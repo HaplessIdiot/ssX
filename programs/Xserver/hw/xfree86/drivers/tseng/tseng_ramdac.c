@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.8 1997/06/06 06:07:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.9 1997/06/11 12:24:45 dawes Exp $ */
 
 /*
  *
@@ -306,10 +306,11 @@ read_color(entry, cmap)
 
           
 
-void Check_Tseng_Ramdac()
+t_ramdactype Check_Tseng_Ramdac()
 {
     unsigned char cmap[3], save_cmap[3];
     BOOL cr_saved;
+    t_ramdactype dac;
 
     rmr = inb(RAMDAC_RMR);
     saved_cr = read_cr(); cr_saved = TRUE;
@@ -319,17 +320,20 @@ void Check_Tseng_Ramdac()
      */
     if (vga256InfoRec.ramdac) 
     {
-       TsengRamdacType = xf86StringToToken(TsengDacTable, vga256InfoRec.ramdac);
-       if (TsengRamdacType < 0) {
+       dac = xf86StringToToken(TsengDacTable, vga256InfoRec.ramdac);
+       if (dac < 0) {
           ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
                  vga256InfoRec.name, vga256InfoRec.ramdac);
-          return ;
+          return UNKNOWN_DAC;
        }
     }
     else    /* autoprobe for the RAMDAC */
     {
-        /* is it an ICS GenDAC ? */
-        if (ProbeGenDAC(FALSE))
+        if (et4000_type >= TYPE_ET6000)
+        {
+           dac = ET6000_DAC;
+        }
+        else if (ProbeGenDAC(FALSE))
         {
           /* It is. Nothing to do here */
         }
@@ -342,7 +346,7 @@ void Check_Tseng_Ramdac()
           /* it's a CH8398 */
         }
         else
-        /* if none of the above: start probing for other DAC's */
+        /* if none of the above: start probing for other DACs */
         {
           outb(RAMDAC_RMR, 0xff); GlennsIODelay();
           inb(RAMDAC_RMR); GlennsIODelay();
@@ -354,15 +358,15 @@ void Check_Tseng_Ramdac()
           if (inb(RAMDAC_RMR) != 0xff)
           {
               cr_saved = FALSE;
-              TsengRamdacType = ATT20C47xA_DAC;
-              return;
+              dac = ATT20C47xA_DAC;
+              goto dac_found;
           }
 
           write_cr(0xe0);
           if ((read_cr() >> 5) != 0x7)
           {
-              TsengRamdacType = ATT20C497_DAC;
-              return;
+              dac = ATT20C497_DAC;
+              goto dac_found;
           }
 
           write_cr(0x60);
@@ -370,9 +374,9 @@ void Check_Tseng_Ramdac()
           {
               write_cr(0x2);        
               if ((read_cr() & 0x2) != 0)
-                  TsengRamdacType = ATT20C490_DAC;
+                  dac = ATT20C490_DAC;
               else
-                  TsengRamdacType = ATT20C493_DAC;
+                  dac = ATT20C493_DAC;
           }
           else
           {
@@ -384,23 +388,24 @@ void Check_Tseng_Ramdac()
               read_color(0xff, cmap);
 
               if (cmap[0] == 0xff && cmap[1] == 0xff && cmap[2] == 0xff)
-                  TsengRamdacType = ATT20C491_DAC;
+                  dac = ATT20C491_DAC;
               else
-                  TsengRamdacType = ATT20C492_DAC;
+                  dac = ATT20C492_DAC;
               
               write_color(0xff, save_cmap);
           }
         }
     }
 
+dac_found:
    /* defaults: 8-bit wide DAC port, 6-bit color lookup-tables */
    RamdacShift = 10;
    vgaRamdacMask = 0x3f;
    TsengDac8Bit = FALSE;
    dac_is_16bit = FALSE;
 
-   /* now override deaults with appropriate values for each RAMDAC */
-   switch(TsengRamdacType)
+   /* now override defaults with appropriate values for each RAMDAC */
+   switch(dac)
    {
      case  ATT20C490_DAC:
      case  ATT20C491_DAC:
@@ -437,11 +442,13 @@ void Check_Tseng_Ramdac()
 
     ErrorF("%s %s: Ramdac: %s\n",
             (vga256InfoRec.ramdac) ? XCONFIG_GIVEN : XCONFIG_PROBED,
-            vga256InfoRec.name, xf86TokenToString(TsengDacTable, TsengRamdacType));
+            vga256InfoRec.name, xf86TokenToString(TsengDacTable, dac));
 
     if (cr_saved && RamdacShift == 10)
         write_cr(saved_cr);
     outb(RAMDAC_RMR, 0xff);
+    
+    return dac;
 }
 
 
@@ -532,9 +539,11 @@ void tseng_set_dacspeed(int bytesperpixel)
       }
       else if (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions))
       {
+#ifdef SUPERFLUOUS
         ErrorF("%s %s: Using ET6000 built-in programmable clock\n",
                OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions) ?
                XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+#endif
       }
       else
       {
@@ -624,12 +633,14 @@ void tseng_set_dacspeed(int bytesperpixel)
     if (vga256InfoRec.dacSpeeds[bytesperpixel-1] > 0)
       vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[bytesperpixel-1];
 
+#ifdef SUPERFLUOUS
     if (xf86Verbose) {
       ErrorF("%s %s: Ramdac speed at %dbpp: %3.3f MHz\n",
              OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
              XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
              vgaBitsPerPixel, vga256InfoRec.dacSpeeds[0] / 1000.0);
     }
+#endif
 
     /* Check that maxClock is not higher than dacSpeed */
     if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeeds[0])

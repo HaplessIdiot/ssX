@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.4 1997/04/14 07:05:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.5 1997/06/03 14:12:22 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -174,7 +174,7 @@ void tseng_init_acl()
      * prepare some shortcuts for faster access to memory mapped registers
      */
 
-    if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+    if (TSENG.ChipUseLinearAddressing)
     {
       MMioBase = (long)vgaLinearBase + 0x3FFF00;
       scratchMemBase = (long)vgaLinearBase + scratchVidBase;
@@ -346,7 +346,7 @@ void tseng_init_acl()
     *MMU_CONTROL = 0x74;
 
     if ((et4000_type < TYPE_ET6000) && (et4000_type > TYPE_ET4000W32I)
-         && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) /* W32p */
+         && TSENG.ChipUseLinearAddressing) /* W32p */
     {
       /*
        * Since the w32p revs C and D don't have any memory mapped when the

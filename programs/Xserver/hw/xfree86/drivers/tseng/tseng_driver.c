@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.11 1997/06/06 06:07:19 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.12 1997/06/11 12:24:45 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -84,10 +84,10 @@ extern void     ET4000HWSaveScreen();
 unsigned char 	tseng_save_divide = 0;
 
 /* Do we use PCI-retry or busy-waiting */
-Bool Use_Pci_Retry = 0;
+Bool tseng_use_PCI_Retry = 0;
 
 /* Do we use the XAA acceleration architecture */
-static Bool Use_ACL = FALSE;
+Bool tseng_use_ACL = FALSE;
 
 #include "tseng_cursor.h"
 extern vgaHWCursorRec vgaHWCursor;
@@ -509,10 +509,6 @@ ET6000InitVars(Bool autodetect)
   
   ClockSelect = Tseng_ET6000ClockSelect;
 
-  outb(ET6Kbase+0x67, 0x0f);
-  ErrorF("%s %s: ET6000: CLKDAC ID: 0x%X\n",
-      XCONFIG_PROBED, vga256InfoRec.name, inb(ET6Kbase+0x69));
-
 #ifdef DO_WE_NEED_THIS
   vga256InfoRec.clocks = 3;
   vga256InfoRec.clock[0] = 25175;
@@ -520,11 +516,10 @@ ET6000InitVars(Bool autodetect)
   vga256InfoRec.clock[2] = 31500; /* this one will be reprogrammed */
 #endif
 
-  /* avoid autoprobing for what we already know */
-  vga256InfoRec.ramdac = xf86TokenToString(TsengDacTable, ET6000_DAC);
+  outb(ET6Kbase+0x67, 0x0f); /* select CLKDAC ID register */
 
-  ErrorF("%s %s: ET6000: Using built-in 135 MHz programmable Clock Chip/RAMDAC\n",
-      XCONFIG_PROBED, vga256InfoRec.name);
+  ErrorF("%s %s: ET6000: Using built-in programmable Clock Chip/RAMDAC (ID=0x%X)\n",
+      XCONFIG_PROBED, vga256InfoRec.name, inb(ET6Kbase+0x69));
 
   return(TRUE);
 }
@@ -913,7 +908,7 @@ ET4000Probe()
  /*
   * Check for RAMDAC type
   */
-  Check_Tseng_Ramdac();
+  TsengRamdacType = Check_Tseng_Ramdac();
   tseng_init_clockscale(vgaBitsPerPixel/8);
   tseng_set_dacspeed(vgaBitsPerPixel/8);
 
@@ -931,27 +926,21 @@ ET4000Probe()
   if (CHIP_SUPPORTS_LINEAR) {
     /* enable using option "linear" in XF86Config */
     OFLG_SET(OPTION_LINEAR, &TSENG.ChipOptionFlags);
+    /* copy state of option flag, override if > 8bpp */
+    if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) || (vgaBitsPerPixel > 8) )
+    {
+      if (!ET4000LinMem(autodetect))
+        FatalError("%s %s: Linear memory mode not supported on this device.\n",
+                   XCONFIG_PROBED, vga256InfoRec.name);
+    }
   }
-  else {
-    /* clear the option flag if it isn't supported */
-    OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
-  }
-  
-  if (vgaBitsPerPixel > 8) {
-    if (!CHIP_SUPPORTS_LINEAR) {
+  else {   /* > 8bpp really needs linear mode */
+    if (vgaBitsPerPixel > 8) {
       FatalError("%s %s: A color depth of %d bits per pixel is not supported on this device.\n",
                  XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
-    }
-    /* OK, so we can do > 8bpp. Force linear mode -- can't do banked at >8bpp */
-    OFLG_SET(OPTION_LINEAR, &vga256InfoRec.options);
+      }
   }
-
-  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) {
-    if (!ET4000LinMem(autodetect))
-      FatalError("%s %s: Linear memory mode not supported on this device.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name);
-  }
-
+  
   /* what color depths can we handle? */
   switch(TsengRamdacType) {
     case ET6000_DAC:
@@ -982,8 +971,15 @@ ET4000Probe()
 
   if (et4000_type < TYPE_ET4000W32P)
   {
-    /* this makes life easier in the rest of the server code */
-    OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+    tseng_use_ACL = FALSE;
+  }
+  else
+  {
+    /* enable acceleration-related options */
+    OFLG_SET(OPTION_NOACCEL, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_PCI_RETRY, &TSENG.ChipOptionFlags);
+
+    tseng_use_ACL = !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options);
   }
 
  /*
@@ -991,16 +987,12 @@ ET4000Probe()
   * W32p rev c.
   */  
 
-  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
-      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-  {
-    if (et4000_type < TYPE_ET4000W32Pc)
+  if (tseng_use_ACL && TSENG.ChipUseLinearAddressing && (et4000_type < TYPE_ET4000W32Pc))
     {
       ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
              XCONFIG_PROBED, vga256InfoRec.name);
-      OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+      tseng_use_ACL = FALSE;
     }
-  }
 
  /*
   * Some combinations can't use all available memory.
@@ -1018,30 +1010,25 @@ ET4000Probe()
 
   /* This is from experience, and not from the data book. Should get fixed some day */
   if ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type < TYPE_ET4000W32Pc)
-      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) )
+      && TSENG.ChipUseLinearAddressing )
   {
       TSENG_MEMLIMIT(1024, "linear memory mode on W32p rev a & b");
   }
 
   /* more differentiation could be used later, but it'll do for now */
-  if ( (et4000_type < TYPE_ET6000)
-      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)
-      && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) )
+  if ( (et4000_type < TYPE_ET6000) && tseng_use_ACL && TSENG.ChipUseLinearAddressing )
   {
       TSENG_MEMLIMIT(2048, "accelerated mode with linear memory mapping on any W32");
   }
 
 #ifdef KMG_FORGOT_WHY_THIS_WAS
-  if ( (et4000_type < TYPE_ET6000)
-      && !OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)
-      && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) )
+  if ( (et4000_type < TYPE_ET6000) && tseng_use_ACL && !TSENG.ChipUseLinearAddressing )
   {
       TSENG_MEMLIMIT(4096-516, "banked accelerated mode on any W32");
   }
 #endif
 
-  if ( !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
-      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) )
+  if ( tseng_use_ACL && TSENG.ChipUseLinearAddressing )
   {
       TSENG_MEMLIMIT(4096-8, "accelerated mode with linear memory mapping on any Tseng card");
   }
@@ -1052,7 +1039,7 @@ ET4000Probe()
   * Acceleration requires 1kb scratch buffer memory.
   */  
 
-  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+  if (tseng_use_ACL)
   {
     ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
            XCONFIG_PROBED, vga256InfoRec.name);
@@ -1088,16 +1075,11 @@ ET4000Probe()
           OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
   }
         
-  /* Set PCI_RETRY option valid */
-  OFLG_SET(OPTION_PCI_RETRY, &TSENG.ChipOptionFlags);
-
-  OFLG_SET(OPTION_NOACCEL, &TSENG.ChipOptionFlags);
-  
   } /* if (vgaBitsPerPixel >= 8) */
   else {
     OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
-    OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
-    OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+    TSENG.ChipUseLinearAddressing = FALSE;
+    tseng_use_ACL = FALSE;
   }
 
 
@@ -1114,7 +1096,7 @@ ET4000Probe()
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &TSENG.ChipOptionFlags);
     OFLG_SET(OPTION_SLOW_DRAM, &TSENG.ChipOptionFlags);
     OFLG_SET(OPTION_FAST_DRAM, &TSENG.ChipOptionFlags);
-    }
+  }
 
 /*
  * because of some problems with W32 cards, SLOW_DRAM is _always_ enabled
@@ -1325,22 +1307,15 @@ ET4000FbInit()
   if (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))
     {
       ErrorF("%s %s: Using PCI retrys.\n",XCONFIG_PROBED, vga256InfoRec.name);
-      Use_Pci_Retry = 1;
+      tseng_use_PCI_Retry = 1;
     }
 
-  if (vgaBitsPerPixel >= 8) {
-  if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-    {
-      Use_ACL = FALSE;
-    }
-    else
+  if ( (vgaBitsPerPixel >= 8) && (tseng_use_ACL) )
     {
       /* initialize the XAA interface software */
       /* TsengAccelInit();
          This relies on variables that are setup later, so it's called there */ 
-      Use_ACL = TRUE;
     }
-  }
 }
 
 
@@ -1539,7 +1514,7 @@ ET4000Restore(restore)
         (ClockSelect)(restore->std.NoClock);
       }
 
-  if (Use_ACL & (restore->std.Attribute[16] & 1)) /* are we going to graphics mode? */
+  if (tseng_use_ACL & (restore->std.Attribute[16] & 1)) /* are we going to graphics mode? */
     tseng_init_acl(); /* initialize acceleration hardware */
 
   vgaProtect(FALSE);
@@ -1986,11 +1961,11 @@ ET4000Init(mode)
    * Enable memory mapped IO registers when acceleration is needed.
    */
 
-  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+  if (tseng_use_ACL)
   {
     if (et4000_type >= TYPE_ET6000)
     {
-      if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+      if (TSENG.ChipUseLinearAddressing)
         new->ET6KMMAPCtrl |= 0x02; /* MMU can't be used here (causes system hang...) */
       else
         new->ET6KMMAPCtrl |= 0x06; /* MMU is needed in banked accelerated mode */
