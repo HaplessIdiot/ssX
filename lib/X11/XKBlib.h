@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h /main/17 1996/03/01 14:30:14 kaleb $ */
+/* $TOG: XKBlib.h /main/18 1997/12/12 09:03:32 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1070,6 +1070,21 @@ extern	Bool	XkbGetAutoResetControls(
     Display *			/* dpy */,
     unsigned int *		/* auto_ctrls */,
     unsigned int *		/* auto_ctrl_values */
+#endif
+);
+
+extern	Bool	XkbSetPerClientControls(
+#if NeedFunctionPrototypes
+    Display *			/* dpy */,
+    unsigned int		/* change */,
+    unsigned int *		/* values */
+#endif
+);
+
+extern	Bool	XkbGetPerClientControls(
+#if NeedFunctionPrototypes
+    Display *			/* dpy */,
+    unsigned int *		/* ctrls */
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $TOG: SetWin.c /main/4 1997/09/02 17:31:01 kaleb $ */
+/* $TOG: SetWin.c /main/5 1997/11/24 11:03:56 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -111,6 +111,15 @@ ResizeCB (Widget widget, XtPointer client_data, XtPointer call_data)
     XtSetValues(This->plugin_widget, args, n);
 }
 
+static Widget
+FindToplevel(Widget widget)
+{
+    while (XtParent(widget) != NULL && !XtIsTopLevelShell(widget))
+	widget = XtParent(widget);
+
+    return widget;
+}
+
 /***********************************************************************
  * This function gets called first when the plugin widget is created and
  * then whenever the plugin is changed.
@@ -140,6 +149,8 @@ NPP_SetWindow(NPP instance, NPWindow* window)
      */
     display = ((NPSetWindowCallbackStruct *)window->ws_info)->display;
     netscape_widget = XtWindowToWidget(display, (Window) window->window);
+    if (This->toplevel_widget == NULL)
+	This->toplevel_widget = FindToplevel(netscape_widget);
 
     if (This->plugin_widget != netscape_widget) {
 

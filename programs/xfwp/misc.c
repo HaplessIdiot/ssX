@@ -1,4 +1,4 @@
-/* $TOG: misc.c /main/10 1997/11/12 08:16:13 barstow $ */
+/* $TOG: misc.c /main/11 1997/12/04 13:14:03 barstow $ */
 
 /*
 Copyright "1986-1997 The Open Group All Rights Reserved
@@ -865,8 +865,10 @@ doCheckTimeouts(
  	close(client_conn_array[client_data_counter]->fd);
  	close(client_conn_array[client_data_counter]->conn_to);
         free(client_conn_array[client_conn_array[client_data_counter]->conn_to]);
-        free(client_conn_array[client_data_counter]->source);
-        free(client_conn_array[client_data_counter]->destination);
+        if (client_conn_array[client_data_counter]->source)
+	    free(client_conn_array[client_data_counter]->source);
+        if (client_conn_array[client_data_counter]->destination)
+	    free(client_conn_array[client_data_counter]->destination);
         free(client_conn_array[client_data_counter]);
         client_conn_array[client_conn_array[client_data_counter]->conn_to] = 
 		NULL;

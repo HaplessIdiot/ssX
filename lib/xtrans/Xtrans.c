@@ -1,5 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.31 95/03/28 19:49:02 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.16 1997/07/06 05:30:37 dawes Exp $ */
+/* $TOG: Xtrans.c /main/33 1997/12/09 17:28:04 kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.17 1997/07/19 05:43:04 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -110,12 +110,16 @@ Xtransport_table Xtransports[] = {
 #endif /* OS2PIPECONN */
 #if defined(LOCALCONN)
     &TRANS(LocalFuncs),		TRANS_LOCAL_LOCAL_INDEX,
+#ifndef sun
     &TRANS(PTSFuncs),		TRANS_LOCAL_PTS_INDEX,
+#endif /* sun */
 #ifdef SVR4
     &TRANS(NAMEDFuncs),		TRANS_LOCAL_NAMED_INDEX,
 #endif
+#ifndef sun
     &TRANS(ISCFuncs),		TRANS_LOCAL_ISC_INDEX,
     &TRANS(SCOFuncs),		TRANS_LOCAL_SCO_INDEX,
+#endif /* sun */
 #endif /* LOCALCONN */
 #if defined(AMRPCCONN) || defined(AMTCPCONN)
     &TRANS(AmConnFuncs),	TRANS_AMOEBA_INDEX,
@@ -724,7 +728,9 @@ int		arg;
 	case 1: /* Set to non-blocking mode */
 
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu) && !defined(__EMX__) && !defined(SCO))
-	    ret = fcntl (fd, F_SETFL, O_NONBLOCK);
+	    ret = fcntl (fd, F_GETFL, 0);
+	    if (ret != -1)
+		ret = fcntl (fd, F_SETFL, ret | O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
 	{
@@ -746,10 +752,11 @@ int		arg;
 #endif
 	}
 #else
+	    ret = fcntl (fd, F_GETFL, 0);
 #ifdef FNDELAY
-	    ret = fcntl (fd, F_SETFL, FNDELAY);
+	    ret = fcntl (fd, F_SETFL, ret | FNDELAY);
 #else
-	    ret = fcntl (fd, F_SETFL, O_NDELAY);
+	    ret = fcntl (fd, F_SETFL, ret | O_NDELAY);
 #endif
 #endif /* AIXV3  || uniosu */
 #endif /* FIOSNBIO */

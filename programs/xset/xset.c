@@ -1,5 +1,5 @@
 /* 
- * $TOG: xset.c /main/72 1997/11/12 14:39:11 kaleb $
+ * $TOG: xset.c /main/75 1997/12/02 19:16:29 kaleb $
  */
 
 /*
@@ -28,7 +28,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.12 1997/06/29 07:54:38 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.13 1997/11/22 06:50:40 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -40,12 +40,27 @@ char *malloc();
 #endif
 #ifdef DPMSExtension
 #include <X11/extensions/dpms.h>
+#ifdef WIN32
+#define BOOL wBOOL
+#ifdef Status
+#undef Status
+#define Status wStatus
 #endif
+#include <windows.h>
+#ifdef Status
+#undef Status
+#define Status int
+#endif
+#undef BOOL
+#endif
+#if defined(SVR4) && defined(sun)
+#include <sys/syscall.h>
+#endif
+#endif /* DPMSExtension */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xlib.h>
-/*  #include <X11/Xlibwm.h>  [Doesn't exist yet  5-14-87]  %*/
 #include <X11/keysym.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
@@ -402,16 +417,42 @@ for (i = 1; i < argc; ) {
 	       * which case the Up transition may immediately turn the display
 	       * back on.
 	       *
-	       * NOTE: SYSV and SVR4 don't have usleep().  For now, just
-	       * use sleep(), but could probably do something better
-	       * using poll().
 	       * On OS/2, use _sleep2()
 	       */
-#if defined(SYSV) || defined(SVR4)
-#define usleep(us) sleep((us / 1000000 > 0) ? us / 1000000 : 1)
+#ifdef SVR4
+# ifdef sun
+/* Anything to avoid linking with -lposix4 */
+#  define Usleep(us) { \
+		struct ts { \
+			long	tv_sec; \
+			long	tv_nsec; \
+		} req; \
+		req.tv_sec = 0; \
+		req.tv_nsec = (us) * 1000;\
+		syscall(SYS_nanosleep, &req, NULL); \
+	}
+# endif
+# ifdef sgi
+#  define Usleep(us) sginap((us) / 1000)
+# endif
+#endif
+#ifdef hpux
+# ifdef _XPG4_EXTENDED
+#  define Usleep(us) usleep((us))
+# endif
 #endif
 #ifdef __EMX__
-#define usleep(us) _sleep2((us / 1000 > 0) ? us / 1000 : 1)
+# define Usleep(us) _sleep2((us / 1000 > 0) ? us / 1000 : 1)
+#endif
+#ifdef WIN32
+# define Usleep(us) Sleep(us)
+#endif
+#ifndef Usleep
+# if defined(SYSV) || defined(SVR4)
+#  define Usleep(us) sleep((us / 1000000 > 0) ? us / 1000000 : 1)
+# else
+#  define Usleep(us) usleep((us))
+# endif
 #endif
 
 	      if (strcmp(arg, "on") == 0) {
@@ -421,19 +462,19 @@ for (i = 1; i < argc; ) {
 	      }
 	      else if (strcmp(arg, "standby") == 0) {
 		  DPMSEnable(dpy);
-		  usleep(100000);
+		  Usleep(100000);
 		  DPMSForceLevel(dpy, DPMSModeStandby);
 		  i++;
 	      }
 	      else if (strcmp(arg, "suspend") == 0) {		  
 		  DPMSEnable(dpy);
-		  usleep(100000);
+		  Usleep(100000);
 		  DPMSForceLevel(dpy, DPMSModeSuspend);
 		  i++;
 	      }
 	      else if (strcmp(arg, "off") == 0) {  
 		  DPMSEnable(dpy);
-		  usleep(100000);
+		  Usleep(100000);
 		  DPMSForceLevel(dpy, DPMSModeOff);
 		  i++;
 	      }

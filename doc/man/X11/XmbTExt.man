@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -138,11 +138,11 @@
 .el .sp 10p
 ..
 .ny0
-.TH XmbTextExtents 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XmbTextExtents 3X11 "Release 6.4" "X Version 11" "XLIB FUNCTIONS"
 .SH NAME
 XmbTextExtents, XwcTextExtents \- compute text extents
 .SH SYNTAX
-int XmbTextExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_bytes\fP\^, \fIoverall_return\fP\^)
+int XmbTextExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_bytes\fP\^, \fIoverall_ink_return\fP\^, \fIoverall_logical_return\fP\^)
 .br
       XFontSet \fIfont_set\fP\^;
 .br
@@ -154,7 +154,7 @@ int XmbTextExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_bytes\fP\^, \fIo
 .br
       XRectangle *\fIoverall_logical_return\fP\^;
 .LP
-int XwcTextExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_wchars\fP\^, \fIoverall_return\fP\^)
+int XwcTextExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_wchars\fP\^, \fIoverall_ink_return\fP\^, \fIoverall_logical_return\fP\^)
 .br
       XFontSet \fIfont_set\fP\^;
 .br

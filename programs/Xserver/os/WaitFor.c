@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $TOG: WaitFor.c /main/56 1997/11/12 14:38:59 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.13 1997/06/11 12:24:48 dawes Exp $ */
+/* $TOG: WaitFor.c /main/57 1997/11/25 14:35:28 kaleb $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.14 1997/11/22 06:50:32 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -196,19 +196,20 @@ WaitForSomething(pClientsReady)
 		wt = &waittime;
 	    }
 	}
+	if (ScreenSaverTime > 0
 #ifdef DPMSExtension
-	if (ScreenSaverTime > 0 ||
-	    (DPMSEnabled &&
-	     (DPMSStandbyTime > 0 || DPMSSuspendTime > 0 || DPMSOffTime > 0)))
-#else
-	if (ScreenSaverTime > 0)
+	    || (DPMSEnabled &&
+	     (DPMSStandbyTime > 0 || DPMSSuspendTime > 0 || DPMSOffTime > 0))
 #endif
-	{
+	) {
 #ifdef DPMSExtension
 
+#ifdef DPMSExtension
 	    if (ScreenSaverTime > 0)
+#endif
 		timeout = (ScreenSaverTime -
 			   (now - lastDeviceEventTime.milliseconds));
+#ifdef DPMSExtension
 	    if (DPMSStandbyTime > 0)
 		standbyTimeout = (DPMSStandbyTime -
 				  (now - lastDeviceEventTime.milliseconds));
@@ -218,16 +219,13 @@ WaitForSomething(pClientsReady)
 	    if (DPMSOffTime > 0)
 		offTimeout = (DPMSOffTime -
 			      (now - lastDeviceEventTime.milliseconds));
-#else
-	    timeout = (ScreenSaverTime -
-		       (now - lastDeviceEventTime.milliseconds));
 #endif /* DPMSExtension */
+
+	    if (timeout <= 0
 #ifdef DPMSExtension
-	    if (timeout <= 0 && ScreenSaverTime > 0)
-#else
-	    if (timeout <= 0) /* may be forced by AutoResetServer() */
+		 && ScreenSaverTime > 0)
 #endif /* DPMSExtension */
-	    {
+	    ) {
 		INT32 timeSinceSave;
 
 		timeSinceSave = -timeout;

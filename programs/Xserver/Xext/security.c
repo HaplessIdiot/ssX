@@ -1,4 +1,4 @@
-/* $XConsortium: security.c /main/13 1996/12/15 21:24:27 rws $ */
+/* $TOG: security.c /main/14 1997/12/05 11:51:53 msr $ */
 /*
 Copyright (c) 1996 X Consortium, Inc.
 
@@ -15,7 +15,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from the X Consortium.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.2 1997/01/27 06:57:17 dawes Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1594,6 +1594,8 @@ SecurityParseSitePolicy(p)
 
     SecurityPolicyStrings = newStrings;
     SecurityPolicyStrings[nSecurityPolicyStrings++] = copyPolicyStr;
+
+    return TRUE;
 
 } /* SecurityParseSitePolicy */
 

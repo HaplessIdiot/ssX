@@ -1,4 +1,4 @@
-/* $TOG: dpms.c /main/1 1997/11/12 14:37:34 kaleb $ */
+/* $TOG: dpms.c /main/2 1997/11/25 14:35:13 kaleb $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.
@@ -27,7 +27,7 @@ Equipment Corporation.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.1 1997/01/12 10:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.2 1997/11/22 06:50:19 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -212,18 +212,28 @@ ProcDPMSForceLevel(client)
       lastDeviceEventTime.milliseconds =
           GetTimeInMillis();
     } else if (stuff->level == DPMSModeStandby) {
+#if 0
       lastDeviceEventTime.milliseconds =
           GetTimeInMillis() -  DPMSStandbyTime;
+#endif
+      ;
     } else if (stuff->level == DPMSModeSuspend) {
+#if 0
       lastDeviceEventTime.milliseconds =
           GetTimeInMillis() -  DPMSSuspendTime;
+#endif
+      ;
     } else if (stuff->level == DPMSModeOff) {
+#if 0
       lastDeviceEventTime.milliseconds =
           GetTimeInMillis() -  DPMSOffTime;
+#endif
+      ;
     } else {
 	client->errorValue = stuff->level;
 	return BadValue;
     }
+#endif
 
 #ifdef DPMSExtension
     DPMSSet(stuff->level);

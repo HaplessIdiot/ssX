@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $TOG: X11.tmpl /main/300 1997/11/12 14:36:32 kaleb $
+XCOMM $TOG: X11.tmpl /main/305 1997/12/04 13:45:25 kaleb $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.21 1997/11/22 06:50:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -114,6 +114,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.21 1997/11/22 06:50:04 dawes Exp $
 #endif
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
+#endif
+#ifndef BuildEVI
+#define BuildEVI		YES
 #endif
 #ifndef BuildDBE
 #define BuildDBE		YES
@@ -450,6 +453,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.21 1997/11/22 06:50:04 dawes Exp $
 #endif
 #endif
 
+#ifndef EVIDefines
+#if BuildEVI
+#define EVIDefines -DEVI
+#else
+#define EVIDefines /**/
+#endif
+#endif
+
 #ifndef DBEDefines
 #if BuildDBE
 #define DBEDefines -DDBE
@@ -551,7 +562,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.21 1997/11/22 06:50:04 dawes Exp $
 	PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines ScreenSaverExtensionDefines \
 	GlxDefines \
-	DBEDefines SiteExtensionDefines
+	DBEDefines DPMSDefines EVIDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif /* ExtensionDefines */
@@ -1590,9 +1601,11 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #ifndef InstallAppDefaultsLong
 #if InstallAppDefFiles
 #define InstallAppDefaultsLong(file,class)				@@\
+LinkVarDirectory(app-defaults,.,app-defaults,.)				@@\
 InstallNamedTarget(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #else
 #define InstallAppDefaultsLong(file,class)				@@\
+LinkVarDirectory(app-defaults,.,app-defaults,.)				@@\
 InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #endif /* InstallAppDefFiles */
 #endif /* InstallAppDefaultsLong */

@@ -1,4 +1,4 @@
-/* $XConsortium: file.c,v 1.16 94/04/17 20:03:38 rws Exp $ */
+/* $TOG: file.c /main/17 1997/12/07 18:27:38 kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -222,7 +222,8 @@ int		numAcceptable;
     else
     {
 	d = NewDisplay (name, class);
-	Debug ("Found new display:  %s %s %s", d->name, d->class, type);
+	Debug ("Found new display:  %s %s %s", 
+		d->name, d->class ? d->class : "", type);
     }
     d->displayType = displayType;
     d->argv = copyArgs (argv);

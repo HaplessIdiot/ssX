@@ -1,4 +1,4 @@
-/* $TOG: transport.c /main/5 1997/11/12 08:16:23 barstow $ */
+/* $TOG: transport.c /main/6 1997/12/11 14:26:08 kaleb $ */
 /*
 
 Copyright "1986-1997 The Open Group All Rights Reserved
@@ -125,6 +125,9 @@ doSetupRemClientListen(
    */
   bzero((char * ) &rem_sockaddr_in, sizeof(rem_sockaddr_in));
   rem_sockaddr_in.sin_family = AF_INET;
+#ifdef BSD44SOCKETS
+  rem_sockaddr_in.sin_len = sizeof rem_sockaddr_in;
+#endif
 
 #ifdef SO_REUSEADDR
   if (setsockopt(server_array[this_server]->client_listen_fd,
@@ -309,6 +312,9 @@ doServerConnectSetup(
 
   memset(server_sockaddr_in, 0, sizeof(*server_sockaddr_in));
   server_sockaddr_in->sin_family = hostptr->h_addrtype;
+#ifdef BSD44SOCKETS
+  server_sockaddr_in->sin_len = sizeof server_sockaddr_in;
+#endif
   memcpy((char *) &server_sockaddr_in->sin_addr, 
 	 hostptr->h_addr,
 	 hostptr->h_length);

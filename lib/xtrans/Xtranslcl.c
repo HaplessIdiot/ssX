@@ -1,4 +1,4 @@
-/* $TOG: Xtranslcl.c /main/30 1997/10/23 06:38:32 kaleb $ */
+/* $TOG: Xtranslcl.c /main/34 1997/12/09 17:28:12 kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.24 1997/10/25 13:49:58 hohndel Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.25 1997/11/16 06:17:44 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -229,7 +229,6 @@ int sig;
 #else
 #define X_STREAMS_DIR	"/tmp/.X11-pipe"
 #endif
-#define DEV_SPX		"/dev/pm"
 #endif
 #define DEV_PTMX	"/dev/ptmx"
 
@@ -276,6 +275,7 @@ int sig;
 
 
 
+#ifndef sun
 #ifdef TRANS_CLIENT
 
 static int
@@ -612,6 +612,7 @@ int		*status;
 }
 
 #endif /* TRANS_SERVER */
+#endif /* sun */
 
 
 #ifdef SVR4
@@ -833,6 +834,7 @@ int		*status;
 
 
 
+#ifndef sun
 /*
  * connect_spipe is used by both the SCO and ISC connection types.
  */
@@ -1383,6 +1385,7 @@ int		*status;
 }
 
 #endif /* TRANS_SERVER */
+#endif /* sun */
 
 
 
@@ -1613,6 +1616,7 @@ typedef struct _LOCALtrans2dev {
 } LOCALtrans2dev;
 
 static LOCALtrans2dev LOCALtrans2devtab[] = {
+#ifndef sun
 {"",
 #ifdef TRANS_CLIENT
      TRANS(PTSOpenClient),
@@ -1678,6 +1682,51 @@ static LOCALtrans2dev LOCALtrans2devtab[] = {
      TRANS(PTSAccept)
 #endif /* TRANS_SERVER */
 },
+#else /* sun */
+{"",
+#ifdef TRANS_CLIENT
+     TRANS(NAMEDOpenClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+     TRANS(NAMEDOpenServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
+     TRANS(OpenFail),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+     TRANS(OpenFail),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_REOPEN
+     TRANS(NAMEDReopenServer),
+     TRANS(ReopenFail),
+#endif
+#ifdef TRANS_SERVER
+     TRANS(NAMEDAccept)
+#endif /* TRANS_SERVER */
+},
+
+{"local",
+#ifdef TRANS_CLIENT
+     TRANS(NAMEDOpenClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+     TRANS(NAMEDOpenServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
+     TRANS(OpenFail),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
+     TRANS(OpenFail),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_REOPEN
+     TRANS(NAMEDReopenServer),
+     TRANS(ReopenFail),
+#endif
+#ifdef TRANS_SERVER
+     TRANS(NAMEDAccept)
+#endif /* TRANS_SERVER */
+},
+#endif /* sun */
 
 #ifdef SVR4
 {"named",
@@ -1703,6 +1752,7 @@ static LOCALtrans2dev LOCALtrans2devtab[] = {
 },
 #endif /* SVR4 */
 
+#ifndef sun
 {"isc",
 #ifdef TRANS_CLIENT
      TRANS(ISCOpenClient),
@@ -1746,6 +1796,7 @@ static LOCALtrans2dev LOCALtrans2devtab[] = {
      TRANS(SCOAccept)
 #endif /* TRANS_SERVER */
 },
+#endif /* sun */
 };
 
 #define NUMTRANSPORTS	(sizeof(LOCALtrans2devtab)/sizeof(LOCALtrans2dev))
@@ -2521,6 +2572,8 @@ Xtransport	TRANS(LocalFuncs) = {
 	TRANS(LocalCloseForCloning),
 };
 
+#ifndef sun
+
 Xtransport	TRANS(PTSFuncs) = {
 	/* Local Interface */
 	"pts",
@@ -2560,6 +2613,8 @@ Xtransport	TRANS(PTSFuncs) = {
 	TRANS(LocalCloseForCloning),
 };
 
+#endif /* sun */
+
 Xtransport	TRANS(NAMEDFuncs) = {
 	/* Local Interface */
 	"named",
@@ -2598,6 +2653,8 @@ Xtransport	TRANS(NAMEDFuncs) = {
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
 };
+
+#ifndef sun
 
 Xtransport	TRANS(ISCFuncs) = {
 	/* Local Interface */
@@ -2675,3 +2732,4 @@ Xtransport	TRANS(SCOFuncs) = {
 	TRANS(LocalClose),
 	TRANS(LocalCloseForCloning),
 };
+#endif /* sun */

@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -138,13 +138,13 @@
 .el .sp 10p
 ..
 .ny0
-.TH XmbTextPerCharExtents 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XmbTextPerCharExtents 3X11 "Release 6.4" "X Version 11" "XLIB FUNCTIONS"
 .SH NAME
 XmbTextPerCharExtents, XwcTextPerCharExtents \- obtain per-character information for a text string
 .SH SYNTAX
 Status XmbTextPerCharExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_bytes\fP\^, \fIink_array_return\fP\^,
 .br
-           \fIlogical_array_return\fP\^, \fIarray_size\fP\^, \fInum_chars_return\fP\^, \fIoverall_return\fP\^)
+           \fIlogical_array_return\fP\^, \fIarray_size\fP\^, \fInum_chars_return\fP\^, \fIoverall_ink_return\fP\^,  \fIoverall_logical_return\fP\^)
 .br
       XFontSet \fIfont_set\fP\^;
 .br
@@ -166,7 +166,7 @@ Status XmbTextPerCharExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_bytes\
 .LP
 Status XwcTextPerCharExtents\^(\^\fIfont_set\fP\^, \fIstring\fP\^, \fInum_wchars\fP\^, \fIink_array_return\fP\^,
 .br
-          \fIlogical_array_return\fP\^, \fIarray_size\fP\^, \fInum_chars_return\fP\^, \fIoverall_return\fP\^)
+          \fIlogical_array_return\fP\^, \fIarray_size\fP\^, \fInum_chars_return\fP\^, \fIoverall_ink_return\fP\^,  \fIoverall_logical_return\fP\^)
 .br
       XFontSet \fIfont_set\fP\^;
 .br

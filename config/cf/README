@@ -1,9 +1,9 @@
-$TOG: README /main/74 1997/11/12 14:36:25 kaleb $
+$TOG: README /main/75 1997/11/24 16:47:09 kaleb $
 
 
 
 
-$XFree86: xc/config/cf/README,v 1.6 1997/11/16 06:17:23 dawes Exp $
+$XFree86: xc/config/cf/README,v 1.7 1997/11/22 06:50:02 dawes Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -167,6 +167,7 @@ X11.tmpl provides defaults for the following variables:
 	BuildFonts		build pcf fonts
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
+	BuildEVI		build EVI server extension
 	BuildLBX		build LBX (aka X.fast) server extension
 	BuildMultibuffer	build Multibuffer extension (obsolete)
 	BuildPlugin		build xrx plug-in for web browsers

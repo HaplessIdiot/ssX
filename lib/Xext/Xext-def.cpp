@@ -115,4 +115,7 @@ EXPORTS
  DPMSDisable
  DPMSForceLevel
  DPMSInfo
-/* $TOG: Xext-def.cpp /main/8 1997/11/12 14:37:20 kaleb $ */
+ XeviQueryExtension
+ XeviQueryVersion
+ XeviGetVisualInfo
+/* $TOG: Xext-def.cpp /main/9 1997/12/02 14:28:56 kaleb $ */

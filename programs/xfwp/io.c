@@ -1,4 +1,4 @@
-/* $TOG: io.c /main/11 1997/11/12 08:16:08 barstow $ */
+/* $TOG: io.c /main/12 1997/12/04 13:13:53 barstow $ */
 /*
 
 Copyright "1986-1997 The Open Group All Rights Reserved
@@ -155,8 +155,10 @@ doProcessWritables(
 	    client_conn_array[client_conn_array[fd_counter]->conn_to]->conn_to 
 			= -1;
 	    client_conn_array[fd_counter]->conn_to = -1;
-	    free(client_conn_array[fd_counter]->source);
-	    free(client_conn_array[fd_counter]->destination);
+	    if (client_conn_array[fd_counter]->source)
+		free(client_conn_array[fd_counter]->source);
+	    if (client_conn_array[fd_counter]->destination)
+		free(client_conn_array[fd_counter]->destination);
 	    free(client_conn_array[fd_counter]);
 	    client_conn_array[fd_counter] = NULL;
 	    return;
@@ -206,8 +208,10 @@ doProcessWritables(
 		    client_conn_array[fd_counter]->conn_to = -1;
 		    client_conn_array[fd_counter]->wclose = 0;
 		    (void) close (fd_counter);
-		    free(client_conn_array[fd_counter]->source);
-		    free(client_conn_array[fd_counter]->destination);
+		    if (client_conn_array[fd_counter]->source)
+			free(client_conn_array[fd_counter]->source);
+		    if (client_conn_array[fd_counter]->destination)
+			free(client_conn_array[fd_counter]->destination);
 		    free(client_conn_array[fd_counter]);
 		    client_conn_array[fd_counter] = NULL;
 		}
@@ -254,8 +258,10 @@ doProcessWritables(
 	    client_conn_array[fd_counter]->conn_to = -1;
 	    client_conn_array[fd_counter]->wclose = 0;
 	    (void) close (fd_counter);
-	    free(client_conn_array[fd_counter]->source);
-	    free(client_conn_array[fd_counter]->destination);
+	    if (client_conn_array[fd_counter]->source)
+		free(client_conn_array[fd_counter]->source);
+	    if (client_conn_array[fd_counter]->destination)
+		free(client_conn_array[fd_counter]->destination);
 	    free(client_conn_array[fd_counter]);
 	    client_conn_array[fd_counter] = NULL;
 	}
@@ -614,6 +620,7 @@ ProcessNewClientConnection (
 	(void) fprintf (stderr, "malloc - client connection buffer\n");
 	return;
     }
+    bzero (client_conn_array[temp_sock_fd], sizeof (struct client_conn_buf));
 
     /*
      * save the source and destination data for this connection (since
@@ -640,6 +647,7 @@ ProcessNewClientConnection (
 	(void) fprintf (stderr, "malloc - server connectioin buffer\n");
 	return;
     }
+    bzero (client_conn_array[server_fd], sizeof (struct client_conn_buf));
 
     client_conn_array[server_fd]->conn_to = temp_sock_fd;
     client_conn_array[temp_sock_fd]->conn_to = server_fd;
@@ -682,6 +690,8 @@ ProcessNewClientConnection (
     client_conn_array[server_fd]->creation_time = time_val.tv_sec; 
     client_conn_array[server_fd]->time_to_close = 
 	config_info->client_data_timeout;
+
+    client_conn_array[server_fd]->fd = server_fd;
 }
 
 static void
@@ -839,8 +849,10 @@ ProcessConnectionReady (
 	    (void) close (client_conn_array[client_fd]->conn_to);
 	    (void) close (client_fd);
 
-	    free(client_conn_array[client_fd]->source);
-	    free(client_conn_array[client_fd]->destination);
+	    if (client_conn_array[client_fd]->source)
+		free(client_conn_array[client_fd]->source);
+	    if (client_conn_array[client_fd]->destination)
+		free(client_conn_array[client_fd]->destination);
 	    free(client_conn_array[client_fd]);
 
 	    client_conn_array[client_fd] = NULL;
