@@ -1,5 +1,4 @@
 /* $XConsortium: Xlcint.h /main/25 1996/09/28 16:35:19 rws $ */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.1 1996/12/23 05:59:45 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.2 1997/11/22 09:58:11 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -826,7 +826,7 @@ typedef struct _XIC {
 
 typedef XLCd (*XLCdLoadProc)(
 #if NeedFunctionPrototypes
-    char*
+    _Xconst char*
 #endif
 );
 
