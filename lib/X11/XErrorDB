@@ -830,4 +830,12 @@ XProtoError.Adobe-DPS-Extension.1: PSErrorBadSpace (invalid Space parameter)
 XlibMessage.Adobe-DPS-Extension.1: Space id in failed request:  0x%lx
 XProtoError.Adobe-DPS-Extension.2: PSErrorAbort (interpreter aborted)
 XlibMessage.Adobe-DPS-Extension.2: Value in failed request:  0x%lx
+! RANDR
+XRequest.RANDR.0: RRQueryVersion
+XRequest.RANDR.1: RROldGetScreenInfo
+XRequest.RANDR.2: RRSetScreenConfig
+XRequest.RANDR.3: RROldScreenChangeSelectInput
+XRequest.RANDR.4: RRSelectInput
+XRequest.RANDR.5: RRGetScreenInfo
+
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/render.h,v 1.5 2002/02/12 07:19:40 keithp Exp $
+ * $XFree86: xc/include/extensions/render.h,v 1.8 2002/09/26 02:56:48 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -167,6 +167,6 @@ typedef unsigned long	PictFormat;
 #define SubPixelHorizontalBGR		    2
 #define SubPixelVerticalRGB		    3
 #define SubPixelVerticalBGR		    4
-#define SubPixelNone			    255
+#define SubPixelNone			    5
 
 #endif	/* _RENDER_H_ */

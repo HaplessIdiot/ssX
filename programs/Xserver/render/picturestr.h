@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.17 2002/05/13 05:25:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.18 2002/09/26 02:56:52 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -308,6 +308,9 @@ PictureInitIndexedFormats (ScreenPtr pScreen);
 
 Bool
 PictureSetSubpixelOrder (ScreenPtr pScreen, int subpixel);
+
+int
+PictureGetSubpixelOrder (ScreenPtr pScreen);
 
 PictFormatPtr
 PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.3 2001/05/26 01:25:42 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randrstr.h,v 1.4 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -27,35 +27,18 @@
 
 #include "randr.h"
 
-typedef struct _rrVisualGroup {
-    int		id;
-    int		nvisuals;
-    VisualPtr	*visuals;
-    Bool	referenced;
-    Bool	oldReferenced;
-} RRVisualGroup, *RRVisualGroupPtr;
-
-typedef struct _rrGroupOfVisualGroup {
-    int		id;
-    int		ngroups;
-    int		*groups;
-    Bool	referenced;
-    Bool	oldReferenced;
-} RRGroupOfVisualGroup, *RRGroupOfVisualGroupPtr;
 
 typedef struct _rrScreenSize {
     int		id;
     short	width, height;
     short	mmWidth, mmHeight;
-    int		groupOfVisualGroups;
     Bool	referenced;
     Bool	oldReferenced;
 } RRScreenSize, *RRScreenSizePtr;
 
 typedef Bool (*RRSetConfigProcPtr) (ScreenPtr		pScreen,
 				    Rotation		rotation,
-				    RRScreenSizePtr	pSize,
-				    RRVisualGroupPtr	pVisualGroup);
+				    RRScreenSizePtr	pSize);
 
 typedef Bool (*RRGetInfoProcPtr) (ScreenPtr pScreen, Rotation *rotations);
 typedef Bool (*RRCloseScreenProcPtr) ( int i, ScreenPtr pscreen);
@@ -74,12 +57,6 @@ typedef struct _rrScrPriv {
     Rotation		    rotations;
     int			    swaps;
     
-    int			    nVisualGroups;
-    int			    nVisualGroupsInUse;
-    RRVisualGroupPtr	    pVisualGroups;
-    int			    nGroupsOfVisualGroups;
-    int			    nGroupsOfVisualGroupsInUse;
-    RRGroupOfVisualGroupPtr pGroupsOfVisualGroups;
     int			    nSizes;
     int			    nSizesInUse;
     RRScreenSizePtr	    pSizes;
@@ -89,8 +66,6 @@ typedef struct _rrScrPriv {
      */
     Rotation		    rotation;
     RRScreenSizePtr	    pSize;
-    RRVisualGroupPtr	    pVisualGroup;
-
 } rrScrPrivRec, *rrScrPrivPtr;
 
 extern int rrPrivIndex;
@@ -99,50 +74,9 @@ extern int rrPrivIndex;
 #define rrScrPriv(pScr)	rrScrPrivPtr    pScrPriv = rrGetScrPriv(pScr)
 #define SetRRScreen(s,p) ((s)->devPrivates[rrPrivIndex].ptr = (pointer) (p))
 
-/*
- * First, create the visual groups and register them with the screen
- */
-RRVisualGroupPtr
-RRCreateVisualGroup (ScreenPtr pScreen);
-
+/* Initialize the extension */
 void
-RRDestroyVisualGroup (ScreenPtr		pScreen,
-		      RRVisualGroupPtr  pVisualGroup);
-
-Bool
-RRAddVisualToVisualGroup (ScreenPtr	    pScreen,
-			  RRVisualGroupPtr  pVisualGroup,
-			  VisualPtr	    pVisual);
-
-Bool
-RRAddDepthToVisualGroup (ScreenPtr	    pScreen,
-			 RRVisualGroupPtr   pVisualGroup,
-			 DepthPtr	    pDepth);
-
-RRVisualGroupPtr
-RRRegisterVisualGroup (ScreenPtr	pScreen,
-		       RRVisualGroupPtr	pVisualGroup);
-
-/*
- * Next, create the group of visual groups and register that with the screen
- */
-RRGroupOfVisualGroupPtr
-RRCreateGroupOfVisualGroup (ScreenPtr   pScreen);
-
-void
-RRDestroyGroupOfVisualGroup (ScreenPtr			pScreen,
-			     RRGroupOfVisualGroupPtr	pGroupOfVisualGroup);
-
-Bool
-RRAddVisualGroupToGroupOfVisualGroup (ScreenPtr			pScreen,
-				      RRGroupOfVisualGroupPtr	pGroupOfVisualGroup,
-				      RRVisualGroupPtr		pVisualGroup);
-				
-				
-RRGroupOfVisualGroupPtr
-RRRegisterGroupOfVisualGroup (ScreenPtr			pScreen,
-			      RRGroupOfVisualGroupPtr	pGroupOfVisualGroup);
-
+RRExtensionInit (void);
 
 /*
  * Then, register the specific size with the screen
@@ -153,8 +87,7 @@ RRRegisterSize (ScreenPtr		pScreen,
 		short			width, 
 		short			height,
 		short			mmWidth,
-		short			mmHeight,
-		RRGroupOfVisualGroup    *visualgroups);
+		short			mmHeight);
 
 /*
  * Finally, set the current configuration of the screen
@@ -163,17 +96,20 @@ RRRegisterSize (ScreenPtr		pScreen,
 void
 RRSetCurrentConfig (ScreenPtr		pScreen,
 		    Rotation		rotation,
-		    RRScreenSizePtr	pSize,
-		    RRVisualGroupPtr	pVisualGroup);
+		    RRScreenSizePtr	pSize);
 
+Bool RRScreenInit(ScreenPtr pScreen);
+    
 Bool
 miRandRInit (ScreenPtr pScreen);
 
 Bool
+miRRGetInfo (ScreenPtr pScreen, Rotation *rotations);
+
+Bool
 miRRSetConfig (ScreenPtr	pScreen,
 	       Rotation		rotation,
-	       RRScreenSizePtr	size,
-	       RRVisualGroupPtr	pVisualGroup);
+	       RRScreenSizePtr	size);
 
 Bool
 miRRGetScreenInfo (ScreenPtr pScreen);

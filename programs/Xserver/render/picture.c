@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.23 2002/08/22 08:03:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.25 2002/09/26 02:56:52 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -431,6 +431,17 @@ PictureSetSubpixelOrder (ScreenPtr pScreen, int subpixel)
     return TRUE;
     
 }
+
+int
+PictureGetSubpixelOrder (ScreenPtr pScreen)
+{
+    PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
+
+    if (!ps)
+	return SubPixelUnknown;
+    return ps->subpixel;
+}
+    
 PictFormatPtr
 PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 {
