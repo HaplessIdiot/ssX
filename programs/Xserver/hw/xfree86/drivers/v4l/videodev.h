@@ -7,15 +7,19 @@
  * Used here with the explicit permission of the original author, Alan Cox.
  *				<alan@lxorguk.ukuu.org.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/videodev.h,v 1.3 1999/04/05 12:42:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/videodev.h,v 1.4 1999/04/29 09:13:46 dawes Exp $ */
 
 #include <Xmd.h>
 
+#ifdef XFree86LOADER
 typedef CARD32 __u32;
 typedef unsigned long ulong;
 typedef CARD16 __u16;
 typedef INT32 __s32;
 typedef CARD8 __u8;
+#else
+#include <sys/types.h>
+#endif
 
 #define VID_TYPE_CAPTURE	1	/* Can capture */
 #define VID_TYPE_TUNER		2	/* Can tune */
