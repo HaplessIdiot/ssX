@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.127 2001/09/13 08:21:47 alanh Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.128 2001/09/21 20:24:39 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -449,6 +449,12 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildXvLibrary
 #define BuildXvLibrary		(BuildXvExt && !BuildServersOnly)
+#endif
+#ifndef BuildXvMCExt
+#define BuildXvMCExt		NO
+#endif
+#ifndef BuildXvMCLibrary
+#define BuildXvMCLibrary	(BuildXvMCExt && !BuildServersOnly)
 #endif
 #ifndef BuildGlxExt
 #define BuildGlxExt		NO
@@ -897,6 +903,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
+#ifndef XvMCExtensionDefines
+#if BuildXvMCExt
+#define XvMCExtensionDefines -DXVMC
+#else
+#define XvMCExtensionDefines /**/
+#endif
+#endif
+
 #ifndef RECORDDefines
 #if BuildRECORD
 #define RECORDDefines -DXRECORD
@@ -989,7 +1003,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 	XCMiscDefines RECORDDefines \
 	PexDefines ShmDefines XieDefines BigReqDefines VidModeExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
-	ScreenSaverExtensionDefines XvExtensionDefines \
+	ScreenSaverExtensionDefines XvExtensionDefines XvMCExtensionDefines \
 	GlxDefines FontCacheExtensionDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
@@ -1640,6 +1654,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildXvMCLibrary
+#ifndef SharedLibXvMC
+#define SharedLibXvMC		NO
+#endif
+#ifndef NormalLibXvMC
+#define NormalLibXvMC		YES
+#endif
+#ifndef DebugLibXvMC
+#define DebugLibXvMC		NO
+#endif
+#ifndef ProfileLibXvMC
+#define ProfileLibXvMC		NO
+#endif
+#endif
+
 #if BuildXineramaLibrary
 #ifndef SharedLibXinerama
 #define SharedLibXinerama	NO
@@ -1885,6 +1914,17 @@ ProjectUnsharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),XBuildLibDir
 SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
 #else
 ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
+#endif
+
+
+    XVMCLIBSRC = $(LIBSRC)/XvMC
+#if SharedLibXvMC
+#ifndef SharedXvMCRev
+#define SharedXvMCRev 1.0
+#endif
+SharedLibReferences(XVMC,XvMC,$(XVMCLIBSRC),SOXVMCREV,SharedXvMCRev)
+#else
+ProjectUnsharedLibReferences(XVMC,XvMC,$(XVMCLIBSRC),XBuildLibDir)
 #endif
 
     XINERAMALIBSRC = $(LIBSRC)/Xinerama

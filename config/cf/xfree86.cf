@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.375 2001/08/18 02:46:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.376 2001/08/27 17:40:55 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1074,6 +1074,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef BuildXvLibrary
 # define BuildXvLibrary		YES
 #endif
+#ifndef BuildXvMCLibrary
+# define BuildXvMCLibrary	YES
+#endif
 #ifndef BuildGLXLibrary
 # define BuildGLXLibrary	YES
 #endif
@@ -1151,6 +1154,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #ifndef BuildXvExt
 # define BuildXvExt			YES
+#endif
+
+/*
+ * Build the X Video Motion Compensation Extension
+ */
+#ifndef BuildXvMCExt
+# define BuildXvMCExt			YES
 #endif
 
 
@@ -1292,6 +1302,12 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define XFree86XvDefines	/**/
 #endif
 
+#if BuildXvMCExt
+# define XFree86XvMCDefines	-DXvMCExtension
+#else
+# define XFree86XvMCDefines	/**/
+#endif
+
 #ifndef DlopenHack
 # define DlopenHack		-DDLOPEN_HACK
 #endif
@@ -1340,6 +1356,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				XFree86DGADefines XFree86XvDefines \
 				XFree86LoaderDefines -DXFree86Server \
 				VidModeExtensionDefines \
+				XFree86XvMCDefines \
 				ServerSnprintfDefines \
 				SmartScheduleDefines \
 				DebugDefines \

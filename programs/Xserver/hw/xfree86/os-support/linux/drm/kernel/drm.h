@@ -449,6 +449,12 @@ typedef struct drm_scatter_gather {
 #define DRM_IOCTL_I810_SWAP		DRM_IO(  0x46)
 #define DRM_IOCTL_I810_COPY		DRM_IOW( 0x47, drm_i810_copy_t)
 #define DRM_IOCTL_I810_DOCOPY		DRM_IO(  0x48)
+#define DRM_IOCTL_I810_OV0INFO		DRM_IOR( 0x49, drm_i810_overlay_t)
+#define DRM_IOCTL_I810_FSTATUS		DRM_IO ( 0x4a)
+#define DRM_IOCTL_I810_OV0FLIP		DRM_IO ( 0x4b)
+#define DRM_IOCTL_I810_MC		DRM_IOW( 0x4c, drm_i810_mc_t)
+#define DRM_IOCTL_I810_RSTATUS		DRM_IO ( 0x4d )
+
 
 /* Rage 128 specific ioctls */
 #define DRM_IOCTL_R128_INIT		DRM_IOW( 0x40, drm_r128_init_t)

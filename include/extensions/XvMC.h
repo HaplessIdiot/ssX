@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XvMC.h,v 1.3 2001/04/01 13:59:59 tsi Exp $ */
+/* $XFree86: xc/include/extensions/XvMC.h,v 1.4 2001/06/11 23:21:00 mvojkovi Exp $ */
 
 #ifndef _XVMC_H_
 #define _XVMC_H_
@@ -57,8 +57,10 @@
 #define XVMC_TOP_FIELD          0x00000001
 #define XVMC_BOTTOM_FIELD       0x00000002
 #define XVMC_FRAME_PICTURE      (XVMC_TOP_FIELD | XVMC_BOTTOM_FIELD)
-#define XVMC_TOP_FIELD_FIRST    0x00000001
-#define XVMC_PROGRESSIVE_FRAME  0x00000002
+
+#define XVMC_RESERVED_1         0x00000001
+#define XVMC_RESERVED_2         0x00000002
+#define XVMC_SECOND_FIELD       0x00000004
 
 #define XVMC_DIRECT                     0x00000001
 

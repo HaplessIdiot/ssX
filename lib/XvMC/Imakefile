@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/XvMC/Imakefile,v 1.2 2001/04/01 14:00:02 tsi Exp $
 
 #define DoNormalLib NormalLibXvMC
 #define DoSharedLib SharedLibXvMC
@@ -25,5 +25,15 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
      LINTLIBS = $(LINTXLIB)
 
 #include <Library.tmpl>
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+#if defined(LinuxArchitecture)
+SUBDIRS = hw/i810
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()
