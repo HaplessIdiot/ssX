@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.45 2000/06/21 17:28:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.47 2000/10/20 12:57:26 alanh Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -309,7 +309,6 @@ TGAProbe(DriverPtr drv, int flags)
 {
     int i;
     GDevPtr *devSections = NULL;
-/*      GDevPtr *usedDevs; */
     int *usedChips;
     int numDevSections;
     int numUsed;

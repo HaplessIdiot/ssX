@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.12 2000/11/03 00:58:10 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.13 2000/11/06 02:56:03 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -339,7 +339,7 @@ static Bool
 I128Probe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -384,7 +384,8 @@ I128Probe(DriverPtr drv, int flags)
 			numDevSections, drv, &usedChips);
 
     /* Free it since we don't need that list after this */
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
 
     if (numUsed <= 0)
