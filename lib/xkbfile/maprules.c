@@ -1,4 +1,5 @@
 /* $XConsortium: maprules.c /main/5 1996/03/22 12:52:33 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
