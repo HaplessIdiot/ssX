@@ -1,3 +1,4 @@
+3838. Fix drm free list bug (Jeff Hartmann and Rik Faith, Precision Insight).
 3837. Remove deprecated keywords (Kevin Martin).
 3836. Support for YUV offscreen surfaces in Xv and have the MGA driver
       offer them (Mark Vojkovich).
@@ -9784,4 +9785,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1023 2000/02/22 02:09:29 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1024 2000/02/23 04:46:59 martin Exp $
