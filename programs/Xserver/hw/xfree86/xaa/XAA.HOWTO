@@ -287,7 +287,7 @@ void SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
     the SubsequentSolidHorVertLine is used for horizontal and vertical
     lines since most hardware is able to render the horizontal lines
     and sometimes the vertical lines faster by other methods (Hint:
-    try rendering horizontal lines as thin rectangles).  If you have 
+    try rendering horizontal lines as flattened rectangles).  If you have 
     not provided a SubsequentSolidHorVertLine but you have provided 
     Bresenham or two-point lines, a SubsequentSolidHorVertLine function 
     will be supplied for you.
@@ -375,7 +375,7 @@ void SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
         int x, int y, int major, int minor, int err, int len, int octant)
 
     "X" and "y" are the starting point of the line.  "Major" and "minor" 
-    are the major and minor axis increments.  "Err" is the initial error
+    are the major and minor step constants.  "Err" is the initial error
     term.  "Len" is the number of pixels to be drawn (inclusive). "Octant"
     can be any combination of the following flags OR'd together:
 
@@ -417,8 +417,98 @@ SolidBresenhamLineErrorTermBits
 
 2.4  Dashed Lines
 
-    /*  More to come */
+    The same degree of accuracy required by the solid lines is required
+    for drawing dashed lines as well.  The dash pattern itself is a
+    buffer of binary data where ones are expanded into the foreground
+    color and zeros either correspond to the background color or
+    indicate transparency depending on whether or not DoubleDash or
+    OnOffDashes are being drawn.  
+
+    The flags field associated with dashed Lines is DashedLineFlags and 
+    the GXCOPY_ONLY, ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags as
+    described in Section 2.0 are valid restrictions.  Additionally, the
+    following flags are valid:
+
+      HARDWARE_CLIP_LINE
+	
+	This is the same as for the solid lines.
+
+      NO_TRANSPARENCY
+
+	This indicates that the driver cannot support dashed lines
+	with transparent backgrounds (OnOffDashes).
+
+      TRANSPARENCY_ONLY
+
+	This indicates that the driver cannot support dashes with
+	both a foreground and background color (DoubleDashes).
+
+      LINE_PATTERN_POWER_OF_2_ONLY
+
+	This indicates that only patterns with a power of 2 length
+	can be accelerated.
+
+      LINE_PATTERN_LSBFIRST_MSBJUSTIFIED
+      LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
+      LINE_PATTERN_MSBFIRST_MSBJUSTIFIED
+      LINE_PATTERN_MSBFIRST_LSBJUSTIFIED
+
+	These describe how the line pattern should be packed.
+	The pattern buffer is DWORD padded.  LSBFIRST indicates
+	that the pattern runs from the LSB end to the MSB end.
+	MSBFIRST indicates that the pattern runs from the MSB end
+	to the LSB end.  When the pattern does not completely fill
+	the DWORD padded buffer, the pattern will be justified 
+	towards the MSB or LSB end based on the flags above.
+
+
+    The following field indicates the maximum length dash pattern that
+    should be accelerated.
+
+	int DashPatternMaxLength
+
+
+void SetupForDashedLine(ScrnInfoPtr pScrn,
+		int fg, int bg, int rop, unsigned int planemask,
+        	int length, unsigned char *pattern)
+
+    
+    SetupForDashedLine indicates that any combination of the following 
+    may follow it.
+
+	SubsequentDashedBresenhamLine
+	SubsequentDashedTwoPointLine
+
+    If "bg" is -1, then the background (pixels corresponding to clear
+    bits in the pattern) should remain unmodified. "Bg" indicates the
+    background color otherwise.  "Length" indicates the length of
+    the pattern in bits and "pattern" points to the DWORD padded buffer
+    holding the pattern which has been packed according to the flags
+    set above.  
+
+    
+void SubsequentDashedTwoPointLine( ScrnInfoPtr pScrn,
+        int x1, int y1, int x2, int y2, int flags, int phase)
+
+void SubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
+        int x1, int y1, int major, int minor, int err, int len, int octant,
+        int phase)
   
+    These are the same as the SubsequentSolidTwoPointLine and
+    SubsequentBresenhamLine functions except for the addition
+    of the "phase" field which indicates the offset into the dash 
+    pattern that the pixel at (x1,y1) corresponds to.
+
+    As with the SubsequentBresenhamLine, there is an
+ 
+	int DashedBresenhamLineErrorTermBits 
+   
+    field which indicates the size of the error term registers
+    used with dashed lines.  This is usually the same value as
+    the field for the solid lines (because it's usually the same
+    register).
+       
+      
 
 2.5   Color Expansion Fills
 
@@ -1313,4 +1403,4 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.5 1998/08/19 07:49:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.6 1998/08/29 05:44:04 dawes Exp $

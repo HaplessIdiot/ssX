@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 29 August 1998.
+Last modified: 6 September 1998.
 
 
 
@@ -1389,10 +1389,12 @@ Section 10: Offscreen Memory Manager
 
 Management of offscreen video memory may be handled by the XFree86
 framebuffer manager.  The manager provides functions in the ScrnInfoRec
-for allocation and freeing of offscreen memory areas:
+for allocation and freeing of offscreen memory areas as well as resizing
+of existing areas:
 
     AllocateOffscreenAreaProcPtr AllocateOffscreenArea;
     FreeOffscreenAreaProcPtr FreeOffscreenArea;
+    ResizeOffscreenAreaProcPtr ResizeOffscreenArea;
 
 which have the following definitions (taken from xf86fbman.h):
 
@@ -1416,6 +1418,12 @@ which have the following definitions (taken from xf86fbman.h):
 
     typedef void (*FreeOffscreenAreaProcPtr) (FBAreaPtr area);
 
+    typedef Bool (*ResizeOffscreenAreaProcPtr) (
+	ScreenPtr pScreen, 
+	int w, int h,
+	FBAreaPtr area
+    );
+
 
 AllocateOffscreenArea can be used to request a rectangle of dimensions
 width x height (in pixels) from unused offscreen memory.  Granularity
@@ -1431,6 +1439,14 @@ returned to the requester in the FBArea passed via the MoveAreaCallback.
 AllocateOffscreenArea returns NULL if it was unable to allocate the
 requested area.  When no longer needed, areas should be freed with
 FreeOffscreenArea.
+
+ResizeOffscreenArea resizes an existing FBArea.  ResizeOffscreenArea
+returns TRUE if the resize was successful.  If ResizeOffscreenArea
+returns FALSE, the original FBArea is left unmodified.  Resizing
+an area maintains the area's original granularity, devPrivate,
+and MoveAreaCallback.  ResizeOffscreenArea has considerably less
+overhead than freeing the old area then reallocating the new size,
+so it should be used whenever possible.
 
 Initialization of the XFree86 framebuffer manager is done via
 
@@ -3707,4 +3723,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.9 1998/08/30 03:39:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.10 1998/09/05 06:36:22 dawes Exp $

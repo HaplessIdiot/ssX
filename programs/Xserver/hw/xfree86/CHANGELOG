@@ -1,4 +1,6 @@
 XFree86 3.9Nd (5 September 1998)
+1812. Document the offscreen memory managers new ResizeArea function
+      (#1955, Mark Vojkovich).
 1810. Allow the FreeType code to be build as an X server font module.
 1809. Add Latin2 support to the Speedo and Type1 font code (#1792,
       Robert Wilhelm).
@@ -10,7 +12,7 @@ XFree86 3.9Nd (5 September 1998)
       it for solid rects and spans (#1953, Mark Vojkovich).
 1805. Fix C&T HiQV detection (#1952, Taketoshi Sano).
 1804. Add dashed line support to XAA, and update the mga driver to use it
-      (#1951, 1953, Mark Vojkovich).
+      (#1951, 1953, 1954, Mark Vojkovich).
 1803. Lots of glint driver updates, including a memclock option to set the
       mclk, and some more XAA functions for the older Permedia chip (#1950,
       Alan Hourihane).
@@ -6452,4 +6454,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.619 1998/09/06 04:46:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.620 1998/09/06 07:32:00 dawes Exp $
