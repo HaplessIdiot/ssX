@@ -1,3 +1,14 @@
+XFree86 3.0Fd (25 September 1994)
+373. Change name of XF86Vga256Drivers to XF86SvgaDrivers.
+372. Documentation updates.
+371. Enable 16bpp, 32bpp for 964+Bt485.
+370. Support for 16bpp and 32bpp on 964+Bt485 -- tested so far on
+     Miro Crystal 20SV (Eddy Olk).
+369. Fix pixel wrapping for 964+Bt485 (Eddy Olk).
+368. Fix low-res mode support for GXE64Pro (Robin Cutshaw).
+367. Fix some depth 15 vs depth 16 code for the Ti3020 (Hans Nasten).
+366. Update W32 server (Glenn Lai).
+
 XFree86 3.0Fc (24 September 1994)
 365. Fix image shift at 32bpp on GXE64Pro (Hans Nasten).
 364. Only initialise TrueColor visual for 16/32bpp since DirectColor is
