@@ -290,9 +290,6 @@ README for XFree86 3.3 on OS/2
 		  X33VG16
 			the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-		  X33W32
-			the X server for et4000w32 based boards
-
       OPTIONAL:
 
 		  X33man
@@ -322,7 +319,10 @@ README for XFree86 3.3 on OS/2
 			PEX fonts and libraries required for PEX applications
 
 In order to save space on your disk and reduce net bandwidth, choose the soft-
-ware to obtain carefully. Each X server is an archive of about 1.2MB and
+ware to obtain carefully. Each X server is an archive of about 1.2MB and occu-
+pies 3.0MB on the disk. You won't normally need more than the single Xserver
+tailored to your video card.
+
 
 
 
@@ -334,9 +334,6 @@ ware to obtain carefully. Each X server is an archive of about 1.2MB and
 README for XFree86 3.3 on OS/2
 
 
-
-occupies 3.0MB on the disk. You won't normally need more than the single
-Xserver tailored to your video card.
 
 If it is your first time install, get the X33base archive before any of the
 other packages. This package contains a driver and a test program, which ana-
@@ -390,6 +387,9 @@ all commands accordingly.
 
 
 
+  2.  Edit your CONFIG.SYS file to contain the following line somewhere:
+
+
 
 
 
@@ -400,8 +400,6 @@ all commands accordingly.
 README for XFree86 3.3 on OS/2
 
 
-
-  2.  Edit your CONFIG.SYS file to contain the following line somewhere:
 
 	   DEVICE=Y:\XFree86\lib\xf86sup.sys
 
@@ -456,6 +454,8 @@ can be changed, but is strictly discouraged.
   2.  For each package to install, go to the root directory of this drive, and
       type:
 
+	   drive:> cd \
+
 
 
 
@@ -467,7 +467,6 @@ README for XFree86 3.3 on OS/2
 
 
 
-	   drive:> cd \
 	   drive:> unzip \path_of_packages\X33xxxx.zip
 
   3.  You might encounter that some packages report duplicate files, e.g.  the
@@ -521,6 +520,7 @@ rectly. Please add the following settings:
 	    TCP/IP installation program, such as
 
 		 SET HOSTNAME=myhost
+
 
 
 
@@ -829,7 +829,7 @@ Many thanks to:
 
    o ME - no, no, forget this: I won't praise myself :-)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.10 1997/05/18 12:12:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.11 1997/12/05 22:01:37 hohndel Exp $
 
 
 

@@ -71,9 +71,6 @@ Information for SCO Users
 
 
 
-	   X312W32.tgz
-		 The ET4000/W32 server
-
 	   *X312cfg.tgz
 		 The local configuration files for xdm/fs/xinit.
 
@@ -125,6 +122,9 @@ To install the XFree86 binaries just follow these steps.
 
   3.  cd /usr/X11R6
 
+  4.  extract the archives, for example:
+
+		       gunzip < X312bin.tgz | tar xvpf -
 
 
 
@@ -134,12 +134,6 @@ To install the XFree86 binaries just follow these steps.
 
 
 Information for SCO Users
-
-
-
-  4.  extract the archives, for example:
-
-		       gunzip < X312bin.tgz | tar xvpf -
 
 
 
@@ -190,7 +184,13 @@ these things:
      TCP/IP and that this method of connecting to the server has been disabled.
 
 
+   o Do worry about errors involving ``/dev/spx'' or the ``sco'' connection
+     type.  This means something is wrong with the streams pipes that are used
+     for connections on the local machine.  First be sure that your server has
+     the ``s-bit'' set.  You can do this by running this command for the X
+     server you are using:
 
+     ls -al /usr/X11R6/bin/XF86_XXXXXX
 
 
 
@@ -203,19 +203,11 @@ Information for SCO Users
 
 
 
-   o Do worry about errors involving ``/dev/spx'' or the ``sco'' connection
-     type.  This means something is wrong with the streams pipes that are used
-     for connections on the local machine.  First be sure that your server has
-     the ``s-bit'' set.  You can do this by running this command for the X
-     server you are using:
-
-     ls -al /usr/X11R6/bin/XF86_XXXXXX
-
      The output should contain the `s' character instead of the `x' character.
      For example:
 
 
-	       -rwsr-xr-x   1 root     bin	1074060 Jul 24 11:54 XF86_W32
+	       -rwsr-xr-x   1 root     bin	1074060 Jul 24 11:54 XF86_S3
 
 
 
@@ -223,7 +215,7 @@ Information for SCO Users
      is correct while:
 
 
-	       -rwxr-xr-x   1 root     bin	1074060 Jul 24 11:54 XF86_W32
+	       -rwxr-xr-x   1 root     bin	1074060 Jul 24 11:54 XF86_S3
 
 
 
@@ -252,23 +244,6 @@ Information for SCO Users
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Information for SCO Users
-
-
-
 				  NSTREAM      128
 				  NQUEUE       512
 				  NBLK4096     4
@@ -283,6 +258,14 @@ Information for SCO Users
 				  NUMSP        128
 
 
+
+
+
+
+
+
+
+Information for SCO Users
 
 
 
@@ -322,19 +305,6 @@ your ``xf86site.def'' file.  Those using the binary distribution can use
 ``uncompress'' to uncompress the man pages.
 
 
-
-
-
-
-
-
-
-
-
-Information for SCO Users
-
-
-
 6.  Using SCO binaries/servers.
 
 XFree86 will accept connections from SCO binaries (R3 upwards) and the SCO R5
@@ -352,6 +322,18 @@ following:
 
 There is no reason to modify gcc in any way.  It compiles cleanly on Open
 Server 5.
+
+
+
+
+
+
+
+
+
+Information for SCO Users
+
+
 
 SCO Open Server 5.0 is recognised automatically by XFree86. You do not need to
 specify any BOOTSTRAPCFLAGS parameters when doing a make World. You can ignore
@@ -389,18 +371,6 @@ World.
 Some relevant documentation for SCO Users and Developers can be found in the
 following files.
 
-
-
-
-
-
-
-
-
-Information for SCO Users
-
-
-
       README
 	    the standard XFree86 README (/usr/X11R6/lib/X11/doc)
 
@@ -418,6 +388,18 @@ Information for SCO Users
    o After running the server you may see some strange characters in your input
      to the shell.  This is due to some unprocessed scancodes and is of no con-
      cern.  This will be fixed in a future release.
+
+
+
+
+
+
+
+
+
+Information for SCO Users
+
+
 
    o Not all of the applications in /usr/X11R6/bin have been debugged.
 
@@ -454,6 +436,24 @@ Information for SCO Users
 		 hung.
 
       Causes:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -743,7 +743,7 @@ Special thanks to Jerry Whelan (guru@stasi.bradley.edu) for providing an ftp
 site for the binary distribution.
 
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.16 1997/01/25 03:22:12 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.17 1997/12/05 22:01:38 hohndel Exp $
 
 
 
@@ -877,13 +877,13 @@ Information for SCO Users
 
 5.  Setting up Man Pages .................................................... 5
 
-6.  Using SCO binaries/servers. ............................................. 6
+6.  Using SCO binaries/servers. ............................................. 5
 
-7.  Compiling XFree86 under Open Server 5 ................................... 6
+7.  Compiling XFree86 under Open Server 5 ................................... 5
 
 8.  Relevant Documentation .................................................. 6
 
-9.  Known Problems .......................................................... 7
+9.  Known Problems .......................................................... 6
 
 10. Trouble Shooting ........................................................ 7
 
