@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.22 2000/10/05 18:30:41 keithp Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.23 2000/10/05 23:44:38 keithp Exp $
  */
 
 /************************************************************
@@ -772,7 +772,8 @@ xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStruct *font, in
 
 #ifdef XRENDERFONT
     Display			    *dpy = screen->display;
-    if (!screen->renderFont && term->misc.face_name)
+    if (!screen->renderFont && term->misc.face_name &&
+	XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))))
     {
 	XftFontName		    fn;
 	
