@@ -20,7 +20,7 @@ InstallManPageAliases(XtAppAddConverter,$(MANDIR),XtAddConverter)
 InstallManPageLong(XtAppAI,$(MANDIR),XtAppAddInput)
 InstallManPageAliases(XtAppAddInput,$(MANDIR),XtRemoveInput)
 InstallManPageLong(XtAppATO,$(MANDIR),XtAppAddTimeOut)
-#ifndef OS2Architecture
+#ifndef OS2Architecture || DarwinArchitecture
 InstallManPageAliases(XtAppAddTimeOut,$(MANDIR),XtRemoveTimeOut XtAppAddTimeout)
 #else
 InstallManPageAliases(XtAppAddTimeOut,$(MANDIR),XtRemoveTimeOut)
