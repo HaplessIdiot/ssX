@@ -779,7 +779,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (nPtr->pVbe) {
 	xf86MonPtr pMon;
-	if ((pMon = xf86PrintEDID(vbeDoEDID(nPtr->pVbe))) != NULL)
+	if ((pMon = xf86PrintEDID(vbeDoEDID(nPtr->pVbe,NULL))) != NULL)
 	    ddc_done = TRUE;
 	xf86SetDDCproperties(pScrn,pMon);
     }
