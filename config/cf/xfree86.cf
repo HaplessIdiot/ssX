@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.272 2000/02/25 21:25:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.273 2000/02/29 03:08:57 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -878,7 +878,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define DlopenHack		-DDLOPEN_HACK
 #endif
 
-#ifndef LoaderDefines
+#ifndef ExtraLoaderDefines
 # if MakeDllModules
 #  define ExtraLoaderDefines	DlopenHack
 # else
