@@ -285,35 +285,18 @@ PolyGlyphBltAsSingleBitmap (
 
     if(!nbox) return;
 
-    topLine = 10000; botLine = -10000;
-
-    for(i = 0; i < nglyph; i++) {
-	top = -glyphs[i].yoff;
-	bot = top + glyphs[i].height;
-	if(top < topLine) topLine = top;
-	if(bot > botLine) botLine = bot;
-    }
-
-    if(topLine < -FONTMAXBOUNDS(font,ascent)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "XAA: topLine (%d) < %d\n",
-		   topLine, -FONTMAXBOUNDS(font,ascent));
-    }
-    if(botLine > FONTMAXBOUNDS(font,descent)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "XAA: botline (%d) > %d\n",
-		   botLine, FONTMAXBOUNDS(font,descent));
-    }
-
     pitch = (Right - Left + 31) >> 5;
-    size = (pitch << 2) * (max(botLine, FONTMAXBOUNDS(font,descent)) -
-			   min(topLine, -FONTMAXBOUNDS(font,ascent)));
+    size = (pitch << 2) * (Bottom - Top);
     block = (CARD32*)ALLOCATE_LOCAL(size);
     bzero(block, size);
+
+    topLine = 10000; botLine = -10000;
 
     while(nglyph--) {
 	top = -glyphs->yoff;
 	bot = top + glyphs->height;
+	if(top < topLine) topLine = top;
+	if(bot > botLine) botLine = bot;
 	skippix = glyphs->start - infoRec->GlyphInfo[0].start;
 	bits = (CARD32*)glyphs->bits;
 	bitPitch = glyphs->srcwidth >> 2;
