@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.17 2000/02/15 07:13:43 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.18 2000/02/15 18:01:15 dawes Exp $ */
 
 /*
  * Authors:
@@ -154,6 +154,8 @@ static void TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 #define TDFX_MAJOR_VERSION 1
 #define TDFX_MINOR_VERSION 0
 #define TDFX_PATCHLEVEL 0
+#define PCI_SUBDEVICE_ID_VOODOO3_2000 0x0036
+#define PCI_SUBDEVICE_ID_VOODOO3_3000 0x003a
 
 DriverRec TDFX = {
   VERSION,
@@ -753,7 +755,17 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
       pTDFX->MaxClock = 270000;
       break;
     case PCI_CHIP_VOODOO3:
-      pTDFX->MaxClock = 300000;
+      switch(pTDFX->PciInfo->subsysCard) {
+      case PCI_SUBDEVICE_ID_VOODOO3_2000:
+	pTDFX->MaxClock = 300000;
+	break;
+      case PCI_SUBDEVICE_ID_VOODOO3_3000:
+	pTDFX->MaxClock = 350000;
+	break;
+      default:
+	pTDFX->MaxClock = 300000;
+	break;
+      }
       break;
     }
   }
