@@ -1,10 +1,33 @@
 XFree86 4.2.99.3 (xx December 2002)
- 627. Fix some bugs in the Iranian xkb layout (A.1135, Roozbeh Pournader).
- 626. Add a Bosnian xkb layout (A.1398, Amila Akagic).
- 625. Fix for Hungarian xkb layout (A.1175, Peter Soos).
- 624. Update the Maltese xkb layouts (A.1243, Ramon Casha).
- 623. Add EuroSign to the xkb "gb" layout (A.901, Dermot McNally).
- 622. Various updates for the xkb "xfree86" keymap list (including A.777,
+ 638. Set the default fa_IR character set to UTF-8 instead of
+      ISIRI-3342 (#A.1356, Roozbeh Pournader).
+ 637. Fixes and updates for building under LynxOS/PowerPC 4.0 (#A.1386,
+      Stuart Lissaman).
+ 636. Update the ClearlyU fonts to version 1.9 (#A.1386, Mark Leisher).
+ 635. Fix for drmOpenDevice() ignoring success on its second attempt at
+      opening the drm device (#A.1394, Alexander Stohr).
+ 634. Add support for a "-include" command line option to makedepend, similar
+      to the same GNU C option (#A.1396, Alexander Stohr).
+ 633. Perform country-independent matching for Chinese languages in fontconfig
+      (#A.1406, Keith Packard).
+ 632. Finish off the UTF-16 APIs in Xft, and fix the UTF-16 conversion
+      code in fontconfig (#A.1411, Keith Packard, Jungshik Shin).
+ 631. Make XIM locale checking case-independent (based on #A.1422, Leon Ho).
+ 630. Fix incorrect datatype for the pixmap width in
+      fbCompositeSrcAdd_8000x8000(), and add some small optimisations
+      (#A.1423, Keith Packard).
+ 629. Update the se xkb map to allow the older AltGr+5 method of entering
+      the Euro sign (#A.1433, Christian Rose).
+ 628. Add validation for the screen number parameter received over the wire
+      by the X server's DRI extension code, and fix some similar checks in
+      the GLX code.  This fixes X server segfaults when an invalid screen
+      value is provided (#A.1434, Felix Kühling)..
+ 627. Fix some bugs in the Iranian xkb layout (#A.1135, Roozbeh Pournader).
+ 626. Add a Bosnian xkb layout (#A.1398, Amila Akagic).
+ 625. Fix for Hungarian xkb layout (#A.1175, Peter Soos).
+ 624. Update the Maltese xkb layouts (#A.1243, Ramon Casha).
+ 623. Add EuroSign to the xkb "gb" layout (#A.901, Dermot McNally).
+ 622. Various updates for the xkb "xfree86" keymap list (including #A.777,
       Andriy Rysin).
  621. Let kbd driver test if Xserver is in suspend before handling any
       input events (Egbert Eich).
@@ -15782,4 +15805,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2445 2002/12/12 18:29:06 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2446 2002/12/13 04:21:41 dawes Exp $
