@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.17 2001/05/25 21:43:16 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.18 2001/05/28 21:35:26 paulo Exp $
  */
 
 #include "vesa.h"
@@ -77,11 +77,11 @@ static Bool
 VESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function);
 
 static void *VESAWindowPlanar(ScreenPtr pScrn, CARD32 row, CARD32 offset,
-			      int mode, CARD32 *size);
+			      int mode, CARD32 *size, void *closure);
 static void *VESAWindowLinear(ScreenPtr pScrn, CARD32 row, CARD32 offset,
-			      int mode, CARD32 *size);
+			      int mode, CARD32 *size, void *closure);
 static void *VESAWindowWindowed(ScreenPtr pScrn, CARD32 row, CARD32 offset,
-				int mode, CARD32 *size);
+				int mode, CARD32 *size, void *closure);
 
 static Bool VESADGAInit(ScrnInfoPtr pScrn, ScreenPtr pScreen);
 
@@ -365,8 +365,8 @@ static void
 VESAFreeRec(ScrnInfoPtr pScrn)
 {
     VESAPtr pVesa = VESAGetRec(pScrn);
-    DisplayModePtr mode = pScrn->modes;
 #if 0
+    DisplayModePtr mode = pScrn->modes;
     /* I am not sure if the modes will ever get freed.
      * Anyway, the data unknown to other modules is being freed here.
      */
@@ -1242,7 +1242,7 @@ VESAUnmapVidMem(ScrnInfoPtr pScrn)
 
 void *
 VESAWindowPlanar(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
-		 CARD32 *size)
+		 CARD32 *size, void *closure)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VESAPtr pVesa = VESAGetRec(pScrn);
@@ -1264,7 +1264,7 @@ VESAWindowPlanar(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
 
 static void *
 VESAWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
-		 CARD32 *size)
+		 CARD32 *size, void *closure)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VESAPtr pVesa = VESAGetRec(pScrn);
@@ -1275,7 +1275,7 @@ VESAWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
 
 static void *
 VESAWindowWindowed(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
-		   CARD32 *size)
+		   CARD32 *size, void *closure)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VESAPtr pVesa = VESAGetRec(pScrn);

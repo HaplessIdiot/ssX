@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.52 2001/05/15 10:19:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.53 2001/06/13 23:34:17 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -76,9 +76,6 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /* Needed by Resources Access Control (RAC) */
 #include "xf86RAC.h"
-
-/* Needed by the Shadow Framebuffer */
-#include "shadow.h"
 
 /* int10 */
 #include "xf86int10.h"
