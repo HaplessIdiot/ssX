@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.7 1999/01/14 13:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.8 1999/04/29 09:13:48 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -45,7 +45,31 @@
  * Read BIOS via xf86sup.SYS device driver
  */
 
-#define Bios_Base 0
+static APIRET doioctl(HFILE fd,ULONG addr,ULONG len,unsigned char* dbuf)
+{
+	UCHAR	*dta;
+	ULONG	plen,dlen;
+	APIRET rc;
+
+	struct {
+		ULONG command;
+		ULONG physaddr;
+		USHORT numbytes;
+	} par;
+
+	/* prepare parameter and data packets for ioctl */
+	par.command 	= 0;
+	par.physaddr 	= addr;
+	par.numbytes 	= dlen = len;
+	plen 		= sizeof(par);
+
+	/* issue call to get a readonly copy of BIOS ROM */
+	rc = DosDevIOCtl(fd, (ULONG)0x76, (ULONG)0x64,
+	   (PVOID)&par, (ULONG)plen, (PULONG)&plen,
+	   (PVOID)dbuf, (ULONG)dlen, (PULONG)&dlen);
+
+	return rc;
+}
 
 int xf86ReadBIOS(Base, Offset, Buf, Len)
 unsigned long Base;
@@ -53,19 +77,16 @@ unsigned long Offset;
 unsigned char *Buf;
 int Len;
 {
-	HFILE fd;
-	struct {
-		ULONG command;
-		ULONG physaddr;
-		USHORT numbytes;
-	} par;
-	UCHAR	*dta;
-	ULONG	plen,dlen;
-	int 	i;
+	HFILE	fd;
+	int	i;
 	ULONG	action;
-	APIRET rc;
-	ULONG Phys_address;
+	APIRET	rc;
+	ULONG	Phys_address;
+	UCHAR*	dta;
+	int	off, chunksz,lensave;
 
+	/* allocate dta */
+	dta = (UCHAR*)xalloc(Len);
 
 	Phys_address=Base+Offset;
 
@@ -78,25 +99,22 @@ int Len;
 		return -1;
 	}
 
-	/* prepare parameter and data packets for ioctl */
-	par.command 	= 0;
-	par.physaddr 	= (ULONG)Bios_Base+(Phys_address & 0xffff8000);
-	par.numbytes 	= (Phys_address & 0x7fff) + Len;
-	plen 		= sizeof(par);
-
-	dta		= xalloc(par.numbytes);
-	dlen 		= par.numbytes;
-
-	/* issue call to get a readonly copy of BIOS ROM */
-	if (rc=DosDevIOCtl(fd, (ULONG)0x76, (ULONG)0x64,
-	   (PVOID)&par, (ULONG)plen, (PULONG)&plen,
-	   (PVOID)dta, (ULONG)dlen, (PULONG)&dlen)) {
-		FatalError("xf86ReadBIOS: BIOS map failed, addr=%lx, rc=%d\n", 
-			Bios_Base+Phys_address,rc);
-		free(dta);
-		DosClose(fd);
-		return -1;
-	}
+ 	/* copy 32K at a time */
+ 	off = 0;
+ 	lensave = Len;
+ 	while (Len > 0) {
+ 		chunksz = (Len > 32768) ? 32768 : Len;
+ 		Len -= chunksz;
+ 		rc = doioctl(fd,(ULONG)Phys_address,chunksz,dta+off);
+ 		if (rc != 0) {
+ 			ErrorF("xf86ReadBIOS: BIOS map failed, addr=%lx, rc=%d\n",
+ 			Phys_address,rc);
+ 			xfree(dta);
+ 			DosClose(fd);
+ 			return -1;
+ 		}		
+ 		off += chunksz;
+  	}
 
 	/*
 	 * Sanity check... No longer fatal, as some PS/1 and PS/2 fail here but still work.
@@ -105,15 +123,15 @@ int Len;
 	if ((Phys_address & 0x7fff) != 0 && 
 		(dta[0] != 0x55 || dta[1] != 0xaa)) {
 		FatalError("BIOS sanity check failed, addr=%x\nPlease report if you encounter problems\n",
-			Bios_Base+Phys_address);
+			Phys_address);
 	}
 
 	/* copy data to buffer */
-	memcpy(Buf,dta + (Phys_address & 0x7fff), Len);
+ 	memcpy(Buf, dta, lensave);
 	xfree(dta);
 
 	/* close device */
 	DosClose(fd);
 
-	return(Len);
+ 	return(lensave);
 }
