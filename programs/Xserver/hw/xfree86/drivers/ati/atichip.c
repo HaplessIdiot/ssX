@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.29 2003/01/16 16:09:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.30 2003/01/17 19:54:02 martin Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -540,15 +540,27 @@ ATIChipID
         case NewChipID('S', 'K'):
         case NewChipID('S', 'L'):
         case NewChipID('S', 'M'):
-        case NewChipID('S', 'N'):
+        case NewChipID('S', 'N'): /* Listed as ATI_CHIP_RAGE128_4X in ATI docs */
             return ATI_CHIP_RAGE128GL;
 
         case NewChipID('R', 'K'):
         case NewChipID('R', 'L'):
+	/* FIXME: ATI documentation lists SE/SF/SG under both ATI_CHIP_RAGE128VR
+	 * and ATI_CHIP_RAGE128_4X, and lists SH/SK/SL under Rage 128 4X only.
+         * I'm stuffing them here for now until this can be clarified as ATI
+         * documentation doesn't mention their details. <mharris@redhat.com>
+	 */
         case NewChipID('S', 'E'):
         case NewChipID('S', 'F'):
         case NewChipID('S', 'G'):
+        case NewChipID('S', 'H'):
             return ATI_CHIP_RAGE128VR;
+
+        /* case NewChipID('S', 'H'): */
+        /* case NewChipID('S', 'K'): */
+        /* case NewChipID('S', 'L'): */
+        /* case NewChipID('S', 'N'): */
+        /*    return ATI_CHIP_RAGE128_4X */
 
         case NewChipID('P', 'A'):
         case NewChipID('P', 'B'):
@@ -581,12 +593,15 @@ ATIChipID
         case NewChipID('T', 'F'):
         case NewChipID('T', 'L'):
         case NewChipID('T', 'R'):
+        case NewChipID('T', 'S'):
+        case NewChipID('T', 'T'):
+        case NewChipID('T', 'U'):
             return ATI_CHIP_RAGE128PROULTRA;
 
         case NewChipID('L', 'E'):
         case NewChipID('L', 'F'):
-        case NewChipID('L', 'K'):
-        case NewChipID('L', 'L'):
+        case NewChipID('L', 'K'): /* FIXME: Not in any ATI documentation I can find - mharris */
+        case NewChipID('L', 'L'): /* FIXME: Not in any ATI documentation I can find - mharris */
             return ATI_CHIP_RAGE128MOBILITY3;
 
         case NewChipID('M', 'F'):
@@ -612,9 +627,17 @@ ATIChipID
             return ATI_CHIP_RADEONMOBILITY7;
 
         case NewChipID('Q', 'H'):
+        case NewChipID('Q', 'I'):
+        case NewChipID('Q', 'J'):
+        case NewChipID('Q', 'K'):
         case NewChipID('Q', 'L'):
+        case NewChipID('Q', 'M'):
         case NewChipID('Q', 'N'):
         case NewChipID('Q', 'O'):
+        case NewChipID('Q', 'h'):
+        case NewChipID('Q', 'i'):
+        case NewChipID('Q', 'j'):
+        case NewChipID('Q', 'k'):
         case NewChipID('Q', 'l'):
         case NewChipID('B', 'B'):
             return ATI_CHIP_R200;
