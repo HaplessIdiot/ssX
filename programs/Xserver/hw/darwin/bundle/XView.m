@@ -1,7 +1,7 @@
 /*
  * NSView subclass for Mac OS X rootless X server
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.m,v 1.3 2001/11/05 05:12:16 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.m,v 1.4 2001/11/06 23:18:13 torrey Exp $ */
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -156,23 +156,19 @@ static void reallocShapeBits(NSSize minSize)
     fakeBoxRec bounds = {0, 0, [self frame].size.width,
                          [self frame].size.height};
 
-    if (count == 0) {
-        // not shaped anymore - just refresh everything
-
-        // reset alpha channel (fixme maybe not necessary)
-        [self lockFocus];
-        [[NSColor whiteColor] set]; 
-        NSRectFill([self frame]);
-        [self unlockFocus];
-
-        mShaped = NO;
+    if (count == 0  &&  !mShaped) {
         [self refreshRects:&bounds count:1];
     } else {
+        // View is shaped, or used to be shaped.
+        // Shaped windows never become unshaped.
+        // (Mac OS X 10.0.4 does not allow transparent windows
+        // to become opaque.)
+
         mShaped = YES;
 
-        // magic: 10.0.4 and 10.1 both require the alpha channel to be
+        // Magic. 10.0.4 and 10.1 both require the alpha channel to be
         // cleared explicitly. 10.0.4 additionally requires the view to
-        // be unlocked between the erase and the drawing code below.
+        // be unlocked between this and the drawing code below.
         [self lockFocus];
         [[NSColor clearColor] set];
         NSRectFill([self frame]);

@@ -1,7 +1,7 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.7 2001/11/05 05:12:16 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.8 2001/11/06 23:18:14 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "XWindow.h"
@@ -133,14 +133,19 @@ void AquaReshapeWindow(void *rw, fakeBoxRec *rects, int count)
 {
     AquaWindowRec *winRec = WINREC(rw);
 
-    // make opaque if window is now rectangular
-    [winRec->window setOpaque:(count == 0)];        
+    // make transparent if window is now shaped
+    // transparent windows never go back to opaque
+    if (count > 0) {
+        [winRec->window setOpaque:NO];
+    }
 
     [[winRec->window contentView] reshapeRects:rects count:count];
 
-    // force update of window shadow
-    [winRec->window setHasShadow:NO];
-    [winRec->window setHasShadow:YES];
+    if (! [winRec->window isOpaque]) {
+        // force update of window shadow
+        [winRec->window setHasShadow:NO];
+        [winRec->window setHasShadow:YES];
+    }
 }
 
 void AquaGetPixmap(void *rw, char **bits,
