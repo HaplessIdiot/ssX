@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.3 2001/03/04 17:40:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.4 2001/04/01 07:12:13 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -212,7 +212,14 @@ static void SetupFBandHID(void)
                         &iter );
     kern_assert( kr );
 
+    // find the requested screen
     assert(service = IOIteratorNext(iter));
+    for (i = 0; i < darwinScreenNumber; i++) {
+        service = IOIteratorNext(iter);
+        if (service == 0)
+            FatalError("Could not find the requested screen number %i.\n",
+                       darwinScreenNumber);
+    }
 
     kr = IOServiceOpen( service, mach_task_self(),
                         kIOFBServerConnectType, &dfb.fbService );
