@@ -1,6 +1,6 @@
 
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.3 2002/12/02 11:11:49 alanh Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.4 2002/12/11 03:40:13 dawes Exp $
 
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -208,7 +208,8 @@ xkb_symbols "pc101" {
 // definition for the extra key on 102-key keyboards
 xkb_symbols "pc102" {
     include "pc/pc(pc101)"
-    key <LSGT> {	[      less,    greater		]	};
+    key <LSGT> { type[Group1] = "FOUR_LEVEL",
+                 [      less,    greater,          bar,    brokenbar ]	};
 };
 
 // definition for the extra keys on 104-key "Windows95" keyboards
@@ -230,5 +231,6 @@ xkb_symbols "pc104" {
 // the extra key on most European keyboards.
 xkb_symbols "pc105" {
     include "pc/pc(pc104)"
-    key <LSGT> {	[      less,    greater		]	};
+    key <LSGT> { type[Group1] = "FOUR_LEVEL",
+                 [      less,    greater,          bar,    brokenbar ]	};
 };
