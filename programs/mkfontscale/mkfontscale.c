@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.3 2003/01/26 02:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.4 2003/02/13 03:04:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,10 +35,6 @@
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
 
-#define CODE_IGNORED(c) ((c) < 0x20 || \
-                         ((c) >= 0x7F && (c) <= 0xA0) || \
-                         (c) == 0xAD)
-   
 #include "list.h"
 #include "data.h"
 
@@ -46,17 +42,20 @@ char *encodings_array[] =
     { "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
       "iso8859-6", "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
       "iso8859-11", "iso8859-12", "iso8859-13", "iso8859-14", "iso8859-15",
-      "koi8-r", "koi8-u", "koi8-e",
-      "adobe-standard", "adobe-symbol", "ibm-cp437", "microsoft-cp1252",
+      "koi8-r", "koi8-u", "koi8-ru", "koi8-e",
+      "tis620-2",
+      "adobe-standard", "adobe-symbol",
+      "ibm-cp437", "microsoft-cp1252",
       /* But not "adobe-dingbats", as it uses generic glyph names. */
       "jisx0201.1976-0", "jisx0208.1983-0", "jisx0208.1990-0",
-      "jisx0212.1190-0", "big5-0", "gb2312.1980-0",
+      "jisx0212.1990-0", "big5-0", "gb2312.1980-0",
       "ksc5601.1987-0", "ksc5601.1992-3"};
 
 char *extra_encodings_array[] =
     { "iso10646-1", "adobe-fontspecific", "microsoft-symbol" };
 
 ListPtr encodings, extra_encodings;
+char *outfilename;
 
 #define countof(_a) (sizeof(_a)/sizeof((_a)[0]))
 
@@ -74,7 +73,8 @@ static void
 usage(void)
 {
     fprintf(stderr, 
-            "mkfontscale [ -e encoding ] [ -f fuzz ] [ directory ]\n");
+            "mkfontscale [ -o filename ] [ -e encoding ] [ -f fuzz ] "
+            "[ directory ]\n");
 }
 
 int
@@ -82,6 +82,8 @@ main(int argc, char **argv)
 {
     int argn;
     FT_Error ftrc;
+
+    outfilename = "fonts.scale";
 
     encodings = makeList(encodings_array, countof(encodings_array), NULL, 0);
 
@@ -102,6 +104,13 @@ main(int argc, char **argv)
                 exit(1);
             }
             makeList(&argv[argn + 1], 1, encodings, 0);
+            argn += 2;
+        } else if(argv[argn][1] == 'o') {
+            if(argn >= argc - 1) {
+                usage();
+                exit(1);
+            }
+            outfilename = argv[argn + 1];
             argn += 2;
         } else if(argv[argn][1] == 'f') {
             if(argn >= argc - 1) {
@@ -365,7 +374,24 @@ doDirectory(char *dirname_given)
         dirname = strcat_reliable(dirname_given, "/");
     else
         dirname = strcat_reliable(dirname_given, "");
-    fontscale_name = strcat_reliable(dirname, "fonts.scale");
+
+    if(dirname == NULL) {
+        perror("dirname");
+        exit(1);
+    }
+
+    if(strcmp(outfilename, "-") == 0)
+        fontscale_name = NULL;
+    else {
+        if(outfilename[0] == '/')
+            fontscale_name = strcat_reliable(outfilename, "");
+        else
+            fontscale_name = strcat_reliable(dirname, outfilename);
+        if(fontscale_name == NULL) {
+            perror("fontscale_name");
+            exit(1);
+        }
+    }
 
     dirp = opendir(dirname);
     if(dirp == NULL) {
@@ -374,7 +400,11 @@ doDirectory(char *dirname_given)
         return 0;
     }
 
-    fontscale = fopen(fontscale_name, "w");
+    if(fontscale_name == NULL)
+        fontscale = stdout;
+    else
+        fontscale = fopen(fontscale_name, "w");
+
     if(fontscale == NULL) {
         fprintf(stderr, "%s: ", fontscale_name);
         perror("fopen(w)");
@@ -557,12 +587,18 @@ doDirectory(char *dirname_given)
         entries = entries->next;
     }
     deepDestroyList(entries);
-    fclose(fontscale);
-    free(fontscale_name);
+    if(fontscale_name) {
+        fclose(fontscale);
+        free(fontscale_name);
+    }
     free(dirname);
     return 1;
 }
 
+#define CODE_IGNORED(c) ((c) < 0x20 || \
+                         ((c) >= 0x7F && (c) <= 0xA0) || \
+                         (c) == 0xAD || (c) == 0xF71B)
+   
 static int
 checkEncoding(FT_Face face, char *encoding_name)
 {
@@ -576,14 +612,16 @@ checkEncoding(FT_Face face, char *encoding_name)
         return 0;
 
     /* An encoding is ``small'' if one of the following is true:
-         - it uses PostScript glyph names;
          - it is linear and has no more than 256 codepoints; or
          - it is a matrix encoding and has no more than one column.
        
-       For small encodings, we require perfect coverage except for
-       CODE_IGNORED and KOI-8 linedrawing glyphs.  
+       For small encodings using Unicode indices, we require perfect
+       coverage except for CODE_IGNORED and KOI-8 IBM-PC compatibility.
 
-       For large encodings, we require coverage up to bigEncodingFuzz. */
+       For large encodings, we require coverage up to bigEncodingFuzz.
+
+       For encodings using PS names (currently Adobe Standard and
+       Adobe Symbol only), we require perfect coverage. */
 
 
     if(FT_Has_PS_Glyph_Names(face)) {
@@ -646,8 +684,8 @@ checkEncoding(FT_Face face, char *encoding_name)
                     return 1;
             } else {
                 int estimate = encoding->size - encoding->first;
-                /* For the KOI8 encodings, ignore the lack of
-                   linedrawing characters */
+                /* For the KOI8 encodings, we ignore the lack of
+                   linedrawing and pseudo-math characters */
                 if(strncmp(encoding->name, "koi8-", 5) == 0)
                     koi8 = 1;
                 else
@@ -655,7 +693,7 @@ checkEncoding(FT_Face face, char *encoding_name)
                 for(i = encoding->first; i < encoding->size; i++) {
                     c = FontEncRecode(i, mapping);
                     if(CODE_IGNORED(c) ||
-                       (koi8 && i >= 0x80 && i < 0xA0)) {
+                       (koi8 && c >= 0x2200 && c < 0x2600)) {
                         continue;
                     } else {
                         if(FT_Get_Char_Index(face, c) == 0) {
@@ -742,7 +780,7 @@ checkExtraEncoding(FT_Face face, char *encoding_name, int found)
     if(strcasecmp(encoding_name, "iso10646-1") == 0) {
         if(find_cmap(FONT_ENCODING_UNICODE, -1, -1, face)) {
             int found = 0;
-            /* Export as Unicode if there are at least 15 BMP
+             /* Export as Unicode if there are at least 15 BMP
                characters that are not a space or ignored. */
             for(c = 0x21; c < 0x10000; c++) {
                 if(CODE_IGNORED(c))
