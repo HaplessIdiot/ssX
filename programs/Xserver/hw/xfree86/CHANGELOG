@@ -1,4 +1,5 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 285. Print the XFree86 command line in the log file (David Dawes).
  284. Release notes details for xterm (Thomas Dickey).
  283. First phase of dynamic configuration (David Dawes, S. Lussos,
       Michael Dawes, J. D. Darling, X-Oz Technologies).
@@ -19301,7 +19302,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3396 2005/01/26 05:31:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3397 2005/01/26 17:38:15 dawes Exp $
 
 
 

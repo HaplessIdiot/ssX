@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.223 2005/01/07 23:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.224 2005/01/26 05:31:48 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -172,6 +172,8 @@ static Bool appendauto = FALSE;
 static Bool noAppendauto = FALSE;
 static Bool noHardware = FALSE;
 static Bool noVT = FALSE;
+
+static char *cmdline = NULL;
 
 #ifdef DO_CHECK_BETA
 static int extraDays = 0;
@@ -1484,39 +1486,39 @@ AbortDDX()
   int i;
 
   /*
-   * try to deinitialize all input devices
+   * Try to deinitialize all input devices.
    */
   if (xf86Info.pKeyboard)
     (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
 
   /*
-   * try to restore the original video state
+   * Try to restore the original video state.
    */
 #ifdef HAS_USL_VTS
-  /* Need the sleep when starting X from within another X session */
+  /* Need the sleep when starting X from within another X session. */
   if (!noVT)
     sleep(1);
 #endif
   if (xf86Screens && !noVT) {
-      if (xf86Screens[0]->vtSema)
-	  xf86EnterServerState(SETUP);
-      for (i = 0; i < xf86NumScreens; i++)
-	  if (xf86Screens[i]->vtSema) {
-	      /*
-	       * if we are aborting before ScreenInit() has finished
-	       * we might not have been wrapped yet. Therefore enable
-	       * screen explicitely.
-	       */
-	      xf86EnableAccess(xf86Screens[i]);
-	      (xf86Screens[i]->LeaveVT)(i, 0);
-	  }
+    if (xf86Screens[0]->vtSema)
+      xf86EnterServerState(SETUP);
+    for (i = 0; i < xf86NumScreens; i++)
+      if (xf86Screens[i]->vtSema) {
+	/*
+	 * If we are aborting before ScreenInit() has finished
+	 * we might not have been wrapped yet. Therefore enable
+	 * screen explicitly.
+	 */
+	xf86EnableAccess(xf86Screens[i]);
+	(xf86Screens[i]->LeaveVT)(i, 0);
+      }
   }
   
   xf86AccessLeave();
   
   /*
    * This is needed for an abnormal server exit, since the normal exit stuff
-   * MUST also be performed (i.e. the vt must be left in a defined state)
+   * MUST also be performed (i.e. the vt must be left in a defined state).
    */
   ddxGiveUp();
 }
@@ -1561,8 +1563,6 @@ xf86SetLogVerbosity(int verb)
  *
  */
 
-
-
 /* ARGSUSED */
 int
 ddxProcessArgument(int argc, char **argv, int i)
@@ -1571,6 +1571,28 @@ ddxProcessArgument(int argc, char **argv, int i)
    * Note: can't use xalloc/xfree here because OsInit() hasn't been called
    * yet.  Use malloc/free instead.
    */
+
+  /* Make a copy of the command line to log later. */
+  if (!cmdline) {
+    int j, len;
+
+    for (j = 0; j < argc; j++) {
+      if (cmdline) {
+	len = strlen(argv[j]) + 1 + strlen(cmdline) + 1;
+	cmdline = realloc(cmdline, len);
+	if (!cmdline)
+	  FatalError("Cannot allocate memory for the command line.\n");
+	strlcat(cmdline, " ", len);
+	strlcat(cmdline, argv[j], len);
+      } else {
+	len = strlen(argv[j]) + 1;
+	cmdline = malloc(len);
+	if (!cmdline)
+	  FatalError("Cannot allocate memory for the command line.\n");
+	strlcpy(cmdline, argv[j], len);
+      }
+    }
+  }
 
   /* First the options that are only allowed for root */
   if (getuid() == 0)
@@ -2080,6 +2102,8 @@ xf86PrintBanner()
 #ifdef XFree86LOADER
   ErrorF("Module Loader present\n");
 #endif
+  if (cmdline)
+    ErrorF("Command line: %s\n", cmdline);
 }
 
 static void
