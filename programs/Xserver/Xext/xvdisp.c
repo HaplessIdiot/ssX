@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.17 2001/02/20 05:29:19 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.18 2001/03/03 21:17:54 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -2131,6 +2131,9 @@ void XineramifyXv(void)
       for(j = 1; j < PanoramiXNumScreens; j++) {
          pScreen = screenInfo.screens[j];
 	 xvsp = (XvScreenPtr)pScreen->devPrivates[XvScreenIndex].ptr;
+
+         /* Do not try to go on if xv is not supported on this screen */
+         if (xvsp==NULL) continue ;
 	 
          /* if the adaptor has the same name it's a perfect match */
 	 for(k = 0; k < xvsp->nAdaptors; k++) {
