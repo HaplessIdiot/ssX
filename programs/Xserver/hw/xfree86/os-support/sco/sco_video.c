@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_video.c,v 3.0 1996/02/22 05:12:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_video.c,v 3.1 1996/12/09 11:53:14 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: sco_video.c /main/2 1995/11/13 06:08:46 kaleb $ */
+/* $XConsortium: sco_video.c /main/4 1996/02/22 10:46:34 kaleb $ */
 
 #include "X.h"
 #include "input.h"

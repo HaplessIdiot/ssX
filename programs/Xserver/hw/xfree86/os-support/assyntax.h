@@ -1,5 +1,4 @@
-/* $XConsortium: assyntax.h /main/4 1996/01/26 14:27:41 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.5 1996/01/24 22:02:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.6 1996/02/04 09:09:46 dawes Exp $ */
 #ifndef __ASSYNTAX_H__
 #define	__ASSYNTAX_H__
 
@@ -24,6 +23,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: assyntax.h /main/5 1996/02/21 17:50:49 kaleb $ */
 
  /*
  * assyntax.h

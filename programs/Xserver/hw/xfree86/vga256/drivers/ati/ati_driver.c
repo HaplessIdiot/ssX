@@ -1,5 +1,4 @@
-/* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.37 1996/09/25 14:18:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.38 1996/10/16 14:42:27 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,6 +20,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: ati_driver.c /main/21 1996/10/27 11:07:02 kaleb $ */
 
 /*************************************************************************/
 

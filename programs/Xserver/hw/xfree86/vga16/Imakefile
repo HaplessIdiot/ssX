@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/7 1996/01/26 13:49:33 kaleb $
+XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:49:52 kaleb $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.6 1996/01/24 22:02:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.7 1996/02/04 09:10:43 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -18,7 +18,7 @@ OBJS = vga/?*.o ibm/?*.o mfb/?*.o
 DONES = vga/DONE ibm/DONE mfb/DONE
 
 INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
-	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
+	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 
 VGA16DRIVERS = XF86Vga16Drivers
 

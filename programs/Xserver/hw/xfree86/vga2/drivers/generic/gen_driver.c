@@ -1,5 +1,5 @@
-/* $XConsortium: gen_driver.c /main/5 1996/01/10 11:13:23 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.12 1996/06/29 09:07:57 dawes Exp $ */
+/* $XConsortium: gen_driver.c /main/8 1996/10/23 18:46:36 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.13 1996/09/14 13:11:05 dawes Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since

@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 1.1.1.2 1996/01/03 07:20:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.0 1996/11/18 13:12:18 dawes Exp $
 
 
 
 
-XCOMM $XConsortium: Imakefile /main/2 1995/11/13 05:55:35 kaleb $
+XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:23:38 rws $
 
 #include <Server.tmpl>
 
@@ -16,7 +16,7 @@ OBJS = bsdi_init.o bsdi_video.o IO_utils.o bsdi_io.o bios_devmem.o \
        std_mseEv.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC)
+           -I$(XINCLUDESRC)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

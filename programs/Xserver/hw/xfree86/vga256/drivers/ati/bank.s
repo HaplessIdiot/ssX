@@ -1,5 +1,4 @@
-/* $XConsortium: bank.s,v 1.5 95/06/19 18:59:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.5 1996/02/18 03:43:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.6 1996/02/22 05:12:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -66,6 +65,7 @@
  * dual paged apertures.  These functions are used to emulate a standard VGA
  * aperture.
  */
+/* $XConsortium: bank.s /main/7 1996/02/22 10:47:09 kaleb $ */
 
 #include "assyntax.h"
 

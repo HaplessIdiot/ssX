@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imrd.s,v 1.1.1.2 1996/01/03 07:13:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imrd.s,v 3.0 1996/11/18 13:09:46 dawes Exp $ */
 
 
 
 
 
 
-/* $XConsortium: mach8imrd.s /main/3 1995/11/12 18:00:45 kaleb $ */
+/* $XConsortium: mach8imrd.s /main/4 1996/02/21 17:30:50 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageRead routine.

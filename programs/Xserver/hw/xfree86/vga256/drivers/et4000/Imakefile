@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/8 1996/01/26 14:05:44 kaleb $
+XCOMM $XConsortium: Imakefile /main/10 1996/09/28 17:29:32 rws $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/Imakefile,v 3.8 1996/12/17 21:00:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/Imakefile,v 3.9 1996/12/20 06:45:27 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = et4_driver.c et4_accel.c et4_bank.s tseng_acl.c
@@ -17,7 +17,7 @@ INCLUDES = -I. -I../../../include -I../../../include/X11 -I../.. -I../../../xaa
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I../../vga -I../../../xaa -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC) -I$(FONTINCSRC)
+           -I$(XINCLUDESRC) -I$(FONTINCSRC)
 #endif
 
 DEFINES = -DPSZ=8 -DW32_SUPPORT

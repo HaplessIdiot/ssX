@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.3 1996/02/04 09:06:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.4 1996/05/06 05:57:47 dawes Exp $ */
 /*
  * Copyright 1994 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: ATTDac.c /main/7 1995/11/19 14:43:21 kaleb $ */
+/* $XConsortium: ATTDac.c /main/9 1996/05/07 17:12:54 kaleb $ */
 
 #include "Xfuncproto.h"
 #include "compiler.h"

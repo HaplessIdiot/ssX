@@ -1,5 +1,4 @@
-/* $XConsortium: bank.s /main/4 1995/12/17 08:39:48 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.3 1996/02/04 09:14:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.4 1996/03/29 22:18:12 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -29,6 +28,7 @@
  *
  * 	    Alan Hourihane, version 1.0 (dual banks / single banks)
  */
+/* $XConsortium: bank.s /main/6 1996/04/01 18:13:25 kaleb $ */
 
 
 /*
