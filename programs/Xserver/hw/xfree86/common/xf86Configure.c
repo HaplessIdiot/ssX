@@ -44,10 +44,8 @@
 
 pciVideoPtr ConfiguredPciCard;
 xf86MonPtr ConfiguredMonitor;
-xf86MonPtr ConfiguredMonitors;
 int ConfiguredIsaCard;
 int FoundPciCards = 0;
-char *foundDriver = NULL;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
@@ -551,7 +549,6 @@ DoConfigure()
     char *filename = NULL;
     OptionInfoPtr options = NULL;
     XF86ConfigPtr xf86config = NULL;
-    xf86MonPtr ConfMon;
     char **vlist, **ilist, **vl, **il;
 
     vlist = xf86DriverlistFromCompile();
@@ -682,8 +679,6 @@ DoConfigure()
     /* Try to get DDC information filled in */
     xf86ConfigFile = filename;
     xf86HandleConfigFile();
-    ConfiguredMonitors = xalloc(sizeof(xf86Monitor) * xf86NumDrivers);
-    ConfMon = ConfiguredMonitors;
     vl = vlist;
 
     for (i = 0; i < xf86NumDrivers; i++) {
