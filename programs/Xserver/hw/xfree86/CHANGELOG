@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX January 2002)
+  26. Localize XDarwin credits in French (Olivier Verdier) and Portuguese
+      (Fabr’cio L. de Castro).
   25. Turn off compiling broken XFree86-Misc extension for XDarwin
       (Torrey T. Lyons).
   24. Localize a few missing strings in XDarwin preferences (Torrey T. Lyons).
@@ -20,7 +22,8 @@ XFree86 4.2.99.1 (XX January 2002)
   18. Fix startx script for ksh (Phillip B. Bruce).
   17. Fix Emulate3Buttons for wsmouse protocol on NetBSD and OpenBSD
       (Matthieu Herrb).
-  16. Add Portuguese localization of XDarwin front end (Fabr’cio de Castro).
+  16. Add Portuguese localization of XDarwin front end
+      (Fabr’cio L. de Castro).
   15. Fix mouse Protocol "Auto" for SunOS (Marc La France).
   14. Relocate all driver low memory accesses (atimisc module not yet done)
       (Marc La France).
@@ -14606,4 +14609,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2160 2002/01/30 06:50:43 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2161 2002/02/01 02:05:36 torrey Exp $
