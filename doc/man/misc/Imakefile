@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/doc/man/misc/Imakefile,v 1.7 2004/06/02 22:42:54 dawes Exp $
+XCOMM $XFree86: xc/doc/man/misc/Imakefile,v 1.8 2005/03/12 23:13:28 dawes Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -78,7 +78,7 @@ InstallGenManPage(XDarwin,$(MANDIR),$(MANSUFFIX))
 InstallGenManPage(dumpkeymap,$(MANDIR),$(MANSUFFIX))
 #if !defined(TinyXServer) || !TinyXServer
 InstallGenManPage(TinyX,$(MANDIR),$(MANSUFFIX))
-InstallGenManPageAliases(TinyX,$(MANDIR),$(MANSUFFIX),Xchips Xi810 Xigs Xipaq Xmach64 Xsavage Xsis530 Xtrident Xtrio Xts300)
+InstallGenManPageAliases(TinyX,$(MANDIR),$(MANSUFFIX),Xchips Xi810 Xigs Xipaq Xmach64 Xsavage Xsis530 Xtrident Xtrio Xts300 Xkdrive kdrive)
 #endif
 #if !defined(XvesaServer) || !XvesaServer
 InstallGenManPage(Xvesa,$(MANDIR),$(MANSUFFIX))

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/tinyx/TinyX.man,v 1.5 2002/02/14 16:08:05 keithp Exp $
+.\" $XFree86: xc/programs/Xserver/hw/tinyx/TinyX.man,v 1.1 2004/06/02 22:43:00 dawes Exp $
 .\"
 .TH TinyX 1 __vendorversion__
 .SH NAME
@@ -59,6 +59,11 @@ manual page describes the common functionality of the
 .B TinyX
 servers; for information on a specific X server, please refer to the
 relevant manual page.
+.PP
+This incarnation of
+.B TinyX
+is colloquially known as
+.BR kdrive .
 .SH OPTIONS
 In addition to the standard options accepted by all X servers (see
 Xserver(1)), all the 
@@ -92,7 +97,9 @@ enable emulation of a middle mouse button by chording.
 .B \-3button
 disable emulation of a middle mouse button by chording.
 .SH SEE ALSO
-X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1), Xvesa(1), Xfbdev(1).
+X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1), Xvesa(1), Xfbdev(1),
+XFree86(1).
 .SH AUTHORS
 The TinyX common core was written by Keith Packard, based on XFree86
-which, in turn, is based loosely on the X11R6 Sample Implementation.
+which.  It was integrated into the XFree86 build process by David Dawes
+and X-Oz Technologies.
