@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.131 94/06/03 21:38:47 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.3 1994/06/12 16:30:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.4 1994/06/28 12:15:03 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -200,9 +200,6 @@ XCOMM operating system:  OSName
 #if (OSMajorVersion > 4) && defined(i386Architecture)
 #ifndef HasSolx86ApertureDriver
 #define HasSolx86ApertureDriver	NO
-#endif
-#if HasSolx86ApertureDriver
-#define ApertureDrvDefines	-DHAS_APERTURE_DRV
 #endif
 #endif
 
