@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.31 2003/07/16 01:39:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.32 2003/09/06 14:07:18 pascal Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -41,8 +41,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 #include "xkb.h"
-
-#include "xf86.h"
 
 #if defined(CSRG_BASED) || defined(linux) || defined(__sgi) || defined(AIXV3) || defined(__osf__) || defined(__GNU__)
 #include <paths.h>
@@ -485,12 +483,12 @@ unsigned	missing;
     }
     file= XkbDDXOpenConfigFile(nameRtrn,fileName,PATH_MAX);
     if (file==NULL) {
-	xf86Msg(X_ERROR, "Couldn't open compiled keymap file %s\n",fileName);
+	ErrorF("(EE) Couldn't open compiled keymap file %s\n",fileName);
 	return 0;
     }
     missing= XkmReadFile(file,need,want,finfoRtrn);
     if (finfoRtrn->xkb==NULL) {
-	xf86Msg(X_ERROR, "Error loading keymap %s\n",fileName);
+	ErrorF("(EE) Error loading keymap %s\n",fileName);
 	fclose(file);
 	(void) unlink (fileName);
 	return 0;

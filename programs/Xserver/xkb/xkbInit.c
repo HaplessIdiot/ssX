@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.28 2003/07/16 01:39:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.29 2003/09/06 14:07:18 pascal Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,8 +46,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKMformat.h>
 #include <X11/extensions/XKBfile.h>
 #include "xkb.h"
-
-#include "xf86.h"
 
 #define	CREATE_ATOM(s)	MakeAtom(s,sizeof(s)-1,1)
 
@@ -560,10 +558,10 @@ XkbEventCauseRec	cause;
 	if ((file.file=XkbDDXOpenConfigFile(XkbInitialMap,NULL,0))!=NULL) {
 	    XkmReadFile(file.file,0,XkmKeymapLegal,&file.xkbinfo);
 	    if (file.xkbinfo.xkb==NULL) {
-		xf86Msg(X_ERROR, "Error loading keymap file %s (%s in %s)\n",
+		ErrorF("(EE) Error loading keymap file %s (%s in %s)\n",
 				XkbInitialMap, _XkbErrMessages[_XkbErrCode],
 				(_XkbErrLocation?_XkbErrLocation:"unknown"));
-		xf86Msg(X_ERROR, "      reverting to defaults\n");
+		ErrorF("(EE)      reverting to defaults\n");
 		fclose(file.file);
 		file.file= NULL;
 		bzero(&file.xkbinfo,sizeof(XkbFileInfo));
@@ -580,8 +578,7 @@ XkbEventCauseRec	cause;
 	    }
 	}
 	else {
-	    xf86Msg(X_ERROR,
-                    "Error opening keymap file %s, reverting to defaults\n",
+	    ErrorF("(EE) Error opening keymap file %s, reverting to defaults\n",
 	    	    XkbInitialMap);
 	}
     }
@@ -836,8 +833,7 @@ XkbRF_VarDefsRec	defs;
 	_XkbInitFileInfo= &finfo;
     }
     else {
-	xf86Msg(X_ERROR,
-                "Couldn't load XKB keymap, falling back to pre-XKB keymap\n");
+	ErrorF("(EE) Couldn't load XKB keymap, falling back to pre-XKB keymap\n");
     }
     ok= InitKeyboardDeviceStruct((DevicePtr)dev,pSyms,pMods,bellProc,ctrlProc);
     if ((config!=NULL)&&(dev && dev->key && dev->key->xkbInfo))
@@ -1007,8 +1003,7 @@ XkbProcessArguments(argc,argv,i)
 	if(++i < argc) {
 #if !defined(WIN32) && !defined(__UNIXOS2__) && !defined(__CYGWIN__)
 	    if (getuid() != geteuid()) {
-		xf86Msg(X_WARNING,
-                        "-xkbdir is not available for setuid X servers\n");
+		ErrorF("(WW) -xkbdir is not available for setuid X servers\n");
 		return -1;
 	    } else
 #endif
@@ -1017,7 +1012,7 @@ XkbProcessArguments(argc,argv,i)
 		    XkbBaseDirectory= argv[i];
 		    return 2;
 	        } else {
-		    xf86Msg(X_ERROR, "-xkbdir pathname too long\n");
+		    ErrorF("(EE) -xkbdir pathname too long\n");
 		    return -1;
 		}
 	    }
@@ -1032,7 +1027,7 @@ XkbProcessArguments(argc,argv,i)
 		XkbInitialMap= argv[i];
 		return 2;
 	    } else {
-		xf86Msg(X_ERROR, "-xkbmap pathname too long\n");
+		ErrorF("(EE) -xkbmap pathname too long\n");
 		return -1;
 	    }
 	}
@@ -1046,7 +1041,7 @@ XkbProcessArguments(argc,argv,i)
 		XkbDB= argv[i];
 		return 2;
 	    } else {
-		xf86Msg(X_ERROR, "-xkbdb pathname too long\n");
+		ErrorF("(EE) -xkbdb pathname too long\n");
 		return -1;
 	    }
 	}
