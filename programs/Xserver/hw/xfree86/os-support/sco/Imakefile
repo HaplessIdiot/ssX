@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 3.13 2002/06/03 21:22:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 3.14 2002/10/11 01:47:00 dawes Exp $
 
 
 
@@ -10,12 +10,12 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:24:25 rws $
 SRCS = sco_init.c sco_video.c sco_io.c sco_iop.c sco_mouse.c VTsw_sco.c \
        std_kbdEv.c posix_tty.c bios_devmem.c vidmem.c \
        libc_wrapper.c stdResource.c stdPci.c sigiostubs.c pm_noop.c \
-       kmod_noop.c agp_noop.c kbd.c
+       kmod_noop.c agp_noop.c
 
 OBJS = sco_init.o sco_video.o sco_io.o sco_iop.o sco_mouse.o VTsw_sco.o \
        std_kbdEv.o posix_tty.o bios_devmem.o vidmem.o \
        libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o \
-       kmod_noop.o agp_noop.o kbd.o
+       kmod_noop.o agp_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(SERVERSRC)/mi -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -38,7 +38,6 @@ LinkSourceFile(pm_noop.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)
 LinkSourceFile(agp_noop.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
-LinkSourceFile(kbd.c,../shared)
 
 DependTarget()
 
