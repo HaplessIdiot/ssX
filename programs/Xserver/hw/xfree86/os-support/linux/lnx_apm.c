@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.10 2001/10/01 13:44:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.11 2001/11/30 12:12:03 eich Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
  
 #define APM_PROC   "/proc/apm"
 #define APM_DEVICE "/dev/apm_bios"
@@ -113,31 +114,35 @@ lnxPMConfirmEventToOs(int fd, pmEvent event)
 PMClose
 xf86OSPMOpen(void)
 {
-   int fd;    
+    int fd, pfd;    
 
 #ifdef DEBUG
-   ErrorF("APM: OSPMOpen called\n");
+    ErrorF("APM: OSPMOpen called\n");
 #endif
-   if (APMihPtr || !xf86Info.pmFlag)
-       return NULL;
+    if (APMihPtr || !xf86Info.pmFlag)
+	return NULL;
    
-   if (access( APM_PROC, R_OK ) || ((fd = open( APM_PROC, O_RDONLY)) == -1)) {
-       xf86MsgVerb(X_WARNING,3,"Cannot open APM\n");
-       return NULL;
-   }
-   close( fd );
 #ifdef DEBUG
-   ErrorF("APM: Opening device\n");
+    ErrorF("APM: Opening device\n");
 #endif
-   if ((fd = open( APM_DEVICE, O_RDWR )) > -1) {
-       xf86PMGetEventFromOs = lnxPMGetEventFromOs;
-       xf86PMConfirmEventToOs = lnxPMConfirmEventToOs;
-       APMihPtr = xf86AddInputHandler(fd,xf86HandlePMEvents,NULL);
-       xf86MsgVerb(X_INFO,3,"Open APM successful\n");
-       return lnxCloseAPM;
-   }
-   xf86MsgVerb(X_WARNING,3,"Open APM failed\n");
-   return NULL;
+    if ((fd = open( APM_DEVICE, O_RDWR )) > -1) {
+	if (access( APM_PROC, R_OK ) ||
+	    ((pfd = open( APM_PROC, O_RDONLY)) == -1)) {
+	    xf86MsgVerb(X_WARNING,3,"Cannot open APM (%s) (%s)\n",
+			APM_PROC, strerror(errno));
+	    close(fd);
+	    return NULL;
+	} else
+	    close(pfd);
+	xf86PMGetEventFromOs = lnxPMGetEventFromOs;
+	xf86PMConfirmEventToOs = lnxPMConfirmEventToOs;
+	APMihPtr = xf86AddInputHandler(fd,xf86HandlePMEvents,NULL);
+	xf86MsgVerb(X_INFO,3,"Open APM successful\n");
+	return lnxCloseAPM;
+    }
+    xf86MsgVerb(X_WARNING,3,"Open APM failed (%s) (%s)\n", APM_DEVICE,
+		strerror(errno));
+    return NULL;
 }
 
 static void
