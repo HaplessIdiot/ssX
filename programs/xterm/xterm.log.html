@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.82 2002/08/12 00:36:33 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.83 2002/08/17 19:52:27 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,7 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_167">Patch #167 - development - XFree86 4.2.0</A>
+<LI><A HREF="#xterm_167">Patch #167 - 2002/8/24 - XFree86 4.2.0</A>
 <LI><A HREF="#xterm_166">Patch #166 - 2002/3/25 - XFree86 4.2.0</A>
 <LI><A HREF="#xterm_165">Patch #165 - 2002/1/5 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_164">Patch #164 - 2001/11/13 - XFree86 4.1.0</A>
@@ -212,8 +212,32 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_167">Patch #167 - development - XFree86 4.2.0</A></H1>
+<H1><A NAME="xterm_167">Patch #167 - 2002/8/24 - XFree86 4.2.0</A></H1>
 <ul>
+	<li>correct ifdef's for <code>USE_TERMCAP</code> to match cygwin
+	  configuration.
+
+	<li>fix several places in ctlseqs.ms which had no boxes around the
+	  literal text (report by Ilya Zakharevich).
+
+	<li>integrated patch from Ilya Zakharevich to extend mouse support for
+	  readline (ifdef'd with OPT_READLINE).
+
+	<li>modify terminfo description to match default for
+	  <code>modifyCursorKeys</code> resource.
+
+	<li>add <code>modifyCursorKeys</code> resource to control how the
+	  shift- and similar modifiers are used to make a cursor escape
+	  sequence.  The default makes a modified escape sequence always start
+	  with CSI and puts the modifier as the second parameter, to avoid
+	  confusing applications that would interpret the first parameter as a
+	  repeat count.  The original behavior can be obtained by setting the
+	  resource to 0 (from newsgroup discussion with Stephen J Turnbull
+	  and Jeffrey Altman).
+
+	<li>correct missing initializations for <code>appdefaultCursor</code>
+	  and <code>appdefaultKeypad</code> resources.
+
 	<li>add configure option <code>--enable-luit</code> and ifdef'd the
 	  luit-related code with OPT_LUIT_PROG.
 
@@ -235,9 +259,9 @@ xc/programs/Xserver/hw/xfree86).
 
 	<li>changes from OpenBSD:
 	<ul>
-	   Make xterm setgid utmp to be able to update utmp even
+	   <li>Make xterm setgid utmp to be able to update utmp even
 	   with root privileges revoked.
-	   If not updating utmp, revoke group privileges totally too.
+	   <li>If not updating utmp, revoke group privileges totally too.
 	</ul>
 
 	<li>changes from NetBSD:

@@ -2,7 +2,7 @@
  *	$Xorg: input.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/input.c,v 3.56 2002/03/26 01:46:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/input.c,v 3.57 2002/04/28 19:04:20 dickey Exp $ */
 
 /*
  * Copyright 1999-2001,2002 by Thomas E. Dickey
@@ -130,7 +130,7 @@ ModifierName(unsigned modifier)
 #endif
 
 static void
-AdjustAfterInput(register TScreen * screen)
+AdjustAfterInput(TScreen * screen)
 {
     if (screen->scrollkey && screen->topline != 0)
 	WindowScroll(screen, 0);
@@ -245,11 +245,16 @@ TranslateFromSUNPC(KeySym keysym)
 		reply.a_type = ESC; \
 		})
 
+#define APPEND_PARM(number) \
+	    reply.a_param[(int) reply.a_nparam] = number, \
+	    reply.a_nparam += 1
+
+#if OPT_MOD_FKEYS
 #define MODIFIER_PARM \
-	if (modify_parm > 1) { \
-	    reply.a_param[(int) reply.a_nparam] = modify_parm; \
-	    reply.a_nparam += 1; \
-	}
+	if (modify_parm > 1) APPEND_PARM(modify_parm)
+#else
+#define MODIFIER_PARM		/*nothing */
+#endif
 
 #if OPT_WIDE_CHARS
 /* Convert a Unicode value c into a UTF-8 sequence in strbuf */
@@ -354,18 +359,17 @@ xtermAddInput(Widget w)
 }
 
 void
-Input(
-	 register TKeyboard * keyboard,
-	 register TScreen * screen,
-	 register XKeyEvent * event,
-	 Bool eightbit)
+Input(TKeyboard * keyboard,
+      TScreen * screen,
+      XKeyEvent * event,
+      Bool eightbit)
 {
 
 #define STRBUFSIZE 500
 
     char strbuf[STRBUFSIZE];
-    register Char *string;
-    register int key = FALSE;
+    Char *string;
+    int key = FALSE;
     int pty = screen->respond;
     int nbytes;
     KeySym keysym = 0;
@@ -442,7 +446,7 @@ Input(
      * Other (Sun, PC) keyboards commonly have keypad(+), but no keypad(,)
      * - it's a pain for users to work around.
      */
-    if (term->keyboard.type == keyboardIsVT220
+    if (keyboard->type == keyboardIsVT220
 	&& (event->state & ShiftMask) == 0) {
 	if (keysym == XK_KP_Add) {
 	    keysym = XK_KP_Separator;
@@ -484,6 +488,7 @@ Input(
     }
 #endif
 
+#if OPT_MOD_FKEYS
     /*
      * If we are in the normal (possibly Sun/PC) keyboard state, allow
      * modifiers to add a parameter to the function-key control sequences.
@@ -491,7 +496,7 @@ Input(
     if (event->state != 0
 	&& !(IsKeypadKey(keysym) && keypad_mode)
 #if OPT_SUNPC_KBD
-	&& term->keyboard.type != keyboardIsVT220
+	&& keyboard->type != keyboardIsVT220
 #endif
 #if OPT_VT52_MODE
 	&& screen->ansi_level != 0
@@ -535,10 +540,11 @@ Input(
 #endif
 	TRACE(("...ModifierParm %d\n", modify_parm));
     }
+#endif /* OPT_MOD_FKEYS */
 
     /* VT300 & up: backarrow toggle */
     if ((nbytes == 1)
-	&& (((term->keyboard.flags & MODE_DECBKM) == 0)
+	&& (((keyboard->flags & MODE_DECBKM) == 0)
 	    ^ ((event->state & ControlMask) != 0))
 	&& (keysym == XK_BackSpace)) {
 	strbuf[0] = '\177';
@@ -546,7 +552,7 @@ Input(
     }
 #if OPT_SUNPC_KBD
     /* make an DEC editing-keypad from a Sun or PC editing-keypad */
-    if (term->keyboard.type == keyboardIsVT220
+    if (keyboard->type == keyboardIsVT220
 	&& (keysym != XK_Delete || !xtermDeleteIsDEL()))
 	keysym = TranslateFromSUNPC(keysym);
     else
@@ -562,7 +568,7 @@ Input(
     }
 
 #if OPT_HP_FUNC_KEYS
-    if (term->keyboard.type == keyboardIsHP
+    if (keyboard->type == keyboardIsHP
 	&& (reply.a_final = hpfuncvalue(keysym)) != 0) {
 	reply.a_type = ESC;
 	MODIFIER_PARM;
@@ -570,7 +576,7 @@ Input(
     } else
 #endif
 #if OPT_SCO_FUNC_KEYS
-	if (term->keyboard.type == keyboardIsSCO
+	if (keyboard->type == keyboardIsSCO
 	    && (reply.a_final = scofuncvalue(keysym)) != 0) {
 	reply.a_type = CSI;
 	MODIFIER_PARM;
@@ -585,7 +591,7 @@ Input(
 	unparseseq(&reply, pty);
 	key = TRUE;
 #if 0				/* OPT_SUNPC_KBD should suppress - but only for vt220 compatibility */
-    } else if (term->keyboard.type == keyboardIsVT220
+    } else if (keyboard->type == keyboardIsVT220
 	       && screen->ansi_level <= 1
 	       && IsEditFunctionKey(keysym)) {
 	key = FALSE;		/* ignore editing-keypad in vt100 mode */
@@ -594,19 +600,23 @@ Input(
 	       keysym != XK_Prior && keysym != XK_Next) {
 	if (keyboard->flags & MODE_DECCKM) {
 	    reply.a_type = SS3;
-	    reply.a_final = curfinal[keysym - XK_Home];
-	    VT52_CURSOR_KEYS
-		MODIFIER_PARM;
-	    unparseseq(&reply, pty);
 	} else {
 	    reply.a_type = CSI;
-	    if_OPT_VT52_MODE(screen, {
-		reply.a_type = ESC;
-	    });
-	    reply.a_final = curfinal[keysym - XK_Home];
-	    MODIFIER_PARM;
-	    unparseseq(&reply, pty);
 	}
+#if OPT_MOD_FKEYS
+	if (modify_parm > 1) {
+	    if (keyboard->modify_cursor_keys)
+		reply.a_type = CSI;	/* SS3 should not have params */
+	    if (keyboard->modify_cursor_keys > 1)
+		APPEND_PARM(1);	/* force modifier to 2nd param */
+	    if (keyboard->modify_cursor_keys > 2)
+		reply.a_pintro = '>';	/* mark this as "private" */
+	}
+#endif
+	reply.a_final = curfinal[keysym - XK_Home];
+	VT52_CURSOR_KEYS;
+	MODIFIER_PARM;
+	unparseseq(&reply, pty);
 	key = TRUE;
     } else if (IsFunctionKey(keysym)
 	       || IsMiscFunctionKey(keysym)
@@ -619,7 +629,7 @@ Input(
 		   && ((modify_parm > 1)
 		       || !xtermDeleteIsDEL()))) {
 #if OPT_SUNPC_KBD
-	if (term->keyboard.type == keyboardIsVT220) {
+	if (keyboard->type == keyboardIsVT220) {
 	    if ((event->state & ControlMask)
 		&& (keysym >= XK_F1 && keysym <= XK_F12))
 		keysym += term->misc.ctrl_fkeys;
@@ -629,7 +639,7 @@ Input(
 	dec_code = decfuncvalue(keysym);
 	if ((event->state & ShiftMask)
 #if OPT_SUNPC_KBD
-	    && term->keyboard.type == keyboardIsVT220
+	    && keyboard->type == keyboardIsVT220
 #endif
 	    && ((string = (Char *) udk_lookup(dec_code, &nbytes)) != 0)) {
 	    while (nbytes-- > 0)
@@ -639,12 +649,12 @@ Input(
 	/*
 	 * Interpret F1-F4 as PF1-PF4 for VT52, VT100
 	 */
-	else if (term->keyboard.type != keyboardIsSun
-		 && term->keyboard.type != keyboardIsLegacy
+	else if (keyboard->type != keyboardIsSun
+		 && keyboard->type != keyboardIsLegacy
 		 && (dec_code >= 11 && dec_code <= 14)) {
 	    reply.a_type = SS3;
-	    VT52_CURSOR_KEYS
-		reply.a_final = A2E(dec_code - 11 + E2A('P'));
+	    VT52_CURSOR_KEYS;
+	    reply.a_final = A2E(dec_code - 11 + E2A('P'));
 	    MODIFIER_PARM;
 	    unparseseq(&reply, pty);
 	}
@@ -654,7 +664,7 @@ Input(
 	    reply.a_nparam = 1;
 	    reply.a_final = 0;
 	    MODIFIER_PARM;
-	    if (term->keyboard.type == keyboardIsSun) {
+	    if (keyboard->type == keyboardIsSun) {
 		reply.a_param[0] = sunfuncvalue(keysym);
 		reply.a_final = 'z';
 #ifdef XK_ISO_Left_Tab
@@ -747,7 +757,7 @@ Input(
 }
 
 void
-StringInput(register TScreen * screen, Char * string, size_t nbytes)
+StringInput(TScreen * screen, Char * string, size_t nbytes)
 {
     int pty = screen->respond;
 

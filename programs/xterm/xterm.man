@@ -54,7 +54,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.83 2002/08/12 00:36:33 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.84 2002/08/17 19:52:27 dickey Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996 - August 2002.
 .TH XTERM 1 __vendorversion__
@@ -477,7 +477,7 @@ This corresponds to the \fBlocale\fR resource.
 The actual list of encodings which are supported is determined by \fBluit\fR.
 Consult the \fBluit\fR manual page for futher details.
 .TP 8
-.B \+lc
+.B +lc
 Turn off support of automatic selection of locale encodings.
 Conventional 8bit mode or, in UTF-8 locales or with \-u8 option,
 UTF-8 mode will be used.
@@ -1449,6 +1449,16 @@ sees that \fBMeta\fP is used in your key translations.
 If ``false'', Meta characters input from the keyboard are handled according
 to the \fBeightBitInput\fP resource.
 The default is ``false.''
+.TP 8
+.B "modifyCursorKeys (\fPclass\fB ModifyCursorKeys\fP)"
+Tells how to handle the special case where
+control-, shift-, alt- or meta-modifiers are used to add a parameter to
+the escape sequence returned by a cursor-key.
+Set it to 0 to use the old/obsolete behavior.
+Set it to 1 to prefix modified sequences with CSI.
+Set it to 2 to force the modifier to be the second parameter.
+Set it to 3 to mark the sequence with a '>' to hint that it is private.
+The default is ``2''.
 .TP 8
 .B "multiClickTime (\fPclass\fB MultiClickTime)"
 Specifies the maximum time in milliseconds between multi-click select
