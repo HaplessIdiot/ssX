@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.5 1997/01/22 11:17:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.6 1997/01/23 11:04:24 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -534,6 +534,36 @@ xf86FillRectStippledScreenToScreenColorExpand(
     BoxPtr pBoxInit
 #endif
 );
+
+void
+xf86PolyDashedSegment(
+#if NeedFunctionPrototypes
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		nseg,
+    xSegment	*pSeg
+#endif
+);
+
+void
+xf86PolyDashedLine(
+#if NeedFunctionPrototypes
+    DrawablePtr pDrawable,
+    GCPtr	pGC,
+    int		mode,
+    int		npt,
+    DDXPointPtr pptInit
+#endif
+);
+
+int
+xf86PackDashPattern(
+#if NeedFunctionPrototypes
+    GCPtr	pGC
+#endif
+);
+
+
 
 void
 xf86Bench();

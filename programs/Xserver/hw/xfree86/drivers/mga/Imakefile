@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/Imakefile,v 1.1 1997/03/06 23:15:57 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/Imakefile,v 1.2 1997/03/10 10:12:05 hohndel Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -32,15 +32,15 @@ ObjectFromSpecialSource(mga_accel16, mga_accel, -DPSZ=16)
 ObjectFromSpecialSource(mga_accel24, mga_accel, -DPSZ=24)
 ObjectFromSpecialSource(mga_accel32, mga_accel, -DPSZ=32)
 
-InstallLinkKitNonExecFile(mga.h,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mgabios.h,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mgareg.h,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mgadriver.c,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mga_initacc.c,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mga_accel.c,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mga_map.h,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mga)
-InstallLinkKitNonExecFile(mgaTi3026Curs.c,$(LINKKITDIR)/drivers/mga)
+InstallLinkKitNonExecFile(mga.h,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mgabios.h,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mgareg.h,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mgadriver.c,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mga_initacc.c,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mga_accel.c,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mga_map.h,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/mga)
+InstallLinkKitNonExecFile(mgaTi3026Curs.c,$(LINKKITDIR)/drivers/svga/mga)
 
 #if DoLoadableServer
 InstallDynamicModule(mga_drv.o,$(MODULEDIR))

@@ -599,6 +599,53 @@ Flags
     and parameter that allows the initial error term to be provided
     for software clipped lines.
 
+    ONLY_TWO_BITBLT_DIRECTIONS
+
+    Indicates that ScreenToScreenCopy is only allowed with xdir = ydir
+    (both -1 or both 1). BitBLTs are converted to smaller BitBLTs with
+    supported directions if necessary.
+
+    ONLY_LEFT_TO_RIGHT_BITBLT
+
+    Indicates that ScreenToScreenCopy is only allowed with xdir = 1.
+    BitBLTs are converted to smaller BitBLTs with supported directions
+    if necessary.
+
+    NO_SYNC_AFTER_CPU_COLOR_EXPAND
+
+    Indicates that a Sync() is not required after a CPU-to-screen color
+    expansion operation. Generally, this can be defined if host color
+    expansion data is processed by the graphics chip in the same way as
+    accelerated graphics commands (it uses the command FIFO).
+
+    NO_TEXT_COLOR_EXPANSION
+
+    Do not use color expansion to accelerate text. Define this if
+    color expansion is slower than plain framebuffer for text (which
+    might happen with scanline screen-to-screen color expansion,
+    when there is little video memory bandwidth but the CPU to
+    framebuffer bandwidth is decent).
+
+    LINE_PATTERN_POWER_OF_2_ONLY
+
+    Indicates that hardware dashed lines only support pattern lengths
+    that are a power of two.
+
+    LINE_PATTERN_MSBFIRST_INCREASING
+    LINE_PATTERN_MSBFIRST_DECREASING
+
+    Indicates that the dashed line pattern stored in the LinePatternBuffer
+    progresses from MSB to LSB within each DWORD.  INCREASING patterns
+    are stored with the beginning of the pattern in the first DWORD of
+    the LinePatternBuffer, while DECREASING indicates that the end of the
+    pattern is in the first DWORD in the LinePatternBuffer. INCREASING or
+    DECREASING is only relevant if the pattern is longer than a DWORD. 
+
+PatternFlags
+
+    This is a set of flags that controls some overall parameters for
+    the acceleration code related to the hardware pattern.
+
     HARDWARE_PATTERN_SCREEN_ORIGIN
 
     Indicates that the baseline origin for hardware 8x8 pattern fills
@@ -658,32 +705,10 @@ Flags
     Indicates that the 8x8 pattern data should not be stored linearly
     in video memory, but rather, as a tiled 8x8 pattern in the cache.
 
-    ONLY_TWO_BITBLT_DIRECTIONS
+    HARDWARE_PATTERN_NO_PLANEMASK
 
-    Indicates that ScreenToScreenCopy is only allowed with xdir = ydir
-    (both -1 or both 1). BitBLTs are converted to smaller BitBLTs with
-    supported directions if necessary.
-
-    ONLY_LEFT_TO_RIGHT_BITBLT
-
-    Indicates that ScreenToScreenCopy is only allowed with xdir = 1.
-    BitBLTs are converted to smaller BitBLTs with supported directions
-    if necessary.
-
-    NO_SYNC_AFTER_CPU_COLOR_EXPAND
-
-    Indicates that a Sync() is not required after a CPU-to-screen color
-    expansion operation. Generally, this can be defined if host color
-    expansion data is processed by the graphics chip in the same way as
-    accelerated graphics commands (it uses the command FIFO).
-
-    NO_TEXT_COLOR_EXPANSION
-
-    Do not use color expansion to accelerate text. Define this if
-    color expansion is slower than plain framebuffer for text (which
-    might happen with scanline screen-to-screen color expansion,
-    when there is little video memory bandwidth but the CPU to
-    framebuffer bandwidth is decent).
+    Indicates that the 8x8 pattern doesn't support a write planemask.
+    All bits in a pixel must be written.
 
 Sync()
 
@@ -800,6 +825,38 @@ SetClippingRectangle(x1, y1, x2, y2)
     right-bottom corner. Clipping should be active only for the first
     following line draw (BresenhamLine or TwoPointLine). This function
     is only used when HARDWARE_CLIP_LINE is enabled.
+
+SetupForDashedLine(fg, bg, rop, planemask, size)
+
+    Setup the hardware for accelerated dashed lines. Fg and bg are the
+    foreground and background colors respectively.  If bg is -1, the
+    background is transparent.  Size indicates the length of the color
+    expand pattern in bits (pixels) to be used by the subsequent dashed
+    line command.  By the time this function is called, the bit pattern
+    will already reside in the LinePatternBuffer.  The packing order in
+    the buffer is determined by one of the following flags:
+	LINE_PATTERN_MSBFIRST_INCREASING
+	LINE_PATTERN_MSBFIRST_DECREASING
+    One and only one of these flags must be set.  A LinePatternBuffer must
+    be allocated and its length (in bits) recorded as LinePatternMaxLength
+    in order to use hardware dashed lines.
+
+SubsequentDashedBresenhamLine(x1, y1, octant, err, e1, e2, length, offset)
+
+    Draw a dashed line using Bresenham's algorithm. The first arguments
+    are identical to those of SubsequentBresenhamLine.  The only difference
+    is the offset argument which specifies the offset into the bit pattern
+    the first pixel of this line must start on.
+
+LinePatternMaxLength
+LinePatternBuffer
+
+    LinePatternMaxLength is the maximum length pattern that the hardware
+    can accelerate. Additionally the LINE_PATTERN_POWER_OF_2_ONLY flag 
+    can be set indicating that only patterns with lengths that are a
+    power of two can be accelerated.  The LinePatternBuffer should be
+    allocated by the driver and should be long enough to hold
+    LinePatternMaxLength bits padded out to a DWORD.
 
 ImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
 
@@ -1767,4 +1824,4 @@ Mach64 server provided a baseline for what to implement first.
 
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.12 1997/03/28 09:43:01 hohndel Exp $

@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.8 1997/03/23 07:58:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.9 1997/03/24 13:09:12 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -160,6 +160,9 @@ NEWMMIO_Probe()
       LoadModule("libs3ga968newmmio.a", xf86ModulePath);
 #endif
 #endif
+
+      if (LoaderCheckUnresolved(xf86bpp, LD_RESOLV_NOW))
+	 ErrorF("Warning: Some symbols couldn't be resolved!\n");
 #endif
       return(TRUE);
    } else {

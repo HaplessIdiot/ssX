@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.9 1997/03/10 10:12:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.10 1997/03/27 08:31:40 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -11,21 +11,30 @@
 #define HARDWARE_CLIP_LINE		0x20
 #define USE_TWO_POINT_LINE		0x40
 #define TWO_POINT_LINE_NOT_LAST		0x80
-#define HARDWARE_PATTERN_SCREEN_ORIGIN  0x100
-#define HARDWARE_PATTERN_TRANSPARENCY   0x200
-#define HARDWARE_PATTERN_ALIGN_64	0x400
 #define ONLY_TWO_BITBLT_DIRECTIONS	0x800
 #define ONLY_LEFT_TO_RIGHT_BITBLT	0x1000
 #define NO_SYNC_AFTER_CPU_COLOR_EXPAND  0x2000
 #define TWO_POINT_LINE_ERROR_TERM	0x4000
-#define HARDWARE_PATTERN_MOD_64_OFFSET  0x8000
-#define HARDWARE_PATTERN_PROGRAMMED_BITS	0x10000
-#define HARDWARE_PATTERN_PROGRAMMED_ORIGIN	0x20000
-#define HARDWARE_PATTERN_BIT_ORDER_MSBFIRST	0x40000
-#define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80000
 #define NO_TEXT_COLOR_EXPANSION		0x100000
-#define HARDWARE_PATTERN_NOT_LINEAR	0x200000
 #define HORIZONTAL_TWOPOINTLINE		0x400000
+#define LINE_PATTERN_POWER_OF_2_ONLY		0x800000
+#define LINE_PATTERN_MSBFIRST_INCREASING	0x1000000
+#define LINE_PATTERN_MSBFIRST_DECREASING	0x2000000
+
+/* AccelInfoRec hardware pattern flags */
+
+#define HARDWARE_PATTERN_SCREEN_ORIGIN  0x1
+#define HARDWARE_PATTERN_TRANSPARENCY   0x2
+#define HARDWARE_PATTERN_ALIGN_64	0x4
+#define HARDWARE_PATTERN_MOD_64_OFFSET  0x8
+#define HARDWARE_PATTERN_PROGRAMMED_BITS	0x10
+#define HARDWARE_PATTERN_PROGRAMMED_ORIGIN	0x20
+#define HARDWARE_PATTERN_BIT_ORDER_MSBFIRST	0x40
+#define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80
+#define HARDWARE_PATTERN_NOT_LINEAR	0x100
+#define HARDWARE_PATTERN_NO_PLANEMASK	0x200
+
+
 /* Graphics operation flags */
 
 #define GXCOPY_ONLY		0x1
@@ -249,6 +258,26 @@ typedef struct {
 #endif
     );
     int CopyAreaFlags;
+    void (*PolyLineDashedZeroWidth)(
+#if NeedNestedPrototypes
+        DrawablePtr	pDrawable,
+        GCPtr		pGC,
+        int		mode,
+        int		npt,
+        DDXPointPtr	pptInit
+#endif
+    );
+    int PolyLineDashedZeroWidthFlags;
+    void (*PolySegmentDashedZeroWidth)(
+#if NeedNestedPrototypes
+        DrawablePtr	pDrawable,
+        GCPtr		pGC,
+        int		nseg,
+        xSegment	*pSeg
+#endif
+    );
+    int PolySegmentDashedZeroWidthFlags;
+    
    
 /*
  * These fall-back functions are set during screen initialization.
@@ -870,6 +899,27 @@ typedef struct {
         unsigned long **addrl
 #endif
     );
+    void (*SetupForDashedLine)(
+#if NeedNestedPrototypes
+	int fg,
+	int bg,
+	int rop,
+	unsigned planemask,
+	int size
+#endif
+    );
+    void (*SubsequentDashedBresenhamLine)(
+#if NeedNestedPrototypes
+	int x2,
+	int y1,
+	int octant,
+	int err,
+	int e1,
+	int e2,
+	int length,
+	int offset
+#endif
+    );
     void (*Sync)();
     int Flags;
     int ColorExpandFlags;
@@ -889,6 +939,9 @@ typedef struct {
     ScrnInfoPtr ServerInfoRec;
     int PixmapCacheMemoryStart;
     int PixmapCacheMemoryEnd;
+    int LinePatternMaxLength;
+    void *LinePatternBuffer;
+    int PatternFlags;
 } xf86AccelInfoRecType;
 
 extern xf86AccelInfoRecType xf86AccelInfoRec;

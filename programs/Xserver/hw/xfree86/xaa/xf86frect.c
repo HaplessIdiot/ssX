@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.13 1997/03/10 10:12:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.14 1997/03/27 08:31:26 hohndel Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.13 1997/03/10 10:12:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.14 1997/03/27 08:31:26 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -107,6 +107,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    n;
     int		    xorg, yorg;
     int		    nboxFill;
+    extern CacheInfoPtr xf86CacheInfo;
 
     /* No bullshit please. */
     if (nrectFill <= 0)
@@ -289,7 +290,12 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     case FillTiled:
         if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE)
         && DO_CACHE_PATTERN(nboxFill, pboxClippedBase, pGC->tile.pixmap)
-        && xf86CacheTile(pGC->tile.pixmap)) {
+        && xf86CacheTile(pGC->tile.pixmap)
+	&& (((&xf86CacheInfo[((xf86PixPrivPtr)(pGC->tile.pixmap->
+	       devPrivates[xf86PixmapIndex].ptr))->slot])->flags == 0) 
+        || !(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NO_PLANEMASK)
+	|| (pGC->planemask & xf86AccelInfoRec.FullPlanemask) == 
+	       xf86AccelInfoRec.FullPlanemask)) {
             BoxFill = xf86FillRectTileCached;
         }
         else
@@ -302,7 +308,12 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
         if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE)
         && (!(xf86AccelInfoRec.Flags & DO_NOT_CACHE_STIPPLES))
         && DO_CACHE_PATTERN(nboxFill, pboxClippedBase, pGC->stipple)
-        && xf86CacheStipple(pDrawable, pGC)) {
+        && xf86CacheStipple(pDrawable, pGC)
+	&& (((&xf86CacheInfo[((xf86PixPrivPtr)(pGC->stipple->
+	       devPrivates[xf86PixmapIndex].ptr))->slot])->flags == 0) 
+        || !(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NO_PLANEMASK)
+	|| (pGC->planemask & xf86AccelInfoRec.FullPlanemask) == 
+	       xf86AccelInfoRec.FullPlanemask)) {
             BoxFill = xf86FillRectTileCached;
         }
         else
@@ -338,7 +349,12 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
         if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE)
         && (!(xf86AccelInfoRec.Flags & DO_NOT_CACHE_STIPPLES))
         && DO_CACHE_PATTERN(nboxFill, pboxClippedBase, pGC->stipple)
-        && xf86CacheStipple(pDrawable, pGC)) {
+        && xf86CacheStipple(pDrawable, pGC)
+	&& (((&xf86CacheInfo[((xf86PixPrivPtr)(pGC->stipple->
+	       devPrivates[xf86PixmapIndex].ptr))->slot])->flags == 0) 
+        || !(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NO_PLANEMASK)
+	|| (pGC->planemask & xf86AccelInfoRec.FullPlanemask) == 
+	       xf86AccelInfoRec.FullPlanemask)) {
             BoxFill = xf86FillRectTileCached;
         }
         else
@@ -535,7 +551,7 @@ static void RotatePattern(pattern, xoffset, yoffset)
     unsigned char old_pattern[8];
     y = yoffset;
     memcpy(old_pattern, pattern, 8);
-    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
+    if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
         pattern[0] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
         pattern[1] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
@@ -643,7 +659,8 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 
 	    patternx = pci->x;
 	    patterny = pci->y;
-	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+	    if (xf86AccelInfoRec.PatternFlags
+	    & HARDWARE_PATTERN_SCREEN_ORIGIN) {
 	        /*
  	         * Since we have horizontally rotated copies on consecutive
 	         * scanlines, rotation is very simple.
@@ -677,10 +694,10 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
                 rectHeight = rectY2 - rectY1;
 
 		if ((rectWidth > 0) && (rectHeight > 0)) {
-	            if (xf86AccelInfoRec.Flags &
+	            if (xf86AccelInfoRec.PatternFlags &
 	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
 	                /* Special case: origin offset is passed. */
-                        if (xf86AccelInfoRec.Flags
+                        if (xf86AccelInfoRec.PatternFlags
                         & HARDWARE_PATTERN_SCREEN_ORIGIN)
                              xf86AccelInfoRec.SubsequentFill8x8Pattern(
                                  (- adjLeftX) & 7,
@@ -695,14 +712,14 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
                                 rectHeight);
                     }
 		    else
-		    if (xf86AccelInfoRec.Flags
+		    if (xf86AccelInfoRec.PatternFlags
 		    & HARDWARE_PATTERN_SCREEN_ORIGIN)
 		        /* patternx, patterny are ignored in this case. */
 		        xf86AccelInfoRec.SubsequentFill8x8Pattern(
 		            patternx, patterny, rectX1, rectY1, rectWidth,
 		            rectHeight);
 		    else
-		    if (xf86AccelInfoRec.Flags
+		    if (xf86AccelInfoRec.PatternFlags
 		    & HARDWARE_PATTERN_NOT_LINEAR)
 		        xf86AccelInfoRec.SubsequentFill8x8Pattern(
 		            patternx + ((- adjLeftX) & 7),
@@ -731,12 +748,13 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
             adjLeftX = ((pGC->patOrg.x + drawableXOrg) & 0x07);
             adjTopY = ((pGC->patOrg.y + drawableYOrg) & 0x07);
 
-	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) {
+	    if (xf86AccelInfoRec.PatternFlags
+	    & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	        /*
 	         * pattern data is passed in function arguments.
 	         */
-	        if (xf86AccelInfoRec.Flags &
-	        HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
+	        if (xf86AccelInfoRec.PatternFlags
+	        & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
 	            /*
 	             * This is the sweet and easy case.
 	             * Actually, if screen origin is also set,
@@ -748,7 +766,7 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	            patterny = pci->pattern1;
 	        }
 	        else
-	            if (xf86AccelInfoRec.Flags
+	            if (xf86AccelInfoRec.PatternFlags
 	            & HARDWARE_PATTERN_SCREEN_ORIGIN) {
 	                /*
 	                 * Programmed bits but no programmed origin,
@@ -774,8 +792,9 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
                  */
 	        patternx = pci->x * xf86AccelInfoRec.BitsPerPixel;
 	        patterny = pci->y;
-	        if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) 
-		    && !(xf86AccelInfoRec.Flags & 
+	        if ((xf86AccelInfoRec.PatternFlags 
+		    & HARDWARE_PATTERN_SCREEN_ORIGIN) 
+		    && !(xf86AccelInfoRec.PatternFlags & 
 			 HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
 	            /*
  	             * Since we have horizontally rotated copies on consecutive
@@ -818,10 +837,10 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
                 rectHeight = rectY2 - rectY1;
 
 		if ((rectWidth > 0) && (rectHeight > 0)) {
-	            if (xf86AccelInfoRec.Flags &
+	            if (xf86AccelInfoRec.PatternFlags &
 	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
 	                /* Special case: origin offset is passed. */
-	                if (xf86AccelInfoRec.Flags
+	                if (xf86AccelInfoRec.PatternFlags
 	                & HARDWARE_PATTERN_SCREEN_ORIGIN)
 		            xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
 		                (- adjLeftX) & 7,
@@ -836,14 +855,14 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 		                rectHeight);
 	            }
 	            else
-		    if (xf86AccelInfoRec.Flags
+		    if (xf86AccelInfoRec.PatternFlags
 		    & HARDWARE_PATTERN_SCREEN_ORIGIN)
 		        /* patternx, patterny are ignored in this case. */
 		        xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
 		            patternx, patterny, rectX1, rectY1, rectWidth,
 		            rectHeight);
 		    else
-	            if (xf86AccelInfoRec.Flags
+	            if (xf86AccelInfoRec.PatternFlags
 	            & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	                /*
 	                 * Programmed bits but no programmed origin,

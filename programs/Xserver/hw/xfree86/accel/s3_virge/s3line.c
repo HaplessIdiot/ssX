@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.10 1996/12/27 07:02:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.11 1997/01/14 22:17:23 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -141,7 +141,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 
    s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
 
-   if (!xf86VTSema || (s3_rop == -1)) {
+   if (!xf86VTSema || (s3_rop == -1) || (pGC->planemask & s3BppPMask) != s3BppPMask) {
       if (xf86VTSema) WaitIdleEmpty();
 #ifndef POLYSEGMENT
       switch (s3InfoRec.bitsPerPixel) {
@@ -527,9 +527,9 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		  if (y1 > y2) {
 		     xss = (new_x1 << 20) + xfixup;
 #ifndef POLYSEGMENT
-		     if (new_x2 != x2)
+		     if (new_x2 != x2 || new_y2 != y2)
 #else /* POLYSEGMENT */
-		     if (new_x2 != x2 || pGC->capStyle != CapNotLast)
+		     if (new_x2 != x2 || new_y2 != y2 || pGC->capStyle != CapNotLast)
 #endif /* POLYSEGMENT */
 			xe = new_x2;
 		     else if (xdir)
@@ -538,23 +538,21 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 			xe = new_x2 + 1;
 		     ys = new_y1;
 		     xs = new_x1;
-		     xofs = x1 - new_x1;
 		     yofs = y1 - new_y1;
 		  } else {
 		     ys = new_y2;
 		     xe = new_x1;
 		     xss = (new_x2 << 20) + xfixup;
 #ifndef POLYSEGMENT
-		     if (new_x2 != x2)
+		     if (new_x2 != x2 || new_y2 != y2)
 #else /* POLYSEGMENT */
-		     if (new_x2 != x2 || pGC->capStyle != CapNotLast)
+		     if (new_x2 != x2 || new_y2 != y2 || pGC->capStyle != CapNotLast)
 #endif /* POLYSEGMENT */
 			xs = new_x2;
 		     else if (xdir)
 			xs = new_x2 + 1;
 		     else
 			xs = new_x2 - 1;
-		     xofs = x2 - new_x2;
 		     yofs = y2 - new_y2;
 		  }		  
 

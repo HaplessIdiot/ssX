@@ -3,17 +3,17 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:39:23 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.15 1997/03/11 13:08:08 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.16 1997/03/17 07:18:25 hohndel Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
 #if XF98GANBWAPServer || XF98PEGCServer || XF98NKVNECServer || \
     XF98WABSServer    || XF98WABEPServer  || XF98WSNAServer   || \
-    XF98TGUIServer || \
+    XF98TGUIServer    || XF98EGCServer || \
     XF98GANBWAPModule || XF98PEGCModule || XF98NKVNECModule || \
     XF98WABSModule    || XF98WABEPModule  || XF98WSNAModule   || \
-    XF98TGUIModule
+    XF98TGUIModule    || XF98EGCModule
 VGA256SCREEN = vga256
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.123 1997/03/07 00:29:19 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.124 1997/03/22 09:35:19 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1861,6 +1861,7 @@ configDeviceSection()
   devp->s3BlankDelay = -1;
   devp->DCConfig = NULL;
   devp->DCOptions = NULL;
+  devp->MemClk = 0;
 
   while ((token = xf86GetToken(DeviceTab)) != ENDSECTION) {
     devp->DCConfig = xf86DCSaveLine(devp->DCConfig, token);
@@ -2107,6 +2108,11 @@ configDeviceSection()
     case S3MCLK:
       if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("MCLK value in MHz expected");
       devp->s3MClk = (int)(val.realnum * 1000.0 + 0.5);
+      break;
+
+    case MEMCLOCK:
+      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Memory Clock value in MHz expected");
+      devp->MemClk = (int)(val.realnum * 1000.0 + 0.5);
       break;
 
     case CHIPID:
@@ -2624,7 +2630,7 @@ configDynamicModuleSection()
      * functions not needed for the current color depth. For now, we just 
      * issue a warning while we are working on this code
      */
-    if( LoaderCheckUnresolved( xf86bpp ) )
+    if( LoaderCheckUnresolved( xf86bpp, LD_RESOLV_IFDONE ) )
     {
         /*
 	 * leave as a warning for now
@@ -2930,6 +2936,7 @@ configScreenSection()
           screen->s3Madjust = device_list[i].s3Madjust;
           screen->s3Nadjust = device_list[i].s3Nadjust;
 	  screen->s3MClk = device_list[i].s3MClk;
+	  screen->MemClk = device_list[i].MemClk;
 	  screen->chipID = device_list[i].chipID;
 	  screen->chipRev = device_list[i].chipRev;
 	  screen->s3RefClk = device_list[i].s3RefClk;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.11 1997/03/10 10:12:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.12 1997/03/27 08:31:33 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -426,12 +426,12 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
         xf86memcpy(buf + nh * 8 * bytespp, buf, nh * 8 * bytespp);
         nh *= 2;
     }
-    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
+    if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
     	/*
     	 * This is easy. Just one copy required. Also consider alignment
     	 * constraints.
     	 */
-    	if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64) {
+    	if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_64) {
     	    /*
     	     * We have a 128 pixel wide cache slot, so there is a horizontal
     	     * offset into the cache slot where we can store the 64-pixel
@@ -584,14 +584,16 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
     for (i = 0; i < 8; i++) {
         /* Write 8 vertically rotated versions. */
         int j;
-        if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
+        if (xf86AccelInfoRec.PatternFlags 
+        & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
             int k;
             for (k = 0; k < 8; k++)
                 buf[k] = byte_reversed[pattern[k]];
         }
         else
             xf86memcpy(buf, pattern, 8);
-        if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
+        if (xf86AccelInfoRec.PatternFlags
+        & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
             /* Special case; we need just one copy. */
             xf86AccelInfoRec.ImageWrite(x, y,
                 64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, 1, buf,
@@ -610,7 +612,8 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
         if (i < 7) {
             /* Rotate. */
             int k;
-            if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST)
+            if (xf86AccelInfoRec.PatternFlags
+            & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST)
                 for (k = 0; k < 8; k++)
                     pattern[k] = (pattern[k] >> 1) | (pattern[k] << 7);
             else
@@ -881,7 +884,8 @@ static void DoCacheTile(pix)
 	     * below, and if there is a pattern origin offset, we'll
 	     * only write one version).
 	     */
-	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) {
+	    if (xf86AccelInfoRec.PatternFlags
+            & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	        /*
 	         * Easy, just put the 8x8 stipple data into two ints.
 	         * No need to use the pixmap cache slot at all.
@@ -893,7 +897,7 @@ static void DoCacheTile(pix)
                 /*
                  * and reverse when msb-first [rk] 
                  */ 
-                if (xf86AccelInfoRec.Flags & 
+                if (xf86AccelInfoRec.PatternFlags & 
                            HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
                     int k;
                     for (k = 0; k < 8; k++)
@@ -912,15 +916,15 @@ static void DoCacheTile(pix)
 
     /* See if we can use any hardware pattern feature. */
     if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
-    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64)
-    || (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
+    (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_64)
+    || (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
     /*
      * As long as cache slots are positioned at multiple-of-128 x-coords,
      * 64 pixel aligment requirement for 8x8 pattern can be guaranteed
      * for certain values of FramebufferWidth (such as 1024, 1280).
      * This only helps when the chip uses HARDWARE_PATTERN_MOD_64_OFFSET.
      */
-    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET)
+    (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MOD_64_OFFSET)
     || (xf86AccelInfoRec.FramebufferWidth & 63) == 0)
     )
         /*
@@ -936,7 +940,7 @@ static void DoCacheTile(pix)
              * The height is 1, 2, 4, or 8.
              */
             pci->flags = 1;
-	    if(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_NOT_LINEAR)
+	    if(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR)
 		goto REGULAR_TILE;
 
             Write8x8Pattern(pci,
@@ -1070,7 +1074,7 @@ static int DoCacheStipple(slot, pDrawable, pGC)
     check_reducible = TRUE;
     /* See if we can use a mono (color-expanded) pattern. */
     if (xf86AccelInfoRec.Subsequent8x8PatternColorExpand
-    && ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MONO_TRANSPARENCY)
+    && ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MONO_TRANSPARENCY)
     || pGC->fillStyle == FillOpaqueStippled))
         if (check_reducible = ReduceStippleToSize8(pci, pix)) {
             /*
@@ -1081,7 +1085,8 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	     * versions (unless we have special support as checked for
 	     * below).
 	     */
-	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) {
+	    if (xf86AccelInfoRec.PatternFlags
+            & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	        /*
 	         * Easy, just put the 8x8 stipple data into two ints.
 	         * No need to use the pixmap cache slot at all.
@@ -1092,7 +1097,7 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	        /* 
 	         * and reverse when msb-first [rk] 
 	         */ 
-	        if (xf86AccelInfoRec.Flags & 
+	        if (xf86AccelInfoRec.PatternFlags & 
 	                   HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
 	            int k;
 	            for (k = 0; k < 8; k++)
@@ -1118,11 +1123,11 @@ static int DoCacheStipple(slot, pDrawable, pGC)
         }
 
     if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
-    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64)
-    || (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
-    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET)
+    (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_64)
+    || (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) &&
+    (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MOD_64_OFFSET)
     || (xf86AccelInfoRec.FramebufferWidth & 63) == 0) &&
-    ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_TRANSPARENCY)
+    ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_TRANSPARENCY)
     || pGC->fillStyle == FillOpaqueStippled) &&
     xf86AccelInfoRec.BitsPerPixel != 24)
         /*
@@ -1143,7 +1148,7 @@ static int DoCacheStipple(slot, pDrawable, pGC)
              * using CopyPlane1ToN, and then call Write8x8Pattern.
              */
             pci->flags = 1;
-	    if(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_NOT_LINEAR)
+	    if(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR)
 		goto REGULAR_STIPPLE;
 
 	    pScreen = screenInfo.screens[xf86ScreenIndex];

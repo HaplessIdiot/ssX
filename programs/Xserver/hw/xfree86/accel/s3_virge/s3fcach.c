@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.5 1997/01/14 22:17:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.6 1997/03/10 10:11:47 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -238,7 +238,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   */
                   WaitQueue(6);
                   SETB_CLIP_L_R(0, (s3DisplayWidth - 1));
-                  SETB_CLIP_L_R(0, s3ScissB);
+                  SETB_CLIP_T_B(0, s3ScissB);
                   SETB_RSRC_XY(0,0);
                   SETB_RDEST_XY(0,0);
                   SETB_RWIDTH_HEIGHT(0,1);

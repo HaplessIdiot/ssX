@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.2 1997/03/03 15:55:27 hohndel Exp $ */
 
 
 
@@ -56,7 +56,7 @@ void
 );
 int LoaderCheckUnresolved(
 #if NeedFunctionPrototypes
-int
+int, int
 #endif
 );
 int LoaderDefaultFunc(

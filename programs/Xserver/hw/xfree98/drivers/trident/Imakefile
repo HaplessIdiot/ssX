@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/trident/Imakefile,v 1.2 1997/03/11 14:35:26 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/trident/Imakefile,v 1.3 1997/03/17 07:18:43 hohndel Exp $
 
 
 #define IHaveModules
@@ -59,22 +59,22 @@ ObjectFromSpecialSource(trident_bank,bankc,NullParameter)
 ObjectFromSpecialSource(tguimaccel, tgui_accel, -DTRIDENT_MMIO)
 ObjectFromSpecialSource(tguimoldacl, tgui_oldacl, -DTRIDENT_MMIO)
 
-InstallLinkKitNonExecFile(trident_driver.c,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(trident_driver.h,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(trident_driver.c,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(trident_driver.h,$(XF98LINKKITDIR)/drivers98/svga/trident)
 #ifdef i386Architecture
-InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers98/svga/trident)
 #else
-InstallLinkKitNonExecFile(bankc.c,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(bankc.c,$(XF98LINKKITDIR)/drivers98/svga/trident)
 #endif
-InstallLinkKitNonExecFile(tgui_curs.c,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(tgui_accel.c,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(tgui_oldacl.c,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(tgui_drv.h,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(tgui_ger.h,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(tgui_mmio.h,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(pc98_tgui.h,$(XF98LINKKITDIR)/drivers98/trident)
-InstallLinkKitNonExecFile(pc98_tgui.c,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(tgui_curs.c,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(tgui_accel.c,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(tgui_oldacl.c,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(tgui_drv.h,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(tgui_ger.h,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(tgui_mmio.h,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(pc98_tgui.h,$(XF98LINKKITDIR)/drivers98/svga/trident)
+InstallLinkKitNonExecFile(pc98_tgui.c,$(XF98LINKKITDIR)/drivers98/svga/trident)
 
 #if DoLoadableServer
 #ifndef DontInstallPC98Version

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.7 1997/01/27 06:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.8 1997/03/27 08:31:27 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -160,33 +160,58 @@ void xf86GCNewLine(pGC, pDrawable, new_cfb_line)
 
     } /* endif new_cfb_line */
 
-    if (xf86GCInfoRec.PolyLineSolidZeroWidth &&
-        pGC->lineStyle == LineSolid &&
-        pGC->fillStyle == FillSolid &&
-        pGC->lineWidth == 0 &&
+    if((pGC->fillStyle == FillSolid) && (pGC->lineWidth == 0)) {
+      if(pGC->lineStyle == LineSolid) {
+  	if(xf86GCInfoRec.PolyLineSolidZeroWidth &&
 #if !defined(NO_ONE_RECT)
-	(!(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & ONE_RECT_CLIPPING)
-	|| devPriv->oneRect) &&
+	  (!(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & ONE_RECT_CLIPPING)
+	  || devPriv->oneRect) &&
 #endif
-        CHECKPLANEMASK(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
-        CHECKROP(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
-        CHECKRGBEQUAL(xf86GCInfoRec.PolyLineSolidZeroWidthFlags))
-        PolyLineFunc = xf86GCInfoRec.PolyLineSolidZeroWidth;
+          CHECKPLANEMASK(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
+          CHECKROP(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
+          CHECKRGBEQUAL(xf86GCInfoRec.PolyLineSolidZeroWidthFlags))
+              PolyLineFunc = xf86GCInfoRec.PolyLineSolidZeroWidth;
 
-    if (xf86GCInfoRec.PolySegmentSolidZeroWidth &&
-        pGC->lineStyle == LineSolid &&
-        pGC->fillStyle == FillSolid &&
-        pGC->lineWidth == 0 &&
+
+        if (xf86GCInfoRec.PolySegmentSolidZeroWidth &&
 #if !defined(NO_ONE_RECT)
-	(!(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & ONE_RECT_CLIPPING)
-	|| devPriv->oneRect) &&
+	  (!(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & ONE_RECT_CLIPPING)
+	  || devPriv->oneRect) &&
 #endif
-        CHECKPLANEMASK(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags) &&
-        CHECKROP(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags) &&
-        CHECKRGBEQUAL(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags) &&
-        (pGC->capStyle != CapNotLast || 
-        !(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags & NO_CAP_NOT_LAST)))
-        PolySegmentFunc = xf86GCInfoRec.PolySegmentSolidZeroWidth;
+          CHECKPLANEMASK(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags) &&
+          CHECKROP(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags) &&
+          CHECKRGBEQUAL(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags) &&
+          (pGC->capStyle != CapNotLast || 
+          !(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags & NO_CAP_NOT_LAST)))
+        	PolySegmentFunc = xf86GCInfoRec.PolySegmentSolidZeroWidth;
+
+     } else {
+ 	if(xf86GCInfoRec.PolyLineDashedZeroWidth &&
+#if !defined(NO_ONE_RECT)
+	   (!(xf86GCInfoRec.PolyLineDashedZeroWidthFlags & ONE_RECT_CLIPPING)
+	   || devPriv->oneRect) &&
+#endif
+           CHECKPLANEMASK(xf86GCInfoRec.PolyLineDashedZeroWidthFlags) &&
+           CHECKROP(xf86GCInfoRec.PolyLineDashedZeroWidthFlags) &&
+           CHECKRGBEQUAL(xf86GCInfoRec.PolyLineDashedZeroWidthFlags))
+               PolyLineFunc = xf86GCInfoRec.PolyLineDashedZeroWidth;
+
+
+        if (xf86GCInfoRec.PolySegmentDashedZeroWidth &&
+#if !defined(NO_ONE_RECT)
+	  (!(xf86GCInfoRec.PolySegmentDashedZeroWidthFlags & ONE_RECT_CLIPPING)
+	  || devPriv->oneRect) &&
+#endif
+          CHECKPLANEMASK(xf86GCInfoRec.PolySegmentDashedZeroWidthFlags) &&
+          CHECKROP(xf86GCInfoRec.PolySegmentDashedZeroWidthFlags) &&
+          CHECKRGBEQUAL(xf86GCInfoRec.PolySegmentDashedZeroWidthFlags) &&
+          (pGC->capStyle != CapNotLast || 
+          !(xf86GCInfoRec.PolySegmentDashedZeroWidthFlags & NO_CAP_NOT_LAST)))
+        	PolySegmentFunc = xf86GCInfoRec.PolySegmentDashedZeroWidth;
+
+
+      }
+    }
 
     pGC->ops->Polylines = PolyLineFunc;
     pGC->ops->PolySegment = PolySegmentFunc;

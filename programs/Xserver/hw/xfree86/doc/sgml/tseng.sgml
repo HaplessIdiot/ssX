@@ -109,12 +109,17 @@ following in the Device section of your
 
 Hardware cursor is supported in all color depths. Due to a hardware
 limitation in the ET6000, only a limited set of colors is supported (2
-significant bits per color component). This may cause some cursor color
-errors, in which case the only solution is not to use the hardware cursor at
-all. The hardware cursor can be enabled using
+significant bits per color component). This may cause some (small) cursor
+color errors. If absolute cursor color accuracy is required, the hardware
+cursor should not be enabled. However, in most applications, this will not
+be a problem. The hardware cursor can be enabled using
 <verb>
   Option "hw_cursor"
 </verb>
+
+Doublescan modes currently don't work with the hardware cursor: only the top
+half of the cursor is visible. If you want to use DoubleSCan modes (320x200
+is a popular one), then do not enable the hardware cursor.
 
 
 On some systems, acceleration may cause occasional font corruption. Until
@@ -671,7 +676,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.18 1997/03/17 07:18:01 hohndel Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.19 1997/03/27 08:30:37 hohndel Exp $ 
 
 
 

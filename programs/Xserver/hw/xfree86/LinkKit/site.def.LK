@@ -4,7 +4,7 @@ XCOMM $XConsortium: site.def.LK /main/12 1996/10/28 04:23:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.27 1997/02/16 10:27:02 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.28 1997/03/17 07:17:56 hohndel Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -83,23 +83,21 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.27 1997/0
  */
 
 /*
+ * Build a server that dynamically loads the modules by setting
+ * this to YES.
+ *
+#define DoLoadableServer	YES
+ */
+
+/*
  * Server configuration parameters
  */
 
+/* The Loadable Server */
+#define XF86LoaderServer        NO
+
 /* The SVGA colour server */
 #define XF86SVGAServer		YES
-
-/* The 16-colour VGA server */
-#define XF86VGA16Server		YES
-
-/* Dual headed 16-colour VGA + mono server */
-#define XF86VGA16DualServer	YES
-
-/* The VGA mono server */
-#define XF86MonoServer		YES
-
-/* Dual headed VGA mono server */
-#define XF86MonoDualServer	YES
 
 /* The S3 servers */
 #define XF86S3Server		YES
@@ -138,6 +136,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.27 1997/0
 /*
  * PC98 X servers
  *
+#define XF98LoaderServer        YES
+
 #define XF98EGCServer		YES
 #define XF98GANBWAPServer	YES
 #define XF98PEGCServer		YES
@@ -161,19 +161,13 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.27 1997/0
 #define ServerToInstall	XF86_S3
  */
 
-#define XF86SvgaDrivers		nv et4000 et3000 pvga1 gvga ati sis tvga8900 \
-				cirrus ncr77c22 mga oak al2101 ali cl64xx \
-				video7 chips ark mx realtek apm generic
-
-#define XF86Vga16Drivers	et4000 et3000 ncr77c22 ati sis tvga8900 oak \
-				cl64xx generic 
-
-#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati sis tvga8900 \
-				cirrus ncr77c22 oak cl64xx generic
-
-#define XF86MonoDrivers		hgc1280 sigma apollo hercules
-
-#define XF86W32Drivers		et4000w32
+/*
+#define XF86CardDrivers		nv tseng et3000 wd gvga ati sis trident \
+                                cirrus ncr compaq mga oak al2101 ali \
+                                cl64xx video7 chips ark mx realtek apm s3 s3v \
+                                apollo hercules hgc1280 sigma \
+                                vga
+*/
 
 /*
  * If you only run the X server under xdm the X servers don't need to be

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/10/25 15:41:54 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/ga968/Imakefile,v 3.2 1996/12/24 02:26:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/ga968/Imakefile,v 3.3 1996/12/27 07:07:00 dawes Exp $
 
 
 
@@ -80,6 +80,8 @@ InstallLinkKitNamedLibrary(xf86_hw,xf86_hwga968,$(XF98LINKKITDIR)/lib98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(xf86_HWlib.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_PCI.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(IBMRGB.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(Ti302X.h,$(XF98LINKKITDIR)/include)
 #endif
 
 DependTarget()

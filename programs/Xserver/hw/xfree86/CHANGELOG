@@ -1,3 +1,49 @@
+XFree86 3.2As (09 April 1997)
+ 657. Fix Bresenham line bug in trident/9440 driver (#257, Alan Hourihane).
+ 656. Add trapezoid acceleration to tseng driver (disabled), disable W32 hw
+      cursor, remove redundant warning message about "Wrong Cursor Color Tried"
+      (#256, Koen Gadeyne).
+ 655. Add mga dashed lines (#255, Andrew Vanderstock).
+ 654. Add more flexible way of loading and initializing extensions (#253,
+      Matthieu Herrb).
+ 653. Fix bugs in the S3V server concerning rectfill with scan line width of 
+      2048 and with lines (#251,252, Harald Koenig).
+ 652. Add option "set_memclk" (#249, Sebastien Marineau).
+ 651. Fix hangs in svga/s3v server, fix some bugs, add planemask support to
+      most accelerated primitives and start accelerated lines (#249, Sebastien 
+      Marineau).
+ 650. Fix XAA to force ROP to GXcopy for XDrawImageString (#249, Sebastien
+      Marineau).
+ 649. Change "unsigned long" to CARD32 in dashed line support (#248,
+      Mark Vojkovich).
+ 648. Add Matrox Mystique to vgaPCI.h (Guy Desbief).
+ 647. Fix building XF98_EGC (#247, Takaaki Nomura).
+ 646. Fix some problems with delayed syncing in the C&T driver (#245, David
+      Bateman).
+ 645. Add dashed line support for SVGA/S3 (#243, Mark Vojkovich).
+ 644. Add dashed line support for XAA (#242,244, Mark Vojkovich).
+ 643. Fix some fill problems in S3V server (#241, Harald Koenig).
+ 642. Several fixes to C&T driver that rearrange code in XAA FillRect code to
+      work around bug in HW cursor, add ImageWrite function, use the 8x8 
+      pattern where possible to simulate a planemask, add preliminary support 
+      for vga2 and vga16 and temporary fix for Syncing problems in new XAA code
+      (#239, David Bateman).
+ 641. Further LinkKit changes (#238, Takaaki Nomura).
+ 640. Small fix for LinkKit (#237, David Bateman).
+ 639. Fix twm double-frees (#236, John Hawkinson).
+ 638. Include missing patch for change 601.
+ 637. Update Compaq vgaVideoChipRec (1bpp,4bpp,15bpp,32bpp) (#234, Gerry Toll).
+ 636. Fix Linkkit (#233, Takaaki Nomura).
+ 635. Fix broken console restore for 4bpp driver (#232, Marc Aurele La France).
+ 634. Add S3 chipset override code to SVGA/S3 server (#231, Harald Koenig).
+ 633. Start converting XF86Setup to use the loader (#230, Joe Moss).
+ 632. Correct DCLK limits for S3V server (#229, Harald Koenig).
+ 631. Add STG1702 to SuperProbe (#227, Stuart Lamble).
+ 630. Small fix for syncing in XAA color expansion (#225, Mark Vojkovich).
+ 629. Resync PC98 server (#224, Takaaki Nomura).
+ 628. Add stg1702 auto probing to the tseng driver (#223,#226, Stuart Lamble).
+ 627. Fix 4bpp for PC98 (#222, Takaaki Nomura).
+
 XFree86 3.2Ar (28 March 1997)
  626. Remove the old driver subdirectories.
  625. Fix setting of CRTC[22] on VGA compatibles (#220, Marc Aurele La France).
@@ -4259,4 +4305,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.440 1997/03/27 18:37:51 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.441 1997/03/28 09:03:01 hohndel Exp $

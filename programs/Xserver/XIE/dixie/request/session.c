@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.5 1997/02/25 14:19:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.6 1997/02/28 08:18:25 hohndel Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -95,6 +95,7 @@ terms and conditions:
 
 #ifdef XFree86LOADER
 #include "xf86.h"
+#include "xf86_ldext.h"
 #endif
 
 /* function declarations */
@@ -376,6 +377,12 @@ unsigned long server_version;
 /*
  * Entry point for the new loading code that can load .a files
  */
+ExtensionModule XieExt =
+{
+    XieInit,
+    xieExtName,
+    NULL
+};
 
 void
 libxieModuleInit(data,magic)
@@ -387,8 +394,8 @@ libxieModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-	*magic = MAGIC_XIE_INIT;
-        * data = (pointer) XieInit;
+	*magic = MAGIC_LOAD_EXTENSION;
+        * data = (pointer) &XieExt;
 	break;
     default:
         * magic= MAGIC_DONE;

@@ -9,10 +9,11 @@ What works:
   8bpp pixmux on virge seems to work, as do interlace modes.
 - VT switching seems to work well, no corruption for 8, 16 and 24bpp. This
   has only been tested on OS/2.
-- Basic acceleration: ScreenToScreen copy, solid rectangle fills, CPU to
+- Acceleration: ScreenToScreen copy, solid rectangle fills, CPU to
   screen color expansion, 8x8 mono and color fills. Currently, this appears
   to be substantially faster than the accel server at least for 
-  color expansions. Note that the 8x8 color fills have not been tested.
+  color expansions. These functions also include planemask support, and there
+  is transparency for 8x8 mono fills. Work has started on accelerating lines. 
 
 What does not work for sure:
 - No VLB support for now (were there any VLB virge cards produced??)
@@ -29,10 +30,8 @@ What probably does not work:
 - Many other things which I cannot think of now :-)
 
 What is in the works:
-- Add transparency to 8x8 mono/color fills, and planemask support.
-- Maybe add accelerated lines and polygons, if the DDA issue is resolved.
-- Add accelerated spans, ImageWrite. Also hook some functions at a higher level
-  so that we can use the hardware clipping (eg. rectangles).
+- FIx accelerated lines and polygons.
+- Add ImageWrite, also maybe use PCI DMA when doing fills.
 
 - Fixing the bugs :-)
 
@@ -40,12 +39,14 @@ XCONFIG options:
 - "pci_burst_off" will disable the PCI busrt mode
 - "slow_edodram" will switch the ViRGE to 2-cycle edo mode
 - "fpm_vram" will switch the ViRGE/VX to fast page mode vram mode
+- "fast_dram" increases the mclk value. This is still not finalized.
 - "noaccel" turns off all acceleration
+- "set_memclk value" sets the video memory clock rate to 'value' (in MHz)
 
 Sebastien Marineau 
-26/03/97
+04/04/97
 
 
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/README,v 1.2 1997/03/28 09:42:48 hohndel Exp $

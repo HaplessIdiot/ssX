@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_oldacl.c,v 3.1 1997/02/10 16:41:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_oldacl.c,v 1.1 1997/03/06 23:17:05 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -83,12 +83,11 @@ void OLDTGUISubsequent8x8PatternColorExpand();
  */
 void OLDTGUIAccelInit() {
 
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS |
-				HARDWARE_PATTERN_TRANSPARENCY |
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
 				HARDWARE_PATTERN_MONO_TRANSPARENCY |
-				HARDWARE_PATTERN_SCREEN_ORIGIN |
-				PIXMAP_CACHE;
+				HARDWARE_PATTERN_SCREEN_ORIGIN;
 
     xf86AccelInfoRec.Sync = OLDTGUISync;
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:29:11 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cl64xx/Imakefile,v 3.7 1997/02/25 14:22:07 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cl64xx/Imakefile,v 1.1 1997/03/06 23:15:39 hohndel Exp $
 
 
 
@@ -31,9 +31,9 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(cl64xx_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(cl_driver.c,$(LINKKITDIR)/drivers/cl64xx)
-InstallLinkKitNonExecFile(cl_bank.s,$(LINKKITDIR)/drivers/cl64xx)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/cl64xx)
+InstallLinkKitNonExecFile(cl_driver.c,$(LINKKITDIR)/drivers/svga/cl64xx)
+InstallLinkKitNonExecFile(cl_bank.s,$(LINKKITDIR)/drivers/svga/cl64xx)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/cl64xx)
 
 #if DoLoadableServer
 InstallDynamicModule(cl64xx_drv.o,$(MODULEDIR))

@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/et3000/Imakefile,v 1.1 1997/03/06 23:15:44 hohndel Exp $
 
 
 
@@ -26,9 +26,9 @@ NormalRelocatableTarget(et3_drv,$(OBJS))
 
 ObjectFromSpecialAsmSource(et3_bank,bank,NullParameter)
 
-InstallLinkKitNonExecFile(et3_driver.c,$(LINKKITDIR)/drivers/et3000)
-InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/et3000)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/et3000)
+InstallLinkKitNonExecFile(et3_driver.c,$(LINKKITDIR)/drivers/svga/et3000)
+InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/svga/et3000)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/et3000)
 
 #if DoLoadableServer
 InstallDynamicModule(et3_drv.o,$(MODULEDIR))

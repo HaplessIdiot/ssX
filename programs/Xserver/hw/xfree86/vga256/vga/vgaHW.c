@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.56tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.57 1997/03/27 18:40:18 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -567,11 +567,11 @@ vgaHWRestore(restore)
      */
     tmp = inb(vgaIOBase + 0x0A); /* reset flip-flop */
     outb(0x3C0,0x30); outb(0x3C0, 0x01); /* graphics mode */
-#ifdef XF86VGA16
-    outw(0x3CE,0x0003); /* GJA - don't rotate, write unmodified */
-    outw(0x3CE,0xFF08); /* GJA - write all bits in a byte */
-    outw(0x3CE,0x0001); /* GJA - all planes come from CPU */
-#endif
+    if (xf86bpp == 4) {
+      outw(0x3CE,0x0003); /* GJA - don't rotate, write unmodified */
+      outw(0x3CE,0xFF08); /* GJA - write all bits in a byte */
+      outw(0x3CE,0x0001); /* GJA - all planes come from CPU */
+    }
 #ifdef SAVE_FONT1
     if (restore->FontInfo1) {
       outw(0x3C4, 0x0402);    /* write to plane 2 */

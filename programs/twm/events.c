@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.187 94/04/17 20:38:07 rws Exp $
+ * $XConsortium: events.c /main/144 1996/12/02 08:19:17 swick $
  *
  * twm event handling
  *
@@ -366,8 +366,11 @@ HandleEvents()
 	    InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
 	}
 	WindowMoved = FALSE;
-	XNextEvent(dpy, &Event);
-	(void) DispatchEvent ();
+	XtAppNextEvent(appContext, &Event);
+	if (Event.type>= 0 && Event.type < MAX_X_EVENT)
+	    (void) DispatchEvent ();
+	else
+	    XtDispatchEvent (&Event);
     }
 }
 
@@ -714,11 +717,9 @@ static void free_window_names (tmp, nukefull, nukename, nukeicon)
     if (tmp->name == tmp->full_name) nukefull = False;
     if (tmp->icon_name == tmp->name) nukename = False;
 
-#define isokay(v) ((v) && (v) != NoName)
-    if (nukefull && isokay(tmp->full_name)) XFree (tmp->full_name);
-    if (nukename && isokay(tmp->name)) XFree (tmp->name);
-    if (nukeicon && isokay(tmp->icon_name)) XFree (tmp->icon_name);
-#undef isokay
+    if (nukefull && tmp->full_name) free (tmp->full_name);
+    if (nukename && tmp->name) free (tmp->name);
+    if (nukeicon && tmp->icon_name) free (tmp->icon_name);
     return;
 }
 
@@ -805,11 +806,14 @@ HandlePropertyNotify()
 				(unsigned char **) &prop) != Success ||
 	    actual == None)
 	  return;
-	if (!prop) prop = NoName;
 	free_window_names (Tmp_win, True, True, False);
 
-	Tmp_win->full_name = prop;
-	Tmp_win->name = prop;
+	Tmp_win->full_name = strdup(prop ? prop : NoName);
+	Tmp_win->name = strdup(prop ? prop : NoName);
+	if (prop)
+	    XFree(prop);
+
+	Tmp_win->nameChanged = 1;
 
 	Tmp_win->name_width = XTextWidth (Scr->TitleBarFont.font,
 					  Tmp_win->name,
@@ -837,9 +841,10 @@ HandlePropertyNotify()
 				(unsigned char **) &prop) != Success ||
 	    actual == None)
 	  return;
-	if (!prop) prop = NoName;
 	free_window_names (Tmp_win, False, False, True);
-	Tmp_win->icon_name = prop;
+	Tmp_win->icon_name = strdup(prop ? prop : NoName);
+	if (prop)
+	    XFree(prop);
 
 	RedoIconName();
 	break;
@@ -850,6 +855,21 @@ HandlePropertyNotify()
 
 	if (Tmp_win->wmhints && (Tmp_win->wmhints->flags & WindowGroupHint))
 	  Tmp_win->group = Tmp_win->wmhints->window_group;
+
+	if (Tmp_win->icon_not_ours && Tmp_win->wmhints &&
+	    !(Tmp_win->wmhints->flags & IconWindowHint)) {
+	    /* IconWindowHint was formerly on, now off; revert
+	    // to a default icon */
+	    int icon_x = 0, icon_y = 0;
+	    XGetGeometry (dpy, Tmp_win->icon_w, &JunkRoot,
+			  &icon_x, &icon_y,
+			  &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth);
+	    XSelectInput (dpy, Tmp_win->icon_w, None);
+	    XDeleteContext (dpy, Tmp_win->icon_w, TwmContext);
+	    XDeleteContext (dpy, Tmp_win->icon_w, ScreenContext);
+	    CreateIconWindow(Tmp_win, icon_x, icon_y);
+	    break;
+	}
 
 	if (!Tmp_win->forced && Tmp_win->wmhints &&
 	    Tmp_win->wmhints->flags & IconWindowHint) {
@@ -885,6 +905,9 @@ HandlePropertyNotify()
 			XUnmapWindow(dpy, Tmp_win->icon_w);
 		} else
 		    XDestroyWindow(dpy, Tmp_win->icon_w);
+
+		XDeleteContext(dpy, Tmp_win->icon_w, TwmContext);
+		XDeleteContext(dpy, Tmp_win->icon_w, ScreenContext);
 
 		/*
 		 * The new icon window isn't our window, so note that fact
@@ -1293,6 +1316,9 @@ HandleDestroyNotify()
       free ((char *) Tmp_win->titlebuttons);
     remove_window_from_ring (Tmp_win);				/* 11 */
 
+    if (UnHighLight_win == Tmp_win)
+	UnHighLight_win = NULL;
+
     free((char *)Tmp_win);
 }
 
@@ -1304,7 +1330,7 @@ HandleCreateNotify()
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "CreateNotify w = 0x%x\n", Event.xcreatewindow.window);
     fflush(stderr);
-    XBell(dpy, 0);
+    Bell(XkbBI_Info,0,Event.xcreatewindow.window);
     XSync(dpy, 0);
 #endif
 }
@@ -1741,7 +1767,7 @@ static do_menu (menu, w)
     if (PopUpMenu (menu, x, y, center)) {
 	UpdateMenu();
     } else {
-	XBell (dpy, 0);
+	Bell(XkbBI_MinorError,0,w);
     }
 }
 
@@ -1917,7 +1943,7 @@ HandleButtonPress()
 			      (caddr_t *)&Tmp_win) == XCNOENT))
 	    {
 		RootFunction = 0;
-		XBell(dpy, 0);
+		Bell(XkbBI_MinorError,0,Event.xany.window);
 		return;
 	    }
 

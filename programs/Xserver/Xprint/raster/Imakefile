@@ -22,4 +22,6 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(raster,$(OBJS))
 NormalLintTarget($(SRCS1) $(SRCS2))
 
+InstallLinkKitLibrary(raster,$(LINKKITDIR)/lib)
+
 DependTarget()

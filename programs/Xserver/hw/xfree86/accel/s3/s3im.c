@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.40 1997/01/08 20:33:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.41 1997/03/22 09:34:57 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1301,10 +1301,10 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 		    }
 		    else if( pw >= 8 ) {
 			pix = ((ldw_u(pnt) >> x2) & MSKBIT(np)) 
-			   | ((ldw_u(ptmp) & MSKBIT(pw)) << np) | (ldw_u(pnt) << (np+pw));
+			   | ((ldw_u(ptmp) & MSKBIT(pw)) << np) | (ldw_u(ptmp) << (np+pw));
 		    }
 		    else {
-			pix = (ldw_u(ptmp) >> x2) & MSKBIT(np);
+			pix = (ldw_u(pnt) >> x2) & MSKBIT(np);
 			while( np < 16 && np < dstw ) {
 			    pix |= (ldw_u(ptmp) & MSKBIT(pw)) << np;
 			    np += pw;
@@ -1313,7 +1313,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 		    SET_PIX_TRANS_W(s3SwapBits[ pix & 0xff ] | 
 				       s3SwapBits[ ( pix >> 8 ) & 0xff ] << 8);
 		    srcx += 16;
-		    if( srcx >= pw )
+		    while (srcx >= pw)
 			srcx -= pw;
 		    dstw -= 16;
 		}

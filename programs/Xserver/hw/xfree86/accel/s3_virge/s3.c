@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.25 1997/03/24 16:29:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.26 1997/03/27 08:30:29 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1264,7 +1264,7 @@ s3Probe()
 	 if (S3_ViRGE_DXGX_SERIES(s3ChipId))
 	    s3InfoRec.maxClock = 110000;
 	 else
-	    s3InfoRec.maxClock =  80000;
+	    s3InfoRec.maxClock =  95000;
       else
 	 if (S3_ViRGE_VX_SERIES(s3ChipId))
 	    s3InfoRec.maxClock = 135000;
@@ -1272,7 +1272,7 @@ s3Probe()
 	    if (S3_ViRGE_DXGX_SERIES(s3ChipId))
 	       s3InfoRec.maxClock = 60000;
 	    else
-	       s3InfoRec.maxClock = 50000;
+	       s3InfoRec.maxClock = 57000;
       break;
    default:
       /* For DACs we don't have special code for, keep this as a limit */

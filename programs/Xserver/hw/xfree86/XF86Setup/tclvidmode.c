@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.6 1996/12/28 08:13:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.7 1997/03/24 13:08:15 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -364,9 +364,19 @@ TCL_XF86VidModeModModeLine(clientData, interp, argc, argv)
 	mode_line.flags =	mode_info.flags;
 	mode_line.privsize =	mode_info.privsize;
 	mode_line.private =	mode_info.private;
-	sprintf(interp->result, "%d",
-		XF86VidModeModModeLine(Tk_Display(tkwin),
-		    Tk_ScreenNumber(tkwin), &mode_line));
+	XSync(Tk_Display(tkwin), False);
+	savErrorFunc = XSetErrorHandler(vidError);
+	errorOccurred = 0;
+	XF86VidModeModModeLine(Tk_Display(tkwin),
+		    Tk_ScreenNumber(tkwin), &mode_line);
+	XSync(Tk_Display(tkwin), False);
+	XSetErrorHandler(savErrorFunc);
+	if (errorOccurred) {
+                Tcl_AppendResult(interp, "Unable to modify modeline: ",
+                        errMsgBuf, (char *) NULL);
+                return TCL_ERROR;
+	}
+
 	return TCL_OK;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.11 1997/03/27 08:31:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.12 1997/03/28 08:19:08 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -129,9 +129,9 @@ xf86InitializeAcceleration(pScreen)
         if (xf86Verbose)
             ErrorF("%s %s: XAA: 8x8 pattern fill",
                 XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
-        if (((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64) &&
-        !(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN))
-        || ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET) &&
+        if (((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_ALIGN_64) &&
+        !(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN))
+        || ((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MOD_64_OFFSET) &&
         (xf86AccelInfoRec.FramebufferWidth & 63) != 0))
             ErrorF(" (not usable)");
         ErrorF("\n");
@@ -470,7 +470,7 @@ xf86InitializeAcceleration(pScreen)
              * transparency, we might hope to use it.
              */
             if (!(xf86GCInfoRec.CopyAreaFlags & NO_TRANSPARENCY) ||
-            (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MONO_TRANSPARENCY)) {
+            (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_MONO_TRANSPARENCY)) {
                 xf86GCInfoRec.PolyFillRectStippled = xf86PolyFillRect;
                 xf86GCInfoRec.PolyFillRectStippledFlags =
                     xf86GCInfoRec.CopyAreaFlags;
@@ -579,6 +579,23 @@ xf86InitializeAcceleration(pScreen)
                     ErrorF("%s %s: XAA: Horizontal and vertical lines and segments\n",
                         XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
             }
+        }
+
+
+        if (xf86AccelInfoRec.SubsequentDashedBresenhamLine &&
+	     xf86AccelInfoRec.SetupForDashedLine && 
+	     xf86AccelInfoRec.LinePatternBuffer &&
+	    (xf86AccelInfoRec.LinePatternMaxLength > 0) &&
+           ((xf86AccelInfoRec.Flags & HARDWARE_CLIP_LINE) ||
+        xf86AccelInfoRec.ErrorTermBits)) {
+            if (!xf86GCInfoRec.PolyLineDashedZeroWidth)
+                xf86GCInfoRec.PolyLineDashedZeroWidth = xf86PolyDashedLine;
+            if (!xf86GCInfoRec.PolySegmentDashedZeroWidth)
+                xf86GCInfoRec.PolySegmentDashedZeroWidth = 
+						xf86PolyDashedSegment;
+            if (xf86Verbose)
+                ErrorF("%s %s: XAA: Dashed lines and segments\n",
+	            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
 
 do_not_touch_xf86AccelInfoRec:

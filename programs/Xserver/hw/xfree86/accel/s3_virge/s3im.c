@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.11 1996/12/26 01:38:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.12 1996/12/27 07:02:39 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -733,12 +733,12 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	       else if (pw >= 32) {
 #ifdef __alpha__
 		  pix = (CARD32)((ldq_u((unsigned long *)(pnt)) >> x2)
-				 & MSKBIT(np)) | (*ptmp << np);
+				 & MSKBIT(np)) | (ldl_u(ptmp) << np);
 #else
 		  pix =   (CARD32)(  ldl_u((unsigned int *)(pnt)) >> x2 );
 		  if (x2 > 0)
 		     pix |= (CARD32)(ldl_u((unsigned int *)(pnt+1)) << (32-x2));
-		  pix = (pix  & MSKBIT(np)) | (*ptmp << np);
+		  pix = (pix  & MSKBIT(np)) | (ldl_u(ptmp) << np);
 #endif
 	       }
 	       else if (pw >= 16) {
@@ -749,9 +749,9 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 			| (ldl_u(ptmp) << (np+pw));
 	       }
 	       else {
-		  pix = (*ptmp >> x2) & MSKBIT(np);
+		  pix = (ldl_u(pnt) >> x2) & MSKBIT(np);
 		  while( np < 32 && np < dstw ) {
-		     pix |= (*ptmp & MSKBIT(pw)) << np;
+		     pix |= (ldl_u(ptmp) & MSKBIT(pw)) << np;
 		     np += pw;
 		  }
 	       }

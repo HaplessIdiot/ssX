@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.9 1997/02/28 08:18:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.10 1997/03/17 07:17:39 hohndel Exp $ */
 
 /***********************************************************
 
@@ -68,9 +68,9 @@ SOFTWARE.
 #undef LOCAL_FLAG
 
 #ifdef XFree86LOADER
-#define	MAGIC_DONE	0
-#define	MAGIC_PEX_INIT	6
+#include "xf86.h"
 #include "xf86_libc.h"
+#include "xf86_ldext.h"
 #endif
 
 unsigned long add_pad_of[] = {0, 3, 2, 1};
@@ -359,6 +359,11 @@ unsigned long server_version;
 
 
 #ifdef XFree86LOADER
+
+ExtensionModule pex5Ext = {
+    PexExtensionInit,
+    PEX_NAME_STRING,
+    NULL};
 /*
  * Entry point for the new loading code that can load .a files
  */
@@ -373,8 +378,8 @@ libpex5ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-	*magic = MAGIC_PEX_INIT;
-        * data = (pointer) PexExtensionInit;
+	*magic = MAGIC_LOAD_EXTENSION;
+        * data = (pointer) &pex5Ext;
 	break;
     default:
         * magic= MAGIC_DONE;

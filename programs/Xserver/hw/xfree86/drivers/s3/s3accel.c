@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.3 1997/03/17 07:18:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.4 1997/03/27 08:30:45 hohndel Exp $ */
 
 /*
  *
@@ -31,20 +31,26 @@ void S3SubsequentScanlineScreenToScreenColorExpand16();
 void S3SubsequentScanlineScreenToScreenColorExpand32();
 void S3ImageWrite16();
 void S3ImageWrite32();
+void S3SetupForDashedLine();
+void S3SubsequentDashedBresenhamLine16();
+void S3SubsequentDashedBresenhamLine32();
 
 static Bool Transfer32 = FALSE;
 
 static unsigned char ScratchBuffer[512];
+static CARD32 DashPattern[32];
 
-void S3AccelInit() {
 
+void S3AccelInit() 
+{
     if(S3_x64_SERIES(s3ChipId))
 	Transfer32 = TRUE; 
 
 
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS  | PIXMAP_CACHE |
-				 HARDWARE_PATTERN_NOT_LINEAR |
-				COP_FRAMEBUFFER_CONCURRENCY; 
+				COP_FRAMEBUFFER_CONCURRENCY |
+				LINE_PATTERN_MSBFIRST_INCREASING; 
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NOT_LINEAR;
 	
     xf86AccelInfoRec.Sync = S3Sync;
 
@@ -65,6 +71,19 @@ void S3AccelInit() {
     xf86AccelInfoRec.SubsequentBresenhamLine = S3SubsequentBresenhamLine; 
     xf86AccelInfoRec.ErrorTermBits = 11;
 
+    /* dashed lines */
+    if(s3Bpp != 3) {
+    	xf86AccelInfoRec.SetupForDashedLine = S3SetupForDashedLine;
+    	xf86AccelInfoRec.LinePatternBuffer = (void*)DashPattern;     
+    	xf86AccelInfoRec.LinePatternMaxLength = 1024;
+ 
+    	if(Transfer32) 
+      	    xf86AccelInfoRec.SubsequentDashedBresenhamLine = 
+			S3SubsequentDashedBresenhamLine32; 
+    	else
+      	    xf86AccelInfoRec.SubsequentDashedBresenhamLine = 
+			S3SubsequentDashedBresenhamLine16;
+    }
 
     /* 8x8 pattern fills */
     if(S3_801_928_SERIES(s3ChipId)) {
@@ -78,12 +97,15 @@ void S3AccelInit() {
     if(Transfer32) {
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
 			S3SubsequentScanlineScreenToScreenColorExpand32;
+#ifndef S3_GENERIC
 	xf86AccelInfoRec.ImageWrite = S3ImageWrite32;
-
+#endif
     } else {
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
 			S3SubsequentScanlineScreenToScreenColorExpand16;
+#ifndef S3_GENERIC
 	xf86AccelInfoRec.ImageWrite = S3ImageWrite16;
+#endif
     }
 
     xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
@@ -303,7 +325,7 @@ void S3SubsequentScanlineScreenToScreenColorExpand16(int srcaddr)
 
 void S3SubsequentScanlineScreenToScreenColorExpand32(int srcaddr)
 {
-    register unsigned long *ptr = (unsigned long*)ScratchBuffer;
+    register CARD32 *ptr = (CARD32*)ScratchBuffer;
     register int count = ScanlineWordCount;
 
     while(count--)
@@ -322,7 +344,7 @@ void S3ImageWrite32(x, y, w, h, src, srcwidth, rop, planemask)
     int srcwidth, rop;
     unsigned planemask;
 {
-    register unsigned long* ptr = src;
+    register CARD32* ptr = (CARD32*)src;
     register int count;
     int linepad;
 
@@ -377,7 +399,7 @@ void S3ImageWrite16(x, y, w, h, src, srcwidth, rop, planemask)
     int srcwidth, rop;
     unsigned planemask;
 {
-    register unsigned short* ptr = src;
+    register unsigned short* ptr = (unsigned short*)src;
     register int count;
     int linepad;
 
@@ -420,5 +442,181 @@ void S3ImageWrite16(x, y, w, h, src, srcwidth, rop, planemask)
 	count *= h;
 	while(count--)
 	    SET_PIX_TRANS_W(*(ptr++));
+    }
+}
+
+	/***********************\
+	|	Dashed Lines	|
+	\***********************/
+
+
+
+static int DashPatternSize;
+static Bool NicePattern;
+static int EndIndex;
+static CARD32 EndMask;
+
+void S3SetupForDashedLine(fg, bg, rop, planemask, size)
+    int fg, bg, rop, planemask, size;
+{
+    register CARD32 scratch = DashPattern[0];
+
+    NicePattern = FALSE;
+
+    WaitQueue16_32(5,8);
+    SET_FRGD_COLOR(fg);
+    SET_FRGD_MIX(FSS_FRGDCOL | s3alu[rop]); 
+    if(bg == -1) {  
+    	SET_BKGD_MIX(BSS_BKGDCOL | MIX_XOR); 
+    	SET_BKGD_COLOR(0);
+    } else {
+   	SET_BKGD_MIX(BSS_BKGDCOL | s3alu[rop]); 
+    	SET_BKGD_COLOR(bg);
+    }
+    SET_WRT_MASK(planemask);
+
+    if(Transfer32) 
+      switch(size) {
+	case 2:		scratch |= scratch >> 2;
+	case 4:		scratch |= scratch >> 4;
+	case 8:		scratch |= scratch >> 8;
+	case 16:	scratch |= scratch >> 16;
+	case 32:	DashPattern[0] = scratch;
+			NicePattern = TRUE;			
+      }
+   else
+       switch(size) {
+	case 2:		scratch |= scratch >> 2;
+	case 4:		scratch |= scratch >> 4;
+	case 8:		scratch |= scratch >> 8;
+	case 16:	DashPattern[0] = scratch;
+			NicePattern = TRUE;			
+      }
+    
+    EndIndex = size >> 5;
+    EndMask = 0x80000000 >> (size & 31);
+
+    DashPatternSize = size;
+
+    WaitQueue(1);
+    SET_PIX_CNTL(MIXSEL_EXPPC);
+}
+
+void S3SubsequentDashedBresenhamLine32(x1, y1, octant, err, e1, e2, length,
+							start)
+    int x1, y1, octant, err, e1, e2, length, start;
+{
+    unsigned short cmd = LASTPIX | CMD_LINE | WRTDATA | PLANAR | 
+					_32BIT | DRAW | PCDATA;
+    register int count;
+    register CARD32 pattern;
+
+    if(octant & YMAJOR) cmd |= YMAJAXIS;
+    if(!(octant & XDECREASING)) cmd |= INC_X;
+    if(!(octant & YDECREASING)) cmd |= INC_Y;
+
+    count = (length + 31) >> 5;
+
+    WaitQueue(7);
+    SET_CURPT((short)x1, (short)y1);
+    SET_ERR_TERM((short)err);
+    SET_DESTSTP((short)e2, (short)e1);
+    SET_MAJ_AXIS_PCNT((short)length);
+    SET_CMD(cmd);
+
+    if(NicePattern) {
+	pattern = 
+	     (start) ? 
+	     (DashPattern[0] << start) | (DashPattern[0] >> (32 - start)) :
+	      DashPattern[0];
+
+	while(count--)
+	   SET_PIX_TRANS_L(pattern);
+    } else { 
+	int bits;
+	register int index = start >> 5;
+	register CARD32 mask = 0x80000000 >> (start & 31);
+
+	while(count--) {
+	   bits = 32;
+	   pattern = 0;
+	   while(bits--) {
+		pattern <<= 1;
+
+		if(DashPattern[index] & mask) pattern++;
+		
+		if(!(mask >>= 1)) {
+		    mask = 0x80000000;
+		    index++;
+		}
+
+		if((index == EndIndex) && (mask == EndMask)){
+		    index = 0;
+		    mask = 0x80000000;
+		}	    		
+	    }
+
+       	    SET_PIX_TRANS_L(pattern);
+	}
+    }
+}
+
+void S3SubsequentDashedBresenhamLine16(x1, y1, octant, err, e1, e2, length,
+							start)
+    int x1, y1, octant, err, e1, e2, length, start;
+{
+    unsigned short cmd = LASTPIX | CMD_LINE | WRTDATA | PLANAR | 
+					_16BIT | DRAW | PCDATA;
+    register int count;
+    register unsigned short pattern;
+
+    if(octant & YMAJOR) cmd |= YMAJAXIS;
+    if(!(octant & XDECREASING)) cmd |= INC_X;
+    if(!(octant & YDECREASING)) cmd |= INC_Y;
+
+    count = (length + 15) >> 4;
+
+    WaitQueue(7);
+    SET_CURPT((short)x1, (short)y1);
+    SET_ERR_TERM((short)err);
+    SET_DESTSTP((short)e2, (short)e1);
+    SET_MAJ_AXIS_PCNT((short)length);
+    SET_CMD(cmd);
+
+    if(NicePattern) {
+	if(start)
+		pattern = (DashPattern[0] >> (16 - start)) | 
+			  (DashPattern[0] >> (32 - start));
+	else
+		pattern = DashPattern[0] >> 16;
+
+	while(count--)
+	   SET_PIX_TRANS_W(pattern);
+    } else { 
+	int bits;
+	register int index = start >> 5;
+	register CARD32 mask = 0x80000000 >> (start & 31);
+
+	while(count--) {
+	   bits = 16;
+	   pattern = 0;
+	   while(bits--) {
+		pattern <<= 1;
+
+		if(DashPattern[index] & mask) pattern++;
+		
+		if(!(mask >>= 1)) {
+		    mask = 0x80000000;
+		    index++;
+		}
+
+		if((index == EndIndex) && (mask == EndMask)){
+		    index = 0;
+		    mask = 0x80000000;
+		}	    		
+	    }
+
+       	    SET_PIX_TRANS_W(pattern);
+	}
     }
 }

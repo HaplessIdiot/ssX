@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.3 1997/03/28 09:42:49 hohndel Exp $ */
 
 /* regs3v.h
  *
@@ -323,6 +323,22 @@
 #define	ROP_PDno			(0xf5<<17)
 #define	ROP_DPo				(0xfa<<17)
 
+/* ROP -> (ROP & S) | (~ROP & D) */
+#define ROP_DPSDxax			(0xca<<17)
+#define ROP_DSPnoa			(0x8a<<17)
+#define ROP_DPSao			(0xea<<17)
+#define ROP_DPSoa			(0xa8<<17)
+#define ROP_DSa				(0x88<<17)
+#define ROP_SSPxDSxax			(0xe8<<17)
+#define ROP_SDPoa			(0xc8<<17)
+#define ROP_DSPnao			(0xae<<17)
+#define ROP_SSDxPDxax			(0x8e<<17)
+#define ROP_DSo				(0xee<<17)
+#define ROP_SDPnao			(0xce<<17)
+#define ROP_SPDSxax			(0xac<<17)
+#define ROP_SDPnoa			(0x8c<<17)
+#define ROP_SDPao			(0xec<<17)
+
 typedef struct {
    unsigned char r, g, b;
 }
@@ -340,6 +356,8 @@ LUTENTRY;
 /* Wait until Command FIFO is empty */
 #define WaitCommandEmpty()       do { mem_barrier(); while (!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)); } while (0)
 
+/* Wait until a DMA transfer is done */ 
+#define WaitDMAEmpty()    do { mem_barrier(); while  ((((mmtr)s3vMmioMem)->dma_regs.regs.cmd.write_pointer) != (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.read_pointer)); } while(0)
 
 #ifndef NULL
 #define NULL	0

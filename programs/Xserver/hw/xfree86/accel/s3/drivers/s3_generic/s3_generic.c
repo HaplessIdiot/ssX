@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.8 1997/03/23 07:59:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.9 1997/03/24 13:09:33 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -129,6 +129,9 @@ S3_GENERICProbe()
    LoadModule("libs3ga968pio.a", xf86ModulePath);
 #endif
 #endif
+
+   if (LoaderCheckUnresolved(xf86bpp, LD_RESOLV_NOW))
+      ErrorF("Warning: Some symbols couldn't be resolved!\n");
 #endif
    return(TRUE);
 }

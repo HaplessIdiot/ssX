@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.53 1997/02/27 13:58:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.54 1997/03/07 00:29:17 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -219,6 +219,7 @@ typedef struct {
   int            textClockFreq;
   char          *DCConfig;
   char          *DCOptions;
+  int            MemClk;          /* General flag used for memory clocking */
 #ifdef XFreeXDGA
   int            directMode;
   void           (*setBank)(
@@ -275,11 +276,21 @@ typedef enum {
 #define MAGIC_CCD_DO_BITBLT		3	/* cur.col.depth specific blit*/
 #define MAGIC_CCD_SCREEN_PRIV_IDX	4	/* cur.col.depth specific idx*/
 #define MAGIC_CCD_XAA_SCREEN_INIT	5	/* cur.col.depth specific init*/
+
 #define MAGIC_PEX_INIT			6	/* PEX init function */
 #define MAGIC_XIE_INIT			7	/* XIE init function */
+
+#define MAGIC_LOAD_EXTENSION            9
+
 #define MAGIC_VERSION			8	/* retrieve version info */
 						/* must be returned as */
 						/* first item from ModuleInit */
+#define MAGIC_DONT_CHECK_UNRESOLVED	9	/* delay checking */
+
+#define LD_RESOLV_IFDONE		0	/* only check if no more 
+						   delays pending */
+#define LD_RESOLV_NOW			1	/* finish one delay step */
+#define LD_RESOLV_FORCE			2	/* force checking... */
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a

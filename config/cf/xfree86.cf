@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.152 1997/03/27 08:29:12 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.153 1997/03/27 18:37:32 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -900,10 +900,7 @@ XF98LINKKITDIR = LinkKitDir
      XF86OSSRC = $(XF86SRC)/lib86
  XF86DRIVERSRC = $(XF86SRC)/drivers
      DRIVERSRC = $(XF86DRIVERSRC)
-  VGADRIVERSRC = $(XF86SRC)/drivers/vga256
-VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
- VGA2DRIVERSRC = $(XF86SRC)/drivers/vga2
- MONODRIVERSRC = $(XF86SRC)/drivers/mono
+ SVGADRIVERSRC = $(XF86SRC)/drivers/svga
    S3DRIVERSRC = $(XF86SRC)/drivers/s3
   S3VDRIVERSRC = $(XF86SRC)/drivers/s3_virge
 
@@ -918,10 +915,7 @@ VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
     XF98HWGA968SRC = $(XF98SRC)/lib98
          XF98OSSRC = $(XF98SRC)/lib98
      XF98DRIVERSRC = $(XF98SRC)/drivers98
-  XF98VGADRIVERSRC = $(XF98SRC)/drivers98/vga256
-XF98VGA16DRIVERSRC = $(XF98SRC)/drivers98/vga16
- XF98VGA2DRIVERSRC = $(XF98SRC)/drivers98/vga2
- XF98MONODRIVERSRC = $(XF98SRC)/drivers98/mono
+ XF98SVGADRIVERSRC = $(XF98SRC)/drivers98/svga
 XF98NECS3DRIVERSRC = $(XF98SRC)/drivers98/s3nec
 XF98PWSKBDRIVERSRC = $(XF98SRC)/drivers98/s3pwskb
  XF98PWLBDRIVERSRC = $(XF98SRC)/drivers98/s3pwlb

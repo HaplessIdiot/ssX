@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.16 1997/01/12 10:48:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.17 1997/01/19 12:52:00 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -60,12 +60,16 @@ extern Bool noTestExtensions;
 extern Bool noXkbExtension;
 #endif
 
+#ifndef XFree86LOADER
 #if NeedFunctionPrototypes
 #define INITARGS void
 #else
 #define INITARGS /*nothing*/
 #endif
 typedef void (*InitExtension)(INITARGS);
+#else /* XFree86Loader */
+#include "xf86_ldext.h"
+#endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
 #ifdef BEZIER
@@ -84,7 +88,9 @@ extern void ShmExtensionInit(INITARGS);
 #ifndef PEX_MODULE
 extern void PexExtensionInit(INITARGS);
 #endif
+#ifndef XFree86LOADER
 InitExtension PexExtensionInitPtr = NULL;
+#endif
 #endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
@@ -117,7 +123,9 @@ extern void XvExtensionInit(INITARGS);
 #ifndef XIE_MODULE
 extern void XieInit(INITARGS);
 #endif
+#ifndef XFree86LOADER
 InitExtension XieInitPtr = NULL;
+#endif
 #endif
 #ifdef XSYNC
 extern void SyncExtensionInit(INITARGS);
@@ -159,6 +167,8 @@ extern void XFree86DGAExtensionInit(INITARGS);
 extern void DPMSExtensionInit(INITARGS);
 #endif
 
+#ifndef XFree86LOADER
+
 /*ARGSUSED*/
 void
 InitExtensions(argc, argv)
@@ -185,7 +195,7 @@ InitExtensions(argc, argv)
 	(*PexExtensionInitPtr)();
     } else {
 	if (serverGeneration == 1)
-	    ErrorF("PEX extension module not loaded\n");
+	    ErrorF("(--) PEX extension module not loaded\n");
     }
 #endif
 #endif
@@ -224,7 +234,7 @@ InitExtensions(argc, argv)
 	(*XieInitPtr)();
     } else {
 	if (serverGeneration == 1)
-	    ErrorF("XIE extension module not loaded\n");
+	    ErrorF("(--) XIE extension module not loaded\n");
     }
 #endif
 #endif
@@ -268,3 +278,139 @@ InitExtensions(argc, argv)
     DPMSExtensionInit();
 #endif
 }
+
+#else /* XFree86LOADER */
+/* FIXME:The names here must come from the headers. those with ?? are 
+   not included in X11R6.3 sample implementation, so there's a problem... */
+ExtensionModule extension[] =
+{
+    { NULL, "BEZIER", NULL },	/* ?? */
+    { NULL, "XTEST1", &noTestExtensions }, /* ?? */
+    { NULL, "SHAPE", NULL },
+    { NULL, "MIT-SHM", NULL },
+    { NULL, "X3D-PEX", NULL },
+    { NULL, "Multi-Buffering", NULL },
+    { NULL, "XInputExtension", NULL },
+    { NULL, "XTEST", &noTestExtensions },
+    { NULL, "BIG-REQUESTS", NULL },
+    { NULL, "MIT-SUNDRY-NONSTANDARD", NULL },
+    { NULL, "XIDLE", NULL },	/* ?? */
+    { NULL, "XTRAP", &noTestExtensions }, /* ?? */
+    { NULL, "MIT-SCREEN-SAVER", NULL },
+    { NULL, "XV", NULL },	/* ?? */
+    { NULL, "XIE", NULL },
+    { NULL, "SYNC", NULL },
+    { NULL, "XKEYBOARD", &noXkbExtension },
+    { NULL, "XC-MISC", NULL },
+    { NULL, "RECORD", &noTestExtensions },
+    { NULL, "LBX", NULL },
+    { NULL, "DOUBLE-BUFFER", NULL },
+    { NULL, "XC-APPGROUP", NULL },
+    { NULL, "SECURITY", NULL },
+    { NULL, "XpExtension", NULL },
+    { NULL, "XFree86-VidModeExtension", NULL },
+    { NULL, "XFree86-Misc", NULL },
+    { NULL, "XFree86-DGA", NULL },
+    { NULL, "DPMS", NULL },
+    { NULL, NULL, NULL }
+};
+
+/*ARGSUSED*/
+void
+InitExtensions(argc, argv)
+    int		argc;
+    char	*argv[];
+{
+    int i;
+ 
+   /* Add static extensions */
+#ifdef BEZIER
+    extension[0].initFunc = BezierExtensionInit;
+#endif 
+#ifdef XTESTEXT1
+    extension[1].initFunc = XTestExtension1Init;
+#endif
+#ifdef SHAPE
+    extension[2].initFunc = ShapeExtensionInit;
+#endif
+#ifdef MITSHM
+    extension[3].initFunc = ShmExtensionInit;
+#endif
+    /* 4 - pex */
+#ifdef MULTIBUFFER
+    extension[5].initFunc = MultibufferExtensionInit;
+#endif
+#ifdef XINPUT
+    extension[6].initFunc = XInputExtensionInit;
+#endif
+#ifdef XTEST
+    extension[7].initFunc = XTestExtensionInit;
+#endif
+#ifdef BIGREQS
+    extension[8].initFunc = BigReqExtensionInit;
+#endif
+#ifdef MITMISC
+    extension[9].initFunc = MITMiscExtensionInit;
+#endif
+#ifdef XIDLE
+    extension[10].initFunc = XIdleExtensionInit;
+#endif
+#ifdef XTRAP
+    extension[11].initFunc = DEC_XTRAPIbit;
+#endif
+#ifdef SCREENSAVER
+    extension[12].initFunc = ScreenSaverExtensionInit;
+#endif
+#ifdef XV
+    extension[13].initFunc = XvExtensionInit;
+#endif
+    /* 14 - XIE */
+#ifdef XSYNC
+    extension[15].initFunc = SyncExtensionInit;
+#endif
+#ifdef XKB
+    extension[16].initFunc = XkbExtensionInit;
+#endif
+#ifdef XCMISC
+    extension[17].initFunc = XCMiscExtensionInit;
+#endif
+#ifdef RECORD
+    extension[18].initFunc = RecordExtensionInit;
+#endif
+#ifdef LBX
+    extension[19].initFunc = LbxExtensionInit;
+#endif
+#ifdef DBE
+    extension[20].initFunc = DbeExtensionInit;
+#endif
+#ifdef XAPPGROUP
+    extension[21].initFunc = XagExtensionInit;
+#endif
+#ifdef XCSECURITY
+    extension[22].initFunc = SecurityExtensionInit;
+#endif
+#ifdef XPRINT
+    extension[23].initFunc = XpExtensionInit;
+#endif
+#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
+    extension[24].initFunc = XFree86VidModeExtensionInit;
+#endif
+#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER)
+    extension[25].initFunc = XFree86MiscExtensionInit;
+#endif
+#if defined(XFree86DGA) && !defined(PRINT_ONLY_SERVER)
+    extension[26].initFunc = XFree86DGAExtensionInit;
+#endif
+#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
+    extension[27].initFunc = DPMSExtensionInit;
+#endif
+
+    for (i = 0; extension[i].name != NULL; i++) 
+	if (extension[i].initFunc != NULL && 
+	    (extension[i].disablePtr == NULL || 
+	     extension[i].disablePtr != NULL && !*extension[i].disablePtr)) {
+	    (*extension[i].initFunc)();
+	}
+}
+
+#endif /* XFree86LOADER */

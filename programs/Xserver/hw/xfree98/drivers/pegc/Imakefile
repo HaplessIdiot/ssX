@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/Imakefile,v 1.2 1997/03/11 14:35:24 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/Imakefile,v 1.3 1997/03/17 07:18:40 hohndel Exp $
 
 
 #include <Server.tmpl>
@@ -29,9 +29,9 @@ ObjectFromSpecialAsmSource(pegc_bank,bank,NullParameter)
 LinkSourceFile(bank.s,$(XF98SRC)/vga256/drivers/pegc)
 #endif
 
-InstallLinkKitNonExecFile(pegc_dr.c,$(XF98LINKKITDIR)/drivers98/pegc)
-InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers98/pegc)
-InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/pegc)
+InstallLinkKitNonExecFile(pegc_dr.c,$(XF98LINKKITDIR)/drivers98/svga/pegc)
+InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers98/svga/pegc)
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/svga/pegc)
 
 #if DoLoadableServer
 InstallDynamicModule(pegc_drv.o, $(MODULEDIR))

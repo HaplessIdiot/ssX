@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.50 1997/03/27 08:29:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.51 1997/03/27 18:38:20 hohndel Exp $ */
 
 /*
  * Includes
@@ -333,7 +333,7 @@ extern Chip_Descriptor GLINT_Descriptor;
 #define DAC_ATI_INTERNAL 42     /* ATI Mach64 integrated DAC */
 #define DAC_MU9C1880	43	/* Music 9C1880 */
 #define DAC_IMSG174	44	/* Inmos G-174 */
-#define DAC_STG1702	45	/* STG 1703 15/16/24-bit DAC w/pixel-mux */
+#define DAC_STG1702	45	/* STG 1702 15/16/24-bit DAC w/pixel-mux */
 #define DAC_CH8398	46	/* Chrontel 8398 */
 #define DAC_ATT408	47	/* AT&T 20C408 */
 #define DAC_TVP3030	48	/* TI ViewPoint TVP3030 RAMDAC */

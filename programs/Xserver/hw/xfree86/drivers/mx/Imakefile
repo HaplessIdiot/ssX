@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mx/Imakefile,v 1.1 1997/03/06 23:16:05 hohndel Exp $
 
 
 
@@ -24,9 +24,9 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(mx_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(mx_driver.c,$(LINKKITDIR)/drivers/mx)
-InstallLinkKitNonExecFile(mx_bank.s,$(LINKKITDIR)/drivers/mx)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mx)
+InstallLinkKitNonExecFile(mx_driver.c,$(LINKKITDIR)/drivers/svga/mx)
+InstallLinkKitNonExecFile(mx_bank.s,$(LINKKITDIR)/drivers/svga/mx)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/mx)
 
 #if DoLoadableServer
 InstallDynamicModule(mx_drv.o,$(MODULEDIR))

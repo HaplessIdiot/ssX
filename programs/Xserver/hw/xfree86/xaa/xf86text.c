@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.6 1997/01/18 06:57:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.7 1997/03/27 08:31:38 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -389,7 +389,7 @@ nglyph, ppci, pglyphBase)
      */
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
         /* First fill-in the background. */
-        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, pGC->alu,
+        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, GXcopy,
             pGC->planemask);
         xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
     }
@@ -400,10 +400,8 @@ nglyph, ppci, pglyphBase)
     CollectCharacters(glyphp, nglyph, pglyphBase, ppci);
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
-        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            xf86AccelInfoRec.Sync();
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-            -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+            -1, pGC->fgPixel, GXcopy, pGC->planemask);
     }
     else
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
@@ -749,11 +747,11 @@ nglyph, ppci, pglyphBase)
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
             xf86AccelInfoRec.Sync();
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-            -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+            -1, pGC->fgPixel, GXcopy, pGC->planemask);
     }
     else
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-            pGC->bgPixel, pGC->fgPixel, pGC->alu, pGC->planemask);
+            pGC->bgPixel, pGC->fgPixel, GXcopy, pGC->planemask);
 
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
         x, y, w, h, 0);
@@ -828,7 +826,7 @@ nglyph, ppci, pglyphBase)
 
     if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
         /* First fill-in the background. */
-        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, pGC->alu,
+        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, GXcopy,
             pGC->planemask);
         xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
     }
@@ -837,11 +835,11 @@ nglyph, ppci, pglyphBase)
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
             xf86AccelInfoRec.Sync();
         xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
-            x, y, w, h, -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+            x, y, w, h, -1, pGC->fgPixel, GXcopy, pGC->planemask);
     }
     else
         xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
-            x, y, w, h, pGC->bgPixel, pGC->fgPixel, pGC->alu, pGC->planemask);
+            x, y, w, h, pGC->bgPixel, pGC->fgPixel, GXcopy, pGC->planemask);
 
     DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop);
 

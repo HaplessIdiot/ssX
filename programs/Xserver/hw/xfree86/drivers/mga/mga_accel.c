@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.8 1997/03/03 10:19:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_accel.c,v 1.1 1997/03/06 23:16:00 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -9,6 +9,8 @@
 #include "xf86.h"
 #include "vga.h"
 
+#include "miline.h"
+
 #include "xf86xaa.h"
 
 #include "mga.h"
@@ -18,6 +20,7 @@
 /*
  * external functions
  */
+
 void MgaSync();
  
 /*
@@ -36,13 +39,17 @@ void MGANAME(SubsequentScreenToScreenColorExpand)();
 void MGANAME(SetupFor8x8PatternColorExpand)();
 void MGANAME(Subsequent8x8PatternColorExpand)();
 void MGANAME(SubsequentTwoPointLine)();
+void MGANAME(SetupForDashedLine)();
+void MGANAME(SubsequentDashedBresenhamLine)();
 void MGANAME(SetClippingRectangle)();
-
 
 static int mga_cmd, mga_lastcmd, mga_linecmd, mga_rop;
 static int mga_sgn, mga_lastsgn, mga_lastcxright, mga_lastshift;
 static int mgablitxdir, mgablitydir;
 static int mga_ClipRect;
+
+static CARD32 mgaDashedPatternBuf[4];	/* allocate 128 bits */
+static CARD32 mgaStylelen;
 
 /*
  * The following function sets up the supported acceleration. Call it
@@ -67,12 +74,16 @@ void MGANAME(AccelInit)()
                              HARDWARE_CLIP_LINE |
                              USE_TWO_POINT_LINE |
                              TWO_POINT_LINE_NOT_LAST |
-                             HARDWARE_PATTERN_PROGRAMMED_BITS |
+                             NO_SYNC_AFTER_CPU_COLOR_EXPAND |
+			     LINE_PATTERN_MSBFIRST_DECREASING;
+
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
                              HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
                              HARDWARE_PATTERN_SCREEN_ORIGIN |
                              HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
-                             HARDWARE_PATTERN_MONO_TRANSPARENCY |
-                             NO_SYNC_AFTER_CPU_COLOR_EXPAND;
+                             HARDWARE_PATTERN_MONO_TRANSPARENCY;
+    
+
 
     /*
      * install hardware lines and clipping
@@ -80,6 +91,12 @@ void MGANAME(AccelInit)()
 
     xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME(SubsequentTwoPointLine);
     xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
+
+    xf86AccelInfoRec.SetupForDashedLine = MGANAME(SetupForDashedLine);
+    xf86AccelInfoRec.SubsequentDashedBresenhamLine = MGANAME(SubsequentDashedBresenhamLine);
+    xf86AccelInfoRec.LinePatternBuffer = (void *) &mgaDashedPatternBuf[0];
+    xf86AccelInfoRec.LinePatternMaxLength = 128;
+    xf86AccelInfoRec.ErrorTermBits = 15;
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -337,6 +354,7 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
  * the specified location and size, with the parameters from the SetUp
  * call.
  */
+
 void MGANAME(SubsequentFillRectSolid)(x, y, w, h)
     int x, y, w, h;
 {
@@ -395,8 +413,9 @@ transparency_color)
      */
     if( rop == GXcopy )
         mga_cmd |= MGADWG_RPL;
-    else
+    else {
         SETACCESSNOGXCOPY(mga_cmd,rop);
+    }
 
     mgablitxdir = xdir;
     mgablitydir = ydir;
@@ -536,7 +555,7 @@ void MGANAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
      * check transparency 
      */
     if( transc )
-        mga_cmd |= MGWDWG_TRANSC;
+        mga_cmd |= MGADWG_TRANSC;
     else
     {
         REPLICATE(bg);
@@ -591,7 +610,7 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
      * check transparency 
      */
     if( transc )
-        mga_cmd |= MGWDWG_TRANSC;
+        mga_cmd |= MGADWG_TRANSC;
     else
     {
         REPLICATE(bg);
@@ -646,7 +665,7 @@ void MGANAME(SetupFor8x8PatternColorExpand)(patternx, patterny, bg, fg,
      * check transparency 
      */
     if( transc )
-        mga_cmd |= MGWDWG_TRANSC;
+        mga_cmd |= MGADWG_TRANSC;
     else
     {
         REPLICATE(bg);
@@ -726,6 +745,126 @@ MGANAME(SubsequentTwoPointLine)(x1, y1, x2, y2, bias)
 
     /* restore FillRect state for future rects */
     OUTREG(MGAREG_DWGCTL, mga_lastcmd);
+}
+
+void
+MGANAME(SetupForDashedLine)(int fg, int bg, int rop, unsigned int planemask,
+				 int size)
+{
+    /* handle transparent background */
+    int transc = ( bg == -1 );
+
+    MgaSync();
+
+    /* load the style length part into the SHIFT register */
+
+    mgaStylelen = ( (size - 1) << 16 ) & 0x007f0000;
+    OUTREG(MGAREG_SHIFT, mgaStylelen);
+    mgaStylelen = size;
+
+    /* load the pattern */
+    
+    switch ( ((size + 31) >> 5) )
+    {
+ 	case 4: OUTREG(MGAREG_SRC3, mgaDashedPatternBuf[3]); 
+ 	case 3: OUTREG(MGAREG_SRC2, mgaDashedPatternBuf[2]); 
+ 	case 2: OUTREG(MGAREG_SRC1, mgaDashedPatternBuf[1]); 
+ 	default: OUTREG(MGAREG_SRC0, mgaDashedPatternBuf[0]); 
+    }
+
+    /* closed Bresenham lines with a linestyle, p5-19 or p5-30 */
+    mga_cmd = MGADWG_LINE_CLOSE | MGADWG_BFCOL;
+    
+    /*
+     * check transparency and set bg/fg colors
+     */
+
+    if ( transc )
+        mga_cmd |= MGADWG_TRANSC;
+    else
+    {
+        REPLICATE(bg);
+        SETBACKGROUNDCOLOR(bg);
+    }
+
+    REPLICATE(fg);
+    SETFOREGROUNDCOLOR(fg);
+
+    /* set planemask (if appropiate) */
+
+#if PSZ != 24
+    REPLICATE(planemask);
+    SETWRITEPLANEMASK(planemask);
+#endif
+
+    /* set atype, based upon fastest rules */
+
+    if ( rop == GXcopy ) 
+    {
+        mga_cmd |= MGADWG_RPL;
+    }
+    else
+    {
+        SETACCESSNOGXCOPY(mga_cmd, rop);
+    }
+
+    /* set rop (bop) */
+
+    SETRASTEROP(rop);
+
+    /* set up power drawing mode */
+
+    OUTREG(MGAREG_DWGCTL, mga_cmd);
+
+    /* we have to do this to allow the hw clipping to work */
+
+    DISABLECLIPPING();
+}
+
+void 
+MGANAME(SubsequentDashedBresenhamLine)(int x1, int y1, int octant, int err, 
+                                       int e1, int e2, int length, int start)
+{
+    unsigned int oct = 0;
+    unsigned int startPos = mgaStylelen - start;
+
+#ifdef DEBUG
+    if ( start < 0 )
+	ErrorF("mga dashed lines: -ve start (%d, %d)\n", mgaStylelen, start);
+
+    if ( startPos > mgaStylelen )
+ 	ErrorF("mga dashed lines: startpos > mgaStylelen (%d, %d)\n", mgaStylelen, start);
+
+    if ( startPos > 127 )
+        ErrorF("mga dashed lines: startPos > 127 (%d, %d)\n", mgaStylelen, start);
+#endif
+
+    OUTREG16(MGAREG_SHIFT, startPos & 0x7f);
+
+    /* load the xy position. The Mill documentation has an error, xdst not ydst */
+
+    OUTREG16(MGAREG_XDST, x1);
+    OUTREG(MGAREG_YDSTLEN, (y1 << 16) | length);
+
+    if ( octant & YDECREASING )
+	oct |= 4;
+
+    if ( octant & XDECREASING )
+	oct |= 2;
+
+    if ( !((octant & YMAJOR) == YMAJOR) )
+	oct |= 1;
+
+    OUTREG16(MGAREG_SGN, oct);
+    OUTREG(MGAREG_AR0, e1 & 0x3ffff);
+    OUTREG(MGAREG_AR1, err & 0x0fffffff);
+    OUTREG(MGAREG_AR2 + MGAREG_EXEC, e2 & 0x3ffff);
+
+    /* disable one-time clipping (see XAA notes) */
+    if ( mga_ClipRect )
+    {
+	DISABLECLIPPING();
+    }
 }
 
 void

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:05:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.11 1997/03/10 10:12:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.12 1997/03/11 11:11:09 hohndel Exp $
 
 
 #define IHaveModules
@@ -43,7 +43,6 @@ NormalLibraryObjectRule()
 ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(mono,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(confmono.SHsuf,$(LINKKITDIR))
 
 #if DoLoadableServer
 InstallDynamicModule(LibraryTargetName(mono),$(MODULEDIR))

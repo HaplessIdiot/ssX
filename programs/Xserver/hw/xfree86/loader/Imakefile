@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.3 1997/02/20 10:01:20 hohndel Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.4 1997/02/23 09:25:13 dawes Exp $ */
 
 
 
@@ -26,8 +26,8 @@ SRCS1 = os2funcs.c
 OBJS1 = os2funcs.o
 #endif
 
-SRCS = aoutloader.c coffloader.c elfloader.c hash.c loader.c loadmod.c \
-	dixsym.c misym.c xf86sym.c $(SRCS1)
+SRCS = aoutloader.c coffloader.c dlloader.c elfloader.c hash.c loader.c \
+	loadmod.c dixsym.c misym.c xf86sym.c $(SRCS1)
 OBJS = aoutloader.o coffloader.o elfloader.o hash.o loader.o loadmod.o \
 	dixsym.o misym.o xf86sym.o $(OBJS1)
 
@@ -37,5 +37,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(loader,$(OBJS))
 
 SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES) $(EXT_DEFINES))
+
+InstallLinkKitLibrary(loader,$(LINKKITDIR)/drivers)
 
 DependTarget()

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.1 1997/03/06 23:17:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.2 1997/03/11 13:06:00 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -90,6 +90,12 @@ WordP ACL_MIX_Y_OFFSET,
 /* for ET6000 only */
 extern
 ByteP ACL_POWER_CONTROL;
+extern
+ByteP ACL_SECONDARY_EDGE;
+extern
+WordP ACL_SECONDARY_ERROR_TERM,
+      ACL_SECONDARY_DELTA_MINOR,
+      ACL_SECONDARY_DELTA_MAJOR;
 
 
 extern int W32OpTable[16];

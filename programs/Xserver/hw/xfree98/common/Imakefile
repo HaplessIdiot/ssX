@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.30 1997/03/11 13:09:33 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.31 1997/03/17 07:18:28 hohndel Exp $
 
 
 
@@ -193,10 +193,6 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 
     DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES) -DPC98
 
-#if XF98EGCServer
-VGA16BUILD = -DBUILD_VGA16
-#endif
-
 XF86SCREENFLAGS = $(VGA16BUILD) $(VGA16MONOBUILD)
 
 all:: $(OFILES)
@@ -240,13 +236,10 @@ SpecialObjectRule(xf86DCConf.o,xf86DCConf.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(X
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF98GANBWAPServer || XF98PEGCServer || XF98NKVNECServer ||\
-    XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
+    XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer || \
+    XF98EGCServer
 SpecialObjectRule(XF86_SVGA.o,XF86_SVGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_SVGA.o
-#endif
-#if XF98EGCServer
-SpecialObjectRule(XF86_VGA16.o,XF86_VGA16.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
-all:: XF86_VGA16.o
 #endif
 #if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || XF98GA968Server
 SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
@@ -328,6 +321,7 @@ LinkSourceFile(xf86_Option.h,$(XF86SRC)/common)
 InstallLinkKitLibrary(xf86,$(XF98LINKKITDIR)/lib98)
 InstallLinkKitNonExecFile(xf86Init.o,$(XF98LINKKITDIR)/lib98)
 InstallLinkKitNonExecFile(xf86Init_m.o,$(XF98LINKKITDIR)/lib98)
+InstallLinkKitNonExecFile(xf86Init_L.o,$(XF98LINKKITDIR)/lib98)
 
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(xf86.h,$(XF98LINKKITDIR)/include)

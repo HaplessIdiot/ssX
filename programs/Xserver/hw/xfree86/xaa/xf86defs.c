@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.5 1997/02/27 14:00:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.6 1997/03/27 08:31:22 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -31,6 +31,8 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL, 0,	/* FillSpansStippled() */
     NULL, 0,	/* FillSpansOpaqueStippled() */
     NULL, 0,	/* CopyArea() */
+    NULL, 0,	/* PolyLineDashedZeroWidth() */
+    NULL, 0, 	/* PolySegmentDashedZeroWidth() */
     NULL,	/* FillSpansFallBack */
     NULL,	/* PolyGlyphBltFallBack() */
     NULL,	/* ImageGlyphBltFallBack() */
@@ -94,6 +96,8 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* VerticalLineGXcopyFallBack() */
     NULL,	/* BresenhamLineFallBack() */
     NULL,	/* xf86GetLongWidthAndPointer() */
+    NULL,	/* SetupForDashedLine() */
+    NULL,	/* SubsequentDashedBresenhamLine() */
     NULL,	/* Sync() */
     0,		/* Flags */
     0,		/* ColorExpandFlags */
@@ -113,4 +117,6 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* ServerInfoRec */
     0,		/* PixmapCacheMemoryStart */
     0,		/* PixmapCacheMemoryEnd */
+    0,		/* LinePatternMaxLength */
+    NULL	/* LinePatternBuffer */
 };

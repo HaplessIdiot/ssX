@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/25 15:42:01 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/nec/Imakefile,v 3.4 1996/10/08 12:42:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/nec/Imakefile,v 3.5 1996/12/23 07:06:51 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -76,6 +76,8 @@ InstallLinkKitNamedLibrary(xf86_hw,xf86_hwnec,$(XF98LINKKITDIR)/lib98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(xf86_HWlib.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_PCI.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(IBMRGB.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(Ti302X.h,$(XF98LINKKITDIR)/include)
 #endif
 
 DependTarget()

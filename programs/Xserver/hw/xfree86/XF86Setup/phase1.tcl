@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.12 1996/10/26 09:35:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.13 1996/12/27 06:54:09 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -192,6 +192,10 @@ set ConfigFile [xf86config_findfile]
 set StartServer 1
 set ReConfig 0
 set UseConfigFile 0
+set UseLoader 1
+if { ![file exists $Xwinhome/bin/XF86_LOADER] } {
+	set UseLoader 0
+}
 if { [string length $ConfigFile] > 0 } {
 	if [info exists env(DISPLAY)] {
 		set msg [format "%s\n \n%s\n \n%s" \
@@ -227,8 +231,9 @@ if { [string length $ConfigFile] > 0 } {
 			configuration with this program" okay
 		    exit 1
 		}
-		if { ![file exists $Xwinhome/bin/XF86_VGA16] } {
-		    mesg "The VGA16 server is required when using\n\
+		if { !$UseLoader && ![file exists $Xwinhome/bin/XF86_VGA16] } {
+		    mesg "The XFree86 loader (XF86_LOADER) or the VGA16\n\
+		    	server is required when using\n\
 			this program to set the initial configuration" okay
 		    exit 1
 		}
@@ -247,8 +252,10 @@ if { [string length $ConfigFile] > 0 } {
 	    mesg "You need to be root to run this program" okay
 	    exit 1
 	}
-	if { !$ReConfig && ![file exists $Xwinhome/bin/XF86_VGA16] } {
-	    mesg "The VGA16 server is required to run this program" okay
+	if { !$ReConfig && !$UseLoader
+		&& ![file exists $Xwinhome/bin/XF86_VGA16] } {
+	    mesg "Either the XFree86 loader (XF86_LOADER) or the\n\
+	    	VGA16 server is required to run this program" okay
 	    exit 1
 	}
 	# initialize the configuration variables
@@ -332,8 +339,8 @@ if $StartServer {
 	# write out a temp XF86Config file
 	writeXF86Config $Confname-1 -vgamode -generic
 
-	mesg "Press \[Enter\] to switch to graphics mode.\n\
-		\nThis may take a while..." okay
+	mesg "Ready to switch to graphics mode.\n\
+		\nIt may take a while" okay
 
 	set ServerPID [start_server VGA16 $Confname-1 ServerOut-1]
 

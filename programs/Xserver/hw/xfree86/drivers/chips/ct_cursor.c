@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.1 1997/03/06 23:14:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.2 1997/03/22 09:35:32 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -140,6 +140,8 @@ CHIPSShowCursor()
 void
 CHIPSHideCursor()
 {
+    ctBLTWAITGENERAL;
+    
     /* turn the cursor off */
     if (ctisHiQV32)
 	outw(0x3D6, 0x10A0);
@@ -556,6 +558,8 @@ CHIPSMoveCursor(pScr, x, y)
     if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
 	y *= 2;
 
+    ctBLTWAITGENERAL;
+    
     /* Program the cursor origin (offset into the cursor bitmap). */
     if (ctisHiQV32) {
 	outw(0x3D6, ((x & 0xFF) << 8) | 0xA4);
@@ -652,6 +656,8 @@ CHIPSWarpCursor(pScr, x, y)
     ScreenPtr pScr;
     int x, y;
 {
+    ctBLTWAITGENERAL;
+    
     miPointerWarpCursor(pScr, x, y);
     xf86Info.currentScreen = pScr;
 }
@@ -663,6 +669,8 @@ CHIPSQueryBestSize(class, pwidth, pheight, pScreen)
     short *pheight;
     ScreenPtr pScreen;
 {
+    ctBLTWAITGENERAL;
+    
     if (*pwidth > 0) {
 	switch (class) {
 	case CursorShape:

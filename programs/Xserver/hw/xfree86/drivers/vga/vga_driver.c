@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.4 1997/03/12 11:23:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.5 1997/03/27 08:31:06 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -250,11 +250,27 @@ ModuleInit(data,magic)
 	* magic= MAGIC_VERSION;
 	break;
     case 1:
+#ifndef PC98_EGC
 	* data = (pointer)&VGA;
+#else
+	* data = (pointer)&EGC;
+#endif
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
+#ifdef PC98_EGC
+    case 2:
+	* data = (pointer)"libvga16.a";
+	* magic= MAGIC_LOAD;
+	break;
+    case 3:
+	* data = (pointer)"libegc.a";
+	* magic= MAGIC_LOAD;
+	break;
+#endif
     default:
+#ifndef PC98_EGC
         xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
+#endif
         * magic= MAGIC_DONE;
 	break;
     }

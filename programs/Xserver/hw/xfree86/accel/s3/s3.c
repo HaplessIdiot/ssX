@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.164 1997/03/24 16:29:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.165 1997/03/27 08:30:09 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -317,6 +317,9 @@ ModuleInit(data,magic)
         * data = (pointer) "libxf86cache.a";
         * magic= MAGIC_LOAD;
         break;
+    case 7:
+        * magic= MAGIC_DONT_CHECK_UNRESOLVED;
+	break;
     default:
         * magic= MAGIC_DONE;
         break;

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:41:17 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/Imakefile,v 3.10 1997/03/11 13:09:14 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/Imakefile,v 3.11 1997/03/24 13:13:50 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -25,14 +25,14 @@ PIOSRCS =  s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \
 	s3scrin.c s3blt.c s3plypt.c \
 	s3line.c s3seg.c s3frect.c s3text.c \
 	s3font.c s3fcach.c s3dline.c \
-	s3dseg.c s3bcach.c
+	s3dseg.c s3bcach.c s3mod.c
 
 PIOOBJS =  s3cmap.o s3gc.o s3gc16.o s3gc24.o s3gc32.o s3fs.o s3ss.o \
 	s3gs.o s3win.o s3im.o s3bstor.o \
 	s3scrin.o s3blt.o s3plypt.o \
 	s3line.o s3seg.o s3frect.o s3text.o \
 	s3font.o s3fcach.o s3dline.o \
-	s3dseg.o s3bcach.o
+	s3dseg.o s3bcach.o s3mod.o
 
 SRCS = 	$(S3SRCS) $(PIOSRCS)
 
@@ -106,6 +106,7 @@ LinkSourceFile(s3init.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3line.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3linear.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3misc.c,$(XF86SRC)/accel/s3)
+LinkSourceFile(s3mod.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3name.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3plypt.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3ramdacs.c,$(XF86SRC)/accel/s3)
@@ -116,6 +117,7 @@ LinkSourceFile(s3text.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3win.c,$(XF86SRC)/accel/s3)
 
 InstallLinkKitLibrary(s3pwskb,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitLibrary(s3pwskbpio,$(XF98LINKKITDIR)/drivers98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(confS3.SHsuf,$(XF98LINKKITDIR))
 #endif
