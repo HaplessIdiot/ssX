@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.7 1994/09/03 02:51:46 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.8 1994/09/04 10:47:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1299,11 +1299,10 @@ configDeviceSection()
 
   /* Allocate one more device */
   if ( device_list == NULL ) {
-    device_list = (GDevPtr)
-    xalloc(sizeof(GDevRec));
+    device_list = (GDevPtr) xalloc(sizeof(GDevRec));
   } else {
-    device_list = (GDevPtr)
-    xrealloc(device_list,(n_devices+1) * sizeof(GDevRec));
+    device_list = (GDevPtr) xrealloc(device_list,
+				     (n_devices+1) * sizeof(GDevRec));
   }
   devp = &(device_list[n_devices]); /* Point to the last device */
   n_devices++; 
@@ -1561,11 +1560,10 @@ configMonitorSection()
       
   /* Allocate one more monitor */
   if ( monitor_list == NULL ) {
-    monitor_list = (MonPtr)
-    xalloc(sizeof(MonRec));
+    monitor_list = (MonPtr) xalloc(sizeof(MonRec));
   } else {
-    monitor_list = (MonPtr)
-    xrealloc(monitor_list,(n_monitors+1) * sizeof(MonRec));
+    monitor_list = (MonPtr) xrealloc(monitor_list,
+				     (n_monitors+1) * sizeof(MonRec));
   }
   monp = &(monitor_list[n_monitors]); /* Point to the new monitor */
   monp->Modes = 0;
