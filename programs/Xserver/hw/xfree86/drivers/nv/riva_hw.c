@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.47 2003/02/10 23:42:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.48 2003/03/12 21:27:18 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -2031,25 +2031,6 @@ static void nv10GetConfig
     chip->UnloadStateExt  = UnloadStateExt;
     chip->SetStartAddress = SetStartAddress;
     chip->LockUnlock      = nv4LockUnlock;
-
-    switch(pNv->Chipset & 0x0ff0) {
-    case 0x0110:
-    case 0x0170:
-    case 0x0180:
-    case 0x01F0:
-    case 0x0250:
-    case 0x0280:
-    case 0x0300:
-    case 0x0310:
-    case 0x0320:
-    case 0x0330:
-    case 0x0340:
-        chip->twoHeads = TRUE;
-        break;
-    default:
-        chip->twoHeads = FALSE;
-        break;
-    }
 }
 int RivaGetConfig
 (
@@ -2057,10 +2038,8 @@ int RivaGetConfig
 )
 {
     RIVA_HW_INST *chip = &pNv->riva;
-    /*
-     * Save this so future SW know whats it's dealing with.
-     */
-    chip->Version = RIVA_SW_VERSION;
+
+    chip->twoHeads = pNv->twoHeads;
     /*
      * Chip specific configuration.
      */

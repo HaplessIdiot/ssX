@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.30 2002/11/28 23:02:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.31 2003/01/02 20:44:56 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -155,8 +155,6 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(pNv->riva.Architecture >= NV_ARCH_10)
 	pNv->riva.CURSOR = (U032 *)(pNv->FbStart + pNv->riva.CursorStart);
 
-    pNv->riva.LockUnlock(&pNv->riva, 0);
-
     pNv->riva.CalcStateExt(&pNv->riva, 
                            nvReg,
                            i,
@@ -171,7 +169,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        nvReg->pixel |= (1 << 7);
        nvReg->scale |= (1 << 8) ;
     }
-    if(pNv->SecondCRTC) {
+    if(pNv->CRTCnumber) {
        nvReg->head  = pNv->riva.PCRTC0[0x00000860/4] & ~0x00001000;
        nvReg->head2 = pNv->riva.PCRTC0[0x00002860/4] | 0x00001000;
        nvReg->crtcOwner = 3;
@@ -251,10 +249,13 @@ NVDACSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
     saveFonts = FALSE;
 #endif
 
+    pNv->riva.LockUnlock(&pNv->riva, 0);
+
     vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE | 
                              (saveFonts? VGA_SR_FONTS : 0));
     pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
 
+    /* can't read this reliably on NV11 */
     if((pNv->Chipset & 0x0ff0) == 0x0110) 
        nvReg->crtcOwner = ((pNv->Chipset & 0x0fff) == 0x0112) ? 3 : 0;
 }
@@ -318,24 +319,6 @@ NVDACLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 #define DDC_SDA_WRITE_MASK (1 << 4)
 #define DDC_SCL_WRITE_MASK (1 << 5)
 
-static unsigned int
-NV_ddc1Read(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    unsigned char val;
-
-    /* wait for Vsync */
-    while(VGA_RD08(pNv->riva.PCIO, 0x3da) & 0x08);
-    while(!(VGA_RD08(pNv->riva.PCIO, 0x3da) & 0x08));
-
-    /* Get the result */
-    VGA_WR08(pNv->riva.PCIO, 0x3d4, pNv->DDCBase);
-    val = VGA_RD08(pNv->riva.PCIO, 0x3d5);
-    DEBUG(ErrorF("NV_ddc1Read(%p,...) returns %d\n",
-                 pScrn, val));
-    return (val & DDC_SDA_READ_MASK) != 0;
-}
-
 static void
 NV_I2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
@@ -376,8 +359,8 @@ NV_I2CPutBits(I2CBusPtr b, int clock, int data)
     DEBUG(ErrorF("NV_I2CPutBits(%p, %d, %d) val=0x%x\n", b, clock, data, val));
 }
 
-static Bool
-NV_i2cInit(ScrnInfoPtr pScrn)
+Bool
+NVDACi2cInit(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
     I2CBusPtr I2CPtr;
@@ -397,19 +380,5 @@ NV_i2cInit(ScrnInfoPtr pScrn)
         return FALSE;
     }
     return TRUE;
-}
-
-/*
- * NVRamdacInit
- */
-void
-NVRamdacInit(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVRamdacInit\n"));
-    pNv->ddc1Read = NV_ddc1Read;
-    /* vgaHWddc1SetSpeed will only work if the card is in VGA mode */
-    pNv->DDC1SetSpeed = vgaHWddc1SetSpeed;
-    pNv->i2cInit = NV_i2cInit;
 }
 

@@ -36,10 +36,9 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.23 2003/01/02 20:44:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.24 2003/02/10 23:42:51 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
-#define RIVA_SW_VERSION 0x00010003
 
 /*
  * Define supported architectures.
@@ -309,7 +308,6 @@ typedef struct _riva_hw_inst
      * Chip specific settings.
      */
     U032 Architecture;
-    U032 Version;
     U032 Chipset;
     U032 CrystalFreqKHz;
     U032 RamAmountKBytes;
