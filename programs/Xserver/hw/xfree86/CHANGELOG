@@ -1,4 +1,8 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 158. Small fixes in keyboard maps:
+      - add an explicit type declaration in level3(ralt_switch)
+        (Bugzilla #225, Séamus Ó Ciardhuáin);
+      - fix wrong group number in Russian keyboard map (Ivan Pascal).
  157. Add rootless implementation for XDarwin using Apple's Xplugin API
       (Apple and Torrey T. Lyons).
  156. Fix precision problems in xf86XVClipVideoHelper and in Mach64 XVideo
@@ -16921,7 +16925,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2679 2003/04/30 16:56:16 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2680 2003/04/30 23:15:30 torrey Exp $
 
 
 
