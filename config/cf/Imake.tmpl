@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.160tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.161tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1374,6 +1374,12 @@ TCLIBDIR = TclLibDir
 #ifndef ExtraLoadFlags
 #define ExtraLoadFlags /**/
 #endif
+#ifndef ExtraSharedLibraryLoadOptions
+#define ExtraSharedLibraryLoadOptions ExtraLoadOptions
+#endif
+#ifndef ExtraSharedLibraryLoadFlags
+#define ExtraSharedLibraryLoadFlags ExtraLoadFlags
+#endif
 #ifndef LdCombineFlags
 #if SystemV4
 #define LdCombineFlags -r
@@ -1911,7 +1917,9 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
     SHAREDCODEDEF = SharedCodeDef
          SHLIBDEF = SharedLibraryDef
 #ifdef SharedLibraryLoadFlags
-     SHLIBLDFLAGS = SharedLibraryLoadFlags $(SHLIBGLOBALSFLAGS) $(EXTRA_LOAD_FLAGS)
+     SHLIBLDFLAGS = SharedLibraryLoadFlags \
+                    $(SHLIBGLOBALSFLAGS) \
+                    ExtraSharedLibraryLoadFlags ExtraSharedLibraryLoadOptions
 #endif
 /*
  * Here we set up flags needed to produce position-independent code

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.10 2004/03/30 10:34:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.11tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
- * $Revision: 1.11 $
- * $Author: herrb $
+ * $Revision: 1.12 $
+ * $Author: tsi $
  *
  * File Contents: This file consists of main Xfree video supported routines.
  *
@@ -236,17 +236,12 @@ static Atom xvColorKey, xvColorKeyMode, xvFilter
 void
 GX1InitVideo(ScreenPtr pScreen)
 {
-   GeodePtr pGeode;
-
    ScrnInfoPtr pScreenInfo = xf86Screens[pScreen->myNum];
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
    XF86VideoAdaptorPtr newAdaptor = NULL;
    
    int num_adaptors;
 
-   pGeode = GEODEPTR(pScreenInfo);
-
-   
    DEBUGMSG(0, (0, X_NONE, "InitVideo\n"));
    newAdaptor = GX1SetupImageVideo(pScreen);
    GX1InitOffscreenImages(pScreen);

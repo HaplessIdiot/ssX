@@ -21,6 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 #define DEBUG_PARSING 0
 
@@ -3055,7 +3056,7 @@ parse_generic_attrib_num(GLcontext *ctx, GLubyte ** inst,
 {
    *attrib = parse_integer(inst, Program);
 
-   if ((*attrib < 0) || (*attrib > MAX_VERTEX_PROGRAM_ATTRIBS))
+   if (*attrib > MAX_VERTEX_PROGRAM_ATTRIBS)
    {
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid generic vertex attribute index");
@@ -3078,7 +3079,7 @@ parse_texcoord_num (GLcontext * ctx, GLubyte ** inst,
 {
    *coord = parse_integer (inst, Program);
 
-   if ((*coord < 0) || (*coord >= ctx->Const.MaxTextureUnits)) {
+   if (*coord >= ctx->Const.MaxTextureUnits) {
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid texture unit index");
       _mesa_error (ctx, GL_INVALID_OPERATION, "Invalid texture unit index");
@@ -4085,11 +4086,11 @@ static GLuint
 parse_param (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
              struct arb_program *Program)
 {
-   GLuint found, specified_length, err;
+   GLuint found;
+   GLint specified_length;
    char *error_msg;
    struct var_cache *param_var;
 
-   err = 0;
    param_var = parse_string (inst, vc_head, Program, &found);
    Program->Position = parse_position (inst);
 
@@ -4683,7 +4684,8 @@ parse_src_reg (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
                GLboolean *IsRelOffset )
 {
    struct var_cache *src;
-   GLuint binding_state, binding_idx, is_generic, found, offset;
+   GLuint binding_state, binding_idx, is_generic, found;
+   GLint offset;
 
    /* And the binding for the src */
    switch (*(*inst)++) {
@@ -5134,7 +5136,7 @@ parse_fp_instruction (GLcontext * ctx, GLubyte ** inst,
             case OP_XPD_SAT:
                fp->Saturate = 1;
             case OP_XPD:
-               fp->Opcode = FP_OPCODE_X2D;
+               fp->Opcode = FP_OPCODE_XPD;
                break;
          }
 
@@ -5937,6 +5939,21 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    struct var_cache *vc_head;
    dict *dt;
    GLubyte *parsed, *inst;
+   GLubyte *strCopy;
+
+   /* init to zero in case of parse error */
+   _mesa_bzero(program, sizeof(*program));
+
+   /* Need a null-terminated string for parsing */
+   strCopy = (GLubyte *) _mesa_malloc(len + 1);
+   if (!strCopy) {
+      _mesa_error (ctx, GL_OUT_OF_MEMORY, "glProgramStringARB");
+      return 1;
+   }
+   _mesa_memcpy(strCopy, str, len);
+   strCopy[len] = 0;
+   str = strCopy;
+
 
 #if DEBUG_PARSING
    fprintf (stderr, "Loading grammar text!\n");
@@ -5947,6 +5964,7 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
       _mesa_set_program_error (ctx, error_pos, error_msg);
       _mesa_error (ctx, GL_INVALID_OPERATION,
                    "Error loading grammer rule set");
+      _mesa_free(strCopy);
       return 1;
    }
 
@@ -5963,6 +5981,7 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
       _mesa_error (ctx, GL_INVALID_OPERATION, "Parse Error");
 
       dict_destroy (&dt);
+      _mesa_free(strCopy);
       return 1;
    }
 
@@ -5972,6 +5991,7 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    dict_destroy (&dt);
 
    /* Initialize the arb_program struct */
+   program->Base.String = strCopy;
    program->Base.NumInstructions =
    program->Base.NumTemporaries =
    program->Base.NumParameters =
@@ -6033,5 +6053,6 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
 #if DEBUG_PARSING
    printf ("_mesa_parse_arb_program() done\n");
 #endif
+
    return err;
 }

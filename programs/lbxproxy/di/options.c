@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/options.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/options.c,v 1.10tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -307,11 +307,11 @@ LbxOptInit(server)
 int
 LbxOptBuildReq(server, buf)
     XServerPtr server;
-    register char *buf;
+    register unsigned char *buf;
 {
     int		  i;
-    char *bufstart = buf;
-    char *pnopts = buf++;
+    unsigned char *bufstart = buf;
+    unsigned char *pnopts = buf++;
 
     server->optcount = 0;
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $Xorg: sgi.cf,v 1.4 2000/08/17 19:41:48 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.13tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.14tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -45,6 +45,9 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
 #ifndef ExtraLoadFlags
 #define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIRPATH)
+#endif
+#ifndef ExtraSharedLibraryLoadFlags
+#define ExtraSharedLibraryLoadFlags /* */
 #endif
 #endif
 

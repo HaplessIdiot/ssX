@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/tnl/t_vb_lighttmp.h,v 1.2tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.1
@@ -254,8 +254,9 @@ static void TAG(light_rgba)( GLcontext *ctx,
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
 
    GLfloat (*Fcolor)[4] = (GLfloat (*)[4]) store->LitColor[0].data;
+#if IDX & LIGHT_TWOSIDE
    GLfloat (*Bcolor)[4] = (GLfloat (*)[4]) store->LitColor[1].data;
-   GLfloat (*color[2])[4];
+#endif
 
    const GLuint nr = VB->Count;
 
@@ -265,9 +266,6 @@ static void TAG(light_rgba)( GLcontext *ctx,
 
    (void) nstride;
    (void) vstride;
-
-   color[0] = Fcolor;
-   color[1] = Bcolor;
 
    VB->ColorPtr[0] = &store->LitColor[0];
    sumA[0] = ctx->Light.Material.Attrib[MAT_ATTRIB_FRONT_DIFFUSE][3];

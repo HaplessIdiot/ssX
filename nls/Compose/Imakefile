@@ -3,10 +3,38 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.21 2002/06/03 22:19:43 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.22tsi Exp $
 
-#ifndef Win32Architecture
+#ifdef Win32Architecture
 # define ComposeTarget(name)						@@\
+AllTarget(name)								@@\
+	MakeDir(Concat($(BUILDLIBDIR:/=\)\locale\,name))		@@\
+	RemoveFile(Concat($(BUILDLIBDIR:/=\)\locale\,name\Compose))	@@\
+	cd Concat($(BUILDLIBDIR:/=\)\locale\,name) && \			@@\
+	  $(LN) Concat($(BUILDLIBTOP:/=\)\..\..\$(CURRENT_DIR:/=\)\,name.ct) Compose @@\
+									@@\
+CppFileTarget(name.ct,name,$(DEFINES),NullParameter)			@@\
+									@@\
+InstallNamedNonExec(name.ct,Compose,$(XLOCALEDIR)/name)
+#else
+# ifdef SGIArchitecture
+#  define ComposeTarget(name)						@@\
+AllTarget(name.ct)							@@\
+									@@\
+name.ct: name								@@\
+	RemoveFile($@)							@@\
+	$(CPP) CppNoLineInfoOption $(DEFINES) name | CppSedMagic >$@	@@\
+	MakeDir($(BUILDLIBDIR)/locale/name)				@@\
+	RemoveFile($(BUILDLIBDIR)/locale/name/Compose)			@@\
+	cd $(BUILDLIBDIR)/locale/name && \				@@\
+	  $(LN) $(BUILDLIBTOP)/../../$(CURRENT_DIR)/name.ct Compose	@@\
+									@@\
+clean::									@@\
+	RemoveFile(name.ct)						@@\
+									@@\
+InstallNamedNonExec(name.ct,Compose,$(XLOCALEDIR)/name)
+# else
+#  define ComposeTarget(name)						@@\
 AllTarget(name.ct)							@@\
 									@@\
 name.ct: name								@@\
@@ -14,22 +42,14 @@ name.ct: name								@@\
 	$(CPP) CppNoLineInfoOption $(DEFINES) <name | CppSedMagic >$@	@@\
 	MakeDir($(BUILDLIBDIR)/locale/name)				@@\
 	RemoveFile($(BUILDLIBDIR)/locale/name/Compose)			@@\
-	cd $(BUILDLIBDIR)/locale/name && $(LN) $(BUILDLIBTOP)/../../$(CURRENT_DIR)/name.ct Compose @@\
+	cd $(BUILDLIBDIR)/locale/name && \				@@\
+	  $(LN) $(BUILDLIBTOP)/../../$(CURRENT_DIR)/name.ct Compose	@@\
 									@@\
 clean::									@@\
 	RemoveFile(name.ct)						@@\
 									@@\
 InstallNamedNonExec(name.ct,Compose,$(XLOCALEDIR)/name)
-#else
-# define ComposeTarget(name)						@@\
-AllTarget(name)								@@\
-	MakeDir(Concat($(BUILDLIBDIR:/=\)\locale\,name))		@@\
-	RemoveFile(Concat($(BUILDLIBDIR:/=\)\locale\,name\Compose))	@@\
-	cd Concat($(BUILDLIBDIR:/=\)\locale\,name) && $(LN) Concat($(BUILDLIBTOP:/=\)\..\..\$(CURRENT_DIR:/=\)\,name.ct) Compose @@\
-									@@\
-CppFileTarget(name.ct,name,$(DEFINES),NullParameter)			@@\
-									@@\
-InstallNamedNonExec(name.ct,Compose,$(XLOCALEDIR)/name)
+# endif
 #endif
 
 ComposeTarget(armscii-8)
