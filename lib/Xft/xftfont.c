@@ -27,7 +27,10 @@
 #include "xftint.h"
 
 FcPattern *
-XftFontMatch (Display *dpy, int screen, FcPattern *pattern, FcResult *result)
+XftFontMatch (Display		*dpy,
+	      int		screen,
+	      _Xconst FcPattern *pattern,
+	      FcResult		*result)
 {
     FcPattern	*new;
     FcPattern	*match;

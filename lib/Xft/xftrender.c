@@ -33,19 +33,19 @@
  */
 
 void
-XftGlyphRender (Display	    *dpy,
-		int	    op,
-		Picture	    src,
-		XftFont	    *public,
-		Picture	    dst,
-		int	    srcx,
-		int	    srcy,
-		int	    x,
-		int	    y,
-		FT_UInt	    *glyphs,
-		int	    nglyphs)
+XftGlyphRender (Display		*dpy,
+		int		op,
+		Picture		src,
+		XftFont		*pub,
+		Picture		dst,
+		int		srcx,
+		int		srcy,
+		int		x,
+		int		y,
+		_Xconst FT_UInt	*glyphs,
+		int		nglyphs)
 {
-    XftFontInt	    *font = (XftFontInt *) public;
+    XftFontInt	    *font = (XftFontInt *) pub;
     int		    i;
     FT_UInt	    missing[XFT_NMISSING];
     int		    nmissing;
@@ -73,11 +73,11 @@ XftGlyphRender (Display	    *dpy,
 	g = glyphs[i];
 	if (g > max)
 	    max = g;
-	if (XftFontCheckGlyph (dpy, public, FcTrue, g, missing, &nmissing))
+	if (XftFontCheckGlyph (dpy, pub, FcTrue, g, missing, &nmissing))
 	    glyphs_loaded = FcTrue;
     }
     if (nmissing)
-	XftFontLoadGlyphs (dpy, public, FcTrue, missing, nmissing);
+	XftFontLoadGlyphs (dpy, pub, FcTrue, missing, nmissing);
     
     if (!font->glyphset)
 	goto bail1;
@@ -139,21 +139,21 @@ XftGlyphRender (Display	    *dpy,
 	free (chars);
 bail1:
     if (glyphs_loaded)
-	_XftFontManageMemory (dpy, public);
+	_XftFontManageMemory (dpy, pub);
 }
 
 void
-XftGlyphSpecRender (Display	    *dpy,
-		    int		    op,
-		    Picture	    src,
-		    XftFont	    *public,
-		    Picture	    dst,
-		    int		    srcx, 
-		    int		    srcy,
-		    XftGlyphSpec    *glyphs,
-		    int		    nglyphs)
+XftGlyphSpecRender (Display		    *dpy,
+		    int			    op,
+		    Picture		    src,
+		    XftFont		    *pub,
+		    Picture		    dst,
+		    int			    srcx,
+		    int			    srcy,
+		    _Xconst XftGlyphSpec    *glyphs,
+		    int			    nglyphs)
 {
-    XftFontInt	    *font = (XftFontInt *) public;
+    XftFontInt	    *font = (XftFontInt *) pub;
     int		    i, j;
     FT_UInt	    missing[XFT_NMISSING];
     int		    nmissing;
@@ -190,11 +190,11 @@ XftGlyphSpecRender (Display	    *dpy,
 	g = glyphs[i].glyph;
 	if (g > max)
 	    max = g;
-	if (XftFontCheckGlyph (dpy, public, FcTrue, g, missing, &nmissing))
+	if (XftFontCheckGlyph (dpy, pub, FcTrue, g, missing, &nmissing))
 	    glyphs_loaded = FcTrue;
     }
     if (nmissing)
-	XftFontLoadGlyphs (dpy, public, FcTrue, missing, nmissing);
+	XftFontLoadGlyphs (dpy, pub, FcTrue, missing, nmissing);
     
     if (!font->glyphset)
 	goto bail1;
@@ -348,19 +348,19 @@ bail2:
 	free (chars);
 bail1:
     if (glyphs_loaded)
-	_XftFontManageMemory (dpy, public);
+	_XftFontManageMemory (dpy, pub);
 }
 
 void
-XftCharSpecRender (Display	    *dpy,
-		   int		    op,
-		   Picture	    src,
-		   XftFont	    *public,
-		   Picture	    dst,
-		   int		    srcx, 
-		   int		    srcy,
-		   XftCharSpec	    *chars,
-		   int		    len)
+XftCharSpecRender (Display		*dpy,
+		   int			op,
+		   Picture		src,
+		   XftFont		*pub,
+		   Picture		dst,
+		   int			srcx, 
+		   int			srcy,
+		   _Xconst XftCharSpec	*chars,
+		   int			len)
 {
     XftGlyphSpec    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -375,26 +375,26 @@ XftCharSpecRender (Display	    *dpy,
     }
     for (i = 0; i < len; i++)
     {
-	glyphs[i].glyph = XftCharIndex(dpy, public, chars[i].ucs4);
+	glyphs[i].glyph = XftCharIndex(dpy, pub, chars[i].ucs4);
 	glyphs[i].x = chars[i].x;
 	glyphs[i].y = chars[i].y;
     }
 
-    XftGlyphSpecRender (dpy, op, src, public, dst, srcx, srcy, glyphs, len);
+    XftGlyphSpecRender (dpy, op, src, pub, dst, srcx, srcy, glyphs, len);
 
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftGlyphFontSpecRender (Display		    *dpy,
-			int		    op,
-			Picture		    src,
-			Picture		    dst,
-			int		    srcx,
-			int		    srcy,
-			XftGlyphFontSpec    *glyphs,
-			int		    nglyphs)
+XftGlyphFontSpecRender (Display			    *dpy,
+			int			    op,
+			Picture			    src,
+			Picture			    dst,
+			int			    srcx,
+			int			    srcy,
+			_Xconst XftGlyphFontSpec    *glyphs,
+			int			    nglyphs)
 {
     int		    i, j;
     XftFont	    *prevPublic;
@@ -429,16 +429,16 @@ XftGlyphFontSpecRender (Display		    *dpy,
     g = glyphs[0].glyph;
     for (i = 0; i < nglyphs; i++)
     {
-	XftFont	    *public = glyphs[i].font;
-	XftFontInt  *font = (XftFontInt *) public;
+	XftFont	    *pub = glyphs[i].font;
+	XftFontInt  *font = (XftFontInt *) pub;
 	g = glyphs[i].glyph;
 	if (g > max)
 	    max = g;
 	nmissing = 0;
-	if (XftFontCheckGlyph (dpy, public, FcTrue, g, missing, &nmissing))
+	if (XftFontCheckGlyph (dpy, pub, FcTrue, g, missing, &nmissing))
 	    glyphs_loaded = FcTrue;
 	if (nmissing)
-	    XftFontLoadGlyphs (dpy, public, FcTrue, missing, nmissing);
+	    XftFontLoadGlyphs (dpy, pub, FcTrue, missing, nmissing);
 	if (!font->format)
 	    goto bail1;
 	if (!font->glyphset)
@@ -481,8 +481,8 @@ XftGlyphFontSpecRender (Display		    *dpy,
     firstFont = 0;
     for (i = 0; i < nglyphs; i++)
     {
-	XftFont	    *public = glyphs[i].font;
-	XftFontInt  *font = (XftFontInt *) public;
+	XftFont	    *pub = glyphs[i].font;
+	XftFontInt  *font = (XftFontInt *) pub;
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
 	if (g >= font->num_glyphs || !font->glyphs[g])
@@ -501,8 +501,8 @@ XftGlyphFontSpecRender (Display		    *dpy,
     prevPublic = 0;
     while (++i < nglyphs)
     {
-	XftFont	    *public = glyphs[i].font;
-	XftFontInt  *font = (XftFontInt *) public;
+	XftFont	    *pub = glyphs[i].font;
+	XftFontInt  *font = (XftFontInt *) pub;
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
 	if (g >= font->num_glyphs || !font->glyphs[g])
@@ -513,9 +513,9 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	 */
 	if ((glyph = font->glyphs[g]))
 	{
-	    if (public != prevPublic || x != glyphs[i].x || y != glyphs[i].y)
+	    if (pub != prevPublic || x != glyphs[i].x || y != glyphs[i].y)
 	    {
-		prevPublic = public;
+		prevPublic = pub;
 		x = glyphs[i].x;
 		y = glyphs[i].y;
 		++nelt;
@@ -543,8 +543,8 @@ XftGlyphFontSpecRender (Display		    *dpy,
     prevPublic = 0;
     for (i = 0; i < nglyphs; i++)
     {
-	XftFont	    *public = glyphs[i].font;
-	XftFontInt  *font = (XftFontInt *) public;
+	XftFont	    *pub = glyphs[i].font;
+	XftFontInt  *font = (XftFontInt *) pub;
 	
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
@@ -552,7 +552,7 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	    g = 0;
 	if ((glyph = font->glyphs[g]))
 	{
-	    if (!i || public != prevPublic || x != glyphs[i].x || y != glyphs[i].y)
+	    if (!i || pub != prevPublic || x != glyphs[i].x || y != glyphs[i].y)
 	    {
 		if (n)
 		{
@@ -563,7 +563,7 @@ XftGlyphFontSpecRender (Display		    *dpy,
 		elts[nelt].chars = char8 + size * j;
 		elts[nelt].xOff = glyphs[i].x - x;
 		elts[nelt].yOff = glyphs[i].y - y;
-		prevPublic = public;
+		prevPublic = pub;
 		x = glyphs[i].x;
 		y = glyphs[i].y;
 		n = 0;
@@ -614,14 +614,14 @@ bail1:
 }
 
 void
-XftCharFontSpecRender (Display		    *dpy,
-		       int		    op,
-		       Picture		    src,
-		       Picture		    dst,
-		       int		    srcx,
-		       int		    srcy,
-		       XftCharFontSpec	    *chars,
-		       int		    len)
+XftCharFontSpecRender (Display			*dpy,
+		       int			op,
+		       Picture			src,
+		       Picture			dst,
+		       int			srcx,
+		       int			srcy,
+		       _Xconst XftCharFontSpec	*chars,
+		       int			len)
 {
     XftGlyphFontSpec	*glyphs, glyphs_local[NUM_LOCAL];
     int			i;
@@ -648,17 +648,17 @@ XftCharFontSpecRender (Display		    *dpy,
 }
 
 void
-XftTextRender8 (Display *dpy,
-		int	op,
-		Picture	src,
-		XftFont	*public,
-		Picture	dst,
-		int	srcx,
-		int	srcy,
-		int	x,
-		int	y,
-		FcChar8	*string,
-		int	len)
+XftTextRender8 (Display		*dpy,
+		int		op,
+		Picture		src,
+		XftFont		*pub,
+		Picture		dst,
+		int		srcx,
+		int		srcy,
+		int		x,
+		int		y,
+		_Xconst FcChar8	*string,
+		int		len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -672,25 +672,25 @@ XftTextRender8 (Display *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, string[i]);
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRender16 (Display    *dpy,
-		 int	    op,
-		 Picture    src,
-		 XftFont    *public,
-		 Picture    dst,
-		 int	    srcx,
-		 int	    srcy,
-		 int	    x,
-		 int	    y,
-		 FcChar16   *string,
-		 int	    len)
+XftTextRender16 (Display	    *dpy,
+		 int		    op,
+		 Picture	    src,
+		 XftFont	    *pub,
+		 Picture	    dst,
+		 int		    srcx,
+		 int		    srcy,
+		 int		    x,
+		 int		    y,
+		 _Xconst FcChar16   *string,
+		 int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -704,25 +704,25 @@ XftTextRender16 (Display    *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, string[i]);
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRender16BE (Display  *dpy,
-		   int	    op,
-		   Picture  src,
-		   XftFont  *public,
-		   Picture  dst,
-		   int	    srcx,
-		   int	    srcy,
-		   int	    x,
-		   int	    y,
-		   FcChar8  *string,
-		   int	    len)
+XftTextRender16BE (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *pub,
+		   Picture	    dst,
+		   int		    srcx,
+		   int		    srcy,
+		   int		    x,
+		   int		    y,
+		   _Xconst FcChar8  *string,
+		   int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -736,26 +736,26 @@ XftTextRender16BE (Display  *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, 
+	glyphs[i] = XftCharIndex (dpy, pub, 
 				  (string[i*2]<<8) | string[i*2+1]);
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRender16LE (Display  *dpy,
-		   int	    op,
-		   Picture  src,
-		   XftFont  *public,
-		   Picture  dst,
-		   int	    srcx,
-		   int	    srcy,
-		   int	    x,
-		   int	    y,
-		   FcChar8  *string,
-		   int	    len)
+XftTextRender16LE (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *pub,
+		   Picture	    dst,
+		   int		    srcx,
+		   int		    srcy,
+		   int		    x,
+		   int		    y,
+		   _Xconst FcChar8  *string,
+		   int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -769,26 +769,26 @@ XftTextRender16LE (Display  *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, 
+	glyphs[i] = XftCharIndex (dpy, pub, 
 				  string[i*2] | (string[i*2+1]<<8));
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRender32 (Display    *dpy,
-		 int	    op,
-		 Picture    src,
-		 XftFont    *public,
-		 Picture    dst,
-		 int	    srcx,
-		 int	    srcy,
-		 int	    x,
-		 int	    y,
-		 FcChar32   *string,
-		 int	    len)
+XftTextRender32 (Display	    *dpy,
+		 int		    op,
+		 Picture	    src,
+		 XftFont	    *pub,
+		 Picture	    dst,
+		 int		    srcx,
+		 int		    srcy,
+		 int		    x,
+		 int		    y,
+		 _Xconst FcChar32   *string,
+		 int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -802,25 +802,25 @@ XftTextRender32 (Display    *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, string[i]);
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRender32BE (Display  *dpy,
-		   int	    op,
-		   Picture  src,
-		   XftFont  *public,
-		   Picture  dst,
-		   int	    srcx,
-		   int	    srcy,
-		   int	    x,
-		   int	    y,
-		   FcChar8  *string,
-		   int	    len)
+XftTextRender32BE (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *pub,
+		   Picture	    dst,
+		   int		    srcx,
+		   int		    srcy,
+		   int		    x,
+		   int		    y,
+		   _Xconst FcChar8  *string,
+		   int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -834,29 +834,29 @@ XftTextRender32BE (Display  *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, 
+	glyphs[i] = XftCharIndex (dpy, pub, 
 				  (string[i*4] << 24) |
 				  (string[i*4+1] << 16) |
 				  (string[i*4+2] << 8) |
 				  (string[i*4+3]));
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRender32LE (Display  *dpy,
-		   int	    op,
-		   Picture  src,
-		   XftFont  *public,
-		   Picture  dst,
-		   int	    srcx,
-		   int	    srcy,
-		   int	    x,
-		   int	    y,
-		   FcChar8  *string,
-		   int	    len)
+XftTextRender32LE (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *pub,
+		   Picture	    dst,
+		   int		    srcx,
+		   int		    srcy,
+		   int		    x,
+		   int		    y,
+		   _Xconst FcChar8  *string,
+		   int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -870,29 +870,29 @@ XftTextRender32LE (Display  *dpy,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, 
+	glyphs[i] = XftCharIndex (dpy, pub, 
 				  (string[i*4]) |
 				  (string[i*4+1] << 8) |
 				  (string[i*4+2] << 16) |
 				  (string[i*4+3] << 24));
-    XftGlyphRender (dpy, PictOpOver, src, public, dst, 
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextRenderUtf8 (Display  *dpy,
-		   int	    op,
-		   Picture  src,
-		   XftFont  *public,
-		   Picture  dst,
-		   int	    srcx,
-		   int	    srcy,
-		   int	    x,
-		   int	    y,
-		   FcChar8  *string,
-		   int	    len)
+XftTextRenderUtf8 (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *pub,
+		   Picture	    dst,
+		   int		    srcx,
+		   int		    srcy,
+		   int		    x,
+		   int		    y,
+		   _Xconst FcChar8  *string,
+		   int		    len)
 {
     FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
     FcChar32	    ucs4;
@@ -920,11 +920,11 @@ XftTextRenderUtf8 (Display  *dpy,
 		free (glyphs);
 	    glyphs = glyphs_new;
 	}
-	glyphs[i++] = XftCharIndex (dpy, public, ucs4);
+	glyphs[i++] = XftCharIndex (dpy, pub, ucs4);
 	string += l;
 	len -= l;
     }
-    XftGlyphRender (dpy, PictOpOver, src, public, dst,
+    XftGlyphRender (dpy, PictOpOver, src, pub, dst,
 		     srcx, srcy, x, y, glyphs, i);
     if (glyphs != glyphs_local)
 	free (glyphs);

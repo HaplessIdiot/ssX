@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftextent.c,v 1.6 2001/04/01 14:00:01 tsi Exp $
+ * $XFree86: xc/lib/Xft/xftextent.c,v 1.8 2002/07/06 01:24:34 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -27,34 +27,34 @@
 #include "xftint.h"
    
 void
-XftGlyphExtents (Display	*dpy,
-		 XftFont	*public,
-		 FT_UInt	*glyphs,
-		 int		nglyphs,
-		 XGlyphInfo	*extents)
+XftGlyphExtents (Display	    *dpy,
+		 XftFont	    *pub,
+		 _Xconst FT_UInt    *glyphs,
+		 int		    nglyphs,
+		 XGlyphInfo	    *extents)
 {
-    XftFontInt	*font = (XftFontInt *) public;
-    FT_UInt	missing[XFT_NMISSING];
-    int		nmissing;
-    int		n;
-    FT_UInt	*g;
-    FT_UInt	glyph;
-    XftGlyph	*xftg;
-    FcBool	glyphs_loaded;
-    int         x, y;
-    int         left, right, top, bottom;
-    int         overall_left, overall_right;
-    int         overall_top, overall_bottom;
+    XftFontInt		*font = (XftFontInt *) pub;
+    FT_UInt		missing[XFT_NMISSING];
+    int			nmissing;
+    int			n;
+    _Xconst FT_UInt	*g;
+    FT_UInt		glyph;
+    XftGlyph		*xftg;
+    FcBool		glyphs_loaded;
+    int			x, y;
+    int			left, right, top, bottom;
+    int			overall_left, overall_right;
+    int			overall_top, overall_bottom;
     
     g = glyphs;
     n = nglyphs;
     nmissing = 0;
     glyphs_loaded = FcFalse;
     while (n--)
-	if (XftFontCheckGlyph (dpy, public, FcFalse, *g++, missing, &nmissing))
+	if (XftFontCheckGlyph (dpy, pub, FcFalse, *g++, missing, &nmissing))
 	    glyphs_loaded = FcTrue;
     if (nmissing)
-	XftFontLoadGlyphs (dpy, public, FcFalse, missing, nmissing);
+	XftFontLoadGlyphs (dpy, pub, FcFalse, missing, nmissing);
     g = glyphs;
     n = nglyphs;
     xftg = 0;
@@ -114,17 +114,17 @@ XftGlyphExtents (Display	*dpy,
 	extents->yOff = y;
     }
     if (glyphs_loaded)
-	_XftFontManageMemory (dpy, public);
+	_XftFontManageMemory (dpy, pub);
 }
 
 #define NUM_LOCAL   1024
 
 void
-XftTextExtents8 (Display    *dpy,
-		 XftFont    *public,
-		 FcChar8    *string, 
-		 int	    len,
-		 XGlyphInfo *extents)
+XftTextExtents8 (Display	    *dpy,
+		 XftFont	    *pub,
+		 _Xconst FcChar8    *string, 
+		 int		    len,
+		 XGlyphInfo	    *extents)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -141,18 +141,18 @@ XftTextExtents8 (Display    *dpy,
 	}
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, string[i]);
-    XftGlyphExtents (dpy, public, glyphs, len, extents);
+	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
+    XftGlyphExtents (dpy, pub, glyphs, len, extents);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextExtents16 (Display	*dpy,
-		  XftFont	*public,
-		  FcChar16	*string,
-		  int		len,
-		  XGlyphInfo	*extents)
+XftTextExtents16 (Display	    *dpy,
+		  XftFont	    *pub,
+		  _Xconst FcChar16  *string, 
+		  int		    len,
+		  XGlyphInfo	    *extents)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -169,18 +169,18 @@ XftTextExtents16 (Display	*dpy,
 	}
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, string[i]);
-    XftGlyphExtents (dpy, public, glyphs, len, extents);
+	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
+    XftGlyphExtents (dpy, pub, glyphs, len, extents);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextExtents32 (Display	*dpy,
-		  XftFont	*public,
-		  FcChar32	*string,
-		  int		len,
-		  XGlyphInfo	*extents)
+XftTextExtents32 (Display	    *dpy,
+		  XftFont	    *pub,
+		  _Xconst FcChar32  *string, 
+		  int		    len,
+		  XGlyphInfo	    *extents)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -197,18 +197,18 @@ XftTextExtents32 (Display	*dpy,
 	}
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (dpy, public, string[i]);
-    XftGlyphExtents (dpy, public, glyphs, len, extents);
+	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
+    XftGlyphExtents (dpy, pub, glyphs, len, extents);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftTextExtentsUtf8 (Display	*dpy,
-		    XftFont	*public,
-		    FcChar8	*string,
-		    int		len,
-		    XGlyphInfo	*extents)
+XftTextExtentsUtf8 (Display	    *dpy,
+		    XftFont	    *pub,
+		    _Xconst FcChar8 *string, 
+		    int		    len,
+		    XGlyphInfo	    *extents)
 {
     FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
     FcChar32	    ucs4;
@@ -237,11 +237,11 @@ XftTextExtentsUtf8 (Display	*dpy,
 		free (glyphs);
 	    glyphs = glyphs_new;
 	}
-	glyphs[i++] = XftCharIndex (dpy, public, ucs4);
+	glyphs[i++] = XftCharIndex (dpy, pub, ucs4);
 	string += l;
 	len -= l;
     }
-    XftGlyphExtents (dpy, public, glyphs, i, extents);
+    XftGlyphExtents (dpy, pub, glyphs, i, extents);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }

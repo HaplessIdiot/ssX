@@ -30,7 +30,7 @@
 Bool	    _XftConfigInitialized;
 
 Bool
-XftInit (char *config)
+XftInit (_Xconst char *config)
 {
     if (_XftConfigInitialized)
 	return True;

@@ -27,12 +27,12 @@
 #include <X11/Xmd.h>
 
 void
-XftRectCore (XftDraw	    *draw,
-	     XftColor	    *color,
-	     int	    x, 
-	     int	    y,
-	     unsigned int   width,
-	     unsigned int   height)
+XftRectCore (XftDraw		*draw,
+	     _Xconst XftColor	*color,
+	     int		x, 
+	     int		y,
+	     unsigned int	width,
+	     unsigned int	height)
 {
     if (color->color.alpha >= 0x8000)
     {
@@ -319,11 +319,11 @@ _XftPutField (CARD32 pixel, int shift, int len)
  * the bitmap portions
  */
 static void
-_XftSmoothGlyphMono (XImage	*image,
-		     XftGlyph	*xftg,
-		     int	x,
-		     int	y,
-		     XftColor   *color)
+_XftSmoothGlyphMono (XImage		*image,
+		     _Xconst XftGlyph	*xftg,
+		     int		x,
+		     int		y,
+		     _Xconst XftColor   *color)
 {
     unsigned char   *srcLine = xftg->bitmap, *src;
     unsigned char   bits, bitsMask;
@@ -454,11 +454,11 @@ fbIn (CARD32 x, CARD8 y)
 }
 
 static void
-_XftSmoothGlyphGray8888 (XImage	    *image,
-			 XftGlyph   *xftg,
-			 int	    x,
-			 int	    y,
-			 XftColor   *color)
+_XftSmoothGlyphGray8888 (XImage		    *image,
+			 _Xconst XftGlyph   *xftg,
+			 int		    x,
+			 int		    y,
+			 _Xconst XftColor   *color)
 {
     CARD32	src, srca;
     CARD32	r, g, b;
@@ -524,11 +524,11 @@ _XftSmoothGlyphGray8888 (XImage	    *image,
 }
 
 static void
-_XftSmoothGlyphGray565 (XImage	    *image,
-			XftGlyph    *xftg,
-			int	    x,
-			int	    y,
-			XftColor    *color)
+_XftSmoothGlyphGray565 (XImage		    *image,
+			_Xconst XftGlyph    *xftg,
+			int		    x,
+			int		    y,
+			_Xconst XftColor    *color)
 {
     CARD32	src, srca;
     CARD32	r, g, b;
@@ -600,11 +600,11 @@ _XftSmoothGlyphGray565 (XImage	    *image,
 }
 
 static void
-_XftSmoothGlyphGray555 (XImage	    *image,
-			XftGlyph    *xftg,
-			int	    x,
-			int	    y,
-			XftColor    *color)
+_XftSmoothGlyphGray555 (XImage		    *image,
+			_Xconst XftGlyph    *xftg,
+			int		    x,
+			int		    y,
+			_Xconst XftColor    *color)
 {
     CARD32	src, srca;
     CARD32	r, g, b;
@@ -676,11 +676,11 @@ _XftSmoothGlyphGray555 (XImage	    *image,
 }
 
 static void
-_XftSmoothGlyphGray (XImage	*image,
-		     XftGlyph	*xftg,
-		     int	x,
-		     int	y,
-		     XftColor   *color)
+_XftSmoothGlyphGray (XImage		*image,
+		     _Xconst XftGlyph	*xftg,
+		     int		x,
+		     int		y,
+		     _Xconst XftColor   *color)
 {
     CARD32	    src, srca;
     int		    r_shift, r_len;
@@ -755,11 +755,11 @@ _XftSmoothGlyphGray (XImage	*image,
 }
 
 static void
-_XftSmoothGlyphRgba (XImage	*image,
-		     XftGlyph	*xftg,
-		     int	x,
-		     int	y,
-		     XftColor   *color)
+_XftSmoothGlyphRgba (XImage		*image,
+		     _Xconst XftGlyph	*xftg,
+		     int		x,
+		     int		y,
+		     _Xconst XftColor   *color)
 {
     CARD32	    src, srca;
     int		    r_shift, r_len;
@@ -853,11 +853,11 @@ _XftSmoothGlyphPossible (XftDraw *draw)
     return FcTrue;
 }
 
-typedef	void (*XftSmoothGlyph) (XImage	*image, 
-			       XftGlyph *xftg,
-			       int	x,
-			       int	y,
-			       XftColor	*color);
+typedef	void (*XftSmoothGlyph) (XImage		    *image, 
+				_Xconst XftGlyph    *xftg,
+				int		    x,
+				int		    y,
+				_Xconst XftColor    *color);
 
 static XftSmoothGlyph
 _XftSmoothGlyphFind (XftDraw *draw, XftFont *public)
@@ -933,18 +933,19 @@ static int XftGetImageErrorHandler (Display *dpy, XErrorEvent *error_event)
 }
 
 void
-XftGlyphCore (XftDraw	*draw,
-	      XftColor	*color,
-	      XftFont	*public,
-	      int	x,
-	      int	y,
-	      FT_UInt	*glyphs,
-	      int	nglyphs)
+XftGlyphCore (XftDraw		*draw,
+	      _Xconst XftColor	*color,
+	      XftFont		*public,
+	      int		x,
+	      int		y,
+	      _Xconst FT_UInt	*glyphs,
+	      int		nglyphs)
 {
     Display	    *dpy = draw->dpy;
     XftFontInt	    *font = (XftFontInt *) public;
     XftGlyph	    *xftg;
-    FT_UInt	    glyph, *g;
+    FT_UInt	    glyph;
+    _Xconst FT_UInt *g;
     FT_UInt	    missing[XFT_NMISSING];
     FcBool	    glyphs_loaded;
     int		    nmissing;
@@ -1068,11 +1069,11 @@ bail1:
 #define NUM_LOCAL   1024
 
 void
-XftGlyphSpecCore (XftDraw	*draw,
-		  XftColor	*color,
-		  XftFont	*public,
-		  XftGlyphSpec	*glyphs,
-		  int		nglyphs)
+XftGlyphSpecCore (XftDraw		*draw,
+		  _Xconst XftColor	*color,
+		  XftFont		*public,
+		  _Xconst XftGlyphSpec	*glyphs,
+		  int			nglyphs)
 {
     Display	    *dpy = draw->dpy;
     XftFontInt	    *font = (XftFontInt *) public;
@@ -1215,10 +1216,10 @@ bail1:
 }
 
 void
-XftGlyphFontSpecCore (XftDraw		*draw,
-		      XftColor		*color,
-		      XftGlyphFontSpec	*glyphs,
-		      int		nglyphs)
+XftGlyphFontSpecCore (XftDraw			*draw,
+		      _Xconst XftColor		*color,
+		      _Xconst XftGlyphFontSpec	*glyphs,
+		      int			nglyphs)
 {
     Display	    *dpy = draw->dpy;
     XftGlyph	    *xftg;

@@ -317,7 +317,7 @@ XftUnlockFace (XftFont *public)
 }
 
 static FcBool
-XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
+XftFontInfoFill (Display *dpy, _Xconst FcPattern *pattern, XftFontInfo *fi)
 {
     XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
     FcChar8	    *filename;
@@ -583,7 +583,7 @@ XftFontInfoEmpty (Display *dpy, XftFontInfo *fi)
 }
 
 XftFontInfo *
-XftFontInfoCreate (Display *dpy, FcPattern *pattern)
+XftFontInfoCreate (Display *dpy, _Xconst FcPattern *pattern)
 {
     XftFontInfo	*fi = malloc (sizeof (XftFontInfo));
 
@@ -608,19 +608,21 @@ XftFontInfoDestroy (Display *dpy, XftFontInfo *fi)
 }
 
 FcChar32
-XftFontInfoHash (XftFontInfo *fi)
+XftFontInfoHash (_Xconst XftFontInfo *fi)
 {
     return fi->hash;
 }
     
 FcBool
-XftFontInfoEqual (XftFontInfo *a, XftFontInfo *b)
+XftFontInfoEqual (_Xconst XftFontInfo *a, _Xconst XftFontInfo *b)
 {
     return memcmp ((void *) a, (void *) b, sizeof (XftFontInfo)) == 0;
 }
 
 XftFont *
-XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
+XftFontOpenInfo (Display	*dpy, 
+		 FcPattern	*pattern, 
+		 XftFontInfo	*fi)
 {
     XftDisplayInfo	*info = _XftDisplayInfoGet (dpy, True);
     FT_Face		face;

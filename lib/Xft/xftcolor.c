@@ -26,9 +26,9 @@
 
 Bool
 XftColorAllocName (Display  *dpy,
-		   Visual   *visual,
+		   _Xconst Visual   *visual,
 		   Colormap cmap,
-		   char	    *name,
+		   _Xconst char	    *name,
 		   XftColor *result)
 {
     XColor  screen, exact;
@@ -77,7 +77,7 @@ Bool
 XftColorAllocValue (Display	    *dpy,
 		    Visual	    *visual,
 		    Colormap	    cmap,
-		    XRenderColor    *color,
+		    _Xconst XRenderColor    *color,
 		    XftColor	    *result)
 {
     if (visual->class == TrueColor)
