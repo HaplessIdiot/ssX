@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.7 1999/09/27 06:30:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.8 2000/01/21 01:12:21 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -362,7 +362,7 @@ ShadowModifyPixmapHeader(
     pScreen = pPixmap->drawable.pScreen;
     pScrn = xf86Screens[pScreen->myNum];
 
-    pScreenPix = (*pScreen->GetScreenPixmap);
+    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
     
     if (pPixmap == pScreenPix && !pScrn->vtSema)
 	pScreenPix->devPrivate = pScrn->pixmapPrivate;

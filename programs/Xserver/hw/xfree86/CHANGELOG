@@ -1,4 +1,5 @@
 XFree86 3.9.17b (23 January 2000)
+3571. Fix VT switching problem in shadowfb (Marc La France).
 3570. Initialize DST_X_DIR and DST_Y_DIR for solid filled rects and for
       horizontal and vertical lines to fix line drawing problems, and
       initialize ScanlineCPUToScreenColorExpandFillFlags to fix font
@@ -9313,4 +9314,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.944 2000/01/22 21:24:02 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.945 2000/01/22 21:35:45 martin Exp $
