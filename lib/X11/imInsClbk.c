@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imInsClbk.c,v 3.0 1996/02/09 08:18:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imInsClbk.c,v 3.1 2001/01/17 19:41:51 dawes Exp $ */
 
 #include	<X11/Xatom.h>
 #define NEED_EVENTS
@@ -280,8 +280,8 @@ _XimUnRegisterIMInstantiateCallback( lcd, display, rdb, res_name, res_class,
 	    ((res_class == NULL  &&  icb->res_class == NULL)  ||
 	     (res_class != NULL  &&  icb->res_class != NULL  &&
 	      !strcmp( res_class, icb->res_class )))  &&
-	    callback == icb->callback  &&
-	    client_data  ==  icb->client_data  &&		/* XXXXX */
+	    (callback == icb->callback)  &&
+	    (client_data  ==  icb->client_data)  &&		/* XXXXX */
 	    !icb->destroy ) {
 	    if( lock )
 		icb->destroy = True;

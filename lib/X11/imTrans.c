@@ -1,4 +1,4 @@
-/* $XConsortium: imTrans.c,v 1.4 94/03/26 17:01:02 rws Exp $ */
+/* $Xorg: imTrans.c,v 1.3 2000/08/17 19:45:16 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -28,17 +28,18 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
 #include <X11/Xmd.h>
 #define NEED_EVENTS
 #include "Xlibint.h"
-#include "Xlibnet.h"
 #include <X11/Xtrans.h>
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "XimTrans.h"
+#include "XimTrInt.h"
 
 
 #ifndef XIM_CONNECTION_RETRIES
@@ -47,8 +48,8 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 Private Bool
-_XimTransConnect(im)
-    Xim			 im;
+_XimTransConnect(
+    Xim			 im)
 {
     TransSpecRec	*spec = (TransSpecRec *)im->private.proto.spec;
     int			connect_stat, retry;
@@ -100,8 +101,8 @@ _XimTransConnect(im)
 
 
 Private Bool
-_XimTransShutdown(im)
-    Xim im;
+_XimTransShutdown(
+    Xim im)
 {
     TransSpecRec *spec = (TransSpecRec *)im->private.proto.spec;
 
@@ -119,7 +120,7 @@ _XimTransShutdown(im)
 
 
 
-Public Bool
+static Public Bool
 #if NeedFunctionPrototypes
 _XimTransRegisterDispatcher(
     Xim				 im,
@@ -151,8 +152,8 @@ _XimTransRegisterDispatcher(im, callback, call_data)
 
 
 Public void
-_XimFreeTransIntrCallback(im)
-    Xim				 im;
+_XimFreeTransIntrCallback(
+    Xim				 im)
 {
     TransSpecRec		*spec = (TransSpecRec *)im->private.proto.spec;
     register TransIntrCallbackPtr	 rec, next;
@@ -166,7 +167,7 @@ _XimFreeTransIntrCallback(im)
 }
 
 
-Public Bool
+static Public Bool
 #if NeedFunctionPrototypes
 _XimTransCallDispatcher(Xim im, INT16 len, XPointer data)
 #else
@@ -188,11 +189,11 @@ _XimTransCallDispatcher(im, len, data)
 
 
 Public Bool
-_XimTransFilterWaitEvent(d, w, ev, arg)
-    Display		*d;
-    Window		 w;
-    XEvent		*ev;
-    XPointer		 arg;
+_XimTransFilterWaitEvent(
+    Display		*d,
+    Window		 w,
+    XEvent		*ev,
+    XPointer		 arg)
 {
     Xim			 im = (Xim)arg;
     TransSpecRec	*spec = (TransSpecRec *)im->private.proto.spec;
@@ -203,10 +204,10 @@ _XimTransFilterWaitEvent(d, w, ev, arg)
 
 
 Public void
-_XimTransInternalConnection(d, fd, arg)
-    Display		*d;
-    int			 fd;
-    XPointer		 arg;
+_XimTransInternalConnection(
+    Display		*d,
+    int			 fd,
+    XPointer		 arg)
 {
     Xim			 im = (Xim)arg;
     XEvent		 ev;
@@ -253,15 +254,19 @@ _XimTransWrite(im, len, data)
 
 
 Public Bool
-_XimTransRead(im, recv_buf, buf_len, ret_len)
-    Xim			 im;
-    XPointer		 recv_buf;
-    int			 buf_len;
-    int			*ret_len;
+_XimTransRead(
+    Xim			 im,
+    XPointer		 recv_buf,
+    int			 buf_len,
+    int			*ret_len)
 {
     TransSpecRec	*spec = (TransSpecRec *)im->private.proto.spec;
     int			 len;
 
+    if (buf_len == 0) {
+	*ret_len = 0;
+	return True;
+    }
     if ((len = _XimXTransRead(spec->trans_conn, recv_buf, buf_len)) <= 0)
 	return False;
     *ret_len = len;
@@ -270,8 +275,8 @@ _XimTransRead(im, recv_buf, buf_len, ret_len)
 
 
 Public void
-_XimTransFlush(im)
-    Xim		 im;
+_XimTransFlush(
+    Xim		 im)
 {
     return;
 }
@@ -279,11 +284,10 @@ _XimTransFlush(im)
 
 
 Public Bool
-_XimTransConf(im, address)
-    Xim		   	 im;
-    char	 	*address;
+_XimTransConf(
+    Xim		   	 im,
+    char	 	*address)
 {
-    char		*p;
     char		*paddr;
     TransSpecRec	*spec;
 

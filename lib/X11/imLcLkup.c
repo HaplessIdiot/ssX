@@ -29,7 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.5 2001/01/17 19:41:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.6 2001/08/13 21:46:46 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -214,13 +214,13 @@ _XimLocalUtf8LookupString(xic, ev, buffer, bytes, keysym, status)
 }
 
 Private int
-_XimLcctsconvert(conv, from, from_len, to, to_len, state)
-    XlcConv	 conv;
-    char	*from;
-    int		 from_len;
-    char	*to;
-    int		 to_len;
-    Status	*state;
+_XimLcctsconvert(
+    XlcConv	 conv,
+    char	*from,
+    int		 from_len,
+    char	*to,
+    int		 to_len,
+    Status	*state)
 {
     int		 from_left;
     int		 to_left;

@@ -24,10 +24,11 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XKBleds.c,v 1.3 2001/02/21 15:18:03 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
+#define NEED_MAP_READERS
 #include "Xlibint.h"
 #include <X11/extensions/XKBproto.h>
 #include "XKBlibint.h"

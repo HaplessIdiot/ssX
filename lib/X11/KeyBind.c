@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeyBind.c,v 1.4 2001/01/17 19:41:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/KeyBind.c,v 1.5 2001/12/14 19:54:02 dawes Exp $ */
 
 /* Beware, here be monsters (still under construction... - JG */
 
@@ -47,8 +47,11 @@ in this Software without prior written authorization from The Open Group.
 
 #ifdef USE_OWN_COMPOSE
 #include "imComp.h"
-
 #endif
+
+#include "Xresource.h"
+#include "XKBlibint.h"
+#include "Key.h"
 
 #ifdef XKB
 #define	XKeycodeToKeysym	_XKeycodeToKeysym
@@ -64,8 +67,10 @@ in this Software without prior written authorization from The Open Group.
 #define AllMods (ShiftMask|LockMask|ControlMask| \
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
-static void ComputeMaskFromKeytrans();
-int _XKeyInitialize();
+static void
+ComputeMaskFromKeytrans(
+    Display *dpy,
+    register struct _XKeytrans *p);
 
 struct _XKeytrans {
 	struct _XKeytrans *next;/* next on list */
@@ -167,8 +172,8 @@ XLookupKeysym(event, col)
 }
 
 static void
-ResetModMap(dpy)
-    Display *dpy;
+ResetModMap(
+    Display *dpy)
 {
     register XModifierKeymap *map;
     register int i, j, n;
@@ -216,8 +221,8 @@ ResetModMap(dpy)
 }
 
 static int
-InitModMap(dpy)
-    Display *dpy;
+InitModMap(
+    Display *dpy)
 {
     register XModifierKeymap *map;
 
@@ -265,8 +270,8 @@ XRefreshKeyboardMapping(event)
 }
 
 int
-_XKeyInitialize(dpy)
-    Display *dpy;
+_XKeyInitialize(
+    Display *dpy)
 {
     int per, n;
     KeySym *keysyms;
@@ -624,8 +629,8 @@ XLookupString (event, buffer, nbytes, keysym, status)
 }
 
 static void
-_XFreeKeyBindings (dpy)
-    Display *dpy;
+_XFreeKeyBindings(
+    Display *dpy)
 {
     register struct _XKeytrans *p, *np;
 
@@ -693,9 +698,9 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
 }
 
 unsigned
-_XKeysymToModifiers(dpy,ks)
-    Display *dpy;
-    KeySym ks;
+_XKeysymToModifiers(
+    Display *dpy,
+    KeySym ks)
 {
     CARD8 code,mods;
     register KeySym *kmax;
@@ -732,9 +737,9 @@ _XKeysymToModifiers(dpy,ks)
  * can't map some keysym to a modifier.
  */
 static void
-ComputeMaskFromKeytrans(dpy, p)
-    Display *dpy;
-    register struct _XKeytrans *p;
+ComputeMaskFromKeytrans(
+    Display *dpy,
+    register struct _XKeytrans *p)
 {
     register int i;
 

@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imTransR.c,v 3.3 1999/05/09 10:50:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imTransR.c,v 3.4 2001/01/17 19:41:52 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -81,9 +81,9 @@ _XimWrite(im, len, data)
 }
 
 Private int
-_CheckProtocolData(im, recv_buf)
-    Xim		  im;
-    char	 *recv_buf;
+_CheckProtocolData(
+    Xim		  im,
+    char	 *recv_buf)
 {
     int		 data_len;
 
@@ -92,11 +92,11 @@ _CheckProtocolData(im, recv_buf)
 }
 
 Private int
-_XimReadData(im, len, buf, buf_size)
-    Xim		 im;
-    INT16	*len;
-    XPointer	 buf;
-    int		 buf_size;
+_XimReadData(
+    Xim		 im,
+    INT16	*len,
+    XPointer	 buf,
+    int		 buf_size)
 {
     char	*hold_buf;
     char	*tmp;
@@ -209,10 +209,10 @@ _XimReadData(im, len, buf, buf_size)
 }
 
 Private Bool
-_XimCallDispatcher(im, len, data)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
+_XimCallDispatcher(
+    Xim		 im,
+    INT16	 len,
+    XPointer	 data)
 {
     return im->private.proto.call_dispatcher(im, len, data);
 }
@@ -249,14 +249,14 @@ _XimRead(im, len, buf, buf_size, predicate, arg)
 }
 
 Public Bool
-_XimRegisterDispatcher(im, callback, call_data)
-    Xim		 im;
+_XimRegisterDispatcher(
+    Xim		 im,
     Bool	 (*callback)(
 #if NeedNestedPrototypes
 			     Xim, INT16, XPointer, XPointer
 #endif
-			     );
-    XPointer	 call_data;
+			     ),
+    XPointer	 call_data)
 {
     return im->private.proto.register_dispatcher(im, callback, call_data);
 }

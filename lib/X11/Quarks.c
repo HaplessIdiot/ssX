@@ -49,19 +49,19 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Quarks.c,v 1.4 2001/10/28 03:32:31 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Quarks.c,v 1.5 2001/12/14 19:54:04 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
+#include "Xresinternal.h"
 
 /* Not cost effective, at least for vanilla MIT clients */
 /* #define PERMQ */
 
-typedef unsigned long Signature;
-typedef unsigned long Entry;
 #ifdef PERMQ
 typedef unsigned char Bits;
 #endif
+typedef unsigned long Entry; /* dont confuse with EntryRec from Xintatom.h */
 
 static XrmQuark nextQuark = 1;	/* next available quark number */
 static unsigned long quarkMask = 0;

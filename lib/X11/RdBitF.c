@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/RdBitF.c,v 3.4 2001/12/14 19:54:05 dawes Exp $ */
+/* $XFree86: xc/lib/X11/RdBitF.c,v 3.5 2002/05/31 18:45:41 dawes Exp $ */
 
 /*
  *	Code to read bitmaps from disk files. Interprets 
@@ -61,7 +61,7 @@ static Bool initialized = False;	/* easier to fill in at run time */
  *	Table index for the hex values. Initialized once, first time.
  *	Used for translation value or delimiter significance lookup.
  */
-static void initHexTable()
+static void initHexTable(void)
 {
     /*
      * We build the table at run time for several reasons:
@@ -95,8 +95,8 @@ static void initHexTable()
  *	read next hex value in the input stream, return -1 if EOF
  */
 static int
-NextInt (fstream)
-    FILE *fstream;
+NextInt (
+    FILE *fstream)
 {
     int	ch;
     int	value = 0;

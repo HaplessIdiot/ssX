@@ -27,7 +27,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the X Consortium and the XFree86 Project.
 
 */
-/* $XFree86: xc/lib/X11/Font.c,v 1.15 2001/12/14 19:54:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Font.c,v 1.16 2002/12/14 01:55:57 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -338,8 +338,8 @@ _XQueryFont (dpy, fid, seq)
 static int XF86BigfontNumber = 1040697125;
 
 static int
-_XF86BigfontFreeCodes (extension)
-    XExtData *extension;
+_XF86BigfontFreeCodes (
+    XExtData *extension)
 {
     /* Don't Xfree(extension->private_data) because it is on the same malloc
        chunk as extension. */
@@ -349,8 +349,8 @@ _XF86BigfontFreeCodes (extension)
 }
 
 static XF86BigfontCodes *
-_XF86BigfontCodes (dpy)
-    register Display *dpy;
+_XF86BigfontCodes (
+    register Display *dpy)
 {
     XEDataObject dpy_union;
     XExtData *pData;
@@ -434,8 +434,8 @@ _XF86BigfontCodes (dpy)
 }
 
 static int
-_XF86BigfontFreeNop (extension)
-    XExtData *extension;
+_XF86BigfontFreeNop (
+    XExtData *extension)
 {
     return 0;
 }

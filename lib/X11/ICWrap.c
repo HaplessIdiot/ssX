@@ -64,16 +64,16 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ICWrap.c,v 1.6 2001/10/28 03:32:30 tsi Exp $ */
+/* $XFree86: xc/lib/X11/ICWrap.c,v 1.8 2002/11/25 14:04:53 eich Exp $ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
 #include "Xlcint.h"
 
 static int
-_XIMNestedListToNestedList(nlist, list)
-    XIMArg *nlist;   /* This is the new list */
-    XIMArg *list;    /* The original list */
+_XIMNestedListToNestedList(
+    XIMArg *nlist,   /* This is the new list */
+    XIMArg *list)    /* The original list */
 {
     register XIMArg *ptr = list;
 
@@ -91,9 +91,9 @@ _XIMNestedListToNestedList(nlist, list)
 }
 
 static void
-_XIMCountNestedList(args, total_count)
-    XIMArg *args;
-    int *total_count;
+_XIMCountNestedList(
+    XIMArg *args,
+    int *total_count)
 {
     for (; args->name; args++) {
 	if (!strcmp(args->name, XNVaNestedList))

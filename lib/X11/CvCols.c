@@ -33,20 +33,13 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/CvCols.c,v 1.2 1999/05/09 10:49:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/CvCols.c,v 1.3 2001/01/17 19:41:34 dawes Exp $ */
+
+/* #define XCMS_CONVERSION_HARDWARE */ /* FIXME XXX */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
-
-/*
- *      EXTERNS
- *              External declarations required locally to this package
- *              that are not already declared in any of the included header
- *		files (external includes or internal includes).
- */
-extern XcmsRegColorSpaceEntry _XcmsRegColorSpaces[];
-extern XcmsColorSpace **_XcmsDIColorSpaces;
-extern XcmsColorSpace **_XcmsDDColorSpaces;
+#include "Cv.h"
 
 /*
  *      LOCAL DEFINES
@@ -57,13 +50,6 @@ extern XcmsColorSpace **_XcmsDDColorSpaces;
 #ifndef MAX
 #  define MAX(x,y) ((x) > (y) ? (x) : (y))
 #endif
-
-/*
- *      FORWARD DECLARATIONS
- */
-Status _XcmsDIConvertColors();
-Status _XcmsDDConvertColors();
-int _XcmsEqualWhitePts();
 
 
 /************************************************************************
@@ -79,8 +65,8 @@ int _XcmsEqualWhitePts();
  *	SYNOPSIS
  */
 static int
-EqualCIEXYZ(p1, p2)
-    XcmsColor *p1, *p2;
+EqualCIEXYZ(
+    XcmsColor *p1, XcmsColor *p2)
 /*
  *	DESCRIPTION
  *		Compares two XcmsColor structures that are in XcmsCIEXYZFormat
@@ -109,9 +95,9 @@ EqualCIEXYZ(p1, p2)
  *	SYNOPSIS
  */
 static XcmsColorSpace *
-ColorSpaceOfID(ccc, id)
-    XcmsCCC ccc;
-    XcmsColorFormat	id;
+ColorSpaceOfID(
+    XcmsCCC ccc,
+    XcmsColorFormat	id)
 /*
  *	DESCRIPTION
  *		Returns a pointer to the color space structure
@@ -166,8 +152,8 @@ ColorSpaceOfID(ccc, id)
  *	SYNOPSIS
  */
 static int
-ValidDIColorSpaceID(id)
-    XcmsColorFormat id;
+ValidDIColorSpaceID(
+    XcmsColorFormat id)
 /*
  *	DESCRIPTION
  *		Determines if the specified color space ID is a valid
@@ -199,9 +185,9 @@ ValidDIColorSpaceID(id)
  *	SYNOPSIS
  */
 static int
-ValidDDColorSpaceID(ccc, id)
-    XcmsCCC ccc;
-    XcmsColorFormat id;
+ValidDDColorSpaceID(
+    XcmsCCC ccc,
+    XcmsColorFormat id)
 /*
  *	DESCRIPTION
  *		Determines if the specified color space ID is a valid
@@ -234,14 +220,13 @@ ValidDDColorSpaceID(ccc, id)
  *	SYNOPSIS
  */
 static Status
-ConvertMixedColors(ccc, pColors_in_out, pWhitePt, nColors,
-	targetFormat, format_flag)
-    XcmsCCC ccc;
-    XcmsColor *pColors_in_out;
-    XcmsColor *pWhitePt;
-    unsigned int nColors;
-    XcmsColorFormat targetFormat;
-    unsigned char format_flag;
+ConvertMixedColors(
+    XcmsCCC ccc,
+    XcmsColor *pColors_in_out,
+    XcmsColor *pWhitePt,
+    unsigned int nColors,
+    XcmsColorFormat targetFormat,
+    unsigned char format_flag)
 /*
  *	DESCRIPTION
  *		This routine will only convert the following types of
@@ -376,9 +361,7 @@ ConvertMixedColors(ccc, pColors_in_out, pWhitePt, nColors,
  *	SYNOPSIS
  */
 int
-_XcmsEqualWhitePts(ccc, pWhitePt1, pWhitePt2)
-    XcmsCCC ccc;
-    XcmsColor *pWhitePt1, *pWhitePt2;
+_XcmsEqualWhitePts(XcmsCCC ccc, XcmsColor *pWhitePt1, XcmsColor *pWhitePt2)
 /*
  *	DESCRIPTION
  *
@@ -417,13 +400,12 @@ _XcmsEqualWhitePts(ccc, pWhitePt1, pWhitePt2)
  *	SYNOPSIS
  */
 Status
-_XcmsDIConvertColors(ccc, pColors_in_out, pWhitePt, nColors,
-	newFormat)
-    XcmsCCC ccc;
-    XcmsColor *pColors_in_out;
-    XcmsColor *pWhitePt;
-    unsigned int nColors;
-    XcmsColorFormat newFormat;
+_XcmsDIConvertColors(
+    XcmsCCC ccc,
+    XcmsColor *pColors_in_out,
+    XcmsColor *pWhitePt,
+    unsigned int nColors,
+    XcmsColorFormat newFormat)
 /*
  *	DESCRIPTION
  *		Convert XcmsColor structures to another Device-Independent
@@ -562,13 +544,12 @@ Continue:
  *	SYNOPSIS
  */
 Status
-_XcmsDDConvertColors(ccc, pColors_in_out, nColors, newFormat,
-	pCompressed)
-    XcmsCCC ccc;
-    XcmsColor *pColors_in_out;
-    unsigned int nColors;
-    XcmsColorFormat newFormat;
-    Bool *pCompressed;
+_XcmsDDConvertColors(
+    XcmsCCC ccc,
+    XcmsColor *pColors_in_out,
+    unsigned int nColors,
+    XcmsColorFormat newFormat,
+    Bool *pCompressed)
 /*
  *	DESCRIPTION
  *		Convert XcmsColor structures:
@@ -664,8 +645,12 @@ Continue:
 	 * Execute the functions
 	 */
 	while (src_to_CIEXYZ != to_CIEXYZ_stop) {
+#ifdef XCMS_CONVERSION_HARDWARE
 	    retval = (*src_to_CIEXYZ++)(ccc, pColors_in_out, nColors,
 		    pCompressed);
+#else
+	    retval = (*src_to_CIEXYZ++)(ccc, NULL, pColors_in_out, nColors);
+#endif
 	    if (retval == XcmsFailure) {
 		return(XcmsFailure);
 	    }
@@ -692,8 +677,12 @@ Continue:
 	 * Execute the functions all the way to CIEXYZ
 	 */
 	while (*src_to_CIEXYZ) {
+#ifdef XCMS_CONVERSION_HARDWARE
 	    retval = (*src_to_CIEXYZ++)(ccc, pColors_in_out, nColors,
 		    pCompressed);
+#else
+	    retval = (*src_to_CIEXYZ++)(ccc, NULL, pColors_in_out, nColors);
+#endif
 	    if (retval == XcmsFailure) {
 		return(XcmsFailure);
 	    }
@@ -707,8 +696,12 @@ Continue:
     }
 
     while (*from_CIEXYZ_start) {
+#ifdef XCMS_CONVERSION_HARDWARE
 	retval = (*from_CIEXYZ_start++)(ccc, pColors_in_out, nColors,
 		pCompressed);
+#else
+	retval = (*from_CIEXYZ_start++)(ccc, NULL, pColors_in_out, nColors);
+#endif
 	if (retval == XcmsFailure) {
 	    return(XcmsFailure);
 	}
@@ -1026,8 +1019,8 @@ Failure:
  *	SYNOPSIS
  */
 XcmsColorFormat
-_XcmsRegFormatOfPrefix(prefix)
-    char *prefix;
+_XcmsRegFormatOfPrefix(
+    _Xconst char *prefix)
 /*
  *	DESCRIPTION
  *		Returns a color space ID associated with the specified

@@ -1,4 +1,4 @@
-/* $XConsortium: LuvMxLC.c,v 1.4 93/10/07 18:49:37 rws Exp $ */
+/* $Xorg: LuvMxLC.c,v 1.3 2000/08/17 19:44:45 cpqbld Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -38,9 +38,11 @@
  *		Fred W. Billmeyer & Max Saltzman, "Principles of Color
  *		Technology", John Wily & Sons, Inc, 1981.
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
+#include "Cv.h"
 
 /*
  *	DEFINES
@@ -51,16 +53,6 @@
 #define MAX3(x,y,z)	((x) > (MAX((y), (z))) ? (x) : (MAX((y), (z))))
 #define START_LSTAR	(XcmsFloat)40.0
 #define START_CHROMA	(XcmsFloat)2.2
-
-/*
- *	EXTERNS
- */
-extern Status _XcmsConvertColorsWithWhitePt();
-
-/*
- *	FORWARD DECLARATIONS
- */
-Status _XcmsCIELuvQueryMaxLCRGB();
 
 
 /************************************************************************
@@ -76,12 +68,11 @@ Status _XcmsCIELuvQueryMaxLCRGB();
  *	SYNOPSIS
  */
 Status
-_XcmsCIELuvQueryMaxLCRGB(ccc, hue, pColor_return, pRGB_return)
-    XcmsCCC	ccc;
-    XcmsFloat	hue;		/* hue in radians */
-    XcmsColor   *pColor_return;
-    XcmsRGBi    *pRGB_return;
-
+_XcmsCIELuvQueryMaxLCRGB(
+    XcmsCCC	ccc,
+    XcmsFloat	hue,		/* hue in radians */
+    XcmsColor   *pColor_return,
+    XcmsRGBi    *pRGB_return)
 /*
  *	DESCRIPTION
  *		Return the maximum psychometric chroma for a specified

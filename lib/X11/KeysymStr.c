@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.7 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.8 2001/12/14 19:54:02 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
@@ -37,9 +37,7 @@ typedef unsigned long Signature;
 
 #define NEEDVTABLE
 #include "ks_tables.h"
-
-extern XrmDatabase _XInitKeysymDB();
-extern const unsigned char _XkeyTable[];
+#include "Key.h"
 
 
 typedef struct _GRNData {

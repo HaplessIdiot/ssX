@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imTrX.c,v 1.2 2002/11/26 01:21:25 dawes Exp $ */
 
 #include <string.h>
 #include <X11/Xatom.h>
@@ -40,14 +40,14 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XimTrX.h"
 
 Private Bool
-_XimXRegisterDispatcher(im, callback, call_data)
-    Xim			 im;
+_XimXRegisterDispatcher(
+    Xim			 im,
     Bool		 (*callback)(
 #if NeedNestedPrototypes
 				     Xim, INT16, XPointer, XPointer
 #endif
-				     );
-    XPointer		 call_data;
+				     ),
+    XPointer		 call_data)
 {
     XIntrCallbackPtr	 rec;
     XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
@@ -63,8 +63,8 @@ _XimXRegisterDispatcher(im, callback, call_data)
 }
 
 Private void
-_XimXFreeIntrCallback(im)
-    Xim			 im;
+_XimXFreeIntrCallback(
+    Xim			 im)
 {
     XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
     register XIntrCallbackPtr rec, next;
@@ -98,11 +98,11 @@ _XimXCallDispatcher(im, len, data)
 }
 
 Private Bool
-_XimXFilterWaitEvent(d, w, ev, arg)
-    Display	*d;
-    Window	 w;
-    XEvent	*ev;
-    XPointer	 arg;
+_XimXFilterWaitEvent(
+    Display	*d,
+    Window	 w,
+    XEvent	*ev,
+    XPointer	 arg)
 {
     Xim		 im = (Xim)arg;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
@@ -126,10 +126,10 @@ _XimXFilterWaitEvent(d, w, ev, arg)
 }
 
 Private Bool
-_CheckConnect(display, event, xim)
-    Display	*display;
-    XEvent	*event;
-    XPointer	 xim;
+_CheckConnect(
+    Display	*display,
+    XEvent	*event,
+    XPointer	 xim)
 {
     Xim		 im = (Xim)xim;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
@@ -241,8 +241,8 @@ _XimXShutdown(im)
 }
 
 Private char *
-_NewAtom(atomName)
-    char	*atomName;
+_NewAtom(
+    char	*atomName)
 {
     static int	 sequence = 0;
 
@@ -320,12 +320,12 @@ _XimXWrite(im, len, data)
 }
 
 Private Bool
-_XimXGetReadData(im, buf, buf_len, ret_len, event)
-    Xim			  im;
-    char		 *buf;
-    int			  buf_len;
-    int			 *ret_len;
-    XEvent		 *event;
+_XimXGetReadData(
+    Xim			  im,
+    char		 *buf,
+    int			  buf_len,
+    int			 *ret_len,
+    XEvent		 *event)
 {
     char		 *data;
     int			  len;
@@ -434,10 +434,10 @@ _XimXGetReadData(im, buf, buf_len, ret_len, event)
 }
 
 Private Bool
-_CheckCMEvent(display, event, xim)
-    Display	*display;
-    XEvent	*event;
-    XPointer	 xim;
+_CheckCMEvent(
+    Display	*display,
+    XEvent	*event,
+    XPointer	 xim)
 {
     Xim		 im = (Xim)xim;
     XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;

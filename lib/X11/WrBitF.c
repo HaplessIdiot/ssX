@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WrBitF.c,v 3.4 2001/12/14 19:54:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WrBitF.c,v 3.5 2002/05/31 18:45:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -35,9 +35,9 @@ from The Open Group.
 
 #define ERR_RETURN 0
 
-static char *Format_Image(image, resultsize)
-XImage *image;
-int *resultsize;
+static char *Format_Image(
+    XImage *image,
+    int *resultsize)
 {
   register int x, c, b;
   register char *ptr;

@@ -26,11 +26,12 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBBind.c,v 3.14 2001/12/14 19:54:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBBind.c,v 3.15 2003/02/15 17:49:01 dawes Exp $ */
 
 	/* the new monsters ate the old ones */
 
 #define NEED_EVENTS
+#include "XKBlib.h"
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -269,6 +270,12 @@ XLookupKeysym(event, col)
     * that is preserved here so that functions linked against the old 
     * version will continue to work in a shared library environment.
     */
+int
+XkbTranslateKey(	register Display *	dpy,
+			KeyCode 		key,
+			register unsigned int 	mods,
+			unsigned int *		mods_rtrn,
+			KeySym *		keysym_rtrn);
 int
 #if NeedFunctionPrototypes
 XkbTranslateKey(	register Display *	dpy,

@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imImSw.c,v 1.2 1999/05/09 10:50:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imImSw.c,v 1.3 2001/01/17 19:41:51 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -40,8 +40,8 @@ THIS SOFTWARE.
 #include "XimImSw.h"
 
 Private Bool
-_XimCheckIfDefault(im)
-    Xim		im;
+_XimCheckIfDefault(
+    Xim		im)
 {
     return(True);
 }

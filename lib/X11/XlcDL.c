@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.10 2003/03/11 23:26:58 herrb Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.11 2003/04/07 16:23:31 eich Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -99,10 +99,7 @@ static XI18NObjectsListRec *xi18n_objects_list = NULL;
 static int lc_count = 0;
 
 static int
-parse_line(line, argv, argsize)
-char *line;
-char **argv;
-int argsize;
+parse_line(char *line, char **argv, int argsize)
 {
     int argc = 0;
     char *p = line;
@@ -159,9 +156,7 @@ try_both_dlsym (void *handle, char *name)
 #endif
 
 static void
-resolve_object(path, lc_name)
-char *path;
-char *lc_name;
+resolve_object(char *path, const char *lc_name)
 {
     char filename[BUFSIZ];
     FILE *fp;
@@ -232,9 +227,7 @@ Limit the length of path to prevent stack buffer corruption.
 }
 
 static char*
-__lc_path(dl_name, lc_dir)
-const char *dl_name;
-const char *lc_dir;
+__lc_path(const char *dl_name, const char *lc_dir)
 {
     char *path;
     size_t len;
@@ -310,9 +303,9 @@ const char *lc_dir;
  * in XLCd
  */
 static Bool
-open_object (object, lc_dir)
-     XI18NObjectsList object;
-     char *lc_dir;
+open_object(
+     XI18NObjectsList object,
+     char *lc_dir)
 {
   char *path;
   
@@ -336,9 +329,9 @@ open_object (object, lc_dir)
 }
 
 static void *
-fetch_symbol (object, symbol)
-     XI18NObjectsList object;
-     char *symbol;
+fetch_symbol(
+     XI18NObjectsList object,
+     char *symbol)
 {
     void *result = NULL;
 #if defined(hpux)
@@ -371,8 +364,7 @@ fetch_symbol (object, symbol)
 }
 
 static void
-close_object (object)
-     XI18NObjectsList object;
+close_object(XI18NObjectsList object)
 {
   object->refcount--;
   if (object->refcount == 0)
@@ -387,6 +379,8 @@ close_object (object)
 }
 
 
+typedef XLCd (*dynamicLoadProc)(const char *);
+
 XLCd
 #if NeedFunctionPrototypes
 _XlcDynamicLoad(const char *lc_name)
@@ -396,7 +390,7 @@ _XlcDynamicLoad(lc_name)
 #endif
 {
     XLCd lcd = (XLCd)NULL;
-    XLCd (*lc_loader)() = (XLCd(*)())NULL;
+    dynamicLoadProc lc_loader = (dynamicLoadProc)NULL;
     int count;
     XI18NObjectsList objects_list;
     char lc_dir[BUFSIZE];
@@ -416,7 +410,7 @@ _XlcDynamicLoad(lc_name)
 	if (!open_object (objects_list, lc_dir))
 	    continue;
 
-	lc_loader = (XLCd(*)())fetch_symbol (objects_list, objects_list->open);
+	lc_loader = (dynamicLoadProc)fetch_symbol (objects_list, objects_list->open);
 	if (!lc_loader) continue;
 	lcd = (*lc_loader)(lc_name);
 	if (lcd != (XLCd)NULL) {
@@ -427,6 +421,9 @@ _XlcDynamicLoad(lc_name)
     }
     return (XLCd)lcd;
 }
+
+
+typedef XIM (*dynamicOpenProcp)(XLCd, Display *, XrmDatabase, char *, char *);
 
 static XIM
 #if NeedFunctionPrototypes
@@ -443,7 +440,7 @@ char *res_name, *res_class;
   XIM im = (XIM)NULL;
   char lc_dir[BUFSIZE];
   char *lc_name;
-  XIM (*im_openIM)() = (XIM(*)())NULL;
+  dynamicOpenProcp im_openIM = (dynamicOpenProcp)NULL;
   int count;
   XI18NObjectsList objects_list = xi18n_objects_list;
 
@@ -459,7 +456,7 @@ char *res_name, *res_class;
     if (!open_object (objects_list, lc_dir))
         continue;
 
-    im_openIM = (XIM(*)())fetch_symbol(objects_list, objects_list->open);
+    im_openIM = (dynamicOpenProcp)fetch_symbol(objects_list, objects_list->open);
     if (!im_openIM) continue;
     im = (*im_openIM)(lcd, display, rdb, res_name, res_class);
     if (im != (XIM)NULL) {
@@ -471,20 +468,22 @@ char *res_name, *res_class;
   return (XIM)im;
 }
 
+typedef Bool (*dynamicRegisterCBProcp)(
+    XLCd, Display *, XrmDatabase, char *, char *, XIDProc, XPointer);
+
 static Bool
-_XDynamicRegisterIMInstantiateCallback(lcd, display, rdb,
-				       res_name, res_class,
-				       callback, client_data)
-XLCd	 lcd;
-Display	*display;
-XrmDatabase	 rdb;
-char	*res_name, *res_class;
-XIMProc	 callback;
-XPointer	*client_data;
+_XDynamicRegisterIMInstantiateCallback(
+    XLCd	 lcd,
+    Display	*display,
+    XrmDatabase	 rdb,
+    char	*res_name,
+    char        *res_class,
+    XIDProc	 callback,
+    XPointer	 client_data)
 {
   char lc_dir[BUFSIZE];
   char *lc_name;
-  Bool (*im_registerIM)() = (Bool(*)())NULL;
+  dynamicRegisterCBProcp im_registerIM = (dynamicRegisterCBProcp)NULL;
   Bool ret_flag = False;
   int count;
   XI18NObjectsList objects_list = xi18n_objects_list;
@@ -504,7 +503,7 @@ XPointer	*client_data;
 
     if (!open_object (objects_list, lc_dir))
         continue;
-    im_registerIM = (Bool(*)())fetch_symbol(objects_list,
+    im_registerIM = (dynamicRegisterCBProcp)fetch_symbol(objects_list,
 					    objects_list->im_register);
     if (!im_registerIM) continue;
     ret_flag = (*im_registerIM)(lcd, display, rdb,
@@ -517,20 +516,22 @@ XPointer	*client_data;
   return (Bool)ret_flag;
 }
 
+typedef Bool (*dynamicUnregisterProcp)(
+    XLCd, Display *, XrmDatabase, char *, char *, XIDProc, XPointer);
+
 static Bool
-_XDynamicUnRegisterIMInstantiateCallback(lcd, display, rdb,
-					 res_name, res_class,
-					 callback, client_data)
-XLCd	 lcd;
-Display	*display;
-XrmDatabase	 rdb;
-char	*res_name, *res_class;
-XIMProc	 callback;
-XPointer	*client_data;
+_XDynamicUnRegisterIMInstantiateCallback(
+    XLCd	 lcd,
+    Display	*display,
+    XrmDatabase	 rdb,
+    char	*res_name,
+    char        *res_class,
+    XIDProc	 callback,
+    XPointer	 client_data)
 {
   char lc_dir[BUFSIZE];
   char *lc_name;
-  Bool (*im_unregisterIM)() = (Bool(*)())NULL;
+  dynamicUnregisterProcp im_unregisterIM = (dynamicUnregisterProcp)NULL;
   Bool ret_flag = False;
   int count;
   XI18NObjectsList objects_list = xi18n_objects_list;
@@ -550,7 +551,7 @@ XPointer	*client_data;
     if (!objects_list->refcount) /* Must already be opened */
         continue;
 
-    im_unregisterIM = (Bool(*)())fetch_symbol(objects_list,
+    im_unregisterIM = (dynamicUnregisterProcp)fetch_symbol(objects_list,
 					      objects_list->im_unregister);
 
     if (!im_unregisterIM) continue;
@@ -581,6 +582,10 @@ XLCd lcd;
     return True;
 }
 
+
+typedef XOM (*dynamicIOpenProcp)(
+        XLCd, Display *, XrmDatabase, _Xconst char *, _Xconst char *);
+
 static XOM
 #if NeedFunctionPrototypes
 _XDynamicOpenOM(XLCd lcd, Display *display, XrmDatabase rdb,
@@ -598,7 +603,7 @@ char *res_class;
   int count;
   char lc_dir[BUFSIZE];
   char *lc_name;
-  XOM (*om_openOM)() = (XOM(*)())NULL;
+  dynamicIOpenProcp om_openOM = (dynamicIOpenProcp)NULL;
   XI18NObjectsList objects_list = xi18n_objects_list;
 #if defined(hpux)
   int getsyms_cnt, i;
@@ -616,7 +621,7 @@ char *res_class;
     if (!open_object (objects_list, lc_dir))
         continue;
     
-    om_openOM = (XOM(*)())fetch_symbol(objects_list, objects_list->open);
+    om_openOM = (dynamicIOpenProcp)fetch_symbol(objects_list, objects_list->open);
     if (!om_openOM) continue;
     om = (*om_openOM)(lcd, display, rdb, res_name, res_class);
     if (om != (XOM)NULL) {

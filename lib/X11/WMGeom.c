@@ -24,12 +24,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
 
-static int _GeometryMaskToGravity();
-
+static int _GeometryMaskToGravity(
+    int mask);
 
 /*
  * This routine given a user supplied positional argument and a default
@@ -179,8 +180,8 @@ int XWMGeometry (dpy, screen, user_geom, def_geom, bwidth, hints,
 }
 
 
-static int _GeometryMaskToGravity (mask)
-    int mask;
+static int _GeometryMaskToGravity(
+    int mask)
 {
     switch (mask & (XNegative|YNegative)) {
       case 0:

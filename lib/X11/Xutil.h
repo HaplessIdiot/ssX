@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Xutil.h,v 3.4 2001/12/14 19:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xutil.h,v 3.5 2003/01/26 02:40:10 dawes Exp $ */
 
 #ifndef _XUTIL_H_
 #define _XUTIL_H_
@@ -184,6 +184,24 @@ typedef struct {
 	char *res_class;
 } XClassHint;
 
+#ifdef XUTIL_DEFINE_FUNCTIONS
+extern int XDestroyImage(
+        XImage *ximage);
+extern unsigned long XGetPixel(
+        XImage *ximage,
+        int x, int y);
+extern int XPutPixel(
+        XImage *ximage,
+        int x, int y,
+        unsigned long pixel);
+extern XImage *XSubImage(
+        XImage *ximage,
+        int x, int y,
+        unsigned int width, unsigned int height);
+extern int XAddPixel(
+        XImage *ximage,
+        long value);
+#else
 /*
  * These macros are used to give some sugar to the image routines so that
  * naive people are more comfortable with them.
@@ -198,6 +216,7 @@ typedef struct {
 	((*((ximage)->f.sub_image))((ximage), (x), (y), (width), (height)))
 #define XAddPixel(ximage, value) \
 	((*((ximage)->f.add_pixel))((ximage), (value)))
+#endif
 
 /*
  * Compose sequence status structure, used in calling XLookupString.

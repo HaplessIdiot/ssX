@@ -24,27 +24,27 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 
 
-int _XSyncFunction(dpy)
-register Display *dpy;
+static int _XSyncFunction(register Display *dpy)
 {
 	XSync(dpy,0);
 	return 0;
 }
 
 #if NeedFunctionPrototypes
-int (*XSynchronize(Display *dpy, int onoff))()
+int (*XSynchronize(Display *dpy, int onoff))(Display *)
 #else
 int (*XSynchronize(dpy,onoff))()
      register Display *dpy;
      int onoff;
 #endif
 {
-        int (*temp)();
-	int (*func)() = NULL;
+        int (*temp)(Display *);
+	int (*func)(Display *) = NULL;
 
 	if (onoff)
 	    func = _XSyncFunction;
@@ -69,7 +69,7 @@ int (*XSetAfterFunction(
 		 Display*
 #endif
 		 )
-))()
+        ))(Display *)
 #else
 int (*XSetAfterFunction(dpy,func))()
      register Display *dpy;
@@ -80,7 +80,7 @@ int (*XSetAfterFunction(dpy,func))()
 		 );
 #endif
 {
-        int (*temp)();
+        int (*temp)(Display *);
 
 	LockDisplay(dpy);
 	if (dpy->flags & XlibDisplayPrivSync) {

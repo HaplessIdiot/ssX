@@ -27,7 +27,7 @@
  *	DESCRIPTION
  *		Public include file for X Color Management System
  */
-/* $XFree86: xc/lib/X11/Xcms.h,v 1.4 1999/03/14 03:21:04 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xcms.h,v 1.5 2001/01/17 19:41:49 dawes Exp $ */
 #ifndef _XCMS_H_
 #define _XCMS_H_
 
@@ -271,7 +271,21 @@ typedef Status (*XcmsConversionProc)(XcmsCCC, XcmsColor *, unsigned int,
  *       Until this is reworked, it's probably best to leave it unprotoized.
  *       The code works regardless.
  */
-typedef Status (*XcmsConversionProc)();
+#ifdef XCMS_CONVERSION_HARDWARE
+typedef Status (*XcmsConversionProc)( /* using device-dependent version */
+    XcmsCCC             /* ccc */,
+    XcmsColor*          /* pcolors_in_out */,
+    unsigned int        /* ncolors */,
+    Bool*               /* pCompressed */
+    );
+#else
+typedef Status (*XcmsConversionProc)( /* using device-independent version */
+    XcmsCCC             /* ccc */,
+    XcmsColor*          /* white_point */,
+    XcmsColor*          /* pcolors_in_out */,
+    unsigned int        /* ncolors */
+    );
+#endif
 typedef XcmsConversionProc *XcmsFuncListPtr;
 
 typedef int (*XcmsParseStringProc)(	/* Color String Parsing Proc */
@@ -286,7 +300,7 @@ typedef int (*XcmsParseStringProc)(	/* Color String Parsing Proc */
      *    or Device-Dependent)
      */
 typedef struct _XcmsColorSpace {
-    char *prefix;		/* Prefix of string format.		*/
+    const char *prefix;		/* Prefix of string format.		*/
     XcmsColorFormat id;		/* Format ID number.			*/
     XcmsParseStringProc parseString;
 				/* String format parsing function	*/

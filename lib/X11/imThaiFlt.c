@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.17 2003/01/08 17:45:02 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.18 2003/02/21 03:13:30 dawes Exp $ */
 
 /*
 **++ 
@@ -73,30 +73,8 @@ SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "XimThai.h"
+#include "XlcPubI.h"
 
-/* EXTERNS */
-/* KeyBind.c */
-extern int _XKeyInitialize();
-
-/* lcStd.c */
-extern int _Xlcmbstowcs(
-    XLCd	lcd,
-    wchar_t	*wstr,
-    char	*str,
-    int		len
-);
-extern int _Xlcwcstombs(
-    XLCd	lcd,
-    char	*str,
-    wchar_t	*wstr,
-    int		len
-);
-extern int _Xlcmbstoutf8(
-    XLCd	lcd,
-    char	*ustr,
-    const char	*str,
-    int		len
-);
 
 #define SPACE   32
 
@@ -555,9 +533,11 @@ THAI_apply_scm(instr, outstr, spec_ch, num_sp, insert_ch)
 #if 0
 Private void ComputeMaskFromKeytrans();
 #endif
-Private int IsCancelComposeKey();
-Private void SetLed();
+Private int IsCancelComposeKey(KeySym *symbol, XKeyEvent *event);
+Private void SetLed(Display *dpy, int num, int state);
+#if 0
 Private CARD8 FindKeyCode();
+#endif
 
 /* The following functions are specific to this module */ 
 
@@ -566,12 +546,28 @@ Private int XThaiTranslateKey();
 Private int XThaiTranslateKeySym();
 #endif
 
-Private KeySym HexIMNormalKey();
-Private KeySym HexIMFirstComposeKey();
-Private KeySym HexIMSecondComposeKey();
-Private KeySym HexIMComposeSequence();
-Private void InitIscMode();
-Private Bool ThaiComposeConvert();
+#if 0
+Private KeySym HexIMNormalKey(
+    XicThaiPart *thai_part,
+    KeySym symbol,
+    XKeyEvent *event);
+Private KeySym HexIMFirstComposeKey(
+    XicThaiPart *thai_part,
+    KeySym symbol,
+    XKeyEvent *event);
+Private KeySym HexIMSecondComposeKey(
+    XicThaiPart *thai_part,
+    KeySym symbol
+    XKeyEvent *event);
+#endif
+Private KeySym HexIMComposeSequence(KeySym ks1, KeySym ks2);
+#if 0
+Private void InitIscMode(Xic ic);
+Private Bool ThaiComposeConvert(
+    Display *dpy,
+    KeySym insym,
+    KeySym *outsym, KeySym *lower, KeySym *upper);
+#endif
 
 /*
  * Definitions
@@ -726,7 +722,12 @@ IC_RealDeletePreviousChar(ic)
 
 #define COMPOSE_LED 2
 
-typedef KeySym (*StateProc)();
+#if 0
+typedef KeySym (*StateProc)(
+    XicThaiPart *thai_part,
+    KeySym symbol,
+    XKeyEvent *event);
+#endif
 
 /*
  * macros to classify XKeyEvent state field
@@ -797,10 +798,10 @@ struct _XKeytrans {
 /* Convert keysym to 'Thai Compose' keysym */
 /* The current implementation use latin-1 keysyms */
 Private Bool
-ThaiComposeConvert(dpy, insym, outsym ,lower, upper)
-    Display *dpy;
-    KeySym insym;
-    KeySym *outsym,*lower,*upper;
+ThaiComposeConvert(
+    Display *dpy,
+    KeySym insym,
+    KeySym *outsym, KeySym *lower, KeySym *upper)
 {
     struct _XMapThaiKey const *table_entry = ThaiComposeTable;
 
@@ -818,13 +819,14 @@ ThaiComposeConvert(dpy, insym, outsym ,lower, upper)
 
 #if 0
 Private int
-XThaiTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return,
-	      lsym_return, usym_return)
-    register Display *dpy;
-    KeyCode keycode;
-    register unsigned int modifiers;
-    unsigned int *modifiers_return;
-    KeySym *keysym_return,*lsym_return,*usym_return;
+XThaiTranslateKey(
+    register Display *dpy,
+    KeyCode keycode,
+    register unsigned int modifiers,
+    unsigned int *modifiers_return,
+    KeySym *keysym_return,
+    KeySym *lsym_return,
+    KeySym *usym_return)
 {
     int per;
     register KeySym *syms;
@@ -902,12 +904,14 @@ XThaiTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return,
  * standard.
  */
 Private int
-XThaiTranslateKeySym(dpy, symbol, lsym, usym, modifiers, buffer, nbytes)
-    Display *dpy;
-    register KeySym symbol, lsym, usym;
-    unsigned int modifiers;
-    unsigned char *buffer;
-    int nbytes;
+XThaiTranslateKeySym(
+    Display *dpy,
+    register KeySym symbol,
+    register KeySym lsym,
+    register KeySym usym,
+    unsigned int modifiers,
+    unsigned char *buffer,
+    int nbytes)
 {
     KeySym ckey = 0;
     register struct _XKeytrans *p; 
@@ -1010,9 +1014,9 @@ XThaiTranslateKeySym(dpy, symbol, lsym, usym, modifiers, buffer, nbytes)
  * given a KeySym, returns the first keycode containing it, if any.
  */
 Private CARD8
-FindKeyCode(dpy, code)
-    register Display *dpy;
-    register KeySym code;
+FindKeyCode(
+    register Display *dpy,
+    register KeySym code)
 {
 
     register KeySym *kmax = dpy->keysyms + 
@@ -1035,9 +1039,9 @@ FindKeyCode(dpy, code)
  * can't map some keysym to a modifier.
  */
 Private void
-ComputeMaskFromKeytrans(dpy, p)
-    Display *dpy;
-    register struct _XKeytrans *p;
+ComputeMaskFromKeytrans(
+    Display *dpy,
+    register struct _XKeytrans *p)
 {
     register int i;
     register CARD8 code;
@@ -1076,11 +1080,10 @@ ComputeMaskFromKeytrans(dpy, p)
 #define SECOND_COMPOSE_KEY_STATE 2
 
 Private
-KeySym HexIMNormalKey (thai_part, symbol, event)
-    XicThaiPart *thai_part;
-    KeySym symbol;
-    XKeyEvent *event;
-
+KeySym HexIMNormalKey(
+    XicThaiPart *thai_part,
+    KeySym symbol,
+    XKeyEvent *event)
 {
     if (IsComposeKey (symbol, event))	/* start compose sequence	*/
 	{
@@ -1093,11 +1096,10 @@ KeySym HexIMNormalKey (thai_part, symbol, event)
 
 
 Private
-KeySym HexIMFirstComposeKey (thai_part, symbol, event)	
-    XicThaiPart *thai_part;
-    KeySym symbol;
-    XKeyEvent *event;
-
+KeySym HexIMFirstComposeKey(
+    XicThaiPart *thai_part,
+    KeySym symbol,
+    XKeyEvent *event)
 {
     if (IsModifierKey (symbol)) return symbol; /* ignore shift etc. */
     if (IsCancelComposeKey (&symbol, event))	/* cancel sequence */
@@ -1117,11 +1119,10 @@ KeySym HexIMFirstComposeKey (thai_part, symbol, event)
 }
 
 Private
-KeySym HexIMSecondComposeKey (thai_part, symbol, event)
-    XicThaiPart *thai_part;
-    KeySym symbol;
-    XKeyEvent *event;
-
+KeySym HexIMSecondComposeKey(
+    XicThaiPart *thai_part,
+    KeySym symbol,
+    XKeyEvent *event)
 {
     if (IsModifierKey (symbol)) return symbol;	/* ignore shift etc. */
     if (IsComposeKey (symbol, event))		/* restart sequence ? */
@@ -1153,9 +1154,7 @@ KeySym HexIMSecondComposeKey (thai_part, symbol, event)
  */
 
 Private
-KeySym HexIMComposeSequence (ks1, ks2)
-
-KeySym ks1, ks2;
+KeySym HexIMComposeSequence(KeySym ks1, KeySym ks2)
 {
 int	hi_digit;
 int	lo_digit;
@@ -1192,9 +1191,9 @@ int	tactis_code;
  */
 
 Private
-int IsCancelComposeKey(symbol, event)
-    KeySym *symbol;
-    XKeyEvent *event;
+int IsCancelComposeKey(
+    KeySym *symbol,
+    XKeyEvent *event)
 {
     if (*symbol==XK_Delete && !IsControl(event->state) &&
 						!IsMod1(event->state)) {
@@ -1224,10 +1223,10 @@ int IsCancelComposeKey(symbol, event)
  */
 
 Private
-void SetLed (dpy, num, state)
-    Display *dpy;
-    int num;
-    int state;
+void SetLed(
+    Display *dpy,
+    int num,
+    int state)
 {
     XKeyboardControl led_control;
 
@@ -1240,8 +1239,7 @@ void SetLed (dpy, num, state)
 /*
  * Initialize ISC mode from im modifier 
  */
-Private void InitIscMode(ic)
-Xic ic;
+Private void InitIscMode(Xic ic)
 {
     Xim im;
     char *im_modifier_name;

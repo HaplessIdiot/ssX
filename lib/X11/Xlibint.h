@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.23 2001/12/19 21:37:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.24 2002/05/31 18:45:42 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -1476,6 +1476,27 @@ extern int _XF86LoadQueryLocaleFont(
     Font*		/* fidp */
 #endif
 );
+
+extern void _XProcessWindowAttributes (
+    register Display *dpy,
+    xChangeWindowAttributesReq *req,
+    register unsigned long valuemask,
+    register XSetWindowAttributes *attributes);
+
+extern int _XDefaultError(
+        Display *dpy,
+        XErrorEvent *event);
+
+extern int _XDefaultIOError(
+        Display *dpy);
+
+extern void _XSetClipRectangles (
+    register Display *dpy,
+    GC gc,
+    int clip_x_origin, int clip_y_origin,
+    XRectangle *rectangles,
+    int n,
+    int ordering);
 
 _XFUNCPROTOEND
 

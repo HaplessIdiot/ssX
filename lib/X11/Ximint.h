@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.9 2001/01/17 19:41:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.10 2001/07/25 15:04:44 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -233,7 +233,7 @@ extern Bool _XimSetInnerICResourceList(
 #endif
 );
 
-extern Bool cw_XimCheckCreateICValues(
+extern Bool _XimCheckCreateICValues(
 #if NeedFunctionPrototypes
     XIMResourceList	 res_list,
     unsigned int	 list_num
@@ -1234,5 +1234,20 @@ extern Bool _XimEncodeSavedICATTRIBUTE(
 #endif
 );
 #endif
+
+extern Public Bool
+_XimRegisterDispatcher(
+    Xim          im,
+    Bool         (*callback)(
+#if NeedNestedPrototypes 
+                             Xim, INT16, XPointer, XPointer
+#endif 
+                             ),
+    XPointer     call_data);
+
+extern Public Bool
+_XimRespSyncReply(
+    Xic          ic,
+    BITMASK16    mode);
 
 #endif /* _XIMINT_H */
