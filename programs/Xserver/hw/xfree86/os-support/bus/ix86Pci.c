@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.22 2003/07/17 15:08:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.23tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -683,38 +683,3 @@ ix86PciInit()
 	pciBusInfo[0]  = NULL;
     }
 }
-
-#ifdef ARCH_PCI_HOST_BRIDGE
-
-/*
- * A small table of host bridges that limit the number of PCI buses to less
- * than the maximum of 256.
- */
-static struct {
-    CARD32 devid;
-    int    maxpcibus;
-} host_bridges[] = {
-    { DEVID(VENDOR_ALI_2,	CHIP_M1541),			128},
-    { DEVID(VENDOR_VIA,		CHIP_APOLLOVP1),		32},
-    { DEVID(VENDOR_VIA,		CHIP_APOLLOPRO133X),		32},
-    { DEVID(VENDOR_INTEL,	CHIP_430HX_BRIDGE),		16},
-    { DEVID(VENDOR_INTEL,	CHIP_430TX_BRIDGE),		128},
-    { DEVID(VENDOR_INTEL,	CHIP_430VX_BRIDGE),		32},
-    { DEVID(VENDOR_INTEL,	CHIP_440EX_BRIDGE),		32},
-    { DEVID(VENDOR_INTEL,	CHIP_440BX_BRIDGE),		32},
-};
-#define NUM_BRIDGES (sizeof(host_bridges) / sizeof(host_bridges[0]))
-
-void ARCH_PCI_HOST_BRIDGE(pciConfigPtr pPCI)
-{
-    int i;
-
-    for (i = 0;  i < NUM_BRIDGES;  i++) {
-	if (pPCI->pci_device_vendor == host_bridges[i].devid) {
-	    pciMaxBusNum = host_bridges[i].maxpcibus;
-	    break;
-	}
-    }
-}
-
-#endif /* ARCH_PCI_HOST_BRIDGE */
