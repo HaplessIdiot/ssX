@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+  92. Fix problem in Ib/Xaw/AsciiSrc.c:nitStringOrFile() when descriptor 0
+      is closed, as a zero return value from open(2) is taken as an error
+      (splite at purdue.edu).
   91. Fix glide driver that causes -configure to fail for all drivers
       (Alan Hourihane).
   90. Don't define SVR4 on Cygwin/XFree86 (#4751, Suhaib Siddiqi,  
@@ -13473,4 +13476,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1839 2001/06/08 08:40:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1840 2001/06/08 10:53:36 alanh Exp $
