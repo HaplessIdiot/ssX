@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.2 2001/07/01 03:24:57 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -106,9 +106,6 @@ void
 RootlessSetShape(WindowPtr pWin)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
-
-    // fixme reimplement shape
-    return;
 
     RootlessReallySetShape(pWin);
     SCREEN_UNWRAP(pScreen, SetShape);
