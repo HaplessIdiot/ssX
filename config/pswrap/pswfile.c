@@ -80,7 +80,7 @@ void InitOFile(void)
 #endif /* __MACH__ */
     printf("#include %s\n", FRIENDSFILE);
     printf("#include <string.h>\n");
-    printf("#include \"%spsops.h\"\n\n", dpsops ? "d" : "");
+    printf("#include \"DPS/%spsops.h\"\n\n", dpsops ? "d" : "");
     outlineno += 4;  /* UPDATE this if you add more prolog */
     printf("#line 1 \"%s\"\n",ifile);
     outlineno++;
