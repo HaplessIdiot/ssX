@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_tex.c,v 1.1.1.4tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_tex.c,v 1.2tsi Exp $ */
 
 /*
  * New fixes:
@@ -1743,7 +1743,7 @@ tdfxCompressedTexSubImage2D( GLcontext *ctx, GLenum target,
     for (i = 0; i < rows; i++) {
        MEMCPY(dest, data, srcRowStride);
        dest += destRowStride;
-       data = (GLvoid *)((GLuint)data + (GLuint)srcRowStride);
+       data = (const GLvoid *)((GLubyte *)data + srcRowStride);
     }
 
     /* [dBorca] Hack alert:

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -240,7 +241,7 @@ static void set_no_texture( i915ContextPtr i915 )
    i915->meta.emitted &= ~I915_UPLOAD_PROGRAM;
 }
 
-
+#ifdef UNUSED
 static void enable_texture_blend_replace( i915ContextPtr i915 )
 {
    static const GLuint prog[] = {
@@ -277,11 +278,11 @@ static void enable_texture_blend_replace( i915ContextPtr i915 )
    i915->meta.Program[0] |= i915->meta.ProgramSize - 2;
    i915->meta.emitted &= ~I915_UPLOAD_PROGRAM;
 }
+#endif /* UNUSED */
 
 
 
-
-
+#ifdef UNUSED
 /* Set up an arbitary piece of memory as a rectangular texture
  * (including the front or back buffer).
  */
@@ -323,6 +324,7 @@ static void set_tex_rect_source( i915ContextPtr i915,
 
    i915->meta.emitted &= ~I915_UPLOAD_TEX(0);
 }
+#endif /* UNUSED */
 
 
 /* Select between front and back draw buffers.
@@ -334,6 +336,8 @@ static void set_draw_offset( i915ContextPtr i915,
    i915->meta.emitted &= ~I915_UPLOAD_BUFFERS;
 }
 
+
+#ifdef UNUSED
 /* Setup an arbitary draw format, useful for targeting texture or agp
  * memory.
  */
@@ -352,6 +356,7 @@ static void set_draw_format( i915ContextPtr i915,
 /*    fprintf(stderr, "%s: DV1: %x\n",  */
 /* 	   __FUNCTION__, i915->meta.Buffer[I915_DESTREG_DV1]); */
 }
+#endif /* UNUSED */
 
 static void set_vertex_format( i915ContextPtr i915 )
 {
