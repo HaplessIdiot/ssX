@@ -501,7 +501,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   if (flags & PROBE_DETECT) {
 	I740ProbeDDC(pScrn, pI740->pEnt->index);
-	return;
+	return TRUE;
   }
 
   /* The vgahw module should be loaded here when needed */
