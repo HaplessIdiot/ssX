@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.95 2001/02/13 17:20:09 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.96 2001/02/26 18:27:55 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -447,6 +447,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef GzipLibrary	/* if OS config didn't define it, assume it's -lz */
 #define GzipLibrary -lz
+#endif
+/* If the system has the Freetype2 library */
+#ifndef HasFreetype2
+#define HasFreetype2		NO
 #endif
 #if HasKrbIV
 #ifndef KrbIVIncludes
