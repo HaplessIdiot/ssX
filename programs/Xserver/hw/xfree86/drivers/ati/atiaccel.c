@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.12tsi Exp $ */
 /*
  * Copyright 2001 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -103,7 +103,11 @@ ATIResizeOffscreenLinear
     {
         if ((pLinear->size >= Size) ||
             xf86ResizeOffscreenLinear(pLinear, Size))
+        {
+            pLinear->MoveLinearCallback = NULL;
+            pLinear->RemoveLinearCallback = NULL;
             return pLinear;
+        }
 
         xf86FreeOffscreenLinear(pLinear);
     }
