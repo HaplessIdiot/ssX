@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/drawstr.c,v 1.1 2000/10/05 18:05:26 keithp Exp $
+ * $XFree86: xc/lib/Xft/drawstr.c,v 1.2 2000/10/05 22:57:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -81,7 +81,8 @@ XftDrawString (Display *dpy, Picture src, XftFont *font, Picture dst,
 	_XftCheckGlyph (dpy, font, (unsigned long) *s++, missing, &nmissing);
     if (nmissing)
 	_XftLoadGlyphs (dpy, font, missing, nmissing);
-    XRenderCompositeString8 (dpy, PictOpOver, src, dst, 0, font->glyphset,
+    XRenderCompositeString8 (dpy, PictOpOver, src, dst,
+			     font->format, font->glyphset,
 			     srcx, srcy, x, y, (char *) string, len);
 }
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.75 2000/08/26 16:37:55 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.76 2000/10/05 18:05:25 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2150,6 +2150,31 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 SharedLibReferences(XFT,Xft,$(XFTLIBSRC),SOXFTREV,SharedXftRev)
 #else
 ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
+#endif
+
+#ifdef Freetype2Dir
+#ifndef Freetype2LibDir
+#define Freetype2LibDir Freetype2Dir/lib
+#endif
+
+#ifndef Freetype2IncDir
+#define Freetype2IncDir Freetype2Dir/include
+#endif
+
+FREETYPE2DIR = Freetype2Dir
+FREETYPE2LIBDIR = Freetype2LibDir
+FREETYPE2INCDIR = Freetype2IncDir
+FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR)
+FREETYPE2LIB = -L$(FREETYPE2DIR)/lib -lfreetype
+FREETYPE2DEFINES = -DFREETYPE2
+
+#endif
+
+#ifndef XftClientDepLibs
+#define XftClientDepLibs $(DEPXFTLIB)
+#endif
+#ifndef XftClientLibs
+#define XftClientLibs $(XFTLIB) $(FREETYPE2LIB)
 #endif
 
 #ifndef LdLibraryPath

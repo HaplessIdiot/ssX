@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.1 2000/10/05 18:05:26 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.2 2000/10/05 22:57:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -48,6 +48,8 @@ typedef struct _XftFontName {
 
 typedef struct _XftFont	XftFont;
 
+typedef struct _XftDraw XftDraw;
+
 /* load.c */
 XftFont	*
 XftLoadFont (Display *dpy, XftFontName *name);
@@ -86,5 +88,30 @@ XftDrawString (Display		*dpy,
 	       int		y,
 	       unsigned char	*string,
 	       int		len);
+
+XftDraw *
+XftCreateDraw (Display	    *dpy,
+	       Drawable	    draw,
+	       Visual	    *visual,
+	       char	    *name);
+
+void
+XftTransparentString (Display		*dpy,
+		      XftDraw		*draw,
+		      unsigned long    	fg,
+		      int		x,
+		      int		y,
+		      unsigned char	*string,
+		      int		len);
+
+void
+XftOpaqueString (Display	*dpy,
+		 XftDraw	*draw,
+		 unsigned long	fg,
+		 unsigned long	bg,
+		 int		x,
+		 int		y,
+		 unsigned char	*string,
+		 int		len);
 
 #endif /* _XFT_H_ */

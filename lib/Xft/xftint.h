@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.1 2000/10/05 18:05:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -29,7 +29,7 @@
 #include <X11/extensions/render.h>
 #include <X11/extensions/Xrender.h>
 #include "Xft.h"
-#include <freetype.h>
+#include <freetype/freetype.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -40,6 +40,7 @@ struct _XftFont {
     int		    min_char;
     int		    max_char;
     int		    size;
+    XRenderPictFormat	*format;
     XGlyphInfo	    **realized;
     int		    nrealized;
     int		    ascent;
@@ -50,7 +51,30 @@ struct _XftFont {
     FT_Face	    face;      /* handle to face object */
 };
 
-#define XftGlyphExists(f,g) ((f)->nrealized > ((g) >> 3) ? (f)->realized[(g) >> 3] & (1 << ((g) & 7)) : 0)
+#define CACHE_SIZE  4
+
+struct _XftDraw {
+    Drawable	    draw;
+    GC		    draw_gc;
+    Bool	    render;
+    struct {
+	unsigned long	    pixel;
+	unsigned long	    color;
+	int		    use;
+    } cache[CACHE_SIZE];
+    union {
+	struct {
+	    XftFont	    *font;
+	    Picture	    pict;
+	    Pixmap	    fg_pix;
+	    Picture	    fg_pict;
+	    GC		    fg_gc;
+	} render;
+	struct {
+	    XFontStruct	    *font;
+	} core;
+    } u;
+};
 
 #ifndef XFT_DEFAULT_PATH
 #define XFT_DEFAULT_PATH "/usr/X11R6/lib/X11/XftConfig"
