@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.85 2000/11/30 23:29:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.86 2000/12/01 00:24:30 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -229,6 +229,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifdef BootStrap
 #undef BuildHtmlManPages
 #define BuildHtmlManPages NO
+#endif
+
+#ifndef HasCookieMaker
+#define HasCookieMaker	NO
 #endif
 
 #include <Imake.rules>

@@ -3,7 +3,7 @@ $TOG: README /main/76 1998/05/11 14:35:10 barstow $
 
 
 
-$XFree86: xc/config/cf/README,v 1.10 1998/10/02 06:15:01 dawes Exp $
+$XFree86: xc/config/cf/README,v 1.11 2000/06/14 00:16:02 dawes Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -58,6 +58,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasCenterLineCplusplus	boolean for system has CenterLine C++ compiler
 	HasClearmake		use Clearcase's clearmake make program?
 	HasCodeCenter		boolean for system has CodeCenter
+	HasCookieMaker		boolean for system has xauth cookie generator
 	HasCplusplus		system has a C++ compiler?
 	HasDECnet		system has DECnet?
 	HasFortran		boolean for system has Fortran compiler
@@ -119,6 +120,7 @@ Imake.tmpl provides defaults for the following variables:
 	Malloc0ReturnsNull	boolean for malloc(0) == NULL
 	Malloc0ReturnsNullDefines -D's to build libX11/libXt
 	MathLibrary		library for programs using C math functions
+	MkCookieCmd		command to generate an xauth cookie
 	MsMacros		macro flag for TroffCmd, normally "-ms"
 	MvCmd			command to rename a file
 	NdbmDefines		-D's to turn on use of ndbm routines
