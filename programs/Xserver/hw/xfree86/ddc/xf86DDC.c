@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.10 1999/06/27 14:08:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.12 1999/12/03 19:17:26 eich Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -184,8 +184,8 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
 #ifdef DEBUG
     if (!tmp)
 	ErrorF("Cannot interpret EDID block\n");
-#endif
     ErrorF("Sections to follow: %i\n",tmp->no_sections);
+#endif
     VDIF_Block = 
 	VDIFRead(scrnIndex, pBus, EDID1_LEN * (tmp->no_sections + 1));    
     tmp->vdif = xf86InterpretVdif(VDIF_Block);
@@ -276,7 +276,9 @@ VDIFRead(int scrnIndex, I2CBusPtr pBus, int start)
     Buffer = DDCRead_DDC2(scrnIndex, pBus,start,64);
     if (Buffer == NULL)
 	return NULL;
+#ifdef DEBUG
     ErrorF("number of 64 bit blocks: %i\n",Buffer[0]);
+#endif
     if ((num = Buffer[0]) > 0)
 	v_buffer = v_bufferp = xalloc(sizeof(unsigned char) * 64 * num);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.81 2000/03/05 17:04:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.82 2000/03/05 23:47:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2554,8 +2554,10 @@ xf86RegisterRootWindowProperty(int ScrnIndex, Atom property, Atom type,
     PropertyPtr pNewProp, pRegProp;
     int i;
 
-ErrorF("xf86RegisterRootWindowProperty(%d, %d, %d, %d, %d, %p)\n",
-       ScrnIndex, property, type, format, len, value);
+#ifdef DEBUG
+    ErrorF("xf86RegisterRootWindowProperty(%d, %d, %d, %d, %d, %p)\n",
+	   ScrnIndex, property, type, format, len, value);
+#endif
 
     if (ScrnIndex<0 || ScrnIndex>=xf86NumScreens) {
       return(BadMatch);
@@ -2575,11 +2577,15 @@ ErrorF("xf86RegisterRootWindowProperty(%d, %d, %d, %d, %d, %p)\n",
      */
     pNewProp->next = NULL;
  
+#ifdef DEBUG
     ErrorF("new property filled\n");
+#endif
 
     if (NULL==xf86RegisteredPropertiesTable) {
+#ifdef DEBUG
       ErrorF("creating xf86RegisteredPropertiesTable[] size %d\n",
 	     xf86NumScreens);
+#endif
       if ( NULL==(xf86RegisteredPropertiesTable=(PropertyPtr*)xnfcalloc(sizeof(PropertyPtr),xf86NumScreens) )) {
 	return(BadAlloc);
       }
@@ -2588,22 +2594,28 @@ ErrorF("xf86RegisterRootWindowProperty(%d, %d, %d, %d, %d, %p)\n",
       }
     }
 
+#ifdef DEBUG
     ErrorF("xf86RegisteredPropertiesTable %p\n",
 	   xf86RegisteredPropertiesTable);
     ErrorF("xf86RegisteredPropertiesTable[%d] %p\n",
 	   ScrnIndex, xf86RegisteredPropertiesTable[ScrnIndex]);
+#endif
 
     if ( xf86RegisteredPropertiesTable[ScrnIndex] == NULL) {
       xf86RegisteredPropertiesTable[ScrnIndex] = pNewProp;
     } else {
       pRegProp = xf86RegisteredPropertiesTable[ScrnIndex];
       while (pRegProp->next != NULL) {
+#ifdef DEBUG
 	ErrorF("- next %p\n", pRegProp);
+#endif
 	pRegProp = pRegProp->next;
       }
       pRegProp->next = pNewProp;
     }
-ErrorF("xf86RegisterRootWindowProperty succeeded\n");
+#ifdef DEBUG
+    ErrorF("xf86RegisterRootWindowProperty succeeded\n");
+#endif
     return(Success);    
 }
 
