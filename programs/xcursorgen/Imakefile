@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.5 2002/10/21 18:36:45 keithp Exp $
+XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.6 2002/12/07 20:43:43 herrb Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -8,7 +8,8 @@ XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.5 2002/10/21 18:36:45 keith
        THEMEDIR = $(ICONDIR)/default
        INCLUDES = $(LIBPNGINC)
         DEPLIBS = $(DEPXLIB)
-LOCAL_LIBRARIES = $(XCURSORLIB) $(XLIB) $(LIBPNGLIB) MathLibrary
+LOCAL_LIBRARIES = $(XCURSORLIB) $(XRENDERLIB) $(XLIB) $(LIBPNGLIB) \
+		  MathLibrary GzipLibrary
            SRCS = xcursorgen.c
            OBJS = xcursorgen.o
 
