@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.6 2005/01/28 02:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.7 2005/01/31 03:24:01 dawes Exp $ */
 /*
  * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -51,18 +51,25 @@
 #include "xf86OSmouse.h"
 
 #if defined(__SOL8__) || !defined(i386)
+#define HAVE_VUID_SUPPORT
+#endif
 
+#define DEFAULT_MOUSE_PS2_DEV		"/dev/kdmouse"
+#define DEFAULT_MOUSE_VUID_DEV		"/dev/mouse"
+
+#define PS2_PROTOCOL_NAME		"PS/2"
+#define VUID_PROTOCOL_NAME		"VUID"
+
+#ifdef HAVE_VUID_SUPPORT
 #include "xisb.h"
 #include "mipointer.h"
 #include <sys/vuid_event.h>
 
-#define DEFAULT_MOUSE_VUID_DEV		"/dev/mouse"
-#define DEFAULT_MOUSE_PS2_DEV		"/dev/kdmouse"
 
 /* Names of protocols that are handled internally here. */
 
 static const char *internalNames[] = {
-	"VUID",
+	VUID_PROTOCOL_NAME,
 	NULL
 };
 
@@ -275,7 +282,7 @@ static Bool
 sunMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 {
     /* The protocol is guaranteed to be one of the internalNames[] */
-    if (xf86NameCmp(protocol, "VUID") == 0) {
+    if (xf86NameCmp(protocol, VUID_PROTOCOL_NAME) == 0) {
 	return vuidPreInit(pInfo, protocol, flags);
     }
     return TRUE;
@@ -298,6 +305,7 @@ CheckProtocol(const char *protocol)
 
     return FALSE;
 }
+#endif
 
 static const char *
 DefaultProtocol(void)
@@ -306,19 +314,23 @@ DefaultProtocol(void)
 }
 
 static Bool
-haveVUID(int fd)
+haveVUID(int fd, const char *dev)
 {
+#ifndef HAVE_VUID_SUPPORT
+    return FALSE;
+#else
     Bool needToClose = FALSE;
     int ret, fmt;
 
     if (fd == -1) {
 	needToClose = TRUE;
-	SYSCALL (fd = open(DEFAULT_MOUSE_VUID_DEV, O_RDWR | O_NONBLOCK));
+	if (!dev)
+	    dev = DEFAULT_MOUSE_VUID_DEV;
+	SYSCALL (fd = open(dev, O_RDWR | O_NONBLOCK));
     }
     if (fd == -1) {
 #ifdef DEBUG
-	ErrorF("Cannot open %s (%s)\n", DEFAULT_MOUSE_VUID_DEV,
-		strerror(errno));
+	ErrorF("Cannot open %s (%s)\n", dev, strerror(errno));
 #endif
 	return FALSE;
     }
@@ -334,15 +346,70 @@ haveVUID(int fd)
 	return FALSE;
     } else
 	return TRUE;
+#endif
+}
+
+static const char *
+GuessProtocol(InputInfoPtr pInfo, int flags)
+{
+    const char *dev;
+    char *realdev = NULL;
+    struct stat sbuf;
+    int i;
+
+    dev = xf86SetStrOption(pInfo->conf_idev->commonOptions, "Device", NULL);
+    if (!dev) {
+#ifdef DEBUG
+	ErrorF("xf86SetStrOption failed to return the device name\n");
+#endif
+	return NULL;
+    }
+    /* Can guess either VUID or PS/2. */
+    if (haveVUID(-1, dev))
+	return VUID_PROTOCOL_NAME;
+
+    if (strcmp(dev, DEFAULT_MOUSE_PS2_DEV) == 0)
+	return PS2_PROTOCOL_NAME;
+
+    if (lstat(dev, &sbuf) != 0) {
+#ifdef DEBUG
+	ErrorF("lstat failed for %s (%s)\n", dev, strerror(errno));
+#endif
+	return NULL;
+    }
+    if (S_ISLNK(sbuf.st_mode)) {
+	realdev = xnfalloc(PATH_MAX + 1);
+	i = readlink(dev, realdev, PATH_MAX);
+	if (i <= 0) {
+#ifdef DEBUG
+	    ErrorF("readlink failed for %s (%s)\n", dev, strerror(errno));
+#endif
+	    xfree(realdev);
+	    return NULL;
+	}
+	realdev[i] = '\0';
+    }
+    if (realdev && strcmp(realdev, DEFAULT_MOUSE_PS2_DEV) == 0)
+	return PS2_PROTOCOL_NAME;
+
+    return NULL;
 }
 
 static const char *
 SetupAuto(InputInfoPtr pInfo, int *protoPara)
 {
-    if (haveVUID(pInfo->fd))
-	return "VUID";
+    const char *guess;
+
+    if (pInfo->fd == -1) {
+	guess = GuessProtocol(pInfo, 0);
+	if (guess)
+	    return guess;
+    }
+
+    if (haveVUID(pInfo->fd, NULL))
+	return VUID_PROTOCOL_NAME;
     else
-	return "PS/2";
+	return PS2_PROTOCOL_NAME;
 }
 
 static const char *
@@ -350,7 +417,7 @@ FindDevice(InputInfoPtr pInfo, const char *protocol, int flags)
 {
     const char *dev;
 
-    if (haveVUID(-1))
+    if (haveVUID(-1, NULL))
 	dev = DEFAULT_MOUSE_VUID_DEV;
     else
 	dev = DEFAULT_MOUSE_PS2_DEV;
@@ -361,18 +428,17 @@ FindDevice(InputInfoPtr pInfo, const char *protocol, int flags)
     return dev;
 }
 
-#else /* __SOL8__ || !i386 */
-
-#undef MSE_MISC
-#define MSE_MISC 0
-
-#endif /* !__SOL8__ && i386 */
-
 static int
 SupportedInterfaces(void)
 {
+    int i;
+
     /* XXX This needs to be checked. */
-    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_AUTO | MSE_XPS2 | MSE_MISC;
+    i = MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_AUTO | MSE_XPS2;
+#ifdef HAVE_VUID_SUPPORT
+    i |= MSE_MISC;
+#endif
+    return i;
 }
 
 OSMouseInfoPtr
@@ -384,14 +450,15 @@ xf86OSMouseInit(int flags)
     if (!p)
 	return NULL;
     p->SupportedInterfaces = SupportedInterfaces;
-#if defined(__SOL8__) || !defined(i386)
+#ifdef HAVE_VUID_SUPPORT
     p->BuiltinNames = BuiltinNames;
     p->CheckProtocol = CheckProtocol;
     p->PreInit = sunMousePreInit;
+#endif
     p->DefaultProtocol = DefaultProtocol;
     p->SetupAuto = SetupAuto;
     p->FindDevice = FindDevice;
-#endif
+    p->GuessProtocol = GuessProtocol;
     return p;
 }
 
