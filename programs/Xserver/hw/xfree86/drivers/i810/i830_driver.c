@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.29 2003/04/11 15:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.30 2003/04/11 15:26:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3257,6 +3257,8 @@ I830BIOSLeaveVT(int scrnIndex, int flags)
    RestoreHWState(pScrn);
    RestoreBIOSMemSize(pScrn);
    I830UnbindGARTMemory(pScrn);
+   if (pI830->AccelInfoRec)
+      pI830->AccelInfoRec->NeedToSync = FALSE;
 }
 
 /*
