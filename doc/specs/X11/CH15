@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
 \&
 .sp 1
 .ce 3
@@ -107,7 +108,7 @@ of a class of ``Mail'' programs.
 By convention, the first character of class components is capitalized,
 and the first letter of name components is in lowercase.
 Each name and class finally has an attribute
-(for example ``foreground'' or ``font'').
+(for example, ``foreground'' or ``font'').
 If each window is properly assigned a name and class,
 it is easy for the user to specify attributes of any portion 
 of the application.
@@ -196,7 +197,7 @@ which the line occurs (for example, if the file name contains no
 directory or contains a relative directory specification).
 .LP
 If a ResourceName contains a contiguous sequence of two or more Binding
-characters, the sequence will be replaced with single ``\&.'' character
+characters, the sequence will be replaced with a single ``\&.'' character
 if the sequence contains only ``\&.'' characters;
 otherwise, the sequence will be replaced with a single ``*'' character.
 .LP
@@ -243,7 +244,7 @@ Resource Manager Matching Rules
 The algorithm for determining which resource database entry
 matches a given query is the heart of the resource manager.
 All queries must fully specify the name and class of the desired resource
-(use of the characters ``*'' and ``?'' are not permitted).
+(use of the characters ``*'' and ``?'' is not permitted).
 The library supports up to 100 components in a full name or class.
 Resources are stored in the database with only partially specified
 names and classes, using pattern matching constructs.
@@ -351,7 +352,7 @@ Each name, class, and representation type is typedef'd as an
 .LP
 .sM
 .Ds 0
-typedef int XrmQuark, *XrmQuarkList;
+typedef long XrmQuark, *XrmQuarkList;
 typedef XrmQuark XrmName;
 typedef XrmQuark XrmClass;
 typedef XrmQuark XrmRepresentation;
@@ -397,7 +398,7 @@ Specifies the string for which a quark\*(Ql is to be allocated.
 .eM
 These functions can be used to convert from string to quark representation.
 If the string is not in the Host Portable Character Encoding,
-the conversion is implementation dependent.
+the conversion is implementation-dependent.
 The string argument to
 .PN XrmStringToQuark
 need not be permanently allocated storage.
@@ -451,7 +452,7 @@ To convert a string with one or more components to a quark list, use
 .sM
 .FD 0
 #define XrmStringToNameList(str, name)  XrmStringToQuarkList((str), (name))
-#define XrmStringToClassList(str,class) XrmStringToQuarkList((str), (class))
+#define XrmStringToClassList(str, class) XrmStringToQuarkList((str), (class))
 .sp
 void XrmStringToQuarkList\^(\^\fIstring\fP, \fIquarks_return\fP\^)
 .br
@@ -473,7 +474,7 @@ to a list of quarks.
 Note that the string must be in the valid ResourceName format 
 (see section 15.1).
 If the string is not in the Host Portable Character Encoding,
-the conversion is implementation dependent.
+the conversion is implementation-dependent.
 .LP
 A binding list is a list of type
 .PN XrmBindingList
@@ -594,7 +595,7 @@ creates a new resource database, and loads it with the specifications
 read in from the specified file.
 The specified file should contain a sequence of entries in valid ResourceLine
 format (see section 15.1); the database that results from reading a file
-with incorrect syntax is implementation dependent.
+with incorrect syntax is implementation-dependent.
 The file is parsed in the current locale, 
 and the database is created in the current locale.
 If it cannot open the specified file,
@@ -627,12 +628,12 @@ ResourceLine format (see section 15.1).
 The file is written in the locale of the database.
 Entries containing resource names that are not in the Host Portable Character
 Encoding or containing values that are not in the encoding of the database
-locale, are written in an implementation dependent manner.
-The order in which entries are written is implementation dependent.
+locale, are written in an implementation-dependent manner.
+The order in which entries are written is implementation-dependent.
 Entries with representation types other than ``String'' are ignored.
 .LP
 .sp
-To obtain a pointer to the screen independent resources of a display, use
+To obtain a pointer to the screen-independent resources of a display, use
 .PN XResourceManagerString .
 .IN "XResourceManagerString" "" "@DEF@"
 .sM
@@ -712,12 +713,12 @@ except that it reads the information out of a string instead of out of a file.
 The string should contain a sequence of entries in valid ResourceLine
 format (see section 15.1) terminated by a null character;
 the database that results from using a string
-with incorrect syntax is implementation dependent.
+with incorrect syntax is implementation-dependent.
 The string is parsed in the current locale, 
 and the database is created in the current locale.
 .LP
 .sp
-To obtain locale name of a database, use
+To obtain the locale name of a database, use
 .PN XrmLocaleOfDatabase .
 .IN "XrmLocaleOfDatabase" "" "@DEF@"
 .sM
@@ -826,6 +827,8 @@ Specifies the resource database file name.
 .IP \fItarget_db\fP 1i
 Specifies the resource database into which the source 
 database is to be merged.
+.IP \fIoverride\fP 1i
+Specifies whether source entries override target ones.
 .LP
 .eM 
 The
@@ -1016,7 +1019,7 @@ delim %%
 Most applications and toolkits do not make random probes
 into a resource database to fetch resources.
 The X toolkit access pattern for a resource database is quite stylized.
-A series of from 1 to 20 probes are made with only the 
+A series of from 1 to 20 probes is made with only the 
 last name/class differing in each probe.
 The 
 .PN XrmGetResource 
@@ -1142,9 +1145,9 @@ and
 .PN XrmQGetResource 
 with the fully qualified name and class.
 .NH 2
-Storing Into a Resource Database
+Storing into a Resource Database
 .XS
-\*(SN Storing Into a Resource Database
+\*(SN Storing into a Resource Database
 .XE
 .LP
 To store resources into the database, use
@@ -1191,7 +1194,7 @@ followed by:
 XrmQPutResource(database, bindings, quarks, XrmStringToQuark(type), value)
 .De
 If the specifier and type are not in the Host Portable Character Encoding,
-the result is implementation dependent.
+the result is implementation-dependent.
 The value is stored in the database without modification.
 .LP
 .sp
@@ -1265,7 +1268,7 @@ on the specifier and then calls
 .PN XrmQPutResource ,
 using a ``String'' representation type.
 If the specifier is not in the Host Portable Character Encoding,
-the result is implementation dependent.
+the result is implementation-dependent.
 The value is stored in the database without modification.
 .LP
 .sp
@@ -1336,12 +1339,12 @@ adds a single resource entry to the specified database.
 The line should be in valid ResourceLine format (see section 15.1)
 terminated by a newline or null character;
 the database that results from using a string
-with incorrect syntax is implementation dependent.
+with incorrect syntax is implementation-dependent.
 The string is parsed in the locale of the database.
 If the
 .PN ResourceName
 is not in the Host Portable Character Encoding,
-the result is implementation dependent.
+the result is implementation-dependent.
 Note that comment lines are not stored.
 .NH 2
 Enumerating Database Entries
@@ -1403,7 +1406,7 @@ The
 .PN XrmEnumerateDatabase
 function calls the specified procedure for each resource in the database
 that would match some completion of the given name/class resource prefix.
-The order in which resources are found is implementation dependent.
+The order in which resources are found is implementation-dependent.
 If mode is
 .PN XrmEnumOneLevel ,
 a resource must match the given name/class prefix with
@@ -1432,7 +1435,7 @@ The procedure is called with the following arguments:
 	XrmQuarkList \fIquarks\fP\^;
 	XrmRepresentation *\fItype\fP\^;
 	XrmValue *\fIvalue\fP\^;
-	XPointer \fIclosure\fP\^;
+	XPointer \fIarg\fP\^;
 .De
 .\" End marker code here
 .LP
@@ -1441,7 +1444,7 @@ The bindings and quarks lists are terminated by
 Note that pointers
 to the database and type are passed, but these values should not be modified.
 .LP
-The procedure must not modifiy the database.
+The procedure must not modify the database.
 If Xlib has been initialized for threads, the procedure is called with
 the database locked and the result of a call by the procedure to any
 Xlib function using the same database is not defined.
@@ -1577,7 +1580,7 @@ To specify a more completely qualified resource name,
 the resourceName entry can contain multiple components.
 If the name argument and the resourceNames are not in the
 Host Portable Character Encoding,
-the result is implementation dependent.
+the result is implementation-dependent.
 .LP
 The following provides a sample option table:
 .LP
