@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 236. Plug kernel security hole in Linux int10 (Marc La France).
  235. Fix Xnest build for newest gcc versions (Marc La France).
  234. Fix typo in Xv Xinerama support (Gerd Knorr).
  233. Fix a problem with multi-thread support on OpenBSD (released OpenBSD 
@@ -303,11 +304,11 @@ XFree86 4.0.99.1 (19 February 2001)
  100. Add XaaNoWriteBitmap and XaaNoWritePixmap options to XAA (Alan Hourihane).
   99. Improve determination of primary adapter (Marc La France).
   98. Fix PPC xf86sym.c compile problems (Marc La France).
-  97. Fix int10 option handling for drivers that cann xf86CollectOptions()
+  97. Fix int10 option handling for drivers that call xf86CollectOptions()
       before calling int10 (Marc La France).
   96. Properly detect unassigned MMIO address in ATI driver (Marc La France).
   95. Fix default compilation on Sparc/Solaris (Marc La France).
-  94. Fix typo in Linux/Arm configuretion (Marc La France).
+  94. Fix typo in Linux/Arm configuration (Marc La France).
   93. By default, don't build libGLU on libc5 systems (Marc La France).
   92. Fix HW cursor colors for pm2v/pm3 in the glint driver (Alan Hourihane).
   91. Rework the memory detection code for Permedia3, now correctly detects
@@ -478,7 +479,7 @@ XFree86 4.0.99.1 (19 February 2001)
       retrieval attempt fails (Marc La France).
   30. Temporary kludge to not consider any adapter as primary if more than one
       candidate can be found (Marc La France).
-  29. Make deleted mode message less fearsome (Marc La France).
+  29. Make deleted mode messages less fearsome (Marc La France).
   28. Fix -configure to retrieve the correct set of options for ATI, C&T,
       Cirrus and NeoMagic adapters (Marc La France).
   27. When removing PCI resource overlaps, always consider resources whose size
@@ -12647,4 +12648,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1604 2001/03/03 21:20:21 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1605 2001/03/03 22:57:26 tsi Exp $
