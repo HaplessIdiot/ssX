@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.9 1995/01/15 10:29:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.10 1995/01/23 01:28:32 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -579,8 +579,8 @@ void agxFSpansTile(
     PixmapPtr,
     int,
     int,
-    unsigned int,
-    unsigned int
+    short,
+    unsigned long
 #endif
 );
 void agxFSpansStipple(

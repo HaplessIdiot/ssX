@@ -1,5 +1,5 @@
-/* $XConsortium: Shell.c,v 1.167 94/09/02 16:16:48 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.0 1994/06/28 12:23:51 dawes Exp $ */
+/* $XConsortium: Shell.c,v 1.168 95/01/06 21:14:23 converse Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.1 1994/09/17 13:44:36 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1274,6 +1274,19 @@ static void TransientRealize(w, vmask, attr)
     _SetTransientForHint((TransientShellWidget)w, False);
 }
 
+static Widget GetClientLeader(w)
+    Widget w;
+{	
+    while ((! XtIsWMShell(w) || ! ((WMShellWidget)w)->wm.client_leader)
+	   && w->core.parent)
+	w = w->core.parent;
+
+    /* ASSERT: w is a WMshell with client_leader set, or w has no parent */
+
+    if (XtIsWMShell(w) && ((WMShellWidget)w)->wm.client_leader)
+	w = ((WMShellWidget)w)->wm.client_leader;
+    return w;
+}
 
 static void EvaluateWMHints(w)
     WMShellWidget w;
@@ -1484,15 +1497,7 @@ static void _popup_set_prop(w)
 	}
 	UNLOCK_PROCESS;
 
-	p = (Widget) w;
-	while ((! XtIsWMShell(p) || ! ((WMShellWidget)p)->wm.client_leader)
-	       && p->core.parent)
-	    p = p->core.parent;
-
-	/* ASSERT: p is a WMshell with client_leader set, or p has no parent */
-
-	if (((WMShellWidget)p)->wm.client_leader)
-	    p = ((WMShellWidget)p)->wm.client_leader;
+	p = GetClientLeader((Widget)w);
 	if (XtWindow(p))
 	    XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
 			    XInternAtom(XtDisplay((Widget)w),
@@ -2256,6 +2261,17 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
  				 XA_WM_TRANSIENT_FOR);
  	}
 
+	if (nwmshell->wm.client_leader != owmshell->wm.client_leader
+	    && XtWindow(new) && !nwmshell->shell.override_redirect) {
+	    Widget leader = GetClientLeader(new);
+	    if (XtWindow(leader))
+		XChangeProperty(XtDisplay(new), XtWindow(new),
+				XInternAtom(XtDisplay(new),
+					    "WM_CLIENT_LEADER", False),
+				XA_WINDOW, 32, PropModeReplace,
+				(unsigned char *) &(leader->core.window), 1);
+	}
+
 	if (nwmshell->wm.window_role != owmshell->wm.window_role) {
 	    XtFree(owmshell->wm.window_role);
 	    if (set_prop && nwmshell->wm.window_role) {
@@ -2492,6 +2508,27 @@ static Boolean SessionSetValues(current, request, new, args, num_args)
 	StopManagingSession(nw, nw->session.connection);
 #endif /* !XT_NO_SM */
 
+    if (cw->wm.client_leader != nw->wm.client_leader ||
+	cw->session.session_id != nw->session.session_id) {
+	Widget leader;
+	if (cw->session.session_id) {
+	    leader = GetClientLeader(current);
+	    if (XtWindow(leader))
+		XDeleteProperty(XtDisplay(leader), XtWindow(leader),
+				XInternAtom(XtDisplay(leader), "SM_CLIENT_ID",
+					    False));
+	}
+	if (nw->session.session_id) {
+	    leader = GetClientLeader(new);
+	    if (XtWindow(leader))
+		XChangeProperty(XtDisplay(leader), XtWindow(leader),
+				XInternAtom(XtDisplay(leader), "SM_CLIENT_ID",
+					    False),
+				XA_STRING, 8, PropModeReplace,
+				(unsigned char *) nw->session.session_id,
+				strlen(nw->session.session_id));
+	}
+    }
     return False;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.6 1994/12/11 10:53:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.7 1995/01/15 10:32:02 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -52,7 +52,8 @@ static void p9000ProbeMemConfig(
  *    Stores the value in sysconfigval.
  */
 Bool p9000CalcSysconfigHres(hres, bytesperpixel, sysconfigval)
-     int hres, bytesperpixel;
+     int hres;
+     unsigned long bytesperpixel;
      unsigned long *sysconfigval;
 {
   static struct p9000SysconfigHresFieldEntry {

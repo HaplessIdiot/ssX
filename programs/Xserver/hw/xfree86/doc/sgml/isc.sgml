@@ -223,8 +223,16 @@ To use the library you need the gnu-ld installed.  The standard ISC ld
 couldn't link libFresco.a inside a program.
 
 I could test the Lib. with the sample Fresco Application fdraw, which compiled
-without problem. But running fdraw results in a close of the application after
-a few drawings, with an XIO Error To many / No more processes (EAGAIN).
+without problem. 
+It seems that Fresco applications has some problems running with display :0.0
+on Interactive. (I test it only against standard XLOCAL transport mechanism, 
+this could maybe improved by using another XLOCAL configuration). 
+The fdraw window is closed with the following message:
+<verb>
+XIO:  fatal IO error 11 (Resource temporarily unavailable) on X server ":0.0"
+</verb>
+As a workaround you could specify local-machinename:0 to the -display Argument
+when starting the Fresco application. On TCP/IP transport you got a workable Fresco App.
 
 </itemize>
 
@@ -316,7 +324,7 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.1 1994/12/26 10:43:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.2 1995/01/25 10:53:48 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabstore.c,v 3.0 1994/07/24 11:58:50 dawes Exp $ */
 /*
  * This file was derived from cfbbstore.c.
  */
@@ -18,10 +18,6 @@
  *
  *
  */
-#ifndef lint
-static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 5.5 94/03/28 21:44:22 dpw Exp $ SPRITE (Berkeley)";
-#endif
 
 #include    "vga256.h"
 

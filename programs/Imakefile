@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.68 94/04/07 15:10:02 rws Exp $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.3 1994/08/01 12:06:32 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.69 94/07/06 16:26:01 mor Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.4 1994/10/20 06:07:08 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -30,7 +30,8 @@ SUBDIRS = $(XSDIR)
 SUBDIRS = \
 	appres bdftopcf $(SCRNSAVDIR) \
 	bitmap editres fsinfo fslsfonts fstobdf iceauth \
-	mkfontdir oclock $(RGBDIR) rstart twm x11perf xauth xclipboard xclock \
+	mkfontdir oclock $(RGBDIR) rstart smproxy \
+	twm x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdm xdpyinfo xfd $(XFSDIR) xhost xieperf \
 	$(XINIDIR) $(XKBCOMP) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
@@ -39,7 +40,8 @@ SUBDIRS = \
 #else /* AmoebaArchitecture */
 SUBDIRS = \
 	appres bdftopcf $(SCRNSAVDIR) bitmap editres iceauth \
-	mkfontdir oclock $(RGBDIR) rstart twm x11perf xauth xclipboard xclock \
+	mkfontdir oclock $(RGBDIR) rstart smproxy \
+	twm x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdpyinfo xfd xhost \
 	xieperf $(XINIDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \

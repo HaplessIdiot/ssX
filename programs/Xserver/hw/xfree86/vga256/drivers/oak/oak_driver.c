@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.11 1995/01/20 04:23:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.12 1995/01/21 07:18:44 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -169,10 +169,12 @@ static void *   OAKSave();
 static void     OAKRestore();
 static void     OAKAdjust();
 
+#if 0
 static void     OAKSaveScreen();
 static void     OAKGetMode();
 
 static void     OAKFbInit();
+#endif
 
 
 /*
@@ -253,8 +255,8 @@ vgaVideoChipRec OAK = {
    * This is a dummy initialization for the set of vendor/option flags
    * that this driver supports.  It gets filled in properly in the
    * probe function, if the probe succeeds (assuming the driver
-					    * supports any such flags).
-					    */
+   * supports any such flags).
+   */
   {0,},
   /*
    * This specifies how the virtual width is to be rounded.  The

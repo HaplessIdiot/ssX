@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.8 1995/01/10 10:22:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.9 1995/01/15 10:31:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -181,7 +181,7 @@ extern Bool p9000CloseScreen(
 
 extern Bool p9000CalcSysconfigHres(
 #if NeedFunctionPrototypes
-   int, int, unsigned long *
+   int, unsigned long, unsigned long *
 #endif
 );
 
