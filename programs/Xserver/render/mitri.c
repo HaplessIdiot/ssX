@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.2 2002/05/15 06:46:19 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.3 2002/05/17 18:08:31 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -159,7 +159,7 @@ miTriangles (CARD8	    op,
 	miTriangleBounds (ntri, tris, &bounds);
 	if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
 	    return;
-	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+	pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
@@ -172,7 +172,7 @@ miTriangles (CARD8	    op,
 	    miTriangleBounds (1, tris, &bounds);
 	    if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
 		continue;
-	    pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+	    pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat,
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)
@@ -219,7 +219,7 @@ miTriStrip (CARD8	    op,
 	miPointFixedBounds (npoint, points, &bounds);
 	if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
 	    return;
-	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+	pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
@@ -235,7 +235,7 @@ miTriStrip (CARD8	    op,
 	    miTriangleBounds (1, &tri, &bounds);
 	    if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
 		continue;
-	    pPicture = miCreateAlphaPicture (pScreen, maskFormat, 
+	    pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat, 
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)
@@ -282,7 +282,7 @@ miTriFan (CARD8		op,
 	miPointFixedBounds (npoint, points, &bounds);
 	if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
 	    return;
-	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+	pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
@@ -300,7 +300,7 @@ miTriFan (CARD8		op,
 	    miTriangleBounds (1, &tri, &bounds);
 	    if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
 		continue;
-	    pPicture = miCreateAlphaPicture (pScreen, maskFormat, 
+	    pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat, 
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)

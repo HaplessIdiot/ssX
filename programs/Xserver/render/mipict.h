@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.8 2001/07/19 04:42:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.9 2002/05/13 05:25:11 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -202,8 +202,11 @@ miTriFan (CARD8		op,
 	  xPointFixed	*points);
 
 PicturePtr
-miCreateAlphaPicture (ScreenPtr pScreen, PictFormatPtr pPictFormat,
-		      CARD16 width, CARD16 height);
+miCreateAlphaPicture (ScreenPtr	    pScreen, 
+		      PicturePtr    pDst,
+		      PictFormatPtr pPictFormat,
+		      CARD16	    width,
+		      CARD16	    height);
 
 Bool
 miBuildRenderColormap (ColormapPtr  pColormap,
