@@ -47,6 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h,v 1.61 94/04/17 20:25:52 dpw Exp $ */
+/* $XFree86$ */
 
 #ifndef OS_H
 #define OS_H
@@ -136,6 +137,9 @@ char *alloca();
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 
+#ifdef SCO
+#include <stdio.h>
+#endif
 #ifndef X_NOT_STDC_ENV
 #include <string.h>
 #else

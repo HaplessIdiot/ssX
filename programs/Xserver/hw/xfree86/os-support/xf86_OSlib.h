@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.1 1994/05/06 08:41:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.2 1994/05/08 05:23:33 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -53,6 +53,9 @@
 # include <termio.h>
 # include <sys/stat.h>
 # include <sys/types.h>
+# ifdef SCO
+# include <sys/param.h>
+# endif
 
 # include <errno.h>
 

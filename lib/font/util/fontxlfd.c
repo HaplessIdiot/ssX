@@ -1,4 +1,5 @@
 /* $XConsortium: fontxlfd.c,v 1.18 94/04/17 20:17:33 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -39,7 +40,7 @@ from the X Consortium.
 #include	"fontxlfd.h"
 #include	<X11/Xos.h>
 #include	<math.h>
-#ifndef X_NOT_STDC_ENV
+#if !defined(X_NOT_STDC_ENV) || defined(SCO)
 #include	<stdlib.h>
 #endif
 #if defined(X_NOT_STDC_ENV) || (defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV))

@@ -1,4 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.25 94/04/17 20:23:05 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -952,9 +953,11 @@ XtransConnInfo ciptr;
 
     PRMSG (3, "TRANS(SocketUNIXResetListener) (%x,%d)\n", ciptr, ciptr->fd, 0);
 
-    if (stat (unsock->sun_path, &statb) == -1 ||
-        (statb.st_mode & S_IFMT) != S_IFSOCK)
-    {
+    if (stat (unsock->sun_path, &statb) == -1
+#ifdef S_IFSOCK
+		|| (statb.st_mode & S_IFMT) != S_IFSOCK
+#endif
+	) {
 	int oldUmask = umask (0);
 
 #ifdef UNIX_DIR

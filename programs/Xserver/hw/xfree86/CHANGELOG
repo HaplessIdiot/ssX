@@ -1,3 +1,10 @@
+XFree86 3.0Aa (22 May 1994)
+ 55. 
+ 54. Some initial untested S3 864/964 code (Harald Koenig).
+ 53. Fix for bsdLib.tmpl.
+ 52. STREAMSCONN fixes for xdm, chooser and Xserver XDMCP code (Stuart
+     Anderson).
+
 XFree86 3.0A (15 May 1994)
  51. SVGA driver for the AL2101 chipset (Paolo Severini).
  50. SVGA driver for the MX68000 and MX68010 chipsets (Frank Dikker).

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: showrgb.c,v 1.11 94/04/17 20:24:46 gildea Exp $
+ * $XFree86$
  *
 Copyright (c) 1989  X Consortium
 
@@ -39,7 +40,11 @@ in this Software without prior written authorization from the X Consortium.
 #define dbm_open(name,flags,mode) (!dbminit(name))
 #define dbm_firstkey(db) (firstkey())
 #define dbm_fetch(db,key) (fetch(key))
+#ifdef SCO
+#define dbm_close(db) /* */
+#else
 #define dbm_close(db) dbmclose()
+#endif
 #endif
 #endif /* USE_RGB_TXT */
 

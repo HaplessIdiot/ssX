@@ -1,4 +1,5 @@
 /* $XConsortium: sco_mouse.c,v 1.1 94/03/28 21:30:44 dpw Exp $ */
+/* $XFree86$ */
 
 /******************************************************************************/
 
@@ -11,16 +12,6 @@
 
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
-
-/******************************************************************************/
-
-extern int GetMotionEvents(
-#if NeedFunctionPrototypes
-	CARD32, CARD32,
-	xTimecoord *,
-	ScreenPtr
-#endif
-);
 
 /******************************************************************************/
 #ifdef USE_OSMOUSE

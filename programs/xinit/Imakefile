@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.24 93/09/21 17:58:25 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.0 1994/04/28 12:45:46 dawes Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
@@ -19,7 +19,12 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
 
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
+
+#ifdef i386ScoArchitecture
+MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR))
+#else
 MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
+#endif
 
 InstallNamedProg(startx,startx,$(BINDIR))
 InstallManPage(startx,$(MANDIR))
