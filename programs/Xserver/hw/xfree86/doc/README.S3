@@ -31,6 +31,8 @@
         Real AT&T 20C490 or 20C491 RAMDACs work with the "dac_8_bit"
         option.  Some clones (like the Winbond 82C490) do not.
 
+        The Orchid Fahrenheit 1280+ VLB may require `Option "nolinear"'.
+
      S3 805 VLB, S3 GENDAC (RAMDAC + clock synthesizer)
 
         o  MIRO 10SD (available for VLB and PCI) It is not known whether
@@ -59,8 +61,6 @@
            ClockChip "icd2061a"
            RamDac    "att20c490"
            Option    "dac_8_bit
-
-
 
 
 
@@ -699,7 +699,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.26 1995/07/30 04:15:58 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.27 1995/08/06 03:01:39 dawes Exp $
 
 
 

@@ -246,6 +246,8 @@ size is limited to approximately 800x600.
       The Trident TGUI9440 series of chips is not yet supported, but we
       are working on this.
 
+      Some types of the Mach64 cards are not fully supported.  Refer to
+      <htmlurl name="README.Mach64" url="Mach64.html"> for details.
 
 <sect>Important Changes between version 2.1.1 and 3.1<label id="Changes">
 <p>
@@ -916,7 +918,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.30 1995/08/04 00:59:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.31 1995/08/05 11:53:07 dawes Exp $
 </verb>
 
 </article>

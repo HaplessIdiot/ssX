@@ -328,6 +328,9 @@
 
   The Trident TGUI9440 series of chips is not yet supported, but we are
   working on this.
+  Some types of the Mach64 cards are not fully supported.  Refer to
+  README.Mach64 for details.
+
   5.  Important Changes between version 2.1.1 and 3.1
 
   There are a number of important user-visible changes between XFree86
@@ -391,9 +394,6 @@
   mostly discussions about XFree86 and related topics. Many questions
   can be answered there. The answers to common questions are found in
   the corresponding FAQ.
-
-
-
   7.  Credits
 
   XFree86 was originally put together by:
@@ -1052,7 +1052,7 @@
   building the distribution.
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.31 1995/08/05 11:53:07 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.32 1995/08/06 03:01:35 dawes Exp $
 
 
 
