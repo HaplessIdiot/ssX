@@ -168,6 +168,8 @@
 
         o  SunSoft: Solaris x86 2.1, 2.4
 
+        o  PANIX for PC-AT
+
 
      SVR4.2:
 
@@ -193,8 +195,8 @@
 
         o  Mach 386
 
-        o  Linux
 
+        o  Linux
 
         o  Amoeba
 
@@ -258,9 +260,10 @@
      Tseng
         ET3000, ET4000AX, ET4000/W32
 
+
+
      Western Digital/Paradise
         PVGA1
-
 
      Western Digital
         WD90C00, WD90C10, WD90C11, WD90C24, WD90C24A, WD90C30, WD90C31,
@@ -276,7 +279,7 @@
      ATI
         18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
         68800-6, 68800AX, 68800LX, 88800GX-C, 88800GX-D, 88800GX-E,
-        88800GX-F, 88800CX, 88800CT, 88800ET
+        88800GX-F, 88800CX, 264CT, 264ET, 264VT, 264VT2, 264GT
 
      NCR
         77C22, 77C22E, 77C22E+
@@ -327,7 +330,6 @@
 
   The VGA16 server supports memory banking with the ET4000, Trident,
   ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
-
   up to about 1600x1200 (with 1MB of video memory).  For other chipsets
   the display size is limited to approximately 800x600.
 
@@ -391,6 +393,7 @@
 
   The files README.Config and VideoModes.doc should be consulted for
   information on how to set up the XFree86 servers.  All supplied
+
   documents and manual pages should be read before contacting the
   XFree86 team for assistance.
 
@@ -455,10 +458,11 @@
 
      o  Rich Murphey <rich@XFree86.org>
 
+
+
      o  Hans Nasten <nasten@everyware.se>
 
      o  Mark Snitily <mark@sgcs.com>
-
 
      o  Randy Terbush <randyt@cse.unl.edu>
 
@@ -521,10 +525,10 @@
 
         o  Hans Nasten <nasten@everyware.se>,
 
+
         o  Paul Vixie <paul@vix.com>
 
      Solaris support by:
-
 
         o  Doug Anson <danson@lgc.com>,
 
@@ -586,11 +590,11 @@
 
         o  Takaaki Nomura <tnomura@sfc.keio.ac.jp>,
 
+
+
         o  Tadaaki Nagao <nagao@cs.titech.ac.jp>,
 
         o  Minoru Noda <tarda@ce.tokushima-u.ac.jp>,
-
-
 
         o  Naofumi Honda <honda@math.hokudai.ac.jp>,
 
@@ -652,11 +656,11 @@
 
         o  Tiago Gons <tiago@comosjn.hobby.nl>,
 
+
+
         o  Hans Nasten <nasten@everyware.se>,
 
         o  Scott Laird <scott@laird.com>
-
-
 
      Cirrus accelerated code by:
 
@@ -718,6 +722,7 @@
      Trident SVGA driver by:
 
         o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+
 
      NCR SVGA driver by:
 
@@ -784,11 +789,10 @@
 
      RealTek SVGA driver by:
 
+
         o  Peter Trattler <peter@sbox.tu-graz.ac.at>
 
      Apollo Mono driver by:
-
-
 
         o  Hamish Coleman <hamish@zot.apana.org.au>
 
@@ -851,12 +855,12 @@
   The first of these was the primary motivation.  We have held discus-
   sions with the X Consortium on and off for many months, attempting to
   find an avenue by which our loosely-organized free software project
+
   could be given a voice within the X Consortium.  The bylaws of the
   Consortium would not recognize such an organization.  After an initial
   investigation about funding, we decided to form our own corporation to
-  provide the avenue we needed to meet the requirements of the X
-
-  Consortium bylaws.
+  provide the avenue we needed to meet the requirements of the X Consor-
+  tium bylaws.
 
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
@@ -917,11 +921,11 @@
   XFree86's involvement in X11R6.
 
 
+
      o  GUUG -- 1st German Linux Congress
 
   Also deserving of special mention are the organizers and attendees of
   the 1st German Linux Congress in Heidelberg.  Significant funding to
-
   The XFree86 Project has been provided from its proceeds.
 
 
@@ -982,11 +986,11 @@
 
      o  Brett Neumeier
 
+
+
      o  Number Nine, Lexington, MA
 
      o  Kazuyuki Okamoto, Japan
-
-
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
@@ -1047,6 +1051,8 @@
 
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
+
+
 
         +  ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2
            (Linux binaries and source)
@@ -1113,26 +1119,20 @@
   on which files you need to get to build your distribution.
 
   Ensure that you are getting XFree86 3.1.2 - some of these sites may
+
   archive older releases as well.  Each binary distribution will contain
   a README file that describes what files you need to take from the
   archive, and which compile-time option selections were made when
   building the distribution.
 
 
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.46 1996/03/16 12:46:32 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.48 1996/03/31 11:48:59 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
 
 
 

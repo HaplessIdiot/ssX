@@ -635,9 +635,11 @@
 
 
 
-  7.3.  It seems that xterm still uses BSD 4.3 style ioctls to set the
+  7.3.  Other kernel options
+
+  It seems that xterm still uses BSD 4.3 style ioctls to set the
   terminal modes. Hence, it won't work unless you have option COMPAT_43
-  in your kernel configuration file.  Other kernel options
+  in your kernel configuration file.
 
   8.  Rebuilding the XFree86 Distribution
 
@@ -652,6 +654,9 @@
   You should configure the distribution by editing
   xc/config/cf/xf86site.def  before compiling.  To compile the sources,
   invoke ``make World'' in the xc directory.
+
+
+
 
   8.1.  Console drivers
 
@@ -718,11 +723,6 @@
 
 
        #define BuildBsdSharedLibs      NO
-
-
-
-
-
 
   8.4.  Building on NetBSD/sparc
 
@@ -810,7 +810,7 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.24 1996/02/25 01:30:34 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.25 1996/03/29 22:17:05 dawes Exp $
 
 
 
