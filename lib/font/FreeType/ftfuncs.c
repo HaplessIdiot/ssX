@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.34tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.35 2003/10/28 18:01:48 tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -51,8 +51,14 @@ THE SOFTWARE.
 #include "freetype/ftbbox.h"
 #include "freetype/internal/tttypes.h"
 #include "extras/freetype2/src/truetype/ttobjs.h"
-/* for FT_Outline_Get_CBox */
-/* #include "freetype/ftoutln.h" */
+/*
+ *  If you want to use FT_Outline_Get_CBox instead of 
+ *  FT_Outline_Get_BBox, define here.
+ */
+/* #define USE_GET_CBOX */
+#ifdef USE_GET_CBOX
+#include "freetype/ftoutln.h"
+#endif
 
 #include "fontenc.h"
 #include "ft.h"
@@ -77,7 +83,7 @@ THE SOFTWARE.
  *  handling large charset, define here.
  */
 /* #define DEFAULT_VERY_LAZY 1 */     	/* Always */
-/* #define DEFAULT_VERY_LAZY 2 */     	/* Multi-byte only */
+#define DEFAULT_VERY_LAZY 2     	/* Multi-byte only */
 /* #define DEFAULT_VERY_LAZY 256 */   	/* Unicode only */
 
 /* Does the XAA accept noSuchChar? */
@@ -786,6 +792,7 @@ static int
 ft_get_very_lazy_bbox( FT_UInt index,
 		       FT_Face face,
 		       FT_Size size,
+		       double slant,
 		       FT_Matrix *matrix,
 		       FT_BBox *bbox,
 		       FT_Long *horiAdvance,
@@ -815,6 +822,15 @@ ft_get_very_lazy_bbox( FT_UInt index,
 				smetrics->y_scale );
 	bbox->yMax = FT_MulFix( face->bbox.yMax,
 				smetrics->y_scale );
+	/* slant */
+	if( 0 < slant ) {
+	    bbox->xMax += slant * bbox->yMax;
+	    bbox->xMin += slant * bbox->yMin;
+	}
+	else if( slant < 0 ) {
+	    bbox->xMax += slant * bbox->yMin;
+	    bbox->xMin += slant * bbox->yMax;
+	}
 
 	*vertAdvance = -1;	/* We don't support */
 
@@ -859,7 +875,7 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
     FT_Glyph_Metrics *metrics = NULL;
     int wd, ht, bpr;            /* width, height, bytes per row */
     int wd_actual, ht_actual;
-    int ftrc, is_outline, b_shift=0;
+    int ftrc, is_outline, b_shift=0, correct=0;
     int dx, dy;
     int leftSideBearing, rightSideBearing, characterWidth, rawCharacterWidth,
         ascent, descent;
@@ -872,6 +888,20 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
     bitmap = &face->face->glyph->bitmap;
 
     if(!tgp) return AllocError;
+
+    if( instance->spacing == FT_CHARCELL ) correct=1;
+    else if( flags & FT_FORCE_CONSTANT_SPACING ) correct=1;
+    else if( instance->ttcap.flags & TTCAP_IS_VERY_LAZY ){
+	if( hasMetrics || (!hasMetrics && (flags & FT_GET_GLYPH_METRICS_ONLY)) ){
+	    /* If sbit is available, we don't use very lazy method. */
+	    /* See TT_Load_Glyph */
+	    if( FT_IS_SFNT( face->face ) ) {
+		TT_Size tt_size = (TT_Size)instance->size;
+		if( !( !(instance->load_flags & FT_LOAD_NO_BITMAP) 
+		       && tt_size->strike_index != 0xFFFFU ) ) correct=1;
+	    }
+	}
+    }
 
     /*
      * PREPARE METRICS
@@ -890,25 +920,12 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
 	}
 	/* mono or prop. */
 	else{
-	    int new_width, try_very_lazy=1;
+	    int new_width, try_very_lazy=correct;
 	    double ratio;
 
-	    /* If sbit is available, we don't use very lazy method. */
-	    /* See TT_Load_Glyph */
-	    if( FT_IS_SFNT( face->face ) ) {
-		TT_Size tt_size = (TT_Size)instance->size;
-		if( !(instance->load_flags & FT_LOAD_NO_BITMAP) 
-		    && tt_size->strike_index != 0xFFFFU ) {
-		    try_very_lazy=0;
-		}
-	    }
-
-	    /* fprintf(stderr,"[try_vl=%d]\n",try_very_lazy); */
-
-	    if( try_very_lazy 
-		&& (flags & FT_GET_GLYPH_METRICS_ONLY) 
-		&& (instance->ttcap.flags & TTCAP_IS_VERY_LAZY) ) {
+	    if( try_very_lazy ) {
 		if( ft_get_very_lazy_bbox( idx, face->face, instance->size, 
+					   instance->ttcap.vl_slant,
 					   &instance->transformation.matrix,
 					   &bbox, &outline_hori_advance, 
 					   &outline_vert_advance ) == 0 ) {
@@ -953,11 +970,14 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
 	    }
 	    else {
 		/* Outline */
+#ifdef USE_GET_CBOX
 		/* Very fast?? */
-		/* FT_Outline_Get_CBox(&face->face->glyph->outline, &bbox); */
-		/* ftrc=0; */	/* FT_Outline_Get_CBox returns nothing. */
+		FT_Outline_Get_CBox(&face->face->glyph->outline, &bbox);
+		ftrc=0;		/* FT_Outline_Get_CBox returns nothing. */
+#else
 		/* Calculate exact metrics */
 		ftrc=FT_Outline_Get_BBox(&face->face->glyph->outline, &bbox);
+#endif
 		if( ftrc != 0 ) return FTtoXReturnCode(ftrc);
 		outline_hori_advance = metrics->horiAdvance;
 		outline_vert_advance = metrics->vertAdvance;
@@ -1054,8 +1074,9 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
     /* Spacial case */
     if( (instance->ttcap.flags & TTCAP_MONO_CENTER) && hasMetrics ) {
 	if( is_outline == 1 ){
-	    if( instance->ttcap.flags & TTCAP_IS_VERY_LAZY ){
+	    if( correct ){
 		if( ft_get_very_lazy_bbox( idx, face->face, instance->size, 
+					   instance->ttcap.vl_slant,
 					   &instance->transformation.matrix,
 					   &bbox, &outline_hori_advance, 
 					   &outline_vert_advance ) != 0 ){
@@ -1063,7 +1084,12 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
 		}
 	    }
 	    else {
-		ftrc = FT_Outline_Get_BBox(&face->face->glyph->outline, &bbox);
+#ifdef USE_GET_CBOX
+		FT_Outline_Get_CBox(&face->face->glyph->outline, &bbox);
+		ftrc=0;
+#else
+		ftrc=FT_Outline_Get_BBox(&face->face->glyph->outline, &bbox);
+#endif
 		if( ftrc != 0 ) return FTtoXReturnCode(ftrc);
 	    }
 	    bbox_center_raw = (double)(bbox.xMax + bbox.xMin)/2.0/64.;
@@ -1104,12 +1130,59 @@ FreeTypeRasteriseGlyph(unsigned idx, int flags, CharInfoPtr tgp,
      * CALCULATE OFFSET, dx AND dy.
      */
 
-    leftSideBearing  = tgp->metrics.leftSideBearing;
-    if(instance->ttcap.flags & TTCAP_MONO_CENTER)
-	leftSideBearing -= b_shift;
-
-    dx = face->face->glyph->bitmap_left - leftSideBearing;
+    dx = face->face->glyph->bitmap_left - tgp->metrics.leftSideBearing;
     dy = tgp->metrics.ascent - face->face->glyph->bitmap_top;
+
+    if(instance->ttcap.flags & TTCAP_MONO_CENTER)
+	dx += b_shift;
+
+    /* To prevent chipped bitmap, we correct dx and dy if needed. */
+    if( correct && is_outline==1 ){
+	int lsb, rsb, asc, des;
+	int chip_left,chip_right,chip_top,chip_bot;
+#ifdef USE_GET_CBOX
+	FT_Outline_Get_CBox(&face->face->glyph->outline, &bbox);
+	ftrc=0;
+#else
+	ftrc=FT_Outline_Get_BBox(&face->face->glyph->outline, &bbox);
+#endif
+	if( ftrc != 0 ) return FTtoXReturnCode(ftrc);
+	des = CEIL64(-bbox.yMin - 32) / 64;
+	lsb = FLOOR64(bbox.xMin + 32) / 64;
+	asc = FLOOR64(bbox.yMax + 32) / 64;
+	rsb = FLOOR64(bbox.xMax + 32) / 64;
+	rightSideBearing = tgp->metrics.rightSideBearing;
+	leftSideBearing  = tgp->metrics.leftSideBearing;
+	if( instance->ttcap.flags & TTCAP_DOUBLE_STRIKE )
+	    rightSideBearing -= instance->ttcap.doubleStrikeShift;
+	/* special case */
+	if(instance->ttcap.flags & TTCAP_MONO_CENTER){
+	    leftSideBearing  -= b_shift;
+	    rightSideBearing -= b_shift;
+	}
+	chip_left  = lsb - leftSideBearing;
+	chip_right = rightSideBearing - rsb;
+	if( flags & FT_FORCE_CONSTANT_SPACING ){
+	    if( instance->ttcap.force_c_adjust_lsb_by_pixel != 0 ||
+		instance->ttcap.force_c_adjust_rsb_by_pixel != 0 ){
+		chip_left=0;
+		chip_right=0;
+	    }
+	}
+	else{
+	    if( instance->ttcap.adjustRightSideBearingByPixel != 0 ||
+		instance->ttcap.adjustLeftSideBearingByPixel != 0 ){
+		chip_left=0;
+		chip_right=0;
+	    }
+	}
+	chip_top   = tgp->metrics.ascent - asc;
+	chip_bot   = tgp->metrics.descent - des;
+	if( chip_left < 0 && 0 < chip_right ) dx++;
+	else if( chip_right < 0 && 0 < chip_left ) dx--;
+	if( chip_top < 0 && 0 < chip_bot ) dy++;
+	else if( chip_bot < 0 && 0 < chip_top ) dy--;
+    }
 
     /*
      * COPY RASTER
@@ -1894,6 +1967,7 @@ FreeTypeSetUpTTCap( char *fileName, FontScalablePtr vals,
     ret->force_c_scale_lsb = 0.0;
     ret->force_c_scale_rsb = 1.0;
     /* */
+    ret->vl_slant=0;
     ret->lsbShiftOfBitmapAutoItalic=0;
     ret->rsbShiftOfBitmapAutoItalic=0;
     /* face number */
@@ -2398,6 +2472,7 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
     FTNormalisedTransformationRec trans;
     int spacing, actual_spacing, zero_code;
     long  lastCode, firstCode;
+    TT_Postscript *post;
 
     ft_get_trans_from_vals(vals,&trans);
 
@@ -2511,10 +2586,14 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
 	font->zero_idx = FTRemap(face->face, 
 				 &font->mapping, zero_code);
 
+    post = FT_Get_Sfnt_Table(face->face, ft_sfnt_post);
+
 #ifdef DEFAULT_VERY_LAZY
     if( !( tmp_ttcap->flags & TTCAP_DISABLE_DEFAULT_VERY_LAZY ) )
 	if( DEFAULT_VERY_LAZY <= 1 + info->lastRow - info->firstRow ) {
-	    tmp_ttcap->flags |= TTCAP_IS_VERY_LAZY;
+	    if( post ){
+		tmp_ttcap->flags |= TTCAP_IS_VERY_LAZY;
+	    }
 	}
 #endif
     /* We should always reset. */
@@ -2525,6 +2604,12 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
     /* "vl=y" is available when TrueType or OpenType only */
     if ( !face->bitmap && !(FT_IS_SFNT( face->face )) )
 	tmp_ttcap->flags &= ~TTCAP_IS_VERY_LAZY;
+
+    if( post ) {
+	if( post->italicAngle != 0 )
+	    tmp_ttcap->vl_slant = -sin( (post->italicAngle/1024./5760.)*1.57079632679489661923 );
+	/* fprintf(stderr,"angle=%g(%g)\n",tmp_ttcap->vl_slant,(post->italicAngle/1024./5760.)*90); */
+    }
 
     xrc = FreeTypeOpenInstance(&font->instance, face,
                                FTFileName, &trans, actual_spacing, bmfmt,
