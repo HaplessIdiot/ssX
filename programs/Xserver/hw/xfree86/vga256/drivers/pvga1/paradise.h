@@ -1,5 +1,6 @@
 /* $XConsortium: paradise.h,v 1.2 94/10/13 13:26:38 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/paradise.h,v 3.0 1994/07/24 11:57:00 dawes Exp $ */
+/* Author: Mike Tierney <floyd@eng.umd.edu> */
 
 /* Modified by: Bill Morgart <wsm@morticia.ssw.com> */
 /*              for the WD90C33                     */

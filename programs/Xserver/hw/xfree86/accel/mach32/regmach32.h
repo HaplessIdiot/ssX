@@ -1,5 +1,6 @@
 /* $XConsortium: regmach32.h,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.2 1994/06/01 03:18:22 dawes Exp $ */
+/* regmach32.h
  *
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved

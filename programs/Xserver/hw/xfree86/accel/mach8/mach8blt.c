@@ -1,5 +1,6 @@
 /* $XConsortium: mach8blt.c,v 1.6 95/01/12 20:20:29 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.2 1994/11/26 12:43:25 dawes Exp $ */
+/*
 
 Copyright (c) 1989  X Consortium
 

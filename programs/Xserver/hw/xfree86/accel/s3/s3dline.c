@@ -1,5 +1,6 @@
 /* $XConsortium: s3dline.c,v 1.3 94/10/12 20:07:37 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.3 1994/09/26 15:31:42 dawes Exp $ */
+/*
 
 Copyright (c) 1987  X Consortium
 

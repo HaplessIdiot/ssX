@@ -1,5 +1,6 @@
 /* $XConsortium: XF86_VGA16.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_VGA16.c,v 3.3 1994/09/07 15:51:46 dawes Exp $ */
+#include "X.h"
 #include "os.h"
 
 #define _NO_XF86_PROTOTYPES

@@ -1,5 +1,6 @@
 /* $XConsortium: mach8init.c,v 1.3 95/01/06 20:57:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.2 1994/12/11 10:52:47 dawes Exp $ */
+/*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
  *

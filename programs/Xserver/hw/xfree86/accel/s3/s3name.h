@@ -1,5 +1,6 @@
 /* $XConsortium: s3name.h,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.4 1994/09/22 15:50:07 dawes Exp $ */
+/*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

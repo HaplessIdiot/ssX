@@ -1,6 +1,7 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.34 1995/01/11 03:50:32 dawes Exp $
+ *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

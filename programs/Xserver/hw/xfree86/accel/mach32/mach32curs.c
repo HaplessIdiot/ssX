@@ -1,6 +1,7 @@
 /*
  * $XConsortium: mach32curs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.1 1994/09/11 00:48:48 dawes Exp $
+ * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

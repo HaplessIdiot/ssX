@@ -1,5 +1,6 @@
 /* $XConsortium: mach32cmap.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.0 1994/09/11 00:48:46 dawes Exp $ */
+/*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

@@ -1,5 +1,6 @@
 /* $XConsortium: ppcPntWin.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.0 1994/05/04 15:03:30 dawes Exp $ */
+/*
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

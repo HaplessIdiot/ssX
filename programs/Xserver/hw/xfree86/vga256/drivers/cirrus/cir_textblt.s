@@ -1,5 +1,6 @@
 /* $XConsortium: cir_textblt.s,v 1.4 95/01/05 20:47:57 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.4 1994/10/23 13:01:01 dawes Exp $ */
+/*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
  *

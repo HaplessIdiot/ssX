@@ -1,5 +1,6 @@
 /* $XConsortium: sco_init.c,v 1.3 95/01/05 20:42:39 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.2 1994/11/19 13:56:23 dawes Exp $ */
+/*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

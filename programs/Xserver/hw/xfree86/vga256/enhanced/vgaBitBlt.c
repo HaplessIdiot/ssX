@@ -1,5 +1,6 @@
 /* $XConsortium: vgaBitBlt.c,v 1.2 94/10/13 13:16:19 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaBitBlt.c,v 3.0 1994/07/24 11:58:16 dawes Exp $ */
+/*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,5 +1,6 @@
 /* $XConsortium: s3TiCursor.c,v 1.4 95/01/26 15:35:46 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.5 1995/01/26 02:18:22 dawes Exp $ */
+/*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

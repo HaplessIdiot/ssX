@@ -1,5 +1,6 @@
 /* $XConsortium: cir_im.c,v 1.4 95/01/26 15:38:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.7 1995/01/26 02:20:59 dawes Exp $ */
+/*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
  *

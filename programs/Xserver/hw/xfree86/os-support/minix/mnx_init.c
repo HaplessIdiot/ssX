@@ -1,5 +1,6 @@
 /* $XConsortium: mnx_init.c,v 1.2 94/10/12 20:47:58 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.1 1994/09/23 10:25:09 dawes Exp $ */
+/*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

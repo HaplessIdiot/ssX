@@ -1,5 +1,6 @@
 /* $XConsortium: s3plypt.c,v 1.4 95/01/13 19:09:26 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.2 1994/08/20 07:34:22 dawes Exp $ */
+/************************************************************
 
 Copyright (c) 1989  X Consortium
 

@@ -1,5 +1,6 @@
 /* $XConsortium: mach32scrin.c,v 1.4 95/01/06 20:57:04 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.5 1994/12/10 02:07:52 dawes Exp $ */
+/************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
 

@@ -1,5 +1,6 @@
 /* $XConsortium: ppcSetSp.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.1 1994/06/18 16:26:39 dawes Exp $ */
+/*
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

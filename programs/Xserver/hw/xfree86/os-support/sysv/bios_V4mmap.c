@@ -1,5 +1,6 @@
 /* $XConsortium: bios_V4mmap.c,v 1.2 95/01/05 20:43:10 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/bios_V4mmap.c,v 3.0 1994/10/23 13:00:18 dawes Exp $ */
+/*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

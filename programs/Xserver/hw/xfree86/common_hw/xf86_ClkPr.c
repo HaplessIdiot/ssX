@@ -1,5 +1,6 @@
 /* $XConsortium: xf86_ClkPr.c,v 1.3 95/01/05 20:41:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.3 1994/11/26 12:45:59 dawes Exp $ */
+/*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

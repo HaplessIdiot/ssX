@@ -1,5 +1,6 @@
 /* $XConsortium: offscreen.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.1 1994/06/18 16:26:33 dawes Exp $ */
+/*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
  * Permission to use, copy, modify, and distribute this software and its

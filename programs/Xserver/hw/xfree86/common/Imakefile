@@ -1,5 +1,6 @@
 XCOMM $XConsortium: Imakefile,v 1.5 95/01/26 15:36:06 kaleb Exp $
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.14 1995/01/26 02:18:43 dawes Exp $
+#include <Server.tmpl>
 
 #ifdef i386MachArchitecture
         KBD = xf86KbdMach

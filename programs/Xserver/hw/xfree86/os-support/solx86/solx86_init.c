@@ -1,5 +1,6 @@
 /* $XConsortium: solx86_init.c,v 1.2 94/10/12 20:50:38 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_init.c,v 3.0 1994/09/23 10:25:22 dawes Exp $ */
+/*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

@@ -1,5 +1,6 @@
 /* $XConsortium: xf86KbdMach.c,v 1.6 95/01/13 19:20:17 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.2 1994/12/11 10:54:40 dawes Exp $ */
+/*
  *****************************************************************************
  * HISTORY
  * Log:	xf86KbdMach.c,v

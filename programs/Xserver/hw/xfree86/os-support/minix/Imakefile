@@ -1,5 +1,6 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:47:58 kaleb Exp $
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/Imakefile,v 3.0 1994/05/08 05:23:44 dawes Exp $
+#include <Server.tmpl>
 
 SRCS = mnx_init.c mnx_video.c mnx_io.c bios_devmem.c mapVT_noop.c \
        ioperm_noop.c VTsw_noop.c std_mouse.c posix_tty.c

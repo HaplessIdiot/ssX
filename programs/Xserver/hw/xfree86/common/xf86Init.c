@@ -1,6 +1,7 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.14 1995/01/07 04:07:28 dawes Exp $
+ *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

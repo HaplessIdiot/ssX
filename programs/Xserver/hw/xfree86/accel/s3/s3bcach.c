@@ -1,5 +1,6 @@
 /* $XConsortium: s3bcach.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.5 1994/09/07 15:51:14 dawes Exp $ */
+/*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

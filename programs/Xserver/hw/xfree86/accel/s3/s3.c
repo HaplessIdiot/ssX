@@ -1,5 +1,6 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.70 1995/01/25 10:48:54 dawes Exp $ */
+/*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,5 +1,6 @@
 /* $XConsortium: vgaImages.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.0 1994/05/04 15:03:47 dawes Exp $ */
+/*
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

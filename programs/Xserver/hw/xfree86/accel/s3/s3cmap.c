@@ -1,5 +1,6 @@
 /* $XConsortium: s3cmap.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.1 1994/08/20 07:33:50 dawes Exp $ */
+/*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

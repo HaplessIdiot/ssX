@@ -1,5 +1,6 @@
 /* $XConsortium: mach32fs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.5 1994/09/11 00:48:56 dawes Exp $ */
+/*
 
 Copyright (c) 1987  X Consortium
 

@@ -1,5 +1,6 @@
 /* $XConsortium: inout.s,v 1.3 94/10/12 20:50:05 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/inout.s,v 3.0 1994/08/31 04:40:50 dawes Exp $ */
+
 #include "assyntax.h"
 
 /*

@@ -1,5 +1,6 @@
 /* $XConsortium: SC11412.c,v 1.3 95/01/05 20:41:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.1 1994/11/05 23:44:05 dawes Exp $ */
+
 /* Norbert Distler ndistler@physik.tu-muenchen.de  */
 
 #include "SC11412.h" 
