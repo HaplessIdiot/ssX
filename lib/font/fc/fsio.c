@@ -1,5 +1,5 @@
 /* $XConsortium: fsio.c,v 1.36 94/03/18 11:01:01 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.0 1994/04/28 12:32:29 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -53,6 +53,11 @@ extern int errno;
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #undef EINTR
 #define EINTR WSAEINTR
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX

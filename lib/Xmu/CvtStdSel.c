@@ -1,4 +1,5 @@
 /* $XConsortium: CvtStdSel.c,v 1.29 94/04/17 20:15:57 gildea Exp $ */
+/* $XFree86$ */
 
 /*
  
@@ -57,8 +58,10 @@ in this Software without prior written authorization from the X Consortium.
 #define Status int
 #undef BOOL
 #else
+#ifndef MINIX
 #include <netdb.h>
 #include <sys/socket.h>
+#endif /* MINIX */
 #endif
 #endif
 
@@ -204,7 +207,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	*format = 8;
 	return True;
     }
-#ifdef TCPCONN
+#ifdef TCPCONN || defined(MNX_TCPCONN)
     if (*target == XA_IP_ADDRESS(d)) {
 	char hostname[1024];
 

@@ -1,4 +1,5 @@
 /* $XConsortium: NextEvent.c,v 1.142 94/04/17 20:14:29 kaleb Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -65,6 +66,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 static TimerEventRec* freeTimerRecs;

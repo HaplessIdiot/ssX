@@ -1,4 +1,5 @@
 /* $XConsortium: main.c,v 1.83 94/04/17 20:10:36 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -47,6 +48,10 @@ in this Software without prior written authorization from the X Consortium.
 
 #if NeedVarargsPrototypes
 #include <stdarg.h>
+#endif
+
+#ifdef MINIX
+#define USE_CHMOD	1
 #endif
 
 #ifdef DEBUG
@@ -631,7 +636,7 @@ redirect(line, makefile)
 	    }
 	}
 	fflush(fdout);
-#if defined(USGISH) || defined(_SEQUENT_)
+#if defined(USGISH) || defined(_SEQUENT_) || defined(USE_CHMOD)
 	chmod(makefile, st.st_mode);
 #else
         fchmod(fileno(fdout), st.st_mode);

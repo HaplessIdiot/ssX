@@ -1,4 +1,5 @@
 /* $XConsortium: Xtransint.h,v 1.20 94/04/17 20:23:03 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -85,7 +86,9 @@ extern int  errno;		/* Internal system error number. */
 #endif
 
 #ifndef WIN32
+#ifndef MINIX
 #include <sys/socket.h>
+#endif
 
 /*
  * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
@@ -407,13 +410,16 @@ static int is_numeric (
  */
 
 #if defined(DEBUG)
+/* add hack to the format string to avoid warnings about extra arguments
+ * to fprintf.
+ */
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
-			int saveerrno=errno; \
-			fprintf(stderr, x,a,b,c); fflush(stderr); \
+			int hack= 0, saveerrno=errno; \
+			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
 			errno=saveerrno; \
-			}
+			} else ((void)0)
 #else
-#define PRMSG(lvl,x,a,b,c)
+#define PRMSG(lvl,x,a,b,c)	((void)0)
 #endif /* DEBUG */
 
 #endif /* _XTRANSINT_H_ */

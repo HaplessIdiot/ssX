@@ -1,4 +1,5 @@
 /* $XConsortium: Xtransutil.c,v 1.15 94/04/17 20:23:07 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -93,7 +94,7 @@ Xtransaddr	*addrp;
 
     switch( *familyp )
     {
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
     {
 	/*
@@ -129,7 +130,7 @@ Xtransaddr	*addrp;
 	}
 	break;
     }
-#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
 
 #if defined(DNETCONN)
     case AF_DECnet:
@@ -249,7 +250,7 @@ Xtransaddr	*addr;
     }
 #endif /* defined(UNIXCONN) || defined(LOCALCONN) */
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) addr;
@@ -261,7 +262,7 @@ Xtransaddr	*addr;
 	sprintf (networkId, "tcp/%s:%s", hostnamebuf, portnumbuf);
 	break;
     }
-#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
 
 #if defined(DNETCONN)
     case AF_DECnet:
@@ -333,7 +334,7 @@ Xtransaddr	*peer_addr;
     }
 #endif /* defined(UNIXCONN) || defined(LOCALCONN) */
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
@@ -371,7 +372,7 @@ Xtransaddr	*peer_addr;
 	break;
     }
 
-#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
 
 #if defined(DNETCONN)
     case AF_DECnet:
