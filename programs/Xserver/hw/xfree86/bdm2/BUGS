@@ -1,0 +1,7 @@
+bdm2/BUGS
+Pascal Haible 8/93, 3/94
+haible@izfm.uni-stuttgart.de
+
+hgc1280 only:
+- autodetection is not very reliable, the probe may fail if the card
+  was in a fancy mode before. In this case ' chipset "hgc1280" ' is required.

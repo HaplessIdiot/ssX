@@ -1,0 +1,32 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:18:24 dpw Exp $
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = bdm drivers mfb.banked misc
+
+SRCS = bdm/?*.c mfb.banked/?*.c
+
+OBJS = bdm/?*.o mfb.banked/?*.o
+
+DONES = bdm/DONE mfb.banked/DONE
+
+INCLUDES = -Ibdm -I../common -I../os-support -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
+
+BDMDRIVERS = XF86Bdm2Drivers
+
+ConfigTargetNoDepend(bdm2Conf,$(ICONFIGFILES),confbdm2.sh,$(BDMDRIVERS))
+
+all:: subdirs libbdm2.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(bdm2,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confbdm2.sh,$(LINKKITDIR))
+
+NormalDepLibraryTarget(bdm2,$(SUBDIRS) $(DONES),$(OBJS))
+
+DependSubdirs($(SUBDIRS))

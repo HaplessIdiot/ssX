@@ -1,0 +1,29 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:55:11 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s
+
+OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
+	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I$(SERVERSRC)/include  -I../cfb.banked -I$(SERVERSRC)/cfb \
+           -I$(INCLUDESRC) -I.
+
+#if DirtyStartup
+STARTUPDEFINES = -DDIRTY_STARTUP
+#endif
+
+DEFINES = $(SPEEDUPDEFINES) $(STARTUPDEFINES) -DPSZ=8
+
+VGADRIVERS = XF86Vga256Drivers
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+InstallLinkKitNonExecFile(vga.h,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(vgaBank.h,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(vgaHW.c,$(LINKKITDIR)/VGADriverDoc)
+
+DependTarget()

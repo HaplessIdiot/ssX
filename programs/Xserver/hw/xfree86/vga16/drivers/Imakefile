@@ -1,0 +1,27 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:33:46 dpw Exp $
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF86Vga16Drivers
+
+SRCS = */?*.c 
+
+OBJS = */?*_drv.o 
+
+all:: subdirs libdriver16.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(driver16,$(LINKKITDIR)/drivers)
+
+NormalDepLibraryTarget(driver16,$(SUBDIRS),$(OBJS))
+
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16)
+
+#if XFF6LinkKit
+#include <LinkKit.tmpl>
+#endif

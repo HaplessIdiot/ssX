@@ -1,0 +1,32 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:33:34 dpw Exp $
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = vga ibm mfb drivers misc
+
+SRCS = vga/?*.c ibm/?*.c mfb/?*.c
+
+OBJS = vga/?*.o ibm/?*.o mfb/?*.o
+
+DONES = vga/DONE ibm/DONE mfb/DONE
+
+INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
+
+VGA16DRIVERS = XF86Vga16Drivers
+
+ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),confvga16.sh,$(VGA16DRIVERS))
+
+all:: subdirs libvga16.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+NormalDepLibraryTarget(vga16,$(SUBDIRS) $(DONES),$(OBJS))
+
+InstallLinkKitLibrary(vga16,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confvga16.sh,$(LINKKITDIR))
+
+DependSubdirs($(SUBDIRS))

@@ -1,0 +1,25 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:17:43 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = s3_generic.c
+
+OBJS = s3_generic.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I../.. -I$(XF86COMSRC) -I$(XF86HWSRC) \
+	   -I$(XF86OSSRC) -I$(SERVERSRC)/mi \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+all:: s3_generic.o
+
+InstallLinkKitNonExecFile(s3_generic.c,$(LINKKITDIR)/drivers/s3/s3_generic)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3/s3_generic)
+
+DependTarget()
+

@@ -1,0 +1,28 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:47:31 dpw Exp $
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+
+SUBDIRS = XF86Vga256Drivers
+
+SRCS = */?*.c 
+
+OBJS = */?*_drv.o 
+
+all:: subdirs libdriver256.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(driver256,$(LINKKITDIR)/drivers)
+
+NormalDepLibraryTarget(driver256,$(SUBDIRS),$(OBJS))
+
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256)
+
+#if XF86LinkKit
+#include <LinkKit.tmpl>
+#endif

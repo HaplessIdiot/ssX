@@ -1,0 +1,32 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:41:46 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = gen_driver.c
+
+#if defined(i386BsdArchitecture)
+OBJS = drivergen.o
+#else
+OBJS = gen_driver.o
+#endif
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+DEFINES = -DMONOVGA
+
+NormalLibraryObjectRule()
+
+NormalRelocatableTarget(gen_drv, $(OBJS))
+
+#if defined(i386BsdArchitecture)
+ObjectFromSpecialSource(drivergen,gen_driver,NullParameter)
+#endif
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga2/generic)
+InstallLinkKitNonExecFile(gen_driver.c,$(LINKKITDIR)/drivers/vga2/generic)
+
+DependTarget()

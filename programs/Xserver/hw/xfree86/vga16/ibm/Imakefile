@@ -1,0 +1,44 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:34:17 dpw Exp $
+#include <Server.tmpl>
+
+SRCS =	ppcArea.c ppcBitmap.c ppcBStore.c \
+	ppcClip.c ppcCpArea.c ppcCReduce.c \
+	ppcCurs.c ppcDepth.c ppcFillRct.c ppcWindowFS.c \
+	ppcPixmapFS.c ppcGC.c ppcGetSp.c \
+	ppcImg.c ppcLine.c ppcPixmap.c ppcPntWin.c \
+	ppcPolyPnt.c ppcPolyRec.c ppcPushPxl.c ppcQuery.c ppcRot.c \
+	ppcRslvC.c ppcSetSp.c ppcWindow.c emulOpStip.c \
+	emulRepAre.c emulTile.c \
+	vgaGC.c vgaBitBlt.c vgaImages.c \
+	vgaLine.c vgaStipple.c vgaSolid.c offscreen.c \
+	mfbimggblt.c wm3.c \
+	ppcIO.c mfbfillarc.c mfbzerarc.c
+
+OBJS =	ppcArea.o ppcBitmap.o ppcBStore.o \
+	ppcClip.o ppcCpArea.o ppcCReduce.o \
+	ppcCurs.o ppcDepth.o ppcFillRct.o ppcWindowFS.o \
+	ppcPixmapFS.o ppcGC.o ppcGetSp.o \
+	ppcImg.o ppcLine.o ppcPixmap.o ppcPntWin.o \
+	ppcPolyPnt.o ppcPolyRec.o ppcPushPxl.o ppcQuery.o ppcRot.o \
+	ppcRslvC.o ppcSetSp.o ppcWindow.o emulOpStip.o \
+	emulRepAre.o emulTile.o \
+	vgaGC.o vgaBitBlt.o vgaImages.o \
+	vgaLine.o vgaStipple.o vgaSolid.o offscreen.o \
+	mfbimggblt.o wm3.o \
+	ppcIO.o mfbfillarc.o mfbzerarc.o
+
+XCOMM This one is for unbanked vga16:
+DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16 -DUNBANKED_VGA16
+XCOMM This one is for banked vga16
+XCOMM DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16
+
+INCLUDES = -I. -I$(SERVERSRC)/mi -I$(XF86SRC)/vga2/mfb.banked \
+		-I$(XF86SRC)/vga256/vga \
+		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/include \
+		-I$(FONTINCSRC) -I$(INCLUDESRC) \
+		-I$(XF86COMSRC)
+
+NormalLibraryObjectRule()
+SubdirLibraryRule($(OBJS))
+
+DependTarget()

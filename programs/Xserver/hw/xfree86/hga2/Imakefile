@@ -1,0 +1,32 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:40 dpw Exp $
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = hga drivers mfb.mapped 
+
+SRCS = hga/?*.c mfb.mapped/?*.c 
+
+OBJS = hga/?*.o mfb.mapped/?*.o 
+
+DONES = hga/DONE mfb.mapped/DONE 
+
+INCLUDES = -Ihga -I../common -I../os-support -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
+
+HGADRIVERS = XF86Hga2Drivers
+
+ConfigTargetNoDepend(hga2Conf,$(ICONFIGFILES),confhga2.sh,$(HGADRIVERS))
+
+all:: subdirs libhga2.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(hga2,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confhga2.sh,$(LINKKITDIR))
+
+NormalDepLibraryTarget(hga2,$(SUBDIRS) $(DONES),$(OBJS))
+
+DependSubdirs($(SUBDIRS))

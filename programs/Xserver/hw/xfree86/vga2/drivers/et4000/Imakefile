@@ -1,0 +1,28 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:41:40 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = driver4.c bank4.s
+
+OBJS = driver4.o bank4.o
+
+#if XF86LinkKit
+VGA256DIR = ../../vga256
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+VGA256DIR = ../../../vga256/drivers
+#endif
+
+DEFINES = -DMONOVGA
+
+NormalLibraryObjectRule()
+
+NormalRelocatableTarget(et4_drv, $(OBJS))
+
+ObjectFromSpecialSource(driver4,$(VGA256DIR)/et4000/et4_driver,/**/)
+ObjectFromSpecialAsmSource(bank4,$(VGA256DIR)/et4000/bank,/**/)
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga2/et4000)
+
+DependTarget()

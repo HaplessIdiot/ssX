@@ -1,0 +1,32 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:29:39 dpw Exp $
+#include <Server.tmpl>
+
+#if AckToolset
+IOSRC = inout.s
+IOOBJ = inout.o
+#endif
+
+SRCS = mnx_init.c mnx_video.c mnx_io.c bios_devmem.c mapVT_noop.c \
+       ioperm_noop.c VTsw_noop.c std_mouse.c posix_tty.c $(IOSRC)
+
+OBJS = mnx_init.o mnx_video.o mnx_io.o bios_devmem.o mapVT_noop.o \
+       ioperm_noop.o VTsw_noop.o std_mouse.o posix_tty.o $(IOOBJ)
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+ObjectFromSpecialSource(bios_devmem,../shared/bios_devmem,/**/)
+ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)
+ObjectFromSpecialSource(ioperm_noop,../shared/ioperm_noop,/**/)
+ObjectFromSpecialSource(VTsw_noop,../shared/VTsw_noop,/**/)
+ObjectFromSpecialSource(posix_tty,../shared/posix_tty,/**/)
+ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
+#if AckToolset
+ObjectFromSpecialAsmSource(inout,../shared/inout,/**/)
+#endif
+
+DependTarget()

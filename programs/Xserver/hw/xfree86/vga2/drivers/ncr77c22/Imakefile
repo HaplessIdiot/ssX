@@ -1,0 +1,28 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:42:05 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = ncr_driver.c ncr_bank.s
+
+OBJS = ncr_driver.o ncr_bank.o
+
+#if XF86LinkKit
+VGA256DIR = ../../vga256
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+VGA256DIR = ../../../vga256/drivers
+#endif
+
+DEFINES = -DMONOVGA
+
+NormalLibraryObjectRule()
+
+NormalRelocatableTarget(ncr_drv, $(OBJS))
+
+ObjectFromSpecialSource(ncr_driver,$(VGA256DIR)/ncr77c22/ncr_driver,/**/)
+ObjectFromSpecialAsmSource(ncr_bank,$(VGA256DIR)/ncr77c22/ncr_bank,/**/)
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga2/ncr)
+
+DependTarget()

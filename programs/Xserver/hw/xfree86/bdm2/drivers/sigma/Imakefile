@@ -1,0 +1,25 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:20:01 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = sigmadriv.c
+
+OBJS = sigmadriv.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I../../../common -I../../../os-support -I../../bdm \
+           -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(sigma_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/bdm2/sigma)
+InstallLinkKitNonExecFile(sigmaHW.h,$(LINKKITDIR)/drivers/bdm2/sigma)
+InstallLinkKitNonExecFile(sigmaPorts.h,$(LINKKITDIR)/drivers/bdm2/sigma)
+InstallLinkKitNonExecFile(sigmadriv.c,$(LINKKITDIR)/drivers/bdm2/sigma)
+
+DependTarget()

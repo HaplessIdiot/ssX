@@ -1,0 +1,27 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:19:18 dpw Exp $
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF86Bdm2Drivers
+
+SRCS = */?*.c
+
+OBJS = */?*_drv.o
+
+all:: subdirs libbdm2drv.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(bdm2drv,$(LINKKITDIR)/drivers)
+
+NormalDepLibraryTarget(bdm2drv,$(SUBDIRS),$(OBJS))
+
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/bdm2)
+
+#if XF86LinkKit
+#include <LinkKit.tmpl>
+#endif

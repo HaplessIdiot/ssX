@@ -1,0 +1,39 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:02:48 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = 	ibm8514.c ibm8514cmap.c ibm8514gc.c ibm8514fs.c ibm8514ss.c \
+	ibm8514gs.c ibm8514win.c ibm8514init.c ibm8514im.c ibm8514bsto.c \
+	ibm8514scri.c ibm8514blt.c ibm8514pcac.c ibm8514plyp.c \
+	ibm8514line.c ibm8514seg.c ibm8514frec.c ibm8514text.c \
+	ibm8514font.c ibm8514fcac.c \
+	ibm8514dsln.c ibm8514dssg.c ibm8514ddln.c ibm8514ddsg.c \
+	ibm8514imwr.s ibm8514imrd.s ibm8514imfl.s ibm8514imst.s \
+	ibm8514gtim.c ibm8514fc.c ibm8514bc.c
+
+OBJS = 	ibm8514.o ibm8514cmap.o ibm8514gc.o ibm8514fs.o ibm8514ss.o \
+	ibm8514gs.o ibm8514win.o ibm8514init.o ibm8514im.o ibm8514bsto.o \
+	ibm8514scri.o ibm8514blt.o ibm8514pcac.o ibm8514plyp.o \
+	ibm8514line.o ibm8514seg.o ibm8514frec.o ibm8514text.o \
+	ibm8514font.o ibm8514fcac.o \
+	ibm8514dsln.o ibm8514dssg.o ibm8514ddln.o ibm8514ddsg.o \
+	ibm8514imwr.o ibm8514imrd.o ibm8514imfl.o ibm8514imst.o \
+	ibm8514gtim.o ibm8514fc.o ibm8514bc.o
+
+DEFINES=-DPSZ=8
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. \
+	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTINCSRC) -I../cache
+
+NormalLibraryObjectRule()
+
+NormalAsmObjectRule()
+
+NormalLibraryTarget(8514,$(OBJS))
+
+InstallLinkKitLibrary(8514,$(LINKKITDIR)/drivers)
+
+ObjectFromSpecialSource(ibm8514ddln,ibm8514dsln,-DI8514DoubleDash)
+ObjectFromSpecialSource(ibm8514ddsg,ibm8514dssg,-DI8514DoubleDash)
+
+DependTarget()

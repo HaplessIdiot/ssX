@@ -1,0 +1,42 @@
+XCOMM $XConsortium: Imakefile,v 1.68 94/04/07 15:10:02 rws Exp $
+#define IHaveSubdirs
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
+
+#ifndef Win32Architecture
+
+#if HasXServer
+XINIDIR = xinit
+#endif
+#if BuildServer
+RGBDIR = rgb
+XSDIR = Xserver
+#endif
+#if BuildFontServer
+XFSDIR = xfs
+#endif
+#if BuildXKBlib
+XKBCOMP = xkbcomp
+#endif
+
+SUBDIRS = \
+	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf iceauth \
+	mkfontdir oclock $(RGBDIR) rstart twm x11perf xauth xclipboard xclock \
+	xcmsdb xconsole xdm xdpyinfo xfd $(XFSDIR) xhost xieperf \
+	$(XINIDIR) $(XKBCOMP) xkill xlogo xlsatoms xlsclients xlsfonts \
+	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
+	xwd xwininfo xwud $(XSDIR) scripts
+
+#else
+
+SUBDIRS = \
+	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf iceauth \
+	mkfontdir oclock x11perf xauth xclipboard xclock \
+	xcmsdb xdpyinfo xfd $(XFSDIR) \
+	xieperf xkill xlogo xlsatoms xlsclients xlsfonts \
+	xmag xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap \
+	xwd xwininfo xwud
+
+#endif
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

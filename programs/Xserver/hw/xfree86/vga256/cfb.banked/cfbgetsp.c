@@ -1,0 +1,190 @@
+/* $XConsortium: cfbgetsp.c,v 1.2 94/04/17 20:32:19 dpw Exp $ */
+/***********************************************************
+
+Copyright (c) 1987  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
+
+
+Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the name of Digital not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
+
+
+#include "X.h"
+#include "Xmd.h"
+#include "servermd.h"
+
+#include "misc.h"
+#include "region.h"
+#include "gc.h"
+#include "windowstr.h"
+#include "pixmapstr.h"
+#include "scrnintstr.h"
+
+#include "cfb.h"
+#include "cfbmskbits.h"
+#include "vgaBank.h"
+
+/* GetSpans -- for each span, gets bits from drawable starting at ppt[i]
+ * and continuing for pwidth[i] bits
+ * Each scanline returned will be server scanline padded, i.e., it will come
+ * out to an integral number of words.
+ */
+void
+cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
+    DrawablePtr		pDrawable;	/* drawable from which to get bits */
+    int			wMax;		/* largest value of all *pwidths */
+    register DDXPointPtr ppt;		/* points to start copying from */
+    int			*pwidth;	/* list of number of bits to copy */
+    int			nspans;		/* number of scanlines to copy */
+    char		*pchardstStart;	/* where to put the bits */
+{
+    PixelGroup	*pdstStart = (PixelGroup *)pchardstStart;
+    register PixelGroup	*pdst;		/* where to put the bits */
+    register PixelGroup	*psrc;		/* where to get the bits */
+    register PixelGroup	tmpSrc;		/* scratch buffer for bits */
+    PixelGroup		*psrcBase;	/* start of src bitmap */
+    int			widthSrc;	/* width of pixmap in bytes */
+    register DDXPointPtr pptLast;	/* one past last point to get */
+    int         	xEnd;		/* last pixel to copy from */
+    register int	nstart; 
+    int	 		nend; 
+    int	 		srcStartOver; 
+    PixelGroup		startmask, endmask;
+    int			nlMiddle, nl, srcBit;
+    int			w;
+    PixelGroup		*pdstNext;
+
+    switch (pDrawable->bitsPerPixel) {
+	case 1:
+	    mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
+	    return;
+	case PSZ:
+	    break;
+	default:
+	    FatalError("cfbGetSpans: invalid depth\n");
+    }
+
+    
+    cfbGetByteWidthAndPointer (pDrawable, widthSrc, (unsigned char *)psrcBase)
+
+    BANK_FLAG(psrcBase)
+
+#if PPW == 4
+    if ((nspans == 1) && (*pwidth == 1))
+    {
+        psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + ppt->x;
+	SETRW(psrc);
+	tmpSrc = *psrc;
+#if BITMAP_BIT_ORDER == MSBFirst
+	tmpSrc <<= 24;
+#endif
+	*pdstStart = tmpSrc;
+	return;
+    }
+#endif
+    pdst = pdstStart;
+    pptLast = ppt + nspans;
+    while(ppt < pptLast)
+    {
+	xEnd = min(ppt->x + *pwidth, widthSrc << (PWSH-2) );
+	psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + (ppt->x >> PWSH); 
+	SETRW(psrc);
+	w = xEnd - ppt->x;
+	srcBit = ppt->x & PIM;
+	/* This shouldn't be needed */
+	pdstNext = pdst + PixmapWidthInPadUnits(w, PSZ);
+
+	if (srcBit + w <= PPW) 
+	{ 
+	    getbits(psrc, srcBit, w, tmpSrc);
+/*XXX*/	    putbits(tmpSrc, 0, w, pdst, ~((unsigned long) 0)); 
+	    pdst++;
+	} 
+	else 
+	{ 
+
+	    maskbits(ppt->x, w, startmask, endmask, nlMiddle);
+	    if (startmask) 
+		nstart = PPW - srcBit; 
+	    else 
+		nstart = 0; 
+	    if (endmask) 
+		nend = xEnd & PIM; 
+	    srcStartOver = srcBit + nstart > PLST;
+	    if (startmask) 
+	    { 
+		getbits(psrc, srcBit, nstart, tmpSrc);
+/*XXX*/		putbits(tmpSrc, 0, nstart, pdst, ~((unsigned long) 0));
+		if(srcStartOver)
+		  {
+		    psrc++; CHECKRWO(psrc);
+		  }
+	    } 
+	    nl = nlMiddle; 
+	    while (nl--) 
+	    { 
+		tmpSrc = *psrc;
+/*XXX*/		putbits(tmpSrc, nstart, PPW, pdst, ~((unsigned long) 0));
+		psrc++; CHECKRWO(psrc);
+		pdst++;
+	    } 
+	    if (endmask) 
+	    { 
+		getbits(psrc, 0, nend, tmpSrc);
+/*XXX*/		putbits(tmpSrc, nstart, nend, pdst, ~((unsigned long) 0));
+		if(nstart + nend >= PPW)
+		    pdst++;
+	    } 
+#ifdef	notdef
+	    pdst++; 
+	    while(pdst < pdstNext)
+	    {
+		*pdst++ = 0;
+	    }
+#else
+	    pdst = pdstNext;
+#endif
+	} 
+        ppt++;
+	pwidth++;
+    }
+}

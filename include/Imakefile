@@ -1,0 +1,34 @@
+XCOMM $XConsortium: Imakefile,v 1.85 94/03/29 15:54:38 gildea Exp $
+#define IHaveSubdirs
+#define PassCDebugFlags /**/
+
+SUBDIRS = bitmaps extensions fonts
+
+HEADERS = DECkeysym.h \
+	Sunkeysym.h \
+	X.h \
+	XWDFile.h \
+	Xatom.h \
+	Xfuncproto.h \
+	Xfuncs.h \
+	Xmd.h \
+	Xos.h \
+	Xosdefs.h \
+	Xproto.h \
+	Xprotostr.h \
+	Xthreads.h \
+	Xw32defs.h \
+	ap_keysym.h \
+	keysym.h \
+	keysymdef.h 
+
+all::
+
+BuildIncludes($(HEADERS),.,.)
+
+InstallMultipleFlags($(HEADERS),$(INCDIR),$(INSTINCFLAGS))
+MakeSubdirs($(SUBDIRS))
+
+depend::
+
+clean::

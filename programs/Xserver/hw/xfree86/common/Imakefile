@@ -1,0 +1,121 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:21:20 dpw Exp $
+#include <Server.tmpl>
+
+#if i386Mach
+        KBD = xf86KbdMach
+#else
+# ifdef i386BsdArchitecture
+        KBD = xf86_KbdBSD
+# else
+#  ifdef LinuxArchitecture
+        KBD = xf86_KbdLnx
+#  else
+        KBD = xf86Kbd
+#  endif
+# endif
+#endif
+
+SERVERSRCS = \
+	XF86_SVGA.c \
+	XF86_VGA16.c \
+	XF86_Bdm.c \
+	XF86_Hga.c \
+	XF86_Mono.c \
+	XF86_S3.c \
+	XF86_8514.c \
+	XF86_Mach8.c \
+	XF86_Mach32.c
+
+SRCS =	\
+	xf86Config.c \
+	xf86Cursor.c \
+	xf86Events.c \
+	xf86Init.c \
+	xf86Init_m.c \
+	xf86Io.c \
+	xf86_Mouse.c \
+	xf86_Option.c \
+	$(KBD).c \
+	$(SERVERSRCS)
+
+OBJS = \
+	xf86Config.o \
+	xf86Cursor.o \
+	xf86Events.o \
+	xf86Io.o \
+	xf86_Mouse.o \
+	$(KBD).o
+
+   INCLUDES = -I. -I.. -I$(XF86OSSRC) -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+              -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
+              -I$(INCLUDESRC) -I$(EXTINCSRC)
+
+     OSNAME = OSName
+   OSVENDOR = OSVendor
+  OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
+
+all:: xf86Init.o xf86Init_m.o xf86_Option.o
+
+SpecialObjectRule(xf86Config.o,xf86Config.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/Xconfig"')
+SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES))
+SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
+#if XF86SVGAServer
+SpecialObjectRule(XF86_SVGA.o,XF86_SVGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_SVGA.o
+#endif
+#if XF86VGA16Server
+SpecialObjectRule(XF86_VGA16.o,XF86_VGA16.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_VGA16.o
+#endif
+#if XF86MonoServer
+SpecialObjectRule(XF86_Mono.o,XF86_Mono.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_Mono.o
+#endif
+#if XF86BdmServer
+SpecialObjectRule(XF86_Bdm.o,XF86_Bdm.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_Bdm.o
+#endif
+#if XF86HgaServer
+SpecialObjectRule(XF86_Hga.o,XF86_Hga.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_Hga.o
+#endif
+#if XF86S3Server
+SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_S3.o
+#endif
+#if XF86I8514Server
+SpecialObjectRule(XF86_8514.o,XF86_8514.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_8514.o
+#endif
+#if XF86Mach8Server
+SpecialObjectRule(XF86_Mach8.o,XF86_Mach8.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_Mach8.o
+#endif
+#if XF86Mach32Server
+SpecialObjectRule(XF86_Mach32.o,XF86_Mach32.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_Mach32.o
+#endif
+
+ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) -DXF86MONOVGA)
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(xf86,$(OBJS))
+
+InstallLinkKitLibrary(xf86,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86Init.o,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86Init_m.o,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86Priv.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_Option.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_Option.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(xf86_Config.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(XF86_SVGA.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_VGA16.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mono.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_S3.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_8514.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mach8.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mach32.c,$(LINKKITDIR))
+
+DependTarget()
