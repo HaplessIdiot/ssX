@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.9 1999/03/07 11:41:08 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.10 1999/08/21 13:48:52 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
@@ -205,7 +205,7 @@ WaitForSomething(int *pClientsReady)
 	    while (clientsReadable.fds_bits[i]) {
 		curclient = ffs(clientsReadable.fds_bits[i]) - 1;
 		conn = ConnectionTranslation[curclient + (i << 5)];
-		FD_CLR (curclient, &clientsReadable);
+		clientsReadable.fds_bits[i] &= ~(((fd_mask)1L) << curclient);
 		client = clients[conn];
 		if (!client)
 		    continue;

@@ -45,7 +45,7 @@ OBJS2 = sunGX.o
 OBJS = $(OBJS1) $(OBJS2)
 
    INCLUDES = -I. -I../.. -I../../mi -I../../mfb -I../../cfb -I../../cfb32 \
-	      -I../../include -I$(XINCLUDESRC) -I$(FONTINCSRC)
+	      -I../../include -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 

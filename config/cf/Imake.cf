@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.54 2000/04/17 16:29:44 eich Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.55 2000/05/18 23:21:30 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -332,6 +332,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.54 2000/04/17 16:29:44 eich Exp $
 # undef sgi
 # define SGIArchitecture
 # undef mips
+# undef __mips
 # define MipsArchitecture
 # ifdef _SVR4
 #  undef _SVR4
@@ -606,6 +607,11 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #   define SparcArchitecture
 #  endif
 #  undef __sparc__
+# endif
+# if defined(mips) || defined(__mips__)
+#  define MipsArchitecture
+#  undef mips
+#  undef __mips__
 # endif
 /* for compatibility with 3.3.x */
 # ifdef PpcArchitecture

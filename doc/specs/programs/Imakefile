@@ -1,7 +1,17 @@
-XCOMM $XConsortium: Imakefile /main/6 1995/12/20 15:03:27 gildea $
+XCOMM $XConsortium: Imakefile /main/10 1996/02/08 01:54:18 gildea $
+XCOMM $XFree86$
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
+
+#ifdef XFree86Version
+XFREE86_MANUALS = \
+  $(TOP)/programs/Xserver/hw/XFree86/XFree86.man \
+  $(TOP)/programs/Xserver/hw/XFree86/XF86Config.man \
+  $(TOP)/programs/Xserver/hw/XFree86/xf86config/xf86conf.man \
+  $(TOP)/programs/Xserver/hw/XFree86/xf86cfg/xf86cfg.man \
+  $(TOP)/programs/Xserver/hw/XFree86/SuperProbe/SuperProbe.man
+#endif
 
 MANUALS = \
   $(TOP)/doc/man/general/X.man \
@@ -19,12 +29,15 @@ MANUALS = \
   $(TOP)/programs/iceauth/iceauth.man \
   $(TOP)/config/imake/imake.man \
   $(TOP)/programs/Xserver/hw/sun/kbd_mode.man \
+  $(TOP)/programs/Xserver/hw/xfree86/etc/kbd_mode.man \
   $(TOP)/config/util/lndir.man \
-  $(TOP)/config/util/makestrs.man \
   $(TOP)/config/makedepend/mkdepend.man \
+  $(TOP)/config/util/makeg.man \
+  $(TOP)/config/util/makestrs.man \
   $(TOP)/config/util/mkdirhier.man \
   $(TOP)/programs/mkfontdir/mkfontdir.man \
   $(TOP)/programs/oclock/oclock.man \
+  $(TOP)/programs/Xserver/hw/xfree86/reconfig/reconfig.man \
   $(TOP)/programs/xterm/resize.man \
   $(TOP)/programs/rstart/rstart.man \
   $(TOP)/programs/rstart/rstartd.man \
@@ -32,9 +45,10 @@ MANUALS = \
   $(TOP)/programs/rgb/showrgb.man \
   $(TOP)/programs/smproxy/smproxy.man \
   $(TOP)/programs/xinit/startx.man \
+  $(TOP)/programs/Xserver/hw/xfree86/SuperProbe/SuperProbe.man \
   $(TOP)/programs/twm/twm.man \
-  $(TOP)/programs/x11perf/x11pcomp.man \
   $(TOP)/programs/x11perf/x11perf.man \
+  $(TOP)/programs/x11perf/x11pcomp.man \
   $(TOP)/programs/xauth/xauth.man \
   $(TOP)/programs/xclipboard/xclipboard.man \
   $(TOP)/programs/xclock/xclock.man \
@@ -44,17 +58,8 @@ MANUALS = \
   $(TOP)/programs/Xserver/hw/dec/ws/Xdec.man \
   $(TOP)/programs/xdm/xdm.man \
   $(TOP)/programs/xdpyinfo/xdpyinfo.man \
-  $(TOP)/programs/Xserver/hw/xfree86/XF86Conf.man \
-  $(TOP)/programs/Xserver/hw/xfree86/XF86_Acc.man \
-  $(TOP)/programs/Xserver/hw/xfree86/XF86_Mono.man \
-  $(TOP)/programs/Xserver/hw/xfree86/XF86_SVGA.man \
-  $(TOP)/programs/Xserver/hw/xfree86/XF86_VGA16.man \
-  $(TOP)/programs/Xserver/hw/xfree86/etc/kbd_mode.man \
-  $(TOP)/programs/Xserver/hw/xfree86/reconfig/reconfig.man \
-  $(TOP)/programs/Xserver/hw/xfree86/xf86config/xf86config.man \
-  $(TOP)/programs/Xserver/hw/xfree86/SuperProbe/SuperProbe.man \
+  $(XFREE86_MANUALS) \
   $(TOP)/programs/xfd/xfd.man \
-  $(TOP)/programs/Xserver/hw/xfree86/XFree86.man \
   $(TOP)/programs/xfs/xfs.man \
   $(TOP)/programs/xhost/xhost.man \
   $(TOP)/programs/Xserver/hw/hp/Xhp.man \
@@ -81,7 +86,6 @@ MANUALS = \
   $(TOP)/programs/xset/xset.man \
   $(TOP)/programs/xsetroot/xsetroot.man \
   $(TOP)/programs/xsm/xsm.man \
-  $(TOP)/programs/xsm/xsmclient.man \
   $(TOP)/programs/xstdcmap/xstdcmap.man \
   $(TOP)/programs/Xserver/hw/sun/Xsun.man \
   $(TOP)/programs/xterm/xterm.man \
