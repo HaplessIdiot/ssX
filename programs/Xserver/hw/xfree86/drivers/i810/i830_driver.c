@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.15 2002/09/12 04:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.16 2002/09/14 19:15:36 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2383,7 +2383,7 @@ I830BIOSAdjustFrame(int scrnIndex, int x, int y, int flags)
    I830Ptr pI830;
    vbeInfoPtr pVbe;
    static int xoffset = 0, yoffset = 0;
-   static int adjustGeneration = -1;
+   static unsigned long adjustGeneration = 0;
 
    pScrn = xf86Screens[scrnIndex];
    pI830 = I830PTR(pScrn);
@@ -2451,7 +2451,7 @@ I830BIOSEnterVT(int scrnIndex, int flags)
 {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
    I830Ptr pI830 = I830PTR(pScrn);
-   static int SaveGeneration = -1;
+   static unsigned long SaveGeneration = 0;
 
    DPRINTF(PFX, "Enter VT\n");
 

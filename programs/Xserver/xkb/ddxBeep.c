@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -59,7 +60,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	HIGH_PITCH	2000
 #define CLICK_PITCH	1500
 
-static	unsigned long	atomGeneration= -1;
+static	unsigned long	atomGeneration= 0;
 static	Atom	featureOn;
 static	Atom	featureOff;
 static	Atom	featureChange;

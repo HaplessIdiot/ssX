@@ -6,7 +6,7 @@
  * February 2001  Created
  * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessScreen.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessScreen.c,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
 
 
 #include "mi.h"
@@ -307,7 +307,7 @@ static Bool
 RootlessAllocatePrivates(ScreenPtr pScreen)
 {
     RootlessScreenRec *s;
-    static int rootlessGeneration = -1;
+    static unsigned long rootlessGeneration = 0;
 
     if (rootlessGeneration != serverGeneration) {
         rootlessScreenPrivateIndex = AllocateScreenPrivateIndex();

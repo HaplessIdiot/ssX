@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.26 2002/04/04 14:05:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.28 2002/09/16 18:06:14 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -25,7 +25,7 @@
 #define SHMERRORPTR (pointer)(-1)
 
 static int counter = 0;
-static int int10Generation = -1;
+static unsigned long int10Generation = 0;
 
 static CARD8 read_b(xf86Int10InfoPtr pInt, int addr);
 static CARD16 read_w(xf86Int10InfoPtr pInt, int addr);
