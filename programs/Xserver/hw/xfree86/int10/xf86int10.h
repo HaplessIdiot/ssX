@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/xf86int10.h,v 1.3 1999/12/03 19:17:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.2 2000/02/08 13:13:26 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -131,6 +131,7 @@ void x_outw(CARD16 port, CARD16 val);
 CARD32 x_inl(CARD16 port);
 void x_outl(CARD16 port, CARD32 val);
 
+#ifndef _INT10_NO_INOUT_MACROS
 #if defined(PRINT_PORT) || !defined(_PC)
 # define p_inb x_inb
 # define p_inw x_inw
@@ -145,6 +146,7 @@ void x_outl(CARD16 port, CARD32 val);
 # define p_outw outw
 # define p_inl inl
 # define p_outl outl
+#endif
 #endif
 
 CARD8 Mem_rb(int addr);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.1 2000/01/23 04:44:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.3 2000/02/08 13:13:26 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -13,10 +13,69 @@
 #include "xf86Pci.h"
 #include "xf86_libc.h"
 #define _INT10_PRIVATE
+#define _INT10_NO_INOUT_MACROS
 #include "xf86int10.h"
 #include "int10Defines.h"
 
 #define M            _X86EMU_env
+
+#if defined(PRINT_PORT) || !defined(_PC)
+# define p_inb x_inb
+# define p_inw x_inw
+# define p_outb x_outb
+# define p_outw x_outw
+# define p_inl x_inl
+# define p_outl x_outl
+#else
+# define p_inb f_inb
+# define p_inw f_inw
+# define p_outb f_outb
+# define p_outw f_outw
+# define p_inl f_inl
+# define p_outl f_outl
+#endif
+
+/*
+ * inb/outb, etc are not available as functions (compler.h) on all
+ * platforms (eg SVR4.0 with cc).  This provides versions that are guaranteed
+ * to be functions.
+ */
+
+static CARD8
+f_inb(CARD16 port)
+{
+    return inb(port);
+}
+
+static CARD16
+f_inw(CARD16 port)
+{
+    return inw(port);
+}
+
+static CARD32
+f_inl(CARD16 port)
+{
+    return inl(port);
+}
+
+static void
+f_outb(CARD16 port, CARD8 val)
+{
+    outb(port, val);
+}
+
+static void
+f_outw(CARD16 port, CARD16 val)
+{
+    outw(port,val);
+}
+
+static void
+f_outl(CARD16 port, CARD32 val)
+{
+    outl(port,val);
+}
 
 static void
 x86emu_do_int(int num)
