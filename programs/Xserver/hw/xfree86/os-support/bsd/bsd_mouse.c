@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.1 1999/05/09 06:06:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.2 1999/05/14 14:11:20 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -12,7 +12,13 @@
 static int
 SupportedInterfaces(void)
 {
+#if defined(__NetBSD__)
+    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_AUTO;
+#elif defined(__FreeBSD__)
     return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_XPS2 | MSE_AUTO | MSE_MISC;
+#else
+    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_XPS2 | MSE_AUTO;
+#endif
 }
 
 /* Names of protocols that are handled internally here. */
@@ -32,12 +38,12 @@ static const char *miscNames[] = {
 	"SysMouse",
 #endif
 	NULL
-}
+};
 
 static const char **
 BuiltinNames(void)
 {
-    return names;
+    return internalNames;
 }
 
 static Bool
@@ -46,10 +52,10 @@ CheckProtocol(const char *protocol)
     int i;
 
     for (i = 0; internalNames[i]; i++)
-	if (xf86NameCmp(protocol, names[i]) == 0)
+	if (xf86NameCmp(protocol, internalNames[i]) == 0)
 	    return TRUE;
     for (i = 0; miscNames[i]; i++)
-	if (xf86NameCmp(protocol, names[i]) == 0)
+	if (xf86NameCmp(protocol, miscNames[i]) == 0)
 	    return TRUE;
     return FALSE;
 }
@@ -127,19 +133,6 @@ SetSysMouseRes(InputInfoPtr pInfo, const char *protocol, int rate, int res)
 }
 #endif
 
-#if defined(__FreeBSD__)
-static void
-SysMouseReadInput(InputInfoPtr pInfo)
-{
-}
-
-static Bool
-SysMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
-{
-    return TRUE;
-}
-#endif
-
 #if defined(WSCONS_SUPPORT)
 static void
 wsconsReadInput(InputInfoPtr pInfo)
@@ -170,9 +163,7 @@ xf86OSMouseInit(int flags)
     p->SetBMRes = SetSysMouseRes;
     p->SetMiscRes = SetSysMouseRes;
 #endif
-#if defined(__FreeBSD__)
-    p->PreInit = SysMousePreInit;
-#elif defined(WSCONS_SUPPORT)
+#if defined(WSCONS_SUPPORT)
     p->PreInit = wsconsPreInit;
 #endif
     return p;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.17 1999/04/25 15:30:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.18 1999/04/25 15:39:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -170,7 +170,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 	xf86MsgVerb(X_INFO, MMAP_DEBUG,
 			"MMAP_VERSION: 0x%x\n",ioctl(mmapFd, GETVERSION));
 	xf86MsgVerb(X_INFO, MMAP_DEBUG,
-		"xf86MapVidMem: Screen: %d - Flags: %d\n", ScreenNum, Flags);
+		"xf86MapVidMem: Screen: %d\n", ScreenNum);
 	mmapStat(Base,Size);
 	/* To force the MMAP driver to provide the address */
 	base = (pointer)0;
