@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 194. Adjust -probe for change in default stderr verbosity (Marc La France).
  193. Radeon patch for Xv on all known Radeon devices (James Ralston and
       Keith Packard).
  192. New XDarwin application icon (Michael Oland).
@@ -14911,4 +14912,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2252 2002/06/18 19:43:01 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2254 2002/06/27 22:39:47 keithp Exp $
