@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.44 1998/12/13 07:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.45 1998/12/20 11:58:00 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -55,7 +55,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include "misc.h"
 #include "X.h"
 #include "input.h"
-#include "opaque.h"
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -109,39 +108,10 @@ static mutex print_lock;
 # endif
 #endif
 
+#include "opaque.h"
+
 #include <errno.h>
 extern int errno;
-
-extern char *display;
-
-extern CARD32 defaultScreenSaverTime;	/* for parsing command line */
-extern CARD32 defaultScreenSaverInterval;
-extern int defaultScreenSaverBlanking;
-extern int defaultBackingStore;
-extern Bool disableBackingStore;
-extern Bool disableSaveUnders;
-extern Bool PartialNetwork;
-#ifndef NOLOGOHACK
-extern int logoScreenSaver;
-#endif
-#ifdef RLIMIT_DATA
-extern int limitDataSpace;
-#endif
-#ifdef RLIMIT_STACK
-extern int limitStackSpace;
-#endif
-#ifdef RLIMIT_NOFILE
-extern int limitNoFile;
-#endif
-extern int defaultColorVisualClass;
-extern Bool permitOldBugs;
-extern int monitorResolution;
-extern Bool defeatAccessControl;
-#ifdef SERVER_LOCK
-static Bool nolock = FALSE;
-#endif
-
-extern char* protNoListen;
 
 Bool CoreDump;
 Bool noTestExtensions;

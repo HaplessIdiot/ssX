@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.14 1998/08/02 09:27:00 dawes Exp $ */
 
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
@@ -1153,6 +1153,10 @@ extern	Status	 XkbChangeKeycodeRange(
 	XkbChangesPtr		/* changes */
 #endif
 );
+
+extern int XkbFinishDeviceInit(DeviceIntPtr);
+extern void XkbFreeSrvLedInfo(XkbSrvLedInfoPtr);
+extern void XkbFreeInfo(XkbSrvInfoPtr);
 
 #ifdef XKBSRV_NEED_FILE_FUNCS
 

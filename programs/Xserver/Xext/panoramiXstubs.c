@@ -1,9 +1,7 @@
+/* $XFree86$ */
 /*
  * HISTORY
- * $Log: panoramiXstubs.c,v $
- * Revision 3.3  1998/10/04 08:15:29  dawes
- * new R6.4 files
- *
+ * Log
  * Revision 1.1.2.3  1996/05/21  18:18:34  Madeline_Asmus
  * 	Add new dummy panoramiX routines for symbol resolution
  * 	[1996/05/21  15:24:11  Madeline_Asmus]
@@ -12,7 +10,7 @@
  * 	Build in stubs for PanoramiX for symbol resolution
  * 	[1995/12/06  19:28:14  Madeline_Asmus]
  * 
- * $EndLog$
+ * EndLog
  */
 /* $TOG: panoramiXstubs.c /main/3 1997/10/30 16:04:17 kaleb $ */
 

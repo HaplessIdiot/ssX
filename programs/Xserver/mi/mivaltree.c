@@ -1,18 +1,13 @@
-/* $XConsortium: mivaltree.c,v 5.33 94/04/17 20:27:58 dpw Exp $ */
+/* $TOG: mivaltree.c /main/52 1998/02/09 14:49:15 kaleb $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
  *	is miValidateTree.
  *
 
-Copyright (c) 1987, 1988, 1989  X Consortium
+Copyright 1987, 1988, 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -20,13 +15,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
  *
  * Copyright 1987, 1988, 1989 by 
@@ -51,6 +46,7 @@ in this Software without prior written authorization from the X Consortium.
  * SOFTWARE.
  * 
  ******************************************************************/
+/* $XFree86$ */
 
  /* 
   * Aug '86: Susan Angebranndt -- original code
@@ -61,7 +57,6 @@ in this Software without prior written authorization from the X Consortium.
   *		Bob Scheifler -- avoid miComputeClips for unmapped windows,
   *				 valdata changes
   */
-
 #include    "X.h"
 #include    "scrnintstr.h"
 #include    "validate.h"
@@ -69,6 +64,12 @@ in this Software without prior written authorization from the X Consortium.
 #include    "mi.h"
 #include    "regionstr.h"
 #include    "mivalidate.h"
+#ifdef PANORAMIX
+#include    "panoramiX.h"
+#include    "panoramiXsrv.h"
+#endif
+
+#include    "globals.h"
 
 #ifdef SHAPE
 /*
@@ -138,7 +139,8 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
 				    HasBorder(w) && \
 				    (w)->backgroundState == ParentRelative)
 
-/*-
+
+/*
  *-----------------------------------------------------------------------
  * miComputeClips --
  *	Recompute the clipList, borderClip, exposed and borderExposed
@@ -154,7 +156,6 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
  *
  *-----------------------------------------------------------------------
  */
-
 static void
 miComputeClips (pParent, pScreen, universe, kind, exposed)
     register WindowPtr	pParent;
@@ -173,7 +174,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     Bool		overlap;
     RegionPtr		borderVisible;
     Bool		resized;
-    
     /*
      * Figure out the new visibility of this window.
      * The extent of the universe should be the same as the extent of
@@ -182,7 +182,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * completely). If the window is completely obscured, none of the
      * universe will cover the rectangle.
      */
-
     borderSize.x1 = pParent->drawable.x - wBorderWidth(pParent);
     borderSize.y1 = pParent->drawable.y - wBorderWidth(pParent);
     dx = (int) pParent->drawable.x + (int) pParent->drawable.width + wBorderWidth(pParent);
@@ -476,6 +475,412 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	(* pScreen->ClipNotify) (pParent, dx, dy);
 }
 
+#ifdef PANORAMIX
+static void
+PanoramiXComputeClips (pParent, pScreen, universe, panoramiXuniverse, kind, exposed)
+    register WindowPtr	pParent;
+    register ScreenPtr	pScreen;
+    register RegionPtr	universe;
+    register RegionPtr	panoramiXuniverse;
+    VTKind		kind;
+    RegionPtr		exposed; /* for intermediate calculations */
+{
+    int			dx,
+			dy;
+    RegionRec		childUniverse;
+    register WindowPtr	pChild;
+    int     	  	oldVis, newVis, PanoramiXoldVis, PanoramiXnewVis;
+    BoxRec		borderSize;
+    RegionRec		childUnion;
+    Bool		overlap;
+    RegionPtr		borderVisible;
+    Bool		resized;
+    RegionRec		PanoramiXchildUniverse;
+    int			j, this_dx, this_dy;
+    PanoramiXWindow 	*pPanoramiXWin = PanoramiXWinRoot;
+    RegionRec           PanoramiXborderSize;
+    register WindowPtr	pWin;
+    RegionRec           totalClip;
+    RegionRec		childClip;
+
+    /*
+     * Figure out the new visibility of this window.
+     * The extent of the universe should be the same as the extent of
+     * the borderSize region. If the window is unobscured, this rectangle
+     * will be completely inside the universe (the universe will cover it
+     * completely). If the window is completely obscured, none of the
+     * universe will cover the rectangle.
+     */
+    borderSize.x1 = pParent->drawable.x - wBorderWidth(pParent);
+    borderSize.y1 = pParent->drawable.y - wBorderWidth(pParent);
+    dx = (int) pParent->drawable.x + (int) pParent->drawable.width + wBorderWidth(pParent);
+    if (dx > 32767)
+	dx = 32767;
+    borderSize.x2 = dx;
+    dy = (int) pParent->drawable.y + (int) pParent->drawable.height + wBorderWidth(pParent);
+    if (dy > 32767)
+	dy = 32767;
+    borderSize.y2 = dy;
+
+ 	/* Use the panoramiX values to determine visibility */	
+
+    oldVis = pParent->visibility;
+    /* Get the visibility save in the PanoramiX data structure */
+    j = pScreen->myNum;
+    PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pParent->drawable.id, j);
+    if ( pPanoramiXWin )
+         PanoramiXoldVis = pPanoramiXWin->visibility;
+    else
+	 PanoramiXoldVis = pParent->visibility;
+    if (oldVis == VisibilityNotViewable)
+        PanoramiXoldVis =  oldVis;
+    switch (RECT_IN_REGION( pScreen, panoramiXuniverse, &borderSize)) 
+    {
+	case rgnIN:
+	    PanoramiXnewVis = VisibilityUnobscured;
+	    break;
+	case rgnPART:
+	    PanoramiXnewVis = VisibilityPartiallyObscured;
+#ifdef SHAPE
+	    {
+		RegionPtr   pBounding;
+
+		if ((pBounding = wBoundingShape (pParent)))
+		{
+		    switch (miShapedWindowIn (pScreen, panoramiXuniverse, pBounding,
+					      &borderSize,
+					      pParent->drawable.x,
+ 					      pParent->drawable.y))
+		    {
+		    case rgnIN:
+			PanoramiXnewVis = VisibilityUnobscured;
+			break;
+		    case rgnOUT:
+			PanoramiXnewVis = VisibilityFullyObscured;
+			break;
+		    }
+		}
+	    }
+#endif
+	    break;
+	default:
+	    PanoramiXnewVis = VisibilityFullyObscured;
+	    break;
+    }
+    if (pPanoramiXWin) {
+        pPanoramiXWin->visibility = PanoramiXnewVis;
+	PanoramiXVisibilityNotifySent = pPanoramiXWin->VisibilitySent;
+    }else
+	PanoramiXVisibilityNotifySent = FALSE; 
+
+    if (PanoramiXoldVis != PanoramiXnewVis && (!PanoramiXVisibilityNotifySent) 
+&&
+	((pParent->eventMask | wOtherEventMasks(pParent)) & VisibilityChangeMask)) {
+        pParent->visibility = PanoramiXnewVis;
+	pPanoramiXWin->VisibilitySent = TRUE;
+	SendVisibilityNotify(pParent);
+        pParent->visibility = oldVis;
+    }	
+
+    switch (RECT_IN_REGION( pScreen, universe, &borderSize)) 
+    {
+	case rgnIN:
+	    newVis = VisibilityUnobscured;
+	    break;
+	case rgnPART:
+	    newVis = VisibilityPartiallyObscured;
+#ifdef SHAPE
+	    {
+		RegionPtr   pBounding;
+
+		if ((pBounding = wBoundingShape (pParent)))
+		{
+		    switch (miShapedWindowIn (pScreen, universe, pBounding,
+					      &borderSize,
+					      pParent->drawable.x,
+ 					      pParent->drawable.y))
+		    {
+		    case rgnIN:
+			newVis = VisibilityUnobscured;
+			break;
+		    case rgnOUT:
+			newVis = VisibilityFullyObscured;
+			break;
+		    }
+		}
+	    }
+#endif
+	    break;
+	default:
+	    newVis = VisibilityFullyObscured;
+	    break;
+    }
+    pParent->visibility = newVis;
+    /*
+    if (oldVis != newVis &&
+	((pParent->eventMask | wOtherEventMasks(pParent)) & VisibilityChangeMask))
+	SendVisibilityNotify(pParent);
+     */
+    dx = pParent->drawable.x - pParent->valdata->before.oldAbsCorner.x;
+    dy = pParent->drawable.y - pParent->valdata->before.oldAbsCorner.y;
+
+    /*
+     * avoid computations when dealing with simple operations
+     */
+
+    switch (kind) {
+    case VTMap:
+    case VTStack:
+    case VTUnmap:
+	break;
+    case VTMove:
+	if ((oldVis == newVis) &&
+	    ((oldVis == VisibilityFullyObscured) ||
+	     (oldVis == VisibilityUnobscured)))
+	{
+	    pChild = pParent;
+	    while (1)
+	    {
+		if (pChild->viewable)
+		{
+		    if (pChild->visibility != VisibilityFullyObscured)
+		    {
+			REGION_TRANSLATE( pScreen, &pChild->borderClip,
+						      dx, dy);
+			REGION_TRANSLATE( pScreen, &pChild->clipList,
+						      dx, dy);
+			pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+			if (pScreen->ClipNotify)
+			    (* pScreen->ClipNotify) (pChild, dx, dy);
+
+		    }
+		    if (pChild->valdata)
+		    {
+			REGION_INIT(pScreen, 
+				    &pChild->valdata->after.borderExposed,
+				    NullBox, 0);
+			if (HasParentRelativeBorder(pChild))
+			{
+			    REGION_SUBTRACT(pScreen,
+					 &pChild->valdata->after.borderExposed,
+					 &pChild->borderClip,
+					 &pChild->winSize);
+			}
+			REGION_INIT( pScreen, &pChild->valdata->after.exposed,
+						 NullBox, 0);
+		    }
+		    if (pChild->firstChild)
+		    {
+			pChild = pChild->firstChild;
+			continue;
+		    }
+		}
+		while (!pChild->nextSib && (pChild != pParent))
+		    pChild = pChild->parent;
+		if (pChild == pParent)
+		    break;
+		pChild = pChild->nextSib;
+	    }
+	    return;
+	}
+	/* fall through */
+    default:
+    	/*
+     	 * To calculate exposures correctly, we have to translate the old
+     	 * borderClip and clipList regions to the window's new location so there
+     	 * is a correspondence between pieces of the new and old clipping regions.
+     	 */
+    	if (dx || dy) 
+    	{
+	    /*
+	     * We translate the old clipList because that will be exposed or copied
+	     * if gravity is right.
+	     */
+	    REGION_TRANSLATE( pScreen, &pParent->borderClip, dx, dy);
+	    REGION_TRANSLATE( pScreen, &pParent->clipList, dx, dy);
+    	} 
+	break;
+    }
+
+    borderVisible = pParent->valdata->before.borderVisible;
+    resized = pParent->valdata->before.resized;
+    REGION_INIT( pScreen, &pParent->valdata->after.borderExposed, NullBox, 0);
+    REGION_INIT( pScreen, &pParent->valdata->after.exposed, NullBox, 0);
+
+    /*
+     * Since the borderClip must not be clipped by the children, we do
+     * the border exposure first...
+     *
+     * 'universe' is the window's borderClip. To figure the exposures, remove
+     * the area that used to be exposed from the new.
+     * This leaves a region of pieces that weren't exposed before.
+     */
+
+    if (HasBorder (pParent))
+    {
+    	if (borderVisible)
+    	{
+	    /*
+	     * when the border changes shape, the old visible portions
+	     * of the border will be saved by DIX in borderVisible --
+	     * use that region and destroy it
+	     */
+	    REGION_SUBTRACT( pScreen, exposed, universe, borderVisible);
+	    REGION_DESTROY( pScreen, borderVisible);
+    	}
+    	else
+    	{
+	    REGION_SUBTRACT( pScreen, exposed, universe, &pParent->borderClip);
+    	}
+	if (HasParentRelativeBorder(pParent) && (dx || dy))
+	    REGION_SUBTRACT( pScreen, &pParent->valdata->after.borderExposed,
+				  universe,
+				  &pParent->winSize);
+	else
+	    REGION_SUBTRACT( pScreen, &pParent->valdata->after.borderExposed,
+			       exposed, &pParent->winSize);
+
+    	REGION_COPY( pScreen, &pParent->borderClip, universe);
+    
+    	/*
+     	 * To get the right clipList for the parent, and to make doubly sure
+     	 * that no child overlaps the parent's border, we remove the parent's
+     	 * border from the universe before proceeding.
+     	 */
+    
+    	REGION_INTERSECT( pScreen, universe, universe, &pParent->winSize);
+    }
+    else
+    	REGION_COPY( pScreen, &pParent->borderClip, universe);
+    
+    if ((pChild = pParent->firstChild) && pParent->mapped)
+    {
+	REGION_INIT(pScreen, &childUniverse, NullBox, 0);
+	REGION_INIT(pScreen, &PanoramiXchildUniverse, NullBox, 0);
+	REGION_INIT(pScreen, &childUnion, NullBox, 0);
+	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
+	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
+	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
+	{
+	    for (; pChild; pChild = pChild->nextSib)
+	    {
+		if (pChild->viewable)
+		    REGION_APPEND( pScreen, &childUnion, &pChild->borderSize);
+	    }
+	}
+	else
+	{
+	    for (pChild = pParent->lastChild; pChild; pChild = pChild->prevSib)
+	    {
+		if (pChild->viewable)
+		    REGION_APPEND( pScreen, &childUnion, &pChild->borderSize);
+	    }
+	}
+	REGION_VALIDATE( pScreen, &childUnion, &overlap);
+
+	for (pChild = pParent->firstChild;
+	     pChild;
+	     pChild = pChild->nextSib)
+ 	{
+	    if (pChild->viewable) {
+		/*
+		 * If the child is viewable, we want to remove its extents
+		 * from the current universe, but we only re-clip it if
+		 * it's been marked.
+		 */
+		if (pChild->valdata) {
+		    /*
+		     * Figure out the new universe from the child's
+		     * perspective and recurse.
+		     */
+		    REGION_INTERSECT( pScreen, &childUniverse, universe,
+				     &pChild->borderSize);
+    	    	    REGION_INIT(pScreen, &PanoramiXborderSize, NullBox, 0);
+	            if ( kind == VTMove )
+	               PanoramiXClippedRegion(pChild, &PanoramiXborderSize, 
+				(pChild->borderSize.extents.x2 - wBorderWidth(pChild)), 
+				(pChild->borderSize.extents.y2 - wBorderWidth(pChild)),  
+				(pChild->drawable.width + (2*wBorderWidth(pChild))),  
+				(pChild->drawable.height + (2*wBorderWidth(pChild))));
+	    	    else 
+		       PanoramiXClippedRegion(pChild, &PanoramiXborderSize, 
+		    		(pChild->drawable.x - wBorderWidth(pChild)), 
+		    		(pChild->drawable.y - wBorderWidth(pChild)), 
+		    		(pChild->drawable.width + (2*wBorderWidth(pChild))), 
+				(pChild->drawable.height + (2*wBorderWidth(pChild))));
+		    
+		    REGION_UNION(pScreen, &PanoramiXchildUniverse, panoramiXuniverse,
+				    &PanoramiXborderSize);
+
+		    PanoramiXComputeClips (pChild, pScreen, &childUniverse, &PanoramiXchildUniverse, kind, exposed);
+		}
+		/*
+		 * Once the child has been processed, we remove its extents
+		 * from the current universe, thus denying its space to any
+		 * other sibling.
+		 */
+		if (overlap)
+		    REGION_SUBTRACT( pScreen, universe, universe,
+					  &pChild->borderSize);
+	    }
+	}
+	if (!overlap)
+	    REGION_SUBTRACT( pScreen, universe, universe, &childUnion);
+	REGION_UNINIT( pScreen, &childUnion);
+	REGION_UNINIT( pScreen, &childUniverse);
+    } /* if any children */
+
+    /*
+     * 'universe' now contains the new clipList for the parent window.
+     *
+     * To figure the exposure of the window we subtract the old clip from the
+     * new, just as for the border.
+     */
+
+    if (oldVis == VisibilityFullyObscured ||
+	oldVis == VisibilityNotViewable)
+    {
+	REGION_COPY( pScreen, &pParent->valdata->after.exposed, universe);
+    }
+    else if (newVis != VisibilityFullyObscured &&
+	     newVis != VisibilityNotViewable)
+    {
+    	REGION_SUBTRACT( pScreen, &pParent->valdata->after.exposed,
+			       universe, &pParent->clipList);
+    }
+
+    /*
+     * One last thing: backing storage. We have to try to save what parts of
+     * the window are about to be obscured. We can just subtract the universe
+     * from the old clipList and get the areas that were in the old but aren't
+     * in the new and, hence, are about to be obscured.
+     */
+    if (pParent->backStorage && !resized)
+    {
+	REGION_SUBTRACT( pScreen, exposed, &pParent->clipList, universe);
+	(* pScreen->SaveDoomedAreas)(pParent, exposed, dx, dy);
+    }
+    
+    /* HACK ALERT - copying contents of regions, instead of regions */
+    {
+	RegionRec   tmp;
+
+	tmp = pParent->clipList;
+	pParent->clipList = *universe;
+	*universe = tmp;
+    }
+
+#ifdef NOTDEF
+    REGION_COPY( pScreen, &pParent->clipList, universe);
+#endif
+
+    pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+
+    if (pScreen->ClipNotify)
+	(* pScreen->ClipNotify) (pParent, dx, dy);
+}
+#endif
+
 static void
 miTreeObscured(pParent)
     register WindowPtr pParent;
@@ -506,7 +911,7 @@ miTreeObscured(pParent)
     }
 }
 
-/*-
+/*
  *-----------------------------------------------------------------------
  * miValidateTree --
  *	Recomputes the clip list for pParent and all its inferiors.
@@ -557,6 +962,15 @@ miValidateTree (pParent, pChild, kind)
     Bool		overlap;
     int			viewvals;
     Bool		forward;
+#ifdef PANORAMIX
+    Bool		OnScreen;
+    RegionRec	  	PanoramiXtotalClip;  /* Total PanoramiX clipping region 
+					      * available to the marked children. */
+    RegionRec           PanoramiXborderSize;
+    RegionRec           PanoramiXborderClip;
+    RegionRec           PanoramiXclipList;
+    RegionRec           PanoramiXchildClip;
+#endif
 
     pScreen = pParent->drawable.pScreen;
     if (pChild == NullWindow)
@@ -572,6 +986,13 @@ miValidateTree (pParent, pChild, kind)
      * children in their new configuration.
      */
     REGION_INIT(pScreen, &totalClip, NullBox, 0);
+#ifdef PANORAMIX
+    REGION_INIT(pScreen, &PanoramiXtotalClip, NullBox, 0);
+    REGION_INIT(pScreen, &PanoramiXborderSize, NullBox, 0);
+    REGION_INIT(pScreen, &PanoramiXborderClip, NullBox, 0);
+    REGION_INIT(pScreen, &PanoramiXclipList, NullBox, 0);
+    REGION_INIT(pScreen, &PanoramiXchildClip, NullBox, 0);
+#endif
     viewvals = 0;
     if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
@@ -583,6 +1004,27 @@ miValidateTree (pParent, pChild, kind)
 	    if (pWin->valdata)
 	    {
 		REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
+#ifdef PANORAMIX
+		if (!noPanoramiXExtension) {
+    		    REGION_INIT(pScreen, &PanoramiXborderClip, NullBox, 0);
+		    if ( kind ==  VTMove )
+		         PanoramiXClippedRegion(pWin, &PanoramiXborderClip, 
+			          (pWin->borderClip.extents.x2 - pWin->drawable.width
+				                               - wBorderWidth(pWin) ), 
+				  (pWin->borderClip.extents.y2 - pWin->drawable.height 
+				                               - wBorderWidth(pWin) ),
+			          (pWin->drawable.width + (2*wBorderWidth(pWin))),  
+				  (pWin->drawable.height + (2*wBorderWidth(pWin))));
+		    else
+			 PanoramiXClippedRegion(pWin, &PanoramiXborderClip,
+			          (pWin->drawable.x - wBorderWidth(pWin)), 
+				  (pWin->drawable.y - wBorderWidth(pWin)),
+			          (pWin->drawable.width + (2*wBorderWidth(pWin))),  
+				  (pWin->drawable.height + (2*wBorderWidth(pWin))));
+		    REGION_APPEND( pScreen, &PanoramiXtotalClip, &PanoramiXborderClip);
+		    
+		}
+#endif
 		if (pWin->viewable)
 		    viewvals++;
 	    }
@@ -597,6 +1039,26 @@ miValidateTree (pParent, pChild, kind)
 	    if (pWin->valdata)
 	    {
 		REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
+#ifdef PANORAMIX
+		if (!noPanoramiXExtension) {
+    		    REGION_INIT(pScreen, &PanoramiXborderClip, NullBox, 0);
+		    if ( kind ==  VTMove )
+		         PanoramiXClippedRegion(pWin, &PanoramiXborderClip, 
+			      (pWin->borderClip.extents.x2 - pWin->drawable.width
+			                                   - wBorderWidth(pWin) ), 
+			      (pWin->borderClip.extents.y2 - pWin->drawable.height
+			                                   - wBorderWidth(pWin) ),
+			      (pWin->drawable.width + (2*wBorderWidth(pWin))),  
+			      (pWin->drawable.height + (2*wBorderWidth(pWin))));
+		    else
+			 PanoramiXClippedRegion(pWin, &PanoramiXborderClip,
+			       (pWin->drawable.x - wBorderWidth(pWin)), 
+			       (pWin->drawable.y - wBorderWidth(pWin)),
+			       (pWin->drawable.width + (2*wBorderWidth(pWin))),  
+			       (pWin->drawable.height + (2*wBorderWidth(pWin))));
+		    REGION_APPEND( pScreen, &PanoramiXtotalClip, &PanoramiXborderClip);
+		}
+#endif
 		if (pWin->viewable)
 		    viewvals++;
 	    }
@@ -605,6 +1067,11 @@ miValidateTree (pParent, pChild, kind)
 	    pWin = pWin->prevSib;
 	}
     }
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension)  {
+   	REGION_VALIDATE( pScreen, &PanoramiXtotalClip, &overlap);
+    }
+#endif
     REGION_VALIDATE( pScreen, &totalClip, &overlap);
 
     /*
@@ -617,6 +1084,30 @@ miValidateTree (pParent, pChild, kind)
     overlap = TRUE;
     if (kind != VTStack)
     {
+#ifdef PANORAMIX
+        if (!noPanoramiXExtension) {
+    	    REGION_INIT(pScreen, &PanoramiXclipList, NullBox, 0);
+	    /* This should be the Root window, use clipList if its a Move
+	       otherwise use the drawable x,y and widths, the areas might
+	       have been clipped away, assign clipList to get data section */
+	    if ( kind ==  VTMove )
+	         PanoramiXClippedRegion(pParent, &PanoramiXclipList, 
+			(pParent->clipList.extents.x2 - pParent->drawable.width
+			                              - wBorderWidth(pParent) ), 
+			(pParent->clipList.extents.y2 - pParent->drawable.height
+			                              - wBorderWidth(pParent) ),  
+			(pParent->drawable.width + (2*wBorderWidth(pParent))),  
+			(pParent->drawable.height + (2*wBorderWidth(pParent))));
+	    else
+	         PanoramiXClippedRegion(pParent, &PanoramiXclipList, 
+			(pParent->drawable.x - wBorderWidth(pParent)), 
+			(pParent->drawable.y - wBorderWidth(pParent)),
+			(pParent->drawable.width + (2*wBorderWidth(pParent))),  
+			(pParent->drawable.height + (2*wBorderWidth(pParent))));
+    	   REGION_UNION( pScreen, &PanoramiXtotalClip, &PanoramiXtotalClip, 
+&PanoramiXclipList);
+	}
+#endif
 	REGION_UNION( pScreen, &totalClip, &totalClip, &pParent->clipList);
 	if (viewvals > 1)
 	{
@@ -663,12 +1154,48 @@ miValidateTree (pParent, pChild, kind)
 		REGION_INTERSECT( pScreen, &childClip,
 					&totalClip,
  					&pWin->borderSize);
+#ifdef PANORAMIX
+                if (!noPanoramiXExtension) {
+    	    	    REGION_INIT(pScreen, &PanoramiXborderSize, NullBox, 0);
+	            if (( kind ==  VTMove ) && (pWin->borderSize.extents.x2 != 0 &&
+						pWin->borderSize.extents.y2 != 0)) {
+	                 PanoramiXClippedRegion(pWin, &PanoramiXborderSize, 
+				(pWin->borderSize.extents.x2 - pWin->drawable.width
+				                             - wBorderWidth(pWin) ), 
+				(pWin->borderSize.extents.y2 - pWin->drawable.height
+				                             - wBorderWidth(pWin) ),  
+				(pWin->drawable.width + (2*wBorderWidth(pWin))),  
+				(pWin->drawable.height + (2*wBorderWidth(pWin))));
+	    	    }else {
+	    	         PanoramiXClippedRegion(pWin, &PanoramiXborderSize, 
+		    		(pWin->drawable.x - wBorderWidth(pWin)), 
+		    		(pWin->drawable.y - wBorderWidth(pWin)), 
+			        (pWin->drawable.width + (2*wBorderWidth(pWin))),  
+				(pWin->drawable.height + (2*wBorderWidth(pWin))));
+		    }
+		    if (miRegionDataCopy(&PanoramiXtotalClip, &totalClip) ) {
+			REGION_UNION( pScreen, &PanoramiXchildClip, &PanoramiXtotalClip, &PanoramiXborderSize);
+		        PanoramiXComputeClips (pWin, pScreen, &childClip, &PanoramiXchildClip, kind, &exposed);
+		    }else
+		     	miComputeClips (pWin, pScreen, &childClip, kind, &exposed);
+	        }else
+		    miComputeClips (pWin, pScreen, &childClip, kind, &exposed);
+
+#else
 		miComputeClips (pWin, pScreen, &childClip, kind, &exposed);
+#endif
 		if (overlap)
 		{
 		    REGION_SUBTRACT( pScreen, &totalClip,
 				       	   &totalClip,
 				       	   &pWin->borderSize);
+#ifdef PANORAMIX
+                    if (!noPanoramiXExtension){
+		        REGION_SUBTRACT( pScreen, &PanoramiXtotalClip,
+			         	 &PanoramiXtotalClip,
+				       	 &PanoramiXborderSize);
+		    }
+#endif
 		}
 	    } else if (pWin->visibility == VisibilityNotViewable) {
 		miTreeObscured(pWin);
@@ -685,6 +1212,9 @@ miValidateTree (pParent, pChild, kind)
     }
 
     REGION_UNINIT( pScreen, &childClip);
+#ifdef PANORAMIX
+    REGION_UNINIT(pScreen, &PanoramiXchildClip);
+#endif
     if (!overlap)
     {
 	REGION_SUBTRACT(pScreen, &totalClip, &totalClip, &childUnion);
@@ -724,6 +1254,12 @@ miValidateTree (pParent, pChild, kind)
 
     REGION_UNINIT( pScreen, &totalClip);
     REGION_UNINIT( pScreen, &exposed);
+#ifdef PANORAMIX
+    REGION_UNINIT(pScreen, &PanoramiXtotalClip);
+    REGION_UNINIT(pScreen, &PanoramiXborderSize);
+    REGION_UNINIT(pScreen, &PanoramiXborderClip);
+    REGION_UNINIT(pScreen, &PanoramiXclipList);
+#endif
     if (pScreen->ClipNotify)
 	(*pScreen->ClipNotify) (pParent, 0, 0);
     return (1);

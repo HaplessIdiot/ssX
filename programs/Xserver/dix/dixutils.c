@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.2 1997/05/23 12:28:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.3 1998/10/04 09:38:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -91,7 +91,7 @@ Author:  Adobe Systems Incorporated
 #include "keysymdef.h"
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include "security.h"
 #endif
 
 /*

@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.8 1998/10/04 09:38:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.9 1998/11/29 10:50:16 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -58,13 +58,20 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "servermd.h"
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#else
 #include "dixevents.h"
+#endif
+#include "globals.h"
+
 #ifdef XAPPGROUP
-#include "extensions/Xagsrv.h"
+#include "Xagsrv.h"
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include "security.h"
 #endif
 
 extern Bool permitOldBugs;
@@ -95,6 +102,12 @@ ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
 extern WindowPtr *WindowTable;
 
+#if 0
+extern void DeleteWindowFromAnyEvents();
+extern Mask EventMaskForClient();
+extern void WindowHasNewCursor();
+extern void RecalculateDeliverableEvents();
+#endif
 extern int rand();
 
 static Bool TileScreenSaver(
@@ -167,6 +180,34 @@ PrintWindowTree()
 	p1 = pWin->firstChild;
 	PrintChildren(p1, 4);
     }
+}
+#endif
+
+#ifdef PANORAMIX
+Bool
+PanoramiXWindowOffScreen(pWin,w, h)
+    register WindowPtr pWin;
+    unsigned short w, h;
+{
+    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    int  Scr;
+   
+    Scr = (pWin->drawable.pScreen)->myNum;
+
+    if ((pWin->drawable.x  < 0) && 
+	((pWin->drawable.x + w) < 0))
+       return TRUE;
+    if ((pWin->drawable.x > panoramiXdataPtr[Scr].width) &&
+	((pWin->drawable.x + w) > panoramiXdataPtr[Scr].width))
+       return TRUE;
+    if ((pWin->drawable.y < 0) && 
+	((pWin->drawable.y + h) < 0))
+       return TRUE;
+    if ((pWin->drawable.y > panoramiXdataPtr[Scr].height) && 
+	((pWin->drawable.y + h) > panoramiXdataPtr[Scr].height) )
+       return TRUE;
+
+   return FALSE;
 }
 #endif
 
@@ -515,6 +556,44 @@ ClippedRegionFromBox(pWin, Rgn, x, y, w, h)
     REGION_INTERSECT(pScreen, Rgn, Rgn, &pWin->winSize);
 }
 
+/* Set the region to the intersection of the rectangle and the
+ * PanoramiX window size.  The window is typically the parent of the
+ * window from which the region came.
+ */
+
+#ifdef PANORAMIX
+void
+PanoramiXClippedRegion(pWin, Rgn, x, y, w, h)
+    register WindowPtr pWin;
+    RegionPtr Rgn;
+    register int x, y;
+    int w, h;
+{
+    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    BoxRec box;
+
+    box = *(REGION_EXTENTS(pScreen, &PanoramiXScreenRegion[pScreen->myNum]));
+
+    /* we do these calculations to avoid overflows */
+    if (x > box.x1)
+	box.x1 = x;
+    if (y > box.y1)
+	box.y1 = y;
+    x += w;
+    if (x < box.x2)
+	box.x2 = x;
+    y += h;
+    if (y < box.y2)
+	box.y2 = y;
+    if (box.x1 > box.x2)
+	box.x2 = box.x1;
+    if (box.y1 > box.y2)
+	box.y2 = box.y1;
+    REGION_RESET(pScreen, Rgn, &box);
+    REGION_INTERSECT(pScreen, Rgn, Rgn, &PanoramiXScreenRegion[pScreen->myNum]);
+}
+#endif
+
 WindowPtr
 RealChildHead(pWin)
     register WindowPtr pWin;
@@ -556,7 +635,17 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     DepthPtr pDepth;
     PixmapFormatRec *format;
     register WindowOptPtr ancwopt;
-
+#ifdef PANORAMIX
+    PanoramiXWindow    *pPanoramiXWin = PanoramiXWinRoot;
+    Window		parID;
+    register ScreenPtr  PXpScreen;
+    register WindowPtr  PXpParent;
+    register WindowOptPtr PXancwopt; 
+    VisualPtr           pVisual;
+    short		VisualClass;
+    Bool		ClassKnown;
+    int  		i, j, thisVisual, thisDepth;
+#endif
     if (class == CopyFromParent)
 	class = pParent->drawable.class;
 
@@ -580,9 +669,14 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
 
     pScreen = pParent->drawable.pScreen;
-
-    if ((class == InputOutput) && (depth == 0))
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+      if (depth > pParent->drawable.depth)
 	depth = pParent->drawable.depth;
+    } 
+#endif
+    if ((class == InputOutput) && (depth == 0))
+	 depth = pParent->drawable.depth;
     ancwopt = pParent->optional;
     if (!ancwopt)
 	ancwopt = FindWindowWithOptional(pParent)->optional;
@@ -2427,7 +2521,25 @@ ActuallyDoSomething:
 	event.u.configureNotify.height = h;
 	event.u.configureNotify.borderWidth = bw;
 	event.u.configureNotify.override = pWin->overrideRedirect;
+#ifdef PANORAMIX
+        /* In the case where a window is split between one
+           or more screen, a ConfigureNotify event will be written
+           to the client describing the section of the window
+           which is changed per screen. This causes a failure
+           in the vsw test  CH03/mvrszwdw because the test is
+           not properly written and expects 1 event and fails
+           when it reads more than 1 event when the window is 
+           split. The server is in fact doing the expected and 
+           correct behavior. -mad 10/11/96                    
+	 */
+	if (!noPanoramiXExtension) {
+	   if (!PanoramiXWindowOffScreen(pWin, w, h)) 
+	      DeliverEvents(pWin, &event, 1, NullWindow);
+	}else
+	   DeliverEvents(pWin, &event, 1, NullWindow);
+#else
 	DeliverEvents(pWin, &event, 1, NullWindow);
+#endif
     }
     if (mask & CWBorderWidth)
     {

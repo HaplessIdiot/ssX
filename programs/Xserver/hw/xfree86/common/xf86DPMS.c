@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.1.2.9 1998/07/18 17:53:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.2 1998/07/25 16:55:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -10,7 +10,7 @@
 
 #include "X.h"
 #include "os.h"
-#include "opaque.h"
+#include "globals.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #ifdef DPMSExtension

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.156 1999/01/12 06:24:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.157 1999/01/13 03:19:35 dawes Exp $ */
 
 
 /*
@@ -22,22 +22,18 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-#include "opaque.h"
+#include "globals.h"
 
 #ifdef XINPUT
 #include "xf86Xinput.h"
 extern DeviceAssocRec mouse_assoc;
 #endif
 
-extern CARD32 defaultScreenSaverTime;
 #ifdef XKB
-extern Bool noXkbExtension;
-extern char *XkbInitialMap;
+#define XKB_IN_SERVER
+#include "XKBsrv.h"
 #endif
 
-#if 0
-static char *configPath;
-#endif
 static char *fontPath = NULL;
 static char *logFilePath;
 

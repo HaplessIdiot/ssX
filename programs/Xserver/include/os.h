@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.22 1998/10/10 15:25:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.23 1998/12/06 06:08:46 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -796,6 +796,5 @@ extern CallbackListPtr FlushCallback;
 extern void AbortDDX(void);
 extern void ddxGiveUp(void);
 extern int TimeSinceLastInputEvent(void);
-extern int defaultColorVisualClass;
 
 #endif /* OS_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.51 1999/01/03 03:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.52 1999/01/13 03:19:40 dawes Exp $ */
 
 /*
  *
@@ -41,7 +41,6 @@
 #include "xf86xv.h"
 #include "xf86cmap.h"
 #include "xf86fbman.h"
-#include "opaque.h"
 #include "dgaproc.h"
 #include "loader.h"
 
@@ -700,12 +699,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86PixmapIndex)
    SYMVAR(xf86Screens)
    SYMVAR(byte_reversed)
-
-#ifdef DPMSExtension
-   SYMVAR(DPMSEnabledSwitch)
-   SYMVAR(DPMSDisabledSwitch)
-   SYMVAR(defaultDPMSEnabled)
-#endif
 
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)

@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.5 1998/10/06 07:26:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.6 1998/11/22 10:37:42 dawes Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -41,6 +41,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"
+#include "globals.h"
 #include "micmap.h"
 
 ColormapPtr miInstalledMaps[MAXSCREENS];

@@ -19,6 +19,8 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
+/* $XFree86$ */
+
 #include <stdio.h>
 #include "X.h"
 #include "Xproto.h"
@@ -39,6 +41,8 @@
 #endif
 #include "panoramiX.h"
 #include "panoramiXproto.h"
+#include "panoramiXsrv.h"
+#include "globals.h"
 
 
 /*
@@ -46,8 +50,6 @@
  *	External references for data variables
  */
 
-extern Bool noPanoramiXExtension;
-extern Bool PanoramiXVisibilityNotifySent;
 extern WindowPtr *WindowTable;
 extern int defaultBackingStore;
 extern char *ConnectionInfo;

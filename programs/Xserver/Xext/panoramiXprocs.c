@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.5 1998/12/13 05:32:33 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -37,19 +37,8 @@
 #include "misc.h"
 #include "dixstruct.h"
 #include "panoramiX.h"
+#include "panoramiXsrv.h"
 
-extern Bool noPanoramiXExtension;
-extern Bool PanoramiXVisibilityNotifySent;
-extern Bool PanoramiXMapped;
-extern int PanoramiXNumScreens;
-extern int PanoramiXPixWidth;
-extern int PanoramiXPixHeight;
-extern PanoramiXWindow *PanoramiXWinRoot;
-extern PanoramiXGC   *PanoramiXGCRoot;
-extern PanoramiXCmap *PanoramiXCmapRoot;
-extern PanoramiXPmap *PanoramiXPmapRoot;
-extern PanoramiXData *panoramiXdataPtr;
-extern PanoramiXCDT   PanoramiXColorDepthTable[MAXSCREENS];
 extern ScreenInfo *GlobalScrInfo;
 extern int (* SavedProcVector[256])();
 extern void (* ReplySwapVector[256])();
@@ -61,10 +50,6 @@ extern XID clientErrorValue;
 
 extern void Swap32Write();
 
-extern long defaultScreenSaverTime;
-extern long defaultScreenSaverInterval;
-extern int  defaultScreenSaverBlanking;
-extern int  defaultScreenSaverAllowExposures;
 static ClientPtr onlyClient;
 static Bool grabbingClient = FALSE;
 #ifdef __alpha /* THIS NEEDS TO BE LONG !!!! Change driver! */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.195 1998/12/20 11:56:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.196 1999/01/03 03:58:11 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -348,6 +348,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  */
 #ifndef BuildXInputExt
 #define BuildXInputExt		YES
+#endif
+
+/* Build Xinerama (aka panoramiX) extension */
+#ifndef BuildXinerama
+#define BuildXinerama		YES
 #endif
 
 #if 0

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.12 1997/07/10 08:17:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.13 1998/10/04 09:38:03 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -60,21 +60,10 @@ SOFTWARE.
 #define	XKB_IN_SERVER
 #ifdef XKB
 #include "XKBsrv.h"
-/* Metro Link */
-#if NeedFunctionPrototypes
-extern void XkbFinishDeviceInit(DeviceIntPtr);
-extern void XkbFreeSrvLedInfo(XkbSrvLedInfoPtr);
-extern void XkbFreeInfo(XkbSrvInfoPtr);
-#else
-extern void XkbFinishDeviceInit();
-extern void XkbFreeSrvLedInfo();
-extern void XkbFreeInfo();
-#endif
-/* Metro Link */
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include "security.h"
 #endif
 
 #include "dispatch.h"

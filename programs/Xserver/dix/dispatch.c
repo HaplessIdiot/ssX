@@ -41,7 +41,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.9 1998/10/05 13:22:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.10 1998/10/25 07:12:02 dawes Exp $ */
+
+#ifdef PANORAMIX_DEBUG
+#include <stdio.h>
+int ProcInitialConnection();
+#endif
 
 #include "windowstr.h"
 #include "fontstruct.h"
@@ -60,12 +65,21 @@ SOFTWARE.
 #include "swaprep.h"
 #include "swapreq.h"
 #include "dixevents.h"
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
-#include "extensions/security.h"
+#include "security.h"
 #endif
 #ifdef XAPPGROUP
-#include "extensions/Xagsrv.h"
+#include "Xagsrv.h"
+#endif
+#ifdef XKB
+#define XKB_IN_SERVER
+#include "inputstr.h"
+#include "XKBsrv.h"
 #endif
 
 #define mskcnt ((MAXCLIENTS + 31) / 32)
@@ -79,14 +93,17 @@ SOFTWARE.
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
+extern void ReleaseActiveGrabs();
+extern void NotImplemented();
+extern void SwapConnClientPrefix(
+#if NeedFunctionPrototypes
+    xConnClientPrefix	*
+#endif
+);
 
 Selection *CurrentSelections;
 int NumCurrentSelections;
 
-extern CARD32 defaultScreenSaverTime;
-extern CARD32 defaultScreenSaverInterval;
-extern int  defaultScreenSaverBlanking;
-extern int  defaultScreenSaverAllowExposures;
 static ClientPtr grabClient;
 #define GrabNone 0
 #define GrabActive 1
@@ -97,9 +114,8 @@ CallbackListPtr ServerGrabCallback = NULL;
 HWEventQueuePtr checkForInput[2];
 extern int connBlockScreenStart;
 
-#ifdef XKB
-extern Bool noXkbExtension;
-#endif
+extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
+extern void WriteSConnSetupPrefix();
 
 static void KillAllClients(
 #if NeedFunctionPrototypes
@@ -695,6 +711,10 @@ ProcQueryTree(client)
     int numChildren = 0;
     register WindowPtr pChild, pWin, pHead;
     Window  *childIDs = (Window *)NULL;
+#ifdef PANORAMIX
+    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
+    int		j, thisScreen;
+#endif
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
@@ -709,7 +729,55 @@ ProcQueryTree(client)
 	reply.parent = pWin->parent->drawable.id;
     else
         reply.parent = (Window)None;
+#ifdef PANORAMIX
+    if ( !noPanoramiXExtension ) {
+	thisScreen = 0;
+        for (j = 0; j <= PanoramiXNumScreens - 1; j++) { 
+          if ( pWin->winSize.extents.x1 <  (panoramiXdataPtr[j].x  + panoramiXdataPtr[j].width)) {
+	     thisScreen = j;
+	     break;
+	  }
+	}
+    }
+    if ( !noPanoramiXExtension  && thisScreen ) {
+	PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);   
+	IF_RETURN(!pPanoramiXWin, BadWindow);
+	pWin = (WindowPtr)SecurityLookupWindow(pPanoramiXWin->info[thisScreen].id, client,
+						SecurityReadAccess);
+	if (!pWin)
+	    return(BadWindow);
+        pHead = RealChildHead(pWin);
+        for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
+	     numChildren++;
+        if (numChildren)
+        {
+	  int curChild = 0;
+	  childIDs = (Window *) ALLOCATE_LOCAL(numChildren * sizeof(Window));
+	  if (!childIDs)
+	      return BadAlloc;
+	  for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib) {
+	      pPanoramiXWin = PanoramiXWinRoot;
+	      PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pChild->drawable.id, thisScreen);   
+	      IF_RETURN(!pPanoramiXWin, BadWindow);
+	      childIDs[curChild++] = pPanoramiXWin->info[0].id;
+	  }
+        } /* numChildren */  
+    }else { /* otherwise its screen 0, and nothing changes */
+      pHead = RealChildHead(pWin);
+      for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
+	  numChildren++;
+      if (numChildren)
+      {
+	int curChild = 0;
 
+	childIDs = (Window *) ALLOCATE_LOCAL(numChildren * sizeof(Window));
+	if (!childIDs)
+	    return BadAlloc;
+	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
+	    childIDs[curChild++] = pChild->drawable.id;
+      }
+    }
+#else
     pHead = RealChildHead(pWin);
     for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	numChildren++;
@@ -723,6 +791,7 @@ ProcQueryTree(client)
 	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	    childIDs[curChild++] = pChild->drawable.id;
     }
+#endif
     
     reply.nChildren = numChildren;
     reply.length = (numChildren * sizeof(Window)) >> 2;
@@ -2555,6 +2624,9 @@ ProcAllocColor(client)
 	    else
 	        return (retval);
 	}
+#ifdef PANORAMIX
+	if (noPanoramiXExtension)
+#endif
         WriteReplyToClient(client, sizeof(xAllocColorReply), &acr);
 	return (client->noClientException);
 
@@ -2611,6 +2683,9 @@ ProcAllocNamedColor           (client)
                 else
     	            return(retval);
 	    }
+#ifdef PANORAMIX
+	    if (noPanoramiXExtension)
+#endif
             WriteReplyToClient(client, sizeof (xAllocNamedColorReply), &ancr);
 	    return (client->noClientException);
 	}
@@ -2678,14 +2753,19 @@ ProcAllocColorCells           (client)
 	    else
 	        return(retval);
 	}
-	accr.type = X_Reply;
-	accr.length = length >> 2;
-	accr.sequenceNumber = client->sequence;
-	accr.nPixels = npixels;
-	accr.nMasks = nmasks;
-        WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
-	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
-	WriteSwappedDataToClient(client, length, ppixels);
+#ifdef PANORAMIX
+	if (noPanoramiXExtension)
+#endif
+	{
+	    accr.type = X_Reply;
+	    accr.length = length >> 2;
+	    accr.sequenceNumber = client->sequence;
+	    accr.nPixels = npixels;
+	    accr.nMasks = nmasks;
+	    WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
+	    client->pSwapReplyFunc = Swap32Write;
+	    WriteSwappedDataToClient(client, length, ppixels);
+	}
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
@@ -3236,9 +3316,11 @@ int
 ProcListHosts(client)
     register ClientPtr client;
 {
+extern int GetHosts();
     xListHostsReply reply;
     int	len, nHosts, result;
     pointer	pdata;
+    REQUEST(xListHostsReq);
 
     REQUEST_SIZE_MATCH(xListHostsReq);
 #ifdef XCSECURITY
@@ -3363,6 +3445,7 @@ ProcGetFontPath(client)
     xGetFontPathReply reply;
     int stringLens, numpaths;
     unsigned char *bufferStart;
+    REQUEST (xReq);
 
     REQUEST_SIZE_MATCH(xReq);
     bufferStart = GetFontPath(&numpaths, &stringLens);
@@ -3463,6 +3546,16 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
+#ifdef PANORAMIX
+    PanoramiXGC           *pPanoramiXFreeGC;
+    PanoramiXGC           *pPanoramiXFreeGCback = NULL;
+    PanoramiXWindow       *pPanoramiXFreeWin;
+    PanoramiXWindow       *pPanoramiXFreeWinback = NULL;
+    PanoramiXCmap         *pPanoramiXFreeCmap;
+    PanoramiXCmap         *pPanoramiXFreeCmapback = NULL;
+    PanoramiXPmap         *pPanoramiXFreePmap;
+    PanoramiXPmap         *pPanoramiXFreePmapback = NULL;
+#endif
     Bool really_close_down = client->clientGone ||
 			     client->closeDownMode == DestroyAll;
 
@@ -3540,6 +3633,9 @@ CloseDownClient(client)
 	    CallCallbacks((&ClientStateCallback), (pointer)&clientinfo);
 	} 	    
 	FreeClientResources(client);
+#ifdef PANORAMIX
+	    PANORAMIX_FREE(client);
+#endif
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
@@ -3692,6 +3788,16 @@ NextAvailableClient(ospriv)
     register int i;
     register ClientPtr client;
     xReq data;
+#ifdef PANORAMIX
+    PanoramiXGC           *pPanoramiXFreeGC;
+    PanoramiXGC           *pPanoramiXFreeGCback = NULL;
+    PanoramiXWindow       *pPanoramiXFreeWin;
+    PanoramiXWindow       *pPanoramiXFreeWinback = NULL;
+    PanoramiXCmap         *pPanoramiXFreeCmap;
+    PanoramiXCmap         *pPanoramiXFreeCmapback = NULL;
+    PanoramiXPmap         *pPanoramiXFreePmap;
+    PanoramiXPmap         *pPanoramiXFreePmapback = NULL;
+#endif
 
     i = nextFreeClientID;
     if (i == MAXCLIENTS)
@@ -3711,6 +3817,9 @@ NextAvailableClient(ospriv)
     if (!InsertFakeRequest(client, (char *)&data, sz_xReq))
     {
 	FreeClientResources(client);
+#ifdef PANORAMIX
+	PANORAMIX_FREE(client);
+#endif
 	xfree(client);
 	return (ClientPtr)NULL;
     }
@@ -3815,6 +3924,13 @@ SendConnSetup(client, reason)
     ((xConnSetup *)lConnectionInfo)->ridMask = RESOURCE_ID_MASK;
     /* fill in the "currentInputMask" */
     root = (xWindowRoot *)(lConnectionInfo + connBlockScreenStart);
+#ifdef PANORAMIX
+    if (noPanoramiXExtension)
+	numScreens = screenInfo.numScreens;
+    else 
+        numScreens = ((xConnSetup *)ConnectionInfo)->numRoots;
+#endif
+
     for (i=0; i<numScreens; i++) 
     {
 	register unsigned int j;

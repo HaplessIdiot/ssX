@@ -19,6 +19,8 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
+/* $XFree86$ */
+
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
@@ -40,6 +42,8 @@
 #endif
 #include "panoramiX.h"
 #include "panoramiXproto.h"
+#include "panoramiXsrv.h"
+#include "globals.h"
 
 static unsigned char PanoramiXReqCode = 0;
 /*
@@ -78,8 +82,6 @@ static void PanoramiXResetProc(ExtensionEntry*);
  */
 
 extern int SProcPanoramiXDispatch();
-extern Bool noPanoramiXExtension;
-extern Bool PanoramiXVisibilityNotifySent;
 extern WindowPtr *WindowTable;
 #if 0
 extern ScreenArgsRec screenArgs[MAXSCREENS];

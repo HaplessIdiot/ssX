@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.86 1999/01/12 06:24:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.87 1999/01/13 03:19:36 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -45,7 +45,7 @@ extern int atoi();
 #include "inputstr.h"
 #endif
 
-#include "opaque.h"
+#include "globals.h"
 
 #ifdef XTESTEXT1
 #include "atKeynames.h"

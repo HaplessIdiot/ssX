@@ -1,4 +1,7 @@
 XFree86 3.9Nu (15 January 1999)
+2143. Merge the pandix/panmi code into dix and mi, and enable building
+      the Xinerama (panoramiX) extension by default (#2377-2381,
+      Alan Hourihane).
 2142. Rework the handling of the depth/bpp/fbbpp options.  The -bpp flag and
       related config file keywords are no longer used.  New flags and options
       have been added to specify the server-wide depth 24 pixmap format.
@@ -7072,4 +7075,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.661 1999/01/12 08:52:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.662 1999/01/13 03:19:30 dawes Exp $
