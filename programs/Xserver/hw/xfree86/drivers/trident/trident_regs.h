@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.14 2000/11/27 23:00:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.15 2000/11/28 00:04:39 alanh Exp $ */
 
 #define DEBUG 1
 
@@ -325,7 +325,7 @@
 #define IMAGEBUSY(b) \
 	(b = MMIO_IN32(pTrident->IOBase,IMAGE_GE_STATUS) & 0xF0000000)
 #define BLADEBUSY(b) \
-	(b = MMIO_IN32(pTrident->IOBase,BLADE_GE_STATUS) & 0xF0000000)
+	(b = MMIO_IN32(pTrident->IOBase,BLADE_GE_STATUS) & 0xFA800000)
 #define IMAGE_OUT(addr, c) \
 	MMIO_OUT32(pTrident->IOBase, addr, (c))
 #define BLADE_OUT(addr, c) \

@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.11 2000/12/01 12:46:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.12 2000/12/03 18:03:03 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -71,12 +71,11 @@ static void BladeSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 static void BladeSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     				int x, int y, int w, int h, int srcx, int srcy,
 				int offset);
-static void BladeSetupForScanlineCPUToScreenColorExpand(ScrnInfoPtr pScrn,
+static void BladeSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
     				int fg, int bg, int rop,
     				unsigned int planemask);
-static void BladeSubsequentScanlineCPUToScreenColorExpand(ScrnInfoPtr pScrn,
+static void BladeSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
-static void BladeSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 static void BladeSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, 
 				int x2, int y2);
 static void BladeDisableClipping(ScrnInfoPtr pScrn);
@@ -92,18 +91,21 @@ static void BladeSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 static void BladeSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
-static void BladeSetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
+static void BladeSetupForImageWrite(ScrnInfoPtr pScrn, int rop,
    				unsigned int planemask, int transparency_color,
    				int bpp, int depth);
-static void BladeSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, int x,
+static void BladeSubsequentImageWriteRect(ScrnInfoPtr pScrn, int x,
    				int y, int w, int h, int skipleft);
-static void BladeSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno);
 
 static void
 BladeInitializeAccelerator(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     CARD32 stride;
+ 
+    BLADE_OUT(0x2124, 1<<7);
+    BLADE_OUT(0x2124, 0);
+    BladeSync(pScrn);
 
     stride = (pScrn->displayWidth >> 3) << 20;
 
@@ -216,8 +218,7 @@ BladeAccelInit(ScreenPtr pScreen)
 				BladeSubsequentScreenToScreenColorExpand;
 #endif
 
-    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
-				NO_TRANSPARENCY |
+    infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
 				LEFT_EDGE_CLIPPING |
 				SYNC_AFTER_COLOR_EXPAND |
 				NO_PLANEMASK |
@@ -225,37 +226,20 @@ BladeAccelInit(ScreenPtr pScreen)
 			        SCANLINE_PAD_DWORD;
     infoPtr->ColorExpandRange = 0x10000;
     infoPtr->ColorExpandBase = pTrident->IOBase + 0x10000;
-    infoPtr->SetupForScanlineCPUToScreenColorExpandFill = 	
-				BladeSetupForScanlineCPUToScreenColorExpand;
-    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 		
-				BladeSubsequentScanlineCPUToScreenColorExpand;
-    infoPtr->SubsequentColorExpandScanline = 
-				BladeSubsequentColorExpandScanline;
+    infoPtr->SetupForCPUToScreenColorExpandFill = 	
+				BladeSetupForCPUToScreenColorExpand;
+    infoPtr->SubsequentCPUToScreenColorExpandFill = 		
+				BladeSubsequentCPUToScreenColorExpand;
 
-    pTrident->XAAScanlineColorExpandBuffers[0] =
-	    xnfalloc(((pScrn->virtualX + 63)) *4* (pScrn->bitsPerPixel / 8));
-
-    infoPtr->NumScanlineColorExpandBuffers = 1;
-    infoPtr->ScanlineColorExpandBuffers = 
-					pTrident->XAAScanlineColorExpandBuffers;
-
-    infoPtr->SetupForScanlineImageWrite = BladeSetupForScanlineImageWrite;
-    infoPtr->SubsequentScanlineImageWriteRect = 
-					BladeSubsequentScanlineImageWriteRect;
-    infoPtr->SubsequentImageWriteScanline = 
-				BladeSubsequentImageWriteScanline;
-    infoPtr->ScanlineImageWriteFlags =  NO_PLANEMASK |
-				NO_TRANSPARENCY |
+    infoPtr->SetupForImageWrite = BladeSetupForImageWrite;
+    infoPtr->SubsequentImageWriteRect = 
+					BladeSubsequentImageWriteRect;
+    infoPtr->ImageWriteFlags =  NO_PLANEMASK |
 				LEFT_EDGE_CLIPPING |
 				CPU_TRANSFER_PAD_DWORD |
 				SYNC_AFTER_IMAGE_WRITE;
     infoPtr->ImageWriteBase = pTrident->IOBase + 0x10000;
     infoPtr->ImageWriteRange = 0x10000;
-    infoPtr->NumScanlineImageWriteBuffers = 1;
-    infoPtr->ScanlineImageWriteBuffers = pTrident->XAAImageScanlineBuffer;
-
-    pTrident->XAAImageScanlineBuffer[0] = 
-			xnfalloc(pScrn->virtualX * pScrn->bitsPerPixel / 8); 
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
@@ -546,36 +530,8 @@ BladeSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     IMAGE_OUT(0x24, 0x80000000 | 3<<22 | 1<<7 | pTrident->BltScanDirection | (pTrident->ROP == GXcopy ? 0 : 1<<10) | offset<<25);
 }
 
-static void MoveDWORDS(
-   register CARD32* dest,
-   register CARD32* src,
-   register int dwords )
-{
-     while(dwords & ~0x03) {
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	*(dest + 2) = *(src + 2);
-	*(dest + 3) = *(src + 3);
-	src += 4;
-	dest += 4;
-	dwords -= 4;
-     }	
-     if (!dwords) return;
-     *dest = *src;
-     dest += 1;
-     src += 1;
-     if (dwords == 1) return;
-     *dest = *src;
-     dest += 1;
-     src += 1;
-     if (dwords == 2) return;
-     *dest = *src;
-     dest += 1;
-     src += 1;
-}
-
 static void 
-BladeSetupForScanlineCPUToScreenColorExpand(ScrnInfoPtr pScrn,
+BladeSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
     int fg, int bg, int rop,
     unsigned int planemask)
 {
@@ -603,7 +559,7 @@ BladeSetupForScanlineCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 }
 
 static void
-BladeSubsequentScanlineCPUToScreenColorExpand(ScrnInfoPtr pScrn,
+BladeSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 	int x, int y, int w, int h, int skipleft)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
@@ -612,21 +568,6 @@ BladeSubsequentScanlineCPUToScreenColorExpand(ScrnInfoPtr pScrn,
     BLADE_OUT(0x2144, 0xE0000000 | pTrident->BltScanDirection | 1<<4 | (skipleft ? 1 : 0));
     BLADE_OUT(0x2108, (y&0xfff)<<16 | (x&0xfff));
     BLADE_OUT(0x210C, ((y+h-1)&0xfff)<<16 | ((x+w-1)&0xfff));
-    pTrident->dwords = (w + 31) >> 5;
-    pTrident->h = h;
-}
-
-static void
-BladeSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    XAAInfoRecPtr infoRec;
-    infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-
-    MoveDWORDS((CARD32*)infoRec->ColorExpandBase,
- 	(CARD32*)pTrident->XAAScanlineColorExpandBuffers[bufno], pTrident->dwords);
-
-    pTrident->h--;
 }
 
 static void 
@@ -720,7 +661,7 @@ BladeSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
     CHECKCLIPPING;
 }
 
-static void BladeSetupForScanlineImageWrite(	
+static void BladeSetupForImageWrite(	
    ScrnInfoPtr pScrn,
    int rop,
    unsigned int planemask,
@@ -738,31 +679,15 @@ static void BladeSetupForScanlineImageWrite(
     }
 }
 
-static void BladeSubsequentScanlineImageWriteRect(
+static void BladeSubsequentImageWriteRect(
    ScrnInfoPtr pScrn,
    int x, int y, int w, int h,
    int skipleft
 ){
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    pTrident->dwords = ((w * (pScrn->bitsPerPixel/8)) + 3) >> 2;
-    pTrident->h = h;
-
     if (skipleft) BladeSetClippingRectangle(pScrn,x+skipleft,y,(x+w-1),(y+h-1));
     BLADE_OUT(0x2144, 0xE0000000 | 1<<19 | 1<<4 | pTrident->BltScanDirection | (skipleft ? 1 : 0));
     BLADE_OUT(0x2108, y<<16 | (x&0xfff));
     BLADE_OUT(0x210C, ((y+h-1)&0xfff)<<16 | ((x+w-1)&0xfff));
-}
-
-static void
-BladeSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    XAAInfoRecPtr infoRec;
-    infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-
-    MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
- 	(CARD32*)pTrident->XAAImageScanlineBuffer[bufno], pTrident->dwords);
-
-    pTrident->h--;
 }
