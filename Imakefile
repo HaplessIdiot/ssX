@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.125 94/04/08 19:57:43 rws Exp $
-XCOMM $XFree86: xc/Imakefile,v 3.1 1994/10/20 05:57:10 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.2 1995/03/11 14:02:22 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -20,6 +20,12 @@ RELEASE = "Release 6"
 
         SUBDIRS = config include lib nls programs $(WIPDIR) $(FONTSDIR) $(DOCSDIR)
   LNINSTALLDIRS = lib
+
+#if HasParallelMake
+#ifdef ParallelDefines
+        PARALLELOPTS = ParallelDefines
+#endif
+#endif
 
 MakeSubdirs($(SUBDIRS))
 
@@ -46,7 +52,7 @@ clean::
 	$(RM) -r $(BUILDINCDIR)
 	$(RM) -r $(BUILDLIBDIR)
 
-      WORLDOPTS = -k
+      WORLDOPTS = -k $(PARALLELOPTS)
 
 XCOMM do not name your log file make.log when you run this ...
 World::

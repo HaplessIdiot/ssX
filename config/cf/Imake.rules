@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.197 94/12/05 19:30:41 gildea Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.12 1995/03/11 14:02:40 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.13 1995/04/24 07:12:45 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2120,3 +2120,13 @@ all:: depends
 #ifdef DefineOldLibraryRules
 #include <oldlib.rules>
 #endif
+
+/*
+ * MakeMutex - generate mutex rules for parallel make
+ */
+#ifndef MakeMutex
+#ifdef MutexDirective
+#define MakeMutex(targets)						@@\
+MutexDirective:	targets
+#endif /* MutexDirective */
+#endif /* MakeMutex */
