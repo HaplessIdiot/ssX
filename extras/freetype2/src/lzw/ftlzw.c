@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/src/lzw/ftlzw.c,v 1.2 2004/12/16 22:15:48 tsi Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftlzw.c                                                                */
@@ -27,6 +27,7 @@
 #include FT_INTERNAL_MEMORY_H
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_DEBUG_H
+#include FT_LZW_H
 #ifndef FONTMODULE
 #include <string.h>
 #include <stdio.h>

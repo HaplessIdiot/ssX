@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __AFDUMMY_H__
 #define __AFDUMMY_H__
 
@@ -9,7 +11,9 @@ FT_BEGIN_HEADER
   * be performed. This is the default for non-latin glyphs !
   */
 
+#ifndef FT_MAKE_OPTION_SINGLE_OBJECT
   FT_LOCAL( const AF_ScriptClassRec )    af_dummy_script_class;
+#endif
 
 /* */
 

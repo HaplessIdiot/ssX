@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /***************************************************************************/
 /*                                                                         */
 /*  ftgzip.c                                                               */
@@ -18,13 +20,14 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/gzip/ftgzip.c,v 1.2 2003/05/29 14:53:28 dawes Exp $ */
+/* $XFree86: xc/extras/freetype2/src/gzip/ftgzip.c,v 1.3 2004/04/26 16:15:54 dawes Exp $ */
 
 
 #include <ft2build.h>
 #include FT_INTERNAL_MEMORY_H
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_DEBUG_H
+#include FT_GZIP_H
 #if 0
 #include <string.h>
 #endif

@@ -1,10 +1,12 @@
+/* $XFree86$ */
+
 /***************************************************************************/
 /*                                                                         */
 /*  ftcalc.h                                                               */
 /*                                                                         */
 /*    Arithmetic computations (specification).                             */
 /*                                                                         */
-/*  Copyright 1996-2000 by                                                 */
+/*  Copyright 1996-2001, 2002, 2003 by                                     */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -19,167 +21,20 @@
 #ifndef __FTCALC_H__
 #define __FTCALC_H__
 
-#ifndef    FT_BUILD_H
-#  define  FT_BUILD_H  <freetype/config/ftbuild.h>
-#endif
-#include   FT_BUILD_H
-#include   FT_FREETYPE_H
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 
 FT_BEGIN_HEADER
 
 
-#ifdef FT_LONG64
+  FT_EXPORT( FT_Int32 )
+  FT_SqrtFixed( FT_Int32  x );
 
-
-  typedef FT_INT64  FT_Int64;
-
-#define ADD_64( x, y, z )  z = (x) + (y)
-#define MUL_64( x, y, z )  z = (FT_Int64)(x) * (y)
-#define DIV_64( x, y )     ( (x) / (y) )
-
-#ifdef FT_CONFIG_OPTION_OLD_CALCS
-
-#define SQRT_64( z )  FT_Sqrt64( z )
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Sqrt64                                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Computes the square root of a 64-bit value.  That sounds stupid,   */
-  /*    but it is needed to obtain maximal accuracy in the TrueType        */
-  /*    bytecode interpreter.                                              */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    l :: A 64-bit integer.                                             */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The 32-bit square-root.                                            */
-  /*                                                                       */
-  FT_EXPORT( FT_Int32 )  FT_Sqrt64( FT_Int64  l );
-
-#endif /* FT_CONFIG_OPTION_OLD_CALCS */
-
-
-#else /* FT_LONG64 */
-
-
-  typedef struct  FT_Int64_
-  {
-    FT_UInt32  lo;
-    FT_UInt32  hi;
-
-  } FT_Int64;
-
-
-#define ADD_64( x, y, z )  FT_Add64( &x, &y, &z )
-#define MUL_64( x, y, z )  FT_MulTo64( x, y, &z )
-#define DIV_64( x, y )     FT_Div64by32( &x, y )
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Add64                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Add two Int64 values.                                              */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    x :: A pointer to the first value to be added.                     */
-  /*    y :: A pointer to the second value to be added.                    */
-  /*                                                                       */
-  /* <Output>                                                              */
-  /*    z :: A pointer to the result of `x + y'.                           */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    Will be wrapped by the ADD_64() macro.                             */
-  /*                                                                       */
-  FT_EXPORT( void )  FT_Add64( FT_Int64*  x,
-                               FT_Int64*  y,
-                               FT_Int64  *z );
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_MulTo64                                                         */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Multiplies two Int32 integers.  Returns an Int64 integer.          */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    x :: The first multiplier.                                         */
-  /*    y :: The second multiplier.                                        */
-  /*                                                                       */
-  /* <Output>                                                              */
-  /*    z :: A pointer to the result of `x * y'.                           */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    Will be wrapped by the MUL_64() macro.                             */
-  /*                                                                       */
-  FT_EXPORT( void )  FT_MulTo64( FT_Int32   x,
-                                 FT_Int32   y,
-                                 FT_Int64  *z );
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Div64by32                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Divides an Int64 value by an Int32 value.  Returns an Int32        */
-  /*    integer.                                                           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    x :: A pointer to the dividend.                                    */
-  /*    y :: The divisor.                                                  */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The result of `x / y'.                                             */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    Will be wrapped by the DIV_64() macro.                             */
-  /*                                                                       */
-  FT_EXPORT( FT_Int32 )  FT_Div64by32( FT_Int64*  x,
-                                       FT_Int32   y );
-
-
-#ifdef FT_CONFIG_OPTION_OLD_CALCS
-
-  FT_EXPORT( FT_Int32 )  FT_SqrtFixed( FT_Int32  x );
-
-#define SQRT_64( z )  FT_Sqrt64( &z )
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Sqrt64                                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Computes the square root of a 64-bits value.  That sounds stupid,  */
-  /*    but it is needed to obtain maximal accuracy in the TrueType        */
-  /*    bytecode interpreter.                                              */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    z :: A pointer to a 64-bit integer.                                */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The 32-bit square-root.                                            */
-  /*                                                                       */
-  FT_EXPORT( FT_Int32 )  FT_Sqrt64( FT_Int64*  x );
-
-#endif /* FT_CONFIG_OPTION_OLD_CALCS */
-
-
-#endif /* FT_LONG64 */
-
-
-#ifndef FT_CONFIG_OPTION_OLD_CALCS
 
 #define SQRT_32( x )  FT_Sqrt32( x )
+
 
   /*************************************************************************/
   /*                                                                       */
@@ -196,9 +51,8 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    The result of `sqrt(x)'.                                           */
   /*                                                                       */
-  FT_EXPORT( FT_Int32 )  FT_Sqrt32( FT_Int32  x );
-
-#endif /* !FT_CONFIG_OPTION_OLD_CALCS */
+  FT_EXPORT( FT_Int32 )
+  FT_Sqrt32( FT_Int32  x );
 
 
   /*************************************************************************/
@@ -206,6 +60,39 @@ FT_BEGIN_HEADER
   /* FT_MulDiv() and FT_MulFix() are declared in freetype.h.               */
   /*                                                                       */
   /*************************************************************************/
+
+
+#ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    FT_MulDiv_No_Round                                                 */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    A very simple function used to perform the computation `(a*b)/c'   */
+  /*    (without rounding) with maximal accuracy (it uses a 64-bit         */
+  /*    intermediate integer whenever necessary).                          */
+  /*                                                                       */
+  /*    This function isn't necessarily as fast as some processor specific */
+  /*    operations, but is at least completely portable.                   */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    a :: The first multiplier.                                         */
+  /*    b :: The second multiplier.                                        */
+  /*    c :: The divisor.                                                  */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    The result of `(a*b)/c'.  This function never traps when trying to */
+  /*    divide by zero; it simply returns `MaxInt' or `MinInt' depending   */
+  /*    on the signs of `a' and `b'.                                       */
+  /*                                                                       */
+  FT_BASE( FT_Long )
+  FT_MulDiv_No_Round( FT_Long  a,
+                      FT_Long  b,
+                      FT_Long  c );
+
+#endif /* TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
 
 
 #define INT_TO_F26DOT6( x )    ( (FT_Long)(x) << 6  )
@@ -216,6 +103,39 @@ FT_BEGIN_HEADER
 
 #define ROUND_F26DOT6( x )     ( x >= 0 ? (    ( (x) + 32 ) & -64 )     \
                                         : ( -( ( 32 - (x) ) & -64 ) ) )
+
+#ifdef FT_LONG64
+
+  typedef FT_INT64  FT_Int64;
+
+#else
+
+  typedef struct  FT_Int64_
+  {
+    FT_UInt32  lo;
+    FT_UInt32  hi;
+
+  } FT_Int64;
+
+#endif /* FT_LONG64 */
+
+#ifndef FT_LONG64
+
+  FT_EXPORT_DEF( void )
+  FT_Add64( FT_Int64*  x,
+            FT_Int64*  y,
+            FT_Int64  *z );
+
+  FT_EXPORT_DEF( void )
+  FT_MulTo64( FT_Int32   x,
+              FT_Int32   y,
+              FT_Int64  *z );
+
+  FT_EXPORT_DEF( FT_Int32 )
+  FT_Div64by32( FT_Int64*  x,
+                FT_Int32   y );
+#endif
+
 
 FT_END_HEADER
 

@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.274 2005/02/28 05:09:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.275 2005/02/28 18:08:21 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -493,11 +493,12 @@ VENDORMANVERSION = XVendorManVersionString
 				 BuildLibraries)
 #endif
 #ifndef BuildDmxDevelTools
-#define BuildDmxDevelTools	YES
+#define BuildDmxDevelTools	NO
 #endif
 #ifndef BuildDmxLibrary
 #define BuildDmxLibrary		(BuildDmx && \
-				 (!BuildServersOnly || BuildDmxDevelTools))
+				 (BuildDmxDevelTools || \
+				  (!BuildServersOnly && BuildLibraries)))
 #endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
