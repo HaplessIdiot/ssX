@@ -1,5 +1,8 @@
 XFree86 3.9.17c (27 January 2000)
-3596> More compilation fixups (Marc La France).
+3597. Avoid PCI-PCI bridges with an unexpected header type, which avoids
+      an infinite loop that can show up in the PCI bus enumeration code
+      (Egbert Eich).
+3596. More compilation fixups (Marc La France).
 3595. Add '###' (Comment) line capability to the parser (Alan Hourihane).
 3594. Fix the laguna driver to return MOD_CLASS_NONE (Alan Hourihane).
 3593. Add the 'extmod' module to the -configure option (Alan Hourihane).
@@ -9364,4 +9367,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.961 2000/01/26 02:06:03 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.962 2000/01/26 22:05:49 tsi Exp $
