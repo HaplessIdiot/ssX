@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.7 2003/06/20 15:49:52 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.8 2003/06/30 16:52:57 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1214,7 +1214,7 @@ readEncodings(ListPtr encodings, char *dirname)
                 free(fullname);
                 fullname = n;
             }
-            encodingsToDo = listConsF(encodingsToDo, "%s %s", fullname, *name);
+            encodingsToDo = listConsF(encodingsToDo, "%s %s", *name ,fullname);
             if(encodingsToDo == NULL) {
                 fprintf(stderr, "Couldn't allocate encodings\n");
                 closedir(dirp);
