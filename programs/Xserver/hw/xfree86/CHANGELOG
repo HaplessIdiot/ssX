@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 438. Fix Maltese entry in xkbcomp/keymap/xfree86 (#4921, Nerijus Baliunas).
+ 438. Fix a locale.alias typo (#4920, Nerijus Baliunas).
  437. Documents Options for the Matrox and Neomagic drivers, and makes
       HW/SWcursor generic options (#5021, Dr. Andrew C. Aitchison).
  436. Corrections and updates to Xaw manpage (#5020, Branden Robinson).
@@ -14087,4 +14089,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2017 2001/11/03 16:37:08 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2018 2001/11/03 19:04:06 paulo Exp $
