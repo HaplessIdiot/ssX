@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.4 2005/02/01 01:13:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.5 2005/02/08 16:28:05 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -296,7 +296,7 @@ SRCS_BUILD_LINUX = \
 SRCS_BUILD_BSD = \
 	Makefile
 
-DRMLINUXINSTSRCDIR = $(INSTSRCDIR)/drm/
+DRMLINUXINSTSRCDIR = $(INSTSRCDIR)/drm/linux/kernel
 DRMBSDINSTSRCDIR = $(INSTSRCDIR)/drm/bsd/kernel
 
 SRCS_SHARED = $(SRCS_DRM_SHARED) $(SRCS_GAMMA_SHARED) $(SRCS_I810_SHARED) \
