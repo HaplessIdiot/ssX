@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.4 1997/12/14 02:55:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.5 1998/06/04 16:43:09 hohndel Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the
@@ -99,7 +99,7 @@ static void initHexTable()
 /*
  *	read next hex value in the input stream, return -1 if EOF
  */
-static NextInt (fstream)
+static int NextInt (fstream)
     FILE *fstream;
 {
     int	ch;

@@ -181,3 +181,25 @@ Patch 5 (#1686) 11 May 1998
  + Added DisplayListToString and PixmapToString converters.
  + Bug fixes in the pixmap name interpretation.
 
+
+Patch 6 (#1686) 24 May 1998
+
+  Xaw
+ ------
+ + Allows setting the resources label_x and label_y inherited from labelWidget.
+   This is useful for moving the contents of a button when it is pressed
+   ( I included a simple test for it )
+ + Added OS/2 patchs
+ + The buffer overflow problems were resolved in a different way. I added
+   a function XmuSnprintf, that is used by Xaw and Xmu.
+ + Correction of a problem in SimpleMenu, when it tries to optimize the
+   space used by the menu.
+
+  Xmu
+ -----
+ + Function XmuNCopyISOLatin1Lowered, defined in <X11/Xmu/CharSet.h>
+ + Function XmuSnprintf, defined in <X11/Xmu/SysUtil.h>
+ + All ocurrences of sprintf were replaced by XmuSnprintf and all ocurrences
+   of XmuCopyISOLatin1Lowered were replaced by XmuNCopyISOLation1Lowered.
+
+

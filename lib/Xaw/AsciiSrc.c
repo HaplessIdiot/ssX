@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.3 1998/06/28 08:41:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.4 1998/06/28 11:23:44 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -96,7 +96,7 @@ static int ReplaceText();
 static Piece * FindPiece(), * AllocNewPiece();
 static FILE * InitStringOrFile();
 static void FreeAllPieces(), RemovePiece(), BreakPiece(), LoadPieces();
-static void RemoveOldStringOrFile(),  CvtStringToAsciiType();
+static void RemoveOldStringOrFile(), CvtStringToAsciiType();
 static void ClassInitialize(), Initialize(), Destroy(), GetValuesHook();
 static String MyStrncpy(), StorePiecesInString();
 static Boolean SetValues(), WriteToFile();
@@ -166,6 +166,8 @@ AsciiSrcClassRec asciiSrcClassRec = {
 
 WidgetClass asciiSrcObjectClass = (WidgetClass)&asciiSrcClassRec;
 
+static XrmQuark XtQEstring, XtQEfile;
+
 /************************************************************
  *
  * Semi-Public Interfaces.
@@ -182,8 +184,10 @@ static void
 ClassInitialize()
 {
   XawInitializeWidgetSet();
-  XtAddConverter( XtRString, XtRAsciiType, CvtStringToAsciiType,
-		 NULL, (Cardinal) 0);
+  XtQEstring = XrmPermStringToQuark(XtEstring);
+  XtQEfile   = XrmPermStringToQuark(XtEfile);
+  XtAddConverter(XtRString, XtRAsciiType, CvtStringToAsciiType,
+		 NULL, (Cardinal)0);
 }
 
 /*      Function Name: Initialize
@@ -1290,32 +1294,23 @@ Cardinal	*num_args;	/* unused */
 XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
 {
-  static XawAsciiType type;
-  static XrmQuark  XtQEstring = NULLQUARK;
-  static XrmQuark  XtQEfile;
+  static XawAsciiType type = XawAsciiString;
   XrmQuark q;
-  char lowerName[BUFSIZ];
+  char lowerName[32];
 
-  if (XtQEstring == NULLQUARK) {
-    XtQEstring = XrmPermStringToQuark(XtEstring);
-    XtQEfile   = XrmPermStringToQuark(XtEfile);
-  }
-
-  if (strlen((char *) fromVal->addr) >= sizeof(lowerName)) {
-    XtStringConversionWarning((char *) fromVal->addr, XtRAsciiType);
-    return;
-  }
-  XmuCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr);
+  XmuNCopyISOLatin1Lowered(lowerName, (char *)fromVal->addr,
+			   sizeof(lowerName));
   q = XrmStringToQuark(lowerName);
 
-  if (q == XtQEstring) type = XawAsciiString;
-  if (q == XtQEfile)  type = XawAsciiFile;
-  if (q == XtQEstring || q == XtQEfile) {
-    (*toVal).size = sizeof(XawAsciiType);
-    (*toVal).addr = (XPointer) &type;
-    return;
-  }
-  XtStringConversionWarning((char *) fromVal->addr, XtRAsciiType);
+  if (q == XtQEstring)
+    type = XawAsciiString;
+  else if (q == XtQEfile)
+    type = XawAsciiFile;
+  else
+    XtStringConversionWarning((char *)fromVal->addr, XtRAsciiType);
+
+  (*toVal).size = sizeof(XawAsciiType);
+  (*toVal).addr = (XPointer)&type;
 }
 
 #if (defined(ASCII_STRING) || defined(ASCII_DISK))

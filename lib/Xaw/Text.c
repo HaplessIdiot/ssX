@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.5 1998/06/28 11:23:50 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.6 1998/06/28 11:30:07 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -63,6 +63,7 @@ SOFTWARE.
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/StdSel.h>
 #include <X11/Xmu/Misc.h>
+#include <X11/Xmu/SysUtil.h>
 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Cardinals.h>
@@ -186,7 +187,9 @@ static XtResource resources[] = {
 #define done(address, type) \
         { toVal->size = sizeof(type); toVal->addr = (XPointer) address; }
 
-
+static XrmQuark QScrollNever, QScrollAlways, QScrollWhenNeeded,
+	  QWrapNever, QWrapLine, QWrapWord,
+	  QResizeNever, QResizeWidth, QResizeHeight, QResizeBoth;
 
 /* ARGSUSED */
 static void 
@@ -196,33 +199,23 @@ Cardinal	*num_args;	/* unused */
 XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
 {
-  static XawTextScrollMode scrollMode;
-  static  XrmQuark  QScrollNever, QScrollAlways, QScrollWhenNeeded;
+  static XawTextScrollMode scrollMode = XawtextScrollNever;
   XrmQuark    q;
-  char        lowerName[BUFSIZ];
-  static Boolean inited = FALSE;
-    
-  if ( !inited ) {
-    QScrollNever      = XrmPermStringToQuark(XtEtextScrollNever);
-    QScrollWhenNeeded = XrmPermStringToQuark(XtEtextScrollWhenNeeded);
-    QScrollAlways     = XrmPermStringToQuark(XtEtextScrollAlways);
-    inited = TRUE;
-  }
+  char        lowerName[32];
 
-  if (strlen((char *)fromVal->addr) >= sizeof(lowerName)) {
-    XtStringConversionWarning((char *) fromVal->addr, XtRScrollMode);
-    return;
-  }
-  XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
+  XmuNCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr,
+			    sizeof(lowerName));
   q = XrmStringToQuark(lowerName);
 
-  if      (q == QScrollNever)          scrollMode = XawtextScrollNever;
-  else if (q == QScrollWhenNeeded)     scrollMode = XawtextScrollWhenNeeded;
-  else if (q == QScrollAlways)         scrollMode = XawtextScrollAlways;
-  else {
+  if (q == QScrollNever)
+    scrollMode = XawtextScrollNever;
+  else if (q == QScrollWhenNeeded)
+    scrollMode = XawtextScrollWhenNeeded;
+  else if (q == QScrollAlways)
+    scrollMode = XawtextScrollAlways;
+  else
     XtStringConversionWarning((char *) fromVal->addr, XtRScrollMode);
-    return;
-  }
+
   done(&scrollMode, XawTextScrollMode);
   return;
 }
@@ -235,33 +228,23 @@ Cardinal	*num_args;	/* unused */
 XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
 {
-  static XawTextWrapMode wrapMode;
-  static  XrmQuark QWrapNever, QWrapLine, QWrapWord;
+  static XawTextWrapMode wrapMode = XawtextWrapNever;
   XrmQuark    q;
-  char        lowerName[BUFSIZ];
-  static Boolean inited = FALSE;
-    
-  if ( !inited ) {
-    QWrapNever = XrmPermStringToQuark(XtEtextWrapNever);
-    QWrapLine  = XrmPermStringToQuark(XtEtextWrapLine);
-    QWrapWord  = XrmPermStringToQuark(XtEtextWrapWord);
-    inited = TRUE;
-  }
+  char        lowerName[32];
 
-  if (strlen((char *)fromVal->addr) >= sizeof(lowerName)) {
-    XtStringConversionWarning((char *) fromVal->addr, XtRWrapMode);
-    return;
-  }
-  XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
+  XmuNCopyISOLatin1Lowered(lowerName, (char *)fromVal->addr,
+			   sizeof(lowerName));
   q = XrmStringToQuark(lowerName);
 
-  if      (q == QWrapNever)     wrapMode = XawtextWrapNever;
-  else if (q == QWrapLine)      wrapMode = XawtextWrapLine;
-  else if (q == QWrapWord)      wrapMode = XawtextWrapWord;
-  else {
-    XtStringConversionWarning((char *) fromVal->addr, XtRWrapMode);
-    return;
-  }
+  if (q == QWrapNever)
+    wrapMode = XawtextWrapNever;
+  else if (q == QWrapLine)
+    wrapMode = XawtextWrapLine;
+  else if (q == QWrapWord)
+    wrapMode = XawtextWrapWord;
+  else
+    XtStringConversionWarning((char *)fromVal->addr, XtRWrapMode);
+
   done(&wrapMode, XawTextWrapMode);
   return;
 }
@@ -274,35 +257,25 @@ Cardinal	*num_args;	/* unused */
 XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
 {
-  static XawTextResizeMode resizeMode;
-  static  XrmQuark  QResizeNever, QResizeWidth, QResizeHeight, QResizeBoth;
+  static XawTextResizeMode resizeMode = XawtextResizeNever;
   XrmQuark    q;
-  char        lowerName[BUFSIZ];
-  static Boolean inited = FALSE;
-    
-  if ( !inited ) {
-    QResizeNever      = XrmPermStringToQuark(XtEtextResizeNever);
-    QResizeWidth      = XrmPermStringToQuark(XtEtextResizeWidth);
-    QResizeHeight     = XrmPermStringToQuark(XtEtextResizeHeight);
-    QResizeBoth       = XrmPermStringToQuark(XtEtextResizeBoth);
-    inited = TRUE;
-  }
+  char        lowerName[32];
 
-  if (strlen((char *)fromVal->addr) >= sizeof(lowerName)) {
-    XtStringConversionWarning((char *) fromVal->addr, XtRResizeMode);
-    return;
-  }
-  XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
+  XmuNCopyISOLatin1Lowered(lowerName, (char *)fromVal->addr,
+			   sizeof(lowerName));
   q = XrmStringToQuark(lowerName);
 
-  if      (q == QResizeNever)          resizeMode = XawtextResizeNever;
-  else if (q == QResizeWidth)          resizeMode = XawtextResizeWidth;
-  else if (q == QResizeHeight)         resizeMode = XawtextResizeHeight;
-  else if (q == QResizeBoth)           resizeMode = XawtextResizeBoth;
-  else {
-    XtStringConversionWarning((char *) fromVal->addr, XtRResizeMode);
-    return;
-  }
+  if (q == QResizeNever)
+    resizeMode = XawtextResizeNever;
+  else if (q == QResizeWidth)
+    resizeMode = XawtextResizeWidth;
+  else if (q == QResizeHeight)
+    resizeMode = XawtextResizeHeight;
+  else if (q == QResizeBoth)
+    resizeMode = XawtextResizeBoth;
+  else
+    XtStringConversionWarning((char *)fromVal->addr, XtRResizeMode);
+
   done(&resizeMode, XawTextResizeMode);
   return;
 }
@@ -338,6 +311,16 @@ ClassInitialize()
   (void) strcpy( cp, _XawDefaultTextTranslations4);
   textWidgetClass->core_class.tm_table = buf;
 
+  QScrollNever      = XrmPermStringToQuark(XtEtextScrollNever);
+  QScrollWhenNeeded = XrmPermStringToQuark(XtEtextScrollWhenNeeded);
+  QScrollAlways     = XrmPermStringToQuark(XtEtextScrollAlways);
+  QWrapNever        = XrmPermStringToQuark(XtEtextWrapNever);
+  QWrapLine         = XrmPermStringToQuark(XtEtextWrapLine);
+  QWrapWord         = XrmPermStringToQuark(XtEtextWrapWord);
+  QResizeNever      = XrmPermStringToQuark(XtEtextResizeNever);
+  QResizeWidth      = XrmPermStringToQuark(XtEtextResizeWidth);
+  QResizeHeight     = XrmPermStringToQuark(XtEtextResizeHeight);
+  QResizeBoth       = XrmPermStringToQuark(XtEtextResizeBoth);
   XtAddConverter(XtRString, XtRScrollMode, CvtStringToScrollMode,
 			(XtConvertArgList)NULL, (Cardinal)0 );
   XtAddConverter(XtRString, XtRWrapMode,   CvtStringToWrapMode,
@@ -543,17 +526,12 @@ Cardinal *num_args;		/* unused */
   if (ctx->text.scroll_vert != XawtextScrollNever) 
     if ( (ctx->text.resize == XawtextResizeHeight) ||
      	 (ctx->text.resize == XawtextResizeBoth) ) {
-      char *err1 = "Xaw Text Widget ";
-      char *err2 = ":\nVertical scrolling not allowed with height resize.\n";
-      char *err3 = "Vertical scrolling has been DEACTIVATED.";
-      len = strlen(err1) + strlen(err2) + strlen(err3) +
-		strlen(ctx->core.name) + 1;
-      perr = XtStackAlloc(len, error_buf);
-      if (perr != NULL) {
-	(void) sprintf(perr, "%s%s%s%s", err1, ctx->core.name, err2, err3);
-	XtAppWarning(XtWidgetToApplicationContext(new), perr);
-	XtStackFree(perr, error_buf);
-      }
+      (void)XmuSnprintf(error_buf, sizeof(error_buf),
+			"Xaw Text Widget %s:\n"
+			" Vertical scrolling not allowed with height resize.\n"
+			" Vertical scrolling has been DEACTIVATED.\n",
+			ctx->core.name);
+      XtAppWarning(XtWidgetToApplicationContext(new), perr);
       ctx->text.scroll_vert = XawtextScrollNever;
     }
     else if (ctx->text.scroll_vert == XawtextScrollAlways)
@@ -561,33 +539,24 @@ Cardinal *num_args;		/* unused */
 
   if (ctx->text.scroll_horiz != XawtextScrollNever) 
     if (ctx->text.wrap != XawtextWrapNever) {
-      char *err1 = "Xaw Text Widget ";
-      char *err2 = ":\nHorizontal scrolling not allowed with wrapping active.";
-      char *err3 = "\nHorizontal scrolling has been DEACTIVATED.";
-      len = strlen(err1) + strlen(err2) + strlen(err3) +
-		strlen(ctx->core.name) + 1;
-      perr = XtStackAlloc(len, error_buf);
-      if (perr != NULL) {
-	(void) sprintf(perr, "%s%s%s%s", err1, ctx->core.name, err2, err3);
-	XtAppWarning(XtWidgetToApplicationContext(new), perr);
-	XtStackFree(perr, error_buf);
-      }
+      (void)XmuSnprintf(error_buf, sizeof(error_buf),
+			"Xaw Text Widget %s:\n"
+			" Horizontal scrolling not allowed with wrapping "
+			"active.\n"
+			" Horizontal scrolling has been DEACTIVATED.\n",
+			ctx->core.name);
+      XtAppWarning(XtWidgetToApplicationContext(new), perr);
       ctx->text.scroll_horiz = XawtextScrollNever;
     }
     else if ( (ctx->text.resize == XawtextResizeWidth) ||
 	      (ctx->text.resize == XawtextResizeBoth) ) {
-      char *err1 = "Xaw Text Widget ";
-      char *err2 = ":\nHorizontal scrolling not allowed with width resize.\n";
-      char *err3 = "Horizontal scrolling has been DEACTIVATED.";
-      len = strlen(err1) + strlen(err2) + strlen(err3) +
-		strlen(ctx->core.name) + 1;
-      perr = XtStackAlloc(len, error_buf);
-      if (perr != NULL) {
-	(void) sprintf(perr, "%s%s%s%s", err1, ctx->core.name, err2, err3);
-	XtAppWarning(XtWidgetToApplicationContext(new), perr);
-	XtStackFree(perr, error_buf);
-      }
-      ctx->text.scroll_horiz = XawtextScrollNever;
+      (void)XmuSnprintf(error_buf, sizeof(error_buf),
+			"Xaw Text Widget %s:\n"
+			" Horizontal scrolling not allowed with width "
+			"resize.\n"
+			" Horizontal scrolling has been DEACTIVATED.\n",
+			ctx->core.name);
+      XtAppWarning(XtWidgetToApplicationContext(new), perr);
     }
     else if (ctx->text.scroll_horiz == XawtextScrollAlways)
       CreateHScrollBar(ctx);

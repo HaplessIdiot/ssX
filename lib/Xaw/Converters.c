@@ -25,12 +25,13 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.4 1998/06/28 11:23:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.5 1998/06/28 11:30:05 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include "Simple.h"
+#include <X11/Xaw/Simple.h>
+#include <X11/Xmu/SysUtil.h>
 #include "Private.h"
 
 /*
@@ -194,7 +195,8 @@ _XawCvtBooleanToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		    "Boolean to String conversion needs no extra arguments",
 		    (String *)NULL, (Cardinal *)NULL);
 
-  sprintf(buffer, "%s", *(Boolean *)fromVal->addr ? "true" : "false");
+  XmuSnprintf(buffer, sizeof(buffer), "%s",
+	      *(Boolean *)fromVal->addr ? "true" : "false");
   size = strlen(buffer);
 
   string_done(buffer);
@@ -216,7 +218,7 @@ _XawCvtPositionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		    "Position to String conversion needs no extra arguments",
 		    (String *)NULL, (Cardinal *)NULL);
 
-  snprintf(buffer, sizeof(buffer), "%d", *(Position *)fromVal->addr);
+  XmuSnprintf(buffer, sizeof(buffer), "%d", *(Position *)fromVal->addr);
   size = strlen(buffer);
 
   string_done(buffer);
@@ -238,7 +240,7 @@ _XawCvtDimensionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		    "Dimension to String conversion needs no extra arguments",
 		    (String *)NULL, (Cardinal *)NULL);
 
-  snprintf(buffer, sizeof(buffer), "%u", *(Dimension *)fromVal->addr);
+  XmuSnprintf(buffer, sizeof(buffer), "%u", *(Dimension *)fromVal->addr);
   size = strlen(buffer);
 
   string_done(buffer);
@@ -273,7 +275,8 @@ _XawCvtPixelToString(Display *dpy, XrmValue *args, Cardinal *num_args,
    * without asking Xlib.
    */
   XQueryColor(dpy, colormap, &color);
-  sprintf(buffer, "rgb:%04hx/%04hx/%04hx", color.red, color.green, color.blue);
+  XmuSnprintf(buffer, sizeof(buffer), "rgb:%04hx/%04hx/%04hx",
+	      color.red, color.green, color.blue);
   size = strlen(buffer);
 
   string_done(buffer);
@@ -308,7 +311,7 @@ _XawCvtFontStructToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 
       if (tmp)
 	{
-	  snprintf(buffer, sizeof(buffer), "%s", tmp);
+	  XmuSnprintf(buffer, sizeof(buffer), "%s", tmp);
 	  size = strlen(tmp);
 	  XFree(tmp);
 	}

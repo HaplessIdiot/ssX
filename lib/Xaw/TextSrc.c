@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.1.1.1.12.2 1998/05/16 09:05:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.2 1998/06/28 08:41:48 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -119,10 +119,16 @@ TextSrcClassRec textSrcClassRec = {
 
 WidgetClass textSrcObjectClass = (WidgetClass)&textSrcClassRec;
 
+static XrmQuark QRead, QAppend, QEdit;
+
 static void 
 ClassInitialize ()
 {
     XawInitializeWidgetSet ();
+
+    QRead   = XrmPermStringToQuark(XtEtextRead);
+    QAppend = XrmPermStringToQuark(XtEtextAppend);
+    QEdit   = XrmPermStringToQuark(XtEtextEdit);
     XtAddConverter(XtRString, XtREditMode,   CvtStringToEditMode,   NULL, 0);
 }
 
@@ -313,32 +319,22 @@ XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
 {
   static XawTextEditType editType;
-  static  XrmQuark  QRead, QAppend, QEdit;
-  XrmQuark    q;
-  char        lowerName[BUFSIZ];
-  static Boolean inited = FALSE;
-    
-  if ( !inited ) {
-    QRead   = XrmPermStringToQuark(XtEtextRead);
-    QAppend = XrmPermStringToQuark(XtEtextAppend);
-    QEdit   = XrmPermStringToQuark(XtEtextEdit);
-    inited = TRUE;
-  }
-
-  if (strlen((char *)fromVal->addr) >= sizeof(lowerName)) {
-    XtStringConversionWarning((char *) fromVal->addr, XtREditMode);
-    return;
-  }
-  XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
+   XrmQuark    q;
+   char        lowerName[32];
+ 
+   XmuNCopyISOLatin1Lowered(lowerName, (char *)fromVal->addr,
+			   sizeof(lowerName));
   q = XrmStringToQuark(lowerName);
 
-  if       (q == QRead)          editType = XawtextRead;
-  else if (q == QAppend)         editType = XawtextAppend;
-  else if (q == QEdit)           editType = XawtextEdit;
-  else {
-    XtStringConversionWarning((char *) fromVal->addr, XtREditMode);
-    return;
-  }
+  if (q == QRead)
+    editType = XawtextRead;
+  else if (q == QAppend)
+    editType = XawtextAppend;
+  else if (q == QEdit)
+    editType = XawtextEdit;
+  else
+    XtStringConversionWarning((char *)fromVal->addr, XtREditMode);
+
   done(&editType, XawTextEditType);
   return;
 }

@@ -229,7 +229,7 @@ int len;
       {
 	XTextItem item;
 
-	item.chars = buf;
+	item.chars = (char *)buf;
 	item.nchars = len;
 	item.delta = 0;
 	item.font = sink->ascii_sink.font->fid;

@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c /main/42 1996/12/04 10:26:05 lehors $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.8 1996/12/23 06:00:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.9 1997/01/18 06:52:13 dawes Exp $ */
 
 /*
  
@@ -111,9 +111,9 @@ static char *get_os_name ()
 
 	if (uname (&utss) == 0) {
 	    char *os_name;
-	    int len = strlen(utss.sysname);
+	    int len = strlen(utss.sysname) + 1;
 #ifndef hpux				/* because of hostname length crock */
-	    len += 1 + strlen(utss.release);
+	    len += 2 + strlen(utss.release);
 #endif
 	    os_name = XtMalloc (len);
 	    strcpy (os_name, utss.sysname);

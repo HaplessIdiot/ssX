@@ -51,14 +51,21 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.1.1.1.12.3 1998/05/20 05:06:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.2 1998/06/28 08:59:58 dawes Exp $ */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
 #include	<X11/Xmu/Converters.h>
 #include	<X11/Xmu/Drawing.h>
+#include	<X11/Xmu/CurUtil.h>
+#include	<X11/Xmu/CharSet.h>
+
+#ifdef __EMX__
+#define strcasecmp stricmp
+#endif
 
 #ifndef X_NOT_POSIX
+#include <stdlib.h>
 #ifdef _POSIX_SOURCE
 #include <limits.h>
 #else
@@ -144,6 +151,13 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
      XtErrorMsg("wrongParameters","cvtStringToCursor","XtToolkitError",
              "String to cursor conversion needs screen argument",
               (String *)NULL, (Cardinal *)NULL);
+
+    if (strcasecmp(name, "None") == 0)
+      {
+	cursor = None;
+	done(&cursor, Cursor);
+	return;
+      }
 
     screen = *((Screen **) args[0].addr);
 
@@ -243,6 +257,9 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 				       maskname, (sizeof maskname) - 4,
 				       NULL, NULL, &xhot, &yhot)) == None) {
 	XtStringConversionWarning (name, XtRCursor);
+	cursor = None;
+	done(&cursor, Cursor);
+	return;
     }
     len = strlen (maskname);
     for (i = 0; i < 2; i++) {
@@ -300,6 +317,7 @@ XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
     XtPointer   *converter_data;	/* unused */
 {
     Cursor cursor;
+    Screen *screen;
     Pixel fg, bg;
     Colormap c_map;
     XColor colors[2];
@@ -314,6 +332,7 @@ XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
 	return False;
     }
 
+    screen = *((Screen **) args[0].addr);
     fg = *((Pixel *) args[1].addr);
     bg = *((Pixel *) args[2].addr);
     c_map = *((Colormap *) args[3].addr);
@@ -323,7 +342,8 @@ XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
     
     cursor = *((Cursor *) ret_val.addr);
 
-    if (cursor == None)
+    if (cursor == None || (fg == BlackPixelOfScreen(screen)
+			   && bg == WhitePixelOfScreen(screen)))
 	new_done(Cursor, cursor);
 
     colors[0].pixel = fg;

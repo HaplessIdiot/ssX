@@ -41,6 +41,15 @@ extern int XmuGetHostname(
 #endif
 );
 
+extern int XmuSnprintf(
+#if NeedVarargsPrototypes
+    char*		/* str */,
+    int			/* size */,
+    char*		/* fmt */,
+    ...
+#endif
+);
+
 _XFUNCPROTOEND
 
 #endif /* _SYSUTIL_H_ */

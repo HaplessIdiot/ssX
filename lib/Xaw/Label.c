@@ -110,6 +110,10 @@ static XtResource resources[] = {
 	offset(label.pixmap), XtRImmediate, (XtPointer)None},
     {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
 	offset(label.resize), XtRImmediate, (XtPointer)True},
+    {XtNlabelX, XtCPosition, XtRPosition, sizeof(Position),
+	offset(label.label_x), XtRImmediate, (XtPointer)0},
+    {XtNlabelY, XtCPosition, XtRPosition, sizeof(Position),
+	offset(label.label_y), XtRImmediate, (XtPointer)0},
 };
 #undef offset
 

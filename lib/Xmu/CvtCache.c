@@ -1,5 +1,5 @@
 /* $XConsortium: CvtCache.c,v 1.8 94/04/17 20:15:56 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/CvtCache.c,v 3.0 1996/06/10 10:59:21 dawes Exp $ */
 
 /*
  
@@ -57,6 +57,7 @@ static int _FreeCCDQ (q)
 {
     XmuDQDestroy (dq, False);
     dq = NULL;
+    return (0);
 }
 
 

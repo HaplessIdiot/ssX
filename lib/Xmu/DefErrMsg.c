@@ -31,6 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 #define NEED_EVENTS
 #include <X11/Xlibint.h>
 #include <X11/Xproto.h>
+#include <X11/Xmu/SysUtil.h>
 
 /*
  * XmuPrintDefaultErrorMessage - print a nice error that looks like the usual 
@@ -54,7 +55,7 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->request_code);
     if (event->request_code < 128) {
-	sprintf(number, "%d", event->request_code);
+	XmuSnprintf(number, sizeof(number), "%d", event->request_code);
 	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, BUFSIZ);
     } else {
 	/* XXX this is non-portable */
@@ -63,7 +64,7 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 	     ext = ext->next)
 	  ;
 	if (ext)
-	    strcpy(buffer, ext->name);
+	  XmuSnprintf(buffer, sizeof(buffer), "%s", ext->name);
 	else
 	    buffer[0] = '\0';
     }
@@ -74,7 +75,8 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 			      mesg, BUFSIZ);
 	(void) fprintf(fp, mesg, event->minor_code);
 	if (ext) {
-	    sprintf(mesg, "%s.%d", ext->name, event->minor_code);
+	    XmuSnprintf(mesg, sizeof(mesg),
+			"%s.%d", ext->name, event->minor_code);
 	    XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
 	    (void) fprintf(fp, " (%s)", buffer);
 	}
@@ -97,8 +99,8 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 		bext = ext;
 	}    
 	if (bext)
-	    sprintf(buffer, "%s.%d", bext->name,
-		    event->error_code - bext->codes.first_error);
+	    XmuSnprintf(buffer, sizeof(buffer), "%s.%d", bext->name,
+			event->error_code - bext->codes.first_error);
 	else
 	    strcpy(buffer, "Value");
 	XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);

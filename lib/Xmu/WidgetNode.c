@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.1.1.1.12.2 1998/05/16 09:05:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.2 1998/06/28 09:00:00 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -150,7 +150,7 @@ void XmuWnInitializeNodes (nodearray, nnodes)
 	if (!wn->lowered_label) {
 	    fprintf (stderr,
 		     "%s:  unable to allocate %d bytes for widget name\n",
-		     "XmuWnInitializeNodes");
+		     "XmuWnInitializeNodes", lablen + namelen + 2);
 	    exit (1);
 	}
 	wn->lowered_classname = wn->lowered_label + (lablen + 1);
@@ -288,17 +288,14 @@ XmuWidgetNode *XmuWnNameToNode (nodelist, nnodes, name)
 {
     int i;
     XmuWidgetNode *wn;
-    char *tmp;
+    char tmp[1024];
 
-    tmp = (char *)XtMalloc(strlen(name) + 1);
-    XmuCopyISOLatin1Lowered (tmp, name);
+    XmuNCopyISOLatin1Lowered(tmp, name, sizeof(tmp));
     for (i = 0, wn = nodelist; i < nnodes; i++, wn++) {
 	if (strcmp (tmp, wn->lowered_label) == 0 ||
 	    strcmp (tmp, wn->lowered_classname) == 0) {
-	  XtFree(tmp);
 	  return wn;
 	}
     }
-    XtFree(tmp);
     return NULL;
 }

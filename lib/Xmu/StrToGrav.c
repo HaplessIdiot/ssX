@@ -29,6 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/Intrinsic.h>
 #include <X11/Xmu/Converters.h>
+#include <X11/Xmu/CharSet.h>
 
 #define done(address, type) \
         { (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }

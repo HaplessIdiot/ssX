@@ -1,5 +1,5 @@
 /* $XConsortium: CrCmap.c,v 1.6 94/04/17 20:15:53 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/CrCmap.c,v 3.0 1994/10/20 06:05:50 dawes Exp $ */
 
 /* 
 
@@ -37,13 +37,9 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#ifdef __EMX__
-#include <stdlib.h>	/* to get qsort() */
-#endif
-
-extern char	*calloc();
 
 static int	ROmap();		/* allocate entire map Read Only */
 static Status	ROorRWcell();		/* allocate a cell, prefer Read Only */
@@ -127,7 +123,7 @@ Status XmuCreateColormap(dpy, colormap)
 	    }
 	} else {
 	    unsigned int	maxdepth = 0;
-	    XVisualInfo		*v;
+	    XVisualInfo		*v = NULL;
 
 	    for (i=0; i < n; i++, vinfo++)
 		if (vinfo->depth > maxdepth) {

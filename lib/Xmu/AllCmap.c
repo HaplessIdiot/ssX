@@ -95,7 +95,8 @@ Status XmuAllStandardColormaps(dpy)
     Status	status;
     long	vinfo_mask;
     XVisualInfo	template, *vinfo, *v1, *v2;
-    
+
+    status = 0;
     /* for each screen, determine all visuals of this server */
     for (scr=0; scr < ScreenCount(dpy); scr++)
     {

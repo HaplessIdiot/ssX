@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.1.4.1 1998/05/16 09:05:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.2 1998/06/28 08:59:56 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -41,6 +41,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xutil.h>
 #include <X11/Xmu/CvtCache.h>
 #include <X11/Xmu/Drawing.h>
+#include <X11/Xmu/SysUtil.h>
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -175,7 +176,7 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	switch (i) {
 	  case 1:
 #ifndef __EMX__
-	    if (!(name[0] == '/' || (name[0] == '.') && name[1] == '/')) 
+	    if (!(name[0] == '/' || ((name[0] == '.') && name[1] == '/')))
 #else
 	    if (!(name[0] == '/' || (name[0] == '.' && name[1] == '/') ||
 		  (isalpha(name[0]) && name[1] == ':')))
@@ -186,18 +187,15 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	    break;
 	  case 2:
 	    if (file_paths && *file_paths) {
-		if (strlen(*file_paths) + strlen(name) + 2 > sizeof(filename))
-		    continue;
-		sprintf (filename, "%s/%s", *file_paths, name);
+		XmuSnprintf(filename, sizeof(filename),
+			    "%s/%s", *file_paths, name);
 		file_paths++;
 		i--;
 		break;
 	    }
 	    continue;
 	  case 3:
-	    if (strlen(BITMAPDIR) + strlen(name) + 2 > sizeof(filename))
-		continue;
-	    sprintf (filename, "%s/%s", BITMAPDIR, name);
+	    XmuSnprintf(filename, sizeof(filename), "%s/%s", BITMAPDIR, name);
 	    break;
 	  case 4:
 	    if (!try_plain_name) continue;

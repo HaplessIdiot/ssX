@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include "Converters.h"
 

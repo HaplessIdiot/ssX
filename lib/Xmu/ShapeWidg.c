@@ -32,8 +32,8 @@ in this Software without prior written authorization from the X Consortium.
 #include "Converters.h"
 #include "Drawing.h"
 
-static ShapeError();
-static  ShapeRectangle(), ShapeOval(), ShapeEllipseOrRoundedRectangle();
+static void ShapeError();
+static void ShapeRectangle(), ShapeOval(), ShapeEllipseOrRoundedRectangle();
 
 Boolean XmuReshapeWidget(w, shape_style, corner_width, corner_height)
     Widget w;
@@ -66,7 +66,7 @@ Boolean XmuReshapeWidget(w, shape_style, corner_width, corner_height)
     return True;
 }
 
-static ShapeError(w)
+void ShapeError(w)
     Widget w;
 {
     String params[1];
@@ -80,7 +80,7 @@ static ShapeError(w)
 }
 
 
-static ShapeRectangle(w)
+void ShapeRectangle(w)
     Widget w;
 {
     XShapeCombineMask( XtDisplay(w), XtWindow(w),
@@ -90,7 +90,7 @@ static ShapeRectangle(w)
 }
 
 
-static ShapeOval(w)
+void ShapeOval(w)
     Widget w;
 {
     Display *dpy = XtDisplay(w);
@@ -145,7 +145,7 @@ static ShapeOval(w)
 }
 
 
-static ShapeEllipseOrRoundedRectangle(w, ellipse, ew, eh)
+void ShapeEllipseOrRoundedRectangle(w, ellipse, ew, eh)
     Widget w;
     Boolean ellipse;
     int ew, eh;
