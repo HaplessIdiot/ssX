@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>29 August 1999
+<date>30 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.15 1999/08/29 12:20:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.16 1999/08/29 12:53:39 dawes Exp $
 </ident>
 
 <abstract>
@@ -24,7 +24,8 @@ in XFree86 &relvers; and their status.
 <sect>Summary of new features in &relvers; compared with &prevrelvers;.
 <p>
 This section contains a brief summary of what has changed since the previous
-snapshot.  More detailed information can be found in the sections that follow.
+snapshot.  The sections that follow this one have details of features that
+are new to the pre-4.0 snapshot series.
 
 <itemize>
   <item>The "apm" driver has been updated.
@@ -38,6 +39,8 @@ snapshot.  More detailed information can be found in the sections that follow.
 	external X servers (e.g., X terminals).
   <item>New driver for Intel i740.  The driver is called "i740".
   <item>New driver for 3Dfx Banshee and Voodoo 3.  The driver is called "tdfx".
+  <item>Some work on adding WYSIWYG capabilities to the Xaw text widget.
+  <item>Some preliminary support for programming modes has been added to xedit.
 </itemize>
 
 <sect>X server
@@ -713,7 +716,7 @@ New features:
 	configurable control of the widgets, and to allow setting resources
 	at run time.
 
-  <item>Since Xpm is integrated in XFree86 &relvers;, programs linked with the
+  <item>Since Xpm was integrated into XFree86, programs linked with the
 	new Xaw library	will also link with Xpm. This allows for color
 	background pixmaps, and also for shaped widgets.
 
@@ -749,6 +752,12 @@ New features:
 	  <item>Text indentation support is also available.
 
 	</itemize>
+
+  <item>This snapshot shows the current state of the work to add to the Xaw
+	text widget WYSIWYG capabilities. The state is very initial, and
+	can be seen as a candidate to a candidate to a very early alpha
+	snapshot. There is no public interface for programming yet, because
+	the current one is very likely to change before ready to use.
 
 </itemize>
 
@@ -912,6 +921,18 @@ version of xedit. These include:
 
 	  <item>The interface also checks for repeated words.
 
+	</itemize>
+
+  <item>A first tentative to add programming modes was done. Currently, there
+	are two modes:
+	<itemize>
+
+	  <item><bf>C-mode:</bf> this mode is expected to be stable, and fully
+		usable.
+
+	  <item><bf>Html-mode:</bf> a lot of work needs to be done yet. It is
+		included in this snapshot only to show what the new text widget
+		capabilities can do.
 	</itemize>
 
 </itemize>
