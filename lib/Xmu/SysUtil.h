@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/SysUtil.h,v 1.8 2001/08/23 00:03:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/SysUtil.h,v 1.9 2001/12/14 19:55:55 dawes Exp $ */
 
 #ifndef _SYSUTIL_H_
 #define _SYSUTIL_H_
@@ -47,7 +47,12 @@ int XmuSnprintf
  int			size,
  _Xconst char		*fmt,
     ...
- );
+ )
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
+__attribute((format(printf,3,4)))
+#endif
+;
 #endif
 
 _XFUNCPROTOEND

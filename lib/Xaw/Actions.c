@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.16 2001/10/30 04:56:38 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.17 2003/03/25 04:18:10 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -651,7 +651,7 @@ XawPrintActionErrorMsg(String action_name, Widget w,
   unsigned int size, idx;
 
   size = XmuSnprintf(msg, sizeof(msg), "%s(): bad number of parameters.\n\t(",
-		     action_name, action_name);
+		     action_name);
 
   idx = 0;
   while (idx < *num_params - 1 && size < sizeof(msg))
