@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.28 2002/10/30 17:30:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.29 2002/10/30 20:53:46 alanh Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -320,7 +320,7 @@ MakeRootTile(pWin)
     pWin->backgroundState = BackgroundPixmap;
     pGC = GetScratchGC(pScreen->rootDepth, pScreen);
     if (!pWin->background.pixmap || !pGC)
-	FatalError("cound not create root tile");
+	FatalError("could not create root tile");
 
     {
 	CARD32 attributes[2];
