@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.17 2003/07/11 22:17:41 tsi Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.18 2003/10/19 08:27:05 herrb Exp $
 
 #if UseCygIPC
 # define SharedX11Reqs		-lcygipc
@@ -23,6 +23,7 @@ XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.17 2003/07/11 22:17:41 tsi Exp $
 #define SharedGLReqs		$(LDPRELIB) $(XLIB)
 #define SharedGLUReqs		$(LDPRELIB) $(XLIB) $(GLXLIB)
 #define SharedXfontReqs		$(LDPRELIB) $(FONTSTUBLIB) GzipLibrary $(FREETYPE2LIB)
+#define SharedFontencReqs	$(LDPRELIB) GzipLibrary
 #define SharedXxf86vmReqs	$(LDPRELIB) $(XLIB) 
 #define SharedXxf86miscReqs	$(LDPRELIB) $(XLIB)
 #define SharedXpmReqs		$(LDPRELIB) $(XLIB)

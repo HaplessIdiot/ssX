@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.55 2003/10/26 18:15:38 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.56 2003/10/27 22:34:02 herrb Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -58,6 +58,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.55 2003/10/26 18:15:38 her
 
 #define HasSnprintf		YES
 
+#ifndef HasMakefileSafeInclude
+# define HasMakefileSafeInclude YES
+#endif
 /*
  * Cygwin has Tcl/Tk, but you need to keep the version numbers
  * of the libs in sync.  These version numbers may change
@@ -318,6 +321,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.55 2003/10/26 18:15:38 her
 #define BuildScanpci		NO	/* No direct access to hardware */
 
 #define BuildScreenSaverExt	NO
+
+#define BuildWindowsWMLibrary  YES
+
 
 /*
  * What is Plugin?
