@@ -144,13 +144,63 @@
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
+				/* Backward compatibility section */
+#ifndef minor
+#define minor(x) MINOR((x))
+#endif
+
+#ifndef MODULE_LICENSE
+#define MODULE_LICENSE(x) 
+#endif
+
+#ifndef preempt_disable
+#define preempt_disable()
+#define preempt_enable()
+#endif
+
+#ifndef pte_offset_map 
+#define pte_offset_map pte_offset
+#define pte_unmap(pte)
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,19)
+static inline struct page * vmalloc_to_page(void * vmalloc_addr)
+{
+	unsigned long addr = (unsigned long) vmalloc_addr;
+	struct page *page = NULL;
+	pgd_t *pgd = pgd_offset_k(addr);
+	pmd_t *pmd;
+	pte_t *ptep, pte;
+  
+	if (!pgd_none(*pgd)) {
+		pmd = pmd_offset(pgd, addr);
+		if (!pmd_none(*pmd)) {
+			preempt_disable();
+			ptep = pte_offset_map(pmd, addr);
+			pte = *ptep;
+			if (pte_present(pte))
+				page = pte_page(pte);
+			pte_unmap(ptep);
+			preempt_enable();
+		}
+	}
+	return page;
+}
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+#define DRM_RPR_ARG(vma)
+#else
+#define DRM_RPR_ARG(vma) vma,
+#endif
+
 #define VM_OFFSET(vma) ((vma)->vm_pgoff << PAGE_SHIFT)
 
 				/* Macros to make printk easier */
 #define DRM_ERROR(fmt, arg...) \
-	printk(KERN_ERR "[" DRM_NAME ":" __FUNCTION__ "] *ERROR* " fmt , ##arg)
+	printk(KERN_ERR "[" DRM_NAME ":%s] *ERROR* " fmt , __FUNCTION__ , ##arg)
 #define DRM_MEM_ERROR(area, fmt, arg...) \
-	printk(KERN_ERR "[" DRM_NAME ":" __FUNCTION__ ":%s] *ERROR* " fmt , \
+	printk(KERN_ERR "[" DRM_NAME ":%s:%s] *ERROR* " fmt , __FUNCTION__, \
 	       DRM(mem_stats)[area].name , ##arg)
 #define DRM_INFO(fmt, arg...)  printk(KERN_INFO "[" DRM_NAME "] " fmt , ##arg)
 
@@ -159,8 +209,8 @@
 	do {								\
 		if ( DRM(flags) & DRM_FLAG_DEBUG )			\
 			printk(KERN_DEBUG				\
-			       "[" DRM_NAME ":" __FUNCTION__ "] " fmt ,	\
-			       ##arg);					\
+			       "[" DRM_NAME ":%s] " fmt ,		\
+			       __FUNCTION__ , ##arg);			\
 	} while (0)
 #else
 #define DRM_DEBUG(fmt, arg...)		 do { } while (0)
@@ -544,7 +594,7 @@ typedef struct drm_device {
 #endif
 	struct pci_dev *pdev;
 #ifdef __alpha__
-#if LINUX_VERSION_CODE < 0x020403
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
 	struct pci_controler *hose;
 #else
 	struct pci_controller *hose;
