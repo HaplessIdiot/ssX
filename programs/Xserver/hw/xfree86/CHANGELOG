@@ -1,3 +1,32 @@
+XFree86 3.1.2E (13 May 1996)
+541. OS/2 updates (Sebastien Marineau).
+540. Fix(?) server crash on keyboard input when using DGA with XKB disabled.
+539. Install xterm termcap/terminfo files in lib/X11/etc for all OSs, not
+     just SYSV/SVR4.
+538. Convert egc_asm.s to the portable assembler format so it can be built
+     on SVR4 (Takaaki Nomura).
+537. Fix Mach64 ghostview scrollbar problem.  This may also fix some font
+     corruption problems seen in Netscape (Kevin Martin).
+536. Fix Mach64 ol[v]wm icon problem (Kevin Martin).
+535. Add Mach64 cursor in doublescan mode -- this still has problems
+     (Kevin Martin).
+534. Add Mach64 doublescan mode for low resolution modes (only works so far
+     for the VT chip) (Kevin Martin).
+533. Fix Mach64 264VT support in the Mach64 server (Kevin Martin).
+532. Update the xterm termcap and terminfo descriptions (Thomas E. Dickey).
+531. Fix an xterm bug where XmbLookupString is used even though an
+     IM/IC isn't open/used (Kaleb Keithley).
+530. Fix a clock roll-over bug in xterm (Kaleb Keithley).
+529. Add some new locale aliases used by Solaris 2.5 and some other OSs
+     (Kaleb Keithley).
+528. Fix some potential data overruns with long environment variables in
+     libX11 and libXt which could create security holes in suid root
+     programs like xterm (Kaleb Keithley).
+527. Fix makedepend's handling of long typed defines (eg, 1993L)
+     (Kaleb Keithley).
+526. User alloca on UnixWare (Kaleb Keithley).
+525. Improved fix for removing compiled keymap files (Kaleb Keithley).
+
 XFree86 3.1.2Dj (12 May 1996)
 524. Disable POSIX_TERMIOS in xterm for FreeBSD versions prior to 2.1.
 523. Add a document for XInput (Frederic Lepied).

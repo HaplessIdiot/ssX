@@ -1,4 +1,4 @@
-/* $XConsortium: XlcPubI.h,v 1.4 95/02/22 22:02:55 kaleb Exp $ */
+/* $XConsortium: XlcPubI.h /main/5 1996/04/19 16:00:40 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -223,7 +223,8 @@ extern int _XlcResolveDBName(
 
 extern int _XlcResolveI18NPath(
 #if NeedFunctionPrototypes
-    char*		/* path_name */
+    char*		/* buf */,
+    int			/* buf_len */
 #endif
 );
 

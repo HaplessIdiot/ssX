@@ -1,4 +1,4 @@
-/* $XConsortium: cppsetup.c,v 1.13 94/04/17 20:10:32 gildea Exp $ */
+/* $XConsortium: cppsetup.c /main/16 1996/04/23 13:27:04 kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -95,16 +95,16 @@ cppsetup(line, filep, inc)
 	return(value);
 }
 
-struct symtab *lookup(symbol)
+struct symtab **lookup(symbol)
 	char	*symbol;
 {
-	static struct symtab    undefined;
-	struct symtab   *sp;
+	static struct symtab    *undefined;
+	struct symtab   **sp;
 
 	sp = isdefined(symbol, currentinc, NULL);
 	if (sp == NULL) {
 		sp = &undefined;
-		sp->s_value = NULL;
+		(*sp)->s_value = NULL;
 	}
 	return (sp);
 }
@@ -132,7 +132,7 @@ struct _parse_data {
 };
 
 static const char *
-_my_if_errors (ip, cp, expecting)
+my_if_errors (ip, cp, expecting)
     IfParser *ip;
     const char *cp;
     const char *expecting;
@@ -161,8 +161,8 @@ _my_if_errors (ip, cp, expecting)
 
 #define MAXNAMELEN 256
 
-static struct symtab *
-_lookup_variable (ip, var, len)
+static struct symtab **
+lookup_variable (ip, var, len)
     IfParser *ip;
     const char *var;
     int len;
@@ -180,12 +180,12 @@ _lookup_variable (ip, var, len)
 
 
 static int
-_my_eval_defined (ip, var, len)
+my_eval_defined (ip, var, len)
     IfParser *ip;
     const char *var;
     int len;
 {
-    if (_lookup_variable (ip, var, len))
+    if (lookup_variable (ip, var, len))
 	return 1;
     else
 	return 0;
@@ -193,25 +193,25 @@ _my_eval_defined (ip, var, len)
 
 #define isvarfirstletter(ccc) (isalpha(ccc) || (ccc) == '_')
 
-static int
-_my_eval_variable (ip, var, len)
+static long
+my_eval_variable (ip, var, len)
     IfParser *ip;
     const char *var;
     int len;
 {
-    struct symtab *s;
+    struct symtab **s;
 
-    s = _lookup_variable (ip, var, len);
+    s = lookup_variable (ip, var, len);
     if (!s)
 	return 0;
     do {
-	var = s->s_value;
+	var = (*s)->s_value;
 	if (!isvarfirstletter(*var))
 	    break;
-	s = _lookup_variable (ip, var, strlen(var));
+	s = lookup_variable (ip, var, strlen(var));
     } while (s);
 
-    return atoi(var);
+    return strtol(var, NULL, 0);
 }
 
 
@@ -222,14 +222,14 @@ cppsetup(line, filep, inc)
 {
     IfParser ip;
     struct _parse_data pd;
-    int val = 0;
+    long val = 0;
 
     pd.filep = filep;
     pd.inc = inc;
     pd.line = line;
-    ip.funcs.handle_error = _my_if_errors;
-    ip.funcs.eval_defined = _my_eval_defined;
-    ip.funcs.eval_variable = _my_eval_variable;
+    ip.funcs.handle_error = my_if_errors;
+    ip.funcs.eval_defined = my_eval_defined;
+    ip.funcs.eval_variable = my_eval_variable;
     ip.data = (char *) &pd;
 
     (void) ParseIfExpression (&ip, line, &val);

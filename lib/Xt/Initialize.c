@@ -1,5 +1,5 @@
 /* $XConsortium: Initialize.c /main/200 1996/02/28 12:16:42 kaleb $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.7 1996/01/21 01:48:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.8 1996/03/16 12:45:34 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -156,10 +156,10 @@ static XrmOptionDescRec Const opTable[] = {
 
 
 /*
- * _XtGetHostname - emulates gethostname() on non-bsd systems.
+ * GetHostname - emulates gethostname() on non-bsd systems.
  */
 
-static int _XtGetHostname (buf, maxlen)
+static void GetHostname (buf, maxlen)
     char *buf;
     int maxlen;
 {
@@ -170,16 +170,14 @@ static int _XtGetHostname (buf, maxlen)
 
     uname (&name);
     len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen - 1;
+    if (len >= maxlen) len = maxlen;
     (void) strncpy (buf, name.nodename, len);
-    buf[len] = '\0';
+    buf[len-1] = '\0';
 #else
     buf[0] = '\0';
     (void) gethostname (buf, maxlen);
     buf [maxlen - 1] = '\0';
-    len = strlen(buf);
 #endif
-    return len;
 }
 
 
@@ -223,15 +221,17 @@ void XtToolkitInitialize()
 }
 
 
-String _XtGetUserName(dest)
+String _XtGetUserName(dest, len)
     String dest;
+    int len;
 {
 #ifdef WIN32
     String ptr = NULL;
 
-    if ((ptr = getenv("USERNAME")))
-	(void) strcpy (dest, ptr);
-    else
+    if ((ptr = getenv("USERNAME"))) {
+	(void) strncpy (dest, ptr, len);
+	dest[len-1] = '\0';
+    } else
 	*dest = '\0';
 #else
 #ifdef X_NOT_POSIX
@@ -274,9 +274,10 @@ String _XtGetUserName(dest)
     struct passwd *pw;
 #endif /* XTHREADS && XUSE_MTSAFE_API */
     char* ptr;
-    if ((ptr = getenv("USER")))
-	(void) strcpy (dest, ptr);
-    else {
+    if ((ptr = getenv("USER"))) {
+	(void) strncpy (dest, ptr, len);
+	dest[len-1] = '\0';
+    } else {
 	if ((pw = Getpwuid(getuid())) != CallFailed)
 	    (void) strcpy (dest, PwName);
 	else
@@ -287,18 +288,20 @@ String _XtGetUserName(dest)
 }
 
 
-static String GetRootDirName(dest, slash)
-     String dest;
-     Bool slash;
+static String GetRootDirName(dest, len)
+    String dest;
+    int len; 
 {
 #ifdef WIN32
     register char *ptr;
 
-    if (ptr = getenv("HOME"))
-	(void) strcpy(dest, ptr);
-    else if (ptr = getenv("USERNAME")) {
+    if (ptr = getenv("HOME")) {
+	(void) strncpy(dest, ptr, len);
+	dest[len-1] = '\0';
+    } else if (ptr = getenv("USERNAME")) {
 	(void) strcpy (dest, "/users/");
-	(void) strcat (dest, ptr);
+	(void) strncat (dest, ptr, len - strlen (dest));
+	dest[len-1] = '\0';
     } else
 	*dest = '\0';
 #else
@@ -343,9 +346,10 @@ static String GetRootDirName(dest, slash)
 #endif /* XTHREADS && XUSE_MTSAFE_API */
     static char *ptr;
 
-    if ((ptr = getenv("HOME")))
-	(void) strcpy (dest, ptr);
-    else {
+    if ((ptr = getenv("HOME"))) {
+	(void) strncpy (dest, ptr, len);
+	dest[len-1] = '\0';
+    } else {
 	if (ptr = getenv("USER"))
 	    pw = Getpwnam(ptr);
 	else
@@ -356,12 +360,6 @@ static String GetRootDirName(dest, slash)
 	    *dest = '\0';
     }
 #endif
-    if (slash) {
-	dest += strlen(dest);
-	*dest = '/';
-	dest++;
-	*dest = '\0';
-    }
     return dest;
 }
 
@@ -376,7 +374,7 @@ static void CombineAppUserDefaults(dpy, pdb)
     if (!(path = getenv("XUSERFILESEARCHPATH"))) {
 	char *old_path;
 	char homedir[PATH_MAX];
-	GetRootDirName(homedir, False);
+	GetRootDirName(homedir, PATH_MAX);
 	if (!(old_path = getenv("XAPPLRESDIR"))) {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
 	    if (!(path =
@@ -410,13 +408,15 @@ static void CombineUserDefaults(dpy, pdb)
     XrmDatabase *pdb;
 {
     char *dpy_defaults = XResourceManagerString(dpy);
+    static char slashDotXdefaults[] = "/.Xdefaults";
 
     if (dpy_defaults) {
 	XrmCombineDatabase(XrmGetStringDatabase(dpy_defaults), pdb, False);
     } else {
 	char filename[PATH_MAX];
-	(void) GetRootDirName(filename, True);
-	(void) strcat(filename, ".Xdefaults");
+	(void) GetRootDirName(filename, 
+			PATH_MAX - sizeof slashDotXdefaults - 1);
+	(void) strcat(filename, slashDotXdefaults);
 	(void)XrmCombineFileDatabase(filename, pdb, False);
     }
 }
@@ -554,10 +554,13 @@ XrmDatabase XtScreenDatabase(screen)
 
 	if (!(filename = getenv("XENVIRONMENT"))) {
 	    int len;
-	    (void) GetRootDirName(filename = filenamebuf, True);
-	    (void) strcat(filename, ".Xdefaults-");
+	    static char slashDotXdefaultsDash[] = "/.Xdefaults-";
+
+	    (void) GetRootDirName(filename = filenamebuf, 
+			PATH_MAX - sizeof slashDotXdefaultsDash - 1);
+	    (void) strcat(filename, slashDotXdefaultsDash);
 	    len = strlen(filename);
-	    (void) _XtGetHostname (filename+len, PATH_MAX-len);
+	    GetHostname (filename+len, PATH_MAX-len);
 	}
 	(void)XrmCombineFileDatabase(filename, &db, False);
     }

@@ -1,5 +1,5 @@
 /* $XConsortium: XlibInt.c /main/181 1995/12/05 16:47:01 mor $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.6 1996/01/24 21:57:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.7 1996/02/09 08:18:49 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -124,6 +124,10 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #ifdef EMSGSIZE
 #define ESZTEST() ECHECK(EMSGSIZE)
 #endif
+#endif
+
+#ifdef __EMX__
+#define select(n,r,w,x,t) os2ClientSelect(n,r,w,x,t)
 #endif
 
 #ifdef MUSTCOPY
@@ -3238,40 +3242,4 @@ _XANYSET(src)
 }
 #endif
 
-#ifdef __EMX__
-char *__XOS2RedirRoot(char *fname)
-{
-    /* This adds a further redirection by allowing the ProjectRoot
-     * to be prepended by the content of the envvar X11ROOT.
-     * This is for the purpose to move the whole X11 stuff to a different
-     * disk drive.
-     * The feature was added despite various environment variables
-     * because not all file opens respect them.
-     */
-    static char redirname[300]; /* enough for long filenames */
-    char *root;
 
-    /* if name does not start with /, assume it is not root-based */
-    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
-	return fname;
-
-    root = (char*)getenv("X11ROOT");
-    if (root==0 || 
-	(fname[1]==':' && isalpha(fname[0])) ||
-        (strlen(fname)+strlen(root)+2) > 300)
-	return fname;
-    sprintf(redirname,"%s%s",root,fname);
-    return redirname;
-}
-
-char *__XOS2RedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
-{
-    /* this first constructs a name from a format and up to three
-     * components, then adds a path
-     */
-    char buf[300];
-    sprintf(buf,format,arg1,arg2,arg3);
-    return __XOS2RedirRoot(buf);
-}
-
-#endif
