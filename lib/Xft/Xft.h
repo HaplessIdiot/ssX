@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.1 2000/10/05 18:05:26 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -76,15 +76,15 @@ XftExtentsString (Display	*dpy,
 		  XGlyphInfo	*extents);
 
 void
-XftDrawString (Display	*dpy,
-	       Picture	 src,
-	       XftFont	*font,
-	       Picture	dst,
-	       int	srcx,
-	       int	srcy,
-	       int	x,
-	       int	y,
-	       char	*string,
-	       int	len);
+XftDrawString (Display		*dpy,
+	       Picture		src,
+	       XftFont		*font,
+	       Picture		dst,
+	       int		srcx,
+	       int		srcy,
+	       int		x,
+	       int		y,
+	       unsigned char	*string,
+	       int		len);
 
 #endif /* _XFT_H_ */

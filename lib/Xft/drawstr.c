@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/drawstr.c,v 1.1 2000/10/05 18:05:26 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -67,11 +67,11 @@ void
 XftDrawString (Display *dpy, Picture src, XftFont *font, Picture dst,
 	       int srcx, int srcy,
 	       int x, int y,
-	       char *string, int len)
+	       unsigned char *string, int len)
 {
     unsigned long   missing[XFT_NMISSING];
     int		    nmissing;
-    char	    *s;
+    unsigned char   *s;
     int		    l;
 
     s = string;
@@ -82,6 +82,6 @@ XftDrawString (Display *dpy, Picture src, XftFont *font, Picture dst,
     if (nmissing)
 	_XftLoadGlyphs (dpy, font, missing, nmissing);
     XRenderCompositeString8 (dpy, PictOpOver, src, dst, 0, font->glyphset,
-			     srcx, srcy, x, y, string, len);
+			     srcx, srcy, x, y, (char *) string, len);
 }
 

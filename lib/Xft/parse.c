@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/parse.c,v 1.1 2000/10/05 18:05:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,6 +26,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+
+static Bool dbg;
+
+#define DBG(L, F)	if (dbg >= L) fprintf F;
 
 static void
 _XftParseError (XftParseState *s)
@@ -116,21 +120,36 @@ _XftParsePattern (XftParseState *s)
 			if ((s->name->mask & XftFontNameFace) &&
 			    !_XftStrImatch (s->string, s->name->face))
 			{
+			    DBG (2,(stderr, "\tface mismatch \"%s\"\n", s->string));
 			    s->state = XftSkipping;
+			}
+			else
+			{
+			    DBG (1,(stderr, "\tface match \"%s\"\n", s->string));
 			}
 			break;
 		    case XFT_ENCODING:
 			if ((s->name->mask & XftFontNameEncoding) &&
 			    !_XftStrImatch (s->string, s->name->encoding))
 			{
+			    DBG (2,(stderr, "\tencoding mismatch \"%s\"\n", s->string));
 			    s->state = XftSkipping;
+			}
+			else
+			{
+			    DBG (1,(stderr, "\tencoding match \"%s\"\n", s->string));
 			}
 			break;
 		    case XFT_FILE:
 			if ((s->name->mask & XftFontNameFile) &&
 			    !_XftStrImatch (s->string, s->name->file))
 			{
+			    DBG (2,(stderr, "\tfile mismatch \"%s\"\n", s->string));
 			    s->state = XftSkipping;
+			}
+			else
+			{
+			    DBG (1,(stderr, "\tfile match \"%s\"\n", s->string));
 			}
 			break;
 		    }
@@ -143,7 +162,11 @@ _XftParsePattern (XftParseState *s)
 			if (!(s->name->mask & XftFontNameFace))
 			{
 			    s->name->face = _XftSaveString (s->string);
-			    s->name->mask |= XftFontNameFace;
+			    DBG (1, (stderr, "\tsetting face \"%s\"\n", s->name->face));
+			}
+			else
+			{
+			    DBG (2, (stderr, "\tnot setting face \"%s\"\n", s->string));
 			}
 			break;
 		    case XFT_ENCODING:
@@ -151,6 +174,11 @@ _XftParsePattern (XftParseState *s)
 			{
 			    s->name->encoding = _XftSaveString (s->string);
 			    s->name->mask |= XftFontNameEncoding;
+			    DBG (1, (stderr, "\tsetting encoding \"%s\"\n", s->name->encoding));
+			}
+			else
+			{
+			    DBG (2, (stderr, "\tnot setting face \"%s\"\n", s->string));
 			}
 			break;
 		    case XFT_FILE:
@@ -158,6 +186,11 @@ _XftParsePattern (XftParseState *s)
 			{
 			    s->name->file = _XftSaveFile (s->dir, s->string);
 			    s->name->mask |= XftFontNameFile;
+			    DBG (1, (stderr, "\tsetting file \"%s\"\n", s->name->file));
+			}
+			else
+			{
+			    DBG (2, (stderr, "\tnot setting file \"%s\"\n", s->string));
 			}
 			break;
 		    }
@@ -191,6 +224,11 @@ _XftParsePattern (XftParseState *s)
 			    s->number != s->name->size)
 			{
 			    s->state = XftSkipping;
+			    DBG (2,(stderr, "\tsize mismatch %d\n", s->number));
+			}
+			else
+			{
+			    DBG (1,(stderr, "\tsize match %d\n", s->number));
 			}
 			break;
 		    case XFT_ROTATION:
@@ -198,6 +236,11 @@ _XftParsePattern (XftParseState *s)
 			    s->number != s->name->rotation)
 			{
 			    s->state = XftSkipping;
+			    DBG (2,(stderr, "\trotation mismatch %d\n", s->number));
+			}
+			else
+			{
+			    DBG (1,(stderr, "\trotation match %d\n", s->number));
 			}
 			break;
 		    case XFT_SPACING:
@@ -205,6 +248,11 @@ _XftParsePattern (XftParseState *s)
 			    s->number != s->name->spacing)
 			{
 			    s->state = XftSkipping;
+			    DBG (2,(stderr, "\tspacing mismatch %d\n", s->number));
+			}
+			else
+			{
+			    DBG (1,(stderr, "\trotation match %d\n", s->number));
 			}
 			break;
 		    }
@@ -213,24 +261,42 @@ _XftParsePattern (XftParseState *s)
 		case XftEditing:
 		    switch (token) {
 		    case XFT_SIZE:
+			DBG (1,(stderr, "\t editing size %d: ", s->number));
 			if (!(s->name->mask & XftFontNameSize))
 			{
 			    s->name->size = s->number;
+			    DBG (1,(stderr, "replacing %d\n", s->number));
 			    s->name->mask |= XftFontNameSize;
+			}
+			else
+			{
+			    DBG (1,(stderr, "already set\n"));
 			}
 			break;
 		    case XFT_ROTATION:
+			DBG (1,(stderr, "\t editing size %d: ", s->number));
 			if (!(s->name->mask & XftFontNameRotation))
 			{
 			    s->name->rotation = s->number;
+			    DBG (1,(stderr, "replacing %d\n", s->number));
 			    s->name->mask |= XftFontNameRotation;
+			}
+			else
+			{
+			    DBG (1,(stderr, "already set\n"));
 			}
 			break;
 		    case XFT_SPACING:
+			DBG (1,(stderr, "\t editing size %d: ", s->number));
 			if (!(s->name->mask & XftFontNameSpacing))
 			{
 			    s->name->spacing = s->number;
+			    DBG (1,(stderr, "replacing %d\n", s->number));
 			    s->name->mask |= XftFontNameSpacing;
+			}
+			else
+			{
+			    DBG (1,(stderr, "already set\n"));
 			}
 			break;
 		    }
@@ -406,6 +472,7 @@ _XftParseDir (XftParseState *s)
 		    ndir[olen++] = ':';
 		strncpy (ndir + olen, add, len);
 		ndir[olen+len] = '\0';
+		DBG (1,(stderr, "\tadding font file directory \"%s\"\n", ndir+olen));
 		s->dir = ndir;
 	    }
 	    _XftLex (s);
@@ -481,9 +548,13 @@ _XftParsePathElt (char *elt, char *dir, XftFontName *result)
 	ret = True;
 	elt++;
     }
+    DBG (1,(stderr, "Parsing Xft config file \"%s\"\n", elt));
     state.file = fopen (elt, "r");
     if (!state.file)
+    {
+	DBG (1,(stderr, "Failed to open\n"));
 	return ret;
+    }
     state.filename = elt;
     state.line = 1;
     state.token = XFT_EOF;
@@ -497,6 +568,20 @@ _XftParsePathElt (char *elt, char *dir, XftFontName *result)
 	state.dir = 0;
     ret = _XftParse (&state);
     fclose (state.file);
+    DBG (1,(stderr, "Finished parsing \"%s\":\n"
+	  "\t\tface     \"%s\"\n"
+	  "\t\tencoding \"%s\"\n"
+	  "\t\tfile     \"%s\"\n"
+	  "\t\tsize     %d\n"
+	  "\t\trotation %d\n"
+	  "\t\tspacing  %d\n\n",
+	  elt,
+	  result->mask & XftFontNameFace ? result->face : "(no face)",
+	  result->mask & XftFontNameEncoding ? result->encoding : "(no encoding)",
+	  result->mask & XftFontNameFile ? result->file : "(no file)",
+	  result->mask & XftFontNameSize ? result->size / 64 : -1,
+	  result->mask & XftFontNameRotation ? result->rotation : -1,
+	  result->mask & XftFontNameSpacing ? result->spacing : -1));
     return ret;
 }
 
@@ -505,6 +590,16 @@ _XftParsePathList (char *path, char *dir, XftFontName *result)
 {
     char    file[XFT_MAX_STRING], *home, *rest;
     char    *colon;
+    char    *d;
+    
+    d = getenv ("XFT_DEBUG");
+    if (d)
+    {
+	dbg = atoi(d);
+	if (dbg == 0) dbg = 1;
+    }
+    else
+	dbg = 0;
     
     while (path && *path)
     {
