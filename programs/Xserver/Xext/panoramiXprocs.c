@@ -1251,7 +1251,7 @@ int PanoramiXPolyLine(ClientPtr client)
         memcpy((char *) origPts, (char *) &stuff[1], npoint * sizeof(xPoint));
         FOR_NSCREENS_FORWARD(j){
 
-	    if(j) memcpy(&stuff[1], origPts, npoint * sizeof(xPoint));
+            if(j) memcpy(&stuff[1], origPts, npoint * sizeof(xPoint));
 
             if (isRoot) {
                 int x_off = panoramiXdataPtr[j].x;
@@ -1382,7 +1382,8 @@ int PanoramiXPolyRectangle(ClientPtr client)
 		int x_off = panoramiXdataPtr[j].x;
 		int y_off = panoramiXdataPtr[j].y;
 
-		if(x_off || x_off) {
+
+		if(x_off || y_off) {
 	    	    xRectangle *rects = (xRectangle *) &stuff[1];
 
 		    for (i = nrects; i--; rects++) {
@@ -1390,7 +1391,7 @@ int PanoramiXPolyRectangle(ClientPtr client)
 			rects->y -= y_off;
 		    }
 		}
-	    }
+	    } 
 
 	    stuff->drawable = draw->info[j].id;
 	    stuff->gc = gc->info[j].id;

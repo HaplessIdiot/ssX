@@ -64,50 +64,38 @@ extern int (* ProcVector[256]) ();
 PROC_EXTERN(ProcPanoramiXQueryVersion);
 PROC_EXTERN(ProcPanoramiXGetState);
 PROC_EXTERN(ProcPanoramiXGetScreenCount);
-PROC_EXTERN(PropPanoramiXGetScreenSize);
+PROC_EXTERN(ProcPanoramiXGetScreenSize);
+
+PROC_EXTERN(ProcXineramaIsActive);
+PROC_EXTERN(ProcXineramaQueryScreens);
 
 static int
-#if NeedFunctionPrototypes      
 SProcPanoramiXQueryVersion (ClientPtr client)
-#else
-SProcPanoramiXQueryVersion (client)
-    register ClientPtr  client;
-#endif
 {
-    register 	int	n;
-    REQUEST(xPanoramiXQueryVersionReq);
+	REQUEST(xPanoramiXQueryVersionReq);
+	register int n;
 
-    swaps(&stuff->length,n);
-    REQUEST_SIZE_MATCH (xPanoramiXQueryVersionReq);
-    return ProcPanoramiXQueryVersion(client);
+	swaps(&stuff->length,n);
+	REQUEST_SIZE_MATCH (xPanoramiXQueryVersionReq);
+	return ProcPanoramiXQueryVersion(client);
 }
 
 static int
-#if NeedFunctionPrototypes      
 SProcPanoramiXGetState(ClientPtr client)
-#else
-SProcPanoramiXGetState(client)
-        register ClientPtr      client;
-#endif
 {
 	REQUEST(xPanoramiXGetStateReq);
-	register int			n;
+	register int n;
 
  	swaps (&stuff->length, n);	
 	REQUEST_SIZE_MATCH(xPanoramiXGetStateReq);
-
+	return ProcPanoramiXGetState(client);
 }
 
 static int 
-#if NeedFunctionPrototypes      
 SProcPanoramiXGetScreenCount(ClientPtr client)
-#else
-SProcPanoramixGetScreenCount(client)
-	register ClientPtr	client;
-#endif
 {
 	REQUEST(xPanoramiXGetScreenCountReq);
-	register int			n;
+	register int n;
 
 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xPanoramiXGetScreenCountReq);
@@ -115,29 +103,43 @@ SProcPanoramixGetScreenCount(client)
 }
 
 static int 
-#if NeedFunctionPrototypes      
 SProcPanoramiXGetScreenSize(ClientPtr client)
-#else 
-SProcPanoramiXGetScreenSize(client)
-        register ClientPtr      client;
-#endif 
 {
 	REQUEST(xPanoramiXGetScreenSizeReq);
-    	WindowPtr			pWin;
-	register int			n;
+	register int n;
 
 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xPanoramiXGetScreenSizeReq);
 	return ProcPanoramiXGetScreenSize(client);
 }
 
+
+static int 
+SProcXineramaIsActive(ClientPtr client)
+{
+	REQUEST(xXineramaIsActiveReq);
+	register int n;
+
+	swaps (&stuff->length, n);
+	REQUEST_SIZE_MATCH(xXineramaIsActiveReq);
+	return ProcXineramaIsActive(client);
+}
+
+
+static int 
+SProcXineramaQueryScreens(ClientPtr client)
+{
+	REQUEST(xXineramaQueryScreensReq);
+	register int n;
+
+	swaps (&stuff->length, n);
+	REQUEST_SIZE_MATCH(xXineramaQueryScreensReq);
+	return ProcXineramaQueryScreens(client);
+}
+
+
 int
-#if NeedFunctionPrototypes      
 SProcPanoramiXDispatch (ClientPtr client)
-#else
-SProcPanoramiXDispatch (client) 
-    ClientPtr   client;
-#endif
 {   REQUEST(xReq);
     switch (stuff->data)
     {
@@ -149,6 +151,10 @@ SProcPanoramiXDispatch (client)
 	     return SProcPanoramiXGetScreenCount(client);
 	case X_PanoramiXGetScreenSize:
 	     return SProcPanoramiXGetScreenSize(client);
-    return BadRequest;
+	case X_XineramaIsActive:
+	     return SProcXineramaIsActive(client);
+	case X_XineramaQueryScreens:
+	     return SProcXineramaQueryScreens(client);
     }
+    return BadRequest;
 }
