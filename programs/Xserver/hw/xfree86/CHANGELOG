@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 293. Fix a bug introduced into the i810 driver in 4.4.99.7 that resulted in
+      a SEGV (David Dawes).
  292. Installer improvements and bindist updates (David Dawes).
  291. Add basic automatic mouse device node detection for Solaris
       (David Dawes).
@@ -19317,7 +19319,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3403 2005/01/28 02:11:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3404 2005/01/29 00:24:29 dawes Exp $
 
 
 
