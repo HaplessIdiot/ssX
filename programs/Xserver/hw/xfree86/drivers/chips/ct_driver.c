@@ -136,6 +136,7 @@
 #include "ct_driver.h"
 
 /* Mandatory functions */
+static OptionInfoPtr	CHIPSAvailableOptions(int chipid);
 static void     CHIPSIdentify(int flags);
 static Bool     CHIPSProbe(DriverPtr drv, int flags);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
@@ -474,6 +475,7 @@ DriverRec CHIPS = {
 #endif
 	CHIPSIdentify,
 	CHIPSProbe,
+	CHIPSAvailableOptions,
 	NULL,
 	0
 };
@@ -787,6 +789,22 @@ CHIPSIdentify(int flags)
 {
     xf86PrintChipsets(CHIPS_NAME, "Driver for Chips and Technologies chipsets",
 			CHIPSChipsets);
+}
+
+static
+OptionInfoPtr
+CHIPSAvailableOptions(int chipid)
+{
+    int vendor = ((chipid & 0xffff0000) >> 16);
+    int chip = chipid & 0x0000ffff;
+
+    if ((chip == CHIPS_CT64200) || (chip == CHIPS_CT64300)) 
+	return ChipsWingineOptions;
+    else
+    if ((chip >= CHIPS_CT65550) && (chip <= CHIPS_CT69030))
+	return ChipsHiQVOptions;
+    else
+	return Chips655xxOptions;
 }
 
 /* Mandatory */

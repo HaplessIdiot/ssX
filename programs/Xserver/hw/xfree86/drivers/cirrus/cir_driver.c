@@ -34,6 +34,7 @@
 
 /* Mandatory functions */
 
+static OptionInfoPtr	CIRAvailableOptions(int chipid);
 static void	CIRIdentify(int flags);
 static Bool	CIRProbe(DriverPtr drv, int flags);
 
@@ -63,6 +64,7 @@ DriverRec CIRRUS = {
 #endif
 	CIRIdentify,
 	CIRProbe,
+	CIRAvailableOptions,
 	NULL,
 	0
 };
@@ -186,6 +188,21 @@ CIRIdentify(int flags)
 	xf86PrintChipsets(CIR_NAME, "driver for Cirrus chipsets", CIRChipsets);
 }
 
+static
+OptionInfoPtr
+CIRAvailableOptions(int chipid)
+{
+	int vendor = (chipid & 0xffff0000) >> 16;
+	int chip = chipid & 0xffff;
+
+	if (chip == PCI_CHIP_GD5462 ||
+	    chip == PCI_CHIP_GD5464 ||
+	    chip == PCI_CHIP_GD5464BD ||
+	    chip == PCI_CHIP_GD5465) 
+		return LgAvailableOptions(chipid);
+	else
+		return AlpAvailableOptions(chipid);
+}
 
 /* Mandatory */
 static Bool
