@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 165. Check for NULL tObj in the i830 3D driver's TexEnv function.  This
+      fixes a FlightGear crash (Keith Whitwell).
  164. Set Mesa hooks to flush vertices on state changes in Radeon 3D drivers
       (Keith Whitwell).
  163. Add an entry to the i2c module that drivers can call to retrieve an array
@@ -16942,7 +16944,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2686 2003/05/05 21:18:37 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2687 2003/05/06 23:52:05 daenzer Exp $
 
 
 
