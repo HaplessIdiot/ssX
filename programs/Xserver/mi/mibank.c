@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.4 1998/09/19 12:15:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.5 1999/09/27 06:30:05 dawes Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -126,8 +126,8 @@ typedef struct _miBankScreen
 
 typedef struct _miBankGC
 {
-    GCOps     *wrappedOps;
-    GCFuncs   *wrappedFuncs;
+    GCOps     *wrappedOps,   *unwrappedOps;
+    GCFuncs   *wrappedFuncs, *unwrappedFuncs;
 
     Bool      fastCopy, fastPlane;
 
@@ -233,14 +233,16 @@ static GCFuncs       miBankGCFuncs;
     miBankGCPtr pGCPriv = BANK_GCPRIVATE(pGC)
 
 #define GC_UNWRAP(pGC) \
-    (pGC)->ops   = pGCPriv->wrappedOps; \
-    (pGC)->funcs = pGCPriv->wrappedFuncs
+    pGCPriv->unwrappedOps   = (pGC)->ops; \
+    pGCPriv->unwrappedFuncs = (pGC)->funcs; \
+    (pGC)->ops              = pGCPriv->wrappedOps; \
+    (pGC)->funcs            = pGCPriv->wrappedFuncs
 
 #define GC_WRAP(pGC) \
     pGCPriv->wrappedOps   = (pGC)->ops; \
     pGCPriv->wrappedFuncs = (pGC)->funcs; \
-    (pGC)->ops            = &miBankGCOps; \
-    (pGC)->funcs          = &miBankGCFuncs
+    (pGC)->ops            = pGCPriv->unwrappedOps; \
+    (pGC)->funcs          = pGCPriv->unwrappedFuncs
 
 #define IS_BANKED(pDrawable) \
     ((pbits == (pointer)pScreenPriv) && \
@@ -636,6 +638,8 @@ miBankCopy(
         }
 
         pGC->fExpose = fExpose;
+        srcx -= xorg;
+        srcy -= yorg;
     }
     else if (!IS_BANKED(pSrc))
     {
@@ -1864,6 +1868,8 @@ miBankCreateGC(
 
     if ((ret = (*pScreen->CreateGC)(pGC)))
     {
+        pGCPriv->unwrappedOps = &miBankGCOps;
+        pGCPriv->unwrappedFuncs = &miBankGCFuncs;
         GC_WRAP(pGC);
 
         memset(&pGCPriv->pBankedClips, 0,

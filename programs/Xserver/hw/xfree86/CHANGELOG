@@ -1,7 +1,8 @@
+3269. mibank bug fixes (Marc La France).
 3268. Add -withrevinfo flag to lndir to allow shadowing of RCS, SCCS, CVS and
       CVS.adm directories (Marc La France).
 3267. SIGIO workaround for older Linux kernels (Marc La France).
-3266. Fix xalloc.c compilationb failure with -DXALLOC_LOG (Marc La France).
+3266. Fix xalloc.c compilation failure with -DXALLOC_LOG (Marc La France).
 3265. Change ATIProbe() to use int 10 vector to locate the BIOS of VGA and
       VGA Wonder non-PCI adapters (Marc La France).
 3264. Make '-probe' work for static server and ATI driver (Marc La France).
@@ -8959,4 +8960,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.839 1999/10/14 02:45:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.840 1999/10/19 16:32:39 tsi Exp $
