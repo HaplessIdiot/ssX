@@ -1,4 +1,6 @@
 XFree86 4.4.99.2 (xx March 2004)
+  34. Fix Rage 128 XV support for interlaced and doublescanned modes
+      (Marc La France).
   33. Fix bad xfree()'s in renditionProbe() (Reported by Lee Olsen).
   32. Fix multiple glyphs in RenderAddGlyphs which caused malloc corruption.
       (Bugzilla #1276, Stephen McCamant)
@@ -18746,7 +18748,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3187 2004/03/19 16:23:11 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3188 2004/03/19 17:00:14 tsi Exp $
 
 
 
