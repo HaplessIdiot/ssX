@@ -1,4 +1,5 @@
 XFree86 4.4.99.2 (xx March 2004)
+  22. Fix warnings in xedit (Terry R. Frienrichsen, Bugzilla 1267).
   21. Make makedepend's recognition of its -a, -m and -w flags stricter
       (Marc La France).
   20. nv driver updates: PCI-Xpress, DPMS support for DVI (Mark Vojkovich).
@@ -18725,7 +18726,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3175 2004/03/13 22:13:59 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3176 2004/03/13 23:52:24 tsi Exp $
 
 
 
