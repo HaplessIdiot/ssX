@@ -1,4 +1,6 @@
 XFree86 4.0.1e (x November 2000)
+ 832. Split ATI driver into two modules in preparation for merging in the
+      r128 and radeon drivers (Marc La France).
  831. Update the XFree86 -configure code to put the default font path
       in the Files section of the config file it generates (#4202,
       Paulo Cesar Pereira de Andrade).
@@ -11360,4 +11362,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1360 2000/10/28 01:44:57 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1361 2000/10/30 18:04:47 dawes Exp $

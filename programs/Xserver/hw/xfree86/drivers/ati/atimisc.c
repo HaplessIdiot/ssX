@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.9 2000/10/13 13:27:00 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,7 +26,7 @@
 #include "ati.h"
 #include "ativersion.h"
 
-/* Module loader interface */
+/* Module loader interface for subsidiary driver module */
 
 static XF86ModuleVersionInfo ATIVersionRec =
 {
@@ -60,19 +60,18 @@ ATISetup
 
     if (!Inited)
     {
-        Inited = TRUE;
-        xf86AddDriver(&ATI, Module, 0);
+        /* Ensure main driver module is loaded, but not as a submodule */
+        if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
+            xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        return (pointer)TRUE;
+        Inited = TRUE;
     }
 
-    if (ErrorMajor)
-        *ErrorMajor = LDR_ONCEONLY;
-    return NULL;
+    return (pointer)TRUE;
 }
 
-/* The following record must be called atiModuleData */
-XF86ModuleData atiModuleData =
+/* The following record must be called atimiscModuleData */
+XF86ModuleData atimiscModuleData =
 {
     &ATIVersionRec,
     ATISetup,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.166 2000/10/05 18:27:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.167 2000/10/24 22:45:09 dawes Exp $ */
 
 /*
  *
@@ -436,6 +436,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetFlipPixels)
    SYMFUNC(xf86GetServerName)
    SYMFUNC(xf86ServerIsExiting)
+   SYMFUNC(xf86ServerIsOnlyDetecting)
    SYMFUNC(xf86ServerIsOnlyProbing)
    SYMFUNC(xf86ServerIsResetting)
    SYMFUNC(xf86CaughtSignal)
@@ -449,6 +450,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SetPriority)
    SYMFUNC(xf86LoadDrvSubModule)
    SYMFUNC(xf86LoadSubModule)
+   SYMFUNC(xf86LoadOneModule)
    SYMFUNC(xf86UnloadSubModule)
    SYMFUNC(xf86LoaderCheckSymbol)
    SYMFUNC(xf86LoaderReqSymLists)
