@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.252 2004/03/25 03:36:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.253 2004/04/05 02:33:07 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3144,24 +3144,24 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
           FREETYPE2LIBSRC = $(LIBSRC)/freetype2
 
 /*
- * FreeType 2.1.4
+ * FreeType 2.1.8
  *
  * Get the library version information from version_info in
  * in xc/extras/freetype2/builds/unix/configure.ac.
  *
- * current:revision:age = 9:3:3
+ * current:revision:age = 9:6:3
  *
  * The LibtoolMinorVersions revision is "(current - age).age".
  * The !LibtoolMinorVersions revision is "current.0".
  * Freetype2Version should be set to "current.revision.age"
  */
 #ifndef Freetype2Version
-#define Freetype2Version 9.3.3
+#define Freetype2Version 9.6.3
 #endif
 
 #if SharedLibFreetype2
 #ifndef SharedLibtoolFreetype2Rev
-#define SharedLibtoolFreetype2Rev	9:3:3
+#define SharedLibtoolFreetype2Rev	9:6:3
 #endif
 #ifndef SharedFreetype2Rev
 #if LibtoolMinorVersions
