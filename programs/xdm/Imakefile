@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.66 2004/01/09 00:25:23 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.67tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -158,14 +158,14 @@ XKB_CLIENT_DEFINES = XkbClientDefines
 
 #if HasSetUserContext
 USER_CONTEXT_DEFINES = -DHAS_SETUSERCONTEXT
-# XXX - only FreeBSD has this in libutil
+/* XXX - only FreeBSD has this in libutil */
 SYS_LIBRARIES1 = -lutil
 #endif
 
 #if HasSetProcTitle
 PROCTITLE_DEFINES = -DHAS_SETPROCTITLE
 #if defined(BSDOSArchitecture)
-# XXX - only BSD/OS has this in libutil
+/* XXX - only BSD/OS has this in libutil */
 SYS_LIBRARIES1 = -lutil
 #endif
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.26 2004/04/05 02:33:09 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.27tsi Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -33,7 +33,7 @@ XCOMM 	glw
 
 #define LargePICTable YES
 
-# Files from Mesa
+/* Files from Mesa */
 
 LinkSourceFile(glapi.c, $(MESASRCDIR)/src/mesa/glapi)
 LinkSourceFile(glthread.c, $(MESASRCDIR)/src/mesa/glapi)
@@ -44,10 +44,10 @@ LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/mesa/x86)
 LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 #endif
 
-
-# Maybe some of these could come from
-# xc/extras/ogl-sample/main/glx/lib at some point.
-
+/*
+ * Maybe some of these could come from
+ * xc/extras/ogl-sample/main/glx/lib at some point.
+ */
      GLX_SRCS = \
 		clientattrib.c \
 		compsize.c \
