@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.2 1994/05/29 02:04:53 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.3 1994/05/31 06:45:28 dawes Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -361,6 +361,7 @@ Development and improvement of the Mach32 specific code.
 Erik Nygren, \fInygren@mit.edu\fP
 Harry Langenbacher, \fIharry@brain.jpl.nasa.gov\fP
 Chris Mason, \fImason@mail.csh.rit.edu\fP
+David Moews, \fIdmoews@xraysgi.ims.uconn.edu\fP
 .fi
 .RS 8
 Development and improvement of the P9000 specific code.
@@ -377,16 +378,15 @@ dot-clocks less than 85MHz.
 The P9000 server is still beta.  It will probably not work with cards
 other than ther Diamond Viper VLB (I have not yet been able to get
 programming information from any companies other than Diamond).
-Restoration of text mode does not yet work.  When the P9000 is
-enabled, the W5[12]86 stops refreshing its DRAM so it corrupts.  Using
-\fIrestorefont\fP from \fIsvgalib\fP can be used as a temporary fix
-under those operating systems which support it.  In addition, restoration
-does not work at all after switching modes.  Using physical
+The ability to use banking rather than a linear frame buffer has been
+added as a compile time option, but it does not yet work.
+Restoration of colors in text mode doesn't always work.  Using physical
 resolutions different from the virtual resolution is not supported and
 is probably not possible.  Use at dot-clocks greater than 110 MHz is
-not recommended and not supported (Diamond claims that 135 MHz is the
+not recommended and not supported.  Diamond claims that 135 MHz is the
 maximum clock speed, but some of their bt485's are not rated that
-high).
+high.  If you do not have a 135 MHz bt485 on your Viper, contact Diamond
+tech support and they will send you an RMA number to replace the board.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to

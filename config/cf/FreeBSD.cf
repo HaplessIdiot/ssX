@@ -1,11 +1,12 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.8 1994/06/12 16:30:04 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.9 1994/06/22 06:10:53 dawes Exp $
 
-#define OSName            FreeBSD 1.1
+#define OSName            FreeBSD 1.1.5
 #define OSVendor          /**/
 XCOMM operating system:  OSName
 #define OSMajorVersion    1
 #define OSMinorVersion    1
+#define OSTeenyVersion    5
 
 #define HasGcc			YES
 #define HasGcc2			YES

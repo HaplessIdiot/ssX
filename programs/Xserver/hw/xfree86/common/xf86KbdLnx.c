@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_KbdLnx.c,v 1.1 94/03/28 21:24:06 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -42,7 +43,7 @@
 #include "xf86_Config.h"
 
 #include "xf86Keymap.h"
-
+#include "DECkeysym.h"
 
 /*
  * LegalModifier --
@@ -477,8 +478,29 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
        * KT_DEAD keys are for accelerated diacritical creation.
        * We should generate "XK_Compose XK_xxx" but can only map to one
        * keysym.
+       * There is support for these in DECkeysym.h. At the same place support 
+       * for dead cedilla and dead degree sign can be found, too (these are 
+       * not yet supported by the Linux kernel)
        */
       case KT_DEAD:
+	switch (kbe.kb_value)
+	  {
+	  case K_DGRAVE:
+	    *k = DXK_grave_accent;
+	    break;
+	  case K_DACUTE:
+	    *k = DXK_acute_accent;
+	    break;
+	  case K_DCIRCM:
+	    *k = DXK_circumflex_accent;
+	    break;
+	  case K_DTILDE:
+	    *k = DXK_tilde;
+	    break;
+	  case K_DDIERE:
+	    *k = DXK_diaeresis;
+	    break;
+	  }
 	break;
 
       case KT_CUR:

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.0 1994/05/29 02:05:43 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -54,57 +54,18 @@ Modified for the P9000 by Erik Nygren (nygren@mit.edu)
 #include "mi.h"
 #include "mistruct.h"
 #include "dix.h"
-#include "cfbmskbits.h"
-#include "mibstore.h"
 #include "p9000.h"
+#include "p9000reg.h"
+#include "vgaBank.h"
 
+#ifdef P9000_BANKED
+extern void p9000VGABankInit();
+#endif /* P9000_BANKED */
+
+extern pointer vgaBase;
 extern RegionPtr mfbPixmapToRegion();
 extern Bool mfbAllocatePrivates();
 
-extern int defaultColorVisualClass;
-
-#define _BP 6 /**** VGA ****/
-#define _RZ ((PSZ + 2) / 3)
-#define _RS 0
-#define _RM ((1 << _RZ) - 1)
-#define _GZ ((PSZ - _RZ + 1) / 2)
-#define _GS _RZ
-#define _GM (((1 << _GZ) - 1) << _GS)
-#define _BZ (PSZ - _RZ - _GZ)
-#define _BS (_RZ + _GZ)
-#define _BM (((1 << _BZ) - 1) << _BS)
-#define _CE (1 << _RZ)
-
-static VisualRec visuals[] = {
-/* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
-#ifndef STATIC_COLOR
-    0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-    0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
-    0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-    0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-#endif
-    0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
-    0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
-};
-
-#ifdef OMIT_ME
-
-#define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
-static  VisualID VIDs[NUMVISUALS];
-static DepthRec depths[] = {
-/* depth	numVid		vids */
-    1,		0,		NULL,
-    8,		NUMVISUALS,	VIDs
-};
-static unsigned long cfbGeneration = 0;
-#endif /* OMIT_ME */
-
-#define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
-
-int cfbWindowPrivateIndex;
-int cfbGCPrivateIndex;
-
-/* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
 p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
@@ -117,7 +78,14 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     ErrorF("Doing cfbScreenInit: base %lx, size %d,%d dpi %d,%d width %d\n",
 	   pbits, xsize, ysize, dpix, dpiy, width);
 #endif
-    cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+
+#ifdef P9000_BANKED
+    if (p9000BankSwitching) p9000VGABankInit();
+#endif /* P9000_BANKED */
+    /* Use VGABASE instead of passed video region if banked */
+    cfbScreenInit(pScreen, 
+                  (p9000BankSwitching ? ((pointer)vgaBase) : pbits),
+                  xsize, ysize, dpix, dpiy, width);
     return(1);
 }
 

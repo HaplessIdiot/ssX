@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.0 1994/06/15 15:35:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.1 1994/06/18 16:23:00 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -70,7 +70,6 @@ agxBitCache8Init(x,y)
    int y;
 {
    unsigned char i;
-   bitMapRowPtr bptr;
    static Bool reEntry = FALSE;
    unsigned int numRows = agxFontCacheSize / FONT_ROW_LENGTH;
    
@@ -94,26 +93,31 @@ agxBitCache8Init(x,y)
    reEntry = TRUE;
       
    if ( numRows ) {
+      bitMapRowPtr bptr;
       /* Xcalloc returns zeroed memory */
       agxHeadFont = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
       headBitRow  = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
       bptr        = headBitRow;
-      for (i = 0; i < numRows; i++) {	
+      i           = numRows;
+      while( i-- ) {	
          bptr->offset = agxFontCacheOffset + i * FONT_ROW_LENGTH;
 	 bptr->freel  = ROW_NUM_LINES;	
-	 bptr->next   = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
-	 bptr->next->prev  = bptr;
-	 bptr = bptr->next;
+         if( i ) {
+	    bptr->next   = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
+	    bptr->next->prev  = bptr;
+	    bptr = bptr->next;
+         }
       }
    }
 
    if (xf86Verbose) {
       if (agxFontCacheSize) {
-	 ErrorF("%s %s: Using %dK for font caching\n",
-	   XCONFIG_PROBED, agxInfoRec.name, agxFontCacheSize>>10);
+	 ErrorF( "%s %s: Font Cache: %dk @ offset 0x%x\n",
+	         XCONFIG_PROBED, agxInfoRec.name, 
+                 agxFontCacheSize>>10, agxFontCacheOffset );
       } else {
 	 ErrorF("%s %s: Font caching is disabled due to lack of video ram\n",
-           XCONFIG_PROBED, agxInfoRec.name);
+                XCONFIG_PROBED, agxInfoRec.name);
       }
    }
 }
@@ -136,9 +140,6 @@ agxCGetBlock( size )
    bitMapRowPtr bptr = headBitRow;
    bitMapBlockPtr canidate = NULL;
    int oldest=0;   
-
-   if( size > ROW_NUM_LINES )
-      return NULL;
    
    do {
        if (bptr->blocks == NULL) { /* block is empty */    

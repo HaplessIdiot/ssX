@@ -1,4 +1,3 @@
-/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -65,22 +64,24 @@ agxUnCacheFont8(font)
 	        agxCReturnBlock(ptr->fblock[i]);
 	    }
 
-	    if (ptr != agxHeadFont) {
-	       last->next = ptr->next;
-	       Xfree(ptr);
-	    } else {
-	       if (ptr->next != NULL) { /* move the head down */
-		  agxHeadFont=ptr->next;
-		  Xfree(ptr);		  
-	       } else { /* one and only entry */
-		  agxHeadFont->font = NULL;
-	       }
+	 if (ptr != agxHeadFont) {
+	    last->next = ptr->next;
+	    Xfree(ptr);
+	 }
+         else {
+	    if (ptr->next != NULL) { /* move the head down */
+	       agxHeadFont=ptr->next;
+	       Xfree(ptr);		  
 	    }
+            else { /* one and only entry */
+	       agxHeadFont->font = NULL;
+	    }
+         }
 #ifdef DEBUG_FCACHE
-            for (ptr = agxHeadFont; ptr != NULL; ptr = ptr->next)
-	       ErrorF("fonts 0x%x\n", ptr->font);
+         for (ptr = agxHeadFont; ptr != NULL; ptr = ptr->next)
+	    ErrorF("fonts 0x%x\n", ptr->font);
 #endif	       
-      	    return;	 
+      	 return;	 
       }
       last=ptr;
    }
@@ -94,6 +95,9 @@ agxCacheFont8(font)
    unsigned long n;
    unsigned char chr;
    int   width, height;
+   int   bWidth;
+   int   blockSize;
+   int   gper;
    CharInfoPtr pci;
 
    CacheFont8Ptr last, ret = agxHeadFont;
@@ -110,10 +114,15 @@ agxCacheFont8(font)
    height = FONTMAXBOUNDS(font, ascent) 
              + FONTMAXBOUNDS(font, descent);
 
+   bWidth = PixmapBytePad(width,1); 
+   gper = CACHE_LINE_WIDTH_BYTES / bWidth;
+   blockSize =  (((BLOCK_NUM_CHAR - 1) / gper) + 1) * height;
+
    if ( (width > CACHE_LINE_WIDTH_PIXELS) 
         || (FONTFIRSTROW(font) != 0) 
         || (FONTLASTROW(font) != 0)
-        || (FONTLASTCOL(font) > 255)  )
+        || (FONTLASTCOL(font) > 255)  
+        || blockSize > ROW_NUM_LINES )
        return NULL;
 
    if (agxHeadFont->font == NULL)
@@ -125,8 +134,9 @@ agxCacheFont8(font)
 
    ret->wPix = width;
    ret->hPix = height;
-   ret->wBytes = PixmapBytePad(width,1);
-   ret->gper = CACHE_LINE_WIDTH_BYTES / ret->wBytes;
+   ret->wBytes = bWidth;
+   ret->gper = gper;
+   ret->blockSize = blockSize;
    ret->font = font;
 
    /*
@@ -164,7 +174,6 @@ agxloadFontBlock(fentry, block)
    unsigned int   gWidth, gHeight, gSize;
    unsigned int   nbyGlyphWidth;
    unsigned int   nbyPadGlyph;
-   unsigned int   blockSize;                   /* block size in lines */
 
    ERROR_F(("loading 0x%x (0x%x) 0x%x\n", 
              fentry->font, block, fentry->fblock[block]));
@@ -172,12 +181,21 @@ agxloadFontBlock(fentry, block)
 
    nbyWidth = fentry->wBytes;  		/* glyph width in bytes */
    gSize = nbyWidth * fentry->hPix;  	 /*  font cache glyph size in bytes */
-   blockSize =  ((BLOCK_NUM_CHAR / fentry->gper) + 1) * fentry->hPix; 
 
    pbits = (unsigned char *)ALLOCATE_LOCAL(gSize);   /* buffer for copy */
 
+   /* 
+    * We have to worry about modifing a block that is
+    * currently being used by the graphics engine.
+    * For now, we assume the worse, in the long-run
+    * it may be useful to keep track of the in-use
+    * block and only wait when actually needed.
+    */
+   GE_WAIT_IDLE_SHORT();
+
    if ( pbits != NULL 
-        && (fentry->fblock[block] = agxCGetBlock(blockSize)) != NULL ) {
+        && (fentry->fblock[block]
+             = agxCGetBlock(fentry->blockSize)) != NULL ) {
 
       unsigned int first = block << BLOCK_NUM_SHIFT;  /* first char in block */
       unsigned int last  = first + BLOCK_NUM_CHAR;    /* last+1 char in block */
@@ -261,7 +279,8 @@ agxloadFontBlock(fentry, block)
                   /* cache is laid out so that blocks don't cross banks */ 
                   outb( agxApIdxReg, bank );
                   for( i=0, offset = 0; i < gHeight; i++ ) {
-                     MemToBus( (void *)((unsigned char *)base+offset), pb,
+                     MemToBus( (void *)((unsigned char *)base+offset), 
+                               pb,
 			       nbyWidth );
                      offset += CACHE_LINE_WIDTH_BYTES;
                      pb+=nbyWidth;
@@ -290,7 +309,7 @@ agxloadFontBlock(fentry, block)
 
       for (fptr = agxHeadFont; fptr == NULL; fptr= fptr->next)
 	 if (fptr != fentry) {
-	    for (i = 0; i < MAX_NUM_ROWS; i++)
+	    for (i = 0; i < BLOCKS_PER_FONT; i++)
 	       if (fptr->fblock[i] != NULL) {
 	         agxCReturnBlock(fptr->fblock[i]);
 		 found = TRUE;
@@ -301,15 +320,16 @@ agxloadFontBlock(fentry, block)
 
       /* getting real desperate - this doesn't work with pre-loading */
       if (!found) { 
-	 for (i = 0; i < MAX_NUM_ROWS; i++)
+         ERROR_F(("Flushing Current Font!\n"));
+	 for (i = 0; i < BLOCKS_PER_FONT; i++)
 	    if (fentry->fblock[i] != NULL) 
 	       agxCReturnBlock(fentry->fblock[i]);	    
       }
       agxloadFontBlock(fentry, block);
       return;
    }
-   for (i = 0; i < MAX_NUM_ROWS; i++)
-   ERROR_F(("got 0x%x(0x%x) 0x%x\n", fentry->font, i, fentry->fblock[i]));
+   for (i = 0; i < BLOCKS_PER_FONT; i++)
+      ERROR_F(("got 0x%x(0x%x) 0x%x\n", fentry->font, i, fentry->fblock[i]));
 }
 
 int
@@ -344,7 +364,9 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry)
    /*
     * Too maximize concurrency we shouldn't preload for the AGX, 
     * which won't use the GE to load fonts. I'll remove this once
-    * I get this stuff going.
+    * I get this stuff going and checks are added to prevent
+    * modification of in-use blocks. Pre-loading also aggravates
+    * thrashing with a small cache.
     */
    ret_x = x;
    for (i = 0; i < count; i++) {
@@ -355,9 +377,13 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry)
 
    for (i = 0; i < BLOCKS_PER_FONT; i++) {
       if (toload[i]) {
+#if 0
 	 if ((fentry->fblock[i]) == NULL) {
 	    agxloadFontBlock(fentry, i);
 	 }
+#else
+	 if ((fentry->fblock[i]) != NULL) 
+#endif
 	 fentry->fblock[i]->lru++;
       }
    }
@@ -388,7 +414,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry)
 
    for (; --numRects >= 0; ++pBox) {
       /* mask off clipped areas of the destination */
-      GE_WAIT_IDLE_SHORT();
+      GE_WAIT_IDLE();
       GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
       GE_OUT_D( GE_MASK_MAP_X, (long) pBox->x1 );
       GE_OUT_D( GE_MASK_MAP_Y, (long) pBox->y1 );
@@ -400,7 +426,6 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry)
       GE_OUT_W( GE_PIXEL_MAP_HEIGHT, (short) (pBox->y2 - pBox->y1) - 1 );
 #endif
       DoagxCPolyText8(x, y, count, chars, fentry, pGC);
-      GE_WAIT_IDLE_SHORT();
    }
 
    return ret_x;
@@ -495,7 +520,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
    unsigned int   blockBase;
    unsigned int   oldBlockBase = 0;
 
-   GE_WAIT_IDLE_SHORT();
+   GE_WAIT_IDLE();
 
    MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
 
@@ -525,15 +550,12 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
 	       if (block == NULL) {
 		  agxloadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
+                  MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
 	       }
-	       block->lru = NEXT_FONT_AGE;
+               block->lru = NEXT_FONT_AGE;
                blockBase = agxMemBase + block->daddy->offset;
                if( blockBase != oldBlockBase ) {
                   GE_WAIT_IDLE_SHORT();
-                  /* 
-                   * need to add map management to reduce 
-                   * how often we do this 
-                   */
                   GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
   
                   GE_OUT_D( GE_PIXEL_MAP_BASE, blockBase );

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.6 1994/06/15 15:31:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.7 1994/06/18 16:11:33 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -34,6 +34,16 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.6 1994/06/15 15:31:14 dawes Exp $
  * libs, uncomment this.  (This is a temporary option)
  *
 #define Mach32ShareCfb		NO
+ */
+
+/* 
+ * Using banking with the P9000 server may help people with flakey
+ * local bus machines.  However, it will slow things down considerably,
+ * even if just compiled in.  Since there are no ISA P9000 boards,
+ * this option should usually be disabled unless you need it.
+ * At the moment, this option does NOT work.
+ *
+#define P9000Banked		NO
  */
 
 /*

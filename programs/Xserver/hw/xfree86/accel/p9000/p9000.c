@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.3 1994/06/18 16:24:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.4 1994/06/19 11:05:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -14,14 +14,14 @@
  * "as is" without express or implied warranty.
  *
  * ERIK NYGREN, THOMAS ROELL, KEVIN E. MARTIN, RICKARD E. FAITH, SCOTT LAIRD,
- * AND TIAGO GONS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT
- * SHALL ERIK NYGREN, THOMAS ROELL, KEVIN E. MARTIN, RICKARD E. FAITH,
- * SCOTT LAIRD, OR TIAGO GONS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
- * PERFORMANCE OF THIS SOFTWARE.
+ * DAVID MOEWS, AND TIAGO GONS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL ERIK NYGREN, THOMAS ROELL, KEVIN E. MARTIN, 
+ * RICKARD E. FAITH, DAVID MOEWS SCOTT LAIRD, OR TIAGO GONS BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
@@ -30,6 +30,7 @@
  * Further modifications by Scott Laird (lair@kimbark.uchicago.edu)
  * and Tiago Gons (tiago@comosjn.hobby.nl)
  * Modified for the P9000 by Erik Nygren (nygren@mit.edu)
+ * Bank switching code for P9000 by David Moews (dmoews@xraysgi.ims.uconn.edu)
  *
  * Header: /x/xc/programs/Xserver/hw/xfree86/accel/p9000/RCS/p9000.c,v 4.0 1994/05/28 01:24:17 nygren Exp
  */
@@ -145,12 +146,15 @@ volatile pointer p9000VideoMem;
 Bool p9000SWCursor = FALSE;         /* Use a software cursor */
 Bool p9000DACSyncOnGreen = FALSE;   /* Enables syncing on green */
 
+Bool p9000BankSwitching = FALSE;
+
 unsigned char p9000SwapBits[256];
 
 static unsigned p9000_IOPorts[] = {
   /* VGA Registers */
   SEQ_INDEX_REG,    SEQ_PORT,         MISC_OUT_REG,     MISC_IN_REG,
-  GRA_I,            GRA_D,
+  GRA_I,            GRA_D,            CRT_IC,           CRT_DC,
+  IS1_RC,           ATT_IW,           ATT_R,            VGA_BANK_REG,
 
   /* BT484/485 Register Defines */  
   BT_PIXEL_MASK,    BT_READ_ADDR,     BT_WRITE_ADDR,    BT_RAMDAC_DATA,
@@ -227,14 +231,33 @@ p9000Probe()
 	return(FALSE);	
       }
 
+    /* Memory base 0 means banked configuration. */
     if ((p9000InfoRec.MemBase != 0xA0000000) &&
 	(p9000InfoRec.MemBase != 0x20000000) &&
+#ifdef P9000_BANKED
+	(p9000InfoRec.MemBase != 0x0)        && 
+#endif /* P9000_BANKED */
 	(p9000InfoRec.MemBase != 0x80000000))
       {
 	p9000InfoRec.MemBase = 0x80000000;
 	ErrorF("%s: MemBase not specified.  Using 0x%lx as a default.\n",
 	       p9000InfoRec.name, p9000InfoRec.MemBase);
       }
+
+#ifdef P9000_BANKED
+    if (p9000InfoRec.MemBase == 0)
+      {
+	ErrorF("%s %s: Using banking to access video memory.",
+	       XCONFIG_GIVEN, p9000InfoRec.name);
+	p9000BankSwitching = TRUE;
+      }
+    else
+      {
+	ErrorF("%s: WARNING: Using server compiled with banking support.\n",
+	       p9000InfoRec.name);
+	ErrorF("    This will slow down the server whether or not you are using the banking.\n");
+      }
+#endif /* P9000_BANKED */
 
     /* Probe for the vendor */
     for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
@@ -362,7 +385,7 @@ p9000Probe()
 	     OFLG_ISSET(XCONFIG_VIRTUAL,&p9000InfoRec.xconfigFlag) ?
 	     XCONFIG_GIVEN : XCONFIG_PROBED, p9000InfoRec.name,
 	     p9000InfoRec.virtualX, p9000InfoRec.virtualY);
-    
+
     if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &p9000InfoRec.options))
       {
 	p9000DACSyncOnGreen = TRUE;

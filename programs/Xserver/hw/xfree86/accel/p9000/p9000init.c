@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.0 1994/05/29 02:05:40 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -211,7 +211,7 @@ void p9000SetCRTCRegs(crtcRegs)
   p9000Store(SYSCONFIG,CtlBase,crtcRegs->sysconfig);
 
   /* Disable interrupts from P9000 */
-  p9000Store(INTERRUPTEN,CtlBase,0x00000080L);
+  p9000Store(INTERRUPT_EN,CtlBase,0x00000080L);
 
   /* Write Horizontal Timing Registers */
   p9000Store(PREHRZC,CtlBase, crtcRegs->prehrzc);
@@ -228,10 +228,33 @@ void p9000SetCRTCRegs(crtcRegs)
   p9000Store(VRTT,CtlBase, crtcRegs->vrtt);	/* VRTT  */
 
   /* Memory Configuration */
-  p9000Store(MEMCONF,CtlBase, p9000MiscReg.memconfig);
+  p9000Store(MEM_CONFIG,CtlBase, p9000MiscReg.memconfig);
 
   p9000Store(RFPERIOD,CtlBase, 0x00000186L);
   p9000Store(RLMAX,CtlBase, 0x000000FAL);
+
+  /* Enable writing to all 8 planes */
+  p9000Store(PMASK,CtlBase,0x000000FFL);
+  /* Select buffer 1 and allow drawing in window */
+  p9000Store(DRAW_MODE,CtlBase,0x0000000AL);
+  /* Disable any window (coord) offset */
+  p9000Store(W_MIN,CtlBase,0x00000000L);
+  /* Set the pattern origin to 0,0 */
+  p9000Store(PAT_ORIGINX,CtlBase,0x00000000L);
+  p9000Store(PAT_ORIGINY,CtlBase,0x00000000L); 
+
+  /* Calulate and set registers for clipping */
+  ClipMax= ((long)(crtcRegs->XSize*crtcRegs->BytesPerPixel)-1)<<16
+    | ( p9000MiscReg.memsize / (crtcRegs->XSize*crtcRegs->BytesPerPixel) - 1);
+  p9000Store(W_MIN,CtlBase,0);        /* Minimum Clipping */
+  p9000Store(W_MAX,CtlBase,ClipMax);  /* Maximum Clipping */
+#ifdef DEBUG
+  ErrorF("ClipMax set to 0x%lx\n",ClipMax);
+#endif
+
+  /* Clear the screen the first time before enabling video */
+  if (!p9000Inited)
+    p9000ClearScreen();
 
   /* Enable video (1e5, 1e4, or 1c4) */
   p9000Store(SRTCTL,CtlBase, p9000MiscReg.srtctl);
@@ -240,27 +263,6 @@ void p9000SetCRTCRegs(crtcRegs)
   ErrorF("About to set the clock\n");
 #endif
   p9000VendorPtr->SetClock(crtcRegs->dotfreq, crtcRegs->memspeed);
-
-  /*allow writing in all 8 planes */
-  p9000Store(PLANEMASK,CtlBase,0x000000FFL);
-  /*drawmode=buffer 0, write inside window */
-  p9000Store(DRAWMODE,CtlBase,0x0000000AL);
-  /*disable any co-ord offset */
-  p9000Store(W_OFFXY,CtlBase,0x00000000L);
-  /*set the pattern offset */
-  p9000Store(PATXORG,CtlBase,0x00000000L);
-  /*regesters to zero. */
-  p9000Store(PATYORG,CtlBase,0x00000000L); 
-
-  /* Set clipping registers */
-  /*calc and set max */
-  ClipMax= ((long)(crtcRegs->XSize*crtcRegs->BytesPerPixel)-1)<<16
-    | ( p9000MiscReg.memsize / (crtcRegs->XSize*crtcRegs->BytesPerPixel) - 1);
-  p9000Store(WMIN,CtlBase,0);          /*minimum clipping register */
-  p9000Store(WMAX,CtlBase,ClipMax);	/* maximum clipping; */
-#ifdef DEBUG
-  ErrorF("ClipMax set to 0x%lx\n",ClipMax);
-#endif
 
   p9000InitCursorFlag = TRUE;
   p9000Inited = TRUE;
@@ -279,10 +281,13 @@ void p9000InitAperture(screen_idx)
 			  0x10000);  /* 64k Banks */
 
   /* Map the P9000 in */
-  p9000VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
-				(pointer)(p9000InfoRec.MemBase),
-				0x400000L);  /* 4 Megabytes */
-
+  if (p9000BankSwitching)
+    p9000VideoMem = 0;   /* No need to map  */
+  else
+    p9000VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
+  				  (pointer)(p9000InfoRec.MemBase),
+				  0x400000L);  /* 4 Megabytes */
+  
   /* the start of video memory */
   VidBase = (volatile unsigned long *)((unsigned char *)p9000VideoMem +
 				       0x200000L);
@@ -342,13 +347,14 @@ void  p9000ClearScreen(void)
 {
   p9000NotBusy();         /* Wait for the P9000 to be free */
   /* Drawing a big black rectangle is probably a good way to clear things */
-  p9000Store(FOREGROUND, CtlBase, 0);
-  p9000Store(RASTER, CtlBase, FORE);
-  p9000Store(METACORD | REC, CtlBase,0);
-  p9000Store(METACORD | REC, CtlBase, ((long)(p9000CRTCRegs.XSize*
-					      p9000CRTCRegs.BytesPerPixel)<<16)
-	     | p9000CRTCRegs.YSize);
-  p9000Fetch(QUAD, CtlBase);
+  p9000Store(FGROUND, CtlBase, 0);
+  p9000Store(RASTER, CtlBase, IGM_F_MASK);
+  p9000Store(META_COORD | MC_RECT | MC_YX, CtlBase,
+	     YX_PACK(0,0));
+  p9000Store(META_COORD | MC_RECT | MC_YX, CtlBase,
+	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,
+		     p9000CRTCRegs.YSize));
+  p9000Fetch(CMD_QUAD, CtlBase);
   /* Wait for the engine to be free again */
   p9000NotBusy();
   return;
@@ -370,7 +376,7 @@ void p9000ProbeMemConfig()
    * will occur and we can detect the type of memory
    * by looking at the errors.
    */
-  p9000Store(MEMCONF, CtlBase, 0x2L);
+  p9000Store(MEM_CONFIG, CtlBase, 0x2L);
 
   /* Write something into a non-first row */
   p9000Store(0x100000, VidBase, 0x5a5a5a5a);
@@ -387,7 +393,7 @@ void p9000ProbeMemConfig()
       {
 	p9000MiscReg.memconfig = 0x0L;
 	p9000MiscReg.memsize = 0x100000L;
-	p9000Store(MEMCONF, CtlBase, p9000MiscReg.memconfig);
+	p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
 	return;
       }
 
@@ -399,7 +405,7 @@ void p9000ProbeMemConfig()
       {
 	p9000MiscReg.memconfig = 0x1L;
 	p9000MiscReg.memsize = 0x100000L;
-	p9000Store(MEMCONF, CtlBase, p9000MiscReg.memconfig);
+	p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
 	return;
       }
 
@@ -407,5 +413,5 @@ void p9000ProbeMemConfig()
    * Yay! */
   p9000MiscReg.memconfig = 0x2L;
   p9000MiscReg.memsize = 0x200000L;
-  p9000Store(MEMCONF, CtlBase, p9000MiscReg.memconfig);
+  p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
 }

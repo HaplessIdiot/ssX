@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.2 1994/06/15 15:42:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.3 1994/06/19 11:05:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -725,15 +725,12 @@ configGraphics(scr_index)
       OFLG_SET(XCONFIG_CLOCKS,&(screen->xconfigFlag));
       if ((token = getToken(NULL)) == STRING)
       {
-         /* XXXX since we're using a bitmap for this, we should allow
-	    multiple Clock strings (don't know if this will ever be used) */
-#if 0
+	 /* Only allow one Clock string */
 	 if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions)))
 	 {
-	    configError("Clock string already specified");
+	    configError("Only one Clock string may be specified.");
 	    break;
 	 }
-#endif
 	 if (screen->clocks == 0)
 	 {
 	    i = 0;

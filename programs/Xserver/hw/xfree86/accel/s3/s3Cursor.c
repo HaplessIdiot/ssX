@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.0 1994/06/14 14:12:23 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -331,7 +331,7 @@ s3LoadCursor(pScr, pCurs, x, y)
       }
 #endif
 
-      ram_loc = i;
+      ram_loc += n/2;
       ypos++;
       xpos = 0;
       bytes_remaining -= n;

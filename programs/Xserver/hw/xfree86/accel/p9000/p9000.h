@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.0 1994/05/29 02:05:33 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -302,19 +302,30 @@ extern Bool p9000DACSyncOnGreen;   /* Enables syncing on green */
 
 extern ScreenPtr p9000savepScreen;
 
+extern Bool p9000BankSwitching;     /* Enable bank switching */
+
 /* Retrieve a long word from memory */
+#ifndef P9000_BANKED
 #ifndef p9000Fetch
 #define p9000Fetch(Off,Base) (*(volatile unsigned long *)(Base + ((Off)/4L)))
 #endif
+#else /* P9000_BANKED */
+extern unsigned long p9000Fetch(unsigned long, volatile unsigned long *);
+#endif /* P9000_BANKED */
 
 /* Store a long word into memory */
+#ifndef P9000_BANKED
 #ifndef p9000Store
 #define p9000Store(Off,Base,Data)  *(volatile unsigned long *)(Base + ((Off)/4L)) = (unsigned long)Data
 #endif
+#else /* P9000_BANKED */
+extern void p9000Store(unsigned long, volatile unsigned long *,
+unsigned long);
+#endif /* P9000_BANKED */
 
 /* Wait for Drawing Engine to be free */
 #ifndef p9000NotBusy
-#define p9000NotBusy()  while(p9000Fetch(STATUS,CtlBase) & BUSY)
+#define p9000NotBusy()  while(p9000Fetch(STATUS,CtlBase) & SR_BUSY)
 #endif
 
 #endif /* P9000_H */

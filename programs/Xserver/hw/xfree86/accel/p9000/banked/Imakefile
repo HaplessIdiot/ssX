@@ -1,0 +1,47 @@
+XCOMM $XFree86$
+XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
+
+#include <Server.tmpl>
+
+SRCS = 	p9000.c p9000cmap.c p9000init.c p9000viper.c \
+	p9000BtCurs.c p9000Bt485.c p9000vga.c \
+	p9000scrin.c p9000curs.c ICD2061Aset.c ICD2061Acal.c \
+	p9000bank.s
+
+OBJS = 	p9000.o p9000cmap.o p9000init.o p9000viper.o \
+	p9000BtCurs.o p9000Bt485.o p9000vga.o \
+	p9000scrin.o p9000curs.o ICD2061Aset.o ICD2061Acal.o \
+	p9000bank.o
+
+INCLUDES = -I$(XF86SRC) -I.. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(SERVERSRC)/include -I$(FONTSRC)/include \
+           -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTSRC)/include \
+	   -I$(XF86SRC)/vga256/cfb.banked \
+           -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86HWSRC) \
+           -I$(FONTINCSRC) -I$(XF86OSSRC)
+
+DEFINES = -DP9000_SERVER -DPSZ=8 -DP9000_BANKED
+
+NormalLibraryObjectRule()
+
+NormalAsmObjectRule()
+
+NormalLibraryTarget(p9000bank,$(OBJS) )
+
+#define P9000LinkDirectory ..
+LinkSourceFile(p9000.c, P9000LinkDirectory)
+LinkSourceFile(p9000cmap.c, P9000LinkDirectory)
+LinkSourceFile(p9000init.c, P9000LinkDirectory)
+LinkSourceFile(p9000viper.c, P9000LinkDirectory)
+LinkSourceFile(p9000BtCurs.c, P9000LinkDirectory)
+LinkSourceFile(p9000Bt485.c, P9000LinkDirectory)
+LinkSourceFile(p9000vga.c, P9000LinkDirectory)
+LinkSourceFile(p9000scrin.c, P9000LinkDirectory)
+LinkSourceFile(p9000curs.c, P9000LinkDirectory)
+LinkSourceFile(ICD2061Aset.c, P9000LinkDirectory)
+LinkSourceFile(ICD2061Acal.c, P9000LinkDirectory)
+LinkSourceFile(p9000bank.s, P9000LinkDirectory)
+
+InstallLinkKitLibrary(p9000bank,$(LINKKITDIR)/drivers)
+
+DependTarget()
