@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.25 2002/10/31 23:04:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.27 2003/07/29 21:25:18 dawes Exp $ */
 
 #include "win.h"
 
@@ -590,7 +590,7 @@ winFinishScreenInitNativeGDI (int index,
   int			nVisuals = 0, nDepths = 0, nRootDepth = 0;
 
   /* Ignore user input (mouse, keyboard) */
-  pScreenInfo->fIgnoreInput = TRUE;
+  pScreenInfo->fIgnoreInput = FALSE;
 
   /* Get device contexts for the screen and shadow bitmap */
   pScreenPriv->hdcScreen = GetDC (pScreenPriv->hwndScreen);
@@ -622,13 +622,15 @@ winFinishScreenInitNativeGDI (int index,
 		     NULL, /* No framebuffer */
 		     pScreenInfo->dwWidth, pScreenInfo->dwHeight,
 		     monitorResolution, monitorResolution,
-		     pScreenInfo->dwWidth,
+		     pScreenInfo->dwStride,
 		     nRootDepth, nDepths, pDepths, rootVisual,
 		     nVisuals, pVisuals))
     {
       ErrorF ("winFinishScreenInitNativeGDI - miScreenInit failed\n");
       return FALSE;
     }
+
+  pScreen->defColormap = FakeClientID(0);
 
   /*
    * Register our block and wakeup handlers; these procedures

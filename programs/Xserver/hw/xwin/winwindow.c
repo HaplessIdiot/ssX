@@ -28,7 +28,7 @@
  * Authors:	Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.5 2002/11/07 10:31:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.7 2003/07/29 21:25:18 dawes Exp $ */
 
 #include "win.h"
 
@@ -91,7 +91,84 @@ winCopyWindowNativeGDI (WindowPtr pWin,
 			DDXPointRec ptOldOrg,
 			RegionPtr prgnSrc)
 {
-  ErrorF ("winCopyWindowNativeGDI ()\n");
+  DDXPointPtr		pptSrc;
+  DDXPointPtr		ppt;
+  RegionPtr		prgnDst;
+  BoxPtr		pBox;
+  int			dx, dy;
+  int			i, nbox;
+  WindowPtr		pwinRoot;
+  BoxPtr		pBoxDst, pBoxSrc;
+  ScreenPtr		pScreen = pWin->drawable.pScreen;
+  winScreenPriv(pScreen);
+
+#if 0
+  ErrorF ("winCopyWindow\n");
+#endif
+
+  /* Get a pointer to the root window */
+  pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
+
+  /* Create a region for the destination */
+  prgnDst = REGION_CREATE(pWin->drawable.pScreen, NULL, 1);
+
+  /* Calculate the shift from the source to the destination */
+  dx = ptOldOrg.x - pWin->drawable.x;
+  dy = ptOldOrg.y - pWin->drawable.y;
+
+  /* Translate the region from the destination to the source? */
+  REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
+  REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip,
+		   prgnSrc);
+
+  /* Get a pointer to the first box in the region to be copied */
+  pBox = REGION_RECTS(prgnDst);
+  
+  /* Get the number of boxes in the region */
+  nbox = REGION_NUM_RECTS(prgnDst);
+
+  /* Allocate source points for each box */
+  if(!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
+    return;
+
+  /* Set an iterator pointer */
+  ppt = pptSrc;
+
+  /* Calculate the source point of each box? */
+  for (i = nbox; --i >= 0; ppt++, pBox++)
+    {
+      ppt->x = pBox->x1 + dx;
+      ppt->y = pBox->y1 + dy;
+    }
+
+  /* Setup loop pointers again */
+  pBoxDst = REGION_RECTS(prgnDst);
+  ppt = pptSrc;
+
+#if 0
+  ErrorF ("winCopyWindow - x1\tx2\ty1\ty2\tx\ty\n");
+#endif
+
+  /* BitBlt each source to the destination point */
+  for (i = nbox; --i >= 0; pBoxDst++, ppt++)
+    {
+#if 0
+      ErrorF ("winCopyWindow - %d\t%d\t%d\t%d\t%d\t%d\n",
+	      pBoxDst->x1, pBoxDst->x2, pBoxDst->y1, pBoxDst->y2,
+	      ppt->x, ppt->y);
+#endif
+
+      BitBlt (pScreenPriv->hdcScreen,
+	      pBoxDst->x1, pBoxDst->y1,
+	      pBoxDst->x2 - pBoxDst->x1, pBoxDst->y2 - pBoxDst->y1,
+	      pScreenPriv->hdcScreen,
+	      ppt->x, ppt->y,
+	      SRCCOPY);
+    }
+
+  /* Cleanup the regions, etc. */
+  DEALLOCATE_LOCAL(pptSrc);
+  REGION_DESTROY(pWin->drawable.pScreen, prgnDst);
 }
 
 
