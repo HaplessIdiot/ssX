@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.192 95/01/25 20:37:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.29 1995/01/25 10:46:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.30 1995/01/28 15:44:31 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -479,7 +479,7 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF86W32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86W32OBJS = $(XF86COMSRC)/XF86_W32.o $(XF86ACCELSRC)/et4000w32/w32Conf.o
-XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/cfb.w32/libcfb.a $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/asm/libasm.a CFB8Libs $(XF86LIBS)
+XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/cfb.w32/libcfb.a $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/asm/libasm.a $(XF86LIBS) CFB8Libs
 XF86W32SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
 #ifndef ServerToInstall
