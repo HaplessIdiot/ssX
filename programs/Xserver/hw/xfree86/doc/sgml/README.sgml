@@ -16,7 +16,7 @@
 <date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.132 2003/02/26 16:41:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.133 2003/02/27 01:17:37 dawes Exp $
 </ident>
 
 <abstract>
@@ -327,11 +327,13 @@ gzip -d &lt; &fullrelvers;.tgz | tar vxf -
 ]]>
 ]]>
 
+<!--
 <![ %prevrelwasupdate; [
 Patches might also be available relative to &prevrelvers;.  If so, the
 instructions for applying them are the same, except that you should start 
 with a clean &prevrelvers; source tree.
 ]]>
+-->
 
 To format the XFree86 documentation use the latest version of our doctools
 package available from the XFree86 CVS repository's "doctools" module,
