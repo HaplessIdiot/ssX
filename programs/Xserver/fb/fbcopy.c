@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.8 2001/05/29 04:54:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.9 2001/06/03 18:45:17 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -586,7 +586,7 @@ fbDoCopy (DrawablePtr	pSrcDrawable,
 		      &rgnDst, dx, dy, copyProc, bitPlane, closure);
 
     /* Pixmap sources generate a NoExposed (we return NULL to do this) */
-    if (!fastExpose)
+    if (!fastExpose && pGC->fExpose)
 	prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 					origSource.x, origSource.y,
 					(int)origSource.width,
