@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.57 2000/03/03 23:12:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.58 2000/03/04 00:26:30 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -58,6 +58,7 @@ LinuxDocReadmeTarget(fbdev)
 LinuxDocReadmeTarget(I128)
 #endif
 LinuxDocReadmeTarget(i740)
+LinuxDocReadmeTarget(i810)
 #ifdef OUTOFDATE
 LinuxDocReadmeTarget(neomagic)
 LinuxDocReadmeTarget(Mach32)
