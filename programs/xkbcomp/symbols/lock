@@ -1,4 +1,5 @@
 // $TOG: lock /main/2 1997/06/13 06:25:10 kaleb $
+// $XFree86$
 
 partial hidden modifier_keys
 xkb_symbols "shift" {

@@ -5,7 +5,7 @@ XFree86@XFree86.org.  Replace the comments in [] with your own text.
 
 VERSION:
 
-4.0.1
+4.0.1a
 
 VIDEO DRIVER:
 
@@ -53,3 +53,5 @@ REPORT:
      reproduce it.]
 
 
+
+$XFree86$

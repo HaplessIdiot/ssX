@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #define ModeInfoFlag      0x07
 #define MemoryInfoFlag    0x1E0
 #define MemorySizeShift   0x05

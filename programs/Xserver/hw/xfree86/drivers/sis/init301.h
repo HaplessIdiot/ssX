@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "initdef.h"
 
 USHORT VBInfo,SetFlag,RVBHCFACT,RVBHCMAX,VGAVT,VGAHT,VT,HT,VGAVDE,VGAHDE;
