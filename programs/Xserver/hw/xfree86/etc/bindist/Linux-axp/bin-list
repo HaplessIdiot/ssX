@@ -25,6 +25,9 @@ lib/libXaw.so
 lib/libXext.so.6.4
 lib/libXext.so.6
 lib/libXext.so
+lib/libXfont.so.1.3
+lib/libXfont.so.1
+lib/libXfont.so
 lib/libXi.so.6.0
 lib/libXi.so.6
 lib/libXi.so
