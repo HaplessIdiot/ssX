@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.29 2002/12/14 02:39:45 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.30tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -97,21 +97,22 @@ struct	inclist inclist[ MAXFILES ],
 		*inclistnext = inclist,
 		maininclist;
 
-char	*filelist[ MAXFILES ];
-char	*includedirs[ MAXDIRS + 1 ],
-	**includedirsnext = includedirs;
-char	*notdotdot[ MAXDIRS ];
-int	cmdinc_count = 0;
-char	*cmdinc_list[ 2 * MAXINCFILES ];
-char	*objprefix = "";
-char	*objsuffix = OBJSUFFIX;
-char	*startat = "# DO NOT DELETE";
-int	width = 78;
-boolean	append = FALSE;
-boolean	printed = FALSE;
-boolean	verbose = FALSE;
-boolean	show_where_not = FALSE;
-boolean warn_multiple = FALSE;	/* Warn on multiple includes of same file */
+static char	*filelist[ MAXFILES ];
+char		*includedirs[ MAXDIRS + 1 ],
+		**includedirsnext = includedirs;
+char		*notdotdot[ MAXDIRS ];
+static int	cmdinc_count = 0;
+static char	*cmdinc_list[ 2 * MAXINCFILES ];
+char		*objprefix = "";
+char		*objsuffix = OBJSUFFIX;
+static char	*startat = "# DO NOT DELETE";
+int		width = 78;
+static boolean	append = FALSE;
+boolean		printed = FALSE;
+boolean		verbose = FALSE;
+boolean		show_where_not = FALSE;
+/* Warn on multiple includes of same file */
+boolean 	warn_multiple = FALSE;
 
 static void setfile_cmdinc(struct filepointer *filep, long count, char **list);
 static void redirect(char *line, char *makefile);
@@ -528,6 +529,7 @@ getfile(char *file)
 	struct stat	st;
 
 	content = (struct filepointer *)malloc(sizeof(struct filepointer));
+	content->f_name = file;
 	if ((fd = open(file, O_RDONLY)) < 0) {
 		warning("cannot open \"%s\"\n", file);
 		content->f_p = content->f_base = content->f_end = (char *)malloc(1);
@@ -599,6 +601,7 @@ char *getnextline(struct filepointer *filep)
 		*eof,	/* end of file pointer */
 		*bol;	/* beginning of line pointer */
 	int	lineno;	/* line number */
+	boolean whitespace = FALSE;
 
 	/*
 	 * Fake the "-include" line files in form of #include to the
@@ -619,15 +622,16 @@ char *getnextline(struct filepointer *filep)
 		return((char *)NULL);
 	lineno = filep->f_line;
 
-	for(bol = p--; ++p < eof; ) {
-		if(((*p == ' ') || (*p == '\t')) && (bol==p))
+	for (bol = p--; ++p < eof; ) {
+		if ((bol == p) && ((*p == ' ') || (*p == '\t')))
 		{
-			/* consume leading white-spaces for this line */
-			while(((*p == ' ')||(*p == '\t')) && ((p+1) < eof))
+			/* Consume leading white-spaces for this line */
+			while (((p+1) < eof) && ((*p == ' ') || (*p == '\t')))
 			{
 				p++;
 				bol++;
 			}
+			whitespace = TRUE;
 		}
         
 		if (*p == '/' && (p+1) < eof && *(p+1) == '*') {
@@ -699,14 +703,22 @@ char *getnextline(struct filepointer *filep)
 				--p;
 			}
 			bol = p+1;
+			whitespace = FALSE;
 		}
 	}
 	if (*bol != '#')
 		bol = NULL;
 done:
+	if (bol && whitespace) {
+		warning("%s:  non-portable whitespace encountered at line %d\n",
+			filep->f_name, lineno);
+	}
 	filep->f_p = p;
 	filep->f_line = lineno;
-	DBG_PRINT(stderr,"%s\n",bol);
+#ifdef DEBUG_DUMP
+	if (bol)
+		DBG_PRINT(stderr,"%s\n",bol);
+#endif
 	return(bol);
 }
 
