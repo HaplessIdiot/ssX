@@ -1,7 +1,9 @@
 /* $XFree86$ */
 /*
  * Copyright (C) 1999-2004 by The XFree86 Project, Inc.
- * based on code written by Mark Vojkovich <markv@valinux.com>
+ * based on code written by Mark Vojkovich
+ *
+ * Licensed under the following terms:
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,8 +23,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- *  TW: This module doesn't use CurrentLayout, because it is never
- *      active when DGA is active and vice versa.
+ * TW: This module doesn't use CurrentLayout, because it is never
+ *     active when DGA is active and vice versa.
  */
 
 #include "xf86.h"

@@ -2,6 +2,8 @@
 /*
  * Copyright (C) 1999-2004 by The XFree86 Project, Inc.
  *
+ * Licensed under the following terms:
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appears in all copies and that both that copyright

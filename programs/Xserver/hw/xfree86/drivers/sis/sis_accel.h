@@ -3,8 +3,10 @@
  * 2D acceleration for 5597/5598 and 6326
  * Definitions for the SIS engine communication
  *
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
- * Parts Copyright 2001-2004 Thomas Winischhofer, Vienna, Austria.
+ * Copyright (C) 1998, 1999 by Alan Hourihane, Wigan, England.
+ * Parts Copyright (C) 2001-2004 Thomas Winischhofer, Vienna, Austria.
+ *
+ * Licensed under the following terms:
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,12 +26,12 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ * Authors:  Alan Hourihane <alanh@fairlite.demon.co.uk>,
  *           Mike Chapman <mike@paranoia.com>,
  *           Juanjo Santamarta <santamarta@ctv.es>,
- *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
- *           David Thomas <davtom@dream.org.uk>
- *	     Thomas Winischhofer <thomas@winischhofer.net>
+ *           Mitani Hiroshi <hmitani@drl.mei.co.jp>,
+ *           David Thomas <davtom@dream.org.uk>,
+ *	     Thomas Winischhofer <thomas@winischhofer.net>.
  */
 
 

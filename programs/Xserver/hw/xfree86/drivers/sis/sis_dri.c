@@ -7,6 +7,8 @@
  * Preliminary 315/330 support by Thomas Winischhofer
  * Portions of Mesa 4/5 changes by Eric Anholt
  *
+ * Licensed under the following terms:
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appears in all copies and that both that copyright
@@ -27,8 +29,10 @@
  *
  * Previously taken and modified from tdfx_dri.c, mga_dri.c
  *
- * Author:	Thomas Winischhofer <thomas@winischhofer.net>
- *		others, including SiS, Inc.
+ * Authors:	Can-Ru Yeou, SiS Inc.
+ *		Alan Hourihane, Wigan, England,
+ *		Thomas Winischhofer <thomas@winischhofer.net>
+ *		others.
  */
 
 #include "xf86.h"
