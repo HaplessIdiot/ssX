@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.11 2001/12/14 19:56:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.12 2002/05/31 18:45:46 dawes Exp $ */
 
 /*
 
@@ -1035,7 +1035,7 @@ Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
   }
 
     /* Should really do XListFonts, but most servers support this */
-    f = XCreateFontSet(display, "-*-*-*-R-*-*-*-120-*-*-*-*",
+    f = XCreateFontSet(display, "-*-*-*-R-*-*-*-120-*-*-*-*,*",
           &missing_charset_list, &missing_charset_count, &def_string);
 
     /* Free any returned missing charset list */
