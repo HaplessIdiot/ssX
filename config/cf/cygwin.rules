@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.10 2001/06/20 12:55:21 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.11 2001/06/25 08:12:30 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -235,19 +235,26 @@ InstallTarget(install,Concat3(lib,libname,.dll),$(INSTLIBFLAGS),$(BINDIR))
 
 /*
  * LinkBuildBinary - This rule normally creates a link in xc/exports/bin
- * to a program executable, but we create an actual copy of the executable.
- * Creating a link causes the DLLs that the executables depend on, such as
- * libX11.dll, not to be found.  Copying the executable causes the runtime
+ * to a binary, but we create an actual copy of the binary.
+ * Creating a link causes the DLLs that the binary depend on, such as
+ * libX11.dll, not to be found.  Copying the binary causes the runtime
  * directory to be xc/exports/bin, which is the location of the DLLs, thus,
- * the DLLs can now be found by the executable.  Phew...
+ * the DLLs can now be found by the binary.  Phew...
+ *
+ * Note that sometimes the binary is not an executable.  One example
+ * is the rgb binary file.
+ * 
+ * ProgramTargetName is passed to LinkBuildBinary if the binary
+ * is actually an executable; thus, we do not wrap the binary name
+ * with ProgramTargetName here.
  */
 
 #ifndef LinkBuildBinary
-#define LinkBuildBinary(program)					@@\
-all:: ProgramTargetName(program)					@@\
+#define LinkBuildBinary(binary)						@@\
+all:: binary								@@\
 	MakeDir($(BUILDBINDIR))						@@\
-	RemoveFile($(BUILDBINDIR)/program)				@@\
-	$(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/ProgramTargetName(program) $(BUILDBINDIR)
+	RemoveFile($(BUILDBINDIR)/binary)				@@\
+	$(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/binary $(BUILDBINDIR)
 #endif /* LinkBuildBinary */
 
 
