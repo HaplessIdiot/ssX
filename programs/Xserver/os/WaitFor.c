@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.32 2001/07/25 15:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.33 2001/08/23 15:26:05 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -88,7 +88,6 @@ mffs(fd_mask mask)
 #ifdef DPMSExtension
 #define DPMS_SERVER
 #include "dpms.h"
-extern void DPMSSet();
 #endif
 
 #ifdef XTESTEXT1
@@ -105,7 +104,7 @@ struct _OsTimerRec {
     pointer		arg;
 };
 
-static void DoTimer();
+static void DoTimer(OsTimerPtr timer, CARD32 now, OsTimerPtr *prev);
 static OsTimerPtr timers;
 
 /*****************
@@ -192,7 +191,7 @@ WaitForSomething(pClientsReady)
 	wt = NULL;
 	if (timers)
 	{
-	    while (timers && timers->expires <= now)
+	    while (timers && (int) (timers->expires - now) <= 0)
 		DoTimer(timers, now, &timers);
 	    if (timers)
 	    {
@@ -396,7 +395,7 @@ WaitForSomething(pClientsReady)
 	    if (timers)
 	    {
 		now = GetTimeInMillis();
-		while (timers && timers->expires <= now)
+		while (timers && (int) (timers->expires - now) <= 0)
 		    DoTimer(timers, now, &timers);
 	    }
 	    if (*checkForInput[0] != *checkForInput[1])
@@ -519,10 +518,7 @@ ANYSET(src)
 
 
 static void
-DoTimer(timer, now, prev)
-    register OsTimerPtr timer;
-    CARD32 now;
-    OsTimerPtr *prev;
+DoTimer(OsTimerPtr timer, CARD32 now, OsTimerPtr *prev)
 {
     CARD32 newTime;
 
@@ -637,7 +633,7 @@ TimerCheck()
 {
     register CARD32 now = GetTimeInMillis();
 
-    while (timers && timers->expires <= now)
+    while (timers && (int) (timers->expires - now) <= 0)
 	DoTimer(timers, now, &timers);
 }
 
