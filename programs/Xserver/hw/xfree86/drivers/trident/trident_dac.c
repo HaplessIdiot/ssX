@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.28 2000/11/03 18:46:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.29 2000/11/16 19:45:00 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -314,6 +314,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
 	case CYBERBLADEI1D:
+	case CYBERBLADEE4:
 	case BLADE3D:
 	    OUTB(vgaIOBase + 4, RAMDACTiming);
 	    pReg->tridentRegs3x4[RAMDACTiming] |= 0x0F;
@@ -321,7 +322,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    /* Fall Through */
 	case CYBER9520:
 	case CYBER9525DVD:
-	case CYBER9540:
 	case CYBER9397DVD:
 	case CYBER9397:
 	case CYBER9388:
@@ -422,7 +422,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
     	pReg->tridentRegs3x4[LinearAddReg] = 0;
     }
-
+    
     pReg->tridentRegs3x4[CRTCModuleTest] = 
 				(mode->Flags & V_INTERLACE ? 0x84 : 0x80);
     OUTB(vgaIOBase+ 4, InterfaceSel);
