@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.19 2002/06/02 20:52:07 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.20 2002/08/02 18:48:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -78,7 +78,7 @@ XftFontLoadGlyphs (Display	*dpy,
 		   FT_UInt	*glyphs,
 		   int		nglyph)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
     XftFontInt	    *font = (XftFontInt *) public;
     FT_Error	    error;
     FT_UInt	    glyphindex;
@@ -379,6 +379,7 @@ XftFontLoadGlyphs (Display	*dpy,
 			    dstLine[x] = a;
 		    }
 		    dstLine += pitch * vmul;
+		    srcLine += glyphslot->bitmap.pitch;
 		}
 	    }
 	    else
@@ -603,7 +604,7 @@ XftFontUnloadGlyphs (Display	*dpy,
 		     FT_UInt	*glyphs,
 		     int	nglyph)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, False);
     XftFontInt	    *font = (XftFontInt *) public;
     XftGlyph	    *xftg;
     FT_UInt	    glyphindex;

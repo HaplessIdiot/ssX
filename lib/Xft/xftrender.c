@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.10 2002/02/19 07:51:20 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.11 2002/05/28 16:15:08 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -109,7 +109,7 @@ XftGlyphRender (Display	    *dpy,
     for (i = 0; i < nglyphs; i++)
     {
 	wire = (Glyph) glyphs[i];
-	if (wire > font->num_glyphs || !font->glyphs[wire])
+	if (wire >= font->num_glyphs || !font->glyphs[wire])
 	    wire = 0;
 	switch (width) {
 	case 1: char8[i] = (char) wire; break;
@@ -236,7 +236,7 @@ XftGlyphSpecRender (Display	    *dpy,
     {
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
-	if (g > font->num_glyphs || !font->glyphs[g])
+	if (g >= font->num_glyphs || !font->glyphs[g])
 	    g = 0;
 	if (font->glyphs[g])
 	     break;
@@ -250,7 +250,7 @@ XftGlyphSpecRender (Display	    *dpy,
     {
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
-	if (g > font->num_glyphs || !font->glyphs[g])
+	if (g >= font->num_glyphs || !font->glyphs[g])
 	    g = 0;
 	/* 
 	 * check to see if the glyph is placed where it would
@@ -288,7 +288,7 @@ XftGlyphSpecRender (Display	    *dpy,
     {
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
-	if (g > font->num_glyphs || !font->glyphs[g])
+	if (g >= font->num_glyphs || !font->glyphs[g])
 	    g = 0;
 	if ((glyph = font->glyphs[g]))
 	{
@@ -484,7 +484,7 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	XftFontInt  *font = (XftFontInt *) public;
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
-	if (g > font->num_glyphs || !font->glyphs[g])
+	if (g >= font->num_glyphs || !font->glyphs[g])
 	    g = 0;
 	if (font->glyphs[g])
 	{
@@ -504,7 +504,7 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	XftFontInt  *font = (XftFontInt *) public;
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
-	if (g > font->num_glyphs || !font->glyphs[g])
+	if (g >= font->num_glyphs || !font->glyphs[g])
 	    g = 0;
 	/* 
 	 * check to see if the glyph is placed where it would
@@ -547,7 +547,7 @@ XftGlyphFontSpecRender (Display		    *dpy,
 	
 	g = glyphs[i].glyph;
 	/* Substitute default for non-existant glyphs */
-	if (g > font->num_glyphs || !font->glyphs[g])
+	if (g >= font->num_glyphs || !font->glyphs[g])
 	    g = 0;
 	if ((glyph = font->glyphs[g]))
 	{

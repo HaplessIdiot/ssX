@@ -313,7 +313,7 @@ XftDebug (void);
 
 /* xftdpy.c */
 XftDisplayInfo *
-_XftDisplayInfoGet (Display *dpy);
+_XftDisplayInfoGet (Display *dpy, FcBool createIfNecessary);
 
 void
 _XftDisplayManageMemory (Display *dpy);

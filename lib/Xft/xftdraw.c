@@ -211,7 +211,7 @@ XftDrawCreateAlpha (Display *dpy,
 static XRenderPictFormat *
 _XftDrawFormat (XftDraw	*draw)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (draw->dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (draw->dpy, True);
 
     if (!info->hasRender)
 	return 0;
@@ -294,7 +294,7 @@ Picture
 XftDrawSrcPicture (XftDraw *draw, XftColor *color)
 {
     Display	    *dpy = draw->dpy;
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
     int		    i;
     XftColor	    bitmapColor;
 

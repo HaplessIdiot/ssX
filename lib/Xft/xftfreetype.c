@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.22 2002/06/02 20:33:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.24 2002/08/02 18:48:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -307,7 +307,7 @@ XftUnlockFace (XftFont *public)
 static FcBool
 XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
     FcChar8	    *filename;
     int		    id;
     double	    dsize;
@@ -610,7 +610,7 @@ XftFontInfoEqual (XftFontInfo *a, XftFontInfo *b)
 XftFont *
 XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 {
-    XftDisplayInfo	*info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo	*info = _XftDisplayInfoGet (dpy, True);
     FT_Face		face;
     XftFont		**bucket;
     XftFontInt		*font;
@@ -957,11 +957,13 @@ XftFontFindNthUnref (XftDisplayInfo *info, int n)
 void
 XftFontManageMemory (Display *dpy)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, False);
     XftFont	    **prev;
     XftFont	    *public;
     XftFontInt	    *font;
 
+    if (!info)
+	return;
     while (info->num_unref_fonts > info->max_unref_fonts)
     {
 	public = XftFontFindNthUnref (info, rand() % info->num_unref_fonts);
@@ -1001,7 +1003,7 @@ XftFontManageMemory (Display *dpy)
 void
 XftFontClose (Display *dpy, XftFont *public)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, False);
     XftFontInt	    *font = (XftFontInt *) public;
     
     if (--font->ref != 0)
