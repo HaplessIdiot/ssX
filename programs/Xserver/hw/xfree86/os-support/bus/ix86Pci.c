@@ -430,6 +430,8 @@ void ix86PciSelectCfgmech(void)
       ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
       return;
 
+    case PCIOsConfig:
+	return;
     }
 
     /* No PCI found */

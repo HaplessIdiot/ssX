@@ -100,7 +100,6 @@ KDKBDREP_ioctl_ok(int rate, int delay) {
    }
 
    return 1;			/* success! */
-
 #else /* no KDKBDREP */
    return 0;
 #endif /* KDKBDREP */
