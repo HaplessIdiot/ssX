@@ -1,4 +1,5 @@
 XFree86 3.2w (22 January 1997)
+ 342. Update the xset man page for the DPMS additions.
  341. Updates to TGUI acceleration, to hopefully fix some problems that
       show up with xtest (Alan Hourihane).
  340. Add recognition of some other TGUI Cyber chipset codes (Alan Hourihane).
