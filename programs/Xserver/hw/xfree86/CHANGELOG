@@ -1,4 +1,9 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 857. Fix vertical retrace to not interfere with interrupt handling
+      (#5608, Michel Dänzer).
+ 856. Add M9 DRI support (Hui Yu@ATI).
+ 855. Update Radeon man page (Michel Dänzer).
+ 854. Add Radeon man page (Hui Yu@ATI).
  853. Use strtol instead of atoi in xf86cfg 'expert' mode. Make pauses
       when printing keyboard models in xf86config (#5609, Chisato Yamauchi).
  852. Xterm patch #173 (Thomas Dickey).
@@ -16274,4 +16279,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2532 2003/02/06 23:12:08 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2533 2003/02/07 05:46:51 paulo Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.83 2003/01/29 18:06:06 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.84 2003/01/30 05:31:31 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -671,9 +671,13 @@ void RADEONWaitForVerticalSync(ScrnInfoPtr pScrn)
     unsigned char *RADEONMMIO = info->MMIO;
     int            i;
 
-    OUTREG(RADEON_GEN_INT_STATUS, RADEON_VSYNC_INT_AK);
-    for (i = 0; i < RADEON_TIMEOUT; i++) {
-	if (INREG(RADEON_GEN_INT_STATUS) & RADEON_VSYNC_INT) break;
+    /* Clear the CRTC_VBLANK_SAVE bit */
+    OUTREG(RADEON_CRTC_STATUS, RADEON_CRTC_VBLANK_SAVE_CLEAR);
+
+    /* Wait for it to go back up */
+    for (i = 0; i < RADEON_TIMEOUT/1000; i++) {
+	if (INREG(RADEON_CRTC_STATUS) & RADEON_CRTC_VBLANK_SAVE) break;
+	usleep(1);
     }
 }
 
@@ -684,9 +688,13 @@ void RADEONWaitForVerticalSync2(ScrnInfoPtr pScrn)
     unsigned char *RADEONMMIO = info->MMIO;
     int            i;
 
-    OUTREG(RADEON_GEN_INT_STATUS, RADEON_VSYNC2_INT_AK);
-    for (i = 0; i < RADEON_TIMEOUT; i++) {
-	if (INREG(RADEON_GEN_INT_STATUS) & RADEON_VSYNC2_INT) break;
+    /* Clear the CRTC2_VBLANK_SAVE bit */
+    OUTREG(RADEON_CRTC2_STATUS, RADEON_CRTC2_VBLANK_SAVE_CLEAR);
+
+    /* Wait for it to go back up */
+    for (i = 0; i < RADEON_TIMEOUT/1000; i++) {
+	if (INREG(RADEON_CRTC2_STATUS) & RADEON_CRTC2_VBLANK_SAVE) break;
+	usleep(1);
     }
 }
 
