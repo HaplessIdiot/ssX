@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.149 2000/02/12 06:31:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.150 2000/02/12 17:02:01 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -277,9 +277,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     xf86OpenConsole();
-#ifdef __linux__ /* XXX */
     xf86OSPMClose = xf86OSPMOpen();
-#endif
     
     /* Run an external VT Init program if specified in the config file */
     xf86RunVtInit();
@@ -718,9 +716,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * serverGeneration != 1; some OSs have to do things here, too.
      */
     xf86OpenConsole();
-#ifdef __linux__ /* XXX */
     xf86OSPMClose = xf86OSPMOpen();
-#endif
     
     /* Make sure full I/O access is enabled */
     xf86EnableIO();
