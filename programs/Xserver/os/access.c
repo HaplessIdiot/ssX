@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.52tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.53 2004/01/02 18:23:19 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -962,9 +962,12 @@ DefineSelf (int fd)
 	    )
 		continue;
 	    /* 
-	     * ignore 'localhost' entries as they're not usefule
+	     * ignore 'localhost' entries as they're not useful
 	     * on the other end of the wire
 	     */
+	    if (ifr->ifa_flags & IFF_LOOPBACK) 
+		    continue;
+
 	    if (family == FamilyInternet && 
 		addr[0] == 127 && addr[1] == 0 &&
 		addr[2] == 0 && addr[3] == 1) 
