@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.130 2000/07/07 20:06:56 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.131 2000/08/09 02:33:46 tsi Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -124,13 +124,11 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 				LinuxAdditionalIncludes LinuxGnuSourceDefines \
 				LinuxLocaleDefines
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
-#ifndef ia64Architecture
 #define HasPosixThreads		YES
 #define ThreadedX		YES
 #define HasThreadSafeAPI	YES
 #define ThreadsLibraries	-lpthread
 #define SystemMTDefines		-D_REENTRANT
-#endif /* ia64Architecture */
 #ifndef HasLibCrypt
 #define HasLibCrypt		YES
 #endif
