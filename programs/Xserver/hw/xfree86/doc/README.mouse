@@ -2,20 +2,27 @@
 
                                Kazutaka Yokota
 
-                              17 December 2002
+            17 December 2002, with minor revisions 8 March 2005.
 
 1.  Introduction
 
 This document describes mouse support in XFree86 4.4.99.903.
 
-Mouse configuration has often been a mysterious task for novice users.  How-
-ever, once you learn the basics, it is straightforward to write the mouse
-"InputDevice" section in the XF86Config file by hand.
+Mouse configuration has often been a mysterious task for novice users.  With
+XFree86 4.5.0 and later, mouse configuration is automatic for most common
+setups on most platforms, to the point where an explicit mouse "InputDevice"
+section is not required in the XF86Config file.
+
+However, if you have a less common setup, or wish to customize your mouse
+configuration, you should find it straightforward to write the mouse "Input-
+Device" section in the XF86Config file by hand.  The information in this doc-
+ument should help with that.  Also refer to the XFree86 mouse driver manual
+page (mouse(4)).
 
 2.  Supported Hardware
 
-The XFree86 X server supports three classes of mice: serial, bus and PS/2
-mice.
+The XFree86 X server supports four classes of mice: serial, bus, PS/2, and
+USB mice.
 
       Serial mouse
             The serial mouse has been the most popular pointing device for
@@ -190,17 +197,22 @@ OpenBSD 2.2 and earlier does not support extended PS/2 mouse protocols
 ("xxxPS/2") .  Therefore, you should specify the "PS/2" protocol for any PS/2
 mouse regardless of the brand of the mouse.
 
-OpenBSD 2.3 and later support all extended PS/2 mouse protocols.  You can
-select the "Auto" protocol for PnP PS/2 mice or any specific extended
-("xxxPS/2") protocol for non PnP mice.
+OpenBSD 2.3 through 2.8 supports all extended PS/2 mouse protocols by select-
+ing the "Auto" protocol for PnP PS/2 mice or any specific extended
+("xxxPS/2") protocol for non PnP mice.  There is also a cooked PS/2 mouse
+device driver /dev/pms0 which emulates the bus mouse.  Specify the "BusMouse"
+protocol for any PS/2 mouse regardless of the brand of the mouse when using
+this device.
 
-There is also a cooked PS/2 mouse device driver /dev/pms0 which emulates the
-bus mouse.  Specify the "BusMouse" protocol for any PS/2 mouse regardless of
-the brand of the mouse when using this device.
+OpenBSD 2.9 and later supports the "wsmouse" protocol and /dev/wsmouse0
+device as described above for NetBSD 1.4 and later (though of course the
+remark about binaries does not apply).  Again, see the wsmouse(4) man page.
 
 XFree86 3.3.6 support USB mices on OpenBSD 2.6 and later though the generic
 Human Interface Device (hid) /dev/uhid*. Select the "usb" protocol and the
-/dev/uhid* instance corresponding to your mouse as the device name.
+/dev/uhid* instance corresponding to your mouse as the device name.  For
+OpenBSD 2.9 and later, USB mice are supported by the wsmouse driver (see
+above).
 
 3.12  OS/2
 
@@ -986,7 +998,7 @@ time. They may prefer the following InputDevice section which defines button
           Option      "DragLockButtons" "4"
      EndSection
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.16 dawes Exp $
 
 
 $XFree86$
