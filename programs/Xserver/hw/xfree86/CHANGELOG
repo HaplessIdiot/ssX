@@ -1,4 +1,9 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 258. Fixes and updates for XKB keyboard maps:
+      - add Faroese keyboard map (Bugzilla #401, Roi a Torkilsheyggi)
+      - add missing KPPT key to ABNT2 keycodes list (Bugzilla #431, Christian
+        Tosta)
+      - fix geometry/pc file (Alexander Pohoyda).
  257. Don't sleep on Darwin for directory owner/mode problems (John Harper).
  256. Limit 430TX and 430VX to 128 and 32 PCI buses respectively
       (Marc La France).
@@ -17179,7 +17184,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2757 2003/06/30 02:42:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2758 2003/06/30 04:25:02 torrey Exp $
 
 
 
