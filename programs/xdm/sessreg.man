@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/xdm/sessreg.man,v 1.6 2001/01/27 18:21:10 dawes Exp $
 .\"
 .TH SESSREG 1 __xorgversion__
 .SH NAME
@@ -61,8 +61,8 @@ Conversely, System V managers will not ever need to use these options (-x,
 \fIsessreg\fP accepts the BSD-specific flags in the System V
 environment and ignores them.
 .PP
-BSD also has a host-name field in the utmp file which doesn't exist in
-System V.  This option is also ignored by the System V version of
+BSD and Linux also have a host-name field in the utmp file which doesn't
+exist in System V.  This option is also ignored by the System V version of
 \fIsessreg\fP.
 .SH USAGE
 .PP

@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.18 2001/02/07 22:51:57 tsi Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.19 2001/02/07 23:25:55 dawes Exp $
 .\" 
 .TH XDM 1 __xorgversion__
 .SH NAME
@@ -721,15 +721,6 @@ and sends another \fBIndirect\fP XDMCP request.
 \fIxdm\fP remembers the user's choice (for
 \fBDisplayManager.choiceTimeout\fP seconds) and forwards the request
 to the chosen host, which starts a session on that display.
-
-When the user selects a host, \fIchooser\fP prints the host chosen,
-which is read by the parent \fIxdm\fP, and exits.
-\fIxdm\fP closes its connection to the X server, and the server resets
-and sends another \fBIndirect\fP XDMCP request.
-\fIxdm\fP remembers the user's choice (for
-\fBDisplayManager.choiceTimeout\fP seconds) and forwards the request
-to the chosen host, which starts a session on that display.
-
 .\"
 .SH "LOCAL SERVER SPECIFICATION"
 .PP

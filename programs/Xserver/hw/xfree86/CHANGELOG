@@ -1,4 +1,17 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 426. Make the backspace key definitions for the xkb macintosh/us and
+      dvorak layouts consistent with the default 'us' layout (#4588, 4589,
+      Branden Robinson).
+ 425. Update for the sessreg man page (#4587, Branden Robinson).
+ 424. Add a font substitute for the ko locale (#4586, Changwoo Ryu).
+ 423. Avoid using fileno() in xauth's signal handler, and write messages to
+      stderr rather than stdout (#4585, submitted by Branden Robinson).
+ 422. Fix nested comment warnings in dix/gc.c (#4584, Branden Robinson).
+ 421. Include <stdlib.h> in two lbxutil files to get malloc/free prototypes
+      (#4583, submitted by Branden Robinson).
+ 420. Remove duplicate paragraph in xdm man page (#4582, Branden Robinson).
+ 419. Fix line numbers in error messages when parsing .twmrc files (#4580,
+      Topi Miettinen).
  418. Fix backwards font glyphs in the ati/Mach64 driver for big endian
       platforms (#4579, Michael Dänzer).
  417. Add a build-time option to xf86config to make it append the major version
@@ -13041,4 +13054,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1710 2001/04/23 16:17:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1711 2001/04/23 17:15:55 dawes Exp $
