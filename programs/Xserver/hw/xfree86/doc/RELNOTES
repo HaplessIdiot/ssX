@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2B (beta version)
   The XFree86 Project, Inc
 
-  23 December 1995
+  26 December 1995
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2B and 3.1.2A
@@ -48,9 +48,45 @@
   2.1.  General X server changes
 
 
-     o  ADD SOMETHING HERE ??
+     o  A new extension called XFree86-DGA is now provided.  This allows
+        a client program to get direct access to the video card's
+        memory.  This is currently only implemented for the S3 and
+        Mach64 servers and the Cirrus and Trident drivers of the SVGA
+        server.
 
-  2.2.  Trident driver (SVGA server)
+     o  An implementation of the XInput extension is now included.  It
+        has support for the following devices:
+
+        +  Joystick (Linux and FreeBSD only at the moment)
+
+        +  Wacom tablet (Wacom IV protocol only)
+
+        +  Elographics touchscreen
+
+
+        Refer to the XF86Config(4/5) manual page for configuration
+        details.
+
+     o  The default black and white pixel values are now black = 0 and
+        white = 1 for all servers.  This may be swapped with the
+        `-flipPixels' command-line option.
+
+  2.2.  PC98 support
+
+
+     o  Support has been added for PC98 machines.  These are Intel based
+        machines which are common in Japan.
+
+     o  Initial release of the PC98 NEC(S3) server. This server is based
+        on the PC-AT S3 server.
+
+     o  Initial release of the PC98 SKB-PowerWindow(S3) server. This
+        server is based on the PC-AT S3 server.
+
+     o  Initial release of the PC98 PowerWindowLB(S3) server. This
+        server is based on the PC-AT S3 server.
+
+  2.3.  Trident driver (SVGA server)
 
 
      o  TGUI9440 is now fully supported by the SVGA server.
@@ -62,47 +98,113 @@
      o  Hardware Cursor support has problems when mode switching.  This
         is only a positioning issue and shouldn't cause any problems.
 
-
-
      o  Check README.trident distributed with this release for full
         details.
 
-  2.3.  ARK driver (SVGA server)
+  2.4.  ARK driver (SVGA server)
 
 
-     o  No changes -- say something about it the ics5342 not working.
+     o  No changes since 3.1.2A.  The ICS5342 clock support (required
+        for the Diamond Stealth64 Graphics 2001 series) reportedly
+        doesn't work.
 
-  2.4.  S3 server
+  2.5.  S3 server
+
+
+     o  Workaround for the hardware bug in some new Trio32 chips that
+        causes font corruption.  To enable this workaround, add the
+        following line to the Device section of your XF86Config:
+
+
+                  Option "trio32_fc_bug"
+
+
+
+
+
+     o  Support for S3 and Bt485 HW cursor in doublescan modes.
+
+     o  Fix positioning of IBM RGB Ramdac HW cursor in interlace and
+        doublescan modes (the cursor shape still isn't correct).
+
+     o  Fixed detection of Trio64V+ cards.
+
+
+     o  Improved linear fb detection for PCI cards.  In particular this
+        should allow most Trio64V+ cards to use the linear fb, which
+        seems to prevent a lot of the lockups that have been reported.
+
+     o  Support for the ELSA Elsa Winner2000PRO/X-2,4 Rev.G which uses
+        an ICS9161A clock chip as well as the Ti3026 RAMDAC (clock
+        doubling not supported yet).
+
+     o  The AT&T20C409 RAMDAC now supported at clocks up to 135MHz in
+        8bpp mode.
+
+  2.6.  Mach64 server
+
+
+     o  The Mach64 CT (also known as the 264CT, or 215CT22200) chip is
+        now supported.  This chip has a integrated RAMDAC and clockchip,
+        and is used on some Graphics Xpression and WinBoost cards.
+
+     o  The Mach64 GX-F (GX rev 3) is now supported.
+
+     o  The IBM RGB514 RAMDAC is now supported (as used on the ATI
+        Graphics Turbo Pro 1600).
+
+     o  The memory base should now be correctly detected for VLB cards.
+        If you've needed to add a `MemBase' line to your XF86Config for
+        previous versions, please try removing it, and let us know if
+        there are any problems.
+
+     o  Cursor colour problems at 16bpp/32bpp mode with some RAMDACs
+        have been fixed.
+
+     o  Errors in detecting some RAMDACs (like the CH8398) should now be
+        fixed.
+
+     o  8 bit-per-RGB mode (when running at 8bpp) is now default for
+        RAMDACs that support it.
+
+     o  Known problems with this version of the Mach64 server are:
+
+        +  The Background colour is not correctly set after exiting the
+           server when using a GPT1600 card.
+
+        +  VT switching does not work for cards with the CH8398 and
+           AT&T20C409 RAMDACs.
+
+        +  The background colour of the cursor in xterms for the CH8398
+           and T&T20C409 RAMDACs is blue instead of black in 16bpp and
+           32bpp modes.
+
+        +  When using the software cursor, after switching to the
+           console and back, it leaves ``droppings'' when entering and
+           exiting windows (this bug is also present in 3.1.2).
+
+  2.7.  ET4000/W32 server
 
 
      o  ADD SOMETHING HERE
 
-  2.5.  Mach64 server
-
-
-     o  ADD SOMETHING HERE
-
-  2.6.  ET4000/W32 server
-
-
-     o  ADD SOMETHING HERE
-
-  2.7.  SiS 86C201 support
+  2.8.  SiS 86C201 support
 
 
      o  Support is included in 3.1.2B for the SiS 86C201 PCI graphics
         card.  It is currently only supported by the VGA16 and Mono
         servers.  Support for 256 colour operation is being worked on.
 
-  2.8.  SuperProbe
-
-
-     o  ADD SOMETHING HERE
 
   2.9.  Client/Library changes
 
 
-     o  ADD SOMETHING HERE ??
+     o  The following new clients have been added:
+
+        +  dga -- a test program for the XFree86-DGA extension.
+
+        +  xsetmode, xsetpointer -- programs for use with the XInput
+           extension.
 
   3.  New Features in 3.1.2A
 
@@ -126,9 +228,6 @@
      o  Bitmap fontpath elements can have ":unscaled" appended to
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
-
-
-
 
   3.2.  Trident driver (SVGA server)
 
@@ -161,6 +260,7 @@
 
 
      Do not include any Clocks lines in your XF86Config file.
+
 
      o  Panning has been fixed for ARK2000PV cards with 2MB of video
         memory.
@@ -226,6 +326,8 @@
 
 
 
+
+
      o  Problems that could cause the W32 server to crash at startup or
         get stuck in a loop at exit have been fixed.
 
@@ -260,8 +362,6 @@
 
      o  Colour support has been added to xterm.
 
-
-
      o  XNLS support has been added for KOI8-R.
 
      o  xrdb dynamically allocates string space to avoid overruns.
@@ -278,22 +378,45 @@
   3.1.2.  It consists of the following files:
 
 
-       BetaReport         Beta test report template form
-       X312B8514.tgz      8514/A server
-       X312BAGX.tgz       AGX server
-       X312BMa32.tgz      Mach 32 server
-       X312BMa64.tgz      Mach 64 server
-       X312BMa8.tgz       Mach 8 server
-       X312BMono.tgz      Mono server
-       X312BP9K.tgz       P9000 server
-       X312BSVGA.tgz      SVGA server
-       X312BVG16.tgz      16 colour VGA server
-       X312BW32.tgz       ET4000/W32 server
-       X312Bupd.tgz       clients/libraries that have changed since 3.1.2
-       postinst.sh        script to run after installing the 3.1.2B binaries
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  BetaReport         Beta test report template form
+  X312B8514.tgz      8514/A server
+  X312BAGX.tgz       AGX server
+  X312BMa32.tgz      Mach 32 server
+  X312BMa64.tgz      Mach 64 server
+  X312BMa8.tgz       Mach 8 server
+  X312BMono.tgz      Mono server
+  X312BP9K.tgz       P9000 server
+  X312BSVGA.tgz      SVGA server
+  X312BVG16.tgz      16 colour VGA server
+  X312BW32.tgz       ET4000/W32 server
+  X312B9NS3.tgz      PC98 NEC(S3) server (*)
+  X312B9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server (*)
+  X312B9LPW.tgz      PC98 PowerWindowLB(S3) server (*)
+  X312Bupd.tgz       clients/libraries that have changed since 3.1.2
+  postinst.sh        script to run after installing the 3.1.2B binaries
+
+
+
+
+  (*)Note: The PC98 servers are for use only on PC98 machines (if you
+  don't know what a PC98 machine is, you don't need these).  Binaries
+  for these are available only for FreeBSD and NetBSD.
 
   If you don't already have XFree86 3.1.2 installed, first install that.
   If you have already installed 3.1.2A, that's fine.  Then, you will
@@ -326,64 +449,7 @@
   /usr/XFree86-3.1.2A directory.
 
 
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.8 1995/12/23 09:39:09 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.9 1995/12/26 06:08:37 dawes Exp $
 
 
 

@@ -63,7 +63,7 @@ our usual support address.
   <item>An implementation of the XInput extension is now included.  It
 	has support for the following devices:
 	<itemize>
-	  <item>Joystick (Linux-only at the moment)
+	  <item>Joystick (Linux and FreeBSD only at the moment)
 	  <item>Wacom tablet (Wacom IV protocol only)
 	  <item>Elographics touchscreen
 	</itemize>
@@ -392,7 +392,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.8 1995/12/23 09:39:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.9 1995/12/26 06:08:37 dawes Exp $
 </verb>
 
 </article>

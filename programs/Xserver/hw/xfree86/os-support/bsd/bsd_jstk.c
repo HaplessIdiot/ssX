@@ -23,7 +23,7 @@
 
 /* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.0 1995/12/26 06:08:53 dawes Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -63,7 +63,7 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
       return -1;
     }
 
-  if (*timeout == 0) {
+  if (*timeout <= 0) {
     /* Use the current setting */
     ioctl(status, JOY_GETTIMEOUT, &timeinmicros);
     *timeout = timeinmicros / 1000;

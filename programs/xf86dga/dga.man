@@ -1,12 +1,13 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/xf86dga/dga.man,v 3.0 1995/12/26 06:10:09 dawes Exp $
 .\"
-.TH dga 1 "Release 6" "X Version 11"
+.TH dga 1 "3.1.2B" "XFree86"
 .SH NAME
 dga \- test program for the XFree86-DGA extension
 .SH SYNOPSIS
 .B dga
 .SH DESCRIPTION
-Dga is a simple test client for the XFree86-DGA extension.  To exit it,
-hit the `q' key.
+Dga is a simple test client for the XFree86-DGA extension.  It fills
+the screen with a different colour for each key pressed.  It also prints
+keyboard and pointer events to stdout.  To exit, hit the `q' key.
 .SH AUTHOR
 Jon Tombs

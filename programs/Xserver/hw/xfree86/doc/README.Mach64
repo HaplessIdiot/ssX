@@ -1,6 +1,6 @@
   Notes for Mach64 X Server
   Kevin E. Martin (martin@cs.unc.edu)
-  28 November 1995
+  26 December 1995
 
   1.  Supported Cards, RAMDACs, and Bits Per Pixel
 
@@ -38,6 +38,14 @@
   AT&T20C408        80MHz      16       1024x768             2Mb
   AT&T20C408        40MHz      32        800x600             2Mb
 
+  Internal         135MHz       8      1280x1024             2Mb
+  Internal          80MHz      16       1024x768             2Mb
+  Internal          40MHz      32        800x600             2Mb
+
+  IBM RGB514       220MHz       8      1600x1200             2Mb
+  IBM RGB514       220MHz      16      1600x1200             4Mb
+  IBM RGB514       135MHz(?)   32       1024x768             4Mb
+
   All Others[*]     80MHz       8      1280x1024             2Mb
 
 
@@ -51,19 +59,14 @@
   Pro Turbo and ATI WinTurbo cards.  The other RAMDACs are usually found
   on ATI Graphics Xpression cards.
 
-  A number of cards now use the ATI Mach64 CT chip (which is a
-  combination Mach64 acclerator, RAMDAC and clock chip).  The current
-  version of the Mach 64 X server does not support this chip, but a
-  future release will.
-
   As advertised, Mach64 graphics cards can use a special 24bpp mode
   (packed pixel mode), but this is not currently supported in the Mach64
   for various reasons.  The main one is that there is no current support
   for 24bpp modes in the X Consortium's servers.  Adding this support
+
   will require a great programming effort.
 
   The Mach64 X server requires the video memory aperture to function
-
   properly.  This means that ISA Mach64 cards in systems with more than
   12Mb of main memory will not work.
 
@@ -126,9 +129,8 @@
 
      Option "composite"
         This option will set the composite sync for monitors that
+
         require this.
-
-
 
      Option "dac_8_bit"
         This option enables 8 bits per RGB value.  Note this option does
@@ -192,6 +194,10 @@
 
         o  att20c408
 
+
+
+        o  ibm_rgb514
+
      Ramdac "type"
         This entry specifies the RAMDAC type.  The following values are
         valid for type:
@@ -211,6 +217,8 @@
         o  ch8398
 
         o  att20c408
+
+        o  ibm_rgb514
 
   4.  Known Problems and Bug Reports
 
@@ -237,15 +245,7 @@
   comp.windows.x.i386unix newsgroup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.6 1995/12/02 05:05:43 dawes Exp $
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.7 1995/12/26 06:54:09 dawes Exp $
 
 
 
