@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.4 2000/10/02 05:25:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.5 2000/10/07 05:58:18 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -171,7 +171,7 @@ Bool
 PictureDestroyWindow (WindowPtr pWindow);
 
 Bool
-PictureCloseScreen (int index, ScreenPtr pScreen);
+PictureCloseScreen (int Index, ScreenPtr pScreen);
 
 PictFormatPtr
 PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp);
@@ -218,11 +218,6 @@ FreePicture (pointer	pPicture,
 int
 FreePictFormat (pointer	pPictFormat,
 		XID     pid);
-
-int
-FreeGlyphSet (pointer	pGlyphset,
-	      XID       gid);
-
 
 void
 CompositePicture (CARD8		op,

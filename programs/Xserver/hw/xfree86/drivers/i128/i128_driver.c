@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.2 2000/10/06 03:52:55 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1112,6 +1112,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
+#ifdef XFree86LOADER
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	I128FreeRec(pScrn);
 	return FALSE;
@@ -1140,6 +1141,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
+#endif /* XFree86LOADER */
 
     I128UnmapMem(pScrn);
 
