@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.19 2002/10/12 01:38:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.20 2002/10/30 12:52:13 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1821,6 +1821,7 @@ static void RADEONDRITransitionTo3d(ScreenPtr pScreen)
     RADEONEnablePageFlip(pScreen);
 
     info->have3DWindows = 1;
+    xf86ForceHWCursor (pScreen, TRUE);
 }
 
 static void RADEONDRITransitionTo2d(ScreenPtr pScreen)
@@ -1843,4 +1844,5 @@ static void RADEONDRITransitionTo2d(ScreenPtr pScreen)
     xf86FreeOffscreenArea(info->depthTexArea); 
 
     info->have3DWindows = 0;
+    xf86ForceHWCursor (pScreen, FALSE);
 }
