@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.21 2003/06/30 02:42:32 tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -667,14 +667,14 @@ static struct {
     CARD32 devid;
     int    maxpcibus;
 } host_bridges[] = {
-    { DEVID(ALI_2,	M1541),			128},
-    { DEVID(VIA,	APOLLOVP1),		32},
-    { DEVID(VIA,	APOLLOPRO133X),		64},
-    { DEVID(INTEL,	430HX_BRIDGE),		16},
-    { DEVID(INTEL,	430TX_BRIDGE),		128},
-    { DEVID(INTEL,	430VX_BRIDGE),		32},
-    { DEVID(INTEL,	440EX_BRIDGE),		32},
-    { DEVID(INTEL,	440BX_BRIDGE),		32},
+    { DEVID(VENDOR_ALI_2,	CHIP_M1541),			128},
+    { DEVID(VENDOR_VIA,		CHIP_APOLLOVP1),		32},
+    { DEVID(VENDOR_VIA,		CHIP_APOLLOPRO133X),		32},
+    { DEVID(VENDOR_INTEL,	CHIP_430HX_BRIDGE),		16},
+    { DEVID(VENDOR_INTEL,	CHIP_430TX_BRIDGE),		128},
+    { DEVID(VENDOR_INTEL,	CHIP_430VX_BRIDGE),		32},
+    { DEVID(VENDOR_INTEL,	CHIP_440EX_BRIDGE),		32},
+    { DEVID(VENDOR_INTEL,	CHIP_440BX_BRIDGE),		32},
 };
 #define NUM_BRIDGES (sizeof(host_bridges) / sizeof(host_bridges[0]))
 

@@ -1,4 +1,6 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 315. Change DEVID macro to work around glitch in SCO's C compiler
+      (Marc La France).
  314. Fixed Radeon driver so that clone modes survive server reset 
       (BugzillaR #487, Egbert Eich).
  313. Changed behavior of FreeType and Type1 renderer: when no encoding file
@@ -17324,7 +17326,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2776 2003/07/16 01:38:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2777 2003/07/17 08:19:27 eich Exp $
 
 
 
