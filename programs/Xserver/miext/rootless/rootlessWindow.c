@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.3 2003/06/07 05:49:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.5 2003/06/30 01:45:13 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -782,7 +782,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
     RootlessWindowRec *winRec = WINREC(pWin);
     Bool need_window_source = FALSE, resize_after = FALSE;
 
-    BoxRec rect, copy_rect;
+    BoxRec rect;
     int oldX2, newX2;
     int oldY2, newY2;
     unsigned int weight;
@@ -858,6 +858,8 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         }
         else {
             unsigned int copy_rowbytes, Bpp;
+            unsigned int copy_rect_width, copy_rect_height;
+            BoxRec copy_rect;
 
             /* We can get away with a partial copy. 'rect' is the
                intersection between old and new bounds, so copy
@@ -881,21 +883,37 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
                 abort();
 
             Bpp = winRec->win->drawable.bitsPerPixel / 8;
-            copy_rowbytes = (((copy_rect.x2 - copy_rect.x1) * Bpp) + 31) & ~31;
+            copy_rect_width = copy_rect.x2 - copy_rect.x1;
+            copy_rect_height = copy_rect.y2 - copy_rect.y1;
+            copy_rowbytes = ((copy_rect_width * Bpp) + 31) & ~31;
             gResizeDeathBits = xalloc(copy_rowbytes
-                                      * (copy_rect.y2 - copy_rect.y1));
+                                      * copy_rect_height);
 
-            SCREENREC(pScreen)->imp->CopyBytes(
-                    (copy_rect.x2 - copy_rect.x1) * Bpp,
-                    copy_rect.y2 - copy_rect.y1, ((char *) winRec->pixelData)
+            if (rootless_CopyWindow_threshold &&
+                copy_rect_width * copy_rect_height >
+                        rootless_CopyWindow_threshold)
+            {
+                SCREENREC(pScreen)->imp->CopyBytes(
+                    copy_rect_width * Bpp, copy_rect_height,
+                    ((char *) winRec->pixelData)
                     + ((copy_rect.y1 - oldY) * winRec->bytesPerRow)
                     + (copy_rect.x1 - oldX) * Bpp, winRec->bytesPerRow,
                     gResizeDeathBits, copy_rowbytes);
+            } else {
+                fbBlt((FbBits *) (winRec->pixelData
+                      + ((copy_rect.y1 - oldY) * winRec->bytesPerRow)
+                      + (copy_rect.x1 - oldX) * Bpp),
+                      winRec->bytesPerRow / sizeof(FbBits), 0,
+                      (FbBits *) gResizeDeathBits,
+                      copy_rowbytes / sizeof(FbBits), 0,
+                      copy_rect_width * Bpp, copy_rect_height,
+                      GXcopy, FB_ALLONES, Bpp, 0, 0);
+            }
 
             gResizeDeathBounds[1] = copy_rect;
             gResizeDeathPix[1]
-                = GetScratchPixmapHeader(pScreen, copy_rect.x2 - copy_rect.x1,
-                                         copy_rect.y2 - copy_rect.y1,
+                = GetScratchPixmapHeader(pScreen, copy_rect_width,
+                                         copy_rect_height,
                                          winRec->win->drawable.depth,
                                          winRec->win->drawable.bitsPerPixel,
                                          winRec->bytesPerRow,
