@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.8 2000/01/07 17:58:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.13 2000/05/25 20:45:23 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -76,7 +76,7 @@ XvAdaptorPtr XineramaAdaptors[MAXSCREENS];
 static int XineramaXvShmPutImage(ClientPtr);
 static int XineramaXvPutImage(ClientPtr);
 static int XineramaXvSetPortAttribute(ClientPtr);
-
+static int XineramaXvStopVideo(ClientPtr);
 #endif
 
 /* INTERNAL */
@@ -226,7 +226,13 @@ ProcXvDispatch(ClientPtr client)
     case xv_UngrabPort: return(ProcXvUngrabPort(client));
     case xv_SelectVideoNotify: return(ProcXvSelectVideoNotify(client));
     case xv_SelectPortNotify: return(ProcXvSelectPortNotify(client));
-    case xv_StopVideo: return(ProcXvStopVideo(client));
+    case xv_StopVideo: 
+#ifdef PANORAMIX
+        if(!noPanoramiXExtension)
+	    return(XineramaXvStopVideo(client));
+	else
+#endif
+	    return(ProcXvStopVideo(client));
     case xv_SetPortAttribute: 
 #ifdef PANORAMIX
         if(!noPanoramiXExtension)
@@ -1810,6 +1816,31 @@ SWriteListImageFormatsReply(
 
 
 #ifdef PANORAMIX
+
+
+static int
+XineramaXvStopVideo(ClientPtr client)
+{
+  int result, i;
+  PanoramiXRes *draw;
+  XvPortPtr pPort;
+  REQUEST(xvStopVideoReq);
+  REQUEST_SIZE_MATCH(xvStopVideoReq);
+
+  if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+                client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+        return BadDrawable;
+
+  FOR_NSCREENS_BACKWARD(i) {
+     if(XineramaAdaptors[i]) {
+	stuff->drawable = draw->info[i].id;
+	stuff->port = XineramaAdaptors[i]->base_id;
+	result = ProcXvStopVideo(client);
+     }
+  }
+
+  return result;
+}
 
 static int
 XineramaXvSetPortAttribute(ClientPtr client)
