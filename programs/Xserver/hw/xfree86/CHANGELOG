@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 324. Update Status and i810 docs to mention i815 support and FreeBSD support
+      (#4509, Andrew C Aitchison, David Dawes).
  323. Xprt fixes to make it closer to X.org version (Danny Backx).
  322. Fix for reading PCI resource data on Linux/alpha (#4508,
       Ivan Kokshaysky).
@@ -12790,4 +12792,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1657 2001/04/03 17:05:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1658 2001/04/03 17:52:01 paulo Exp $
