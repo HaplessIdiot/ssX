@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.10 2001/08/27 17:40:57 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.11 2002/10/30 12:51:25 alanh Exp $ */
 
 /*
  * Authors:
@@ -308,10 +308,15 @@ static Bool GetDriverName(Display *dpy, int scrNum, char **driverName)
 static __DRIdriver *GetDriver(Display *dpy, int scrNum)
 {
    char *driverName;
+   __DRIdriver *ret;
 
    if (GetDriverName(dpy, scrNum, &driverName)) {
-      return OpenDriver(driverName);
+      ret = OpenDriver(driverName);
+      if (driverName)
+     	 Xfree(driverName);
+      return ret;
    }
+
    return NULL;
 }
 
