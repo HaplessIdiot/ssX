@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.11 2001/09/19 01:44:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.12 2001/10/18 04:59:46 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,7 +11,7 @@
 
 @interface Xserver : NSObject {
     // server state
-    NSLock *serverLock;
+    NSRecursiveLock *serverLock;
     NSPort *signalPort;
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
