@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.88 2001/02/17 23:19:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.89 2001/02/23 01:12:29 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -341,6 +341,8 @@
 #define PCI_CHIP_9750		0x9750
 #define PCI_CHIP_9850		0x9850
 #define PCI_CHIP_9880		0x9880
+#define PCI_CHIP_9910		0x9910
+#define PCI_CHIP_9930		0x9930
 
 /* ALI */
 #define PCI_CHIP_M1435		0x1435
@@ -524,6 +526,10 @@
 #define PCI_CHIP_GAMMA		0x0008
 #define PCI_CHIP_PERMEDIA2V	0x0009
 #define PCI_CHIP_PERMEDIA3	0x000A
+#define PCI_CHIP_PERMEDIA4	0x000C
+#define PCI_CHIP_R4		0x000D
+#define PCI_CHIP_GAMMA2		0x000E
+#define PCI_CHIP_R4ALT		0x0011
 
 /* S3 */
 #define PCI_CHIP_PLATO		0x0551
@@ -919,6 +925,8 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_9750,		"3DImage975",0},
 				{PCI_CHIP_9850,		"3DImage985",0},
 				{PCI_CHIP_9880,		"Blade3D",0},
+				{PCI_CHIP_9910,		"Cyber/BladeXP",0},
+				{PCI_CHIP_9930,		"CyberBlade/XPm",0},
 				{PCI_CHIP_8400,		"CyberBlade/i7",0},
 				{PCI_CHIP_8420,		"CyberBlade/DSTN/i7",0},
 				{PCI_CHIP_8500,		"CyberBlade/i1",0},
@@ -1392,6 +1400,10 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GAMMA,	"GLINT Gamma",0},
 				{PCI_CHIP_PERMEDIA2V,	"GLINT Permedia 2v",0},
 				{PCI_CHIP_PERMEDIA3,	"GLINT Permedia 3",0},
+				{PCI_CHIP_PERMEDIA4,	"GLINT Permedia 4",0},
+				{PCI_CHIP_R4,		"GLINT R4",0},
+				{PCI_CHIP_R4ALT,	"GLINT R4 (Alt)",0},
+				{PCI_CHIP_GAMMA2,	"GLINT Gamma 2",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_AVANCE_2, {
 				{PCI_CHIP_ALG2064,	"ALG2064",0},
@@ -1613,8 +1625,25 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x3db3, "Jeronimo Pro",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_3DLABS, {
-                        { 0x0106, "GMX2000",0, NF },
-                        { 0x0116, "GVX1",0, NF },
+                        { 0x0096, "Permedia",0, NF },
+                        { 0x0098, "PermediaNT",0, NF },
+                        { 0x0099, "PermediaLC",0, NF },
+                        { 0x0100, "Permedia2 PCI",0, NF },
+                        { 0x0101, "Permedia2 AGP",0, NF },
+                        { 0x0102, "Oxygen GMX2000 PCI",0, NF },
+                        { 0x0106, "Oxygen GMX2000 AGP",0, NF },
+                        { 0x0116, "Oxygen GVX1 AGP",0, NF },
+                        { 0x0121, "Oxygen VX1 PCI",0, NF },
+                        { 0x0122, "Oxygen ACX AGP",0, NF },
+                        { 0x0123, "Oxygen ACX PCI",0, NF },
+                        { 0x0125, "Oxygen VX1 AGP",0, NF },
+                        { 0x0127, "Permedia3 Create!",0, NF },
+                        { 0x0134, "Oxygen GVX1 PCI",0, NF },
+                        { 0x0136, "Oxygen GVX210 AGP",0, NF },
+                        { 0x0140, "Oxygen VX1-16 AGP",0, NF },
+                        { 0x0144, "Oxygen VX1-4X AGP",0, NF },
+                        { 0x0400, "Oxygen GVX420 AGP",0, NF },
+                        { 0x0800, "Oxygen VX1-1600SW PCI",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_ELSA, {
                         { 0x0914, "Winner 1000",0, NF },
