@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.18 2001/08/01 00:44:38 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.20 2001/10/01 13:43:57 eich Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -597,12 +597,13 @@ extern void _XFlushGCCache(Display *dpy, GC gc);
  * "len" is the length of the data buffer.
  */
 #ifndef DataRoutineIsProcedure
-#define Data(dpy, data, len) \
+#define Data(dpy, data, len) {\
 	if (dpy->bufptr + (len) <= dpy->bufmax) {\
 		memcpy(dpy->bufptr, data, (int)len);\
 		dpy->bufptr += ((len) + 3) & ~3;\
 	} else\
-		_XSend(dpy, data, len)
+		_XSend(dpy, data, len);\
+	}
 #endif /* DataRoutineIsProcedure */
 
 

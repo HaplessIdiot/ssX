@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.5 2000/12/01 18:31:07 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.7 2001/07/08 05:46:35 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -563,7 +563,7 @@ DrawScreenMask(Display *dpy, Drawable win, GC gc, int xs, int ys, int xe, int ye
 {
     double xfact, yfact;
     XPoint points[(sizeof(lin) / sizeof(lin[0])) >> 1];
-    int i, x, y, width, height;
+    int i = 0, x = 0, y = 0, width, height;
 
     if (rotate) {
 	xfact = (xe - xs) / 80.0;
@@ -923,7 +923,7 @@ UpdateScreenUI(void)
     qsort(computer.screens, computer.num_screens, sizeof(xf86cfgScreen*),
 	  qcmp_screen);
 
-    adj = prev, base = NULL;
+    adj = prev = left = base = NULL;
     for (i = p = scrno = 0; i < computer.num_screens; i++) {
 	XF86ConfScreenPtr scr = computer.screens[i]->screen;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgcunder.c,v 1.2 2000/02/12 05:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgcunder.c,v 1.3 2001/08/01 00:44:57 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -401,7 +401,7 @@ cfb32ValidateGC_Underlay(
     {
 	GCOps	*newops;
 
-	if (newops = cfb32MatchCommon_Underlay (pGC, devPriv))
+	if ((newops = cfb32MatchCommon_Underlay (pGC, devPriv)))
  	{
 	    if (pGC->ops->devPrivate.val)
 		miDestroyGCOps (pGC->ops);

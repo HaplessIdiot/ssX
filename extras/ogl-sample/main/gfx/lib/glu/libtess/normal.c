@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -198,7 +199,10 @@ extern int RandomSweep;
 void __gl_projectPolygon( GLUtesselator *tess )
 {
   GLUvertex *v, *vHead = &tess->mesh->vHead;
-  GLdouble w, norm[3];
+  GLdouble norm[3];
+#if defined(FOR_TRITE_TEST_PROGRAM) || defined(TRUE_PROJECT)
+  Gldouble w;
+#endif
   GLdouble *sUnit, *tUnit;
   int i, computedNormal = FALSE;
 

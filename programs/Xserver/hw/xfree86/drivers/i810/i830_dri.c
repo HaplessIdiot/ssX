@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.28 2001/08/13 19:35:01 dawes Exp $ */
 
 /*
 
@@ -754,7 +754,7 @@ FlagsEditCB (Widget w, XtPointer client, XtPointer call)
 static void
 BlankEditCB (Widget w, XtPointer client, XtPointer call)
 {
-    int i, len;
+    int len;
     char* string;
     fields findex = (fields) client;
     ScrollData* sdp = &AppRes.field[findex];
@@ -1440,7 +1440,6 @@ main (int argc, char** argv)
     Widget top;
     XtAppContext app;
     Display* dpy;
-    int suspendTime, offTime;
 
     static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction },
 				      { "xvidtune-restore", RestoreAction },

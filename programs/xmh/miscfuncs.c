@@ -1,5 +1,5 @@
 /* $XConsortium: miscfuncs.c,v 1.7 94/12/01 17:15:05 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.4 2001/07/23 13:15:54 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.5 2001/07/25 15:05:27 dawes Exp $ */
 
 #include <X11/Xos.h>
 
@@ -81,8 +81,8 @@ int ftruncate_emu(fd, length, name)
     (void) chmod(tmp_file, stat_val.st_mode);
 
     /* Close files, delete original, rename temp file to original. */
-    (void) myclose(new_fid);
-    (void) myclose(fd);
+    myclose(new_fid);
+    myclose(fd);
     (void) unlink(name);	/* remove original */
     (void) rename(tmp_file, name); /* rename temp file */
 
@@ -137,7 +137,7 @@ ScanDir(Name, List, Selector)
 	return(-1);
 
     /* Read entries in the directory. */
-    for (i = 0; E = readdir(Dp); )
+    for (i = 0; (E = readdir(Dp)); )
 	if (!Selector || (*Selector)(E->d_name)) {
 	    /* User wants them all, or he wants this one. */
 	    if (++i >= size) {

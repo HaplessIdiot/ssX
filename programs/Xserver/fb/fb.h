@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.30 2001/07/24 08:32:57 alanh Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.31 2001/10/10 19:06:36 herrb Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -458,16 +458,16 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #define FbLaneCase2(n,a,o)  ((n) == 0x03 ? \
 			     (*(CARD16 *) ((a)+FbPatternOffset(o,CARD16)) = \
 			      fgxor) : \
-			     (FbLaneCase1((n)&1,a,o), \
-			      FbLaneCase1((n)>>1,a,(o)+1)))
+			     ((void)FbLaneCase1((n)&1,a,o), \
+				    FbLaneCase1((n)>>1,a,(o)+1)))
 #define FbLaneCase4(n,a,o)  ((n) == 0x0f ? \
 			     (*(CARD32 *) ((a)+FbPatternOffset(o,CARD32)) = \
 			      fgxor) : \
-			     (FbLaneCase2((n)&3,a,o), \
-			      FbLaneCase2((n)>>2,a,(o)+2)))
-#define FbLaneCase8(n,a,o)  ((n) == 0xff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
-			     (FbLaneCase4((n)&0xf,a,o), \
-			      FbLaneCase4((n)>>4,a,(o)+4)))
+			     ((void)FbLaneCase2((n)&3,a,o), \
+				    FbLaneCase2((n)>>2,a,(o)+2)))
+#define FbLaneCase8(n,a,o)  ((n) == 0x0ff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
+			     ((void)FbLaneCase4((n)&15,a,o), \
+				    FbLaneCase4((n)>>4,a,(o)+4)))
 
 #if FB_SHIFT == 6
 #define FbLaneCase(n,a)   FbLaneCase8(n,(CARD8 *) (a),0)

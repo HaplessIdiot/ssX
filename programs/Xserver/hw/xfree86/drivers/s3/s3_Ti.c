@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.2 2001/09/27 08:34:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.3 2001/09/28 07:45:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -129,9 +129,11 @@ Bool S3TiDACProbe(ScrnInfoPtr pScrn)
 	cr43 = inb(vgaCRReg);
 	outb(vgaCRReg, cr43 & ~0x02);
 
+	outb(vgaCRIndex, 0x45);
+	cr45 = inb(vgaCRReg);
+
 	outb(vgaCRIndex, 0x55);
 	cr55 = inb(vgaCRReg);
-
 	outb(vgaCRReg, (cr55 & 0xfc) | 0x01);
 
 	TIndx = inb(TI_INDEX_REG);
@@ -258,7 +260,6 @@ void S3TiDAC_Restore(ScrnInfoPtr pScrn)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
 	S3RegPtr restore = &pS3->SavedRegs;
-	int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 
 	S3OutTiIndReg(pScrn, TIDAC_true_color_ctrl, 0x00,
 		      restore->dacregs[TIDAC_true_color_ctrl]);
@@ -431,7 +432,6 @@ void S3TiDACSetClock(ScrnInfoPtr pScrn, long freq, int clk)
 void S3TiDAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
         S3Ptr pS3 = S3PTR(pScrn);
-        S3RegPtr new = &pS3->ModeRegs;
         vgaHWPtr hwp = VGAHWPTR(pScrn);
         vgaRegPtr pVga = &hwp->ModeReg;
         int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
@@ -599,7 +599,6 @@ static void S3TiSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
         S3Ptr pS3 = S3PTR(pScrn);
         int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
-        unsigned char tmp;
 
         /* unlock sys regs */
         outb(vgaCRIndex, 0x39);
@@ -681,7 +680,9 @@ static void S3TiLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
         int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
         unsigned char tmp, tmp1;
         register int i;
+#if 0
 	register unsigned char *mask = image + 1;
+#endif
 
         /* unlock sys regs */
         outb(vgaCRIndex, 0x39);  

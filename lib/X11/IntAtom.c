@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/IntAtom.c,v 1.3 2001/01/17 19:41:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/IntAtom.c,v 1.4 2001/08/18 02:41:28 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -208,7 +208,7 @@ Bool _XIntAtomHandler(
     XPointer data)
 {
     register _XIntAtomState *state;
-    register int i, idx;
+    register int i, idx = 0;
     xInternAtomReply replbuf;
     register xInternAtomReply *repl;
 

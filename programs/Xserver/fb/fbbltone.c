@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.10 2000/09/22 05:58:01 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.11 2001/09/07 15:15:31 keithp Exp $ */
 
 #include "fb.h"
 
@@ -58,15 +58,15 @@
     
 #ifndef FBNOPIXADDR
     
-#define LaneCases1(n,a)	    case n: FbLaneCase(n,a); break;
-#define LaneCases2(n,a)	    LaneCases1(n,a) LaneCases1(n+1,a)
-#define LaneCases4(n,a)	    LaneCases2(n,a) LaneCases2(n+2,a)
-#define LaneCases8(n,a)	    LaneCases4(n,a) LaneCases4(n+4,a)
-#define LaneCases16(n,a)    LaneCases8(n,a) LaneCases8(n+8,a)
-#define LaneCases32(n,a)    LaneCases16(n,a) LaneCases16(n+16,a)
-#define LaneCases64(n,a)    LaneCases32(n,a) LaneCases32(n+32,a)
-#define LaneCases128(n,a)   LaneCases64(n,a) LaneCases64(n+64,a)
-#define LaneCases256(n,a)   LaneCases128(n,a) LaneCases128(n+128,a)
+#define LaneCases1(n,a)	    case n: (void)FbLaneCase(n,a); break
+#define LaneCases2(n,a)	    LaneCases1(n,a); LaneCases1(n+1,a)
+#define LaneCases4(n,a)	    LaneCases2(n,a); LaneCases2(n+2,a)
+#define LaneCases8(n,a)	    LaneCases4(n,a); LaneCases4(n+4,a)
+#define LaneCases16(n,a)    LaneCases8(n,a); LaneCases8(n+8,a)
+#define LaneCases32(n,a)    LaneCases16(n,a); LaneCases16(n+16,a)
+#define LaneCases64(n,a)    LaneCases32(n,a); LaneCases32(n+32,a)
+#define LaneCases128(n,a)   LaneCases64(n,a); LaneCases64(n+64,a)
+#define LaneCases256(n,a)   LaneCases128(n,a); LaneCases128(n+128,a)
     
 #if FB_SHIFT == 6
 #define LaneCases(a)	    LaneCases256(0,a)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.6 2001/01/17 22:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.7 2001/04/23 20:31:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -404,8 +404,8 @@ dixChangeGC(client, pGC, mask, pC32, pUnion)
 		break;
 	    case GCClipMask:
 	    {
-		Pixmap pid;
-		int    clipType;
+		Pixmap pid = 0;
+		int    clipType = 0;
 
 		if (pUnion)
 		{
@@ -564,9 +564,9 @@ DoChangeGC(pGC, mask, pval, fPointer)
 {
     if (fPointer)
     /* XXX might be a problem on 64 bit big-endian servers */
-	dixChangeGC(NullClient, pGC, mask, NULL, (ChangeGCValPtr)pval);
+	return dixChangeGC(NullClient, pGC, mask, NULL, (ChangeGCValPtr)pval);
     else
-	dixChangeGC(NullClient, pGC, mask, pval, NULL);
+	return dixChangeGC(NullClient, pGC, mask, pval, NULL);
 }
 
 

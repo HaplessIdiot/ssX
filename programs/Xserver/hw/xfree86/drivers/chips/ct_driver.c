@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.113 2001/06/15 21:22:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.115 2001/10/01 13:44:04 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1384,7 +1384,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSMemClockPtr MemClk = &cPtr->MemClock;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
-    resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
+    resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -2408,7 +2408,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
     char *s;
-    resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
+    resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -2720,7 +2720,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
-	linearRes[0].type = ResExcIoSparse | ResBios;
+	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
 	linearRes[0].rBase = cPtr->Regs32[0];
 	linearRes[0].rMask = 0x83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
@@ -2874,7 +2874,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
     char *s;
-    resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
+    resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
     
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -3401,7 +3401,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
-	linearRes[0].type = ResExcIoSparse;
+	linearRes[0].type = ResExcIoSparse | ResBios | ResBus;
 	linearRes[0].rBase = cPtr->Regs32[0];
 	linearRes[0].rMask = 0x83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
@@ -3830,7 +3830,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     unsigned int racflag = 0;
     unsigned char *FBStart;
     int height, width, displayWidth;
-    CHIPSEntPtr cPtrEnt;
+    CHIPSEntPtr cPtrEnt = NULL;
 #ifdef DEBUG
     ErrorF("CHIPSScreenInit\n");
 #endif    

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.29 2001/07/25 15:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.30 2001/08/26 16:21:29 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -595,9 +595,6 @@ StartClient (
 #endif   /* QNX4 doesn't support multi-groups, no initgroups() */
 #ifdef USE_PAM
 	if (thepamh()) {
-	    int i;
-	    char **pam_env;
-
 	    pam_setcred(thepamh(), PAM_ESTABLISH_CRED);
 	}
 #endif

@@ -44,7 +44,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.7 2001/01/17 23:44:55 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.8 2001/08/01 00:45:00 tsi Exp $ */
 
 #include	<stdio.h>
 #include	"misc.h"
@@ -188,7 +188,7 @@ lookup(name, len, create)
      Bool create;
 {
   unsigned int h = 0, g;
-  dbEntryPtr   entry, *prev;
+  dbEntryPtr   entry, *prev = NULL;
   char         *str = name;
 
   if (!(name = (char*)ALLOCATE_LOCAL(len +1))) return NULL;

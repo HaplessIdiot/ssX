@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.9 2001/01/17 22:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.10 2001/01/19 17:42:53 dawes Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -81,9 +81,8 @@ static int readFontName(char *fileName, char *file_name, char *dlfnam)
 {
     FILE        *file;
     struct stat statb;
-    int         count, i, status;
     char        buf[256];
-    char 	*front, *end, *fn;
+    char 	*front, *fn;
 
     file = fopen(fileName, "r");
     if(file)
@@ -385,7 +384,7 @@ PsPolyGlyphBlt(
   pointer       pGlyphBase)
 {
     int width, height;
-    PixmapPtr pPixmap;
+    PixmapPtr pPixmap = NullPixmap;
     int nbyLine;                        /* bytes per line of padded pixmap */
     FontPtr pfont;
     GCPtr pGCtmp;

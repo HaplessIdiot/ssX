@@ -4,7 +4,7 @@
  *
  *    Objects definition unit.
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -14,6 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTOBJS_H
 #define TTOBJS_H
@@ -219,22 +220,22 @@
   /*                                                           */
   /*************************************************************/
 
-  #define MAX_CODE_RANGES   3
+#define MAX_CODE_RANGES   3
 
-  /* There can only be 3 active code ranges at once:   */
-  /*   - the Font Program                              */
-  /*   - the CVT Program                               */
-  /*   - a glyph's instructions set                    */
+/* There can only be 3 active code ranges at once:   */
+/*   - the Font Program                              */
+/*   - the CVT Program                               */
+/*   - a glyph's instructions set                    */
 
-  #define TT_CodeRange_Font  1
-  #define TT_CodeRange_Cvt   2
-  #define TT_CodeRange_Glyph 3
+#define TT_CodeRange_Font  1
+#define TT_CodeRange_Cvt   2
+#define TT_CodeRange_Glyph 3
 
 
   struct  TCodeRange_
   {
     PByte  Base;
-    Long   Size;
+    ULong  Size;
   };
 
   typedef struct TCodeRange_  TCodeRange;
@@ -255,10 +256,10 @@
 
   struct  TDefRecord_
   {
-    Int   Range;      /* in which code range is it located ? */
-    Long  Start;      /* where does it start ?               */
-    Byte  Opc;        /* function #, or instruction code     */
-    Bool  Active;     /* is it active ?                      */
+    Int    Range;     /* in which code range is it located ? */
+    ULong  Start;     /* where does it start ?               */
+    Int    Opc;       /* function #, or instruction code     */
+    Bool   Active;    /* is it active ?                      */
   };
 
   typedef struct TDefRecord_  TDefRecord;
@@ -269,10 +270,10 @@
 
   struct  TCallRecord_
   {
-    Int   Caller_Range;
-    Long  Caller_IP;
-    Long  Cur_Count;
-    Long  Cur_Restart;
+    Int    Caller_Range;
+    ULong  Caller_IP;
+    Long   Cur_Count;
+    ULong  Cur_Restart;
   };
 
   typedef struct TCallRecord_  TCallRecord;
@@ -358,12 +359,6 @@
     Bool         preserve_pps; /* preserve phantom points? */
 
     Long         file_offset;
-
-#if 0
-    TT_BBox      bbox;
-    Int          leftBearing;     /* in FUnits */
-    Int          advanceWidth;    /* in FUnits */
-#endif
 
     TT_Big_Glyph_Metrics  metrics;
 
@@ -536,10 +531,14 @@
     PCMapTable  cMaps;
 
     /* The glyph locations table */
-    UShort    numLocations;
+    ULong     numLocations;         /* UShort is not enough */
+#ifndef TT_HUGE_PTR
     PStorage  glyphLocations;
+#else
+    Storage TT_HUGE_PTR * glyphLocations;
+#endif
 
-    /* NOTE : Tjhe "hmtx" is now part of the horizontal header */
+    /* NOTE : The "hmtx" is now part of the horizontal header */
 
     /* the font program, if any */
     ULong   fontPgmSize;
@@ -598,11 +597,16 @@
 
     TIns_Metrics     metrics;
 
-    ULong            numFDefs;  /* number of function definitions */
+    UShort           numFDefs;  /* number of function definitions */
+    UShort           maxFDefs;
     PDefArray        FDefs;     /* table of FDefs entries         */
 
-    ULong            numIDefs;  /* number of instruction definitions */
+    UShort           numIDefs;  /* number of instruction definitions */
+    UShort           maxIDefs;
     PDefArray        IDefs;     /* table of IDefs entries            */
+
+    Int              maxFunc;   /* maximum function definition id    */
+    Int              maxIns;    /* maximum instruction definition id */
 
     TCodeRangeTable  codeRangeTable;
 
@@ -651,8 +655,8 @@
     ULong           stackSize;  /* size of exec. stack */
     PStorage        stack;      /* current exec. stack */
 
-    Long            args,
-                    new_top;    /* new top after exec.    */
+    Long            args;
+    ULong           new_top;    /* new top after exec.    */
 
     TGlyph_Zone     zp0,            /* zone records */
                     zp1,
@@ -666,25 +670,30 @@
 
     Int             curRange;  /* current code range number   */
     PByte           code;      /* current code range          */
-    Long            IP;        /* current instruction pointer */
-    Long            codeSize;  /* size of current range       */
+    ULong           IP;        /* current instruction pointer */
+    ULong           codeSize;  /* size of current range       */
 
     Byte            opcode;    /* current opcode              */
     Int             length;    /* length of current opcode    */
 
     Bool            step_ins;  /* true if the interpreter must */
-                                /* increment IP after ins. exec */
+                               /* increment IP after ins. exec */
     ULong           cvtSize;
     PLong           cvt;
 
     ULong           glyphSize; /* glyph instructions buffer size */
     PByte           glyphIns;  /* glyph instructions buffer */
 
-    ULong           numFDefs;  /* number of function defs */
-    PDefRecord      FDefs;     /* table of FDefs entries  */
+    UShort          numFDefs;  /* number of function defs         */
+    UShort          maxFDefs;  /* maximum number of function defs */
+    PDefRecord      FDefs;     /* table of FDefs entries          */
 
-    ULong           numIDefs;  /* number of instruction defs */
-    PDefRecord      IDefs;     /* table of IDefs entries     */
+    UShort          numIDefs;  /* number of instruction defs         */
+    UShort          maxIDefs;  /* maximum number of instruction defs */
+    PDefRecord      IDefs;     /* table of IDefs entries             */
+
+    Int             maxFunc;
+    Int             maxIns;
 
     Int             callTop,    /* top of call stack during execution */
                     callSize;   /* size of call stack */
@@ -698,7 +707,7 @@
                                      /* useful for the debugger   */
 
     ULong           storeSize;  /* size of current storage */
-    PStorage        storage;    /* storage area            */
+    PLong           storage;    /* storage area            */
 
     TT_F26Dot6      period;     /* values used for the */
     TT_F26Dot6      phase;      /* 'SuperRounding'     */
@@ -720,6 +729,9 @@
                                    /* the prep program               */
     Bool            is_composite;  /* ture if the glyph is composite */
 
+    Bool            pedantic_hinting;  /* if true, read and write array   */
+                                       /* bounds faults halt the hinting  */
+
     /* latest interpreter additions */
 
     Long               F_dot_P;    /* dot product of freedom and projection */
@@ -738,6 +750,7 @@
 
     ULong              loadSize;
     PSubglyph_Stack    loadStack;      /* loading subglyph stack */
+
   };
 
 
@@ -768,6 +781,7 @@
 
   typedef struct TFont_Input_  TFont_Input;
 
+#if !defined(FTXCMAP_H) && !defined(FTXSBIT_H)
 
   /********************************************************************/
   /*                                                                  */
@@ -779,7 +793,7 @@
   LOCAL_DEF
   TT_Error  Goto_CodeRange( PExecution_Context  exec,
                             Int                 range,
-                            Long                IP );
+                            ULong               IP );
 
 #if 0
   /* Return a pointer to a given coderange record. */
@@ -794,7 +808,7 @@
   TT_Error  Set_CodeRange( PExecution_Context  exec,
                            Int                 range,
                            void*               base,
-                           Long                length );
+                           ULong               length );
 
   /* Clear a given coderange */
   LOCAL_DEF
@@ -850,6 +864,8 @@
 
   LOCAL_DEF TT_Error  TTObjs_Init( PEngine_Instance  engine );
   LOCAL_DEF TT_Error  TTObjs_Done( PEngine_Instance  engine );
+
+#endif /* !FTXCMAP_H && !FTXSBIT */
 
 #ifdef __cplusplus
   }

@@ -38,6 +38,7 @@
 ** $Date$ $Revision$
 ** $Header$
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <assert.h>
@@ -249,10 +250,9 @@ static GLboolean IsWindingInside( GLUtesselator *tess, int n )
     return (n < 0);
   case GLU_TESS_WINDING_ABS_GEQ_TWO:
     return (n >= 2) || (n <= -2);
+  default:
+    return FALSE;
   }
-  /*LINTED*/
-  assert( FALSE );
-  /*NOTREACHED*/
 }
 
 
@@ -1184,7 +1184,8 @@ static void DoneEdgeDict( GLUtesselator *tess )
      */
     if( ! reg->sentinel ) {
       assert( reg->fixUpperEdge );
-      assert( ++fixedEdges == 1 );
+      assert( fixedEdges == 0 );
+      ++fixedEdges;
     }
     assert( reg->windingNumber == 0 );
     DeleteRegion( tess, reg );

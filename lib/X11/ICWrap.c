@@ -60,7 +60,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ICWrap.c,v 1.4 2001/01/17 19:41:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ICWrap.c,v 1.5 2001/07/25 15:04:43 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -110,7 +110,7 @@ _XIMCountVaList(va_list var, int *total_count)
 	if (!strcmp(attr, XNVaNestedList)) {
 	    _XIMCountNestedList(va_arg(var, XIMArg*), total_count);
 	} else {
-	    va_arg(var, XIMArg*);
+	    (void)va_arg(var, XIMArg*);
 	    ++(*total_count);
 	}
     }

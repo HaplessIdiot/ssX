@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.3 2001/06/13 19:20:06 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.4 2001/07/20 19:25:01 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -157,7 +157,7 @@ LayerWindowRemove (ScreenPtr pScreen, LayerPtr pLayer, WindowPtr pWin)
 	LayerListPtr	*pPrev;
 	LayerListPtr	pLayList;
 
-	for (pPrev = &pLayWin->u.pLayList; pLayList = *pPrev; pPrev = &pLayList->pNext)
+	for (pPrev = &pLayWin->u.pLayList; (pLayList = *pPrev); pPrev = &pLayList->pNext)
 	{
 	    if (pLayList->pLayer == pLayer)
 	    {
@@ -222,8 +222,6 @@ LayerPtr
 LayerWindowFirst (WindowPtr pWin, LayerWinLoopPtr pLoop)
 {
     layerWinPriv (pWin);
-    LayerListPtr    pLayList;
-    LayerPtr	    pLayer;
 
     pLoop->pLayWin = pLayWin;
     if (!pLayWin->isList)
@@ -341,7 +339,7 @@ layerDestroyWindow (WindowPtr pWin)
     LayerPtr	pLayer;
     Bool	ret = TRUE;
 
-    while (pLayer = layerWinLayer (pLayWin))
+    while ((pLayer = layerWinLayer (pLayWin)))
     {
 	LayerUnwrap (pScreen, pLayer->pKind, DestroyWindow);
 	ret = (*pScreen->DestroyWindow) (pWin);
@@ -355,7 +353,6 @@ Bool
 layerChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
 {
     ScreenPtr	    pScreen = pWin->drawable.pScreen;
-    layerWinPriv (pWin);
     LayerPtr	    pLay;
     LayerWinLoopRec loop;
     Bool	    ret = TRUE;
@@ -376,7 +373,6 @@ layerChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
 void
 layerPaintWindowBackground (WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    layerWinPriv (pWin);
     ScreenPtr	    pScreen = pWin->drawable.pScreen;
     LayerPtr	    pLay;
     LayerWinLoopRec loop;
@@ -395,7 +391,6 @@ layerPaintWindowBackground (WindowPtr pWin, RegionPtr pRegion, int what)
 void
 layerPaintWindowBorder (WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    layerWinPriv (pWin);
     ScreenPtr	    pScreen = pWin->drawable.pScreen;
     LayerPtr	    pLay;
     LayerWinLoopRec loop;
@@ -414,7 +409,6 @@ layerPaintWindowBorder (WindowPtr pWin, RegionPtr pRegion, int what)
 void
 layerCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
-    layerWinPriv (pWin);
     ScreenPtr	    pScreen = pWin->drawable.pScreen;
     LayerPtr	    pLay;
     LayerWinLoopRec loop;

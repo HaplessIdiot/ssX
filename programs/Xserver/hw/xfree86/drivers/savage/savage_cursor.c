@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_cursor.c,v 1.3 2001/05/15 10:19:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_cursor.c,v 1.4 2001/05/18 23:35:32 dawes Exp $ */
 
 /*
  * Hardware cursor support for S3 Savage 4.0 driver. Taken with
@@ -128,6 +128,7 @@ SavageLoadCursorImage(
 	 * loading the cursor.
 	 */
 	volatile unsigned int i = ALT_STATUS_WORD0;
+	(void)i;	/* Not to be optimised out */
     }
 }
 

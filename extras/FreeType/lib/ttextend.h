@@ -4,7 +4,7 @@
  *
  *    Extensions Interface.
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -19,6 +19,7 @@
  *  through a simple API.
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTEXTEND_H
 #define TTEXTEND_H
@@ -98,7 +99,7 @@
   /*                                                                   */
   /*  o TT_Register_Extension (previously called Extension_Register)   */
   /*        which is to be called by each extension on within          */
-  /*        it TT_Init_XXXX_Extension initialiser.                     */
+  /*        it TT_Init_XXXX_Extension initializer.                     */
   /*                                                                   */
   /*  o File and frame access functions. Fortunately, these already    */
   /*    have their names prefixed by "TT_", so no change was needed    */
@@ -121,7 +122,7 @@
   /*                                                                   */
 
   /* Register a new extension.  Called by extension */
-  /* service initialisers.                          */
+  /* service initializers.                          */
   EXPORT_DEF
   TT_Error  TT_Register_Extension( PEngine_Instance  engine,
                                    Long              id,
@@ -130,7 +131,7 @@
                                    PExt_Destructor   destroy );
 
 
-#ifdef TT_CONFIG_OPTION_EXTEND_ENGINE
+#if defined(TT_CONFIG_OPTION_EXTEND_ENGINE) && !defined(FTXSBIT_H)
   /* Initialize the extension component */
   LOCAL_DEF
   TT_Error  TTExtend_Init( PEngine_Instance  engine );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.3 2000/02/12 03:39:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.4 2001/01/17 22:36:36 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -74,7 +74,9 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 #ifdef PIXEL_ADDR
     register PixelType   *addrp;
     register int    npwidth;
+#if PSZ != 24
     PixelType	    *addrpt;
+#endif
 #else
     register CfbBits    *addrl;
     register int    nlwidth;

@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:40 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.32 2001/07/23 13:15:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.33 2001/08/01 00:44:59 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -109,9 +109,14 @@ BOOTSTRAPCFLAGS =
 #if HasPam && HasPamMisc
     PAM_DEFINES = -DUSE_PAM
 #endif
-        DEFINES = -DXSERV_t -DTRANS_SERVER $(CONNECTION_FLAGS) $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES) $(RGB_DEFINES)
-       INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(TOP)/lib/Xau -I../lbx Krb5Includes
- DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) $(TRANS_INCLUDES) $(CONNECTION_FLAGS) DependDefines
+        DEFINES = -DXSERV_t -DTRANS_SERVER $(CONNECTION_FLAGS) $(MEM_DEFINES) \
+		  $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) \
+		  $(KRB5_DEFINES) $(RGB_DEFINES)
+       INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
+		  -I$(SERVERSRC)/Xext -I$(FONTINCSRC) \
+		  -I$(TOP)/lib/Xau -I../lbx Krb5Includes
+ DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) \
+		  $(TRANS_INCLUDES) $(CONNECTION_FLAGS) DependDefines
        LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef NEED_ALLOCA_FROM_LIBPW

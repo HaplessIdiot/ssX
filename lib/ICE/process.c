@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/process.c,v 3.5 2001/01/17 19:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/process.c,v 3.6 2001/07/23 13:15:41 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -536,7 +536,7 @@ Bool		 swap;
 IceReplyWaitInfo *replyWait;
 
 {
-    int		invokeHandler;
+    int		invokeHandler = 0;
     Bool	errorReturned = False;
     iceErrorMsg *message;
     char 	*pData, *pStart;
@@ -815,7 +815,7 @@ Bool		swap;
     int  hisMajorVersion, hisMinorVersion;
     int	 myAuthCount, hisAuthCount;
     int	 found, i, j;
-    char *myAuthName, **hisAuthNames;
+    char *myAuthName, **hisAuthNames = NULL;
     char *pData, *pStart, *pEnd;
     char *vendor = NULL;
     char *release = NULL;
@@ -1074,7 +1074,7 @@ IceReplyWaitInfo	*replyWait;
     IcePoAuthProc	authProc;
     IcePoAuthStatus	status;
     IcePointer 		authState;
-    int			realAuthIndex;
+    int			realAuthIndex = 0;
 
     CHECK_AT_LEAST_SIZE (iceConn, ICE_AuthRequired,
 	length, SIZEOF (iceAuthRequiredMsg),
@@ -1630,7 +1630,7 @@ IceReplyWaitInfo	*replyWait;
     }
     else if (status == IcePoAuthRejected || status == IcePoAuthFailed)
     {
-	char *prefix, *returnErrorString;
+	char *prefix = NULL, *returnErrorString;
 
 	if (status == IcePoAuthRejected)
 	{
@@ -1797,7 +1797,7 @@ Bool		swap;
     int	 	      	myAuthCount, hisAuthCount;
     int  	      	myOpcode, hisOpcode;
     int	 	      	found, i, j;
-    char	      	*myAuthName, **hisAuthNames;
+    char	      	*myAuthName, **hisAuthNames = NULL;
     char 	      	*protocolName;
     char 		*pData, *pStart, *pEnd;
     char 	      	*vendor = NULL;

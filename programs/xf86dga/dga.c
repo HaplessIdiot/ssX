@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.17 2000/05/14 20:44:00 alanh Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.18 2001/07/23 13:15:52 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -45,7 +45,7 @@ main(int argc, char *argv[])
     char *addr;
     int width, bank, banks, ram;
     XEvent event;
-    Colormap cmap;
+    Colormap cmap = 0;
     Visual *vis;
     int flags;
 

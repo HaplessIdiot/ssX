@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.3 2001/04/19 19:54:51 dawes Exp $ */
+/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.4 2001/08/01 00:45:02 tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -567,7 +567,7 @@ static void GetMailFile (w)
 	username = pw->pw_name;
     }
 #endif
-    if (mailpath = getenv("MAIL")) {
+    if ((mailpath = getenv("MAIL"))) {
 	w->mailbox.filename = (String) XtMalloc (strlen (mailpath) + 1);
 	strcpy (w->mailbox.filename, mailpath);
     } else {

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_bios.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -26,6 +26,7 @@
 #ifdef i386
 #define _NEED_SYSI86
 #endif
+#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
@@ -42,7 +43,6 @@ int
 xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	     int Len)
 {
-#ifdef i386
 	int fd;
 	unsigned char *ptr;
 	char solx86_vtname[20];
@@ -63,16 +63,15 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	Offset += Base & (psize - 1);
 	Base &= ~(psize - 1);
 	mlen = (Offset + Len + psize - 1) & ~(psize - 1);
-#ifndef __SOL8__
+#if defined(i386) && !defined(__SOL8__)
 	if (Base >= 0xA0000 && Base + mlen < 0xFFFFF && xf86Info.vtno >= 0)
-		sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
+		sprintf(solx86_vtname, "/dev/vt%02d", xf86Info.vtno);
 	else
 #endif
 	{
-		if (!apertureDevName)
-			if (!xf86LinearVidMem())
-				FatalError("xf86ReadBIOS: Could not mmap "
-					   "BIOS [a=%x]\n", Base);
+		if (!xf86LinearVidMem())
+			FatalError("xf86ReadBIOS: Could not mmap BIOS"
+				   " [a=%x]\n", Base);
 		sprintf(solx86_vtname, apertureDevName);
 	}
 
@@ -90,15 +89,12 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 			"[0x%05x, 0x%04x]\n",
 			solx86_vtname, Base, mlen);
 		close(fd);
-		return(-1);
+		return -1;
 	}
+
 	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
 	(void)munmap((caddr_t)ptr, mlen);
 	(void)close(fd);
-	return(Len);
-#else
-	FatalError("xf86ReadBIOS() called\n");
 
-	return -1;      /* G'd'ole gcc */
-#endif
+	return Len;
 }

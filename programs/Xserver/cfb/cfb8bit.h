@@ -7,7 +7,7 @@
  * are used for depths other than 8.  Perhaps the file should be
  * renamed.  dpw
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.h,v 3.4 2000/02/12 03:39:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb8bit.h,v 3.5 2001/01/17 22:36:34 dawes Exp $ */
 
 /*
 
@@ -165,13 +165,11 @@ extern int		cfb8StippleRRop;
 
 #define RRopBitGroup(dst,bits)					\
     {								\
-    register PixelGroup    _bitsTmp = (bits);			\
     *(dst) = RRopPixels(*(dst),bits);				\
     }
 
 #define MaskRRopBitGroup(dst,bits,mask)				\
     {								\
-    register PixelGroup   _bitsTmp = (bits);			\
     *(dst) = MaskRRopPixels(*(dst),bits,mask);			\
     }
 #endif /* PSZ == 8 */

@@ -1,5 +1,5 @@
 /* $XConsortium: math.c,v 1.17 91/07/25 17:51:34 rws Exp $ 
- * $XFree86: xc/programs/xcalc/math.c,v 1.3 2001/08/01 00:45:02 tsi Exp $ 
+ * $XFree86: xc/programs/xcalc/math.c,v 1.4 2001/08/27 23:35:11 dawes Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -305,7 +305,7 @@ numeric(keynum)
      int keynum;
 {
     char	st[2];
-    int		cell;
+    int		cell = 0;
 
   flagINV=0;
 

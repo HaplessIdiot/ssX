@@ -68,7 +68,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.6 2000/01/02 00:23:47 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.8 2001/02/16 13:24:07 eich Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -822,7 +822,7 @@ SecurityLookupIDByClass(client, id, classes, mode)
     Mask mode;
 {
     int    cid;
-    register    ResourcePtr res;
+    register ResourcePtr res = NULL;
     pointer retval = NULL;
 
     assert(client == NullClient ||

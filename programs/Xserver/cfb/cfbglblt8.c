@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.3 2000/02/12 03:39:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.4 2001/01/17 22:36:35 dawes Exp $ */
 
 /*
  * Poly glyph blt.  Accepts an arbitrary font <= 32 bits wide, in Copy mode
@@ -118,11 +118,13 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer	pglyphBase;	/* start of array of glyphs */
 {
-    register CfbBits  c;
 #ifndef GLYPHROP
     register CfbBits  pixel;
 #endif
+#if !defined(STIPPLE) && !defined(USE_STIPPLE_CODE)
+    register CfbBits  c;
     register CfbBits  *dst;
+#endif
     register glyphPointer   glyphBits;
     register int	    xoff;
 
@@ -134,9 +136,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			bwidthDst;
     int			widthDst;
     int			h;
-    int			ew;
     BoxRec		bbox;		/* for clipping */
-    int			widthDiff;
     int			w;
     RegionPtr		clip;
     BoxPtr		extents;
@@ -224,7 +224,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	          (y - pci->metrics.ascent) * widthDst + (xoff >> PWSH);
 #endif
 	x += pci->metrics.characterWidth;
-	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
+	if ((hTmp = pci->metrics.descent + pci->metrics.ascent))
 	{
 #if PSZ == 24
 	    xoff &= 0x03;
@@ -271,39 +271,43 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
-    register CfbBits  c;
 #ifndef GLYPHROP
-    register CfbBits  pixel;
+    register CfbBits	pixel;
 #endif
-    register CfbBits  *dst;
+#if !defined(STIPPLE) && !defined(USE_STIPPLE_CODE)
+    register CfbBits	c;
+#endif
     register glyphPointer   glyphBits;
-    register int	    xoff;
-    CfbBits	    c1;
+    register int	xoff;
+#if defined(USE_LEFT_BITS) || (!defined(STIPPLE) && !defined(USE_STIPPLE_CODE))
+    register CfbBits	*dst;
+#endif
 
     CharInfoPtr		pci;
     FontPtr		pfont = pGC->font;
-    CfbBits	*dstLine;
-    CfbBits	*pdstBase;
-    CARD32		*cTmp, *clips;
+    CfbBits		*dstLine;
+    CfbBits		*pdstBase;
+#ifdef USE_LEFT_BITS
+    CARD32		*cTmp;
+#endif
+    CARD32		*clips;
     int			maxAscent, maxDescent;
     int			minLeftBearing;
     int			hTmp;
     int			widthDst;
     int			bwidthDst;
-    int			ew;
     int			xG, yG;
     BoxPtr		pBox;
     int			numRects;
-    int			widthDiff;
     int			w;
     RegionPtr		pRegion;
     int			yBand;
 #ifdef GLYPHROP
-    CfbBits       bits;
+    CfbBits		bits;
 #endif
 #ifdef USE_LEFTBITS
     int			widthGlyph;
-    CfbBits	widthMask;
+    CfbBits		widthMask;
 #endif
 
 #ifdef GLYPHROP
@@ -348,7 +352,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	xG = x + pci->metrics.leftSideBearing;
 	yG = y - pci->metrics.ascent;
 	x += pci->metrics.characterWidth;
-	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
+	if ((hTmp = pci->metrics.descent + pci->metrics.ascent))
 	{
 #if PSZ == 24
 	    dstLine = pdstBase + yG * widthDst + ((xG>> 2)*3);
@@ -429,7 +433,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	    	c = BitLeft(c,PGSZB - xoff);
 	    	    	dst += DST_INC;
 #else /* GLYPHROP */
-                        if (bits = GetBitGroup(BitRight(c,xoff)))
+                        if ((bits = GetBitGroup(BitRight(c,xoff))))
 	    	    	  WriteBitGroup(dst, pixel, bits);
 	    	    	c = BitLeft(c,PGSZB - xoff);
 	    	    	dst += DST_INC;

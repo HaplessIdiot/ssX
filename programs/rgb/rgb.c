@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/rgb/rgb.c,v 3.5 2001/01/17 23:45:03 dawes Exp $ */
+/* $XFree86: xc/programs/rgb/rgb.c,v 3.6 2001/07/25 15:05:15 dawes Exp $ */
 
 
 /* reads from standard input lines of the form:
@@ -60,6 +60,7 @@ char *SysError ()
     return s ? s : "?";
 }
 
+int
 main(argc, argv)
     int argc;
     char **argv;

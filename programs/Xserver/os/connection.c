@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.51 2001/08/23 15:26:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.52 2001/10/01 21:11:48 herrb Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -868,9 +868,9 @@ EstablishNewConnections(clientUnused, closure)
 	if ((client = clients[i]))
 	{
 	    oc = (OsCommPtr)(client->osPrivate);
-	    if (oc && (oc->conn_time != 0) &&
-		(connect_time - oc->conn_time) >= TimeOutValue || 
-		client->noClientException != Success && !client->clientGone)
+	    if ((oc && (oc->conn_time != 0) &&
+		(connect_time - oc->conn_time) >= TimeOutValue) || 
+		(client->noClientException != Success && !client->clientGone))
 		CloseDownClient(client);     
 	}
     }

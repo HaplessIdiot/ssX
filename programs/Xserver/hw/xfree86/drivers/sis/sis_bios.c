@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.8 2001/04/19 14:11:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.9 2001/06/15 21:22:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -303,10 +303,10 @@ static Bool BridgeInSlave(void);
 static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4Reg);
 static void PresetScratchregister(UShort P3d4Reg);
 static Bool GetLCDDDCInfo(ScrnInfoPtr pScrn);
-static void SetTVSystem(void);
+/* static void SetTVSystem(void); */
 static void LongWait(void);
 static void VBLongWait(void);
-static Bool WaitVBRetrace(UShort  BaseAddr);
+/* static Bool WaitVBRetrace(UShort BaseAddr); */
 static void ModCRT1CRTC(ULong ROMAddr,UShort ModeNo);
 static void SetCRT2ECLK(ULong ROMAddr, UShort ModeNo);
 static UShort GetLVDSDesPtr(ULong ROMAddr,UShort ModeNo);
@@ -4058,6 +4058,7 @@ static Bool GetLCDDDCInfo(ScrnInfoPtr pScrn)
   else return 0;
 }
 
+#if 0
 static void SetTVSystem(void)
 {
   UShort tempah;
@@ -4065,8 +4066,8 @@ static void SetTVSystem(void)
   tempah=tempah&0x01;                  /* get SR 38 D0 TV Type Selection */
                                        /* 0:NTSC 1:PAL                   */
   SetRegANDOR(P3d4,0x31,~0x01,tempah); /* set CR 31 D0= SR 38 D0         */
-  return;
 }
+#endif
 
 static void LongWait(void)
 {
@@ -4102,6 +4103,7 @@ static void VBLongWait(void)
   return;
 }
 
+#if 0
 static Bool WaitVBRetrace(UShort  BaseAddr)
 {
   UShort temp;
@@ -4122,7 +4124,7 @@ static Bool WaitVBRetrace(UShort  BaseAddr)
   }
   return 1;
 }
-
+#endif
 
 static void ModCRT1CRTC(ULong ROMAddr,UShort ModeNo)
 {

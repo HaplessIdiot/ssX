@@ -1,7 +1,9 @@
-/* $XConsortium: xkbDflts.h,v 1.3 94/04/12 17:35:00 dpw Exp $ */
-/* THIS FILE GENERATED AUTOMATICALLY BY XKBCOMP */
-#ifndef DFLT_H
-#define DFLT_H 1
+/* $Xorg: xkbDflts.h,v 1.3 2000/08/17 19:53:47 cpqbld Exp $ */
+/* $XFree86$ */
+/* This file generated automatically by xkbcomp */
+/* DO  NOT EDIT */
+#ifndef DEFAULT_H
+#define DEFAULT_H 1
 
 #ifndef XKB_IN_SERVER
 #define GET_ATOM(d,s)	XInternAtom(d,s,0)
@@ -10,128 +12,149 @@
 #define GET_ATOM(d,s)	MakeAtom(s,strlen(s),1)
 #define DPYTYPE	char *
 #endif
-#define NUM_KEYS	118
+#define NUM_KEYS	1
 
 #define	vmod_NumLock	0
-#define	vmod_LevelThree	1
-#define	vmod_Alt	2
+#define	vmod_Alt	1
+#define	vmod_LevelThree	2
 #define	vmod_AltGr	3
+#define	vmod_ScrollLock	4
 
 #define	vmod_NumLockMask	(1<<0)
-#define	vmod_LevelThreeMask	(1<<1)
-#define	vmod_AltMask	(1<<2)
+#define	vmod_AltMask	(1<<1)
+#define	vmod_LevelThreeMask	(1<<2)
 #define	vmod_AltGrMask	(1<<3)
+#define	vmod_ScrollLockMask	(1<<4)
 
-/* semantics name is "default" */
+/* types name is "default" */
 static Atom lnames_ONE_LEVEL[1];
 
-static XkbKTMapEntryRec map_TWO_LEVEL[2]= {
-    { 1,       ShiftMask,      1,       ShiftMask,               0 },
-    { 1,        LockMask,      0,        LockMask,               0 }
-};
-static XkbKTPreserveRec preserve_TWO_LEVEL[2]= {
-    {                 0,               0,               0 },
-    {          LockMask,        LockMask,               0 }
+static XkbKTMapEntryRec map_TWO_LEVEL[1]= {
+    { 1,      1, {       ShiftMask,       ShiftMask,               0 } }
 };
 static Atom lnames_TWO_LEVEL[2];
 
+static XkbKTMapEntryRec map_ALPHABETIC[2]= {
+    { 1,      1, {       ShiftMask,       ShiftMask,               0 } },
+    { 1,      0, {        LockMask,        LockMask,               0 } }
+};
+static XkbModsRec preserve_ALPHABETIC[2]= {
+    {                 0,               0,               0 },
+    {          LockMask,        LockMask,               0 }
+};
+static Atom lnames_ALPHABETIC[2];
+
 static XkbKTMapEntryRec map_KEYPAD[2]= {
-    { 1,       ShiftMask,      1,       ShiftMask,               0 },
-    { 0,       ShiftMask,      1,       ShiftMask, vmod_NumLockMask }
+    { 1,      1, {       ShiftMask,       ShiftMask,               0 } },
+    { 0,      1, {               0,               0, vmod_NumLockMask } }
 };
 static Atom lnames_KEYPAD[2];
 
-static XkbKTMapEntryRec map_THREE_LEVEL[3]= {
-    { 1,       ShiftMask,      1,       ShiftMask,               0 },
-    { 0,               0,      2,               0, vmod_LevelThreeMask },
-    { 0,       ShiftMask,      2,       ShiftMask, vmod_LevelThreeMask }
-};
-static Atom lnames_THREE_LEVEL[3];
-
 static XkbKTMapEntryRec map_PC_BREAK[1]= {
-    { 1,     ControlMask,      1,     ControlMask,               0 }
+    { 1,      1, {     ControlMask,     ControlMask,               0 } }
 };
 static Atom lnames_PC_BREAK[2];
 
 static XkbKTMapEntryRec map_PC_SYSRQ[1]= {
-    { 1,        Mod1Mask,      1,        Mod1Mask,               0 }
+    { 0,      1, {               0,               0,    vmod_AltMask } }
 };
 static Atom lnames_PC_SYSRQ[2];
 
 static XkbKTMapEntryRec map_CTRL_ALT[1]= {
-    { 1, ControlMask|Mod1Mask,      1, ControlMask|Mod1Mask,               0 }
+    { 0,      1, {     ControlMask,     ControlMask,    vmod_AltMask } }
 };
 static Atom lnames_CTRL_ALT[2];
 
+static XkbKTMapEntryRec map_THREE_LEVEL[3]= {
+    { 1,      1, {       ShiftMask,       ShiftMask,               0 } },
+    { 0,      2, {               0,               0, vmod_LevelThreeMask } },
+    { 0,      2, {       ShiftMask,       ShiftMask, vmod_LevelThreeMask } }
+};
+static Atom lnames_THREE_LEVEL[3];
+
+static XkbKTMapEntryRec map_SHIFT_ALT[1]= {
+    { 0,      1, {       ShiftMask,       ShiftMask,    vmod_AltMask } }
+};
+static Atom lnames_SHIFT_ALT[2];
+
 static XkbKeyTypeRec dflt_types[]= {
     {
-	0,
-	0,	0,
-	1, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
+	{               0,               0,               0 },
+	1,
 	0,	NULL,	NULL,
 	None,	lnames_ONE_LEVEL
     },
     {
-	ShiftMask|LockMask,
-	ShiftMask|LockMask,	0,
-	2, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames|XkbNoFreeKTPreserve,
-	2,	map_TWO_LEVEL,	preserve_TWO_LEVEL,
+	{       ShiftMask,       ShiftMask,               0 },
+	2,
+	1,	map_TWO_LEVEL,	NULL,
 	None,	lnames_TWO_LEVEL
     },
     {
-	ShiftMask,
-	ShiftMask,	vmod_NumLockMask,
-	2, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
+	{ ShiftMask|LockMask, ShiftMask|LockMask,               0 },
+	2,
+	2,	map_ALPHABETIC,	preserve_ALPHABETIC,
+	None,	lnames_ALPHABETIC
+    },
+    {
+	{       ShiftMask,       ShiftMask, vmod_NumLockMask },
+	2,
 	2,	map_KEYPAD,	NULL,
 	None,	lnames_KEYPAD
     },
     {
-	ShiftMask,
-	ShiftMask,	vmod_LevelThreeMask,
-	3, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
-	3,	map_THREE_LEVEL,	NULL,
-	None,	lnames_THREE_LEVEL
-    },
-    {
-	ControlMask,
-	ControlMask,	0,
-	2, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
+	{     ControlMask,     ControlMask,               0 },
+	2,
 	1,	map_PC_BREAK,	NULL,
 	None,	lnames_PC_BREAK
     },
     {
-	Mod1Mask,
-	Mod1Mask,	0,
-	2, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
+	{               0,               0,    vmod_AltMask },
+	2,
 	1,	map_PC_SYSRQ,	NULL,
 	None,	lnames_PC_SYSRQ
     },
     {
-	ControlMask|Mod1Mask,
-	ControlMask|Mod1Mask,	0,
-	2, XkbNoFreeKTStruct|XkbNoFreeKTMap|XkbNoFreeKTLevelNames,
+	{     ControlMask,     ControlMask,    vmod_AltMask },
+	2,
 	1,	map_CTRL_ALT,	NULL,
 	None,	lnames_CTRL_ALT
+    },
+    {
+	{       ShiftMask,       ShiftMask, vmod_LevelThreeMask },
+	3,
+	3,	map_THREE_LEVEL,	NULL,
+	None,	lnames_THREE_LEVEL
+    },
+    {
+	{       ShiftMask,       ShiftMask,    vmod_AltMask },
+	2,
+	1,	map_SHIFT_ALT,	NULL,
+	None,	lnames_SHIFT_ALT
     }
 };
 #define num_dflt_types (sizeof(dflt_types)/sizeof(XkbKeyTypeRec))
 
+
 static void
+#if NeedFunctionPrototypes
+initTypeNames(DPYTYPE dpy)
+#else
 initTypeNames(dpy)
 DPYTYPE dpy;
+#endif
 {
     dflt_types[0].name= GET_ATOM(dpy,"ONE_LEVEL");
     lnames_ONE_LEVEL[0]=	GET_ATOM(dpy,"Any");
     dflt_types[1].name= GET_ATOM(dpy,"TWO_LEVEL");
     lnames_TWO_LEVEL[0]=	GET_ATOM(dpy,"Base");
     lnames_TWO_LEVEL[1]=	GET_ATOM(dpy,"Shift");
-    dflt_types[2].name= GET_ATOM(dpy,"KEYPAD");
+    dflt_types[2].name= GET_ATOM(dpy,"ALPHABETIC");
+    lnames_ALPHABETIC[0]=	GET_ATOM(dpy,"Base");
+    lnames_ALPHABETIC[1]=	GET_ATOM(dpy,"Caps");
+    dflt_types[3].name= GET_ATOM(dpy,"KEYPAD");
     lnames_KEYPAD[0]=	GET_ATOM(dpy,"Base");
     lnames_KEYPAD[1]=	GET_ATOM(dpy,"Number");
-    dflt_types[3].name= GET_ATOM(dpy,"THREE_LEVEL");
-    lnames_THREE_LEVEL[0]=	GET_ATOM(dpy,"Base");
-    lnames_THREE_LEVEL[1]=	GET_ATOM(dpy,"Shift");
-    lnames_THREE_LEVEL[2]=	GET_ATOM(dpy,"Level3");
     dflt_types[4].name= GET_ATOM(dpy,"PC_BREAK");
     lnames_PC_BREAK[0]=	GET_ATOM(dpy,"Base");
     lnames_PC_BREAK[1]=	GET_ATOM(dpy,"Control");
@@ -141,144 +164,357 @@ DPYTYPE dpy;
     dflt_types[6].name= GET_ATOM(dpy,"CTRL+ALT");
     lnames_CTRL_ALT[0]=	GET_ATOM(dpy,"Base");
     lnames_CTRL_ALT[1]=	GET_ATOM(dpy,"Ctrl+Alt");
+    dflt_types[7].name= GET_ATOM(dpy,"THREE_LEVEL");
+    lnames_THREE_LEVEL[0]=	GET_ATOM(dpy,"Base");
+    lnames_THREE_LEVEL[1]=	GET_ATOM(dpy,"Shift");
+    lnames_THREE_LEVEL[2]=	GET_ATOM(dpy,"Level3");
+    dflt_types[8].name= GET_ATOM(dpy,"SHIFT+ALT");
+    lnames_SHIFT_ALT[0]=	GET_ATOM(dpy,"Base");
+    lnames_SHIFT_ALT[1]=	GET_ATOM(dpy,"Shift+Alt");
 }
-
-static XkbSymInterpretRec dfltSI[33]= {
+/* compat name is "default" */
+static XkbSymInterpretRec dfltSI[69]= {
     {    XK_ISO_Level2_Latch, 0x0000,
          XkbSI_LevelOneOnly|XkbSI_Exactly, ShiftMask,
          255,
-       { XkbSA_LatchMods,  0x3, 0x1, 0x1, 0x0, 0x0, 0x0, 0x0  } },
+       {      XkbSA_LatchMods, { 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_Eisu_Shift, 0x0000,
+         XkbSI_Exactly, LockMask,
+         255,
+       {       XkbSA_NoAction, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_Eisu_toggle, 0x0000,
+         XkbSI_Exactly, LockMask,
+         255,
+       {       XkbSA_NoAction, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_Kana_Shift, 0x0000,
+         XkbSI_Exactly, LockMask,
+         255,
+       {       XkbSA_NoAction, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_Kana_Lock, 0x0000,
+         XkbSI_Exactly, LockMask,
+         255,
+       {       XkbSA_NoAction, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Shift_Lock, 0x0000,
          XkbSI_AnyOf, ShiftMask|LockMask,
          255,
-       { XkbSA_LockMods,  0x0, 0x1, 0x1, 0x0, 0x0, 0x0, 0x0  } },
+       {       XkbSA_LockMods, { 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Num_Lock, 0x0000,
          XkbSI_AnyOf, 0xff,
          0,
-       { XkbSA_LockMods,  0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0  } },
+       {       XkbSA_LockMods, { 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_Alt_L, 0x0000,
+         XkbSI_AnyOf, 0xff,
+         1,
+       {        XkbSA_SetMods, { 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_Alt_R, 0x0000,
+         XkbSI_AnyOf, 0xff,
+         1,
+       {        XkbSA_SetMods, { 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_Scroll_Lock, 0x0000,
+         XkbSI_AnyOf, 0xff,
+         4,
+       {       XkbSA_LockMods, { 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_ISO_Lock, 0x0000,
          XkbSI_AnyOf, 0xff,
          255,
-       { XkbSA_ISOLock,  0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0  } },
+       {        XkbSA_ISOLock, { 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_ISO_Level3_Shift, 0x0000,
          XkbSI_LevelOneOnly|XkbSI_AnyOf, 0xff,
-         1,
-       { XkbSA_SetMods,  0x1, 0x0, 0x0, 0x0, 0x2, 0x0, 0x0  } },
+         2,
+       {        XkbSA_SetMods, { 0x01, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00 } } },
     {    XK_ISO_Level3_Latch, 0x0000,
          XkbSI_LevelOneOnly|XkbSI_AnyOf, 0xff,
-         1,
-       { XkbSA_LatchMods,  0x3, 0x0, 0x0, 0x0, 0x2, 0x0, 0x0  } },
+         2,
+       {      XkbSA_LatchMods, { 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00 } } },
     {    XK_Mode_switch, 0x0000,
          XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
          3,
-       { XkbSA_SetGroup,  0x4, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0  } },
-    {    XK_ISO_Group_Latch, 0x0000,
-         XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
-         3,
-       { XkbSA_LatchGroup,  0x4, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0  } },
-    {    XK_ISO_Next_Group, 0x0000,
-         XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
-         3,
-       { XkbSA_LockGroup,  0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0  } },
-    {    XK_ISO_Prev_Group, 0x0000,
-         XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
-         3,
-       { XkbSA_LockGroup,  0x0, 0xff, 0x0, 0x0, 0x0, 0x0, 0x0  } },
-    {    XK_Left, 0x0001,
+       {       XkbSA_SetGroup, { 0x05, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_1, 0x0001,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_MovePtr,  0x0, 0xff, 0xff, 0x0, 0x0, 0x0, 0x0  } },
-    {    XK_Right, 0x0001,
+       {        XkbSA_MovePtr, { 0x00, 0xff, 0xff, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_KP_End, 0x0001,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_MovePtr,  0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0  } },
-    {    XK_Up, 0x0001,
+       {        XkbSA_MovePtr, { 0x00, 0xff, 0xff, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_KP_2, 0x0001,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_MovePtr,  0x0, 0x0, 0x0, 0xff, 0xff, 0x0, 0x0  } },
-    {    XK_Down, 0x0001,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_KP_Down, 0x0001,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_MovePtr,  0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0  } },
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_KP_3, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_KP_Next, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00 } } },
+    {    XK_KP_4, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Left, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_6, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Right, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_7, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 } } },
+    {    XK_KP_Home, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 } } },
+    {    XK_KP_8, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00 } } },
+    {    XK_KP_Up, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00 } } },
+    {    XK_KP_9, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00 } } },
+    {    XK_KP_Prior, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {        XkbSA_MovePtr, { 0x00, 0x00, 0x01, 0xff, 0xff, 0x00, 0x00 } } },
+    {    XK_KP_5, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {         XkbSA_PtrBtn, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Begin, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {         XkbSA_PtrBtn, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_F1, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_SetPtrDflt, { 0x04, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Divide, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_SetPtrDflt, { 0x04, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_F2, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_SetPtrDflt, { 0x04, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Multiply, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_SetPtrDflt, { 0x04, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_F3, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_SetPtrDflt, { 0x04, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Subtract, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_SetPtrDflt, { 0x04, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Separator, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {         XkbSA_PtrBtn, { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Add, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {         XkbSA_PtrBtn, { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_0, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_LockPtrBtn, { 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Insert, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_LockPtrBtn, { 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Decimal, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_LockPtrBtn, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_KP_Delete, 0x0001,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {     XkbSA_LockPtrBtn, { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Button_Dflt, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_PtrBtn,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Button1, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_PtrBtn,  0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Button2, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_PtrBtn,  0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Button3, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_PtrBtn,  0x0, 0x0, 0x3, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_DblClick_Dflt, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_ClickPtrBtn,  0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_DblClick1, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_ClickPtrBtn,  0x0, 0x2, 0x1, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_DblClick2, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_ClickPtrBtn,  0x0, 0x2, 0x2, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_DblClick3, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_ClickPtrBtn,  0x0, 0x2, 0x3, 0x0, 0x0, 0x0, 0x0  } },
+       {         XkbSA_PtrBtn, { 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Drag_Dflt, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_LockPtrBtn,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0  } },
+       {     XkbSA_LockPtrBtn, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Drag1, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_LockPtrBtn,  0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0  } },
+       {     XkbSA_LockPtrBtn, { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Drag2, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_LockPtrBtn,  0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0  } },
+       {     XkbSA_LockPtrBtn, { 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_Drag3, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_LockPtrBtn,  0x0, 0x0, 0x3, 0x0, 0x0, 0x0, 0x0  } },
+       {     XkbSA_LockPtrBtn, { 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_EnableKeys, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_LockControls,  0x0, 0x0, 0x0, 0x0, 0x10, 0x0, 0x0  } },
+       {   XkbSA_LockControls, { 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00 } } },
     {    XK_Pointer_Accelerate, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_LockControls,  0x0, 0x0, 0x0, 0x0, 0x20, 0x0, 0x0  } },
+       {   XkbSA_LockControls, { 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00 } } },
     {    XK_Pointer_DfltBtnNext, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_SetPtrDflt,  0x0, 0x1, 0x1, 0x0, 0x0, 0x0, 0x0  } },
+       {     XkbSA_SetPtrDflt, { 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00 } } },
     {    XK_Pointer_DfltBtnPrev, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_SetPtrDflt,  0x0, 0x1, 0xff, 0x0, 0x0, 0x0, 0x0  } },
+       {     XkbSA_SetPtrDflt, { 0x00, 0x01, 0xff, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_AccessX_Enable, 0x0000,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {   XkbSA_LockControls, { 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00 } } },
     {    XK_Terminate_Server, 0x0000,
          XkbSI_AnyOfOrNone, 0xff,
          255,
-       { XkbSA_Terminate,  0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0  } },
-#ifndef XKB_DDX_PERMANENT_LOCK
+       {      XkbSA_Terminate, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_ISO_Group_Latch, 0x0000,
+         XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
+         3,
+       {     XkbSA_LatchGroup, { 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_ISO_Next_Group, 0x0000,
+         XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
+         3,
+       {      XkbSA_LockGroup, { 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_ISO_Prev_Group, 0x0000,
+         XkbSI_LevelOneOnly|XkbSI_AnyOfOrNone, 0xff,
+         3,
+       {      XkbSA_LockGroup, { 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_ISO_First_Group, 0x0000,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {      XkbSA_LockGroup, { 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
+    {    XK_ISO_Last_Group, 0x0000,
+         XkbSI_AnyOfOrNone, 0xff,
+         255,
+       {      XkbSA_LockGroup, { 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 } } },
     {    NoSymbol, 0x0000,
          XkbSI_Exactly, LockMask,
          255,
-       { XkbSA_LockMods,  0x0, 0x2, 0x2, 0x0, 0x0, 0x0, 0x0  } },
-#endif
+       {       XkbSA_LockMods, { 0x00, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00 } } },
     {    NoSymbol, 0x0000,
          XkbSI_AnyOf, 0xff,
          255,
-       { XkbSA_SetMods,  0x5, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0  } }
+       {        XkbSA_SetMods, { 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } } }
 };
 #define num_dfltSI (sizeof(dfltSI)/sizeof(XkbSymInterpretRec))
 
-#endif /* DFLT_H */
+static XkbCompatMapRec compatMap= {
+    dfltSI,
+    {   /* group compatibility */
+        {            0,            0,            0 },
+        {            0,            0, vmod_AltGrMask },
+        {            0,            0, vmod_AltGrMask },
+        {            0,            0, vmod_AltGrMask }
+    },
+    num_dfltSI, num_dfltSI
+};
+
+static XkbIndicatorRec indicators= {
+    0x0,
+    {
+        { 0x80, 0, 0x00, XkbIM_UseEffective, { LockMask,  LockMask, 0 }, 0 },
+        { 0x80, 0, 0x00, XkbIM_UseEffective, { 0,  0, vmod_NumLockMask }, 0 },
+        { 0x80, 0, 0x00, XkbIM_UseLocked, { ShiftMask,  ShiftMask, 0 }, 0 },
+        { 0x80, 0, 0x00, 0, { 0,  0, 0 }, XkbMouseKeysMask },
+        { 0x80, 0, 0x00, XkbIM_UseLocked, { 0,  0, vmod_ScrollLockMask }, 0 },
+        { 0x80, XkbIM_UseEffective, 0xfe, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 },
+        { 0x00, 0, 0x00, 0, { 0,  0, 0 }, 0 }
+    }
+};
+static void
+#if NeedFunctionPrototypes
+initIndicatorNames(DPYTYPE dpy,XkbDescPtr xkb)
+#else
+initIndicatorNames(dpy,xkb)
+    DPYTYPE dpy;
+    XkbDescPtr xkb;
+#endif
+{
+    xkb->names->indicators[ 0]=	GET_ATOM(dpy,"Caps Lock");
+    xkb->names->indicators[ 1]=	GET_ATOM(dpy,"Num Lock");
+    xkb->names->indicators[ 2]=	GET_ATOM(dpy,"Shift Lock");
+    xkb->names->indicators[ 3]=	GET_ATOM(dpy,"Mouse Keys");
+    xkb->names->indicators[ 4]=	GET_ATOM(dpy,"Scroll Lock");
+    xkb->names->indicators[ 5]=	GET_ATOM(dpy,"Group 2");
+}
+#endif /* DEFAULT_H */

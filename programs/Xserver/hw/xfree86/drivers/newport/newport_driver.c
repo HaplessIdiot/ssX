@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.11 2001/06/13 23:34:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.12 2001/08/07 07:04:48 keithp Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -53,7 +53,7 @@
 #include "Xv.h"
 
 #define VERSION			4000
-#define NEWPORT_NAME		"Newport"
+#define NEWPORT_NAME		"NEWPORT"
 #define NEWPORT_DRIVER_NAME	"newport"
 #define NEWPORT_MAJOR_VERSION	0
 #define NEWPORT_MINOR_VERSION	1	
@@ -679,14 +679,15 @@ NewportHWProbe(unsigned probedIDs[])
 	FILE* cpuinfo;		
 	char line[80];
 	unsigned hasNewport = 0;
-	cpuinfo = fopen("/proc/cpuinfo","r");
-	while(fgets(line,80,cpuinfo) != NULL) {	
-		if(strstr(line, "SGI Indy") != NULL) {
-			hasNewport = 1;
-			break;
+	if ((cpuinfo = fopen("/proc/cpuinfo", "r"))) {
+		while(fgets(line, 80, cpuinfo) != NULL) {	
+			if(strstr(line, "SGI Indy") != NULL) {
+				hasNewport = 1;
+				break;
+			}
 		}
+		fclose(cpuinfo);	
 	}
-	fclose(cpuinfo);	
 
 	probedIDs[0] = 0;
 	return hasNewport;	

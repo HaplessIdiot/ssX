@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.62 91/07/22 21:23:25 converse Exp $
+ * $XConsortium: screen.c,v 2.65 95/01/06 16:39:19 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -24,6 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 /* scrn.c -- management of scrns. */
 
@@ -316,6 +317,7 @@ ScrnKind kind;
 	case STtocAndView: 	MakeTocAndView(scrn); break;
 	case STview:		MakeView(scrn); break;
 	case STcomp:		MakeComp(scrn);	break;
+	default: break;
     }
 
     if (kind != STpick) {
@@ -362,6 +364,9 @@ ScrnKind kind;
 	    XtInstallAllAccelerators(scrn->viewwidget, scrn->widget);
 	    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
 	    break;
+
+	  default:
+	    break;
 	}
 
 	InitBusyCursor(scrn);
@@ -370,7 +375,7 @@ ScrnKind kind;
 	(void) XSetWMProtocols(XtDisplay(scrn->parent), XtWindow(scrn->parent),
 			       protocolList, XtNumber(protocolList));
     }
-    scrn->mapped = (numScrns == 1);
+    scrn->mapped = False;
     return scrn;
 }
 
@@ -424,8 +429,7 @@ Scrn ScrnFromWidget(w)		/* heavily used, should be efficient */
 Widget w;
 {
     register int i;
-    while (w && (XtClass(w) != applicationShellWidgetClass) &&
-	   (XtClass(w) != topLevelShellWidgetClass))
+    while (w && ! XtIsTopLevelShell(w))
 	w = XtParent(w);
     if (w) {
 	for (i=0 ; i<numScrns ; i++) {
@@ -434,7 +438,7 @@ Widget w;
 	}
     }
     Punt("ScrnFromWidget failed!");
-    /*NOTREACHED*/
+    return NULL;
 }
  
 
@@ -514,6 +518,8 @@ Scrn scrn;
 		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "save"));
 		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "insert"));
 	    }
+	    break;
+	  default:
 	    break;
 	}
     }

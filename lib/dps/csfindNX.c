@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/csfindNX.c,v 1.5 2000/09/26 15:56:59 tsi Exp $ */
+/* $XFree86: xc/lib/dps/csfindNX.c,v 1.6 2001/08/01 00:44:42 tsi Exp $ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
@@ -286,7 +286,6 @@ XDPSNXOnDisplay(
 	   i++) {
 	Atom *licenseMethods = NULL;
 	unsigned long nMethods;
-	unsigned long remaining;
 	unsigned long j;
 	
 	if (GetProperty(dpy, agentList[i].id,
@@ -433,7 +432,7 @@ FindXDPSNXInXrmDatabase(
      int *port)
 {
   XrmDatabase rDB = NULL;	/* for merged database */
-  XrmDatabase serverDB, applicationDB;
+  XrmDatabase serverDB;
   char filenamebuf[1024];
   char *filename = &filenamebuf[0];
   char *env, *str_type;

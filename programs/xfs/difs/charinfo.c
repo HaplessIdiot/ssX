@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
-/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.9 2001/01/17 23:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.10 2001/08/01 00:45:04 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include "misc.h"
@@ -73,7 +73,9 @@ extern void FourByteSwap(unsigned char *, int);
 #define n2dChars(pfi)   (((pfi)->lastRow - (pfi)->firstRow + 1) * \
                          ((pfi)->lastCol - (pfi)->firstCol + 1))
 
+#if 0
 static CharInfoRec  junkDefault;
+#endif
 
 typedef int (*MetricsFunc)(FontPtr, unsigned long, unsigned char *, 
 			   FontEncoding, unsigned long *, CharInfoPtr *);
@@ -169,9 +171,11 @@ getCharInfos (
 		    fsfree (xchars);
 		    return err;
 		}
-/*		if (glyphCount != 1 || 
+#if 0
+		if (glyphCount != 1 || 
 		   (*xci == defaultPtr && defaultCh != ((r<<8)+c)))
-		    *xci = &junkDefault;*/
+		    *xci = &junkDefault;
+#endif
 		xci++;
 	    }
 	}

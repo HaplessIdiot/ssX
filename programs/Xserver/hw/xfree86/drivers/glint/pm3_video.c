@@ -22,7 +22,7 @@
  * Authors: Alan Hourihane, alanh@fairlite.demon.co.uk
  *          Sven Luther <luther@dpt-info.u-strasbg.fr>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.5 2001/05/08 14:20:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.7 2001/08/18 11:37:31 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -830,7 +830,9 @@ Permedia3PutImage(
   Bool sync,
   RegionPtr clipBoxes, pointer data
 ){
+#if 0
    GLINTPtr pGlint = GLINTPTR(pScrn);
+#endif
    GLINTPortPrivPtr pPriv = (GLINTPortPrivPtr)data;
    INT32 x1, x2, y1, y2;
    int pitch;

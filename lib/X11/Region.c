@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XFree86: xc/lib/X11/Region.c,v 1.5 1999/05/09 10:50:01 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Region.c,v 1.6 2001/01/17 19:41:42 dawes Exp $ */
 /*
  * The functions in this file implement the Region abstraction, similar to one
  * used in the X11 sample server. A Region is simply an area, as the name
@@ -201,6 +201,8 @@ miSetExtents (pReg)
     assert(pExtents->x1 < pExtents->x2);
 }
 
+extern void _XSetClipRectangles();
+
 int
 XSetRegion( dpy, gc, r )
     Display *dpy;
@@ -211,7 +213,6 @@ XSetRegion( dpy, gc, r )
     register XRectangle *xr, *pr;
     register BOX *pb;
     unsigned long total;
-    extern void _XSetClipRectangles();
 
     LockDisplay (dpy);
     total = r->numRects * sizeof (XRectangle);

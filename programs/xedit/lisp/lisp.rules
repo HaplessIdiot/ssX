@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #ifndef LispModuleTarget
 #define LispModuleTarget(module,liblist,options)			@@\
 AllTarget(module.so)							@@\

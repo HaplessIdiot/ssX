@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.4 2000/02/12 03:39:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.5 2001/01/17 22:36:37 dawes Exp $ */
 
 
 #include "X.h"
@@ -116,14 +116,15 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     register int    m;
     register CfbBits   *pdst;
     RROP_DECLARE
-    register CfbBits   leftMask, rightMask;
     CfbBits   *pdstBase, *pdstRect;
     int		    nmiddle;
     int		    h;
     int		    w;
     int		    widthDst;
 #if PSZ == 24
-    int leftIndex, rightIndex, xOffset;
+    int		    leftIndex, rightIndex;
+#else
+    register CfbBits   leftMask, rightMask;
 #endif
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
@@ -765,7 +766,6 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     
     register CfbBits  *pdst;
     register int	    nlmiddle;
-    register CfbBits  startmask, endmask;
     register int	    w;
     int			    x;
     
@@ -777,7 +777,9 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    *pwidth;
     cfbPrivGCPtr    devPriv;
 #if PSZ == 24
-    int leftIndex, rightIndex, xOffset;
+    int		    leftIndex, rightIndex;
+#else
+    register CfbBits  startmask, endmask;
 #endif
 
     devPriv = cfbGetGCPrivate(pGC);

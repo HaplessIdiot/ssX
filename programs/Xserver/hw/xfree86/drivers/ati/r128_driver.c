@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.42 2001/10/02 11:44:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.43 2001/10/16 18:17:09 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1098,7 +1098,7 @@ static Bool R128PreInitGamma(ScrnInfoPtr pScrn)
 }
 
 static void
-R128I2CGetBits(I2CBusPtr b, int *clock, int *data)
+R128I2CGetBits(I2CBusPtr b, int *Clock, int *data)
 {
     ScrnInfoPtr   pScrn       = xf86Screens[b->scrnIndex];
     R128InfoPtr info = R128PTR(pScrn);
@@ -1107,13 +1107,13 @@ R128I2CGetBits(I2CBusPtr b, int *clock, int *data)
 
     /* Get the result. */
     val = INREG(info->DDCReg);
-    *clock = (val & R128_GPIO_MONID_Y_3) != 0;
+    *Clock = (val & R128_GPIO_MONID_Y_3) != 0;
     *data  = (val & R128_GPIO_MONID_Y_0) != 0;
 
 }
 
 static void
-R128I2CPutBits(I2CBusPtr b, int clock, int data)
+R128I2CPutBits(I2CBusPtr b, int Clock, int data)
 {
     ScrnInfoPtr   pScrn       = xf86Screens[b->scrnIndex];
     R128InfoPtr info = R128PTR(pScrn);
@@ -1122,7 +1122,7 @@ R128I2CPutBits(I2CBusPtr b, int clock, int data)
 
     val = INREG(info->DDCReg)  
               & ~R128_GPIO_MONID_EN_0 & ~R128_GPIO_MONID_EN_3;
-    val |= (clock ? 0:R128_GPIO_MONID_EN_3);
+    val |= (Clock ? 0:R128_GPIO_MONID_EN_3);
     val |= (data ? 0:R128_GPIO_MONID_EN_0);
     OUTREG(info->DDCReg, val);
 }

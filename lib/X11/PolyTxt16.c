@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/PolyTxt16.c,v 1.2 1999/05/09 10:49:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/PolyTxt16.c,v 1.3 2001/01/17 19:41:41 dawes Exp $ */
 
 #include "Xlibint.h"
 
@@ -106,7 +106,7 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 	    int nbytes = SIZEOF(xTextElt);
 	    int PartialNChars = item->nchars;
 	    int PartialDelta = item->delta;
-            register xTextElt *elt;
+            register xTextElt *elt = NULL;
 	    int FirstTimeThrough = True;
  	    XChar2b *CharacterOffset = item->chars;
 

@@ -76,7 +76,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.7 1999/12/13 02:12:55 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.8 2001/01/17 22:36:30 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -96,6 +96,7 @@ extern XpValidatePoolsRec PclValidatePoolsRec;
 
 static void AllocatePclPrivates(ScreenPtr pScreen);
 static int PclInitContext(XpContextPtr pCon);
+static Bool PclDestroyContext(XpContextPtr pCon);
 
 extern unsigned char *PclReadMap(char *, int *);
 
@@ -166,11 +167,9 @@ InitializePclDriver(
      int argc,
      char **argv)
 {
-    int maxRes, xRes, yRes, maxWidth, maxHeight, maxDim, numBytes;
+    int maxRes, xRes, yRes, maxDim;
     unsigned i;
     PclScreenPrivPtr pPriv;
-    char **printerNames;
-    int numPrinters;
     
     /*
      * Register this driver's InitContext function with the print

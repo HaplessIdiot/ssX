@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.26 2001/06/23 01:45:56 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.30 2001/10/21 18:28:13 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -1575,7 +1575,7 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 #endif
     if (config_mode == CONFIG_SCREEN) {
 	XF86OptionPtr option, options;
-	int rotate;
+	int rotate = 0;
 
 	options = computer.screens[i]->screen->scrn_option_lst;
 	if ((option = xf86findOption(options, "Rotate")) != NULL) {

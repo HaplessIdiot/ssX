@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.1 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.2 2001/10/18 03:15:22 paulo Exp $ */
 
 #include "string.h"
 #include "private.h"
@@ -245,7 +245,7 @@ Lisp_CharUpcase(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_IntChar(LispMac *mac, LispObj *list, char *fname)
 {
-    long character;
+    long character = 0;
     LispObj *obj = CAR(list);
 
     if (INTEGER_P(obj))

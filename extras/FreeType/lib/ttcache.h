@@ -4,7 +4,7 @@
  *
  *    Generic object cache
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -81,6 +81,7 @@
  *  - inserted an engine instance pointer in the cache structure
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTCACHE_H
 #define TTCACHE_H
@@ -99,24 +100,24 @@
   typedef TT_Error  TDestructor ( void*  object );
 
   typedef TConstructor  TRefresher;
-  typedef TDestructor   TFinaliser;
+  typedef TDestructor   TFinalizer;
 
   typedef TConstructor*  PConstructor;
   typedef TDestructor*   PDestructor;
   typedef TRefresher*    PRefresher;
-  typedef TFinaliser*    PFinaliser;
+  typedef TFinalizer*    PFinalizer;
 
 
   /* A Cache class record holds the data necessary to define */
   /* a cache kind.                                           */
   struct  TCache_Class_
   {
-    Long          object_size;
+    ULong         object_size;
     Long          idle_limit;
     PConstructor  init;
     PDestructor   done;
     PRefresher    reset;
-    PFinaliser    finalise;
+    PFinalizer    finalize;
   };
 
   typedef struct TCache_Class_  TCache_Class;
@@ -152,7 +153,9 @@
   };
 
   typedef struct TCache_  TCache;
-  typedef TCache          *PCache;
+  typedef TCache*         PCache;
+
+#if !defined(FTXCMAP_H) && !defined(FTXSBIT_H)
 
   /* Returns a new list element, either fresh or recycled. */
   /* Note: the returned element is unlinked.               */
@@ -205,6 +208,7 @@
   LOCAL_DEF
   TT_Error  TTCache_Done( PEngine_Instance  engine );
 
+#endif /* !FTXCMAP_H && !FTXSBIT_H */
 
 #ifdef __cplusplus
   }

@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.2 2001/09/27 08:34:28 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -130,7 +130,7 @@ Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 	if (!RamDacInit(pScrn, pS3->RamDacRec)) {
 		RamDacDestroyInfoRec(pS3->RamDacRec);
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "RamDacInit failed\n");
-		return;
+		return FALSE;
 	}
 
 	pS3->RamDac = IBMramdacProbe(pScrn, IBMRamdacs);
@@ -143,11 +143,6 @@ Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 void S3ProgramIBMRGBClock(ScrnInfoPtr pScrn, int clk, unsigned char m,
 			  unsigned char n, unsigned char df)
 {
-	S3Ptr pS3 = S3PTR(pScrn);
-	RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
-	RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
-	int tmp = 1;
-
 	S3OutIBMRGBIndReg(pScrn, IBMRGB_misc_clock, ~1, 1);
 
 	S3OutIBMRGBIndReg(pScrn, IBMRGB_m0+2*clk, 0, (df<<6)|(m&0x3f));
@@ -297,12 +292,7 @@ void S3IBMRGB_PreInit(ScrnInfoPtr pScrn)
 void S3IBMRGB_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
-	S3RegPtr new = &pS3->ModeRegs;
-	RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
-	RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
-	unsigned long m=0,n=0,p=0,c=0;
-	unsigned long clock;
-	unsigned char tmp, cr55, blank;
+	unsigned char tmp, blank;
 	int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 
 	S3IBMRGBSetClock(pScrn, mode->Clock, 2, pS3->MaxClock,

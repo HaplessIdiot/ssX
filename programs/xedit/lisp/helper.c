@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.13 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.14 2001/10/20 00:19:34 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -557,7 +557,7 @@ static LispObj *
 _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 {
     double count = 0.0;
-    LispObj *var, *val, *res, *body, *old_frm, *old_env;
+    LispObj *var, *val = NIL, *res = NIL, *body, *old_frm, *old_env;
 
     /* Parse arguments */
     if (CAR(list)->type != LispCons_t)

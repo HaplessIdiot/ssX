@@ -2,7 +2,7 @@
  * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.3 2000/02/12 03:39:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.4 2001/01/17 22:36:37 dawes Exp $ */
 
 /*
 
@@ -223,7 +223,7 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
     register CfbBits endmask; /* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
-    register int nlw;	/* loop version of nlwMiddle */
+    register int nlw = 0;	/* loop version of nlwMiddle */
     register CfbBits *p;	/* pointer to bits we're writing */
     int y;		/* current scan line */
     int srcy;		/* current tile position */

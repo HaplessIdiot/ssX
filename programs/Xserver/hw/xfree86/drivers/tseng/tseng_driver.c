@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.85 2001/06/15 21:23:04 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.87 2001/10/01 13:44:11 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1386,11 +1386,9 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 {
     MessageType from;
     TsengPtr pTseng = TsengPTR(pScrn);
-    resRange range[] = { {ResExcMemBlock,0,0},_END };
+    resRange range[] = { {ResExcMemBlock|ResBus,0,0},_END };
 
     PDEBUG("	TsengGetLinFbAddress\n");
-
-    from = X_PROBED;
 
     /* let config file override Base address */
     if (pTseng->pEnt->device->MemBase != 0) {
@@ -1430,7 +1428,7 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 		pTseng->UseLinMem = FALSE;
 		return TRUE;
 	    }
-	    if (xf86RegisterResources(pTseng->pEnt->index,range,ResNone)) {
+	    if (xf86RegisterResources(pTseng->pEnt->index,NULL,ResNone)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "    Cannot register linear memory."
 			   " Using banked mode instead.\n");

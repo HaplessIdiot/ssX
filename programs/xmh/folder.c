@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/folder.c,v 1.2 2001/08/01 00:45:06 tsi Exp $ */
 
 /* folder.c -- implement buttons relating to folders and other globals. */
 
@@ -289,7 +289,7 @@ static void CreateFolder(widget, client_data, call_data)
 	if (scrnList[i]->folderbuttons) {
 	    char	*c;
 	    Button	button;
-	    if (c = strchr(name, '/')) { /* if is subfolder */
+	    if ((c = strchr(name, '/'))) { /* if is subfolder */
 		c[0] = '\0';
 		button = BBoxFindButtonNamed(scrnList[i]->folderbuttons,
 					     name);

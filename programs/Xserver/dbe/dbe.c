@@ -30,7 +30,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.9 2001/06/23 03:33:21 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.10 2001/08/23 14:19:24 alanh Exp $ */
 
 
 /* INCLUDES */
@@ -351,7 +351,7 @@ static int
 ProcDbeGetVersion(client)
     ClientPtr client;
 {
-    REQUEST(xDbeGetVersionReq);
+    /* REQUEST(xDbeGetVersionReq); */
     xDbeGetVersionReply	rep;
     register int	n;
 
@@ -835,7 +835,7 @@ static int
 ProcDbeBeginIdiom(client)
     ClientPtr client;
 {
-    REQUEST(xDbeBeginIdiomReq);
+    /* REQUEST(xDbeBeginIdiomReq); */
     DbeScreenPrivPtr	pDbeScreenPriv;
     register int	i;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.36 2001/10/01 13:44:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.37 2001/10/02 15:57:32 alanh Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -79,7 +79,7 @@ enum { FBDEV_ROTATE_NONE=0, FBDEV_ROTATE_CW=270, FBDEV_ROTATE_UD=180, FBDEV_ROTA
 static int pix24bpp = 0;
 
 #define VERSION			4000
-#define FBDEV_NAME		"FBDev"
+#define FBDEV_NAME		"FBDEV"
 #define FBDEV_DRIVER_NAME	"fbdev"
 #define FBDEV_MAJOR_VERSION	0
 #define FBDEV_MINOR_VERSION	1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.40 2001/08/06 20:51:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.41 2001/09/04 14:03:27 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1632,7 +1632,7 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
     int attempt;
     register InputClients *other;
     ClientPtr client = NullClient;
-    Mask deliveryMask; 	/* If a grab occurs due to a button press, then
+    Mask deliveryMask = 0; /* If a grab occurs due to a button press, then
 		              this mask is the mask of the grab. */
     int type = pEvents->u.u.type;
 
@@ -2533,7 +2533,7 @@ CheckDeviceGrabs(device, xE, checkFirst, count)
     int count;
 {
     register int i;
-    register WindowPtr pWin;
+    register WindowPtr pWin = NULL;
     register FocusClassPtr focus = device->focus;
 
     if ((xE->u.u.type == ButtonPress
@@ -3676,7 +3676,7 @@ ProcGetInputFocus(client)
     ClientPtr client;
 {
     xGetInputFocusReply rep;
-    REQUEST(xReq);
+    /* REQUEST(xReq); */
     FocusClassPtr focus = inputInfo.keyboard->focus;
 
     REQUEST_SIZE_MATCH(xReq);

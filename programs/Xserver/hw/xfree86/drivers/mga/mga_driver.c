@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.207 2001/08/07 07:04:47 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.209 2001/10/01 13:44:06 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2890,7 +2890,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int width, height, displayWidth;
     MGAEntPtr pMgaEnt = NULL;
     int f;
+#ifdef XF86DRI
     MessageType driFrom = X_DEFAULT;
+#endif
 
     /*
      * First get the ScrnInfoRec
@@ -3460,8 +3462,8 @@ MGALeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    MGAPtr pMga = MGAPTR(pScrn);
 #ifdef XF86DRI
+    MGAPtr pMga = MGAPTR(pScrn);
     ScreenPtr pScreen;
 #endif
 

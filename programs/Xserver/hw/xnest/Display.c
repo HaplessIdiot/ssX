@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Display.c,v 3.2 2001/01/17 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Display.c,v 3.3 2001/08/27 17:41:00 dawes Exp $ */
 
 
 #include <X11/X.h>
@@ -185,8 +185,6 @@ void xnestOpenDisplay(argc, argv)
 
 void xnestCloseDisplay()
 {
-  int i;
-
   if (!xnestDoFullGeneration || !xnestDisplay) return;
 
   /*

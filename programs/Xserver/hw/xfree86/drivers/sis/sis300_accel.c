@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.2 2000/02/12 23:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.7 2001/04/19 12:40:33 alanh Exp $ */
 
 /*
  *
@@ -60,6 +60,7 @@ static void SiSSetupForMonoPatternFill(ScrnInfoPtr pScrn,
 static void SiSSubsequentMonoPatternFill(ScrnInfoPtr pScrn,
                                 int patx, int paty,
                                 int x, int y, int w, int h);
+#if 0
 static void SiSSetupForColorPatternFill(ScrnInfoPtr pScrn,
                                 int patx, int paty, int rop,
                                 unsigned int planemask,
@@ -78,7 +79,7 @@ static void SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 static void SiSSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
                                 int x, int y, int w, int h,
                                 int srcx, int srcy, int skipleft);
-
+#endif
 static void SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
                                 int fg, int bg, int rop, 
                                 unsigned int planemask);
@@ -171,17 +172,13 @@ SiS300AccelInit(ScreenPtr pScreen)
 	infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK |
 							HARDWARE_PATTERN_SCREEN_ORIGIN |
 							HARDWARE_PATTERN_PROGRAMMED_BITS ;
-#endif
 
-#if 0
 	/* Screen To Screen Color Expand */
 	infoPtr->SetupForScreenToScreenColorExpandFill =
 							SiSSetupForScreenToScreenColorExpand;
 	infoPtr->SubsequentScreenToScreenColorExpandFill =
 							SiSSubsequentScreenToScreenColorExpand;
-#endif
 	
-#if 0
 	/* CPU To Screen Color Expand ---implement another instead of this one! */
 	infoPtr->SetupForCPUToScreenColorExpandFill =
 							SiSSetupForCPUToScreenColorExpand;
@@ -606,6 +603,7 @@ SiSSubsequentMonoPatternFill(ScrnInfoPtr pScrn,
 	SiSDoCMD
 }
 
+#if 0
 static void
 SiSSetupForColorPatternFill(ScrnInfoPtr pScrn,
                                 int patx, int paty, int rop,
@@ -696,7 +694,6 @@ SiSSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 	pSiS->DoColorExpand = TRUE;
 }
 
-#if 0
 static void
 SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
                                 int fg, int bg,

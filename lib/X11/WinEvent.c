@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WinEvent.c,v 3.3 2001/01/17 19:41:47 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WinEvent.c,v 3.4 2001/07/25 15:04:44 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -46,7 +46,7 @@ XWindowEvent (dpy, w, mask, event)
 	register XEvent *event;	/* XEvent to be filled in. */
 {
 	register _XQEvent *prev, *qelt;
-	unsigned long qe_serial;
+	unsigned long qe_serial = 0;
 
         LockDisplay(dpy);
 	prev = NULL;

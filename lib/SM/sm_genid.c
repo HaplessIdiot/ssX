@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.11 2001/01/17 19:41:31 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.12 2001/07/25 15:04:43 dawes Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -161,8 +161,8 @@ SmsConn smsConn;
     return (NULL);
 #endif
 
-    sprintf (temp, "1%s%.13ld%.10d%.4d", address, time((Time_t*)0),
-        getpid (), sequence);
+    sprintf (temp, "1%s%.13ld%.10ld%.4d", address, time((Time_t*)0),
+        (long)getpid(), sequence);
 
     if (++sequence > 9999)
 	sequence = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.53 2001/04/05 15:55:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.54 2001/06/13 23:10:43 dawes Exp $ */
 
 /*
  *
@@ -99,6 +99,7 @@ DEFFUNCDOT(mul)
 DEFFUNCDOT(umul)
 DEFFUNCDOT(div)
 DEFFUNCDOT(udiv)
+#ifdef linux
 static LOOKUP SparcV89LookupTab[] = {
    SYMFUNCDOT89(rem)
    SYMFUNCDOT89(urem)
@@ -108,6 +109,7 @@ static LOOKUP SparcV89LookupTab[] = {
    SYMFUNCDOT89(udiv)
    { 0, 0 }
 };
+#endif
 static LOOKUP SparcLookupTab[] = {
    SYMFUNCDOT(rem)
    SYMFUNCDOT(urem)

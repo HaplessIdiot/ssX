@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.9 2001/07/25 15:05:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.10 2001/08/06 20:51:16 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1907,7 +1907,7 @@ miComputeArcs (
 	struct arcData	*data;
 	miArcDataPtr	arc;
 	xArc		xarc;
-	int		iphase, prevphase, joinphase;
+	int		iphase, prevphase = 0, joinphase;
 	int		arcsJoin;
 	int		selfJoin;
 

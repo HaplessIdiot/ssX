@@ -1,4 +1,4 @@
-/* $XConsortium: imExten.c,v 1.4 94/03/26 16:57:55 rws Exp $ */
+/* $Xorg: imExten.c,v 1.3 2000/08/17 19:45:12 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -26,6 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -75,11 +76,12 @@ _XimIsSupportExt(idx)
     int		 n = XIMNumber(extensions) - 1;
 
     for (i = 0; i < n; i++) {
-	if (extensions[i].idx == idx)
-	    if (extensions[idx].is_support)
+	if (extensions[i].idx == idx) {
+	    if (extensions[i].is_support)
 		return i;
 	    else
 		break;
+	}
     }
     return -1;
 }
@@ -242,11 +244,13 @@ _XimExtForwardKeyEvent(ic, ev, sync)
     Bool	 sync;
 {
     Xim		 im = (Xim) ic->core.im;
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD8	*buf_b = &buf[XIM_HEADER_SIZE];	
     CARD16	*buf_s = (CARD16 *)buf_b;
     CARD32	*buf_l = (CARD32 *)buf_b;
-    char	reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	preply;
     int		buf_size;
     int		ret_code;
@@ -448,7 +452,8 @@ _XimExtension(im)
     CARD16	*buf_s;
     int		 buf_len;
     INT16	 len;
-    char	 reply[BUFSIZE];
+    CARD32	 reply32[BUFSIZE/4];
+    char	*reply = (char *)reply32;
     XPointer	 preply;
     int		 buf_size;
     int		 ret_code;
@@ -549,7 +554,8 @@ _XimExtMove(im, ic, x, y)
     CARD16	 x;
     CARD16	 y;
 {
-    CARD8	 buf[BUFSIZE];
+    CARD32	 buf32[BUFSIZE/4];
+    CARD8	*buf = (CARD8 *)buf32;
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
     int		idx;

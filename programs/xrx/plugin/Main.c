@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * RX plug-in module based on the UnixTemplate file provided by Netcape.
@@ -563,9 +564,11 @@ exit:
 void 
 NPP_StreamAsFile(NPP instance, NPStream *stream, const char* fname)
 {
+    /*
     PluginInstance* This;
     if (instance != NULL)
 	This = (PluginInstance*) instance->pdata;
+     */
 }
 
 
@@ -576,7 +579,9 @@ NPP_Print(NPP instance, NPPrint* printInfo)
 	return;
 
     if (instance != NULL) {
+#if 0
 	PluginInstance* This = (PluginInstance*) instance->pdata;
+#endif
 	
 	if (printInfo->mode == NP_FULL) {
 	    /*
@@ -596,14 +601,17 @@ NPP_Print(NPP instance, NPPrint* printInfo)
 	     *	etc.
 	     */
 
+	    /*
 	    void* platformPrint =
 		printInfo->print.fullPrint.platformPrint;
 	    NPBool printOne =
 		printInfo->print.fullPrint.printOne;
+	     */
 			
 	    /* Do the default*/
 	    printInfo->print.fullPrint.pluginPrinted = FALSE;
 	}
+#if 0
 	else {	/* If not fullscreen, we must be embedded */
 	    /*
 	     * PLUGIN DEVELOPERS:
@@ -622,5 +630,6 @@ NPP_Print(NPP instance, NPPrint* printInfo)
 	    void* platformPrint =
 		printInfo->print.embedPrint.platformPrint;
 	}
+#endif
     }
 }

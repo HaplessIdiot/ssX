@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.7 2001/08/27 22:01:21 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.8 2001/08/31 19:00:02 paulo Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -399,7 +399,7 @@ previous_anchor:
 	C_ParserEnt *ent, *nent;
 	XawTextAnchor *kanc;
 	XawTextEntity *kent;
-	XawTextPosition kfrom, kto;
+	XawTextPosition kfrom = 0, kto = 0;
 	int delta = info->block->length - (info->right - info->left);
 
 	if (XawTextSourceAnchorAndEntity(w, position - 1,

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_vid.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -26,6 +26,7 @@
 #ifdef i386
 #define _NEED_SYSI86
 #endif
+#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
@@ -40,49 +41,42 @@
 char *apertureDevName = NULL;
 
 Bool
-xf86LinearVidMem()
+xf86LinearVidMem(void)
 {
-#ifdef i386
 	int	mmapFd;
+
+	if (apertureDevName)
+	    return TRUE;
 
 	apertureDevName = "/dev/xsvc";
 	if ((mmapFd = open(apertureDevName, O_RDWR)) < 0)
 	{
-#ifndef __SOL8__
 	    apertureDevName = "/dev/fbs/aperture";
 	    if((mmapFd = open(apertureDevName, O_RDWR)) < 0)
-#endif
 	    {
 		xf86Msg(X_WARNING,
 			"xf86LinearVidMem: failed to open %s (%s)\n",
 			apertureDevName, strerror(errno));
 		xf86Msg(X_WARNING, "xf86LinearVidMem:"
-#ifndef __SOL8__
 			" either /dev/fbs/aperture or"
-#endif
 			" /dev/xsvc device driver"
 			" required\n");
 		xf86Msg(X_WARNING,
 			"xf86LinearVidMem: linear memory access disabled\n");
+		apertureDevName = NULL;
 		return FALSE;
 	    }
 	}
 	close(mmapFd);
 	return TRUE;
-#else /* i386 */
-	FatalError("xf86LinearVidMem() called\n");
-
-	return FALSE;	/* Gd'ole gcc */
-#endif /* i386 */
 }
 
 pointer
 xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
-#ifdef i386
 	pointer base;
 	int fd;
-	char solx86_vtname[20];
+	char vtname[20];
 
 	/*
 	 * Solaris 2.1 x86 SVR4 (10/27/93)
@@ -106,42 +100,37 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	 * Use /dev/xsvc for everything
 	 *
 	 * DWH - 7/26/99 - Solaris8/dev/xsvc changes
+	 *
+	 * TSI - 2001.09 - SPARC changes
 	 */
 
-#ifndef __SOL8__
+#if defined(i386) && !defined(__SOL8__)
 	if(Base < 0xFFFFF)
-		sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
+		sprintf(vtname, "/dev/vt%02d", xf86Info.vtno);
 	else
 #endif
 	{
-		if (!apertureDevName)
-			if (!xf86LinearVidMem())
-				FatalError("xf86MapVidMem: Could not mmap "
-					   "linear framebuffer [s=%x,a=%x]\n",
-					   Size, Base);
+		if (!xf86LinearVidMem())
+			FatalError("xf86MapVidMem:  no aperture device\n");
 
-		sprintf(solx86_vtname, apertureDevName);
+		strcpy(vtname, apertureDevName);
 	}
 
-	if ((fd = open(solx86_vtname, O_RDWR,0)) < 0)
-	{
+	fd = open(vtname, (Flags & VIDMEM_READONLY) ? O_RDONLY : O_RDWR);
+	if (fd < 0)
 		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
-			   solx86_vtname, strerror(errno));
-	}
-	base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
+			   vtname, strerror(errno));
+
+	base = mmap(NULL, Size,
+		    (Flags & VIDMEM_READONLY) ?
+			PROT_READ : (PROT_READ | PROT_WRITE),
 		     MAP_SHARED, fd, (off_t)Base);
 	close(fd);
 	if (base == MAP_FAILED)
-	{
-		FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
-			   "xf86MapVidMem", Size, Base, strerror(errno));
-	}
-	return(base);
-#else /* i386 */
-	FatalError("xf86MapVidMem() called\n");
+		FatalError("xf86MapVidMem:  mmap failure:  %s\n",
+			   strerror(errno));
 
-	return NULL;	/* Gd'ole gcc */
-#endif
+	return(base);
 }
 
 /* ARGSUSED */
@@ -155,10 +144,12 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 /* I/O Permissions section						   */
 /***************************************************************************/
 
+#ifdef i386
 static Bool ExtendedEnabled = FALSE;
+#endif
 
 void
-xf86EnableIO()
+xf86EnableIO(void)
 {
 #ifdef i386
 	if (ExtendedEnabled)
@@ -166,22 +157,22 @@ xf86EnableIO()
 
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) < 0)
 		FatalError("xf86EnableIOPorts: Failed to set IOPL for I/O\n");
-#endif /* i386 */
 
 	ExtendedEnabled = TRUE;
+#endif /* i386 */
 }
 
 void
-xf86DisableIO()
+xf86DisableIO(void)
 {
 #ifdef i386
 	if(!ExtendedEnabled)
 		return;
 
 	sysi86(SI86V86, V86SC_IOPL, 0);
-#endif /* i386 */
 
 	ExtendedEnabled = FALSE;
+#endif /* i386 */
 }
 
 
@@ -189,7 +180,7 @@ xf86DisableIO()
 /* Interrupt Handling section						   */
 /***************************************************************************/
 
-Bool xf86DisableInterrupts()
+Bool xf86DisableInterrupts(void)
 {
 #ifdef i386
 	if (!ExtendedEnabled && (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) < 0))
@@ -208,7 +199,7 @@ Bool xf86DisableInterrupts()
 	return TRUE;
 }
 
-void xf86EnableInterrupts()
+void xf86EnableInterrupts(void)
 {
 #ifdef i386
 	if (!ExtendedEnabled && (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) < 0))

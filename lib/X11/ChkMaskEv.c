@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/ChkMaskEv.c,v 3.4 2001/07/29 05:01:11 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -43,7 +43,7 @@ Bool XCheckMaskEvent (dpy, mask, event)
  	register XEvent *event;	/* XEvent to be filled in. */
 {
 	register _XQEvent *prev, *qelt;
-	unsigned long qe_serial;
+	unsigned long qe_serial = 0;
 	int n;			/* time through count */
 
         LockDisplay(dpy);

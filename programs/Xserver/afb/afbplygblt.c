@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbplygblt.c,v 3.0 1996/08/18 01:45:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbplygblt.c,v 3.1 1998/03/20 21:04:56 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -94,10 +94,6 @@ afbPolyGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
 	ExtentInfoRec info;			/* used by QueryGlyphExtents() */
 	BoxRec bbox;					/* string's bounding box */
-	xRectangle backrect;			/* backing rectangle to paint.
-											in the general case, NOT necessarily
-											the same as the string's bounding box
-										*/
 
 	CharInfoPtr pci;
 	int xorg, yorg;				/* origin of drawable in bitmap */

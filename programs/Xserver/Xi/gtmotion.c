@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/gtmotion.c,v 3.4 1998/10/04 09:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/gtmotion.c,v 3.5 2001/01/17 22:13:25 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -96,7 +96,7 @@ ProcXGetDeviceMotionEvents(client)
     INT32 *coords = NULL, *bufptr;
     xGetDeviceMotionEventsReply rep;
     unsigned long i;
-    int     num_events, axes, size, tsize;
+    int     num_events, axes, size = 0, tsize;
     unsigned long nEvents;
     DeviceIntPtr dev;
     TimeStamp start, stop;

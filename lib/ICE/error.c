@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/error.c,v 1.3 2001/01/17 19:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/error.c,v 1.4 2001/07/25 15:04:43 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -602,8 +602,8 @@ IceConn iceConn;
 
 {
     fprintf (stderr,
-	"ICE default IO error handler doing an exit(), pid = %d, errno = %d\n",
-	getpid(), errno);
+	"ICE default IO error handler doing an exit(), pid = %ld, errno = %d\n",
+	(long)getpid(), errno);
 
     exit (1);
 }

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.9 2001/07/10 21:39:41 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.10 2001/08/01 00:44:56 tsi Exp $
  */
 
 #define CARDS_PRIVATE
@@ -98,7 +98,7 @@ InitializePciInfo(void)
 void
 CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 {
-    int i, j, ichk, ivnd, vendor, device;
+    int i, j, ichk, ivnd, vendor = -1, device;
     SymTabPtr chips = opts->chipsets;
     chipset_check *check = NULL;
     int num_check = 0;

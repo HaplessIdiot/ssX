@@ -4,7 +4,7 @@
  *
  *    TrueType Tables Loader.
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -19,6 +19,7 @@
  *  - add function Load_TrueType_Any used by TT_Get_Font_Data
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTLOAD_H
 #define TTLOAD_H
@@ -31,8 +32,10 @@
   extern "C" {
 #endif
 
-  EXPORT_DEF Long  TT_LookUp_Table( PFace  face,
-                                    ULong  tag  );
+  EXPORT_DEF
+  Long  TT_LookUp_Table( PFace  face, ULong  tag  );
+
+#if !defined(FTXSBIT_H)
 
   LOCAL_DEF TT_Error  Load_TrueType_Directory        ( PFace  face,
                                                        ULong  faceIndex );
@@ -60,6 +63,8 @@
 
   LOCAL_DEF TT_Error  Free_TrueType_Names( PFace  face );
   LOCAL_DEF TT_Error  Free_TrueType_Hdmx ( PFace  face );
+
+#endif /* !FTXSBIT_H */
 
 
 /* The following macros are defined to simplify the writing of */
@@ -115,9 +120,13 @@
 
 
 #define ACCESS_Frame( _size_ ) \
-          ( (error = TT_Access_Frame( stream, &frame, _size_ )) != TT_Err_Ok )
+          ( (error = TT_Access_Frame( stream, \
+                                      &frame, \
+                                      (Long)(_size_) )) != TT_Err_Ok )
 #define CHECK_ACCESS_Frame( _size_ ) \
-          ( (error = TT_Check_And_Access_Frame( stream, &frame, _size_ )) != TT_Err_Ok )
+          ( (error = TT_Check_And_Access_Frame( stream, \
+                                                &frame, \
+                                                (Long)(_size_) )) != TT_Err_Ok )
 #define FORGET_Frame() \
           ( (void)TT_Forget_Frame( &frame ) )
 
@@ -132,13 +141,20 @@
 #define FILE_Pos()    TT_File_Pos ( stream )
 
 #define FILE_Seek( _position_ ) \
-          ( (error = TT_Seek_File( stream, _position_ )) != TT_Err_Ok )
+          ( (error = TT_Seek_File( stream, \
+                                   (Long)(_position_) )) != TT_Err_Ok )
 #define FILE_Skip( _distance_ ) \
-          ( (error = TT_Skip_File( stream, _distance_ )) != TT_Err_Ok )
+          ( (error = TT_Skip_File( stream, \
+                                   (Long)(_distance_) )) != TT_Err_Ok )
 #define FILE_Read( buffer, count ) \
-          ( (error = TT_Read_File ( stream, buffer, count )) != TT_Err_Ok )
+          ( (error = TT_Read_File ( stream, \
+                                    buffer, \
+                                    (Long)(count) )) != TT_Err_Ok )
 #define FILE_Read_At( pos, buffer, count ) \
-          ( (error = TT_Read_At_File( stream, pos, buffer, count )) != TT_Err_Ok )
+          ( (error = TT_Read_At_File( stream, \
+                                      (Long)(pos), \
+                                      buffer, \
+                                      (Long)(count) )) != TT_Err_Ok )
 
 #else   /* thread-safe implementation */
 
@@ -166,9 +182,9 @@
 
 
 #define ACCESS_Frame( _size_ ) \
-          ( (error = TT_Access_Frame( _size_ )) != TT_Err_Ok )
+          ( (error = TT_Access_Frame( (Long)(_size_) )) != TT_Err_Ok )
 #define CHECK_ACCESS_Frame( _size_ ) \
-          ( (error = TT_Check_And_Access_Frame( _size_ )) != TT_Err_Ok )
+          ( (error = TT_Check_And_Access_Frame( (Long)(_size_) )) != TT_Err_Ok )
 #define FORGET_Frame() \
           ( (void)TT_Forget_Frame() )
 
@@ -183,13 +199,16 @@
 #define FILE_Pos()    TT_File_Pos()
 
 #define FILE_Seek( _position_ ) \
-          ( (error = TT_Seek_File( _position_ )) != TT_Err_Ok )
+          ( (error = TT_Seek_File( (Long)(_position_) )) != TT_Err_Ok )
 #define FILE_Skip( _distance_ ) \
-          ( (error = TT_Skip_File( _distance_ )) != TT_Err_Ok )
+          ( (error = TT_Skip_File( (Long)(_distance_) )) != TT_Err_Ok )
 #define FILE_Read( buffer, count ) \
-          ( (error = TT_Read_File ( buffer, count )) != TT_Err_Ok )
+          ( (error = TT_Read_File ( buffer, \
+                                    (Long)(count) )) != TT_Err_Ok )
 #define FILE_Read_At( pos, buffer, count ) \
-          ( (error = TT_Read_At_File( pos, buffer, count )) != TT_Err_Ok )
+          ( (error = TT_Read_At_File( (Long)(pos), \
+                                      buffer, \
+                                      (Long)(count) )) != TT_Err_Ok )
 
 #endif /* TT_CONFIG_OPTION_THREAD_SAFE */
 

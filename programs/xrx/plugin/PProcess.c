@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "RxPlugin.h"
 #include "XUrls.h"
@@ -80,7 +81,7 @@ GetWindowGeometry(
     if (sizehints) {
 	XGetWMNormalHints (dpy, win, sizehints, &mask);
 
-	if (mask & USPosition|PPosition) {
+	if (mask & (USPosition|PPosition)) {
 	    *x = sizehints->x;
 	    *y = sizehints->y;
 	    *width = sizehints->width;

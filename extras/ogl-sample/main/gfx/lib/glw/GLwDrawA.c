@@ -32,6 +32,7 @@
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
 */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <GL/glx.h>
@@ -432,8 +433,6 @@ static void createAttribList(GLwDrawingAreaWidget w)
 /* Initialize the visualInfo based on the attribute list */
 static void createVisualInfo(GLwDrawingAreaWidget w)
 {
-    static XVisualInfo *visualInfo;
-
     assert(w->glwDrawingArea.attribList);
     w->glwDrawingArea.visualInfo = glXChooseVisual(XtDisplay(w),
 					XScreenNumberOfScreen(XtScreen(w)),
@@ -630,7 +629,6 @@ static void
 Redraw(GLwDrawingAreaWidget w, XEvent *event, Region region)
 {
    GLwDrawingAreaCallbackStruct cb;
-   XtCallbackList cblist;
    
    cb.reason = GLwCR_EXPOSE;
    cb.event = event;

@@ -1,16 +1,10 @@
-
-/* $XConsortium: sunCfb24.c,v 1.3 94/04/05 11:29:31 dpw Exp $ */
+/* $Xorg: sunCfb24.c,v 1.3 2000/08/17 19:48:29 cpqbld Exp $ */
 
 /*
 
-Copyright (c) 1994  X Consortium
+Copyright 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
@@ -22,11 +16,12 @@ CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
 ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings in
-this Software without prior written authorization from the X Consortium.
+this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * The CG8 is similar to the CG4 in that it has a mono plane, an enable 
@@ -73,7 +68,6 @@ static void CG24StoreColors (pmap, ndef, pdefs)
     int ndef;
     xColorItem* pdefs;
 {
-  struct fbcmap cmap;
   u_char rmap[256], gmap[256], bmap[256];
   SetupScreen (pmap->pScreen);
   VisualPtr pVisual = pmap->pVisual;

@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.2 2001/10/10 20:59:25 dawes Exp $ */
 
 #include <xf86Version.h>
 
@@ -1384,7 +1384,7 @@ xf86HypSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 ** Allocates the device structures for the HyperPen.
 */
 static LocalDevicePtr
-xf86HypAllocate()
+xf86HypAllocate(void)
 {
 #ifdef XFREE86_V4
     LocalDevicePtr	local = xf86AllocateInput(hypDrv, 0);
@@ -1419,9 +1419,9 @@ xf86HypAllocate()
     local->history_size  = 0;
 
 #if defined(sun) && !defined(i386)
-    if (def_name) {
+    if (dev_name) {
 	priv->hypDevice = (char *)xalloc(strlen(dev_name) + 1);
-	strcpy(priv->hypDevice, device_name);
+	strcpy(priv->hypDevice, dev_name);
 	ErrorF("xf86HypOpen port changed to '%s'\n", priv->hypDevice);
     } else {
 	priv->hypDevice = "";

@@ -1,4 +1,37 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 407. Fix for threaded libraries (Marc La France).
+ 406. Finish removal of SuperProbe (Marc La France).
+ 405. A rather large number of warning fixes throughout (Marc La France).
+ 404. Fix bug in HTML install script (Marc La France).
+ 403. Missing ident lines for some XFree86-modified files (Marc La France).
+ 402. Add default half-width doublescanned modes (Marc La France).
+ 401. Mark all driver-registered resources with ResBus (Maarc La France).
+ 400. Fix DPMS-related build problem (Marc La France).
+ 399. Log a message just before calling each ChipProbe() during '-probe'
+      processing (Marc La France).
+ 398. Temporarily disable ISA probing on SPARCs and PowerPCs (Marc La France).
+ 397. Add PCI IDs for Sun hardware (Marc La France).
+ 396. Fix memory leak in resource relocation (Marc La France).
+ 395. Do not relocate resources that only conflict with disabled non-video PCI
+      devices or disabled PCI ROMs (Marc La France).
+ 394. Re-organise SBUS code (Marc La France).
+ 393. Add as-yet-unused definitions for PCI resource types other than I/O and
+      memory (Marc La France).
+ 392. Add doc for Solaris, but don't format it yet (Marc La France).
+ 391. Normalise driver names (Marc La France).
+ 390. For SPARCs, disable DGA support in ATI driver (Marc La France).
+ 389. Clean up some debugging messages (Marc La France).
+ 388. Fix newport driver for when a /proc fs isn't mounted (Marc La France).
+ 387. Fix DAC handling bugs in s3 driver (Marc La France).
+ 386. Fix resource registration bug for PCI Tseng's (Marc La France).
+ 385. Add aperture driver for Solaris (not yet used) (Marc La France).
+ 384. Rework scanpci to fix problems that prevented it from completely
+      displaying non-PCI bridges and Simba bridges (Marc La France).
+ 383. Fix build problems in some input drivers (Marc La France).
+ 382. Fix int10 compile problem for SPARCs and PowerPCs (Marc La France).
+ 381. Ensure master aborts on secondary buses complete normally during PCI
+      scans (Marc La France).
+ 380. Some memory mapping and Solaris cleanups (Marc La France).
  379. Fix XDarwin crash on server reset and problem in full screen mode when
       switching from X to Aqua to X too rapidly (Torrey T. Lyons).
  378. Add __apploaddir__ definition to imake MANDEFS, to specify location of
@@ -14010,4 +14043,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2000 2001/10/25 00:18:52 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2001 2001/10/26 06:13:56 torrey Exp $

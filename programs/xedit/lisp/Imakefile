@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #include "lisp.cf"
 #include "lisp.rules"
 

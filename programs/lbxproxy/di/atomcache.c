@@ -42,6 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+/* $XFree86$ */
 
 /*
  * atom cache for LBX
@@ -158,7 +159,7 @@ LbxMakeAtom(server, string, len, atom, makeit)
 {
     AtomListPtr a;
     int         hash;
-    int         h;
+    int         h = 0;
     int         r;
 
     hash = Hash(string, len);

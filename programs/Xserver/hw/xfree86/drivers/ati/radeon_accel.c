@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.18 2001/09/25 14:58:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.19 2001/09/26 12:49:25 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -494,10 +494,10 @@ static void  RADEONSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 
 /* unlike r128, Radeon don't have the Last-Pel controlling bit in DP_CNTL_XDIR_YDIR_YMAJOR
    for line drawing, so we have to do it using our own extrapolation routine*/
-static void LastLinePel(int *x1, int *y1, int *x2, int *y2)
+static void LastLinePel(int *X1, int *Y1, int *X2, int *Y2)
 {
 	int tg, deltax, deltay;
-	int xa = *x1, ya = *y1, xb = *x2, yb = *y2;
+	int xa = *X1, ya = *Y1, xb = *X2, yb = *Y2;
 
 	deltax = xb - xa;
 	deltay = yb - ya;
@@ -1030,41 +1030,41 @@ static void RADEONSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 }
 
 static void RADEONSetClippingRectangle(ScrnInfoPtr pScrn,
-							  int x1, int y1, int x2, int y2)
+							  int xa, int ya, int xb, int yb)
 {
 	RADEONInfoPtr   info        = RADEONPTR(pScrn);
 	unsigned char *RADEONMMIO = info->MMIO;
 	unsigned long tmp = 0;
 
-	if(x1 < 0)
+	if(xa < 0)
 	{
-		tmp = -x1;
+		tmp = -xa;
 		tmp |= RADEON_SC_SIGN_MASK_LO;
 	}
-	else tmp = x1;
+	else tmp = xa;
 
-	if(y1 < 0)
+	if(ya < 0)
 	{
-		tmp |= ((-y1) << 16);
+		tmp |= ((-ya) << 16);
 		tmp |= RADEON_SC_SIGN_MASK_HI;
 	}
-	else tmp |= (y1 << 16);
+	else tmp |= (ya << 16);
 
 	OUTREG(RADEON_SC_TOP_LEFT, tmp);
 
-	if(x2 < 0)
+	if(xb < 0)
 	{
-		tmp = -x2;
+		tmp = -xb;
 		tmp |= RADEON_SC_SIGN_MASK_LO;
 	}
-	else tmp = x2;
+	else tmp = xb;
 
-	if(y2 < 0)
+	if(yb < 0)
 	{
-		tmp |= ((-y2) << 16);
+		tmp |= ((-yb) << 16);
 		tmp |= RADEON_SC_SIGN_MASK_HI;
 	}
-	else tmp |= (y2 << 16);
+	else tmp |= (yb << 16);
     OUTREG(RADEON_SC_BOTTOM_RIGHT, tmp);
 
     OUTREG(RADEON_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl | RADEON_GMC_DST_CLIPPING));
@@ -1345,38 +1345,38 @@ static void RADEONCPSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
 
 
 static void RADEONCPSetClippingRectangle(ScrnInfoPtr pScrn,
-							  int x1, int y1, int x2, int y2)
+							  int xa, int ya, int xb, int yb)
 {
 	RADEONInfoPtr   info        = RADEONPTR(pScrn);
 	unsigned long tmp1 = 0, tmp2 = 0;
 
-	if(x1 < 0)
+	if(xa < 0)
 	{
-		tmp1 = -x1;
+		tmp1 = -xa;
 		tmp1 |= RADEON_SC_SIGN_MASK_LO;
 	}
-	else tmp1 = x1;
+	else tmp1 = xa;
 
-	if(y1 < 0)
+	if(ya < 0)
 	{
-		tmp1 |= ((-y1) << 16);
+		tmp1 |= ((-ya) << 16);
 		tmp1 |= RADEON_SC_SIGN_MASK_HI;
 	}
-	else tmp1 |= (y1 << 16);
+	else tmp1 |= (ya << 16);
 
-	if(x2 < 0)
+	if(xb < 0)
 	{
-		tmp2 = -x2;
+		tmp2 = -xb;
 		tmp2 |= RADEON_SC_SIGN_MASK_LO;
 	}
-	else tmp2 = x2;
+	else tmp2 = xb;
 
-	if(y2 < 0)
+	if(yb < 0)
 	{
-		tmp2 |= ((-y2) << 16);
+		tmp2 |= ((-yb) << 16);
 		tmp2 |= RADEON_SC_SIGN_MASK_HI;
 	}
-	else tmp2 |= (y2 << 16);
+	else tmp2 |= (yb << 16);
 
 	{
 	

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.27 2001/05/15 10:19:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.29 2001/10/01 13:44:14 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -354,7 +354,8 @@
  */
 
 /* Primitive Types */
-typedef unsigned long ADDRESS;		/* Memory/PCI address */
+typedef unsigned long ADDRESS;    /* Memory/PCI address */
+typedef unsigned long IOADDRESS;  /* Must be large enough for a pointer */
 typedef unsigned long PCITAG;
 
 /*
@@ -666,11 +667,6 @@ int           xf86GetAvailablePciBIOSTypes(PCITAG Tag, int basereg,
 					   PciBiosType *Buf);
 pciConfigPtr *xf86scanpci(int flags);
 
-/* Old sytle PCI access functions (for compatibility) */
-#if 0
-void          xf86writepci(int, int, int, int, int, CARD32, CARD32);
-#endif
-
 extern int pciNumBuses;
 
 typedef enum {
@@ -686,5 +682,3 @@ typedef enum {
 } romBaseSource;
 
 #endif /* _XF86PCI_H */
-
-

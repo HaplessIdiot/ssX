@@ -1,4 +1,4 @@
-/* $XConsortium: geometry.c /main/3 1995/12/15 17:41:55 converse $ */
+/* $Xorg: geometry.c,v 1.3 2000/08/17 19:54:30 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -265,9 +266,13 @@ static char	buf[64];
 /***====================================================================***/
 
 static void
+#if NeedFunctionPrototypes
+InitPropertyInfo(PropertyInfo *pi,GeometryInfo *info)
+#else
 InitPropertyInfo(pi,info)
     PropertyInfo *	pi;
     GeometryInfo *	info;
+#endif
 {
     pi->defs.defined= 0;
     pi->defs.fileID= info->fileID;
@@ -277,9 +282,13 @@ InitPropertyInfo(pi,info)
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeProperties(PropertyInfo *pi,GeometryInfo *info)
+#else
 FreeProperties(pi,info)
     PropertyInfo *	pi;
     GeometryInfo *	info;
+#endif
 {
 PropertyInfo *	tmp;
 PropertyInfo *	next;
@@ -301,10 +310,14 @@ PropertyInfo *	next;
 }
 
 static void
+#if NeedFunctionPrototypes
+InitKeyInfo(KeyInfo *key,RowInfo *row,GeometryInfo *info)
+#else
 InitKeyInfo(key,row,info)
     KeyInfo *		key;
     RowInfo *		row;
     GeometryInfo *	info;
+#endif
 {
 
     if (key!=&row->dfltKey) {
@@ -325,8 +338,12 @@ InitKeyInfo(key,row,info)
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearKeyInfo(KeyInfo *key)
+#else
 ClearKeyInfo(key)
     KeyInfo *		key;
+#endif
 {
     key->defs.defined&= ~_GK_Default;
     strcpy(key->name,"default");
@@ -337,10 +354,14 @@ ClearKeyInfo(key)
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeKeys(KeyInfo *key,RowInfo *row,GeometryInfo *info)
+#else
 FreeKeys(key,row,info)
     KeyInfo *		key;
     RowInfo *		row;
     GeometryInfo *	info;
+#endif
 {
 KeyInfo *	tmp;
 KeyInfo *	next;
@@ -358,10 +379,14 @@ KeyInfo *	next;
 }
 
 static void
+#if NeedFunctionPrototypes
+InitRowInfo(RowInfo *row,SectionInfo *section,GeometryInfo *info)
+#else
 InitRowInfo(row,section,info)
     RowInfo *		row;
     SectionInfo *	section;
     GeometryInfo *	info;
+#endif
 {
     if (row!= &section->dfltRow) {
 	*row= section->dfltRow;
@@ -382,12 +407,14 @@ InitRowInfo(row,section,info)
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearRowInfo(RowInfo *row,GeometryInfo *info)
+#else
 ClearRowInfo(row,info)
     RowInfo *		row;
     GeometryInfo *	info;
+#endif
 {
-CommonInfo	old;
-
     row->defs.defined&= ~_GR_Default;
     row->top= row->left= 0;
     row->vertical= False;
@@ -400,10 +427,14 @@ CommonInfo	old;
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeRows(RowInfo *row,SectionInfo *section,GeometryInfo *info)
+#else
 FreeRows(row,section,info)
     RowInfo *		row;
     SectionInfo *	section;
     GeometryInfo *	info;
+#endif
 {
 RowInfo *	next;
 RowInfo *	tmp;
@@ -438,9 +469,13 @@ FindDoodadByType(di,type)
 }
 
 static DoodadInfo *
+#if NeedFunctionPrototypes
+FindDoodadByName(DoodadInfo *di,Atom name)
+#else
 FindDoodadByName(di,name)
     DoodadInfo *	di;
     Atom		name;
+#endif
 {
     while (di) {
 	if (di->name==name)
@@ -451,11 +486,15 @@ FindDoodadByName(di,name)
 }
 
 static void
+#if NeedFunctionPrototypes
+InitDoodadInfo(DoodadInfo *di,unsigned type,SectionInfo *si,GeometryInfo *info)
+#else
 InitDoodadInfo(di,type,si,info)
     DoodadInfo *	di;
     unsigned		type;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 DoodadInfo *	dflt;
 
@@ -488,8 +527,12 @@ DoodadInfo *	dflt;
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearDoodadInfo(DoodadInfo *di)
+#else
 ClearDoodadInfo(di)
     DoodadInfo *	di;
+#endif
 {
 CommonInfo	defs;
 
@@ -501,8 +544,12 @@ CommonInfo	defs;
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearOverlayInfo(OverlayInfo *ol)
+#else
 ClearOverlayInfo(ol)
     OverlayInfo *	ol;
+#endif
 {
     if (ol && ol->keys) {
 	ol->keys= (OverlayKeyInfo *)ClearCommonInfo(&ol->keys->defs);
@@ -512,10 +559,14 @@ ClearOverlayInfo(ol)
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeDoodads(DoodadInfo *di,SectionInfo *si,GeometryInfo *info)
+#else
 FreeDoodads(di,si,info)
     DoodadInfo *	di;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 DoodadInfo *	tmp;
 DoodadInfo *	next;
@@ -543,9 +594,13 @@ DoodadInfo *	next;
 }
 
 static void
+#if NeedFunctionPrototypes
+InitSectionInfo(SectionInfo *si,GeometryInfo *info)
+#else
 InitSectionInfo(si,info)
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
     if (si!=&info->dfltSection) {
 	*si= info->dfltSection;
@@ -568,10 +623,14 @@ InitSectionInfo(si,info)
 }
 
 static void
+#if NeedFunctionPrototypes
+DupSectionInfo(SectionInfo *into,SectionInfo *from,GeometryInfo *info)
+#else
 DupSectionInfo(into,from,info)
     SectionInfo *	into;
     SectionInfo *	from;
     GeometryInfo *	info;
+#endif
 {
 CommonInfo	defs;
 
@@ -592,9 +651,13 @@ CommonInfo	defs;
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearSectionInfo(SectionInfo *si,GeometryInfo *info)
+#else
 ClearSectionInfo(si,info)
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 
     si->defs.defined&= ~_GS_Default;
@@ -616,9 +679,13 @@ ClearSectionInfo(si,info)
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeSections(SectionInfo *si,GeometryInfo *info)
+#else
 FreeSections(si,info)
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 SectionInfo *	tmp;
 SectionInfo *	next;
@@ -636,9 +703,13 @@ SectionInfo *	next;
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeShapes(ShapeInfo *si,GeometryInfo *info)
+#else
 FreeShapes(si,info)
     ShapeInfo *		si;
     GeometryInfo *	info;
+#endif
 {
 ShapeInfo *	tmp;
 ShapeInfo *	next;
@@ -681,8 +752,6 @@ InitGeometryInfo(info,fileID,merge)
     unsigned		merge;
 #endif
 {
-register int i;
-
     bzero(info,sizeof(GeometryInfo));
     info->fileID= fileID;
     info->merge= merge;
@@ -692,11 +761,13 @@ register int i;
 }
 
 static void
+#if NeedFunctionPrototypes
+ClearGeometryInfo(GeometryInfo *info)
+#else
 ClearGeometryInfo(info)
     GeometryInfo *	info;
+#endif
 {
-register int i;
-
     if (info->name)
 	uFree(info->name);
     info->name= NULL;
@@ -719,8 +790,12 @@ register int i;
 /***====================================================================***/
 
 static PropertyInfo *
+#if NeedFunctionPrototypes
+NextProperty(GeometryInfo *info)
+#else
 NextProperty(info)
     GeometryInfo *	info;
+#endif
 {
 PropertyInfo *	pi;
 
@@ -735,11 +810,14 @@ PropertyInfo *	pi;
 }
 
 static PropertyInfo *
+#if NeedFunctionPrototypes
+FindProperty(GeometryInfo *info,char *name)
+#else
 FindProperty(info,name)
     GeometryInfo *	info;
     char *		name;
+#endif
 {
-register int 	i;
 PropertyInfo *	old;
 
     if (!name)
@@ -752,9 +830,13 @@ PropertyInfo *	old;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+AddProperty(GeometryInfo *info,PropertyInfo *new)
+#else
 AddProperty(info,new)
     GeometryInfo *	info;
     PropertyInfo *	new;
+#endif
 {
 PropertyInfo	*	old;
 
@@ -765,9 +847,9 @@ PropertyInfo	*	old;
 	if ((new->defs.merge==MergeReplace)||(new->defs.merge==MergeOverride)) {
 	    if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-		uWarning("Multiple definitions for the \"%s\" property\n",
+		WARN1("Multiple definitions for the \"%s\" property\n",
 								new->name);
-		uAction("Ignoring \"%s\", using \"%s\"\n",old->value,
+		ACTION2("Ignoring \"%s\", using \"%s\"\n",old->value,
 								new->value);
 	    }
 	    if (old->value)
@@ -777,8 +859,8 @@ PropertyInfo	*	old;
 	}
 	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-	    uWarning("Multiple definitions for \"%s\" property\n",new->name);
-	    uAction("Using \"%s\", ignoring \"%s\" \n",old->value,new->value);
+	    WARN1("Multiple definitions for \"%s\" property\n",new->name);
+	    ACTION2("Using \"%s\", ignoring \"%s\" \n",old->value,new->value);
 	}
 	return True;
     }
@@ -794,8 +876,12 @@ PropertyInfo	*	old;
 /***====================================================================***/
 
 static ShapeInfo *
+#if NeedFunctionPrototypes
+NextShape(GeometryInfo *info)
+#else
 NextShape(info)
     GeometryInfo *	info;
+#endif
 {
 ShapeInfo *	si;
 
@@ -821,7 +907,6 @@ FindShape(info,name,type,which)
     char *		which;
 #endif
 {
-register int 	i;
 ShapeInfo *	old;
 
     for (old= info->shapes;old!=NULL;old=(ShapeInfo *)old->defs.next) {
@@ -830,22 +915,26 @@ ShapeInfo *	old;
     }
     if (type!=NULL) {
 	old= info->shapes;
-	uWarning("Unknown shape \"%s\" for %s %s\n",
+	WARN3("Unknown shape \"%s\" for %s %s\n",
 			XkbAtomText(info->dpy,name,XkbMessage),type,which);
 	if (old) {
-	    uAction("Using default shape %s instead\n",shText(info->dpy,old));
+	    ACTION1("Using default shape %s instead\n",shText(info->dpy,old));
 	    return old;
 	}
-	uAction("No default shape; definition ignored\n");
+	ACTION("No default shape; definition ignored\n");
 	return NULL;
     }
     return NULL;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+AddShape(GeometryInfo *info,ShapeInfo *new)
+#else
 AddShape(info,new)
     GeometryInfo *	info;
     ShapeInfo *		new;
+#endif
 {
 ShapeInfo	*	old;
 
@@ -855,8 +944,8 @@ ShapeInfo	*	old;
 	    ShapeInfo *next= (ShapeInfo *)old->defs.next;
 	    if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-		uWarning("Duplicat shape name \"%s\"\n",shText(info->dpy,old));
-		uAction("Using last definition\n");
+		WARN1("Duplicate shape name \"%s\"\n",shText(info->dpy,old));
+		ACTION("Using last definition\n");
 	    }
 	    *old= *new;
 	    old->defs.next= &next->defs;
@@ -864,8 +953,8 @@ ShapeInfo	*	old;
 	}
 	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-	    uWarning("Multiple shapes named \"%s\"\n",shText(info->dpy,old));
-	    uAction("Using first definition\n");
+	    WARN1("Multiple shapes named \"%s\"\n",shText(info->dpy,old));
+	    ACTION("Using first definition\n");
 	}
 	return True;
     }
@@ -884,9 +973,13 @@ ShapeInfo	*	old;
 /***====================================================================***/
 
 static void
+#if NeedFunctionPrototypes
+ReplaceDoodad(DoodadInfo *into,DoodadInfo *from)
+#else
 ReplaceDoodad(into,from)
     DoodadInfo *	into;
     DoodadInfo *	from;
+#endif
 {
 CommonInfo *	next;
 
@@ -926,9 +1019,13 @@ DoodadInfo *	di;
 }
 
 static DoodadInfo *
+#if NeedFunctionPrototypes
+NextDoodad(SectionInfo *si,GeometryInfo *info)
+#else
 NextDoodad(si,info)
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 DoodadInfo *	di;
 
@@ -959,16 +1056,15 @@ AddDoodad(si,info,new)
 #endif
 {
 DoodadInfo	*	old;
-unsigned long		name;
 
     old= FindDoodadByName((si?si->doodads:info->doodads),new->name);
     if (old!=NULL) {
 	if ((new->defs.merge==MergeReplace)||(new->defs.merge==MergeOverride)) {
 	    if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-		uWarning("Multiple doodads named \"%s\"\n",
+		WARN1("Multiple doodads named \"%s\"\n",
 		        XkbAtomText(info->dpy,old->name,XkbMessage));
-		uAction("Using last definition\n");
+		ACTION("Using last definition\n");
 	    }
 	    ReplaceDoodad(old,new);
 	    old->section= si;
@@ -976,11 +1072,10 @@ unsigned long		name;
 	}
 	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-	    uWarning("Multiple overlays named \"%s\"\n",
+	    WARN1("Multiple doodads named \"%s\"\n",
 		        XkbAtomText(info->dpy,old->name,XkbMessage));
-	    uAction("Using first definition\n");
+	    ACTION("Using first definition\n");
 	}
-	uWarning("Don't know how to merge conflicting doodads yet\n");
 	return True;
     }
     old= new;
@@ -1029,13 +1124,16 @@ unsigned	type;
 /***====================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+AddOverlay(SectionInfo	*si,GeometryInfo *info,OverlayInfo *new)
+#else
 AddOverlay(si,info,new)
     SectionInfo		*si;
     GeometryInfo	*info;
     OverlayInfo		*new;
+#endif
 {
 OverlayInfo	*	old;
-unsigned long		name;
 
     for (old=si->overlays;old!=NULL;old=(OverlayInfo *)old->defs.next) {
 	if (old->name==new->name)
@@ -1045,10 +1143,10 @@ unsigned long		name;
 	if ((new->defs.merge==MergeReplace)||(new->defs.merge==MergeOverride)) {
 	    if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-		uWarning("Multiple overlays named \"%s\" for section \"%s\"\n",
+		WARN2("Multiple overlays named \"%s\" for section \"%s\"\n",
 		        XkbAtomText(info->dpy,old->name,XkbMessage),
 			XkbAtomText(info->dpy,si->name,XkbMessage));
-		uAction("Using last definition\n");
+		ACTION("Using last definition\n");
 	    }
 	    ClearOverlayInfo(old);
 	    old->nKeys= new->nKeys;
@@ -1059,10 +1157,10 @@ unsigned long		name;
 	}
 	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-	    uWarning("Multiple doodads named \"%s\" in section \"%s\"\n",
+	    WARN2("Multiple doodads named \"%s\" in section \"%s\"\n",
 		        XkbAtomText(info->dpy,old->name,XkbMessage),
 			XkbAtomText(info->dpy,si->name,XkbMessage));
-	    uAction("Using first definition\n");
+	    ACTION("Using first definition\n");
 	}
 	return True;
     }
@@ -1070,8 +1168,8 @@ unsigned long		name;
     new= uTypedCalloc(1,OverlayInfo);
     if (!new) {
 	if (warningLevel>0) {
-	    uInternalError("Couldn't allocate a new OverlayInfo\n");
-	    uAction("Overlay \"%s\" in section \"%s\" will be incomplete\n",
+	    WSGO("Couldn't allocate a new OverlayInfo\n");
+	    ACTION2("Overlay \"%s\" in section \"%s\" will be incomplete\n",
 			XkbAtomText(info->dpy,old->name,XkbMessage),
 			XkbAtomText(info->dpy,si->name,XkbMessage));
 	}
@@ -1089,8 +1187,12 @@ unsigned long		name;
 /***====================================================================***/
 
 static SectionInfo *
+#if NeedFunctionPrototypes
+NextSection(GeometryInfo *info)
+#else
 NextSection(info)
     GeometryInfo *	info;
+#endif
 {
 SectionInfo *	si;
 
@@ -1109,11 +1211,14 @@ SectionInfo *	si;
 }
 
 static SectionInfo *
+#if NeedFunctionPrototypes
+FindMatchingSection(GeometryInfo *info,SectionInfo *new)
+#else
 FindMatchingSection(info,new)
     GeometryInfo *	info;
     SectionInfo *		new;
+#endif
 {
-register int 	i;
 SectionInfo *	old;
 
     for (old=info->sections;old!=NULL;old=(SectionInfo *)old->defs.next) {
@@ -1124,9 +1229,13 @@ SectionInfo *	old;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+AddSection(GeometryInfo *info,SectionInfo *new)
+#else
 AddSection(info,new)
     GeometryInfo *	info;
     SectionInfo *		new;
+#endif
 {
 SectionInfo	*	old;
 
@@ -1137,8 +1246,8 @@ SectionInfo	*	old;
 	    SectionInfo *next= (SectionInfo *)old->defs.next;
 	    if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-		uWarning("Duplicate shape name \"%s\"\n",shText(info->dpy,old));
-		uAction("Using last definition\n");
+		WARN1("Duplicate shape name \"%s\"\n",shText(info->dpy,old));
+		ACTION("Using last definition\n");
 	    }
 	    *old= *new;
 	    old->defs.next= &next->defs;
@@ -1146,12 +1255,12 @@ SectionInfo	*	old;
 	}
 	if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
 		    					(warningLevel>9)) {
-	    uWarning("Multiple shapes named \"%s\"\n",shText(info->dpy,old));
-	    uAction("Using first definition\n");
+	    WARN1("Multiple shapes named \"%s\"\n",shText(info->dpy,old));
+	    ACTION("Using first definition\n");
 	}
 	return True;
 #else
-	uWarning("Don't know how to merge sections yet\n");
+	WARN("Don't know how to merge sections yet\n");
 #endif
     }
     old= new;
@@ -1175,8 +1284,12 @@ SectionInfo	*	old;
 /***====================================================================***/
 
 static RowInfo *
+#if NeedFunctionPrototypes
+NextRow(SectionInfo *si)
+#else
 NextRow(si)
     SectionInfo *	si;
+#endif
 {
 RowInfo *	row;
 
@@ -1194,9 +1307,13 @@ RowInfo *	row;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+AddRow(SectionInfo *si,RowInfo *new)
+#else
 AddRow(si,new)
     SectionInfo *	si;
     RowInfo *		new;
+#endif
 {
 RowInfo	*	old;
 
@@ -1213,8 +1330,12 @@ RowInfo	*	old;
 /***====================================================================***/
 
 static KeyInfo *
+#if NeedFunctionPrototypes
+NextKey(RowInfo *row)
+#else
 NextKey(row)
     RowInfo *	row;
+#endif
 {
 KeyInfo *	key;
 
@@ -1229,9 +1350,13 @@ KeyInfo *	key;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+AddKey(RowInfo *row,KeyInfo *new)
+#else
 AddKey(row,new)
     RowInfo *	row;
     KeyInfo *	new;
+#endif
 {
 KeyInfo	*	old;
 
@@ -1247,10 +1372,14 @@ KeyInfo	*	old;
 /***====================================================================***/
 
 static void
+#if NeedFunctionPrototypes
+MergeIncludedGeometry(GeometryInfo *into,GeometryInfo *from,unsigned merge)
+#else
 MergeIncludedGeometry(into,from,merge)
     GeometryInfo *	into;
     GeometryInfo *	from;
     unsigned		merge;
+#endif
 {
 Bool clobber;
 
@@ -1319,20 +1448,33 @@ Bool clobber;
 		into->errorCount++;
  	}
     }
-    if (!MergeAliases(&into->aliases,&from->aliases))
+    if (!MergeAliases(&into->aliases,&from->aliases,merge))
 	into->errorCount++;
     return;
 }
 
+typedef void	(*FileHandler)(
+#if NeedFunctionPrototypes
+	XkbFile *	/* file */,
+	XkbDescPtr	/* xkb */,
+	unsigned	/* merge */,
+	GeometryInfo *	/* info */
+#endif
+);
+
 static Bool
+#if NeedFunctionPrototypes
+HandleIncludeGeometry(IncludeStmt *stmt,XkbDescPtr xkb,GeometryInfo *info,
+							FileHandler hndlr)
+#else
 HandleIncludeGeometry(stmt,xkb,info,hndlr)
     IncludeStmt	*	  stmt;
     XkbDescPtr		  xkb;
     GeometryInfo *	  info;
-    void		(*hndlr)();
+    FileHandler		  hndlr;
+#endif
 {
-unsigned 	newMerge,tmp;
-FILE	*	file;
+unsigned 	newMerge;
 XkbFile	*	rtrn;
 GeometryInfo 	included;
 Bool		haveSelf;
@@ -1435,6 +1577,14 @@ ExprResult	tmp;
 }
 
 static int
+#if NeedFunctionPrototypes
+SetShapeDoodadField(	DoodadInfo *	di,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			SectionInfo *	si,
+			GeometryInfo *	info)
+#else
 SetShapeDoodadField(di,field,arrayNdx,value,si,info)
     DoodadInfo *	di;
     char *		field;
@@ -1442,6 +1592,7 @@ SetShapeDoodadField(di,field,arrayNdx,value,si,info)
     ExprDef *		value;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 ExprResult	tmp;
 char *		typeName;
@@ -1474,8 +1625,6 @@ char *		typeName;
 	return True;
     }
     else if (uStrCaseCmp(field,"shape")==0) {
-	XkbKeyNameRec	name;
-
 	if (arrayNdx!=NULL) {
 	    info->errorCount++;
 	    return ReportNotArray(typeName,field,ddText(info->dpy,di));
@@ -1496,6 +1645,14 @@ char *		typeName;
 #define	FIELD_USHORT	2
 
 static int
+#if NeedFunctionPrototypes
+SetTextDoodadField(	DoodadInfo *	di,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			SectionInfo *	si,
+			GeometryInfo *	info)
+#else
 SetTextDoodadField(di,field,arrayNdx,value,si,info)
     DoodadInfo *	di;
     char *		field;
@@ -1503,6 +1660,7 @@ SetTextDoodadField(di,field,arrayNdx,value,si,info)
     ExprDef *		value;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 ExprResult	tmp;
 unsigned	def;
@@ -1623,6 +1781,14 @@ union {
 }
 
 static int
+#if NeedFunctionPrototypes
+SetIndicatorDoodadField(	DoodadInfo *	di,
+				char *		field,
+				ExprDef *	arrayNdx,
+				ExprDef *	value,
+				SectionInfo *	si,
+				GeometryInfo *	info)
+#else
 SetIndicatorDoodadField(di,field,arrayNdx,value,si,info)
     DoodadInfo *	di;
     char *		field;
@@ -1630,6 +1796,7 @@ SetIndicatorDoodadField(di,field,arrayNdx,value,si,info)
     ExprDef *		value;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 ExprResult	tmp;
 
@@ -1663,6 +1830,14 @@ ExprResult	tmp;
 }
 
 static int
+#if NeedFunctionPrototypes
+SetLogoDoodadField(	DoodadInfo *	di,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			SectionInfo *	si,
+			GeometryInfo *	info)
+#else
 SetLogoDoodadField(di,field,arrayNdx,value,si,info)
     DoodadInfo *	di;
     char *		field;
@@ -1670,6 +1845,7 @@ SetLogoDoodadField(di,field,arrayNdx,value,si,info)
     ExprDef *		value;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 ExprResult	tmp;
 char *		typeName= "logo doodad";
@@ -1701,8 +1877,6 @@ char *		typeName= "logo doodad";
 	return True;
     }
     else if (uStrCaseCmp(field,"shape")==0) {
-	XkbKeyNameRec	name;
-
 	if (arrayNdx!=NULL) {
 	    info->errorCount++;
 	    return ReportNotArray(typeName,field,ddText(info->dpy,di));
@@ -1761,9 +1935,9 @@ ExprResult	tmp;
 	}
 	if ((tmp.ival<0)||(tmp.ival>XkbGeomMaxPriority)) {
 	    info->errorCount++;
-	    uError("Doodad priority %d out of range (must be 0..%d)\n",
+	    ERROR2("Doodad priority %d out of range (must be 0..%d)\n",
 						tmp.ival,XkbGeomMaxPriority);
-	    uAction("Priority for doodad %s not changed",ddText(info->dpy,di));
+	    ACTION1("Priority for doodad %s not changed",ddText(info->dpy,di));
 	    return False;
 	}
 	di->defs.defined|= _GD_Priority;
@@ -1820,18 +1994,26 @@ ExprResult	tmp;
 	case XkbLogoDoodad:
 	    return SetLogoDoodadField(di,field,arrayNdx,value,si,info);
     }
-    uInternalError("Unknown doodad type %d in SetDoodadField\n",di->type);
-    uAction("Definition of %s in %s ignored\n",field,ddText(info->dpy,di));
+    WSGO1("Unknown doodad type %d in SetDoodadField\n",(unsigned int)di->type);
+    ACTION2("Definition of %s in %s ignored\n",field,ddText(info->dpy,di));
     return False;
 }
 
 static int
+#if NeedFunctionPrototypes
+SetSectionField(	SectionInfo *	si,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			GeometryInfo *	info)
+#else
 SetSectionField(si,field,arrayNdx,value,info)
     SectionInfo *	si;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
     GeometryInfo *	info;
+#endif
 {
 unsigned short *	pField;
 unsigned		def;
@@ -1852,9 +2034,9 @@ ExprResult		tmp;
 	}
 	if ((tmp.ival<0)||(tmp.ival>XkbGeomMaxPriority)) {
 	    info->errorCount++;
-	    uError("Section priority %d out of range (must be 0..%d)\n",
+	    ERROR2("Section priority %d out of range (must be 0..%d)\n",
 						tmp.ival,XkbGeomMaxPriority);
-	    uAction("Priority for section %s not changed",scText(info->dpy,si));
+	    ACTION1("Priority for section %s not changed",scText(info->dpy,si));
 	    return False;
 	}
 	si->priority= tmp.ival;
@@ -1900,12 +2082,20 @@ ExprResult		tmp;
 }
 
 static int
+#if NeedFunctionPrototypes
+SetRowField(	RowInfo *	row,
+		char *		field,
+		ExprDef *	arrayNdx,
+		ExprDef *	value,
+		GeometryInfo *	info)
+#else
 SetRowField(row,field,arrayNdx,value,info)
     RowInfo *		row;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
     GeometryInfo *	info;
+#endif
 {
 ExprResult	tmp;
 
@@ -1986,7 +2176,6 @@ ExprResult tmp;
 	key->gap= tmp.ival;
     }
     else if (uStrCaseCmp(field,"shape")==0) {
-	XkbKeyNameRec	name;
 	if (arrayNdx!=NULL) {
 	    info->errorCount++;
 	    return ReportNotArray("key",field,keyText(key));
@@ -2032,10 +2221,14 @@ ExprResult tmp;
 }
 
 static int
+#if NeedFunctionPrototypes
+SetGeometryProperty(GeometryInfo *info,char *property,ExprDef *value)
+#else
 SetGeometryProperty(info,property,value)
     GeometryInfo *	info;
     char *		property;
     ExprDef *		value;
+#endif
 {
 PropertyInfo	pi;
 ExprResult	result;
@@ -2044,8 +2237,8 @@ ExprResult	result;
     pi.name= property;
     if (!ExprResolveString(value,&result,NULL,NULL)) {
 	info->errorCount++;
-	uError("Property values must be type string\n");
-	uAction("Ignoring illegal definition of \"%s\" property\n",property);
+	ERROR("Property values must be type string\n");
+	ACTION1("Ignoring illegal definition of \"%s\" property\n",property);
 	return False;
     }
     pi.value= result.str;
@@ -2053,10 +2246,14 @@ ExprResult	result;
 }
 
 static int
+#if NeedFunctionPrototypes
+HandleGeometryVar(VarDef *stmt,XkbDescPtr xkb,GeometryInfo *info)
+#else
 HandleGeometryVar(stmt,xkb,info)
     VarDef *		stmt;
     XkbDescPtr		xkb;
     GeometryInfo *	info;
+#endif
 {
 ExprResult	elem,field,tmp;
 ExprDef *	ndx;
@@ -2080,8 +2277,8 @@ Atom *		pField;
     if (elem.str&&(uStrCaseCmp(elem.str,"property")==0)) {
 	if (ndx!=NULL) {
 	    info->errorCount++;
-	    uError("The %s geometry property is not an array\n",field.str);
-	    uAction("Ignoring illegal property definition\n");
+	    ERROR1("The %s geometry property is not an array\n",field.str);
+	    ACTION("Ignoring illegal property definition\n");
 	    return False;
 	}
 	return SetGeometryProperty(info,field.str,stmt->value);
@@ -2125,8 +2322,8 @@ Atom *		pField;
 	return SetDoodadField(dflt,field.str,ndx,stmt->value,NULL,info);
     }
     if (elem.str) {
-	uWarning("Assignment to field of unknown element\n");
-	uAction("No value assigned to %s.%s\n",elem.str,field.str);
+	WARN("Assignment to field of unknown element\n");
+	ACTION2("No value assigned to %s.%s\n",elem.str,field.str);
 	return False;
     }
 
@@ -2141,16 +2338,16 @@ Atom *		pField;
 	    return ReportBadType("keyboard",field.str,"geometry","number");
 	}
 	if (tmp.ival<1) {
-	    uWarning("Keyboard width must be positive\n");
-	    uAction("Ignoring illegal keyboard width %s\n",
+	    WARN("Keyboard width must be positive\n");
+	    ACTION1("Ignoring illegal keyboard width %s\n",
 	    				XkbGeomFPText(tmp.ival,XkbMessage));
 	    return True;
 	}
 	if (info->widthMM!=0) {
-	    uWarning("Keyboard width multiply defined\n");
-	    uAction("Using last definition (%s),",
+	    WARN("Keyboard width multiply defined\n");
+	    ACTION1("Using last definition (%s),",
 				XkbGeomFPText(tmp.ival,XkbMessage));
-	    uInformation(" ignoring first (%s)\n",
+	    INFO1(" ignoring first (%s)\n",
 				XkbGeomFPText(info->widthMM,XkbMessage));
 	}
 	info->widthMM= tmp.ival;
@@ -2167,16 +2364,16 @@ Atom *		pField;
 	    return ReportBadType("keyboard",field.str,"geometry","number");
 	}
 	if (tmp.ival<1) {
-	    uWarning("Keyboard height must be positive\n");
-	    uAction("Ignoring illegal keyboard height %s\n",
+	    WARN("Keyboard height must be positive\n");
+	    ACTION1("Ignoring illegal keyboard height %s\n",
 					XkbGeomFPText(tmp.ival,XkbMessage));
 	    return True;
 	}
 	if (info->heightMM!=0) {
-	    uWarning("Keyboard height multiply defined\n");
-	    uAction("Using last definition (%s),",
+	    WARN("Keyboard height multiply defined\n");
+	    ACTION1("Using last definition (%s),",
 				XkbGeomFPText(tmp.ival,XkbMessage));
-	    uInformation(" ignoring first (%s)\n",
+	    INFO1(" ignoring first (%s)\n",
 				XkbGeomFPText(info->heightMM,XkbMessage));
 	}
 	info->heightMM= tmp.ival;
@@ -2216,8 +2413,8 @@ Atom *		pField;
 	}
 	if ((tmp.ival<40)||(tmp.ival>2550)) {
 	    info->errorCount++;
-	    uError("Illegal font size %d (must be 4..255)\n",tmp.ival);
-	    uAction("Ignoring font size in keyboard geometry\n");
+	    ERROR1("Illegal font size %d (must be 4..255)\n",tmp.ival);
+	    ACTION("Ignoring font size in keyboard geometry\n");
 	    return False;
 	}
 	info->fontSize= tmp.ival;
@@ -2267,11 +2464,15 @@ Atom *		pField;
 /***====================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+HandleShapeBody(ShapeDef *def,ShapeInfo *si,unsigned merge,GeometryInfo *info)
+#else
 HandleShapeBody(def,si,merge,info)
     ShapeDef *		def;
     ShapeInfo *		si;
     unsigned 		merge;
     GeometryInfo *	info;
+#endif
 {
 OutlineDef *	ol;
 int		nOut,nPt;
@@ -2279,15 +2480,15 @@ XkbOutlinePtr 	outline;
 ExprDef *	pt;
 
     if (def->nOutlines<1) {
-	uWarning("Shape \"%s\" has no outlines\n",shText(info->dpy,si));
-	uAction("Definition ignored\n");
+	WARN1("Shape \"%s\" has no outlines\n",shText(info->dpy,si));
+	ACTION("Definition ignored\n");
 	return True;
     }
     si->nOutlines= def->nOutlines;
     si->outlines= uTypedCalloc(def->nOutlines,XkbOutlineRec);
     if (!si->outlines) {
-	uError("Couldn't allocate outlines for \"%s\"\n",shText(info->dpy,si));
-	uAction("Definition ignored\n");
+	ERROR1("Couldn't allocate outlines for \"%s\"\n",shText(info->dpy,si));
+	ACTION("Definition ignored\n");
 	info->errorCount++;
 	return False;
     }
@@ -2303,8 +2504,8 @@ ExprDef *	pt;
 	outline->corner_radius= si->dfltCornerRadius;
 	outline->points= uTypedCalloc(ol->nPoints,XkbPointRec);
 	if (!outline->points) {
-	    uError("Can't allocate points for \"%s\"\n",shText(info->dpy,si));
-	    uAction("Definition ignored\n");
+	    ERROR1("Can't allocate points for \"%s\"\n",shText(info->dpy,si));
+	    ACTION("Definition ignored\n");
 	    info->errorCount++;
 	    return False;
 	}
@@ -2320,44 +2521,47 @@ ExprDef *	pt;
 		if (si->approx==NULL)
 		    si->approx= outline;
 		else {
-		    uWarning("Multiple approximations for \"%s\"\n",
+		    WARN1("Multiple approximations for \"%s\"\n",
 		    					shText(info->dpy,si));
-		    uAction("Treating all but the first as normal outlines\n");
+		    ACTION("Treating all but the first as normal outlines\n");
 		}
 	    }
 	    else if (uStrCaseCmp(str,"primary")==0) {
 		if (si->primary==NULL)
 		    si->primary= outline;
 		else {
-		    uWarning("Multiple primary outlines for \"%s\"\n",
+		    WARN1("Multiple primary outlines for \"%s\"\n",
 							shText(info->dpy,si));
-		    uAction("Treating all but the first as normal outlines\n");
+		    ACTION("Treating all but the first as normal outlines\n");
 		}
 	    }
 	    else {
-		uWarning("Unknown outline type %s for \"%s\"\n",str,
+		WARN2("Unknown outline type %s for \"%s\"\n",str,
 							shText(info->dpy,si));
-		uAction("Treated as a normal outline\n");
+		ACTION("Treated as a normal outline\n");
 	    }
 	}
     }
     if (nOut!=si->nOutlines) {
-	uInternalError("Expected %d outlines, got %d\n",si->nOutlines,nOut);
+	WSGO2("Expected %d outlines, got %d\n",(unsigned int)si->nOutlines,
+									nOut);
 	si->nOutlines= nOut;
     }
     return True;
 }
 
 static int
+#if NeedFunctionPrototypes
+HandleShapeDef(ShapeDef *def,XkbDescPtr xkb,unsigned merge,GeometryInfo *info)
+#else
 HandleShapeDef(def,xkb,merge,info)
     ShapeDef *		def;
     XkbDescPtr		xkb;
     unsigned 		merge;
     GeometryInfo *	info;
+#endif
 {
-int			tmp;
 ShapeInfo		si;
-char *			str;
 
     if (def->merge!=MergeDefault)
 	merge= def->merge;
@@ -2409,9 +2613,9 @@ VarDef *	var;
 	if (ExprResolveLhs(var->name,&elem,&field,&ndx)==0) 
 	    return 0; /* internal error, already reported */
 	if (elem.str!=NULL) {
-	    uWarning("Assignment to field of unknown element in doodad %s\n",
+	    WARN1("Assignment to field of unknown element in doodad %s\n",
 						ddText(info->dpy,&new));
-	    uAction("No value assigned to %s.%s\n",elem.str,field.str);
+	    ACTION2("No value assigned to %s.%s\n",elem.str,field.str);
 	}
 	else if (!SetDoodadField(&new,field.str,ndx,var->value,si,info))
 	    return False;
@@ -2425,21 +2629,28 @@ VarDef *	var;
 /***====================================================================***/
 
 static int
+#if NeedFunctionPrototypes
+HandleOverlayDef(	OverlayDef *	def,
+			unsigned 	merge,
+			SectionInfo *	si,
+			GeometryInfo *	info)
+#else
 HandleOverlayDef(def,merge,si,info)
     OverlayDef *	def;
     unsigned		merge;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 OverlayKeyDef *	keyDef;
 OverlayKeyInfo *key;
 OverlayInfo	ol;
 
     if ((def->nKeys<1)&&(warningLevel>3)) {
-	uWarning("Overlay \"%s\" in section \"%s\" has no keys\n",
+	WARN2("Overlay \"%s\" in section \"%s\" has no keys\n",
 					XkbAtomText(NULL,def->name,XkbMessage),
 					scText(info->dpy,si));
-	uAction("Overlay ignored\n");
+	ACTION("Overlay ignored\n");
 	return True;
     }
     bzero(&ol,sizeof(OverlayInfo));
@@ -2447,8 +2658,8 @@ OverlayInfo	ol;
     for (keyDef= def->keys;keyDef;keyDef=(OverlayKeyDef *)keyDef->common.next) {
 	key= uTypedCalloc(1,OverlayKeyInfo);
 	if ((!key)&&warningLevel>0) {
-	    uInternalError("Couldn't allocate OverlayKeyInfo\n");
-	    uAction("Overlay %s for section %s will be incomplete\n",
+	    WSGO("Couldn't allocate OverlayKeyInfo\n");
+	    ACTION2("Overlay %s for section %s will be incomplete\n",
 					oiText(info->dpy,&ol),
 					scText(info->dpy,si));
 	    return False;
@@ -2470,10 +2681,14 @@ OverlayInfo	ol;
 /***====================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+HandleComplexKey(KeyDef *def,KeyInfo *key,GeometryInfo *info)
+#else
 HandleComplexKey(def,key,info)
     KeyDef *		def;
     KeyInfo *		key;
     GeometryInfo *	info;
+#endif
 {
 RowInfo *	row;
 ExprDef *	expr;
@@ -2490,8 +2705,8 @@ ExprDef *	expr;
 		    return False;
 	    }
 	    else {
-		uError("Illegal element used in a key definition\n");
-		uAction("Assignment to %s.%s ignored\n",elem.str,f.str);
+		ERROR("Illegal element used in a key definition\n");
+		ACTION2("Assignment to %s.%s ignored\n",elem.str,f.str);
 		return False;
 	    }
 	}
@@ -2510,8 +2725,8 @@ ExprDef *	expr;
 			return False;
 		    break;
 		default:
-		    uError("Cannot determine field for unnamed expression\n");
-		    uAction("Ignoring key %d in row %d of section %s\n",
+		    ERROR("Cannot determine field for unnamed expression\n");
+		    ACTION3("Ignoring key %d in row %d of section %s\n",
 					row->nKeys+1,row->section->nRows+1,
 					rowText(info->dpy,row));
 		    return False;
@@ -2522,17 +2737,21 @@ ExprDef *	expr;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+HandleRowBody(RowDef *def,RowInfo *row,unsigned merge,GeometryInfo *info)
+#else
 HandleRowBody(def,row,merge,info)
     RowDef *		def;
     RowInfo *		row;
     unsigned 		merge;
     GeometryInfo *	info;
+#endif
 {
 KeyDef *	keyDef;
 
     if ((def->nKeys<1)&&(warningLevel>3)) {
-	uError("Row in section %s has no keys\n",rowText(info->dpy,row));
-	uAction("Section ignored\n");
+	ERROR1("Row in section %s has no keys\n",rowText(info->dpy,row));
+	ACTION("Section ignored\n");
 	return True;
     }
     for (keyDef= def->keys; keyDef!=NULL;keyDef=(KeyDef *)keyDef->common.next) {
@@ -2551,8 +2770,8 @@ KeyDef *	keyDef;
 		    return False;
 	    }
 	    else {
-		uWarning("Assignment to field of unknown element in row\n");
-		uAction("No value assigned to %s.%s\n",elem.str,field.str);
+		WARN("Assignment to field of unknown element in row\n");
+		ACTION2("No value assigned to %s.%s\n",elem.str,field.str);
 	    }
 	}
 	else if (keyDef->common.stmtType==StmtKeyDef) {
@@ -2561,10 +2780,10 @@ KeyDef *	keyDef;
 	    if (keyDef->name!=NULL) {
 		int len= strlen(keyDef->name);
 		if ((len<1)||(len>XkbKeyNameLength)) {
-		    uError("Illegal name %s for key in section %s\n",
+		    ERROR2("Illegal name %s for key in section %s\n",
 						keyDef->name,
 						rowText(info->dpy,row));
-		    uAction("Section not compiled\n");
+		    ACTION("Section not compiled\n");
 		    return False;
 		}
 		bzero(key.name,XkbKeyNameLength+1);
@@ -2577,7 +2796,7 @@ KeyDef *	keyDef;
 		return False;
 	}
 	else {
-	    uInternalError("Unexpected statement (type %d) in row body\n",
+	    WSGO1("Unexpected statement (type %d) in row body\n",
 						     keyDef->common.stmtType);
 	    return False;
 	}
@@ -2586,11 +2805,18 @@ KeyDef *	keyDef;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+HandleSectionBody(	SectionDef *	def,
+			SectionInfo *	si,
+			unsigned 	merge,
+			GeometryInfo *	info)
+#else
 HandleSectionBody(def,si,merge,info)
     SectionDef *	def;
     SectionInfo *	si;
     unsigned 		merge;
     GeometryInfo *	info;
+#endif
 {
 RowDef *	rowDef;
 DoodadInfo *	di;
@@ -2620,8 +2846,8 @@ DoodadInfo *	di;
 		    return False;
 	    }
 	    else {
-		uWarning("Assignment to field of unknown element in section\n");
-		uAction("No value assigned to %s.%s\n",elem.str,field.str);
+		WARN("Assignment to field of unknown element in section\n");
+		ACTION2("No value assigned to %s.%s\n",elem.str,field.str);
 	    }
 	}
 	else if (rowDef->common.stmtType==StmtRowDef) {
@@ -2643,25 +2869,33 @@ DoodadInfo *	di;
 		return False;
 	}
 	else {
-	    uInternalError("Unexpected statement (type %d) in section body\n",
+	    WSGO1("Unexpected statement (type %d) in section body\n",
 						     rowDef->common.stmtType);
 	    return False;
 	}
     }
     if (si->nRows!=def->nRows) {
-	uInternalError("Expected %d rows, found %d\n",def->nRows,si->nRows);
-	uAction("Definition of section %s might be incorrect\n",
-							scText(info->dpy,si));
+	WSGO2("Expected %d rows, found %d\n",(unsigned int)def->nRows,
+						(unsigned int)si->nRows);
+	ACTION1("Definition of section %s might be incorrect\n",
+						scText(info->dpy,si));
     }
     return True;
 }
 
 static int
+#if NeedFunctionPrototypes
+HandleSectionDef(	SectionDef *	def,
+			XkbDescPtr 	xkb,
+			unsigned 	merge,
+			GeometryInfo *	info)
+#else
 HandleSectionDef(def,xkb,merge,info)
     SectionDef *	def;
     XkbDescPtr		xkb;
     unsigned 		merge;
     GeometryInfo *	info;
+#endif
 {
 SectionInfo 	si;
 char *	 	str;
@@ -2672,8 +2906,8 @@ char *	 	str;
     si.defs.merge= merge;
     str= XkbAtomGetString(NULL,def->name);
     if ((str==NULL)||(strlen(str)<1)) {
-	uError("Section defined without a name\n");
-	uAction("Definition ignored\n");
+	ERROR("Section defined without a name\n");
+	ACTION("Definition ignored\n");
 	return False;
     }
     si.name= XkbInternAtom(info->dpy,XkbAtomGetString(NULL,def->name),False);
@@ -2687,11 +2921,18 @@ char *	 	str;
 /***====================================================================***/
 
 static void
+#if NeedFunctionPrototypes
+HandleGeometryFile(	XkbFile *	file,
+			XkbDescPtr 	xkb,
+			unsigned 	merge,
+			GeometryInfo *	info)
+#else
 HandleGeometryFile(file,xkb,merge,info)
     XkbFile *		file;
     XkbDescPtr 		xkb;
     unsigned		merge;
     GeometryInfo *	info;
+#endif
 {
 ParseCommon *	stmt;
 char *		failWhat;
@@ -2739,22 +2980,21 @@ char *		failWhat;
 		if (!failWhat)	failWhat= "group compatibility map";
 	    case StmtKeycodeDef:
 		if (!failWhat)	failWhat= "key name";
-		uError("Interpretation files may not include other types\n");
-		uAction("Ignoring %s definition.\n",failWhat);
+		ERROR("Interpretation files may not include other types\n");
+		ACTION1("Ignoring %s definition.\n",failWhat);
 		info->errorCount++;
 		break;
 	    default:
-		uInternalError(
-			"Unexpected statement type %d in HandleGeometryFile\n",
-			stmt->stmtType);
+		WSGO1("Unexpected statement type %d in HandleGeometryFile\n",
+								stmt->stmtType);
 		break;
 	}
 	stmt= stmt->next;
 	if (info->errorCount>10) {
 #ifdef NOISY
-	    uError("Too many errors\n");
+	    ERROR("Too many errors\n");
 #endif
-	    uAction("Abandoning geometry file \"%s\"\n",file->topName);
+	    ACTION1("Abandoning geometry file \"%s\"\n",file->topName);
 	    break;
 	}
     }
@@ -2764,31 +3004,34 @@ char *		failWhat;
 /***====================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+CopyShapeDef(Display *dpy,XkbGeometryPtr geom,ShapeInfo *si)
+#else
 CopyShapeDef(dpy,geom,si)
     Display *		dpy;
     XkbGeometryPtr	geom;
     ShapeInfo *		si;
+#endif
 {
 register int	i,n;
 XkbShapePtr	shape;
 XkbOutlinePtr	old_outline,outline;
-XkbPointPtr	old_pt,pt;
 Atom		name;
 
     si->index= geom->num_shapes;
     name= XkbInternAtom(dpy,XkbAtomGetString(NULL,si->name),False);
     shape= XkbAddGeomShape(geom,name,si->nOutlines);
     if (!shape) {
-	uInternalError("Couldn't allocate shape in geometry\n");
-	uAction("Shape %s not compiled\n",shText(dpy,si));
+	WSGO("Couldn't allocate shape in geometry\n");
+	ACTION1("Shape %s not compiled\n",shText(dpy,si));
 	return False;
     }
     old_outline= si->outlines;
     for (i=0;i<si->nOutlines;i++,old_outline++) {
-	outline= XkbAddGeomOutline(geom,shape,old_outline->num_points);
+	outline= XkbAddGeomOutline(shape,old_outline->num_points);
 	if (!outline) {
-	    uInternalError("Couldn't allocate outline in shape\n");
-	    uAction("Shape %s is incomplete\n",shText(dpy,si));
+	    WSGO("Couldn't allocate outline in shape\n");
+	    ACTION1("Shape %s is incomplete\n",shText(dpy,si));
 	    return False;
 	}
 	n= old_outline->num_points;
@@ -2809,28 +3052,32 @@ Atom		name;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+VerifyDoodadInfo(DoodadInfo *di,GeometryInfo *info)
+#else
 VerifyDoodadInfo(di,info)
     DoodadInfo *	di;
     GeometryInfo *	info;
+#endif
 {
     if ((di->defs.defined&(_GD_Top|_GD_Left))!=(_GD_Top|_GD_Left)) {
 	if (warningLevel<9) {
-	    uError("No position defined for doodad %s\n",ddText(info->dpy,di));
-	    uAction("Illegal doodad ignored\n");
+	    ERROR1("No position defined for doodad %s\n",ddText(info->dpy,di));
+	    ACTION("Illegal doodad ignored\n");
 	    return False;
 	}
     }
-    if (di->defs.defined&_GD_Priority==0) {
+    if ((di->defs.defined & _GD_Priority) == 0) {
 	/* calculate priority -- should be just above previous doodad/row */
     }
     switch (di->type) {
 	case XkbOutlineDoodad:
 	case XkbSolidDoodad:
 	    if ((di->defs.defined&_GD_Shape)==0) {
-		uError("No shape defined for %s doodad %s\n",
+		ERROR2("No shape defined for %s doodad %s\n",
 			(di->type==XkbOutlineDoodad?"outline":"filled"),
 			ddText(info->dpy,di));
-		uAction("Incomplete definition ignored\n");
+		ACTION("Incomplete definition ignored\n");
 		return False;
 	    }
 	    else {
@@ -2842,33 +3089,33 @@ VerifyDoodadInfo(di,info)
 		if (si)
 		    di->shape= si->name;
 		else {
-		    uError("No legal shape for %s\n",ddText(info->dpy,di));
-		    uAction("Incomplete definition ignored\n");
+		    ERROR1("No legal shape for %s\n",ddText(info->dpy,di));
+		    ACTION("Incomplete definition ignored\n");
 		    return False;
 		}
 	    }
 	    if ((di->defs.defined&_GD_Color)==0) {
 		if (warningLevel>5) {
-		    uWarning("No color for doodad %s\n",ddText(info->dpy,di));
-		    uAction("Using black\n");
+		    WARN1("No color for doodad %s\n",ddText(info->dpy,di));
+		    ACTION("Using black\n");
 		}
 		di->color= XkbInternAtom(NULL,"black",False);
 	    }
 	    break;
 	case XkbTextDoodad:
 	    if ((di->defs.defined&_GD_Text)==0) {
-		uError("No text specified for text doodad %s\n",
+		ERROR1("No text specified for text doodad %s\n",
 							ddText(info->dpy,di));
-		uAction("Illegal doodad definition ignored\n");
+		ACTION("Illegal doodad definition ignored\n");
 		return False;
 	    }
 	    if ((di->defs.defined&_GD_Angle)==0)
 		di->angle= 0;
 	    if ((di->defs.defined&_GD_Color)==0) {
 		if (warningLevel>5) {
-		    uWarning("No color specified for doodad %s\n",
+		    WARN1("No color specified for doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using black\n");
+		    ACTION("Using black\n");
 		}
 		di->color= XkbInternAtom(NULL,"black",False);
 	    }
@@ -2876,66 +3123,66 @@ VerifyDoodadInfo(di,info)
 		if ((di->defs.defined&_GD_FontParts)==0)
 		    return True;
 		if (warningLevel<9) {
-		    uWarning("Text doodad %s has full and partial font definition\n",
+		    WARN1("Text doodad %s has full and partial font definition\n",
 							ddText(info->dpy,di));
-		    uAction("Full specification ignored\n");
+		    ACTION("Full specification ignored\n");
 		}
 		di->defs.defined&= ~_GD_FontSpec;
 		di->fontSpec= None;
 	    }
 	    if ((di->defs.defined&_GD_Font)==0) {
 		if (warningLevel>5) {
-		    uWarning("No font specified for doodad %s\n",
+		    WARN1("No font specified for doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using \"%s\"\n",DFLT_FONT);
+		    ACTION1("Using \"%s\"\n",DFLT_FONT);
 		}
 		di->font= XkbInternAtom(NULL,DFLT_FONT,False);
 	    }
 	    if ((di->defs.defined&_GD_FontSlant)==0) {
 		if (warningLevel>7) {
-		    uWarning("No font slant for text doodad %s\n",
+		    WARN1("No font slant for text doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using \"%s\"\n",DFLT_SLANT);
+		    ACTION1("Using \"%s\"\n",DFLT_SLANT);
 		}
 		di->fontSlant= XkbInternAtom(NULL,DFLT_SLANT,False);
 	    }
 	    if ((di->defs.defined&_GD_FontWeight)==0) {
 		if (warningLevel>7) {
-		    uWarning("No font weight for text doodad %s\n",
+		    WARN1("No font weight for text doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using \"%s\"\n",DFLT_WEIGHT);
+		    ACTION1("Using \"%s\"\n",DFLT_WEIGHT);
 		}
 		di->fontWeight= XkbInternAtom(NULL,DFLT_WEIGHT,False);
 	    }
 	    if ((di->defs.defined&_GD_FontSetWidth)==0) {
 		if (warningLevel>9) {
-		    uWarning("No font set width for text doodad %s\n",
+		    WARN1("No font set width for text doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using \"%s\"\n",DFLT_SET_WIDTH);
+		    ACTION1("Using \"%s\"\n",DFLT_SET_WIDTH);
 		}
 		di->fontSetWidth= XkbInternAtom(NULL,DFLT_SET_WIDTH,False);
 	    }
 	    if ((di->defs.defined&_GD_FontVariant)==0) {
 		if (warningLevel>9) {
-		    uWarning("No font variant for text doodad %s\n",
+		    WARN1("No font variant for text doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using \"%s\"\n",DFLT_VARIANT);
+		    ACTION1("Using \"%s\"\n",DFLT_VARIANT);
 		}
 		di->fontVariant= XkbInternAtom(NULL,DFLT_VARIANT,False);
 	    }
 	    if ((di->defs.defined&_GD_FontEncoding)==0) {
 		if (warningLevel>7) {
-		    uWarning("No font encoding for doodad %s\n",
+		    WARN1("No font encoding for doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using \"%s\"\n",DFLT_ENCODING);
+		    ACTION1("Using \"%s\"\n",DFLT_ENCODING);
 		}
 		di->fontEncoding= XkbInternAtom(NULL,DFLT_ENCODING,False);
 	    }
 	    if ((di->defs.defined&_GD_FontSize)==0) {
 		if (warningLevel>7) {
-		    uWarning("No font size for text doodad %s\n",
+		    WARN1("No font size for text doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using %s point text\n",
+		    ACTION1("Using %s point text\n",
 					XkbGeomFPText(DFLT_SIZE,XkbMessage));
 		}
 		di->fontSize= DFLT_SIZE;
@@ -2950,9 +3197,9 @@ VerifyDoodadInfo(di,info)
 		}
 		size*= nLines;
 		if (warningLevel>5) {
-		    uWarning("No height for text doodad %s\n",
+		    WARN1("No height for text doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Using calculated height %s millimeters\n",
+		    ACTION1("Using calculated height %s millimeters\n",
 						XkbGeomFPText(size,XkbMessage));
 		}
 		di->height= size;
@@ -2974,8 +3221,8 @@ VerifyDoodadInfo(di,info)
 		    width= tmp;
 		width*= (di->height*2)/3;
 		if (warningLevel>5) {
-		    uWarning("No width for text doodad %s\n",ddText(info->dpy,di));
-		    uAction("Using calculated width %s millimeters\n",
+		    WARN1("No width for text doodad %s\n",ddText(info->dpy,di));
+		    ACTION1("Using calculated width %s millimeters\n",
 					XkbGeomFPText(width,XkbMessage));
 		}
 		di->width= width;
@@ -2983,9 +3230,9 @@ VerifyDoodadInfo(di,info)
 	    break;
 	case XkbIndicatorDoodad:
 	    if ((di->defs.defined&_GD_Shape)==0) {
-		uError("No shape defined for indicator doodad %s\n",
+		ERROR1("No shape defined for indicator doodad %s\n",
 							ddText(info->dpy,di));
-		uAction("Incomplete definition ignored\n");
+		ACTION("Incomplete definition ignored\n");
 		return False;
 	    }
 	    else {
@@ -2995,40 +3242,40 @@ VerifyDoodadInfo(di,info)
 		if (si)
 		    di->shape= si->name;
 		else {
-		    uError("No legal shape for doodad %s\n",
+		    ERROR1("No legal shape for doodad %s\n",
 		    					ddText(info->dpy,di));
-		    uAction("Incomplete definition ignored\n");
+		    ACTION("Incomplete definition ignored\n");
 		    return False;
 		}
 	    }
 	    if ((di->defs.defined&_GD_Color)==0) {
 		if (warningLevel>5) {
-		    uWarning("No \"on\" color for indicator doodad %s\n",
+		    WARN1("No \"on\" color for indicator doodad %s\n",
 							ddText(info->dpy,di));
-		    uAction("Using green\n");
+		    ACTION("Using green\n");
 		}
 		di->color= XkbInternAtom(NULL,"green",False);
 	    }
 	    if ((di->defs.defined&_GD_OffColor)==0) {
 		if (warningLevel>5) {
-		    uWarning("No \"off\" color for indicator doodad %s\n",
+		    WARN1("No \"off\" color for indicator doodad %s\n",
 							ddText(info->dpy,di));
-		    uAction("Using black\n");
+		    ACTION("Using black\n");
 		}
 		di->offColor= XkbInternAtom(NULL,"black",False);
 	    }
 	    break;
 	case XkbLogoDoodad:
 	    if (di->logoName==NULL)  {
-		uError("No logo name defined for logo doodad %s\n",
+		ERROR1("No logo name defined for logo doodad %s\n",
 							ddText(info->dpy,di));
-		uAction("Incomplete definition ignored\n");
+		ACTION("Incomplete definition ignored\n");
 		return False;
 	    }
 	    if ((di->defs.defined&_GD_Shape)==0) {
-		uError("No shape defined for logo doodad %s\n",
+		ERROR1("No shape defined for logo doodad %s\n",
 							ddText(info->dpy,di));
-		uAction("Incomplete definition ignored\n");
+		ACTION("Incomplete definition ignored\n");
 		return False;
 	    }
 	    else {
@@ -3038,21 +3285,21 @@ VerifyDoodadInfo(di,info)
 		if (si)
 		    di->shape= si->name;
 		else {
-		    uError("No legal shape for %s\n",ddText(info->dpy,di));
-		    uAction("Incomplete definition ignored\n");
+		    ERROR1("No legal shape for %s\n",ddText(info->dpy,di));
+		    ACTION("Incomplete definition ignored\n");
 		    return False;
 		}
 	    }
 	    if ((di->defs.defined&_GD_Color)==0) {
 		if (warningLevel>5) {
-		    uWarning("No color for doodad %s\n",ddText(info->dpy,di));
-		    uAction("Using black\n");
+		    WARN1("No color for doodad %s\n",ddText(info->dpy,di));
+		    ACTION("Using black\n");
 		}
 		di->color= XkbInternAtom(NULL,"black",False);
 	    }
 	    break;
 	default:
-	    uInternalError("Uknown doodad type %d in VerifyDoodad\n",di->type);
+	    WSGO1("Uknown doodad type %d in VerifyDoodad\n",(unsigned int)di->type);
 	    return False;
     }
     return True;
@@ -3129,9 +3376,9 @@ ShapeInfo *	si;
     name= XkbInternAtom(NULL,XkbAtomGetString(NULL,di->name),False);
     doodad= XkbAddGeomDoodad(geom,section,name);
     if (!doodad) {
-	uInternalError("Couldn't allocate doodad in %s\n",
-						(section?"section":"geometry"));
-	uAction("Cannot copy doodad %s\n",ddText(info->dpy,di));
+	WSGO1("Couldn't allocate doodad in %s\n",
+					(section?"section":"geometry"));
+	ACTION1("Cannot copy doodad %s\n",ddText(info->dpy,di));
 	return False;
     }
     doodad->any.type= di->type;
@@ -3145,7 +3392,7 @@ ShapeInfo *	si;
 	    if (!si)
 		return False;
 	    doodad->shape.angle= di->angle;
-	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color));
+	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color),geom->num_colors);
 	    shape= &geom->shapes[si->index];
 	    XkbSetShapeDoodadColor(geom,&doodad->shape,color);
 	    XkbSetShapeDoodadShape(geom,&doodad->shape,shape);
@@ -3161,7 +3408,7 @@ ShapeInfo *	si;
 						di->fontSize,di->fontEncoding);
 	    else doodad->text.font= XkbAtomGetString(NULL,di->fontSpec);
 	    doodad->text.text= XkbAtomGetString(NULL,di->text);
-	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color));
+	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color),geom->num_colors);
 	    XkbSetTextDoodadColor(geom,&doodad->text,color);
 	    break;
 	case XkbIndicatorDoodad:
@@ -3169,10 +3416,10 @@ ShapeInfo *	si;
 	    if (!si)
 		return False;
 	    shape= &geom->shapes[si->index];
-	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color));
+	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color),geom->num_colors);
 	    XkbSetIndicatorDoodadShape(geom,&doodad->indicator,shape);
 	    XkbSetIndicatorDoodadOnColor(geom,&doodad->indicator,color);
-	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->offColor));
+	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->offColor),geom->num_colors);
 	    XkbSetIndicatorDoodadOffColor(geom,&doodad->indicator,color);
 	    break;
 	case XkbLogoDoodad:
@@ -3180,7 +3427,7 @@ ShapeInfo *	si;
 	    if (!si)
 		return False;
 	    doodad->logo.angle= di->angle;
-	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color));
+	    color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,di->color),geom->num_colors);
 	    shape= &geom->shapes[si->index];
 	    XkbSetLogoDoodadColor(geom,&doodad->logo,color);
 	    XkbSetLogoDoodadShape(geom,&doodad->logo,shape);
@@ -3188,16 +3435,20 @@ ShapeInfo *	si;
 	    di->logoName= NULL;
 	    break;
     }
-    /* 
-     * add stroke width to outline doodad
-     * need section priority?
-     */
     return True;
 }
 
 /***====================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+VerifyOverlayInfo(	XkbGeometryPtr	geom,
+			XkbSectionPtr	section,
+			OverlayInfo *	oi,
+			GeometryInfo *	info,
+			short		rowMap[256],
+			short		rowSize[256])
+#else
 VerifyOverlayInfo(geom,section,oi,info,rowMap,rowSize)
     XkbGeometryPtr	geom;
     XkbSectionPtr	section;
@@ -3205,6 +3456,7 @@ VerifyOverlayInfo(geom,section,oi,info,rowMap,rowSize)
     GeometryInfo *	info;
     short		rowMap[256];
     short		rowSize[256];
+#endif
 {
 register OverlayKeyInfo *	ki,*next;
 unsigned long			oKey,uKey,sKey;
@@ -3221,11 +3473,11 @@ int				r,k;
 		sKey= KeyNameToLong(key->name.name);
 		if (sKey==oKey) {
 		    if (warningLevel>0) {
-		       uWarning("Key %s in section \"%s\" and overlay \"%s\"\n",
+		       WARN3("Key %s in section \"%s\" and overlay \"%s\"\n",
 				XkbKeyNameText(key->name.name,XkbMessage),
 				XkbAtomText(info->dpy,section->name,XkbMessage),
 				XkbAtomText(info->dpy,oi->name,XkbMessage));
-			uAction("Overlay definition ignored\n");
+			ACTION("Overlay definition ignored\n");
 		    }
 		    oKey= 0;
 		}
@@ -3236,11 +3488,11 @@ int				r,k;
 	    }
 	}
 	if ((ki->sectionRow==_GOK_UnknownRow)&&(warningLevel>0)) {
-	    uWarning("Key %s not in \"%s\", but has an overlay key in \"%s\"\n",
+	    WARN3("Key %s not in \"%s\", but has an overlay key in \"%s\"\n",
 				XkbKeyNameText(ki->under,XkbMessage),
 				XkbAtomText(info->dpy,section->name,XkbMessage),
 				XkbAtomText(info->dpy,oi->name,XkbMessage));
-	    uAction("Definition ignored\n");
+	    ACTION("Definition ignored\n");
 	}
     }
     /* now prune out keys that aren't in the section */
@@ -3260,10 +3512,10 @@ int				r,k;
 	}
     }
     if (oi->nKeys<1) {
-	uError("Overlay \"%s\" for section \"%s\" has no legal keys\n",
+	ERROR2("Overlay \"%s\" for section \"%s\" has no legal keys\n",
 			       XkbAtomText(info->dpy,oi->name,XkbMessage),
 			       XkbAtomText(info->dpy,section->name,XkbMessage));
-	uAction("Overlay definition ignored\n");
+	ACTION("Overlay definition ignored\n");
 	return False;
     }
     /* now figure out how many rows are defined for the overlay */
@@ -3282,11 +3534,18 @@ int				r,k;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyOverlayDef(	XkbGeometryPtr	geom,
+		XkbSectionPtr	section,
+		OverlayInfo *	oi,
+		GeometryInfo *	info)
+#else
 CopyOverlayDef(geom,section,oi,info)
     XkbGeometryPtr	geom;
     XkbSectionPtr	section;
     OverlayInfo *	oi;
     GeometryInfo *	info;
+#endif
 {
 Atom			name;
 XkbOverlayPtr		ol;
@@ -3299,16 +3558,21 @@ int			i;
     if (!VerifyOverlayInfo(geom,section,oi,info,rowMap,rowSize))
 	return False;
     name= XkbInternAtom(NULL,XkbAtomGetString(NULL,oi->name),False);
-    ol= XkbAddGeomOverlay(geom,section,name,oi->nRows);
+    ol= XkbAddGeomOverlay(section,name,oi->nRows);
     if (!ol) {
-	uInternalError("Couldn't add overlay \"%s\" to section \"%s\"\n",
+	WSGO2("Couldn't add overlay \"%s\" to section \"%s\"\n",
 			XkbAtomText(info->dpy,name,XkbMessage),
 			XkbAtomText(info->dpy,section->name,XkbMessage));
 	return False;
     }
     for (i=0;i<oi->nRows;i++) {
-	if (!XkbAddGeomOverlayRow(geom,ol,rowSize[i])) {
-	uInternalError("Can't add row %d to overlay \"%s\" of section \"%s\"\n",
+	int tmp,row_under;
+	for (tmp=0,row_under=-1;(tmp<section->num_rows)&&(row_under<0);tmp++) {
+	    if (rowMap[tmp]==i)
+		row_under= tmp;
+	}
+	if (!XkbAddGeomOverlayRow(ol,row_under,rowSize[i])) {
+	WSGO3("Can't add row %d to overlay \"%s\" of section \"%s\"\n",
 			i,XkbAtomText(info->dpy,name,XkbMessage),
 			XkbAtomText(info->dpy,section->name,XkbMessage));
 	    return False;
@@ -3327,10 +3591,14 @@ int			i;
 /***====================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+CopySectionDef(XkbGeometryPtr geom,SectionInfo *si,GeometryInfo *info)
+#else
 CopySectionDef(geom,si,info)
     XkbGeometryPtr	geom;
     SectionInfo *	si;
     GeometryInfo *	info;
+#endif
 {
 XkbSectionPtr	section;
 XkbRowPtr	row;
@@ -3342,8 +3610,8 @@ Atom		name;
     name= XkbInternAtom(NULL,XkbAtomGetString(NULL,si->name),False);
     section= XkbAddGeomSection(geom,name,si->nRows,si->nDoodads,si->nOverlays);
     if (section==NULL) {
-	uInternalError("Couldn't allocate section in geometry\n");
-	uAction("Section %s not compiled\n",scText(info->dpy,si));
+	WSGO("Couldn't allocate section in geometry\n");
+	ACTION1("Section %s not compiled\n",scText(info->dpy,si));
 	return False;
     }
     section->top= si->top;
@@ -3353,10 +3621,10 @@ Atom		name;
     section->angle= si->angle;
     section->priority= si->priority;
     for (ri=si->rows;ri!=NULL;ri=(RowInfo *)ri->defs.next) {
-	row= XkbAddGeomRow(geom,section,ri->nKeys);
+	row= XkbAddGeomRow(section,ri->nKeys);
 	if (row==NULL) {
-	    uInternalError("Couldn't allocate row in section\n");
-	    uAction("Section %s is incomplete\n",scText(info->dpy,si));
+	    WSGO("Couldn't allocate row in section\n");
+	    ACTION1("Section %s is incomplete\n",scText(info->dpy,si));
 	    return False;
 	}
 	row->top= ri->top;
@@ -3365,16 +3633,16 @@ Atom		name;
 	for (ki=ri->keys;ki!=NULL;ki=(KeyInfo *)ki->defs.next) {
 	    XkbColorPtr	color;
 	    if ((ki->defs.defined&_GK_Name)==0) {
-		uError("Key %d of row %d in section %s has no name\n",
-						ki->index,ri->index,
+		ERROR3("Key %d of row %d in section %s has no name\n",
+						(int)ki->index,(int)ri->index,
 						scText(info->dpy,si));
-		uAction("Section %s ignored\n",scText(info->dpy,si));
+		ACTION1("Section %s ignored\n",scText(info->dpy,si));
 		return False;
 	    }
-	    key= XkbAddGeomKey(geom,row);
+	    key= XkbAddGeomKey(row);
 	    if (key==NULL) {
-		uInternalError("Couldn't allocate key in row\n");
-		uAction("Section %s is incomplete\n",scText(info->dpy,si));
+		WSGO("Couldn't allocate key in row\n");
+		ACTION1("Section %s is incomplete\n",scText(info->dpy,si));
 		return False;
 	    }
 	    memcpy(key->name.name,ki->name,XkbKeyNameLength);
@@ -3389,8 +3657,8 @@ Atom		name;
 		key->shape_ndx= si->index;
 	    }
 	    if (ki->color!=None)
-		 color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,ki->color));
-	    else color= XkbAddGeomColor(geom,"white");
+		 color= XkbAddGeomColor(geom,XkbAtomGetString(NULL,ki->color),geom->num_colors);
+	    else color= XkbAddGeomColor(geom,"white",geom->num_colors);
 	    XkbSetKeyColor(geom,key,color);
 	}
     }
@@ -3419,10 +3687,14 @@ Atom		name;
 /***====================================================================***/
 
 Bool
+#if NeedFunctionPrototypes
+CompileGeometry(XkbFile *file,XkbFileInfo *result,unsigned merge)
+#else
 CompileGeometry(file,result,merge)
     XkbFile *		file;
     XkbFileInfo *	result;
     unsigned	 	merge;
+#endif
 {
 GeometryInfo	info;
 XkbDescPtr	xkb;
@@ -3443,8 +3715,8 @@ XkbDescPtr	xkb;
 	sizes.num_sections= info.nSections;
 	sizes.num_doodads= info.nDoodads;
 	if (XkbAllocGeometry(xkb,&sizes)!=Success) {
-	    uInternalError("Couldn't allocate GeometryRec\n");
-	    uAction("Geometry not compiled\n");
+	    WSGO("Couldn't allocate GeometryRec\n");
+	    ACTION("Geometry not compiled\n");
 	    return False;
 	}
 	geom= xkb->geom;
@@ -3462,17 +3734,17 @@ XkbDescPtr	xkb;
 					     info.fontSlant,info.fontSetWidth,
 					     info.fontVariant,
 					     info.fontSize,info.fontEncoding);
-	XkbAddGeomColor(geom,"black");
-	XkbAddGeomColor(geom,"white");
+	XkbAddGeomColor(geom,"black",geom->num_colors);
+	XkbAddGeomColor(geom,"white",geom->num_colors);
 
 	if (info.baseColor==None)
 	    info.baseColor= XkbInternAtom(NULL,"white",False);
 	if (info.labelColor==None)
 	    info.labelColor= XkbInternAtom(NULL,"black",False);
 	geom->base_color= 
-		XkbAddGeomColor(geom,XkbAtomGetString(NULL,info.baseColor));
+		XkbAddGeomColor(geom,XkbAtomGetString(NULL,info.baseColor),geom->num_colors);
 	geom->label_color= 
-		XkbAddGeomColor(geom,XkbAtomGetString(NULL,info.labelColor));
+		XkbAddGeomColor(geom,XkbAtomGetString(NULL,info.labelColor),geom->num_colors);
 
 	if (info.props) {
 	    PropertyInfo *pi;
@@ -3503,7 +3775,7 @@ XkbDescPtr	xkb;
 	    }
 	}
 	if (info.aliases)
-	    ApplyAliases(xkb,&info.aliases);
+	    ApplyAliases(xkb,True,&info.aliases);
 	ClearGeometryInfo(&info);
 	return True;
     }

@@ -4,7 +4,7 @@
  *
  *    File I/O Component (specification).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -27,8 +27,7 @@
  *    (re-entrant builds only)
  *
  ******************************************************************/
-
-/* #define TT_CONFIG_REENTRANT */
+/* $XFree86$ */
 
 #ifndef TTFILE_H
 #define TTFILE_H
@@ -41,6 +40,8 @@
 #ifdef __cplusplus
   extern "C" {
 #endif
+
+#if !defined(FTXSBIT_H)
 
   /* Initialize file component */
   LOCAL_DEF
@@ -70,6 +71,8 @@
 
   LOCAL_DEF
   TT_Error  TT_Close_Stream( TT_Stream*  stream );
+
+#endif /* !FTXSBIT */
 
 
   /* Informs the component that we're going to use the file   */
@@ -114,7 +117,7 @@
 #define STREAM_ARGS   /* void */
 #define STREAM_ARG    void
 
-#endif /* TT_CONFIG_REENTRANT */
+#endif /* TT_CONFIG_OPTION_THREAD_SAFE */
 
 
   /****************************************************************/
@@ -208,14 +211,15 @@
 
 #ifdef TT_CONFIG_OPTION_THREAD_SAFE
 
-  #define FRAME_ARGS   TFileFrame* frame,
-  #define FRAME_ARG    TFileFrame* frame
+#define FRAME_ARGS   TFileFrame*  frame,
+#define FRAME_ARG    TFileFrame*  frame
 
 #else
-  #define FRAME_ARGS   /* void */
-  #define FRAME_ARG    void
 
-#endif /* TT_CONFIG_REENTRANT */
+#define FRAME_ARGS   /* void */
+#define FRAME_ARG    void
+
+#endif /* TT_CONFIG_OPTION_THREAD_SAFE */
 
 
   /* Access the next 'size' bytes from current position. */
@@ -240,9 +244,12 @@
 
   /* primitive routines for data accessing */
 
-  EXPORT_DEF Char   TT_Get_Char  ( FRAME_ARG );
-  EXPORT_DEF Short  TT_Get_Short ( FRAME_ARG );
-  EXPORT_DEF Long   TT_Get_Long  ( FRAME_ARG );
+  EXPORT_DEF
+  Char   TT_Get_Char ( FRAME_ARG );
+  EXPORT_DEF
+  Short  TT_Get_Short( FRAME_ARG );
+  EXPORT_DEF
+  Long   TT_Get_Long ( FRAME_ARG );
 
 #ifdef TT_CONFIG_OPTION_THREAD_SAFE
 
@@ -252,11 +259,11 @@
 
 #else
 
-#define  TT_Get_Byte()   ((Byte  )TT_Get_Char ())
-#define  TT_Get_UShort() ((UShort)TT_Get_Short())
-#define  TT_Get_ULong()  ((ULong )TT_Get_Long ())
+#define  TT_Get_Byte()   ( (Byte  )TT_Get_Char () )
+#define  TT_Get_UShort() ( (UShort)TT_Get_Short() )
+#define  TT_Get_ULong()  ( (ULong )TT_Get_Long () )
 
-#endif /* TT_CONFIG_REENTRANT */
+#endif /* TT_CONFIG_OPTION_THREAD_SAFE */
 
 
 #ifdef __cplusplus

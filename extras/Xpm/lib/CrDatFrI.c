@@ -31,6 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
+/* $XFree86$ */
 
 #include "XpmI.h"
 
@@ -229,7 +230,7 @@ CreateColors(dataptr, data_size, colors, ncolors, cpp)
 	s = buf + cpp;
 
 	for (key = 1; key <= NKEYS; key++, defaults++) {
-	    if (s2 = *defaults) {
+	    if ((s2 = *defaults)) {
 #ifndef VOID_SPRINTF
 		s +=
 #endif

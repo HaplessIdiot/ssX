@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.17 2001/07/20 19:22:37 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.18 2001/08/10 22:25:59 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -159,7 +159,6 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     FormatInitRec   formats[1024];
     CARD32	    format;
     CARD8	    depth;
-    int		    i;
     VisualPtr	    pVisual;
     int		    v;
     int		    bpp;

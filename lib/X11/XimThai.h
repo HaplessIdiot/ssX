@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XimThai.h,v 1.2 2001/02/09 00:02:53 dawes Exp $ */
 
 /*
 **++ 
@@ -166,6 +166,7 @@ Bool THAI_isaccepted (
 #endif
 );
 
+#if 0
 Private
 void THAI_apply_write_rules (
 #if NeedFunctionPrototypes
@@ -175,6 +176,7 @@ void THAI_apply_write_rules (
 	int	       *num_insert_ch
 #endif
 );
+#endif
 
 Private
 int THAI_find_chtype (

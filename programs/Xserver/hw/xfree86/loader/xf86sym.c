@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.197 2001/08/15 19:08:55 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.198 2001/08/28 16:55:10 tsi Exp $ */
 
 /*
  *
@@ -47,6 +47,7 @@
 #include "xf86cmap.h"
 #include "xf86fbman.h"
 #include "dgaproc.h"
+#include "dpmsproc.h"
 #include "vidmodeproc.h"
 #include "xf86miscproc.h"
 #include "loader.h"
@@ -156,8 +157,6 @@ extern int testrg(unsigned short, unsigned char);
 extern int testinx2(unsigned short, unsigned char, unsigned char);
 extern int testinx(unsigned short, unsigned char);
 #endif
-
-extern void DPMSSet(CARD16);
 
 /* XFree86 things */
 
@@ -595,7 +594,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86XInputSetSendCoreEvents)
 /* End merged segment */
 #endif
+   SYMFUNC(DPMSGet)
    SYMFUNC(DPMSSet)
+   SYMFUNC(DPMSSupported)
 /* xf86Debug.c */
 #ifdef BUILDDEBUG
    SYMFUNC(xf86Break1)

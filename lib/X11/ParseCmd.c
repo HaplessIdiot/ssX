@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/ParseCmd.c,v 1.2 1998/12/20 11:56:57 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ParseCmd.c,v 1.3 2001/01/17 19:41:41 dawes Exp $ */
 
 /* XrmParseCommand()
 
@@ -58,9 +58,7 @@ SOFTWARE.
 #include <stdio.h>
 
 
-static void _XReportParseError(arg, msg)
-    XrmOptionDescRec *arg;
-    char *msg;
+static void _XReportParseError(XrmOptionDescRec *arg, char *msg)
 {
     (void) fprintf(stderr, "Error parsing argument \"%s\" (%s); %s\n",
 		   arg->option, arg->specifier, msg);
@@ -92,7 +90,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     XrmQuark		quarks[100];
     XrmBinding		*start_bindings;
     XrmQuark		*start_quarks;
-    char		*optP, *argP, optchar, argchar;
+    char		*optP, *argP = NULL, optchar, argchar = 0;
     int			matches;
     enum {DontCare, Check, NotSorted, Sorted} table_is_sorted;
     char		**argend;

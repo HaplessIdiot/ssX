@@ -1,7 +1,7 @@
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.3 2000/02/12 03:39:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.4 2001/01/17 22:36:36 dawes Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -70,8 +70,8 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 
     CfbBits *pbits;/* pointer to start of pixmap */
     register CfbBits bits;	/* bits from stipple */
-    int	rot, lastStop, i;
-    register CfbBits  xor, and;
+    int	rot;
+    register CfbBits xor;
     PixmapPtr		    stipple;
     int	    wEnd;
 
@@ -120,8 +120,8 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	    	    dstLine += nlwDst;
 	    	    if (startmask)
 	    	    {
-		    	*dst = *dst & ~startmask |
-				GetPixelGroup (bits) & startmask;
+		    	*dst = (*dst & ~startmask) |
+			       (GetPixelGroup (bits) & startmask);
 		    	dst++;
 		    	RotBitsLeft (bits, PGSZB);
 	    	    }
@@ -133,8 +133,8 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	    	    }
 	    	    if (endmask)
 	    	    {
-			*dst = *dst & ~endmask |
-			      GetPixelGroup (bits) & endmask;
+			*dst = (*dst & ~endmask) |
+			       (GetPixelGroup (bits) & endmask);
 	    	    }
 	    	}
 	    }
@@ -154,8 +154,8 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	    	    dstLine += nlwDst;
 		    if (startmask)
 		    {
-			*dstTmp = *dstTmp & ~startmask |
-			       GetPixelGroup (bits) & startmask;
+			*dstTmp = (*dstTmp & ~startmask) |
+				  (GetPixelGroup (bits) & startmask);
 			dstTmp++;
 			RotBitsLeft (bits, PGSZB);
 		    }
@@ -179,7 +179,7 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 		    {
 			dst = dstTmp + (nlwMiddle << 3);
 			*dst = (*dst & ~endmask) |
-			       GetPixelGroup (bits) & endmask;
+			       (GetPixelGroup(bits) & endmask);
 		    }
 		    while (w--)
 		    {
@@ -243,7 +243,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
 {
     int		    x, y, w, h;
-    int		    nlwMiddle, nlwDst, nlwTmp;
+    int		    nlwMiddle, nlwDst;
     CfbBits   startmask, endmask;
     register CfbBits   *dst;
     CfbBits   *dstLine, *pbits, *dstTmp;

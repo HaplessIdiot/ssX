@@ -24,7 +24,7 @@
  * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.6 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.7 2001/07/25 15:04:44 dawes Exp $ */
 /*
  *	It should be pointed out that for simplicity's sake, the
  *	environment parameters are defined as floating point constants,
@@ -567,7 +567,7 @@ _XcmsArcTangent(x)
  *		Returns the arctangent 
  */
 {
-    double ai, a1, bi, b1, l, d;
+    double ai, a1 = 0.0, bi, b1 = 0.0, l, d;
     double maxerror;
     int i;
 

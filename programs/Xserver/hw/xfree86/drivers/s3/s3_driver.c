@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.4 2001/09/14 13:54:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.5 2001/09/27 08:34:28 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -313,7 +313,7 @@ static const OptionInfoRec * S3AvailableOptions(int chipid, int busid)
                 
 static void S3Identify(int flags)
 {
-        xf86PrintChipsets("s3", "driver (version " DRIVER_VERSION " for S3 chipset",
+        xf86PrintChipsets("S3", "driver (version " DRIVER_VERSION " for S3 chipset",
                           S3Chipsets);  
 }
 
@@ -928,7 +928,7 @@ static void S3Save(ScrnInfoPtr pScrn)
 	RamDacRegRecPtr RAMDACreg;
 	int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 	int i;
-	unsigned char cr5c;
+	unsigned char cr5c = 0;
 
 	pRAMDAC = RAMDACHWPTR(pScrn);
 	RAMDACreg = &pRAMDAC->SavedReg;
@@ -1757,7 +1757,6 @@ static void S3AdjustFrame(int scrnIndex, int x, int y, int flags)
 void S3Regdump(ScrnInfoPtr pScrn)
 {
         S3Ptr pS3 = S3PTR(pScrn);
-	S3RegPtr regs = &pS3->ModeRegs;
         int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 
 #if 1

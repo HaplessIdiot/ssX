@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbbitblt.c,v 1.3 1998/10/04 09:39:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbbitblt.c,v 1.4 2001/01/17 22:37:02 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -129,7 +129,7 @@ int srcx, srcy;
 int width, height;
 int dstx, dsty;
 {
-    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    RegionPtr prgnSrcClip = NULL; /* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
 
     RegionPtr prgnExposed;

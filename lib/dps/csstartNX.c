@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/csstartNX.c,v 1.5 2001/07/29 05:01:13 tsi Exp $ */
 
 #include <sys/param.h>
 #include <X11/X.h>
@@ -79,7 +79,6 @@ TryTCP(void)
 {
     struct sockaddr_in insock;
     int request;
-    int retry;
     unsigned short port, startPort = 0;
     struct servent *serventInfo;
     int okay;

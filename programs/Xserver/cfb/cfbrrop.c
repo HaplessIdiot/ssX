@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.c,v 1.3 2000/02/12 05:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.c,v 1.4 2001/01/17 22:36:36 dawes Exp $ */
 
 /* cfb reduced rasterop computations */
 
@@ -193,6 +193,9 @@ cfbReduceRasterOp (rop, fg, pm, andp, xorp)
     case GXset:
 	and = 0;
 	xor = ~0;
+	break;
+    default:
+	and = xor = 0;
 	break;
     }
     and |= ~pm;

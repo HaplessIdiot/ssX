@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.5 2001/01/17 22:36:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.6 2001/08/01 00:44:47 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1269,9 +1269,9 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 {
     EntryPtr	pent;
     Bool	foundFree;
-    Pixel	pixel, Free;
-    int		npix, count, *nump;
-    Pixel	**pixp, *ppix;
+    Pixel	pixel, Free = 0;
+    int		npix, count, *nump = NULL;
+    Pixel	**pixp = NULL, *ppix;
     xColorItem	def;
 
     foundFree = FALSE;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.8 2001/07/20 19:25:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.9 2001/07/27 16:48:38 dawes Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -92,16 +92,14 @@ shadowWakeupHandler (pointer data, int i, pointer LastSelectMask)
 static void
 shadowDamageRegion (WindowPtr pWindow, RegionPtr pRegion)
 {
-    ScreenPtr	    pScreen = pWindow->drawable.pScreen;
     shadowBufPtr    pBuf = shadowFindBuf (pWindow);
-    shadowScrPriv (pScreen);
 
     if (!pBuf)
 	abort ();
     
-    REGION_UNION (pScreen, &pBuf->damage, &pBuf->damage, pRegion);
+    REGION_UNION (pWindow->drawable.pScreen, &pBuf->damage, &pBuf->damage, pRegion);
 #ifdef ALWAYS_DISPLAY
-    shadowRedisplay (pScreen);
+    shadowRedisplay (pWindow->drawable.pScreen);
 #endif
 }
 
@@ -1427,7 +1425,7 @@ shadowRemove (ScreenPtr pScreen, PixmapPtr pPixmap)
     shadowScrPriv(pScreen);
     shadowBufPtr    pBuf, *pPrev;
 
-    for (pPrev = &pScrPriv->pBuf; pBuf = *pPrev; pPrev = &pBuf->pNext)
+    for (pPrev = &pScrPriv->pBuf; (pBuf = *pPrev); pPrev = &pBuf->pNext)
 	if (pBuf->pPixmap == pPixmap)
 	{
 	    REGION_UNINIT (pScreen, &pBuf->damage);
@@ -1445,7 +1443,7 @@ shadowFindBuf (WindowPtr pWindow)
     shadowBufPtr    pBuf, *pPrev;
     PixmapPtr	    pPixmap = (*pScreen->GetWindowPixmap) (pWindow);
 
-    for (pPrev = &pScrPriv->pBuf; pBuf = *pPrev; pPrev = &pBuf->pNext)
+    for (pPrev = &pScrPriv->pBuf; (pBuf = *pPrev); pPrev = &pBuf->pNext)
     {
 	if (!pBuf->pPixmap)
 	    pBuf->pPixmap = (*pScreen->GetScreenPixmap) (pScreen);

@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.19 2001/07/23 13:15:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.20 2001/07/25 15:04:52 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -235,7 +235,7 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 	}
 #else
 #ifdef POLLRDNORM
-#define XPOLL_READ POLLIN|POLLRDNORM
+#define XPOLL_READ (POLLIN|POLLRDNORM)
 #else
 #define XPOLL_READ POLLIN
 #endif
@@ -243,13 +243,13 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 #if (POLLWRNORM == POLLOUT)
 #define XPOLL_WRITE POLLOUT
 #else
-#define XPOLL_WRITE POLLOUT|POLLWRNORM
+#define XPOLL_WRITE (POLLOUT|POLLWRNORM)
 #endif
 #else
 #define XPOLL_WRITE POLLOUT
 #endif
 #ifdef POLLRDBAND
-#define XPOLL_EXCEPT POLLPRI|POLLRDBAND
+#define XPOLL_EXCEPT (POLLPRI|POLLRDBAND)
 #else
 #define XPOLL_EXCEPT POLLPRI
 #endif

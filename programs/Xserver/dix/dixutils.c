@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.6 2001/01/17 22:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.7 2001/07/25 15:05:01 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -323,7 +323,7 @@ AlterSaveSetForClient(client, pWin, mode)
     unsigned mode;
 {
     int numnow;
-    pointer *pTmp;
+    pointer *pTmp = NULL;
     int j;
 
     numnow = client->numSaved;
@@ -560,7 +560,7 @@ ProcessWorkQueue()
      * they will be called again.  This must be reentrant with
      * QueueWorkProc.
      */
-    while (q = *p)
+    while ((q = *p))
     {
 	if ((*q->function) (q->client, q->closure))
 	{
@@ -582,7 +582,7 @@ ProcessWorkQueueZombies()
     WorkQueuePtr    q, *p;
 
     p = &workQueue;
-    while (q = *p)
+    while ((q = *p))
     {
 	if (q->client && q->client->clientGone)
 	{

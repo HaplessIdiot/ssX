@@ -31,6 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
+/* $XFree86$ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -191,7 +192,7 @@ XpmCreateXpmImageFromImage(display, image, shapeimage,
     /* variables to return */
     PixelsMap pmap;
     XpmColor *colorTable = NULL;
-    int ErrorStatus;
+    int ErrorStatus = 0;
 
     /* calculation variables */
     unsigned int width = 0;
@@ -385,7 +386,7 @@ ScanTransparentColor(color, cpp, attributes)
 		((XpmColor **) attributes->colorTable)[attributes->mask_pixel];
 /* end 3.2 bc */
 	for (key = 1; key <= NKEYS; key++) {
-	    if (s = mask_defaults[key]) {
+	    if ((s = mask_defaults[key])) {
 		defaults[key] = (char *) xpmstrdup(s);
 		if (!defaults[key])
 		    return (XpmNoMemory);
@@ -423,10 +424,10 @@ ScanOtherColors(display, colors, ncolors, pixels, mask, cpp, attributes)
     XpmColor *color;
     XColor *xcolors = NULL, *xcolor;
     char *colorname, *s;
-    XpmColor *colorTable, **oldColorTable = NULL;
+    XpmColor *colorTable = NULL, **oldColorTable = NULL;
     unsigned int ancolors = 0;
-    Pixel *apixels;
-    unsigned int mask_pixel;
+    Pixel *apixels = NULL;
+    unsigned int mask_pixel = 0;
     Bool found;
 
     /* retrieve information from the XpmAttributes */
@@ -521,7 +522,7 @@ ScanOtherColors(display, colors, ncolors, pixels, mask, cpp, attributes)
 
 		found = True;
 		for (key = 1; key <= NKEYS; key++) {
-		    if (s = adefaults[key])
+		    if ((s = adefaults[key]))
 			defaults[key] = (char *) xpmstrdup(s);
 		}
 	    }

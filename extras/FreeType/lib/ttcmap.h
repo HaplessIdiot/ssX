@@ -4,7 +4,7 @@
  *
  *    TrueType Character Mappings
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -15,6 +15,7 @@
  *
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTCMAP_H
 #define TTCMAP_H
@@ -54,11 +55,12 @@
   struct  TCMap2_
   {
     PUShort subHeaderKeys;
-    /* high byte mapping table            */
-    /* value = subHeader index * 8        */
+    /* high byte mapping table     */
+    /* value = subHeader index * 8 */
 
     PCMap2SubHeader  subHeaders;
     PUShort          glyphIdArray;
+    UShort           numGlyphId;        /* control value */
   };
 
   typedef struct TCMap2_  TCMap2;
@@ -88,6 +90,7 @@
 
     PCMap4Segment  segments;
     PUShort        glyphIdArray;
+    UShort         numGlyphId;          /* control value */
   };
 
   typedef struct TCMap4_  TCMap4;
@@ -133,7 +136,7 @@
   typedef struct TCMapTable_  TCMapTable;
   typedef TCMapTable*         PCMapTable;
 
-
+#if !defined(FTXCMAP_H) && !defined(FTXSBIT_H)
 
   /* Load character mappings directory when face is loaded. */
   /* The mappings themselves are only loaded on demand.     */
@@ -154,6 +157,8 @@
   LOCAL_DEF
   UShort  CharMap_Index( PCMapTable  cmap,
                          UShort      charCode );
+
+#endif /* !FTXCMAP_H && !FTXSBIT_H */
 
   /* NOTE: The PFace type isn't defined at this point */
 

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.9 2001/06/30 10:43:17 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.10 2001/07/06 02:04:10 paulo Exp $
  */
 
 #include "options.h"
@@ -242,7 +242,7 @@ OptionsPopup(XF86OptionPtr *opts)
     option_str = NULL;
     options = opts;
     if (first) {
-	Widget pane, form, viewport, bottom, popdown, command;
+	Widget pane, form, viewport, bottom, popdown;
 
 	first = 0;
 
@@ -264,6 +264,8 @@ OptionsPopup(XF86OptionPtr *opts)
 	XtAddCallback(update, XtNcallback, UpdateOption, NULL);
 #ifdef USE_MODULES
 	if (!nomodules) {
+	    Widget command;
+
 	    command = XtCreateManagedWidget("help", commandWidgetClass,
 					    form, NULL, 0);
 	    XtAddCallback(command, XtNcallback, ModuleOptionsPopup, NULL);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.17 2001/08/07 07:04:42 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.18 2001/09/26 12:53:59 alanh Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -204,7 +204,7 @@ static const OptionInfoRec * ARKAvailableOptions(int chipid, int busid)
 
 static void ARKIdentify(int flags)
 {
-	xf86PrintChipsets("ark", "driver (version " DRIVER_VERSION " for ARK Logic chipset",
+	xf86PrintChipsets("ARK", "driver (version " DRIVER_VERSION " for ARK Logic chipset",
 			  ARKChipsets);
 }
 

@@ -39,7 +39,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.6 2001/08/01 00:44:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.7 2001/08/17 22:08:11 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "sun.h"
@@ -287,6 +287,7 @@ static KeyCode LookupKeyCode (keysym, keysymsrec)
 	for (ii = 0; ii < keysymsrec->mapWidth; ii++)
 	    if (keysymsrec->map[index++] == keysym)
 		return i;
+    return 0;
 }
 
 static void pseudoKey(device, down, keycode)
@@ -413,7 +414,7 @@ static void sunKbdCtrl (device, ctrl)
     	if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) == -1)
  	    Error("Failed to set keyclick");
     }
-    if (pPriv->type == KB_SUN4 && pPriv->leds != ctrl->leds & 0x0f)
+    if ((pPriv->type == KB_SUN4) && (pPriv->leds != (ctrl->leds & 0x0f)))
 	DoLEDs(device, ctrl, pPriv);
 }
 

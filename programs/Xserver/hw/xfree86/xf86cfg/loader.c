@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.14 2001/08/01 00:44:56 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.15 2001/08/17 22:08:15 tsi Exp $
  */
 
 #include "config.h"
@@ -151,13 +151,13 @@ LoaderInitializeOptions(void)
 {
     static int first = 1;
     static char *modules = "lib/modules";
-    Bool options_ok = False;
+    volatile Bool options_ok = False;
     char query[256];
     char *type;
     XrmValue value;
     XrmQuark names[2];
     XrmQuark classes[2];
-    int i;
+    volatile int i;
     static ModuleType module_types[] = {
 	GenericModule, FontRendererModule, InputModule, VideoModule, NullModule
     };

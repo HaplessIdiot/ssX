@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.10 2000/08/11 19:10:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.11 2001/05/15 18:22:22 paulo Exp $ */
 
 #define _SPACEORB_C_
 /*****************************************************************************
@@ -136,6 +136,24 @@ SPACEORBSetupProc(pointer module,
   return (pointer) 1;
 }
 
+static void
+TearDownProc( pointer p )
+{
+  if (!xf86ServerIsOnlyDetecting()) {
+
+    InputInfoPtr pInfo = (InputInfoPtr) p;
+    SPACEORBPrivatePtr priv = (SPACEORBPrivatePtr) pInfo->private;
+
+    DeviceOff (pInfo->dev);
+  
+    xf86CloseSerial (pInfo->fd);
+    XisbFree (priv->buffer);
+    xfree (priv);
+    xfree (pInfo->name);
+    xfree (pInfo);
+  }
+}
+
 /* was before: XF86ModuleData spaceorbModuleData = { &VersionRec, SetupProc, TearDownProc }; */
 XF86ModuleData spaceorbModuleData = { &VersionRec, SPACEORBSetupProc, TearDownProc };
 
@@ -242,24 +260,6 @@ SpaceorbPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	if (priv)
                 xfree (priv);
         return (pInfo);
-}
-
-static void
-TearDownProc( pointer p )
-{
-  if (!xf86ServerIsOnlyDetecting()) {
-
-    InputInfoPtr pInfo = (InputInfoPtr) p;
-    SPACEORBPrivatePtr priv = (SPACEORBPrivatePtr) pInfo->private;
-
-    DeviceOff (pInfo->dev);
-  
-    xf86CloseSerial (pInfo->fd);
-    XisbFree (priv->buffer);
-    xfree (priv);
-    xfree (pInfo->name);
-    xfree (pInfo);
-  }
 }
 
 static Bool

@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.9 2000/02/12 03:39:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.10 2001/01/17 22:36:34 dawes Exp $ */
 
 /*
 
@@ -147,19 +147,16 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				/* following used for looping through a line */
     CfbBits startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
-    int xoffSrc, xoffDst, xoffEnd;
+    int xoffSrc, xoffDst;
+    register int nl;		/* temp copy of nlMiddle */
+    int careful;
+
+#if (PSZ != 24) || (MROP != 0)
     register int leftShift, rightShift;
     register CfbBits bits;
     register CfbBits bits1;
-    register int nl;		/* temp copy of nlMiddle */
+#endif
 
-				/* place to store full source word */
-    int nstart;			/* number of ragged bits at start of dst */
-    int nend;			/* number of ragged bits at end of dst */
-    int srcStartOver;		/* pulling nstart bits from src
-				   overflows into the next word? */
-    int careful;
-    int tmpSrc;
 #if PSZ == 24
 #ifdef DO_MEMCPY
     int w2;

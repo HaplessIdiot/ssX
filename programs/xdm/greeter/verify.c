@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.16 2001/08/17 13:27:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.18 2001/10/01 13:44:16 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -281,12 +281,12 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 #ifdef USESHADOW
 	struct spwd	*sp;
 #endif
+	char		*user_pass = NULL;
 #endif
 #ifdef __OpenBSD__
 	char            *s;
 	struct timeval  tp;
 #endif
-	char		*user_pass = NULL;
 	char		*shell, *home;
 	char		**argv;
 

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/twm/session.c,v 3.5 1999/02/25 06:01:03 dawes Exp $ */
+/* $XFree86: xc/programs/twm/session.c,v 3.6 2001/01/17 23:45:08 dawes Exp $ */
 
 #include <X11/Xos.h>
 
@@ -796,7 +796,7 @@ SmPointer clientData;
 	prop1val.value = Argv[0];
 	prop1val.length = strlen (Argv[0]);
 
-	sprintf (userId, "%d", getuid());
+	sprintf (userId, "%ld", (long)getuid());
 	prop2.name = SmUserID;
 	prop2.type = SmARRAY8;
 	prop2.num_vals = 1;

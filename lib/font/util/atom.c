@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/atom.c,v 1.3 1999/08/22 08:58:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/atom.c,v 1.4 2001/01/17 19:43:33 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -135,7 +135,7 @@ MakeAtom(char *string, unsigned len, int makeit)
 {
     AtomListPtr	a;
     int		hash;
-    int		h;
+    int		h = 0;
     int		r;
 
     hash = Hash (string, len);

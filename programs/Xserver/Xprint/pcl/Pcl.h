@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.8 2001/08/01 00:44:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.9 2001/08/27 17:40:59 dawes Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -385,7 +385,6 @@ extern Bool InitializePclDriver(
     ScreenPtr pScreen,
     int argc,
     char **argv);
-static Bool PclDestroyContext( XpContextPtr pCon );
 extern XpContextPtr PclGetContextFromWindow( WindowPtr win );
 
 /******

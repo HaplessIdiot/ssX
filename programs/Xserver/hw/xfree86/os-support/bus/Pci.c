@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.49 2001/05/21 03:45:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.50 2001/10/01 13:44:14 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -24,7 +24,7 @@
  * 	pciBusAddrToHostAddr() - Convert a PCI address to a host address
  * 	pciHostAddrToBusAddr() - Convert a host address to a PCI address
  *	pciGetBaseSize - Returns the number of bits in a PCI base addr mapping
- *	xf86MapPciMem() - Like xf86MapVidMem() expect function expects
+ *	xf86MapPciMem() - Like xf86MapVidMem() except function expects
  *                        a PCI address and PCITAG (identifies PCI domain)
  *	xf86ReadPciBIOS() - Like xf86ReadBIOS, except that it handles PCI/host
  *                          address translation and BIOS decode enabling.
@@ -59,9 +59,6 @@
  *         required. These include pciFindFirstFP, pciFindNextFP,
  *         Of course, if you choose not to use one of the generic
  *         functions, you will need to provide a platform specifc replacement.
- *
- * See xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c for an example
- * of how to extend this framework to other platforms/OSes.
  *
  * Gary Barton
  * Concurrent Computer Corporation
@@ -211,9 +208,6 @@ int            pciNumBuses = 0;     /* Actual number of PCI buses */
 static Bool    inProbe = FALSE;
 
 static pciConfigPtr pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
-#ifdef INCLUDE_LOCKPCI
-static pciConfigPtr pci_locked_devp[MAX_PCI_DEVICES + 1] = {NULL, };
-#endif
 
 /*
  * Platform specific PCI function pointers.
@@ -255,10 +249,9 @@ PCITAG
 pciFindFirst(CARD32 id, CARD32 mask)
 {
 #ifdef DEBUGPCI
-ErrorF("pciFindFirst(0x%lx, 0x%lx), pciInit = %d\n", id, mask, pciInitialized);
+  ErrorF("pciFindFirst(0x%lx, 0x%lx), pciInit = %d\n", id, mask, pciInitialized);
 #endif
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
 
   pciDevid = id & mask;
   pciDevidMask = mask;
@@ -270,10 +263,9 @@ PCITAG
 pciFindNext(void)
 {
 #ifdef DEBUGPCI
-ErrorF("pciFindNext(), pciInit = %d\n", pciInitialized);
+  ErrorF("pciFindNext(), pciInit = %d\n", pciInitialized);
 #endif
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
     
   return((*pciFindNextFP)());
 }
@@ -284,10 +276,9 @@ pciReadLong(PCITAG tag, int offset)
   int bus = PCI_BUS_FROM_TAG(tag);
 
 #ifdef DEBUGPCI
-ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
+  ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
 #endif
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
 
   if ((bus < pciNumBuses || inProbe) &&  pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciReadLong) {
@@ -334,8 +325,7 @@ pciWriteLong(PCITAG tag, int offset, CARD32 val)
 {
   int bus = PCI_BUS_FROM_TAG(tag);
 	
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
   
   if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciWriteLong)
@@ -384,8 +374,7 @@ pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 #ifdef DEBUGPCI
     ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
 #endif
-    if (!pciInitialized)
-	pciInit();
+    pciInit();
 
     if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciReadLong) {
@@ -411,8 +400,7 @@ pciLongFunc(PCITAG tag, pciFunc func)
 {
     int bus = PCI_BUS_FROM_TAG(tag);
 
-    if (!pciInitialized)
-	pciInit();
+    pciInit();
 
     if (bus > pciNumBuses || !pciBusInfo[bus] ||
 	!pciBusInfo[bus]->funcs.pciReadLong) return NULL;
@@ -433,8 +421,7 @@ pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   int bus = PCI_BUS_FROM_TAG(tag);
 	
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
   
   if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciAddrBusToHost)
@@ -448,8 +435,7 @@ pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   int bus = PCI_BUS_FROM_TAG(tag);
 	
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
   
   if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciAddrHostToBus)
@@ -494,8 +480,7 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
   if (index < 0 || index > 6)
     return 0;
 
-  if (!pciInitialized)
-    pciInit();
+  pciInit();
 
   if (xf86GetPciSizeFromOS(tag, index, &bits)) {
       if (min)
@@ -629,8 +614,10 @@ PCITAG
 pciGenFindNext(void)
 {
     unsigned long devid, tmp;
-    unsigned char base_class, sub_class, sec_bus, pri_bus;
+    unsigned int sec_bus, pri_bus;
+    static int previousBus = 0;
     Bool speculativeProbe = FALSE;
+    unsigned char base_class, sub_class;
   
 #ifdef DEBUGPCI
     ErrorF("pciGenFindNext\n");
@@ -648,7 +635,8 @@ pciGenFindNext(void)
 	    if (pciNumBuses == 0)
 		return(PCI_NOT_FOUND);
 
-	    pciBusNum = 0;
+	    /* Skip ahead to the first bus defined by pciInit() */
+	    for (pciBusNum = 0;  !pciBusInfo[pciBusNum];  ++pciBusNum);
 	    pciFuncNum = 0;
 	    pciDevNum = 0;
 	} else {
@@ -664,7 +652,7 @@ pciGenFindNext(void)
 		/*
 		 * Is current dev a multifunction device?
 		 */
-		if (pciMfDev(pciBusNum, pciDevNum))
+		if (!speculativeProbe && pciMfDev(pciBusNum, pciDevNum))
 		    /* Probe for other functions */
 		    pciFuncNum = 1;
 		else
@@ -713,7 +701,7 @@ pciGenFindNext(void)
 #endif
 	if (!pciBusInfo[pciBusNum]) {
 	    pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
-	    *pciBusInfo[pciBusNum] = *pciBusInfo[0];
+	    *pciBusInfo[pciBusNum] = *pciBusInfo[previousBus];
      
 	    speculativeProbe = TRUE;
 	}
@@ -733,13 +721,15 @@ pciGenFindNext(void)
 #ifdef DEBUGPCI
 	ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, devid);
 #endif
-	if (devid == 0xffffffff)
+	if ((devid == 0xffffffff) || (devid == 0x00000000) ||
+	    (devid == 0xffff0000) || (devid == 0x0000ffff))
 	    continue; /* Nobody home.  Next device please */
 
-	if (speculativeProbe && (pciNumBuses <= pciBusNum))
+	if (pciNumBuses <= pciBusNum)
 	    pciNumBuses = pciBusNum + 1;
     
 	speculativeProbe = FALSE;
+	previousBus = pciBusNum;
     
 	/*
 	 * Before checking for a specific devid, look for enabled
@@ -827,7 +817,7 @@ pciCfgMech1Read(PCITAG tag, int offset)
   rv = inl(0xCFC);
 
 #if defined(__powerpc__)
-  signal(SIGBUS,SIG_DFL);
+  signal(SIGBUS, SIG_DFL);
   if (buserr_detected)
     return(0xffffffff);
   else
@@ -870,7 +860,7 @@ pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask, CARD32 val)
     outl(0xCFC, rv);
 
 #if defined(__powerpc__)
-    signal(SIGBUS,SIG_DFL);
+    signal(SIGBUS, SIG_DFL);
 #endif
 }
 
@@ -926,8 +916,9 @@ pciAddrNOOP(PCITAG tag, PciAddrType type, ADDRESS addr)
 pciConfigPtr *
 xf86scanpci(int flags)
 {
-    int idx = 0;
-    PCITAG tag;
+    pciConfigPtr devp;
+    int          idx = 0;
+    PCITAG       tag;
 
     if (pci_devp[0])
 	return pci_devp;
@@ -940,65 +931,99 @@ xf86scanpci(int flags)
 	return NULL;
 
 #ifdef DEBUGPCI
-ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
+    ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 #endif
 #ifndef OLD_FORMAT
     xf86MsgVerb(X_INFO, 2, "PCI: PCI scan (all values are in hex)\n");
 #endif
+
     while (idx < MAX_PCI_DEVICES && tag != PCI_NOT_FOUND) {
-	    pciConfigPtr devp;
-	    int          i;
-	    
-	    devp = xalloc(sizeof(pciDevice));
-	    if (!devp) {
-		    xf86Msg(X_ERROR,
-			"xf86scanpci: Out of memory after %d devices!!\n",
-			idx);
-		    return (pciConfigPtr *)NULL;
-	    }
+	int i;
 
-	    /* Identify pci device by bus, dev, func, and tag */
-	    devp->tag = tag;
-	    devp->busnum = PCI_BUS_FROM_TAG(tag);
-	    devp->devnum = PCI_DEV_FROM_TAG(tag);
-	    devp->funcnum = PCI_FUNC_FROM_TAG(tag);
-	    
-	    /* Read config space for this device */
-	    for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
-		    devp->cfgspc.dwords[i] =
-				pciReadLong(tag, i * sizeof(CARD32));
+	devp = xalloc(sizeof(pciDevice));
+	if (!devp) {
+	    xf86Msg(X_ERROR,
+		"xf86scanpci: Out of memory after %d devices!!\n", idx);
+	    return (pciConfigPtr *)NULL;
+	}
 
+	/* Identify pci device by bus, dev, func, and tag */
+	devp->tag = tag;
+	devp->busnum = PCI_BUS_FROM_TAG(tag);
+	devp->devnum = PCI_DEV_FROM_TAG(tag);
+	devp->funcnum = PCI_FUNC_FROM_TAG(tag);
+
+	/* Read config space for this device */
+	for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
+	    devp->cfgspc.dwords[i] = pciReadLong(tag, i * sizeof(CARD32));
+
+	switch (devp->pci_header_type & 0x7f) {
+	case 0:
 	    /* Get base address sizes for type 0 headers */
-	    if ((devp->pci_header_type & 0x7f) == 0)
-		for (i = 0; i < 7; i++)
-		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, 
-						       &devp->minBasesize);
-	    devp->listed_class = 0;
+	    for (i = 0; i < 7; i++)
+		devp->basesize[i] =
+		    pciGetBaseSize(tag, i, FALSE, &devp->minBasesize);
+	    break;
+
+	case 1:
+	    /* Allow master aborts to complete normally on secondary buses */
+	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
+		break;
+	    pciWriteByte(tag, PCI_PCI_BRIDGE_CONTROL_REG,
+		devp->pci_bridge_control & ~PCI_PCI_BRIDGE_MASTER_ABORT_EN);
+	    break;
+
+	default:
+	    break;
+	}
+
+	devp->listed_class = 0;
 
 #ifdef OLD_FORMAT
-	    xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%02x,0x%02x,0x%1x "
-			"ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
-			devp->busnum, devp->devnum, devp->funcnum,
-			devp->pci_vendor, devp->pci_device, devp->pci_rev_id,
-			devp->pci_base_class, devp->pci_sub_class);
+	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
+		    "ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
+		    devp->busnum, devp->devnum, devp->funcnum,
+		    devp->pci_vendor, devp->pci_device, devp->pci_rev_id,
+		    devp->pci_base_class, devp->pci_sub_class);
 #else
-	    xf86MsgVerb(X_INFO, 2, "PCI: %02x:%02x:%1x: chip %04x,%04x"
-			" card %04x,%04x rev %02x class %02x,%02x,%02x"
-			" hdr %02x\n",
-			devp->busnum, devp->devnum, devp->funcnum,
-			devp->pci_vendor, devp->pci_device,
-			devp->pci_subsys_vendor, devp->pci_subsys_card,
-			devp->pci_rev_id, devp->pci_base_class,
-			devp->pci_sub_class, devp->pci_prog_if,
-			devp->pci_header_type);
+	xf86MsgVerb(X_INFO, 2, "PCI: %.2x:%02x:%1x: chip %04x,%04x"
+		    " card %04x,%04x rev %02x class %02x,%02x,%02x hdr %02x\n",
+		    devp->busnum, devp->devnum, devp->funcnum,
+		    devp->pci_vendor, devp->pci_device,
+		    devp->pci_subsys_vendor, devp->pci_subsys_card,
+		    devp->pci_rev_id, devp->pci_base_class,
+		    devp->pci_sub_class, devp->pci_prog_if,
+		    devp->pci_header_type);
 #endif
 
-	    pci_devp[idx++] = devp;
-	    tag = pciFindNext();
+	pci_devp[idx++] = devp;
+	tag = pciFindNext();
+
 #ifdef DEBUGPCI
-ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
+	ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
 #endif
+
     }
+
+    /* Restore modified data (in reverse order) */
+    while (--idx >= 0) {
+	devp = pci_devp[idx];
+	switch (devp->pci_header_type & 0x7f) {
+	case 0:
+	    break;
+
+	case 1:
+	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
+		break;
+	    pciWriteByte(devp->tag, PCI_PCI_BRIDGE_CONTROL_REG,
+		devp->pci_bridge_control);
+	    break;
+
+	default:
+	    break;
+	}
+    }
+
 #ifndef OLD_FORMAT
     xf86MsgVerb(X_INFO, 2, "PCI: End of PCI scan\n");
 #endif

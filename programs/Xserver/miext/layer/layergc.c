@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.3 2001/06/05 01:11:07 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.4 2001/08/27 03:55:46 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -56,9 +56,7 @@ Bool
 layerCreateGC (GCPtr pGC)
 {
     Bool	    ret = TRUE;
-    int		    kind;
     LayerKindPtr    pLayKind;
-    LayerPtr	    pLayer;
     ScreenPtr	    pScreen = pGC->pScreen;
     layerScrPriv(pScreen);
     layerGCPriv(pGC);

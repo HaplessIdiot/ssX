@@ -42,6 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 #include	"misc.h"
 #include	"util.h"
 #include	"cache.h"
@@ -221,7 +222,7 @@ flush_cache(cache, needed)
     CachePtr    cache;
     unsigned long needed;
 {
-    CacheEntryPtr cp, *prev, oldest, *oldprev;
+    CacheEntryPtr cp, *prev, oldest, *oldprev = NULL;
     int i;
 
     while ((cache->cursize + needed) > cache->maxsize) {

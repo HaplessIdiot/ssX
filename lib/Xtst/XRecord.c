@@ -46,7 +46,7 @@ from The Open Group.
 /*
  * By Stephen Gildea, X Consortium, and Martha Zimet, NCD.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.2 2001/08/17 22:08:10 tsi Exp $ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -736,7 +736,7 @@ parse_reply_call_callback(dpy, info, rep, reply, callback, closure)
     XPointer		 closure;
 {
     int current_index;
-    int datum_bytes;
+    int datum_bytes = 0;
     XRecordInterceptData *data;
 
     /* call the callback for each protocol element in the reply */

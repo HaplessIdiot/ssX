@@ -12,6 +12,8 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "miscstruct.h"
@@ -82,7 +84,6 @@ RegionPtr xnestPixmapToRegion(pPixmap)
   register int x, y;
   unsigned long previousPixel, currentPixel;
   BoxRec Box;
-  int nWidth;
   Bool overlap;
   
   ximage = XGetImage(xnestDisplay, xnestPixmap(pPixmap), 0, 0,

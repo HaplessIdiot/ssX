@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.6 2000/03/31 20:13:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.7 2001/05/04 19:05:42 dawes Exp $ */
 #ifndef _VTYPES_H_
 #define _VTYPES_H_
 
@@ -9,6 +9,7 @@
  */
 
 #include "Xmd.h"
+#include "xf86Pci.h"
 
 
 /*
@@ -158,9 +159,9 @@ struct verite_board_t {
  */
 typedef struct _renditionRec
 {
-    struct verite_board_t board;             /* information on the board */
-    struct verite_modeinfo_t mode;           /* information on the mode */
-    int pcitag;                         /* tag for the PCI config space */
+    struct verite_board_t board;        /* information on the board */
+    struct verite_modeinfo_t mode;      /* information on the mode */
+    PCITAG pcitag;                      /* tag for the PCI config space */
     pciVideoPtr PciInfo;                /* PCI config data */
     EntityInfoPtr pEnt;                 /* entity information */
     CloseScreenProcPtr CloseScreen;     /* wrap CloseScreen */

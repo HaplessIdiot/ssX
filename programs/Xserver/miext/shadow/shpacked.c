@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shpacked.c,v 1.1 2000/09/07 23:12:15 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shpacked.c,v 1.4 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -44,16 +44,14 @@ shadowUpdatePacked (ScreenPtr	    pScreen,
     int		nbox = REGION_NUM_RECTS (damage);
     BoxPtr	pbox = REGION_RECTS (damage);
     FbBits	*shaBase, *shaLine, *sha;
-    FbBits	s;
     FbStride	shaStride;
     int		scrBase, scrLine, scr;
     int		shaBpp;
     int		shaXoff, shaYoff; /* XXX assumed to be zero */
     int		x, y, w, h, width;
     int         i;
-    FbBits	*winBase, *winLine, *win;
+    FbBits	*winBase = NULL, *win;
     CARD32      winSize;
-    int		plane;
 
     fbGetDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp, shaXoff, shaYoff);
     while (nbox--)

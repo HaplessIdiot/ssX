@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_accel.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -35,11 +35,13 @@
 #include "s3_reg.h"
 
 
+#if 0
 static Bool NicePattern;
 static int DashPatternSize;
 #define MAX_LINE_PATTERN_LENGTH	512
 #define LINE_PATTERN_START	((MAX_LINE_PATTERN_LENGTH >> 5) - 1)
 static CARD32 DashPattern[MAX_LINE_PATTERN_LENGTH >> 5];
+#endif
 
 
 static void S3Sync(ScrnInfoPtr pScrn)
@@ -62,7 +64,9 @@ static void S3SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 static void S3SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 				      int w, int h)
 {
+#ifdef S3_NEWMMIO
 	S3Ptr pS3 = S3PTR(pScrn);
+#endif
 
 	WaitQueue(5);
 	SET_CURPT((short)x, (short)y);
@@ -221,6 +225,7 @@ static void S3SubsequentCPUToScreenColorExpandFill32(ScrnInfoPtr pScrn,
 }
 #endif
 
+#if 0
 #ifndef S3_NEWMMIO
 
 static void S3SetupForScanlineImageWriteNoMMIO(ScrnInfoPtr pScrn, int rop,
@@ -277,6 +282,7 @@ static void S3SubsequentImageWriteScanlineNoMMIO(ScrnInfoPtr pScrn,
 }	
 
 #endif
+#endif
 
 
 static void S3SetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
@@ -297,7 +303,9 @@ static void S3SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
 					   int major, int minor,
 					   int err, int len, int octant)
 {
+#ifdef S3_NEWMMIO
 	S3Ptr pS3 = S3PTR(pScrn);
+#endif
 	unsigned short cmd;
 	int error, e1, e2;
 
@@ -334,8 +342,6 @@ static void S3SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
 static void S3SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
 					 int x, int y, int len, int dir)
 {
-	S3Ptr pS3 = S3PTR(pScrn);
-
 	if (dir == DEGREES_0)
 		S3SubsequentSolidFillRect(pScrn, x, y, len, 1);
 	else
@@ -343,15 +349,16 @@ static void S3SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
 }
 
 
+#if 0
 
 static void S3SetupForDashedLine(ScrnInfoPtr pScrn,
                                  int fg, int bg,
                                  int rop, unsigned int planemask,
                                  int len, unsigned char *pattern)
 {
+#ifdef S3_NEWMMIO
 	S3Ptr pS3 = S3PTR(pScrn);
 
-#ifdef S3_NEWMMIO
 	S3SetupForCPUToScreenColorExpandFill(pScrn, bg, fg, rop, planemask);
 #endif
 
@@ -392,14 +399,15 @@ static void S3SetupForDashedLine(ScrnInfoPtr pScrn,
 }
 
 
-
 static void S3SubsequentDashedBresenhamLine32(ScrnInfoPtr pScrn,
 					      int x, int y,
 					      int absmaj, int absmin,
 					      int err, int len,
 					      int octant, int phase)
 {
+#ifdef S3_NEWMMIO
 	S3Ptr pS3 = S3PTR(pScrn);
+#endif
 	register int count = (len + 31) >> 5;
 	register CARD32 pattern;
 	int error, e1, e2;
@@ -526,6 +534,8 @@ static void S3SubsequentDashedBresenhamLine32(ScrnInfoPtr pScrn,
 		}
 	}
 }
+
+#endif
  	
 #ifdef S3_NEWMMIO
 Bool S3AccelInitNewMMIO(ScreenPtr pScreen)
@@ -600,6 +610,3 @@ Bool S3AccelInitPIO(ScreenPtr pScreen)
 
 	return XAAInit(pScreen, pXAA);
 }
-
-
-

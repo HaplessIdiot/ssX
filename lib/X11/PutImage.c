@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/PutImage.c,v 3.6 2001/01/17 19:41:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/PutImage.c,v 3.7 2001/07/25 15:04:44 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
@@ -900,6 +900,8 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
     }
 }
 
+extern void _XInitImageFuncPtrs();
+
 int
 XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 							      req_height)
@@ -948,7 +950,6 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 	if (dest_bits_per_pixel != image->bits_per_pixel) {
 	    XImage img;
 	    register long i, j;
-	    extern void _XInitImageFuncPtrs();
 	    /* XXX slow, but works */
 	    img.width = width;
 	    img.height = height;

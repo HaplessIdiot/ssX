@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.3 2000/02/12 03:39:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.4 2001/01/17 22:36:35 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -634,7 +634,6 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		int clip1 = 0, clip2 = 0;
 		int clipdx, clipdy;
 		int err;
-		int dashIndexTmp, dashOffsetTmp;
 		
 		if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
 				   pbox->y2-1,

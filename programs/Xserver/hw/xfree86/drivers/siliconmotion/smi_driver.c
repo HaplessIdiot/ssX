@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.14 2001/06/15 21:22:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.16 2001/10/01 13:44:09 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -82,7 +82,7 @@ static void SMI_FreeScreen(int ScrnIndex, int flags);
 static void SMI_ProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
-#define SILICONMOTION_NAME			"Silicon Motion"
+#define SILICONMOTION_NAME		"SILICONMOTION"
 #define SILICONMOTION_DRIVER_NAME	"siliconmotion"
 #define SILICONMOTION_VERSION_NAME	"1.2.2"
 #define SILICONMOTION_VERSION_MAJOR	1

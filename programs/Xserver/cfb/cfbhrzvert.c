@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.4 2000/02/12 03:39:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.5 2001/01/17 22:36:35 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987,1998  The Open Group
@@ -67,10 +67,10 @@ int y1;
 int len;		/* length of line */
 {
     register int nlmiddle;
-    register CfbBits startmask;
-    register CfbBits endmask;
+
 #if PSZ == 24
-    int leftIndex, rightIndex, xOffset;
+
+    int leftIndex, rightIndex;
     CfbBits piQxelAnd[3], piQxelXor[3];
     piQxelAnd[0] = (and & 0xFFFFFF) | ((and<<24)  & 0xFF000000);
     piQxelAnd[1] = ((and>>8)  & 0xFFFF)| ((and<<16) & 0xFFFF0000);
@@ -275,6 +275,9 @@ int len;		/* length of line */
       }
     }
 #else
+    register CfbBits startmask;
+    register CfbBits endmask;
+
     addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
 
     /* all bits inside same longword */
@@ -338,7 +341,7 @@ register int len;	/* length of line */
 {
 #if PSZ == 24
     int xIdx;
-    CfbBits and2, xor2, offset, mask, mask2;
+    CfbBits and2 = 0, xor2 = 0, mask = 0, mask2;
 #endif
 #ifdef PIXEL_ADDR
     register PixelType    *bits = (PixelType *) addrl;

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.6 2000/02/12 03:39:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.7 2001/01/17 22:36:36 dawes Exp $ */
 
 #include "X.h"
 
@@ -47,29 +47,32 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 {
     cfbPrivGCPtr    devPriv;
     int		    nwidth;
-    CfbBits   *addrl, *addr;
+    CfbBits	    *addrl, *addr;
 #if PSZ == 24
-    CfbBits startmask, endmask;
-    register int pidx;
+    CfbBits	    startmask, endmask;
+    register int    pidx;
+#else
+#if PPW > 1
+    CfbBits	    mask, bits = ~((CfbBits)0);
+#endif
 #endif
     int		    maxy;
     int		    origin;
     register int    vertex1, vertex2;
-    int		    c;
+    int		    c = 0;
     BoxPtr	    extents;
     int		    clip;
     int		    y;
-    int		    *vertex1p, *vertex2p;
+    int		    *vertex1p = NULL, *vertex2p;
     int		    *endp;
-    int		    x1, x2;
-    int		    dx1, dx2;
-    int		    dy1, dy2;
-    int		    e1, e2;
-    int		    step1, step2;
-    int		    sign1, sign2;
+    int		    x1 = 0, x2 = 0;
+    int		    dx1 = 0, dx2 = 0;
+    int		    dy1 = 0, dy2 = 0;
+    int		    e1 = 0, e2 = 0;
+    int		    step1 = 0, step2 = 0;
+    int		    sign1 = 0, sign2 = 0;
     int		    h;
     int		    l, r;
-    CfbBits   mask, bits = ~((CfbBits)0);
     int		    nmiddle;
     RROP_DECLARE
 
@@ -179,7 +182,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	vertex2p = (int *) ptsIn;
 #define Setup(c,x,vertex,dx,dy,e,sign,step) {\
     x = intToX(vertex); \
-    if (dy = intToY(c) - y) { \
+    if ((dy = intToY(c) - y)) { \
     	dx = intToX(c) - x; \
 	step = 0; \
     	if (dx >= 0) \
@@ -329,7 +332,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 		    RROP_SOLID(addr); addr++;
 		}
 #if PPW > 1
-	    	if (mask = ~SCRRIGHT(bits, r & PIM))
+	    	if ((mask = ~SCRRIGHT(bits, r & PIM)))
 	    	    RROP_SOLID_MASK(addr,mask);
 	    }
 #endif

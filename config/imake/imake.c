@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.44 2001/07/25 15:04:38 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.45 2001/08/01 00:44:33 tsi Exp $ */
 
 /*
  * 
@@ -301,7 +301,7 @@ int xvariables[10];
  * space instead of being deleted.  Blech.
  */
 #ifdef FIXUP_CPP_WHITESPACE
-void KludgeOutputLine(), KludgeResetRule();
+void KludgeOutputLine(char **), KludgeResetRule(void);
 #else
 # define KludgeOutputLine(arg)
 # define KludgeResetRule()

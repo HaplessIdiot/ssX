@@ -31,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.7 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.8 2001/07/25 15:04:44 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -404,7 +404,7 @@ _XcmsLookupColorName(ccc, name, pColor)
     register int	i, j, left, right;
     int			len;
     const char		*tmpName;
-    XcmsPair		*pair;
+    XcmsPair		*pair = NULL;
 
     /*
      * Check state of Database:

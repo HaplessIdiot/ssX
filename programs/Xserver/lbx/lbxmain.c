@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.10 2001/07/25 15:05:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.11 2001/08/23 14:46:57 alanh Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -918,7 +918,7 @@ LbxShutdownProxy (LbxProxyPtr proxy)
 int
 ProcLbxQueryVersion (ClientPtr client)
 {
-    REQUEST(xLbxQueryVersionReq);
+    /* REQUEST(xLbxQueryVersionReq); */
     xLbxQueryVersionReply rep;
     register int n;
 
@@ -1107,7 +1107,7 @@ ProcLbxStartProxy (ClientPtr	client)
 int
 ProcLbxStopProxy(ClientPtr client)
 {
-    REQUEST(xLbxStopProxyReq);
+    /* REQUEST(xLbxStopProxyReq); */
     LbxProxyPtr	    proxy;
     LbxClientPtr    lbxClient = LbxClient(client);
 
@@ -1176,7 +1176,7 @@ ProcLbxLargeRequestData(ClientPtr client)
 int
 ProcLbxEndLargeRequest(ClientPtr client)
 {
-    REQUEST(xReq);
+    /* REQUEST(xReq); */
 
     client->sequence--;
     REQUEST_SIZE_MATCH(xReq);
@@ -1470,7 +1470,7 @@ DecodeLbxDelta (ClientPtr client)
 int
 ProcLbxGetModifierMapping(ClientPtr client)
 {
-    REQUEST(xLbxGetModifierMappingReq);
+    /* REQUEST(xLbxGetModifierMappingReq); */
 
     REQUEST_SIZE_MATCH(xLbxGetModifierMappingReq);
     return LbxGetModifierMapping(client);
@@ -1479,7 +1479,7 @@ ProcLbxGetModifierMapping(ClientPtr client)
 int
 ProcLbxGetKeyboardMapping(ClientPtr client)
 {
-    REQUEST(xLbxGetKeyboardMappingReq);
+    /* REQUEST(xLbxGetKeyboardMappingReq); */
 
     REQUEST_SIZE_MATCH(xLbxGetKeyboardMappingReq);
     return LbxGetKeyboardMapping(client);
@@ -1488,7 +1488,7 @@ ProcLbxGetKeyboardMapping(ClientPtr client)
 int
 ProcLbxQueryFont(ClientPtr client)
 {
-    REQUEST(xLbxQueryFontReq);
+    /* REQUEST(xLbxQueryFontReq); */
 
     REQUEST_SIZE_MATCH(xLbxQueryFontReq);
     return LbxQueryFont(client);
@@ -1497,7 +1497,7 @@ ProcLbxQueryFont(ClientPtr client)
 int
 ProcLbxChangeProperty(ClientPtr	client)
 {
-    REQUEST(xLbxChangePropertyReq);
+    /* REQUEST(xLbxChangePropertyReq); */
 
     REQUEST_SIZE_MATCH(xLbxChangePropertyReq);
     return LbxChangeProperty(client);
@@ -1506,7 +1506,7 @@ ProcLbxChangeProperty(ClientPtr	client)
 int
 ProcLbxGetProperty(ClientPtr client)
 {
-    REQUEST(xLbxGetPropertyReq);
+    /* REQUEST(xLbxGetPropertyReq); */
 
     REQUEST_SIZE_MATCH(xLbxGetPropertyReq);
     return LbxGetProperty(client);

@@ -70,7 +70,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.7 2001/08/01 00:44:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.8 2001/08/27 17:40:59 dawes Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -300,7 +300,6 @@ typedef struct
 
 extern Bool InitializePsDriver(int ndx, ScreenPtr pScreen, int argc,
     char **argv);
-static Bool         PsDestroyContext(XpContextPtr pCon);
 extern XpContextPtr PsGetContextFromWindow(WindowPtr win);
 
 /*
@@ -324,9 +323,6 @@ extern int PsGetDocumentData(XpContextPtr pCon, ClientPtr client,
  */
 
 extern Bool PsCreateGC(GCPtr pGC);
-static int  PsGetDrawablePrivateStuff(DrawablePtr pDrawable, GC *gc,
-                                      unsigned long *valid, PsOutPtr *psOut,
-                                      ColormapPtr *cMap);
 extern int  PsUpdateDrawableGC(GCPtr pGC, DrawablePtr pDrawable,
                                PsOutPtr *psOut, ColormapPtr *cMap);
 extern void PsValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable);
