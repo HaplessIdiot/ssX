@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.4 1999/10/13 04:21:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.6 1999/11/19 13:54:46 hohndel Exp $ */
 /*
  * includes
  */
@@ -52,11 +52,11 @@ int v_initboard(ScrnInfoPtr pScreenInfo)
     v_write_memory32(vmb, offset, csrisc[c]);
 
   if (V1000_DEVICE == pRendition->board.chip){
-    c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
+    c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
   }
   else {
     /* V2x00 chip */
-    c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
+    c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
   }
 
   if (c == -1) {
