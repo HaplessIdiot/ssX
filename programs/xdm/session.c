@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.20 1999/03/14 03:22:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.22 2000/05/31 07:15:11 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -908,7 +908,7 @@ systemEnv (struct display *d, char *user, char *home)
     return env;
 }
 
-#if defined(Lynx) || defined(SCO) && !defined(SCO_USA) && !defined(_SCO_DS)
+#if (defined(Lynx) && !defined(HAS_CRYPT)) || defined(SCO) && !defined(SCO_USA) && !defined(_SCO_DS)
 char *crypt(char *s1, char *s2)
 {
 	return(s2);

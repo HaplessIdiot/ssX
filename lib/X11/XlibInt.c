@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.20 2000/06/15 17:03:01 keithp Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.21 2000/06/15 23:59:06 keithp Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -1823,7 +1823,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 	if (len > *lenp)
 	    _XEatData(dpy, len - *lenp);
     }
-    if (len <= SIZEOF(xReply))
+    if (len < SIZEOF(xReply))
     {
 	_XIOError (dpy);
 	buf += *lenp;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.7 2000/06/14 00:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.8 2000/06/17 00:03:22 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -141,7 +141,7 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
     OUTREG(R128_CRTC_GEN_CNTL, save & ~R128_CRTC_CUR_EN);
  
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-    switch(info->pixel_bytes) {
+    switch(info->CurrentLayout.pixel_bytes) {
     case 4:
     case 3:
 	for (y = 0; y < 64; y++) {

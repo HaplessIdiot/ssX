@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.53 2000/06/13 02:28:41 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.54 2000/06/14 00:16:22 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_138">Patch #138 - 2000/6/15 - XFree86 4.0c</A>
 <LI><A HREF="#xterm_137">Patch #137 - 2000/6/10 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_136">Patch #136 - 2000/6/3 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_135">Patch #135 - 2000/5/29 - XFree86 4.0b</A>
@@ -182,6 +183,20 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_138">Patch #138 - 2000/6/15 - XFree86 4.0c</A></H1>
+<ul>
+	<li>workaround for fixed fonts which are generated from Unicode fonts: 
+	  they omit glyphs for some xterm's less-used line-drawing characters,
+	  which caused xterm to set a flag telling it to use only its internal
+	  line-drawing characters.  Do not set the flag (it can be set from the
+	  popup menu), and xterm will generate only the line-drawing glyphs
+	  which actually are missing.
+	  <br>
+	  Otherwise, when used for large fonts, xterm may generate a 2-pixel
+	  wide line, which can leave dots on the screen.
+
+	<li>restore first line of 256colres.pl, omitted in 4.0c diffs.
+</ul>
 <H1><A NAME="xterm_137">Patch #137 - 2000/6/10 - XFree86 4.0b</A></H1>
 <ul>
 	<li>make command-line <code>-name</code> option work as documented.
