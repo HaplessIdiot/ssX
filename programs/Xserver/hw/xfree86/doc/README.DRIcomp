@@ -1,15 +1,14 @@
                             DRI Compilation Guide
 
-                           Precision Insight, Inc.
+          VA Linux Systems, Inc. Professional Services - Graphics.
 
-                                 18 May 2000
+                                8 August 2000
 
 1.  Preamble
 
 1.1  Copyright
 
-Copyright © 2000 by Precision Insight, Inc., Cedar Park, Texas.  All Rights
-Reserved.
+Copyright © 2000 by VA Linux Systems, Inc.  All Rights Reserved.
 
 Permission is granted to make and distribute verbatim copies of this document
 provided the copyright notice and this permission notice are preserved on all
@@ -34,8 +33,8 @@ This document describes how to download, compile and install the DRI project.
 This information is intended for experienced Linux developers.  Beginners are
 probably better off installing precompiled packages.
 
-Edits, corrections and updates to this document may be mailed to brian@preci-
-sioninsight.com.
+Edits, corrections and updates to this document may be mailed to brianp@val-
+inux.com.
 
 3.  Prerequisites
 
@@ -201,16 +200,29 @@ the mailing lists.
       The -z3 flag causes compression to be used in order to reduce the down-
       load time.
 
-6.  Updating your CVS sources
+5.3  Updating your CVS sources
 
 In the future you'll want to occasionally update your local copy of the DRI
 source code to get the latest changes.  This can be done with:
 
-                 cd ~/DRI-CVS
-                 cvs -z3 update -dA xc
+                cd ~/DRI-CVS
+                cvs -z3 update -dA xc
 
 The -d flag causes any new subdirectories to be created and -A causes most
 recent trunk sources to be fetched, not branch sources.
+
+6.  Mesa
+
+Most of the DRI 3D drivers are based on Mesa (the free implementation of the
+OpenGL API).  The relevant files from Mesa are already included in the
+XFree86/DRI source tree.  There is no need to download or install the Mesa
+source files separately.
+
+Sometimes a newer version of Mesa will be available than the version included
+in XFree86/DRI.  Upgrading Mesa within XFree86/DRI is not always straightfor-
+ward.  It can be an error-prone undertaking, especially for beginners, and is
+not generally recommended.  The DRI developers will upgrade Mesa when appro-
+priate.
 
 7.  Compiling the XFree86/DRI tree
 
@@ -260,7 +272,7 @@ The ProjectRoot variable specifies where the XFree86 files will be installed.
 You probably don't want to use /usr/X11R6/ because that would overwrite your
 default X files.  The following is recommended:
 
-                 #define ProjectRoot /usr/XF86-main
+                 #define ProjectRoot /usr/X11R6-DRI
 
 Especially note the XF86CardDrivers line to be sure your driver is listed.
 
@@ -270,7 +282,7 @@ If you have 3dfx hardware be sure that the Glide 3x headers are installed in
 
 If you do not have 3dfx hardware comment out the HasGlide3 line in host.def.
 
-7.3  Compile
+7.3  Compilation
 
 To compile the complete DRI tree:
 
@@ -288,6 +300,9 @@ ing compilation.
 
 Building will take some time so you may want to go check your email or visit
 slashdot.
+
+WARNING: do not use the -j option with make.  It's reported that it does not
+work with XFree86/DRI.
 
 7.4  Check for compilation errors
 
@@ -317,43 +332,44 @@ If the path to your kernel source is /bigdisk/linux-2.3.99-pre6,
 
 or alternatively, edit Makefile to include this change.
 
-After fixing the errors, do make World again.  Later, you might just compile
+After fixing the errors, run make World again.  Later, you might just compile
 parts of the source tree but it's important that the whole tree will build
 first.
 
-8.  Installing
+8.  Normal Installation and Configuration
 
-After the DRI tree has been compiled you can install the XFree86 headers,
-libraries, programs, etc for testing.
+Most users will want to install the new X server and use it instead of the
+original X server.  This section explains how to do that.  We assume that the
+user is upgrading from XFree86 3.3.x.
+
+Developers, on the other hand, may just want to test the X server without
+actually installing it as their default server.  If you want to do that, skip
+to the next section.
 
 8.1  X Installation
 
-As mentioned above, the install directory is specified by the ProjectRoot
-variable in the host.def file.  Create that directory now if it doesn't
-already exist:
+You'll need to run as root to do the following commands:
 
-                mkdir /usr/XF86-main
-
-You'll have to change to root since the install process puts several files in
-/etc/X11/ and sets the setuid flag on the X server executable.
-
-                cd ~/DRI-CVS/build/xc
                 su
+
+As mentioned above, the installation directory is specified by the Project-
+Root variable in the host.def file.  Create that directory now if it doesn't
+already exist, then run the install commands:
+
+                mkdir /usr/X11R6-DRI
+                cd ~/DRI-CVS/build/xc
                 make install
 
-Edit your /etc/ld.so.conf file and put /usr/XF86-main/lib as the first line.
-Continue with:
+8.2  Linker configuration
+
+Edit your /etc/ld.so.conf file and put /usr/X11R6-DRI/lib as the first line.
+Then run:
 
                 ldconfig
-                exit
 
-Look in /usr/XF86-main to be sure the files installed there.
+This will ensure that you use the new X libraries when you run X programs.
 
-Strictly speaking, installing the DRI tree isn't required.  It's possible to
-run and test the X server directly from the build directory but it's a bit
-error prone.
-
-8.2  Update Locale Information
+8.3  Update Locale Information
 
 To update your X locale information do the following:
 
@@ -365,53 +381,112 @@ To update your X locale information do the following:
 This will prevent a locale error message from being printed when you run Xlib
 programs.
 
-9.  X Server Configuration
+8.4  Setup Miscellaneous Files
 
-If your X server is currently running you'll have to stop it and return to a
-virtual terminal.
+Issue the following commands:
 
-First, setup your XF86Config file.  It should load the GLX and DRI modules
-and specify the driver to use for your hardware.  See the DRI User Guide for
-detailed information.
+                  cd /usr/X11R6-DRI/lib/X11
+                  ln -s /usr/X11R6/lib/X11/rgb.txt .
+                  ln -s /usr/X11R6/lib/X11/fonts .
+                  ln -s /usr/X11R6/lib/X11/app-defaults .
 
-You may want to make a backup copy of your existing /etc/X11/XF86Config file
-first.
+This will allow applications to use the fonts and resources that they used in
+the past.
 
-It's very important that you set the ModulePath option to point to your
-installation directory:
+8.5  Disable the Old X Server and Enable the New One
 
-                 ModulePath "/usr/XF86-main/lib/modules"
+Assuming that an installation of XFree86 3.3.x is present, we need to disable
+the old 3.3.x X server and enable the new 4.0.x X server.
 
-Double check with this:
+Issue the following commands:
 
-                 grep ModulePath /etc/X11/XF86Config
+                  cd /usr/X11R6/bin
+                  mv Xwrapper Xwrapper.old
+                  rm X
+                  ln -s /usr/X11R6-4.0.1/lib/X11/XFree86  X
 
-Next, your ~/.xinitrc file controls which clients will be launched when your
-X server starts.  You might put the following in yours:
+This will cause the new X server to be used instead of the original one.
 
-                 xset b off
-                 xsetroot -solid "#004070"
-                 xmodmap -e "clear mod4"
-                 xrdb -merge ~/.Xdefaults
-                 xterm -geometry +0+0 &
-                 xterm -geometry +512+0 &
-                 fvwm
+8.6  Create the XF86Config File
 
-10.  X Server Start-up
+Configuration files for XFree86 3.3.x will not work with XFree86 4.0.x.
 
-The X server can be started with:
+The new 4.0.x server can generate a basic configuration file itself.  Simply
+do this:
 
-                 xinit -- /usr/XF86-main/bin/XFree86
+                  cd /usr/X11R6-DRI/bin
+                  ./XFree86 -configure
 
-Automatic loading of DRM kernel modules was added to the X server in XFree86
-4.0.1.  This feature, and manual loading of kernel modules, is documented in
-the DRI user guide.
+A file named /root/XF86Config.new will be created.  It should allow you to
+try your X server but you'll almost certainly have to edit it.  For example,
+you should add HorizSync and VertRefresh options to the Monitor section and
+Modes options to the Screen section.  Also, the ModulePath option in the
+Files section should be set to /usr/X11R6-DRI/lib/modules.
+
+On the DRI web site, in the resources section, you'll find example XF86Config
+files for a number of graphics cards.  These configuration files also setup
+DRI options so it's highly recommended that you look at these examples.
+
+In any case, your new XF86Config file should be placed in /etc/X11/XF86Con-
+fig-4.  This configuration file will be recognized by the 4.0.x server but
+not by 3.3.x servers.  You can instead name it /etc/X11/XF86Config but
+that'll overwrite your old config file, which you may want to preserve.
+
+8.7  Start the New X Server
+
+The new X server should be ready to use now.  Start your X server in your
+usual manner.  Typically, the startx command is used:
+
+                  startx
+
+9.  Testing the Server Without Installing It
+
+As mentioned at the start of section 8, developers may want to simply run the
+X server without installing it.  This can save some time and allow you to
+keep a number of X servers available for testing.
+
+9.1  Configuration
+
+As described in the preceding section, you'll need to create a configuration
+file for the new server.  Put the XF86Config file in your ~/DRI-
+CVS/build/xc/programs/Xserver directory.
+
+Be sure the ModulePath option is set correctly.
+
+9.2  A Startup Script
+
+A simple shell script can be used to start the X server.  Here's an example.
+
+             #!/bin/sh
+             export DISPLAY=:0
+             ./XFree86 -xf86config XF86Config & \
+             sleep 2
+             fvwm2 &
+             xset b off
+             xmodmap -e "clear mod4"
+             xsetroot -solid "#00306f"
+             xterm -geometry 80x40+0+0
+
+You might name this script start-dri.  Put it in your ~/DRI-CVS/build/xc/pro-
+grams/Xserver directory.
+
+To test the server run the script:
+
+                  cd ~/DRI-CVS/build/xc/programs/Xserver
+                  ./start-dri
+
+For debugging, you may also want to capture the log messages printed by the
+server in a file.  If you're using the C-shell:
+
+                  ./start-dri >& log
+
+10.  Where To Go From Here
 
 At this point your X server should be up and running with hardware-acceler-
-ated direct rendering.  Please read the DRI User Guide for trouble shooting
-information.
+ated direct rendering.  Please read the DRI User Guide for information about
+trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.3 2000/06/17 02:16:49 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.5 2000/08/28 18:24:15 dawes Exp $
 
 
 $XFree86$

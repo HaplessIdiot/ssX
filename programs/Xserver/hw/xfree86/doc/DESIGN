@@ -5508,7 +5508,7 @@ fields.  By using xnfcalloc() to do the allocation it is zeroed, and if the
 allocation fails the server exits.
 
 NOTE: When allocating structures from inside the driver which are defined on
-the common level it is importand to initialize the structure to zero.  Only
+the common level it is important to initialize the structure to zero.  Only
 this guarantees that the server remains source compatible to future changes
 in common level structures.
 
@@ -6302,6 +6302,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.31 2000/08/04 16:13:27 eich Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.32 2000/08/28 18:24:14 dawes Exp $
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.26 2000/06/19 15:12:26 tsi Exp $
+
+$XFree86$
