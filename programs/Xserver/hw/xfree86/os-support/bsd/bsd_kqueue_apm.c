@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_apm.c,v 1.1 2000/02/29 03:09:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kqueue_apm.c,v 1.1 2001/09/19 19:51:33 herrb Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -66,7 +66,7 @@ bsdPMGetEventFromOS(int kq, pmEvent *events, int num)
     for (i = 0; i < num; i++) {
 	if (kevent(kq, NULL, 0, &ev, 1, NULL) < 0) {
 	    xf86Msg(X_WARNING, "bsdPMGetEventFromOS: kevent"
-		    " errono = %d\n", errno);
+		    " errno = %d\n", errno);
 	}
 	events[i] = bsdToXF86(APM_EVENT_TYPE(ev.data));
     }
