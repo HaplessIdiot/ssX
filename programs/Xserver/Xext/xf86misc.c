@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.44tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.45 2004/12/15 04:11:39 tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -645,9 +645,10 @@ ProcXF86MiscPassMessage(client)
 
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.mesglen = (retstr? strlen(retstr): 0);
+    rep.mesglen = (retstr ? strlen(retstr) : 0);
     rep.length = (SIZEOF(xXF86MiscPassMessageReply) - SIZEOF(xGenericReply) +
 		  ((rep.mesglen + 3) & ~3)) >> 2;
+    rep.status = 0;
     
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
