@@ -294,7 +294,6 @@ ProcRenderQueryPictFormats (ClientPtr client)
     for (s = 0; s < screenInfo.numScreens; s++)
     {
 	pScreen = screenInfo.screens[s];
-	ps = GetPictureScreen(pScreen);
 	pictDepth = (xPictDepth *) (pictScreen + 1);
 	ndepth = 0;
 	for (d = 0; d < pScreen->numDepths; d++)
@@ -331,7 +330,11 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	    pictDepth = (xPictDepth *) pictVisual;
 	}
 	pictScreen->nDepth = ndepth;
-	pictScreen->fallback = ps->fallback->id;
+	ps = GetPictureScreen(pScreen);
+	if (ps)
+	    pictScreen->fallback = ps->fallback->id;
+	else
+	    pictScreen->fallback = 0;
 	if (client->swapped)
 	{
 	    swapl (&pictScreen->nDepth, n);
