@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.24 2002/11/23 02:38:15 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.25 2003/01/15 03:45:26 dawes Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1431,7 +1431,7 @@ ProcRenderCreateCursor (ClientPtr client)
     unsigned char   *mskbits, *mskline;
     int		    stride;
     int		    x, y;
-    int		    n;
+    int		    nbytes_mono;
     CursorMetricRec cm;
     CursorPtr	    pCursor;
     CARD32	    twocolor[3];
@@ -1453,20 +1453,22 @@ ProcRenderCreateCursor (ClientPtr client)
 	return (BadAlloc);
     
     stride = BitmapBytePad(width);
-    n = stride*height;
-    srcbits = (unsigned char *)xalloc(n);
+    nbytes_mono = stride*height;
+    srcbits = (unsigned char *)xalloc(nbytes_mono);
     if (!srcbits)
     {
 	xfree (argbbits);
 	return (BadAlloc);
     }
-    mskbits = (unsigned char *)xalloc(n);
+    mskbits = (unsigned char *)xalloc(nbytes_mono);
     if (!mskbits)
     {
 	xfree(argbbits);
 	xfree(srcbits);
 	return (BadAlloc);
     }
+    bzero ((char *) mskbits, nbytes_mono);
+    bzero ((char *) srcbits, nbytes_mono);
 
     if (pSrc->format == PICT_a8r8g8b8)
     {
@@ -1532,6 +1534,7 @@ ProcRenderCreateCursor (ClientPtr client)
 		continue;
 	    if (a == 0xff)  /* opaque */
 	    {
+		int n;
 		for (n = 0; n < ncolor; n++)
 		    if (p == twocolor[n])
 			break;
@@ -1546,8 +1549,6 @@ ProcRenderCreateCursor (ClientPtr client)
     /*
      * Convert argb image to two plane cursor
      */
-    bzero ((char *) mskbits, n);
-    bzero ((char *) srcbits, n);
     srcline = srcbits;
     mskline = mskbits;
     argb = argbbits;
