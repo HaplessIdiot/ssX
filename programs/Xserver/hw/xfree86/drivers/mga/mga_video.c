@@ -933,22 +933,22 @@ MGAFreeSurface(
 
 static int
 MGAGetSurfaceAttribute(
-    XF86SurfacePtr surface,
+    ScrnInfoPtr pScrn,
     Atom attribute,
     INT32 *value
 ){
-    return MGAGetPortAttributeG(surface->pScrn, attribute, value, 
-			(pointer)(GET_PORT_PRIVATE(surface->pScrn)));
+    return MGAGetPortAttributeG(pScrn, attribute, value, 
+			(pointer)(GET_PORT_PRIVATE(pScrn)));
 }
 
 static int
 MGASetSurfaceAttribute(
-    XF86SurfacePtr surface,
+    ScrnInfoPtr pScrn,
     Atom attribute,
     INT32 value
 ){
-    return MGASetPortAttributeG(surface->pScrn, attribute, value, 
-			(pointer)(GET_PORT_PRIVATE(surface->pScrn)));
+    return MGASetPortAttributeG(pScrn, attribute, value, 
+			(pointer)(GET_PORT_PRIVATE(pScrn)));
 }
 
 
