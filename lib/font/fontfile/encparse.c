@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.8 1999/05/03 12:15:54 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.9 1999/05/09 10:51:48 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -716,7 +716,7 @@ error:
 
 /* Public entrypoint */  
 struct font_encoding* 
-loadEncodingFile(char *charset, char *fontFileName)
+loadEncodingFile(const char *charset, const char *fontFileName)
 {
   FontFilePtr f;
   FILE *file;
