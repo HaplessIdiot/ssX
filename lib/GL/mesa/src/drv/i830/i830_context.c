@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.2 2002/09/10 00:39:38 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.3 2002/09/11 00:29:25 dawes Exp $ */
 
 /*
  * Authors:
@@ -99,6 +99,8 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
 	 return 0;
       }
       break;
+   default:
+      return 0;
    }
 }
 
