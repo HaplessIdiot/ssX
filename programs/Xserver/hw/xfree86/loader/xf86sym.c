@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.177 2000/12/07 21:04:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.178 2000/12/08 22:31:52 dawes Exp $ */
 
 /*
  *
@@ -22,6 +22,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#define COMPILER_H_EXTRAS
 #include <fcntl.h>
 #include "sym.h"
 #include "misc.h"
@@ -54,10 +55,7 @@
 #include "xf86Priv.h"
 #include "vbe.h"
 #include "xf86sbusBus.h"
-#ifdef __alpha__
-/* MMIO function prototypes */
 #include "compiler.h"
-#endif
 
 #ifdef __FreeBSD__
 /* XXX used in drmOpen(). This should change to use a less os-specific
