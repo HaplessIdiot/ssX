@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.40 2003/10/21 01:45:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.41 2003/10/21 01:50:49 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1768,7 +1768,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    else
       pI830->CursorNeedsPhysical = FALSE;
 
-   /* Force ring buffer to be in low memory for the 845G. */
+   /* Force ring buffer to be in low memory for the 845G and later. */
    if (IS_845G(pI830) || IS_I85X(pI830) || IS_I865G(pI830))
       pI830->NeedRingBufferLow = TRUE;
 
@@ -3253,8 +3253,6 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    I830_dump_registers(pScrn);
 #endif
 #endif
-   pI830->xoffset = (pScrn->fbOffset / pI830->cpp) % pScrn->displayWidth;
-   pI830->yoffset = (pScrn->fbOffset / pI830->cpp) / pScrn->displayWidth;
 
    pI830->starting = FALSE;
    pI830->closing = FALSE;
