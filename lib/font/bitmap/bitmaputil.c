@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.9 2002/09/19 13:21:59 tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.10 2002/09/24 20:52:48 tsi Exp $ */
 
 #include "fntfilst.h"
 #include "bitmap.h"
@@ -53,8 +53,8 @@ MINSHORT, MINSHORT, MINSHORT, MINSHORT, MINSHORT, 0x0000};
 	     maxbounds->field = (ci)->field;
 
 #define COMPUTE_MINMAX(ci) \
-    if ((ci)->ascent != -(ci)->descent || \
-	(ci)->leftSideBearing != (ci)->rightSideBearing || \
+    if ((ci)->ascent || (ci)->descent || \
+	(ci)->leftSideBearing || (ci)->rightSideBearing || \
 	(ci)->characterWidth) \
     { \
 	MINMAX(ascent, (ci)); \
