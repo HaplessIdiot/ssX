@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.10 2000/01/18 16:35:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.15 2000/01/30 01:15:55 alanh Exp $ */
 
 /*
  * Authors:
@@ -136,9 +136,6 @@ static Bool TDFXCloseScreen(int scrnIndex, ScreenPtr pScreen);
 
 /* Change screensaver state */
 static Bool TDFXSaveScreen(ScreenPtr pScreen, Bool unblank);
-
-/* Allow mode switching */
-Bool TDFXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 
 /* Cleanup server private data */
 static void TDFXFreeScreen(int scrnIndex, int flags);
@@ -727,15 +724,12 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     from = X_CONFIG;
   }
 
-  xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
-	     pScrn->videoRam);
-  pTDFX->FbMapSize = pScrn->videoRam*1024;
+  /* Multiple by two because tiled access requires more address space */
+  pTDFX->FbMapSize = pScrn->videoRam*1024*2;
+  xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte Mapping %d kByte\n",
+	     pScrn->videoRam, pTDFX->FbMapSize/1024);
 
-  /*
-   * If the driver can do gamma correction, it should call xf86SetGamma()
-   * here.
-   */
-  
+  /* Since we can do gamma correction, we call xf86SetGamma */
   {
     Gamma zeros = {0.0, 0.0, 0.0};
     
@@ -1415,7 +1409,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   hwp = VGAHWPTR(pScrn);
 
   if (!TDFXMapMem(pScrn)) return FALSE;
-  pScrn->memPhysBase = (int)pTDFX->FbBase;
+  pScrn->memPhysBase = (int)pTDFX->LinearAddr;
   pTDFX->lowMemLoc=0;
 
   if (!pTDFX->usePIO) {
@@ -1660,8 +1654,8 @@ static void
 TDFXLeaveVT(int scrnIndex, int flags) {
   ScrnInfoPtr pScrn;
   vgaHWPtr hwp;
-#ifdef XF86DRI
   ScreenPtr pScreen;
+#ifdef XF86DRI
   TDFXPtr pTDFX;
 #endif
 
@@ -1670,10 +1664,10 @@ TDFXLeaveVT(int scrnIndex, int flags) {
   hwp=VGAHWPTR(pScrn);
   TDFXRestore(pScrn);
   vgaHWLock(hwp);
+  pScreen = screenInfo.screens[scrnIndex];
 #ifdef XF86DRI
   pTDFX = TDFXPTR(pScrn);
   if (pTDFX->directRenderingEnabled) {
-    pScreen = screenInfo.screens[scrnIndex];
     DRILock(pScreen);
   }
 #endif

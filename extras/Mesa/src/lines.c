@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,17 +25,10 @@
  */
 
 
-
-
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <assert.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "depth.h"
 #include "feedback.h"
@@ -50,8 +43,10 @@
 
 
 
-void gl_LineWidth( GLcontext *ctx, GLfloat width )
+void
+_mesa_LineWidth( GLfloat width )
 {
+   GET_CURRENT_CONTEXT(ctx);
    if (width<=0.0) {
       gl_error( ctx, GL_INVALID_VALUE, "glLineWidth" );
       return;
@@ -68,8 +63,10 @@ void gl_LineWidth( GLcontext *ctx, GLfloat width )
 
 
 
-void gl_LineStipple( GLcontext *ctx, GLint factor, GLushort pattern )
+void
+_mesa_LineStipple( GLint factor, GLushort pattern )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glLineStipple");
    ctx->Line.StippleFactor = CLAMP( factor, 1, 256 );
    ctx->Line.StipplePattern = pattern;
@@ -1027,7 +1024,8 @@ void gl_set_line_function( GLcontext *ctx )
       else {
 	 if (ctx->Light.ShadeModel==GL_SMOOTH) {
 	    /* Width==1, non-stippled, smooth-shaded */
-            if (ctx->Depth.Test || ctx->FogMode == FOG_FRAGMENT) {
+            if (ctx->Depth.Test
+	        || (ctx->Fog.Enabled && ctx->Hint.Fog==GL_NICEST)) {
                if (rgbmode)
                   ctx->Driver.LineFunc = smooth_rgba_z_line;
                else
@@ -1042,7 +1040,8 @@ void gl_set_line_function( GLcontext *ctx )
 	 }
          else {
 	    /* Width==1, non-stippled, flat-shaded */
-            if (ctx->Depth.Test || ctx->FogMode == FOG_FRAGMENT) {
+            if (ctx->Depth.Test
+                || (ctx->Fog.Enabled && ctx->Hint.Fog==GL_NICEST)) {
                if (rgbmode)
                   ctx->Driver.LineFunc = flat_rgba_z_line;
                else

@@ -24,13 +24,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef XFree86Server
-#include <stdio.h>
-#include <stdlib.h>
+
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "types.h"		/* for MESA_VERBOSE */
+#endif
 
 
 /*

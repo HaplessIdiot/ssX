@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,8 +25,6 @@
  */
 
 
-/* $XFree86: xc/lib/GL/mesa/src/glmisc.h,v 1.1 1999/03/14 03:20:45 dawes Exp $ */
-
 #ifndef GLMISC_H
 #define GLMISC_H
 
@@ -34,22 +32,36 @@
 #include "types.h"
 
 
-extern void gl_ClearIndex( GLcontext *ctx, GLfloat c );
+extern void
+_mesa_ClearIndex( GLfloat c );
 
-extern void gl_ClearColor( GLcontext *ctx, GLclampf red, GLclampf green,
-                           GLclampf blue, GLclampf alpha );
+extern void
+_mesa_ClearColor( GLclampf red, GLclampf green,
+                  GLclampf blue, GLclampf alpha );
 
-extern void gl_Clear( GLcontext *ctx, GLbitfield mask );
+extern void
+_mesa_Clear( GLbitfield mask );
 
-extern void gl_Finish( GLcontext *ctx );
+extern void
+_mesa_Finish( void );
 
-extern void gl_Flush( GLcontext *ctx );
+extern void
+_mesa_Flush( void );
 
-extern GLboolean gl_Hint( GLcontext *ctx, GLenum target, GLenum mode );
+extern GLboolean
+_mesa_try_Hint( GLcontext *ctx, GLenum target, GLenum mode );
 
-extern void gl_DrawBuffer( GLcontext *ctx, GLenum mode );
+extern void
+_mesa_Hint( GLenum target, GLenum mode );
 
-extern void gl_ReadBuffer( GLcontext *ctx, GLenum mode );
+extern void
+_mesa_HintPGI( GLenum target, GLint mode );
+
+extern void
+_mesa_DrawBuffer( GLenum mode );
+
+extern void
+_mesa_ReadBuffer( GLenum mode );
 
 
 #endif

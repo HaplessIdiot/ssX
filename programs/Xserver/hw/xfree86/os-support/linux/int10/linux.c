@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.4 1999/12/03 19:17:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.6 2000/02/08 13:13:31 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -120,21 +120,21 @@ xf86InitInt10(int entityIndex)
 #ifdef DEBUG
     ErrorF("Mapping high memory area\n");
 #endif
-    if ((high_mem = xf86shmget(counter++, HIGH_MEM_SIZE,
-			       XF86IPC_CREAT | SHM_R | SHM_W)) == -1)
+    if ((high_mem = shmget(counter++, HIGH_MEM_SIZE,
+			       IPC_CREAT | SHM_R | SHM_W)) == -1)
 	goto error1;
     ((linuxInt10Priv*)pInt->private)->highMem = high_mem;
 #ifdef DEBUG
     ErrorF("Mapping 640kB area\n");
 #endif
-    if ((low_mem = xf86shmget(counter++, V_RAM,
-			      XF86IPC_CREAT|SHM_R|SHM_W)) == -1)
+    if ((low_mem = shmget(counter++, V_RAM,
+			      IPC_CREAT|SHM_R|SHM_W)) == -1)
 	goto error2;
     
     ((linuxInt10Priv*)pInt->private)->lowMem = low_mem;
-    base = xf86shmat(low_mem,0,0);
+    base = shmat(low_mem,0,0);
     ((linuxInt10Priv *)pInt->private)->base = base;
-    base_high = xf86shmat(high_mem,0,0);
+    base_high = shmat(high_mem,0,0);
     ((linuxInt10Priv *)pInt->private)->base_high = base_high;
     
     MapCurrentInt10(pInt);  
@@ -200,14 +200,14 @@ xf86InitInt10(int entityIndex)
     return pInt;
     
     error3:
-    xf86shmdt(base_high);
-    xf86shmdt(base);
-    xf86shmdt(0);
-    xf86shmdt((char*)HIGH_MEM);
-    xf86shmctl(low_mem,IPC_RMID,NULL);
+    shmdt(base_high);
+    shmdt(base);
+    shmdt(0);
+    shmdt((char*)HIGH_MEM);
+    shmctl(low_mem,IPC_RMID,NULL);
     Int10Current = NULL;
     error2:
-    xf86shmctl(high_mem,IPC_RMID,NULL);
+    shmctl(high_mem,IPC_RMID,NULL);
     error1:
     xfree(((linuxInt10Priv*)pInt->private)->alloc);
     xfree(pInt->private);
@@ -220,11 +220,11 @@ void
 MapCurrentInt10(xf86Int10InfoPtr pInt)
 {
     if (Int10Current) {
-	xf86shmdt(0);
-	xf86shmdt((char*)HIGH_MEM);
+	shmdt(0);
+	shmdt((char*)HIGH_MEM);
     }
-    xf86shmat(((linuxInt10Priv *)pInt->private)->lowMem,(char*)1,XF86SHM_RND);
-    xf86shmat(((linuxInt10Priv *)pInt->private)->highMem,(char*)HIGH_MEM,0);
+    shmat(((linuxInt10Priv *)pInt->private)->lowMem,(char*)1,SHM_RND);
+    shmat(((linuxInt10Priv *)pInt->private)->highMem,(char*)HIGH_MEM,0);
 }
 
 void
@@ -233,14 +233,14 @@ xf86FreeInt10(xf86Int10InfoPtr pInt)
     if (!pInt)
         return;
     if (Int10Current == pInt) {
-	xf86shmdt(0);
-	xf86shmdt((char*)HIGH_MEM);
+	shmdt(0);
+	shmdt((char*)HIGH_MEM);
 	Int10Current = NULL;
     }
-    xf86shmdt(((linuxInt10Priv *)pInt->private)->base_high);
-    xf86shmdt(((linuxInt10Priv *)pInt->private)->base);
-    xf86shmctl(((linuxInt10Priv *)pInt->private)->lowMem,XF86IPC_RMID,NULL);
-    xf86shmctl(((linuxInt10Priv *)pInt->private)->highMem,XF86IPC_RMID,NULL);
+    shmdt(((linuxInt10Priv *)pInt->private)->base_high);
+    shmdt(((linuxInt10Priv *)pInt->private)->base);
+    shmctl(((linuxInt10Priv *)pInt->private)->lowMem,IPC_RMID,NULL);
+    shmctl(((linuxInt10Priv *)pInt->private)->highMem,IPC_RMID,NULL);
     xfree(((linuxInt10Priv*)pInt->private)->alloc);
     xfree(pInt->private);
     xfree(pInt);

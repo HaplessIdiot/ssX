@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,24 +25,17 @@
  */
 
 
-/* $XFree86: xc/lib/GL/mesa/src/get.c,v 1.3 1999/04/04 00:20:25 dawes Exp $ */
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "enable.h"
 #include "enums.h"
 #include "extensions.h"
 #include "get.h"
 #include "macros.h"
+#include "matrix.h"
 #include "mmath.h"
 #include "types.h"
 #include "vb.h"
@@ -66,8 +59,10 @@
 
 
 
-void gl_GetBooleanv( GLcontext *ctx, GLenum pname, GLboolean *params )
+void
+_mesa_GetBooleanv( GLenum pname, GLboolean *params )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint i;
    GLuint texUnit = ctx->Texture.CurrentUnit;
    GLuint texTransformUnit = ctx->Texture.CurrentTransformUnit;
@@ -393,6 +388,7 @@ void gl_GetBooleanv( GLcontext *ctx, GLenum pname, GLboolean *params )
 	 *params = FLOAT_TO_BOOL(LINE_WIDTH_GRANULARITY);
 	 break;
       case GL_LINE_WIDTH_RANGE:
+      case GL_ALIASED_LINE_WIDTH_RANGE:
 	 params[0] = FLOAT_TO_BOOL(MIN_LINE_WIDTH);
 	 params[1] = FLOAT_TO_BOOL(MAX_LINE_WIDTH);
 	 break;
@@ -620,6 +616,7 @@ void gl_GetBooleanv( GLcontext *ctx, GLenum pname, GLboolean *params )
 	 *params = FLOAT_TO_BOOL(POINT_SIZE_GRANULARITY );
 	 break;
       case GL_POINT_SIZE_RANGE:
+      case GL_ALIASED_POINT_SIZE_RANGE:
 	 params[0] = FLOAT_TO_BOOL(MIN_POINT_SIZE );
 	 params[1] = FLOAT_TO_BOOL(MAX_POINT_SIZE );
 	 break;
@@ -748,13 +745,13 @@ void gl_GetBooleanv( GLcontext *ctx, GLenum pname, GLboolean *params )
 	 *params = INT_TO_BOOL(0);  /* TODO */
 	 break;
       case GL_TEXTURE_1D:
-         *params = gl_IsEnabled( ctx, GL_TEXTURE_1D );
+         *params = _mesa_IsEnabled(GL_TEXTURE_1D );
 	 break;
       case GL_TEXTURE_2D:
-         *params = gl_IsEnabled( ctx, GL_TEXTURE_2D );
+         *params = _mesa_IsEnabled(GL_TEXTURE_2D );
 	 break;
       case GL_TEXTURE_3D:
-         *params = gl_IsEnabled( ctx, GL_TEXTURE_3D );
+         *params = _mesa_IsEnabled(GL_TEXTURE_3D );
 	 break;
       case GL_TEXTURE_BINDING_1D:
          *params = INT_TO_BOOL(textureUnit->CurrentD[1]->Name);
@@ -969,6 +966,42 @@ void gl_GetBooleanv( GLcontext *ctx, GLenum pname, GLboolean *params )
       case GL_NATIVE_GRAPHICS_HANDLE_PGI:
 	 *params = 0;
 	 break;
+
+      /* GL_ARB_transpose_matrix */
+      case GL_TRANSPOSE_COLOR_MATRIX_ARB:
+         /* don't have a color matrix */
+         break;
+      case GL_TRANSPOSE_MODELVIEW_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->ModelView.m);
+            for (i=0;i<16;i++) {
+               params[i] = FLOAT_TO_BOOL(tm[i]);
+            }
+         }
+         break;
+      case GL_TRANSPOSE_PROJECTION_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->ProjectionMatrix.m);
+            for (i=0;i<16;i++) {
+               params[i] = FLOAT_TO_BOOL(tm[i]);
+            }
+         }
+         break;
+      case GL_TRANSPOSE_TEXTURE_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->TextureMatrix[texTransformUnit].m);
+            for (i=0;i<16;i++) {
+               params[i] = FLOAT_TO_BOOL(tm[i]);
+            }
+         }
+         break;
+
       default:
 	 printf("invalid enum: %x\n", pname);
          gl_error( ctx, GL_INVALID_ENUM, "glGetBooleanv" );
@@ -978,8 +1011,10 @@ void gl_GetBooleanv( GLcontext *ctx, GLenum pname, GLboolean *params )
 
 
 
-void gl_GetDoublev( GLcontext *ctx, GLenum pname, GLdouble *params )
+void
+_mesa_GetDoublev( GLenum pname, GLdouble *params )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint i;
    GLuint texUnit = ctx->Texture.CurrentUnit;
    GLuint texTransformUnit = ctx->Texture.CurrentTransformUnit;
@@ -1305,6 +1340,7 @@ void gl_GetDoublev( GLcontext *ctx, GLenum pname, GLdouble *params )
 	 *params = (GLdouble) LINE_WIDTH_GRANULARITY;
 	 break;
       case GL_LINE_WIDTH_RANGE:
+      case GL_ALIASED_LINE_WIDTH_RANGE:
 	 params[0] = (GLdouble) MIN_LINE_WIDTH;
 	 params[1] = (GLdouble) MAX_LINE_WIDTH;
 	 break;
@@ -1532,6 +1568,7 @@ void gl_GetDoublev( GLcontext *ctx, GLenum pname, GLdouble *params )
 	 *params = (GLdouble) POINT_SIZE_GRANULARITY;
 	 break;
       case GL_POINT_SIZE_RANGE:
+      case GL_ALIASED_POINT_SIZE_RANGE:
 	 params[0] = (GLdouble) MIN_POINT_SIZE;
 	 params[1] = (GLdouble) MAX_POINT_SIZE;
 	 break;
@@ -1660,13 +1697,13 @@ void gl_GetDoublev( GLcontext *ctx, GLenum pname, GLdouble *params )
 	 *params = 0.0;   /* TODO */
 	 break;
       case GL_TEXTURE_1D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_1D) ? 1.0 : 0.0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_1D) ? 1.0 : 0.0;
 	 break;
       case GL_TEXTURE_2D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_2D) ? 1.0 : 0.0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_2D) ? 1.0 : 0.0;
 	 break;
       case GL_TEXTURE_3D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_3D) ? 1.0 : 0.0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_3D) ? 1.0 : 0.0;
 	 break;
       case GL_TEXTURE_BINDING_1D:
          *params = (GLdouble) textureUnit->CurrentD[1]->Name;
@@ -1882,7 +1919,40 @@ void gl_GetDoublev( GLcontext *ctx, GLenum pname, GLdouble *params )
 	 *params = 0;
 	 break;
 
-
+      /* GL_ARB_transpose_matrix */
+      case GL_TRANSPOSE_COLOR_MATRIX_ARB:
+         /* don't have a color matrix */
+         break;
+      case GL_TRANSPOSE_MODELVIEW_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->ModelView.m);
+            for (i=0;i<16;i++) {
+               params[i] = (GLdouble) tm[i];
+            }
+         }
+         break;
+      case GL_TRANSPOSE_PROJECTION_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->ProjectionMatrix.m);
+            for (i=0;i<16;i++) {
+               params[i] = (GLdouble) tm[i];
+            }
+         }
+         break;
+      case GL_TRANSPOSE_TEXTURE_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->TextureMatrix[texTransformUnit].m);
+            for (i=0;i<16;i++) {
+               params[i] = (GLdouble) tm[i];
+            }
+         }
+         break;
 
       default:
 	 printf("invalid enum: %x\n", pname);
@@ -1893,8 +1963,10 @@ void gl_GetDoublev( GLcontext *ctx, GLenum pname, GLdouble *params )
 
 
 
-void gl_GetFloatv( GLcontext *ctx, GLenum pname, GLfloat *params )
+void
+_mesa_GetFloatv( GLenum pname, GLfloat *params )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint i;
    GLuint texUnit = ctx->Texture.CurrentUnit;
    GLuint texTransformUnit = ctx->Texture.CurrentTransformUnit;
@@ -2217,6 +2289,7 @@ void gl_GetFloatv( GLcontext *ctx, GLenum pname, GLfloat *params )
 	 *params = (GLfloat) LINE_WIDTH_GRANULARITY;
 	 break;
       case GL_LINE_WIDTH_RANGE:
+      case GL_ALIASED_LINE_WIDTH_RANGE:
 	 params[0] = (GLfloat) MIN_LINE_WIDTH;
 	 params[1] = (GLfloat) MAX_LINE_WIDTH;
 	 break;
@@ -2444,6 +2517,7 @@ void gl_GetFloatv( GLcontext *ctx, GLenum pname, GLfloat *params )
 	 *params = (GLfloat) POINT_SIZE_GRANULARITY;
 	 break;
       case GL_POINT_SIZE_RANGE:
+      case GL_ALIASED_POINT_SIZE_RANGE:
 	 params[0] = (GLfloat) MIN_POINT_SIZE;
 	 params[1] = (GLfloat) MAX_POINT_SIZE;
 	 break;
@@ -2572,13 +2646,13 @@ void gl_GetFloatv( GLcontext *ctx, GLenum pname, GLfloat *params )
 	 *params = 0.0F;  /* TODO */
 	 break;
       case GL_TEXTURE_1D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_1D) ? 1.0 : 0.0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_1D) ? 1.0 : 0.0;
 	 break;
       case GL_TEXTURE_2D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_2D) ? 1.0 : 0.0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_2D) ? 1.0 : 0.0;
 	 break;
       case GL_TEXTURE_3D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_3D) ? 1.0 : 0.0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_3D) ? 1.0 : 0.0;
 	 break;
       case GL_TEXTURE_BINDING_1D:
          *params = (GLfloat) textureUnit->CurrentD[1]->Name;
@@ -2793,6 +2867,20 @@ void gl_GetFloatv( GLcontext *ctx, GLenum pname, GLfloat *params )
 	 *params = 0;
 	 break;
 
+      /* GL_ARB_transpose_matrix */
+      case GL_TRANSPOSE_COLOR_MATRIX_ARB:
+         /* don't have a color matrix */
+         break;
+      case GL_TRANSPOSE_MODELVIEW_MATRIX_ARB:
+         gl_matrix_transposef(params, ctx->ModelView.m);
+         break;
+      case GL_TRANSPOSE_PROJECTION_MATRIX_ARB:
+         gl_matrix_transposef(params, ctx->ProjectionMatrix.m);
+         break;
+      case GL_TRANSPOSE_TEXTURE_MATRIX_ARB:
+         gl_matrix_transposef(params, ctx->TextureMatrix[texTransformUnit].m);
+         break;
+
       default:
 	 printf("invalid enum: %x\n", pname);
          gl_error( ctx, GL_INVALID_ENUM, "glGetFloatv" );
@@ -2802,8 +2890,10 @@ void gl_GetFloatv( GLcontext *ctx, GLenum pname, GLfloat *params )
 
 
 
-void gl_GetIntegerv( GLcontext *ctx, GLenum pname, GLint *params )
+void
+_mesa_GetIntegerv( GLenum pname, GLint *params )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint i;
    GLuint texUnit = ctx->Texture.CurrentUnit;
    GLuint texTransformUnit = ctx->Texture.CurrentTransformUnit;
@@ -3130,6 +3220,7 @@ void gl_GetIntegerv( GLcontext *ctx, GLenum pname, GLint *params )
 	 *params = (GLint) LINE_WIDTH_GRANULARITY;
 	 break;
       case GL_LINE_WIDTH_RANGE:
+      case GL_ALIASED_LINE_WIDTH_RANGE:
 	 params[0] = (GLint) MIN_LINE_WIDTH;
 	 params[1] = (GLint) MAX_LINE_WIDTH;
 	 break;
@@ -3357,6 +3448,7 @@ void gl_GetIntegerv( GLcontext *ctx, GLenum pname, GLint *params )
 	 *params = (GLint) POINT_SIZE_GRANULARITY;
 	 break;
       case GL_POINT_SIZE_RANGE:
+      case GL_ALIASED_POINT_SIZE_RANGE:
 	 params[0] = (GLint) MIN_POINT_SIZE;
 	 params[1] = (GLint) MAX_POINT_SIZE;
 	 break;
@@ -3485,13 +3577,13 @@ void gl_GetIntegerv( GLcontext *ctx, GLenum pname, GLint *params )
 	 *params = 0;  /* TODO */
 	 break;
       case GL_TEXTURE_1D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_1D) ? 1 : 0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_1D) ? 1 : 0;
 	 break;
       case GL_TEXTURE_2D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_2D) ? 1 : 0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_2D) ? 1 : 0;
 	 break;
       case GL_TEXTURE_3D:
-         *params = gl_IsEnabled(ctx, GL_TEXTURE_3D) ? 1 : 0;
+         *params = _mesa_IsEnabled(GL_TEXTURE_3D) ? 1 : 0;
 	 break;
       case GL_TEXTURE_BINDING_1D:
          *params = textureUnit->CurrentD[1]->Name;
@@ -3717,6 +3809,41 @@ void gl_GetIntegerv( GLcontext *ctx, GLenum pname, GLint *params )
 	 *params = ctx->Array.LockCount;
 	 break;
 	 
+      /* GL_ARB_transpose_matrix */
+      case GL_TRANSPOSE_COLOR_MATRIX_ARB:
+         /* don't have a color matrix */
+         break;
+      case GL_TRANSPOSE_MODELVIEW_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->ModelView.m);
+            for (i=0;i<16;i++) {
+               params[i] = (GLint) tm[i];
+            }
+         }
+         break;
+      case GL_TRANSPOSE_PROJECTION_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->ProjectionMatrix.m);
+            for (i=0;i<16;i++) {
+               params[i] = (GLint) tm[i];
+            }
+         }
+         break;
+      case GL_TRANSPOSE_TEXTURE_MATRIX_ARB:
+         {
+            GLfloat tm[16];
+            GLuint i;
+            gl_matrix_transposef(tm, ctx->TextureMatrix[texTransformUnit].m);
+            for (i=0;i<16;i++) {
+               params[i] = (GLint) tm[i];
+            }
+         }
+         break;
+
       default:
 	 printf("invalid enum: %x\n", pname);
          gl_error( ctx, GL_INVALID_ENUM, "glGetIntegerv" );
@@ -3725,8 +3852,10 @@ void gl_GetIntegerv( GLcontext *ctx, GLenum pname, GLint *params )
 
 
 
-void gl_GetPointerv( GLcontext *ctx, GLenum pname, GLvoid **params )
+void
+_mesa_GetPointerv( GLenum pname, GLvoid **params )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint texUnit = ctx->Texture.CurrentUnit;
    /*GLuint texTransformUnit = ctx->Texture.CurrentTransformUnit;*/
 
@@ -3766,11 +3895,13 @@ void gl_GetPointerv( GLcontext *ctx, GLenum pname, GLvoid **params )
 
 
 
-const GLubyte *gl_GetString( GLcontext *ctx, GLenum name )
+const GLubyte *
+_mesa_GetString( GLenum name )
 {
+   GET_CURRENT_CONTEXT(ctx);
    static char result[1000];
    static char *vendor = "Brian Paul";
-   static char *version = "1.2 Mesa 3.1 beta";
+   static char *version = "1.2 Mesa 3.3 beta";
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH_WITH_RETVAL(ctx, "glGetString", 0);
 
@@ -3811,3 +3942,24 @@ const GLubyte *gl_GetString( GLcontext *ctx, GLenum name )
          return NULL;
    }
 }
+
+
+/*
+ * Execute a glGetError command
+ */
+GLenum
+_mesa_GetError( void )
+{
+   GET_CURRENT_CONTEXT(ctx);
+
+   GLenum e = ctx->ErrorValue;
+
+   ASSERT_OUTSIDE_BEGIN_END_WITH_RETVAL( ctx, "glGetError", (GLenum) 0);
+
+   if (MESA_VERBOSE & VERBOSE_API)
+      fprintf(stderr, "glGetError <-- %s\n", gl_lookup_enum_by_nr(e));
+
+   ctx->ErrorValue = (GLenum) GL_NO_ERROR;
+   return e;
+}
+

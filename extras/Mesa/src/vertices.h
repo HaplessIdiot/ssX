@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -28,26 +28,33 @@
 #ifndef VERTICES_H_
 #define VERTICES_H_
 
+#ifdef USE_X86_ASM
+#define _PROJAPI _ASMAPI
+#define _PROJAPIP _ASMAPIP
+#else
+#define _PROJAPI
+#define _PROJAPIP *
+#endif
 
-typedef void (*gl_transform_func)( GLfloat *first_vert,
+typedef void (_PROJAPIP gl_transform_func)( GLfloat *first_vert,
 				   const GLfloat *m,
 				   const GLfloat *src,
 				   GLuint src_stride,
 				   GLuint count );
 
-typedef void (*gl_cliptest_func)( GLfloat *first_vert,
+typedef void (_PROJAPIP gl_cliptest_func)( GLfloat *first_vert,
 				  GLfloat *last_vert, /* use count instead? */
 				  GLubyte *or_mask,
 				  GLubyte *and_mask,
 				  GLubyte *clip_mask );
 
-typedef void (*gl_project_clipped_func)( GLfloat *first,
+typedef void (_PROJAPIP gl_project_clipped_func)( GLfloat *first,
 					 GLfloat *last,
 					 const GLfloat *m,
 					 GLuint stride,
 					 const GLubyte *clipmask ); 
 
-typedef void (*gl_project_func)( GLfloat *first,
+typedef void (_PROJAPIP gl_project_func)( GLfloat *first,
 				 GLfloat *last,
 				 const GLfloat *m,
 				 GLuint stride );

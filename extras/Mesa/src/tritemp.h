@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -67,7 +67,7 @@
  *
  * Inspired by triangle rasterizer code written by Allen Akin.  Thanks Allen!
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/tritemp.h,v 1.4 2000/01/18 17:14:25 tsi Exp $ */
 
 
 /*void triangle( GLcontext *ctx, GLuint v0, GLuint v1, GLuint v2, GLuint pv )*/
@@ -84,7 +84,7 @@
 	GLfixed fx0;	/* fixed pt X of lower endpoint */
    } EdgeT;
 
-   struct vertex_buffer *VB = ctx->VB;
+   const struct vertex_buffer *VB = ctx->VB;
    EdgeT eMaj, eTop, eBot;
    GLfloat oneOverArea;
    int vMin, vMid, vMax;       /* vertex indexes:  Y(vMin)<=Y(vMid)<=Y(vMax) */
@@ -135,16 +135,12 @@
 
    /* compute oneOverArea */
    {
-      GLfloat area = eMaj.dx * eBot.dy - eBot.dx * eMaj.dy;
+      const GLfloat area = eMaj.dx * eBot.dy - eBot.dx * eMaj.dy;
 
       /* Do backface culling */
-      if ( 
-	 area * bf < 0 || 
-	 area * area < .0025 
-	 )
-	 return;   
+      if (area * bf < 0 || area * area < .0025)
+	 return;
 
-      
       oneOverArea = 1.0F / area;
    }
 
@@ -699,7 +695,7 @@
                   fdzOuter = (GLint) (dzdy + dxOuter * dzdx);
 #endif
                   zRow = Z_ADDRESS( ctx, FixedToInt(fxLeftEdge), iy );
-                  dZRowOuter = (ctx->Buffer->Width + idxOuter) * sizeof(GLdepth);
+                  dZRowOuter = (ctx->DrawBuffer->Width + idxOuter) * sizeof(GLdepth);
                }
 #endif
 #ifdef INTERP_RGB

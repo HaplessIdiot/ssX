@@ -1,4 +1,44 @@
-XFree86 3.9.17d (1 February 2000)
+XFree86 3.9.17d (8 February 2000)
+3647. XFree86-Bigfont extension that provides efficient client access to
+      the complete glyph metrics, using shared memory where possible/available
+      or transmitting the data in a compressed format otherwise (#3626,
+      Bruno Haible).
+3646. Update locale support for Celtic languages (Welsh, Irish, Scots, Manx
+      and Cornish), and include a compose file for ISO-8859-14 (#3612,
+      Alastair McKinstry).
+3645. Add a Slovenian xkb symbols file (#3629, Marko Samastur,
+      Primoz Peterlin).
+3644. The new extension init code didn't handle server resets (#3628,
+      Ebgert Eich).
+3643. xf86GetPciSizeFromOS() didn't close the file it opened (#3627,
+      Loic Grenie).
+3642. Export frexp() and ldexp() to modules (#3624, 3631, Juliusz Chroboczek).
+3641. Fixes for CTEXT handling in Xlib:
+       - rewrite CTEXT from/to converters for standard compliance
+       - CTEXT parser now understands UTF-8 (and other DOC) sequences and
+         performs only CTEXT sequence recognition
+       - detailed charset information parsing moved to the procedure that
+         adds 'charset object'
+       - Some actions for preparing 'charset object' moved to lcCharSet.c
+         (where it can be done easily)
+       - XlcAddCT call added to XLC_LOCALE file parser to allow recognition
+         of charsets that are described only in those files (ie, not
+         in internal Xlib tables)
+      (#3624, Ivan Pascal).
+3640. Convert the nv driver to use MMIO to access the VGA registers
+      instead of normal I/O ports.  Also riva_hw is updated to the
+      same version as is in 3.3.6 (#3620, Jarno Paananen).
+3639. DRI and Mesa update (#3619, Brian Paul, Precision Insight).
+3638. Fix a problem with the tdfx driver that can result in a lockup
+      (#3618, Nicholas Brealey).
+3627. Fix some PPC inline assembler in compiler.h (#3617, Kostas Gewrgiou).
+3626. Add support for the S3 Trio3D/2x and Trio3D chips to the s3virge
+      driver (#3616, 3623, Harald Koenig).
+3625. Fix some build problems on Solaris 8 with gcc (#3615, Richard Coley).
+3624. Fix an Xserver core dump that can happen when xdmcp-related command
+      line options have missing arguments (#3614, Harald Koenig).
+3623. Xterm patch #125 (#3611, Thomas Dickey).
+3622. Add a Type1 version of the cursor font (#3610, Juliusz Chroboczek).
 3621. Add Trident Cyber9540 detection (not tested) (Alan Hourihane).
 3620. Fix horizontal/vertical line drawing for r128 driver (Kevin Martin).
 3619. Update -probe option for all bus types (Alan Hourihane).
@@ -9407,4 +9447,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.973 2000/02/03 20:50:04 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.975 2000/02/07 22:13:03 alanh Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.3 1999/06/14 07:23:36 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.4 1999/12/14 01:32:23 robin Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -157,15 +157,6 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
 		}
 	    }
 	}
-
-	/*
-	** Initialize the function pointer array to use the indirect
-	** rendering routines.  If direct rendering is available for
-	** this context, then glAPI is initialized when the context is
-	** made current.
-	*/
-	if (!gc->isDirect)
-	    glInitIndirectAPI(&gc->glAPI);
 #endif
 
 	/* Send the glXCreateContext request */
@@ -595,9 +586,7 @@ int glXGetConfig(Display *dpy, XVisualInfo *vis, int attribute,
     __GLXvisualConfig *pConfig;
     __GLXscreenConfigs *psc;
     __GLXdisplayPrivate *priv;
-    GLint i, items;
-    XVisualInfo* vi;
-    XVisualInfo template;
+    GLint i;
 
     /* Initialize the extension, if needed */
     priv = __glXInitialize(dpy);
@@ -1382,7 +1371,6 @@ static int __glXQueryContextInfo(Display *dpy, GLXContext ctx)
     xGLXQueryContextInfoEXTReq *req;
     xGLXQueryContextInfoEXTReply reply;
     CARD8 opcode;
-    GLXContext gc = __glXGetCurrentContext();
     GLuint numValues;
 
     if (ctx == NULL) {
@@ -1476,9 +1464,6 @@ GLXContextID glXGetContextIDEXT(const GLXContext ctx)
 
 GLXContext glXImportContextEXT(Display *dpy, GLXContextID contextID)
 {
-    VisualID vid;
-    int screen;
-    GLXContextID shareListID;
     GLXContext ctx;
 
     if (contextID == None) {

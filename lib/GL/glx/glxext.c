@@ -1,4 +1,5 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.2 1999/06/14 07:23:37 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.3 1999/12/14 01:32:24 robin Exp $ */
+
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -17,7 +18,6 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** $SGI$
 */
 
 /*
@@ -26,13 +26,17 @@
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/glx/glxext.c,v 1.6 1999/05/10 07:37:17 martin Exp $
  */
 
 #include "packrender.h"
 #include <stdio.h>
 #include <Xext.h>
 #include <extutil.h>
+#ifdef GLX_DIRECT_RENDERING
+#include "indirect_init.h"
+#include "glapi.h"
+#include <assert.h>
+#endif
 
 #ifdef DEBUG
 void __glXDumpDrawBuffer(__GLXcontext *ctx);
@@ -59,7 +63,17 @@ static __GLXcontext dummyContext = {
     sizeof(dummyBuffer),
 };
 
+
+#ifdef GLX_DIRECT_RENDERING
+/*
+** All indirect rendering contexts will share the same indirect dispatch table.
+*/
+static __GLapi *IndirectAPI = NULL;
+#endif
+
+
 __GLXcontext *__glXcurrentContext = &dummyContext;
+
 
 /*
 ** You can set this cell to 1 to force the gl drawing stuff to be
@@ -98,6 +112,9 @@ int __glXCloseDisplay(Display *dpy, XExtCodes *codes)
   gc = __glXGetCurrentContext();
   if (dpy == gc->currentDpy) {
     __glXSetCurrentContext(&dummyContext);
+#ifdef GLX_DIRECT_RENDERING
+    _glapi_set_dispatch(NULL);  /* no-op functions */
+#endif
     __glXFreeContext(gc);
   }
 
@@ -186,6 +203,10 @@ static int __glXFreeDisplayPrivate(XExtData *extension)
 	(*priv->driDisplay.destroyDisplay)(priv->dpy,
 					   priv->driDisplay.private);
     priv->driDisplay.private = NULL;
+#endif
+
+#ifdef GLX_DIRECT_RENDERING
+    XFree(priv->driDisplay.createScreen);
 #endif
 
     Xfree((char*) priv);
@@ -390,6 +411,14 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
     XEDataObject dataObj;
     int major, minor;
 
+#ifdef GLX_DIRECT_RENDERING
+    /*
+    **Initialize the indirect GLX dispatch table.  It'll never change and
+    ** can be used by all indirect contexts.
+    */
+    IndirectAPI = __glXNewIndirectAPI();
+#endif
+
     /* The one and only long long lock */
     __glXLock();
 
@@ -459,7 +488,7 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
 	Xfree((char*) private);
 	return 0;
     }
-    
+
     /*
     ** Fill in the private structure.  This is the actual structure that
     ** hangs off of the Display structure.  Our private structure is
@@ -668,6 +697,7 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
     CARD8 opcode, oldOpcode;
     Display *dpyTmp;
     Bool sentRequestToOldDpy = False;
+    Bool bindReturnValue = True;
 
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {
@@ -683,61 +713,68 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
     }
 
     oldGC = __glXGetCurrentContext();
-    if (dpy != oldGC->currentDpy && oldGC != &dummyContext) {
+    if ((dpy != oldGC->currentDpy || (gc && gc->isDirect)) &&
+	!oldGC->isDirect && oldGC != &dummyContext) {
 	/*
-	** We are switching from one dpy to another, and have to send a
-	** request to the previous dpy to unbind the previous context.
+	** We are either switching from one dpy to another and have to
+	** send a request to the previous dpy to unbind the previous
+	** context, or we are switching away from a indirect context to
+	** a direct context and have to send a request to the dpy to
+	** unbind the previous context.
 	*/
 	sentRequestToOldDpy = True;
+	dpyTmp = dpy;
 
-#ifdef GLX_DIRECT_RENDERING
-	/* Unbind the old direct rendering context */
-	if (oldGC->isDirect) {
-	    if (oldGC->driContext.private) {
-		/* NOT_DONE: check the return value */
-		(*oldGC->driContext.unbindContext)(oldGC->currentDpy,
-						   oldGC->screen,
-						   oldGC->currentDrawable,
-						   oldGC);
-	    }
-	} else {
-#endif
+	if (dpy != oldGC->currentDpy) {
 	    /*
 	    ** The GetReq macro uses "dpy", so we have to save and
 	    ** restore later.
 	    */
-	    dpyTmp = dpy;
 	    dpy = oldGC->currentDpy;
 	    oldOpcode = __glXSetupForCommand(dpy);
 	    if (!oldOpcode) {
 		return GL_FALSE;
 	    }
-	    LockDisplay(dpy);
-	    GetReq(GLXMakeCurrent,req);
-	    req->reqType = oldOpcode;
-	    req->glxCode = X_GLXMakeCurrent;
-	    req->drawable = None;
-	    req->context = None;
-	    req->oldContextTag = oldGC->currentContextTag;
-	    if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
-		/* The make current failed.  Just return GL_FALSE. */
-		UnlockDisplay(dpy);
-		SyncHandle();
-		return GL_FALSE;
-	    }
-	    oldGC->currentContextTag = 0;
-	    dpy = dpyTmp;
-#ifdef GLX_DIRECT_RENDERING
+	} else {
+	    oldOpcode = opcode;
 	}
-#endif
+	LockDisplay(dpy);
+	GetReq(GLXMakeCurrent,req);
+	req->reqType = oldOpcode;
+	req->glxCode = X_GLXMakeCurrent;
+	req->drawable = None;
+	req->context = None;
+	req->oldContextTag = oldGC->currentContextTag;
+	if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
+	    /* The make current failed.  Just return GL_FALSE. */
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return GL_FALSE;
+	}
+	dpy = dpyTmp;
+	oldGC->currentContextTag = 0;
     }
     
 #ifdef GLX_DIRECT_RENDERING
+    /* Unbind the old direct rendering context */
+    if (oldGC->isDirect) {
+	if (oldGC->driContext.private) {
+	    if (!(*oldGC->driContext.unbindContext)(oldGC->currentDpy,
+						    oldGC->screen,
+						    oldGC->currentDrawable,
+						    oldGC)) {
+		/* The make current failed.  Just return GL_FALSE. */
+		return GL_FALSE;
+	    }
+	}
+	oldGC->currentContextTag = 0;
+    }
+
     /* Bind the direct rendering context to the drawable */
     if (gc && gc->isDirect) {
 	if (gc->driContext.private) {
-	    /* NOT_DONE: check the return value */
-	    (*gc->driContext.bindContext)(dpy, gc->screen, draw, gc);
+	    bindReturnValue =
+		(*gc->driContext.bindContext)(dpy, gc->screen, draw, gc);
 	}
     } else {
 #endif
@@ -749,63 +786,75 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 	req->drawable = draw;
 	req->context = gc ? gc->xid : None;
 	req->oldContextTag = oldGC->currentContextTag;
-	if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
-
-	    /* The make current failed. */
-	    UnlockDisplay(dpy);
-	    SyncHandle();
-	    /*
-	    ** If we had just sent a request to a previous dpy, we have
-	    ** to undo that request (because if a command fails, it
-	    ** should act like a no-op) by making current to the
-	    ** previous context and drawable.
-	    */
-	    if (sentRequestToOldDpy) {
-#ifdef GLX_DIRECT_RENDERING
-		/* Re-bind the old direct rendering context */
-		if (oldGC->isDirect) {
-		    if (oldGC->driContext.private) {
-			/* NOT_DONE: check the return value */
-			(*oldGC->driContext.bindContext)
-			    (oldGC->currentDpy,
-			     oldGC->screen,
-			     oldGC->currentDrawable,
-			     oldGC);
-		    }
-		} else {
-#endif
-		    dpy = oldGC->currentDpy;
-		    oldOpcode = __glXSetupForCommand(dpy);
-		    LockDisplay(dpy);
-		    GetReq(GLXMakeCurrent,req);
-		    req->reqType = oldOpcode;
-		    req->glxCode = X_GLXMakeCurrent;
-		    req->drawable = oldGC->currentDrawable;
-		    req->context = oldGC->xid;
-		    req->oldContextTag = 0;
-		    if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
-			UnlockDisplay(dpy);
-			SyncHandle();
-			/*
-			** The request failed; this cannot happen with
-			** the current API.  If in the future the API is
-			** extended to allow context sharing between
-			** clients, then this may fail (because another
-			** client may have grabbed the context); in that
-			** case, we cannot undo the previous request,
-			** and cannot adhere to the "no-op" behavior.
-			*/
-		    }
-		    oldGC->currentContextTag = reply.contextTag;
-#ifdef GLX_DIRECT_RENDERING
-		}
-#endif
-	    }
-	    return GL_FALSE;
-	}
+	bindReturnValue = _XReply(dpy, (xReply*) &reply, 0, False);
 #ifdef GLX_DIRECT_RENDERING
     }
 #endif
+
+    if (!bindReturnValue) {
+	/* The make current failed. */
+	if (!gc->isDirect) {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	}
+
+#ifdef GLX_DIRECT_RENDERING
+	/* If the old context was direct rendering, then re-bind to it. */
+	if (oldGC->isDirect) {
+	    if (oldGC->driContext.private) {
+		if (!(*oldGC->driContext.bindContext)(oldGC->currentDpy,
+						      oldGC->screen,
+						      oldGC->currentDrawable,
+						      oldGC)) {
+		    /*
+		    ** The request failed; this cannot happen with the
+		    ** current API.  If in the future the API is
+		    ** extended to allow context sharing between
+		    ** clients, then this may fail (because another
+		    ** client may have grabbed the context); in that
+		    ** case, we cannot undo the previous request, and
+		    ** cannot adhere to the "no-op" behavior.
+		    */
+		}
+	    }
+	} else
+#endif
+	/*
+	** If we had just sent a request to a previous dpy, we have to
+	** undo that request (because if a command fails, it should act
+	** like a no-op) by making current to the previous context and
+	** drawable.
+	*/
+	if (sentRequestToOldDpy) {
+	    if (dpy != oldGC->currentDpy) {
+		dpy = oldGC->currentDpy;
+		oldOpcode = __glXSetupForCommand(dpy);
+	    } else {
+		oldOpcode = opcode;
+	    }
+	    LockDisplay(dpy);
+	    GetReq(GLXMakeCurrent,req);
+	    req->reqType = oldOpcode;
+	    req->glxCode = X_GLXMakeCurrent;
+	    req->drawable = oldGC->currentDrawable;
+	    req->context = oldGC->xid;
+	    req->oldContextTag = 0;
+	    if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
+		UnlockDisplay(dpy);
+		SyncHandle();
+		/*
+		** The request failed; this cannot happen with the
+		** current API.  If in the future the API is extended to
+		** allow context sharing between clients, then this may
+		** fail (because another client may have grabbed the
+		** context); in that case, we cannot undo the previous
+		** request, and cannot adhere to the "no-op" behavior.
+		*/
+	    }
+	    oldGC->currentContextTag = reply.contextTag;
+	}
+	return GL_FALSE;
+    }
 
     /* Update our notion of what is current */
     __glXLock();
@@ -820,24 +869,16 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
     } else {
 	if (oldGC != &dummyContext) {
 	    /* Old current context is no longer current to anybody */
-
-#ifdef GLX_DIRECT_RENDERING
-	    /* Unbind the old direct rendering context */
-	    if (oldGC->isDirect) {
-		if (oldGC->driContext.private) {
-		    /* NOT_DONE: check the return value */
-		    (*oldGC->driContext.unbindContext)(dpy, oldGC->screen,
-						       oldGC->currentDrawable,
-						       oldGC);
-		}
-	    }
-#endif
-
 	    oldGC->currentDpy = 0;
 	    oldGC->currentDrawable = None;
 	    oldGC->currentContextTag = 0;
 
 	    if (oldGC->xid == None) {
+		/* 
+		** We are switching away from a context that was
+		** previously destroyed, so we need to free the memory
+		** for the old handle.
+		*/
 #ifdef GLX_DIRECT_RENDERING
 		/* Destroy the old direct rendering context */
 		if (oldGC->isDirect) {
@@ -848,20 +889,28 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 		    }
 		}
 #endif
-		/*
-		** Free memory for old handle if we are switching away
-		** from a context that was destroyed.
-		*/
 		__glXFreeContext(oldGC);
 	    }
 	}
 	if (gc) {
 	    __glXSetCurrentContext(gc);
+#ifdef GLX_DIRECT_RENDERING
+            if (!gc->isDirect) {
+               assert(IndirectAPI);
+               _glapi_set_dispatch(IndirectAPI);
+            }
+#endif
 	    gc->currentDpy = dpy;
 	    gc->currentDrawable = draw;
+#ifdef GLX_DIRECT_RENDERING
+	    if (gc->isDirect) reply.contextTag = -1;
+#endif
 	    gc->currentContextTag = reply.contextTag;
 	} else {
 	    __glXSetCurrentContext(&dummyContext);
+#ifdef GLX_DIRECT_RENDERING
+            _glapi_set_dispatch(NULL);  /* no-op functions */
+#endif
 	}
     }
     __glXUnlock();

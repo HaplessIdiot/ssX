@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.6 1999/12/02 20:55:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.7 1999/12/14 01:33:38 robin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.53 1999/08/04 18:12:55 faith Exp $
  */
 
 #if XFree86LOADER

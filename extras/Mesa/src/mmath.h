@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -23,10 +23,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/mmath.h,v 1.2 1999/04/04 00:20:28 dawes Exp $ */
-
-
-
 
 
 /*
@@ -39,15 +35,9 @@
 #ifndef MMATH_H
 #define MMATH_H
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
 
-#ifndef XFree86Server
-#include <math.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
+
 
 /*
  * Set the x86 FPU control word to guarentee only 32 bits of presision
@@ -73,7 +63,7 @@ typedef unsigned short fpu_control_t;
 /* Set it up how we want it.
  */
 #if !defined(NO_FAST_MATH) 
-#define START_FAST_MATH(x)					\
+#define START_FAST_MATH(x)                  \
    {								\
       static fpu_control_t mask = _FPU_SINGLE | _FPU_MASK_IM	\
             | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM	\
@@ -97,6 +87,47 @@ typedef unsigned short fpu_control_t;
       _FPU_SETCW( x );				\
    }
 
+#define HAVE_FAST_MATH
+
+#elif defined(__WATCOMC__) && !defined(NO_FAST_MATH) 
+
+/* This is the watcom specific inline assembly version of setcw and getcw */
+
+void START_FAST_MATH2(unsigned short *x);
+#pragma aux START_FAST_MATH2 =          \
+    "fstcw   word ptr [esi]"            \
+    "or      word ptr [esi], 0x3f"      \
+    "fldcw   word ptr [esi]"            \
+    parm [esi]                          \
+    modify exact [];
+
+void END_FAST_MATH2(unsigned short *x);
+#pragma aux END_FAST_MATH2 =            \
+    "fldcw   word ptr [esi]"            \
+    parm [esi]                          \
+    modify exact [];
+
+#define START_FAST_MATH(x)  START_FAST_MATH2(& x)          
+#define END_FAST_MATH(x)  END_FAST_MATH2(& x)
+
+/*
+__inline START_FAST_MATH(unsigned short x)
+    {                               
+    _asm {                          
+        fstcw   ax                  
+        mov     x , ax              
+        or      ax, 0x3f            
+        fldcw   ax                  
+        }                           
+    }
+
+__inline END_FAST_MATH(unsigned short x)    
+    {                               
+    _asm {                          
+        fldcw   x                   
+        }                           
+    }
+*/
 #define HAVE_FAST_MATH
 
 #else
@@ -131,18 +162,32 @@ static __inline int FloatToInt(float f)
 {
    int r;
    _asm {
-     fld f
-     fistp r
-    }
+	 fld f
+	 fistp r
+	}
    return r;
 }
+#elif defined(__WATCOMC__)
+long FloatToInt(float f);
+#pragma aux FloatToInt =                \
+	"push   eax"                        \
+	"fistp  dword ptr [esp]"            \
+	"pop    eax"                        \
+	parm [8087]                         \
+	value [eax]                         \
+	modify exact [eax];
+float asm_sqrt (float x);
+#pragma aux asm_sqrt =                  \
+	"fsqrt"                             \
+	parm [8087]                         \
+	value [8087]                        \
+	modify exact [];
+#else
+#define FloatToInt(F) ((int) (F))
 #endif
 #else
 #define FloatToInt(F) ((int) (F))
 #endif
-
-
-
 
 
 /*
@@ -150,13 +195,16 @@ static __inline int FloatToInt(float f)
  */
 
 extern float gl_sqrt(float x);
-
+    
 #ifdef FAST_MATH
+#if defined (__WATCOMC__) && defined(USE_X86_ASM)
+#  define GL_SQRT(X)  asm_sqrt(X)
+#else
 #  define GL_SQRT(X)  gl_sqrt(X)
+#endif
 #else
 #  define GL_SQRT(X)  sqrt(X)
 #endif
-
 
 
 /*

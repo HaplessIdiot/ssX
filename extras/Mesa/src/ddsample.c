@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -23,10 +23,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-
-
-
 
 
 /*
@@ -56,16 +52,17 @@
  * the core Mesa library.
  */
 
-#ifndef XFree86Server
-#include <stdlib.h>
+
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "GL/FooMesa.h"
 #include "context.h"
 #include "matrix.h"
 #include "types.h"
 #include "vb.h"
+#endif
 
 
 

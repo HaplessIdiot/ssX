@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.4 1999/06/14 07:31:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.5 1999/12/14 01:33:40 robin Exp $
 XCOMM $PI: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.6 1999/03/15 21:36:10 martin Exp $
 
 #define IHaveModules
@@ -9,6 +9,7 @@ LinkSourceFile(xmesa2.c,../../../../../../extras/Mesa/src/X)
 LinkSourceFile(xmesa3.c,../../../../../../extras/Mesa/src/X)
 LinkSourceFile(xmesa4.c,../../../../../../extras/Mesa/src/X)
 LinkSourceFile(xmesaP.h,../../../../../../extras/Mesa/src/X)
+LinkSourceFile(glxheader.h,../../../../../../extras/Mesa/src/X)
 
 LinkSourceFile(compsize.c,../../../../../../lib/GL/glx)
 LinkSourceFile(size.h,../../../../../../lib/GL/glx)

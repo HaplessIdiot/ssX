@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,37 +28,40 @@
  * Copyright (C) 1999 Keith Whitwell.
  */
 
-#ifndef XFree86Server
-#include <stdio.h>
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "bbox.h"
 #include "clip.h"
 #include "context.h"
 #include "cva.h"
-#include "pipeline.h"
-#include "vbcull.h"
-#include "vbindirect.h"
-#include "vbrender.h"
-#include "vbxform.h"
 #include "fog.h"
 #include "light.h"
+#include "mem.h"
 #include "mmath.h"
+#include "pipeline.h"
 #include "shade.h"
 #include "stages.h"
 #include "types.h"
 #include "translate.h"
+#include "vbcull.h"
+#include "vbindirect.h"
+#include "vbrender.h"
+#include "vbxform.h"
 #include "xform.h"
+#endif
+
+
 
 #ifndef MESA_VERBOSE
 int MESA_VERBOSE = 0 
 /*                 | VERBOSE_PIPELINE */
-               | VERBOSE_IMMEDIATE
+/*                 | VERBOSE_IMMEDIATE */
 /*                 | VERBOSE_VARRAY */
 /*                 | VERBOSE_TEXTURE */
 /*                 | VERBOSE_API */
-/*                 | VERBOSE_DRIVER */
+               | VERBOSE_DRIVER
 /*                 | VERBOSE_STATE */
 /*                 | VERBOSE_CULL */
 /*                 | VERBOSE_DISPLAY_LIST */
@@ -205,7 +208,7 @@ void gl_pipeline_init( GLcontext *ctx )
 /* Called prior to every recomputation of the CVA precalc data, except where
  * the driver is able to calculate the pipeline unassisted.
  */
-void gl_build_full_precalc_pipeline( GLcontext *ctx )
+static void build_full_precalc_pipeline( GLcontext *ctx )
 {
    struct gl_pipeline_stage *pipeline = ctx->PipelineStage;
    struct gl_cva *cva = &ctx->CVA;
@@ -316,7 +319,7 @@ void gl_build_precalc_pipeline( GLcontext *ctx )
 
    if (!ctx->Driver.BuildPrecalcPipeline ||
        !ctx->Driver.BuildPrecalcPipeline( ctx ))
-      gl_build_full_precalc_pipeline( ctx );
+      build_full_precalc_pipeline( ctx );
 
    pre->data_valid = 0;
    pre->pipeline_valid = 1;
@@ -329,7 +332,7 @@ void gl_build_precalc_pipeline( GLcontext *ctx )
 }
 
 
-static void gl_build_full_immediate_pipeline( GLcontext *ctx )
+static void build_full_immediate_pipeline( GLcontext *ctx )
 {
    struct gl_pipeline_stage *pipeline = ctx->PipelineStage;
    struct gl_cva *cva = &ctx->CVA;
@@ -401,7 +404,7 @@ void gl_build_immediate_pipeline( GLcontext *ctx )
 
    if (!ctx->Driver.BuildEltPipeline ||
        !ctx->Driver.BuildEltPipeline( ctx )) {
-      gl_build_full_immediate_pipeline( ctx );
+      build_full_immediate_pipeline( ctx );
    }
 
    elt->pipeline_valid = 1;
@@ -479,7 +482,7 @@ void gl_run_pipeline( struct vertex_buffer *VB )
 {
    struct gl_pipeline *pipe = VB->pipeline;
    struct gl_pipeline_stage **stages = pipe->stages;
-   short x;
+   unsigned short x;
 
    pipe->data_valid = 1;	/* optimized stages might want to reset this. */
 

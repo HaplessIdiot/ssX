@@ -4,7 +4,7 @@ XCOMM	This file contains compose table file name.
 XCOMM	The first word is the compose table file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM $XFree86: xc/nls/compose.dir,v 1.6 1999/08/28 09:00:33 dawes Exp $
+XCOMM $XFree86: xc/nls/compose.dir,v 1.7 2000/01/21 02:29:37 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -108,6 +108,9 @@ iso8859-14/Compose	gd_GB.ISO8859-14
 iso8859-15/Compose	gd_GB.ISO8859-15
 iso8859-1/Compose	gl_ES.ISO8859-1
 iso8859-15/Compose	gl_ES.ISO8859-15
+iso8859-1/Compose	gv_GB.ISO8859-1
+iso8859-14/Compose	gv_GB.ISO8859-14
+iso8859-15/Compose	gv_GB.ISO8859-15
 iso8859-8/Compose	he_IL.ISO8859-8
 iso8859-2/Compose	hr_HR.ISO8859-2
 iso8859-2/Compose	hu_HU.ISO8859-2
@@ -128,6 +131,9 @@ georgian-ps/Compose	ka_GE.GEORGIAN-PS
 iso8859-1/Compose	kl_GL.ISO8859-1
 iso8859-15/Compose	kl_GL.ISO8859-15
 ko/Compose		ko_KR.eucKR
+iso8859-1/Compose	kw_GB.ISO8859-1
+iso8859-14/Compose	kw_GB.ISO8859-14
+iso8859-15/Compose	kw_GB.ISO8859-15
 ibm-cp1133/Compose	lo_LA.IBM-CP1133
 mulelao-1/Compose	lo_LA.MULELAO-1
 iso8859-1/Compose	lt_LN.ISO8859-1
@@ -278,6 +284,9 @@ iso8859-14/Compose:	gd_GB.ISO8859-14
 iso8859-15/Compose:	gd_GB.ISO8859-15
 iso8859-1/Compose:	gl_ES.ISO8859-1
 iso8859-15/Compose:	gl_ES.ISO8859-15
+iso8859-1/Compose:	gv_GB.ISO8859-1
+iso8859-14/Compose:	gv_GB.ISO8859-14
+iso8859-15/Compose:	gv_GB.ISO8859-15
 iso8859-8/Compose:	he_IL.ISO8859-8
 iso8859-2/Compose:	hr_HR.ISO8859-2
 iso8859-2/Compose:	hu_HU.ISO8859-2
@@ -297,6 +306,9 @@ georgian-academy/Compose: ka_GE.GEORGIAN-ACADEMY
 georgian-ps/Compose:	ka_GE.GEORGIAN-PS
 iso8859-1/Compose:	kl_GL.ISO8859-1
 iso8859-15/Compose:	kl_GL.ISO8859-15
+iso8859-1/Compose:	kw_GB.ISO8859-1
+iso8859-14/Compose:	kw_GB.ISO8859-14
+iso8859-15/Compose:	kw_GB.ISO8859-15
 ko/Compose:		ko_KR.eucKR
 ibm-cp1133/Compose:	lo_LA.IBM-CP1133
 mulelao-1/Compose:	lo_LA.MULELAO-1

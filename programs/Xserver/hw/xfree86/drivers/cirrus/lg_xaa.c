@@ -10,7 +10,7 @@
  * Much of this code is inspired by the XAA acceleration from XFree86
  * 3.3.3, laguna_acl.c
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_xaa.c,v 1.1 1998/11/22 10:37:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_xaa.c,v 1.2 1999/12/26 18:24:20 robin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -74,8 +74,8 @@ static int lgPatRop[16] = {
 #endif
 
 
-static void LgSetBitmask(LgPtr pLg, const CARD32 m);
-static void LgWaitQAvail(LgPtr pLg, int n);
+static void LgSetBitmask(CirPtr pCir, const CARD32 m);
+static void LgWaitQAvail(CirPtr pCir, int n);
 static CARD32 LgExpandColor(CARD32 color, int bpp);
 static void LgSync(ScrnInfoPtr pScrn);
 static void LgSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
@@ -92,7 +92,8 @@ static void LgSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 
 /**************************************************** LgXAAInit *****/
 
-Bool LgXAAInit(ScreenPtr pScreen)
+Bool
+LgXAAInit(ScreenPtr pScreen)
 {
 	XAAInfoRecPtr XAAPtr;
 
@@ -135,8 +136,11 @@ Bool LgXAAInit(ScreenPtr pScreen)
  * about the only register whose value is worth shadowing, so we special-
  * case it.
  */
-static void LgSetBitmask(LgPtr pLg, const CARD32 m)
+static void
+LgSetBitmask(CirPtr pCir, const CARD32 m)
 {
+	const LgPtr pLg = LGPTR(pCir);
+
 	if (m != pLg->oldBitmask) {
 		LgSETBITMASK(m);
 		pLg->oldBitmask = m;
@@ -149,21 +153,23 @@ static void LgSetBitmask(LgPtr pLg, const CARD32 m)
  * (i.e., we let the PCI bus buffer the register writes), or we wait for
  * room in the Laguna's command queue explicitly.
  */
-static void LgWaitQAvail(LgPtr pLg, int n)
+static void
+LgWaitQAvail(CirPtr pCir, int n)
 {
 	if (!0/*lgUsePCIRetry*/) {
 		CARD8 qfree;
 
 		/* Wait until n entries are open in the command queue */
 		do
-			qfree = *(volatile CARD8 *)(pLg->CirRec.IOBase + QFREE);
+			qfree = *(volatile CARD8 *)(pCir->IOBase + QFREE);
 		while (qfree < n);
 	}
 }
 
 
 /* We might want to make this a macro at some point. */
-static CARD32 LgExpandColor(CARD32 color, int bpp)
+static CARD32
+LgExpandColor(CARD32 color, int bpp)
 {
 	if (8 == bpp)
 		color = ((color&0xFF) << 8) | (color&0xFF);
@@ -178,53 +184,59 @@ static CARD32 LgExpandColor(CARD32 color, int bpp)
 /*************************************************** Lg XAA functions ***/
 
 
-static void LgSync(ScrnInfoPtr pScrn)
+static void
+LgSync(ScrnInfoPtr pScrn)
 {
+	const CirPtr pCir = CIRPTR(pScrn);
+#if 0
 	LgPtr pLg = LGPTR(pScrn);
+#endif
 
 	while (!LgREADY())
 		;
 }
 
-static void LgSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
-								unsigned int planemask)
+static void
+LgSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+			unsigned int planemask)
 {
 
-	const LgPtr pLg = LGPTR(pScrn);
+	const CirPtr pCir = CIRPTR(pScrn);
 
 	color = LgExpandColor(color, pScrn->bitsPerPixel);
 
-	LgWaitQAvail(pLg, 4);
+	LgWaitQAvail(pCir, 4);
 
 	LgSETBACKGROUND(color);
 	LgSETROP(lgRop[rop]);
 	LgSETMODE(SCR2SCR | COLORFILL);
-	LgSetBitmask(pLg, planemask);
+	LgSetBitmask(pCir, planemask);
 }
 
-static void LgSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
-										int w, int h)
+static void
+LgSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
-	const LgPtr pLg = LGPTR(pScrn);
+	const CirPtr pCir = CIRPTR(pScrn);
 
 	/* Wait for room in the command queue. */
-	LgWaitQAvail(pLg, 2);
+	LgWaitQAvail(pCir, 2);
 
 	LgSETDSTXY(x, y);
 	LgSETEXTENTS(w, h);
 }
 
-static void LgSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
-											int rop, unsigned int planemask,
-											int transparency_color)
+static void
+LgSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
+				int rop, unsigned int planemask, int transparency_color)
 {
 	int bltmode = 0;
-	LgPtr const pLg = LGPTR(pScrn);
+	const CirPtr pCir = CIRPTR(pScrn);
+	const LgPtr pLg = LGPTR(pCir);
 
 	pLg->blitTransparent = (transparency_color != -1);
 	pLg->blitYDir = ydir;
 
-	LgWaitQAvail(pLg, 4);
+	LgWaitQAvail(pCir, 4);
 
 	/* We set the rop up here because the LgSETROP macro conveniently
 	   (really -- it is convenient!) clears the transparency bits
@@ -247,13 +259,15 @@ static void LgSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 	}
 
 	LgSETMODE(SCR2SCR | COLORSRC | bltmode);
-	LgSetBitmask(pLg, planemask);
+	LgSetBitmask(pCir, planemask);
 }
 
-static void LgSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
-											int x2, int y2, int w, int h)
+static void
+LgSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
+								int x2, int y2, int w, int h)
 {
-	const LgPtr pLg = LGPTR(pScrn);
+	const CirPtr pCir = CIRPTR(pScrn);
+	const LgPtr pLg = LGPTR(pCir);
 
 	/*
 	 * We have set the flag indicating that xdir must be one,
@@ -267,10 +281,10 @@ static void LgSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	if (pLg->blitTransparent) {
 		/* We're doing a transparent blit.  We'll need to point
 		   OP2 to the color compare mask. */
-		LgWaitQAvail(pLg, 4);
+		LgWaitQAvail(pCir, 4);
 		LgSETTRANSMASK(x1, y1);
 	} else {
-		LgWaitQAvail(pLg, 3);
+		LgWaitQAvail(pCir, 3);
 	}
 	LgSETSRCXY(x1, y1);
 	LgSETDSTXY(x2, y2);

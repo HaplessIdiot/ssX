@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.45 2000/01/29 17:17:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.47 2000/02/08 13:13:34 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -101,6 +101,9 @@ typedef void (*InitExtension)(INITARGS);
 #ifdef PANORAMIX
 #include "panoramiXproto.h"
 #endif
+#ifdef XF86BIGFONT
+#include "xf86bigfstr.h"
+#endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
 #ifdef BEZIER
@@ -180,6 +183,9 @@ extern void SecurityExtensionInit(INITARGS);
 #endif
 #ifdef XPRINT
 extern void XpExtensionInit(INITARGS);
+#endif
+#ifdef XF86BIGFONT
+extern void XFree86BigfontExtensionInit(INITARGS);
 #endif
 #ifdef XF86VIDMODE
 extern void XFree86VidModeExtensionInit(INITARGS);
@@ -307,6 +313,9 @@ InitExtensions(argc, argv)
 #ifdef XANTI
     XAntiExtensionInit();
 #endif
+#ifdef XF86BIGFONT
+    XFree86BigfontExtensionInit();
+#endif
 #if !defined(PRINT_ONLY_SERVER) && !defined(NO_HW_ONLY_EXTS)
 #if defined(XF86VIDMODE)
     XFree86VidModeExtensionInit();
@@ -395,6 +404,7 @@ ExtensionModule extension[] =
     { NULL, "NOXINERAMA", NULL, NULL },
 #endif
     { NULL, "XAnti", NULL, NULL },
+    { NULL, "XFree86-Bigfont", NULL, NULL },
     { NULL, "XFree86-DRI", NULL, NULL },
     { NULL, "Adobe-DPS-Extension", NULL, NULL },
     { NULL, NULL, NULL, NULL }
@@ -442,6 +452,9 @@ static ExtensionModule staticExtensions[] = {
 #ifdef PANORAMIX
     { PanoramiXExtensionInit, PANORAMIX_PROTOCOL_NAME, &noPanoramiXExtension, NULL, NULL },
 #endif
+#ifdef XF86BIGFONT
+    { XFree86BigfontExtensionInit, XF86BIGFONTNAME, NULL, NULL, NULL },
+#endif
     { NULL, NULL, NULL, NULL, NULL }
 };
     
@@ -453,26 +466,18 @@ InitExtensions(argc, argv)
 {
     int i, j, k, numExts, ii;
     ExtensionModule *ext, *newList;
-    
-    /* Add built-in extensions to the list. */
-	
-    for (i = 0; staticExtensions[i].name; i++) {
-	Bool noLoad = FALSE;
-	for (j = 0; ExtensionModuleList[j].name != NULL; j++) {
-	    if (!strcmp(staticExtensions[i].name,
-			 ExtensionModuleList[j].name)){
-		noLoad = TRUE;
-		break;
-	    }
-	}
-	if (!noLoad) 
+    static Bool listInitialised = FALSE;
+
+    if (!listInitialised) {
+	/* Add built-in extensions to the list. */
+	for (i = 0; staticExtensions[i].name; i++)
 	    LoadExtension(&staticExtensions[i], TRUE);
+
+	/* Sort the extensions according the init dependencies. */
+	LoaderSortExtensions();
+	listInitialised = TRUE;
     }
-    
-    
-    /* Sort the extensions according the init dependencies. */
-    LoaderSortExtensions();
-    
+
     for (i = 0; ExtensionModuleList[i].name != NULL; i++) {
 	ext = &ExtensionModuleList[i];
 	if (ext->initFunc != NULL && 

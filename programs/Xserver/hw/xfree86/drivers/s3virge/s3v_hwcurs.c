@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.4 1999/11/19 13:54:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.5 1999/12/14 02:52:48 robin Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -150,54 +150,76 @@ S3VSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
     /*PVERB5("	S3VSetCursorColors\n");*/
 
-	if (!(S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)))
 	switch( pScrn->bitsPerPixel) {
-	  case 8:
-	  			/* Dup color indexes in low, mid, & high bytes */
-	  	fg &= 0x000000ff;
-	  	fg |= (fg << 16) | (fg << 8);
-	  	bg &= 0x000000ff;
-	  	bg |= (bg << 16) | (bg << 8);
+	case 8:
+	  if (!(S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset))) {
+	    /* Reset the cursor color stack pointer */
+	    inCRReg(0x45);
+	    /* Write foreground */
+	    outCRReg(0x4a, fg);
+	    outCRReg(0x4a, fg);
+	    /* Reset the cursor color stack pointer */
+	    inCRReg(0x45);
+	    /* Write background */
+	    outCRReg(0x4b, bg);
+	    outCRReg(0x4b, bg);
 	    break;
-	  case 16:
-				/* adjust colors to 16 bits */
-		if (pScrn->weight.green == 5 && ps3v->Chipset != S3_ViRGE_VX) {
-		  fg = ((fg & 0xf80000) >> 9) |
-			((fg & 0xf800) >> 6) |
-			((fg & 0xf8) >> 3);
-		  bg = ((bg & 0xf80000) >> 9) |
-			((bg & 0xf800) >> 6) |
-			((bg & 0xf8) >> 3);
-		  
-		} else {
-		  fg = ((fg & 0xf80000) >> 8) |
-			((fg & 0xfc00) >> 5) |
-			((fg & 0xf8) >> 3);
-		  bg = ((bg & 0xf80000) >> 8) |
-			((bg & 0xfc00) >> 5) |
-			((bg & 0xf8) >> 3);
-		}
-			
-	    break;
+	  }  /* else fall through for ViRGE/MX... */
+	case 16:
+	  if (!(S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset))) {
+	    /* adjust colors to 16 bits */
+	    if (pScrn->weight.green == 5 && ps3v->Chipset != S3_ViRGE_VX) {
+	      fg = ((fg & 0xf80000) >> 9) |
+		((fg & 0xf800) >> 6) |
+		((fg & 0xf8) >> 3);
+	      bg = ((bg & 0xf80000) >> 9) |
+		((bg & 0xf800) >> 6) |
+		((bg & 0xf8) >> 3);
+	    } else {
+	      fg = ((fg & 0xf80000) >> 8) |
+		((fg & 0xfc00) >> 5) |
+		((fg & 0xf8) >> 3);
+	      bg = ((bg & 0xf80000) >> 8) |
+		((bg & 0xfc00) >> 5) |
+		((bg & 0xf8) >> 3);
+	    }
 
-	  case 24:
-	  case 32:
-			/* Do it straight, full 24 bit color. */
-        break;
-    }
+	    inCRReg(0x45);
+	    /* Write foreground */
+	    outCRReg(0x4a, fg);
+	    outCRReg(0x4a, fg >> 8);
+	    /* needed for 2nd pixel in double-clock modes */
+	    outCRReg(0x4a, fg);
+	    outCRReg(0x4a, fg >> 8);
+	    /* Reset the cursor color stack pointer */
+	    inCRReg(0x45);
+	    /* Write background */
+	    outCRReg(0x4b, bg);
+	    outCRReg(0x4b, bg >> 8);
+	    /* needed for 2nd pixel in double-clock modes */
+	    outCRReg(0x4b, bg);
+	    outCRReg(0x4b, bg >> 8);
+	    break;
+	  }  /* else fall through for ViRGE/MX... */
+
+	case 24:
+	case 32:
+	  /* Do it straight, full 24 bit color. */
       
-	/* Reset the cursor color stack pointer */
-    inCRReg( 0x45 );
-    /* Write low, mid, high bytes - foreground */
-    outCRReg( 0x4a, (fg & 0x000000FF));
-    outCRReg( 0x4a, (fg & 0x0000FF00) >> 8);
-    outCRReg( 0x4a, (fg & 0x00FF0000) >> 16);
-	/* Reset the cursor color stack pointer */
-    inCRReg( 0x45 );
-    /* Write low, mid, high bytes - background */
-    outCRReg( 0x4b, (bg & 0x000000FF));
-    outCRReg( 0x4b, (bg & 0x0000FF00) >> 8);
-    outCRReg( 0x4b, (bg & 0x00FF0000) >> 16);
+	  /* Reset the cursor color stack pointer */
+	  inCRReg(0x45);
+	  /* Write low, mid, high bytes - foreground */
+	  outCRReg(0x4a, fg);
+	  outCRReg(0x4a, fg >> 8);
+	  outCRReg(0x4a, fg >> 16);
+	  /* Reset the cursor color stack pointer */
+	  inCRReg(0x45);
+	  /* Write low, mid, high bytes - background */
+	  outCRReg(0x4b, bg);
+	  outCRReg(0x4b, bg >> 8);
+	  outCRReg(0x4b, bg >> 16);
+	  break;
+	}
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.2 1999/12/16 02:26:29 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.3 1999/12/28 22:48:14 robin Exp $ */
 
 
 #ifndef _TDFX_FIFO_H_
@@ -11,7 +11,7 @@ typedef int   int32;
 typedef short int16;
 typedef char  int8;
 
-#define CMDFIFO_PAGES 16*2
+#define CMDFIFO_PAGES 64
 
 #define PROPSAREADATA \
   volatile int fifoPtr; \

@@ -115,4 +115,10 @@ void fx_sanity_triangle( GrVertex *v1, GrVertex *v2, GrVertex *v3 )
       fprintf(stderr, "\n\n\n");
 }
 
+#else
+
+void gl_fxsanity_dummy()
+{
+}
+
 #endif

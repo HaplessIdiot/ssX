@@ -29,13 +29,7 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "cva.h"
 #include "clip.h"
@@ -46,6 +40,7 @@
 #include "light.h"
 #include "macros.h"
 #include "matrix.h"
+#include "mem.h"
 #include "mmath.h"
 #include "pipeline.h"
 #include "shade.h"
@@ -466,6 +461,9 @@ void gl_compute_orflag( struct immediate *IM )
 
    IM->LastData = count-1;
 
+/*     fprintf(stderr, "In gl_compute_orflag, start %d count %d\n", IM->Start, IM->Count); */
+/*     gl_print_vert_flags("initial andflag", andflag); */
+
    /* Compute the flags for the whole buffer, even if 
     */
    for (i = IM->Start ; i < count ; i++) {
@@ -475,9 +473,11 @@ void gl_compute_orflag( struct immediate *IM )
 
    if (IM->Flag[i] & VERT_DATA) {
       IM->LastData++;
-/*        andflag &= IM->Flag[i]; */	/* possibly incorrect (norm_bug.c) */
+/*        andflag &= IM->Flag[i]; */
       orflag |= IM->Flag[i];
    }      
+
+/*     gl_print_vert_flags("final andflag", andflag); */
 
    IM->Flag[IM->LastData+1] |= VERT_END_VB;
    IM->AndFlag = andflag;
@@ -537,13 +537,8 @@ void gl_fixup_input( GLcontext *ctx, struct immediate *IM )
       if (ctx->ExecuteFlag && (fixup & ~IM->Flag[start])) {
 	 GLuint copy = fixup & ~IM->Flag[start];
 
-	 if (MESA_VERBOSE&VERBOSE_IMMEDIATE)
-	    gl_print_vert_flags("copy from current", copy);
-	 
-	 if (copy & VERT_NORM) {
-	    IM->Flag[start] |= VERT_NORM;
+	 if (copy & VERT_NORM) 	 
 	    COPY_3V( IM->Normal[start], ctx->Current.Normal );
-	 }
 	 
 	 if (copy & VERT_RGBA)
 	    COPY_4UBV( IM->Color[start], ctx->Current.ByteColor);
@@ -604,7 +599,7 @@ void gl_fixup_input( GLcontext *ctx, struct immediate *IM )
       }
 
       if (fixup & VERT_NORM) {
-	 if (IM->OrFlag & VERT_NORM)
+	 if (IM->OrFlag & VERT_EVAL_ANY)
 	    fixup_3f( IM->Normal, IM->Flag, start, VERT_NORM );
 	 else if (!(IM->Flag[IM->LastData] & VERT_NORM)) 
  	    find_last_3f( IM->Normal, IM->Flag, VERT_NORM, IM->LastData );

@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -26,8 +26,6 @@
 
 
 
-
-
 /* OVERVIEW: 
  *
  * The vertices between glBegin() and glEnd() are accumulated in the
@@ -45,15 +43,12 @@
  * described above.  
  */
 
+
 #ifndef VB_H
 #define VB_H
 
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-
-#include "GL/gl.h"
+#include "glheader.h"
 #include "vector.h"
 #include "matrix.h"
 #include "config.h"

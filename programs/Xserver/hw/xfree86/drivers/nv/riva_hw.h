@@ -36,11 +36,17 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.2 1999/08/14 10:49:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.5 1999/11/12 02:12:41 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
-#define RIVA_SW_VERSION 0x00010001
+#define RIVA_SW_VERSION 0x00010003
 
+/*
+ * Define supported architectures.
+ */
+#define NV_ARCH_03  0x03
+#define NV_ARCH_04  0x04
+#define NV_ARCH_10  0x10
 /***************************************************************************\
 *                                                                           *
 *                             FIFO registers.                               *
@@ -52,165 +58,165 @@
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BB];
-    unsigned Rop3;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BB];
+    U032 Rop3;
 } RivaRop;
 /*
  * 8X8 Monochrome pattern.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BD];
-    unsigned Shape;
-    unsigned reserved03[0x001];
-    unsigned Color0;
-    unsigned Color1;
-    unsigned Monochrome[2];
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BD];
+    U032 Shape;
+    U032 reserved03[0x001];
+    U032 Color0;
+    U032 Color1;
+    U032 Monochrome[2];
 } RivaPattern;
 /*
  * Scissor clip rectangle.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BB];
-    unsigned TopLeft;
-    unsigned WidthHeight;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BB];
+    U032 TopLeft;
+    U032 WidthHeight;
 } RivaClip;
 /*
  * 2D filled rectangle.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop[1];
-    unsigned reserved01[0x0BC];
-    unsigned Color;
-    unsigned reserved03[0x03E];
-    unsigned TopLeft;
-    unsigned WidthHeight;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop[1];
+    U032 reserved01[0x0BC];
+    U032 Color;
+    U032 reserved03[0x03E];
+    U032 TopLeft;
+    U032 WidthHeight;
 } RivaRectangle;
 /*
  * 2D screen-screen BLT.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BB];
-    unsigned TopLeftSrc;
-    unsigned TopLeftDst;
-    unsigned WidthHeight;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BB];
+    U032 TopLeftSrc;
+    U032 TopLeftDst;
+    U032 WidthHeight;
 } RivaScreenBlt;
 /*
  * 2D pixel BLT.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop[1];
-    unsigned reserved01[0x0BC];
-    unsigned TopLeft;
-    unsigned WidthHeight;
-    unsigned WidthHeightIn;
-    unsigned reserved02[0x03C];
-    unsigned Pixels;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop[1];
+    U032 reserved01[0x0BC];
+    U032 TopLeft;
+    U032 WidthHeight;
+    U032 WidthHeightIn;
+    U032 reserved02[0x03C];
+    U032 Pixels;
 } RivaPixmap;
 /*
  * Filled rectangle combined with monochrome expand.  Useful for glyphs.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BB];
-    unsigned reserved03[(0x040)-1];
-    unsigned Color1A;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BB];
+    U032 reserved03[(0x040)-1];
+    U032 Color1A;
     struct
     {
-        unsigned TopLeft;
-        unsigned WidthHeight;
+        U032 TopLeft;
+        U032 WidthHeight;
     } UnclippedRectangle[64];
-    unsigned reserved04[(0x080)-3];
+    U032 reserved04[(0x080)-3];
     struct
     {
-        unsigned TopLeft;
-        unsigned BottomRight;
+        U032 TopLeft;
+        U032 BottomRight;
     } ClipB;
-    unsigned Color1B;
+    U032 Color1B;
     struct
     {
-        unsigned TopLeft;
-        unsigned BottomRight;
+        U032 TopLeft;
+        U032 BottomRight;
     } ClippedRectangle[64];
-    unsigned reserved05[(0x080)-5];
+    U032 reserved05[(0x080)-5];
     struct
     {
-        unsigned TopLeft;
-        unsigned BottomRight;
+        U032 TopLeft;
+        U032 BottomRight;
     } ClipC;
-    unsigned Color1C;
-    unsigned WidthHeightC;
-    unsigned PointC;
-    unsigned MonochromeData1C;
-    unsigned reserved06[(0x080)+121];
+    U032 Color1C;
+    U032 WidthHeightC;
+    U032 PointC;
+    U032 MonochromeData1C;
+    U032 reserved06[(0x080)+121];
     struct
     {
-        unsigned TopLeft;
-        unsigned BottomRight;
+        U032 TopLeft;
+        U032 BottomRight;
     } ClipD;
-    unsigned Color1D;
-    unsigned WidthHeightInD;
-    unsigned WidthHeightOutD;
-    unsigned PointD;
-    unsigned MonochromeData1D;
-    unsigned reserved07[(0x080)+120];
+    U032 Color1D;
+    U032 WidthHeightInD;
+    U032 WidthHeightOutD;
+    U032 PointD;
+    U032 MonochromeData1D;
+    U032 reserved07[(0x080)+120];
     struct
     {
-        unsigned TopLeft;
-        unsigned BottomRight;
+        U032 TopLeft;
+        U032 BottomRight;
     } ClipE;
-    unsigned Color0E;
-    unsigned Color1E;
-    unsigned WidthHeightInE;
-    unsigned WidthHeightOutE;
-    unsigned PointE;
-    unsigned MonochromeData01E;
+    U032 Color0E;
+    U032 Color1E;
+    U032 WidthHeightInE;
+    U032 WidthHeightOutE;
+    U032 PointE;
+    U032 MonochromeData01E;
 } RivaBitmap;
 /*
  * 3D textured, Z buffered triangle.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BC];
-    unsigned TextureOffset;
-    unsigned TextureFormat;
-    unsigned TextureFilter;
-    unsigned FogColor;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BC];
+    U032 TextureOffset;
+    U032 TextureFormat;
+    U032 TextureFilter;
+    U032 FogColor;
 /* This is a problem on LynxOS */
 #ifdef Control
 #undef Control
 #endif
-    unsigned Control;
-    unsigned AlphaTest;
-    unsigned reserved02[0x339];
-    unsigned FogAndIndex;
-    unsigned Color;
+    U032 Control;
+    U032 AlphaTest;
+    U032 reserved02[0x339];
+    U032 FogAndIndex;
+    U032 Color;
     float ScreenX;
     float ScreenY;
     float ScreenZ;
@@ -218,58 +224,88 @@ typedef volatile struct
     float TextureS;
     float TextureT;
 } RivaTexturedTriangle03;
-
+typedef volatile struct
+{
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BB];
+    U032 ColorKey;
+    U032 TextureOffset;
+    U032 TextureFormat;
+    U032 TextureFilter;
+    U032 Blend;
+/* This is a problem on LynxOS */
+#ifdef Control
+#undef Control
+#endif
+    U032 Control;
+    U032 FogColor;
+    U032 reserved02[0x39];
+    struct
+    {
+        float ScreenX;
+        float ScreenY;
+        float ScreenZ;
+        float EyeM;
+        U032 Color;
+        U032 Specular;
+        float TextureS;
+        float TextureT;
+    } Vertex[16];
+    U032 DrawTriangle3D;
+} RivaTexturedTriangle05;
 /*
  * 2D line.
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop[1];
-    unsigned reserved01[0x0BC];
-    unsigned Color;             /* source color               0304-0307*/
-    unsigned Reserved02[0x03e];
-    struct {                    /* start aliased methods in array   0400-    */
-        unsigned point0;        /* y_x S16_S16 in pixels            0-   3*/
-        unsigned point1;        /* y_x S16_S16 in pixels            4-   7*/
-    } Lin[16];                  /* end of aliased methods in array      -047f*/
-    struct {                    /* start aliased methods in array   0480-    */
-        signed point0X;         /* in pixels, 0 at left                0-   3*/
-        signed point0Y;         /* in pixels, 0 at top                 4-   7*/
-        signed point1X;         /* in pixels, 0 at left                8-   b*/
-        signed point1Y;         /* in pixels, 0 at top                 c-   f*/
-    } Lin32[8];                 /* end of aliased methods in array      -04ff*/
-    unsigned PolyLin[32];       /* y_x S16_S16 in pixels         0500-057f*/
-    struct {                    /* start aliased methods in array   0580-    */
-        signed x;               /* in pixels, 0 at left                0-   3*/
-        signed y;               /* in pixels, 0 at top                 4-   7*/
-    } PolyLin32[16];            /* end of aliased methods in array      -05ff*/
-    struct {                    /* start aliased methods in array   0600-    */
-        unsigned color;         /* source color                     0-   3*/
-        unsigned point;         /* y_x S16_S16 in pixels            4-   7*/
-    } ColorPolyLin[16];         /* end of aliased methods in array      -067f*/
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop[1];
+    U032 reserved01[0x0BC];
+    U032 Color;             /* source color               0304-0307*/
+    U032 Reserved02[0x03e];
+    struct {                /* start aliased methods in array   0400-    */
+        U032 point0;        /* y_x S16_S16 in pixels            0-   3*/
+        U032 point1;        /* y_x S16_S16 in pixels            4-   7*/
+    } Lin[16];              /* end of aliased methods in array      -047f*/
+    struct {                /* start aliased methods in array   0480-    */
+        U032 point0X;       /* in pixels, 0 at left                0-   3*/
+        U032 point0Y;       /* in pixels, 0 at top                 4-   7*/
+        U032 point1X;       /* in pixels, 0 at left                8-   b*/
+        U032 point1Y;       /* in pixels, 0 at top                 c-   f*/
+    } Lin32[8];             /* end of aliased methods in array      -04ff*/
+    U032 PolyLin[32];       /* y_x S16_S16 in pixels         0500-057f*/
+    struct {                /* start aliased methods in array   0580-    */
+        U032 x;             /* in pixels, 0 at left                0-   3*/
+        U032 y;             /* in pixels, 0 at top                 4-   7*/
+    } PolyLin32[16];        /* end of aliased methods in array      -05ff*/
+    struct {                /* start aliased methods in array   0600-    */
+        U032 color;         /* source color                     0-   3*/
+        U032 point;         /* y_x S16_S16 in pixels            4-   7*/
+    } ColorPolyLin[16];     /* end of aliased methods in array      -067f*/
 } RivaLine;
 /*
  * 2D/3D surfaces
  */
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BE];
-    unsigned Offset;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BE];
+    U032 Offset;
 } RivaSurface;
 typedef volatile struct
 {
-    unsigned reserved00[4];
-    unsigned short FifoFree;
-    unsigned short Nop;
-    unsigned reserved01[0x0BD];
-    unsigned Pitch;
-    unsigned RenderBufferOffset;
-    unsigned ZBufferOffset;
+    U032 reserved00[4];
+    U016 FifoFree;
+    U016 Nop;
+    U032 reserved01[0x0BD];
+    U032 Pitch;
+    U032 RenderBufferOffset;
+    U032 ZBufferOffset;
 } RivaSurface3D;
     
 /***************************************************************************\
@@ -288,36 +324,37 @@ typedef struct _riva_hw_inst
     /*
      * Chip specific settings.
      */
-    unsigned Architecture;
-    unsigned Version;
-    unsigned CrystalFreqKHz;
-    unsigned RamAmountKBytes;
-    unsigned MaxVClockFreqKHz;
-    unsigned RamBandwidthKBytesPerSec;
-    unsigned EnableIRQ;
-    unsigned IO;
-    unsigned LockUnlockIO;
-    unsigned LockUnlockIndex;
-    unsigned VBlankBit;
-    unsigned FifoFreeCount;
-    unsigned FifoEmptyCount;
+    U032 Architecture;
+    U032 Version;
+    U032 CrystalFreqKHz;
+    U032 RamAmountKBytes;
+    U032 MaxVClockFreqKHz;
+    U032 RamBandwidthKBytesPerSec;
+    U032 EnableIRQ;
+    U032 IO;
+    U032 VBlankBit;
+    U032 FifoFreeCount;
+    U032 FifoEmptyCount;
     /*
      * Non-FIFO registers.
      */
-    volatile unsigned *PCRTC;
-    volatile unsigned *PRAMDAC;
-    volatile unsigned *PFB;
-    volatile unsigned *PFIFO;
-    volatile unsigned *PGRAPH;
-    volatile unsigned *PEXTDEV;
-    volatile unsigned *PTIMER;
-    volatile unsigned *PMC;
-    volatile unsigned *PRAMIN;
-    volatile unsigned *FIFO;
-    volatile unsigned *CURSOR;
-    volatile unsigned *CURSORPOS;
-    volatile unsigned *VBLANKENABLE;
-    volatile unsigned *VBLANK;
+    volatile U032 *PCRTC;
+    volatile U032 *PRAMDAC;
+    volatile U032 *PFB;
+    volatile U032 *PFIFO;
+    volatile U032 *PGRAPH;
+    volatile U032 *PEXTDEV;
+    volatile U032 *PTIMER;
+    volatile U032 *PMC;
+    volatile U032 *PRAMIN;
+    volatile U032 *FIFO;
+    volatile U032 *CURSOR;
+    volatile U032 *CURSORPOS;
+    volatile U032 *VBLANKENABLE;
+    volatile U032 *VBLANK;
+    volatile U008 *PCIO;
+    volatile U008 *PVIO;
+    volatile U008 *PDIO;
     /*
      * Common chip functions.
      */
@@ -325,10 +362,11 @@ typedef struct _riva_hw_inst
     void (*CalcStateExt)(struct _riva_hw_inst *,struct _riva_hw_state *,int,int,int,int,int,int,int,int,int,int,int,int,int);
     void (*LoadStateExt)(struct _riva_hw_inst *,struct _riva_hw_state *);
     void (*UnloadStateExt)(struct _riva_hw_inst *,struct _riva_hw_state *);
-    void (*SetStartAddress)(struct _riva_hw_inst *,unsigned);
-    void (*SetSurfaces2D)(struct _riva_hw_inst *,unsigned,unsigned);
-    void (*SetSurfaces3D)(struct _riva_hw_inst *,unsigned,unsigned);
+    void (*SetStartAddress)(struct _riva_hw_inst *,U032);
+    void (*SetSurfaces2D)(struct _riva_hw_inst *,U032,U032);
+    void (*SetSurfaces3D)(struct _riva_hw_inst *,U032,U032);
     int  (*ShowHideCursor)(struct _riva_hw_inst *,int);
+    void (*LockUnlock)(struct _riva_hw_inst *, int);
     /*
      * Current extended mode settings.
      */
@@ -344,37 +382,38 @@ typedef struct _riva_hw_inst
     RivaBitmap              *Bitmap;
     RivaLine                *Line;
     RivaTexturedTriangle03  *Tri03;
+    RivaTexturedTriangle05  *Tri05;
 } RIVA_HW_INST;
 /*
  * Extended mode state information.
  */
 typedef struct _riva_hw_state
 {
-    unsigned bpp;
-    unsigned width;
-    unsigned height;
-    unsigned repaint0;
-    unsigned repaint1;
-    unsigned screen;
-    unsigned pixel;
-    unsigned horiz;
-    unsigned arbitration0;
-    unsigned arbitration1;
-    unsigned vpll;
-    unsigned pllsel;
-    unsigned general;
-    unsigned config;
-    unsigned cursor0;
-    unsigned cursor1;
-    unsigned cursor2;
-    unsigned offset0;
-    unsigned offset1;
-    unsigned offset2;
-    unsigned offset3;
-    unsigned pitch0;
-    unsigned pitch1;
-    unsigned pitch2;
-    unsigned pitch3;
+    U032 bpp;
+    U032 width;
+    U032 height;
+    U032 repaint0;
+    U032 repaint1;
+    U032 screen;
+    U032 pixel;
+    U032 horiz;
+    U032 arbitration0;
+    U032 arbitration1;
+    U032 vpll;
+    U032 pllsel;
+    U032 general;
+    U032 config;
+    U032 cursor0;
+    U032 cursor1;
+    U032 cursor2;
+    U032 offset0;
+    U032 offset1;
+    U032 offset2;
+    U032 offset3;
+    U032 pitch0;
+    U032 pitch1;
+    U032 pitch2;
+    U032 pitch3;
 } RIVA_HW_STATE;
 /*
  * External routines.

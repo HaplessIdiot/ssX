@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,25 +25,17 @@
  */
 
 
-
-
-
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "alphabuf.h"
 #include "context.h"
 #include "depth.h"
 #include "feedback.h"
 #include "image.h"
 #include "macros.h"
+#include "mem.h"
 #include "pixel.h"
 #include "readpix.h"
 #include "span.h"
@@ -71,7 +63,8 @@ static void read_index_pixels( GLcontext *ctx,
       return;
    }
 
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Pixel.DriverReadBuffer );
+   ASSERT(ctx->Driver.SetReadBuffer);
+   (*ctx->Driver.SetReadBuffer)(ctx, ctx->ReadBuffer, ctx->Pixel.DriverReadBuffer);
 
    readWidth = (width > MAX_WIDTH) ? MAX_WIDTH : width;
 
@@ -171,7 +164,7 @@ static void read_index_pixels( GLcontext *ctx,
       }
    }
 
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer );
+   (*ctx->Driver.SetReadBuffer)(ctx, ctx->DrawBuffer, ctx->Color.DriverDrawBuffer);
 }
 
 
@@ -213,7 +206,7 @@ static void read_depth_pixels( GLcontext *ctx,
       for (j=0;j<height;j++,y++) {
          GLushort *dst = (GLushort*) gl_pixel_addr_in_image( packing, pixels,
                          width, height, GL_DEPTH_COMPONENT, type, 0, j, 0 );
-         (*ctx->Driver.ReadDepthSpanInt)( ctx, width, x, y, (GLdepth*) dst);
+         (*ctx->Driver.ReadDepthSpan)( ctx, width, x, y, (GLdepth*) dst);
       }
    }
    else if (type==GL_UNSIGNED_INT && sizeof(GLdepth)==sizeof(GLuint)
@@ -229,7 +222,7 @@ static void read_depth_pixels( GLcontext *ctx,
       for (j=0;j<height;j++,y++) {
          GLuint *dst = (GLuint *) gl_pixel_addr_in_image( packing, pixels,
                          width, height, GL_DEPTH_COMPONENT, type, 0, j, 0 );
-         (*ctx->Driver.ReadDepthSpanInt)( ctx, width, x, y, (GLdepth*) dst);
+         (*ctx->Driver.ReadDepthSpan)( ctx, width, x, y, (GLdepth*) dst);
          for (i=0;i<width;i++) {
             dst[i] = dst[i] << shift;
          }
@@ -241,7 +234,7 @@ static void read_depth_pixels( GLcontext *ctx,
          GLfloat depth[MAX_WIDTH];
          GLvoid *dest;
 
-         (*ctx->Driver.ReadDepthSpanFloat)( ctx, readWidth, x, y, depth );
+         gl_read_depth_span_float(ctx, readWidth, x, y, depth);
 
          if (bias_or_scale) {
             for (i=0;i<readWidth;i++) {
@@ -537,24 +530,24 @@ read_fast_rgba_pixels( GLcontext *ctx,
          rowLength = width;
 
       /* horizontal clipping */
-      if (srcX < ctx->Buffer->Xmin) {
-         skipPixels += (ctx->Buffer->Xmin - srcX);
-         readWidth  -= (ctx->Buffer->Xmin - srcX);
-         srcX = ctx->Buffer->Xmin;
+      if (srcX < ctx->ReadBuffer->Xmin) {
+         skipPixels += (ctx->ReadBuffer->Xmin - srcX);
+         readWidth  -= (ctx->ReadBuffer->Xmin - srcX);
+         srcX = ctx->ReadBuffer->Xmin;
       }
-      if (srcX + readWidth > ctx->Buffer->Xmax)
-         readWidth -= (srcX + readWidth - ctx->Buffer->Xmax - 1);
+      if (srcX + readWidth > ctx->ReadBuffer->Xmax)
+         readWidth -= (srcX + readWidth - ctx->ReadBuffer->Xmax - 1);
       if (readWidth <= 0)
          return GL_TRUE;
 
       /* vertical clipping */
-      if (srcY < ctx->Buffer->Ymin) {
-         skipRows   += (ctx->Buffer->Ymin - srcY);
-         readHeight -= (ctx->Buffer->Ymin - srcY);
-         srcY = ctx->Buffer->Ymin;
+      if (srcY < ctx->ReadBuffer->Ymin) {
+         skipRows   += (ctx->ReadBuffer->Ymin - srcY);
+         readHeight -= (ctx->ReadBuffer->Ymin - srcY);
+         srcY = ctx->ReadBuffer->Ymin;
       }
-      if (srcY + readHeight > ctx->Buffer->Ymax)
-         readHeight -= (srcY + readHeight - ctx->Buffer->Ymax - 1);
+      if (srcY + readHeight > ctx->ReadBuffer->Ymax)
+         readHeight -= (srcY + readHeight - ctx->ReadBuffer->Ymax - 1);
       if (readHeight <= 0)
          return GL_TRUE;
 
@@ -601,13 +594,13 @@ static void read_rgba_pixels( GLcontext *ctx,
 {
    GLint readWidth;
 
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Pixel.DriverReadBuffer );
+   (*ctx->Driver.SetReadBuffer)(ctx, ctx->ReadBuffer, ctx->Pixel.DriverReadBuffer);
 
    /* Try optimized path first */
    if (read_fast_rgba_pixels( ctx, x, y, width, height,
                               format, type, pixels, packing )) {
 
-      (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer );
+      (*ctx->Driver.SetReadBuffer)(ctx, ctx->DrawBuffer, ctx->Color.DriverDrawBuffer);
       return; /* done! */
    }
 
@@ -652,7 +645,7 @@ static void read_rgba_pixels( GLcontext *ctx,
          GLubyte rgba[MAX_WIDTH][4];
          GLvoid *dest;
 
-         gl_read_rgba_span( ctx, readWidth, x, y, rgba );
+         gl_read_rgba_span( ctx, ctx->ReadBuffer, readWidth, x, y, rgba );
 
          dest = gl_pixel_addr_in_image( packing, pixels, width, height,
                                         format, type, 0, j, 0);
@@ -684,15 +677,16 @@ static void read_rgba_pixels( GLcontext *ctx,
       }
    }
 
-   (void) (*ctx->Driver.SetBuffer)( ctx, ctx->Color.DriverDrawBuffer );
+   (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer, ctx->Color.DriverDrawBuffer );
 }
 
 
 
-void gl_ReadPixels( GLcontext *ctx,
-                    GLint x, GLint y, GLsizei width, GLsizei height,
-		    GLenum format, GLenum type, GLvoid *pixels )
+void
+_mesa_ReadPixels( GLint x, GLint y, GLsizei width, GLsizei height,
+		  GLenum format, GLenum type, GLvoid *pixels )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glReadPixels");
 
    if (!pixels) {

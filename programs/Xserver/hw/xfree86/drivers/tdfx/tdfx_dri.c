@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.3 1999/09/27 06:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.4 1999/12/14 01:33:49 robin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -56,7 +56,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
   case 32:
     break;
   case 16:
-    numConfigs = 4;
+    numConfigs = 1;
 
     if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 						   numConfigs))) {
@@ -76,29 +76,24 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
     for (i=0; i<numConfigs; i++) 
       pTDFXConfigPtrs[i] = &pTDFXConfigs[i];
 
-    /* config 0: db=FALSE, depth=0
-       config 1: db=FALSE, depth=16
-       config 2: db=TRUE, depth=0;
-       config 3: db=TRUE, depth=16
-    */
     pConfigs[0].vid = -1;
     pConfigs[0].class = -1;
     pConfigs[0].rgba = TRUE;
-    pConfigs[0].redSize = 8;
-    pConfigs[0].greenSize = 8;
-    pConfigs[0].blueSize = 8;
-    pConfigs[0].redMask =   0x00FF0000;
-    pConfigs[0].greenMask = 0x0000FF00;
-    pConfigs[0].blueMask =  0x000000FF;
+    pConfigs[0].redSize = 5;
+    pConfigs[0].greenSize = 6;
+    pConfigs[0].blueSize = 5;
+    pConfigs[0].redMask = 0x0000F800;
+    pConfigs[0].greenMask = 0x000007E0;
+    pConfigs[0].blueMask = 0x0000001F;
     pConfigs[0].alphaMask = 0;
     pConfigs[0].accumRedSize = 0;
     pConfigs[0].accumGreenSize = 0;
     pConfigs[0].accumBlueSize = 0;
     pConfigs[0].accumAlphaSize = 0;
-    pConfigs[0].doubleBuffer = FALSE;
+    pConfigs[0].doubleBuffer = TRUE;
     pConfigs[0].stereo = FALSE;
     pConfigs[0].bufferSize = 16;
-    pConfigs[0].depthSize = 0;
+    pConfigs[0].depthSize = 16;
     pConfigs[0].stencilSize = 0;
     pConfigs[0].auxBuffers = 0;
     pConfigs[0].level = 0;
@@ -109,93 +104,6 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
     pConfigs[0].transparentBlue = 0;
     pConfigs[0].transparentAlpha = 0;
     pConfigs[0].transparentIndex = 0;
-
-    pConfigs[1].vid = -1;
-    pConfigs[1].class = -1;
-    pConfigs[1].rgba = TRUE;
-    pConfigs[1].redSize = 8;
-    pConfigs[1].greenSize = 8;
-    pConfigs[1].blueSize = 8;
-    pConfigs[1].redMask = 0x00FF0000;
-    pConfigs[1].greenMask = 0x0000FF00;
-    pConfigs[1].blueMask = 0x000000FF;
-    pConfigs[1].alphaMask = 0;
-    pConfigs[1].accumRedSize = 0;
-    pConfigs[1].accumGreenSize = 0;
-    pConfigs[1].accumBlueSize = 0;
-    pConfigs[1].accumAlphaSize = 0;
-    pConfigs[1].doubleBuffer = FALSE;
-    pConfigs[1].stereo = FALSE;
-    pConfigs[1].bufferSize = 16;
-    pConfigs[1].depthSize = 16;
-    pConfigs[1].stencilSize = 0;
-    pConfigs[1].auxBuffers = 0;
-    pConfigs[1].level = 0;
-    pConfigs[1].visualRating = 0;
-    pConfigs[1].transparentPixel = 0;
-    pConfigs[1].transparentRed = 0;
-    pConfigs[1].transparentGreen = 0;
-    pConfigs[1].transparentBlue = 0;
-    pConfigs[1].transparentAlpha = 0;
-    pConfigs[1].transparentIndex = 0;
-
-    pConfigs[2].vid = -1;
-    pConfigs[2].class = -1;
-    pConfigs[2].rgba = TRUE;
-    pConfigs[2].redSize = 8;
-    pConfigs[2].greenSize = 8;
-    pConfigs[2].blueSize = 8;
-    pConfigs[2].redMask = 0x00FF0000;
-    pConfigs[2].greenMask = 0x0000FF00;
-    pConfigs[2].blueMask = 0x000000FF;
-    pConfigs[2].alphaMask = 0;
-    pConfigs[2].accumRedSize = 0;
-    pConfigs[2].accumGreenSize = 0;
-    pConfigs[2].accumBlueSize = 0;
-    pConfigs[2].accumAlphaSize = 0;
-    pConfigs[2].doubleBuffer = TRUE;
-    pConfigs[2].stereo = FALSE;
-    pConfigs[2].bufferSize = 16;
-    pConfigs[2].depthSize = 0;
-    pConfigs[2].stencilSize = 0;
-    pConfigs[2].auxBuffers = 0;
-    pConfigs[2].level = 0;
-    pConfigs[2].visualRating = 0;
-    pConfigs[2].transparentPixel = 0;
-    pConfigs[2].transparentRed = 0;
-    pConfigs[2].transparentGreen = 0;
-    pConfigs[2].transparentBlue = 0;
-    pConfigs[2].transparentAlpha = 0;
-    pConfigs[2].transparentIndex = 0;
-
-    pConfigs[3].vid = -1;
-    pConfigs[3].class = -1;
-    pConfigs[3].rgba = TRUE;
-    pConfigs[3].redSize = 8;
-    pConfigs[3].greenSize = 8;
-    pConfigs[3].blueSize = 8;
-    pConfigs[3].redMask = 0x00FF0000;
-    pConfigs[3].greenMask = 0x0000FF00;
-    pConfigs[3].blueMask = 0x000000FF;
-    pConfigs[3].alphaMask = 0;
-    pConfigs[3].accumRedSize = 0;
-    pConfigs[3].accumGreenSize = 0;
-    pConfigs[3].accumBlueSize = 0;
-    pConfigs[3].accumAlphaSize = 0;
-    pConfigs[3].doubleBuffer = TRUE;
-    pConfigs[3].stereo = FALSE;
-    pConfigs[3].bufferSize = 16;
-    pConfigs[3].depthSize = 16;
-    pConfigs[3].stencilSize = 0;
-    pConfigs[3].auxBuffers = 0;
-    pConfigs[3].level = 0;
-    pConfigs[3].visualRating = 0;
-    pConfigs[3].transparentPixel = 0;
-    pConfigs[3].transparentRed = 0;
-    pConfigs[3].transparentGreen = 0;
-    pConfigs[3].transparentBlue = 0;
-    pConfigs[3].transparentAlpha = 0;
-    pConfigs[3].transparentIndex = 0;
     break;
   }
   pTDFX->numVisualConfigs = numConfigs;
@@ -281,14 +189,14 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pTDFXDRI->regsSize=TDFXIOMAPSIZE;
   if (drmAddMap(pTDFX->drmSubFD, (drmHandle)pTDFX->MMIOAddr, 
 		pTDFXDRI->regsSize, DRM_REGISTERS, 0, &pTDFXDRI->regs)<0) {
-    DRICloseScreen(pScreen);
+    TDFXDRICloseScreen(pScreen);
     return FALSE;
   }
   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Registers = 0x%08lx\n",
 	       pTDFXDRI->regs);
 
   if (!(TDFXInitVisualConfigs(pScreen))) {
-    DRICloseScreen(pScreen);
+    TDFXDRICloseScreen(pScreen);
     return FALSE;
   }
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );
@@ -363,9 +271,9 @@ TDFXDRIFinishScreenInit(ScreenPtr pScreen)
   pTDFXDRI->textureSize=pTDFX->texSize;
   pTDFXDRI->fbOffset=pTDFX->fbOffset;
   pTDFXDRI->backOffset=pTDFX->backOffset=(pTDFX->lowMemLoc+4095)&~0xFFF;
-  size=2*pScrn->virtualX*pScrn->virtualY;
+  size=(pScrn->virtualX*pScrn->virtualY+4095)&~0xFFF;
+  size*=2;
   pTDFXDRI->depthOffset=pTDFX->depthOffset=(pTDFXDRI->backOffset+size+4095)&~0xFFF;
-
   return DRIFinishScreenInit(pScreen);
 }
 

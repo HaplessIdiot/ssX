@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,30 +25,12 @@
  */
 
 
-
-
-
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
 
+#include "glapi.h"
 #include "types.h"
-
-
-
-#ifdef THREADS
-   /*
-    * A seperate GLcontext for each thread
-    */
-   extern GLcontext *gl_get_thread_context( void );
-#else
-   /*
-    * All threads use same pointer to current context.
-    */
-   extern GLcontext *CC;
-   extern struct immediate *CURRENT_INPUT;
-#endif
-
 
 
 /*
@@ -92,6 +74,21 @@ extern void gl_destroy_visual( GLvisual *vis );
 
 
 /*
+ * Create/destroy a GLframebuffer.  A GLframebuffer is like a GLX drawable.
+ * It bundles up the depth buffer, stencil buffer and accum buffers into a
+ * single entity.
+ */
+extern GLframebuffer *gl_create_framebuffer( GLvisual *visual,
+                                             GLboolean softwareDepth,
+                                             GLboolean softwareStencil,
+                                             GLboolean softwareAccum,
+                                             GLboolean softwareAlpha );
+
+extern void gl_destroy_framebuffer( GLframebuffer *buffer );
+
+
+
+/*
  * Create/destroy a GLcontext.  A GLcontext is like a GLX context.  It
  * contains the rendering state.
  */
@@ -100,38 +97,78 @@ extern GLcontext *gl_create_context( GLvisual *visual,
                                      void *driver_ctx,
                                      GLboolean direct);
 
+extern GLboolean gl_initialize_context_data( GLcontext *ctx,
+                                             GLvisual *visual,
+                                             GLcontext *share_list,
+                                             void *driver_ctx,
+                                             GLboolean direct );
+
+extern void gl_free_context_data( GLcontext *ctx );
+
 extern void gl_destroy_context( GLcontext *ctx );
 
-/* Called by the driver after both the context and driver are fully
- * initialized.  Currently just reads the config file.
- */
+
 extern void gl_context_initialize( GLcontext *ctx );
 
-/*
- * Create/destroy a GLframebuffer.  A GLframebuffer is like a GLX drawable.
- * It bundles up the depth buffer, stencil buffer and accum buffers into a
- * single entity.
- */
-extern GLframebuffer *gl_create_framebuffer( GLvisual *visual );
 
-extern void gl_destroy_framebuffer( GLframebuffer *buffer );
-
+extern void gl_copy_context(const GLcontext *src, GLcontext *dst, GLuint mask);
 
 
 extern void gl_make_current( GLcontext *ctx, GLframebuffer *buffer );
 
+
+extern void gl_make_current2( GLcontext *ctx, GLframebuffer *drawBuffer,
+                              GLframebuffer *readBuffer );
+
+
 extern GLcontext *gl_get_current_context(void);
 
-extern void gl_copy_context(const GLcontext *src, GLcontext *dst, GLuint mask);
 
-extern void gl_set_api_table( GLcontext *ctx, const struct gl_api_table *api );
+/*
+ * Macros for fetching current context, input buffer, etc.
+ */
+#ifdef THREADS
+
+#define GET_CURRENT_CONTEXT(C)	GLcontext *C = (GLcontext *) (_glapi_Context ? _glapi_Context : _glapi_get_context())
+
+#define GET_IMMEDIATE  struct immediate *IM = ((GLcontext *) (_glapi_Context ? _glapi_Context : _glapi_get_context()))->input
+
+#define SET_IMMEDIATE(ctx, im)		\
+do {					\
+   ctx->input = im;			\
+} while (0)
+
+#else
+
+extern struct immediate *_mesa_CurrentInput;
+
+#define GET_CURRENT_CONTEXT(C)  GLcontext *C = _glapi_Context
+
+#define GET_IMMEDIATE struct immediate *IM = _mesa_CurrentInput
+
+#define SET_IMMEDIATE(ctx, im)		\
+do {					\
+   ctx->input = im;			\
+   _mesa_CurrentInput = im;		\
+} while (0)
+
+#endif
+
+
+
+extern void
+_mesa_swapbuffers(GLcontext *ctx);
+
+
+extern struct _glapi_table *
+_mesa_get_dispatch(GLcontext *ctx);
 
 
 
 /*
  * GL_MESA_resize_buffers extension
  */
-extern void gl_ResizeBuffersMESA( GLcontext *ctx );
+extern void _mesa_ResizeBuffersMESA( void );
 
 
 
@@ -144,10 +181,8 @@ extern void gl_problem( const GLcontext *ctx, const char *s );
 extern void gl_warning( const GLcontext *ctx, const char *s );
 
 extern void gl_error( GLcontext *ctx, GLenum error, const char *s );
+
 extern void gl_compile_error( GLcontext *ctx, GLenum error, const char *s );
-
-extern GLenum gl_GetError( GLcontext *ctx );
-
 
 extern void gl_update_state( GLcontext *ctx );
 

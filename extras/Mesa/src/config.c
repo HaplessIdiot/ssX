@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -31,19 +31,19 @@
  * to parse and potentially very expressive.  
  */
 
-#ifndef XFree86Server
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
-#include "enums.h"
+#include "glheader.h"
 #include "config.h"
-#include "types.h"
+#include "enums.h"
 #include "extensions.h"
-#include "simple_list.h"
 #include "glmisc.h"
+#include "simple_list.h"
+#include "mem.h"
+#include "types.h"
+#endif
 
 
 typedef enum { nil_t, list_t, word_t } node_type;
@@ -229,7 +229,7 @@ static void default_hint( GLcontext *ctx, struct cnode *args )
 	  (v = (GLenum) gl_lookup_enum_by_name(vname)) != -1)
       {
 	 printf("calling glHint(%s=%d, %s=%d)\n", hname, h, vname, v);
-	 if (!gl_Hint( ctx, h, v ))
+	 if (!_mesa_try_Hint( ctx, h, v ))
 	    error( hint, "glHint failed");
 	 printf("allow draw mem: %d\n", ctx->Hint.AllowDrawMem);
 	 return;

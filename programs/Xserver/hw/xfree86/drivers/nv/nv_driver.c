@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.30 2000/01/30 01:15:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.31 2000/01/30 17:58:44 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -634,7 +634,6 @@ NVdoDDC(ScrnInfoPtr pScrn)
     pNv = NVPTR(pScrn);
     NVdac = &pNv->Dac;
 
-    /* Map the VGA memory when the primary video */
     if (!pNv->Primary) {
         /* XXX Need to write an NV mode ddc1SetSpeed */
         if (pNv->DDC1SetSpeed == vgaHWddc1SetSpeed) {
@@ -758,18 +757,19 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
     {
+        resRange vgaio[] =      { {ResShrIoBlock,0x3B0,0x3BB},
+                                  {ResShrIoBlock,0x3C0,0x3DF},
+                                  _END };
  	resRange vga1mem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
  				  {ResShrMemBlock,0xB8000,0xBFFFF},
  				  _END };
  	resRange vga2mem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
  				  _END };
+        xf86SetOperatingState(vgaio, pNv->pEnt->index, ResUnusedOpr);
  	xf86SetOperatingState(vga1mem, pNv->pEnt->index, ResDisableOpr);
  	xf86SetOperatingState(vga2mem, pNv->pEnt->index, ResDisableOpr);
     }
 
-    pScrn->racMemFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-    pScrn->racIoFlags  = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-  
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -828,24 +828,24 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
-	case 8:
-	case 15:
-	case 24:
-	    /* OK */
-	    break;
-	case 16:
-	    if(pNv->Chipset == NV_CHIP_RIVA128) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			"The Riva 128 chipset does not support depth 16.  "
+            case 8:
+            case 15:
+            case 24:
+                /* OK */
+                break;
+            case 16:
+                if(pNv->Chipset == NV_CHIP_RIVA128) {
+                    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                        "The Riva 128 chipset does not support depth 16.  "
 			"Using depth 15 instead\n");
-		pScrn->depth = 15;
-	    }
-	    break;
-	default:
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Given depth (%d) is not supported by this driver\n",
-		       pScrn->depth);
-	    return FALSE;
+                    pScrn->depth = 15;
+                }
+                break;
+            default:
+                xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                    "Given depth (%d) is not supported by this driver\n",
+                    pScrn->depth);
+                return FALSE;
 	}
     }
     xf86PrintDepthBpp(pScrn);
@@ -1120,13 +1120,13 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Remove reserved memory from end of buffer */
     switch( pNv->riva.Architecture ) {
-    case 0x03:
-      pNv->FbUsableSize -= 32 * 1024;
-      break;
-    case 0x04:
-    case 0x10:
-      pNv->FbUsableSize -= 128 * 1024;
-      break;
+        case NV_ARCH_03:
+            pNv->FbUsableSize -= 32 * 1024;
+            break;
+        case NV_ARCH_04:
+        case NV_ARCH_10:
+            pNv->FbUsableSize -= 128 * 1024;
+            break;
     }
 
 
@@ -1152,16 +1152,14 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      * pScrn->maxVValue are set.  Since our NVValidMode() already takes
      * care of this, we don't worry about setting them here.
      */
-    {        
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 2048,
-			      32 * pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pNv->FbUsableSize,
-			      LOOKUP_BEST_REFRESH);
-    }
+    i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+                          pScrn->display->modes, clockRanges,
+                          NULL, 256, 2048,
+                          32 * pScrn->bitsPerPixel, 128, 2048,
+                          pScrn->display->virtualX,
+                          pScrn->display->virtualY,
+                          pNv->FbUsableSize,
+                          LOOKUP_BEST_REFRESH);
 
     if (i < 1 && pNv->FBDev) {
 	fbdevHWUseBuildinMode(pScrn);
@@ -1209,20 +1207,20 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	reqSym = "cfbScreenInit";
-	break;
-    case 16:
-	mod = "cfb16";
-	reqSym = "cfb16ScreenInit";
-	break;
-    case 32:
-        mod = "cfb32";
-        reqSym = "cfb32ScreenInit";
-	break;
-    default:
-	return FALSE;
+        case 8:
+            mod = "cfb";
+            reqSym = "cfbScreenInit";
+            break;
+        case 16:
+            mod = "cfb16";
+            reqSym = "cfb16ScreenInit";
+            break;
+        case 32:
+            mod = "cfb32";
+            reqSym = "cfb32ScreenInit";
+            break;
+        default:
+            return FALSE;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	NVFreeRec(pScrn);
@@ -1287,7 +1285,7 @@ NVMapMem(ScrnInfoPtr pScrn)
      */ 
     pNv->IOBase = xf86MapPciMem(pScrn->scrnIndex,
                                 VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
-                                pNv->PciTag, pNv->IOAddress, 0x4000);
+                                pNv->PciTag, pNv->IOAddress, 0x1000000);
     if (pNv->IOBase == NULL)
 	return FALSE;
 
@@ -1338,7 +1336,7 @@ NVUnmapMem(ScrnInfoPtr pScrn)
     /*
      * Unmap IO registers to virtual address space
      */ 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->IOBase, 0x4000);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->IOBase, 0x1000000);
     pNv->IOBase = NULL;
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->FbBase, pNv->FbMapSize);
@@ -1524,7 +1522,6 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	width = pScrn->virtualY;
     }
 
-
     if(pNv->ShadowFB) {
  	pNv->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
         pNv->ShadowPtr = xalloc(pNv->ShadowPitch * height);
@@ -1536,34 +1533,27 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     switch (pScrn->bitsPerPixel) {
-    case 8:
-	ret = cfbScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-    case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-    case 32:
-	ret = cfb32ScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in NVScreenInit\n",
-		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
+        case 8:
+            ret = cfbScreenInit(pScreen, FBStart, width, height,
+                                pScrn->xDpi, pScrn->yDpi, displayWidth);
+            break;
+        case 16:
+            ret = cfb16ScreenInit(pScreen, FBStart, width, height,
+                                  pScrn->xDpi, pScrn->yDpi, displayWidth);
+            break;
+        case 32:
+            ret = cfb32ScreenInit(pScreen, FBStart, width, height,
+                                  pScrn->xDpi, pScrn->yDpi, displayWidth);
+            break;
+        default:
+            xf86DrvMsg(scrnIndex, X_ERROR,
+                       "Internal error: invalid bpp (%d) in NVScreenInit\n",
+                       pScrn->bitsPerPixel);
+            ret = FALSE;
+            break;
     }
     if (!ret)
 	return FALSE;
-
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- cfb set up\n"));
 
@@ -1636,10 +1626,10 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	   pScrn->PointerMoved = NVPointerMoved;
 
 	   switch(pScrn->bitsPerPixel) {
-	   case 8:	refreshArea = NVRefreshArea8;	break;
-	   case 16:	refreshArea = NVRefreshArea16;	break;
-	   case 24:	refreshArea = NVRefreshArea24;	break;
-	   case 32:	refreshArea = NVRefreshArea32;	break;
+               case 8:	refreshArea = NVRefreshArea8;	break;
+               case 16:	refreshArea = NVRefreshArea16;	break;
+               case 24:	refreshArea = NVRefreshArea24;	break;
+               case 32:	refreshArea = NVRefreshArea32;	break;
 	   }
 	}
 

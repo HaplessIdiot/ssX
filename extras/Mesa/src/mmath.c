@@ -23,27 +23,17 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/mmath.c,v 1.2 1999/04/04 00:20:28 dawes Exp $ */
-
-
-
 
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#else
-#include "GL/xf86glx.h"
-#endif
-#include "GL/gl.h"
+#include "glheader.h"
 #include "mmath.h"
 #endif
 
 
 static int in_fast_math;
-
 
 /*
  * A High Speed, Low Precision Square Root
@@ -99,8 +89,8 @@ static void init_sqrt(void)
       sqrttab[i+0x80] = (*fi & 0x7fffff) >> 16;
    }
 #else
-   (void) sqrttab;  /* silence compiler warning - unused var */
-#endif
+   (void) sqrttab;  /* silence compiler warnings */
+#endif /*FAST_MATH*/
 }
 
 

@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,12 +25,9 @@
  */
 
 
-
-
-
 /*
- * A pseudo-GLX implementation to allow OpenGL/GLX programs to work with Mesa.
- * The Fake_glX*() functions implemented here are called from glxapi.c
+ * This is an emulation of the GLX API which allows Mesa/GLX-based programs
+ * to run on X servers which do not have the real GLX extension.
  *
  * Thanks to the contributors:
  *
@@ -45,23 +42,31 @@
 
 
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include "GL/gl.h"
+#include "glxheader.h"
+#include "glxapi.h"
 #include "GL/xmesa.h"
 #include "context.h"
 #include "config.h"
-#include "fakeglx.h"
 #include "macros.h"
 #include "types.h"
 #include "xmesaP.h"
+
+
+/* This indicates the client-side GLX API and GLX encoder version. */
+#define CLIENT_MAJOR_VERSION 1
+#define CLIENT_MINOR_VERSION 2
+
+/* This indicates the server-side GLX decoder version.
+ * GLX 1.3 indicates OpenGL 1.2 support
+ */
+#define SERVER_MAJOR_VERSION 1
+#define SERVER_MINOR_VERSION 3
+
+/* This is appended onto the glXGetClient/ServerString version strings. */
+#define MESA_GLX_VERSION "Mesa 3.1"
+
+/* Who implemented this GLX? */
+#define VENDOR "Brian Paul"
 
 
 
@@ -267,7 +272,7 @@ save_glx_visual( Display *dpy, XVisualInfo *vinfo,
           && (v->gl_visual->StencilBits >= stencil_size || stencil_size == 0)
           && (v->gl_visual->AccumBits >= accum_size || accum_size == 0)) {
          /* now either compare XVisualInfo pointers or visual IDs */
-         if ((!comparePointers && v->vishandle->visualid == vinfo->visualid)
+         if ((!comparePointers && v->visinfo->visualid == vinfo->visualid)
              || (comparePointers && v->vishandle == vinfo)) {
             return v;
          }
@@ -843,7 +848,8 @@ static XVisualInfo *choose_x_overlay_visual( Display *dpy, int scr,
 
 
 
-XVisualInfo *Fake_glXChooseVisual( Display *dpy, int screen, int *list )
+static XVisualInfo *
+Fake_glXChooseVisual( Display *dpy, int screen, int *list )
 {
    int *parselist;
    XVisualInfo *vis;
@@ -1020,8 +1026,9 @@ XVisualInfo *Fake_glXChooseVisual( Display *dpy, int screen, int *list )
 
 
 
-GLXContext Fake_glXCreateContext( Display *dpy, XVisualInfo *visinfo,
-                                  GLXContext share_list, Bool direct )
+static GLXContext
+Fake_glXCreateContext( Display *dpy, XVisualInfo *visinfo,
+                       GLXContext share_list, Bool direct )
 {
    XMesaVisual glxvis;
    XMesaContext xmctx;
@@ -1048,54 +1055,94 @@ GLXContext Fake_glXCreateContext( Display *dpy, XVisualInfo *visinfo,
 }
 
 
-static GLXDrawable MakeCurrent_PrevDrawable = 0;
 static GLXContext MakeCurrent_PrevContext = 0;
-static XMesaBuffer MakeCurrent_PrevBuffer = 0;
+static GLXDrawable MakeCurrent_PrevDrawable = 0;
+static GLXDrawable MakeCurrent_PrevReadable = 0;
+static XMesaBuffer MakeCurrent_PrevDrawBuffer = 0;
+static XMesaBuffer MakeCurrent_PrevReadBuffer = 0;
 
-Bool Fake_glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ctx )
+/* GLX 1.3 and later */
+static Bool
+Fake_glXMakeContextCurrent( Display *dpy, GLXDrawable draw,
+                            GLXDrawable read, GLXContext ctx )
 {
-   if (ctx && drawable) {
-      XMesaBuffer buffer;
+   if (ctx && draw && read) {
+      XMesaBuffer drawBuffer, readBuffer;
+      XMesaContext xmctx = (XMesaContext) ctx;
 
-      if (drawable==MakeCurrent_PrevDrawable && ctx==MakeCurrent_PrevContext) {
-         buffer = MakeCurrent_PrevBuffer;
+      /* Find the XMesaBuffer which corresponds to the GLXDrawable 'draw' */
+      if (ctx == MakeCurrent_PrevContext
+          && draw == MakeCurrent_PrevDrawable) {
+         drawBuffer = MakeCurrent_PrevDrawBuffer;
       }
       else {
-         buffer = XMesaFindBuffer( dpy, drawable );
+         drawBuffer = XMesaFindBuffer( dpy, draw );
       }
-      if (!buffer) {
+      if (!drawBuffer) {
          /* drawable must be a new window! */
-         buffer = XMesaCreateWindowBuffer2( ctx->xm_visual, drawable, ctx );
-         if (!buffer) {
+         drawBuffer = XMesaCreateWindowBuffer2( xmctx->xm_visual, draw, ctx );
+         if (!drawBuffer) {
             /* Out of memory, or context/drawable depth mismatch */
             return False;
          }
       }
+
+      /* Find the XMesaBuffer which corresponds to the GLXDrawable 'read' */
+      if (ctx == MakeCurrent_PrevContext
+          && read == MakeCurrent_PrevReadable) {
+         readBuffer = MakeCurrent_PrevReadBuffer;
+      }
+      else {
+         readBuffer = XMesaFindBuffer( dpy, read );
+      }
+      if (!readBuffer) {
+         /* drawable must be a new window! */
+         readBuffer = XMesaCreateWindowBuffer2( xmctx->xm_visual, read, ctx );
+         if (!readBuffer) {
+            /* Out of memory, or context/drawable depth mismatch */
+            return False;
+         }
+      }
+
       MakeCurrent_PrevContext = ctx;
-      MakeCurrent_PrevDrawable = drawable;
-      MakeCurrent_PrevBuffer = buffer;
+      MakeCurrent_PrevDrawable = draw;
+      MakeCurrent_PrevReadable = read;
+      MakeCurrent_PrevDrawBuffer = drawBuffer;
+      MakeCurrent_PrevReadBuffer = readBuffer;
 
       /* Now make current! */
-      return (Bool) XMesaMakeCurrent( (XMesaContext) ctx, buffer );
+      return (Bool) XMesaMakeCurrent2((XMesaContext) ctx, drawBuffer, readBuffer);
    }
-   else if (!ctx && !drawable) {
+   else if (!ctx && !draw && !read) {
       /* release current context w/out assigning new one. */
       XMesaMakeCurrent( NULL, NULL );
       MakeCurrent_PrevContext = 0;
       MakeCurrent_PrevDrawable = 0;
-      MakeCurrent_PrevBuffer = 0;
+      MakeCurrent_PrevReadable = 0;
+      MakeCurrent_PrevDrawBuffer = 0;
+      MakeCurrent_PrevReadBuffer = 0;
       return True;
    }
    else {
-      /* ctx XOR drawable is NULL, this is an error */
+      /* The args must either all be non-zero or all zero.
+       * This is an error.
+       */
       return False;
    }
 }
 
 
 
-GLXPixmap Fake_glXCreateGLXPixmap( Display *dpy, XVisualInfo *visinfo,
-                                   Pixmap pixmap )
+static Bool
+Fake_glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ctx )
+{
+   return Fake_glXMakeContextCurrent( dpy, drawable, drawable, ctx );
+}
+
+
+
+static GLXPixmap
+Fake_glXCreateGLXPixmap( Display *dpy, XVisualInfo *visinfo, Pixmap pixmap )
 {
    XMesaVisual v;
    XMesaBuffer b;
@@ -1119,8 +1166,9 @@ GLXPixmap Fake_glXCreateGLXPixmap( Display *dpy, XVisualInfo *visinfo,
 
 #ifdef GLX_MESA_pixmap_colormap
 
-GLXPixmap Fake_glXCreateGLXPixmapMESA( Display *dpy, XVisualInfo *visinfo,
-                                       Pixmap pixmap, Colormap cmap )
+static GLXPixmap
+Fake_glXCreateGLXPixmapMESA( Display *dpy, XVisualInfo *visinfo,
+                             Pixmap pixmap, Colormap cmap )
 {
    XMesaVisual v;
    XMesaBuffer b;
@@ -1144,7 +1192,8 @@ GLXPixmap Fake_glXCreateGLXPixmapMESA( Display *dpy, XVisualInfo *visinfo,
 #endif
 
 
-void Fake_glXDestroyGLXPixmap( Display *dpy, GLXPixmap pixmap )
+static void
+Fake_glXDestroyGLXPixmap( Display *dpy, GLXPixmap pixmap )
 {
    XMesaBuffer b = XMesaFindBuffer(dpy, pixmap);
    if (b) {
@@ -1156,8 +1205,9 @@ void Fake_glXDestroyGLXPixmap( Display *dpy, GLXPixmap pixmap )
 }
 
 
-void Fake_glXCopyContext( Display *dpy, GLXContext src, GLXContext dst,
-                          GLuint mask )
+static void
+Fake_glXCopyContext( Display *dpy, GLXContext src, GLXContext dst,
+                     GLuint mask )
 {
    XMesaContext xm_src = (XMesaContext) src;
    XMesaContext xm_dst = (XMesaContext) dst;
@@ -1167,7 +1217,8 @@ void Fake_glXCopyContext( Display *dpy, GLXContext src, GLXContext dst,
 
 
 
-Bool Fake_glXQueryExtension( Display *dpy, int *errorb, int *event )
+static Bool
+Fake_glXQueryExtension( Display *dpy, int *errorb, int *event )
 {
    /* Mesa's GLX isn't really an X extension but we try to act like one. */
    (void) dpy;
@@ -1184,19 +1235,23 @@ void _kw_ungrab_all( Display *dpy )
 }
 
 
-void Fake_glXDestroyContext( Display *dpy, GLXContext ctx )
+static void
+Fake_glXDestroyContext( Display *dpy, GLXContext ctx )
 {
    (void) dpy;
    MakeCurrent_PrevContext = 0;
    MakeCurrent_PrevDrawable = 0;
-   MakeCurrent_PrevBuffer = 0;
+   MakeCurrent_PrevReadable = 0;
+   MakeCurrent_PrevDrawBuffer = 0;
+   MakeCurrent_PrevReadBuffer = 0;
    XMesaDestroyContext( (XMesaContext) ctx );
    XMesaGarbageCollect();
 }
 
 
 
-Bool Fake_glXIsDirect( Display *dpy, GLXContext ctx )
+static Bool
+Fake_glXIsDirect( Display *dpy, GLXContext ctx )
 {
    (void) dpy;
    return ((XMesaContext) ctx)->direct;
@@ -1204,7 +1259,8 @@ Bool Fake_glXIsDirect( Display *dpy, GLXContext ctx )
 
 
 
-void Fake_glXSwapBuffers( Display *dpy, GLXDrawable drawable )
+static void
+Fake_glXSwapBuffers( Display *dpy, GLXDrawable drawable )
 {
    XMesaBuffer buffer = XMesaFindBuffer( dpy, drawable );
 
@@ -1217,8 +1273,9 @@ void Fake_glXSwapBuffers( Display *dpy, GLXDrawable drawable )
 }
 
 
-void Fake_glXCopySubBufferMESA( Display *dpy, GLXDrawable drawable,
-				int x, int y, int width, int height )
+static void
+Fake_glXCopySubBufferMESA( Display *dpy, GLXDrawable drawable,
+                           int x, int y, int width, int height )
 {
    XMesaBuffer buffer = XMesaFindBuffer( dpy, drawable );
    if (buffer) {
@@ -1231,12 +1288,14 @@ void Fake_glXCopySubBufferMESA( Display *dpy, GLXDrawable drawable,
 
 
 
-Bool Fake_glXQueryVersion( Display *dpy, int *maj, int *min )
+static Bool
+Fake_glXQueryVersion( Display *dpy, int *maj, int *min )
 {
    (void) dpy;
    /* Return GLX version, not Mesa version */
-   *maj = 1;
-   *min = 1;
+   assert(CLIENT_MAJOR_VERSION == SERVER_MAJOR_VERSION);
+   *maj = CLIENT_MAJOR_VERSION;
+   *min = MIN2( CLIENT_MINOR_VERSION, SERVER_MINOR_VERSION );
    return True;
 }
 
@@ -1245,8 +1304,9 @@ Bool Fake_glXQueryVersion( Display *dpy, int *maj, int *min )
 /*
  * Query the GLX attributes of the given XVisualInfo.
  */
-int Fake_glXGetConfig( Display *dpy, XVisualInfo *visinfo,
-                       int attrib, int *value )
+static int
+Fake_glXGetConfig( Display *dpy, XVisualInfo *visinfo,
+                   int attrib, int *value )
 {
    XMesaVisual glxvis;
 
@@ -1388,26 +1448,8 @@ int Fake_glXGetConfig( Display *dpy, XVisualInfo *visinfo,
 
 
 
-GLXContext Fake_glXGetCurrentContext( void )
-{
-   return (GLXContext) XMesaGetCurrentContext();
-}
-
-
-
-GLXDrawable Fake_glXGetCurrentDrawable( void )
-{
-   XMesaBuffer b = XMesaGetCurrentBuffer();
-   if (b) {
-      return b->frontbuffer;
-   }
-   else {
-      return 0;
-   }
-}
-
-
-void Fake_glXWaitGL( void )
+static void
+Fake_glXWaitGL( void )
 {
    XMesaContext xmesa = XMesaGetCurrentContext();
    XMesaFlush( xmesa );
@@ -1415,7 +1457,8 @@ void Fake_glXWaitGL( void )
 
 
 
-void Fake_glXWaitX( void )
+static void
+Fake_glXWaitX( void )
 {
    XMesaContext xmesa = XMesaGetCurrentContext();
    XMesaFlush( xmesa );
@@ -1430,16 +1473,17 @@ static const char *get_extensions( void )
 #ifdef FX
    const char *fx = getenv("MESA_GLX_FX");
    if (fx && fx[0] != 'd') {
-      return "GLX_MESA_pixmap_colormap GLX_EXT_visual_info GLX_MESA_release_buffers GLX_MESA_copy_sub_buffer GLX_SGI_video_sync GLX_EXT_get_proc_address GLX_MESA_set_3dfx_mode";
+      return "GLX_MESA_pixmap_colormap GLX_EXT_visual_info GLX_MESA_release_buffers GLX_MESA_copy_sub_buffer GLX_SGI_video_sync GLX_MESA_set_3dfx_mode GLX_ARB_get_proc_address";
    }
 #endif
-   return "GLX_MESA_pixmap_colormap GLX_EXT_visual_info GLX_MESA_release_buffers GLX_MESA_copy_sub_buffer GLX_SGI_video_sync GL_EXT_get_proc_address";
+   return "GLX_MESA_pixmap_colormap GLX_EXT_visual_info GLX_MESA_release_buffers GLX_MESA_copy_sub_buffer GLX_SGI_video_sync GLX_ARB_get_proc_address";
 }
 
 
 
 /* GLX 1.1 and later */
-const char *Fake_glXQueryExtensionsString( Display *dpy, int screen )
+static const char *
+Fake_glXQueryExtensionsString( Display *dpy, int screen )
 {
    (void) dpy;
    (void) screen;
@@ -1449,10 +1493,12 @@ const char *Fake_glXQueryExtensionsString( Display *dpy, int screen )
 
 
 /* GLX 1.1 and later */
-const char *Fake_glXQueryServerString( Display *dpy, int screen, int name )
+static const char *
+Fake_glXQueryServerString( Display *dpy, int screen, int name )
 {
-   static char *vendor = "Brian Paul";
-   static char *version = "1.1 Mesa 3.1";
+   static char version[1000];
+   sprintf(version, "%d.%d %s", SERVER_MAJOR_VERSION, SERVER_MINOR_VERSION,
+           MESA_GLX_VERSION);
 
    (void) dpy;
    (void) screen;
@@ -1461,7 +1507,7 @@ const char *Fake_glXQueryServerString( Display *dpy, int screen, int name )
       case GLX_EXTENSIONS:
          return get_extensions();
       case GLX_VENDOR:
-	 return vendor;
+	 return VENDOR;
       case GLX_VERSION:
 	 return version;
       default:
@@ -1472,10 +1518,12 @@ const char *Fake_glXQueryServerString( Display *dpy, int screen, int name )
 
 
 /* GLX 1.1 and later */
-const char *Fake_glXGetClientString( Display *dpy, int name )
+static const char *
+Fake_glXGetClientString( Display *dpy, int name )
 {
-   static char *vendor = "Brian Paul";
-   static char *version = "1.1 Mesa 3.1";
+   static char version[1000];
+   sprintf(version, "%d.%d %s", CLIENT_MAJOR_VERSION, CLIENT_MINOR_VERSION,
+           MESA_GLX_VERSION);
 
    (void) dpy;
 
@@ -1483,7 +1531,7 @@ const char *Fake_glXGetClientString( Display *dpy, int name )
       case GLX_EXTENSIONS:
          return get_extensions();
       case GLX_VENDOR:
-	 return vendor;
+	 return VENDOR;
       case GLX_VERSION:
 	 return version;
       default:
@@ -1494,10 +1542,164 @@ const char *Fake_glXGetClientString( Display *dpy, int name )
 
 
 /*
+ * GLX 1.3 and later
+ */
+
+static GLXFBConfig
+Fake_glXChooseFBConfig( Display *dpy, int screen,
+                        const int *attribList, int *nitems )
+{
+   (void) dpy;
+   (void) screen;
+   (void) attribList;
+   (void) nitems;
+   return 0;
+}
+
+
+static int
+Fake_glXGetFBConfigAttrib( Display *dpy, GLXFBConfig config,
+                           int attribute, int *value )
+{
+   (void) dpy;
+   (void) config;
+   (void) attribute;
+   (void) value;
+   return 0;
+}
+
+
+static XVisualInfo *
+Fake_glXGetVisualFromFBConfig( Display *dpy, GLXFBConfig config )
+{
+   (void) dpy;
+   (void) config;
+   return 0;
+}
+
+
+static GLXWindow
+Fake_glXCreateWindow( Display *dpy, GLXFBConfig config, Window win,
+                      const int *attribList )
+{
+   (void) dpy;
+   (void) config;
+   (void) win;
+   (void) attribList;
+   return 0;
+}
+
+
+static void
+Fake_glXDestroyWindow( Display *dpy, GLXWindow window )
+{
+   (void) dpy;
+   (void) window;
+   return;
+}
+
+
+static GLXPixmap
+Fake_glXCreatePixmap( Display *dpy, GLXFBConfig config, Pixmap pixmap,
+                      const int *attribList )
+{
+   (void) dpy;
+   (void) config;
+   (void) pixmap;
+   (void) attribList;
+   return 0;
+}
+
+
+static void
+Fake_glXDestroyPixmap( Display *dpy, GLXPixmap pixmap )
+{
+   (void) dpy;
+   (void) pixmap;
+   return;
+}
+
+
+static GLXPbuffer
+Fake_glXCreatePbuffer( Display *dpy, GLXFBConfig config,
+                       const int *attribList )
+{
+   (void) dpy;
+   (void) config;
+   (void) attribList;
+   return 0;
+}
+
+
+static void
+Fake_glXDestroyPbuffer( Display *dpy, GLXPbuffer pbuf )
+{
+   (void) dpy;
+   (void) pbuf;
+}
+
+
+static void
+Fake_glXQueryDrawable( Display *dpy, GLXDrawable draw, int attribute,
+                       unsigned int *value )
+{
+   (void) dpy;
+   (void) draw;
+   (void) attribute;
+   (void) value;
+}
+
+
+static GLXContext
+Fake_glXCreateNewContext( Display *dpy, GLXFBConfig config,
+                          int renderType, GLXContext shareList, Bool direct )
+{
+   (void) dpy;
+   (void) config;
+   (void) renderType;
+   (void) shareList;
+   (void) direct;
+   return 0;
+}
+
+
+static int
+Fake_glXQueryContext( Display *dpy, GLXContext ctx, int attribute, int *value )
+{
+   (void) dpy;
+   (void) ctx;
+   (void) attribute;
+   (void) value;
+   return 0;
+}
+
+
+static void
+Fake_glXSelectEvent( Display *dpy, GLXDrawable drawable, unsigned long mask )
+{
+   (void) dpy;
+   (void) drawable;
+   (void) mask;
+}
+
+
+static void
+Fake_glXGetSelectedEvent( Display *dpy, GLXDrawable drawable,
+                          unsigned long *mask )
+{
+   (void) dpy;
+   (void) drawable;
+   (void) mask;
+}
+
+
+
+/*
  * Release the depth, stencil, accum buffers attached to a GLXDrawable
  * (a window or pixmap) prior to destroying the GLXDrawable.
  */
-Bool Fake_glXReleaseBuffersMESA( Display *dpy, GLXDrawable d )
+static Bool
+Fake_glXReleaseBuffersMESA( Display *dpy, GLXDrawable d )
 {
    XMesaBuffer b = XMesaFindBuffer(dpy, d);
    if (b) {
@@ -1511,44 +1713,121 @@ Bool Fake_glXReleaseBuffersMESA( Display *dpy, GLXDrawable d )
 /*
  * GLX_MESA_set_3dfx_mode
  */
-GLboolean Fake_glXSet3DfxModeMESA( GLint mode )
+static GLboolean
+Fake_glXSet3DfxModeMESA( GLint mode )
 {
    return XMesaSetFXmode( mode );
 }
 
 
+/*
+ * GLX_SGI_video_sync
+ */
 
-#if 0
-/*GLfunction Fake_glXGetProcAddress( const GLubyte *procName )*/
-void (*Fake_glXGetProcAddress( const GLubyte *procName ))()
+#ifdef GLX_SGI_video_sync
+
+static int
+Fake_glXGetVideoSyncSGI(unsigned int *count)
 {
-   typedef void (*GLfunction)();
-   struct proc {
-      const char *name;
-      GLfunction address;
-   };
-   static struct proc procTable[] = {
-      { "glXGetProcAddressEXT", (GLfunction) glXGetProcAddressEXT },
-      { "glXCreateGLXPixmapMESA", (GLfunction) glXCreateGLXPixmapMESA },
-      { "glXReleaseBuffersMESA", (GLfunction) glXReleaseBuffersMESA },
-      { "glXCopySubBufferMESA", (GLfunction) glXCopySubBufferMESA },
-      { "glXSet3DfxModeMESA", (GLfunction) glXSet3DfxModeMESA },
-      /* NOTE: GLX_SGI_video_sync not implemented in Mesa */
-      { NULL, NULL }  /* end of list token */
-   };
-   GLuint i;
+   return 0;
+}
 
-   /* First, look for core library functions */
-   GLfunction f = (GLfunction) gl_get_proc_address(procName);
-   if (f)
-      return f;
 
-   /* Second, look for GLX funtion */
-   for (i = 0; procTable[i].address; i++) {
-      if (strcmp((const char *) procName, procTable[i].name) == 0)
-	  return (GLfunction) procTable[i].address;
+static int
+Fake_glXWaitVideoSyncSGI(int divisor, int remainder, unsigned int *count)
+{
+   return 0;
+}
+
+#endif
+
+
+
+extern void Fake_glXUseXFont( Font font, int first, int count, int listbase );
+
+
+struct _glxapi_table *_mesa_GetGLXDispatchTable(void)
+{
+   static struct _glxapi_table glx;
+
+   /* be sure our dispatch table size <= libGL's table */
+   {
+      int size = sizeof(struct _glxapi_table) / sizeof(void *);
+      (void) size;
+      assert(_glxapi_get_dispatch_table_size() >= size);
    }
 
-   return NULL;
-}
+   /* initialize the whole table to no-ops */
+   _glxapi_set_no_op_table(&glx);
+
+   /* now initialize the table with the functions I implement */
+   glx.ChooseVisual = Fake_glXChooseVisual;
+   glx.CopyContext = Fake_glXCopyContext;
+   glx.CreateContext = Fake_glXCreateContext;
+   glx.CreateGLXPixmap = Fake_glXCreateGLXPixmap;
+   glx.DestroyContext = Fake_glXDestroyContext;
+   glx.DestroyGLXPixmap = Fake_glXDestroyGLXPixmap;
+   glx.GetConfig = Fake_glXGetConfig;
+   /*glx.GetCurrentContext = Fake_glXGetCurrentContext;*/
+   /*glx.GetCurrentDrawable = Fake_glXGetCurrentDrawable;*/
+   glx.IsDirect = Fake_glXIsDirect;
+   glx.MakeCurrent = Fake_glXMakeCurrent;
+   glx.QueryExtension = Fake_glXQueryExtension;
+   glx.QueryVersion = Fake_glXQueryVersion;
+   glx.SwapBuffers = Fake_glXSwapBuffers;
+   glx.UseXFont = Fake_glXUseXFont;
+   glx.WaitGL = Fake_glXWaitGL;
+   glx.WaitX = Fake_glXWaitX;
+
+#ifdef _GLXAPI_VERSION_1_1
+   glx.GetClientString = Fake_glXGetClientString;
+   glx.QueryExtensionsString = Fake_glXQueryExtensionsString;
+   glx.QueryServerString = Fake_glXQueryServerString;
 #endif
+
+#ifdef _GLXAPI_VERSION_1_2
+   /*glx.GetCurrentDisplay = Fake_glXGetCurrentDisplay;*/
+#endif
+
+#ifdef _GLXAPI_VERSION_1_3
+   glx.ChooseFBConfig = Fake_glXChooseFBConfig;
+   glx.CreateNewContext = Fake_glXCreateNewContext;
+   glx.CreatePbuffer = Fake_glXCreatePbuffer;
+   glx.CreatePixmap = Fake_glXCreatePixmap;
+   glx.CreateWindow = Fake_glXCreateWindow;
+   glx.DestroyPbuffer = Fake_glXDestroyPbuffer;
+   glx.DestroyPixmap = Fake_glXDestroyPixmap;
+   glx.DestroyWindow = Fake_glXDestroyWindow;
+   /*glx.GetCurrentReadDrawable = Fake_glXGetCurrentReadDrawable;*/
+   glx.GetFBConfigAttrib = Fake_glXGetFBConfigAttrib;
+   glx.GetSelectedEvent = Fake_glXGetSelectedEvent;
+   glx.GetVisualFromFBConfig = Fake_glXGetVisualFromFBConfig;
+   glx.MakeContextCurrent = Fake_glXMakeContextCurrent;
+   glx.QueryContext = Fake_glXQueryContext;
+   glx.QueryDrawable = Fake_glXQueryDrawable;
+   glx.SelectEvent = Fake_glXSelectEvent;
+#endif
+
+#ifdef _GLXAPI_SGI_video_sync
+   glx.GetVideoSyncSGI = Fake_glXGetVideoSyncSGI;
+   glx.WaitVideoSyncSGI = Fake_glXWaitVideoSyncSGI;
+#endif
+
+#ifdef _GLXAPI_MESA_copy_sub_buffer
+   glx.CopySubBufferMESA = Fake_glXCopySubBufferMESA;
+#endif
+
+#ifdef _GLXAPI_MESA_release_buffers
+   glx.ReleaseBuffersMESA = Fake_glXReleaseBuffersMESA;
+#endif
+
+#ifdef _GLXAPI_MESA_pixmap_colormap
+   glx.CreateGLXPixmapMESA = Fake_glXCreateGLXPixmapMESA;
+#endif
+
+#ifdef _GLXAPI_MESA_set_3dfx_mode
+   glx.Set3DfxModeMESA = Fake_glXSet3DfxModeMESA;
+#endif
+
+   return &glx;
+}

@@ -78,12 +78,12 @@ extern void gl_write_multitexture_span( GLcontext *ctx, GLuint texSets,
                                         GLenum primitive );
 
 
-extern void gl_read_rgba_span( GLcontext *ctx,
+extern void gl_read_rgba_span( GLcontext *ctx, GLframebuffer *buffer,
                                GLuint n, GLint x, GLint y,
                                GLubyte rgba[][4] );
 
 
-extern void gl_read_index_span( GLcontext *ctx,
+extern void gl_read_index_span( GLcontext *ctx, GLframebuffer *buffer,
                                 GLuint n, GLint x, GLint y, GLuint indx[] );
 
 

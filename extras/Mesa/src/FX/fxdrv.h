@@ -68,6 +68,7 @@
 #include "context.h"
 #include "macros.h"
 #include "matrix.h"
+#include "mem.h"
 #include "texture.h"
 #include "types.h"
 #include "vb.h"
@@ -255,10 +256,10 @@ typedef struct {
 
 #define FX_UM_E_IFMT                0x00fff000
 
-#define FX_UM_COLOR_ITERATED        0x00100000
-#define FX_UM_COLOR_CONSTANT        0x00200000
-#define FX_UM_ALPHA_ITERATED        0x00400000
-#define FX_UM_ALPHA_CONSTANT        0x00800000
+#define FX_UM_COLOR_ITERATED        0x01000000
+#define FX_UM_COLOR_CONSTANT        0x02000000
+#define FX_UM_ALPHA_ITERATED        0x04000000
+#define FX_UM_ALPHA_CONSTANT        0x08000000
 
 typedef void (*tfxRenderVBFunc)(GLcontext *);
 
@@ -437,6 +438,7 @@ struct tfxMesaContext {
 
   GrBuffer_t currentFB;
 
+  GLboolean bgrOrder;
   GrColor_t color;
   GrColor_t clearC;
   GrAlpha_t clearA;
@@ -469,7 +471,6 @@ struct tfxMesaContext {
   GLuint texBindNumber;
   GLint tmuSrc;
   GLuint lastUnitsMode;
-  GLuint texStart[FX_NUM_TMU];
   GLuint freeTexMem[FX_NUM_TMU];
   MemRange *tmPool;
   MemRange *tmFree[FX_NUM_TMU];
@@ -619,6 +620,7 @@ extern void fxTMInit(fxMesaContext ctx);
 extern void fxTMClose(fxMesaContext ctx);
 extern void fxTMMoveInTM(fxMesaContext, struct gl_texture_object *, GLint);
 extern void fxTMMoveOutTM(fxMesaContext, struct gl_texture_object *);
+#define fxTMMoveOutTM_NoLock fxTMMoveOutTM
 extern void fxTMFreeTexture(fxMesaContext, struct gl_texture_object *);
 extern void fxTMReloadMipMapLevel(fxMesaContext, struct gl_texture_object *, GLint);
 extern void fxTMReloadSubMipMapLevel(fxMesaContext, struct gl_texture_object *,
@@ -635,22 +637,19 @@ extern GLboolean fxDDColorMask(GLcontext *ctx,
 			       GLboolean r, GLboolean g, 
 			       GLboolean b, GLboolean a );
 
-extern GLuint fxDDDepthTestSpanGeneric(GLcontext *ctx,
-                                       GLuint n, GLint x, GLint y, 
-				       const GLdepth z[],
-                                       GLubyte mask[]);
+extern void fxDDWriteDepthSpan(GLcontext *ctx, GLuint n, GLint x, GLint y,
+                               const GLdepth depth[], const GLubyte mask[]);
 
-extern void fxDDDepthTestPixelsGeneric(GLcontext* ctx,
-                                       GLuint n, 
-				       const GLint x[], const GLint y[],
-                                       const GLdepth z[], GLubyte mask[]);
+extern void fxDDReadDepthSpan(GLcontext *ctx, GLuint n, GLint x, GLint y,
+                              GLdepth depth[]);
 
-extern void fxDDReadDepthSpanFloat(GLcontext *ctx,
-				   GLuint n, GLint x, GLint y, GLfloat depth[]);
+extern void fxDDWriteDepthPixels(GLcontext *ctx, GLuint n,
+                                 const GLint x[], const GLint y[],
+                                 const GLdepth depth[], const GLubyte mask[]);
 
-extern void fxDDReadDepthSpanInt(GLcontext *ctx,
-				 GLuint n, GLint x, GLint y, GLdepth depth[]);
-
+extern void fxDDReadDepthPixels(GLcontext *ctx, GLuint n,
+                                const GLint x[], const GLint y[],
+                                GLdepth depth[]);
 
 extern void fxDDFastPath( struct vertex_buffer *VB );
 
@@ -671,9 +670,6 @@ extern void fxSetScissorValues(GLcontext *ctx);
 extern void fxTMMoveInTM_NoLock(fxMesaContext fxMesa, 
 				struct gl_texture_object *tObj, 
 				GLint where);
-extern void fxSetupTexture_NoLock(GLcontext *ctx);
-extern void fxSetupTexture(GLcontext *ctx);
-
-extern void fxInitPixelTables(GLboolean bgrOrder);
+extern void fxInitPixelTables(fxMesaContext fxMesa, GLboolean bgrOrder);
 
 #endif

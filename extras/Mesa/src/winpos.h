@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,15 +25,16 @@
  */
 
 
-
-
-
-
 #ifndef WINPOS_H
 #define WINPOS_H
 
 
-#include "types.h"
+#include "glheader.h"
+
+
+extern void
+_mesa_WindowPos4fMESA( GLfloat x, GLfloat y, GLfloat z, GLfloat w );
+
 
 
 #ifndef GL_MESA_window_pos
@@ -63,11 +64,6 @@ extern void glWindowPos4fvMESA( const GLfloat *p );
 extern void glWindowPos4dvMESA( const GLdouble *p );
 
 #endif
-
-
-
-extern void gl_WindowPos4fMESA( GLcontext *ctx,
-                                GLfloat x, GLfloat y, GLfloat z, GLfloat w );
 
 
 #endif

@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.6 1999/11/01 17:34:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.12 2000/01/01 18:32:28 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -61,8 +61,8 @@
  */
 #define NV_RECT_VALID(rr)  (((rr).x1 < (rr).x2) && ((rr).y1 < (rr).y2))
 
-static void NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
-                                   int x2, int y2)
+static void
+NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
 {
     int height = y2-y1 + 1;
     int width  = x2-x1 + 1;
@@ -78,8 +78,8 @@ static void NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
  * Set pattern. Internal routine. The upper bits of the colors
  * are the ALPHA bits.  0 == transparency.
  */
-static void NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0,
-                         int pat1)
+static void
+NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0, int pat1)
 {
     RIVA_FIFO_FREE(pNv->riva, Patt, 5);
     pNv->riva.Patt->Shape         = 0; /* 0 = 8X8, 1 = 64X1, 2 = 1X64 */
@@ -92,7 +92,8 @@ static void NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0,
 /*
  * Set ROP.  Translate X rop into ROP3.  Internal routine.
  */
-static void NVSetRopSolid(NVPtr pNv, int rop)
+static void
+NVSetRopSolid(NVPtr pNv, int rop)
 {    
     if (pNv->currentRop != rop)
     {
@@ -104,7 +105,8 @@ static void NVSetRopSolid(NVPtr pNv, int rop)
     }
 }
 
-static void NVSetRopPattern(NVPtr pNv, int rop)
+static void
+NVSetRopPattern(NVPtr pNv, int rop)
 {
     if (pNv->currentRop != rop + 16)
     {
@@ -116,10 +118,10 @@ static void NVSetRopPattern(NVPtr pNv, int rop)
 
 /*
  * Fill solid rectangles.
- */                              
-             
-static void NVSetupForSolidFill(ScrnInfoPtr pScrn,
-                                int color, int rop, unsigned planemask)
+ */
+static
+void NVSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+                         unsigned planemask)
 {
     NVPtr pNv = NVPTR(pScrn);
 
@@ -128,8 +130,8 @@ static void NVSetupForSolidFill(ScrnInfoPtr pScrn,
     pNv->riva.Bitmap->Color1A = color;
 }
 
-static void NVSubsequentSolidFillRect(ScrnInfoPtr pScrn,
-                                      int x, int y, int w, int h)
+static void
+NVSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     NVPtr pNv = NVPTR(pScrn);
     
@@ -141,16 +143,16 @@ static void NVSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 /*
  * Screen to screen BLTs.
  */
-static void NVSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
-                                         int xdir, int ydir, int rop,
-                                         unsigned planemask,
-                                         int transparency_color)
+static void
+NVSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
+                             unsigned planemask, int transparency_color)
 {
     NVSetRopSolid(NVPTR(pScrn), rop);
 }
 
-static void NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
-                                           int x2, int y2, int w, int h)
+static void
+NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
+                               int x2, int y2, int w, int h)
 {
     NVPtr pNv = NVPTR(pScrn);
 
@@ -166,10 +168,9 @@ static void NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
  * the overloaded pattern bits themselves. The pattern colors don't
  * support 565, only 555. Hack around it.
  */
-static void NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
-    	                                 int patternx, int patterny,
-                                         int fg, int bg, int rop,
-                                         unsigned planemask)
+static void
+NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
+                             int fg, int bg, int rop, unsigned planemask)
 {
     NVPtr pNv = NVPTR(pScrn);
 
@@ -198,9 +199,10 @@ static void NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     pNv->riva.Bitmap->Color1A = fg;
 }
 
-static void NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
-                                               int patternx, int patterny,
-                                               int x, int y, int w, int h)
+static void
+NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
+                                   int patternx, int patterny,
+                                   int x, int y, int w, int h)
 {
     NVPtr pNv = NVPTR(pScrn);
 
@@ -262,7 +264,7 @@ NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    int t = pNv->expandWidth, i;
+    int t = pNv->expandWidth;
     CARD32 *pbits = (CARD32*)pNv->expandBuffer;
     CARD32 *d = (CARD32*)pNv->expandFifo;
     
@@ -403,7 +405,7 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    int t = pNv->expandWidth, i;
+    int t = pNv->expandWidth;
     CARD32 *pbits = (CARD32*)pNv->expandBuffer;
     CARD32 *d = (CARD32*)&pNv->riva.Pixmap->Pixels;
 
@@ -581,15 +583,12 @@ NVSubsequentSolidBresenhamLine(
 
 #endif
 
-void
+static void
 NVValidatePolyArc(
    GCPtr        pGC,
    unsigned long changes,
    DrawablePtr pDraw
 ){
-   ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
-   NVPtr pNv = NVPTR(pScrn);
-
    if(pGC->planemask != ~0) return;
 
    if(!pGC->lineWidth && 
@@ -599,15 +598,12 @@ NVValidatePolyArc(
    }
 }
 
-void
+static void
 NVValidatePolyPoint(
    GCPtr        pGC,
    unsigned long changes,
    DrawablePtr pDraw
 ){
-   ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
-   NVPtr pNv = NVPTR(pScrn);
-
    pGC->ops->PolyPoint = XAAFallbackOps.PolyPoint;
 
    if(pGC->planemask != ~0) return;

@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,9 +25,6 @@
  */
 
 
-
-
-
 /*
  * Matrix operations
  *
@@ -43,18 +40,11 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "enums.h"
-#include "macros.h"
 #include "matrix.h"
+#include "mem.h"
 #include "mmath.h"
 #include "types.h"
 #endif
@@ -547,6 +537,50 @@ GLboolean gl_matrix_invert( GLmatrix *mat )
 
 
 
+void gl_matrix_transposef( GLfloat to[16], const GLfloat from[16] )
+{
+   to[0] = from[0];
+   to[1] = from[4];
+   to[2] = from[8];
+   to[3] = from[12];
+   to[4] = from[1];
+   to[5] = from[5];
+   to[6] = from[9];
+   to[7] = from[13];
+   to[8] = from[2];
+   to[9] = from[6];
+   to[10] = from[10];
+   to[11] = from[14];
+   to[12] = from[3];
+   to[13] = from[7];
+   to[14] = from[11];
+   to[15] = from[15];
+}
+
+
+
+void gl_matrix_transposed( GLdouble to[16], const GLdouble from[16] )
+{
+   to[0] = from[0];
+   to[1] = from[4];
+   to[2] = from[8];
+   to[3] = from[12];
+   to[4] = from[1];
+   to[5] = from[5];
+   to[6] = from[9];
+   to[7] = from[13];
+   to[8] = from[2];
+   to[9] = from[6];
+   to[10] = from[10];
+   to[11] = from[14];
+   to[12] = from[3];
+   to[13] = from[7];
+   to[14] = from[11];
+   to[15] = from[15];
+}
+
+
+
 /*
  * Generate a 4x4 transformation matrix from glRotate parameters.
  */
@@ -902,11 +936,12 @@ do {									\
 } while (0)
 
 
-void gl_Frustum( GLcontext *ctx,
-                 GLdouble left, GLdouble right,
-	 	 GLdouble bottom, GLdouble top,
-		 GLdouble nearval, GLdouble farval )
+void
+_mesa_Frustum( GLdouble left, GLdouble right,
+               GLdouble bottom, GLdouble top,
+               GLdouble nearval, GLdouble farval )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLfloat x, y, a, b, c, d;
    GLfloat m[16];
    GLmatrix *mat = 0;
@@ -952,11 +987,12 @@ void gl_Frustum( GLcontext *ctx,
 }
 
 
-void gl_Ortho( GLcontext *ctx,
-               GLdouble left, GLdouble right,
-               GLdouble bottom, GLdouble top,
-               GLdouble nearval, GLdouble farval )
+void
+_mesa_Ortho( GLdouble left, GLdouble right,
+             GLdouble bottom, GLdouble top,
+             GLdouble nearval, GLdouble farval )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLfloat x, y, z;
    GLfloat tx, ty, tz;
    GLfloat m[16];
@@ -991,8 +1027,10 @@ void gl_Ortho( GLcontext *ctx,
 }
 
 
-void gl_MatrixMode( GLcontext *ctx, GLenum mode )
+void
+_mesa_MatrixMode( GLenum mode )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glMatrixMode");
    switch (mode) {
       case GL_MODELVIEW:
@@ -1007,8 +1045,10 @@ void gl_MatrixMode( GLcontext *ctx, GLenum mode )
 
 
 
-void gl_PushMatrix( GLcontext *ctx )
+void
+_mesa_PushMatrix( void )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glPushMatrix");
 
    if (MESA_VERBOSE&VERBOSE_API)
@@ -1056,8 +1096,10 @@ void gl_PushMatrix( GLcontext *ctx )
 
 
 
-void gl_PopMatrix( GLcontext *ctx )
+void
+_mesa_PopMatrix( void )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glPopMatrix");
 
    if (MESA_VERBOSE&VERBOSE_API)
@@ -1111,8 +1153,10 @@ void gl_PopMatrix( GLcontext *ctx )
 
 
 
-void gl_LoadIdentity( GLcontext *ctx )
+void
+_mesa_LoadIdentity( void )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
    GET_ACTIVE_MATRIX(ctx, mat, ctx->NewState, "glLoadIdentity");
 
@@ -1131,8 +1175,10 @@ void gl_LoadIdentity( GLcontext *ctx )
 }
 
 
-void gl_LoadMatrixf( GLcontext *ctx, const GLfloat *m )
+void
+_mesa_LoadMatrixf( const GLfloat *m )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
    GET_ACTIVE_MATRIX(ctx, mat, ctx->NewState, "glLoadMatrix");
 
@@ -1162,12 +1208,25 @@ void gl_LoadMatrixf( GLcontext *ctx, const GLfloat *m )
 }
 
 
+void
+_mesa_LoadMatrixd( const GLdouble *m )
+{
+   GLfloat f[16];
+   GLint i;
+   for (i = 0; i < 16; i++)
+      f[i] = m[i];
+   _mesa_LoadMatrixf(f);
+}
+
+
 
 /*
  * Multiply the active matrix by an arbitary matrix.
  */
-void gl_MultMatrixf( GLcontext *ctx, const GLfloat *m )
+void
+_mesa_MultMatrixf( const GLfloat *m )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
    GET_ACTIVE_MATRIX( ctx,  mat, ctx->NewState, "glMultMatrix" );
    matmul4( mat->m, mat->m, m );
@@ -1178,8 +1237,10 @@ void gl_MultMatrixf( GLcontext *ctx, const GLfloat *m )
 /*
  * Multiply the active matrix by an arbitary matrix.  
  */
-void gl_MultMatrixd( GLcontext *ctx, const GLdouble *m )
+void
+_mesa_MultMatrixd( const GLdouble *m )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
    GET_ACTIVE_MATRIX( ctx,  mat, ctx->NewState, "glMultMatrix" );
    matmul4fd( mat->m, mat->m, m );
@@ -1227,9 +1288,10 @@ void gl_mat_mul_mat( GLmatrix *mat, const GLmatrix *m )
 /*
  * Execute a glRotate call
  */
-void gl_Rotatef( GLcontext *ctx,
-                 GLfloat angle, GLfloat x, GLfloat y, GLfloat z )
+void
+_mesa_Rotatef( GLfloat angle, GLfloat x, GLfloat y, GLfloat z )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLfloat m[16];
    if (angle != 0.0F) {
       GLmatrix *mat = 0;
@@ -1240,11 +1302,20 @@ void gl_Rotatef( GLcontext *ctx,
    }
 }
 
+void
+_mesa_Rotated( GLdouble angle, GLdouble x, GLdouble y, GLdouble z )
+{
+   _mesa_Rotatef(angle, x, y, z);
+}
+
+
 /*
  * Execute a glScale call
  */
-void gl_Scalef( GLcontext *ctx, GLfloat x, GLfloat y, GLfloat z )
+void
+_mesa_Scalef( GLfloat x, GLfloat y, GLfloat z )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
    GLfloat *m;
    GET_ACTIVE_MATRIX(ctx, mat, ctx->NewState, "glScale");
@@ -1265,11 +1336,21 @@ void gl_Scalef( GLcontext *ctx, GLfloat x, GLfloat y, GLfloat z )
 		  MAT_DIRTY_DEPENDENTS);
 }
 
+
+void
+_mesa_Scaled( GLdouble x, GLdouble y, GLdouble z )
+{
+   _mesa_Scalef(x, y, z);
+}
+
+
 /*
  * Execute a glTranslate call
  */
-void gl_Translatef( GLcontext *ctx, GLfloat x, GLfloat y, GLfloat z )
+void
+_mesa_Translatef( GLfloat x, GLfloat y, GLfloat z )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
    GLfloat *m;
    GET_ACTIVE_MATRIX(ctx, mat, ctx->NewState, "glTranslate");
@@ -1286,12 +1367,72 @@ void gl_Translatef( GLcontext *ctx, GLfloat x, GLfloat y, GLfloat z )
 }
 
 
+void
+_mesa_Translated( GLdouble x, GLdouble y, GLdouble z )
+{
+   _mesa_Translatef(x, y, z);
+}
+
+
+
+void
+_mesa_LoadTransposeMatrixfARB( const GLfloat *m )
+{
+   GLfloat tm[16];
+   gl_matrix_transposef(tm, m);
+   _mesa_LoadMatrixf(tm);
+}
+
+
+void
+_mesa_LoadTransposeMatrixdARB( const GLdouble *m )
+{
+   GLdouble tm[16];
+   gl_matrix_transposed(tm, m);
+   _mesa_LoadMatrixd(tm);
+}
+
+
+void
+_mesa_MultTransposeMatrixfARB( const GLfloat *m )
+{
+   GLfloat tm[16];
+   gl_matrix_transposef(tm, m);
+   _mesa_MultMatrixf(tm);
+}
+
+
+void
+_mesa_MultTransposeMatrixdARB( const GLdouble *m )
+{
+   GLdouble tm[16];
+   gl_matrix_transposed(tm, m);
+   _mesa_MultMatrixd(tm);
+}
+
+
+/*
+ * Called via glViewport or display list execution.
+ */
+void
+_mesa_Viewport( GLint x, GLint y, GLsizei width, GLsizei height )
+{
+   GET_CURRENT_CONTEXT(ctx);
+   gl_Viewport(ctx, x, y, width, height);
+}
+
+
+
 /*
  * Define a new viewport and reallocate auxillary buffers if the size of
  * the window (color buffer) has changed.
+ *
+ * XXX This is directly called by device drivers, BUT this function
+ * may be renamed _mesa_Viewport (without ctx arg) in the future so
+ * use of _mesa_Viewport is encouraged.
  */
-void gl_Viewport( GLcontext *ctx,
-                  GLint x, GLint y, GLsizei width, GLsizei height )
+void
+gl_Viewport( GLcontext *ctx, GLint x, GLint y, GLsizei width, GLsizei height )
 {
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glViewport");
 
@@ -1330,15 +1471,15 @@ void gl_Viewport( GLcontext *ctx,
    /* Check if window/buffer has been resized and if so, reallocate the
     * ancillary buffers.
     */
-   gl_ResizeBuffersMESA(ctx);
+   _mesa_ResizeBuffersMESA();
 
 
    ctx->RasterMask &= ~WINCLIP_BIT;
 
    if (   ctx->Viewport.X<0
-       || ctx->Viewport.X + ctx->Viewport.Width > ctx->Buffer->Width
+       || ctx->Viewport.X + ctx->Viewport.Width > ctx->DrawBuffer->Width
        || ctx->Viewport.Y<0
-       || ctx->Viewport.Y + ctx->Viewport.Height > ctx->Buffer->Height) {
+       || ctx->Viewport.Y + ctx->Viewport.Height > ctx->DrawBuffer->Height) {
       ctx->RasterMask |= WINCLIP_BIT;
    }
 
@@ -1350,7 +1491,8 @@ void gl_Viewport( GLcontext *ctx,
 
 
 
-void gl_DepthRange( GLcontext *ctx, GLclampd nearval, GLclampd farval )
+void
+_mesa_DepthRange( GLclampd nearval, GLclampd farval )
 {
    /*
     * nearval - specifies mapping of the near clipping plane to window
@@ -1364,7 +1506,7 @@ void gl_DepthRange( GLcontext *ctx, GLclampd nearval, GLclampd farval )
     * this range to window z coords.
     */
    GLfloat n, f;
-
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glDepthRange");
 
    if (MESA_VERBOSE&VERBOSE_API)
@@ -1412,13 +1554,14 @@ void gl_matrix_dtr( GLmatrix *m )
    }
 }
 
+#if 0
 void gl_matrix_set_identity( GLmatrix *m )
 {
    MEMCPY( m->m, Identity, sizeof(Identity));
    m->type = MATRIX_IDENTITY;
    m->flags = MAT_DIRTY_DEPENDENTS;
 }
-
+#endif
 
 void gl_matrix_alloc_inv( GLmatrix *m )
 {

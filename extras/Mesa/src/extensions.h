@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -39,14 +39,13 @@
  */
 extern int gl_extensions_add( struct gl_context *ctx, int state, 
 			      const char *name, void (*notify)( void ) );
-extern GLboolean gl_extension_is_enabled( GLcontext *ctx, const char *name);
+
 extern int gl_extensions_enable( struct gl_context *ctx, const char *name );
 extern int gl_extensions_disable( struct gl_context *ctx, const char *name );
+extern GLboolean gl_extension_is_enabled( GLcontext *ctx, const char *name);
 extern void gl_extensions_dtr( struct gl_context *ctx );
 extern void gl_extensions_ctr( struct gl_context *ctx );
 extern const char *gl_extensions_get_string( struct gl_context *ctx );
-
-extern void (*gl_get_proc_address( const GLubyte *procName ))();
 
 #endif
 

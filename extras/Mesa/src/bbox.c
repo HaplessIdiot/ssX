@@ -29,9 +29,16 @@
  */
 
 
+#ifdef PC_HEADER
+#include "all.h"
+#else
+#include "glheader.h"
 #include "bbox.h"
 #include "types.h"
 #include "xform.h"
+#endif
+
+
 
 static void cliptest_bounds( GLubyte *orMask, 
 			     GLubyte *andMask,

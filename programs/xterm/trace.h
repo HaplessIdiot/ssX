@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/trace.h,v 3.6 1999/04/29 09:14:08 dawes Exp $
+ * $XFree86: xc/programs/xterm/trace.h,v 3.7 2000/01/24 22:21:58 dawes Exp $
  */
 
 /************************************************************
@@ -46,7 +46,7 @@ extern	void	Trace ( char *, ... )
 	__attribute__ ((format(printf,1,2)))
 #endif
 	;
-#define TRACE(p) Trace p;
+#define TRACE(p) Trace p
 
 extern	char *	visibleChars (PAIRED_CHARS(Char *buf, Char *buf2), unsigned len);
 extern	char *	visibleIChar (IChar *, unsigned);

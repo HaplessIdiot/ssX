@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,9 +25,6 @@
  */
 
 
-
-
-
 #ifndef COPYPIXELS_H
 #define COPYPIXELS_H
 
@@ -35,10 +32,9 @@
 #include "types.h"
 
 
-extern void gl_CopyPixels( GLcontext* ctx,
-                           GLint srcx, GLint srcy,
-                           GLsizei width, GLsizei height,
-			   GLenum type );
+extern void
+_mesa_CopyPixels( GLint srcx, GLint srcy, GLsizei width, GLsizei height,
+                  GLenum type );
 
 
 #endif

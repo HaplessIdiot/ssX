@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -25,10 +25,8 @@
  */
 
 
-
-
-
-/* The purpose of this file is to collect all the header files that Mesa
+/*
+ * The purpose of this file is to collect all the header files that Mesa
  * uses into a single header so that we can get new compilers that support
  * pre-compiled headers to compile much faster.
  * All we do is list all the internal headers used by Mesa in this one
@@ -47,59 +45,50 @@
   This is an error.  all.h should be included only if PC_HEADER is defined.
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-
-#ifndef XFree86LOADER
-#include <assert.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <float.h>
-#include <math.h>
-#endif
-#include "GL/gl.h"
-#ifdef XFree86Server
-#include "GL/osmesa.h"
-#endif
+#include "glheader.h"
 #include "accum.h"
 #include "alpha.h"
 #include "alphabuf.h"
-#include "api.h"
 #include "asm-386.h"
 #include "attrib.h"
+#include "bbox.h"
 #include "bitmap.h"
 #include "blend.h"
 #include "clip.h"
 #include "colortab.h"
-#include "context.h"
 #include "config.h"
+#include "context.h"
 #include "copypix.h"
+#include "cva.h"
 #include "dd.h"
+#include "debug_xform.h"
 #include "depth.h"
 #include "dlist.h"
 #include "drawpix.h"
 #include "enable.h"
+#include "enums.h"
 #include "eval.h"
+#include "extensions.h"
 #include "feedback.h"
 #include "fixed.h"
 #include "fog.h"
 #include "get.h"
+#include "glapi.h"
+#include "glapinoop.h"
+#include "glmisc.h"
 #include "hash.h"
 #include "image.h"
+#include "imaging.h"
 #include "light.h"
 #include "lines.h"
 #include "logic.h"
 #include "macros.h"
 #include "masking.h"
 #include "matrix.h"
-#include "glmisc.h"
+#include "mem.h"
 #include "mmath.h"
 #include "pb.h"
 #include "pixel.h"
-#include "pointers.h"
 #include "points.h"
 #include "polygon.h"
 #include "quads.h"
@@ -109,6 +98,7 @@
 #include "scissor.h"
 #include "shade.h"
 #include "span.h"
+#include "stages.h"
 #include "stencil.h"
 #include "teximage.h"
 #include "texobj.h"
@@ -118,14 +108,16 @@
 #include "types.h"
 #include "varray.h"
 #include "vb.h"
+#include "vbcull.h"
 #include "vbfill.h"
+#include "vbindirect.h"
 #include "vbrender.h"
 #include "vbxform.h"
+#include "vector.h"
+#include "vertices.h"
 #include "winpos.h"
 #include "xform.h"
 #include "zoom.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
+
 
 #endif /*SRC_ALL_H*/

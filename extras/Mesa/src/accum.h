@@ -38,14 +38,15 @@
 extern void gl_alloc_accum_buffer( GLcontext *ctx );
 
 
-extern void gl_Accum( GLcontext *ctx, GLenum op, GLfloat value );
-
-
-extern void gl_ClearAccum( GLcontext *ctx, GLfloat red, GLfloat green,
-                           GLfloat blue, GLfloat alpha );
-
-
 extern void gl_clear_accum_buffer( GLcontext *ctx );
+
+
+extern void
+_mesa_Accum( GLenum op, GLfloat value );
+
+
+extern void
+_mesa_ClearAccum( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha );
 
 
 #endif

@@ -70,7 +70,7 @@ static void TAG(build_m3)(GLfloat      f[][3],
 	 fx = f[i][0] = u[0] - norm[0] * two_nu;
 	 fy = f[i][1] = u[1] - norm[1] * two_nu;
 	 fz = f[i][2] = u[2] - norm[2] * two_nu;
-	 m[i] = fx*fx + fy*fy + (fz + 1.0F) * (fz + 1.0F);
+	 m[i] = fx * fx + fy * fy + (fz + 1.0F) * (fz + 1.0F);
 	 if (m[i] != 0.0F) {
 	    m[i] = 0.5F / (GLfloat) GL_SQRT(m[i]);
 	 }
@@ -111,7 +111,7 @@ static void TAG(build_m2)(GLfloat f[][3],
 	 fx = f[i][0] = u[0] - norm[0] * two_nu;
 	 fy = f[i][1] = u[1] - norm[1] * two_nu;
 	 fz = f[i][2] = u[2] - norm[2] * two_nu;
-	 m[i] = fx*fx + fy*fy + (fz + 1.0F) * (fz + 1.0F);
+	 m[i] = fx * fx + fy * fy + (fz + 1.0F) * (fz + 1.0F);
 	 if (m[i] != 0.0F) {
 	    m[i] = 0.5F / (GLfloat) GL_SQRT(m[i]);
 	 }

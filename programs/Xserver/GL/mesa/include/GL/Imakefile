@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/include/GL/Imakefile,v 1.2 1999/06/14 07:31:42 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/GL/mesa/include/GL/Imakefile,v 1.6 1999/03/15 21:36:09 martin Exp $
 
 #define IHaveModules
@@ -6,8 +6,8 @@ XCOMM $PI: xc/programs/Xserver/GL/mesa/include/GL/Imakefile,v 1.6 1999/03/15 21:
 
       DEFINES = $(GLX_DEFINES)
 
-LinkSourceFile(gl.h,../../../../../../lib/GL/mesa/include/GL)
-LinkSourceFile(glx.h,../../../../../../lib/GL/mesa/include/GL)
-LinkSourceFile(xmesa.h,../../../../../../lib/GL/mesa/include/GL)
-LinkSourceFile(xmesa_x.h,../../../../../../lib/GL/mesa/include/GL)
-LinkSourceFile(xmesa_xf86.h,../../../../../../lib/GL/mesa/include/GL)
+LinkSourceFile(gl.h, ../../../../../../extras/Mesa/include/GL)
+LinkSourceFile(glx.h, ../../../../../../extras/Mesa/include/GL)
+LinkSourceFile(xmesa.h, ../../../../../../extras/Mesa/include/GL)
+LinkSourceFile(xmesa_x.h, ../../../../../../extras/Mesa/include/GL)
+LinkSourceFile(xmesa_xf86.h, ../../../../../../extras/Mesa/include/GL)

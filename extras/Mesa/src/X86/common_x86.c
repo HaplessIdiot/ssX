@@ -1,9 +1,10 @@
+/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,6 +30,8 @@
  *   processor.
  *
  *  Written by Holger Waechtler <holger@akaflieg.extern.tu-berlin.de>
+ *  Changed by Andre Werthmann <wertmann@cs.uni-potsdam.de> for using the
+ *  new Katmai functions
  */
 
 #include <stdlib.h>
@@ -36,6 +39,12 @@
 #include "common_x86asm.h"
 
 int gl_x86_cpu_features = 0;
+
+static void message(const char *msg)
+{
+   if (getenv("MESA_DEBUG"))
+      fprintf(stderr, "%s\n", msg);
+}
 
 
 void gl_init_all_x86_asm (void)
@@ -48,7 +57,7 @@ void gl_init_all_x86_asm (void)
       gl_x86_cpu_features = 0;
 
    if (gl_x86_cpu_features & GL_CPU_GenuineIntel) {
-      fprintf (stderr, "GenuineIntel cpu detected.\n");
+      message("GenuineIntel cpu detected.");
    }
 
    if (gl_x86_cpu_features) {
@@ -59,7 +68,7 @@ void gl_init_all_x86_asm (void)
    if (gl_x86_cpu_features & GL_CPU_MMX) {
       char *s = getenv( "MESA_NO_MMX" );
       if (s == NULL) { 
-         fprintf (stderr, "MMX cpu detected.\n");
+         message("MMX cpu detected.");
       } else {
          gl_x86_cpu_features &= (~GL_CPU_MMX); 
       }
@@ -71,10 +80,23 @@ void gl_init_all_x86_asm (void)
    if (gl_x86_cpu_features & GL_CPU_3Dnow) {
       char *s = getenv( "MESA_NO_3DNOW" );
       if (s == NULL) {
-         fprintf (stderr, "3Dnow cpu detected.\n");
+         message("3Dnow cpu detected.");
          gl_init_3dnow_asm_transforms ();
       } else {
          gl_x86_cpu_features &= (~GL_CPU_3Dnow); 
+      }
+   }
+#endif
+
+
+#ifdef USE_KATMAI_ASM
+   if (gl_x86_cpu_features & GL_CPU_Katmai) {
+      char *s = getenv( "MESA_NO_KATMAI" );
+      if (s == NULL) {
+         message("Katmai cpu detected.");
+         gl_init_katmai_asm_transforms ();
+      } else {
+         gl_x86_cpu_features &= (~GL_CPU_Katmai); 
       }
    }
 #endif

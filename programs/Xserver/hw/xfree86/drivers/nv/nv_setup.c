@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.1 1999/08/01 07:20:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.3 1999/11/12 02:12:40 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -36,39 +36,151 @@
  */
 void RivaEnterLeave(ScrnInfoPtr pScrn, Bool enter)
 {
-    unsigned char tmp;
-    CARD16 vgaIOBase = VGAHW_GET_IOBASE();
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     NVPtr pNv = NVPTR(pScrn);
      
     if (enter)
     {
         vgaHWUnlock(hwp);
-        outb(vgaIOBase + 4, 0x11);
-        tmp = inb(vgaIOBase + 5);
-        outb(vgaIOBase + 5, tmp & 0x7F);
-        outb(pNv->riva.LockUnlockIO, pNv->riva.LockUnlockIndex);
-        outb(pNv->riva.LockUnlockIO + 1, 0x57);
+        pNv->riva.LockUnlock(&pNv->riva, 0);
     }
     else
     {
-        outb(vgaIOBase + 4, 0x11);
-        tmp = inb(vgaIOBase + 5);
-        outb(vgaIOBase + 5, (tmp & 0x7F) | 0x80);
-        outb(pNv->riva.LockUnlockIO, pNv->riva.LockUnlockIndex);
-        outb(pNv->riva.LockUnlockIO + 1, 0x99);
+        pNv->riva.LockUnlock(&pNv->riva, 1);
         vgaHWLock(hwp);
     }
 }
+
+/*
+ * Override VGA I/O routines.
+ */
+static void NVWriteCrtc(vgaHWPtr pVga, CARD8 index, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    VGA_WR08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_DATA_OFFSET,  value);
+}
+static CARD8 NVReadCrtc(vgaHWPtr pVga, CARD8 index)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    return (VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_DATA_OFFSET));
+}
+static void NVWriteGr(vgaHWPtr pVga, CARD8 index, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PVIO, VGA_GRAPH_INDEX, index);
+    VGA_WR08(pNv->riva.PVIO, VGA_GRAPH_DATA,  value);
+}
+static CARD8 NVReadGr(vgaHWPtr pVga, CARD8 index)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PVIO, VGA_GRAPH_INDEX, index);
+    return (VGA_RD08(pNv->riva.PVIO, VGA_GRAPH_DATA));
+}
+static void NVWriteSeq(vgaHWPtr pVga, CARD8 index, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PVIO, VGA_SEQ_INDEX, index);
+    VGA_WR08(pNv->riva.PVIO, VGA_SEQ_DATA,  value);
+}
+static CARD8 NVReadSeq(vgaHWPtr pVga, CARD8 index)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PVIO, VGA_SEQ_INDEX, index);
+    return (VGA_RD08(pNv->riva.PVIO, VGA_SEQ_DATA));
+}
+static void NVWriteAttr(vgaHWPtr pVga, CARD8 index, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    (void)tmp;
+    if (pVga->paletteEnabled)
+        index &= ~0x20;
+    else
+        index |= 0x20;
+    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX,  index);
+    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_DATA_W, value);
+}
+static CARD8 NVReadAttr(vgaHWPtr pVga, CARD8 index)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    (void)tmp;
+    if (pVga->paletteEnabled)
+        index &= ~0x20;
+    else
+        index |= 0x20;
+    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, index);
+    return (VGA_RD08(pNv->riva.PCIO, VGA_ATTR_DATA_R));
+}
+static void NVWriteMiscOut(vgaHWPtr pVga, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PVIO, VGA_MISC_OUT_W, value);
+}
+static CARD8 NVReadMiscOut(vgaHWPtr pVga)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    return (VGA_RD08(pNv->riva.PVIO, VGA_MISC_OUT_R));
+}
+static void NVEnablePalette(vgaHWPtr pVga)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    (void)tmp;
+    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, 0x00);
+    pVga->paletteEnabled = TRUE;
+}
+static void NVDisablePalette(vgaHWPtr pVga)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    volatile CARD8 tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    (void)tmp;
+    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, 0x20);
+    pVga->paletteEnabled = FALSE;
+}
+static void NVWriteDacMask(vgaHWPtr pVga, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PDIO, VGA_DAC_MASK, value);
+}
+static CARD8 NVReadDacMask(vgaHWPtr pVga)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    return (VGA_RD08(pNv->riva.PDIO, VGA_DAC_MASK));
+}
+static void NVWriteDacReadAddr(vgaHWPtr pVga, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PDIO, VGA_DAC_READ_ADDR, value);
+}
+static void NVWriteDacWriteAddr(vgaHWPtr pVga, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PDIO, VGA_DAC_WRITE_ADDR, value);
+}
+static void NVWriteDacData(vgaHWPtr pVga, CARD8 value)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    VGA_WR08(pNv->riva.PDIO, VGA_DAC_DATA, value);
+}
+static CARD8 NVReadDacData(vgaHWPtr pVga)
+{
+    NVPtr pNv = (NVPtr)pVga->MMIOBase;
+    return (VGA_RD08(pNv->riva.PDIO, VGA_DAC_DATA));
+}
+
 
 static void
 NVCommonSetup(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
+    vgaHWPtr pVga = VGAHWPTR(pScrn);
     CARD32 regBase = pNv->IOAddress;
     int mmioFlags;
     
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV4CommonSetup\n"));
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVCommonSetup\n"));
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Regbase %x\n", regBase));
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- riva %x\n", &pNv->riva));
 
@@ -80,13 +192,41 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pNv->Dac.LoadPalette = NVDACLoadPalette;
 
     /*
+     * Override VGA I/O routines.
+     */
+    pVga->writeCrtc         = NVWriteCrtc;
+    pVga->readCrtc          = NVReadCrtc;
+    pVga->writeGr           = NVWriteGr;
+    pVga->readGr            = NVReadGr;
+    pVga->writeAttr         = NVWriteAttr;
+    pVga->readAttr          = NVReadAttr;
+    pVga->writeSeq          = NVWriteSeq;
+    pVga->readSeq           = NVReadSeq;
+    pVga->writeMiscOut      = NVWriteMiscOut;
+    pVga->readMiscOut       = NVReadMiscOut;
+    pVga->enablePalette     = NVEnablePalette;
+    pVga->disablePalette    = NVDisablePalette;
+    pVga->writeDacMask      = NVWriteDacMask;
+    pVga->readDacMask       = NVReadDacMask;
+    pVga->writeDacWriteAddr = NVWriteDacWriteAddr;
+    pVga->writeDacReadAddr  = NVWriteDacReadAddr;
+    pVga->writeDacData      = NVWriteDacData;
+    pVga->readDacData       = NVReadDacData;
+    /*
+     * Note: There are different pointers to the CRTC/AR and GR/SEQ registers.
+     * Bastardize the intended uses of these to make it work.
+     */
+    pVga->MMIOBase   = (CARD8 *)pNv;
+    pVga->MMIOOffset = 0;
+    
+    /*
      * No IRQ in use.
      */
     pNv->riva.EnableIRQ = 0;
     /*
      * Map remaining registers. This MUST be done in the OS specific driver code.
      */
-    pNv->riva.IO      = VGAHW_GET_IOBASE();
+    pNv->riva.IO      = VGA_IOBASE_COLOR;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- IO %x\n", pNv->riva.IO));
 
@@ -117,6 +257,20 @@ NVCommonSetup(ScrnInfoPtr pScrn)
                                       regBase+0x00800000, 0x00010000);
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- FIFO %x\n", pNv->riva.FIFO));
 
+    /*
+     * These registers are read/write as 8 bit values.  Probably have to map
+     * sparse on alpha.
+     */
+    pNv->riva.PCIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
+                                           pNv->PciTag, regBase+0x00601000,
+                                           0x00001000);
+    pNv->riva.PDIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
+                                           pNv->PciTag, regBase+0x00681000,
+                                           0x00001000);
+    pNv->riva.PVIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
+                                           pNv->PciTag, regBase+0x000C0000,
+                                           0x00001000);
+    
     RivaGetConfig(&pNv->riva);
 
     pNv->Dac.maxPixelClock = pNv->riva.MaxVClockFreqKHz;

@@ -29,7 +29,7 @@
  */
 
 
-static void TAG(transform_normalize_normals)( const GLmatrix *mat,
+static void _XFORMAPI TAG(transform_normalize_normals)( const GLmatrix *mat,
 					      GLfloat scale,
 					      const GLvector3f *in,
 					      const GLfloat *lengths,
@@ -103,7 +103,7 @@ static void TAG(transform_normalize_normals)( const GLmatrix *mat,
    dest->count = in->count;
 }
 
-static void TAG(transform_normalize_normals_no_rot)( const GLmatrix *mat,
+static void _XFORMAPI TAG(transform_normalize_normals_no_rot)( const GLmatrix *mat,
 						     GLfloat scale,
 						     const GLvector3f *in,
 						     const GLfloat *lengths,
@@ -176,7 +176,7 @@ static void TAG(transform_normalize_normals_no_rot)( const GLmatrix *mat,
 }
 
 
-static void TAG(transform_rescale_normals_no_rot)( const GLmatrix *mat,
+static void _XFORMAPI TAG(transform_rescale_normals_no_rot)( const GLmatrix *mat,
 						   GLfloat scale,
 						   const GLvector3f *in,
 						   const GLfloat *lengths,
@@ -205,7 +205,7 @@ static void TAG(transform_rescale_normals_no_rot)( const GLmatrix *mat,
    dest->count = in->count;
 }
 
-static void TAG(transform_rescale_normals)( const GLmatrix *mat,
+static void _XFORMAPI TAG(transform_rescale_normals)( const GLmatrix *mat,
 					    GLfloat scale,
 					    const GLvector3f *in,
 					    const GLfloat *lengths,
@@ -238,7 +238,7 @@ static void TAG(transform_rescale_normals)( const GLmatrix *mat,
 }
 
 
-static void TAG(transform_normals_no_rot)(const GLmatrix *mat,
+static void _XFORMAPI TAG(transform_normals_no_rot)(const GLmatrix *mat,
 					  GLfloat scale,
 					  const GLvector3f *in,
 					  const GLfloat *lengths,
@@ -268,7 +268,7 @@ static void TAG(transform_normals_no_rot)(const GLmatrix *mat,
    dest->count = in->count;
 }
 
-static void TAG(transform_normals)( const GLmatrix *mat,
+static void _XFORMAPI TAG(transform_normals)( const GLmatrix *mat,
 				    GLfloat scale,
 				    const GLvector3f *in,
 				    const GLfloat *lengths,
@@ -299,7 +299,7 @@ static void TAG(transform_normals)( const GLmatrix *mat,
 }
 
 
-static void TAG(normalize_normals)( const GLmatrix *mat,
+static void _XFORMAPI TAG(normalize_normals)( const GLmatrix *mat,
 				    GLfloat scale,
 				    const GLvector3f *in,
 				    const GLfloat *lengths,
@@ -348,7 +348,7 @@ static void TAG(normalize_normals)( const GLmatrix *mat,
 }
 
 
-static void TAG(rescale_normals)( const GLmatrix *mat,
+static void _XFORMAPI TAG(rescale_normals)( const GLmatrix *mat,
 				  GLfloat scale,
 				  const GLvector3f *in,
 				  const GLfloat *lengths,
@@ -373,7 +373,7 @@ static void TAG(rescale_normals)( const GLmatrix *mat,
 }
 
 
-static void TAG(init_c_norm_transform)( void )
+static void _XFORMAPI TAG(init_c_norm_transform)( void )
 {
    gl_normal_tab[NORM_TRANSFORM_NO_ROT][IDX] = 
       TAG(transform_normals_no_rot);

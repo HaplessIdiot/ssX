@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.3 1999/11/19 13:54:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.4 1999/12/14 01:33:49 robin Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -408,8 +408,7 @@ TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY,
     dstX += w-1;
   }
   if (srcY>=pTDFX->prevBlitDest.y1-32 && srcY<=pTDFX->prevBlitDest.y1) {
-    /* ErrorF("Sending NOP\n"); */
-    TDFXSendNOP(pTDFX);
+    TDFXSync(pScrn);
   }
 
   TDFXMakeRoom(pTDFX, 4);

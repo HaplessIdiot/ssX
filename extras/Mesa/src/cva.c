@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -28,27 +28,23 @@
  * Copyright (C) 1999 Keith Whitwell
  */
 
-#ifndef XFree86Server
-#include <stdlib.h>
-#include <stdio.h>
+
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
-#include "api.h"
+#include "glheader.h"
 #include "types.h"
 #include "cva.h"
 #include "context.h"
 #include "macros.h"
+#include "mem.h"
 #include "pipeline.h"
 #include "varray.h"
 #include "vbcull.h"
 #include "vbrender.h"
 #include "vbxform.h"
 #include "vector.h"
-
-/* Mesa CVA implementation.  
- * Copyright (C) 1999 Keith Whitwell
- */
+#endif
 
 
 
@@ -377,12 +373,10 @@ void gl_rescue_cva( GLcontext *ctx, struct immediate *IM )
  * actual draw commands arrive, the data will be merged prior to
  * calling render_vb.  
  */
-void GLAPIENTRY glLockArraysEXT(CTX_ARG GLint first, GLsizei count )
+void
+_mesa_LockArraysEXT(GLint first, GLsizei count)
 {
-   GLcontext *ctx;
-   GET_CONTEXT;
-   CHECK_CONTEXT;
-   ctx = CC;
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH( ctx, "unlock arrays" );
 
    if (MESA_VERBOSE & VERBOSE_API)
@@ -430,12 +424,10 @@ void GLAPIENTRY glLockArraysEXT(CTX_ARG GLint first, GLsizei count )
 
 
 
-void GLAPIENTRY glUnlockArraysEXT(CTX_VOID )
+void
+_mesa_UnlockArraysEXT( void )
 {
-   GLcontext *ctx;
-   GET_CONTEXT;
-   CHECK_CONTEXT;
-   ctx = CC;
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH( ctx, "unlock arrays" );
 
    if (MESA_VERBOSE & VERBOSE_API)

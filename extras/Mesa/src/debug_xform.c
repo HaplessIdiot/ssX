@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -24,18 +24,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef XFree86Server
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+
+#ifdef PC_HEADER
+#include "all.h"
 #else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "types.h"
 #include "xform.h"
 #include "debug_xform.h"
+#endif
+
+
+#ifdef DEBUG  /* This code only used for debugging */
 
 
 /*  comment this out to deactivate the cycle counter.
@@ -237,10 +238,11 @@ static int test_transform_function( transform_func fn, int psize, int mtype,
    GLfloat *m = mat->m;
    GLubyte mask[TEST_COUNT];
    int i, j;
-
+#ifdef  RUN_XFORM_BENCHMARK
    int cycle_i;                /* the counter for the benchmarks we run     */
+#endif
 
-   (void) cycles; (void) cycle_i;
+   (void) cycles;
 
    if (psize > 4) {
       gl_problem( NULL, "test_transform_function called with psize > 4\n");
@@ -585,10 +587,11 @@ static int test_norm_function( normal_func fn, int mtype,
    GLfloat *m = mat->m;
    GLubyte mask[TEST_COUNT];
    int i, j;
-
+#ifdef  RUN_XFORM_BENCHMARK
    int cycle_i;                /* the counter for the benchmarks we run     */
+#endif
 
-   (void) cycles; (void) cycle_i;
+   (void) cycles;
 
    mat->inv = mat->m;
 
@@ -793,3 +796,4 @@ void gl_test_all_normal_transform_functions( char *description )
 
 
 
+#endif /*DEBUG*/

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/50 1997/11/24 16:47:55 kaleb $
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.27 1999/09/27 06:29:06 dawes Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.28 1999/12/13 01:39:39 robin Exp $
 
 #if BuildScreenSaverLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
@@ -7,6 +7,9 @@ SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
 
 #if BuildXF86MiscLibrary
 XF86MISCHEADERS = xf86misc.h xf86mscstr.h
+#endif
+#if BuildXF86BigfontExt
+XF86BIGFONTHEADERS = xf86bigfont.h xf86bigfstr.h
 #endif
 #if BuildXF86VidModeLibrary
 XF86VIDMODEHEADERS = xf86vmode.h xf86vmstr.h
@@ -21,8 +24,9 @@ LBXHEADERS = lbxbuf.h lbxbufstr.h lbxdeltastr.h lbximage.h lbxopts.h lbxstr.h lb
 XVHEADERS = Xv.h Xvlib.h Xvproto.h
 #endif
 
-EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) \
-	       $(XF86MISCHEADERS) $(LBXHEADERS) $(XVHEADERS)
+EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86MISCHEADERS) $(XF86BIGFONTHEADERS) \
+	       $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) \
+	       $(LBXHEADERS) $(XVHEADERS)
 
 
 

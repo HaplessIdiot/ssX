@@ -1,0 +1,257 @@
+/**************************************************************************
+
+Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sub license, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice (including the
+next paragraph) shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**************************************************************************/
+
+/*
+ * Authors:
+ *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Brian Paul <brian@precisioninsight.com>
+ *
+ */
+
+#ifdef GLX_DIRECT_RENDERING
+
+#include <unistd.h>
+#include <Xlibint.h>
+#include <Xext.h>
+#include <extutil.h>
+#include "glxclient.h"
+#include "xf86dri.h"
+#include "sarea.h"
+#include <stdio.h>
+#include <dlfcn.h>
+#include "dri_glx.h"
+#include <sys/types.h>
+
+
+typedef void *(*CreateScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
+                                  int numConfigs, __GLXvisualConfig *config);
+
+
+
+#ifdef BUILT_IN_DRI_DRIVER
+
+extern void *driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
+                             int numConfigs, __GLXvisualConfig *config);
+
+
+#else /* BUILT_IN_DRI_DRIVER */
+
+
+#define QUOTE(s)   #s
+
+#ifndef DEFAULT_DRIVER_DIR
+/* this should be defined in the Imakefile */
+#define DEFAULT_DRIVER_DIR /usr/X11R6/lib/modules/dri
+#endif
+
+
+static void ErrorMessage(const char *msg)
+{
+    if (getenv("LIBGL_DEBUG")) {
+        fprintf(stderr, "libGL error: %s\n", msg);
+    }
+}
+
+
+/*
+ * We'll save a pointer to this function when we couldn't find a
+ * direct rendering driver for a given screen.
+ */
+static void *DummyCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
+                               int numConfigs, __GLXvisualConfig *config)
+{
+    (void) dpy;
+    (void) scrn;
+    (void) psc;
+    (void) numConfigs;
+    (void) config;
+    return NULL;
+}
+
+
+/*
+ * Initialize two arrays:  an array of createScreen function pointers
+ * and an array of dlopen library handles.  Arrays are indexed by
+ * screen number.
+ * We use the DRI in order to find the driCreateScreen function
+ * exported by each screen on a display.
+ */
+static void Find_CreateScreenFuncs(Display *dpy,
+                                   CreateScreenFunc *createFuncs,
+                                   void **libraryHandles)
+{
+    const int numScreens = ScreenCount(dpy);
+    int scrn;
+
+    for (scrn = 0; scrn < numScreens; scrn++) {
+        int directCapable;
+        Bool b;
+        int driverMajor, driverMinor, driverPatch;
+        char *driverName = NULL;
+
+        /* defaults */
+        createFuncs[scrn] = DummyCreateScreen;
+        libraryHandles[scrn] = NULL;
+
+        if (!XF86DRIQueryDirectRenderingCapable(dpy, scrn, &directCapable)) {
+            continue;
+        }
+        if (!directCapable) {
+            continue;
+        }
+
+        /*
+         * Use DRI to find the device driver for use on screen number 'scrn'.
+         */
+        b = XF86DRIGetClientDriverName(dpy, scrn, &driverMajor, &driverMinor,
+                                       &driverPatch, &driverName);
+        if (!b) {
+            char message[1000];
+            snprintf(message, 1000, "Cannot determine driver name for screen %d", scrn);
+            ErrorMessage(message);
+            continue;
+        }
+
+
+        /*
+         * dlopen the driver module and call its driCreateScreen function.
+         */
+        {
+            char realDriverName[100];
+            void *handle;
+            CreateScreenFunc createScreenFunc;
+            char *libDir = NULL;
+
+            if (geteuid() == getuid()) {
+                /* don't allow setuid apps to use DRI_MODULES_DIR */
+                libDir = getenv("DRI_MODULES_DIR");
+            }
+            if (!libDir)
+                libDir = QUOTE(DEFAULT_DRIVER_DIR);
+
+            sprintf(realDriverName, "%s/%s_dri.so", libDir, driverName);
+            /*printf("OPEN %s\n", realDriverName);*/
+            handle = dlopen(realDriverName, RTLD_LAZY);
+            if (!handle) {
+                char message[1000];
+                snprintf(message, 1000, "dlopen failed: %s", dlerror());
+                ErrorMessage(message);
+                continue;
+            }
+
+            createScreenFunc = (CreateScreenFunc) dlsym(handle, "driCreateScreen");
+            if (createScreenFunc) {
+                /* success! */
+                createFuncs[scrn] = createScreenFunc;
+                libraryHandles[scrn] = handle;
+            }
+            else {
+                char message[1000];
+                snprintf(message, 1000, "driCreateScreen() not defined in %s", realDriverName);
+                ErrorMessage(message);
+                dlclose(handle);
+            }
+        }
+    }
+}
+
+#endif /* BUILT_IN_DRI_DRIVER */
+
+
+static void driDestroyDisplay(Display *dpy, void *private)
+{
+    __DRIdisplayPrivate *pdpyp = (__DRIdisplayPrivate *)private;
+
+    if (pdpyp) {
+        const int numScreens = ScreenCount(dpy);
+        int i;
+        for (i = 0; i < numScreens; i++) {
+            if (pdpyp->libraryHandles[i])
+                dlclose(pdpyp->libraryHandles[i]);
+        }
+        Xfree(pdpyp->libraryHandles);
+	Xfree(pdpyp);
+    }
+}
+
+
+void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
+{
+    const int numScreens = ScreenCount(dpy);
+    __DRIdisplayPrivate *pdpyp;
+    int eventBase, errorBase;
+    int major, minor, patch;
+
+    if (!XF86DRIQueryExtension(dpy, &eventBase, &errorBase)) {
+	return NULL;
+    }
+
+    if (!XF86DRIQueryVersion(dpy, &major, &minor, &patch)) {
+	return NULL;
+    }
+
+    pdpyp = (__DRIdisplayPrivate *)Xmalloc(sizeof(__DRIdisplayPrivate));
+    if (!pdpyp) {
+	return NULL;
+    }
+
+    pdpyp->major = major;
+    pdpyp->minor = minor;
+    pdpyp->patch = patch;
+
+    pdisp->destroyDisplay = driDestroyDisplay;
+
+    /* allocate array of pointers to createScreen funcs */
+    pdisp->createScreen = (CreateScreenFunc *) Xmalloc(numScreens * sizeof(void *));
+    if (!pdisp->createScreen)
+       return NULL;
+
+    /* allocate array of library handles */
+    pdpyp->libraryHandles = (void **) Xmalloc(numScreens * sizeof(void*));
+    if (!pdpyp->libraryHandles) {
+       Xfree(pdisp->createScreen);
+       return NULL;
+    }
+
+#ifdef BUILT_IN_DRI_DRIVER
+    /* we'll statically bind to the driCreateScreen function */
+    {
+       int i;
+       for (i = 0; i < numScreens; i++) {
+          pdisp->createScreen[i] = driCreateScreen;
+          pdpyp->libraryHandles[i] = NULL;
+       }
+    }
+#else
+    Find_CreateScreenFuncs(dpy, pdisp->createScreen, pdpyp->libraryHandles);
+#endif
+
+    return (void *)pdpyp;
+}
+
+
+#endif /* GLX_DIRECT_RENDERING */

@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,37 +25,19 @@
  */
 
 
-
-
-
 /*
  * Mesa/X11 interface, part 2.
  *
  * This file contains the implementations of all the device driver functions.
  */
-/* $XFree86: xc/lib/GL/mesa/src/X/xmesa2.c,v 1.2 1999/03/14 03:21:02 dawes Exp $ */
 
 
-#ifdef HAVE_CONFIG_H
-#include "conf.h"
-#endif
-
-#ifndef XFree86Server
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <X11/Xlib.h>
-#endif
-#include "GL/xmesa.h"
+#include "glxheader.h"
 #include "context.h"
-#include "macros.h"
+#include "drawpix.h"
+#include "mem.h"
 #include "types.h"
 #include "xmesaP.h"
-#ifdef XFree86Server
-#include "gcstruct.h"
-#include "GL/xf86glx.h"
-#endif
-
 
 
 /*
@@ -238,7 +220,7 @@ static void flush( GLcontext *ctx )
 }
 
 
-
+#if 0
 static GLboolean set_buffer( GLcontext *ctx, GLenum mode )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
@@ -270,6 +252,90 @@ static GLboolean set_buffer( GLcontext *ctx, GLenum mode )
       return GL_FALSE;
    }
 }
+#endif
+
+
+static GLboolean set_draw_buffer( GLcontext *ctx, GLenum mode )
+{
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   if (mode == GL_FRONT_LEFT) {
+      /* write to front buffer */
+      xmesa->xm_buffer->buffer = xmesa->xm_buffer->frontbuffer;
+      /*
+      ctx->NewState |= NEW_RASTER_OPS;
+      gl_update_state(ctx);
+      */
+      xmesa_update_state(ctx);
+      return GL_TRUE;
+   }
+   else if (mode==GL_BACK_LEFT && xmesa->xm_buffer->db_state) {
+      /* write to back buffer */
+      if (xmesa->xm_buffer->backpixmap) {
+         xmesa->xm_buffer->buffer =
+	     (XMesaDrawable)xmesa->xm_buffer->backpixmap;
+      }
+      else if (xmesa->xm_buffer->backimage) {
+         xmesa->xm_buffer->buffer = None;
+      }
+      else {
+         /* just in case there wasn't enough memory for back buffer */
+         xmesa->xm_buffer->buffer = xmesa->xm_buffer->frontbuffer;
+      }
+      ctx->NewState |= NEW_RASTER_OPS;
+      gl_update_state(ctx);
+      return GL_TRUE;
+   }
+   else {
+      return GL_FALSE;
+   }
+}
+
+
+static void set_read_buffer( GLcontext *ctx, GLframebuffer *buffer,
+                             GLenum mode )
+{
+   XMesaBuffer target;
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+
+   if (buffer == ctx->DrawBuffer) {
+      target = xmesa->xm_buffer;
+      xmesa->use_read_buffer = GL_FALSE;
+   }
+   else {
+      ASSERT(buffer == ctx->ReadBuffer);
+      target = xmesa->xm_read_buffer;
+      xmesa->use_read_buffer = GL_TRUE;
+   }
+
+   if (mode == GL_FRONT_LEFT) {
+      target->buffer = target->frontbuffer;
+      /*
+        ctx->NewState |= NEW_RASTER_OPS;
+        gl_update_state(ctx);
+      */
+      xmesa_update_state(ctx);
+   }
+   else if (mode==GL_BACK_LEFT && xmesa->xm_read_buffer->db_state) {
+      if (target->backpixmap) {
+         target->buffer = (XMesaDrawable)xmesa->xm_buffer->backpixmap;
+      }
+      else if (target->backimage) {
+         target->buffer = None;
+      }
+      else {
+         /* just in case there wasn't enough memory for back buffer */
+         target->buffer = target->frontbuffer;
+      }
+      /*
+      ctx->NewState |= NEW_RASTER_OPS;
+      gl_update_state(ctx);
+      */
+      xmesa_update_state(ctx);
+   }
+   else {
+      gl_problem(ctx, "invalid buffer in set_read_buffer() in xmesa2.c");
+   }
+}
 
 
 
@@ -278,7 +344,7 @@ static void clear_index( GLcontext *ctx, GLuint index )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    xmesa->clearpixel = (unsigned long) index;
    XMesaSetForeground( xmesa->display, xmesa->xm_buffer->cleargc,
-                   (unsigned long) index );
+                       (unsigned long) index );
 }
 
 
@@ -292,7 +358,7 @@ static void clear_color( GLcontext *ctx,
    xmesa->clearcolor[3] = a;
    xmesa->clearpixel = xmesa_color_to_pixel( xmesa, r, g, b, a );
    XMesaSetForeground( xmesa->display, xmesa->xm_buffer->cleargc,
-                   xmesa->clearpixel );
+                       xmesa->clearpixel );
 }
 
 
@@ -306,26 +372,25 @@ static void clear_color_HPCR_ximage( GLcontext *ctx,
    xmesa->clearcolor[2] = b;
    xmesa->clearcolor[3] = a;
 
-   if (0x0==r && 0x0==g && 0x0==b)
-   {
-	 /* black is black */
-         MEMSET( xmesa->xm_visual->hpcr_clear_ximage_pattern, 0x0 ,
-		 sizeof(xmesa->xm_visual->hpcr_clear_ximage_pattern));
+   if (r == 0 && g == 0 && b == 0) {
+      /* black is black */
+      MEMSET( xmesa->xm_visual->hpcr_clear_ximage_pattern, 0x0 ,
+              sizeof(xmesa->xm_visual->hpcr_clear_ximage_pattern));
    }
    else {
-   /* build clear pattern */
-   for (i=0; i<16; i++) {
-	xmesa->xm_visual->hpcr_clear_ximage_pattern[0][i]    =
-		DITHER_HPCR(i, 0, r, g, b);
-	xmesa->xm_visual->hpcr_clear_ximage_pattern[1][i]    =
-		DITHER_HPCR(i, 1, r, g, b);
-   }
+      /* build clear pattern */
+      for (i=0; i<16; i++) {
+         xmesa->xm_visual->hpcr_clear_ximage_pattern[0][i]    =
+            DITHER_HPCR(i, 0, r, g, b);
+         xmesa->xm_visual->hpcr_clear_ximage_pattern[1][i]    =
+            DITHER_HPCR(i, 1, r, g, b);
+      }
    }
 }
 
 
 static void clear_color_HPCR_pixmap( GLcontext *ctx,
-                         GLubyte r, GLubyte g, GLubyte b, GLubyte a )
+                             GLubyte r, GLubyte g, GLubyte b, GLubyte a )
 {
    int i;
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
@@ -335,21 +400,18 @@ static void clear_color_HPCR_pixmap( GLcontext *ctx,
    xmesa->clearcolor[3] = a;
 
  
-   if (0x0==r && 0x0==g && 0x0==b)
-   {
-   /* black is black */
-   for (i=0; i<16; i++)
-   {
-	XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 0, 0);
-	XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 1, 0);
-   }
+   if (0x0==r && 0x0==g && 0x0==b) {
+      /* black is black */
+      for (i=0; i<16; i++) {
+         XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 0, 0);
+         XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 1, 0);
+      }
    }
    else {
-   for (i=0; i<16; i++)
-   {
-	XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 0, DITHER_HPCR(i, 0, r, g, b));
-	XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 1, DITHER_HPCR(i, 1, r, g, b));
-   }
+      for (i=0; i<16; i++) {
+         XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 0, DITHER_HPCR(i, 0, r, g, b));
+         XMesaPutPixel(xmesa->xm_visual->hpcr_clear_ximage, i, 1, DITHER_HPCR(i, 1, r, g, b));
+      }
    }
    /* change tile pixmap content */
    XMesaPutImage(xmesa->display, 
@@ -496,195 +558,266 @@ static void dither( GLcontext *ctx, GLboolean enable )
 /*** glClear implementations                                        ***/
 /**********************************************************************/
 
-static GLbitfield clear_pixmap( GLcontext *ctx, GLbitfield mask, GLboolean all,
-                                GLint x, GLint y, GLint width, GLint height )
+
+/* Clear a pixmap color buffer, may be the front or back buffer */
+static void
+clear_pixmap( GLcontext *ctx, GLboolean all,
+              GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      if (all) {
-         XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->buffer,
-			     xmesa->xm_buffer->cleargc,
-			     0, 0,
-			     xmesa->xm_buffer->width+1,
-			     xmesa->xm_buffer->height+1 );
-      }
-      else {
-         XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->buffer,
-			     xmesa->xm_buffer->cleargc,
-			     x, xmesa->xm_buffer->height - y - height,
-			     width, height );
-      }
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   if (all) {
+      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->buffer,
+                          xmesa->xm_buffer->cleargc,
+                          0, 0,
+                          xmesa->xm_buffer->width+1,
+                          xmesa->xm_buffer->height+1 );
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
+   else {
+      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->buffer,
+                          xmesa->xm_buffer->cleargc,
+                          x, xmesa->xm_buffer->height - y - height,
+                          width, height );
+   }
 }
 
 
-static GLbitfield clear_8bit_ximage( GLcontext *ctx, GLbitfield mask,
-                                     GLboolean all, GLint x, GLint y,
-                                     GLint width, GLint height )
+static void
+clear_8bit_ximage( GLcontext *ctx, GLboolean all,
+                   GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      if (all) {
-         size_t n = xmesa->xm_buffer->backimage->bytes_per_line
-                  * xmesa->xm_buffer->backimage->height;
-         MEMSET( xmesa->xm_buffer->backimage->data, xmesa->clearpixel, n );
-      }
-      else {
-         GLint i;
-         for (i=0;i<height;i++) {
-            GLubyte *ptr = PIXELADDR1( x, y+i );
-            MEMSET( ptr, xmesa->clearpixel, width );
-         }
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   if (all) {
+      size_t n = xmesa->xm_buffer->backimage->bytes_per_line
+         * xmesa->xm_buffer->backimage->height;
+      MEMSET( xmesa->xm_buffer->backimage->data, xmesa->clearpixel, n );
+   }
+   else {
+      GLint i;
+      for (i=0;i<height;i++) {
+         GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y+i );
+         MEMSET( ptr, xmesa->clearpixel, width );
       }
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
 }
 
 
-static GLbitfield clear_HPCR_ximage( GLcontext *ctx, GLbitfield mask,
-                                     GLboolean all, GLint x, GLint y,
-                                     GLint width, GLint height )
+static void
+clear_HPCR_ximage( GLcontext *ctx, GLboolean all,
+                   GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      if (all) {
-         GLint i, c16 = (xmesa->xm_buffer->backimage->bytes_per_line>>4)<<4;
-	 GLubyte *ptr  = (GLubyte *)xmesa->xm_buffer->backimage->data;
-	 for (i=0; i<xmesa->xm_buffer->backimage->height; i++) {
-	    GLint j;
-	    GLubyte *sptr = xmesa->xm_visual->hpcr_clear_ximage_pattern[0];
-	    if (i&1) {
-		sptr += 16;
-	    }
-	    for (j=0; j<c16; j+=16) {
-		ptr[0] = sptr[0];
-		ptr[1] = sptr[1];
-		ptr[2] = sptr[2];
-		ptr[3] = sptr[3];
-		ptr[4] = sptr[4];
-		ptr[5] = sptr[5];
-		ptr[6] = sptr[6];
-		ptr[7] = sptr[7];
-		ptr[8] = sptr[8];
-		ptr[9] = sptr[9];
-		ptr[10] = sptr[10];
-		ptr[11] = sptr[11];
-		ptr[12] = sptr[12];
-		ptr[13] = sptr[13];
-		ptr[14] = sptr[14];
-		ptr[15] = sptr[15];
-		ptr += 16;
-	    }
-	    for (; j<xmesa->xm_buffer->backimage->bytes_per_line; j++) {
-		*ptr = sptr[j&15];
-		ptr++;
-	    }
-	 }
-      }
-      else {
-         GLint i;
-         for (i=y; i<y+height; i++) {
-            GLubyte *ptr = PIXELADDR1( x, i );
-	    int j;
-	    GLubyte *sptr = xmesa->xm_visual->hpcr_clear_ximage_pattern[0];
-	    if (i&1) {
-		sptr += 16;
-	    }
-	    for (j=x; j<x+width; j++) {
-		*ptr = sptr[j&15];
-		ptr++;
-	    }
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   if (all) {
+      GLint i, c16 = (xmesa->xm_buffer->backimage->bytes_per_line>>4)<<4;
+      GLubyte *ptr  = (GLubyte *)xmesa->xm_buffer->backimage->data;
+      for (i=0; i<xmesa->xm_buffer->backimage->height; i++) {
+         GLint j;
+         GLubyte *sptr = xmesa->xm_visual->hpcr_clear_ximage_pattern[0];
+         if (i&1) {
+            sptr += 16;
+         }
+         for (j=0; j<c16; j+=16) {
+            ptr[0] = sptr[0];
+            ptr[1] = sptr[1];
+            ptr[2] = sptr[2];
+            ptr[3] = sptr[3];
+            ptr[4] = sptr[4];
+            ptr[5] = sptr[5];
+            ptr[6] = sptr[6];
+            ptr[7] = sptr[7];
+            ptr[8] = sptr[8];
+            ptr[9] = sptr[9];
+            ptr[10] = sptr[10];
+            ptr[11] = sptr[11];
+            ptr[12] = sptr[12];
+            ptr[13] = sptr[13];
+            ptr[14] = sptr[14];
+            ptr[15] = sptr[15];
+            ptr += 16;
+         }
+         for (; j<xmesa->xm_buffer->backimage->bytes_per_line; j++) {
+            *ptr = sptr[j&15];
+            ptr++;
          }
       }
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
+   else {
+      GLint i;
+      for (i=y; i<y+height; i++) {
+         GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, i );
+         int j;
+         GLubyte *sptr = xmesa->xm_visual->hpcr_clear_ximage_pattern[0];
+         if (i&1) {
+            sptr += 16;
+         }
+         for (j=x; j<x+width; j++) {
+            *ptr = sptr[j&15];
+            ptr++;
+         }
+      }
+   }
 }
 
 
-static GLbitfield clear_16bit_ximage( GLcontext *ctx, GLbitfield mask,
-                                      GLboolean all, GLint x, GLint y,
-                                      GLint width, GLint height )
+static void
+clear_16bit_ximage( GLcontext *ctx, GLboolean all,
+                    GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      if (all) {
-         register GLuint n;
-         register GLuint *ptr4 = (GLuint *) xmesa->xm_buffer->backimage->data;
-         register GLuint pixel = (GLuint) xmesa->clearpixel;
-         if (xmesa->swapbytes) {
-            pixel = ((pixel >> 8) & 0x00ff)
-                  | ((pixel << 8) & 0xff00);
-         }
-         if ((pixel & 0xff) == ((pixel >> 8) & 0xff)) {
-            /* low and high bytes are equal so use memset() */
-            n = xmesa->xm_buffer->backimage->bytes_per_line
-                * xmesa->xm_buffer->height;
-            MEMSET( ptr4, pixel & 0xff, n );
-         }
-         else {
-	    pixel = pixel | (pixel<<16);
-            n = xmesa->xm_buffer->backimage->bytes_per_line 
-                * xmesa->xm_buffer->height / 4;
-            do {
-               *ptr4++ = pixel;
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   register GLuint pixel = (GLuint) xmesa->clearpixel;
+   if (xmesa->swapbytes) {
+      pixel = ((pixel >> 8) & 0x00ff) | ((pixel << 8) & 0xff00);
+   }
+   if (all) {
+      register GLuint n;
+      register GLuint *ptr4 = (GLuint *) xmesa->xm_buffer->backimage->data;
+      if ((pixel & 0xff) == ((pixel >> 8) & 0xff)) {
+         /* low and high bytes are equal so use memset() */
+         n = xmesa->xm_buffer->backimage->bytes_per_line
+            * xmesa->xm_buffer->height;
+         MEMSET( ptr4, pixel & 0xff, n );
+      }
+      else {
+         pixel = pixel | (pixel<<16);
+         n = xmesa->xm_buffer->backimage->bytes_per_line 
+            * xmesa->xm_buffer->height / 4;
+         do {
+            *ptr4++ = pixel;
                n--;
-            } while (n!=0);
-
-	    if ((xmesa->xm_buffer->backimage->bytes_per_line * 
-		 xmesa->xm_buffer->height) & 0x2)
-	       *(GLushort *)ptr4 = pixel & 0xffff;
-         }
+         } while (n!=0);
+         
+         if ((xmesa->xm_buffer->backimage->bytes_per_line * 
+              xmesa->xm_buffer->height) & 0x2)
+            *(GLushort *)ptr4 = pixel & 0xffff;
       }
-      else {
-         register int i, j;
-         register GLushort pixel = (GLushort) xmesa->clearpixel;
-         for (j=0;j<height;j++) {
-            register GLushort *ptr2 = PIXELADDR2( x, y+j );
-            for (i=0;i<width;i++) {
-               *ptr2++ = pixel;
-            }
+   }
+   else {
+      register int i, j;
+      for (j=0;j<height;j++) {
+         register GLushort *ptr2 = PIXELADDR2( xmesa->xm_buffer, x, y+j );
+         for (i=0;i<width;i++) {
+            *ptr2++ = pixel;
          }
       }
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
 }
 
 
 /* Optimized code provided by Nozomi Ytow <nozomi@biol.tsukuba.ac.jp> */
-static GLbitfield clear_24bit_ximage( GLcontext *ctx, GLbitfield mask,
-                                      GLboolean all, GLint x, GLint y,
-                                      GLint width, GLint height )
+static void
+clear_24bit_ximage( GLcontext *ctx, GLboolean all,
+                    GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      const GLubyte r = xmesa->clearcolor[0];
-      const GLubyte g = xmesa->clearcolor[1];
-      const GLubyte b = xmesa->clearcolor[2];
-      register GLuint clearPixel;
-      if (xmesa->swapbytes) {
-         clearPixel = (b << 16) | (g << 8) | r;
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   const GLubyte r = xmesa->clearcolor[0];
+   const GLubyte g = xmesa->clearcolor[1];
+   const GLubyte b = xmesa->clearcolor[2];
+   register GLuint clearPixel;
+   if (xmesa->swapbytes) {
+      clearPixel = (b << 16) | (g << 8) | r;
+   }
+   else {
+      clearPixel = (r << 16) | (g << 8) | b;
+   }
+
+   if (all) {
+      register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
+      register bgr_t *ptr3 = (bgr_t *) xmesa->xm_buffer->backimage->data;
+      if (r==g && g==b) {
+         /* same value for all three components (gray) */
+         MEMSET(ptr3, r, 3 * n);
       }
       else {
-         clearPixel = (r << 16) | (g << 8) | b;
-      }
-
-      if (all) {
-         register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
-         register bgr_t *ptr3 = (bgr_t *) xmesa->xm_buffer->backimage->data;
-         if (r==g && g==b) {
-            /* same value for all three components (gray) */
-            MEMSET(ptr3, r, 3 * n);
+         /* the usual case */
+         register GLuint *ptr4 = (GLuint *) ptr3;
+         register GLuint px;
+         GLuint pixel4[3];
+         register GLuint *p = pixel4;
+         pixel4[0] = clearPixel | (clearPixel << 24);
+         pixel4[1] = (clearPixel << 16) | (clearPixel >> 8);
+         pixel4[2] = (clearPixel << 8) | (clearPixel >>  16);
+         switch (3 & (int)(ptr3 - (bgr_t*) ptr4)){
+            case 0:
+               break;
+            case 1:
+               px = *ptr4 & 0x00ffffff;
+               px |= pixel4[0] & 0xff000000;
+               *ptr4++ = px;
+               px = *ptr4 & 0xffff0000;
+               px |= pixel4[2] & 0x0000ffff;
+               *ptr4 = px;
+               if (0 == --n)
+                  break;
+            case 2:
+               px = *ptr4 & 0x0000fffff;
+               px |= pixel4[1] & 0xffff0000;
+               *ptr4++ = px;
+               px = *ptr4 & 0xffffff00;
+               px |= pixel4[2] & 0x000000ff;
+               *ptr4 = px;
+               if (0 == --n)
+                  break;
+            case 3:
+               px = *ptr4 & 0x000000ff;
+               px |= pixel4[2] & 0xffffff00;
+               *ptr4++ = px;
+               --n;
+               break;
          }
-         else{
-            /* the usual case */
-            register GLuint *ptr4 = (GLuint *) ptr3;
-            register GLuint px;
-            GLuint pixel4[3];
-            register GLuint *p = pixel4;
-            pixel4[0] = clearPixel | (clearPixel << 24);
-            pixel4[1] = (clearPixel << 16) | (clearPixel >> 8);
-            pixel4[2] = (clearPixel << 8) | (clearPixel >>  16);
+         while (n > 3) {
+            p = pixel4;
+            *ptr4++ = *p++;
+            *ptr4++ = *p++;
+            *ptr4++ = *p++;
+            n -= 4;
+         }
+         switch (n) {
+            case 3:
+               p = pixel4;
+               *ptr4++ = *p++;
+               *ptr4++ = *p++;
+               px = *ptr4 & 0xffffff00;
+               px |= clearPixel & 0xff;
+               *ptr4 = px;
+               break;
+            case 2:
+               p = pixel4;
+               *ptr4++ = *p++;
+               px = *ptr4 & 0xffff0000;
+               px |= *p & 0xffff;
+               *ptr4 = px;
+               break;
+            case 1:
+               px = *ptr4 & 0xff000000;
+               px |= *p & 0xffffff;
+               *ptr4 = px;
+               break;
+            case 0:
+               break;
+         }
+      }
+   }
+   else {
+      /* only clear subrect of color buffer */
+      if (r==g && g==b) {
+         /* same value for all three components (gray) */
+         GLint j;
+         for (j=0;j<height;j++) {
+            bgr_t *ptr3 = PIXELADDR3( xmesa->xm_buffer, x, y+j );
+            MEMSET(ptr3, r, 3 * width);
+         }
+      }
+      else {
+         /* non-gray clear color */
+         GLint j;
+         GLuint pixel4[3];
+         pixel4[0] = clearPixel | (clearPixel << 24);
+         pixel4[1] = (clearPixel << 16) | (clearPixel >> 8);
+         pixel4[2] = (clearPixel << 8) | (clearPixel >>  16);
+         for (j=0;j<height;j++) {
+            bgr_t *ptr3 = PIXELADDR3( xmesa->xm_buffer, x, y+j );
+            register GLuint *ptr4 = (GLuint *)ptr3;
+            register GLuint *p, px;
+            GLuint w = width;
             switch (3 & (int)(ptr3 - (bgr_t*) ptr4)){
                case 0:
                   break;
@@ -695,7 +828,7 @@ static GLbitfield clear_24bit_ximage( GLcontext *ctx, GLbitfield mask,
                   px = *ptr4 & 0xffff0000;
                   px |= pixel4[2] & 0x0000ffff;
                   *ptr4 = px;
-                  if (0 == --n)
+                  if (0 == --w)
                      break;
                case 2:
                   px = *ptr4 & 0x0000fffff;
@@ -704,29 +837,29 @@ static GLbitfield clear_24bit_ximage( GLcontext *ctx, GLbitfield mask,
                   px = *ptr4 & 0xffffff00;
                   px |= pixel4[2] & 0x000000ff;
                   *ptr4 = px;
-                  if (0 == --n)
+                  if (0 == --w)
                      break;
                case 3:
                   px = *ptr4 & 0x000000ff;
                   px |= pixel4[2] & 0xffffff00;
                   *ptr4++ = px;
-                  --n;
+                  --w;
                   break;
             }
-            while (n > 3) {
+            while (w > 3){
                p = pixel4;
                *ptr4++ = *p++;
                *ptr4++ = *p++;
                *ptr4++ = *p++;
-               n -= 4;
+               w -= 4;
             }
-            switch (n) {
+            switch (w) {
                case 3:
                   p = pixel4;
                   *ptr4++ = *p++;
                   *ptr4++ = *p++;
                   px = *ptr4 & 0xffffff00;
-                  px |= clearPixel & 0xff;
+                  px |= *p & 0xff;
                   *ptr4 = px;
                   break;
                case 2:
@@ -738,7 +871,7 @@ static GLbitfield clear_24bit_ximage( GLcontext *ctx, GLbitfield mask,
                   break;
                case 1:
                   px = *ptr4 & 0xff000000;
-                  px |= *p & 0xffffff;
+                  px |= pixel4[0] & 0xffffff;
                   *ptr4 = px;
                   break;
                case 0:
@@ -746,167 +879,101 @@ static GLbitfield clear_24bit_ximage( GLcontext *ctx, GLbitfield mask,
             }
          }
       }
-      else {
-         /* only clear subrect of color buffer */
-         if (r==g && g==b) {
-            /* same value for all three components (gray) */
-            GLint j;
-            for (j=0;j<height;j++) {
-               bgr_t *ptr3 = PIXELADDR3( x, y+j );
-               MEMSET(ptr3, r, 3 * width);
-            }
-         }
-         else {
-            /* non-gray clear color */
-            GLint j;
-            GLuint pixel4[3];
-            pixel4[0] = clearPixel | (clearPixel << 24);
-            pixel4[1] = (clearPixel << 16) | (clearPixel >> 8);
-            pixel4[2] = (clearPixel << 8) | (clearPixel >>  16);
-            for (j=0;j<height;j++) {
-               bgr_t *ptr3 = PIXELADDR3( x, y+j );
-               register GLuint *ptr4 = (GLuint *)ptr3;
-               register GLuint *p, px;
-               GLuint w = width;
-               switch (3 & (int)(ptr3 - (bgr_t*) ptr4)){
-                  case 0:
-                     break;
-                  case 1:
-                     px = *ptr4 & 0x00ffffff;
-                     px |= pixel4[0] & 0xff000000;
-                     *ptr4++ = px;
-                     px = *ptr4 & 0xffff0000;
-                     px |= pixel4[2] & 0x0000ffff;
-                     *ptr4 = px;
-                     if (0 == --w)
-                        break;
-                  case 2:
-                     px = *ptr4 & 0x0000fffff;
-                     px |= pixel4[1] & 0xffff0000;
-                     *ptr4++ = px;
-                     px = *ptr4 & 0xffffff00;
-                     px |= pixel4[2] & 0x000000ff;
-                     *ptr4 = px;
-                     if (0 == --w)
-                        break;
-                  case 3:
-                     px = *ptr4 & 0x000000ff;
-                     px |= pixel4[2] & 0xffffff00;
-                     *ptr4++ = px;
-                     --w;
-                     break;
-               }
-               while (w > 3){
-                  p = pixel4;
-                  *ptr4++ = *p++;
-                  *ptr4++ = *p++;
-                  *ptr4++ = *p++;
-                  w -= 4;
-               }
-               switch (w) {
-                  case 3:
-                     p = pixel4;
-                     *ptr4++ = *p++;
-                     *ptr4++ = *p++;
-                     px = *ptr4 & 0xffffff00;
-                     px |= *p & 0xff;
-                     *ptr4 = px;
-                     break;
-                  case 2:
-                     p = pixel4;
-                     *ptr4++ = *p++;
-                     px = *ptr4 & 0xffff0000;
-                     px |= *p & 0xffff;
-                     *ptr4 = px;
-                     break;
-                  case 1:
-                     px = *ptr4 & 0xff000000;
-                     px |= pixel4[0] & 0xffffff;
-                     *ptr4 = px;
-                     break;
-                  case 0:
-                     break;
-               }
-            }
-         }
-      }
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
 }
 
 
-static GLbitfield clear_32bit_ximage( GLcontext *ctx, GLbitfield mask,
-                                      GLboolean all, GLint x, GLint y,
-                                      GLint width, GLint height )
+static void
+clear_32bit_ximage( GLcontext *ctx, GLboolean all,
+                    GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      if (all) {
-         register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
-         register GLuint *ptr4 = (GLuint *) xmesa->xm_buffer->backimage->data;
-         register GLuint pixel = (GLuint) xmesa->clearpixel;
-         if (xmesa->swapbytes) {
-            pixel = ((pixel >> 24) & 0x000000ff)
-                  | ((pixel >> 8)  & 0x0000ff00)
-                  | ((pixel << 8)  & 0x00ff0000)
-                  | ((pixel << 24) & 0xff000000);
-         }
-         if (pixel==0) {
-            MEMSET( ptr4, pixel, 4*n );
-         }
-         else {
-            do {
-               *ptr4++ = pixel;
-               n--;
-            } while (n!=0);
-         }
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   if (all) {
+      register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
+      register GLuint *ptr4 = (GLuint *) xmesa->xm_buffer->backimage->data;
+      register GLuint pixel = (GLuint) xmesa->clearpixel;
+      if (xmesa->swapbytes) {
+         pixel = ((pixel >> 24) & 0x000000ff)
+            | ((pixel >> 8)  & 0x0000ff00)
+            | ((pixel << 8)  & 0x00ff0000)
+            | ((pixel << 24) & 0xff000000);
+      }
+      if (pixel==0) {
+         MEMSET( ptr4, pixel, 4*n );
       }
       else {
-         register int i, j;
-         register GLuint pixel = (GLuint) xmesa->clearpixel;
-         for (j=0;j<height;j++) {
-            register GLuint *ptr4 = PIXELADDR4( x, y+j );
-            for (i=0;i<width;i++) {
-               *ptr4++ = pixel;
-            }
+         do {
+            *ptr4++ = pixel;
+            n--;
+         } while (n!=0);
+      }
+   }
+   else {
+      register int i, j;
+      register GLuint pixel = (GLuint) xmesa->clearpixel;
+      for (j=0;j<height;j++) {
+         register GLuint *ptr4 = PIXELADDR4( xmesa->xm_buffer, x, y+j );
+         for (i=0;i<width;i++) {
+            *ptr4++ = pixel;
          }
       }
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
 }
 
 
-static GLbitfield clear_nbit_ximage( GLcontext *ctx, GLbitfield mask,
-                                     GLboolean all, GLint x, GLint y,
-                                     GLint width, GLint height )
+static void
+clear_nbit_ximage( GLcontext *ctx, GLboolean all,
+                   GLint x, GLint y, GLint width, GLint height )
 {
-   if (mask & GL_COLOR_BUFFER_BIT) {
-      const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-      XMesaImage *img = xmesa->xm_buffer->backimage;
-      if (all) {
-         register int i, j;
-         width = xmesa->xm_buffer->width;
-         height = xmesa->xm_buffer->height;
-         for (j=0;j<height;j++) {
-            for (i=0;i<width;i++) {
-               XMesaPutPixel( img, i, j, xmesa->clearpixel );
-            }
-         }
-      }
-      else {
-         /* TODO: optimize this */
-         register int i, j;
-         y = FLIP(y);
-         for (j=0;j<height;j++) {
-            for (i=0;i<width;i++) {
-               XMesaPutPixel( img, x+i, y-j, xmesa->clearpixel );
-            }
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   XMesaImage *img = xmesa->xm_buffer->backimage;
+   if (all) {
+      register int i, j;
+      width = xmesa->xm_buffer->width;
+      height = xmesa->xm_buffer->height;
+      for (j=0;j<height;j++) {
+         for (i=0;i<width;i++) {
+            XMesaPutPixel( img, i, j, xmesa->clearpixel );
          }
       }
    }
-   return mask & (~GL_COLOR_BUFFER_BIT);
+   else {
+      /* TODO: optimize this */
+      register int i, j;
+      y = FLIP(xmesa->xm_buffer, y);
+      for (j=0;j<height;j++) {
+         for (i=0;i<width;i++) {
+            XMesaPutPixel( img, x+i, y-j, xmesa->clearpixel );
+         }
+      }
+   }
 }
 
+
+
+static GLbitfield
+clear_buffers( GLcontext *ctx, GLbitfield mask,
+               GLboolean all, GLint x, GLint y, GLint width, GLint height )
+{
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   const GLuint *colorMask = (GLuint *) &ctx->Color.ColorMask;
+
+   /* we can't handle color or index masking */
+   if (mask & (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT)) {
+      if (*colorMask != 0xffffffff || ctx->Color.IndexMask != 0xffffffff)
+         return mask;
+   }
+
+   if (mask & DD_FRONT_LEFT_BIT) {
+      ASSERT(xmesa->xm_buffer->front_clear_func);
+      (*xmesa->xm_buffer->front_clear_func)( ctx, all, x, y, width, height );
+   }
+   if (mask & DD_BACK_LEFT_BIT) {
+      ASSERT(xmesa->xm_buffer->back_clear_func);
+      (*xmesa->xm_buffer->back_clear_func)( ctx, all, x, y, width, height );
+   }
+   return mask & (~(DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT));
+}
 
 
 
@@ -973,7 +1040,7 @@ static void write_span_TRUECOLOR_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1007,7 +1074,7 @@ static void write_span_rgb_TRUECOLOR_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1041,7 +1108,7 @@ static void write_span_TRUEDITHER_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1074,7 +1141,7 @@ static void write_span_rgb_TRUEDITHER_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1108,7 +1175,7 @@ static void write_span_8A8B8G8R_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1140,7 +1207,7 @@ static void write_span_rgb_8A8B8G8R_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1172,7 +1239,7 @@ static void write_span_8R8G8B_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1202,7 +1269,7 @@ static void write_span_8R8G8B24_pixmap( RGBA_SPAN_ARGS )
    XMesaDisplay *dpy = xmesa->xm_visual->display;
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       register GLuint i;
       for (i=0;i<n;i++,x++) {
@@ -1297,7 +1364,7 @@ static void write_span_rgb_8R8G8B_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1327,7 +1394,7 @@ static void write_span_rgb_8R8G8B24_pixmap( RGB_SPAN_ARGS )
    XMesaDisplay *dpy = xmesa->xm_visual->display;
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       register GLuint i;
       for (i=0;i<n;i++,x++) {
@@ -1427,7 +1494,7 @@ static void write_span_5R6G5B_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1458,7 +1525,7 @@ static void write_span_DITHER_5R6G5B_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1491,7 +1558,7 @@ static void write_span_rgb_5R6G5B_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1522,7 +1589,7 @@ static void write_span_rgb_DITHER_5R6G5B_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1557,7 +1624,7 @@ static void write_span_DITHER_pixmap( RGBA_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    XDITHER_SETUP(y);
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1588,7 +1655,7 @@ static void write_span_rgb_DITHER_pixmap( RGB_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    XDITHER_SETUP(y);
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1619,7 +1686,7 @@ static void write_span_1BIT_pixmap( RGBA_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    SETUP_1BIT;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1652,7 +1719,7 @@ static void write_span_rgb_1BIT_pixmap( RGB_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    SETUP_1BIT;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1684,7 +1751,7 @@ static void write_span_HPCR_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1715,7 +1782,7 @@ static void write_span_rgb_HPCR_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1747,7 +1814,7 @@ static void write_span_LOOKUP_pixmap( RGBA_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    LOOKUP_SETUP;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1777,7 +1844,7 @@ static void write_span_rgb_LOOKUP_pixmap( RGB_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    LOOKUP_SETUP;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1807,7 +1874,7 @@ static void write_span_GRAYSCALE_pixmap( RGBA_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1836,7 +1903,7 @@ static void write_span_rgb_GRAYSCALE_pixmap( RGB_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1863,7 +1930,7 @@ static void write_span_TRUECOLOR_ximage( RGBA_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1892,7 +1959,7 @@ static void write_span_rgb_TRUECOLOR_ximage( RGB_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1921,7 +1988,7 @@ static void write_span_TRUEDITHER_ximage( RGBA_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1950,7 +2017,7 @@ static void write_span_rgb_TRUEDITHER_ximage( RGB_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -1978,7 +2045,7 @@ static void write_span_8A8B8G8R_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLuint *ptr = PIXELADDR4( x, y );
+   register GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2002,7 +2069,7 @@ static void write_span_rgb_8A8B8G8R_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLuint *ptr = PIXELADDR4( x, y );
+   register GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2026,7 +2093,7 @@ static void write_span_8R8G8B_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLuint *ptr = PIXELADDR4( x, y );
+   register GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2049,7 +2116,7 @@ static void write_span_8R8G8B24_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = (GLubyte *) PIXELADDR3( x, y );
+   register GLubyte *ptr = (GLubyte *) PIXELADDR3( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2199,7 +2266,7 @@ static void write_span_rgb_8R8G8B_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLuint *ptr = PIXELADDR4( x, y );
+   register GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2223,7 +2290,7 @@ static void write_span_rgb_8R8G8B24_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = (GLubyte *) PIXELADDR3( x, y );
+   register GLubyte *ptr = (GLubyte *) PIXELADDR3( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2254,7 +2321,7 @@ static void write_span_5R6G5B_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLushort *ptr = PIXELADDR2( x, y );
+   register GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2278,7 +2345,7 @@ static void write_span_DITHER_5R6G5B_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLushort *ptr = PIXELADDR2( x, y );
+   register GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2302,7 +2369,7 @@ static void write_span_rgb_5R6G5B_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLushort *ptr = PIXELADDR2( x, y );
+   register GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2326,7 +2393,7 @@ static void write_span_rgb_DITHER_5R6G5B_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLushort *ptr = PIXELADDR2( x, y );
+   register GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2351,7 +2418,7 @@ static void write_span_DITHER_ximage( RGBA_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   int yy = FLIP(y);
+   int yy = FLIP(xmesa->xm_buffer, y);
    XDITHER_SETUP(yy);
    if (mask) {
       for (i=0;i<n;i++,x++) {
@@ -2377,7 +2444,7 @@ static void write_span_rgb_DITHER_ximage( RGB_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   int yy = FLIP(y);
+   int yy = FLIP(xmesa->xm_buffer, y);
    XDITHER_SETUP(yy);
    if (mask) {
       for (i=0;i<n;i++,x++) {
@@ -2403,7 +2470,7 @@ static void write_span_DITHER8_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    XDITHER_SETUP(y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
@@ -2424,7 +2491,7 @@ static void write_span_rgb_DITHER8_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    XDITHER_SETUP(y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
@@ -2453,7 +2520,7 @@ static void write_span_1BIT_ximage( RGBA_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    SETUP_1BIT;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2478,7 +2545,7 @@ static void write_span_rgb_1BIT_ximage( RGB_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    SETUP_1BIT;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2501,7 +2568,7 @@ static void write_span_HPCR_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2525,7 +2592,7 @@ static void write_span_rgb_HPCR_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2551,7 +2618,7 @@ static void write_span_LOOKUP_ximage( RGBA_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    LOOKUP_SETUP;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2577,7 +2644,7 @@ static void write_span_rgb_LOOKUP_ximage( RGB_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    LOOKUP_SETUP;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2601,7 +2668,7 @@ static void write_span_LOOKUP8_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    LOOKUP_SETUP;
    if (mask) {
       for (i=0;i<n;i++,x++) {
@@ -2626,7 +2693,7 @@ static void write_rgb_LOOKUP8_ximage( const GLcontext *ctx,
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    LOOKUP_SETUP;
    if (mask) {
       for (i=0;i<n;i++,x++) {
@@ -2654,7 +2721,7 @@ static void write_span_GRAYSCALE_ximage( RGBA_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2679,7 +2746,7 @@ static void write_span_rgb_GRAYSCALE_ximage( RGB_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    if (mask) {
       for (i=0;i<n;i++,x++) {
          if (mask[i]) {
@@ -2703,7 +2770,7 @@ static void write_span_GRAYSCALE8_ximage( RGBA_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2727,7 +2794,7 @@ static void write_span_rgb_GRAYSCALE8_ximage( RGB_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1( x, y );
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x, y );
    if (mask) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
@@ -2771,7 +2838,7 @@ static void write_pixels_TRUECOLOR_pixmap( RGBA_PIXEL_ARGS )
          unsigned long p;
          PACK_TRUECOLOR( p, rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
 	 XMesaSetForeground( dpy, gc, p );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2792,7 +2859,7 @@ static void write_pixels_TRUEDITHER_pixmap( RGBA_PIXEL_ARGS )
          unsigned long p;
          PACK_TRUEDITHER(p, x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]);
          XMesaSetForeground( dpy, gc, p );
-         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2812,7 +2879,7 @@ static void write_pixels_8A8B8G8R_pixmap( RGBA_PIXEL_ARGS )
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc,
                          PACK_8A8B8G8R( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP], rgba[i][ACOMP] ));
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2831,7 +2898,7 @@ static void write_pixels_8R8G8B_pixmap( RGBA_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc, PACK_8R8G8B( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2850,7 +2917,7 @@ static void write_pixels_8R8G8B24_pixmap( RGBA_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc, PACK_8R8G8B( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2869,7 +2936,7 @@ static void write_pixels_5R6G5B_pixmap( RGBA_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc, PACK_5R6G5B( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2890,7 +2957,7 @@ static void write_pixels_DITHER_5R6G5B_pixmap( RGBA_PIXEL_ARGS )
          unsigned long p;
          PACK_TRUEDITHER(p, x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
 	 XMesaSetForeground( dpy, gc, p );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2911,7 +2978,7 @@ static void write_pixels_DITHER_pixmap( RGBA_PIXEL_ARGS )
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc,
                          DITHER(x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]) );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2932,7 +2999,7 @@ static void write_pixels_1BIT_pixmap( RGBA_PIXEL_ARGS )
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc,
                          DITHER_1BIT( x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ));
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2952,7 +3019,7 @@ static void write_pixels_HPCR_pixmap( RGBA_PIXEL_ARGS )
       if (mask[i]) {
          XMesaSetForeground( dpy, gc,
                          DITHER_HPCR( x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ));
-         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2972,7 +3039,7 @@ static void write_pixels_LOOKUP_pixmap( RGBA_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
          XMesaSetForeground( dpy, gc, LOOKUP( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
-         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -2991,7 +3058,7 @@ static void write_pixels_GRAYSCALE_pixmap( RGBA_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
          XMesaSetForeground( dpy, gc, GRAY_RGB( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
-         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+         XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -3009,7 +3076,7 @@ static void write_pixels_TRUECOLOR_ximage( RGBA_PIXEL_ARGS )
       if (mask[i]) {
          unsigned long p;
          PACK_TRUECOLOR( p, rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), p );
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), p );
       }
    }
 }
@@ -3026,8 +3093,8 @@ static void write_pixels_TRUEDITHER_ximage( RGBA_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
          unsigned long p;
-         PACK_TRUEDITHER(p, x[i], FLIP(y[i]), rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]);
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), p );
+         PACK_TRUEDITHER(p, x[i], FLIP(xmesa->xm_buffer, y[i]), rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]);
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), p );
       }
    }
 }
@@ -3042,7 +3109,7 @@ static void write_pixels_8A8B8G8R_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLuint *ptr = PIXELADDR4( x[i], y[i] );
+	 GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x[i], y[i] );
          *ptr = PACK_8A8B8G8R( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP], rgba[i][ACOMP] );
       }
    }
@@ -3058,7 +3125,7 @@ static void write_pixels_8R8G8B_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLuint *ptr = PIXELADDR4( x[i], y[i] );
+	 GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x[i], y[i] );
          *ptr = PACK_8R8G8B( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3074,7 +3141,7 @@ static void write_pixels_8R8G8B24_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 bgr_t *ptr = PIXELADDR3( x[i], y[i] );
+	 bgr_t *ptr = PIXELADDR3( xmesa->xm_buffer, x[i], y[i] );
          ptr->r = rgba[i][RCOMP];
          ptr->g = rgba[i][GCOMP];
          ptr->b = rgba[i][BCOMP];
@@ -3092,7 +3159,7 @@ static void write_pixels_5R6G5B_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLushort *ptr = PIXELADDR2( x[i], y[i] );
+	 GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x[i], y[i] );
          *ptr = PACK_5R6G5B( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3108,7 +3175,7 @@ static void write_pixels_DITHER_5R6G5B_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLushort *ptr = PIXELADDR2( x[i], y[i] );
+	 GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x[i], y[i] );
          PACK_TRUEDITHER( *ptr, x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3126,7 +3193,7 @@ static void write_pixels_DITHER_ximage( RGBA_PIXEL_ARGS )
    DITHER_SETUP;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]),
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]),
                     DITHER( x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
       }
    }
@@ -3143,7 +3210,7 @@ static void write_pixels_DITHER8_ximage( RGBA_PIXEL_ARGS )
    DITHER_SETUP;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+	 GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
 	 *ptr = (GLubyte) DITHER( x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3161,7 +3228,7 @@ static void write_pixels_1BIT_ximage( RGBA_PIXEL_ARGS )
    SETUP_1BIT;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]),
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]),
                     DITHER_1BIT( x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ));
       }
    }
@@ -3177,7 +3244,7 @@ static void write_pixels_HPCR_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-         GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+         GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
          *ptr = (GLubyte) DITHER_HPCR( x[i], y[i], rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3195,7 +3262,7 @@ static void write_pixels_LOOKUP_ximage( RGBA_PIXEL_ARGS )
    LOOKUP_SETUP;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), LOOKUP(rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]) );
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), LOOKUP(rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]) );
       }
    }
 }
@@ -3211,7 +3278,7 @@ static void write_pixels_LOOKUP8_ximage( RGBA_PIXEL_ARGS )
    LOOKUP_SETUP;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+	 GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
 	 *ptr = (GLubyte) LOOKUP( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3228,7 +3295,7 @@ static void write_pixels_GRAYSCALE_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]),
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]),
                     GRAY_RGB( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] ) );
       }
    }
@@ -3244,7 +3311,7 @@ static void write_pixels_GRAYSCALE8_ximage( RGBA_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLubyte *ptr = PIXELADDR1( x[i], y[i] );
+	 GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer, x[i], y[i] );
 	 *ptr = (GLubyte) GRAY_RGB( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
       }
    }
@@ -3273,7 +3340,7 @@ static void write_span_mono_pixmap( MONO_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc1;
    register GLuint i;
    register GLboolean write_all;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    write_all = GL_TRUE;
    for (i=0;i<n;i++) {
       if (!mask[i]) {
@@ -3306,7 +3373,7 @@ static void write_span_mono_TRUEDITHER_pixmap( MONO_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    register GLubyte r, g, b;
-   int yy = FLIP( y );
+   int yy = FLIP(xmesa->xm_buffer, y);
    r = xmesa->red;
    g = xmesa->green;
    b = xmesa->blue;
@@ -3333,7 +3400,7 @@ static void write_span_mono_DITHER_pixmap( MONO_SPAN_ARGS )
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
    register GLubyte r, g, b;
-   int yy = FLIP( y );
+   int yy = FLIP(xmesa->xm_buffer, y);
    XDITHER_SETUP(yy);
    r = xmesa->red;
    g = xmesa->green;
@@ -3363,7 +3430,7 @@ static void write_span_mono_1BIT_pixmap( MONO_SPAN_ARGS )
    r = xmesa->red;
    g = xmesa->green;
    b = xmesa->blue;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++,x++) {
       if (mask[i]) {
          XMesaSetForeground( dpy, gc, DITHER_1BIT( x, y, r, g, b ) );
@@ -3383,7 +3450,7 @@ static void write_span_mono_ximage( MONO_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    register unsigned long p = xmesa->pixel;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++,x++) {
       if (mask[i]) {
 	 XMesaPutPixel( img, x, y, p );
@@ -3404,7 +3471,7 @@ static void write_span_mono_TRUEDITHER_ximage( MONO_SPAN_ARGS )
    GLint r = xmesa->red;
    GLint g = xmesa->green;
    GLint b = xmesa->blue;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++) {
       if (mask[i]) {
          unsigned long p;
@@ -3424,7 +3491,7 @@ static void write_span_mono_8A8B8G8R_ximage( MONO_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    GLuint i, p, *ptr;
    p = (GLuint) xmesa->pixel;
-   ptr = PIXELADDR4( x, y );
+   ptr = PIXELADDR4( xmesa->xm_buffer, x, y );
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 ptr[i] = p;
@@ -3442,7 +3509,7 @@ static void write_span_mono_8R8G8B_ximage( MONO_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    GLuint i, p, *ptr;
    p = (GLuint) xmesa->pixel;
-   ptr = PIXELADDR4( x, y );
+   ptr = PIXELADDR4( xmesa->xm_buffer, x, y );
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 ptr[i] = p;
@@ -3462,7 +3529,7 @@ static void write_span_mono_8R8G8B24_ximage( MONO_SPAN_ARGS )
    const GLubyte g = (GLubyte) ((xmesa->pixel >> 8 ) & 0xff);
    const GLubyte b = (GLubyte) ((xmesa->pixel      ) & 0xff);
    GLuint i;
-   bgr_t *ptr = PIXELADDR3( x, y );
+   bgr_t *ptr = PIXELADDR3( xmesa->xm_buffer, x, y );
    for (i=0;i<n;i++) {
       if (mask[i]) {
          ptr[i].r = r;
@@ -3483,7 +3550,7 @@ static void write_span_mono_DITHER_ximage( MONO_SPAN_ARGS )
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
    register GLubyte r, g, b;
-   int yy = FLIP(y);
+   int yy = FLIP(xmesa->xm_buffer, y);
    XDITHER_SETUP(yy);
    r = xmesa->red;
    g = xmesa->green;
@@ -3504,7 +3571,7 @@ static void write_span_mono_DITHER8_ximage( MONO_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1(x,y);
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x,y);
    register GLubyte r, g, b;
    XDITHER_SETUP(y);
    r = xmesa->red;
@@ -3526,7 +3593,7 @@ static void write_span_mono_LOOKUP8_ximage( MONO_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1(x,y);
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x,y);
    register GLubyte pixel = (GLubyte) xmesa->pixel;
    for (i=0;i<n;i++) {
       if (mask[i]) {
@@ -3550,7 +3617,7 @@ static void write_span_mono_1BIT_ximage( MONO_SPAN_ARGS )
    r = xmesa->red;
    g = xmesa->green;
    b = xmesa->blue;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++,x++) {
       if (mask[i]) {
 	 XMesaPutPixel( img, x, y, DITHER_1BIT( x, y, r, g, b ) );
@@ -3567,7 +3634,7 @@ static void write_span_mono_HPCR_ximage( MONO_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   register GLubyte *ptr = PIXELADDR1(x,y);
+   register GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x,y);
    register GLubyte r, g, b;
    r = xmesa->red;
    g = xmesa->green;
@@ -3589,7 +3656,7 @@ static void write_span_mono_GRAYSCALE8_ximage( MONO_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    GLuint i;
    GLubyte p = (GLubyte) xmesa->pixel;
-   GLubyte *ptr = (GLubyte *) PIXELADDR1(x,y);
+   GLubyte *ptr = (GLubyte *) PIXELADDR1( xmesa->xm_buffer,x,y);
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 ptr[i] = p;
@@ -3606,12 +3673,12 @@ static void write_span_mono_GRAYSCALE8_ximage( MONO_SPAN_ARGS )
 static void write_span_mono_DITHER_5R6G5B_ximage( MONO_SPAN_ARGS )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-   register GLushort *ptr = PIXELADDR2( x, y );
+   register GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x, y );
    GLuint i;
    GLint r = xmesa->red;
    GLint g = xmesa->green;
    GLint b = xmesa->blue;
-   y = FLIP( y );
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++) {
       if (mask[i]) {
          PACK_TRUEDITHER(ptr[i], x+i, y, r, g, b);
@@ -3642,7 +3709,7 @@ static void write_pixels_mono_pixmap( MONO_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -3668,7 +3735,7 @@ static void write_pixels_mono_TRUEDITHER_pixmap( MONO_PIXEL_ARGS )
          unsigned long p;
          PACK_TRUEDITHER(p, x[i], y[i], r, g, b);
          XMesaSetForeground( dpy, gc, p );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -3693,7 +3760,7 @@ static void write_pixels_mono_DITHER_pixmap( MONO_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
          XMesaSetForeground( dpy, gc, DITHER( x[i], y[i], r, g, b ) );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -3718,7 +3785,7 @@ static void write_pixels_mono_1BIT_pixmap( MONO_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
          XMesaSetForeground( dpy, gc, DITHER_1BIT( x[i], y[i], r, g, b ) );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -3736,7 +3803,7 @@ static void write_pixels_mono_ximage( MONO_PIXEL_ARGS )
    register unsigned long p = xmesa->pixel;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), p );
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), p );
       }
    }
 }
@@ -3757,8 +3824,8 @@ static void write_pixels_mono_TRUEDITHER_ximage( MONO_PIXEL_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
          unsigned long p;
-         PACK_TRUEDITHER(p, x[i], FLIP(y[i]), r, g, b);
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), p );
+         PACK_TRUEDITHER(p, x[i], FLIP(xmesa->xm_buffer, y[i]), r, g, b);
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), p );
       }
    }
 }
@@ -3776,7 +3843,7 @@ static void write_pixels_mono_8A8B8G8R_ximage( MONO_PIXEL_ARGS )
    register GLuint p = (GLuint) xmesa->pixel;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLuint *ptr = PIXELADDR4( x[i], y[i] );
+	 GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x[i], y[i] );
 	 *ptr = p;
       }
    }
@@ -3794,7 +3861,7 @@ static void write_pixels_mono_8R8G8B_ximage( MONO_PIXEL_ARGS )
    register GLuint p = (GLuint) xmesa->pixel;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLuint *ptr = PIXELADDR4( x[i], y[i] );
+	 GLuint *ptr = PIXELADDR4( xmesa->xm_buffer, x[i], y[i] );
 	 *ptr = p;
       }
    }
@@ -3814,7 +3881,7 @@ static void write_pixels_mono_8R8G8B24_ximage( MONO_PIXEL_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 bgr_t *ptr = PIXELADDR3( x[i], y[i] );
+	 bgr_t *ptr = PIXELADDR3( xmesa->xm_buffer, x[i], y[i] );
          ptr->r = r;
          ptr->g = g;
          ptr->b = b;
@@ -3839,7 +3906,7 @@ static void write_pixels_mono_DITHER_ximage( MONO_PIXEL_ARGS )
    b = xmesa->blue;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), DITHER( x[i], y[i], r, g, b ) );
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), DITHER( x[i], y[i], r, g, b ) );
       }
    }
 }
@@ -3860,7 +3927,7 @@ static void write_pixels_mono_DITHER8_ximage( MONO_PIXEL_ARGS )
    b = xmesa->blue;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+	 GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
 	 *ptr = (GLubyte) DITHER( x[i], y[i], r, g, b );
       }
    }
@@ -3878,7 +3945,7 @@ static void write_pixels_mono_LOOKUP8_ximage( MONO_PIXEL_ARGS )
    register GLubyte pixel = (GLubyte) xmesa->pixel;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+	 GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
 	 *ptr = pixel;
       }
    }
@@ -3902,7 +3969,7 @@ static void write_pixels_mono_1BIT_ximage( MONO_PIXEL_ARGS )
    b = xmesa->blue;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), DITHER_1BIT( x[i], y[i], r, g, b ));
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), DITHER_1BIT( x[i], y[i], r, g, b ));
       }
    }
 }
@@ -3922,7 +3989,7 @@ static void write_pixels_mono_HPCR_ximage( MONO_PIXEL_ARGS )
    b = xmesa->blue;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-         GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+         GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
          *ptr = DITHER_HPCR( x[i], y[i], r, g, b );
       }
    }
@@ -3940,7 +4007,7 @@ static void write_pixels_mono_GRAYSCALE8_ximage( MONO_PIXEL_ARGS )
    register GLubyte p = (GLubyte) xmesa->pixel;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLubyte *ptr = PIXELADDR1(x[i],y[i]);
+	 GLubyte *ptr = PIXELADDR1( xmesa->xm_buffer,x[i],y[i]);
 	 *ptr = p;
       }
    }
@@ -3960,7 +4027,7 @@ static void write_pixels_mono_DITHER_5R6G5B_ximage( MONO_PIXEL_ARGS )
    int b = xmesa->blue;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 GLushort *ptr = PIXELADDR2( x[i], y[i] );
+	 GLushort *ptr = PIXELADDR2( xmesa->xm_buffer, x[i], y[i] );
          PACK_TRUEDITHER(*ptr, x[i], y[i], r, g, b);
       }
    }
@@ -3991,7 +4058,7 @@ static void write_span_index_pixmap( INDEX_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++,x++) {
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc, (unsigned long) index[i] );
@@ -4011,7 +4078,7 @@ static void write_span_index8_pixmap( INDEX8_SPAN_ARGS )
    XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    XMesaGC gc = xmesa->xm_buffer->gc2;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++,x++) {
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc, (unsigned long) index[i] );
@@ -4029,7 +4096,7 @@ static void write_span_index_ximage( INDEX_SPAN_ARGS )
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
    register GLuint i;
-   y = FLIP(y);
+   y = FLIP(xmesa->xm_buffer, y);
    for (i=0;i<n;i++,x++) {
       if (mask[i]) {
 	 XMesaPutPixel( img, x, y, (unsigned long) index[i] );
@@ -4070,7 +4137,7 @@ static void write_span_index8_ximage8( const GLcontext *ctx, GLuint n,
                                       const GLubyte mask[] )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-   GLubyte *dst = PIXELADDR1(x,y);
+   GLubyte *dst = PIXELADDR1( xmesa->xm_buffer,x,y);
    if (mask) {
       GLuint i;
       for (i=0;i<n;i++) {
@@ -4108,7 +4175,7 @@ static void write_pixels_index_pixmap( INDEX_PIXELS_ARGS )
    for (i=0;i<n;i++) {
       if (mask[i]) {
 	 XMesaSetForeground( dpy, gc, (unsigned long) index[i] );
-	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(y[i]) );
+	 XMesaDrawPoint( dpy, buffer, gc, (int) x[i], (int) FLIP(xmesa->xm_buffer, y[i]) );
       }
    }
 }
@@ -4124,7 +4191,7 @@ static void write_pixels_index_ximage( INDEX_PIXELS_ARGS )
    register GLuint i;
    for (i=0;i<n;i++) {
       if (mask[i]) {
-	 XMesaPutPixel( img, x[i], FLIP(y[i]), (unsigned long) index[i] );
+	 XMesaPutPixel( img, x[i], FLIP(xmesa->xm_buffer, y[i]), (unsigned long) index[i] );
       }
    }
 }
@@ -4145,16 +4212,22 @@ static void read_index_span( const GLcontext *ctx,
 			     GLuint n, GLint x, GLint y, GLuint index[] )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   XMesaBuffer source;
    GLuint i;
 
-   y = FLIP(y);
+   if (xmesa->use_read_buffer)
+      source = xmesa->xm_read_buffer;
+   else
+      source = xmesa->xm_buffer;
 
-   if (xmesa->xm_buffer->buffer) {
+   y = FLIP(source, y);
+
+   if (source->buffer) {
 #ifndef XFree86Server
       XMesaImage *span = NULL;
       int error;
       catch_xgetimage_errors( xmesa->display );
-      span = XGetImage( xmesa->display, xmesa->xm_buffer->buffer,
+      span = XGetImage( xmesa->display, source->buffer,
 		        x, y, n, 1, AllPlanes, ZPixmap );
       error = check_xgetimage_errors();
       if (span && !error) {
@@ -4172,13 +4245,13 @@ static void read_index_span( const GLcontext *ctx,
 	 XMesaDestroyImage( span );
       }
 #else
-      (*xmesa->display->GetImage)(xmesa->xm_buffer->buffer,
+      (*xmesa->display->GetImage)(source->buffer,
 				  x, y, n, 1, ZPixmap,
 				  ~0L, (pointer)index);
 #endif
    }
-   else if (xmesa->xm_buffer->backimage) {
-      XMesaImage *img = xmesa->xm_buffer->backimage;
+   else if (source->backimage) {
+      XMesaImage *img = source->backimage;
       for (i=0;i<n;i++,x++) {
 	 index[i] = (GLuint) XMesaGetPixel( img, x, y );
       }
@@ -4195,22 +4268,28 @@ static void read_color_span( const GLcontext *ctx,
                              GLubyte rgba[][4] )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   XMesaBuffer source;
    register GLuint i;
 
-   if (xmesa->xm_buffer->buffer) {
+   if (xmesa->use_read_buffer)
+      source = xmesa->xm_read_buffer;
+   else
+      source = xmesa->xm_buffer;
+
+   if (source->buffer) {
       XMesaImage *span = NULL;
       int error;
 #ifdef XFree86Server
       span = XMesaCreateImage(GET_VISUAL_DEPTH(xmesa->xm_visual), n, 1, NULL);
       span->data = (char *)MALLOC(span->height * span->bytes_per_line);
       error = (!span->data);
-      (*xmesa->display->GetImage)(xmesa->xm_buffer->buffer,
-				  x, FLIP(y), n, 1, ZPixmap,
+      (*xmesa->display->GetImage)(source->buffer,
+				  x, FLIP(source, y), n, 1, ZPixmap,
 				  ~0L, (pointer)span->data);
 #else
       catch_xgetimage_errors( xmesa->display );
-      span = XGetImage( xmesa->display, xmesa->xm_buffer->buffer,
-		        x, FLIP(y), n, 1, AllPlanes, ZPixmap );
+      span = XGetImage( xmesa->display, source->buffer,
+		        x, FLIP(source, y), n, 1, AllPlanes, ZPixmap );
       error = check_xgetimage_errors();
 #endif
       if (span && !error) {
@@ -4290,9 +4369,9 @@ static void read_color_span( const GLcontext *ctx,
 	    case PF_LOOKUP:
 	    case PF_GRAYSCALE:
                {
-                  GLubyte *rTable = xmesa->xm_buffer->pixel_to_r;
-                  GLubyte *gTable = xmesa->xm_buffer->pixel_to_g;
-                  GLubyte *bTable = xmesa->xm_buffer->pixel_to_b;
+                  GLubyte *rTable = source->pixel_to_r;
+                  GLubyte *gTable = source->pixel_to_g;
+                  GLubyte *bTable = source->pixel_to_b;
                   if (GET_VISUAL_DEPTH(xmesa->xm_visual)==8) {
                      GLubyte *ptr1 = (GLubyte *) span->data;
                      for (i=0;i<n;i++) {
@@ -4343,7 +4422,7 @@ static void read_color_span( const GLcontext *ctx,
 	 XMesaDestroyImage( span );
       }
    }
-   else if (xmesa->xm_buffer->backimage) {
+   else if (source->backimage) {
       switch (xmesa->pixelformat) {
          case PF_TRUECOLOR:
          case PF_TRUEDITHER:
@@ -4359,8 +4438,8 @@ static void read_color_span( const GLcontext *ctx,
                GLint rShift = xmesa->xm_visual->rshift;
                GLint gShift = xmesa->xm_visual->gshift;
                GLint bShift = xmesa->xm_visual->bshift;
-               XMesaImage *img = xmesa->xm_buffer->backimage;
-               y = FLIP(y);
+               XMesaImage *img = source->backimage;
+               y = FLIP(source, y);
                for (i=0;i<n;i++) {
                   unsigned long p;
 		  p = XMesaGetPixel( img, x+i, y );
@@ -4373,7 +4452,7 @@ static void read_color_span( const GLcontext *ctx,
             break;
 	 case PF_8A8B8G8R:
             {
-               GLuint *ptr4 = PIXELADDR4( x, y );
+               GLuint *ptr4 = PIXELADDR4( source, x, y );
                for (i=0;i<n;i++) {
                   GLuint p4 = *ptr4++;
                   rgba[i][RCOMP] = (GLubyte) ( p4        & 0xff);
@@ -4385,7 +4464,7 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
 	 case PF_8R8G8B:
             {
-               GLuint *ptr4 = PIXELADDR4( x, y );
+               GLuint *ptr4 = PIXELADDR4( source, x, y );
                for (i=0;i<n;i++) {
                   GLuint p4 = *ptr4++;
                   rgba[i][RCOMP] = (GLubyte) ((p4 >> 16) & 0xff);
@@ -4397,7 +4476,7 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
 	 case PF_8R8G8B24:
             {
-               bgr_t *ptr3 = PIXELADDR3( x, y );
+               bgr_t *ptr3 = PIXELADDR3( source, x, y );
                for (i=0;i<n;i++) {
                   rgba[i][RCOMP] = ptr3[i].r;
                   rgba[i][GCOMP] = ptr3[i].g;
@@ -4409,7 +4488,7 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
          case PF_HPCR:
             {
-               GLubyte *ptr1 = PIXELADDR1( x, y );
+               GLubyte *ptr1 = PIXELADDR1( source, x, y );
                for (i=0;i<n;i++) {
                   GLubyte p = *ptr1++;
                   rgba[i][RCOMP] =  p & 0xE0;
@@ -4423,11 +4502,11 @@ static void read_color_span( const GLcontext *ctx,
 	 case PF_LOOKUP:
 	 case PF_GRAYSCALE:
             {
-               GLubyte *rTable = xmesa->xm_buffer->pixel_to_r;
-               GLubyte *gTable = xmesa->xm_buffer->pixel_to_g;
-               GLubyte *bTable = xmesa->xm_buffer->pixel_to_b;
+               GLubyte *rTable = source->pixel_to_r;
+               GLubyte *gTable = source->pixel_to_g;
+               GLubyte *bTable = source->pixel_to_b;
                if (GET_VISUAL_DEPTH(xmesa->xm_visual)==8) {
-                  GLubyte *ptr1 = PIXELADDR1(x,y);
+                  GLubyte *ptr1 = PIXELADDR1( source, x, y );
                   for (i=0;i<n;i++) {
                      unsigned long p = *ptr1++;
                      rgba[i][RCOMP] = rTable[p];
@@ -4437,8 +4516,8 @@ static void read_color_span( const GLcontext *ctx,
                   }
                }
                else {
-                  XMesaImage *img = xmesa->xm_buffer->backimage;
-                  y = FLIP(y);
+                  XMesaImage *img = source->backimage;
+                  y = FLIP(source, y);
                   for (i=0;i<n;i++,x++) {
                      unsigned long p;
 		     p = XMesaGetPixel( img, x, y );
@@ -4452,9 +4531,9 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
 	 case PF_1BIT:
             {
-               XMesaImage *img = xmesa->xm_buffer->backimage;
+               XMesaImage *img = source->backimage;
                int bitFlip = xmesa->xm_visual->bitFlip;
-               y = FLIP(y);
+               y = FLIP(source, y);
                for (i=0;i<n;i++,x++) {
                   unsigned long p;
 		  p = XMesaGetPixel( img, x, y ) ^ bitFlip;
@@ -4483,20 +4562,27 @@ static void read_index_pixels( const GLcontext *ctx,
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    register GLuint i;
-   if (xmesa->xm_buffer->buffer) {
+   XMesaBuffer source;
+
+   if (xmesa->use_read_buffer)
+      source = xmesa->xm_read_buffer;
+   else
+      source = xmesa->xm_buffer;
+
+   if (source->buffer) {
       for (i=0;i<n;i++) {
          if (mask[i]) {
             indx[i] = (GLuint) read_pixel( xmesa->display,
-                                           xmesa->xm_buffer->buffer,
-                                           x[i], FLIP(y[i]) );
+                                           source->buffer,
+                                           x[i], FLIP(source, y[i]) );
          }
       }
    }
-   else if (xmesa->xm_buffer->backimage) {
-      XMesaImage *img = xmesa->xm_buffer->backimage;
+   else if (source->backimage) {
+      XMesaImage *img = source->backimage;
       for (i=0;i<n;i++) {
          if (mask[i]) {
-            indx[i] = (GLuint) XMesaGetPixel( img, x[i], FLIP(y[i]) );
+            indx[i] = (GLuint) XMesaGetPixel( img, x[i], FLIP(source, y[i]) );
          }
       }
    }
@@ -4510,10 +4596,18 @@ static void read_color_pixels( const GLcontext *ctx,
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaDisplay *dpy = xmesa->xm_visual->display;
-   XMesaDrawable buffer = xmesa->xm_buffer->buffer;
    register GLuint i;
+   XMesaBuffer source;
+   XMesaDrawable buffer;
 
-   if (xmesa->xm_buffer->buffer) {
+   if (xmesa->use_read_buffer)
+      source = xmesa->xm_read_buffer;
+   else
+      source = xmesa->xm_buffer;
+
+   buffer = source->buffer;  /* the X drawable */
+
+   if (source->buffer) {
       switch (xmesa->pixelformat) {
 	 case PF_TRUECOLOR:
          case PF_TRUEDITHER:
@@ -4532,7 +4626,7 @@ static void read_color_pixels( const GLcontext *ctx,
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p = read_pixel( dpy, buffer,
-                                                   x[i], FLIP(y[i]) );
+                                                   x[i], FLIP(source, y[i]) );
                      rgba[i][RCOMP] = pixelToR[(p & rMask) >> rShift];
                      rgba[i][GCOMP] = pixelToG[(p & gMask) >> gShift];
                      rgba[i][BCOMP] = pixelToB[(p & bMask) >> bShift];
@@ -4545,7 +4639,7 @@ static void read_color_pixels( const GLcontext *ctx,
 	    for (i=0;i<n;i++) {
                if (mask[i]) {
                   unsigned long p = read_pixel( dpy, buffer,
-                                                x[i], FLIP(y[i]) );
+                                                x[i], FLIP(source, y[i]) );
                   rgba[i][RCOMP] = (GLubyte) ( p        & 0xff);
                   rgba[i][GCOMP] = (GLubyte) ((p >> 8)  & 0xff);
                   rgba[i][BCOMP] = (GLubyte) ((p >> 16) & 0xff);
@@ -4557,7 +4651,7 @@ static void read_color_pixels( const GLcontext *ctx,
 	    for (i=0;i<n;i++) {
                if (mask[i]) {
                   unsigned long p = read_pixel( dpy, buffer,
-                                                x[i], FLIP(y[i]) );
+                                                x[i], FLIP(source, y[i]) );
                   rgba[i][RCOMP] = (GLubyte) ((p >> 16) & 0xff);
                   rgba[i][GCOMP] = (GLubyte) ((p >> 8)  & 0xff);
                   rgba[i][BCOMP] = (GLubyte) ( p        & 0xff);
@@ -4569,7 +4663,7 @@ static void read_color_pixels( const GLcontext *ctx,
 	    for (i=0;i<n;i++) {
                if (mask[i]) {
                   unsigned long p = read_pixel( dpy, buffer,
-                                                x[i], FLIP(y[i]) );
+                                                x[i], FLIP(source, y[i]) );
                   rgba[i][RCOMP] = (GLubyte) ((p >> 16) & 0xff);
                   rgba[i][GCOMP] = (GLubyte) ((p >> 8)  & 0xff);
                   rgba[i][BCOMP] = (GLubyte) ( p        & 0xff);
@@ -4582,7 +4676,7 @@ static void read_color_pixels( const GLcontext *ctx,
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p = read_pixel( dpy, buffer,
-                                                   x[i], FLIP(y[i]) );
+                                                   x[i], FLIP(source, y[i]) );
                      rgba[i][RCOMP] = (GLubyte) ( p & 0xE0      );
                      rgba[i][GCOMP] = (GLubyte) ((p & 0x1C) << 3);
                      rgba[i][BCOMP] = (GLubyte) ((p & 0x03) << 6);
@@ -4595,13 +4689,13 @@ static void read_color_pixels( const GLcontext *ctx,
 	 case PF_LOOKUP:
 	 case PF_GRAYSCALE:
             {
-               GLubyte *rTable = xmesa->xm_buffer->pixel_to_r;
-               GLubyte *gTable = xmesa->xm_buffer->pixel_to_g;
-               GLubyte *bTable = xmesa->xm_buffer->pixel_to_b;
+               GLubyte *rTable = source->pixel_to_r;
+               GLubyte *gTable = source->pixel_to_g;
+               GLubyte *bTable = source->pixel_to_b;
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p = read_pixel( dpy, buffer,
-                                                   x[i], FLIP(y[i]) );
+                                                   x[i], FLIP(source, y[i]) );
                      rgba[i][RCOMP] = rTable[p];
                      rgba[i][GCOMP] = gTable[p];
                      rgba[i][BCOMP] = bTable[p];
@@ -4616,7 +4710,7 @@ static void read_color_pixels( const GLcontext *ctx,
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p = read_pixel( dpy, buffer,
-                                                   x[i], FLIP(y[i])) ^ bitFlip;
+                                     x[i], FLIP(source, y[i])) ^ bitFlip;
                      rgba[i][RCOMP] = (GLubyte) (p * 255);
                      rgba[i][GCOMP] = (GLubyte) (p * 255);
                      rgba[i][BCOMP] = (GLubyte) (p * 255);
@@ -4630,7 +4724,7 @@ static void read_color_pixels( const GLcontext *ctx,
             return;
       }
    }
-   else if (xmesa->xm_buffer->backimage) {
+   else if (source->backimage) {
       switch (xmesa->pixelformat) {
 	 case PF_TRUECOLOR:
          case PF_TRUEDITHER:
@@ -4646,11 +4740,11 @@ static void read_color_pixels( const GLcontext *ctx,
                GLint rShift = xmesa->xm_visual->rshift;
                GLint gShift = xmesa->xm_visual->gshift;
                GLint bShift = xmesa->xm_visual->bshift;
-               XMesaImage *img = xmesa->xm_buffer->backimage;
+               XMesaImage *img = source->backimage;
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p;
-                     p = XMesaGetPixel( img, x[i], FLIP(y[i]) );
+                     p = XMesaGetPixel( img, x[i], FLIP(source, y[i]) );
                      rgba[i][RCOMP] = pixelToR[(p & rMask) >> rShift];
                      rgba[i][GCOMP] = pixelToG[(p & gMask) >> gShift];
                      rgba[i][BCOMP] = pixelToB[(p & bMask) >> bShift];
@@ -4662,7 +4756,7 @@ static void read_color_pixels( const GLcontext *ctx,
 	 case PF_8A8B8G8R:
 	    for (i=0;i<n;i++) {
 	       if (mask[i]) {
-                  GLuint *ptr4 = PIXELADDR4( x[i], y[i] );
+                  GLuint *ptr4 = PIXELADDR4( source, x[i], y[i] );
                   GLuint p4 = *ptr4;
                   rgba[i][RCOMP] = (GLubyte) ( p4        & 0xff);
                   rgba[i][GCOMP] = (GLubyte) ((p4 >> 8)  & 0xff);
@@ -4674,7 +4768,7 @@ static void read_color_pixels( const GLcontext *ctx,
 	 case PF_8R8G8B:
 	    for (i=0;i<n;i++) {
 	       if (mask[i]) {
-                  GLuint *ptr4 = PIXELADDR4( x[i], y[i] );
+                  GLuint *ptr4 = PIXELADDR4( source, x[i], y[i] );
                   GLuint p4 = *ptr4;
                   rgba[i][RCOMP] = (GLubyte) ((p4 >> 16) & 0xff);
                   rgba[i][GCOMP] = (GLubyte) ((p4 >> 8)  & 0xff);
@@ -4686,7 +4780,7 @@ static void read_color_pixels( const GLcontext *ctx,
 	 case PF_8R8G8B24:
 	    for (i=0;i<n;i++) {
 	       if (mask[i]) {
-                  bgr_t *ptr3 = PIXELADDR3( x[i], y[i] );
+                  bgr_t *ptr3 = PIXELADDR3( source, x[i], y[i] );
                   rgba[i][RCOMP] = ptr3->r;
                   rgba[i][GCOMP] = ptr3->g;
                   rgba[i][BCOMP] = ptr3->b;
@@ -4697,7 +4791,7 @@ static void read_color_pixels( const GLcontext *ctx,
          case PF_HPCR:
             for (i=0;i<n;i++) {
                if (mask[i]) {
-                  GLubyte *ptr1 = PIXELADDR1( x[i], y[i] );
+                  GLubyte *ptr1 = PIXELADDR1( source, x[i], y[i] );
                   GLubyte p = *ptr1;
                   rgba[i][RCOMP] =  p & 0xE0;
                   rgba[i][GCOMP] = (p & 0x1C) << 3;
@@ -4710,14 +4804,14 @@ static void read_color_pixels( const GLcontext *ctx,
 	 case PF_LOOKUP:
 	 case PF_GRAYSCALE:
             {
-               GLubyte *rTable = xmesa->xm_buffer->pixel_to_r;
-               GLubyte *gTable = xmesa->xm_buffer->pixel_to_g;
-               GLubyte *bTable = xmesa->xm_buffer->pixel_to_b;
-               XMesaImage *img = xmesa->xm_buffer->backimage;
+               GLubyte *rTable = source->pixel_to_r;
+               GLubyte *gTable = source->pixel_to_g;
+               GLubyte *bTable = source->pixel_to_b;
+               XMesaImage *img = source->backimage;
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p;
-                     p = XMesaGetPixel( img, x[i], FLIP(y[i]) );
+                     p = XMesaGetPixel( img, x[i], FLIP(source, y[i]) );
                      rgba[i][RCOMP] = rTable[p];
                      rgba[i][GCOMP] = gTable[p];
                      rgba[i][BCOMP] = bTable[p];
@@ -4728,12 +4822,12 @@ static void read_color_pixels( const GLcontext *ctx,
 	    break;
 	 case PF_1BIT:
             {
-               XMesaImage *img = xmesa->xm_buffer->backimage;
+               XMesaImage *img = source->backimage;
                int bitFlip = xmesa->xm_visual->bitFlip;
                for (i=0;i<n;i++) {
                   if (mask[i]) {
                      unsigned long p;
-                     p = XMesaGetPixel( img, x[i], FLIP(y[i]) ) ^ bitFlip;
+                     p = XMesaGetPixel( img, x[i], FLIP(source, y[i]) ) ^ bitFlip;
                      rgba[i][RCOMP] = (GLubyte) (p * 255);
                      rgba[i][GCOMP] = (GLubyte) (p * 255);
                      rgba[i][BCOMP] = (GLubyte) (p * 255);
@@ -4750,17 +4844,86 @@ static void read_color_pixels( const GLcontext *ctx,
 }
 
 
+
+#ifndef XFree86Server
+/*
+ * This function implements glDrawPixels() with an XPutImage call when
+ * drawing to the front buffer (X Window drawable).
+ * The image format must be GL_BGRA to match the PF_8R8G8B pixel format.
+ * XXX top/bottom edge clipping is broken!
+ */
+static GLboolean
+drawpixels_8R8G8B( GLcontext *ctx,
+                   GLint x, GLint y, GLsizei width, GLsizei height,
+                   GLenum format, GLenum type,
+                   const struct gl_pixelstore_attrib *unpack,
+                   const GLvoid *pixels )
+{
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   XMesaDisplay *dpy = xmesa->xm_visual->display;
+   XMesaDrawable buffer = xmesa->xm_buffer->buffer;
+   XMesaGC gc = xmesa->xm_buffer->gc1;
+   assert(dpy);
+   assert(buffer);
+   assert(gc);
+
+   /* XXX also check for pixel scale/bias/lookup/zooming! */
+   if (format == GL_BGRA && type == GL_UNSIGNED_BYTE) {
+      int dstX = x;
+      int dstY = y;
+      int w = width;
+      int h = height;
+      int srcX = unpack->SkipPixels;
+      int srcY = unpack->SkipRows;
+      if (_mesa_clip_pixelrect(ctx, &dstX, &dstY, &w, &h, &srcX, &srcY)) {
+         XMesaImage ximage;
+         MEMSET(&ximage, 0, sizeof(XMesaImage));
+         ximage.width = width;
+         ximage.height = height;
+         ximage.format = ZPixmap;
+         ximage.data = (char *) pixels + (height - 1) * width * 4;
+         ximage.byte_order = LSBFirst;
+         ximage.bitmap_unit = 32;
+         ximage.bitmap_bit_order = LSBFirst;
+         ximage.bitmap_pad = 32;
+         ximage.depth = 24;
+         ximage.bytes_per_line = -width * 4;
+         ximage.bits_per_pixel = 32;
+         ximage.red_mask   = 0xff0000;
+         ximage.green_mask = 0x00ff00;
+         ximage.blue_mask  = 0x0000ff;
+         dstY = FLIP(xmesa->xm_buffer,dstY) - height + 1;
+         XPutImage(dpy, buffer, gc, &ximage, srcX, srcY, dstX, dstY, w, h);
+         return GL_TRUE;
+      }
+   }
+   return GL_FALSE;
+}
+#endif
+
+
+
+
 static const GLubyte *get_string( GLcontext *ctx, GLenum name )
 {
    (void) ctx;
    switch (name) {
       case GL_RENDERER:
+#ifdef XFree86Server
+         return (const GLubyte *) "Mesa GLX Indirect";
+#else
          return (const GLubyte *) "Mesa X11";
+#endif
+      case GL_VENDOR:
+#ifdef XFree86Server
+         return (const GLubyte *) "Precision Insight, Inc.";
+#else
+         return NULL;
+#endif
       default:
          return NULL;
    }
 }
-
 
 
 
@@ -4774,6 +4937,9 @@ void xmesa_update_state( GLcontext *ctx )
    int depth=GET_VISUAL_DEPTH(xmesa->xm_visual);
 
    (void) DitherValues;  /* silenced unused var warning */
+#ifndef XFree86Server
+   (void) drawpixels_8R8G8B;
+#endif
 
    /*
     * Always the same:
@@ -4787,12 +4953,14 @@ void xmesa_update_state( GLcontext *ctx )
    ctx->Driver.RenderStart = 0;
    ctx->Driver.RenderFinish = 0;
 
-   ctx->Driver.SetBuffer = set_buffer;
+   ctx->Driver.SetDrawBuffer = set_draw_buffer;
+   ctx->Driver.SetReadBuffer = set_read_buffer;
 
    ctx->Driver.Index = set_index;
    ctx->Driver.Color = set_color;
    ctx->Driver.ClearIndex = clear_index;
    ctx->Driver.ClearColor = clear_color;
+   ctx->Driver.Clear = clear_buffers;
    ctx->Driver.IndexMask = index_mask;
    ctx->Driver.ColorMask = color_mask;
    ctx->Driver.LogicOp = logicop;
@@ -4804,12 +4972,44 @@ void xmesa_update_state( GLcontext *ctx )
 
 /*     ctx->Driver.TriangleCaps = DD_TRI_CULL; */
 
+   /* setup pointers to front and back buffer clear functions */
+   /* XXX this bit of code could be moved to a one-time init */
+   xmesa->xm_buffer->front_clear_func = clear_pixmap;
+   if (sizeof(GLushort)!=2 || sizeof(GLuint)!=4) {
+      /* Do this on Crays */
+      xmesa->xm_buffer->back_clear_func = clear_nbit_ximage;
+   }
+   else {
+      /* Do this on most machines */
+      switch (xmesa->xm_visual->BitsPerPixel) {
+         case 8:
+	    if (xmesa->xm_visual->hpcr_clear_flag) {
+               xmesa->xm_buffer->back_clear_func = clear_HPCR_ximage;
+            }
+            else {
+               xmesa->xm_buffer->back_clear_func = clear_8bit_ximage;
+            }
+            break;
+         case 16:
+            xmesa->xm_buffer->back_clear_func = clear_16bit_ximage;
+            break;
+         case 24:
+            xmesa->xm_buffer->back_clear_func = clear_24bit_ximage;
+            break;
+         case 32:
+            xmesa->xm_buffer->back_clear_func = clear_32bit_ximage;
+            break;
+         default:
+            xmesa->xm_buffer->back_clear_func = clear_nbit_ximage;
+            break;
+      }
+   }
+
    /*
     * These drawing functions depend on color buffer config:
     */
    if (xmesa->xm_buffer->buffer!=XIMAGE) {
       /* Writing to window or back pixmap */
-      ctx->Driver.Clear = clear_pixmap;
       switch (xmesa->pixelformat) {
 	 case PF_INDEX:
 	    ctx->Driver.WriteCI32Span     = write_span_index_pixmap;
@@ -4845,6 +5045,7 @@ void xmesa_update_state( GLcontext *ctx )
 	    ctx->Driver.WriteMonoRGBASpan   = write_span_mono_pixmap;
 	    ctx->Driver.WriteRGBAPixels     = write_pixels_8R8G8B_pixmap;
 	    ctx->Driver.WriteMonoRGBAPixels = write_pixels_mono_pixmap;
+            ctx->Driver.DrawPixels          = NULL; /*drawpixels_8R8G8B;*/
 	    break;
 	 case PF_8R8G8B24:
 	    ctx->Driver.WriteRGBASpan       = write_span_8R8G8B24_pixmap;
@@ -4887,8 +5088,7 @@ void xmesa_update_state( GLcontext *ctx )
             ctx->Driver.WriteMonoRGBASpan   = write_span_mono_pixmap;
             ctx->Driver.WriteRGBAPixels     = write_pixels_HPCR_pixmap;
             ctx->Driver.WriteMonoRGBAPixels = write_pixels_mono_pixmap;
-	    if (xmesa->xm_visual->hpcr_clear_flag)
-	    {
+	    if (xmesa->xm_visual->hpcr_clear_flag) {
    		ctx->Driver.ClearColor = clear_color_HPCR_pixmap;
 	    }
             break;
@@ -4913,30 +5113,6 @@ void xmesa_update_state( GLcontext *ctx )
    }
    else if (xmesa->xm_buffer->buffer==XIMAGE) {
       /* Writing to back XImage */
-      if (sizeof(GLushort)!=2 || sizeof(GLuint)!=4) {
-         /* Do this on Crays */
-         ctx->Driver.Clear = clear_nbit_ximage;
-      }
-      else {
-         /* Do this on most machines */
-         switch (xmesa->xm_buffer->backimage->bits_per_pixel) {
-            case 8:
-               ctx->Driver.Clear = clear_8bit_ximage;
-               break;
-            case 16:
-               ctx->Driver.Clear = clear_16bit_ximage;
-               break;
-            case 24:
-               ctx->Driver.Clear = clear_24bit_ximage;
-               break;
-            case 32:
-               ctx->Driver.Clear = clear_32bit_ximage;
-               break;
-            default:
-               ctx->Driver.Clear = clear_nbit_ximage;
-               break;
-         }
-      }
       switch (xmesa->pixelformat) {
 	 case PF_INDEX:
 	    ctx->Driver.WriteCI32Span     = write_span_index_ximage;
@@ -4976,6 +5152,7 @@ void xmesa_update_state( GLcontext *ctx )
 	    ctx->Driver.WriteMonoRGBASpan   = write_span_mono_8R8G8B_ximage;
 	    ctx->Driver.WriteRGBAPixels     = write_pixels_8R8G8B_ximage;
 	    ctx->Driver.WriteMonoRGBAPixels = write_pixels_mono_8R8G8B_ximage;
+            ctx->Driver.DrawPixels          = NULL;
 	    break;
 	 case PF_8R8G8B24:
 	    ctx->Driver.WriteRGBASpan       = write_span_8R8G8B24_ximage;
@@ -5027,10 +5204,8 @@ void xmesa_update_state( GLcontext *ctx )
             ctx->Driver.WriteMonoRGBASpan   = write_span_mono_HPCR_ximage;
             ctx->Driver.WriteRGBAPixels     = write_pixels_HPCR_ximage;
             ctx->Driver.WriteMonoRGBAPixels = write_pixels_mono_HPCR_ximage;
-	    if (xmesa->xm_visual->hpcr_clear_flag)
-	    {
-		ctx->Driver.Clear      = clear_HPCR_ximage;
-   		ctx->Driver.ClearColor = clear_color_HPCR_ximage;
+	    if (xmesa->xm_visual->hpcr_clear_flag) {
+               ctx->Driver.ClearColor = clear_color_HPCR_ximage;
 	    }
             break;
          case PF_LOOKUP:

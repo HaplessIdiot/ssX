@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
  * 
@@ -118,6 +118,15 @@ struct gl_pipeline_stage;
 
 
 
+/* Mask bits sent to the driver Clear() function */
+#define DD_FRONT_LEFT_BIT  FRONT_LEFT_BIT         /* 1 */
+#define DD_FRONT_RIGHT_BIT FRONT_RIGHT_BIT        /* 2 */
+#define DD_BACK_LEFT_BIT   BACK_LEFT_BIT          /* 4 */
+#define DD_BACK_RIGHT_BIT  BACK_RIGHT_BIT         /* 8 */
+#define DD_DEPTH_BIT       GL_DEPTH_BUFFER_BIT    /* 0x00000100 */
+#define DD_STENCIL_BIT     GL_STENCIL_BUFFER_BIT  /* 0x00000400 */
+#define DD_ACCUM_BIT       GL_ACCUM_BUFFER_BIT    /* 0x00000200 */
+
 
 
 /*
@@ -161,10 +170,14 @@ struct dd_function_table {
    GLbitfield (*Clear)( GLcontext *ctx, GLbitfield mask, GLboolean all,
                         GLint x, GLint y, GLint width, GLint height );
    /* Clear the color/depth/stencil/accum buffer(s).
-    * 'mask' indicates which buffers need to be cleared.  Return a bitmask
-    *    indicating which buffers weren't cleared by the driver function.
-    * If 'all' is true then the clear the whole buffer, else clear the
-    *    region defined by (x,y,width,height).
+    * 'mask' is a bitmask of the DD_*_BIT values defined above that indicates
+    * which buffers need to be cleared.  The driver should clear those
+    * buffers then return a new bitmask indicating which buffers should be
+    * cleared by software Mesa.
+    * If 'all' is true then the clear the whole buffer, else clear only the
+    * region defined by (x,y,width,height).
+    * This function must obey the glColorMask, glIndexMask and glStencilMask
+    * settings!  Software Mesa can do masked clears if the device driver can't.
     */
 
    void (*Index)( GLcontext *ctx, GLuint index );
@@ -180,9 +193,9 @@ struct dd_function_table {
     * This color should also be used in the "mono" drawing functions.
     */
 
-   GLboolean (*SetBuffer)( GLcontext *ctx, GLenum buffer );
+   GLboolean (*SetDrawBuffer)( GLcontext *ctx, GLenum buffer );
    /*
-    * Selects the color buffer(s) for reading and writing.
+    * Specifies the current buffer for writing.
     * The following values must be accepted when applicable:
     *    GL_FRONT_LEFT - this buffer always exists
     *    GL_BACK_LEFT - when double buffering
@@ -198,6 +211,17 @@ struct dd_function_table {
     *    GL_RIGHT - write to right left and back right if they exist
     *    GL_FRONT_AND_BACK - write to all four buffers if they exist
     *    GL_NONE - disable buffer write in device driver.
+    */
+
+   void (*SetReadBuffer)( GLcontext *ctx, GLframebuffer *colorBuffer,
+                          GLenum buffer );
+   /*
+    * Specifies the current buffer for reading.
+    * colorBuffer will be one of:
+    *    GL_FRONT_LEFT - this buffer always exists
+    *    GL_BACK_LEFT - when double buffering
+    *    GL_FRONT_RIGHT - when using stereo
+    *    GL_BACK_RIGHT - when using stereo and double buffering
     */
 
    void (*GetBufferSize)( GLcontext *ctx, GLuint *width, GLuint *height );
@@ -216,8 +240,7 @@ struct dd_function_table {
    void (*WriteRGBSpan)( const GLcontext *ctx,
                          GLuint n, GLint x, GLint y,
                          CONST GLubyte rgb[][3], const GLubyte mask[] );
-   /* Write a horizontal run of RGB[A] pixels.  The later version is only
-    * used to accelerate GL_RGB, GL_UNSIGNED_BYTE glDrawPixels() calls.
+   /* Write a horizontal run of RGBA or RGB pixels.
     * If mask is NULL, draw all pixels.
     * If mask is not null, only draw pixel [i] when mask [i] is true.
     */
@@ -380,34 +403,70 @@ struct dd_function_table {
 
    /***
     *** For supporting hardware Z buffers:
+    *** Either ALL or NONE of these functions must be implemented!
     ***/
 
-   void (*AllocDepthBuffer)( GLcontext *ctx );
-   /*
-    * Called when the depth buffer must be allocated or possibly resized.
+   void (*WriteDepthSpan)( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                           const GLdepth depth[], const GLubyte mask[] );
+   /* Write a horizontal span of values into the depth buffer.  Only write
+    * depth[i] value if mask[i] is nonzero.
     */
 
-   GLuint (*DepthTestSpan)( GLcontext *ctx,
-                            GLuint n, GLint x, GLint y, const GLdepth z[],
-                            GLubyte mask[] );
-   void (*DepthTestPixels)( GLcontext *ctx,
-                            GLuint n, const GLint x[], const GLint y[],
-                            const GLdepth z[], GLubyte mask[] );
-   /*
-    * Apply the depth buffer test to an span/array of pixels and return
-    * an updated pixel mask.  This function is not used when accelerated
-    * point, line, polygon functions are used.
+   void (*ReadDepthSpan)( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                          GLdepth depth[] );
+   /* Read a horizontal span of values from the depth buffer.
     */
 
-   void (*ReadDepthSpanFloat)( GLcontext *ctx,
-                               GLuint n, GLint x, GLint y, GLfloat depth[]);
-   void (*ReadDepthSpanInt)( GLcontext *ctx,
-                             GLuint n, GLint x, GLint y, GLdepth depth[] );
-   /*
-    * Return depth values as integers for glReadPixels.
-    * Floats should be returned in the range [0,1].
-    * Ints (GLdepth) values should be in the range [0,MAXDEPTH].
+
+   void (*WriteDepthPixels)( GLcontext *ctx, GLuint n,
+                             const GLint x[], const GLint y[],
+                             const GLdepth depth[], const GLubyte mask[] );
+   /* Write an array of randomly positioned depth values into the
+    * depth buffer.  Only write depth[i] value if mask[i] is nonzero.
     */
+
+   void (*ReadDepthPixels)( GLcontext *ctx, GLuint n,
+                            const GLint x[], const GLint y[],
+                            GLdepth depth[] );
+   /* Read an array of randomly positioned depth values from the depth buffer.
+    */
+
+
+
+   /***
+    *** For supporting hardware stencil buffers:
+    *** Either ALL or NONE of these functions must be implemented!
+    ***/
+
+   void (*WriteStencilSpan)( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                             const GLstencil stencil[], const GLubyte mask[] );
+   /* Write a horizontal span of stencil values into the stencil buffer.
+    * If mask is NULL, write all stencil values.
+    * Else, only write stencil[i] if mask[i] is non-zero.
+    */
+
+
+   void (*ReadStencilSpan)( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                            GLstencil stencil[] );
+   /* Read a horizontal span of stencil values from the stencil buffer.
+    */
+
+
+   void (*WriteStencilPixels)( GLcontext *ctx, GLuint n,
+                               const GLint x[], const GLint y[],
+                               const GLstencil stencil[],
+                               const GLubyte mask[] );
+   /* Write an array of stencil values into the stencil buffer.
+    * If mask is NULL, write all stencil values.
+    * Else, only write stencil[i] if mask[i] is non-zero.
+    */
+
+   void (*ReadStencilPixels)( GLcontext *ctx, GLuint n,
+                              const GLint x[], const GLint y[],
+                              GLstencil stencil[] );
+   /* Read an array of stencil values from the stencil buffer.
+    */
+  
 
 
    /***

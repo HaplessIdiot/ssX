@@ -32,12 +32,11 @@
 #include "types.h"
 
 
-extern void gl_Bitmap( GLcontext *ctx,
-                       GLsizei width, GLsizei height,
-                       GLfloat xorig, GLfloat yorig,
-                       GLfloat xmove, GLfloat ymove,
-                       const GLubyte *bitmap,
-                       const struct gl_pixelstore_attrib *packing );
+
+extern void
+_mesa_Bitmap( GLsizei width, GLsizei height,
+              GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove,
+              const GLubyte *bitmap );
 
 
 #endif

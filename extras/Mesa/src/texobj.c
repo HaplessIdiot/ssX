@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,25 +23,16 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/texobj.c,v 1.3 1999/04/04 00:20:32 dawes Exp $ */
-
-
 
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#ifndef XFree86Server
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#else
-#include "GL/xf86glx.h"
-#endif
+#include "glheader.h"
 #include "context.h"
 #include "enums.h"
 #include "hash.h"
-#include "macros.h"
+#include "mem.h"
 #include "teximage.h"
 #include "texstate.h"
 #include "texobj.h"
@@ -67,8 +58,8 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
 
    ASSERT(dimensions <= 3);
 
-   obj = (struct gl_texture_object *)
-                     calloc(1,sizeof(struct gl_texture_object));
+   obj = CALLOC_STRUCT(gl_texture_object);
+
    if (obj) {
       /* init the non-zero fields */
       obj->RefCount = 1;
@@ -83,13 +74,13 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
       obj->BaseLevel = 0;
       obj->MaxLevel = 1000;
       obj->MinMagThresh = 0.0F;
-      obj->Palette[0] = 255;
-      obj->Palette[1] = 255;
-      obj->Palette[2] = 255;
-      obj->Palette[3] = 255;
-      obj->PaletteSize = 1;
-      obj->PaletteIntFormat = GL_RGBA;
-      obj->PaletteFormat = GL_RGBA;
+      obj->Palette.Table[0] = 255;
+      obj->Palette.Table[1] = 255;
+      obj->Palette.Table[2] = 255;
+      obj->Palette.Table[3] = 255;
+      obj->Palette.Size = 1;
+      obj->Palette.IntFormat = GL_RGBA;
+      obj->Palette.Format = GL_RGBA;
 
       /* insert into linked list */
       if (shared) {
@@ -99,7 +90,7 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
 
       if (name > 0) {
          /* insert into hash table */
-         HashInsert(shared->TexObjects, name, obj);
+         _mesa_HashInsert(shared->TexObjects, name, obj);
       }
    }
    return obj;
@@ -146,7 +137,7 @@ void gl_free_texture_object( struct gl_shared_state *shared,
 
    if (t->Name) {
       /* remove from hash table */
-      HashRemove(shared->TexObjects, t->Name);
+      _mesa_HashRemove(shared->TexObjects, t->Name);
    }
 
    /* free texture image */
@@ -334,8 +325,10 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
 /*
  * Execute glGenTextures
  */
-void gl_GenTextures( GLcontext *ctx, GLsizei n, GLuint *texName )
+void
+_mesa_GenTextures( GLsizei n, GLuint *texName )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint first;
    GLint i;
 
@@ -345,7 +338,7 @@ void gl_GenTextures( GLcontext *ctx, GLsizei n, GLuint *texName )
       return;
    }
 
-   first = HashFindFreeKeyBlock(ctx->Shared->TexObjects, n);
+   first = _mesa_HashFindFreeKeyBlock(ctx->Shared->TexObjects, n);
 
    /* Return the texture names */
    for (i=0;i<n;i++) {
@@ -365,8 +358,10 @@ void gl_GenTextures( GLcontext *ctx, GLsizei n, GLuint *texName )
 /*
  * Execute glDeleteTextures
  */
-void gl_DeleteTextures( GLcontext *ctx, GLsizei n, const GLuint *texName)
+void
+_mesa_DeleteTextures( GLsizei n, const GLuint *texName)
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLint i;
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glDeleteTextures");
@@ -375,7 +370,7 @@ void gl_DeleteTextures( GLcontext *ctx, GLsizei n, const GLuint *texName)
       struct gl_texture_object *t;
       if (texName[i]>0) {
          t = (struct gl_texture_object *)
-            HashLookup(ctx->Shared->TexObjects, texName[i]);
+            _mesa_HashLookup(ctx->Shared->TexObjects, texName[i]);
          if (t) {
             GLuint u;
             for (u=0; u<MAX_TEXTURE_UNITS; u++) {
@@ -409,8 +404,10 @@ void gl_DeleteTextures( GLcontext *ctx, GLsizei n, const GLuint *texName)
 /*
  * Execute glBindTexture
  */
-void gl_BindTexture( GLcontext *ctx, GLenum target, GLuint texName )
+void
+_mesa_BindTexture( GLenum target, GLuint texName )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLuint unit = ctx->Texture.CurrentUnit;
    struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
    struct gl_texture_object *oldTexObj;
@@ -446,8 +443,8 @@ void gl_BindTexture( GLcontext *ctx, GLenum target, GLuint texName )
    if (texName == 0) 
       newTexObj = ctx->Shared->DefaultD[dim];
    else {
-      struct HashTable *hash = ctx->Shared->TexObjects;
-      newTexObj = (struct gl_texture_object *) HashLookup(hash, texName);
+      struct _mesa_HashTable *hash = ctx->Shared->TexObjects;
+      newTexObj = (struct gl_texture_object *) _mesa_HashLookup(hash, texName);
 
       if (!newTexObj)
 	 newTexObj = gl_alloc_texture_object(ctx->Shared, texName, dim);
@@ -509,10 +506,11 @@ void gl_BindTexture( GLcontext *ctx, GLenum target, GLuint texName )
 /*
  * Execute glPrioritizeTextures
  */
-void gl_PrioritizeTextures( GLcontext *ctx,
-                            GLsizei n, const GLuint *texName,
-                            const GLclampf *priorities )
+void
+_mesa_PrioritizeTextures( GLsizei n, const GLuint *texName,
+                          const GLclampf *priorities )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLint i;
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glPrioritizeTextures");
@@ -525,7 +523,7 @@ void gl_PrioritizeTextures( GLcontext *ctx,
       struct gl_texture_object *t;
       if (texName[i]>0) {
          t = (struct gl_texture_object *)
-            HashLookup(ctx->Shared->TexObjects, texName[i]);
+            _mesa_HashLookup(ctx->Shared->TexObjects, texName[i]);
          if (t) {
             t->Priority = CLAMP( priorities[i], 0.0F, 1.0F );
 
@@ -541,10 +539,11 @@ void gl_PrioritizeTextures( GLcontext *ctx,
 /*
  * Execute glAreTexturesResident 
  */
-GLboolean gl_AreTexturesResident( GLcontext *ctx, GLsizei n,
-                                  const GLuint *texName,
-                                  GLboolean *residences )
+GLboolean
+_mesa_AreTexturesResident( GLsizei n, const GLuint *texName,
+                           GLboolean *residences )
 {
+   GET_CURRENT_CONTEXT(ctx);
    GLboolean resident = GL_TRUE;
    GLint i;
 
@@ -563,7 +562,7 @@ GLboolean gl_AreTexturesResident( GLcontext *ctx, GLsizei n,
          return GL_FALSE;
       }
       t = (struct gl_texture_object *)
-         HashLookup(ctx->Shared->TexObjects, texName[i]);
+         _mesa_HashLookup(ctx->Shared->TexObjects, texName[i]);
       if (t) {
 	 if (ctx->Driver.IsTextureResident)
 	    residences[i] = ctx->Driver.IsTextureResident( ctx, t );
@@ -583,11 +582,13 @@ GLboolean gl_AreTexturesResident( GLcontext *ctx, GLsizei n,
 /*
  * Execute glIsTexture
  */
-GLboolean gl_IsTexture( GLcontext *ctx, GLuint texture )
+GLboolean
+_mesa_IsTexture( GLuint texture )
 {
+   GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH_WITH_RETVAL(ctx, "glIsTextures",
 						  GL_FALSE);
-   if (texture>0 && HashLookup(ctx->Shared->TexObjects, texture)) {
+   if (texture>0 && _mesa_HashLookup(ctx->Shared->TexObjects, texture)) {
       return GL_TRUE;
    }
    else {
