@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.4 2002/01/30 21:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.5 2002/03/10 06:53:47 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -550,26 +550,26 @@ polygon_type:
     GCProtect();
     /* get polygon->boundbox */
     cdr = EVAL(CONS(ATOM("MAKE-PG-POINT"),
-		    CONS(KEYWORD(ATOM("X")),
+		    CONS(KEYWORD("X"),
 			 CONS(REAL(polygon->boundbox.high.x),
-			      CONS(KEYWORD(ATOM("Y")),
+			      CONS(KEYWORD("Y"),
 				   CONS(REAL(polygon->boundbox.high.y), NIL))))));
     obj = EVAL(CONS(ATOM("MAKE-PG-POINT"),
-		    CONS(KEYWORD(ATOM("X")),
+		    CONS(KEYWORD("X"),
 			 CONS(REAL(polygon->boundbox.low.x),
-			      CONS(KEYWORD(ATOM("Y")),
+			      CONS(KEYWORD("Y"),
 				   CONS(REAL(polygon->boundbox.low.y), NIL))))));
     box = EVAL(CONS(ATOM("MAKE-PG-BOX"),
-		    CONS(KEYWORD(ATOM("HIGH")),
+		    CONS(KEYWORD("HIGH"),
 			 CONS(cdr,
-			      CONS(KEYWORD(ATOM("LOW")),
+			      CONS(KEYWORD("LOW"),
 				   CONS(obj, NIL))))));
     /* get polygon->p values */
     for (i = 0; i < polygon->npts; i++) {
 	obj = EVAL(CONS(ATOM("MAKE-PG-POINT"),
-			CONS(KEYWORD(ATOM("X")),
+			CONS(KEYWORD("X"),
 			     CONS(REAL(polygon->p[i].x),
-			      CONS(KEYWORD(ATOM("Y")),
+			      CONS(KEYWORD("Y"),
 				   CONS(REAL(polygon->p[i].y), NIL))))));
 	if (i == 0)
 	    p = cdr = CONS(obj, NIL);
@@ -581,13 +581,13 @@ polygon_type:
 
     /* make result */
     poly = EVAL(CONS(ATOM("MAKE-PG-POLYGON"),
-		     CONS(KEYWORD(ATOM("SIZE")),
+		     CONS(KEYWORD("SIZE"),
 			  CONS(REAL(size),
-			       CONS(KEYWORD(ATOM("NUM-POINTS")),
+			       CONS(KEYWORD("NUM-POINTS"),
 				    CONS(REAL(polygon->npts),
-					 CONS(KEYWORD(ATOM("BOUNDBOX")),
+					 CONS(KEYWORD("BOUNDBOX"),
 					      CONS(box,
-						   CONS(KEYWORD(ATOM("POINTS")),
+						   CONS(KEYWORD("POINTS"),
 							CONS(QUOTE(p), NIL))))))))));
     GCUProtect();
 
