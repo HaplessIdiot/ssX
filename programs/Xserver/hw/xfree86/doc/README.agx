@@ -185,15 +185,19 @@
 
      Ramdac related Option Flags:
 
+        "dac_6_bit"
+           Sets RAMDAC to VGA default 6-bit DAC mode (default for
+           "normal").
+
         "dac_8_bit"
-           Sets supported RAMDAC's to 8-bit DAC mode (all but "normal").
+           Sets supported RAMDAC's to 8-bit DAC mode (default for all
+           but "normal").
 
         "sync_on_green"
            Composite sync on green for RAMDAC's that support this
+
            feature (BT481/481 and AT&T20c490). However, whether any
            boards have necessary traces and glue logic is doubtful.
-
-
 
 
      Chipset:
@@ -258,17 +262,20 @@
            POST defaults should be ok.
 
 
-           "vram_delay_latch", "vram delay_ras", "vram_extend_ras",
-              "slow_dram"
-              Set all of the above vram options.
+           "vram_delay_latch",      "vram delay_ras",
+              "vram_extend_ras"
+              Vram timing options.
+
+           "slow_vram",      "slow_dram"
+              Set all of the vram timing options.
 
            "med_dram"
               Set vram latch delay, clear others.
 
-           "fast_dram"
-              All of the vram options are cleared.  Should be specified
-              if directly specifying VRAM options in order to clear POST
-              settings.
+           "fast_vram",
+              "fast_dram"" All of the vram timing options are cleared.
+              Should be specified if directly specifying VRAM options in
+              order to clear POST settings.
 
         Debugging:
            These shouldn't generally be required:
@@ -319,14 +326,15 @@
           AGX-016 : 512, 640, 800, 1024, 1280, and 2048.
 
 
-          XGA,AGX-010 : 512, 640, 800, 1024, 1280, 1152, and 2048.
+
+
+     XGA,AGX-010 : 512, 640, 800, 1024, 1280, 1152, and 2048.
 
 
      When panning I occasionally get streaks if the virtual resolution
      is much greater than the physical resolution.  Moving the mouse a
      little makes it disappear. The Hercules manual indicates this also
      happens with the MS-Windows drivers.
-
 
      The server requires at least a 64KB scratchpad (16KB for XGA's).
      Additional memory is useful for font cache and a larger scratchpad.
@@ -385,6 +393,7 @@
      XGA-1 only 8 clocks are available.  The XGA-2 uses a programmable
      clock and no clocks or clockchip line is required.
 
+
      The maximum pixel clock generally allowed is 85MHz, but some
      RAMDACs support higher values. In any case you, should check your
      RAMDAC, some RAMDACs used on AGX based boards are produced in
@@ -393,7 +402,6 @@
 
      Modes:
         One difference I've noted from the Mach8, is that the AGX's CRTC
-
         doesn't like the start of the horizontal sync to be equal to
         horiz blank start (vert sync may have the same problem, I need
         to test some more). Interlaced and +/-sync flags are supported
@@ -451,13 +459,12 @@
   works. At this time probing for board configuration is limited and
   detailed configuration may need to be done manually.
 
+
   By default the ISA POS register will be performed. If the XGA Instance
   number is specified the scope of probing will be narrowed a bit. To
   override or disable probing, a minimum of the Instance, COPbase, and
   MEMbase must be specified in the XF86Config device section for the XGA
   card. MCA probing is not supported.
-
-
 
 
      Instance       nn
@@ -525,7 +532,6 @@
      DACspeed      nnnn
         Can be used to override the servers default maximum Pixel Clock
         for XGA-2 of 80Mhz.  The limit can be raised as high as 90Mhz,
-
         or set to lower values.
 
   An alternate way to determine the POS register values is with the
@@ -554,19 +560,13 @@
   support 16bpp.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.15 1996/02/04 09:08:32 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.16 1996/08/10 13:06:41 dawes Exp $
 
 
 
 
 
   $XConsortium: agx.sgml /main/7 1995/12/29 15:59:45 kaleb $
-
-
-
-
-
-
 
 
 

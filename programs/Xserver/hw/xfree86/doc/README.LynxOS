@@ -1,29 +1,30 @@
   README for XFree86 3.1.2 on LynxOS
   Thomas Mueller
-  14 November 1995
+  16 July 1996
 
   1.  What and Where is XFree86?
 
-  XFree86 is a port of X11R6 that supports several versions of Intel-
+  XFree86 is a port of X11R6.1 that supports several versions of Intel-
   based Unix.  It is derived from X386 1.2, which was the X server
   distributed with X11R5.  This release consists of many new features
   and performance improvements as well as many bug fixes.  The release
-  is available as source patches against the X Consortium X11R6 code, as
-  well as binary distributions for many architectures.
+  is available as source patches against the X Consortium X11R6.1 code,
+  as well as binary distributions for many architectures.
 
   See the Copyright Notice in COPYRIGHT <COPYRIGHT.html>.
 
   The sources for XFree86 are available by anonymous ftp from:
 
   ftp.XFree86.org:/pub/XFree86/current
-  <ftp://ftp.XFree86.org/pub/XFree86/current>
 
   The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A
-  FCS'.
+  FCS' and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than
+  3.1.2 have not been tested on LynxOS versions earlier than 2.3.0.
 
-  XFree86 currently supports only LynxOS on the AT platform. The library
-  and client part of XFree86 could although compile without problems on
-  other LynxOS platforms (e.g. SPARC, Motorola-68K or PowerPC).
+  XFree86 supports LynxOS on the AT, the microSPARC and the PowerPC
+  platform. X servers are currently available only on the AT platform.
+  Refer to section ``Building on microSPARC and PowerPC'' for details on
+  XFree86 on the non-AT platforms.
 
   2.  Bug Reports for This Document
 
@@ -45,11 +46,12 @@
   little adjustments to your system:
 
 
-     LynxOS AT 2.3
+     LynxOS AT 2.3 and 2.4
 
         o  Use the CYGNUS GNU-C Compiler to build XFree86. With LynxOS
-           2.3.0 you must execute the shell script /CYGNUS.bash to apply
-           the necessary changes to your environment.
+           2.3.0 and 2.4.0 you must execute the shell script
+           /CYGNUS.bash to apply the necessary changes to your
+           environment.
 
         o  Create a shell script named /lib/cpp as follows:
 
@@ -63,7 +65,6 @@
 
 
         It is possible that future releases use a different path for the
-
         CYGNUS compiler support programs. You may use
 
 
@@ -129,7 +130,6 @@
 
 
 
-
            /usr/include/utmp.h
               surrounded by
 
@@ -159,11 +159,11 @@
   match your operating system version. Change the definitions of
   OSMajorVersion, OSMinorVersion and OSTeenyVersion accordingly.
 
-  For LynxOS 2.3.0 the OptimizedCDebugFlags is set to `-O -m486'. Higher
-  optimization levels are not enabled by default to work around a bug in
-  -O2 for GCC v2.6.x.  You might try enabling -O2 if your compiler does
-  not have this bug, but if the session manager xsm hangs on startup it
-  would be a good idea to switch back to -O.
+  For LynxOS 2.3.0 and 2.4.0 the OptimizedCDebugFlags is set to `-O
+  -m486'.  Higher optimization levels are not enabled by default to work
+  around a bug in -O2 for GCC v2.6.x.  You might try enabling -O2 if
+  your compiler does not have this bug, but if the session manager xsm
+  hangs on startup it would be a good idea to switch back to -O.
 
   You may now issue a
 
@@ -188,8 +188,8 @@
 
   You must be logged in as super-user (root) when you invoke `make
   install'.  Be sure to set your environment to use the same compiler
-  (LynxOS 2.3.0, CYGNUS GNU-C) as you did during the `make World'. To
-  install the LinkKit use
+  (LynxOS 2.3.0/2.4.0, CYGNUS GNU-C) as you did during the `make World'.
+  To install the LinkKit use
 
 
 
@@ -264,9 +264,11 @@
 
   4.3.  Bus mouse drivers
 
-  LynxOS does not provide device drivers for Bus or PS/2 mice.
+  Starting with LynxOS AT 2.4.4 LynxOS includes a PS/2 mouse driver.
+  Currently this driver is not supported by XFree86.
   /usr/X11R6/lib/X11/etc/BM-Lynx.shar contains a port of the Linux
-  drivers for those devices. To install the drivers unpack the tar
+  drivers for those devices. To install the drivers unpack the shar
+  archive
 
 
 
@@ -279,6 +281,10 @@
 
   and follow the notes in /BMOUSE.Readme for further installation and
   configuration notes.
+
+  The PS/2 mouse driver works also with MetroLink X 2.3.3.1 as shipped
+  with LynxOS AT 2.4.0 unless you have the LynxOS patch 000055-00
+  installed.
 
   4.4.  ATC console driver and VT switching
 
@@ -319,14 +325,19 @@
   lost. After server shutdown the screen contents of other consoles may
   be inconsistent with what one would expect (i.e. random).
 
+
+
+
   5.  Installing XFree86 manual pages
 
   LynxOS uses cat-able manual pages, and because a doc preparation
   system is definitely not a vital component of a real-time operating
-  system you must first install groff-1.09. With LynxOS 2.3.0 it
-  compiles right out of the box (or better tar archive).
+  system you must first install groff-1.09. Starting with LynxOS 2.3.0
+  it compiles right out of the box (or better tar archive).
 
   XFree86 manual pages may be installed using
+
+
 
             make install.man
 
@@ -380,11 +391,14 @@
 
 
 
+
+
+
   6.  Using XFree86 with Motif
 
-  The Motif libraries shipped with LynxOS AT 2.3.0 can be used with the
-  XFree86 libraries. Follow the steps outlined below after you have
-  installed XFree86 and LynxOS Motif on your system.
+  The Motif libraries shipped with LynxOS AT 2.3.0 and 2.4.0 can be used
+  with the XFree86 libraries. Follow the steps outlined below after you
+  have installed XFree86 and LynxOS Motif on your system.
 
   6.1.  Copy Motif files
 
@@ -392,15 +406,13 @@
   in the /usr/X11R6 directory tree.
 
 
-
-
-        ln -s /usr/bin/X11/uil /usr/X11R6/bin
-        ln -s /usr/lib/libUil.a /usr/X11R6/lib
-        ln -s /usr/lib/libMrm.a /usr/X11R6/lib
-        ln -s /usr/lib/X11/uid /usr/X11R6/lib/X11
-        ln -s /usr/include/Xm /usr/X11R6/include
-        ln -s /usr/include/Mrm /usr/X11R6/include
-        ln -s /usr/include/uil /usr/X11R6/include
+             ln -s /usr/bin/X11/uil /usr/X11R6/bin
+             ln -s /usr/lib/libUil.a /usr/X11R6/lib
+             ln -s /usr/lib/libMrm.a /usr/X11R6/lib
+             ln -s /usr/lib/X11/uid /usr/X11R6/lib/X11
+             ln -s /usr/include/Xm /usr/X11R6/include
+             ln -s /usr/include/Mrm /usr/X11R6/include
+             ln -s /usr/include/uil /usr/X11R6/include
 
 
 
@@ -436,6 +448,9 @@
 
 
 
+  This patch is not necessary for LynxOS 2.4.0 since POSIX support is
+  now the default for the CYGNUS compiler.
+
   6.3.  X11R6 config file patch
 
   Edit /usr/X11R6/lib/X11/config/lynx.cf and change the definition of
@@ -443,13 +458,15 @@
 
        from
 
-              #define HasMotif    NO
+
+
+         #define HasMotif    NO
 
 
 
-       to
+  to
 
-              #define HasMotif    YES
+         #define HasMotif    YES
 
 
 
@@ -459,7 +476,6 @@
 
   The file Motif.tmpl shipped with LynxOS Motif must be modified to work
   with XFree86. In every reference to UnsharedLibReferences the first
-
   argument must be changed
 
        from
@@ -479,38 +495,22 @@
   Be sure to apply the change to the file copied to
   /usr/X11R6/lib/X11/config.
 
+  6.5.  Building on microSPARC and PowerPC
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.5 1996/02/04 09:08:12 dawes Exp $
+  XFree86 3.1.2E also compiles on LynxOS microSPARC and on LynxOS PPC
+  although currently there are no working X servers. One little
+  modifications to xf86site.def is necessary:
+
+     o  Set all variables defining the servers to build to NO.
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.6 1996/08/10 13:06:37 dawes Exp $
 
 
 
 
 
   $XConsortium: LynxOS.sgml /main/4 1995/12/29 15:58:36 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -187,14 +187,16 @@
 
      Others:
 
-        o  NetBSD 1.0
+        o  NetBSD 1.0, 1.1, 1.2
+
+        o  OpenBSD 1.2
 
         o  FreeBSD 1.1.5.1, 2.0, 2.0.5
 
         o  BSD/386 1.1, BSD/OS 2.0
 
-        o  Mach 386
 
+        o  Mach 386
 
         o  Linux
 
@@ -259,8 +261,6 @@
 
      Tseng
         ET3000, ET4000AX, ET4000/W32
-
-
 
      Western Digital/Paradise
         PVGA1
@@ -487,7 +487,7 @@
 
         o  Rich Murphey <Rich@XFree86.org>
 
-     NetBSD  support by:
+     NetBSD, OpenBSD support by:
 
         o  Matthieu Herrb <Matthieu.Herrb.@laas.fr>
 
@@ -1126,7 +1126,7 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.48 1996/03/31 11:48:59 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.49 1996/08/10 13:06:40 dawes Exp $
 
 
 
