@@ -136,10 +136,10 @@ sisOldSetup(ScrnInfoPtr pScrn)
         inSISIDXREG(SISSR, 0x0D, temp);
 	pSiS->Flags &= ~(UMA);
 	if(temp & 0x01) {
-		pSiS->Flags |= UMA;  		/* TW: Shared fb mode */
+		pSiS->Flags |= UMA;  		/* Shared fb mode */
         	inSISIDXREG(SISSR, 0x10, temp);
         	pSiS->MemClock = clockTable[temp & 0x03] * 1000;
-	} else  pSiS->MemClock = SiSMclk(pSiS); /* TW: Local fb mode */
+	} else  pSiS->MemClock = SiSMclk(pSiS); /* Local fb mode */
 
     } else if(pSiS->Chipset == PCI_CHIP_SIS6326) {
 
@@ -189,12 +189,13 @@ sisOldSetup(ScrnInfoPtr pScrn)
        inSISIDXREG(SISSR, 0x23, sr23);
        inSISIDXREG(SISSR, 0x33, sr33);
        inSISIDXREG(SISSR, 0x34, sr34);
+       if(pSiS->oldChipset >= OC_SIS530A) sr33 &= ~0x08;
        if(sr33 & 0x09) {   	  			/* 5597: Sync DRAM timing | One cycle EDO ram;   */
        		pSiS->Flags |= (sr33 & SYNCDRAM);	/* 6326: Enable SGRam timing | One cycle EDO ram */
 		pSiS->Flags |= RAMFLAG;			/* 530:  Enable SGRAM timing | reserved (0)      */
-       } else if(sr23 & 0x20) {   			/* 5597, 6326: EDO DRAM enabled */
-		pSiS->Flags |= SYNCDRAM;		/* 530/620:    reserved (0)     */
-       }
+       } else if((pSiS->oldChipset < OC_SIS530A) && (sr23 & 0x20)) {
+		pSiS->Flags |= SYNCDRAM;		/* 5597, 6326: EDO DRAM enabled */
+       }						/* 530/620:    reserved (0)     */
     }
 
     pSiS->Flags &= ~(ESS137xPRESENT);
@@ -240,6 +241,10 @@ sisOldSetup(ScrnInfoPtr pScrn)
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                "DRAM bus width: %d bit\n",
 	       pSiS->BusWidth);
+#ifdef TWDEBUG
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+    	       "oldChipset = %d, Flags %x\n", pSiS->oldChipset, pSiS->Flags);
+#endif	       	       
 }
 
 static  void

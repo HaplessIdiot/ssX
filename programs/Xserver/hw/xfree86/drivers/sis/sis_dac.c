@@ -455,33 +455,6 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        SiS6326SetTVReg(pScrn, 0x00, tmp);
     }
 
-    /* Restore VCLKs */
-#if 0  /* TW: No, we didn't save SR2x-1 and SR2x-2! */
-    andSISIDXREG(SISSR, 0x38, 0xfc);
-    inSISIDXREG(SISSR, 0x13, tmp);
-    tmp &= ~0x40;
-    tmp |= (sisReg->sisRegs3C4[0x13] & 0x40);
-    outSISIDXREG(SISSR, 0x13, tmp);
-    outSISIDXREG(SISSR, 0x2a, sisReg->sisRegs3C4[0x2a]);
-    outSISIDXREG(SISSR, 0x2b, sisReg->sisRegs3C4[0x2b]);
-    orSISIDXREG(SISSR, 0x38, 0x01);
-    inSISIDXREG(SISSR, 0x13, tmp);
-    tmp &= ~0x40;
-    tmp |= (sisReg->sisRegs3C4[0x13] & 0x40);
-    outSISIDXREG(SISSR, 0x13, tmp);
-    outSISIDXREG(SISSR, 0x2a, sisReg->sisRegs3C4[0x2a]);
-    outSISIDXREG(SISSR, 0x2b, sisReg->sisRegs3C4[0x2b]);
-    andSISIDXREG(SISSR, 0x38, 0xfc);
-    orSISIDXREG(SISSR, 0x38, 0x02);
-    inSISIDXREG(SISSR, 0x13, tmp);
-    tmp &= ~0x40;
-    tmp |= (sisReg->sisRegs3C4[0x13] & 0x40);
-    outSISIDXREG(SISSR, 0x13, tmp);
-    outSISIDXREG(SISSR, 0x2a, sisReg->sisRegs3C4[0x2a]);
-    outSISIDXREG(SISSR, 0x2b, sisReg->sisRegs3C4[0x2b]);
-    andSISIDXREG(SISSR, 0x38, 0xfc);
-#endif
-
     /* Restore other extended SR registers */
     for (i = 0x06; i <= max; i++) {
         if((i == 0x13) || (i == 0x2a) || (i == 0x2b)) continue;
@@ -1789,6 +1762,12 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 {
      SISPtr  pSiS = SISPTR(pScrn);
      int     i, j, index;
+     Bool    dogamma1 = pSiS->CRT1gamma;
+#ifdef SISDUALHEAD
+     SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+     if(pSiS->DualHeadMode) dogamma1 = pSiSEnt->CRT1gamma;
+#endif
 
      PDEBUG(ErrorF("SiSLoadPalette(%d)\n", numColors));
 
@@ -1800,7 +1779,7 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
         switch(pSiS->CurrentLayout.depth) {
 #ifdef SISGAMMA
           case 15:
-	     if(pSiS->CRT1gamma) {
+	     if(dogamma1) {
 	        orSISIDXREG(SISSR, 0x07, 0x04);
 	        for(i=0; i<numColors; i++) {
                    index = indices[i];
@@ -1818,7 +1797,7 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	     }
 	     break;
 	  case 16:
-	     if(pSiS->CRT1gamma) {
+	     if(dogamma1) {
                 orSISIDXREG(SISSR, 0x07, 0x04);
 	        for(i=0; i<numColors; i++) {
                    index = indices[i];
@@ -1836,7 +1815,7 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	     }
 	     break;
           case 24:
-	     if(pSiS->CRT1gamma) {
+	     if(dogamma1) {
 	        orSISIDXREG(SISSR, 0x07, 0x04);
                 for(i=0; i<numColors; i++)  {
                    index = indices[i];
@@ -1853,7 +1832,7 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	     break;
 #endif
 	  default:
-	     if((pScrn->rgbBits == 8) && (pSiS->CRT1gamma))
+	     if((pScrn->rgbBits == 8) && (dogamma1))
 	        orSISIDXREG(SISSR, 0x07, 0x04);
 	     else
 	        andSISIDXREG(SISSR, 0x07, ~0x04);
@@ -1898,16 +1877,22 @@ SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 {
         SISPtr  pSiS = SISPTR(pScrn);
         int     i, j, index;
+	Bool    dogamma2 = pSiS->CRT2gamma;
+#ifdef SISDUALHEAD
+        SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+	if(pSiS->DualHeadMode) dogamma2 = pSiSEnt->CRT2gamma;
+#endif
 
         PDEBUG(ErrorF("SiS301LoadPalette(%d)\n", numColors));
-	
+
 	/* 301B-DH does not support a color palette for LCD */
 	if((pSiS->VBFlags & VB_30xBDH) && (pSiS->VBFlags & CRT2_LCD)) return;
 	
 	switch(pSiS->CurrentLayout.depth) {
 #ifdef SISGAMMA
           case 15:
-	     if(pSiS->CRT2gamma) {
+	     if(dogamma2) {
 	        orSISIDXREG(SISPART4, 0x0d, 0x08);
 	        for(i=0; i<numColors; i++) {
                    index = indices[i];
@@ -1925,7 +1910,7 @@ SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	     }
 	     break;
 	  case 16:
-	     if(pSiS->CRT2gamma) {
+	     if(dogamma2) {
                 orSISIDXREG(SISPART4, 0x0d, 0x08);
 	        for(i=0; i<numColors; i++) {
                    index = indices[i];
@@ -1943,7 +1928,7 @@ SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	     }
 	     break;
           case 24:
-	     if(pSiS->CRT2gamma) {
+	     if(dogamma2) {
 	        orSISIDXREG(SISPART4, 0x0d, 0x08);
                 for(i=0; i<numColors; i++)  {
                    index = indices[i];
@@ -1960,7 +1945,7 @@ SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	     break;
 #endif
 	  default:
-	     if((pScrn->rgbBits == 8) && (pSiS->CRT2gamma))
+	     if((pScrn->rgbBits == 8) && (dogamma2))
 	        orSISIDXREG(SISPART4, 0x0d, 0x08);
 	     else
 	        andSISIDXREG(SISPART4, 0x0d, ~0x08);

@@ -34,6 +34,14 @@
 /* Always unlock the registers (should be set!) */
 #define UNLOCK_ALWAYS
 
+#define SISDRIVERVERSIONYEAR    3
+#define SISDRIVERVERSIONMONTH   7
+#define SISDRIVERVERSIONDAY    28
+#define SISDRIVERREVISION       1
+
+#define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
+                          | SISDRIVERVERSIONDAY | (SISDRIVERREVISION << 24)
+
 #if 0
 #define TWDEBUG    /* for debugging */
 #endif
@@ -71,22 +79,22 @@ typedef unsigned long IOADDRESS;
 #endif
 
 #if 1
-#define SISDUALHEAD  	/* TW: Include Dual Head code  */
+#define SISDUALHEAD  	/* Include Dual Head code  */
 #endif
 
 #if 1
-#define SISMERGED	/* TW: Include Merged-FB mode */
+#define SISMERGED	/* Include Merged-FB mode */
 #endif
 
-#if 1			/* TW: Include code for cycling CRT2 type via keyboard */
+#if 0			/* Include code for cycling CRT2 type via keyboard */
 #define CYCLECRT2	/* (not functional yet) */
 #endif
 
 #if 1
-#define SISGAMMA	/* TW: Include code for gamma correction */
+#define SISGAMMA	/* Include code for gamma correction */
 #endif
 
-#if 1			/* TW: Include code for color hardware cursors */
+#if 1			/* Include code for color hardware cursors */
 #define SIS_ARGB_CURSOR
 #endif
 
@@ -138,7 +146,9 @@ typedef unsigned long IOADDRESS;
 #define SR_BUFFER_SIZE          5
 #define CR_BUFFER_SIZE          5
 
-/* TW: VBFlags */
+#define SIS_VBFlagsVersion	1
+
+/* VBFlags - if anything is changed here, increase VBFlagsVersion! */
 #define CRT2_DEFAULT            0x00000001
 #define CRT2_LCD                0x00000002  /* TW: Never change the order of the CRT2_XXX entries */
 #define CRT2_TV                 0x00000004  /*     (see SISCycleCRT2Type())                       */
@@ -168,11 +178,11 @@ typedef unsigned long IOADDRESS;
 #define VB_30xBDH		0x00800000      /* 30xB DH version (w/o LCD support) */
 #define VB_LVDS                 0x01000000
 #define VB_CHRONTEL             0x02000000
-#define VB_301LV                0x04000000  	
-#define VB_302LV                0x08000000  	
+#define VB_301LV                0x04000000
+#define VB_302LV                0x08000000
 #define VB_30xLV                VB_301LV
 #define VB_30xLVX               VB_302LV
-#define VB_TRUMPION		0x10000000     
+#define VB_TRUMPION		0x10000000
 #define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_302B|VB_301LV|VB_302LV| \
 				 VB_LVDS|VB_CHRONTEL|VB_TRUMPION)
 #define VB_SISBRIDGE            (VB_301|VB_301B|VB_302B|VB_301LV|VB_302LV)
@@ -262,12 +272,14 @@ typedef unsigned char UChar;
 #define OC_SIS6326  9
 #define OC_SIS530A  11
 #define OC_SIS530B  12
+#define OC_SIS620   13
 
 /* Chrontel type */
 #define CHRONTEL_700x 0
 #define CHRONTEL_701x 1
 
 /* ChipFlags */
+/* Use only lower 16 bit for chip id! */
 #define SiSCF_LARGEOVERLAY 0x00000001
 #define SiSCF_Is651        0x00000002
 #define SiSCF_IsM650       0x00000004
@@ -280,6 +292,33 @@ typedef unsigned char UChar;
 #define SiSCF_Is66x        (SiSCF_IsM660 | SiSCF_IsM760)
 #define SiSCF_XabreCore    0x00010000
 #define SiSCF_Integrated   0x80000000
+
+/* SiS Direct Xv-API */
+#define SiS_SD_IS300SERIES    0x00000001
+#define SiS_SD_IS315SERIES    0x00000002
+#define SiS_SD_IS330SERIES    0x00000004
+#define SiS_SD_SUPPORTPALMN   0x00000008   /* tv chip supports pal-m, pal-n */
+#define SiS_SD_SUPPORT2OVL    0x00000010   /* set = 2 overlays, 1 = support SWITCHCRT xv prop */
+#define SiS_SD_SUPPORTTVPOS   0x00000020   /* supports changing tv position */
+#define SiS_SD_ISDUALHEAD     0x00000040   /* Driver is in dual head mode */
+#define SiS_SD_ISMERGEDFB     0x00000080   /* Driver is in merged fb mode */
+#define SiS_SD_ISDHSECONDHEAD 0x00000100   /* Dual head: This is CRT1 (=second head) */
+#define SiS_SD_ISDHXINERAMA   0x00000200   /* Dual head: We are running Xinerama */
+#define SiS_SD_VBHASSCART     0x00000400   /* videobridge has SCART instead of VGA2 */
+#define SiS_SD_ISDEPTH8       0x00000800   /* Depth is 8, no independent gamma correction */
+#define SiS_SD_SUPPORTSOVER   0x00001000   /* Support for Chrontel Super Overscan */
+#define SiS_SD_ENABLED        0x00002000   /* sisctrl is enabled (by option) */
+
+#define SIS_DIRECTKEY       0x3145792
+
+/* SiSCtrl: Check mode for CRT2 */
+#define SiS_CF2_LCD        0x01
+#define SiS_CF2_TV         0x02
+#define SiS_CF2_VGA2       0x04
+#define SiS_CF2_TVPAL      0x08
+#define SiS_CF2_TVNTSC     0x10
+#define SiS_CF2_TVPALM     0x20
+#define SiS_CF2_TVPALN     0x40
 
 /* For backup of register contents */
 typedef struct {
@@ -388,6 +427,7 @@ typedef struct {
     int			curxvcrtnum;
     int			UsePanelScaler;
     int			AllowHotkey;
+    BOOLEAN		enablesisctrl;
 #ifdef SIS_CP
     SIS_CP_H_ENT
 #endif
@@ -648,10 +688,17 @@ typedef struct {
     Atom		xvDisableGfx, xvDisableGfxLR, xvTVXPosition, xvTVYPosition;
     Atom		xvDisableColorkey, xvUseChromakey, xvChromaMin, xvChromaMax;
     Atom		xvInsideChromakey, xvYUVChromakey;
+    Atom		xv_QVF, xv_QVV, xv_USD, xv_SVF, xv_QDD, xv_TAF, xv_TSA, xv_TEE, xv_GSF;
+    Atom		xv_TTE, xv_TCO, xv_TCC, xv_TCF, xv_TLF, xv_CMD, xv_CMDR, xv_CT1, xv_SGA;
+    Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI;
+    BOOLEAN		xv_sisdirectunlocked;
+    unsigned long	xv_sd_result;
+    int			CRT1isoff;
 #ifdef SIS_CP
     SIS_CP_H
 #endif
     unsigned long       ChipFlags;
+    unsigned long       SiS_SD_Flags;
     BOOLEAN		UseHWARGBCursor;
     int			OptUseColorCursor;
     int			OptUseColorCursorBlend;
@@ -677,6 +724,7 @@ typedef struct {
     float		zClearVal;
     unsigned long	bClrColor, dwColor;
     int			AllowHotkey;
+    BOOLEAN		enablesisctrl;
     short		Video_MaxWidth, Video_MaxHeight;
     int			FSTN;
     BOOLEAN		AddedPlasmaModes;
@@ -815,6 +863,9 @@ extern void  SiS_SetSIS6326TVenableyfilter(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetSIS6326TVyfilterstrong(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val);
+extern Bool  SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags);
+extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index);
+extern Bool  SISSwitchCRT1Status(ScrnInfoPtr pScrn, int onoff);
 extern int   SiS_GetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn);
 extern int   SiS_GetCHTVlumabandwidthsvideo(ScrnInfoPtr pScrn);
 extern int   SiS_GetCHTVlumaflickerfilter(ScrnInfoPtr pScrn);
