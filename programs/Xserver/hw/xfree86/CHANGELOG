@@ -1,4 +1,6 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 351. DRM fixes for recent FreeBSD 5.x versions (David Dawes, based on
+      FreeBSD 5.3 kernel source).
  350. Need to build/install/but not use XThrStubs lib for compatibility
       purposes on recent FreeBSD (David Dawes).
  349. Fix for ServerFlags "Log" option, and document it in the XF86Config
@@ -19429,7 +19431,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3456 2005/03/02 19:17:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3457 2005/03/03 03:32:17 dawes Exp $
 
 
 
