@@ -1,9 +1,12 @@
 XFree86 4.4.99.904 (xx March 2005)
+ 360. Append '.txt' to top-level document files to avoid problems with the
+      install target on case-insensitive platforms (reported by
+      Frank Giessler).
  359. Update the OpenBSD section of the mouse doc (Bugzilla #1563,
       David Yerger).
  358. Fix bug that sometimes caused I/O PCI BARs to be mistaken for 64-bit
       memory BARs (Egbert Eich).
- 357. Fix DMX build for systems without SIGIO and/or SIGPOLL (Frank Geissler,
+ 357. Fix DMX build for systems without SIGIO and/or SIGPOLL (Frank Giessler,
       Marc La France).
  356. OS/2 build fixes (Bugzilla #1542, Frank Giessler).
 
@@ -19447,7 +19450,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3464 2005/03/07 16:39:17 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3465 2005/03/08 17:37:25 dawes Exp $
 
 
 

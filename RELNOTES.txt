@@ -1025,4 +1025,4 @@ oz.com/).
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.127 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/RELNOTES,v 1.48 2005/03/05 17:59:50 dawes Exp $

@@ -400,4 +400,4 @@ Once that's done, the main part of the installation can be done:
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.22 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/Install,v 1.4 2005/03/05 17:59:50 dawes Exp $
