@@ -501,6 +501,8 @@ DoConfigure()
     Bool probeResultPci = FALSE;
     Bool probeResultIsa = FALSE;
     char *foundDriver = NULL;
+    char *home = NULL;
+    char *filename = NULL;
     OptionInfoPtr options = NULL;
     XF86ConfigPtr xf86config = NULL;
     char **vlist, **ilist, **vl, **il;
@@ -653,10 +655,31 @@ DoConfigure()
     xf86config->conf_vendor_lst = configureVendorSection();
     xf86config->conf_dri = configureDRISection();
     xf86config->conf_input_lst = configureInputSection();
-    xf86WriteConfigFile("/tmp/XF86Config", xf86config);
+
+    if (!(home = getenv("HOME")))
+    	home = "/";
+    {
+    	char homebuf[PATH_MAX];
+    	/* getenv might return R/O memory, as with OS/2 */
+    	strncpy(homebuf,home,PATH_MAX-1);
+    	homebuf[PATH_MAX-1] = '\0';
+    	home = homebuf;
+
+    	if (!(filename =
+	     (char *)ALLOCATE_LOCAL(strlen(home) + 
+	  			 strlen("XF86Config.new") + 3)))
+
+      	if (home[0] == '/' && home[1] == '\0')
+            home[0] = '\0';
+      	sprintf(filename, "%s/XF86Config.new", home);
+    }
+
+    xf86WriteConfigFile(filename, xf86config);
 
     ErrorF("\nXFree86 has configured your server for your primary card\n");
-    ErrorF("\nTo test the server, try 'XFree86 -xf86config /tmp/XF86Config'\n");
+    ErrorF("\nYour XF86Config file is located in %s\n",home);
+    ErrorF("\nTo test the server, type 'cd <return>' to take you back to\n");
+    ErrorF("Your home directory. Then type 'XFree86 -xf86config XF86Config.new'\n");
 
 bail:
 #ifdef XFree86LOADER
