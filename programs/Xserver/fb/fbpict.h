@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.6 2001/07/16 05:04:05 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.7 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,6 +26,7 @@
 #define _FBPICT_H_
 
 #define FbIntMult(a,b,t) ( (t) = (a) * (b) + 0x80, ( ( ( (t)>>8 ) + (t) )>>8 ) )
+#define FbIntDiv(a,b)	 (((CARD16) (a) * 255) / (b))
 
 #define FbGet8(v,i)   ((CARD16) (CARD8) ((v) >> i))
 
@@ -47,9 +48,10 @@
 
 #define FbInC(x,i,a,t) ((CARD32) FbIntMult(FbGet8(x,i),FbGet8(a,i),(t)) << (i))
 
-#define FbGen(x,y,i,ax,ay,t) ((t) = (FbIntMult(FbGet8(y,i),ay,(t)) + \
-				     FbIntMult(FbGet8(x,i),ax,(t))),\
-			      (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
+#define FbGen(x,y,i,ax,ay,t,u,v) ((t) = (FbIntMult(FbGet8(y,i),ay,(u)) + \
+					 FbIntMult(FbGet8(x,i),ax,(v))),\
+				  (CARD32) ((CARD8) ((t) | \
+						     (0 - ((t) >> 8)))) << (i))
 
 #define FbAdd(x,y,i,t)	((t) = FbGet8(x,i) + FbGet8(y,i), \
 			 (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
