@@ -1,4 +1,5 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 582. Fix SEGV when ATIProbe() fails (Marc La France).
  581. In rootless XDarwin, don't send ButtonPress events when clicking in
       non-X11 windows (Torrey T. Lyons, John Harper).
  580. AppleWM compatibility fixes:
@@ -18170,7 +18171,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2953 2003/11/12 00:10:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2954 2003/11/12 20:29:53 torrey Exp $
 
 
 
