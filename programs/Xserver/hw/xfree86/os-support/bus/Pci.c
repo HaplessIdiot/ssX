@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.41 2000/12/06 15:35:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.42 2000/12/07 15:43:45 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1054,8 +1054,10 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 		unsigned char *Buf, int Len)
 {
     ADDRESS hostbase;
+    CARD8 *image = Buf;
+    unsigned long offset;
     CARD32 romaddr, savebase = 0, romsave = 0, newbase = 0;
-    int ret;
+    int ret, length, rlength, n;
 
     /* XXX This assumes that memory access is enabled */
 
@@ -1067,24 +1069,23 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
     romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
     romaddr = PCIGETROM(romsave);
     if ((newbase = getValidBIOSBase(Tag, &basereg)) != romaddr) {
+RetryWithBase:
 	romaddr = PCIGETROM(newbase);
-	if (romaddr != 0 && romaddr == newbase) {
-#if 1
-	  /* move mem base out of the way if in conflict with ROM */
+	if (romaddr) {
+	  /* move mem base out of the way if in conflicts with ROM */
 	  if ((basereg >= 0) && (basereg <= 5)) {
-	      savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
+	      if (!savebase)
+	          savebase = pciReadLong(Tag, PCI_MAP_REG_START+(basereg<<2));
 	      if (PCIGETROM(savebase) == romaddr) {
 	          xf86MsgVerb(X_INFO,5,"xf86ReadPciBios: modifying membase[%i]"
 			    " for device %i:%i:%i\n", basereg,
 			    PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
 			    PCI_FUNC_FROM_TAG(Tag));
-		pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
+		pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2),
+		    (CARD32)~0);
 	    }
 	  }
-#endif
-	    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
-	} else
-	    romaddr = 0;
+	}
     }
 
 
@@ -1092,10 +1093,10 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	xf86Msg(X_WARNING, "xf86ReadPciBIOS: cannot locate a BIOS address\n");
 	return -1;
     } 
-    else
-      xf86MsgVerb(X_INFO,5,"xf86ReadPciBIOS: found ValidBIOSBase for %i:%i:%i:"
-		  " %x\n", PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
-		  PCI_FUNC_FROM_TAG(Tag),newbase);
+    xf86MsgVerb(X_INFO, 5,
+	"xf86ReadPciBIOS: found ValidBIOSBase for %i:%i:%i: %x\n",
+	PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag), PCI_FUNC_FROM_TAG(Tag),
+	newbase);
 
     hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM, PCIGETROM(romaddr));
 #ifdef DEBUG
@@ -1104,7 +1105,37 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
     /* Enable ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
 
-    ret = xf86ReadBIOS(hostbase, Offset, Buf, Len);
+    /* Read BIOS in 64kB chunks */
+    ret = 0;
+    offset = Offset;
+    while ((length = Len) > 0) {
+	if (length > 0x10000) length = 0x10000;
+	rlength = xf86ReadBIOS(hostbase, offset, image, length);
+	if (rlength < 0) {
+	    ret = rlength;
+	    break;
+	}
+	ret += rlength;
+	if (rlength < length) break;
+	offset += length;
+	image += length;
+	Len -= length;
+    }
+
+    if ((ret != Len) || (Buf[0] != 0x55) || (Buf[1] != 0xaa) || !Buf[2] ||
+	(Len < (Buf[2] << 9))) {
+	n = 0;
+	if ((basereg >= 0) && (basereg <= 5) && xf86PciVideoInfo) do {
+	    pciVideoPtr pvp;
+
+	    if (!(pvp = xf86PciVideoInfo[n++])) break;
+	    if (pciTag(pvp->bus, pvp->device, pvp->func) == Tag) {
+		if (newbase == pvp->memBase[basereg]) break;
+		newbase = pvp->memBase[basereg];
+		goto RetryWithBase;
+	    }
+	} while (1);
+    }
 
     /* Restore ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
@@ -1129,7 +1160,8 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 
   size = readPciBIOS(Offset,Tag,basereg,Buf,Len);
   
-  if (size != -1 && Buf[0] == 0x55 && Buf[1] == 0xaa)
+  if ((size == Len) && (Buf[0] == 0x55) && (Buf[1] == 0xaa) && Buf[2] &&
+      (Len >= (Buf[2] << 9)))
     return size;
 
   num = pciTestMultiDeviceCard(PCI_BUS_FROM_TAG(Tag),
@@ -1149,7 +1181,8 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 					     PCI_CMD_STAT_REG,(Acc2 | PCI_ENA));
     size = readPciBIOS(Offset,pTag[i],0,Buf,Len);
     ((WriteProcPtr)(pciLongFunc(pTag[i],WRITE)))(pTag[i],PCI_CMD_STAT_REG,Acc2);
-    if (size != -1 && ((CARD8*)Buf)[0] == 0x55 && ((CARD8*)Buf)[1] == 0xaa)
+    if ((size == Len) && (Buf[0] == 0x55) && (Buf[1] == 0xaa) && Buf[2] &&
+	(Len >= (Buf[2] << 9)))
       break;
   }
   ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,PCI_CMD_STAT_REG,Acc1);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.8 2000/12/08 14:40:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.9 2000/12/22 12:13:15 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -496,7 +496,7 @@ static int RADEONDiv(int n, int d)
 }
 
 /* Read the Video BIOS block and the FP registers (if applicable). */
-static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn)
+static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 {
     RADEONInfoPtr info     = RADEONPTR(pScrn);
 #ifdef ENABLE_FLAT_PANEL
@@ -523,16 +523,20 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn)
 	return FALSE;
     }
 
-    info->BIOSFromPCI = TRUE;
-    RADEONReadBIOS(0x0000, info->VBIOS, RADEON_VBIOS_SIZE);
-    if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Video BIOS not detected in PCI space!\n");
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Attempting to read Video BIOS from legacy ISA space!\n");
-	info->BIOSFromPCI = FALSE;
-	info->BIOSAddr = 0x000c0000;
-	RADEONReadBIOS(0x0000, info->VBIOS, RADEON_VBIOS_SIZE);
+    if (pInt10) {
+	info->BIOSAddr = pInt10->BIOSseg << 4;
+	(void)memcpy(info->VBIOS, xf86int10Addr(pInt10, info->BIOSAddr),
+		     RADEON_VBIOS_SIZE);
+    } else {
+	xf86ReadPciBIOS(0, info->PciTag, 0, info->VBIOS, RADEON_VBIOS_SIZE);
+	if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Video BIOS not detected in PCI space!\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Attempting to read Video BIOS from legacy ISA space!\n");
+	    info->BIOSAddr = 0x000c0000;
+	    xf86ReadBIOS(info->BIOSAddr, 0, info->VBIOS, RADEON_VBIOS_SIZE);
+	}
     }
     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
 	info->BIOSAddr = 0x00000000;
@@ -953,7 +957,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-static Bool RADEONPreInitDDC(ScrnInfoPtr pScrn)
+static Bool RADEONPreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 {
     RADEONInfoPtr info = RADEONPTR(pScrn);
     vbeInfoPtr pVbe;
@@ -961,7 +965,7 @@ static Bool RADEONPreInitDDC(ScrnInfoPtr pScrn)
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
     if (xf86LoadSubModule(pScrn, "vbe")) {
-	pVbe = VBEInit(NULL,info->pEnt->index);
+	pVbe = VBEInit(pInt10, info->pEnt->index);
 	if (!pVbe) return FALSE;
 
 	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
@@ -1088,15 +1092,13 @@ static Bool RADEONPreInitAccel(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn)
+static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 {
     RADEONInfoPtr   info = RADEONPTR(pScrn);
 #if 1
     if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86Int10InfoPtr pInt;
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
-	pInt = xf86InitInt10(info->pEnt->index);
-	xf86FreeInt10(pInt);
+	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
 #endif
     return TRUE;
@@ -1237,7 +1239,8 @@ RADEONProbeDDC(ScrnInfoPtr pScrn, int indx)
 /* RADEONPreInit is called once at server startup. */
 Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    RADEONInfoPtr   info;
+    RADEONInfoPtr    info;
+    xf86Int10InfoPtr pInt10 = NULL;
 
 #ifdef XFree86LOADER
     /*
@@ -1331,26 +1334,26 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (!info->FBDev)
-	if (!RADEONPreInitInt10(pScrn))  goto fail;
+	if (!RADEONPreInitInt10(pScrn, &pInt10)) goto fail;
 
-    if (!RADEONPreInitConfig(pScrn))     goto fail;
+    if (!RADEONPreInitConfig(pScrn))             goto fail;
 
-    if (!RADEONGetBIOSParameters(pScrn)) goto fail;
+    if (!RADEONGetBIOSParameters(pScrn, pInt10)) goto fail;
 
-    if (!RADEONGetPLLParameters(pScrn))  goto fail;
+    if (!RADEONGetPLLParameters(pScrn))          goto fail;
 
-    if (!RADEONPreInitDDC(pScrn))        goto fail;
+    if (!RADEONPreInitDDC(pScrn, pInt10))        goto fail;
 
-    if (!RADEONPreInitGamma(pScrn))      goto fail;
+    if (!RADEONPreInitGamma(pScrn))              goto fail;
 
-    if (!RADEONPreInitModes(pScrn))      goto fail;
+    if (!RADEONPreInitModes(pScrn))              goto fail;
 
-    if (!RADEONPreInitCursor(pScrn))     goto fail;
+    if (!RADEONPreInitCursor(pScrn))             goto fail;
 
-    if (!RADEONPreInitAccel(pScrn))      goto fail;
+    if (!RADEONPreInitAccel(pScrn))              goto fail;
 
 #ifdef XF86DRI
-    if (!RADEONPreInitDRI(pScrn))        goto fail;
+    if (!RADEONPreInitDRI(pScrn))                goto fail;
 #endif
 
 				/* Free the video bios (if applicable) */
@@ -1358,6 +1361,10 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 	xfree(info->VBIOS);
 	info->VBIOS = NULL;
     }
+
+				/* Free int10 info */
+    if (pInt10)
+	xf86FreeInt10(pInt10);
 
     return TRUE;
 
@@ -1369,6 +1376,10 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 	xfree(info->VBIOS);
 	info->VBIOS = NULL;
     }
+
+				/* Free int10 info */
+    if (pInt10)
+	xf86FreeInt10(pInt10);
 
     vgaHWFreeHWRec(pScrn);
     RADEONFreeRec(pScrn);

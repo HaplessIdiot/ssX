@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.35 2000/11/03 03:42:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.36 2000/12/13 02:44:59 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2241,6 +2241,7 @@ NoVGAWonder:;
 
             xf86LoaderReqSymLists(ATISymbols, NULL);
 
+#ifndef ELFDEBUG
             /* Workaround for possible loader bug */
 #           define ATIPreInit     \
                 (xf86PreInitProc*)    LoaderSymbol("ATIPreInit")
@@ -2258,6 +2259,7 @@ NoVGAWonder:;
                 (xf86FreeScreenProc*) LoaderSymbol("ATIFreeScreen")
 #           define ATIValidMode   \
                 (xf86ValidModeProc*)  LoaderSymbol("ATIValidMode")
+#endif
 
 #endif
 

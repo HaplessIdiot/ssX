@@ -1,3 +1,34 @@
+XFree86 4.0.2a (?? January 2001)
+1249. Change the os-support layer to only claim a bare minimum of I/O resources
+      rather than a larger estimate (Marc La France).
+1248. Loader work:  Fix handling of shared GOTs on IA-64 and Alpha's, and of
+      PLT and OPD entries on IA-64;  Cleanup debug messages and #if testing
+      (Marc La France).
+1247. Extensive int10 rework to address lockups, spontaneous reboots and tight
+      CPU loops on various architectures (Marc La France):
+      - Use intialised BIOS to softboot primary adapters on non-PC's;
+      - Fix endianness problems;
+      - Move stack into its own page to prevent overwritting interrupt vectors;
+      - Prevent (with a message) int10 from interfering with mainboard devices
+        (i.e. RTC, keyboard, speaker, chipset, etc.);
+      - Flesh out int 0x42 emulation on non-PC's;
+      - Emulate BIOS data area on non-PC's;
+1246. Add missing symbols in i810 and sis drivers (Marc La France).
+1245. Optionally disable, at compile time, loader bug workarounds in ATI driver
+      (Marc La France).
+1244. Prevent the Rage 128 and Radeon drivers from initialising an adapter more
+      than once (Marc La France).
+1243. Move support for >64kB BIOS'es from int10 into the os-support/bus layer
+      (Marc La France).
+1242. When retrieving PCI BIOS'es, only use another PCI base when a previous
+      retrieval attempt fails (Marc La France).
+1241. Temporary kludge to not consider any adapter as primary if more than one
+      candidate can be found (Marc La France).
+1240. Make deleted mode message less fearsome (Marc La France).
+1239. Fix -configure to retrieve the correct set of options for ATI, C&T,
+      Cirrus and NeoMagic adapters (Marc La France).
+1238. When removing PCI resource overlaps, always consider resources whose size
+      can be accurately determined, whether active or not (Marc La France).
 1237. Real 4:2:0 YUV support for the Rage 128 (Mark Vojkovich).
 1236. Xinerama support for Render extension (Keith Packard).
 1235. Make some changes to the clock selection for trident driver
@@ -12159,4 +12190,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1508 2001/01/03 02:54:14 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1509 2001/01/03 23:49:37 mvojkovi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.10 2000/09/19 12:46:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.11 2000/10/17 16:53:20 tsi Exp $ */
 
 /* Resource information code */
 
@@ -141,10 +141,12 @@ xf86AccResFromOS(resPtr ret)
     RANGE(range,0xc0000,0xeffff,ResExcMemBlock);
     ret = xf86AddResToList(ret, &range, -1);
 
-    /* Fallback is to claim well known ports in the 0x0 - 0x3ff range */
-    /* Possibly should claim some of them as sparse ranges */
-
-    RANGE(range,0,0x1ff,ResExcIoBlock | ResEstimated);
+    /*
+     * Fallback would be to claim well known ports in the 0x0 - 0x3ff range
+     * along with their sparse I/O aliases, but that's too imprecise.  Instead
+     * claim a bare minimum here.
+     */
+    RANGE(range, 0, 0x00ff, ResExcIoBlock);     /* For mainboard */
     ret = xf86AddResToList(ret, &range, -1);
     /* XXX add others */
     return ret;

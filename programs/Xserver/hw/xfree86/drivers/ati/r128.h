@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.7 2000/12/07 15:43:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.8 2000/12/08 19:15:33 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -193,7 +193,6 @@ typedef struct {
     unsigned long     LinearAddr;   /* Frame buffer physical address         */
     unsigned long     MMIOAddr;     /* MMIO region physical address          */
     unsigned long     BIOSAddr;     /* BIOS physical address                 */
-    Bool              BIOSFromPCI;  /* BIOS is read from PCI space           */
 
     unsigned char     *MMIO;        /* Map of MMIO region                    */
     unsigned char     *FB;          /* Map of frame buffer                   */

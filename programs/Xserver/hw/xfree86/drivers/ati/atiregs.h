@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.11 2000/08/04 21:07:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.12 2000/08/22 21:54:31 tsi Exp $ */
 /*
  * Copyright 1994 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -62,7 +62,7 @@
 #define SparseIOTag(_IOSelect)	IOPortTag(_IOSelect, 0)
 #define BlockIOTag(_IOSelect)	IOPortTag(0, _IOSelect)
 
-/* MDA/CGA/EGA/VGA I/O ports */
+/* MDA/[M]CGA/EGA/VGA I/O ports */
 #define GENVS			0x0102u		/* Write (and Read on uC only) */
 
 #define R_GENLPS		0x03b9u		/* Read */
@@ -99,24 +99,24 @@
 #define MonochromeIOBase	0x03b0u
 #define ColourIOBase		0x03d0u
 
-/* Other EGA/CGA/VGA I/O ports */
-/*	?(_IOBase)		(_IOBase + 0x00u) */
-/*	?(_IOBase)		(_IOBase + 0x01u) */
-/*	?(_IOBase)		(_IOBase + 0x02u) */
-/*	?(_IOBase)		(_IOBase + 0x03u) */
-#define CRTX(_IOBase)		(_IOBase + 0x04u)
-#define CRTD(_IOBase)		(_IOBase + 0x05u)
-/*	?(_IOBase)		(_IOBase + 0x06u) */
-/*	?(_IOBase)		(_IOBase + 0x07u) */
-#define GENMC(_IOBase)		(_IOBase + 0x08u)
-/*	?(_IOBase)		(_IOBase + 0x09u) */	/* R_GENLPS/GENB */
-#define GENS1(_IOBase)		(_IOBase + 0x0au)	/* Read */
-#define GENFC(_IOBase)		(_IOBase + 0x0au)	/* Write */
-#define GENLPC(_IOBase)		(_IOBase + 0x0bu)
-/*	?(_IOBase)		(_IOBase + 0x0cu) */	/* /GENLPS */
-/*	?(_IOBase)		(_IOBase + 0x0du) */	/* /KCX */
-/*	?(_IOBase)		(_IOBase + 0x0eu) */	/* /KCD */
-/*	?(_IOBase)		(_IOBase + 0x0fu) */	/* GENHP/ */
+/* Other MDA/[M]CGA/EGA/VGA I/O ports */
+/*	?(_IOBase)		((_IOBase) + 0x00u) */	/* CRTX synonym */
+/*	?(_IOBase)		((_IOBase) + 0x01u) */	/* CRTD synonym */
+/*	?(_IOBase)		((_IOBase) + 0x02u) */	/* CRTX synonym */
+/*	?(_IOBase)		((_IOBase) + 0x03u) */	/* CRTD synonym */
+#define CRTX(_IOBase)		((_IOBase) + 0x04u)
+#define CRTD(_IOBase)		((_IOBase) + 0x05u)
+/*	?(_IOBase)		((_IOBase) + 0x06u) */
+/*	?(_IOBase)		((_IOBase) + 0x07u) */
+#define GENMC(_IOBase)		((_IOBase) + 0x08u)
+/*	?(_IOBase)		((_IOBase) + 0x09u) */	/* R_GENLPS/GENB */
+#define GENS1(_IOBase)		((_IOBase) + 0x0au)	/* Read */
+#define GENFC(_IOBase)		((_IOBase) + 0x0au)	/* Write */
+#define GENLPC(_IOBase)		((_IOBase) + 0x0bu)
+/*	?(_IOBase)		((_IOBase) + 0x0cu) */	/* /GENLPS */
+/*	?(_IOBase)		((_IOBase) + 0x0du) */	/* /KCX */
+/*	?(_IOBase)		((_IOBase) + 0x0eu) */	/* /KCD */
+/*	?(_IOBase)		((_IOBase) + 0x0fu) */	/* GENHP/ */
 
 /* 8514/A VESA approved register definitions */
 #define DISP_STAT		0x02e8u		/* Read */

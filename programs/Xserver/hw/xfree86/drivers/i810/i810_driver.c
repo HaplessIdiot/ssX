@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.40 2000/12/20 07:38:05 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.41 2000/12/27 04:57:12 dawes Exp $ */
 
 /*
  * Authors:
@@ -158,12 +158,16 @@ static const char *fbSymbols[] = {
    NULL
 };
 
-
 static const char *miscSymbols[] = {
    "GetTimeInMillis",
    NULL
 };
 
+static const char *vbeSymbols[] = {
+   "VBEInit",
+   "vbeDoEDID",
+   NULL
+};
 
 static const char *xaaSymbols[] = {
    "XAADestroyInfoRec",
@@ -290,6 +294,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			drmSymbols, 
 			driSymbols,
 #endif
+			vbeSymbols,
 			NULL /* ddcsymbols */, 
 			NULL /* i2csymbols */, 
 			NULL /* shadowSymbols */,

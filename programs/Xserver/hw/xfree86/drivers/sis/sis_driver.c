@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.55 2000/12/02 15:30:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.56 2000/12/27 04:57:15 dawes Exp $ */
 
 
 #include "fb.h"
@@ -235,6 +235,7 @@ static const char *drmSymbols[] = {
     "drmAgpGetMode",
     "drmAgpBase",
     "drmAgpSize",
+    "drmSiSAgpInit",
     NULL
 };
 
@@ -245,7 +246,7 @@ static const char *driSymbols[] = {
     "DRICloseScreen",
     "DRIDestroyInfoRec",
     "DRIScreenInit",
-    "DRIDestroyInfoRec",
+    "DRIQueryVersion",
     "DRICreateInfoRec",
     "DRILock",
     "DRIUnlock",

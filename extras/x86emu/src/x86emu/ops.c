@@ -70,7 +70,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.4 2000/04/17 16:29:45 eich Exp $ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.5 2000/12/22 05:25:48 tsi Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -8814,15 +8814,11 @@ Handles opcode 0xcc
 ****************************************************************************/
 void x86emuOp_int3(u8 X86EMU_UNUSED(op1))
 {
-    u16 tmp;
-
     START_OF_INSTR();
     DECODE_PRINTF("INT 3\n");
-    tmp = (u16) mem_access_word(3 * 4 + 2);
-    /* access the segment register */
     TRACE_AND_STEP();
-	if (_X86EMU_intrTab[3]) {
-		(*_X86EMU_intrTab[3])(3);
+    if (_X86EMU_intrTab[3]) {
+	(*_X86EMU_intrTab[3])(3);
     } else {
         push_word((u16)M.x86.R_FLG);
         CLEAR_FLAG(F_IF);
@@ -8842,17 +8838,15 @@ Handles opcode 0xcd
 ****************************************************************************/
 void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1))
 {
-    u16 tmp;
     u8 intnum;
 
     START_OF_INSTR();
     DECODE_PRINTF("INT\t");
     intnum = fetch_byte_imm();
     DECODE_PRINTF2("%x\n", intnum);
-    tmp = mem_access_word(intnum * 4 + 2);
     TRACE_AND_STEP();
-	if (_X86EMU_intrTab[intnum]) {
-		(*_X86EMU_intrTab[intnum])(intnum);
+    if (_X86EMU_intrTab[intnum]) {
+	(*_X86EMU_intrTab[intnum])(intnum);
     } else {
         push_word((u16)M.x86.R_FLG);
         CLEAR_FLAG(F_IF);
@@ -8872,15 +8866,12 @@ Handles opcode 0xce
 ****************************************************************************/
 void x86emuOp_into(u8 X86EMU_UNUSED(op1))
 {
-    u16 tmp;
-
     START_OF_INSTR();
     DECODE_PRINTF("INTO\n");
     TRACE_AND_STEP();
     if (ACCESS_FLAG(F_OF)) {
-        tmp = mem_access_word(4 * 4 + 2);
-		if (_X86EMU_intrTab[4]) {
-			(*_X86EMU_intrTab[4])(4);
+	if (_X86EMU_intrTab[4]) {
+	    (*_X86EMU_intrTab[4])(4);
         } else {
             push_word((u16)M.x86.R_FLG);
             CLEAR_FLAG(F_IF);
@@ -11039,7 +11030,7 @@ void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1))
             }
             break;
         case 2:
-            DECODE_PRINTF("CALL\t ");
+            DECODE_PRINTF("CALL\t");
             break;
         case 3:
             DECODE_PRINTF("CALL\tFAR ");

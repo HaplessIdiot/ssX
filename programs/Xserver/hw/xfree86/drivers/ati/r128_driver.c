@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.14 2000/12/22 05:27:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.15 2000/12/22 12:13:15 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -503,16 +503,11 @@ static int R128Div(int n, int d)
 }
 
 /* Read the Video BIOS block and the FP registers (if applicable). */
-static Bool R128GetBIOSParameters(ScrnInfoPtr pScrn)
+static Bool R128GetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 {
     R128InfoPtr info = R128PTR(pScrn);
     int         i;
     int         FPHeader = 0;
-
-#define R128ReadBIOS(offset, buffer, length)                            \
-     (info->BIOSFromPCI ?                                               \
-      xf86ReadPciBIOS(offset, info->PciTag, 0, buffer, length) :        \
-      xf86ReadBIOS(info->BIOSAddr, offset, buffer, length))
 
 #define R128_BIOS8(v)  (info->VBIOS[v])
 #define R128_BIOS16(v) (info->VBIOS[v] | \
@@ -528,16 +523,20 @@ static Bool R128GetBIOSParameters(ScrnInfoPtr pScrn)
 	return FALSE;
     }
 
-    info->BIOSFromPCI = TRUE;
-    R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
-    if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Video BIOS not detected in PCI space!\n");
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Attempting to read Video BIOS from legacy ISA space!\n");
-	info->BIOSFromPCI = FALSE;
-	info->BIOSAddr = 0x000c0000;
-	R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
+    if (pInt10) {
+	info->BIOSAddr = pInt10->BIOSseg << 4;
+	(void)memcpy(info->VBIOS, xf86int10Addr(pInt10, info->BIOSAddr),
+		     R128_VBIOS_SIZE);
+    } else {
+	xf86ReadPciBIOS(0, info->PciTag, 0, info->VBIOS, R128_VBIOS_SIZE);
+	if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Video BIOS not detected in PCI space!\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Attempting to read Video BIOS from legacy ISA space!\n");
+	    info->BIOSAddr = 0x000c0000;
+	    xf86ReadBIOS(info->BIOSAddr, 0, info->VBIOS, R128_VBIOS_SIZE);
+	}
     }
     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
 	info->BIOSAddr = 0x00000000;
@@ -1010,7 +1009,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
+static Bool R128PreInitDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 {
     R128InfoPtr   info = R128PTR(pScrn);
     vbeInfoPtr pVbe;
@@ -1026,7 +1025,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
 #ifdef XFree86LOADER
 	xf86LoaderReqSymLists(vbeSymbols,NULL);
 #endif
-	pVbe = VBEInit(NULL,info->pEnt->index);
+	pVbe = VBEInit(pInt10, info->pEnt->index);
 	if (!pVbe) return FALSE;
 
 	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
@@ -1155,15 +1154,13 @@ static Bool R128PreInitAccel(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-static Bool R128PreInitInt10(ScrnInfoPtr pScrn)
+static Bool R128PreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 {
     R128InfoPtr   info = R128PTR(pScrn);
 #if 1
     if (xf86LoadSubModule(pScrn, "int10")) {
-	xf86Int10InfoPtr pInt;
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
-	pInt = xf86InitInt10(info->pEnt->index);
-	xf86FreeInt10(pInt);
+	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
 #endif
     return TRUE;
@@ -1296,7 +1293,8 @@ R128ProbeDDC(ScrnInfoPtr pScrn, int indx)
 /* R128PreInit is called once at server startup. */
 Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 {
-    R128InfoPtr   info;
+    R128InfoPtr      info;
+    xf86Int10InfoPtr pInt10 = NULL;
 
     R128TRACE(("R128PreInit\n"));
 
@@ -1403,26 +1401,26 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (!info->FBDev)
-	if (!R128PreInitInt10(pScrn))  goto fail;
+	if (!R128PreInitInt10(pScrn, &pInt10))  goto fail;
 
-    if (!R128PreInitConfig(pScrn))     goto fail;
+    if (!R128PreInitConfig(pScrn))              goto fail;
 
-    if (!R128GetBIOSParameters(pScrn)) goto fail;
+    if (!R128GetBIOSParameters(pScrn, pInt10))  goto fail;
 
-    if (!R128GetPLLParameters(pScrn))  goto fail;
+    if (!R128GetPLLParameters(pScrn))           goto fail;
 
-    if (!R128PreInitDDC(pScrn))        goto fail;
+    if (!R128PreInitDDC(pScrn, pInt10))         goto fail;
 
-    if (!R128PreInitGamma(pScrn))      goto fail;
+    if (!R128PreInitGamma(pScrn))               goto fail;
 
-    if (!R128PreInitModes(pScrn))      goto fail;
+    if (!R128PreInitModes(pScrn))               goto fail;
 
-    if (!R128PreInitCursor(pScrn))     goto fail;
+    if (!R128PreInitCursor(pScrn))              goto fail;
 
-    if (!R128PreInitAccel(pScrn))      goto fail;
+    if (!R128PreInitAccel(pScrn))               goto fail;
 
 #ifdef XF86DRI
-    if (!R128PreInitDRI(pScrn))        goto fail;
+    if (!R128PreInitDRI(pScrn))                 goto fail;
 #endif
 
 				/* Free the video bios (if applicable) */
@@ -1430,6 +1428,10 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 	xfree(info->VBIOS);
 	info->VBIOS = NULL;
     }
+
+				/* Free int10 info */
+    if (pInt10)
+	xf86FreeInt10(pInt10);
 
     return TRUE;
 
@@ -1441,6 +1443,10 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 	xfree(info->VBIOS);
 	info->VBIOS = NULL;
     }
+
+				/* Free int10 info */
+    if (pInt10)
+	xf86FreeInt10(pInt10);
 
     vgaHWFreeHWRec(pScrn);
     R128FreeRec(pScrn);

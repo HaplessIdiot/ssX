@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.4 2000/12/02 15:30:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.5 2000/12/13 02:45:00 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -73,6 +73,8 @@ RADEONAvailableOptions(int chipid, int busid)
      * Return options defined in the radeon submodule which will have been
      * loaded by this point.
      */
+    if ((chipid >> 16) == PCI_VENDOR_ATI)
+	chipid -= PCI_VENDOR_ATI << 16;
     for (i = 0; RADEONPciChipsets[i].PCIid > 0; i++) {
 	if (chipid == RADEONPciChipsets[i].PCIid)
 	    return RADEONOptions;
@@ -146,7 +148,7 @@ RADEONProbe(DriverPtr drv, int flags)
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	if (pEnt->active) {
-	    ScrnInfoPtr pScrn    = xf86AllocateScreen(drv, 0);
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
 #ifdef XFree86LOADER
 	    if (!xf86LoadSubModule(pScrn, "radeon")) {
@@ -158,6 +160,7 @@ RADEONProbe(DriverPtr drv, int flags)
 
 	    xf86LoaderReqSymLists(RADEONSymbols, NULL);
 
+#ifndef ELFDEBUG
 	    /* Workaround for possible loader bug */
 #	    define RADEONPreInit     \
 		(xf86PreInitProc*)    LoaderSymbol("RADEONPreInit")
@@ -175,6 +178,7 @@ RADEONProbe(DriverPtr drv, int flags)
 		(xf86FreeScreenProc*) LoaderSymbol("RADEONFreeScreen")
 #	    define RADEONValidMode   \
 		(xf86ValidModeProc*)  LoaderSymbol("RADEONValidMode")
+#endif
 
 #endif
 

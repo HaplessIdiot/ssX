@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.12 2000/10/11 22:52:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.13 2000/12/20 02:00:22 keithp Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -163,17 +163,17 @@ ATIScreenInit
 #endif /* AVOID_CPIO */
 
 #ifdef USE_FB
-	case 8:
-	case 16:
-	case 24:
-	case 32:
+        case 8:
+        case 16:
+        case 24:
+        case 32:
             pATI->Closeable = fbScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth,
-		pATI->bitsPerPixel);
+                pATI->bitsPerPixel);
 #ifdef RENDER
-	    if (pATI->Closeable)
-		fbPictureInit (pScreen, 0, 0);
+            if (pATI->Closeable)
+                fbPictureInit (pScreen, 0, 0);
 #endif
             break;
 #else
