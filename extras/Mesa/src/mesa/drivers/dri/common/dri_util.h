@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.1 2002/02/22 21:32:52 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.h,v 1.1.1.2 2004/12/10 15:33:18 alanh Exp $ */
 /**
  * \file dri_util.h
  * DRI utility functions definitions.
@@ -557,9 +557,6 @@ driCompareGLXAPIVersion( GLuint required_version );
 extern float
 driCalculateSwapUsage( __DRIdrawablePrivate *dPriv,
 		       int64_t last_swap_ust, int64_t current_ust );
-
-extern void 
-(*glXGetProcAddress(const GLubyte *procname))( void );
 
 #endif /* GLX_DIRECT_RENDERING */
 

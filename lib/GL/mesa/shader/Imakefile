@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile,v 1.1 2004/04/08 10:07:59 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/shader/Imakefile,v 1.1 2004/12/10 16:06:58 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -28,7 +28,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile,v 1.1 2004/04/08 10:07:59 alanh 
 
 #define LargePICTable YES
 
-#define MesaSwrastBuildDir /**/
+#define MesaShaderBuildDir /**/
 #define NeedToLinkMesaSrc
 #include "Imakefile.inc"
 
@@ -82,8 +82,8 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFS) $(MATHDEF)
      INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = $(MESA_SWRAST_SRCS)
-         OBJS = $(MESA_SWRAST_OBJS)
+         SRCS = $(MESA_SHADER_SRCS)
+         OBJS = $(MESA_SHADER_OBJS)
 
 
 #include <Library.tmpl>

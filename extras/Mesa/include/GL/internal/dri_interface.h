@@ -149,14 +149,6 @@ typedef GLboolean (* PFNGLXGETDRAWABLEINFOPROC) ( __DRInativeDisplay *dpy, int s
     int * backX, int * backY,
     int * numBackClipRects, drm_clip_rect_t ** pBackClipRects );
 
-extern GLboolean XF86DRIDestroyContext( __DRInativeDisplay *dpy, int screen,
-    __DRIid context_id );
-
-extern GLboolean XF86DRICreateDrawable( __DRInativeDisplay *dpy, int screen,
-    __DRIid drawable, drm_drawable_t *hHWDrawable );
-
-extern GLboolean XF86DRIDestroyDrawable( __DRInativeDisplay *dpy, int screen, 
-    __DRIid drawable);
 /*@}*/
 
 
