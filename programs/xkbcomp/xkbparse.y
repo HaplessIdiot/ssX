@@ -24,6 +24,8 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
+
 %token
 	END_OF_FILE	0
 	ERROR_TOK	255
