@@ -678,11 +678,10 @@ FontFileAddFontFile (FontDirectoryPtr dir, char *fontName, char *fileName)
 #endif
     if (!isscale || (vals.values_supplied & SIZE_SPECIFY_MASK))
     {
-      /* If the fontname says it is nonScalable, make sure that the
-       * renderer supports OpenBitmap and GetInfoBitmap.
+      /*
+       * If the renderer doesn't support OpenBitmap, FontFileOpenFont
+       * will still do the right thing.
        */
-      if (renderer->OpenBitmap && renderer->GetInfoBitmap)
-      {
 	entry.type = FONT_ENTRY_BITMAP;
 	entry.u.bitmap.renderer = renderer;
 	entry.u.bitmap.pFont = NullFont;
@@ -693,7 +692,6 @@ FontFileAddFontFile (FontDirectoryPtr dir, char *fontName, char *fileName)
 	    xfree (entry.u.bitmap.fileName);
 	    return FALSE;
 	}
-      }
     }
     /*
      * Parse out scalable fields from XLFD names - a scalable name
@@ -701,11 +699,6 @@ FontFileAddFontFile (FontDirectoryPtr dir, char *fontName, char *fileName)
      */
     if (isscale)
     {
-      /* If the fontname says it is scalable, make sure that the
-       * renderer supports OpenScalable and GetInfoScalable.
-       */
-      if (renderer->OpenScalable && renderer->GetInfoScalable)
-      {
 	if (vals.values_supplied & SIZE_SPECIFY_MASK)
 	{
 	    bzero((char *)&zeroVals, sizeof(zeroVals));
@@ -805,7 +798,6 @@ FontFileAddFontFile (FontDirectoryPtr dir, char *fontName, char *fileName)
                                            bitmap->name.name);
             }
 	}
-      }
     }
     return TRUE;
 }
