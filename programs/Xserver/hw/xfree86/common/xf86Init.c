@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.156 2000/03/04 03:58:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.157 2000/03/05 23:47:46 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1587,6 +1587,7 @@ xf86LoadModules(char **list, pointer *optlist)
     pointer opt;
     int i;
     char *name;
+    Bool failed = FALSE;
 
     if (!list)
 	return TRUE;
@@ -1612,11 +1613,11 @@ xf86LoadModules(char **list, pointer *optlist)
         if (!LoadModule(name, NULL, NULL, NULL, opt, NULL, &errmaj, &errmin)) {
 	    LoaderErrorMsg(NULL, name, errmaj, errmin);
 	    xfree(name);
-            return FALSE;
+	    failed = TRUE;
 	}
 	xfree(name);
     }
-    return TRUE;
+    return !failed;
 }
 
 /*
