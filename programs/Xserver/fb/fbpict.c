@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.12 2001/07/16 05:04:05 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.13 2002/05/13 05:25:59 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -820,6 +820,13 @@ fbCompositeSolidMask_nx1xn (CARD8      op,
     
     fbComposeGetSolid(pSrc, src);
 
+    if ((src & 0xff000000) != 0xff000000)
+    {
+	fbCompositeGeneral  (op, pSrc, pMask, pDst,
+			     xSrc, ySrc, xMask, yMask, xDst, yDst, 
+			     width, height);
+	return;
+    }
     fbGetStipDrawable (pMask->pDrawable, maskBits, maskStride, maskBpp, maskXoff, maskYoff);
     fbGetDrawable (pDst->pDrawable, dstBits, dstStride, dstBpp, dstXoff, dstYoff);
 
