@@ -5,6 +5,7 @@ XCOMM (xaavga256, xaa16, xaa24, xaa32). It is included from the Imakefiles
 XCOMM in these directories. BPPDEFINES, PixelSize and BPPOBJECTNAME should
 XCOMM be correctly defined for a specific depth.
 
+#define IHaveModules
 #include <Server.tmpl>
 
 INCLUDES = -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \

@@ -4,6 +4,11 @@ XCOMM $XConsortium: Imakefile /main/2 1996/10/27 13:00:56 kaleb $
 
 
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/Imakefile,v 3.2 1996/12/27 07:05:41 dawes Exp $
+
+
+
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = nv_driver.c

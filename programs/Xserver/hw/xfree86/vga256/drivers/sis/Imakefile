@@ -5,6 +5,11 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 06:20:54 kaleb $
 
 
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/Imakefile,v 3.9 1997/01/18 06:56:49 dawes Exp $
+
+
+
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = sis86c201.c sis_bank.s sis_curs.c sis_BitBlt.c sis_blitter.c\

@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.9 1996/12/28 08:18:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.12 1997/02/16 12:14:01 hohndel Exp $ */
 
 /*************************************************************************/
 
@@ -318,10 +318,10 @@ static int Num_RTVGA_ExtPorts =
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
- * its name has to be <driver_module_name>ModuleInit()
+ * its name has to be ModuleInit()
  */
 void
-rtvga_drvModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer *	data;
     INT32 *	magic;
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.3 1997/02/18 17:51:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.4 1997/02/23 09:25:16 dawes Exp $ */
 
 
 
@@ -26,6 +26,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define NO_OSLIB_PROTOTYPES
+#include "os.h"
+#include "xf86_OSlib.h"
 #define LOADERDECLARATIONS
 #include "misc.h"
 #include "xf86.h"
@@ -53,37 +56,127 @@ LOADERVAR(endtab) =
 	(void *) LoaderSymbol("endtab");
 }
 
+static char *subdirs[] = 
+{
+	"",
+	"drivers/",
+	"extensions/",
+	"internal/",
+};
+static char *prefixes[] =
+{
+	"",
+	"lib",
+};
+static char *suffixes[] =
+{
+	"",
+	".o",
+	"_drv.o",
+	".a",
+};
+
+char *
+FindModule(module,dir)
+	char	* module;
+	char	* dir;
+{
+	char		* buf;
+	int		  d,p,s;
+	struct stat	  stat_buf;
+
+	buf = (char*)xcalloc(1,strlen(module)+strlen(dir)+40);
+	for( d = 0; d < sizeof(subdirs)/sizeof(char*); d++ )
+	    for( p = 0; p < sizeof(prefixes)/sizeof(char*); p++ )
+		for( s = 0; s < sizeof(suffixes)/sizeof(char*); s++ )
+		{
+			/*
+			 * put together a possible filename
+			 */
+			strcpy(buf,dir);
+			strcat(buf,subdirs[d]);
+			strcat(buf,prefixes[p]);
+			strcat(buf,module);
+			strcat(buf,suffixes[s]);
+			if ((stat(buf, &stat_buf) == 0) &&
+			    ((S_IFMT & stat_buf.st_mode) == S_IFREG)) 
+			{
+				return(buf);
+			}
+		}
+	xfree(buf);
+	return(NULL);
+}
+
 LoadModule(module,path)
 	char	* module;
 	char	* path;
 {
-	char	* buf;
 	void	(*initfunc)() = NULL;
 	pointer	  data;
 	INT32	  magic;
 
-	char	* p;
+	char	* dir_elem;
+	char	* found = NULL;
+	char	* keep;
 	char	* name;
+	char	* path_elem;
+	char	* p;
 
+	keep = dir_elem = (char *) xcalloc(1, strlen(path) + 1);
+	path_elem = (char *) xcalloc(1, strlen(path) + 2);
+	strcpy(dir_elem, path);
 
-	buf = (char*)xcalloc(1,strlen(module)+strlen(path)+2);
+	/* 
+	 * if the module name is not a full pathname, we need to
+	 * check the elements in the path
+	 */
+	if (module[0] == '/') 
+		found = module;
+	dir_elem = strtok(dir_elem, ",");
+	while( (! found) && (dir_elem != NULL) )
+	{
+	    /*
+	     * only allow fully specified path 
+	     */
+	    if (*dir_elem == '/') {
+		strcpy(path_elem, dir_elem);
+		if (dir_elem[strlen(dir_elem) - 1] != '/') 
+		{
+		    path_elem[strlen(dir_elem)] = '/';
+		    path_elem[strlen(dir_elem)+1] = '\0';
+		}
+		found = FindModule(module,path_elem);
+	    }
+	    dir_elem = strtok(NULL, ",");
+	}
 
-	strcpy(buf,path);
-	strcat(buf,"/");
-	strcat(buf,module);
-	LoaderOpen(buf);
+	/*
+	 * did we find the module?
+	 */
+	if( !found )
+	{
+		ErrorF("Warning, couldn't open module %s\n",module);
+		goto LoadModule_exit;
+	}
+	LoaderOpen(found);
 	/*
 	 * now check if there's the special function
 	 * <modulename>ModuleInit
 	 * and if yes, call it.
 	 */
-	name = (char*)xalloc(strlen(module)+strlen("ModuleInit")+1);
-	strcpy(name,module);
+	name = (char*)xalloc(strlen(found)+strlen("ModuleInit")+1);
+	strcpy(name,found);
 	p = strchr(name,'.'); /* get rid of the .o/.a/.so */
 	if( p )
 	    *p = '\0';
 	strcat(name,"ModuleInit");
-	initfunc = (void (*)())LoaderSymbol(name);
+	p = strrchr(name,'/');
+	if( p )
+	    p++;
+	else
+	    p=name;
+	initfunc = (void (*)())LoaderSymbol(p);
 	xfree(name);
 	if( initfunc )
 	{
@@ -126,5 +219,11 @@ LoadModule(module,path)
 		}
 		while(magic != MAGIC_DONE);
 	}
+	xfree(found);
+
+LoadModule_exit:
+
+	xfree(path_elem);
+	xfree(keep);
 }
 

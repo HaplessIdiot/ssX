@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.83 1997/02/16 12:13:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.84 1997/02/17 09:47:32 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -652,10 +652,10 @@ int defaultTilesPerLineIndex = 5; /* 2048 byte, skinny tiles */
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
- * its name has to be <driver_module_name>ModuleInit()
+ * its name has to be ModuleInit()
  */
 void
-cir_drvModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer *	data;
     INT32 *	magic;
 {

@@ -4,6 +4,11 @@ XCOMM $XConsortium: Imakefile /main/3 1996/10/23 15:09:22 kaleb $
 
 
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/Imakefile,v 3.2 1996/12/27 07:04:44 dawes Exp $
+
+
+
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = apm_driver.c apm_bank.s apm_cursor.c

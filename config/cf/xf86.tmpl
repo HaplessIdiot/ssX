@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.12 1997/02/18 04:34:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.13 1997/02/23 09:24:43 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -73,7 +73,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.12 1997/02/18 04:34:34 dawes Exp $
 	$(MODCC) $(MODCFLAGS) options -c $*.c
 
 /* This overrides an AssembleObject in xf86.rules or in an os-dependent
- * rules file (currently only minix.cf)
+ * rules file (currently only minix.cf and os2.rules (uncritical))
  */
 #undef AssembleObject
 #define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
@@ -88,5 +88,23 @@ AllTarget(objname.Osuf)							@@\
 objname.Osuf: objlist $(EXTRALIBRARYDEPS)				@@\
 	RemoveFile($@)							@@\
 	$(MODLD) $(MODLDCOMBINEFLAGS) objlist -o $@
+
+/* This overrides the RanLibrary in Imake.rules */
+#if DoRanlibCmd || NeedModuleRanlib
+#undef RanLibrary
+#define RanLibrary(args) $(MODRANLIB) args
+#endif
+
+/* This overrides the MakeLibrary rule in Imake.rules */
+#undef MakeLibrary
+#define MakeLibrary(libname,objlist) $(MODAR) libname objlist
+
+/* This overrides the LibraryTargetName rule in Imake.rules */
+#undef LibraryTargetName
+#define LibraryTargetName(libname)Concat(lib,libname.a)
+
+/* This disables an OS/2 rule */
+#undef BuildLibSupportLibs
+#define BuildLibSupportLibs(dummy)
 
 #endif /* IHaveModules */

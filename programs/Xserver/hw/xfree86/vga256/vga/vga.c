@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.74 1997/02/15 11:12:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.75 1997/02/17 09:48:31 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -249,7 +249,7 @@ int vga256ValidTokens[] =
 };
 
 ScrnInfoRec *
-ModuleInit()
+ServerInit()
 {
 return &vga256InfoRec;
 }
@@ -257,10 +257,10 @@ return &vga256InfoRec;
 /*
  * this function is automagically executed when loading this module
  *
- * its name has to be <driver_module_name>ModuleInit()
+ * its name has to be ModuleInit()
  */
 void
-libvga256ModuleInit(data,magic)
+ModuleInit(data,magic)
     int  * data;
     int  * magic;
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.21 1997/01/18 06:53:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.22 1997/02/14 10:29:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -20,9 +20,6 @@
 #define _XF86MISC_SAVER_COMPAT_
 #include "xf86mscstr.h"
 #include "Xfuncproto.h"
-#include "xf86.h"
-#include "xf86Priv.h"
-#include "xf86_OSlib.h"
 
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
@@ -38,6 +35,10 @@
 #endif
 
 #include "swaprep.h"
+
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86_OSlib.h"
 
 extern int xf86ScreenIndex;
 extern Bool xf86MiscModInDevEnabled;

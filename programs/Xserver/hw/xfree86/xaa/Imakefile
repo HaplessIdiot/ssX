@@ -1,5 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.7 1997/01/14 22:21:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.10 1997/02/20 10:01:29 hohndel Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs

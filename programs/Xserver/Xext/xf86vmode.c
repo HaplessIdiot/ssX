@@ -44,8 +44,6 @@ from Kaleb S. KEITHLEY
 #define _XF86VIDMODE_SERVER_
 #include "xf86vmstr.h"
 #include "Xfuncproto.h"
-#include "../hw/xfree86/common/xf86.h"
-#include "../hw/xfree86/common/xf86Priv.h"
 
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
@@ -61,6 +59,9 @@ from Kaleb S. KEITHLEY
 #endif
 
 #include "swaprep.h"
+
+#include "../hw/xfree86/common/xf86.h"
+#include "../hw/xfree86/common/xf86Priv.h"
 
 extern int xf86ScreenIndex;
 extern Bool xf86VidModeEnabled;

@@ -1258,6 +1258,12 @@ s3Init(mode)
 
    s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
 
+   if ( S3_TRIO64V2_SERIES(s3ChipId) ) {
+     /* disable the stream display fetch length control */
+      outb(0x3d4,0x90);
+      outb(0x3d5,0x00);
+   }     
+
 #ifdef REG_DEBUG
    for (i=0; i<10; i++) {
 	 outb(vgaCRIndex, i);

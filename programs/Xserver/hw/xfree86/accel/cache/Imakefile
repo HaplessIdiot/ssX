@@ -1,9 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/Imakefile,v 3.1 1996/12/23 06:33:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/Imakefile,v 3.3 1997/02/20 10:01:02 hohndel Exp $
 
 
 
 
 XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:20:30 rws $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = 	xf86bcache.c xf86fcache.c xf86text.c

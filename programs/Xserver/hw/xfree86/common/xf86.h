@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.50 1997/02/18 17:51:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.51 1997/02/23 09:25:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,6 +31,9 @@
 #include "scrnintstr.h"
 
 #include "xf86_Option.h"
+
+#define DONT_DEFINE_WRAPPERS
+#include "xf86_libc.h"
 
 /*
  * structure common for all modes
@@ -374,11 +377,6 @@ typedef struct _MouseDevRec {
 #else
 #define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
 #endif
-
-/* for libc_wrapper.c */
-typedef pointer XF86FILE;	/* opaque FILE* replacement */
-extern XF86FILE xf86stdin,xf86stdout,xf86stderr;
-typedef pointer XF86FPOS_T;	/* opaque fpos_t* replacement */
 
 /* Global data */
 /* xf86Init.c */

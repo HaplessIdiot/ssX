@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.23 1997/02/11 10:02:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.24 1997/02/23 09:25:07 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -206,14 +206,14 @@ void (*i128ImageFillFunc)(
 
 
 ScrnInfoRec *
-ModuleInit()
+ServerInit()
 {
 return &i128InfoRec;
 }
 
 
 void
-libi128ModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer	* data;
     INT32	* magic;
 {

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.7 1997/02/17 14:22:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.8 1997/02/20 10:01:12 hohndel Exp $
 
 
 
@@ -6,6 +6,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.7 19
 
 XCOMM $XConsortium: Imakefile /main/6 1995/11/12 19:05:21 kaleb $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.138 1997/02/18 10:47:32 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.139 1997/02/23 09:24:45 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -43,8 +43,14 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef XF86Mach32Module
 #define XF86Mach32Module        XF86LoaderServer
 #endif
+#ifndef XF86P9000Module
+#define XF86P9000Module         XF86LoaderServer
+#endif
 #ifndef XF86I128Module
 #define XF86I128Module		XF86LoaderServer
+#endif
+#ifndef XF86Mach64Module
+#define XF86Mach64Module        XF86LoaderServer
 #endif
 #if !XF86LoaderServer
 #ifndef XF86SVGAServer
@@ -245,13 +251,13 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # define XF86Mach32Dir		/**/
 #endif
 
-#if XF86Mach64Server
+#if XF86Mach64Server || XF86Mach64Module
 # define XF86Mach64Dir		mach64
 #else
 # define XF86Mach64Dir		/**/
 #endif
 
-#if XF86P9000Server
+#if XF86P9000Server || XF86P9000Module
 # define XF86P9000Dir		p9000
 #else
 # define XF86P9000Dir		/**/

@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/68 1996/12/15 22:57:09 rws $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.17 1996/12/23 07:09:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.18 1997/01/18 06:57:58 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -60,6 +60,7 @@ SOFTWARE.
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
+#include <sys/types.h>
 #ifndef WIN32
 #if !defined(AMOEBA) && !defined(MINIX)
 #ifdef ESIX

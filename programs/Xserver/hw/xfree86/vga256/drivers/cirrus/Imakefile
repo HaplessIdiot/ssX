@@ -4,7 +4,9 @@ XCOMM $XConsortium: Imakefile /main/11 1996/10/19 18:10:30 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.20 1997/02/14 12:18:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.21 1997/02/23 10:30:05 dawes Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \

@@ -4,8 +4,9 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.16 1997/02/14 12:18:17 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.17 1997/02/23 10:30:01 dawes Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 XCOMM To use the old acceleration code you must define OLD_ACCL here.

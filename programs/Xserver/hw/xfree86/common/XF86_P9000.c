@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.5 1996/02/04 09:05:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.6 1996/12/23 06:43:08 dawes Exp $ */
 
 
 
@@ -61,6 +61,33 @@ int p9000ValidTokens[] =
   IOBASE,
   -1
 };
+
+#if defined(XFree86LOADER)
+/*
+ * this function returns the ScrnInfoPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer     * data;
+    INT32       * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+        * data = (pointer) "libp9000.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif
 
 #include "xf86ExtInit.h"
 

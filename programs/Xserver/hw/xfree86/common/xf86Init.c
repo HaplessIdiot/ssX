@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.66 1997/01/19 12:50:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.67 1997/02/16 10:27:16 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -162,6 +162,8 @@ InitOutput(pScreenInfo, argc, argv)
 #endif
 
   if (serverGeneration == 1) {
+
+    xf86WrapperInit();
 
     if ((xf86ServerName = strrchr(argv[0], '/')) != 0)
       xf86ServerName++;

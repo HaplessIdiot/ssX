@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.5 1997/02/23 09:25:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.6 1997/02/24 17:47:03 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -475,6 +475,15 @@ void xf86rewind(XF86FILE f);
 int xf86ffs(int mask);
 
 char * xf86getenv(const char *);
+
+XF86DIR	xf86opendir(const char *name);
+
+XF86DIRENT xf86readdir(XF86DIR dirp);
+
+void xf86rewinddir(XF86DIR dirp);
+
+int xf86closedir(XF86DIR dirp);
+
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.7 1996/12/24 08:47:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.8 1997/01/18 06:53:01 dawes Exp $ */
 
 /*
 
@@ -21,7 +21,6 @@ Copyright (c) 1995, 1996  XFree86 Inc
 #define _XF86DGA_SERVER_
 #include "xf86dgastr.h"
 #include "swaprep.h"
-#include "../hw/xfree86/common/xf86.h"
 
 #include <X11/Xtrans.h>
 #include "../os/osdep.h"
@@ -35,6 +34,7 @@ Copyright (c) 1995, 1996  XFree86 Inc
 #else
 #include <lan/socket.h>
 #endif
+#include "../hw/xfree86/common/xf86.h"
 
 extern int xf86ScreenIndex;
 

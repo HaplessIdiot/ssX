@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.9 1996/03/10 12:03:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.10 1996/12/23 06:40:56 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -144,7 +144,7 @@ int p9000VGASetRegs(const unsigned char *regs)
   int tmp;
 
   /* update misc output register */
-  usleep(20000) ;
+  xf86usleep(20000) ;
   /* This save and restore is used for switching into
    * 640x400x16 and does not conflict with the one
    * done in the vendor specific code */
@@ -154,7 +154,7 @@ int p9000VGASetRegs(const unsigned char *regs)
 	 (int)regs[MIS]);
 #endif
 
-  usleep(30000);  /* Wait at least 10 ms for the clock to change */
+  xf86usleep(30000);  /* Wait at least 10 ms for the clock to change */
 
   /* synchronous reset on */
   outb(SEQ_INDEX_REG, 0x00); 

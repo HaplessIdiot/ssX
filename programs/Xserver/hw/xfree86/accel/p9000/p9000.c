@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.45 1997/02/11 10:02:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.46 1997/02/18 12:04:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -249,6 +249,50 @@ unsigned int p9000QuadAlu[16] ; /* alu src = p9000 foreground */
 unsigned int p9000PixOpAlu[16] ; /* use for pix1 opaque operations */
 unsigned int p9000PixAlu[16] ; /* use for pix1 transparent operations */
 
+#if defined(XFree86LOADER)
+
+/*
+ * ServerInit --
+ *      called by the module loader when all modules are loaded.
+ */
+ScrnInfoRec *
+ServerInit()
+{
+  return &p9000InfoRec;
+}
+
+/*
+ * this function returns the ScrnInfoPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer     * data;
+    INT32       * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+        * data = (pointer) &p9000InfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 1:
+        * data = (pointer) "XF86_P9000.o";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+
+#endif
+
+
 /*
  * p9000Probe --
  *     probe and initialize the hardware driver
@@ -282,7 +326,7 @@ p9000Probe()
       {
 	for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
 	  {
-	    if (0 == strcmp(p9000VendorList[curvendor]->Vendor,
+	    if (0 == xf86strcmp(p9000VendorList[curvendor]->Vendor,
 			    p9000InfoRec.chipset))
 	      {
 		p9000VendorPtr = p9000VendorList[curvendor];
@@ -1000,7 +1044,7 @@ p9000DPMSSet(PowerManagementMode)
 	/* Power down the RAMDAC output to blank the screen.  No data
 	 * will be lost and MPU reads and writes should continue to work. */
 	p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, BT_CR0_POWERDOWN);
-	usleep(10000);
+	xf86usleep(10000);
 	/* disable video in the video controller */
 	p9000Store(SRTCTL,CtlBase,0x01C4L);
 	break;

@@ -5,11 +5,6 @@ and donated to The XFree86 Project.
 
 <at this point we should include the design document as written by Stuart>
 
-At this point (XFree86-3.2Ad) the code works for a few cards that were
-tested, all this was done under Linux. Significant cleanups and improvements
-will be necessary together with alot of testing. Ideally, based on this
-technology a new server design should be developed.
-
 Debugging this code is somewhat dificult as gdb will not be able to step
 through loaded modules in source mode. The functions
 
@@ -26,40 +21,11 @@ servers.
 
 More documentation on the design and implementation should be added here.
 
-------------------------------------------------------------------
-
-Here are the changes that were made to this design and to the generic XFree86
-code after the initial merger of the code:
-
-18. resolve unresolved function to a dummy function that prints out
-    a fatal error when called. Only for Elf at this point
-18. fix autoloading amd implement it for all SVGA drivers
-17. add loading for the new s3/svga driver and the S3V server 
-16. update patches to XFree86-3.2Ac
-16. update patches to X11R6.3 (XFree86-3.2o)
-15. add automagic loading of the right xaa and cfb libraries (only matrox)
-14. some color depth dependencies in livga256 and xaa have been removed
-13. implicit loading of some modules has been implemented
-12. all SVGA drivers are loadable now
-11. changed vgaDrivers to be built dynamically
-10. added <name>ModuleInit interface that is called when the module named
-    name.o or name.a or name.so or... is loaded
- 9. disabled external clock program for now
- 8. LD-3 released
- 7. ported LD-2 back to Linux and sorted out the problems related to
-    undefined symbols
- 6. LD-2 released
- 5. added the necessary symbols to get S3, XAA, Matrox working
- 4. changed config code to load the modules given in the XF86Config file
- 3. changed vgaIOBase and friends to be globals living in the main server
- 2. changed the S3 specific calls in the RAMDAC routines to be function ptrs
- 1. added Imakefile support to build and install the modules
-
 Specific comments to some design ideas and the state of the code
 
 - Init Function
 
-every module has its init function, which has the name <name(module)>ModuleInit.
+every module has its init function, which has the name ModuleInit.
 When loading the module this function is repeatedly called with two pointers
 (one to a magic value, one to a data element) until it returns a magic value
 indicating that it is done. Currently the magic values support several
@@ -80,14 +46,16 @@ MAGIC_CCD_SCREEN_PRIV_IDX	the ScreenPrivIdx for the current color depth
 MAGIC_CCD_XAA_SCREEN_INIT	the XaaScreenInit function for the current
 				color depth
 
+MAGIC_PEX_INIT			
+MAGIC_XIE_INIT			init functions of extensions
+
 MAGIC_DONE			nothing; side effect is to stop looping
 
 - mixed color depths
 
 the current code has various cross dependencies on cfb8, libvga256, and all
 higher depths cfbs as well as all the xaa modules. These need to be
-straightened out (this has been started in change #14 above but is far from
-done).
+straightened out (this has been started but is far from done).
 We basically need a redesigned server to solve these issues cleanly.
 
 - unresolved functions
@@ -113,9 +81,19 @@ solutions are welcome.
 Currently this has been tested on Linux, it should work on SVR4. This
 code needs to be ported to the other operating systems XFree86 supports.
 
+- finding modules
+
+ModulePath can contain several entries of directories that contain modules.
+Modules can be implicitly or explicitly loaded. To load a module explicitly
+you have to include it in the Module Section. Load "name" tries to find
+name, name.o, name_drv.o, or name.a in any of the directories given in the 
+ModulePath or in the subdirectories drivers, extensions, internal under these 
+directories. Normally the chipset drivers should be implemented in a way that 
+they implicitly load all other core modules needed by this driver.
+
 ----------------------------------------------------------------------
 
-Last updated Feb 14, 1997, Dirk H. Hohndel <hohndel@XFree86.Org>
+Last updated Feb 25, 1997, Dirk H. Hohndel <hohndel@XFree86.Org>
 
 
 

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.33 1997/02/12 08:54:38 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.34 1997/02/23 09:24:39 dawes Exp $
 XCOMM
 
 /*
@@ -756,7 +756,7 @@ TCLIBDIR = TclLibDir
 #define ModuleCcCmd CcCmd
 #endif
 #ifndef ModuleCFlags
-#define ModuleCFlags $(CDEBUGFLAGS) $(THREAD_CFLAGS) $(ALLDEFINES)
+#define ModuleCFlags $(CDEBUGFLAGS) $(CCOPTIONS) $(THREAD_CFLAGS) $(ALLDEFINES)
 #endif
 #ifndef ModuleAsCmd
 #define ModuleAsCmd AsCmd
@@ -772,6 +772,15 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef ModuleLdCombineFlags
 #define ModuleLdCombineFlags LdCombineFlags
+#endif
+#ifndef ModuleArCmd
+#define ModuleArCmd ArCmd
+#endif
+#ifndef NeedModuleRanlib
+#define NeedModuleRanlib NO
+#endif
+#ifndef ModuleRanlibCmd
+#define ModuleRanlibCmd /*won't be used unless NeedModuleRanlib is YES*/
 #endif
 
 #ifndef StandardIncludes	/* for platform-specifics */
@@ -1109,6 +1118,8 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
             MODLD = ModuleLdCmd
        MODLDFLAGS = ModuleLdFlags
 MODLDCOMBINEFLAGS = ModuleLdCombineFlags
+            MODAR = ModuleArCmd
+        MODRANLIB = ModuleRanlibCmd
 #if HasLatex
             DVIPS = DvipsCmd
             LATEX = LatexCmd

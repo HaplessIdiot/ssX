@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/Imakefile,v 3.5 1996/12/23 06:39:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/Imakefile,v 3.6 1997/01/05 11:53:36 dawes Exp $
 
 
 
@@ -7,6 +7,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/Imakefile,v 3.5 1996
 
 XCOMM $XConsortium: Imakefile /main/5 1996/10/27 18:06:00 kaleb $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = ativga.c mach64.c mach64blt.c mach64bstor.c mach64cmap.c mach64curs.c \
@@ -37,6 +38,10 @@ NormalLibraryTarget(mach64,$(OBJS))
 LinkSourceFile(vgaHW.c,../../vga256/vga)
 
 InstallLinkKitLibrary(mach64,$(LINKKITDIR)/drivers)
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(mach64),$(MODULEDIR))
+#endif
 
 #ifndef OS2Architecture
 DependTarget()

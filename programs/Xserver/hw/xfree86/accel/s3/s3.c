@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.159 1997/02/16 12:12:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.160 1997/02/17 09:45:21 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -211,7 +211,7 @@ ScrnInfoRec s3InfoRec =
 };
 
 ScrnInfoRec *
-ModuleInit()
+ServerInit()
 {
 return &s3InfoRec;
 }
@@ -219,10 +219,10 @@ return &s3InfoRec;
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
- * it name has to be <driver_module_name>ModuleInit()
+ * it name has to be ModuleInit()
  */
 void
-libs3ModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer	* data;
     INT32	* magic;
 {

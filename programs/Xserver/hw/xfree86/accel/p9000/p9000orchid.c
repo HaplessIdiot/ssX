@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.8 1996/12/23 06:40:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.9 1997/02/17 09:45:11 hohndel Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -271,7 +271,7 @@ void p9000OrchidDisable()
           (int)( ( p9000OrchidSaveMisc ) | ORCHID_CLKSELBITS_P9000 )) ;
 #endif
 
-  usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout) for 
+  xf86usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout) for 
 		   * the clock chip output freq to change */
 
   p9000BtRestore();
@@ -338,7 +338,7 @@ void p9000OrchidSetClock(dotclock, memclock)
   ActualHertz = ICD2061AGetClock (clock_ctrl_word);
   /* Wait at least 10 msecs (ICD2061 timeout) for the clock chip 
    * to change output */
-  usleep(30000); 
+  xf86usleep(30000); 
   
 #ifdef DEBUG
   ErrorF("Mem clock actually set to %d Hz.  Wanted %ld\n",ActualHertz,

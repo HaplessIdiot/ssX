@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/Imakefile,v 3.10 1996/12/23 06:38:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/Imakefile,v 3.12 1997/02/20 10:01:03 hohndel Exp $
 
 
 
@@ -6,6 +6,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/Imakefile,v 3.10 199
 
 XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:21:12 rws $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = 	mach32.c mach32cmap.c mach32gc.c mach32fs.c mach32ss.c \

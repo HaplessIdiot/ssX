@@ -1,6 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/6 1996/09/28 16:55:25 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/export/Imakefile,v 3.2 1996/12/23 06:26:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/export/Imakefile,v 3.3 1997/02/18 17:51:11 hohndel Exp $
 XCOMM build device independent export element objects
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 = eclut.c ecphoto.c edraw.c edrawp.c elut.c ephoto.c

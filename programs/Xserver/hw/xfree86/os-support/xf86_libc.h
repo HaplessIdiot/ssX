@@ -22,6 +22,39 @@
 #ifdef XFree86LOADER
 
 /*
+ * First, the new data types
+ *
+ * note: if some pointer is declared "opaque" here, pass it between
+ * xf86* functions only, and don't rely on it having a whatever internal
+ * structure, even if yome source file might reveal the existance of
+ * such a structure.
+ */
+typedef pointer XF86FILE;	/* opaque FILE* replacement */
+extern  XF86FILE xf86stdin;
+extern  XF86FILE xf86stdout;
+extern  XF86FILE xf86stderr;
+
+typedef pointer XF86FPOS_T;	/* opaque fpos_t* replacement */
+
+#define _XF86NAMELEN	263	/* enough for a larger filename */
+				/* (divisble by 8) */
+typedef pointer XF86DIR;	/* opaque DIR* replacement */
+
+/* Note: the following is POSIX! POSIX only requires the d_name member. 
+ * Normal Unix has often a number of other members, but don't rely on that
+ */
+struct _xf86dirent {		/* types in struct dirent/direct: */
+	char	d_name[_XF86NAMELEN+1];	/* char [MAXNAMLEN]; might be smaller or unaligned */
+};
+typedef struct _xf86dirent *XF86DIRENT;
+
+/*
+ * the rest of this file should only be included for code that is supposed
+ * to go into modules
+ */
+
+#ifndef DONT_DEFINE_WRAPPERS
+/*
  * the mem.../bcopy family
  */
 #define memcpy(a,b,c)	xf86memcpy(a,b,c)
@@ -54,12 +87,8 @@
 
 /*
  * FILE is not really compatible accross operating systems
+ *
  */
-#define XF86FILE	pointer
-extern  XF86FILE xf86stdin;
-extern  XF86FILE xf86stdout;
-extern  XF86FILE xf86stderr;
-
 #define FILE		XF86FILE
 #define fopen(a,b)	xf86fopen(a,b)
 #define fclose(a)	xf86fclose(a)
@@ -68,11 +97,20 @@ extern  XF86FILE xf86stderr;
 #define fseek(a,b,c)	xf86fseek(a,b,c)
 
 /*
+ * DIR and DIRENT need to be replaced as well
+ */
+#define opendir(a)	xf86opendir(a)
+#define readdir(a)	xf86readdir(a)
+#define rewinddir(a)	xf86rewinddir(a)
+#define closedir(a)	xf86closedir(a)
+
+/*
  * misc other functions we provide
  */
 #define getenv(a)	xf86getenv(a)
 
 
+#endif /* DONT_DEFINE_WRAPPERS */
 
 #endif /* XFree86LOADER */
 

@@ -1,6 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/09/28 16:56:25 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/process/Imakefile,v 3.2 1996/12/23 06:28:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/process/Imakefile,v 3.3 1997/02/18 17:51:30 hohndel Exp $
 XCOMM build device dependent machine independent process element objs
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 = bitfun.c mpgeom.c mpgeomaa.c mpgeomnn.c mppoint.c

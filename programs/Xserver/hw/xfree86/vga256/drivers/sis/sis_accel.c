@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_accel.c,v 3.1 1997/01/18 06:56:52 dawes Exp $ */
 
 
 /*
@@ -16,6 +16,7 @@
 
 #include "sis_driver.h"
 #include "sis_Blitter.h"
+extern Bool sisUseLinear ;
 /* 
  * Include any definitions for communicating with the coprocessor here.
  * In this sample driver, the following macros are defined:
@@ -84,11 +85,20 @@ void SISAccelInit()
      * ONLY_TWO_BITBLT_DIRECTIONS indicates that xdir must be equal to ydir.
      * ONLY_LEFT_TO_RIGHT_BITBLT indicates that the xdir must be 1.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-	HARDWARE_PATTERN_PROGRAMMED_BITS | 
-	HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
-        HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
-        HARDWARE_PATTERN_MONO_TRANSPARENCY ;
+
+    /* Disable the PIXMAP CACHE in no linear because XAA high level does not
+     * work with video in banked mode.
+     * May be in the future we could restore the PIXMAP CACHE even in banked
+     * mode
+     */
+       
+
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | 
+	(sisUseLinear ? PIXMAP_CACHE : 0 ) |
+	    HARDWARE_PATTERN_PROGRAMMED_BITS | 
+		HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+		    HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
+			HARDWARE_PATTERN_MONO_TRANSPARENCY ;
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -136,41 +146,43 @@ void SISAccelInit()
 					SCANLINE_PAD_DWORD |
 					GXCOPY_ONLY |
 					NO_PLANEMASK;
-
-	xf86AccelInfoRec.SetupForScreenToScreenColorExpand = 
-	    SISSetupForScreenToScreenColorExpand;
-	xf86AccelInfoRec.SubsequentScreenToScreenColorExpand = 
-	    SISSubsequentScreenToScreenColorExpand;
-        xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-            SISSetupForScanlineScreenToScreenColorExpand;
-        xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-            SISSubsequentScanlineScreenToScreenColorExpand;
-
-	offscreen_available = vga256InfoRec.videoRam * 1024 - 
-	    vga256InfoRec.displayWidth * vga256InfoRec.virtualY
-		* (vgaBitsPerPixel / 8);
-	sisBLTPatternOffscreenSize = 1024 ;
-	if (offscreen_available < sisBLTPatternOffscreenSize) {
-	    ErrorF("%s %s: Not enough off-screen video"
-		   " memory for expand color.\n",
-		   XCONFIG_PROBED, vga256InfoRec.name);
-	    sisBLTPatternOffscreenSize = 0 ;
-	}
-	else {
-	    sisBLTPatternAddress = vga256InfoRec.videoRam * 1024 
-		- sisCursorSize - sisBLTPatternOffscreenSize;
-	    xf86AccelInfoRec.ScratchBufferAddr = sisBLTPatternAddress;
-	    xf86AccelInfoRec.ScratchBufferSize = sisBLTPatternOffscreenSize;
-	}
+	if ( sisUseLinear ) {
+	    xf86AccelInfoRec.SetupForScreenToScreenColorExpand = 
+		SISSetupForScreenToScreenColorExpand;
+	    xf86AccelInfoRec.SubsequentScreenToScreenColorExpand = 
+		SISSubsequentScreenToScreenColorExpand;
+	    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
+		SISSetupForScanlineScreenToScreenColorExpand;
+	    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+		SISSubsequentScanlineScreenToScreenColorExpand;
+	
+	    offscreen_available = vga256InfoRec.videoRam * 1024 - 
+		vga256InfoRec.displayWidth * vga256InfoRec.virtualY
+		    * (vgaBitsPerPixel / 8);
+	    sisBLTPatternOffscreenSize = 1024 ;
+	
+	    if (offscreen_available < sisBLTPatternOffscreenSize) {
+		ErrorF("%s %s: Not enough off-screen video"
+		       " memory for expand color.\n",
+		       XCONFIG_PROBED, vga256InfoRec.name);
+		sisBLTPatternOffscreenSize = 0 ;
+	    }
+	    else {
+		sisBLTPatternAddress = vga256InfoRec.videoRam * 1024 
+		    - sisCursorSize - sisBLTPatternOffscreenSize;
+		xf86AccelInfoRec.ScratchBufferAddr=sisBLTPatternAddress;
+		xf86AccelInfoRec.ScratchBufferSize=sisBLTPatternOffscreenSize;
+	    }
+	}	
 	/*
 	 * 8x8 color expand pattern fill
 	 */
-#if 1
+
 	xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
 	    SISSetupFor8x8PatternColorExpand;
 	xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
 	    SISSubsequent8x8PatternColorExpand;
-#endif
+
     }
      /*
      * Finally, we set up the video memory space available to the pixmap
@@ -178,17 +190,18 @@ void SISAccelInit()
      * to the end of video memory minus 1K, can be used. If you haven't
      * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
      */
-     cacheStart =
-         vga256InfoRec.virtualY * vga256InfoRec.displayWidth
-         * vga256InfoRec.bitsPerPixel / 8;
-     cacheEnd =
-        vga256InfoRec.videoRam * 1024 - 1024 - sisBLTPatternOffscreenSize -
-	    sisCursorSize ;
+    if (sisUseLinear) {
+	cacheStart =
+	    vga256InfoRec.virtualY * vga256InfoRec.displayWidth
+		* vga256InfoRec.bitsPerPixel / 8;
+	cacheEnd =
+	    vga256InfoRec.videoRam * 1024 - 1024 - sisBLTPatternOffscreenSize -
+		sisCursorSize ;
 
-    xf86InitPixmapCache(&vga256InfoRec, cacheStart, cacheEnd);
-
+	xf86InitPixmapCache(&vga256InfoRec, cacheStart, cacheEnd);
+    }
     /* 
-     * Now set variable often use
+     * Now set variables often used
      *
      */
     

@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.17 1997/01/18 06:56:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.20 1997/02/16 12:14:06 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -125,6 +125,7 @@ static void *SISSave();
 static void SISRestore();
 static void SISFbInit();
 static void SISAdjust();
+static void SISDisplayPowerManagementSet();
 extern void SISSetRead();
 extern void SISSetWrite();
 extern void SISSetReadWrite();
@@ -182,15 +183,16 @@ Bool sisUseLinear = TRUE;
 Bool sisUseMMIO = TRUE;
 static int SISDisplayableMemory;
 unsigned char *sisMMIOBase = NULL;
+unsigned int PCIMMIOBase=0 ;
 
 
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
- * its name has to be <driver_module_name>ModuleInit()
+ * its name has to be ModuleInit()
  */
 void
-sis_drvModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer *	data;
     INT32 *	magic;
 {
@@ -626,6 +628,9 @@ SISProbe()
 	/* Set to 130MHz at 16 colours */
 	vga256InfoRec.maxClock = 130000;
 #endif
+#ifdef DPMSExtension
+	vga256InfoRec.DPMSSet = SISDisplayPowerManagementSet;
+#endif
 
     	return(TRUE);
 }
@@ -651,7 +656,7 @@ sisPCIMemBase()
     }
 }
 
-static int
+static unsigned int
 sisPCIMMIOBase()
 {
     
@@ -720,14 +725,33 @@ SISFbInit()
 		ErrorF("%s %s: base address is set at 0x%X.\n",
 		       XCONFIG_GIVEN, vga256InfoRec.name, SIS.ChipLinearBase);
 	    }	
+	    else {
+		SIS.ChipLinearBase = sisPCIMemBase();
+		if (SIS.ChipLinearBase == -1) {
+		    unsigned long addr,addr2 ;
 
-	    SIS.ChipLinearBase = sisPCIMemBase();
-	    if (SIS.ChipLinearBase == -1) {
-		ErrorF("%s %s: Disabling Linear Addressing\n",
-		       XCONFIG_PROBED, vga256InfoRec.name);
-		sisUseLinear = FALSE;
-	    } 
-	    
+		    outb(0x3C4, 0x21);
+		    addr = inb(0x3C5) & 0x1f ;
+		    addr <<= 27 ;
+		    outb(0x3C4, 0x20);
+		    addr2 = inb(0x3C5) ;
+		    addr2 <<= 19 ;
+		    addr |= addr2 ;
+		    if ( addr == 0 )  {
+			ErrorF("%s %s: Disabling Linear Addressing\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+			ErrorF("%s %s:   Try to set MemBase in XF86Config\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+			sisUseLinear = FALSE;
+		    }
+		    else {
+			SIS.ChipLinearBase = addr ;
+			ErrorF("%s %s: Trying Linear Addressing at 0x0%x\n",
+			       XCONFIG_PROBED, vga256InfoRec.name,
+			       SIS.ChipLinearBase);
+		    }
+		}
+	    }
 	}
 
 	if ( sisUseLinear && xf86LinearVidMem() )
@@ -738,14 +762,10 @@ SISFbInit()
 		   SIS.ChipLinearBase, SIS.ChipLinearSize/1048576);
 	}	
 
-	if (sisUseLinear) {
+	if (sisUseLinear) 
 	    SIS.ChipUseLinearAddressing = TRUE;
-	    sisUseMMIO = TRUE ;
-	}
-	else {
+	else 
 	    SIS.ChipUseLinearAddressing = FALSE;
-	    sisUseMMIO = FALSE ;
-	}
 
 	if (sisUseMMIO && OFLG_ISSET(OPTION_NO_BITBLT,&vga256InfoRec.options)){
 	    sisUseMMIO = FALSE ;
@@ -754,13 +774,20 @@ SISFbInit()
 		   XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name); 
 	}
 
-	if ( sisUseLinear && sisUseMMIO ){
-	    int PCIMMIOBase = sisPCIMMIOBase() ;
+	if ( sisUseMMIO ){
+	    PCIMMIOBase = sisPCIMMIOBase() ;
 	    sisUseMMIO = TRUE ;
 	    if ( PCIMMIOBase == -1 ) {
 		/* use default base */
-		PCIMMIOBase = 0xA0000 ;
-		/* sisMMIOBase = vgaBase , but not yet mapped here */
+		if ( sisUseLinear) 
+		    /* sisMMIOBase = vgaBase , but not yet mapped here */
+		    PCIMMIOBase = 0xA0000 ;
+		else {
+		    PCIMMIOBase = 0xB0000 ;
+		    sisMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, 
+					    MMIO_REGION,
+					    (pointer)(PCIMMIOBase), 0x10000L);
+		}
 	    } else {
 		sisMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, 
 					    MMIO_REGION,
@@ -815,7 +842,9 @@ SISFbInit()
 	if (sisUseMMIO) {
 	   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) 
 	       SISAccelInit();
-	   else {
+	   else if ( sisUseLinear ) {
+	       ErrorF("%s %s: SIS: using old accelerated functions.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
 	    switch (vgaBitsPerPixel) {
 	      case 8:
 
@@ -960,7 +989,7 @@ SISFbInit()
 		break;
 	    }
 	    vgaSetScreenInitHook(SISScrnInit);
-	}
+	   }
        }		
 
 #endif /* MONOVGA */
@@ -1141,9 +1170,9 @@ int *thresholdHigh;
     static struct ThresholdREC threshold8[]={{25250,0x6,0x3},{31500,0x6,0x3},
 					     {40000,0x7,0x4},{44900,0x7,0x4},
 					     {56250,0x9,0x5},
-					     {65000,0xf,0x6},/* ??? */
+					     {65000,0xe,0x5},/* ??? */
 					     {78750,0xd,0x6},{85000,0xd,0x6},
-					     {95000,0xa,0x7},{110000,0xc,0xa},
+					     {95000,0xb,0x7},{110000,0xc,0xa},
 					     {135000,0xc,0xa}};
 #endif
 #if 0
@@ -1282,7 +1311,6 @@ SISInit(mode)
 	else
 	    new->DualBanks |= 0x08;
 
-
 	if (vgaBitsPerPixel == 16) 
 	    if (xf86weight.green == 5)
 		new->BankReg |= 0x04;	/* 16bpp = 5-5-5             */
@@ -1335,14 +1363,17 @@ SISInit(mode)
 	 * Force a higher Mclk for now */
 	if ( SISchipset == SIS86C205 ) {
 	    /* 80 MHz MCLK */
-	    new->Port_3C4[0x28] = 0xCF ;
-	    new->Port_3C4[0x29] = 0x9C ;
+	    /*new->Port_3C4[0x28] = 0xCF ;
+	    new->Port_3C4[0x29] = 0x9C ;*/
 	    /* 70 MHz MCLK */
-	    /*new->Port_3C4[0x28] = 0xC1 ;
-	    new->Port_3C4[0x29] = 0x1A ;*/
+	    new->Port_3C4[0x28] = 0xC1 ;
+	    new->Port_3C4[0x29] = 0x1A ;
 	    /* 60 MHz MCLK */
 	    /*new->Port_3C4[0x28] = 0x57 ;
 	    new->Port_3C4[0x29] = 0x14 ;*/
+	    /* 45 MHz MCLK */
+	    /*new->Port_3C4[0x28] = 0x15 ;
+	    new->Port_3C4[0x29] = 0x06 ;*/
 	}
 #endif
 	
@@ -1352,7 +1383,16 @@ SISInit(mode)
 	    new->Port_3C4[0x27] |= 0x40 ; /* enable Graphic Engine Prog */
 	    if ( !sisMMIOBase ) 
 		sisMMIOBase = (unsigned char *)vgaBase ;	    
-	    new->Port_3C4[0x0B] |= 0x20 ; /* enable MMIO */
+	    switch ( PCIMMIOBase ) {
+	      case 0xA0000:
+		new->Port_3C4[0x0B] |= 0x20 ; /* enable MMIO at 0xAxxxx */
+		break;
+	      case 0xB0000:
+		new->Port_3C4[0x0B] |= 0x40 ; /* enable MMIO  at 0xBxxxx*/
+		break;
+	      default:
+		new->Port_3C4[0x0B] |= 0x60 ; /* enable MMIO at PCI reg */
+	    }
 	    new->Port_3C4[0x0C] |= 0x80 ; /* 64-bit mode */
 	    /*
 	     * Setup the address to write monochrome source data to, for
@@ -1431,6 +1471,65 @@ int flag;
 	return MODE_OK;
 }
 
+/*
+ * MGADisplayPowerManagementSet --
+ *
+ * Sets VESA Display Power Management Signaling (DPMS) Mode.
+ */
+#ifdef DPMSExtension
+static void SISDisplayPowerManagementSet(PowerManagementMode)
+int PowerManagementMode;
+{
+	unsigned char extDDC_PCR;
+	unsigned char crtc17;
+	unsigned char seq1;
+
+#ifdef DEBUG
+	ErrorF("SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
+#endif
+	if (!xf86VTSema) return;
+	outb(vgaIOBase + 4, 0x17);
+	crtc17 = inb(vgaIOBase + 5);
+	outb(0x3C4, 0x11);
+	extDDC_PCR = inb(0x3C5) & ~0xC0;
+	switch (PowerManagementMode)
+	{
+	case DPMSModeOn:
+	    /* HSync: On, VSync: On */
+	    seq1 = 0x00 ;
+	    crtc17 |= 0x80;
+	    break;
+	case DPMSModeStandby:
+	    /* HSync: Off, VSync: On */
+	    seq1 = 0x20 ;
+	    extDDC_PCR |= 0x40;
+	    break;
+	case DPMSModeSuspend:
+	    /* HSync: On, VSync: Off */
+	    seq1 = 0x20 ;
+	    extDDC_PCR |= 0x80;
+	    break;
+	case DPMSModeOff:
+	    /* HSync: Off, VSync: Off */
+	    seq1 = 0x20 ;
+	    extDDC_PCR |= 0xC0;
+	    /* DPMSModeOff is not supported with ModeStandby | ModeSuspend  */
+            /* need same as the generic VGA function */
+	    crtc17 &= ~0x80;
+	    break;
+	}
+	outw(0x3C4, 0x0100);	/* Synchronous Reset */
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	seq1 |= inb(0x3C5) & ~0x20;
+	outb(0x3C5, seq1);
+	usleep(10000);
+	outb(vgaIOBase + 4, 0x17);
+	outb(vgaIOBase + 5, crtc17);
+	outb(0x3C4, 0x11);
+	outb(0x3C5, extDDC_PCR);
+	outw(0x3C4, 0x0300);	/* End Reset */
+}
+#endif
 
 
 

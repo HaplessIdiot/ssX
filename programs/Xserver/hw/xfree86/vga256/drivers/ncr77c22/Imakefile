@@ -5,6 +5,11 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:29:56 rws $
 
 
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/Imakefile,v 3.6 1996/12/23 06:57:46 dawes Exp $
+
+
+
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = ncr_driver.c ncr_bank.s

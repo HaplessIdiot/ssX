@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.117 1997/02/18 03:34:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.118 1997/02/18 04:33:38 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2497,9 +2497,9 @@ configDynamicModuleSection()
     LoaderResolveSymbols();
     LoaderFixups();
 
-    ptr=(ScrnInfoRec *(*)())LoaderSymbol("ModuleInit");
+    ptr=(ScrnInfoRec *(*)())LoaderSymbol("ServerInit");
     if (ptr == NULL) {
-	FatalError("Can't find ModuleInit entry\n");
+	FatalError("Can't find ServerInit entry\n");
     } else {
 	xf86Screens[0]=(ptr)();
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.13 1997/02/17 09:45:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.14 1997/02/18 12:04:09 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -318,7 +318,7 @@ void p9000ViperVlbDisable()
           (int) p9000ViperSaveMisc ) ;
 #endif
   
-  usleep(30000);   /* Wait at least 10 msecs (ICD2061 timeout) for the
+  xf86usleep(30000);   /* Wait at least 10 msecs (ICD2061 timeout) for the
 		    * clock to change */
 
   p9000BtRestore();
@@ -562,7 +562,7 @@ void p9000ViperPciDisable()
           (int) p9000ViperSaveMisc ) ;
 #endif
   
-  usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout)
+  xf86usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout)
 		   * for the clock freq to change */
   
   p9000BtRestore();
@@ -642,7 +642,7 @@ void p9000ViperSetClock(dotclock, memclock)
   ICD2061ASetClock (clock_ctrl_word);
   ActualHertz = ICD2061AGetClock (clock_ctrl_word);
   /* Wait at least 10 msecs (ICD2061 timeout) for the clock to change */
-  usleep(30000); 
+  xf86usleep(30000); 
   
 #ifdef DEBUG
   ErrorF("Mem clock actually set to %d Hz.  Wanted %ld\n",ActualHertz,

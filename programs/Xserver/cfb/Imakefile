@@ -1,5 +1,7 @@
 XCOMM $XConsortium: Imakefile /main/67 1996/12/02 10:19:53 lehors $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.9 1997/01/05 11:53:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.11 1997/02/20 10:00:49 hohndel Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 #ifndef PixelSize

@@ -1,6 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/6 1996/09/28 16:56:01 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/export/Imakefile,v 3.2 1996/12/23 06:28:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/export/Imakefile,v 3.3 1997/02/18 17:51:23 hohndel Exp $
 XCOMM build device dependent machine independent export element objs
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 = meclut.c mecphoto.c medraw.c medrawp.c \

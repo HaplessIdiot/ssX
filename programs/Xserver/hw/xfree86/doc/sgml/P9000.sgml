@@ -4,11 +4,16 @@
  
 <title>XFree86 3.2 P9000 Server Release Notes
 <author>Erik Nygren (<it>nygren@mit.edu</it>)
-<date>1997 February 18
+<date>1997 February 24
 <toc>
  
 <sect>Change Log <p>
 <descrip>
+<tag/1997.02.24:/
+	<itemize>
+	<item>
+	  Added loadable module support (Erik Nygren)
+	</itemize>
 <tag/1997.01.30:/
 	<itemize>
 	<item>
@@ -230,9 +235,10 @@ These are NOT supported yet.  We don't have the hardware to write and
 or test drivers for them on.  The docs I have says the P9100 has a
 different interface than the P9000.  As a result, they may need an
 entirely new server.  If you need support for one of these cards, you
-should look into XInside's AcceleratedX.  It's a commercial product
-that costs about &dollar;99.  Send email to <it>info@xinside.com</it>
-for more information.
+should look into Xi Graphic's AcceleratedX or MetroLink's MetroX.
+They're commercial products that cost about &dollar;99.  
+Check out <it>http://www.metrolink.com/</it> and
+<it>http://www.xinside.com</it> for more info.
 
 <sect>Acceleration <p>
 Some of the acceleration code is working, but
@@ -343,6 +349,12 @@ one which works with available memory, etc).  Any other modes which
 are valid and have the same dimensions are also used.  And other modes
 are ignored.
 
+If you're using the <tt>XF86_LOADER</tt> server, you'll need
+to tell it to load the <tt>libp9000.a</tt> and/or the
+<tt>XF86_P9000.o</tt> module.  Each of them knows that
+the other needs to be loaded and will load it if you
+do not specify it.
+
 The current supported keywords in the <tt>Device</tt> section
 of the <tt>XF86Config</tt> file are:
 <descrip>
@@ -402,6 +414,10 @@ of the <tt>XF86Config</tt> file are:
 </descrip>
 Here's a portion of a sample <tt>XF86Config</tt> file for the Viper VLB:
 <verb>
+Section "Module"
+    Load "libp9000.a"
+EndSection
+
 Section "Device"
     Identifier "ViperVLB"
     VendorName "Diamond"
@@ -457,7 +473,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.19 1997/02/12 08:56:02 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.20 1997/02/18 12:04:23 dawes Exp $
 
 
 

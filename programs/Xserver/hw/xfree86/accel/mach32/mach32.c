@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.66 1997/02/20 10:01:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.67 1997/02/24 17:46:45 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -189,7 +189,7 @@ ScrnInfoRec mach32InfoRec = {
 };
 
 ScrnInfoRec *
-ModuleInit()
+ServerInit()
 {
 return &mach32InfoRec;
 }

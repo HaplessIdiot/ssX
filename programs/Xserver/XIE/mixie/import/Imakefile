@@ -1,6 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/09/28 16:56:13 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/import/Imakefile,v 3.2 1996/12/23 06:28:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/import/Imakefile,v 3.3 1997/02/18 17:51:26 hohndel Exp $
 XCOMM build device dependent machine independent import element objects
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 = mifax.c miclut.c micphoto.c midraw.c \

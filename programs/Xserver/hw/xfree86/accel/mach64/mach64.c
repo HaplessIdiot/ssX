@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.62 1997/01/19 12:49:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.64 1997/02/24 17:46:50 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -28,6 +28,7 @@
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Rewritten for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  * Support for the Mach64 CT added by David Dawes (dawes@XFree86.org)
+ * Module load code by Holger Veit (Holger.Veit@gmd.de)
  *
  */
 /* $XConsortium: mach64.c /main/34 1996/10/28 04:46:47 kaleb $ */
@@ -65,7 +66,7 @@
 
 #include "xf86_PCI.h"
 
-#define XCONFIG_FLAGS_ONLY
+/*#define XCONFIG_FLAGS_ONLY*/
 #include "xf86_Config.h"
 
 #ifdef XFreeXDGA
@@ -78,7 +79,6 @@
 #endif
 
 extern int defaultColorVisualClass;
-extern int mach64MaxClock;
 extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern void mach64QueryBestSize();
 extern void mach64WarpCursor();
@@ -101,6 +101,53 @@ static int mach64ValidMode(
     int
 #endif
 ); 
+
+#if defined(XFree86LOADER)
+
+/*
+ * This limit is currently set to 80MHz because this is the limit of many
+ * ramdacs when running in 1:1 mode.  It will be increased when support
+ * is added for using the ramdacs in 2:1 mode.  Increasing this limit
+ * could result in damage to your hardware.
+ */
+#define MAX_MACH64_CLOCK	80000
+
+int mach64MaxClock = MAX_MACH64_CLOCK;
+
+ScrnInfoPtr xf86Screens[] =
+{
+  &mach64InfoRec,
+};
+
+int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] =
+{
+  ACCEL,
+  -1
+};
+
+int mach64ValidTokens[] =
+{
+  STATICGRAY,
+  GRAYSCALE,
+  STATICCOLOR,
+  PSEUDOCOLOR,
+  TRUECOLOR,
+  DIRECTCOLOR,
+  CHIPSET,
+  CLOCKS,
+  MODES,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  BIOSBASE,
+  MEMBASE,
+  -1
+};
+#endif
 
 ScrnInfoRec mach64InfoRec = {
     FALSE,		/* Bool configured */
@@ -170,6 +217,36 @@ ScrnInfoRec mach64InfoRec = {
     0,                  /* int physSize */
 #endif
 };
+
+ScrnInfoRec *
+ServerInit()
+{
+    return &mach64InfoRec;
+}
+
+void
+ModuleInit(data,magic)
+    pointer   * data;
+    INT32     * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = (pointer) &mach64InfoRec;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+	* data = (pointer) "libmfb.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+	* magic= MAGIC_DONE;
+	break;
+    }
+    return;
+}
 
 int mach64alu[16] = {
     MIX_0,
