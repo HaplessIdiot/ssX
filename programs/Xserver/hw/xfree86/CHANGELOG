@@ -1,4 +1,5 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 301. Xinerama-fy the XTest extension (Rik Faith).
 
 XFree86 4.3.99.8 (10 July 2003)
  300. X.Org IPv6 changes (Bugzilla #227, Alan Coopersmith, Marc La France).
@@ -17295,7 +17296,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2771 2003/07/09 15:27:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2772 2003/07/10 11:06:46 dawes Exp $
 
 
 
