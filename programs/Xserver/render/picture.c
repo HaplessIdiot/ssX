@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.9 2000/11/16 19:45:06 eich Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.11 2000/12/05 03:13:33 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -560,14 +560,6 @@ ChangePicture (PicturePtr	pPicture,
 
 		if (vlist)
 		{
-		    pPixmap = NEXT_PTR(PixmapPtr);
-		    if (pPixmap)
-			clipType = CT_PIXMAP;
-		    else
-			clipType = CT_NONE;
-		}
-		else
-		{
 		    pid = NEXT_VAL(Pixmap);
 		    if (pid == None)
 		    {
@@ -588,6 +580,14 @@ ChangePicture (PicturePtr	pPicture,
 			    break;
 			}
 		    }
+		}
+		else
+		{
+		    pPixmap = NEXT_PTR(PixmapPtr);
+		    if (pPixmap)
+			clipType = CT_PIXMAP;
+		    else
+			clipType = CT_NONE;
 		}
 
 		if (pPixmap)
