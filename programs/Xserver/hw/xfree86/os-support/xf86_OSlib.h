@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -136,7 +137,7 @@ extern int xf86_solx86usleep(unsigned long);
 #endif /* sun && i386 && SVR4 */
 
 # ifdef SYSV
-#  if !defined(ISC) || defined(ISC202)
+#  if !defined(ISC) || defined(ISC202) || defined(ISC22)
 #   define NEED_STRERROR
 #  endif
 # endif

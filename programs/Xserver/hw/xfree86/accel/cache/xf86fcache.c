@@ -1,4 +1,5 @@
 /* $XConsortium: xf86fcache.c,v 1.1 94/03/28 21:02:22 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -221,7 +222,7 @@ xf86loadFontBlock(fentry, block)
    nbyLine = PixmapBytePad(fentry->w, 1);
    ERROR_F(("loading %d (%d) %d\n", fentry->font, block, fentry->fblock[block]));
 
-   pbits = (unsigned char *)ALLOCATE_LOCAL(nbyLine * fentry->w);
+   pbits = (unsigned char *)ALLOCATE_LOCAL(nbyLine * fentry->h);
    if (pbits != NULL &&
     (fentry->fblock[block] = xf86AllocFromCachePool( xf86FontPool,
 						     32 * fentry->w,
@@ -281,6 +282,7 @@ xf86loadFontBlock(fentry, block)
     * Unfortunatly this doesn't work if we use the preload code so the
     * demand load makes more sense.
     */
+      if (pbits) DEALLOCATE_LOCAL(pbits);
       ERROR_F(("Time to write new font cache management\n"));
       for (fptr = xf86HeadFont; fptr != NULL; fptr= fptr->next)
 	 if (fptr != fentry) {

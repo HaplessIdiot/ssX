@@ -1,5 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
+ * $XFree86$
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -189,7 +190,8 @@ PVGA1ClockSelect(no)
       {
         outb(vgaIOBase + 4, 0x2E); save3 = inb(vgaIOBase + 5);
       }
-      if (IS_WD90C3X(WDchipset))
+      if (IS_WD90C3X(WDchipset) &&
+	  !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
       {
         outb(0x3C4, 0x12); save4 = inb(0x3C5);
       }
@@ -204,7 +206,8 @@ PVGA1ClockSelect(no)
       {
         outw(vgaIOBase + 4, 0x2E | (save3 << 8));
       }
-      if (IS_WD90C3X(WDchipset))
+      if (IS_WD90C3X(WDchipset) &&
+	  !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
       {
         outw(0x3C4, 0x12 | (save4 << 8));
       }
@@ -236,7 +239,8 @@ PVGA1ClockSelect(no)
         {
           outw(0x3CE, 0x0C | ((((no & 0x04) >> 1) ^ save_cs2) << 8));
         }
-        if (IS_WD90C3X(WDchipset))
+        if (IS_WD90C3X(WDchipset) &&
+	    !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
         {
           outb(0x3C4, 0x12); temp = inb(0x3C5);
           outb(0x3C5, temp & 0xfb | ((no & 0x8) >> 1) ^ 0x4);
@@ -286,7 +290,7 @@ PVGA1Probe()
     }
     else {
 	char ident[4];
-	unsigned char tmp;
+	unsigned char tmp, tmp1;
 	unsigned char sig[2];
 
 	if (xf86ReadBIOS(vga256InfoRec.BIOSbase, 0x7D, (unsigned char *)ident,
@@ -321,6 +325,8 @@ PVGA1Probe()
 		/* 
 		 * WD90C24, 26, 30, 31.
 		 */
+		tmp1 = rdinx(vgaIOBase+0x04, 0x34);
+		wrinx(vgaIOBase+0x04, 0x34, 0x00);
 		sig[0] = rdinx(vgaIOBase+0x04, 0x36);
 		sig[1] = rdinx(vgaIOBase+0x04, 0x37);
     		ErrorF("%s %s: WD: Signature for WD90C[23]X=[0x%02x 0x%02x]\n", 
@@ -339,15 +345,18 @@ PVGA1Probe()
 			   XCONFIG_PROBED, vga256InfoRec.name);
 		    ErrorF("%s %s:     90C30, but we don't know for sure.\n",
 			   XCONFIG_PROBED, vga256InfoRec.name);
+		    wrinx(vgaIOBase+0x04, 0x34, tmp1);
         	    PVGA1EnterLeave(LEAVE);
 		    return(FALSE);
 		}
 		else {
 		    ErrorF("%s %s: WD: Unsupported chipset detected.\n"
 			   XCONFIG_PROBED, vga256InfoRec.name);
+		    wrinx(vgaIOBase+0x04, 0x34, tmp1);
         	    PVGA1EnterLeave(LEAVE);
 		    return(FALSE);
 		}		    
+		wrinx(vgaIOBase+0x04, 0x34, tmp1);
 	    }
 	    else {
 		/* WD90C1x */
@@ -418,7 +427,8 @@ PVGA1Probe()
 	    numclocks = 8;
 	else
 	    numclocks = 4;
-    else if (IS_WD90C3X(WDchipset))
+    else if (IS_WD90C3X(WDchipset) &&
+	     !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
 	numclocks = 17;
     else
 	numclocks = 9;
@@ -601,7 +611,8 @@ PVGA1Restore(restore)
   if (new->std.NoClock >= 0)
   {
     outw(0x3CE, (restore->VideoSelect << 8) | 0x0C);
-    if (IS_WD90C3X(WDchipset))
+    if (IS_WD90C3X(WDchipset) &&
+	!OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
       outw(0x3C4, (restore->MiscCtrl4 << 8) | 0x12);
   }
 #ifndef MONOVGA
@@ -693,7 +704,8 @@ PVGA1Save(save)
   save->PR0B = PR0B;
   outb(0x3CE, 0x0B); save->MemorySize  = inb(0x3CF);
   outb(0x3CE, 0x0C); save->VideoSelect = inb(0x3CF);
-  if (IS_WD90C3X(WDchipset))
+  if (IS_WD90C3X(WDchipset) &&
+      !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
   {
     outb(0x3C4, 0x12); save->MiscCtrl4 = inb(0x3C5);
   }
