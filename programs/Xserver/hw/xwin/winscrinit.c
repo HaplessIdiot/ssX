@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.5 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.6 2001/05/04 11:50:12 alanh Exp $ */
 
 #include "win.h"
 
@@ -235,15 +235,24 @@ winScreenInit (int index,
 
   /* Determine which engine to use */
   if (!winSetEngine (pScreen))
-    return FALSE;
+    {
+      ErrorF ("winScreenInit () - winSetEngine () failed\n");
+      return FALSE;
+    }
 
   /* Adjust the video mode for our engine type */
   if (!(*pScreenPriv->pwinAdjustVideoMode) (pScreen))
-    return FALSE;
+    {
+      ErrorF ("winScreenInit () - winAdjustVideoMode () failed\n");
+      return FALSE;
+    }
 
   /* Call the engine dependent screen initialization procedure */
   if (!((*pScreenPriv->pwinFinishScreenInit) (index, pScreen, argc, argv)))
-    return FALSE;
+    {
+      ErrorF ("winScreenInit () - winFinishScreenInit () failed\n");
+      return FALSE;
+    }
 
   return TRUE;
 }
@@ -590,7 +599,10 @@ winFinishScreenInitNativeGDI (int index,
   ErrorF ("winScreenInit ()\n");
 
   if (!winAllocatePrivates (pScreen))
-    return FALSE;
+    {
+      ErrorF ("winFinishScreenInitNativeGDI () winAllocatePrivates failed\n");
+      return FALSE;
+    }
 
   /* Get a pointer to the privates structure that was allocated */
   pScreenPriv = winGetScreenPriv (pScreen);

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.3 2001/05/01 22:57:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -578,7 +578,10 @@ winAdjustVideoModeShadowDD (ScreenPtr pScreen)
   /* We're in serious trouble if we can't get a DC */
   hdc = GetDC (NULL);
   if (hdc == NULL)
-    return FALSE;
+    {
+      ErrorF ("winAdjustVideoModeShadowDD () - GetDC () failed\n");
+      return FALSE;
+    }
 
   /* Query GDI for current display depth */
   dwDepth = GetDeviceCaps (hdc, BITSPIXEL);

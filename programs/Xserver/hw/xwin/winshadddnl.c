@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.3 2001/05/01 22:57:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -77,8 +77,11 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   /* Allocate memory for our shadow surface */
   lpSurface = xalloc (pScreenInfo->dwPaddedWidth * pScreenInfo->dwHeight);
   if (lpSurface == NULL)
-      FatalError ("winAllocateFBShadowDDNL () - Could not allocate bits\n");
-
+    {
+      ErrorF ("winAllocateFBShadowDDNL () - Could not allocate bits\n");
+      return FALSE;
+    }
+  
   /*
    * Initialize the framebuffer memory so we don't get a 
    * strange display at startup
@@ -575,7 +578,10 @@ winAdjustVideoModeShadowDDNL (ScreenPtr pScreen)
   /* We're in serious trouble if we can't get a DC */
   hdc = GetDC (NULL);
   if (hdc == NULL)
-    return FALSE;
+    {
+      ErrorF ("winAdjustVideoModeShadowDDNL () - GetDC () failed\n");
+      return FALSE;
+    }
 
   /* Query GDI for current display depth */
   dwDepth = GetDeviceCaps (hdc, BITSPIXEL);

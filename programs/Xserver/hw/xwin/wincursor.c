@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincursor.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
@@ -44,6 +44,7 @@ miPointerScreenFuncRec g_winPointerCursorFuncs =
 Bool
 winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y)
 {
+  ErrorF ("winCursorOffScreen () - hmm...\n");
   return FALSE;
 }
 
