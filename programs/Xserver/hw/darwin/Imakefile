@@ -1,17 +1,23 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.3 2000/12/01 19:47:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.4 2000/12/11 20:29:38 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
+XCOMM LinkSourceFile(xf86Helper.c,../xfree86/common)
+
 SUBDIRS = utils
 
 SRCS =	darwin.c \
-        darwinCursor.c \
-        darwinKeyboard.c
+        darwinKeyboard.c \
+        xfIOKit.c \
+        xfIOKitCursor.c \
+        quartz.c
 
 OBJS =	darwin.o \
-        darwinCursor.o \
-        darwinKeyboard.o
+        darwinKeyboard.o \
+        xfIOKit.o \
+        xfIOKitCursor.o \
+        quartz.o
 
 INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb -I$(SERVERSRC)/cfb \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(SERVERSRC)/os \
@@ -22,7 +28,11 @@ CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
-DEFINES = $(CUSTOMVERDEF)
+#if DarwinQuartzSupport
+QUARTZDEF = -DDARWIN_WITH_QUARTZ
+#endif
+
+DEFINES = $(CUSTOMVERDEF) $(QUARTZDEF)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(darwin,$(OBJS))

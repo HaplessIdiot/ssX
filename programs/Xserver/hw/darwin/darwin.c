@@ -1,16 +1,10 @@
 /**************************************************************
  *
- * IOKit support for the Darwin X Server
- *
- * HISTORY:
- * Original port to Mac OS X Server by John Carmack
- * Port to Darwin 1.0 by Dave Zarzycki
- * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
+ * Shared code for the Darwin X Server
+ * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.1 2000/11/15 01:36:13 dawes Exp $ */
-
-#define NDEBUG 1
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.2 2000/12/01 19:47:38 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -27,39 +21,43 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <pthread.h>
+//#include <unistd.h>
+//#include <fcntl.h>
+//#include <pthread.h>
 
-#include <mach/mach_interface.h>
+//#include <mach/mach_interface.h>
 
 #define NO_CFPLUGIN
 #include <IOKit/IOKitLib.h>
-#include <IOKit/hidsystem/IOHIDShared.h>
-#include <IOKit/graphics/IOGraphicsLib.h>
-#include <drivers/event_status_driver.h>
-
-// Define this to work around bugs in the display drivers for
-// older PowerBook G3's. If the X server starts without this
-// #define, you don't need it.
-#undef OLD_POWERBOOK_G3
+#include <IOKit/hidsystem/IOHIDLib.h>
+//#include <IOKit/hidsystem/IOHIDShared.h>
+//#include <IOKit/graphics/IOGraphicsLib.h>
+//#include <drivers/event_status_driver.h>
 
 #include "darwin.h"
+#include "quartz.h"
+#include "xfIOKit.h"
 
+// Shared global variables
 DarwinFramebufferRec    dfb;
 unsigned char           darwinKeyCommandL = 0, darwinKeyOptionL = 0;
+int                     darwinEventFD;
+Bool                    quartz = FALSE;
+UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
+IOIndex                 darwinDesiredDepth = -1;
+SInt32                  darwinDesiredRefresh = -1;
+
+// Quit after this many seconds if no quartz event poster is found.
+// Leave undefined for no safety quit.
+#define QUARTZ_SAFETY_DELAY 10
 
 /* Fake button press/release for scroll wheel move. */
 #define	SCROLLWHEELUPFAKE	4
 #define	SCROLLWHEELDOWNFAKE	5
 
-static	int             darwinEventFD;
-static	Bool            fake3Buttons = FALSE;
 static	DeviceIntPtr    darwinPointer;
 static	DeviceIntPtr    darwinKeyboard;
-static	UInt32          darwinDesiredWidth = 0, darwinDesiredHeight = 0;
-static	IOIndex         darwinDesiredDepth = -1;
-static	SInt32          darwinDesiredRefresh = -1;
+static	Bool            fake3Buttons = FALSE;
 
 // Common pixmap formats
 static PixmapFormatRec formats[] = {
@@ -108,54 +106,28 @@ DarwinPrintBanner()
 #if defined(BUILDERSTRING)
   ErrorF("%s \n",BUILDERSTRING);
 #endif
-}
-
-static Bool DarwinSaveScreen(ScreenPtr pScreen, int on)
-{	// FIXME
-	if (on == SCREEN_SAVER_FORCER) {
-	} else if (on == SCREEN_SAVER_ON) {
-	} else {
-	}
-	return TRUE;
+#if defined(DARWIN_WITH_QUARTZ)
+  ErrorF("Mac OS X Quartz support available.\n");
+#endif
 }
 
 /*
- * DarwinStoreColors
- * This is a callback from X to change the hardware colormap
- * when using PsuedoColor
+ * DarwinSaveScreen
+ *  X screensaver support. Not implemented.
  */
-static void DarwinStoreColors(
-    ColormapPtr     pmap,
-    int             numEntries,
-    xColorItem      *pdefs)
+static Bool DarwinSaveScreen(ScreenPtr pScreen, int on)
 {
-    kern_return_t   kr;
-    int             i;
-    IOColorEntry    *newColors;
-
-    assert( newColors = (IOColorEntry *)
-                xalloc( numEntries*sizeof(IOColorEntry) ));
-
-    // Convert xColorItem values to IOColorEntry
-    // assume the colormap is PsuedoColor
-    // as we do not support DirectColor
-    for (i = 0; i < numEntries; i++) {
-        newColors[i].index = pdefs[i].pixel;
-        newColors[i].red =   pdefs[i].red;
-        newColors[i].green = pdefs[i].green;
-        newColors[i].blue =  pdefs[i].blue;
+    // FIXME
+    if (on == SCREEN_SAVER_FORCER) {
+    } else if (on == SCREEN_SAVER_ON) {
+    } else {
     }
-
-    kr = IOFBSetCLUT( dfb.fbService, 0, numEntries,
-                      kSetCLUTByValue, newColors );
-    kern_assert( kr );
-
-    xfree( newColors );
+    return TRUE;
 }
 
 /*
  * DarwinAddScreen
- * This is a callback from X during AddScreen() from InitOutput()
+ *  This is a callback from X during AddScreen() from InitOutput()
  */
 static Bool DarwinAddScreen(
     int         index,
@@ -165,6 +137,12 @@ static Bool DarwinAddScreen(
 {
     int         bitsPerRGB, i;
     VisualPtr   visual;
+
+    if (quartz) {
+        if (! QuartzAddScreen(pScreen)) {
+            return FALSE;
+        }
+    }
 
     /* Communicate the information about our initialized screen back to X. */
     bitsPerRGB = dfb.pixelInfo.bitsPerComponent;
@@ -249,17 +227,27 @@ static Bool DarwinAddScreen(
     ShmRegisterFbFuncs(pScreen);
 #endif
 
-    // setup cursor support, use hardware if possible
-    if (!DarwinInitCursor(pScreen)) {
-        return FALSE;
+    // setup cursor support, use hardware cursor if possible
+    if (quartz) {
+        if (!QuartzInitCursor(pScreen)) {
+            return FALSE;
+        }
+    } else {
+        if (!XFIOKitInitCursor(pScreen)) {
+            return FALSE;
+        }
     }
 
     // this must be initialized (why doesn't X have a default?)
     pScreen->SaveScreen = DarwinSaveScreen;
-    
+
     // initialize colormap handling as needed
     if (dfb.pixelInfo.pixelType == kIOCLUTPixels) {
-        pScreen->StoreColors = DarwinStoreColors;
+        if (quartz) {
+            pScreen->StoreColors = QuartzStoreColors;
+        } else {
+            pScreen->StoreColors = XFIOKitStoreColors;
+        }
     }
 
     // create and install the default colormap and
@@ -272,20 +260,6 @@ static Bool DarwinAddScreen(
 }
 
 /*
- * DarwinShutdownScreen
- */
-void DarwinShutdownScreen( void )
-{
-#if 0
-    // we must close the HID System first
-    // because it is a client of the framebuffer
-    NXCloseEventStatus( dfb.hidParam );
-    IOServiceClose( dfb.hidService );
-    IOServiceClose( dfb.fbService );
-#endif
-}
-
-/*
  =============================================================================
 
  mouse callbacks
@@ -294,8 +268,9 @@ void DarwinShutdownScreen( void )
 */
 
 /*
- * Set mouse acceleration and thresholding
- * FIXME: We currently ignore the threshold in ctrl->threshold.
+ * DarwinChangePointerControl
+ *  Set mouse acceleration and thresholding
+ *  FIXME: We currently ignore the threshold in ctrl->threshold.
  */
 static void DarwinChangePointerControl(
     DeviceIntPtr    device,
@@ -313,6 +288,7 @@ static void DarwinChangePointerControl(
 
 /*
  * Motion history between events is not required to be supported.
+ * FIXME: This routine is obsolete?
  */
 static int DarwinGetMotionEvents( DeviceIntPtr pDevice, xTimecoord *buff,
                            unsigned long start, unsigned long stop, ScreenPtr pScr)
@@ -322,50 +298,52 @@ static int DarwinGetMotionEvents( DeviceIntPtr pDevice, xTimecoord *buff,
 
 
 /*
- * DarwinMouseProc --
- *      Handle the initialization, etc. of a mouse
+ * DarwinMouseProc
+ *  Handle the initialization, etc. of a mouse
  */
 
-static int DarwinMouseProc( DeviceIntPtr pPointer, int what ) {
+static int DarwinMouseProc(
+    DeviceIntPtr    pPointer,
+    int             what )
+{
+    char map[6];
+    
+    switch (what) {
+    
+        case DEVICE_INIT:
+            pPointer->public.on = FALSE;
 
-  char map[6];
+            map[1] = 1;
+            map[2] = 2;
+            map[3] = 3;
+            map[4] = 4;
+            map[5] = 5;
+            InitPointerDeviceStruct( (DevicePtr)pPointer,
+                        map,
+                        5,   // numbuttons (4 & 5 are scroll wheel)
+                        miPointerGetMotionEvents,
+                        DarwinChangePointerControl,
+                        0 );
+            break;
 
-  switch (what) {
+        case DEVICE_ON:
+            pPointer->public.on = TRUE;
+            AddEnabledDevice( darwinEventFD ); 
+            return Success;
 
-  case DEVICE_INIT:
-    pPointer->public.on = FALSE;
+        case DEVICE_CLOSE:
+        case DEVICE_OFF:
+            pPointer->public.on = FALSE;
+            RemoveEnabledDevice( darwinEventFD ); 
+            return Success;
+    }
 
-    map[1] = 1;
-    map[2] = 2;
-    map[3] = 3;
-    map[4] = 4;
-    map[5] = 5;
-    InitPointerDeviceStruct( (DevicePtr)pPointer,
-                map,
-                5,                      // numbuttons (4 & 5 are scroll wheel)
-                DarwinGetMotionEvents,  // miPointerGetMotionEvents ??
-                DarwinChangePointerControl,
-                0 );
-    break;
-
-  case DEVICE_ON:
-    pPointer->public.on = TRUE;
-      AddEnabledDevice( darwinEventFD ); 
     return Success;
-
-  case DEVICE_CLOSE:
-  case DEVICE_OFF:
-    pPointer->public.on = FALSE;
-      RemoveEnabledDevice( darwinEventFD ); 
-    return Success;
-  }
-
-  return Success;
 }
 
 /*
  * DarwinKeybdProc
- * callback from X
+ *  Callback from X
  */
 static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
 {
@@ -389,6 +367,50 @@ static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
 }
 
 /*
+ * DarwinSimulateMouseClick
+ *  Send a mouse click to X when multiple mouse buttons are simulated
+ *  with modifier-clicks, such as command-click for button 2. The dix
+ *  layer is told that the previously pressed modifier key(s) are
+ *  released, the simulated click event is sent, and the modifier keys
+ *  are reverted to their actual (pressed) state. This is usually
+ *  closest to what the user wants. Ie. the user typically wants to
+ *  simulate a button 2 press instead of Command-button 2.
+ */
+void DarwinSimulateMouseClick(
+    xEvent xe,          // event template with time and
+                        // mouse position filled in
+    int whichButton,    // mouse button to be pressed
+    int whichEvent,     // ButtonPress or ButtonRelease
+    int keycodesUsed[], // list of keycodes of the modifiers used
+                        // to create the fake click
+    int numKeycodes )   // number of keycodes in list
+{  
+    int i;
+
+    // first fool X into forgetting about the keys
+    for (i = 0; i < numKeycodes; i++) {
+    xe.u.u.type = KeyRelease;
+    xe.u.u.detail = keycodesUsed[i] + MIN_KEYCODE;
+    (darwinKeyboard->public.processInputProc)
+        ( &xe, darwinKeyboard, 1 );
+    }
+
+    // push the mouse button
+    xe.u.u.type = whichEvent;
+    xe.u.u.detail = whichButton;			// de.key = button n
+    (darwinPointer->public.processInputProc)
+    ( &xe, darwinPointer, 1 );
+
+    // reset the keys
+    for (i = 0; i < numKeycodes; i++) {
+    xe.u.u.type = KeyPress;
+    xe.u.u.detail = keycodesUsed[i] + MIN_KEYCODE;
+    (darwinKeyboard->public.processInputProc)
+        ( &xe, darwinKeyboard, 1 );
+    }
+}
+
+/*
 ===========================================================================
 
  Functions needed to link against device independent X
@@ -398,7 +420,7 @@ static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
 
 /*
  * ProcessInputEvents
- * Read events from the event queue
+ *  Read events from the event queue
  */
 void ProcessInputEvents(void)
 {
@@ -407,8 +429,26 @@ void ProcessInputEvents(void)
     int	r;
     struct timeval tv;
     struct timezone tz;
+    static int startsec = 0;
+    static Bool gotread = false;
+    static int old_state = 0;
+
+#if defined(DARWIN_WITH_QUARTZ)  && defined(QUARTZ_SAFETY_DELAY)
+    // Quartz safety quit. Bail if we don't get any events from the event pipe.
+    // If the event writer fails to find us, we will have captured the screen 
+    // but not be seeing any events and be unkillable from the console.
+    if (quartz  &&  ! gotread) {
+        gettimeofday(&tv, &tz);
+        if (startsec == 0) startsec = tv.tv_sec;
+        if (startsec + QUARTZ_SAFETY_DELAY< tv.tv_sec) {
+	    QuartzGiveUp();
+	    FatalError("%d second safety quit", QUARTZ_SAFETY_DELAY);
+        }
+    }
+#endif
 
     // try to read from our pipe
+    // FIXME: safely handle SIGPIPE in quartz mode
     r = read( darwinEventFD, &ev, sizeof(ev));
     if ((r == -1) && (errno != EAGAIN)) {
         ErrorF("read(darwinEventFD) failed, errno=%d: %s\n", errno, strerror(errno));
@@ -420,6 +460,7 @@ void ProcessInputEvents(void)
         return;
     }
 
+    gotread = true;
     gettimeofday(&tv, &tz);
 
     // translate it to an X event and post it
@@ -443,39 +484,16 @@ void ProcessInputEvents(void)
         case NX_LMOUSEDOWN:
             // Mimic multi-button mouse with Command and Option
             if (fake3Buttons && ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
+                int button;
+                int keycode;
                 if (ev.flags & NX_COMMANDMASK) {
-                    // first fool X into forgetting about Command key
-                    xe.u.u.type = KeyRelease;
-                    xe.u.u.detail = darwinKeyCommandL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
-                    // push button 2
-                    xe.u.u.type = ButtonPress;
-                    xe.u.u.detail = 2;			// de.key = button 2
-                    (darwinPointer->public.processInputProc)
-                            ( &xe, darwinPointer, 1 );
-                    // reset Command key down
-                    xe.u.u.type = KeyPress;
-                    xe.u.u.detail = darwinKeyCommandL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
+                    button = 2;
+                    keycode = darwinKeyCommandL;
                 } else {
-                    // first fool X into forgetting about Option key
-                    xe.u.u.type = KeyRelease;
-                    xe.u.u.detail = darwinKeyOptionL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
-                    // push button 3
-                    xe.u.u.type = ButtonPress;
-                    xe.u.u.detail = 3;			// de.key = button 3
-                    (darwinPointer->public.processInputProc)
-                            ( &xe, darwinPointer, 1 );
-                    // reset Option key down
-                    xe.u.u.type = KeyPress;
-                    xe.u.u.detail = darwinKeyOptionL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
+                    button = 3;
+                    keycode = darwinKeyOptionL;
                 }
+                DarwinSimulateMouseClick(xe, button, ButtonPress, &keycode, 1);
             } else {
                 xe.u.u.detail = 1;			//de.key = button 1;
                 xe.u.u.type = ButtonPress;
@@ -487,39 +505,16 @@ void ProcessInputEvents(void)
         case NX_LMOUSEUP:
             // Mimic multi-button mouse with Command and Option
             if (fake3Buttons && ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
+                int button;
+                int keycode;
                 if (ev.flags & NX_COMMANDMASK) {
-                    // first fool X into forgetting about Command key
-                    xe.u.u.type = KeyRelease;
-                    xe.u.u.detail = darwinKeyCommandL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
-                    // push button 2
-                    xe.u.u.type = ButtonRelease;
-                    xe.u.u.detail = 2;			// de.key = button 2
-                    (darwinPointer->public.processInputProc)
-                            ( &xe, darwinPointer, 1 );
-                    // reset Command key down
-                    xe.u.u.type = KeyPress;
-                    xe.u.u.detail = darwinKeyCommandL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
+                    button = 2;
+                    keycode = darwinKeyCommandL;
                 } else {
-                    // first fool X into forgetting about Option key
-                    xe.u.u.type = KeyRelease;
-                    xe.u.u.detail = darwinKeyOptionL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
-                    // push button 3
-                    xe.u.u.type = ButtonRelease;
-                    xe.u.u.detail = 3;			// de.key = button 3
-                    (darwinPointer->public.processInputProc)
-                            ( &xe, darwinPointer, 1 );
-                    // reset Option key down
-                    xe.u.u.type = KeyPress;
-                    xe.u.u.detail = darwinKeyOptionL;
-                    (darwinKeyboard->public.processInputProc)
-                            ( &xe, darwinKeyboard, 1 );
+                    button = 3;
+                    keycode = darwinKeyOptionL;
                 }
+                DarwinSimulateMouseClick(xe, button, ButtonRelease, &keycode, 1);
             } else {
                 xe.u.u.detail = 1;			//de.key = button 1;
                 xe.u.u.type = ButtonRelease;
@@ -560,7 +555,8 @@ void ProcessInputEvents(void)
 
         case NX_FLAGSCHANGED:
         {
-            static int old_state = 0;
+	    // Assumes only one flag has changed. In quartz mode, 
+	    // this restriction must be enforced by the quartz event feeder.
             int new_on_flags = ~old_state & ev.flags;
             int new_off_flags = old_state & ~ev.flags;
             old_state = ev.flags;
@@ -633,6 +629,70 @@ void ProcessInputEvents(void)
             break;
         }
 
+	// Special events for Quartz support
+        case NX_APPDEFINED:
+          if (quartz) {
+            switch (ev.data.compound.subType) {
+              case kXServerClearModifiers:
+// FIXME: We don't have ModifierKeycode(), but we probably don't need it.
+// There may be better ways to do this with the XKB extension, or we may
+// be able to do without this event by being smarter elsewhere.
+#if 0
+                xe.u.u.type = KeyRelease;
+                if (old_state & NX_ALPHASHIFTMASK) {
+                    xe.u.u.detail = 
+                        ModifierKeycode(NX_MODIFIERKEY_ALPHALOCK, 0)
+                        + MIN_KEYCODE;
+                    (darwinKeyboard->public.processInputProc)
+                        (&xe, darwinKeyboard, 1);		
+                }
+                if (old_state & NX_COMMANDMASK) {
+                    xe.u.u.detail = 
+                        ModifierKeycode(NX_MODIFIERKEY_COMMAND, 0)
+                        + MIN_KEYCODE;
+                    (darwinKeyboard->public.processInputProc)
+                        (&xe, darwinKeyboard, 1);		
+                }
+                if (old_state & NX_CONTROLMASK) {
+                    xe.u.u.detail = 
+                        ModifierKeycode(NX_MODIFIERKEY_CONTROL, 0)
+                        + MIN_KEYCODE;
+                    (darwinKeyboard->public.processInputProc)
+                        (&xe, darwinKeyboard, 1);		
+                }
+                if (old_state & NX_ALTERNATEMASK) {
+                    xe.u.u.detail = 
+                        ModifierKeycode(NX_MODIFIERKEY_ALTERNATE, 0)
+                        + MIN_KEYCODE;
+                    (darwinKeyboard->public.processInputProc)
+                        (&xe, darwinKeyboard, 1);		
+                }
+                if (old_state & NX_SHIFTMASK) {
+                    xe.u.u.detail = 
+                        ModifierKeycode(NX_MODIFIERKEY_SHIFT, 0)
+                        + MIN_KEYCODE;
+                    (darwinKeyboard->public.processInputProc)
+                        (&xe, darwinKeyboard, 1);		
+                }
+#endif
+                old_state = 0;
+	        break;
+
+            case kXServerShow:
+                QuartzShow();
+                break;
+	      
+            case kXServerHide:
+                QuartzHide();
+                break;
+	      
+            case kXServerQuit:
+                // FIXME: is there a better way to quit?
+                FatalError("Terminated by Xmaster.\n");
+            } // switch (ev.data.compound.subType)
+          } // if (quartz)
+          break;
+
         default:
             ErrorF("unknown event caught: %d\n", ev.type);
             ErrorF("\tev.type = %d\n", ev.type);
@@ -656,271 +716,20 @@ void ProcessInputEvents(void)
 
 }
 
-static void *DarwinHIDThread(void *arg);
-
 /*
  * InitInput
- * Register the keyboard and mouse devices
+ *  Register the keyboard and mouse devices
  */
 void InitInput( int  argc, char **argv )
 {
-	if (serverGeneration == 1) {
-		int fd[2];
+    if (serverGeneration == 1) {
+        darwinPointer = AddInputDevice(DarwinMouseProc, TRUE);
+        RegisterPointerDevice( darwinPointer );
 
-		assert( pipe(fd) == 0 );
-		darwinEventFD = fd[0];
-		fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
-		pthread_create(&dfb.hidThread, NULL, DarwinHIDThread, (void *) fd[1]);
-    
-		darwinPointer = AddInputDevice(DarwinMouseProc, TRUE);
-		RegisterPointerDevice( darwinPointer );
-
-		darwinKeyboard = AddInputDevice(DarwinKeybdProc, TRUE);
-		RegisterKeyboardDevice( darwinKeyboard );
-	}
-}
-
-EvGlobals *     evg;
-mach_port_t     masterPort;
-mach_port_t     notificationPort;
-IONotificationPortRef NotificationPortRef;
-
-static void ClearEvent(NXEvent * ep)
-{
-    static NXEvent nullEvent = {NX_NULLEVENT, {0, 0 }, 0, -1, 0 };
-
-    *ep = nullEvent;
-    ep->data.compound.subType = ep->data.compound.misc.L[0] =
-                                ep->data.compound.misc.L[1] = 0;
-}
-
-static void *DarwinHIDThread(void *arg)
-{
-    int darwinEventWriteFD = (int)arg;
-
-    for (;;) {
-        IOReturn kr;
-        NXEvent ev;
-        NXEQElement *oldHead;
-        struct {
-            mach_msg_header_t	header;
-            mach_msg_trailer_t	trailer;
-        } msg;
-
-        kr = mach_msg((mach_msg_header_t*) &msg, MACH_RCV_MSG, 0,
-                      sizeof(msg), notificationPort, 0, MACH_PORT_NULL);
-        assert(KERN_SUCCESS == kr);
-
-        while (evg->LLEHead != evg->LLETail) {
-            oldHead = (NXEQElement*)&evg->lleq[evg->LLEHead];
-            ev_lock(&oldHead->sema);
-            ev = oldHead->event;
-            ClearEvent(&oldHead->event);
-            evg->LLEHead = oldHead->next;
-            ev_unlock(&oldHead->sema);
-
-            write(darwinEventWriteFD, &ev, sizeof(ev));
-        }
+        darwinKeyboard = AddInputDevice(DarwinKeybdProc, TRUE);
+        RegisterKeyboardDevice( darwinKeyboard );
     }
-    return NULL;
 }
-
-void SetupFBandHID(void)
-{
-    kern_return_t           kr;
-    io_service_t            service;
-    io_iterator_t           iter;
-    io_name_t               name;
-    vm_address_t            shmem, vram;
-    vm_size_t               shmemSize;
-    int                     i;
-    UInt32                  numModes;
-    IODisplayModeInformation modeInfo;
-    IODisplayModeID         displayMode, *allModes;
-    IOIndex                 displayDepth;
-    IOFramebufferInformation fbInfo;
-    StdFBShmem_t            *cshmem;
-
-    dfb.fbService = 0;
-    dfb.hidService = 0;
-
-    // find and open the IOFrameBuffer service
-    kr = IOServiceGetMatchingServices( masterPort,
-                        IOServiceMatching( IOFRAMEBUFFER_CONFORMSTO ),
-                        &iter );
-    kern_assert( kr );
-
-    assert(service = IOIteratorNext(iter));
-
-    kr = IOServiceOpen( service, mach_task_self(),
-                        kIOFBServerConnectType, &dfb.fbService );
-    if (kr != KERN_SUCCESS)
-        FatalError("failed to connect as window server!\nMake sure you have quit the Mac OS X window server.\n");
-
-    IOObjectRelease( service );
-    IOObjectRelease( iter );
-
-    // create the slice of shared memory containing cursor state data
-    kr = IOFBCreateSharedCursor( dfb.fbService, kIOFBCurrentShmemVersion,
-                               	 32, 32 );
-    kern_assert( kr );
-
-    // SET THE SCREEN PARAMETERS
-    // get the current screen resolution, refresh rate and depth
-    kr = IOFBGetCurrentDisplayModeAndDepth( dfb.fbService, &displayMode,
-                                            &displayDepth );
-    kern_assert( kr );
-
-    // use the current screen resolution if the user
-    // only wants to change the refresh rate
-    if (darwinDesiredRefresh != -1 && darwinDesiredWidth == 0) {
-        kr = IOFBGetDisplayModeInformation( dfb.fbService, displayMode,
-                                            &modeInfo );
-        kern_assert( kr );
-        darwinDesiredWidth = modeInfo.nominalWidth;
-        darwinDesiredHeight = modeInfo.nominalHeight;
-    }
-
-    // use the current resolution and refresh rate
-    // if the user doesn't have a preference
-    if (darwinDesiredWidth == 0) {
-
-        // change the pixel depth if desired
-        if (darwinDesiredDepth != -1) {
-            kr = IOFBGetDisplayModeInformation( dfb.fbService, displayMode,
-                                                &modeInfo );
-            kern_assert( kr );
-            if (modeInfo.maxDepthIndex < darwinDesiredDepth)
-                FatalError("Current screen resolution does not support desired pixel depth!\n");
-
-            displayDepth = darwinDesiredDepth;
-            kr = IOFBSetDisplayModeAndDepth( dfb.fbService, displayMode,
-                                             displayDepth );
-            kern_assert( kr );
-        }
- 
-    // look for display mode with correct resolution and refresh rate
-    } else {
-
-        // get an array of all supported display modes
-        kr = IOFBGetDisplayModeCount( dfb.fbService, &numModes );
-        kern_assert( kr );
-        assert(allModes = (IODisplayModeID *)
-                xalloc( numModes * sizeof(IODisplayModeID) ));
-        kr = IOFBGetDisplayModes( dfb.fbService, numModes, allModes );
-        kern_assert( kr );
-
-        for (i = 0; i < numModes; i++) {
-            kr = IOFBGetDisplayModeInformation( dfb.fbService, allModes[i],
-                                                &modeInfo );
-            kern_assert( kr );
-
-            if (modeInfo.flags & kDisplayModeValidFlag &&
-                modeInfo.nominalWidth == darwinDesiredWidth &&
-                modeInfo.nominalHeight == darwinDesiredHeight) {
-
-                if (darwinDesiredDepth == -1)
-                    darwinDesiredDepth = modeInfo.maxDepthIndex;
-                if (modeInfo.maxDepthIndex < darwinDesiredDepth)
-                    FatalError("Desired screen resolution does not support desired pixel depth!\n");
-                if ((darwinDesiredRefresh == -1 ||
-                    (darwinDesiredRefresh << 16) == modeInfo.refreshRate)) {
-                    displayMode = allModes[i];
-                    displayDepth = darwinDesiredDepth;
-                    kr = IOFBSetDisplayModeAndDepth( dfb.fbService, displayMode,
-                                                     displayDepth );
-                    kern_assert( kr );
-                    break;
-                }
-            }
-        }
-
-        xfree( allModes );
-        if (i >= numModes)
-            FatalError("Desired screen resolution or refresh rate is not supported!\n");
-    }
-
-    kr = IOFBGetPixelInformation( dfb.fbService, displayMode, displayDepth,
-                                  kIOFBSystemAperture, &dfb.pixelInfo );
-    kern_assert( kr );
-
-#ifdef OLD_POWERBOOK_G3
-    if (dfb.pixelInfo.pixelType == kIOCLUTPixels)
-        dfb.pixelInfo.pixelType = kIOFixedCLUTPixels;
-#endif
-
-    kr = IOFBGetFramebufferInformationForAperture( dfb.fbService, kIOFBSystemAperture,
-                                                   &fbInfo );
-    kern_assert( kr );
-
-    kr = IOConnectMapMemory( dfb.fbService, kIOFBCursorMemory,
-                             mach_task_self(), (vm_address_t *) &cshmem,
-                             &shmemSize, kIOMapAnywhere );
-    kern_assert( kr );
-    dfb.cursorShmem = cshmem;
-
-    kr = IOConnectMapMemory( dfb.fbService, kIOFBSystemAperture, mach_task_self(),
-                             &vram, &shmemSize, kIOMapAnywhere );
-    kern_assert( kr );
-
-    dfb.framebuffer = (void*)vram;
-    dfb.width = fbInfo.activeWidth;
-    dfb.height = fbInfo.activeHeight;
-    dfb.pitch = fbInfo.bytesPerRow;
-    dfb.bitsPerPixel = fbInfo.bitsPerPixel;
-    dfb.colorBitsPerPixel = dfb.pixelInfo.componentCount *
-                            dfb.pixelInfo.bitsPerComponent;
-
-    // find and open the HID System Service
-    kr = IOServiceGetMatchingServices( masterPort,
-                                       IOServiceMatching( kIOHIDSystemClass ),
-                                       &iter );
-    kern_assert( kr );
-
-    assert( service = IOIteratorNext( iter ) );
-
-    kr = IORegistryEntryGetName( service, name );
-    kern_assert( kr );
-
-    kr = IOServiceOpen( service, mach_task_self(), kIOHIDServerConnectType,
-                        &dfb.hidService );
-    kern_assert( kr );
-
-    IOObjectRelease( service );
-    IOObjectRelease( iter );
-
-    kr = IOHIDCreateSharedMemory( dfb.hidService, kIOHIDCurrentShmemVersion );
-    kern_assert( kr );
-
-    kr = IOHIDSetEventsEnable(dfb.hidService, TRUE);
-    kern_assert( kr );
-
-    // Inform the HID system that the framebuffer is also connected to it
-    kr = IOConnectAddClient( dfb.hidService, dfb.fbService );
-    kern_assert( kr );
-
-    kr = IOHIDSetCursorEnable(dfb.hidService, TRUE);
-    kern_assert( kr );
-
-    kr = IOConnectMapMemory( dfb.hidService, kIOHIDGlobalMemory, mach_task_self(),
-                             &shmem, &shmemSize, kIOMapAnywhere );
-    kern_assert( kr );
-
-    evg = (EvGlobals *)(shmem + ((EvOffsets *)shmem)->evGlobalsOffset);
-
-    assert(sizeof(EvGlobals) == evg->structSize);
-
-    NotificationPortRef = IONotificationPortCreate( masterPort );
-
-    notificationPort = IONotificationPortGetMachPort(NotificationPortRef);
-
-    kr = IOConnectSetNotificationPort( dfb.hidService, kIOHIDEventNotification,
-                                       notificationPort, 0 );
-    kern_assert( kr );
-
-    evg->movedMask |= NX_MOUSEMOVEDMASK;
-}
-
 
 /*
  * InitOutput
@@ -943,24 +752,28 @@ void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
     AddScreen( DarwinAddScreen, argc, argv );
 }
 
+/*
+ * OsVendorFataError
+ */
 void OsVendorFatalError( void )
-{	ErrorF( "   OsVendorFatalError\n" );
+{
+    ErrorF( "   OsVendorFatalError\n" );
 }
 
 /*
- * OSVendorInit
+ * OsVendorInit
  *  One-time initialization of Darwin support.
- *  Connect to framebuffer and HID system.
+ *  Initialize display and event handling.
  */
 void OsVendorInit(void)
 {
-    kern_return_t           kr;
-
-    kr = IOMasterPort(bootstrap_port, &masterPort);
-    kern_assert( kr );
-
     DarwinPrintBanner();
-    SetupFBandHID();
+
+    if (quartz) {
+        QuartzOsVendorInit();
+    } else {
+        XFIOKitOsVendorInit();
+    }
 }
 
 /*
@@ -978,21 +791,33 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         }
     	darwinScreenNumber = atoi( argv[i+1] );
         ErrorF( "Attempting to use screen number %i\n", darwinScreenNumber );
-		return 2;
+        return 2;
     }
 #endif
 
     if ( !strcmp( argv[i], "-fakebuttons" ) ) {
     	fake3Buttons = TRUE;
         ErrorF( "Faking a three button mouse\n" );
-		return 1;
+        return 1;
     }
 
     if ( !strcmp( argv[i], "-nofakebuttons" ) ) {
     	fake3Buttons = FALSE;
         ErrorF( "Not faking a three button mouse\n" );
-		return 1;
+        return 1;
     }
+
+#ifdef DARWIN_WITH_QUARTZ
+    if ( !strcmp( argv[i], "-quartz" ) ) {
+        quartz = TRUE;
+        ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
+#ifdef QUARTZ_SAFETY_DELAY
+        ErrorF( "Quitting in %d seconds if no controller application is found.\n",
+                QUARTZ_SAFETY_DELAY );
+#endif
+        return 1;
+    }
+#endif
 
     if ( !strcmp( argv[i], "-size" ) ) {
     	if ( i >= argc-2 ) {
@@ -1068,10 +893,15 @@ void ddxUseMsg( void )
 #endif
     ErrorF("-fakebuttons : fake a three button mouse with Command and Option keys.\n");
     ErrorF("-nofakebuttons : don't fake a three button mouse.\n");
+    ErrorF("-version : show the server version\n");
+#ifdef DARWIN_WITH_QUARTZ
+    ErrorF("-quartz : run in parallel with Mac OS X Quartz window server.\n");
+    ErrorF("\n");
+    ErrorF("IOKit specific options (ignored with -quartz):\n");
+#endif
     ErrorF("-size <height> <width> : use a screen resolution of <height> x <width>.\n");
     ErrorF("-depth <8,15,24> : use this bit depth.\n");
     ErrorF("-refresh <rate> : use a monitor refresh rate of <rate> Hz.\n");
-    ErrorF("-version : show the server version\n");
     ErrorF("\n");
 }
 
@@ -1079,8 +909,15 @@ void ddxUseMsg( void )
  * ddxGiveUp --
  *      Device dependent cleanup. Called by dix before normal server death.
  */
-void ddxGiveUp( void ) {
+void ddxGiveUp( void )
+{
     ErrorF( "   ddxGiveUp\n" ); 
+
+    if (quartz) {
+        QuartzGiveUp();
+    } else {
+        XFIOKitGiveUp();
+    }
 }
 
 /*
@@ -1089,15 +926,14 @@ void ddxGiveUp( void ) {
  *      made to restore all original setting of the displays. Also all devices
  *      are closed.
  */
-void AbortDDX( void ) {
-#if TRUE
-   ErrorF( "   AbortDDX\n" ); 
+void AbortDDX( void )
+{
+    ErrorF( "   AbortDDX\n" ); 
     /*
-     * This is needed for a abnormal server exit, since the normal exit stuff
-     * MUST also be performed (i.e. the vt must be left in a defined state)
-     */
+    * This is needed for a abnormal server exit, since the normal exit stuff
+    * MUST also be performed (i.e. the vt must be left in a defined state)
+    */
     ddxGiveUp();
-#endif
 }
 
 Bool DPMSSupported(void)
