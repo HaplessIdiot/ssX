@@ -143,6 +143,9 @@ static const char *cfbSymbols[] = {
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
+    "cfbBresS",
+    "cfb16BresS",
+    "cfb32BresS",
     NULL
 };
 
@@ -150,10 +153,6 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     NULL
 };
 
