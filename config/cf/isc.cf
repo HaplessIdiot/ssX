@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.0 1994/11/30 20:26:18 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -31,7 +31,8 @@ XCOMM platform:  $XFree86$
 #define OSMajorVersion		3
 #define OSMinorVersion		2
 
-#define BootstrapCFlags		OSDefines -DSYSV -DSYSV386
+/* Note, cpp already does -Di386 */
+#define BootstrapCFlags		OSDefines -DSYSV
 
 #if IscVersion > 202
 # define LocalLibraries	-lpt

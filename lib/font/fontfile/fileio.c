@@ -1,4 +1,5 @@
 /* $XConsortium: fileio.c,v 1.4 94/04/17 20:17:04 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -55,7 +56,12 @@ FontFileOpen (name)
 	return 0;
     }
     len = strlen (name);
+#ifndef __EMX__
     if (len > 2 && !strcmp (name + len - 2, ".Z")) {
+#else
+    if (len > 2 && (!strcmp (name + len - 4, ".pcz") || 
+		    !strcmp (name + len - 2, ".Z"))) {
+#endif
 	cooked = BufFilePushCompressed (raw);
 	if (!cooked) {
 	    BufFileClose (raw, TRUE);

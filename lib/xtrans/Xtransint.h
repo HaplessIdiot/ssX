@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.3 1994/10/23 12:55:33 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.4 1994/11/30 20:34:39 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -65,7 +65,11 @@ from the X Consortium.
  *	DEBUG=4 printing of intermediate values
  *	DEBUG=5 really detailed stuff
  */
+#ifndef __EMX__
 #define DEBUG 1
+#else
+#define DEBUG 5
+#endif
 
 #ifndef _XTRANSINT_H_
 #define _XTRANSINT_H_

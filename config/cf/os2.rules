@@ -1,12 +1,13 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.0 1994/10/20 06:00:11 dawes Exp $
 
-.c.obj:
+.SUFFIXES: .Osuf .c .CCsuf
+
+.c.Osuf:
 	$(CC) $(CFLAGS) -c $*.c
 
 #if HasCplusplus
-.CCsuf.obj:
+.CCsuf.Osuf:
 	$(CXX) $(CFLAGS) -c $*.CCsuf
-	$(CFLAGS)
 #endif
 
 #ifndef UseInstalled
@@ -14,13 +15,20 @@ XCOMM platform:  $XFree86$
 #define IMmode n
 #define ImakeIndir \indir
 #define ImakeSubCmdHelper \imake -I$(IRULESRC) $(IMAKE_DEFINES)
+#define IOPLFix \ioplfix
+#define Fontc \bdftopcf
+#define MkFontDir \mkfontdir
 #else
 #define ImakeHelper imakesvc
 #define IMmode u
 #define ImakeIndir indir
 #define ImakeSubCmdHelper $(IMAKE_CMD)
+#define IOPLFix ioplfix
+#define Fontc bdftopcf
+#define MkFontDir mkfontdir
 #endif
 
+#define echo ImakeHelper 8 
 #define RunProgram(progvar,options) $(subst /,\,$(progvar)) options
 #define RemoveFile(file) $(RM) file
 #define RemoveFiles(files) $(RM) files
@@ -91,10 +99,17 @@ PROGRAM3 = ProgramTargetName(program)					@@\
 									@@\
 ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 
-#define MoveToBakFile(file) if exist file ren file file.bak
+#define NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
+ProgramTargetName(program): objects deplibs				@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
+									@@\
+InstallProgram(program,$(BINDIR))					@@\
+InstallManPage(program,$(MANDIR))
 
-#define RMoveToBakFile(file) RemoveFile(file.bak)			@@\
-	if exist file ren file file.bak
+#define MoveToBakFile(file) ImakeHelper 5 file
+
+#define RMoveToBakFile(file) ImakeHelper 6 file
 
 #define InstallMultipleDestFlags(step,list,dest,flags)			@@\
 step:: list								@@\
@@ -117,9 +132,8 @@ clean::									@@\
 	RemoveFile(src)
 
 #define LinkFile(tofile,fromfile)					@@\
-tofile:: 								@@\
-	RemoveFile(tofile)						@@\
-	$(LN) fromfile tofile 						@@\
+tofile:: fromfile							@@\
+	ImakeHelper 7 fromfile tofile					@@\
 									@@\
 includes:: tofile							@@\
 									@@\
@@ -162,18 +176,24 @@ depend::								@@\
 */
 
 #define ForceSubdirs(dirs)						@@\
-dirs: FRC								@@\
-	@for %i in (dirs) do \indir %i $(MAKE) SHELL= $(MFLAGS) PassCDebugFlags all @@\
+dirs: DONE								@@\
 									@@\
-FRC:
+DONE:									@@\
+	@for %i in (dirs) do \indir %i $(MAKE) SHELL= $(MFLAGS) PassCDebugFlags all @@\
+	touch DONE							@@\
+									@@\
+clean::									@@\
+	RemoveFile(DONE)
 
 #define MakeMakeSubdirs(dirs,target)					@@\
+MMSDIRS = dirs								@@\
 target::								@@\
-	@for %i in (dirs) do ImakeHelper 1 IMmode %i ../$(IRULESRC) ../$(TOP) $(CURRENT_DIR)
+	@for %i in ($(subst /,\,$(MMSDIRS))) do ImakeHelper 1 IMmode %i ../$(IRULESRC) ../$(TOP) $(CURRENT_DIR)
 
 #define NamedTargetSubdirs(name,dirs,verb,flags,subname)		@@\
+Concat(SUBST,name) = dirs						@@\
 name::									@@\
-	@for %i in (dirs) do \indir %i $(MAKE) SHELL= $(MFLAGS) flags subname
+	@for %i in ($(subst /,\,$(Concat(SUBST,name)))) do \indir %i $(MAKE) SHELL= $(MFLAGS) flags subname
 
 #define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 step:: srcname								@@\
@@ -186,3 +206,49 @@ ImakeDependency(Makefile)						@@\
 Makefile:: 								@@\
 	RMoveToBakFile(Makefile)					@@\
 	ImakeSubCmdHelper -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
+
+#define AssembleObject(flags) $(RM) $@                                  @@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.s | \         @@\
+	    grep -v '^\#' > _tmp_.s                                     @@\
+	$(CC) $(CFLAGS) -o $*.Osuf -c _tmp_.s                           @@\
+	$(RM) _tmp_.s
+
+#define NormalAsmObjectRule()                                           @@\
+.s.Osuf:                                                                @@\
+	AssembleObject($(_NOOP_))
+
+#define FontBaseObj(basename)basename.pcf
+#define FontCompressObj(basename)basename.pcz
+/*
+ * UncompressedFontTarget
+ */
+#define UncompressedFontTarget(basename)				@@\
+FontBaseObj(basename):  FontSrc(basename)				@@\
+	Fontc $(FONTCFLAGS) $? -o $@
+
+/*
+ * CompressedFontTarget
+ */
+#define CompressedFontTarget(basename)					@@\
+FontCompressObj(basename):  FontSrc(basename)				@@\
+	Fontc $(FONTCFLAGS) $? | $(COMPRESS) > $@
+
+/*
+ * MakeFontsDir - generate rules to build fonts.dir database.
+ */
+#define MakeFontsDir(deplist)						@@\
+all:: fonts.dir								@@\
+									@@\
+fonts.dir:  deplist							@@\
+	MkFontDir .							@@\
+									@@\
+clean::									@@\
+	RemoveFile(fonts.dir)
+
+#if CompressAllFonts
+#define FontTarget(basename) CompressedFontTarget(basename)
+#define FontObj(basename) FontCompressObj(basename)
+#else
+#define FontTarget(basename) UncompressedFontTarget(basename)
+#define FontObj(basename) FontBaseObj(basename)
+#endif /* CompressAllFonts */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.4 1994/08/20 07:26:49 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.5 1994/08/31 03:19:47 dawes Exp $
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -11,9 +11,9 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.4 1994/08/20 07:26:49 dawes E
 /* You must manually compute BootstrapCFlags for initial build */
 
 #ifdef i386Sco324Architecture
-# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO -DSCO324
+# define BootstrapCFlags	-DSYSV -Di386 -DSCO -DSCO324
 #else
-# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO
+# define BootstrapCFlags	-DSYSV -Di386 -DSCO
 #endif
 
 #define	OSMinorVersion	2

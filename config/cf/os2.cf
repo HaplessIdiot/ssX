@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.0 1994/10/20 06:00:10 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -96,16 +96,17 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.0 1994/10/20 06:00:10 dawes E
 #define CcCmd	gcc
 #define DefaultCCOptions	-Zmtd
 #define LibraryCCOptions	-Zmtd
+#define ServerCCOptions		-Zmtd 
 
-#define AsCmd	as
+#define AsCmd	gcc -S
 #define GccGasOption	-DGCCUSESGAS
 #define AsmDefines	-DUSE_GAS
 
 #define InstallCmd	install
 
-#define LdCmd	gcc
-#define ExtraLoadFlags	-Zmtd
-#define ExtraLibraries	/emx/lib/binmode.o -lnet -lbsd
+#define LdCmd	ld
+#define ExtraLoadFlags	/**/
+#define ExtraLibraries	/emx/lib/binmode.Osuf -lnet -lbsd
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
@@ -122,7 +123,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.0 1994/10/20 06:00:10 dawes E
 #define CompressCmd	compress
 #define LnCmd cp
 #define CpCmd cp
-#define RmCmd	rm -f
+#define RmCmd	ImakeHelper 4 
 
 #ifndef UseInstalled
 #define ImakeCmd \imake

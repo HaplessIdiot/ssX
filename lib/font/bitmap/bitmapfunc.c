@@ -1,4 +1,5 @@
 /* $XConsortium: bitmapfunc.c,v 1.8 94/04/17 20:17:12 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -53,6 +54,9 @@ extern int  BitmapGetInfoScalable ();
 static BitmapFileFunctionsRec readers[] = {
     pcfReadFont, pcfReadFontInfo,
     pcfReadFont, pcfReadFontInfo,
+#ifdef __EMX__
+    pcfReadFont, pcfReadFontInfo,
+#endif
     snfReadFont, snfReadFontInfo,
     snfReadFont, snfReadFontInfo,
     bdfReadFont, bdfReadFontInfo,
@@ -71,6 +75,12 @@ static FontRendererRec	renderers[] = {
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES,
+#ifdef __EMX__
+    ".pcf.Z", 6,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
+#endif
     ".snf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
