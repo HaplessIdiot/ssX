@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.18 1997/12/28 21:28:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.19 1998/04/26 16:04:55 robin Exp $ */
 
 
 /*
@@ -42,6 +42,7 @@
 #include "tseng_acl.h"
 
 #include "xf86xaa.h"
+#include "compiler.h"
 #include "tseng_colexp.h"
 #include "tseng_inline.h"
 
