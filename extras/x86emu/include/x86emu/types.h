@@ -36,7 +36,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/include/x86emu/types.h,v 1.2 2000/01/23 04:32:41 dawes Exp $ */
 
 #ifndef __X86EMU_TYPES_H
 #define __X86EMU_TYPES_H
@@ -44,6 +44,21 @@
 #ifndef IN_MODULE
 #include <sys/types.h>
 #endif
+
+/*
+ * The following kludge is an attempt to work around typedef conflicts with
+ * <sys/types.h>.
+ */
+#define u8   x86emuu8
+#define u16  x86emuu16
+#define u32  x86emuu32
+#define u64  x86emuu64
+#define s8   x86emus8
+#define s16  x86emus16
+#define s32  x86emus32
+#define s64  x86emus64
+#define uint x86emuuint
+#define sint x86emusint
 
 /*---------------------- Macros and type definitions ----------------------*/
 
