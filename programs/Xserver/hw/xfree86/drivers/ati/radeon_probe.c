@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.2 2000/11/09 03:24:37 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.3 2000/11/18 19:37:12 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -96,7 +96,7 @@ RADEONProbe(DriverPtr drv, int flags)
     int           numUsed;
     int           numDevSections, nATIGDev, nRadeonGDev;
     int           *usedChips;
-    GDevPtr       *devSections, *ATIGDevs = NULL, *RadeonGDevs = NULL;
+    GDevPtr       *devSections, *ATIGDevs, *RadeonGDevs;
     EntityInfoPtr pEnt;
     Bool          foundScreen = FALSE;
     int           i;
@@ -180,7 +180,7 @@ RADEONProbe(DriverPtr drv, int flags)
 	xfree(pEnt);
     }
 
-    if (numUsed) xfree(usedChips);
+    xfree(usedChips);
     xfree(devSections);
 
     return foundScreen;

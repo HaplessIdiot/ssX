@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.53 2000/11/09 11:32:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.54 2000/12/02 01:16:18 dawes Exp $ */
 
 
 #include "fb.h"
@@ -478,9 +478,7 @@ SISProbe(DriverPtr drv, int flags)
                    numDevSections, drv, &usedChips);
 
     /* Free it since we don't need that list after this */
-    if (devSections)
-        xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
         return FALSE;
 

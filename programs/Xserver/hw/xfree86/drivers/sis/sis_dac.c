@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.16 2000/09/22 11:35:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.17 2000/12/02 01:16:17 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -49,6 +49,7 @@ static  void    SiSLVDSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 static  void    SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 static  void    SiS301Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 static  void    SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
+static  void	SiSChrontelSave(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 
 static  void    SiS301LoadPalette(ScrnInfoPtr pScrn, int numColors,
                         int *indicies, LOCO *colors, VisualPtr pVisual);
@@ -572,7 +573,7 @@ SiSLVDSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         sisReg->sisRegs3C4[0x32] &= ~0x20;      /* Disable Lock Mode */
 }
 
-
+static void
 SiSChrontelSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
         SISPtr  pSiS = SISPTR(pScrn);

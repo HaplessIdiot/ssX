@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.24 2000/08/14 16:09:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.25 2000/10/20 14:59:00 alanh Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -246,7 +246,7 @@ FBDevProbe(DriverPtr drv, int flags)
 {
 	int i;
 	ScrnInfoPtr pScrn;
-       	GDevPtr *devSections = NULL;
+       	GDevPtr *devSections;
 	int numDevSections;
 	int bus,device,func;
 	char *dev;

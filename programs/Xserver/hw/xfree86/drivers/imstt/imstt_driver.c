@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.8 2000/08/01 20:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.9 2000/08/23 22:10:13 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -276,7 +276,7 @@ static void IMSTTIdentify(int flags)
 static Bool IMSTTProbe(DriverPtr drv, int flags)
 {
 	int i;
-	GDevPtr *devSections = NULL;
+	GDevPtr *devSections;
 	int *usedChips;
 	int numDevSections;
 	int numUsed;
@@ -294,9 +294,7 @@ static Bool IMSTTProbe(DriverPtr drv, int flags)
 					devSections, numDevSections, drv,
 					&usedChips);
 
-	if (devSections)
-		xfree(devSections);
-	devSections = NULL;
+	xfree(devSections);
 
 	if (numUsed <= 0)
 		return FALSE;

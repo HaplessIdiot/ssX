@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.67 2000/11/21 23:10:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.68 2000/11/28 20:59:17 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -496,7 +496,7 @@ static Bool
 S3VProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -521,9 +521,7 @@ S3VProbe(DriverPtr drv, int flags)
 				    numDevSections, drv, &usedChips);
     
     /* Free it since we don't need that list after this */
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
 

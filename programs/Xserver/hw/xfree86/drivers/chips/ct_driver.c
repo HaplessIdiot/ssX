@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.100 2000/11/14 16:54:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.101 2000/12/01 17:08:32 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -820,7 +820,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int i;
     
@@ -897,8 +897,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 	}
     }
     
-    if (devSections)
-	xfree(devSections);
+    xfree(devSections);
     return foundScreen;
 }
 

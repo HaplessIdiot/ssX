@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.1 2000/12/02 01:16:21 dawes Exp $ */
 
 /* Adapted from ../mga/mga_video.c */
 
@@ -336,7 +336,7 @@ YUVPlanarToPacked (ScrnInfoPtr pScrn,
   /* psrc points to the base of the Y plane, move out to src_x, src_y */
   psrc += src_x + src_y * width;
 
-  pdst = pTDFX->MMIOBase[0] + YUV_Y_BASE;
+  pdst = (char *)pTDFX->MMIOBase[0] + YUV_Y_BASE;
   for (y = 0; y < height; y++)
   {   
     memcpy (pdst, psrc, src_w);
@@ -351,7 +351,7 @@ YUVPlanarToPacked (ScrnInfoPtr pScrn,
    * different and we handle it in the the way we pick the source
    * format later on. */
 
-  pdst = pTDFX->MMIOBase[0] + YUV_V_BASE;
+  pdst = (char *)pTDFX->MMIOBase[0] + YUV_V_BASE;
   psrc = (char*)buf + width * height;
   /* psrc now points to the base of the V plane, move out to src_x, src_y */
   psrc += (src_x >> 1) + (src_y >> 1) * (width >> 1);
@@ -361,7 +361,7 @@ YUVPlanarToPacked (ScrnInfoPtr pScrn,
     psrc += width >> 1;
     pdst += 1024;
   }
-  pdst = pTDFX->MMIOBase[0] + YUV_U_BASE;
+  pdst = (char *)pTDFX->MMIOBase[0] + YUV_U_BASE;
   psrc = (char*)buf + width * height + (width >> 1) * (height >> 1);
   /* psrc now points to the base of the U plane, move out to src_x, src_y */
   psrc += (src_x >> 1) + (src_y >> 1) * (width >> 1);
@@ -415,7 +415,7 @@ TDFXPutImage(
      }
 
      YUVPlanarToPacked (pScrn, src_x, src_y, src_h, src_w,
-			id, buf, width, height,
+			id, (char *)buf, width, height,
 			fbarea);
      /* Don't know what executed last so we need to send a NOP */
      TDFXSendNOP(pScrn);   

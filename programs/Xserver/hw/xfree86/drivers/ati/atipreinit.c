@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.36 2000/10/13 13:27:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.37 2000/10/26 11:47:45 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -584,13 +584,14 @@ ATIPreInit
             /* Validate, then make a private copy of, the initialised BIOS */
             CARD8 *pBIOS = xf86int10Addr(pInt10Info, pInt10Info->BIOSseg << 4);
 
-            if ((pBIOS[0] != 0x55U) || (pBIOS[1] != 0xAAU) ||
-                !pBIOS[2] || (pBIOS[2] > 0x80U))
+            if ((pBIOS[0] != 0x55U) || (pBIOS[1] != 0xAAU) || !pBIOS[2])
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                     "Unable to correctly retrieve adapter BIOS.\n");
             else
             {
                 BIOSSize = pBIOS[2] << 9;
+                if (BIOSSize > BIOS_SIZE)
+                    BIOSSize = BIOS_SIZE;
                 (void)memcpy(BIOS, pBIOS, BIOSSize);
             }
         }
@@ -979,7 +980,7 @@ ATIPreInit
              * Compensate for BIOS absence.  Note that the reference
              * frequency has already been set by option processing.
              */
-            if ((pATI->DAC & 0x0FU) == ATI_DAC_INTERNAL)
+            if ((pATI->DAC & ~0x0FU) == ATI_DAC_INTERNAL)
                 pATI->ProgrammableClock = ATI_CLOCK_INTERNAL;
             else switch (pATI->DAC)
             {

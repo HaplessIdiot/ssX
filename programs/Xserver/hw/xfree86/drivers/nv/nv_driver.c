@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.49 2000/11/03 18:46:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.50 2000/11/16 19:44:59 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -417,7 +417,7 @@ static Bool
 NVProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -476,9 +476,7 @@ NVProbe(DriverPtr drv, int flags)
                                     &usedChips);
                         
     /* Free it since we don't need that list after this */
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
         return FALSE;
 

@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.47 2000/10/20 12:57:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.48 2000/12/01 17:08:37 dawes Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -308,7 +308,7 @@ static Bool
 TGAProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -364,9 +364,7 @@ TGAProbe(DriverPtr drv, int flags)
 		   TGAChipsets, TGAPciChipsets, devSections, numDevSections,
 		   drv, &usedChips);
 				    
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
 
@@ -398,6 +396,7 @@ TGAProbe(DriverPtr drv, int flags)
 	    foundScreen = TRUE;
 	}
     }
+    xfree(usedChips);
     return foundScreen;
 }
 

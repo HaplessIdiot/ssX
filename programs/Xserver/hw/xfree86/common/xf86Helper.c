@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.103 2000/11/18 19:37:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.104 2000/12/01 15:28:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1454,6 +1454,9 @@ xf86MatchDevice(const char *drivername, GDevPtr **sectlist)
     GDevPtr       gdp, *pgdp = NULL;
     confScreenPtr screensecptr;
     int i,j;
+
+    if (sectlist)
+	*sectlist = NULL;
 
     if (xf86DoProbe) return 1;
   

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.7 2000/11/14 17:28:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.8 2000/11/15 23:13:09 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -209,7 +209,7 @@ static void ARKIdentify(int flags)
 static Bool ARKProbe(DriverPtr drv, int flags)
 {
 	int i;
-	GDevPtr *devSections = NULL;
+	GDevPtr *devSections;
 	int *usedChips;
 	int numDevSections;
 	int numUsed;
@@ -225,8 +225,7 @@ static Bool ARKProbe(DriverPtr drv, int flags)
 					devSections, numDevSections, drv,
 					&usedChips);
 
-	if (devSections)
-		xfree(devSections);
+	xfree(devSections);
 
 	if (numUsed <= 0)
 		return FALSE;

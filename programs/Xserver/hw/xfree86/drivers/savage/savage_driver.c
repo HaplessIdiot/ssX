@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.1 2000/12/02 01:16:12 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -497,7 +497,7 @@ static void SavageIdentify(int flags)
 static Bool SavageProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -513,9 +513,7 @@ static Bool SavageProbe(DriverPtr drv, int flags)
 				    SavageChipsets, SavagePciChipsets,
 				    devSections, numDevSections, drv,
 				    &usedChips);
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
 
@@ -2128,7 +2126,7 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
         refresh = (mode->Clock * 1000) / (mode->HTotal * mode->VTotal);
 
-#if EXTENDED_DEBUG
+#ifdef EXTENDED_DEBUG
 	ErrorF( "Desired refresh rate = %dHz\n", refresh );
 #endif
 

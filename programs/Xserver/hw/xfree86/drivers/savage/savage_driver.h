@@ -1,9 +1,8 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.1 2000/12/02 01:16:13 dawes Exp $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H
 
-#include "compiler.h"
 #include "vgaHW.h"
 #include "xf86.h"
 #include "xf86Resources.h"
@@ -11,6 +10,7 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xf86_OSproc.h"
+#include "compiler.h"
 #include "xf86Cursor.h"
 #include "mipointer.h"
 #include "micmap.h"

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.1 2000/12/02 01:16:11 dawes Exp $ */
 
 /*
  *
@@ -15,12 +15,11 @@
  *
  */
 
-#include <math.h>
-#include "compiler.h"
 #include "Xarch.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
+#include "compiler.h"
 #include "xaalocal.h"
 #include "xaarop.h"
 #include "xf86PciInfo.h"

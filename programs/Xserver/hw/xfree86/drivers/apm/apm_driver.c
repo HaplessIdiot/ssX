@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.44 2000/06/30 18:34:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.45 2000/11/22 04:32:12 tsi Exp $ */
 
 
 #include "apm.h"
@@ -378,7 +378,7 @@ static Bool
 ApmProbe(DriverPtr drv, int flags)
 {
     int			numDevSections, numUsed, i;
-    GDevPtr		*DevSections = NULL;
+    GDevPtr		*DevSections;
     int			*usedChips;
     int			foundScreen = FALSE;
 
@@ -445,8 +445,7 @@ ApmProbe(DriverPtr drv, int flags)
 	    }
 	}
     }
-    if (DevSections)
-	xfree(DevSections);
+    xfree(DevSections);
     return foundScreen;
 }
 

@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.1 2000/12/01 19:48:00 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -218,7 +218,7 @@ NewportProbe(DriverPtr drv, int flags)
 {
 	int numDevSections, numUsed, i, j, busID;
 	Bool foundScreen = FALSE;
-	GDevPtr *devSections = NULL;
+	GDevPtr *devSections;
 	GDevPtr dev = NULL;
 	resRange range[] = { {ResExcMemBlock ,0,0}, _END };
 	unsigned probedIDs[NEWPORT_MAX_BOARDS];
@@ -267,8 +267,7 @@ NewportProbe(DriverPtr drv, int flags)
 			}
 		}
 	}
-	if(devSections)
-		xfree(devSections);
+	xfree(devSections);
 	return foundScreen;
 }
 

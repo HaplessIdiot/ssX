@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 1 May 2000
+<date>Last modified 2 December 2000
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.33 2000/12/01 19:34:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.34 2000/12/01 19:37:20 dawes Exp $
 </ident>
 
 
@@ -6635,8 +6635,7 @@ ZZZProbe(DriverPtr drv, int flags)
                /* add screen to entity */
            }
         }
-        if (numUsed > 0)
-            xfree(usedChips);
+        xfree(usedChips);
     }
 
 #ifdef HAS_ISA_DEVS
@@ -6667,8 +6666,7 @@ ZZZProbe(DriverPtr drv, int flags)
             foundScreen = TRUE;
         }
     }
-    if (numUsed > 0)
-        xfree(usedChips);
+    xfree(usedChips);
 #endif /* HAS_ISA_DEVS */
 
     xfree(devSections);

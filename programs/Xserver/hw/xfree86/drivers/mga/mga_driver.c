@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.181 2000/11/16 19:44:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.182 2000/12/01 14:28:57 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -541,7 +541,7 @@ static Bool
 MGAProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips = NULL;
     int numDevSections;
     int numUsed;
@@ -597,9 +597,7 @@ MGAProbe(DriverPtr drv, int flags)
 			MGAChipsets, MGAPciChipsets, devSections,
 			numDevSections, drv, &usedChips);
     /* Free it since we don't need that list after this */
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
 
@@ -675,8 +673,8 @@ MGAProbe(DriverPtr drv, int flags)
 					   pMgaEnt->lastInstance);
 	}
     }
-    if (usedChips)
-	xfree(usedChips);
+
+    xfree(usedChips);
     
     return foundScreen;
 }

@@ -26,7 +26,7 @@
  * Author: Kevin E. Martin <martin@valinux.com>
  * 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.3 2000/08/24 22:20:18 tsi Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -150,7 +150,7 @@ int drmR128SubmitPacket(int fd, CARD32 *buffer, int *count, int flags)
     packet.flags = flags;
 
     while (packet.count > 0) {
-	packet.buffer = buffer + (*count - packet.count);
+	packet.buffer = (unsigned int *)buffer + (*count - packet.count);
 	ret = ioctl(fd, DRM_IOCTL_R128_PACKET, &packet);
 	if (ret < 0 && ret != -EAGAIN) {
 	    *count = packet.count;

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.111 2000/11/26 10:08:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.112 2000/11/30 10:19:48 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -849,7 +849,7 @@ static Bool
 TRIDENTProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips = NULL;
     int numDevSections;
     int numUsed;
@@ -909,6 +909,7 @@ TRIDENTProbe(DriverPtr drv, int flags)
 		    foundScreen = TRUE;
 		}
 	    }
+	    xfree(usedChips);
 	}
     }
 
@@ -943,8 +944,7 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	xfree(usedChips);
     }
     
-    if (devSections)
-	xfree(devSections);
+    xfree(devSections);
     return foundScreen;
 }
 	
