@@ -1,4 +1,4 @@
-                Installation Details for XFree86® 4.4.99.903
+                   Installation Details for XFree86® 4.5.0
 
                           The XFree86 Project, Inc
 
@@ -22,17 +22,13 @@ ries.  (The source for this customized version of GNU tar can be found in the
 XFree86 CVS repository's "utils" module, and from our ftp site
 <URL:ftp://ftp.xfree86.org/pub/XFree86/misc/utils-1.1.3.tgz>.)
 
-Note: for release candidates like this one, binaries are only available for a
-small number of platforms.
+2.  Downloading the XFree86 4.5.0 binaries
 
-2.  Downloading the XFree86 4.4.99.903 binaries
-
-We provide XFree86 4.4.99.903 binaries for a range of operating systems at
-our ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/snap-
-shots/4.4.99.903/binaries/> and our web site
-<URL:http://ftp.xfree86.org/pub/XFree86/snapshots/4.4.99.903/binaries/>.
-Often during releases our site is heavily loaded.  Instead of downloading
-directly from us we recommend that instead you use one of our mirror sites.
+We provide XFree86 4.5.0 binaries for a range of operating systems at our ftp
+site <URL:ftp://ftp.xfree86.org/pub/XFree86/4.5.0/binaries/> and our web site
+<URL:http://ftp.xfree86.org/pub/XFree86/4.5.0/binaries/>.  Often during
+releases our site is heavily loaded.  Instead of downloading directly from us
+we recommend that instead you use one of our mirror sites.
 
 Our binaries are organized by sub-directories which correspond to each of the
 OS/platforms for which we provide binaries.  First go to the sub-directory
@@ -75,10 +71,10 @@ NOTES:
      that your target will not be be available for this release.  This is
      likeliest possibility if you are looking more than about two weeks after
      the release date.  Check here
-     <URL:http://www.xfree86.org/4.4.99.903/UPDATES.html> for information
-     about updates to our binary distributions, and here
-     <URL:http://www.xfree86.org/4.4.99.903/ERRATA.html> for errata related
-     to this release.
+     <URL:http://www.xfree86.org/4.5.0/UPDATES.html> for information about
+     updates to our binary distributions, and here
+     <URL:http://www.xfree86.org/4.5.0/ERRATA.html> for errata related to
+     this release.
 
 Assuming that you have run the Xinstall.sh script and found the binary dis-
 tribution suitable for your system, download the necessary files.  The thir-
@@ -142,10 +138,10 @@ NOTES:
 If you miss some and want to install them later, go to the Manual Installa-
 tion (section 4., page 1) section.
 
-3.  Installing XFree86 4.4.99.903 using the Xinstall.sh script
+3.  Installing XFree86 4.5.0 using the Xinstall.sh script
 
-We strongly recommend that our XFree86 4.4.99.903 binaries be installed using
-the Xinstall.sh script we provide.  There are a lot of steps in the manual
+We strongly recommend that our XFree86 4.5.0 binaries be installed using the
+Xinstall.sh script we provide.  There are a lot of steps in the manual
 installation process, and those steps can vary according to the platform and
 hardware setup.  There is a description of the manual installation process
 for the most common cases below (section 4., page 1).
@@ -288,13 +284,13 @@ server configuration file is not used on Darwin/Mac OS X.
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-4.  Installing XFree86 4.4.99.903 manually
+4.  Installing XFree86 4.5.0 manually
 
-This section contains information about manually installing the XFree86
-4.4.99.903 binary distributions.  You should only use this method if you know
-what you're doing.  The information here covers some common cases, but not
-every possible case.  It also may not be complete or up to date.  Use at your
-own risk.
+This section contains information about manually installing the XFree86 4.5.0
+binary distributions.  You should only use this method if you know what
+you're doing.  The information here covers some common cases, but not every
+possible case.  It also may not be complete or up to date.  Use at your own
+risk.
 
 Put all of the downloaded files into a single directory (choose some tempo-
 rary location with enough space).  Become the super user (root).  All of the
@@ -400,4 +396,4 @@ Once that's done, the main part of the installation can be done:
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.22 dawes Exp $
 
 
-$XFree86: xc/Install,v 1.4 2005/03/05 17:59:50 dawes Exp $
+$XFree86$

@@ -6,16 +6,16 @@
 
 <title>Release Notes for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>12 March 2005
+<date>16 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.133 2005/03/15 21:05:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.135 2005/03/16 15:30:47 dawes Exp $
 </ident>
 
 <abstract>
 
-This document contains information about features and their status in
-XFree86 &relvers;.
+This document contains information about the various features and their current 
+status in the XFree86 &relvers; release.
 
 </abstract>
 
@@ -27,106 +27,106 @@ XFree86 &relvers;.
 <p>
 XFree86 4.0 was the first official release of the XFree86 4 series.
 <![ %updaterel [
-XFree86 &relvers; is the &whichupdaterel; update to &fullrelvers;, which
-is the latest full release in that series.
+XFree86 &relvers; is the &whichupdaterel; update to &fullrelvers;, which is the 
+latest full release in that series.
 ]]>
 <![ %fullrel [
 The current release (&relvers;) is the latest in that series.
 ]]>
-XFree86 4 represents a significant redesign of the XFree86 X server,
-with a strong focus on modularity and clean interfaces compared with the
-previous XFree86 3.x series.
+The XFree86 4.x series  represents a significant redesign of the XFree86 X server,
+with a strong focus on modularity
+and configurability.
 
 <![ %relcandidate [
 <sect1>&fullrelvers; RC&rcnum;
 <p>
-This is release candidate &rcnum; for the &fullrelvers; release.  This
-release candidate is feature-complete.  Known problems with this release
-candidate include:
+This is release candidate &rcnum; for the &fullrelvers; release, and is 
+feature-complete.  Known problems with this release candidate include:
 
 <itemize>
 
-<item>The documentation is not up to date.
+<item>The documentation is not <em>fully</em> up to date.
 
 </itemize>
 ]]>
 
 <sect>Configuration: a Quick Synopsis
 <p>
-XFree86 4.4 introduced an automatic configuration mechanism for the
-XFree86 server which makes it now possible to start XFree86 without first
-creating a configuration file, and this has been improved in XFree86
-4.5.  The initial automatic configuration support is targeted towards
-Linux and FreeBSD and it is hoped that automatic configuration will be
-supported on other platforms in future releases.
+Automatic configuration was introduced with XFree86 4.4.0 
+which makes it possible to start XFree86 without first creating a 
+configuration file.  This was further improved in XFree86
+4.5.0.  
+
+While the initial automatic configuration support was originally targeted 
+ust for Linux and the FreeBSD variants, in 4.5.0 it now includes Solaris, NetBSD and OpenBSD support, 
+and it is planned that automatic configuration will be supported on other 
+platforms in future releases.
 
 If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris,
-try it out if you do not already have a working <tt>XF86Config</tt> file.
-Even if you do, you can try it out by running:
+try Auto Configuration by running:
 
 <tscreen><verb>
 XFree86 -autoconfig
 </verb></tscreen>
 
-If you want to customise things afterwards, you can cut and paste the
+If you want to customise some things afterwards, you can cut and paste the
 automatically generated configuration from the
 <tt>/var/log/XFree86.0.log</tt> file into an <tt>XF86Config</tt> file
-and make your customisations there.  If you want to customise some parts
+and make your customisations there.  If you need to customise some parts
 of the configuration while leaving others to be automatically detected,
-you can combine a static partial configuration with the automatically
-detected information by running:
+you can combine a partial static configuration with the automatically
+detected one by running:
 
 <tscreen><verb>
 XFree86 -appendauto
 </verb></tscreen>
 
-If you do not have any luck with automatic configuration, or you are using
-a platform that is not currently supported, try one of the older methods
-for getting started.
+If you using a platform that is not currently supported, then you must try one 
+of the older methods for getting started like <tt>xf86cfg</tt>", 
+which is our graphical configuration tool.  It also has a text mode 
+interface that an be used to create an initial configuration file and 
+customise existing configurations.
 
-XFree86 comes with a graphical configuration tool called "<tt>xf86cfg</tt>",
-which also has a text mode interface and can be used to create an initial
-configuration file. It can also be used to customise existing
-configurations.
-
-Next in the order of configuration preferences is to use the XFree86
-server's ability to create a starting configuration file.  Run as root:
+After that, you can use XFree86 server's ability to create a 
+starting configuration file.  To do so you must login as root, and run:
 
 <tscreen><verb>
 XFree86 -configure
 </verb></tscreen>
 
-and follow the instructions.
+and then follow the instructions.
 
 Finally, if all else fails, the trusty old standby text-based tool
 "<tt>xf86config</tt>" can also be used for generating X server config
 files.
 
-At least one, and hopefully, all of these configuration options will
-give you a reasonable starting point for a suitable configuration
-file.  With the automatic mechanism you might even find that you don't
-need one!  
+Hopefully, at least one, and perhaps all of these various configuration options 
+will give you a reasonable starting point for a suitable configuration
+file but we think that with the automatic mechanism you will probably not 
+need any. 
 
-If you do need to customise the configuration file, see the <htmlurl
-name="XF86Config manual page" url="XF86Config.5.html">.  You can also
-check the driver-specific manual pages and the related documentation
-(found at <ref id="drivertables" name="tables below">).
+If you would like to customise the configuration file, see the <htmlurl
+name="XF86Config manual page" url="XF86Config.5.html">.  You should also
+check the driver-specific manual pages and the related documentation, which
+is found at <ref id="drivertables" name="tables below">.
 
-Before downloading the binary distributions for this release, please
-have a quick read through the <htmlurl name="Installation Document"
-url="Install.html">.  It may save you some time and also help you figure out
-which of the binary releases you need.
+Before downloading any of the binary distributions for this release, 
+read through the <htmlurl name="Installation Document"
+url="Install.html"> as it can point out which particular binary you should 
+download. 
 
 <![ %updaterel [
-The next sections describe what has changed in the update release(s)
-as well as what is new in the latest full release (&fullrelvers;).
+The following sections describe what has changed in the update release(s)
+as well as what is <bf>new</bf> in the latest full release (&fullrelvers;).
 ]]>
 <![ %fullrel [
-The next section describes what is new in the latest version (&relvers;)
+The next section describes what is <bf>new</bf> in the latest version (&relvers;)
 compared with the previous full release (&prevfullrelvers).
 ]]>
-There are lots of new features, and we definitely don't have enough space
-to cover them all here.
+There are many new features in this release and we unfortunately do not have 
+enough space
+to cover
+them all here.
 
 </sect>
 

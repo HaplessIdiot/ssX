@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.87 2005/03/05 17:59:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.88 2005/03/06 17:10:04 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -110,11 +110,11 @@ if [ X$XINST_LOGFILE != X ]; then
 	trap "echo ''; echo $logmsg; echo ''; exit" 0
 fi
 
-SNAPSHOT=y
+SNAPSHOT=n
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.4.99.903
+	VERSION=4.4.99.XXX
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
@@ -831,7 +831,7 @@ FindDistName()
 					DistName="NetBSD-1.4.x"
 					;;
 				*)
-					DistName="NetBSD-1.6 or NetBSD 1.5"
+					DistName="NetBSD-1.6 or NetBSD-1.5"
 					;;
 				esac
 				;;

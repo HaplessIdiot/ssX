@@ -1,4 +1,4 @@
-                  README for XFree86® 4.4.99.903 on OpenBSD
+                    README for XFree86® 4.5.0 on OpenBSD
 
                                Matthieu Herrb
 
@@ -13,6 +13,16 @@ X11R6.6.
 
 See the Copyright Notice.
 
+The sources for XFree86 4.5.0 are available by anonymous ftp from:
+
+ftp://ftp.XFree86.org/pub/XFree86/4.5.0
+
+Binaries for OpenBSD/i386 3.4 and later are available from:
+
+ftp://ftp.XFree86.org/pub/XFree86/4.5.0/binaries/OpenBSD
+
+A list of mirror sites is provided by http://www.xfree86.org/MIRRORS.shtml
+
 XFree86 also builds on other OpenBSD architectures. See section Building on
 other architectures (section 8., page 1) for details.
 
@@ -23,8 +33,7 @@ or suggestions about this file.
 
 3.  New OS dependent features
 
-See the Release Notes for non-OS dependent new features in XFree86
-4.4.99.903.
+See the Release Notes for non-OS dependent new features in XFree86 4.5.0.
 
 3.1  New OS related features in 4.4
 
@@ -137,10 +146,10 @@ the xvidtune utility.
 
 5.1  About mouse configuration
 
-XFree86 4.4.99.903 has support for the mouse driver included in the new
-wscons console driver introduced by OpenBSD-2.9.  Specify ``wsmouse'' as the
-protocol and ``/dev/wsmouse0'' as the  device in /etc/X11/XF86Config if
-you're using OpenBSD-2.9 or later with a PS/2 or USB mouse.
+XFree86 4.5.0 has support for the mouse driver included in the new wscons
+console driver introduced by OpenBSD-2.9.  Specify ``wsmouse'' as the proto-
+col and ``/dev/wsmouse0'' as the  device in /etc/X11/XF86Config if you're
+using OpenBSD-2.9 or later with a PS/2 or USB mouse.
 
 See README.mouse  for general instruction on mouse configuration in XFree86.
 

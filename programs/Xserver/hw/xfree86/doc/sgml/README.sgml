@@ -13,10 +13,10 @@
 
 <title>README for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>9 March 2005
+<date>16 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.146 2005/02/08 16:46:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.148 2005/03/10 02:35:07 dawes Exp $
 </ident>
 
 <abstract>
