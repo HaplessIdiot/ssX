@@ -4,19 +4,20 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "xf86_OSproc.h"
-#include "xf86_ansic.h"
 
 
 #define MODPROBE_PATH_FILE      "/proc/sys/kernel/modprobe"
 #define MAX_PATH                1024
 
 
+#if 0
 /* XFree86 #defines execl to be the xf86execl() function which does
  * a fork AND exec.  We don't want that.  We want the regular,
  * standard execl().
  */
 #ifdef execl
 #undef execl
+#endif
 #endif
 
 
@@ -29,7 +30,8 @@
  * Return:
  *    0 for failure, 1 for success
  */
-int xf86LoadKernelModule(const char *modName)
+int
+xf86LoadKernelModule(const char *modName)
 {
    char mpPath[MAX_PATH] = "";
    int fd = -1, status, n;
@@ -51,10 +53,15 @@ int xf86LoadKernelModule(const char *modName)
 
    if (mpPath[0] == 0) {
       /* we failed to get the path from the system, use a default */
-      xf86strcpy(mpPath, "/sbin/modprobe");
+      strcpy(mpPath, "/sbin/modprobe");
    }
 
    /* now fork/exec the modprobe command */
+   /*
+    * It would be good to capture stdout/stderr so that it can be directed
+    * to the log file.  modprobe errors currently are missing from the log
+    * file.
+    */
    switch (pid = fork()) {
    case 0:  /* child */
       n = execl(mpPath, "modprobe", modName, NULL);
