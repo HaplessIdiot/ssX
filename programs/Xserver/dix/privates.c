@@ -1,5 +1,5 @@
 /* $XConsortium: privates.c /main/5 1996/06/17 10:56:22 mor $ */
-/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.2 1997/01/23 10:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.3 1998/03/20 21:05:09 hohndel Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -125,12 +125,12 @@ ResetScreenPrivates()
 int
 AllocateScreenPrivateIndex()
 {
-    int		index2;
+    int		idx;
     int		i;
     ScreenPtr	pScreen;
     DevUnion	*nprivs;
 
-    index2 = screenPrivateCount++;
+    idx = screenPrivateCount++;
     for (i = 0; i < screenInfo.numScreens; i++)
     {
 	pScreen = screenInfo.screens[i];
@@ -141,9 +141,11 @@ AllocateScreenPrivateIndex()
 	    screenPrivateCount--;
 	    return -1;
 	}
+	/* Zero the new private */
+	bzero(&nprivs[idx], sizeof(DevUnion));
 	pScreen->devPrivates = nprivs;
     }
-    return index2;
+    return idx;
 }
 
 

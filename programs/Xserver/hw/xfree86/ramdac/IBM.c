@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.1.2.2 1998/07/11 13:52:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.2 1998/07/25 16:57:18 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -35,8 +35,72 @@
 
 #define INITIALFREQERR 100000
 
-/* This maybe specific to the IBM526, need to check other IBM ramdacs */
-/* That's why I'm leaving the name as IBMramdac526Calc....            */
+unsigned long
+IBMramdac640CalculateMNPCForClock(
+    unsigned long RefClock,	/* In 100Hz units */
+    unsigned long ReqClock,	/* In 100Hz units */
+    char IsPixClock,	/* boolean, is this the pixel or the sys clock */
+    unsigned long MinClock,	/* Min VCO rating */
+    unsigned long MaxClock,	/* Max VCO rating */
+    unsigned long *rM,	/* M Out */
+    unsigned long *rN,	/* N Out */
+    unsigned long *rP,	/* Min P In, P Out */
+    unsigned long *rC	/* C Out */
+)
+{
+  unsigned long   M, N, P, iP = *rP;
+  unsigned long   IntRef, VCO, Clock;
+  long            freqErr, lowestFreqErr = INITIALFREQERR;
+  unsigned long   ActualClock = 0;
+
+  for (N = 0; N <= 63; N++)
+    {
+      IntRef = RefClock / (N + 1);
+      if (IntRef < 10000)
+	break;			/* IntRef needs to be >= 1MHz */
+      for (M = 2; M <= 127; M++)
+	{
+	  VCO = IntRef * (M + 1);
+	  if ((VCO < MinClock) || (VCO > MaxClock))
+	    continue;
+	  for (P = iP; P <= 4; P++)
+	    {
+	      if (P != 0)
+		Clock = (RefClock * (M + 1)) / ((N + 1) * 2 * P);
+	      else
+		Clock = (RefClock * (M + 1)) / (N + 1);
+
+	      freqErr = (Clock - ReqClock);
+
+	      if (freqErr < 0)
+		{
+		  /* PixelClock gets rounded up always so monitor reports
+		     correct frequency. */
+		  if (IsPixClock)
+		    continue;
+		  freqErr = -freqErr;
+		}
+
+	      if (freqErr < lowestFreqErr)
+		{
+		  *rM = M;
+		  *rN = N;
+		  *rP = P;
+		  *rC = (VCO <= 1280000 ? 1 : 2);
+		  ActualClock = Clock;
+
+		  lowestFreqErr = freqErr;
+		  /* Return if we found an exact match */
+		  if (freqErr == 0)
+		    return (ActualClock);
+		}
+	    }
+	}
+    }
+
+  return (ActualClock);
+}
+
 unsigned long
 IBMramdac526CalculateMNPCForClock(
     unsigned long RefClock,	/* In 100Hz units */
@@ -107,11 +171,20 @@ void
 IBMramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 				    RamDacRegRecPtr ramdacReg)
 {
-	int i;
+	int i, maxreg;
+
+	switch (ramdacPtr->RamDacType) {
+	    case IBM640_RAMDAC:
+		maxreg = 0x300;
+		break;
+	    default:
+		maxreg = 0x100;
+		break;
+	}
 
 	/* Here we pass a short, so that we can evaluate a mask too */
 	/* So that the mask is the high byte and the data the low byte */
-	for (i=0;i<0x100;i++) 
+	for (i=0;i<maxreg;i++) 
 	    (*ramdacPtr->WriteDAC)
 	        (pScrn, i, (ramdacReg->DacRegs[i] & 0xFF00) >> 8, 
 						ramdacReg->DacRegs[i]);
@@ -121,13 +194,22 @@ void
 IBMramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr, 
 				 RamDacRegRecPtr ramdacReg)
 {
-	int i;
+	int i, maxreg;
+
+	switch (ramdacPtr->RamDacType) {
+	    case IBM640_RAMDAC:
+		maxreg = 0x300;
+		break;
+	    default:
+		maxreg = 0x100;
+		break;
+	}
 	
 	(*ramdacPtr->ReadAddress)(pScrn, 0); /* Start at index 0 */
 	for (i=0;i<768;i++)
 	    ramdacReg->DAC[i] = (*ramdacPtr->ReadData)(pScrn);
 
-	for (i=0;i<0x100;i++) 
+	for (i=0;i<maxreg;i++) 
 	    ramdacReg->DacRegs[i] = (*ramdacPtr->ReadDAC)(pScrn, i);
 }
 
@@ -158,7 +240,7 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
 		if (rev == 0x80) IBMramdac_ID = IBM624DB_RAMDAC;
 		break;
 	case 0x12:
-		IBMramdac_ID = IBM640_RAMDAC;
+		if (rev == 0x1c) IBMramdac_ID = IBM640_RAMDAC;
 		break;
 	case 0x01:
 		IBMramdac_ID = IBM525_RAMDAC;
@@ -191,7 +273,7 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
 	return -1;
     } else {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
-		"Attached RAMDAC is %s\n", IBMramdacDeviceInfo[IBMramdac_ID]);
+		"Attached RAMDAC is %s\n", IBMramdacDeviceInfo[IBMramdac_ID&0xFFFF]);
     }
 
     for (i=0;ramdacs[i].token != -1;i++) {
@@ -205,7 +287,7 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
 	return -1;
     }
 	
-    return IBMramdac_ID;
+    return (ramdacPtr->RamDacType = IBMramdac_ID);
 }
 
 void
@@ -213,7 +295,7 @@ IBMramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 {
     /* We need to deal with Direct Colour visuals for 8bpp and other
      * good stuff for colours */
-    switch (pScrn->depth) {
+    switch (pScrn->bitsPerPixel) {
 	case 32:
 	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_32BPP;
 	    ramdacReg->DacRegs[IBMRGB_32bpp] = B32_DCOL_DIRECT;

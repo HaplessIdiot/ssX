@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.2 1998/07/25 16:55:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.3 1998/07/31 10:41:22 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -182,7 +182,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->glintRegs[0x72] = p;
     }
 
-    switch (pScrn->depth)
+    switch (pScrn->bitsPerPixel)
     {
     case 8:
     	if (pScrn->rgbBits == 8)
@@ -205,7 +205,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case 24:
         pReg->glintRegs[0x61] = 0x09; /* 8bit DAC */
 	pReg->glintRegs[0x81] = 0x04;
-	pReg->glintRegs[0x82] = 0x20;
+	pReg->glintRegs[0x82] = 0x60;
     	break;
     case 32:
         pReg->glintRegs[0x61] = 0x09; /* 8bit DAC */
@@ -253,26 +253,14 @@ Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     for (i=0; i<768; i++)
 	glintReg->DacRegs[i] = GLINT_READ_REG(PM2DACData);
 
-    GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
+    glintReg->glintRegs[0x61] = Permedia2vInIndReg(pScrn, PM2VDACRDMiscControl);
+    glintReg->glintRegs[0x80] = Permedia2vInIndReg(pScrn, PM2VDACRDDACControl);
+    glintReg->glintRegs[0x81] = Permedia2vInIndReg(pScrn, PM2VDACRDPixelSize);
+    glintReg->glintRegs[0x82] = Permedia2vInIndReg(pScrn, PM2VDACRDColorFormat);
 
-    GLINT_SLOW_WRITE_REG(PM2VDACRDMiscControl, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x61] = GLINT_READ_REG(PM2VDACIndexData);
-
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDACControl, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x80] = GLINT_READ_REG(PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDPixelSize, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x81] = GLINT_READ_REG(PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDColorFormat, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x82] = GLINT_READ_REG(PM2VDACIndexData);
-
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0PreScale >> 8, PM2VDACIndexRegHigh);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0PreScale, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x70] = GLINT_READ_REG(PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0FeedbackScale, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x71] = GLINT_READ_REG(PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0PostScale, PM2VDACIndexRegLow);
-    glintReg->glintRegs[0x72] = GLINT_READ_REG(PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
+    glintReg->glintRegs[0x70] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PreScale);
+    glintReg->glintRegs[0x71] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0FeedbackScale);
+    glintReg->glintRegs[0x72] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PostScale);
 }
 
 void
@@ -305,34 +293,17 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5B], PMVsStart);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5A], PMVsEnd);
 
-    GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDMiscControl, 0x00, glintReg->glintRegs[0x61]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDACControl, 0x00, glintReg->glintRegs[0x80]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDPixelSize, 0x00, glintReg->glintRegs[0x81]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDColorFormat, 0x00, glintReg->glintRegs[0x82]);
 
-    GLINT_SLOW_WRITE_REG(PM2VDACRDMiscControl, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x61],PM2VDACIndexData);
+    temp = Permedia2vInIndReg(pScrn, PM2VDACIndexClockControl) & 0xFC;
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PreScale, 0x00, glintReg->glintRegs[0x70]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0FeedbackScale, 0x00, glintReg->glintRegs[0x71]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, glintReg->glintRegs[0x72]);
 
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDACControl, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x80],PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDPixelSize, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x81],PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDColorFormat, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x82],PM2VDACIndexData);
-
-    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockControl >> 8, PM2VDACIndexRegHigh);
-    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockControl, PM2VDACIndexRegLow);
-    temp = GLINT_READ_REG(PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(temp & 0xFC, PM2VDACIndexData);
-
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0PreScale, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x70], PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0FeedbackScale, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x71], PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(PM2VDACRDDClk0PostScale, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x72], PM2VDACIndexData);
-
-    GLINT_SLOW_WRITE_REG(PM2VDACIndexClockControl, PM2VDACIndexRegLow);
-    GLINT_SLOW_WRITE_REG(temp | 0x03, PM2VDACIndexData);
-    GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
-
+    Permedia2vOutIndReg(pScrn, PM2VDACIndexClockControl, 0x00, temp|0x03);
 }
 
 static void 
@@ -355,13 +326,10 @@ Permedia2vLoadCursorImage(
     unsigned char *src
 )
 {
-    GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
        
-    GLINT_SLOW_WRITE_REG((PM2VDACRDCursorPattern>>8)&0xff, PM2VDACIndexRegHigh);
     for (i=0; i<1024; i++) 
     	Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPattern+i, 0x00, *(src++));
-    GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
 }
 
 static void
@@ -389,10 +357,8 @@ Permedia2vSetCursorColors(
    int bg, int fg
 )
 {
-    GLINTPtr pGlint = GLINTPTR(pScrn);
     /* The Permedia2v cursor is always 8 bits so shift 8, not 10 */
 
-    GLINT_SLOW_WRITE_REG((PM2VDACRDCursorPalette>>8)&0xff, PM2VDACIndexRegHigh);
     /* Background color */
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+6, 0x00, bg >> 16);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+7, 0x00, bg >> 8);
@@ -402,8 +368,6 @@ Permedia2vSetCursorColors(
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+9, 0x00, fg >> 16);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+10, 0x00, fg >> 8);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+11, 0x00, fg);
-   
-    GLINT_SLOW_WRITE_REG(0, PM2VDACIndexRegHigh);
 }
 
 static Bool 
@@ -426,7 +390,7 @@ Permedia2vHWCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
-    infoPtr->Flags = 0;
+    infoPtr->Flags = HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
     infoPtr->SetCursorColors = Permedia2vSetCursorColors;
     infoPtr->SetCursorPosition = Permedia2vSetCursorPosition;
     infoPtr->LoadCursorImage = Permedia2vLoadCursorImage;

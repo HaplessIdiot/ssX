@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.31 1998/07/26 02:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.32 1998/07/26 09:56:22 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -266,40 +266,40 @@ InitExtensions(argc, argv)
    is disabled */
 ExtensionModule extension[] =
 {
-    { NULL, "BEZIER", NULL },	/* ?? */
-    { NULL, "XTEST1", &noTestExtensions }, /* ?? */
-    { NULL, "SHAPE", NULL },
-    { NULL, "MIT-SHM", NULL },
-    { NULL, "X3D-PEX", NULL },
-    { NULL, "Multi-Buffering", NULL },
-    { NULL, "XInputExtension", NULL },
-    { NULL, "XTEST", &noTestExtensions },
-    { NULL, "BIG-REQUESTS", NULL },
-    { NULL, "MIT-SUNDRY-NONSTANDARD", NULL },
-    { NULL, "XIDLE", NULL },	/* ?? */
-    { NULL, "XTRAP", &noTestExtensions }, /* ?? */
-    { NULL, "MIT-SCREEN-SAVER", NULL },
-    { NULL, "XVideo", NULL },	/* ?? */
-    { NULL, "XIE", NULL },
-    { NULL, "SYNC", NULL },
+    { NULL, "BEZIER", NULL, NULL },	/* ?? */
+    { NULL, "XTEST1", &noTestExtensions, NULL }, /* ?? */
+    { NULL, "SHAPE", NULL, NULL },
+    { NULL, "MIT-SHM", NULL, NULL },
+    { NULL, "X3D-PEX", NULL, NULL },
+    { NULL, "Multi-Buffering", NULL, NULL },
+    { NULL, "XInputExtension", NULL, NULL },
+    { NULL, "XTEST", &noTestExtensions, NULL },
+    { NULL, "BIG-REQUESTS", NULL, NULL },
+    { NULL, "MIT-SUNDRY-NONSTANDARD", NULL, NULL },
+    { NULL, "XIDLE", NULL, NULL },	/* ?? */
+    { NULL, "XTRAP", &noTestExtensions, NULL }, /* ?? */
+    { NULL, "MIT-SCREEN-SAVER", NULL, NULL },
+    { NULL, "XVideo", NULL, NULL },	/* ?? */
+    { NULL, "XIE", NULL, NULL },
+    { NULL, "SYNC", NULL, NULL },
 #ifdef XKB
-    { NULL, "XKEYBOARD", &noXkbExtension },
+    { NULL, "XKEYBOARD", &noXkbExtension, NULL },
 #else
-    { NULL, "NOXKEYBOARD", NULL },
+    { NULL, "NOXKEYBOARD", NULL, NULL },
 #endif
-    { NULL, "XC-MISC", NULL },
-    { NULL, "RECORD", &noTestExtensions },
-    { NULL, "LBX", NULL },
-    { NULL, "DOUBLE-BUFFER", NULL },
-    { NULL, "XC-APPGROUP", NULL },
-    { NULL, "SECURITY", NULL },
-    { NULL, "XpExtension", NULL },
-    { NULL, "XFree86-VidModeExtension", NULL },
-    { NULL, "XFree86-Misc", NULL },
-    { NULL, "XFree86-DGA", NULL },
-    { NULL, "DPMS", NULL },
-    { NULL, "GLX", NULL },
-    { NULL, NULL, NULL }
+    { NULL, "XC-MISC", NULL, NULL },
+    { NULL, "RECORD", &noTestExtensions, NULL },
+    { NULL, "LBX", NULL, NULL },
+    { NULL, "DOUBLE-BUFFER", NULL, NULL },
+    { NULL, "XC-APPGROUP", NULL, NULL },
+    { NULL, "SECURITY", NULL, NULL },
+    { NULL, "XpExtension", NULL, NULL },
+    { NULL, "XFree86-VidModeExtension", NULL, NULL },
+    { NULL, "XFree86-Misc", NULL, NULL },
+    { NULL, "XFree86-DGA", NULL, NULL },
+    { NULL, "DPMS", NULL, NULL },
+    { NULL, "GLX", NULL, NULL },
+    { NULL, NULL, NULL, NULL }
 };
 
 /*ARGSUSED*/

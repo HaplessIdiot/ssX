@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.2 1998/07/25 16:55:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.3 1998/07/31 10:41:20 dawes Exp $ */
 
 /*
  * glint register file 
@@ -913,18 +913,27 @@
 	}							\
 }
 
-#define CHECKPLANEMASK(planemask)				\
+#define LOADROP(rop)						\
 {								\
-	if ( (planemask & ((1<<pScrn->bitsPerPixel)-1)) ==	\
-			   ((1<<pScrn->bitsPerPixel)-1) ) 	\
-		pGlint->BlitMode = FBRM_DstEnable;		\
-	else 							\
-		pGlint->BlitMode = 0;				\
+	if (pGlint->ROP != rop) {				\
+		GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);	\
+		pGlint->ROP = rop;				\
+	}							\
+}
+
+	
+
+#define CHECKCLIPPING						\
+{								\
+	if (pGlint->ClippingOn) {				\
+		pGlint->ClippingOn = FALSE;			\
+		GLINT_WAIT(1);					\
+		GLINT_WRITE_REG(0, ScissorMode);		\
+	}							\
 }
 
 #define DO_PLANEMASK(planemask)					\
 { 								\
-	CHECKPLANEMASK(planemask); 				\
 	REPLICATE(planemask); 					\
 	GLINT_WRITE_REG(planemask, FBHardwareWriteMask);	\
 } 

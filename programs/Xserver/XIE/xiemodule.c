@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.1 1998/07/26 09:56:05 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "XIE.h"		
@@ -12,6 +12,7 @@ ExtensionModule XieExt =
 {
     XieInit,
     xieExtName,
+    NULL,
     NULL
 };
 

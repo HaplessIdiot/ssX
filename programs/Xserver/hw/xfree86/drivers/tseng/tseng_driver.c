@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.30 1998/07/25 16:56:03 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.31 1998/08/02 05:17:01 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,9 +22,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
- *          ET6000 and ET4000W32 16/24/32 bpp support by Koen Gadeyne
+ *          ET6000 and ET4000W32 16/24/32 bpp and acceleration support by Koen Gadeyne
+ *
+ * Large parts rewritten for XFree86 4.0 by Koen Gadeyne.
  */
 /* $XConsortium: et4_driver.c /main/27 1996/10/28 04:48:15 kaleb $ */
+
+
+
+
 
 /*** Generic includes ***/
 
@@ -90,6 +96,8 @@ static Bool TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void TsengUnlock(void);
 static void TsengLock(void);
 
+static Bool ET4000DetailedProbe(t_tseng_type * chiptype, t_w32_revid * rev);
+
 #define VERSION 4000
 #define TSENG_NAME "TSENG"
 #define TSENG_DRIVER_NAME "tseng"
@@ -150,15 +158,12 @@ typedef enum {
     OPTION_HIBIT_LOW,
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
-    OPTION_PCI_BURST_ON,
-    OPTION_PCI_BURST_OFF,
+    OPTION_PCI_BURST,
     OPTION_SLOW_DRAM,
     OPTION_MED_DRAM,
     OPTION_FAST_DRAM,
-    OPTION_W32_INTERLEAVE_ON,
-    OPTION_W32_INTERLEAVE_OFF,
+    OPTION_W32_INTERLEAVE,
     OPTION_NOACCEL,
-    OPTION_NOLINEAR,
     OPTION_LINEAR,
     OPTION_SHOWCACHE,
     OPTION_LEGEND,
@@ -175,9 +180,7 @@ static OptionInfoRec TsengOptions[] =
 	{0}, FALSE},
     {OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_PCI_BURST_ON, "pci_burst_on", OPTV_BOOLEAN,
-	{0}, FALSE},
-    {OPTION_PCI_BURST_OFF, "pci_burst_off", OPTV_BOOLEAN,
+    {OPTION_PCI_BURST, "pci_burst", OPTV_TRI,
 	{0}, FALSE},
     {OPTION_SLOW_DRAM, "slow_dram", OPTV_BOOLEAN,
 	{0}, FALSE},
@@ -185,15 +188,11 @@ static OptionInfoRec TsengOptions[] =
 	{0}, FALSE},
     {OPTION_FAST_DRAM, "fast_dram", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_W32_INTERLEAVE_ON, "w32_interleave_on", OPTV_BOOLEAN,
-	{0}, FALSE},
-    {OPTION_W32_INTERLEAVE_OFF, "w32_interleave_off", OPTV_BOOLEAN,
+    {OPTION_W32_INTERLEAVE, "w32_interleave", OPTV_TRI,
 	{0}, FALSE},
     {OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_NOLINEAR, "NoLinear", OPTV_BOOLEAN,
-	{0}, FALSE},
-    {OPTION_LINEAR, "Linear", OPTV_BOOLEAN,
+    {OPTION_LINEAR, "Linear", OPTV_TRI,
 	{0}, FALSE},
     {OPTION_SHOWCACHE, "ShowCache", OPTV_BOOLEAN,
 	{0}, FALSE},
@@ -415,7 +414,7 @@ ET4000MinimalProbe(void)
     outb(0x3C0, 0x16 | 0x20);
     newVal = inb(0x3C1);
     outb(0x3C0, origVal);
-    TsengLock();
+/*    TsengLock();    FIXME: RESTORE OLD CONTENTS INSTEAD ! */
     if (newVal != (origVal ^ 0x10)) {
 	return (FALSE);
     }
@@ -588,6 +587,7 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
 	    pTseng->ChipType);
     } else {
+	/* probe for chipset type */
 	from = X_PROBED;
 	if (!TsengPCI2Type(pScrn, pTseng->PciInfo->chipType))
 	    return FALSE;
@@ -601,22 +601,55 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
 	if ((pTseng->ChipType == TYPE_ET6000) && (pTseng->ChipRev >= ET6100REVID))
 	    pTseng->ChipType = TYPE_ET6100;
     } else {
-	/* FIXME: W32p needs its own chiprev here */
-	pTseng->ChipRev = pTseng->PciInfo->chipRev;
+	t_tseng_type dum_chiptype;
+	t_w32_revid rev;
+	if (Is_ET6K) {
+	    pTseng->ChipRev = pTseng->PciInfo->chipRev;
+	} else {
+	    /*
+	     * on W32p cards, the PCI ChipRev field is always 0 (it is not
+	     * implmemented).  We will use the ChipRev field to distinguish
+	     * between revisions A through D, so we set it up with the
+	     * standard register-probing "Detailed Probe" instead.
+	     */
+	    ET4000DetailedProbe(&dum_chiptype, &rev);
+	    pTseng->ChipRev = rev;
+	}
     }
 
-    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+    if (Is_ET6K) {
+	xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+    } else {
+	char ch_rev;
+	switch (pTseng->ChipRev) {
+	case W32REVID_A:
+	    ch_rev = 'A';
+	    break;
+	case W32REVID_B:
+	    ch_rev = 'B';
+	    break;
+	case W32REVID_C:
+	    ch_rev = 'C';
+	    break;
+	case W32REVID_D:
+	    ch_rev = 'D';
+	    break;
+	default:
+	    ch_rev = 'X';
+	}
+	xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\" (rev %c)\n",
+	    pScrn->chipset, ch_rev);
+    }
 
     pTseng->PciTag = pciTag(pTseng->PciInfo->bus, pTseng->PciInfo->device,
 	pTseng->PciInfo->func);
 
-    /* the masks just get rid of the crap in the lower bits */
-
-    if (pScrn->device->IOBase != 0) {
-	pTseng->IOAddress = pScrn->device->IOBase;
-	from = X_CONFIG;
-    } else {
-	if (Is_ET6K) {
+    /* only the ET6000 implements a PCI IO address */
+    if (Is_ET6K) {
+	if (pScrn->device->IOBase != 0) {
+	    pTseng->IOAddress = pScrn->device->IOBase;
+	    from = X_CONFIG;
+	} else {
 	    if ((pTseng->PciInfo->ioBase[1]) != 0) {
 		pTseng->IOAddress = pTseng->PciInfo->ioBase[1];
 		from = X_PROBED;
@@ -626,9 +659,9 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
 		return FALSE;
 	    }
 	}
+	xf86DrvMsg(pScrn->scrnIndex, from, "PCI I/O registers at 0x%lX\n",
+	    (unsigned long)pTseng->IOAddress);
     }
-    xf86DrvMsg(pScrn->scrnIndex, from, "PCI I/O registers at 0x%lX\n",
-	(unsigned long)pTseng->IOAddress);
 
     pTseng->LinFbAddressMask = 0xFF000000;
 
@@ -905,9 +938,6 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
      * registers we modify, of course.
      */
 
-    /* first set the KEY, so we can access the bank select registers */
-    TsengUnlock();
-
     oldSegSel1 = inb(0x3CD);
     oldSegSel2 = inb(0x3CB);
     outb(0x3CE, 5);
@@ -1004,7 +1034,6 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
     outb(0x3C4, 4);
     outb(0x3C5, oldSEQ4);
 
-/*    TsengLock(); */
     vgaHWUnmapMem(pScrn);
     return real_ram;
 }
@@ -1037,7 +1066,7 @@ TsengLimitMem(ScrnInfoPtr pScrn, int ram)
     if (pTseng->UseLinMem && pTseng->Linmem_1meg) {
 	TsengDoMemLimit(pScrn, ram, 1024, "in linear mode on this VGA board/bus configuration");
     }
-    if (!pTseng->NoAccel && pTseng->UseLinMem) {
+    if (pTseng->UseAccel && pTseng->UseLinMem) {
 	if (Is_W32_any) {
 	    /* <= W32p_ab :
 	     *   2 MB direct access + 2*512kb via apertures MBP0 and MBP1
@@ -1186,7 +1215,12 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
     pTseng->HWCursor = FALSE;	       /* default */
     if (xf86IsOptionSet(TsengOptions, OPTION_HW_CURSOR)) {
 	from = X_CONFIG;
-	pTseng->HWCursor = TRUE;
+	if (!Is_ET6K) {
+	    xf86DrvMsg(pScrn->scrnIndex, from,
+		"Hardware Cursor not supported on this chipset\n");
+	} else {
+	    pTseng->HWCursor = TRUE;
+	}
     }
     if (xf86IsOptionSet(TsengOptions, OPTION_SW_CURSOR)) {
 	from = X_CONFIG;
@@ -1195,17 +1229,21 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 	pTseng->HWCursor ? "HW" : "SW");
 
-    pTseng->NoAccel = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_NOACCEL)) {
-	pTseng->NoAccel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
-    }
+    if (pScrn->bitsPerPixel >= 8) {
+	pTseng->UseAccel = TRUE;
+	if (xf86IsOptionSet(TsengOptions, OPTION_NOACCEL)) {
+	    pTseng->UseAccel = FALSE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
+	}
+    } else
+	pTseng->UseAccel = FALSE;  /* 1bpp and 4bpp are always non-accelerated */
+
     pTseng->SlowDram = FALSE;
     if (xf86IsOptionSet(TsengOptions, OPTION_SLOW_DRAM)) {
 	pTseng->SlowDram = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using slow DRAM access\n");
     }
-    pTseng->FastDram = FALSE;
+    pTseng->MedDram = FALSE;
     if (xf86IsOptionSet(TsengOptions, OPTION_MED_DRAM)) {
 	pTseng->MedDram = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Medium-speed DRAM access\n");
@@ -1215,34 +1253,35 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pTseng->FastDram = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using fast DRAM access\n");
     }
-    pTseng->W32InterleaveOn = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_W32_INTERLEAVE_ON)) {
-	pTseng->W32InterleaveOn = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing W32p memory interleave ON.\n");
-    }
-    pTseng->W32InterleaveOff = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_W32_INTERLEAVE_OFF)) {
-	pTseng->W32InterleaveOff = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing W32p memory interleave OFF.\n");
-    }
-    from = X_DEFAULT;
-    if (pTseng->PciTag)
-	pTseng->UseLinMem = TRUE;      /* use linear memory by default on PCI systems */
-    else
-	pTseng->UseLinMem = FALSE;     /* ... and banked on non-PCI systems */
-    if (xf86IsOptionSet(TsengOptions, OPTION_NOLINEAR)) {
-	pTseng->UseLinMem = FALSE;
-    }
-    if (xf86IsOptionSet(TsengOptions, OPTION_LINEAR)) {
-	pTseng->UseLinMem = TRUE;
-	if (!CHIP_SUPPORTS_LINEAR) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear memory not supported on chipset \"%s\".\n",
-		pScrn->chipset);
-	} else if (!xf86LinearVidMem()) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		"This operating system does not support a linear framebuffer.\n");
-	    pTseng->UseLinMem = FALSE;
+    if ((pTseng->SetW32Interleave = 
+	xf86GetOptValBool(TsengOptions, OPTION_W32_INTERLEAVE, &pTseng->W32Interleave)) )
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing W32p memory interleave %s.\n",
+	    pTseng->W32Interleave ? "ON" : "OFF");
+    if ((pTseng->SetPCIBurst = 
+	xf86GetOptValBool(TsengOptions, OPTION_PCI_BURST, &pTseng->PCIBurst)) )
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing PCI burst mode %s.\n",
+	    pTseng->PCIBurst ? "ON" : "OFF");
+    from = X_CONFIG;
+    if (xf86GetOptValBool(TsengOptions, OPTION_LINEAR, &pTseng->UseLinMem)) {
+	/* check if linear mode is allowed */
+	if (pTseng->UseLinMem) {
+	    if (!CHIP_SUPPORTS_LINEAR) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Linear memory not supported on chipset \"%s\".\n",
+		    pScrn->chipset);
+		pTseng->UseLinMem = FALSE;
+	    } else if (!xf86LinearVidMem()) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		    "This operating system does not support a linear framebuffer.\n");
+		pTseng->UseLinMem = FALSE;
+	    }
 	}
+    } else {
+	/* option not specified: use defaults */
+	from = X_DEFAULT;
+	if (pTseng->PciTag)
+	    pTseng->UseLinMem = TRUE;      /* use linear memory by default on PCI systems */
+	else
+	    pTseng->UseLinMem = FALSE;     /* ... and banked on non-PCI systems */
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s Memory.\n",
 	(pTseng->UseLinMem) ? "linear" : "banked");
@@ -1290,8 +1329,8 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 	}
     } else {
 	from = X_PROBED;
-	if (pTseng->PciTag && Is_ET6K) {
-	    /* PCI ET6000 boards only: PCI ET4000W32p doesn't use the PCI space.
+	if (pTseng->PciTag) {
+	    /*
 	     * base0 is the framebuffer and base1 is the PCI IO space.
 	     */
 	    if ((pTseng->PciInfo->memBase[0]) != 0) {
@@ -1426,6 +1465,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     }
     pTseng = TsengPTR(pScrn);
 
+    TsengUnlock();
+
     /*
      * Find the bus slot for this screen (PCI or other). This also finds the
      * exact chipset type.
@@ -1541,7 +1582,14 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86PrintDepthBpp(pScrn);
 
-    pTseng->Bytesperpixel = pScrn->bitsPerPixel / 8;
+    if (pScrn->bitsPerPixel > 8)
+	pTseng->Bytesperpixel = pScrn->bitsPerPixel / 8;
+    else
+	pTseng->Bytesperpixel = 1;  /* this is fake for < 8bpp, but simplifies other code */
+
+    /* hardware limits */
+    pScrn->maxHValue = 4096 / pTseng->Bytesperpixel;
+    pScrn->maxVValue = 2048;
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1612,49 +1660,12 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = TsengDetectMem(pScrn);
     }
     pScrn->videoRam = TsengLimitMem(pScrn, pScrn->videoRam);
-    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte.\n",
 	pScrn->videoRam);
 
-/*    pTseng->FbMapSize = pScrn->videoRam * 1024; */
-
-    /* TODO XXX Set HW cursor use */
-
-    /* Set the min pixel clock */
-    pTseng->MinClock = 12000;	       /* XXX Guess, need to check this */
-    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
-	pTseng->MinClock / 1000);
-    /*
-     * If the user has specified ramdac speed in the XF86Config
-     * file, we respect that setting.
-     */
-    if (pScrn->device->dacSpeeds[0]) {
-	int speed;
-
-	switch (pScrn->bitsPerPixel) {
-	default:
-	case 8:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP8];
-	    break;
-	case 16:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP16];
-	    break;
-	case 24:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP24];
-	    break;
-	case 32:
-	    speed = pScrn->device->dacSpeeds[DAC_BPP32];
-	    break;
-	}
-	if (speed == 0)
-	    pTseng->MaxClock = pScrn->device->dacSpeeds[0];
-	else
-	    pTseng->MaxClock = speed;
-	from = X_CONFIG;
-    } else {
-	tseng_set_dacspeed(pScrn);
-    }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
-	pTseng->MaxClock / 1000);
+    /* set and report min and max pixel clocks */
+    tseng_set_dacspeed(pScrn);
 
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
@@ -1699,12 +1710,12 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     /* Select valid modes from those available */
     i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 	pScrn->display->modes, clockRanges,
-	NULL, 32, 4096 / pTseng->Bytesperpixel,
-	8, 0, 2048,
+	NULL, 32, pScrn->maxHValue, 8, /* H limits */
+	0, pScrn->maxVValue,	       /* V limits */
 	pScrn->display->virtualX,
 	pScrn->display->virtualY,
-	pScrn->videoRam,	       /* was: pTseng->FbMapSize, */
-	LOOKUP_BEST_REFRESH);
+	pTseng->FbMapSize,
+	LOOKUP_BEST_REFRESH);	       /* LOOKUP_CLOSEST_CLOCK | LOOKUP_CLKDIV2 when no programable clock ? */
 
     if (i == -1) {
 	TsengFreeRec(pScrn);
@@ -1738,8 +1749,13 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     xf86SetDpi(pScrn, 0, 0);
 
     /* Load bpp-specific modules */
-    /* Set the required modules list */
     switch (pScrn->bitsPerPixel) {
+    case 1:
+	mod = "xf1bpp";
+	break;
+    case 4:
+	mod = "xf4bpp";
+	break;
     case 8:
 	mod = "cfb";
 	break;
@@ -1758,11 +1774,13 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     /* Load XAA if needed */
-    if (!pTseng->NoAccel || pTseng->HWCursor)
+    if (pTseng->UseAccel || pTseng->HWCursor)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
+/*    TsengLock(); */
+
     return TRUE;
 }
 
@@ -1771,9 +1789,10 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
     TsengPtr pTseng;
-    int ret;
+    int ret, i;
     VisualPtr visual;
     int savedDefaultVisualClass;
+    int offscreen_videoram, videoram_end, req_videoram;
 
     ErrorF("	TsengScreenInit\n");
 
@@ -1795,9 +1814,8 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TsengModeInit(pScrn, pScrn->currentMode);
 
     /* Darken the screen for aesthetic reasons and set the viewport */
-#if TODO			       /* we want to see this now for non-aesthetic reasons */
     TsengSaveScreen(pScreen, FALSE);
-#endif
+
     TsengAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     /* XXX Fill the screen with black */
 
@@ -1820,22 +1838,29 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     /*
-     * Reset cfb's visual list.
+     * Reset visual list.
      */
-    cfbClearVisualTypes();
+    miClearVisualTypes();
 
     /* Setup the visuals we support. */
 
     /*
      * For bpp > 8, the default visuals are not acceptable because we only
      * support TrueColor and not DirectColor.  To deal with this, call
-     * cfbSetVisualTypes for each visual supported.
+     * miSetVisualTypes for each visual supported.
      */
 
-    if (pScrn->bitsPerPixel > 8) {
-	if (!cfbSetVisualTypes(pScrn->depth, 1 << TrueColor, pScrn->rgbBits))
+    if (pScrn->depth > 8) {
+	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+			      pScrn->defaultVisual))
+	    return FALSE;
+    } else {
+	if (!miSetVisualTypes(pScrn->depth,
+			      miGetDefaultVisualMask(pScrn->depth),
+			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
+
     /*
      * Temporarily set the global defaultColorVisualClass to make
      * cfbInitVisuals do what we want.
@@ -1849,6 +1874,18 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     switch (pScrn->bitsPerPixel) {
+    case 1:
+	ret = xf1bppScreenInit(pScreen, pTseng->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 4:
+	ret = xf4bppScreenInit(pScreen, pTseng->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
     case 8:
 	ret = cfbScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
@@ -1882,7 +1919,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->bitsPerPixel == 8) {
+    if (pScrn->pixmapBPP == 8) {        /* Both xf4bpp & cfb */
 	vgaHandleColormaps(pScreen, pScrn);
     } else {
 	/* Fixup RGB ordering */
@@ -1905,7 +1942,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     if (!pTseng->UseLinMem) {
-	xf86DrvMsg(scrnIndex, X_INFO, "Using banked (=non-linear) mode\n");
 	if (!Is_stdET4K && (pScrn->videoRam > 1024)) {
 	    pTseng->BankInfo.SetSourceBank = ET4000W32SetRead;
 	    pTseng->BankInfo.SetDestinationBank = ET4000W32SetWrite;
@@ -1918,72 +1954,159 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pTseng->BankInfo.pBankA = pTseng->FbBase;
 	pTseng->BankInfo.pBankB = pTseng->FbBase;
 	pTseng->BankInfo.BankSize = 0x10000;
-	pTseng->BankInfo.nBankDepth = pScrn->depth;	/* depth for pixmap format for DDX */
+	pTseng->BankInfo.nBankDepth = (pScrn->depth == 4) ? 1 : pScrn->depth;
 
 	if (!miInitializeBanking(pScreen, pScrn->virtualX, pScrn->virtualY,
-		pScrn->displayWidth, &pTseng->BankInfo))
+		pScrn->displayWidth, &pTseng->BankInfo)) {
 	    return FALSE;
+	}
     }
     /*
      * Initialize the acceleration interface.
+     *
+     * The accelerator requires free off-screen video memory to operate. The
+     * more there is, the more it can accelerate.
      */
 
-    if ((!pTseng->NoAccel) && (pScrn->bitsPerPixel >= 8)) {
-	int FBmem = (pScrn->virtualY * pScrn->displayWidth * pTseng->Bytesperpixel) / 1024;
+    videoram_end = pScrn->videoRam * 1024;
+    offscreen_videoram = videoram_end -
+	pScrn->displayWidth * pScrn->virtualY * pTseng->Bytesperpixel;
+    xf86DrvMsg(scrnIndex, X_INFO, "Available off-screen memory: %d bytes.\n",
+	offscreen_videoram);
 
-	if ((pScrn->videoRam - FBmem) < 1) {
-	    xf86Msg(X_WARNING, "Acceleration disabled. It requires AT LEAST 1kb of free video memory\n");
-	    pTseng->NoAccel = TRUE;
+    /*
+     * The HW cursor requires 1kb of off-screen memory, aligned to 1kb
+     * (256 DWORDS). Setting up its memory first ensures the alignment.
+     */
+    if (pTseng->HWCursor) {
+	req_videoram = 1024;
+	if (offscreen_videoram < req_videoram) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Hardware Cursor disabled. It requires %d bytes of free video memory\n",
+		req_videoram);
+	    pTseng->HWCursor = FALSE;
+	    pTseng->HWCursorBufferOffset = 0;
 	} else {
-	    pScrn->videoRam -= 1;
-	    tsengScratchVidBase = pScrn->videoRam * 1024;
+	    offscreen_videoram -= req_videoram;
+	    videoram_end -= req_videoram;
+	    pTseng->HWCursorBufferOffset = videoram_end;
+	}
+    } else {
+	pTseng->HWCursorBufferOffset = 0;
+    }
+
+    if (pTseng->UseAccel) {
+	/*
+	 * Basic acceleration needs storage for FG, BG and PAT colors in
+	 * off-screen memory. Each color requires 2(ping-pong)*8 bytes.
+	 */
+	req_videoram = 2 * 8 * 3;
+	if (offscreen_videoram < req_videoram) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Acceleration disabled. It requires AT LEAST %d bytes of free video memory\n",
+		req_videoram);
+	    pTseng->UseAccel = FALSE;
+	    pTseng->AccelColorBufferOffset = 0;
+	} else {
+	    offscreen_videoram -= req_videoram;
+	    videoram_end -= req_videoram;
+	    pTseng->AccelColorBufferOffset = videoram_end;
 	}
 
-#ifdef TODO
 	/*
-	 * XAA ImageWrite support needs two entire line buffers + 3 and rounded
-	 * up to the next DWORD boundary.
+	 * Color expansion (using triple buffering) requires 3 non-expanded
+	 * scanlines, DWORD padded.
 	 */
-	if (tseng_use_ACL) {
-	    int req_ram = (pScrn->displayWidth * pTseng->Bytesperpixel + 6) * 2;
-
-	    req_ram = (req_ram + 1023) / 1024;	/* in kb */
-	    if ((pScrn->videoRam - FBmem) > req_ram) {
-		pScrn->videoRam -= req_ram;
-		tsengImageWriteBase = pScrn->videoRam * 1024;
-		ErrorF("%s %s: Using %dkb of unused display memory for extra acceleration functions.\n",
-		    XCONFIG_PROBED, pScrn->name, req_ram);
+	req_videoram = 3 * ((pScrn->virtualX + 31) / 32) * 4;
+	if (offscreen_videoram < req_videoram) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Accelerated color expansion disabled (%d more bytes of free video memory required)\n",
+		req_videoram - offscreen_videoram);
+	    pTseng->AccelColorExpandBufferOffsets[0] = 0;
+	} else {
+	    offscreen_videoram -= req_videoram;
+	    for (i = 0; i < 3; i++) {
+		videoram_end -= req_videoram / 3;
+		pTseng->AccelColorExpandBufferOffsets[i] = videoram_end;
 	    }
 	}
-#endif
+
+	/*
+	 * XAA ImageWrite support needs two entire line buffers. The
+	 * current code assumes buffer 1 lies in the same 8kb aperture as
+	 * buffer 0.
+	 *
+	 * [ FIXME: aren't we forgetting the DWORD padding here ? ]
+	 * [ FIXME: why here double-buffering and in colexp triple-buffering? ]
+	 */
+	req_videoram = 2 * (pScrn->virtualX * pTseng->Bytesperpixel);
+	if (offscreen_videoram < req_videoram) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Accelerated ImageWrites disabled (%d more bytes of free video memory required)\n",
+		req_videoram - offscreen_videoram);
+	    pTseng->AccelImageWriteBufferOffsets[0] = 0;
+	} else {
+	    offscreen_videoram -= req_videoram;
+	    for (i = 0; i < 2; i++) {
+		videoram_end -= req_videoram / 2;
+		pTseng->AccelImageWriteBufferOffsets[i] = videoram_end;
+	    }
+	}
+
+	pScrn->videoRam = videoram_end / 1024;
+	xf86DrvMsg(scrnIndex, X_INFO, "Remaining off-screen memory available for pixmap cache: %d bytes.\n",
+	    offscreen_videoram);
+
 	tseng_init_acl(pScreen);       /* set up accelerator */
 	if (!TsengXAAInit(pScreen)) {  /* set up XAA interface */
 	    return FALSE;
 	}
     }
     miInitializeBackingStore(pScreen);
-
-#ifdef TODO
-    if (!pTseng->NoAccel)
-	TsengAclInit(pScreen);
-
     /* Initialise cursor functions */
-    if (pTseng->HWCursor && 0) {
-	/* Initialise HW cursor functions */
-    } else
-#endif
-    {
-	/* SW cursor */
-	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+    /* Hardware Cursor layer */
+    if (pTseng->HWCursor) {
+	if (!TsengHWCursorInit(pScreen))
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Hardware cursor initialization failed\n");
     }
+
     /* Initialise default colourmap */
-    if (!cfbCreateDefColormap(pScreen))
-	return FALSE;
+    switch (pScrn->depth)
+    {
+    case 1:
+	if (!xf1bppCreateDefColormap(pScreen))
+	    return FALSE;
+	break;
+    case 4:
+	if (!xf4bppCreateDefColormap(pScreen))
+	    return FALSE;
+ErrorF("HERE!\n");
+	break;
+    default:
+	if (!cfbCreateDefColormap(pScreen))
+	    return FALSE;
+	break;
+    }
 
     /* Wrap the current CloseScreen and SaveScreen functions */
+    pScreen->SaveScreen = TsengSaveScreen;
+
+#ifdef DPMSExtension
+    /* Support for DPMS, the ET4000W32Pc and newer uses a different and
+     * simpler method than the older cards.
+     */
+    if (Is_W32p_cd || Is_ET6K) {
+	xf86DPMSInit(pScreen, (DPMSSetProcPtr)TsengCrtcDPMSSet, 0);
+    } else {
+	xf86DPMSInit(pScreen, (DPMSSetProcPtr)TsengHVSyncDPMSSet, 0);
+    }
+#endif
+
     pTseng->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = TsengCloseScreen;
-    pScreen->SaveScreen = TsengSaveScreen;
 
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
@@ -2043,6 +2166,8 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
     TsengUnmapMem(pScrn);
     if (pTseng->AccelInfoRec)
 	XAADestroyInfoRec(pTseng->AccelInfoRec);
+    if (pTseng->CursorInfoRec)
+	XAADestroyCursorInfoRec(pTseng->CursorInfoRec);
 
     pScrn->vtSema = FALSE;
 
@@ -2058,38 +2183,49 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
  * The ET4000 "Video System Configuration 1" register (CRTC index 0x36),
  * which is used to set linear memory mode and MMU-related stuff, is
  * partially reset to "0" when TS register index 0 bit 1 is set (synchronous
- * reset): bits 3..5 are reset during a sync. reset. The problem is that
- * sync reset is active during the register setup (ET4000Restore()), and
- * thus ExtCRTC[0x36] never gets written...).
+ * reset): bits 3..5 are reset during a sync. reset.
  *
- * IS THIS STILL TRUE FOR ND? 
+ * We therefor do _not_ call vgaHWSaveScreen here, since it does a sequencer
+ * reset. Instead, we do the same as in vgaHWSaveScreen except for the seq. reset.
  *
- * We hook this function so that we can remember/restore ExtCRTC[0x36].
+ * If this is not done, the higher level code will not be able to access the
+ * framebuffer (because it is temporarily in banked mode instead of linear
+ * mode) as long as SaveScreen is active (=in between a
+ * SaveScreen(FALSE)/SaveScreen(TRUE) pair)
  */
 
 static Bool
 TsengSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
-    ErrorF("	TsengSaveScreen\n");
-#ifdef TODO
-#ifndef PC98_NEC480
-#ifndef PC98_EGC
-    if (start == SS_START) {
-	if (Is_W32_any) {
-	    outb(iobase + 4, 0x36);
-	    save_ExtCRTC[0x36] = inb(iobase + 5);
-	}
-	vgaHWSaveScreen(start);
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    TsengPtr pTseng = TsengPTR(pScrn);
+    unsigned char scrn;
+
+    ErrorF("	TsengSaveScreen (unblank=%s)\n", unblank ? "TRUE" : "FALSE");
+
+    if (Is_ET6K || !pTseng->UseLinMem) {
+	return vgaHWSaveScreen(pScreen, unblank);
     } else {
-	vgaHWSaveScreen(start);
-	if (Is_W32_any) {
-	    outw(iobase + 4, (save_ExtCRTC[0x36] << 8) | 0x36);
-	}
+       if (unblank)
+	  SetTimeSinceLastInputEvent();
+
+       if (pScrn->vtSema) {
+	   /* replacement of vgaHWBlankScreen(pScrn, unblank) without seq reset */
+	    outb(0x3C4,1);
+	    scrn = inb(0x3C5);
+
+	    if(unblank) {
+	      scrn &= 0xDF;			/* enable screen */
+	    }else {
+	      scrn |= 0x20;			/* blank screen */
+	    }
+
+    /*        vgaHWSeqReset(hwp, TRUE);*/
+	    outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+    /*        vgaHWSeqReset(hwp, FALSE);*/
+       }
+       return (TRUE);
     }
-#endif
-#endif
-#endif
-    return vgaHWSaveScreen(pScreen, unblank);
 }
 
 static Bool
@@ -2156,7 +2292,7 @@ commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, int ma
     unsigned char n1, n2;
     unsigned char best_n1 = 16 + 2, best_n2 = 2, best_m = 125 + 2;
 
-    ErrorF("	commonCalcClock\n");
+    ErrorF("	commonCalcClock %d kHz\n", freq);
     ffreq = freq / 1000.0 / BASE_FREQ;
     ffreq_min = freq_min / 1000.0 / BASE_FREQ;
     ffreq_max = freq_max / 1000.0 / BASE_FREQ;
@@ -2213,14 +2349,64 @@ static Bool
 TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     vgaHWPtr hwp;
-    vgaRegPtr vgaReg;
     TsengPtr pTseng = TsengPTR(pScrn);
     TsengRegPtr new = &(pTseng->ModeReg);
     TsengRegPtr initial = &(pTseng->SavedReg);
     int row_offset;
     int temp1, temp2, temp3;
+    int min_n2;
+    int hdiv = 1, hmul = 1;
 
     ErrorF("	TsengModeInit\n");
+
+    /*
+     * Calculate the data transport clock (transport from vga core to
+     * RAMDAC). This will be the clock that actually needs to be programmed
+     * or selected. We store that clock in the "SynthClock" field. This
+     * allows all the other code to check the "original" mode->Clock field
+     * for the real pixel clock (e.g.  to check clock limits etc), while the
+     * register setup code can use SynthClock for the actual programming.
+     */
+    mode->SynthClock =
+	(mode->Clock * pTseng->DacInfo.ClockMulFactor) / pTseng->DacInfo.ClockDivFactor;
+
+    if (mode->Flags & V_PIXMUX) {
+	hdiv *= 2;
+	mode->SynthClock /= 2;
+    }
+
+    hmul *= pTseng->DacInfo.ClockMulFactor;
+    hdiv *= pTseng->DacInfo.ClockDivFactor;
+
+    /*
+     * Modify mode timings accordingly
+     */
+    if (!mode->CrtcHAdjusted) {
+	/* now divide and multiply the horizontal timing parameters as required */
+	mode->CrtcHTotal = (mode->CrtcHTotal * hmul) / hdiv;
+	mode->CrtcHDisplay = (mode->CrtcHDisplay * hmul) / hdiv;
+	mode->CrtcHSyncStart = (mode->CrtcHSyncStart * hmul) / hdiv;
+	mode->CrtcHSyncEnd = (mode->CrtcHSyncEnd * hmul) / hdiv;
+	mode->CrtcHBlankStart = (mode->CrtcHBlankStart * hmul) / hdiv;
+	mode->CrtcHBlankEnd = (mode->CrtcHBlankEnd * hmul) / hdiv;
+	mode->CrtcHSkew = (mode->CrtcHSkew * hmul) / hdiv;
+	if (pScrn->bitsPerPixel == 24) {
+	    int rgb_skew;
+
+	    /*
+	     * in 24bpp, the position of the BLANK signal determines the
+	     * phase of the R,G and B values. XFree86 sets blanking equal to
+	     * the Sync, so setting the Sync correctly will also set the
+	     * BLANK corectly, and thus also the RGB phase
+	     */
+	    rgb_skew = (mode->CrtcHTotal / 8 - mode->CrtcHBlankEnd / 8 - 1) % 3;
+	    mode->CrtcHBlankEnd += rgb_skew * 8 + 24;
+	    /* HBlankEnd must come BEFORE HTotal */
+	    if (mode->CrtcHBlankEnd > mode->CrtcHTotal)
+		mode->CrtcHBlankEnd -= 24;
+	}
+	mode->CrtcHAdjusted = TRUE;
+    }
 
     /* prepare standard VGA register contents */
     hwp = VGAHWPTR(pScrn);
@@ -2235,21 +2421,6 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
 
     memcpy(new, initial, sizeof(TsengRegRec));
-
-#ifdef TODO
-    /*
-     * this is a kludge, but the ET4000Validate() code should already have
-     * done this, and it _has_ (supposing we call tseng_validate_mode in
-     * there. I tried that, with no effect). But we seem to be getting a
-     * different mode structure (a copy?) at this point.
-     *
-     * Another weirdness is that _here_, mode->Clock points to the clock
-     * _index_ in the array off clocks (usually 2 for a programmable clock),
-     * while in ET4000Validate() mode->Clock is the actual pixel clock (in
-     * kHZ).
-     */
-    tseng_validate_mode(mode, TRUE);
-#endif
 
     if (pScrn->bitsPerPixel < 8) {
 	/* Don't ask me why this is needed on the ET6000 and not on the others */
@@ -2316,22 +2487,26 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/*
 	 * now on to the memory interleave setting (CR32 bit 7)
 	 */
-	if (pTseng->W32InterleaveOff)
-	    new->ExtCRTC[0x32] &= 0x7F;
-	if (pTseng->W32InterleaveOn)
-	    new->ExtCRTC[0x32] |= 0x80;
+	if (pTseng->SetW32Interleave) {
+	    if (pTseng->W32Interleave)
+		new->ExtCRTC[0x32] |= 0x80;
+	    else
+		new->ExtCRTC[0x32] &= 0x7F;
+	}
     }
     if (Is_W32p) {
 	/*
 	 * next, we check the PCI Burst option and turn that on or off
 	 * which is done with bit 4 in CR34
 	 */
-	if (pTseng->PCIBurstOff)
-	    new->ExtCRTC[0x34] &= 0xEF;
-	if (pTseng->PCIBurstOn)
-	    new->ExtCRTC[0x34] |= 0x10;
+	if (pTseng->SetPCIBurst) {
+	    if (pTseng->PCIBurst)
+		new->ExtCRTC[0x34] |= 0x10;
+	    else
+		new->ExtCRTC[0x34] &= 0xEF;
+	}
     }
-#ifdef TODO
+
     /* prepare clock-related registers when not Legend.
      * cannot really SET the clock here yet, since the ET4000Save()
      * is called LATER, so it would save the wrong state...
@@ -2342,13 +2517,14 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* for pixmux: must use post-div of 4 on ICS GenDAC clock generator!
 	 */
 
-	if (mode->Flags & V_PIXMUX) {
-	    commonCalcClock(mode->SynthClock / 2, 1, 1, 31, 2, 3, 100000, pScrn->device->dacSpeeds[0] * 2 + 1,
-		&(new->pll.f2_M), &(new->pll.f2_N));
-	} else {
-	    commonCalcClock(mode->SynthClock, 1, 1, 31, 0, 3, 100000, pScrn->device->dacSpeeds[0] * 2 + 1,
-		&(new->pll.f2_M), &(new->pll.f2_N));
-	}
+	if (mode->Flags & V_PIXMUX)
+	    min_n2 = 2;
+	else
+	    min_n2 = 0;
+	commonCalcClock(mode->SynthClock, 1, 1, 31, min_n2, 3,
+	    100000, pTseng->MaxClock * 2 + 1,
+	    &(new->pll.f2_M), &(new->pll.f2_N));
+
 	new->pll.w_idx = 0;
 	new->pll.r_idx = 0;
 
@@ -2362,7 +2538,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	/* memory clock */
 	if (Gendac_programmable_clock && pTseng->MClkInfo.Set) {
-	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 31, 1, 3, 100000, pScrn->device->dacSpeeds[0] * 2 + 1,
+	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 31, 1, 3, 100000, pTseng->MaxClock * 2 + 1,
 		&(new->pll.MClkM), &(new->pll.MClkN));
 	}
     } else if (ICD2061a_programmable_clock) {
@@ -2374,14 +2550,14 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	hwp->ModeReg.MiscOutReg = (hwp->ModeReg.MiscOutReg & 0xF3) | 0x08;
 	mode->ClockIndex = 2;
 	/* FIXME: icd2061_dwv not used anywhere ... */
-	pTseng->icd2061_dwv = AltICD2061CalcClock(mode->SynthClock * 1000);
-	/* Tseng_ICD2061AClockSelect(mode->SynthClock); */
+	pTseng->icd2061_dwv = AltICD2061CalcClock(mode->Clock * 1000);
+	/* Tseng_ICD2061AClockSelect(mode->Clock); */
     } else if (CH8398_programmable_clock) {
 	/* Let's call common_hw/Ch8391clk.c ! */
 	if (mode->Flags & V_PIXMUX)
-	    Chrontel8391CalcClock(mode->SynthClock / 2, &temp1, &temp2, &temp3);
+	    Chrontel8391CalcClock(mode->Clock / 2, &temp1, &temp2, &temp3);
 	else
-	    Chrontel8391CalcClock(mode->SynthClock, &temp1, &temp2, &temp3);
+	    Chrontel8391CalcClock(mode->Clock, &temp1, &temp2, &temp3);
 	new->pll.f2_N = (unsigned char)(temp2);
 	new->pll.f2_M = (unsigned char)(temp1 | (temp3 << 6));
 	if (xf86GetVerbosity())
@@ -2401,12 +2577,10 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* disable MCLK/2 and MCLK/4, they don't seem to work in 24bpp 
 	 * anyway */
 	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
-    } else
-#endif
-    if (Is_ET6K) {
+    } else if (Is_ET6K) {
 	/* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
-	commonCalcClock(mode->Clock, 1, 1, 31, 1, 3, 100000,
-	    pScrn->device->dacSpeeds[0] * 2,
+	commonCalcClock(mode->SynthClock, 1, 1, 31, 1, 3, 100000,
+	    pTseng->MaxClock * 2,
 	    &(new->pll.f2_M), &(new->pll.f2_N));
 
 	/* ErrorF("M=0x%x ; N=0x%x\n",new->pll.f2_M, new->pll.f2_N); */
@@ -2424,7 +2598,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (pTseng->MClkInfo.Set) {
 	    /* according to Tseng Labs, N1 must be <= 4, and N2 should always be 1 for MClk */
 	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 4, 1, 1,
-		100000, pScrn->device->dacSpeeds[0] * 2,
+		100000, pTseng->MaxClock * 2,
 		&(new->pll.MClkM), &(new->pll.MClkN));
 	}
 	/* 
@@ -2516,7 +2690,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * Enable memory mapped IO registers when acceleration is needed.
      */
 
-    if (!pTseng->NoAccel) {
+    if (pTseng->UseAccel) {
 	if (Is_ET6K) {
 	    if (pTseng->UseLinMem)
 		new->ExtET6K[0x40] |= 0x02;	/* MMU can't be used here (causes system hang...) */
@@ -2528,7 +2702,6 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
     vgaHWUnlock(hwp);		       /* TODO: is this needed (tsengEnterVT does this) */
     /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
     TsengRestore(pScrn, &hwp->ModeReg, new);
     return TRUE;
 }
@@ -2589,44 +2762,32 @@ TsengValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengValidMode\n");
+
+    /* Check for CRTC timing bits overflow. */
+    if (mode->HTotal > Tseng_HMAX) {
+	return MODE_BAD_HVALUE;
+    }
+    if (mode->VTotal > Tseng_VMAX) {
+	return MODE_BAD_VVALUE;
+    }
+
     /*
-     * Check for pixmux modes. We try not to change the mode clock here
-     * (although that would be the easiest way), because that confuses all the
-     * rest of the code. E.g. clock limit checking is done outside this
-     * driver, and it would be made to think the clock is only half of what it
-     * actually is, and thus allow clocks that should be banned.
+     * Check for pixmux modes.
      *
-     * For the time being, cards with PIXMUX capabilities but without
-     * programmable clockchips use this "bad" method until a better solution
-     * is found.
+     * 1bpp or 4bpp don't support pixmux.
      */
+    if (pTseng->Bytesperpixel < 1)
+	return MODE_OK;
+
     if ((pTseng->DacInfo.pixMuxPossible) &&
 	(mode->Clock > pTseng->DacInfo.nonMuxMaxClock)
-    /* && (!(mode->Flags & V_INTERLACE)) *//* PIXMUX+interlace seem to work now */
 	) {
 	mode->Flags |= V_PIXMUX;
 	mode->Flags |= V_DBLCLK;
 	if (verbose)
 	    xf86Msg(X_PROBED, "Mode \"%s\" will use pixel multiplexing.\n", mode->name);
-	if (!pScrn->progClock) {
-	    mode->Clock /= 2;
-	    if (verbose)
-		xf86Msg(X_PROBED, " (clock will be reported as 1/2 of clock in modeline)\n");
-	}
     }
-    /* Check for CRTC timing bits overflow. */
-    if (mode->HTotal > Tseng_HMAX) {
-	if (verbose)
-	    xf86Msg(X_ERROR, "Horizontal mode timing overflow (=%d, max=%d)\n",
-		mode->HTotal, Tseng_HMAX);
-	return MODE_BAD;
-    }
-    if (mode->VTotal > Tseng_VMAX) {
-	if (verbose)
-	    xf86Msg(X_ERROR, "Vertical mode timing overflow (=%d, max=%d)\n",
-		mode->VTotal, Tseng_VMAX);
-	return MODE_BAD;
-    }
+
     return MODE_OK;
 }
 
@@ -2700,7 +2861,6 @@ TsengSave(ScrnInfoPtr pScrn)
     outb(0x3C0, 0x36);
     tsengReg->ExtATC = inb(0x3C1);
     outb(0x3C0, tsengReg->ExtATC);
-#ifdef TODO
     if (DAC_is_GenDAC) {
 	/* Save GenDAC Command and PLL registers */
 	outb(iobase + 4, 0x31);
@@ -2715,8 +2875,10 @@ TsengSave(ScrnInfoPtr pScrn)
 	    tsengReg->pll.f2_M = inb(0x3c9);	/* f2 PLL M divider */
 	    tsengReg->pll.f2_N = inb(0x3c9);	/* f2 PLL N1/N2 divider */
 	    outb(0x3c7, 10);	       /* index to Mclk reg */
-	    tsengReg->MClkM = inb(0x3c9);	/* MClk PLL M divider */
-	    tsengReg->MClkN = inb(0x3c9);	/* MClk PLL N1/N2 divider */
+#if TODO
+	    tsengReg->MClkInfo.MClkM = inb(0x3c9);	/* MClk PLL M divider */
+	    tsengReg->MClkInfo.MClkN = inb(0x3c9);	/* MClk PLL N1/N2 divider */
+#endif
 	    outb(0x3c7, 0x0e);	       /* index to PLL control */
 	    tsengReg->pll.ctrl = inb(0x3c9);	/* PLL control */
 	}
@@ -2730,8 +2892,8 @@ TsengSave(ScrnInfoPtr pScrn)
 	 * field names are not really good.
 	 */
 
-	xf86dactopel();
-	tsengReg->pll.cmd_reg = xf86getdaccomm();	/* Enhanced command register */
+	tseng_dactopel();
+	tsengReg->pll.cmd_reg = tseng_getdaccomm();	/* Enhanced command register */
 	if (STG170x_programmable_clock) {
 	    tsengReg->pll.f2_M = STG1703getIndex(0x24);		/* f2 PLL M divider */
 	    tsengReg->pll.f2_N = inb(0x3c6);	/* f2 PLL N1/N2 divider */
@@ -2740,8 +2902,8 @@ TsengSave(ScrnInfoPtr pScrn)
 	tsengReg->pll.timingctrl = STG1703getIndex(0x05);	/* pll timing control */
     }
     if (pTseng->DacInfo.DacType == CH8398_DAC) {
-	xf86dactopel();
-	tsengReg->pll.cmd_reg = xf86getdaccomm();
+	tseng_dactopel();
+	tsengReg->pll.cmd_reg = tseng_getdaccomm();
     }
     if (CH8398_programmable_clock) {
 	inb(0x3c8);
@@ -2770,7 +2932,6 @@ TsengSave(ScrnInfoPtr pScrn)
 	outb(iobase + 4, 0x31);
 	outb(iobase + 5, temp);
     }
-#endif
     if (ET6000_programmable_clock) {
 	/* Save ET6000 CLKDAC PLL registers */
 	temp = inb(pTseng->IOAddress + 0x67);	/* remember old CLKDAC index register pointer */
@@ -2827,7 +2988,6 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
     if (!Is_stdET4K)
 	outb(0x3CB, 0x00);	       /* segment select bits 4,5 */
 
-#if TODO
     if (DAC_is_GenDAC) {
 	/* Restore GenDAC Command and PLL registers */
 	outb(iobase + 4, 0x31);
@@ -2841,18 +3001,20 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	    outb(0x3c9, tsengReg->pll.f2_M);	/* f2 PLL M divider */
 	    outb(0x3c9, tsengReg->pll.f2_N);	/* f2 PLL N1/N2 divider */
 
+#ifdef TODO
 	    if (pTseng->MClkInfo.Set) {
 		outb(0x3c7, 10);       /* index to Mclk reg */
 		outb(0x3c9, tsengReg->MClkM);	/* MClk PLL M divider */
 		outb(0x3c9, tsengReg->MClkN);	/* MClk PLL N1/N2 divider */
 	    }
+#endif
 	    outb(0x3c8, 0x0e);	       /* index to PLL control */
 	    outb(0x3c9, tsengReg->pll.ctrl);	/* PLL control */
 	    outb(0x3c8, tsengReg->pll.w_idx);	/* PLL write index */
 	    outb(0x3c7, tsengReg->pll.r_idx);	/* PLL read index */
 	}
 	outb(iobase + 4, 0x31);
-	outb(iobase + 5, i & ~0x40);
+	outb(iobase + 5, tmp & ~0x40);
     }
     if (DAC_is_STG170x) {
 	/* Restore STG 170x GenDAC Command and PLL registers 
@@ -2870,11 +3032,11 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	usleep(500);		       /* 500 usec PLL settling time required */
 
 	STG1703magic(0);
-	xf86dactopel();
+	tseng_dactopel();
 	tseng_setdaccomm(tsengReg->pll.cmd_reg);	/* write enh command reg */
     }
     if (pTseng->DacInfo.DacType == CH8398_DAC) {
-	xf86dactopel();
+	tseng_dactopel();
 	tseng_setdaccomm(tsengReg->pll.cmd_reg);
     }
     if (CH8398_programmable_clock) {
@@ -2886,8 +3048,8 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	inb(0x3c6);
 	outb(0x3c6, tsengReg->pll.timingctrl);
 	outb(iobase + 4, 0x31);
-	i = inb(iobase + 5);
-	outb(iobase + 5, i | (1 << 6));		/* Set RS2 through CS3 */
+	tmp = inb(iobase + 5);
+	outb(iobase + 5, tmp | (1 << 6));		/* Set RS2 through CS3 */
 	/* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
 	outb(0x3c7, tsengReg->pll.r_idx);
 	outb(0x3c8, 10);
@@ -2902,10 +3064,9 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	inb(0x3c8);
 	outb(0x3c8, tsengReg->pll.ctrl);
 	outb(iobase + 4, 0x31);
-	outb(iobase + 5, (i & 0x3F));
+	outb(iobase + 5, (tmp & 0x3F));
 	/* Make sure CS3 isn't set */
     }
-#endif
     if (ET6000_programmable_clock) {
 	/* Restore ET6000 CLKDAC PLL registers */
 	tmp = inb(pTseng->IOAddress + 0x67);	/* remember old CLKDAC index register pointer */
@@ -2959,19 +3120,10 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	outw(iobase + 4, (tsengReg->ExtCRTC[0x34] << 8) | 0x34);
 #endif
     outw(iobase + 4, (tsengReg->ExtCRTC[0x35] << 8) | 0x35);
-#ifdef TODO
     if (Is_W32_any) {
-	outw(iobase + 4, (tsengReg->ExtCRTC[0x36] << 8) | 0x36);
-	/* 
-	 * We must also save ExtCRTC[0x36] in save_ExtCRTC[0x36], because we are at
-	 * this moment in the middle of a sync reset, and we will have
-	 * saved the OLD value, which we want to change now.
-	 */
-	save_ExtCRTC[0x36] = tsengReg->ExtCRTC[0x36];
 	outw(iobase + 4, (tsengReg->ExtCRTC[0x37] << 8) | 0x37);
 	outw(0x217a, (tsengReg->ExtIMACtrl << 8) | 0xF7);
     }
-#endif
     if (!Is_ET6K) {
 	outw(iobase + 4, (tsengReg->ExtCRTC[0x32] << 8) | 0x32);
     }
@@ -2991,12 +3143,17 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	    (ClockSelect) (tsengReg->std.ClockIndex);
 	}
 #endif
-#ifdef TODO
-    if (tseng_use_ACL & (tsengReg->std.Attribute[16] & 1))	/* are we going to graphics mode? */
-	tseng_init_acl();	       /* initialize acceleration hardware */
-#endif
 
     vgaHWProtect(pScrn, FALSE);
+
+    /* 
+     * We must change CRTC 0x36 only OUTSIDE the vgaHWProtect(pScrn,
+     * TRUE)/vgaHWProtect(pScrn, FALSE) pair, because the sequencer reset
+     * also resets the linear mode bits in CRTC 0x36.
+     */
+    if (Is_W32_any) {
+	outw(iobase + 4, (tsengReg->ExtCRTC[0x36] << 8) | 0x36);
+    }
 }
 
 /* 
@@ -3175,133 +3332,10 @@ ET4000Probe()
 	vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
 
-#ifdef DPMSExtension
-    /* Support for DPMS, the ET4000W32Pc and newer uses a different and
-     * simpler method than the older cards.
-     */
-    if (pTseng->ChipType >= TYPE_ET4000W32Pc) {
-	vga256InfoRec.DPMSSet = TsengCrtcDPMSSet;
-    } else {
-	vga256InfoRec.DPMSSet = TsengHVSyncDPMSSet;
-    }
-#endif
+  ...
+
 
     return (TRUE);
-}
-
-/*
- * ET4000FbInit --
- *      initialise the cfb SpeedUp functions
- */
-
-static void
-ET4000FbInit()
-{
-    int useSpeedUp;
-    int FBmem = (vga256InfoRec.virtualY * pScrn->displayWidth * pTseng->Bytesperpixel) / 1024;
-
-    if (pScrn->bitsPerPixel < 8)
-	return;
-
-    if (xf86GetVerbosity() && pTseng->UseLinMem)
-	ErrorF("%s %s: %s: Using linear framebuffer at 0x%08X.\n",
-	    XCONFIG_PROBED, vga256InfoRec.name,
-	    vga256InfoRec.chipset, TSENG.ChipLinearBase);
-
-    if (pScrn->videoRam > 1024)
-	useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYCHIPSET;
-    else
-	useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
-    if (useSpeedUp && xf86GetVerbosity()) {
-	ErrorF("%s %s: ET4000: SpeedUps selected (Flags=0x%x)\n",
-	    OFLG_ISSET(XCONFIG_SPEEDUP, &vga256InfoRec.xconfigFlag) ?
-	    XCONFIG_GIVEN : XCONFIG_PROBED,
-	    vga256InfoRec.name, useSpeedUp);
-    }
-    if (!pTseng->UseLinMem) {
-	if (useSpeedUp & SPEEDUP_FILLRECT) {
-	    vga256LowlevFuncs.fillRectSolidCopy = speedupvga256FillRectSolidCopy;
-	}
-	if (useSpeedUp & SPEEDUP_BITBLT) {
-	    vga256LowlevFuncs.doBitbltCopy = speedupvga256DoBitbltCopy;
-	}
-	if (useSpeedUp & SPEEDUP_LINE) {
-	    vga256LowlevFuncs.lineSS = speedupvga256LineSS;
-	    vga256LowlevFuncs.segmentSS = speedupvga256SegmentSS;
-	    vga256TEOps1Rect.Polylines = speedupvga256LineSS;
-	    vga256TEOps1Rect.PolySegment = speedupvga256SegmentSS;
-	    vga256TEOps.Polylines = speedupvga256LineSS;
-	    vga256TEOps.PolySegment = speedupvga256SegmentSS;
-	    vga256NonTEOps1Rect.Polylines = speedupvga256LineSS;
-	    vga256NonTEOps1Rect.PolySegment = speedupvga256SegmentSS;
-	    vga256NonTEOps.Polylines = speedupvga256LineSS;
-	    vga256NonTEOps.PolySegment = speedupvga256SegmentSS;
-	}
-	if (useSpeedUp & SPEEDUP_FILLBOX) {
-	    vga256LowlevFuncs.fillBoxSolid = speedupvga256FillBoxSolid;
-	}
-    }
-    /* Hardware cursor setup */
-    if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options) &&
-#ifdef W32_HW_CURSOR_FIXED
-	(pTseng->ChipType >= TYPE_ET4000W32P)
-#else
-	(Is_ET6K)
-#endif
-	) {
-	if ((pScrn->videoRam - FBmem) < 1) {
-	    ErrorF("%s %s: Hardware cursor disabled. It requires 1kb of free video memory\n",
-		XCONFIG_PROBED, vga256InfoRec.name);
-	    OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
-	} else {
-	    pScrn->videoRam -= 1;      /* 1kb reserved for hardware cursor */
-	    tsengCursorAddress = pScrn->videoRam * 1024;
-
-	    tsengCursorWidth = 64;
-	    tsengCursorHeight = 64;
-	    vgaHWCursor.Initialized = TRUE;
-	    vgaHWCursor.Init = TsengCursorInit;
-	    vgaHWCursor.Restore = TsengRestoreCursor;
-	    vgaHWCursor.Warp = TsengWarpCursor;
-	    vgaHWCursor.QueryBestSize = TsengQueryBestSize;
-	    if (xf86GetVerbosity())
-		ErrorF("%s %s: %s: Using hardware cursor\n",
-		    XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
-	}
-    }
-    if (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options)) {
-	ErrorF("%s %s: Using PCI retrys.\n", XCONFIG_PROBED, vga256InfoRec.name);
-	tseng_use_PCI_Retry = 1;
-    }
-    if ((pScrn->bitsPerPixel >= 8) && (tseng_use_ACL)) {
-	if ((pScrn->videoRam - FBmem) < 1) {
-	    ErrorF("%s %s: Acceleration disabled. It requires AT LEAST 1kb of free video memory\n",
-		XCONFIG_PROBED, vga256InfoRec.name);
-	    tseng_use_ACL = FALSE;
-	} else {
-	    pScrn->videoRam -= 1;
-	    tsengScratchVidBase = pScrn->videoRam * 1024;
-	    /* initialize the XAA interface software */
-	    /* TsengAccelInit();
-	     * This relies on variables that are setup later, so it's called there */
-	}
-
-	/*
-	 * XAA ImageWrite support needs two entire line buffers + 3 and rounded
-	 * up to the next DWORD boundary.
-	 */
-	if (tseng_use_ACL) {
-	    int req_ram = (pScrn->displayWidth * pTseng->Bytesperpixel + 6) * 2;
-
-	    req_ram = (req_ram + 1023) / 1024;	/* in kb */
-	    if ((pScrn->videoRam - FBmem) > req_ram) {
-		pScrn->videoRam -= req_ram;
-		tsengImageWriteBase = pScrn->videoRam * 1024;
-		ErrorF("%s %s: Using %dkb of unused display memory for extra acceleration functions.\n",
-		    XCONFIG_PROBED, vga256InfoRec.name, req_ram);
-	    }
-	}
-    }
 }
 
 #endif

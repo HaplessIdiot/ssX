@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $TOG: WaitFor.c /main/57 1997/11/25 14:35:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.15 1997/12/14 02:55:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.16 1997/12/14 04:21:53 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -82,6 +82,19 @@ extern int errno;
 #include "osdep.h"
 #include "dixstruct.h"
 #include "opaque.h"
+
+/* modifications by raphael */
+#define ffs mffs
+int mffs(fd_mask mask) {
+    register i;
+    if ( ! mask ) return 0;
+    i = 1;
+    while (! (mask & 1)) {
+		i++;
+		mask = mask >> 1;
+    }
+    return i;
+}
 
 #ifdef DPMSExtension
 #include "dpms.h"
@@ -412,7 +425,8 @@ WaitForSomething(pClientsReady)
 	        int client_priority, client_index;
 
 		curclient = ffs (clientsReadable.fds_bits[i]) - 1;
-		client_index = ConnectionTranslation[curclient + (i << 5)];
+		client_index = /* raphael: modified */
+			ConnectionTranslation[curclient + (i * (sizeof(fd_mask) * 8))];
 #else
 	int highest_priority;
 	fd_set savedClientsReadable;

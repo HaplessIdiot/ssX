@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.1.2.1 1998/07/18 17:53:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.2 1998/07/25 16:55:57 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -69,16 +69,8 @@ DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     ramdacReg->DacRegs[BT_COMMAND_REG_0] = 0xA0 | (pScrn->rgbBits ? 2 : 0);
     ramdacReg->DacRegs[BT_COMMAND_REG_2] = 0x20;
+    ramdacReg->DacRegs[BT_STATUS_REG] = 0x14;
     BTramdacSetBpp(pScrn, ramdacReg);
-#if 0
-    ramdacReg->DacRegs[BT_COMMAND_REG_3] = 0x14; /* 64x64 cursor */
-   BT485_WRITE(0x01, BT485_ADDR_PAL_WRITE);
-    ramdacReg->DacRegs[BT_COMMAND_REG_1] = 0x40; /* 8bpp */
-   BT485_WRITE(0x14, BT485_CMD_3); /* 64x64 cursor */
-   BT485_WRITE(0x40, BT485_CMD_1); /* 8bpp */
-   BT485_WRITE(0x20, BT485_CMD_2);
-   BT485_WRITE(0xFF, BT485_PIXEL_MASK);
-#endif
 
     pReg->tgaRegs[0x00] = mode->CrtcHDisplay;
     pReg->tgaRegs[0x01] = (mode->CrtcHSyncStart - mode->CrtcHDisplay) / 4;
@@ -139,10 +131,10 @@ DEC21030Restore(ScrnInfoPtr pScrn, TGARegPtr tgaReg)
 
     TGA_WRITE_REG(0x00, TGA_VALID_REG); /* Disable Video */
 
+    ICS1562ClockSelect(pScrn, tgaReg->tgaRegs[0x0A]);
+
     TGA_WRITE_REG(tgaReg->tgaRegs[0x10], TGA_HORIZ_REG);
     TGA_WRITE_REG(tgaReg->tgaRegs[0x11], TGA_VERT_REG);
-
-    ICS1562ClockSelect(pScrn, tgaReg->tgaRegs[0x0A]);
 
     TGA_WRITE_REG(tgaReg->tgaRegs[0x12], TGA_VALID_REG); /* Re-enable Video */
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/modinit.c,v 3.2.2.5 1998/07/04 13:32:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.1 1998/07/25 08:48:42 dawes Exp $ */
 
 /*
  *
@@ -112,6 +112,7 @@ extern void DPMSExtensionInit(INITARGS);
 
 #ifdef XV
 extern void XvExtensionInit(INITARGS);
+extern void XvRegister(INITARGS);
 #include "Xv.h"
 #endif
 
@@ -123,6 +124,7 @@ ExtensionModule extensionModules[] = {
     {
 	ShapeExtensionInit,
 	SHAPENAME,
+	NULL,
 	NULL
     },
 #endif
@@ -130,6 +132,7 @@ ExtensionModule extensionModules[] = {
     {
 	MultibufferExtensionInit,
 	MULTIBUFFER_PROTOCOL_NAME,
+	NULL,
 	NULL
     },
 #endif
@@ -137,6 +140,7 @@ ExtensionModule extensionModules[] = {
     {
 	MITMiscExtensionInit,
 	MITMISCNAME,
+	NULL,
 	NULL
     },
 #endif
@@ -144,20 +148,23 @@ ExtensionModule extensionModules[] = {
     {
 	XTestExtensionInit,
 	XTestExtensionName,
-	&noTestExtensions
+	&noTestExtensions,
+	NULL
     },
 #endif
 #ifdef BIGREQS
      {
-	 BigReqExtensionInit,
-	 XBigReqExtensionName,
-	 NULL
+	BigReqExtensionInit,
+	XBigReqExtensionName,
+	NULL,
+	NULL
      },
 #endif
 #ifdef XSYNC
     {
 	SyncExtensionInit,
 	SYNC_NAME,
+	NULL,
 	NULL
     },
 #endif
@@ -165,6 +172,7 @@ ExtensionModule extensionModules[] = {
     {
 	ScreenSaverExtensionInit,
 	ScreenSaverName,
+	NULL,
 	NULL
     },
 #endif
@@ -172,6 +180,7 @@ ExtensionModule extensionModules[] = {
     {
 	XCMiscExtensionInit,
 	XCMiscExtensionName,
+	NULL,
 	NULL
     },
 #endif
@@ -179,6 +188,7 @@ ExtensionModule extensionModules[] = {
     {
 	XFree86VidModeExtensionInit,
 	XF86VIDMODENAME,
+	NULL,
 	NULL
     },
 #endif
@@ -186,6 +196,7 @@ ExtensionModule extensionModules[] = {
     {
 	XFree86MiscExtensionInit,
 	XF86MISCNAME,
+	NULL,
 	NULL
     },
 #endif
@@ -193,6 +204,7 @@ ExtensionModule extensionModules[] = {
     {
 	XFree86DGAExtensionInit,
 	XF86DGANAME,
+	NULL,
 	NULL
     },
 #endif
@@ -200,6 +212,7 @@ ExtensionModule extensionModules[] = {
     {
 	DPMSExtensionInit,
 	DPMSExtensionName,
+	NULL,
 	NULL
     },
 #endif
@@ -207,10 +220,12 @@ ExtensionModule extensionModules[] = {
     {
 	XvExtensionInit,
 	XvName,
-	NULL
+	NULL,
+	XvRegister
     },
 #endif
     {				/* DON'T delete this entry ! */
+	NULL,
 	NULL,
 	NULL,
 	NULL

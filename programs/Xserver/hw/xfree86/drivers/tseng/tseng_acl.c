@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.7.2.1 1998/07/24 11:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.17 1998/07/25 16:56:00 dawes Exp $ */
 
 
 
@@ -139,7 +139,6 @@ long W32BackgroundPing;
 long W32BackgroundPong;
 long W32PatternPing;
 long W32PatternPong;
-long W32Mix;
 
 LongP MemW32ForegroundPing;
 LongP MemW32ForegroundPong;
@@ -147,12 +146,8 @@ LongP MemW32BackgroundPing;
 LongP MemW32BackgroundPong;
 LongP MemW32PatternPing;
 LongP MemW32PatternPong;
-LongP MemW32Mix;		       /* ping-ponging the MIX map is done by XAA */
 
 LongP tsengCPU2ACLBase;
-
-long tsengScratchVidBase;	       /* will be initialized in the Probe */
-int tsengImageWriteBase = 0;	       /* ImageWritebuffer adress -- initialized in the Probe() */
 
 int tseng_powerPerPixel, tseng_neg_x_pixel_offset;
 int tseng_line_width;
@@ -230,7 +225,7 @@ tseng_init_acl(ScreenPtr pScreen)
 
     if (pTseng->UseLinMem) {
 	MMioBase = (long)pTseng->FbBase + 0x3FFF00;
-	scratchMemBase = (long)pTseng->FbBase + tsengScratchVidBase;
+	scratchMemBase = (long)pTseng->FbBase + pTseng->AccelColorBufferOffset;
 	/* 
 	 * we won't be using tsengCPU2ACLBase in linear memory mode anyway, since
 	 * using the MMU apertures restricts the amount of useable video memory
@@ -241,15 +236,16 @@ tseng_init_acl(ScreenPtr pScreen)
     } else {
 	MMioBase = (long)pTseng->FbBase + 0x1FF00L;
 	/*
-	 * for the scratchpad (i.e. colors and scanline-colorexpand buffers)
-	 * we'll use the MMU aperture 0, which we'll make point at the last 1
-	 * KB of video memory.
+	 * MMU 0 is used for the scratchpad (i.e. FG and BG colors).
 	 *
-	 * MMU 1 is used for the Imagewrite buffer.
+	 * MMU 1 is used for the Imagewrite buffers. This code assumes those
+	 * buffers are back-to-back, with AccelImageWriteBufferOffsets[0]
+	 * being the first, and don't exceed 8kb (aperture size) in total
+	 * length.
 	 */
 	scratchMemBase = (long)pTseng->FbBase + 0x18000L;
-	*((LongP) (MMioBase + 0x00)) = tsengScratchVidBase;
-	*((LongP) (MMioBase + 0x04)) = tsengImageWriteBase;
+	*((LongP) (MMioBase + 0x00)) = pTseng->AccelColorBufferOffset;
+	*((LongP) (MMioBase + 0x04)) = pTseng->AccelImageWriteBufferOffsets[0];
 	/*
 	 * tsengCPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
 	 */
@@ -330,16 +326,14 @@ tseng_init_acl(ScreenPtr pScreen)
     ACL_SECONDARY_DELTA_MAJOR = (WordP) (MMioBase + 0xB6);
 
     /* addresses in video memory (i.e. "0" = first byte in video memory) */
-    W32ForegroundPing = tsengScratchVidBase + 0;
-    W32ForegroundPong = tsengScratchVidBase + 8;
+    W32ForegroundPing = pTseng->AccelColorBufferOffset + 0;
+    W32ForegroundPong = pTseng->AccelColorBufferOffset + 8;
 
-    W32BackgroundPing = tsengScratchVidBase + 16;
-    W32BackgroundPong = tsengScratchVidBase + 24;
+    W32BackgroundPing = pTseng->AccelColorBufferOffset + 16;
+    W32BackgroundPong = pTseng->AccelColorBufferOffset + 24;
 
-    W32PatternPing = tsengScratchVidBase + 32;
-    W32PatternPong = tsengScratchVidBase + 40;
-
-    W32Mix = tsengScratchVidBase + 48;
+    W32PatternPing = pTseng->AccelColorBufferOffset + 32;
+    W32PatternPong = pTseng->AccelColorBufferOffset + 40;
 
     /* addresses in the memory map */
     MemW32ForegroundPing = (LongP) (scratchMemBase + 0);
@@ -350,8 +344,6 @@ tseng_init_acl(ScreenPtr pScreen)
 
     MemW32PatternPing = (LongP) (scratchMemBase + 32);
     MemW32PatternPong = (LongP) (scratchMemBase + 40);
-
-    MemW32Mix = (LongP) (scratchMemBase + 48);
 
     /*
      * prepare the accelerator for some real work

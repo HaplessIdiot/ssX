@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.17 1998/06/28 03:52:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.18 1998/07/25 09:24:27 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -652,8 +652,8 @@ AddScreen(pfnInit, argc, argv)
     if (!pScreen)
 	return -1;
 
-    pScreen->devPrivates = (DevUnion *)xalloc(screenPrivateCount *
-					      sizeof(DevUnion));
+    pScreen->devPrivates = (DevUnion *)xcalloc(sizeof(DevUnion),
+						screenPrivateCount);
     if (!pScreen->devPrivates && screenPrivateCount)
     {
 	xfree(pScreen);

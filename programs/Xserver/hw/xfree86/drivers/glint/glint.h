@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.3 1998/07/25 16:55:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.4 1998/07/31 10:41:19 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -55,18 +55,24 @@ typedef struct {
     int			ForeGroundColor;
     int			BackGroundColor;
     int			bppalign;
+    int			startxdom;
+    int			startxsub;
+    int			starty;
+    int			count;
+    int			dy;
+    int			dxdom;
+    int			rectxy;
+    int			rectwh;
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned char *     IOBase;
-#ifdef __alpha__
-    unsigned char *     IOBaseDense;
-#endif
     unsigned char *	FbBase;
     long		FbMapSize;
     Bool		DoubleBuffer;
     Bool		NoAccel;
     Bool		Dac6Bit;
     Bool		HWCursor;
+    Bool		ClippingOn;
     Bool		UsePCIRetry;
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
@@ -77,7 +83,6 @@ typedef struct {
     GLINTRegRec		ModeReg;
     CARD32		AccelFlags;
     CARD32		ROP;
-    CARD32		BlitMode;
     CARD32		FrameBufferReadMode;
     CARD32		BltScanDirection;
     RamDacRecPtr	RamDacRec;
@@ -100,6 +105,8 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2V)
 #define PCI_VENDOR_3DLABS_CHIP_500TX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_500TX)
+#define PCI_VENDOR_3DLABS_CHIP_MX	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_MX)
 
 /* Prototypes */
 
@@ -121,6 +128,7 @@ Bool PermediaAccelInit(ScreenPtr pScreen);
 void Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool Permedia2vHWCursorInit(ScreenPtr pScreen);
 
 void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
@@ -128,23 +136,25 @@ Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool TXAccelInit(ScreenPtr pScreen);
 
 void glintOutIBMRGBIndReg(ScrnInfoPtr pScrn,
-		     unsigned char reg, unsigned char mask, unsigned char data);
-unsigned char glintInIBMRGBIndReg(ScrnInfoPtr pScrn, unsigned char reg);
-void glintIBMWriteAddress(ScrnInfoPtr pScrn, unsigned char index);
-void glintIBMReadAddress(ScrnInfoPtr pScrn, unsigned char index);
+		     CARD32 reg, unsigned char mask, unsigned char data);
+unsigned char glintInIBMRGBIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+void glintIBMWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void glintIBMReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintIBMWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char glintIBMReadData(ScrnInfoPtr pScrn);
+Bool glintIBM526HWCursorInit(ScreenPtr pScreen);
+Bool glintIBM640HWCursorInit(ScreenPtr pScreen);
 
 void Permedia2OutIndReg(ScrnInfoPtr pScrn,
-		     unsigned char reg, unsigned char mask, unsigned char data);
-unsigned char Permedia2InIndReg(ScrnInfoPtr pScrn, unsigned char reg);
-void Permedia2WriteAddress(ScrnInfoPtr pScrn, unsigned char index);
-void Permedia2ReadAddress(ScrnInfoPtr pScrn, unsigned char index);
+		     CARD32, unsigned char mask, unsigned char data);
+unsigned char Permedia2InIndReg(ScrnInfoPtr pScrn, CARD32);
+void Permedia2WriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void Permedia2ReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void Permedia2WriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char Permedia2ReadData(ScrnInfoPtr pScrn);
 
 void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
-		   unsigned char reg, unsigned char mask, unsigned char data);
-unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, unsigned char reg);
+		   CARD32, unsigned char mask, unsigned char data);
+unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, CARD32);
 #endif /* _GLINT_H_ */
 

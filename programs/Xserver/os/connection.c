@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.27 1997/07/05 15:16:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.28 1997/11/16 06:42:20 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -164,6 +164,10 @@ extern __const__ int _nfiles;
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
+
+/* added by raphael */
+#define ffs mffs
+extern int mffs(long);
 
 extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */

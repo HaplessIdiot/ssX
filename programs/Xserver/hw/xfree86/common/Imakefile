@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.74 1998/07/25 16:54:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.75 1998/08/02 05:16:56 dawes Exp $
 
 
 
@@ -151,6 +151,7 @@ SRCS =	\
 	$(PNPMOUSESRCS) \
 	xf86Option.c \
 	xf86fbman.c \
+	xf86xv.c \
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
 	$(XINPUT_DEV_SRCS) \
@@ -174,6 +175,7 @@ OBJS = \
 	$(PNPMOUSEOBJS) \
 	xf86Option.o \
 	xf86fbman.o \
+	xf86xv.o \
 	$(XF86_XINPUT_OBJ) \
 	$(XINPUT_DEV_OBJS) \
 	$(XKBDDXOBJ) \
@@ -286,6 +288,7 @@ InstallLinkKitNonExecFile(xf86Option.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(xf86Ldext.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86fbman.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86xv.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_LOADER.c,$(LINKKITDIR))
 
 #ifndef OS2Architecture

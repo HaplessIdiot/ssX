@@ -53,7 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.15 1997/01/18 06:58:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.16 1997/11/16 06:42:20 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -84,6 +84,10 @@ extern int errno;
 #ifdef LBX
 #include "lbxserve.h"
 #endif
+
+/* added by raphael */
+#define ffs mffs
+extern int mffs(long);
 
 CallbackListPtr       ReplyCallback;
 CallbackListPtr       FlushCallback;
@@ -794,7 +798,8 @@ static int padlength[4] = {0, 3, 2, 1};
 void
 FlushAllOutput()
 {
-    register int index, base, mask;
+    register int index, base;
+    register fd_mask mask; /* raphael */
     OsCommPtr oc;
     register ClientPtr client;
     Bool newoutput = NewOutputPending;
