@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.5 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.6 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -50,7 +50,6 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86PciInfo.h"
 #include "Pci.h"
 
 /*
@@ -61,32 +60,36 @@ static CARD32 linuxPciCfgRead(PCITAG tag, int off);
 static void linuxPciCfgWrite(PCITAG, int off, CARD32 val);
 static void linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
-static pciBusInfo_t linuxPci0 = {
-/* configMech  */	  PCI_CFG_MECH_OTHER,
-/* numDevices  */	  32,
-/* secondary   */	  FALSE,
-/* primary_bus */	  0,
-#ifdef PowerMAX_OS
-/* ppc_io_base */	  0,
-/* ppc_io_size */	  0,		  
-#endif
-/* funcs       */	  {
-	                    linuxPciCfgRead,
-			    linuxPciCfgWrite,
-			    linuxPciCfgSetBits,
-			    pciAddrNOOP,
-			    pciAddrNOOP
-		          },
-/* pciBusPriv  */	  NULL
+static pciBusFuncs_t linuxFuncs0 = {
+/* pciReadLong      */	linuxPciCfgRead,
+/* pciWriteLong     */	linuxPciCfgWrite,
+/* pciSetBitsLong   */	linuxPciCfgSetBits,
+/* pciAddrHostToBus */	pciAddrNOOP,
+/* pciAddrBusToHost */	pciAddrNOOP
 };
 
-void  
+static pciBusInfo_t linuxPci0 = {
+/* configMech  */	PCI_CFG_MECH_OTHER,
+/* numDevices  */	32,
+/* secondary   */	FALSE,
+/* primary_bus */	0,
+#ifdef PowerMAX_OS
+/* ppc_io_base */	0,
+/* ppc_io_size */	0,
+#endif
+/* funcs       */	&linuxFuncs0,
+/* pciBusPriv  */	NULL,
+/* bridge      */	NULL
+};
+
+void
 linuxPciInit()
 {
 	struct stat st;
-	if (-1 == stat("/proc/bus/pci",&st)) {
+	if ((xf86Info.pciFlags == PCIForceNone) ||
+	    (-1 == stat("/proc/bus/pci", &st))) {
 		/* when using this as default for all linux architectures,
-                   we'll need a fallback for 2.0 kernels here */
+		   we'll need a fallback for 2.0 kernels here */
 		return;
 	}
 	pciNumBuses    = 1;
@@ -101,7 +104,7 @@ linuxPciOpenFile(PCITAG tag)
 	static int	lbus,ldev,lfunc,fd = -1;
 	int		bus, dev, func;
 	char		file[32];
-	
+
 	bus  = PCI_BUS_FROM_TAG(tag);
 	dev  = PCI_DEV_FROM_TAG(tag);
 	func = PCI_FUNC_FROM_TAG(tag);
@@ -148,7 +151,6 @@ linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 	int	fd;
 	CARD32	val = 0xffffffff;
 
-	return; 
 	if (-1 != (fd = linuxPciOpenFile(tag))) {
 		lseek(fd,off,SEEK_SET);
 		read(fd,&val,4);
@@ -206,34 +208,19 @@ linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 #endif
 
 /* This probably shouldn't be Linux-specific */
-static PCITAG
-xf86GetPciControllerTag(PCITAG Tag)
+static pciConfigPtr
+xf86GetPciHostConfigFromTag(PCITAG Tag)
 {
     int bus = PCI_BUS_FROM_TAG(Tag);
     pciBusInfo_t *pBusInfo;
 
     while ((bus < pciNumBuses) && (pBusInfo = pciBusInfo[bus])) {
 	if (!pBusInfo->secondary)
-	    return pBusInfo->host_bridge;
+	    return pBusInfo->bridge;
 	bus = pBusInfo->primary_bus;
     }
 
-    return 0;	/* Bad data */
-}
-
-static pciConfigPtr
-xf86GetPciConfigFromTag(PCITAG Tag)
-{
-    pciConfigPtr *ppPCI, pPCI;
-
-    if (!(ppPCI = xf86scanpci(0)))
-	return NULL;
-
-    for (;  ;  ppPCI++)
-	if (!(pPCI = *ppPCI) || (pPCI->tag == Tag))
-	    return pPCI;
-
-    return NULL;
+    return NULL;	/* Bad data */
 }
 
 /*
@@ -274,11 +261,8 @@ linuxGetIOSize(PCITAG Tag)
     pciConfigPtr pPCI;
     int          i;
 
-    /* Get the host bridge's tag */
-    Tag = xf86GetPciControllerTag(Tag);
-
     /* Find host bridge */
-    if ((pPCI = xf86GetPciConfigFromTag(Tag))) {
+    if ((pPCI = xf86GetPciHostConfigFromTag(Tag))) {
 	/* Look up vendor/device */
 	for (i = 0;  i < NUM_SIZES;  i++) {
 	    if (pPCI->pci_vendor > pciControllerSizes[i].vendor)
@@ -305,11 +289,8 @@ linuxGetSizes(PCITAG Tag, unsigned long *io_size, unsigned long *mem_size)
     *io_size  = (1U << 16);			/* Default to 64K */
     *mem_size = (unsigned long)(1ULL << 32);	/* Default to 4G */
 
-    /* Get the host bridge's tag */
-    Tag = xf86GetPciControllerTag(Tag);
-
     /* Find host bridge */
-    if ((pPCI = xf86GetPciConfigFromTag(Tag))) {
+    if ((pPCI = xf86GetPciHostConfigFromTag(Tag))) {
 	/* Look up vendor/device */
 	for (i = 0;  i < NUM_SIZES;  i++) {
 	    if (pPCI->pci_vendor > pciControllerSizes[i].vendor)
@@ -330,9 +311,12 @@ linuxGetSizes(PCITAG Tag, unsigned long *io_size, unsigned long *mem_size)
 int
 xf86GetPciDomain(PCITAG Tag)
 {
+    pciConfigPtr pPCI;
     int fd, result;
 
-    if ((fd = linuxPciOpenFile(xf86GetPciControllerTag(Tag))) < 0)
+    pPCI = xf86GetPciHostConfigFromTag(Tag);
+
+    if ((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0) < 0)
 	return 0;
 
     if ((result = ioctl(fd, PCIIOC_CONTROLLER, 0)) < 0)
@@ -346,13 +330,16 @@ linuxMapPci(int ScreenNum, int Flags, PCITAG Tag,
 	    ADDRESS Base, unsigned long Size, int mmap_ioctl)
 {
     do {
+	pciConfigPtr pPCI;
 	unsigned char *result;
 	ADDRESS realBase, Offset;
 	int fd, mmapflags, prot;
 
 	xf86InitVidMem();
 
-	if (((fd = linuxPciOpenFile(xf86GetPciControllerTag(Tag))) < 0) ||
+	pPCI = xf86GetPciHostConfigFromTag(Tag);
+
+	if (((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0) < 0) ||
 	    (ioctl(fd, mmap_ioctl, 0) < 0))
 	    break;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.27 2002/08/06 13:13:15 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.28 2002/08/16 23:32:44 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -54,18 +54,18 @@
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of the above listed copyright holder(s)
- * not be used in advertising or publicity pertaining to distribution of 
+ * not be used in advertising or publicity pertaining to distribution of
  * the software without specific, written prior permission.  The above listed
- * copyright holder(s) make(s) no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
+ * copyright holder(s) make(s) no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD 
- * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY 
- * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE 
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY 
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER 
- * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING 
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE
+ * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+ * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
@@ -80,6 +80,7 @@
 #include "Xarch.h"
 #include "Xfuncproto.h"
 #include "xf86Pci.h"
+#include "xf86PciInfo.h"
 
 /*
  * Global Definitions
@@ -93,6 +94,8 @@
 #endif
 
 #define PCI_NOT_FOUND   0xffffffff
+
+#define DEVID(vendor, device) ((PCI_CHIP_##device << 16) | PCI_VENDOR_##vendor)
 
 /*
  * "b" contains an optional domain number.
@@ -128,7 +131,7 @@
 #define PCI_PRIMARY_BUS_INSERT(x, y)     \
     (((x) & ~PCI_PRIMARY_BUS_MASK    ) | (((y) & 0xffu) <<  0))
 #define PCI_SECONDARY_BUS_INSERT(x, y)   \
-    (((x) & ~PCI_SECONDARY_BUS_MASK  ) | (((y) & 0xffu) <<  8)) 
+    (((x) & ~PCI_SECONDARY_BUS_MASK  ) | (((y) & 0xffu) <<  8))
 #define PCI_SUBORDINATE_BUS_INSERT(x, y) \
     (((x) & ~PCI_SUBORDINATE_BUS_MASK) | (((y) & 0xffu) << 16))
 
@@ -285,6 +288,7 @@ extern void ARCH_PCI_INIT(void);
 #if defined(ARCH_PCI_OS_INIT)
 extern void ARCH_PCI_OS_INIT(void);
 #endif
+
 #if defined(ARCH_PCI_HOST_BRIDGE)
 extern void ARCH_PCI_HOST_BRIDGE(CARD32 devid);
 #endif
@@ -296,13 +300,13 @@ extern void ARCH_PCI_HOST_BRIDGE(CARD32 devid);
 typedef struct pci_bus_funcs {
 	CARD32  (*pciReadLong)(PCITAG, int);
 	void    (*pciWriteLong)(PCITAG, int, CARD32);
-        void    (*pciSetBitsLong)(PCITAG, int, CARD32, CARD32);
+	void    (*pciSetBitsLong)(PCITAG, int, CARD32, CARD32);
 	ADDRESS (*pciAddrHostToBus)(PCITAG, PciAddrType, ADDRESS);
 	ADDRESS (*pciAddrBusToHost)(PCITAG, PciAddrType, ADDRESS);
-} pciBusFuncs_t;
+} pciBusFuncs_t, *pciBusFuncs_p;
 
 /*
- * pciBusInfo_t - One structure per defined PCI bus 
+ * pciBusInfo_t - One structure per defined PCI bus
  */
 typedef struct pci_bus_info {
 	unsigned char  configMech;   /* PCI config type to use      */
@@ -313,9 +317,9 @@ typedef struct pci_bus_info {
 	unsigned long  ppc_io_base;  /* PowerPC I/O spc membase     */
 	unsigned long  ppc_io_size;  /* PowerPC I/O spc size        */
 #endif
-	pciBusFuncs_t  funcs;        /* PCI access functions        */
+	pciBusFuncs_p  funcs;        /* PCI access functions        */
 	void          *pciBusPriv;   /* Implementation private data */
-	PCITAG         host_bridge;  /* host bridge on this bus     */
+	pciConfigPtr   bridge;       /* bridge that opens this bus  */
 } pciBusInfo_t;
 
 /* configMech values */
@@ -333,16 +337,12 @@ void          pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask,
 				 CARD32 val);
 CARD32        pciByteSwap(CARD32);
 Bool          pciMfDev(int, int);
-CARD32        pciReadLongNULL(PCITAG tag, int offset);
-void          pciWriteLongNULL(PCITAG tag, int offset, CARD32 val);
-void          pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask,
-				 CARD32 val);
 ADDRESS       pciAddrNOOP(PCITAG tag, PciAddrType type, ADDRESS);
 
 extern PCITAG (*pciFindFirstFP)(void);
 extern PCITAG (*pciFindNextFP)(void);
 
-extern CARD32 pciDevid;    
+extern CARD32 pciDevid;
 extern CARD32 pciDevidMask;
 
 extern int    pciMaxBusNum;
@@ -353,7 +353,5 @@ extern int    pciFuncNum;
 extern PCITAG pciDeviceTag;
 
 extern pciBusInfo_t  *pciBusInfo[];
-
-extern pciBusFuncs_t pciNOOPFuncs;
 
 #endif /* _PCI_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.5.2.1 2001/11/28 22:35:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.6 2002/01/25 21:56:18 tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -269,7 +269,7 @@ sparcPciInit(void)
 	unsigned long long pci_addr;
 	sparcDomainRec     domain;
 	sparcDomainPtr     pDomain;
-	pciBusFuncs_t      *pFunctions;
+	pciBusFuncs_p      pFunctions;
 	char               *prop_val;
 	int                prop_len, bus;
 
@@ -478,12 +478,12 @@ sparcPciInit(void)
 	pciBusInfo[bus] = xnfcalloc(1, sizeof(pciBusInfo_t));
 	pciBusInfo[bus]->configMech = PCI_CFG_MECH_OTHER;
 	pciBusInfo[bus]->numDevices = 32;
-	pciBusInfo[bus]->funcs = *pFunctions;
+	pciBusInfo[bus]->funcs = pFunctions;
 	pciBusInfo[bus]->pciBusPriv = pDomain;
 	while (++bus < pciNumBuses) {
 	    pciBusInfo[bus] = xnfalloc(sizeof(pciBusInfo_t));
 	    *(pciBusInfo[bus]) = *(pciBusInfo[bus - 1]);
-	    pciBusInfo[bus]->funcs = sparcPCIFunctions;
+	    pciBusInfo[bus]->funcs = &sparcPCIFunctions;
 	}
 
 	/* Next domain, please... */
