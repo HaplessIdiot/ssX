@@ -285,8 +285,6 @@ lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
     
-    ErrorF("lgSetup\n");
-    
     if (!setupDone) {
 	setupDone = TRUE;
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,

@@ -423,15 +423,16 @@ ApmProbe(DriverPtr drv, int flags)
 	if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
 	else for (i = 0; i < numUsed; i++) {
-	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-
+	    ScrnInfoPtr pScrn = NULL;
+	    if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, usedChips[i],
+					     ApmIsaChipsets, NULL, NULL, NULL,
+					     NULL, NULL))) {
 	    /*
 	     * Fill in what we can of the ScrnInfoRec
 	     */
 	    ApmAssignFPtr(pScrn);
 	    foundScreen = TRUE;
-	    xf86ConfigIsaEntity(pScrn, 0, usedChips[i], ApmIsaChipsets,
-				      NULL, NULL, NULL, NULL, NULL);
+	    }
 	}
     }
 #if 0	/* This causes problems with -configure? */

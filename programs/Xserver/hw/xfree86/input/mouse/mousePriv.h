@@ -1,5 +1,4 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mousePriv.h,v 1.1 2000/04/17 16:30:10 eich Exp $ */
-
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -8,8 +7,7 @@
 #define _X_MOUSEPRIV_H
 
 #include "mouse.h"
-#include "xf86Xinput.h"
-
+#include "xf86Xinput.h"                                                                                              
 /* Private interface for the mouse driver. */
 
 typedef struct {
