@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 276. Preliminary big endian (PowerPC) support for the "nv" driver
+      (Ani Joshi, Mark Vojkovich).
  275. Enable ThreadedX for Cygwin/XFree86 using auto import features of
       newer binutils packages (Alan Hourihane).
  274. Exclude the Mac OS X menu bar from the X11 screen while running XDarwin
@@ -13808,4 +13810,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1943 2001/09/19 01:44:39 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1944 2001/09/19 15:46:58 alanh Exp $
