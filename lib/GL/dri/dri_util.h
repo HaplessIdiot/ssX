@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.3tsi Exp $ */
 /**
  * \file dri_util.h
  * DRI utility functions definitions.
@@ -53,9 +53,6 @@
 
 #define CAPI  /* XXX this should be globally defined somewhere */
 
-#if !defined(linux) || defined(__GLIBC__)
-#include <inttypes.h>
-#endif
 #include <sys/types.h>
 #include "glxclient.h"           /* for GLXDrawable */
 #include "xf86dri.h"             /* for XF86DRIClipRectPtr */

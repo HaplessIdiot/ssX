@@ -33,7 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.2tsi Exp $ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -598,14 +598,6 @@ typedef GLint ( * PFNGLXGETSWAPINTERVALMESAPROC) ( void );
 #define GLX_OML_swap_method 1
 #endif
 
-#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || \
-    (defined(linux) && !defined(__GLIBC__)) || \
-    defined(_STDINT_H) || defined(_SYS_INTTYPES_H_) || defined(_INTTYPES_H_)
-#if !defined(linux) || defined(__GLIBC__)
-/* Include ISO C99 integer types for OML_sync_control; need a better test */
-#include <inttypes.h>
-#endif
-
 #ifndef GLX_OML_sync_control
 #define GLX_OML_sync_control 1
 #ifdef GLX_GLXEXT_PROTOTYPES
@@ -635,8 +627,6 @@ typedef GLint ( * PFNGLXENDFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable dra
 typedef GLint ( * PFNGLXGETFRAMEUSAGEMESAPROC) (Display *dpy, GLXDrawable drawable, GLfloat *usage);
 typedef GLint ( * PFNGLXQUERYFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable, int64_t *sbc, int64_t *missedFrames, GLfloat *lastMissedUsage);
 #endif
-
-#endif /* C99 version test */
 
 #ifdef __cplusplus
 }
