@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.17 1994/10/20 06:00:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.18 1994/10/30 02:51:38 dawes Exp $
 
 #define OSName            FreeBSD 1.1.5
 #define OSVendor          /**/
@@ -86,6 +86,8 @@ XCOMM operating system:  OSName
 
 #define DefaultUserPath		/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR):/usr/gnu/bin:/usr/local/bin
 #define DefaultSystemPath	/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR)
+
+#define InstKmemFlags	-g kmem -m 2755
 
 /*
  * Compress manual pages

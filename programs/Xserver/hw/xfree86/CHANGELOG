@@ -1,4 +1,5 @@
 XFree86 3.1.0c (6 November 1994)
+ 71. Fix xload for FreeBSD 1.1.5 (Joerg Wunsch).
  70. Modify S3 linear fb probe to handle the non-standard CR5A[6:7] address
      mapping used by some Diamond boards (including the Diamond Stealth Pro).
      Also, the 10 most significant bits of a specified MemBase value are
