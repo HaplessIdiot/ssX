@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.177 2001/05/24 19:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.178 2001/05/25 02:44:35 tsi Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -603,13 +603,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	    xf86DeleteDriver(i);
 #endif
 
-#ifdef XFree86LOADER
-    if (LoaderCheckUnresolved(LD_RESOLV_IFDONE)) {
-	/* For now, just a warning */
-	xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
-    }
-#endif
-
     /*
      * At this stage we know how many screens there are.
      */
@@ -859,6 +852,14 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
 #endif
   }
+
+#ifdef XFree86LOADER
+    if ((serverGeneration == 1) && LoaderCheckUnresolved(LD_RESOLV_IFDONE)) {
+	/* For now, just a warning */
+	xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
+    }
+#endif
+
   xf86PostScreenInit();
 
   xf86InitOrigins();

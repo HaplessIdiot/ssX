@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.41 2001/05/15 10:19:35 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.42 2001/05/16 07:56:06 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -671,6 +671,10 @@ savePciBusState(BusAccPtr ptr)
 		pciReadWord(ptr->busdep.pci.acc,PCI_PCI_BRIDGE_PMEM_REG);
     ptr->busdep.pci.save.control =
 		pciReadByte(ptr->busdep.pci.acc,PCI_PCI_BRIDGE_CONTROL_REG);
+    /* Allow master aborts to complete normally on non-root buses */
+    if (ptr->busdep.pci.save.control & PCI_PCI_BRIDGE_MASTER_ABORT_EN)
+	pciWriteByte(ptr->busdep.pci.acc,PCI_PCI_BRIDGE_CONTROL_REG,
+	    ptr->busdep.pci.save.control & ~PCI_PCI_BRIDGE_MASTER_ABORT_EN);
 }
 
 /* move to OS layer */

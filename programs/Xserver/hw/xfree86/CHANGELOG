@@ -1,5 +1,9 @@
 XFree86 4.1.99.1 (xx June 2001)
- 100. Update XvMC header files to match the spec (Matthew Sottek).
+  98. Ensure PCI master aborts are allowed to complete normally on non-root
+      buses (Marc La France).
+  97. Allow ChipScreenInit()'s to load modules during the first server
+      generation (Marc La France).
+  96. Update XvMC header files to match the spec (Matthew Sottek).
   95. Darwin build configuration changes:
        - Turn on building Xv and GLX extensions.
        - Make GLX and GLU build successfully.
@@ -13486,4 +13490,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1844 2001/06/11 07:23:08 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1845 2001/06/11 23:22:25 mvojkovi Exp $
