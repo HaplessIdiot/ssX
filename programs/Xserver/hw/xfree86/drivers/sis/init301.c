@@ -3980,7 +3980,9 @@ SiS_GetCRT2Ptr(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIn
 	      if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) tempbx += 1;
               if(SiS_Pr->SiS_VBInfo & SetPALTV) {
 		 tempbx += 2;
-		 if(SiS_Pr->SiS_CHSOverScan) tempbx = 99;
+		 if(SiS_Pr->SiS_ModeType > ModeVGA) {
+		    if(SiS_Pr->SiS_CHSOverScan) tempbx = 99;
+		 }
 		 if(SiS_Pr->SiS_CHPALM) {
 		    tempbx = 90;
 		    if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) tempbx += 1;
@@ -4780,6 +4782,9 @@ SiS_GetVBInfo(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeNo,
       		if( (temp & 0x80) || (SiS_Pr->SiS_CHOverScan == 1) )
 		      tempbx |= SetCHTVOverScan;
     	   }
+	   if(SiS_Pr->SiS_CHSOverScan) {
+	      tempbx |= SetCHTVOverScan;
+	   }
 	}
   }
 
@@ -6050,6 +6055,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USH
 
       if(SiS_Pr->SiS_IF_DEF_CH70xx == 1) {
          if(!(SiS_CRT2IsLCD(SiS_Pr,BaseAddr,HwDeviceExtension))) {
+	    SiS_WaitVBRetrace(SiS_Pr,HwDeviceExtension);
 	    SiS_SetCH700x(SiS_Pr,0x0B0E);
          }
       }
@@ -8500,6 +8506,7 @@ SiS_SetGroup4(SiS_Private *SiS_Pr, USHORT  BaseAddr,UCHAR *ROMAddr,USHORT ModeNo
          if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
 	    if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x24,0x0e);
+	       /* LCD-too-dark-error-source, see FinalizeLCD() */
 	    }
 	 }
 
@@ -8757,7 +8764,9 @@ SiS_GetVCLK2Ptr(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdI
 		if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) tempbx += 1;
         	if(SiS_Pr->SiS_VBInfo & SetPALTV) {
 			tempbx += 2;
-			if(SiS_Pr->SiS_CHSOverScan) tempbx = 8;
+			if(SiS_Pr->SiS_ModeType > ModeVGA) {
+			   if(SiS_Pr->SiS_CHSOverScan) tempbx = 8;
+			}
 			if(SiS_Pr->SiS_CHPALM) {
 				tempbx = 4;
 				if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) tempbx += 1;
@@ -9030,7 +9039,9 @@ SiS_GetLVDSCRT1Ptr(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT Mode
         if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) tempbx++;
         if(SiS_Pr->SiS_VBInfo & SetPALTV) {
       	   tempbx += 2;
-	   if(SiS_Pr->SiS_CHSOverScan) tempbx = 99;
+	   if(SiS_Pr->SiS_ModeType > ModeVGA) {
+	      if(SiS_Pr->SiS_CHSOverScan) tempbx = 99;
+	   }
 	   if(SiS_Pr->SiS_CHPALM) {
 	      tempbx = 18;  /* PALM uses NTSC data */
 	      if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) tempbx++;
@@ -9189,7 +9200,9 @@ SiS_SetCHTVReg(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIn
   if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) TVType += 1;
   if(SiS_Pr->SiS_VBInfo & SetPALTV) {
   	TVType += 2;
-	if(SiS_Pr->SiS_CHSOverScan) TVType = 8;
+	if(SiS_Pr->SiS_ModeType > ModeVGA) {
+	   if(SiS_Pr->SiS_CHSOverScan) TVType = 8;
+	}
 	if(SiS_Pr->SiS_CHPALM) {
 		TVType = 4;
 		if(SiS_Pr->SiS_VBInfo & SetCHTVOverScan) TVType += 1;
@@ -9287,37 +9300,37 @@ SiS_SetCHTVReg(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIn
          if(resindex == 0x04) {   			/* 640x480 overscan: Mode 16 */
       	   SiS_SetCH70xxANDOR(SiS_Pr,0x0020,0xEF);   	/* loop filter off */
            SiS_SetCH70xxANDOR(SiS_Pr,0x0121,0xFE);      /* ACIV on, no need to set FSCI */
-         } else {
-           if(resindex == 0x05) {    			/* 800x600 overscan: Mode 23 */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0118,0xF0);	/* 0x18-0x1f: FSCI 469,762,048 */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0C19,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x001A,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x001B,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x001C,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x001D,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x001E,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x001F,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0120,0xEF);     /* Loop filter on for mode 23 */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0021,0xFE);     /* ACIV off, need to set FSCI */
-           }
+         } else  if(resindex == 0x05) {    		/* 800x600 overscan: Mode 23 */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0118,0xF0);	/* 0x18-0x1f: FSCI 469,762,048 */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0C19,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x001A,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x001B,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x001C,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x001D,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x001E,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x001F,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0120,0xEF);       /* Loop filter on for mode 23 */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0021,0xFE);       /* ACIV off, need to set FSCI */
          }
        } else {
          if(resindex == 0x04) {     			 /* ----- 640x480 underscan; Mode 17 */
            SiS_SetCH70xxANDOR(SiS_Pr,0x0020,0xEF); 	 /* loop filter off */
            SiS_SetCH70xxANDOR(SiS_Pr,0x0121,0xFE);
-         } else {
-           if(resindex == 0x05) {   			 /* ----- 800x600 underscan: Mode 24 */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0118,0xF0);     /* (FSCI was 0x1f1c71c7 - this is for mode 22) */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0919,0xF0);	 /* FSCI for mode 24 is 428,554,851 */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x081A,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0b1B,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x031C,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0a1D,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x061E,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x031F,0xF0);
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0020,0xEF);     /* loop filter off for mode 24 */
-             SiS_SetCH70xxANDOR(SiS_Pr,0x0021,0xFE);	 /* ACIV off, need to set FSCI */
-           }
+         } else if(resindex == 0x05) {   		 /* ----- 800x600 underscan: Mode 24 */
+#if 0
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0118,0xF0);       /* (FSCI was 0x1f1c71c7 - this is for mode 22) */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0919,0xF0);	 /* FSCI for mode 24 is 428,554,851 */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x081A,0xF0);       /* 198b3a63 */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0b1B,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x041C,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x011D,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x061E,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x051F,0xF0);
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0020,0xEF);       /* loop filter off for mode 24 */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0021,0xFE);	 /* ACIV off, need to set FSCI */
+#endif     /* All alternatives wrong (datasheet wrong?), don't use FSCI */
+	   SiS_SetCH70xxANDOR(SiS_Pr,0x0020,0xEF); 	 /* loop filter off */
+           SiS_SetCH70xxANDOR(SiS_Pr,0x0121,0xFE);
          }
        }
      } else {				/* ---- PAL ---- */
@@ -11053,12 +11066,10 @@ SiS_I2C_Stop(SiS_Private *SiS_Pr)
 void
 SiS_SetCH70xxANDOR(SiS_Private *SiS_Pr, USHORT tempax,USHORT tempbh)
 {
-  USHORT tempal,tempah,tempbl;
+  USHORT tempbl;
 
-  tempal = tempax & 0x00FF;
-  tempah =(tempax >> 8) & 0x00FF;
-  tempbl = SiS_GetCH70xx(SiS_Pr,tempal);
-  tempbl = (((tempbl & tempbh) | tempah) << 8 | tempal);
+  tempbl = SiS_GetCH70xx(SiS_Pr,(tempax & 0x00FF));
+  tempbl = (((tempbl & tempbh) << 8) | tempax);
   SiS_SetCH70xx(SiS_Pr,tempbl);
 }
 
@@ -11632,6 +11643,7 @@ SetYFilter(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Bas
                  }
               }
          }
+	 /* PALN : Is this data correct? */
          if(temp == EnablePALN) {
               if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
                  for(i=0x35, j=0; i<=0x38; i++, j++) {
@@ -12353,5 +12365,4 @@ SiS_OEM300Setting(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
   }
 }
 #endif
-
 

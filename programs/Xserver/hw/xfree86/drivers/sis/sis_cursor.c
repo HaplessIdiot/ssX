@@ -937,6 +937,17 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 	      return FALSE;
 	}
 #endif
+	if(pSiS->Chipset == PCI_CHIP_SIS330) {
+	   if((pSiS->VBFlags & CRT2_TV) &&
+	      (pSiS->VBFlags & (TV_NTSC|TV_PALM))) {
+#ifdef SISMERGED
+              if(pSiS->MergedFB) {
+	         if(mode2->HDisplay == 1024) return FALSE;
+              } else
+#endif
+	         if(mode->HDisplay == 1024) return FALSE;
+	   }
+	}
         break;
       default:
         if(mode->Flags & V_INTERLACE)
@@ -998,6 +1009,8 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	    return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
 	    return FALSE;
+	if((pSiS->CurrentLayout.bitsPerPixel == 8) && (pSiS->VBFlags & CRT2_ENABLE))
+	    return FALSE;
 #ifdef SISMERGED
         if(pSiS->MergedFB) {
 	   if(mode2->Flags & V_INTERLACE)
@@ -1006,6 +1019,18 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	      return FALSE;
 	}
 #endif
+        if(pSiS->Chipset == PCI_CHIP_SIS330) {
+	   if((pSiS->VBFlags & VB_SISBRIDGE) &&
+	      (pSiS->VBFlags & CRT2_TV) &&
+	      (pSiS->VBFlags & (TV_NTSC|TV_PALM))) {
+#ifdef SISMERGED
+              if(pSiS->MergedFB) {
+	         if(mode2->HDisplay == 1024) return FALSE;
+              } else
+#endif
+	         if(mode->HDisplay == 1024) return FALSE;
+	   }
+	}
         break;
       default:        
         return FALSE;

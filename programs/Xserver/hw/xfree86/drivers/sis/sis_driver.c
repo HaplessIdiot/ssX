@@ -670,6 +670,9 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
             if(!pSiS->CRT1off) {
 	       setSISIDXREG(SISSR, 0x1f, 0x3f, pmreg);
 	    }
+	    /* TODO: Check if Chrontel TV is active and in slave mode,
+	     * don't go into power-saving mode this in this case!
+	     */
        }
     }
 
@@ -1439,8 +1442,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/06/28-1) by "
-	"Thomas Winischhofer <thomas@winischhofer.net>\n");
+        "SiS driver (%d/%02d/%02d-%d) by "
+	"Thomas Winischhofer <thomas@winischhofer.net>\n",
+	SISDRIVERVERSIONYEAR + 2000, SISDRIVERVERSIONMONTH,
+	SISDRIVERVERSIONDAY, SISDRIVERREVISION);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
 	"for documentation and updates\n");
@@ -1653,10 +1658,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Determine chipset and VGA engine type for new mode switching code */
     pSiS->ChipFlags = 0;
+    pSiS->SiS_SD_Flags = 0;
     switch(pSiS->Chipset) {
 	case PCI_CHIP_SIS300:
 		pSiS->sishw_ext.jChipType = SIS_300;
 		pSiS->VGAEngine = SIS_300_VGA;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS300SERIES;
 		break;
 	case PCI_CHIP_SIS630: /* 630 + 730 */
 		pSiS->sishw_ext.jChipType = SIS_630;
@@ -1664,20 +1671,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			pSiS->sishw_ext.jChipType = SIS_730;
 		}
 		pSiS->VGAEngine = SIS_300_VGA;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS300SERIES;
 		break;
 	case PCI_CHIP_SIS540:
 		pSiS->sishw_ext.jChipType = SIS_540;
 		pSiS->VGAEngine = SIS_300_VGA;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS300SERIES;
 		break;
 	case PCI_CHIP_SIS315H:
 		pSiS->sishw_ext.jChipType = SIS_315H;
 		pSiS->VGAEngine = SIS_315_VGA;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
 		break;
 	case PCI_CHIP_SIS315:
 		/* Override for simplicity */
 	        pSiS->Chipset = PCI_CHIP_SIS315H;
 		pSiS->sishw_ext.jChipType = SIS_315;
 		pSiS->VGAEngine = SIS_315_VGA;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
 		break;
 	case PCI_CHIP_SIS315PRO:
 		/* Override for simplicity */
@@ -1689,6 +1700,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->sishw_ext.jChipType = SIS_550;
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_Integrated;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
 		break;
 	case PCI_CHIP_SIS650: /* 650 + 740 */
 		pSiS->sishw_ext.jChipType = SIS_650;
@@ -1697,11 +1709,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		}
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_Integrated;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
 		break;
 	case PCI_CHIP_SIS330:
 		pSiS->sishw_ext.jChipType = SIS_330;
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_XabreCore;
+		pSiS->SiS_SD_Flags |= SiS_SD_IS330SERIES;
 		break;
 	case PCI_CHIP_SIS660: /* 660 + 760 */
 		pSiS->sishw_ext.jChipType = SIS_660;
@@ -1710,6 +1724,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		}
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= (SiSCF_XabreCore | SiSCF_Integrated);
+		pSiS->SiS_SD_Flags |= SiS_SD_IS330SERIES;
 		break;
 	case PCI_CHIP_SIS530:
 		pSiS->sishw_ext.jChipType = SIS_530;
@@ -1969,9 +1984,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        case PCI_CHIP_SIS6326:
           pSiS->oldChipset = OC_SIS6326; break;
        case PCI_CHIP_SIS530:
-          if((pSiS->ChipRev & 0x0f) < 0x0a)
-	  	pSiS->oldChipset = OC_SIS530A;
-	  else  pSiS->oldChipset = OC_SIS530B;
+          if(pciReadLong(0x00000000, 0x00) == 0x06201039) {
+	     pSiS->oldChipset = OC_SIS620;
+	  } else {
+             if((pSiS->ChipRev & 0x0f) < 0x0a)
+	  	   pSiS->oldChipset = OC_SIS530A;
+	     else  pSiS->oldChipset = OC_SIS530B;
+	  }
 	  break;
        default:
           pSiS->oldChipset = OC_UNKNOWN;
@@ -1995,7 +2014,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
       case 8:
       case 16:
       case 24:
-        break;
+         break;
       case 15:
 	 if((pSiS->VGAEngine == SIS_300_VGA) ||
 	    (pSiS->VGAEngine == SIS_315_VGA))
@@ -2289,6 +2308,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiSEnt->CRT2gamma = pSiS->CRT2gamma;
 	     pSiSEnt->XvOnCRT2 = pSiS->XvOnCRT2;
 	     pSiSEnt->AllowHotkey = pSiS->AllowHotkey;
+	     pSiSEnt->enablesisctrl = pSiS->enablesisctrl;
 #ifdef SIS_CP
 	     SIS_CP_DRIVER_COPYOPTIONSENT
 #endif
@@ -2346,6 +2366,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiS->CRT1gamma = pSiSEnt->CRT1gamma;
 	     pSiS->CRT2gamma = pSiSEnt->CRT2gamma;
 	     pSiS->XvOnCRT2 = pSiSEnt->XvOnCRT2;
+	     pSiS->enablesisctrl = pSiSEnt->enablesisctrl;
 #ifdef SIS_CP
 	     SIS_CP_DRIVER_COPYOPTIONS
 #endif
@@ -2611,6 +2632,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
          case PCI_CHIP_SIS630:
          case PCI_CHIP_SIS550:
 	   pSiS->hasTwoOverlays = TRUE;
+	   pSiS->SiS_SD_Flags |= SiS_SD_SUPPORT2OVL;
 	   break;
 	 case PCI_CHIP_SIS315PRO:
 	   /* No idea about 315 and 315H */
@@ -2631,6 +2653,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
 	     /* This is a wild guess */
 	     pSiS->hasTwoOverlays = TRUE;
+	     pSiS->SiS_SD_Flags |= SiS_SD_SUPPORT2OVL;
 	     if(pSiS->sishw_ext.jChipType == SIS_660) {
 		inSISIDXREG(SISCR, 0x5f, CR5F);
 	        CR5F &= 0xf0;
@@ -2663,6 +2686,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   	      "SiS650 revision ID %x (%s)\n", CR5F, id650str[CR5F >> 4]);
 	           if(CR5F & 0x80) {
 	              pSiS->hasTwoOverlays = TRUE;  /* M650 or 651 */
+		      pSiS->SiS_SD_Flags |= SiS_SD_SUPPORT2OVL;
 	           }
 		   switch(CR5F) {
 		      case 0xa0:
@@ -2678,6 +2702,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		   }
 		} else {
 		   pSiS->hasTwoOverlays = TRUE;  /* ? */
+		   pSiS->SiS_SD_Flags |= SiS_SD_SUPPORT2OVL;
 		   switch(CR5F) {
 		      case 0x90:
 		         inSISIDXREG(SISCR, 0x5c, tempreg1);
@@ -2816,7 +2841,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     SISCRT2PreInit(pScrn);
 
     /* Backup detected CRT2 devices */
-    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD | CRT2_TV | CRT2_VGA);
+    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD | CRT2_TV | CRT2_VGA | TV_AVIDEO | TV_SVIDEO | TV_SCART);
+
+    if((pSiS->VBFlags & VB_SISBRIDGE) ||
+       ((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_701x))) {
+       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTPALMN;
+    }
+    if((pSiS->VBFlags & VB_SISBRIDGE) ||
+       ((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_700x))) {
+       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTTVPOS;
+    }
+    if((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->ChrontelType == CHRONTEL_700x)) {
+       pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTSOVER;
+    }
 
     /* Eventually overrule detected CRT2 type
      * If no type forced, use the detected devices in the order VGA2->TV->LCD
@@ -2986,6 +3023,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   	"PALM and PALN only supported on Chrontel 701x and SiS30x/B/LV\n");
  	   pSiS->NonDefaultPAL = -1;
 	   pSiS->VBFlags &= ~(TV_PALN | TV_PALM);
+	   pSiS->SiS_SD_Flags &= ~SiS_SD_SUPPORTPALMN;
 	}
     }
     if(pSiS->NonDefaultPAL != -1) {
@@ -2994,6 +3032,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   	"PALM and PALN not supported on SiS300 and SiS540\n");
 	   pSiS->NonDefaultPAL = -1;
 	   pSiS->VBFlags &= ~(TV_PALN | TV_PALM);
+	   pSiS->SiS_SD_Flags &= ~SiS_SD_SUPPORTPALMN;
 	}
     }
     if(pSiS->OptTVStand != -1) {
@@ -3009,11 +3048,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	   	"Option TVStandard ignored for SCART and 480i HDTV\n");
 	   }
+
 	} else if(pSiS->Chipset == PCI_CHIP_SIS6326) {
 	   pSiS->SiS6326Flags &= ~SIS6326_TVPAL;
 	   if(pSiS->OptTVStand) pSiS->SiS6326Flags |= SIS6326_TVPAL;
 	}
     }
+
+    /* SCART only supported for PAL */
+    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+       if((pSiS->VBFlags & VB_SISBRIDGE) && (pSiS->VBFlags & TV_SCART)) {
+	  pSiS->VBFlags &= ~(TV_NTSC | TV_PALN | TV_PALM);
+	  pSiS->VBFlags |= TV_PAL;
+	  pSiS->OptTVStand = 1;
+	  pSiS->NonDefaultPAL = -1;
+       }
+    }
+
+
 
 #ifdef SIS_CP
     SIS_CP_DRIVER_RECONFIGOPT
@@ -4004,7 +4056,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        if(!pScrn->modes) {
 
 	  xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	      "Failed to parse MetaModes or no modes found. MergeFB mode disabled.\n");
+	      "Failed to parse MetaModes or no modes found. MergedFB mode disabled.\n");
 	  if(pSiS->CRT2pScrn) {
 	     if(pSiS->CRT2pScrn->modes) {
 	        while(pSiS->CRT2pScrn->modes)
@@ -4161,6 +4213,21 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
     pSiS->pInt = NULL;
+
+#ifdef SISDUALHEAD
+    if(pSiS->DualHeadMode) {
+    	pSiS->SiS_SD_Flags |= SiS_SD_ISDUALHEAD;
+	if(pSiS->SecondHead)      pSiS->SiS_SD_Flags |= SiS_SD_ISDHSECONDHEAD;
+	if(!noPanoramiXExtension) pSiS->SiS_SD_Flags |= SiS_SD_ISDHXINERAMA;
+    }
+#endif
+#ifdef SISMERGED
+    if(pSiS->MergedFB)      pSiS->SiS_SD_Flags |= SiS_SD_ISMERGEDFB;
+#endif
+
+    if(pSiS->enablesisctrl) pSiS->SiS_SD_Flags |= SiS_SD_ENABLED;
+
+    if(pSiS->CurrentLayout.bitsPerPixel == 8) pSiS->SiS_SD_Flags |= SiS_SD_ISDEPTH8;
 
     return TRUE;
 }
@@ -4642,6 +4709,9 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr vgaReg;
     SISPtr pSiS = SISPTR(pScrn);
     SISRegPtr sisReg;
+#ifdef SISDUALHEAD
+    SISEntPtr pSiSEnt = NULL;
+#endif
 
     andSISIDXREG(SISCR,0x11,0x7f);   	/* Unlock CRTC registers */
 
@@ -4709,6 +4779,8 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	        pScrn->vtSema = TRUE;
 
+		pSiSEnt = pSiS->entityPrivate;
+
 		if(!(pSiS->SecondHead)) {
 			/* Head 1 (master) is always CRT2 */
 			SiSPreSetMode(pScrn, mode);
@@ -4718,6 +4790,9 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				return FALSE;
 			}
 			SiSPostSetMode(pScrn, &pSiS->ModeReg);
+			SISAdjustFrame(pSiSEnt->pScrn_2->scrnIndex,
+			               pSiSEnt->pScrn_2->frameX0,
+			               pSiSEnt->pScrn_2->frameY0, 0);
 		} else {
 			/* Head 2 (slave) is always CRT1 */
 			SiSPreSetMode(pScrn, mode);
@@ -4727,6 +4802,9 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				return FALSE;
 			}
 			SiSPostSetMode(pScrn, &pSiS->ModeReg);
+			SISAdjustFrame(pSiSEnt->pScrn_1->scrnIndex,
+			               pSiSEnt->pScrn_1->frameX0,
+			               pSiSEnt->pScrn_1->frameY0, 0);
 		}
 	} else {
 #endif
@@ -5081,7 +5159,7 @@ SISRestore(ScrnInfoPtr pScrn)
 	if(doitlater) {
             outSISIDXREG(SISCR, 0x17, pSiS->oldCR17);
 	}
-	
+
 	if(pSiS->Primary) {
 	   if((pSiS->VBFlags & VB_VIDEOBRIDGE) && (SiSBridgeIsInSlaveMode(pScrn))) {
 	      /* IMPORTANT: The 30xLV does not handle well being disabled if in
@@ -5778,7 +5856,7 @@ SISCycleCRT2Type(int scrnIndex, DisplayModePtr mode)
        pSiS->VGAEngine != SIS_315_VGA) return FALSE;
 
     /* Only if there is a video bridge */
-    if(pSiS->VBFlags & VB_VIDEOBRIDGE) return FALSE;
+    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return FALSE;
 
     /* Only if there were more than 1 CRT2 devices detected */
     if(pSiS->detectedCRT2Devices & CRT2_VGA) i++;
@@ -5816,9 +5894,188 @@ SISCycleCRT2Type(int scrnIndex, DisplayModePtr mode)
     pSiS->VBFlags &= ~(DISPTYPE_DISP2);
     pSiS->VBFlags |= i;
 
-    return SISModeInit(xf86Screens[scrnIndex], mode);
+    xf86DrvMsg(0, X_INFO, "Calling SiSModeInit()\n");
+
+    /* return SISModeInit(xf86Screens[scrnIndex], mode); */
+    /* Remember to restore the palette after this */
+    if(!(pScrn->SwitchMode(scrnIndex, pScrn->currentMode, 0))) return FALSE;
+    SISAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    return TRUE;
 }
 #endif
+
+Bool
+SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    BOOLEAN hcm;
+    DisplayModePtr mode = pScrn->currentMode;
+
+    /* Only on 300 and 315/330 series */
+    if(pSiS->VGAEngine != SIS_300_VGA &&
+       pSiS->VGAEngine != SIS_315_VGA) return FALSE;
+
+    /* Only if there is a video bridge */
+    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return FALSE;
+
+#define SiS_NewVBMask (CRT2_ENABLE | TV_PAL | TV_NTSC | TV_PALM | TV_PALN | TV_AVIDEO | TV_SVIDEO)
+
+    newvbflags &= SiS_NewVBMask;
+    newvbflags |= pSiS->VBFlags & ~SiS_NewVBMask;
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB)  {
+    	hcm = pSiS->HaveCustomModes2;
+	if(mode->Private) {
+	   mode = ((SiSMergedDisplayModePtr)mode->Private)->CRT2;
+	}
+	if(!(newvbflags & CRT2_ENABLE)) {
+	   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	   	"CRT2 can't be switched off in MergedFB mode\n");
+	   return FALSE;
+	}
+    } else
+#endif
+        hcm = pSiS->HaveCustomModes;
+
+    if((!(newvbflags & CRT2_ENABLE)) && (!newvbflags & DISPTYPE_CRT1)) {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+          "CRT2 can't be switched off if CRT1 is off, too\n");
+       return FALSE;
+    }
+
+    /* Check if the current mode is suitable for desired output device */
+    if(!SiS_CheckCalcModeIndex(pScrn, mode, newvbflags, hcm)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Current mode not suitable for desired CRT2 output device\n");
+    	return FALSE;
+    }
+
+    /* Sync the accelerators */
+    if(!pSiS->NoAccel) {
+         if(pSiS->AccelInfoPtr) {
+            (*pSiS->AccelInfoPtr->Sync)(pScrn);
+	 }
+    }
+
+    pSiS->VBFlags = pSiS->VBFlags_backup = newvbflags;
+
+    if(!(pScrn->SwitchMode(pScrn->scrnIndex, pScrn->currentMode, 0))) return FALSE;
+    /* if(!SISModeInit(xf86Screens[pScrn->scrnIndex], pScrn->currentMode)) return FALSE; */
+    SISAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    return TRUE;
+}
+
+Bool
+SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    BOOLEAN hcm;
+    DisplayModePtr mode = pScrn->modes;
+    int i;
+    unsigned long vbflags = pSiS->VBFlags;
+
+    /* Only on 300 and 315/330 series */
+    if(pSiS->VGAEngine != SIS_300_VGA &&
+       pSiS->VGAEngine != SIS_315_VGA) return FALSE;
+
+    /* Mode is OK if there is no video bridge */
+    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return TRUE;
+
+    if(cond) {
+       vbflags &= ~(CRT2_ENABLE | TV_TYPE | TV_PALM | TV_PALN);
+       if(cond & SiS_CF2_LCD) {
+       	  vbflags |= CRT2_LCD;
+       } else if(cond & SiS_CF2_TV) {
+          vbflags |= CRT2_TV;
+	  if(cond & SiS_CF2_TVPAL) {
+	     vbflags |= TV_PAL;
+	     if(cond & SiS_CF2_TVPALM)      vbflags |= TV_PALM;
+	     else if(cond & SiS_CF2_TVPALN) vbflags |= TV_PALN;
+	  } else if(cond & SiS_CF2_TVNTSC)  vbflags |= TV_NTSC;
+       } else if(cond & SiS_CF2_VGA2) {
+          vbflags |= CRT2_VGA;
+       }
+    }
+
+    /* Mode is obviously OK if video bridge is disabled */
+    if(!(vbflags & CRT2_ENABLE)) return TRUE;
+
+    /* Find mode of given index */
+    if(index) {
+       for(i = 0; i < index; i++) {
+          if(!mode) return FALSE;
+          mode = mode->next;
+       }
+    }
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB)  {
+    	hcm = pSiS->HaveCustomModes2;
+	if(mode->Private) {
+	   mode = ((SiSMergedDisplayModePtr)mode->Private)->CRT2;
+	}
+    } else
+#endif
+        hcm = pSiS->HaveCustomModes;
+
+    /* Check if the desired mode is suitable for current output device */
+    if(!SiS_CheckCalcModeIndex(pScrn, mode, vbflags, hcm)) {
+        if(!cond) {
+           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Desired mode not suitable for current CRT2 output device\n");
+ 	}
+    	return FALSE;
+    }
+
+    return TRUE;
+}
+
+Bool
+SISSwitchCRT1Status(ScrnInfoPtr pScrn, int onoff)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+
+    /* Only on 300 and 315/330 series */
+    if(pSiS->VGAEngine != SIS_300_VGA &&
+       pSiS->VGAEngine != SIS_315_VGA) return FALSE;
+
+    /* Only if at least one CRT2 device is active */
+    if(!(pSiS->VBFlags & CRT2_ENABLE)) return FALSE;
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB)  {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	   	"CRT1 can't be switched off in MergedFB mode\n");
+       return FALSE;
+    }
+#endif
+
+    pSiS->VBFlags &= ~(DISPTYPE_CRT1 | SINGLE_MODE | MIRROR_MODE);
+    pSiS->CRT1off = 1;
+    if(onoff) {
+       pSiS->VBFlags |= DISPTYPE_CRT1;
+       pSiS->CRT1off = 0;
+       if(pSiS->VBFlags & CRT2_ENABLE) pSiS->VBFlags |= MIRROR_MODE;
+       else pSiS->VBFlags |= SINGLE_MODE;
+    } else {
+       pSiS->VBFlags |= SINGLE_MODE;
+    }
+
+    pSiS->VBFlags_backup = pSiS->VBFlags;
+
+    /* Sync the accelerators */
+    if(!pSiS->NoAccel) {
+         if(pSiS->AccelInfoPtr) {
+            (*pSiS->AccelInfoPtr->Sync)(pScrn);
+	 }
+    }
+
+    if(!(pScrn->SwitchMode(pScrn->scrnIndex, pScrn->currentMode, 0))) return FALSE;
+    /* if(!SISModeInit(xf86Screens[pScrn->scrnIndex], pScrn->currentMode)) return FALSE; */
+    SISAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    return TRUE;
+}
 
 static void
 SISSetStartAddressCRT1(SISPtr pSiS, unsigned long base)
@@ -6465,7 +6722,6 @@ SISFreeScreen(int scrnIndex, int flags)
 
 /* Checks if a mode is suitable for the selected chipset. */
 
-/* Optional */
 static int
 SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
@@ -6496,15 +6752,13 @@ SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 	           return(MODE_BAD);
 	     }
 	  } else {
-	     if(!pSiS->CheckForCRT2) {
-	        if(SiS_CalcModeIndex(pScrn, ((SiSMergedDisplayModePtr)mode->Private)->CRT1,
-		                           pSiS->HaveCustomModes) < 0x14)
-	           return(MODE_BAD);
-             } else {
-	        if(SiS_CheckCalcModeIndex(pScrn, ((SiSMergedDisplayModePtr)mode->Private)->CRT2,
-		                           pSiS->VBFlags, pSiS->HaveCustomModes2) < 0x14)
-	           return(MODE_BAD);
-	     }
+	     if(SiS_CalcModeIndex(pScrn, ((SiSMergedDisplayModePtr)mode->Private)->CRT1,
+		                  pSiS->HaveCustomModes) < 0x14)
+	        return(MODE_BAD);
+
+	     if(SiS_CheckCalcModeIndex(pScrn, ((SiSMergedDisplayModePtr)mode->Private)->CRT2,
+		                  pSiS->VBFlags, pSiS->HaveCustomModes2) < 0x14)
+	        return(MODE_BAD);
  	  }
        } else
 #endif
@@ -7029,7 +7283,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 		usScratchCR31 &= ~0x04;   /* Clear NotSimuMode */
 		pSiS->SiS_Pr->SiS_CHOverScan = pSiS->UseCHOverScan;
-		if(pSiS->OptTVSOver == 1) {
+		if((pSiS->OptTVSOver == 1) && (pSiS->ChrontelType == CHRONTEL_700x)) {
 			pSiS->SiS_Pr->SiS_CHSOverScan = TRUE;
 		} else {
 		        pSiS->SiS_Pr->SiS_CHSOverScan = FALSE;
@@ -7328,7 +7582,10 @@ void SiS_SetCHTVlumaflickerfilter(ScrnInfoPtr pScrn, int val)
        case CHRONTEL_700x:
            val /= 6;
            if((val >= 0) && (val <= 2)) {
-	      SiS_SetCH70xxANDOR(pSiS->SiS_Pr, ((val << 10) | 0x01),0xF3);
+	      unsigned short reg = 0;
+	      reg = SiS_GetCH70xx(pSiS->SiS_Pr, 0x01);
+	      reg = (reg & 0xf0) | ((reg & 0x0c) >> 2) | (val << 2);
+              SiS_SetCH70xx(pSiS->SiS_Pr, ((reg << 8) | 0x01));
            }
 	   break;
        case CHRONTEL_701x:
@@ -7360,7 +7617,7 @@ int SiS_GetCHTVlumaflickerfilter(ScrnInfoPtr pScrn)
 #endif
       switch(pSiS->ChrontelType) {
       case CHRONTEL_700x:
-           return(int)(((SiS_GetCH70xx(pSiS->SiS_Pr, 0x01) & 0x0c) >> 2) * 6);
+           return(int)((SiS_GetCH70xx(pSiS->SiS_Pr, 0x01) & 0x03) * 6);
       case CHRONTEL_701x:
 	   return(int)(((SiS_GetCH70xx(pSiS->SiS_Pr, 0x01) & 0x0c) >> 2) * 4);
       default:
@@ -7456,7 +7713,10 @@ void SiS_SetCHTVchromaflickerfilter(ScrnInfoPtr pScrn, int val)
        case CHRONTEL_700x:
            val /= 6;
            if((val >= 0) && (val <= 2)) {
-	      SiS_SetCH70xxANDOR(pSiS->SiS_Pr, ((val << 12) | 0x01),0xCF);
+	      unsigned short reg = 0;
+	      reg = SiS_GetCH70xx(pSiS->SiS_Pr, 0x01);
+	      reg = (reg & 0xc0) | ((reg & 0x0c) >> 2) | ((reg & 0x03) << 2) | (val << 4);
+              SiS_SetCH70xx(pSiS->SiS_Pr, ((reg << 8) | 0x01));
            }
 	   break;
        case CHRONTEL_701x:
@@ -7580,7 +7840,10 @@ void SiS_SetCHTVtextenhance(ScrnInfoPtr pScrn, int val)
        case CHRONTEL_700x:
            val /= 6;
            if((val >= 0) && (val <= 2)) {
-              SiS_SetCH70xxANDOR(pSiS->SiS_Pr, ((val << 8) | 0x01),0xFC);
+	      unsigned short reg = 0;
+	      reg = SiS_GetCH70xx(pSiS->SiS_Pr, 0x01);
+	      reg = (reg & 0xf0) | ((reg & 0x03) << 2) | val;
+              SiS_SetCH70xx(pSiS->SiS_Pr, ((reg << 8) | 0x01));
            }
 	   break;
        case CHRONTEL_701x:
@@ -7589,7 +7852,7 @@ void SiS_SetCHTVtextenhance(ScrnInfoPtr pScrn, int val)
 	      SiS_SetCH70xxANDOR(pSiS->SiS_Pr, ((val << 8) | 0x03),0xF8);
 	   }
            break;
-   }	   
+   }
 }
 
 int SiS_GetCHTVtextenhance(ScrnInfoPtr pScrn)
@@ -7612,11 +7875,11 @@ int SiS_GetCHTVtextenhance(ScrnInfoPtr pScrn)
 #endif
       switch(pSiS->ChrontelType) {
       case CHRONTEL_700x:
-	   return(int)((SiS_GetCH70xx(pSiS->SiS_Pr, 0x01) & 0x03) * 6);
+	   return(int)(((SiS_GetCH70xx(pSiS->SiS_Pr, 0x01) & 0x0c) >> 2) * 6);
       case CHRONTEL_701x:
 	   return(int)((SiS_GetCH70xx(pSiS->SiS_Pr, 0x03) & 0x07) * 2);
       default:
-           return -2;   
+           return -2;
       }
    }
 }
@@ -7649,8 +7912,9 @@ void SiS_SetCHTVcontrast(ScrnInfoPtr pScrn, int val)
        case CHRONTEL_701x:
 	      SiS_SetCH70xxANDOR(pSiS->SiS_Pr, ((val << 8) | 0x08),0xF8);
               break;
-       } 
-   } 	  
+       }
+       SiS_DDC2Delay(pSiS->SiS_Pr, 1000);
+   }
 }
 
 int SiS_GetCHTVcontrast(ScrnInfoPtr pScrn)
@@ -8014,7 +8278,7 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 	 
 	    if((val >= -32) && (val <= 32)) {
 
-	        unsigned char p2_1f,p2_2b,p2_2c,p2_2d,p2_43;
+	        unsigned char p2_1f,p2_2b,p2_2c,p2_2d,p2_43, p3d4_34;
 
 	        /* P2B = (P1F - 5) & 0x0f | 0x60  */
 		/* P2C = P1F + 1                  */
@@ -8024,11 +8288,22 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 #ifdef SISDUALHEAD
 	        if(pSiSEnt && pSiS->DualHeadMode) p2_1f = pSiSEnt->p2_1f;
 #endif
+	        inSISIDXREG(SISCR,0x34,p3d4_34);
+		p3d4_34 &= 0x7f;
+
 		p2_1f += (val * 2);
-		p2_2b = ((p2_1f - 5) & 0x0f) | 0x60;
-		p2_2c = p2_1f + 1;
-		p2_2d = ((p2_2c - 5) & 0x0f) | (pSiS->VBFlags & TV_PAL ? 0x80 : 0xf0);
-		p2_43 = p2_1f + 3;
+		if((pSiS->VBFlags & (TV_NTSC | TV_PALM)) &&
+		   ((p3d4_34 == 0x64) || (p3d4_34 == 0x4a) || (p3d4_34 == 0x38))) {
+		   p2_2b = ((p2_1f - 4) & 0x0f) | 0x70;
+		   p2_2c = p2_1f - 22;
+		   p2_2d = ((p2_2c - 4) & 0x0f) | 0xe0;
+		   p2_43 = p2_1f + 4;
+		} else {
+		   p2_2b = ((p2_1f - 5) & 0x0f) | 0x60;
+		   p2_2c = p2_1f + 1;
+		   p2_2d = ((p2_2c - 5) & 0x0f) | (pSiS->VBFlags & TV_PAL ? 0x80 : 0xf0);
+		   p2_43 = p2_1f + 3;
+		}
 		SISWaitRetraceCRT2(pScrn);
 	        outSISIDXREG(SISPART2,0x1f,p2_1f);
 		outSISIDXREG(SISPART2,0x2b,p2_2b);
@@ -8247,6 +8522,7 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
     	"CRT1off is %d\n", pSiS->CRT1off);
 #endif
+    pSiS->CRT1isoff = pSiS->CRT1off;
 
 #ifdef UNLOCK_ALWAYS
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
@@ -8285,8 +8561,10 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
 	   if(pSiS->CRT1off) {
 	      orSISIDXREG(SISCR,0x63,0x40);
+	      orSISIDXREG(SISSR,0x1f,0xc0);
 	   } else {
 	      andSISIDXREG(SISCR,0x63,0xBF);
+	      andSISIDXREG(SISSR,0x1f,0x3f);
 	   }
 
 	} else {
@@ -8308,12 +8586,20 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
                  outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
 	      }
 	   }
-	}
 
-	if(pSiS->CRT1off) {
-           orSISIDXREG(SISSR,0x1f,0xc0);
-	} else {
-	   andSISIDXREG(SISSR,0x1f,0x3f);
+	   /* For some reason, sending CRT1 into power-save while in slave mode
+	    * on Chrontel TV, makes the chrontel lose sync... TODO: Test this
+	    * on Chrontel 7019
+	    */
+	   if((pSiS->CRT1off) &&
+	      (!((pSiS->VGAEngine == SIS_300_VGA) &&
+	         (pSiS->VBFlags & VB_CHRONTEL)    &&
+		 (pSiS->VBFlags & CRT2_TV)        &&
+		 (!doit)))) {
+	      orSISIDXREG(SISSR,0x1f,0xc0);
+	   } else {
+	      andSISIDXREG(SISSR,0x1f,0x3f);
+	   }
 	}
 
     }
@@ -9086,35 +9372,35 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 
       if(VBFlags & VB_CHRONTEL) {		/* TV on Chrontel */
 
-        switch(mode->HDisplay)
-	{
-      	case 512:
+	 switch(mode->HDisplay)
+	 {
+      	   case 512:
 	        if(pSiS->VGAEngine == SIS_315_VGA) {
 		   if(mode->VDisplay == 384) {
 		      ModeIndex = ModeIndex_512x384[i];
 		   }
 		}
 		break;
-	case 640:
+	   case 640:
 		if(mode->VDisplay == 480) {
 		   ModeIndex = ModeIndex_640x480[i];
 		} else if(mode->VDisplay == 400) {
 		   ModeIndex = ModeIndex_640x400[i];
 		}
 		break;
-	case 800:
+	   case 800:
 		if(mode->VDisplay == 600) {
 		   ModeIndex = ModeIndex_800x600[i];
 		}
 		break;
-	case 1024:
+	   case 1024:
 		if(mode->VDisplay == 768) {
 		   if(pSiS->VGAEngine == SIS_315_VGA) {
 		      ModeIndex = ModeIndex_1024x768[i];
 		   }
 		}
 		break;
-        }
+         }
 
       } else {				    /* TV on 301(B/LV) */
 
@@ -9134,7 +9420,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
           	break;
       	case 512:
 		if(mode->VDisplay == 384) {
-		   if(VBFlags & TV_PAL)
+		   if((VBFlags & TV_PAL) && (!(VBFlags & TV_PALM)))
 		      ModeIndex = ModeIndex_512x384[i];
 		}
 		break;
@@ -9148,10 +9434,10 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 	case 720:
 	        if(!(VBFlags & (TV_HIVISION | TV_HIVISION_LV))) {
                    if(mode->VDisplay == 480) {
-		      if(VBFlags & TV_NTSC)
+		      if((VBFlags & TV_NTSC) || (VBFlags & TV_PALM))
                          ModeIndex = ModeIndex_720x480[i];
                    } else if(mode->VDisplay == 576) {
-		      if(VBFlags & TV_PAL)
+		      if((VBFlags & TV_PAL) && (!(VBFlags & TV_PALM)))
                          ModeIndex = ModeIndex_720x576[i];
                    }
 		}
@@ -9159,7 +9445,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 	case 768:
 	        if(!(VBFlags & (TV_HIVISION | TV_HIVISION_LV))) {
           	   if(mode->VDisplay == 576) {
-		      if(VBFlags & TV_PAL)
+		      if((VBFlags & TV_PAL) && (!(VBFlags & TV_PALM)))
 	     	         ModeIndex = ModeIndex_768x576[i];
 		   }
           	}

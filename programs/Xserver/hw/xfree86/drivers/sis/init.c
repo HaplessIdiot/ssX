@@ -3739,7 +3739,9 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDe
   USHORT data,data2,data3;
   USHORT infoflag=0,modeflag;
   USHORT resindex,xres;
+#ifdef SIS315H
   ULONG  longdata;
+#endif  
 
   if(SiS_Pr->UseCustomMode) {
      modeflag = SiS_Pr->CModeFlag;

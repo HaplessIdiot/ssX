@@ -4,7 +4,7 @@
  *
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
- * Init() function for old series based on old code which was
+ * Init() function for old series based on code which was
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -58,7 +58,7 @@
 
 static Bool  SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool  SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
-/* TW: To be used internally only */
+/* To be used internally only */
 int    SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch);
 void   SISSense30x(ScrnInfoPtr pScrn);
 int    SIS6326DoSense(ScrnInfoPtr pScrn, int tempbh, int tempbl, int tempch, int tempcl);
@@ -217,329 +217,363 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Save the registers for further processing */
     (*pSiS->SiSSave)(pScrn, pReg);
 
-    /* TW: Determine if chosen mode is suitable for TV on the 6326
-           and if the mode is one of our special hi-res modes.
+    /* Determine if chosen mode is suitable for TV on the 6326
+     * and if the mode is one of our special hi-res modes.
      */
     sis6326tvmode = FALSE;
     sis6326himode = FALSE;
     if(pSiS->Chipset == PCI_CHIP_SIS6326) {
-      if(pSiS->SiS6326Flags & SIS6326_HASTV) {
-        if((pSiS->SiS6326Flags & SIS6326_TVDETECTED) &&
-           ((strcmp(mode->name, "PAL800x600") == 0)   ||	/* TW: Special TV modes */
-            (strcmp(mode->name, "PAL800x600U") == 0)  ||
-	    (strcmp(mode->name, "PAL720x540") == 0)   ||
-            (strcmp(mode->name, "PAL640x480") == 0)   ||
-	    (strcmp(mode->name, "NTSC640x480") == 0)  ||
-	    (strcmp(mode->name, "NTSC640x480U") == 0) ||
-	    (strcmp(mode->name, "NTSC640x400") == 0))) {
-		    sis6326tvmode = TRUE;
-        } else {
-          pReg->sis6326tv[0x00] &= 0xfb;
-        }
-      }
-      if((strcmp(mode->name, "SIS1280x1024-75") == 0) ||	/* TW: Special high-res modes */
-         (strcmp(mode->name, "SIS1600x1200-60") == 0)) {
-	 sis6326himode = TRUE;
-      }
+       if(pSiS->SiS6326Flags & SIS6326_HASTV) {
+          if((pSiS->SiS6326Flags & SIS6326_TVDETECTED) &&
+             ((strcmp(mode->name, "PAL800x600") == 0)   ||	/* Special TV modes */
+              (strcmp(mode->name, "PAL800x600U") == 0)  ||
+	      (strcmp(mode->name, "PAL720x540") == 0)   ||
+              (strcmp(mode->name, "PAL640x480") == 0)   ||
+	      (strcmp(mode->name, "NTSC640x480") == 0)  ||
+	      (strcmp(mode->name, "NTSC640x480U") == 0) ||
+	      (strcmp(mode->name, "NTSC640x400") == 0))) {
+	     sis6326tvmode = TRUE;
+          } else {
+             pReg->sis6326tv[0x00] &= 0xfb;
+          }
+       }
+       if((strcmp(mode->name, "SIS1280x1024-75") == 0) ||	/* Special high-res modes */
+          (strcmp(mode->name, "SIS1600x1200-60") == 0)) {
+	  sis6326himode = TRUE;
+       }
     }
 
 #ifdef UNLOCK_ALWAYS
     outSISIDXREG(SISSR, 0x05, 0x86);
 #endif
 
-    pReg->sisRegs3C4[0x06] &= 0x01;
+    if(!pSiS->UseVESA) {
+       pReg->sisRegs3C4[0x06] &= 0x01;
+    }
 
-    /* set interlace */
+       /* set interlace */
     if(!(mode->Flags & V_INTERLACE))  {
-        offset = pSiS->CurrentLayout.displayWidth >> 3;
+       offset = pSiS->CurrentLayout.displayWidth >> 3;
     } else  {
-        offset = pSiS->CurrentLayout.displayWidth >> 2;
-        pReg->sisRegs3C4[0x06] |= 0x20;
+       offset = pSiS->CurrentLayout.displayWidth >> 2;
+       if(!pSiS->UseVESA) {
+          pReg->sisRegs3C4[0x06] |= 0x20;
+       }
     }
 
     /* Enable Linear and Enhanced Gfx Mode */
-    pReg->sisRegs3C4[0x06] |= 0x82;
+    if(!pSiS->UseVESA) {
+       pReg->sisRegs3C4[0x06] |= 0x82;
+    }
 
     /* Enable MMIO at PCI Register 14H (D[6:5]: 11) */
-    pReg->sisRegs3C4[0x0B] |= 0x60;
-
-    /* Enable 32bit mem access (D7), read-ahead cache (D4) */
-    pReg->sisRegs3C4[0x0C] |= 0xA0;
-
-    /* TW: Some speed-up stuff */
-    switch(pSiS->Chipset)  {
-    case PCI_CHIP_SIS5597:
-        /* TW: enable host bus */
-	if(pSiS->NoHostBus) {
-	   pReg->sisRegs3C4[0x34] &= ~0x08;
-	} else {
-           pReg->sisRegs3C4[0x34] |= 0x08;
-	}
-        /* TW: fall through */
-    case PCI_CHIP_SIS6326:
-    case PCI_CHIP_SIS530: 
-        /* TW: Enable "dual segment register mode" (D2) and "i/o gating while
-         *     write buffer is not empty" (D3)
-         */
-    	pReg->sisRegs3C4[0x0B] |= 0x0C;
+    if(pSiS->oldChipset >= OC_SIS5597) {
+       pReg->sisRegs3C4[0x0B] |= 0x60;
+    } else {
+       pReg->sisRegs3C4[0x0B] |= 0x20;
+       pReg->sisRegs3C4[0x0B] &= ~0x40;
     }
 
-    /* set colordepth */
-    if(pSiS->Chipset == PCI_CHIP_SIS530) {
-        pReg->sisRegs3C4[0x09] &= 0x7F;
-    }
-    switch(pSiS->CurrentLayout.bitsPerPixel) {
-        case 8:
-            break;
-        case 16:
-	    offset <<= 1;
-	    if(pSiS->CurrentLayout.depth == 15)
+    if(!pSiS->UseVESA) {
+
+       /* Enable 32bit mem access (D7), read-ahead cache (D4) */
+       pReg->sisRegs3C4[0x0C] |= 0xA0;
+
+       /* Some speed-up stuff */
+       switch(pSiS->Chipset) {
+       case PCI_CHIP_SIS5597:
+          /* enable host bus */
+	  if(pSiS->NoHostBus) {
+	     pReg->sisRegs3C4[0x34] &= ~0x08;
+	  } else {
+            pReg->sisRegs3C4[0x34] |= 0x08;
+	  }
+          /* fall through */
+       case PCI_CHIP_SIS6326:
+       case PCI_CHIP_SIS530:
+          /* Enable "dual segment register mode" (D2) and "i/o gating while
+           * write buffer is not empty" (D3)
+           */
+    	  pReg->sisRegs3C4[0x0B] |= 0x0C;
+       }
+
+       /* set colordepth */
+       if(pSiS->Chipset == PCI_CHIP_SIS530) {
+          pReg->sisRegs3C4[0x09] &= 0x7F;
+       }
+       switch(pSiS->CurrentLayout.bitsPerPixel) {
+          case 8:
+             break;
+          case 16:
+	     offset <<= 1;
+	     if(pSiS->CurrentLayout.depth == 15)
 	        pReg->sisRegs3C4[0x06] |= 0x04;
-	    else
+	     else
                 pReg->sisRegs3C4[0x06] |= 0x08;
-            break;
-        case 24:
-            offset += (offset << 1);
-            pReg->sisRegs3C4[0x06] |= 0x10;
-            pReg->sisRegs3C4[0x0B] |= 0x90;  
-            break;
-        case 32:
-            if(pSiS->Chipset == PCI_CHIP_SIS530) {
+             break;
+          case 24:
+             offset += (offset << 1);
+             pReg->sisRegs3C4[0x06] |= 0x10;
+             pReg->sisRegs3C4[0x0B] |= 0x90;
+             break;
+          case 32:
+             if(pSiS->Chipset == PCI_CHIP_SIS530) {
 	        offset <<= 2;
-                pReg->sisRegs3C4[0x06] |= 0x10;
-                pReg->sisRegs3C4[0x0B] |= 0x90; 
+	        if(pSiS->oldChipset != OC_SIS620) {
+                   pReg->sisRegs3C4[0x06] |= 0x10;
+	        }
+                pReg->sisRegs3C4[0x0B] |= 0x90;
                 pReg->sisRegs3C4[0x09] |= 0x80;
-            } else return FALSE;
-            break;
+             } else return FALSE;
+             break;
+       }
     }
 
     /* save screen pitch for acceleration functions */
     pSiS->scrnOffset = pSiS->CurrentLayout.displayWidth *
                            ((pSiS->CurrentLayout.bitsPerPixel + 7) / 8);
 
-    /* set linear framebuffer addresses */
-    switch(pScrn->videoRam)  {
-        case 512:
-            temp = 0x00;  break;
-        case 1024:
-            temp = 0x20;  break;
-        case 2048:
-            temp = 0x40;  break;
-        case 4096:
-            temp = 0x60;  break;
-        case 8192:
-            temp = 0x80;  break;
-        default:
-            temp = 0x20;
-    }
-    pReg->sisRegs3C4[0x20] = (pSiS->FbAddress & 0x07F80000) >> 19;
-    pReg->sisRegs3C4[0x21] = ((pSiS->FbAddress & 0xF8000000) >> 27) | temp;
+    if(!pSiS->UseVESA) {
 
-    /* Set screen offset */
-    vgaReg->CRTC[0x13] = offset & 0xFF;
+       /* set linear framebuffer addresses */
+       switch(pScrn->videoRam)  {
+          case 512:  temp = 0x00;  break;
+          case 1024: temp = 0x20;  break;
+          case 2048: temp = 0x40;  break;
+          case 4096: temp = 0x60;  break;
+          case 8192: temp = 0x80;  break;
+          default:   temp = 0x20;
+       }
+       pReg->sisRegs3C4[0x20] = (pSiS->FbAddress & 0x07F80000) >> 19;
+       pReg->sisRegs3C4[0x21] = ((pSiS->FbAddress & 0xF8000000) >> 27) | temp;
 
-    /* Set CR registers for our built-in TV and hi-res modes */
-    if((sis6326tvmode) || (sis6326himode)) {
+       /* Set screen offset */
+       vgaReg->CRTC[0x13] = offset & 0xFF;
 
-	int index,i;
+       /* Set CR registers for our built-in TV and hi-res modes */
+       if((sis6326tvmode) || (sis6326himode)) {
 
-	/* TW: We need our very private data for hi-res and TV modes */
-	if(sis6326himode) {
-	   if(strcmp(mode->name, "SIS1280x1024-75") == 0)  index = 7;
-	   else index = 8;
-	} else {
-	  if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
-	    switch(width) {
-	    case 800:
-	      if((strcmp(mode->name, "PAL800x600U") == 0))
-	      	index = 4;
-	      else
-	        index = 0;
-	      break;
-	    case 720:
-	      index = 5;
-	      break;
-	    case 640:
-	    default:
-	      index = 1;
-	    }
+	  int index,i;
+
+	  /* We need our very private data for hi-res and TV modes */
+	  if(sis6326himode) {
+	     if(strcmp(mode->name, "SIS1280x1024-75") == 0)  index = 7;
+	     else index = 8;
 	  } else {
-	    switch(height) {
-	    case 400:
-	      index = 3;
-	      break;
-	    case 480:
-	    default:
-	      if((strcmp(mode->name, "NTSC640x480U") == 0))
-	        index = 6;
-	      else
-	        index = 2;
-	    }
+	     if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
+	        switch(width) {
+	        case 800:
+	           if((strcmp(mode->name, "PAL800x600U") == 0))
+	      	      index = 4;
+	           else
+	              index = 0;
+	           break;
+	        case 720:
+	           index = 5;
+	           break;
+	        case 640:
+	        default:
+	           index = 1;
+	        }
+	     } else {
+	        switch(height) {
+	        case 400:
+	           index = 3;
+	           break;
+	        case 480:
+	        default:
+	           if((strcmp(mode->name, "NTSC640x480U") == 0))
+	              index = 6;
+	           else
+	              index = 2;
+	        }
+	     }
+          }
+	  for(i=0; i<=5; i++) {
+	     vgaReg->CRTC[i] = SiS6326CR[index][i];
 	  }
-        }
-	for(i=0; i<=5; i++) {
-	    vgaReg->CRTC[i] = SiS6326CR[index][i];
-	}
-        pReg->sisRegs3C4[0x12] = SiS6326CR[index][6];
-	vgaReg->CRTC[6] = SiS6326CR[index][7];
-	vgaReg->CRTC[7] = SiS6326CR[index][8];
-	vgaReg->CRTC[0x10] = SiS6326CR[index][9];
-	vgaReg->CRTC[0x11] = SiS6326CR[index][10];
-	vgaReg->CRTC[0x12] = SiS6326CR[index][11];
-	vgaReg->CRTC[0x15] = SiS6326CR[index][12];
-	vgaReg->CRTC[0x16] = SiS6326CR[index][13];
-	vgaReg->CRTC[9] &= ~0x20;
-	vgaReg->CRTC[9] |= (SiS6326CR[index][14] & 0x20);
-	pReg->sisRegs3C4[0x0A] = ((offset & 0xF00) >> 4) | (SiS6326CR[index][14] & 0x0f);
+          pReg->sisRegs3C4[0x12] = SiS6326CR[index][6];
+	  vgaReg->CRTC[6] = SiS6326CR[index][7];
+	  vgaReg->CRTC[7] = SiS6326CR[index][8];
+	  vgaReg->CRTC[0x10] = SiS6326CR[index][9];
+	  vgaReg->CRTC[0x11] = SiS6326CR[index][10];
+	  vgaReg->CRTC[0x12] = SiS6326CR[index][11];
+	  vgaReg->CRTC[0x15] = SiS6326CR[index][12];
+	  vgaReg->CRTC[0x16] = SiS6326CR[index][13];
+	  vgaReg->CRTC[9] &= ~0x20;
+	  vgaReg->CRTC[9] |= (SiS6326CR[index][14] & 0x20);
+	  pReg->sisRegs3C4[0x0A] = ((offset & 0xF00) >> 4) | (SiS6326CR[index][14] & 0x0f);
 
-    } else {
+       } else {
 
-       /* Set extended vertical overflow register */
-       pReg->sisRegs3C4[0x0A] = ((offset & 0xF00) >> 4) |
-              (((mode->CrtcVTotal-2)     & 0x400) >> 10 ) |
-              (((mode->CrtcVDisplay-1)   & 0x400) >>  9 ) |
-/*            (((mode->CrtcVSyncStart-1) & 0x400) >>  8 ) |  */
-	      (((mode->CrtcVBlankStart-1)& 0x400) >>  8 ) |
-/*            (((mode->CrtcVBlankStart-1)& 0x400) >>  7 );  */
-              (((mode->CrtcVSyncStart)   & 0x400) >>  7 );  
+          /* Set extended vertical overflow register */
+          pReg->sisRegs3C4[0x0A] = ((offset & 0xF00) >> 4) |
+                 (((mode->CrtcVTotal-2)     & 0x400) >> 10 ) |
+                 (((mode->CrtcVDisplay-1)   & 0x400) >>  9 ) |
+/*               (((mode->CrtcVSyncStart-1) & 0x400) >>  8 ) |  */
+	         (((mode->CrtcVBlankStart-1)& 0x400) >>  8 ) |
+/*               (((mode->CrtcVBlankStart-1)& 0x400) >>  7 );  */
+                 (((mode->CrtcVSyncStart)   & 0x400) >>  7 );
 
-       /* Set extended horizontal overflow register */
-       pReg->sisRegs3C4[0x12] &= 0xE0;
-       pReg->sisRegs3C4[0x12] |= (
-           (((mode->CrtcHTotal >> 3) - 5)      & 0x100) >> 8 |
-           (((mode->CrtcHDisplay >> 3) - 1)    & 0x100) >> 7 |
-/*         (((mode->CrtcHSyncStart >> 3) - 1)  & 0x100) >> 6 |  */
-           (((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6 |
-           ((mode->CrtcHSyncStart >> 3)        & 0x100) >> 5 |
-           (((mode->CrtcHBlankEnd >> 3) - 1)   & 0x40)  >> 2);
-    }
+          /* Set extended horizontal overflow register */
+          pReg->sisRegs3C4[0x12] &= 0xE0;
+          pReg->sisRegs3C4[0x12] |= (
+              (((mode->CrtcHTotal >> 3) - 5)      & 0x100) >> 8 |
+              (((mode->CrtcHDisplay >> 3) - 1)    & 0x100) >> 7 |
+/*            (((mode->CrtcHSyncStart >> 3) - 1)  & 0x100) >> 6 |  */
+              (((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6 |
+              ((mode->CrtcHSyncStart >> 3)        & 0x100) >> 5 |
+              (((mode->CrtcHBlankEnd >> 3) - 1)   & 0x40)  >> 2);
+       }
 
 #ifdef TWDEBUG
-    xf86DrvMsg(0, X_INFO, "HDisplay %d HSyncStart %d HSyncEnd %d HTotal %d\n",
+       xf86DrvMsg(0, X_INFO, "HDisplay %d HSyncStart %d HSyncEnd %d HTotal %d\n",
 		mode->CrtcHDisplay, mode->CrtcHSyncStart,
 		mode->CrtcHSyncEnd, mode->CrtcHTotal);
-    xf86DrvMsg(0, X_INFO, "HBlankSt %d  HBlankE %d\n",
+       xf86DrvMsg(0, X_INFO, "HBlankSt %d  HBlankE %d\n",
     		mode->CrtcHBlankStart, mode->CrtcHBlankEnd);
 
-    xf86DrvMsg(0, X_INFO, "VDisplay %d VSyncStart %d VSyncEnd %d VTotal %d\n",
+       xf86DrvMsg(0, X_INFO, "VDisplay %d VSyncStart %d VSyncEnd %d VTotal %d\n",
 		mode->CrtcVDisplay, mode->CrtcVSyncStart,
 		mode->CrtcVSyncEnd, mode->CrtcVTotal);
-    xf86DrvMsg(0, X_INFO, "VBlankSt %d  VBlankE %d\n",
+       xf86DrvMsg(0, X_INFO, "VBlankSt %d  VBlankE %d\n",
     		mode->CrtcVBlankStart, mode->CrtcVBlankEnd);
 #endif
 
-    /* enable (or disable) line compare */
-    if(mode->CrtcVDisplay >= 1024)
-        pReg->sisRegs3C4[0x38] |= 0x04;
-    else
-        pReg->sisRegs3C4[0x38] &= 0xFB;
+       /* enable (or disable) line compare */
+       if(mode->CrtcVDisplay >= 1024)
+          pReg->sisRegs3C4[0x38] |= 0x04;
+       else
+          pReg->sisRegs3C4[0x38] &= 0xFB;
 
-    /* Enable (or disable) high speed DCLK (some 6326 and 530/620 only) */
-    if( ( (pSiS->Chipset == PCI_CHIP_SIS6326) &&
-          ( (pSiS->ChipRev == 0xd0) || (pSiS->ChipRev == 0xd1) ||
-            (pSiS->ChipRev == 0xd2) || (pSiS->ChipRev == 0x92) ||
-	    (pSiS->Flags & A6326REVAB) ) ) ||
-        (pSiS->oldChipset > OC_SIS6326) ) {
-      if( (pSiS->CurrentLayout.bitsPerPixel == 24) ||
-          (pSiS->CurrentLayout.bitsPerPixel == 32) ||
-          (mode->CrtcHDisplay >= 1280) )
-         pReg->sisRegs3C4[0x3E] |= 0x01;
-      else
-         pReg->sisRegs3C4[0x3E] &= 0xFE;
-    }
+       /* Enable (or disable) high speed DCLK (some 6326 and 530/620 only) */
+       if( ( (pSiS->Chipset == PCI_CHIP_SIS6326) &&
+             ( (pSiS->ChipRev == 0xd0) || (pSiS->ChipRev == 0xd1) ||
+               (pSiS->ChipRev == 0xd2) || (pSiS->ChipRev == 0x92) ||
+	       (pSiS->Flags & A6326REVAB) ) ) ||
+           (pSiS->oldChipset > OC_SIS6326) ) {
+         if( (pSiS->CurrentLayout.bitsPerPixel == 24) ||
+             (pSiS->CurrentLayout.bitsPerPixel == 32) ||
+             (mode->CrtcHDisplay >= 1280) )
+            pReg->sisRegs3C4[0x3E] |= 0x01;
+         else
+            pReg->sisRegs3C4[0x3E] &= 0xFE;
+       }
 
-    /* We use the internal VCLK */
-    pReg->sisRegs3C4[0x38] &= 0xFC;
+       /* We use the internal VCLK */
+       pReg->sisRegs3C4[0x38] &= 0xFC;
 
-    /* Set VCLK */
-    if((sis6326tvmode) || (sis6326himode)) {
-        /* TW: For our built-in modes, the calculation is not suitable */
-      if(sis6326himode) {
-        if((strcmp(mode->name, "SIS1280x1024-75") == 0)) {
-	   pReg->sisRegs3C4[0x2A] = 0x5d;	/* 1280x1024-75 */
-           pReg->sisRegs3C4[0x2B] = 0xa4;
-        } else {
-	   pReg->sisRegs3C4[0x2A] = 0x59;	/* 1600x1200-60 */
-           pReg->sisRegs3C4[0x2B] = 0xa3;
-        }
-	pReg->sisRegs3C4[0x13] &= ~0x40;
-      } else {
-        if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
-	   /* PAL: 31.500 Mhz */
-	   if((strcmp(mode->name, "PAL800x600U") == 0)) {
-   	      pReg->sisRegs3C4[0x2A] = 0x46;
-              pReg->sisRegs3C4[0x2B] = 0x49;
-	   } else {
-	      pReg->sisRegs3C4[0x2A] = 0xab;
-              pReg->sisRegs3C4[0x2B] = 0xe9;
-	   }
-	   pReg->sisRegs3C4[0x13] &= ~0x40;
-	} else {
-	   /* NTSC: 27.000 Mhz */
-	   if((strcmp(mode->name, "NTSC640x480U") == 0)) {
-	      pReg->sisRegs3C4[0x2A] = 0x5a;
-              pReg->sisRegs3C4[0x2B] = 0x65;
-	   } else {
-	      pReg->sisRegs3C4[0x2A] = 0x29;
-              pReg->sisRegs3C4[0x2B] = 0xe2;
-	   }
-	   pReg->sisRegs3C4[0x13] |= 0x40;
-	}
-      }
-    } else if(SiS_compute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {
-        pReg->sisRegs3C4[0x2A] = (num - 1) & 0x7f ;
-        pReg->sisRegs3C4[0x2A] |= (div == 2) ? 0x80 : 0;
-        pReg->sisRegs3C4[0x2B] = ((denum - 1) & 0x1f);
-        pReg->sisRegs3C4[0x2B] |= (((scale -1) & 3) << 5);
+       /* Set VCLK */
+       if((sis6326tvmode) || (sis6326himode)) {
 
-	/* When setting VCLK, we should set SR13 first */
-        if(sbit)
-              pReg->sisRegs3C4[0x13] |= 0x40;
-        else
-              pReg->sisRegs3C4[0x13] &= 0xBF;
+          /* For our built-in modes, the calculation is not suitable */
+          if(sis6326himode) {
+             if((strcmp(mode->name, "SIS1280x1024-75") == 0)) {
+	        pReg->sisRegs3C4[0x2A] = 0x5d;	/* 1280x1024-75 */
+                pReg->sisRegs3C4[0x2B] = 0xa4;
+             } else {
+	        pReg->sisRegs3C4[0x2A] = 0x59;	/* 1600x1200-60 */
+                pReg->sisRegs3C4[0x2B] = 0xa3;
+             }
+	     pReg->sisRegs3C4[0x13] &= ~0x40;
+          } else {
+             if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
+	        /* PAL: 31.500 Mhz */
+	        if((strcmp(mode->name, "PAL800x600U") == 0)) {
+   	           pReg->sisRegs3C4[0x2A] = 0x46;
+                   pReg->sisRegs3C4[0x2B] = 0x49;
+	        } else {
+	           pReg->sisRegs3C4[0x2A] = 0xab;
+                   pReg->sisRegs3C4[0x2B] = 0xe9;
+	        }
+	        pReg->sisRegs3C4[0x13] &= ~0x40;
+	     } else {
+	        /* NTSC: 27.000 Mhz */
+	        if((strcmp(mode->name, "NTSC640x480U") == 0)) {
+	           pReg->sisRegs3C4[0x2A] = 0x5a;
+                   pReg->sisRegs3C4[0x2B] = 0x65;
+	        } else {
+	           pReg->sisRegs3C4[0x2A] = 0x29;
+                   pReg->sisRegs3C4[0x2B] = 0xe2;
+	        }
+	        pReg->sisRegs3C4[0x13] |= 0x40;
+	     }
+          }
+
+       } else if(SiS_compute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {
+
+          pReg->sisRegs3C4[0x2A] = (num - 1) & 0x7f ;
+          pReg->sisRegs3C4[0x2A] |= (div == 2) ? 0x80 : 0;
+          pReg->sisRegs3C4[0x2B] = ((denum - 1) & 0x1f);
+          pReg->sisRegs3C4[0x2B] |= (((scale -1) & 3) << 5);
+
+	  /* When setting VCLK, we should set SR13 first */
+          if(sbit)
+             pReg->sisRegs3C4[0x13] |= 0x40;
+          else
+             pReg->sisRegs3C4[0x13] &= 0xBF;
 
 #ifdef TWDEBUG
-	xf86DrvMsg(0, X_INFO, "2a: %x 2b: %x 13: %x clock %d\n",
+	  xf86DrvMsg(0, X_INFO, "2a: %x 2b: %x 13: %x clock %d\n",
 		pReg->sisRegs3C4[0x2A], pReg->sisRegs3C4[0x2B], pReg->sisRegs3C4[0x13], clock);
 #endif
 
-    } else {
-        /* if SiS_compute_vclk cannot handle the requested clock, try sisCalcClock */
-        SiSCalcClock(pScrn, clock, 2, vclk);
+       } else {
 
-        pReg->sisRegs3C4[0x2A] = (vclk[Midx] - 1) & 0x7f;
-        pReg->sisRegs3C4[0x2A] |= ((vclk[VLDidx] == 2) ? 1 : 0) << 7;
+          /* if SiS_compute_vclk cannot handle the requested clock, try sisCalcClock */
+          SiSCalcClock(pScrn, clock, 2, vclk);
 
-	/* bits [4:0] contain denumerator */
-        pReg->sisRegs3C4[0x2B] = (vclk[Nidx] - 1) & 0x1f;
+          pReg->sisRegs3C4[0x2A] = (vclk[Midx] - 1) & 0x7f;
+          pReg->sisRegs3C4[0x2A] |= ((vclk[VLDidx] == 2) ? 1 : 0) << 7;
 
-        if (vclk[Pidx] <= 4){
-              /* postscale 1,2,3,4 */
-              pReg->sisRegs3C4[0x2B] |= (vclk[Pidx] - 1) << 5;
-              pReg->sisRegs3C4[0x13] &= 0xBF;
-        } else {
-              /* postscale 6,8 */
-              pReg->sisRegs3C4[0x2B] |= ((vclk[Pidx] / 2) - 1) << 5;
-              pReg->sisRegs3C4[0x13] |= 0x40;
-        }
-        pReg->sisRegs3C4[0x2B] |= 0x80 ;   /* gain for high frequency */
-    }
+	  /* bits [4:0] contain denumerator */
+          pReg->sisRegs3C4[0x2B] = (vclk[Nidx] - 1) & 0x1f;
 
-    /* High speed DAC */
-    if(clock > 135000)
-        pReg->sisRegs3C4[0x07] |= 0x02;
+          if(vclk[Pidx] <= 4){
+             /* postscale 1,2,3,4 */
+             pReg->sisRegs3C4[0x2B] |= (vclk[Pidx] - 1) << 5;
+             pReg->sisRegs3C4[0x13] &= 0xBF;
+          } else {
+             /* postscale 6,8 */
+             pReg->sisRegs3C4[0x2B] |= ((vclk[Pidx] / 2) - 1) << 5;
+             pReg->sisRegs3C4[0x13] |= 0x40;
+          }
+          pReg->sisRegs3C4[0x2B] |= 0x80 ;   /* gain for high frequency */
 
-    /* Programmable Clock */
-    pReg->sisRegs3C2 = inb(SISMISCR) | 0x0C;
+       }
 
-    /* 1 or 2 cycle DRAM (set by option FastVram) */
-    if(pSiS->newFastVram == -1) {
-        pReg->sisRegs3C4[0x34] |= 0x80;
-	pReg->sisRegs3C4[0x34] &= ~0x40;
-    } else if(pSiS->newFastVram == 1)
-        pReg->sisRegs3C4[0x34] |= 0xC0;
-    else
-        pReg->sisRegs3C4[0x34] &= ~0xC0;
+       /* High speed DAC */
+       if(clock > 135000)
+          pReg->sisRegs3C4[0x07] |= 0x02;
+
+       /* Programmable Clock */
+       pReg->sisRegs3C2 = inb(SISMISCR) | 0x0C;
+
+       /* 1 or 2 cycle DRAM (set by option FastVram) */
+       if(pSiS->newFastVram == -1) {
+          if(pSiS->oldChipset == OC_SIS620) {
+	     /* Use different default on the 620 */
+             pReg->sisRegs3C4[0x34] |= 0x40;
+	     pReg->sisRegs3C4[0x34] &= ~0x80;
+          } else {
+             pReg->sisRegs3C4[0x34] |= 0x80;
+	     pReg->sisRegs3C4[0x34] &= ~0x40;
+          }
+       } else if(pSiS->newFastVram == 1)
+          pReg->sisRegs3C4[0x34] |= 0xC0;
+       else
+          pReg->sisRegs3C4[0x34] &= ~0xC0;
+
+       if(pSiS->oldChipset == OC_SIS620) {
+          /* Enable SGRAM burst timing (= bit clear) on the 620 */
+          if(pSiS->Flags & SYNCDRAM) {
+             pReg->sisRegs3C4[0x35] &= ~0x20;
+          } else {
+             pReg->sisRegs3C4[0x35] |= 0x20;
+          }
+       }
+
+    } /* VESA */
 
     /* Logical line length */
     pSiS->ValidWidth = TRUE;
@@ -569,279 +603,272 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* Acceleration stuff */
     if(!pSiS->NoAccel) {
-         pReg->sisRegs3C4[0x27] |= 0x40;   /* Enable engine programming registers */
-         if( (pSiS->TurboQueue) &&	       /* Handle TurboQueue */
- 	     ( (pSiS->Chipset != PCI_CHIP_SIS530) ||
-	       (pSiS->CurrentLayout.bitsPerPixel != 24) ) ) {
-               pReg->sisRegs3C4[0x27] |= 0x80;        /* Enable TQ */
-	       if((pSiS->Chipset == PCI_CHIP_SIS530) ||
-		  ((pSiS->Chipset == PCI_CHIP_SIS6326 &&
-		   (pSiS->ChipRev == 0xd0 || pSiS->ChipRev == 0xd1 ||
-		    pSiS->ChipRev == 0xd2 || pSiS->ChipRev == 0x92 ||
-		    pSiS->ChipRev == 0x0a || pSiS->ChipRev == 0x1a ||
-		    pSiS->ChipRev == 0x2a || pSiS->ChipRev == 0x0b ||
-		    pSiS->ChipRev == 0x1b || pSiS->ChipRev == 0x2b) ) ) ) {
-		    /* pReg->sisRegs3C4[0x3D] |= 0x80;  */     /* Queue is 62K (530/620 specs) */
-		       pReg->sisRegs3C4[0x3D] &= 0x7F;         /* Queue is 30K (530/620 specs) */
-		}
-		/* TW: Locate the TQ at the beginning of the last 64K block of
-		 *     video RAM. The address is to be specified in 32K steps.
-		 */
-		pReg->sisRegs3C4[0x2C] = (pScrn->videoRam - 64) / 32;
-		if(pSiS->Chipset != PCI_CHIP_SIS530) {	/* 530/620: Reserved (don't touch) */
-    		        pReg->sisRegs3C4[0x3C] &= 0xFC; /* 6326: Queue is all for 2D */
-		}					/* 5597: Must be 0           */
-          } else {
-	        pReg->sisRegs3C4[0x27] &= 0x7F;
+       pReg->sisRegs3C4[0x27] |= 0x40;   /* Enable engine programming registers */
+       if( (pSiS->TurboQueue) &&	 /* Handle TurboQueue */
+ 	   ( (pSiS->Chipset != PCI_CHIP_SIS530) ||
+	     (pSiS->CurrentLayout.bitsPerPixel != 24) ) ) {
+          pReg->sisRegs3C4[0x27] |= 0x80;        /* Enable TQ */
+	  if((pSiS->Chipset == PCI_CHIP_SIS530) ||
+	     ((pSiS->Chipset == PCI_CHIP_SIS6326 &&
+	      (pSiS->ChipRev == 0xd0 || pSiS->ChipRev == 0xd1 ||
+	       pSiS->ChipRev == 0xd2 || pSiS->ChipRev == 0x92 ||
+	       pSiS->ChipRev == 0x0a || pSiS->ChipRev == 0x1a ||
+	       pSiS->ChipRev == 0x2a || pSiS->ChipRev == 0x0b ||
+	       pSiS->ChipRev == 0x1b || pSiS->ChipRev == 0x2b) ) ) ) {
+	     /* pReg->sisRegs3C4[0x3D] |= 0x80;  */     /* Queue is 62K (530/620 specs) */
+	     pReg->sisRegs3C4[0x3D] &= 0x7F;         /* Queue is 30K (530/620 specs) */
 	  }
-    }
-
-    /* TW: No idea what this does. The Windows driver does it, so we do it as well */
-    if(pSiS->Chipset == PCI_CHIP_SIS6326) {
-       if((pSiS->ChipRev == 0xd0) || (pSiS->ChipRev == 0xd1) ||
-          (pSiS->ChipRev == 0xd2) || (pSiS->ChipRev == 0x92) ||
-	  (pSiS->Flags & A6326REVAB)) {
-	  if((pSiS->Flags & (SYNCDRAM | RAMFLAG)) == (SYNCDRAM | RAMFLAG)) {
-	     if(!(pReg->sisRegs3C4[0x0E] & 0x03)) {
-	        pReg->sisRegs3C4[0x3E] |= 0x02;
-	     }
-	  }
+	  /* Locate the TQ at the beginning of the last 64K block of
+	   * video RAM. The address is to be specified in 32K steps.
+	   */
+	  pReg->sisRegs3C4[0x2C] = (pScrn->videoRam - 64) / 32;
+	  if(pSiS->Chipset != PCI_CHIP_SIS530) {	/* 530/620: Reserved (don't touch) */
+    	     pReg->sisRegs3C4[0x3C] &= 0xFC; 		/* 6326: Queue is all for 2D */
+	  }						/* 5597: Must be 0           */
+       } else {
+	  pReg->sisRegs3C4[0x27] &= 0x7F;
        }
     }
 
 
-    /* Set memclock */
-#if 0
-    /* TW: We don't need to do this; the SetMClk option was not used since 4.0. */
-    if((pSiS->Chipset == PCI_CHIP_SIS5597) || (pSiS->Chipset == PCI_CHIP_SIS6326)) {
-      if(pSiS->MemClock > 66000) {
-          SiSCalcClock(pScrn, pSiS->MemClock, 1, vclk);
+    if(!pSiS->UseVESA) {
 
-          pReg->sisRegs3C4[0x28] = (vclk[Midx] - 1) & 0x7f ;
-          pReg->sisRegs3C4[0x28] |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;
-          pReg->sisRegs3C4[0x29] = (vclk[Nidx] -1) & 0x1f ;   /* bits [4:0] contain denumerator -MC */
-          if(vclk[Pidx] <= 4) {
-            pReg->sisRegs3C4[0x29] |= (vclk[Pidx] - 1) << 5 ; /* postscale 1,2,3,4 */
-            pReg->sisRegs3C4[0x13] &= 0x7F;
-          } else {
-            pReg->sisRegs3C4[0x29] |= ((vclk[Pidx] / 2) - 1) << 5 ;  /* postscale 6,8 */
-            pReg->sisRegs3C4[0x13] |= 0x80;
+       /* TW: No idea what this does. The Windows driver does it, so we do it as well */
+       if(pSiS->Chipset == PCI_CHIP_SIS6326) {
+          if((pSiS->ChipRev == 0xd0) || (pSiS->ChipRev == 0xd1) ||
+             (pSiS->ChipRev == 0xd2) || (pSiS->ChipRev == 0x92) ||
+	     (pSiS->Flags & A6326REVAB)) {
+	     if((pSiS->Flags & (SYNCDRAM | RAMFLAG)) == (SYNCDRAM | RAMFLAG)) {
+	        if(!(pReg->sisRegs3C4[0x0E] & 0x03)) {
+	           pReg->sisRegs3C4[0x3E] |= 0x02;
+	        }
+	     }
           }
-          /* Check programmed memory clock. Enable only to check the above code */
+       }
+
+       /* Set memclock */
+#if 0
+       /* We don't need to do this; the SetMClk option was not used since 4.0. */
+       if((pSiS->Chipset == PCI_CHIP_SIS5597) || (pSiS->Chipset == PCI_CHIP_SIS6326)) {
+          if(pSiS->MemClock > 66000) {
+             SiSCalcClock(pScrn, pSiS->MemClock, 1, vclk);
+
+             pReg->sisRegs3C4[0x28] = (vclk[Midx] - 1) & 0x7f ;
+             pReg->sisRegs3C4[0x28] |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;
+             pReg->sisRegs3C4[0x29] = (vclk[Nidx] -1) & 0x1f ;   /* bits [4:0] contain denumerator -MC */
+             if(vclk[Pidx] <= 4) {
+                pReg->sisRegs3C4[0x29] |= (vclk[Pidx] - 1) << 5 ; /* postscale 1,2,3,4 */
+                pReg->sisRegs3C4[0x13] &= 0x7F;
+             } else {
+                pReg->sisRegs3C4[0x29] |= ((vclk[Pidx] / 2) - 1) << 5 ;  /* postscale 6,8 */
+                pReg->sisRegs3C4[0x13] |= 0x80;
+             }
+             /* Check programmed memory clock. Enable only to check the above code */
 /*
-          mclk = 14318 * ((pReg->sisRegs3C4[0x28] & 0x7f) + 1);
-          mclk /= ((pReg->sisRegs3C4[0x29] & 0x0f) + 1);
-          if(!(pReg->sisRegs3C4[0x13] & 0x80)) {
-             mclk /= (((pReg->sisRegs3C4[0x29] & 0x60) >> 5) + 1);
-          } else {
-             if ((pReg->sisRegs3C4[0x29] & 0x60) == 0x40) mclk /= 6;
-             if ((pReg->sisRegs3C4[0x29] & 0x60) == 0x60) mclk /= 8;
-          }
-          xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,2,
+             mclk = 14318 * ((pReg->sisRegs3C4[0x28] & 0x7f) + 1);
+             mclk /= ((pReg->sisRegs3C4[0x29] & 0x0f) + 1);
+             if(!(pReg->sisRegs3C4[0x13] & 0x80)) {
+                mclk /= (((pReg->sisRegs3C4[0x29] & 0x60) >> 5) + 1);
+             } else {
+                if((pReg->sisRegs3C4[0x29] & 0x60) == 0x40) mclk /= 6;
+                if((pReg->sisRegs3C4[0x29] & 0x60) == 0x60) mclk /= 8;
+             }
+             xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,2,
                  "Setting memory clock to %.3f MHz\n",
                  mclk/1000.0);
 */
-      }
-    }
-#endif
-
-    /* TW: set threshold values (rewritten) */
-    /*
-     * CPU/CRT Threshold:                     FIFO
-     *                           MCLK     ___________      VCLK
-     * cpu/engine <---o       o--------->|___________| -----------> CRT
-     *                ^       ^            ^       ^
-     *                 \     /             |       |
-     *                  \   /              |< gap >|
-     *                   \ /               |       |
-     *           selector switch   Thrsh. low     high
-     *
-     * CRT consumes the data in the FIFO during scanline display. When the
-     * amount of data in the FIFO reaches the Threshold low value, the selector
-     * switch will switch to the right, and the FIFO will be refilled with data.
-     * When the amount of data in the FIFO reaches the Threshold high value, the
-     * selector switch will switch to the left and allows the CPU and the chip
-     * engines to access video RAM.
-     *
-     * The Threshold low values should be increased at higher bpps, simply because
-     * there is more data needed for the CRT. When Threshold low and high are very
-     * close to each other, the selector switch will be activated more often, which
-     * decreases performance.
-     *
-     */
-    switch(pSiS->Chipset) {
-    case PCI_CHIP_SIS5597:  factor = 65; break;
-    case PCI_CHIP_SIS6326:  factor = 30; break;
-    case PCI_CHIP_SIS530:   factor = (pSiS->Flags & UMA) ? 60 : 30; break;
-    default:                factor = (pScrn->videoRam > (1024*1024)) ? 24 : 12;
-    }
-    a = width * height * rate * 1.40 * factor * ((pSiS->CurrentLayout.bitsPerPixel + 1) / 8);
-    b = (mclk / 1000) * 999488.0 * (buswidth / 8);
-    c = ((a / b) + 1.0) / 2;
-    d = (int)c + 2;
-
-#ifdef TWDEBUG
-    xf86DrvMsg(0, X_INFO,
-       "Debug: w %d h %d r %d mclk %d bus %d factor %d bpp %d\n",
-       width, height, rate, mclk/1000, buswidth, factor,
-       pSiS->CurrentLayout.bitsPerPixel);
-    xf86DrvMsg(0, X_INFO, "Debug: a %f b %f c %f d %d (flags %x)\n",
-     	a, b, c, d, pSiS->Flags);
-#endif
-
-    CRT_CPUthresholdLow = d;
-    if((pSiS->Flags & (RAMFLAG | SYNCDRAM)) == (RAMFLAG | SYNCDRAM)) {
-     		CRT_CPUthresholdLow += 2;
-    }
-    CRT_CPUthresholdHigh = CRT_CPUthresholdLow + 3;
-
-    CRT_ENGthreshold = 0x0F;
-
-#ifdef TWDEBUG
-    xf86DrvMsg(0, X_INFO, "Debug: Thlow %d thhigh %d\n",
-     	CRT_CPUthresholdLow, CRT_CPUthresholdHigh);
-#endif
-
-#if 0  /* TW: See comment in sis_dac.c on why this is commented */
-    if(pSiS->Chipset == PCI_CHIP_SIS530) {
-       if((pSiS->oldChipset == OC_SIS530A) &&
-	  (pSiS->Flags & UMA) &&
-	  (mclk == 100000) &&
-	  (pSiS->Flags & ESS137xPRESENT)) {
-	    if(!(pSiS->Flags & SECRETFLAG)) index = 0;
-            if((temp = SiS_CalcSpecial530Threshold(pSiS, mode, index)) {
-	    	CRT_CPUthresholdLow = temp;
-	        break;
-	    }
+          }
        }
-    }
 #endif
 
-    switch(pSiS->Chipset) {
-    case PCI_CHIP_SIS530:
-        if(CRT_CPUthresholdLow > 0x1f)  CRT_CPUthresholdLow = 0x1f;
-        CRT_CPUthresholdHigh = 0x1f;
-        break;
-    case PCI_CHIP_SIS5597:
-    case PCI_CHIP_SIS6326:
-    default:
-        if(CRT_CPUthresholdLow > 0x0f)  CRT_CPUthresholdLow  = 0x0f;
-        if(CRT_CPUthresholdHigh > 0x0f) CRT_CPUthresholdHigh = 0x0f;
-    }
+       /* Set threshold values */
+       /*
+        * CPU/CRT Threshold:                     FIFO
+        *                           MCLK     ___________      VCLK
+        * cpu/engine <---o       o--------->|___________| -----------> CRT
+        *                ^       ^            ^       ^
+        *                 \     /             |       |
+        *                  \   /              |< gap >|
+        *                   \ /               |       |
+        *           selector switch   Thrsh. low     high
+        *
+        * CRT consumes the data in the FIFO during scanline display. When the
+        * amount of data in the FIFO reaches the Threshold low value, the selector
+        * switch will switch to the right, and the FIFO will be refilled with data.
+        * When the amount of data in the FIFO reaches the Threshold high value, the
+        * selector switch will switch to the left and allows the CPU and the chip
+        * engines to access video RAM.
+        *
+        * The Threshold low values should be increased at higher bpps, simply because
+        * there is more data needed for the CRT. When Threshold low and high are very
+        * close to each other, the selector switch will be activated more often, which
+        * decreases performance.
+        *
+        */
+       switch(pSiS->Chipset) {
+       case PCI_CHIP_SIS5597:  factor = 65; break;
+       case PCI_CHIP_SIS6326:  factor = 30; break;
+       case PCI_CHIP_SIS530:   factor = (pSiS->Flags & UMA) ? 60 : 30; break;
+       default:                factor = (pScrn->videoRam > (1024*1024)) ? 24 : 12;
+       }
+       a = width * height * rate * 1.40 * factor * ((pSiS->CurrentLayout.bitsPerPixel + 1) / 8);
+       b = (mclk / 1000) * 999488.0 * (buswidth / 8);
+       c = ((a / b) + 1.0) / 2;
+       d = (int)c + 2;
 
-    pReg->sisRegs3C4[0x08] = ((CRT_CPUthresholdLow & 0x0F) << 4) |
-			      (CRT_ENGthreshold & 0x0F);
+#ifdef TWDEBUG
+       xf86DrvMsg(0, X_INFO,
+          "Debug: w %d h %d r %d mclk %d bus %d factor %d bpp %d\n",
+          width, height, rate, mclk/1000, buswidth, factor,
+          pSiS->CurrentLayout.bitsPerPixel);
+       xf86DrvMsg(0, X_INFO, "Debug: a %f b %f c %f d %d (flags %x)\n",
+     	  a, b, c, d, pSiS->Flags);
+#endif
 
-    pReg->sisRegs3C4[0x09] &= 0xF0;
-    pReg->sisRegs3C4[0x09] |= (CRT_CPUthresholdHigh & 0x0F);
+       CRT_CPUthresholdLow = d;
+       if((pSiS->Flags & (RAMFLAG | SYNCDRAM)) == (RAMFLAG | SYNCDRAM)) {
+          CRT_CPUthresholdLow += 2;
+       }
+       CRT_CPUthresholdHigh = CRT_CPUthresholdLow + 3;
 
-    pReg->sisRegs3C4[0x3F] &= 0xEB;
-    pReg->sisRegs3C4[0x3F] |= (CRT_CPUthresholdHigh & 0x10) |
-                       	      ((CRT_CPUthresholdLow & 0x10) >> 2);
+       CRT_ENGthreshold = 0x0F;
 
-    if(pSiS->oldChipset >= OC_SIS530A) {
-     	pReg->sisRegs3C4[0x3F] &= 0xDF;
-	pReg->sisRegs3C4[0x3F] |= 0x58;
-    }
+#ifdef TWDEBUG
+       xf86DrvMsg(0, X_INFO, "Debug: Thlow %d thhigh %d\n",
+     	  CRT_CPUthresholdLow, CRT_CPUthresholdHigh);
+#endif
 
+#if 0  /* See comment in sis_dac.c on why this is commented */
+       if(pSiS->Chipset == PCI_CHIP_SIS530) {
+          if((pSiS->oldChipset == OC_SIS530A) &&
+	     (pSiS->Flags & UMA) &&
+	     (mclk == 100000) &&
+	     (pSiS->Flags & ESS137xPRESENT)) {
+	       if(!(pSiS->Flags & SECRETFLAG)) index = 0;
+               if((temp = SiS_CalcSpecial530Threshold(pSiS, mode, index)) {
+	    	   CRT_CPUthresholdLow = temp;
+	           break;
+	       }
+          }
+       }
+#endif
 
+       switch(pSiS->Chipset) {
+       case PCI_CHIP_SIS530:
+          if(CRT_CPUthresholdLow > 0x1f)  CRT_CPUthresholdLow = 0x1f;
+          CRT_CPUthresholdHigh = 0x1f;
+          break;
+       case PCI_CHIP_SIS5597:
+       case PCI_CHIP_SIS6326:
+       default:
+          if(CRT_CPUthresholdLow > 0x0f)  CRT_CPUthresholdLow  = 0x0f;
+          if(CRT_CPUthresholdHigh > 0x0f) CRT_CPUthresholdHigh = 0x0f;
+       }
 
-    /* TW: Set SiS6326 TV registers */
-    if((pSiS->Chipset == PCI_CHIP_SIS6326) && (sis6326tvmode)) {
-      unsigned char tmp;
-      int index=0, i, j, k;
-      int fsc;
+       pReg->sisRegs3C4[0x08] = ((CRT_CPUthresholdLow & 0x0F) << 4) |
+	  		        (CRT_ENGthreshold & 0x0F);
 
-      if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
-         pReg->sisRegs3C4[0x0D] |= 0x04;
-         switch(width) {
-	   case 800:
-	      if((strcmp(mode->name, "PAL800x600U") == 0))  index = 4;
-	      else	        			    index = 3;
-	      break;
-	   case 720:
-	      index = 5;
-	      break;
-	   case 640:
-	   default:
-	      index = 2;
-	      break;
-	 }
-	 for(i=0; i<14; i++) {
-	     pReg->sis6326tv[SiS6326TVRegs1[i]] = SiS6326TVRegs1_PAL[index][i];
-	 }
+       pReg->sisRegs3C4[0x09] &= 0xF0;
+       pReg->sisRegs3C4[0x09] |= (CRT_CPUthresholdHigh & 0x0F);
+
+       pReg->sisRegs3C4[0x3F] &= 0xEB;
+       pReg->sisRegs3C4[0x3F] |= (CRT_CPUthresholdHigh & 0x10) |
+                         	      ((CRT_CPUthresholdLow & 0x10) >> 2);
+
+       if(pSiS->oldChipset >= OC_SIS530A) {
+     	  pReg->sisRegs3C4[0x3F] &= 0xDF;
+	  pReg->sisRegs3C4[0x3F] |= 0x58;
+       }
+
+       /* Set SiS6326 TV registers */
+       if((pSiS->Chipset == PCI_CHIP_SIS6326) && (sis6326tvmode)) {
+          unsigned char tmp;
+          int index=0, i, j, k;
+          int fsc;
+
+          if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
+             pReg->sisRegs3C4[0x0D] |= 0x04;
+             switch(width) {
+	     case 800:
+	        if((strcmp(mode->name, "PAL800x600U") == 0))  index = 4;
+	        else	        			      index = 3;
+	        break;
+	     case 720: index = 5;  break;
+	     case 640:
+	     default:  index = 2;
+	     }
+	     for(i=0; i<14; i++) {
+	        pReg->sis6326tv[SiS6326TVRegs1[i]] = SiS6326TVRegs1_PAL[index][i];
+	     }
 #ifdef TV6326TEST
-         for(i=0, j=2; i<3; i++, j++) {
-	     pReg->sis6326tv[j] = SiS6326TVRegs1_PAL_2[index][i];
-	 }
+             for(i=0, j=2; i<3; i++, j++) {
+	        pReg->sis6326tv[j] = SiS6326TVRegs1_PAL_2[index][i];
+	     }
 #endif
-         fsc = (SiS6326TVRegs1_PAL[index][2] << 16) |
-	       (SiS6326TVRegs1_PAL[index][3] << 8)  |
-	       (SiS6326TVRegs1_PAL[index][4]);
-      } else {
-	 pReg->sisRegs3C4[0x0D] &= ~0x04;
-	 if((strcmp(mode->name, "NTSC640x480U") == 0))  index = 5;
-	 else 					        index = 4;
-         for(i=0; i<14; i++) {
-	    pReg->sis6326tv[SiS6326TVRegs1[i]] = SiS6326TVRegs1_NTSC[index][i];
-	 }
+             fsc = (SiS6326TVRegs1_PAL[index][2] << 16) |
+	           (SiS6326TVRegs1_PAL[index][3] << 8)  |
+	           (SiS6326TVRegs1_PAL[index][4]);
+          } else {
+	     pReg->sisRegs3C4[0x0D] &= ~0x04;
+	     if((strcmp(mode->name, "NTSC640x480U") == 0))  index = 5;
+	     else 					    index = 4;
+             for(i=0; i<14; i++) {
+	        pReg->sis6326tv[SiS6326TVRegs1[i]] = SiS6326TVRegs1_NTSC[index][i];
+	     }
 #ifdef TV6326TEST
-         for(i=0, j=2; i<3; i++, j++) {
-	    pReg->sis6326tv[j] = SiS6326TVRegs1_NTSC_2[index][i];
-	 }
+             for(i=0, j=2; i<3; i++, j++) {
+	        pReg->sis6326tv[j] = SiS6326TVRegs1_NTSC_2[index][i];
+	     }
 #endif
-         fsc = (SiS6326TVRegs1_NTSC[index][2] << 16) |
-	       (SiS6326TVRegs1_NTSC[index][3] << 8)  |
-	       (SiS6326TVRegs1_NTSC[index][4]);
-      }
-      if(pSiS->sis6326fscadjust) {
-	 fsc += pSiS->sis6326fscadjust;
-	 pReg->sis6326tv[2] = (fsc >> 16) & 0xff;
-	 pReg->sis6326tv[3] = (fsc >> 8) & 0xff;
-	 pReg->sis6326tv[4] = fsc & 0xff;
-      }
-      tmp = pReg->sis6326tv[0x43];
-      if(pSiS->SiS6326Flags & SIS6326_TVCVBS) tmp |= 0x10;
-      tmp |= 0x08;
-      pReg->sis6326tv[0x43] = tmp;
-      j = 0; k = 0;
-      for(i=0; i<=0x44; i++) {
-	 if(SiS6326TVRegs1[j] == i) {
+             fsc = (SiS6326TVRegs1_NTSC[index][2] << 16) |
+	           (SiS6326TVRegs1_NTSC[index][3] << 8)  |
+	           (SiS6326TVRegs1_NTSC[index][4]);
+          }
+          if(pSiS->sis6326fscadjust) {
+	     fsc += pSiS->sis6326fscadjust;
+	     pReg->sis6326tv[2] = (fsc >> 16) & 0xff;
+	     pReg->sis6326tv[3] = (fsc >> 8) & 0xff;
+	     pReg->sis6326tv[4] = fsc & 0xff;
+          }
+          tmp = pReg->sis6326tv[0x43];
+          if(pSiS->SiS6326Flags & SIS6326_TVCVBS) tmp |= 0x10;
+          tmp |= 0x08;
+          pReg->sis6326tv[0x43] = tmp;
+          j = 0; k = 0;
+          for(i=0; i<=0x44; i++) {
+	     if(SiS6326TVRegs1[j] == i) {
 	 	j++;
 		continue;
-	 }
-	 if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
+	     }
+	     if(pSiS->SiS6326Flags & SIS6326_TVPAL) {
 		tmp = SiS6326TVRegs2_PAL[index][k];
-	 } else {
+	     } else {
 		tmp = SiS6326TVRegs2_NTSC[index][k];
-	 }
-	 pReg->sis6326tv[i] = tmp;
-	 k++;
-      }
-      pReg->sis6326tv[0x43] |= 0x08;
-      if((pSiS->ChipRev == 0xc1) || (pSiS->ChipRev == 0xc2)) {
-         pReg->sis6326tv[0x43] &= ~0x08;
-      }
+	     }
+	     pReg->sis6326tv[i] = tmp;
+	     k++;
+          }
+          pReg->sis6326tv[0x43] |= 0x08;
+          if((pSiS->ChipRev == 0xc1) || (pSiS->ChipRev == 0xc2)) {
+             pReg->sis6326tv[0x43] &= ~0x08;
+          }
 
-      tmp = pReg->sis6326tv[0];
-      tmp |= 0x18;
-      if(pSiS->SiS6326Flags & SIS6326_TVCVBS)   tmp &= ~0x10;
-      if(pSiS->SiS6326Flags & SIS6326_TVSVIDEO) tmp &= ~0x08;
-      tmp |= 0x04;
-      pReg->sis6326tv[0] = tmp;
-    }
+          tmp = pReg->sis6326tv[0];
+          tmp |= 0x18;
+          if(pSiS->SiS6326Flags & SIS6326_TVCVBS)   tmp &= ~0x10;
+          if(pSiS->SiS6326Flags & SIS6326_TVSVIDEO) tmp &= ~0x08;
+          tmp |= 0x04;
+          pReg->sis6326tv[0] = tmp;
+       }
+
+    } /* VESA */
 
     return(TRUE);
 }
 
-/* TW: Init a mode for SiS 300, 315 and 330 series
- *     The original intention of the followling procedure was
- *     to initialize various registers for the selected mode.
- *     This was actually done to a structure, not the hardware.
- *     (SiSRestore would write the structure to the hardware
- *     registers.)
- *     This function is now only used for setting up some
- *     variables (eg. scrnOffset).
+/* Init a mode for SiS 300, 315 and 330 series
+ * This function is now only used for setting up some
+ * variables (eg. scrnOffset).
  */
 Bool
 SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
@@ -871,7 +898,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Copy current register settings to structure */
     (*pSiS->SiSSave)(pScrn, pReg);
 
-    /* TW: Calculate Offset/Display Pitch */
+    /* Calculate Offset/Display Pitch */
     pSiS->scrnOffset = pSiS->CurrentLayout.displayWidth *
                           ((pSiS->CurrentLayout.bitsPerPixel + 7) / 8);
 
@@ -910,24 +937,24 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
             break;
     }
 
-    /* TW: Enable PCI LINEAR ADDRESSING (0x80), MMIO (0x01), PCI_IO (0x20) */
+    /* Enable PCI LINEAR ADDRESSING (0x80), MMIO (0x01), PCI_IO (0x20) */
     pReg->sisRegs3C4[0x20] = 0xA1;
 
-/* TW: Now initialize TurboQueue. TB is always located at the very top of
- *     the videoRAM (notably NOT the x framebuffer memory, which can/should
- *     be limited by MaxXFbMem when using DRI). Also, enable the accelerators.
- */
+    /* Now initialize TurboQueue. TB is always located at the very top of
+     * the videoRAM (notably NOT the x framebuffer memory, which can/should
+     * be limited by MaxXFbMem when using DRI). Also, enable the accelerators.
+     */
     if (!pSiS->NoAccel) {
-        pReg->sisRegs3C4[0x1E] |= 0x42;  /* TW: Enable 2D accelerator */
-	pReg->sisRegs3C4[0x1E] |= 0x18;  /* TW: Enable 3D accelerator */
+        pReg->sisRegs3C4[0x1E] |= 0x42;  /* Enable 2D accelerator */
+	pReg->sisRegs3C4[0x1E] |= 0x18;  /* Enable 3D accelerator */
 	switch (pSiS->VGAEngine) {
 	case SIS_300_VGA:
 	  if(pSiS->TurboQueue)  {    		/* set Turbo Queue as 512k */
-	    temp = ((pScrn->videoRam/64)-8);    /* TW: 8=512k, 4=256k, 2=128k, 1=64k */
+	    temp = ((pScrn->videoRam/64)-8);    /* 8=512k, 4=256k, 2=128k, 1=64k */
             pReg->sisRegs3C4[0x26] = temp & 0xFF;
 	    pReg->sisRegs3C4[0x27] =
 		(pReg->sisRegs3C4[0x27] & 0xfc) | (((temp >> 8) & 3) | 0xF0);
-          }	/* TW: line above new for saving D2&3 of status register */
+          }	/* line above new for saving D2&3 of status register */
 	  break;
 	case SIS_315_VGA:
 	  /* See comments in sis_driver.c */
@@ -958,7 +985,7 @@ SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch)
     return((temp == tempch));
 }
 
-/* TW: Sense connected devices on 30x */
+/* Sense connected devices on 30x */
 void SISSense30x(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
@@ -1138,6 +1165,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	      pSiS->postVBCR32 |= 0x10;
 	   }
        }
+       if(biosflag & 0x01) pSiS->SiS_SD_Flags |= SiS_SD_VBHASSCART;
     }
 
 #ifdef TWDEBUG
