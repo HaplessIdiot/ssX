@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.42 1998/11/22 10:37:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.43 1998/11/29 10:50:34 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -77,6 +77,11 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <ctype.h>    /* for isspace */
 #if NeedVarargsPrototypes
 #include <stdarg.h>
+#endif
+
+#if defined(DGUX)
+#include <sys/resource.h>
+#include <netdb.h>
 #endif
 
 #ifdef AMOEBA
@@ -219,6 +224,11 @@ OsSignal(sig, handler)
 #define LOCK_TMP_PREFIX "/xf86$"
 #define LOCK_PREFIX "/xf86_"
 #define LOCK_SUFFIX ".lck"
+#endif
+
+#if defined(DGUX)
+#include <limits.h>
+#include <sys/param.h>
 #endif
 
 #ifdef _MINIX

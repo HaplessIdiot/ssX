@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.16 1998/07/25 16:55:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.17 1998/08/16 10:25:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -239,9 +239,9 @@ xf86KbdGetMapping (pKeySyms, pModMap)
      CARD8      *pModMap;
 {
   KeySym        *k;
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__) && !defined(DGUX)
   keymap_t      keymap;
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ */
+#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ && !DGUX */
   char          type;
   int           i, j;
   KeySym        *pMap;
@@ -258,7 +258,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pMap = map;
 #endif
 
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__) && !defined(DGUX)
   /*
    * use the keymap, which can be gotten from our oringinal vt??.
    * ( ttymap(1) !!!! )
@@ -281,7 +281,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 	if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
       }
   }
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ */
+#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ && !DGUX */
 
   /*
    * Apply the special key mapping specified in XF86Config 

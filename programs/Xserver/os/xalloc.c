@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.18 1998/10/10 15:25:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.19 1998/12/06 13:05:43 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -253,7 +253,15 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 #include <sys/mman.h>
 #endif /* CSRG_BASED */
 
-#if defined(SVR4)
+#if defined(DGUX)
+#define HAS_GETPAGESIZE
+#define MMAP_DEV_ZERO
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#endif /* DGUX */
+
+#if defined(SVR4) && !defined(DGUX)
 #define MMAP_DEV_ZERO
 #include <sys/types.h>
 #include <sys/mman.h>

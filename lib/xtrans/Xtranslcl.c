@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.27 1998/10/03 09:07:35 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.28 1998/12/05 14:39:55 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -75,8 +75,13 @@ from The Open Group.
 #include <sys/signal.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#ifdef SVR4
+#if defined(SVR4)
+#if !defined(DGUX)
 #include <sys/filio.h>
+#else /* DGUX */
+#include <sys/stream.h>
+#include <sys/ptms.h>
+#endif
 #endif
 #include <sys/stropts.h>
 #include <sys/wait.h>

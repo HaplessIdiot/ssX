@@ -9,7 +9,7 @@
  *
  *  supported O/S's:  SVR4, UnixWare, SCO, Solaris,
  *                    FreeBSD, NetBSD, 386BSD, BSDI BSD/386,
- *                    Linux, Mach/386, ISC
+ *                    Linux, Mach/386, ISC, DGUX
  *                    DOS (WATCOM 9.5 compiler)
  *
  *  compiling:        [g]cc scanpci.c -o scanpci
@@ -18,10 +18,11 @@
  *                    for DOS, watcom 9.5:
  *                        wcc386p -zq -omaxet -7 -4s -s -w3 -d2 name.c
  *                        and link with PharLap or other dos extender for exe
+ * case Intel DG/ux:  gcc -DDGUX scanpci.c -o scanpci (with gcc-DG-2.7.2.88)
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.58 1998/05/01 12:21:20 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.59 1998/11/15 04:30:35 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -47,11 +48,14 @@
  *
  */
 
+#if !defined(DGUX)
 #if defined(__SVR4)
 #if !defined(SVR4)
 #define SVR4
 #endif
 #endif
+#endif
+
 
 #ifdef __EMX__
 #define INCL_DOSFILEMGR
@@ -60,7 +64,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#if defined(SVR4)
+#if defined(SVR4) && !defined(DGUX)
 #if defined(sun)
 #define __EXTENSIONS__
 #endif
@@ -102,6 +106,13 @@
 #ifndef GCCUSESGAS
 #define GCCUSESGAS
 #endif
+#endif
+#if defined(DGUX)
+#include <sys/file.h>
+#include <sys/ioctl.h>
+#include <sys/proc.h>
+#include <sys/param.h>
+#include <sys/kd.h>
 #endif
 #if defined(SCO) || defined(ISC)
 #ifndef ISC
@@ -217,9 +228,15 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 	}
 #else
 
-#if defined(SVR4)
+#if defined(SVR4) && !defined(DGUX)
 # if !defined(__USLC__)
 #  define __USLC__
+# endif
+#endif
+
+#if defined(DGUX)
+# if !defined(_USL)
+#  define _USL
 # endif
 #endif
 
@@ -1214,6 +1231,10 @@ main(int argc, unsigned char *argv[])
     }
 #endif
 
+#if defined(DGUX)
+    printf("Scanpci for Intel ix86 DG/ux R4.20MU03...MUxx\n\n");
+#endif
+
     enable_os_io();
 
 #if !defined(__alpha__) && !defined(__powerpc__)
@@ -1648,7 +1669,7 @@ USHORT callgate[3] = {0,0,0};
 void
 enable_os_io()
 {
-#if defined(SVR4) || defined(SCO) || defined(ISC)
+#if (defined(SVR4) || defined(SCO) || defined(ISC)) && !defined(DGUX)
 #if defined(SI86IOPL)
     sysi86(SI86IOPL, 3);
 #else
@@ -1658,12 +1679,12 @@ enable_os_io()
 #if defined(linux)
     iopl(3);
 #endif
-#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__)
+#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__) || defined(DGUX)
     if ((io_fd = open("/dev/console", O_RDWR, 0)) < 0) {
         perror("/dev/console");
         exit(1);
     }
-#if defined(__FreeBSD__)  || defined(__386BSD__)
+#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(DGUX)
     if (ioctl(io_fd, KDENABIO, 0) < 0) {
         perror("ioctl(KDENABIO)");
         exit(1);
@@ -1752,7 +1773,7 @@ enable_os_io()
 void
 disable_os_io()
 {
-#if defined(SVR4) || defined(SCO) || defined(ISC)
+#if (defined(SVR4) || defined(SCO) || defined(ISC)) && !defined(DGUX)
 #if defined(SI86IOPL)
     sysi86(SI86IOPL, 0);
 #else
@@ -1762,10 +1783,10 @@ disable_os_io()
 #if defined(linux)
     iopl(0);
 #endif
-#if defined(__FreeBSD__)  || defined(__386BSD__)
+#if defined(__FreeBSD__)  || defined(__386BSD__) || defined(DGUX)
     if (ioctl(io_fd, KDDISABIO, 0) < 0) {
         perror("ioctl(KDDISABIO)");
-	close(io_fd);
+        close(io_fd);
         exit(1);
     }
     close(io_fd);
@@ -1775,15 +1796,15 @@ disable_os_io()
     close(io_fd);
 #else
     if (i386_iopl(0) < 0) {
-	perror("i386_iopl");
-	exit(1);
+        perror("i386_iopl");
+        exit(1);
     }
 #endif /* NetBSD1_1 */
 #endif /* __NetBSD__ */
 #if defined(__bsdi__)
     if (ioctl(io_fd, PCCONDISABIOPL, 0) < 0) {
         perror("ioctl(PCCONDISABIOPL)");
-	close(io_fd);
+        close(io_fd);
         exit(1);
     }
     close(io_fd);
@@ -1797,3 +1818,4 @@ disable_os_io()
     pciConfBase = NULL;
 #endif
 }
+

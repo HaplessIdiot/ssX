@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c /main/34 1996/12/02 10:23:29 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.9 1997/01/18 06:58:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.10 1998/10/10 15:25:28 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -60,6 +60,11 @@
 #include "input.h"
 #include "dixstruct.h"
 #include "opaque.h"
+
+#if defined(DGUX)
+#include <net/net_ioctl.h>
+#include <sys/ioctl.h>
+#endif
 
 #ifdef STREAMSCONN
 #include <tiuser.h>

@@ -4,9 +4,9 @@ XCOMM $XConsortium: Imakefile /main/14 1996/10/27 11:03:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.28 1998/01/24 16:56:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.29 1998/08/16 10:25:38 dawes Exp $
 
-#if defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture)
+#if defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture) && !defined(DguxArchitecture)
 # define OSModule OS_SYSV
 #endif
 
@@ -16,6 +16,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.28 1998/
 
 #if defined(SVR4Architecture)
 # include <Server.tmpl>
+#endif
+
+#if defined(DguxArchitecture) 
+# define OSModule OS_DGUX     
 #endif
 
 #if defined(SVR4Architecture) && defined(SunArchitecture) && !HasGcc
