@@ -1,19 +1,20 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.11 2001/01/08 01:07:17 martin Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.12 2001/03/21 16:01:09 dawes Exp $
 
-#define DoNormalLib NormalLibGlx
-#define DoSharedLib SharedLibGlx
-#define DoExtraLib SharedLibGlx
-#define DoDebugLib DebugLibGlx
-#define DoProfileLib ProfileLibGlx
+#define DoNormalLib NO
+#define DoSharedLib YES
+#define DoExtraLib NO
+#define DoDebugLib NO
+#define DoProfileLib NO
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I. \
+     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) \
 		-I$(XF86OSSRC)/$(OS_SUBDIR)/drm \
 		-I$(XF86OSSRC)/$(OS_SUBDIR)/drm/kernel \
+		-I$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel \
 		-I$(XF86OSSRC)
          SRCS = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c \
 		xf86drmMga.c xf86drmR128.c xf86drmRadeon.c
@@ -32,11 +33,6 @@ OS_SUBDIR2 = linux
 OS_SUBDIR = cygwin
 OS_SUBDIR2 = cygwin
 #endif
-
-LinkSourceFile(xf86drm.h,$(XF86OSSRC))
-LinkSourceFile(xf86drmMga.h,$(XF86OSSRC))
-LinkSourceFile(xf86drmR128.h,$(XF86OSSRC))
-LinkSourceFile(xf86drmRadeon.h,$(XF86OSSRC))
 
 LinkSourceFile(xf86drm.c,$(XF86OSSRC)/$(OS_SUBDIR)/drm)
 
@@ -58,7 +54,6 @@ LinkSourceFile(sis_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(OBJS))
-NormalLintTarget($(SRCS))
+AllTarget($(OBJS))
 
 DependTarget()

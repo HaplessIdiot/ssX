@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/GL/mesa/src/drv/common/Imakefile,v 1.1 2001/03/22 21:47:58 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -6,30 +6,15 @@ XCOMM $XFree86$
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
-MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
-
-#if Malloc0ReturnsNull
-ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
-#endif
-
-#if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DDRIVERTS
- DRI_INCLUDES = 
-#endif
-
-MESA_INCLUDES = -I$(MESADRVSRC)/common
-
+#define NeedToLinkMesaSrc
+#define MesaDrvCommonBuildDir /**/
+#include "../../../../../mesa/src/drv/common/Imakefile.inc"
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
-     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
-      DRISRCS = hwlog.c mm.c
-      DRIOBJS = hwlog.o mm.o
+     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
-LinkSourceFile(hwlog.c, $(MESADRVSRC)/common)
-LinkSourceFile(mm.c, $(MESADRVSRC)/common)
-
-         SRCS = $(DRISRCS) 
-         OBJS = $(DRIOBJS) 
+         SRCS = $(COMMONSRCS) 
+         OBJS = $(COMMONOBJS) 
 
 #include <Library.tmpl>
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.13 2001/03/21 16:14:26 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/mesa/src/drv/sis/Imakefile,v 1.1 2001/03/22 21:47:59 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -8,7 +8,8 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.13 2001/03/21 16:14:26 
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
-MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+#define NeedToLinkMesaSrc
+#include "../../../../../mesa/src/drv/sis/Imakefile.inc"
 
 XCOMM SIS_DEFINES = -DSIS_USE_HW_CULL -DSIS_USE_FASTPATH
 SIS_DEFINES = -DSIS_USE_HW_CULL
@@ -16,99 +17,9 @@ SIS_DEFINES = -DSIS_USE_HW_CULL
 XCOMM DEBUG_DEFINES = -DDEBUG_LOCKING
 XCOMM DEBUG_DEFINES = -DSIS_DEBUG
 
-#if Malloc0ReturnsNull
-ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
-#endif
-
-#ifdef i386Architecture
-#if MesaUseMMX
-     MMX_DEFS = -DUSE_MMX_ASM
-#endif
-#if MesaUse3DNow
-   3DNOW_DEFS = -DUSE_3DNOW_ASM
-#endif
-#if MesaUseKatmai
-  KATMAI_DEFS = -DUSE_KATMAI_ASM
-#endif
-  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
-#endif
-
-#if BuildXF86DRI
-  DRI_DEFINES = GlxDefines $(SIS_DEFINES)
- DRI_INCLUDES = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx \
-		-I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
-		-I$(GLXLIBSRC)/mesa/dri \
-		-I$(SERVERSRC)/GL/dri \
-		-I$(XF86OSSRC) \
-		-I$(XF86DRIVERSRC)/sis \
-		-I$(GLXLIBSRC)/dri/drm
-#endif
-
-MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESASRCDIR)/include \
-		-I$(MESADRVSRC)/common -I$(MESADRVSRC)/sis
-
-#if 0
-LinkSourceFile(sis_debug.c, $(MESADRVSRC)/sis)
- DEBUG_SRC = sis_debug.c
- DEBUG_OBJ = sis_debug.o
- DEBUG_DEFINES += -DSIS_DUMP
-#endif
-
-#if 0
-LinkSourceFile(sis_stereo.c, $(MESADRVSRC)/sis)
- STEREO_SRC = sis_stereo.c
- STEREO_OBJ = sis_stereo.o
- STEREO_DEFINES = -DSIS_STEREO=1
-#else
- STEREO_DEFINES = -DSIS_STEREO=0
-#endif
-
-      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES) \
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES) \
 		$(DEBUG_DEFINES) $(STEREO_DEFINES)
-     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
-
-LinkSourceFile(sis_render.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_mesa.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_ctx.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_alloc.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_fog.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_clear.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_stencil.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_texture.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_xwin.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_xmesa.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_span.c, $(MESADRVSRC)/sis)
-LinkSourceFile(sis_fastpath.c, $(MESADRVSRC)/sis)
-
-      SISSRCS = sis_render.c \
-		sis_mesa.c \
-		sis_ctx.c \
-		sis_alloc.c \
-		sis_fog.c \
-		sis_clear.c \
-		sis_stencil.c \
-		sis_texture.c \
-		sis_xwin.c \
-		sis_xmesa.c \
-		sis_span.c \
-		sis_fastpath.c \
-		$(DEBUG_SRC) \
-		$(STEREO_SRC)
-
-      SISOBJS = sis_render.o \
-		sis_mesa.o \
-		sis_ctx.o \
-		sis_alloc.o \
-		sis_fog.o \
-		sis_clear.o \
-		sis_stencil.o \
-		sis_texture.o \
-		sis_xwin.o \
-		sis_xmesa.o \
-		sis_span.o \
-		sis_fastpath.o \
-		$(DEBUG_OBJ) \
-		$(STEREO_OBJ)
+     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
          SRCS = $(SISSRCS)
          OBJS = $(SISOBJS)

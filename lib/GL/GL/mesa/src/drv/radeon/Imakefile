@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile,v 1.2 2001/03/21 16:14:24 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/mesa/src/drv/radeon/Imakefile,v 1.1 2001/03/22 21:47:59 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -8,96 +8,11 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile,v 1.2 2001/03/21 16:14:2
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
-MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+#define NeedToLinkMesaSrc
+#include "../../../../../mesa/src/drv/radeon/Imakefile.inc"
 
-#if Malloc0ReturnsNull
-ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
-#endif
-
-#ifdef i386Architecture
-#if MesaUseMMX
-     MMX_DEFS = -DUSE_MMX_ASM
-#endif
-#if MesaUse3DNow
-   3DNOW_DEFS = -DUSE_3DNOW_ASM
-#endif
-#if MesaUseKatmai
-  KATMAI_DEFS = -DUSE_KATMAI_ASM
-#endif
-  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
-#endif
-
-#if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DDRIVERTS
- DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
-		-I$(GLXLIBSRC)/glx \
-		-I$(INCLUDESRC) \
-		-I$(INCLUDESRC)/GL \
-		-I$(GLXLIBSRC)/mesa/dri \
-		-I$(SERVERSRC)/GL/dri \
-		-I$(XF86OSSRC) \
-		-I$(XF86DRIVERSRC)/ati \
-		-I$(XF86COMSRC) \
-		-I$(GLXLIBSRC)/dri/drm
-#endif
-
-MESA_INCLUDES = -I$(MESASRCDIR)/src \
-		-I$(MESADRVSRC)/common \
-		-I$(MESADRVSRC)/radeon
-
-      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
-     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
-
-LinkSourceFile(radeon_context.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_dd.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_fastpath.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_eltpath.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_ioctl.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_lock.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_pipeline.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_screen.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_span.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_state.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_tex.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_texmem.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_texstate.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_tris.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_vb.c, $(MESADRVSRC)/radeon)
-LinkSourceFile(radeon_xmesa.c, $(MESADRVSRC)/radeon)
-
-   RADEONSRCS = radeon_context.c \
-		radeon_dd.c \
-		radeon_fastpath.c \
-		radeon_eltpath.c \
-		radeon_ioctl.c \
-		radeon_lock.c \
-		radeon_pipeline.c \
-                radeon_screen.c \
-		radeon_span.c \
-		radeon_state.c \
-		radeon_tex.c \
-		radeon_texmem.c \
-		radeon_texstate.c \
-		radeon_tris.c \
-		radeon_vb.c \
-		radeon_xmesa.c
-
-   RADEONOBJS = radeon_context.o \
-		radeon_dd.o \
-		radeon_fastpath.o \
-		radeon_eltpath.o \
-		radeon_ioctl.o \
-		radeon_lock.o \
-		radeon_pipeline.o \
-                radeon_screen.o \
-		radeon_span.o \
-		radeon_state.o \
-		radeon_tex.o \
-		radeon_texmem.o \
-		radeon_texstate.o \
-		radeon_tris.o \
-		radeon_vb.o \
-		radeon_xmesa.o
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
+     INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
          SRCS = $(RADEONSRCS)
          OBJS = $(RADEONOBJS)
