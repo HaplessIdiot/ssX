@@ -1,5 +1,5 @@
 XCOMM $Xorg: bsdLib.tmpl,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.16tsi Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.17 2003/05/27 21:56:39 tsi Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
@@ -48,6 +48,8 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #if !defined(SharedX11Reqs)
 #define SharedX11Reqs
 #endif
+
+#define SharedXlibi18nReqs $(LDPRELIB) $(XONLYLIB)
 #define SharedOldXReqs	$(LDPRELIBS) $(XONLYLIB)
 #ifndef SharedXtReqs
 #define SharedXtReqs	$(LDPRELIBS) $(XONLYLIB) $(SMLIB) $(ICELIB)
@@ -66,7 +68,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXtstReqs	$(LDPRELIBS) $(XLIB)
 #define SharedXvReqs	$(LDPRELIB) $(XLIB)
 #define SharedSMReqs	$(LDPRELIBS) $(ICELIB)
-#define SharedGLReqs	$(LDPRELIBS) $(XLIB) -lc
+#define SharedGLReqs	$(LDPRELIBS) $(XLIB)
 #ifndef SharedGLUReqs
 #define SharedGLUReqs	$(LDPRELIB) $(XLIB) $(GLXLIB)
 #endif

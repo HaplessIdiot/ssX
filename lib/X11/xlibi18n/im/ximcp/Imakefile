@@ -13,7 +13,7 @@
 
    CONN_DEFINES = ConnectionFlags
    XTRANS_XIM_DEFINES = -DXIM_t -DTRANS_CLIENT
-   REQUIREDLIBS = -L$(XENVLIBDIR) -lX11 -lc
+   REQUIREDLIBS = SharedXlibi18nReqs
 
 LinkSourceFile(imCallbk.c, ../../..)
 LinkSourceFile(imDefFlt.c, ../../..)

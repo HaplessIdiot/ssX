@@ -1,7 +1,7 @@
 XCOMM
 XCOMM  GNU Hurd shared library template
 XCOMM
-XCOMM $XFree86: xc/config/cf/gnuLib.tmpl,v 1.3tsi Exp $
+XCOMM $XFree86: xc/config/cf/gnuLib.tmpl,v 1.4 2003/05/27 21:56:40 tsi Exp $
 XCOMM
 
 #ifndef FixupLibReferences
@@ -17,6 +17,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define CplusplusLibC
 
 #define SharedX11Reqs
+#define SharedXlibi18nReqs $(LDPRELIB) $(XONLYLIB)
 #define SharedOldXReqs	$(LDPRELIB) $(XONLYLIB)
 #define SharedXtReqs	$(LDPRELIB) $(XONLYLIB) $(SMLIB) $(ICELIB)
 #define SharedXaw6Reqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
