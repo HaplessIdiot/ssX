@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.22 2001/04/30 16:26:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.23 2001/05/18 17:48:32 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -12,7 +12,6 @@
 #include "servermd.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
-//#include "mi.h"
 #include "mibstore.h"		// mi backing store implementation
 #include "mipointer.h"		// mi software cursor
 #include "micmap.h"		// mi colormap code
@@ -70,7 +69,8 @@ static PixmapFormatRec formats[] = {
         { 8,    8,      BITMAP_SCANLINE_PAD },
         { 15,   16,     BITMAP_SCANLINE_PAD },
         { 16,   16,     BITMAP_SCANLINE_PAD },
-        { 24,   32,     BITMAP_SCANLINE_PAD }
+        { 24,   32,     BITMAP_SCANLINE_PAD },
+        { 32,   32,     BITMAP_SCANLINE_PAD }
 };
 const int NUMFORMATS = sizeof(formats)/sizeof(formats[0]);
 
@@ -191,36 +191,6 @@ static Bool DarwinAddScreen(
     {
         return FALSE;
     }
-
-#if 0
-    if ( dfb.bitsPerPixel == 32 ) {
-        if (!cfb32ScreenInit(pScreen,
-                dfb.framebuffer,
-                dfb.width, dfb.height,
-                dpi, dpi,
-                dfb.pitch / (dfb.bitsPerPixel/8))) {
-            return FALSE;
-        }
-    } else if ( dfb.bitsPerPixel == 16 ) {
-        if (!cfb16ScreenInit(pScreen,
-                dfb.framebuffer,
-                dfb.width, dfb.height,
-                dpi, dpi,
-                dfb.pitch / (dfb.bitsPerPixel/8))) {
-            return FALSE;
-        }
-    } else if ( dfb.bitsPerPixel == 8 ) {
-        if (!cfbScreenInit(pScreen,
-                dfb.framebuffer,
-                dfb.width, dfb.height,
-                dpi, dpi,
-                dfb.pitch / (dfb.bitsPerPixel/8))) {
-            return FALSE;
-        }
-    } else {
-        return FALSE;
-    }
-#endif
 
     // set the RGB order correctly for TrueColor
     if (dfb.bitsPerPixel > 8) {
