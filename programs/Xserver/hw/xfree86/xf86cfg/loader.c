@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.16 2001/10/28 03:34:08 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.17 2001/11/02 18:23:14 paulo Exp $
  */
 
 #include "config.h"
@@ -42,6 +42,7 @@
 #include <string.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <ctype.h>
 
 #include <stdarg.h>
 
@@ -133,16 +134,18 @@ EnumDatabase(XrmDatabase *db, XrmBindingList bindings, XrmQuarkList quarks,
 {
     char *res = XrmQuarkToString(quarks[1]);
 
-    option = module_options->option;
-    while (option->name) {
-	if (strcmp(option->name, res) == 0)
-	    return (False);
-	++option;
+    if (res) {
+	option = module_options->option;
+	while (option->name) {
+	    if (strcasecmp(option->name, res) == 0)
+		return (False);
+	    ++option;
+	}
+	CheckMsg(CHECKER_OPTION_UNUSED,
+		 "WARNING %s.%s is not used\n",
+		 XrmQuarkToString(quarks[0]), res);
+	++error_level;
     }
-    CheckMsg(CHECKER_OPTION_UNUSED,
-	     "WARNING %s.%s is not used\n",
-	     XrmQuarkToString(quarks[0]), res);
-    ++error_level;
 
     return (False);
 }
@@ -153,7 +156,8 @@ LoaderInitializeOptions(void)
     static int first = 1;
     static char *modules = "lib/modules";
     volatile Bool options_ok = False;
-    char query[256];
+    char *ptr, query[256];
+    char *ptr2, query2[256];
     char *type;
     XrmValue value;
     XrmQuark names[2];
@@ -290,7 +294,13 @@ LoaderInitializeOptions(void)
 
 				    while (option->name) {
 					XmuSnprintf(query, sizeof(query), "%s.%s", *ploaderList, option->name);
-					if (!XrmGetResource(options_xrm, query, "Module.Option", &type, &value) ||
+					for (ptr = query, ptr2 = query2; *ptr; ptr++) {
+					    if (*ptr != '_' && *ptr != ' ' && *ptr != '\t')
+						*ptr2 = tolower(*ptr);
+					}
+					*ptr2 = '\0';
+					/* all resources are in lowercase */
+					if (!XrmGetResource(options_xrm, query2, "Module.Option", &type, &value) ||
 					    value.addr == NULL) {
 					    CheckMsg(CHECKER_OPTION_DESCRIPTION_MISSING,
 						     "WARNING no description for %s\n", query);
