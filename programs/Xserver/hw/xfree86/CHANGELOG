@@ -1,3 +1,29 @@
+XFree86 3.9z (14 December 1997)
+1300. Xkb{Get,Set}PerClientControls missing from XKBlib.h (#1283,
+      Kaleb Keithley).
+1299. BSD 4.4 sockets not handled correctly in xfwp/transport.c (#1276, 1281,
+      Kaleb Keithley).
+1298. Local connection doesn't work for lbxproxy on AIX (#1275,
+      Arthur Barstow).
+1297. Get fcntl flags in Xtrans before setting them (#1268, Kaleb Keithley).
+1296. Fix 'Xnest -query' on IBM (#1263, Kaleb Keithley).
+1295. Fix X server core dump after disconnecting from a font server
+      (#1256, Arthur Barstow).
+1294. Xserver:Security Policy parsing code returns bogus value on suceess
+      (#1254, M.S. Ramesh).
+1293. Install app-defaults in /var (#1253, Kaleb Keithley).
+1292. Some xfwp fixes (#1252, Arthur Barstow).
+1291. Fix some Win32 problems (#1251, 1255, Kaleb Keithley).
+1290. DPMS was missing from pandix main.c (#1246, Kaleb Keithley).
+1289. Solaris 2.x LOCALCONN updates (#1269 Kaleb Keithley).
+1288. DPMS updates (#1229, Kaleb Keithley).
+1287. KeyPress event doesn't use XKB state when GrabsUseXKBStateMask is set
+      (#1227, Kaleb Keithley).
+1286. Add EVI (Extended Visual Information) server extension (#1225, 1282,
+      Kaleb Keithley).
+1285. Fix some Xmb man pages and specs docs (#1220, 1270, Kaleb Keithley).
+1284. Plugin fixes (#1219, 1221, 1224, 1226, 1247, 1273, Kaleb Keithley).
+
 XFree86 3.9y (6 December 1997)
 1484. Fix some initialization problems in the xkb programs (#1233,
       Andreas Schwab).
