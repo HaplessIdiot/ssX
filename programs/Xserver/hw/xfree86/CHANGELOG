@@ -1,4 +1,6 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 452. Replace the perl version of ucs2any with a C version ( Ben Collver and 
+      other NetBSD developpers, Matthieu Herrb).
  451. For drivers that support 'Option "dri"' have the driver request
       loading the dri module when this option is true.  This brings
       it in to line with how other things are handled.  Other drivers
@@ -17750,7 +17752,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2860 2003/09/18 19:31:47 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2861 2003/09/21 01:20:14 dawes Exp $
 
 
 
