@@ -179,7 +179,7 @@ typedef struct {
 	unsigned short blue;	/* 0x0000 to 0xffff */
 } XcmsRGB;		/* RGB Device */
 .De
-LP
+.LP
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i

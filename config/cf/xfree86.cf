@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.47 1995/01/27 10:28:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.48 1995/01/28 15:40:38 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -174,6 +174,13 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.47 1995/01/27 10:28:08 dawes Exp $
  */
 #ifndef BuildExtraExtensionLibrary
 #define BuildExtraExtensionLibrary	YES
+#endif
+
+/*
+ * Build the VGAHelp extension
+ */
+#ifndef BuildVGAHelp
+#define BuildVGAHelp			YES
 #endif
 
 /*
