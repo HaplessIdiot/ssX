@@ -20,7 +20,6 @@
 #define RGBEQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff)) 
 
 #ifdef XF86DRI
-#define MGAREG_DWGSYNC		      0x2c4c
 #define MGA_SYNC_XTAG                 0x275f4200
 
 #define MGABUSYWAIT() do { \

@@ -216,7 +216,8 @@ typedef enum {
     OPTION_SET_MCLK,
     OPTION_OVERCLOCK_MEM,
     OPTION_VIDEO_KEY,
-    OPTION_ROTATE
+    OPTION_ROTATE,
+    OPTION_TEXTURED_VIDEO
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -235,6 +236,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_OVERCLOCK_MEM,	"OverclockMem",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_TEXTURED_VIDEO,	"TexturedVideo",OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1393,6 +1395,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->OverclockMem = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Overclocking memory\n");
     }
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_TEXTURED_VIDEO, FALSE)) {
+	pMga->TexturedVideo = TRUE;
+    }
     if (pMga->FBDev) {
 	/* check for linux framebuffer device */
 	if (!xf86LoadSubModule(pScrn, "fbdevhw"))
@@ -2398,8 +2403,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+#if 0
     if(!pMga->ShadowFB) /* hardware cursor needs to wrap this layer */
 	MGADGAInit(pScreen);
+#endif
 
     if (!pMga->NoAccel)
 	MGAStormAccelInit(pScreen);
@@ -2679,6 +2686,8 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xfree(pMga->DGAModes);
     if (pMga->adaptor)
 	xfree(pMga->adaptor);
+    if (pMga->portPrivate)
+	xfree(pMga->portPrivate);
 
     pScrn->vtSema = FALSE;
 
