@@ -1,9 +1,0 @@
-.deps
-.libs
-Makefile.in
-*.lo
-*.o
-*.la
-profile
-mesasyms
-depend
