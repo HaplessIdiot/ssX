@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.38 2003/11/29 01:37:36 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.39 2003/12/17 18:14:40 dawes Exp $ */
 
 #include "fontmisc.h"
 
@@ -89,6 +89,8 @@ THE SOFTWARE.
 
 /* Does the X accept noSuchChar? */
 #define X_ACCEPTS_NO_SUCH_CHAR
+/* Does the XAA accept NULL noSuchChar.bits?(dangerous) */
+/* #define XAA_ACCEPTS_NULL_BITS */
 
 #ifdef X_ACCEPTS_NO_SUCH_CHAR
 static CharInfoRec noSuchChar = { /* metrics */{0,0,0,0,0,0},
@@ -611,6 +613,13 @@ FreeTypeInstanceGetGlyph(unsigned idx, int flags, CharInfoPtr *g, FTInstancePtr 
     xrc = FreeTypeRasteriseGlyph(idx, flags, 
 				 &(*glyphs)[segment][offset], instance, 
 				 (*available)[segment][offset] >= FT_AVAILABLE_METRICS);
+    if(xrc != Successful && (*available)[segment][offset] >= FT_AVAILABLE_METRICS) {
+	ErrorF("Warning: FreeTypeRasteriseGlyph() returns an error,\n");
+	ErrorF("\tso the backend tries to set a white space.\n");
+	xrc = FreeTypeRasteriseGlyph(idx, flags | FT_GET_DUMMY,
+				     &(*glyphs)[segment][offset], instance,
+				     (*available)[segment][offset] >= FT_AVAILABLE_METRICS);
+    }
     if(xrc == Successful) {
         (*available)[segment][offset] = FT_AVAILABLE_RASTERISED;
 	/* return the glyph */
@@ -1276,6 +1285,8 @@ FreeTypeFreeFont(FTFontPtr font)
     FreeTypeFreeInstance(font->instance);
     if(font->ranges)
         xfree(font->ranges);
+    if(font->dummy_char.bits)
+	xfree(font->dummy_char.bits);
     xfree(font);
 }
 
@@ -3454,7 +3465,33 @@ FreeTypeGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
             *gp++ = g;
         }
 #ifdef X_ACCEPTS_NO_SUCH_CHAR
-	else *gp++ = &noSuchChar;
+	else {
+#ifdef XAA_ACCEPTS_NULL_BITS
+	    *gp++ = &noSuchChar;
+#else
+	    if ( tf->dummy_char.bits ) {
+		*gp++ = &tf->dummy_char;
+	    }
+	    else {
+		char *raster = NULL;
+		int wd_actual, ht_actual, wd, ht, bpr;
+		wd_actual = tf->info->maxbounds.rightSideBearing - tf->info->maxbounds.leftSideBearing;
+		ht_actual = tf->info->maxbounds.ascent + tf->info->maxbounds.descent;
+		if(wd_actual <= 0) wd = 1;
+		else wd=wd_actual;
+		if(ht_actual <= 0) ht = 1;
+		else ht=ht_actual;
+		bpr = (((wd + (tf->instance->bmfmt.glyph<<3) - 1) >> 3) & 
+		       -tf->instance->bmfmt.glyph);
+		raster = (char*)xalloc(ht * bpr);
+		if(raster) {
+		    memset(raster, 0, ht * bpr);
+		    tf->dummy_char.bits = raster;
+		    *gp++ = &tf->dummy_char;
+		}
+	    }
+#endif
+	}
 #endif
     }
     
