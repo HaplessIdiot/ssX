@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /* (c) Itai Nahshon */
 
 #include "xf86.h"
@@ -11,7 +13,6 @@
 #include "vgaHW.h"
 
 #include "xaa.h"
-#include "xaacursor.h"
 
 #include "cir.h"
 

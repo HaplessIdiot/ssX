@@ -1,4 +1,3 @@
-/* $XConsortium: $ */
 /*
  * Driver for CL-GD5480.
  * Itai Nahshon.
@@ -10,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.15 1998/08/29 05:43:16 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -62,7 +61,7 @@
 #endif
 
 #include "xaa.h"
-#include "xaacursor.h"
+#include "xf86Cursor.h"
 
 #include "cir.h"
 
@@ -165,7 +164,7 @@ static OptionInfoRec CIROptions[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(cirModuleInit);
+MODULEINITPROTO(cirrusModuleInit);
 static MODULESETUPPROTO(cirSetup);
 
 static XF86ModuleVersionInfo cirVersRec =
@@ -203,7 +202,7 @@ cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
     if (!setupDone) {
 	setupDone = TRUE;
-	xf86AddDriver(&CIR, module, 0);
+	xf86AddDriver(&CIRRUS, module, 0);
 
 	/*
 	 * Modules that this driver always requires may be loaded here
