@@ -49,6 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _Xtos_h
 #define _Xtos_h
@@ -61,7 +62,7 @@ SOFTWARE.
 #define WORD64
 #endif
 
-#ifdef __alpha
+#if defined(__alpha) || defined(__alpha__)
 #define LONG64
 #endif
 

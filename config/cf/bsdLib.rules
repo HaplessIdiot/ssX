@@ -4,11 +4,17 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.2 1996/10/03 08:28:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.3 1996/12/23 05:50:15 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
 
+#ifndef UseElfFormat
+#define UseElfFormat NO
+#endif
+
+#if !UseElfFormat
+/* a.out shared libs */
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
 #endif
@@ -111,3 +117,109 @@ Concat3(DEP,varname,LIB) = SharedDSLibDependencies(libname,libsource,revname) @@
 Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname) Concat3(Shared,libname,Reqs)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
+
+#else /* UseElfFormat */
+
+/*
+ * NetBSD/FreeBSD (ELF) shared library rules
+ * Cloned from Linux ELF rules, but with a minor number.
+ */
+
+#ifndef HasSharedLibraries
+#define HasSharedLibraries YES
+#endif
+#ifndef ForceNormalLib
+#define ForceNormalLib YES
+#endif
+
+/*
+ *	#define BaseShLibReqs	-lc
+ *
+ * I don't want to use this since the normal ELF executables should
+ * be linked with libc.so. If it is not, i.e., static, the variables in
+ * libc.so which is loaded in because of the other shared libraries
+ * may have different values than the ones in the static ELF
+ * executables. That happens if the binaries are linked with libg.a
+ * or libc_p.a.
+ *
+ * If an ELF executable linked with libg.a or libc_p.a loads a shared
+ * object which needs libc.so via dlopen (), I think it should fail.
+ * It is a very bad idea. The moral story is DON'T USE dlopen () IN
+ * ELF EXECUTABLES LINKED WITH libg.a OR libc_p.a. H.J.
+ *
+ */
+#define BaseShLibReqs
+
+#ifndef SharedDataSeparation
+#define SharedDataSeparation NO
+#endif
+#ifndef SharedCodeDef
+#define SharedCodeDef /**/
+#endif
+#ifndef SharedLibraryDef
+#define SharedLibraryDef /**/
+#endif
+#ifndef ShLibIncludeFile
+#define ShLibIncludeFile <bsdLib.tmpl>
+#endif
+#ifndef SharedLibraryLoadFlags
+#define SharedLibraryLoadFlags -shared -Wl,-rpath,$(USRLIBDIR)
+#endif
+#ifndef PositionIndependentCFlags
+#define PositionIndependentCFlags -fPIC
+#endif
+#ifndef PositionIndependentCplusplusFlags
+#define PositionIndependentCplusplusFlags -fPIC
+#endif
+#ifndef ExtraLoadFlags
+#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIR)
+#endif
+
+/*
+ * InstallSharedLibrary - generate rules to install the shared library.
+ * NOTE: file must be executable, hence "INSTBINFLAGS"
+ */
+#ifndef InstallSharedLibrary
+#define	InstallSharedLibrary(libname,rev,dest)				@@\
+install:: Concat(lib,libname.so.rev) 					@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest
+#endif /* InstallSharedLibrary */
+
+/*
+ * InstallSharedLibraryData - generate rules to install the shared library data
+ */
+#ifndef InstallSharedLibraryData
+#define	InstallSharedLibraryData(libname,rev,dest)
+#endif /* InstallSharedLibraryData */
+
+
+/*
+ * SharedLibraryTarget - generate rules to create a shared library;
+ * build it into a different name so that we do not hose people by having
+ * the library gone for long periods.
+ */
+#ifndef SharedLibraryTarget
+#define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
+AllTarget(Concat(lib,libname.so.rev))					@@\
+									@@\
+Concat(lib,libname.so.rev):  solist					@@\
+	$(RM) $@~							@@\
+	(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$@ solist $(REQUIREDLIBS) BaseShLibReqs) @@\
+	$(RM) $@ 							@@\
+	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.so.rev)
+
+#endif /* SharedLibraryTarget */
+
+/*
+ * SharedLibraryDataTarget - generate rules to create shlib data file;
+ */
+#ifndef SharedLibraryDataTarget
+#define SharedLibraryDataTarget(libname,rev,salist)
+#endif /* SharedLibraryTarget */
+
+#endif /* UseElfFormat */

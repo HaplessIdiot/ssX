@@ -58,16 +58,11 @@
            linear frame buffer. By default for VLBus/EISA cards it is at
            60MB.  For the 8900CL/D, it is at 15MB.
 
-        Option "fast_dram"
-           45ns DRAM
+        Option "mmio"
+           This option turns on Memory Mapped IO support. It increases
+           speed, but hasn't been extensively tested yet.
 
-        Option "med_dram"
-           70ns DRAM
 
-        Option "slow_dram"
-           80ns DRAM.  This is the default for TGUIs.  NOTE: The above
-           settings allow for higher dot clocks. Choose the one that
-           matches your DRAM speed.
 
         Option "hw_cursor"
            Turn on hardware cursor (NOTE: it is off by default)
@@ -129,12 +124,12 @@
   clocks for the newer clock synthesizers, but you should have no prob-
   lems on newer boards.
 
-
   Some newer Trident 8900B/C boards are apparently being built with the
   clock synthesizers used on the 9000 and 8900CL boards.  If your board
   has a chip labeled "Trident TCK900x" ("x" has been seen as 2 or 4;
   there may be others), your board may actually have a 4th clock select
   bit.  The 9002 has twelve distinct clocks (the other 4 are
+
   duplicates); the 9004 has 16 clocks (the same 12 as the 9002 + 4
   others).  If you see such a chip on a board with an 8900B or 8900C,
   put the following line in the Device section of your XF86Config file:
@@ -162,7 +157,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.15 1996/12/23 06:46:28 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.16 1996/12/30 13:59:47 dawes Exp $
 
 
 
@@ -170,6 +165,11 @@
 
 
   $XConsortium: trident.sgml /main/11 1996/10/28 04:24:08 kaleb $
+
+
+
+
+
 
 
 

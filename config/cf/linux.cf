@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.53 1996/12/25 04:05:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.54 1996/12/28 08:03:14 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -9,20 +9,20 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.53 1996/12/25 04:05:36 dawe
 #define UseElfFormat		LinuxElfDefault
 #endif
 
-#ifndef OsBinaryType
+#ifndef OSBinaryType
 #if UseElfFormat
-#define OsBinaryType		[ELF]
+#define OSBinaryType		[ELF]
 #else
 #ifdef AlphaArchitecture
-#define OsBinaryType		[ECOFF]
+#define OSBinaryType		[ECOFF]
 #else
-#define OsBinaryType		[a.out]
+#define OSBinaryType		[a.out]
 #endif
 #endif
 #endif
 
 #ifndef OSName
-#define OSName			DefaultOSName OsBinaryType
+#define OSName			DefaultOSName OSBinaryType
 #endif
 
 #ifndef OSVendor

@@ -1,4 +1,14 @@
-XFree86 3.2l (30 December 1996)
+XFree86 3.2l (31 December 1996)
+ 158. Add config support for using the system's standard version of libz
+      when it exists (Chris Demetriou).
+ 157. Add rules for ELF shared libraries on BSD (Chris Demetriou).
+ 156. Recognise __alpha__ as AlphaArchitecture for NetBSD, and treat
+      __alpha__ the same way as __alpha is various part of the code
+      (Chris Demetriou).
+ 155. Update NetBSD config file (Chris Demetriou).
+ 154. Add code to dynamically recognise NetBSD versions in imake, and
+      add defines to allow massaging of the information returned by
+      uname Chris Demetriou).
  153. Fix inconsistent usage of malloc/xalloc/Xalloc in the Xprt server.
  152. Fix segfault at startup of clients linked with libICE on SVR4.0
  151. Add detection for the 250MHz ramdac used on the PowerDoc Edition

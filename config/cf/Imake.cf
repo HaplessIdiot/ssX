@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/27 1996/12/27 16:30:58 kaleb $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.30 1996/12/23 05:50:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.31 1996/12/29 13:36:52 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -77,9 +77,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.30 1996/12/23 05:50:02 dawes Exp $
 #   define MipsArchitecture
 #   undef mips
 # endif
-# ifdef __alpha
+# if defined(__alpha) || defined(__alpha__)
 #   define AlphaArchitecture
 #   undef __alpha
+#   undef __alpha__
 # endif
 # ifdef mc68000
 #   define Mc68020Architecture
@@ -104,9 +105,9 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.30 1996/12/23 05:50:02 dawes Exp $
 #   define MipsArchitecture
 #   undef mips
 # endif
-# ifdef __alpha
+# ifdef __alpha__
 #   define AlphaArchitecture
-#   undef __alpha
+#   undef __alpha__
 # endif
 # ifdef mc68000
 #   define Mc68020Architecture

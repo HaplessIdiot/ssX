@@ -1,5 +1,5 @@
 /* $XConsortium: xkbInit.c /main/23 1996/09/28 17:16:19 rws $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.10 1996/10/13 11:32:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.11 1996/12/23 07:10:13 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -54,7 +54,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	PHYS_LEDS	0x7f
 #define	LED_COMPOSE	8
 #else
-#if defined(ultrix) || defined(__osf__) || defined(__alpha)
+#if defined(ultrix) || defined(__osf__) || defined(__alpha) || defined(__alpha__)
 #define	LED_COMPOSE	2
 #define LED_CAPS	3
 #define	LED_SCROLL	4

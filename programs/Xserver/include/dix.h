@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dix.h /main/44 1996/12/15 21:24:57 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.5 1996/12/23 07:09:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.6 1996/12/24 02:27:26 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -296,7 +296,7 @@ extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
 
-#ifndef __alpha
+#if !(defined(__alpha) || defined(__alpha__))
 typedef long HWEventQueueType;
 #else
 typedef int HWEventQueueType;

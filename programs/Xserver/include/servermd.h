@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/58 1996/12/02 10:22:09 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.17 1996/12/17 21:03:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.18 1996/12/23 07:09:31 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -269,7 +269,7 @@ SOFTWARE.
 
 #endif /* mips */
 
-#if defined(__alpha) || defined(__alphaCross)
+#if defined(__alpha) || defined(__alpha__) || defined(__alphaCross)
 # define IMAGE_BYTE_ORDER	LSBFirst	/* Values for the Alpha only */
 
 # if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)

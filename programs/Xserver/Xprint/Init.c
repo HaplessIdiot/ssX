@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.2 1996/12/30 13:58:51 dawes Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -96,13 +96,7 @@ typedef char *XPointer;
 
 extern  char    *display;		/* display number as a string */
 
-#if 0
-/* extern char *Xalloc(); */
-extern void  Xfree();
-/* extern char *Xrealloc(); */
-#else
 #include "os.h"
-#endif
 
 extern char *getenv();
 extern void XpAddPrinterAttribute();
