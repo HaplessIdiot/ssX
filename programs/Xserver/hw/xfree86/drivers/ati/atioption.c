@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.2 1999/09/25 14:37:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.4 2000/01/27 01:01:03 alanh Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -55,7 +55,6 @@ OptionInfoRec  Option[] =
         {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
 };
 
-static
 OptionInfoPtr
 ATIAvailableOptions(int chipid)
 {
