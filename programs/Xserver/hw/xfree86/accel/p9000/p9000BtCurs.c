@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.0 1994/05/29 02:05:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.1 1994/08/01 12:11:47 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -64,13 +64,18 @@ static __inline__ void p9000OutBtData(reg, data)
 unsigned short reg;
 unsigned char data;
 {
-   /* Output data to RAMDAC */
+  /* Output data to RAMDAC */
+  if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
+      && (0xf000 & reg))
+    {
+      reg = ((unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4)))
+	+ (unsigned long)p9000InfoRec.IObase;
+    }
    outb(reg, data);
 }
 
 static __inline__ void p9000EndBtData()
 {
-   unsigned char tmp;
 }
 
 /*

@@ -23,6 +23,7 @@
  *
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
+ * Modified for the new cache by Mike Bernson (mike@mbsun.mlb.org)
  */
 
 
@@ -50,7 +51,6 @@ mach32UnrealizeFont(pScreen, font)
     ScreenPtr	pScreen;
     FontPtr	font;
 {
-    if (xf86VTSema)
-	mach32UnCacheFont8(font);
+    xf86UnCacheFont8(font);
     return mfbUnrealizeFont(pScreen, font);
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32gc.c,v 1.2 94/04/17 20:30:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.1 1994/07/15 06:58:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.2 1994/08/01 12:10:36 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -79,6 +79,10 @@ Modified for 16 bpp and VTSema-dependent validation by
 
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
+
+#include "xf86bcache.h"
+#include "xf86fcache.h"
+#include "xf86text.h"
 
 #include "mach32.h"
 #include "regmach32.h"
@@ -179,10 +183,10 @@ static GCOps	mach32Ops = {
     miFillPolygon,
     mach32PolyFillRect,
     miPolyFillArc,
-    mach32PolyText8,
-    miPolyText16,
-    mach32ImageText8,
-    miImageText16,
+    xf86PolyText8,
+    xf86PolyText16,
+    xf86ImageText8,
+    xf86ImageText16,
     miImageGlyphBlt,
     miPolyGlyphBlt,
     miPushPixels
@@ -205,9 +209,9 @@ static GCOps	mach32Ops16 = {
     miFillPolygon,
     mach32PolyFillRect,
     miPolyFillArc,
-    mach32PolyText8,
+    xf86PolyText8,
     miPolyText16,
-    mach32ImageText8,
+    xf86ImageText8,
     miImageText16,
     miImageGlyphBlt,
     miPolyGlyphBlt,
@@ -231,9 +235,9 @@ static GCOps	mach32MemApertureOps = {
     miFillPolygon,
     mach32PolyFillRect,
     miPolyFillArc,
-    mach32PolyText8,
+    xf86PolyText8,
     miPolyText16,
-    mach32ImageText8,
+    xf86ImageText8,
     miImageText16,
     miImageGlyphBlt,
     miPolyGlyphBlt,
@@ -257,9 +261,9 @@ static GCOps	mach32MemApertureOps16 = {
     miFillPolygon,
     mach32PolyFillRect,
     miPolyFillArc,
-    mach32PolyText8,
+    xf86PolyText8,
     miPolyText16,
-    mach32ImageText8,
+    xf86ImageText8,
     miImageText16,
     miImageGlyphBlt,
     miPolyGlyphBlt,
@@ -1328,9 +1332,9 @@ mach32ValidateGC(pGC, changes, pDrawable)
 	if (xf86VTSema) {
 	    pGC->ops->CopyArea = mach32CopyArea;
 	    pGC->ops->CopyPlane = mach32CopyPlane;
-	    pGC->ops->ImageText8 = mach32ImageText8;
+	    pGC->ops->ImageText8 = xf86ImageText8;
 	    pGC->ops->PolyPoint = mach32PolyPoint;
-	    pGC->ops->PolyText8 = mach32PolyText8;
+	    pGC->ops->PolyText8 = xf86PolyText8;
 	    pGC->ops->SetSpans = mach32SetSpans;
 	} else {
 	    pGC->ops->CopyArea = pcfbCopyArea;

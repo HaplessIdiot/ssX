@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.2 1994/07/15 06:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.3 1994/07/24 11:47:43 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -24,7 +24,8 @@
  *
  * Modified for P9000 by Erik Nygren <nygren@mit.edu>
  * Additional changes by Chris Mason <mason@mail.csh.rit.edu>
- * */
+ * 
+ */
 
 #ifndef P9000_H
 #define P9000_H
@@ -34,10 +35,10 @@
 /* WARNING: THESE ARE ALPHA */
 /* CODE AND MAY NOT BE      */
 /* FINISHED                 */
-/* #define P9000_ACCEL      */   /* Use acceleration */
-/* #define P9000_IM_ACCEL   */   /* Use code from p9000im.c */
-/* #define P9000_ORCHID_SUP */   /* Support the Orchid P9000 */
-/* #define P9000_VPRPCI_SUP */   /* Support the Viper PCI */
+#define P9000_ACCEL        /* Use acceleration */
+/* #define P9000_IM_ACCEL   */  /* Use image read from p9000im.c */
+#define P9000_ORCHID_SUP   /* Support the Orchid P9000 (may not work) */
+#define P9000_VPRPCI_SUP   /* Support the Viper PCI (may not work yet) */
 /* #define DEBUG            */
 /****************************/
 
@@ -220,6 +221,12 @@ extern void p9000CleanUp(
 #endif
 );
 
+extern Bool p9000SysconfigHres(
+#if NeedFunctionPrototypes
+   int, int, unsigned long *
+#endif
+);
+
 /****************** p9000vga.c *****************/
 
 extern void p9000SaveVT(
@@ -333,7 +340,6 @@ p9000ValidateGC(
 );
 
 /*********************** p9000im.c **************************/
-#ifdef P9000_IM_ACCEL
 
 extern void p9000ImageInit(
 #if NeedFunctionPrototypes
@@ -364,7 +370,6 @@ void
 );
 #endif /* if 0 */
 
-#endif /* P9000_IM_ACCEL */
 
 /*********************** p9000blt.c **************************/
 
@@ -396,6 +401,8 @@ extern RegionPtr p9000CopyPlane(
 #endif
 );
 #endif
+
+extern void p9000CopyWindow() ;
  
 /***********/
 
@@ -432,8 +439,6 @@ extern int p9000ValidTokens[];
 extern volatile unsigned long *CtlBase;
 /* P9000 linear mapped frame buffer base */
 extern volatile unsigned long *VidBase;  
-/* P9000 PCI extended I/O base */
-extern volatile unsigned long *ExtBase;  
 
 extern volatile pointer p9000VideoMem;
 
@@ -441,13 +446,14 @@ extern Bool p9000SWCursor;         /* Use a software cursor */
 extern Bool p9000DACSyncOnGreen;   /* Enables syncing on green */
 extern Bool p9000DAC8Bit;          /* Only 8 bit is supported for now
 				    * (as opposed to 6 bit) */
+extern Bool p9000NoAccel;          /* Disables hardware acceleration */
 
 extern ScreenPtr p9000savepScreen;
 
 extern unsigned p9000BytesPerPixel;
 
 /* Raster operation (alu) -> minterm mapping */
-extern unsigned long p9000alu[];
+extern unsigned int p9000alu[];
 
 /* Retrieve a long word from memory */
 #ifndef p9000Fetch

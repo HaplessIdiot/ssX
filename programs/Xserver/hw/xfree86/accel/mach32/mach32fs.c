@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.2 1994/07/15 06:58:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.3 1994/08/01 12:10:34 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -104,8 +104,8 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfb.h"
 #include "cfb16.h"
 
-#include "regmach32.h"
 #include "mach32.h"
+#include "regmach32.h"
 
 void
 mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
@@ -321,8 +321,8 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     while (n--) {
 	mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
 			   pPix->devPrivate.ptr, pixWidth, width, height,
-			   xrot, yrot, pGC->fgPixel,
-			   mach32alu[pGC->alu], pGC->planemask);
+			   xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+			   mach32alu[pGC->alu], pGC->planemask, 0);
 	ppt++;
 	pwidth++;
     }

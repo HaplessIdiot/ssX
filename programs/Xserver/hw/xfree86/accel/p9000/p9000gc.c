@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc.c,v 3.0 1994/07/24 11:47:48 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -76,7 +76,7 @@ Additional P9000 work by Chris Mason <mason@mail.csh.rit.edu>
 #include "cfb16.h"
 #include "cfb32.h"
 
-#if P9000_ACCEL
+#ifdef P9000_ACCEL
 
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
@@ -260,7 +260,9 @@ p9000InitGC()
   p9000alu[GXcopyInverted] = ~IGM_S_MASK;	      /* NOT src */
   p9000alu[GXorInverted] = ~IGM_S_MASK | IGM_D_MASK;  /* NOT src OR dst */
   p9000alu[GXnand] = ~IGM_S_MASK | ~IGM_D_MASK;	      /* NOT src OR NOT dst */
-  p9000alu[GXset] = 1;			              /* 1 */
+  p9000alu[GXset] = IGM_S_MASK | ~IGM_S_MASK;         /* 1 */
+
+  p9000BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
 }
 
 
@@ -294,7 +296,7 @@ p9000MatchCommon (pGC, devPriv)
 	    if (devPriv->oneRect)
 		return &p9000TEOps1Rect;
 	    else
-		return &cfbTEOps;
+		return &p9000TEOps;
 #endif
 	else
 #ifdef NO_ONE_RECT

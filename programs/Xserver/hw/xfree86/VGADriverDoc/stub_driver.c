@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.1 1994/05/31 08:03:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.2 1994/06/18 16:22:32 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -196,6 +196,21 @@ vgaVideoChipRec STUB = {
 	 * will normally be 8, but may be 4 or 16 for some servers.
 	 */
 	8,
+	/*
+	 * If the driver includes support for a linear-mapped frame buffer
+	 * this should be set to TRUE.  In most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is the physical base address of the linear-mapped frame
+	 * buffer (when used).  Set it to 0 when not in use.
+	 */
+	0,
+	/*
+	 * This is the size  of the linear-mapped frame buffer (when used).
+	 * Set it to 0 when not in use.
+	 */
+	0,
 };
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.0 1994/07/24 11:47:45 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -116,10 +116,10 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
     if (!xf86VTSema
 	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	    (pDstDrawable->type != DRAWABLE_WINDOW))
-#ifndef P9000_IM_ACCEL
 	/* These are temporary until implemented *TO*DO* */
 	|| ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
 	    (pDstDrawable->type != DRAWABLE_WINDOW))
+#ifndef P9000_IM_ACCEL
 	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
 	    (pDstDrawable->type == DRAWABLE_WINDOW))
 #endif /* P9000_IM_ACCEL */
@@ -379,7 +379,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	      }
 	    DEALLOCATE_LOCAL(ordering);
 	    /* Wait for it to be all done.  Do you need this?  *TO*DO* */
-	    p9000NotBusy();
+	    p9000NotBusy(); 
 	}
 	else if (pSrcDrawable->type == DRAWABLE_WINDOW
 		 && pDstDrawable->type != DRAWABLE_WINDOW)
@@ -393,7 +393,8 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = numRects; --i >= 0; pbox++)
 	      (p9000ImageReadFunc)(pbox->x1 + dx, pbox->y1 + dy,
 				   pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				   pdst, pixWidth, pbox->x1, pbox->y1,
+				   pdst, pixWidth,
+				   pbox->x1, pbox->y1,
 				   pGC->planemask);
 #else
 	    ErrorF("Don't know how to window->pixmap\n");
@@ -406,16 +407,12 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	    int pixWidth = PixmapBytePad(pSrcDrawable->width,
 					 pSrcDrawable->depth);
 	    char *psrc = ((PixmapPtr)pSrcDrawable)->devPrivate.ptr;
-#ifdef P9000_IM_ACCEL
 	    for (i = numRects; --i >= 0; pbox++)
 	      (p9000ImageWriteFunc)(pbox->x1, pbox->y1,
 				    pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
 				    psrc, pixWidth,
 				    pbox->x1 + dx, pbox->y1 + dy,
-				    p9000alu[pGC->alu], pGC->planemask);
-#else
-	    ErrorF("Don't know how to pixmap->window\n");
-#endif	  
+				    pGC->alu, pGC->planemask);
 	  } 
 	else
 	  {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.7 1994/07/21 13:56:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.8 1994/07/24 11:47:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -150,8 +150,6 @@ static ScreenPtr savepScreen = NULL;
 volatile unsigned long *CtlBase; 
 /* P9000 linear mapped frame buffer base */
 volatile unsigned long *VidBase; 
-/* P9000 PCI extended I/O base */
-volatile unsigned long *ExtBase;  
 
 volatile pointer p9000VideoMem;
 
@@ -163,6 +161,7 @@ Bool p9000DACSyncOnGreen = FALSE;   /* Enables syncing on green */
 Bool p9000DAC8Bit = TRUE;           /* Use 8 bits for cmap entry (the
 				     * alternative is not implemented
 				     * and may never be */
+Bool p9000NoAccel = FALSE;          /* Disables hardware acceleration */
 
 unsigned char p9000SwapBits[256];
 
@@ -198,7 +197,7 @@ short p9000WeightMask;
         (a & 0x01) << 7;
 
 /* Raster operation (alu) -> minterm mapping */
-unsigned long p9000alu[16];
+unsigned int p9000alu[16];
 
 /*
  * p9000Probe --
@@ -220,8 +219,15 @@ p9000Probe()
     xrgb           p9000weights[] = { { 5, 6, 5 }, { 5, 5, 5 }, /* 16bpp */
 				      { 8, 8, 8 } };            /* 32bpp */
     int            i;
+    unsigned long  tmpsysconfig;  /* dummy value */
 
     p9000InfoRec.maxClock = p9000MaxClock;
+
+    if (!xf86LinearVidMem())
+      {
+	ErrorF("This operating system does not support memory mapping of linear regions.\nAs a result, it can not be used with this server\n");
+	return(FALSE);
+      }
 
     xf86ClearIOPortList(p9000InfoRec.scrnIndex);
     xf86AddIOPorts(p9000InfoRec.scrnIndex, Num_p9000_IOPorts, p9000_IOPorts);
@@ -376,10 +382,6 @@ p9000Probe()
 		 && (pNewModeRing->HDisplay != pMode->HDisplay))
 	  ErrorF("%s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s)\n",
 		 p9000InfoRec.name, pMode->name, pNewModeRing->name);
-	/* We should do a better test than this...  *TO*DO* */
-	else if ((pMode->HDisplay*p9000InfoRec.bitsPerPixel/8) % 32) 
-	  ErrorF("%s: The width of mode %s is not valid\n",
-		 p9000InfoRec.name, pMode->name);
 	/* These size limits are in effect until 1600x1200 is tested *TO*DO* */
 	else if (pMode->HDisplay > 1280) 
 	  ErrorF("%s: The width of mode %s is too large (max 1280)\n",
@@ -390,6 +392,13 @@ p9000Probe()
 	else if (p9000InfoRec.clock[pMode->Clock] > p9000MaxClock)
 	  ErrorF("%s: The clock speed of mode %s is too high (max %ld MHz)\n",
 		 p9000InfoRec.name, pMode->name, p9000MaxClock/1000);	  
+	/* See if the horizontal resolution is valid.  This is constrained
+	 * by possible values for sysconfig */
+	else if (!p9000CalcSysconfigHres(pMode->HDisplay, 
+					 p9000InfoRec.bitsPerPixel/8,
+					 &tmpsysconfig))
+	  ErrorF("%s: The width of mode %s is not valid\n",
+		 p9000InfoRec.name, pMode->name);
 	else   /* The mode has passed and is valid */
 	  {
 	    /* Link in the mode */
@@ -437,6 +446,14 @@ p9000Probe()
 	p9000DACSyncOnGreen = TRUE;
 	if (xf86Verbose)
 	  ErrorF("%s %s: Putting RAMDAC into sync-on-green mode\n",
+		 XCONFIG_GIVEN, p9000InfoRec.name);
+      }
+
+    if (OFLG_ISSET(OPTION_NOACCEL, &p9000InfoRec.options))
+      {
+	p9000NoAccel = TRUE;
+	if (xf86Verbose)
+	  ErrorF("%s %s: Disabling hardware acceleration\n",
 		 XCONFIG_GIVEN, p9000InfoRec.name);
       }
 
@@ -605,7 +622,7 @@ p9000Initialize (scr_index, pScreen, argc, argv)
     ErrorF("Leaving p9000Initialize...\n");
 #endif
 
-#ifdef P9000_IM_ACCEL
+#ifdef P9000_ACCEL
   p9000ImageInit();
 #endif
 

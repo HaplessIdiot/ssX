@@ -1,29 +1,31 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.1 1994/07/15 06:59:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.2 1994/07/24 11:47:44 dawes Exp $ */
 /*
  * Copyright 1993 By David Wexelblat <dwex@aib.com>
  *
  * Modified 1994 for P9000 Server By Erik Nygren <nygren@mit.edu>
+ * Modified for Viper PCI by Matt Thomas <thomas@lkg.dec.com>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of David Wexelblat and Erik Nygren not 
- * be used in advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.  David Wexelblat and
- * Erik Nygren make no representations about the suitability of this software
- * for any purpose.
- * It is provided "as is" without express or implied warranty.
+ * Permission to use, copy, modify, distribute, and sell this software
+ * and its documentation for any purpose is hereby granted without
+ * fee, provided that the above copyright notice appear in all copies
+ * and that both that copyright notice and this permission notice
+ * appear in supporting documentation, and that the names of David
+ * Wexelblat, Matt Thomas, and Erik Nygren not be used in advertising
+ * or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  David Wexelblat and Erik
+ * Nygren make no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express
+ * or implied warranty.
  *
- * DAVID WEXELBLAT AND ERIK NYGREN DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
- * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
- * IN NO EVENT SHALL DAVID WEXELBLAT OR ERIK NYGREN BE LIABLE FOR ANY SPECIAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- *
- */
+ * DAVID WEXELBLAT, MATT THOMAS, AND ERIK NYGREN DISCLAIM ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DAVID
+ * WEXELBLAT OR ERIK NYGREN BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+ * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * */
 
 #include "X.h"
 #include "input.h"
@@ -52,9 +54,10 @@ extern xrgb xf86weight;
  * an array).  The P9000 provides access by remapping to 
  * 0x03C[6789], 0x43C[6789], 0x83C[6789], and 0xC3C[6789].
  * The Viper PCI is a special case where addresses are remapped
- * 0x03C[6789] and then the rest are mapped into ExtBase+0x[48C][6789].
+ * 0x03C[6789] and then the rest are mapped into IOBase+0x[48C][6789].
  * How the Viper PCI is handled is a hack and should be changed!
  * Maybe have a table of DAC functions.  *TO*DO* (ELN)
+ * If you change this, make sure to change p9000BtCurs as well!
  */
 #ifdef __STDC__
 void p9000OutBtReg(unsigned short reg, unsigned char mask, unsigned char data)
@@ -69,16 +72,11 @@ unsigned char data;
   if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
       && (0xf000 & reg))
     {
-      unsigned long offset;
-      offset = (unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4));
-      tmp = p9000Fetch8(offset, ExtBase) & mask;
-      p9000Store8(offset, ExtBase, tmp | data);
+      reg = ((unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4)))
+	+ (unsigned long)p9000InfoRec.IObase;
     }
-  else
-    {
-      tmp = inb(reg) & mask;
-      outb(reg, tmp | data);
-    }
+  tmp = inb(reg) & mask;
+  outb(reg, tmp | data);
 }
 
 #ifdef __STDC__
@@ -91,14 +89,10 @@ unsigned short reg;
   if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
       && (0xf000 & reg))
     {
-      unsigned long offset;
-      offset = (unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4));
-      return(p9000Fetch8(offset, ExtBase));
+      reg = ((unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4)))
+	+ (unsigned long)p9000InfoRec.IObase;
     }
-  else
-    {
-      return(inb(reg));
-    }
+  return(inb(reg));
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.1 1994/06/26 13:05:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.2 1994/07/15 06:59:37 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -45,6 +45,67 @@ static void p9000ProbeMemConfig(
 #endif
 );
 
+/*	
+ * p9000CalcSysconfigHres --
+ *    Calculates the horizontal resolution component of the sysconfig
+ *    register.  Returns whether the horiz res is possible or not.
+ *    Stores the value in sysconfigval.
+ */
+Bool p9000CalcSysconfigHres(hres, bytesperpixel, sysconfigval)
+     int hres, bytesperpixel;
+     unsigned long *sysconfigval;
+{
+  static struct p9000SysconfigHresFieldEntry {
+    unsigned long fieldval;  /* The value to store in the field */
+    int           add;       /* How much to add for this field */
+    Bool          specin[3]; /* Which fields can this be spec'd in */
+  } p9000SysconfigHresFields[] = {
+    /* val  add     0      1      2  */
+    { 0x7, 2048, {FALSE, FALSE, TRUE}  },
+    { 0x6, 1024, {FALSE, TRUE,  TRUE}  },
+    { 0x5, 512,  {TRUE,  TRUE,  TRUE}  },
+    { 0x4, 256,  {TRUE,  TRUE,  TRUE}  },
+    { 0x3, 128,  {TRUE,  TRUE,  TRUE}  },
+    { 0x2, 64,   {TRUE,  TRUE,  FALSE} },
+    { 0x1, 32,   {TRUE,  FALSE, FALSE} },
+    { 0x0, 0,    {TRUE,  TRUE,  TRUE}  },
+  };
+  int p9000SysconfigHresFieldEntries = sizeof(p9000SysconfigHresFields)
+    / sizeof(struct p9000SysconfigHresFieldEntry);
+  int remhres;                     /* The remaining hres */
+  unsigned long cursysconfig = 0;  /* The current version of sysconfig */
+  int curfield, curfv;             /* The current field and field value */
+  
+  remhres = bytesperpixel*hres;
+
+  /* NOTE - the p9000 manual figure 60 has the fields labeled
+     backwards - but if you look at values from viper.ini
+     you'll see that it's the left-most (msb) field that
+     can have values up to 7 , so that must be field 3 . It
+     doesn't work for rectangles if you mess this up, i.e. if
+     you calculate a wrong number or you use a field value
+     illegal for that field */
+
+  for (curfield = 2; curfield >=0; curfield--)
+    for (curfv = 0; curfv < p9000SysconfigHresFieldEntries; curfv++)
+      if (p9000SysconfigHresFields[curfv].specin[curfield]
+	  && (p9000SysconfigHresFields[curfv].add <= remhres))
+	{
+	  remhres -= p9000SysconfigHresFields[curfv].add;
+	  cursysconfig |= 
+	    p9000SysconfigHresFields[curfv].fieldval << (curfield*3 + 14);
+	  break;
+	}
+  if (remhres)
+    {
+      ErrorF("It is not possible to have a horiz resolution of %d at %d bytes per pixel.\n\tTry a horizontal resolution of %d instead.\n",
+	     hres, bytesperpixel, hres - remhres/bytesperpixel);
+      return(FALSE);
+    }
+  *sysconfigval = cursysconfig;
+  return(TRUE);
+}
+
 
 /*	
  * p9000CalcMiscRegs --
@@ -75,9 +136,6 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
      p9000CRTCRegPtr crtcRegs;
      DisplayModePtr mode;
 {
-  int bytesperline , diff , bestdiff ;
-  int fieldadd1 , fieldadd2 , fieldadd3 , bestfit , linebytes ;
-  int field1 , field2 , field3 ;
 
   crtcRegs->XSize = mode->HDisplay;
   crtcRegs->YSize = mode->VDisplay;
@@ -108,83 +166,14 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
   if (mode->Flags & V_INTERLACE) crtcRegs->interlaced = TRUE;
   else crtcRegs->interlaced = FALSE;
 
-  /****** This stuff is needed to generate the value of sysconfig ******/
-  bytesperline = mode->HDisplay * (p9000InfoRec.bitsPerPixel / 8) ;
-  diff = bestdiff = bestfit = 0x7FFFFFFF ; /* ((unsigned) -1) >> 1 maxed out */
-  /* only 6 ** 3 posibilities - try them all and find exact
-   * or best resolution
-   */
-  fieldadd3 = 0 ;
-  for ( field3 = 2 ; field3 <= 7 ; field3 ++ )
-    {
-      fieldadd2 = 0 ;
-      for ( field2 = 1 ; field2 <= 6 ; field2 ++ )
-	{
-	  fieldadd1 = 0 ;
-	  for ( field1 = 0 ; field1 <= 5 ; field1 ++ )
-	    {
-	      /* resultant "horizontal res" */
-	      linebytes = fieldadd1 + fieldadd2 + fieldadd3 ; 
-	      /* how close is it to what we want */
-	      diff = bytesperline - linebytes ; 
-	      if ( diff == 0 )
-		break;
-	      if ( diff < 0 )
-		diff = - diff ; /* absolute value */
-	      if ( diff < bestdiff )
-		{
-		  bestfit = linebytes ; /* this is the best fit yet */
-		  bestdiff = diff ; /* this is how close it is (the error) */
-		}
-	      /*it won't get any better in this loop */
-	      if ( linebytes > bytesperline )
-		/* ok - so I can't stand a totally dumb exhaustive search */
-		break ; 
-	      if ( fieldadd1 == 0 )
-		fieldadd1 = 32 ;
-	      else
-		fieldadd1 = ( fieldadd1 * 2 ) ;
-	    }
-	  if ( diff == 0 )
-	    break;
-	  if ( fieldadd2 == 0 )
-	    fieldadd2 = 64 ;
-	  else
-	    fieldadd2 = ( fieldadd2 * 2 ) ;
-	}
-      if ( diff == 0 )
-	break;
-      if ( fieldadd3 == 0 )
-	fieldadd3 = 128 ;
-      else
-	fieldadd3 = ( fieldadd3 * 2 ) ;
-    }
-  /* falls out to here with diff != 0 if no match found */
-  /* impossible HDisplay value (at least for this value of bytes_per_pixel */
-  if (diff != 0)
-    {
-      ErrorF("WARNING: Can't do %d dots/line with %d bit color.  Could do %d dots.\n   Going ahead anyways.  This could be a BadThing[tm].\n",
-	     mode->HDisplay, p9000InfoRec.depth,
-	     bestfit / (p9000InfoRec.bitsPerPixel/8));
-      /* This really should fail now.  ***TO*DO*** */
-    }
-  
-  /* NOTE - the p9000 manual figure 60 has the fields labeled
-     backwards - but if you look at values from viper.ini
-     you'll see that it's the left-most (msb) field that
-     can have values up to 7 , so that must be field 3 . It
-     doesn't work for rectangles if you mess this up, i.e. if
-     you calculate a wrong number or you use a field value
-     illegal for that field */
-
-  if ( fieldadd3 == 0 )
-    field3 = 0 ; /* correct field value if necessary - 0 value means add 0 */
-  if ( fieldadd2 == 0 )
-    field2 = 0 ; /* correct field value if necessary - 0 value means add 0 */
-
-  crtcRegs->sysconfig =
-    0x00003000 | (field1<<14) | (field2<<17) | (field3<< 20);
-  /* Yay!  We have the value of sysconfig.  Now onto other things. */
+  /* Calculate sysconfig */
+  if (!p9000CalcSysconfigHres(mode->HDisplay, crtcRegs->BytesPerPixel,
+			      &crtcRegs->sysconfig))
+    ErrorF("Bad horizontal resolution!!!!\n");
+#ifdef DEBUG
+  ErrorF("p9000CalcSysconfigHres returned 0x%lx\n", crtcRegs->sysconfig);
+#endif
+  crtcRegs->sysconfig |= 0x00003000;
 
   /* This is set to the default for now. *TO*DO* */
   crtcRegs->memspeed = MEMSPEED;

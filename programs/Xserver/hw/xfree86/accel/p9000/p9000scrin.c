@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.2 1994/07/15 06:59:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.3 1994/07/24 11:47:52 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -226,11 +226,21 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->GetSpans = cfbGetSpans;
       pScreen->PaintWindowBackground = cfbPaintWindow;
       pScreen->PaintWindowBorder = cfbPaintWindow;
-      pScreen->CopyWindow = cfbCopyWindow;
 #ifdef P9000_ACCEL
-      pScreen->CreateGC = p9000CreateGC;
-#else
-      pScreen->CreateGC = cfbCreateGC;
+      if (!p9000NoAccel)
+	{
+	  /***** ACCELERATED *****/
+	  pScreen->CopyWindow = p9000CopyWindow;
+	  pScreen->CreateGC = p9000CreateGC;
+	}
+      else
+	{
+#endif
+	  /***** FRAME BUFFER (NOT ACCEL)  *****/
+	  pScreen->CopyWindow = cfbCopyWindow;
+	  pScreen->CreateGC = cfbCreateGC;
+#ifdef P9000_ACCEL
+	}
 #endif
       if (!cfbAllocatePrivates(pScreen, &cfbWindowPrivateIndex,
 			       &cfbGCPrivateIndex))
@@ -254,7 +264,20 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->GetSpans = cfb16GetSpans;
       pScreen->PaintWindowBackground = cfb16PaintWindow;
       pScreen->PaintWindowBorder = cfb16PaintWindow;
-      pScreen->CopyWindow = cfb16CopyWindow;
+#ifdef P9000_ACCEL
+      if (!p9000NoAccel)
+	{
+	  /***** ACCELERATED *****/
+	  pScreen->CopyWindow = p9000CopyWindow;
+	}
+      else
+	{
+#endif
+	  /***** FRAME BUFFER (NOT ACCEL)  *****/
+	  pScreen->CopyWindow = cfb16CopyWindow;
+#ifdef P9000_ACCEL
+	}
+#endif
       pScreen->CreateGC = cfb16CreateGC;
       if (!cfb16AllocatePrivates(pScreen, &cfbWindowPrivateIndex,
 				 &cfbGCPrivateIndex))
@@ -277,7 +300,20 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->GetSpans = cfb32GetSpans;
       pScreen->PaintWindowBackground = cfb32PaintWindow;
       pScreen->PaintWindowBorder = cfb32PaintWindow;
-      pScreen->CopyWindow = cfb32CopyWindow;
+#ifdef P9000_ACCEL
+      if (!p9000NoAccel)
+	{
+	  /***** ACCELERATED *****/
+	  pScreen->CopyWindow = p9000CopyWindow;
+	}
+      else
+	{
+#endif
+	  /***** FRAME BUFFER (NOT ACCEL)  *****/
+	  pScreen->CopyWindow = cfb32CopyWindow;
+#ifdef P9000_ACCEL
+	}
+#endif
       pScreen->CreateGC = cfb32CreateGC;
       if (!cfb32AllocatePrivates(pScreen, &cfbWindowPrivateIndex,
 				 &cfbGCPrivateIndex))

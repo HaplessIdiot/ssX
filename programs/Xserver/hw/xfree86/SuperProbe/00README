@@ -3,7 +3,7 @@
 			    Version 2.1
 
 			    David E Wexelblat
-			    dwex@goblin.org
+			    dwex@xfree86.org
 
 What is it?
 -----------
@@ -43,7 +43,7 @@ See the SuperProbe.1 manual page.
 
 Reporting Problems
 ------------------
-Please report any problems to the author, David E Wexeblat, <dwex@goblin.org>
+Please report any problems to the author, David E Wexeblat, <dwex@xfree86.org>
 
 Credits
 -------
@@ -73,4 +73,4 @@ The XFree86 Beta Test Team
 	For helping test and debug this software.
 
 
-$XFree86: mit/server/ddx/x386/SuperProbe/00README,v 2.9 1994/04/15 05:09:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/00README,v 3.0 1994/05/14 06:50:33 dawes Exp $

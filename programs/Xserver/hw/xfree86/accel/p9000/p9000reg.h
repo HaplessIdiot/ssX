@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.2 1994/07/15 06:59:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.3 1994/07/24 11:47:51 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -148,6 +148,7 @@
 #define CMD_QUAD        0x80008L  /* Draw a Quadrilateral */
 #define CMD_BLIT        0x80004L  /* Start a BitBlit */
 #define CMD_PIXEL8      0x8000CL  /* Do a Pixel8 */
+#define CMD_PIXEL8_SWAP 0xE000CL  /* do a pixel8 with endian swapping */
 #define CMD_PIXEL1(n)  (0x80080L|((n-1)<<2)) /* Do a Pixel1 of n pixels */
 #define CMD_PIXEL1_32   0x800FCL  /* Do a Pixel1 of 32 pixels */
 #define CMD_NEXT_PIXELS 0x80014L  /* Do a Next_Pixels */

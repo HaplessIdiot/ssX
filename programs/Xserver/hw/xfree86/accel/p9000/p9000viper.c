@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.3 1994/07/24 11:47:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.4 1994/08/01 12:11:50 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -6,16 +6,18 @@
  * long as the copyright notice stays intact.
  *
  * Additions by Harry Langenbacher (harry@brain.jpl.nasa.gov)
+ * Additions for Viper PCI by Matt Thomas <thomas@lkg.dec.com>
  *
- * ERIK NYGREN AND HARRY LANGENBACHER
- * DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ERIK NYGREN
- * OR HARRY LANGENBACHER BE LIABLE
- * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
- * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * ERIK NYGREN, MATT THOMAS, AND HARRY LANGENBACHER DISCLAIM ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ERIK
+ * NYGREN, MATT THOMAS, OR HARRY LANGENBACHER BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ * 
  */
 
 #include "X.h"
@@ -368,11 +370,6 @@ p9000ViperPciInitialize(scr_index, pScreen, argc, argv)
     int            argc;         /* The number of the Server's arguments. */
     char           **argv;       /* The arguments themselves. Don't change! */
 {
-  /* Memory map the extended IO area */
-  ExtBase = (volatile unsigned long *)
-    xf86MapVidMem(scr_index, LINEAR_REGION, 
-		  (pointer)(p9000InfoRec.IObase),
-		  0xD00);  /* Approximately 3K */
 }
 
 /*

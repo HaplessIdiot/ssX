@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.0 1994/07/24 11:47:49 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -40,7 +40,6 @@
 #include "p9000reg.h"
 
 #ifdef P9000_ACCEL
-#ifdef P9000_IM_ACCEL
 
 void (*p9000ImageReadFunc)(
 #if NeedFunctionPrototypes
@@ -85,7 +84,6 @@ p9000ImageInit()
     int i;
 
     PMask = (1UL << p9000InfoRec.depth) - 1;
-    p9000BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
     screenStride = p9000InfoRec.virtualX * p9000BytesPerPixel;
 
     p9000ImageReadFunc = p9000ImageRead;
@@ -103,36 +101,35 @@ p9000ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			pwidth;
     int			px;
     int			py;
-    short		alu;
+    short		alu; /* expected to be a xfree86 alu,not an igm_mask */
     short		planemask;
 {
     unsigned char *curvm;
     int byteCount;
 
-ErrorF("hello from ImageWrite\n") ;
     if ((w == 0) || (h == 0))
 	return;
 
     if (p9000alu[alu] == IGM_D_MASK)
 	return;
 
-    if ((p9000alu[alu] != IGM_S_MASK) || ((planemask&PMask) != PMask)) {
+    if ((p9000alu[alu] != IGM_S_MASK) | ((planemask&PMask) != PMask) ) { 
 	p9000ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py,
 			      alu, planemask);
 	return;
     }
-	
-    p9000NotBusy() ;
-
+       
     psrc += pwidth * py + px * p9000BytesPerPixel;
-    curvm = (unsigned char *)(p9000InfoRec.videoRam+(x+y * p9000InfoRec.virtualX) * p9000BytesPerPixel);
-
+    curvm = (unsigned char *)( (int)VidBase + 
+                            (x+y * p9000InfoRec.virtualX) * p9000BytesPerPixel);
+    
     byteCount = w * p9000BytesPerPixel;
     while(h--) {
-	MemToBus((void *)curvm, psrc, byteCount);
-	curvm += screenStride; 
-	psrc += pwidth;
+        MemToBus((void *)curvm, psrc, byteCount);
+        curvm += screenStride; 
+        psrc += pwidth;
     }
+	
 }
 
 
@@ -149,41 +146,30 @@ p9000ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     short		alu;
     short		planemask;
 {
-    int count = ( ((w + 1) >> 1 ) * p9000BytesPerPixel ) ;
-    int i,j;
-       
-ErrorF("hello from ImageWriteNoMem\n") ;
-    p9000NotBusy() ;
+    register int i,j;
+#ifdef P9000_IM_ACCEL
+    ErrorF("hello from ImageWriteNoMem\n") ;
+#endif
+    psrc += pwidth * py;
     p9000Store(RASTER,CtlBase,p9000alu[alu]) ;
     p9000Store(PMASK,CtlBase,planemask) ;
 
-    p9000Store(W_MIN,CtlBase,YX_PACK(x,y)) ;
-    p9000Store(W_MAX,CtlBase,YX_PACK(x+w-1, y+h-1)) ;
-
-    psrc += pwidth * py;
-
-    p9000Store(DEVICE_COORD | DC_X  | DC_0,CtlBase,x) ;
-    p9000Store(DEVICE_COORD | DC_YX | DC_1,CtlBase,YX_PACK(x,y)) ;
-    p9000Store(DEVICE_COORD | DC_X  | DC_2,CtlBase,x + w) ;
-    p9000Store(DEVICE_COORD | DC_Y  | DC_3,CtlBase,1) ;
+    p9000Store(DEVICE_COORD | DC_YX | DC_2,CtlBase,YX_PACK(x,y)) ; 
+    p9000Store(DEVICE_COORD | DC_Y | DC_3,CtlBase,1) ;
+    p9000Store(CMD_NEXT_PIXELS,CtlBase,w) ;
     
     /* ASSUMPTION: it is ok to read one byte past
        the psrc structure (for odd width). */
 
     for (j=0 ; j < h; j++) {
-        for (i=0;i<count;i++) {
-            p9000Store(CMD_PIXEL8,CtlBase,psrc + (px + count) * p9000BytesPerPixel);
-	}
-	psrc += pwidth ;
+        for (i=0;i<(w);i+=4) {
+          p9000Store(CMD_PIXEL8_SWAP,CtlBase,*((int *)(psrc + (px + i) * 
+	             p9000BytesPerPixel ))) ;
+        }
+        psrc += pwidth ;
     }
 
-    p9000NotBusy() ;
-    p9000Store(W_MIN,CtlBase,YX_PACK(x,y)) ;
-    p9000Store(W_MAX,CtlBase,YX_PACK(p9000InfoRec.virtualX,p9000InfoRec.virtualY));
-    p9000NotBusy() ;
-
 }
-
 
 static void
 p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
@@ -198,21 +184,21 @@ p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     short		planemask;
 {
     register int j;
-    unsigned char *curvm;
+    register unsigned char *curvm;
 
 ErrorF("hello from ImageRead\n") ;
     if ((w == 0) || (h == 0))
 	return;
 
-    if ((planemask & PMask) != PMask) {
+    if ((planemask & PMask) != PMask) { 
 	p9000ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask);
 	return;
     }
 
-
     psrc += pwidth * py + px * p9000BytesPerPixel;
-    curvm = (unsigned char *)(p9000InfoRec.videoRam + x * p9000BytesPerPixel);
-    
+    curvm = (unsigned char *)( (int)VidBase + 
+                            (x+y * p9000InfoRec.virtualX) * p9000BytesPerPixel);
+
     for (j = y; j < y+h; j++) {
 	BusToMem(psrc, (void *)(curvm + j * screenStride), w * p9000BytesPerPixel);
 	psrc += pwidth;
@@ -255,5 +241,5 @@ ErrorF("ImageReadNoMem\n") ;
     }
 }
 
-#endif /* P9000_IM_ACCEL */
 #endif /* P9000_ACCEL */
+

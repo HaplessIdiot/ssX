@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.1 1994/06/26 13:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.2 1994/07/15 06:59:41 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -70,15 +70,14 @@ void p9000VGASlowCopy(unsigned char *dest, unsigned char *src, unsigned bytes)
 
 /*
  * p9000VGADelay --
- *     Pauses for a very short time...  I know this is a bad way
- *     to do it, but svgalib did it this way and usleep seems
- *     to take too long.
- *     XXXX try doing one or more outb(0x80, 00) for a better delay.
+ *     Pauses for a very short time.
  */
 void p9000VGADelay()
 {
-  volatile int ctr; /* Maybe making this volotile will reduce optimizations? */
-  for (ctr = 0; ctr <= 20; ctr++);
+  int ctr;
+  for (ctr = 0; ctr <= 10; ctr++)
+    outb(0x80, 0);  /* This is the POST register.  The length of this
+		     * delay is dependant only on ISA bus speed */
 }
 
 /*
@@ -129,7 +128,11 @@ int p9000VGASaveRegs(unsigned char *regs)
        outb(SEQ_INDEX_REG, i); 
        regs[SEQ+i] = inb(SEQ_PORT); 
   }
-  regs[MIS] = inb(MISC_IN_REG); 
+
+  /* This save and restore is used for switching into
+   * 640x400x16 and does not conflict with the one
+   * done in the vendor specific code */
+  regs[MIS] = inb(MISC_IN_REG);
 
   return CRT_C + ATT_C + GRA_C + SEQ_C + 1 + i;
 }
@@ -140,9 +143,12 @@ int p9000VGASetRegs(const unsigned char *regs)
   int tmp;
 
   /* update misc output register */
+  /* This save and restore is used for switching into
+   * 640x400x16 and does not conflict with the one
+   * done in the vendor specific code */
   outb(MISC_OUT_REG, regs[MIS]);         
 
-  usleep(40000);  /* Wait for the clock to settle */
+  usleep(50000);  /* Wait for the clock to settle */
 
   /* synchronous reset on */
   outb(SEQ_INDEX_REG, 0x00); 
