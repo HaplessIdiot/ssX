@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.64tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.65 2002/10/08 22:14:05 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -157,7 +157,7 @@ const OptionInfoRec RADEONOptions[] = {
 #endif
     { OPTION_PANEL_OFF,      "PanelOff",         OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_DDC_MODE,       "DDCMode",          OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_CLONE_DISPLAY,  "CloneDisplay",     OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_CLONE_DISPLAY,  "CloneDisplay",     OPTV_INTEGER, {0}, FALSE },
     { OPTION_CLONE_MODE,     "CloneMode",        OPTV_ANYSTR,  {0}, FALSE },
     { OPTION_CLONE_HSYNC,    "CloneHSync",       OPTV_ANYSTR,  {0}, FALSE },
     { OPTION_CLONE_VREFRESH, "CloneVRefresh",    OPTV_ANYSTR,  {0}, FALSE },
@@ -360,7 +360,7 @@ static struct
     int hsize;
     int vsize;
     int refresh;
-} EDIDtimings[] = {
+} est_timings[] = {
     {1280, 1024, 75},
     {1024, 768, 75},
     {1024, 768, 70},
@@ -573,14 +573,36 @@ static Bool RADEONUnmapMem(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
+/* This function is required to workaround a hardware bug in some (all?)
+ * revisions of the R300.  This workaround should be called after every
+ * CLOCK_CNTL_INDEX register access.  If not, register reads afterward
+ * may not be correct.
+ */
+void R300CGWorkaround(ScrnInfoPtr pScrn) {
+    RADEONInfoPtr  info       = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    CARD32         save, tmp;
+
+    save = INREG(RADEON_CLOCK_CNTL_INDEX);
+    tmp = save & ~(0x3f | RADEON_PLL_WR_EN);
+    OUTREG(RADEON_CLOCK_CNTL_INDEX, tmp);
+    tmp = INREG(RADEON_CLOCK_CNTL_DATA);
+    OUTREG(RADEON_CLOCK_CNTL_INDEX, save);
+}
+
 /* Read PLL information */
 unsigned RADEONINPLL(ScrnInfoPtr pScrn, int addr)
 {
     RADEONInfoPtr  info       = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
+    CARD32         data;
 
     OUTREG8(RADEON_CLOCK_CNTL_INDEX, addr & 0x3f);
-    return INREG(RADEON_CLOCK_CNTL_DATA);
+    data = INREG(RADEON_CLOCK_CNTL_DATA);
+    if (info->ChipFamily == CHIP_FAMILY_R300)
+	R300CGWorkaround(pScrn);
+
+    return data;
 }
 
 #if 0
@@ -721,6 +743,7 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     unsigned long  tmp, i;
     unsigned char *RADEONMMIO;
     Bool           BypassSecondary = FALSE;
+    int            CloneDispOption;
 
 #define RADEON_BIOS8(v)  (info->VBIOS[v])
 #define RADEON_BIOS16(v) (info->VBIOS[v] | \
@@ -764,6 +787,7 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     }
 
     info->FPBIOSstart = RADEON_BIOS16(0x48);
+    info->OverlayOnCRTC2 = FALSE;
 
     RADEONMapMMIO(pScrn);
     RADEONMMIO = info->MMIO;
@@ -794,8 +818,8 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	tmp = INREG(RADEON_BIOS_4_SCRATCH);
 
 	if (info->IsSecondary) {
-	    /* Check Port2 (CRT port, for the existing boards (VE &
-	     * M6),this port can only be connected to a CRT
+	    /* Check Port2 (CRT port) -- for the existing boards (VE &
+	     * M6), this port can only be connected to a CRT
 	     */
 	    if (tmp & 0x02)        info->DisplayType = MT_CRT;
 	    else if (tmp & 0x800)  info->DisplayType = MT_DFP;
@@ -842,18 +866,78 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		}
 		BypassSecondary = TRUE;
 	    } else {
-		/* Only enable clone mode, if it is requested */
-		if (xf86ReturnOptValBool(info->Options, OPTION_CLONE_DISPLAY,
-					 FALSE)) {
-		    if (tmp & 0x02) {
-			info->CloneType = MT_CRT;
-			info->Clone = TRUE;
-		    } else if (tmp & 0x800) {
-			info->CloneType = MT_DFP;
-			info->Clone = TRUE;
-		    }
+		if (tmp & 0x02) {
+		    info->CloneType = MT_CRT;
+		    info->Clone = TRUE;
+		} else if (tmp & 0x800) {
+		    info->CloneType = MT_DFP;
+		    info->Clone = TRUE;
 		}
 	    }
+
+	    /* FIXME: This option is too complicated.  We need to
+	     *        find a better way to handle all cases.
+	     *
+	     * CloneDisplay options:
+	     *  0      -- disable
+	     *  1      -- auto-detect (default)
+	     *  2      -- force on
+	     *  3      -- auto-detect + 2nd head overlay.
+	     *  4      -- force on + 2nd head overlay.
+	     *  others -- auto-detect
+	     *
+	     * Force on: it will force the clone mode on even no display
+	     * is detected. With this option together with the proper
+	     * CloneHSync and CloneVRefresh options, we can turn on the
+	     * CRT ouput on the 2nd head regardless if a monitor is
+	     * connected there.  This way, we can plug in a CRT to the
+	     * second head later after X server has started.
+	     *
+	     * 2nd head overlay: it will force the hardware overlay on
+	     * CRTC2 (used by 2nd head). Since we only have one overlay,
+	     * we have to decide which head to use it (the overlay space
+	     * on the other head will be blank). 2nd head overlay is on
+	     * automatically when PanelOff option is effective.
+	     */
+	    if (xf86GetOptValInteger(info->Options, OPTION_CLONE_DISPLAY,
+				     &(CloneDispOption))) {
+		char *s;
+
+		switch (CloneDispOption) {
+		case 0: s = "Disable"; break;
+		case 1: s = "Auto-detect"; break;
+		case 2: s = "Force On"; break;
+		case 3: s = "Auto-detect -- use 2nd head overlay"; break;
+		case 4: s = "Force On -- use 2nd head overlay"; break;
+		default:
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			       "Illegal CloneDisplay Option set, "
+			       "using default\n");
+		    CloneDispOption = 1;
+		    break;
+		}
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			   "CloneDisplay option: %s (%d)\n",
+			   s, CloneDispOption);
+	    } else {
+		/* Default to auto-detect */
+		CloneDispOption = 1;
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			   "CloneDisplay option not set -- "
+			   "defaulting to auto-detect\n");
+	    }
+
+	    if (CloneDispOption == 0) {
+		info->Clone = FALSE;
+	    } else if ((CloneDispOption == 2 || CloneDispOption == 4)
+		       && !info->Clone) {
+		info->CloneType = MT_CRT;
+		info->Clone = TRUE;
+	    }
+
+	    /* This will be used to set OV0_SCALAR_CNTL */
+	    if (info->Clone && (CloneDispOption == 3 || CloneDispOption == 4))
+		info->OverlayOnCRTC2 = TRUE; 
 	}
     } else {
 	/* Regular Radeon ASIC, only one CRTC, but it could be used for
@@ -921,6 +1005,7 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		    info->VSyncWidth = ((RADEON_BIOS16(tmp0+28) & 0xf800)
 					>> 11);
 		    info->DotClock   = RADEON_BIOS16(tmp0+9) * 10;
+		    info->Flags      = 0;
 		}
 	    }
 	}
@@ -955,6 +1040,7 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		info->VSyncWidth =
 		    ((RADEON_BIOS8(tmp + 11) & 0x03) << 4) +
 		    (RADEON_BIOS8(tmp + 10) & 0x0f);
+		info->Flags = 0;
 	    } else {
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			   "No DFP timing table detected\n");
@@ -1203,16 +1289,16 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	       pScrn->chipset,
 	       info->Chipset);
 
-    info->IsM6 = FALSE;
+    info->HasCRTC2 = TRUE;
     switch (info->Chipset) {
     case PCI_CHIP_RADEON_LY:
     case PCI_CHIP_RADEON_LZ:
-	info->IsM6 = TRUE;
-	/* Fall Through ??? */
+	info->ChipFamily = CHIP_FAMILY_M6;
+	break;
+
     case PCI_CHIP_RADEON_QY:
     case PCI_CHIP_RADEON_QZ:
-	/* VE or M6 has secondary CRTC */
-	info->HasCRTC2 = TRUE;
+	info->ChipFamily = CHIP_FAMILY_VE;
 	break;
 
     case PCI_CHIP_R200_QL:
@@ -1220,19 +1306,43 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     case PCI_CHIP_R200_QO:
     case PCI_CHIP_R200_Ql:
     case PCI_CHIP_R200_BB:
-	/* R200 has secondary CRTC */
-	info->HasCRTC2 = TRUE;
-	info->IsR200 = TRUE;
+	info->ChipFamily = CHIP_FAMILY_R200;
 	break;
 
-    case PCI_CHIP_RV200_QW:   /* RV200 desktop */
-    case PCI_CHIP_RADEON_LW:  /* M7 */
-    case PCI_CHIP_RADEON_LX:  /* M7 */
-	info->HasCRTC2 = TRUE;
-	info->IsRV200 = TRUE;
+    case PCI_CHIP_RV200_QW: /* RV200 desktop */
+    case PCI_CHIP_RV200_QX:
+	info->ChipFamily = CHIP_FAMILY_RV200;
 	break;
+
+    case PCI_CHIP_RADEON_LW:
+    case PCI_CHIP_RADEON_LX:
+	info->ChipFamily = CHIP_FAMILY_M7;
+	break;
+
+    case PCI_CHIP_RV250_Id:
+    case PCI_CHIP_RV250_Ie:
+    case PCI_CHIP_RV250_If:
+    case PCI_CHIP_RV250_Ig:
+	info->ChipFamily = CHIP_FAMILY_RV250;
+	break;
+
+    case PCI_CHIP_RV250_Ld:
+    case PCI_CHIP_RV250_Le:
+    case PCI_CHIP_RV250_Lf:
+    case PCI_CHIP_RV250_Lg:
+	info->ChipFamily = CHIP_FAMILY_M9;
+	break;
+
+    case PCI_CHIP_R300_ND:
+    case PCI_CHIP_R300_NE:
+    case PCI_CHIP_R300_NF:
+    case PCI_CHIP_R300_NG:
+	info->ChipFamily = CHIP_FAMILY_R300;
+        break;
 
     default:
+	/* Original Radeon/7200 */
+	info->ChipFamily = CHIP_FAMILY_RADEON;
 	info->HasCRTC2 = FALSE;
     }
 
@@ -1240,7 +1350,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
      * It needs some special handlings for it's 2nd head to work.
      */
     info->IsDell = FALSE;
-    if (info->PciInfo->subsysVendor == PCI_VENDOR_DELL && 
+    if (info->ChipFamily == CHIP_FAMILY_VE &&
+	info->PciInfo->subsysVendor == PCI_VENDOR_ATI && 
 	info->PciInfo->subsysCard & (1 << 12)) { /* DELL's signature */
 	if (info->PciInfo->subsysCard & 0xb00) {
 	    info->IsDell = TRUE;
@@ -1569,7 +1680,7 @@ static xf86MonPtr RADEONDoDDC(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	RADEONUnmapMMIO(pScrn);
     }
 
-    if (!MonInfo && (info->DDCReg == RADEON_GPIO_VGA_DDC)) {
+    if (!MonInfo && pInt10 && (info->DDCReg == RADEON_GPIO_VGA_DDC)) {
 	if (xf86LoadSubModule(pScrn, "vbe")) {
 	    vbeInfoPtr  pVbe;
 	    pVbe = VBEInit(pInt10, info->pEnt->index);
@@ -1653,6 +1764,18 @@ static void RADEONUpdatePanelSize(ScrnInfoPtr pScrn)
 			info->VOverPlus  = p->VSyncStart - p->VDisplay;
 			info->VSyncWidth = p->VSyncEnd - p->VSyncStart;
 			info->DotClock   = p->Clock;
+			info->Flags      =
+			    (ddc->det_mon[j].section.d_timings.interlaced
+			     ? V_INTERLACE
+			     : 0);
+			if (ddc->det_mon[j].section.d_timings.sync == 3) {
+			    switch (ddc->det_mon[j].section.d_timings.misc) {
+			    case 0: info->Flags |= V_NHSYNC | V_NVSYNC; break;
+			    case 1: info->Flags |= V_PHSYNC | V_NVSYNC; break;
+			    case 2: info->Flags |= V_NHSYNC | V_PVSYNC; break;
+			    case 3: info->Flags |= V_PHSYNC | V_PVSYNC; break;
+			    }
+			}
 		    }
 		}
 	    }
@@ -1663,8 +1786,8 @@ static void RADEONUpdatePanelSize(ScrnInfoPtr pScrn)
 	       info->PanelXRes, info->PanelYRes);
 }
 
-/* This will sort all modes according it's resolution Highest resolution
- * first.
+/* This function will sort all modes according to their resolution.
+ * Highest resolution first.
  */
 static void RADEONSortModes(DisplayModePtr *new, DisplayModePtr *first,
 			    DisplayModePtr *last)
@@ -1704,12 +1827,25 @@ static void RADEONSortModes(DisplayModePtr *new, DisplayModePtr *first,
     }
 }
 
+static void RADEONSetPitch (ScrnInfoPtr pScrn)
+{
+    int  dummy = pScrn->virtualX;
+
+    /* FIXME: May need to validate line pitch here */
+    switch (pScrn->depth / 8) {
+    case 1: dummy = (pScrn->virtualX + 127) & ~127; break;
+    case 2: dummy = (pScrn->virtualX +  31) &  ~31; break;
+    case 3:
+    case 4: dummy = (pScrn->virtualX +  15) &  ~15; break;
+    }
+    pScrn->displayWidth = dummy;
+}
+
 /* When no mode provided in config file, this will add all modes supported in 
  * DDC date the pScrn->modes list
  */
 static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
 {
-    RADEONInfoPtr   info = RADEONPTR(pScrn);
     DisplayModePtr  p;
     DisplayModePtr  last  = NULL;
     DisplayModePtr  new   = NULL;
@@ -1718,30 +1854,6 @@ static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
     int             j, tmp;
     char            stmp[32];
     xf86MonPtr      ddc   = pScrn->monitor->DDC;
-
-    /* Add native panel size */
-    if (info->PanelXRes != 0 && info->DisplayType != MT_CRT &&
-	info->PanelYRes != 0 && info->DotClock != 0) {
-
-	new             = xnfcalloc (1, sizeof (DisplayModeRec));
-	new->prev       = last;
-	new->name       = xnfalloc (12);
-	sprintf (new->name, "%dx%d", info->PanelXRes, info->PanelYRes);
-	new->HDisplay   = info->PanelXRes;
-	new->VDisplay   = info->PanelYRes;
-	    
-	new->HTotal     = new->HDisplay + info->HBlank;
-	new->HSyncStart = new->HDisplay + info->HOverPlus;
-	new->HSyncEnd   = new->HSyncStart + info->HSyncWidth;
-	new->VTotal     = new->VDisplay + info->VBlank;
-	new->VSyncStart = new->VDisplay + info->VOverPlus;
-	new->VSyncEnd   = new->VSyncStart + info->VSyncWidth;	
-	    
-	new->Clock      = info->DotClock;
-	new->Flags      = 0;
-
-	RADEONSortModes (&new, &first, &last);
-    }
 
     /* Go thru detailed timing table first */
     for (j = 0; j < 4; j++) {
@@ -1778,11 +1890,6 @@ static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
 		case 3: new->Flags |= V_PHSYNC | V_PVSYNC; break;
 		}
 	    }
-
-	    pScrn->display->virtualX =
-		pScrn->virtualX = MAX(pScrn->virtualX, new->HDisplay);
-	    pScrn->display->virtualY =
-		pScrn->virtualY = MAX(pScrn->virtualY, new->VDisplay);
 	    count++;
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -1807,14 +1914,10 @@ static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
 		    /* Is this good enough? */
 		    new = xnfcalloc(1, sizeof (DisplayModeRec));
 		    memcpy(new, p, sizeof(DisplayModeRec));
-		    new->name = xnfalloc(strlen (p->name) + 1);
+		    new->name = xnfalloc(strlen(p->name) + 1);
 		    strcpy(new->name, p->name);
 		    new->status = MODE_OK;
 
-		    pScrn->display->virtualX =
-			pScrn->virtualX = MAX(pScrn->virtualX, p->HDisplay);
-		    pScrn->display->virtualY =
-			pScrn->virtualY = MAX(pScrn->virtualY, p->VDisplay);
 		    count++;
 
 		    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -1833,23 +1936,19 @@ static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
     for (j = 0; j < 16; j++) {
 	if (tmp & (1 << j)) {
 	    for (p = pScrn->monitor->Modes; p && p->next; p = p->next->next) {
-		if ((EDIDtimings[j].hsize == p->HDisplay) &&
-		    (EDIDtimings[j].vsize == p->VDisplay)) {
+		if ((est_timings[j].hsize == p->HDisplay) &&
+		    (est_timings[j].vsize == p->VDisplay)) {
 		    float  refresh =
 			(float)p->Clock * 1000.0 / p->HTotal / p->VTotal;
 
-		    if (abs((float)EDIDtimings[j].refresh - refresh) < 1.0) {
+		    if (abs((float)est_timings[j].refresh - refresh) < 1.0) {
 			/* Is this good enough? */
 			new = xnfcalloc(1, sizeof (DisplayModeRec));
 			memcpy(new, p, sizeof(DisplayModeRec));
-			new->name = xnfalloc(strlen (p->name) + 1);
+			new->name = xnfalloc(strlen(p->name) + 1);
 			strcpy(new->name, p->name);
 			new->status = MODE_OK;
 		    
-			pScrn->display->virtualX = pScrn->virtualX =
-			    MAX(pScrn->virtualX, p->HDisplay);
-			pScrn->display->virtualY = pScrn->virtualY =
-			    MAX(pScrn->virtualY, p->VDisplay);
 			count++;
 
 			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -1864,212 +1963,274 @@ static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
 	}
     }
 
-#if 0
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "$$$$$0 %p %p %p\n",
-	       first, first->next, first->next->next);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "$$$$$2 %p %p %p\n",
-	       first, last, new);
-#endif
-
-#if 0
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "$$$$$1 %p %p %p\n",
-	       first, first->next, first->next->next);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "$$$$$ %d %d %d\n",
-	       first->HDisplay, first->next->HDisplay,
-	       first->next->next->HDisplay);
-#endif
-
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	       "Total of %d mode(s) found.\n", count);
 
     return first;
 }
 
-/* XFree86's xf86ValidateModes routine deosn't work well with DFPs here
- * is our own validation routine. 
+/* XFree86's xf86ValidateModes routine doesn't work well with DDC modes,
+ * so here is our own validation routine.
  */
-static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName,
-				 Bool IsClone)
+static int RADEONValidateDDCModes(ScrnInfoPtr pScrn, char **ppModeName,
+				  RADEONMonitorType DisplayType)
 {
     RADEONInfoPtr   info       = RADEONPTR(pScrn);
-    DisplayModePtr  p, *prev;
+    DisplayModePtr  p;
     DisplayModePtr  last       = NULL;
-    DisplayModePtr  new        = NULL;
     DisplayModePtr  first      = NULL;
     DisplayModePtr  ddcModes   = NULL;
-    xf86MonPtr      ddc        = pScrn->monitor->DDC;
     int             count      = 0;
     int             i, width, height;
-
-    /* The panel size we collected from BIOS may not be the maximum size
-     * supported by the panel.  If not, we update it now.  These will be
-     * used if no matching mode can be found from EDID data.
-     */
-    if (ddc &&
-	!IsClone &&
-	!info->IsSecondary &&
-	info->DisplayType != MT_CRT) RADEONUpdatePanelSize (pScrn);
-
-    if (!IsClone) {
-	/* Free any allocated modes during configuration.  We don't need
-	 * them.
-	 */
-	while (pScrn->modes)
-	    xf86DeleteMode(&pScrn->modes, pScrn->modes);
-	while (pScrn->modePool)
-	    xf86DeleteMode(&pScrn->modePool, pScrn->modePool);
-    }
 
     pScrn->virtualX = pScrn->display->virtualX;
     pScrn->virtualY = pScrn->display->virtualY;
 
-    ddcModes = RADEONDDCModes (pScrn);
-    
-    /* Primary head panel, use RMX by default */
-    if (!info->ddc_mode &&
-	!info->IsSecondary &&
-	!IsClone &&
-	info->DisplayType != MT_CRT) {
-	for (p = ddcModes; p; p = p->next)
-	{
-	    /* These values are effective values after expansion.
-	     * They are not really used to set CRTC registers.
+    /* We have a flat panel connected */
+    if (pScrn->monitor->DDC) {
+	int  maxVirtX = pScrn->virtualX;
+	int  maxVirtY = pScrn->virtualY;
+
+	if (DisplayType != MT_CRT) {
+	    /* The panel size we collected from BIOS may not be the
+	     * maximum size supported by the panel.  If not, we update
+	     * it now.  These will be used if no matching mode can be
+	     * found from EDID data.
 	     */
-	    p->HTotal     = info->PanelXRes + info->HBlank;
-	    p->HSyncStart = info->PanelXRes + info->HOverPlus;
-	    p->HSyncEnd   = p->HSyncStart + info->HSyncWidth;
-	    p->VTotal     = info->PanelYRes + info->VBlank;
-	    p->VSyncStart = info->PanelYRes + info->VOverPlus;
-	    p->VSyncEnd   = p->VSyncStart + info->VSyncWidth;	
-	    p->Clock      = info->DotClock;
-
-	    p->Flags |= RADEON_USE_RMX; 
+	    RADEONUpdatePanelSize(pScrn);
 	}
-    }
 
-    for (i = 0; ppModeName[i] != NULL; i++) {
-	if (sscanf(ppModeName[i], "%dx%d", &width, &height) != 2) continue;
+	/* Collect all of the DDC modes */
+	first = last = ddcModes = RADEONDDCModes(pScrn);
 
-	/*
-	 * Match a DDC mode and use that if available
-	 */
-	for (prev = &ddcModes; (new = *prev); prev = &new->next)
-	{
-	    if (width == new->HDisplay && height == new->VDisplay)
-	    {
-		/* unhook from ddcMode list */
-		*prev = new->next;
-		break;
-	    }
-	}
-	
-	/* Add non standard mode */
-	if (!new && !info->IsSecondary && !IsClone && info->DisplayType != MT_CRT) {
-	    /* Note: We allow all non-standard modes as long as they do
-	     * not exceed the native resolution of the panel.  Since it
-	     * needs internal RMX unit in the video chips (only got
-	     * one), this will only apply to the primary head.
-	     */
+	for (p = ddcModes; p; p = p->next) {
 
-	    if (width < 320 || width > info->PanelXRes ||
-		height < 200 || height > info->PanelYRes) {
-		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-			   "Mode %s is out of range.\n"
-			   "Valid mode should be between 320x200-%dx%d\n",
-			    ppModeName[i], info->PanelXRes,
-			    info->PanelYRes);
-		continue;
+	    /* If primary head is a flat panel, use RMX by default */
+	    if (!info->IsSecondary && DisplayType != MT_CRT) {
+		/* These values are effective values after expansion.
+		 * They are not really used to set CRTC registers.
+		 */
+		p->HTotal     = info->PanelXRes + info->HBlank;
+		p->HSyncStart = info->PanelXRes + info->HOverPlus;
+		p->HSyncEnd   = p->HSyncStart + info->HSyncWidth;
+		p->VTotal     = info->PanelYRes + info->VBlank;
+		p->VSyncStart = info->PanelYRes + info->VOverPlus;
+		p->VSyncEnd   = p->VSyncStart + info->VSyncWidth;
+		p->Clock      = info->DotClock;
+
+		p->Flags     |= RADEON_USE_RMX;
 	    }
 
-	    new             = xnfcalloc(1, sizeof(DisplayModeRec));
-	    new->name       = xnfalloc(strlen (ppModeName[i]) + 1);
-	    strcpy (new->name, ppModeName[i]);
-	    new->HDisplay   = width;
-	    new->VDisplay   = height;
-
-	    /* These values are effective values after expansion 
-	     * They are not really used to set CRTC registers
-	     */
-	    new->HTotal     = info->PanelXRes + info->HBlank;
-	    new->HSyncStart = info->PanelXRes + info->HOverPlus;
-	    new->HSyncEnd   = new->HSyncStart + info->HSyncWidth;
-	    new->VTotal     = info->PanelYRes + info->VBlank;
-	    new->VSyncStart = info->PanelYRes + info->VOverPlus;
-	    new->VSyncEnd   = new->VSyncStart + info->VSyncWidth;	
-	    new->Clock      = info->DotClock;
-
-	    new->Flags |= RADEON_USE_RMX;
-	}
-
-	new->type |= M_T_USERDEF;
-
-	new->next = 0;
-	new->prev = last;
-	if (last)
-	    last->next = new;
-	last = new;
-	if (!first)
-	    first = new;
-	pScrn->display->virtualX =
-	pScrn->virtualX = MAX(pScrn->virtualX, width);
-	pScrn->display->virtualY =
-	pScrn->virtualY = MAX(pScrn->virtualY, height);
-	count++;
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Valid Mode by using on-chip RMX: %s\n", new->name);
-    }
-
-    /*
-     * Append remaining DDC modes to end of list
-     */
-    while (ddcModes)
-    {
-	new = ddcModes;
-	ddcModes = new->next;
-	for (p = first; p; p = p->next)
-	    if (p->HDisplay == new->HDisplay && p->VDisplay == new->VDisplay)
-		break;
-	if (p)
-	    xfree (new);
-	else
-	{
-	    new->next = 0;
-	    new->prev = last;
-	    if (last)
-		last->next = new;
-	    last = new;
-	    if (!first)
-		first = new;
-	    pScrn->display->virtualX =
-	    pScrn->virtualX = MAX(pScrn->virtualX, width);
-	    pScrn->display->virtualY =
-	    pScrn->virtualY = MAX(pScrn->virtualY, height);
+	    maxVirtX = MAX(maxVirtX, p->HDisplay);
+	    maxVirtY = MAX(maxVirtY, p->VDisplay);
 	    count++;
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Valid Mode from DDC: %s\n", new->name);
+
+	    last = p;
 	}
+
+	/* Match up modes that are specified in the XF86Config file */
+	if (ppModeName[0]) {
+	    DisplayModePtr  next;
+
+	    /* Reset the max virtual dimensions */
+	    maxVirtX = pScrn->virtualX;
+	    maxVirtY = pScrn->virtualY;
+
+	    /* Reset list */
+	    first = last = NULL;
+
+	    for (i = 0; ppModeName[i]; i++) {
+		/* FIXME: Use HDisplay and VDisplay instead of mode string */
+		if (sscanf(ppModeName[i], "%dx%d", &width, &height) == 2) {
+		    for (p = ddcModes; p; p = next) {
+			next = p->next;
+
+			if (p->HDisplay == width && p->VDisplay == height) {
+			    /* We found a DDC mode that matches the one
+                               requested in the XF86Config file */
+			    p->type |= M_T_USERDEF;
+
+			    /* Update  the max virtual setttings */
+			    maxVirtX = MAX(maxVirtX, width);
+			    maxVirtY = MAX(maxVirtY, height);
+
+			    /* Unhook from DDC modes */
+			    if (p->prev) p->prev->next = p->next;
+			    if (p->next) p->next->prev = p->prev;
+			    if (p == ddcModes) ddcModes = p->next;
+
+			    /* Add to used modes */
+			    if (last) {
+				last->next = p;
+				p->prev = last;
+			    } else {
+				first = p;
+				p->prev = NULL;
+			    }
+			    p->next = NULL;
+			    last = p;
+
+			    break;
+			}
+		    }
+		}
+	    }
+
+	    /* Delete unused modes */
+	    while (ddcModes)
+		xf86DeleteMode(&ddcModes, ddcModes);
+	}
+
+	pScrn->virtualX = pScrn->display->virtualX = maxVirtX;
+	pScrn->virtualY = pScrn->display->virtualY = maxVirtY;
     }
 
+    /* Close the doubly-linked mode list, if we found any usable modes */
     if (last) {
 	last->next   = first;
 	first->prev  = last;
 	pScrn->modes = first;
-
-	/* FIXME: May need to validate line pitch here */
-	{
-	    int dummy = pScrn->virtualX;
-	    switch (pScrn->depth / 8) {
-	    case 1: dummy = (pScrn->virtualX + 127) & ~127; break;
-	    case 2: dummy = (pScrn->virtualX + 31) & ~31;   break;
-	    case 3:
-	    case 4: dummy = (pScrn->virtualX + 15) & ~15;   break;
-	    }
-	    pScrn->displayWidth = dummy;
-	}
+	RADEONSetPitch(pScrn);
     }
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "Total of %d mode(s) found. %d\n", count);
+	       "Total number of valid DDC mode(s) found: %d\n", count);
+
+    return count;
+}
+
+/* This is used only when no mode is specified for FP and no ddc is
+ * available.  We force it to native mode, if possible.
+ */
+static DisplayModePtr RADEONFPNativeMode(ScrnInfoPtr pScrn)
+{
+    RADEONInfoPtr   info  = RADEONPTR(pScrn);
+    DisplayModePtr  new   = NULL;
+    char            stmp[32];
+
+    if (info->PanelXRes != 0 &&
+	info->PanelYRes != 0 &&
+	info->DotClock != 0) {
+
+	/* Add native panel size */
+	new             = xnfcalloc(1, sizeof (DisplayModeRec));
+	sprintf(stmp, "%dx%d", info->PanelXRes, info->PanelYRes);
+	new->name       = xnfalloc(strlen(stmp) + 1);
+	strcpy(new->name, stmp);
+	new->HDisplay   = info->PanelXRes;
+	new->VDisplay   = info->PanelYRes;
+
+	new->HTotal     = new->HDisplay + info->HBlank;
+	new->HSyncStart = new->HDisplay + info->HOverPlus;
+	new->HSyncEnd   = new->HSyncStart + info->HSyncWidth;
+	new->VTotal     = new->VDisplay + info->VBlank;
+	new->VSyncStart = new->VDisplay + info->VOverPlus;
+	new->VSyncEnd   = new->VSyncStart + info->VSyncWidth;
+
+	new->Clock      = info->DotClock;
+	new->Flags      = 0;
+
+	new->next       = NULL;
+	new->prev       = NULL;
+
+	pScrn->display->virtualX =
+	    pScrn->virtualX = MAX(pScrn->virtualX, info->PanelXRes);
+	pScrn->display->virtualY =
+	    pScrn->virtualY = MAX(pScrn->virtualY, info->PanelYRes);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "No valid mode specified, force to native mdoe\n");
+    }
+
+    return new;
+}
+
+/* XFree86's xf86ValidateModes routine doesn't work well with DFPs, so
+ * here is our own validation routine.
+ */
+static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName)
+{
+    RADEONInfoPtr   info       = RADEONPTR(pScrn);
+    DisplayModePtr  last       = NULL;
+    DisplayModePtr  new        = NULL;
+    DisplayModePtr  first      = NULL;
+    int             count      = 0;
+    int             i, width, height;
+
+    pScrn->virtualX = pScrn->display->virtualX;
+    pScrn->virtualY = pScrn->display->virtualY;
+
+    /* We have a flat panel connected to the primary display, and we
+     * don't have any DDC info.
+     */
+    for (i = 0; ppModeName[i] != NULL; i++) {
+	/* FIXME: Use HDisplay and VDisplay instead of mode string */
+	if (sscanf(ppModeName[i], "%dx%d", &width, &height) != 2) continue;
+
+	/* Note: We allow all non-standard modes as long as they do not
+	 * exceed the native resolution of the panel.  Since these modes
+	 * need the internal RMX unit in the video chips (and there is
+	 * only one per card), this will only apply to the primary head.
+	 */
+	if (width < 320 || width > info->PanelXRes ||
+	    height < 200 || height > info->PanelYRes) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Mode %s is out of range.\n", ppModeName[i]);
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Valid modes must be between 320x200-%dx%d\n",
+		       info->PanelXRes, info->PanelYRes);
+	    continue;
+	}
+
+	new             = xnfcalloc(1, sizeof(DisplayModeRec));
+	new->name       = xnfalloc(strlen(ppModeName[i]) + 1);
+	strcpy(new->name, ppModeName[i]);
+	new->HDisplay   = width;
+	new->VDisplay   = height;
+
+	/* These values are effective values after expansion They are
+	 * not really used to set CRTC registers.
+	 */
+	new->HTotal     = info->PanelXRes + info->HBlank;
+	new->HSyncStart = info->PanelXRes + info->HOverPlus;
+	new->HSyncEnd   = new->HSyncStart + info->HSyncWidth;
+	new->VTotal     = info->PanelYRes + info->VBlank;
+	new->VSyncStart = info->PanelYRes + info->VOverPlus;
+	new->VSyncEnd   = new->VSyncStart + info->VSyncWidth;	
+	new->Clock      = info->DotClock;
+	new->Flags     |= RADEON_USE_RMX;
+
+	new->type      |= M_T_USERDEF;
+
+	new->next       = NULL;
+	new->prev       = last;
+
+	if (last) last->next = new;
+	last = new;
+	if (!first) first = new;
+
+	pScrn->display->virtualX =
+	    pScrn->virtualX = MAX(pScrn->virtualX, width);
+	pScrn->display->virtualY =
+	    pScrn->virtualY = MAX(pScrn->virtualY, height);
+	count++;
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Valid mode using on-chip RMX: %s\n", new->name);
+    }
+
+    /* If all else fails, add the native mode */
+    if (!count) first = last = RADEONFPNativeMode(pScrn);
+
+    /* Close the doubly-linked mode list, if we found any usable modes */
+    if (last) {
+	last->next   = first;
+	first->prev  = last;
+	pScrn->modes = first;
+	RADEONSetPitch(pScrn);
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	       "Total number of valid FP mode(s) found: %d\n", count);
 
     return count;
 }
@@ -2197,7 +2358,7 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
     while (pScrn->display->modes[count]) count++;
     clone_mode_names = xnfalloc((count+2) * sizeof(char*));
     for (i = 0; i < count; i++) {
-	clone_mode_names[i] = xnfalloc(strlen (pScrn->display->modes[i]) + 1);
+	clone_mode_names[i] = xnfalloc(strlen(pScrn->display->modes[i]) + 1);
 	strcpy(clone_mode_names[i], pScrn->display->modes[i]);
     }
     clone_mode_names[count]   = NULL;
@@ -2213,9 +2374,9 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
     clockRanges->interlaceAllowed  = FALSE;
     clockRanges->doubleScanAllowed = FALSE;
 
-    /* only take one clone mode from config file for now,
-       rest of clone modes will copy from primary head 
-    */
+    /* Only take one clone mode from config file for now, rest of clone
+     * modes will copy from primary head.
+     */
     if ((s = xf86GetOptValString(info->Options, OPTION_CLONE_MODE))) {
 	if (sscanf(s, "%dx%d", &tmp_hdisplay, &tmp_vdisplay) == 2) {
 	    if(count > 0) free(clone_mode_names[0]);
@@ -2278,7 +2439,8 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
 		   "DDC detection (type %d) for clone modes\n",
 		   info->CloneDDCType);
 
-	if ((pScrn->monitor->DDC = RADEONDoDDC (pScrn, NULL))) {
+	pScrn->monitor->DDC = RADEONDoDDC(pScrn, NULL);
+	if (pScrn->monitor->DDC) {
 	    if (info->CloneType == MT_CRT) {
 		if (pScrn->monitor->nHsync == 0)
 		    RADEONSetSyncRangeFromEdid(pScrn, 1);
@@ -2289,7 +2451,7 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
 	    ddc_mode = FALSE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		       "No DDC data available for clone mode, "
-		       "UseVESA option is dismissed\n");
+		       "DDCMode option is dismissed\n");
 	}
 	info->DDCReg = save_ddc_reg;
     }
@@ -2310,12 +2472,20 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
 			      info->FbMapSize, 
 			      LOOKUP_BEST_REFRESH);
     } else {
-	modesFound = RADEONValidateFPModes(pScrn, clone_mode_names, TRUE);
+	/* Try to add DDC modes */
+	modesFound = RADEONValidateDDCModes(pScrn, clone_mode_names,
+					    info->CloneType);
+
+	/* If that fails and we're connect to a flat panel, then try to
+         * add the flat panel modes
+	 */
+	if (modesFound < 1 && info->DisplayType != MT_CRT)
+	    modesFound = RADEONValidateFPModes(pScrn, clone_mode_names);
     }
 
     if (modesFound > 0) {
 	xf86SetCrtcForModes(pScrn, 0);
-	xf86PrintModes (pScrn);
+	xf86PrintModes(pScrn);
 	for (i = 0; i < modesFound; i++) {
 	    while(pScrn->modes->status != MODE_OK) {
 		pScrn->modes = pScrn->modes->next;
@@ -2411,11 +2581,8 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
      *
      * Note: This option will be dismissed if no DDC data is available.
      */
-    if (xf86ReturnOptValBool(info->Options, OPTION_DDC_MODE, FALSE))
-	info->ddc_mode = TRUE;
-    else
-	info->ddc_mode = FALSE;
-
+    info->ddc_mode =
+	xf86ReturnOptValBool(info->Options, OPTION_DDC_MODE, FALSE);
 
     /* Here is a hack for cloning first display on the second head.  If
      * we don't do this, when both heads are connected, the same CRTC
@@ -2466,11 +2633,11 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     if (!pScrn->monitor->DDC && info->ddc_mode) {
 	info->ddc_mode = FALSE;
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "No DDC data available, UseVESA option is dismissed\n");
+		   "No DDC data available, DDCMode option is dismissed\n");
     }
 
     /* We'll use our own mode validation routine for DFP/LCD, since
-     * xf86ValidateModes is not working well with the DFP/LCD modes
+     * xf86ValidateModes does not work correctly with the DFP/LCD modes
      * 'stretched' from their native mode.
      */
     if (info->DisplayType == MT_CRT && !info->ddc_mode) {
@@ -2488,7 +2655,7 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	if (pScrn->monitor->DDC) {
 	    /* If we still don't know sync range yet, let's try EDID.
 	     *
-	     * Note that, since we can have dual heads, the Xconfigurator
+	     * Note that, since we can have dual heads, Xconfigurator
 	     * may not be able to probe both monitors correctly through
 	     * vbe probe function (RADEONProbeDDC). Here we provide an
 	     * additional way to auto-detect sync ranges if they haven't
@@ -2530,14 +2697,35 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	    return FALSE;
 	}
     } else {
-	/* Flat panel mode validation routine, it's also used for CRT
-	 * with DDCModes option.
+	/* First, free any allocated modes during configuration, since
+	 * we don't need them
 	 */
-	modesFound =
-	    RADEONValidateFPModes(pScrn, pScrn->display->modes, FALSE);
+	while (pScrn->modes)
+	    xf86DeleteMode(&pScrn->modes, pScrn->modes);
+	while (pScrn->modePool)
+	    xf86DeleteMode(&pScrn->modePool, pScrn->modePool);
+
+	/* Next try to add DDC modes */
+	modesFound = RADEONValidateDDCModes(pScrn, pScrn->display->modes,
+					    info->DisplayType);
+
+	/* If that fails and we're connect to a flat panel, then try to
+         * add the flat panel modes
+	 */
+	if (modesFound < 1 && info->DisplayType != MT_CRT)
+	    modesFound = RADEONValidateFPModes(pScrn, pScrn->display->modes);
+
+	/* Fail if we still don't have any valid modes */
 	if (modesFound < 1) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "No valid mode found for this DFP/LCD\n");
+	    if (info->DisplayType == MT_CRT) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "No valid DDC modes found for this CRT\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Try turning off the \"DDCMode\" option\n");
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "No valid mode found for this DFP/LCD\n");
+	    }
 	    return FALSE;
 	}
     }
@@ -2556,16 +2744,7 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		    pScrn->display->virtualX = clone_mode->HDisplay; 
 		pScrn->virtualY =
 		    pScrn->display->virtualY = clone_mode->VDisplay; 
-		{
-		    int dummy = pScrn->virtualX;
-		    switch (pScrn->depth / 8) {
-		    case 1: dummy = (pScrn->virtualX + 127) & ~127; break;
-		    case 2: dummy = (pScrn->virtualX + 31) & ~31;   break;
-		    case 3:
-		    case 4: dummy = (pScrn->virtualX + 15) & ~15;   break;
-		    }
-		    pScrn->displayWidth = dummy;
-		}
+		RADEONSetPitch(pScrn);
 	    }
 	    if (!clone_mode->next) break;
 	    clone_mode = clone_mode->next;
@@ -3176,10 +3355,11 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       (pScrn->displayWidth * pScrn->virtualY *
 			info->CurrentLayout.pixel_bytes * 3 + 1023) / 1024);
 	    info->directRenderingEnabled = FALSE;
-	} else if (info->IsR200) {
+	} else if (info->ChipFamily >= CHIP_FAMILY_R200) {
 	    info->directRenderingEnabled = FALSE;
 	    xf86DrvMsg(scrnIndex, X_WARNING,
-		       "Direct rendering not yet supported on Radeon 8500\n");
+		       "Direct rendering not yet supported on "
+		       "Radeon 8500 and newer cards\n");
 	} else {
 	    if (info->IsSecondary)
 		info->directRenderingEnabled = FALSE;
@@ -3595,8 +3775,6 @@ static void RADEONRestoreCommonRegisters(ScrnInfoPtr pScrn,
     OUTREG(RADEON_OVR_WID_LEFT_RIGHT, restore->ovr_wid_left_right);
     OUTREG(RADEON_OVR_WID_TOP_BOTTOM, restore->ovr_wid_top_bottom);
     OUTREG(RADEON_OV0_SCALE_CNTL,     restore->ov0_scale_cntl);
-    OUTREG(RADEON_MPP_TB_CONFIG,      restore->mpp_tb_config );
-    OUTREG(RADEON_MPP_GP_CONFIG,      restore->mpp_gp_config );
     OUTREG(RADEON_SUBPIC_CNTL,        restore->subpic_cntl);
     OUTREG(RADEON_VIPH_CONTROL,       restore->viph_control);
     OUTREG(RADEON_I2C_CNTL_1,         restore->i2c_cntl_1);
@@ -3605,6 +3783,27 @@ static void RADEONRestoreCommonRegisters(ScrnInfoPtr pScrn,
     OUTREG(RADEON_CAP1_TRIG_CNTL,     restore->cap1_trig_cntl);
     OUTREG(RADEON_BUS_CNTL,           restore->bus_cntl);
     OUTREG(RADEON_SURFACE_CNTL,       restore->surface_cntl);
+
+    /* Workaround for the VT switching problem in dual-head mode.  This
+     * problem only occurs on RV style chips, typically when a FP and
+     * CRT are connected.
+     */
+    if (info->HasCRTC2 &&
+	info->ChipFamily != CHIP_FAMILY_R200 &&
+	info->ChipFamily != CHIP_FAMILY_R300) {
+	DevUnion     *pPriv;
+	RADEONEntPtr  pRADEONEnt;
+	CARD32        tmp;
+
+	pPriv = xf86GetEntityPrivate(pScrn->entityList[0], gRADEONEntityIndex);
+	pRADEONEnt = pPriv->ptr;
+
+	if (pRADEONEnt->HasSecondary || info->Clone) {
+	    tmp = INREG(RADEON_DAC_CNTL2);
+	    OUTREG(RADEON_DAC_CNTL2, tmp & ~RADEON_DAC2_DAC_CLK_SEL);
+	    usleep(100000);
+	}
+    }
 }
 
 /* Write CRTC registers */
@@ -3650,10 +3849,20 @@ static void RADEONRestoreCrtc2Registers(ScrnInfoPtr pScrn,
 	    RADEON_CRTC2_DISP_DIS);
 
     OUTREG(RADEON_DAC_CNTL2, restore->dac2_cntl);
-    if (info->IsR200)
+
+    if (info->ChipFamily == CHIP_FAMILY_R200 ||
+	info->ChipFamily == CHIP_FAMILY_R300) {
 	OUTREG(RADEON_DISP_OUTPUT_CNTL, restore->disp_output_cntl);
-    else
+    } else {
 	OUTREG(RADEON_DISP_HW_DEBUG, restore->disp_hw_debug);
+	if (info->IsDell) {
+	    /* Workaround for DELL card. BIOS doesn't initialize
+	     * TV_DAC_CNTL to a correct value which causes too high
+	     * contrast for the second CRT (using TV_DAC).
+	     */
+	    OUTREG(0x88c, 0x00280203);
+	}
+    }
 
     OUTREG(RADEON_CRTC2_H_TOTAL_DISP,    restore->crtc2_h_total_disp);
     OUTREG(RADEON_CRTC2_H_SYNC_STRT_WID, restore->crtc2_h_sync_strt_wid);
@@ -3667,11 +3876,12 @@ static void RADEONRestoreCrtc2Registers(ScrnInfoPtr pScrn,
 	OUTREG(RADEON_FP_H2_SYNC_STRT_WID, restore->fp2_h_sync_strt_wid);
 	OUTREG(RADEON_FP_V2_SYNC_STRT_WID, restore->fp2_v_sync_strt_wid);
 	OUTREG(RADEON_FP2_GEN_CNTL,        restore->fp2_gen_cntl);
-	/* OUTREG(RADEON_TMDS_PLL_CNTL,       restore->tmds_pll_cntl); */
     }
 
-    /* Hack for restoring text mode */
+#if 0
+    /* Hack for restoring text mode -- fixed elsewhere */
     usleep(100000);
+#endif
 }
 
 /* Write flat panel registers */
@@ -3711,7 +3921,16 @@ static void RADEONRestoreFPRegisters(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 
 static void RADEONPLLWaitForReadUpdateComplete(ScrnInfoPtr pScrn)
 {
-    while (INPLL(pScrn, RADEON_PPLL_REF_DIV) & RADEON_PPLL_ATOMIC_UPDATE_R);
+    int i = 0;
+
+    /* FIXME: Certain revisions of R300 can't recover here.  Not sure of
+       the cause yet, but this workaround will mask the problem for now.
+       Other chips usually will pass at the very first test, so the
+       workaround shouldn't have any effect on them. */
+    for (i = 0;
+	 (i < 10000 &&
+	  INPLL(pScrn, RADEON_PPLL_REF_DIV) & RADEON_PPLL_ATOMIC_UPDATE_R);
+	 i++);
 }
 
 static void RADEONPLLWriteUpdate(ScrnInfoPtr pScrn)
@@ -3728,7 +3947,16 @@ static void RADEONPLLWriteUpdate(ScrnInfoPtr pScrn)
 
 static void RADEONPLL2WaitForReadUpdateComplete(ScrnInfoPtr pScrn)
 {
-    while (INPLL(pScrn, RADEON_P2PLL_REF_DIV) & RADEON_P2PLL_ATOMIC_UPDATE_R);
+    int i = 0;
+
+    /* FIXME: Certain revisions of R300 can't recover here.  Not sure of
+       the cause yet, but this workaround will mask the problem for now.
+       Other chips usually will pass at the very first test, so the
+       workaround shouldn't have any effect on them. */
+    for (i = 0;
+	 (i < 10000 &&
+	  INPLL(pScrn, RADEON_P2PLL_REF_DIV) & RADEON_P2PLL_ATOMIC_UPDATE_R);
+	 i++);
 }
 
 static void RADEONPLL2WriteUpdate(ScrnInfoPtr pScrn)
@@ -3921,9 +4149,9 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 
     RADEONTRACE(("RADEONRestoreMode(%p)\n", restore));
 
-    /* When changing mode with Dual-head card (VE/M6), care must be
-     * taken for the special order in setting registers. CRTC2 has to be
-     * set before changing CRTC_EXT register.  In the dual-head setup, X
+    /* When changing mode with Dual-head card, care must be taken for
+     * the special order in setting registers. CRTC2 has to be set
+     * before changing CRTC_EXT register.  In the dual-head setup, X
      * server calls this routine twice with primary and secondary pScrn
      * pointers respectively. The calls can come with different
      * order. Regardless the order of X server issuing the calls, we
@@ -3931,6 +4159,8 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
      * we may get a blank screen.
      */
     if (info->IsSecondary) {
+	if (!pRADEONEnt->RestorePrimary)
+	    RADEONRestoreCommonRegisters(pScrn, restore);
 	RADEONRestoreCrtc2Registers(pScrn, restore);
 	RADEONRestorePLL2Registers(pScrn, restore);
 
@@ -3952,7 +4182,8 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	    pRADEONEnt->IsSecondaryRestored = FALSE;
 	}
     } else {
-	RADEONRestoreCommonRegisters(pScrn, restore);
+	if (!pRADEONEnt->IsSecondaryRestored)
+	    RADEONRestoreCommonRegisters(pScrn, restore);
 
 	if (info->Clone) {
 	    RADEONRestoreCrtc2Registers(pScrn, restore);
@@ -3990,8 +4221,6 @@ static void RADEONSaveCommonRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save)
     save->ovr_wid_left_right = INREG(RADEON_OVR_WID_LEFT_RIGHT);
     save->ovr_wid_top_bottom = INREG(RADEON_OVR_WID_TOP_BOTTOM);
     save->ov0_scale_cntl     = INREG(RADEON_OV0_SCALE_CNTL);
-    save->mpp_tb_config      = INREG(RADEON_MPP_TB_CONFIG);
-    save->mpp_gp_config      = INREG(RADEON_MPP_GP_CONFIG);
     save->subpic_cntl        = INREG(RADEON_SUBPIC_CNTL);
     save->viph_control       = INREG(RADEON_VIPH_CONTROL);
     save->i2c_cntl_1         = INREG(RADEON_I2C_CNTL_1);
@@ -4127,6 +4356,7 @@ static void RADEONSaveMode(ScrnInfoPtr pScrn, RADEONSavePtr save)
 	RADEONSaveCrtc2Registers(pScrn, save);
 	RADEONSavePLL2Registers(pScrn, save);
     } else {
+	RADEONSavePLLRegisters(pScrn, save);
 	RADEONSaveCommonRegisters(pScrn, save);
 	RADEONSaveCrtcRegisters(pScrn, save);
 
@@ -4134,8 +4364,6 @@ static void RADEONSaveMode(ScrnInfoPtr pScrn, RADEONSavePtr save)
 	    (info->DisplayType == MT_LCD)) {
 	    RADEONSaveFPRegisters(pScrn, save);
 	}
-
-	RADEONSavePLLRegisters(pScrn, save);
 
 	if (info->Clone) {
 	    RADEONSaveCrtc2Registers(pScrn, save);
@@ -4178,8 +4406,8 @@ static void RADEONSave(ScrnInfoPtr pScrn)
 	save->dp_datatype      = INREG(RADEON_DP_DATATYPE);
 	save->rbbm_soft_reset  = INREG(RADEON_RBBM_SOFT_RESET);
 	save->clock_cntl_index = INREG(RADEON_CLOCK_CNTL_INDEX);
-	save->amcgpio_en_reg   = INREG(RADEON_AMCGPIO_EN_REG);
-	save->amcgpio_mask     = INREG(RADEON_AMCGPIO_MASK);
+	if (info->ChipFamily == CHIP_FAMILY_R300)
+	    R300CGWorkaround(pScrn);
     }
 
     RADEONSaveMode(pScrn, save);
@@ -4200,18 +4428,20 @@ static void RADEONRestore(ScrnInfoPtr pScrn)
     }
     RADEONBlank(pScrn);
 
-    OUTREG(RADEON_AMCGPIO_MASK,     restore->amcgpio_mask);
-    OUTREG(RADEON_AMCGPIO_EN_REG,   restore->amcgpio_en_reg);
     OUTREG(RADEON_CLOCK_CNTL_INDEX, restore->clock_cntl_index);
+    if (info->ChipFamily == CHIP_FAMILY_R300)
+	R300CGWorkaround(pScrn);
     OUTREG(RADEON_RBBM_SOFT_RESET,  restore->rbbm_soft_reset);
     OUTREG(RADEON_DP_DATATYPE,      restore->dp_datatype);
 
+#if 0
     /* M6 card has trouble restoring text mode for its CRT.
-     * Needs this workaround.
+     * This is fixed elsewhere and will be removed in the future.
      */
     if ((xf86IsEntityShared(pScrn->entityList[0]) || info->Clone)
 	&& info->IsM6)
 	OUTREG(RADEON_DAC_CNTL2, restore->dac2_cntl);
+#endif
 
     RADEONRestoreMode(pScrn, restore);
 
@@ -4265,8 +4495,6 @@ static void RADEONInitCommonRegisters(RADEONSavePtr save, RADEONInfoPtr info)
     save->ovr_wid_left_right = 0;
     save->ovr_wid_top_bottom = 0;
     save->ov0_scale_cntl     = 0;
-    save->mpp_tb_config      = 0;
-    save->mpp_gp_config      = 0;
     save->subpic_cntl        = 0;
     save->viph_control       = 0;
     save->i2c_cntl_1         = 0;
@@ -4325,6 +4553,7 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 	    mode->CrtcVSyncStart = mode->CrtcVDisplay + info->VOverPlus;
 	    mode->CrtcVSyncEnd   = mode->CrtcVSyncStart + info->VSyncWidth;
 	    mode->Clock          = info->DotClock;
+	    mode->Flags          = info->Flags | RADEON_USE_RMX;
 	}
     } else {
 	hsync_fudge = hsync_fudge_default[format-1];
@@ -4467,13 +4696,16 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 			       ? RADEON_CRTC2_INTERLACE_EN
 			       : 0));
 
+    /* Turn CRT on in case the first head is a DFP */
+    save->crtc_ext_cntl |= RADEON_CRTC_CRT_ON;
     save->dac2_cntl = info->SavedReg.dac2_cntl;
-    if (info->IsR200)
+    if (info->ChipFamily == CHIP_FAMILY_R200 ||
+	info->ChipFamily == CHIP_FAMILY_R300) {
 	save->disp_output_cntl =
 	    ((info->SavedReg.disp_output_cntl
 	      & ~(CARD32)RADEON_DISP_DAC_SOURCE_MASK)
 	     | RADEON_DISP_DAC_SOURCE_CRTC2);
-    else {
+    } else {
 	save->disp_hw_debug = info->SavedReg.disp_hw_debug;
 	if (info->IsDell && info->DellType == 2) {
 	    if (info->DisplayType == MT_CRT || info->CloneType == MT_CRT) {
@@ -4545,10 +4777,12 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 				     RADEON_FP2_PANEL_FORMAT |
 				     RADEON_FP2_ON);
 
-	/* FIXME: How should we set TMDS_PLL_CNTL if we have two panels
-	 *        working at different clocks.
+	/* FIXME: When there are two DFPs, the 2nd DFP is driven by the
+	 *        external TMDS transmitter.  It may have a problem at
+	 *        high dot clock for certain panels.  Since we don't
+	 *        know how to control the external TMDS transmitter, not
+	 *        much we can do here.
 	 */
-
 #if 0
 	if (save->dot_clock_freq > 15000)
 	    save->tmds_pll_cntl = 0xA3F;
@@ -4667,11 +4901,8 @@ static void RADEONInitFPRegisters(ScrnInfoPtr pScrn, RADEONSavePtr orig,
     }
 
     if (info->PanelOff && info->Clone) {
+	info->OverlayOnCRTC2 = TRUE;
 	if (info->DisplayType == MT_LCD) {
-#if 0
-	      save->lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON);
-#endif
-
 	    /* Turning off LVDS_ON seems to make panel white blooming.
 	     * For now we just turn off display data ???
 	     */
@@ -4877,7 +5108,23 @@ static Bool RADEONInit(ScrnInfoPtr pScrn, DisplayModePtr mode,
 	    return FALSE;
 	dot_clock = mode->Clock/1000.0;
 	if (dot_clock) {
-	    RADEONInitPLLRegisters(save, &info->pll, dot_clock);
+	    if (info->ChipFamily == CHIP_FAMILY_R300) {
+		CARD16  ref_div = info->pll.reference_div;
+
+		/* When using a DFP on R300, the BIOS seems to configure
+		 * the reference divider to a value different from the
+		 * value in PLL information table.  Here we use the
+		 * register value set by the BIOS.  We need to restore
+		 * the PLL info table value back in case it needs to be
+		 * used for the 2nd head.
+		 */
+		info->pll.reference_div = (INPLL(pScrn, RADEON_PPLL_REF_DIV) &
+					   RADEON_PPLL_REF_DIV_MASK);
+		RADEONInitPLLRegisters(save, &info->pll, dot_clock);
+		info->pll.reference_div = ref_div;
+	    } else {
+		RADEONInitPLLRegisters(save, &info->pll, dot_clock);
+	    }
 	} else {
 	    save->ppll_ref_div = info->SavedReg.ppll_ref_div;
 	    save->ppll_div_3   = info->SavedReg.ppll_div_3;

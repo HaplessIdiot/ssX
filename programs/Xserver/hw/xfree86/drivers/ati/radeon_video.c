@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.16 2002/07/02 13:02:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.17 2002/09/18 18:14:59 martin Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -191,12 +191,12 @@ typedef struct
 /* Recommended gamma curve parameters */
 GAMMA_SETTINGS def_gamma[18] = 
 {
-    {RADEON_OV0_GAMMA_0_F, 0x100, 0x0000},
-    {RADEON_OV0_GAMMA_10_1F, 0x100, 0x0020},
-    {RADEON_OV0_GAMMA_20_3F, 0x100, 0x0040},
-    {RADEON_OV0_GAMMA_40_7F, 0x100, 0x0080},
-    {RADEON_OV0_GAMMA_80_BF, 0x100, 0x0100},
-    {RADEON_OV0_GAMMA_C0_FF, 0x100, 0x0100},
+    {RADEON_OV0_GAMMA_000_00F, 0x100, 0x0000},
+    {RADEON_OV0_GAMMA_010_01F, 0x100, 0x0020},
+    {RADEON_OV0_GAMMA_020_03F, 0x100, 0x0040},
+    {RADEON_OV0_GAMMA_040_07F, 0x100, 0x0080},
+    {RADEON_OV0_GAMMA_080_0BF, 0x100, 0x0100},
+    {RADEON_OV0_GAMMA_0C0_0FF, 0x100, 0x0100},
     {RADEON_OV0_GAMMA_100_13F, 0x100, 0x0200},
     {RADEON_OV0_GAMMA_140_17F, 0x100, 0x0200},
     {RADEON_OV0_GAMMA_180_1BF, 0x100, 0x0300},
@@ -313,7 +313,7 @@ static void RADEONSetTransform (ScrnInfoPtr pScrn,
      * as in Radeon is a lie 
      * Or more precisely the location of bit fields is a lie 
      */
-    if(1 || !info->IsR200)
+    if(1 || info->ChipFamily < CHIP_FAMILY_R200)
     {
 	dwOvLuma =(((INT32)(OvLuma * 2048.0))&0x7fff)<<17;
 	dwOvRCb = (((INT32)(OvRCb * 2048.0))&0x7fff)<<1;
@@ -394,22 +394,21 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
 				RADEON_VIDEO_KEY_FN_FALSE |
 				RADEON_CMP_MIX_OR);
     OUTREG(RADEON_OV0_TEST, 0);
-    OUTREG(RADEON_FCP_CNTL, RADEON_FCP_CNTL__GND);
+    OUTREG(RADEON_FCP_CNTL, RADEON_FCP0_SRC_GND);
     OUTREG(RADEON_CAP0_TRIG_CNTL, 0);
     RADEONSetColorKey(pScrn, pPriv->colorKey);
     
-    if(!info->IsR200)
-    {
+    if (info->ChipFamily == CHIP_FAMILY_R200 ||
+	info->ChipFamily == CHIP_FAMILY_R300) {
 	OUTREG(RADEON_OV0_LIN_TRANS_A, 0x12a20000);
 	OUTREG(RADEON_OV0_LIN_TRANS_B, 0x198a190e);
 	OUTREG(RADEON_OV0_LIN_TRANS_C, 0x12a2f9da);
 	OUTREG(RADEON_OV0_LIN_TRANS_D, 0xf2fe0442);
 	OUTREG(RADEON_OV0_LIN_TRANS_E, 0x12a22046);
 	OUTREG(RADEON_OV0_LIN_TRANS_F, 0x175f);
-    }
-    else 
-    {
+    } else {
 	int i;
+
 	OUTREG(RADEON_OV0_LIN_TRANS_A, 0x12a00000);
 	OUTREG(RADEON_OV0_LIN_TRANS_B, 0x1990190e);
 	OUTREG(RADEON_OV0_LIN_TRANS_C, 0x12a0f9c0);
@@ -418,12 +417,13 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
 	OUTREG(RADEON_OV0_LIN_TRANS_F, 0x175f);
 
 	/*
-	 * Default Gamma, 
-	 * Of 18 segments for gamma curve, all segments in R200 are programmable, 
-	 * while only lower 4 and upper 2 segments are programmable in Radeon
+	 * Set default Gamma ramp:
+	 *
+	 * Of 18 segments for gamma curve, all segments in R200 (and
+	 * newer) are programmable, while only lower 4 and upper 2
+	 * segments are programmable in the older Radeons.
 	 */
-	for(i=0; i<18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 	    OUTREG(def_gamma[i].gammaReg,
 		   (def_gamma[i].gammaSlope<<16) | def_gamma[i].gammaOffset);
 	}
@@ -971,6 +971,7 @@ RADEONDisplayVideo(
     int v_inc_shift;
     int y_mult;
     int x_off;
+    CARD32 scaler_src;
 
     /* Unlike older Mach64 chips, RADEON has only two ECP settings: 0 for PIXCLK < 175Mhz, and 1 (divide by 2)
        for higher clocks, sure makes life nicer 
@@ -1028,13 +1029,43 @@ RADEONDisplayVideo(
     if (pScrn->currentMode->Flags & V_DBLSCAN)
 	y_mult = 2;
     x_off = 8;
-    if (info->IsR200)
+    if (info->ChipFamily == CHIP_FAMILY_R200 ||
+	info->ChipFamily == CHIP_FAMILY_R300)
 	x_off = 0;
-    
-    OUTREG(RADEON_OV0_Y_X_START, ((dstBox->x1 + x_off) | 
-				  ((dstBox->y1*y_mult) << 16)));
-    OUTREG(RADEON_OV0_Y_X_END,   ((dstBox->x2 + x_off) | 
-				  ((dstBox->y2*y_mult) << 16)));
+
+    /* Put the hardware overlay on CRTC2:
+     * For now, the CRTC2 overlay is only implemented for clone mode.
+     * Xinerama 2nd head will be similar, but there are other issues.
+     *
+     * Since one hardware overlay can not be displayed on two heads 
+     * at the same time, we might need to consider using software
+     * rendering for the second head (do we really need it?).
+     */
+    if (info->Clone && info->OverlayOnCRTC2) {
+	x_off = 0;
+	OUTREG(RADEON_OV1_Y_X_START, ((dstBox->x1
+				       + x_off
+				       - info->CloneFrameX0
+				       + pScrn->frameX0) |
+				      ((dstBox->y1*y_mult -
+					info->CloneFrameY0
+					+ pScrn->frameY0) << 16)));
+	OUTREG(RADEON_OV1_Y_X_END,   ((dstBox->x2
+				       + x_off
+				       - info->CloneFrameX0
+				       + pScrn->frameX0) |
+				      ((dstBox->y2*y_mult
+					- info->CloneFrameY0
+					+ pScrn->frameY0) << 16)));
+	scaler_src = (1 << 14);
+    } else {
+	OUTREG(RADEON_OV0_Y_X_START, ((dstBox->x1 + x_off) |
+				      ((dstBox->y1*y_mult) << 16)));
+	OUTREG(RADEON_OV0_Y_X_END,   ((dstBox->x2 + x_off) |
+				      ((dstBox->y2*y_mult) << 16)));
+	scaler_src = 0;
+    }
+
     OUTREG(RADEON_OV0_V_INC, v_inc);
     OUTREG(RADEON_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(RADEON_OV0_VID_BUF_PITCH0_VALUE, pitch);
@@ -1062,18 +1093,20 @@ RADEONDisplayVideo(
        OUTREG(RADEON_OV0_SCALE_CNTL, 0x41008B03);
 #endif
 
-    if(id == FOURCC_UYVY)
-       OUTREG(RADEON_OV0_SCALE_CNTL, RADEON_SCALER_SOURCE_YVYU422 \
-       	       | RADEON_SCALER_ADAPTIVE_DEINT \
-	       | RADEON_SCALER_SMART_SWITCH \
-	       | RADEON_SCALER_DOUBLE_BUFFER \
-	       | RADEON_SCALER_ENABLE);
+    if (id == FOURCC_UYVY)
+	OUTREG(RADEON_OV0_SCALE_CNTL, (RADEON_SCALER_SOURCE_YVYU422
+				       | RADEON_SCALER_ADAPTIVE_DEINT
+				       | RADEON_SCALER_SMART_SWITCH
+				       | RADEON_SCALER_DOUBLE_BUFFER
+				       | RADEON_SCALER_ENABLE
+				       | scaler_src));
     else
-       OUTREG(RADEON_OV0_SCALE_CNTL,  RADEON_SCALER_SOURCE_VYUY422 \
-       	       | RADEON_SCALER_ADAPTIVE_DEINT \
-	       | RADEON_SCALER_SMART_SWITCH \
-	       | RADEON_SCALER_DOUBLE_BUFFER \
-	       | RADEON_SCALER_ENABLE);
+	OUTREG(RADEON_OV0_SCALE_CNTL, (RADEON_SCALER_SOURCE_VYUY422
+				       | RADEON_SCALER_ADAPTIVE_DEINT
+				       | RADEON_SCALER_SMART_SWITCH
+				       | RADEON_SCALER_DOUBLE_BUFFER
+				       | RADEON_SCALER_ENABLE
+				       | scaler_src));
 
     OUTREG(RADEON_OV0_REG_LOAD_CNTL, 0);
 }

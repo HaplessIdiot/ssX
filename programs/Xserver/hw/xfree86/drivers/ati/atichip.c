@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.25 2002/01/16 16:22:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.26 2002/07/15 14:22:39 martin Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -90,6 +90,9 @@ const char *ATIChipNames[] =
     "ATI Radeon Mobility M7",
     "ATI Radeon 8500",
     "ATI Radeon 7500",
+    "ATI Radeon 9000",
+    "ATI Radeon Mobility M9",
+    "ATI Radeon 9700",
     "ATI Rage HDTV"
 };
 
@@ -616,7 +619,26 @@ ATIChipID
             return ATI_CHIP_R200;
 
         case NewChipID('Q', 'W'):
+        case NewChipID('Q', 'X'):
             return ATI_CHIP_RV200;
+
+        case NewChipID('I', 'd'):
+        case NewChipID('I', 'e'):
+        case NewChipID('I', 'f'):
+        case NewChipID('I', 'g'):
+            return ATI_CHIP_RV250;
+
+        case NewChipID('L', 'd'):
+        case NewChipID('L', 'e'):
+        case NewChipID('L', 'f'):
+        case NewChipID('L', 'g'):
+            return ATI_CHIP_RADEONMOBILITY9;
+
+        case NewChipID('N', 'D'):
+        case NewChipID('N', 'E'):
+        case NewChipID('N', 'F'):
+        case NewChipID('N', 'G'):
+            return ATI_CHIP_R300;
 
         case NewChipID('H', 'D'):
             return ATI_CHIP_HDTV;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.27 2002/09/18 18:14:58 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.28 2002/09/19 03:38:58 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -171,6 +171,8 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     RADEONEngineFlush(pScrn);
 
     clock_cntl_index = INREG(RADEON_CLOCK_CNTL_INDEX);
+    if (info->ChipFamily == CHIP_FAMILY_R300)
+	R300CGWorkaround(pScrn);
 
     /* Some ASICs have bugs with dynamic-on feature, which are
      * ASIC-version dependent, so we force all blocks on for now
@@ -183,7 +185,7 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
 				  RADEON_CP_MAX_DYN_STOP_LAT |
 				  RADEON_SCLK_FORCEON_MASK));
 
-	if (info->IsRV200) {
+	if (info->ChipFamily == CHIP_FAMILY_RV200) {
 	    tmp = INPLL(pScrn, RADEON_SCLK_MORE_CNTL);
 	    OUTPLL(RADEON_SCLK_MORE_CNTL, tmp | RADEON_SCLK_MORE_FORCEON);
 	}
@@ -205,34 +207,49 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     host_path_cntl = INREG(RADEON_HOST_PATH_CNTL);
     rbbm_soft_reset = INREG(RADEON_RBBM_SOFT_RESET);
 
-    OUTREG(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
-				    RADEON_SOFT_RESET_CP |
-				    RADEON_SOFT_RESET_HI |
-				    RADEON_SOFT_RESET_SE |
-				    RADEON_SOFT_RESET_RE |
-				    RADEON_SOFT_RESET_PP |
-				    RADEON_SOFT_RESET_E2 |
-				    RADEON_SOFT_RESET_RB));
-    INREG(RADEON_RBBM_SOFT_RESET);
-    OUTREG(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset & (CARD32)
-				    ~(RADEON_SOFT_RESET_CP |
-				      RADEON_SOFT_RESET_HI |
-				      RADEON_SOFT_RESET_SE |
-				      RADEON_SOFT_RESET_RE |
-				      RADEON_SOFT_RESET_PP |
-				      RADEON_SOFT_RESET_E2 |
-				      RADEON_SOFT_RESET_RB)));
-    INREG(RADEON_RBBM_SOFT_RESET);
+    if (info->ChipFamily == CHIP_FAMILY_R300) {
+	CARD32 tmp;
+
+	OUTREG(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
+					RADEON_SOFT_RESET_CP |
+					RADEON_SOFT_RESET_HI |
+					RADEON_SOFT_RESET_E2));
+	INREG(RADEON_RBBM_SOFT_RESET);
+	OUTREG(RADEON_RBBM_SOFT_RESET, 0);
+	tmp = INREG(RADEON_RB2D_DSTCACHE_MODE);
+	OUTREG(RADEON_RB2D_DSTCACHE_MODE, tmp | (1 << 17)); /* FIXME */
+    } else {
+	OUTREG(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
+					RADEON_SOFT_RESET_CP |
+					RADEON_SOFT_RESET_HI |
+					RADEON_SOFT_RESET_SE |
+					RADEON_SOFT_RESET_RE |
+					RADEON_SOFT_RESET_PP |
+					RADEON_SOFT_RESET_E2 |
+					RADEON_SOFT_RESET_RB));
+	INREG(RADEON_RBBM_SOFT_RESET);
+	OUTREG(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset & (CARD32)
+					~(RADEON_SOFT_RESET_CP |
+					  RADEON_SOFT_RESET_HI |
+					  RADEON_SOFT_RESET_SE |
+					  RADEON_SOFT_RESET_RE |
+					  RADEON_SOFT_RESET_PP |
+					  RADEON_SOFT_RESET_E2 |
+					  RADEON_SOFT_RESET_RB)));
+	INREG(RADEON_RBBM_SOFT_RESET);
+    }
 
     OUTREG(RADEON_HOST_PATH_CNTL, host_path_cntl | RADEON_HDP_SOFT_RESET);
     INREG(RADEON_HOST_PATH_CNTL);
     OUTREG(RADEON_HOST_PATH_CNTL, host_path_cntl);
 
-    OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
+    if (info->ChipFamily != CHIP_FAMILY_R300)
+	OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
 
     OUTREG(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
     OUTPLL(RADEON_MCLK_CNTL, mclk_cntl);
-
+    if (info->ChipFamily == CHIP_FAMILY_R300)
+	R300CGWorkaround(pScrn);
 }
 
 /* Restore the acceleration hardware to its previous state */
@@ -248,8 +265,15 @@ void RADEONEngineRestore(ScrnInfoPtr pScrn)
 
     RADEONWaitForFifo(pScrn, 1);
 
+    /* NOTE: The following RB2D_DSTCACHE_MODE setting will cause the
+     * R300 to hang.  ATI does not see a reason to change it from the
+     * default BIOS settings (even on non-R300 cards).  This setting
+     * might be removed in future versions of the Radeon driver.
+     */
+
     /* Turn of all automatic flushing - we'll do it all */
-    OUTREG(RADEON_RB2D_DSTCACHE_MODE, 0);
+    if (info->ChipFamily != CHIP_FAMILY_R300)
+	OUTREG(RADEON_RB2D_DSTCACHE_MODE, 0);
 
     pitch64 = ((pScrn->displayWidth * (pScrn->bitsPerPixel / 8) + 0x3f)) >> 6;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.27 2002/07/11 20:11:51 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.28 2002/09/18 18:14:58 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -220,40 +220,53 @@ typedef struct {
     DisplayModePtr    mode;
 } RADEONFBLayout;
 
-typedef enum
-{
+typedef enum {
     MT_NONE,
     MT_CRT,
     MT_LCD,
     MT_DFP,
     MT_CTV,
     MT_STV
-}RADEONMonitorType;
+} RADEONMonitorType;
 
-typedef enum
-{
+typedef enum {
     DDC_NONE_DETECTED,
     DDC_MONID,
     DDC_DVI,
     DDC_VGA,
     DDC_CRT2
-}RADEONDDCType;
+} RADEONDDCType;
 
-typedef enum
-{
+typedef enum {
     CONNECTOR_NONE,
     CONNECTOR_PROPRIETARY,
     CONNECTOR_CRT,
     CONNECTOR_DVI_I,
     CONNECTOR_DVI_D
-}RADEONConnectorType;
+} RADEONConnectorType;
+
+typedef enum {
+    CHIP_FAMILY_UNKNOW,
+    CHIP_FAMILY_LEGACY,
+    CHIP_FAMILY_R128,
+    CHIP_FAMILY_M3,
+    CHIP_FAMILY_RADEON,
+    CHIP_FAMILY_VE,
+    CHIP_FAMILY_M6,
+    CHIP_FAMILY_RV200,
+    CHIP_FAMILY_M7,
+    CHIP_FAMILY_R200,
+    CHIP_FAMILY_RV250,
+    CHIP_FAMILY_M9,
+    CHIP_FAMILY_R300
+} RADEONChipFamily;
 
 typedef struct {
     EntityInfoPtr     pEnt;
     pciVideoPtr       PciInfo;
     PCITAG            PciTag;
     int               Chipset;
-    Bool              Primary;
+    RADEONChipFamily  ChipFamily;
 
     Bool              FBDev;
 
@@ -274,24 +287,22 @@ typedef struct {
     RADEONMonitorType DisplayType;      /* Monitor connected on              */
     RADEONDDCType     DDCType;
     RADEONConnectorType ConnectorType;
-    BOOL              HasCRTC2;         /* VE/M6/M7                          */
-    BOOL              IsR200;           /* R200 chip                         */
-    BOOL              IsRV200;          /* RV200 chip                        */
-    BOOL              IsSecondary;      /* Second Screen                     */
-    BOOL              IsSwitching;      /* Flag for switching mode           */
-    BOOL              IsDell;           /* Dell OEM VE card                  */
+    Bool              HasCRTC2;         /* All cards except original Radeon  */
+    Bool              IsSecondary;      /* Second Screen                     */
+    Bool              IsSwitching;      /* Flag for switching mode           */
+    Bool              IsDell;           /* Dell OEM VE card                  */
     int               DellType;
-    BOOL              Clone;            /* Force second head to clone primary*/
+    Bool              Clone;            /* Force second head to clone primary*/
     RADEONMonitorType CloneType;
     RADEONDDCType     CloneDDCType;
     DisplayModePtr    CloneModes;
     DisplayModePtr    CurCloneMode;
     int               CloneFrameX0;
     int               CloneFrameY0;
-    BOOL              PanelOff;         /* Force panel (LCD/DFP) off         */
-    BOOL              IsM6;             /* M6 card, for some workarounds     */
+    Bool              OverlayOnCRTC2;
+    Bool              PanelOff;         /* Force panel (LCD/DFP) off         */
     int               FPBIOSstart;      /* Start of the flat panel info      */
-    BOOL              ddc_mode;         /* Validate mode by matching exactly  
+    Bool              ddc_mode;         /* Validate mode by matching exactly  
 					 * the modes supported in DDC data
 					 */
 
@@ -308,9 +319,9 @@ typedef struct {
     int               DotClock;
 
 				/* EDID data using DDC interface */
-    BOOL              ddc_bios;
-    BOOL              ddc1;
-    BOOL              ddc2;
+    Bool              ddc_bios;
+    Bool              ddc1;
+    Bool              ddc2;
     I2CBusPtr         pI2CBus;
     CARD32            DDCReg;
 
@@ -526,7 +537,9 @@ extern Bool        RADEONDGAInit(ScreenPtr pScreen);
 
 extern int         RADEONMinBits(int val);
 
-extern void        RADEONInitVideo(ScreenPtr);
+extern void        RADEONInitVideo(ScreenPtr pScreen);
+
+extern void        R300CGWorkaround(ScrnInfoPtr pScrn);
 
 #ifdef XF86DRI
 extern Bool        RADEONDRIScreenInit(ScreenPtr pScreen);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.13 2002/06/19 05:48:50 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.14 2002/07/11 20:11:51 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -102,8 +102,8 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     int                X2         = pScrn->frameX0 + x;
     int                Y2         = pScrn->frameY0 + y;
 
-    if (x < 0)                        xorigin = -x;
-    if (y < 0)                        yorigin = -y;
+    if (x < 0)                        xorigin = -x+1;
+    if (y < 0)                        yorigin = -y+1;
     if (y > total_y)                  y       = total_y;
     if (info->Flags & V_DBLSCAN)      y       *= 2;
     if (xorigin >= cursor->MaxWidth)  xorigin = cursor->MaxWidth - 1;
@@ -180,6 +180,13 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     }
 
     if (info->Clone) {
+	xorigin = 0;
+	yorigin = 0;
+	if (X2 < 0) xorigin = -X2 + 1;
+	if (Y2 < 0) yorigin = -Y2 + 1;
+	if (xorigin >= cursor->MaxWidth)  xorigin = cursor->MaxWidth - 1;
+	if (yorigin >= cursor->MaxHeight) yorigin = cursor->MaxHeight - 1;
+
 	OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
 					    | (xorigin << 16)
 					    | yorigin));
