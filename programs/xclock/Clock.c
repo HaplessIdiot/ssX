@@ -50,6 +50,7 @@ SOFTWARE.
 #include "ClockP.h"
 #include <X11/Xosdefs.h>
 #include <stdio.h>
+#include <X11/Xos.h>
 
 #if defined(__STDC__) && !defined(AIXV3) /* AIX is broken */
 #define Const const
@@ -359,15 +360,17 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
         ClockWidget w = (ClockWidget)client_data;    
 	struct tm tm; 
 	Time_t	time_value;
+	struct timeval	tv;
 	char	*time_ptr;
         register Display *dpy = XtDisplay(w);
         register Window win = XtWindow(w);
 
+	X_GETTIMEOFDAY (&tv);
 	if (id || !w->clock.interval_id)
 	    w->clock.interval_id =
 		XtAppAddTimeOut( XtWidgetToApplicationContext( (Widget) w),
-				w->clock.update*1000, clock_tic, (XtPointer)w );
-	(void) time(&time_value);
+				(w->clock.update - 1) * 1000 + (1000000 - tv.tv_usec)/1000, clock_tic, (XtPointer)w );
+	time_value = tv.tv_sec;
 	tm = *localtime(&time_value);
 	/*
 	 * Beep on the half hour; double-beep on the hour.
