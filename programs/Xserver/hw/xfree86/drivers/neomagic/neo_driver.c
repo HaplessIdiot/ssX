@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.1 1999/04/17 07:06:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.2 1999/04/18 04:08:38 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -212,11 +212,9 @@ typedef enum {
     OPTION_LCD_CENTER,
     OPTION_LCD_STRETCH,
     OPTION_SHADOW_FB,
-    OPTION_PCI_BURST_ON,
+    OPTION_PCI_BURST,
     OPTION_PROG_LCD_MODE_REGS,
-    OPTION_NO_PROG_LCD_MODE_REGS,
     OPTION_PROG_LCD_MODE_STRETCH,
-    OPTION_NO_PROG_LCD_MODE_STRETCH,
     OPTION_OVERRIDE_VALIDATE_MODE
 } NEOOpts;
 
@@ -224,19 +222,15 @@ static OptionInfoRec NEO_2070_Options[] = {
     { OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,	"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NO_MMIO,	"noMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_INTERN_DISP,"internDisp", OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_INTERN_DISP,"internDisp",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_EXTERN_DISP,"externDisp",  OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER, "LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_STRETCH, "NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,   "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_PCI_BURST_ON,"pciBurstOn", OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_PCI_BURST,	 "pciBurst",	OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_PROG_LCD_MODE_REGS, "progLcdModeRegs",
       OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_PROG_LCD_MODE_REGS, "noProgLcdModeRegs",
-      OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_PROG_LCD_MODE_STRETCH, "progLcdModeStretch",
-      OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_PROG_LCD_MODE_STRETCH, "noProgLcdModeStretch",
       OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_OVERRIDE_VALIDATE_MODE, "overrideValidateMode",
       OPTV_BOOLEAN, {0}, FALSE },
@@ -248,19 +242,15 @@ static OptionInfoRec NEOOptions[] = {
     { OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,	"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NO_MMIO,	"noMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_INTERN_DISP,"internDisp", OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_EXTERN_DISP,"externDisp", OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_INTERN_DISP,"internDisp",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_EXTERN_DISP,"externDisp",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER, "LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_SHADOW_FB,   "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_LCD_STRETCH, "NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_PCI_BURST_ON,"pciBurstOn",OPTV_BOOLEAN,  {0}, FALSE },
+    { OPTION_SHADOW_FB,  "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_LCD_STRETCH,"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_PCI_BURST,	 "pciBurst",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PROG_LCD_MODE_REGS, "progLcdModeRegs",
       OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_PROG_LCD_MODE_REGS, "noProgLcdModeRegs",
-      OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_PROG_LCD_MODE_STRETCH, "progLcdModeStretch",
-      OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_PROG_LCD_MODE_STRETCH, "noProgLcdModeStretch",
       OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_OVERRIDE_VALIDATE_MODE, "overrideValidateMode",
       OPTV_BOOLEAN, {0}, FALSE },
@@ -835,34 +825,19 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     xf86GetOptValBool(nPtr->Options, OPTION_LCD_CENTER,&nPtr->lcdCenter);
     xf86GetOptValBool(nPtr->Options, OPTION_LCD_STRETCH,&nPtr->noLcdStretch);
     xf86GetOptValBool(nPtr->Options, OPTION_SHADOW_FB,&nPtr->shadowFB);
-    xf86GetOptValBool(nPtr->Options, OPTION_PCI_BURST_ON,&nPtr->onPciBurst);
+    xf86GetOptValBool(nPtr->Options, OPTION_PCI_BURST,&nPtr->onPciBurst);
     xf86GetOptValBool(nPtr->Options,
 		      OPTION_PROG_LCD_MODE_REGS,&nPtr->progLcdRegs);
-    xf86GetOptValBool(nPtr->Options,
-		      OPTION_NO_PROG_LCD_MODE_REGS,&nPtr->noProgLcdRegs);
-    xf86GetOptValBool(nPtr->Options,
-		      OPTION_PROG_LCD_MODE_STRETCH,&nPtr->progLcdStretch);
-    xf86GetOptValBool(nPtr->Options,
-		      OPTION_NO_PROG_LCD_MODE_STRETCH,&nPtr->noProgLcdStretch);
+    if (xf86GetOptValBool(nPtr->Options,
+		      OPTION_PROG_LCD_MODE_STRETCH,&nPtr->progLcdStretch))
+	nPtr->progLcdStrechOpt = TRUE;
     xf86GetOptValBool(nPtr->Options,
 		      OPTION_OVERRIDE_VALIDATE_MODE, &nPtr->overrideValidate);
-    if (nPtr->progLcdRegs && nPtr->noProgLcdRegs){
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "\nOptions \"prog_lcd_mode_regs\" and "
-		   "\"no_prog_lcd_mode_regs\" are incompatible.\n");
-	RETURN;
-    }
     if (nPtr->shadowFB)
 	ErrorF("shadow\n");
     else
 	ErrorF("no shadow\n");
     
-    if (nPtr->progLcdStretch && nPtr->noProgLcdStretch){
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "\nOptions \"prog_lcd_mode_stretch\" and "
-		   "\"no_prog_lcd_mode_stretch\" are incompatible.\n");
-	RETURN;
-    }
     if (nPtr->internDisp && nPtr->externDisp)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
 		   "Simultaneous LCD/CRT display mode\n");
@@ -1811,7 +1786,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
     case NM2070:
 	/* Program the shadow regs by default */
 	noProgramShadowRegs = FALSE;
-	if (nPtr->noProgLcdRegs)
+	if (!nPtr->progLcdRegs)
 	    noProgramShadowRegs = TRUE;
 
 	if (restore->PanelDispCntlReg2 & 0x84) {
@@ -1834,10 +1809,8 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 
 	if (restore->PanelDispCntlReg2 & 0x84) {
 	    /* Only change the behavior if an option is set */
-	    if (nPtr->progLcdStretch)
-		noProgramShadowRegs = FALSE;
-	    else if (nPtr->noProgLcdStretch)
-		noProgramShadowRegs = TRUE;
+	    if (nPtr->progLcdStrechOpt)
+		noProgramShadowRegs = !nPtr->progLcdStretch;
 	}
 	break;
     }
