@@ -1,4 +1,5 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 499. Add missing SetScreenSaverTimer() to ProcSetScreenSaver (Ivan Pascal).
  498. Fix building on Mac OS X after DRI merge (Torrey T. Lyons).
 
 XFree86 4.3.99.14 (10 October 2003)
@@ -17937,7 +17938,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2880 2003/10/10 11:08:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2881 2003/10/13 00:30:50 torrey Exp $
 
 
 
