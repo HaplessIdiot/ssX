@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.51 2001/02/16 01:36:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.52 2001/02/16 02:14:21 dawes Exp $ */
 
 /*
  *
@@ -365,7 +365,7 @@ _GetModuleType(int fd, long offset)
 #endif
 
     if (strncmp((char *) buf, ELFMAG, SELFMAG) == 0) {
-	if( buf[ELFDLOFF] == ELFDLMAG ) {
+	if( *((Elf32_Half *)(buf + ELFDLOFF)) == ELFDLMAG ) {
 	    return LD_ELFDLOBJECT;
 	} else {
 	    return LD_ELFOBJECT;
@@ -1249,8 +1249,10 @@ LoaderCheckUnresolved(int delay_flag )
   return ret;
 }
 
+void xf86LoaderTrap(void);
+
 void
-xf86LoaderTrap()
+xf86LoaderTrap(void)
 {
 }
 
