@@ -106,6 +106,7 @@ static Bool needRAC = FALSE;
 /* XXX Fixme: Hack: so far we only support 32 bit PCI addresses */
 #define PCI_MEMBASE_LENGTH_TYPE(x) 0xFFFFFFFF
 #define PCI_MEMBASE_LENGTH_MAX 0xFFFFFFFF
+#define PCI_IOBASE_LENGTH_MAX 0xFFFF
 #undef MIN
 #define MIN(x,y) ((x<y)?x:y)
 
@@ -2204,8 +2205,8 @@ ValidatePci(void)
     pciVideoPtr pvp, pvp1;
     PciBusPtr pbp, pbp1;
     memType start_mp = 0, start_m = 0;
-    memType end_mp = PCI_MEMBASE_LENGTH_MAX, end_m = PCI_MEMBASE_LENGTH_MAX;
-    memType start_io = 0, end_io = 0;
+    memType end_mp, end_m;
+    memType start_io = 0, end_io;
     resPtr tmp, avoid;
     resPtr Sys;
     resPtr Fix;
@@ -2253,6 +2254,9 @@ ValidatePci(void)
 	xf86PrintResList(3,Sys);
 #endif
 	avoid = NULL;
+	end_m = PCI_MEMBASE_LENGTH_MAX;
+	end_mp = PCI_MEMBASE_LENGTH_MAX;
+	end_io = PCI_IOBASE_LENGTH_MAX;
 	pbp = pbp1 = xf86PciBus;
 	while (pbp) {
 	    if (pbp->secondary == pvp->bus) {
@@ -2324,7 +2328,7 @@ ValidatePci(void)
 		    && ! ChkConflict(&range,Sys,SETUP))
 		    continue;
 		xf86MsgVerb(X_WARNING, 0,
-			"****INVALID IO ALLOCATION**** b: 0x%lx e: 0x%lx"
+			"****INVALID IO ALLOCATION**** b: 0x%lx e: 0x%lx "
 			"correcting\a\n", range.rBegin,range.rEnd);
 #ifdef DEBUG
 		sleep(2);
@@ -3542,7 +3546,7 @@ fixPciResource(unsigned int prt, memType alignment, pciVideoPtr pvp, long type)
     case pciIo:
 	type |= ResIo;
 	res_n = prt & pciRegMask;
-	p_base = &(pvp->memBase[res_n]);
+	p_base = &(pvp->ioBase[res_n]);
 	p_size = &(pvp->size[res_n]);
 	p_type = pvp->type[res_n];
 	end_w = ~(CARD16)0;

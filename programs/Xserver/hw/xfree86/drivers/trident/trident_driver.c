@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.59 1999/06/13 16:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.60 1999/06/20 05:23:42 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -70,6 +70,10 @@
 #include "extensions/dpms.h"
 #endif
 
+#ifdef XvExtension
+#include "xf86xv.h"
+#endif
+
 static void	TRIDENTIdentify(int flags);
 static Bool	TRIDENTProbe(DriverPtr drv, int flags);
 static Bool	TRIDENTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -97,6 +101,8 @@ static void	TRIDENTSave(ScrnInfoPtr pScrn);
 static void	TRIDENTRestore(ScrnInfoPtr pScrn);
 static Bool	TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+static void	TRIDENTEnableMMIO(ScrnInfoPtr pScrn);
+static void	TRIDENTDisableMMIO(ScrnInfoPtr pScrn);
 /*
  * This is intentionally screen-independent.  It indicates the binding
  * choice made in the first PreInit.
@@ -350,6 +356,8 @@ static int ClockLimit32bpp[] = {
 static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAAHelpPatternROP",
+    "XAAHelpSolidROP",
     "XAACopyROP",
     "XAAPatternROP",
     "XAAInit",
@@ -381,11 +389,6 @@ static const char *fbSymbols[] = {
     "cfb24ScreenInit",
     "cfb32ScreenInit",
     "cfb24_32ScreenInit",
-    NULL
-};
-
-static const char *racSymbols[] = {
-    "xf86RACInit",
     NULL
 };
 
@@ -429,7 +432,7 @@ tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, i2cSymbols,
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols,
 			  xaaSymbols, NULL);
 	return (pointer)TRUE;
     } 
@@ -471,7 +474,7 @@ static void
 TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    unsigned char DPMSCont, PMCont, temp;
+    CARD8 DPMSCont, PMCont, temp;
 
     MMIO_OUTB(0x3C4, 0x0E);
     temp = MMIO_INB(0x3C5);
@@ -671,14 +674,14 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 {
     TRIDENTPtr pTrident;
     MessageType from;
-    unsigned char videoram;
+    CARD8 videoram;
     char *ramtype = NULL, *chipset = NULL;
     Bool Support24bpp;
     int vgaIOBase;
     float mclk;
     double real;
     int i;
-    unsigned char revision;
+    CARD8 revision;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *Sym = "";
@@ -732,14 +735,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     pTrident->PciTag = pciTag(pTrident->PciInfo->bus, pTrident->PciInfo->device,
 			  pTrident->PciInfo->func);
 
-    /*
-     * VGA resources are not used in operating mode.  XXX It may be possible
-     * to refine this depending on what is actually decoded in operating mode.
-     */
     xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
 
     /* Operations for which memory access is required. */
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+#if 0
+    pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+#endif
 
     /* The ramdac module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "ramdac"))
@@ -948,6 +950,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!TRIDENTMapMem(pScrn))
 	return FALSE;
+
+    TRIDENTEnableMMIO(pScrn);
 
     MMIO_OUTB(0x3C4, RevisionID); revision = MMIO_INB(0x3C5);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Revision is %d\n",revision);
@@ -1219,19 +1223,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
 
-
-#if 0
-    pTrident->RamDacRec = RamDacCreateInfoRec();
-    pTrident->RamDacRec->ReadAddress = TridentReadAddress;
-    pTrident->RamDacRec->WriteAddress = TridentWriteAddress;
-    pTrident->RamDacRec->ReadData = TridentReadData;
-    pTrident->RamDacRec->WriteData = TridentWriteData;
-    if(!RamDacInit(pScrn, pTrident->RamDacRec)) {
-	RamDacDestroyInfoRec(pTrident->RamDacRec);
-	return FALSE;
-    }
-#endif
-
     pTrident->MCLK = 0;
     mclk = CalculateMCLK(pScrn);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Memory Clock is %3.2f MHz\n", mclk);
@@ -1415,13 +1406,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86LoaderReqSymbols(Sym, NULL);
 
-    if (!xf86LoadSubModule(pScrn, "rac")) {
-	TRIDENTFreeRec(pScrn);
-	return FALSE;
-    }
-
-    xf86LoaderReqSymLists(racSymbols, NULL);
-
     if (!xf86LoadSubModule(pScrn, "i2c")) {
 	TRIDENTFreeRec(pScrn);
 	return FALSE;
@@ -1468,66 +1452,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pTrident->ddc1Read ) );
 #endif
 
+    TRIDENTDisableMMIO(pScrn);
+
     TRIDENTUnmapMem(pScrn);
 
     pTrident->FbMapSize = pScrn->videoRam * 1024;
 
     return TRUE;
-}
-
-
-/*
- * Enable MMIO.
- */
-
-static void
-TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
-
-    /* Goto New Mode */
-    outb(0x3C4, 0x0B); inb(0x3C5);
-
-    /* Unprotect registers */
-    outb(0x3C4, NewMode1); temp = inb(0x3C5);
-    outb(0x3C5, 0xC0);
-
-    /* Enable MMIO */
-    outb(vgaIOBase + 4, PCIReg); pTrident->REGPCIReg = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01);
-
-    /* Protect registers */
-    MMIO_OUTB(0x3C4, NewMode1);
-    MMIO_OUTB(0x3C5, temp);
-}
-
-/*
- * Disable MMIO.
- */
-
-static void
-TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
-
-    /* Goto New Mode */
-    MMIO_OUTB(0x3C4, 0x0B); temp = MMIO_INB(0x3C5);
-
-    /* Unprotect registers */
-    MMIO_OUTB(0x3C4, NewMode1); temp = MMIO_INB(0x3C5);
-    MMIO_OUTB(0x3C5, 0xC0);
-
-    /* Disable MMIO access */
-    MMIO_OUTB(vgaIOBase + 4, PCIReg);
-    MMIO_OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
-
-    /* Protect registers */
-    outb(0x3C4, NewMode1);
-    outb(0x3C5, temp);
 }
 
 
@@ -1564,7 +1495,7 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pTrident->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pTrident->PciTag, pTrident->IOAddress, 0x1000);
+		pTrident->PciTag, pTrident->IOAddress, 0x20000);
 
     if (pTrident->IOBaseDense == NULL)
 	return FALSE;
@@ -1579,7 +1510,6 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
 	    return FALSE;
     }
 
-    TRIDENTEnableMMIO(pScrn);
     return TRUE;
 }
 
@@ -1593,8 +1523,6 @@ TRIDENTUnmapMem(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    TRIDENTDisableMMIO(pScrn);
-
     /*
      * Unmap IO registers to virtual address space
      */ 
@@ -1602,7 +1530,7 @@ TRIDENTUnmapMem(ScrnInfoPtr pScrn)
     pTrident->IOBase = NULL;
 
 #ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTrident->IOBaseDense, 0x1000);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTrident->IOBaseDense, 0x20000);
     pTrident->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
@@ -1762,11 +1690,14 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     hwp = VGAHWPTR(pScrn);
     hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
 
-    /* Initialize the MMIO vgahw functions */
     if (xf86IsPrimaryPci(pTrident->PciInfo)) {
 	if (!vgaHWMapMem(pScrn))
    	    return FALSE;
     }
+
+    TRIDENTEnableMMIO(pScrn);
+
+    /* Initialize the MMIO vgahw functions */
     vgaHWSetMmioFuncs(hwp, pTrident->IOBase, 0);
     vgaHWGetIOBase(hwp);
 
@@ -1947,6 +1878,21 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)TRIDENTDisplayPowerManagementSet, 0);
 #endif
 
+    pScrn->memPhysBase = pTrident->FbAddress;
+    pScrn->fbOffset = 0;
+
+#ifdef XvExtension
+    {
+	XF86VideoAdaptorPtr *ptr;
+	int n;
+	
+	n = xf86XVListGenericAdaptors(&ptr);
+	if (n) {
+	    xf86XVScreenInit(pScreen, ptr, n);
+	}
+    }
+#endif
+
     pTrident->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = TRIDENTCloseScreen;
     pScreen->SaveScreen = TRIDENTSaveScreen;
@@ -1987,7 +1933,7 @@ TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags)
     vgaHWPtr hwp;
     int base = y * pScrn->displayWidth + x;
     int vgaIOBase;
-    unsigned char temp;
+    CARD8 temp;
 
     hwp = VGAHWPTR(pScrn);
     pTrident = TRIDENTPTR(pScrn);
@@ -2059,7 +2005,6 @@ TRIDENTLeaveVT(int scrnIndex, int flags)
 
     TRIDENTRestore(pScrn);
     vgaHWLock(hwp);
-   
     TRIDENTDisableMMIO(pScrn);
 }
 
@@ -2080,6 +2025,7 @@ TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pScrn->vtSema) {
     	TRIDENTRestore(pScrn);
     	vgaHWLock(hwp);
+	TRIDENTDisableMMIO(pScrn);
     	TRIDENTUnmapMem(pScrn);
     }
     if(pTrident->AccelInfoRec)
@@ -2121,4 +2067,51 @@ static Bool
 TRIDENTSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
     return vgaHWSaveScreen(pScreen, unblank);
+}
+
+static void
+TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
+{
+    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    CARD8 temp = 0;
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    /* Goto New Mode */
+    outb(0x3C4, 0x0B); inb(0x3C5);
+
+    /* Unprotect registers */
+    outb(0x3C4, NewMode1); temp = inb(0x3C5);
+    outb(0x3C5, 0xC0);
+
+    /* Enable MMIO */
+    outb(vgaIOBase + 4, PCIReg); pTrident->REGPCIReg = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01); /* Enable it */
+
+    /* Protect registers */
+    MMIO_OUTB(0x3C4, NewMode1);
+    MMIO_OUTB(0x3C5, temp);
+}
+
+static void
+TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
+{
+    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    CARD8 temp = 0;
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    /* Goto New Mode */
+    MMIO_OUTB(0x3C4, 0x0B); temp = MMIO_INB(0x3C5);
+
+    /* Unprotect registers */
+    MMIO_OUTB(0x3C4, NewMode1); temp = MMIO_INB(0x3C5);
+    MMIO_OUTB(0x3C5, 0xC0);
+
+    /* Disable MMIO access */
+    MMIO_OUTB(vgaIOBase + 4, PCIReg); 
+    pTrident->REGPCIReg = MMIO_INB(vgaIOBase + 5);
+    MMIO_OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
+
+    /* Protect registers */
+    outb(0x3C4, NewMode1);
+    outb(0x3C5, temp);
 }

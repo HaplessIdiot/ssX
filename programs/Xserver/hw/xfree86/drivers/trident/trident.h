@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.10 1999/06/07 08:50:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.11 1999/06/13 15:49:05 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -85,9 +85,10 @@ typedef struct {
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
     I2CBusPtr		DDC;
-    short		EngineOperation;
+    CARD16		EngineOperation;
     CARD32		AccelFlags;
     CARD32		BltScanDirection;
+    CARD16		LinePattern;
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
@@ -103,8 +104,11 @@ void TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 void TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 Bool TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool TridentAccelInit(ScreenPtr pScreen);
-Bool TridentAccelInitMMIO(ScreenPtr pScreen);
-
+Bool ImageAccelInit(ScreenPtr pScreen);
+Bool BladeAccelInit(ScreenPtr pScreen);
+Bool TridentHWCursorInit(ScreenPtr pScreen);
+void TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b);
+void TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b);
 void TridentOutIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
 unsigned char TridentInIndReg(ScrnInfoPtr pScrn, CARD32 reg);
@@ -112,26 +116,12 @@ void TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
-
-void TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
-			LOCO *colors, short visualClass);
-
+void 	TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
 void TGUISetRead(int bank);
 void TGUISetWrite(int bank);
 void TGUISetReadWrite(int bank);
 
 float CalculateMCLK(ScrnInfoPtr pScrn);
-void TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a,
-		  unsigned char *b);
-void TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a,
-		 unsigned char *b);
-
-Bool BladeAccelInit(ScreenPtr pScreen);
-Bool ImageAccelInit(ScreenPtr pScreen);
-
-Bool TridentHWCursorInit(ScreenPtr pScreen);
-
-Bool TRIDENTI2CInit(ScreenPtr pScreen);
 
 /*
  * Trident Chipset Definitions

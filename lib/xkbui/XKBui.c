@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbui/XKBui.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/lib/xkbui/XKBui.c,v 3.5 1999/03/14 03:21:21 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -155,7 +155,7 @@ XkbUI_Init(dpy,win,width,height,xkb,opts)
 {
 XGCValues	xgcv;
 XkbUI_ViewPtr	view;
-int		scrn,i;
+int		scrn;
 
     if ((!dpy)||(!xkb)||(!xkb->geom)||(win==None)||(width<1)||(height<1))
 	return NULL;
@@ -548,7 +548,6 @@ int		x;
 int		y;
 XkbShapePtr	shape;
 Bool		solid;
-Atom		edgeAtom;
 
     x= 		doodad->any.left+xoff;
     y= 		doodad->any.top+yoff;
@@ -594,7 +593,7 @@ _DrawRow(view,rangle,xoff,yoff,row)
 	XkbRowPtr	row;
 #endif
 {
-register int 	k,x,y,tmp;
+register int 	k,x,y;
 XkbKeyPtr	key;
 
     x= xoff+row->left; y= yoff+row->top;
@@ -655,7 +654,6 @@ _DrawAll(view)
 	XkbUI_ViewPtr	view;
 #endif
 {
-int		s;
 XkbGeometryPtr	geom;
 XkbDrawablePtr	first,draw;
 Bool		dfltBorder;

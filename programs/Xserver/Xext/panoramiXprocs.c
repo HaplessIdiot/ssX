@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.10 1999/05/15 06:24:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.11 1999/05/30 02:28:04 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1320,13 +1320,6 @@ int PanoramiXCopyPlane(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xCopyPlaneReq);
 
-    if(stuff->bitPlane == 0 || (stuff->bitPlane & (stuff->bitPlane - 1)) ||
-       (stuff->bitPlane > (1L << (pSrc->depth - 1))))
-    {
-       client->errorValue = stuff->bitPlane;
-       return(BadValue);
-    }
-
     VERIFY_DRAWABLE(pDst, stuff->dstDrawable, client);
     if (stuff->dstDrawable != stuff->srcDrawable) {
         VERIFY_DRAWABLE(pSrc, stuff->srcDrawable, client);
@@ -1337,6 +1330,14 @@ int PanoramiXCopyPlane(ClientPtr client)
     } else {
         pSrc = pDst;
     } 
+
+    if(stuff->bitPlane == 0 || (stuff->bitPlane & (stuff->bitPlane - 1)) ||
+       (stuff->bitPlane > (1L << (pSrc->depth - 1))))
+    {
+       client->errorValue = stuff->bitPlane;
+       return(BadValue);
+    }
+
     pPanoramiXSrcRoot = (pSrc->type == DRAWABLE_PIXMAP)
 					? PanoramiXPmapRoot : PanoramiXWinRoot;
     pPanoramiXDstRoot = (pDst->type == DRAWABLE_PIXMAP)
