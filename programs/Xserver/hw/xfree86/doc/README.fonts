@@ -1,8 +1,8 @@
                               Fonts in XFree86
 
-                    Juliusz Chroboczek, jec@dcs.ed.ac.uk
+                Juliusz Chroboczek, Juliusz.Chroboczek@ens.fr
 
-                              10 February 2000
+                              14 February 2000
 
 This version of XFree86 includes a number of improvements to the handling of
 fonts, including
@@ -657,8 +657,10 @@ should be replaced by fonts.scale and fonts.dir files with a number of
 entries of the form:
 
      1
+
      Adobe-Korea1/Munhwa-Regular--Adobe-Korea1-0.cid \
-     -adobe-munhwa-medium-r-normal--0-0-0-0-p-0-adobe.korea1-0
+
+       -adobe-munhwa-medium-r-normal--0-0-0-0-p-0-adobe.korea1-0
 
 (the font file name and the XLFD name should be on the same line).  Note that
 the first column does not specify an actual filename; instead, it specifies
@@ -686,10 +688,14 @@ stored in the subdirectory CIDFont of the Adobe-Korea1 directory.  The direc-
 tory structure looks as following:
 
      CID/Adobe-Korea1/CIDFont/Munhwa-Regular
+
      CID/Adobe-Korea1/CMap/Adobe-Korea1-0
+
      CID/Adobe-Korea1/AFM/Munhwa-Regular.afm
+
      CID/Adobe-Korea1/CFM
      CID/fonts.dir
+
      CID/fonts.scale
 
 The file `Munhwa-Regular.afm' is an Adobe Font Metric File (AFM).  The direc-
@@ -724,7 +730,7 @@ used for horizontal text (e.g. the CMap `KSC-EUC-H' will be used, but not
 `KSC-EUC-V').  This limitation is due to the fact that the core X11 protocol
 only provides support for horizontal writing.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.5 2000/02/11 18:06:48 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.6 2000/02/14 19:20:44 dawes Exp $
 
 
 $XFree86$

@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                       Last modified 17 December 1999
+                       Last modified 15 February 2000
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -4775,6 +4775,19 @@ pixel clock values on older hardware.
           Print out the pixel clocks scrp->clock[].  from indicates
           whether the clocks were probed or from the config file.
 
+18.8  Other helper functions
+
+     Bool xf86IsUnblank(int mode)
+
+          Returns FALSE when the screen saver mode specified by
+          mode requires the screen be unblanked, and TRUE other-
+          wise.  The screen saver modes that require blanking are
+          SCREEN_SAVER_ON and SCREEN_SAVER_CYCLE, and the screen
+          saver modes that require unblanking are SCREEN_SAVER_OFF
+          and SCREEN_SAVER_FORCER.  Drivers may call this helper
+          from their SaveScreen() function to interpret the screen
+          saver modes.
+
 19.  The vgahw module
 
 The vgahw modules provides an interface for saving, restoring and programming
@@ -5073,10 +5086,12 @@ WRec.  They are defined in vgaHW.h.
           to TRUE before programming, and with on set to FALSE
           after programming.
 
-     Bool vgaHWSaveScreen(ScreenPtr pScreen, Bool on)
+     Bool vgaHWSaveScreen(ScreenPtr pScreen, int mode)
 
           This function blanks and unblanks the screen.  It is
-          blanked when on is FALSE, and unblanked when on is TRUE.
+          blanked when mode is SCREEN_SAVER_ON or
+          SCREEN_SAVER_CYCLE, and unblanked when mode is
+          SCREEN_SAVER_OFF or SCREEN_SAVER_FORCER.
 
      void vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
 
@@ -5326,7 +5341,7 @@ Drivers must NOT include the following:
               "unaccelerated driver for ZZZ Zzzzzy cards",
               ZZZIdentify,
               ZZZProbe,
-              ZZZAvailableOptions, 
+              ZZZAvailableOptions,
               NULL,
               0
           };
@@ -5617,7 +5632,7 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
 
 20.3.5  AvailableOptions
 
-Define the AvailableOptions function. The purpose of this is to return the
+Define the AvailableOptions() function. The purpose of this is to return the
 available driver options back to the -configure option, so that an XF86Config
 file can be built and the user can see which options are available for them
 to use.
@@ -6214,9 +6229,9 @@ the vgahw module, this will typically be:
 This function is mandatory.
 
      static Bool
-     ZZZSaveScreen(ScreenPtr pScreen, Bool unblank)
+     ZZZSaveScreen(ScreenPtr pScreen, int mode)
      {
-         return vgaHWSaveScreen(pScreen, unblank);
+         return vgaHWSaveScreen(pScreen, mode);
      }
 
 20.3.16  FreeScreen
@@ -6238,7 +6253,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.21 2000/02/08 19:43:16 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.23 2000/02/15 18:00:57 dawes Exp $
 
 
 $XFree86$
