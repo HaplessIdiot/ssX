@@ -8,7 +8,7 @@
 <date>22 February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.33 2004/03/05 03:55:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.34 2004/03/17 19:53:56 dawes Exp $
 </ident>
 
 <sect>Introduction
@@ -662,7 +662,7 @@ All rights reserved.
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-<sect1>UCB/LBL<label id="bsd">
+<sect1>UCB/LBL
 <p>
 In addition to the standard 4-clause BSD License, this one carries the
 following statements:
