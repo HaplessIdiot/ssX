@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.51 2000/12/15 20:01:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.52 2000/12/15 20:17:49 keithp Exp $
 </ident>
 
 <abstract>
@@ -1047,9 +1047,9 @@ By default, xterm uses core fonts through the standard core API.  It has
 two command line options and associated resources to direct it to use
 Xft instead:
 <itemize>
-  <item><tt>-fa</tt>family/<tt>.VT100.faceName:</tt> family.  Selects the 
+  <item><tt>-fa</tt> family / <tt>.VT100.faceName:</tt> family.  Selects the 
 	font family to use.
-  <item><tt>-fs</tt>pointsize/<tt>.VT100.faceSize:</tt> pointsize.  
+  <item><tt>-fs</tt> pointsize / <tt>.VT100.faceSize:</tt> pointsize.  
 	Selects the pointsize.
 </itemize>
 
