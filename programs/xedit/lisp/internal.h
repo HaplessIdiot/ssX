@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.35 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.36 2002/11/10 16:29:05 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -133,7 +133,7 @@ typedef struct _LispMac LispMac;
     ((LispObj*)(((long)(value) << BIT_COUNT) | SCHAR_MASK))
 #define SCHAR_VALUE(object)	FIXNUM_VALUE(object)
 #define SCHARP(object)							\
-    (((unsigned long)(object) & SCHAR_MASK) == SCHAR_MASK)
+    (((unsigned long)(object) & BIT_MASK) == SCHAR_MASK)
 #define CHECK_SCHAR(object)						\
     if (!SCHARP(object))						\
 	LispDestroy("%s: %s is not a character",			\
@@ -170,7 +170,7 @@ typedef struct _LispMac LispMac;
     ((LispObj*)(((long)(value) << BIT_COUNT) | FIXNUM_MASK))
 #define FIXNUM_VALUE(object)	((long)(object) >> BIT_COUNT)
 #define FIXNUMP(object)							\
-    (((unsigned long)(object) & FIXNUM_MASK) == FIXNUM_MASK)
+    (((unsigned long)(object) & BIT_MASK) == FIXNUM_MASK)
 #define CHECK_FIXNUM(object)						\
     if (!FIXNUMP(object))						\
 	LispDestroy("%s: %s is not a fixnum",				\

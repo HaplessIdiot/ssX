@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.14 2002/11/04 04:15:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.15 2002/11/08 08:00:55 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -36,16 +36,21 @@
 #include <locale.h>
 #include <ctype.h>
 
+#include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/SimpleMenu.h>
+
 /*
  * Prototypes
  */
 static void XeditDoLispEval(Widget);
+static void EditModeCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Initialization
  */
 static int lisp_initialized;
 extern Widget scratch;
+static Widget edit_mode_menu, edit_mode_entry, edit_mode_none;
 
 /*
  * Implementation
@@ -85,7 +90,6 @@ XeditPrintLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params
 void
 XeditKeyboardReset(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    /* XXX Need a different way, the interpreter runs in the same process */
     XtCallActionProc(w, "keyboard-reset", event, params, *num_params);
 }
 
@@ -98,7 +102,7 @@ SetTextProperties(xedit_flist_item *item)
 
 	if (source != item->source)
 	    XawTextSetSource(textwindow, item->source, 0);
-	XeditLispSetEditMode(item);
+	XeditLispSetEditMode(item, NULL);
 	if (source != item->source)
 	    XawTextSetSource(textwindow, source, top);
     }
@@ -196,4 +200,76 @@ XeditDoLispEval(Widget output)
     }
 
     XeditLispExecute(output, position, end);
+}
+
+void
+CreateEditModePopup(Widget parent)
+{
+    int i;
+    Widget sme;
+    static char *editModes = "editModes";
+
+    XtVaCreateManagedWidget("modeMenuItem", smeBSBObjectClass, parent,
+			    XtNmenuName, editModes, NULL);
+    edit_mode_menu = XtCreatePopupShell(editModes, simpleMenuWidgetClass,
+					parent, NULL, 0);
+    XtRealizeWidget(edit_mode_menu);
+
+    edit_mode_none = XtCreateManagedWidget("none", smeBSBObjectClass,
+					   edit_mode_menu, NULL, 0);
+    XtAddCallback(edit_mode_none, XtNcallback, EditModeCallback, NULL);
+
+    for (i = 0; i < num_mode_infos; i++) {
+	sme = XtVaCreateManagedWidget("mode", smeBSBObjectClass, edit_mode_menu,
+				      XtNlabel, mode_infos[i].desc, NULL);
+	XtAddCallback(sme, XtNcallback, EditModeCallback,
+		      (XtPointer)(mode_infos + i));
+	mode_infos[i].sme = sme;
+    }
+}
+
+void
+SetEditModeMenu(void)
+{
+    int i;
+    Widget old_entry = edit_mode_entry, new_entry = edit_mode_none;
+    xedit_flist_item *item = FindTextSource(XawTextGetSource(textwindow), NULL);
+
+    for (i = 0; i < num_mode_infos; i++) {
+	if (item->xldata && mode_infos[i].syntax == item->xldata->syntax) {
+	    new_entry = mode_infos[i].sme;
+	    break;
+	}
+    }
+
+    if (old_entry != new_entry) {
+	if (old_entry)
+	    XtVaSetValues(old_entry, XtNleftBitmap, None, NULL);
+	XtVaSetValues(new_entry, XtNleftBitmap, flist.pixmap, NULL);
+	edit_mode_entry = new_entry;
+    }
+}
+
+static void
+EditModeCallback(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    Widget source = XawTextGetSource(textwindow);
+    EditModeInfo *info = (EditModeInfo*)client_data;
+    xedit_flist_item *item = FindTextSource(source, NULL);
+
+    if ((info == NULL && item->xldata == NULL) ||
+	(info && item && item->xldata && info->syntax == item->xldata->syntax))
+	return;
+
+    XawTextSourceClearEntities(source,
+			       XawTextSourceScan(source, 0, XawsdLeft,
+						 XawstAll, 1, True),
+			       XawTextSourceScan(source, 0, XawsdRight,
+						 XawstAll, 1, True));
+    XeditLispUnsetEditMode(item);
+    if (info)
+	XeditLispSetEditMode(item, info->symbol);
+    else
+	item->properties = NULL;
+    UpdateTextProperties(1);
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.3 2002/11/04 04:15:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.4 2002/11/08 08:00:58 paulo Exp $ */
 
 #ifndef Lisp_xedit_h
 #define Lisp_xedit_h
@@ -65,11 +65,30 @@ LispObj *Xedit_SearchForward(LispBuiltin*);
 LispObj *Xedit_VerticalScrollbar(LispBuiltin*);
 LispObj *Xedit_WrapMode(LispBuiltin*);
 LispObj *Xedit_XrmStringToQuark(LispBuiltin*);
+#else
+#define LispObj void
 #endif /* XEDIT_LISP_PRIVATE */
+
+typedef struct _EditModeInfo {
+    char *desc;			/* Mode description */
+    Widget sme;			/* Menu entry */
+    LispObj *symbol;		/* Symbol holding syntax data */
+    LispObj *syntax;		/* The syntax definition */
+} EditModeInfo;
+
+/* Typedef'ed to XeditLispData in ../xedit.h */
+struct _XeditLispData {
+    LispObj *syntax;		/* Syntax definition */
+    LispObj *syntable;		/* Syntax-table the cursor is located */
+    int disable_highlight;	/* Working in the buffer */
+};
 
 void LispXeditInitialize(void);
 void XeditLispExecute(Widget, XawTextPosition, XawTextPosition);
-void XeditLispSetEditMode(xedit_flist_item*);
+void XeditLispSetEditMode(xedit_flist_item*, LispObj*);
 void XeditLispUnsetEditMode(xedit_flist_item*);
+
+extern EditModeInfo *mode_infos;
+extern Cardinal num_mode_infos;
 
 #endif /* Lisp_xedit_h */

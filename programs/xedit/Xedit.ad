@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.22 2002/09/08 02:29:48 paulo Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.23 2002/09/22 07:09:05 paulo Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -131,6 +131,7 @@ xedit.textSource*enableUndo:		True
 *scrollMenu.horizontal.label:		Horizontal
 *editMenu.modeMenuItem.leftBitmap:	menu12
 *editMenu.modeMenuItem.label:		Edit Mode
+*editModes.none.label:			Plain/None
 
 *TransientShell*Text.translations: #override \
 c<Key>S:	no-op(r)\n\

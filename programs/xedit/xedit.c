@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.16 2002/09/08 02:29:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.17 2002/09/22 07:09:05 paulo Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include "xedit.h"
@@ -146,6 +146,10 @@ main(int argc, char *argv[])
   }
   XtRealizeWidget(topwindow);
 
+#ifndef __UNIXOS2__
+  XeditLispInitialize();
+#endif
+
   options_popup = XtCreatePopupShell("optionsMenu", simpleMenuWidgetClass,
 				     topwindow, NULL, 0);
   XtRealizeWidget(options_popup);
@@ -159,12 +163,8 @@ main(int argc, char *argv[])
   (void) XSetWMProtocols (XtDisplay(topwindow), XtWindow(topwindow),
 			  &wm_delete_window, 1);
 
-#ifndef __UNIXOS2__
-  XeditLispInitialize();
-#endif
-
   /* This first call is just to save the default font and colors */
-  UpdateTextProperties();
+  UpdateTextProperties(0);
 
   if (argc > 1) {
       Boolean exists;

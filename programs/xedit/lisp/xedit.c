@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.7 2002/11/08 08:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.8 2002/11/10 16:29:07 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -80,16 +80,11 @@ typedef struct {
     XrmQuark property;
 } EntityInfo;
 
-/* Typedef'ed to XeditLispData in ../xedit.h */
-struct _XeditLispData {
-    LispObj *syntaxp;		/* Syntax definition */
-    LispObj *syntablep;		/* Syntax-table the cursor is located */
-    int disable_highlight;	/* Working in the buffer */
-};
-
 /*
  * Prototypes
  */
+static Bool ControlGPredicate(Display*, XEvent*, XPointer);
+static void XeditUpdateModeInfos(void);
 static void XeditPrint(Widget, LispObj*);
 static void XeditInteractiveCallback(Widget, XtPointer, XtPointer);
 static void XeditIndentationCallback(Widget, XtPointer, XtPointer);
@@ -99,14 +94,16 @@ static LispObj *XeditSearch(LispBuiltin*, XawTextScanDirection);
 /*
  * Initialization
  */
-static Bool ControlGPredicate(Display*, XEvent*, XPointer);
 #ifdef SIGNALRETURNSINT
 static int (*old_sigalrm)(int);
 #else
 static void (*old_sigalrm)(int);
 #endif
 
-static LispObj *Oauto_mode, *Osyntax_highlight, *Osyntable_indent;
+EditModeInfo *mode_infos;
+Cardinal num_mode_infos;
+
+static LispObj *Oauto_modes, *Oauto_mode, *Osyntax_highlight, *Osyntable_indent;
 
 /* Just to make calling interactive reparse easier */
 static LispObj interactive_arguments[4];
@@ -239,6 +236,7 @@ LispXeditInitialize(void)
 	LispAddBuiltinFunction(&xeditbuiltins[i]);
 
     /* Create these objects in the xedit package */
+    Oauto_modes		= STATIC_ATOM("*AUTO-MODES*");
     Oauto_mode		= STATIC_ATOM("AUTO-MODE");
     Osyntax_highlight	= STATIC_ATOM("SYNTAX-HIGHLIGHT");
     Osyntable_indent	= STATIC_ATOM("SYNTABLE-INDENT");
@@ -289,6 +287,52 @@ LispXeditInitialize(void)
 
     /* Load extra functions and data type definitions */
     EXECUTE("(require \"xedit\")");
+
+
+    /*
+     *	This assumes that the *auto-modes* variable is a list where every
+     * item has the format:
+     *	    (regexp string-desc load-file-desc . symbol-name)
+     *	Minimal error checking is done.
+     */
+
+    if (Oauto_modes->data.atom->a_object) {
+	LispObj *desc, *modes = Oauto_modes->data.atom->property->value;
+
+	for (; CONSP(modes); modes = CDR(modes)) {
+	    list = CAR(modes);
+
+	    desc = NIL;
+	    for (i = 0; i < 3 && CONSP(list); i++, list = CDR(list)) {
+		if (i == 1)
+		    desc = CAR(list);
+	    }
+	    if (i == 3 && STRINGP(desc)) {
+		mode_infos = (EditModeInfo*)
+		    XtRealloc((XtPointer)mode_infos, sizeof(EditModeInfo) *
+			      (num_mode_infos + 1));
+		mode_infos[num_mode_infos].desc = XtNewString(THESTR(desc));
+		mode_infos[num_mode_infos].symbol = list;
+		mode_infos[num_mode_infos].syntax = NULL;
+		++num_mode_infos;
+	    }
+	}
+    }
+}
+
+static void
+XeditUpdateModeInfos(void)
+{
+    int i;
+
+    for (i = 0; i < num_mode_infos; i++) {
+	if (mode_infos[i].symbol &&
+	    mode_infos[i].syntax == NULL &&
+	    XSYMBOLP(mode_infos[i].symbol) &&
+	    mode_infos[i].symbol->data.atom->a_object)
+	    mode_infos[i].syntax =
+		mode_infos[i].symbol->data.atom->property->value;
+    }
 }
 
 void
@@ -388,7 +432,7 @@ XeditPrint(Widget output, LispObj *object)
  * to the core xedit code.
  */
 void
-XeditLispSetEditMode(xedit_flist_item *item)
+XeditLispSetEditMode(xedit_flist_item *item, LispObj *symbol)
 {
     GC_ENTER();
     LISP_SETUP();
@@ -407,7 +451,10 @@ XeditLispSetEditMode(xedit_flist_item *item)
 
     /*  Call the AUTO-MODE function to check if there is a
      * syntax definition for the file being loaded */
-    syntax = APPLY1(Oauto_mode, name);
+    if (symbol == NULL)
+	syntax = APPLY1(Oauto_mode, name);
+    else
+	syntax = APPLY2(Oauto_mode, name, symbol);
 
     /* Don't need the name object anymore */
     GC_LEAVE();
@@ -417,7 +464,7 @@ XeditLispSetEditMode(xedit_flist_item *item)
 	LispObj arguments;
 	XawTextPropertyList *property_list;
 
-	item->xldata->syntaxp = syntax;
+	item->xldata->syntax = syntax;
 
 	/* Apply the syntax highlight to the current buffer */
 	arguments.type = LispCons_t;
@@ -434,6 +481,9 @@ XeditLispSetEditMode(xedit_flist_item *item)
 	/* Add callback for interactive changes */
 	XtAddCallback(item->source, XtNpropertyCallback,
 		      XeditInteractiveCallback, item->xldata);
+
+	/* Update information as a new file may have been loaded */
+	XeditUpdateModeInfos();
     }
     else
 	item->properties = NULL;
@@ -445,6 +495,8 @@ void
 XeditLispUnsetEditMode(xedit_flist_item *item)
 {
     if (item->xldata) {
+	XtRemoveCallback(item->source, XtNpropertyCallback,
+			 XeditInteractiveCallback, item->xldata);
 	XtFree((XtPointer)item->xldata);
 	item->xldata = NULL;
     }
@@ -469,7 +521,7 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 {
     LISP_SETUP();
     XeditLispData *data = (XeditLispData*)client_data;
-    LispObj *syntax = data->syntaxp;
+    LispObj *syntax = data->syntax;
     XawTextPropertyInfo *info = (XawTextPropertyInfo*)call_data;
     LispObj *result, *syntable;
     XawTextAnchor *anchor;
@@ -662,7 +714,7 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     }
     XmuDestroyScanline(clip);
 
-    data->syntablep = syntable;
+    data->syntable = syntable;
     if (indent && syntable != NIL &&
 	/* Doing an undo, probably will need an exported interface for this
 	 * case. Should not change the text now. */
@@ -688,11 +740,11 @@ XeditIndentationCallback(Widget w, XtPointer client_data, XtPointer call_data)
     LISP_ENTER();
 
     /* Get pointer to indentation function */
-    indentp = APPLY1(Osyntable_indent, data->syntablep);
+    indentp = APPLY1(Osyntable_indent, data->syntable);
 
     /* Execute indentation function */
     if (indentp != NIL)
-	APPLY2(indentp, data->syntaxp, data->syntablep);
+	APPLY2(indentp, data->syntax, data->syntable);
 
     data->disable_highlight = False;
 

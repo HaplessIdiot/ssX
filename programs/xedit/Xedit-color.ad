@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.12 2002/09/29 02:54:59 paulo Exp $
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.13 2002/10/06 17:11:39 paulo Exp $
 
 #include "Xedit"
 
@@ -26,13 +26,14 @@ Button1<Leave>: reset() set-values(1, foreground, gray20, background, gray70)\n\
 <Btn1Up>:	notify() unset()
 
 *Toggle.foreground:		gray30
-*Toggle.background:		gray85
-*Toggle.borderColor:		gray70
+*Toggle.background:		gray82
+*Toggle.borderColor:		gray90
 *Toggle.displayList:\
-foreground	gray50;\
-lines		+2,-2,-2,-2,-2,+2;\
-foreground	gray60;\
-lines		-2,+1,+1,+1,+1,-2
+foreground	gray75;\
+segments	0,1,0,-2,-1,1,-1,-2;\
+foreground	gray80;\
+segments	0,0,-1,0,0,-1,-1,-1;\
+points		1,1,1,-2,-2,1, -2,-2
 
 *bc_label.backgroundPixmap:	gradient:vertical?dimension=18&start=gray90&end=gray65
 *bc_label.displayList:\

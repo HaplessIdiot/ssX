@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.54 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.55 2002/11/10 16:29:03 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -560,6 +560,9 @@ Lisp_Boundp(LispBuiltin *builtin)
     LispAtom *atom;
 
     LispObj *symbol = ARGUMENT(0);
+
+    if (symbol == NIL || symbol == T)
+	return (T);
 
     CHECK_SYMBOL(symbol);
 

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.22 2002/09/22 07:09:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.23 2002/10/06 17:11:39 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -272,7 +272,7 @@ KillTextSource(xedit_flist_item *item)
 	    XawTextDisableRedisplay(texts[i]);
 	    XtSetValues(texts[i], targs, tnum_args);
 
-	    UpdateTextProperties();
+	    UpdateTextProperties(0);
 
 	    _XawTextShowPosition((TextWidget)texts[i]);
 	    XawTextEnableRedisplay(texts[i]);
@@ -406,7 +406,7 @@ SwitchTextSource(xedit_flist_item *item)
     ++num_args;
     XtSetValues(textwindow, args, num_args);
 
-    UpdateTextProperties();
+    UpdateTextProperties(0);
 
     _XawTextShowPosition((TextWidget)textwindow);
     XawTextEnableRedisplay(textwindow);
@@ -582,7 +582,7 @@ DeleteWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		     wrapmodes[WindowIndex(texts[current ? idx : uidx])]);
 	XtSetValues(texts[0], args, num_args);
 
-	UpdateTextProperties();
+	UpdateTextProperties(0);
     }
 
     labelwindow = labels[0];
@@ -783,7 +783,7 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     ++num_args;
     XtSetValues(ntext, args, num_args);
 
-    UpdateTextProperties();
+    UpdateTextProperties(0);
 
     _XawTextShowPosition((TextWidget)textwindow);
     _XawTextShowPosition((TextWidget)ntext);

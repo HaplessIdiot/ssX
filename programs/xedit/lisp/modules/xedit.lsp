@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.5 2002/09/29 02:55:01 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.6 2002/10/06 17:11:47 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -84,69 +84,51 @@
 ;; Find the progmode associated with the given filename.
 ;; Returns nil if nothing matches.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun auto-mode (filename)
-    (do*
-	(
-	(mode	*auto-modes*	(cdr mode))
-	(regex	(caar mode)	(caar mode))
-	(syntax	(cddar mode)	(cddar mode))
+(defun auto-mode (filename &optional symbol &aux syntax)
+    (if (and symbol (symbolp symbol))
+	(if (boundp symbol)
+	    (return-from auto-mode (symbol-value symbol))
+	    (setq syntax (cddr (find symbol *auto-modes* :key #'cdddr)))
 	)
-	((endp mode))
-
-	;; Only wants to know if the regex match.
-	(when (listp (re-exec regex filename :count 0))
-
-	    (if (syntax-p syntax)
-		;; Already loaded earlier, return it.
-		(return syntax)
-
-		;; It must be a cons, the cdr is the symbol name.
-		(setq syntax (car syntax))
+	;; symbol optional argument is not a symbol
+	(do*
+	    (
+	    (mode   *auto-modes*    (cdr mode))
+	    (regex  (caar mode)     (caar mode))
 	    )
+	    ((endp mode))
 
-	    ;; Try to load the specified file.
-	    (if (stringp syntax)
-		(load
-		    (string-concat
-			(namestring *default-pathname-defaults*)
-			"progmodes/"
-			syntax
-			".lsp"
-		    )
-		)
-		(load syntax)
-	    )
-
-	    ;; Pointer to symbol name
-	    (setq syntax (cdddar mode))
-	    (if (boundp syntax)
-		(setq syntax (symbol-value syntax))
-	    )
-
-	    (if (syntax-p syntax)
-
-		;; New syntax table was loaded
-		(progn
-		    (rplacd (cdar mode) syntax)
-		    (return syntax)
-		)
-
-		;; Failed to load, remove the entry from the list.
-		;; XXX This only prevents the cases where the file wasn't
-		;; found or did not return a syntax-p, if a fatal error
-		;; was generated, this code will not be executed.
-		(progn
-		    (if (cdr mode)
-			(progn
-			    (rplaca mode (cadr mode))
-			    (rplacd mode (cddr mode))
-			)
-			(rplacd (last *auto-modes* 2) nil)
-		    )
-		    (return)
-		)
+	    ;; only wants to know if the regex match.
+	    (when (listp (re-exec regex filename :count 0))
+		(setq syntax (cddar mode) symbol (cdr syntax))
+		(return)
 	    )
 	)
+    )
+
+    ;; if file was already loaded
+    (if (and symbol (boundp symbol))
+	(return-from auto-mode (symbol-value symbol))
+    )
+
+    (when (consp syntax)
+	;; point to the syntax file specification
+	(setq syntax (car syntax))
+
+	;; to load the syntax definition file
+	(if (stringp syntax)
+	    (load
+		(string-concat
+		    (namestring *default-pathname-defaults*)
+		    "progmodes/"
+		    syntax
+		    ".lsp"
+		)
+	    )
+	    (load syntax)
+	)
+
+	(and symbol (boundp symbol) (symbol-value symbol))
     )
 )
 
