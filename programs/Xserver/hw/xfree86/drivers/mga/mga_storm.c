@@ -1,3 +1,7 @@
+/* $XFree86: $ */
+
+/* Copyright (c) 1998 The XFree86 Project, Inc. */
+
 #include "compiler.h"
 #include "vga256.h"
 #include "xf86.h"
