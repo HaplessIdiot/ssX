@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.9 1999/08/21 13:48:41 dawes Exp $ */
+/* $XFree86: /X11R6/x-cvs/xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.10 1999/09/25 14:38:04 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -11,9 +11,9 @@
 #include "xf86_OSlib.h"
 
 #ifdef USESTDRES
-#define xf86StdAccWindowsFromOS xf86AccWindowsFromOS
-#define xf86StdAccResFromOS xf86AccResFromOS
-#define xf86StdInitOSPciAllocator xf86InitOSPciAllocator
+#define xf86AccWindowsFromOS xf86StdAccWindowsFromOS
+#define xf86AccResFromOS xf86StdAccResFromOS
+#define xf86InitOSPciAllocator xf86StdInitOSPciAllocator
 #endif
 
 resPtr
