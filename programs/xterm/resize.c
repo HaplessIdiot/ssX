@@ -2,7 +2,7 @@
  *	$Xorg: resize.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/resize.c,v 3.45 2001/01/17 23:46:38 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/resize.c,v 3.46 2001/02/13 19:19:18 dawes Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -36,25 +36,12 @@
 #include <xstrings.h>
 #include <xterm_io.h>
 
-#ifdef __CYGWIN__
-#include <signal.h>
-#include <term.h>
-#include <sys/termios.h>
-#define USE_TERMCAP 1
-#define USE_ANY_SYSV_TERMIO
-#endif
-
 #ifdef APOLLO_SR9
 #define CANT_OPEN_DEV_TTY
 #endif
 
-#ifdef __OpenBSD__
-#define USE_TERMINFO
-#include <term.h>
-#endif
-
 #ifndef USE_TERMINFO	/* avoid conflict with configure script */
-#if defined(__QNX__) || defined(SCO) || defined(sco) || defined(linux)
+#if defined(__QNX__) || defined(SCO) || defined(sco) || defined(linux) || defined(__OpenBSD__)
 #define USE_TERMINFO
 #endif
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.67 2000/12/30 19:15:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.68 2001/03/05 23:01:21 dawes Exp $ */
 
 /************************************************************
 
@@ -154,6 +154,18 @@ authorization.
 
 /***====================================================================***/
 
+/* if compiling with gcc -ansi -pedantic, we must fix POSIX definitions */
+#if defined(__GNUC__) && defined(SVR4) && defined(sun)
+#ifndef __EXTENSIONS__
+#define __EXTENSIONS__ 1
+#endif
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 1
+#endif
+#endif
+
+/***====================================================================***/
+
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
@@ -220,15 +232,11 @@ extern int errno;
 
 #endif
 
-#if defined(SVR4) && defined(sun)
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE
-#endif
-#endif
 #include <setjmp.h>
 
 /***====================================================================***/
 
+#define	XtNi18nSelections	"i18nSelections"
 #define XtNallowSendEvents	"allowSendEvents"
 #define XtNalwaysHighlight	"alwaysHighlight"
 #define XtNalwaysUseMods	"alwaysUseMods"
@@ -285,10 +293,10 @@ extern int errno;
 #define XtNeightBitControl	"eightBitControl"
 #define XtNeightBitInput	"eightBitInput"
 #define XtNeightBitOutput	"eightBitOutput"
-#define XtNfontDoublesize	"fontDoublesize"
-#define XtNfontStyle		"fontStyle"
 #define XtNfaceName		"faceName"
 #define XtNfaceSize		"faceSize"
+#define XtNfontDoublesize	"fontDoublesize"
+#define XtNfontStyle		"fontStyle"
 #define XtNhighlightColor	"highlightColor"
 #define XtNhighlightSelection	"highlightSelection"
 #define XtNhpLowerleftBugCompat	"hpLowerleftBugCompat"
@@ -312,6 +320,7 @@ extern int errno;
 #define XtNpointerColor		"pointerColor"
 #define XtNpointerColorBackground "pointerColorBackground"
 #define XtNpointerShape		"pointerShape"
+#define XtNpopOnBell		"popOnBell"
 #define XtNprintAttributes	"printAttributes"
 #define XtNprinterAutoClose	"printerAutoClose"
 #define XtNprinterCommand	"printerCommand"
@@ -338,15 +347,15 @@ extern int errno;
 #define XtNunderLine		"underLine"
 #define XtNutf8			"utf8"
 #define XtNvisualBell		"visualBell"
-#define XtNpopOnBell		"popOnBell"
+#define XtNwideBoldFont		"wideBoldFont"
 #define XtNwideChars		"wideChars"
 #define XtNwideFont		"wideFont"
-#define XtNwideBoldFont		"wideBoldFont"
 #define XtNxmcAttributes	"xmcAttributes"
 #define XtNxmcGlitch		"xmcGlitch"
 #define XtNxmcInline		"xmcInline"
 #define XtNxmcMoveSGR		"xmcMoveSGR"
 
+#define	XtCI18nSelections	"I18nSelections"
 #define XtCAllowSendEvents	"AllowSendEvents"
 #define XtCAlwaysHighlight	"AlwaysHighlight"
 #define XtCAlwaysUseMods	"AlwaysUseMods"
@@ -398,6 +407,7 @@ extern int errno;
 #define XtCMultiScroll		"MultiScroll"
 #define XtCNumLock		"NumLock"
 #define XtCOldXtermFKeys	"OldXtermFKeys"
+#define XtCPopOnBell		"PopOnBell"
 #define XtCPrintAttributes	"PrintAttributes"
 #define XtCPrinterAutoClose	"PrinterAutoClose"
 #define XtCPrinterCommand	"PrinterCommand"
@@ -422,10 +432,9 @@ extern int errno;
 #define XtCUnderLine		"UnderLine"
 #define XtCUtf8			"Utf8"
 #define XtCVisualBell		"VisualBell"
-#define XtCPopOnBell		"PopOnBell"
+#define XtCWideBoldFont		"WideBoldFont"
 #define XtCWideChars		"WideChars"
 #define XtCWideFont		"WideFont"
-#define XtCWideBoldFont		"WideBoldFont"
 #define XtCXmcAttributes	"XmcAttributes"
 #define XtCXmcGlitch		"XmcGlitch"
 #define XtCXmcInline		"XmcInline"

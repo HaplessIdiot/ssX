@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.42 2000/12/28 00:51:51 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.43 2000/12/30 19:15:46 dickey Exp $ */
 
 /***********************************************************
 
@@ -436,7 +436,7 @@ static XrmOptionDescRec optionDescList[] = {
    standard XtAppInitialize options now */
 {"%",		"*tekGeometry",	XrmoptionStickyArg,	(caddr_t) NULL},
 {"#",		".iconGeometry",XrmoptionStickyArg,	(caddr_t) NULL},
-{"-T",		"*title",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-T",		".title",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-n",		"*iconName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
 {"+r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
