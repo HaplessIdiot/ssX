@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.6 2000/06/13 23:15:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.7 2000/10/20 14:59:05 alanh Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -78,7 +78,7 @@ WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER
 #endif
 
 #if HasDlopen
-DLLIB = -ldl
+DLLIB = DlLibrary
 #endif
 
 LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \

@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaa.c,v 1.2 2000/02/08 13:13:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaa.c,v 1.3 2000/09/22 11:12:32 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -18,6 +18,32 @@
 #define WAIT   outb(0x3CE,0x31); while(inb(0x3CF) & pCir->chip.alp->waitMsk){};
 #define WAIT_1 outb(0x3CE,0x31); while(inb(0x3CF) & 0x1){};
 
+static const CARD16 translated_rop[] =
+{
+  /* GXclear */        0x0032U,
+  /* GXand   */        0x0532U,
+  /* GXandreverse */   0x0932U,
+  /* GXcopy */         0x0D32U,
+  /* GXandinversted */ 0x5032U,
+  /* GXnoop */         0x0632U,
+  /* GXxor */          0x5932U,
+  /* GXor */           0x6D32U,
+  /* GXnor */          0x9032U,
+  /* GXequiv */        0x9532U,
+  /* GXinvert */       0x0B32U,
+  /* GXorReverse */    0xAD32U,
+  /* GXcopyInverted */ 0xD032U,
+  /* GXorInverted */   0xD632U,
+  /* GXnand */         0xDA32U,
+  /* GXset */          0x0E32U
+};
+
+#if 1
+#define SetupForRop(rop) outw(0x3CE, translated_rop[rop])
+#else
+#define SetupForRop(rop) outw(0x3CE, 0x0D32)
+#endif
+
 static void AlpSync(ScrnInfoPtr pScrn)
 {
 #ifdef ALP_DEBUG
@@ -29,8 +55,8 @@ static void AlpSync(ScrnInfoPtr pScrn)
 
 static void
 AlpSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
-								int rop, unsigned int planemask,
-								int trans_color)
+			      int rop, unsigned int planemask,
+			      int trans_color)
 {
 	CirPtr pCir = CIRPTR(pScrn);
 	int pitch = pCir->pitch;
@@ -40,7 +66,7 @@ AlpSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 		xdir, ydir, rop, planemask, trans_color);
 #endif
 	WAIT;
-	outw(0x3CE,0x0d32);
+	SetupForRop(rop);
 	/* Set dest pitch */
 	outw(0x3CE, ((pitch << 8) & 0xff00) | 0x24);
 	outw(0x3CE, ((pitch) & 0x1f00) | 0x25);
@@ -118,8 +144,7 @@ AlpSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 #endif
 	WAIT;
 
-	/* GR32 = 0x0D => verbatim source copy (no logical op) */
-	outw(0x3CE, 0x0D32);
+	SetupForRop(rop);
 
 	switch (pCir -> Chipset)
 	{
@@ -210,8 +235,7 @@ AlpSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 #endif
 	WAIT;
 
-	/* GR32 = 0x0D => verbatim source copy (no logical op) */
-	outw(0x3CE, 0x0D32);
+	SetupForRop(rop);
 
 	{
 	  int source = pAlp->monoPattern8x8;
@@ -313,8 +337,7 @@ AlpSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #endif
 	WAIT;
 
-	/* GR32 = 0x0D => verbatim source copy (no logical op) */
-	outw(0x3CE, 0x0D32);
+	SetupForRop(rop);
 
         /* GR30 = color expansion, CPU->display copy */
 	/* Choses 8bpp / 16bpp color expansion */
@@ -409,8 +432,7 @@ AlpSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #endif
 	WAIT;
 
-	/* GR32 = 0x0D => verbatim source copy (no logical op) */
-	outw(0x3CE, 0x0D32);
+	SetupForRop(rop);
 
         /* GR30 = color expansion, CPU->display copy */
 	/* Choses 8bpp / 16bpp color expansion */
@@ -559,7 +581,8 @@ AlpXAAInit(ScreenPtr pScreen)
 
 	XAAPtr->SetupForScreenToScreenCopy = AlpSetupForScreenToScreenCopy;
 	XAAPtr->SubsequentScreenToScreenCopy = AlpSubsequentScreenToScreenCopy;
-	XAAPtr->ScreenToScreenCopyFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
+	XAAPtr->ScreenToScreenCopyFlags =
+	  NO_TRANSPARENCY | NO_PLANEMASK;
 
         switch (pCir->Chipset)
 	{
@@ -568,15 +591,15 @@ AlpXAAInit(ScreenPtr pScreen)
 	  XAAPtr->SetupForSolidFill = AlpSetupForSolidFill;
 	  XAAPtr->SubsequentSolidFillRect = AlpSubsequentSolidFillRect;
 	  XAAPtr->SubsequentSolidFillTrap = NULL;
-	  XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_PLANEMASK;
+	  XAAPtr->SolidFillFlags = NO_PLANEMASK;
 
 	  XAAPtr->SetupForMono8x8PatternFill = AlpSetupForMono8x8PatternFill;
 	  XAAPtr->SubsequentMono8x8PatternFillRect =
 	    AlpSubsequentMono8x8PatternFillRect;
 	  XAAPtr->SubsequentMono8x8PatternFillTrap = NULL;
 	  XAAPtr->Mono8x8PatternFillFlags =
-	    GXCOPY_ONLY|NO_PLANEMASK|
-	    HARDWARE_PATTERN_PROGRAMMED_BITS|BIT_ORDER_IN_BYTE_MSBFIRST;
+	    NO_PLANEMASK |
+	    HARDWARE_PATTERN_PROGRAMMED_BITS | BIT_ORDER_IN_BYTE_MSBFIRST;
 
 #if 0
 	  /* Currently disabled: XF86 sends DWORD-padded data,
@@ -587,9 +610,9 @@ AlpXAAInit(ScreenPtr pScreen)
 	    AlpSubsequentCPUToScreenColorExpandFill;
 	  XAAPtr->ColorExpandBase = pCir->FbBase + 4;
 	  XAAPtr->CPUToScreenColorExpandFillFlags =
-	    GXCOPY_ONLY|NO_PLANEMASK|BIT_ORDER_IN_BYTE_MSBFIRST|
-	    SCANLINE_PAD_DWORD|
-	    CPU_TRANSFER_PAD_DWORD|CPU_TRANSFER_BASE_FIXED;
+	    NO_PLANEMASK | BIT_ORDER_IN_BYTE_MSBFIRST |
+	    SCANLINE_PAD_DWORD | ROP_NEEDS_SOURCE |
+	    CPU_TRANSFER_PAD_DWORD | CPU_TRANSFER_BASE_FIXED;
 #endif
 #if 1
 	  /* kludge: since XF86 does not support byte-padded
@@ -622,8 +645,8 @@ AlpXAAInit(ScreenPtr pScreen)
 		malloc(buffer_size);
 	  }
 	  XAAPtr->ScanlineCPUToScreenColorExpandFillFlags =
-	    GXCOPY_ONLY|NO_PLANEMASK|BIT_ORDER_IN_BYTE_MSBFIRST|
-	    SCANLINE_PAD_DWORD;
+	    NO_PLANEMASK | BIT_ORDER_IN_BYTE_MSBFIRST |
+	    SCANLINE_PAD_DWORD | ROP_NEEDS_SOURCE;
 #endif
 	  break;
   
@@ -632,7 +655,7 @@ AlpXAAInit(ScreenPtr pScreen)
 	  XAAPtr->SetupForSolidFill = AlpSetupForSolidFill;
 	  XAAPtr->SubsequentSolidFillRect = AlpSubsequentSolidFillRect;
 	  XAAPtr->SubsequentSolidFillTrap = NULL;
-	  XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
+	  XAAPtr->SolidFillFlags = NO_TRANSPARENCY|NO_PLANEMASK;
 	  outw(0x3CE, 0x200E); /* enable writes to gr33 */
 	  break;
 	}

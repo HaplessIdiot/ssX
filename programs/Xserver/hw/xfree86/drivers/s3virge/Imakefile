@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/Imakefile,v 1.16 2000/02/08 13:13:20 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/Imakefile,v 1.18 2000/09/20 00:09:28 keithp Exp $
 /*
  *
  * Copyright 1995-1998 The XFree86 Project, Inc.
@@ -9,10 +9,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/Imakefile,v 1.16 
 #include <Server.tmpl>
 
 SRCS = s3v_driver.c s3v_accel.c s3v_dac.c s3v_hwcurs.c s3v_dga.c s3v_i2c.c \
-       s3v_shadow.c
+       s3v_shadow.c s3v_xv.c
 
 OBJS = s3v_driver.o s3v_accel.o s3v_dac.o s3v_hwcurs.o s3v_dga.o s3v_i2c.o \
-       s3v_shadow.o
+       s3v_shadow.o s3v_xv.o
 
 DEFINES = -DPSZ=8
 
@@ -22,6 +22,7 @@ INCLUDES = -I. -I../../include
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
+           -I$(SERVERSRC)/fb \
            -I$(XF86SRC)/xf1bpp -I$(XF86SRC)/xf4bpp \
            -I$(XF86SRC)/xf24_32bpp -I$(SERVERSRC)/Xext \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
