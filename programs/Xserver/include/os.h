@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.61 2005/01/11 23:01:14 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1996-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -588,6 +588,7 @@ __attribute((noreturn))
 extern void VErrorF(const char *f, va_list args);
 extern void ErrorF(const char *f, ...) _printf_attribute(1,2);
 extern void Error(char *str);
+extern const char *LogTypeToTxt(MessageType type);
 extern void LogPrintMarkers(void);
 
 #ifndef IN_MODULE
