@@ -1,4 +1,5 @@
 XFree86 4.4.99.2 (xx March 2004)
+  19. Fix SOSYMLINK support on various OS'es (Marc La France).
 
 XFree86 4.4.99.1 (12 March 2004)
   18. IRIX allows for a relatively low number of command arguments, so break up
@@ -18721,7 +18722,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3172 2004/03/11 15:21:32 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3173 2004/03/12 12:09:11 dawes Exp $
 
 
 
