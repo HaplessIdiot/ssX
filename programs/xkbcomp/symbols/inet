@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.1 2000/02/09 22:00:07 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -12,6 +12,26 @@ xkb_symbols "hp" {
     key <I2E>	{	[ XF86AudioLowerVolume	]	};
     key <I30>	{	[ XF86AudioRaiseVolume	]	};
     key <I20>	{	[ XF86AudioMute		]	};
+};
+
+partial alphanumeric_keys 
+xkb_symbols "itouch" {
+
+    // Describes the extra keys on an HP "Internet" keyboard.
+
+    name[Group1]= "iTouch";
+    key <I5F>	{	[ XF86Standby		]	};
+    key <I1F>	{	[ XF86AudioMute		]	};
+    key <I2B>	{	[ XF86AudioLowerVolume	]	};
+    key <I2D>	{	[ XF86AudioRaiseVolume	]	};
+    key <I22>	{	[ XF86AudioPlay		]	};
+    key <I24>	{	[ XF86AudioStop		]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I32>	{	[ XF86HomePage		]	};
+    key <I6C>	{	[ XF86Mail		]	};
+    key <I65>	{	[ Find			]	};
+    key <I66>	{	[ XF86Start		]	};
 };
 
 

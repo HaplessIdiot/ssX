@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.1 2000/02/09 21:59:55 dawes Exp $ */
 
 /*
  * ModeLock (not needed since XKB offers this functionality)
@@ -13,3 +13,12 @@
 #define XF86XK_AudioLowerVolume	0x1008FF11
 #define XF86XK_AudioMute	0x1008FF12
 #define XF86XK_AudioRaiseVolume	0x1008FF13
+#define XF86XK_AudioPlay	0x1008FF14
+#define XF86XK_AudioStop	0x1008FF15
+#define XF86XK_AudioPrev	0x1008FF16
+#define XF86XK_AudioNext	0x1008FF17
+#define XF86XK_HomePage		0x1008FF18
+#define XF86XK_Mail		0x1008FF19
+#define XF86XK_Start		0x1008FF1A
+
+

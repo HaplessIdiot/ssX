@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.200 2000/01/23 02:12:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.205 2000/02/08 13:13:04 eich Exp $ */
 
 
 /*
@@ -618,7 +618,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     if (layoutopts) {
 	tmp = OptionListDup(layoutopts);
 	if (optp)
-	    OptionListMerge(optp, tmp);
+	    optp = OptionListMerge(optp, tmp);
 	else
 	    optp = tmp;
     }
