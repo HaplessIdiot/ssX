@@ -43,6 +43,10 @@
 #include "globals.h"
 #include "servermd.h"
 #include "resource.h"
+#ifdef RENDER
+#include "picturestr.h"
+#endif
+
 
 static unsigned char PanoramiXReqCode = 0;
 /*
@@ -611,6 +615,9 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     ProcVector[X_StoreColors] = PanoramiXStoreColors;    
     ProcVector[X_StoreNamedColor] = PanoramiXStoreNamedColor;    
 
+#ifdef RENDER
+    PanoramiXRenderInit ();
+#endif
     return;
 }
 extern 
@@ -860,6 +867,9 @@ static void PanoramiXResetProc(ExtensionEntry* extEntry)
 {
     int		i;
 
+#ifdef RENDER
+    PanoramiXRenderReset ();
+#endif
     screenInfo.numScreens = PanoramiXNumScreens;
     for (i = 256; i--; )
 	ProcVector[i] = SavedProcVector[i];

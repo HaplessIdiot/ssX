@@ -77,7 +77,7 @@ XF86BIGFOBJS = xf86bigfont.o
 #if BuildXinerama
         PNRXSRCS = panoramiX.c panoramiXSwap.c panoramiXprocs.c
         PNRXOBJS = panoramiX.o panoramiXSwap.o panoramiXprocs.o
-    PNRXINCLUDES = -I$(FONTINCSRC) -I../mi
+    PNRXINCLUDES = -I$(FONTINCSRC) -I../mi -I../render
 #endif
 #if BuildDPMS
         DPMSSRCS = dpms.c
