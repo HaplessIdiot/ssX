@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.18 1997/09/19 09:01:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.19 1997/09/29 08:40:30 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -582,7 +582,7 @@ MGAProbe()
 					vga256InfoRec.chipset = MGAIdent(2);
 				break;
 				case PCI_CHIP_MGA2164_AGP:
-					MGAchipset = PCI_CHIP_MGA2164;
+					MGAchipset = id;
 					vga256InfoRec.chipset = MGAIdent(3);
 			}
 			if (MGAchipset)
@@ -607,20 +607,6 @@ MGAProbe()
 		MGArev = pcr->_rev_id;
 	}
 	/*
-	 * make it obvious that Millennium II support is experimental
-	 */
-	if (MGAchipset == PCI_CHIP_MGA2164) 
-	{
-		ErrorF("(!!) %s: Support for the Millennium II in this release\n",
-			vga256InfoRec.name);
-	
-		ErrorF("(!!) %s: is HIGHLY EXPERIMENTAL and largely untested\n",
-			vga256InfoRec.name);
-		ErrorF("(!!) %s:    ===================     ================\n",
-			vga256InfoRec.name);
-	}
-	   
-	/*
 	 *	OK. It's MGA
 	 */
 	 
@@ -636,13 +622,15 @@ MGAProbe()
 	
 	if ( pcr->_base0 ) {	/* details: mgabase1 sdk pp 4-11 */
 		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 )
+			MGAchipset == PCI_CHIP_MGA2164 ||
+			MGAchipset == PCI_CHIP_MGA2164_AGP)
 			MGA.ChipLinearBase = pcr->_base0 & 0xff800000;
 		else
 			MGAMMIOAddr = pcr->_base0 & 0xffffc000;
 	} else {
 		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 )
+			MGAchipset == PCI_CHIP_MGA2164 ||
+			MGAchipset == PCI_CHIP_MGA2164_AGP)
 			MGA.ChipLinearBase = 0;
 		else
 			MGAMMIOAddr = 0;
@@ -650,14 +638,16 @@ MGAProbe()
 	
 	if ( pcr->_base1 ) {	/* details: mgabase2 sdk pp 4-12 */
 		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 )
+			MGAchipset == PCI_CHIP_MGA2164 ||
+			MGAchipset == PCI_CHIP_MGA2164_AGP)
 	
 			MGAMMIOAddr = pcr->_base1 & 0xffffc000;
 		else
 			MGA.ChipLinearBase = pcr->_base1 & 0xff800000;
 	} else {
 		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
-			MGAchipset == PCI_CHIP_MGA2164 )
+			MGAchipset == PCI_CHIP_MGA2164 ||
+			MGAchipset == PCI_CHIP_MGA2164_AGP)
 			MGAMMIOAddr = 0;
 		else
 			MGA.ChipLinearBase = 0;
@@ -808,7 +798,7 @@ MGAProbe()
 	 */
 
 	if (!vga256InfoRec.videoRam)
-	   if ( MGAchipset == PCI_CHIP_MGA2164 )
+	   if ( MGAchipset == PCI_CHIP_MGA2164 || MGAchipset == PCI_CHIP_MGA2164_AGP )
 		vga256InfoRec.videoRam = MGACountRam(8); /* count to 16 mb */
 	   else
 		vga256InfoRec.videoRam = MGACountRam(4); /* count to 8 mb */
@@ -817,7 +807,7 @@ MGAProbe()
 
 	/* sanity check ChipLinearSize */
 
-	if ( MGAchipset == PCI_CHIP_MGA2164 )
+	if ( MGAchipset == PCI_CHIP_MGA2164 || MGAchipset == PCI_CHIP_MGA2164_AGP )
 	{
 		if ( MGA.ChipLinearSize < 2048 || MGA.ChipLinearSize > 16384 )
 		{
@@ -1444,7 +1434,6 @@ Bool enter;
 						0x4000);
 				MGAMMIOBase = 0;
 			}
-			
 		}
 		
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
