@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.4 1999/01/13 08:30:49 dawes Exp $ */
 /*
  * HISTORY
  * Log
@@ -51,4 +51,9 @@ Bool PanoramiXCreateScreenRegion()
 }
 
 void* PanoramiXScreenRegion;
+
+Bool PanoramiXWinRootFreeable;
+Bool PanoramiXGCRootFreeable;
+Bool PanoramiXCmapRootFreeable;
+Bool PanoramiXPmapRootFreeable;
 

@@ -1,0 +1,115 @@
+Direct Rendering Infrastructure Alpha release
+---------------------------------------------
+
+Patches for the final sample implementation (SI) of Precision Insight's
+Direct Rendering Infrastructure (DRI) have been submitted to XFree86.
+
+
+
+Please direct all comments about this release to glx@xfree86.org.
+
+
+
+
+* What comes with this release?
+
+  There are four main parts of this patch:
+
+  1. the client- and server-side DRI,
+  2. a 2D DDX driver for 3Dlabs' GMX2000,
+  3. an OpenGL client side direct rendering driver for the GMX2000, and
+  4. a generic kernel driver for Linux 2.2.x (x <= 10) and Linux 2.3.y (y
+     <= 8).
+
+  The DRI handles the communication and synchronization between the X
+  server, the client driver and the kernel driver.
+
+  The 3Dlabs XFree86 DDX driver has been enhanced to support the
+  GMX2000.  It has also been extended to communicate with and provide
+  callbacks for the DRI.
+
+  The client driver implements a subset of OpenGL.  The subset required
+  for id Software's Quake 2 was chosen to demonstrate the capabilities
+  of the DRI.  This driver communicates with the device by filling DMA
+  buffers and sending them to the kernel driver.  Note that the Gamma
+  chip implements OpenGL 1.1 in hardware, and therefore, does not use
+  the Mesa internals at this time.  However, support for the majority of
+  current generation of 3D hardware devices will require integration
+  with Mesa, so an example DRI driver using the Mesa software-only
+  pipeline was implemented (and is mostly complete for the alpha
+  release).
+
+  The generic kernel driver handles the allocation of the DMA buffers,
+  distribution of the buffers to the clients, sending the buffers to the
+  device, and the management of synchronization between the client
+  driver, the X server, and the kernel driver (this includes the device
+  lock and a shared memory region).  Note that hardware that does not
+  support DMA or that does support special synchronization methods will
+  only make use of a subset of these capabilities.
+
+* What changed between the alpha release and the sample implementation?
+
+  - Dynamic loading of the OpenGL client driver is implemented
+  - 3D client death while holding the drawable lock does not cause deadlock
+  - The kernel module works with Linux 2.2.x [x <= 10] and 2.3.y [y <= 8]
+  - A better authentication mechanism has been implemented
+  - XF86Config options for the DRI are supported
+
+* What are the known problems and/or limitations of the sample
+  implementation? 
+
+  Here are other problems that we did not have time to fix for the SI.
+  However, we and other open source developers could continue developing
+  and extending the DRI in follow-on projects.
+
+  - The X server seg faults due to a context switching bug when there
+    are 10 or more 3D clients running simultaneously
+  - A better DMA buffer queuing algorithm needs to be implemented
+  - A device specific shared memory region needs to be added to SAREA
+  - The DRI protocol request for the framebuffer layout needs to be
+    extended to support FB width and depth information (for 24 vs. 32
+    bpp, 8+24 layouts, etc)
+  - Direct rendering to a pixmap is not supported
+  - A more sophisticated texture management routine is required to
+    handle texture swapping efficiently
+  - Multi-threaded OpenGL clients are not supported
+  - glXCopyContext and glXUseXFont are not supported in the DRI
+  - SwapBuffers does not wait on vertical retrace
+  - Support wait for vertical retrace in kernel driver
+  - Handling overlays is not currently supported
+  - Integrate with DBE
+  - Completing the software-only Mesa example driver
+  - Completing the other OpenGL paths for the GMX2000
+  - Support for video modes other than 640x480 in both the GMX2000 2D
+    DDX driver and the 3D client driver
+  - More than minimal 2D acceleration of the GMX2000 2D DDX driver
+    should be implemented
+  - Implement finer grained locking scheme in X server to improve
+    interactivity
+  - Only grab the drawable lock and update the drawable stamp when a 3D
+    window is altered
+  - The viewport does not scale properly when a 3D window is resized
+  - Double buffered 3D windows are not clipped to the screen
+  - glXSwapBuffers is not clipped to the client's viewport
+  - Only one client is allowed to use texture memory
+  - glFinish does not wait until the HW completes processing the
+    outstanding DMA buffers
+  - Version numbers of the DDX and kernel driver are not verified
+  - Make lock available during SIGSTOP
+  - Make drmFinish work while holding the device lock
+  - Improve /proc/drm
+  - Improve documentation
+  - Improve example device-specific kernel driver (not used for SI)
+
+* Where can I get more information?
+
+  We have made our design and implementation documents available on our
+  website:
+
+      http://www.precisioninsight.com/piinsights.html
+
+  More documentation will be available with the SI release.
+
+* Where should I send comments?
+
+  Please send all comments and questions to the glx@xfree86.org list

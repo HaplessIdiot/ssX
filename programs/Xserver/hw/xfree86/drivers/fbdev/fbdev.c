@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.8 1999/06/20 15:02:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.9 1999/06/27 14:08:04 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -441,7 +441,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
                "EGA/VGA Planes are not supprted yet by drivers/fbdev.");
                break;
        default:
-               xf86DrvMsg(scrnIndex, X_ERROR,
+               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                "Fbdev type (%d) not supported yet.");
                break;
 	}
