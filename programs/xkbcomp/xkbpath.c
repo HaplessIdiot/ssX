@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.6 2002/05/31 18:46:13 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.7 2002/06/05 00:00:38 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -46,6 +46,7 @@
 
 #define	PATH_CHUNK	8
 
+static	Bool	 noDefaultPath = False;
 static	int	 longestPath;
 static	int	 szPath;
 static	int	 nPathEntries;
@@ -124,9 +125,16 @@ XkbInitIncludePath(void)
     includePath=  (char **)calloc(szPath,sizeof(char *));
     if (includePath==NULL)
 	return False;
+    return True;
+}
+
+void
+XkbAddDefaultDirectoriesToPath(void)
+{
+    if (noDefaultPath)
+	return;
     XkbAddDirectoryToPath(".");
     XkbAddDirectoryToPath(DFLT_XKB_CONFIG_ROOT);
-    return True;
 }
 
 void
@@ -144,6 +152,7 @@ register int i;
 	nPathEntries= 0;
 	longestPath= 0;
     }
+    noDefaultPath = True;
     return;
 }
 
