@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                30 June 2000
+                                 3 July 2000
 
                                   Abstract
 
@@ -13,29 +13,22 @@
 
 XFree86 4.0 was the first official release of the new XFree86 4.  XFree86 4
 represents a significant redesign of the XFree86 X server.  Not all of the
-hardware drivers from 3.3.x have been ported to 4.x yet.
+hardware drivers from 3.3.x have been ported to 4.x yet, but conversely, 4.x
+has some hardware support not present in 3.3.x.  We've attempted to provide
+some information about the second point in our Driver Status document.
+Please check there first before downloading  4.0.1.
 
-1.1  Differences Between the 4.x series and the 3.3 series
-
-The 4.x release series is also missing a nice configuration tool.  This means
-that configuring the Xserver might be trickier than usual.  The second point
-is that is that your hardware might not be supported by 4.0.1, or it might be
-supported at a lesser level (conversely, some hardware is better supported in
-4.0.1).  We've attempted to provide some information about the second point
-in our Driver Status document.  Please check there first before downloading
-4.0.1.
-
-On the subject of configuration, we have updated the basic text-based tool
-"xf86config" to generate config files in the format required by 4.0.1 (3.3.x
-config files won't really work with 4.0.1).  We're also working on some other
-configuration tools, including one that is built-in to the X server.  An
-early version of this is included in the release, and it works well for some
-hardware.  To try it out, just run (as root) "XFree86 -configure".  Both of
-these configuration options will give you a reasonable starting point for a
-suitable configuration file.  We've put some effort into documenting the
-4.0.1 config file format, and you can find that information in the XF86Config
-manual page. Check that,  the driver manual pages and the related documenta-
-tion for further information.
+The 4.0.1 has a new configuration tool, "xf86cfg".  It is work in progress,
+but definitely worth trying out.  We have also updated the basic text-based
+tool "xf86config" to generate config files in the format required by 4.0.1
+(3.3.x config files won't really work with 4.0.1).  We're also on a configu-
+ration tool that is built-in to the X server.  An early version of this is
+included in the release, and it works well for some hardware.  To try it out,
+just run (as root) "XFree86 -configure".  Each of these configuration options
+will give you a reasonable starting point for a suitable configuration file.
+We've put some effort into documenting the 4.0.1 config file format, and you
+can find that information in the XF86Config manual page. Check that,  the
+driver manual pages and the related documentation for further information.
 
 Oh, another thing you might notice is that our documentation is rather
 patchy.  Most of what is present should be in reasonable shape, but there are
@@ -84,7 +77,43 @@ enough space to cover it all here.
 
    o Add generic DGA support to the sis, neomagic and i810 drivers.
 
-   o xf86cfg, a new graphical configuration tool.
+   o xf86cfg, a new graphical configuration tool for XFree86 4.0, and can be
+     used to either write the initial configuration or make customizations to
+     the current configuration.  xf86cfg is a work in progress, and allows
+     configuration of:
+
+        o Specific setup of monitors, cards, keyboards and mice, as well as
+          adding or removing them.
+
+        o Server layout setup, allowing complex configuration of physical
+          monitor positions, default color depth and/or rotated monitors.
+
+        o Mode line editor that can be used to configure multiple monitors,
+          and allows adding a modeline specific to a monitor directly to the
+          configuration file.
+
+        o AccessX configuration interface, that provides an interface to easy
+          setup of most AccessX options, including:
+
+             o Timeout to reset controls.
+
+             o StickyKeys, for people with disabilities that cannot press two
+               keys at the same time.
+
+             o MouseKeys, mouse control only with the keyboard.
+
+             o RepeatKeys, repeat rate and repeat delay.
+
+             o SlowKeys, to avoid pressing keys accidentally, they're only
+               accepted if pressed for some specific amount of time.
+
+             o BounceKeys, helps avoiding multiple key presses by only
+               accepting a key if it is pressed only once and not pressed
+               again in a specific amount of time.
+
+           New configuration options are being worked on, as well as correct-
+     ing some of the bugs in the current options.  A protocol for plugging in
+     external modules is also planned.
 
 2.2  X libraries and clients.
 
@@ -357,7 +386,6 @@ page for more comprehensive information:
                    Identifier "MGA 1"
                    Driver     "mga"
                    BusID      "PCI:1:0:0"
-                   Option     "PCI Retry"
                EndSection
 
    o The Screen sections are mostly unchanged.  The old Driver keyword is no
@@ -544,19 +572,14 @@ Known problems:
      way.  This is an issue that needs to be dealt with in the individual
      window managers, and isn't specifically an XFree86 problem.
 
-3.7  XVideo extension
+3.7  DGA version 2
 
-The XVideo extension is included in this release, but nobody seems interested
-in writing up some information about it.
+DGA 2.0 is included in 4.0.1, but is not implemented by all drivers.  Prelim-
+inary documentation for the client libraries can be found in the README.DGA
+document.  A good degree of backwards compatibility with version 1.0 is pro-
+vided.
 
-3.8  DGA version 2
-
-DGA 2.0 is nearly completed but still not implemented by all drivers.  Pre-
-liminary documentation for the client libraries can be found in the xc/pro-
-grams/Xserver/hw/xfree86/DGA document.  Some degree of backwards compatibil-
-ity with version 1.0 is provided.  This information is out of date.
-
-3.9  DDC
+3.8  DDC
 
 The VESA(R) Display Data Channel (DDC[tm]) standard allows the monitor to
 tell the video card (or on some cases the computer directly) about itself;
@@ -578,7 +601,7 @@ to the and non-DDC default value 75 with the -dpi 75 command line option for
 the X server, or by specifying appropriate screen dimensions with the "Dis-
 playSize" keyword in the "Monitor" section of the config file.
 
-3.10  GLX and the Direct Rendering Infrastructure (DRI)
+3.9  GLX and the Direct Rendering Infrastructure (DRI)
 
 Precision Insight <URL:http://www.precisioninsight.com> has been provided
 with funding and support from Red Hat <URL:http://www.redhat.com>, SGI
@@ -599,7 +622,7 @@ of 2000.  Updated information on DRI compatible drivers can be found at the
 DRI Project <URL:http://dri.sourceforge.net> on SourceForge
 <URL:http://www.sourceforge.net>.
 
-3.11  X-Video Extension (Xv)
+3.10  X-Video Extension (Xv)
 
 An XvQueryPortAttributes function has been added as well as support for XvIm-
 ages.  XvImages are XImages in alternate color spaces such as YUV and can be
@@ -607,7 +630,7 @@ passed to the server through shared memory segments.  This allows clients to
 display YUV data with high quality hardware scaling and filtering.   XvImages
 are only supported by the Matrox G200/G400 cards at the moment.
 
-3.12  Other extensions
+3.11  Other extensions
 
 The XFree86-Misc extension has not been fully ported to the new server archi-
 tecture yet.  This should be completed in a future release.
@@ -620,7 +643,7 @@ The new xgamma utility makes use of this feature.  Compatibility with the
 3.3.x version of the extension is provided.  The missing parts of this exten-
 sion and some new features should be completed in a future release.
 
-3.13  Drivers
+3.12  Drivers
 
 XFree86 4.0.1 includes the following drivers:
 
@@ -663,7 +686,7 @@ but are not complete and/or stable yet.
 
 Drivers marked with (+) are for Linux/Sparc only.
 
-3.13.1  APM
+3.12.1  APM
 
 This is the driver for Alliance AT3D/AT25 and AT24 chips. There is a rather
 complete support for the functions with acceleration at 8,15,16,24 and 32
@@ -673,11 +696,11 @@ driver is almost ok. The Rush extension for glide2x works, with some addi-
 tions, including overlay of the result. DGA and DGA2 have been tested ok.
 Further information can be found in README.apm.
 
-3.13.2  Chips & Technologies
+3.12.2  Chips & Technologies
 
 Information about the C&T driver can be found in README.chips.
 
-3.13.3  s3virge
+3.12.3  s3virge
 
 The s3virge driver is a port of the 3.3.x SVGA S3 ViRGE driver.  As such it
 should be as stable and functional as previous XFree86 releases.  There are a
@@ -705,24 +728,17 @@ Outstanding items not implemented or fully tested:
 
 Further information can be found in README.s3virge.
 
-3.13.4  TGA
+3.12.4  TGA
 
 The TGA driver is now accelerated and supports both 8 and 32 plane frame-
 buffers.  It is known to work under Linux/Alpha.  Please see the
 README.DECtga file for further information.
 
-3.13.5  Matrox
+3.12.5  Matrox
 
 The MGA driver supports the same range or hardware as XFree86 3.3.4, but has
 a number of enhancements including multi-head support and support for (non-
 destructive) overlays (8-bit + 24-bit).
-
-Option "overlay" when the server is started in 32bpp (-fbbpp 32) will enable
-the 8+24 mode.  The current implementation doesn't optimize away unnecessary
-exposures yet so the performance of this option will be better in future
-release.  By default, the color key for the overlays is 255, but this can be
-changed with the "ColorKey" option to work around problems in specific pro-
-grams.  Valid values for the key are 2-255.
 
 This release contains performance enhancements for the G400 and particularly
 for the G400 MAX.  It also includes XvImage support for G200/G400 chips and
@@ -730,20 +746,21 @@ improved memory autodetection support.
 
 Further information can be found in the mga man page.
 
-3.13.6  ATI
+3.12.6  ATI
 
 Information about the ATI driver can be found in README.ati <URL:ati.html>.
-The current version is not accelerated.  Acceleration support is planned for
-a future release.
+The current version is not accelerated for all supported chips.  Some accel-
+eration is included for Mach64 chips.
 
-3.13.7  NVIDIA
+3.12.7  NVIDIA
 
-The "nv" driver supports all Riva TNT accelerators as well as the new GeForce
-and Quadro accelerators.  DGA 2.0 support is included.
+The "nv" driver supports all Riva TNT accelerators as well as the GeForce 256
+and Quadro accelerators (the GeForce2 and GeForce2 MX are not yet supported).
+DGA 2.0 support is included.
 
 Further information can be found in the nv man page.
 
-3.13.8  Glide
+3.12.8  Glide
 
 This driver is for Voodoo 1 and Voodoo 2 boards. It runs X on top of the 3DFX
 Glide API (where this is available, like for Linux). You need to have Glide
@@ -764,7 +781,7 @@ man page.
 For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx driver
 which talks directly to the hardware and is much faster.
 
-3.13.9  GLINT
+3.12.9  GLINT
 
 The "glint" driver supports most 3Dlabs/Texas Instruments GLINT/Permedia
 chips. There is a rather complete support (better than in 3.3.x) for acceler-
@@ -1166,7 +1183,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.41 2000/07/02 02:35:27 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.42 2000/07/03 16:27:10 dawes Exp $
 
 
 $XFree86$
