@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.78 2004/06/29 10:17:45 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.79 2004/10/23 15:29:29 dawes Exp $ */
 /* $XdotOrg$ */
 /*
  * Mode initializing code (CRT2 section)
@@ -86,6 +86,11 @@
 #define SiS_I2CDELAYSHORT  150
 
 static USHORT SiS_GetBIOSLCDResInfo(SiS_Private *SiS_Pr);
+#ifdef SIS300
+static void SetOEMLCDData2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
+			   USHORT ModeNo, USHORT ModeIdIndex,
+			   USHORT RefTabIndex);
+#endif
 
 /*********************************************/
 /*         HELPER: Lock/Unlock CRT2          */
@@ -11582,7 +11587,7 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 
 #ifdef SIS300
 
-void
+static void
 SetOEMLCDData2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
                USHORT ModeNo,USHORT ModeIdIndex, USHORT RefTabIndex)
 {
