@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.76 2000/11/14 21:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.77 2001/02/22 16:21:30 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -464,11 +464,21 @@ extern int errno;
 #   endif
 #   ifdef SYSCONS_SUPPORT
 #    define COMPAT_SYSCONS
-#    if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#    if defined(__NetBSD__) || defined(__OpenBSD__)
 #     include <machine/console.h>
 #    else
-#     include <sys/console.h>
-#    endif /* __FreeBSD__ || __NetBSD__ || defined(__OpenBSD__) */
+#     if defined(__FreeBSD__)
+#        include <osreldate.h>
+#        if __FreeBSD_version >= 410000
+#          include <sys/consio.h>
+#          include <sys/kbio.h>
+#        else
+#          include <machine/console.h>
+#        endif /* FreeBSD 4.1 RELEASE or lator */
+#     else
+#      include <sys/console.h>
+#     endif
+#    endif
 #   endif /* SYSCONS_SUPPORT */
 #   if defined(PCVT_SUPPORT)
 #    if !defined(SYSCONS_SUPPORT)
@@ -499,8 +509,13 @@ extern int errno;
 #    include <dev/wscons/wsconsio.h>
 #   endif /* WSCONS_SUPPORT */
 #   if defined(__FreeBSD__)
-#    undef MOUSE_GETINFO
-#    include <machine/mouse.h>
+#    include <osreldate.h>
+#    if __FreeBSD_version >= 500013
+#     include <sys/mouse.h>
+#    else
+#     undef MOUSE_GETINFO
+#     include <machine/mouse.h>
+#    endif
 #   endif
     /* Include these definitions in case ioctl_pc.h didn't get included */
 #   ifndef CONSOLE_X_MODE_ON

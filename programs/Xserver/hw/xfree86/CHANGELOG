@@ -1,4 +1,10 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 231. Support for ThreadedX on FreeBSD (FreeBSD ports patch-xthread).
+ 230. Updates for console-related FreeBSD system header changes as of 4.1-REL
+      (FreeBSD ports patch-r, patch-s).
+ 229. Don't leave free'd vrotate uninitialised in lib/X11/omGeneric.c
+      (FreeBSD ports patch-q).
+ 228. Protect #define HasPam in FreeBSD.cf (FreeBSD ports patch-d).
  227. Fix border garbage for the G400 second head by backing out #4205
       (David Dawes).
  227. Fix a typo in fonts/util/Imakefile (#4499, Juliusz Chroboczek).
@@ -12635,4 +12641,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1600 2001/03/02 02:45:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1601 2001/03/02 19:38:58 dawes Exp $
