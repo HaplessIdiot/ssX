@@ -1,4 +1,9 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 519. Update SiS driver:
+      - Merge 661/741/760 support
+      - Clean up
+      - Fix Xv problems after swsuspend
+      - Fix LCD-via-CRT1 on various machines
  518. Prevent some compilers from optimising out Mesa's X11 error interface
       (Marc La France).
  517. Add rules to generate post-processed and assembler source from C++ files
@@ -18017,7 +18022,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2897 2003/10/21 17:41:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2898 2003/10/21 21:15:03 tsi Exp $
 
 
 
