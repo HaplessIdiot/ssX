@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.112 1998/04/26 16:05:06 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.113 1998/06/04 16:43:36 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -1268,7 +1268,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 	break;
     case 16:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInit16(pScreen,
+	if (!xf86XAAScreenInit16bpp(pScreen,
 		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
 							vgaVirtBase),
 		     vga256InfoRec.virtualX,
@@ -1279,7 +1279,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 	break;
     case 24:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInit24(pScreen,
+	if (!xf86XAAScreenInit24bpp(pScreen,
 		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
 							vgaVirtBase),
 		     vga256InfoRec.virtualX,
@@ -1290,7 +1290,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 	break;
     case 32:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInit32(pScreen,
+	if (!xf86XAAScreenInit32bpp(pScreen,
 		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
 							vgaVirtBase),
 		     vga256InfoRec.virtualX,
