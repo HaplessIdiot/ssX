@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.9 2000/12/02 15:30:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.10 2001/01/06 21:29:14 tsi Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -43,7 +43,7 @@
 #include "mipointer.h"
 #include "micmap.h"
 #include "mibstore.h"
-
+#include "fb.h"
 #include "ark.h"
 
 
@@ -73,7 +73,7 @@ static void ARKLoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void ARKWriteMode(ScrnInfoPtr pScrn, vgaRegPtr pVga, ARKRegPtr new);
 
 /* helpers */
-static unsigned char get_daccomm();
+static unsigned char get_daccomm(void);
 static unsigned char set_daccom(unsigned char comm);
 
 
@@ -262,11 +262,8 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	EntityInfoPtr pEnt;
 	ARKPtr pARK;
 	vgaHWPtr hwp;
-	MessageType from = X_DEFAULT;
 	int i;
 	ClockRangePtr clockRanges;
-	char *mod = NULL;
-	const char *reqSym = NULL;
 	rgb zeros = {0, 0, 0};
 	Gamma gzeros = {0.0, 0.0, 0.0};
 	unsigned char tmp;
@@ -414,10 +411,11 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 				pScrn->videoRam = 2048;
 			else
 				pScrn->videoRam = 4096;
-	}
+		}
 
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected %d bytes video ram\n",
-			pScrn->videoRam);
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected %d bytes video ram\n",
+			   pScrn->videoRam);
+	}
 
 	/* try to detect the RAMDAC */
 	{
@@ -491,15 +489,12 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 
 	return TRUE;
 }
-}
 
 static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 			  char **argv)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	ARKPtr pARK = ARKPTR(pScrn);
-	BoxRec MemBox;
-	int i;
 
 	pScrn->fbOffset = 0;
 
@@ -530,10 +525,14 @@ static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 			return FALSE;
 	}
 
+	miSetPixmapDepths ();
+
 	if (!fbScreenInit(pScreen, pARK->FBBase, pScrn->virtualX,
 			  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 			  pScrn->displayWidth, pScrn->bitsPerPixel))
 		return FALSE;
+
+	fbPictureInit (pScreen, 0, 0);
 
 	xf86SetBlackWhitePixels(pScreen);
 
@@ -1131,7 +1130,7 @@ static void ARKFreeScreen(int scrnIndex, int flags)
 }
 
 
-static unsigned char get_daccomm()
+static unsigned char get_daccomm(void)
 {
 	unsigned char tmp;
 

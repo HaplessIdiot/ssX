@@ -187,7 +187,6 @@ Bool ARKAccelInit(ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	ARKPtr pARK = ARKPTR(pScrn);
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	XAAInfoRecPtr pXAA;
 
 	if (!(pXAA = XAACreateInfoRec()))
