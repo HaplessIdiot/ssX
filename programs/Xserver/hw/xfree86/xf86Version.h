@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.591 2004/12/27 12:02:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.592 2005/01/07 18:27:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -55,7 +55,7 @@
 #define XF86_VERSION_SNAP	20
 
 /* This has five arguments for compatibilty reasons */
-#define XF86_VERSION_NUMERIC(major,minor,patch,snap,dummy) \
+#define XF86_VERSION_NUMERIC(major, minor, patch, snap, dummy) \
 	(((major) * 10000000) + ((minor) * 100000) + ((patch) * 1000) + snap)
 
 #define XF86_GET_MAJOR_VERSION(vers)	((vers) / 10000000)
@@ -79,4 +79,3 @@
 
 #endif
 
-/* $XConsortium: xf86Version.h /main/78 1996/10/28 05:42:10 kaleb $ */
