@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.39 2001/07/19 02:22:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.40 2001/08/01 00:44:53 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1649,7 +1649,7 @@ ATIMach64SubsequentColorExpandScanline
  * This function fills in structure fields needed for acceleration on Mach64
  * variants.
  */
-unsigned int
+int
 ATIMach64AccelInit
 (
     ATIPtr        pATI,

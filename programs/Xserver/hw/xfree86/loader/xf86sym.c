@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.196 2001/08/15 16:25:22 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.197 2001/08/15 19:08:55 herrb Exp $ */
 
 /*
  *
@@ -494,6 +494,7 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86fbman.c */
    SYMFUNC(xf86InitFBManager)
+   SYMFUNC(xf86InitFBManagerArea)
    SYMFUNC(xf86InitFBManagerRegion)
    SYMFUNC(xf86RegisterFreeBoxCallback)
    SYMFUNC(xf86FreeOffscreenArea)
