@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.13 2003/05/29 14:53:29 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.14 2003/06/08 15:41:14 herrb Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -26,25 +26,27 @@ INCLUDES = -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
            -I$(FT2SOURCEDIR)/pcf \
            -I$(INCLUDESRC)
 
-FT2SRCS = ftbase.c ftinit.c ftglyph.c ftsystem.c fttype1.c ftxf86.c \
+FT2SRCS = ftbase.c ftinit.c ftglyph.c ftbbox.c ftsystem.c fttype1.c ftxf86.c \
           ftgzip.c raster.c sfnt.c truetype.c cff.c type1.c \
           psaux.c psnames.c pshinter.c  autohint.c \
           ftbdf.c bdf.c pcf.c
-FT2OBJS = ftbase.o ftinit.o ftglyph.o ftsystem.o fttype1.o ftxf86.o \
+FT2OBJS = ftbase.o ftinit.o ftglyph.o ftbbox.o ftsystem.o fttype1.o ftxf86.o \
           ftgzip.o raster.o sfnt.o truetype.o cff.o type1.o \
           psaux.o psnames.o pshinter.o autohint.o \
           ftbdf.o bdf.o pcf.o
 
-SRCS = ftfuncs.c ftenc.c fttools.c $(FT2SRCS) ftmodule.c
-OBJS = ftfuncs.o ftenc.o fttools.o $(FT2OBJS) ftmodule.o
+SRCS = xttcap.c ftfuncs.c ftenc.c fttools.c $(FT2SRCS) ftmodule.c
+OBJS = xttcap.o ftfuncs.o ftenc.o fttools.o $(FT2OBJS) ftmodule.o
 
 LinkSourceFile(ftenc.c,..)
 LinkSourceFile(ftfuncs.c,..)
 LinkSourceFile(fttools.c,..)
+LinkSourceFile(xttcap.c,..)
 
 LinkSourceFile(ftbase.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftinit.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftglyph.c,$(FT2SOURCEDIR)/base)
+LinkSourceFile(ftbbox.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftsystem.c,..)
 LinkSourceFile(ftutil.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(fttype1.c,$(FT2SOURCEDIR)/base)
