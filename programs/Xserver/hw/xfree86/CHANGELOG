@@ -1,4 +1,7 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 658. Fix atimisc panel support bug that occurs when the mode on server entry
+      is a VGA mode with large horizontal and/or vertical blanking pulses
+      (Marc La France).
  657. Fix small documentation error in config/imake/imakemdep.h (#A.1052,
       Linus Almstrom).
  656. Small change to find_mesa_visual() in xf86glx.c to avoid
@@ -15842,4 +15845,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2451 2002/12/16 22:48:27 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2452 2002/12/17 05:09:21 dawes Exp $

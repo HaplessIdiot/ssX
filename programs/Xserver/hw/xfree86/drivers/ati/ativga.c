@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.16 2002/02/14 22:08:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.17tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -202,10 +202,24 @@ ATIVGACalculate
         Index = pMode->CrtcHBlankEnd - pMode->CrtcHBlankStart - 0x3F;
         if (Index > 0)
         {
-            pMode->CrtcHBlankStart += Index / 2;
-            if (pMode->CrtcHBlankStart >= pMode->CrtcHSyncStart)
-                pMode->CrtcHBlankStart = pMode->CrtcHSyncStart - 1;
-            pMode->CrtcHBlankEnd = pMode->CrtcHBlankStart + 0x3F;
+            if ((pMode->CrtcHBlankEnd - Index) > pMode->CrtcHSyncEnd)
+            {
+                pMode->CrtcHBlankStart += Index / 2;
+                if (pMode->CrtcHBlankStart >= pMode->CrtcHSyncStart)
+                    pMode->CrtcHBlankStart = pMode->CrtcHSyncStart - 1;
+                pMode->CrtcHBlankEnd = pMode->CrtcHBlankStart + 0x3F;
+            }
+            else
+            {
+                Index -= 0x40;
+                if (Index > 0)
+                {
+                    pMode->CrtcHBlankStart += Index / 2;
+                    if (pMode->CrtcHBlankStart >= pMode->CrtcHSyncStart)
+                        pMode->CrtcHBlankStart = pMode->CrtcHSyncStart - 1;
+                    pMode->CrtcHBlankEnd = pMode->CrtcHBlankStart + 0x7F;
+                }
+            }
         }
     }
 
@@ -326,13 +340,27 @@ ATIVGACalculate
     }
 
     /* Check blank pulse width */
-    Index = pMode->CrtcVBlankEnd - pMode->CrtcVBlankStart - 0x0FF;
+    Index = pMode->CrtcVBlankEnd - pMode->CrtcVBlankStart - 0x00FF;
     if (Index > 0)
     {
-        pMode->CrtcVBlankStart += Index / 2;
-        if (pMode->CrtcVBlankStart >= pMode->CrtcVSyncStart)
-            pMode->CrtcVBlankStart = pMode->CrtcVSyncStart - 1;
-        pMode->CrtcVBlankEnd = pMode->CrtcVBlankStart + 0x0FF;
+        if ((pMode->CrtcVBlankEnd - Index) > pMode->CrtcVSyncEnd)
+        {
+            pMode->CrtcVBlankStart += Index / 2;
+            if (pMode->CrtcVBlankStart >= pMode->CrtcVSyncStart)
+                pMode->CrtcVBlankStart = pMode->CrtcVSyncStart - 1;
+            pMode->CrtcVBlankEnd = pMode->CrtcVBlankStart + 0x00FF;
+        }
+        else
+        {
+            Index -= 0x0100;
+            if (Index > 0)
+            {
+                pMode->CrtcVBlankStart += Index / 2;
+                if (pMode->CrtcVBlankStart >= pMode->CrtcVSyncStart)
+                    pMode->CrtcVBlankStart = pMode->CrtcVSyncStart - 1;
+                pMode->CrtcVBlankEnd = pMode->CrtcVBlankStart + 0x01FF;
+            }
+        }
     }
 
     /* Set up sequencer register values */
