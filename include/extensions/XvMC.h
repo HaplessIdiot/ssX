@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/XvMC.h,v 1.3 2001/04/01 13:59:59 tsi Exp $ */
 
 #ifndef _XVMC_H_
 #define _XVMC_H_
@@ -113,5 +113,32 @@ typedef struct {
   char component_order[4];
   void *privData;    /* private to the library */
 } XvMCSubpicture;
+
+typedef struct {
+  unsigned int num_blocks;
+  XID context_id;
+  void *privData;
+  short *blocks;
+} XvMCBlockArray;
+
+typedef struct {
+  unsigned short x,y;
+  unsigned char macroblock_type;
+  unsigned char motion_type;
+  unsigned char motion_vertical_field_select;
+  unsigned char quantizer_scale;
+  short PMV[2][2][2];
+  unsigned int index;
+  unsigned short coded_block_pattern;
+  unsigned char dct_type;
+  unsigned char pad0;
+} XvMCMacroBlock;
+
+typedef struct {
+  unsigned int num_blocks;
+  XID context_id;
+  void *privData;
+  XvMCMacroBlock *macro_blocks;
+} XvMCMacroBlockArray;
 
 #endif
