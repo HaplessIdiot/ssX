@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.14 1998/01/24 16:57:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/olddrivers/cirrus/cir_driver.c,v 1.1 1998/08/29 05:43:47 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Bill Reynolds, bill@goshawk.lanl.gov
- * Modifications: David Dawes, <dawes@physics.su.oz.au>
+ * Modifications: David Dawes, <dawes@xfree86.org>
  * Modifications: Piercarlo Grandi, Aberystwyth (pcg@aber.ac.uk)
  * Modifications: Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  * Modifications: Wolfgang Jung, <wong@cs.tu-berlin.de>
