@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx September 2000)
+ 736. Add primitive support in xterm for Xft based fonts (Keith Packard)
+ 735. Add new Xft library to hook FreeType 2 to Render (Keith Packard)
  734. Added support for Number Nine I128 chipsets (Robin Cutshaw).
  733. Added support for softbooting BIOSes on ia64 (Egbert Eich).
  732. Fixed handling of XtMakeGeometryRequest() to test for parent
@@ -11202,7 +11204,7 @@ XFree86 3.0 (26 April 1994)
 
 
 <<<<<<< CHANGELOG
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1328 2000/09/29 08:59:43 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1329 2000/10/05 02:13:02 robin Exp $
 =======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1328 2000/09/29 08:59:43 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1329 2000/10/05 02:13:02 robin Exp $
 >>>>>>> 3.1327
