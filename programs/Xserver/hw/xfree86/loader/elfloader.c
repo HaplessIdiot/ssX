@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.38 2001/11/16 16:47:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.39 2002/01/12 19:25:26 alanh Exp $ */
 
 /*
  *
@@ -2044,6 +2044,58 @@ int		force;
 	    break;
 
 #endif
+
+#if defined(__arm__)
+	case R_ARM_ABS32:
+	    dest32=(unsigned int *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_ARM_ABS32\t");
+	    ELFDEBUG( "dest32=%x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8lx\t", *dest32 );
+#endif
+	    *dest32=symval+(*dest32); /* S + A */
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8lx\n", *dest32 );
+#endif
+	    break;
+
+	case R_ARM_REL32:
+	    dest32=(unsigned int *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    {
+	    char *namestr;
+	    ELFDEBUG( "R_ARM_REL32 %s\t",
+			namestr=ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+	    xf86loaderfree(namestr);
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%lx\t", symval );
+	    ELFDEBUG( "dest32=%x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8lx\t", *dest32 );
+	    }
+#endif
+
+	    *dest32=symval+(*dest32)-(Elf_Addr)dest32; /* S + A - P */
+
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8lx\n", *dest32 );
+#endif
+
+	    break;
+
+	case R_ARM_PC24:	
+	    {
+	    unsigned long val;
+            dest32=(unsigned int *)(secp+rel->r_offset);
+	    val = (*dest32 & 0x00ffffff) << 2;
+            val = symval - (unsigned long)dest32 + val;	
+            val >>= 2;
+	    *dest32 = (*dest32 & 0xff000000) | (val & 0x00ffffff); 
+	    arm_flush_cache(dest32);
+	    }
+	    break;
+
+#endif /* (__arm__) */
+
 	default:
 	    ErrorF("Elf_RelocateEntry() Unsupported relocation type %d\n",
 		   ELF_R_TYPE(rel->r_info));
@@ -2416,7 +2468,7 @@ int		*maxalign;
 #endif
 		continue;
 		}
-#if defined(i386) || defined(__alpha__) || defined(__ia64__)
+#if defined(i386) || defined(__alpha__) || defined(__ia64__) || defined(__arm__)
 	/* .rel.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".rel.text" ) == 0 ) {
