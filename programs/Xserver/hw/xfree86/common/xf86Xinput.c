@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.58 2000/06/24 17:04:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.59 2000/06/28 07:51:47 keithp Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -908,7 +908,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     int				dx, dy;
     float			mult;
 #ifdef XFreeXDGA
-    int				xdelta = 0, ydelta = 0;
+    int				rawx = 0, rawy = 0;
 #endif
     
     DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) switch=0x%x is_core=%s is_shared=%s is_absolute=%s\n",
@@ -952,6 +952,18 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 
 	    DBG(5, ErrorF("xf86PostMotionEvent v0=%d v1=%d\n", xv->valuator0, xv->valuator1));
 	    
+#ifdef XFreeXDGA
+	    /*
+	     * DGA wants raw dx/dy (or at least, I think it does -keithp)
+	     */
+	    rawx = xv->valuator0;
+	    rawy = xv->valuator1;
+	    if (is_absolute)
+	    {
+		rawx -= local->old_x;
+		rawy -= local->old_y;
+	    }
+#endif
 	    if (loop == 1 && !is_absolute && device->ptrfeed && device->ptrfeed->ctrl.num) {
 		/* modeled from xf86Events.c */
 		if (device->ptrfeed->ctrl.threshold) {
@@ -1006,15 +1018,6 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		    DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
 		}
             }
-#ifdef XFreeXDGA
-            /* We need to save this for DGA so we can undo it 
-               to get relative motion again */
-            if(!is_absolute) {
-		xdelta = axisvals[loop+first_valuator-1];
-		ydelta = axisvals[loop+first_valuator];
-	    } else 
-		xdelta = ydelta = 0;
-#endif
 	    RELATIVE_CHECK(xv->valuator0, loop+first_valuator-1);
 	    RELATIVE_CHECK(xv->valuator1, loop+first_valuator);
 	    break;
@@ -1092,7 +1095,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 
 #ifdef XFreeXDGA
 		xev->type = MotionNotify;
-		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x - xdelta, y - ydelta )) {
+		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, rawx, rawy )) {
 #endif
 		    miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
 

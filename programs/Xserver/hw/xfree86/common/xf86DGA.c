@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.35 2000/06/19 15:00:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.36 2000/06/24 18:59:20 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -74,6 +74,8 @@ typedef struct {
    FakedVisualList	*fakedVisuals;
    ColormapPtr 		dgaColormap;
    ColormapPtr		savedColormap;
+   Bool			grabMouse;
+   Bool			grabKeyboard;
 } DGAScreenRec, *DGAScreenPtr;
 
 
@@ -106,13 +108,16 @@ DGAInit(
     pScreenPriv->pScrn = pScrn;
     pScreenPriv->numModes = num;
     pScreenPriv->modes = modes;
-    pScreenPriv->current = NULL;
+    pScreenPriv->current = NULL;    
+    
     pScreenPriv->funcs = funcs;
     pScreenPriv->input = 0;
     pScreenPriv->client = NULL;
     pScreenPriv->fakedVisuals = NULL;
     pScreenPriv->dgaColormap = NULL;
     pScreenPriv->savedColormap = NULL;
+    pScreenPriv->grabMouse = FALSE;
+    pScreenPriv->grabKeyboard = FALSE;
     
     for(i = 0; i < num; i++)
 	modes[i].num = i + 1;
@@ -270,6 +275,10 @@ DGASetDGAMode(
 
 	    FreeMarkedVisuals(pScreen);
 	}
+      
+        pScreenPriv->grabMouse = FALSE;
+        pScreenPriv->grabKeyboard = FALSE;
+
 	return Success;
    }
 
@@ -332,13 +341,28 @@ DGASetDGAMode(
    devRet->pPix = device->pPix = pPix;
    pScreenPriv->current = device;
    pScreenPriv->pixmapMode = FALSE;
-
+   pScreenPriv->grabMouse = TRUE;
+   pScreenPriv->grabKeyboard = TRUE;
+   
    return Success;
 }
 
 
+
 /*********** exported ones ***************/
 
+void
+DGASetInputMode(int index, Bool keyboard, Bool mouse)
+{
+   ScreenPtr pScreen = screenInfo.screens[index];
+   DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+
+   if (pScreenPriv)
+   {
+      pScreenPriv->grabMouse = mouse;
+      pScreenPriv->grabKeyboard = keyboard;
+   }
+}
 
 Bool
 DGAChangePixmapMode(int index, int *x, int *y, int mode)
@@ -805,7 +829,7 @@ DGAStealKeyEvent(int index, xEvent *e)
 
    pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
 
-   if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
+   if(!pScreenPriv || !pScreenPriv->grabKeyboard) /* no direct mode */
 	return FALSE;
 
     de.u.u.type = e->u.u.type + *XDGAEventBase;
@@ -828,7 +852,7 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 
    pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
 
-   if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
+   if(!pScreenPriv || !pScreenPriv->grabMouse) /* no direct mode */
 	return FALSE;
     
     DGAMouseX += dx;
@@ -1035,10 +1059,10 @@ DGAProcessPointerEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr mouse)
 	    core.u.u.type		    = coreEquiv;
 	    core.u.u.detail		    = de->u.u.detail;
 	    core.u.keyButtonPointer.time    = de->u.event.time;
-	    core.u.keyButtonPointer.eventX  = de->u.event.pad1;
-	    core.u.keyButtonPointer.eventY  = de->u.event.pad2;
-	    core.u.keyButtonPointer.rootX   = de->u.event.pad1;
-	    core.u.keyButtonPointer.rootY   = de->u.event.pad2;
+	    core.u.keyButtonPointer.eventX  = de->u.event.dx;
+	    core.u.keyButtonPointer.eventY  = de->u.event.dy;
+	    core.u.keyButtonPointer.rootX   = de->u.event.dx;
+	    core.u.keyButtonPointer.rootY   = de->u.event.dy;
 	    core.u.keyButtonPointer.state   = de->u.event.state;
 	    DeliverGrabbedEvent (&core, mouse, FALSE, 1);
 	}

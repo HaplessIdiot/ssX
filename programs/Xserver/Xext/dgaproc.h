@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.19 1999/10/13 22:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.20 2000/06/19 15:00:46 tsi Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -64,6 +64,13 @@ DGASetMode(
    int num,
    XDGAModePtr mode,
    PixmapPtr *pPix
+);
+
+void
+DGASetInputMode(
+   int Index,
+   Bool keyboard,
+   Bool mouse
 );
 
 void 

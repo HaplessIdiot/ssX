@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.13 1999/08/22 05:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.15 2000/06/08 17:02:40 mvojkovi Exp $ */
 
 
 #define NEED_REPLIES
@@ -669,6 +669,42 @@ SProcXDGADispatch (ClientPtr client)
    return DGAErrorBase + XF86DGAClientNotLocal;
 }
 
+#if 0
+#define DGA_REQ_DEBUG
+#endif
+
+#ifdef DGA_REQ_DEBUG
+static char *dgaMinor[] = {
+    "QueryVersion",
+    "GetVideoLL",
+    "DirectVideo",
+    "GetViewPortSize",
+    "SetViewPort",
+    "GetVidPage",
+    "SetVidPage",
+    "InstallColormap",
+    "QueryDirectVideo",
+    "ViewPortChanged",
+    "10",
+    "11",
+    "QueryModes",
+    "SetMode",
+    "SetViewport",
+    "InstallColormap",
+    "SelectInput",
+    "FillRectangle",
+    "CopyArea",
+    "CopyTransparentArea",
+    "GetViewportStatus",
+    "Sync",
+    "OpenFramebuffer",
+    "CloseFramebuffer",
+    "SetClientVersion",
+    "ChangePixmapMode",
+    "CreateColormap",
+};
+#endif
+
 static int
 ProcXDGADispatch (ClientPtr client)
 {
@@ -677,6 +713,11 @@ ProcXDGADispatch (ClientPtr client)
     if (!LocalClient(client))
 	return DGAErrorBase + XF86DGAClientNotLocal;
 
+#ifdef DGA_REQ_DEBUG
+    if (stuff->data <= X_XDGACreateColormap)
+	fprintf (stderr, "    DGA %s\n", dgaMinor[stuff->data]);
+#endif
+    
     /* divert old protocol */
 #if 1
     if( (stuff->data <= X_XF86DGAViewPortChanged) && 

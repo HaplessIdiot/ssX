@@ -100,6 +100,10 @@ ProcXF86DGADirectVideo(ClientPtr client)
     if(Success != DGASetMode(stuff->screen, num, &mode, &pix))
 	return (DGAErrorBase + XF86DGAScreenNotActive);
 
+    DGASetInputMode (stuff->screen, 
+		     (stuff->enable & XF86DGADirectKeyb) != 0,
+		     (stuff->enable & XF86DGADirectMouse) != 0);
+
     return (client->noClientException);
 }
 
