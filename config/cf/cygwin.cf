@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.43 2002/07/06 09:59:15 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.44 2002/07/14 17:08:15 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -201,11 +201,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.43 2002/07/06 09:59:15 ala
 #define XFree86Devel		NO
 
 /*
- * Turn off building of Xft1 (old library) - overwrites Xft (v2)
- */
-#define BuildXft1Library	NO
-
-/*
  * Xinerama is multiple monitor support and will require special code,
  * if it even makes sense to enable such a beast in Cygwin/XFree86.
  */
@@ -240,7 +235,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.43 2002/07/06 09:59:15 ala
 
 #define BuildGlxExt             YES
 #define BuildXInputExt		YES
-#define BuildXF86VidModeExt     YES
+#define BuildXF86VidModeExt     NO
 #define BuildXF86DGA		NO	/* No direct access to hardware */
 #define BuildXvExt		YES
 #define BuildXF86MiscExt	NO

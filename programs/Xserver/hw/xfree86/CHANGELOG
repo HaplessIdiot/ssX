@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 358. Enable version controlled .dll's on Cygwin/XFree86 (Alexander Gottwald).
+ 357. Some build fixes for Cygwin/XFree86 (Alan Hourihane).
  356. Add new FreeType2 backend which fixes a bug with -c- fonts
       (#5347, #5348, Juliusz Chroboczek).
  355. Add new command line options to glxinfo for more detailed output
@@ -15230,4 +15232,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2318 2002/09/30 22:48:45 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2320 2002/10/01 00:02:06 alanh Exp $
