@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  *
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.8 1998/10/04 09:37:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.9 1998/11/22 10:37:02 dawes Exp $
  * Jeff Anton'x fixes: cfb8line.c   97/02/07
  */
 
@@ -893,7 +893,11 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 		if (x1_or_len)
 		  {
 		    maskpartialbits(y1_or_e1, x1_or_len, e)
+#ifdef __sparc__
+		      RROP_SOLID_MASK_lu((unsigned long *) addrp, e);
+#else
 		      RROP_SOLID_MASK((unsigned long *) addrp, e);
+#endif
 		  }
 	      }
 	    else
@@ -904,13 +908,13 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 		    RROP_SOLID_MASK((unsigned long *) addrp, e);
 		    addrp += PPW;
 	    	}
-#if 0
+#ifdef __sparc__
 		RROP_SPAN_lu(addrp, x1_or_len)
 #else
 		RROP_SPAN(addrp, x1_or_len)
 #endif
 	    	if (e3)
-#if 0
+#ifdef __sparc__
 		    RROP_SOLID_MASK_lu((unsigned long *) addrp, e3);
 #else
 		    RROP_SOLID_MASK((unsigned long *) addrp, e3);

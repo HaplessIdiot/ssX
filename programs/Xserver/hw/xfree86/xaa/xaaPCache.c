@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.15 1999/03/07 11:40:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.16 1999/03/20 08:59:32 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -2230,9 +2230,6 @@ XAATiledFillChooser(GCPtr pGC)
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     PixmapPtr pPixmap = pGC->tile.pixmap;
     XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pPixmap);
-
-    if(pPixmap->drawable.bitsPerPixel != infoRec->pScrn->bitsPerPixel)
-	return 0;
 
     if(IS_OFFSCREEN_PIXMAP(pPixmap) && infoRec->FillCacheBltSpans &&
 	CHECK_ROP(pGC,infoRec->FillCacheBltSpansFlags) &&

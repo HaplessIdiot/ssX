@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.62 1999/02/01 11:56:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.63 1999/02/28 11:19:44 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -154,7 +154,7 @@ unsigned inb(unsigned port);
 
 #if defined(__GNUC__)
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)
 #if defined(GCCUSESGAS)
 #define OUTB_GCC "outb %0,%1"
 #define OUTL_GCC "outl %0,%1"
@@ -176,7 +176,7 @@ static unsigned char inb(unsigned short port) { unsigned char ret;
 static unsigned long inl(unsigned short port) { unsigned long ret;
      __asm__ __volatile__(INL_GCC : "=a" (ret) : "d" (port)); return ret; }
 
-#endif /* !defined(__alpha__) && !defined(__powerpc__) */
+#endif /* !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__) */
 #else  /* __GNUC__ */
 
 #if defined(__STDC__) && (__STDC__ == 1)
@@ -257,9 +257,15 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 #endif /* __WATCOMC__ */
 
 
-#if defined(__alpha__)
+#if defined(__alpha__) || defined(__sparc__)
 #if defined(linux)
 #include <asm/unistd.h>
+#if defined(__sparc__)
+#if !defined(__NR_pciconfig_read)
+#define __NR_pciconfig_read  148
+#define __NR_pciconfig_write 149
+#endif
+#endif
 #define BUS(tag) (((tag)>>16)&0xff)
 #define DFN(tag) (((tag)>>8)&0xff)
 int pciconfig_read(
@@ -281,9 +287,9 @@ int pciconfig_write(
   return syscall(__NR_pciconfig_write, bus, dfn, off, len, buf);
 }
 #else
-Generate compiler error - scanpci unsupported on non-linux alpha platforms
+Generate compiler error - scanpci unsupported on non-linux alpha and sparc platforms
 #endif /* linux */
-#endif /* __alpha__ */
+#endif /* __alpha__ || __sparc__ */
 #if defined(Lynx) && defined(__powerpc__)
 /* let's mimick the Linux Alpha stuff for LynxOS so we don't have
  * to change too much code
@@ -350,7 +356,7 @@ int pciconfig_write(
 }
 #endif
 
-#if !defined(__powerpc__)
+#if !defined(__powerpc__) && !defined(__sparc__)
 struct pci_config_reg {
     /* start of official PCI config space header */
     union {
@@ -495,7 +501,7 @@ struct pci_config_reg {
     unsigned long _cardnum;       /* config type 2 - private card number */
 };
 #else
-/* ppc is big endian, swapping bytes is not quite enough
+/* ppc and sparc are big endian, swapping bytes is not quite enough
  * to interpret the PCI config registers...
  */
 struct pci_config_reg {
@@ -660,7 +666,7 @@ extern void disable_os_io();
 #define MAX_PCI_DEVICES         64
 #define NF ((void (*)())NULL)
 #define PCI_MULTIFUNC_DEV	0x80
-#if defined(__alpha__) || defined(__powerpc__)
+#if defined(__alpha__) || defined(__powerpc__) || defined(__sparc__)
 #define PCI_ID_REG              0x00
 #define PCI_CMD_STAT_REG        0x04
 #define PCI_CLASS_REG           0x08
@@ -954,7 +960,9 @@ struct pci_vendor_device {
         { 0x108E, "Sun", {
                             { 0x1000, "EBUS", NF },
                             { 0x1001, "Happy Meal", NF },
+                            { 0x5000, "Simba Bus Module", NF },
                             { 0x8000, "PCI Bus Module", NF },
+                            { 0xa000, "Sabre Bus Module", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1095, "CMD", {
                             { 0x0640, "640A", NF },
@@ -1207,7 +1215,7 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } }
 };
 
-#if defined(__alpha__)
+#if defined(__alpha__) || defined(__sparc__)
 #define PCI_EN 0x00000000
 #else
 #define PCI_EN 0x80000000
@@ -1262,7 +1270,7 @@ main(int argc, unsigned char *argv[])
 
     enable_os_io();
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)
     pcr._configtype = 0;
 
     outb(PCI_MODE2_ENABLE_REG, 0x00);
@@ -1309,14 +1317,14 @@ main(int argc, unsigned char *argv[])
 		pcr._cardnum += 0x1) {
 	  func = 0;
 	  do { /* loop over the different functions, if present */
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)
 	    config_cmd = PCI_EN | (pcr._pcibuses[pcr._pcibusidx]<<16) |
                                   (pcr._cardnum<<11) | (func<<8);
 
             outl(PCI_MODE1_ADDRESS_REG, config_cmd);         /* ioreg 0 */
             pcr._device_vendor = inl(PCI_MODE1_DATA_REG);
 #else
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 		PCI_ID_REG, 4, &pcr._device_vendor);
 #endif
 
@@ -1327,7 +1335,7 @@ main(int argc, unsigned char *argv[])
 	        pcr._pcibuses[pcr._pcibusidx], pcr._cardnum, func,
 		pcr._vendor, pcr._device);
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x04);
 	    pcr._status_command  = inl(PCI_MODE1_DATA_REG);
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x08);
@@ -1355,31 +1363,31 @@ main(int argc, unsigned char *argv[])
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x40);
 	    pcr._user_config = inl(PCI_MODE1_DATA_REG);
 #else
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_CMD_STAT_REG, 4, &pcr._status_command);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_CLASS_REG, 4, &pcr._class_revision);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_HEADER_MISC, 4, &pcr._bist_header_latency_cache);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START, 4, &pcr._base0);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START + 0x04, 4, &pcr._base1);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START + 0x08, 4, &pcr._base2);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START + 0x0C, 4, &pcr._base3);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START + 0x10, 4, &pcr._base4);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START + 0x14, 4, &pcr._base5);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_REG_START + 0x1c, 4, &pcr._subsys_card_vendor);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_MAP_ROM_REG, 4, &pcr._baserom);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_INTERRUPT_REG, 4, &pcr._max_min_ipin_iline);
-	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], pcr._cardnum<<3,
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_REG_USERCONFIG, 4, &pcr._user_config);
 #endif
 
@@ -1419,7 +1427,7 @@ main(int argc, unsigned char *argv[])
     } while (++pcr._pcibusidx < pcr._pcinumbus);
     }
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)
     /* Now try pci config 2 probe (deprecated) */
 
     if ((pcr._configtype == 2) || do_mode2_scan) {
@@ -1708,7 +1716,7 @@ enable_os_io()
     sysi86(SI86V86, V86SC_IOPL, PS_IOPL);
 #endif
 #endif
-#if defined(linux)
+#if defined(linux) && !defined(__sparc__)
     iopl(3);
 #endif
 #if defined(__FreeBSD__)  || defined(__386BSD__) || defined(__bsdi__) || defined(DGUX)
@@ -1812,7 +1820,7 @@ disable_os_io()
     sysi86(SI86V86, V86SC_IOPL, 0);
 #endif
 #endif
-#if defined(linux)
+#if defined(linux) && !defined(__sparc__)
     iopl(0);
 #endif
 #if defined(__FreeBSD__)  || defined(__386BSD__) || defined(DGUX)

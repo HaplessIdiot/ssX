@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.23 1999/02/28 11:19:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.24 1999/03/07 14:05:07 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -1018,6 +1018,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_REALTEC, {
                                 {0x8029, "8029" },
                                 {0x8129, "8129" },
+                                {0x8139, "RTL8139 Ethernet Controller" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_TRUEVISION, {
                                 {0x000C, "Targa 1000" },
@@ -1032,6 +1033,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x0576, "VT 82C576 3V" },
                                 {0x0586, "VT 82C586 MVP3 ISA Bridge" },
                                 {0x0597, "VT 82C598 MVP3 Host Bridge" },
+                                {0x3040, "VT 82C586B Apollo MVP3 ACPI Bridge" },
                                 {0x8598, "VT 82C598 MVP3 PCI/AGP Bridge" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_VORTEX, {
@@ -1282,6 +1284,9 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{ PCI_VENDOR_NCR_1, {
 	                { 0x1000, "SCSI HBA", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+    { PCI_VENDOR_REALTEC, {
+                        { 0x8139, "Generic", NF },
                         { 0x0000, (char *)NULL, NF } } },
 #endif
 	{PCI_VENDOR_DIGITAL, {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.7 1998/12/06 06:08:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.8 1999/02/12 22:52:11 hohndel Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
@@ -17,7 +17,6 @@ typedef struct _RamDacRegRec {
  */
     unsigned short DacRegs[0x400];	/* register set */
     unsigned char DAC[0x300];		/* colour map */
-    Bool Overlay;
 } RamDacRegRec, *RamDacRegRecPtr;
 
 typedef struct _RamDacHWRegRec {

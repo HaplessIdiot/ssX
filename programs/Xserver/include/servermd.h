@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.31 1998/12/20 11:57:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.32 1998/12/20 13:16:39 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -171,6 +171,7 @@ SOFTWARE.
     (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
     (defined(__uxp__) && (defined(sparc) || defined(mc68000))) || \
     (defined(Lynx) && defined(__sparc__)) || \
+    (defined(linux) && defined(__sparc__)) || \
     ((defined(__NetBSD__) || defined(__OpenBSD__)) && \
      (defined(__sparc__) || defined(__mc68000__)))
 

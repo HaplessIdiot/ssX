@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.15 1999/02/19 21:27:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.16 1999/03/06 13:12:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -348,6 +348,20 @@ xf86FreeBusSlot(int slot)
     if (xf86BusSlots[slot] == NULL)
 	return;
 
+    switch (xf86BusSlots[slot]->resource) {
+    case RES_VGA:
+	Resources.exclusive_Vga_taken = 0;
+	break;
+    case RES_8514:
+	Resources.exclusive_8514_taken = 0;
+	break;
+    case RES_MONO:
+	Resources.exclusive_mono_taken = 0;
+	break;
+    default:
+	break;
+    }
+
     xfree(xf86BusSlots[slot]);
     xf86NumBusSlots--;
     for (i = slot; i < xf86NumBusSlots; i++)
@@ -371,7 +385,7 @@ xf86CheckPciSlot(int bus, int device, int func, BusResource res)
 	    p->pciBusId.device == device && p->pciBusId.func == func)
 	    return FALSE;
     }
-	/* If VGA access is requested, check if that is alreay taken */
+    /* If VGA access is requested, check if it is already taken */
     switch (res) {
     case RES_SHARED_VGA:
 	if (Resources.exclusive_Vga) return FALSE;
@@ -382,12 +396,10 @@ xf86CheckPciSlot(int bus, int device, int func, BusResource res)
     case RES_VGA:
 	if (!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
 	    return FALSE;
-	Resources.exclusive_Vga_taken = 1;
 	break;
     case RES_8514:
 	if (!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
 	    return FALSE;
-	Resources.exclusive_8514_taken = 1;
 	break;
     case RES_MONO:
 	xf86Msg(X_WARNING,"Resource Mono is not supported for PCI devices\n");
@@ -409,19 +421,31 @@ xf86ClaimPciSlot(int bus, int device, int func, BusResource res,
 {
     BusPtr p;
 
-    if (xf86CheckPciSlot(bus, device, func, res)) {
-	p = xf86AllocateBusSlot();
-	p->driver = drvp;
-	p->chipset = chipset;
-	p->busType = BUS_PCI;
-	p->scrnIndex = scrnIndex;
-	p->pciBusId.bus = bus;
-	p->pciBusId.device = device;
-	p->pciBusId.func = func;
-	p->resource = res;
-	return TRUE;
-    } else
+    if (!xf86CheckPciSlot(bus, device, func, res))
 	return FALSE;
+
+    /* If VGA or 8514/A access is requested, claim it */
+    switch (res) {
+    case RES_VGA:
+	Resources.exclusive_Vga_taken = 1;
+	break;
+    case RES_8514:
+	Resources.exclusive_8514_taken = 1;
+	break;
+    default:
+	break;
+    }
+
+    p = xf86AllocateBusSlot();
+    p->driver = drvp;
+    p->chipset = chipset;
+    p->busType = BUS_PCI;
+    p->scrnIndex = scrnIndex;
+    p->pciBusId.bus = bus;
+    p->pciBusId.device = device;
+    p->pciBusId.func = func;
+    p->resource = res;
+    return TRUE;
 }
 
 /*
@@ -635,20 +659,17 @@ xf86CheckIsaSlot(BusResource res)
     case RES_VGA:
 	if (!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
 	    return FALSE;
-	Resources.exclusive_Vga_taken = 1;
 	break;
     case RES_8514:
 	if (!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
 	    return FALSE;
-	Resources.exclusive_8514_taken = 1;
 	break;
     case RES_MONO:
 	if (!Resources.exclusive_mono || Resources.exclusive_mono_taken) 
 	    return FALSE;
-	Resources.exclusive_mono_taken = 1;
 	break;
     default:
-	return TRUE;
+	break;
     }
     return TRUE;
 }
@@ -663,16 +684,30 @@ xf86ClaimIsaSlot(BusResource res, DriverPtr drvp, int chipset, int scrnIndex)
 {
     BusPtr p;
 
-    if (xf86CheckIsaSlot(res)) {
-	p = xf86AllocateBusSlot();
-	p->driver = drvp;
-	p->chipset = chipset;
-	p->busType = BUS_ISA;
-	p->scrnIndex = scrnIndex;
-	p->resource = res;
-	return TRUE;
-    } else
+    if (!xf86CheckIsaSlot(res))
 	return FALSE;
+
+    switch (res) {
+    case RES_VGA:
+	Resources.exclusive_Vga_taken = 1;
+	break;
+    case RES_8514:
+	Resources.exclusive_8514_taken = 1;
+	break;
+    case RES_MONO:
+	Resources.exclusive_mono_taken = 1;
+	break;
+    default:
+	break;
+    }
+
+    p = xf86AllocateBusSlot();
+    p->driver = drvp;
+    p->chipset = chipset;
+    p->busType = BUS_ISA;
+    p->scrnIndex = scrnIndex;
+    p->resource = res;
+    return TRUE;
 }
 
 /*
@@ -736,20 +771,6 @@ xf86ParseIsaBusString(const char *busID)
     return (StringToBusType(busID,NULL) == BUS_ISA);
 }
 
-/*
- * Release all slots claimed by a screen.
- */
-
-void
-xf86FreeBusSlots(int scrnIndex)
-{
-    int i;
-
-    for (i = 0; i < xf86NumBusSlots; i++) {
-	if (xf86BusSlots[i]->scrnIndex == scrnIndex)
-	    xf86FreeBusSlot(i);
-    }
-}
 
 /*
  * Change the scrnIndex in bus slots to reflect the new indices after a
@@ -777,7 +798,7 @@ xf86DeleteBusSlotsForScreen(int scrnIndex)
     int i;
     
     for (i = 0; i < xf86NumBusSlots; i++) {
-	if (xf86BusSlots[i]->scrnIndex == scrnIndex){
+	if (xf86BusSlots[i]->scrnIndex == scrnIndex) {
 	    xf86FreeBusSlot(i);
 	    i--;
 	}
@@ -1358,12 +1379,11 @@ xf86FindPrimaryDevice()
 static void
 CheckGenericGA()
 {
-#ifndef __powerpc__ /* FIXME ?? */
+#if !defined(__sparc__) && !defined(__powerpc__) /* FIXME ?? */
     CARD16 GenericIOBase = VGAHW_GET_IOBASE();
     CARD8 CurrentValue, TestValue;
 
-    /* Unlock VGA registers */
-    VGAHW_UNLOCK(GenericIOBase);
+    /* VGA CRTC registers are not used here, so don't bother unlocking them */
 
     /* VGA has one more read/write attribute register than EGA */
     (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
@@ -1373,9 +1393,6 @@ CheckGenericGA()
     outb(0x3C0, 0x14 | 0x20);
     TestValue = inb(0x3C1);
     outb(0x3C0, CurrentValue);
-
-    /* XXX:  This should restore lock state, rather than relock */
-    VGAHW_LOCK(GenericIOBase);
 
     if ((CurrentValue ^ 0x0F) == TestValue) {
         Resources.exclusive_Vga = 1;

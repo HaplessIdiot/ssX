@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.38 1999/01/31 12:21:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.39 1999/02/19 21:26:59 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -65,12 +65,26 @@
 
 #if defined(NO_INLINE) || defined(DO_PROTOTYPES)
 
+#if !defined(__sparc__)
+
 extern void outb(unsigned short, unsigned char);
 extern void outw(unsigned short, unsigned short);
 extern void outl(unsigned short, unsigned int);
 extern unsigned int inb(unsigned short);
 extern unsigned int inw(unsigned short);
 extern unsigned int inl(unsigned short);
+
+#else /* __sparc__ */
+
+extern void outb(unsigned long, unsigned char);
+extern void outw(unsigned long, unsigned short);
+extern void outl(unsigned long, unsigned int);
+extern unsigned int inb(unsigned long);
+extern unsigned int inw(unsigned long);
+extern unsigned int inl(unsigned long);
+
+#endif /* __sparc__ */
+
 extern unsigned long ldq_u(unsigned long *);
 extern unsigned long ldl_u(unsigned int *);
 extern unsigned long ldw_u(unsigned short *);
@@ -96,7 +110,8 @@ extern int testinx(unsigned short, unsigned char);
 
 #ifdef __GNUC__
 
-#if defined(linux) && defined(__alpha__)
+#if defined(linux)
+#if defined(__alpha__)
 /* for Linux on Alpha, we use the LIBC _inx/_outx routines */
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
@@ -304,6 +319,93 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define write_mem_barrier()  __asm__ __volatile__("wmb" : : : "memory")
 #else  /*  ECOFF gas 2.6 doesn't know "wmb" :-(  */
 #define write_mem_barrier()  mem_barrier()
+#endif
+
+#elif defined(__sparc__)
+#ifndef ASI_PL
+#define ASI_PL 0x88
+#endif
+
+static __inline__ void outb(unsigned long port, unsigned char val)
+{
+	__asm__ __volatile__("stba %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+}
+
+static __inline__ void outw(unsigned long port, unsigned short val)
+{
+	__asm__ __volatile__("stha %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+}
+
+static __inline__ void outl(unsigned long port, unsigned int val)
+{
+	__asm__ __volatile__("sta %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+}
+
+static __inline__ unsigned int inb(unsigned long port)
+{
+	unsigned int ret;
+	__asm__ __volatile__("lduba [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
+	return ret;
+}
+
+static __inline__ unsigned int inw(unsigned long port)
+{
+	unsigned int ret;
+	__asm__ __volatile__("lduha [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
+	return ret;
+}
+
+static __inline__ unsigned int inl(unsigned long port)
+{
+	unsigned int ret;
+	__asm__ __volatile__("lda [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
+	return ret;
+}
+
+#include <string.h>
+
+static __inline__ unsigned long ldq_u(unsigned long *p)
+{
+	unsigned long ret;
+	memmove(&ret, p, sizeof(*p));
+	return ret;
+}
+
+static __inline__ unsigned long ldl_u(unsigned int *p)
+{
+	unsigned int ret;
+	memmove(&ret, p, sizeof(*p));
+	return ret;
+}
+
+static __inline__ unsigned long ldw_u(unsigned short *p)
+{
+	unsigned short ret;
+	memmove(&ret, p, sizeof(*p));
+	return ret;
+}
+
+static __inline__ void stq_u(unsigned long val, unsigned long *p)
+{
+	unsigned long tmp = val;
+	memmove(p, &tmp, sizeof(*p));
+}
+
+static __inline__ void stl_u(unsigned long val, unsigned int *p)
+{
+	unsigned int tmp = val;
+	memmove(p, &tmp, sizeof(*p));
+}
+
+static __inline__ void stw_u(unsigned long val, unsigned short *p)
+{
+	unsigned short tmp = val;
+	memmove(p, &tmp, sizeof(*p));
+}
+
+#define mem_barrier()         /* XXX: nop for now */
+#define write_mem_barrier()   /* XXX: nop for now */
+
 #endif
 
 #elif defined(__mips__) || defined(__arm32__)

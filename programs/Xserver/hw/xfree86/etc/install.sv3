@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.6 1996/12/23 06:47:10 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.7 1998/04/05 00:45:59 robin Exp $
 #
 # Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
 #
@@ -29,6 +29,11 @@
 # (thomas@aeon.in-berlin.de, wolf@prz.tu-berlin.de)
 # Changed for XFree86 3.1 to coexist with Interactive X11 by Michael Rohleder
 # (michael.rohleder@stadt-frankfurt.de)
+# 
+# Changed interface handling (now Menu) via helper functions
+# Changed tunable parameters
+# Changed Device generation for more flexibility
+# (michael.rohleder@stadt-frankfurt.de)
 
 # $XConsortium: install.sv3 /main/4 1996/02/21 17:47:34 kaleb $
 
@@ -42,9 +47,49 @@ VERSION=`X -version 2>&1 |
 
 VERSION_STRING="X11R6 XFree86 Version $VERSION"
 #
+# Path/Files
+#
+XFREE86_NAME=xfree86.name
+INSTALLED=/usr/lib/installed
+REMOVEDIR=$INSTALLED/Remove
+REMOVESRC=$REMOVEDIR/$XFREE86_NAME
+
+OPTIONS=/usr/options
+KC_NAME=$OPTIONS/kc.name
+ST_NAME=$OPTIONS/st.name
+XF86_NAME=$OPTIONS/$XFREE86_NAME
+XU_NAME=$OPTIONS/xu.name
+
+XHOME=/usr/X11R6
+PRGHOME=$XHOME/lib/X11/etc
+
+KCONF=/etc/conf
+NODED=$KCONF/node.d
+SDEVD=$KCONF/sdevice.d
+CFD=$KCONF/cf.d
+
+MTUNE=$CFD/mtune
+STUNE=$CFD/stune
+MDEVICE=$CFD/mdevice 
+IDTUNE=$KCONF/bin/idtune
+
+NODED_LIST="$NODED/pts $NODED/sp $NODED/pty $NODED/ptx"
+SDEVD_LIST="$SDEVD/pts $SDEVD/sp $SDEVD/pty $SDEVD/ptx $SDEVD/ldterm $SDEVD/ptem $SDEVD/ptm"
+FILE_LIST="$MDEVICE $NODED_LIST $SDEVD_LIST"
+
+SAVE_NAME=`uname`.$$.cpio
+
+MAX_PTYS=128
+
+#
+# trap
+#
+trap goodbye 1 2 9 15
+
+#
 # Functions .... 
 #
-great() {
+Head() {
 clear
 echo
 echo $VERSION_STRING
@@ -54,106 +99,242 @@ echo
 echo
 }
 
-do_wait() {
+Wait() {
 echo
 echo
-echo -n "[PRESS ANY KEY TO GO ON]"
+echo -n "[PRESS RETURN TO GO ON]"
 read anykey
 }
 
-great
+#
+# Save current Kernel Files
+#
+mk_save() {
+echo "Saving to: $SAVE_NAME"
+find $FILE_LIST -print | cpio -ovc > $SAVE_NAME
+}
+
+show_save() {
+find $FILE_LIST -print
+}
 
 #
 # dependencies
 #
-if [ ! -s /usr/options/kc.name ]
+dependencies() {
+if [ ! -s $KC_NAME  ]
 then
     echo "Please make first sure that the Kernel Configuration is installed"
     echo "correctly. Then try a reinstall of XFree86 $VERSION."
     exit 1
+else
+echo "OK    ::: $KC_NAME: `sed 's/-.*Version//' $KC_NAME`"
 fi
-
-if [ ! -s /usr/options/st.name ]
+echo
+if [ ! -s $ST_NAME ]
 then
     echo "Please make first sure that the STREAMS Facilities are installed"
     echo "correctly. Then try a reinstall of XFree86 $VERSION."
     exit 1
+else
+echo "OK    ::: $ST_NAME: `sed 's/-.*Version//' $ST_NAME`"
 fi
+echo
+echo
+echo
+echo "Your dependecies are correct :-)"
+}
 
 #
 # Make a X11 label, so that following commercial products can be installed
 # 
-if [ ! -s /usr/options/xfree86.name ]
+mk_label() {
+if [ ! -s $XF86_NAME ]
 then
-    echo $VERSION_STRING >/usr/options/xfree86.name
+    echo $VERSION_STRING > $XF86_NAME
 else
     echo "The following XFree86 Version is installed:"
     echo
-    cat /usr/options/xfree86.name
+    cat $XF86_NAME 
     echo
     echo -n "Should I Update this to $VERSION ?(y/n)"
     read yesno
     [ "$yesno" = "y" -o "$yesno" = "Y" ] && {
-    echo $VERSION_STRING >/usr/options/xfree86.name
+    echo $VERSION_STRING > $XF86_NAME
     echo
     echo "Updated !!!"
     }
 fi
 echo
 echo -n "Current Version: "
-cat /usr/options/xfree86.name
+cat $XF86_NAME
 echo
 
-do_wait
-great
-
-if [ ! -s /usr/options/xu.name ]
+if [ ! -s $XU_NAME ]
 then
    echo "There's no Interactive X11 installed"
    echo "Generating links, so following commercial products can be installed"
-   ln /usr/options/xfree86.name /usr/options/xu.name
+   ln $XF86_NAME $XU_NAME
    echo
 fi
+
+}
 
 #
 # Install remove script
 #
-if [ ! -s /usr/lib/installed/Remove/xfree86.name ]
+mk_remove() {
+if [ ! -s $REMOVESRC ]
 then
     echo "Install remove script"
-    echo -n 'echo "Removing XFree86 Version ' >/usr/lib/installed/Remove/xfree86.name
-    echo -n $VERSION >>/usr/lib/installed/Remove/xfree86.name
-    echo '"' >>/usr/lib/installed/Remove/xfree86.name
-    echo '/bin/rm -rf /usr/X11R6' >>/usr/lib/installed/Remove/xfree86.name
-    echo '/bin/rm -f /usr/options/xfree86.name' >>/usr/lib/installed/Remove/xfree86.name
+    echo -n 'echo "Removing XFree86 Version ' >$REMOVESRC
+    echo -n $VERSION >>$REMOVESRC
+    echo '"' >>$REMOVESRC
+    echo '/bin/rm -rf /usr/X11R6' >>$REMOVESRC
+    echo '/bin/rm -f /usr/options/xfree86.name' >>$REMOVESRC
     echo "Installed !!!"
 else
     echo -n "Would you like to update your remove script ? (j/n)"
     read yesno
     [ "$yesno" = "y" -o "$yesno" = "Y" ] && {
-    echo -n 'echo "Removing XFree86 Version ' >/usr/lib/installed/Remove/xfree86.name
-    echo -n $VERSION >>/usr/lib/installed/Remove/xfree86.name
-    echo '"' >>/usr/lib/installed/Remove/xfree86.name
-    echo '/bin/rm -rf /usr/X11R6' >>/usr/lib/installed/Remove/xfree86.name
-    echo '/bin/rm -f /usr/options/xfree86.name' >>/usr/lib/installed/Remove/xfree86.name
+    echo -n 'echo "Removing XFree86 Version ' >$REMOVESRC
+    echo -n $VERSION >>$REMOVESRC
+    echo '"' >>$REMOVESRC
+    echo '/bin/rm -rf /usr/X11R6' >>$REMOVESRC
+    echo '/bin/rm -f /usr/options/xfree86.name' >>$REMOVESRC
     echo "Updated !!!"
     }
 fi
+}
 
-do_wait
-great
 
+#
+# Tune PTS Devices 
+# call with number of entries to create e.g. mk_dev_pts 128
+#
+mk_dev_pts() {
+nawk ' { max_pts=$4; print }
+       END { for (i=max_pts+1;i<'$1';i++)
+                 printf("pts	pts%03d c	%d\n", i , i );
+           }
+     ' < $NODED/pts > pts.node.neu
+tail -1 $NODED/pts
+tail -1 pts.node.neu
+echo -n "Should I install the new pts File ?(y/n)"
+read yesno
+case $yesno in
+  y|Y ) echo "Do install .... "
+	mv pts.node.neu $NODED/pts
+	;;
+  n|N ) echo "Dont install .. "
+	;;
+esac
+rm -f pts.node.neu
+}
+
+#
+# Set up node and sdevice
+#
+mk_node_sdevice() {
 echo -n "Setting up node and sdevice(y/n)"
 read yesno
 [ "$yesno" = "y" -o "$yesno" = "Y" ] && {
-cd /usr/X11R6/lib/X11/etc
-cp pts.node /etc/conf/node.d/pts 2>/dev/null
-cp sp.node /etc/conf/node.d/sp 2>/dev/null
-cp ldterm.sdevice /etc/conf/sdevice.d/ldterm 2>/dev/null
-cp ptem.sdevice /etc/conf/sdevice.d/ptem 2>/dev/null
-cp ptm.sdevice /etc/conf/sdevice.d/ptm 2>/dev/null
-cp pts.sdevice /etc/conf/sdevice.d/pts 2>/dev/null
-cp sp.sdevice /etc/conf/sdevice.d/sp 2>/dev/null
+OWD=`pwd`
+cd $PRGHOME
+[ -s $NODED/pts     ] || {
+   echo "Installed: $NODED/pts"
+   cp pts.node $NODED/pts 2>/dev/null
+   }
+tail -1 $NODED/pts
+mk_dev_pts $MAX_PTYS
+[ -s $NODED/sp      ] || {
+   echo "Installed: $NODED/sp"
+   cp sp.node $NODED/sp 2>/dev/null
+   }
+tail -1 $NODED/sp
+[ -s $SDEVD/ldterm  ] || {
+   echo "Installed: $SDEVD/ldterm"
+   cp ldterm.sdevice $SDEVD/ldterm 2>/dev/null
+   }
+tail -1 $SDEVD/ldterm
+[ -s $SDEVD/ptem    ] || {
+   echo "Installed: $SDEVD/ptem"
+   cp ptem.sdevice $SDEVD/ptem 2>/dev/null
+   }
+tail -1 $SDEVD/ptem
+change_sdevice ptem
+[ -s $SDEVD/ptm     ] || {
+   echo "Installed: $SDEVD/ptm"
+   cp ptm.sdevice $SDEVD/ptm 2>/dev/null
+   }
+tail -1 $SDEVD/ptm
+change_sdevice ptm
+change_mdevice "pt[em]"
+[ -s $SDEVD/pts     ] || {
+   echo "Installed: $SDEVD/pts"
+   cp pts.sdevice $SDEVD/pts 2>/dev/null
+   }
+tail -1 $SDEVD/pts
+[ -s $SDEVD/sp      ] || {
+   echo "Installed: $SDEVD/sp"
+   cp sp.sdevice $SDEVD/sp 2>/dev/null
+   }
+tail -1 $SDEVD/sp
+cd $OWD
+}
+}
+
+#
+# Show current values
+#
+show_node_sdevice() {
+OWD=`pwd`
+cd $PRGHOME
+Head
+echo
+echo pts
+tail -1 pts.node
+tail -1 $NODED/pts
+tail -1 pts.sdevice
+tail -1 $SDEVD/pts
+Wait
+Head
+echo
+echo sp
+tail -1 sp.node
+tail -1 $NODED/sp
+tail -1 sp.sdevice
+tail -1 $SDEVD/sp
+Wait
+Head
+echo
+echo ldterm
+tail -1 ldterm.sdevice
+tail -1 $SDEVD/ldterm
+Wait
+Head
+echo
+echo ptem
+tail -1 ptem.sdevice
+tail -1 $SDEVD/ptem
+Wait
+Head
+echo
+echo ptm
+tail -1 ptm.sdevice
+tail -1 $SDEVD/ptm
+cd $OWD
+}
+#
+# Set some Kernel Variables ...
+#
+mk_kvars() {
+echo "Setup KERNEL Variables to suit the needs..."
+echo "if you don't want this changes - enter s to skip"
+read skip
+[ "$skip" != "s" ] && {
+ /bin/sh /etc/conf/bin/idtune -m NOFILES 100
+ /bin/sh /etc/conf/bin/idtune -m MAXUMEM 131072
 }
 
 
@@ -164,60 +345,129 @@ echo "Setup STREAMS for maximum performance..."
 echo "if you allready tuned the STREAMS parameters - enter s to skip"
 read skip
 [ "$skip" != "s" ] && {
- /bin/sh /etc/conf/bin/idtune -m NSTREAM 128
- /bin/sh /etc/conf/bin/idtune -m NQUEUE 512
- /bin/sh /etc/conf/bin/idtune -m NBLK4096 4
- /bin/sh /etc/conf/bin/idtune -m NBLK2048 32
- /bin/sh /etc/conf/bin/idtune -m NBLK1024 32
- /bin/sh /etc/conf/bin/idtune -m NBLK512 32
- /bin/sh /etc/conf/bin/idtune -m NBLK256 64
- /bin/sh /etc/conf/bin/idtune -m NBLK128 256
- /bin/sh /etc/conf/bin/idtune -m NBLK64 256
- /bin/sh /etc/conf/bin/idtune -m NBLK16 256
- /bin/sh /etc/conf/bin/idtune -m NBLK4 128
- /bin/sh /etc/conf/bin/idtune -m SHLBMAX 8
+ /bin/sh /etc/conf/bin/idtune -m NSTREAM	512
+ /bin/sh /etc/conf/bin/idtune -m NQUEUE		2048
+ /bin/sh /etc/conf/bin/idtune -m NBLK4096	512
+ /bin/sh /etc/conf/bin/idtune -m NBLK2048	1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK1024	1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK512	1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK256	1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK128	1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK64		1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK16		1024
+ /bin/sh /etc/conf/bin/idtune -m NBLK4		1024
+ /bin/sh /etc/conf/bin/idtune -m SHLBMAX	12
+}
+}
+
+#
+# Show current Kernel Vars
+#
+show_kvars() {
+nawk '
+BEGIN { printf"%-40s%s\n\n", "Variable", "Current Value" }
+/NOFILES|MAXUMEM|NSTREAM|NQUEUE|NBLK|SHLBMAX/ { printf"%-40s%s\n", $1, $NF }
+     ' $STUNE 
 }
 
 # increase number of pseudo terminals from 16 to 32
 
-echo "Adjust kernel configuration files for 32 pseudo terminals..."
+change_sdevice() {
+FILE=$SDEVD/$1
+nawk '{
+ if ($1 == "'"$1"'") {
+    print $1 "\t" $2 "\t" '"$MAX_PTYS"' "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 "\t" $9 "\t" $10
+ }
+ else
+    print
+}'   < $FILE > $1.sdevice.neu
+tail -1 $FILE
+tail -1 $1.sdevice.neu
+echo -n "Should I install the new $1 File ?(y/n)"
+read yesno
+case $yesno in
+  y|Y ) echo "Do install .... "
+	mv $1.sdevice.neu $FILE
+	;;
+  n|N ) echo "Dont install .. "
+	;;
+esac
+rm -f $1.sdevice.neu
+}
 
-if [ `grep pty /etc/conf/sdevice.d/pty | cut -f3` != 16 ] ; then
-	echo "There are already more then 16 pty's."
+#
+# Change mdevice
+#
+change_mdevice() {
+nawk '{ 
+ if ($1 ~ "'"$1"'") { 
+    print $1 "\t" $2 "\t" $3 "\t\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" '"$MAX_PTYS"' "\t" $9
+ }
+ else
+    print
+ }'  < $MDEVICE > mdevice.neu
+
+grep "$1" $MDEVICE
+grep "$1" mdevice.neu
+echo -n "Should I install the new $MDEVICE File ?(y/n)"
+read yesno
+case $yesno in
+  y|Y ) echo "Do install .... "
+	mv mdevice.neu $MDEVICE
+	;;
+  n|N ) echo "Dont install .. "
+	;;
+esac
+rm -f mdevice.neu
+}
+
+#
+# Generate PTY Files
+#
+mk_ptys() {
+echo "Adjust kernel configuration files for $MAX_PTYS pseudo terminals..."
+
+if [ `grep pty $SDEVD/pty | cut -f3` -ge $MAX_PTYS ] ; then
+	echo "There are already more then $MAX_PTYS pty's."
 else
 
+change_sdevice pty
+#mv /etc/conf/sdevice.d/pty /etc/conf/sdevice.d/pty.old
+#nawk '{
+# if ($1 == "pty") {
+#    print $1 "\t" $2 "\t" 32 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 "\t" $9 "\t" $10
+# }
+# else
+#    print
+#}'   </etc/conf/sdevice.d/pty.old >/etc/conf/sdevice.d/pty
+#rm /etc/conf/sdevice.d/pty.old
 
-mv /etc/conf/sdevice.d/pty /etc/conf/sdevice.d/pty.old
-nawk '{
- if ($1 == "pty") {
-    print $1 "\t" $2 "\t" 32 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 "\t" $9 "\t" $10
- }
- else
-    print
-}'   </etc/conf/sdevice.d/pty.old >/etc/conf/sdevice.d/pty
-rm /etc/conf/sdevice.d/pty.old
+change_sdevice ptx
+#mv /etc/conf/sdevice.d/ptx /etc/conf/sdevice.d/ptx.old
+#nawk '{
+# if ($1 == "ptx") {
+#    print $1 "\t" $2 "\t" 32 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 "\t" $9 "\t" $10
+# }
+# else
+#    print
+#}'   </etc/conf/sdevice.d/ptx.old >/etc/conf/sdevice.d/ptx
+#rm /etc/conf/sdevice.d/ptx.old
 
-mv /etc/conf/sdevice.d/ptx /etc/conf/sdevice.d/ptx.old
-nawk '{
- if ($1 == "ptx") {
-    print $1 "\t" $2 "\t" 32 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 "\t" $9 "\t" $10
- }
- else
-    print
-}'   </etc/conf/sdevice.d/ptx.old >/etc/conf/sdevice.d/ptx
-rm /etc/conf/sdevice.d/ptx.old
+change_mdevice "pt[y|x]"
+#mv /etc/conf/cf.d/mdevice /etc/conf/cf.d/mdevice.old
+#nawk '{ 
+# if ($1 ~ "pt[y|x]") { 
+#    print $1 "\t" $2 "\t" $3 "\t\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" 32 "\t" $9
+# }
+# else
+#    print
+# }'  </etc/conf/cf.d/mdevice.old >/etc/conf/cf.d/mdevice
+#rm /etc/conf/cf.d/mdevice.old
 
-mv /etc/conf/cf.d/mdevice /etc/conf/cf.d/mdevice.old
-nawk '{ 
- if ($1 ~ "pt[y|x]") { 
-    print $1 "\t" $2 "\t" $3 "\t\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" 32 "\t" $9
- }
- else
-    print
- }'  </etc/conf/cf.d/mdevice.old >/etc/conf/cf.d/mdevice
-rm /etc/conf/cf.d/mdevice.old
-
-HAS_PTC=`grep "PTC_UNITS > 32" /etc/conf/node.d/pty`
+CHECK_PTY=`expr $MAX_PTYS - 1`
+HAS_PTC=`grep "PTC_UNITS > $MAX_PTYS" /etc/conf/node.d/pty`
+[ "$HAS_PTC" = "" ] && \
+HAS_PTC=`grep "PTC_UNITS > $CHECK_PTYS" /etc/conf/node.d/pty`
 [ "$HAS_PTC" = "" ] && {
 echo "pty	ptyq0	c	16
 pty	ptyq1	c	17
@@ -237,7 +487,9 @@ pty	ptyqe	c	30
 pty	ptyqf	c	31" >>/etc/conf/node.d/pty
 }
 
-HAS_PTX=`grep "PTX_UNITS > 32" /etc/conf/node.d/ptx`
+HAS_PTX=`grep "PTX_UNITS > $MAX_PTYS" /etc/conf/node.d/ptx`
+[ "$HAS_PTX" = "" ] && \
+HAS_PTX=`grep "PTX_UNITS > $CHECK_PTYS" /etc/conf/node.d/ptx`
 [ "$HAS_PTX" = "" ] && {
 echo "ptx	ttyq0	c	16
 ptx	ttyq1	c	17
@@ -258,23 +510,24 @@ ptx	ttyqf	c	31" >>/etc/conf/node.d/ptx
 }
 
 fi
+}
 
-do_wait
-great
-
+#
+# notify the user to build a new kernel
+#
+notify() {
 echo "*** New Installation ***"
 echo "If this is a new installation of XFree86 $VERSION use \"kconfig\" to build a new"
 echo "kernel. XFree86 won't run without this new kernel."
 echo ""
 #echo "<press return>"
 #read answer
-
-do_wait
-great
+}
 
 #
 # install additional termcap & terminfo entries
 #
+mk_term() {
 echo -n "Do you want me to Install additional termcap & terminfo entries...[y/n]"
 read answer
 [ "$answer" = "y" -o "$answer" = "Y" ] && {
@@ -284,7 +537,12 @@ grep sun-cmd /etc/termcap >/dev/null || cat sun.termcap   >>/etc/termcap
 tic sun.terminfo 2>/dev/null
 tic xterm.terminfo 2>/dev/null
 }
+}
 
+#
+# install vga font
+#
+mk_vgafont() {
 if [ -s /usr/lib/loadfont/vga437.bdf ]
 then
     echo -n "Convert VGA font for using under X11...(y/n)"
@@ -296,9 +554,99 @@ then
     mkfontdir /usr/X11R6/lib/X11/fonts/misc
     }
 fi
-echo READY
+}
+
+#
+# Exit
+#
+goodbye() {
+Head
+echo
 echo
 echo -n "Thats all folks ;-) Current XFree86 Version: "
 cat /usr/options/xfree86.name
+echo
+echo
+echo
+echo
 exit
+}
 
+while [ 1 ]
+do
+    Head
+    echo 
+    echo "                    Check dependencies:                   1"
+    echo "                    Make XFree86 Label                    2"
+    echo "                    Install Remove script                 3"
+    echo "                    Setup node.d + sdevice.d Files        4"
+    echo "                    Tune Kernel Variables                 5"
+    echo "                    Tune PseudoTerminals                  6"
+    echo "                    Install xterm terminal entries        7"
+    echo "                    Install VGA font                      8"
+    echo "                    Save current KernelConfig             9"
+    echo
+    echo "                    Exit                                  X"
+
+    echo
+    echo
+    echo -n "Your Choice [1-9]?<enter>: "
+    read in
+
+    Head
+    case $in in
+       1 ) echo 
+	   dependencies
+	   ;;
+       1?|?1 ) echo "1 HELP"
+	   ;;
+       2 ) echo
+	   mk_label
+	   ;;
+       2?|?2 ) echo "2 HELP"
+	   ;;
+       3 ) echo
+	   mk_remove
+	   ;;
+       3?|?3 ) echo "3 HELP"
+	   ;;
+       4 ) echo
+	   mk_node_sdevice
+	   ;;
+       4?|?4 )
+           show_node_sdevice
+	   ;;
+       5 ) echo
+	   mk_kvars
+	   ;;
+       5?|?5 ) echo
+	   show_kvars
+	   ;;
+       6 ) echo
+	   mk_ptys
+	   ;;
+       6?|?6 ) echo
+	   change_sdevice pty
+	   change_sdevice ptx
+	   ;;
+       7 ) echo "7"
+	   ;;
+       7?|?7 ) echo "7 HELP"
+	   ;;
+       8 ) echo 
+	   mk_vgafont
+	   ;;
+       8?|?8 ) echo "8 HELP"
+	   ;;
+       9 ) echo
+	   mk_save
+	   ;;
+       9?|?9 ) echo
+	   show_save
+	   ;;
+       q|Q|X|x ) echo
+             goodbye
+	   ;;
+    esac
+    Wait
+done

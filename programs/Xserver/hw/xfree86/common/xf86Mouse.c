@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.8 1999/01/26 10:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.9 1999/03/14 03:21:52 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -154,6 +154,7 @@ unsigned short xf86MouseCflags[NUM_PROTOCOLS] =
 	0,						     /* NetMouse */
 	0,						     /* NetScroll */
 	0,						     /* wsmouse */
+	0,						     /* Sun Mouse */
 
 	(CS8 | CSTOPB          | CREAD | CLOCAL | HUPCL ),   /* sysmouse */
 	0,						     /* auto */
@@ -214,6 +215,7 @@ static unsigned char proto[][8] = {
 #else
   {  0x00, 0x00, 0x00, 0x00, 0,    0x00, 0xff, 0       },  /* wsmouse */
 #endif
+  {  0xf8,   0x80, 0x00,   0x00, 5,    0x00,   0xff },  /* Sun Mouse */
   {  0xf8,   0x80, 0x00,   0x00, 5,    0x00,   0xff },  /* dummy entry for auto - used only to fill space */
   {  0x80,   0x80, 0x80,   0x00, 3,    0x00,   0xff },  /* ACECAD */
 };
@@ -560,6 +562,9 @@ MouseDevPtr mouse;
 
       case PROT_WSMOUSE:
 	break;
+	
+      case PROT_SUN:
+	break;
 
       default:
 	xf86SetMouseSpeed(mouse, mouse->baudRate, mouse->baudRate,
@@ -900,6 +905,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
       break;
       
     case PROT_BM:              /* BusMouse */
+    case PROT_SUN:             /* Sun Mouse */
 #if defined(__NetBSD__)
     case PROT_PS2:
 #endif

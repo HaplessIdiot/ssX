@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.8 1999/02/07 06:18:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.9 1999/03/14 05:51:06 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -114,7 +114,7 @@
 #define PCI_CLASS_MULTIMEDIA            0x04
 #define PCI_CLASS_MEMORY                0x05
 #define PCI_CLASS_BRIDGE                0x06
-#define PCI_CLASS_COMMUNCATIONS		0x07
+#define PCI_CLASS_COMMUNICATIONS	0x07
 #define PCI_CLASS_SYSPERIPH		0x08
 #define PCI_CLASS_INPUT			0x09
 #define PCI_CLASS_DOCKING		0x0a
@@ -536,7 +536,7 @@ void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);
-int           pciGetBaseSize(PCITAG tag, int index, Bool destructive);
+int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive);
 pointer       xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag,
 				pointer Base, unsigned long Size);
 pointer       xf86MapPciMemSparse(int ScreenNum, int Region, PCITAG Tag,

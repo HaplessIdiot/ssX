@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.21 1999/03/07 11:40:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.22 1999/03/21 07:35:29 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1237,6 +1237,12 @@ XAADestroyInfoRec(
     XAAInfoRecPtr infoRec
 );
 
+typedef void (*DepthChangeFuncPtr) (ScrnInfoPtr pScrn, int depth);
 
+Bool
+XAAInitDualFramebufferOverlay(
+   ScreenPtr pScreen, 
+   DepthChangeFuncPtr callback
+);
 
 #endif /* _XAA_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.8 1999/02/28 11:19:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.9 1999/03/07 08:29:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -208,6 +208,7 @@ typedef struct {
 #define XLED1   ((unsigned long) 0x00000001)
 #define XLED2   ((unsigned long) 0x00000002)
 #define XLED3   ((unsigned long) 0x00000004)
+#define XLED4	((unsigned long) 0x00000008)
 #define XCAPS   ((unsigned long) 0x20000000)
 #define XNUM    ((unsigned long) 0x40000000)
 #define XSCR    ((unsigned long) 0x80000000)

@@ -1,10 +1,75 @@
-XFree86 3.9Pg (xx March 1999)
+XFree86 3.9Pg (29 March 1999)
+2451. Add missing parts to the parser's printKeyboardSection routine (#2621,
+      Joe Moss).
+2450. Finalising the DGA 2.0 driver interface (#2619, Mark Vojkovich).
+2449. Xterm patch #94 (#2618, Thomas Dickey).
+2448. Accelerated support for 8+16 overlays in XAA (untested) (#2617,
+      Mark Vojkovich).
+2447. Some optimisations for the 8+32 and 24+32 layers (#2616, Mark Vojkovich).
+2446. Updates for IUS (Interactive Unix) (#2614, Michael Rohleder).
+2445. Update xf86config for the 4.0 config file format (#2613,
+      Justin Bradford).
+2444. Update and clean up the Cards file (#2600, 2612, Justin Bradford).
+2443. When probing for a VGA, it's unnecessary to unlock its CRTC registers
+      (#2611, Marc La France).
+2442. Remove xf86FreeBusSlots(), which is redundant, unused and incorrect
+      (#2611, Marc La France).
+2441. Move the claiming of ISA resources from xf86Check???Slot() to
+      xf86Claim???Slot() (#2611, Marc La France).
+2440. On Linux, define _GNU_SOURCE only compiling the xc/ source tree (#2611,
+      Marc La France).
+2439. Remove uneeded s3virge files (#2615, Kevin Brosius).
+2438. "pci_burst" option updates for the s3virge driver (#2615, Kevin Brosius).
+2437. Fix missing accel flags and depth 24 problem with the s3virge driver
+      from the Alpha patch (#2615, Kevin Brosius).
+2436. Make sure the size of offscreen pixmaps don't exceed the address space
+      of the ViRGE (#2610, Mark Vojkovich).
+2435. Add a driver for video4linux frame grabber cards (#2609, Gerd Knorr,
+      David Woodhouse).
+2434. Add support to the MGA driver so that it will use any available
+      generic Xv adaptors (#2609, David Woodhouse).
+2433. Add xf86XVRegisterGenericAdaptor() and xf86XVListGenericAdaptors()
+      functions for maintaining a list of Xv adaptors which are not tied
+      to a particular screen (#2609, David Woodhouse).
+2432. Fix virtual screen panning with the SiS driver (#2608,
+      Juanjo Santamarta).
+2431. Fix security problem with the creation of the /tmp/.X11-unix directory
+      (#2607, Matthieu Herrb).
+2430. Update the 8+16 layer to get the color key from the new field in
+      the ScrnInfoRec (#2605, Mark Vojkovich).
+2429. Complete the Xv config evaluation code in the PM2 Xv driver and the
+      common layer (#2604, Michael Schimek).
+2428. Modify Xv DDX's clipping interface (#2604, Michael Schimek).
+2427. Fix a bug in the handling of Boolean options (#2603, Michael Schimek).
+2426. Have xf86ChangeGamma() update and install the default colormap
+      when the currently installed colormap is not implemented by lookup
+      (#2602, Mark Vojkovich).
+2425. Export StoreColors() (#2601, Mark Vojkovich).
+2424. Replace all Imakefile.obj files with Imakefile.inc because .obj is
+      a reserved extension for object file on OS/2 (#2599, Holger Veit).
+2423. Update the Cards file parser to accept a new DRIVER line (#2598,
+      Justin Bradford).
+2422. Fix getline clash in proxymngr and xsm (#2595, Dejan Ilic).
+2421. Fix colourmap on Permedia2, and fix GLINT SaveScreen to blank the
+      display (#2594, 2596, Alan Hourihane).
+2420. Make fbdev work on Sparc Linux, and fix a few bugs in fbdevhw and
+      fbdev (#2593, Jakub Jelinek).
+2419. Sparc Linux support for XFree86 (#2593, Jakub Jelinek).
+2418. Add DPMS support to the s3virge driver (#2592, Matt Grossman).
+2417. ppc_flush_icache() for Linux/PPC, required for the loader to work
+      correctly (#2591, Gerd Knorr).
+2416. Linux/PPC loader fix (#2590, Stuart Anderson).
+2415. Modify the ramdac module and glint driver to use the ScrnInfoRec
+      overlay fields (#2589, 2594, Alan Hourihane).
+2414. Add RTL ethernet and VIA APCI PCI devices to the ID list (#2588,
+      Kevin Brosius).
+2413. Fix a problem with $(STD_CPP_DEFINES) that was introduced in 3.9Pf.
 2412. Add VESA default modes, small perl hack to create an initialized data
       structure from them, and the code to use those modes as default if no
       other modes with the same name are defined (Dirk Hohndel).
 
 XFree86 3.9Pf (21 March 1999)
-2411. Fix some malloc problems in xf86xv.c (Michael Schimek).
+2411. Fix some malloc problems in xf86xv.c (#2587, Michael Schimek).
 2410. Fix building of Xprt, Xnest and Xvfb when doing a loader build
       (David Dawes).
 2409. Updates to s3virge driver to get it working under Linux/Alpha
@@ -7568,4 +7633,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.712 1999/03/21 12:59:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.714 1999/03/22 13:39:55 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.2 1999/03/07 08:29:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.3 1999/03/14 03:22:12 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -326,7 +326,7 @@ fbdevHWProbe(pciVideoPtr pPci, char *device)
 	if (pPci)
 		fd = fbdev_open_pci(pPci);
 	else
-		fd = fbdev_open(NULL);
+		fd = fbdev_open(device);
 
 	if (-1 == fd)
 		return FALSE;
@@ -623,6 +623,7 @@ fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	cmap.red   = &red;
 	cmap.green = &green;
 	cmap.blue  = &blue;
+	cmap.transp = NULL;
 	for (i = 0; i < numColors; i++) {
 		cmap.start = indices[i];
 		red   = colors[indices[i]].red   << 8;

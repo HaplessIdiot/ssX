@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.11 1998/07/25 16:57:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.12 1999/01/14 13:05:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -48,24 +48,57 @@
  * XXX Support for SVR3 will need to be reworked if needed.  In particular
  * the Region parameter is no longer passed, and will need to be dealt
  * with internally if required.
+ * OK, i'll rework that thing ... (clean it up a lot)
+ * SVR3 Support only with SVR3_MMAPDRV (mr)
+ * 
  */
 
-#if 0
-struct kd_memloc MapDSC[MAXSCREENS][NUM_REGIONS];
-pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
-#if 0
-/* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
-#if defined(SVR4) || defined(HAS_SVR3_MMAPDRV)
-static struct xf86memMap {
-  int offset;
-  int memSize;
-} xf86memMaps[MAXSCREENS];
-#endif
-#endif
+#ifdef HAS_SVR3_MMAPDRV
+#ifndef MMAP_DEBUG
+#define MMAP_DEBUG	3
 #endif
 
-#ifndef SVR4
-static int mmapFd = -2;
+struct kd_memloc MapDSC;
+int mmapFd = -2;
+
+int mmapStat(pointer Base, unsigned long Size) {
+
+	int nmmreg,i=0,region=-1;
+	mmapinfo_t *ibuf;
+
+	nmmreg = ioctl(mmapFd, GETNMMREG);
+
+	if(nmmreg <= 0)
+	   xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			  "\nNo physical memory mapped currently.\n\n");
+	else {
+	  if((ibuf = (mmapinfo_t *)malloc(nmmreg*sizeof(mmapinfo_t))) == NULL) 
+		ErrorF("Couldn't allocate memory 4 mmapinfo_t\n");
+	  else {
+	     if(ioctl(mmapFd, GETMMREG, ibuf) != -1)
+		{ 
+		   xf86MsgVerb(X_INFO, MMAP_DEBUG,
+				"# mmapStat: [Size=%x,Base=%x]\n", Size, Base);
+		   xf86MsgVerb(X_INFO, MMAP_DEBUG,
+		     "#      Physical Address     Size      Reference Count\n");
+		for(i = 0; i < nmmreg; i++) {
+		   xf86MsgVerb(X_INFO, MMAP_DEBUG,
+                      "%-4d   0x%08X         %5dk                %5d	",
+          	      i, ibuf[i].physaddr, ibuf[i].length/1024, ibuf[i].refcnt);
+		   if (ibuf[i].physaddr == Base || ibuf[i].length == Size ) {
+			xf86MsgVerb(X_INFO, MMAP_DEBUG,"MATCH !!!");
+			if (region==-1) region=i;
+                      }
+		   xf86ErrorFVerb(MMAP_DEBUG, "\n");
+		}
+		xf86ErrorFVerb(MMAP_DEBUG, "\n");
+		}
+	     free(ibuf);
+	   }
+	}
+	if (region == -1 && nmmreg > 0) region=region * i;
+	return(region);
+}
 #endif
 
 Bool
@@ -74,10 +107,11 @@ xf86LinearVidMem()
 #ifdef SVR4
 	return TRUE;
 #elif defined(HAS_SVR3_MMAPDRV)
-	if(mmapFd >= 0)
-	{
-		return TRUE;
-	}
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+		    "# xf86LinearVidMem: MMAP 2.2.2 called\n");
+
+	if(mmapFd >= 0) return TRUE;
+
 	if ((mmapFd = open("/dev/mmap", O_RDWR)) != -1)
 	{
 	    if(ioctl(mmapFd, GETVERSION) < 0x0222) {
@@ -91,9 +125,8 @@ xf86LinearVidMem()
 	xf86Msg(X_WARNING, "xf86LinearVidMem: failed to open /dev/mmap (%s)\n",
 	        strerror(errno));
 	xf86ErrorF("\tlinear memory access disabled\n");
-#else
-	return FALSE;
 #endif
+	return FALSE;
 }
 
 pointer
@@ -117,39 +150,31 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 			   "xf86MapVidMem", Size, Base, strerror(errno));
 	}
 #else /* SVR4 */
-        XXX Not Supported!
 #ifdef HAS_SVR3_MMAPDRV
-	if (mmapFd == -2)
-	{
-		mmapFd = open("/dev/mmap", O_RDWR);
-	}
-#endif
-	if (mmapFd >= 0)
-	{
-		/* To force the MMAP driver to provide the address */
-		base = (pointer)0;
-	}
-	else
-	{
-	    AllocAddress[ScreenNum][Region] = xalloc(Size + 0x1000);
-	    if (AllocAddress[ScreenNum][Region] == (pointer)0)
-	    {
-		FatalError("xf86MapVidMem: can't alloc framebuffer space\n");
-		/* NOTREACHED */
-	    }
-	    base = (pointer)(((unsigned int)AllocAddress[ScreenNum][Region]
-			      & ~0xFFF) + 0x1000);
-	}
-	MapDSC[ScreenNum][Region].vaddr    = (char *)base;
-	MapDSC[ScreenNum][Region].physaddr = (char *)Base;
-	MapDSC[ScreenNum][Region].length   = Size;
-	MapDSC[ScreenNum][Region].ioflg    = 1;
 
-#ifdef HAS_SVR3_MMAPDRV
+	xf86MsgVerb(X_INFO, MMAP_DEBUG, "# xf86MapVidMem: MMAP 2.2.2 called\n");
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"MMAP_VERSION: 0x%x\n",ioctl(mmapFd, GETVERSION));
+	if (ioctl(mmapFd, GETVERSION) == -1)
+	{
+		xf86LinearVidMem();
+	}
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"MMAP_VERSION: 0x%x\n",ioctl(mmapFd, GETVERSION));
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+		"xf86MapVidMem: Screen: %d - Flags: %d\n", ScreenNum, Flags);
+	mmapStat(Base,Size);
+	/* To force the MMAP driver to provide the address */
+	base = (pointer)0;
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"xf86MapVidMem: [s=%x,a=%x]\n", Size, Base);
+	MapDSC.vaddr    = (char *)base;
+	MapDSC.physaddr = (char *)Base;
+	MapDSC.length   = Size;
+	MapDSC.ioflg    = 1;
 	if(mmapFd >= 0)
 	{
-	    if((base = (pointer)ioctl(mmapFd, MAP,
-			   &(MapDSC[ScreenNum][Region]))) == (pointer)-1)
+	    if((base = (pointer)ioctl(mmapFd, MAP, &MapDSC)) == (pointer)-1)
 	    {
 		FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
 			   "xf86MapVidMem", Size, Base, strerror(errno));
@@ -157,102 +182,42 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	    }
 
 	    /* Next time we want the same address! */
-	    MapDSC[ScreenNum][Region].vaddr    = (char *)base;
-#if 0
-/* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
-	    xf86memMaps[ScreenNum].offset = (int) Base;
-	    xf86memMaps[ScreenNum].memSize = Size;
-#endif
-	    return((pointer)base);
+	    MapDSC.vaddr    = (char *)base;
 	}
-#endif
-	if (ioctl(xf86Info.consoleFd, KDMAPDISP,
-		  &(MapDSC[ScreenNum][Region])) < 0)
-	{
-	    FatalError("xf86MapVidMem: Failed to map video mem (%x,%x) (%s)\n",
-		        Base, Size, strerror(errno));
-	    /* NOTREACHED */
-	}
+
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"MapDSC.vaddr   : 0x%x\n", MapDSC.vaddr);
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"MapDSC.physaddr: 0x%x\n", MapDSC.physaddr);
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"MapDSC.length  : %d\n", MapDSC.length);
+	mmapStat(Base,Size);
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"xf86MapVidMem: [s=%x,a=%x,b=%x]\n", Size, Base, base);
+	xf86Msg(X_WARNING, "xf86MapVidMem: SUCCEED Mapping FrameBuffer \n");
+#endif /* HAS_SVR3_MMAPDRV */
 #endif /* SVR4 */
-#if 0
-	xf86memMaps[ScreenNum].offset = (int) Base;
-	xf86memMaps[ScreenNum].memSize = Size;
-#endif
 	return((pointer)base);
 }
 
-#if 0
-/* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
-#if defined(SVR4) || defined(HAS_SVR3_MMAPDRV)
-void xf86GetVidMemData(ScreenNum, Base, Size)
-int ScreenNum;
-int *Base;
-int *Size;
-{
-   *Base = xf86memMaps[ScreenNum].offset;
-   *Size = xf86memMaps[ScreenNum].memSize;
-}
-
-#endif
-#endif
 /* ARGSUSED */
 void xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 #if defined (SVR4)
 	munmap(Base, Size);
 #else /* SVR4 */
-	XXX Not Supported!
 #ifdef HAS_SVR3_MMAPDRV
-	if(mmapFd >= 0)
-	{
-		ioctl(mmapFd, UNMAPRM, MapDSC[ScreenNum][Region].vaddr);
-		return;
+	   ErrorF("# xf86UnMapVidMem: UNMapping FrameBuffer\n");
+	   mmapStat(Base,Size);
 	}
-#endif
-	/* XXXX This is a problem because it unmaps all regions */
-	ioctl(xf86Info.consoleFd, KDUNMAPDISP, 0);
-	xfree(AllocAddress[ScreenNum][Region]);
-#endif /* SVR4 */
-}
-
-#if 0
-/* xf86{Map,UnMap}Display() are no longer supported */
-/* ARGSUSED */
-void xf86MapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-#if !defined(SVR4)
-#ifdef HAS_SVR3_MMAPDRV
-	if(mmapFd >= 0)
-	{
-		ioctl(mmapFd, MAP, &(MapDSC[ScreenNum][Region]));
-		return;
-	}
-#endif
-	ioctl(xf86Info.consoleFd, KDMAPDISP, &(MapDSC[ScreenNum][Region]));
+	ioctl(mmapFd, UNMAPRM , Base);
+	mmapStat(Base,Size);
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+		"# xf86UnMapVidMem: Screen: %d [v=%x]\n", ScreenNum, Base);
+#endif /* HAS_SVR3_MMAPDRV */
 #endif /* SVR4 */
 	return;
 }
-
-/* ARGSUSED */
-void xf86UnMapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-#if !defined(SVR4)
-#ifdef HAS_SVR3_MMAPDRV
-	if(mmapFd > 0)
-	{
-		ioctl(mmapFd, UNMAP, MapDSC[ScreenNum][Region].vaddr);
-		return;
-	}
-#endif
-	ioctl(xf86Info.consoleFd, KDUNMAPDISP, 0);
-#endif /* SVR4 */
-	return;
-}
-#endif
 
 /***************************************************************************/
 /* I/O Permissions section                                                 */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.5 1999/02/28 11:19:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.6 1999/03/20 08:59:10 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -374,6 +374,8 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 			   "Option \"%s\" requires a boolean value\n", newn);
 		p->found = FALSE;
 	    }
+	} else {
+	    p->found = FALSE;
 	}
 	if (p->found) {
 	    xf86DrvMsgVerb(scrnIndex, X_CONFIG, 2, "Option \"%s\"", newn);

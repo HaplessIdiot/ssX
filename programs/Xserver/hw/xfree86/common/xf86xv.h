@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.2 1998/09/13 05:23:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.3 1999/02/28 11:19:35 dawes Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -8,27 +8,26 @@
 
 #define VIDEO_NO_CLIPPING			0x00000001
 #define VIDEO_INVERT_CLIPLIST			0x00000002
+#define VIDEO_EXPOSE				0x00000004
 
 
 typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
-	pointer data );
+	RegionPtr clipBoxes, pointer data );
 typedef  int (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
-	pointer data );
+	RegionPtr clipBoxes, pointer data );
 typedef int (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
-	pointer data );
+	RegionPtr clipBoxes, pointer data );
 typedef int (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
-	pointer data );
+	RegionPtr clipBoxes, pointer data );
 typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn, pointer data, Bool exit);
-typedef void (* ReclipVideoFuncPtr)(ScrnInfoPtr pScrn, RegionPtr clipBoxes,
-	pointer data );
 typedef int (* SetPortAttributeFuncPtr)(ScrnInfoPtr pScrn, Atom attribute,
 	INT32 value, pointer data);
 typedef int (* GetPortAttributeFuncPtr)(ScrnInfoPtr pScrn, Atom attribute,
@@ -69,7 +68,6 @@ typedef struct {
   GetVideoFuncPtr GetVideo;
   GetStillFuncPtr GetStill;
   StopVideoFuncPtr StopVideo;
-  ReclipVideoFuncPtr ReclipVideo;
   SetPortAttributeFuncPtr SetPortAttribute;
   GetPortAttributeFuncPtr GetPortAttribute;
   QueryBestSizeFuncPtr QueryBestSize;
@@ -81,6 +79,17 @@ xf86XVScreenInit(
    ScreenPtr pScreen, 
    XF86VideoAdaptorPtr 	*Adaptors,
    int num
+);
+
+int
+xf86XVRegisterGenericAdaptor(
+   XF86VideoAdaptorPtr 	*Adaptors,
+   int num
+);
+
+int
+xf86XVListGenericAdaptors(
+   XF86VideoAdaptorPtr 	**Adaptors
 );
 
 
@@ -104,7 +113,6 @@ typedef struct {
   GetVideoFuncPtr GetVideo;
   GetStillFuncPtr GetStill;
   StopVideoFuncPtr StopVideo;
-  ReclipVideoFuncPtr ReclipVideo;
   SetPortAttributeFuncPtr SetPortAttribute;
   GetPortAttributeFuncPtr GetPortAttribute;
   QueryBestSizeFuncPtr QueryBestSize;

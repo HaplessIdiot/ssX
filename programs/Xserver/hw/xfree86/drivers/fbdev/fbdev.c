@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.1 1999/03/06 13:12:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.2 1999/03/20 08:59:18 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -206,32 +206,32 @@ static Bool
 FBDevProbe(DriverPtr drv, int flags)
 {
 	int i;
-	ScrnInfoPtr pScrn;
+	ScrnInfoPtr pScrn, pScrn0;
        	GDevPtr *devSections;
 	int numDevSections;
 	char *dev;
 	Bool foundScreen = FALSE;
 
 	TRACE("probe start");
-	pScrn = xf86AllocateScreen(drv, 0);
-	if (!xf86LoadSubModule(pScrn, "fbdevhw")) {
-		xf86DeleteScreen(pScrn->scrnIndex,0);
+	pScrn0 = xf86AllocateScreen(drv, 0);
+	if (!xf86LoadSubModule(pScrn0, "fbdevhw")) {
+		xf86DeleteScreen(pScrn0->scrnIndex,0);
 		return FALSE;
 	}
 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
 
-	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0)
+	if ((numDevSections = xf86MatchDevice(FBDEV_DRIVER_NAME, &devSections)) <= 0) {
+		xf86DeleteScreen(pScrn0->scrnIndex,0);
 		return FALSE;
+	}
 
 	for (i = 0; i < numDevSections; i++) {
 		dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
 		if (fbdevHWProbe(NULL,dev)) {
-			if (!foundScreen) {
-				pScrn = xf86AllocateScreen(drv, 0);
-				xf86LoadSubModule(pScrn, "fbdevhw");
-				xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
-			}
 			foundScreen = TRUE;
+			pScrn = xf86AllocateScreen(drv, 0);
+			xf86LoadSubModule(pScrn, "fbdevhw");
+			xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
 #if DEBUG
 			ErrorF("fbdev screen: %s\n", dev ? dev : "-");
 #endif
@@ -250,8 +250,7 @@ FBDevProbe(DriverPtr drv, int flags)
 		}
 	}
 	xfree(devSections);
-	if (FALSE == foundScreen)
-		xf86DeleteScreen(pScrn->scrnIndex,0);
+	xf86DeleteScreen(pScrn0->scrnIndex,0);
 	TRACE("probe done");
 	return foundScreen;
 }

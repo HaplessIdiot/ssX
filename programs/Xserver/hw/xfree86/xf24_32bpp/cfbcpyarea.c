@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbcpyarea.c,v 1.2 1999/02/07 06:18:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbcpyarea.c,v 1.3 1999/02/28 11:19:49 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -175,14 +175,11 @@ cfbDoBitblt24To32(
 	    }
 	}
     } else {  /* it ain't pretty, but hey */
-	register unsigned char tmp;
 	for(;nbox; pbox++, pptSrc++, nbox--) {
 	    data24 = ptr24 + (pptSrc->y * pitch24) + (pptSrc->x * 3);
 	    data32 = ptr32 + (pbox->y1 * pitch32) + (pbox->x1 << 2);
 	    width = (pbox->x2 - pbox->x1) << 2;
 	    height = pbox->y2 - pbox->y1;
-
-	    /* Some of these can probably be reduced more */
 
 	    while(height--) {	
 		switch(rop) {
@@ -218,68 +215,39 @@ cfbDoBitblt24To32(
 		    break;
 		case GXandReverse:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = ((~tmp & data24[j]) & pm[0]) | 
-							(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = ((~tmp & data24[j+1]) & pm[1]) | 
-							(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = ((~tmp & data24[j+2]) & pm[2]) | 
-							(tmp & ~pm[2]);
+			data32[i] = ~data32[i] & (data24[j] | ~pm[0]);
+			data32[i+1] = ~data32[i+1] & (data24[j+1] | ~pm[1]);
+			data32[i+2] = ~data32[i+2] & (data24[j+2] | ~pm[2]);
 		    }
 		    break;
 		case GXandInverted:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = (tmp & ~data24[j] & pm[0]) | (tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = (tmp & ~data24[j+1] & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = (tmp & ~data24[j+2] & pm[2]) | 
-								(tmp & ~pm[2]);
+			data32[i] &= ~(data24[j] & pm[0]);
+			data32[i+1] &= ~(data24[j+1] & pm[1]);
+			data32[i+2] &= ~(data24[j+2] & pm[2]);
 		    }
 		    break;
 		case GXnoop:
 		    return;
 		case GXxor:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = ((tmp ^ data24[j]) & pm[0]) | 
-								(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = ((tmp ^ data24[j+1]) & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = ((tmp ^ data24[j+2]) & pm[2]) | 
-								(tmp & ~pm[2]);
+			data32[i] ^= data24[j] & pm[0];
+			data32[i+1] ^= data24[j+1] & pm[1];
+			data32[i+2] ^= data24[j+2] & pm[2];
 		    }
 		    break;
 		case GXnor:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = (~(tmp | data24[j]) & pm[0]) | 
-								(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = (~(tmp | data24[j+1]) & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = (~(tmp | data24[j+2]) & pm[2]) | 
-								(tmp & ~pm[2]);
+			data32[i] = ~(data32[i] | (data24[j] & pm[0]));
+			data32[i+1] = ~(data32[i+1] | (data24[j+1] & pm[1]));
+			data32[i+2] = ~(data32[i+2] | (data24[j+2] & pm[2]));
 		    }
 		    break;
 		case GXequiv:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = ((tmp ^ ~data24[j]) & pm[0]) | 
-								(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = ((tmp ^ ~data24[j+1]) & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = ((tmp ^ ~data24[j+2]) & pm[2]) | 
-								(tmp & ~pm[2]);
+			data32[i] = ~(data32[i] ^ (data24[j] & pm[0]));
+			data32[i+1] = ~(data32[i+1] ^ (data24[j+1] & pm[1]));
+			data32[i+2] = ~(data32[i+2] ^ (data24[j+2] & pm[2]));
 		    }
 		    break;
 		case GXinvert:
@@ -291,15 +259,9 @@ cfbDoBitblt24To32(
 		    break;
 		case GXorReverse:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = ((~tmp | data24[j]) & pm[0]) | 
-								(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = ((~tmp | data24[j+1]) & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = ((~tmp | data24[j+2]) & pm[2]) | 
-								(tmp & ~pm[2]);
+			data32[i] = ~data32[i] | (data24[j] & pm[0]);
+			data32[i+1] = ~data32[i+1] | (data24[j+1] & pm[1]);
+			data32[i+2] = ~data32[i+2] | (data24[j+2] & pm[2]);
 		    }
 		    break;
 		case GXcopyInverted:
@@ -313,28 +275,16 @@ cfbDoBitblt24To32(
 		    break;
 		case GXorInverted:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = ((tmp | ~data24[j]) & pm[0]) | 
-								(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = ((tmp | ~data24[j+1]) & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = ((tmp | ~data24[j+2]) & pm[2]) | 
-								(tmp & ~pm[2]);
-			}
+			data32[i] |= ~data24[j] & pm[0];
+			data32[i+1] |= ~data24[j+1] & pm[1];
+			data32[i+2] |= ~data24[j+2] & pm[2];
+		    }
 		    break;
 		case GXnand:
 		    for(i = j = 0; i < width; i += 4, j += 3) {
-			tmp = data32[i];
-			data32[i] = (~(tmp & data24[j]) & pm[0]) | 
-								(tmp & ~pm[0]);
-			tmp = data32[i+1];
-			data32[i+1] = (~(tmp & data24[j+1]) & pm[1]) | 
-								(tmp & ~pm[1]);
-			tmp = data32[i+2];
-			data32[i+2] = (~(tmp & data24[j+2]) & pm[2]) | 
-								(tmp & ~pm[2]);
+			data32[i] = ~(data32[i] & (data24[j] | ~pm[0]));
+			data32[i+1] = ~(data32[i+1] & (data24[j+1] | ~pm[1]));
+			data32[i+2] = ~(data32[i+2] & (data24[j+2] | ~pm[2]));
 		    }
 		    break;
 		case GXset:
@@ -498,54 +448,39 @@ cfbDoBitblt32To24(
 		    break;
 		case GXandReverse:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = ((data32[i] & ~data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = ((data32[i+1] & ~data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = ((data32[i+2] & ~data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] = ~data24[j] & (data32[i] | ~pm[0]);
+			data24[j+1] = ~data24[j+1] & (data32[i+1] | ~pm[1]);
+			data24[j+2] = ~data24[j+2] & (data32[i+2] | ~pm[2]);
 		    }
 		    break;
 		case GXandInverted:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[i] = (~data32[i] & data24[j] & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[i+1] = (~data32[i+1] & data24[j+1] & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[i+2] = (~data32[i+2] & data24[j+2] & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] &= ~(data32[i] & pm[0]);
+			data24[j+1] &= ~(data32[i+1] & pm[1]);
+			data24[j+2] &= ~(data32[i+2] & pm[2]);
 		    }
 		    break;
 		case GXnoop:
 		    return;
 		case GXxor:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = ((data32[i] ^ data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = ((data32[i+1] ^ data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = ((data32[i+2] ^ data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] ^= data32[i] & pm[0];
+			data24[j+1] ^= data32[i+1] & pm[1];
+			data24[j+2] ^= data32[i+2] & pm[2];
 		    }
 		    break;
 		case GXnor:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = (~(data32[i] | data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = (~(data32[i+1] | data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = (~(data32[i+2] | data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] = ~(data24[j] | (data32[i] & pm[0]));
+			data24[j+1] = ~(data24[j+1] | (data32[i+1] & pm[1]));
+			data24[j+2] = ~(data24[j+2] | (data32[i+2] & pm[2]));
 		    }
 		    break;
 		case GXequiv:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = ((~data32[i] ^ data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = ((~data32[i+1] ^ data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = ((~data32[i+2] ^ data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] = ~(data24[j] ^ (data32[i] & pm[0]));
+			data24[j+1] = ~(data24[j+1] ^ (data32[i+1] & pm[1]));
+			data24[j+2] = ~(data24[j+2] ^ (data32[i+2] & pm[2]));
 		    }
 		    break;
 		case GXinvert:
@@ -557,12 +492,9 @@ cfbDoBitblt32To24(
 		    break;
 		case GXorReverse:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = ((data32[i] | ~data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = ((data32[i+1] | ~data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = ((data32[i+2] | ~data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] = ~data24[j] | (data32[i] & pm[0]);
+			data24[j+1] = ~data24[j+1] | (data32[i+1] & pm[1]);
+			data24[j+2] = ~data24[j+2] | (data32[i+2] & pm[2]);
 		    }
 		    break;
 		case GXcopyInverted:
@@ -576,22 +508,16 @@ cfbDoBitblt32To24(
 		    break;
 		case GXorInverted:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = ((~data32[i] | data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = ((~data32[i+1] | data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = ((~data32[i+2] | data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] |= ~data32[i] & pm[0];
+			data24[j+1] |= ~data32[i+1] & pm[1];
+			data24[j+2] |= ~data32[i+2] & pm[2];
 		    }
 		    break;
 		case GXnand:
 		    for(i = j = 0; j < width; i += 4, j += 3) {
-			data24[j] = (~(data32[i] & data24[j]) & pm[0]) | 
-							(data24[j] & ~pm[0]);
-			data24[j+1] = (~(data32[i+1] & data24[j+1]) & pm[1]) | 
-							(data24[j+1] & ~pm[1]);
-			data24[j+2] = (~(data32[i+2] & data24[j+2]) & pm[2]) | 
-							(data24[j+2] & ~pm[2]);
+			data24[j] = ~(data24[j] & (data32[i] | ~pm[0]));
+			data24[j+1] = ~(data24[j+1] & (data32[i+1] | ~pm[1]));
+			data24[j+2] = ~(data24[j+2] & (data32[i+2] | ~pm[2]));
 		    }
 		    break;
 		case GXset:

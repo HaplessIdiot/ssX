@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.88 1999/03/14 03:20:31 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.89 1999/03/21 01:44:59 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -97,10 +97,19 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LinuxLocaleDefines	-DX_LOCALE
 #endif
 
+#ifndef LinuxGnuSourceDefines
+#ifdef UseInstalled
+#define LinuxGnuSourceDefines	/**/
+#else
+#define LinuxGnuSourceDefines	-D_GNU_SOURCE
+#endif
+#endif
+
 #if LinuxCLibMajorVersion >= 6
 #define LinuxSourceDefines	-D_POSIX_C_SOURCE=199309L \
 				-D_POSIX_SOURCE -D_XOPEN_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE
+				-D_BSD_SOURCE -D_SVID_SOURCE \
+				LinuxGnuSourceDefines LinuxLocaleDefines
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
 #if !defined(AlphaArchitecture)
 #define HasPosixThreads		YES
@@ -114,8 +123,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #define HasPoll			YES
 #else
-#define LinuxSourceDefines	-D_POSIX_SOURCE -D_GNU_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE LinuxLocaleDefines
+#define LinuxSourceDefines	-D_POSIX_SOURCE \
+				-D_BSD_SOURCE -D_SVID_SOURCE \
+				LinuxGnuSourceDefines LinuxLocaleDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #ifndef HasLibCrypt
 #if !defined(AlphaArchitecture)
@@ -293,6 +303,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define StandardCppOptions	-traditional
 #define StandardCppDefines	StandardDefines
 
+#ifndef XF86ExtraCardDrivers
+#define XF86ExtraCardDrivers	v4l
+#endif
+
 #ifdef i386Architecture
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt
 #define LinuxMachineDefines	-D__i386__
@@ -335,11 +349,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #define PositionIndependentCFlags -fpic
 #define PositionIndependentCplusplusFlags -fpic
-#define BuildServer	NO
-#if defined(DoLoadableServer)
-#undef DoLoadableServer
-#endif
-#define DoLoadableServer NO
 #endif
 
 #define StandardDefines		-Dlinux LinuxMachineDefines LinuxSourceDefines

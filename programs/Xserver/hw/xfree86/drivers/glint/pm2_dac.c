@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.11 1999/03/07 11:40:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.12 1999/03/21 07:35:09 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -243,7 +243,7 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case 32:
 	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | 
 				 	PM2DAC_GRAPHICS | PM2DAC_8888;
-	if (pGlint->Overlay) {
+	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    pReg->DacRegs[PM2DACIndexColorKeyControl] = 0x11;
 	    pReg->DacRegs[PM2DACIndexColorKeyOverlay] = 0xFF;
 	} else
@@ -362,10 +362,6 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsEnd >> 3], PMVsEnd);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
 
-    Permedia2WriteAddress(pScrn, 0x00);
-    for (i=0;i<768;i++)
-        Permedia2WriteData(pScrn, glintReg->cmap[i]);
-
     Permedia2OutIndReg(pScrn, PM2DACIndexColorKeyOverlay, 0x00, 
 					glintReg->DacRegs[PM2DACIndexColorKeyOverlay]);
     Permedia2OutIndReg(pScrn, PM2DACIndexColorKeyControl, 0x00, 
@@ -383,6 +379,10 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 					glintReg->DacRegs[PM2DACIndexClockAN]);
     Permedia2OutIndReg(pScrn, PM2DACIndexClockAP, 0x00, 
 					glintReg->DacRegs[PM2DACIndexClockAP]);
+
+    Permedia2WriteAddress(pScrn, 0x00);
+    for (i=0;i<768;i++)
+        Permedia2WriteData(pScrn, glintReg->cmap[i]);
 
     if (pGlint->MemClock) {
         Permedia2OutIndReg(pScrn, PM2DACIndexMemClockM, 0x00, 
@@ -502,10 +502,11 @@ void
 Permedia2I2CUDelay(I2CBusPtr b, int usec)
 {
     GLINTPtr pGlint = (GLINTPtr) b->DriverPrivate.ptr;
-    CARD32 ct2 = usec * ((pGlint->MemClock > 0) ? pGlint->MemClock : 100);
     CARD32 ct1 = GLINT_READ_REG(PMCount);
+    CARD32 ct2 = usec * ((pGlint->MemClock > 0) ? pGlint->MemClock : 100);
 
-    while ((GLINT_READ_REG(PMCount) - ct1) < ct2);
+    if (GLINT_READ_REG(PMCount) != ct1)
+	while ((GLINT_READ_REG(PMCount) - ct1) < ct2);
 }
 
 void

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.210 1999/03/21 07:34:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.211 1999/03/21 12:46:29 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -36,6 +36,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* XInput drivers */
 #ifndef XInputDrivers
 #define XInputDrivers elo2300 magellan microtouch spaceorb
+#endif
+
+/* OS.cf files may set this for OS-specific drivers */
+#ifndef XF86ExtraCardDrivers
+#define XF86ExtraCardDrivers /**/
 #endif
 
 /*
@@ -102,8 +107,42 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
 #define XF86CardDrivers		mga glint tga s3virge sis cirrus tseng \
-				trident chips apm fbdev vga
+				trident chips apm fbdev \
+				vga XF86ExtraCardDrivers
 #endif
+#endif
+
+/* Sparc drivers */
+
+#ifdef SparcArchitecture
+#ifndef XF86Server
+#define XF86Server              YES
+#endif
+/* 1bpp module */
+#ifndef XF1Bpp
+#define XF1Bpp                  YES
+#endif
+/* shadow fb module */
+#ifndef XFShadowFB
+#define XFShadowFB		YES
+#endif
+/* fbdevhw module */
+#ifndef XF86FBDevHw
+#define XF86FBDevHw		YES
+#endif
+/* XAA module */
+#ifndef XF86XAA
+#define XF86XAA                 YES
+#endif
+/* DDC module */
+#ifndef XF86DDC
+#define XF86DDC			YES
+#endif
+
+#ifndef XF86CardDrivers
+#define XF86CardDrivers		fbdev XF86ExtraCardDrivers
+#endif
+
 #endif
 
 /*
@@ -170,7 +209,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
-#define XF86CardDrivers		mga glint tga vga
+#define XF86CardDrivers		mga glint tga vga XF86ExtraCardDrivers
 #endif
 #endif
 
@@ -255,7 +294,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
 #define XF86CardDrivers		mga glint s3virge sis cirrus tseng \
-				trident chips fbdev vga
+				trident chips fbdev vga XF86ExtraCardDrivers
 #endif
 #endif
 
@@ -573,7 +612,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * Build scanpci?
  */
 #ifndef BuildScanpci
-#if SystemV || SystemV4 || (defined(LinuxArchitecture) && !defined(Mc68020Architecture) && !defined(PpcArchitecture)) || defined(i386BsdArchitecture) || defined(LynxOSArchitecture) || defined(OS2Architecture)
+#if SystemV || SystemV4 || \
+    (defined(LinuxArchitecture) && !defined(Mc68020Architecture) && \
+     !defined(PpcArchitecture)) || \
+    defined(i386BsdArchitecture) || defined(LynxOSArchitecture) || \
+    defined(OS2Architecture)
 #define BuildScanpci		YES
 #else
 #define BuildScanpci		NO
@@ -606,6 +649,12 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define XFree86DGADefines	/**/
 #endif
 
+#if BuildXvExt
+#define XFree86XvDefines	-DXvExtension
+#else
+#define XFree86XvDefines	/**/
+#endif
+
 #ifndef DlopenHack
 #define DlopenHack		-DDLOPEN_HACK
 #endif
@@ -634,7 +683,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH LinkKitDefines XFree86DGADefines XFree86LoaderDefines -DXFree86Server VidModeExtensionDefines -DX_BYTE_ORDER=ByteOrder
+#define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
+				XFree86DGADefines XFree86XvDefines \
+				XFree86LoaderDefines -DXFree86Server \
+				VidModeExtensionDefines \
+				-DX_BYTE_ORDER=ByteOrder
 #endif
 
 #ifndef XFree86ServerOSDefines

@@ -2,7 +2,7 @@ XCOMM $XConsortium: isc.cf /main/1 1996/10/31 14:45:18 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.11 1997/01/14 22:12:37 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.12 1998/04/05 00:45:40 robin Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -28,10 +28,73 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.11 1997/01/14 22:12:37 dawes 
 # endif
 #endif
 
-/* gcc 2.7.2 tested Optimization Flags                               */
+/* Disable the use of /var/X11 */
+#ifndef HasVarDirectory
+#define HasVarDirectory		NO
+#endif
+
+/* Use mmap Driver                                                   */
+#ifndef HasSVR3mmapDrv
+# define HasSVR3mmapDrv		YES
+#endif
+
+/* Use inline Math from linux ;-) package inline-math-2.6.tar.gz */
+/* should be available on your favorite linux ftp                */
+#ifndef UseInlineMath
+# define UseInlineMath		YES
+#endif
+
+/* Use cbrt from liboptm.a (Interactive icc Compiler) */
+/*
+*/
+#ifndef HasCbrt
+# define HasCbrt		YES
+#endif
+
+/* Use GNUs MallocLibrary (and the Location for the Lib)             */
+#ifndef UseGnuMalloc
+# define UseGnuMalloc		YES
+#endif
+
+/* Install Zlib Headers - used in lib/zlib/Imakefile */
+#ifndef OsNeedZlibHeaders
+# define OsNeedZlibHeaders	YES
+#endif
+
+/* Expand Manual Pages (needs S5L)                                   */
+#ifndef ExpandManNames
+# define ExpandManNames		YES
+#endif
+
+/* if you have groff or the TextProcessingWorkbench - don't preformat*/
+#ifndef FormattedManPages
+# define FormattedManPages      NO
+#endif
+
+#if 0
+/* for the new XF86Setup Util */
+#define BuildXF86Setup          NO
+#ifndef HasTk
+#define HasTk			YES
+#define HasTcl			YES
+#endif
+#endif
+
+#ifndef HasPosixRegex		/* Need extra/regex since 3.9Ns */
+#define HasPosixRegex		NO
+#endif
+
+#ifndef DoLoadableServer
+#define DoLoadableServer        YES
+#endif
+
+#ifndef CpuOption
+#define CpuOption	-mpentium
+#endif
+
+/* gcc 2.7.2/2.8.1 tested Optimization Flags                               */
 #ifndef DefaultGcc2i386Opt
-# define DefaultGcc2i386Opt	-m486 -O2 -fno-strength-reduce -malign-loops=2 -malign-jumps=2 -malign-functions=2
-/* -fomit-frame-pointer */ 
+#define DefaultGcc2i386Opt	-O2 CpuOption -fno-strength-reduce GccWarningOptions
 #endif
 
 /* For a POSIXized build on Interactive maybe needed to use gcc2.7.2 */
@@ -116,7 +179,7 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 
 #ifndef GnuMallocLibrary
 #ifndef UseIscLd
-# define GnuMallocLibrary	-L/usr/local/lib -lgmalloc
+# define GnuMallocLibrary	-L/usr/local/lib -lgnumalloc
 #else
 # define GnuMallocLibrary       /usr/local/lib/libgmalloc.a
 #endif
@@ -137,9 +200,6 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #  define ExtraLibraries SocketLibraries LocalLibraries PosixLibraries
 # endif
 #endif
-
-/* Don't know if this is necessary, but it avoids breaking the current setup */
-#define MallocLibraries		/**/
 
 #if UseXwctomb
 #define XawI18nDefines		-DUSE_XWCHAR_STRING

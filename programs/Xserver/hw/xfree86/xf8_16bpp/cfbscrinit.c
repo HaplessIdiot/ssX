@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.2 1999/02/07 06:18:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.3 1999/03/21 07:35:34 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -245,9 +245,9 @@ cfb8_16ScreenInit(
     int xsize, int ysize,	/* in pixels */
     int dpix, int dpiy,		/* dots per inch */
     int width16,		/* pixel width of frame buffer */
-    int width8,
-    unsigned char key
+    int width8
 ){
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     cfb8_16ScreenPtr pScreenPriv;
 
     if (!cfb8_16SetupScreen(pScreen, xsize, ysize, dpix, dpiy))
@@ -258,7 +258,7 @@ cfb8_16ScreenInit(
     pScreenPriv->pix16 = pbits16;
     pScreenPriv->width8 = width8;
     pScreenPriv->width16 = width16;
-    pScreenPriv->key = key;
+    pScreenPriv->key = pScrn->colorKey;
 
     return cfb8_16FinishScreenInit(pScreen, xsize, ysize, dpix, dpiy);
 }

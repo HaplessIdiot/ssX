@@ -419,6 +419,9 @@ xf86PostKbdEvent(unsigned key)
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
   static Bool first_time = TRUE;
 #endif
+#if defined(__sparc__)
+  static int  kbdSun = -1;
+#endif
 
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
   if (first_time)
@@ -428,6 +431,17 @@ xf86PostKbdEvent(unsigned key)
 	    || (xf86Info.consType == PCVT);
   }
 #endif
+
+#if defined (__sparc__)
+  if (kbdSun == -1) {
+    if (xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
+      kbdSun = 1;
+    else
+      kbdSun = 0;
+  }
+  if (kbdSun)
+    goto special;
+#endif /* __sparc__ */
 
 #if defined (i386) && defined (SVR4) && !defined (PC98)
     /* 
@@ -588,6 +602,39 @@ xf86PostKbdEvent(unsigned key)
 #else /* ASSUME_CUSTOM_KEYCODES */
   specialkey = scanCode;
 #endif /* ASSUME_CUSTOM_KEYCODES */
+
+#if defined (__sparc__)
+special:
+  if (kbdSun) {
+    switch (scanCode) {
+      case 0x2b: specialkey = KEY_BackSpace; break;
+      case 0x47: specialkey = KEY_KP_Minus; break;
+      case 0x7d: specialkey = KEY_KP_Plus; break;
+      case 0x05: specialkey = KEY_F1; break;
+      case 0x06: specialkey = KEY_F2; break;
+      case 0x08: specialkey = KEY_F3; break;
+      case 0x0a: specialkey = KEY_F4; break;
+      case 0x0c: specialkey = KEY_F5; break;
+      case 0x0e: specialkey = KEY_F6; break;
+      case 0x10: specialkey = KEY_F7; break;
+      case 0x11: specialkey = KEY_F8; break;
+      case 0x12: specialkey = KEY_F9; break;
+      case 0x07: specialkey = KEY_F10; break;
+      case 0x09: specialkey = KEY_F11; break;
+      case 0x0b: specialkey = KEY_F12; break;
+      default: specialkey = 0; break;
+    }
+    /*
+     * XXX XXX XXX:
+     *
+     * I really don't know what's wrong here, but passing the real
+     * scanCode offsets by one from XKB's point of view.
+     *
+     * (ecd@skynet.be, 980405)
+     */
+    scanCode--;
+  }
+#endif /* defined (__sparc__) */
 
   if ((ModifierDown(ControlMask | AltMask)) ||
       (ModifierDown(ControlMask | AltLangMask)))

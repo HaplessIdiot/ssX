@@ -1,7 +1,7 @@
 S3 ViRGE 4.0 devel notes
 
 rev: 
-01/30/99 KJB
+Mar 21 99 KJB
 
 
 Function		Implemented
@@ -23,6 +23,15 @@ S3VRestore		X
 
 Status
 ------
+03/21/99 KJB
+3.9Pf has Matt Grossman's Alpha changes.
+For next patch - remove s3v_pio.c and s3v_comp.h.  Include the EnableMMIO and
+DisableMMIO functions from s3v_pio.c in s3v_driver.c.
+
+03/02/99 KJB
+3.9Pc - depth 24 doesn't work on my ViRGE DX.  NoAccel doesn't start, accel does
+but has blocky noise.
+
 03/01/99 KJB
 Macro change done, VGAIN/VGAOUT for register access, INREG/OUTREG for s3v_accel.c.
 Added Mark Vojkovich's re-write of the accel code.  It may only be clean for ViRGE DX
@@ -145,4 +154,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.5 1999/01/31 12:21:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.6 1999/03/02 10:41:58 dawes Exp $

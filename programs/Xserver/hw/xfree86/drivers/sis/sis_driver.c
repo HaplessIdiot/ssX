@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.18 1999/03/20 08:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.19 1999/03/21 07:35:19 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1613,11 +1613,15 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     vgaHWPtr hwp;
     int base = y * pScrn->displayWidth + x;
     int vgaIOBase;
-    unsigned char temp;
+    unsigned char temp,temp2;
 
     hwp = VGAHWPTR(pScrn);
     pSiS = SISPTR(pScrn);
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
     if (pScrn->bitsPerPixel < 8) {
 	base = (y * pScrn->displayWidth + x + 3) >> 3;
@@ -1641,9 +1645,14 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
     outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);
 
-    outb(0x3C4, 0x27); temp = inb(0x3C5) & 0xF0;
-    temp |= (base & 0x0F0000) >> 16;
-    outb(0x3C5, temp);
+    outb(VGA_SEQ_INDEX, 0x27);
+    temp2 = inb(VGA_SEQ_DATA) & 0xF0;
+    temp2 |= (base & 0x0F0000) >> 16;
+    xf86DrvMsg(pScrn->scrnIndex, X_NOTICE,
+		"3C5/27h set to hex %2X, base %d\n", temp2, base);
+    outb(VGA_SEQ_DATA, temp2);
+
+    outw(VGA_SEQ_INDEX, (temp << 8) | 0x05); /* Relock Registers */
 }
 
 /*

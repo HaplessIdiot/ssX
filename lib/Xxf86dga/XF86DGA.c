@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.11 1997/01/18 06:52:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.12 1999/01/12 06:24:15 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -14,6 +14,49 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #include <os2.h>
 #endif
 
+#if defined(linux)
+#define HAS_MMAP_ANON
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <asm/page.h>   /* PAGE_SIZE */
+#define HAS_SC_PAGESIZE /* _SC_PAGESIZE may be an enum for Linux */
+#define HAS_GETPAGESIZE
+#endif /* linux */
+
+#if defined(CSRG_BASED)
+#define HAS_MMAP_ANON
+#define HAS_GETPAGESIZE
+#include <sys/types.h>
+#include <sys/mman.h>
+#endif /* CSRG_BASED */
+
+#if defined(DGUX)
+#define HAS_GETPAGESIZE
+#define MMAP_DEV_ZERO
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#endif /* DGUX */
+
+#if defined(SVR4) && !defined(DGUX)
+#define MMAP_DEV_ZERO
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#endif /* SVR4 && !DGUX */
+
+#if defined(sun) && !defined(SVR4) /* SunOS */
+#define MMAP_DEV_ZERO   /* doesn't SunOS have MAP_ANON ?? */
+#define HAS_GETPAGESIZE
+#include <sys/types.h>
+#include <sys/mman.h>
+#endif /* sun && !SVR4 */
+
+#ifdef XNO_SYSCONF
+#undef _SC_PAGESIZE
+#endif
+
+
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -21,100 +64,45 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #include "Xext.h"
 #include "extutil.h"
 
-static XExtensionInfo _xf86dga_info_data;
-static XExtensionInfo *xf86dga_info = &_xf86dga_info_data;
-static char *xf86dga_extension_name = XF86DGANAME;
+extern XExtDisplayInfo* xdga_find_display(Display*);
+extern char *xdga_extension_name;
 
 #define XF86DGACheckExtension(dpy,i,val) \
-  XextCheckExtension (dpy, i, xf86dga_extension_name, val)
+  XextCheckExtension (dpy, i, xdga_extension_name, val)
 
 /*****************************************************************************
  *                                                                           *
- *			   private utility routines                          *
+ *		    public XFree86-DGA Extension routines                    *
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
-static /* const */ XExtensionHooks xf86dga_extension_hooks = {
-    NULL,				/* create_gc */
-    NULL,				/* copy_gc */
-    NULL,				/* flush_gc */
-    NULL,				/* free_gc */
-    NULL,				/* create_font */
-    NULL,				/* free_font */
-    close_display,			/* close_display */
-    NULL,				/* wire_to_event */
-    NULL,				/* event_to_wire */
-    NULL,				/* error */
-    NULL,				/* error_string */
-};
-
-static XEXT_GENERATE_FIND_DISPLAY (find_display, xf86dga_info, 
-				   xf86dga_extension_name, 
-				   &xf86dga_extension_hooks, 
-				   0, NULL)
-
-static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xf86dga_info)
-
-
-/*****************************************************************************
- *                                                                           *
- *		    public XFree86-DGA Extension routines                *
- *                                                                           *
- *****************************************************************************/
-
-Bool XF86DGAQueryExtension (dpy, event_basep, error_basep)
-    Display *dpy;
-    int *event_basep, *error_basep;
-{
-    XExtDisplayInfo *info = find_display (dpy);
-
-    if (XextHasExtension(info)) {
-	*event_basep = info->codes->first_event;
-	*error_basep = info->codes->first_error;
-	return True;
-    } else {
-	return False;
-    }
+Bool XF86DGAQueryExtension (
+    Display *dpy,
+    int *event_basep,
+    int *error_basep
+){
+    return XDGAQueryExtension(dpy, event_basep, error_basep);
 }
 
-Bool XF86DGAQueryVersion(dpy, majorVersion, minorVersion)
-    Display* dpy;
-    int* majorVersion; 
-    int* minorVersion;
-{
-    XExtDisplayInfo *info = find_display (dpy);
-    xXF86DGAQueryVersionReply rep;
-    xXF86DGAQueryVersionReq *req;
-
-    XF86DGACheckExtension (dpy, info, False);
-
-    LockDisplay(dpy);
-    GetReq(XF86DGAQueryVersion, req);
-    req->reqType = info->codes->major_opcode;
-    req->dgaReqType = X_XF86DGAQueryVersion;
-    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return False;
-    }
-    *majorVersion = rep.majorVersion;
-    *minorVersion = rep.minorVersion;
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return True;
+Bool XF86DGAQueryVersion(
+    Display* dpy,
+    int* majorVersion, 
+    int* minorVersion
+){
+    return XDGAQueryVersion(dpy, majorVersion, minorVersion);
 }
 
-Bool XF86DGAGetVideoLL(dpy, screen, offset, width, bank_size, ram_size)
-    Display* dpy;
-    int screen;
-    int *offset;
-    int *width, *bank_size, *ram_size;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGAGetVideoLL(
+    Display* dpy,
+    int screen,
+    int *offset,
+    int *width, 
+    int *bank_size, 
+    int *ram_size
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGAGetVideoLLReply rep;
     xXF86DGAGetVideoLLReq *req;
-    int i;
 
     XF86DGACheckExtension (dpy, info, False);
 
@@ -140,12 +128,12 @@ Bool XF86DGAGetVideoLL(dpy, screen, offset, width, bank_size, ram_size)
 }
 
     
-Bool XF86DGADirectVideoLL(dpy, screen, enable)
-    Display* dpy;
-    int screen;
-    int enable;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGADirectVideoLL(
+    Display* dpy,
+    int screen,
+    int enable
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGADirectVideoReq *req;
 
     XF86DGACheckExtension (dpy, info, False);
@@ -162,15 +150,15 @@ Bool XF86DGADirectVideoLL(dpy, screen, enable)
     return True;
 }
 
-Bool XF86DGAGetViewPortSize(dpy, screen, width, height)
-    Display* dpy;
-    int screen;
-    int *width, *height;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGAGetViewPortSize(
+    Display* dpy,
+    int screen,
+    int *width, 
+    int *height
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGAGetViewPortSizeReply rep;
     xXF86DGAGetViewPortSizeReq *req;
-    int i;
 
     XF86DGACheckExtension (dpy, info, False);
 
@@ -194,12 +182,13 @@ Bool XF86DGAGetViewPortSize(dpy, screen, width, height)
 }
     
     
-Bool XF86DGASetViewPort(dpy, screen, x, y)
-    Display* dpy;
-    int screen;
-    int x, y;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGASetViewPort(
+    Display* dpy,
+    int screen,
+    int x, 
+    int y
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGASetViewPortReq *req;
 
     XF86DGACheckExtension (dpy, info, False);
@@ -218,15 +207,14 @@ Bool XF86DGASetViewPort(dpy, screen, x, y)
 }
 
     
-Bool XF86DGAGetVidPage(dpy, screen, vpage)
-    Display* dpy;
-    int screen;
-    int *vpage;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGAGetVidPage(
+    Display* dpy,
+    int screen,
+    int *vpage
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGAGetVidPageReply rep;
     xXF86DGAGetVidPageReq *req;
-    int i;
 
     XF86DGACheckExtension (dpy, info, False);
 
@@ -248,12 +236,12 @@ Bool XF86DGAGetVidPage(dpy, screen, vpage)
 }
 
     
-Bool XF86DGASetVidPage(dpy, screen, vpage)
-    Display* dpy;
-    int screen;
-    int vpage;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGASetVidPage(
+    Display* dpy,
+    int screen,
+    int vpage
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGASetVidPageReq *req;
 
     XF86DGACheckExtension (dpy, info, False);
@@ -270,13 +258,13 @@ Bool XF86DGASetVidPage(dpy, screen, vpage)
     return True;
 }
 
-Bool XF86DGAInstallColormap(dpy, screen, cmap)
-Display* dpy;
-int screen;
-Colormap cmap;
-{
-   XExtDisplayInfo *info = find_display (dpy);
-   xXF86DGAInstallColormapReq *req;
+Bool XF86DGAInstallColormap(
+    Display* dpy,
+    int screen,
+    Colormap cmap
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXF86DGAInstallColormapReq *req;
 
     XF86DGACheckExtension (dpy, info, False);
 
@@ -292,12 +280,12 @@ Colormap cmap;
     return True;
 }
 
-Bool XF86DGAQueryDirectVideo(dpy, screen, flags)
-    Display *dpy;
-    int screen;
-    int *flags;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGAQueryDirectVideo(
+    Display *dpy,
+    int screen,
+    int *flags
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGAQueryDirectVideoReply rep;
     xXF86DGAQueryDirectVideoReq *req;
 
@@ -319,12 +307,12 @@ Bool XF86DGAQueryDirectVideo(dpy, screen, flags)
     return True;
 }
 
-Bool XF86DGAViewPortChanged(dpy, screen, n)
-    Display *dpy;
-    int screen;
-    int n;
-{
-    XExtDisplayInfo *info = find_display (dpy);
+Bool XF86DGAViewPortChanged(
+    Display *dpy,
+    int screen,
+    int n
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
     xXF86DGAViewPortChangedReply rep;
     xXF86DGAViewPortChangedReq *req;
 
@@ -350,20 +338,6 @@ Bool XF86DGAViewPortChanged(dpy, screen, n)
 
 /* Helper functions */
 
-#if 0
-#include <X11/Intrinsic.h>
-#include <X11/Shell.h>
-#include <X11/StringDefs.h>
-#include <X11/Xatom.h>
-#include <X11/Xaw/Form.h>
-#include <X11/Xaw/Scrollbar.h>
-#include <X11/Xaw/Label.h>
-#include <X11/Xaw/Command.h>
-#include <X11/Xaw/AsciiText.h>
-#include <X11/Xaw/Box.h>
-#include <X11/Xaw/Toggle.h>
-#include <X11/Xmu/StdSel.h>
-#endif
 #include <X11/Xmd.h>
 #include <X11/extensions/xf86dga.h>
 #include <stdlib.h>
@@ -438,11 +412,12 @@ int XF86DGAForkApp(int screen)
      return pid;
 }
 
-XF86DGADirectVideo(dis, screen, enable)
-Display *dis;
-int screen;
-int enable;
-{
+
+XF86DGADirectVideo(
+    Display *dis,
+    int screen,
+    int enable
+){
    if (enable&XF86DGADirectGraphics) {
 	 fprintf(stderr, "video memory unprotecting\n");
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__EMX__)
@@ -487,13 +462,15 @@ static void XF86cleanup(int sig)
         _exit(3);
 }
 
-XF86DGAGetVideo(dis, screen, addr, width, bank, ram)
-Display *dis;
-int screen;
-char **addr;
-int *width, *bank, *ram;
-{
-   int offset, fd;
+XF86DGAGetVideo(
+    Display *dis,
+    int screen,
+    char **addr,
+    int *width, 
+    int *bank, 
+    int *ram
+){
+   int offset, fd, pagesize = -1, delta;
 #ifdef __EMX__
    APIRET rc;
    ULONG action;
@@ -508,7 +485,7 @@ int *width, *bank, *ram;
    {
         fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mmap (%s)\n",
                            strerror(errno));
-	exit(-1)
+	exit(-1);
    }
 #else
 #ifdef __EMX__
@@ -536,10 +513,31 @@ int *width, *bank, *ram;
 #endif
 #endif
 
+#if defined(_SC_PAGESIZE) && defined(HAS_SC_PAGESIZE)
+    pagesize = sysconf(_SC_PAGESIZE);
+#endif
+#ifdef _SC_PAGE_SIZE
+    if (pagesize == -1)
+	pagesize = sysconf(_SC_PAGE_SIZE);
+#endif
+#ifdef HAS_GETPAGESIZE
+    if (pagesize == -1)
+	pagesize = getpagesize();
+#endif
+#ifdef PAGE_SIZE
+    if (pagesize == -1)
+	pagesize = PAGE_SIZE;
+#endif
+    if (pagesize == -1)
+	pagesize = 4096;
+
+   delta = (unsigned int)offset % pagesize;
+   offset -= delta;   
+
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
    XFree86mloc.vaddr=(char *) 0;
    XFree86mloc.physaddr=(char *)offset;
-   XFree86mloc.length=*bank;
+   XFree86mloc.length=*bank + delta;
    XFree86mloc.ioflg=1;
 
 #define DEBUG_MMAP(state)     fprintf(stderr,"\
@@ -563,7 +561,8 @@ int *width, *bank, *ram;
    }
 #else /* !ISC */
 #ifdef Lynx
-   *addr = (void *)smem_create("XF86DGA", (char *)offset, *bank, SM_READ|SM_WRITE);
+   *addr = (void *)smem_create("XF86DGA", (char *)offset, 
+				*bank + delta, SM_READ|SM_WRITE);
    if (*addr == NULL) {
         fprintf(stderr, "XF86DGAGetVideo: smem_create() failed (%s)\n",
                            strerror(errno));
@@ -584,7 +583,7 @@ int *width, *bank, *ram;
 #define PMAP_MAP	0x44
 
 	pmap.a.phys = offset;
-	pmap.size = *bank;
+	pmap.size = *bank + delta;
 	rc = DosDevIOCtl(hfd, XFREE86_PMAP, PMAP_MAP,
 			 (PULONG)&pmap, sizeof(pmap), &plen,
 			 (PULONG)&dmap, sizeof(dmap), &dlen);
@@ -603,7 +602,7 @@ int *width, *bank, *ram;
 #define MAP_FILE 0
 #endif
    /* This requires linux-0.99.pl10 or above */
-   *addr = (void *)mmap(NULL, *bank, PROT_READ,
+   *addr = (void *)mmap(NULL, *bank + delta, PROT_READ,
                         MAP_FILE | MAP_SHARED, fd, (off_t)offset);
 #ifdef DEBUG
    fprintf(stderr, "XF86DGAGetVideo: physaddr: 0x%08x, size: %d\n",
@@ -617,9 +616,10 @@ int *width, *bank, *ram;
 #endif /* !__EMX__*/
 #endif /* !Lynx */
 #endif /* !ISC && !HAS_SVR3_MMAP */
-   _XFree86size = *bank;
-   _XFree86addr = *addr;
 
+   _XFree86size = *bank + delta;
+   _XFree86addr = *addr;
+   *addr += delta;
    
    atexit((void(*)(void))XF86cleanup);
    /* one shot XF86cleanup attempts */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.32 1999/01/31 12:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.33 1999/03/06 13:12:45 dawes Exp $ */
 
 
 
@@ -110,6 +110,7 @@ typedef signed long xf86ssize_t;
 #define xf86_ETXTBSY		1019
 #define xf86_ENOTTY		1020
 #define xf86_ENOSYS		1021
+#define xf86_EBUSY		1022
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
@@ -328,6 +329,7 @@ typedef signed long xf86ssize_t;
 #define ETXTBSY		xf86_ETXTBSY
 #define ENOTTY		xf86_ENOTTY
 #define ENOSYS		xf86_ENOSYS
+#define EBUSY		xf86_EBUSY
 
 /* Some ANSI macros */
 #define FILENAME_MAX		1024

@@ -60,7 +60,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.11 1997/07/10 08:17:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.12 1997/10/25 13:50:06 hohndel Exp $ */
 
 #if defined(__GNUC__)
 #if defined(linux) && defined(__alpha__)
@@ -70,6 +70,62 @@
 #define outb(p,v) _outb((v),(p))
 #define outw(p,v) _outw((v),(p))
 #define outl(p,v) _outl((v),(p))
+#else
+#if defined(__sparc__)
+#ifndef ASI_PL
+#define ASI_PL 0x88
+#endif
+
+static __inline__ void
+outb(port, val)
+unsigned long port;
+char val;
+{
+  __asm__ __volatile__("stba %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+}
+
+static __inline__ void
+outw(port, val)
+unsigned long port;
+char val;
+{
+  __asm__ __volatile__("stha %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+}
+
+static __inline__ void
+outl(port, val)
+unsigned long port;
+char val;
+{
+  __asm__ __volatile__("sta %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+}
+
+static __inline__ unsigned int
+inb(port)
+unsigned long port;
+{
+   unsigned char ret;
+   __asm__ __volatile__("lduba [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
+   return ret;
+}
+
+static __inline__ unsigned int
+inw(port)
+unsigned long port;
+{
+   unsigned char ret;
+   __asm__ __volatile__("lduha [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
+   return ret;
+}
+
+static __inline__ unsigned int
+inl(port)
+unsigned long port;
+{
+   unsigned char ret;
+   __asm__ __volatile__("lda [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
+   return ret;
+}
 #else
 #ifdef __arm32__
 unsigned int IOPortBase;  /* Memory mapped I/O port area */
@@ -315,6 +371,7 @@ inl(port)
 #endif /* GCCUSESGAS */
 #endif /* Lynx && __powerpc__ */
 #endif /* arm32 */
+#endif /* linux && __sparc__ */
 #endif /* linux && __alpha__ */
 
 #if defined(linux) || defined(__arm32__) || (defined(Lynx) && defined(__powerpc__))

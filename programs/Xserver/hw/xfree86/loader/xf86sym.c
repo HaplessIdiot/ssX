@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.74 1999/03/20 08:59:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.75 1999/03/21 12:46:41 dawes Exp $ */
 
 /*
  *
@@ -86,6 +86,38 @@ extern void* __divq(long, long);
 extern void* __divqu(long, long);
 extern void* __remq(long, long);
 extern void* __remqu(long, long);
+#endif
+
+#if defined(__sparc__) && defined(__GNUC__)
+#define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
+#define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
+#define DEFFUNCDOT(func) 					\
+extern void __sparc_dot_ ## func (void) __asm__ ("." #func);	\
+extern void func ## _sparcv89 (void);
+DEFFUNCDOT(rem)
+DEFFUNCDOT(urem)
+DEFFUNCDOT(mul)
+DEFFUNCDOT(umul)
+DEFFUNCDOT(div)
+DEFFUNCDOT(udiv)
+LOOKUP SparcV89LookupTab[] = {
+   SYMFUNCDOT89(rem)
+   SYMFUNCDOT89(urem)
+   SYMFUNCDOT89(mul)
+   SYMFUNCDOT89(umul)
+   SYMFUNCDOT89(div)
+   SYMFUNCDOT89(udiv)
+   { 0, 0 }
+};
+LOOKUP SparcLookupTab[] = {
+   SYMFUNCDOT(rem)
+   SYMFUNCDOT(urem)
+   SYMFUNCDOT(mul)
+   SYMFUNCDOT(umul)
+   SYMFUNCDOT(div)
+   SYMFUNCDOT(udiv)
+   { 0, 0 }
+};
 #endif
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))
@@ -214,7 +246,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CheckIsaSlot)
    SYMFUNC(xf86ClaimIsaSlot)
    SYMFUNC(xf86ReleaseIsaSlot)
-   SYMFUNC(xf86FreeBusSlots)
+   SYMFUNC(xf86DeleteBusSlotsForScreen)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
    SYMFUNC(xf86ParseIsaBusString)
@@ -314,6 +346,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86Break3)
    SYMFUNC(xf86SetBackingStore)
    SYMFUNC(xf86NewSerialNumber)
+   SYMFUNC(xf86FindXvOptions)
 
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)
@@ -466,9 +499,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(ET6000SetClock)
    SYMFUNC(S3AuroraSetClock)
    SYMFUNC(commonCalcClock)
-   SYMFUNC(xf86scanpci)
    SYMFUNC(xf86writepci)
-   SYMFUNC(xf86cleanpci)
    SYMFUNC(dacOutTi3026IndReg)
    SYMFUNC(dacInTi3026IndReg)
    SYMFUNC(s3OutIBMRGBIndReg)
@@ -585,15 +616,16 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86memchr)
    SYMFUNC(xf86memcmp)
    SYMFUNC(xf86memcpy)
-#if defined(__powerpc__) && defined(Lynx)
+#if (defined(__powerpc__) && (defined(Lynx) || defined(linux))) || defined(__sparc__)
    /*
-    * The LynxOS compilers generate calls to memcpy to handle structure copies.
-    * This causes a problem both here and in shared libraries as there is no
-    * way to map the name of the call to the correct function.
+    * These PPC and SPARC compilers generate calls to memcpy to handle
+    * structure copies.  This causes a problem both here and in shared
+    * libraries as there is no way to map the name of the call to the
+    * correct function.
     */
    SYMFUNC(memcpy)
    /*
-    * The LynxOS compilers generates calls to memset to handle 
+    * Thes PPC and SPARC compilers generate calls to memset to handle 
     * aggregate initializations.
     */
    SYMFUNC(memset)

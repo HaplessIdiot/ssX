@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.14 1999/03/14 11:17:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.15 1999/03/21 07:34:43 dawes Exp $ */
 
 /*
 
@@ -79,7 +79,7 @@ ProcXF86DGAGetVideoLL(ClientPtr client)
 
     DGAGetDeviceInfo(stuff->screen, &device, mode);
 
-    rep.offset = (CARD32)device.data;
+    rep.offset = (CARD32)(device.data + device.offset);
     rep.width = device.mode.bytesPerScanline / 
 		(device.mode.bitsPerPixel >> 3);
     rep.bank_size = device.mode.bytesPerScanline * device.mode.imageHeight;

@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.12 1997/12/14 10:04:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.13 1999/03/21 07:35:33 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -22,6 +22,7 @@
  * NAME <name of card>
  * CHIPSET <chipset description>
  * SERVER <server name>	
+ * DRIVER <driver name>
  *
  * Optional keywords:
  * RAMDAC <ramdac identifier>
@@ -158,7 +159,9 @@ int parse_database() {
 			card[lastcard].name = malloc(strlen(buf + 5) + 1);
 			strcpy(card[lastcard].name, buf + 5);
 			card[lastcard].chipset = NULL;
-			card[lastcard].ramdac = NULL;
+		        card[lastcard].server = NULL;
+			card[lastcard].driver = NULL;
+		        card[lastcard].ramdac = NULL;
 			card[lastcard].clockchip = NULL;
 			card[lastcard].dacspeed = NULL;
 			card[lastcard].flags = 0;
@@ -182,6 +185,8 @@ int parse_database() {
 				card[lastcard].chipset = card[i].chipset;
 			if (card[lastcard].server == NULL)
 				card[lastcard].server = card[i].server;
+			if (card[lastcard].driver == NULL)
+				card[lastcard].driver = card[i].driver;
 			if (card[lastcard].ramdac == NULL)
 				card[lastcard].ramdac = card[i].ramdac;
 			if (card[lastcard].clockchip == NULL)
@@ -202,6 +207,12 @@ int parse_database() {
 			/* Server identifier. */
 			card[lastcard].server = malloc(strlen(buf + 7) + 1);
 			strcpy(card[lastcard].server, buf + 7);
+			continue;
+		}
+		if (strncmp(buf, "DRIVER", 6) == 0) {
+			/* Driver identifier. */
+			card[lastcard].driver = malloc(strlen(buf + 7) + 1);
+			strcpy(card[lastcard].driver, buf + 7);
 			continue;
 		}
 		if (strncmp(buf, "RAMDAC", 6) == 0) {
@@ -232,12 +243,12 @@ int parse_database() {
 			continue;
 		}
 		/* test for missing required fields */
-		if (card[lastcard].server == NULL) {
-		    fprintf(stderr, "Warning SERVER specification missing "
+		if (card[lastcard].driver == NULL) {
+		    fprintf(stderr, "Warning DRIVER specification missing "
 			    "in Card database entry %s (line %d).\n", 
 			    card[lastcard].name, lineno);
 		    keypress();
-		       card[lastcard].server = "unknown";
+		       card[lastcard].driver = "unknown";
 		}
 		if (card[lastcard].chipset == NULL) {
 		    fprintf(stderr, "Warning CHIPSET specification missing "

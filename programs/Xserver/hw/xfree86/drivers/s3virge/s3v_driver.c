@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.17 1999/03/20 08:59:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.18 1999/03/21 07:35:17 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -39,11 +39,23 @@ in this Software without prior written authorization from the XFree86 Project.
  *
  */
 
+/*
+ * Internals
+ */
+static void S3VEnableMmio(ScrnInfoPtr pScrn);
+static void S3VDisableMmio(ScrnInfoPtr pScrn);
+
 
 	/* Most xf86 commons are already in s3v.h */
 #include	"s3v.h"
 		
-  
+
+#ifdef DPMSExtension
+#include "globals.h"
+#define DPMS_SERVER
+#include "extensions/dpms.h"
+#endif /* DPMSExtension */
+
 /*
  * Forward definitions for the functions that make up the driver.
  */
@@ -76,6 +88,11 @@ static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
 
+#ifdef DPMSExtension
+static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					 int PowerManagementMode,
+					 int flags);
+#endif
 
 /*
  * Externs needed here
@@ -104,9 +121,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.4.0"
+#define S3VIRGE_VERSION_NAME "0.5.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   4
+#define S3VIRGE_VERSION_MINOR   5
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -646,10 +663,10 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
 
     if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_BURST, FALSE)) {
-	ps3v->pci_burst_on = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_burst_on - PCI burst read enabled\n");
+	ps3v->pci_burst = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_burst - PCI burst read enabled\n");
     } else
-   	ps3v->pci_burst_on = FALSE;
+   	ps3v->pci_burst = FALSE;
 					/* default */
     ps3v->NoPCIRetry = 1;
    					/* Set option */
@@ -659,7 +676,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_retry\n");
 	}
       else {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires \"pci_burst_on\".\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"\"pci_retry\" option requires \"pci_burst\".\n");
 	}
     }
     if (xf86IsOptionSet(S3VOptions, OPTION_FIFO_CONSERV)) {
@@ -1907,7 +1925,7 @@ S3VRestoreSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
   OUTREG(BLEND_CONTROL_REG, 0x01000000);
   OUTREG(PSTREAM_FBADDR0_REG, 0x00);
   OUTREG(PSTREAM_FBADDR1_REG, 0x00);
-  OUTREG(PSTREAM_STRIDE_REG, 0x0fff);
+  OUTREG(PSTREAM_STRIDE_REG, streams[8] & 0x0fff);
   OUTREG(DOUBLE_BUFFER_REG, 0x00);
   OUTREG(SSTREAM_FBADDR0_REG, 0x00);
   OUTREG(SSTREAM_FBADDR1_REG, 0x00);
@@ -1985,7 +2003,6 @@ S3VMapMem(ScrnInfoPtr pScrn)
 				     (pointer) (ps3v->PciInfo->memBase[0] +
 						S3_NEWMMIO_REGBASE),
 				     0x8000);
-  
   ps3v->IOBase = ps3v->MapBase + (S3V_MMIO_REGSIZE << 5);
 #else
   ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
@@ -2206,6 +2223,11 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   ps3v->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = S3VCloseScreen;
 
+#ifdef DPMSExtension
+  if(xf86DPMSInit(pScreen, S3VDisplayPowerManagementSet, 0) == FALSE)
+    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed!\n");
+#endif
+  
     /* Report any unused options (only for the first generation) */
   if (serverGeneration == 1) {
     xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
@@ -2330,7 +2352,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    VGAOUT8(vgaCRIndex, 0x3a);
    tmp = VGAIN8(vgaCRReg);
-   if(ps3v->pci_burst_on)
+   if(ps3v->pci_burst)
       new->CR3A = (tmp & 0x7f) | 0x15; /* ENH 256, PCI burst */
    else 
       new->CR3A = tmp | 0x95;      /* ENH 256, no PCI burst! */
@@ -2942,6 +2964,62 @@ void S3VLoadPalette(
 }
 
 
+/*
+ * Functions to support getting a ViRGE card into MMIO mode if it fails to
+ * default to MMIO enabled. 
+ */
+
+void
+S3VEnableMmio(ScrnInfoPtr pScrn)
+{
+  vgaHWPtr hwp;
+  S3VPtr ps3v;
+  int vgaCRIndex, vgaCRReg;
+  
+  PVERB5("	S3VEnableMmio\n");
+  
+  hwp = VGAHWPTR(pScrn);
+  ps3v = S3VPTR(pScrn);
+  			  
+  vgaHWGetIOBase(hwp);             	/* Get VGA I/O base */
+  vgaCRIndex = hwp->IOBase + 4;
+  vgaCRReg = hwp->IOBase + 5;
+
+  
+  outb(vgaCRIndex, 0x53);
+  					/* Save register for restore */
+  ps3v->EnableMmioCR53 = inb(vgaCRReg);
+      
+  			      	/* Enable new MMIO, if TRIO mmio is already */
+				/* enabled, then it stays enabled. */
+  outb(vgaCRReg, ps3v->EnableMmioCR53 | 0x08 );
+  
+  return;
+}
+
+
+
+void
+S3VDisableMmio(ScrnInfoPtr pScrn)
+{
+  vgaHWPtr hwp;
+  S3VPtr ps3v;
+  int vgaCRIndex, vgaCRReg;
+
+  PVERB5("	S3VDisableMmio\n");
+ 
+  hwp = VGAHWPTR(pScrn);
+  ps3v = S3VPTR(pScrn);
+ 
+  vgaCRIndex = hwp->IOBase + 4;
+  vgaCRReg = hwp->IOBase + 5;
+  
+  outb(vgaCRIndex, 0x53);
+				/* Restore register's original state */
+  outb(vgaCRReg, ps3v->EnableMmioCR53 );
+   
+  return;
+}
 
 
 
@@ -3062,6 +3140,60 @@ print_subsys_stat(void *s3vMmioMem)
 }
 */
 
+/*
+ * S3VDisplayPowerManagementSet --
+ *
+ * Sets VESA Display Power Management Signaling (DPMS) Mode.
+ */
+#ifdef DPMSExtension
+static void
+S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+			     int flags)
+{
+  S3VPtr ps3v;
+  unsigned char sr8 = 0x0, srd = 0x0;
 
+  ps3v = S3VPTR(pScrn);
+  
+  /* unlock extended sequence registers */
+
+  VGAOUT8(0x3c4, 0x08);
+  sr8 = VGAIN8(0x3c5);
+  sr8 |= 0x6;
+  VGAOUT8(0x3c5, sr8);
+
+  /* load SRD */
+  VGAOUT8(0x3c4, 0x0d);
+  srd = VGAIN8(0x3c5);
+  
+  srd &= 0x03; /* clear the sync control bits of srd */
+  
+  switch (PowerManagementMode) {
+  case DPMSModeOn:
+    /* Screen: On; HSync: On, VSync: On */
+    break;
+  case DPMSModeStandby:
+    /* Screen: Off; HSync: Off, VSync: On */
+    srd |= 0x10;
+    break;
+  case DPMSModeSuspend:
+    /* Screen: Off; HSync: On, VSync: Off */
+    srd |= 0x40;
+    break;
+  case DPMSModeOff:
+    /* Screen: Off; HSync: Off, VSync: Off */
+    srd |= 0x50;
+    break;
+  default:
+    ErrorF("Invalid PowerManagementMode %d passed to S3VDisplayPowerManagementSet\n", PowerManagementMode);
+    break;
+  }
+
+  VGAOUT8(0x3c4, 0x0d);
+  VGAOUT8(0x3c5, srd);
+
+  return;
+}
+#endif /* DPMSExtension */
 /*EOF*/
 

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.2 1997/01/08 20:32:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.3 1998/10/04 09:37:50 dawes Exp $ */
 
 #ifndef GXcopy
 #include "X.h"
@@ -67,8 +67,8 @@ in this Software without prior written authorization from The Open Group.
 #define RROP_DECLARE	register unsigned long	rrop_xor;
 #define RROP_SOLID(dst)	    (*(dst) = (rrop_xor))
 #define RROP_SOLID_MASK(dst,mask) (*(dst) = (*(dst) & ~(mask)) | ((rrop_xor) & (mask)))
-#define RROP_SOLID_lu(dst)	    stl_u(rrop_xor, dst)
-#define RROP_SOLID_MASK_lu(dst,mask) stl_u((ldl_u(dst) & ~(mask)) | ((rrop_xor) & (mask)), dst)
+#define RROP_SOLID_lu(dst)	    stq_u(rrop_xor, dst)
+#define RROP_SOLID_MASK_lu(dst,mask) stq_u((ldq_u(dst) & ~(mask)) | ((rrop_xor) & (mask)), dst)
 #endif
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,Copy)
 #endif /* GXcopy */
@@ -103,6 +103,8 @@ in this Software without prior written authorization from The Open Group.
 #define RROP_FETCH_GCPRIV(devPriv)  rrop_xor = (devPriv)->xor;
 #define RROP_SOLID(dst)	    (*(dst) ^= (rrop_xor))
 #define RROP_SOLID_MASK(dst,mask) (*(dst) ^= ((rrop_xor) & (mask)))
+#define RROP_SOLID_lu(dst)  stq_u(ldq_u(dst) ^ rrop_xor, dst)
+#define RROP_SOLID_MASK_lu(dst,mask) stq_u(ldq_u(dst) ^ ((rrop_xor) & (mask)), dst)
 #endif
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,Xor)
 #endif /* GXxor */
@@ -257,6 +259,8 @@ in this Software without prior written authorization from The Open Group.
 				    rrop_xor = (devPriv)->xor;
 #define RROP_SOLID(dst)	    (*(dst) = DoRRop (*(dst), rrop_and, rrop_xor))
 #define RROP_SOLID_MASK(dst,mask)   (*(dst) = DoMaskRRop (*(dst), rrop_and, rrop_xor, (mask)))
+#define RROP_SOLID_lu(dst)  stq_u(DoRRop (ldq_u(dst), rrop_and, rrop_xor), dst)
+#define RROP_SOLID_MASK_lu(dst,mask) stq_u(DoMaskRRop (ldq_u(dst), rrop_and, rrop_xor, (mask)), dst)
 #endif
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,General)
 #endif /* GXset */

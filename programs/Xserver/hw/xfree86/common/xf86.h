@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.95 1999/03/14 03:21:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.96 1999/03/21 16:20:54 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -57,7 +57,6 @@ Bool xf86ClaimIsaSlot(BusResource res, DriverPtr drvp, int chipset,
 		      int scrnIndex);
 void xf86ReleaseIsaSlot(BusResource res);
 int xf86GetIsaInfoForScreen(int scrnIndex, BusResource **pRes);
-void xf86FreeBusSlots(int scrnIndex);
 Bool xf86ParsePciBusString(const char *busID, int *bus, int *device,
 			   int *func);
 Bool xf86ParseIsaBusString(const char *busID);
@@ -72,8 +71,6 @@ void xf86EnableAccess(xf86ScrnAccessPtr pScAcc);
 Bool xf86IsPrimaryPci(pciVideoPtr pPci);
 Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
-
-/* xf86Config.c */
 
 /* xf86Cursor.c */
 
@@ -167,6 +164,8 @@ void xf86Break2(void);
 void xf86Break3(void);
 void xf86SetBackingStore(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);
+pointer xf86FindXvOptions(int scrnIndex, int adapt_index, char *port_name,
+			  char **adaptor_name, pointer *adaptor_options);
 
 
 /* xf86Init.c */

@@ -4,10 +4,10 @@
 <!-- made up title -->
 <title> Information for ISC Users
 <author> Michael Rohleder
-<date> 23 March 1998
+<date> 06 March 1999
 <toc>
 
-<sect> X11R6/XFree86&tm; on Interactive Unix <p>
+<sect> X11R6/XFree86 on Interactive Unix <p>
 
 This document provides some additional information about
 compiling and using X11R6 and XFree86 on your
@@ -253,14 +253,6 @@ BOOTSTRAPCFLAGS="-DISC [-DISC30 | -DISC40] -DSYSV [-Di386]"
 
 <itemize>
 <item>Compiling &hellip; <p>
-If you want to include support for linear addressing into the server binaries,
-you have to define 
-<verb>
-#define HasSVR3mmapDrv		YES
-</verb>
-in xf86site.def.
-This is necessary to get the correct setup to be defined for the build.
-
 You need the mmap-2.2.3 driver installed on your system.
 If you don't have the mmap-2.2.3 driver installed, you could use the driver
 source in the file 
@@ -274,6 +266,11 @@ or
 Build and install the driver as instructed. You'll need the file
 /usr/include/sys/mmap.h for compiling the X11R6/XFree86 source tree,
 with linear addressing enabled.
+
+<code>
+The new loadable X Server is not tested to work without linear addressing.
+</code>
+
 
 <item>Using &hellip; <p>
 
@@ -289,16 +286,14 @@ in your XF86Config.   Check the appropriate manual pages for details.
 Maybe you need also the MemBase specified in XF86Config. Please refer to the 
 appropriate README of your Card/Server, for 
 <bf>How to use..</bf>.
-Note that the P9000 server will not work at all unless linear addressing
-is available.
 
-I could only test these cards against the linear addressing.
+I could only test these cards on Interactive UNIX
 <itemize>
-	<item>Spea/V7 Vega - clgd5428 - VLB<p>
+	<item>Spea/V7 Vega - clgd5428 - VLB - (old)<p>
 	   with 32MB MainMemory installed I couldn't use it.
            My tests with different mappings into the address space
            results in no Graphics displayed or a spontaneous reboot.<p>
-	<item>ATI GUP      - mach32   - VLB<p>
+	<item>ATI GUP      - mach32   - VLB - (old)<p>
            with 32MB MainMemory installed I could map the CardMemory
            at MemBase 0x07c00000. I could work with all clients
            until I try to activate a Motif 1.1.1 InputField inside a 
@@ -324,6 +319,11 @@ I could only test these cards against the linear addressing.
            </verb>
            inside your XF86Config, it may be alright again.<p>
            With the current XF86_S3 I don't encounter any problem.
+	<item>Diamond FireGL 1000<p>
+	   <verb>
+	   3Dlabs GLINT Permedia rev 1
+	   3Dlabs GLINT Delta rev 1
+	   </verb>
 
 </itemize>
 
@@ -363,63 +363,78 @@ inside your build, you have to add:
  <tt>&num;define BuildMultibuffer        YES</tt> inside xf86site.def
 Please note, this Extension should be disabled when building the Loader Server.
 
-<sect> Sample Definitions <p>
+<sect> Default Definitions <p>
 
-This is my current host.def, if I build the sources. (So no more changes were
-necessary in xf86site.def, either it isn't to bad to have a look inside it ;-)
+These are default options defined inside isc.cf. 
+You can redefine them inside host.def.
+
 <verb>
+/* Disable the use of /var/X11 */
+#ifndef HasVarDirectory
+#define HasVarDirectory		NO
+#endif
 
-#ifdef BeforeVendorCF
-
-/* ISC 4.1Mu - build only for 4.1
-#define IscCompileVersion       410
-*/
-
-/* Optimization for Pentium CPU with gcc-2.8.1 */
-/*                                             */
-#define DefaultGcc2i386Opt	-O2 -march=pentium -mpentium -Wall -Wno-implicit-int -fno-strength-reduce 
+/* Use mmap Driver                                                   */
+#ifndef HasSVR3mmapDrv
+# define HasSVR3mmapDrv		YES
+#endif
 
 /* Use inline Math from linux ;-) package inline-math-2.6.tar.gz */
 /* should be available on your favorite linux ftp                */
+#ifndef UseInlineMath
 # define UseInlineMath		YES
+#endif
 
 /* Use cbrt from liboptm.a (Interactive icc Compiler) */
-/*
-*/
+#ifndef HasCbrt
 # define HasCbrt		YES
+#endif
 
 /* Use GNUs MallocLibrary (and the Location for the Lib)             */
+#ifndef UseGnuMalloc
 # define UseGnuMalloc		YES
-# define GnuMallocLibrary	-L/usr/local/lib -lgnumalloc
+#endif
 
-/* Build Xvfb                                                        */
-# define XVirtualFramebufferServer	YES
-
-/* Use mmap Driver                                                   */
-# define HasSVR3mmapDrv		YES
+/* Install Zlib Headers - used in lib/zlib/Imakefile */
+#ifndef OsNeedZlibHeaders
+# define OsNeedZlibHeaders	YES
+#endif
 
 /* Expand Manual Pages (needs S5L)                                   */
+#ifndef ExpandManNames
 # define ExpandManNames		YES
+#endif
 
-/* Has LinuxDoc (and the Location for LinuxDoc / only HTML and Text) */
-# define HasLinuxDoc		YES
-# define BuildLinuxDocHtml	YES
-# define BuildAllDocs		YES
-# define LinuxDocDir		/usr/local/lib/linuxdoc-sgml
+/* if you have groff or the TextProcessingWorkbench - don't preformat*/
+#ifndef FormattedManPages
+# define FormattedManPages      NO
+#endif
 
-/* Install Config's for xdm, xfs, and xinit */
-# define InstallXinitConfig    YES
-# define InstallXdmConfig      YES
-# define InstallFSConfig               YES
+#ifndef HasSgmlFmt	/* HasLinuxDoc */
+# define HasSgmlFmt             YES
+#endif
 
-#define BuildChooser		YES
-
-/* for the new XF86Setup Util */
+/* XF86Setup Util */
+#ifndef HasTk
 #define HasTk			YES
 #define HasTcl			YES
+#endif
 
-#endif /* BeforeVendorCF */
+#ifndef HasPosixRegex		/* Need extra/regex since 3.9Ns */
+#define HasPosixRegex		NO
+#endif
+
+#ifndef DoLoadableServer
+#define DoLoadableServer        YES
+#endif
+
+#ifndef CpuOption
+#define CpuOption	-mpentium
+#endif
+
 </verb>
+
+
 <sect> Installation <p>
 
 After your <bf>make World BOOTSTRAPCFLAGS="&hellip;</bf> succeed, 
@@ -440,7 +455,7 @@ make install.linkkit
 to install the server binary LinkKit into /usr/X11R6/lib/Server.
 
 <code>
-       You could tune the Kernel using the command-file
+       You should tune the Kernel using the command-file
        
        /usr/X11R6/lib/X11/etc/xf86install
        
@@ -448,10 +463,37 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
        some Tunable Parameters and install some files 
        to use inside sysadm. You could also install 
        some additional Fonts and Terminal files.
+
 </code>
 
-       You also should increase MAXUMEM to its maximum, else
-       programs may die with:
+This is now a menu driven config tool for XFree86 on IUS
+For the first setup you should go from 1 to x step by step.
+Here is its main screen
+<code>
+
+X11R6 XFree86 Version (version)
+-------------------------------------------------------------------------------
+
+
+
+                    Check dependencies:                   1
+                    Make XFree86 Label                    2
+                    Install Remove script                 3
+                    Setup node.d + sdevice.d Files        4
+                    Tune Kernel Variables                 5
+                    Tune PseudoTerminals                  6
+                    Install xterm terminal entries        7
+                    Install VGA font                      8
+                    Save current KernelConfig             9
+
+                    Exit                                  X
+
+
+Your Choice [1-9]?<enter>: 
+
+</code>
+
+You also should increase MAXUMEM to its maximum, else programs may die with:
 <code>
 X Error of failed request:  BadAlloc (insufficient resources for operation)
   Major opcode of failed request:  53 (X_CreatePixmap)
@@ -459,6 +501,7 @@ X Error of failed request:  BadAlloc (insufficient resources for operation)
   Current serial number in output stream:  37822
   Widget hierarchy of resource: unknown
 </code>
+You could do this automtically with menu entry no. 5.
 
 <sect>Using &hellip; <p>
 
@@ -555,7 +598,7 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.18 1997/01/25 03:22:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.19 1998/04/05 00:45:56 robin Exp $
 
 
 

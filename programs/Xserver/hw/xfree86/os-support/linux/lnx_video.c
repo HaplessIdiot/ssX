@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.21 1999/03/14 03:22:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.22 1999/03/20 08:59:31 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -380,8 +380,16 @@ xf86LinearVidMem()
 /* FIXME: init this... */
 volatile unsigned char *ioBase = MAP_FAILED;
 
-/* FIXME: dummy function ... */
-void ppc_flush_icache(char *addr) {};
+void
+ppc_flush_icache(char *addr)
+{
+	/* cut+paste from linux glibc */
+	__asm__ volatile (" dcbf 0,3");
+	__asm__ volatile (" icbi 0,3");
+	__asm__ volatile (" addi 3,3,32");
+	__asm__ volatile (" dcbf 0,3");
+	__asm__ volatile (" icbi 0,3");
+}
 #endif
 
 void
@@ -390,7 +398,7 @@ xf86EnableIO(void)
 	if (ExtendedEnabled)
 		return;
 
-#if !defined(__mc68000__) && !defined(__powerpc__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 	if (iopl(3))
 		FatalError("%s: Failed to set IOPL for I/O\n",
 			   "xf86EnableIOPorts");
@@ -406,7 +414,7 @@ xf86DisableIO(void)
 	if (!ExtendedEnabled)
 		return;
 
-#if !defined(__mc68000__) && !defined(__powerpc__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 	iopl(0);
 #endif
 	ExtendedEnabled = FALSE;
@@ -423,11 +431,11 @@ Bool
 xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
-#if !defined(__mc68000__) && !defined(__powerpc__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 		if (iopl(3))
 			return (FALSE);
 #endif
-#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__)
+#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__)
 #else
 #ifdef __GNUC__
 	__asm__ __volatile__("cli");
@@ -435,7 +443,7 @@ xf86DisableInterrupts()
 	asm("cli");
 #endif
 #endif
-#if !defined(__mc68000__) && !defined(__powerpc__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 	if (!ExtendedEnabled)
 		iopl(0);
 #endif
@@ -446,11 +454,11 @@ void
 xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
-#if !defined(__mc68000__) && !defined(__powerpc__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 		if (iopl(3))
 			return;
 #endif
-#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__)
+#if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__)
 #else
 #ifdef __GNUC__
 	__asm__ __volatile__("sti");
@@ -458,7 +466,7 @@ xf86EnableInterrupts()
 	asm("sti");
 #endif
 #endif
-#if !defined(__mc68000__) && !defined(__powerpc__)
+#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 	if (!ExtendedEnabled)
 		iopl(0);
 #endif

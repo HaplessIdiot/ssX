@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.17 1999/02/07 06:19:03 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.18 1999/03/14 03:22:46 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_94">Patch #94 - 1999/3/27 - XFree86 3.9Pf</A>
 <LI><A HREF="#xterm_93">Patch #93 - 1999/3/14 - XFree86 3.9Pd</A>
 <LI><A HREF="#xterm_92">Patch #92 - 1999/2/5 - XFree86 3.9Nz</A>
 <LI><A HREF="#xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A>
@@ -136,6 +137,92 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_94">Patch #94 - 1999/3/27 - XFree86 3.9Pf</A></H1>
+<ul>
+	<li>further fixes for terminfo: ka1, ka3, etc., differ between the
+	  default xterm-xfree86 and xterm-vt220 entries.
+
+	<li>change default (with sunKeyboard resource false) behavior of
+	  the editing keypad "Delete" to send a 127, like xterm-r6.
+	  The VT220-style <code>&lt;esc&gt;[3~</code> is sent when
+	  sunKeyboard is true (reported by Tomas Vanhala).
+
+	<li>add parameters to function keys to indicate if shift, control
+	  or alt are set.  The codes are based on a description of
+	  a DEC VT510 with a PC keyboard, from Jeffrey Altman
+	  &lt;jaltman@watsun.cc.columbia.edu&gt;.
+
+	<li>add control sequence 1035, set-num-lock action and num-lock
+	  menu entry to control the use of the NumLock and Alt keys for
+	  the Sun/PC and VT220 keyboard extensions.
+
+  	<li>implement DECSET/DECRST numeric keypad (DECNKM) mode.
+
+	<li>modify terminfo and termcap to use recommended "X Window" or "X11"
+	  names rather than "X Windows" (reported by Tomas Vanhala).
+
+	<li>suppress translation of shifted keypad "+" when sunKeyboard
+	  is true.
+
+	<li>workaround unexpected behavior (perhaps bug) in XmbLookupString,
+	  which returns trash in the string buffer for numlock and control-key
+	  combined with keypad-keys.
+
+	<li>modify ScrollBarReverseVideo() to keep scrollbar border visible
+	  when reverse video is toggled.
+
+	<li>correct missing case for parameter 17 (set highlight color) in
+	  dynamic colors control sequences.
+
+	<li>extend dynamic colors control sequences to allow users to
+	  determine the colors and font which are currently active.
+
+	<li>minor tweak to OSC responses, to use BEL if the application used
+	  that to end the request, rather than ST.  This works better with
+	  shell scripts, which may not handle an
+	  <code>&lt;esc&gt;backslash</code> very well.
+
+	<li>separate menu settings for reverse video from that done under
+	  program control.
+
+	<li>corrected ifdef's for menus, which did not allow tek4014 to
+	  be suppressed properly (reported by Clark Morgan).
+
+	<li>integrated patch from Pavel Roskin
+	  &lt;pavel_roskin@geocities.com&gt; 
+	  for Linux-2.2.x with GLibc-2.1 and
+	  /dev/ptmx support:
+	<ul>
+	  <li>main.c and resize.c were using different rules to determine
+	    whether ATT should be defined (actually USE_USG_PTYS is more
+	    apt).
+
+	  <li>copy definitions from main.c to resize.c to prevent
+	    sys/stream.h and sys/ptem.h from inclusion when SYSV is not
+	    defined
+
+	  <li>define CNUL if not already defined like other variables.
+
+	  <li>/dev/tty does exist in Linux, but it doesn't mean, it
+	    should be used.  Therefore EACCES is now an acceptable
+	    result. 
+ 
+	  <li>ifdef'd several calls such as <code>ioctl (ptyfd, I_PUSH,
+	    "ptem")</code> to build on Linux (I_PUSH is not defined when
+	    sys/stropts.h is not included).
+	</ul>
+
+	<li>initialize second "ltc" variable in main.c (reported by David
+	  Dawes).
+
+	<li>provide definition for USE_USG_PTYS in screen.c
+
+	<li>add resource-files to install rule in standalone Makefile.in
+
+	<li>add sample scripts to illustrate titlebar controls, resizing
+	  and colors.
+</ul>
 
 <H1><A NAME="xterm_93">Patch #93 - 1999/3/14 - XFree86 3.9Pd</A></H1>
 Here are several fixes and minor enhancements.  The chief ones

@@ -36,22 +36,14 @@ DependSubdirs($(SUBDIRS))
 #endif
 
         OBJS = $(GLXOBJS)  $(DRIOBJS)  $(DRMOBJS)
+#if HasSharedLibraries
        UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRMUOBJS)
+#else
+       UOBJS = $(OBJS)
+#endif
        DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRMDOBJS)
        POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRMPOBJS)
        DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES)
-
-#if 0
-XCOMM This works for now... NOT_DONE
-$(GLXOBJS):
-$(GLXUOBJS):
-#if BuildXF86DRI
-$(DRIOBJS):
-$(DRIUOBJS):
-$(DRMOBJS):
-$(DRMUOBJS):
-#endif
-#endif
 
 #undef _LinkBuildLibrary
 #define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.22 1999/03/14 11:18:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.23 1999/03/21 16:20:57 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -263,6 +263,18 @@ typedef struct {
     pointer		options;
 } DispRec, *DispPtr;
 
+typedef struct _confxvportrec {
+    char *		identifier;
+    pointer		options;
+} confXvPortRec, *confXvPortPtr;
+
+typedef struct _confxvadaptrec {
+    char *		identifier;
+    int			numports;
+    confXvPortPtr	ports;
+    pointer		options;
+} confXvAdaptorRec, *confXvAdaptorPtr;
+
 typedef struct _confscreenrec {
     char *		id;
     int			defaultdepth;
@@ -272,6 +284,8 @@ typedef struct _confscreenrec {
     GDevPtr		device;
     int			numdisplays;
     DispPtr		displays;
+    int			numxvadaptors;
+    confXvAdaptorPtr	xvadaptors;
     pointer		options;
 } confScreenRec, *confScreenPtr;
 
@@ -384,6 +398,8 @@ typedef struct {
    int maxViewportY;
    int viewportFlags;	/* types of page flipping possible */
    unsigned char* memBase;
+   unsigned char* mapBase;
+   int offset;
    int reserved1;
    int reserved2;
 } DGAModeRec, *DGAModePtr;
@@ -485,7 +501,8 @@ typedef struct _ScrnInfoRec {
     int			clock[MAXCLOCKS];	/* list of clock frequencies */
     int			videoRam;		/* amount of video ram (kb) */
     unsigned long	biosBase;		/* Base address of video BIOS */
-    unsigned long	memBase;		/* Frame buffer base address */
+    unsigned long	memPhysBase;		/* Physical address of FB */
+    unsigned long 	fbOffset;		/* Offset of FB in the above */
     unsigned long	ioBase;			/* I/O or MMIO base adderss */
     int			memClk;			/* memory clock */
     int			textClockFreq;		/* clock of text mode */
@@ -621,6 +638,7 @@ typedef enum {
     PROT_NETSCROLLPS2,			/* Genius PS/2 NetScroll */
     PROT_SYSMOUSE,			/* SysMouse */
     PROT_WSMOUSE,			/* wsmouse (NetBSD) */
+    PROT_SUN,				/* Sun Microsystems */
     PROT_AUTO,				/* automatic */
     PROT_ACECAD,			/* Acecad tablets */
     NUM_PROTOCOLS			/* MUST BE LAST */

@@ -105,7 +105,7 @@ Types are:  B = boolean, O = set/unset (no value), I = integer, S = string,
             F = floating point number
 
 Scopes are: F = global flags, V = video driver, C = common (per screen),
-            I = input drivers, X = XAA, M = misc.
+            I = input drivers, X = XAA, Xv = Xv extension, M = misc.
 
 Names currently in use:
 
@@ -216,6 +216,8 @@ UseModeLine               B     V    Use Modeline (??)
 UseVclk1                  B     V    ??
 W32Interleave             B     V    ??
 
+Expose                    B     Xv   Disable occlusion clipping (see DESIGN)
+
 XAA options.  All are of type "O" and scope "X", and are self-explanatory
 
 XaaNoColor8x8PatternFillRect
@@ -266,7 +268,6 @@ ProgLcdModeRegs
 ProgLcdModeStretch
 SlowDRAMrefresh
 SlowVRAM
-STN
 SwapHiBit
 
 
@@ -289,4 +290,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.4 1999/03/20 08:59:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.5 1999/03/21 07:34:47 dawes Exp $

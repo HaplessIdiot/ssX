@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.6.4.5 1998/06/04 17:35:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.7 1998/07/25 16:55:16 dawes Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -66,6 +66,24 @@ void
 XkbDDXUpdateIndicators(DeviceIntPtr pXDev,CARD32 new)
 {
     CARD32 old;
+#if defined (__sparc__)
+    static int kbdSun = -1;
+    
+    if (kbdSun == -1) {
+	if (xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
+	    kbdSun = 1;
+	else
+	    kbdSun = 0;
+	}
+	if (kbdSun) {
+	    old = new;
+	    new = 0;
+	    if (old & 0x08) new |= XLED1;
+	    if (old & 0x04) new |= XLED3;
+	    if (old & 0x02) new |= XLED4;
+	    if (old & 0x01) new |= XLED2;
+	}
+#endif /* defined (__sparc__) */
 #ifdef DEBUG
 /*    if (xkbDebugFlags)*/
         ErrorF("XkbDDXUpdateIndicators(...,0x%x) -- XFree86 version\n",new);
@@ -76,6 +94,9 @@ XkbDDXUpdateIndicators(DeviceIntPtr pXDev,CARD32 new)
     if (old&XLED1)	new|= LED_CAP;
     if (old&XLED2)	new|= LED_NUM;
     if (old&XLED3)	new|= LED_SCR;
+#ifdef LED_COMP
+    if (old&XLED4)	new|= LED_COMP;
+#endif
 #endif
     xf86SetKbdLeds(new);
     return;

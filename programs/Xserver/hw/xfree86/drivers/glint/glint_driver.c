@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.30 1999/03/20 08:59:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.31 1999/03/21 07:35:08 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -748,6 +748,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     GLINTPtr pGlint;
     MessageType from;
     int i;
+    Bool Overlay;
     int maxwidth = 0, maxheight = 0;
     ClockRangePtr clockRanges;
     char *mod = NULL;
@@ -898,15 +899,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     if (pGlint->UsePCIRetry)
 	xf86DrvMsg(pScrn->scrnIndex, from, "PCI retry enabled\n");
-    pGlint->Overlay = FALSE;
+    pScrn->overlayFlags = 0;
     from = X_DEFAULT;
-    if (xf86GetOptValBool(GLINTOptions, OPTION_OVERLAY, &pGlint->Overlay))
+    if (xf86GetOptValBool(GLINTOptions, OPTION_OVERLAY, &Overlay))
 	from = X_CONFIG;
-    if (pGlint->Overlay) {
+    if (Overlay) {
 	if ((pScrn->depth == 24) && (pScrn->bitsPerPixel == 32)) {
 	    pScrn->colorKey = 255; /* we should let the user change this */
 	    pScrn->overlayFlags = OVERLAY_8_32_PLANAR;
-	    pGlint->Overlay = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "32/8bpp overlay enabled\n");
 	}
     }
@@ -1374,7 +1374,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    mod = "xf24_32bpp";
 	break;
     case 32:
-	if (pGlint->Overlay) {
+	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    mod = "xf8_32bpp";
 	} else {
 	    mod = "cfb32";
@@ -1863,7 +1863,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * miSetVisualTypes for each visual supported.
      */
 
-    if(pGlint->Overlay && (pScrn->bitsPerPixel == 32)) {
+    if((pScrn->overlayFlags & OVERLAY_8_32_PLANAR) && 
+						(pScrn->bitsPerPixel == 32)) {
 	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
 			      pScrn->rgbBits, PseudoColor))
 		return FALSE;
@@ -1919,7 +1920,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 32:
-	if(pGlint->Overlay)
+	if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
 	    ret = cfb8_32ScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
@@ -2010,7 +2011,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    (pScrn->depth == 16) ? Permedia2LoadPalette16:Permedia2LoadPalette,
 	    NULL,
 	    CMAP_RELOAD_ON_MODE_SWITCH |
-	    (pGlint->Overlay ? 0 : CMAP_PALETTED_TRUECOLOR)))
+	    ((pScrn->overlayFlags & OVERLAY_8_32_PLANAR) 
+					? 0 : CMAP_PALETTED_TRUECOLOR)))
 	return FALSE;
     } else {
 	if (pScrn->rgbBits == 10) {
@@ -2020,12 +2022,14 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	} else {
     	if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits, 
 	    CMAP_RELOAD_ON_MODE_SWITCH | 
-	    (pGlint->Overlay ? 0 : CMAP_PALETTED_TRUECOLOR)))
+	    ((pScrn->overlayFlags & OVERLAY_8_32_PLANAR) 
+					? 0 : CMAP_PALETTED_TRUECOLOR)))
 	return FALSE;
 	}
     }
 
-    if(pGlint->Overlay && (pScrn->bitsPerPixel == 32)) {
+    if((pScrn->overlayFlags & OVERLAY_8_32_PLANAR) && 
+						(pScrn->bitsPerPixel == 32)) {
 	if(!xf86Overlay8Plus32Init(pScreen))
 	    return FALSE;
     }
@@ -2050,8 +2054,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    Permedia2VideoInit(pScreen);
     }
 
+#if 0
     /* Enable the screen */
     GLINTSaveScreen(pScreen, TRUE);
+#endif
 
     /* Done */
     return TRUE;
@@ -2252,11 +2258,25 @@ GLINTSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    CARD32 temp;
 
-    if (pGlint->VGAcore)
-    	return vgaHWSaveScreen(pScreen, unblank);
-    else 
-    	return TRUE;
+    switch (pGlint->Chipset) {
+    case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+    case PCI_VENDOR_TI_CHIP_PERMEDIA:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
+	temp = GLINT_READ_REG(PMVideoControl);
+	if (unblank) temp |= 1;
+	else	     temp &= 0xFFFFFFFE;
+	GLINT_WRITE_REG(temp, PMVideoControl);
+	break;
+    case PCI_VENDOR_3DLABS_CHIP_500TX:
+    case PCI_VENDOR_3DLABS_CHIP_MX:
+	break;
+    }
+
+    return TRUE;
 }
 
 #ifdef DEBUG

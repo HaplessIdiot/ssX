@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.8 1999/03/07 11:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.9 1999/03/21 12:59:24 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -94,6 +94,38 @@ unsigned long (*XvGetRTPortProc)(void) = XvGetRTPort;
 int (*XvScreenInitProc)(ScreenPtr) = XvScreenInit;
 #endif
 
+
+static XF86VideoAdaptorPtr *GenAdaptors = NULL;
+static int NumGenAdaptors = 0;
+
+int
+xf86XVRegisterGenericAdaptor(
+   XF86VideoAdaptorPtr *adaptors,
+   int num
+){
+  int i;
+  XF86VideoAdaptorPtr *newadaptors;
+
+  newadaptors = xrealloc(GenAdaptors, sizeof(XF86VideoAdaptorPtr) * 
+			 (num + NumGenAdaptors));
+  if (!newadaptors)
+    return 0;
+  GenAdaptors = newadaptors;
+  
+  for (i=0; i<num && NumGenAdaptors <= 4; i++, NumGenAdaptors++) {
+    GenAdaptors[NumGenAdaptors] = adaptors[i];
+  }
+
+  return i;
+}
+
+int
+xf86XVListGenericAdaptors(
+   XF86VideoAdaptorPtr **adaptors
+){
+   *adaptors = GenAdaptors;
+   return NumGenAdaptors;
+}
 
 Bool
 xf86XVScreenInit(
@@ -342,16 +374,12 @@ xf86XVInitAdaptors(
           continue;
       }
 
-      if(!adaptorPtr->ReclipVideo)
-	  adaptorPtr->flags |= VIDEO_NO_CLIPPING;
-
       adaptorPriv->flags = adaptorPtr->flags;
       adaptorPriv->PutVideo = adaptorPtr->PutVideo;
       adaptorPriv->PutStill = adaptorPtr->PutStill;
       adaptorPriv->GetVideo = adaptorPtr->GetVideo;
       adaptorPriv->GetStill = adaptorPtr->GetStill;
       adaptorPriv->StopVideo = adaptorPtr->StopVideo;
-      adaptorPriv->ReclipVideo = adaptorPtr->ReclipVideo;
       adaptorPriv->SetPortAttribute = adaptorPtr->SetPortAttribute;
       adaptorPriv->GetPortAttribute = adaptorPtr->GetPortAttribute;
       adaptorPriv->QueryBestSize = adaptorPtr->QueryBestSize;
@@ -521,7 +549,8 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
 {
   RegionRec WinRegion;
   RegionRec ClipRegion;
-  BoxRec WinBox;
+  RegionRec ScreenRegion;
+  BoxRec WinBox, ScreenBox;
   ScreenPtr pScreen = portPriv->pDraw->pScreen;
   int ret = Success;
 
@@ -531,10 +560,23 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
   WinBox.x2 = WinBox.x1 + portPriv->drw_w;
   WinBox.y2 = WinBox.y1 + portPriv->drw_h;
   
-  /* clip to the window composite clip */
   REGION_INIT(pScreen, &WinRegion, &WinBox, 1);
   REGION_INIT(pScreen, &ClipRegion, NullBox, 1);
-  REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, portPriv->pCompositeClip); 
+
+  if(portPriv->AdaptorRec->flags & VIDEO_EXPOSE) {
+     ScreenBox.x1 = 0;
+     ScreenBox.y1 = 0;
+     ScreenBox.x2 = pScreen->width;
+     ScreenBox.y2 = pScreen->height;
+     REGION_INIT(pScreen, &ScreenRegion, &ScreenBox, 1);
+     REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, &ScreenRegion);
+  } else
+     /* clip to the window composite clip */
+     REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, portPriv->pCompositeClip);
+
+  /* that's all if it's totally obscured and video already off */
+  if(!REGION_NOTEMPTY(pScreen, &ClipRegion) && !portPriv->isOn)
+	goto CLIP_VIDEO_BAILOUT;
 
   /* turn off the video if it's on */  
   if(portPriv->isOn) { 
@@ -542,11 +584,7 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
 	portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
      portPriv->isOn = FALSE;
   }
-#if 0
-  /* that's all if it's totally obscured */
-  if(!REGION_NOTEMPTY(pScreen, &ClipRegion))
-	goto CLIP_VIDEO_BAILOUT;
-#endif
+
 #if 1
   /* if you wanted VIDEO_NO_CLIPPING hardware to grab the window area
      if part of it was visible rather than just failing, you could 
@@ -568,19 +606,22 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
      REGION_SUBTRACT(pScreen, &ClipRegion, &WinRegion, &ClipRegion);
   }
 
-  if(!(portPriv->AdaptorRec->flags & VIDEO_NO_CLIPPING))
-	(*portPriv->AdaptorRec->ReclipVideo)( portPriv->pScrn, 
-				&ClipRegion, portPriv->DevPriv.ptr);
- 
   ret = (*portPriv->AdaptorRec->GetVideo)(portPriv->pScrn, 
 			portPriv->vid_x, portPriv->vid_y, 
 			portPriv->pDraw->x + portPriv->drw_x, 
 			portPriv->pDraw->y + portPriv->drw_y, 
 			portPriv->vid_w, portPriv->vid_h, 
 			portPriv->drw_w, portPriv->drw_h, 
-			portPriv->DevPriv.ptr);
-  if(ret == Success)
-	portPriv->isOn = TRUE;
+			&ClipRegion, portPriv->DevPriv.ptr);
+  if(ret == Success) {
+     /* the driver had a chance to lower the curtain,
+        that's all if it's totally obscured */
+     if(!REGION_NOTEMPTY(pScreen, &ClipRegion))
+        (*portPriv->AdaptorRec->StopVideo)(
+	   portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
+     else
+        portPriv->isOn = TRUE;
+  }
 
 CLIP_VIDEO_BAILOUT:
 
@@ -636,17 +677,13 @@ xf86XVReputVideo(XvPortRecPrivatePtr portPriv)
      REGION_SUBTRACT(pScreen, &ClipRegion, &WinRegion, &ClipRegion);
   }
 
-  if(!(portPriv->AdaptorRec->flags & VIDEO_NO_CLIPPING))
-	(*portPriv->AdaptorRec->ReclipVideo)( portPriv->pScrn, 
-				&ClipRegion, portPriv->DevPriv.ptr);
- 
   ret = (*portPriv->AdaptorRec->PutVideo)(portPriv->pScrn, 
 			portPriv->vid_x, portPriv->vid_y, 
 			portPriv->pDraw->x + portPriv->drw_x, 
 			portPriv->pDraw->y + portPriv->drw_y, 
 			portPriv->vid_w, portPriv->vid_h, 
 			portPriv->drw_w, portPriv->drw_h, 
-			portPriv->DevPriv.ptr);
+			&ClipRegion, portPriv->DevPriv.ptr);
   if(ret == Success)
 	portPriv->isOn = TRUE;
 
@@ -1068,13 +1105,10 @@ xf86XVPutStill(
      REGION_SUBTRACT(pScreen, &ClipRegion, &WinRegion, &ClipRegion);
   }
 
-  if(!(portPriv->AdaptorRec->flags & VIDEO_NO_CLIPPING))
-	(*portPriv->AdaptorRec->ReclipVideo)(
-			portPriv->pScrn, &ClipRegion, portPriv->DevPriv.ptr);
- 
   ret = (*portPriv->AdaptorRec->PutStill)(portPriv->pScrn, vid_x, vid_y, 
 		pDraw->x  + drw_x, pDraw->y + drw_y,
-		vid_w, vid_h, drw_w, drw_h, portPriv->DevPriv.ptr);
+		vid_w, vid_h, drw_w, drw_h,
+		&ClipRegion, portPriv->DevPriv.ptr);
 
 PUT_STILL_BAILOUT:
 
@@ -1157,7 +1191,8 @@ xf86XVGetStill(
   ScreenPtr pScreen = pDraw->pScreen;
   RegionRec WinRegion;
   RegionRec ClipRegion;
-  BoxRec WinBox;
+  RegionRec ScreenRegion;
+  BoxRec WinBox, ScreenBox;
   Bool WasOn = FALSE;
   int ret = Success;
 
@@ -1173,7 +1208,16 @@ xf86XVGetStill(
   
   REGION_INIT(pScreen, &WinRegion, &WinBox, 1);
   REGION_INIT(pScreen, &ClipRegion, NullBox, 1);
-  REGION_INTERSECT(pScreen, &ClipRegion, &WinRegion, pGC->pCompositeClip);   
+
+  if(portPriv->AdaptorRec->flags & VIDEO_EXPOSE) {
+     ScreenBox.x1 = 0;
+     ScreenBox.y1 = 0;
+     ScreenBox.x2 = pScreen->width;
+     ScreenBox.y2 = pScreen->height;
+     REGION_INIT(pScreen, &ScreenRegion, &ScreenBox, 1);
+     REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, &ScreenRegion);
+  } else
+     REGION_INTERSECT(pScreen, &ClipRegion, &WinRegion, pGC->pCompositeClip);   
 
   if(!REGION_NOTEMPTY(pScreen, &ClipRegion))
 	goto GET_STILL_BAILOUT; 
@@ -1205,13 +1249,10 @@ xf86XVGetStill(
      REGION_SUBTRACT(pScreen, &ClipRegion, &WinRegion, &ClipRegion);
   }
 
-  if(!(portPriv->AdaptorRec->flags & VIDEO_NO_CLIPPING))
-	(*portPriv->AdaptorRec->ReclipVideo)(
-			portPriv->pScrn, &ClipRegion, portPriv->DevPriv.ptr);
- 
   ret = (*portPriv->AdaptorRec->GetStill)(portPriv->pScrn, vid_x, vid_y, 
 		pDraw->x  + drw_x, pDraw->y + drw_y,
-		vid_w, vid_h, drw_w, drw_h, portPriv->DevPriv.ptr);
+		vid_w, vid_h, drw_w, drw_h,
+		&ClipRegion, portPriv->DevPriv.ptr);
 
 GET_STILL_BAILOUT:
 

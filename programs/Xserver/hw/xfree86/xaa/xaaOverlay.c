@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.6 1999/01/11 12:09:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.7 1999/03/21 07:35:31 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -287,8 +287,9 @@ XAAWindowExposures8_32(
    RegionPtr pOtherReg
 ){
     ScreenPtr pScreen = pWin->drawable.pScreen;
-    if(pWin->drawable.depth == 24) {
-	XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+
+    if((pWin->drawable.depth == 24) && infoRec->pScrn->vtSema) {
 	if(REGION_NUM_RECTS(pReg) && infoRec->FillSolidRects) {
 	    (*infoRec->FillSolidRects)(infoRec->pScrn, 
 		(infoRec->pScrn->colorKey << 24), GXcopy, 0xff000000,

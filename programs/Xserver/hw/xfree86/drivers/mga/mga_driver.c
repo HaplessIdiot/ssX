@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.85 1999/03/20 08:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.86 1999/03/21 07:35:13 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -104,6 +104,9 @@
 #include "xf86cmap.h"
 #include "shadowfb.h"
 #include "fbdevhw.h"
+
+#include "xf86xv.h"
+#include "Xv.h"
 
 
 /*
@@ -1620,7 +1623,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
 
-    /* Load ramdac if needed */
+    /* Load shadowfb if needed */
     if (pMga->ShadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
 	    MGAFreeRec(pScrn);
@@ -2195,6 +2198,21 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
+#endif
+
+    pScrn->memPhysBase = pMga->FbAddress;
+    pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+
+#ifdef XvExtension
+    {
+	XF86VideoAdaptorPtr *ptr;
+	int n;
+	
+	n = xf86XVListGenericAdaptors(&ptr);
+	if (n) { 
+	    xf86XVScreenInit(pScreen, ptr, n);
+	}
+    }
 #endif
 
     pScreen->SaveScreen = MGASaveScreen;

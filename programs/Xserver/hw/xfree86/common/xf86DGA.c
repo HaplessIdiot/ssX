@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.10 1999/03/14 11:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.11 1999/03/21 07:34:58 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -180,7 +180,7 @@ DGASetDGAMode(
 			pMode->pixmapWidth, pMode->pixmapHeight,
 			pMode->depth, pMode->bitsPerPixel, 
 			pMode->bytesPerScanline,
- 			(pointer)pMode->memBase);
+ 			(pointer)(pMode->mapBase + pMode->offset));
         }
    }
 
@@ -479,6 +479,7 @@ DGACopyDeviceInfo(
    dev->mode.reserved1 = mode->reserved1;
    dev->mode.reserved2 = mode->reserved2;
    dev->data = mode->memBase;
+   dev->offset = mode->offset;
    dev->pPix = NULL;
 
    if(dmode->Flags & V_INTERLACE) dev->mode.flags |= DGA_INTERLACED;

@@ -1,10 +1,8 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.7 1999/03/21 07:34:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.8 1999/03/21 12:46:34 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
 
-
-/********* This section belongs in the client header file **********/
 
 #define DGA_CONCURRENT_ACCESS	0x00000001
 #define DGA_FILL_RECT		0x00000002
@@ -52,11 +50,10 @@ typedef struct {
 typedef struct {
    XDGAModeRec mode;
    unsigned char *data;
+   int offset;
    PixmapPtr pPix;
 } XDGADeviceRec, *XDGADevicePtr;
 
-
-/*********************************************************************/
 
 void XFree86DGAExtensionInit(void);
 

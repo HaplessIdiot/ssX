@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.10 1999/03/14 11:17:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.11 1999/03/21 07:35:00 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -874,8 +874,33 @@ xf86ChangeGamma(
 	pLink = pLink->next;
     }
 
-    if(miInstalledMaps[pScreen->myNum] && pScrn->vtSema)
-	CMapReinstallMap(miInstalledMaps[pScreen->myNum]);
+    if(miInstalledMaps[pScreen->myNum] && pScrn->vtSema) {
+	ColormapPtr pMap = miInstalledMaps[pScreen->myNum];
+
+	if(!(pScreenPriv->flags & CMAP_PALETTED_TRUECOLOR) &&
+	    (pMap->pVisual->class == TrueColor) &&
+	    ((1 << pMap->pVisual->nplanes) > pScreenPriv->maxColors)) {
+
+	    /* if the current map doesn't have a palette look
+		for another map to change the gamma on. */
+
+	    pLink = pScreenPriv->maps;
+	    while(pLink) {
+		if(pLink->cmap->pVisual->class == PseudoColor)
+		    break;
+		pLink = pLink->next;
+	    }
+
+	    if(pLink) {
+		/* need to trick CMapRefreshColors() into thinking 
+		   this is the currently installed map */
+		miInstalledMaps[pScreen->myNum] = pLink->cmap;
+		CMapReinstallMap(pLink->cmap);
+		miInstalledMaps[pScreen->myNum] = pMap;
+	    }
+	} else
+	    CMapReinstallMap(pMap);
+    }
 
     return Success;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.4 1998/11/15 04:30:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.5 1998/12/06 06:08:43 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -70,6 +70,12 @@ XAAPaintWindow(
     } else {	/* pixmap */
         XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
 	WindowPtr pBgWin = pWin;
+	Bool NoCache = FALSE;
+
+	/* Hack so we can use this with the dual framebuffer layers
+	   which only support the pixmap cache in the primary bpp */
+	if(pPix->drawable.bitsPerPixel != infoRec->pScrn->bitsPerPixel)
+	    NoCache = TRUE;
 
 	if (what == PW_BORDER) {
 	    for (pBgWin = pWin;
@@ -115,7 +121,8 @@ XAAPaintWindow(
 			pBgWin->drawable.x, pBgWin->drawable.y);
 		return;
 	    }
-	    if(infoRec->CanDoColor8x8 && infoRec->FillColor8x8PatternRects) {
+	    if(infoRec->CanDoColor8x8 && !NoCache &&
+				infoRec->FillColor8x8PatternRects) {
 		XAACacheInfoPtr pCache = (*infoRec->CacheColor8x8Pattern)(
 					infoRec->pScrn, pPix, -1, -1);
 
@@ -125,7 +132,8 @@ XAAPaintWindow(
 		return;
 	    }        
 	}
-	if(infoRec->UsingPixmapCache && infoRec->FillCacheBltRects && 
+	if(infoRec->UsingPixmapCache && 
+	    infoRec->FillCacheBltRects && !NoCache &&
 	    (pPix->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	    (pPix->drawable.width <= infoRec->MaxCacheableTileWidth)) {
 

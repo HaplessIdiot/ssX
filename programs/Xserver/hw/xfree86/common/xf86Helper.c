@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.31 1999/03/14 03:21:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.32 1999/03/20 08:59:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1871,5 +1871,33 @@ xf86SetBackingStore(ScreenPtr pScreen)
     if (serverGeneration == 1)
 	xf86DrvMsg(pScreen->myNum, from, "Backing store %s\n",
 		   useBS ? "enabled" : "disabled");
+}
+
+
+/* Wrote this function for the PM2 Xv driver, preliminary. */
+
+pointer
+xf86FindXvOptions(int scrnIndex, int adaptor_index, char *port_name,
+		  char **adaptor_name, pointer *adaptor_options)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    confXvAdaptorPtr adaptor;
+    int i;
+
+    if (adaptor_index >= pScrn->confScreen->numxvadaptors) {
+	if (adaptor_name) *adaptor_name = NULL;
+	if (adaptor_options) *adaptor_options = NULL;
+	return NULL;
+    }
+
+    adaptor = &pScrn->confScreen->xvadaptors[adaptor_index];
+    if (adaptor_name) *adaptor_name = adaptor->identifier;
+    if (adaptor_options) *adaptor_options = adaptor->options;
+
+    for (i = 0; i < adaptor->numports; i++)
+	if (!xf86NameCmp(adaptor->ports[i].identifier, port_name))
+	    return adaptor->ports[i].options;
+
+    return NULL;
 }
 

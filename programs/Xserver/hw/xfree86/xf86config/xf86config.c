@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.44 1997/10/26 13:25:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.45 1998/09/05 06:37:06 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -52,6 +52,7 @@
  *	   Write temporary XF86Config for clock probing in /tmp instead
  *	     of /usr/X11R6/lib/X11.
  *	   Add RAMDAC and Clockchip menu.
+ * 27Mar99 Modified for XFree86 4.0 config file format
  *
  * Possible enhancements:
  * - Add more standard mode timings (also applies to README.Config). Missing
@@ -195,8 +196,6 @@ char *config_xkbgeometry;
  */
 
 int card_selected;	/* Card selected from database. */
-int card_screentype;
-int card_accelserver;
 
 
 void write_XF86Config();
@@ -221,6 +220,7 @@ CONFIGNAME " file is supplied with XFree86; it is configured for a standard\n"
 "configuration and fine-tune it. Refer to " TREEROOTLX "/doc/README.Config\n"
 "for a detailed overview of the configuration process.\n"
 "\n"
+"(what should we change this section to?)\n"
 "For accelerated servers (including accelerated drivers in the SVGA server),\n"
 "there are many chipset and card-specific options and settings. This program\n"
 "does not know about these. On some configurations some of these settings must\n"
@@ -228,7 +228,6 @@ CONFIGNAME " file is supplied with XFree86; it is configured for a standard\n"
 "\n"
 "Before continuing with this program, make sure you know the chipset and\n"
 "amount of video memory on your video card. SuperProbe can help with this.\n"
-"It is also helpful if you know what server you want to run.\n"
 "\n"
 ;
 
@@ -959,9 +958,9 @@ static char *cardintro_text =
 "selection, you will still be asked about the components of the card, with\n"
 "the settings from the chosen database entry presented as a strong hint.\n"
 "\n"
-"The database entries include information about the chipset, what server to\n"
+"The database entries include information about the chipset, what driver to\n"
 "run, the Ramdac and ClockChip, and comments that will be included in the\n"
-"Device section. However, a lot of definitions only hint about what server\n"
+"Device section. However, a lot of definitions only hint about what driver\n"
 "to run (based on the chipset the card uses) and are untested.\n"
 "\n"
 "If you can't find your card in the database, there's nothing to worry about.\n"
@@ -977,18 +976,10 @@ static char *cardunsupported_text =
 "this card definition was based on, there's a chance that it is now\n"
 "supported.\n";
 
-#define NU_ACCELSERVER_IDS 10
-
-static char *accelserver_id[NU_ACCELSERVER_IDS] = {
-	"S3", "Mach32", "Mach8", "8514", "P9000", "AGX", "W32", "Mach64",
-	"I128", "S3V"
-};
-
 void carddb_configuration() {
 	int i;
 	char s[80];
 	card_selected = -1;
-	card_screentype = -1;
 	printf("%s", cardintro_text);
 	printf("Do you want to look at the card database? ");
 	getstring(s);
@@ -1036,25 +1027,10 @@ void carddb_configuration() {
 	 * Look at the selected card.
 	 */
 	if (card_selected != -1) {
-		if (strcmp(card[card_selected].server, "Mono") == 0)
-			card_screentype = 1;
-		else
-		if (strcmp(card[card_selected].server, "VGA16") == 0)
-			card_screentype = 2;
-		if (strcmp(card[card_selected].server, "SVGA") == 0)
-			card_screentype = 3;
-		for (i = 0; i < NU_ACCELSERVER_IDS; i++)
-			if (strcmp(card[card_selected].server,
-			accelserver_id[i]) == 0) {
-				card_screentype = 4;
-				card_accelserver = i;
-				break;
-			}
-
 		printf("\nYour selected card definition:\n\n");
 		printf("Identifier: %s\n", card[card_selected].name);
 		printf("Chipset:    %s\n", card[card_selected].chipset);
-		printf("Server:     XF86_%s\n", card[card_selected].server);
+		printf("Driver:     %s\n", card[card_selected].driver);
 		if (card[card_selected].ramdac != NULL)
 			printf("Ramdac:     %s\n", card[card_selected].ramdac);
 		if (card[card_selected].dacspeed != NULL)
@@ -1080,40 +1056,6 @@ void carddb_configuration() {
  * Screen/video card configuration.
  */
 
-static char *screenintro_text =
-"Now you must determine which server to run. Refer to the manpages and other\n"
-"documentation. The following servers are available (they may not all be\n"
-"installed on your system):\n"
-"\n"
-" 1  The XF86_Mono server. This a monochrome server that should work on any\n"
-"    VGA-compatible card, in 640x480 (more on some SVGA chipsets).\n"
-" 2  The XF86_VGA16 server. This is a 16-color VGA server that should work on\n"
-"    any VGA-compatible card.\n"
-" 3  The XF86_SVGA server. This is a 256 color SVGA server that supports\n"
-"    a number of SVGA chipsets. On some chipsets it is accelerated or\n"
-"    supports higher color depths.\n"
-" 4  The accelerated servers. These include XF86_S3, XF86_Mach32, XF86_Mach8,\n"
-"    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32, XF86_Mach64, XF86_I128 and\n"
-"    XF86_S3V.\n"
-"\n"
-"These four server types correspond to the four different \"Screen\" sections in\n"
-CONFIGNAME " (vga2, vga16, svga, accel).\n"
-"\n";
-
-#ifndef __EMX__
-static char *screenlink_text =
-"The server to run is selected by changing the symbolic link 'X'. For example,\n"
-"'rm /usr/X11R6/bin/X; ln -s /usr/X11R6/bin/XF86_SVGA /usr/X11R6/bin/X' selects\n"
-"the SVGA server.\n"
-"\n";
-
-static char *varlink_text =
-"The directory /var/X11R6/bin exists. On many Linux systems this is the\n"
-"preferred location of the symbolic link 'X'. You can select this location\n"
-"when setting the symbolic link.\n"
-"\n";
-#endif /* !__EMX__ */
-
 static char *deviceintro_text =
 "Now you must give information about your video card. This will be used for\n"
 "the \"Device\" section of your video card in " CONFIGNAME ".\n"
@@ -1130,10 +1072,6 @@ static char *videomemoryintro_text =
 "How much video memory do you have on your video card:\n"
 "\n";
 
-static char *screenaccelservers_text =
-"Select an accel server:\n"
-"\n";
-
 static char *carddescintro_text =
 "You must now enter a few identification/description strings, namely an\n"
 "identifier, a vendor name, and a model name. Just pressing enter will fill\n"
@@ -1145,16 +1083,15 @@ static char *devicevendornamecomment_text =
 "describe your card with one string.\n";
 
 static char *devicesettingscomment_text =
-"Especially for accelerated servers, Ramdac, Dacspeed and ClockChip settings\n"
+"Especially for accelerated drivers, Ramdac, Dacspeed and ClockChip settings\n"
 "or special options may be required in the Device section.\n"
 "\n";
 
 static char *ramdaccomment_text =
-"The RAMDAC setting only applies to the S3, AGX, W32 servers, and some \n"
-"drivers in the SVGA servers. Some RAMDAC's are auto-detected by the server.\n"
-"The detection of a RAMDAC is forced by using a Ramdac \"identifier\" line in\n"
-"the Device section. The identifiers are shown at the right of the following\n"
-"table of RAMDAC types:\n"
+"The RAMDAC setting only applies to some drivers. Some RAMDAC's are\n"
+"auto-detected by the server. The detection of a RAMDAC is forced by using a\n"
+"Ramdac \"identifier\" line in the Device section. The identifiers are shown\n"
+"at the right of the following table of RAMDAC types:\n"
 "\n";
 
 #define NU_RAMDACS 24
@@ -1293,13 +1230,6 @@ static char *virtual_text =
 "differently-sized virtual screen\n"
 "\n";
 
-#define NU_ACCEL_SERVERS 10
-
-static char *accelserver_name[NU_ACCEL_SERVERS] = {
-	"XF86_S3", "XF86_Mach32", "XF86_Mach8", "XF86_8514", "XF86_P9000",
-	"XF86_AGX", "XF86_W32" ,"XF86_Mach64", "XF86_I128", "XF86_S3V"
-};
-
 static int videomemory[5] = {
 	256, 512, 1024, 2048, 4096
 };
@@ -1371,87 +1301,8 @@ static int exists_dir(char *name) {
 }
 
 void screen_configuration() {
-	int i, c, varlink, np;
-	int usecardscreentype;
+	int i, c, np;
 	char s[80];
-
-	printf("%s", screenintro_text);
-
-	if (card_screentype != -1)
-		printf(" 5  Choose the server from the card definition, XF86_%s.\n\n",
-			card[card_selected].server);
-
-	printf("Which one of these screen types do you intend to run by default (1-%d)? ",
-		4 + (card_screentype != -1 ? 1 : 0));
-	getstring(s);
-	config_screentype = atoi(s);
-	if (config_screentype == 0)
-		config_screentype = 4 + (card_screentype != -1 ? 1 : 0);
-	usecardscreentype = 0;
-	if (config_screentype == 5) {
-		config_screentype = card_screentype;	/* From definition. */
-		usecardscreentype = 1;
-	}
-	printf("\n");
-
-#ifndef __EMX__
-	printf("%s", screenlink_text);
-
-	varlink = exists_dir("/var/X11R6/bin");
-	if (varlink) {
-		printf("%s", varlink_text);
-	}
-
-	printf("Please answer the following question with either 'y' or 'n'.\n");
-	printf("Do you want me to set the symbolic link? ");
-	getstring(s);
-	printf("\n");
-	if (answerisyes(s)) {
-		char *servername;
-		if (varlink) {
-			printf("Do you want to set it in /var/X11R6/bin? ");
-			getstring(s);
-			printf("\n");
-			if (!answerisyes(s))
-				varlink = 0;
-		}
-		if (config_screentype == 4 && usecardscreentype)
-			/* Use screen type from card definition. */
-			servername = accelserver_name[card_accelserver];
-		else
-		if (config_screentype == 4) {
-			/* Accel server. */
-			printf("%s", screenaccelservers_text);
-			for (i = 0; i < NU_ACCEL_SERVERS; i++)
-				printf("%2d  %s\n", i + 1,
-					accelserver_name[i]);
-			printf("\n");
-			printf("Which accel server: ");
-			getstring(s);
-			servername = accelserver_name[atoi(s) - 1];
-			printf("\n");
-		}
-		else
-			switch (config_screentype) {
-			case 1 : servername = "XF86_Mono"; break;
-			case 2 : servername = "XF86_VGA16"; break;
-			case 3 : servername = "XF86_SVGA"; break;
-			}
-		if (varlink) {
-			system("rm -f /var/X11R6/bin/X");
-			sprintf(s, "ln -s /usr/X11R6/bin/%s /var/X11R6/bin/X",
-				servername);
-		}
-		else {
-			system("rm -f /usr/X11R6/bin/X");
-			sprintf(s, "ln -s /usr/X11R6/bin/%s /usr/X11R6/bin/X",
-				servername);
-		}
-		system(s);
-	}
-#endif /* !__EMX__ */
-
-	emptylines();
 
 	/*
 	 * Configure the "Device" section for the video card.
@@ -1534,7 +1385,7 @@ void screen_configuration() {
 	if (config_videomemory >= 4096) {
 		config_virtualx8bpp = 1600;
 		config_virtualy8bpp = 1280;
-		if (config_screentype == 4) {
+		if (card_selected != -1 && !(card[card_selected].flags & UNSUPPORTED)) {
 			/*
 			 * Allow room for font/pixmap cache for accel
 			 * servers.
@@ -1546,7 +1397,7 @@ void screen_configuration() {
 			config_virtualx16bpp = 1600;
 			config_virtualy16bpp = 1280;
 		}
-		if (config_screentype == 4) {
+		if (card_selected != -1 && !(card[card_selected].flags & UNSUPPORTED)) {
 			config_virtualx24bpp = 1152;
 			config_virtualy24bpp = 900;
 			config_virtualx32bpp = 1024;
@@ -1566,7 +1417,7 @@ void screen_configuration() {
 	}
 	else
 	if (config_videomemory >= 2048) {
-		if (config_screentype == 4) {
+		if (card_selected != -1 && !(card[card_selected].flags & UNSUPPORTED)) {
 			/*
 			 * Allow room for font/pixmap cache for accel
 			 * servers.
@@ -1579,7 +1430,7 @@ void screen_configuration() {
 			config_virtualx8bpp = 1600;
 			config_virtualy8bpp = 1200;
 		}
-		if (config_screentype == 4) {
+		if (card_selected != -1 && !(card[card_selected].flags & UNSUPPORTED)) {
 			config_virtualx16bpp = 1024;
 			config_virtualy16bpp = 768;
 		}
@@ -1605,7 +1456,7 @@ void screen_configuration() {
 	}
 	else
 	if (config_videomemory >= 1024) {
-		if (config_screentype == 4) {
+		if (card_selected != -1 && !(card[card_selected].flags & UNSUPPORTED)) {
 			/*
 			 * Allow room for font/pixmap cache for accel
 			 * servers.
@@ -1652,7 +1503,7 @@ void screen_configuration() {
 
 	printf("%s", devicesettingscomment_text);
 
-	if (config_screentype < 3)
+	if (card_selected == -1 || (card[card_selected].flags & UNSUPPORTED))
 		goto skipramdacselection;
 
 	printf("%s", ramdaccomment_text);
@@ -1826,10 +1677,9 @@ endofprobeonly:
 skipclockprobing:
 
 	/*
-	 * For the mono and vga16 server, no further configuration is
-	 * required.
+	 * For vga driver, no further configuration is required.
 	 */
-	if (config_screentype == 1 || config_screentype == 2)
+	if (card_selected == -1 || (card[card_selected].flags & UNSUPPORTED))
 		return;
 	
 	/*
@@ -1917,7 +1767,7 @@ static char *XF86Config_firstchunk_text =
 "# File generated by xf86config.\n"
 "\n"
 "#\n"
-"# Copyright (c) 1995 by The XFree86 Project, Inc.\n"
+"# Copyright (c) 1999 by The XFree86 Project, Inc.\n"
 "#\n"
 "# Permission is hereby granted, free of charge, to any person obtaining a\n"
 "# copy of this software and associated documentation files (the \"Software\"),\n"
@@ -2021,38 +1871,38 @@ static char *XF86Config_fontpathchunk_text =
 "# received.  This may leave the console in an unusable state, but may\n"
 "# provide a better stack trace in the core dump to aid in debugging\n"
 "\n"
-"#    NoTrapSignals\n"
+"#    Option \"NoTrapSignals\"\n"
 "\n"
 "# Uncomment this to disable the <Crtl><Alt><BS> server abort sequence\n"
 "# This allows clients to receive this key event.\n"
 "\n"
-"#    DontZap\n"
+"#    Option \"DontZap\"\n"
 "\n"
 "# Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching\n"
 "# sequences.  This allows clients to receive these key events.\n"
 "\n"
-"#    DontZoom\n"
+"#    Option \"Dont Zoom\"\n"
 "\n"
 "# Uncomment this to disable tuning with the xvidtune client. With\n"
 "# it the client can still run and fetch card and monitor attributes,\n"
 "# but it will not be allowed to change them. If it tries it will\n"
 "# receive a protocol error.\n"
 "\n"
-"#       DisableVidModeExtension\n"
+"#    Option \"DisableVidModeExtension\"\n"
 "\n"
 "# Uncomment this to enable the use of a non-local xvidtune client. \n"
 "\n"
-"#       AllowNonLocalXvidtune\n"
+"#    Option \"AllowNonLocalXvidtune\"\n"
 "\n"
 "# Uncomment this to disable dynamically modifying the input device\n"
 "# (mouse and keyboard) settings. \n"
 "\n"
-"#       DisableModInDev\n"
+"#    Option \"DisableModInDev\"\n"
 "\n"
 "# Uncomment this to enable the use of a non-local client to\n"
 "# change the keyboard or mouse settings (currently only xset).\n"
 "\n"
-"#       AllowNonLocalModInDev\n"
+"#    Option \"AllowNonLocalModInDev\"\n"
 "\n"
 "EndSection\n"
 "\n"
@@ -2073,7 +1923,7 @@ static char *XF86Config_fontpathchunk_text =
 "\n"
 "#    Protocol	\"Xqueue\"\n"
 "\n"
-"    AutoRepeat	500 5\n"
+"    Option \"AutoRepeat\" \"500\" \"5\"\n"
 "# Let the server do the NumLock processing.  This should only be required\n"
 "# when using pre-R6 clients\n"
 "#    ServerNumLock\n"
@@ -2393,7 +2243,8 @@ static char *devicesection_text =
 "# Standard VGA Device:\n"
 "\n"
 "Section \"Device\"\n"
-"    Identifier	\"Generic VGA\"\n"
+"    Identifier	\"Standard VGA\"\n"
+"    Driver     \"vga\"\n"
 "    VendorName	\"Unknown\"\n"
 "    BoardName	\"Unknown\"\n"
 "#   Chipset	\"generic\"\n"
@@ -2403,25 +2254,6 @@ static char *devicesection_text =
 "#    Clocks	25.2 28.3\n"
 "\n"
 "EndSection\n"
-"\n"
-"# Sample Device for accelerated server:\n"
-"\n"
-"# Section \"Device\"\n"
-"#    Identifier	\"Actix GE32+ 2MB\"\n"
-"#    VendorName	\"Actix\"\n"
-"#    BoardName	\"GE32+\"\n"
-"#    Ramdac	\"ATT20C490\"\n"
-"#    Dacspeed	110\n"
-"#    Option	\"dac_8_bit\"\n"
-"#    Clocks	 25.0  28.0  40.0   0.0  50.0  77.0  36.0  45.0\n"
-"#    Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0\n"
-"# EndSection\n"
-"\n"
-"# Sample Device for Hercules mono card:\n"
-"\n"
-"# Section \"Device\"\n"
-"#    Identifier \"Hercules mono\"\n"
-"# EndSection\n"
 "\n"
 "# Device configured by xf86config:\n"
 "\n";
@@ -2566,7 +2398,16 @@ void write_XF86Config(filename)
 	fprintf(f, "%s", devicesection_text);
 	fprintf(f, "Section \"Device\"\n");
 	fprintf(f, "    Identifier  \"%s\"\n", config_deviceidentifier);
-	fprintf(f, "    VendorName  \"%s\"\n", config_devicevendorname);
+   	if (card_selected != -1) {
+	        fprintf(f, "    Driver      \"%s\"\n", card[card_selected].driver);
+	        if (card[card_selected].flags & UNSUPPORTED) {
+			fprintf(f, "	# unsupported card\n");
+		}
+	} else {
+	        fprintf(f, "    Driver      \"vga\"\n"
+			"	# unsupported card\n");
+	}
+        fprintf(f, "    VendorName  \"%s\"\n", config_devicevendorname);
 	fprintf(f, "    BoardName   \"%s\"\n", config_deviceboardname);
 	/* Rely on server to detect video memory. */
 	fprintf(f, "    #VideoRam    %d\n", config_videomemory);
@@ -2597,171 +2438,9 @@ void write_XF86Config(filename)
 
 	fprintf(f, "%s", screensection_text1);
 
-	/*
-	 * SVGA screen section.
-	 */
-	if (config_screentype == 3) {
-		fprintf(f, 
-			"# The Colour SVGA server\n"
-			"\n"
-			"Section \"Screen\"\n"
-			"    Driver      \"svga\"\n"
-			"    # Use Device \"Generic VGA\" for Standard VGA 320x200x256\n"
-			"    #Device      \"Generic VGA\"\n"
-			"    Device      \"%s\"\n"
-			"    Monitor     \"%s\"\n"
-			"    Subsection \"Display\"\n"
-			"        Depth       8\n"
-			"        # Omit the Modes line for the \"Generic VGA\" device\n"
-			"        Modes       %s\n"
-			"        ViewPort    0 0\n"
-			"        # Use Virtual 320 200 for Generic VGA\n",
-			config_deviceidentifier,
-			config_monitoridentifier,
-			config_modesline8bpp);
-		if (config_virtual)
-			fprintf(f, "        Virtual     %d %d\n",
-				config_virtualx8bpp, config_virtualy8bpp);
-		fprintf(f, 
-			"    EndSubsection\n"
-			"    Subsection \"Display\"\n"
-			"        Depth       16\n"
-			"        Modes       %s\n"
-			"        ViewPort    0 0\n",
-			config_modesline16bpp);
-		if (config_virtual)
-			fprintf(f, "        Virtual     %d %d\n",
-				config_virtualx16bpp, config_virtualy16bpp);
-		fprintf(f, 
-			"    EndSubsection\n"
-			"    Subsection \"Display\"\n"
-			"        Depth       24\n"
-			"        Modes       %s\n"
-			"        ViewPort    0 0\n",
-			config_modesline24bpp);
-		if (config_virtual)
-			fprintf(f, "        Virtual     %d %d\n",
-				config_virtualx24bpp, config_virtualy24bpp);
-		fprintf(f, 
-			"    EndSubsection\n"
-			"    Subsection \"Display\"\n"
-			"        Depth       32\n"
-			"        Modes       %s\n"
-			"        ViewPort    0 0\n",
-			config_modesline32bpp);
-		if (config_virtual)
-			fprintf(f, "        Virtual     %d %d\n",
-				config_virtualx32bpp, config_virtualy32bpp);
-		fprintf(f, 
-			"    EndSubsection\n"
-			"EndSection\n"
-			"\n");
-	}
-	else
-		/*
-		 * If the default server is not the SVGA server, generate
-		 * an SVGA server screen for just generic 320x200.
-		 */
-		fprintf(f, 
-			"# The Colour SVGA server\n"
-			"\n"
-			"Section \"Screen\"\n"
-			"    Driver      \"svga\"\n"
-			"    Device      \"Generic VGA\"\n"
-			"    #Device      \"%s\"\n"
-			"    Monitor     \"%s\"\n"
-			"    Subsection \"Display\"\n"
-			"        Depth       8\n"
-			"        #Modes       %s\n"
-			"        ViewPort    0 0\n"
-			"        Virtual     320 200\n"
-			"        #Virtual     %d %d\n"
-			"    EndSubsection\n"
-			"EndSection\n"
-			"\n",
-			config_deviceidentifier,
-			config_monitoridentifier,
-			config_modesline8bpp,
-			config_virtualx8bpp, config_virtualy8bpp
-		);
-
-	/*
-	 * VGA16 screen section.
-	 */
 	fprintf(f, 
-		"# The 16-color VGA server\n"
-		"\n"
 		"Section \"Screen\"\n"
-		"    Driver      \"vga16\"\n"
-		"    Device      \"%s\"\n"
-		"    Monitor     \"%s\"\n"
-		"    Subsection \"Display\"\n"
-		/*
-		 * Depend on 800x600 to be deleted if not available due to
-		 * dot clock or monitor constraints.
-		 */
-		"        Modes       \"640x480\" \"800x600\"\n"
-		"        ViewPort    0 0\n"
-		"        Virtual     800 600\n"
-		"    EndSubsection\n"
-		"EndSection\n"
-		"\n",
-		/*
-		 * If mono or vga16 is configured as the default server,
-		 * use the configured video card device instead of the
-		 * generic VGA device.
-		 */
-		(config_screentype == 1 || config_screentype == 2) ?
-			config_deviceidentifier :
-			"Generic VGA",
-		config_monitoridentifier
-	);
-
-	/*
-	 * VGA2 screen section.
-	 * This is almost identical to the VGA16 section.
-	 */
-	fprintf(f, 
-		"# The Mono server\n"
-		"\n"
-		"Section \"Screen\"\n"
-		"    Driver      \"vga2\"\n"
-		"    Device      \"%s\"\n"
-		"    Monitor     \"%s\"\n"
-		"    Subsection \"Display\"\n"
-		/*
-		 * Depend on 800x600 to be deleted if not available due to
-		 * dot clock or monitor constraints.
-		 */
-		"        Modes       \"640x480\" \"800x600\"\n"
-		"        ViewPort    0 0\n"
-		"        Virtual     800 600\n"
-		"    EndSubsection\n"
-		"EndSection\n"
-		"\n",
-		/*
-		 * If mono or vga16 is configured as the default server,
-		 * use the configured video card device instead of the
-		 * generic VGA device.
-		 */
-		(config_screentype == 1 || config_screentype == 2) ?
-			config_deviceidentifier :
-			"Generic VGA",
-		config_monitoridentifier
-	);
-
-	/*
-	 * The Accel section.
-	 */
-	fprintf(f, 
-#if XFREE86_VERSION >= 311
-		"# The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32, Mach64)\n"
-#else
-		"# The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)\n"
-#endif
-		"\n"
-		"Section \"Screen\"\n"
-		"    Driver      \"accel\"\n"
+		"    Identifier  \"Screen 1\"\n"
 		"    Device      \"%s\"\n"
 		"    Monitor     \"%s\"\n"
 		"    Subsection \"Display\"\n"
@@ -2809,7 +2488,18 @@ void write_XF86Config(filename)
 		"EndSection\n"
 		"\n");
 
-	fclose(f);
+        /*
+	 * ServerLayout section
+	 */
+   
+        fprintf(f,
+		"Section \"ServerLayout\"\n"
+		"	Identifier \"Main Layout\"\n"
+		"	Screen \"Screen 1\"\n"
+		"EndSection\n"
+		"\n");
+   
+        fclose(f);
 }
 
 
@@ -2948,7 +2638,7 @@ void path_check() {
  * Program entry point.
  */
 
-void main() {
+int main() {
 	emptylines();
 
 	printf("%s", intro_text);

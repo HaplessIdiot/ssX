@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.h,v 3.2 1996/02/04 09:15:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.h,v 3.3 1996/12/23 07:04:44 dawes Exp $ */
 
 
 
@@ -16,7 +16,8 @@ typedef struct {
 	char *name;		/* Name of the card. */
 	char *chipset;		/* Chipset (decriptive). */
 	char *server;		/* Server identifier. */
-	char *ramdac;		/* Ramdac identifier. */
+        char *driver;		/* Driver identifier. */
+        char *ramdac;		/* Ramdac identifier. */
 	char *clockchip;	/* Clockchip identifier. */
 	char *dacspeed;		/* DAC speed rating. */
 	int flags;

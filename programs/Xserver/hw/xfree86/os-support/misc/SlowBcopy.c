@@ -4,7 +4,7 @@
   for Alpha Linux
 *******************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SlowBcopy.c,v 1.1.2.1 1998/06/04 17:36:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/SlowBcopy.c,v 1.2 1998/07/25 16:56:50 dawes Exp $ */
  
 /* 
  *   Create a dependency that should be immune from the effect of register
@@ -29,7 +29,9 @@ xf86SlowBcopy(unsigned char *src, unsigned char *dst, int len)
     while(len--)
     {
 	*dst++ = *src++;
+#ifndef __sparc__	
 	outb(0x80, 0x00);
+#endif
     }
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.164 1999/03/20 08:59:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.165 1999/03/21 16:20:55 hohndel Exp $ */
 
 
 /*
@@ -795,6 +795,7 @@ static SymTabRec MouseTab[] = {
   { PROT_NETSCROLLPS2,		"netscrollps/2" },
   { PROT_SYSMOUSE,		"sysmouse" },
   { PROT_WSMOUSE,		"wsmouse" },
+  { PROT_SUN,			"sun" },
   { PROT_AUTO,			"auto" },
   { PROT_ACECAD,		"acecad" },
   { -1,				"" },
@@ -1226,12 +1227,50 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
 }
 
 static Bool
+configXvAdaptor(confXvAdaptorPtr adaptor, XF86ConfVideoAdaptorPtr conf_adaptor)
+{
+    int count = 0;
+    XF86ConfVideoPortPtr conf_port;
+
+    xf86Msg(X_CONFIG, "|   |-->VideoAdaptor \"%s\"\n",
+	    conf_adaptor->va_identifier);
+    adaptor->identifier = conf_adaptor->va_identifier;
+    adaptor->options = conf_adaptor->va_option_lst;
+    if (conf_adaptor->va_busid || conf_adaptor->va_driver) {
+	xf86Msg(X_CONFIG, "|   | Unsupported device type, skipping entry\n");
+	return FALSE;
+    }
+
+    /*
+     * figure out how many videoport subsections there are and fill them in
+     */
+    conf_port = conf_adaptor->va_port_lst;
+    while(conf_port) {
+        count++;
+        conf_port = (XF86ConfVideoPortPtr)conf_port->list.next;
+    }
+    adaptor->ports = xnfalloc((count) * sizeof(confXvPortRec));
+    adaptor->numports = count;
+    count = 0;
+    conf_port = conf_adaptor->va_port_lst;
+    while(conf_port) {
+	adaptor->ports[count].identifier = conf_port->vp_identifier;
+	adaptor->ports[count].options = conf_port->vp_option_lst;
+        count++;
+        conf_port = (XF86ConfVideoPortPtr)conf_port->list.next;
+    }
+
+    return TRUE;
+}
+
+static Bool
 configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
 	     MessageType from)
 {
     int count = 0;
     XF86ConfDisplayPtr dispptr;
-    
+    XF86ConfAdaptorLinkPtr conf_adaptor;
+
     xf86Msg(from, "|-->Screen \"%s\"\n", conf_screen->scrn_identifier);
     /*
      * now we fill in the elements of the screen
@@ -1265,6 +1304,25 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
         count++;
         dispptr = (XF86ConfDisplayPtr)dispptr->list.next;
     }
+
+    /*
+     * figure out how many videoadaptor references there are and fill them in
+     */
+    conf_adaptor = conf_screen->scrn_adaptor_lst;
+    while(conf_adaptor) {
+        count++;
+        conf_adaptor = (XF86ConfAdaptorLinkPtr)conf_adaptor->list.next;
+    }
+    screenp->xvadaptors = xnfalloc((count) * sizeof(confXvAdaptorRec));
+    screenp->numxvadaptors = 0;
+    conf_adaptor = conf_screen->scrn_adaptor_lst;
+    while(conf_adaptor) {
+        if (configXvAdaptor(&(screenp->xvadaptors[screenp->numxvadaptors]),
+			    conf_adaptor->al_adaptor))
+    	    screenp->numxvadaptors++;
+        conf_adaptor = (XF86ConfAdaptorLinkPtr)conf_adaptor->list.next;
+    }
+
     return TRUE;
 }
 

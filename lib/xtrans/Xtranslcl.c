@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.30 1998/12/20 11:57:21 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.31 1999/01/12 08:52:36 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -461,9 +461,11 @@ char		*port;
 #else
     mode = 0777;
 #endif
-
-    mkdir(X_STREAMS_DIR, mode);
-    chmod(X_STREAMS_DIR, mode);
+    if (trans_mkdir(X_STREAMS_DIR, mode) == -1) {
+	PRMSG (1, "PTSOpenServer: mkdir(%s) failed, errno = %d\n",
+	       X_STREAMS_DIR, errno, 0);
+	return(-1);
+    }
 
     if( (fd=open(server_path, O_RDWR)) >= 0 ) {
 #if 0
@@ -742,9 +744,11 @@ char		*port;
 #else
     mode = 0777;
 #endif
-
-    mkdir(X_STREAMS_DIR, mode);
-    chmod(X_STREAMS_DIR, mode);
+    if (trans_mkdir(X_STREAMS_DIR, mode) == -1) {
+	PRMSG (1, "NAMEDOpenServer: mkdir(%s) failed, errno = %d\n",
+	       X_STREAMS_DIR, errno, 0);
+	return(-1);
+    }
 
     if(stat(server_path, &sbuf) != 0) {
 	if (errno == ENOENT) {
@@ -1063,10 +1067,18 @@ char		*port;
     mode = 0777;
 #endif
 
-    mkdir(X_STREAMS_DIR, mode); /* "/dev/X" */
-    chmod(X_STREAMS_DIR, mode);
-    mkdir(X_ISC_DIR, mode); /* "/dev/X/ISCCONN" */
-    chmod(X_ISC_DIR, mode);
+    /* "/dev/X" */
+    if (trans_mkdir(X_STREAMS_DIR, mode) == -1) {
+	PRMSG (1, "ISCOpenServer: mkdir(%s) failed, errno = %d\n",
+	       X_STREAMS_DIR, errno, 0);
+	return(-1);
+    }
+    /* "/dev/X/ISCCONN" */
+    if (trans_mkdir(X_ISC_DIR, mode) == -1) {
+	PRMSG (1, "ISCOpenServer: mkdir(%s) failed, errno = %d\n",
+	       X_ISC_DIR, errno, 0);
+	return(-1);
+    }
     
     unlink(server_path);
     
@@ -1091,8 +1103,11 @@ char		*port;
      */
 #define X_UNIX_DIR	"/tmp/.X11-unix"
     
-    mkdir(X_UNIX_DIR, mode);
-    chmod(X_UNIX_DIR, mode);
+    if (trans_mkdir(X_UNIX_DIR, mode) == -1) {
+	PRMSG (1, "ISCOpenServer: mkdir(%s) failed, errno = %d\n",
+	       X_UNIX_DIR, errno, 0);
+	return(-1);
+    }
     
     unlink(server_unix_path);
     

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.21 1999/02/07 06:19:02 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.22 1999/03/14 03:22:43 dawes Exp $
  */
 
 /*
@@ -218,7 +218,7 @@ ScrollBarReverseVideo(register Widget scrollWidget)
 	args[1].value = (XtArgVal) bg;
 	nargs--;				/* don't set border_pixmap */
 	if (bdpix == XtUnspecifiedPixmap) {	/* if not pixmap then pixel */
-	    args[2].value = (XtArgVal) bdr;	/* keep old border color */
+	    args[2].value = args[1].value;	/* keep border visible */
 	} else {				/* ignore since pixmap */
 	    nargs--;				/* don't set border pixel */
 	}
