@@ -1,0 +1,110 @@
+                 Installation Details for XFree86[tm] 3.9.18
+
+                          The XFree86 Project, Inc
+
+                              25 February 2000
+
+                                  Abstract
+
+     This document contains information about installing XFree86 3.9.18.
+
+1.  Introduction
+
+This document contains information about installing XFree86 3.9.18 binary
+distributions as provided by The XFree86 Project.  The installation proce-
+dures for binary distributions provided by others may be different.
+
+The XFree86 binary distributions that we provide for UNIX-like OSs are pack-
+aged in the platform-independent gzipped tar format (referred to as "tar-
+balls").  Each tarball has the ".tgz" suffix.  We do not provide binaries in
+RPM format or any other platform specific package format.  Together with the
+binary distributions, we provide a customised version of GNU tar called
+"extract", and an installation script.  We recommend that these be used to
+install the binary distributions.
+
+2.  How to get the XFree86 3.9.18 binary distributions
+
+We, The XFree86 Project, provide XFree86 3.9.18 binaries for a range of oper-
+ating systems at our ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/snap-
+shots/3.9.18/binaries/>.  Our ftp site is also mirrored by many sites around
+the world.  There is a sub-directory for each OS/platform that we have bina-
+ries for.  The first thing you need to do is to decide which of these suits
+you.  In most cases, the choice is straightforward.  In some cases (e.g.,
+Linux) there may be a number of choices depending on what architecture of
+libc version you are using.  If in doubt, first download the Xinstall.sh
+script, and run it as follows:
+
+     sh Xinstall.sh -check
+
+This should tell you which binary distribution is the correct one for your
+system.
+
+The next step is to download the necessary files.  The mandatory files for
+all installations are listed below.  All of them must be downloaded to do the
+installation.  The installer script will complain if they are not all pre-
+sent.
+
+          Xinstall.sh      The installer script
+          extract          The utility for extracting tarballs
+          Xbin.tgz         X clients/utilities and run-time libraries
+          Xlib.tgz         Some data files required at run-time
+          Xman.tgz         Manual pages
+          Xdoc.tgz         XFree86 documentation
+          Xfnts.tgz        Base set of fonts
+          Xfenc.tgz        Base set of font encoding data
+          Xetc.tgz         Run-time configuration files
+          Xvar.tgz         Run-time data
+          Xxserv.tgz       XFree86 X server
+          Xmod.tgz         XFree86 X server modules
+
+The following tarballs are optional.  You should download the ones you want
+to install.
+
+          Xfsrv.tgz        Font server
+          Xnest.tgz        Nested X server
+          Xprog.tgz        X header files, config files and compile-time libs
+          Xprt.tgz         X Print server
+          Xvfb.tgz         Virtual framebuffer X server
+          Xf100.tgz        100dpi fonts
+          Xfcyr.tgz        Cyrillic fonts
+          Xflat2.tgz       Latin-2 fonts
+          Xfnon.tgz        Some large bitmap fonts
+          Xfscl.tgz        Scalable fonts (Speedo and Type1)
+          Xhtml.tgz        HTML version of the documentation
+          Xps.tgz          PostScript version of the documentation
+          Xjdoc.tgz        Documentation in Japanese
+
+If you miss some and want to install them later, you can do so by following
+the appropriate part of the section that describes manual installation.
+
+3.  Installing XFree86 3.9.18 using the Xinstall.sh script
+
+We strongly recommend that our XFree86 3.9.18 binary distributions be
+installed using the Xinstall.sh script that we provide.  The main reason that
+we make this recommendation is that there are a lot of steps in the manual
+installation process, and those steps can vary according to the situation.
+There is, however, a description of the manual installation process for the
+most common cases below for those who might need it.
+
+Put all of the downloaded files into a single directory (choose some tempo-
+rary location with enough space).  cd to that directory, then run the
+installer script as follows:
+
+     sh Xinstall.sh
+
+Answer the prompts that come up.  If you are missing something that is
+required to run this version of XFree86, the installer my tell you to install
+that something before trying again.  If you don't have all of the mandatory
+files listed above, then the installer will tell you which ones are missing
+and ask you to download them before trying again.
+
+[Deal with the non-obvious questions that the installer asks.]
+
+4.  Installing XFree86 3.9.18 manually
+
+This section will describe how to install XFree86 3.9.18 manually.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.1 2000/02/26 04:56:01 dawes Exp $
+
+
+$XFree86$

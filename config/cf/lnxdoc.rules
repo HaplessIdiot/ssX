@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.17 2000/01/25 01:06:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.18 2000/01/25 01:36:53 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -83,7 +83,7 @@ clean::									@@\
 #ifndef UpdateFormattedDoc
 #define UpdateFormattedDoc(textfile)					@@\
 update.docs:: textfile							@@\
-	@if [ -f $(FORMATTEDDIR)/textfile ]; then \			@@\
+	-@if [ -f $(FORMATTEDDIR)/textfile ]; then \			@@\
 	    if [ "$(FORCEUPDATE)" = yes ]; then set -x; \		@@\
 		cp textfile $(FORMATTEDDIR)/textfile; \			@@\
 		echo "" >> $(FORMATTEDDIR)/textfile; \			@@\
