@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -2125,11 +2125,16 @@ static void radeonDDTexSubImage( GLcontext *ctx, GLenum target,
    if ( t ) {
       if ( t->bound ) FLUSH_BATCH( rmesa );
 
+#if 0
+      /* FIXME: Only upload textures if we already have space in the heap.
+       */
       LOCK_HARDWARE( rmesa );
       radeonUploadSubImage( rmesa, t, level,
 			    xoffset, yoffset, width, height );
       UNLOCK_HARDWARE( rmesa );
-
+#else
+      radeonDestroyTexObj( rmesa, t );
+#endif
       /* Update the context state */
       rmesa->new_state |= RADEON_NEW_TEXTURE;
    }

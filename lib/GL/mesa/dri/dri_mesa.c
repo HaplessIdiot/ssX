@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.12 2000/11/13 23:31:23 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.13 2000/12/07 20:26:04 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -927,10 +927,16 @@ static void driMesaDestroyScreen(Display *dpy, int scrn, void *private)
     __DRIscreenPrivate *psp = (__DRIscreenPrivate *)private;
 
     if (psp) {
+#if 0
+	/*
+	** NOT_DONE: For the same reason as that listed below, we cannot
+	** call the X server here to destroy the dummy context.
+	*/
 	if (psp->dummyContextPriv.driScreenPriv) {
 	    (void)XF86DRIDestroyContext(dpy, scrn,
 					psp->dummyContextPriv.contextID);
 	}
+#endif
 	if (psp->MesaAPI.ResetDriver)
 	    (*psp->MesaAPI.ResetDriver)(psp);
 	while (--psp->numVisuals >= 0) {

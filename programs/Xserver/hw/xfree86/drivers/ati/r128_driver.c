@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.17 2001/01/08 01:07:34 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.18 2001/01/09 21:07:39 mvojkovi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -134,10 +134,7 @@ typedef enum {
   OPTION_BUFFER_SIZE,
   OPTION_USE_CCE_2D,
 #endif
-#if 0
-  /* FIXME: Disable CRTOnly until it is tested */
-  OPTION_CRT,
-#endif
+  OPTION_BIOS_DISPLAY,
   OPTION_PANEL_WIDTH,
   OPTION_PANEL_HEIGHT,
   OPTION_PROG_FP_REGS,
@@ -162,10 +159,7 @@ OptionInfoRec R128Options[] = {
   { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
   { OPTION_USE_CCE_2D,   "UseCCEfor2D",      OPTV_BOOLEAN, {0}, FALSE },
 #endif
-#if 0
-  /* FIXME: Disable CRTOnly until it is tested */
-  { OPTION_CRT,          "CRTOnly",          OPTV_BOOLEAN, {0}, FALSE },
-#endif
+  { OPTION_BIOS_DISPLAY, "UseBIOSDisplay",   OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_PANEL_WIDTH,  "PanelWidth",       OPTV_INTEGER, {0}, FALSE },
   { OPTION_PANEL_HEIGHT, "PanelHeight",      OPTV_INTEGER, {0}, FALSE },
   { OPTION_PROG_FP_REGS, "ProgramFPRegs",    OPTV_BOOLEAN, {0}, FALSE },
@@ -900,17 +894,34 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     }
 
 				/* Read registers used to determine options */
-    from                     = X_PROBED;
+    from                      = X_PROBED;
     R128MapMMIO(pScrn);
-    R128MMIO                 = info->MMIO;
-    if (info->FBDev)
-	pScrn->videoRam      = fbdevHWGetVidmem(pScrn) / 1024;
-    else
-	pScrn->videoRam      = INREG(R128_CONFIG_MEMSIZE) / 1024;
-    info->MemCntl            = INREG(R128_MEM_CNTL);
+    R128MMIO                  = info->MMIO;
 
-    info->BusCntl            = INREG(R128_BUS_CNTL);
-    R128MMIO                 = NULL;
+    if (info->FBDev)
+	pScrn->videoRam       = fbdevHWGetVidmem(pScrn) / 1024;
+    else
+	pScrn->videoRam       = INREG(R128_CONFIG_MEMSIZE) / 1024;
+
+    info->MemCntl             = INREG(R128_MEM_CNTL);
+    info->BusCntl             = INREG(R128_BUS_CNTL);
+
+    /* On non-flat panel systems, the default is to display to the CRT,
+       and on flat panel systems, the default is to display to the flat
+       panel unless the user explicity enables displaying to the device
+       initialized in the BIOS via the "UseBIOSDisplay" config file
+       setting.  BIOS_5_SCRATCH holds the display device on flat panel
+       systems only. */
+    if (info->HasPanelRegs) {
+	if (xf86ReturnOptValBool(R128Options, OPTION_BIOS_DISPLAY, FALSE))
+	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
+	else
+	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
+    } else {
+	info->BIOSDisplay     = R128_BIOS_DISPLAY_CRT;
+    }
+
+    R128MMIO                  = NULL;
     R128UnmapMMIO(pScrn);
 
 				/* RAM */
@@ -950,22 +961,21 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 				/* Flat panel (part 2) */
     if (info->HasPanelRegs) {
-#if 1
-	info->CRTOnly = FALSE;
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Using flat panel for display\n");
-#else
-				/* Panel CRT mode override */
-	if ((info->CRTOnly = xf86ReturnOptValBool(R128Options,
-						  OPTION_CRT, FALSE))) {
+	switch (info->BIOSDisplay) {
+	case R128_BIOS_DISPLAY_FP:
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "Using external CRT instead of "
-		       "flat panel for display\n");
-	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		       "Using flat panel for display\n");
+	    break;
+	case R128_BIOS_DISPLAY_CRT:
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Using external CRT for display\n");
+	    break;
+	case R128_BIOS_DISPLAY_FP_CRT:
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Using both flat panel and external CRT "
+		       "for display\n");
+	    break;
 	}
-#endif
 
 				/* Panel width/height overrides */
 	info->PanelXRes = 0;
@@ -980,8 +990,6 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Flat panel height: %d\n", info->PanelYRes);
 	}
-    } else {
-	info->CRTOnly = FALSE;
     }
 
 #ifdef XF86DRI
@@ -1937,7 +1945,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 				/* DPMS setup */
 #ifdef DPMSExtension
-    if (!info->HasPanelRegs || info->CRTOnly)
+    if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
 	xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
 #endif
 
@@ -2150,7 +2158,7 @@ static void R128RestoreMode(ScrnInfoPtr pScrn, R128SavePtr restore)
     R128RestoreCrtcRegisters(pScrn, restore);
     if (info->HasPanelRegs)
 	R128RestoreFPRegisters(pScrn, restore);
-    if (!info->HasPanelRegs || info->CRTOnly)
+    if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
 	R128RestorePLLRegisters(pScrn, restore);
     R128RestoreDDARegisters(pScrn, restore);
     R128RestorePalette(pScrn, restore);
@@ -2375,15 +2383,24 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
     case 32: format = 6; bytpp = 4; break;      /* xRGB */
     default:
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Unsupported pixel depth (%d)\n", info->CurrentLayout.bitsPerPixel);
+		   "Unsupported pixel depth (%d)\n",
+		   info->CurrentLayout.bitsPerPixel);
 	return FALSE;
     }
     R128TRACE(("Format = %d (%d bytes per pixel)\n", format, bytpp));
 
-    if (info->HasPanelRegs)
-	if (info->CRTOnly) hsync_fudge = hsync_fudge_fp_crt[format-1];
-	else               hsync_fudge = hsync_fudge_fp[format-1];
-    else                   hsync_fudge = hsync_fudge_default[format-1];
+    switch (info->BIOSDisplay) {
+    case R128_BIOS_DISPLAY_FP:
+	hsync_fudge = hsync_fudge_fp[format-1];
+	break;
+    case R128_BIOS_DISPLAY_FP_CRT:
+	hsync_fudge = hsync_fudge_fp_crt[format-1];
+	break;
+    case R128_BIOS_DISPLAY_CRT:
+    default:
+	hsync_fudge = hsync_fudge_default[format-1];
+	break;
+    }
 
     save->crtc_gen_cntl = (R128_CRTC_EXT_DISP_EN
 			  | R128_CRTC_EN
@@ -2465,7 +2482,7 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
     int   yres = mode->CrtcVDisplay;
     float Hratio, Vratio;
 
-    if (info->CRTOnly) {
+    if (info->BIOSDisplay == R128_BIOS_DISPLAY_CRT) {
 	save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
 	save->crtc2_gen_cntl  = 0;
 	save->fp_gen_cntl     = orig->fp_gen_cntl;
@@ -2532,9 +2549,13 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
        want to use the dual CRTC capabilities of the R128 to allow both
        the flat panel and external CRT to either simultaneously display
        the same image or display two different images. */
-    save->crtc_ext_cntl  &= ~R128_CRTC_CRT_ON;
-    save->dac_cntl       |= R128_DAC_CRT_SEL_CRTC2;
-    save->crtc2_gen_cntl  = 0;
+    if (info->BIOSDisplay == R128_BIOS_DISPLAY_FP_CRT) {
+	save->crtc_ext_cntl  |= R128_CRTC_CRT_ON;
+    } else {
+	save->crtc_ext_cntl  &= ~R128_CRTC_CRT_ON;
+	save->dac_cntl       |= R128_DAC_CRT_SEL_CRTC2;
+	save->crtc2_gen_cntl  = 0;
+    }
 
     /* WARNING: Be careful about turning on the flat panel */
 #if 1
@@ -2792,7 +2813,9 @@ int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 	if (mode->Flags & V_DBLSCAN)   return MODE_NO_DBLESCAN;
     }
 
-    if (info->HasPanelRegs && !info->CRTOnly && info->VBIOS) {
+    if (info->HasPanelRegs &&
+	info->BIOSDisplay != R128_BIOS_DISPLAY_CRT &&
+	info->VBIOS) {
 	int i;
 	for (i = info->FPBIOSstart+64; R128_BIOS16(i) != 0; i += 2) {
 	    int j = R128_BIOS16(i);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -65,12 +65,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
    radeonScreenPtr radeonScreen = rmesa->radeonScreen;			\
    __DRIscreenPrivate *sPriv = rmesa->driScreen;			\
    __DRIdrawablePrivate *dPriv = rmesa->driDrawable;			\
-   GLuint pitch = radeonScreen->depthPitch * radeonScreen->cpp;		\
    GLuint height = dPriv->h;						\
-   char *buf = (char *)(sPriv->pFB +					\
-			radeonScreen->depthOffset +			\
-			(dPriv->x * radeonScreen->cpp) +		\
-			(dPriv->y * pitch));				\
+   GLuint xo = dPriv->x;						\
+   GLuint yo = dPriv->y;						\
+   char *buf = (char *)(sPriv->pFB + radeonScreen->depthOffset);	\
    (void) buf
 
 #define LOCAL_STENCIL_VARS	LOCAL_DEPTH_VARS
@@ -204,7 +202,7 @@ static __inline GLuint radeon_mba_z16( radeonContextPtr rmesa,
    return address;
 }
 
-static __inline GLuint radeon_mba_z32( radeonContextPtr rmesa,
+static GLuint radeon_mba_z32( radeonContextPtr rmesa,
 				       GLint x, GLint y )
 {
    radeonScreenPtr radeonScreen = rmesa->radeonScreen;
@@ -231,10 +229,10 @@ static __inline GLuint radeon_mba_z32( radeonContextPtr rmesa,
 /* 16-bit depth buffer functions
  */
 #define WRITE_DEPTH( _x, _y, d )					\
-   *(GLushort *)(buf + radeon_mba_z16( rmesa, _x, _y )) = d;
+   *(GLushort *)(buf + radeon_mba_z16( rmesa, _x+xo, _y+yo )) = d;
 
 #define READ_DEPTH( d, _x, _y )						\
-   d = *(GLushort *)(buf + radeon_mba_z16( rmesa, _x, _y ));
+   d = *(GLushort *)(buf + radeon_mba_z16( rmesa, _x+xo, _y+yo ));
 
 #define TAG(x) radeon##x##_16
 #include "depthtmp.h"
@@ -243,14 +241,15 @@ static __inline GLuint radeon_mba_z32( radeonContextPtr rmesa,
  */
 #define WRITE_DEPTH( _x, _y, d )					\
 do {									\
-   GLuint tmp = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x, _y ));	\
+   GLuint offset = radeon_mba_z32( rmesa, _x+xo, _y+yo );		\
+   GLuint tmp = *(GLuint *)(buf + offset);				\
    tmp &= 0xff000000;							\
    tmp |= ((d) & 0x00ffffff);						\
-   *(GLuint *)(buf + radeon_mba_z32( rmesa, _x, _y )) = tmp;		\
+   *(GLuint *)(buf + offset) = tmp;					\
 } while (0)
 
 #define READ_DEPTH( d, _x, _y )						\
-   d = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x, _y )) & 0x00ffffff;
+   d = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x+xo, _y+yo )) & 0x00ffffff;
 
 #define TAG(x) radeon##x##_24_8
 #include "depthtmp.h"
@@ -264,15 +263,17 @@ do {									\
  */
 #define WRITE_STENCIL( _x, _y, d )					\
 do {									\
-   GLuint tmp = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x, _y ));	\
+   GLuint offset = radeon_mba_z32( rmesa, _x+xo, _y+yo );		\
+   GLuint tmp = *(GLuint *)(buf + offset);				\
    tmp &= 0x00ffffff;							\
    tmp |= (((d) & 0xff) << 24);						\
-   *(GLuint *)(buf + radeon_mba_z32( rmesa, _x, _y )) = tmp;		\
+   *(GLuint *)(buf + offset) = tmp;					\
 } while (0)
 
 #define READ_STENCIL( d, _x, _y )					\
 do {									\
-   GLuint tmp = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x, _y ));	\
+   GLuint offset = radeon_mba_z32( rmesa, _x+xo, _y+yo );		\
+   GLuint tmp = *(GLuint *)(buf + offset);				\
    tmp &= 0xff000000;							\
    d = tmp >> 24;							\
 } while (0)

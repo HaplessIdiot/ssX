@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.11 2001/01/08 01:07:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.12 2001/01/11 03:36:58 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -131,6 +131,7 @@ typedef enum {
     OPTION_AGP_SIZE,
     OPTION_RING_SIZE,
     OPTION_BUFFER_SIZE,
+    OPTION_DEPTH_MOVE,
 #endif
 #ifdef ENABLE_FLAT_PANEL
     /* Note: Radeon flat panel support has been disabled for now */
@@ -157,6 +158,7 @@ OptionInfoRec RADEONOptions[] = {
     { OPTION_AGP_SIZE,     "AGPSize",          OPTV_INTEGER, {0}, FALSE },
     { OPTION_RING_SIZE,    "RingSize",         OPTV_INTEGER, {0}, FALSE },
     { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
+    { OPTION_DEPTH_MOVE,   "EnableDepthMoves", OPTV_BOOLEAN, {0}, FALSE },
 #endif
 #ifdef ENABLE_FLAT_PANEL
     /* Note: Radeon flat panel support has been disabled for now */
@@ -1193,6 +1195,15 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	/* This option checked by the RADEON DRM kernel module */
     }
 
+    /* Depth moves are disabled by default since they are extremely slow */
+    if ((info->depthMoves = xf86ReturnOptValBool(RADEONOptions,
+						 OPTION_DEPTH_MOVE, FALSE))) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling depth moves\n");
+    } else {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Depth moves disabled by default\n");
+    }
+
     return TRUE;
 }
 #endif
@@ -1625,7 +1636,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	/* Check to see if there is more room available after the 8192nd
 	   scanline for textures */
-	if ((int)(info->FbMapSize - 8192*width_bytes - bufferSize*2)
+	if ((int)info->FbMapSize - 8192*width_bytes - bufferSize*2
 	    > info->textureSize) {
 	    info->textureSize =
 		info->FbMapSize - 8192*width_bytes - bufferSize*2;

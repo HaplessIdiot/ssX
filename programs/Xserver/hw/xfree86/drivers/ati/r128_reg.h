@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.7 2000/12/22 05:27:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.8 2001/01/08 01:07:35 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -182,6 +182,13 @@
 #define R128_BIOS_1_SCRATCH               0x0014
 #define R128_BIOS_2_SCRATCH               0x0018
 #define R128_BIOS_3_SCRATCH               0x001c
+#define R128_BIOS_4_SCRATCH               0x0020
+#define R128_BIOS_5_SCRATCH               0x0024
+#       define R128_BIOS_DISPLAY_FP       (1 << 0)
+#       define R128_BIOS_DISPLAY_CRT      (2 << 0)
+#       define R128_BIOS_DISPLAY_FP_CRT   (3 << 0)
+#define R128_BIOS_6_SCRATCH               0x0028
+#define R128_BIOS_7_SCRATCH               0x002c
 #define R128_BIOS_ROM                     0x0f30 /* PCI */
 #define R128_BIST                         0x0f0f /* PCI */
 #define R128_BRUSH_DATA0                  0x1480

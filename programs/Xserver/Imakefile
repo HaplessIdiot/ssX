@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.205 2000/12/11 20:29:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.206 2001/01/14 16:41:32 herrb Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -662,7 +662,8 @@ XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #endif
 XF86SERVEROBJS = $(XF86DRVOBJS) $(XF86IDRVOBJS)
 XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86IDRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) \
-		 $(XF86COMLIB) $(XF86MAINLIBS) $(XF86SCANLIB) $(XF86OSLIB)
+		 $(XF86COMLIB) $(XF86MAINLIBS) $(XF86SCANLIB) $(XF86OSLIB) \
+		 $(XF86DDCLIB)
 #if HasParallelMake
 MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 #endif

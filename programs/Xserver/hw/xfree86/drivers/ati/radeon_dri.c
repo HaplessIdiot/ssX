@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.1 2001/01/08 01:07:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.2 2001/01/11 03:36:58 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -313,7 +313,6 @@ static void RADEONDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
     }
 }
 
-#if 0
 /* The Radeon has depth tiling on all the time, so we have to convert
  * the x,y coordinates into the memory bus address (mba) in the same
  * manner as the engine.  In each case, the linear block address (ba)
@@ -418,7 +417,6 @@ static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
     default: break;
     }
 }
-#endif
 
 /* Initialize the state of the back and depth buffers. */
 static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
@@ -620,13 +618,12 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 						     destx, desty,
 						     w, h);
 	RADEONSelectBuffer(pScrn, RADEON_DEPTH);
-#if 0
-	/* FIXME: This is disabled because it is much too slow */
-	RADEONScreenToScreenCopyDepth(pScrn,
-				      xa, ya,
-				      destx, desty,
-				      w, h);
-#endif
+
+	if (info->depthMoves)
+	    RADEONScreenToScreenCopyDepth(pScrn,
+					  xa, ya,
+					  destx, desty,
+					  w, h);
     }
 
     RADEONSelectBuffer(pScrn, RADEON_FRONT);
@@ -644,7 +641,6 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 {
     unsigned char *RADEONMMIO = info->MMIO;
-    unsigned long cntl;
     unsigned long mode;
     unsigned int  vendor, device;
     int           ret;
@@ -802,26 +798,14 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	       (unsigned long)info->agpTex);
 
 				/* Initialize Radeon's AGP registers */
-    cntl  = INREG(RADEON_AGP_CNTL);
-    cntl &= ~RADEON_AGP_APER_SIZE_MASK;
-    switch (info->agpSize) {
-    case 256: cntl |= RADEON_AGP_APER_SIZE_256MB; break;
-    case 128: cntl |= RADEON_AGP_APER_SIZE_128MB; break;
-    case  64: cntl |= RADEON_AGP_APER_SIZE_64MB;  break;
-    case  32: cntl |= RADEON_AGP_APER_SIZE_32MB;  break;
-    case  16: cntl |= RADEON_AGP_APER_SIZE_16MB;  break;
-    case   8: cntl |= RADEON_AGP_APER_SIZE_8MB;   break;
-    case   4: cntl |= RADEON_AGP_APER_SIZE_4MB;   break;
-    default:
-	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[agp] Illegal aperture size %d kB\n",
-		   info->agpSize*1024);
-	return FALSE;
-    }
-
     /* Ring buffer is at AGP offset 0 */
     OUTREG(RADEON_AGP_BASE, info->ringHandle);
-    OUTREG(RADEON_AGP_CNTL, cntl);
+
+				/* Enable bus mastering in PCI config
+				   space */
+    info->pciCommand = pciReadLong(info->PciTag, PCI_CMD_STAT_REG);
+    pciWriteLong(info->PciTag, PCI_CMD_STAT_REG,
+		 info->pciCommand | PCI_CMD_MASTER_ENABLE);
 
     return TRUE;
 }
@@ -1420,6 +1404,9 @@ void RADEONDRICloseScreen(ScreenPtr pScreen)
 	info->agpMemHandle = 0;
 	drmAgpRelease(info->drmFD);
     }
+
+				/* Restore PCI command register */
+    pciWriteLong(info->PciTag, PCI_CMD_STAT_REG, info->pciCommand);
 
 				/* De-allocate all DRI resources */
     DRICloseScreen(pScreen);
