@@ -1,4 +1,5 @@
-/* $XConsortium: ddxBeep.c /main/2 1995/12/07 21:22:05 kaleb $ */
+/* $XConsortium: ddxBeep.c /main/3 1996/01/01 10:54:41 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -58,7 +59,7 @@ extern	CARD16	xkbDebugFlags;
 #define	HIGH_PITCH	2000
 #define CLICK_PITCH	1500
 
-static	unsigned long	atomGeneration= -1;
+static	unsigned long	atomGeneration= 0;
 static	Atom	featureOn;
 static	Atom	featureOff;
 static	Atom	featureChange;
@@ -325,10 +326,14 @@ Atom		name;
 }
 
 int
+#if NeedFunctionPrototypes
+XkbDDXAccessXBeep(DeviceIntPtr dev,unsigned what,unsigned which)
+#else
 XkbDDXAccessXBeep(dev,what,which)
     DeviceIntPtr	dev;
     unsigned		what;
     unsigned		which;
+#endif
 {
 XkbSrvInfoRec	*xkbInfo= dev->key->xkbInfo;
 CARD32		 next;

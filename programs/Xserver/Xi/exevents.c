@@ -1,4 +1,5 @@
-/* $XConsortium: exevents.c,v 1.50 94/04/17 20:33:07 dpw Exp $ */
+/* $XConsortium: exevents.c /main/51 1995/12/08 13:41:35 dpw $ */
+/* $XFree86$ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -143,6 +144,13 @@ ProcessOtherEvent (xE, other, count)
         xE->state = inputInfo.keyboard->key->state | 
 		    inputInfo.pointer->button->state;
         bit = 1 << (key & 7);
+    }
+    if (DeviceEventCallback)
+    {
+	DeviceEventInfoRec eventinfo;
+	eventinfo.events = (xEventPtr)xE;
+	eventinfo.count = count;
+	CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
     }
     for (i=1; i<count; i++)
 	if ((++xV)->type == DeviceValuator)

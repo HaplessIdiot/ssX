@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.9 1996/01/10 05:42:36 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.10 1996/01/11 10:38:14 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -826,7 +826,7 @@ get_pty (pty, tty, ttydev, ptydev)
 #endif
 
 #ifdef ISC
-#define NO_READAHAED
+#define NO_READAHEAD
 #endif
 
 FILE *
