@@ -1,11 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/oslbx/Imakefile,v 3.0 1994/12/25 12:37:28 dawes Exp $
 
 #define LinkDirectory ../os
 
 #include "../os/Imakefile"
 
-LBX_EXT_DEFINES = -UBIGREQS
-EXTRA_DEFINES = -DLBX
+EXTRA_DEFINES = -DLBX -UBIGREQS
 
 InstallLinkKitNamedLibrary(os,oslbx,$(LINKKITDIR)/lib)
 
