@@ -3,7 +3,7 @@
  */
 
 /* $XConsortium: mipointer.c,v 5.24 94/04/17 20:27:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.1.6.1 1998/07/03 13:44:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.2 1998/07/26 02:33:08 dawes Exp $ */
 
 /*
 
@@ -251,7 +251,8 @@ miPointerWarpCursor (pScreen, x, y)
     	{
 	    miPointer.devx = x;
 	    miPointer.devy = y;
-	    (*pScreenPriv->spriteFuncs->MoveCursor) (pScreen, x, y);
+	    if(!miPointer.pCursor->bits->emptyMask)
+		(*pScreenPriv->spriteFuncs->MoveCursor) (pScreen, x, y);
     	}
 	miPointer.x = x;
 	miPointer.y = y;
@@ -348,8 +349,10 @@ miPointerUpdate ()
      */
     else if (miPointer.pCursor != miPointer.pSpriteCursor)
     {
-	(*pScreenPriv->spriteFuncs->SetCursor) 
-	    (pScreen, miPointer.pCursor, x, y);
+	(*pScreenPriv->spriteFuncs->SetCursor) (pScreen, 
+	    	miPointer.pCursor->bits->emptyMask ?
+		NullCursor : miPointer.pCursor, x, y);
+
 	miPointer.devx = x;
 	miPointer.devy = y;
 	miPointer.pSpriteCursor = miPointer.pCursor;
@@ -358,7 +361,8 @@ miPointerUpdate ()
     {
 	miPointer.devx = x;
 	miPointer.devy = y;
-	(*pScreenPriv->spriteFuncs->MoveCursor) (pScreen, x, y);
+	if(!miPointer.pCursor->bits->emptyMask)
+	    (*pScreenPriv->spriteFuncs->MoveCursor) (pScreen, x, y);
     }
 }
 
@@ -453,7 +457,8 @@ miPointerMove (pScreen, x, y, time)
     {
 	miPointer.devx = x;
 	miPointer.devy = y;
-	(*pScreenPriv->spriteFuncs->MoveCursor) (pScreen, x, y);
+	if(!miPointer.pCursor->bits->emptyMask)
+	    (*pScreenPriv->spriteFuncs->MoveCursor) (pScreen, x, y);
     }
     miPointer.x = x;
     miPointer.y = y;

@@ -61,6 +61,7 @@ SOFTWARE.
 typedef struct _CursorBits {
     unsigned char *source;			/* points to bits */
     unsigned char *mask;			/* points to bits */
+    Bool emptyMask;				/* all zeros mask */
     unsigned short width, height, xhot, yhot;	/* metrics */
     int refcnt;					/* can be shared */
     pointer devPriv[MAXSCREENS];		/* set by pScr->RealizeCursor*/

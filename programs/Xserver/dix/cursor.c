@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: cursor.c /main/19 1996/08/01 19:20:16 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.0 1996/04/15 11:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/cursor.c,v 3.1 1996/12/23 06:29:36 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -126,6 +126,22 @@ FreeCursor(value, cid)
     return(Success);
 }
 
+
+/*
+ * We check for empty cursors so that we won't have to display them
+ */
+static void
+CheckForEmptyMask(CursorBitsPtr bits)
+{
+    register unsigned char *msk = bits->mask;
+    int n = BitmapBytePad(bits->width) * bits->height;
+
+    bits->emptyMask = FALSE;
+    while(n--) 
+	if(*(msk++) != 0) return;
+    bits->emptyMask = TRUE;
+}
+
 /*
  * does nothing about the resource table, just creates the data structure.
  * does not copy the src and mask bits
@@ -159,6 +175,7 @@ AllocCursor(psrcbits, pmaskbits, cm,
     bits->xhot = cm->xhot;
     bits->yhot = cm->yhot;
     bits->refcnt = -1;
+    CheckForEmptyMask(bits);
 
     pCurs->bits = bits;
     pCurs->refcnt = 1;		
@@ -332,6 +349,7 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 	    sharedGlyphs = pShare;
 	}
     }
+    CheckForEmptyMask(bits);
     pCurs->bits = bits;
     pCurs->refcnt = 1;
 

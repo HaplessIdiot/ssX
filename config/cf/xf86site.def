@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.130 1998/09/05 06:36:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.131 1998/09/06 04:46:51 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -511,14 +511,30 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.130 1998/09/05 06:36:02 dawes Exp 
  */
 
 /*
- * LinuxDoc stuff.  Uncomment those of these you want.  Check in
- * lnxdoc.tmpl for other things you might need to define/change here.
+ * If you have sgmlfmt and want to build formatted docs from the SGML source,
+ * uncomment this.
+ *
+#define HasSgmlFmt		YES
+ */
+
+/*
+ * To disable building some document formats, uncomment some of these.
+ *
+#define BuildLinuxDocText	NO
+#define BuildLinuxDocHtml	NO
+#define BuildLinuxDocPS		NO
+ */
+
+/*
+ * LinuxDoc stuff using the old tools.  Don't use this if you have sgmlfmt.
+ *
+ * Uncomment those of these you want.  Check in lnxdoc.tmpl for other
+ * things you might need to define/change here.
  *
 #define HasLinuxDoc		YES
 #define HasLatex		YES
 #define HasDvips		YES
 #define BuildLinuxDocHtml	YES
-#define BuildAllDocs		YES
  */
 
 /*
