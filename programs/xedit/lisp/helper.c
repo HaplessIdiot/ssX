@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.31 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.32 2002/08/05 03:56:23 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -746,23 +746,24 @@ LispReallyDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
 
 	/* Update symbols and check exit condition */
 	if (times) {
-	    if ((count += 1) > end)
-		break;
 	    LispSetVar(mac, symbol, SMALLINT(count));
+	    if ((count += 1) >= end)
+		break;
 	}
 	else {
 	    value = CDR(value);
-	    if (!CONS_P(value))
+	    if (!CONS_P(value)) {
+		LispSetVar(mac, symbol, NIL);
 		break;
+	    }
 	    LispSetVar(mac, symbol, CAR(value));
 	}
     }
-    if (NCONSTANT_P(result))
-	result = EVAL(result);
-
-    mac->env.head = mac->env.length = head;
 
 loop_done:
+    if (NCONSTANT_P(result))
+	result = EVAL(result);
+    mac->env.head = mac->env.length = head;
     GC_LEAVE();
 
     return (result);

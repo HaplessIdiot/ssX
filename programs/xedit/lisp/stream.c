@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.10 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.11 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -90,6 +90,19 @@ LispStreamInit(LispMac *mac)
     Sappend		= GETATOMID("APPEND");
     Ssupersede		= GETATOMID("SUPERSEDE");
     Screate		= GETATOMID("CREATE");
+}
+
+LispObj *
+Lisp_Streamp(LispMac *mac, LispBuiltin *builtin)
+/*
+ streamp object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (STREAM_P(object) ? T : NIL);
 }
 
 LispObj *
@@ -475,10 +488,13 @@ Lisp_Read(LispMac *mac, LispBuiltin *builtin)
 	else if (!input_stream->data.stream.readable)
 	    LispDestroy(mac, "%s: stream %s is not readable",
 			STRFUN(builtin), STROBJ(input_stream));
+	LispPushInput(mac, input_stream);
+    }
+    else if (CONS_P(mac->input_list)) {
+	input_stream = STANDARD_INPUT;
+	LispPushInput(mac, input_stream);
     }
 
-    if (input_stream != NIL)
-	LispPushInput(mac, input_stream);
     result = LispRead(mac);
     if (result == EOLIST)
 	LispDestroy(mac, "%s: object cannot start with #\\)", STRFUN(builtin));
@@ -555,13 +571,10 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
     input_stream = ARGUMENT(0);
 
     if (input_stream == NIL)
-	/* XXX mac->standard_input must be renamed, stdin is the
-	 * last element of mac->input */
-	for (input_stream = mac->input;
-	     CONS_P(input_stream);
-	     input_stream = CDR(input_stream))
-	    ;
-    ERROR_CHECK_STREAM(input_stream);
+	input_stream = STANDARD_INPUT;
+    else {
+	ERROR_CHECK_STREAM(input_stream);
+    }
 
     result = eof_value;
     string = NULL;

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.2 2002/07/28 21:34:05 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.3 2002/08/05 03:56:25 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -245,7 +245,6 @@ is used.
     labels		;; List of keywords labeling syntax tables.
 )
 
-
 (defstruct SYNTABLE
     label		;; A keyword naming this syntax table.
     property		;; NIL or a default synprop structure.
@@ -277,6 +276,8 @@ is used.
 			;;     syntax tables.
     quark		;;  A XrmQuark associated with the XawTextPropertyList
 			;; used by this syntax mode.
+    token-count		;;  Number of distinct syntoken structures in
+			;; the syntax table.
 
     ;; Field(s) used at "run time"
     stack		;; Stack of syntax tables for nested rules.
@@ -632,6 +633,8 @@ is used.
 		    name
 		    properties
 		)
+	    :TOKEN-COUNT
+		(length (delete-duplicates (car elements)))
 
 	    ;; Stack field initialization defaults to NIL...
 	    :TABLE	main-table
@@ -728,6 +731,16 @@ is used.
 	;; i.e. the items in this list are not in nomatch.
 	token-list
 
+	;;  A pointer to the syntable token list, if token-list is
+	;; eq to this value, cannot change it inplace.
+	current-token-list
+
+	;;  Help to avoid allocating too many new object cells, and
+	;; optmizes a bit time in [n]?set-difference.
+	;;  This optimizes only the processing of one line of text
+	;; as nomatch must be rebuilt when reading a new line of text.
+	token-list-stack
+
 	;;  Input line does not end in a newline?
 	noteol
 
@@ -759,13 +772,32 @@ is used.
 	right
 	result
 	left
+	property
+
+	;;  Beginig a new syntax table?
+	begin
+
+	;;  Switching to another syntax table?
+	switch
+
+	;;  Property flag when changing the current syntax table.
+	contained
+
+	;;  The new syntax table if changing
+	change
+
+	;;  Variables used when removing invalid elements from the
+	;; the cache.
+	item
+	from
+	to
 	)
 
 ;-----------------------------------------------------------------------
 :READ
 #+debug-verbose
 	(format T "** Entering :READ stack length is ~D~%"
-	    (length (syntax-stack *SYNTAX*))
+	    (length stack)
 	)
 #+debug	(format T "~%[~D]> " (incf *LINE-NUMBER*))
 
@@ -774,13 +806,15 @@ is used.
 	    (read-line stream NIL NIL)
 
 	    (setq
-		line		text
-		length		(length text)
-		notbol		(> start 0)
-		noteol		eos
-		token-list	(syntable-tokens syntax-table)
-		nomatch		()
-		cache		()
+		line			text
+		length			(length text)
+		notbol			(> start 0)
+		noteol			eos
+		token-list		(syntable-tokens syntax-table)
+		current-token-list	token-list
+		token-list-stack	()
+		nomatch			()
+		cache			()
 	    )
 	)
 
@@ -791,8 +825,10 @@ is used.
 #-debug	    (close stream)
 
 	    ;;  Remember the state if did not pop all the stack.
-	    (setf (syntax-table *SYNTAX*) syntax-table)
-	    (setf (syntax-stack *SYNTAX*) stack)
+	    (setf
+		(syntax-table *SYNTAX*) syntax-table
+		(syntax-stack *SYNTAX*) stack
+	    )
 	    (return)
 	)
 
@@ -806,7 +842,7 @@ is used.
 	    )
 #+debug-verbose
 	    (format T "Empty line and table has no match to bol or eol~%")
-	    (go :PROCESS)
+	    (go :UPDATE)
 	)
 
 
@@ -824,16 +860,18 @@ is used.
 	    (token
 		(setq
 		    token-list
-		    (set-difference token-list nomatch)
+		    (if (eq token-list current-token-list)
+			(set-difference token-list nomatch :TEST #'eq)
+			(nset-difference token-list nomatch :TEST #'eq)
+		    )
 		)
 	    )
 
 	    ;;	Try to fetch match from cache.
-	    (if (setq match (member token cache :key #'car))
+	    (if (setq match (member token cache :TEST #'eq :KEY #'car))
 		;;  Match is in the cache.
 
-		(when (member (caar match) token-list)
-
+		(progn
 		    ;;	Match must be moved to the beginning of the
 		    ;; matches list, as a match from another syntax
 		    ;; table may be also in the cache, but before
@@ -843,20 +881,22 @@ is used.
 		    ;;	Remove the match from the cache.
 		    (if (eq match cache)
 
-			;;  Slightly faster than (setq cache (cdr cache))
-			(pop cache)
+			;;  This could be changed to only set "matches"
+			;; if it is not the first element of cache,
+			;; but is unsafe, because other tokens may
+			;; be added to "matches", and will end up
+			;; before when joining "matches" and "cache".
+			(setq cache (cdr cache))
 
-			(case (length match)
-			    (1	(rplacd (last cache 2) NIL)
-			    )
-			    (T
+			(if (= (length match) 1)
+			    (rplacd (last cache 2) NIL)
+			    (progn
 				(rplaca match (cadr match))
 				(rplacd match (cddr match))
 			    )
 			)
 		    )
 		)
-
 
 		;;  Not in the cache, call regexec.
 		(if
@@ -880,13 +920,50 @@ is used.
 			    (subseq line (caar match) (cdar match))
 			    (syntoken-regex token)
 			)
-			(setq
-			    ;; Only the first pair is used.
-			    match
-			    (car match)
 
-			    matches
-			    (cons (cons token match) matches)
+			;; Only the first pair is used.
+			(setq match (car match))
+
+			(cond
+			    (
+				(or
+				    (null matches)
+				    ;;	No overlap and after most
+				    ;; recent match.
+				    (> (car match) (cddar matches))
+				    ;; No overlap and before most
+				    ;; recent match.
+				    (< (cdr match) (cadar matches))
+				)
+				(setq
+				    matches
+				    (cons (cons token match) matches)
+				)
+			    )
+			    (
+				(or
+				    ;;	Overlap, but start before most
+				    ;; recent match.
+				    (< (car match) (cadar matches))
+				    (and
+					;;  Same offset as most recent
+					;; match, but is longer.
+					(= (car match) (cadar matches))
+					(> (cdr match) (cddar matches))
+				    )
+				)
+				(rplaca (car matches) token)
+				(rplacd (car matches) match)
+#+debug-verbose 		(format T "Replaced most recent match~%")
+			    )
+			    (T
+#+debug-verbose 		(format T "Ignored~%")
+				;; XXX The interpreter does not yet implement
+				;; implicit tagbody in dolist, just comment
+				;; the go call in that case. (Will just do
+				;; an unecessary test...)
+				(go :IGNORED)
+			    )
 			)
 
 			;;  Exit loop if the all the remaining
@@ -902,19 +979,15 @@ is used.
 		    )
 
 		    ;;	Match not found.
-#+debug-verbose	    (progn
-			(format T "Adding to nomatch: ~A~%"
+		    (progn
+#+debug-verbose 	(format T "Adding to nomatch: ~A~%"
 			    (syntoken-regex token)
 			)
-			(unless (position token nomatch)
-			    (setq nomatch (cons token nomatch))
-			)
-		    )
-#-debug-verbose	    (unless (position token nomatch)
 			(setq nomatch (cons token nomatch))
 		    )
 		)
 	    )
+:IGNORED
 	)
 
 	;;  Matches was created in reversed order of precedence.
@@ -923,19 +996,19 @@ is used.
 	    ;;	Add matches to the beginning of the cache list.
 	    ;;	There may be matches from another syntable table in the cache.
 	    (setq
-		cache	    (nconc matches cache)
+		;;  Put matches with smaller offset first.
+		cache
+		(stable-sort (nconc matches cache) #'< :KEY #'cadr)
 
 		;;  Make sure that when the match loop is reentered, this
 		;; variable is NIL.
-		matches     ()
+		matches
+		()
 	    )
-
-	    ;;	Put matches with smaller offset first.
-	    (stable-sort cache #'< :KEY #'cadr)
 	)
 
-	;;  While the first entry in the is not from the current table.
-	(until (or (null cache) (member (caar cache) token-list))
+	;;  While the first entry in the cache is not from the current table.
+	(until (or (null cache) (member (caar cache) token-list :TEST #'eq))
 
 #+debug-verbose
 	    (format T "Not in the current table, removing {~A:~S} ~A~%"
@@ -944,24 +1017,32 @@ is used.
 		(syntoken-regex (caar cache))
 	    )
 
-	    ;;  Slightly faster than (setq cache (cdr cache)).
-	    (pop cache)
+	    (setq cache (cdr cache))
 	)
 
 
 	;;  If nothing was matched in the entire/remaining line.
 	(unless cache
-	    (setq
-		result
-		(cons
-		    (cons start (cons length default-property))
-		    result
+	    (when default-property
+		(if
+		    (or
+			(null result)
+			(> start (cadar result))
+			(not (eq (cddar result) default-property))
+		    )
+		    (setq
+			result
+			(cons
+			    (cons start (cons length default-property))
+			    result
+			)
+		    )
+		    (rplaca (cdar result) length)
 		)
-
-		;;  Let the code know the input line is finished.
-		start
-		length
 	    )
+	    ;;  Let the code know the input line is finished.
+	    (setq start length)
+
 #+debug-verbose
 	    (format T "No match until end of line~%")
 
@@ -969,27 +1050,6 @@ is used.
 	    ;; change, bypass :PARSE.
 	    (go :PROCESS)
 	)
-
-	;;  If there is only one match in the entire input line.
-	;;  Can't bypass :PARSE because the single match may repeat
-	;; at a longer offset.
-	(when (= (length cache) 1)
-	    (setq
-		match	(car cache)
-		left	(cadr match)
-		right	(cddr match)
-
-		;;  Reset cache now.
-		cache	NIL
-	    )
-
-	    (go :PARSE)
-	)
-
-
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;;  If got here, length of cache is larger than one.
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #+debug-verbose
 	(format T "Removing first candidate from cache {~A:~S} ~A~%"
@@ -1003,55 +1063,58 @@ is used.
 	    match	(car cache)
 	    left	(cadr match)
 	    right	(cddr match)
-
-	    ;;  First element can be safely removed now.
-	    cache	(cdr cache)
 	)
 
+	;;  First element can be safely removed now.
+	;;  If there is only one, skip loop below.
+	(or (setq cache (cdr cache)) (go :PARSE))
+
 	;;  Remove elements of cache that must be discarded.
+	(setq
+	    item   (car cache)
+	    from   (cadr item)
+	    to     (cddr item)
+	)
+
 	(loop
-	    (let*
-		(
-		(item	(car cache))
-		(from	(cadr item))
-		(to	(cddr item))
+	    (if
+		(or
+
+		    ;;	If everything removed from the cache.
+		    (null item)
+
+		    ;;	Or next item is at a longer offset than the
+		    ;; end of current match.
+		    (>= from right)
 		)
+		(return)
+	    )
 
-		(if
-		    (or
+	    (and
+		;;  If another match at the same offset.
+		(= left from)
 
-			;;  If everything removed from the cache.
-			(null item)
+		;;  And if this match is longer than the current one.
+		(> to right)
 
-			;;  Or next item is at a longer offset than the
-			;; end of current match.
-			(>= from right)
-		    )
-		    (return)
+		(setq
+		    match   item
+		    right   to
 		)
+	    )
 
-		(if
-		    (and
-			;;  If another match at the same offset.
-			(= left from)
+#+debug-verbose
+	    (format T "Removing from cache {~A:~S} ~A~%"
+		(cdar cache)
+ 		(subseq line from to)
+		(syntoken-regex (caar cache))
+	    )
 
-			;;  And if this match is longer than the current one.
-			(> to right)
-		    )
-		    (setq
-			match	item
-			right	to
-		    )
-		)
-
-#+debug-verbose	(format T "Removing from cache {~A:~S} ~A~%"
-		    (cdar cache)
-		    (subseq line from to)
-		    (syntoken-regex (caar cache))
-		)
-
-		;;  Slightly faster than (setq cache (cdr cache)).
-		(pop cache)
+	    (setq
+		cache	    (cdr cache)
+		item	    (car cache)
+		from	    (cadr item)
+		to	    (cddr item)
 	    )
 	)
 
@@ -1065,156 +1128,204 @@ is used.
 
 	    ;;  Change match value to the syntoken.
 	    match	(car match)
+
+	    begin	(syntoken-begin match)
+	    switch	(syntoken-switch match)
+	    contained	(syntoken-contained match)
+	    change	(or begin switch)
 	)
 
-	(let*
-	    (
-	    (begin	(syntoken-begin match))
-	    (switch	(syntoken-switch match))
-	    (contained	(syntoken-contained match))
-	    (change	(or begin switch))
-	    (property	default-property)
+	;;  Check for unmatched leading text.
+	(when (and default-property (> left start))
+#+debug-verbose (format T "No match in {(~D . ~D):~S}~%"
+		start
+		left
+		(subseq line start left)
 	    )
-
-	    ;;  Check for unmatched leading text.
-	    (when (> left start)
-#+debug-verbose	(format T "No match in {(~D . ~D):~S}~%"
-		    start
-		    left
-		    (subseq line start left)
+	    (if
+		(or
+		    (null result)
+		    (> start (cadar result))
+		    (not (eq (cddar result) default-property))
 		)
 		(setq
 		    result
-		    (cons (cons start (cons left property)) result)
+		    (cons
+			(cons start (cons left default-property))
+			result
+		    )
 		)
+		(rplaca (cdar result) left)
 	    )
+	)
 
-	    ;;  If the syntax table is not changed,
-	    ;; or if the new table requires that the
-	    ;; current default property be used.
-	    (when
-		(or
-		    (not change)
-		    (not contained)
-		)
+	;;  If the syntax table is not changed,
+	;; or if the new table requires that the
+	;; current default property be used.
+	(unless (and change contained)
 
-		;;  If token specifies the property.
-		(if (syntoken-property match)
-		    (setq property (syntoken-property match))
+	    (and
+		(> right left)
+		(setq
+		    property
+		    (or
+			;;  If token specifies the property.
+			(syntoken-property match)
+			default-property
+		    )
 		)
 
 		;;  Add matched text.
-		(setq
-		    result
-		    (cons (cons left (cons right property)) result)
+		(if
+		    (or
+			(null result)
+			(> left (cadar result))
+			(not (eq (cddar result) property))
+		    )
+		    (setq
+			result
+			(cons
+			    (cons left (cons right property))
+			    result
+			)
+		    )
+		    (rplaca (cdar result) right)
 		)
-#+debug-verbose	(format T "(0)Match found for {(~D . ~D):~S}~%"
+	    )
+
+#+debug-verbose
+	    (format T "(0)Match found for {(~D . ~D):~S}~%"
+		left
+		right
+		(subseq line left right)
+	    )
+	)
+
+
+	;;  Update start offset in the input now!
+	(setq start right)
+
+
+	;;  When changing the current syntax table.
+	(when change
+	    (if switch
+		(progn
+#+debug-verbose	    (format T "switching to ")
+		    (if (numberp switch)
+
+			;;  If returning to a previous state.
+			;;  Don't generate an error if the stack
+			;; becomes empty?
+			(while
+			    (< switch 0)
+
+			    (setq
+				change	    (pop stack)
+				token-list  (pop token-list-stack)
+				switch	    (1+ switch)
+			    )
+			)
+
+			;;  Else, not to a previous state, but
+			;; returning to a named syntax table,
+			;; search for it in the stack.
+			(while
+			    (and
+
+				(setq
+				    token-list (pop token-list-stack)
+				    change     (pop stack)
+				)
+
+				(not (eq switch change))
+			    )
+			    ;;	Empty loop.
+			)
+		    )
+
+		    ;;	If no match found while popping
+		    ;; the stack.
+		    (unless change
+
+			;;  Return to the topmost syntax table.
+			(setq
+			    change
+			    (car (syntax-labels *SYNTAX*))
+			)
+		    )
+		)
+
+		;;  Else, it is a begin.
+		(progn
+#+debug-verbose	    (format T "begining ")
+
+		    ;;	Save state for a possible
+		    ;; :SWITCH later.
+		    (setq
+			stack		 (cons syntax-table stack)
+			token-list-stack (cons token-list token-list-stack)
+			token-list	 (syntable-tokens change)
+		    )
+		)
+	    )
+
+#+debug-verbose
+	    (format T "~A offset: ~D~%"
+		(syntable-label change)
+		start
+	    )
+
+	    (if (null token-list)
+		(setq token-list (syntable-tokens change))
+	    )
+
+	    ;;	Change current syntax table.
+	    (setq
+		syntax-table	    change
+		default-property    (syntable-property change)
+		current-token-list  token-list
+	    )
+
+	    ;; If processing of text was deferred.
+	    (when contained
+
+		(and
+		    (> right left)
+		    (setq
+			property
+			(or
+			    (syntoken-property match)
+			    default-property
+			)
+		    )
+		    ;;	Add matched text with the updated property.
+		    (if
+			(or
+			    (null result)
+			    (> left (cadar result))
+			    (not (eq (cddar result) property))
+			)
+			(setq
+			    result
+			    (cons
+				(cons left (cons right property))
+				result
+			    )
+			)
+			(rplaca (cdar result) right)
+		    )
+		)
+
+#+debug-verbose (format T "(1)Match found for {(~D . ~D):~S}~%"
 		    left
 		    right
 		    (subseq line left right)
 		)
 	    )
 
-
-	    ;;	Update start offset in the input now!
-	    (setq start right)
-
-
-	    ;;	When changing the current syntax table.
-	    (when change
-		(if switch
-		    (progn
-#+debug-verbose		(format T "switching to ")
-			(if (numberp switch)
-
-			    ;;	If returning to a previous state.
-			    ;;  Don't generate an error if the stack
-			    ;; becomes empty?
-			    (while
-				(< switch 0)
-				(setq change (pop stack))
-				(incf switch)
-			    )
-
-			    ;;	Else, not to the previous state, but
-			    ;; returning to a named syntax table,
-			    ;; search for it in the stack.
-			    (while
-				(and
-				    (setq change (pop stack))
-				    (not (eq switch change))
-				)
-				;;  Empty loop.
-			    )
-			)
-
-			;;  If no match found while popping
-			;; the stack.
-			(unless change
-
-			    ;;	Return to the topmost syntax table.
-			    (setq
-				change
-				(car (syntax-labels *SYNTAX*))
-			    )
-			)
-		    )
-
-		    ;;	Else, it is a begin.
-		    (progn
-#+debug-verbose		(format T "begining ")
-			(setq change begin)
-
-			;;  Save state for a possible
-			;; :SWITCH later.
-			(push syntax-table stack)
-		    )
-		)
-
-#+debug-verbose	(format T "~A offset: ~D~%"
-		    (syntable-label change)
-		    start
-		)
-
-		;;  Change current syntax table.
-		(setq
-		    syntax-table	change
-		    default-property	(syntable-property change)
-		    token-list		(syntable-tokens change)
-		)
-
-
-		;; If processing of text was deferred.
-		(when contained
-
-		    (if (syntoken-property match)
-			(setq
-			    property
-			    (syntoken-property match)
-			)
-			(setq
-			    property
-			    default-property
-			)
-		    )
-
-		    ;; Add matched text with the updated property.
-		    (setq
-			result
-			(cons (cons left (cons right property)) result)
-		    )
-
-#+debug-verbose	    (format T "(1)Match found for {(~D . ~D):~S}~%"
-			left
-			right
-			(subseq line left right)
-		    )
-		)
-
-		;;  Try again if the table has a match to the empty
-		;; string in the end of a line.
-		(and (= start length) (syntable-eol change) (go :LOOP))
-	    )
+	    ;;	Try again if the table has a match to the empty
+	    ;; string in the end of a line.
+	    (and (= start length) (syntable-eol change) (go :LOOP))
 	)
 
 
@@ -1231,40 +1342,8 @@ is used.
 	(format T "** Entering :PROCESS~%")
 
 	;;  Result was created in reversed order.
-	(nreverse result)
-
-	(let
-	    (
-	    property
-	    )
-
-	    ;;	Join all sequential matches that use the same property.
-	    ;; Gaps do not exist. When text was not matched, the loop
-	    ;; above filled the gap with the current default property.
-	    ;; Overlaps don't exist either.
-	    (setq
-		left	    (caar result)
-		property    (cddar result)
-	    )
-	    (dolist (item (cdr result))
-		(if (eq (cddr item) property)
-
-		    ;;	Two consecutive matches with the same property.
-		    ;; Adjust the beginning offset.
-		    (rplaca item left)
-
-		    ;; Else, update variables.
-		    (setq
-			left	    (car item)
-			property    (cddr item)
-		    )
-		)
-	    )
-
-	    ;;	Loop in the result. If there are consecutive matches
-	    ;; with the same property, now result will have the same
-	    ;; offset value in the CAR of it's elements.
-	    (dolist (item (delete-duplicates result :TEST #'= :KEY #'car))
+	(when (nreverse result)
+	    (dolist (item result)
 		(setq
 		    left	    (car item)
 		    right	    (cadr item)
@@ -1274,43 +1353,35 @@ is used.
 
 		;; Use the information.
 #+debug		(format T "~A: ~S~%"
-		    (if (synprop-p property)
-			(synprop-name property)
-			"default"
-		    )
+		    (synprop-name property)
 		    (subseq line left right)
 		)
 
-		(and
-		    ;; XXX
-		    ;; XXX
-		    ;; IF THE CHECK OF RIGHT LARGER THAN LEFT IS NOT
-		    ;; DONE (i.e. right != left) XAW WILL CRASH
-		    ;; ALLOCATING ALL AVAILABLE MEMORY.
-		    ;; XXX FIXME
-		    ;; XXX
-		    ;; XXX
-		    (> right left)
-		    (synprop-p property)
-		    (add-entity
-			(+ *FROM* left)
-			(- right left)
-			(synprop-quark property)
-		    )
+		;; XXX
+		;; XXX
+		;; IF RIGHT IS EQUAL TO LEFT XAW WILL
+		;; CRASH ALLOCATING ALL AVAILABLE MEMORY.
+		;; XXX FIXME
+		;; XXX
+		;; XXX
+		(add-entity
+		    (+ *FROM* left)
+		    (- right left)
+		    (synprop-quark property)
 		)
 	    )
 	)
 
+:UPDATE
 	;; Prepare for new matches.
 	(setq
-	    result    NIL
-	    start    0
+	    result	NIL
+	    start	0
+
+	    ;;	Update offset to read text.
+	    ;;	Add 1 for the skipped newline.
+	    *FROM*	(+ *FROM* length 1)
 	)
-
-
-	;;  Update offset to read text.
-	;;  Add 1 for the skipped newline.
-	(incf *FROM* (1+ length))
 
 	(go :READ)
     )

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.1 2002/07/22 07:26:30 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.2 2002/07/28 21:34:05 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -51,10 +51,10 @@
 (defconstant *ESCAPE* #-debug #\Escape #+debug #\$)
 
 ;; Stream to write to xedit.
-(defvar *OUTPUT* *STANDARD-OUTPUT*)
+(defconstant *OUTPUT* #-debug T #+debug *STANDARD-OUTPUT*)
 
 ;; Stream to read from xedit.
-(defvar *INPUT* *STANDARD-INPUT*)
+(defconstant *INPUT* #-debug NIL #+debug *STANDARD-INPUT*)
 
 ;; Recognized identifiers for wrap mode.
 (defconstant *WRAP-MODES* '(:NEVER :LINE :WORD))

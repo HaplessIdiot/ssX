@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.11 2002/07/16 05:19:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.12 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -500,6 +500,19 @@ Lisp_Complex(LispMac *mac, LispBuiltin *builtin)
     }
 
     return (COMPLEX(realpart, imagpart));
+}
+
+LispObj *
+Lisp_Complexp(LispMac *mac, LispBuiltin *builtin)
+/*
+ complexp object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (COMPLEX_P(object) ? T : NIL);
 }
 
 LispObj *

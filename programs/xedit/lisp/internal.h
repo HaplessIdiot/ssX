@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.27 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.28 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -71,13 +71,13 @@
 #define BACKQUOTE(bquote)	LispNewBackquote(mac, bquote)
 #define COMMA(comma, at)	LispNewComma(mac, comma, at)
 #define REAL(num)		LispNewReal(mac, num)
-#define STRING(str)		LispNewString(mac, str, strlen(str))
-#define LSTRING(str, size)	LispNewString(mac, str, size)
+#define STRING(str)		LispNewString(mac, str, strlen(str), 0)
+#define LSTRING(str, size)	LispNewString(mac, str, size, 0)
 
 	/* string must be from the LispXXX allocation functions,
 	 * and LispMused not yet called on it */
-#define STRING2(str)		LispNewAllocedString(mac, str, strlen(str))
-#define LSTRING2(str, size)	LispNewAllocedString(mac, str, size)
+#define STRING2(str)		LispNewString(mac, str, strlen(str), 1)
+#define LSTRING2(str, size)	LispNewString(mac, str, size, 1)
 
 #define CHAR(c)			LispNewCharacter(mac, c)
 #define INTEGER(i)		LispNewInteger(mac, i)
@@ -317,6 +317,11 @@
 	LispDestroy(mac, "%s: %s is not a regexp",		\
 		    STRFUN(builtin), STROBJ(object))
 
+#define ERROR_CHECK_SPECIAL_FORM(atom)					\
+    if (atom->property->fun.builtin->compile)				\
+	LispDestroy(mac, "%s: the special form %s cannot be redefined",	\
+		    STRFUN(builtin), atom->string)
+
 /*
  * Types
  */
@@ -327,6 +332,10 @@ typedef struct _LispModuleData LispModuleData;
 typedef struct _LispFile LispFile;
 typedef struct _LispString LispString;
 typedef struct _LispPackage LispPackage;
+typedef struct _LispBytecode LispBytecode;
+
+/* Bytecode compiler data */
+typedef struct _LispCom LispCom;
 
 typedef char *Atom_id;
 
@@ -363,7 +372,8 @@ typedef enum _LispType {
     LispComma_t,
     LispPathname_t,
     LispPackage_t,
-    LispRegex_t
+    LispRegex_t,
+    LispBytecode_t
 } LispType;
 
 typedef enum _LispFunType {
@@ -466,10 +476,15 @@ struct _LispObj {
 	    LispObj *pattern;		/* regex string */
 	    int options;		/* regex compile flags */
 	} regex;
+	struct {
+	    LispBytecode *bytecode;
+	    LispObj *code;		/* object used to generate bytecode */
+	} bytecode;
     } data;
 };
 
 typedef	LispObj *(*LispFunPtr)(LispMac*, LispBuiltin*);
+typedef void (*LispComPtr)(LispCom*, LispBuiltin*);
 
 struct _LispBuiltin {
     /* these fields must be set */
@@ -477,12 +492,14 @@ struct _LispBuiltin {
     LispFunPtr function;
     char *declaration;
 
-    /* this field is optional, set if the function returns multiple values.
-     * Note: currently only builtin functions can return multiple values */
+    /* this field is optional, set if the function returns multiple values */
     int multiple_values;
 
     /* this field is also optional, set if the function should not be exported */
     int internal;
+
+    /* this optional field points to a function of the bytecode compiler */
+    LispComPtr compile;
 
     /* this field is set at runtime */
     LispObj *description;
@@ -511,8 +528,7 @@ LispObj *LispNewSymbol(LispMac*, LispAtom*);
 LispObj *LispNewAtom(LispMac*, char*);
 LispObj *LispNewStaticAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
-LispObj *LispNewString(LispMac*, char*, long);
-LispObj *LispNewAllocedString(LispMac*, char*, long);
+LispObj *LispNewString(LispMac*, char*, long, int);
 LispObj *LispNewCharacter(LispMac*, long);
 LispObj *LispNewSmallInt(LispMac*, long);
 LispObj *LispNewInteger(LispMac*, long);
@@ -584,8 +600,8 @@ void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
 extern LispObj *NIL, *T, *DOT, *UNBOUND;
 extern int gcpro;
 
-extern LispObj *Okey, *Orest, *Ooptional, *Oaux;
-extern Atom_id Snil, St, Slambda, Skey, Srest, Soptional, Saux;
+extern LispObj *Okey, *Orest, *Ooptional, *Oaux, *Olambda;
+extern Atom_id Snil, St, Skey, Srest, Soptional, Saux;
 extern Atom_id Sand, Sor, Snot;
 extern Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
 	       Scons, Svector, Sarray, Sstruct, Skeyword, Sfunction, Spathname,
@@ -594,7 +610,7 @@ extern Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
 extern LispObj *Ocomplex, *Oformat, *Kunspecific;
 
 extern LispObj *Omake_array, *Kinitial_contents, *Osetf;
-extern Atom_id Sotherwise, Svariable, Sstructure, Stype, Ssetf;
+extern Atom_id Svariable, Sstructure, Stype, Ssetf;
 
 extern Atom_id Smake_struct, Sstruct_access, Sstruct_store, Sstruct_type;
 extern LispObj *Omake_struct, *Ostruct_access, *Ostruct_store, *Ostruct_type;

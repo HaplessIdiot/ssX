@@ -1,4 +1,4 @@
-$XFree86: xc/programs/xedit/lisp/TODO,v 1.2 2002/01/31 04:33:27 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/TODO,v 1.3 2002/02/08 02:59:26 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -7,10 +7,6 @@ LAST UPDATED:	$Date$
 o Forgive about the possibility of more than one instance of the lisp
   interpreter in the same application. Have just one instance of the
   LispMac structure, to avoid name clashes.
-o Cleanup the LispMac structure. All atoms/objects that must be alive
-  during the interpreter execution (mostly for speed or avoiding the risk
-  of gc while recreating it) should be static to the file needing it, and/or
-  created in a Init function.
 o When an Init function is present in every file, call LispAddBuiltin from
   that initialization function.
 o Cleanup the code, make it optional to build some uncommon features (as well
@@ -23,8 +19,6 @@ o Finish an "specification" for loadable modules. Write a FFI interface.
   to link statically with a new interpreter binary, make it easy.
 o Implement a better string type. That should support characters larger than
   8 bits, and that should allow embeded nuls.
-o It does not seen to be very smart to have two functions that do almost the
-  same thing, LispEval and LispApply. They should be merged someway.
 o Implement a richer set of math functions. This, if properly done can be
   made a loadable module.
 o Optmize mathimp.c, comparing a double with a bignum should never cause an
@@ -48,7 +42,6 @@ o Instead of using mathimp.c for a large amount of functions, implement a
   mp library.
 o Finish the interface/protocol with xedit. It is taking a bit long to have
   have programable text buffers, easily implementable color-syntax modes, etc.
-o Implement a package system for the interpreter.
 o Make more optimizations to get faster execution. Implement byte-code
   compilation? Implement a simple optimizer, not very effective for common
   code, but almost mandatory for loops.
@@ -73,18 +66,8 @@ o Write some type of "hyperlinks", this is the only feature missing to even
   allow writting a web browser inside xedit.
 o Write some "demos" (maybe a file manager or a simple mail reader) using the
   Xt/Xaw bindings (needs modules working in all systems).
-o Remove all calls to the macros GCProtect and GCUProtect. Create some
-  function/macro facility to protect temporary results form GC. The current
-  way is too much hard to do, i.e.:
-	int protect = mac->protect.length;
-	while (protect + <number-of-variables-required> <= mac->protect.space)
-	    LispMoreProtects(mac);
-	...
-	mac->protect.objects[mac->protect.length++] = <object-to-protect>;
-	...
-	mac->protect.objects[mac->protect.length++] = <other-object-to-protect>;
-	...
-	mac->protect.length = protect;
+o Remove all calls to the macros GCProtect and GCUProtect. This is unsafe
+  and should be removed.
 o Write a set of tests. The interpreter is expected to be only a subset of
   Common Lisp, but what it understand should generate the expected/acceptable
   results. Probably there are yet errors in the math code.

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.7 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.8 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -121,7 +121,7 @@ LispPushInput(LispMac *mac, LispObj *stream)
 {
     if (!STREAM_P(stream) || !stream->data.stream.readable)
 	LispDestroy(mac, "bad stream at PUSH-INPUT");
-    mac->input = CONS(stream, mac->input);
+    mac->input_list = CONS(stream, mac->input_list);
     SINPUT = stream;
     if (mac->iunget + 1 == mac->nunget) {
 	LispUngetInfo **info =
@@ -141,10 +141,10 @@ LispPushInput(LispMac *mac, LispObj *stream)
 void
 LispPopInput(LispMac *mac, LispObj *stream)
 {
-    if (!CONS_P(mac->input) || stream != CAR(mac->input))
+    if (!CONS_P(mac->input_list) || stream != CAR(mac->input_list))
 	LispDestroy(mac, "bad stream at POP-INPUT");
-    mac->input = CDR(mac->input);
-    SINPUT = CONS_P(mac->input) ? CAR(mac->input) : mac->input;
+    mac->input_list = CDR(mac->input_list);
+    SINPUT = CONS_P(mac->input_list) ? CAR(mac->input_list) : mac->input_list;
     --mac->iunget;
     mac->eof = 0;
 }
@@ -531,8 +531,29 @@ LispFwrite(LispFile *file, void *data, int size)
 
 	if (size) {
 	    /* keep remaining data in buffer */
-	    memcpy(file->buffer + file->length, buffer, size);
-	    file->length += size;
+	    switch (size) {
+		case 8:
+		    file->buffer[file->length++] = *buffer++;
+		case 7:
+		    file->buffer[file->length++] = *buffer++;
+		case 6:
+		    file->buffer[file->length++] = *buffer++;
+		case 5:
+		    file->buffer[file->length++] = *buffer++;
+		case 4:
+		    file->buffer[file->length++] = *buffer++;
+		case 3:
+		    file->buffer[file->length++] = *buffer++;
+		case 2:
+		    file->buffer[file->length++] = *buffer++;
+		case 1:
+		    file->buffer[file->length++] = *buffer++;
+		    break;
+		default:
+		    memcpy(file->buffer + file->length, buffer, size);
+		    file->length += size;
+		    break;
+	    }
 	    length += size;
 	}
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.2 2002/02/10 02:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.3 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_math_h
 #define Lisp_math_h
@@ -54,6 +54,7 @@ LispObj *Lisp_Max(LispMac*, LispBuiltin*);		/* max */
 LispObj *Lisp_Min(LispMac*, LispBuiltin*);		/* min */
 LispObj *Lisp_Abs(LispMac*, LispBuiltin*);		/* abs */
 LispObj *Lisp_Complex(LispMac*, LispBuiltin*);		/* complex */
+LispObj *Lisp_Complexp(LispMac*, LispBuiltin*);		/* complexp */
 LispObj *Lisp_Conjugate(LispMac*, LispBuiltin*);	/* conjugate */
 LispObj *Lisp_Decf(LispMac*, LispBuiltin*);		/* decf */
 LispObj *Lisp_Denominator(LispMac*, LispBuiltin*);	/* denominator */

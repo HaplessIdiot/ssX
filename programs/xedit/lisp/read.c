@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.18 2002/07/22 07:26:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.19 2002/08/05 03:56:24 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -357,11 +357,10 @@ LispCharInfo LispChars[256] = {
     {{LispCharacter_t /* 254 */}, NULL},
     {{LispCharacter_t /* 255 */}, NULL}
 };
-#undef CHAR_VALUE
 
 Atom_id Sand, Sor, Snot;
 
-static LispObj lispdot = {LispAtom_t};
+static LispObj lispdot = {LispNil_t};
 LispObj *DOT = &lispdot;
 
 /*
@@ -1176,10 +1175,8 @@ LispReadFunction(LispMac *mac)
     if (INVALID_P(function)) 
 	LispDestroy(mac, "READ: illegal function object");
     else if (CONS_P(function)) {
-	if (!SYMBOL_P(CAR(function)) ||
-	    ATOMID(CAR(function)) != Slambda) {
+	if (CAR(function) != Olambda)
 	    LispDestroy(mac, "READ: %s is not a valid lambda", STROBJ(function));
-	}
 
 	return (EVAL(function));
     }
@@ -1316,13 +1313,18 @@ LispSkipComment(LispMac *mac)
 
     for (;;) {
 	ch = LispGet(mac);
-	if (ch == '|' && LispGet(mac) == '#') {
-	    if (--comm == 0)
+	if (ch == '#') {
+	    ch = LispGet(mac);
+	    if (ch == '|')
+		++comm;
+	    continue;
+	}
+	while (ch == '|') {
+	    ch = LispGet(mac);
+	    if (ch == '#' && --comm == 0)
 		return;
 	}
-	else if (ch == '#' && LispGet(mac) == '|')
-	    ++comm;
-	else if (ch == EOF)
+	if (ch == EOF)
 	    LispDestroy(mac, "READ: unexpected end of input");
     }
 }
@@ -1431,34 +1433,35 @@ LispReadArray(LispMac *mac, long dimensions)
 
     initial = Kinitial_contents;
 
+    dim = cons = NIL;
     if (dimensions) {
-	dim = cons = CONS(SMALLINT(dimensions), NIL);
+	LispObj *array;
 
-	for (count = 1; count < dimensions; count++) {
+	for (count = 0, array = data; count < dimensions; count++) {
 	    long length;
-	    LispObj *obj;
+	    LispObj *item;
 
-	    for (obj = data, length = 0; length < count; length++) {
-		if (!CONS_P(obj))
-		    LispDestroy(mac, "READ: bad array for given dimension");
-		obj = CAR(obj);
-	    }
+	    if (!CONS_P(array))
+		LispDestroy(mac, "READ: bad array for given dimension");
+	    item = array;
+	    array = CAR(array);
 
-	    for (length = 1, obj = data; CONS_P(obj); obj = CDR(obj), length++)
+	    for (length = 0; CONS_P(item); item = CDR(item), length++)
 		;
-	    GCProtect();
-	    CDR(cons) = CONS(SMALLINT(length), NIL);
-	    cons = CDR(cons);
-	    GCUProtect();
+
+	    if (dim == NIL) {
+		dim = cons = CONS(SMALLINT(length), NIL);
+		GC_PROTECT(dim);
+	    }
+	    else {
+		CDR(cons) = CONS(SMALLINT(length), NIL);
+		cons = CDR(cons);
+	    }
 	}
     }
-    else
-	dim = NIL;
 
-    GC_PROTECT(dim);
     arguments = CONS(dim, CONS(initial, CONS(data, NIL)));
     GC_PROTECT(arguments);
-
     data = APPLY(Omake_array, arguments);
     GC_LEAVE();
 

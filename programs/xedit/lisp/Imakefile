@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.15 2002/03/01 16:42:43 tsi Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.17 2002/07/16 05:19:38 paulo Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -53,6 +53,7 @@ SAMPOBJ		= lsp.o
 SUBDIRS		= mp modules
 
 SRCS		= $(SYS_SRCS) \
+		bytecode.c \
 		core.c \
 		debugger.c \
 		format.c \
@@ -71,6 +72,7 @@ SRCS		= $(SYS_SRCS) \
 		time.c \
 		write.c
 OBJS		= $(SYS_OBJS) \
+		bytecode.o \
 		core.o \
 		debugger.o \
 		format.o \

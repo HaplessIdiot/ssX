@@ -27,9 +27,10 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.3 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.4 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "time.h"
+#include "bytecode.h"
 
 /*
  * Implementation
@@ -73,7 +74,13 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
     mac->gc.gctime = 0;
     mac->gc.timebits = 1;
 
+#if 0
+    form = CONS(form, NIL);
+    COD = CONS(form, COD);
+    result = LispExecuteBytecode(mac, (LispCompileForm(mac, form)));
+#else
     result = EVAL(form);
+#endif
 
     getitimer(ITIMER_REAL, &real);
     getitimer(ITIMER_VIRTUAL, &virt);

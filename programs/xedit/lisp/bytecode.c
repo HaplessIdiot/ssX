@@ -1,0 +1,3493 @@
+/*
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the XFree86 Project shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from the
+ * XFree86 Project.
+ *
+ * Author: Paulo César Pereira de Andrade
+ */
+
+/* $XFree86$ */
+
+
+/*
+somethings TODO:
+
+ o Write code for allowing storing the bytecode on disk. Basically
+   write a section of the bytecode with the package name of the symbol
+   pointers, and after that, the symbols used. At load time just put
+   the pointers in the bytecode. Constants can be stored as the string
+   representation. Probably just storing the gc protected code as a
+   string is enough to rebuild it.
+
+ o Write code to store tags of BLOCK/CATCH and setjump buffer stacks,
+   and, only keep track of this if non byte-compiled code is called,
+   as after byte-compilation RETURN and THROW are just jumps.
+
+ o Remove not reliable "optmization code" code from Com_XXX functions
+   and do it later, removing dead code, tests with a constant argument,
+   etc, in the "link time". Frequently joining sequential opcodes to a
+   compound version.
+
+ o Write an optimizer to do code transformation.
+
+ o Write code to know when variables can be changed in place, this
+   can save a huge time in loop counters.
+
+ o Write code for fast garbage collection of objects that can be
+   safely collected.
+
+ o Cleanup of interpreted code. Having bytecode mean that the interpreter
+   now is better having a clean and small code. If speed is important,
+   it should be byte compiled.
+
+ o Limit the stacks length. So that instead of using an index, use the
+   pointer where an object value should be read/stored as the stack address
+   would not change during the program execution.
+
+ o Optimize jump to jump. Common in code like:
+	(IF test
+	    (GO somewhere)
+	    (GO elsewhere)
+	)
+	(GO there)
+   that generates a bytecode like:
+	<code to evaluate test>
+	JUMPNIL :NIL-RESULT
+	:T-RESULT
+	    JUMP :SOMEWHERE
+	JUMP :END-OF-IF			;; <- this is not required, or even
+	:NIL-RESULT			;;    better, notice the jump after
+	    JUMP :ELSEWHERE		;;    the if and transform it into
+	:END-OF-IF			;;    a JUMP :THERE
+	JUMP :THERE
+
+ o Optimize variables that are known to not change it's value, i.e. pseudo
+   constants. Loading the value of a constant should be faster than loading
+   the current value of a variable; the constant table could fit in the
+   processor cache line and needs less calculation to find the object address.
+ */
+
+
+#include "bytecode.h"
+#include "write.h"
+
+#define	SYMBOL_KEYWORD	-1	/* A keyword, load as constant */
+#define	SYMBOL_CONSTANT	-2	/* Defined as constant at compile time */
+#define	SYMBOL_UNBOUND	-3	/* Not a local variable */
+
+#define NEW_TREE(type)		CompileNewTree(com, type)
+
+/* If in tagbody, ignore anything that is not code */
+#define	IN_TAGBODY()		(com->block->type == LispBlockBody && \
+				 com->level == com->tagbody)
+#define	FORM_ENTER()		++com->level
+#define	FORM_LEAVE()		--com->level
+
+/*
+ * Types
+ */
+typedef struct _CodeTree CodeTree;
+typedef struct _CodeBlock CodeBlock;
+
+typedef enum {
+    CodeTreeBytecode,
+    CodeTreeLabel,
+    CodeTreeGo,
+    CodeTreeJump,
+    CodeTreeJumpIf,
+    CodeTreeCond,
+    CodeTreeBlock,
+    CodeTreeReturn
+} CodeTreeType;
+
+struct _CodeTree {
+    CodeTreeType type;
+
+    /* Resolved when linking, may be adjusted while optimizing */
+    long offset;
+
+    LispByteOpcode code;
+
+    union {
+	signed char signed_char;
+	signed short signed_short;
+	signed int signed_int;
+	LispAtom *atom;
+	LispObj *object;
+	CodeTree *tree;
+	CodeBlock *block;
+	struct {
+	    unsigned char num_arguments;
+	    LispBuiltin *builtin;
+	    signed short offset;	/* Used if opcode is XBC_CALL_SET */
+	} builtin;
+	struct {
+	    unsigned char num_arguments;
+	    LispObj *name;
+	    LispObj *lambda;
+	} call;
+	struct {
+	    short offset;
+	    LispAtom *name;
+	} let;
+	struct {
+	    LispAtom *symbol;
+	    LispAtom *name;
+	} let_sym;
+	struct {
+	    LispObj *object;
+	    LispAtom *name;
+	} let_con;
+	struct {
+	    signed short load;
+	    signed short set;
+	} load_set;
+	struct {
+	    LispObj *object;
+	    signed short offset;
+	} load_con_set;
+	struct {
+	    LispObj *car;
+	    LispObj *cdr;
+	} cons;
+	struct {
+	    short offset;
+	    LispObj *definition;
+	} struc;
+    } data;
+
+    CodeTree *next;
+    CodeTree *group;
+    CodeBlock *block;
+};
+
+struct _CodeBlock {
+    LispBlockType type;
+    LispObj *tag;
+
+    struct {
+	LispObj **labels;
+	CodeTree **codes;	/* Filled at link time */
+	int length;
+	int space;
+    } tagbody;
+
+    struct {
+	LispAtom **symbols;	/* Identifiers of variables in a block */
+	int *flags;		/* Information about usage of the variable */
+	int length;
+    } variables;
+
+    int bind;			/* Used in case of RETURN from LET */
+    int level;			/* Nesting level block was created */
+
+    CodeTree *tree, *tail;
+    CodeBlock *prev;		/* Linked list as a stack */
+    CodeTree *parent;		/* Back reference */
+};
+
+struct _LispCom {
+    LispMac *mac;		/* Interpreter data */
+
+    unsigned char *bytecode;	/* Bytecode generated so far */
+    long length;
+
+    CodeBlock *block;
+
+    int tagbody;		/* Inside a tagbody block? */
+    int level;			/* Nesting level */
+    int macro;			/* Expanding a macro? */
+
+    int warnings;
+
+    LispObj *form;
+
+    struct {
+	int cstack;	/* Current number of objects in forms evaluation */
+	int cbstack;
+	int cpstack;
+	int stack;	/* max number of objects will be loaded in stack */
+	int bstack;
+	int pstack;
+    } stack;
+
+    struct {
+	/* Constant table */
+	LispObj **constants;
+	int num_constants;
+	/* Symbol table */
+	LispAtom **symbols;
+	int num_symbols;
+	/* Builtin table */
+	LispBuiltin **builtins;
+	int num_builtins;
+    } table;
+};
+
+/*
+ * Prototypes
+ */
+static LispObj *MakeBytecodeObject(LispMac*, LispCom*, LispObj*);
+
+static CodeTree *CompileNewTree(LispCom*, CodeTreeType);
+static void CompileFreeState(LispCom*);
+static void CompileFreeBlock(LispMac*, CodeBlock*);
+static void CompileFreeTree(LispMac*, CodeTree*);
+
+static void CompileIniBlock(LispCom*, LispBlockType, LispObj*);
+static void CompileFiniBlock(LispCom*);
+
+
+static void com_BytecodeChar(LispCom*, LispByteOpcode, char);
+static void com_BytecodeShort(LispCom*, LispByteOpcode, short);
+static void com_BytecodeObject(LispCom*, LispByteOpcode, LispObj*);
+static void com_BytecodeCons(LispCom*, LispByteOpcode, LispObj*, LispObj*);
+
+static void com_BytecodeAtom(LispCom*, LispByteOpcode, LispAtom*);
+
+static void com_Bytecode(LispCom*, LispByteOpcode);
+
+static void com_Load(LispCom*, short);
+static void com_LoadLet(LispCom*, short, LispAtom*);
+static void com_LoadPush(LispCom*, short);
+
+static void com_Let(LispCom*, LispAtom*);
+
+static void com_Bind(LispCom*, short);
+static void com_Unbind(LispCom*, short);
+
+static void com_LoadSym(LispCom*, LispAtom*);
+static void com_LoadSymLet(LispCom*, LispAtom*, LispAtom*);
+static void com_LoadSymPush(LispCom*, LispAtom*);
+
+static void com_LoadCon(LispCom*, LispObj*);
+static void com_LoadConLet(LispCom*, LispObj*, LispAtom*);
+static void com_LoadConPush(LispCom*, LispObj*);
+
+static void com_Set(LispCom*, short);
+static void com_SetSym(LispCom*, LispAtom*);
+
+static void com_Struct(LispCom*, short, LispObj*);
+static void com_Structp(LispCom*, LispObj*);
+
+static void com_Call(LispCom*, unsigned char, LispBuiltin*);
+static void com_Funcall(LispCom*, LispObj*, LispObj*);
+
+static void CompileStackEnter(LispCom*, int, int);
+static void CompileStackLeave(LispCom*, int, int);
+
+static void LinkBytecode(LispCom*);
+
+static LispObj *ExecuteBytecode(LispMac*, unsigned char*);
+
+
+/* Defined in lisp.c */
+void LispMoreStack(LispMac*);
+void LispMoreEnvironment(LispMac*);
+void LispMoreGlobals(LispMac*, LispPackage*);
+LispObj *LispEvalBackquote(LispMac*, LispObj*, int);
+void LispSetAtomObjectProperty(LispMac*, LispAtom*, LispObj*);
+
+/*
+ * Initialization
+ */
+extern int pagesize;
+
+LispObj x_cons[8];
+static LispObj *cons, *cons1, *cons2, *cons3, *cons4, *cons5, *cons6, *cons7;
+
+/*
+ * Implementation
+ */
+#include "compile.c"
+
+void
+LispBytecodeInit(LispMac *mac)
+{
+    cons = &x_cons[7];
+    cons->type = LispCons_t;
+    CDR(cons) = NIL;
+    cons1 = &x_cons[6];
+    cons1->type = LispCons_t;
+    CDR(cons1) = cons;
+    cons2 = &x_cons[5];
+    cons2->type = LispCons_t;
+    CDR(cons2) = cons1;
+    cons3 = &x_cons[4];
+    cons3->type = LispCons_t;
+    CDR(cons3) = cons2;
+    cons4 = &x_cons[3];
+    cons4->type = LispCons_t;
+    CDR(cons4) = cons3;
+    cons5 = &x_cons[2];
+    cons5->type = LispCons_t;
+    CDR(cons5) = cons4;
+    cons6 = &x_cons[1];
+    cons6->type = LispCons_t;
+    CDR(cons6) = cons5;
+    cons7 = &x_cons[0];
+    cons7->type = LispCons_t;
+    CDR(cons7) = cons6;
+}
+
+LispObj *
+Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
+/*
+ compile name &optional definition
+ */
+{
+    GC_ENTER();
+    LispObj *result, *warnings_p, *failure_p;
+
+    LispObj *name, *definition;
+
+    definition = ARGUMENT(1);
+    name = ARGUMENT(0);
+
+    result = name;
+    warnings_p = NIL;
+    failure_p = T;
+
+    if (name != NIL) {
+	LispAtom *atom;
+
+	ERROR_CHECK_SYMBOL(name);
+	atom = name->data.atom;
+	if (atom->a_builtin || atom->a_compiled)
+	    goto finished_compilation;
+	else if (atom->a_function) {
+	    LispCom com;
+	    int lex, base;
+	    LispArgList *alist;
+	    LispObj *lambda, *form, *arguments;
+
+	    lambda = atom->property->fun.function;
+	    if (definition != NIL || lambda->data.lambda.type != LispFunction)
+		/* XXX TODO replace definition etc. */
+		goto finished_compilation;
+	    alist = atom->property->alist;
+
+	    memset(&com, 0, sizeof(LispCom));
+	    com.mac = mac;
+	    com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
+	    com.block->type = LispBlockClosure;
+	    com.block->tag = name;
+
+	    /*  Create a fake argument list to avoid yet another flag
+	     * for ComCall. The value does not matter, just the fact
+	     * that the symbol will be bound or not in the implicit
+	     * PROGN of the function body. */
+	    base = alist->num_arguments - alist->auxs.num_symbols;
+	    if (base) {
+		arguments = form = CONS(NIL, NIL);
+		GC_PROTECT(arguments);
+		for (--base; base > 0; base--) {
+		    CDR(form) = CONS(NIL, NIL);
+		    form = CDR(form);
+		}
+	    }
+	    else
+		arguments = NIL;
+
+	    lambda = CDR(lambda->data.lambda.code);
+	    form = CONS(lambda, NIL);
+	    GC_PROTECT(form);
+	    com.form = form;
+
+	    /* Save interpreter state */
+	    lex = mac->env.lex;
+	    base = ComCall(&com, alist, name, arguments, 1, 0, 1);
+
+	    /* Generate code tree */
+	    mac->env.lex = base;
+	    ComProgn(&com, lambda);
+
+	    /* Restore interpreter state */
+	    mac->env.lex = lex;
+	    mac->env.head = mac->env.length = base;
+
+	    failure_p = NIL;
+	    result = MakeBytecodeObject(mac, &com, CAR(form));
+	    LispSetAtomCompiledProperty(mac, atom, result);
+	    result = name;
+	    if (com.warnings)
+		warnings_p = SMALLINT(com.warnings);
+	    goto finished_compilation;
+	}
+	else
+	    goto undefined_function;
+    }
+
+undefined_function:
+    LispDestroy(mac, "%s: the function %s is undefined",
+		STRFUN(builtin), STROBJ(name));
+
+finished_compilation:
+    RETURN_CHECK(2);
+    RETURN(0) = warnings_p;
+    RETURN(1) = failure_p;
+    RETURN_COUNT = 2;
+    GC_LEAVE();
+
+    return (result);
+}
+
+LispObj *
+Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
+/*
+ disassemble function
+ */
+{
+    int macro;
+    char buffer[128];
+    LispAtom *atom;
+    LispArgList *alist;
+    LispBuiltin *xbuiltin;
+    LispObj *name, *lambda, *bytecode;
+
+    LispObj *function;
+
+    function = ARGUMENT(0);
+
+    macro = 0;
+    alist = NULL;
+    xbuiltin = NULL;
+    name = bytecode = NULL;
+
+    switch (function->type) {
+	case LispAtom_t:
+	    name = function;
+	    atom = function->data.atom;
+	    alist = atom->property->alist;
+	    if (atom->a_builtin) {
+		xbuiltin = atom->property->fun.builtin;
+		macro = xbuiltin->type == LispMacro;
+	    }
+	    else if (atom->a_compiled)
+		bytecode = atom->property->fun.function;
+	    else if (atom->a_function) {
+		lambda = atom->property->fun.function;
+		macro = lambda->data.lambda.type == LispMacro;
+	    }
+	    else if (atom->a_defstruct &&
+		     atom->property->structure.function != STRUCT_NAME) {
+		if (atom->property->structure.function == STRUCT_CONSTRUCTOR)
+		    atom = Omake_struct->data.atom;
+		else if (atom->property->structure.function == STRUCT_CHECK)
+		    atom = Ostruct_type->data.atom;
+		else
+		    atom = Ostruct_access->data.atom;
+		xbuiltin = atom->property->fun.builtin;
+	    }
+	    else
+		LispDestroy(mac, "%s: the function %s is not defined",
+			    STRFUN(builtin), STROBJ(function));
+	    break;
+	case LispBytecode_t:
+	    name = Olambda;
+	    bytecode = function;
+	    break;
+	case LispLambda_t:
+	    name = Olambda;
+	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
+	    break;
+	case LispCons_t:
+	    if (CAR(function) == Olambda) {
+		function = EVAL(function);
+		if (function->type == LispLambda_t) {
+		    name = Olambda;
+		    alist = (LispArgList*)
+			function->data.lambda.name->data.opaque.data;
+		    break;
+		}
+	    }
+	default:
+	    LispDestroy(mac, "%s: %s is not a function",
+			STRFUN(builtin), STROBJ(function));
+	    break;
+    }
+
+    if (xbuiltin) {
+	LispWriteStr(mac, NIL, "Builtin ", 8);
+	if (macro)
+	    LispWriteStr(mac, NIL, "macro ", 6);
+	else
+	    LispWriteStr(mac, NIL, "function ", 9);
+    }
+    else if (macro)
+	LispWriteStr(mac, NIL, "Macro ", 6);
+    else
+	LispWriteStr(mac, NIL, "Function ", 9);
+    LispWriteAtom(mac, NIL, name);
+    LispWriteStr(mac, NIL, ":\n", 2);
+
+    if (alist) {
+	int i;
+
+	sprintf(buffer, "%d required argument%s",
+		alist->normals.num_symbols,
+		alist->normals.num_symbols != 1 ? "s" : "");
+	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	for (i = 0; i < alist->normals.num_symbols; i++) {
+	    LispWriteChar(mac, NIL, i ? ',' : ':');
+	    LispWriteChar(mac, NIL, ' ');
+	    LispWriteStr(mac, NIL, STRPTR(alist->normals.symbols[i]),
+			 strlen(STRPTR(alist->normals.symbols[i])));
+	}
+	LispWriteChar(mac, NIL, '\n');
+
+	sprintf(buffer, "%d optional argument%s",
+		alist->optionals.num_symbols,
+		alist->optionals.num_symbols != 1 ? "s" : "");
+	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	for (i = 0; i < alist->optionals.num_symbols; i++) {
+	    LispWriteChar(mac, NIL, i ? ',' : ':');
+	    LispWriteChar(mac, NIL, ' ');
+	    LispWriteStr(mac, NIL, STRPTR(alist->optionals.symbols[i]),
+			 strlen(STRPTR(alist->optionals.symbols[i])));
+	}
+	LispWriteChar(mac, NIL, '\n');
+
+	sprintf(buffer, "%d keyword parameter%s",
+		alist->keys.num_symbols,
+		alist->keys.num_symbols != 1 ? "s" : "");
+	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	for (i = 0; i < alist->keys.num_symbols; i++) {
+	    LispWriteChar(mac, NIL, i ? ',' : ':');
+	    LispWriteChar(mac, NIL, ' ');
+	    LispWriteAtom(mac, NIL, alist->keys.symbols[i]);
+	}
+	LispWriteChar(mac, NIL, '\n');
+
+	if (alist->rest) {
+	    LispWriteStr(mac, NIL, "Rest argument: ", 15);
+	    LispWriteStr(mac, NIL, STRPTR(alist->rest),
+			 strlen(STRPTR(alist->rest)));
+	    LispWriteChar(mac, NIL, '\n');
+	}
+	else
+	    LispWriteStr(mac, NIL, "No rest argument\n", 17);
+    }
+
+    if (bytecode) {
+	char *ptr;
+	int *offsets[4];
+	int i, done, j, sym0, sym1, con0, con1, bui0, strd, strf;
+	LispObj **constants;
+	LispAtom **symbols;
+	LispBuiltin **builtins;
+	short stack, num_constants, num_symbols, num_builtins;
+	unsigned char *base, *stream = bytecode->data.bytecode.bytecode->code;
+
+	LispWriteStr(mac, NIL, "\nBytecode header:\n", 18);
+
+	/* Header information */
+	stack = *(short*)stream;
+	stream += sizeof(short);
+	sprintf(buffer, "%d element%s used in the stack\n",
+		stack, stack != 1 ? "s" : "");
+	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	stack = *(short*)stream;
+	stream += sizeof(short);
+	sprintf(buffer, "%d element%s used in the builtin stack\n",
+		stack, stack != 1 ? "s" : "");
+	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	stack = *(short*)stream;
+	stream += sizeof(short);
+	sprintf(buffer, "%d element%s used in the protected stack\n",
+		stack, stack != 1 ? "s" : "");
+	LispWriteStr(mac, NIL, buffer, strlen(buffer));
+
+	num_constants = *(short*)stream;
+	stream += sizeof(short);
+	num_symbols = *(short*)stream;
+	stream += sizeof(short);
+	num_builtins = *(short*)stream;
+	stream += sizeof(short);
+
+	constants = (LispObj**)stream;
+	stream += num_constants * sizeof(LispObj*);
+	symbols = (LispAtom**)stream;
+	stream += num_symbols * sizeof(LispAtom*);
+	builtins = (LispBuiltin**)stream;
+	stream += num_builtins * sizeof(LispBuiltin*);
+
+	for (i = 0; i < num_constants; i++) {
+	    sprintf(buffer, "Constant %d = %s\n", i, STROBJ(constants[i]));
+	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	}
+
+/* Macro XSTRING avoids some noisy in the output, if it were defined as
+ * #define XSTRING(object) object ? STROBJ(object) : #<UNBOUND>
+ *	and called as XSTRING(atom->object)
+ * it would also print the package name were the symbol was first defined,
+ * but for local variables, only the symbol string is important. */
+#define XSTRING(string)		string ? string : "#<UNBOUND>"
+
+	for (i = 0; i < num_symbols; i++) {
+	    sprintf(buffer, "Symbol %d = %s\n",
+		    i, XSTRING(symbols[i]->string));
+	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	}
+	for (i = 0; i < num_builtins; i++) {
+	    sprintf(buffer, "Builtin %d = %s\n",
+		    i, STROBJ(CAR(builtins[i]->description)));
+	    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+	}
+
+	/*  Make readability slightly easier printing the names of local
+	 * variables where it's offset is known, i.e. function arguments. */
+	if (alist) {
+	    if (alist->num_arguments == 0)
+		LispWriteStr(mac, NIL, "\nNo initial stack\n", 18);
+	    else {
+		int len1, len2;
+
+		j = 0;
+		LispWriteStr(mac, NIL, "\nInitial stack:\n", 16);
+
+		for (i = 0; i < alist->normals.num_symbols; i++, j++) {
+		    sprintf(buffer, "%d = ", j);
+		    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+		    ptr = alist->normals.symbols[i]->data.atom->string;
+		    LispWriteStr(mac, NIL, ptr, strlen(ptr));
+		    LispWriteChar(mac, NIL, '\n');
+		}
+
+		for (i = 0; i < alist->optionals.num_symbols; i++, j++) {
+		    sprintf(buffer, "%d = ", j);
+		    LispWriteStr(mac, NIL, buffer, strlen(buffer));
+		    ptr = alist->optionals.symbols[i]->data.atom->string;
+		    LispWriteStr(mac, NIL, ptr, strlen(ptr));
+		    LispWriteChar(mac, NIL, '\n');
+		    if (alist->optionals.sforms[i]) {
+			sprintf(buffer, "%d = ", j);
+			len1 = strlen(buffer);
+			LispWriteStr(mac, NIL, buffer, len1);
+			ptr = alist->optionals.sforms[i]->data.atom->string;
+			len2 = strlen(ptr);
+			LispWriteStr(mac, NIL, ptr, len2);
+			LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
+			LispWriteStr(mac, NIL, ";  sform\n", 9);
+			j++;
+		    }
+		}
+
+		for (i = 0; i < alist->keys.num_symbols; i++, j++) {
+		    sprintf(buffer, "%d = ", j);
+		    len1 = strlen(buffer);
+		    LispWriteStr(mac, NIL, buffer, len1);
+		    if (alist->keys.keys[i]) {
+			ptr = alist->keys.keys[i]->data.atom->string;
+			len2 = strlen(ptr);
+			LispWriteStr(mac, NIL, ptr, strlen(ptr));
+			LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
+			LispWriteStr(mac, NIL, ";  special key", 14);
+		    }
+		    else {
+			ptr = alist->keys.symbols[i]->data.atom->string;
+			LispWriteStr(mac, NIL, ptr, strlen(ptr));
+		    }
+		    LispWriteChar(mac, NIL, '\n');
+		    if (alist->keys.sforms[i]) {
+			sprintf(buffer, "%d = ", j);
+			len1 = strlen(buffer);
+			LispWriteStr(mac, NIL, buffer, len1);
+			ptr = alist->keys.sforms[i]->data.atom->string;
+			len2 = strlen(ptr);
+			LispWriteStr(mac, NIL, ptr, len2);
+			LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
+			LispWriteStr(mac, NIL, ";  sform\n", 9);
+			j++;
+		    }
+		}
+
+		if (alist->rest) {
+		    sprintf(buffer, "%d = ", j);
+		    len1 = strlen(buffer);
+		    LispWriteStr(mac, NIL, buffer, len1);
+		    ptr = alist->rest->data.atom->string;
+		    len2 = strlen(ptr);
+		    LispWriteStr(mac, NIL, ptr, len2);
+		    LispWriteChar(mac, NIL, '\n');
+		    j++;
+		}
+
+		for (i = 0; i < alist->auxs.num_symbols; i++, j++) {
+		    sprintf(buffer, "%d = ", j);
+		    len1 = strlen(buffer);
+		    LispWriteStr(mac, NIL, buffer, len1);
+		    ptr = alist->auxs.symbols[i]->data.atom->string;
+		    len2 = strlen(ptr);
+		    LispWriteStr(mac, NIL, ptr, len2);
+		    LispWriteChars(mac, NIL, ' ', 28 - (len1 + len2));
+		    LispWriteStr(mac, NIL, ";  aux\n", 7);
+		}
+	    }
+	}
+
+	LispWriteStr(mac, NIL, "\nBytecode stream:\n", 18);
+
+	base = stream;
+	for (done = j = 0; !done; j = 0) {
+	    sym0 = sym1 = con0 = con1 = bui0 = strd = strf = -1;
+	    sprintf(buffer, "%4ld  ", (long)(stream - base));
+	    ptr = buffer + strlen(buffer);
+	    switch (*stream++) {
+#ifdef LONG64
+		case XBC_NOOP6:	strcpy(ptr, "NOOP6");	stream += 6; break;
+		case XBC_NOOP5:	strcpy(ptr, "NOOP5");	stream += 5; break;
+		case XBC_NOOP4:	strcpy(ptr, "NOOP4");	stream += 4; break;
+		case XBC_NOOP3:	strcpy(ptr, "NOOP3");	stream += 3; break;
+#endif
+		case XBC_NOOP2:	strcpy(ptr, "NOOP2");	stream += 2; break;
+		case XBC_NOOP1:	strcpy(ptr, "NOOP1");	++stream;    break;
+		case XBC_NOOP:	strcpy(ptr, "NOOP");		     break;
+		case XBC_PRED:
+		    strcpy(ptr, "PRED:");
+		    ptr += strlen(ptr);
+		    goto predicate;
+		case XBC_INV:	strcpy(ptr, "INV");	break;
+		case XBC_NIL:	strcpy(ptr, "NIL");	break;
+		case XBC_T:	strcpy(ptr, "NIL");	break;
+		case XBC_CAR:	strcpy(ptr, "CAR");	break;
+		case XBC_CDR:	strcpy(ptr, "CDR");	break;
+		case XBC_RPLACA:strcpy(ptr, "RPLACA");	break;
+		case XBC_RPLACD:strcpy(ptr, "RPLACD");	break;
+		case XBC_EQ:	strcpy(ptr, "EQ");	break;
+		case XBC_EQL:	strcpy(ptr, "EQL");	break;
+		case XBC_EQUAL:	strcpy(ptr, "EQUAL");	break;
+		case XBC_EQUALP:strcpy(ptr, "EQUALP");	break;
+		case XBC_LENGTH:strcpy(ptr, "LENGTH");	break;
+		case XBC_LAST:	strcpy(ptr, "LAST");	break;
+		case XBC_NTHCDR:strcpy(ptr, "NTHCDR");	break;
+		case XBC_PUSH:	strcpy(ptr, "PUSH");	break;
+		case XBC_CAR_PUSH:
+		    strcpy(ptr, "CAR&PUSH");
+		    break;
+		case XBC_CDR_PUSH:
+		    strcpy(ptr, "CDR&PUSH");
+		    break;
+		case XBC_PUSH_NIL:
+		    strcpy(ptr, "PUSH NIL");
+		    break;
+		case XBC_PUSH_T:
+		    strcpy(ptr, "PUSH T");
+		    break;
+		case XBC_PUSH_NIL_N:
+		    strcpy(ptr, "PUSH NIL ");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, "%d", (int)(*stream++));
+		    break;
+		case XBC_LET:
+		    strcpy(ptr, "LET");
+/* update sym0 */
+symbol:
+		    offsets[j++] = &sym0;
+/* update <offsets> - print [short] */
+offset:
+		    ptr += strlen(ptr);
+		    i = *(short*)stream;
+		    *(offsets[j - 1]) = i;
+		    stream += sizeof(short);
+		    sprintf(ptr, " [%d]", i);
+		    break;
+		case XBC_LETX:
+		    strcpy(ptr, "LET*");
+		    goto symbol;
+		case XBC_LET_NIL:
+		    strcpy(ptr, "LET NIL");
+		    goto symbol;
+		case XBC_LETX_NIL:
+		    strcpy(ptr, "LET* NIL");
+		    goto symbol;
+		case XBC_LETBIND:
+		    strcpy(ptr, "LETBIND");
+/* print short */
+value:
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " %d", (int)(*(short*)stream));
+		    stream += sizeof(short);
+		    break;
+		case XBC_UNLET:strcpy(ptr, "UNLET");	goto value;
+		case XBC_LOAD:
+		    strcpy(ptr, "LOAD");
+/* print (short) */
+reference:
+		    ptr += strlen(ptr);
+		    i = *(short*)stream;
+		    stream += sizeof(short);
+		    sprintf(ptr, " (%d)", i);
+		    break;
+		case XBC_LOAD_CAR:
+		    strcpy(ptr, "LOAD&CAR");
+		    goto reference;
+		case XBC_LOAD_CDR:
+		    strcpy(ptr, "LOAD&CDR");
+		    goto reference;
+		case XBC_LOAD_CAR_STORE:
+		    strcpy(ptr, "LOAD&CAR&STORE");
+		    goto reference;
+		case XBC_LOAD_CDR_STORE:
+		    strcpy(ptr, "LOAD&CDR&STORE");
+		    goto reference;
+		case XBC_LOAD_LET:
+		    strcpy(ptr, "LOAD&LET");
+load_let:
+		    offsets[j++] = &sym0;
+		    i = *(short*)stream;
+		    stream += sizeof(short);
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " (%d)", i);
+		    goto offset;
+		case XBC_LOAD_LETX:
+		    strcpy(ptr, "LOAD&LET*");
+		    goto load_let;
+		case XBC_STRUCT:
+		    strcpy(ptr, "STRUCT");
+		    offsets[j++] = &strf;
+		    offsets[j++] = &strd;
+/* update <offsets> - print [short] - update <offsets> - print [short] */
+offset_offset:
+		    ptr += strlen(ptr);
+		    i = *(short*)stream;
+		    *(offsets[j - 2]) = i;
+		    stream += sizeof(short);
+		    sprintf(ptr, " [%d]", i);
+		    goto offset;
+		case XBC_LOAD_PUSH:
+		    strcpy(ptr, "LOAD&PUSH");
+		    goto reference;
+		case XBC_LOADCON:
+		    strcpy(ptr, "LOADCON");
+constant:
+		    offsets[j++] = &con0;
+		    goto offset;
+		case XBC_LOADCON_SET:
+		    strcpy(ptr, "LOADCON&SET");
+		    offsets[j++] = &con0;
+/* update <offsets> - print [short] - print (short) */
+offset_reference:
+		    i = *(short*)stream;
+		    stream += sizeof(short);
+		    *(offsets[j - 1]) = i;
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " [%d]", i);
+		    goto reference;
+		case XBC_STRUCTP:
+		    strcpy(ptr, "STRUCTP");
+		    offsets[j++] = &strd;
+		    goto offset;
+		case XBC_LOADCON_LET:
+		    strcpy(ptr, "LOADCON&LET");
+loadcon_let:
+		    offsets[j++] = &con0;
+		    offsets[j++] = &sym0;
+		    goto offset_offset;
+		case XBC_LOADCON_LETX:
+		    strcpy(ptr, "LOADCON&LET*");
+		    goto loadcon_let;
+		case XBC_LOADCON_PUSH:
+		    strcpy(ptr, "LOADCON&PUSH");
+		    goto constant;
+		case XBC_LOADSYM:
+		    strcpy(ptr, "LOADSYM");
+		    goto symbol;
+		case XBC_LOADSYM_LET:
+		    strcpy(ptr, "LOADSYM&LET");
+loadsym_let:
+		    offsets[j++] = &sym0;
+		    offsets[j++] = &sym1;
+		    goto offset_offset;
+		case XBC_LOADSYM_LETX:
+		    strcpy(ptr, "LOADSYM&LET*");
+		    goto loadsym_let;
+		case XBC_LOADSYM_PUSH:
+		    strcpy(ptr, "LOADSYM&PUSH");
+		    goto symbol;
+		case XBC_LOAD_SET:
+		    strcpy(ptr, "LOAD&SET");
+/* print (short) - print (short) */
+reference_reference:
+		    ptr += strlen(ptr);
+		    i = *(short*)stream;
+		    stream += sizeof(short);
+		    sprintf(ptr, " (%d)", i);
+		    goto reference;
+		case XBC_LOAD_CAR_SET:
+		    strcpy(ptr, "LOAD&CAR&SET");
+		    goto reference_reference;
+		case XBC_LOAD_CDR_SET:
+		    strcpy(ptr, "LOAD&CDR&SET");
+		    goto reference_reference;
+		case XBC_CAR_SET:
+		    strcpy(ptr, "CAR&SET");
+		    goto reference;
+		case XBC_CDR_SET:
+		    strcpy(ptr, "CDR&SET");
+		    goto reference;
+		case XBC_SET:
+		    strcpy(ptr, "SET");
+		    goto reference;
+		case XBC_SETSYM:
+		    strcpy(ptr, "SETSYM");
+		    goto symbol;
+		case XBC_SET_NIL:
+		    strcpy(ptr, "SET NIL");
+		    goto reference;
+		case XBC_CALL:
+		    strcpy(ptr, "CALL");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " %d", (int)(*stream++));
+		    offsets[j++] = &bui0;
+		    goto offset;
+		case XBC_CALL_SET:
+		    strcpy(ptr, "CALL&SET");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " %d", (int)(*stream++));
+		    offsets[j++] = &bui0;
+		    goto offset_reference;
+		case XBC_FUNCALL:
+		    strcpy(ptr, "FUNCALL");
+constant_constant:
+		    offsets[j++] = &con0;
+		    offsets[j++] = &con1;
+		    goto offset_offset;
+		case XBC_CCONS:
+		    strcpy(ptr, "CCONS");
+		    goto constant_constant;
+		case XBC_CSTAR:	strcpy(ptr, "CSTAR");	break;
+		case XBC_CFINI:	strcpy(ptr, "CFINI");	break;
+		case XBC_LSTAR:	strcpy(ptr, "LSTAR");	break;
+		case XBC_LCONS:	strcpy(ptr, "LCONS");	break;
+		case XBC_LFINI:	strcpy(ptr, "LFINI");	break;
+		case XBC_BCONS:	strcpy(ptr, "BCONS");	break;
+		case XBC_BCONS1:	case XBC_BCONS2:	case XBC_BCONS3:
+		case XBC_BCONS4:	case XBC_BCONS5:	case XBC_BCONS6:
+		case XBC_BCONS7:
+		    strcpy(ptr, "BCONS");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, "%d", (int)(stream[-1] - XBC_BCONS));
+		    break;
+		case XBC_JUMP:
+		    strcpy(ptr, "JUMP");
+integer:
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " %d", *(int*)stream);
+		    stream += sizeof(int);
+		    break;
+		case XBC_JUMPT:
+		    strcpy(ptr, "JUMPT");
+		    goto integer;
+		case XBC_JUMPNIL:
+		    strcpy(ptr, "JUMPNIL");
+		    goto integer;
+		case XBC_LETREC:
+		    strcpy(ptr, "LETREC");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, " %d", (int)*stream++);
+		    break;
+		case XBC_RETURN:
+		    strcpy(ptr, "RETURN");
+		    done = 1;
+		    break;
+	    }
+	    i = ptr - buffer + strlen(ptr);
+	    LispWriteStr(mac, NIL, buffer, i);
+	    if (j) {
+
+		/* Pad */
+		LispWriteChars(mac, NIL, ' ', 28 - i);
+		LispWriteChar(mac, NIL, ';');
+
+		ptr = buffer;
+
+		/* Structure */
+		if (strf >= 0) {
+		    /* strd is valid if strf set */
+		    LispObj *fields = constants[strd];
+
+		    for (; strf >= 0; strf--)
+			fields = CDR(fields);		    
+		    strcpy(ptr, "  ");	    ptr += 2;
+		    strcpy(ptr, CAR(fields)->data.atom->string);
+		    ptr += strlen(ptr);
+		}
+		if (strd >= 0) {
+		    strcpy(ptr, "  ");		ptr += 2;
+		    strcpy(ptr, STROBJ(CAR(constants[strd])));
+		    ptr += strlen(ptr);
+		}
+
+		/* Constants */
+		if (con0 >= 0) {
+		    strcpy(ptr, "  ");	ptr += 2;
+		    strcpy(ptr, STROBJ(constants[con0]));
+		    ptr += strlen(ptr);
+		    if (con1 >= 0) {
+			strcpy(ptr, "  ");	ptr += 2;
+			strcpy(ptr, STROBJ(constants[con1]));
+			ptr += strlen(ptr);
+		    }
+		}
+
+		/* Builtin */
+		if (bui0 >= 0) {
+		    strcpy(ptr, "  ");	ptr += 2;
+		    strcpy(ptr, STROBJ(CAR(builtins[bui0]->description)));
+		    ptr += strlen(ptr);
+		}
+
+		/* Symbols */
+		if (sym0 >= 0) {
+		    strcpy(ptr, "  ");	ptr += 2;
+		    strcpy(ptr, XSTRING(symbols[sym0]->string));
+		    ptr += strlen(ptr);
+		    if (sym1 >= 0) {
+			strcpy(ptr, "  ");	ptr += 2;
+			strcpy(ptr, XSTRING(symbols[sym1]->string));
+			ptr += strlen(ptr);
+		    }
+		}
+
+		i = ptr - buffer;
+		LispWriteStr(mac, NIL, buffer, i);
+	    }
+	    LispWriteChar(mac, NIL, '\n');
+	    continue;
+predicate:
+	    switch (*stream++) {
+		case XBP_CONSP:     strcpy(ptr, "CONSP");   break;
+		case XBP_LISTP:     strcpy(ptr, "LISTP");   break;
+		case XBP_NUMBERP:   strcpy(ptr, "NUMBERP"); break;
+	    }
+	    LispWriteStr(mac, NIL, buffer, ptr - buffer + strlen(ptr));
+	    LispWriteChar(mac, NIL, '\n');
+	}
+#undef XSTRING
+    }
+
+    return (function);
+}
+
+
+
+LispObj *
+LispCompileForm(LispMac *mac, LispObj *form)
+{
+    LispCom com;
+    LispObj *code;
+
+    if (!CONS_P(form))
+	/* Incorrect call or NIL */
+	return (form);
+
+    memset(&com, 0, sizeof(LispCom));
+
+    com.mac = mac;
+    com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
+    com.block->type = LispBlockNone;
+
+    for (code = form; CONS_P(form); form = CDR(form)) {
+	com.form = form;
+	ComEval(&com, CAR(form));
+    }
+
+    return (MakeBytecodeObject(mac, &com, form));
+}
+
+LispObj *
+LispExecuteBytecode(LispMac *mac, LispObj *object)
+{
+    if (object->type != LispBytecode_t)
+	return (EVAL(object));
+
+    return (ExecuteBytecode(mac, object->data.bytecode.bytecode->code));
+}
+
+static LispObj *
+MakeBytecodeObject(LispMac *mac, LispCom *com, LispObj *code)
+{
+    LispObj *object;
+    LispBytecode *bytecode;
+
+    /* Resolve dependencies, optimize and create byte stream */
+    LinkBytecode(com);
+
+    /* Free everything, but the LispCom structure and the generated bytecode */
+    CompileFreeState(com);
+
+    object = LispNew(mac, NIL, NIL);
+    bytecode = LispMalloc(mac, sizeof(LispBytecode));
+    bytecode->code = com->bytecode;
+    bytecode->length = com->length;
+
+    object->data.bytecode.bytecode = bytecode;
+    /* Byte code references this object, so it cannot be garbage collected */
+    object->data.bytecode.code = code;
+    object->type = LispBytecode_t;
+
+    LispMused(mac, bytecode);
+    LispMused(mac, bytecode->code);
+
+    return (object);
+}
+
+static void
+CompileFreeTree(LispMac *mac, CodeTree *tree)
+{
+    if (tree->type == CodeTreeBlock)
+	CompileFreeBlock(mac, tree->data.block);
+    LispFree(mac, tree);
+}
+
+static void
+CompileFreeBlock(LispMac *mac, CodeBlock *block)
+{
+    CodeTree *tree = block->tree, *next;
+
+    while (tree) {
+	next = tree->next;
+	CompileFreeTree(mac, tree);
+	tree = next;
+    }
+    if (block->type == LispBlockBody) {
+	LispFree(mac, block->tagbody.labels);
+	LispFree(mac, block->tagbody.codes);
+    }
+    LispFree(mac, block->variables.symbols);
+    LispFree(mac, block->variables.flags);
+    LispFree(mac, block);
+}
+
+static void
+CompileFreeState(LispCom *com)
+{
+    CompileFreeBlock(com->mac, com->block);
+    LispFree(com->mac, com->table.constants);
+    LispFree(com->mac, com->table.symbols);
+    LispFree(com->mac, com->table.builtins);
+}
+
+/* XXX Put a breakpoint here when changing the macro expansion code.
+ *     No opcodes should be generated during macro expansion. */
+static CodeTree *
+CompileNewTree(LispCom *com, CodeTreeType type)
+{
+    CodeTree *tree = LispMalloc(com->mac, sizeof(CodeTree));
+
+    tree->type = type;
+    tree->next = NULL;
+    tree->block = com->block;
+    if (com->block->tree == NULL)
+	com->block->tree = tree;
+    else
+	com->block->tail->next = tree;
+    com->block->tail = tree;
+
+    return (tree);
+}
+
+static void
+CompileIniBlock(LispCom *com, LispBlockType type, LispObj *tag)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBlock);
+    CodeBlock *block = LispCalloc(com->mac, 1, sizeof(CodeBlock));
+
+    tree->data.block = block;
+
+    block->type = type;
+    block->tag = tag;
+    block->prev = com->block;
+    block->parent = tree;
+    block->level = com->level;
+    com->block = block;
+
+    if (type == LispBlockBody)
+	com->tagbody = com->level;
+}
+
+static void
+CompileFiniBlock(LispCom *com)
+{
+    com->block = com->block->prev;
+    if (com->block && com->block->type == LispBlockBody)
+	com->tagbody = com->block->level;
+}
+
+static void
+com_BytecodeChar(LispCom *com, LispByteOpcode code, char value)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = code;
+    tree->data.signed_char = value;
+}
+
+static void
+com_BytecodeShort(LispCom *com, LispByteOpcode code, short value)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = code;
+    tree->data.signed_short = value;
+}
+
+static void
+com_BytecodeAtom(LispCom *com, LispByteOpcode code, LispAtom *atom)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = code;
+    tree->data.atom = atom;
+}
+
+static void
+com_BytecodeObject(LispCom *com, LispByteOpcode code, LispObj *object)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = code;
+    tree->data.object = object;
+}
+
+static void
+com_BytecodeCons(LispCom *com, LispByteOpcode code, LispObj *car, LispObj *cdr)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = code;
+    tree->data.cons.car = car;
+    tree->data.cons.cdr = cdr;
+}
+
+static void
+com_Bytecode(LispCom *com, LispByteOpcode code)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = code;
+}
+
+static void
+com_Load(LispCom *com, short offset)
+{
+    com_BytecodeShort(com, XBC_LOAD, offset);
+}
+
+static void
+com_LoadLet(LispCom *com, short offset, LispAtom *name)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = XBC_LOAD_LET;
+    tree->data.let.offset = offset;
+    tree->data.let.name = name;
+}
+
+static void
+com_LoadPush(LispCom *com, short offset)
+{
+    com_BytecodeShort(com, XBC_LOAD_PUSH, offset);
+}
+
+static void
+com_Let(LispCom *com, LispAtom *name)
+{
+    com_BytecodeAtom(com, XBC_LET, name);
+}
+
+static void
+com_Bind(LispCom *com, short count)
+{
+    if (count)
+	com_BytecodeShort(com, XBC_LETBIND, count);
+}
+
+static void
+com_Unbind(LispCom *com, short count)
+{
+    if (count)
+	com_BytecodeShort(com, XBC_UNLET, count);
+}
+
+static void
+com_LoadSym(LispCom *com, LispAtom *atom)
+{
+    com_BytecodeAtom(com, XBC_LOADSYM, atom);
+}
+
+static void
+com_LoadSymLet(LispCom *com, LispAtom *symbol, LispAtom *name)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = XBC_LOADSYM_LET;
+    tree->data.let_sym.symbol = symbol;
+    tree->data.let_sym.name = name;
+}
+
+static void
+com_LoadSymPush(LispCom *com, LispAtom *name)
+{
+    com_BytecodeAtom(com, XBC_LOADSYM_PUSH, name);
+}
+
+static void
+com_LoadCon(LispCom *com, LispObj *constant)
+{
+    if (constant == NIL)
+	com_Bytecode(com, XBC_NIL);
+    else if (constant == T)
+	com_Bytecode(com, XBC_T);
+    else
+	com_BytecodeObject(com, XBC_LOADCON, constant);
+}
+
+static void
+com_LoadConLet(LispCom *com, LispObj *constant, LispAtom *name)
+{
+    if (constant == NIL)
+	com_BytecodeAtom(com, XBC_LET_NIL, name);
+    else {
+	CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+	tree->code = XBC_LOADCON_LET;
+	tree->data.let_con.object = constant;
+	tree->data.let_con.name = name;
+    }
+}
+
+static void
+com_LoadConPush(LispCom *com, LispObj *constant)
+{
+    if (constant == NIL)
+	com_Bytecode(com, XBC_PUSH_NIL);
+    else if (constant == T)
+	com_Bytecode(com, XBC_PUSH_T);
+    else
+	com_BytecodeObject(com, XBC_LOADCON_PUSH, constant);
+}
+
+static void
+com_Set(LispCom *com, short offset)
+{
+    com_BytecodeShort(com, XBC_SET, offset);
+}
+
+static void
+com_SetSym(LispCom *com, LispAtom *symbol)
+{
+    com_BytecodeAtom(com, XBC_SETSYM, symbol);
+}
+
+static void
+com_Struct(LispCom *com, short offset, LispObj *definition)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = XBC_STRUCT;
+    tree->data.struc.offset = offset;
+    tree->data.struc.definition = definition;
+}
+
+static void
+com_Structp(LispCom *com, LispObj *definition)
+{
+    com_BytecodeObject(com, XBC_STRUCTP, definition);
+}
+
+static void
+com_Call(LispCom *com, unsigned char num_arguments, LispBuiltin *builtin)
+{
+    CodeTree *tree = NEW_TREE(CodeTreeBytecode);
+
+    tree->code = XBC_CALL;
+    tree->data.builtin.num_arguments = num_arguments;
+    tree->data.builtin.builtin = builtin;
+}
+
+static void
+com_Funcall(LispCom *com, LispObj *function, LispObj *arguments)
+{
+    com_BytecodeCons(com, XBC_FUNCALL, function, arguments);
+}
+
+static void
+CompileStackEnter(LispCom *com, int count, int builtin)
+{
+    if (!com->macro) {
+	if (builtin) {
+	    com->stack.cbstack += count;
+	    if (com->stack.bstack < com->stack.cbstack)
+		com->stack.bstack = com->stack.cbstack;
+	}
+	else {
+	    com->stack.cstack += count;
+	    if (com->stack.stack < com->stack.cstack)
+		com->stack.stack = com->stack.cstack;
+	}
+    }
+}
+
+static void
+CompileStackLeave(LispCom *com, int count, int builtin)
+{
+    if (!com->macro) {
+	if (builtin)
+	    com->stack.cbstack -= count;
+	else
+	    com->stack.cstack -= count;
+    }
+}
+
+static void
+LinkWarnUnused(LispCom *com, CodeBlock *block)
+{
+    int i;
+    CodeTree *tree;
+
+    for (tree = block->tree; tree; tree = tree->next) {
+	if (tree->type == CodeTreeBlock)
+	    LinkWarnUnused(com, tree->data.block);
+    }
+
+    for (i = 0; i < block->variables.length; i++)
+	if (!(block->variables.flags[i] & VARIABLE_USED)) {
+	    ++com->warnings;
+	    LispWarning(com->mac, "the variable %s is unused",
+			block->variables.symbols[i]->string);
+	}
+}
+
+#define	INTERNAL_ERROR_STRING "COMPILE: internal error #%d"
+#define	INTERNAL_ERROR(value) LispDestroy(com->mac, INTERNAL_ERROR_STRING, value)
+static long
+LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
+{
+    for (; tree; tree = tree->next) {
+	tree->offset = offset;
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+		switch (tree->code) {
+#ifdef LONG64
+		    case XBC_NOOP6:
+		    case XBC_NOOP5:
+		    case XBC_NOOP4:
+		    case XBC_NOOP3:
+#endif
+		    case XBC_NOOP2:
+		    case XBC_NOOP1:
+		    case XBC_NOOP:
+			INTERNAL_ERROR(__LINE__);
+			break;
+
+		    /* byte */
+		    case XBC_BCONS:
+		    case XBC_BCONS1:
+		    case XBC_BCONS2:
+		    case XBC_BCONS3:
+		    case XBC_BCONS4:
+		    case XBC_BCONS5:
+		    case XBC_BCONS6:
+		    case XBC_BCONS7:
+		    case XBC_INV:
+		    case XBC_NIL:
+		    case XBC_T:
+		    case XBC_PUSH:
+		    case XBC_CAR_PUSH:
+		    case XBC_CDR_PUSH:
+		    case XBC_PUSH_NIL:
+		    case XBC_PUSH_T:
+		    case XBC_LSTAR:
+		    case XBC_LCONS:
+		    case XBC_LFINI:
+		    case XBC_RETURN:
+		    case XBC_CSTAR:
+		    case XBC_CFINI:
+		    case XBC_CAR:
+		    case XBC_CDR:
+		    case XBC_RPLACA:
+		    case XBC_RPLACD:
+		    case XBC_EQ:
+		    case XBC_EQL:
+		    case XBC_EQUAL:
+		    case XBC_EQUALP:
+		    case XBC_LENGTH:
+		    case XBC_LAST:
+		    case XBC_NTHCDR:
+			++offset;
+			break;
+
+		    /* byte + char */
+		    case XBC_PUSH_NIL_N:
+		    case XBC_PRED:
+		    case XBC_LETREC:
+			offset += 2;
+			break;
+
+		    /* byte + short */
+		    case XBC_LOAD_PUSH:
+		    case XBC_CAR_SET:
+		    case XBC_CDR_SET:
+		    case XBC_SET:
+		    case XBC_SET_NIL:
+		    case XBC_LETBIND:
+		    case XBC_UNLET:
+		    case XBC_LOAD:
+		    case XBC_LOAD_CAR:
+		    case XBC_LOAD_CDR:
+		    case XBC_LOAD_CAR_STORE:
+		    case XBC_LOAD_CDR_STORE:
+			offset += sizeof(short) + 1;
+			break;
+
+		    /* byte + short + short */
+		    case XBC_LOAD_SET:
+		    case XBC_LOAD_CAR_SET:
+		    case XBC_LOAD_CDR_SET:
+			offset += (sizeof(short) << 1) + 1;
+			break;
+
+		    /* byte + int */
+		    case XBC_JUMP:
+		    case XBC_JUMPT:
+		    case XBC_JUMPNIL:
+			/* XXX this is likely a jump to random address here */
+			INTERNAL_ERROR(__LINE__);
+			offset += sizeof(int) + 1;
+			break;
+
+		    /* byte + pointer offset */
+		    case XBC_STRUCTP:
+		    case XBC_LET:
+		    case XBC_LETX:
+		    case XBC_LET_NIL:
+		    case XBC_LETX_NIL:
+		    case XBC_SETSYM:
+		    case XBC_LOADCON_PUSH:
+		    case XBC_LOADSYM_PUSH:
+		    case XBC_LOADCON:
+		    case XBC_LOADSYM:
+			offset += sizeof(short) + 1;
+			break;
+
+		    /* byte + pointer offset + short */
+		    case XBC_LOADCON_SET:
+			offset += (sizeof(short) << 1) + 1;
+			break;
+
+		    /* byte + byte + pointer offset */
+		    case XBC_CALL:
+			offset += sizeof(short) + 2;
+			break;
+
+		    /* byte + byte + pointer offset + short */
+		    case XBC_CALL_SET:
+			offset += (sizeof(short) << 1) + 2;
+			break;
+
+		    /* byte + short + pointer offset */
+		    case XBC_STRUCT:
+		    case XBC_LOAD_LET:
+		    case XBC_LOAD_LETX:
+			offset += (sizeof(short) << 1) + 1;
+			break;
+
+		    /* byte + pointer offset + pointer offset */
+		    case XBC_LOADCON_LET:
+		    case XBC_LOADCON_LETX:
+		    case XBC_LOADSYM_LET:
+		    case XBC_LOADSYM_LETX:
+		    case XBC_CCONS:
+		    case XBC_FUNCALL:
+			offset += (sizeof(short) << 1) + 1;
+			break;
+		}
+		break;
+	    case CodeTreeLabel:
+		/* Labels are not loaded */
+		break;
+	    case CodeTreeJump:
+	    case CodeTreeJumpIf:
+	    case CodeTreeCond:
+		/* If not the point where the conditional block finishes */
+		if (tree->code != XBC_NOOP)
+		    /* Reserve space for the jump opcode */
+		    offset += sizeof(int) + 1;
+		break;
+	    case CodeTreeGo:
+	    case CodeTreeReturn:
+		/* Reserve space for the jump opcode */
+		offset += sizeof(int) + 1;
+		break;
+	    case CodeTreeBlock:
+		offset = LinkBuildOffsets(com, tree->data.block->tree, offset);
+		break;
+	}
+    }
+
+    return (offset);
+}
+
+static void
+LinkDoOptimize_0(LispCom *com, CodeBlock *block)
+{
+    CodeTree *tree, *prev, *next;
+
+    /*  Remove redundant or join opcodes that can be joined. Do it here
+     * because some of these are hard to detect earlier, and/or would
+     * require a lot of duplicated code or more time. */
+    tree = prev = block->tree;
+    while (tree) {
+	next = tree->next;
+
+	/* LET -> LET* */
+	if (next &&
+	    next->type == CodeTreeBytecode &&
+	    next->code == XBC_LETBIND &&
+	    next->data.signed_short == 1) {
+	    switch (tree->code) {
+		case XBC_LET:
+		    tree->code = XBC_LETX;
+		    goto remove_next_label;
+		case XBC_LET_NIL:
+		    tree->code = XBC_LETX_NIL;
+		    goto remove_next_label;
+		case XBC_LOAD_LET:
+		    tree->code = XBC_LOAD_LETX;
+		    goto remove_next_label;
+		case XBC_LOADCON_LET:
+		    tree->code = XBC_LOADCON_LETX;
+		    goto remove_next_label;
+		case XBC_LOADSYM_LET:
+		    tree->code = XBC_LOADSYM_LETX;
+		    goto remove_next_label;
+		default:
+		    break;
+	    }
+	}
+
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+		switch (tree->code) {
+		    case XBC_LOADCON:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_LET:
+				    next->code = XBC_LOADCON_LET;
+				    next->data.let_con.name =
+					next->data.atom;
+				    next->data.let_con.object =
+					tree->data.object;
+				    goto remove_label;
+				case XBC_PUSH:
+				    next->code = XBC_LOADCON_PUSH;
+				    next->data.object = tree->data.object;
+				    goto remove_label;
+				case XBC_CAR:
+				    if (tree->data.object != NIL) {
+					if (!CONS_P(tree->data.object))
+					    LispDestroy(com->mac,
+							"CAR: %s is not a list",
+						        LispStrObj(com->mac,
+							tree->data.object));
+					next->code = XBC_LOADCON;
+					next->data.object =
+					    CAR(tree->data.object);
+				    }
+				    goto remove_label;
+				case XBC_CDR:
+				    if (tree->data.object != NIL) {
+					if (!CONS_P(tree->data.object))
+					    LispDestroy(com->mac,
+							"CAR: %s is not a list",
+						        LispStrObj(com->mac,
+							tree->data.object));
+					next->code = XBC_LOADCON;
+					next->data.object =
+					    CDR(tree->data.object);
+				    }
+				    goto remove_label;
+				case XBC_SET:
+				    next->code = XBC_LOADCON_SET;
+				    next->data.load_con_set.offset =
+					next->data.signed_short;
+				    next->data.load_con_set.object =
+					tree->data.object;
+				    goto remove_label;
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_LOADSYM:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_LET:
+				    next->code = XBC_LOADSYM_LET;
+				    next->data.let_sym.name =
+					next->data.atom;
+				    next->data.let_sym.symbol =
+					tree->data.atom;
+				    goto remove_label;
+				case XBC_PUSH:
+				    next->code = XBC_LOADSYM_PUSH;
+				    next->data.atom = tree->data.atom;
+				    goto remove_label;
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_LOAD:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_SET:
+				    next->code = XBC_LOAD_SET;
+				    next->data.load_set.set =
+					next->data.signed_short;
+				    next->data.load_set.load =
+					tree->data.signed_short;
+				    goto remove_label;
+				/* TODO add XBC_LOAD_SETSYM */
+				case XBC_CAR:
+				    next->code = XBC_LOAD_CAR;
+				    next->data.signed_short =
+					tree->data.signed_short;
+				    goto remove_label;
+				case XBC_CDR:
+				    next->code = XBC_LOAD_CDR;
+				    next->data.signed_short =
+					tree->data.signed_short;
+				    goto remove_label;
+				case XBC_PUSH:
+				    tree->code = XBC_LOAD_PUSH;
+				    goto remove_next_label;
+				case XBC_LET:
+				    next->code = XBC_LOAD_LET;
+				    next->data.let.name = next->data.atom;
+				    next->data.let.offset =
+					tree->data.signed_short;
+				    goto remove_label;
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_LOAD_CAR:
+			if (next && next->type == CodeTreeBytecode &&
+			    next->code == XBC_SET) {
+			    if (next->data.signed_short ==
+				tree->data.signed_short)
+				next->code = XBC_LOAD_CAR_STORE;
+			    else {
+				next->code = XBC_LOAD_CAR_SET;
+				next->data.load_set.set =
+				    next->data.signed_short;
+				next->data.load_set.load =
+				    tree->data.signed_short;
+			    }
+			    goto remove_label;
+			}
+			break;
+		    case XBC_LOAD_CDR:
+			if (next && next->type == CodeTreeBytecode &&
+			    next->code == XBC_SET) {
+			    if (next->data.signed_short ==
+				tree->data.signed_short)
+				next->code = XBC_LOAD_CDR_STORE;
+			    else {
+				next->code = XBC_LOAD_CDR_SET;
+				next->data.load_set.set =
+				    next->data.signed_short;
+				next->data.load_set.load =
+				    tree->data.signed_short;
+			    }
+			    goto remove_label;
+			}
+			break;
+		    case XBC_CALL:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_SET:
+				    next->code = XBC_CALL_SET;
+				    next->data.builtin.offset =
+					next->data.signed_short;
+				    next->data.builtin.num_arguments =
+					tree->data.builtin.num_arguments;
+				    next->data.builtin.builtin =
+					tree->data.builtin.builtin;
+				    goto remove_label;
+				/* TODO add XBC_CALL_SETSYM */
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_CAR:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_SET:
+				    next->code = XBC_CAR_SET;
+				    goto remove_label;
+				/* TODO add XBC_CAR_SETSYM */
+				case XBC_PUSH:
+				    next->code = XBC_CAR_PUSH;
+				    goto remove_label;
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_CDR:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_SET:
+				    next->code = XBC_CDR_SET;
+				    goto remove_label;
+				/* TODO add XBC_CDR_SETSYM */
+				case XBC_PUSH:
+				    next->code = XBC_CDR_PUSH;
+				    goto remove_label;
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_NIL:
+			if (next && next->type == CodeTreeBytecode) {
+			    switch (next->code) {
+				case XBC_SET:
+				    next->code = XBC_SET_NIL;
+				    goto remove_label;
+				/* TODO add XBC_SETSYM_NIL */
+				default:
+				    break;
+			    }
+			}
+			break;
+		    case XBC_PUSH_NIL:
+			if (next && next->type == CodeTreeBytecode &&
+			    next->code == XBC_PUSH_NIL) {
+			    next->code = XBC_PUSH_NIL_N;
+			    next->data.signed_char = 1;
+			    goto remove_label;
+			}
+			break;
+		    case XBC_PUSH_NIL_N:
+			if (next && next->type == CodeTreeBytecode &&
+			    next->code == XBC_PUSH_NIL) {
+			    next->code = XBC_PUSH_NIL_N;
+			    next->data.signed_char = tree->data.signed_char + 1;
+			    goto remove_label;
+			}
+			break;
+		    default:
+			break;
+		}
+		break;
+	    case CodeTreeBlock:
+		LinkDoOptimize_0(com, tree->data.block);
+		break;
+	    default:
+		break;
+	}
+	goto update_label;
+remove_label:
+	if (tree == block->tree) {
+	    block->tree = prev = next;
+	    if (tree == block->tail)
+		block->tail = tree;
+	}
+	else
+	    prev->next = next;
+	CompileFreeTree(com->mac, tree);
+	tree = next;
+	continue;
+remove_next_label:
+	tree->next = next->next;
+	CompileFreeTree(com->mac, next);
+	continue;
+update_label:
+	prev = tree;
+	tree = tree->next;
+    }
+}
+
+static void
+LinkOptimize_0(LispCom *com)
+{
+    /* Recursive */
+    LinkDoOptimize_0(com, com->block);
+}
+
+static void
+LinkResolveJumps(LispCom *com, CodeBlock *block)
+{
+    int i, go;
+    LispMac *mac = com->mac;
+    CodeTree *ptr, *tree = block->tree;
+
+    go = 0;
+    for (; tree; tree = tree->next) {
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+		break;
+	    case CodeTreeBlock:
+		LinkResolveJumps(com, tree->data.block);
+		break;
+	    case CodeTreeGo:
+		++go;
+		break;
+
+	    case CodeTreeCond:
+		if (tree->code == XBC_JUMPNIL)
+		    /* If test is NIL, go to next test */
+		    tree->data.tree = tree->group->next;
+		else if (tree->code == XBC_JUMPT) {
+		    /* After executing code, test was T */
+		    for (ptr = tree->group;
+			 ptr->code != XBC_NOOP;
+			 ptr = ptr->group)
+			;
+		    tree->data.tree = ptr;
+		}
+		break;
+
+	    case CodeTreeJumpIf:
+		if (tree->code != XBC_NOOP) {
+		    for (ptr = tree->group;
+			 ptr->code != XBC_NOOP;
+			 ptr = ptr->group) {
+			if (ptr->type == CodeTreeJump) {
+			    /* ELSE code of IF */
+			    ptr = ptr->next;
+			    /* Skip inconditional jump node */
+			    break;
+			}
+		    }
+		    tree->data.tree = ptr;
+		}
+		break;
+
+	    case CodeTreeJump:
+		if (tree->code != XBC_NOOP)
+		    tree->data.tree = tree->group;
+		break;
+
+	    case CodeTreeLabel:
+		for (i = 0; i < block->tagbody.length; i++)
+		    if (XEQL(tree->data.object, block->tagbody.labels[i]) == T) {
+			block->tagbody.codes[i] = tree;
+			break;
+		    }
+		break;
+
+	    case CodeTreeReturn:
+		/* One bytecode is guaranteed to exist in the code tree */
+		for (;;) {
+		    for (ptr = tree->data.block->parent; ptr; ptr = ptr->next)
+			if (ptr->type == CodeTreeBytecode)
+			    break;
+		    if (ptr) {
+			tree->data.tree = ptr;
+			break;
+		    }
+		    else
+			/* Move one BLOCK up */
+			tree->data.block = tree->data.block->prev;
+		}
+		break;
+	}
+    }
+
+    if (!go)
+	return;
+
+    /* Resolve labeled jumps */
+    for (tree = block->tree; tree; tree = tree->next) {
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+	    case CodeTreeBlock:
+	    case CodeTreeLabel:
+	    case CodeTreeCond:
+	    case CodeTreeJump:
+	    case CodeTreeJumpIf:
+	    case CodeTreeReturn:
+		break;
+	    case CodeTreeGo:
+		/* Error checking if inside a tagbody block already done */
+		for (i = 0; i < block->tagbody.length; i++)
+		    if (XEQL(tree->data.object, block->tagbody.labels[i]) == T)
+			break;
+		if (i == block->tagbody.length)
+		    LispDestroy(mac, "COMPILE: no visible tag %s to GO",
+				STROBJ(tree->data.object));
+		/* Now the jump code is known */
+		tree->data.tree = block->tagbody.codes[i];
+		break;
+	}
+    }
+}
+
+static long
+LinkPad(long offset, long adjust, int preffix, int datalen)
+{
+    /* If byte or aligned data */
+    if (datalen <= preffix || ((offset + adjust + preffix) % datalen) == 0)
+	return (adjust);
+
+    return (adjust + (datalen - ((offset + adjust + preffix) % datalen)));
+}
+
+static long
+LinkFixupOffsets(LispCom *com, CodeTree *tree, long adjust)
+{
+    for (; tree; tree = tree->next) {
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+		switch (tree->code) {
+		    /* byte */
+#ifdef LONG64
+		    case XBC_NOOP6:
+		    case XBC_NOOP5:
+		    case XBC_NOOP4:
+		    case XBC_NOOP3:
+#endif
+		    case XBC_NOOP2:
+		    case XBC_NOOP1:
+		    case XBC_NOOP:
+		    case XBC_BCONS:
+		    case XBC_BCONS1:
+		    case XBC_BCONS2:
+		    case XBC_BCONS3:
+		    case XBC_BCONS4:
+		    case XBC_BCONS5:
+		    case XBC_BCONS6:
+		    case XBC_BCONS7:
+		    case XBC_INV:
+		    case XBC_NIL:
+		    case XBC_T:
+		    case XBC_PUSH_NIL:
+		    case XBC_PUSH_T:
+		    case XBC_PUSH:
+		    case XBC_CAR_PUSH:
+		    case XBC_CDR_PUSH:
+		    case XBC_LSTAR:
+		    case XBC_LCONS:
+		    case XBC_LFINI:
+		    case XBC_RETURN:
+		    case XBC_CSTAR:
+		    case XBC_CFINI:
+		    case XBC_CAR:
+		    case XBC_CDR:
+		    case XBC_RPLACA:
+		    case XBC_RPLACD:
+		    case XBC_EQ:
+		    case XBC_EQL:
+		    case XBC_EQUAL:
+		    case XBC_EQUALP:
+		    case XBC_LENGTH:
+		    case XBC_LAST:
+		    case XBC_NTHCDR:
+			tree->offset += adjust;
+			break;
+
+		    /* byte + char */
+		    case XBC_LETREC:
+		    case XBC_PRED:
+		    case XBC_PUSH_NIL_N:
+			tree->offset += adjust;
+			break;
+
+		    /* byte + short */
+		    case XBC_CAR_SET:
+		    case XBC_CDR_SET:
+		    case XBC_SET:
+		    case XBC_SET_NIL:
+		    case XBC_LETBIND:
+		    case XBC_UNLET:
+		    case XBC_LOAD_PUSH:
+		    case XBC_LOAD:
+		    case XBC_LOAD_CAR:
+		    case XBC_LOAD_CDR:
+		    case XBC_LOAD_CAR_STORE:
+		    case XBC_LOAD_CDR_STORE:
+			adjust = LinkPad(tree->offset, adjust, 1,
+					 sizeof(short));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + short + short */
+		    case XBC_LOAD_SET:
+		    case XBC_LOAD_CAR_SET:
+		    case XBC_LOAD_CDR_SET:
+			adjust = LinkPad(tree->offset, adjust,
+					 sizeof(short), sizeof(short));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + int */
+		    case XBC_JUMP:
+		    case XBC_JUMPT:
+		    case XBC_JUMPNIL:
+			adjust = LinkPad(tree->offset, adjust, 1,
+					 sizeof(int));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + byte + pointer offset */
+		    case XBC_CALL:
+			adjust = LinkPad(tree->offset, adjust, 2,
+					 sizeof(short));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + byte + pointer offset + short */
+		    case XBC_CALL_SET:
+			adjust = LinkPad(tree->offset, adjust,
+					 sizeof(short), sizeof(short));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + short + pointer offset */
+		    case XBC_STRUCT:
+		    case XBC_LOAD_LET:
+		    case XBC_LOAD_LETX:
+			adjust = LinkPad(tree->offset, adjust,
+					 sizeof(short), sizeof(short));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + pointer offset */
+		    case XBC_STRUCTP:
+		    case XBC_LET:
+		    case XBC_LETX:
+		    case XBC_LET_NIL:
+		    case XBC_LETX_NIL:
+		    case XBC_SETSYM:
+		    case XBC_LOADCON_PUSH:
+		    case XBC_LOADSYM_PUSH:
+		    case XBC_LOADCON:
+		    case XBC_LOADSYM:
+			adjust = LinkPad(tree->offset, adjust, 1,
+					 sizeof(short));
+			tree->offset += adjust;
+			break;
+
+		    /* byte + pointer offset + short */
+		    case XBC_LOADCON_SET:
+		    /* byte + pointer offset + pointer offset */
+		    case XBC_CCONS:
+		    case XBC_LOADCON_LET:
+		    case XBC_LOADCON_LETX:
+		    case XBC_LOADSYM_LET:
+		    case XBC_LOADSYM_LETX:
+		    case XBC_FUNCALL:
+			adjust = LinkPad(tree->offset, adjust,
+					 sizeof(short), sizeof(short));
+			tree->offset += adjust;
+			break;
+		}
+		break;
+	    case CodeTreeLabel:
+		/* Labels are not loaded, just adjust offset */
+		tree->offset += adjust;
+		break;
+	    case CodeTreeJump:
+	    case CodeTreeCond:
+	    case CodeTreeJumpIf:
+		/* If an opcode will be generated. */
+		if (tree->code != XBC_NOOP)
+		    adjust = LinkPad(tree->offset, adjust, 1, sizeof(int));
+		tree->offset += adjust;
+		break;
+	    case CodeTreeGo:
+	    case CodeTreeReturn:
+		adjust = LinkPad(tree->offset, adjust, 1, sizeof(int));
+		tree->offset += adjust;
+		break;
+	    case CodeTreeBlock:
+		adjust = LinkFixupOffsets(com, tree->data.block->tree, adjust);
+		break;
+	}
+    }
+
+    return (adjust);
+}
+
+static void
+LinkSkipPadding(LispCom *com, CodeTree *tree)
+{
+    int found;
+    CodeTree *ptr;
+
+    /* Recurse to adjust forward jumps or jumps to the start of the block */
+    for (ptr = tree; ptr; ptr = ptr->next) {
+	if (ptr->type == CodeTreeBlock) {
+	    LinkSkipPadding(com, ptr->data.block->tree);
+	    ptr->offset = ptr->data.block->tree->offset;
+	}
+    }
+
+    /* Adjust the nodes offsets */
+    for (; tree; tree = tree->next) {
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+	    case CodeTreeBlock:
+	    case CodeTreeGo:
+	    case CodeTreeReturn:
+		break;
+	    case CodeTreeJump:
+	    case CodeTreeCond:
+	    case CodeTreeJumpIf:
+		if (tree->code != XBC_NOOP)
+		    /* If code will be generated */
+		    break;
+	    case CodeTreeLabel:
+		/* This should be done in reversed order, but to avoid
+		 * the requirement of a prev pointer, do the job in a
+		 * harder way here. */
+		for (found = 0, ptr = tree->next; ptr; ptr = ptr->next) {
+		    switch (ptr->type) {
+			case CodeTreeBytecode:
+			case CodeTreeBlock:
+			case CodeTreeGo:
+			case CodeTreeReturn:
+			    found = 1;
+			    break;
+			case CodeTreeJump:
+			case CodeTreeCond:
+			case CodeTreeJumpIf:
+			    if (ptr->code != XBC_NOOP)
+				found = 1;
+			    break;
+			case CodeTreeLabel:
+			    break;
+		    }
+		    if (found)
+			break;
+		}
+		if (found)
+		    tree->offset = ptr->offset;
+		break;
+	}
+    }
+}
+
+static void
+LinkCalculateJump(CodeTree *tree, LispByteOpcode code)
+{
+    long jumpto, offset, distance;
+
+    tree->type = CodeTreeBytecode;
+    /* After the opcode */
+    offset = tree->offset + 1;
+    jumpto = tree->data.tree->offset;
+    /* Effective distance */
+    distance = jumpto - offset;
+    tree->code = code;
+    tree->data.signed_int = distance;
+}
+
+static void
+LinkFixupJumps(LispCom *com, CodeTree *tree)
+{
+    for (; tree; tree = tree->next) {
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+	    case CodeTreeLabel:
+		break;
+	    case CodeTreeCond:
+		if (tree->code == XBC_JUMPNIL)
+		    /* Go to next test if NIL */
+		    LinkCalculateJump(tree, XBC_JUMPNIL);
+		else if (tree->code == XBC_JUMPT)
+		    /* After executing T code */
+		    LinkCalculateJump(tree, XBC_JUMP);
+		break;
+	    case CodeTreeJumpIf:
+		if (tree->code != XBC_NOOP)
+		    LinkCalculateJump(tree, tree->code);
+		break;
+	    case CodeTreeGo:
+		/* Inconditional jump */
+		LinkCalculateJump(tree, XBC_JUMP);
+		break;
+	    case CodeTreeReturn:
+		/* Inconditional jump */
+		if (tree->data.tree != tree)
+		    /* If need to skip something */
+		    LinkCalculateJump(tree, XBC_JUMP);
+		break;
+	    case CodeTreeBlock:
+		LinkFixupJumps(com, tree->data.block->tree);
+		break;
+	    case CodeTreeJump:
+		if (tree->code != XBC_NOOP)
+		    LinkCalculateJump(tree, tree->code);
+	}
+    }
+}
+
+static void
+LinkBuildTableSymbol(LispCom *com, LispAtom *symbol)
+{
+    BuildTablePointer(com->mac, symbol, (void***)&com->table.symbols,
+		      &com->table.num_symbols);
+}
+
+static void
+LinkBuildTableConstant(LispCom *com, LispObj *constant)
+{
+    BuildTablePointer(com->mac, constant, (void***)&com->table.constants,
+		      &com->table.num_constants);
+}
+
+static void
+LinkBuildTableBuiltin(LispCom *com, LispBuiltin *builtin)
+{
+    BuildTablePointer(com->mac, builtin, (void***)&com->table.builtins,
+		      &com->table.num_builtins);
+}
+
+static void
+LinkBuildTables(LispCom *com, CodeBlock *block)
+{
+    CodeTree *tree;
+
+    for (tree = block->tree; tree; tree = tree->next) {
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+		switch (tree->code) {
+		    case XBC_LET:
+		    case XBC_LETX:
+		    case XBC_LET_NIL:
+		    case XBC_LETX_NIL:
+		    case XBC_SETSYM:
+		    case XBC_LOADSYM:
+		    case XBC_LOADSYM_PUSH:
+			LinkBuildTableSymbol(com, tree->data.atom);
+			break;
+		    case XBC_STRUCTP:
+		    case XBC_LOADCON:
+		    case XBC_LOADCON_PUSH:
+			LinkBuildTableConstant(com, tree->data.object);
+			break;
+		    case XBC_LOADCON_SET:
+			LinkBuildTableConstant(com, tree->data.load_con_set.object);
+			break;
+		    case XBC_CALL:
+		    case XBC_CALL_SET:
+			LinkBuildTableBuiltin(com, tree->data.builtin.builtin);
+			break;
+		    case XBC_LOAD_LET:
+		    case XBC_LOAD_LETX:
+			LinkBuildTableSymbol(com, tree->data.let.name);
+			break;
+		    case XBC_STRUCT:
+			LinkBuildTableConstant(com, tree->data.struc.definition);
+			break;
+		    case XBC_LOADSYM_LET:
+		    case XBC_LOADSYM_LETX:
+			LinkBuildTableSymbol(com, tree->data.let_sym.symbol);
+			LinkBuildTableSymbol(com, tree->data.let_sym.name);
+			break;
+		    case XBC_LOADCON_LET:
+		    case XBC_LOADCON_LETX:
+			LinkBuildTableConstant(com, tree->data.let_con.object);
+			LinkBuildTableSymbol(com, tree->data.let_con.name);
+			break;
+		    case XBC_CCONS:
+		    case XBC_FUNCALL:
+			LinkBuildTableConstant(com, tree->data.cons.car);
+			LinkBuildTableConstant(com, tree->data.cons.cdr);
+			break;
+		    default:
+			break;
+		}
+		break;
+	    case CodeTreeBlock:
+		LinkBuildTables(com, tree->data.block);
+		break;
+	    default:
+		break;
+	}
+    }
+}
+
+static long
+LinkEmmitBytecode(LispCom *com, CodeTree *tree,
+		  unsigned char *bytecode, long offset)
+{
+    short i;
+    LispByteOpcode code;
+
+    for (; tree; tree = tree->next) {
+
+	/* Fill padding */
+	code = (LispByteOpcode)(tree->offset - offset);
+
+	while (offset < tree->offset)
+	    bytecode[offset++] = --code;
+
+	switch (tree->type) {
+	    case CodeTreeBytecode:
+		bytecode[offset++] = tree->code;
+		switch (tree->code) {
+		    /* Noop should not enter the CodeTree */
+#ifdef LONG64
+		    case XBC_NOOP6:
+		    case XBC_NOOP5:
+		    case XBC_NOOP4:
+		    case XBC_NOOP3:
+#endif
+		    case XBC_NOOP2:
+		    case XBC_NOOP1:
+		    case XBC_NOOP:
+			INTERNAL_ERROR(__LINE__);
+			break;
+
+		    /* byte */
+		    case XBC_BCONS:
+		    case XBC_BCONS1:
+		    case XBC_BCONS2:
+		    case XBC_BCONS3:
+		    case XBC_BCONS4:
+		    case XBC_BCONS5:
+		    case XBC_BCONS6:
+		    case XBC_BCONS7:
+		    case XBC_INV:
+		    case XBC_NIL:
+		    case XBC_T:
+		    case XBC_PUSH_NIL:
+		    case XBC_PUSH_T:
+		    case XBC_CAR_PUSH:
+		    case XBC_CDR_PUSH:
+		    case XBC_PUSH:
+		    case XBC_LSTAR:
+		    case XBC_LCONS:
+		    case XBC_LFINI:
+		    case XBC_RETURN:
+		    case XBC_CSTAR:
+		    case XBC_CFINI:
+		    case XBC_CAR:
+		    case XBC_CDR:
+		    case XBC_RPLACA:
+		    case XBC_RPLACD:
+		    case XBC_EQ:
+		    case XBC_EQL:
+		    case XBC_EQUAL:
+		    case XBC_EQUALP:
+		    case XBC_LENGTH:
+		    case XBC_LAST:
+		    case XBC_NTHCDR:
+			break;
+
+		    /* byte + char */
+		    case XBC_LETREC:
+		    case XBC_PRED:
+		    case XBC_PUSH_NIL_N:
+			*(signed char*)(bytecode + offset) =
+			    tree->data.signed_char;
+			offset++;
+			break;
+
+		    /* byte + short */
+		    case XBC_CAR_SET:
+		    case XBC_CDR_SET:
+		    case XBC_SET:
+		    case XBC_SET_NIL:
+		    case XBC_LETBIND:
+		    case XBC_UNLET:
+		    case XBC_LOAD_PUSH:
+		    case XBC_LOAD:
+		    case XBC_LOAD_CAR:
+		    case XBC_LOAD_CDR:
+		    case XBC_LOAD_CAR_STORE:
+		    case XBC_LOAD_CDR_STORE:
+			*(short*)(bytecode + offset) =
+			    tree->data.signed_short;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + short + short */
+		    case XBC_LOAD_SET:
+		    case XBC_LOAD_CAR_SET:
+		    case XBC_LOAD_CDR_SET:
+			*(short*)(bytecode + offset) =
+			    tree->data.load_set.load;
+			offset += sizeof(short);
+			*(short*)(bytecode + offset) =
+			    tree->data.load_set.set;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + int */
+		    case XBC_JUMP:
+		    case XBC_JUMPT:	case XBC_JUMPNIL:
+			*(int*)(bytecode + offset) =
+			    tree->data.signed_int;
+			offset += sizeof(int);
+			break;
+
+		    /* byte + atom */
+		    case XBC_LET:
+		    case XBC_LETX:
+		    case XBC_LET_NIL:
+		    case XBC_LETX_NIL:
+		    case XBC_SETSYM:
+		    case XBC_LOADSYM:
+		    case XBC_LOADSYM_PUSH:
+			i = FindIndex(tree->data.atom,
+				      (void**)com->table.symbols,
+				      com->table.num_symbols);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + object */
+		    case XBC_STRUCTP:
+		    case XBC_LOADCON:
+		    case XBC_LOADCON_PUSH:
+			i = FindIndex(tree->data.object,
+				      (void**)com->table.constants,
+				      com->table.num_constants);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + object + short */
+		    case XBC_LOADCON_SET:
+			i = FindIndex(tree->data.load_con_set.object,
+				      (void**)com->table.constants,
+				      com->table.num_constants);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			*(short*)(bytecode + offset) =
+			    tree->data.load_con_set.offset;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + byte + builtin */
+		    case XBC_CALL:
+			bytecode[offset++] =
+			    tree->data.builtin.num_arguments;
+			i = FindIndex(tree->data.builtin.builtin,
+				      (void**)com->table.builtins,
+				      com->table.num_builtins);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + byte + builtin + short */
+		    case XBC_CALL_SET:
+			bytecode[offset++] =
+			    tree->data.builtin.num_arguments;
+			i = FindIndex(tree->data.builtin.builtin,
+				      (void**)com->table.builtins,
+				      com->table.num_builtins);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			*(short*)(bytecode + offset) = tree->data.builtin.offset;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + short + atom */
+		    case XBC_LOAD_LET:
+		    case XBC_LOAD_LETX:
+			*(short*)(bytecode + offset) =
+			    tree->data.let.offset;
+			offset += sizeof(short);
+			i = FindIndex(tree->data.let.name,
+				      (void**)com->table.symbols,
+				      com->table.num_symbols);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + short + object */
+		    case XBC_STRUCT:
+			*(short*)(bytecode + offset) =
+			    tree->data.struc.offset;
+			offset += sizeof(short);
+			i = FindIndex(tree->data.struc.definition,
+				      (void**)com->table.constants,
+				      com->table.num_constants);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + atom + atom */
+		    case XBC_LOADSYM_LET:
+		    case XBC_LOADSYM_LETX:
+			i = FindIndex(tree->data.let_sym.symbol,
+				      (void**)com->table.symbols,
+				      com->table.num_symbols);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			i = FindIndex(tree->data.let_sym.name,
+				      (void**)com->table.symbols,
+				      com->table.num_symbols);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + object + atom */
+		    case XBC_LOADCON_LET:
+		    case XBC_LOADCON_LETX:
+			i = FindIndex(tree->data.let_con.object,
+				      (void**)com->table.constants,
+				      com->table.num_constants);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			i = FindIndex(tree->data.let_con.name,
+				      (void**)com->table.symbols,
+				      com->table.num_symbols);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+
+		    /* byte + object + object */
+		    case XBC_CCONS:
+		    case XBC_FUNCALL:
+			i = FindIndex(tree->data.cons.car,
+				      (void**)com->table.constants,
+				      com->table.num_constants);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			i = FindIndex(tree->data.cons.cdr,
+				      (void**)com->table.constants,
+				      com->table.num_constants);
+			*(short*)(bytecode + offset) = i;
+			offset += sizeof(short);
+			break;
+		}
+		break;
+	    case CodeTreeLabel:
+		/* Labels are not loaded */
+		break;
+	    case CodeTreeCond:
+	    case CodeTreeJump:
+	    case CodeTreeJumpIf:
+		if (tree->code != XBC_NOOP)
+		    INTERNAL_ERROR(__LINE__);
+		break;
+	    case CodeTreeGo:
+		INTERNAL_ERROR(__LINE__);
+		break;
+	    case CodeTreeReturn:
+		if (tree->data.tree != tree)
+		    INTERNAL_ERROR(__LINE__);
+		break;
+	    case CodeTreeBlock:
+		offset = LinkEmmitBytecode(com, tree->data.block->tree,
+					   bytecode, offset);
+		break;
+	}
+    }
+
+    return (offset);
+}
+
+static void
+LinkBytecode(LispCom *com)
+{
+    long offset, count;
+
+    /* Close bytecode */
+    com_Bytecode(com, XBC_RETURN);
+
+    /* The only usage of this information for now, and still may generate
+     * false positives because arguments to unamed functions are not being
+     * parsed as well as arguments to yet undefined function/maros.
+     * XXX should also add declaim/declare to let the code specify that
+     * the argument is unused */
+    LinkWarnUnused(com, com->block);
+
+    /* First level optimization */
+    LinkOptimize_0(com);
+
+    /* Resolve any pending jumps */
+    LinkResolveJumps(com, com->block);
+
+    /* Calculate unpadded offsets */
+    LinkBuildOffsets(com, com->block->tree, 0);
+
+    /* Do padding for aligned memory reads */
+    LinkFixupOffsets(com, com->block->tree, 0);
+
+    /* Jumps normally are to a node that does not generate code,
+     * and due to padding, the jump may go to a address with a
+     * XBC_NOOP, so adjust the jump to the next useful opcode. */
+    LinkSkipPadding(com, com->block->tree);
+
+    /* Now addresses are known */
+    LinkFixupJumps(com, com->block->tree);
+
+    /* Build symbol, constant and builtin tables */
+    LinkBuildTables(com, com->block);
+
+    /* Stack info */
+    com->length = sizeof(short) * 3;
+    /* Tables info */
+    com->length += sizeof(short) * 3;
+    com->length += com->table.num_constants * sizeof(LispObj*);
+    com->length += com->table.num_symbols * sizeof(LispAtom*);
+    com->length += com->table.num_builtins * sizeof(LispBuiltin*);
+
+    /* Allocate space for the bytecode stream */
+    com->length += com->block->tail->offset + 1;
+    com->bytecode = LispMalloc(com->mac, com->length);
+
+    /* Add header */
+    offset = 0;
+    *(short*)(com->bytecode + offset) = com->stack.stack;
+    offset += sizeof(short);
+    *(short*)(com->bytecode + offset) = com->stack.bstack;
+    offset += sizeof(short);
+    *(short*)(com->bytecode + offset) = com->stack.pstack;
+    offset += sizeof(short);
+
+    *(short*)(com->bytecode + offset) = com->table.num_constants;
+    offset += sizeof(short);
+    *(short*)(com->bytecode + offset) = com->table.num_symbols;
+    offset += sizeof(short);
+    *(short*)(com->bytecode + offset) = com->table.num_builtins;
+    offset += sizeof(short);
+
+    count = sizeof(LispObj*) * com->table.num_constants;
+    memcpy(com->bytecode + offset, com->table.constants, count);
+    offset += count;
+    count = sizeof(LispAtom*) * com->table.num_symbols;
+    memcpy(com->bytecode + offset, com->table.symbols, count);
+    offset += count;
+    count = sizeof(LispBuiltin*) * com->table.num_builtins;
+    memcpy(com->bytecode + offset, com->table.builtins, count);
+    offset += count;
+
+    /* Generate it */
+    LinkEmmitBytecode(com, com->block->tree, com->bytecode + offset, 0);
+}
+
+static LispObj *
+ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
+{
+    register LispObj *reg0;
+    register LispAtom *atom;
+    register short offset;
+    LispObj *reg1;
+    LispBuiltin *builtin;
+    LispObj *lambda;
+    LispObj *arguments;
+    unsigned char *bytecode;
+
+    LispObj **constants;
+    LispAtom **symbols;
+    LispBuiltin **builtins;
+    short num_constants, num_symbols, num_builtins;
+
+    int lex;
+
+    /* To control gc protected slots */
+    int phead, pbase;
+
+    reg0 = NIL;
+
+    bytecode = stream;
+    pbase = mac->protect.length;
+
+    /* stack */
+    offset = *(short*)stream;
+    stream += sizeof(short);
+    if (mac->env.length + offset > mac->env.space) {
+	do
+	    LispMoreEnvironment(mac);
+	while (mac->env.length + offset >= mac->env.space);
+    }
+    /* builtin stack */
+    offset = *(short*)stream;
+    stream += sizeof(short);
+    if (mac->stack.length + offset >= mac->stack.space) {
+	do
+	    LispMoreStack(mac);
+	while (mac->stack.length + offset >= mac->stack.space);
+    }
+    /* protect stack */
+    phead = *(short*)stream;
+    stream += sizeof(short);
+    if (mac->protect.length + phead > mac->protect.space) {
+	do
+	    LispMoreProtects(mac);
+	while (mac->protect.length + phead >= mac->protect.space);
+    }
+
+    num_constants = *(short*)stream;
+    stream += sizeof(short);
+    num_symbols = *(short*)stream;
+    stream += sizeof(short);
+    num_builtins = *(short*)stream;
+    stream += sizeof(short);
+
+    constants = (LispObj**)stream;
+    stream += num_constants * sizeof(LispObj*);
+    symbols = (LispAtom**)stream;
+    stream += num_symbols * sizeof(LispAtom*);
+    builtins = (LispBuiltin**)stream;
+    stream += num_builtins * sizeof(LispBuiltin*);
+
+    for (; phead > 0; phead--)
+	mac->protect.objects[mac->protect.length++] = NIL;
+    phead = pbase;
+
+    for (;;) {
+next_opcode:
+	switch (*stream++) {
+#ifdef LONG64
+	    case XBC_NOOP6: ++stream; case XBC_NOOP5: ++stream;
+	    case XBC_NOOP4: ++stream; case XBC_NOOP3: ++stream;
+#endif
+	    case XBC_NOOP2: ++stream; case XBC_NOOP1: ++stream;
+	    case XBC_NOOP:
+		goto next_opcode;
+	    case XBC_PRED:
+		goto predicate_label;
+	    case XBC_INV:
+		reg0 = reg0 == NIL ? T : NIL;
+		goto next_opcode;
+	    case XBC_NIL:
+		reg0 = NIL;
+		goto next_opcode;
+	    case XBC_T:
+		reg0 = T;
+		goto next_opcode;
+	    case XBC_CAR:
+car:
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		    reg0 = CAR(reg0);
+		}
+		goto next_opcode;
+	    case XBC_CDR:
+cdr:
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		    reg0 = CDR(reg0);
+		}
+		goto next_opcode;
+	    case XBC_RPLACA:
+		reg1 = mac->stack.values[--mac->stack.length];
+		if (!CONS_P(reg1))
+		    LispDestroy(mac, "RPLACA: %s is not a cons", STROBJ(reg1));
+		CAR(reg1) = reg0;
+		reg0 = reg1;
+		goto next_opcode;
+	    case XBC_RPLACD:
+		reg1 = mac->stack.values[--mac->stack.length];
+		if (!CONS_P(reg1))
+		    LispDestroy(mac, "RPLACD: %s is not a cons", STROBJ(reg1));
+		CDR(reg1) = reg0;
+		reg0 = reg1;
+		goto next_opcode;
+
+	    case XBC_BCONS:
+		CAR(cons) = reg0;
+		mac->stack.values[mac->stack.length++] = cons;
+		goto next_opcode;
+	    case XBC_BCONS1:
+		offset = mac->stack.length - 1;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[offset];
+		mac->stack.values[offset] = cons1;
+		goto next_opcode;
+	    case XBC_BCONS2:
+		offset = mac->stack.length;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[--offset];
+		CAR(cons2) = mac->stack.values[--offset];
+		mac->stack.values[offset] = cons2;
+		mac->stack.length = offset + 1;
+		goto next_opcode;
+	    case XBC_BCONS3:
+		offset = mac->stack.length;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[--offset];
+		CAR(cons2) = mac->stack.values[--offset];
+		CAR(cons3) = mac->stack.values[--offset];
+		mac->stack.values[offset] = cons3;
+		mac->stack.length = offset + 1;
+		goto next_opcode;
+	    case XBC_BCONS4:
+		offset = mac->stack.length;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[--offset];
+		CAR(cons2) = mac->stack.values[--offset];
+		CAR(cons3) = mac->stack.values[--offset];
+		CAR(cons4) = mac->stack.values[--offset];
+		mac->stack.values[offset] = cons4;
+		mac->stack.length = offset + 1;
+		goto next_opcode;
+	    case XBC_BCONS5:
+		offset = mac->stack.length;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[--offset];
+		CAR(cons2) = mac->stack.values[--offset];
+		CAR(cons3) = mac->stack.values[--offset];
+		CAR(cons4) = mac->stack.values[--offset];
+		CAR(cons5) = mac->stack.values[--offset];
+		mac->stack.values[offset] = cons5;
+		mac->stack.length = offset + 1;
+		goto next_opcode;
+	    case XBC_BCONS6:
+		offset = mac->stack.length;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[--offset];
+		CAR(cons2) = mac->stack.values[--offset];
+		CAR(cons3) = mac->stack.values[--offset];
+		CAR(cons4) = mac->stack.values[--offset];
+		CAR(cons5) = mac->stack.values[--offset];
+		CAR(cons6) = mac->stack.values[--offset];
+		mac->stack.values[offset] = cons6;
+		mac->stack.length = offset + 1;
+		goto next_opcode;
+	    case XBC_BCONS7:
+		offset = mac->stack.length;
+		CAR(cons) = reg0;
+		CAR(cons1) = mac->stack.values[--offset];
+		CAR(cons2) = mac->stack.values[--offset];
+		CAR(cons3) = mac->stack.values[--offset];
+		CAR(cons4) = mac->stack.values[--offset];
+		CAR(cons5) = mac->stack.values[--offset];
+		CAR(cons6) = mac->stack.values[--offset];
+		CAR(cons7) = mac->stack.values[--offset];
+		mac->stack.values[offset] = cons7;
+		mac->stack.length = offset + 1;
+		goto next_opcode;
+
+	    case XBC_EQ:
+		reg0 = reg0 == mac->stack.values[--mac->stack.length] ? T : NIL;
+		goto next_opcode;
+	    case XBC_EQL:
+		reg1 = mac->stack.values[--mac->stack.length];
+		reg0 = XEQL(reg1, reg0);
+		goto next_opcode;
+	    case XBC_EQUAL:
+		reg1 = mac->stack.values[--mac->stack.length];
+		reg0 = XEQUAL(reg1, reg0);
+		goto next_opcode;
+	    case XBC_EQUALP:
+		reg1 = mac->stack.values[--mac->stack.length];
+		reg0 = XEQUALP(reg1, reg0);
+		goto next_opcode;
+	    case XBC_LENGTH:
+		reg0 = SMALLINT(LispLength(mac, reg0));
+		goto next_opcode;
+	    case XBC_LAST: {
+		long length, count;
+
+		reg1 = mac->stack.values[--mac->stack.length];
+		if (CONS_P(reg1)) {
+		    if (reg0 != NIL) {
+			if (!INT_P(reg0) || reg0->data.integer < 0)
+			    LispDestroy(mac, "LAST: %s is not a positive fixnum",
+					STROBJ(reg0));
+			count = reg0->data.integer;
+		    }
+		    else
+			count = 1;
+		    reg0 = reg1;
+		    for (reg0 = reg1, length = 0;
+			 CONS_P(reg0);
+			 reg0 = CDR(reg0), length++)
+			;
+		    for (length -= count, reg0 = reg1; length > 0; length--)
+			reg0 = CDR(reg0);
+		}
+		else
+		    reg0 = reg1;
+	    }	goto next_opcode;
+	    case XBC_NTHCDR:
+		reg1 = mac->stack.values[--mac->stack.length];
+		if (!INT_P(reg1) || reg1->data.integer < 0)
+		    LispDestroy(mac, "NTHCDR: %s is not a positive fixnum",
+				STROBJ(reg1));
+		if (reg0 != NIL) {
+		    long count = reg1->data.integer;
+
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "NTHCDR: %s is not a list",
+				    STROBJ(reg0));
+		    for (; count > 0; count--) {
+			if (!CONS_P(reg0))
+			    break;
+			reg0 = CDR(reg0);
+		    }
+		}
+		goto next_opcode;
+
+	    /* Push to builtin stack */
+	    case XBC_CAR_PUSH:
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		    reg0 = CAR(reg0);
+		}
+		goto push_builtin;
+	    case XBC_CDR_PUSH:
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		    reg0 = CDR(reg0);
+		}
+		/*FALLTROUGH*/
+	    case XBC_PUSH:
+push_builtin:
+		mac->stack.values[mac->stack.length++] = reg0;
+		goto next_opcode;
+	    case XBC_PUSH_NIL:
+		mac->stack.values[mac->stack.length++] = NIL;
+		goto next_opcode;
+	    case XBC_PUSH_T:
+		mac->stack.values[mac->stack.length++] = T;
+		goto next_opcode;
+	    case XBC_PUSH_NIL_N:
+		for (offset = *stream++; offset >= 0; offset--)
+		    mac->stack.values[mac->stack.length++] = NIL;
+		goto next_opcode;
+
+	    case XBC_LET:
+let_argument:
+		/*  The global object value is not changed, so it does not
+		 * matter if it is a constant symbol. An error would be
+		 * generated if it was declared as constant at the time of
+		 * bytecode generation. Check can be done looking at the
+		 * atom->constant field. */
+		atom = symbols[*(short*)stream];
+		stream += sizeof(short);
+		atom->offset = mac->env.length;
+		mac->env.names[mac->env.length] = atom->string;
+		mac->env.values[mac->env.length++] = reg0;
+		goto next_opcode;
+	    case XBC_LETX:
+letx_argument:
+		atom = symbols[*(short*)stream];
+		stream += sizeof(short);
+		atom->offset = mac->env.length;
+		mac->env.names[mac->env.length] = atom->string;
+		mac->env.values[mac->env.length++] = reg0;
+		mac->env.head++;
+		goto next_opcode;
+	    case XBC_LET_NIL:
+		atom = symbols[*(short*)stream];
+		stream += sizeof(short);
+		atom->offset = mac->env.length;
+		mac->env.names[mac->env.length] = atom->string;
+		mac->env.values[mac->env.length++] = NIL;
+		goto next_opcode;
+	    case XBC_LETX_NIL:
+		atom = symbols[*(short*)stream];
+		stream += sizeof(short);
+		atom->offset = mac->env.length;
+		mac->env.names[mac->env.length] = atom->string;
+		mac->env.values[mac->env.length++] = NIL;
+		mac->env.head++;
+		goto next_opcode;
+
+	    /* Bind locally added variables to a block */
+	    case XBC_LETBIND:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		mac->env.head += offset;
+		goto next_opcode;
+
+	    /* Unbind locally added variables to a block */
+	    case XBC_UNLET:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		mac->env.head -= offset;
+		mac->env.length -= offset;
+		goto next_opcode;
+
+	    /* Load value from stack */
+	    case XBC_LOAD:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto next_opcode;
+	    case XBC_LOAD_CAR:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto car;
+	    case XBC_LOAD_CDR:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto cdr;
+	    case XBC_LOAD_CAR_STORE:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		    reg0 = CAR(reg0);
+		    mac->env.values[mac->env.lex + offset] = reg0;
+		}
+		goto next_opcode;
+	    case XBC_LOAD_CDR_STORE:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		    reg0 = CDR(reg0);
+		    mac->env.values[mac->env.lex + offset] = reg0;
+		}
+		goto next_opcode;
+	    case XBC_LOAD_LET:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto let_argument;
+	    case XBC_LOAD_LETX:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto letx_argument;
+	    case XBC_LOAD_PUSH:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		mac->stack.values[mac->stack.length++] = reg0;
+		goto next_opcode;
+
+	    /* Load pointer to constant */
+	    case XBC_LOADCON:
+		reg0 = constants[*(short*)stream];
+		stream += sizeof(short);
+		goto next_opcode;
+	    case XBC_LOADCON_LET:
+		reg0 = constants[*(short*)stream];
+		stream += sizeof(short);
+		goto let_argument;
+	    case XBC_LOADCON_LETX:
+		reg0 = constants[*(short*)stream];
+		stream += sizeof(short);
+		goto letx_argument;
+	    case XBC_LOADCON_PUSH:
+		reg0 = constants[*(short*)stream];
+		stream += sizeof(short);
+		mac->stack.values[mac->stack.length++] = reg0;
+		goto next_opcode;
+	    case XBC_LOADCON_SET:
+		reg0 = constants[*(short*)stream];
+		stream += sizeof(short);
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		mac->env.values[mac->env.lex + offset] = reg0;
+		goto next_opcode;
+
+	    /* Change value of local variable */
+	    case XBC_CAR_SET:
+car_set:
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+		    reg0 = CAR(reg0);
+		}
+		goto set_local_variable;
+	    case XBC_CDR_SET:
+cdr_set:
+		if (reg0 != NIL) {
+		    if (!CONS_P(reg0))
+			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+		    reg0 = CDR(reg0);
+		}
+		goto set_local_variable;
+	    case XBC_LOAD_CAR_SET:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto car_set;
+	    case XBC_LOAD_CDR_SET:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		goto cdr_set;
+	    case XBC_LOAD_SET:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg0 = mac->env.values[mac->env.lex + offset];
+		/*FALLTROUGH*/
+	    case XBC_SET:
+set_local_variable:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		mac->env.values[mac->env.lex + offset] = reg0;
+		goto next_opcode;
+
+	    case XBC_SET_NIL:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		mac->env.values[mac->env.lex + offset] = NIL;
+		goto next_opcode;
+
+	    /* Change value of a global/special variable */
+	    case XBC_SETSYM:
+		atom = symbols[*(short*)stream];
+		stream += sizeof(short);
+		if (atom->dyn) {
+		    /*  atom->dyn and atom->constant are exclusive, no
+		     * need to check if variable declared as constant. */
+		    if (atom->offset < mac->env.head &&
+			mac->env.names[atom->offset] == atom->string)
+			mac->env.values[atom->offset] = reg0;
+		    else {
+			if (atom->watch)
+			    LispSetAtomObjectProperty(mac, atom, reg0);
+			else
+			    atom->property->value = reg0;
+		    }
+		}
+		else if (atom->a_object) {
+		    if (atom->constant)
+			LispDestroy(mac, "EVAL: %s is a constant",
+				    STROBJ(atom->object));
+		    else if (atom->watch)
+			LispSetAtomObjectProperty(mac, atom, reg0);
+		    else
+			atom->property->value = reg0;
+		}
+		else {
+		    /* Create new global variable */
+		    LispPackage *pack;
+
+		    LispWarning(mac, "the variable %s was not declared",
+				atom->string);
+		    LispSetAtomObjectProperty(mac, atom, reg0);
+		    pack = atom->package->data.package.package;
+		    if (pack->glb.length >= pack->glb.space)
+			LispMoreGlobals(mac, pack);
+		    pack->glb.pairs[pack->glb.length++] = atom->object;
+		}
+		goto next_opcode;
+
+#define LOADSYM		-1
+#define LOADSYM_LET	0
+#define LOADSYM_LETX	1
+#define LOADSYM_PUSH	2
+	    /* Resolve symbol value at runtime */
+	    case XBC_LOADSYM:
+		offset = LOADSYM;
+load_symbol:
+		atom = symbols[*(short*)stream];
+		stream += sizeof(short);
+		if (atom->dyn) {
+		    if (atom->offset < mac->env.head &&
+			mac->env.names[atom->offset] == atom->string)
+			reg0 = mac->env.values[atom->offset];
+		    else {
+			reg0 = atom->property->value;
+			if (reg0 == UNBOUND)
+			    LispDestroy(mac, "EVAL: the symbol %s is unbound",
+					STROBJ(atom->object));
+		    }
+		}
+		else {
+		    if (atom->a_object)
+			reg0 = atom->property->value;
+		    else
+			LispDestroy(mac, "EVAL: the symbol %s is unbound",
+				    STROBJ(atom->object));
+		}
+		if (offset == LOADSYM_LET)
+		    goto let_argument;
+		if (offset == LOADSYM_LETX)
+		    goto letx_argument;
+		else if (offset == LOADSYM_PUSH)
+		    mac->stack.values[mac->stack.length++] = reg0;
+		goto next_opcode;
+	    case XBC_LOADSYM_LET:
+		offset = LOADSYM_LET;
+		goto load_symbol;
+	    case XBC_LOADSYM_LETX:
+		offset = LOADSYM_LETX;
+		goto load_symbol;
+	    case XBC_LOADSYM_PUSH:
+		offset = LOADSYM_PUSH;
+		goto load_symbol;
+#undef LOADSYM
+#undef LOADSYM_LET
+#undef LOADSYM_LETX
+#undef LOADSYM_PUSH
+
+	    /* Builtin function */
+	    case XBC_CALL:
+		offset = *stream++;
+		mac->stack.base = mac->stack.length - offset;
+		builtin = builtins[*(short*)stream];
+		stream += sizeof(short);
+		reg0 = builtin->function(mac, builtin);
+		mac->stack.length -= offset;
+		goto next_opcode;
+	    case XBC_CALL_SET:
+		offset = *stream++;
+		mac->stack.base = mac->stack.length - offset;
+		builtin = builtins[*(short*)stream];
+		stream += sizeof(short);
+		reg0 = builtin->function(mac, builtin);
+		mac->stack.length -= offset;
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		mac->env.values[mac->env.lex + offset] = reg0;
+		goto next_opcode;
+
+	    /* Unimplemented function/macro call */
+	    case XBC_FUNCALL:
+		lambda = constants[*(short*)stream];
+		stream += sizeof(short);
+		arguments = constants[*(short*)stream];
+		stream += sizeof(short);
+		reg0 = LispFuncall(mac, lambda, arguments, 1);
+		goto next_opcode;
+
+	    case XBC_JUMP:
+		stream += *(signed int*)stream;
+		goto next_opcode;
+	    case XBC_JUMPT:
+		if (reg0 != NIL)
+		    stream += *(signed int*)stream;
+		else
+		    /* skip jump relative offset */
+		    stream += sizeof(signed int);
+		goto next_opcode;
+	    case XBC_JUMPNIL:
+		if (reg0 == NIL)
+		    stream += *(signed int*)stream;
+		else
+		    /* skip jump relative offset */
+		    stream += sizeof(signed int);
+		goto next_opcode;
+
+	    /* Build CONS of two constant arguments */
+	    case XBC_CCONS:
+		reg0 = constants[*(short*)stream];
+		stream += sizeof(short);
+		reg1 = constants[*(short*)stream];
+		stream += sizeof(short);
+		reg0 = CONS(reg0, reg1);
+		goto next_opcode;
+
+	    /* Start CONS */
+	    case XBC_CSTAR:
+		/* This the CAR of the CONS */
+		mac->protect.objects[phead++] = reg0;
+		goto next_opcode;
+	    /* Finish CONS */
+	    case XBC_CFINI:
+		reg0 = CONS(mac->protect.objects[--phead], reg0);
+		goto next_opcode;
+
+	    /* Start building list */
+	    case XBC_LSTAR:
+		reg1 = CONS(reg0, NIL);
+		/* Start of list stored here */
+		mac->protect.objects[phead++] = reg1;
+		/* Tail of list stored here */
+		mac->protect.objects[phead++] = reg1;
+		goto next_opcode;
+	    /* Add to list */
+	    case XBC_LCONS:
+		reg1 = mac->protect.objects[phead - 2];
+		CDR(reg1) = CONS(reg0, NIL);
+		 mac->protect.objects[phead - 2] = CDR(reg1);
+		goto next_opcode;
+	    /* Finish list */
+	    case XBC_LFINI:
+		phead -= 2;
+		reg0 = mac->protect.objects[phead];
+		goto next_opcode;
+
+	    case XBC_STRUCT:
+		offset = *(short*)stream;
+		stream += sizeof(short);
+		reg1 = constants[*(short*)stream];
+		stream += sizeof(short);
+		if (reg0->type != LispStruct_t ||
+		    reg0->data.struc.def != reg1) {
+		    char *name = STRPTR(CAR(reg1->data.struc.def));
+
+		    for (; offset; offset--)
+			reg1 = CDR(reg1);
+		    LispDestroy(mac, "%s-%s: %s is not a %s",
+				name, STRPTR(CAR(reg1)),
+				STROBJ(reg0), name);
+		}
+		for (reg0 = reg0->data.struc.fields; offset; offset--)
+		    reg0 = CDR(reg0);
+		reg0 = CAR(reg0);
+		goto next_opcode;
+	    case XBC_STRUCTP:
+		reg1 = constants[*(short*)stream];
+		stream += sizeof(short);
+		reg0 = reg0->type == LispStruct_t &&
+		       reg0->data.struc.def == reg1 ? T : NIL;
+		goto next_opcode;
+
+	    case XBC_LETREC:
+		/* XXX could/should optimize, shouldn't need to parse
+		 * the bytecode header again */
+		lex = mac->env.lex;
+		mac->env.lex = mac->env.length - (*stream++);
+		reg0 = ExecuteBytecode(mac, bytecode);
+		mac->env.lex = lex;
+		goto next_opcode;
+
+	    case XBC_RETURN:
+		mac->protect.length = pbase;
+		return (reg0);
+	}
+	continue;
+predicate_label:
+	switch (*stream++) {
+	    case XBP_CONSP:
+		reg0 = CONS_P(reg0) ? T : NIL;
+		goto next_opcode;
+	    case XBP_LISTP:
+		reg0 = CONS_P(reg0) || reg0 == NIL ? T : NIL;
+		goto next_opcode;
+	    case XBP_NUMBERP:
+		reg0 = NUMBER_P(reg0) ? T : NIL;
+		goto next_opcode;
+	}
+    }
+
+    /*NOTREACHED*/
+    return (reg0);
+}
