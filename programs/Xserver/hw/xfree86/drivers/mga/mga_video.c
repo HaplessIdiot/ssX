@@ -1024,8 +1024,8 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
     offscreenImages[0].image = &ImagesG[0];
     offscreenImages[0].flags = VIDEO_OVERLAID_IMAGES | 
 			       VIDEO_CLIP_TO_VIEWPORT;
-    offscreenImages[0].allocate = MGAAllocateSurface;
-    offscreenImages[0].free = MGAFreeSurface;
+    offscreenImages[0].alloc_surface = MGAAllocateSurface;
+    offscreenImages[0].free_surface = MGAFreeSurface;
     offscreenImages[0].display = MGADisplaySurface;
     offscreenImages[0].stop = MGAStopSurface;
     offscreenImages[0].setAttribute = MGASetSurfaceAttribute;
@@ -1039,8 +1039,8 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
 	offscreenImages[1].image = &ImagesG[2];
 	offscreenImages[1].flags = VIDEO_OVERLAID_IMAGES | 
 				   VIDEO_CLIP_TO_VIEWPORT;
-	offscreenImages[1].allocate = MGAAllocateSurface;
-	offscreenImages[1].free = MGAFreeSurface;
+	offscreenImages[1].alloc_surface = MGAAllocateSurface;
+	offscreenImages[1].free_surface = MGAFreeSurface;
 	offscreenImages[1].display = MGADisplaySurface;
 	offscreenImages[1].stop = MGAStopSurface;
 	offscreenImages[1].setAttribute = MGASetSurfaceAttribute;
