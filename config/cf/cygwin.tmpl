@@ -1,5 +1,5 @@
 XCOMM $XConsortium: WinLib.tmpl,v 1.1 94/01/08 18:32:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.4 2001/04/18 17:13:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.5 2001/06/04 13:04:40 alanh Exp $
 
 #define SharedX11Reqs
 #define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
@@ -40,4 +40,38 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #endif
+
+
+/*
+ * Some Imake defines needed only on Cygwin
+ */
+
+#ifndef DllwrapCmd
+#define DllwrapCmd dllwrap
+#endif
+
+#ifndef DlltoolCmd
+#define DlltoolCmd dlltool
+#endif
+
+#ifndef ObjdumpCmd
+#define ObjdumpCmd objdump
+#endif
+
+#ifndef DllBaseCounter
+# if CrossCompiling
+# define DllBaseCounter ~/DLL_BASE_COUNTER /* So you don't have to be root */
+# else
+# define DllBaseCounter /tmp/DLL_BASE_COUNTER
+#endif
+#endif
+
+/*
+ * Some Cygwin only Makefile symbols, as opposed to Imake define's
+ */
+
+          DLLWRAP = DllwrapCmd
+          DLLTOOL = DlltoolCmd
+          OBJDUMP = ObjdumpCmd
+     BASE_COUNTER = DllBaseCounter
 

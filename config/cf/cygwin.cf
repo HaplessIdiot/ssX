@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.22 2001/06/08 08:37:35 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -28,7 +28,10 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 #define GccUsesGas              YES
 #define UseGas                  YES
 #define GnuCpp                  YES
+
+#if !CrossCompiling
 #define BootstrapCFlags		-L/lib/automode.o
+#endif
 
 #define HasShadowPasswd         NO
 #define HasLibCrypt             YES
@@ -117,7 +120,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 
 #define PreProcessCmd           CcCmd -E
 
+#ifndef PostIncDir
 #define PostIncDir              `CcCmd --print-libgcc-file-name | sed 's,\\\\,/,g' | sed 's,libgcc.a,include,'`
+#endif
 
 #define LdCombineFlags          -r
 
@@ -141,8 +146,8 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 #define ConnectionFlags         -DTCPCONN -DUNIXCONN
 #define ExtraLibraries          
 #define InstUidFlags            -m 4711
-#define UseRgbTxt                YES
-#define ExtraFilesToClean	  *.obj *.orig *.rej junk.c *.exe *.dll *.lib *~
+#define UseRgbTxt               YES
+#define ExtraFilesToClean	*.obj *.orig *.rej junk.c *.exe *.dll *.lib *~
 
 /*
  * You'll probably want BuildDebug to be YES if you are debugging :)
@@ -186,12 +191,12 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 #define BuildGlxExt             YES
 #define BuildXInputExt		YES
 #define BuildXF86VidModeExt     YES
-#define BuildXF86DGA		NO
+#define BuildXF86DGA		NO	/* No direct access to hardware */
 #define BuildXvExt		YES
 #define BuildXF86MiscExt	YES
 #define BuildRender		YES
-#define BuildXF86DRI		NO
-#define BuildXF86DRM		NO
+#define BuildXF86DRI		NO	/* No direct access to hardware */
+#define BuildXF86DRM		NO	/* No direct access to hardware */
 #define BuildXKB		YES
 #define BuildXCMiscExt		YES
 #define BuildTestExt		YES
@@ -208,7 +213,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 #define BuildXCSecurity		YES
 #define BuildAppgroup		YES
 #define BuildShapeExt		YES
-#define BuildScanpci		NO
+#define BuildScanpci		NO	/* No direct access to hardware */
 
 #define BuildScreenSaverExt	NO
 
@@ -258,6 +263,12 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 
 #define XF86CardDrivers		/**/
 
+
+/*
+ * These man rules were ganked from linux.cf, verbatim.
+ * I am not convinced that we need them.
+ */
+#if 0
 /* Some of these man page defaults are overriden in the above OS sections */
 #ifndef ManSuffix
 # define ManSuffix      1x
@@ -277,6 +288,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 #ifndef FileManDir
 # define FileManDir     $(MANSOURCEPATH)5
 #endif
+#endif
 
 /* Server build rules */
 #define XnestServer			YES
@@ -286,12 +298,15 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.21 2001/06/08 08:06:50 ala
 #define XWinServer			YES
 
 /*
- * Why we don't use the smart scheduler?
+ * 2001-06-19 - SmartScheduler is terribly slow on Cygwin.  It causes
+ * visible delays in updating of windows, cursor position, etc.
  */
 #define UseSmartScheduler		NO
 
-/* --unix option of cygwin make fools the standard MakeFlagsToShellFlags macro */
-#define MakeFlagsToShellFlags(makeflags,shellcmd)\
+/*
+ * --unix option of Cygwin make fools the standard MakeFlagsToShellFlags macro
+ */
+#define MakeFlagsToShellFlags(makeflags,shellcmd) \
 	for flag in ${MAKEFLAGS} ''; do \				@@\
 	  case "$$flag" in *=*) ;;--*) ;; *[makeflags]*) shellcmd;; esac; done
 

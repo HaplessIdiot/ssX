@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.11 2001/06/08 08:06:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.12 2001/06/20 12:55:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -337,6 +337,17 @@ winFinishScreenInitFB (int index,
       return FALSE;
     }
 
+#if WIN_PSEUDO_SUPPORT
+  /* Colormap Routines */
+  pScreen->CreateColormap = winCreateColormap;
+  pScreen->DestroyColormap = winDestroyColormap;
+  pScreen->InstallColormap = winInstallColormap;
+  pScreen->UninstallColormap = winUninstallColormap;
+  pScreen->ListInstalledColormaps = winListInstalledColormaps;
+  pScreen->StoreColors = winStoreColors;
+  pScreen->ResolveColor = winResolveColor;
+#endif
+
 #ifdef RENDER
   /* Render extension initialization, calls miPictureInit */
   fbPictureInit (pScreen, NULL, 0);
@@ -373,7 +384,7 @@ winFinishScreenInitFB (int index,
 #endif
       shadowInit (pScreen,
 		  pScreenPriv->pwinShadowUpdate,
-		  pScreenPriv->pwinShadowWindow);
+		  NULL);
     }
 
   /*
@@ -712,13 +723,13 @@ winFinishScreenInitNativeGDI (int index,
   pScreen->PointerNonInterestBox = (PointerNonInterestBoxProcPtr) 0;
 
   /* Colormap Routines */
-  pScreen->CreateColormap = winInitializeColormapNativeGDI;
-  pScreen->DestroyColormap = (void (*)())NoopDDA;
-  pScreen->InstallColormap = winInstallColormapNativeGDI;
-  pScreen->UninstallColormap = winUninstallColormapNativeGDI;
-  pScreen->ListInstalledColormaps = winListInstalledColormapsNativeGDI;
-  pScreen->StoreColors = (void (*)())NoopDDA;
-  pScreen->ResolveColor = winResolveColorNativeGDI;
+  pScreen->CreateColormap = winCreateColormap;
+  pScreen->DestroyColormap = winDestroyColormap;
+  pScreen->InstallColormap = winInstallColormap;
+  pScreen->UninstallColormap = winUninstallColormap;
+  pScreen->ListInstalledColormaps = winListInstalledColormaps;
+  pScreen->StoreColors = winStoreColors;
+  pScreen->ResolveColor = winResolveColor;
 
   /* Fonts */
   pScreen->RealizeFont = winRealizeFontNativeGDI;

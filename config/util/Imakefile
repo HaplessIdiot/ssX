@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.35 2001/04/26 16:01:37 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.36 2001/04/26 21:09:39 dawes Exp $
 
 #if UseCCMakeDepend
 CCMDEP_PROG = ccmakedep
@@ -18,7 +18,11 @@ CMKDIRHIER = mkdirhier.exe
 
 #ifndef OS2Architecture
 GCCMDEP_PROG = gccmakedep
+#if CrossCompiling
+LNDIR_PROG = HostProgramTargetName(lndir)
+#else
 LNDIR_PROG = ProgramTargetName(lndir)
+#endif
 #endif
 
 #if BuildRman
@@ -31,7 +35,7 @@ QNXCopyInstaller($(PROJECTROOT)/bin/install.qnx,./install.sh)
 
 PROGRAMS = xmkmf $(CCMDEP_PROG) $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) \
 	   $(RMAN_PROG) ProgramTargetName(revpath) \
-	   ProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
+	   HostProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
 DEPLIBS =
 #ifndef Win32Architecture
   EXTRA_LIBRARIES =
@@ -59,7 +63,11 @@ GCCCMD = $(CC)
 GCCCMD = gcc
 #endif
 
+#if CrossCompiling
+includes:: HostProgramTargetName(makestrs)
+#else
 includes:: ProgramTargetName(makestrs)
+#endif
 
 #ifdef ExportListGenSource
 CppScriptTarget(exportlistgen,ExportListGenSource,-DCXXFILT=$(CXXFILT),)
@@ -89,8 +97,13 @@ AllTarget(ProgramTargetName(mkdirhier))
 SimpleProgramTarget_3(mkdirhier)
 #endif
 
+#if CrossCompiling
+AllTarget(HostProgramTargetName(makestrs))
+SimpleHostProgramTarget(makestrs)
+#else
 AllTarget(ProgramTargetName(makestrs))
 SimpleProgramTarget_1(makestrs)
+#endif
 
 AllTarget(ProgramTargetName(revpath))
 SimpleProgramTarget_4(revpath)

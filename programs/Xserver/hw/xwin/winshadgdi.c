@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.10 2001/06/06 18:02:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.11 2001/06/20 12:55:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -275,6 +275,18 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   pScreenInfo->dwStride = (pScreenInfo->dwStrideBytes * 8)
     / pScreenInfo->dwDepth;
   
+  /* See if the shadow bitmap will be larger than the DIB size limit */
+  if (pScreenInfo->dwWidth * pScreenInfo->dwHeight * pScreenInfo->dwDepth
+      >= WIN_DIB_MAXIMUM_SIZE)
+    {
+      ErrorF ("winAdjustVideoModeShadowGDI () - Requested DIB (bitmap) "
+	      "will be larger than %d MB.  The surface may fail to be "
+	      "allocated on Windows 95, 98, or Me, due to a %d MB limit in "
+	      "DIB size.  This limit does not apply to Windows NT/2000, and "
+	      "this message may be ignored on those platforms.\n",
+	      WIN_DIB_MAXIMUM_SIZE_MB, WIN_DIB_MAXIMUM_SIZE_MB);
+    }
+
   return fReturn;
 }
 
@@ -316,36 +328,11 @@ winShadowUpdateGDI (ScreenPtr pScreen,
     }
 }
 
-void *
-winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
-			     CARD32	dwRow,
-			     CARD32	dwOffset,
-			     int	mode,
-			     CARD32	*pdwSize)
-{
-  winScreenPriv(pScreen);
-  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-
-  *pdwSize = pScreenInfo->dwPaddedWidth;
-  return (CARD8 *) pScreenInfo->pfb 
-    + dwRow * pScreenInfo->dwPaddedWidth + dwOffset;
-}
-
-void *
-winShadowWindowGDI (ScreenPtr	pScreen,
-		    CARD32	dwRow,
-		    CARD32	dwOffset,
-		    int		mode,
-		    CARD32	*pdwSize,
-		    void	*closure)
-{
-  return winShadowSetWindowLinearGDI (pScreen, dwRow, dwOffset, mode, pdwSize);
-}
-
 /* See Porting Layer Definition - p. 33 */
-/* We wrap whatever CloseScreen procedure was specified by fb;
-   a pointer to said procedure is stored in our devPrivate
-*/
+/*
+ * We wrap whatever CloseScreen procedure was specified by fb;
+ * a pointer to said procedure is stored in our devPrivate
+ */
 Bool
 winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
 {
@@ -443,6 +430,20 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       break;
 
     case 8:
+#if WIN_PSEUDO_SUPPORT
+      if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
+				     PseudoColorMask,
+				     pScreenPriv->dwBitsPerRGB,
+				     PseudoColor,
+				     pScreenPriv->dwRedMask,
+				     pScreenPriv->dwGreenMask,
+				     pScreenPriv->dwBlueMask))
+	{
+	  ErrorF ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	  return FALSE;
+	}
+      break;
+#else /* WIN_PSEUDO_SUPPORT */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
@@ -455,19 +456,22 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 	  return FALSE;
 	}
       break;
+#endif /* WIN_PSEUDO_SUPPORT */
 
     default:
       ErrorF ("winInitVisualsGDI () - Unknown screen depth\n");
       return FALSE;
     }
 
+#if !WIN_PSEUDO_SUPPORT
   /* Setup a fake PseudoColor visual for legacy apps */
   if (!miSetVisualTypes (8, PseudoColorMask, 8, -1))
     {
       ErrorF ("winInitVisualsShadowGDI () - miSetVisualTypes failed\n");
       return FALSE;
     }
-  
+#endif
+
   /* Set DPI info */
   pScreenInfo->dwDPIx = 100;
   pScreenInfo->dwDPIy = 100;
@@ -599,7 +603,6 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   /* Set our pointers */
   pScreenPriv->pwinAllocateFB = winAllocateFBShadowGDI;
   pScreenPriv->pwinShadowUpdate = winShadowUpdateGDI;
-  pScreenPriv->pwinShadowWindow = winShadowWindowGDI;
   pScreenPriv->pwinCloseScreen = winCloseScreenShadowGDI;
   pScreenPriv->pwinInitVisuals = winInitVisualsShadowGDI;
   pScreenPriv->pwinAdjustVideoMode = winAdjustVideoModeShadowGDI;
