@@ -594,15 +594,6 @@ do {									\
 #define RADEON_DST_Y                        0x1420
 #define RADEON_DST_Y_SUB                    0x15a8
 #define RADEON_DST_Y_X                      0x1438
-
-#define RADEON_FCP_CNTL                     0x0910
-#       define RADEON_FCP_CNTL__PCICLK      0
-#       define RADEON_FCP_CNTL__PCLK        1
-#       define RADEON_FCP_CNTL__PCLKb       2
-#       define RADEON_FCP_CNTL__HREF        3
-#       define RADEON_FCP_CNTL__GND         4
-#       define RADEON_FCP_CNTL__HREFb       5
-
 #define RADEON_FLUSH_1                      0x1704
 #define RADEON_FLUSH_2                      0x1708
 #define RADEON_FLUSH_3                      0x170c
@@ -852,6 +843,8 @@ do {									\
 #       define  RADEON_SCALER_INT_EMU              0x20000000L
 #       define  RADEON_SCALER_ENABLE               0x40000000L
 #       define  RADEON_SCALER_SOFT_RESET           0x80000000L
+#       define  RADEON_SCALER_ADAPTIVE_DEINT       0x00001000L
+
 #define RADEON_OV0_V_INC                    0x0424
 #define RADEON_OV0_P1_V_ACCUM_INIT          0x0428
 #       define  RADEON_OV0_P1_MAX_LN_IN_PER_LN_OUT 0x00000003L
@@ -899,12 +892,11 @@ do {									\
 #define RADEON_OV0_FOUR_TAP_COEF_3          0x04BC
 #define RADEON_OV0_FOUR_TAP_COEF_4          0x04C0
 #define RADEON_OV0_COLOUR_CNTL              0x04E0
-#define RADEON_OV0_VIDEO_KEY_CLR            0x04E4
-#define RADEON_OV0_VIDEO_KEY_MSK            0x04E8
+#define RADEON_OV0_VIDEO_KEY_CLR_LOW        0x04E4
+#define RADEON_OV0_VIDEO_KEY_CLR_HIGH       0x04E8
 #define RADEON_OV0_GRAPHICS_KEY_CLR_LOW     0x04EC
 #define RADEON_OV0_GRAPHICS_KEY_CLR_HIGH    0x04F0
-#define RADEON_OV0_GRAPHICS_KEY_CLR         0x04EC
-#define RADEON_OV0_GRAPHICS_KEY_MSK         0x04F0
+
 #define RADEON_OV0_KEY_CNTL                 0x04F4
 #       define  RADEON_VIDEO_KEY_FN_MASK    0x00000003L
 #       define  RADEON_VIDEO_KEY_FN_FALSE   0x00000000L
@@ -920,6 +912,44 @@ do {									\
 #       define  RADEON_CMP_MIX_OR           0x00000000L
 #       define  RADEON_CMP_MIX_AND          0x00000100L
 #define RADEON_OV0_TEST                     0x04F8
+
+#define RADEON_OV0_GAMMA_0_F                0x0d40
+#define RADEON_OV0_GAMMA_10_1F              0x0d44
+#define RADEON_OV0_GAMMA_20_3F              0x0d48
+#define RADEON_OV0_GAMMA_40_7F              0x0d4c
+/* the registers that control gamma in the 80-37f range do not
+   exist on pre-R200 radeons */
+#define RADEON_OV0_GAMMA_80_BF              0x0e00
+#define RADEON_OV0_GAMMA_C0_FF              0x0e04
+#define RADEON_OV0_GAMMA_100_13F            0x0e08
+#define RADEON_OV0_GAMMA_140_17F            0x0e0c
+#define RADEON_OV0_GAMMA_180_1BF            0x0e10
+#define RADEON_OV0_GAMMA_1C0_1FF            0x0e14
+#define RADEON_OV0_GAMMA_200_23F            0x0e18
+#define RADEON_OV0_GAMMA_240_27F            0x0e1c
+#define RADEON_OV0_GAMMA_280_2BF            0x0e20
+#define RADEON_OV0_GAMMA_2C0_2FF            0x0e24
+#define RADEON_OV0_GAMMA_300_33F            0x0e28
+#define RADEON_OV0_GAMMA_340_37F            0x0e2c
+#define RADEON_OV0_GAMMA_380_3BF            0x0d50
+#define RADEON_OV0_GAMMA_3C0_3FF            0x0d54
+#define RADEON_OV0_LIN_TRANS_A              0x0d20
+#define RADEON_OV0_LIN_TRANS_B              0x0d24
+#define RADEON_OV0_LIN_TRANS_C              0x0d28
+#define RADEON_OV0_LIN_TRANS_D              0x0d2c
+#define RADEON_OV0_LIN_TRANS_E              0x0d30
+#define RADEON_OV0_LIN_TRANS_F              0x0d34
+
+/* capture related registers */
+
+/* this is _not_ a PLL register, unlike in rage128 */
+#define RADEON_FCP_CNTL                     0x0012 /* PLL */
+#      define RADEON_FCP_CNTL__PCICLK            0
+#      define RADEON_FCP_CNTL__PCLK              1
+#      define RADEON_FCP_CNTL__PCLKb             2
+#      define RADEON_FCP_CNTL__HREF              3
+#      define RADEON_FCP_CNTL__GND               4
+#      define RADEON_FCP_CNTL__HREFb             5
 
 #define RADEON_P2PLL_CNTL                   0x002a /* P2PLL */
 #       define RADEON_P2PLL_RESET                (1 <<  0)
