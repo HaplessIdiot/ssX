@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.62 1999/10/13 16:49:01 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.63 2000/01/31 19:33:17 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1824,6 +1824,16 @@ Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
 
+ /*
+ * ProjectUnsharedFontLibReferences - unshared font libraries
+ */
+#ifndef ProjectUnsharedFontLibReferences
+#define ProjectUnsharedFontLibReferences()					@@\
+DEPFONTLIB = _UseCat($(USRLIBDIR)/,XBuildLibDir/,LibraryTargetName(Xfont))	@@\
+FONTLIB = -L$(FREETYPELIBDIR) -L$(FONTLIBSRC) LoaderLibPrefix -lXfont		@@\
+LintLibReferences(XFONT,Xfont,$(FONTLIBSRC))
+#endif
+
 /*
  * SharedLibDependencies - shared library dependencies
  */
@@ -1831,6 +1841,17 @@ LintLibReferences(varname,libname,libsource)
 #define SharedLibDependencies(libname,libsource,revname) /**/
 #endif
 
+/*
+ * SharedFontLibReferences - shared font libraries
+ */
+#ifndef SharedFontLibReferences
+#define SharedFontLibReferences()					@@\
+SOFONTREV = SharedFontRev						@@\
+DEPFONTLIB = SharedLibDependencies(Xfont,$(FONTLIBSRC),SOFONTREV)	@@\
+FONTLIB = -L$(FREETYPELIBDIR) -L$(FONTLIBSRC) LoaderLibPrefix -lXfont	@@\
+LintLibReferences(XFONT,Xfont,$(FONTLIBSRC))
+#endif
+ 
 /*
  * SharedDSLibDependencies - shared library dependencies with data separation
  */

@@ -4,7 +4,7 @@ XCOMM $XConsortium: ibmLib.rules /main/15 1996/12/30 16:06:05 kaleb $
  * AIX shared library rules
  */
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/ibmLib.rules,v 3.4 1999/01/11 05:13:06 dawes Exp $
 
 #ifndef HasSharedLibraries
 # define HasSharedLibraries YES
@@ -82,7 +82,7 @@ XCOMM $XFree86$
 
 # if OSMajorVersion < 4
 /*
- * SharedDSLibReferences - variables for shared libraries
+ * SharedLibReferences - variables for shared libraries
  */
 
 #  ifndef SharedLibReferences
@@ -90,6 +90,30 @@ XCOMM $XFree86$
 Concat3(DEP,varname,LIB) = /**/						@@\
 Concat(varname,LIB) = _Use(Concat(-l,libname),Concat(libsource/lib,libname.a)) @@\
 LintLibReferences(varname,libname,libsource)
+#  endif
+
+# endif
+
+# if OSMajorVersion < 4
+/*
+ * SharedFontLibReferences - shared font libraries
+ */
+
+#  ifndef SharedLibReferences
+#   define SharedLibReferences()					@@\
+DEPFONTLIB = /**/							@@\
+FONTLIB = -L$(FREETYPELIBDIR) _Use(-lXfont,$(FONTLIBSRC)/libXfont.a)	@@\
+LintLibReferences(XFONT,Xfont,$(FONTLIBSRC))
+#  endif
+
+# else
+
+#  ifndef SharedFontLibReferences
+#   define SharedFontLibReferences()					@@\
+DEPFONTLIB = /**/							@@\
+FONTLIB = -L$(FREETYPELIBDIR) _Use(-lXfont,$(BUILDLIBDIR)/font.imp) $(BUILDLIBDI
+)/libXfont.a)) @@\
+LintLibReferences(XFONT,Xfont,$(FONTLIBSRC))
 #  endif
 
 # else

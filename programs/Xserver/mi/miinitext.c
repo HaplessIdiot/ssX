@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.47 2000/02/08 13:13:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.48 2000/02/08 17:19:25 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -215,6 +215,9 @@ extern void XAntiExtensionInit(INITARGS);
 #ifdef DPS
 extern void DPSExtensionInit(INITARGS);
 #endif
+#ifdef FONTCACHE
+extern void FontCacheExtensionInit(INITARGS);
+#endif
 
 #ifndef XFree86LOADER
 
@@ -309,6 +312,9 @@ InitExtensions(argc, argv)
 #endif
 #if defined(DPMSExtension) && !defined(NO_HW_ONLY_EXTS)
     DPMSExtensionInit();
+#endif
+#ifdef FONTCACHE
+    FontCacheExtensionInit();
 #endif
 #ifdef XANTI
     XAntiExtensionInit();
@@ -407,6 +413,7 @@ ExtensionModule extension[] =
     { NULL, "XFree86-Bigfont", NULL, NULL },
     { NULL, "XFree86-DRI", NULL, NULL },
     { NULL, "Adobe-DPS-Extension", NULL, NULL },
+    { NULL, "FontCache", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 #endif

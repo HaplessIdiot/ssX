@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.16 1998/12/20 11:58:26 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.17 1999/03/07 11:41:19 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -77,6 +77,9 @@ char *malloc();
 #ifdef XF86MISC
 #include <X11/extensions/xf86misc.h>
 #include <X11/extensions/xf86mscstr.h>
+#endif
+#ifdef FONTCACHE
+#include <X11/extensions/fontcacheP.h>
 #endif
 
 #define ON 1
@@ -151,6 +154,9 @@ Bool hasargs = False;
 #ifdef XF86MISC
 int miscpresent = 1;
 int major, minor;
+#endif
+#ifdef FONTCACHE
+long himark, lowmark, balance;
 #endif
 
 progName = argv[0];
@@ -260,6 +266,65 @@ for (i = 1; i < argc; ) {
 	  XMITMiscSetBugMode(dpy, False);
       else
 	  fprintf(stderr, "server does not have extension for -bc option\n");
+  }
+#endif
+#ifdef FONTCACHE
+  else if (strcmp(arg, "fc") == 0) {
+      int dummy;
+      FontCacheSettings cs;
+      if (FontCacheQueryExtension(dpy, &dummy, &dummy)) {
+	  FontCacheGetCacheSettings(dpy, &cs);
+	  himark = cs.himark / 1024;
+	  lowmark = cs.lowmark / 1024;
+	  balance = cs.balance;
+	  if (i >= argc) {
+	      /* Set to server's values, and clear all cache in side effect */
+	      set_font_cache(dpy, himark, lowmark, balance);
+	      break;
+	  }
+	  arg = nextarg(i, argv);
+	  if (is_number(arg, 32767)) {	/* If hi-mark is given: */
+	      himark = atoi(arg);
+	      i++;
+	      if (himark <= 0) {
+		  usage("hi-mark must be grater than 0", NULL);
+	      }
+	      if (i >= argc) {
+		  lowmark = (himark * 70) / 100;
+		  set_font_cache(dpy, himark, lowmark, balance);
+		  break;
+	      }
+	      arg = nextarg(i, argv);
+	      if (is_number(arg, 32767)) {	/* If low-mark is given: */
+		  lowmark = atoi(arg);
+		  i++;
+		  if (lowmark <= 0) {
+		      usage("low-mark must be grater than 0", NULL);
+		  }
+		  if (himark <= lowmark) {
+		      usage("hi-mark must be grater than low-mark", NULL);
+		  }
+		  if (i >= argc) {
+		      set_font_cache(dpy, himark, lowmark, balance);
+		      break;
+		  }
+		  arg = nextarg(i, argv);
+		  if (is_number(arg, 90)) {
+		      balance = atoi(arg);
+		      i++;
+		      if (!(10 <= balance && balance <= 90)) {
+			  usage("balance must be 10 to 90\n");
+		      }
+		      set_font_cache(dpy, himark, lowmark, balance);
+		  }
+	      }
+	  } else if (strcmp(arg, "s") == 0 || strcmp(arg, "status") == 0) {
+	      /* display cache status */
+	      query_cache_status(dpy);
+	  }
+      } else {
+	  fprintf(stderr, "server does not have extension for fc option\n");
+      }
   }
 #endif
   else if (strcmp(arg, "fp") == 0) {	       /* set font path */
@@ -1056,6 +1121,25 @@ set_lock(Display *dpy, Bool onoff)
   return;
 }
 
+#ifdef FONTCACHE
+set_font_cache(dpy, himark, lowmark, balance)
+    Display *dpy;
+    long himark;
+    long lowmark;
+    long balance;
+{
+    FontCacheSettings cs;
+    int status;
+
+    cs.himark = himark * 1024;
+    cs.lowmark = lowmark * 1024;
+    cs.balance = balance;
+    status = FontCacheChangeCacheSettings(dpy, &cs);
+
+    return status;
+}
+#endif
+
 static char *
 on_or_off(int val, int onval, char *onstr, 
 	  int offval, char *offstr, char buf[])
@@ -1198,10 +1282,81 @@ if (npaths) {
       }
 }
 #endif
+#ifdef FONTCACHE
+{
+    int dummy;
+    FontCacheSettings cs;
+    int himark, lowmark, balance;
+
+    printf("Font cache:\n");
+    if (FontCacheQueryExtension(dpy, &dummy, &dummy)) {
+	if (FontCacheGetCacheSettings(dpy, &cs)) {
+	    himark = cs.himark / 1024;
+	    lowmark = cs.lowmark / 1024;
+	    balance = cs.balance;
+	    printf("  hi-mark (KB): %d  low-mark (KB): %d  balance (%%): %d\n",
+		   himark, lowmark, balance);
+	}
+    } else {
+	printf("  Server does not have the FontCache Extension\n");
+    }
+}
+#endif
 
 return;
 }
 
+#ifdef FONTCACHE
+/*
+ *  query_cache_status()
+ *
+ *  This is the information-getting function for telling the user what the
+ *  current settings and statistics are.
+ */
+
+query_cache_status(dpy)
+    Display *dpy;
+{
+    int scr = DefaultScreen (dpy);
+    int i, j;
+
+    int dummy;
+    FontCacheSettings cs;
+    FontCacheStatistics cstats;
+    int himark, lowmark, balance;
+
+    if (FontCacheQueryExtension(dpy, &dummy, &dummy)) {
+	if (FontCacheGetCacheSettings(dpy, &cs)) {
+	    printf("font cache settings:\n");
+	    himark = cs.himark / 1024;
+	    lowmark = cs.lowmark / 1024;
+	    balance = cs.balance;
+	    printf("  hi-mark (KB): %d  low-mark (KB): %d  balance (%%): %d\n",
+		   himark, lowmark, balance);
+	}
+	if (FontCacheGetCacheStatistics(dpy, &cstats)) {
+	    printf("font cache statistics:\n");
+	    printf("   cache purged: %d\n", cstats.purge_runs);
+	    printf("   cache status: %d\n", cstats.purge_stat);
+	    printf("  cache balance: %d\n", cstats.balance);
+	    printf("font cache entry statistics:\n");
+	    printf("      hits: %d\n", cstats.f.hits);
+	    printf("  misshits: %d\n", cstats.f.misshits);
+	    printf("    purged: %d\n", cstats.f.purged);
+	    printf("     usage: %d\n", cstats.f.usage);
+	    printf("large bitmap cache entry statistics:\n");
+	    printf("      hits: %d\n", cstats.v.hits);
+	    printf("  misshits: %d\n", cstats.v.misshits);
+	    printf("    purged: %d\n", cstats.v.purged);
+	    printf("     usage: %d\n", cstats.v.usage);
+	}
+    } else {
+	printf("Server does not have the FontCache Extension\n");
+    }
+
+    return 0;
+}
+#endif
 
 /*  This is the usage function */
 
@@ -1244,6 +1399,14 @@ usage(char *fmt, ...)
     fprintf (stderr, "\t      force off \n");
     fprintf (stderr, "\t      (also implicitly enables DPMS features) \n");
     fprintf (stderr, "\t      a timeout value of zero disables the mode \n");
+#endif
+#ifdef FONTCACHE
+    fprintf (stderr, "    To control font cache:\n");
+    fprintf (stderr, "\t fc [hi-mark [low-mark [balance]]]\n");
+    fprintf (stderr, "\t    both mark values spcecified in KB\n");
+    fprintf (stderr, "\t    balance value spcecified in percent (10 - 90)\n");
+    fprintf (stderr, "    Show font cache statistics:\n");
+    fprintf (stderr, "\t fc s\n");
 #endif
     fprintf (stderr, "    To set the font path:\n" );
     fprintf (stderr, "\t fp= path[,path...]\n" );

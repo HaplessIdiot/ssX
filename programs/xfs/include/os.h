@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.6 1999/01/31 12:22:27 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.7 1999/03/07 11:41:01 dawes Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
@@ -79,6 +79,10 @@ extern int  ListenPort;
 extern Bool UseSyslog;
 extern Bool CloneSelf;
 extern char ErrorFile[];
+#ifdef FONTCACHE
+#include "fontcacheP.h"
+extern FontCacheSettings cacheSettings;
+#endif
 
 struct _osComm;	/* FIXME: osCommPtr */
 

@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.8 1998/10/25 07:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.9 1999/03/07 11:41:06 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
@@ -592,7 +592,14 @@ static int  padlength[4] = {0, 3, 2, 1};
 void
 WriteToClient(ClientPtr client, int count, char *buf)
 {
+    int flag = 0;
+    if (NULL == buf) {
+	flag = -1;
+	buf = (char *)fsalloc(count); memset(buf, 0, count);
+    }
      write_to_client_internal(client, count, buf, padlength[count & 3]);
+    if (flag)
+	fsfree(buf);
 }
 
 static ConnectionInputPtr

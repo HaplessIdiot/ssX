@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.6 1998/10/25 07:12:34 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.7 1999/03/07 11:41:05 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -54,6 +54,9 @@ in this Software without prior written authorization from The Open Group.
 #include	"globals.h"
 #include	"access.h"
 #include	"difsutils.h"
+#ifdef FONTCACHE
+#include	"fontcacheP.h"
+#endif
 
 static char *font_catalogue = NULL;
 
@@ -72,6 +75,11 @@ static char *config_set_snf_format(ConfigOptionPtr parm, char *val);
  */
 static ConfigOptionRec config_options[] = {
     {"alternate-servers", config_set_list},
+#ifdef FONTCACHE
+    {"cache-balance", config_set_int},
+    {"cache-hi-mark", config_set_int},
+    {"cache-low-mark", config_set_int},
+#endif
     {"catalogue", config_set_catalogue},
     {"client-limit", config_set_int},
     {"clone-self", config_set_bool},
@@ -449,6 +457,15 @@ config_set_int(
     } else if (!strcmp(parm->parm_name, "default-point-size")) {
 	SetDefaultPointSize(ival);
     }
+#ifdef FONTCACHE
+    else if (!strcmp(parm->parm_name, "cache-balance")) {
+	cacheSettings.balance = ival;
+    } else if (!strcmp(parm->parm_name, "cache-hi-mark")) {
+	cacheSettings.himark = ival * 1024;
+    } else if (!strcmp(parm->parm_name, "cache-low-mark")) {
+	cacheSettings.lowmark = ival * 1024;
+    }
+#endif
     return val;
 }
 

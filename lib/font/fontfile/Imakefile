@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.14 1999/05/15 12:10:09 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.15 1999/08/21 13:48:01 dawes Exp $
 #include <Server.tmpl>
 
 #if DoLoadableServer
@@ -27,6 +27,11 @@ CID_DEFINES = -DBUILD_CID
 #if BuildFreeType
 FREETYPE_DEFINES = -DBUILD_FREETYPE
 #endif
+#if BuildXTrueType
+#if XTTInLibFont
+XTRUETYPE_DEFINES = -DBUILD_XTRUETYPE
+#endif
+#endif
 
 #if GzipFontCompression
  GUNZIP_SRC = gunzip.c
@@ -38,7 +43,7 @@ FREETYPE_DEFINES = -DBUILD_FREETYPE
 
     DEFINES = StrcasecmpDefines $(ATTRIBDEFS) \
 	      $(SPEEDO_DEFINES) $(TYPE1_DEFINES) $(CID_DEFINES) \
-	      $(FREETYPE_DEFINES) $(GZIP_DEFS)
+	      $(FREETYPE_DEFINES) $(XTRUETYPE_DEFINES) $(GZIP_DEFS)
 
        SRCS = dirfile.c fontdir.c fontfile.c fileio.c fontscale.c \
               defaults.c bitsource.c register.c renderers.c bufio.c \

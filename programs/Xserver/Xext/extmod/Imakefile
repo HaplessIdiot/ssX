@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.15 1999/08/14 10:49:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.16 2000/01/24 23:22:31 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -41,6 +41,15 @@ LinkSourceFile(xf86dga2.c,..)
 LinkSourceFile(dpms.c,..)
 #endif
 
+#if BuildFontCache
+   FONTCACHESRCS = fontcache.c
+   FONTCACHEOBJS = fontcache.o
+#if 0
+   FONTCACHEINCLUDES = -I$(XF86SRC)/os-support
+#endif
+LinkSourceFile(fontcache.c,..)
+#endif
+
 #if BuildXvExt
           XVSRCS = xvmain.c xvdisp.c xvmod.c
           XVOBJS = xvmain.o xvdisp.o xvmod.o
@@ -75,19 +84,20 @@ LinkSourceFile(cup.c,..)
               mitmisc.c \
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
 	      $(XF86MISCSRCS) $(XF86DGASRCS) \
-	      $(CUPSRCS) $(DPMSSRCS) \
+	      $(CUPSRCS) $(DPMSSRCS) $(FONTCACHESRCS)  \
 	      $(EVISRCS) $(XVSRCS) $(XANTISRCS) $(MODINITSRCS)
 
       MOBJS = $(MODINITOBJS) shape.o $(MULTIBUFOBJ) mitmisc.o \
 	      bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o \
 	      $(VIDMODEOBJS) $(XF86MISCOBJS) $(XF86DGAOBJS) \
-              $(CUPOBJS) $(DPMSOBJS) $(EVIOBJS) $(XVOBJS) $(XANTIOBJS)
+              $(CUPOBJS) $(DPMSOBJS) $(FONTCACHEOBJS) \
+	      $(EVIOBJS) $(XVOBJS) $(XANTIOBJS)
 
     DEFINES = -DEXTMODULE
 
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-	       $(XF86INCLUDES) -I$(FONTINCSRC)
+	       $(XF86INCLUDES) $(FONTCACHEINCLUDES) -I$(FONTINCSRC)
     LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
 
 LinkSourceFile(shape.c,..)

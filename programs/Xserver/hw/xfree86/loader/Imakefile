@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.19 1999/12/28 13:47:43 robin Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.20 2000/01/25 18:37:47 dawes Exp $ */
 
 
 
@@ -34,7 +34,7 @@ MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 		-I$(SERVERSRC)/dbe -I$(SERVERSRC)/Xext \
 		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/os -I$(XINCLUDESRC) -I$(FONTINCSRC) \
-		-I$(FONTLIBSRC)/include -I$(EXTINCSRC)
+		-I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/fontcache -I$(EXTINCSRC)
 
 #ifdef OS2Architecture
 SRCS1 = os2funcs.c

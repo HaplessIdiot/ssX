@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.11 1999/05/09 10:51:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.12 2000/01/25 18:37:37 dawes Exp $ */
 
 /*
  *
@@ -105,6 +105,13 @@ extern void XFree86DGARegister(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #include "dpmsstr.h"
+#endif
+
+#ifdef FONTCACHE
+extern void FontCacheExtensionInit(INITARGS);
+#define _FONTCACHE_SERVER_
+#include "fontcacheP.h"
+#include "fontcachstr.h"
 #endif
 
 #ifdef XANTI
@@ -237,6 +244,14 @@ ExtensionModule extensionModules[] = {
     {
 	DPMSExtensionInit,
 	DPMSExtensionName,
+	NULL,
+	NULL
+    },
+#endif
+#ifdef FONTCACHE
+    {
+	FontCacheExtensionInit,
+	FONTCACHENAME,
 	NULL,
 	NULL,
 	NULL

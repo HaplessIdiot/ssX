@@ -12,11 +12,10 @@ static XF86ModReqInfo cconvSubReq = \
     _XTT_V_MAJOR, \
     _XTT_V_MINOR, \
     _XTT_V_REVISION, \
-    ABI_CLASS_ANSIC, \
+    ABI_CLASS_ANSI, \
     ABI_VERS_UNSPEC, \
-    MOD_TYPE_CODECONV \
+    MOD_CLASS_FONT \
 };
-
 
 #define CCONVVERSION(name) PREDEFCCONVVERSION(name)
 #define PREDEFCCONVVERSION(name) \
@@ -30,9 +29,9 @@ static XF86ModuleVersionInfo name ## VersRec = \
 	_XTT_V_MAJOR, \
 	_XTT_V_MINOR, \
 	_XTT_V_REVISION, \
-	ABI_CLASS_ANSIC,	\
-	ABI_ANSIC_VERSION, \
-	MOD_TYPE_CODECONV, \
+	ABI_CLASS_FONT,			/* Font module */ \
+	ABI_FONT_VERSION, \
+	MOD_CLASS_FONT, \
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */ \
 };
 
@@ -44,7 +43,18 @@ name ## ModuleData = { \
     name ## Setup, \
     NULL, \
 };
-
+/*
+#define CCONVINIT(name) PREDEFCCONVINIT(name)
+#define PREDEFCCONVINIT(name) \
+void \
+name ## ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup, \
+	      ModuleTearDownProc *teardown) \
+{ \
+    *vers = & name ## VersRec; \
+    *setup = name ## Setup; \
+    *teardown = NULL; \
+}
+*/
 
 #define CCONVSETUP(name) PREDEFCCONVSETUP(name)
 
@@ -86,6 +96,5 @@ typedef struct {
     CodeConverterInfo *refCodeConverterInfo;
     int *refMapID;
 } ModuleSetupArg;
-
 
 #endif
