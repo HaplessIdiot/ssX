@@ -1424,8 +1424,16 @@ static int radeon_do_resume_cp( drm_device_t *dev)
 	DRM_DEBUG( "dev_priv->agp_buffers_offset 0x%lx\n",
 		   dev_priv->agp_buffers_offset );
 
-#if __REALLY_HAVE_SG
-	if ( dev_priv->is_pci ) {
+#if __REALLY_HAVE_AGP
+	if ( !dev_priv->is_pci ) {
+		/* Turn off PCI GART
+		 */
+		tmp = RADEON_READ( RADEON_AIC_CNTL )
+		      & ~RADEON_PCIGART_TRANSLATE_EN;
+		RADEON_WRITE( RADEON_AIC_CNTL, tmp );
+	} else
+#endif
+	{
 	        /* I'm not so sure about this ati_picgart_init after at resume-time... */
 	        if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
 					    &dev_priv->bus_pci_gart)) {   
@@ -1452,16 +1460,7 @@ static int radeon_do_resume_cp( drm_device_t *dev)
 		 */
 		RADEON_WRITE( RADEON_MC_AGP_LOCATION, 0xffffffc0 ); /* ?? */
 		RADEON_WRITE( RADEON_AGP_COMMAND, 0 ); /* clear AGP_COMMAND */
-	} else {
-#endif /* __REALLY_HAVE_SG */
-		/* Turn off PCI GART
-		 */
-		tmp = RADEON_READ( RADEON_AIC_CNTL )
-		      & ~RADEON_PCIGART_TRANSLATE_EN;
-		RADEON_WRITE( RADEON_AIC_CNTL, tmp );
-#if __REALLY_HAVE_SG
 	}
-#endif /* __REALLY_HAVE_SG */
 
 	radeon_cp_load_microcode( dev_priv );
 	radeon_cp_init_ring_buffer( dev, dev_priv );
