@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/init.c,v 3.2 1995/01/28 15:51:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/init.c,v 3.3 1996/02/04 09:01:58 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -27,6 +27,7 @@
 #include "ibm8514.h"
 #include "xf86.h"
 #include "xf86_OSlib.h"
+#include "xf86Procs.h"
 
 static short numPlanes = -1;
 static short resolution = -1;
@@ -220,7 +221,10 @@ void InitEnvironment(void)
 	 * Then draw.
 	 */
 	WaitQueue(6);
-	outw(FRGD_COLOR, 1);
+	if( xf86FlipPixels )
+	  outw(FRGD_COLOR, 1);
+	else
+	  outw(FRGD_COLOR, 0);
 	outw(CUR_X, 0);
 	outw(CUR_Y, 0);
 	outw(MAJ_AXIS_PCNT, 1023);

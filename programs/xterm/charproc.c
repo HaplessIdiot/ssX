@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.28 1996/06/29 09:10:52 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.29 1996/07/08 10:37:11 dawes Exp $
  */
 
 /*
@@ -123,6 +123,7 @@ static int in_put PROTO((void));
 static int set_character_class PROTO((char *s));
 static void DoSetSelectedFont PROTO_XT_SEL_CB_ARGS;
 static void FromAlternate PROTO((TScreen *screen));
+static void RequestResize PROTO((XtermWidget termw, int rows, int cols, int text));
 static void SwitchBufs PROTO((TScreen *screen));
 static void ToAlternate PROTO((TScreen *screen));
 static void VTGraphicsOrNoExpose PROTO((XEvent *event));
@@ -136,10 +137,12 @@ static void bitset PROTO((unsigned *p, int mask));
 static void dotext PROTO((TScreen *screen, unsigned flags, int charset, Char *buf, Char *ptr, unsigned fg, unsigned bg));
 static void dpmodes PROTO((XtermWidget termw, void (*func)(unsigned *p, int mask)));
 static void restoremodes PROTO((XtermWidget termw));
+static void report_win_label PROTO((TScreen *screen, int code, XTextProperty *text, Status ok));
 static void savemodes PROTO((XtermWidget termw));
 static void set_vt_box PROTO((TScreen *screen));
 static void unparseputn PROTO((unsigned int n, int fd));
 static void update_font_info PROTO((TScreen *screen, Bool doresize));
+static void window_ops PROTO((XtermWidget termw));
 
 #define	DEFAULT		-1
 #define	TEXT_BUF_SIZE	256
@@ -1435,6 +1438,11 @@ static void VTparse()
 			restoremodes(term);
 			parsestate = groundtable;
 			break;
+
+		case CASE_XTERM_WINOPS:
+			window_ops(term);
+			parsestate = groundtable;
+			break;
 		}
 	}
 }
@@ -1953,28 +1961,8 @@ dpmodes(termw, func)
 				CursorSet(screen, 0, 0, termw->flags);
 				if((j = func == bitset ? 132 : 80) !=
 				 ((termw->flags & IN132COLUMNS) ? 132 : 80) ||
-				 j != screen->max_col + 1) {
-				        Dimension replyWidth, replyHeight;
-					XtGeometryResult status;
-
-					status = XtMakeResizeRequest (
-					    (Widget) termw, 
-					    (Dimension) FontWidth(screen) * j
-					        + 2*screen->border
-						+ screen->scrollbar,
-					    (Dimension) FontHeight(screen)
-						* (screen->max_row + 1)
-						+ 2 * screen->border,
-					    &replyWidth, &replyHeight);
-
-					if (status == XtGeometryYes ||
-					    status == XtGeometryDone) {
-					    ScreenResize (&termw->screen,
-							  replyWidth,
-							  replyHeight,
-							  &termw->flags);
-					}
-				}
+				 j != screen->max_col + 1)
+					RequestResize(termw, 0, j, TRUE);
 				(*func)(&termw->flags, IN132COLUMNS);
 			}
 			break;
@@ -2181,27 +2169,8 @@ restoremodes(termw)
 				CursorSet(screen, 0, 0, termw->flags);
 				if((j = (screen->save_modes[1] & IN132COLUMNS)
 				 ? 132 : 80) != ((termw->flags & IN132COLUMNS)
-				 ? 132 : 80) || j != screen->max_col + 1) {
-				        Dimension replyWidth, replyHeight;
-					XtGeometryResult status;
-					status = XtMakeResizeRequest (
-					    (Widget) termw,
-					    (Dimension) FontWidth(screen) * j 
-						+ 2*screen->border
-						+ screen->scrollbar,
-					    (Dimension) FontHeight(screen)
-						* (screen->max_row + 1)
-						+ 2*screen->border,
-					    &replyWidth, &replyHeight);
-
-					if (status == XtGeometryYes ||
-					    status == XtGeometryDone) {
-					    ScreenResize (&termw->screen,
-							  replyWidth,
-							  replyHeight,
-							  &termw->flags);
-					}
-				}
+				 ? 132 : 80) || j != screen->max_col + 1)
+					RequestResize(termw, 0, j, TRUE);
 				termw->flags &= ~IN132COLUMNS;
 				termw->flags |= screen->save_modes[1] &
 				 IN132COLUMNS;
@@ -2286,6 +2255,173 @@ restoremodes(termw)
 			screen->send_mouse_pos = screen->save_modes[7];
 			break;
 		}
+	}
+}
+
+/*
+ * Report window label (icon or title) in dtterm protocol
+ * ESC ] code label ESC backslash
+ */
+static void
+report_win_label(screen, code, text, ok)
+	TScreen	*screen;
+	int code;
+	XTextProperty *text;
+	Status ok;
+{
+	char **list;
+	int length = 0;
+
+	reply.a_type = ESC;
+	unparseputc(ESC, screen->respond);
+	unparseputc(']', screen->respond);
+	unparseputc(code, screen->respond);
+
+	if (ok
+	 && XTextPropertyToStringList(text, &list, &length)) {
+		int n, c;
+		for (n = 0; n < length; n++) {
+			char *s = list[n];
+			while ((c = *s++) != '\0')
+				unparseputc(c, screen->respond);
+		}
+		XFreeStringList(list);
+	}
+
+	unparseputc(ESC, screen->respond);
+	unparseputc('\\', screen->respond);
+}
+
+/*
+ * Window operations (from CDE dtterm description)
+ */
+static void
+window_ops(termw)
+    XtermWidget termw;
+{
+	register TScreen	*screen	= &termw->screen;
+	XWindowChanges values;
+	XWindowAttributes win_attrs;
+	XTextProperty text;
+	unsigned int value_mask;
+	Position x, y;
+
+	switch (param[0]) {
+	case 1:		/* Restore (de-iconify) window */
+		XMapWindow(screen->display,
+			VShellWindow);
+		break;
+
+	case 2:		/* Minimize (iconify) window */
+		XIconifyWindow(screen->display,
+			VShellWindow,
+			DefaultScreen(screen->display));
+		break;
+
+	case 3:		/* Move the window to the given position */
+		values.x   = param[1];
+		values.y   = param[2];
+		value_mask = (CWX | CWY);
+		XReconfigureWMWindow(
+			screen->display,
+			VShellWindow,
+			DefaultScreen(screen->display),
+			value_mask,
+			&values);
+		break;
+
+	case 4:		/* Resize the window to given size in pixels */
+		RequestResize(termw, param[1], param[2], FALSE);
+		break;
+
+	case 5:		/* Raise the window to the front of the stack */
+		XRaiseWindow(screen->display, VShellWindow);
+		break;
+
+	case 6:		/* Lower the window to the bottom of the stack */
+		XLowerWindow(screen->display, VShellWindow);
+		break;
+
+	case 7:		/* Refresh the window */
+		Redraw();
+		break;
+
+	case 8:		/* Resize the text-area, in characters */
+		RequestResize(termw, param[1], param[2], TRUE);
+		break;
+
+	case 11:	/* Report the window's state */
+		XGetWindowAttributes(screen->display,
+			VWindow(screen),
+			&win_attrs);
+		reply.a_type = CSI;
+		reply.a_pintro = 0;
+		reply.a_nparam = 1;
+		reply.a_param[0] = (win_attrs.map_state == IsViewable) ? 1 : 2;
+		reply.a_inters = 0;
+		reply.a_final  = 't';
+		unparseseq(&reply, screen->respond);
+		break;
+
+	case 13:	/* Report the window's position */
+		XtTranslateCoords(toplevel, 0, 0, &x, &y);
+		reply.a_type = CSI;
+		reply.a_pintro = 0;
+		reply.a_nparam = 3;
+		reply.a_param[0] = 3;
+		reply.a_param[1] = x;
+		reply.a_param[2] = y;
+		reply.a_inters = 0;
+		reply.a_final  = 't';
+		unparseseq(&reply, screen->respond);
+		break;
+
+	case 14:	/* Report the window's size in pixels */
+		XGetWindowAttributes(screen->display,
+			VWindow(screen),
+			&win_attrs);
+		reply.a_type = CSI;
+		reply.a_pintro = 0;
+		reply.a_nparam = 3;
+		reply.a_param[0] = 4;
+		/*FIXME: find if dtterm uses
+		 *	win_attrs.height or Height
+		 *	win_attrs.width  or Width
+		 */
+		reply.a_param[1] = Height(screen);
+		reply.a_param[2] = Width(screen);
+		reply.a_inters = 0;
+		reply.a_final  = 't';
+		unparseseq(&reply, screen->respond);
+		break;
+
+	case 18:	/* Report the text's size in characters */
+		reply.a_type = CSI;
+		reply.a_pintro = 0;
+		reply.a_nparam = 3;
+		reply.a_param[0] = 8;
+		reply.a_param[1] = screen->max_row + 1;
+		reply.a_param[2] = screen->max_col + 1;
+		reply.a_inters = 0;
+		reply.a_final  = 't';
+		unparseseq(&reply, screen->respond);
+		break;
+
+	case 20:	/* Report the icon's label */
+		report_win_label(screen, 'L', &text,
+			XGetWMIconName(
+				screen->display,
+				VShellWindow,
+				&text));
+		break;
+
+	case 21:	/* Report the window's title */
+		report_win_label(screen, 'l', &text,
+			XGetWMName(
+				screen->display,
+				VShellWindow,
+				&text));
+		break;
 	}
 }
 
@@ -2542,6 +2678,52 @@ static void VTResize(w)
 		    &term->flags);
 }
 
+
+static void RequestResize(termw, rows, cols, text)
+	XtermWidget termw;
+	int rows;
+	int cols;
+	int text;
+{
+	register TScreen	*screen	= &termw->screen;
+	Dimension replyWidth, replyHeight;
+	Dimension askedWidth, askedHeight;
+	XtGeometryResult status;
+
+	askedWidth  = cols;
+	askedHeight = rows;
+	if (text) {
+		if (askedHeight <= 0)
+			askedHeight = screen->max_row + 1;
+		if (askedWidth <= 0)
+			askedWidth = screen->max_col + 1;
+
+		askedWidth  *= FontWidth(screen);
+		askedHeight *= FontHeight(screen);
+
+		askedWidth  += (2 * screen->border) + screen->scrollbar;
+		askedHeight += (2 * screen->border);
+
+	} else {
+		if (askedHeight <= 0)
+			askedHeight = FullHeight(screen);
+		if (askedWidth <= 0)
+			askedWidth = FullWidth(screen);
+	}
+
+	status = XtMakeResizeRequest (
+	    (Widget) termw, 
+	     askedWidth,  askedHeight,
+	    &replyWidth, &replyHeight);
+
+	if (status == XtGeometryYes ||
+	    status == XtGeometryDone) {
+	    ScreenResize (&termw->screen,
+			  replyWidth,
+			  replyHeight,
+			  &termw->flags);
+	}
+}
 				
 extern Atom wm_delete_window;	/* for ICCCM delete window */
 

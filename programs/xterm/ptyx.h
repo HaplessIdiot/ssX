@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.10 1996/03/10 12:15:24 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.11 1996/06/10 09:18:53 dawes Exp $
  */
 
 /*
@@ -591,13 +591,17 @@ typedef struct _TekWidgetRec {
  * term->flags and screen->save_modes.  This need only fit in an unsigned.
  */
 
-#define	ATTRIBUTES	0x67	/* mask: user-visible attributes */
 /* global flags and character flags (visible character attributes) */
 #define INVERSE		0x01	/* invert the characters to be output */
 #define UNDERLINE	0x02	/* true if underlining */
 #define BOLD		0x04
+/* global flags (also character attributes) */
+#define BG_COLOR	0x08  /* true if background set */
+#define FG_COLOR	0x10  /* true if foreground set */
+
 /* character flags (internal attributes) */
-#define LINEWRAPPED	0x08	/* used on the first character in a
+#define PROTECTED	0x20	/* a character is drawn that cannot be erased */
+#define LINEWRAPPED	0x40	/* used on the first character in a
 				 * line to indicate that it wraps onto
 				 * the next line so we can tell the
 				 * difference between lines that have
@@ -605,12 +609,12 @@ typedef struct _TekWidgetRec {
 				 * ended naturally with a CR at column
 				 * max_col.
 				 */
-#define CHARDRAWN	0x10    /* a character has been drawn here on the
+#define CHARDRAWN	0x80    /* a character has been drawn here on the
 				   screen.  Used to distinguish blanks from
 				   empty parts of the screen when selecting */
-/* global flags */
-#define BG_COLOR	0x20  /* true if background set */
-#define FG_COLOR	0x40  /* true if foreground set */
+
+			/* mask: user-visible attributes */
+#define	ATTRIBUTES	(INVERSE|UNDERLINE|BOLD|BG_COLOR|FG_COLOR|PROTECTED)
 
 #define WRAPAROUND	0x400	/* true if auto wraparound mode */
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */

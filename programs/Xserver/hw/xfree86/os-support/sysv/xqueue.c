@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.3 1996/05/12 11:58:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.4 1996/05/13 06:40:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -106,8 +106,14 @@ xf86XqueEnable()
   if (!was_here) {
     if ((xf86Info.mouseDev.xqueFd = open("/dev/mouse", O_RDONLY|O_NDELAY)) < 0)
       {
-	Error ("Cannot open /dev/mouse");
-	return (!Success);
+	if (xf86AllowMouseOpenFail) {
+	  ErrorF("Cannot open /dev/mouse (%s) - Continuing...\n",
+		strerror(errno));
+	  return (Success);
+	} else {
+	  Error ("Cannot open /dev/mouse");
+	  return (!Success);
+	}
       }
     was_here = TRUE;
   }

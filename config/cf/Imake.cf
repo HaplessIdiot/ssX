@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.19 1996/03/10 11:46:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.20 1996/05/06 05:52:04 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -58,6 +58,11 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.19 1996/03/10 11:46:57 dawes Exp $
 # define i386Architecture
 # undef i386
 #endif /* bsdi */
+
+#ifdef __OpenBSD__
+# undef __OpenBSD__
+# define OpenBSDArchitecture
+#endif /* OpenBSD */
 
 #ifdef __NetBSD__
 # define MacroIncludeFile <NetBSD.cf>
@@ -499,14 +504,25 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.19 1996/03/10 11:46:57 dawes Exp $
 # endif /* __alpha */
 #endif /* linux */
 
-#if defined(Lynx) && defined(i386)
+#if defined(Lynx) && (defined(i386) || defined(__powerpc__) || defined(__sparc__))
 #define MacroIncludeFile <lynx.cf>
 #define MacroFile lynx.cf
-#undef Lynx
 #define LynxOSArchitecture
-#define i386Architecture
-#undef i386
-#endif /* LynxOS AT */
+#undef Lynx
+#undef lynx
+#ifdef i386
+# define i386Architecture
+# undef i386
+#endif
+#ifdef __powerpc__
+# define ppcArchitecture
+# undef __powerpc__
+#endif
+#ifdef __sparc__
+# define SparcArchitecture
+# undef __sparc__
+#endif
+#endif /* LynxOS AT/PPC/microSPARC */
 
 #ifdef __uxp__
 # define MacroIncludeFile <fujitsu.cf>

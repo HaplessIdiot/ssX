@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.3 1995/12/02 05:07:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.4 1996/07/08 10:37:07 dawes Exp $
  */
 
 /*
@@ -36,7 +36,7 @@
 
 /*
  * Stupid Apollo C preprocessor can't handle long lines.  So... To keep
- * it happy, we put each onto a seperate line....  Sigh...
+ * it happy, we put each onto a separate line....  Sigh...
  */
 
 Const int groundtable[] =
@@ -486,7 +486,7 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 /*	`		a		b		c	*/
-CASE_GROUND_STATE,
+CASE_HPA,
 CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 CASE_DA1,
@@ -498,7 +498,7 @@ CASE_TBC,
 /*	h		i		j		k	*/
 CASE_SET,
 CASE_GROUND_STATE,
-CASE_HPA,
+CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 /*	l		m		n		o	*/
 CASE_RST,
@@ -511,7 +511,7 @@ CASE_GROUND_STATE,
 CASE_DECSTBM,
 CASE_DECSC,
 /*	t		u		v		w	*/
-CASE_GROUND_STATE,
+CASE_XTERM_WINOPS,
 CASE_DECRC,
 CASE_GROUND_STATE,
 CASE_GROUND_STATE,
@@ -1068,8 +1068,7 @@ CASE_IGNORE,
 CASE_IGNORE,
 CASE_IGNORE,
 CASE_IGNORE,
-/*	,
-	-		.		/	*/
+/*	,		-		.		/	*/
 CASE_IGNORE,
 CASE_IGNORE,
 CASE_IGNORE,
