@@ -2489,6 +2489,7 @@ static const char pci_device_103c_1229[] = "zx1 System Bus Adapter";
 static const char pci_device_103c_122a[] = "zx1 I/O Controller";
 static const char pci_device_103c_122e[] = "zx1 Local Bus Adapter";
 static const char pci_device_103c_1290[] = "Auxiliary Diva Serial Port";
+static const char pci_device_103c_12b4[] = "zx1 QuickSilver AGP8x LBA";
 static const char pci_device_103c_2910[] = "E2910A PCIBus Exerciser";
 static const char pci_device_103c_2925[] = "E2925A 32 Bit, 33 MHzPCI Exerciser & Analyzer";
 #ifdef VENDOR_INCLUDE_NONVIDEO
@@ -8336,6 +8337,7 @@ static const char pci_vendor_126f[] = "Silicon Motion, Inc.";
 static const char pci_device_126f_0710[] = "SM710 LynxEM";
 static const char pci_device_126f_0712[] = "SM712 LynxEM+";
 static const char pci_device_126f_0720[] = "SM720 Lynx3DM";
+static const char pci_device_126f_0730[] = "SM731 Cougar3DR";
 static const char pci_device_126f_0810[] = "SM810 LynxE";
 static const char pci_device_126f_0811[] = "SM811 LynxE";
 static const char pci_device_126f_0820[] = "SM820 Lynx3D";
@@ -26331,6 +26333,7 @@ static const pciSubsystemInfo *pci_ss_list_103c_1048[] = {
 #define pci_ss_list_103c_122a NULL
 #define pci_ss_list_103c_122e NULL
 #define pci_ss_list_103c_1290 NULL
+#define pci_ss_list_103c_12b4 NULL
 #define pci_ss_list_103c_2910 NULL
 #define pci_ss_list_103c_2925 NULL
 #define pci_ss_list_1042_1000 NULL
@@ -29194,6 +29197,7 @@ static const pciSubsystemInfo *pci_ss_list_1266_1910[] = {
 #define pci_ss_list_126f_0710 NULL
 #define pci_ss_list_126f_0712 NULL
 #define pci_ss_list_126f_0720 NULL
+#define pci_ss_list_126f_0730 NULL
 #define pci_ss_list_126f_0810 NULL
 #define pci_ss_list_126f_0811 NULL
 #define pci_ss_list_126f_0820 NULL
@@ -42641,6 +42645,15 @@ static const pciDeviceInfo pci_dev_info_103c_1290 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_103c_12b4 = {
+	0x12b4, pci_device_103c_12b4,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_103c_12b4,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_103c_2910 = {
 	0x2910, pci_device_103c_2910,
 #ifdef INIT_SUBSYS_INFO
@@ -55772,6 +55785,15 @@ static const pciDeviceInfo pci_dev_info_126f_0720 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_126f_0730 = {
+	0x0730, pci_device_126f_0730,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_126f_0730,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_126f_0810 = {
 	0x0810, pci_device_126f_0810,
 #ifdef INIT_SUBSYS_INFO
@@ -67082,6 +67104,7 @@ static const pciDeviceInfo *pci_dev_list_103c[] = {
 	&pci_dev_info_103c_122a,
 	&pci_dev_info_103c_122e,
 	&pci_dev_info_103c_1290,
+	&pci_dev_info_103c_12b4,
 	&pci_dev_info_103c_2910,
 	&pci_dev_info_103c_2925,
 	NULL
@@ -69745,6 +69768,7 @@ static const pciDeviceInfo *pci_dev_list_126f[] = {
 	&pci_dev_info_126f_0710,
 	&pci_dev_info_126f_0712,
 	&pci_dev_info_126f_0720,
+	&pci_dev_info_126f_0730,
 	&pci_dev_info_126f_0810,
 	&pci_dev_info_126f_0811,
 	&pci_dev_info_126f_0820,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.2 2003/04/22 15:20:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.3tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -528,7 +528,8 @@ xf86PreScanZX1(void)
 	    tmp = IOA_LONG(i, PCI_ID_REG);
 	    switch ((CARD32)tmp) {
 	    case DEVID(VENDOR_HP, CHIP_ELROY):
-	    case DEVID(VENDOR_HP, CHIP_ZX1_LBA):
+	    case DEVID(VENDOR_HP, CHIP_ZX1_LBA):	/* Mercury */
+	    case DEVID(VENDOR_HP, CHIP_ZX1_AGP8):	/* QuickSilver */
 		/* Expected vendor/device IDs */
 		zx1_busno[i] =
 		    (unsigned int)IOA_BYTE(i, IOA_SECONDARY_BUS);
