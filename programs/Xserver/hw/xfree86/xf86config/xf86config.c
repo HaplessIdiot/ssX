@@ -76,6 +76,22 @@
  *  New 'Configuration of XKB' section.
  *  Author: Ivan Pascal      The XFree86 Project.
  */
+/*
+ *  Nov2002
+ *  Some enhancements:
+ *  - Add new PS/2 mouse protocol.
+ *    "IMPS/2","ExplorerPS/2","ThinkingMousePS/2","MouseManPlusPS/2",
+ *    "GlidePointPS/2","NetMousePS/2" and "NetScrollPS/2".
+ *  - Add mouse-speed setting for PS/2 mouse.
+ *  - Fix seg.fault problem on Solaris.
+ *  - Add modestring "1400x1050"(for ATI Mobile-Rage).
+ *  - Add videomemory 8192, 16384, 32768, 65536, 131072 and 262144.
+ *  - Load "speedo" module.
+ *  - Ready to DRI.
+ *  - Load xtt module instead of freetype module.
+ *  - Add font path "/fonts/TrueType/" and "/fonts/freefont/".
+ *  Chisato Yamauchi(cyamauch@phyas.aichi-edu.ac.jp)
+ */
 /* $XConsortium: xf86config.c /main/21 1996/10/28 05:43:57 kaleb $ */
 
 #include <stdlib.h>
@@ -348,19 +364,48 @@ getstring(char *s)
  */
 
 static char *mousetype_identifier[] = {
-	"Microsoft",
-	"MouseSystems",
-	"Busmouse",
+#define M_PS2			0
 	"PS/2",
+#define M_IMPS2			1
+	"IMPS/2",
+#define M_EXPLORER_PS2		2
+	"ExplorerPS/2",
+#define M_THINKINGMOUSE_PS2	3
+	"ThinkingMousePS/2",
+#define M_MOUSEMAN_PS2		4
+	"MouseManPlusPS/2",
+#define M_GLIDEPOINT_PS2	5
+	"GlidePointPS/2",
+#define M_NETMOUSE_PS2		6
+	"NetMousePS/2",
+#define M_NETSCROLL_PS2		7
+	"NetScrollPS/2",
+#define M_MICROSOFT		8
+	"Microsoft",
+#define M_MOUSESYSTEMS		9
+	"MouseSystems",
+#define M_BUSMOUSE		10
+	"Busmouse",
+#define M_LOGITECH		11
 	"Logitech",
+#define M_MOUSEMAN		12
 	"MouseMan",
+#define M_MMSERIES		13
 	"MMSeries",
+#define M_MMHITTAB		14
 	"MMHitTab",
+#define M_INTELLIMOUSE		15
 	"IntelliMouse",
 #if defined(__UNIXOS2__) || defined(QNX4)
+#define M_OSMOUSE		16
 	"OSMOUSE",
 #endif
 #ifdef WSCONS_SUPPORT
+#ifdef M_OSMOUSE
+#define M_WSMOUSE		17
+#else
+#define M_WSMOUSE		16
+#endif
     	"wsmouse",
 #endif
 };
@@ -371,15 +416,25 @@ static char *mouseintro_text =
 "\n";
 
 static char *mousetype_name[] = {
+	"PS/2 Mouse",
+	"IntelliMouse PS/2",
+	"Explorer PS/2",
+	"ThinkingMouse PS/2",
+	"MouseManPlus PS/2",
+	"GlidePoint PS/2",
+	"NetMouse PS/2",
+	"NetScroll PS/2",
 	"Microsoft compatible (2-button protocol)",
 	"Mouse Systems (3-button protocol)",
 	"Bus Mouse",
-	"PS/2 Mouse",
 	"Logitech Mouse (serial, old type, Logitech protocol)",
 	"Logitech MouseMan (Microsoft compatible)",
 	"MM Series",	/* XXXX These descriptions should be improved. */
 	"MM HitTablet",
 	"Microsoft IntelliMouse",
+#ifdef M_OSMOUSE
+	"OSMOUSE",
+#endif
 #ifdef WSCONS_SUPPORT
         "wsmouse protocol",
 #endif
@@ -394,12 +449,8 @@ static char *mousedev_text =
 "\n";
 
 static char *mousecomment_text =
-"If you have a two-button mouse, it is most likely of type 1, and if you have\n"
-"a three-button mouse, it can probably support both protocol 1 and 2. There are\n"
-"two main varieties of the latter type: mice with a switch to select the\n"
-"protocol, and mice that default to 1 and require a button to be held at\n"
-"boot-time to select protocol 2. Some mice can be convinced to do 2 by sending\n"
-"a special sequence to the serial port (see the ClearDTR/ClearRTS options).\n"
+"If you have a two-button or three-button mouse, it is most likely of type 1,\n"
+"if you have a wheel mouse, it can probably support both protocol 2 and 3.\n"
 #ifdef WSCONS_SUPPORT
 "\n"
 "If your system uses the wscons console driver, with a PS/2 type mouse, select\n"
@@ -458,11 +509,11 @@ mouse_configuration(void) {
 	getstring(s);
 	config_mousetype = atoi(s) - 1;
 	if (config_mousetype < 0)
-		config_mousetype = 0;
+		config_mousetype = M_PS2;
 
 	printf("\n");
 
-	if (config_mousetype == 4) {
+	if (config_mousetype == M_LOGITECH) {
 		/* Logitech. */
 		printf("%s", logitechmousecomment_text);
 		printf("\n");
@@ -470,14 +521,14 @@ mouse_configuration(void) {
 		printf("Are you sure it's really not a Microsoft compatible one? ");
 		getstring(s);
 		if (!answerisyes(s))
-			config_mousetype = 0;
+			config_mousetype = M_MICROSOFT;
 		printf("\n");
 	}
 
 	config_chordmiddle = 0;
-	if (config_mousetype == 0 || config_mousetype == 5) {
+	if (config_mousetype == M_MICROSOFT || config_mousetype == M_MOUSEMAN) {
 		/* Microsoft or MouseMan. */
-		if (config_mousetype == 0)
+		if (config_mousetype == M_MICROSOFT)
 			printf("%s", microsoftmousecomment_text);
 		else
 			printf("%s", mousemancomment_text);
@@ -491,7 +542,7 @@ mouse_configuration(void) {
 	}
 
 	config_cleardtrrts = 0;
-	if (config_mousetype == 1) {
+	if (config_mousetype == M_MOUSESYSTEMS) {
 		/* Mouse Systems. */
 		printf("%s", mousesystemscomment_text);
 		printf("\n");
@@ -504,14 +555,14 @@ mouse_configuration(void) {
 	}
 
 	switch (config_mousetype) {
-	case 0 : /* Microsoft compatible */
+	case M_MICROSOFT : /* Microsoft compatible */
 		if (config_chordmiddle)
 			printf("%s", threebuttonmousecomment_text);
 		else
 			printf("%s", twobuttonmousecomment_text);
 		break;
-	case 1 : /* Mouse Systems. */
-	case 8 : /* IntelliMouse */
+	case M_MOUSESYSTEMS : /* Mouse Systems. */
+	case M_INTELLIMOUSE : /* IntelliMouse */
 		printf("%s", threebuttonmousecomment_text);
 		break;
 	default :
@@ -547,7 +598,7 @@ mouse_configuration(void) {
 
 #else /* __UNIXOS2__ */
        	/* set some reasonable defaults for OS/2 */
-       	config_mousetype = 9;
+       	config_mousetype = M_OSMOUSE;
 	config_chordmiddle = 0;       
 	config_cleardtrrts = 0;
 	config_emulate3buttons = 0;
@@ -942,10 +993,14 @@ carddb_configuration(void) {
 	for (;;) {
 		int j;
 		emptylines();
-		for (j = i; j < i + 18 && j <= lastcard; j++)
+		for (j = i; j < i + 18 && j <= lastcard; j++) {
+			char *name = card[j].name,
+			     *chipset = card[j].chipset;
+
 			printf("%3d  %-50s%s\n", j,
-				card[j].name,
-				card[j].chipset);
+				name ? name : "-",
+				chipset ? chipset : "-");
+		}
 		printf("\n");
 		printf("Enter a number to choose the corresponding card definition.\n");
 		printf("Press enter for the next page, q to continue configuration.\n");
@@ -968,9 +1023,12 @@ carddb_configuration(void) {
 	 * Look at the selected card.
 	 */
 	if (card_selected != -1) {
+		char *name = card[card_selected].name,
+		     *chipset = card[card_selected].chipset;
+
 		printf("\nYour selected card definition:\n\n");
-		printf("Identifier: %s\n", card[card_selected].name);
-		printf("Chipset:    %s\n", card[card_selected].chipset);
+		printf("Identifier: %s\n", name ? name : "-");
+		printf("Chipset:    %s\n", chipset ? chipset : "-");
 		if (!card[card_selected].driver)
 			card[card_selected].driver = "unknown";
 		printf("Driver:     %s\n", card[card_selected].driver);
@@ -1006,12 +1064,10 @@ static char *deviceintro_text =
 "\n";
 
 static char *videomemoryintro_text =
-"You must indicate how much video memory you have. It is probably a good\n"
-"idea to use the same approximate amount as that detected by the server you\n"
-"intend to use. If you encounter problems that are due to the used server\n"
-"not supporting the amount memory you have (e.g. ATI Mach64 is limited to\n"
-"1024K with the SVGA server), specify the maximum amount supported by the\n"
-"server.\n"
+"It is probably a good idea to use the same approximate amount as that detected\n"
+"by the server you intend to use. If you encounter problems that are due to the\n"
+"used server not supporting the amount memory you have, specify the maximum\n"
+"amount supported by the server.\n"
 "\n"
 "How much video memory do you have on your video card:\n"
 "\n";
@@ -1169,10 +1225,14 @@ static char *virtual_text =
 "differently-sized virtual screen\n"
 "\n";
 
-static int videomemory[5] = {
-	256, 512, 1024, 2048, 4096
+static int videomemory[] = {
+	256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144
 };
 
+/* Is this required? */
+#if XFREE86_VERSION >= 440
+#define NU_MODESTRINGS 13
+#else
 #if XFREE86_VERSION >= 330
 #define NU_MODESTRINGS 12
 #else
@@ -1180,6 +1240,7 @@ static int videomemory[5] = {
 #define NU_MODESTRINGS 8
 #else
 #define NU_MODESTRINGS 5
+#endif
 #endif
 #endif
 
@@ -1199,6 +1260,9 @@ static char *modestring[NU_MODESTRINGS] = {
 	"\"1600x1200\"",
 	"\"1800x1400\"",
 	"\"512x384\""
+#endif
+#if XFREE86_VERSION >= 440
+	,"\"1400x1050\""
 #endif
 };
 
@@ -1253,18 +1317,16 @@ screen_configuration(void) {
 
 	printf("%s", videomemoryintro_text);
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < sizeof(videomemory) / sizeof(videomemory[0]); i++)
 		printf("%2d  %dK\n", i + 1, videomemory[i]);
-	printf(" 6  Other\n\n");
+	printf("%2d  Other\n\n", i + 1);
 
 	printf("Enter your choice: ");
 	getstring(s);
 	printf("\n");
 
 	c = atoi(s) - 1;
-	if (c < 0)
-		c = 0;
-	if (c < 5)
+	if (c >= 0 && c < sizeof(videomemory) / sizeof(videomemory[0]))
 		config_videomemory = videomemory[c];
 	else {
 		printf("Amount of video memory in Kbytes: ");
@@ -1328,9 +1390,10 @@ screen_configuration(void) {
 			config_virtualy24bpp = 1024;
 		}
 		/* Add 1600x1280 */
-		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
-		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
-		config_modesline24bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
+		config_modesline8bpp = "\"1280x1024\" \"1024x768\" \"800x600\" \"640x480\"";
+		config_modesline16bpp = "\"1280x1024\" \"1024x768\" \"800x600\" \"640x480\"";
+		config_modesline24bpp = "\"1280x1024\" \"1024x768\" \"800x600\" \"640x480\"";
+
 	}
 	else
 	if (config_videomemory >= 2048) {
@@ -1361,12 +1424,12 @@ screen_configuration(void) {
 			config_virtualx24bpp = 1024;
 			config_virtualy24bpp = 768;
 		}
-		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
-		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\"";
+		config_modesline8bpp = "\"1280x1024\" \"1024x768\" \"800x600\" \"640x480\"";
+		config_modesline16bpp = "\"1024x768\" \"800x600\" \"640x480\"";
 		if (config_videomemory >= 2048 + 256)
-			config_modesline24bpp = "\"640x480\" \"800x600\" \"1024x768\"";
+			config_modesline24bpp = "\"1024x768\" \"800x600\" \"640x480\"";
 		else
-			config_modesline24bpp = "\"640x480\" \"800x600\"";
+			config_modesline24bpp = "\"800x600\" \"640x480\"";
 	}
 	else
 	if (config_videomemory >= 1024) {
@@ -1386,15 +1449,15 @@ screen_configuration(void) {
 		config_virtualy16bpp = 600; /* it's small enough as it is. */
 		config_virtualx24bpp = 640;
 		config_virtualy24bpp = 480;
-		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\"";
-		config_modesline16bpp = "\"640x480\" \"800x600\"";
+		config_modesline8bpp = "\"1024x768\" \"800x600\" \"640x480\"";
+		config_modesline16bpp = "\"800x600\" \"640x480\"";
 		config_modesline24bpp = "\"640x480\"";
 	}
 	else
 	if (config_videomemory >= 512) {
 		config_virtualx8bpp = 800;
 		config_virtualy8bpp = 600;
-		config_modesline8bpp = "\"640x480\" \"800x600\"";
+		config_modesline8bpp = "\"800x600\" \"640x480\"";
 		config_modesline16bpp = "\"640x400\"";
 	}
 	else
@@ -1792,10 +1855,14 @@ static char *XF86Config_firstchunk_text =
 "\n"
 "# This loads the Type1 and FreeType font modules\n"
 "    Load        \"type1\"\n"
-"    Load        \"freetype\"\n"
+"    Load        \"speedo\"\n"
+"#    Load        \"freetype\"\n"
+"#    Load        \"xtt\"\n"
 "\n"
 "# This loads the GLX module\n"
 "#    Load       \"glx\"\n"
+"# This loads the DRI module\n"
+"#    Load       \"dri\"\n"
 "\n"
 "EndSection\n"
 "\n"
@@ -1828,8 +1895,10 @@ static char *XF86Config_fontpaths[] =
 	"/fonts/misc/",
 	"/fonts/75dpi/:unscaled",
 	"/fonts/100dpi/:unscaled",
-	"/fonts/Type1/",
 	"/fonts/Speedo/",
+	"/fonts/Type1/",
+	"/fonts/TrueType/",
+	"/fonts/freefont/",
 	"/fonts/75dpi/",
 	"/fonts/100dpi/",
 	0 /* end of fontpaths */
@@ -1901,6 +1970,7 @@ static char *XF86Config_fontpathchunk_text =
 "\n"
 "    Identifier	\"Keyboard1\"\n"
 "    Driver	\"Keyboard\"\n"
+"\n"
 "# For most OSs the protocol can be omitted (it defaults to \"Standard\").\n"
 "# When using XQUEUE (only for SVR3 and SVR4, but not Solaris),\n"
 "# uncomment the following line.\n"
@@ -1963,6 +2033,10 @@ static char *pointersection_text1 =
 ;
 
 static char *pointersection_text2 =
+"\n"
+"# Mouse-speed setting for PS/2 mouse.\n"
+"\n"
+"#    Option \"Resolution\"	\"256\"\n"
 "\n"
 "# When using XQUEUE, comment out the above two lines, and uncomment\n"
 "# the following line.\n"
@@ -2302,6 +2376,10 @@ static char *serverlayout_section_text2 =
 "    InputDevice \"Keyboard1\" \"CoreKeyboard\"\n"
 "\n"
 "EndSection\n"
+"\n"
+"# Section \"DRI\"\n"
+"#    Mode 0666\n"
+"# EndSection\n"
 "\n";
 
 static void 

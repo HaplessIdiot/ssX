@@ -292,13 +292,17 @@ WriteXF86Config(void)
 
     if (newconfig) {
 	if (XF86Config->conf_modules == NULL) {
-	    static char *modules[] = {"xie", "pex5", "glx", "dri", "dbe",
-				      "record", "extmod", "type1"};
+	    static char *modules[] = {"extmod", "glx", "dri", "dbe",
+				      "record", "xtrap", "type1", "speedo"};
 	    XF86LoadPtr load;
 	    int i;
 
 	    XF86Config->conf_modules = (XF86ConfModulePtr)
 		XtCalloc(1, sizeof(XF86ConfModuleRec));
+
+	    XF86Config->conf_modules->mod_comment =
+		XtNewString("\t# Load \"freetype\"\n"
+			    "\t# Load \"xtt\"\n");
 
 	    for (i = 0; i < sizeof(modules) / sizeof(modules[0]); i++) {
 		load = (XF86LoadPtr)XtCalloc(1, sizeof(XF86LoadRec));
@@ -1073,6 +1077,8 @@ CardConfig(void)
 	"apm",
 	"ark",
 	"ati",
+	"r128",
+	"radeon",
 	"chips",
 	"cirrus",
 	"cyrix",
@@ -1084,16 +1090,20 @@ CardConfig(void)
 	"imstt",
 	"mga",
 	"neomagic",
+	"nv",
 	"r128",
 	"radeon",
 	"rendition",
+	"s3",
 	"s3virge",
+	"savage",
 	"siliconmotion",
 	"sis",
 	"tdfx",
 	"tga",
 	"trident",
 	"tseng",
+	"vmware",
 	"vga",
 	"vesa",
     };
@@ -1347,6 +1357,7 @@ static char *depths[] = {
 
 static char *modes[] = {
     "1600x1200",
+    "1400x1050",
     "1280x1024",
     "1280x960",
     "1152x864",
@@ -1553,8 +1564,13 @@ ScreenConfig(void)
 	def = 4;
     else if (screen->scrn_defaultdepth == 24)
 	def = 5;
-    else
-	def = 2;
+    else {
+	if (screen->scrn_device && screen->scrn_device->dev_driver &&
+	    strcmp(screen->scrn_device->dev_driver, "vga") == 0)
+	    def = 1;		/* 4bpp */
+	else
+	    def = 2;		/* 8bpp */
+    }
     ClearScreen();
     refresh();
     i = DialogMenu("Screen depth",
@@ -1625,7 +1641,7 @@ ScreenConfig(void)
     }
 
     if (nlist == 0 && def == 0)
-	checks[6] = 1;	/* 640x480 */
+	checks[7] = 1;	/* 640x480 */
     list = (char**)XtRealloc((XtPointer)list, (nlist + sizeof(modes) /
 			     sizeof(modes[0])) * sizeof(char*));
     for (i = 0; i < sizeof(modes) / sizeof(modes[0]); i++)

@@ -621,6 +621,8 @@ configureModuleSection (void)
             /* Add only those font backends which are referenced by fontpath */
             /* 'strstr(dFP,"/dir")' is meant as 'dFP =~ m(/dir\W)' */
     	    if (defaultFontPath && (
+		(strcmp(*el, "xtt")  == 0 &&
+		 strstr(defaultFontPath, "/TrueType")) ||
     	        (strcmp(*el, "type1")  == 0 &&
 		 strstr(defaultFontPath, "/Type1")) ||
     	        (strcmp(*el, "speedo") == 0 &&

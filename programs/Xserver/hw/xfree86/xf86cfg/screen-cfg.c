@@ -72,6 +72,7 @@ static char *standard_modes[] = {
     "1600x1200",
     "1800x1400",
     "512x384",
+    "1400x1050",
 };
 
 static char **modes;
