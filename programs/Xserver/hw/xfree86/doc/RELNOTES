@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              23 February 2004
+                              29 February 2004
 
                                   Abstract
 
@@ -297,7 +297,7 @@ Modified terminfo/termcap entries:
 
    o The Compose file processing mechanism has been improved and made more
      flexible.  See the Xlib Compose  file support and extensions section
-     below (section 4.20, page 1).
+     below (section 5.20, page 1).
 
    o The Bitstream Vera TrueType fonts that Bitstream, Inc donated to the
      GNOME Foundation have been included with this release.
@@ -422,7 +422,30 @@ XFree86 4.4.0 includes the following input drivers:
 
 Drivers marked with (*) are available for Linux only.
 
-4.  Overview of XFree86 4.x.
+4.  Known Problems
+
+   o Known issues with this version of the SiS driver:
+
+        o The driver will not work with upcoming laptops/notebooks with
+          661/741/760 and 30xLV bridges as regards LCD output. This is due
+          folks at SiS at the very moment writing an entirely new VBIOS for
+          such machines whose data layout is not decided yet.  (This might
+          affect machines with 650/740 as well within the next year.)
+
+        o Xv does not work correctly in TV NTSC 1024x768 mode, if the overlay
+          is very large (or full screen). The effect are flickering lines on
+          the screen. This is a hardware problem. Do not use this mode for
+          video.
+
+        o YPbPr 720p output is blurry (at least at 1024x768; unknown for
+          other modes). This is a driver problem; solution currently unknown.
+
+   o We have received a late report that enabling DPMS support with the
+     radeon driver can damage some Viewsonic monitors.  DPMS is usually dis-
+     abled by default.  You can verify whether or not DPMS is enabled by run-
+     ning 'xset q' from within your X session.
+
+5.  Overview of XFree86 4.x.
 
 XFree86 4.x has a single X server binary called XFree86.  This binary can
 either have one or more video and input drivers linked in statically, or more
@@ -435,7 +458,7 @@ Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
 progress and is planned for future releases.
 
-4.1  Loader and Modules
+5.1  Loader and Modules
 
 The XFree86 X server has a built-in run-time loader, which can load normal
 object files and libraries in most of the commonly used formats.  The loader
@@ -471,7 +494,7 @@ Note about module security
      hope to have a mechanism for signing/verifying the modules that we
      provide available in a future release.
 
-4.2  Configuration File
+5.2  Configuration File
 
 The XFree86 server uses a configuration file as the primary mechanism for
 providing configuration and run-time parameters.  The configuration file for-
@@ -481,19 +504,19 @@ The XFree86 server has support for automatically determining an initial con-
 figuration on most platforms, as well as support or generating a basic ini-
 tial configuration file.
 
-4.3  Command Line Options
+5.3  Command Line Options
 
 Command line options can be used to override some default parameters and
 parameters provided in the configuration file.  These command line options
 are described in the XFree86(1) manual page.
 
-4.4  XAA
+5.4  XAA
 
 The XFree86 Acceleration Architecture (XAA) was completely rewritten from
 scratch for XFree86 4.x.  Most drivers implement acceleration by making use
 of the XAA module.
 
-4.5  Multi-head
+5.5  Multi-head
 
 Some multi-head configurations are supported in XFree86 4.x, primarily with
 multiple PCI/AGP cards.
@@ -506,7 +529,7 @@ to be resolved.  Some combinations can be made to work better by changing
 which card is the primary card (either by using a different PCI slot, or by
 changing the system BIOS's preference for the primary card).
 
-4.6  Xinerama
+5.6  Xinerama
 
 Xinerama is an X server extension that allows multiple physical screens to
 behave as a single screen.  With traditional multi-head in X11, windows can-
@@ -528,13 +551,13 @@ Known problems:
      an issue that needs to be dealt with in the individual window managers,
      and isn't specifically an XFree86 problem.
 
-4.7  DGA version 2
+5.7  DGA version 2
 
 DGA 2.0 is included in 4.4.0.  Documentation for the client libraries can be
 found in the XDGA(3) man page.  A good degree of backwards compatibility with
 version 1.0 is provided.
 
-4.8  DDC
+5.8  DDC
 
 The VESA® Display Data Channel (DDC[tm]) standard allows the monitor to tell
 the video card (or on some cases the computer directly) about itself; partic-
@@ -550,7 +573,7 @@ use this information to set the default monitor parameters, or to warn about
 monitor sync limits if those provided in the configuration file don't match
 those that are detected.
 
-4.8.1  Changed behavior caused by DDC.
+5.8.1  Changed behavior caused by DDC.
 
 Several drivers uses DDC information to set the screen size and pitch.  This
 can be overridden by explicitly resetting it to the and non-DDC default value
@@ -558,14 +581,14 @@ can be overridden by explicitly resetting it to the and non-DDC default value
 appropriate screen dimensions with the "DisplaySize" keyword in the "Monitor"
 section of the config file.
 
-4.9  GLX and the Direct Rendering Infrastructure (DRI)
+5.9  GLX and the Direct Rendering Infrastructure (DRI)
 
 Direct rendered OpenGL® support is provided for several hardware platforms by
 the Direct Rendering Infrastructure (DRI).  Further information about DRI can
 be found at the DRI Project's web site <URL:http://dri.sf.net/>.  The 3D core
 rendering component is provided by Mesa <URL:http://www.mesa3d.org>.
 
-4.10  XVideo Extension (Xv)
+5.10  XVideo Extension (Xv)
 
 The XVideo extension is supported in XFree86 4.x.  An XvQueryPortAttributes
 function has been added as well as support for XvImages.  XvImages are XIm-
@@ -573,7 +596,7 @@ ages in alternate color spaces such as YUV and can be passed to the server
 through shared memory segments.  This allows clients to display YUV data with
 high quality hardware scaling and filtering.
 
-4.11  X Rendering Extension (Render)
+5.11  X Rendering Extension (Render)
 
 The X Rendering extension provides a 2D rendering model that more closely
 matches application demands and hardware capabilities.  It provides a render-
@@ -595,7 +618,7 @@ This allows the client greater control over text rendering and complete
 access to the available font information while still providing hardware
 acceleration.  The Xft library provides font access for Render applications.
 
-4.11.1  The Xft Library
+5.11.1  The Xft Library
 
 On the client side, the Xft library provides access to fonts for applications
 using the FreeType library, version 2.  FreeType currently supports Type1 and
@@ -618,12 +641,12 @@ tion about which directories contain font files and also provides a sophisti-
 cated font aliasing mechanism.  Documentation for that file is included in
 the Xft(3) man page.
 
-4.11.2  FreeType support in Xft
+5.11.2  FreeType support in Xft
 
 XFree86 4.4.0 includes sources for FreeType version 2.1.4, and, by default,
 they are built and installed automatically.
 
-4.11.3  Application Support For Anti-Aliased Text
+5.11.3  Application Support For Anti-Aliased Text
 
 Only three applications have been modified in XFree86 4.4.0 to work with the
 Render extension and the Xft and FreeType libraries to provide anti-aliased
@@ -641,7 +664,7 @@ aliased, anti-aliased with sub-pixel sampling and regular chunky text, but
 through the Render extension, a path which is currently somewhat slower than
 core text.
 
-4.12  Other extensions
+5.12  Other extensions
 
 The XFree86-Misc extension has not been fully ported to the new server archi-
 tecture yet.  This should be completed in a future release.
@@ -654,7 +677,7 @@ The xgamma utility makes use of this feature.  Compatibility with the 3.3.x
 version of the extension is provided.  The missing parts of this extension
 and some new features should be completed in a future release.
 
-4.13  xedit
+5.13  xedit
 
 Xedit has several new features, including:
 
@@ -667,12 +690,12 @@ Xedit has several new features, including:
 
    o Please refer to xedit(1) for more details.
 
-4.14  Font support
+5.14  Font support
 
 Details about the font support in XFree86 4.x can be found in the
 README.fonts document.
 
-4.15  TrueType support
+5.15  TrueType support
 
 XFree86 4.x comes with two TrueType backends, known as "FreeType" backend
 (the "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these
@@ -681,7 +704,7 @@ has been merged into the FreeType backend by the After X-TT Project for
 XFree86 4.4.  Consequently, the old X-TrueType backend will be dropped as of
 XFree86 4.5.
 
-4.16  CID font support
+5.16  CID font support
 
 Support for CID-keyed fonts is included in XFree86 4.x.  The CID-keyed font
 format was designed by Adobe Systems <URL:http://www.adobe.com> for fonts
@@ -689,7 +712,7 @@ with large character sets.  The CID-keyed font support in XFree86 was donated
 by SGI <URL:http://www.sgi.com>.  See the LICENSE document for a copy of the
 CID Font Code Public License.
 
-4.17  Internationalisation of the scalable font backends
+5.17  Internationalisation of the scalable font backends
 
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends to
 use a common method of font re-encoding.  This re-encoding makes it possible
@@ -698,14 +721,14 @@ layer is used by the Type1 and Speedo backends and the `xfsft' version of the
 TrueType backend.  The `X-TrueType' version of the TrueType backend uses a
 different re-encoding method based on loadable encoding modules.
 
-4.18  Large font optimisation
+5.18  Large font optimisation
 
 The glyph metrics array, which all the X clients using a particular font have
 access to, is placed in shared memory, so as to reduce redundant memory con-
 sumption.  For non-local clients, the glyph metrics array is transmitted in a
 compressed format.
 
-4.19  Unicode/ISO 10646 support
+5.19  Unicode/ISO 10646 support
 
 What is included in 4.x:
 
@@ -738,7 +761,7 @@ What is included in 4.x:
    o Both the xfsft (the "freetype" module) and the X-TrueType (the "xtt"
      module) TrueType font backends support Unicode-encoded fonts.
 
-4.20  Xlib Compose file support and extensions
+5.20  Xlib Compose file support and extensions
 
 A more flexible Compose file processing system was added to Xlib in XFree86
 4.4.0.  The compose file is searched for in the following order:
@@ -786,7 +809,7 @@ if the rule is:
 
 the result depends on how Agrave is mapped in the current locale.
 
-4.21  Luxi fonts from Bigelow and Holmes
+5.21  Luxi fonts from Bigelow and Holmes
 
 XFree86 now includes the ``Luxi'' family of Type 1 fonts and TrueType fonts.
 This family consists of the fonts ``Luxi Serif'', ``Luxi Sans'' and
@@ -811,7 +834,7 @@ as well as in the License document.  For further information, please contact
 <design@bigelowandholmes.com> or <info@urwpp.de>, or consult the URW++ web
 site <URL:http://www.urwpp.de>.
 
-5.  Credits
+6.  Credits
 
 This section lists the credits for the XFree86 4.4.0 release.  For a more
 detailed breakdown, refer to the CHANGELOG file in the XFree86 source tree,
@@ -938,7 +961,7 @@ source files.
       Hosting:
             Internet Systems Consortium, Inc <URL:http://www.isc.org/>.
 
-6.  Attributions/Acknowledgements
+7.  Attributions/Acknowledgements
 
 This product includes software developed by The XFree86 Project, Inc
 (http://www.xfree86.org/) and its contributors.
@@ -957,7 +980,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.115 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.116 dawes Exp $
 
 
 $XFree86: $
