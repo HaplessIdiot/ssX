@@ -1,4 +1,4 @@
-/* $Xorg: psout.h,v 1.4 2000/08/17 19:48:11 cpqbld Exp $ */
+/* $Xorg: psout.h,v 1.5 2000/11/08 17:21:32 pookie Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -53,7 +53,7 @@ in this Software without prior written authorization from The Open Group.
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.h,v 1.2 2001/08/01 00:44:46 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -146,7 +146,7 @@ typedef PsClipRec *PsClipPtr;
 typedef struct PsOutRec_ *PsOutPtr;
 
 extern PsOutPtr PsOut_BeginFile(FILE *fp, int orient, int count, int plex,
-                              int res, int wd, int ht);
+                              int res, int wd, int ht, Bool raw);
 extern void PsOut_EndFile(PsOutPtr self, int closeFile);
 extern void PsOut_BeginPage(PsOutPtr self, int orient, int count, int plex,
                             int res, int wd, int ht);

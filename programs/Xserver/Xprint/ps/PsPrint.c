@@ -1,4 +1,4 @@
-/* $Xorg: PsPrint.c,v 1.4 2000/08/17 19:48:11 cpqbld Exp $ */
+/* $Xorg: PsPrint.c,v 1.5 2000/11/08 17:12:45 pookie Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.7 2001/01/17 22:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.8 2001/10/28 03:32:56 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -158,8 +158,6 @@ PsStartJob(
   Bool         sendClientData,
   ClientPtr    client)
 {
-  int                iorient, iplex, icount, ires;
-  unsigned short     iwd, iht;
   PsContextPrivPtr  pConPriv = 
       (PsContextPrivPtr)pCon->devPrivates[PsContextPrivateIndex].ptr;
 
@@ -168,17 +166,6 @@ PsStartJob(
    */
   if (!XpOpenTmpFile("w", &pConPriv->jobFileName, &pConPriv->pJobFile))
       return BadAlloc;
-
-/*
- * Write the job header to the job file.
- */
-
-  /* get document level attributes */
-  S_GetPageAttributes(pCon,&iorient,&icount,&iplex,&ires,&iwd,&iht);
-
-  pConPriv->pPsOut = PsOut_BeginFile(pConPriv->pJobFile,
-                                   iorient, icount, iplex, ires,
-                                   (int)iwd, (int)iht);
 
   return Success;
 }
@@ -302,6 +289,11 @@ PsStartPage(
   /*
    *  Start the page
    */
+  if (pConPriv->pPsOut == NULL) {
+      pConPriv->pPsOut = PsOut_BeginFile(pConPriv->pJobFile,
+				   iorient, icount, iplex, ires,
+				   (int)iwd, (int)iht, False);
+  }
   PsOut_BeginPage(pConPriv->pPsOut, iorient, icount, iplex, ires,
 		  (int)iwd, (int)iht);
 
@@ -346,6 +338,18 @@ PsEndPage(
 int
 PsStartDoc(XpContextPtr pCon, XPDocumentType type)
 {
+  int                iorient, iplex, icount, ires;
+  unsigned short     iwd, iht;
+  PsContextPrivPtr   pConPriv = 
+      (PsContextPrivPtr)pCon->devPrivates[PsContextPrivateIndex].ptr;
+
+  /* get document level attributes */
+  S_GetPageAttributes(pCon,&iorient,&icount,&iplex,&ires,&iwd,&iht);
+
+  pConPriv->pPsOut = PsOut_BeginFile(pConPriv->pJobFile,
+                                   iorient, icount, iplex, ires,
+                                   (int)iwd, (int)iht, (type == XPDocRaw));
+
   return Success;
 }
 

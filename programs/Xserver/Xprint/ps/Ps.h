@@ -1,4 +1,4 @@
-/* $Xorg: Ps.h,v 1.3 2000/08/17 19:48:09 cpqbld Exp $ */
+/* $Xorg: Ps.h,v 1.4 2000/11/08 17:04:21 pookie Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -70,7 +70,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.9 2001/10/28 03:32:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.10 2001/10/31 22:50:28 tsi Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
