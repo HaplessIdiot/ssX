@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 347. Add SharedXcursorReqs to Cygwin build (#5405, Harold Hunt).
  346. Add image transformation and subpixel order to Render (Keith Packard)
  345. Add Xcursor-def.cpp to Xcursor library (#5350, Alexander Gottwald).
  344. Update to pci.ids to 2002-09-24 snapshot (Marc La France).
@@ -15214,4 +15215,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2308 2002/09/24 16:14:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2310 2002/09/26 02:56:49 keithp Exp $
