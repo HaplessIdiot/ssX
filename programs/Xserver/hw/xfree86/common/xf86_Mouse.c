@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.31 1998/02/07 08:58:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.32 1998/03/21 00:12:54 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -988,7 +988,9 @@ xf86MouseConfig(array, inx, max, val)
     ErrorF("xf86MouseConfig mouse=0x%x\n", mouse);
 #endif
     
+/*
     configPointerSection(mouse, ENDSUBSECTION, &dev->name);
+ */
 
     return Success;
 }
