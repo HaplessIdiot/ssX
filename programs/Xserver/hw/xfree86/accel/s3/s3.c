@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.52 1994/12/10 02:12:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.53 1994/12/17 10:05:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -151,13 +151,16 @@ static SymTabRec s3DacTable[] = {
    { ATT20C505_DAC,	"att20c505" },
    { TI3020_DAC,	"ti3020" },
    { ATT20C498_DAC,	"att20c498" },
+   { ATT20C498_DAC,	"att21c498" },
    { ATT22C498_DAC,	"att22c498" },
    { TI3025_DAC,	"ti3025" },
    { ATT20C490_DAC,	"att20c490" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
    { S3_SDAC_DAC,	"s3_sdac" },
+   { S3_SDAC_DAC,	"ics5342" },       /* XXXX should be checked if true */
    { S3_GENDAC_DAC,	"s3gendac" },
+   { S3_GENDAC_DAC,	"ics5300" },
    { -1,		"" },
 };
 
@@ -258,6 +261,80 @@ s3PrintIdent()
   ErrorF("\n");
 }
 
+
+static Bool s3ProbeSDAC()
+{
+   /* probe for S3 GENDAC or SDAC */
+   /*
+    * S3 GENDAC and SDAC have two fixed read only PLL clocks
+    *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
+    *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
+    * which can be used to detect GENDAC and SDAC since there is no chip-id
+    * for the GENDAC.
+    *
+    * NOTE: for the GENDAC on a MIRO 10SD (805+GENDAC) reading PLL values
+    * for CLK0 f0 and f1 always returns 0x7f (but is documented "read only")
+    */
+   
+   unsigned char saveCR55, savelut[6];
+   int i;
+   long clock01, clock23;
+   Bool found = FALSE;
+
+   outb(vgaCRIndex, 0x55);
+   saveCR55 = inb(vgaCRReg);
+   outb(vgaCRReg, saveCR55 & ~1);
+
+   outb(0x3c7,0);
+   for(i=0; i<2*3; i++)		/* save first two LUT entries */
+      savelut[i] = inb(0x3c9);
+   outb(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
+      outb(0x3c9,0);
+
+   outb(vgaCRIndex, 0x55);
+   outb(vgaCRReg, saveCR55 | 1);
+
+   outb(0x3c7,0);
+   for(i=clock01=0; i<4; i++)
+      clock01 = (clock01 << 8) | (inb(0x3c9) & 0xff);
+   for(i=clock23=0; i<4; i++)
+      clock23 = (clock23 << 8) | (inb(0x3c9) & 0xff);
+
+   outb(vgaCRIndex, 0x55);
+   outb(vgaCRReg, saveCR55 & ~1);
+
+   outb(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* restore first two LUT entries */
+      outb(0x3c9,savelut[i]);
+
+   outb(vgaCRIndex, 0x55);
+   outb(vgaCRReg, saveCR55);
+
+   if ( clock01 == 0x28613d62 ||
+       (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {
+      found = TRUE;
+
+      xf86dactopel();
+      inb(0x3c6);
+      inb(0x3c6);
+      inb(0x3c6);
+
+      /* the forth read will show the SDAC chip ID and revision */
+      if (((i=inb(0x3c6)) & 0xf0) == 0x70) {
+	 ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC and programmable clock\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 s3RamdacType = S3_SDAC_DAC;
+      }
+      else {
+	 ErrorF("%s %s: Detected an S3 GENDAC 86C708 RAMDAC and programmable clock\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 s3RamdacType = S3_GENDAC_DAC;
+      }
+      xf86dactopel();
+   }
+}
+
 /*
  * s3Probe -- probe and initialize the hardware driver
  */
@@ -272,6 +349,7 @@ s3Probe()
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock;
+   char *clockchip_probed = XCONFIG_GIVEN;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -485,10 +563,8 @@ s3Probe()
 	    OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	    s3ClockSelectFunc = icd2061ClockSelect;
-	    if (xf86Verbose)
-	       ErrorF("%s %s: Using ICD2061A programmable clock\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
 	    numClocks = 3;
+	    clockchip_probed = XCONFIG_PROBED;
 	 }
       } while (0);
    }
@@ -693,8 +769,6 @@ s3Probe()
     * type possible.  Only probe for 928, 805i and 864/964.
     */
 
-   /* XXXX The "Detected an ....." messages should probably go */
-
    if (S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
        || S3_805_I_SERIES(s3ChipId)) {
       /* First probe for Ti3020 and Ti3025 */
@@ -857,205 +931,20 @@ s3Probe()
          }
 	 xf86setdaccomm(daccomm);
       }
+   }
+   
+   /* probe for S3 GENDAC or SDAC */
 
-      /* probe for S3 GENDAC or SDAC */
-      /* 
-       * S3 GENDAC and SDAC have two fixed read only PLL clocks
-       *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
-       *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
-       * which can be used to detect GENDAC and SDAC since there is no chip-id
-       * for the GENDAC.
-       */
-
-      if (s3RamdacType == UNKNOWN_DAC)
-      {
-	 unsigned char saveCR55, savelut[6];
-	 int i;
-	 long clock01;
-	 
-	 outb(vgaCRIndex, 0x55);
-	 saveCR55 = inb(vgaCRReg);
-	 outb(vgaCRReg, saveCR55 & ~1);
-
-	 outb(0x3c7,0);
-	 for(i=0; i<2*3; i++)		/* save first two LUT entries */
-	    savelut[i] = inb(0x3c9);
-	 outb(0x3c8,0);
-	 for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
-	    outb(0x3c9,0);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55 | 1);
-	 
-	 outb(0x3c7,0);
-	 for(i=clock01=0; i<4; i++)
-	    clock01 = (clock01 << 8) | (inb(0x3c9) & 0xff);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55 & ~1);
-
-	 outb(0x3c8,0);
-	 for(i=0; i<2*3; i++)		/* restore first two LUT entries */
-	    outb(0x3c9,savelut[i]);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55);
-
-         if (clock01 == 0x28613d62) {
-	    ErrorF("%s %s: Detected an S3 Gendac/SDAC programmable clock\n",
-		   XCONFIG_PROBED, s3InfoRec.name);
-
-	    xf86dactopel();
-	    inb(0x3c6);
-	    inb(0x3c6);
-	    inb(0x3c6);
-	    
-	    /* the forth read will show the SDAC chip ID and revision */
-	    if (((i=inb(0x3c6)) & 0xf0) == 0x70) {
-	       ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       s3RamdacType = S3_SDAC_DAC;
-
-	       OFLG_SET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions);
-	       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	       s3ClockSelectFunc = s3GendacClockSelect;
-	       if (xf86Verbose)
-		  ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
-			 XCONFIG_PROBED, s3InfoRec.name);
-	       numClocks = 3;
-	    }
-	    else {      
-	       ErrorF("%s %s: Detected an S3 GENDAC 86C708 RAMDAC\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       s3RamdacType = S3_GENDAC_DAC;
-
-	       OFLG_SET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions);
-	       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	       s3ClockSelectFunc = s3GendacClockSelect;
-	       if (xf86Verbose)
-		  ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
-			 XCONFIG_PROBED, s3InfoRec.name);
-	       numClocks = 3;
-	    }
-	    xf86dactopel();
-         }
-      }
-
-      /* probe for S3 SDAC again; might be discarded?! */
-      if (s3RamdacType == UNKNOWN_DAC)
-      {
-         xf86dactopel();
-         inb(0x3c6);
-         inb(0x3c6);
-         inb(0x3c6);
-
-         /* the forth read will show the chip ID and revision */
-         if ((inb(0x3c6) & 0xf0) == 0x70)
-         {
-            ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC\n",
-                   XCONFIG_PROBED, s3InfoRec.name);
-            s3RamdacType = S3_SDAC_DAC;
-
+   if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId) 
+       || S3_801_SERIES(s3ChipId)) {
+      if (s3RamdacType == UNKNOWN_DAC) {
+	 if (s3ProbeSDAC()) {
 	    OFLG_SET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	    s3ClockSelectFunc = s3GendacClockSelect;
-	    if (xf86Verbose)
-	       ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
 	    numClocks = 3;
-         }
-	 xf86dactopel();
-      }
-   }
-
-   if (S3_801_SERIES(s3ChipId)) {
-      /* probe for S3 GENDAC or SDAC */
-      /* 
-       * S3 GENDAC and SDAC have two fixed read only PLL clocks
-       *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
-       *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
-       * which can be used to detect GENDAC and SDAC since there is no chip-id
-       * for the GENDAC.
-       * 
-       * NOTE: for the GENDAC on a MIRO 10SD (805+GENDAC) reading PLL values
-       * for CLK0 f0 and f1 always returns 0x7f (but is documented "read only)
-       */
-
-      if (s3RamdacType == UNKNOWN_DAC)
-      {
-	 unsigned char saveCR55, savelut[6];
-	 int i;
-	 long clock01, clock23;
-	 
-	 outb(vgaCRIndex, 0x55);
-	 saveCR55 = inb(vgaCRReg);
-	 outb(vgaCRReg, saveCR55 & ~1);
-
-	 outb(0x3c7,0);
-	 for(i=0; i<2*3; i++)		/* save first two LUT entries */
-	    savelut[i] = inb(0x3c9);
-	 outb(0x3c8,0);
-	 for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
-	    outb(0x3c9,0);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55 | 1);
-	 
-	 outb(0x3c7,0);
-	 for(i=clock01=0; i<4; i++)
-	    clock01 = (clock01 << 8) | (inb(0x3c9) & 0xff);
-	 for(i=clock23=0; i<4; i++)
-	    clock23 = (clock23 << 8) | (inb(0x3c9) & 0xff);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55 & ~1);
-
-	 outb(0x3c8,0);
-	 for(i=0; i<2*3; i++)		/* restore first two LUT entries */
-	    outb(0x3c9,savelut[i]);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55);
-
-         if ( clock01 == 0x28613d62 ||
-	     (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {
-	    ErrorF("%s %s: Detected an S3 Gendac/SDAC programmable clock\n",
-		   XCONFIG_PROBED, s3InfoRec.name);
-
-	    xf86dactopel();
-	    inb(0x3c6);
-	    inb(0x3c6);
-	    inb(0x3c6);
-	    
-	    /* the forth read will show the SDAC chip ID and revision */
-	    if (((i=inb(0x3c6)) & 0xf0) == 0x70) {
-	       ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       s3RamdacType = S3_SDAC_DAC;
-
-	       OFLG_SET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions);
-	       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	       s3ClockSelectFunc = s3GendacClockSelect;
-	       if (xf86Verbose)
-		  ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
-			 XCONFIG_PROBED, s3InfoRec.name);
-	       numClocks = 3;
-	    }
-	    else {      
-	       ErrorF("%s %s: Detected an S3 GENDAC 86C708 RAMDAC\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       s3RamdacType = S3_GENDAC_DAC;
-
-	       OFLG_SET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions);
-	       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	       s3ClockSelectFunc = s3GendacClockSelect;
-	       if (xf86Verbose)
-		  ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
-			 XCONFIG_PROBED, s3InfoRec.name);
-	       numClocks = 3;
-	    }
-	    xf86dactopel();
-         }
+	    clockchip_probed = XCONFIG_PROBED;
+	 }
       }
    }
 
@@ -1347,7 +1236,7 @@ s3Probe()
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
          ErrorF("%s %s: Using ICD2061A programmable clock\n",
-            XCONFIG_GIVEN, s3InfoRec.name);
+		clockchip_probed, s3InfoRec.name);
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = icd2061ClockSelect;
@@ -1357,9 +1246,29 @@ s3Probe()
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = s3GendacClockSelect;
-      if (xf86Verbose)
-	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
-		XCONFIG_GIVEN, s3InfoRec.name);
+      if (xf86Verbose) {
+	 unsigned char saveCR55;
+	 int i,m,n,n1,n2;
+
+	 outb(vgaCRIndex, 0x55);
+	 saveCR55 = inb(vgaCRReg);
+	 outb(vgaCRReg, saveCR55 | 1);
+
+	 outb(0x3C7, 10); /* read MCLK */
+	 m = inb(0x3C9);
+	 n = inb(0x3C9);
+
+	 outb(vgaCRIndex, 0x55);
+	 outb(vgaCRReg, saveCR55);	 
+
+	 m &= 0x7f;
+	 n1 = n & 0x1f;
+	 n2 = (n>>5) & 0x03;
+
+	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock (MCLK %1.3f MHz)\n",
+		clockchip_probed, s3InfoRec.name
+		,((m+2.0) / (n1+2.0) / (1 << n2)) * 14.31818);
+      }
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 #ifdef ICS2595
@@ -1535,9 +1444,16 @@ s3Probe()
       s3InfoRec.maxClock = maxRawClock;
 
    /* check DCLK limit of 95MHz for 864 */
-   if (S3_864_SERIES(s3ChipId) && ((s3Bpp==1 && !pixMuxPossible) || s3Bpp>1)
-       && s3InfoRec.maxClock > 95000)
-      s3InfoRec.maxClock = 95000;
+   if (S3_864_SERIES(s3ChipId)) {
+      if (((s3Bpp==1 && !pixMuxPossible) || s3Bpp==2) 
+	  && s3InfoRec.maxClock > 95000)
+	 s3InfoRec.maxClock = 95000;
+
+      /* for 24bpp the limit should be 95/2 == 47.5MHz
+	 but I set the limit to 50MHz to allow VESA 800x600@72Hz */
+      else if (s3Bpp>2 && s3InfoRec.maxClock > 50000)
+	 s3InfoRec.maxClock = 50000;  
+   }
 
    if (xf86Verbose) {
       if (! OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {

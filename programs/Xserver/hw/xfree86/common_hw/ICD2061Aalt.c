@@ -1,5 +1,5 @@
 /* $XConsortium: ICD2061Aalt.c,v 1.1 94/03/28 21:24:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061Aalt.c,v 3.0 1994/04/29 14:08:27 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -21,7 +21,7 @@ unsigned short crtcaddr;
 unsigned short clockreg;
 
 static double range[15] = {50.0, 51.0, 53.2, 58.5, 60.7, 64.4, 66.8, 73.5, 
-			   75.6, 80.9, 83.2, 91.5, 100.0, 120.0, 120.0};
+			   75.6, 80.9, 83.2, 91.5, 100.0, 120.0, 120.0000001};
 
 #ifdef __STDC__
 static double genratio(unsigned int *p, unsigned int *q, double tgt);
@@ -71,8 +71,8 @@ int select;
    clknum = select;
 
    freq = ((double)frequency)/1000000.0;
-   if (freq > range[14])
-	freq =range[14];
+   if (freq > range[13])
+	freq =range[13];
    else if (freq <= 6.99)
       freq = 7.0;
 
@@ -148,10 +148,10 @@ static double genratio(p, q, tgt)
 
    mindiff = 999999999.0;
    for (k = 13; k < 69; k++) {	       /* q={15..71}:Constraint 2 on page 14 */
-      m = 50.0*k/fref - 3;
+      m = 50.0*(k+2)/fref - 3;
       if (m < 0)
          m = 0;
-      mmax = 120*k/fref - 3;	       /* m..mmax is constraint 3 on page 14 */
+      mmax = 120*(k+2)/fref - 2;	       /* m..mmax is constraint 3 on page 14 */
       if (mmax > 128)
          mmax = 128;
       while (m < mmax) {

@@ -230,8 +230,14 @@ XFree86 isn't easy).
 
 ICD2061A                                ==> ClockChip "icd2061a"
 ICS9161 (ICD2061A compatible)           ==> ClockChip "icd2061a"
+DCS2824-0 (ICD2061A compatible)         ==> ClockChip "icd2061a"
+
 S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
+ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "s3gendac"
+
 S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
+ICS5342 GENDAC (86c716 compatible)      ==> ClockChip "s3_sdac"
+
 Sierra SC11412                          ==> ClockChip "sc11412"
 ICS2595                                 ==> ClockChip "ics2595"
 TI3025                                  ==> ClockChip "ti3025"
@@ -284,4 +290,4 @@ this not being correct is the HW cursor being chopped off when positioned
 close to the right edge of the screen.
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.7 1994/11/19 07:55:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.8 1994/11/19 08:28:32 dawes Exp $

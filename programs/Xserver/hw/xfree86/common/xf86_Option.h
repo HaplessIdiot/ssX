@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.13 1994/09/20 12:46:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.14 1994/10/20 06:09:17 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -225,9 +225,13 @@ OptFlagRec xf86_OptionTab[] = {
 
 OptFlagRec xf86_ClockOptionTab [] = {
   { "icd2061a",		CLOCK_OPTION_ICD2061A },  /* generic ICD2061A */
+  { "ics9161a",		CLOCK_OPTION_ICD2061A },  /* ICD2061A compatible */
+  { "dcs2824",		CLOCK_OPTION_ICD2061A },  /* ICD2061A compatible */
   { "sc11412", 		CLOCK_OPTION_SC11412 },   /* Sierra SC11412 */
   { "s3gendac",		CLOCK_OPTION_S3GENDAC },  /* S3 gendac */
   { "s3_sdac",		CLOCK_OPTION_S3GENDAC },  /* S3 SDAC */
+  { "ics5300",		CLOCK_OPTION_S3GENDAC },  /* S3 gendac compatible */
+  { "ics5342",		CLOCK_OPTION_S3GENDAC },  /* S3 SDAC compatible */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ics2595",		CLOCK_OPTION_ICS2595 },   /* ICS2595 */
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */

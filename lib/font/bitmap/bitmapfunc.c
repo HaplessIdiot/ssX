@@ -1,5 +1,5 @@
 /* $XConsortium: bitmapfunc.c,v 1.8 94/04/17 20:17:12 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.0 1994/12/17 09:40:51 dawes Exp $ */
 
 /*
 
@@ -76,7 +76,7 @@ static FontRendererRec	renderers[] = {
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES,
 #ifdef __EMX__
-    ".pcf.Z", 6,
+    ".pcz", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES,

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.9 1994/12/10 02:14:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.10 1994/12/17 10:07:01 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -48,6 +48,10 @@
 /* SYSV386 (SVR3, SVR4)                                                   */
 /**************************************************************************/
 #if defined(SYSV) || defined(SVR4)
+# if defined(sun) && defined(i386) && defined(SVR4)
+#  /* Fix for Solaris ANSI compilation */
+#  define __EXTENSIONS__
+# endif
 # include <sys/ioctl.h>
 # include <signal.h>
 # include <termio.h>
@@ -63,9 +67,6 @@
 #  include <sys/immu.h>
 #  if !(defined (sun) && defined (i386) && defined (SVR4))
 #    include <sys/region.h>
-#  endif
-#  ifdef sun
-#   define __EXTENSIONS__
 #  endif
 #  include <sys/proc.h>
 #  include <sys/tss.h>

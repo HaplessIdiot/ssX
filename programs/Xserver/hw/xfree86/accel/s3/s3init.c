@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.38 1994/12/11 10:53:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.39 1994/12/17 10:05:42 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -644,6 +644,44 @@ s3Init(mode)
       mode->CrtcHAdjusted = TRUE;
    }
 
+   /* 
+    * do some sanity checks on the horizontal timing parameters 
+    */
+   { 
+      Bool changed=FALSE;
+      int oldCrtcHSyncStart, oldCrtcHSyncEnd, oldCrtcHTotal;
+
+      oldCrtcHSyncStart = mode->CrtcHSyncStart;
+      oldCrtcHSyncEnd   = mode->CrtcHSyncEnd;
+      oldCrtcHTotal     = mode->CrtcHTotal;
+      if (mode->CrtcHTotal > 4096) {  /*  CrtcHTotal/8  is a 9 bit value */
+	 mode->CrtcHTotal = 4096;
+	 changed = TRUE;
+      }
+      if (mode->CrtcHSyncEnd >= mode->CrtcHTotal) {
+	 mode->CrtcHSyncEnd = mode->CrtcHTotal - 1;
+	          changed = TRUE;
+      }
+      if (mode->CrtcHSyncStart >= mode->CrtcHSyncEnd) {
+	 mode->CrtcHSyncStart = mode->CrtcHSyncEnd - 1;
+         changed = TRUE;
+      }
+      if (changed) {
+	 ErrorF("%s %s: mode line has to be modified ...\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 ErrorF("\t\tfrom   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+		,mode->HDisplay, mode->HSyncStart, mode->HSyncEnd, mode->HTotal
+		,mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
+		);
+	 ErrorF("\t\tto     %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+		,(mode->CrtcHDisplay   << 8) >> (8-pixMuxShift)
+		,(mode->CrtcHSyncStart << 8) >> (8-pixMuxShift)
+		,(mode->CrtcHSyncEnd   << 8) >> (8-pixMuxShift)
+		,(mode->CrtcHTotal     << 8) >> (8-pixMuxShift)
+		,mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
+		);
+      }
+   }
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
       return(FALSE);
 
