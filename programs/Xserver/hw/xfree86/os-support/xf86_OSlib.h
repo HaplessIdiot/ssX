@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.45 1998/01/24 16:58:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.46 1998/02/07 08:58:19 hohndel Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -351,6 +351,7 @@ extern int errno;
 #    endif /* PCVT_SUPPORT && SYSCONS_SUPPORT */
 #   endif /* PCVT_SUPPORT */
 #   if defined(__FreeBSD__)
+#    undef MOUSE_GETINFO
 #    include <machine/mouse.h>
 #   endif
     /* Include these definitions in case ioctl_pc.h didn't get included */
