@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.24 1994/09/24 15:13:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.25 1994/10/20 06:09:11 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -62,7 +62,6 @@ extern Bool xf86fpFlag, xf86coFlag;
 extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
-int s3Madjust=0, s3Nadjust=0;
 
 char *xf86VisualNames[] = {
     "StaticGray",
@@ -1352,6 +1351,8 @@ configDeviceSection()
   devp->instance = 0;
   devp->BIOSbase = 0;
   devp->MemBase = 0;
+  devp->s3Madjust = 0;
+  devp->s3Nadjust = 0;
 
   while ((token = getToken(DeviceTab)) != ENDSECTION) {
     switch (token) {
@@ -1572,14 +1573,23 @@ configDeviceSection()
       break;
 
     case S3MNADJUST:
-      if (getToken(NULL) != NUMBER || val.num<-31 || val.num>31) 
+      if ((token = getToken(NULL)) == DASH) {  /* negative number */
+	 token = getToken(NULL);
+	 val.num = -val.num;
+      }
+      if (token != NUMBER || val.num<-31 || val.num>31) 
 	 configError("M adjust (max. 31) expected");
-      s3Madjust = val.num;
-      if ((token = getToken(NULL)) == NUMBER) {
+        devp->s3Madjust = val.num;
+
+      if ((token = getToken(NULL)) == DASH) {  /* negative number */
+	 token = getToken(NULL);
+	 val.num = -val.num;
+      }
+      if (token == NUMBER) {
 	 if (val.num<-255 || val.num>255) 
 	    configError("N adjust (max. 255) expected");
 	 else
-	    s3Nadjust = val.num;
+	    devp->s3Nadjust = val.num;
       }
       else pushToken = token;
       break;
@@ -2091,6 +2101,8 @@ configScreenSection()
             screen->POSbase = device_list[i].POSbase;
           if (OFLG_ISSET(XCONFIG_INSTANCE, &screen->xconfigFlag))
             screen->instance = device_list[i].instance;
+          screen->s3Madjust = device_list[i].s3Madjust;
+          screen->s3Nadjust = device_list[i].s3Nadjust;
           break;
         }
       }

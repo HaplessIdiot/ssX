@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.43 1994/09/26 16:10:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.44 1994/10/20 06:08:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -113,6 +113,8 @@ ScrnInfoRec s3InfoRec =
    0,				/* int COPbase */
    0,				/* int POSbase */
    0,				/* int instance */
+   0,				/* int s3Madjust */
+   0,				/* int s3Nadjust */
 };
 
 short s3alu[16] =
@@ -426,7 +428,8 @@ s3Probe()
       }
    }
 
-   card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock, &max_mem_clock);
+   card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
+			  &max_mem_clock);
    if (card_id > 0) {
       ErrorF("%s %s: card: %s, Ser.No. %s\n",
 	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
@@ -1370,6 +1373,27 @@ s3Probe()
 
    /* At this point, the s3InfoRec.clock[] values are pixel clocks */
 
+   if (S3_911_SERIES(s3ChipId)) {
+      maxDisplayWidth = 1024;
+      maxDisplayHeight = 1024 - 1; /* Cursor takes exactly 1 line for 911 */
+   } else {
+      maxDisplayWidth = 2048;
+      maxDisplayHeight = 4096 - 3; /* Cursor can take up to 3 lines */
+   }
+
+   if (s3InfoRec.virtualX > maxDisplayWidth) {
+      ErrorF("%s: Virtual width (%d) is too large.  Maximum is %d\n",
+	     s3InfoRec.name, s3InfoRec.virtualX, maxDisplayWidth);
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return (FALSE);
+   }
+   if (s3InfoRec.virtualY > maxDisplayHeight) {
+      ErrorF("%s: Virtual height (%d) is too large.  Maximum is %d\n",
+	     s3InfoRec.name, s3InfoRec.virtualY, maxDisplayHeight);
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return (FALSE);
+   }
+ 
    tx = s3InfoRec.virtualX;
    ty = s3InfoRec.virtualY;
    pMode = s3InfoRec.modes;
@@ -1388,6 +1412,14 @@ s3Probe()
        * parameter 
        */
       if (!xf86LookupMode(pMode, &s3InfoRec)) {
+	 xf86DeleteMode(&s3InfoRec, pMode);
+      } else if (pMode->HDisplay > maxDisplayWidth) {
+	 ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
+		XCONFIG_PROBED, s3InfoRec.name, pMode->name, maxDisplayWidth);
+	 xf86DeleteMode(&s3InfoRec, pMode);
+      } else if (pMode->VDisplay > maxDisplayHeight) {
+	 ErrorF("%s %s: Height of mode \"%s\" is too large (max is %d)\n",
+		XCONFIG_PROBED, s3InfoRec.name, pMode->name, maxDisplayHeight);
 	 xf86DeleteMode(&s3InfoRec, pMode);
       } else if ((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
 		 s3InfoRec.videoRam * 1024) {
@@ -1452,7 +1484,9 @@ s3Probe()
 
    /*
     * Are we using pixel multiplexing, or does the mode combination mean
-    * we can't continue
+    * we can't continue.  Note, this is a case we can't really deal with
+    * by deleting modes -- there is no unique choice of modes to delete,
+    * so let the user deal with it.
     */
    if (pixMuxPossible && pixMuxNeeded) {
       if (!pixMuxWidthOK) {
@@ -1579,7 +1613,7 @@ s3Probe()
 	        * We'll act based on clock doubling changeover at 67500
 	        */
 	       if (pMode->SynthClock > 67500) {
-		  if (!S3_864_SERIES(s3ChipId) || !S3_SDAC_DAC) 
+		  if (!S3_864_SERIES(s3ChipId) || !DAC_IS_SDAC)
 		     pMode->SynthClock /= 2;
 		  pMode->Flags |= V_DBLCLK;
 	       }
@@ -1641,28 +1675,6 @@ s3Probe()
 		xf86weight.green, xf86weight.blue);
    }
 
-   if (S3_911_SERIES(s3ChipId)) {
-      maxDisplayWidth = 1024;
-      maxDisplayHeight = 1024 - 1; /* Cursor takes exactly 1 line for 911 */
-   } else {
-      maxDisplayWidth = 2048;
-      maxDisplayHeight = 4096 - 3; /* Cursor can take up to 3 lines */
-   }
-   if (s3InfoRec.virtualX > maxDisplayWidth) {
-      ErrorF("%s: Illegal screen size: (%dx%d)\n", s3InfoRec.name,
-	     s3InfoRec.virtualX, s3InfoRec.virtualY);
-      ErrorF("\tVirtual width must be no greater than %d\n", maxDisplayWidth);
-      xf86DisableIOPorts(s3InfoRec.scrnIndex);
-      return (FALSE);
-   }
-   if (s3InfoRec.virtualY > maxDisplayHeight) {
-      ErrorF("%s: Illegal screen size: (%dx%d)\n", s3InfoRec.name,
-	     s3InfoRec.virtualX, s3InfoRec.virtualY);
-      ErrorF("\tVirtual height must be no greater than %d\n", maxDisplayHeight);
-      xf86DisableIOPorts(s3InfoRec.scrnIndex);
-      return (FALSE);
-   }
- 
    /* Select the appropriate logical line width */
    if (s3UsingPixMux && pixMuxLimitedWidths) {
       if (s3InfoRec.virtualX <= 1024) {
@@ -1735,6 +1747,12 @@ s3Probe()
 	     XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam);
    }
   
+   /*
+    * This one is difficult to deal with by deleting modes.  Do you delete
+    * modes to reduce the vertical size or to reduce the displayWidth?  Either
+    * way it will require the recalculation of everything above.  This one
+    * is in the too-hard basket.
+    */
    if ((s3BppDisplayWidth * (s3CursorStartY + s3CursorLines)) >
        s3InfoRec.videoRam * 1024) { /* XXXX improve this message */
       ErrorF("%s %s: Display size %dx%d is too large: ", 

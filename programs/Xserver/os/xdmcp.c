@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.31 94/06/03 17:21:13 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.2 1994/05/22 22:26:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.3 1994/06/09 10:51:22 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -1299,12 +1299,9 @@ XdmcpFatal (type, status)
     char	*type;
     ARRAY8Ptr	status;
 {
-    extern void AbortDDX();
-
     ErrorF ("XDMCP fatal error: %s %*.*s\n", type,
 	   status->length, status->length, status->data);
-    AbortDDX ();
-    exit (1);
+    AbortServer ();
 }
 
 static 

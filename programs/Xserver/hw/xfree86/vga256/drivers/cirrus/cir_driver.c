@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.17 1994/09/27 10:32:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.18 1994/10/20 06:11:23 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -80,7 +80,6 @@
 #include "input.h"
 #include "screenint.h"
 #include "dix.h"
-#include "gcstruct.h"
 
 #include "compiler.h"
 
@@ -119,6 +118,7 @@ Bool cirrusFavourBLT = FALSE;
 int cirrusDRAMBandwidth;
 int cirrusDRAMBandwidthLimit;
 
+#define CLAVGA2_ID  0x06
 #define CLGD5420_ID 0x22
 #define CLGD5422_ID 0x23
 #define CLGD5424_ID 0x25
@@ -128,7 +128,8 @@ int cirrusDRAMBandwidthLimit;
 #define CLGD6205_ID 0x02
 #define CLGD6215_ID 0x22  /* Hmmm... looks like a 5420 or 5422 */
 #define CLGD6225_ID 0x32
-#define CLGD6235_ID 0x06
+#define CLGD6235_ID 0x12	/* XXXX was 0x06. Untested. */
+				/* XXXX need to add 6245. */
 #define CLGD5434_OLD_ID 0x29
 #define CLGD5434_ID 0x2A	/* CL changed the ID at the last minute. */
 #define CLGD5430_ID 0x28
@@ -250,6 +251,12 @@ vgaVideoChipRec CIRRUS = {
   NULL,				/* ChipBuiltinModes */
   1,				/* ChipClockScaleFactor */
 };
+
+/*
+ * This exists only to force some OS's not to use a 386 I/O bitmap for
+ * I/O protection, which is MUCH slower than full I/O permissions.
+ */
+static unsigned Cirrus_IOPorts[] = { 0x400 };
 
 /*
  * Note: To be able to use 16K bank granularity, we would have to half the
@@ -593,6 +600,8 @@ cirrusProbe()
       */
      xf86ClearIOPortList(vga256InfoRec.scrnIndex);
      xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
+     xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(Cirrus_IOPorts) /
+         sizeof(Cirrus_IOPorts[0]), Cirrus_IOPorts);
 
      if (vga256InfoRec.chipset)
 	  {
@@ -620,6 +629,9 @@ cirrusProbe()
 	  }
      else
 	  {
+	  unsigned char old;
+	  xf86EnableIOPorts(vga256InfoRec.scrnIndex);
+	  old = rdinx(0x3c4, 0x06);
 	  cirrusEnterLeave(ENTER); /* Make the timing regs writable */
 	  
 	  /* Kited the following from the Cirrus */
@@ -635,6 +647,7 @@ cirrusProbe()
 	  /* Ok, if it's not 0x12, we're not a Cirrus542X or 62x5. */
 	  if (lockreg != 0x12)
 	       {
+	       wrinx(0x3c4, 0x06, old);
 	       cirrusEnterLeave(LEAVE);
 	       return(FALSE);
 	       }
@@ -653,7 +666,8 @@ cirrusProbe()
 	  switch( id )
 	       {
 	     case CLGD5420_ID:
-	       cirrusChip = CLGD5420;
+	     case CLAVGA2_ID:		/* AVGA2 uses 5402 */
+	       cirrusChip = CLGD5420;	/* 5420 or 5402 */
 	       break;
 	     case CLGD5422_ID:
 	       cirrusChip = CLGD5422;
@@ -1063,9 +1077,12 @@ cirrusProbe()
      return(TRUE);
 }
 
+#ifndef MONOVGA
 
 extern GCOps cfb16TEOps1Rect, cfb16TEOps;
 extern GCOps cfb32TEOps1Rect, cfb32TEOps;
+
+#endif
 
 /*
  * cirrusFbInit --

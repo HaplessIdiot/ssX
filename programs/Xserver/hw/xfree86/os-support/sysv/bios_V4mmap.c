@@ -1,4 +1,5 @@
 /* $XConsortium: bios_V4mmap.c,v 1.1 94/03/28 21:32:56 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -49,7 +50,8 @@ int Len;
 		       strerror(errno));
 		return(-1);
 	}
-	ptr = mmap((caddr_t)0, 0x8000, PROT_READ, MAP_SHARED, fd, (off_t)Base);
+	ptr = (unsigned char *)mmap((caddr_t)0, 0x8000, PROT_READ, MAP_SHARED,
+				    fd, (off_t)Base);
 	if ((int)ptr == -1)
 	{
 		ErrorF("xf86ReadBios: %s mmap failed\n", DEV_MEM);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.4 1994/09/27 10:28:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.5 1994/09/28 16:24:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -99,6 +99,8 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int COPbase */
   0,			/* int POSbase */
   0,			/* int instance */
+  0,			/* int s3Madjust */
+  0,			/* int s3Nadjust */
 };
 
 pointer vgaOrigVideoState = NULL;

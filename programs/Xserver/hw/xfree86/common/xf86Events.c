@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.0 1994/05/08 05:20:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -946,7 +946,7 @@ xf86SigHandler(signo)
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
   ErrorF("Caught signal %d.  Server aborting\n", signo);
-  AbortDDX();
+  AbortServer();
 }
 
 /*

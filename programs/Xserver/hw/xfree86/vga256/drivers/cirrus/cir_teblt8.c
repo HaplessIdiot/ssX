@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.8 1994/09/21 10:58:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.9 1994/10/20 06:11:29 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -480,10 +480,10 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 		if (ISSPECIALWIDTH(glyphWidth))
 			CirrusTransferText32bitSpecial(nglyph, h, glyphp,
-				glyphWidth, vgaBase);
+				glyphWidth, CIRRUSBASE());
 		else
 			CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
-				vgaBase);
+				CIRRUSBASE());
 
 		WAITUNTILFINISHED();
 

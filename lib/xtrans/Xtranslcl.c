@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.0 1994/05/21 23:53:00 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.1 1994/08/31 03:24:55 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -436,10 +436,20 @@ char		*port;
     chmod(X_STREAMS_DIR, 0777);
 
     if( (fd=open(server_path, O_RDWR)) >= 0 ) {
+#if 0
+	/*
+	 * This doesn't prevent the server from starting up, and doesn't
+	 * prevent clients from trying to connect to the in-use PTS (which
+	 * is often in use by something other than another server).
+	 */
 	PRMSG(1, "A server is already running on port %s\n", port, 0,0 );
 	PRMSG(1, "Remove %s if this is incorrect.\n", server_path, 0,0 );
 	close(fd);
 	return(-1);
+#else
+	/* Just remove the old path (which is what happens with UNIXCONN) */
+	;
+#endif
     }
 
     unlink(server_path);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.6 1994/09/03 02:52:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.7 1994/09/04 10:48:11 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -132,6 +132,8 @@ ScrnInfoRec monoInfoRec = {
   0,			/* int COPbase */
   0,			/* int POSbase */
   0,			/* int instance */
+  0,			/* int s3Madjust */
+  0,			/* int s3Nadjust */
 };
 
 unsigned char *monoBase = NULL;

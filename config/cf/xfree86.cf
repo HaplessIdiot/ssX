@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.24 1994/09/25 12:20:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.25 1994/10/20 06:00:18 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -212,6 +212,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.24 1994/09/25 12:20:27 dawes Exp $
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
 #define XFree86ServerDefines	-DAVOID_GLYPHBLT LinkKitDefines
+#endif
+
+#ifndef UseServerLock
+#define UseServerLock	YES
 #endif
 
 #ifndef XF86LinkKit

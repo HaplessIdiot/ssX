@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.17 1994/09/20 12:45:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.18 1994/09/24 15:12:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -115,6 +115,8 @@ ScrnInfoRec p9000InfoRec = {
     0,			/* int COPbase */
     0,			/* int POSbase */
     0,			/* int instance */
+    0,			/* int s3Madjust */
+    0,			/* int s3Nadjust */
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;

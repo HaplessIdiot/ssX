@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.4 1994/08/31 04:40:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.5 1994/09/07 15:53:28 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -424,6 +424,21 @@ extern int sys_nerr;
 #define EXTENDED_REGION 2
 
 #ifndef NO_OSLIB_PROTOTYPES
+/*
+ * This is to prevent re-entrancy to FatalError() when aborting.
+ * Anything that can be called as a result of AbortDDX() should use this
+ * instead of FatalError(). (xf86Exiting gets set to TRUE the first time
+ * AbortDDX() is called.
+ */
+
+extern Bool xf86Exiting;
+
+#define xf86FatalError(a, b) \
+	if (xf86Exiting) { \
+		ErrorF(a, b); \
+		return; \
+	} else FatalError(a, b)
+
 /***************************************************************************/
 /* Prototypes                                                              */
 /***************************************************************************/

@@ -353,6 +353,7 @@ main(argc, argv)
 
 	if (dispatchException & DE_TERMINATE)
 	{
+	    OsCleanup();
 	    ddxGiveUp();
 	    break;
 	}

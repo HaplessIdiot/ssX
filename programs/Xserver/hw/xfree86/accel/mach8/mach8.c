@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.9 1994/09/11 11:13:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.10 1994/09/23 10:09:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -111,6 +111,8 @@ ScrnInfoRec mach8InfoRec = {
     0,			/* int COPbase */
     0,			/* int POSbase */
     0,			/* int instance */
+    0,			/* int s3Madjust */
+    0,			/* int s3Nadjust */
 };
 
 short mach8alu[16] = {
@@ -433,6 +435,12 @@ mach8Probe()
 		pModeSv=pMode->next;
 		xf86DeleteMode(&mach8InfoRec, pMode);
 		pMode = pModeSv; 
+	  } else if (pMode->HDisplay > 1024) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Width to large for mode %s (max 1024)\n", 
+			XCONFIG_PROBED, mach8InfoRec.name, pMode->name);
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv;
 	  } else if (pMode->HDisplay * pMode->VDisplay > memavail) {
 		pModeSv=pMode->next;
 		ErrorF("%s %s: Too little memory for mode %s\n", 

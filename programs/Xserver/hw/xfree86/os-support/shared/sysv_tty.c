@@ -1,5 +1,5 @@
 /* $XConsortium: sysv_tty.c,v 1.1 94/03/28 21:32:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.0 1994/07/24 11:53:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.1 1994/09/26 15:34:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -105,8 +105,8 @@ unsigned cflag;
 
 	if (ioctl(xf86Info.mseFd, TCSETAW, &tty) < 0)
 	{
-		FatalError("Unable to set status of mouse fd (%s)\n",
-			   strerror(errno));
+		xf86FatalError("Unable to set status of mouse fd (%s)\n",
+			       strerror(errno));
 	}
 
 	switch (new)
@@ -133,16 +133,16 @@ unsigned cflag;
 	{
 		if (write(xf86Info.mseFd, c, 2) != 2)
 		{
-			FatalError("Unable to write to mouse fd (%s)\n",
-				   strerror(errno));
+			xf86FatalError("Unable to write to mouse fd (%s)\n",
+				       strerror(errno));
 		}
 	}
 	usleep(100000);
 
 	if (ioctl(xf86Info.mseFd, TCSETAW, &tty) < 0)
 	{
-		FatalError("Unable to set status of mouse fd (%s)\n",
-			   strerror(errno));
+		xf86FatalError("Unable to set status of mouse fd (%s)\n",
+			       strerror(errno));
 	}
 #ifdef TCMOUSE
 	ioctl(xf86Info.mseFd, TCMOUSE, 1);
