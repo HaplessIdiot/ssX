@@ -9,7 +9,7 @@
 <date>14 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.108 2004/02/10 02:18:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.109 2004/02/15 02:16:49 dawes Exp $
 </ident>
 
 <abstract>
@@ -1092,8 +1092,12 @@ please contact
 
 <sect>Credits
 <p>
-<bf>THIS IS A SAMPLE/DRAFT OF HOW A CREDITS SECTION IN THE XFREE86 RELEASE
-NOTES MIGHT LOOK</bf>
+
+<![ %snapshot [
+<bf>THIS IS A DRAFT OF THE XFree86 &fullrelvers; CREDITS SECTION.</bf>
+If you find missing credits, incorrect attributions, or other errors, please
+send details to <email>devel@XFree86.org</email>.
+]]>
 
 This section lists the credits for the XFree86 &relvers; release.  For
 a more detailed breakdown, refer to the CHANGELOG file in the XFree86
@@ -1354,6 +1358,32 @@ team.
 
 <tag>Webmaster:</tag>Georgina O. Economou
 
+<tag>Hosting:</tag><url name="Internet Systems Consortium, Inc"
+url="http://www.isc.org/">.
+
 </descrip>
+
+<sect>Attributions/Acknowledgements
+<p>
+
+This product includes software developed by The XFree86 Project, Inc
+(http://www.xfree86.org/) and its contributors.
+
+This product includes software developed by Thomas Winischhofer.
+
+This produce includes software that is based in part of the work of the
+FreeType Team (http://www.freetype.org).
+
+This product includes software developed by the University of California,
+Berkeley and its contributors.
+
+This product includes software developed by Christopher G. Demetriou.
+
+This product includes software developed by the NetBSD Foundation, Inc. and its
+contributors
+
+This product includes software developed by X-Oz Technologies
+(http://www.x-oz.com/).
+
 
 </article>
