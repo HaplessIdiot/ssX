@@ -1,4 +1,12 @@
-XFree86 4.1.99.4 (xx December 2001)
+XFree86 4.1.99.4 (28 December 2001)
+ 631. Update the ati/radeon driver to recognise the All-in-Wonder 8500's
+      ID (#5117, Vladimir Dergachev).
+ 630. Fix bug where a pointer may be checked without being intialized in xman
+      (#5120, Martin Husemann).
+ 629. Add an informational message to the radeon driver when LCD/DFP mode
+      validation fails (#5118, Vladimir Dergachev).
+ 628. Handle the ATI Rage128 "PP" variant like the "PR" variant (#4982,
+      Mike Harris).
  627. Fix a LynxOS on PowerPC build problem (#A.746, Stuart Lissaman).
  626. Fix the names of the Northern Saami keyboards (#A.742,
       Petter Reinholdtsen).
@@ -14433,4 +14441,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2106 2001/12/27 01:15:57 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2107 2001/12/27 21:32:38 dawes Exp $
