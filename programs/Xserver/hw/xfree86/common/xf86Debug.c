@@ -2,7 +2,9 @@
 #include <unistd.h> 
 #include "X.h"
 #include "os.h"
-#include "xf86str.h"
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86_OSlib.h"
 #include "compiler.h"
 
 void xf86Break1(void)
