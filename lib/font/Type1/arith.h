@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Type1/arith.h,v 1.2 1999/02/07 06:18:24 dawes Exp $ */
 
 /*SHARED*/
 
@@ -41,8 +41,11 @@ fractpel FPstarslash();
 /*END SHARED*/
 /*SHARED*/
  
+#undef      SHORTSIZE
 #define     SHORTSIZE         (sizeof(short)*8)
+#undef      LONGSIZE
 #define     LONGSIZE          (SHORTSIZE*2)
+#undef      MAXSHORT
 #define     MAXSHORT          ((1<<SHORTSIZE)-1)
  
 /*END SHARED*/

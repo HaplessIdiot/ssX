@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.4 1999/01/24 13:32:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.5 1999/02/07 11:11:15 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -92,7 +92,7 @@ do {\
 #else
 #define TGA_GET_OFFSET() ;
 #define TGA_SAVE_OFFSET() ;
-#define TGA_GET_WRITEME() ;
+#define TGA_GET_IOBASE() ;
 
 #define TGA_WRITE_REG(v,r) \
 	*(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;
