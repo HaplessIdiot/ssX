@@ -1,9 +1,25 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.17 2003/08/22 03:24:59 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.18 2003/08/24 20:52:26 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
 .SH NAME
 XF86Config - Configuration File for XFree86
+.SH INTRODUCTION
+.I XFree86(1)
+supports several mechanisms for supplying/obtaining configuration and
+run-time parameters: command line options, environment variables, the
+XF86Config configuration file, auto-detection, and fallback defaults.
+When the same information is supplied in more than one way, the highest
+precedence mechanism is used.  The list of mechanisms is ordered from
+highest precedence to lowest.  Note that not all parameters can be
+supplied via all methods.  The available command line options and
+environment variables (and some defaults) are described in the
+.I Xserver(1)
+and
+.I XFree86(1)
+manual pages.  Most configuration file parameters, with their defaults,
+are described below.  Driver and module specific configuration parameters
+are described in the relevant driver or module manual page.
 .SH DESCRIPTION
 .I XFree86
 uses a configuration file called

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.58 2003/02/25 21:25:37 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.59 2003/02/26 18:59:49 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -16,7 +16,7 @@ which was contributed to X11R5 by Snitily Graphics Consulting Service.
 The XFree86 X server architecture was redesigned for the 4.0 release,
 and it includes among other things a loadable module system donated by
 Metro Link, Inc.  The current XFree86 release is compatible with X11R6.6.
-.SH CONFIGURATIONS
+.SH PLATFORMS
 .PP
 .I XFree86
 operates under a wide range of operating systems and hardware platforms.
@@ -79,6 +79,22 @@ use \fIstartx/xinit\fP, the definition should be at the top of
 your \fI.xinitrc\fP file.  If you use \fIxdm\fP, the definitions should be
 early on in the \fI __projectroot__/lib/X11/xdm/Xsession\fP script.
 .SH OPTIONS
+.I XFree86
+supports several mechanisms for supplying/obtaining configuration and
+run-time parameters: command line options, environment variables, the
+XF86Config(__filemansuffix__) configuration file, auto-detection, and
+fallback defaults.  When the same information is supplied in more than
+one way, the highest precedence mechanism is used.  The list of mechanisms
+is ordered from highest precedence to lowest.  Note that not all parameters
+can be supplied via all methods.  The available command line options
+and environment variables (and some defaults) are described here and in
+the
+.I Xserver(1)
+manual page.  Most configuration file parameters, with their defaults,
+are described in the XF86Config(__filemansuffix__) manual page.  Driver
+and module specific configuration parameters are described in the relevant
+driver or module manual page.
+.PP
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, \fIXFree86\fP accepts the following command line switches:
 .TP 8
