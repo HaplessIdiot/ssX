@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.13 2003/03/26 20:44:00 tsi Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -406,7 +406,7 @@ static propertyRec windowPropTable[] = {
     {"RECTANGLE",	XA_RECTANGLE,	 "16iicc",    RECTANGLE_DFORMAT },
     {"RGB_COLOR_MAP",	XA_RGB_COLOR_MAP,"32xcccccccxx",RGB_COLOR_MAP_DFORMAT},
     {"STRING",		XA_STRING,	 "8s",	      0 },
-    {"WINDOW",		XA_WINDOW,	 "32x",	      ": window id # $0\n" },
+    {"WINDOW",		XA_WINDOW,	 "32x",	      ": window id # $0+\n" },
     {"VISUALID",	XA_VISUALID,	 "32x",	      ": visual id # $0\n" },
     {"WM_COLORMAP_WINDOWS",	0,	 "32x",       ": window id # $0+\n"},
     {"WM_COMMAND",	XA_WM_COMMAND,	 "8s",	      " = { $0+ }\n" },
