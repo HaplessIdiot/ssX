@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/Imakefile,v 1.11 2000/08/09 02:33:49 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/vm86/Imakefile,v 1.2 2003/06/12 14:12:37 eich Exp $
 
 #define IHaveModules
 
@@ -42,7 +42,7 @@ LibraryModuleTarget(vm86, $(OBJS))
 InstallLibraryModule(vm86,$(MODULEDIR),linux)
 
 all::
-	(set -x; cd ../..; \
+	@(set -x; cd ../..; \
 	RemoveFile(LibraryTargetName(vm86)); \
 	$(LN) linux/int10/vm86/LibraryTargetName(vm86) . )
 
