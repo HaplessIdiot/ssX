@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf /main/160 1996/12/26 08:52:18 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.28 1996/12/23 05:50:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.29 1996/12/28 08:03:15 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -215,16 +215,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # ifndef XsunMonoServer
 #  define XsunMonoServer	  NO		/* monochrome only */
 # endif
+# ifndef BuildPexExt
+#  define BuildPexExt	  (XsunServer || Xsun24Server)
+# endif
 #endif /* not i386Architecture */
 
 #if (OSMajorVersion > 4) && defined(i386Architecture)
 #ifndef HasSolx86ApertureDriver
 #define HasSolx86ApertureDriver	NO
 #endif
-#endif
-
-#ifndef BuildPexExt
-# define BuildPexExt	  (XsunServer || Xsun24Server)
 #endif
 
 #if HasGcc

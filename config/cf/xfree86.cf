@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.122 1996/12/24 08:45:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.123 1997/01/02 04:04:33 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -457,6 +457,14 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # ifndef XF68FBDevCFB32
 #  define XF68FBDevCFB32	NO
 # endif
+#endif
+
+#ifndef XnestServer
+#define XnestServer		YES
+#endif
+
+#ifndef XVirtualFramebufferServer
+#define XVirtualFramebufferServer NO
 #endif
 
 /*

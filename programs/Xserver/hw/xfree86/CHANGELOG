@@ -1,3 +1,9 @@
+XFree86 3.2n (3 January 1997)
+ 169. Fix some xaa build problems on some platforms.
+ 168. Updates to NetBSD.cf, including auto-detection of ELF (Chris Demetriou).
+ 167. Add I128 series II detection to scanpci and SuperProbe (Robin Cutshaw).
+ 166. Fix a problem in sun.cf (Robin Cutshaw).
+
 XFree86 3.2m (2 January 1997)
  165. Fix some problems creating Xserver links in XF86Setup (Dirk Hohndel).
  164. Update to R6.3 public patch 1.

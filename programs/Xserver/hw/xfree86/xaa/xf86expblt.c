@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.3 1996/12/18 03:13:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.4 1997/01/02 04:38:45 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -133,18 +133,25 @@ static __inline__ unsigned int reverse_bitorder(data) {
     *(dest + offset) = reverse_bitorder(data);
 #endif
 #else	/* If no (gcc on i386), don't use asm. */
+#ifdef FIXEDBASE
 #define WRITE_IN_BITORDER(dest, offset, data) \
 	{ unsigned data2; \
 	data2 = byte_reversed[data & 0xFF]; \
 	data2 |= byte_reversed[(data & 0xFF00) >> 8] << 8; \
 	data2 |= byte_reversed[(data & 0xFF0000) >> 16] << 16; \
 	data2 |= byte_reversed[(data & 0xFF000000) >> 24] << 24; \
-#ifdef FIXEDBASE \
 	*(dest) = data2; \
-#else \	
-	*(dest + offset) = data2; \
-#endif \
 	}
+#else
+#define WRITE_IN_BITORDER(dest, offset, data) \
+	{ unsigned data2; \
+	data2 = byte_reversed[data & 0xFF]; \
+	data2 |= byte_reversed[(data & 0xFF00) >> 8] << 8; \
+	data2 |= byte_reversed[(data & 0xFF0000) >> 16] << 16; \
+	data2 |= byte_reversed[(data & 0xFF000000) >> 24] << 24; \
+	*(dest + offset) = data2; \
+	}
+#endif
 #endif
 
 #endif

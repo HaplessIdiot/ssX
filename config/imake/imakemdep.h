@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/100 1996/10/31 14:32:02 kaleb $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.20 1996/12/29 13:37:26 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.21 1996/12/31 04:14:50 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -859,6 +859,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __NetBSD__
 	{"__NetBSD__", "1"},
+#endif
+#ifdef __ELF__
+	{"__ELF__", "1"},
 #endif
 #ifdef __EMX__
 	{"__EMX__", "1"},
