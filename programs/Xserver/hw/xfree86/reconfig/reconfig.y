@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.3 1994/09/14 10:40:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.4 1994/09/21 10:55:52 dawes Exp $ */
 
 %{
 #include <stdio.h>
@@ -128,6 +128,10 @@ char *modename; /* Covert data path. */
 /* This is the *external* mode list. */
 mode_list *modelist;
 
+mode_list *add_mode();
+string_list_list *add_list();
+string_list *add_string();
+
 #define SCRN (screens[scrn_index])
 
 %}
@@ -146,7 +150,7 @@ mode_list *modelist;
 	LOGITECH MEMBASE MICROSOFT MMHITTAB MMSERIES MODEDB MODES
 	MONO MOUSESYS NHSYNC NOSPEEDUP NOTRAPSIGNALS NVSYNC OPTION
 	OSMOUSE PHSYNC PSEUDOCOLOR PS_2 PVSYNC RGBPATH RIGHTALT
-	RIGHTALT RIGHTCTL SAMPLERATE SCREENNO SCROLLLOCK SERVERNUM
+	RIGHTCTL SAMPLERATE SCREENNO SCROLLLOCK SERVERNUM
 	SHAREDMON SPEEDUP STATICCOLOR STATICGRAY TRUECOLOR VGA16 VGA2
 	VGA256 VIDEORAM VIEWPORT VIRTUAL VTINIT VTSYSREQ WHITE XLEDS
 	XQUE

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.1 1994/09/17 13:47:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.2 1994/09/22 15:51:29 dawes Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
@@ -137,7 +137,7 @@ int n
 #define DO_BANK_READ(_bank)       vgaBankRead(_bank)
 #define DO_BANK_WRITE(_bank)      vgaBankWrite(_bank)
 #define DO_BANK_READ_WRITE(_bank) vgaBankReadWrite(_bank)
-#endif /* __GNUC__ > 1 */
+#endif /* USE_GCC_INLINE */
 
 
 static gcc_inline PixelType *vga2ScanlineOffsetFuncSrc(p,offset)

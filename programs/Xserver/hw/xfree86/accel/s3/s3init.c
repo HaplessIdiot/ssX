@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.26 1994/09/23 10:09:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.27 1994/09/23 10:49:44 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1531,7 +1531,7 @@ s3Init(mode)
       else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
 	 outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
       else if (DAC_IS_BT485_SERIES && S3_928_SERIES(s3ChipId))
-	 outb(vgaCRReg, 0x08);
+	 outb(vgaCRReg, 0x00);
       else 
 	 outb(vgaCRReg, 0x09);
       break;
@@ -1541,16 +1541,8 @@ s3Init(mode)
       break;
    }
 
-   if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)){
-      outb(vgaCRIndex, 0x5C);
-      outb(vgaCRReg, 0x00);
-      tmp = inb(vgaCRReg);
-   } else {
-      tmp = 0x00;
-   }
-
    outb(vgaCRIndex, 0x44);
-   outb(vgaCRReg, tmp);
+   outb(vgaCRReg, 0x00);
 
    outb(vgaCRIndex, 0x45);
    i = inb(vgaCRReg) & 0xf2;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.2 1994/09/22 15:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.3 1994/09/23 10:49:57 dawes Exp $ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  94/09/23 */
 
@@ -18,66 +18,82 @@ static Bool SetICS2595();
 
 Bool
 ICS2595SetClock(frequency)
-register long frequency;
+  register long frequency;
 {  
-   int vgaCRIndex = vgaIOBase + 4;
-   int vgaCRReg = vgaIOBase + 5; 
-   unsigned int i, FeedDiv, BigD, Location=17;
-   unsigned int VCLK_preprog[16]={100, 126, 92,  38, 50, 56, 28,
-                                    45, 135, 32, 110, 80, 40, 45, 75, 65};
+  int vgaCRIndex = vgaIOBase + 4;
+  int vgaCRReg = vgaIOBase + 5; 
+  unsigned int i, FeedDiv, BigD, Location=17;
+#if 0
+  unsigned int VCLK_preprog[16]={100, 126, 92,  38, 50, 56, 28,
+                                 45, 135, 32, 110, 80, 40, 45, 75, 65};
+#else
+  unsigned int VCLK_preprog[16]={0, 0, 0,  0, 0, 0, 28,
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#endif
   for(i=0;i<16;i++)
     if ((frequency<(VCLK_preprog[i]+0.5)*1000) && 
-       (frequency>(VCLK_preprog[i]-0.5)*1000)) {
-      Location=i;
-      break; }        /* check whether one of preprogrammed VCLKs fits */
-
+        (frequency>(VCLK_preprog[i]-0.5)*1000))
+      {
+        Location=i;
+        break;
+      }        /* check whether one of preprogrammed VCLKs fits */
+  
   if (Location==17)
-  { /* programm ICS2595 clocks */
-  if (frequency>MAX_ICS2595_FREQ)
-   return FALSE;        /* Frequency too high! */
-       
-     
-  /* calculate POST-DIVIDER */
-    BigD = 3;
-   if (frequency < MIN_ICS2595_FREQ)
-    BigD = 2;
-   if (frequency < MIN_ICS2595_FREQ / 2)
-    BigD = 1;
-   if (frequency < MIN_ICS2595_FREQ / 4)
-    BigD = 0;
-   frequency <<= (~BigD)&3;         /* negation, two last bits significant */	
-
-  if (frequency<MIN_ICS2595_FREQ)
-    return FALSE; 	/* Frequency too low!  */ 
-
-  FeedDiv = (unsigned int) ((frequency*46)/QUARZFREQ);
-  FeedDiv -= 257;
- 
-
-  Location = 0x0a; 		/* what clock to reprogram */    		
-
-  SetICS2595( FeedDiv, BigD, Location);
- }
-   if (Location!=0x06)
+    {
+          /* programm ICS2595 clocks */
+      if (frequency>MAX_ICS2595_FREQ)
+        return FALSE;        /* Frequency too high! */
       
-     {  outb(vgaCRIndex,  0x42);       /* set VCLK */
-        outb(vgaCRReg,    Location);
-        outb(vgaCRIndex,  0x5c);
-        outb(vgaCRReg,    0x20);
-        outb(vgaCRReg,    0x00);
-        usleep(100000);                /* this is unclear perhaps only 30*/
-        outb(vgaCRIndex,  0x5c);        
-        outb(vgaCRReg,    0x04);
-        outb(vgaCRIndex,  0x42);
-        outb(vgaCRReg,    0x04);}      /* perhaps here usleep(10000)      */
-   else { outb(vgaCRIndex, 0x42);      /* Swen check out different combi- */ 
-	  outb(vgaCRReg,   0x01);      /* nations of both  :-?            */
-          outb(vgaCRIndex, 0x5c);
-          outb(vgaCRReg,   0x20);
-          outb(vgaCRReg,   0x00); } 
-
-return TRUE;
-
+      
+          /* calculate POST-DIVIDER */
+      BigD = 3;
+      if (frequency < MIN_ICS2595_FREQ)
+        BigD = 2;
+      if (frequency < MIN_ICS2595_FREQ / 2)
+        BigD = 1;
+      if (frequency < MIN_ICS2595_FREQ / 4)
+        BigD = 0;
+      frequency <<= (~BigD)&3;         /* negation, two last bits significant */	
+      
+      if (frequency<MIN_ICS2595_FREQ)
+        return FALSE; 	/* Frequency too low!  */ 
+      
+      FeedDiv = (unsigned int) ((frequency*46)/QUARZFREQ);
+      if (FeedDiv >= 257)
+        FeedDiv -= 257;
+      if (FeedDiv >= 256)
+        FeedDiv = 255 ;
+      
+      Location = 0x0d; 		/* what clock to reprogram */    		
+      
+      SetICS2595( FeedDiv, BigD, Location);
+    }
+  if (Location!=0x06)
+    
+    {
+      outb(vgaCRIndex,  0x42);       /* set VCLK */
+      outb(vgaCRReg,    Location);
+      outb(vgaCRIndex,  0x5c);
+      outb(vgaCRReg,    0x20);
+      outb(vgaCRReg,    0x00);
+      GlennsIODelay();                /* this is unclear perhaps only 30*/
+      outb(vgaCRIndex,  0x5c);        
+      outb(vgaCRReg,    0x04);
+      outb(vgaCRIndex,  0x42);
+      outb(vgaCRReg,    0x04);      /* perhaps here usleep(10000)      */
+      GlennsIODelay();                /* this is unclear perhaps only 30*/
+    }
+  else
+    {
+      outb(vgaCRIndex, 0x42);      /* Swen check out different combi- */ 
+      outb(vgaCRReg,   0x01);      /* nations of both  :-?            */
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg,   0x20);
+      outb(vgaCRReg,   0x00);
+    } 
+  
+  return TRUE;
+  
 }	/* end of ICS2595SetClock */
 
 
@@ -86,98 +102,97 @@ static Bool
 SetICS2595(unsigned int N, unsigned int D, unsigned int L)
 #else
 SetICS2595(N, D, L)
-unsigned int N, D, L;
+  unsigned int N, D, L;
 #endif
 {
-	int vgaCRIndex = vgaIOBase + 4;
-	int vgaCRReg = vgaIOBase + 5;
-        unsigned int i;
-       
-
-	outb(vgaCRIndex, 0x42); /* Start programming sequence for ICS2595-02 */
-	outb(vgaCRReg,   0x00);
-        outb(vgaCRIndex, 0x5c);
-        outb(vgaCRReg,   0x00);
-        usleep(100000);
-	outb(vgaCRIndex, 0x42);
-        outb(vgaCRReg,   0x00);
-        outb(vgaCRIndex, 0x5c);
-        outb(vgaCRReg,   0x20);
-        outb(vgaCRReg,   0x00);
-        usleep(30);
-        outb(vgaCRIndex, 0x42);
-        outb(vgaCRReg,   0x01);
-        outb(vgaCRIndex, 0x5c);
-        outb(vgaCRReg,   0x20);
-        outb(vgaCRReg,   0x00);
-        usleep(30);
-
-	/* enable programming of ICS2595 */
-
-        wrtICS2595bit(0);              /* start bit must be 0           */
-        wrtICS2595bit(0);              /* R/W control -> Write		*/
-
-        for(i=1; i<6; i++)
-        {
-                wrtICS2595bit(L&1);    /* Location control		*/
-                L>>=1;
-        }
- 
-        
-        for(i=1; i<9; i++)
-        {   
-                wrtICS2595bit(N&1);     
-                N>>=1;
-        }
-
-        wrtICS2595bit(0);		/* disable EXTFREQ		*/
-
-        wrtICS2595bit(D&1);     	/* set post-divider             */
-        D>>=1;
-        wrtICS2595bit(D&1); 
-        
-        wrtICS2595bit(1);		/* STOP1			*/
-        wrtICS2595bit(1);		/* STOP2			*/
-        
-        return TRUE;         
+  int vgaCRIndex = vgaIOBase + 4;
+  int vgaCRReg = vgaIOBase + 5;
+  unsigned int i;
+  
+  
+  outb(vgaCRIndex, 0x42); /* Start programming sequence for ICS2595-02 */
+  outb(vgaCRReg,   0x00);
+  outb(vgaCRIndex, 0x5c);
+  outb(vgaCRReg,   0x00);
+  GlennsIODelay();
+  outb(vgaCRIndex, 0x42);
+  outb(vgaCRReg,   0x00);
+  outb(vgaCRIndex, 0x5c);
+  outb(vgaCRReg,   0x20);
+  outb(vgaCRReg,   0x00);
+  GlennsIODelay();
+  outb(vgaCRIndex, 0x42);
+  outb(vgaCRReg,   0x01);
+  outb(vgaCRIndex, 0x5c);
+  outb(vgaCRReg,   0x20);
+  outb(vgaCRReg,   0x00);
+  GlennsIODelay();
+  
+      /* enable programming of ICS2595 */
+  
+  wrtICS2595bit(0);              /* start bit must be 0           */
+  wrtICS2595bit(0);              /* R/W control -> Write		*/
+  
+  for(i=1; i<6; i++)
+    {
+      wrtICS2595bit(L&1);    /* Location control		*/
+      L>>=1;
+    }
+  
+  
+  for(i=1; i<9; i++)
+    {   
+      wrtICS2595bit(N&1);     
+      N>>=1;
+    }
+  
+  wrtICS2595bit(0);		/* disable EXTFREQ		*/
+  
+  wrtICS2595bit(D&1);     	/* set post-divider             */
+  D>>=1;
+  wrtICS2595bit(D&1); 
+  
+  wrtICS2595bit(1);		/* STOP1			*/
+  wrtICS2595bit(1);		/* STOP2			*/
+  
+  return TRUE;         
 }		
 
 static void wrtICS2595bit(bool)
-int bool;
+  int bool;
 { 
-   int vgaCRIndex = vgaIOBase + 4;
-   int vgaCRReg = vgaIOBase + 5;
-   if (bool==1)
-   {
-    outb(vgaCRIndex, 0x42);
-    outb(vgaCRReg,   0x04);
-    outb(vgaCRIndex, 0x5c);
-    outb(vgaCRReg,   0x20);
-    outb(vgaCRReg,   0x00);
-    usleep(30);   
-    outb(vgaCRIndex, 0x42);
-    outb(vgaCRReg,   0x0c);
-    outb(vgaCRIndex, 0x5c);
-    outb(vgaCRReg,   0x20);
-    outb(vgaCRReg,   0x00);
-    usleep(30);
-   }
-   else
-   {
-    outb(vgaCRIndex, 0x42);
-    outb(vgaCRReg,   0x00);
-    outb(vgaCRIndex, 0x5c);
-    outb(vgaCRReg,   0x20);
-    outb(vgaCRReg,   0x00);
-    usleep(30);
-    outb(vgaCRIndex, 0x42);
-    outb(vgaCRReg,   0x08);
-    outb(vgaCRIndex, 0x5c);
-    outb(vgaCRReg,   0x20);
-    outb(vgaCRReg,   0x00);
-    usleep(30);
-   }
+  int vgaCRIndex = vgaIOBase + 4;
+  int vgaCRReg = vgaIOBase + 5;
+  if (bool==1)
+    {
+      outb(vgaCRIndex, 0x42);
+      outb(vgaCRReg,   0x04);
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg,   0x20);
+      outb(vgaCRReg,   0x00);
+      GlennsIODelay();   
+      outb(vgaCRIndex, 0x42);
+      outb(vgaCRReg,   0x0c);
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg,   0x20);
+      outb(vgaCRReg,   0x00);
+      GlennsIODelay();   
+    }
+  else
+    {
+      outb(vgaCRIndex, 0x42);
+      outb(vgaCRReg,   0x00);
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg,   0x20);
+      outb(vgaCRReg,   0x00);
+      GlennsIODelay();   
+      outb(vgaCRIndex, 0x42);
+      outb(vgaCRReg,   0x08);
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg,   0x20);
+      outb(vgaCRReg,   0x00);
+      GlennsIODelay();   
+    }
 }         
 
 /* End of ICS2595.C */
-

@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.7 1994/09/07 15:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.8 1994/09/11 00:50:42 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -55,13 +55,15 @@ static unsigned long s3FontAge;
 extern Bool xf86Verbose;
 
 #define ALIGNMENT 8
-#define PIXMAP_WIDTH 64
+#define MAX_PIXMAP_WIDTH 64
+#define MIN_PIXMAP_WIDTH 8
+#define MIN_FONTCACHE_HEIGHT 13
 
 void
 s3FontCache8Init()
 {
    static int first = TRUE;
-   int x, y, w, h;
+   int x, y, w, h, pmwidth;
    int BitPlane;
    CachePool FontPool;
 
@@ -75,37 +77,42 @@ s3FontCache8Init()
     * available for the font cache.
     */
 
-   if ((h < PIXMAP_WIDTH) ||
-       ((s3DisplayWidth < 1024) && (h < PIXMAP_WIDTH + 100))) {
+   if ((h < MIN_PIXMAP_WIDTH) ||
+       ((s3DisplayWidth < 1024) && (h < MIN_PIXMAP_WIDTH + 100))) {
       w = s3DisplayWidth;
       ErrorF("%s %s: No pixmap expanding area available\n",
 	     XCONFIG_PROBED, s3InfoRec.name);
    } else {
+      if( h > MAX_PIXMAP_WIDTH )
+	pmwidth = MAX_PIXMAP_WIDTH;
+      else
+	pmwidth = h;
+
       if (s3DisplayWidth < 1024) {
 	 w = s3DisplayWidth;
 	 if (first) {
-	    s3InitFrect(0, y, PIXMAP_WIDTH);
+	    s3InitFrect(0, y, pmwidth);
 	 }
-	 y += PIXMAP_WIDTH;
+	 y += pmwidth;
       } else {
-	 w = s3DisplayWidth - PIXMAP_WIDTH;
-	 if (h >= PIXMAP_WIDTH) { /* XXXX This test should now be redundant */
+	 w = s3DisplayWidth - pmwidth;
+	 if (h >= pmwidth) { /* XXXX This test should now be redundant */
 	    if (first) {
-	       s3InitFrect(w, y, PIXMAP_WIDTH);
+	       s3InitFrect(w, y, pmwidth);
 	    }
 	 }
       }
       if (first) {
 	 ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
-		XCONFIG_PROBED, s3InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH);
+		XCONFIG_PROBED, s3InfoRec.name, pmwidth, pmwidth);
       }
    }
       
    /*
     * Don't allow a font cache if we don't have room for at least
-    * 2 complete 6x13 fonts.
+    * a complete 6x13 font.
     */
-   if (w >= 6*32 && h >= 2*13) {
+   if (w >= 6*32 && h >= MIN_FONTCACHE_HEIGHT) {
       if( first ) {
          FontPool = xf86CreateCachePool(ALIGNMENT);
          for( BitPlane = s3InfoRec.bitsPerPixel-1; BitPlane >= 0; BitPlane-- ) {

@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.6 1994/08/20 07:34:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.7 1994/08/31 04:29:51 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -360,6 +360,7 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
    WaitQueue(8);
 #endif
+   pw *= s3Bpp;
    modulus ((x - pox) * s3Bpp, pw, xpix0);
    cxpix = pw - xpix0;
 

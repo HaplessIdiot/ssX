@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.37 1994/09/22 15:50:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.38 1994/09/23 10:09:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -33,6 +33,7 @@
  * Id: s3.c,v 2.6 1993/08/09 06:17:57 jon Exp jon
  */
 
+#define ICS2595
 
 #include "misc.h"
 #include "cfb.h"
@@ -897,8 +898,6 @@ s3Probe()
 	       reason = "a TI3020 RAMDAC";
 	    break;
 	 case TI3025_DAC:
-	    if (s3Bpp > 2)
-	       reason = "a TI3025 RAMDAC";
 	    break;
 	 default:
 	    /* Should never get here */
