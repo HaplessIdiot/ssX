@@ -1,3 +1,5 @@
+.\" $TOG: XtAppAI.man /main/12 1997/11/04 20:30:36 kaleb $
+.\"
 .\" Copyright 1993 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -23,6 +25,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
+.\" $XFree86$
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xI Intrinsics
@@ -122,7 +125,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddInput 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
+.TH XtAppAddInput 3Xt "Release 6.4" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddInput, XtRemoveInput \- register and remove an input source
 .SH SYNTAX
@@ -203,7 +206,7 @@ XtAppAddInput(app_context,
 source,
 .br
 .B (XtPointer)
-XtInputReadMask | XtInputWriteMask,
+(XtInputReadMask | XtInputWriteMask),
 .br
 proc,
 .br
