@@ -394,6 +394,13 @@ SiSOptions(ScrnInfoPtr pScrn)
          pSiS->HWCursor = FALSE;
     }
 
+    /* DRI not supported on 315/330 series,
+     * so don't load DRI by default
+     */
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       pSiS->loadDRI = FALSE;
+    }
+
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
     pSiS->OptUseColorCursor = 0;
 #else
