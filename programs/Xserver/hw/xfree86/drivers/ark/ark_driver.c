@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.12 2001/05/04 19:05:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.13 2001/05/07 21:12:20 paulo Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -461,7 +461,7 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
 			      NULL, 256, 2048, pScrn->bitsPerPixel,
-			      128, 2048, pScrn->virtualX,
+			      128, 2048, pScrn->display->virtualX,
 			      pScrn->display->virtualY, pARK->videoRam * 1024,
 			      LOOKUP_BEST_REFRESH);
 	if (i == -1) {

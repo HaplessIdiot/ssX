@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.18 2001/04/10 16:08:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.19 2001/05/02 15:06:09 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -235,7 +235,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "[dri] TDFXDRIScreenInit failed (libdri.a too old)\n");
+                 "[dri] I810DRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
    }
    

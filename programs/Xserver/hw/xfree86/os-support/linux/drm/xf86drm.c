@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.19 2001/04/10 16:08:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.20 2001/04/18 18:44:39 dawes Exp $
  *
  */
 
@@ -169,11 +169,7 @@ static drmHashEntry *drmGetEntry(int fd)
 
 static int drmOpenDevice(long dev, int minor)
 {
-#ifdef XFree86LOADER
-    struct xf86stat st;
-#else
-    struct stat     st;
-#endif
+    stat_t          st;
     char            buf[64];
     int             fd;
     mode_t          dirmode = DRM_DEV_DIRMODE;
