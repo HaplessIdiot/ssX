@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -16,11 +17,11 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/lib/GL/glx/vertarr.c,v 1.1 1999/02/23 07:49:20 martin Exp $
+** $SGI$
 */
 
-#include "glxclient.h"
 #include "packrender.h"
+#include "glxclient.h"
 #include <string.h>
 
 /* macros for setting function pointers */
@@ -312,7 +313,7 @@ void glTexCoordPointer(GLint size, GLenum type, GLsizei stride,
     }
 }
 
-void glEdgeFlagPointer(GLsizei stride, const GLboolean *pointer)
+void glEdgeFlagPointer(GLsizei stride, const GLvoid *pointer)
 {
     __GLXcontext *gc = __glXGetCurrentContext();
     __GLXvertArrayState *va = &gc->state.vertArray;

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -16,8 +17,17 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/lib/GL/glx/glxext.c,v 1.1 1999/02/23 07:49:20 martin Exp $
+** $SGI$
 */
+
+/*
+ * Direct rendering support added by Precision Insight, Inc.
+ *
+ * Authors:
+ *   Kevin E. Martin <kevin@precisioninsight.com>
+ *
+ * $PI: xc/lib/GL/glx/glxext.c,v 1.6 1999/05/10 07:37:17 martin Exp $
+ */
 
 #include "packrender.h"
 #include <stdio.h>
@@ -139,6 +149,14 @@ static void FreeScreenConfigs(__GLXdisplayPrivate *priv)
 		Xfree(psc->effectiveGLXexts);
 	    psc->configs = 0;	/* NOTE: just for paranoia */
 	}
+
+#ifdef GLX_DIRECT_RENDERING
+	/* Free the direct rendering per screen data */
+	if (psc->driScreen.private)
+	    (*psc->driScreen.destroyScreen)(priv->dpy, i,
+					    psc->driScreen.private);
+	psc->driScreen.private = NULL;
+#endif
     }
     XFree((char*) priv->screenConfigs);
 }
@@ -161,6 +179,15 @@ static int __glXFreeDisplayPrivate(XExtData *extension)
 	Xfree((char*)priv->serverGLXversion);
 	priv->serverGLXversion = 0x0; /* to protect against double free's */
     }
+
+#ifdef GLX_DIRECT_RENDERING
+    /* Free the direct rendering per display data */
+    if (priv->driDisplay.private)
+	(*priv->driDisplay.destroyDisplay)(priv->dpy,
+					   priv->driDisplay.private);
+    priv->driDisplay.private = NULL;
+#endif
+
     Xfree((char*) priv);
     return 0;
 }
@@ -338,6 +365,15 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	if (props != buf) {
 	    Xfree((char *)props);
 	}
+
+#ifdef GLX_DIRECT_RENDERING
+	/* Initialize the direct rendering per screen data and functions */
+	if (priv->driDisplay.private)
+	    psc->driScreen.private =
+		(*priv->driDisplay.createScreen)(dpy, i, &psc->driScreen,
+						 psc->numConfigs,
+						 psc->configs);
+#endif
     }
     SyncHandle();
     return GL_TRUE;
@@ -406,6 +442,16 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
 
     dpyPriv->serverGLXvendor = 0x0; 
     dpyPriv->serverGLXversion = 0x0;
+
+#ifdef GLX_DIRECT_RENDERING
+    /*
+    ** Initialize the direct rendering per display data and functions.
+    ** Note: This _must_ be done before calling any other DRI routines
+    ** (e.g., those called in AllocAndFetchScreenConfigs).
+    */
+    dpyPriv->driDisplay.private =
+	driCreateDisplay(dpy, &dpyPriv->driDisplay);
+#endif
 
     if (!AllocAndFetchScreenConfigs(dpy, dpyPriv)) {
 	__glXUnlock();
@@ -583,6 +629,33 @@ GLXDrawable glXGetCurrentDrawableEXT(void)
 
 /************************************************************************/
 
+#ifdef GLX_DIRECT_RENDERING
+/* Return the DRI per screen structure */
+__DRIscreen *__glXFindDRIScreen(Display *dpy, int scrn)
+{
+    __DRIscreen *pDRIScreen = NULL;
+    XExtDisplayInfo *info = __glXFindDisplay(dpy);
+    XExtData **privList, *found;
+    __GLXdisplayPrivate *dpyPriv;
+    XEDataObject dataObj;
+
+    __glXLock();
+    dataObj.display = dpy;
+    privList = XEHeadOfExtensionList(dataObj);
+    found = XFindOnExtensionList(privList, info->codes->extension);
+    __glXUnlock();
+
+    if (found) {
+	dpyPriv = (__GLXdisplayPrivate *)found->private_data;
+	pDRIScreen = &dpyPriv->screenConfigs[scrn].driScreen;
+    }
+
+    return pDRIScreen;
+}
+#endif
+
+/************************************************************************/
+
 /*
 ** Make a particular context current.
 ** NOTE: this is in this file so that it can access dummyContext.
@@ -617,75 +690,122 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 	*/
 	sentRequestToOldDpy = True;
 
-	/* The GetReq macro uses "dpy", so we have to save and restore later.*/
-	dpyTmp = dpy;
-	dpy = oldGC->currentDpy;
-	oldOpcode = __glXSetupForCommand(dpy);
-	if (!oldOpcode) {
-	    return GL_FALSE;
-	}
-	LockDisplay(dpy);
-	GetReq(GLXMakeCurrent,req);
-	req->reqType = oldOpcode;
-	req->glxCode = X_GLXMakeCurrent;
-	req->drawable = None;
-	req->context = None;
-	req->oldContextTag = oldGC->currentContextTag;
-	if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
-	    /* The make current failed.  Just return GL_FALSE. */
-	    UnlockDisplay(dpy);
-	    SyncHandle();
-	    return GL_FALSE;
-	}
-	oldGC->currentContextTag = 0;
-	dpy = dpyTmp;
-    }
-    
-    /* Send a glXMakeCurrent request to bind the new context. */
-    LockDisplay(dpy);
-    GetReq(GLXMakeCurrent,req);
-    req->reqType = opcode;
-    req->glxCode = X_GLXMakeCurrent;
-    req->drawable = draw;
-    req->context = gc ? gc->xid : None;
-    req->oldContextTag = oldGC->currentContextTag;
-    if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
-	
-	/* The make current failed. */
-	UnlockDisplay(dpy);
-	SyncHandle();
-	/*
-	** If we had just sent a request to a previous dpy, we have to
-	** undo that request (because if a command fails, it should
-	** act like a no-op) by making current to the previous context
-	** and drawable.
-	*/
-	if (sentRequestToOldDpy) {
+#ifdef GLX_DIRECT_RENDERING
+	/* Unbind the old direct rendering context */
+	if (oldGC->isDirect) {
+	    if (oldGC->driContext.private) {
+		/* NOT_DONE: check the return value */
+		(*oldGC->driContext.unbindContext)(oldGC->currentDpy,
+						   oldGC->screen,
+						   oldGC->currentDrawable,
+						   oldGC);
+	    }
+	} else {
+#endif
+	    /*
+	    ** The GetReq macro uses "dpy", so we have to save and
+	    ** restore later.
+	    */
+	    dpyTmp = dpy;
 	    dpy = oldGC->currentDpy;
 	    oldOpcode = __glXSetupForCommand(dpy);
+	    if (!oldOpcode) {
+		return GL_FALSE;
+	    }
 	    LockDisplay(dpy);
 	    GetReq(GLXMakeCurrent,req);
 	    req->reqType = oldOpcode;
 	    req->glxCode = X_GLXMakeCurrent;
-	    req->drawable = oldGC->currentDrawable;
-	    req->context = oldGC->xid;
-	    req->oldContextTag = 0;
+	    req->drawable = None;
+	    req->context = None;
+	    req->oldContextTag = oldGC->currentContextTag;
 	    if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
+		/* The make current failed.  Just return GL_FALSE. */
 		UnlockDisplay(dpy);
 		SyncHandle();
-		/*
-		** The request failed; this cannot happen with the current
-		** API.  If in the future the API is extended to allow context
-		** sharing between clients, then this may fail (because another
-		** client may have grabbed the context); in that case, we cannot
-		** undo the previous request, and cannot adhere to the "no-op"
-		** behavior.
-		*/
+		return GL_FALSE;
 	    }
-	    oldGC->currentContextTag = reply.contextTag;
+	    oldGC->currentContextTag = 0;
+	    dpy = dpyTmp;
+#ifdef GLX_DIRECT_RENDERING
 	}
-	return GL_FALSE;
+#endif
     }
+    
+#ifdef GLX_DIRECT_RENDERING
+    /* Bind the direct rendering context to the drawable */
+    if (gc && gc->isDirect) {
+	if (gc->driContext.private) {
+	    /* NOT_DONE: check the return value */
+	    (*gc->driContext.bindContext)(dpy, gc->screen, draw, gc);
+	}
+    } else {
+#endif
+	/* Send a glXMakeCurrent request to bind the new context. */
+	LockDisplay(dpy);
+	GetReq(GLXMakeCurrent,req);
+	req->reqType = opcode;
+	req->glxCode = X_GLXMakeCurrent;
+	req->drawable = draw;
+	req->context = gc ? gc->xid : None;
+	req->oldContextTag = oldGC->currentContextTag;
+	if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
+
+	    /* The make current failed. */
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    /*
+	    ** If we had just sent a request to a previous dpy, we have
+	    ** to undo that request (because if a command fails, it
+	    ** should act like a no-op) by making current to the
+	    ** previous context and drawable.
+	    */
+	    if (sentRequestToOldDpy) {
+#ifdef GLX_DIRECT_RENDERING
+		/* Re-bind the old direct rendering context */
+		if (oldGC->isDirect) {
+		    if (oldGC->driContext.private) {
+			/* NOT_DONE: check the return value */
+			(*oldGC->driContext.bindContext)
+			    (oldGC->currentDpy,
+			     oldGC->screen,
+			     oldGC->currentDrawable,
+			     oldGC);
+		    }
+		} else {
+#endif
+		    dpy = oldGC->currentDpy;
+		    oldOpcode = __glXSetupForCommand(dpy);
+		    LockDisplay(dpy);
+		    GetReq(GLXMakeCurrent,req);
+		    req->reqType = oldOpcode;
+		    req->glxCode = X_GLXMakeCurrent;
+		    req->drawable = oldGC->currentDrawable;
+		    req->context = oldGC->xid;
+		    req->oldContextTag = 0;
+		    if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
+			UnlockDisplay(dpy);
+			SyncHandle();
+			/*
+			** The request failed; this cannot happen with
+			** the current API.  If in the future the API is
+			** extended to allow context sharing between
+			** clients, then this may fail (because another
+			** client may have grabbed the context); in that
+			** case, we cannot undo the previous request,
+			** and cannot adhere to the "no-op" behavior.
+			*/
+		    }
+		    oldGC->currentContextTag = reply.contextTag;
+#ifdef GLX_DIRECT_RENDERING
+		}
+#endif
+	    }
+	    return GL_FALSE;
+	}
+#ifdef GLX_DIRECT_RENDERING
+    }
+#endif
 
     /* Update our notion of what is current */
     __glXLock();
@@ -700,11 +820,34 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
     } else {
 	if (oldGC != &dummyContext) {
 	    /* Old current context is no longer current to anybody */
+
+#ifdef GLX_DIRECT_RENDERING
+	    /* Unbind the old direct rendering context */
+	    if (oldGC->isDirect) {
+		if (oldGC->driContext.private) {
+		    /* NOT_DONE: check the return value */
+		    (*oldGC->driContext.unbindContext)(dpy, oldGC->screen,
+						       oldGC->currentDrawable,
+						       oldGC);
+		}
+	    }
+#endif
+
 	    oldGC->currentDpy = 0;
 	    oldGC->currentDrawable = None;
 	    oldGC->currentContextTag = 0;
 
 	    if (oldGC->xid == None) {
+#ifdef GLX_DIRECT_RENDERING
+		/* Destroy the old direct rendering context */
+		if (oldGC->isDirect) {
+		    if (oldGC->driContext.private) {
+			(*oldGC->driContext.destroyContext)
+			    (dpy, oldGC->screen, oldGC->driContext.private);
+			oldGC->driContext.private = NULL;
+		    }
+		}
+#endif
 		/*
 		** Free memory for old handle if we are switching away
 		** from a context that was destroyed.

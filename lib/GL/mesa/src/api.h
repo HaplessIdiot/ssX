@@ -64,6 +64,11 @@
 #define API_H
 
 
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+#define NEED_MESA_FUNCS_WRAPPED
+#include "mesa_api.h"
+#endif
+
 /*
  * Single/multiple thread context selection.
  */

@@ -1,6 +1,7 @@
 #ifndef _GLX_client_h_
 #define _GLX_client_h_
 
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -19,8 +20,17 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/lib/GL/glx/glxclient.h,v 1.1 1999/02/23 07:49:20 martin Exp $
+** $SGI$
 */
+
+/*
+ * Direct rendering support added by Precision Insight, Inc.
+ *
+ * Authors:
+ *   Kevin E. Martin <kevin@precisioninsight.com>
+ *
+ * $PI: xc/lib/GL/glx/glxclient.h,v 1.7 1999/04/05 05:24:32 martin Exp $
+ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -31,6 +41,9 @@
 #include <X11/Xlibint.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef GLX_DIRECT_RENDERING
+#include "dri_glapi.h"
+#endif
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */
 #define GLX_MINOR_VERSION	2
@@ -39,6 +52,155 @@
 
 typedef struct __GLXcontextRec __GLXcontext;
 typedef struct __GLXdisplayPrivateRec __GLXdisplayPrivate;
+
+/************************************************************************/
+
+#ifdef GLX_DIRECT_RENDERING
+
+/*
+** Since glxclient.h is included by all source files that call or define
+** OpenGL functions, it is possible to wrap all of these functions by
+** including indirect.h here.  Note: To turn on wrapping, you must
+** #define NEED_WRAP_GL_FUNCS in the appropriate source files.
+*/
+#include "indirect.h"
+
+/*
+** The following structures define the interface between the GLX client
+** side library and the DRI (direct rendering infrastructure).
+*/
+typedef struct __DRIdisplayRec  __DRIdisplay;
+typedef struct __DRIscreenRec   __DRIscreen;
+typedef struct __DRIcontextRec  __DRIcontext;
+typedef struct __DRIdrawableRec __DRIdrawable;
+
+extern __DRIscreen *__glXFindDRIScreen(Display *dpy, int scrn);
+
+/*
+** Display dependent methods.  This structure is initialized during the
+** driCreateDisplay() call.
+*/
+struct __DRIdisplayRec {
+    /*
+    ** Method to destroy the private DRI display data.
+    */
+    void (*destroyDisplay)(Display *dpy, void *private);
+
+    /*
+    ** Method to create the private DRI screen data and initialize the
+    ** screen dependent methods.
+    */
+    void *(*createScreen)(Display *dpy, int scrn, __DRIscreen *psc,
+			  int numConfigs, __GLXvisualConfig *config);
+
+    /*
+    ** Opaque pointer to private per display direct rendering data.
+    ** NULL if direct rendering is not supported on this display.  Never
+    ** dereference by this code.
+    */
+    void *private;
+};
+
+/*
+** Screen dependent methods.  This structure is initialized during the
+** (*createScreen)() call.
+*/
+struct __DRIscreenRec {
+    /*
+    ** Method to destroy the private DRI screen data.
+    */
+    void (*destroyScreen)(Display *dpy, int scrn, void *private);
+
+    /*
+    ** Method to create the private DRI context data and initialize the
+    ** context dependent methods.
+    */
+    void *(*createContext)(Display *dpy, XVisualInfo *vis, void *shared,
+			   __DRIcontext *pctx);
+
+    /*
+    ** Method to create the private DRI drawable data and initialize the
+    ** drawable dependent methods.
+    */
+    void *(*createDrawable)(Display *dpy, int scrn, GLXDrawable draw,
+			    VisualID vid, __DRIdrawable *pdraw);
+
+    /*
+    ** Method to return a pointer to the DRI drawable data.
+    */
+    __DRIdrawable *(*getDrawable)(Display *dpy, GLXDrawable draw);
+
+    /*
+    ** Opaque pointer to private per screen direct rendering data.  NULL
+    ** if direct rendering is not supported on this screen.  Never
+    ** dereference by this code.
+    */
+    void *private;
+};
+
+/*
+** Context dependent methods.  This structure is initialized during the
+** (*createContext)() call.
+*/
+struct __DRIcontextRec {
+    /*
+    ** Method to destroy the private DRI context data.
+    */
+    void (*destroyContext)(Display *dpy, int scrn, void *private);
+
+    /*
+    ** Method to bind a DRI drawable to a DRI graphics context.
+    */
+    Bool (*bindContext)(Display *dpy, int scrn, GLXDrawable draw,
+			GLXContext gc);
+
+    /*
+    ** Method to unbind a DRI drawable to a DRI graphics context.
+    */
+    Bool (*unbindContext)(Display *dpy, int scrn, GLXDrawable draw,
+			  GLXContext gc);
+
+    /*
+    ** Opaque pointer to private per context direct rendering data.
+    ** NULL if direct rendering is not supported on the display or
+    ** screen used to create this context.  Never dereference by this
+    ** code.
+    */
+    void *private;
+};
+
+/*
+** Drawable dependent methods.  This structure is initialized during the
+** (*createDrawable)() call.  These methods are not currently called
+** from GLX 1.2, but could be used in GLX 1.3.
+*/
+struct __DRIdrawableRec {
+    /*
+    ** Method to destroy the private DRI drawable data.
+    */
+    void (*destroyDrawable)(Display *dpy, void *private);
+
+    /*
+    ** Method to swap the front and back buffers.
+    */
+    void (*swapBuffers)(Display *dpy, void *private);
+
+    /*
+    ** Opaque pointer to private per drawable direct rendering data.
+    ** NULL if direct rendering is not supported on the display or
+    ** screen used to create this drawable.  Never dereference by this
+    ** code.
+    */
+    void *private;
+};
+
+/*
+** Function to create and DRI display data and initialize the display
+** dependent methods.
+*/
+extern void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp);
+
+#endif
 
 /************************************************************************/
 
@@ -264,6 +426,19 @@ struct __GLXcontextRec {
     ** needed.
     */
     GLint majorOpcode;
+
+#ifdef GLX_DIRECT_RENDERING
+    /*
+    ** API function pointers for this context.  The function pointers
+    ** can be changed by the DRI library.
+    */
+    __GLapi glAPI;
+
+    /*
+    ** Per context direct rendering interface functions and data.
+    */
+    __DRIcontext driContext;
+#endif
 };
 
 #define __glXSetError(gc,code) \
@@ -310,6 +485,13 @@ typedef struct __GLXscreenConfigsRec {
     int numConfigs;
     const char *serverGLXexts;
     char *effectiveGLXexts;
+
+#ifdef GLX_DIRECT_RENDERING
+    /*
+    ** Per screen direct rendering interface functions and data.
+    */
+    __DRIscreen driScreen;
+#endif
 } __GLXscreenConfigs;
 
 /*
@@ -347,6 +529,12 @@ struct __GLXdisplayPrivateRec {
     */
     __GLXscreenConfigs *screenConfigs;
 
+#ifdef GLX_DIRECT_RENDERING
+    /*
+    ** Per display direct rendering interface functions and data.
+    */
+    __DRIdisplay driDisplay;
+#endif
 };
 
 void __glXFreeContext(__GLXcontext*);

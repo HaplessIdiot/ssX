@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.94 1999/04/18 12:59:43 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.95 1999/05/15 06:24:45 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -150,6 +150,20 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #else
 #define HasMTRRSupport		NO	/* no for non-ix86 */
 #endif
+#endif
+
+/* The DRM module requires kernel services that appeared in late 2.1.x
+   kernels and are known to be present in 2.2.x kernels. */
+#ifndef BuildXF86DRI
+#  ifdef i386Architecture
+#    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+#      define BuildXF86DRI            YES
+#    else
+#      define BuildXF86DRI            NO
+#    endif
+#  else
+#    define BuildXF86DRI              NO
+#  endif
 #endif
 
 #ifndef LinuxFBDevSupport

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.230 1999/06/13 13:46:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.231 1999/06/13 15:49:01 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -392,16 +392,20 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * Build GLX server interface
  *   --- Doesn't work for 1-bit and 4-bit servers
  */
-#if !defined(BuildGlxExt)
-#if XF86Server
-#  define BuildGlxExt             YES
-#  ifndef BuildXF86DRI
-#    define BuildXF86DRI          NO
-#  endif
+#ifndef BuildGlxExt
+#  define BuildGlxExt    YES
+#endif
+
+/* BuildXF86DRI must be set in an OS specific .cf file */	
+#ifndef BuildXF86DRI
+#  define BuildXF86DRI   NO
+#endif
+
+#if BuildGlxExt
 
 #  if !defined(GlxStaticServerLib) && !GlxStubLib
 #    if BuildXF86DRI
-#      define DRIDefines -DXF86DRI
+#      define DRIDefines -DXF86DRI -DGLX_DIRECT_RENDERING
 #    else
 #      define DRIDefines /**/
 #    endif
@@ -420,9 +424,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  endif
 
 #else
-#  define BuildGlxExt             NO
-#  define BuildXF86DRI            NO
-#endif
+
+/* If we are not building GLX, then make sure the DRI is not built */
+#  undef  BuildXF86DRI
+#  define BuildXF86DRI   NO
+
 #endif
 
 /*

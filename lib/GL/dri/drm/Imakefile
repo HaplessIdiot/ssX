@@ -1,36 +1,37 @@
+XCOMM $XFree86$
+XCOMM $PI: xc/lib/GL/dri/drm/Imakefile,v 1.10 1999/06/07 12:52:39 faith Exp $
 
-XCOMM Header: /p0/cvs/X39-3D/xc/lib/GL/dri/drm/Imakefile,v 1.2 1999/02/26 08:35:32 martin Exp $
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
-         SRCS = drmlib.c
-         OBJS = drmlib.o
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I.
+         SRCS = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c
+         OBJS = xf86drm.o xf86drmHash.o xf86drmRandom.o xf86drmSL.o
 
 #if defined(LinuxArchitecture)
 OS_SUBDIR = linux
 #endif
 
-LinkSourceFile(drmlib.c, \
-	../../../../programs/Xserver/hw/xfree86/os-support/$(OS_SUBDIR)/drm)
-LinkSourceFile(drm.h, \
-	../../../../programs/Xserver/hw/xfree86/os-support/$(OS_SUBDIR)/drm)
-LinkSourceFile(drmlib.h, \
-	../../../../programs/Xserver/hw/xfree86/os-support/$(OS_SUBDIR)/drm)
+LinkSourceFile(xf86drm.c,$(XF86OSSRC)/$(OS_SUBDIR)/drm)
+LinkSourceFile(xf86drmHash.c,$(XF86OSSRC)/$(OS_SUBDIR)/drm)
+LinkSourceFile(xf86drmRandom.c,$(XF86OSSRC)/$(OS_SUBDIR)/drm)
+LinkSourceFile(xf86drmSL.c,$(XF86OSSRC)/$(OS_SUBDIR)/drm)
+LinkSourceFile(xf86drm.h,$(XF86OSSRC))
+LinkSourceFile(drm.h,$(XF86OSSRC)/$(OS_SUBDIR)/drm/generic)
 
-all::
-	LibMkdir(unshared)
+#include <Library.tmpl>
 
-.c.o:
-	UnsharedLibObjCompile($(_NOOP_))
-	NormalSharedLibObjCompile($(_NOOP_))
+LibraryObjectRule()
 
-all:: $(OBJS)
-
-clean::
-	LibCleanDir(unshared)
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
 
 DependTarget()
