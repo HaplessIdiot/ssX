@@ -1,3 +1,5 @@
+3286. Remove ATI driver's meddling with LCD power management facilities
+      (Marc La France).
 3285. Ensure miInitializeBanking() fails when a bank clip region cannot be
       allocated (Marc La France).
 3284. Static server fix for s3virge and nv drivers (Marc La France).
@@ -9008,4 +9010,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.844 1999/11/01 00:33:27 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.845 1999/11/02 16:16:20 tsi Exp $
