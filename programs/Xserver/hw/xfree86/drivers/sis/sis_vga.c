@@ -4,8 +4,8 @@
  *
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
- * Init() function for old series (except for FIFO calculation) based on code
- * which was Copyright 1998,1999 by Alan Hourihane, Wigan, England.
+ * Init() function for old series (except for TV and FIFO calculation) based
+ * on code which was Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,6 +24,9 @@
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Authors: 	Thomas Winischhofer <thomas@winischhofer.net>
+ *          	...
  *
  */
 
@@ -948,12 +951,12 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * the videoRAM (notably NOT the x framebuffer memory, which can/should
      * be limited by MaxXFbMem when using DRI). Also, enable the accelerators.
      */
-    if (!pSiS->NoAccel) {
+    if(!pSiS->NoAccel) {
         pReg->sisRegs3C4[0x1E] |= 0x42;  /* Enable 2D accelerator */
 	pReg->sisRegs3C4[0x1E] |= 0x18;  /* Enable 3D accelerator */
-	switch (pSiS->VGAEngine) {
+	switch(pSiS->VGAEngine) {
 	case SIS_300_VGA:
-	  if(pSiS->TurboQueue)  {    		/* set Turbo Queue as 512k */
+	  if(pSiS->TurboQueue) {    		/* set Turbo Queue as 512k */
 	    temp = ((pScrn->videoRam/64)-8);    /* 8=512k, 4=256k, 2=128k, 1=64k */
             pReg->sisRegs3C4[0x26] = temp & 0xFF;
 	    pReg->sisRegs3C4[0x27] =
@@ -961,10 +964,12 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
           }	/* line above new for saving D2&3 of status register */
 	  break;
 	case SIS_315_VGA:
+#ifndef SISVRAMQ
 	  /* See comments in sis_driver.c */
 	  pReg->sisRegs3C4[0x27] = 0x1F;
 	  pReg->sisRegs3C4[0x26] = 0x22;
 	  pReg->sisMMIO85C0 = (pScrn->videoRam - 512) * 1024;
+#endif
 	  break;
 	}
     }
@@ -1346,7 +1351,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     pSiS->SiS_Pr->SiS_UseLCDA = FALSE;
     pSiS->SiS_Pr->Backup = FALSE;
 
-    /* TW: Videobridges only available for 300/315 series */
+    /* Videobridges only available for 300/315 series */
     if((pSiS->VGAEngine != SIS_300_VGA) && (pSiS->VGAEngine != SIS_315_VGA))
         return;
 	
@@ -1461,7 +1466,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	       }
 	}
         if((temp >= lowerlimitch) && (temp <= upperlimitch))  {
-	    /* TW: Set global for init301.c */
+	    /* Set global for init301.c */
 	    pSiS->SiS_Pr->SiS_IF_DEF_CH70xx = chronteltype;
 
 	    if(chronteltype == 1) {
@@ -1469,10 +1474,10 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	       SiS_SetChrontelGPIO(pSiS->SiS_Pr, 0x9c);
 	    }
 
-	    /* TW: Read Chrontel version number */
+	    /* Read Chrontel version number */
  	    temp1 = SiS_GetCH70xx(pSiS->SiS_Pr, chrontelidreg);
 	    if(chronteltype == 1) {
-	        /* TW: See Chrontel TB31 for explanation */
+	        /* See Chrontel TB31 for explanation */
 		temp2 = SiS_GetCH700x(pSiS->SiS_Pr, 0x0e);
 		if(((temp2 & 0x07) == 0x01) || (temp2 & 0x04)) {
 		    SiS_SetCH700x(pSiS->SiS_Pr, 0x0b0e);
