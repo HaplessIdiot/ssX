@@ -3,12 +3,17 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/Imakefile,v 3.26 2002/05/31 18:45:38 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.27 2003/01/21 04:56:23 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 RELEASE = XOrgReleaseString
+
+#ifdef XFree86VersionString
+VERSTRING = " "version XFree86VersionString "("XFree86DateString")"
+#endif
+
 #ifndef OSName
 #define OSName Unknown Operating System!
 #endif
@@ -97,7 +102,7 @@ World::
 
 Everything::
 	@echo ""
-	@echo Rebuilding $(RELEASE) of the X Window System.
+	@echo Rebuilding XFree86$(VERSTRING).
 	@echo ""
 	@date
 	@echo ""
@@ -115,7 +120,7 @@ Everything::
 	@echo ""
 	@date
 	@echo ""
-	@echo Rebuild of $(RELEASE) of the X Window System complete.
+	@echo Rebuild of XFree86$(VERSTRING) complete.
 	@echo ""
 
 XCOMM clean out link tree looking for stuff that should get checked in
@@ -142,7 +147,7 @@ clean::
 
 Everything::
 	@echo :
-	@echo Rebuilding $(RELEASE) of the X Window System.
+	@echo Rebuilding XFree86$(VERSTRING).
 	@echo :
 	@echo :
 	cd $(IMAKESRC)
@@ -156,7 +161,7 @@ Everything::
 	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
 	@echo :
 	@echo :
-	@echo Rebuild of $(RELEASE) of the X Window System complete.
+	@echo Rebuild of XFree86$(VERSTRING) complete.
 	@echo :
 
 #ifdef ProjectRoot
