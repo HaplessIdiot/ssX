@@ -646,6 +646,8 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <tag/Other contributors:  /
 <itemize>
        <item>Joerg Wunsch <it>&lt;joerg_wunsch@uriah.sax.de&gt;</it> (ET3000 banked mono),
+       <item>Thomas Dickey <it>&lt;dickey@clark.net&gt;</it>
+		(xterm "new" model ANSI colors and VT220, VT520 emulation).
        <item>Eric Raymond <it>&lt;esr@snark.thyrsus.com&gt;</it> (new video mode documentation),
 
        <item>and an entire horde of beta-testers around the world!
@@ -1019,7 +1021,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.77 1997/04/13 14:50:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.78 1997/04/16 08:34:21 dawes Exp $
 
 
 

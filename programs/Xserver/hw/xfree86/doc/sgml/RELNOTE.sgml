@@ -405,7 +405,12 @@ release.
   <item>The libraries have been updated to R6.3.  The shared lib version
 	numbers for libXext and libICE have been bumped to 6.3.  The
 	others remain the same.
+  <item>Xterm's emulation of DECUDK (DEC user-defined keys) now (correctly)
+	interprets shifted keys only.
   <item>VT52 emulation has been added to xterm.
+  <item>Xterm's VT100 emulation generates correct codes for PF1-PF4, as well
+	as the keypad "+" and ",".  These codes differ from the VT220
+	emulation.
   <item>Some xterm bugs have been fixed, including coloured background
 	exposure while selection is active, and missing state changes
 	in the VT100 emulation.
@@ -744,7 +749,7 @@ run at boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.58 1997/01/27 06:57:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.59 1997/01/27 07:47:32 dawes Exp $
 </verb>
 
 </article>
