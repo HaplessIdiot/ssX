@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/charset.c,v 1.5 2002/07/01 02:25:58 tsi Exp $ */
+/* $XFree86: xc/programs/luit/charset.c,v 1.6 2002/10/17 01:06:09 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -466,7 +466,7 @@ getLocaleState(char *locale, char *charset,
     }
 
     for(p = localeCharsets; p->name; p++) {
-        if(!strcmp(p->name, charset))
+        if(compare(p->name, charset) == 0)
             break;
     }
 
