@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.45 2001/08/29 17:11:56 alanh Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.46 2002/05/31 18:46:10 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -13,7 +13,7 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.45 2001/08/29 17:11:56 alanh Exp $
 #endif
 
 #ifndef SharedLibXdmGreet
-#define SharedLibXdmGreet (defined(AlphaArchitecture) || SystemV4)
+#define SharedLibXdmGreet (HasSharedLibraries && (defined(AlphaArchitecture) || SystemV4))
 #endif
 
 #ifndef BuildBoth
