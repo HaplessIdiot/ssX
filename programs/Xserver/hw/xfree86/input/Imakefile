@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.4 1999/05/09 06:06:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.5 1999/05/09 12:01:32 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -40,13 +40,11 @@ NormalDepLibraryTarget(idriver,$(SUBDIRS) idriver.list,$(OBJS))
 #endif
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
-		-I$(XINCLUDESRC)
+	   -I$(EXTINCSRC) -I$(XINCLUDESRC)
 
-#ifdef NewInput
 #if !DoLoadableServer
 ConfigTargetNoDepend(drvConf,$(ICONFIGFILES),confdrv.SHsuf,$(DRIVERS))
 DriverObjectList($(DRIVERS),idriver.list)
-#endif
 #endif
 
 NormalLibraryObjectRule()

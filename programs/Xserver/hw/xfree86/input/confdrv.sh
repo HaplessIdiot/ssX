@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/input/confdrv.sh,v 1.1 1999/05/05 14:29:55 dawes Exp $
 #
 # This script generates drvConf.c
 #
@@ -16,6 +16,7 @@ cat > $DRVCONF <<EOF
  */
 
 #include "xf86.h"
+#include "xf86Xinput.h"
 
 extern InputDriverRec
 EOF

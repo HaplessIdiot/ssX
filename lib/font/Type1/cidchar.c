@@ -15,7 +15,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/cidchar.c,v 1.2 1999/05/04 09:35:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/cidchar.c,v 1.3 1999/05/09 12:22:53 dawes Exp $ */
 
 #ifdef BUILDCID
 #ifndef FONTMODULE
@@ -344,7 +344,7 @@ CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
         for (i = 0; i < SubrCount; i++) {
             len = subroffsets[i + 1] - subroffsets[i];
 #ifndef USE_MMAP
-            arrayP[i].data.valueP = (unsigned char *)vm_alloc(len);
+            arrayP[i].data.valueP = vm_alloc(len);
             if (!arrayP[i].data.valueP) {
                 *rc = AllocError;
                 xfree(subroffsets);

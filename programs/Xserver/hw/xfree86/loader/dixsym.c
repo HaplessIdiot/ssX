@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.21 1999/04/04 07:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.22 1999/05/09 10:51:59 dawes Exp $ */
 
 
 /*
@@ -49,9 +49,13 @@
 #ifdef XV
 #include "xvmodproc.h"
 #endif
+#ifdef XFreeXDGA
+#include "dgaproc.h"
+#endif
 
 /* XXX This should be in a header somewhere */
-extern void ClientSleepUntil();
+extern void ClientSleepUntil(ClientPtr, TimeStamp, void(*)(ClientPtr, pointer),
+			     pointer);
 
 /* DIX things */
 

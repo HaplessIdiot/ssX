@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.97 1999/04/28 05:36:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.98 1999/05/09 06:06:14 dawes Exp $
 
 
 
@@ -122,7 +122,7 @@ OBJS = \
 	xf86Helper.o \
 	xf86Io.o \
 	xf86Mode.o \
-	$(MOUSEOJBS) \
+	$(MOUSEOBJS) \
 	$(PNPMOUSEOBJS) \
 	xf86Option.o \
 	xf86VidMode.o \
