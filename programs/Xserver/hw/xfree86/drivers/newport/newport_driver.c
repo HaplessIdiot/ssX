@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.20 2002/09/30 22:17:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.22 2003/02/05 17:45:28 eich Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -113,7 +113,7 @@ static const char *ramdacSymbols[] = {
 };
 
 static const char *shadowSymbols[] = {
-	"ShadowFBInit",
+	"ShadowFBInit2",
 	NULL
 };
 
@@ -556,12 +556,20 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 
 	/* Install our LoadPalette funciton */
 	if(!xf86HandleColormaps(pScreen, 256, 8, NewportLoadPalette, 0,
-				CMAP_RELOAD_ON_MODE_SWITCH ))
+				CMAP_RELOAD_ON_MODE_SWITCH )) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                   "Colormap initialization failed\n");
 		return FALSE;
+	}
 
 	/* Initialise shadow frame buffer */
-	ShadowFBInit(pScreen, (pNewport->Bpp == 1) ? &NewportRefreshArea8 :
-				&NewportRefreshArea24);
+	if(!ShadowFBInit2(pScreen, NULL, (pNewport->Bpp == 1) ? &NewportRefreshArea8 :
+				&NewportRefreshArea24, FALSE)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                   "ShadowFB initialization failed\n");
+		return FALSE;
+	}
+
 
 #ifdef XvExtension
 	{
