@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.47 2000/12/15 18:02:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.48 2000/12/15 18:36:55 robin Exp $
 </ident>
 
 <abstract>
@@ -349,6 +349,80 @@ don't have enough space to cover them all here.
 
 </sect>
 
+<sect>Drivers
+<p>
+
+XFree86 &relvers; includes the following drivers:
+
+<table border=1 align="center">
+<tabular ca="|l|l|l|">
+   <tabrow>Driver Name<colsep>Description<colsep>Further Information</tabrow>
+   <hline>
+   <tabrow><tt>apm</tt><colsep>Alliance Pro Motion<colsep><htmlurl
+		name="README.apm" url="apm.html"></tabrow>
+   <tabrow><tt>ark</tt><colsep>Ark Logic<colsep>&nbsp;</tabrow>
+   <tabrow><tt>ati</tt><colsep>ATI<colsep><htmlurl
+		name="README.ati" url="ati.html">, <htmlurl
+		name="README.r128" url="r128.html">, r128(4)</tabrow>
+   <tabrow><tt>chips</tt><colsep>Chips &amp; Technologies<colsep><htmlurl
+		name="README.chips" url="chips.html">, chips(4)</tabrow>
+   <tabrow><tt>cirrus</tt><colsep>Cirrus Logic<colsep>&nbsp;</tabrow>
+   <tabrow><tt>cyrix</tt> (*)<colsep>Cyrix MediaGX<colsep><htmlurl
+		name="README.cyrix" url="cyrix.html"></tabrow>
+   <tabrow><tt>fbdev</tt><colsep>Linux fbdev<colsep>fbdev(4)</tabrow>
+   <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)<colsep>glide(4)</tabrow>
+   <tabrow><tt>glint</tt><colsep>3Dlabs, TI<colsep>glint(4)</tabrow>
+   <tabrow><tt>i128</tt><colsep>Number Nine<colsep><htmlurl
+		name="README.I128" url="I128.html">, i128(4)</tabrow>
+   <tabrow><tt>i740</tt><colsep>Intel i740<colsep><htmlurl
+		name="README.i740" url="i740.html"></tabrow>
+   <tabrow><tt>i810</tt><colsep>Intel i810<colsep><htmlurl
+		name="README.i810" url="i810.html">, i810(4)</tabrow>
+   <tabrow><tt>imstt</tt><colsep>Integrated Micro Solns<colsep>&nbsp;</tabrow>
+   <tabrow><tt>mga</tt><colsep>Matrox<colsep>mga(4)</tabrow>
+   <tabrow><tt>neomagic</tt><colsep>NeoMagic<colsep>neomagic(4)</tabrow>
+   <tabrow><tt>newport</tt> (-)<colsep>SGI Newport<colsep><htmlurl
+		name="README.newport" url="newport.html">, newport(4)</tabrow>
+   <tabrow><tt>nv</tt><colsep>NVIDIA<colsep>nv(4)</tabrow>
+   <tabrow><tt>rendition</tt><colsep>Rendition<colsep><htmlurl
+		name="README.rendition" url="rendition.html">, rendition(4)</tabrow>
+   <tabrow><tt>s3virge</tt><colsep>S3 ViRGE<colsep><htmlurl
+		name="README.s3virge" url="s3virge.html">, s3virge(4)</tabrow>
+   <tabrow><tt>savage</tt><colsep>S3 Savage<colsep>savage(4)</tabrow>
+   <tabrow><tt>siliconmotion</tt><colsep>Silicon Motion<colsep>siliconmotion(4)</tabrow>
+   <tabrow><tt>sis</tt><colsep>SiS<colsep><htmlurl
+		name="README.SiS" url="SiS.html"></tabrow>
+   <tabrow><tt>sunbw2</tt> (+)<colsep>Sun bw2<colsep>&nbsp;</tabrow>
+   <tabrow><tt>suncg14</tt> (+)<colsep>Sun cg14<colsep>&nbsp;</tabrow>
+   <tabrow><tt>suncg3</tt> (+)<colsep>Sun cg3<colsep>&nbsp;</tabrow>
+   <tabrow><tt>suncg6</tt> (+)<colsep>Sun GX and Turbo GX<colsep>&nbsp;</tabrow>
+   <tabrow><tt>sunffb</tt> (+)<colsep>Sun Creator/3D, Elite 3D<colsep>&nbsp;</tabrow>
+   <tabrow><tt>sunleo</tt> (+)<colsep>Sun Leo (ZX)<colsep>&nbsp;</tabrow>
+   <tabrow><tt>suntcx</tt> (+)<colsep>Sun TCX<colsep>&nbsp;</tabrow>
+   <tabrow><tt>tdfx</tt><colsep>3Dfx<colsep>&nbsp;</tabrow>
+   <tabrow><tt>tga</tt><colsep>DEC TGA<colsep><htmlurl
+		name="README.TGA" url="TGA.html"></tabrow>
+   <tabrow><tt>trident</tt><colsep>Trident<colsep>trident(4)</tabrow>
+   <tabrow><tt>tseng</tt><colsep>Tseng Labs<colsep>&nbsp;</tabrow>
+   <tabrow><tt>vesa</tt><colsep>VESA<colsep>vesa(4)</tabrow>
+   <tabrow><tt>vga</tt><colsep>Generic VGA<colsep>vga(4)</tabrow>
+</tabular>
+</table>
+
+Drivers marked with (*) are present in a preliminary form in this release,
+but are not complete and/or stable yet.
+<p>
+
+Drivers marked with (+) are for Linux/Sparc only.
+<p>
+
+Drivers marked with (-) are for Linux/mips only.
+<p>
+
+Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
+listed above. Further information can be found in
+<htmlurl name="README.Darwin" url="Darwin.html">.
+
 <sect>Notes for people migrating from XFree86 3.3.x.
 <p>
 Unlike XFree86 3.3.x where there are multiple X server binaries, each
@@ -533,15 +607,6 @@ Section "InputDevice"
     Option	"SampleRate" "80"
 EndSection
 </verb></quote>
-
-<!-- what is this doing in the middle of information about the config file??
-
-     Note: Additional sample rates have been added for some mice.
-           Matching the mouse sampling rate with the vertical refresh
-           rate can yield very noticeable improvements in smoothness of
-           pointer event driven operations such as window moves and
-           scrolling.
--->
 
   <item>The Monitor section is mostly unchanged.  The main difference is
 	that a set of VESA modes is defined internally in the server,
@@ -867,8 +932,7 @@ An XvQueryPortAttributes function has been added as well as
 support for XvImages.  XvImages are XImages in alternate color spaces 
 such as YUV and can be passed to the server through shared memory
 segments.  This allows clients to display YUV data with high quality
-hardware scaling and filtering.   XvImages are only supported
-by the Matrox G200/G400 cards at the moment.
+hardware scaling and filtering.
 
 <sect1>Other extensions
 <p>
@@ -884,225 +948,6 @@ modes where this is possible.  The new <tt>xgamma</tt> utility makes
 use of this feature.  Compatibility with the 3.3.x version of the
 extension is provided.  The missing parts of this extension and some
 new features should be completed in a future release.
-
-
-<sect1>Drivers
-<p>
-
-XFree86 &relvers; includes the following drivers:
-
-<table border=1 align="center">
-<tabular ca="|l|l|l|">
-   <tabrow>Driver Name<colsep>Description<colsep>Further Information</tabrow>
-   <hline>
-   <tabrow><tt>apm</tt><colsep>Alliance Pro Motion<colsep><htmlurl
-		name="README.apm" url="apm.html"></tabrow>
-   <tabrow><tt>ark</tt><colsep>Ark Logic<colsep>&nbsp;</tabrow>
-   <tabrow><tt>ati</tt><colsep>ATI<colsep><htmlurl
-		name="README.ati" url="ati.html">, <htmlurl
-		name="README.r128" url="r128.html">, r128(4)</tabrow>
-   <tabrow><tt>chips</tt><colsep>Chips &amp; Technologies<colsep><htmlurl
-		name="README.chips" url="chips.html">, chips(4)</tabrow>
-   <tabrow><tt>cirrus</tt><colsep>Cirrus Logic<colsep>&nbsp;</tabrow>
-   <tabrow><tt>cyrix</tt> (*)<colsep>Cyrix MediaGX<colsep><htmlurl
-		name="README.cyrix" url="cyrix.html"></tabrow>
-   <tabrow><tt>fbdev</tt><colsep>Linux fbdev<colsep>fbdev(4)</tabrow>
-   <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)<colsep>glide(4)</tabrow>
-   <tabrow><tt>glint</tt><colsep>3Dlabs, TI<colsep>glint(4)</tabrow>
-   <tabrow><tt>i128</tt><colsep>Number Nine<colsep><htmlurl
-		name="README.I128" url="I128.html">, i128(4)</tabrow>
-   <tabrow><tt>i740</tt><colsep>Intel i740<colsep><htmlurl
-		name="README.i740" url="i740.html"></tabrow>
-   <tabrow><tt>i810</tt><colsep>Intel i810<colsep><htmlurl
-		name="README.i810" url="i810.html">, i810(4)</tabrow>
-   <tabrow><tt>imstt</tt><colsep>Integrated Micro Solutions<colsep>&nbsp;</tabrow>
-   <tabrow><tt>mga</tt><colsep>Matrox<colsep>mga(4)</tabrow>
-   <tabrow><tt>neomagic</tt><colsep>NeoMagic<colsep>neomagic(4)</tabrow>
-   <tabrow><tt>newport</tt> (-)<colsep>SGI Newport<colsep><htmlurl
-		name="README.newport" url="newport.html">, newport(4)</tabrow>
-   <tabrow><tt>nv</tt><colsep>NVIDIA<colsep>nv(4)</tabrow>
-   <tabrow><tt>rendition</tt><colsep>Rendition, rendition(4)<colsep><htmlurl
-		name="README.rendition" url="rendition.html"></tabrow>
-   <tabrow><tt>s3virge</tt><colsep>S3 ViRGE<colsep><htmlurl
-		name="README.s3virge" url="s3virge.html">, s3virge(4)</tabrow>
-   <tabrow><tt>savage</tt><colsep>S3 Savage<colsep>savage(4)</tabrow>
-   <tabrow><tt>siliconmotion</tt><colsep>Silicon Motion<colsep>siliconmotion(4)</tabrow>
-   <tabrow><tt>sis</tt><colsep>SiS<colsep><htmlurl
-		name="README.SiS" url="SiS.html"></tabrow>
-   <tabrow><tt>sunbw2</tt> (+)<colsep>Sun bw2<colsep>&nbsp;</tabrow>
-   <tabrow><tt>suncg14</tt> (+)<colsep>Sun cg14<colsep>&nbsp;</tabrow>
-   <tabrow><tt>suncg3</tt> (+)<colsep>Sun cg3<colsep>&nbsp;</tabrow>
-   <tabrow><tt>suncg6</tt> (+)<colsep>Sun GX and Turbo GX<colsep>&nbsp;</tabrow>
-   <tabrow><tt>sunffb</tt> (+)<colsep>Sun Creator/3D and Elite 3D<colsep>&nbsp;</tabrow>
-   <tabrow><tt>sunleo</tt> (+)<colsep>Sun Leo (ZX)<colsep>&nbsp;</tabrow>
-   <tabrow><tt>suntcx</tt> (+)<colsep>Sun TCX<colsep>&nbsp;</tabrow>
-   <tabrow><tt>tdfx</tt><colsep>3Dfx<colsep>&nbsp;</tabrow>
-   <tabrow><tt>tga</tt><colsep>DEC TGA<colsep><htmlurl
-		name="README.TGA" url="TGA.html"></tabrow>
-   <tabrow><tt>trident</tt><colsep>Trident<colsep>trident(4)</tabrow>
-   <tabrow><tt>tseng</tt><colsep>Tseng Labs<colsep>&nbsp;</tabrow>
-   <tabrow><tt>vesa</tt><colsep>VESA<colsep>vesa(4)</tabrow>
-   <tabrow><tt>vga</tt><colsep>Generic VGA<colsep>vga(4)</tabrow>
-</tabular>
-</table>
-
-Drivers marked with (*) are present in a preliminary form in this release,
-but are not complete and/or stable yet.
-<p>
-
-Drivers marked with (+) are for Linux/Sparc only.
-<p>
-
-Drivers marked with (-) are for Linux/mips only.
-<p>
-
-Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
-listed above. Further information can be found in
-<htmlurl name="README.Darwin" url="Darwin.html">.
-
-<!--
-<sect2>APM <label id="apm">
-<p>
-
-This is the driver for Alliance AT3D/AT25 and AT24 chips. There is a rather
-complete support for the functions with acceleration at 8,15,16,24 and 32 bits
-(limited by the chip at 24bpp). There is preliminary, still buggy, support
-for the AP6422 chip, which is still supported in 3.3.x servers. The Xv driver
-is almost ok. The Rush extension for glide2x works, with some additions,
-including overlay of the result. DGA and DGA2 have been tested ok.
-Further information can be found in <htmlurl name="README.apm" url="apm.html">.
-
-<sect2>Chips &amp; Technologies
-<p>
-
-Information about the C&amp;T driver can be found in <htmlurl
-name="README.chips" url="chips.html">.
-
-<sect2>s3virge
-<p>
-
-The s3virge driver is a port of the 3.3.x SVGA S3 ViRGE driver.  As
-such it should be as stable and functional as previous XFree86
-releases.  There are a couple additional benefits included primarily due
-to common enhancements:
-
-<itemize>
-  <item>Depth 24 problems resolved with clients using 24/32 bpp pixmaps.
-  <item>Our common acceleration architecture (XAA) has been re-written,
-	as has the ViRGE acceleration code.  You should find this version
-	has better performance than prior releases.
-
-  <item>Multi-head is reported to work.
-  <item>The <tt>s3virge</tt> man page lists options and has configuration
-	notes for this release of the driver.
-  <item>Trio 3D and Trio 3D/2X support has been added, matching the 3.3.6
-	driver.
-  <item>Supports screen rotation and shadow framebuffer.
-
-</itemize>
-
-Outstanding items not implemented or fully tested:
-
-<itemize>
-  <item>DGA support is implemented, but preliminary and untested.
-</itemize>
-
-Further information can be found in <htmlurl name="README.s3virge"
-url="s3virge.html">.
-
-<sect2>TGA
-<p>
-
-The TGA driver is now accelerated and supports both 8 and 32 plane
-framebuffers.  It is known to work under Linux/Alpha.  Please see the
-<htmlurl name="README.DECtga" url="DECtga.html"> file for further
-information.
-
-<sect2>Matrox
-<p>
-
-The MGA driver supports the same range or hardware as XFree86 3.3.4,
-but has a number of enhancements including multi-head support and
-support for (non-destructive) overlays (8-bit + 24-bit).
-
-This release contains performance enhancements for the G400 and particularly
-for the G400 MAX.  It also includes XvImage support for G200/G400 chips and
-improved memory autodetection support.
-
-Further information can be found in the <tt>mga</tt> <htmlurl name="man page"
-url="mga.4.html">.
-
-<sect2>ATI
-<p>
-
-Information about the ATI driver can be found in <url name="README.ati"
-url="ati.html">.  The current version is not accelerated for all supported
-chips.  Some acceleration is included for Mach64 chips.
-
-<sect2>NVIDIA
-<p>
-
-The "nv" driver supports all Riva TNT accelerators as well as the GeForce
-256 and Quadro accelerators (the GeForce2 and GeForce2 MX are not yet
-supported).  DGA 2.0 support is included.
-
-Further information can be found in the nv <htmlurl name="man page"
-url="nv.4.html">.   
-
-<sect2>Glide
-<p>
-This driver is for Voodoo 1 and Voodoo 2 boards. It runs X on top of
-the 3DFX Glide API (where this is available, like for Linux). You need
-to have Glide 2.x installed before you can run this driver. This
-driver uses no hardware acceleration (since there is no 2D
-acceleration in these boards) but is rather quick anyway since the CPU
-renders to local RAM which is then copied block-wise to the
-board. Unfortunately the Voodoo 1/2 boards are rather limited in
-resolution. The Voodoo 1 can do 800x600 and the Voodoo 2 can do
-1024x768 at best, but still it has some use as a second head in 
-Xinerama or multihead mode.
-
-16 and 24 bpp modes are supported (24 bit in 32-bit sparse-packed
-mode).
-
-Further information about this driver can be found in the 'glide' driver
-man page for XFree86. You will not get this driver running before
-reading this man page.
-
-For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx
-driver which talks directly to the hardware and is much faster.
-
-<sect2>GLINT <label id="glint">
-<p>
-
-The "glint" driver supports most 3Dlabs/Texas Instruments GLINT/Permedia
-chips. There is a rather complete support (better than in 3.3.x) for
-acceleration at 8, 15, 16, and 24 bit depths (limited by some chips at
-some depths). 8+24 overlay is supported. The Xv extension is supported
-for some boards.
-
-Further information about this driver can be found in the 'glint' driver
-man page.
-
-<sect2>Trident <label id="trident">
-<p>
-
-The "trident" driver supports all PCI based Trident cards, including one ISA
-based - the 8900D. 3.3.x is still needed for older SVGA ISA/VLB based cards,
-yet 4.0.2 is much faster for the newer boards. 
-
-<sect2>I128 <label id="i128">
-<p>
-
-The "i128" driver supports the same range or hardware as XFree86 3.3.6
-and has a number of enhancements including multi-head support and
-support for DGA, DDC2, and the render extension.  Font restore after
-server exit has been fixed.  Multi-head SGI flatpanel has been tested
-and works well.
-
-Further information can be found in the <tt>i128</tt> <htmlurl name="man page"
-url="I128.html">.
--->
 
 
 <!--
@@ -1167,14 +1012,6 @@ New features:
 	  <item>Text indentation support is also available.
 
 	</itemize>
-
-<!-- is this still true?
-  <item>This release shows the current state of the work to add to the Xaw
-	text widget WYSIWYG capabilities. The state is very initial, and
-	can be seen as a candidate to a candidate to a very early alpha
-	snapshot. There is no public interface for programming yet, because
-	the current one is very likely to change before ready to use.
--->
 
 </itemize>
 
@@ -1248,12 +1085,6 @@ version of xedit. These include:
 
 	  <item><bf>C-mode:</bf> this mode is expected to be stable, and fully
 		usable.
-<!--  This was removed, right?
-
-	  <item><bf>Html-mode:</bf> a lot of work needs to be done yet. It is
-		included in this snapshot only to show what the new text widget
-		capabilities can do.
--->
 	</itemize>
 
 </itemize>
