@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.18 2001/12/21 15:37:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.19 2002/01/04 21:22:33 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -600,8 +600,15 @@ NewportSaveScreen(ScreenPtr pScreen, int mode)
 	Bool unblank;
 	unsigned short treg;
 
+	if (!pScreen)
+		return TRUE;
+
 	unblank = xf86IsUnblank(mode);
 	pScrn = xf86Screens[pScreen->myNum];
+
+	if (!pScrn->vtSema)
+		return TRUE;
+
 	pNewportRegs = NEWPORTPTR(pScrn)->pNewportRegs;
 	
 	if (unblank) {
@@ -681,7 +688,11 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 					/* turn on RGB mode */	
 					NPORT_DMODE1_RGBMD | 
 					/* turn on 8888 = RGBA pixel packing */
-					NPORT_DMODE1_HD32 | NPORT_DMODE1_RWPCKD; 
+					NPORT_DMODE1_HD32 | NPORT_DMODE1_RWPCKD;
+		/* After setting up XMAP9 we have to reinitialize the CMAP for
+		 * whatever reason (the docs say nothing about it). RestorePalette()
+		 * is just a lazy way to do this */
+		NewportRestorePalette( pScrn );
 	}
 	/* blank the framebuffer */
 	NewportWait(pNewportRegs);
