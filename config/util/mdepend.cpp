@@ -22,7 +22,7 @@ XCOMM	work on both USG and BSD systems.  However, when System V.4 comes out,
 XCOMM	USG users will probably have to change "silent" to "-s" instead of
 XCOMM	"-" (at least, that is what the documentation implies).
 XCOMM
-XCOMM $XFree86: xc/config/util/mdepend.cpp,v 3.3 2000/08/08 03:16:26 dawes Exp $
+XCOMM $XFree86: xc/config/util/mdepend.cpp,v 3.4 2001/01/17 16:39:02 dawes Exp $
 XCOMM
 
 CC=PREPROC
@@ -35,6 +35,18 @@ DEPENDLINES=${TMP}b
 TMPMAKEFILE=${TMP}c
 MAGICLINE=${TMP}d
 ARGS=${TMP}e
+
+XCOMM Security: if $tmp exists exit immediately
+rm -f ${TMP}
+if [ -e ${TMP} ] ; then
+    echo "$0: ${TMP} exists already, exit." 1>&2
+    exit 1;
+fi
+#if defined(HAS_MKTEMP)
+if [ -n "`type -p mktemp`" ] ; then
+    TMP="`mktemp ${TMP}.XXXXXX`" || exit 1
+fi
+#endif
 
 trap "rm -f ${TMP}*; exit 1" 1 2 15
 trap "rm -f ${TMP}*; exit 0" 1 2 13

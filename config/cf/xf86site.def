@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.169 2000/12/14 08:03:47 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.170 2000/12/14 16:38:45 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -748,4 +748,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.169 2000/12/14 08:03:47 herrb Exp 
 #define X86EMU_LIBPATH /usr/local/lib
  */ 
 
-
+/*
+ * By default, gccmakedep uses mktemp for security reasons.
+ * Uncomment this, if your system lacks mktemp.
+ *
+#define HasMktemp		NO
+ */
