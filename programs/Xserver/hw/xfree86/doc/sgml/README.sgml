@@ -1,5 +1,7 @@
 <!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
 <!ENTITY % defs SYSTEM "defs.ent"> %defs;
+<!ENTITY % onediff 'IGNORE'>	<!-- patch is a single diff file -->
+<!ENTITY % twodiffs 'INCLUDE'>	<!-- patch is split into two diff files -->
 ]>
 
 
@@ -7,10 +9,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>22 August 1999
+<date>31 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.96 1999/08/21 14:08:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.97 1999/08/21 14:19:40 dawes Exp $
 </ident>
 
 <abstract>
@@ -82,16 +84,33 @@ XFree86 is you already have a set of fonts.  The second contains the
 fonts and the source for the general X11 documentation.  The third
 contains the general X11 documentation in hardcopy format.
 
+<![ %onediff; [
 A source patch relative to version &prevrelvers; is also available.
 The patch file is <tt>&prevrelvers;-&relvers;.diff.gz</tt>.  This patch should
 be applied to a clean &prevrelvers; source tree, working from the directory
 containing the <tt>xc/</tt> directory.  The patch should be applied by
 running:
 
-<tscreen>
-gunzip &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E<newline>
+<tscreen><verb>
+gunzip &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E
+</verb></tscreen>
+]]>
+
+<![ %twodiffs; [
+A source patch relative to version &prevrelvers; is also available.
+Because of its size, it is split into two parts.
+The patch files are <tt>&prevrelvers;-&relvers;.diff1.gz</tt> and
+<tt>&prevrelvers;-&relvers;.diff2.gz</tt>.  These patches should
+be applied to a clean &prevrelvers; source tree, working from the directory
+containing the <tt>xc/</tt> directory.  The patches should be applied by
+running:
+
+<tscreen><verb>
+gunzip &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
+gunzip &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
 rm -fr xc/fonts/scaled/Type1/latin2
-</tscreen>
+</verb></tscreen>
+]]>
 
 The contrib part of the distribution can be found in the following tarball:
 <tt>X&srcvers;contrib.tgz</tt>.
