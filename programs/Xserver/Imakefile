@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.5 1994/05/29 02:04:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.6 1994/05/30 08:20:19 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -240,7 +240,7 @@ XCOMM
 MFBDIR = mfb
 DDXDIR1 = hw/sunAmoeba
 SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
-SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sun/sunInExMono.o
+SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sunAmoeba/sunInExMono.o
 SUNMLIBS = hw/sunAmoeba/libsun.a MFBBareLibs $(OTHEREXTS)
 ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
 #ifndef ServerToInstall
