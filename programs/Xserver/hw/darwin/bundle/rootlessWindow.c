@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.3 2001/07/03 02:59:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.4 2001/08/01 05:34:06 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -540,12 +540,15 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         RegionRec r;
         DrawablePtr src = &gResizeDeathPix->drawable;
         DrawablePtr dst = &pScreen->GetWindowPixmap(pWin)->drawable;
+       // These vars are needed because implicit unsigned->signed fails
+       int oldX2 = (int)(oldX + oldW), newX2 = (int)(newX + newW);
+       int oldY2 = (int)(oldY + oldH), newY2 = (int)(newY + newH); 
 
         r.data = NULL;
         r.extents.x1 = max(oldX, newX);
         r.extents.y1 = max(oldY, newY);
-        r.extents.x2 = min(oldX + oldW, newX + newW);
-        r.extents.y2 = min(oldY + oldH, newY + newH);
+        r.extents.x2 = min(oldX2, newX2);
+        r.extents.y2 = min(oldY2, newY2);
 
         // r is now intersection of of old location and new location
         if (r.extents.x2 > r.extents.x1  &&  r.extents.y2 > r.extents.y1) {
