@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.1 2002/03/28 02:21:18 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.2 2002/07/15 19:58:31 torrey Exp $
 
 #include <Server.tmpl>
 
@@ -6,6 +6,7 @@ SRCS =  Preferences.m \
         XApplication.m \
         XServer.m \
         XView.m \
+        aquaPicture.c \
         fullscreen.c \
         quartz.c \
         quartzAudio.c \
@@ -25,6 +26,7 @@ OBJS =  Preferences.o \
         XApplication.o \
         XServer.o \
         XView.o \
+        aquaPicture.o \
         fullscreen.o \
         quartz.o \
         quartzAudio.o \

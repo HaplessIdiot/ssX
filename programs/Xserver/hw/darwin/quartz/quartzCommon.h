@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.2 2002/06/12 01:09:36 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -42,9 +42,11 @@
 // X11 definition.
 #define Cursor       QD_Cursor
 #define WindowPtr    QD_WindowPtr
+#define Picture      QD_Picture
 #include <ApplicationServices/ApplicationServices.h>
 #undef Cursor
 #undef WindowPtr
+#undef Picture
 
 #include "quartzShared.h"
 
