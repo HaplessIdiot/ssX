@@ -4,7 +4,7 @@ XCOMM $Xorg: bsdLib.rules,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.26 2003/11/10 20:09:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.27 2003/11/20 00:41:37 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -170,6 +170,10 @@ LintLibReferences(varname,libname,libsource)
 #define ForceNormalLib YES
 #endif
 
+#ifndef UseRpath
+#define UseRpath YES
+#endif
+
 #ifndef BaseShLibReqs
 #define BaseShLibReqs		/* -lc */
 #endif
@@ -186,8 +190,18 @@ LintLibReferences(varname,libname,libsource)
 #ifndef ShLibIncludeFile
 #define ShLibIncludeFile <bsdLib.tmpl>
 #endif
+#ifndef RpathLoadFlags
+#if UseRpath
+#define RpathLoadFlags -Wl,-rpath,$(USRLIBDIRPATH)
+#else
+#define RpathLoadFlags /**/
+#endif
+#endif
+#ifndef LibraryRpathLoadFlags
+#define LibraryRpathLoadFlags RpathLoadFlags
+#endif
 #ifndef SharedLibraryLoadFlags
-#define SharedLibraryLoadFlags -shared -Wl,-rpath,$(USRLIBDIRPATH)
+#define SharedLibraryLoadFlags -shared LibraryRpathLoadFlags
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -fPIC
@@ -197,14 +211,14 @@ LintLibReferences(varname,libname,libsource)
 #endif
 #ifndef ExtraLoadFlags
 #ifdef UseInstalled
-#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIRPATH)
+#define ExtraLoadFlags RpathLoadFlags
 #else
-#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIRPATH) -Wl,-rpath-link,$(BUILDLIBDIR)
+#define ExtraLoadFlags RpathLoadFlags -Wl,-rpath-link,$(BUILDLIBDIR)
 #endif
 #endif
 
 #ifndef HardCodeLibdirFlag
-#define HardCodeLibdirFlag -Wl,-rpath,$(USRLIBDIRPATH)
+#define HardCodeLibdirFlag RpathLoadFlags
 #endif
 
 #if !defined(ShlibGlobalsFlags)

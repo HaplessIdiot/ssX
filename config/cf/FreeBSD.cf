@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.144 2003/11/21 04:58:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.145 2003/12/06 19:24:11 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -321,22 +321,53 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * and they can remove it from the list of directories they add to ld.so.cache 
  * in their /etc/rc file.
  */
+
+#ifndef UseRpath
+# define UseRpath		YES
+#endif
+
 #if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
-#ifndef ExtraLoadFlags
-#if UseElfFormat
-#define ExtraLoadFlags		-Wl,-rpath,$(USRLIBDIRPATH) -Wl,-rpath-link,$(BUILDLIBDIR)
-#else
-#define ExtraLoadFlags		-Wl,-R,$(USRLIBDIRPATH)
+
+# ifndef RpathLoadFlags
+#  if UseRpath
+#   if UseElfFormat
+#    define RpathLoadFlags	-Wl,-rpath,$(USRLIBDIRPATH)
+#   else
+#    define RpathLoadFlags	-Wl,-R,$(USRLIBDIRPATH)
+#   endif
+#  else
+#   define RpathLoadFlags	/**/
+#  endif
+# endif
+
+# ifndef ExtraLoadFlags
+#  if UseElfFormat && !UseInstalled
+#   define ExtraLoadFlags	RpathLoadFlags -Wl,-rpath-link,$(BUILDLIBDIR)
+#  else
+#   define ExtraLoadFlags	RpathLoadFlags
+#  endif
+# endif
+
 #endif
-#endif
+
+#ifndef LibraryRpathLoadFlags
+# if UseRpath
+#  if UseElfFormat
+#   define LibraryRpathLoadFlags	-rpath $(USRLIBDIRPATH)
+#  else
+#   define LibraryRpathLoadFlags	-R $(USRLIBDIRPATH)
+#  endif
+# else
+#  define LibraryRpathLoadFlags		/**/
+# endif
 #endif
 
 #ifndef SharedLibraryLoadFlags
-#if UseElfFormat
-#define SharedLibraryLoadFlags	-shared -rpath $(USRLIBDIRPATH)
-#else
-#define SharedLibraryLoadFlags	-Bshareable -R $(USRLIBDIRPATH)
-#endif
+# if UseElfFormat
+#  define SharedLibraryLoadFlags	-shared LibraryRpathLoadFlags
+# else
+#  define SharedLibraryLoadFlags	-Bshareable LibraryRpathLoadFlags
+# endif
 #endif
 
 #ifndef GnuMallocLibrary
