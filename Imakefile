@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/Imakefile,v 3.27 2003/01/21 04:56:23 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.28 2003/01/21 15:32:58 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -76,11 +76,15 @@ VerifyOS::
 #ifndef OS2Architecture
 version.def::
 	$(RM) $(IRULESRC)/version.def
+	$(RM) $(IRULESRC)/date.def
 	$(LN) ../../$(XF86SRC)/xf86Version.h $(IRULESRC)/version.def
+	$(LN) ../../$(XF86SRC)/xf86Date.h $(IRULESRC)/date.def
 #else /*OS2Architecture*/
 version.def::
 	$(RM) $(IRULESRC)/version.def
+	$(RM) $(IRULESRC)/date.def
 	$(CP) $(XF86SRC)/xf86Version.h $(IRULESRC)/version.def
+	$(CP) $(XF86SRC)/xf86Date.h $(IRULESRC)/date.def
 #endif
 
 includes::

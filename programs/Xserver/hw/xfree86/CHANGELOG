@@ -1,5 +1,19 @@
 XFree86 4.2.99.903 (xx February 2003)
- 954. Xterm patch #174 (Thomas Dickey).
+ 960. Move the XF86_DATE definition to a separate file so that bumping it
+      doesn't trigger almost everything to be rebuilt (David Dawes).
+ 959. Xterm patch #174 (Thomas Dickey).
+ 958. Fix a bug that was preventing DGA2 acceleration from being advertised
+      by the i810 driver (David Dawes).
+ 957. Fix an "xtt" font backend module crash that shows up on Linux/PPC,
+      related to an invalid code converter module being loaded because of
+      a broken string comparison in xttconv.c (#A.1647, Chisato Yamauchi,
+      Daisuke MASATSUNA).
+ 956. Fix a NULL dereference that can happen in lcGenConv.c (#A.1646,
+      Anthony Fok Tung-Ling).
+ 955. Bump the libXft minor revision for the UTF-16 APIs that were added
+      after rev 2.0 (#A.1643, A.1644, Keith Packard, 5652, Mike Harris).
+ 954. Fix a typo in the "freetype" font backend that prevents "ttc" fonts
+      from working (#5651, Mike Fabian).
  953. Fix atimisc bug in restoring colourmaps after a VT switch
       (Marc La France).
  952. A more complete set of dead accent/space compose sequences, add
@@ -16515,4 +16529,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2583 2003/02/25 17:58:10 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2584 2003/02/25 23:39:53 dickey Exp $
