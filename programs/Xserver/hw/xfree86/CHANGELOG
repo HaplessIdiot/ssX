@@ -1,4 +1,5 @@
 XFree86 3.1.2Bh (13 January 1996)
+229. Fix dga speed test problem when the bank size is less than 64k.
 228. Add DGA support to the Mach32 server (untested).
 227. Add SVGA-based servers for PC98 (Cirrus driver) (X98 core team).
 226. Update the Cirrus driver to use the vga PCI probe data (not tested).
