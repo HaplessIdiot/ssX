@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.31 2002/04/26 21:58:48 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.32 2002/04/30 20:04:44 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1113,7 +1113,7 @@ static void nForceUpdateArbitrationSettings
 
     memctrl = pciReadLong(pciTag(0, 0, 3), 0x00) >> 16;
 
-    if((memctrl == 0x1A9) || (memctrl == 0x1AB)) {
+    if((memctrl == 0x1A9) || (memctrl == 0x1AB) || (memctrl == 0x1ED)) {
         int dimm[3];
 
         dimm[0] = (pciReadLong(pciTag(0, 0, 2), 0x40) >> 8) & 0x4F;
@@ -1279,7 +1279,9 @@ static void CalcStateExt
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            if(chip->Chipset == NV_CHIP_IGEFORCE2) {
+            if((chip->Chipset == NV_CHIP_IGEFORCE2) ||
+               (chip->Chipset == NV_CHIP_0x01F0))
+            {
                 nForceUpdateArbitrationSettings(VClk,
                                           pixelDepth * 8,
                                          &(state->arbitration0),
@@ -1946,6 +1948,10 @@ static void nv10GetConfig
 	int amt = pciReadLong(pciTag(0, 0, 1), 0x7C);
 
         chip->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
+    } else if(pNv->Chipset == NV_CHIP_0x01F0) {
+        int amt = pciReadLong(pciTag(0, 0, 1), 0x84);
+
+        chip->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
     } else {
       switch ((chip->PFB[0x0000020C/4] >> 20) & 0x000000FF)
       {
@@ -1989,7 +1995,10 @@ static void nv10GetConfig
                                                                   13500;
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0170:
+    case 0x0180:
+    case 0x01F0:
     case 0x0250:
+    case 0x0280:
        if(chip->PEXTDEV[0x0000/4] & (1 << 22))
            chip->CrystalFreqKHz = 27000;
        break;
@@ -2015,7 +2024,10 @@ static void nv10GetConfig
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0110:
     case 0x0170:
+    case 0x0180:
+    case 0x01F0:
     case 0x0250:
+    case 0x0280:
         chip->twoHeads = TRUE;
         break;
     default:

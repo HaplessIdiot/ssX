@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.16 2002/03/01 22:41:38 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.17 2002/03/15 05:16:40 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -368,7 +368,10 @@ NVCommonSetup(ScrnInfoPtr pScrn)
         NVOverrideCRTC(pScrn);
         break;
     case 0x0170:
+    case 0x0180:
+    case 0x01F0:
     case 0x0250:
+    case 0x0280:
         NVIsSecond(pScrn);
         break;
     default:
