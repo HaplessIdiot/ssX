@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.4 2001/05/16 10:33:16 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.5 2001/07/06 20:46:35 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -244,6 +244,7 @@ XRenderQueryFormats (Display *dpy)
     }
     info->data = (XPointer) xri;
     UnlockDisplay (dpy);
+    SyncHandle ();
     Xfree (xData);
     return 1;
 }
