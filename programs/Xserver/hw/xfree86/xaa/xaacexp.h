@@ -1,5 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaacexp.h,v 1.2 1998/07/25 16:58:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaacexp.h,v 1.3 2000/01/21 02:30:06 dawes Exp $ */
 
+
+#include "Xarch.h"
 
 #ifndef FIXEDBASE
 #define CHECKRETURN(b) if(width <= ((b) * 32)) return(base + (b))
