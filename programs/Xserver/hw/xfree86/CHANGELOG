@@ -1,4 +1,5 @@
 XFree86 3.9Ps (14 June 1999)
+2751. Some small RAC updates (Egbert Eich).
 2750. Direct Rendering Infrastructure from Precision Insight (#2871).
 2749. Fix a problem building xedit on SVR4.0 (missing strcasecmp).
 
@@ -8184,4 +8185,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.776 1999/06/14 07:31:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.777 1999/06/14 12:02:05 dawes Exp $
