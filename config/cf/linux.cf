@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.231tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.232 2005/01/21 21:22:44 tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -453,10 +453,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #define HasPutenv		YES
 #define HasShm			YES
 #define HasSockets		YES
-#if UseElfFormat || defined(AlphaArchitecture)
+/* The semantics of snprintf() in libc version 5 are different. */
+#if (UseElfFormat && LinuxCLibMajorVersion >= 6) || defined(AlphaArchitecture)
 #ifndef HasSnprintf
 #define HasSnprintf		YES
 #endif
+#endif
+#if UseElfFormat || defined(AlphaArchitecture)
 #define HasMkstemp		YES
 #endif
 /* getresuid() appeared in 2.1.4, and getresgid in 2.1.44 */
