@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.70 2002/11/01 19:10:20 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.72 2002/11/25 14:04:57 eich Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -420,7 +420,7 @@ RADEONPreInt10Save(ScrnInfoPtr pScrn, void **pPtr)
     unsigned char *RADEONMMIO;
     int            mapped = 0;
     CARD32 CardTmp;
-    static struct RADEONInt10Save SaveStruct = { 0 };
+    static struct RADEONInt10Save SaveStruct = { 0, 0, 0 };
 
     /*
      * First make sure we have the pci and mmio info and that mmio is mapped
