@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.52 2000/12/15 20:17:49 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.53 2000/12/15 20:20:03 keithp Exp $
 </ident>
 
 <abstract>
@@ -122,6 +122,7 @@ don't have enough space to cover them all here.
 	the 69030.
 
   <item>The tseng driver has multi-head fixes and DGA support has been added.
+
   <item>Most video drivers have been converted to use the integrated "fb"
 	framebuffer code instead of the old "cfb" code.
 	
@@ -129,6 +130,13 @@ don't have enough space to cover them all here.
 	Voodoo5, Intel i810/i815 and Matrox G400.  DRI support for SiS
 	and Sun Creator3D is available.  The DRI is now also available on
 	Alpha platforms.
+
+  <item>An input driver (citron) for Citron Infrared Touch devices has been
+	added.
+
+  <item>An input driver (penmount) for PenMount devices has been added.
+
+  <item>An input driver (digitaledge) for DigitalEdge devices has been added.
 
   <item>Big endian problems in Xinerama have been fixed.
 
@@ -352,7 +360,10 @@ don't have enough space to cover them all here.
 <sect>Drivers
 <p>
 
-XFree86 &relvers; includes the following drivers:
+<sect1>Video Drivers
+<p>
+
+XFree86 &relvers; includes the following video drivers:
 
 <table border=1 align="center">
 <tabular ca="|l|l|l|">
@@ -440,6 +451,37 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in
 <htmlurl name="README.Darwin" url="Darwin.html">.
+
+XFree86 &relvers; includes the following input drivers:
+
+<sect1>Input Drivers
+<p>
+
+<table border=1 align="center">
+<tabular ca="|l|l|l|">
+   <tabrow>Driver Name<colsep>Description<colsep>Further Information</tabrow>
+   <hline>
+   <tabrow><tt>acecad</tt><colsep>AceCad<colsep>&nbsp;</tabrow>
+   <tabrow><tt>citron</tt><colsep>Citron<colsep><htmlurl
+		name="citron(4)" url="citron.4.html"></tabrow>
+   <tabrow><tt>digitaledge</tt><colsep>DigitalEdge<colsep>&nbsp;</tabrow>
+   <tabrow><tt>dynapro</tt><colsep>Dynapro<colsep>&nbsp;</tabrow>
+   <tabrow><tt>elographics</tt><colsep>EloGraphics<colsep>&nbsp;</tabrow>
+   <tabrow><tt>keyboard</tt><colsep>generic keyboards<colsep><htmlurl
+		name="keyboard(4)" url="keyboard.4.html"></tabrow>
+   <tabrow><tt>microtouch</tt><colsep>MicroTouch<colsep>&nbsp;</tabrow>
+   <tabrow><tt>mouse</tt><colsep>most mouse devices<colsep><htmlurl
+		name="mouse(4)" url="mouse.4.html"></tabrow>
+   <tabrow><tt>mutouch</tt><colsep>MicroTouch<colsep>&nbsp;</tabrow>
+   <tabrow><tt>penmount</tt><colsep>PenMount<colsep>&nbsp;</tabrow>
+   <tabrow><tt>spaceorb</tt><colsep>SpaceOrb<colsep>&nbsp;</tabrow>
+   <tabrow><tt>summa</tt><colsep>SummaGraphics<colsep>&nbsp;</tabrow>
+   <tabrow><tt>void</tt><colsep>dummy device<colsep><htmlurl
+		name="void(4)" url="void.4.html"></tabrow>
+   <tabrow><tt>wacom</tt><colsep>Wacom tablets<colsep><htmlurl
+		name="wacom(4)" url="wacom.4.html"></tabrow>
+</tabular>
+</table>
 
 <sect>Summary of XFree86 4.
 <p>
