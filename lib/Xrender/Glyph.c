@@ -26,7 +26,7 @@
 #include "Xrenderint.h"
 
 GlyphSet
-XRenderCreateGlyphSet (Display *dpy, XRenderPictFormat *format)
+XRenderCreateGlyphSet (Display *dpy, _Xconst XRenderPictFormat *format)
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
     GlyphSet			gsid;
@@ -82,10 +82,10 @@ XRenderFreeGlyphSet (Display *dpy, GlyphSet glyphset)
 void
 XRenderAddGlyphs (Display	*dpy,
 		  GlyphSet	glyphset,
-		  Glyph		*gids,
-		  XGlyphInfo	*glyphs,
+		  _Xconst Glyph		*gids,
+		  _Xconst XGlyphInfo	*glyphs,
 		  int		nglyphs,
-		  char		*images,
+		  _Xconst char		*images,
 		  int		nbyte_images)
 {
     XExtDisplayInfo         *info = XRenderFindDisplay (dpy);
@@ -113,7 +113,7 @@ XRenderAddGlyphs (Display	*dpy,
 void
 XRenderFreeGlyphs (Display   *dpy,
 		   GlyphSet  glyphset,
-		   Glyph     *gids,
+		   _Xconst Glyph     *gids,
 		   int       nglyphs)
 {
     XExtDisplayInfo         *info = XRenderFindDisplay (dpy);
@@ -138,13 +138,13 @@ XRenderCompositeString8 (Display	    *dpy,
 			 int		    op,
 			 Picture	    src,
 			 Picture	    dst,
-			 XRenderPictFormat  *maskFormat,
+			 _Xconst XRenderPictFormat  *maskFormat,
 			 GlyphSet	    glyphset,
 			 int		    xSrc,
 			 int		    ySrc,
 			 int		    xDst,
 			 int		    yDst,
-			 char		    *string,
+			 _Xconst char	    *string,
 			 int		    nchar)
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
@@ -222,13 +222,13 @@ XRenderCompositeString16 (Display	    *dpy,
 			  int		    op,
 			  Picture	    src,
 			  Picture	    dst,
-			  XRenderPictFormat *maskFormat,
+			  _Xconst XRenderPictFormat *maskFormat,
 			  GlyphSet	    glyphset,
 			  int		    xSrc,
 			  int		    ySrc,
 			  int		    xDst,
 			  int		    yDst,
-			  unsigned short    *string,
+			  _Xconst unsigned short    *string,
 			  int		    nchar)
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
@@ -301,13 +301,13 @@ XRenderCompositeString32 (Display	    *dpy,
 			  int		    op,
 			  Picture	    src,
 			  Picture	    dst,
-			  XRenderPictFormat  *maskFormat,
+			  _Xconst XRenderPictFormat  *maskFormat,
 			  GlyphSet	    glyphset,
 			  int		    xSrc,
 			  int		    ySrc,
 			  int		    xDst,
 			  int		    yDst,
-			  unsigned int	    *string,
+			  _Xconst unsigned int	    *string,
 			  int		    nchar)
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
