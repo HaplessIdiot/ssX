@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.2 1996/10/17 15:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.3 1996/10/17 15:43:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -168,7 +168,9 @@ s3StoreColors(pmap, ndef, pdefs)
       currents3dac_border = ilow;
       if (xf86VTSema
 #ifdef XFreeXDGA
-	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
+	  || ((s3InfoRec.directMode & XF86DGADirectGraphics)
+	      && !(s3InfoRec.directMode & XF86DGADirectColormap))
+	  || (s3InfoRec.directMode & XF86DGAHasColormap)
 #endif
          ) {
          i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */

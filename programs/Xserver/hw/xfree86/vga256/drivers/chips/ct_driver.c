@@ -1,15 +1,22 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.25 1996/10/17 15:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.26 1996/10/19 15:16:16 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
  * Modified 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
- * Modified 1995/6 by Nozomi Ytow
- * Modified 1996 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
- * Modified 1996 by David Bateman <dbateman@ee.uts.edu.au>
- * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
- * Modified 1996 by Shigehiro Nomura <nomura@sm.sony.co.jp>
+ * Major Contributors to XFree 3.2
+ *   Modified 1995/6 by Nozomi Ytow
+ *   Modified 1996 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
+ *   Modified 1996 by David Bateman <dbateman@ee.uts.edu.au>
+ *   Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
+ *
+ * Contributors to XFree 3.2
+ *   Modified 1995/6 by Ken Raeburn <raeburn@raeburn.org>
+ *   Modified 1996 by Shigehiro Nomura <nomura@sm.sony.co.jp>
+ *   Modified 1996 by Marc de Courville <courvill@sig.enst.fr>
+ *   Modified 1996 by Adam Sulmicki <adam@cfar.umd.edu>
+ *   Modified 1996 by Jens Maurer <jmaurer@cck.uni-kl.de>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

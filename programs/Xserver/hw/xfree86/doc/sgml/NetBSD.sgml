@@ -7,7 +7,7 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 29 September 1996
+<Date>Last modified on: 24 October 1996
 
 <toc>
 
@@ -114,7 +114,7 @@ using <tt/pkg_add/.
     <descrip>
     <tag/X32doc/ READMEs.
     <tag/X32bin/ all of the executable X client applications and shared libs
-    <tag/X32fnts/ the misc and 75dpi fonts
+    <tag/X32fnts/ the misc, 75dpi and PEX fonts
     <tag/X32lib/ data files needed at runtime
     <tag/X32cfg/ customizable xinit and xdm runtime configuration files.
     </descrip>
@@ -127,11 +127,13 @@ using <tt/pkg_add/.
     <tag/X32Mono/  the Monochrome X Server
     <tag/X328514/  the X server for IBM 8514/A and compatible boards
     <tag/X32AGX/   the X server for AGX boards
+    <tag/X32I128/  the X server for I128 boards
     <tag/X32Ma8/ the X server for ATI Mach8 graphics boards
     <tag/X32Ma32/ the X server for ATI Mach32 graphics boards
     <tag/X32Ma64/ the X server for ATI Mach64 graphics boards
     <tag/X32P9K/	the X server for P9000 based boards
     <tag/X32S3/ 	the X server for S3 based boards
+    <tag/X32S3V/ 	the X server for S3 ViRGE boards
     <tag/X32W32/	the X server for et4000w32 and et6000 based boards
     </descrip>
 
@@ -160,6 +162,8 @@ using <tt/pkg_add/.
     <tag/X32prog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
     <tag/X32man/ man pages
+    <tag/X32lkit/ X server reconfiguration kit
+    <tag/X32lk98/ X server reconfiguration kit for PC98 X servers
     <tag/X32f100/ 100dpi fonts
     <tag/X32fcyr/ Cyrillic fonts
     <tag/X32fscl/ Scalable fonts
@@ -796,7 +800,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.38 1996/10/20 13:33:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.39 1996/10/23 13:10:01 dawes Exp $
 
 
 

@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.2
  <author>The XFree86 Project, Inc
- <date>21 October 1996
+ <date>24 October 1996
 
 <abstract>
 
@@ -324,11 +324,11 @@ Note, items marked with `*' have been added since the last beta release
   <item>Screen blanking for some Mach64 CT cards running at 16bpp and 32bpp
 	has been fixed.  Problems remain for some revisions of the CT chip.
   <item>The Mach64 server supports the VT and GT chipset.  The GT is also
-	known as "Rage".  The newer Rage II is not yet supported.
+	known as "3D Rage".  The newer 3D Rage II is not yet supported.
   <item>A problem with ol[v]wm icons has been fixed.
   <item>A problem with ghostview scrollbars has been fixed.  This may also
 	fix some Netscape font problems that have been reported.
-  <item>The Mach64 CT (also known as the 264CT, or 215CT22200) chip is now
+  <item>The Mach64 CT (also known as the 264CT or 215CT22200) chip is now
 	supported.  This chip has a integrated RAMDAC and clockchip, and
 	is used on some Graphics Xpression and WinBoost cards.
   <item>The Mach64 GX-F (GX rev 3) is now supported.
@@ -342,11 +342,25 @@ Note, items marked with `*' have been added since the last beta release
 	been fixed.
   <item>Errors in detecting some RAMDACs (like the CH8398) should now be
 	fixed.
-  <item>8 bit-per-RGB mode (when running at 8bpp) is now default for
+  <item>8 bit-per-RGB mode (when running at 8bpp) is now the default for
 	RAMDACs that support it.
   <item>Hardware cursor mask problem has been fixed.
   <item>Support for the AT&amp;T 20C408 RAMDAC/Clockchip has been added.
-  <item>Arbitrary clocks can be used on most boards with supported clock chips.
+  <item>Arbitrary clocks can be used on most cards with supported clock chips.
+  <item>Hardware cursor color problem on Mach64 CT, VT and GT chips at 16bpp
+	and 32bpp has been fixed.
+  <item>Doublescan mode is supported on VT and GT chipsets.  The hardware
+	cursor is not correctly displayed in doublescan modes, but functions
+	correctly.  No other Mach64 chipsets can support an accelerated
+	doublescan mode.
+  <item>Video noise on certain CT, VT and GT chips has been eliminated (on
+	nearly all cards) or reduced as much as possible (on certain CT
+	based cards).
+  <item>Clock chip programming accuracy has been greatly improved on CT, ET,
+	VT and GT based cards.  This may result in modes that were set up
+	for a previous release not being displayed as before.  With the
+	xvidtune program, you can adjust the screen to work with the now
+	correct clock programming.
   <item>*The reliability of the Mach64 detection code has been improved.
 </itemize>
 <sect1> Mach32 server
@@ -763,7 +777,7 @@ preinst.sh      Pre-installation script
 postinst.sh     Post-installation script
 X32bin.tgz      Clients, run-time libs, and app-defaults files
 X32doc.tgz      Documentation
-X32fnts.tgz     75dpi and misc fonts
+X32fnts.tgz     75dpi, misc and PEX fonts
 X32lib.tgz      Data files required at run-time
 X32man.tgz      Manual pages
 X32set.tgz      XF86Setup utility
@@ -861,7 +875,7 @@ the installation.  This script also removes outdated files and symbolic
 links from a previous installation that may cause problems.
 
 Copy the <tt>preinst.sh</tt> script to
-<tt>/var/tmp</tt>, then run go to <tt>/usr/X11R6</tt> and run it:
+<tt>/var/tmp</tt>, then go to <tt>/usr/X11R6</tt> and run it:
 <tscreen><verb>
 	cd /usr/X11R6
 	sh /var/tmp/preinst.sh
@@ -908,7 +922,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.44 1996/10/21 05:27:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.45 1996/10/23 13:10:04 dawes Exp $
 </verb>
 
 </article>

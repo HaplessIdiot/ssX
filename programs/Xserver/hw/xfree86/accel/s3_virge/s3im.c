@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.7 1996/10/17 15:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.8 1996/10/18 15:01:51 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -744,7 +744,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	       else {
 		  pix = (*ptmp >> x2) & MSKBIT(np);
 		  while( np < 32 && np < dstw ) {
-		     pix |= *ptmp << np;
+		     pix |= (*ptmp & MSKBIT(pw)) << np;
 		     np += pw;
 		  }
 	       }

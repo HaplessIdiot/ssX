@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.8 1996/09/03 15:12:19 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.9 1996/10/19 15:15:52 dawes Exp $
 #
 # postinst.sh (for XFree86 3.2)
 #
@@ -51,6 +51,7 @@ fi
 # Check for terminfo, and update the xterm entry
 TINFODIR=/usr/lib/terminfo
 OLDTINFO=" \
+	x/xterm \
 	x/xterms \
 	x/xterm-24 \
 	x/xterm-vi \
@@ -61,6 +62,7 @@ OLDTINFO=" \
 	x/xterm-ic \
 	x/xterm-r6 \
 	x/xterm-old \
+	x/xterm-r5 \
 	v/vs100"
 	
 if [ -d $TINFODIR ]; then
@@ -80,8 +82,9 @@ if [ -d $TINFODIR ]; then
 		echo ""
 		for t in $OLDTINFO; do
 			if [ -f $TINFODIR/$t ]; then
-				echo "Removing old terminfo file $TINFODIR/$t"
-				rm -f $TINFODIR/$t
+				echo "Moving old terminfo file $TINFODIR/$t to $TINFODIR/$t.bak"
+				rm -f $TINFODIR/$t.bak
+				mv -f $TINFODIR/$t $TINFODIR/$t.bak
 			fi
 		done
 		echo ""

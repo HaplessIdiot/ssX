@@ -3,7 +3,7 @@
 <article>
 <title> README for XFree86 3.2 on FreeBSD 2.1.5
 <author>Rich Murphey, David Dawes
-<date>18 Oct 1996
+<date>24 Oct 1996
 
 <toc>
  
@@ -46,17 +46,17 @@ space, it's safe to unpack everything.
 
 At a minimum you need to unpack the 'required' <tt/X32*.tgz/
 archives plus at least one server that matches your vga card.  You'll
-need 9Mb for the minimum required run-time binaries only.
+need 13Mb for the minimum required run-time binaries only.
 
 <descrip>
-<tag/Required (6.7Mb):/
+<tag/Required (10.4Mb):/
 
 <descrip>
 <tag/X32bin.tgz/
      all the executable X client applications and shared libs
 
 <tag/X32fnts.tgz/
-     the misc and 75 dpi fonts
+     the misc, 75 dpi and PEX fonts
 
 <tag/X32lib.tgz/
      data files needed at runtime
@@ -77,6 +77,9 @@ need 9Mb for the minimum required run-time binaries only.
 
 <tag/X32AGX.tgz/
      8 and 16-bit color for AGX and XGA boards.
+
+<tag/X32I128.tgz/
+     8 and 16-bit color for I128 boards.
 
 <tag/X32Ma32.tgz/
      8 and 16-bit color for ATI Mach32 boards.
@@ -153,7 +156,7 @@ need 9Mb for the minimum required run-time binaries only.
 <descrip>
 
 <tag/X32doc.tgz/
-     (.5Mb) READMEs
+     (.6Mb) READMEs
 
 <tag/X32ps.tgz/
      (.XMb) READMEs in PostScript
@@ -162,31 +165,31 @@ need 9Mb for the minimum required run-time binaries only.
      (.XMb) READMEs in HTML
 
 <tag/X32man.tgz/
-     (1.7Mb) man pages
+     (1.8Mb) man pages
 
 <tag/X32f100.tgz/
-     (1.8Mb) 100dpi fonts
+     (1.6Mb) 100dpi fonts
 
 <tag/X32fscl.tgz/
-     (1.6Mb) Speedo and Type1 fonts
+     (1.7Mb) Speedo and Type1 fonts
 
 <tag/X32fnon.tgz/
      (3.3Mb) Japanese, Chinese and other non-english fonts
 
 <tag/X32fcyr.tgz/
-     (.4Mb) Cyrillic fonts
+     (.6Mb) Cyrillic fonts
 
 <tag/X32fsrv.tgz/
      (.3Mb) the font server and its man page
 
 <tag/X32prog.tgz/
-     (3.9Mb) config, lib*.a and *.h files needed only for compiling
+     (4.8Mb) config, lib*.a and *.h files needed only for compiling
 
-<tag/X32link.tgz/
-     (7.8Mb) X server reconfiguration kit
+<tag/X32lkit.tgz/
+     (10.8Mb) X server reconfiguration kit
 
 <tag/X32lk98.tgz/
-     (7.8Mb) X server reconfiguration kit for PC98 X servers
+     (14.2Mb) X server reconfiguration kit for PC98 X servers
 
 </descrip>
 </descrip>
@@ -547,7 +550,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.17 1996/10/18 15:03:25 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.18 1996/10/23 13:09:54 dawes Exp $ 
 
 
 

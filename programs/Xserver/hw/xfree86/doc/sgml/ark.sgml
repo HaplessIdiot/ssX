@@ -198,17 +198,22 @@ file):
 
 If are having driver-related problems that are not addressed by this document,
 you can try contacting the XFree86 team (the current driver maintainer
-can be reached at <it>H.Hanemaayer@inter.nl.net</it>), or post in the Usenet
-newsgroup <it>comp.windows.x.i386unix</it>.
+can be reached at <htmlurl name="H.Hanemaayer@inter.nl.net"
+url="mailto:H.Hanemaayer@inter.nl.net">), or post in the Usenet
+newsgroup <htmlurl name="comp.windows.x.i386unix"
+url="news:comp.windows.x.i386unix">.
 
 In fact, reports (success or failure) are very welcome, especially
-on configurations that have not been tested. You can do this
-via the BetaReport form (mail to report@XFree86.org). You may want to
-keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
+on configurations that have not been tested. You can do this via the
+<url name="bug report form" url="http://www.xfree86.org/cgi-bin/bugform.cgi">
+(or send mail to <htmlurl name="XFree86@XFree86.org"
+url="mailto:XFree86@XFree86.org">). You may want to
+keep an eye on forthcoming beta releases at the <url name="XFree86 web site"
+url="http://www.xfree86.org">.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.3 1996/10/10 14:04:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.4 1996/10/20 13:33:23 dawes Exp $
 
 
 

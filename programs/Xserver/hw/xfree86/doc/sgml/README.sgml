@@ -72,7 +72,7 @@ Note: Not all systems listed here have been tested with the current release.
 	<ITEM>AT&amp;T: 2.1, 4.0
 	<ITEM>NCR: MP-RAS
 	<ITEM>SunSoft: Solaris x86 2.1, 2.4, 2.5
-	<ITEM>PANIX for PC-AT
+	<ITEM>PANIX 5.0 for AT
 	</itemize>	
 
     <tag/SVR4.2:/
@@ -105,6 +105,7 @@ Note: Not all systems listed here have been tested with the current release.
 	<itemize>
 	<ITEM>FreeBSD(98) 2.0.5, 2.1, 2.1.5
 	<ITEM>NetBSD/pc98 (based on NetBSD 1.2)
+	<ITEM>PANIX 5.0 for 98
 	</itemize>
 
     </DESCRIP>
@@ -146,8 +147,8 @@ At this time, XFree86 3.2 supports the following accelerated chipsets:
 	I128 (not accelerated yet)
  </DESCRIP>
 
-The Cirrus, Western Digital, Oak, ARK, and Matrox accelerators are
-supported in the SVGA
+The Cirrus, Western Digital, Oak, ARK, Chips &amp; Technologies and 
+Matrox accelerators are supported in the SVGA
 server; the other chipsets each have their own server.
   
 In addition, the following SVGA chipsets are supported:
@@ -572,6 +573,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Regis Cridlig <it>&lt;cridlig@dmi.ens.fr&gt;</it>
        <item> Jon Block <it>&lt;block@frc.com&gt;</it>
        <item> Mike Hollick <it>&lt;hollick@graphics.cis.upenn.edu&gt;</it>
+       <item> Nozomi Ytow
+       <item> Egbert Eich <it>&lt;Egbert.Eich@Physik.TH-Darmstadt.DE&gt;</it>
+       <item> David Bateman <it>&lt;dbateman@ee.uts.edu.au&gt;</it>
+       <item> Xavier Ducoin <it>&lt;xavier@rd.lectra.fr&gt;</it>
 </itemize>
 <tag/MX SVGA driver by:  /
 <itemize>
@@ -963,7 +968,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.61 1996/10/20 13:33:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.62 1996/10/23 13:10:02 dawes Exp $
 
 
 
