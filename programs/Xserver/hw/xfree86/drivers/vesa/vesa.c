@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.32 2002/08/06 13:46:27 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.33 2002/09/19 02:57:03 dawes Exp $
  */
 
 #include "vesa.h"
@@ -1130,8 +1130,8 @@ VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
     pVesa->bankSwitchWindowB =
 	!((data->data->WinBSegment == 0) && (data->data->WinBAttributes == 0));
 
-    if (data->data->XResolution != pScrn->virtualX)
-	VBESetLogicalScanline(pVesa->pVbe, pScrn->virtualX);
+    if (data->data->XResolution != pScrn->displayWidth)
+	VBESetLogicalScanline(pVesa->pVbe, pScrn->displayWidth);
 
     if (pScrn->bitsPerPixel >= 8 && pVesa->vbeInfo->Capabilities[0] & 0x01)
 	VBESetGetDACPaletteFormat(pVesa->pVbe, 8);
