@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.22 1998/07/26 09:56:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.23 1998/08/16 12:28:59 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -444,9 +444,7 @@ xf86MapInfoUnmap(struct memAccess *memInfoP, unsigned long Size)
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
-static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
-static Bool InitDone = FALSE;
 
 void
 xf86EnableIO()
@@ -478,6 +476,35 @@ xf86DisableIO()
 
 #endif /* USE_I386_IOPL */
 
+#ifdef USE_DEV_IO
+static int IoFd = -1;
+
+void
+xf86EnableIO()
+{
+	if (IoFd >= 0)
+		return;
+
+	if ((IoFd = open("/dev/io", O_RDWR)) == -1)
+	{
+		FatalError("xf86EnableIO: "
+				"Failed to open /dev/io for extended I/O\n");
+	}
+	return;
+}
+
+void
+xf86DisableIO()
+{
+	if (IoFd < 0)
+		return;
+
+	close(IoFd);
+	IoFd = -1;
+	return;
+}
+
+#endif
 
 #if defined(USE_ARC_MMAP) || defined(__arm32__)
 

@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 26 January 1999.
+Last modified: 14 February 1999.
 
 
 
@@ -361,7 +361,7 @@ Here is what InitOutput() does:
     ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags)
 
       This function allocates a new ScrnInfoRec in the xf86Screens[]
-      array.  This is function is normally called by the video driver
+      array.  This function is normally called by the video driver
       ChipProbe() functions.  The return value is a pointer to the newly
       allocated ScrnInfoRec.  The scrnIndex, origIndex, module and drv
       fields are initialised.  The reference count in drv is incremented.
@@ -408,8 +408,8 @@ Here is what InitOutput() does:
     After the Probe phase is finished, there will be some number of
     ScrnInfoRecs.  These are then matched with the active "Screen"
     sections in the XF86Config, and those not having an active "Screen"
-    section are be deleted.  If the number of remaining screens is
-    0, InitOutput sets screenInfo.numScreens to 0 and returns.
+    section are deleted.  If the number of remaining screens is 0,
+    InitOutput sets screenInfo.numScreens to 0 and returns.
 
     At this point the following fields of the ScrnInfoRecs must be
     initialised:
@@ -469,7 +469,7 @@ Here is what InitOutput() does:
       in some way (unsupported depth, no valid modes, not enough video
       memory, etc), and TRUE if it is usable.
 
-      It is expected that if the ChipPreInit returns TRUE then the only
+      It is expected that if the ChipPreInit returns TRUE, then the only
       reasons that subsequent stages in the driver might fail are lack or
       resources (like xalloc failures).  All other possible reasons for
       failure should be determined by the ChipPreInit function.
@@ -662,12 +662,12 @@ Here is what InitOutput() does:
 
     Bool ChipEnterVT(int index, int flags);
 
-      This function should map memory regions, initialise the current video
-      mode and initialise the viewport, turn on the HW cursor if appropriate,
-      etc.
+      This function should map memory regions, initialise the current
+      video mode and initialise the viewport, turn on the HW cursor if
+      appropriate, etc.
 
-      Should it re-save the video state before the initialising the
-      video mode?
+      Should it re-save the video state before initialising the video
+      mode?
 
 
     void ChipLeaveVT(int index, int flags);
@@ -1042,10 +1042,10 @@ Each device will have an intrinsic classification, but a driver might
 use a device in a more restrictive way.  This can lead to the effective
 classification being different from the intrinsic classification.
 
-Resource types 1, 3 and 5 apply to ISA/VL busses while all PCI bus resources
-are currently assumed sharable.  Any device that can be accessed via any of
-the supported generic interfaces at the time of the Probe() function call
-must be assigned one of the resource types 1-5.
+Resource types 1, 3 and 5 apply to ISA/VL busses, while all PCI bus
+resources are currently assumed sharable.  Any device that can be accessed
+via any of the supported generic interfaces at the time of the Probe()
+function call must be assigned one of the resource types 1-5.
 
 
 7.2  Allocating Resources
@@ -1055,7 +1055,7 @@ and memory address for all devices in classes 2 and 4 above.  It then
 probes for a VGA device (a probe for 8514/A devices is not yet
 implemented).  This will detect devices that can't have their resource
 access disabled by the standard bus-level methods.  For example, if an
-ISA VGA card is present it will be detected at this point.  This
+ISA VGA card is present, it will be detected at this point.  This
 information places some restrictions on what other classes of devices
 can co-exist.  The common layer also identifies the primary video device.
 
@@ -1118,7 +1118,7 @@ config file device sections and keeping track of resource classes.
       no longer needed in cases where the return value is greater than
       zero.
 
-Once the matching is done, the PCI bus needs to be claimed while informing
+Once the matching is done, the PCI bus needs to be claimed, while informing
 the common layer of the resource classes for each device.
 
 
@@ -1143,7 +1143,7 @@ the common layer of the resource classes for each device.
     Bool xf86ClaimPciSlot(int bus, int device, int func, BusResource res,
                           DriverPtr drvp, int chipset, int scrnIndex)
 
-      This function is used to claims a PCI slot.  It marks it as belonging
+      This function is used to claim a PCI slot.  It marks it as belonging
       to the screen with index scrnIndex.  Returns FALSE if the slot
       was already claimed or if the resource type requested is not
       usable, and TRUE otherwise.  This function should always return TRUE
@@ -1212,7 +1212,7 @@ config file device sections and keeping track of resource classes.
       the hardware and returns the chipset token corresponding to what was
       detected, and -1 if nothing was detected.
 
-      If the config file device section contains a chipset entry then
+      If the config file device section contains a chipset entry, then
       it is checked against the `chipsets' list.  When no chipset entry
       is present, the `FindIsaDevice' function is called instead.
 
@@ -1259,7 +1259,7 @@ access control.  Even if no generic resources are accessed explicitly
 by a driver, any resource by which it may be accessed must be put under
 access control.  For example, if a device uses a linear framebuffer,
 but cannot disable its VGA memory window independently of the linear
-window then it must put its memory resource under access control, and
+window, then it must put its memory resource under access control, and
 leave it under access control.  Another example is where a driver is
 able to disable the resource independently of the VGA resource, and
 never needs to use the VGA resource.  In this case the resource needs
@@ -2422,7 +2422,7 @@ The fields are used as follows:
 		the minor version is increased.
 
   abiclass      The ABI class that the module requires.  The class is
-                specified as a string for easy extensibilty.  It should
+                specified as a string for easy extensibility.  It should
 		indicate which (if any) of the X server's built-in ABI
 		classes that the module relies on, or a third-party ABI
                 if appropriate.  Built-in ABI classes currently defined are:
@@ -3867,7 +3867,7 @@ C.2  Data structures and initialisation:
 
 C.3  Functions
 
-  - For dynamically loaded modules, a ModuleData varable is required.
+  - For dynamically loaded modules, a ModuleData variable is required.
     It is should be the name of the driver prepended to "ModuleData".
     A Setup() function is also required, which calls xf86AddDriver to
     add the driver to the main list of drivers.
@@ -4640,4 +4640,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.23 1999/01/26 05:53:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.24 1999/02/12 22:51:51 hohndel Exp $
