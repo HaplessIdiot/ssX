@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.29 2003/10/18 12:34:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.30 2004/02/13 23:58:38 dawes Exp $ */
 /*
  * Copyright (c) 1998-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -881,7 +881,7 @@ xf86NormalizeName(const char *s)
     if (s == NULL)
 	return NULL;
 
-    ret = xalloc(strlen(s) + 1);
+    ret = xnfalloc(strlen(s) + 1);
     for (p = s, q = ret; *p != 0; p++) {
 	switch (*p) {
 	case '_':
