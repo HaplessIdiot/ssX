@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.80 2000/11/02 01:53:42 robin Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.81 2000/11/02 02:51:05 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -317,6 +317,10 @@ XCOMM special target for clearmake					@@\
 
 #ifndef RunProgramWithSetup
 #define RunProgramWithSetup(setup,progvar,options) setup $(progvar) options
+#endif
+
+#ifndef RunPerlScript
+#define RunPerlScript(script,options) $(PERL) $(PERLOPTS) script options
 #endif
 
 #ifndef RemoveFile
@@ -3246,3 +3250,4 @@ clean::									@@\
 #ifndef BuildObjectFromLibrary
 #define BuildObjectFromLibrary(libname,objname) BuildObjectFromLibraryWithPath(.,libname,objname)
 #endif
+

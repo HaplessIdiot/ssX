@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.81 2000/06/25 20:17:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.82 2000/08/25 13:42:15 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -184,6 +184,18 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasSymLinks
 #define HasSymLinks YES
+#endif
+
+#ifndef HasPerl
+#define HasPerl			YES
+#endif
+
+#ifndef PerlCmd
+#define PerlCmd			perl
+#endif
+
+#ifndef PerlOptions
+#define PerlOptions		/**/
 #endif
 
 #ifndef BuildRman
@@ -1421,6 +1433,8 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
   RANLIBINSTFLAGS = RanlibInstFlags
 #endif
                RM = RmCmd
+             PERL = PerlCmd
+         PERLOPTS = PerlOptions
         MANSUFFIX = ManSuffix		/* suffix for command man pages */
      LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
     FILEMANSUFFIX = FileManSuffix	/* suffix for file format man pages */

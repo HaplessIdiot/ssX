@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c /main/13 1996/09/28 17:17:17 rws $ */
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.9 1999/05/23 06:33:51 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.10 1999/08/21 13:48:46 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -126,6 +126,7 @@ extern int errno;
 char *progName;
 char *prefix = "";
 Bool relative = FALSE;
+char *excludesuf = NULL;
 
 /* The possible extensions for encoding files, in decreasing priority */
 #ifdef X_GZIP_FONT_COMPRESSION
@@ -401,6 +402,10 @@ LoadDirectory (char *dirName, FontTablePtr table)
 	if (renderer)
 	{
 	    extension = renderer->fileSuffix;
+	    if (excludesuf &&
+		strncmp(excludesuf, extension + 1, strlen(excludesuf)) == 0) {
+		continue;
+	    }
 	    Estrip (extension, FileName(file));
 	    hash = Hash (FileName(file));
 	    prev = &hashTable[hash];
@@ -732,6 +737,17 @@ main (int argc, char **argv)
           fprintf(stderr, "%s: unknown option `%s'\n", progName, argv[argn]);
           continue;
         }
+      } else if(argv[argn][1]=='x') {
+        if(argv[argn][2]=='\0') {
+          argn++;
+	  if (argn < argc)
+            excludesuf=argv[argn];
+	  else {
+	    fprintf(stderr, "%s: -x requires an argument\n", progName);
+	    break;
+	  }
+        } else
+          excludesuf=argv[argn]+2;
       } else
         fprintf(stderr, "%s: unknown option `%s'\n", progName, argv[argn]);
     }
