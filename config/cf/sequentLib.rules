@@ -1,4 +1,5 @@
 XCOMM $Xorg: sequentLib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
+XCOMM $XFree86$
 
 /*
  * SVR4 shared library rules
