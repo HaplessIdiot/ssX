@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.14 2002/05/20 06:07:32 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.15 2002/05/20 07:17:50 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -891,15 +891,28 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 #ifdef XRENDER
 	    if (w->clock.render)
 	    {
-		XClearArea (dpy, win, 0, 0, 0, 0, False);
+		XGlyphInfo  before, after;
+		int	    x, y;
+
+		XftTextExtents8 (XtDisplay (w), w->clock.face,
+				 (FcChar8 *) time_ptr, i, &before);
+		XftTextExtents8 (XtDisplay (w), w->clock.face,
+				 (FcChar8 *) time_ptr + i, len - i, &after);
+		x = 1 + w->clock.padding;
+		y = w->clock.face->ascent + w->clock.padding;
+		XClearArea (dpy, win, 
+			    x + before.xOff, 
+			    y - after.y,
+			    after.width - after.x,
+			    after.height, False);
 		RenderPrepare (w, 0);
 		XftDrawSetClip (w->clock.draw, 0);
 		XftDrawString8 (w->clock.draw,
 				&w->clock.hour_color,
 				w->clock.face,
-				1 + w->clock.padding,
-				w->clock.face->ascent + w->clock.padding,
-				(FcChar8 *) time_ptr, len);
+				x + before.xOff,
+				y,
+				(FcChar8 *) time_ptr + i, len - i);
 	    }
 	    else
 #endif
