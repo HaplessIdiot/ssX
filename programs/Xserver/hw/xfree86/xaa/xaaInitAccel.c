@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.34 2002/10/08 22:14:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.35tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -491,7 +491,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
 #ifndef __i386__
    /* XAA makes some unaligned accesses when clipping is not available */
-   #define CLIP_FLAGS (LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X)
+#  define CLIP_FLAGS (LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X)
    if(HaveImageWriteRect &&
       ((infoRec->ImageWriteFlags & CLIP_FLAGS) != CLIP_FLAGS))
    {

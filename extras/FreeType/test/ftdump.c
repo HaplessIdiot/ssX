@@ -2,7 +2,7 @@
 /*                                                                          */
 /*  The FreeType project -- a free and portable quality TrueType renderer.  */
 /*                                                                          */
-/*  Copyright 1996-1998 by                                                  */
+/*  Copyright 1996-1999 by                                                  */
 /*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
 /*                                                                          */
 /*  ftdump: Simple TrueType font file resource profiler.                    */
@@ -15,29 +15,39 @@
 /*         debug the current engine.                                        */
 /*                                                                          */
 /****************************************************************************/
-
-#ifdef ARM
-#include "std.h"
-#include "graflink.h"
-#endif
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "common.h"    /* for Panic() etc. */
 #include "freetype.h"
-#include "common.h"    /* for Panic.. */
+#include "ftxcmap.h"
+#include "ftxopen.h"   /* TrueType Open support */
+#include "ftxsbit.h"   /* embedded bitmap support */
+
+/*
+ *  The following comment should be ignored. The "ttobjs.h" file does
+ *  already include ft_conf.h.
+ *
+ * ------------------------------------------------------------------
+ *
+ * IGNORE> Basically, an external program using FreeType shouldn't depend on an
+ * IGNORE> internal file of the FreeType library, especially not on ft_conf.h -- but
+ * IGNORE> to avoid another configure script which tests for the existence of the
+ * IGNORE> i18n stuff we include ft_conf.h here since we can be sure that our test
+ * IGNORE> programs use the same configuration options as the library itself.
+ */
+
 #include "ttobjs.h"    /* We're going to access internal tables directly */
 
-#ifdef ARM
-#include "armsup.c" /* pull in our routines */
-#endif
+#ifdef HAVE_LIBINTL_H
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
 
-#ifdef HAVE_LIBINTL_H
 #include "ftxerr18.h"
 #include <libintl.h>
 #else
@@ -58,22 +68,35 @@
 
   TT_Face_Properties   properties;
 
-  TT_CharMap  cmap;
-
   int  num_glyphs;
   int  ptsize;
 
   int  Fail;
   int  Num;
 
-
   int  flag_memory    = 1;
   int  flag_names     = 1;
   int  flag_encodings = 1;
+  int  flag_cmap      = 1;
+  int  flag_sbits     = 1;
+  int  flag_ttopen    = 1;
 
+#ifdef FREETYPE_DLL
+
+  /* If the library is linked as a DLL, TTMemory_Allocated()    */
+  /* (which is not exported) cannot be accessed.                */
+  /* In this case, some compilers report an error because       */
+  /* they try to link against a non-existing symbol.            */
+  /*                                                            */
+  /* We thus avoid the external reference on these compilers.   */
+
+# define TTMemory_Allocated  0L
+
+#else
   extern long  TTMemory_Allocated;
+#endif
 
-  long   org_memory, old_memory, cur_memory;
+  long  org_memory, old_memory, cur_memory;
 
   const char*  Apple_Encodings[33] =
   {
@@ -99,7 +122,8 @@
   /* We ignore error message strings with this function */
 
 #ifndef HAVE_LIBINTL_H
-  static char*  TT_ErrToString18( TT_Error  error )
+  static char*
+  TT_ErrToString18( TT_Error  error )
   {
     static char  temp[32];
 
@@ -110,7 +134,8 @@
 #endif
 
 
-  void  Save_Memory( long*  var )
+  void
+  Save_Memory( long*  var )
   {
     *var = TTMemory_Allocated - old_memory;
     old_memory += *var;
@@ -122,9 +147,9 @@
   static void
   Print_Mem( long  val, char*  string )
   {
-    printf( "%6ld bytes (%4ldkByte): %s\n",
+    printf( "%6ld Bytes (%4ld kByte): %s\n",
              val,
-             (val+1023) / 1024,
+             ( val + 1023L ) / 1024,
              string );
   }
 
@@ -134,30 +159,40 @@
 
   /* Print the memory footprint */
 
-  void  Print_Memory( void )
+  void
+  Print_Memory( void )
   {
     /* create glyph */
     error = TT_New_Glyph( face, &glyph );
     if ( error )
-      Panic( gettext( "Could not create glyph container.\n" ) );
+    {
+      fprintf( stderr, gettext( "Could not create glyph container.\n" ) );
+      goto Failure;
+    }
 
     FOOTPRINT( glyph_object );
 
     /* create instance */
     error = TT_New_Instance( face, &instance );
     if ( error )
-      Panic( gettext(" Could not create instance.\n" ) );
+    {
+      fprintf( stderr, gettext( "Could not create instance.\n" ) );
+      goto Failure;
+    }
 
     FOOTPRINT( first_instance );
 
     error = TT_New_Instance( face, &instance );
     if ( error )
-      Panic( gettext( "Could not create 2nd instance.\n" ) );
+    {
+      fprintf( stderr, gettext( "Could not create second instance.\n" ) );
+      goto Failure;
+    }
 
     FOOTPRINT( second_instance );
 
     printf( gettext( "Memory footprint statistics:\n" ) );
-    printf(          "-----------------------------------------------\n" );
+    separator_line( stdout, 78 );
 
     /* NOTE: In our current implementation, the face's execution */
     /*       context object is created lazily with the first     */
@@ -165,20 +200,28 @@
     /*       the same context.                                   */
 
     PRINT_MEM( face_object,     gettext( "face object" )     );
-    PRINT_MEM( glyph_object,    gettext( "glyph_object" )    );
+    PRINT_MEM( glyph_object,    gettext( "glyph object" )    );
     PRINT_MEM( second_instance, gettext( "instance object" ) );
 
     Print_Mem( memory_footprint.first_instance -
                memory_footprint.second_instance,
                gettext( "exec. context object" ) );
 
-    printf( "-----------------------------------------------\n" );
+    separator_line( stdout, 78 );
+
     Print_Mem( memory_footprint.face_object  +
                memory_footprint.glyph_object +
                memory_footprint.first_instance,
                gettext( "total memory usage" ) );
 
     printf( "\n" );
+
+    return;
+
+  Failure:
+    fprintf( stderr, "  " );
+    Panic( gettext( "FreeType error message: %s\n" ),
+           TT_ErrToString18( error ) );
   }
 
 
@@ -186,7 +229,8 @@
   static int   name_len = 0;
 
 
-  static char*  LookUp_Name( int  index )
+  static char*
+  LookUp_Name( int  index )
   {
     unsigned short  i, n;
 
@@ -253,23 +297,26 @@
   static void
   Print_Names( void )
   {
-     printf( gettext( "font name table entries\n" ) );
-     printf( "-----------------------------------------------\n" );
+    printf( gettext( "font name table entries\n" ) );
+    separator_line( stdout, 78 );
 
-     if ( LookUp_Name( 4 ) )
-       printf( "%s - ", name_buffer );
+    if ( LookUp_Name( 4 ) )
+      printf( "%s - ", name_buffer );
 
-     if ( LookUp_Name( 5 ) )
-       printf( "%s\n\n", name_buffer );
+    if ( LookUp_Name( 5 ) )
+      printf( "%s\n\n", name_buffer );
 
-     if ( LookUp_Name( 0 ) )
-       printf( "%s\n\n", name_buffer );
+    if ( LookUp_Name( 6 ) )
+      printf( gettext( "PostScript name: %s\n\n" ), name_buffer );
 
-     if ( LookUp_Name( 7 ) )
-       printf( name_buffer );
+    if ( LookUp_Name( 0 ) )
+      printf( "%s\n\n", name_buffer );
 
-     printf( "\n" );
-     printf( "-----------------------------------------------\n\n" );
+    if ( LookUp_Name( 7 ) )
+      printf( name_buffer );
+
+    printf( "\n" );
+    separator_line( stdout, 78 );
   }
 
 
@@ -282,22 +329,24 @@
 
      char  tempStr[128];
 
+
      printf( gettext( "character map encodings\n" ) );
-     printf( "-----------------------------------------------\n" );
+     separator_line( stdout, 78 );
 
      n = properties.num_CharMaps;
      if ( n == 0 )
      {
-       printf( gettext( "The file doesn't seem to have any encoding table.\n" ) );
+       printf( gettext(
+               "The file doesn't seem to have any encoding table.\n" ) );
        return;
      }
 
-     printf( gettext( "There are %d encodings:\n\n" ), n );
+     printf( gettext( "There are %hu encodings:\n\n" ), n );
 
      for ( i = 0; i < n; i++ )
      {
        TT_Get_CharMap_ID( face, i, &platform, &encoding );
-       printf( gettext( "encoding %2d: " ), i );
+       printf( gettext( "encoding %2u: " ), i );
 
        platStr = encoStr = NULL;
 
@@ -324,7 +373,7 @@
            break;
 
          default:
-           sprintf( tempStr, gettext( "Unknown %d" ), encoding );
+           sprintf( tempStr, gettext( "Unknown value %hu" ), encoding );
            encoStr = tempStr;
          }
          break;
@@ -333,7 +382,7 @@
          platStr = "Apple";
          if ( encoding > 32 )
          {
-           sprintf( tempStr, gettext( "Unknown %d" ), encoding );
+           sprintf( tempStr, gettext( "Unknown value %hu" ), encoding );
            encoStr = tempStr;
          }
          else
@@ -358,7 +407,7 @@
            break;
 
          default:
-           sprintf( tempStr, "%d", encoding );
+           sprintf( tempStr, "%hu", encoding );
            encoStr = tempStr;
          }
          break;
@@ -396,13 +445,13 @@
            break;
 
          default:
-           sprintf( tempStr, gettext( "Unknown %d" ), encoding );
+           sprintf( tempStr, gettext( "Unknown value %hu" ), encoding );
            encoStr = tempStr;
          }
          break;
 
        default:
-         sprintf( tempStr, "%d - %d", platform, encoding );
+         sprintf( tempStr, "%hu - %hu", platform, encoding );
          platStr = gettext( "Unknown" );
          encoStr = tempStr;
        }
@@ -411,16 +460,342 @@
      }
 
      printf( "\n" );
-     printf( "-----------------------------------------------\n\n" );
+     separator_line( stdout, 78 );
   }
 
 
-  int  main( int  argc, char**  argv )
+  static void
+  Print_Cmap( void )
+  {
+     TT_CharMap      charmap;
+     TT_UShort       glyph_index;
+     TT_Long         char_index;
+     unsigned short  n, i;
+     unsigned short  platform, encoding;
+
+
+     printf( gettext( "ftxcmap test\n" ) );
+     separator_line( stdout, 78 );
+
+     n = properties.num_CharMaps;
+     if ( n == 0 )
+     {
+       printf( gettext(
+               "The file doesn't seem to have any encoding table.\n" ) );
+       return;
+     }
+
+     printf( gettext( "There are %hu encodings:\n\n" ), n );
+
+     for ( i = 0; i < n; i++ )
+     {
+
+       TT_Get_CharMap_ID( face, i, &platform, &encoding );
+       printf( gettext( "encoding %2u:\n" ), i );
+
+       TT_Get_CharMap( face, i, &charmap);
+
+       char_index = TT_CharMap_First( charmap, &glyph_index );
+       printf( gettext( "first: glyph index %hu, character code 0x%lx\n" ),
+               glyph_index, char_index );
+
+       char_index  = TT_CharMap_Next( charmap, char_index, &glyph_index );
+       printf( gettext( "next:  glyph index %hu, character code 0x%lx\n" ),
+               glyph_index, char_index );
+
+       char_index  = TT_CharMap_Last( charmap, &glyph_index );
+       printf( gettext( "last:  glyph index %hu, character code 0x%lx\n" ),
+               glyph_index, char_index );
+     }
+
+     printf( "\n" );
+     separator_line( stdout, 78 );
+  }
+
+
+  static void
+  Print_SBits( void )
+  {
+    TT_EBLC   eblc;
+    TT_Error  error;
+
+
+    error = TT_Get_Face_Bitmaps( face, &eblc );
+    if ( error == TT_Err_Table_Missing )
+      return;
+    if ( error )
+    {
+      fprintf( stderr, gettext(
+               "Error while retrieving embedded bitmaps table.\n" ) );
+      goto Failure;
+    }
+
+    printf( gettext( "embedded bitmap table\n" ) );
+    separator_line( stdout, 78 );
+
+    printf( gettext( " version of embedded bitmap table:  0x%lx\n" ),
+            eblc.version );
+    printf( gettext( " number of embedded bitmap strikes: %lu\n" ),
+            eblc.num_strikes );
+
+    {
+      TT_SBit_Strike*  strike = eblc.strikes;
+      int              count  = 0;
+
+
+      for ( ; count < eblc.num_strikes; count++, strike++ )
+      {
+        printf( gettext( "  bitmap strike %hu/%lu: " ),
+                count + 1, eblc.num_strikes );
+
+        printf( gettext( "%hux%hu pixels, %hu-bit depth, glyphs [%hu..%hu]\n" ),
+                strike->x_ppem, strike->y_ppem, strike->bit_depth,
+                strike->start_glyph, strike->end_glyph );
+        {
+          TT_SBit_Range*  range = strike->sbit_ranges;
+          TT_SBit_Range*  limit = range + strike->num_ranges;
+
+
+          for ( ; range < limit; range++ )
+            printf( gettext( "      range format (%hu:%hu) glyphs %hu..%hu\n" ),
+                    range->index_format,
+                    range->image_format,
+                    range->first_glyph,
+                    range->last_glyph );
+        }
+      }
+    }
+    printf( "\n" );
+    separator_line( stdout, 78 );
+
+    return;
+
+  Failure:
+    fprintf( stderr, "  " );
+    Panic( gettext( "FreeType error message: %s\n" ),
+           TT_ErrToString18( error ) );
+  }
+
+
+#define TAG2STRING( t, s )  s[0] = (char)(t >> 24), \
+                            s[1] = (char)(t >> 16), \
+                            s[2] = (char)(t >>  8), \
+                            s[3] = (char)(t      )
+
+
+  static void
+  Print_GSUB( void )
+  {
+    TTO_GSUBHeader  gsub;
+    TT_Error        error;
+
+    TT_UShort       i;
+    TTO_Feature     f;
+    TTO_Lookup*     lo;
+
+    TT_ULong        *script_tag_list, *stl;
+    TT_ULong        *language_tag_list, *ltl;
+    TT_ULong        *feature_tag_list, *ftl;
+
+    TT_UShort       script_index, language_index,
+                    feature_index, req_feature_index;
+
+    char            script_tag[4], language_tag[4], feature_tag[4];
+
+
+    error = TT_Load_GSUB_Table( face, &gsub, NULL );
+    if ( error == TT_Err_Table_Missing )
+      return;
+    if ( error )
+    {
+      fprintf( stderr, gettext( "Error while loading GSUB table.\n" ) );
+      goto Failure;
+    }
+
+    printf( gettext( "GSUB table\n" ) );
+    separator_line( stdout, 78 );
+
+    error = TT_GSUB_Query_Scripts( &gsub, &script_tag_list );
+    if ( error )
+    {
+      fprintf( stderr, gettext(
+               "Error while querying GSUB script list.\n" ) );
+      goto Failure;
+    }
+
+    stl = script_tag_list;
+    for ( ; *stl; stl++ )
+    {
+      TAG2STRING( *stl, script_tag );
+
+      error = TT_GSUB_Select_Script( &gsub, *stl, &script_index );
+      if ( error )
+      {
+        fprintf( stderr, gettext(
+                 "Error while selecting GSUB script `%4.4s'.\n" ),
+                 script_tag );
+        goto Failure;
+      }
+
+      printf( gettext( "  script `%4.4s' (index %hu):\n" ),
+              script_tag, script_index );
+
+      error = TT_GSUB_Query_Features( &gsub, script_index, 0xFFFF,
+                                      &feature_tag_list );
+      if ( error )
+      {
+        fprintf( stderr, gettext(
+                 "Error while querying GSUB default language system for script `%4.4s'.\n" ),
+                 script_tag );
+        goto Failure;
+      }
+
+      printf( gettext( "    default language system:\n" ) );
+
+      ftl = feature_tag_list;
+      for ( ; *ftl; ftl++ )
+      {
+        TAG2STRING( *ftl, feature_tag );
+
+        error = TT_GSUB_Select_Feature( &gsub, *ftl,
+                                        script_index, 0xFFFF,
+                                        &feature_index );
+        if ( error )
+        {
+          fprintf( stderr, gettext(
+                   "Error while selecting GSUB feature `%4.4s'\n"
+                   "for default language system of script `%4.4s'.\n" ),
+                   feature_tag, script_tag );
+          goto Failure;
+        }
+
+        printf( gettext( "      feature `%4.4s' (index %hu; lookup " ),
+                feature_tag, feature_index );
+
+        f = gsub.FeatureList.FeatureRecord[feature_index].Feature;
+
+        for ( i = 0; i < f.LookupListCount - 1; i++ )
+          printf( "%hu, ", f.LookupListIndex[i] );
+        printf( "%hu)\n", f.LookupListIndex[i] );
+      }
+      free( feature_tag_list );
+
+      error = TT_GSUB_Query_Languages( &gsub, script_index,
+                                       &language_tag_list );
+      if ( error )
+      {
+        fprintf( stderr, gettext(
+                 "Error while querying GSUB language list for script `%4.4s'.\n" ),
+                 script_tag );
+        goto Failure;
+      }
+
+      ltl = language_tag_list;
+      for ( ; *ltl; ltl++ )
+      {
+        TAG2STRING( *ltl, language_tag );
+
+        error = TT_GSUB_Select_Language( &gsub, *ltl, 
+                                         script_index,
+                                         &language_index,
+                                         &req_feature_index );
+        if ( error )
+        {
+          fprintf( stderr, gettext(
+                   "Error while selecting GSUB language `%4.4s' for script `%4.4s'.\n" ),
+                   language_tag, script_tag );
+          goto Failure;
+        }
+
+        printf( gettext( "    language `%4.4s' (index %hu):\n" ),
+                language_tag, language_index );
+
+        if ( req_feature_index != 0xFFFF )
+        {
+          printf( gettext( "      required feature index %hu (lookup " ),
+                  req_feature_index );
+
+          f = gsub.FeatureList.FeatureRecord[req_feature_index].Feature;
+
+          for ( i = 0; i < f.LookupListCount - 1; i++ )
+            printf( "%hu, ", f.LookupListIndex[i] );
+          printf( "%hu)\n", f.LookupListIndex[i] );
+        }
+
+        error = TT_GSUB_Query_Features( &gsub, script_index, language_index,
+                                        &feature_tag_list );
+        if ( error )
+        {
+          fprintf( stderr, gettext(
+                   "Error while querying GSUB feature list\n"
+                   "for script `%4.4s', language `%4.4s'.\n" ),
+                   script_tag, language_tag );
+          goto Failure;
+        }
+
+        ftl = feature_tag_list;
+        for ( ; *ftl; ftl++ )
+        {
+          TAG2STRING( *ftl, feature_tag );
+
+          error = TT_GSUB_Select_Feature( &gsub, *ftl,
+                                          script_index, language_index,
+                                          &feature_index );
+          if ( error )
+          {
+            fprintf( stderr, gettext(
+                     "Error while selecting GSUB feature `%4.4s'\n"
+                     "for script `%4.4s', language `%4.4s'.\n" ),
+                     feature_tag, script_tag, language_tag );
+            goto Failure;
+          }
+
+          printf( gettext( "      feature `%4.4s' (index %hu; lookup " ),
+                  feature_tag, feature_index );
+
+          f = gsub.FeatureList.FeatureRecord[feature_index].Feature;
+
+          for ( i = 0; i < f.LookupListCount - 1; i++ )
+            printf( "%hu, ", f.LookupListIndex[i] );
+          printf( "%hu)\n", f.LookupListIndex[i] );
+        }
+        free( feature_tag_list );
+      }
+      free( language_tag_list );
+    }
+    free( script_tag_list );
+
+    printf( "\n" );
+
+    lo = gsub.LookupList.Lookup;
+
+    printf( gettext( "Lookups:\n\n" ) );
+
+    for ( i = 0; i < gsub.LookupList.LookupCount; i++ )
+      printf( gettext( "  %hu: type %hu, flag 0x%x\n" ),
+              i, lo[i].LookupType, lo[i].LookupFlag );
+
+    printf( "\n" );
+    separator_line( stdout, 78 );
+
+    return;
+
+  Failure:
+    fprintf( stderr, "  " );
+    Panic( gettext( "FreeType error message: %s\n" ),
+           TT_ErrToString18( error ) );
+  }
+
+
+  int
+  main( int  argc, char**  argv )
   {
     int    i;
     char   filename[128 + 4];
     char   alt_filename[128 + 4];
     char*  execname;
+    char*  gt;
+
 
 #ifdef HAVE_LIBINTL_H
     setlocale( LC_ALL, "" );
@@ -432,14 +807,15 @@
 
     if ( argc != 2 )
     {
-      printf( gettext( "ftdump: simple TrueType Dumper -- part of the FreeType project\n" ) );
-      printf(          "--------------------------------------------------------------\n" );
-      printf(          "\n" );
-      printf( gettext( "Usage: %s fontname[.ttf|.ttc]\n\n" ), execname );
+      gt = gettext( "ftdump: Simple TrueType Dumper -- part of the FreeType project" );
+      fprintf( stderr, "%s\n", gt );
+      separator_line( stderr, strlen( gt ) );
+
+      fprintf( stderr, gettext( "Usage: %s fontname[.ttf|.ttc]\n\n" ),
+               execname );
 
       exit( EXIT_FAILURE );
     }
-
 
     i = strlen( argv[1] );
     while ( i > 0 && argv[1][i] != '\\' )
@@ -466,8 +842,24 @@
     old_memory = 0;
 
     if ( (error = TT_Init_FreeType( &engine )) )
-      Panic( gettext( "Error while initializing engine: %s\n" ),
-             TT_ErrToString18( error ) );
+    {
+      fprintf( stderr, gettext( "Error while initializing engine.\n" ) );
+      goto Failure;
+    }
+
+    if ( (error = TT_Init_SBit_Extension( engine )) )
+    {
+      fprintf( stderr, gettext(
+               "Error while initializing embedded bitmap extension.\n" ) );
+      goto Failure;
+    }
+
+    if ( (error = TT_Init_GSUB_Extension( engine )) )
+    {
+      fprintf( stderr, gettext(
+               "Error while initializing GSUB extension.\n" ) );
+      goto Failure;
+    }
 
     FOOTPRINT( initial_overhead );
 
@@ -480,11 +872,12 @@
       error = TT_Open_Face( engine, alt_filename, &face );
     }
 
+    if ( error == TT_Err_Could_Not_Open_File )
+      Panic( gettext( "Could not find or open %s.\n" ), filename );
     if ( error )
     {
-      printf( gettext( "Error while opening %s.\n" ), filename );
-      Panic( gettext( "FreeType error message: %s\n" ),
-              TT_ErrToString18( error ) );
+      fprintf( stderr, gettext( "Error while opening %s.\n" ), filename );
+      goto Failure;
     }
 
     FOOTPRINT( face_object );
@@ -502,16 +895,34 @@
     if ( flag_encodings )
       Print_Encodings();
 
+    if ( flag_cmap )
+      Print_Cmap();
+
+    if ( flag_sbits )
+      Print_SBits();
+
+    if ( flag_ttopen )
+      Print_GSUB();
+
+#ifndef FREETYPE_DLL  /* the statistics are meaningless if we use a DLL. */
     if ( flag_memory )
       Print_Memory();
+#endif
 
     TT_Close_Face( face );
 
     TT_Done_FreeType( engine );
 
-    exit( EXIT_SUCCESS );      /* for safety reasons */
+    exit( EXIT_SUCCESS );       /* for safety reasons */
 
-    return 0;       /* never reached */
+    return 0;                   /* never reached */
+
+  Failure:
+    fprintf( stderr, "  " );
+    Panic( gettext( "FreeType error message: %s\n" ),
+           TT_ErrToString18( error ) );
+
+    return 0;                   /* never reached */
 }
 
 

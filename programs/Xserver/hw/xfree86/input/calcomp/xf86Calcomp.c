@@ -31,7 +31,7 @@
  * authorization  from Martin Kroeker or Daveg GmbH.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.5 2001/11/26 16:25:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.6tsi Exp $ */
 
 #define _CALCOMP_C_
 /*****************************************************************************
@@ -55,7 +55,7 @@
 /*****************************************************************************
  *	Variables without includable headers
  ****************************************************************************/
-                  #define DEBUG 1
+#define DEBUG 1
 /*****************************************************************************
  *	Local Variables
  ****************************************************************************/

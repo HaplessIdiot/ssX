@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.11 2001/12/26 21:49:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.12tsi Exp $ */
 
 static const char identification[] = "$Identification: 18 $";
 
@@ -1208,11 +1208,11 @@ xf86SumProc(DeviceIntPtr pSum, int what)
  * enagae signal handlers yet.  -huver@amgraf.com mar/12/2001.
 */
 #if 0
-  #ifdef XFREE86_V4
+# ifdef XFREE86_V4
 	    xf86AddEnabledDevice(local);
-  #else
+# else
 	    AddEnabledDevice(local->fd);
-  #endif
+# endif
 #else
 	    AddEnabledDevice(local->fd);
 #endif
@@ -1225,11 +1225,11 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    if (! pSum->public.on) break;		/* already off */
 	    if (local->fd >= 0)
 #if 0
-  #ifdef XFREE86_V4
+# ifdef XFREE86_V4
 		    xf86RemoveEnabledDevice(local);
-  #else
+# else
 	            RemoveEnabledDevice(local->fd);
-  #endif
+# endif
 #else
 	            RemoveEnabledDevice(local->fd);
 #endif

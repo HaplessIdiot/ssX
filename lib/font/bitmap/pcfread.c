@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.18 2001/12/14 19:56:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.19tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -49,24 +49,24 @@ from The Open Group.
 void
 #if NeedVarargsPrototypes
 pcfError(char* message, ...)
-      #else
-      pcfError (message, va_alist)
-          char* message;
-          va_dcl
-      #endif
-      {
-                  va_list args;
-              
-                  #if NeedVarargsPrototypes
-                          va_start (args, message);
-              #else
-                          va_start (args);
-              #endif
-                      
-                          fprintf(stderr, "PCF Error: ");
-                  vfprintf(stderr, message, args);
-                  va_end (args);
-              }
+#else
+pcfError (message, va_alist)
+    char* message;
+    va_dcl
+#endif
+{
+    va_list args;
+
+#if NeedVarargsPrototypes
+    va_start(args, message);
+#else
+    va_start(args);
+#endif
+
+    fprintf(stderr, "PCF Error: ");
+    vfprintf(stderr, message, args);
+    va_end(args);
+}
                               
 /* Read PCF font files */
 

@@ -41,7 +41,7 @@ Author of changes: Corvin Zahn <zahn@zac.de>
 Date:   2.11.2001
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.6 2001/12/20 21:35:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.8tsi Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"
@@ -1354,11 +1354,11 @@ SMI_StopVideo(
 		if (pPort->videoStatus & CLIENT_VIDEO_ON)
 		{
 			WRITE_VPR(pSmi, 0x00, READ_VPR(pSmi, 0x00) & ~0x01000008);
-			#if SMI_USE_CAPTURE
+#if SMI_USE_CAPTURE
 			WRITE_CPR(pSmi, 0x00, READ_CPR(pSmi, 0x00) & ~0x00000001);
 			WRITE_VPR(pSmi, 0x54, READ_VPR(pSmi, 0x54) & ~0x00F00000);
 /* #864		OUT_SEQ(pSmi, 0x21, IN_SEQ(pSmi, 0x21) | 0x04); */
-			#endif
+#endif
 		}
         if (pPort->area != NULL)
 		{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.83 2002/04/04 14:05:46 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.84tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1004,11 +1004,11 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	vgaCRIndex, vgaIOBase, hwp->MMIOBase );
 
 
-   #if 0	/* Not needed in 4.0 flavors */
+#if 0	/* Not needed in 4.0 flavors */
    /* Unlock sys regs */
    VGAOUT8(vgaCRIndex, 0x38);
    VGAOUT8(vgaCRReg, 0x48);
-   #endif
+#endif
 
    /* Next go on to detect amount of installed ram */
 
@@ -1343,15 +1343,15 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
 
-  #if 0
+#if 0
   if (ps3v->Chipset == S3_ViRGE_VX ) {
     ps3v->minClock = 220000;
   } else {
     ps3v->minClock = 135000;
   }
-  #else
+#else
     ps3v->minClock = 20000;  /* cep */
-  #endif
+#endif
   
     xf86ErrorFVerb(VERBLEV, 
 	"	S3VPreInit minClock=%d, maxClock=%d\n",
@@ -3399,14 +3399,14 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				/* in 3.3.3 and never changed. 		*/
 				/* Also, bit 0 is never set in 3.9Nm,	*/
 				/* so I left this out for 4.0.			*/
-   #if 0
+#if 0
       if (mode->Private[0] & (1 << S3_INVERT_VCLK)) {
 	 if (mode->Private[S3_INVERT_VCLK])
 	    new->CR67 |= 1;
 	 else
 	    new->CR67 &= ~1;
       }
-   #endif
+#endif
       				/* S3_BLANK_DELAY settings based on 	*/
 				/* defaults only. From 3.3.3 		*/
    {
@@ -3442,14 +3442,14 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				/* in 3.3.3 and never changed. 		*/
 				/* Also, bit 1 is never set in 3.9Nm,	*/
 				/* so I left this out for 4.0.			*/
-   #if 0
+#if 0
       if (mode->Private[0] & (1 << S3_EARLY_SC)) {
 	 if (mode->Private[S3_EARLY_SC])
 	    new->CR65 |= 2;
 	 else
 	    new->CR65 &= ~2;
       }
-   #endif
+#endif
   
    VGAOUT8(vgaCRIndex, 0x68);
    new->CR68 = VGAIN8(vgaCRReg);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.9 2002/05/14 20:19:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.10tsi Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -869,10 +869,10 @@ SavageSetupImageVideo(ScreenPtr pScreen)
 
     psav->adaptor = adapt;
 
-    #if 0
+#if 0
     psav->BlockHandler = pScreen->BlockHandler;
     pScreen->BlockHandler = SavageBlockHandler;
-    #endif
+#endif
 
     return adapt;
 }

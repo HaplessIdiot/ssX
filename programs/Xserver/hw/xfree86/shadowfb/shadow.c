@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.13 2002/11/05 17:19:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.14tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -25,7 +25,7 @@
 #include "shadowfb.h"
 
 #ifdef RENDER
-  #include "picturestr.h"
+# include "picturestr.h"
 #endif
 
 #define MIN(a,b) (((a)<(b))?(a):(b))

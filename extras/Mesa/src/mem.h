@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 #ifndef MEM_H
 #define MEM_H
@@ -38,7 +38,7 @@
 #if defined(WIN32) && defined(_DEBUG)
 #include <malloc.h>  
 #ifndef _CRTDBG_MAP_ALLOC
-  #define _CRTDBG_MAP_ALLOC 1
+# define _CRTDBG_MAP_ALLOC 1
 #endif
 #include <crtdbg.h>
 

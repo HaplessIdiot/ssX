@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.8 2001/12/20 21:35:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.11tsi Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -65,8 +65,8 @@ authorization from the XFree86 Project and Silicon Motion.
 #include "vbe.h"
 
 #ifdef XvExtension
-	#include "xf86xv.h"
-	#include "Xv.h"
+#	include "xf86xv.h"
+#	include "Xv.h"
 #endif
 
 /******************************************************************************/
@@ -74,7 +74,7 @@ authorization from the XFree86 Project and Silicon Motion.
 /******************************************************************************/
 
 #ifndef SMI_DEBUG
-	#define SMI_DEBUG	0
+#	define SMI_DEBUG	0
 #endif
 
 #define SMI_USE_IMAGE_WRITES	0
@@ -263,20 +263,20 @@ typedef struct
 /******************************************************************************/
 
 #if SMI_DEBUG
-	#define VERBLEV 1
-	#define ENTER_PROC(PROCNAME)	xf86ErrorFVerb(VERBLEV, "ENTER\t" PROCNAME \
+#	define VERBLEV 1
+#	define ENTER_PROC(PROCNAME)	xf86ErrorFVerb(VERBLEV, "ENTER\t" PROCNAME \
 									"(%d)\n", __LINE__); xf86Break1()
-	#define DEBUG_PROC(PROCNAME)	xf86ErrorFVerb(VERBLEV, "DEBUG\t" PROCNAME \
+#	define DEBUG_PROC(PROCNAME)	xf86ErrorFVerb(VERBLEV, "DEBUG\t" PROCNAME \
 									"(%d)\n", __LINE__); xf86Break2()
-	#define LEAVE_PROC(PROCNAME)	xf86ErrorFVerb(VERBLEV, "LEAVE\t" PROCNAME \
+#	define LEAVE_PROC(PROCNAME)	xf86ErrorFVerb(VERBLEV, "LEAVE\t" PROCNAME \
 									"(%d)\n", __LINE__); xf86Break1()
-	#define DEBUG(arg)				xf86ErrorFVerb arg
+#	define DEBUG(arg)				xf86ErrorFVerb arg
 #else
-	#define VERBLEV	4
-	#define ENTER_PROC(PROCNAME)
-	#define DEBUG_PROC(PROCNAME)
-	#define LEAVE_PROC(PROCNAME)
-	#define DEBUG(arg)
+#	define VERBLEV	4
+#	define ENTER_PROC(PROCNAME)
+#	define DEBUG_PROC(PROCNAME)
+#	define LEAVE_PROC(PROCNAME)
+#	define DEBUG(arg)
 #endif
 
 /* Some Silicon Motion structs & registers */

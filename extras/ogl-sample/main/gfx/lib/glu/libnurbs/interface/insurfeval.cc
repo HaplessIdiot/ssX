@@ -31,11 +31,12 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2001/01/15 21:48:20 $ $Revision: 1.1 $
+** $Date: 2003/01/12 03:55:45 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/insurfeval.cc,v 1.1 2001/01/15 21:48:20 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/insurfeval.cc,v 1.2 2003/01/12 03:55:45 tsi Exp $
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <stdlib.h>
@@ -609,9 +610,9 @@ void OpenGLSurfaceEvaluator::inDoEvalCoord2(REAL u, REAL v,
 
 
 
-  #ifdef DEBUG
+#ifdef DEBUG
   printf("vertex(%f,%f,%f)\n", retPoint[0],retPoint[1],retPoint[2]);
-  #endif
+#endif
   
 
 
