@@ -1,4 +1,4 @@
-/* $TOG: EVI.c /main/1 1997/11/24 16:48:29 kaleb $ */
+/* $TOG: EVI.c /main/3 1998/01/23 15:19:47 kaleb $ */
 /************************************************************
 Copyright (c) 1997 by Silicon Graphics Computer Systems, Inc.
 Permission to use, copy, modify, and distribute this
@@ -57,9 +57,9 @@ ProcEVIQueryVersion(ClientPtr client)
    int l1 = l; 						\
    xExtendedVisualInfo *eviInfo1 = eviInfo;		\
    while (l1-- > 0) {					\
-       swapl(eviInfo1->core_visual_id, n);		\
-       swapl(eviInfo1->transparency_value, n);		\
-       swaps(eviInfo1->num_colormap_conflicts, n);	\
+       swapl(&eviInfo1->core_visual_id, n);		\
+       swapl(&eviInfo1->transparency_value, n);		\
+       swaps(&eviInfo1->num_colormap_conflicts, n);	\
        eviInfo1++;					\
    }							\
 }
@@ -68,7 +68,7 @@ ProcEVIQueryVersion(ClientPtr client)
     int l1 = l;						\
     VisualID32 *visual1 = visual;				\
     while (l1-- > 0) {					\
-       swapl(*visual1, n);				\
+       swapl(visual1, n);				\
        visual1++;					\
     }							\
 }

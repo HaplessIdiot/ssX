@@ -1,4 +1,4 @@
-/* $TOG: panoramiX.c /main/2 1997/11/03 13:55:53 kaleb $ */
+/* $TOG: panoramiX.c /main/5 1998/02/27 12:22:22 barstow $ */
 /****************************************************************
 *                                                               *
 *    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
@@ -503,11 +503,17 @@ void PanoramiXConsolidate(void)
 		{
 		  if (pVisual->vid == pDepth->vids[d])
 		    {
-		      PanoramiXColorDepthTable[i].panoramiXScreenMap[pVisual->class].vmap[pDepth->depth].vid[d] = pDepth->vids[d];
-	      	      PanoramiXColorDepthTable[i].panoramiXScreenMap[pVisual->class].vmap[pDepth->depth].numVids++;
-		    }
-		}
-	      }
+		      PanoramiXColorDepthTable[i].
+ 			panoramiXScreenMap[pVisual->class].vmap[pDepth->depth].
+ 			vid[ 
+			  PanoramiXColorDepthTable[i].
+ 			  panoramiXScreenMap[pVisual->class].
+ 			  vmap[pDepth->depth].numVids++ 
+			] 
+ 		      = pDepth->vids[d];
+  		    }
+  		}
+  	      }
 	  }
 	PanoramiXColorDepthTable[i].numVisuals = 6;
      } /* for each screen */
@@ -768,6 +774,6 @@ ProcPanoramiXDispatch (client)
 	     return ProcPanoramiXGetScreenCount(client);
 	case X_PanoramiXGetScreenSize:
 	     return ProcPanoramiXGetScreenSize(client);
-    return BadRequest;
     }
+    return BadRequest;
 }

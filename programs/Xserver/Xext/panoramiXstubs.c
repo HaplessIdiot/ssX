@@ -1,8 +1,8 @@
 /*
  * HISTORY
  * $Log: panoramiXstubs.c,v $
- * Revision 1.1  1998/09/27 07:39:56  dawes
- * Initial revision
+ * Revision 3.3  1998/10/04 08:15:29  dawes
+ * new R6.4 files
  *
  * Revision 1.1.2.3  1996/05/21  18:18:34  Madeline_Asmus
  * 	Add new dummy panoramiX routines for symbol resolution
