@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.50 2000/04/17 16:30:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.51 2000/08/09 02:57:20 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -215,6 +215,9 @@ extern void DPSExtensionInit(INITARGS);
 #ifdef FONTCACHE
 extern void FontCacheExtensionInit(INITARGS);
 #endif
+#ifdef RENDER
+extern void RenderExtensionInit(INITARGS);
+#endif
 
 #ifndef XFree86LOADER
 
@@ -342,6 +345,9 @@ InitExtensions(argc, argv)
     DPSExtensionInit();
 #endif
 #endif
+#ifdef RENDER
+    RenderExtensionInit();
+#endif
 }
 
 void
@@ -407,6 +413,7 @@ ExtensionModule extension[] =
     { NULL, "XFree86-DRI", NULL, NULL },
     { NULL, "Adobe-DPS-Extension", NULL, NULL },
     { NULL, "FontCache", NULL, NULL },
+    { NULL, "RENDER", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 #endif
@@ -454,6 +461,9 @@ static ExtensionModule staticExtensions[] = {
 #endif
 #ifdef XF86BIGFONT
     { XFree86BigfontExtensionInit, XF86BIGFONTNAME, NULL, NULL, NULL },
+#endif
+#ifdef RENDER
+    { RenderExtensionInit, "RENDER", NULL, NULL, NULL },
 #endif
     { NULL, NULL, NULL, NULL, NULL }
 };

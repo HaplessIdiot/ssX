@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.189 2000/08/29 17:23:34 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.190 2000/08/31 04:36:01 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -184,10 +184,11 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
 
 #if BuildRender
+	RENDER = render
      RENDERLIB = $(RENDER)/librender.a
 #endif
 #if DoLoadableServer
-     EXTENSIONS = $(OTHEREXTS) $(RENDELRIB)
+     EXTENSIONS = $(OTHEREXTS) $(RENDERLIB)
    LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
                   $(GLXEXT)
         MISCEXT = Xext/LibraryTargetName(ext)
@@ -199,7 +200,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
 #endif
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(GLXDIR) \
-                  $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
+                  $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(RENDER) $(SITEEXTDIRS)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
 #if BuildLBX || GzipFontCompression
@@ -666,9 +667,6 @@ XCOMM Tiny X server section
 XCOMM
 
         KDRIVE = hw/kdrive
-#if BuildRender
-	RENDER = render
-#endif
 #ifdef LinuxArchitecture
        KDOSDIR = $(KDRIVE)/linux
           KDOS = $(KDOSDIR)/LibraryTargetName(linux)
