@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.18 2000/03/06 23:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.24 2000/05/31 07:15:03 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -187,6 +187,7 @@ static SymTabRec NEOChipsets[] = {
     { NM2097,   "neo2097" },
     { NM2160,   "neo2160" },
     { NM2200,   "neo2200" },
+    { NM2360,   "neo2360" },
     { -1,		 NULL }
 };
 
@@ -198,6 +199,7 @@ static PciChipsets NEOPCIchipsets[] = {
     { NM2097,  PCI_CHIP_NM2097,  RES_SHARED_VGA },
     { NM2160,  PCI_CHIP_NM2160,  RES_SHARED_VGA },
     { NM2200,  PCI_CHIP_NM2200,  RES_SHARED_VGA },
+    { NM2360,  PCI_CHIP_NM2360,  RES_SHARED_VGA },
     { -1,	     -1,	     RES_UNDEFINED}
 };
 
@@ -634,25 +636,28 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Chipset is a ");
     switch(nPtr->NeoChipset){
     case NM2070:
-	ErrorF("MagicGraph 128 (NM2070)");
+	xf86ErrorF("MagicGraph 128 (NM2070)");
 	break;
     case NM2090 :
-	ErrorF("MagicGraph 128V (NM2090)");
+	xf86ErrorF("MagicGraph 128V (NM2090)");
 	break;
     case NM2093 :
-	ErrorF("MagicGraph 128ZV (NM2093)");
+	xf86ErrorF("MagicGraph 128ZV (NM2093)");
 	break;
     case NM2097 :
-	ErrorF("MagicGraph 128ZV+ (NM2097)");
+	xf86ErrorF("MagicGraph 128ZV+ (NM2097)");
 	break;
     case NM2160 :
-	ErrorF("MagicGraph 128XD (NM2160)");
+	xf86ErrorF("MagicGraph 128XD (NM2160)");
 	break;
     case NM2200 :
-        ErrorF("MagicMedia 256AV (NM2200)");
+        xf86ErrorF("MagicMedia 256AV (NM2200)");
+	break;
+    case NM2360 :
+        xf86ErrorF("MagicMedia 256ZX (NM2360)");
 	break;
     }
-    ErrorF("\n");
+    xf86ErrorF("\n");
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	nPtr->pVbe =  VBEInit(NULL,nPtr->pEnt->index);
@@ -690,7 +695,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->NeoPanelHeight = 1024;
 	break;
 #else
-	ErrorF("\nOnly 640x480,\n"
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		     "Only 640x480,\n"
                      "     800x600,\n"
                      " and 1024x768 panels are currently supported\n");
 	return FALSE;
@@ -751,6 +757,16 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	bppSupport = Support24bppFb | Support32bppFb |
 	    SupportConvert32to24 | PreferConvert32to24;
 	videoRam   = 2560;
+	maxClock   = 110000;
+	CursorMem  = 1024;
+	CursorOff  = 0x1000;
+	linearSize = 4096;
+	maxWidth   = 1280;
+	break;
+    case NM2360:
+	bppSupport = Support24bppFb | Support32bppFb |
+	    SupportConvert32to24 | PreferConvert32to24;
+	videoRam   = 4096;
 	maxClock   = 110000;
 	CursorMem  = 1024;
 	CursorOff  = 0x1000;
@@ -1002,6 +1018,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    case NM2160:
 	    case NM2097:
 	    case NM2200:
+	    case NM2360:
 		nPtr->NeoMMIOAddr = nPtr->PciInfo->memBase[1];
 		break;
 	    }
@@ -1472,6 +1489,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		Neo2097AccelInit(pScreen);
 		break;
 	    case NM2200 :
+	    case NM2360 :
 	        Neo2200AccelInit(pScreen);
 		break;
 	    }
@@ -1839,21 +1857,22 @@ neoSave(ScrnInfoPtr pScrn)
     if (nPtr->NeoChipset == NM2160) {
         save->PanelHorizCenterReg4 = VGArGR(0x36);
     }
-    if (nPtr->NeoChipset == NM2200) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360) {
 	save->PanelHorizCenterReg4 = VGArGR(0x36);
 	save->PanelVertCenterReg5  = VGArGR(0x37);
 	save->PanelHorizCenterReg5 = VGArGR(0x38);
     }
     save->ExtColorModeSelect = VGArGR(0x90);
     save->VCLK3NumeratorLow = VGArGR(0x9B);
-    if (nPtr->NeoChipset == NM2200)
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360)
 	save->VCLK3NumeratorHigh = VGArGR(0x8F);
     save->VCLK3Denominator = VGArGR(0x9F);
 
     if (save->reg == NULL)
         save->reg = (regSavePtr)xnfcalloc(sizeof(regSaveRec), 1);
     else
-        ErrorF("WARNING: Non-NULL reg in NeoSave: reg=0x%08X\n", save->reg);
+        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Non-NULL reg in NeoSave: reg=0x%08X\n", save->reg);
 
     save->reg->CR[0x25] = VGArCR(0x25);
     save->reg->CR[0x2F] = VGArCR(0x2F);
@@ -1911,6 +1930,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
     case NM2097:
     case NM2160:
     case NM2200:
+    case NM2360:
     default:
 	/* Don't program the shadow regs by default */
 	noProgramShadowRegs = TRUE;
@@ -2076,6 +2096,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     case NM2097 :
     case NM2160 :
     case NM2200 :
+    case NM2360 :
 	temp &= 0x70; /* Save bits 6:4 */
 	temp |= (restore->ExtColorModeSelect & ~0x70);
 	break;
@@ -2125,6 +2146,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	temp |= (restore->PanelDispCntlReg1 & ~0xDC);
 	break;
     case NM2200 :
+    case NM2360 :
 	temp &= 0x98; /* Save bits 7,4:3 */
 	temp |= (restore->PanelDispCntlReg1 & ~0x98);
 	break;
@@ -2157,7 +2179,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	VGAwGR(0x36, restore->PanelHorizCenterReg4);
     }
 
-    if (nPtr->NeoChipset == NM2200) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360) {
         VGAwGR(0x36, restore->PanelHorizCenterReg4);
         VGAwGR(0x37, restore->PanelVertCenterReg5);
         VGAwGR(0x38, restore->PanelHorizCenterReg5);
@@ -2166,7 +2188,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     /* Program VCLK3 if needed. */
     if (restore->ProgramVCLK) {
 	VGAwGR(0x9B, restore->VCLK3NumeratorLow);
-	if (nPtr->NeoChipset == NM2200) {
+	if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360) {
 	    temp = VGArGR(0x8F);
 	    temp &= 0x0F; /* Save bits 3:0 */
 	    temp |= (restore->VCLK3NumeratorHigh & ~0x0F);
@@ -2198,7 +2220,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	restore->reg = NULL;
     }
     /* Program vertical extension register */
-    if (nPtr->NeoChipset == NM2200) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360) {
 	VGAwCR(0x70, restore->VerticalExt);
     }
 
@@ -2465,7 +2487,8 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * case it isn't, warn us and clear it anyway.
      */
     if (NeoNew->reg) {
-	ErrorF("WARNING: Non-NULL reg in NeoInit: reg=0x%08X\n", NeoNew->reg);
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Non-NULL reg in NeoInit: reg=0x%08X\n", NeoNew->reg);
 	xfree(NeoNew->reg);
 	NeoNew->reg = NULL;
     }
@@ -2519,7 +2542,7 @@ neoCalcVCLK(ScrnInfoPtr pScrn, long freq)
 		}
 	    }
 
-    if (nPtr->NeoChipset == NM2200) {
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2360) {
         /* NOT_DONE:  We are trying the full range of the 2200 clock.
            We should be able to try n up to 2047 */
 	nPtr->NeoModeReg.VCLK3NumeratorLow  = n_best;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.6 2000/03/31 22:55:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.7 2000/05/23 04:47:36 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -210,6 +210,15 @@ shmalloc(
 	return (ShmDescPtr) NULL;
 #endif
 
+    /* On some older Linux systems, the number of shared memory segments
+       system-wide is 127. In Linux 2.4, it is 4095.
+       Therefore there is a tradeoff to be made between allocating a
+       shared memory segment on one hand, and allocating memory and piping
+       the glyph metrics on the other hand. If the glyph metrics size is
+       small, we prefer the traditional way. */
+    if (size < 3500)
+	return (ShmDescPtr) NULL;
+
     pDesc = (ShmDescRec *) xalloc(sizeof(ShmDescRec));
     if (!pDesc)
 	return (ShmDescPtr) NULL;
@@ -324,7 +333,11 @@ ProcXF86BigfontQueryVersion(
     reply.minorVersion = XF86BIGFONT_MINOR_VERSION;
     reply.uid = geteuid();
     reply.gid = getegid();
+#ifdef HAS_SHM
     reply.signature = signature;
+#else
+    reply.signature = 0; /* This is redundant. Avoids uninitialized memory. */
+#endif
     reply.capabilities =
 #ifdef HAS_SHM
 	(LocalClient(client) && !client->swapped ? XF86Bigfont_CAP_LocalShm : 0)

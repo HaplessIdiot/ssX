@@ -1,10 +1,21 @@
 XFree86 4.0d (14 June 2000)
- 278. xf86cfg fixes (#3983, Paulo Cesar Pereira de Andrade).
- 277. Add SilkenMouse support to the s3virge driver (#3982, Kevin Brosius).
- 276. Update Xv support in the glint driver and add the XvPutImage function
+ 284. Clean up some of the messages printed by the neomagic driver
+      (David Dawes).
+ 283. Add support for the 2360 (256ZX) to the neomagic driver, and enable
+      acceleration at depth 24 for this chip (#A.23, Gregory M Pomerantz).
+ 282. Adjust the bigfont extension to not use SHM segments for fonts with
+      a small glyph metric size, and fix a build problem on systems without
+      shared memory (#3984, Bruno Haible).
+ 281. Status doc updates (#A.9, Chris Smith, A.80, Ferenc Acs).
+ 280. Fix memleak warning when doing realloc(NULL, size) (#A.7,
+      Charles G Waldman).
+ 279. xf86cfg fixes (#3983, Paulo Cesar Pereira de Andrade).
+ 278. Add SilkenMouse support to the s3virge driver (#3982, Kevin Brosius).
+ 277. Update Xv support in the glint driver and add the XvPutImage function
       for the Permedia 2 (#3926, Michael Schimek).
 
 XFree86 4.0c (13 June 2000)
+ 276. Xterm patch #137 (#3976, Thomas Dickey).
  275. Doc update for the chips driver (#3981, David Bateman).
  274. Fix some problems building with the SDK (#3981, David Bateman).
  273. Fix comments for the address matching algorithm in
@@ -175,9 +186,9 @@ XFree86 4.0b (23 May 2000)
       (#3922, David S. Miller).
  201. 8+32 framebuffer for hardware that uses window IDs (David S. Miller).
  200. Fix a memory allocation in lbxproxy that can cause it to crash at
-      startup (#3921, Peter Runestig).
+      startup (#3921, Peter Runestig, #A.46, Rob Clark).
  199. Fix a problem with imake's handling of DefaultGccIncludeDir (#3920,
-      Peter Runestig).
+      Peter Runestig, #A.64, Stanislav Brabec).
  198. lib/X11/imInt.c fix from the OpenMotif release notes (#3919).
  197. Prototype and fix almost all compiler warnings fot he dps library
       and the related pswrap program (#3912, Thomas Dickey).
@@ -387,7 +398,8 @@ XFree86 4.0a (6 April 2000)
   71. Bring the SDK support up to date (#3834, David Bateman).
   70. Fix an Xlib problem that causes an application crash when inputting
       cyrillic symbols with the koi8-r locale (and other locales with
-      long esc-sequences) (#3833, Ivan Pascal, #A.15, Serguei Poliakov).
+      long esc-sequences) (#3833, Ivan Pascal, #A.15, Serguei Poliakov, #A.34,
+      Stanislav Meduna, #A.40, Rimantas Plaipa, #A.74, Sergei Laskavy).
   69. Fixes for S3 Trio3D/2X:
        - flickering for some cards (bad FIFO setting from bios).
        - workaround for 8MB ram (ramdac can access only 4MB).
@@ -507,7 +519,7 @@ XFree86 4.0a (6 April 2000)
       Cejka Rudolf).
    9. Updates to Linux-ix86 bindist host.def file.
    8. Fix installation of iso8859-{1,2,3} Compose files, and fix the czech
-      entry in locale.alias (Charles Lopes).
+      entry in locale.alias (Charles Lopes, #A.62, Stanislav Brabec).
    7. Fix some problems with layers forgetting that SwitchMode is an
       optional function (Mark Vojkovich).
    6. Parser bug fix for hexadecimal numbers (Marc La France).
@@ -10556,4 +10568,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1182 2000/06/14 01:43:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1183 2000/06/14 21:57:46 dawes Exp $

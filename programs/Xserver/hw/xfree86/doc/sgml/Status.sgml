@@ -9,7 +9,7 @@
 <date>3 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.14 2000/02/22 20:22:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.15 2000/03/03 21:28:10 dawes Exp $
 </ident>
 
 <abstract>
@@ -428,13 +428,13 @@ dependencies/limitations, other architectures known to work on
 <descrip>
 <tag>&legacyvers;:</tag>
 	Support (accelerated) for the NV1, Riva 128, 128ZX, TNT, TNT2
-	(Ultra, Vanta, M64), GeForce (DDR) and Quadro is provided by
+	(Ultra, Vanta, M64), GeForce (DDR, 256) and Quadro is provided by
 	the XF86_SVGA server and the nv driver.
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
-	Vanta, M64), GeForce (DDR) and Quadro is provided by the XF86_SVGA
-	server and the nv driver.
+	Vanta, M64), GeForce (DDR, 256) and Quadro is provided by
+	the nv driver.
 
 <tag>Summary:</tag>
 	All chipsets supported in &legacyvers; except the NV1 are also
@@ -592,7 +592,8 @@ dependencies/limitations, other architectures known to work on
 	has not been ported.
 
 <tag>Summary:</tag>
-	No SMI chips are supported in &relvers;.
+	No SMI chips are supported in &relvers;, but the fbdev driver is
+	reported to work on Linux.
 
 </descrip>
 

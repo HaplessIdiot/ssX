@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.55 2000/05/23 23:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.56 2000/06/13 02:28:31 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -538,6 +538,7 @@
 #define PCI_CHIP_NM2097	        0x0083
 #define PCI_CHIP_NM2160		0x0004
 #define PCI_CHIP_NM2200		0x0005
+#define PCI_CHIP_NM2360		0x0006
 
 /* Intel */
 #define PCI_CHIP_I740_AGP	0x7800
@@ -1109,6 +1110,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_NM2093,	"NM2093",0},
 				{PCI_CHIP_NM2160,	"NM2160",0},
 				{PCI_CHIP_NM2200,	"NM2200",0},
+				{PCI_CHIP_NM2360,	"NM2360",0},
 #ifdef VENDOR_INCLUDE_NONVIDEO
 				{0x8005,			"NM2360 MagicMedia 256ZX Audio",0},
 #endif
