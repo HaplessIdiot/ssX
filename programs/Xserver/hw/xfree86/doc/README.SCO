@@ -2,28 +2,29 @@
 
                        J. Kean Johnston (jkj@sco.com)
 
-                               9 November 2002
+                              14 February 2003
 
 1.  Requirements
 
 Before you can either compile or execute a binary distribution of XFree86,
 the following conditions must be met:
 
-   o Ensure that you are running Release 5.0.6 or later. This is required
+   o Ensure that you are running Release 5.0.4 or later. This is required
      because OSS646 is only supported on those platforms. There are no plans
      to support XFree86 on earlier releases of OpenServer.
 
-   o Ensure that OSS646, the ``Linkers and Libraries Update'' package is
+   o Ensure that OSS646, the ``Execution Environment Update'' package is
      installed, if appropriate.  Check the release notes for that update to
      see whether or not your current operating system requires this update.
-     This supplement will be available to the public in March 2003.
+     This supplement will be available to the public in February 2003.
 
    o Ensure that OSS631, the "Graphics, Web and X11 Libraries" package is
      installed.  This ships standard with release 5.0.7 and later, and is
-     only required for 5.0.6 users.  This package will be updated fairly fre-
-     quently, and it us always suggested you have the latest possible version
-     installed.  At some point in the future it may even update the libraries
-     in 5.0.7, so it is worth checking the release notes for this supplement.
+     only required for 5.0.[456] users.  This package will be updated fairly
+     frequently, and it us always suggested you have the latest possible ver-
+     sion installed.  At some point in the future it may even update the
+     libraries in 5.0.7, so it is worth checking the release notes for this
+     supplement.
 
    o To compile XFree86, you must use the SCO-supported version of the GNU C
      Compiler.  It is possible that Skunkware versions of the compiler will
@@ -87,12 +88,11 @@ The SCO xterm terminfo description is not compatible with the xterm in the R5
 distribution.
 
 To use a Bus/Keyboard or PS2 mouse you should configure the mouse drivers
-under SCO as above using 'mkdev mouse'.  You may then use the OsMouse option
-in your XF86Config to specify that XFree86 should use the SCO mouse drivers.
-To do this, set the Protocol to "OsMouse" in the Pointer section of your
-XF86Config file.  You can also use "OsMouse" for your serial mouse, espe-
-cially if you are having trouble getting your mouse to work using the XFree86
-mouse drivers.
+using 'mkdev mouse'.  You may then use the OsMouse option in your XF86Config
+to specify that XFree86 should use the SCO mouse drivers.  To do this, set
+the Protocol to "OsMouse" in the Pointer section of your XF86Config file.
+You can also use "OsMouse" for your serial mouse, especially if you are hav-
+ing trouble getting your mouse to work using the XFree86 mouse drivers.
 
 4.  Switching Consoles
 
@@ -137,7 +137,7 @@ server will also accept connections from XFree86 binaries. This means you may
 mix and match the two if you have ODT.  For example you may still use the
 Panning Motif window manager (pmwm) if you prefer.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.21 2002/11/20 23:00:42 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.22 2003/02/17 18:58:07 dawes Exp $
 
 
 $XFree86: $

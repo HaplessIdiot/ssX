@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               4 February 2003
+                              17 February 2003
 
                                   Abstract
 
@@ -73,7 +73,7 @@ developers monitor this list.
 If you have any new work or enhancements/bug fixes for existing work, please
 submit them to <fixes@XFree86.org>.  This will ensure that they are included
 in future releases.  For new work, it's usually a good idea to discuss it
-first on the <XFree86@XFree86.org> list.
+first on the <devel@XFree86.org> list.
 
 5.  How to get XFree86 4.2.99.902
 
@@ -100,7 +100,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.126 2003/02/16 17:21:11 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.127 2003/02/17 15:16:22 dawes Exp $
 
 
 $XFree86: $
