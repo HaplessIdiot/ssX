@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.6 1999/05/23 04:26:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.7 1999/06/05 15:55:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -25,6 +25,7 @@ typedef enum {
     PROT_ACECAD,
     PROT_PS2,
     PROT_IMPS2,
+    PROT_EXPPS2,
     PROT_THINKPS2,
     PROT_MMPS2,
     PROT_GLIDEPS2,

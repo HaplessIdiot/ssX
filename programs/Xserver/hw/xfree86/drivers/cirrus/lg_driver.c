@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.15 2000/01/18 16:35:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.19 2000/02/08 13:13:15 eich Exp $ */
 
 #define EXPERIMENTAL
 
@@ -292,9 +292,8 @@ lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
 			  int10Symbols, NULL);
-
     }
-	return (pointer)1;
+    return (pointer)1;
 }
 
 #endif /* XFree86LOADER */

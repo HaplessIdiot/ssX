@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.21 1999/11/19 13:54:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.24 2000/02/08 13:13:22 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -75,7 +75,7 @@ static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 
 static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons,
-			   int dx, int dy, int dz);
+			   int dx, int dy, int dz, int dw);
 static void MouseReadInput(InputInfoPtr pInfo);
 /* XXX This is temporary. */
 const char * xf86ProtocolIDToName(ProtocolID id);
@@ -180,6 +180,7 @@ static MouseProtocolRec mouseProtocols[] = {
 
     /* Extended PS/2 */
     { "ImPS/2",			MSE_XPS2,	NULL,		PROT_IMPS2 },
+    { "ExplorerPS/2",		MSE_XPS2,	NULL,		PROT_EXPPS2 },
     { "ThinkingMousePS/2",	MSE_XPS2,	NULL,		PROT_THINKPS2 },
     { "MouseManPlusPS/2",	MSE_XPS2,	NULL,		PROT_MMPS2 },
     { "GlidePointPS/2",		MSE_XPS2,	NULL,		PROT_GLIDEPS2 },
@@ -360,27 +361,42 @@ MouseCommonOptions(InputInfoPtr pInfo)
     
     s = xf86SetStrOption(pInfo->options, "ZAxisMapping", NULL);
     if (s) {
-	int b1 = 0, b2 = 0;
+	int b1 = 0, b2 = 0, b3 = 0, b4 = 0;
 	char *msg = NULL;
 
 	if (!xf86NameCmp(s, "x")) {
 	    pMse->negativeZ = pMse->positiveZ = MSE_MAPTOX;
+	    pMse->negativeW = pMse->positiveW = MSE_MAPTOX;
 	    msg = xstrdup("X axis");
 	} else if (!xf86NameCmp(s, "y")) {
 	    pMse->negativeZ = pMse->positiveZ = MSE_MAPTOY;
+	    pMse->negativeW = pMse->positiveW = MSE_MAPTOY;
 	    msg = xstrdup("Y axis");
-	} else if (sscanf(s, "%d %d", &b1, &b2) == 2 &&
+	} else if (sscanf(s, "%d %d %d %d", &b1, &b2, &b3, &b4) >= 2 &&
 		 b1 > 0 && b1 <= MSE_MAXBUTTONS &&
 		 b2 > 0 && b2 <= MSE_MAXBUTTONS) {
-	    pMse->negativeZ = 1 << (b1-1);
-	    pMse->positiveZ = 1 << (b2-1);
-	    if ( b1 > pMse->buttons ) pMse->buttons = b1;
-	    if ( b2 > pMse->buttons ) pMse->buttons = b2;
 	    msg = xstrdup("buttons XX and YY");
 	    if (msg)
 		sprintf(msg, "buttons %d and %d", b1, b2);
+	    pMse->negativeZ = pMse->negativeW = 1 << (b1-1);
+	    pMse->positiveZ = pMse->positiveW = 1 << (b2-1);
+	    if (b3 > 0 && b3 <= MSE_MAXBUTTONS &&
+		b4 > 0 && b4 <= MSE_MAXBUTTONS) {
+		if (msg)
+		    xfree(msg);
+		msg = xstrdup("buttons XX, YY, ZZ and WW");
+		if (msg)
+		    sprintf(msg, "buttons %d, %d, %d and %d", b1, b2, b3, b4);
+		pMse->negativeW = 1 << (b3-1);
+		pMse->positiveW = 1 << (b4-1);
+	    }
+	    if ( b1 > pMse->buttons ) pMse->buttons = b1;
+	    if ( b2 > pMse->buttons ) pMse->buttons = b2;
+	    if ( b3 > pMse->buttons ) pMse->buttons = b3;
+	    if ( b4 > pMse->buttons ) pMse->buttons = b4;
 	} else {
 	    pMse->negativeZ = pMse->positiveZ = MSE_NOZMAP;
+	    pMse->negativeW = pMse->positiveW = MSE_NOZMAP;
 	}
 	if (msg) {
 	    xf86Msg(X_CONFIG, "%s: ZAxisMapping: %s\n", pInfo->name, msg);
@@ -551,11 +567,12 @@ static unsigned char proto[PROT_NUMPROTOS][8] = {
   {  0x80, 0x80, 0x80, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* ACECAD */
 							    /* PS/2 variants */
   {  0xc0, 0x00, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* PS/2 mouse */
-  {  0xc0, 0x00, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* IntelliMouse */
+  {  0x08, 0x00, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* IntelliMouse */
+  {  0x08, 0x00, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* Explorer */
   {  0x80, 0x80, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* ThinkingMouse */
   {  0x08, 0x08, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* MouseMan+ */
   {  0xc0, 0x00, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* GlidePoint */
-  {  0xc0, 0x00, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* NetMouse */
+  {  0x08, 0x00, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* NetMouse */
   {  0xc0, 0x00, 0x00, 0x00,  6,   0x00, 0xff, MPF_NONE },  /* NetScroll */
 							    /* Bus Mouse */
   {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, MPF_NONE },  /* BusMouse */
@@ -843,6 +860,15 @@ SetupMouse(InputInfoPtr pInfo)
 	}
 	break;
 
+    case PROT_EXPPS2:		/* IntelliMouse Explorer */
+	{
+	    static unsigned char s[] = { 243, 200, 243, 200, 243, 80, };
+
+	    param = s;
+	    paramlen = sizeof(s);
+	}
+	break;
+
     case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
     case PROT_NETSCPS2:		/* NetScroll */
 	{
@@ -957,7 +983,7 @@ static void
 MouseReadInput(InputInfoPtr pInfo)
 {
     MouseDevPtr pMse;
-    int j, buttons, dx, dy, dz, baddata;
+    int j, buttons, dx, dy, dz, dw, baddata;
     int pBufP;
     int c;
     unsigned char *pBuf, u;
@@ -1030,7 +1056,7 @@ MouseReadInput(InputInfoPtr pInfo)
 #ifdef EXTMOUSEDEBUG
 		ErrorF("mouse 4th byte %02x",u);
 #endif
-		dx = dy = dz = 0;
+		dx = dy = dz = dw = 0;
 		buttons = 0;
 		switch (pMse->protocolID) {
 
@@ -1047,6 +1073,8 @@ MouseReadInput(InputInfoPtr pInfo)
 					   MouseMan+ */
 		    dz = (u & 0x08) ?
 				(u & 0x0f) - 16 : (u & 0x0f);
+		    if ((dz >= 7) || (dz <= -7))
+			dz = 0;
 		    buttons |=  ((int)(u & 0x10) >> 3)
 			      | ((int)(u & 0x20) >> 2) 
 			      | (pMse->lastButtons & 0x05);
@@ -1166,7 +1194,7 @@ MouseReadInput(InputInfoPtr pInfo)
 	 * Packet complete and verified, now process it ...
 	 */
 
-	dz = 0;
+	dz = dw = 0;
 	switch (pMse->protocolID) {
 	case PROT_LOGIMAN:	/* MouseMan / TrackMan   [CHRIS-211092] */
 	case PROT_MS:		/* Microsoft */
@@ -1240,10 +1268,25 @@ MouseReadInput(InputInfoPtr pInfo)
 	case PROT_NETPS2:	/* NetMouse PS/2 */
 	    buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
 		      (pBuf[0] & 0x02) >> 1 |       /* Right */
-		      (pBuf[0] & 0x01) << 2;        /* Left */
+		      (pBuf[0] & 0x01) << 2 |       /* Left */
+		      (pBuf[0] & 0x40) >> 3 |       /* button 4 */
+		      (pBuf[0] & 0x80) >> 3;        /* button 5 */
 	    dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
 	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
 	    dz = (char)pBuf[3];
+	    if ((dz >= 7) || (dz <= -7))
+		dz = 0;
+	    break;
+
+	case PROT_EXPPS2:	/* IntelliMouse Explorer PS/2 */
+	    buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
+		      (pBuf[0] & 0x02) >> 1 |       /* Right */
+		      (pBuf[0] & 0x01) << 2 |       /* Left */
+		      (pBuf[3] & 0x10) >> 1 |       /* button 4 */
+		      (pBuf[3] & 0x20) >> 1;        /* button 5 */
+	    dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
+	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
+	    dz = (pBuf[3] & 0x08) ? (pBuf[3] & 0x0f) - 16 : (pBuf[3] & 0x0f);
 	    break;
 
 	case PROT_MMPS2:	/* MouseMan+ PS/2 */
@@ -1263,8 +1306,19 @@ MouseReadInput(InputInfoPtr pInfo)
 		    dz = (pBuf[2] & 0x08) ? (pBuf[2] & 0x0f) - 16 :
 					    (pBuf[2] & 0x0f);
 		    break;
+		case 2:		/* Logitech reserves this packet type */
+		    /* 
+		     * IBM ScrollPoint uses this packet to encode its
+		     * stick movement.
+		     */
+		    buttons |= (pMse->lastButtons & ~0x07);
+		    dx = dy = 0;
+		    dz = (pBuf[2] & 0x80) ? ((pBuf[2] >> 4) & 0x0f) - 16 :
+					    ((pBuf[2] >> 4) & 0x0f);
+		    dw = (pBuf[2] & 0x08) ? (pBuf[2] & 0x0f) - 16 :
+					    (pBuf[2] & 0x0f);
+		    break;
 		case 0:		/* device type packet - shouldn't happen */
-		case 2:		/* reserved packet - shouldn't happen */
 		default:
 		    buttons |= (pMse->lastButtons & ~0x07);
 		    dx = dy = 0;
@@ -1291,7 +1345,8 @@ MouseReadInput(InputInfoPtr pInfo)
 	    buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
 		      (pBuf[0] & 0x02) >> 1 |       /* Right */
 		      (pBuf[0] & 0x01) << 2 |       /* Left */
-		      ((pBuf[3] & 0x02) ? 0x08 : 0);/* fourth button */
+		      ((pBuf[3] & 0x02) ? 0x08 : 0) | /* button 4 */
+		      ((pBuf[3] & 0x01) ? 0x10 : 0);  /* button 5 */
 	    dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
 	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
 	    dz = (pBuf[3] & 0x10) ? pBuf[4] - 256 : pBuf[4];
@@ -1333,7 +1388,7 @@ MouseReadInput(InputInfoPtr pInfo)
 
 post_event:
 	/* post an event */
-	pMse->PostEvent(pInfo, buttons, dx, dy, dz);
+	pMse->PostEvent(pInfo, buttons, dx, dy, dz, dw);
 
 	/* 
 	 * We don't reset pBufP here yet, as there may be an additional data
@@ -1494,7 +1549,7 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
     pMse = pInfo->private;
 
     sigstate = xf86BlockSIGIO ();
-    pMse->PostEvent(pInfo, pMse->truebuttons, 0, 0, 0);
+    pMse->PostEvent(pInfo, pMse->truebuttons, 0, 0, 0, 0);
     xf86UnblockSIGIO (sigstate);
     return 0;
 }
@@ -1679,7 +1734,7 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 }
 
 static void
-MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz)
+MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz, int dw)
 {
     MouseDevPtr pMse;
     int zbutton = 0;
@@ -1705,9 +1760,14 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz)
 	}
 	break;
     default:	/* buttons */
-	buttons &= ~(pMse->negativeZ | pMse->positiveZ);
-	if (dz < 0)
+	buttons &= ~(pMse->negativeZ | pMse->positiveZ
+		   | pMse->negativeW | pMse->positiveW);
+	if (dw < 0 || dz < -1)
+	    zbutton = pMse->negativeW;
+	else if (dz < 0)
 	    zbutton = pMse->negativeZ;
+	else if (dw > 0 || dz > 1)
+	    zbutton = pMse->positiveW;
 	else if (dz > 0)
 	    zbutton = pMse->positiveZ;
 	buttons |= zbutton;

@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_mouse.c,v 1.1 1999/12/27 00:45:48 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_mouse.c,v 1.2 2000/01/21 02:30:06 dawes Exp $
  */
 
 /* This module contains the qnx-specific functions to access the keyboard
@@ -82,7 +82,7 @@ OsMouseReadInput(InputInfoPtr pInfo)
 			col = events[i].dx;
 			row = -events[i].dy;
 			buttons = events[i].buttons; 
-			pMse->PostEvent(pInfo, buttons, col, row, 0);
+			pMse->PostEvent(pInfo, buttons, col, row, 0, 0);
 			}
 		xf86Info.inputPending = TRUE;
 		}
