@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.2 2001/02/08 00:55:40 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -101,5 +101,4 @@ LinkSourceFile(raster.c,$(FREETYPESRC)/raster)
 LinkSourceFile(smooth.c,$(FREETYPESRC)/smooth)
 LinkSourceFile(winfnt.c,$(FREETYPESRC)/winfonts)
 
-
-DependTarget()
+DependSubdirs($(SUBDIRS))

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/freetype/Imakefile,v 1.1 2001/02/08 00:55:41 keithp Exp $
+XCOMM $XFree86: xc/lib/freetype2/freetype/Imakefile,v 1.2 2001/02/09 00:35:03 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -54,3 +54,5 @@ LinkSourceFile(t1tables.h,$(FREETYPEINC))
 LinkSourceFile(ttnameid.h,$(FREETYPEINC))
 LinkSourceFile(tttables.h,$(FREETYPEINC))
 LinkSourceFile(tttags.h,$(FREETYPEINC))
+
+DependSubdirs($(SUBDIRS))
