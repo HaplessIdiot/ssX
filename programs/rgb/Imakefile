@@ -1,10 +1,10 @@
 XCOMM $XConsortium: Imakefile,v 1.31 94/12/08 02:28:20 kaleb Exp $
-XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.1 1994/12/10 02:56:16 dawes Exp $
+XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.2 1995/01/28 16:16:16 dawes Exp $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT
 #else
-      RGB_PROG = rgb
+      RGB_PROG = ProgramTargetName(rgb)
 #endif
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
@@ -19,7 +19,7 @@ XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.1 1994/12/10 02:56:16 dawes Exp $
         OBJS2 = showrgb.o
          SRCS = $(SRCS1) $(SRCS2)
          OBJS = $(OBJS1) $(OBJS2)
-     PROGRAMS = $(RGB_PROG) showrgb
+     PROGRAMS = $(RGB_PROG) ProgramTargetName(showrgb)
 #if !UseRgbTxt
 #ifdef BSD386Architecture
     DATAFILES = rgb.db

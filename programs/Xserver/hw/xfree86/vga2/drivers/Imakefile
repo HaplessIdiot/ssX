@@ -1,13 +1,23 @@
 XCOMM $XConsortium: Imakefile,v 1.3 95/01/06 20:58:21 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/Imakefile,v 3.3 1994/12/25 12:33:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/Imakefile,v 3.5 1995/01/28 17:06:54 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
 SUBDIRS = XF86Vga2Drivers
 
+#ifndef OS2Architecture
 SRCS = */?*.c 
 
 OBJS = */?*_drv.o 
+#else
+SRCS = ati/?*.c cirrus/?*.c cl64xx/?*.c compaq/?*.c et3000/?*.c \
+       et4000/?*.c generic/?*.c gvga/?*.c ncr77c22/?*.c oak/?*.c \
+       pvga1/?*.c tvga8900/?*.c
+
+OBJS = ati/?*_drv.o cirrus/?*_drv.o cl64xx/?*_drv.o compaq/?*_drv.o \
+       et3000/?*_drv.o et4000/?*_drv.o generic/?*_drv.o gvga/?*_drv.o \
+       ncr77c22/?*_drv.o oak/?*_drv.o pvga1/?*_drv.o tvga8900/?*_drv.o
+#endif
 
 NormalDepLibraryTarget(driver2,$(SUBDIRS),$(OBJS))
 

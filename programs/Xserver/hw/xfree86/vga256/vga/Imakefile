@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.4 95/01/26 15:41:36 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.4 1995/01/26 02:21:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.6 1995/01/28 17:09:54 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -35,7 +35,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgatile32C.o vgatile32G.o \
 	 vgatileoddC.o vgatileoddG.o \
 	 vgafillsp.o vgasetsp.o \
-	 vgapntwin.o vgapwinS.o vgaBitBlt.o \
+	 vgapntwin.o vgapwinS.o vgaBitBlt1.o \
 	 vgazerarcC.o vgazerarcX.o vgazerarcG.o \
 	 vgafillarcC.o vgafillarcG.o \
 	 vgategblt.o vgabstore.o vga8cppl.o \
@@ -82,8 +82,8 @@ ObjectFromSpecialSource(vgaBanks,../enhanced/gBanks,NullParameter)
 LinkSourceFile(fBitBlt.s,../enhanced)
 LinkSourceFile(fFill.s,../enhanced)
 LinkSourceFile(fFillSet.s,../enhanced)
+LinkFile(vgaBitBlt1.c,../enhanced/vgaBitBlt.c)
 LinkSourceFile(SpeedUpBlt.c,../enhanced)
-LinkSourceFile(vgaBitBlt.c,../enhanced)
 LinkSourceFile(vgaFasm.h,../enhanced)
 
 ObjectFromSpecialSource(vgaseg,vgaline,-DPOLYSEGMENT)

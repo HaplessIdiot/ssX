@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.2 1994/12/17 09:32:44 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -10,9 +10,14 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
  */
 #ifdef __EMX__
 
-#define BootstrapCFlags   -DNOSTDHDRS -DBSD43
-#define StandardDefines   -DNOSTDHDRS
-#define XawI18nDefines     -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+/* set this to what you like (almost :-) 
+ * OS/2 does a nonstandard bootstrap of imake 
+ */
+#define BootstrapCFlags   -DBSD43
+
+/* X_WCHAR and X_LOCALE are set in Xosdefs.h */
+#define StandardDefines   /**/
+#define XawI18nDefines    -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 /* Set the following to the path where the emx *.lib files are! 
  * The following is a correct path:
@@ -25,9 +30,13 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
  * will add the environment variable X11ROOT to the search path
  * so you can redirect the stuff to a different drive
  */
+#ifdef ProjectRoot
+#undef ProjectRoot
+#endif
 #define ProjectRoot /XFree86
 
 /* more directories */
+#define AdmDir		$(LIBDIR)/adm
 #define XAppLoadDir	$(LIBDIR)/app_defs
 
 
@@ -35,9 +44,9 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 
-#define BuildPexExt	NO
+#define BuildPexExt	YES
 #define BuildXInputExt	NO
-#define BuildXIE	NO
+#define BuildXIE	YES
 #define BuildXKB	NO
 /* OS/2 bash implementation (or even OS/2 itself) has a bug preventing
  * proper make clean/include/depend/all in deeper Xfree86 dirs. The following
@@ -64,6 +73,12 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
 # define HasShm          	NO
 #endif
 #define ConnectionFlags		-DTCPCONN
+
+/* set to YES if you have MASM 6.0
+ * ATTENTION: if you have no MASM 6.0, you need UUDECODE, because
+ * there are precompiled versions of certain object files
+ */
+#define HasMasm			NO
 
 /*
  * Compiler Features
@@ -94,9 +109,9 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
 #define PreIncDir	/emx/include
 
 #define CcCmd	gcc
-#define DefaultCCOptions	-Zmtd
-#define LibraryCCOptions	-Zmtd
-#define ServerCCOptions		-Zmtd 
+#define DefaultCCOptions	-Zmtd -Zsysv-signals
+#define LibraryCCOptions	-Zmtd -Zsysv-signals
+#define ServerCCOptions		-Zmtd -Zsysv-signals
 
 #define AsCmd	gcc -S
 #define GccGasOption	-DGCCUSESGAS
@@ -106,13 +121,14 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
 
 #define LdCmd	ld
 #define ExtraLoadFlags	/**/
-#define ExtraLibraries	/emx/lib/binmode.Osuf -lnet -lbsd
+#define ExtraLibraries	/emx/lib/binmode.Osuf -lsocket -lbsd
+#define ServerExtraSysLibs -lemxio
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
  */
 #define CplusplusCmd	g++
-#define ArCmd	ar cr
+#define ArCmd	ar crJ
 #define RanlibCmd	ar s
 #define BourneShell	/**/
 #define LexCmd	flex -l
@@ -131,6 +147,9 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
 #define DependCmd \makedepend
 #endif
 
+/* "shell scripts" in OS/2 have this extension */
+#define SHsuf cmd
+
 #define InstPgmFlags /**/
 #define InstBinFlags /**/
 #define InstUidFlags /**/
@@ -148,7 +167,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.1 1994/11/19 07:32:28 dawes E
 # define ServerOSDefines 	/**/
 #endif
 #ifdef i386Architecture
-#define ServerExtraDefines GccGasOption XFree86ServerDefines
+#define ServerExtraDefines -DUSE_OSMOUSE GccGasOption XFree86ServerDefines
 #else
 #define ServerExtraDefines GccGasOption
 #endif
@@ -215,9 +234,7 @@ XCOMM imake rules.
 #include <os2.rules>
 #include <os2Lib.rules>
 
-#ifdef i386Architecture
 # include <xfree86.cf>
-#endif
 
 #else
 #error You must edit os2.cf for your (non-EMX) OS/2 dev system

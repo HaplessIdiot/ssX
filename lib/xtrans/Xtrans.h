@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.h,v 1.28 94/10/18 15:57:42 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.2 1994/06/09 10:45:58 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.3 1995/01/12 05:54:17 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -153,7 +153,7 @@ typedef long BytesReadable_t;
 #endif
 
 
-#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__)) || defined(MINIX)
+#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__)) || defined(MINIX) || defined(__EMX__)
 
 /*
  *      TRANS(Readv) and TRANS(Writev) use struct iovec, normally found

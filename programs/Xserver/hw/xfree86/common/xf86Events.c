@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.10 1995/01/28 17:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.11 1995/03/04 08:41:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -329,8 +329,13 @@ ProcessInputEvents ()
  * xf86PostKbdEvent --
  *	Translate the raw hardware KbdEvent into an XEvent, and tell DIX
  *	about it. Scancode preprocessing and so on is done ...
+ *
+ *  OS/2 specific xf86PostKbdEvent(key) has been moved to os-support/os2/os2_kbd.c
+ *  as some things differ, and I did not want to scatter this routine with
+ *  ifdefs further (hv).
  */
 
+#if !defined(__EMX__)
 void
 xf86PostKbdEvent(key)
      unsigned key;
@@ -826,8 +831,7 @@ xf86PostKbdEvent(key)
 
   if (updateLeds) xf86KbdLeds();
 }
-
-
+#endif /* !__EMX__ */
 
 
 /*      

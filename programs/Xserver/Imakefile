@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.192 95/01/25 20:37:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.30 1995/01/28 15:44:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.31 1995/03/06 14:35:29 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -32,33 +32,33 @@ INSTPGMFLAGS =
 #define CFB32Libs PreFbLibs $(CFB32) PostFbLibs
 
 #if BuildPexExt
-         PEXLIBS = PEX5/dipex/dispatch/libdidipex.a \
-                   PEX5/dipex/swap/libdiswapex.a \
-                   PEX5/dipex/objects/libdiobpex.a \
-                   PEX5/dipex/dispatch/libdidipex.a \
-                   PEX5/ddpex/mi/level4/libddpex4.a \
-                   PEX5/ddpex/mi/level3/libddpex3.a \
-                   PEX5/ddpex/mi/shared/libddpexs.a \
-                   PEX5/ddpex/mi/level2/libddpex2.a \
-                   PEX5/ddpex/mi/level1/libddpex1.a \
-		   PEX5/ospex/libospex.a 
+         PEXLIBS = PEX5/dipex/dispatch/LibraryTargetName(didipex) \
+                   PEX5/dipex/swap/LibraryTargetName(diswapex) \
+                   PEX5/dipex/objects/LibraryTargetName(diobpex) \
+                   PEX5/dipex/dispatch/LibraryTargetName(didipex) \
+                   PEX5/ddpex/mi/level4/LibraryTargetName(ddpex4) \
+                   PEX5/ddpex/mi/level3/LibraryTargetName(ddpex3) \
+                   PEX5/ddpex/mi/shared/LibraryTargetName(ddpexs) \
+                   PEX5/ddpex/mi/level2/LibraryTargetName(ddpex2) \
+                   PEX5/ddpex/mi/level1/LibraryTargetName(ddpex1) \
+		   PEX5/ospex/LibraryTargetName(ospex) 
           PEXDIR = PEX5
 #endif
 #if BuildXInputExt
-      XINPUTEXT = Xi/libxinput.a
+      XINPUTEXT = Xi/LibraryTargetName(xinput)
           XIDIR = Xi
 #endif
 #if BuildXIE
-      XIEEXT = XIE/dixie/libdixie.a XIE/mixie/libmixie.a 
+      XIEEXT = XIE/dixie/LibraryTargetName(dixie) XIE/mixie/LibraryTargetName(mixie) 
       XIEDIR = XIE
 #endif
 #if BuildXKB
-      XKBEXT = xkb/libxkb.a
+      XKBEXT = xkb/LibraryTargetName(xkb)
       XKBDIR = xkb
 #endif
 #if BuildLBX
-         LBXEXT = $(TOP)/workInProgress/lbx/programs/Xserver/lbx/liblbx.a \
-                  $(TOP)/workInProgress/lbx/lib/lbxutil/liblbxutil.a
+         LBXEXT = $(TOP)/workInProgress/lbx/programs/Xserver/lbx/LibraryTargetName(lbx) \
+                  $(TOP)/workInProgress/lbx/lib/lbxutil/LibraryTargetName(lbxutil)
         LBXDIRS = $(TOP)/workInProgress/lbx/programs/Xserver/lbx \
                   $(TOP)/workInProgress/lbx/lib/lbxutil
 #endif
@@ -74,22 +74,22 @@ INSTPGMFLAGS =
      SITEEXTDIRS = SiteExtensionDirs
 #endif
 
-      OTHEREXTS = Xext/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
+      OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
                   $(LBXEXT) $(SITEEXTS)
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
                   $(LBXDIRS) $(SITEEXTDIRS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
-         XAULIB = $(XAUTHSRC)/libXau.a
-       XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
-             OS = os/libos.a $(XAULIB) $(XDMCPLIB)
+         XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
+       XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
+             OS = os/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(DEPXBSDLIB)
-            MFB = mfb/libmfb.a
-            CFB = cfb/libcfb.a cfb16/libcfb.a cfb32/libcfb.a
-            CFB8 = cfb/libcfb.a
-            CFB16 = cfb/libcfb.a cfb16/libcfb.a
-            CFB32 = cfb/libcfb.a cfb32/libcfb.a
-             MI = mi/libmi.a
-            DIX = dix/libdix.a
+            MFB = mfb/LibraryTargetName(mfb)
+            CFB = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
+            CFB8 = cfb/LibraryTargetName(cfb)
+            CFB16 = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb)
+            CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
+             MI = mi/LibraryTargetName(mi)
+            DIX = dix/LibraryTargetName(dix)
            FONT = $(DEPFONTLIB)
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
@@ -99,7 +99,7 @@ INSTPGMFLAGS =
 #else
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
-           CBRT = mi/libcbrt.a
+           CBRT = mi/LibraryTargetName(cbrt)
         STDDIRS = include dix os mi $(EXTDIRS)
 
 XCOMM
@@ -440,11 +440,14 @@ CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
 XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o
-XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(XF86SRC)/vga256/libvga256.a $(XF86LIBS) CFBLibs
+XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) $(XF86SRC)/vga256/LibraryTargetName(vga256) $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),$(XF86SVGASYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_SVGA
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_SVGA.def,SVGA.def)
 #endif
 #endif	/* XF86SVGAServer */
 
@@ -456,17 +459,20 @@ XCOMM
 DDXDIR1 = hw/xfree86
 #if XF86VGA16DualServer
 XF86VGA16MONOOBJS = $(XF86SRC)/mono/monoConf.o
-XF86VGA16MONOLIBS = $(MONODRIVERSRC)/libmonodrv.a $(XF86SRC)/mono/libmono.a
+XF86VGA16MONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) $(XF86SRC)/mono/LibraryTargetName(mono)
 #endif
 XF86VGA16SUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
                 $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
-XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(XF86SRC)/vga16/libvga16.a \
+XF86VGA16LIBS = $(VGA16DRIVERSRC)/LibraryTargetName(driver16) $(XF86SRC)/vga16/LibraryTargetName(vga16) \
                 $(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86VGA16SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LIBS),$(XF86VGA16SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_VGA16
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_VGA16.def,VGA16.def)
 #endif
 #endif	/* XF86VGA16Server */
 
@@ -479,11 +485,14 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF86W32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86W32OBJS = $(XF86COMSRC)/XF86_W32.o $(XF86ACCELSRC)/et4000w32/w32Conf.o
-XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/cfb.w32/libcfb.a $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/asm/libasm.a $(XF86LIBS) CFB8Libs
+XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) $(XF86ACCELSRC)/et4000w32/cfb.w32/LibraryTargetName(cfb) $(XF86ACCELSRC)/et4000w32/w32/LibraryTargetName(w32) $(XF86ACCELSRC)/et4000w32/asm/LibraryTargetName(asm) $(XF86LIBS) CFB8Libs
 XF86W32SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_W32
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_W32.def,W32.def)
 #endif
 #endif
 
@@ -494,17 +503,20 @@ XCOMM
 DDXDIR1 = hw/xfree86
 #if XF86MonoDualServer
 XF86MONOMONOOBJS = $(XF86SRC)/mono/monoConf.o
-XF86MONOMONOLIBS = $(MONODRIVERSRC)/libmonodrv.a $(XF86SRC)/mono/libmono.a
+XF86MONOMONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) $(XF86SRC)/mono/LibraryTargetName(mono)
 #endif
 XF86MONOSUBDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86MONOOBJS = $(XF86COMSRC)/XF86_Mono.o $(XF86SRC)/vga2/vga2Conf.o \
                $(XF86SRC)/vga2/misc/vga2misc.o $(XF86MONOMONOOBJS)
-XF86MONOLIBS = $(VGA2DRIVERSRC)/libdriver2.a $(XF86SRC)/vga2/libvga2.a \
+XF86MONOLIBS = $(VGA2DRIVERSRC)/LibraryTargetName(driver2) $(XF86SRC)/vga2/LibraryTargetName(vga2) \
 	       $(XF86MONOMONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86MONOSYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_Mono,$(XF86MONOSUBDIRS),$(XF86MONOOBJS),$(XF86MONOLIBS),$(XF86MONOSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mono
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_Mono.def,Mono.def)
 #endif
 #endif	/* XF86MonoServer */
 
@@ -520,11 +532,14 @@ CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
 XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o $(S3DRIVERSRC)/mmio_928/mmio_928.o $(S3DRIVERSRC)/s3_generic/s3_generic.o
-XF86S3LIBS = $(XF86ACCELSRC)/s3/libs3.a $(XF86ACCELSRC)/s3/s3mmio/libs3mmio.a $(XF86LIBS) CFBLibs $(XF86ACCELSRC)/cache/libxf86cache.a
+XF86S3LIBS = $(XF86ACCELSRC)/s3/LibraryTargetName(s3) $(XF86ACCELSRC)/s3/s3mmio/LibraryTargetName(s3mmio) $(XF86LIBS) CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF86S3SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_S3,$(XF86S3SUBDIRS),$(XF86S3OBJS),$(XF86S3LIBS),$(XF86S3SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_S3
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_S3.def,S3.def)
 #endif
 #endif	/* XF86S3Server */
 
@@ -538,11 +553,14 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF868514SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF868514OBJS = $(XF86COMSRC)/XF86_8514.o
-XF868514LIBS = $(XF86ACCELSRC)/ibm8514/lib8514.a $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/libxf86cache.a
+XF868514LIBS = $(XF86ACCELSRC)/ibm8514/LibraryTargetName(8514) $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF868514SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_8514,$(XF868514SUBDIRS),$(XF868514OBJS),$(XF868514LIBS),$(XF868514SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_8514
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_8514.def,8514.def)
 #endif
 #endif	/* XF86I8514Server */
 
@@ -556,11 +574,14 @@ CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 XF86MACH8SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86MACH8OBJS = $(XF86COMSRC)/XF86_Mach8.o
-XF86MACH8LIBS = $(XF86ACCELSRC)/mach8/libmach8.a $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/libxf86cache.a
+XF86MACH8LIBS = $(XF86ACCELSRC)/mach8/LibraryTargetName(mach8) $(XF86LIBS) CFB8Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF86MACH8SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_Mach8,$(XF86MACH8SUBDIRS),$(XF86MACH8OBJS),$(XF86MACH8LIBS),$(XF86MACH8SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mach8
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_Mach8.def,Mach8.def)
 #endif
 #endif	/* XF86Mach8Server */
 
@@ -575,11 +596,14 @@ CFB16DIR = cfb16
 DDXDIR1  = hw/xfree86
 XF86MACH32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(DDXDIR1) $(DEPDIRS)
 XF86MACH32OBJS = $(XF86COMSRC)/XF86_Mach32.o
-XF86MACH32LIBS = $(XF86ACCELSRC)/mach32/libmach32.a $(XF86LIBS) CFB16Libs $(XF86ACCELSRC)/cache/libxf86cache.a
+XF86MACH32LIBS = $(XF86ACCELSRC)/mach32/LibraryTargetName(mach32) $(XF86LIBS) CFB16Libs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF86MACH32SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH32LIBS),$(XF86MACH32SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mach32
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_Mach32.def,Mach32.def)
 #endif
 #endif	/* XF86Mach32Server */
 
@@ -595,11 +619,14 @@ CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
 XF86MACH64SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86MACH64OBJS = $(XF86COMSRC)/XF86_Mach64.o
-XF86MACH64LIBS = $(XF86ACCELSRC)/mach64/libmach64.a $(XF86LIBS) CFBLibs
+XF86MACH64LIBS = $(XF86ACCELSRC)/mach64/LibraryTargetName(mach64) $(XF86LIBS) CFBLibs
 XF86MACH64SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_Mach64,$(XF86MACH64SUBDIRS),$(XF86MACH64OBJS),$(XF86MACH64LIBS),$(XF86MACH64SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mach64
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_Mach64.def,Mach64.def)
 #endif
 #endif	/* XF86Mach64Server */
 
@@ -615,11 +642,14 @@ CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
 XF86P9000SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86P9000OBJS = $(XF86COMSRC)/XF86_P9000.o
-XF86P9000LIBS = $(XF86ACCELSRC)/p9000/libp9000.a $(XF86LIBS) CFBLibs
+XF86P9000LIBS = $(XF86ACCELSRC)/p9000/LibraryTargetName(p9000) $(XF86LIBS) CFBLibs
 XF86P9000SYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_P9000,$(XF86P9000SUBDIRS),$(XF86P9000OBJS),$(XF86P9000LIBS),$(XF86P9000SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_P9000
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_P9000.def,P9000.def)
 #endif
 #endif        /* XF86P9000Server */
 
@@ -633,11 +663,14 @@ CFB8DIR  = cfb
 DDXDIR1  = hw/xfree86
 XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86AGXOBJS = $(XF86COMSRC)/XF86_AGX.o
-XF86AGXLIBS = $(XF86ACCELSRC)/agx/libagx.a $(XF86LIBS) CFB8Libs
+XF86AGXLIBS = $(XF86ACCELSRC)/agx/LibraryTargetName(agx) $(XF86LIBS) CFB8Libs
 XF86AGXSYSLIBS = $(SYSLIBS)
 SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF86AGXSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XF86_AGX
+#endif
+#ifdef OS2Architecture
+LinkFile(XF86_AGX.def,AGX.def)
 #endif
 #endif        /* XF86AGXServer */
 
@@ -649,7 +682,7 @@ XCOMM
 XNESTDDXDIR = hw/xnest
 XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
 XNESTOBJS = 
-XNEST = hw/xnest/libxnest.a
+XNEST = hw/xnest/LibraryTargetName(xnest)
 XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS) $(XNEST)
 XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(SYSLIBS)
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))

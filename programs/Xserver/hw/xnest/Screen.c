@@ -1,4 +1,5 @@
 /* $XConsortium: Screen.c,v 1.4 94/02/06 17:52:40 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -29,10 +30,15 @@ is" without express or implied warranty.
 #include "Display.h"
 #include "Screen.h"
 #include "Args.h"
+#ifdef __EMX__
+#include "GC1.h"
+#include "Font1.h"
+#else
 #include "GC.h"
+#include "Font.h"
+#endif
 #include "GCOps.h"
 #include "Drawable.h"
-#include "Font.h"
 #include "Color.h"
 #include "Cursor.h"
 #include "Visual.h"

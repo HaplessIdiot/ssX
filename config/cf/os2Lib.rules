@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.0 1994/10/20 06:00:12 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -76,7 +76,7 @@ install:: libname.dll libname.a						@@\
         EMXIMP = emximp
         EMXOMF = emxomf
           SHLD = gcc -Zomf -Zdll -Zmtd
-     SHADDLIBS = -lbsd -lnet -lcdll
+     SHADDLIBS = -lbsd -lsocket -lc_import
 #ifndef BuildDllSupportLibs
 #ifdef UseInstalled
 #define BuildDllSupportLibs(slib) $(_NULLCMD_)
@@ -127,7 +127,7 @@ AllTarget(libname.dll)							@@\
 link.rsp: Concat3(libname,os2,.rsp)					@@\
 	@echo $(EMXLIBPATH)"\\dll0.obj+" >link.rsp			@@\
 	@cat Concat3(libname,os2,.rsp) >>link.rsp			@@\
-	@echo $(EMXLIBPATH)\\ $(REQUIREDLIBS) net bsd cdll os2 emx2 >>link.rsp	@@\
+	@echo $(EMXLIBPATH)\\mt\\ $(EMXLIBPATH)\\ $(REQUIREDLIBS) bsd socket c_import os2 emx2 >>link.rsp	@@\
 	@echo Concat3(libname,os2,.def) >>link.rsp			@@\
 									@@\
 libname.dll:  $(OBJS) link.rsp						@@\

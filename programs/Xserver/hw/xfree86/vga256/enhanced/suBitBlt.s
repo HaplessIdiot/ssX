@@ -1,4 +1,5 @@
 /* $XConsortium: suBitBlt.s,v 1.2 94/03/29 11:19:15 dpw Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
 			Copyr 1992 by Glenn G. Lai 
 
@@ -206,7 +207,7 @@ npRL7:
 	MOV_B	(AL, CONTENT(segment))
 npRL2:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 npRL6:
 	MOV_L	(ESI, EAX)
 	MOV_L	(EDI, EBX)
@@ -294,7 +295,7 @@ npRLPartial3:
 	DEC_B	(AL)
 npRLPartial4:
 	MOV_B	(AL, CONTENT(segment))
-	OUT1_B	(DX)
+	OUT_B
 
 	OR_L	(EBX, EBX)
 	JNZ	(npRLPartial5)
@@ -344,7 +345,7 @@ npUp6:
 	MOV_B	(AL, CONTENT(segment))
 npUp5:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(width, EBX)
 	MOV_L	(CONTENT(GLNAME(vgaReadTop)), EAX)
@@ -427,7 +428,7 @@ npDown6:
 	MOV_B	(AL, CONTENT(segment))
 npDown5:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(CONTENT(speedUpBound), EAX)
 	MOV_L	(CONTENT(speedUpBound), EBX)
@@ -881,7 +882,7 @@ npPartial3:
 	INC_B	(AL)
 npPartial4:
 	MOV_B	(AL, CONTENT(segment))
-	OUT1_B	(DX)
+	OUT_B
 
 	OR_L	(EBX, EBX)
 	JNZ	(npPartial5)
@@ -918,10 +919,10 @@ sWW1:
 pMode:
 	MOV_W	(CONST(0x0604), AX)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x4105), AX)
 	MOV_W	(CONST(0x3ce), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(ESI, EAX)
 	MOV_L	(ADDR(pTable), EBX)
@@ -1021,7 +1022,7 @@ pUp6:
 	MOV_B	(AL, CONTENT(segment))
 pUp5:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(ESI, CONTENT(sM))
 	MOV_L	(EDI, CONTENT(dM))
@@ -1073,12 +1074,12 @@ pUp2:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0c04), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x4005), AX)
 	MOV_W	(CONST(0x3ce), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	POP_L	(EBX)
 	POP_L	(ESI)
@@ -1113,7 +1114,7 @@ pDown6:
 	MOV_B	(AL, CONTENT(segment))
 pDown5:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(ESI, CONTENT(sM))
 	MOV_L	(EDI, CONTENT(dM))
@@ -1156,12 +1157,12 @@ pDown2:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0c04), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x4005), AX)
 	MOV_W	(CONST(0x3ce), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	POP_L	(EBX)
 	POP_L	(ESI)
@@ -1173,7 +1174,7 @@ pDown2:
 pLMR:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(lMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1189,7 +1190,7 @@ pLMR1:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(sM), ESI)
 	MOV_L	(CONTENT(dM), EDI)
@@ -1210,7 +1211,7 @@ pLMR2:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(rMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1237,7 +1238,7 @@ pLMR3:
 pLMRa:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(rMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1255,7 +1256,7 @@ pLMRa3:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(sM), ESI)
 	MOV_L	(CONTENT(dM), EDI)
@@ -1276,7 +1277,7 @@ pLMRa2:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(lMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1296,7 +1297,7 @@ pLMRa1:
 pLM:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(lMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1312,7 +1313,7 @@ pLM1:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(sM), ESI)
 	MOV_L	(CONTENT(dM), EDI)
@@ -1340,7 +1341,7 @@ pLM2:
 pLMa:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	INC_L	(ESI)
 	INC_L	(EDI)
@@ -1359,7 +1360,7 @@ pLMa2:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(lMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1379,7 +1380,7 @@ pLMa1:
 pMR:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pMOffset), EAX)
 	MOV_L	(CONTENT(mCount), EBX)
@@ -1398,7 +1399,7 @@ pMR2:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(rMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1424,7 +1425,7 @@ pMR3:
 pMRa:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONTENT(rMask), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(pLROffset), EAX)
 	MOV_L	(CONTENT(allowance), EDX)
@@ -1441,7 +1442,7 @@ pMRa3:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(CONTENT(sM), ESI)
 	MOV_L	(CONTENT(dM), EDI)
@@ -1486,16 +1487,16 @@ pPartial:
 	JE	(pPartial7)
 pPartial9:
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 	MOVS_B
 	
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	JMP	(pPartial6)
 	ALIGNTEXT4
 pPartial7:
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 pPartial5:
 	MOV_L	(CONTENT(GLNAME(vgaReadTop)), EAX)
 	MOV_L	(CONTENT(GLNAME(vgaWriteTop)), ECX)
@@ -1532,7 +1533,7 @@ pPartial3:
 pPartial4:
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	OR_L	(EBX, EBX)
 	JNZ	(pPartial5)
@@ -1557,12 +1558,12 @@ pPartial8:
 pPartial10:
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0c04), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x4005), AX)
 	MOV_W	(CONST(0x3ce), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	POP_L	(EBX)
 	POP_L	(ESI)

@@ -1,4 +1,5 @@
 /* $XConsortium: Init.c,v 1.2 93/12/13 17:40:05 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -34,8 +35,13 @@ is" without express or implied warranty.
 #include "Init.h"
 #include "Args.h"
 #include "Drawable.h"
+#ifdef __EMX__
+#include "GC1.h"
+#include "Font1.h"
+#else
 #include "GC.h"
 #include "Font.h"
+#endif
 
 Bool xnestDoFullGeneration = True;
 

@@ -1,4 +1,5 @@
 /* $XConsortium: GCOps.c,v 1.7 94/03/31 17:49:50 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -30,8 +31,13 @@ is" without express or implied warranty.
 
 #include "Display.h"
 #include "Screen.h"
+#ifdef __EMX__
+#include "GC1.h"
+#include "Font1.h"
+#else
 #include "GC.h"
 #include "Font.h"
+#endif
 #include "GCOps.h"
 #include "Drawable.h"
 #include "Visual.h"

@@ -1,5 +1,5 @@
 /* $XConsortium: ct_bank.s,v 1.2 95/01/06 20:58:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.1 1995/01/04 04:42:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.2 1995/01/28 16:11:11 dawes Exp $ */
 /*
  * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
@@ -41,10 +41,10 @@ GLNAME(CHIPSSetReadWrite):
 	SHL_B	(CONST(3), AH)
 	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
-	OUT1_W	(DX)			/* Output read bank */
+	OUT_W				/* Output read bank */
 	MOV_B	(CONST(0x11),AL)	/* Put write index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
-	OUT1_W	(DX)			/* Output read bank */
+	OUT_W				/* Output read bank */
 	RET
 
 GLNAME(CHIPSSetWrite):
@@ -52,7 +52,7 @@ GLNAME(CHIPSSetWrite):
 	SHL_B	(CONST(3), AH)
 	MOV_B	(CONST(0x11),AL)	/* Put write index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
-	OUT1_W	(DX)			/* Output read bank */
+	OUT_W				/* Output read bank */
 	RET
 
 GLNAME(CHIPSSetRead):
@@ -60,5 +60,5 @@ GLNAME(CHIPSSetRead):
 	SHL_B	(CONST(3), AH)
 	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
-	OUT1_W	(DX)			/* Output read bank */
+	OUT_W				/* Output read bank */
 	RET

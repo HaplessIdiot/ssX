@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.5 1994/12/17 10:09:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.6 1994/12/29 10:22:01 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -269,7 +269,11 @@ LockServer()
   i = 0;
   haslock = 0;
   while ((!haslock) && (i++ < 3)) {
+#ifndef __EMX__
     haslock = (link(tmp,lock) == 0);
+#else
+    haslock = 0;
+#endif
     if (haslock) {
       /*
        * We're done.

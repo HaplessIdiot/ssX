@@ -1,4 +1,5 @@
 /* $XConsortium: GC.c,v 1.6 94/03/31 17:50:26 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -28,10 +29,18 @@ is" without express or implied warranty.
 #undef GC
 
 #include "Display.h"
+#ifdef __EMX__
+#include "GC1.h"
+#else
 #include "GC.h" 
+#endif
 #include "GCOps.h"
 #include "Drawable.h"
+#ifdef __EMX__
+#include "Font1.h"
+#else
 #include "Font.h"
+#endif
 #include "Color.h"
 
 int xnestGCPrivateIndex;

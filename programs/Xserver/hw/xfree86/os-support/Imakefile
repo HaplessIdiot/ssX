@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:43:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.3 1994/06/05 13:46:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.5 1995/01/28 17:04:13 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -42,6 +42,10 @@ OS_SUBDIR = amoeba
 
 #if defined(MinixArchitecture)
 OS_SUBDIR = minix
+#endif
+
+#if defined(OS2Architecture)
+OS_SUBDIR = os2
 #endif
 
 SUBDIRS = $(OS_SUBDIR) misc

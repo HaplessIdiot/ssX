@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.7 1995/03/04 06:24:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.8 1995/03/08 04:57:37 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -113,7 +113,7 @@ extern int errno;
 #endif
 
 #include <stdio.h>
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(_MINIX) && !defined(__EMX__)
 #include <sys/uio.h>
 #endif
 #include "misc.h"		/* for typedef of pointer */

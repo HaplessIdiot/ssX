@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h,v 1.68 94/04/17 20:25:48 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.0 1994/04/28 12:41:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.1 1994/06/18 16:29:35 dawes Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -151,11 +151,11 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
-#ifndef AMOEBA
+#if !defined(AMOEBA) && !defined(__EMX__)
 #ifndef abs
 #define abs(a) ((a) > 0 ? (a) : -(a))
 #endif
-#else /* AMOEBA */
+#else /* AMOEBA || __EMX__ */
 /* abs() is a function, not a macro; include the file declaring
  * it in case we haven't done that yet.
  */  

@@ -19,11 +19,12 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)compress_lzw.c,v 1.5 1994/03/24 17:55:03 lemke Exp $
+ * $NCDId: @(#)compress_lzw.c,v 1.6 1994/09/01 17:31:04 lemke Exp $
  */
 /* Copyright 1988, 1989, 1990 Network Computing Devices, Inc.  All rights reserved. */
 
-/* $XConsortium: compress_lzw.c,v 1.6 94/03/27 11:54:09 dpw Exp $ */
+/* $XConsortium: compress_lzw.c,v 1.7 94/12/01 20:14:02 mor Exp $ */
+/* $XFree86$ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -41,17 +42,19 @@ extern int errno;
 #include <stdio.h>
 #endif /* NCD */
 #include <sys/types.h>
+#ifndef __EMX__
 #include <sys/uio.h>
+#endif
 #include <sys/param.h>
 #include "lbxbufstr.h"
 
 void LzwFree();
 
 #ifdef LBX_STATS
-extern int lzw_out_compressed;
-extern int lzw_out_plain;
-extern int lzw_in_compressed;
-extern int lzw_in_plain;
+int lzw_out_compressed;
+int lzw_out_plain;
+int lzw_in_compressed;
+int lzw_in_plain;
 #endif
 
 #define BYTESTREAM_DAEMON

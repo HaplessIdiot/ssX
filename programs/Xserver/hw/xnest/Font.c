@@ -1,4 +1,5 @@
 /* $XConsortium: Font.c,v 1.1 93/07/12 15:28:18 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -17,7 +18,11 @@ is" without express or implied warranty.
 #include "Xproto.h"
 #include "misc.h"
 #include "miscstruct.h"
+#ifdef __EMX__
+#include "../../../include/fonts/font.h" /* name clash with Font.h */
+#else
 #include "font.h"
+#endif
 #include "fontstruct.h"
 #include "scrnintstr.h"
 
@@ -27,7 +32,11 @@ is" without express or implied warranty.
 #undef GC
 
 #include "Display.h"
+#ifdef __EMX__
+#include "Font1.h"
+#else
 #include "Font.h"
+#endif
 
 int xnestFontPrivateIndex;
 

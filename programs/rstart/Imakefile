@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.12 94/12/01 20:16:44 kaleb Exp $
-XCOMM $XFree86: xc/programs/rstart/Imakefile,v 3.2 1994/10/20 06:13:47 dawes Exp $
+XCOMM $XFree86: xc/programs/rstart/Imakefile,v 3.3 1995/01/28 16:16:20 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -25,8 +25,20 @@ XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 XCOMM Having had to change the name once, I do not want it to be tough
 XCOMM the next time...
+
 SERVERNAME=rstartd
+#ifndef OS2Architecture
+SSERVERNAME=$(SERVERNAME)
+RSERVERNAME=$(SERVERNAME).real
+OS=
 CLIENTNAME=rstart
+#else
+SSERVERNAME=$(SERVERNAME).cmd
+RSERVERNAME=$(SERVERNAME)
+OS=-DOS2
+CLIENTNAME=rstart.cmd
+#endif
+
 MYLIBDIR=$(LIBDIR)/rstart
 ENVPREFIX=RSTART
 PACKAGEname=rstart
@@ -55,15 +67,15 @@ SRVDEFS = -DSERVERNAME=\"$(SERVERNAME)\" -DDEFAULT_CONFIG=\"$(MYLIBDIR)/config\"
 PEDEFS = -DNOPUTENV
 #endif
 
-AllTarget($(SERVERNAME).real)
-NormalProgramTarget($(SERVERNAME).real, $(OBJS),NullParameter,NullParameter,NullParameter)
-InstallProgram($(SERVERNAME).real,$(MYLIBDIR))
+AllTarget(ProgramTargetName($(RSERVERNAME)))
+NormalProgramTarget($(RSERVERNAME), $(OBJS),NullParameter,NullParameter,NullParameter)
+InstallProgram($(RSERVERNAME),$(MYLIBDIR))
 
 SpecialCObjectRule(server,NullParameter,$(SRVDEFS) $(PEDEFS))
 
-AllTarget($(SERVERNAME))
-CppScriptTarget($(SERVERNAME),server.cpp,-DLIBDIR=$(MYLIBDIR) -DSERVERNAME=$(SERVERNAME),NullParameter)
-InstallNamedProg($(SERVERNAME),$(SERVERNAME),$(USRBIN))
+AllTarget($(SSERVERNAME))
+CppScriptTarget($(SSERVERNAME),server.cpp,$(OS) -DLIBDIR=$(MYLIBDIR) -DSERVERNAME=$(SERVERNAME),NullParameter)
+InstallNamedProg($(SSERVERNAME),$(SSERVERNAME),$(USRBIN))
 
 AllTarget($(CLIENTNAME))
 CppScriptTarget($(CLIENTNAME),client.cpp,-DRSHCMD=$(RSHCMD) -DSERVERNAME=$(SERVERNAME),NullParameter)

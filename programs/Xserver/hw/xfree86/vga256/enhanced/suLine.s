@@ -1,4 +1,5 @@
 /* $XConsortium: suLine.s,v 1.2 94/03/29 11:19:20 dpw Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
 			Copyright 1992, 1993 by Glenn G. Lai 
 
@@ -141,7 +142,7 @@ window:
 	OR_B	(AH, AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	AND_L	(CONST(0xffff), EDI)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)), EDI)
@@ -564,7 +565,7 @@ next:
 	ADD_B	(CONST(17), AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 	MOV_L	(XOR, EAX)
 	MOV_L	(CONTENT(tmp1), EDX)
 	JMP	(VARINDIRECT(jump))
@@ -577,7 +578,7 @@ prev:
 	SUB_B	(CONST(17), AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 	MOV_L	(XOR, EAX)
 	MOV_L	(CONTENT(tmp1), EDX)
 	JMP	(VARINDIRECT(jump))

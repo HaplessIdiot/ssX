@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.6 94/04/17 21:17:12 dpw Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.2 1995/01/11 03:59:02 dawes Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.3 1995/03/08 05:06:30 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -136,7 +136,9 @@ static int unixDomainConnection = -1;
 #endif
 
 #include <stdio.h>
+#ifndef __EMX__
 #include <sys/uio.h>
+#endif
 #include "misc.h"		/* for typedef of pointer */
 #include "osdep.h"
 #include "opaque.h"

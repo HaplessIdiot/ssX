@@ -169,9 +169,9 @@ char_type magic_header[] = { "\037\235" };	/* 1F 9D */
  *		James A. Woods		(decvax!ihnp4!ames!jaw)
  *		Joe Orost		(decvax!vax135!petsd!joe)
  *
- * $Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.0 1994/10/20 06:20:37 dawes Exp $
+ * $Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.1 1995/03/11 14:26:08 dawes Exp $
  * $Log: compress.c,v $
- * Revision 3.0  1994/10/20 06:20:37  dawes
+ * Revision 3.1  1995/03/11 14:26:08  dawes
  * updates
  *
  * Revision 4.0  85/07/30  12:50:00  joe
@@ -284,7 +284,7 @@ char_type magic_header[] = { "\037\235" };	/* 1F 9D */
  * Add variable bit length output.
  *
  */
-static char rcs_ident[] = "$Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.0 1994/10/20 06:20:37 dawes Exp $";
+static char rcs_ident[] = "$Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.1 1995/03/11 14:26:08 dawes Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -695,6 +695,12 @@ register int argc; char **argv;
 			fprintf(stderr, "%s: ", *fileptr);
 	    }
 
+#ifdef __EMX__
+	    /* force setting binary mode */
+	    _fsetmode(stdin,"b");
+	    _fsetmode(stdout,"b");
+#endif
+
 	    /* Actually do the compression/decompression */
 	    if (do_decomp == 0)	compress();
 #ifndef DEBUG
@@ -712,6 +718,11 @@ register int argc; char **argv;
 	    }
 	}
     } else {		/* Standard input */
+#ifdef __EMX__
+	/* force setting binary mode */
+	_fsetmode(stdin,"b");
+	_fsetmode(stdout,"b");
+#endif
 	if (do_decomp == 0) {
 		compress();
 #ifdef DEBUG

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 21:30:32 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/Imakefile,v 3.4 1994/09/25 12:30:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/Imakefile,v 3.6 1995/01/28 17:07:45 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -17,15 +17,21 @@ INCLUDES = -Ivga -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
 
 VGADRIVERS = XF86SvgaDrivers
 
-NormalDepLibraryTarget(vga256,$(SUBDIRS) $(DONES),$(OBJS))
+#ifdef OS2Architecture
+all:: DONE
+	cp $(OBJS) .
 
-ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),confvga256.sh,$(VGADRIVERS))
+NormalDepLibraryTarget(vga256,$(SUBDIRS) $(DONES),?*.o)
+#else
+NormalDepLibraryTarget(vga256,$(SUBDIRS) $(DONES),$(OBJS))
+#endif
+ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,$(VGADRIVERS))
 
 NormalLibraryObjectRule()
 
 ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(vga256,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(confvga256.sh,$(LINKKITDIR))
+InstallLinkKitNonExecFile(confvga256.SHsuf,$(LINKKITDIR))
 
 DependSubdirs($(SUBDIRS))

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.0 1994/10/20 06:00:11 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.1 1994/12/17 09:32:46 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -15,7 +15,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.0 1994/10/20 06:00:11 dawe
 #define IMmode n
 #define ImakeIndir \indir
 #define ImakeSubCmdHelper \imake -I$(IRULESRC) $(IMAKE_DEFINES)
-#define IOPLFix \ioplfix
 #define Fontc \bdftopcf
 #define MkFontDir \mkfontdir
 #else
@@ -23,7 +22,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.0 1994/10/20 06:00:11 dawe
 #define IMmode u
 #define ImakeIndir indir
 #define ImakeSubCmdHelper $(IMAKE_CMD)
-#define IOPLFix ioplfix
 #define Fontc bdftopcf
 #define MkFontDir mkfontdir
 #endif
@@ -51,6 +49,14 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
+
+#define	ProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib)	@@\
+ProgramTargetName(program): $(objs) $(deplib)				@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
+									@@\
+InstallProgram(program,$(BINDIR))
+
 
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
 includes::								@@\
@@ -106,6 +112,19 @@ ProgramTargetName(program): objects deplibs				@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
+
+#define ComplexProgramTargetNoMan(program)				@@\
+PROGRAM = ProgramTargetName(program)					@@\
+									@@\
+AllTarget(ProgramTargetName(program))					@@\
+									@@\
+ProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFile($(PROGRAM))
 
 #define MoveToBakFile(file) ImakeHelper 5 file
 
@@ -200,6 +219,11 @@ step:: srcname								@@\
 	MakeDir($(DESTDIR)/dest)					@@\
 	$(INSTALL) $(INSTALLFLAGS) flags srcname $(subst /,\,$(DESTDIR))\dest\dstname
 
+#define	InstallTarget(step,file,flags,dest)				@@\
+step:: srcname								@@\
+	MakeDir($(DESTDIR)/dest)					@@\
+	$(INSTALL) $(INSTALLFLAGS) flags srcname $(subst /,\,$(DESTDIR))\dest
+
 #define	BuildMakefileTarget(notused,imakeflags)				@@\
 ImakeDependency(Makefile)						@@\
 									@@\
@@ -216,6 +240,17 @@ Makefile:: 								@@\
 #define NormalAsmObjectRule()                                           @@\
 .s.Osuf:                                                                @@\
 	AssembleObject($(_NOOP_))
+
+#define ObjectMapIncludeFromSpecialSource(dst,src,flags)		@@\
+dst.c: src.c								@@\
+	ImakeHelper 9 $@ mfbmap.h $?					@@\
+									@@\
+SpecialCObjectRule(dst,NullParameter,flags)				@@\
+									@@\
+depend:: dst.c								@@\
+									@@\
+clean::									@@\
+	RemoveFile(dst.c)
 
 #define FontBaseObj(basename)basename.pcf
 #define FontCompressObj(basename)basename.pcz
@@ -252,3 +287,33 @@ clean::									@@\
 #define FontTarget(basename) UncompressedFontTarget(basename)
 #define FontObj(basename) FontBaseObj(basename)
 #endif /* CompressAllFonts */
+
+/* OS/2 scripts are based on REXX
+ * it is just the SHELL variable that is messed up that forces me to
+ * modify this rule
+ */
+#define ConfigTargetLong(target,dep,script,args,extra)                  @@\
+all:: Configure                                                         @@\
+                                                                        @@\
+Configure:: target.o                                                    @@\
+                                                                        @@\
+target.c: script dep                                                    @@\
+	$(MAKE) SHELL= $(MFLAGS) extra Concat(Build,target)             @@\
+                                                                        @@\
+Concat(Build,target):                                                   @@\
+	$(RM) target.c                                                  @@\
+	script args                                                     @@\
+                                                                        @@\
+clean::                                                                 @@\
+	$(RM) target.c
+
+/*
+ * ServerTarget - rules to compile, link, and relink a normal server
+ * Need a .def file for OS/2
+ */
+#ifndef ServerTarget
+#define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
+ServerTargetWithFlags(server,subdirs,objects,libs,syslibs server.def,$(_NOOP_)) @@\
+									@@\
+ProgramTargetName(server): server.def
+#endif /* ServerTarget */

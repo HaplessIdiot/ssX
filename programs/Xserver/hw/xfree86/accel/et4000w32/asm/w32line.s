@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32line.s,v 3.0 1994/11/19 08:06:55 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -148,14 +148,14 @@ window:
 	OR_B	(AH, AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_B	(BL, AL)
 	SHL_B	(CONST(4), BL)
 	OR_B	(BL, AL)
 	MOV_B	(AL, CONTENT(segment1))
 	MOV_W	(CONST(0x3cb), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	AND_L	(CONST(0xffff), EDI)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)), EDI)
@@ -583,13 +583,13 @@ next:
 	ADD_B	(CONST(17), AL)
 	MOV_B	(AL, CONTENT(segment1))
 	MOV_W	(CONST(0x3cb), DX)
-	OUT1_B	(DX)
+	OUT_B
 	MOV_B	(CONST(239), AL)
 next1:
 	ADD_B	(CONST(17), AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(XOR, EAX)
 	MOV_L	(CONTENT(tmp1), EDX)
@@ -608,13 +608,13 @@ prev:
 	SUB_B	(CONST(17), AL)
 	MOV_B	(AL, CONTENT(segment1))
 	MOV_W	(CONST(0x3cb), DX)
-	OUT1_B	(DX)
+	OUT_B
 	MOV_B	(CONST(16), AL)
 prev1:
 	SUB_B	(CONST(17), AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(XOR, EAX)
 	MOV_L	(CONTENT(tmp1), EDX)

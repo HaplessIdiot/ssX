@@ -1,0 +1,177 @@
+
+ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE ALPHA-CODE
+
+           README for XFree86 3.1.1 on OS/2 2.11 and Warp
+           --------------------------------------------
+
+
+This is a preliminary README which will be updated when the port is finished.
+This readme is not intended literature for an end-user.
+
+Contents
+--------
+    1) What is XFree86/OS2?
+    2) What are the primary design goals?
+    3) What from the distribution works, and what needs to be done?
+    4) How to get started when I want to recompile the code?
+
+1 - What is XFree86/OS2?
+------------------------
+
+XFree86/OS2 is the work title for a project to port XFree86 to OS/2.
+Currently the main worker on this is Holger Veit <veit@gmd.de>, with
+some assistance of Jeff Bakst (<email address not handy in the moment>).
+If you want to participate and help, please contact Holger, after having 
+read this readme. Please refrain from mails that ask about the current
+status, or letters of encouragement. It is well known that XFree86/OS2
+would be a great idea.
+
+2 - What are the primary design goals?
+--------------------------------------
+
+There are already commercial versions of X11 available, but besides
+the fact that they are quite expensive, they usually were derived from
+X11R5 and are based on PM (OS/2 presentation manager), i.e. the native
+OS/2 window management system. So the X11 Windows System runs on top of
+another windows system. It is obvious that in this case X11 is well-integrated
+into the system, but there are two drawbacks: first, emulating X on an
+intelligent system will cost performance, and depending on the quality of
+the emulation, certain native X11 features like coloring the top level
+window may not be available; and second, you need PM and the OS/2 workplace
+shell.
+
+XFree86/OS2 is intended to replace PM, thus allowing to set up a special
+OS/2 that no longer runs PM and WPS (of course losing the WPS features then).
+Runnning OS/2 without PM, in text mode, is already possible nowadays, and
+will change the system into a small and slim single-user, but multi-tasking
+system. This is the base system most Unices start with before running X11.
+
+XFree86/OS2 will run in a OS/2 fullscreen session, thus it is possible to
+run it in parallel to WPS.
+
+XFree86/OS2 is intended to be a plain and unmodified X11, thus allowing to
+do almost everything that a Unix-X11 is capable as well. This includes running
+xdm, for instance, as well as accepting remote connections.
+
+XFree86/OS2 can use TCP/IP sockets right now, and it is intended that it
+will support local (named pipe) connections as well.
+
+XFree86/OS2 requires OS/2 2.11 or OS/2 Warp.
+
+The port is being done using the EMX/GCC development system, but it is
+intended to adapt the configuration to different compilers as well.
+
+The port is developed on a HPFS filesystem, but the final system should
+need FAT only (8.3 file names).
+
+
+3 - What from the distribution works, and what needs to be done?
+----------------------------------------------------------------
+
+As the port is currently done by a single person only in his free time
+(which is limited enough), progress is slow. Anyway:
+
+- Imake and config have been modified to accept CMD.EXE as the shell.
+  Processing the Makefiles requires GNU make for OS/2.
+  Certain imake rules, that haven't been shown up during the build, still
+  need to be adjusted or rewritten. make install hasn't been tested yet.
+
+- All X libraries from x11/xc/lib compile, and have demonstrated that they
+  work together with certain clients. Only DLL versions have been built.
+  What has not been done fully yet, is an adaption to the OS/2 filesystem
+  environment. This means: X11 uses certain config files in certain 
+  directories. All the path names used must be changed to be relative to
+  a root drive and path. XFree86/OS2 will be installed relatively to
+  the %XFREE86%/XFree86 path (e.g. %XFREE86%/XFree86/bin) where %XFREE86%
+  is an environment variable defined in config.sys, for instance
+  SET XFREE86=d:
+
+- The DLL import libraries are almost stable, and likely won't change their
+  sequence of entry points any more, so they may be used as a base for
+  porting own applications now (you need to test them remote for now, however).
+
+- Many X clients from the tree compile, several ones have been tested with
+  a remote Xserver; and they display correctly. This was with EMX 0.8h,
+  in the meantime, EMX 0.9A is in use, so things might have been broken.
+
+- SuperProbe as a test case for direct I/O and MMap has been ported.
+
+- Most of the Server compiles, and the difficult os-support part has been
+  written, but nothing has been tested yet.
+
+- xterm, xconsole and xdm are critical, they only partly compile, but
+  certainly won't run without some possibly severe changes.
+
+- There are still some Unix shell scripts in the tree, that must be rewritten 
+  to REXX. This involves changing several Imakefiles.
+
+4 - How to get started when I want to recompile the code?
+---------------------------------------------------------
+
+Starting with a shopping list, get the following things:
+- IBM TCP/IP 2.0 (commercial); Warp IAK is sufficient for the final system, 
+  but without a working X server, you now need to access a remote Unix system
+  via ethernet.
+- EMX/GCC 0.9A package, with gcc, as, ar, etc. You don't need g++ now.
+  The gcc version is almost uncritical.
+- GNU Make 3.71/72 for OS/2
+- GNU shell utils, and file utils
+- GNU awk
+- GNU sed
+- GNU groff
+- GNU bison and flex
+- GNU diff and patch
+
+Looks almost complete for now. Install everything properly and test it
+with simple files. If you won't be able to get it running to compile
+hello.c, forget fixing problems in XFree86.
+
+Get X11 and patch it up to the current level of XFree86, again something
+that you are supposed to manage yourself. Note that you install it
+on a reasonably large HPFS file system. I have installed both EMX and
+X11 on 300 MB HPFS, with the whole core tree built (as far as it works),
+there are still 70MB free. Take into account that you could put your
+swapfile on this disk as well, and that you need approx 40-50 MB to
+install the system later on; so don't try to save disk space and start with
+a too small disk.
+
+X11 is supposed to be installed in a root dir \x11, emx in \emx, so my
+disk layout of d: looks like
+	d:\emx
+	  ...\bin
+	  ...\lib
+	  ...\dll
+	  ...\include
+	  ......\sys
+        d:\x11
+	  ...\xc
+	  ......\config
+	  .........\imake
+	  .........\cf   etc.
+	  ......\include
+	  ......\lib
+	  .........\X11
+	  .........\oldX
+	  .........\Xt   etc.
+	  ......\programs
+	  .........\appres
+	  .........\bdftopcf
+	  .........\Xserver
+	  .............\cfb
+	  .............\hw
+	  ................\xfree86 etc.
+	d:\XFree86	(where the system is going to be installed)
+
+It is a good idea to use the same layout.
+
+To recompile:
+- Check \x11\xc\config\cf\os2.cf, I temporarily put some declarations there
+  that logically belong into site.def.
+- From \x11\xc\config\util, get buildos2.cmd and put it into \x11\xc.
+- Run this script, it should eventually finish. It will place a buildxc.log
+  file in \x11\xc.
+That's it for now. You are on your own.
+
+Holger Veit
+
+$XFree86$

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.49 95/01/17 14:12:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.8 1995/01/07 04:18:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.9 1995/01/28 16:16:05 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -115,7 +115,7 @@ OsInit()
 		dup2 (fileno (err), 2);
 		fclose (err);
 	    }
-#if defined(SYSV) || defined(SVR4) || defined(MINIX)
+#if defined(SYSV) || defined(SVR4) || defined(MINIX) || defined(__EMX__)
 	    {
 	    static char buf[BUFSIZ];
 	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);

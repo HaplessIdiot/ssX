@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c,v 1.4 94/04/17 21:17:13 dpw Exp $ */
+/* $XFree86$ */
 /*****************************************************************
  * i/o functions
  *
@@ -62,7 +63,9 @@ extern int errno;
 #include "Xmd.h"
 #include <errno.h>
 #include <sys/param.h>
+#ifndef __EMX__
 #include <sys/uio.h>
+#endif
 #include "X.h"
 #include "Xproto.h"
 #include "os.h"

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osdep.h,v 1.40 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.0 1994/04/28 12:42:44 dawes Exp $ */
 
 #ifdef AMOEBA
 #include <stddef.h>
@@ -94,7 +94,11 @@ SOFTWARE.
 #if defined(NOFILE) && !defined(NOFILES_MAX)
 #define OPEN_MAX NOFILE
 #else
+#ifndef __EMX__
 #define OPEN_MAX NOFILES_MAX
+#else
+#define OPEN_MAX 256
+#endif
 #endif
 #endif
 #endif
