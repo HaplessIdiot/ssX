@@ -24,8 +24,8 @@
  *
  * Authors:
  *
- *      ?
  *      Thomas Winischhofer <thomas@winischhofer.net>
+ *      ?
  *
  */
 #ifndef _SIS_H
@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   12
-#define SISDRIVERVERSIONDAY     2
+#define SISDRIVERVERSIONDAY     4
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
