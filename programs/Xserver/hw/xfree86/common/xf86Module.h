@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.6 1999/01/03 03:58:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.7 1999/01/15 02:12:38 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -40,6 +40,13 @@ typedef enum {
     ABI_CLASS_FONT			/* font renderer */
 } LoaderAbiTypes;
 
+#define ABI_MINOR_MASK		0x0000FFFF
+#define ABI_MAJOR_MASK		0xFFFF0000
+#define GET_ABI_MINOR(v)	((v) & ABI_MINOR_MASK)
+#define GET_ABI_MAJOR(v)	(((v) & ABI_MAJOR_MASK) >> 16)
+#define SET_ABI_VERSION(maj, min) \
+		((((maj) << 16) & ABI_MAJOR_MASK) | ((min) & ABI_MINOR_MASK))
+
 /*
  * ABI versions.  Each version has a major and minor revision.  Modules
  * using lower minor revisions must work with servers of a higher minor
@@ -48,11 +55,11 @@ typedef enum {
  * changed.  The minor revision mask is 0x0000FFFF and the major revision
  * mask is 0xFFFF0000.
  */
-#define ABI_ANSIC_VERSION	0x00000001	/* 0.1 */
-#define ABI_VIDEODRV_VERSION	0x00000001	/* 0.1 */
-#define ABI_XINPUT_VERSION	0x00000000	/* 0.0 */
-#define ABI_EXTENSION_VERSION	0x00000000	/* 0.0 */
-#define ABI_FONT_VERSION	0x00000000	/* 0.0 */
+#define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 1)
+#define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(0, 1)
+#define ABI_XINPUT_VERSION	SET_ABI_VERSION(0, 0)
+#define ABI_EXTENSION_VERSION	SET_ABI_VERSION(0, 0)
+#define ABI_FONT_VERSION	SET_ABI_VERSION(0, 0)
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a
@@ -73,7 +80,8 @@ typedef enum {
     LDR_NOLOAD,		/* type specific loader failed */
     LDR_ONCEONLY,	/* Module should only be loaded once (not an error) */
     LDR_NOPORTOPEN,	/* could not open port (check errmin) */
-    LDR_NOHARDWARE	/* could not query/initialize the hardware device */
+    LDR_NOHARDWARE,	/* could not query/initialize the hardware device */
+    LDR_MISMATCH	/* the module didn't match the spec'd requirments */
 } LoaderErrorCode;
 
 /* This structure is expected to be returned by the initfunc */
@@ -88,9 +96,29 @@ typedef struct {
     CARD16	patchlevel;	/* module-specific patch level */
     CARD32	abiclass;	/* ABI class that the module uses */
     CARD32	abiversion;	/* ABI version */
+    char *	abivendor;	/* vendor-defined ABI (overrides abiclass) */
     CARD32	checksum[4];	/* contains a digital signature of the */
 				/* version info structure */
 } XF86ModuleVersionInfo;
+
+/*
+ * This structure can be used to callers of LoadModule and LoadSubModule to
+ * specify version and/or ABI requirements.
+ */
+typedef struct {
+    CARD8	majorversion;	/* module-specific major version */
+    CARD8	minorversion;	/* moudle-specific minor version */
+    CARD16	patchlevel;	/* module-specific patch level */
+    CARD32	abiclass;	/* ABI class that the module uses */
+    CARD32	abiversion;	/* ABI version */
+    char *	abivendor;	/* vendor-defined ABI (overrides abiclass) */
+} XF86ModReqInfo;
+
+/* values to indicate unspecified fields in XF86ModReqInfo. */
+#define MAJOR_UNSPEC		0xFF
+#define MINOR_UNSPEC		0xFF
+#define PATCH_UNSPEC		0xFFFF
+#define ABI_VERS_UNSPEC		0xFFFFFFFF
 
 #define INITARGS void
 
@@ -107,13 +135,16 @@ extern ExtensionModule extension[];
 
 #ifndef IN_LOADER
 /* Prototypes with opaque pointers for use by modules */
-pointer LoadModule(const char *, const char *, pointer, int *, int *);
+pointer LoadModule(const char *, const char *, pointer,
+		   const XF86ModReqInfo *, int *, int *);
 pointer LoadSubModule(pointer, const char *, const char *, const char **,
-		      const char **, pointer, int *, int *);
+		      const char **, pointer, const XF86ModReqInfo *,
+		      int *, int *);
 void UnloadModule(pointer);
 void UnloadSubModule(pointer);
 pointer DuplicateModule(pointer, pointer);
 void LoadFont(pointer);
+pointer LoaderSymbol(const char *);
 #endif
 char **LoaderListDirs(const char *, const char **, const char **);
 void LoaderFreeDirList(char **);

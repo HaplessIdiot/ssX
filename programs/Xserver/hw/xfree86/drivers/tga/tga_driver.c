@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.10 1999/01/13 08:31:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.11 1999/01/14 13:04:34 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -152,6 +152,7 @@ static XF86ModuleVersionInfo tgaVersRec =
 	TGA_MAJOR_VERSION, TGA_MINOR_VERSION, TGA_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
+	NULL,
 	{0,0,0,0}
 };
 
@@ -585,11 +586,17 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pTga->FbAddress = pTga->PciInfo->memBase[0] & 0xFF800000;
     }
 
+    /* Adjust MMIO region */
+    pTga->IOAddress = pTga->FbAddress + TGA_REGS_OFFSET;
+
     /* Check what sort of TGA card we have */
     Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-			 pTga->PciTag, (pointer)pTga->FbAddress, 4);
+			 pTga->PciTag, (pointer)pTga->IOAddress, 4);
     pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
     xf86UnMapVidMem(pScrn->scrnIndex, Base, 4); 
+
+    /* Adjust framebuffer for card type */
+    pTga->FbAddress += fb_offset_presets[pTga->CardType];
 
     switch (pTga->CardType) {
         case TYPE_TGA_8PLANE:
@@ -612,11 +619,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 		   pScrn->depth);
 	return FALSE;
     }
-
-    /* Adjust MMIO region */
-    pTga->IOAddress = pTga->FbAddress + TGA_REGS_OFFSET;
-    /* Adjust framebuffer for card type */
-    pTga->FbAddress += fb_offset_presets[pTga->CardType];
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pTga->FbAddress);

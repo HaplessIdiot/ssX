@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.1 1999/01/03 03:58:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.2 1999/01/03 08:06:40 dawes Exp $ */
 
 
 #ifdef XFree86LOADER
@@ -18,6 +18,7 @@ static XF86ModuleVersionInfo VersRec =
         1, 0, 0,
         ABI_CLASS_ANSIC,                /* Only need the ansic layer */
         ABI_ANSIC_VERSION,
+	NULL,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
@@ -33,9 +34,11 @@ xf8_32bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 static pointer
 xf8_32bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    if (!LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, errmaj, errmin))
+    if (!LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, NULL,
+			errmaj, errmin))
         return NULL;
-    if (!LoadSubModule(module, "cfb32", NULL, NULL, NULL, NULL, errmaj, errmin))
+    if (!LoadSubModule(module, "cfb32", NULL, NULL, NULL, NULL, NULL,
+			errmaj, errmin))
         return NULL;
     return (pointer)1;  /* non-NULL required to indicate success */
 }

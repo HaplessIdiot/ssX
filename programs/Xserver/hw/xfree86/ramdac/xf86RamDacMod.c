@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC module.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacMod.c,v 1.3 1998/09/05 06:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacMod.c,v 1.4 1998/12/13 10:33:51 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -38,6 +38,7 @@ static XF86ModuleVersionInfo VersRec = {
 	0, 1, 0,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
+	NULL,
 	{0, 0, 0, 0}
 };
 

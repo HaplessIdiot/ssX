@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.89 1999/01/14 01:44:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.90 1999/01/14 13:04:06 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -1136,9 +1136,9 @@ xf86LoadModules(char **list, pointer *optlist)
 	else
 	    opt = NULL;
 
-        if (!LoadModule(name, xf86ModulePath, NULL, NULL, opt,
+        if (!LoadModule(name, xf86ModulePath, NULL, NULL, opt, NULL,
 			&errmaj, &errmin)) {
-	    ErrorF("Failed to load module \"%s\"\n", name);
+	    LoaderErrorMsg(NULL, name, errmaj, errmin);
 	    xfree(name);
             return FALSE;
 	}

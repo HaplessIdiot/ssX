@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.66 1999/01/13 03:19:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.67 1999/01/14 13:04:28 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -298,6 +298,7 @@ static XF86ModuleVersionInfo mgaVersRec =
 	MGA_MAJOR_VERSION, MGA_MINOR_VERSION, MGA_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
+	NULL,
 	{0,0,0,0}
 };
 

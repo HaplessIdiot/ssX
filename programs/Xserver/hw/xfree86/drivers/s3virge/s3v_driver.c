@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.8 1999/01/14 01:44:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.9 1999/01/14 13:04:32 dawes Exp $ */
 
 /*
  *
@@ -261,6 +261,7 @@ static XF86ModuleVersionInfo S3VVersRec =
     S3VIRGE_VERSION_MAJOR, S3VIRGE_VERSION_MINOR, S3VIRGE_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,		       /* This is a video driver */
     ABI_VIDEODRV_VERSION,
+    NULL,
     {0, 0, 0, 0}
 };
 

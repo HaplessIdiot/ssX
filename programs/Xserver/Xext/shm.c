@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.9 1998/07/25 08:48:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.10 1998/10/04 09:36:48 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -416,7 +416,7 @@ fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 	PixmapPtr pPixmap;
 
 	pPixmap = GetScratchPixmapHeader(dst->pScreen, w, h, depth,
-			/*XXX*/depth, PixmapBytePad(w, depth), (pointer)data);
+		BitsPerPixel(depth), PixmapBytePad(w, depth), (pointer)data);
 	if (!pPixmap)
 	    return;
 	if (format == XYBitmap)
@@ -868,7 +868,7 @@ fbShmCreatePixmap (pScreen, width, height, depth, addr)
 	return NullPixmap;
 
     if (!(*pScreen->ModifyPixmapHeader)(pPixmap, width, height, depth,
-	    /*XXX*/depth, PixmapBytePad(width, depth), (pointer)addr)) {
+	    BitsPerPixel(depth), PixmapBytePad(width, depth), (pointer)addr)) {
 	(*pScreen->DestroyPixmap)(pPixmap);
 	return NullPixmap;
     }

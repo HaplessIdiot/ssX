@@ -1,3 +1,21 @@
+XFree86 3.9Nw (17 January 1999)
+2158. Add an extra argument to LoadSubModule (and LoadModule) to allow the
+      caller to optionally specify version and/or ABI requirements that
+      the loaded module must meet for the load to complete successfully.
+2158. Add support to the loader for vendor-defined ABI classes.  These classes
+      are specified as a string.  The main use is for third party modules that
+      themselves load sub-modules (like X-TT).
+2157. Fix the MGA driver's handling of the "MGA_SDRAM" option.  SDRAM cards
+      are still not auto-detected though (#2391, Mark Vojkovich).
+2156. Add a screen->screen colour expansion bug workaround to the MGA driver,
+      and enable the faster linear expansions instead of the planar ones
+      (#2390, Mark Vojkovich).
+2155. Fix some depth/bpp issues in the SHM code (#2389, Mark Vojkovich).
+2154. Export some missing symbols for Alpha platforms (#2388, Alan Hourihane).
+2153. Fix a bug in determing the card type in the TGA driver (#2387,
+      Alan Hourihane).
+2152. Fix a problem in ramdac/BT.c (#2386, Alan Hourihane).
+
 XFree86 3.9Nv (15 January 1999)
 2151. Fix cfb24 problems that show up with xtest (#2384, Nozomi Ytow).
 2150. Fix 64 pixel rounding of display width in the C&T driver (#2383,
@@ -7084,4 +7102,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.669 1999/01/15 02:27:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.670 1999/01/15 02:35:30 dawes Exp $

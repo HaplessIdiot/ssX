@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.54 1999/01/14 01:44:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.55 1999/01/15 02:12:40 dawes Exp $ */
 
 /*
  *
@@ -158,6 +158,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86UnMapVidMem)
    SYMFUNC(xf86IODelay)
    SYMFUNC(xf86SlowBcopy)
+#ifdef __alpha__
+   SYMFUNC(xf86SlowBCopyToBus)
+   SYMFUNC(xf86SlowBCopyFromBus)
+#endif
    SYMFUNC(xf86BusToMem)
    SYMFUNC(xf86MemToBus)
    SYMFUNC(xf86OpenSerial)
@@ -455,6 +459,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoaderRefSymLists)
    SYMFUNC(UnloadModule)
    SYMFUNC(UnloadSubModule)
+   SYMFUNC(LoaderSymbol)
 
    /*
     * these here are our own interfaces to libc functions

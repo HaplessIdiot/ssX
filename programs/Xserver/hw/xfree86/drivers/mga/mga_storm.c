@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.39 1999/01/03 03:58:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.40 1999/01/03 08:06:37 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -157,6 +157,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
         break;
     }
 
+    /* all should be able to use this now with the bug fixes */
+    pMga->AccelFlags |= USE_LINEAR_EXPANSION;
+
     if(pMga->HasSDRAM) {
 	pMga->Atype = pMga->AtypeNoBLK = MGAAtypeNoBLK;
 	pMga->AccelFlags &= ~TWO_PASS_COLOR_EXPAND;
@@ -256,7 +259,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SubsequentScreenToScreenColorExpandFill);
     } else {
 #if PSZ != 24
-    /* Slower planar expansions.  Linear shows bugs on some hardware */
+    /* Alternate (but slower) planar expansions */
 	infoPtr->SetupForScreenToScreenColorExpandFill = 
 		MGANAME(SetupForPlanarScreenToScreenColorExpandFill);
 	infoPtr->SubsequentScreenToScreenColorExpandFill = 
@@ -327,21 +330,21 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     }
 
     if((pScrn->bitsPerPixel == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
-    infoPtr->ImageWriteFlags |= NO_PLANEMASK;
-    infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
-    infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
-    infoPtr->WriteBitmapFlags |= NO_PLANEMASK;
-    infoPtr->SolidFillFlags |= NO_PLANEMASK;
-    infoPtr->SolidLineFlags |= NO_PLANEMASK;
-    infoPtr->DashedLineFlags |= NO_PLANEMASK;
-    infoPtr->Mono8x8PatternFillFlags |= NO_PLANEMASK; 
-    infoPtr->FillColorExpandRectsFlags |= NO_PLANEMASK; 
-    infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
-    infoPtr->FillSolidRectsFlags |= NO_PLANEMASK;
-    infoPtr->FillSolidSpansFlags |= NO_PLANEMASK;
-    infoPtr->FillMono8x8PatternRectsFlags |= NO_PLANEMASK;
-    infoPtr->NonTEGlyphRendererFlags |= NO_PLANEMASK;
-    infoPtr->FillCacheBltRectsFlags |= NO_PLANEMASK;
+	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
+	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
+	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
+	infoPtr->WriteBitmapFlags |= NO_PLANEMASK;
+	infoPtr->SolidFillFlags |= NO_PLANEMASK;
+	infoPtr->SolidLineFlags |= NO_PLANEMASK;
+	infoPtr->DashedLineFlags |= NO_PLANEMASK;
+	infoPtr->Mono8x8PatternFillFlags |= NO_PLANEMASK; 
+	infoPtr->FillColorExpandRectsFlags |= NO_PLANEMASK; 
+	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
+	infoPtr->FillSolidRectsFlags |= NO_PLANEMASK;
+	infoPtr->FillSolidSpansFlags |= NO_PLANEMASK;
+	infoPtr->FillMono8x8PatternRectsFlags |= NO_PLANEMASK;
+	infoPtr->NonTEGlyphRendererFlags |= NO_PLANEMASK;
+	infoPtr->FillCacheBltRectsFlags |= NO_PLANEMASK;
     }
 
     
@@ -1240,17 +1243,53 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
    int skipleft
 ){
     MGAPtr pMga = MGAPTR(pScrn);
-    int start, end;
+    int pitch = pScrn->displayWidth * PSZ;
+    int start, end, next, num;
 
     w--;
     start = (XYADDRESS(srcx, srcy) * PSZ) + skipleft;
-    end = start + w;
+    end = start + w + (pitch * (h - 1));
 
-    WAITFIFO(4);
-    OUTREG(MGAREG_AR3, start);
-    OUTREG(MGAREG_AR0, end);
-    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
-    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+    /* src cannot split a 2 Meg boundary */
+    if(!((start ^ end) & 0xff000000)) {
+	WAITFIFO(4);
+	OUTREG(MGAREG_AR3, start);
+	OUTREG(MGAREG_AR0, start + w);
+	OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+    } else {
+	while(h) {
+	    next = (start + 0x00ffffff) & 0xff000000;
+	    if(next <= (start + w)) {
+		num = next - start - 1;
+
+		WAITFIFO(7);
+		OUTREG(MGAREG_AR3, start);
+		OUTREG(MGAREG_AR0, start + num);
+		OUTREG(MGAREG_FXBNDRY, ((x + num) << 16) | x);
+		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+		
+		OUTREG(MGAREG_AR3, next);
+		OUTREG(MGAREG_AR0, start + w);
+		OUTREG(MGAREG_FXBNDRY + MGAREG_EXEC, ((x + w) << 16) | 
+                                                     (x + num + 1));
+		start += pitch;
+		h--; y++;
+	    } else {
+		num = ((next - start - w)/pitch) + 1;
+		if(num > h) num = h;
+
+		WAITFIFO(4);
+		OUTREG(MGAREG_AR3, start);
+		OUTREG(MGAREG_AR0, start + w);
+		OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | num);
+
+		start += num * pitch;
+		h -= num; y += num;		
+	    }
+	}
+    }
 }
 
 
