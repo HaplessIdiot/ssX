@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Xresource.h,v 3.3 2000/09/28 14:50:55 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xresource.h,v 3.4 2000/09/28 20:17:06 tsi Exp $ */
 
 #ifndef _XRESOURCE_H_
 #define _XRESOURCE_H_
@@ -358,7 +358,7 @@ extern Bool XrmEnumerateDatabase(
 #endif
 );
 
-extern char *XrmLocaleOfDatabase(
+extern const char *XrmLocaleOfDatabase(
 #if NeedFunctionPrototypes
     XrmDatabase 	/* database */
 #endif

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.15 1999/05/15 06:24:47 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.16 2000/01/29 18:58:11 dawes Exp $ */
 
 
 /*
@@ -82,6 +82,10 @@ typedef unsigned long wchar_t;
 #define mbtowc(a,b,c)	_Xmbtowc(a,b,c)
 #endif
 #endif
+
+/* API mentioning "UTF8" or "utf8" is an XFree86 extension, introduced in
+   November 2000. Its presence is indicated through the following macro. */
+#define X_HAVE_UTF8_STRING 1
 
 typedef char *XPointer;
 
@@ -4239,16 +4243,10 @@ extern int XWriteBitmapFile(
 #endif
 );
 
-extern Bool XSupportsLocale(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern Bool XSupportsLocale (void);
 
 extern char *XSetLocaleModifiers(
-#if NeedFunctionPrototypes
-    _Xconst char*	/* modifier_list */
-#endif
+    const char*		modifier_list
 );
 
 extern XOM XOpenOM(
@@ -4402,6 +4400,14 @@ extern int XwcTextEscapement(
 #endif
 );
 
+extern int Xutf8TextEscapement(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */
+#endif
+);
+
 extern int XmbTextExtents(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */,
@@ -4417,6 +4423,16 @@ extern int XwcTextExtents(
     XFontSet		/* font_set */,
     _Xconst wchar_t*	/* text */,
     int			/* num_wchars */,
+    XRectangle*		/* overall_ink_return */,
+    XRectangle*		/* overall_logical_return */
+#endif
+);
+
+extern int Xutf8TextExtents(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */,
     XRectangle*		/* overall_ink_return */,
     XRectangle*		/* overall_logical_return */
 #endif
@@ -4450,6 +4466,20 @@ extern Status XwcTextPerCharExtents(
 #endif
 );
 
+extern Status Xutf8TextPerCharExtents(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */,
+    XRectangle*		/* ink_extents_buffer */,
+    XRectangle*		/* logical_extents_buffer */,
+    int			/* buffer_size */,
+    int*		/* num_chars */,
+    XRectangle*		/* overall_ink_return */,
+    XRectangle*		/* overall_logical_return */
+#endif
+);
+
 extern void XmbDrawText(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -4470,6 +4500,18 @@ extern void XwcDrawText(
     int			/* x */,
     int			/* y */,
     XwcTextItem*	/* text_items */,
+    int			/* nitems */
+#endif
+);
+
+extern void Xutf8DrawText(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    XmbTextItem*	/* text_items */,
     int			/* nitems */
 #endif
 );
@@ -4500,6 +4542,19 @@ extern void XwcDrawString(
 #endif
 );
 
+extern void Xutf8DrawString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */
+#endif
+);
+
 extern void XmbDrawImageString(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -4523,6 +4578,19 @@ extern void XwcDrawImageString(
     int			/* y */,
     _Xconst wchar_t*	/* text */,
     int			/* num_wchars */
+#endif
+);
+
+extern void Xutf8DrawImageString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */
 #endif
 );
 
@@ -4595,6 +4663,12 @@ extern char *XmbResetIC(
 #endif
 );
 
+extern char *Xutf8ResetIC(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
 extern char *XSetICValues(
 #if NeedVarargsPrototypes
     XIC /* ic */, ...
@@ -4637,6 +4711,17 @@ extern int XwcLookupString(
     XKeyPressedEvent*	/* event */,
     wchar_t*		/* buffer_return */,
     int			/* wchars_buffer */,
+    KeySym*		/* keysym_return */,
+    Status*		/* status_return */
+#endif
+);
+
+extern int Xutf8LookupString(
+#if NeedFunctionPrototypes
+    XIC			/* ic */,
+    XKeyPressedEvent*	/* event */,
+    char*		/* buffer_return */,
+    int			/* bytes_buffer */,
     KeySym*		/* keysym_return */,
     Status*		/* status_return */
 #endif

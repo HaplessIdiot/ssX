@@ -1,4 +1,16 @@
 XFree86 4.0.1g (28 November 2000)
+1016. Fix the return value for the "indirect" converter in Xlib (#4294,
+      Bruno Haible).
+1015. ANSI C cleanup of Xlib locale core code (#4293, Bruno Haible).
+1014. Optimize the i18n support for parsing resource files for the unibyte
+      locales, and clean up pre-ANSI-C-isms and warnings (#4292, Bruno Haible).
+1013. Enhance the CompoundText <-> UTF-8 converter so that it understands
+      the BIG5 encoding scheme used by Emacs (#4291, Bruno Haible).
+1012. Fix documentation and implementation of _XlcCompareISOLatin1 and
+      _XlcNCompareISOLatin1 (#4290, Bruno Haible).
+1011. Add new Unicode-based APIs for internationalized text for Xlib (#4289,
+      Bruno Haible).
+1010. Fix a minor Mesa lighting bug (#4288, Brian Paul).
 1009. Fix the glide driver's resolution of symbols from the glide library
       (#4281, Pontus Lidman).
 1008. Fix X server stalling forever with local font servers on Linux 2.4
@@ -11674,4 +11686,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1414 2000/11/28 16:10:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1415 2000/11/28 17:25:10 dawes Exp $

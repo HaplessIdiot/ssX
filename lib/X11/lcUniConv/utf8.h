@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/lcUniConv/utf8.h,v 1.1 2000/06/23 23:13:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUniConv/utf8.h,v 1.2 2000/11/28 16:10:32 dawes Exp $ */
 
 /*
  * UTF-8
@@ -34,7 +34,7 @@ utf8_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
            | ((ucs4_t) (s[1] ^ 0x80) << 6)
            | (ucs4_t) (s[2] ^ 0x80);
     return 3;
-  } else if (c < 0xf8 && sizeof(ucs4_t)*8 >= 32) {
+  } else if (c < 0xf8) {
     if (n < 4)
       return RET_TOOFEW(0);
     if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
@@ -46,7 +46,7 @@ utf8_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
            | ((ucs4_t) (s[2] ^ 0x80) << 6)
            | (ucs4_t) (s[3] ^ 0x80);
     return 4;
-  } else if (c < 0xfc && sizeof(ucs4_t)*8 >= 32) {
+  } else if (c < 0xfc) {
     if (n < 5)
       return RET_TOOFEW(0);
     if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40
@@ -59,7 +59,7 @@ utf8_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
            | ((ucs4_t) (s[3] ^ 0x80) << 6)
            | (ucs4_t) (s[4] ^ 0x80);
     return 5;
-  } else if (c < 0xfe && sizeof(ucs4_t)*8 >= 32) {
+  } else if (c < 0xfe) {
     if (n < 6)
       return RET_TOOFEW(0);
     if (!((s[1] ^ 0x80) < 0x40 && (s[2] ^ 0x80) < 0x40

@@ -1,4 +1,5 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -39,11 +40,14 @@
 .\" Digital and Tektronix makes no representations about the suitability
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
+.\"
+.\" $XFree86$
 .\" 
-.EH '\fBXlib \- C Library\fP''\fBX11, Release 6\fP'
-.OH '\fBXlib \- C Library\fP''\fBX11, Release 6\fP'
+.EH '\fBXlib \- C Library\fP''\fBX11, Release 6.4\fP'
+.OH '\fBXlib \- C Library\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
+.hw WM_NORMAL_HINTS
 \&
 .sp 1
 .ce 3
@@ -100,9 +104,13 @@ Errors
 .IP \(bu 5
 Standard header files
 .IP \(bu 5
-Naming and argument conventions
+Generic values and types
+.IP \(bu 5
+Naming and argument conventions within Xlib
 .IP \(bu 5
 Programming considerations
+.IP \(bu 5
+Character sets and encodings
 .IP \(bu 5
 Formatting conventions
 .NH 2
@@ -119,8 +127,8 @@ which is located at the end of the book.
 .LP
 The X Window System supports one or more screens containing
 overlapping windows or subwindows.
-A screen is a physical monitor and hardware,
-which can be either color, grayscale, or monochrome.
+A screen is a physical monitor and hardware
+that can be color, grayscale, or monochrome.
 There can be multiple screens for each display or workstation.
 A single X server can provide display services for any number of screens.
 A set of screens for a single user with one keyboard and one pointer
@@ -148,12 +156,12 @@ but all output to a window is clipped by its parent.
 .IN "Stacking order"
 If several children of a window have overlapping locations, 
 one of the children is considered to be on top of or raised over the
-others thus obscuring them.
+others, thus obscuring them.
 Output to areas covered by other windows is suppressed by the window
 system unless the window has backing store.
 If a window is obscured by a second window, 
-the second window obscures only those ancestors of the second window,
-which are also ancestors of the first window.
+the second window obscures only those ancestors of the second window
+that are also ancestors of the first window.
 .LP
 .IN "Window" "" "@DEF@"
 A window has a border zero or more pixels in width, which can
@@ -374,7 +382,8 @@ which are symbols with the prefix ``XK_''.
 The KeySyms are arranged in groups, and a preprocessor symbol controls
 inclusion of each group.  The preprocessor symbol must be defined
 prior to inclusion of the file to obtain the associated values.
-The preprocessor symbols are XK_MISCELLANY, XK_LATIN1, XK_LATIN2,
+The preprocessor symbols are XK_MISCELLANY, XK_XKB_KEYS, XK_3270,
+XK_LATIN1, XK_LATIN2,
 XK_LATIN3, XK_LATIN4, XK_KATAKANA, XK_ARABIC, XK_CYRILLIC, XK_GREEK,
 XK_TECHNICAL, XK_SPECIAL, XK_PUBLISHING, XK_APL, XK_HEBREW,
 XK_THAI, and XK_KOREAN.
@@ -382,7 +391,8 @@ XK_THAI, and XK_KOREAN.
 .hN X11/keysym.h
 .IP
 This file defines the preprocessor symbols
-XK_MISCELLANY, XK_LATIN1, XK_LATIN2, XK_LATIN3, XK_LATIN4, and XK_GREEK
+XK_MISCELLANY, XK_XKB_KEYS, XK_LATIN1, XK_LATIN2, XK_LATIN3,
+XK_LATIN4, and XK_GREEK
 and then includes
 .hN X11/keysymdef.h .
 .IP \(bu 5
@@ -580,7 +590,7 @@ in the host encoding.
 .IP \(bu 5
 Latin-1
 .IP
-The coded character set defined by the ISO8859-1 standard.
+The coded character set defined by the ISO 8859-1 standard.
 .IP \(bu 5
 Latin Portable Character Encoding
 .IP
@@ -593,6 +603,11 @@ not all of Latin-1.
 STRING Encoding
 .IP
 Latin-1, plus tab and newline.
+.IP \(bu 5
+UTF-8 Encoding
+.IP
+The ASCII compatible character encoding scheme defined by the ISO 10646-1
+standard.
 .IP \(bu 5
 POSIX Portable Filename Character Set
 .IP

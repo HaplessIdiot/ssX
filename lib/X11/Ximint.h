@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.5 2000/06/13 02:28:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.6 2000/11/28 17:25:08 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -61,10 +61,13 @@ typedef struct _Xic	*Xic;
  */
 
 typedef struct _XimCommonPrivateRec {
+    /* This struct is also inlined in XimLocalPrivateRec, XimProtoPrivateRec. */
     XlcConv		ctom_conv;
     XlcConv		ctow_conv;
+    XlcConv		ctoutf8_conv;
     XlcConv		cstomb_conv;
     XlcConv		cstowc_conv;
+    XlcConv		cstoutf8_conv;
     XlcConv		ucs_conv;
 } XimCommonPrivateRec;
 
@@ -764,9 +767,9 @@ extern int	_Ximctstombs(
 #if NeedFunctionPrototypes
     XIM		 im,
     char	*from,
-    int		from_len,
+    int		 from_len,
     char	*to,
-    int		to_len,
+    int		 to_len,
     Status	*state
 #endif
 );
@@ -782,13 +785,24 @@ extern int	_Ximctstowcs(
 #endif
 );
 
+extern int	_Ximctstoutf8(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    char	*from,
+    int		 from_len,
+    char	*to,
+    int		 to_len,
+    Status	*state
+#endif
+);
+
 extern int	_XimLcctstombs(
 #if NeedFunctionPrototypes
     XIM		 im,
     char	*from,
-    int		from_len,
+    int		 from_len,
     char	*to,
-    int		to_len,
+    int		 to_len,
     Status	*state
 #endif
 );
@@ -799,6 +813,17 @@ extern int	_XimLcctstowcs(
     char	*from,
     int		 from_len,
     wchar_t	*to,
+    int		 to_len,
+    Status	*state
+#endif
+);
+
+extern int	_XimLcctstoutf8(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    char	*from,
+    int		 from_len,
+    char	*to,
     int		 to_len,
     Status	*state
 #endif
@@ -836,6 +861,17 @@ extern int	_XimProtoWcLookupString(
     XIC		 xic,
     XKeyEvent	*ev,
     wchar_t	*buffer,
+    int		 bytes,
+    KeySym	*keysym,
+    Status	*state
+#endif
+);
+
+extern int	_XimProtoUtf8LookupString(
+#if NeedFunctionPrototypes
+    XIC		 xic,
+    XKeyEvent	*ev,
+    char	*buffer,
     int		 bytes,
     KeySym	*keysym,
     Status	*state
@@ -902,6 +938,17 @@ extern int	_XimLookupWCText(
     Xic			 ic,
     XKeyEvent		*event,
     wchar_t		*buffer,
+    int			 nbytes,
+    KeySym		*keysym,
+    XComposeStatus	*status
+#endif
+);
+
+extern int	_XimLookupUTF8Text(
+#if NeedFunctionPrototypes
+    Xic			 ic,
+    XKeyEvent		*event,
+    char		*buffer,
     int			 nbytes,
     KeySym		*keysym,
     XComposeStatus	*status
@@ -1094,6 +1141,17 @@ extern int _XimLocalWcLookupString(
     XIC			 ic,
     XKeyEvent		*ev,
     wchar_t		*buffer,
+    int			 bytes,
+    KeySym		*keysym,
+    Status		*status
+#endif
+);
+
+extern int _XimLocalUtf8LookupString(
+#if NeedFunctionPrototypes
+    XIC			 ic,
+    XKeyEvent		*ev,
+    char		*buffer,
     int			 bytes,
     KeySym		*keysym,
     Status		*status

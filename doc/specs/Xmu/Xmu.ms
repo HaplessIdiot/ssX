@@ -1,8 +1,11 @@
+.\"
+.\" $XFree86$
+.\"
 .sp 8
 .ce 2
 \s+2\fBXmu Library\fP\s-2
 .sp 6p
-X Version 11, Release 6
+X Version 11, Release 6.4
 .sp 1
 .ce 1
 ``\fIDon't ask.\fP''
@@ -70,6 +73,7 @@ XA_TARGETS(\fId\fP)
 XA_TEXT(\fId\fP)
 XA_TIMESTAMP(\fId\fP)
 XA_USER(\fId\fP)
+XA_UTF8_STRING(\fId\fP)
 .FN
 .LP
 These macros take a display as argument and return an
@@ -1198,6 +1202,11 @@ Character Set Functions
 To use the functions defined in this section, you should include the header
 file
 .Pn < X11/Xmu/CharSet.h >.
+.LP
+The functions in this section are \fBdeprecated\fP because they don't work
+in most locales now supported by X11; the function
+.PN XmbLookupString
+provides a better alternative.
 .sp
 .FD 0
 void XmuCopyISOLatin1Lowered(\fIdst\fP, \fIsrc\fP)
@@ -1567,9 +1576,16 @@ except that it maps a key event to an APL string.
 Compound Text Functions
 .LP
 The functions defined in this section are for parsing Compound Text strings,
-decomposing them into individual segments.  Definitions needed to use these
+decomposing them into individual segments. Definitions needed to use these
 routines are in the include file
 .Pn < X11/Xmu/Xct.h >.
+.LP
+The functions in this section are \fBdeprecated\fP because they shift the
+burden for recently introduced locale encodings to the application. The
+use of the
+.PN UTF8_STRING
+text encoding provides a better alternative.
+.LP
 A Compound Text string is represented as the following type:
 .LP
 	typedef unsigned char *XctString;

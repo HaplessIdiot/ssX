@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.3 2000/01/29 18:58:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.4 2000/11/27 17:45:53 dawes Exp $ */
 
 /*
 **++ 
@@ -75,7 +75,18 @@ SOFTWARE.
 extern int _XKeyInitialize();
 
 /* lcStd.c */
-extern int _Xlcmbstowcs();
+extern int _Xlcmbstowcs(
+    XLCd	lcd,
+    wchar_t	*wstr,
+    char	*str,
+    int		len
+);
+extern int _Xlcmbstoutf8(
+    XLCd	lcd,
+    char	*ustr,
+    const char	*str,
+    int		len
+);
 
 #define SPACE   32
 
@@ -1235,9 +1246,12 @@ XPointer	client_data;
         ic->private.local.composed->mb[i] = buf[i];
     ic->private.local.composed->mb[count] = '\0';
 
-    i = _Xlcmbstowcs(ic->core.im->core.lcd, ic->private.local.composed->wc,
-			ic->private.local.composed->mb, count);
-    
+    _Xlcmbstowcs(ic->core.im->core.lcd, ic->private.local.composed->wc,
+		 ic->private.local.composed->mb, count);
+
+    _Xlcmbstoutf8(ic->core.im->core.lcd, ic->private.local.composed->utf8,
+		  ic->private.local.composed->mb, count);
+
     if (!((buf[0] > 0 && buf[0] <= 0x1f) || (buf[0] == 0) || (buf[0] == 0x7f)))
         ic->private.local.composed->keysym = NoSymbol;
     else

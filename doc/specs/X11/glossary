@@ -1,3 +1,6 @@
+.\"
+.\" $XFree86$
+.\"
 \&
 .sp 1
 .ce 1
@@ -78,7 +81,7 @@ and
 .PN CharSetEncoding
 fields of an XLFD name identify the charset of the font.
 A base font name may be a full XLFD name, with all fourteen '-' delimiters, 
-or an abbreviated XLFD name containing only the first 13 fields of an XLFD name,
+or an abbreviated XLFD name containing only the first 12 fields of an XLFD name,
 up to but not including 
 .PN CharSetRegistry ,
 with or without the thirteenth '-', or a non-XLFD name.
@@ -402,7 +405,7 @@ characters.
 The representations do not have to be of uniform length.
 Examples are an ISO2022 graphic set, a state-independent 
 or state-dependent combination of graphic sets, possibly including control
-sets, and the X Compound Text encoding.
+sets, the X Compound Text encoding, and the UTF-8 ISO10646/Unicode encoding.
 .IP
 In X, encodings are identified by a string
 which appears as: the
@@ -459,6 +462,14 @@ of event or until the event is discarded explicitly.
 .KE
 .LP
 .KS
+\fBEvent source\fP
+.IN "Event" "source" "@DEF@"
+.IP
+The deepest viewable window that the pointer is in is called
+the source of a device-related event.
+.KE
+.LP
+.KS
 \fBEvent synchronization\fP
 .IN "Event" "synchronization" "@DEF@"
 .IP
@@ -468,14 +479,6 @@ events should be sent when in the middle of window management
 operations).  
 The event synchronization mechanism allows synchronous processing of 
 device events.
-.KE
-.LP
-.KS
-\fBEvent source\fP
-.IN "Event" "source" "@DEF@"
-.IP
-The deepest viewable window that the pointer is in is called
-the source of a device-related event.
 .KE
 .LP
 .KS
@@ -509,17 +512,17 @@ and interline spacing.
 .KE
 .LP
 .KS
-\fBFrozen events\fP
-.IN "Frozen events" "" "@DEF@"
-.IP
-Clients can freeze event processing during keyboard and pointer grabs.
-.KE
-.LP
-.KS
 \fBFont glyph\fP
 .IN "Font glyph" "" "@DEF@"
 .IP
 The abstract graphical symbol for an index into a font.
+.KE
+.LP
+.KS
+\fBFrozen events\fP
+.IN "Frozen events" "" "@DEF@"
+.IP
+Clients can freeze event processing during keyboard and pointer grabs.
 .KE
 .LP
 .KS
@@ -775,16 +778,6 @@ Encoding and decoding for inter-client text communication
 .KE
 .LP
 .KS
-\fBLocalization\fP
-.IN "Localization" "" "@DEF@"
-.IP
-The process of establishing information within a computer system specific 
-to the operation of particular native languages, local customs 
-and coded character sets.
-(XPG3)
-.KE
-.LP
-.KS
 \fBLocale name\fP
 .IN "Locale name" "" "@DEF@"
 .IP
@@ -794,6 +787,16 @@ On ANSI C library compliant systems,
 the locale argument to the
 .PN setlocale
 function.
+.KE
+.LP
+.KS
+\fBLocalization\fP
+.IN "Localization" "" "@DEF@"
+.IP
+The process of establishing information within a computer system specific 
+to the operation of particular native languages, local customs 
+and coded character sets.
+(XPG3)
 .KE
 .LP
 .KS
@@ -1463,15 +1466,7 @@ a set of pixel values in scanline order.
 ANSI Programming Language - C: ANSI X3.159-1989, December 14, 1989.
 .LP
 Draft Proposed Multibyte Extension of ANSI C, Draft 1.1, November 30,
-1989 SC22/C WG/SWG IPSJ/ITSCJ Japan.
-.LP
-X/Open Portability Guide, Issue 3, December 1988 (XPG3), X/Open Company,
-Ltd, Prentice-Hall, Inc. 1989. ISBN 0-13-685835-8.
-(See especially Volume 3:  XSI Supplementary Definitions.)
-.LP
-POSIX: Information Technology - Portable Operating System Interface (POSIX) -
-Part 1: System Application Program Interface (API) [C Language],
-ISO/IEC 9945-1.
+1989, SC22/C WG/SWG IPSJ/ITSCJ Japan.
 .LP
 ISO2022: Information processing - ISO 7-bit and 8-bit coded character
 sets - Code extension techniques.
@@ -1479,6 +1474,14 @@ sets - Code extension techniques.
 ISO8859-1: Information processing - 8-bit single-byte coded graphic
 character sets - Part 1: Latin alphabet No. 1.
 .LP
+POSIX: Information Technology - Portable Operating System Interface (POSIX) -
+Part 1: System Application Program Interface (API) [C Language],
+ISO/IEC 9945-1.
+.LP
 Text of ISO/IEC/DIS 9541-1, Information Processing - Font Information
 Interchange - Part 1:  Architecture.
+.LP
+X/Open Portability Guide, Issue 3, December 1988 (XPG3), X/Open Company,
+Ltd, Prentice-Hall, Inc. 1989. ISBN 0-13-685835-8.
+(See especially Volume 3:  XSI Supplementary Definitions.)
 .bp

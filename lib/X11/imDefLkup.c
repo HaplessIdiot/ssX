@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.5 1998/10/03 08:41:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.6 1999/05/09 10:50:32 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define  NEED_EVENTS
@@ -827,7 +827,7 @@ _XimErrorCallback(xim, len, data, call_data)
     XIMID        imid;
     XICID        icid;
     Xim		 im = (Xim)call_data;
-    Xic		 ic;
+    Xic		 ic = NULL;
 
     if (flag & XIM_IMID_VALID) {
 	imid = buf_s[0];
@@ -902,17 +902,15 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 #define MAXINT		(~((unsigned int)1 << ((8 * sizeof(int)) - 1)))
 #endif /* !MAXINT */
 
-Public int
-_Ximctstombs(xim, from, from_len, to, to_len, state)
-    XIM		 xim;
+Private int
+_Ximctsconvert(conv, from, from_len, to, to_len, state)
+    XlcConv	 conv;
     char	*from;
     int		 from_len;
     char	*to;
     int		 to_len;
     Status	*state;
 {
-    Xim		 im = (Xim)xim;
-    XlcConv	 conv = im->private.proto.ctom_conv;
     int		 from_left;
     int		 to_left;
     int		 from_savelen;
@@ -985,6 +983,19 @@ _Ximctstombs(xim, from, from_len, to, to_len, state)
 	}
     }
     return to_cnvlen;
+}
+
+Public int
+_Ximctstombs(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
+    char	*from;
+    int		 from_len;
+    char	*to;
+    int		 to_len;
+    Status	*state;
+{
+    return _Ximctsconvert(((Xim)xim)->private.proto.ctom_conv,
+			  from, from_len, to, to_len, state);
 }
 
 Public int
@@ -1070,6 +1081,19 @@ _Ximctstowcs(xim, from, from_len, to, to_len, state)
 	}
     }
     return to_cnvlen;
+}
+
+Public int
+_Ximctstoutf8(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
+    char	*from;
+    int		 from_len;
+    char	*to;
+    int		 to_len;
+    Status	*state;
+{
+    return _Ximctsconvert(((Xim)xim)->private.proto.ctoutf8_conv,
+			  from, from_len, to, to_len, state);
 }
 
 Public int
@@ -1177,6 +1201,68 @@ _XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
 
     } else if (ev->type == KeyPress) {
 	ret = _XimLookupWCText(ic, ev, buffer, bytes, keysym, NULL);
+	if (ret > 0) {
+	    if (keysym && *keysym != NoSymbol)
+		*state = XLookupBoth;
+	    else
+		*state = XLookupChars;
+	} else {
+	    if (keysym && *keysym != NoSymbol)
+		*state = XLookupKeySym;
+	    else
+		*state = XLookupNone;
+	}
+    } else {
+	*state = XLookupNone;
+	ret = 0;
+    }
+
+    return ret;
+}
+
+Public int
+_XimProtoUtf8LookupString(xic, ev, buffer, bytes, keysym, state)
+    XIC			 xic;
+    XKeyEvent		*ev;
+    char		*buffer;
+    int			 bytes;
+    KeySym		*keysym;
+    Status		*state;
+{
+    Xic			 ic = (Xic)xic;
+    Xim			 im = (Xim)ic->core.im;
+    int			 ret;
+    Status		 tmp_state;
+    XimCommitInfo	 info;
+
+    if (!IS_SERVER_CONNECTED(im))
+	return 0;
+
+    if (!state)
+	state = &tmp_state;
+
+    if (ev->type == KeyPress && ev->keycode == 0) { /* Filter function */
+	if (!(info = ic->private.proto.commit_info)) {
+	    if (state)
+		*state = XLookupNone;
+	    return 0;
+	}
+
+	ret = im->methods->ctstoutf8((XIM)im, info->string,
+			 	info->string_len, buffer, bytes, state);
+	if (*state == XBufferOverflow)
+	    return 0;
+	if (keysym && (info->keysym && *(info->keysym))) {
+	    *keysym = *(info->keysym);
+	    if (*state == XLookupChars)
+		*state = XLookupBoth;
+	    else
+		*state = XLookupKeySym;
+	}
+	_XimUnregCommitInfo(ic);
+
+    } else if (ev->type == KeyPress) {
+	ret = _XimLookupUTF8Text(ic, ev, buffer, bytes, keysym, NULL);
 	if (ret > 0) {
 	    if (keysym && *keysym != NoSymbol)
 		*state = XLookupBoth;

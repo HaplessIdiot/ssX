@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiIc.c,v 1.3 94/03/26 17:00:55 rws Exp $ */
+/* $XConsortium: imThaiIc.c /main/5 1996/10/22 14:24:50 kaleb $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -59,17 +59,20 @@ _XimThaiDestroyIC(xic)
 {
     Xic	 ic = (Xic)xic;
     if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
-	_XimThaiUnSetFocus(ic);
+	_XimThaiUnSetFocus(xic);
     }
     if(ic->private.local.ic_resources) {
 	Xfree(ic->private.local.ic_resources);
+	ic->private.local.ic_resources = NULL;
     }
 
     Xfree(ic->private.local.context->mb);
     Xfree(ic->private.local.context->wc);
+    Xfree(ic->private.local.context->utf8);
     Xfree(ic->private.local.context);
     Xfree(ic->private.local.composed->mb);
     Xfree(ic->private.local.composed->wc);
+    Xfree(ic->private.local.composed->utf8);
     Xfree(ic->private.local.composed);
     return;
 }
@@ -95,8 +98,8 @@ _XimThaiSetFocus(xic)
     return;
 }
 
-Private char *
-_XimThaiMbReset(xic)
+Private void
+_XimThaiReset(xic)
     XIC	 xic;
 {
     Xic	 ic = (Xic)xic;
@@ -104,19 +107,23 @@ _XimThaiMbReset(xic)
     ic->private.local.thai.keysym = 0;
     ic->private.local.composed->mb[0] = '\0';
     ic->private.local.composed->wc[0] = 0;
-    return((char *)NULL);
+    ic->private.local.composed->utf8[0] = '\0';
+}
+
+Private char *
+_XimThaiMbReset(xic)
+    XIC	 xic;
+{
+    _XimThaiReset(xic);
+    return (char *)NULL;
 }
 
 Private wchar_t *
 _XimThaiWcReset(xic)
     XIC	 xic;
 {
-    Xic	 ic = (Xic)xic;
-    ic->private.local.thai.comp_state = 0;
-    ic->private.local.thai.keysym = 0;
-    ic->private.local.composed->mb[0] = '\0';
-    ic->private.local.composed->wc[0] = 0;
-    return((wchar_t *)NULL);
+    _XimThaiReset(xic);
+    return (wchar_t *)NULL;
 }
 
 Private XICMethodsRec Thai_ic_methods = {
@@ -127,8 +134,10 @@ Private XICMethodsRec Thai_ic_methods = {
     _XimLocalGetICValues,	/* get_values */
     _XimThaiMbReset,		/* mb_reset */
     _XimThaiWcReset,		/* wc_reset */
+    _XimThaiMbReset,		/* utf8_reset */
     _XimLocalMbLookupString,	/* mb_lookup_string */
     _XimLocalWcLookupString,	/* wc_lookup_string */
+    _XimLocalUtf8LookupString	/* utf8_lookup_string */
 };
 
 XIC
@@ -159,6 +168,9 @@ _XimThaiCreateIC(im, values)
     if ((ic->private.local.context->wc = (wchar_t *)Xmalloc(10*sizeof(wchar_t)))
 		== (wchar_t *)NULL)
 	goto Set_Error;
+    if ((ic->private.local.context->utf8 = (char *)Xmalloc(10))
+		== (char *)NULL)
+	goto Set_Error;
     if ((ic->private.local.composed = (DefTree *)Xmalloc(sizeof(DefTree)))
 	    == (DefTree *)NULL)
 	goto Set_Error;
@@ -167,6 +179,9 @@ _XimThaiCreateIC(im, values)
 	goto Set_Error;
     if ((ic->private.local.composed->wc = (wchar_t *)Xmalloc(10*sizeof(wchar_t)))
 		== (wchar_t *)NULL)
+	goto Set_Error;
+    if ((ic->private.local.composed->utf8 = (char *)Xmalloc(10))
+		== (char *)NULL)
 	goto Set_Error;
 
     ic->private.local.thai.comp_state = 0;
