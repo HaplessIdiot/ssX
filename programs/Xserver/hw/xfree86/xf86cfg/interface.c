@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.14 2000/12/29 20:09:52 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.15 2001/03/02 22:39:27 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -81,6 +81,7 @@ void DevicePopupMenu(Widget, XEvent*, String*, Cardinal*);
 void DevicePopdownMenu(Widget, XEvent*, String*, Cardinal*);
 void AddDeviceCallback(Widget, XtPointer, XtPointer);
 void QuitCallback(Widget, XtPointer, XtPointer);
+void SmeConfigureDeviceCallback(Widget, XtPointer, XtPointer);
 void ConfigureDeviceCallback(Widget, XtPointer, XtPointer);
 void EnableDeviceCallback(Widget, XtPointer, XtPointer);
 void DisableDeviceCallback(Widget, XtPointer, XtPointer);
@@ -100,6 +101,7 @@ void PopdownErrorCallback(Widget, XtPointer, XtPointer);
 static void ErrorCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void QuitCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void HelpCallback(Widget, XtPointer, XtPointer);
+static void UpdateMenuDeviceList(int);
 
 extern void AccessXConfigureStart(void);
 extern void AccessXConfigureEnd(void);
@@ -138,6 +140,8 @@ static char no_cursor_data[] = { 0,0,0,0, 0,0,0,0 };
 static GC cablegc, cablegcshadow;
 Atom wm_delete_window;
 static Bool config_set = False;
+static Widget mouseSme, mouseMenu, keyboardSme, keyboardMenu,
+       cardSme, cardMenu, monitorSme, monitorMenu;
 
 #define CONFIG_LAYOUT	0
 #define CONFIG_SCREEN	1
@@ -300,18 +304,54 @@ main(int argc, char *argv[])
 
     commands = XtCreateManagedWidget("commands", formWidgetClass,
 				     pane, NULL, 0);
-    mouse = XtCreateManagedWidget("mouse", commandWidgetClass,
-				  commands, NULL, 0);
-    XtAddCallback(mouse, XtNcallback, AddDeviceCallback, (XtPointer)MOUSE);
-    keyboard = XtCreateManagedWidget("keyboard", commandWidgetClass,
-				     commands, NULL, 0);
-    XtAddCallback(keyboard, XtNcallback, AddDeviceCallback, (XtPointer)KEYBOARD);
-    card = XtCreateManagedWidget("card", commandWidgetClass,
-				 commands, NULL, 0);
-    XtAddCallback(card, XtNcallback, AddDeviceCallback, (XtPointer)CARD);
-    monitor = XtCreateManagedWidget("monitor", commandWidgetClass,
-				    commands, NULL, 0);
-    XtAddCallback(monitor, XtNcallback, AddDeviceCallback, (XtPointer)MONITOR);
+
+    mouse = XtVaCreateManagedWidget("mouse", menuButtonWidgetClass,
+				    commands, XtNmenuName, "mouseP", NULL, 0);
+    popup = XtCreatePopupShell("mouseP", simpleMenuWidgetClass,
+			       mouse, NULL, 0);
+    sme = XtCreateManagedWidget("new", smeBSBObjectClass,
+				popup, NULL, 0);
+    XtAddCallback(sme, XtNcallback, AddDeviceCallback, (XtPointer)MOUSE);
+    mouseSme = XtCreateManagedWidget("configure", smeBSBObjectClass,
+				     popup, NULL, 0);
+    XtAddCallback(mouseSme, XtNcallback, SmeConfigureDeviceCallback,
+		  (XtPointer)MOUSE);
+
+    keyboard = XtVaCreateManagedWidget("keyboard", menuButtonWidgetClass,
+				       commands, XtNmenuName, "keyboardP", NULL, 0);
+    popup = XtCreatePopupShell("keyboardP", simpleMenuWidgetClass,
+			       keyboard, NULL, 0);
+    sme = XtCreateManagedWidget("new", smeBSBObjectClass,
+				popup, NULL, 0);
+    XtAddCallback(sme, XtNcallback, AddDeviceCallback, (XtPointer)KEYBOARD);
+    keyboardSme = XtCreateManagedWidget("configure", smeBSBObjectClass,
+					popup, NULL, 0);
+    XtAddCallback(keyboardSme, XtNcallback, SmeConfigureDeviceCallback,
+		  (XtPointer)KEYBOARD);
+
+    card = XtVaCreateManagedWidget("card", menuButtonWidgetClass,
+				   commands, XtNmenuName, "cardP", NULL, 0);
+    popup = XtCreatePopupShell("cardP", simpleMenuWidgetClass,
+			       card, NULL, 0);
+    sme = XtCreateManagedWidget("new", smeBSBObjectClass,
+				popup, NULL, 0);
+    XtAddCallback(sme, XtNcallback, AddDeviceCallback, (XtPointer)CARD);
+    cardSme = XtCreateManagedWidget("configure", smeBSBObjectClass,
+				    popup, NULL, 0);
+    XtAddCallback(cardSme, XtNcallback, SmeConfigureDeviceCallback,
+		  (XtPointer)CARD);
+
+    monitor = XtVaCreateManagedWidget("monitor", menuButtonWidgetClass,
+				      commands, XtNmenuName, "monitorP", NULL, 0);
+    popup = XtCreatePopupShell("monitorP", simpleMenuWidgetClass,
+			       monitor, NULL, 0);
+    sme = XtCreateManagedWidget("new", smeBSBObjectClass,
+				popup, NULL, 0);
+    XtAddCallback(sme, XtNcallback, AddDeviceCallback, (XtPointer)MONITOR);
+    monitorSme = XtCreateManagedWidget("configure", smeBSBObjectClass,
+				       popup, NULL, 0);
+    XtAddCallback(monitorSme, XtNcallback, SmeConfigureDeviceCallback,
+		  (XtPointer)MONITOR);
 
     work = XtCreateManagedWidget("work", compositeWidgetClass,
 				 pane, NULL, 0);
@@ -383,6 +423,10 @@ main(int argc, char *argv[])
 
     StartConfig();
     InitializeDevices();
+    UpdateMenuDeviceList(MOUSE);
+    UpdateMenuDeviceList(KEYBOARD);
+    UpdateMenuDeviceList(CARD);
+    UpdateMenuDeviceList(MONITOR);
     XtSetSensitive(smemodeline, VideoModeInitialize());
     ReadCardsDatabase();
 
@@ -807,6 +851,8 @@ AddDevice(int type, XtPointer config, int x, int y)
 	    exit(1);
 	    return (NULL);
     }
+
+    UpdateMenuDeviceList(type);
 
     return (computer.devices[computer.num_devices - 1]);
 }
@@ -1233,6 +1279,32 @@ AddDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 }
 
 void
+SmeConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    int i;
+
+    switch ((int)user_data) {
+	case MOUSE:
+	case KEYBOARD:
+	case CARD:
+	case MONITOR:
+	    for (i = 0; i < computer.num_devices; i++)
+		if (computer.devices[i]->type == (int)user_data) {
+		    config = computer.devices[i]->widget;
+		    ConfigureDeviceCallback(w, NULL, NULL);
+		}
+	    break;
+	default:
+	    for (i = 0; i < computer.num_devices; i++)
+		if (computer.devices[i]->config == user_data) {
+		    config = computer.devices[i]->widget;
+		    ConfigureDeviceCallback(w, NULL, NULL);
+		}
+	    break;
+    }
+}
+
+void
 ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     int i, j;
@@ -1296,6 +1368,8 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 				SetTip((xf86cfgDevice*)computer.screens[j]);
 		    }	break;
 		}
+		/* Need to update because it may have been renamed */
+		UpdateMenuDeviceList(computer.devices[i]->type);
 		break;
 	    }
 	}
@@ -1598,11 +1672,109 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 			    (computer.num_devices - i) * sizeof(xf86cfgDevice*));
 
 		DrawCables();
+		UpdateMenuDeviceList(computer.devices[i]->type);
 	    }
 
 	    break;
 	}
     }
+}
+
+static void
+UpdateMenuDeviceList(int type)
+{
+    Widget sme = NULL, menu = NULL;
+    int i, count;
+    static char *mouseM = "mouseM", *keyboardM = "keyboardM",
+		*cardM = "cardM", *monitorM = "monitorM";
+
+    for (i = count = 0; i < computer.num_devices; i++)
+	if (computer.devices[i]->type == type && computer.devices[i]->config)
+	    ++count;
+
+    switch (type) {
+	case MOUSE:
+	    sme = mouseSme;
+	    menu = mouseMenu;
+	    break;
+	case KEYBOARD:
+	    sme = keyboardSme;
+	    menu = keyboardMenu;
+	    break;
+	case CARD:
+	    sme = cardSme;
+	    menu = cardMenu;
+	    break;
+	case MONITOR:
+	    sme = monitorSme;
+	    menu = monitorMenu;
+	    break;
+    }
+
+    if (menu)
+	for (i = ((CompositeWidget)menu)->composite.num_children - 1; i >= 0; i--)
+	    XtDestroyWidget(((CompositeWidget)menu)->composite.children[i]);
+
+    if (count < 2) {
+	XtVaSetValues(sme, XtNmenuName, NULL, NULL);
+	return;
+    }
+
+    switch (type) {
+	case MOUSE:
+	    if (mouseMenu == NULL)
+		menu = mouseMenu =
+		    XtCreatePopupShell(mouseM, simpleMenuWidgetClass,
+				       XtParent(mouseSme), NULL, 0);
+	    XtVaSetValues(mouseSme, XtNmenuName, mouseM, NULL);
+	    break;
+	case KEYBOARD:
+	    if (keyboardMenu == NULL)
+		menu = keyboardMenu =
+		    XtCreatePopupShell(keyboardM, simpleMenuWidgetClass,
+				       XtParent(keyboardSme), NULL, 0);
+	    XtVaSetValues(keyboardSme, XtNmenuName, keyboardM, NULL);
+	    break;
+	case CARD:
+	    if (cardMenu == NULL)
+		menu = cardMenu =
+		    XtCreatePopupShell(cardM, simpleMenuWidgetClass,
+				       XtParent(cardSme), NULL, 0);
+	    XtVaSetValues(cardSme, XtNmenuName, cardM, NULL);
+	    break;
+	case MONITOR:
+	    if (monitorMenu == NULL)
+		menu = monitorMenu =
+		    XtCreatePopupShell(monitorM, simpleMenuWidgetClass,
+				       XtParent(monitorSme), NULL, 0);
+	    XtVaSetValues(monitorSme, XtNmenuName, monitorM, NULL);
+	    break;
+    }
+
+    for (i = 0; i < computer.num_devices; i++)
+	
+	if (computer.devices[i]->config && computer.devices[i]->type == type) {
+	    char *label = NULL;
+
+	    switch (type) {
+		case MOUSE:
+		case KEYBOARD:
+		    label = ((XF86ConfInputPtr)computer.devices[i]->config)
+			->inp_identifier;
+		    break;
+		case CARD:
+		    label = ((XF86ConfDevicePtr)computer.devices[i]->config)
+			->dev_identifier;
+		    break;
+		case MONITOR:
+		    label = ((XF86ConfMonitorPtr)computer.devices[i]->config)
+			->mon_identifier;
+		    break;
+	    }
+	    sme = XtCreateManagedWidget(label, smeBSBObjectClass, menu, NULL, 0);
+	    XtAddCallback(sme, XtNcallback, SmeConfigureDeviceCallback,
+			  computer.devices[i]->config);
+	}
 }
 
 /*ARGSUSED*/
