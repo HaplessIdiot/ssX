@@ -15,8 +15,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <CoreGraphics/CGDirectDisplay.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
+
+// We need CoreGraphics in ApplicationServices, but we leave out
+// QuickDraw, which has symbol conflicts with the basic X includes.
+#define __QD__
+#define __PRINTCORE__
+#include <ApplicationServices/ApplicationServices.h>
 
 #include "../darwin.h"
 #include "quartz.h"
