@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.55 1995/02/12 09:53:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.56 1995/03/04 06:13:24 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1685,36 +1685,19 @@ s3Init(mode)
                s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
          }
          if (DAC_IS_TI3025) {
-	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
-	       outb(vgaCRIndex, 0x6D);             /* set blank delay */
-	       if (s3InfoRec.bitsPerPixel == 32)
-		  if (mode->Flags & V_DBLCLK)
-		     outb(vgaCRReg, 0x10);
-		  else
-		     outb(vgaCRReg, 0x20);
-	       else if (s3InfoRec.bitsPerPixel == 16)
-		  if (mode->Flags & V_DBLCLK) 
-		     outb(vgaCRReg, 0x20);
-		  else
-		     outb(vgaCRReg, 0x31);
+	    outb(vgaCRIndex, 0x6D);
+	    if (s3Bpp == 1)
+	       if (mode->Flags & V_DBLCLK) 
+		  outb(vgaCRReg, 0x02);
 	       else
-		  outb(vgaCRReg, 0x20);
-	    }
-	    else {
-	       outb(vgaCRIndex, 0x6D);
-	       if (s3Bpp == 1)
-		  if (mode->Flags & V_DBLCLK) 
-		     outb(vgaCRReg, 0x02);
-		  else
-		     outb(vgaCRReg, 0x03);
-	       else if (s3Bpp == 2)
-		  if (mode->Flags & V_DBLCLK) 
-		     outb(vgaCRReg, 0x00);
-		  else
-		     outb(vgaCRReg, 0x01);
-	       else /* (s3Bpp == 4) */
+		  outb(vgaCRReg, 0x03);
+	    else if (s3Bpp == 2)
+	       if (mode->Flags & V_DBLCLK) 
 		  outb(vgaCRReg, 0x00);
-	    }
+	       else
+		  outb(vgaCRReg, 0x01);
+	    else /* (s3Bpp == 4) */
+	       outb(vgaCRReg, 0x00);
 	 }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */

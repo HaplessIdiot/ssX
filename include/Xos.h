@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.67 94/11/30 20:48:05 kaleb Exp $
- * $XFree86: xc/include/Xos.h,v 3.9 1995/01/28 15:42:04 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.10 1995/03/08 04:49:18 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -170,6 +170,12 @@ struct timezone {
 #endif /* _SEQUENT_ */
 
 #else /* not SYSV */
+
+#if defined(_ANSI_SOURCE) && defined(__bsdi__)
+#undef _ANSI_SOURCE
+#include <sys/time.h>
+#define _ANSI_SOURCE
+#endif
 
 #if defined(_POSIX_SOURCE) && defined(SVR4)
 /* need to omit _POSIX_SOURCE in order to get what we want in SVR4 */
