@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c,v 1.55 95/05/19 19:35:35 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.1 1995/12/23 09:37:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.2 1996/01/05 13:17:57 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1332,7 +1332,7 @@ doPolyText(client, c)
 		    ValidateGC(c->pDraw, c->pGC);
 		    
 		    c->slept = TRUE;
-		    ClientSleep(client, doPolyText, (pointer) c);
+		    ClientSleep(client, (ClientSleepProcPtr)doPolyText, (pointer) c);
 
 		    /* Set up to perform steps 3 and 4 */
 		    client_state = START_SLEEP;
@@ -1520,7 +1520,7 @@ doImageText(client, c)
 	    ValidateGC(c->pDraw, c->pGC);
 
 	    c->slept = TRUE;
-            ClientSleep(client, doImageText, (pointer) c);
+            ClientSleep(client, (ClientSleepProcPtr)doImageText, (pointer) c);
         }
         return TRUE;
     }

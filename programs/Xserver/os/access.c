@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.9 1996/01/05 13:20:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.10 1996/02/09 08:22:27 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -1007,10 +1007,23 @@ AddHost (client, family, length, pAddr)
 }
 
 Bool
+#if NeedFunctionPrototypes
+ForEachHostInFamily (
+    int	    family,
+    Bool    (*func)(
+#if NeedNestedPrototypes
+            unsigned char * /* addr */,
+            short           /* len */,
+            pointer         /* closure */
+#endif
+            ),
+    pointer closure)
+#else
 ForEachHostInFamily (family, func, closure)
     int	    family;
     Bool    (*func)();
     pointer closure;
+#endif
 {
     HOST    *host;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.0 1996/01/10 05:51:45 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.1 1996/01/16 15:09:46 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -6,6 +6,9 @@
 #define	included_xterm_h
 
 #include "proto.h"
+
+#define GET_FG(flags,color) ((flags&FG_COLOR) ? screen->colors[color] : screen->foreground)
+#define GET_BG(flags,color) ((flags&BG_COLOR) ? screen->colors[color] : term->core.background_pixel)
 
 /* Tekproc.c */
 extern int TekInit PROTO((void));
@@ -48,6 +51,8 @@ extern int VTInit PROTO((void));
 extern int v_write PROTO((int f, char *d, int len));
 extern void FindFontSelection PROTO((char *atom_name, Bool justprobe));
 extern void HideCursor PROTO((void));
+extern void SGR_Background PROTO((int color));
+extern void SGR_Foreground PROTO((int color));
 extern void SetVTFont PROTO((int i, Bool doresize, char *name1, char *name2));
 extern void ShowCursor PROTO((void));
 extern void SwitchBufPtrs PROTO((TScreen *screen));
@@ -164,6 +169,7 @@ extern void TabSet PROTO((Tabs tabs, int col));
 extern void TabZonk PROTO((Tabs	tabs));
 
 /* util.c */
+extern GC updatedXtermGC PROTO((TScreen *screen, int flags, int fg, int bg, Bool hilite));
 extern int AddToRefresh PROTO((TScreen *screen));
 extern int HandleExposure PROTO((TScreen *screen, XEvent *event));
 extern void ChangeColors PROTO((XtermWidget tw, ScrnColors *pNew));
@@ -183,6 +189,7 @@ extern void RevScroll PROTO((TScreen *screen, int amount));
 extern void ReverseVideo PROTO((XtermWidget termw));
 extern void Scroll PROTO((TScreen *screen, int amount));
 extern void recolor_cursor PROTO((Cursor cursor, unsigned long fg, unsigned long bg));
+extern void resetXtermGC PROTO((TScreen *screen, int flags, Bool hilite));
 extern void scrolling_copy_area PROTO((TScreen *screen, int firstline, int nlines, int amount));
 
 #endif	/* included_xterm_h */

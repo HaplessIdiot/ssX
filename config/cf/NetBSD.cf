@@ -4,7 +4,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.31 1996/02/04 04:14:50 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.32 1996/02/04 08:53:38 dawes Exp $
 
 #ifndef OSName
 #define OSName		NetBSD 1.1
@@ -114,6 +114,12 @@ XCOMM operating system:  OSName
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
+#if OSMajorVersion > 0
+# ifndef BuildDynamicLoading
+# define BuildDynamicLoading	YES
+# endif
+#endif
+
 #ifndef ExtraLibraries
 #define ExtraLibraries		/**/
 #endif
@@ -128,6 +134,9 @@ XCOMM operating system:  OSName
  * Make & install Features
  */
 
+#define HasMakefileSafeInclude	YES
+#define IncludeMakefile(file) @@# dependencies are in .depend
+#define DependFileName		.depend
 #define AvoidNullMakeCommand 	YES
 #define StripInstalledPrograms	YES
 #define CompressAllFonts	YES

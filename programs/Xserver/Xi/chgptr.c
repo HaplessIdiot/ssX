@@ -1,4 +1,5 @@
-/* $XConsortium: chgptr.c,v 1.20 94/04/17 20:33:05 dpw Exp $ */
+/* $XConsortium: chgptr.c /main/19 1996/01/14 16:44:45 kaleb $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -158,7 +159,11 @@ ProcXChangePointerDevice (client)
 	if (!dev->ptrfeed)
 	   InitPtrFeedbackClassDeviceStruct(dev, (PtrCtrlProcPtr)NoopDDA);
 	RegisterOtherDevice (xptr);
+#ifdef DEVINTPTR
+	RegisterPointerDevice (dev);
+#else
 	RegisterPointerDevice ((DevicePtr)dev);
+#endif
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;
@@ -166,7 +171,7 @@ ProcXChangePointerDevice (client)
 	ev.request = NewPointer;
 
 	SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
-	SendMappingNotify (MappingPointer, 0, 0);
+	SendMappingNotify (MappingPointer, 0, 0, client);
 
 	rep.status = 0;
 	}

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.3 1996/01/10 05:44:23 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.4 1996/01/24 22:05:03 dawes Exp $
  */
 
 /*
@@ -410,6 +410,7 @@ Boolean force;			/* ... leading/trailing spaces */
 	int maxrow = toprow + nrows - 1;
 	int scrollamt = screen->scroll_amt;
 	int max = screen->max_row;
+	int gc_changes = 0;
 
 	if(screen->cursor_col >= leftcol && screen->cursor_col <=
 	 (leftcol + ncols - 1) && screen->cursor_row >= toprow + topline &&
@@ -426,7 +427,6 @@ Boolean force;			/* ... leading/trailing spaces */
 	   int fg, bg;
 	   int x, n;
 	   GC gc;
-	   Pixel fg_pix, bg_pix;
 	   Boolean hilite;	
 
 	   if (row < screen->top_marg || row > screen->bot_marg)
@@ -479,36 +479,16 @@ Boolean force;			/* ... leading/trailing spaces */
 	   flags = attrs[col];
 	   fg = fgs[col];
 	   bg = bgs[col];
-
-	   fg_pix = (flags & FG_COLOR) ? screen->colors[fg]
-				       : screen->foreground;
-	   bg_pix = (flags & BG_COLOR) ? screen->colors[bg]
-				       : term->core.background_pixel;
-
-	   if ( (!hilite && (flags & INVERSE) != 0) ||
-	        (hilite && (flags & INVERSE) == 0) ) {
-	       if (flags & BOLD) gc = screen->reverseboldGC;
-	       else gc = screen->reverseGC;
-
-	       XSetForeground(screen->display, gc, bg_pix);
-	       XSetBackground(screen->display, gc, fg_pix);
-
-	   } else {
-	       if (flags & BOLD) gc = screen->normalboldGC;
-	       else gc = screen->normalGC;
-
-	       XSetForeground(screen->display, gc, fg_pix);
-	       XSetBackground(screen->display, gc, bg_pix);
-	   }
-
+	   gc = updatedXtermGC(screen, flags, fg, bg, hilite);
+	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
 
 	   x = CursorX(screen, col);
 	   lastind = col;
 
 	   for (; col <= maxcol; col++) {
-		if (attrs[col] != flags ||
-		    (flags & FG_COLOR && fgs[col] != fg) ||
-		    (flags & BG_COLOR && bgs[col] != bg)) {
+		if ((attrs[col] != flags) ||
+		    ((flags & FG_COLOR) && (fgs[col] != fg)) ||
+		    ((flags & BG_COLOR) && (bgs[col] != bg))) {
 
 		   XDrawImageString(screen->display, TextWindow(screen), 
 		        	gc, x, y, (char *) &chars[lastind], n = col - lastind);
@@ -526,50 +506,12 @@ Boolean force;			/* ... leading/trailing spaces */
 		   flags = attrs[col];
 		   fg = fgs[col];
 		   bg = bgs[col];
-
-		   fg_pix = (flags & FG_COLOR) ? screen->colors[fg]
-					       : screen->foreground;
-		   bg_pix = (flags & BG_COLOR) ? screen->colors[bg]
-					       : term->core.background_pixel;
-
-		   if ( (!hilite && (flags & INVERSE) != 0) ||
-		       (hilite && (flags & INVERSE) == 0) ) {
-	       		if (flags & BOLD) gc = screen->reverseboldGC;
-	       		else gc = screen->reverseGC;
-
-		       XSetForeground(screen->display, gc, bg_pix);
-		       XSetBackground(screen->display, gc, fg_pix);
-
-		   } else {
-	      		 if (flags & BOLD) gc = screen->normalboldGC;
-	      		 else gc = screen->normalGC;
-
-		       XSetForeground(screen->display, gc, fg_pix);
-		       XSetBackground(screen->display, gc, bg_pix);
-
-		   }
+	   	   gc = updatedXtermGC(screen, flags, fg, bg, hilite);
+	   	   gc_changes |= (flags & (FG_COLOR|BG_COLOR));
 		}
 
 		if(chars[col] == 0)
 			chars[col] = ' ';
-	   }
-
-
-	   if ( (!hilite && (flags & INVERSE) != 0) ||
-	       (hilite && (flags & INVERSE) == 0) ) {
-	       if (flags & BOLD) gc = screen->reverseboldGC;
-	       else gc = screen->reverseGC;
-
-	       XSetForeground(screen->display, gc, bg_pix);
-	       XSetBackground(screen->display, gc, fg_pix);
-
-	   } else {
-	       if (flags & BOLD) gc = screen->normalboldGC;
-	       else gc = screen->normalGC;
-
-	       XSetForeground(screen->display, gc, fg_pix);
-	       XSetBackground(screen->display, gc, bg_pix);
-
 	   }
 
 	   XDrawImageString(screen->display, TextWindow(screen), gc, 
@@ -581,6 +523,16 @@ Boolean force;			/* ... leading/trailing spaces */
 		XDrawLine(screen->display, TextWindow(screen), gc, 
 		 x, y+1, x + n * FontWidth(screen), y+1);
 	}
+
+	/*
+	 * If we're in color mode, reset the various GC's to the current
+	 * screen foreground and background so that other functions (e.g.,
+	 * ClearRight) will get the correct colors.
+	 */
+	if (gc_changes & FG_COLOR)
+		SGR_Foreground(term->cur_foreground);
+	if (gc_changes & BG_COLOR)
+		SGR_Background(term->cur_background);
 }
 
 void
@@ -819,6 +771,7 @@ register int length;		/* length of string */
 	}
 	return ret;
 }
+
 Bool
 non_blank_line(sb, row, col, len)
 ScrnBuf sb;
@@ -827,7 +780,7 @@ register int row, col, len;
 	register int	i;
 	register Char *ptr = BUF_CHARS(sb, row);
 
-	for (i = col; i < len; i++)	{
+	for (i = col; i < len; i++) {
 		if (ptr[i])
 			return True;
 	}

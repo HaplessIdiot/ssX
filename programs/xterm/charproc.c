@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.20 1996/01/30 15:28:24 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.21 1996/02/12 11:16:40 dawes Exp $
  */
 
 /*
@@ -123,8 +123,7 @@ static int in_put PROTO((void));
 static int set_character_class PROTO((char *s));
 static void DoSetSelectedFont PROTO_XT_SEL_CB_ARGS;
 static void FromAlternate PROTO((TScreen *screen));
-static void SGR_Background PROTO((int color));
-static void SGR_Foreground PROTO((int color));
+static void SGR_Save PROTO((void));
 static void SwitchBufs PROTO((TScreen *screen));
 static void ToAlternate PROTO((TScreen *screen));
 static void VTGraphicsOrNoExpose PROTO((XEvent *event));
@@ -265,9 +264,6 @@ static void update_font_info PROTO((TScreen *screen, Bool doresize));
 #define XtCUnderLine "UnderLine"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
-
-#define GET_FG(flags,color) ((flags&FG_COLOR) ? screen->colors[color] : screen->foreground)
-#define GET_BG(flags,color) ((flags&BG_COLOR) ? screen->colors[color] : term->core.background_pixel)
 
 static int nparam;
 static ANSI reply;
@@ -709,33 +705,38 @@ WidgetClass xtermWidgetClass = (WidgetClass)&xtermClassRec;
 static	Pixel	original_fg;
 static	Pixel	original_bg;
 
+static void SGR_Save()
+{
+	static	int	initialized;
+	if (!initialized) {
+   		original_fg = term->screen.foreground;
+   		original_bg = term->core.background_pixel;
+		initialized = TRUE;
+	}
+}
+
 /*
  * The terminal's foreground and background colors are set via two mechanisms:
  *	text (cur_foreground, cur_background values that are passed down to
  *		XDrawImageString and XDrawString)
  *	area (X11 graphics context used in XClearArea and XFillRectangle)
  */
-static void SGR_Foreground(color)
+void SGR_Foreground(color)
 	int color;
 {
 	register TScreen *screen = &term->screen;
 	Pixel	fg;
-	static	int	initialized;
 
-	if (!initialized) {
-   		original_fg = screen->foreground;
-   		original_bg = term->core.background_pixel;
-		initialized = TRUE;
-	}
+	SGR_Save();
 	
 	if (color >= 0) {
 		fg = COLOR_VALUE(screen,color);
 		term->flags |= FG_COLOR;
-		term->cur_foreground = color;
 	} else {
 		fg = original_fg;
 		term->flags &= ~FG_COLOR;
 	}
+	term->cur_foreground = color;
 
 	XSetForeground(screen->display, screen->normalGC, fg);
 	XSetBackground(screen->display, screen->reverseGC, fg);
@@ -743,27 +744,22 @@ static void SGR_Foreground(color)
 	XSetBackground(screen->display, screen->reverseboldGC, fg);
 }
 
-static void SGR_Background(color)
+void SGR_Background(color)
 	int color;
 {
 	register TScreen *screen = &term->screen;
 	Pixel	bg;
-	static	int	initialized;
 
-	if (!initialized) {
-   		original_fg = screen->foreground;
-   		original_bg = term->core.background_pixel;
-		initialized = TRUE;
-	}
+	SGR_Save();
 	
 	if (color >= 0) {
 		bg = COLOR_VALUE(screen,color);
 		term->flags |= BG_COLOR;
-		term->cur_background = color;
 	} else {
 		bg = original_bg;
 		term->flags &= ~BG_COLOR;
 	}
+	term->cur_background = color;
 
 	XSetBackground(screen->display, screen->normalGC, bg);
 	XSetForeground(screen->display, screen->reverseGC, bg);
@@ -1827,71 +1823,52 @@ WriteText(screen, str, len, flags, fg, bg )
 {
 	register int cx, cy;
 	register unsigned fgs = flags;
-	register Pixel fg_pix, bg_pix;
 	GC	currentGC;
  
-	fg_pix = GET_FG(fgs,fg);
-	bg_pix = GET_BG(fgs,bg);
+	if(screen->cur_row - screen->topline <= screen->max_row) {
+		if(screen->cursor_state)
+			HideCursor();
 
-   if(screen->cur_row - screen->topline <= screen->max_row) {
-	/*
-	if(screen->cur_row == screen->cursor_row && screen->cur_col <=
-	 screen->cursor_col && screen->cursor_col <= screen->cur_col + len - 1)
-		screen->cursor_state = OFF;
-	 */
-	if(screen->cursor_state)
-		HideCursor();
+		if (fgs & INSERT)
+			InsertChar(screen, len);
+		if (!(AddToRefresh(screen))) {
+			/* make sure that the correct GC is current */
+			currentGC = updatedXtermGC(screen, flags, fg, bg, False);
 
-	/*
-	 *	make sure that the correct GC is current
-	 */
+			if(screen->scroll_amt)
+				FlushScroll(screen);
+			cx = CursorX(screen, screen->cur_col);
+			cy = CursorY(screen, screen->cur_row)+screen->fnt_norm->ascent;
+			XDrawImageString(screen->display, TextWindow(screen),
+				currentGC, cx, cy, str, len);
 
-	if (fgs & INVERSE)
-	{
-		if (fgs & BOLD)
-			currentGC = screen->reverseboldGC;
-		else	currentGC = screen->reverseGC;
+			/* Fake boldface by drawing the characters one pixel
+			 * offset, if required.
+			 */
+			if ((fgs & BOLD)
+			 && screen->enbolden
+			 && (currentGC == screen->normalGC
+			  || screen->reverseGC))
+				XDrawString(screen->display,
+					TextWindow(screen),
+					currentGC, cx + 1, cy, str, len);
 
-		XSetForeground(screen->display, currentGC, bg_pix);
-		XSetBackground(screen->display, currentGC, fg_pix);
-	} else {
-		if (fgs & BOLD)
-			currentGC = screen->normalboldGC;
-		else  /* not bold */
-			currentGC = screen->normalGC;
-
-		XSetForeground(screen->display, currentGC, fg_pix);
-		XSetBackground(screen->display, currentGC, bg_pix);
+			if((fgs & UNDERLINE) && screen->underline) 
+				XDrawLine(screen->display,
+					TextWindow(screen), currentGC,
+					cx, cy+1,
+					cx + len * FontWidth(screen), cy+1);
+			/*
+			 * The following statements compile data to compute the
+			 * average number of characters written on each call to
+			 * XText.  The data may be examined via the use of a
+			 * "hidden" escape sequence.
+			 */
+			ctotal += len;
+			++ntotal;
+			resetXtermGC(screen, flags, False);
+		}
 	}
-
-	if (fgs & INSERT)
-		InsertChar(screen, len);
-      if (!(AddToRefresh(screen))) {
-		if(screen->scroll_amt)
-			FlushScroll(screen);
-	cx = CursorX(screen, screen->cur_col);
-	cy = CursorY(screen, screen->cur_row)+screen->fnt_norm->ascent;
- 	XDrawImageString(screen->display, TextWindow(screen), currentGC,
-			cx, cy, str, len);
-
-	if((fgs & BOLD) && screen->enbolden) 
-		if (currentGC == screen->normalGC || screen->reverseGC)
-			XDrawString(screen->display, TextWindow(screen),
-			      	currentGC,cx + 1, cy, str, len);
-
-	if((fgs & UNDERLINE) && screen->underline) 
-		XDrawLine(screen->display, TextWindow(screen), currentGC,
-			cx, cy+1,
-			cx + len * FontWidth(screen), cy+1);
-	/*
-	 * the following statements compile data to compute the average 
-	 * number of characters written on each call to XText.  The data
-	 * may be examined via the use of a "hidden" escape sequence.
-	 */
-	ctotal += len;
-	++ntotal;
-      }
-    }
 	ScreenWrite(screen, str, flags,  fg, bg, len);
 	CursorForward(screen, len);
 }
@@ -3128,26 +3105,6 @@ ShowCursor()
 			}
 		    }
 		}
-#if 0
- /*RFB*/
- if ( flags & BG_COLOR )
- 	XSetForeground( screen->display, currentGC,
- 		screen->colors[ term->cur_background ]);
- if ( flags & FG_COLOR )
- 	XSetBackground( screen->display, currentGC,
- 		screen->colors[ term->cur_foreground ]);
- /**********************************************************/
- /*                                                        */
- /*  we test "flags and background" before calling         */
- /*  XSetForeground;                                       */
- /*                                                        */
- /*  it looks funny, but we're in reverse video and the    */
- /*  color we're setting it to is the current background   */
- /*  color!                                                */
- /*                                                        */
- /**********************************************************/
- /*RFB*/
-#endif
 	} else { /* not selected */
 		if (( (flags & INVERSE) && !in_selection) ||
 		    (!(flags & INVERSE) &&  in_selection)) {
@@ -3156,16 +3113,6 @@ ShowCursor()
 		} else { /* normal video */
 			currentGC = screen->normalGC;
 		}
-#if 0
- /*RFB*/
- if ( flags & FG_COLOR )
- 	XSetForeground( screen->display, currentGC,
- 		screen->colors[ term->cur_foreground ]);
- if ( flags & BG_COLOR )
- 	XSetBackground( screen->display, currentGC,
- 		screen->colors[ term->cur_background ]);
- /*RFB*/
-#endif
 	}
 
 	x = CursorX (screen, screen->cur_col);
@@ -3200,7 +3147,6 @@ HideCursor()
 	register TScreen *screen = &term->screen;
 	GC	currentGC;
 	register int x, y, flags, fg, bg;
-		register Pixel fg_pix, bg_pix;
 	char c;
 	Boolean	in_selection;
 
@@ -3212,9 +3158,6 @@ HideCursor()
 	fg    = SCRN_BUF_FORES(screen, screen->cursor_row)[screen->cursor_col];
 	bg    = SCRN_BUF_BACKS(screen, screen->cursor_row)[screen->cursor_col];
 
-        fg_pix = GET_FG(flags,fg);
-        bg_pix = GET_BG(flags,bg);
-
 	if (screen->cursor_row > screen->endHRow ||
 	    (screen->cursor_row == screen->endHRow &&
 	     screen->cursor_col >= screen->endHCol) ||
@@ -3225,28 +3168,7 @@ HideCursor()
 	else
 	    in_selection = True;
 
-	if (( (flags & INVERSE) && !in_selection) ||
-	    (!(flags & INVERSE) &&  in_selection)) {
-		if(flags & BOLD) {
-			currentGC = screen->reverseboldGC;
-		} else {
-			currentGC = screen->reverseGC;
-		}
-
-		XSetForeground(screen->display, currentGC, bg_pix);
-		XSetBackground(screen->display, currentGC, fg_pix);
-
-	} else {
-		if(flags & BOLD) {
-			currentGC = screen->normalboldGC;
-		} else {
-			currentGC = screen->normalGC;
-		}
-
-		XSetForeground(screen->display, currentGC, fg_pix);
-		XSetBackground(screen->display, currentGC, bg_pix);
-
-	}
+	currentGC = updatedXtermGC(screen, flags, fg, bg, in_selection);
 
 	if (c == 0)
 		c = ' ';
@@ -3263,6 +3185,7 @@ HideCursor()
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
 	screen->cursor_state = OFF;
+	resetXtermGC(screen, flags, in_selection);
 }
 
 void

@@ -4,11 +4,11 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/14 19:01:58 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.7 1996/02/04 09:09:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.8 1996/02/12 11:13:20 dawes Exp $
 
 #include <Server.tmpl>
 
-#ifdef FreeBSDArchitecture
+#if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)
 #ifdef BuildXInputExt
 # if BuildDynamicLoading
 SHARED_CFLAGS = PositionIndependentCFlags

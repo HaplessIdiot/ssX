@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/5 1996/01/15 21:05:07 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.3 1996/01/24 22:04:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.4 1996/01/30 15:27:31 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -92,7 +92,11 @@ void InitInput(argc, argv)
      int argc;
      char *argv[];
 {
+#ifdef DEVINTPTR
+  DeviceIntPtr ptr, kbd;
+#else
   DevicePtr ptr, kbd;
+#endif
     
   ptr = AddInputDevice(xnestPointerProc, TRUE);
   kbd = AddInputDevice(xnestKeyboardProc, TRUE);

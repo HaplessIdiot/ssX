@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.46 1996/01/13 12:21:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.47 1996/02/04 09:02:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -975,6 +975,7 @@ mach32EnterLeaveVT(enter, screen_idx)
 	    ScrnInfoPtr pScr = XF86SCRNINFO(pScreen);
 
 	    mach32InitDisplay(screen_idx);
+            mach32CalcCRTCRegs(&mach32CRTCRegs, mach32InfoRec.modes); /* 96/02/12 SM */
 	    mach32SetCRTCRegs(&mach32CRTCRegs);
 	    mach32InitEnvironment();
 
@@ -1137,6 +1138,7 @@ mach32SaveScreen (pScreen, on)
 		mach32RestoreColor0(pScreen);
 		outb(DAC_MASK, 0xff);
 	    } else {
+                mach32CalcCRTCRegs(&mach32CRTCRegs, mach32InfoRec.modes); /* 96/02/12 SM */
 		mach32SetCRTCRegs(&mach32CRTCRegs);
 	    }
 	} else {
