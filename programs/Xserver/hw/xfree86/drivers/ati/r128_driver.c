@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.62 2002/06/04 23:04:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.63 2002/06/05 20:05:43 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1072,8 +1072,10 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 #ifdef XF86DRI
 				/* DMA for Xv */
-    if (info->DMAForXv = xf86ReturnOptValBool(info->Options, OPTION_XV_DMA, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Will try to use DMA for Xv image transfers\n");
+    info->DMAForXv = xf86ReturnOptValBool(info->Options, OPTION_XV_DMA, FALSE);
+    if (info->DMAForXv) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Will try to use DMA for Xv image transfers\n");
     }
 
 				/* AGP/PCI */
