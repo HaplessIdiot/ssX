@@ -1,4 +1,4 @@
-/* $TOG: dipexExt.c /main/12 1998/02/10 12:34:41 kaleb $ */
+/* $Xorg: dipexExt.c,v 1.3 2000/08/17 19:47:12 cpqbld Exp $ */
 
 /***********************************************************
 
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.17 1998/10/04 09:34:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.18 1998/12/20 11:57:23 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

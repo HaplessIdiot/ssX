@@ -1,4 +1,4 @@
-/* $TOG: jinclude.h /main/7 1998/02/09 16:20:08 kaleb $ */
+/* $Xorg: jinclude.h,v 1.3 2000/08/17 19:47:48 cpqbld Exp $ */
 /* Module jinclude.h */
 
 /****************************************************************************
@@ -66,7 +66,7 @@ terms and conditions:
 	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jinclude.h,v 1.4 1998/10/04 09:36:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jinclude.h,v 1.5 1999/01/31 12:21:37 dawes Exp $ */
 
 /*
  * jinclude.h

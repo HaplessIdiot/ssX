@@ -1,4 +1,4 @@
-/* $TOG: grabdev.c /main/10 1998/02/09 15:29:47 kaleb $ */
+/* $Xorg: grabdev.c,v 1.3 2000/08/17 19:48:01 cpqbld Exp $ */
 
 /************************************************************
 
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/grabdev.c,v 3.0 1996/03/29 22:13:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/grabdev.c,v 3.1 1998/10/04 09:37:07 dawes Exp $ */
 
 /***********************************************************************
  *

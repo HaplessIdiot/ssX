@@ -1,4 +1,4 @@
-/* $TOG: bitfun.c /main/6 1998/02/09 16:20:58 kaleb $ */
+/* $Xorg: bitfun.c,v 1.3 2000/08/17 19:47:49 cpqbld Exp $ */
 /**** module bitfun.c ****/
 /******************************************************************************
 
@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. July, 1993
   
 *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/bitfun.c,v 1.3 1998/10/06 10:35:19 dawes Exp $ */
 
 #define _XIEC_MPBITFUN
 
