@@ -546,7 +546,7 @@ tional colour depths, and so on.  This is the version found in XFree86 3.3.2,
 Version 5 is an almost complete restructuring of version 4 to fit in the new
 driver API of XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.21 1999/07/07 12:05:51 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.22 1999/07/19 13:36:22 dawes Exp $
 
 
 $XFree86$

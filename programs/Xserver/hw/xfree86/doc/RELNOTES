@@ -2,14 +2,12 @@
 
                           The XFree86 Project, Inc
 
-                  18 July 1999 (this document needs work!)
+                                19 July 1999
 
                                   Abstract
 
      This document contains some information about the features present
      in XFree86 3.9.15 and their status.
-
-Many of the sections below are currently empty.
 
 1.  X server
 
@@ -47,7 +45,7 @@ etc), and internal components used by some drivers (like XAA),
 
 The module interfaces (API and ABI) used in the snapshot releases are subject
 to change without notice.  This means that there is no guarantee that modules
-built for one shapshot release will function with another snapshot release.
+built for one snapshot release will function with another snapshot release.
 As of the 4.0 release we plan to make every effort to provide backward com-
 patibility for the module interfaces (that means older modules working with
 newer core X server binaries).
@@ -64,7 +62,11 @@ Note about module security
 1.2  Configuration File
 
 The X server configuration file format has been extended to handle some of
-the new functionality.
+the new functionality.  The xf86config utility can be used to generate a
+basic config file, that may require some manual editing.  Alternatively, the
+sample config file XF86Config.eg that is installed in /usr/X11R6/lib/X11 may
+be used as a starting point.  The XF86Setup utility is currently not usable,
+but work is continuing in this area.
 
 The main changes are:
 
@@ -305,7 +307,7 @@ The following new X server command line options have been changed since
 
           This option specifies the verbosity level to use for the
           server messages that get written to stderr.  It may be
-          specified multiple time to increase the verbositly level
+          specified multiple time to increase the verbosity level
           (as with 3.3.x), or the verbosity level may be specified
           explicitly as a number.  The default verbosity level is
           1.
@@ -319,6 +321,10 @@ The following new X server command line options have been changed since
           config files that the the sysadmin has provided.
 
 1.4  XAA
+
+The XFree86 Acceleration Architecture (XAA) has been completely rewritten
+from scratch.  Most drivers implement acceleration by making use of the XAA
+module.
 
 1.5  Multi-head
 
@@ -348,7 +354,7 @@ with a 16-bit screen in Xinerama mode.
 Xinerama is not enabled by default, and can be enabled with the +xinerama
 command line option for the X server.
 
-Xinerama was included with X11R6.4.  The version included in this shapshot
+Xinerama was included with X11R6.4.  The version included in this snapshot
 contains many bug fixes.  This is an area that we are still working on, and
 we expect it to be improved further in future snapshots.
 
@@ -365,11 +371,13 @@ Known problems:
      way.  This is an issue that needs to be dealt with in the individual
      window managers, and isn't specifically an XFree86 problem.
 
-1.7  XVideo extension
+1.7  DGA version 2
 
-1.8  DGA version 2
+The DGA extension has been reworked.  The version present in this snapshot is
+preliminary, not documented, not implemented by many drivers, and subject to
+further change without notice.  Compatibility with version 1.0 is provided.
 
-1.9  DDC
+1.8  DDC
 
 The VESA(R) Display Data Channel (DDC[tm]) standard (related to, but separate
 from, the VESA(R) Plug and Display standard) allows the monitor to tell the
@@ -397,7 +405,7 @@ ules (this list needs to be verified):
 
 DDC is enabled by default, but can be disabled with a "Device" section entry:
 Option "NoDDC".  We have support for DDC versions 1 and 2; these can be dis-
-abled independently with Option "NoDDC1" and Option "NoDDC1".
+abled independently with Option "NoDDC1" and Option "NoDDC2".
 
 At startup the server prints out DDC information from the display, but it
 does not yet use it the determine modelines.
@@ -419,17 +427,197 @@ the monitor gamma (brightness) curve, and the screen size and pitch.
      screen dimensions with the "DisplaySize" keyword in the "Monitor" sec-
      tion of the config file.
 
-1.10  GLX
+1.9  GLX and the Direct Rendering Infrastructure (DRI)
 
-1.11  Other extensions
+Precision Insight <URL:http://www.precisioninsight.com> has been provided
+with funding and support from Red Hat <URL:http://www.redhat.com> and SGI
+<URL:http://www.sgi.com> to integrate the GLX extension for 3D rendering in
+an X11 window.  The 3D core rendering component is the Mesa
+<URL:http://www.mesa3d.org> library.  SGI has released the sources to the
+extension framework under an open license, which essentially provides the
+glue between the 3D library and this windowing system.  Precision Insight has
+integrated these components into this XFree86 X Server and added a Direct
+Rendering Infrastructure.  Direct Rendering provides a highly optimized path
+for sending 3D data directly to the graphics hardware.  This release demon-
+strates a sample implementation of direct rendering <URL:http://www.preci-
+sioninsight.com/demo.html> by providing a single path of 3D hardware acceler-
+ated rendering for the GMX2000 graphics card.  Future releases will support
+much broader implementations of hardware accelerated direct rendering on a
+wide range of 3D capable graphics devices.
 
-1.12  Sections for specific drivers go here
+1.10  Other extensions
+
+The XFree86-Misc extension has not been fully ported to the new server archi-
+tecture yet.  This should be completed in a future snapshot.
+
+The XFree86-VidModeExtension extension has been updated, and mostly ported to
+the new server architecture.  The area of mode validation needs further work,
+and the extension should be used with care.  This extension has support for
+changing the gamma setting at run-time, for modes where this is possible.
+The new xgamma utility makes use of this feature.  Compatibility with the
+3.3.x version of the extension is provided.  The missing parts of this exten-
+sion and some new features should be completed in a future snapshot.
+
+1.11  Drivers
+
+XFree86 3.9.15 includes the following drivers:
+
+                    +------------+----------------------+
+                    |Driver Name | Description          |
+                    +------------+----------------------+
+                    |apm         | Alliance Pro Motion  |
+                    |ati         | ATI                  |
+                    |chips       | Chips & Technologies |
+                    |cirrus      | Cirrus Logic         |
+                    |fbdev       | Linux fbdev          |
+                    |glide       | Glide2x (3Dfx)       |
+                    |glint       | 3Dlabs               |
+                    |mga         | Matrox               |
+                    |neomagic    | NeoMagic             |
+                    |rendition   | Rendition            |
+                    |s3virge     | S3 ViRGE             |
+                    |sis         | SiS                  |
+                    |tga         | DEC TGA              |
+                    |trident     | Trident              |
+                    |tseng       | Tseng Labs           |
+                    |vga         | Generic VGA          |
+                    +------------+----------------------+
+
+1.11.1  APM
+
+The driver apm is for Alliance AT3D/AT25 based boards. It's still buggy, but
+it works at least with the Hercules 128/3D board.  Please send as many bug-
+report (but success stories as well) as possible to <grenie@lami.univ-
+evry.fr>
+
+1.11.2  Chips & Technologies
+
+Information about the C&T driver can be found in README.chips.
+
+1.11.3  s3virge
+
+The s3virge driver is a port of the 3.3.3.1 SVGA S3 ViRGE driver.  As such it
+should be as stable and functional as previous XFree86 releases.  There are a
+couple additional benefits included primarily due to common enhancements:
+
+   o Depth 24 problems resolved with clients using 24/32 bpp pixmaps.
+
+   o Our common acceleration architecture (XAA) has been re-written, as has
+     the ViRGE acceleration code.  You should find this version has better
+     performance than prior releases.
+
+   o Multi-head is reported to work.
+
+   o The s3virge man page lists options and has configuration notes for this
+     release of the driver.
+
+Outstanding items not implemented or fully tested:
+
+   o DGA support is implemented, but preliminary and untested.
+
+   o ViRGE MX Melco BIOS support has not been ported yet.
+
+1.11.4  TGA
+
+The TGA driver is now accelerated and supports both 8 and 32 plane frame-
+buffers.  It is known to work under Linux/Alpha.  Please see the
+README.DECtga file for further information.
+
+1.11.5  Matrox
+
+The MGA driver supports the same range or hardware as XFree86 3.3.4, but has
+a number of enhancements including multi-head support and support for over-
+lays (8-bit + 24-bit).
+
+Option "overlay" when the server is started in 32bpp (-fbbpp 32) will enable
+the 8+24 mode.  The current implementation doesn't optimize away unnecessary
+exposures yet so the performance of this option will be better in future
+snapshots.  The option is not supported on the G100 due to a missing hardware
+feature.  By default, the color key for the overlays is 255, but this can be
+changed with the "ColorKey" option to work around problems in specific pro-
+grams.  Valid values for the key are 2-255.
+
+Option "OverclockMem" will raise the memory clock on the G200.  Matrox
+doesn't recommend deviating from the BIOS defaults but we find that some
+hardware shows static during graphics operations in high resolutions/depths
+when run at the regular clocks so this option is needed for some cards (it
+also improves performance).  Beware, some hardware experiences difficultly
+restoring the console when this option is used.
+
+Further information can be found in the mga man page.
+
+1.11.6  ATI
+
+Information about the ATI driver can be found in README.ati <URL:ati.html>.
+The current version is not accelerated.  Acceleration support is planned for
+a future snapshot.
 
 2.  X libraries and clients
 
 2.1  Xaw
 
-2.2  xterm
+Two versions of the Xaw library are provided in this release. A version with
+bug fixes and a few binary compatible improvements and a new version with
+several new features.
+
+New features:
+
+   o A displayList resource is available to all Xaw widgets. It basically
+     consists of a list of drawing commands, fully described in the Xaw(3)
+     manual page, that enables a integration of Xaw programs with the new
+     window/desktop managers that allows for configurable themes.
+
+   o Some new actions were added to all Xaw widgets, to allow more config-
+     urable control of the widgets, and to allow setting resources at run
+     time.
+
+   o Since Xpm is integrated in XFree86 3.9.15, programs linked with the new
+     Xaw library will also link with Xpm. This allows for color background
+     pixmaps, and also for shaped widgets.
+
+   o The text widget is the widget that will present more changes. These
+     include:
+
+        o Block cursor.
+
+        o Compile time limit of 16384 undo/redo levels (that will automati-
+          cally grow if the text is not saved when this mark is reached).
+
+        o Overwrite mode.
+
+        o Text killed is inserted in a kill ring list, this text is not for-
+          gotten, pressing M-y allows traversing the kill ring list.
+
+        o International support for latin languages is available even if the
+          international resource is not set. Users will need to properly set
+          the locale environment to make complete use of this feature.
+
+        o A better multiply interface is provided. Pressing C-u,<number>
+          (where number can be negative) allows passing parameters for text
+          actions.
+
+        o Text can be formatted to have left, right, center or full justifi-
+          cation.
+
+        o Text indentation support is also available.
+
+Bug fixes:
+
+   o The simple menu widget geometry management code was improved to solve
+     problems with menu entries not visible in the screen.
+
+   o The form widget geometry code was changed to solve problems with integer
+     round problems in the child widgets geometry when resizing the parent
+     form widget.
+
+   o Several bugs were fixed in the text code, while some code was rewritten
+     from scratch.
+
+2.2  Xpm
+
+Version 3.4k of the Xpm (X pixmap) library is now integrated into XFree86.
+
+2.3  xterm
 
 New Features:
 
@@ -510,7 +698,39 @@ Bug fixes/improvements:
    o Add test/demo scripts for double size characters, font switching, screen
      resizing and colors.
 
-2.3  xedit
+2.4  xedit
+
+Xedit have been changed to use most of the new features added to the new ver-
+sion of the Xaw library, and some xedit only features were added. Emacs users
+will find that several of the emacs key bindings work with the new version of
+xedit. These include:
+
+   o File name tab completion. Including a Emacs dired like window, that will
+     be shown when there are more than one match, when C-x,d is pressed, or
+     when a directory name is specified.
+
+   o An unlimited number of files can be edited at the same time. Including
+     multiple views of the same or different files.
+
+   o The line number of the cursor position is always visible. It can also be
+     customized to show the column number, the position offset and the cur-
+     rent size of the file.
+
+   o There is an autoReplace resource, that enables automatic text replace-
+     ment at the time text is typed. This feature is useful to create simple
+     macros, or to correct common spelling errors.
+
+   o A fully featured ispell interface is also available. This interface is
+     expected to provide most of the features of the terminal interface of
+     the ispell program, with some extra features that include:
+
+        o A compile time limit of 16 undo levels.
+
+        o Terse mode switch.
+
+        o Dictionary change.
+
+        o The interface also checks for repeated words.
 
 3.  Fonts and Internationalisation
 
@@ -534,11 +754,11 @@ copy of the CID Font Code Public License.
 3.3  Internationalisation of the scalable font backends
 
 A new ``fontenc'' layer has been added to allow the scalable font backends to
-use a common method of font reencoding.  This reencoding makes it possible to
-uses fonts in encodings other than their their native encoding.  This layer
-is used by the Type1 and Speedo backends and the `xfsft' version of the True-
-Type backend.  The `X-TrueType' version of the TrueType backend uses a dif-
-ferent reencoding method based on loadable encoding modules.
+use a common method of font re-encoding.  This re-encoding makes it possible
+to uses fonts in encodings other than their their native encoding.  This
+layer is used by the Type1 and Speedo backends and the `xfsft' version of the
+TrueType backend.  The `X-TrueType' version of the TrueType backend uses a
+different re-encoding method based on loadable encoding modules.
 
 3.4  Unicode support
 
@@ -581,7 +801,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 1.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.9 1999/07/18 15:47:54 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.11 1999/07/19 14:38:44 dawes Exp $
 
 
 $XFree86$

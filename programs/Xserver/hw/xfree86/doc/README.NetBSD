@@ -61,7 +61,7 @@ have comments or suggestions about this file and we'll revise it.
 
 4.  Installing the Binaries
 
-Refer to section 4 of the Release Notes  for detailled installation instruc-
+Refer to section 4 of the Release Notes  for detailed installation instruc-
 tions.
 
 4.1  Installing Xdm, the display manager
@@ -485,7 +485,7 @@ Many thanks to:
    o Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
      machines in preparing the FreeBSD binary release.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.47 1997/06/03 14:11:53 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.48 1999/07/19 14:38:42 dawes Exp $
 
      $XConsortium: NetBSD.sgml /main/26 1996/10/28 05:43:20 kaleb $
 

@@ -2,6 +2,8 @@
 
                              The XFree86 Project
 
+                                    1999
+
 1.  XFree86 License
 
 XFree86 code without an explicit copyright is covered by the following copy-
@@ -550,7 +552,7 @@ Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
 solely in object code form, Recipient may replace the words "this file" with
 "this software" in both the first and second sentences.]
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.4 1999/07/07 12:05:50 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.5 1999/07/19 13:36:21 dawes Exp $
 
 
 $XFree86$

@@ -15,12 +15,12 @@ XFree86 3.9.15 is a ``work in progress'' snapshot of the XFree86 4.0 develop-
 ment code.  It is the first in a series of snapshot releases leading up the
 the 4.0 release.  The plan is to release a new snapshot every four to six
 weeks.  The target audience for this release is developers and others who are
-comfortable on the bleeding edge.  This release is not targetted at begin-
-ners.  Also, most end users will find life easier using our latest 3.3.x
-release.  While we welcome bug reports and feedback about this release, we
-don't have the resources to provide user-level support for it.  If you're not
-comfortable dealing with those sorts of things yourself, then the snapshot
-releases are probably not for you.
+comfortable on the bleeding edge.  This release is not targeted at beginners.
+Also, most end users will find life easier using our latest 3.3.x release.
+While we welcome bug reports and feedback about this release, we don't have
+the resources to provide user-level support for it.  If you're not comfort-
+able dealing with those sorts of things yourself, then the snapshot releases
+are probably not for you.
 
 This code is very much work in progress.  Many of the interfaces may change
 without notice between now and the 4.0 release.  The driver design has
@@ -53,6 +53,16 @@ XFree86 3.9.15 can be found at the XFree86 ftp server
 this server.  This snapshot is available primarily in source form.  Binaries
 for some platforms may be made available at a later time.
 
+The source for version 3.9.15 is split into three tarballs: X3915src-1.tgz,
+X3915src-2.tgz, X3915src-3.tgz.  The first contains everything except the
+fonts and general X11 documentation.  It is sufficient to build XFree86 is
+you already have a set of fonts.  The second contains the fonts and the
+source for the general X11 documentation.  The third contains the general X11
+documentation in hardcopy format.
+
+The contrib part of the distribution can be found in the following tarball:
+X3915contrib.tgz.
+
 5.  Reporting Bugs
 
 Bugs should be reported to <XFree86@XFree86.org>.  Before reporting bugs,
@@ -63,7 +73,7 @@ out what you think might not be important.  The information contained in the
 log file is there to make it easier for the developers to determine what is
 going wrong when there are problems.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.93 1999/07/18 15:47:53 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.94 1999/07/19 14:38:43 dawes Exp $
 
 
 $XFree86$

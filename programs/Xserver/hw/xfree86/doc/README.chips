@@ -3,11 +3,11 @@
                   David Bateman (dbateman@eng.uts.edu.au),
                    Egbert Eich (Egbert.Eich@Physik.TH-Darmstadt.DE)
 
-                               19th March 1999
+                                19th July 1999
 
 1.  Introduction
 
-With the release of XFree86 version 4.0, the Chips and Technologies driver
+With the release of XFree86 version 3.9.15, the Chips and Technologies driver
 has been extensively rewritten and contains many new features.  This driver
 must be considered work in progress, and those users wanting stability and
 encouraged to use the older XFree86 3.3.x versions. However this version of
@@ -139,7 +139,13 @@ architecture.
             Similar to the 65555 but incorporates 2Mbytes of SGRAM on chip.
             It is the first Chips and Technologies chipset where all of the
             registers are accessible through MMIO, rather than just the Bit-
-            Blt registers.  (Max Ram: 2Mb Only, Max Dclk: 220MHz@3.3V)
+            Blt registers.  (Max Ram: 2Mb Only, Max Dclk: 130MHz@3.3V)
+
+      ct69030
+            Similar to the 69000 but incorporates 4Mbytes of SGRAM on chip
+            and has faster memory and pixel clock limits. Also includes a
+            second display channel so that the CRT can display independently
+            of the LCD.  (Max Ram: 4Mb Only, Max Dclk: 170MHz@3.3V)
 
 3.  XF86Config Options
 
@@ -276,11 +282,11 @@ Screen, Monitor, Device.
             by default for 65545 machines since the blitter    can not be
             used otherwise. The HiQV series of chipsets must use MMIO with
             their BitBLT engines, and so this is enabled by default. However
-            the 69000 chipset can use MMIO for all communications with the
-            video processor. So using this option on a 69000 chipset forces
+            the 690xx chipsets can use MMIO for all communications with the
+            video processor. So using this option on a 690xx chipset forces
             them to use MMIO for all communications. This only makes sense
-            when the 69000 is on a PCI bus so that normal PIO can be dis-
-            abled.  (WARNING!! 69000 MMIO is untested)
+            when the 690xx is on a PCI bus so that normal PIO can be dis-
+            abled.  (WARNING!! 690xx MMIO is untested)
 
       Option "SuspendHack"
             This option sets the centering and stretching to the BIOS default
@@ -541,6 +547,7 @@ and Technologies chips the maximum specifications are
      65555                    110                55
      68554                    110                55
      69000                    135                83
+     69030                    170               100
 
 Note that all of the chips except the 65550 rev A are 3.3v only. Which is the
 reason for the drop in the dot clock. Now the maximum memory clock is just
@@ -559,6 +566,7 @@ chips are
      65555                   110     77      51.33   77      51.33   38.5
      68554                   110     77      51.33   77      51.33   38.5
      69000                   135    116.2    77.47  116.2    77.47   58.1
+     69030                   170    140      93.33  140      93.33   70
 
 If you exceed the maximum set by the memory clock, you'll get corruption on
 the screen during graphics operations, as you will be starving the HW BitBlt
@@ -723,8 +731,8 @@ won't cause damage.
             The server itself can correctly detect the chip in the same situ-
             ation.
 
-      My 69000 machine lockups when using the "MMIO" option
-            The 69000 MMIO mode has been implemented entirely from the manual
+      My 690xx machine lockups when using the "MMIO" option
+            The 690xx MMIO mode has been implemented entirely from the manual
             as I don't have the hardware to test it on. At this point no
             testing has been done and it is entirely possible that the "MMIO
             option will lockup your machine. You have been warned! However if
@@ -747,15 +755,14 @@ won't cause damage.
 
                         startx -- -depth 24 -fbbpp 32   8-8-8 RGB truecolor
 
-            however as XFree86 version 4.0 allows 32bpp pixmaps to be used
+            however as XFree86 version 3.9.15 allows 32bpp pixmaps to be used
             with framebuffers operating in 24bpp, this mode of operating will
             cost performance for no gain in functionality.
 
-            Note that the "-bpp" option has been removed from XFree86 version
-            4.0 and replaced with a "-depth" and "-fbbpp" option because of
-            the confusion between the depth and number of bits per pixel used
-            to represent to framebuffer and the pixmaps in the screens mem-
-            ory.
+            Note that the "-bpp" option has been removed and replaced with a
+            "-depth" and "-fbbpp" option because of the confusion between the
+            depth and number of bits per pixel used to represent to frame-
+            buffer and the pixmaps in the screens memory.
 
 A general problem with the server that can manifested in many way such as
 drawing errors, wavy screens, etc is related to the programmable clock. Many
@@ -818,7 +825,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.25 1999/07/07 12:05:52 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.26 1999/07/19 13:36:22 dawes Exp $
 
 
 $XFree86$

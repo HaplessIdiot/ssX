@@ -6,8 +6,8 @@
 
 1.  DEC 21030
 
-   o The DEC 21030 is supported by XFree86 4.0.  The driver is now partially
-     accelerated.  The built-in graphics on the Multia is supported in
+   o The DEC 21030 is supported by XFree86 3.9.15.  The driver is now par-
+     tially accelerated.  The built-in graphics on the Multia is supported in
      8-plane mode, and PCI cards with 8 or 16 MB framebuffers are supported
      in 24-plane mode.
 
@@ -45,13 +45,13 @@
 
 2.  Authors
 
-   o Matthew Grossman, mattg@oz.net
+   o Matthew Grossman, <mattg@oz.net>
 
-   o Alan Hourihane, alanh@fairlite.demon.co.uk
+   o Alan Hourihane, <alanh@fairlite.demon.co.uk>
 
-   o Tim Rowley, tor@cs.brown.edu
+   o Tim Rowley, <tor@cs.brown.edu>
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.7 1999/05/03 12:16:04 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.8 1999/07/19 13:36:20 dawes Exp $
 
 
 $XFree86$

@@ -12,11 +12,11 @@ X11R6 and XFree86 on your Interactive Unix, also referred to as ISC.
 If you have any suggestions, comments, fixes or ideas regarding X11R6/XFree86
 on Interactive Unix, send e-mail to
 
-michael.rohleder@stadt-frankfurt.de
+<michael.rohleder@stadt-frankfurt.de>
 
 Bug Reports should be sent to
 
-XFree86@XFree86.Org
+<XFree86@XFree86.Org>
 
 Questions or anything else should be posted to the NewsGroup
 
@@ -550,9 +550,7 @@ All thanks should go to the members of the XFree86 Team for their great work
 and the X Consortium for their Public Release of X11R6, as to all who con-
 tribute to this excellent piece of free software.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.20 1999/03/28 15:32:33 dawes Exp $
-
-     $XConsortium: isc.sgml /main/8 1996/10/23 11:45:58 kaleb $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.21 1999/07/19 13:36:23 dawes Exp $
 
 
 $XFree86$

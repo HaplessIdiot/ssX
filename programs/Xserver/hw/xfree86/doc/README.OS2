@@ -621,8 +621,8 @@ directory that the HOME environment variable points to. These files are
 described in the xinit and startx man pages.
 
 By default, the systemwide xinitrc file (in Y:/XFree86/lib/X11/xinit/xini-
-trc.cmd) installs the rather simplicistic twm window manager. You can find
-better window managers on the ported software page at
+trc.cmd) installs the rather simplistic twm window manager. You can find bet-
+ter window managers on the ported software page at
 http://set.gmd.de/~veit/os2/xf86ported.html .
 
 13.  Rebuilding the XFree86 Distribution
@@ -651,7 +651,7 @@ Many thanks to:
 
    o ME - no, no, forget this: I won't praise myself :-)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.11 1997/12/05 22:01:37 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.12 1999/07/19 14:38:43 dawes Exp $
 
      $XConsortium: OS2.sgml /main/4 1996/03/11 10:46:06 kaleb $
 
