@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.7 2002/11/26 04:06:30 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.8 2002/11/30 23:13:14 paulo Exp $
 ;;
 (provide "lisp")
 
@@ -37,7 +37,8 @@
     second third fourth fifth sixth seventh eighth ninth tenth
     pathname merge-pathnames
     logtest signum
-    alphanumericp copy-seq push pop prog prog* with-open-file
+    alphanumericp copy-seq push pop prog prog*
+    with-open-file with-output-to-string
 ))
 
 (defun second (a)	(nth 1 a))
@@ -91,6 +92,12 @@
 	(unwind-protect
 	    (progn ,@body)
 	    (if ,(car file) (close ,(car file))))))
+
+(defmacro with-output-to-string (stream &rest body)
+    `(let ((,(car stream) (make-string-output-stream)))
+	(unwind-protect
+	    (progn ,@body (get-output-stream-string ,(car stream)))
+	    (and ,(car stream) (close ,(car stream))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; setf

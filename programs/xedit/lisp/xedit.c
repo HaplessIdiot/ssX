@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.19 2002/11/23 21:41:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.20 2002/11/30 23:13:13 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -86,6 +86,7 @@ typedef struct {
 static Bool ControlGPredicate(Display*, XEvent*, XPointer);
 static ssize_t WriteToStdout(int, const void*, size_t);
 static ssize_t WriteToStderr(int, const void*, size_t);
+static ssize_t WrapWrite(Widget, const void*, size_t);
 static void XeditUpdateModeInfos(void);
 static void XeditPrint(Widget, LispObj*, int);
 static void XeditInteractiveCallback(Widget, XtPointer, XtPointer);
@@ -196,28 +197,32 @@ SigalrmHandler(int signum)
 }
 
 static ssize_t
-WriteToStdout(int fd, const void *buffer, size_t nbytes)
+WrapWrite(Widget output, const void *buffer, size_t nbytes)
 {
     XawTextBlock block;
     XawTextPosition position;
 
-    position = XawTextGetInsertionPoint(textwindow);
+    position = XawTextGetInsertionPoint(output);
     block.firstPos = 0;
     block.format = FMT8BIT;
     block.length = nbytes;
     block.ptr = (String)buffer;
-    XawTextReplace(textwindow, position, position, &block);
-    XawTextSetInsertionPoint(textwindow, position + block.length);
+    XawTextReplace(output, position, position, &block);
+    XawTextSetInsertionPoint(output, position + block.length);
 
     return ((ssize_t)nbytes);
 }
 
 static ssize_t
+WriteToStdout(int fd, const void *buffer, size_t nbytes)
+{
+    return (WrapWrite(textwindow, buffer, nbytes));
+}
+
+static ssize_t
 WriteToStderr(int fd, const void *buffer, size_t nbytes)
 {
-    XeditPrintf((char*)buffer);
-
-    return ((ssize_t)nbytes);
+    return (WrapWrite(messwidget, buffer, nbytes));
 }
 
 void
@@ -420,6 +425,8 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
 	    _cod = CDR(_cod);
 	}
     }
+    LispFflush(Stdout);
+    LispFflush(Stderr);
     LispUpdateResults(code, result);
     if (RETURN_COUNT >= 0) {
 	XeditPrint(output, result, 1);

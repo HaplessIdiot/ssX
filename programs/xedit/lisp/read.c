@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.31 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.32 2002/11/30 23:13:12 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -272,6 +272,9 @@ Lisp_Read(LispBuiltin *builtin)
 	LispPushInput(input_stream);
     }
 
+    if (eof_value == UNSPEC)
+	eof_value = NIL;
+
     result = LispRead();
     if (input_stream != NIL)
 	LispPopInput(input_stream);
@@ -308,7 +311,10 @@ LispReadChar(LispBuiltin *builtin, int nohang)
     else
 	input_stream = lisp__data.input;
 
-    result = eof_value;
+    if (eof_value == UNSPEC)
+	eof_value = NIL;
+
+    result = NIL;
     character = EOF;
 
     if (input_stream->data.stream.readable) {
@@ -419,7 +425,10 @@ Lisp_ReadLine(LispBuiltin *builtin)
 	CHECK_STREAM(input_stream);
     }
 
-    result = eof_value;
+    if (eof_value == UNSPEC)
+	eof_value = NIL;
+
+    result = NIL;
     string = NULL;
     length = 0;
 
@@ -585,7 +594,7 @@ static void
 LispReadError(LispObj *stream, int line, char *fmt, ...)
 {
     char string[128], *buffer_string;
-    LispObj *buffer = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+    LispObj *buffer = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
     int length;
     va_list ap;
 
@@ -1121,14 +1130,16 @@ LispReadObject(int unintern, read_info *info)
 	string[length++] = ch;
 	symbol = string + 1;
     }
-    else {
+    else if (ch) {
 	if (islower(ch))
 	    ch = toupper(ch);
 	string[length++] = ch;
     }
+    else
+	unreadable = 1;
 
     /* read remaining data */
-    for (;;) {
+    for (; ch;) {
 	ch = LispGet();
 
 	if (ch == EOF) {
@@ -1140,6 +1151,8 @@ LispReadObject(int unintern, read_info *info)
 	    }
 	    break;
 	}
+	else if (ch == '\0')
+	    break;
 
 	if (ch == '\\') {
 	    backslash = !backslash;

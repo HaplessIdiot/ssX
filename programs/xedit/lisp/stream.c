@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.17 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.18 2002/11/30 23:13:12 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -469,45 +469,6 @@ Lisp_Listen(LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_WriteChar(LispBuiltin *builtin)
-/*
- write-char character &optional output-stream
- */
-{
-    int ch;
-
-    LispObj *character, *output_stream;
-
-    output_stream = ARGUMENT(1);
-    character = ARGUMENT(0);
-
-    CHECK_SCHAR(character);
-    ch = SCHAR_VALUE(character);
-
-    LispWriteChar(output_stream, ch);
-
-    return (character);
-}
-
-LispObj *
-Lisp_WriteLine(LispBuiltin *builtin)
-/*
- write-line string &optional output-stream &key start end
- */
-{
-    return (LispWriteString_(builtin, 1));
-}
-
-LispObj *
-Lisp_WriteString(LispBuiltin *builtin)
-/*
- write-string string &optional output-stream &key start end
- */
-{
-    return (LispWriteString_(builtin, 0));
-}
-
-LispObj *
 Lisp_MakeStringInputStream(LispBuiltin *builtin)
 /*
  make-string-input-stream string &optional start end
@@ -584,7 +545,8 @@ Lisp_GetOutputStreamString(LispBuiltin *builtin)
 
     /* reset string */
     SSTREAMP(string_output_stream)->output =
-	SSTREAMP(string_output_stream)->length = 0;
+	SSTREAMP(string_output_stream)->length =
+	SSTREAMP(string_output_stream)->column = 0;
 
     return (result);
 }

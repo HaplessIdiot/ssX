@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.7 2002/11/13 04:35:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.8 2002/11/20 07:44:42 paulo Exp $ */
 
 #ifndef Lisp_write_h
 #define Lisp_write_h
@@ -39,10 +39,15 @@
  */
 void LispWriteInit(void);
 
+LispObj *Lisp_FreshLine(LispBuiltin*);
 LispObj *Lisp_Prin1(LispBuiltin*);
 LispObj *Lisp_Princ(LispBuiltin*);
 LispObj *Lisp_Print(LispBuiltin*);
+LispObj *Lisp_Terpri(LispBuiltin*);
 LispObj *Lisp_Write(LispBuiltin*);
+LispObj *Lisp_WriteChar(LispBuiltin*);
+LispObj *Lisp_WriteLine(LispBuiltin*);
+LispObj *Lisp_WriteString(LispBuiltin*);
 
 int LispGetColumn(LispObj*);
 

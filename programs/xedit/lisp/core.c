@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.64 2002/11/26 04:06:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.66 2002/12/02 14:49:44 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -6382,30 +6382,6 @@ Lisp_Tagbody(LispBuiltin *builtin)
     LispEndBlock(block);
 
     /* Always return NIL */
-    return (NIL);
-}
-
-LispObj *
-Lisp_Terpri(LispBuiltin *builtin)
-/*
- terpri &optional output-stream
- */
-{
-    LispObj *output_stream;
-
-    output_stream = ARGUMENT(0);
-
-    if (output_stream != UNSPEC) {
-	CHECK_STREAM(output_stream);
-    }
-    else
-	output_stream = NIL;
-    LispWriteChar(output_stream, '\n');
-    if (output_stream == NIL ||
-	(output_stream->data.stream.type == LispStreamStandard &&
-	 output_stream->data.stream.source.file == Stdout))
-	LispFflush(Stdout);
-
     return (NIL);
 }
 
