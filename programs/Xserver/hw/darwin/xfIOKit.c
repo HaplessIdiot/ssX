@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.16 2002/12/10 00:00:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.17 2002/12/15 06:10:15 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -45,6 +45,7 @@
 #include "mibstore.h"
 #include "mipointer.h"
 #include "micmap.h"
+#include "shadow.h"
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -508,7 +509,7 @@ static Bool SetupFBandHID(
     if (kr != KERN_SUCCESS)
         return FALSE;
 
-    dfb->framebuffer = (void*)vram;
+    iokitScreen->framebuffer = (void*)vram;
     dfb->x = cshmem->screenBounds.minx;
     dfb->y = cshmem->screenBounds.miny;
     dfb->width = fbInfo.activeWidth;
@@ -518,6 +519,11 @@ static Bool SetupFBandHID(
     dfb->colorBitsPerPixel = pixelInfo.componentCount *
                              pixelInfo.bitsPerComponent;
     dfb->bitsPerComponent = pixelInfo.bitsPerComponent;
+
+    // allocate shadow framebuffer
+    iokitScreen->shadowPtr = shadowAlloc(dfb->width, dfb->height,
+                                         dfb->bitsPerPixel);
+    dfb->framebuffer = iokitScreen->shadowPtr;
 
     // Note: Darwin kIORGBDirectPixels = X TrueColor, not DirectColor
     if (pixelInfo.pixelType == kIORGBDirectPixels) {
@@ -570,6 +576,44 @@ Bool XFIOKitAddScreen(
 
 
 /*
+ * XFIOKitShadowUpdate
+ *  Update the damaged regions of the shadow framebuffer on the screen.
+ */
+static void XFIOKitShadowUpdate(ScreenPtr pScreen, 
+                                shadowBufPtr pBuf)
+{
+    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    XFIOKitScreenPtr iokitScreen = XFIOKIT_SCREEN_PRIV(pScreen);
+    RegionPtr damage = &pBuf->damage;
+    int numBox = REGION_NUM_RECTS(damage);
+    BoxPtr pBox = REGION_RECTS(damage);
+    int pitch = dfb->pitch;
+    int bpp = dfb->bitsPerPixel/8;
+
+    // Loop through all the damaged boxes
+    while (numBox--) {
+        int width, height, offset;
+        unsigned char *src, *dst;
+
+        width = (pBox->x2 - pBox->x1) * bpp;
+        height = pBox->y2 - pBox->y1;
+        offset = (pBox->y1 * pitch) + (pBox->x1 * bpp);
+        src = iokitScreen->shadowPtr + offset;
+        dst = iokitScreen->framebuffer + offset;
+
+        while (height--) {
+            memcpy(dst, src, width);
+            dst += pitch;
+            src += pitch;
+        }
+
+        // Get the next box
+        pBox++;
+    }
+}
+
+
+/*
  * XFIOKitSetupScreen
  *  Finalize IOKit specific initialization of each screen.
  */
@@ -582,6 +626,13 @@ Bool XFIOKitSetupScreen(
 
     // initalize cursor support
     if (! XFIOKitInitCursor(pScreen)) {
+        return FALSE;
+    }
+
+    // initialize shadow framebuffer support
+    if (! shadowInit(pScreen, XFIOKitShadowUpdate, NULL)) {
+        ErrorF("Failed to initalize shadow framebuffer for screen %i.\n",
+               index);
         return FALSE;
     }
 
