@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.85 2003/10/18 13:31:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.86 2003/12/19 04:26:12 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -62,7 +62,9 @@ LinuxDocTarget(README)
 #if BuildRelnotes
 LinuxDocTarget(RELNOTES)
 #endif
+#if 0
 LinuxDocTarget(Status)
+#endif
 
 /* Other docs */
 LinuxDocReadmeTarget(fonts)

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.83 2003/10/19 00:59:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.84 2003/11/22 01:33:31 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -52,7 +52,7 @@ HWREADME = \
 	ReadmeFile(SiS)
 
 MAINDOCS = LICENSE README BUILD RELNOTES \
-	   Install Status DESIGN Versions
+	   Install DESIGN Versions
 
 OTHERDOCS = \
 	ReadmeFile(fonts) \
