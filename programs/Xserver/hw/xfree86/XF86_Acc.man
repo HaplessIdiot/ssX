@@ -1,10 +1,11 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.3 1994/05/31 06:45:28 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.4 1994/06/26 13:03:46 dawes Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
-XF86_Accel - 8 bit accelerated X Window System servers for UNIX on x86
-platforms with an S3, Mach8, Mach32, P9000 or 8514/A accelerator board
+XF86_Accel - 8, 16, and 32 bit accelerated X Window System servers for
+UNIX on x86 platforms with an S3, Mach8, Mach32, P9000 or 8514/A
+accelerator board
 .SH SYNOPSIS
 .B XF86_S3
 [:displaynumber] [ option ] ...
@@ -28,11 +29,13 @@ is an 8-bit PseudoColor server for S3 graphic accelerator boards.
 is an 8-bit PseudoColor server for ATI Mach8 graphic accelerator boards. 
 .PP
 .I XF86_Mach32
-is an 8-bit PseudoColor server for ATI Mach32 graphic accelerator boards.  
+is an 8-bit PseudoColor and 16-bit TrueColor server for ATI Mach32
+graphic accelerator boards.
 .PP
 .I XF86_P9000
-is an 8-bit PseudoColor server for Weitek P9000 graphic accelerator boards.
-This server is still experimental and should be considered a beta version.
+is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor frame
+buffer server for Weitek P9000 graphic accelerator boards.  This
+server is still experimental and should be considered a beta version.
 .PP
 .I XF86_8514
 is an 8-bit PseudoColor server for 8514/A graphic accelerator boards.  
@@ -82,6 +85,15 @@ same.  With sufficient memory, resolutions up to 1280x1024 are supported.
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, these servers accept some more command line switches,
 as described in the 
+.I XFree86(1) 
+manpage.
+.sp
+The Mach32 and P9000 servers now support more than 8 bit color.
+The Mach32 supports 16 bit TrueColor and the P9000 server supports
+16 and 32 bit TrueColor.  The 32 bit TrueColor mode only uses
+24 bits per pixel for color information (giving you 16 million
+colors).  These modes may be used by specifying the \fB\-bpp\fP
+option as specified in the
 .I XFree86(1) 
 manpage.
 .SH SETUP
@@ -172,8 +184,8 @@ This option must be specified with the P9000 server.  With local bus
 Diamond Vipers the value of \fImemaddress\fP can be either
 \fI0x80000000\fP, \fI0x20000000\fP, or \fI0xA0000000\fP.  The default
 is \fI0x80000000\fP.  Any value should work as long as it does not
-conflict with another device already at that address.  It is not know
-whether the P9000 server will work with PCI-based boards.
+conflict with another device already at that address.  The P9000
+server will not yet work with PCI-based boards.
 .sp
 Note: The S3 server will normally probe for this address automatically.
 Setting this option overrides that probe.  This is not normally recommended
@@ -290,6 +302,9 @@ The 8-bit color X server for Mach8
 <XRoot>/bin/XF86_Mach32
 The 8-bit color X server for Mach32
 .TP 30
+<XRoot>/bin/XF86_P9000
+The 8, 16, and 24-bit color X server for the P9000
+.TP 30
 <XRoot>/bin/XF86_8514
 The 8-bit color X server for IBM 8514 and true compatibles
 .TP 30
@@ -377,18 +392,17 @@ dot-clocks less than 85MHz.
 .sp
 The P9000 server is still beta.  It will probably not work with cards
 other than ther Diamond Viper VLB (I have not yet been able to get
-programming information from any companies other than Diamond).
-The ability to use banking rather than a linear frame buffer has been
-added as a compile time option, but it does not yet work.
-Restoration of colors in text mode doesn't always work.  Using physical
-resolutions different from the virtual resolution is not supported and
-is probably not possible.  Use at dot-clocks greater than 110 MHz is
-not recommended and not supported.  Diamond claims that 135 MHz is the
-maximum clock speed, but some of their bt485's are not rated that
-high.  If you do not have a 135 MHz bt485 on your Viper, contact Diamond
-tech support and they will send you an RMA number to replace the board.
+programming information from any companies other than Diamond and
+Weitek).  Restoration of colors in text mode doesn't always work but
+should now be fixed.  Using physical resolutions different from the
+virtual resolution is not supported and is probably not possible.  
+No screen saver is yet implemented for 16 and 32 bpp modes.  Use
+at dot-clocks greater than 110 MHz is not recommended and not
+supported.  Diamond claims that 135 MHz is the maximum clock speed,
+but some of their bt485's are not rated that high.  If you do not have
+a 135 MHz bt485 on your Viper, contact Diamond tech support and they
+will send you an RMA number to replace the board.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to
 \fIXFree86@XFree86.org\fP for details.
-

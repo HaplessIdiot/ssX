@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.8 1994/06/26 13:01:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.9 1994/06/28 12:15:04 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -36,23 +36,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.8 1994/06/26 13:01:00 dawes Exp $
 #define XF86AGXServer		YES
 
 #define XnestServer             YES
-
-/*
- * If there are problems with the Mach32 server sharing the "main" cfb
- * libs, uncomment this.  (This is a temporary option)
- *
-#define Mach32ShareCfb		NO
- */
-
-/* 
- * Using banking with the P9000 server may help people with flakey
- * local bus machines.  However, it will slow things down considerably,
- * even if just compiled in.  Since there are no ISA P9000 boards,
- * this option should usually be disabled unless you need it.
- * At the moment, this option does NOT work.
- *
-#define P9000Banked		NO
- */
 
 /*
  * To build Xvfb, uncomment this.
@@ -160,6 +143,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.8 1994/06/26 13:01:00 dawes Exp $
  * uncomment this.
  *
 #define HasSolx86ApertureDriver	YES
+ */
+
+/*
+ * If you are running NetBSD 0.9C, and have the aperture driver installed,
+ * uncomment this.
+ *
+#define HasNetBSDApertureDriver	YES
  */
 
 /*

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.14 1994/06/28 12:15:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.15 1994/06/28 12:58:45 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -131,25 +131,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.14 1994/06/28 12:15:05 dawes Exp $
 # define XF86S3Drivers		mmio_928 s3_generic
 #endif
 
-
-/*
- * This is temporary.  Setting it to YES makes the Mach32 server share
- * the "main" cfb libs.
- */
-#ifndef Mach32ShareCfb
-#define Mach32ShareCfb		YES
-#endif
-
-/* 
- * Using banking with the P9000 server may help people with flakey
- * local bus machines.  However, it will slow things down considerably,
- * even if just compiled in.  Since there are no ISA P9000 boards,
- * this option should usually be disabled unless you need it.
- * At the moment, this option does NOT work.
- */
-#ifndef P9000Banked
-#define P9000Banked		NO
-#endif
 
 /*
  * Note, the PEX, XIE and DIS will probably be changed for 3.1.  For now,
