@@ -7,11 +7,10 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.4 2001/09/20 19:35:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.5 2001/09/23 06:10:55 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
-//#include "quartz.h"
 #include "rootlessAqua.h"
 #include "rootlessAquaImp.h"
 #include "rootless.h"
@@ -100,11 +99,12 @@ static void
 AquaGlueReshapeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
                      RegionPtr pNewShape)
 {
-    int sx = dixScreenOrigins[pScreen->myNum].x + darwinMainScreenX;
-    int sy = dixScreenOrigins[pScreen->myNum].y + darwinMainScreenY;
-
+    // Don't correct for dixScreenOrigins here.
+    // pNewShape is in window-local coordinates.
+    BoxRec shapeBox = {0, 0, pFrame->w, pFrame->h};
     if (pFrame->isRoot) return; // shouldn't happen; mi or dix covers this
-    REGION_TRANSLATE(pScreen, pNewShape, sx, sy);
+
+    REGION_INVERSE(pScreen, pNewShape, pNewShape, &shapeBox);
     AquaReshapeWindow(pFrame->devPrivate,
                       (fakeBoxRec *) REGION_RECTS(pNewShape),
                       REGION_NUM_RECTS(pNewShape));

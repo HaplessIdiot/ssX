@@ -1,7 +1,7 @@
 /*
  * NSWindow subclass for Mac OS X rootless X server
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.2 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.3 2001/09/17 03:08:40 torrey Exp $ */
 
 #import "XWindow.h"
 
@@ -29,13 +29,13 @@
                 defer: YES];
     if (! self) return NULL;
 
-    // fixme!
-    // [self setBackgroundColor:[NSColor clearColor]];  // erase transparent
+    [self setBackgroundColor:[NSColor clearColor]];  // erase transparent
     [self setAlphaValue:1.0];  // draw opaque
-    // [self setOpaque:NO];
+    [self setOpaque:NO]; // changed when window is shaped
 
     [self useOptimizedDrawing:YES]; // Has no overlapping sub-views
     [self setAutodisplay:NO];       // MUST NOT autodisplay! See comment above
+    [self disableFlushWindow];      // We do all the flushing manually
     [self setHasShadow: !isRoot];   // All windows have shadows except root
 
     // [self setAcceptsMouseMovedEvents:YES]; // MUST be AFTER orderFront?

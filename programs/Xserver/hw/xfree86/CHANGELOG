@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 449. Fix XDarwin SHAPE support in rootless mode (Gregory Parker).
  448. More corrections to Xaw manpage (#5022, Branden Robinson).
  447. Fix XDarwin crash if a NULL mask is passed to Composite in rootless
       mode (Torrey T. Lyons).
@@ -14104,4 +14105,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2022 2001/11/04 17:57:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2023 2001/11/04 21:16:37 paulo Exp $
