@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.8 1994/09/07 15:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.9 1994/09/13 15:09:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -383,11 +383,13 @@ static SymTabRec DeviceTab[] = {
 #define RIGHTCTL	37
 #define VTSYSREQ	38
 #define DEVICE		39
+#define KPROTOCOL	39
 
 #ifdef INIT_CONFIG
 static SymTabRec KeyboardTab[] = {
   { ENDSECTION,	"endsection"},
   { DEVICE,	"device" },
+  { KPROTOCOL,	"protocol" },
   { AUTOREPEAT,	"autorepeat" },
   { SERVERNUM,	"servernumlock" },
   { XLEDS,	"xleds" },
@@ -510,6 +512,7 @@ static SymTabRec VisualTab[] = {
 #define OSMOUSE    31
 
 #define VGA256     40
+#define SVGA       40
 #define VGA2       41
 #undef MONO /* used on Linux in /usr/include/linux/kd.h */
 #define MONO       42
@@ -539,6 +542,7 @@ static SymTabRec SymTab[] = {
   { OSMOUSE,    "osmouse" },
 
   { VGA256,     "vga256" },
+  { SVGA,       "svga" },
   { VGA2,       "vga2" },
   { MONO,       "mono" },
   { VGA16,      "vga16" },

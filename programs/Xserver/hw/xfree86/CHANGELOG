@@ -1,3 +1,9 @@
+XFree86 3.0E (14 September 1994)
+282. Change the 'Device' entry in the Keyboard section of XF86Config to
+     'Protocol'.
+281. Update the M magic formula for S3 server (Harald Koenig).
+280. Disable TI3025 support in S3 server -- it is incomplete.
+
 XFree86 3.0Dl (13 September 1994)
 279. XF86Config(4/5) manual page.
 278. LinkKit support for the W32 server.

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.20 1994/09/11 00:50:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.21 1994/09/13 15:09:03 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1484,11 +1484,10 @@ s3Init(mode)
 	 int m = (232-s3InfoRec.clock[mode->Clock]*s3Bpp/900)/8;
 #else
 	 int m,clock;
-	 double pow();
 	 clock = s3InfoRec.clock[mode->Clock] * s3Bpp;
 	 if (s3InfoRec.videoRam < 2048) clock *= 2;
 	 if (clock > 230*1000) m = 0;
-	 else m = (int)(1.5+pow(230.0-clock/1000.0,2.5)/12000.0);
+	 else m = (int)(5384.18/(clock/1000.0+39)-21.1543);
 	 if (s3InfoRec.videoRam < 2048) m /= 2;
 #endif
 	 if (m < 0) m = 0;

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.3 1994/06/18 16:21:25 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.4 1994/09/07 15:46:10 dawes Exp $
 .\" XF86_SVGA.man
 .TH XF86_SVGA 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -20,7 +20,8 @@ The
 .I XF86_SVGA
 server supports the following popular SuperVGA chipsets in 256 color mode.
 Virtual resolutions up to (approximately) 1152x900 are supported, using
-(up to) 1Mb of display memory.  Some of the Cirrus chipsets support
+(up to) 1Mb of display memory.  The Western Digital WD90C33 and some of
+the Cirrus chipsets support
 up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
 .RS .5i
 .TP 4
@@ -32,7 +33,7 @@ Tseng:
 ET3000, ET4000, ET4000/W32
 .TP 4
 Western Digital:
-PVGA1, WD90C00, WD90C10, WD90C11, WD90C30, WD90C31
+PVGA1, WD90C00, WD90C10, WD90C11, WD90C30, WD90C31, WD90C33
 .TP 4
 Genoa:
 GVGA
@@ -55,8 +56,9 @@ OTI067, OTI077
 .RE
 .PP
 Accelerated support is included for most of the Cirrus chipsets, and for
-the Western Digital WD90C31 chipsets.  Accelerated support for the
-ET4000/W32 is NOT yet implemented.  Users of boards based on ATI's
+the Western Digital WD90C31 and WD90C33 chipsets.  Accelerated support for the
+ET4000/W32 is implemented in a separate server (see \fIXF86_W32(1)\fP).
+Users of boards based on ATI's
 Mach8 and Mach32 chipsets should refer to the \fIXF86_Mach8(1)\fP and
 \fIXF86_Mach32(1)\fP manual pages, respectively.
 .SH OPTIONS
@@ -92,7 +94,7 @@ Tseng:
 et3000, et4000
 .TP 4
 Western Digital:
-pvga1, wd90c00, wd90c10, wd90c30, wd90c31
+pvga1, wd90c00, wd90c10, wd90c30, wd90c31, wd90c33
 .TP 4
 Genoa:
 gvga
@@ -160,7 +162,7 @@ the driver to probe for clocks instead of reporting the built-in defaults.
 This option is for debugging purposes only.
 .sp
 \fBnoaccel\fP - for Cirrus and WD chipsets.  This option disables the
-accelerated features for the clgd5426, clgd5428 and wd90c31 chipsets.
+accelerated features for the clgd5426, clgd5428, wd90c31 and wd90c33 chipsets.
 .sp
 \fBfifo_conservative\fP - for Cirrus chipsets.  This option sets the CRT
 FIFO threshold to a conservative value for dot clocks above 65MHz.  This
@@ -201,7 +203,8 @@ all
 .IP
 If the selection string is omitted, or if the \fBspeedup\fP option is omitted,
 the selection defaults to "all".
-Some of the SpeedUps can only be used with the ET4000 and WD90C31 chipsets and
+Some of the SpeedUps can only be used with the ET4000, WD90C31 and WD90C33
+chipsets and
 others requires a virtual resolution with a xdim of 1024.  SpeedUps that
 won't work with a given configuration are automatically disabled.
 .TP 8

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.1 1994/09/04 10:49:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.2 1994/09/07 15:54:14 dawes Exp $ */
 
 %{
 #include <stdio.h>
@@ -25,6 +25,8 @@
  *
  * This is all the documentation there is. -- GJA.
  */
+
+#define USE_KBD_PROTOCOL
 
 #define N_SCREENS 5
 #define iVGA256		0
@@ -475,9 +477,17 @@ dump()
 	/* Keyboard section */
 	printf("Section \"Keyboard\"\n");
 	if ( strcmp(gen.mouse_name,"xqueue") == 0 ) {
+#ifdef USE_KBD_PROTOCOL
+		printf("    Protocol \"Xqueue\"\n");
+#else
 		printf("    Device \"Xqueue\"\n");
+#endif
 	} else {
+#ifdef USE_KBD_PROTOCOL
+		printf("    Protocol \"Standard\"\n");
+#else
 		printf("    Device \"Standard\"\n");
+#endif
 	}
 	if ( gen.Autorepeat1 ) {
 		printf("    AutoRepeat %s %s\n",

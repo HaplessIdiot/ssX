@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.2 1994/09/03 02:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.3 1994/09/08 14:26:22 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -387,7 +387,7 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 	    /* Window --> Pixmap */
 	    int pixWidth = PixmapBytePad(pDstDrawable->width,
 					 pDstDrawable->depth);
-	    char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
+	    unsigned char *pdst = ((PixmapPtr)pDstDrawable)->devPrivate.ptr;
 	    
 #ifdef P9000_IM_ACCEL
 	    for (i = numRects; --i >= 0; pbox++)

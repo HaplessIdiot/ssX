@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.26 1994/09/11 11:13:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.27 1994/09/13 15:08:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -150,7 +150,9 @@ static SymTabRec s3DacTable[] = {
    { ATT20C505_DAC,	"att20c505" },
    { TI3020_DAC,	"ti3020" },
    { ATT20C498_DAC,	"att20c498" },
+#ifdef TI3025_SUPPORT
    { TI3025_DAC,	"ti3025" },
+#endif
    { ATT20C490_DAC,	"att20c490" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
@@ -677,7 +679,9 @@ s3Probe()
 	    ErrorF("%s %s: Detected a TI ViewPoint 3020 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = TI3020_DAC;
-	 } else {
+	 }
+#ifdef TI3025_SUPPORT
+	 else {
 	    outb(vgaCRIndex, 0x5C);
 	    saveCR5C = inb(vgaCRReg);
 	    /* clear 0x20 (RS4) for 3020 mode */
@@ -705,6 +709,7 @@ s3Probe()
 	    outb(vgaCRReg, saveCR5C);
 	    outb(vgaCRIndex, 0x55);
 	 }
+#endif
 	 outb(TI_INDEX_REG, saveTIndx);
 	 outb(vgaCRReg, saveCR55);
       }
