@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.10 2001/01/06 20:58:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.11 2001/03/25 05:32:08 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -33,18 +33,19 @@
 #define ATIMach64MaxX    8191
 #define ATIMach64MaxY   32767
 
-extern void ATIMach64PreInit     FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                    ATIHWPtr));
-extern void ATIMach64Save        FunctionPrototype((ATIPtr, ATIHWPtr));
-extern void ATIMach64Calculate   FunctionPrototype((ATIPtr, ATIHWPtr,
-                                                    DisplayModePtr));
-extern void ATIMach64Set         FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void         ATIMach64PreInit     FunctionPrototype((ScrnInfoPtr,
+                                                            ATIPtr, ATIHWPtr));
+extern void         ATIMach64Save        FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void         ATIMach64Calculate   FunctionPrototype((ATIPtr, ATIHWPtr,
+                                                            DisplayModePtr));
+extern void         ATIMach64Set         FunctionPrototype((ATIPtr, ATIHWPtr));
 
-extern void ATIMach64SaveScreen  FunctionPrototype((ATIPtr, int));
-extern void ATIMach64SetDPMSMode FunctionPrototype((ATIPtr, int));
+extern void         ATIMach64SaveScreen  FunctionPrototype((ATIPtr, int));
+extern void         ATIMach64SetDPMSMode FunctionPrototype((ATIPtr, int));
 
-extern Bool ATIMach64AccelInit   FunctionPrototype((ATIPtr, XAAInfoRecPtr));
+extern unsigned int ATIMach64AccelInit   FunctionPrototype((ATIPtr,
+                                                            XAAInfoRecPtr));
 
-extern Bool ATIMach64CursorInit  FunctionPrototype((xf86CursorInfoPtr));
+extern Bool         ATIMach64CursorInit  FunctionPrototype((xf86CursorInfoPtr));
 
 #endif /* ___ATIMACH64_H___ */
