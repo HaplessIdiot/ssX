@@ -4,8 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.2
  <author>The XFree86 Project, Inc
- <date>20 October 1996
-
+ <date>21 October 1996
 
 <abstract>
 
@@ -127,10 +126,10 @@ It is expected that it will reappear in some form in a future release.
 <p>
 <sect> OS issues
 <p>
-Beta testers should always check the OS specific README files for
+Always check the OS specific README files for
 special requirements or caveats. 
 <p>
-Testers running Linux/Elf (on Intel platforms) should note that they will
+Users running Linux/Elf (on Intel platforms) should note that they will
 need ld.so-1.7.14.  This
 can be found at <url name="tsx-11.mit.edu:pub/linux/packages/GCC"
 url="ftp://tsx-11.mit.edu/pub/linux/packages/GCC">.
@@ -140,6 +139,14 @@ url="ftp://tsx-11.mit.edu/pub/linux/packages/GCC">.
 Note, items marked with `*' have been added since the last beta release
 (3.1.2G).
 <p>
+<sect1> General
+<p>
+<itemize>
+  <item> XFree86 3.2 includes the X Consortium's X11R6.1.
+  <item>XFree86-3.2 includes a full distribution for Linux/m68k.
+  <item>XFree86-3.2 includes a full distribution for Linux/Alpha.
+  <item>XFree86-3.2 includes a full distribution for OS/2.
+</itemize>
 <sect1> General X server changes
 <p>
 <itemize>
@@ -147,122 +154,111 @@ Note, items marked with `*' have been added since the last beta release
 	in XF86Config files to allow the default bpp to be specified.
   <item>A `-nolock' server command-line option has been added to allow
 	the server's locking mechanism to be disabled.
+  <item>All VGA cards with a set of discrete clocks (i.e. not a ClockChip or
+	a ClockProg) can now also use all the clocks mentioned in the
+	clocks line divided by 2.  This presents the server with twice as
+	many clocks to choose from.  Add the option "clkdiv2" to the "Device"
+	section of XF86Config to enable this.
+  <item>Some cursor colouring bugs have been fixed for servers that use
+	hardware cursors.
+  <item>A security problem related to the X server's lock files has been
+	fixed.
+  <item>The VidMode extension (as used by xvidtune) now by default only allows
+	changes to modes by clients using a local connection type.  There is
+	also an option to completely disable mode changes via this extension.
+  <item>A new server extension called "XFree86-Misc" has been added.  The
+	primary purpose of this is to allow reconfiguration of some parameters	
+	while the server is running.  Some functions previously in the
+	VidMode extension (like screen save functions) have been moved to
+	this new extension.
+  <item>Support has been added for the ALPS GlidePoint.  A tap on the pad
+	is treated as a fourth button.
+  <item>The XKEYBOARD extension is included in the servers as part of X11R6.1.
+	It is enabled by default, but can be disabled either from the command
+	line (see the Xserver man page) or from the XF86Config file
+	(see XkbDisable in the XF86Config man page).  With this extension
+	enabled, you may see some differences in the keyboard mappings.
+  <item>A new extension called XFree86-DGA is now provided.  This allows
+	a client program to get direct access to the video card's memory.
+	This is implemented for most of the servers/drivers that can support
+	it.  Connections are only allowed from clients using a local
+	connection type (e.g., DISPLAY=":0").
+	For details
+	of the client-side API, see the XF86DGA(3) man page, and the file
+	README.DGA.
+  <item>An implementation of the XInput extension is now included.  It
+	has support for the following devices:
+	<itemize>
+	  <item>Joystick (Linux, FreeBSD, NetBSD and OpenBSD only)
+	  <item>Wacom tablet (Wacom IV protocol only)
+	  <item>Elographics touchscreen
+	  <item>SummaSketch tablet
+	  <item>Mouse
+	</itemize>
+	Refer to the XF86Config(4/5) manual page and the <htmlurl
+	name="xinput document" url="xinput.html"> for configuration details.
+  <item>The default black and white pixel values are now black = 0 and
+	white = 1 for all servers.  This may be swapped with the
+	`-flipPixels' command-line option.
+  <item>Underscore characters are now ignored in Options and keywords in the 
+	XF86Config file.
+  <item>The built-in X server malloc is used by default.
+  <item>A problem that can cause the X server to crash when running
+	xvidtune has been fixed.
+  <item>Bitmap fontpath elements can have <tt>&dquot;:unscaled&dquot;</tt>
+	appended to prevent the fonts from being treated as scalable.  This
+	works with the fontserver (xfs) too.
+  <item>*The PEX and XIE server extensions can now be dynamically loaded
+	for Linux/ELF, FreeBSD, NetBSD and OpenBSD.
 </itemize>
 <sect1> XF86Setup
 <p>
 <itemize>
-  <item>Some bugs in the XF86Setup utility have been fixed.
+  <item>3.2 includes a new, graphical utility for X server configuration
+	called `XF86Setup'.  NOTE: this utility requires that you have the
+	VGA16 server installed, as well as the server specific to your
+	video card.
 </itemize>
 <sect1> PC98 Support
 <p>
 <itemize>
-  <item>Some bugs in the S3-based servers have been fixed.
-</itemize>
-<sect1> S3 server
-<p>
-<itemize>
-  <item>A display problem with Trio64V+ cards when operating at 16bpp has
-	been fixed.
-  <item>The "newmmio" driver is now disabled when the OS doesn't allow
-	linear framebuffer access, or when the "nolinear" option is used.
-  <item>Some potential problems with the way the accelerator is used have
-	been fixed.
-</itemize>
-<sect1> Mach64 server
-<p>
-<itemize>
-  <item>Contrary to what is stated for 3.1.2F, the "no_block_write" option
-	is sometimes still required.
-</itemize>
-<sect1> Trident driver (SVGA server)
-<p>
-<itemize>
-  <item>A problem with non-linear memory access for TGUI cards has been
-	fixed.  This should fix the problems that showed up with 3.1.2F
-	with VLB cards when the "linear" option wasn't specified.
-  <item>PCI burst write is now turned off by default for PCI TGUI cards.
-	This fixes a problem that showed up with 3.1.2F when the
-	"tgui_pci_write_off" option wasn't specified. On the downside,
-	this can result in reduced performance for cards that can do PCI
-	burst writes. This can be solved by adding the option
-	"tgui_pci_write_on" to the Device Section.
-</itemize>
-<sect1> Ark driver (SVGA server)
-<p>
-<itemize>
-  <item>The Ark driver will now detect the ARK2000MT, but it is treated
-	as an ARK2000PV.  This hasn't been tested.
-</itemize>
-<sect1> Alliance ProMotion driver (SVGA server)
-<p>
-<itemize>
-  <item>A driver for the Alliance ProMotion 6442 has been added (from
-	Alliance Semiconductor). This has not been thoroughly tested.
-</itemize>
-<sect1> Cirrus driver (SVGA server)
-<p>
-<itemize>
-  <item>A problem with clock limits for the CL-GD754x when operating at
-	16bpp has been fixed.
-  <item>Some problems with the CL-GD754x that were introduced in 3.1.2F
-	have been fixed.
-</itemize>
-<sect1> Client/Library changes
-<p>
-<itemize>
-  <item>A bug in the xterm termcap entry distributed with 3.1.2F has been
-	fixed.
-  <item>Some problems with xterm's handling of the colorUL and colorBG
-	resources have been fixed.
-  <item>An additional buffer overrun problem in libX11 which can lead to
-	security problems has been fixed.
-</itemize>
-<p>
-<sect> New Features in 3.1.2F
-<p>
-<itemize>
-  <item>3.1.2F includes a new, graphical utility for X server configuration
-	called `XF86Setup'.  NOTE: this utility requires that you have the
-	VGA16 server installed, as well as the server specific to your
-	video card.
-  <item>3.1.2F includes a full distribution for Linux/m68k.
-  <item>Support for the Linux/Alpha has been improved.
-</itemize>
-<sect1> General X server changes
-<p>
-<itemize>
-  <item>The XKEYBOARD extension and related utilities and data files have
-	been updated.  The support for European keyboards should be better
-	than in the previous release.
-</itemize>
-<sect1> DGA Extension
-<p>
-<itemize>
-  <item>SetViewport has been fixed for the SVGA server.
-  <item>An InstallColormap function has been added.
-  <item>DGA support has been added to the AGX server.
-  <item>A man page has been added for this extension.
+  <item>Support has been added for PC98 machines.  These are Intel based
+	machines which are common in Japan.
+  <item>Support has been added for the PANIX-PC98 SVR4.0 OS.
+  <item>The following PC98-specific X servers are included:
+	<itemize>
+	  <item>XF98_NECS3 PC98 NEC(S3) server.
+	  <item>XF98_PWSKB SKB-PowerWindow(S3) server.
+	  <item>XF98_PWLB  PC98 PowerWindowLB(S3) server.
+	  <item>XF98_GA968 GA-968V4/PCI(S3 968).
+	  <item>XF98_TGUI Cyber9320 and TGUI9680.
+	  <item>XF98_NKVNEC NKV-NEC(cirrus) server.
+	  <item>XF98_WABS WABS(cirrus) server.
+	  <item>XF98_GANBWAP GANB-WAP(cirrus) server.
+	  <item>XF98_WABEP WAB-EP(cirrus) server.
+	  <item>XF98_WSNA WSN-A2F(cirrus) server.
+	  <item>XF98_EGC EGC(generic vga16) server.
+	  <item>XF98_NEC480 PEGC-480(generic vga256) server.
+	</itemize>
 </itemize>
 <sect1> XInput Extension
 <p>
 <itemize>
-  <item>Some problems with loading XInput dynamic modules have been fixed.
-  <item>Motion history support has been added for XInput devices.
-  <item>A driver for the SummaSketch tablet has been added.
-  <item>The Wacom driver has been updated.
-</itemize>
-<sect1> PC98 Support
-<p>
-<itemize>
-  <item>A server has been added for the GA-968V4/PCI(S3 968).
+  <item>Motion history support is included for XInput devices.
+  <item>XInput drivers are now dynamically loadable for Linux/ELF, FreeBSD,
+	and NetBSD.
+  <item>Multiple instances of XInput devices may be specified.
 </itemize>
 <sect1> S3 server
 <p>
 <itemize>
-  <item>A bug which caused the server to hang during startup with Trio64V+
-	cards in machines with PCI SCSI controllers has been fixed.
-  <item>Problems related to hardware bugs with the Trio64V+ video blanking
-	signal have been worked around.
+  <item>Support for the S3 Trio64V+.
+  <item>New server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.  Note that this
+	server is very new, and is considered "beta".  Please report any
+	problems with it.
+  <item>Support in the S3 server for the AT&amp;T 20C409 and 20C499 RAMDACs.
+  <item>Some potential problems with the way the accelerator is used have
+	been fixed.
   <item>A new driver has been added for the 868/968/Trio64V+ which uses
 	the new MMIO mode available with these chips.  This new driver is
 	used by default for these chips on Intel platforms, but not yet
@@ -282,249 +278,17 @@ Note, items marked with `*' have been added since the last beta release
 	with the old driver, and let us know (even if the old driver fixes
 	the problem!).
   <item>An initialisation problem with some VideoLogic cards has been fixed.
-</itemize>
-<sect1> Mach64 server
-<p>
-<itemize>
-  <item>A bug in the handling of block_write that was introduced in 3.1.2E
-	has been fixed.  If you needed to add the "no_block_write" option
-	to your XF86Config in 3.1.2E, you should be able to remove it now.
-</itemize>
-<sect1> W32 server
-<p>
-<itemize>
-  <item>Support has been added for the ET6000
-</itemize>
-<sect1> I128 server
-<p>
-<itemize>
-  <item>Support has been added for the Series 2 cards.
-  <item>Support has been added for 8MB cards.
-</itemize>
-<sect1> Trident driver (SVGA server)
-<p>
-<itemize>
-  <item>Some problems introduced in 3.1.2E have been fixed.  Refer to the
-	README.trident file for details of new options that may be required.
-</itemize>
-<sect1> SiS driver (SVGA server)
-<p>
-<itemize>
-  <item>256 colour support has been added.
-</itemize>
-<sect1> Chips and Technologies driver (SVGA server)
-<p>
-<itemize>
-  <item>This driver has been significantly reworked.
-  <item>Support has been added for the 65546, 65548, 65550 and 65554.
-  <item>Linear addressing support for the 65530 and above.
-  <item>16bpp and 24bpp (packed) support for the 65545 an above.
-  <item>BitBLT acceleration for the 65545, 65546 and 65548.
-</itemize>
-<sect1> ALI driver (SVGA server)
-<p>
-<itemize>
-  <item>Interlaced modes now work with this driver.
-</itemize>
-<sect1> ATI driver (SVGA server)
-<p>
-<itemize>
-  <item>Mach64 support has been improved.
-</itemize>
-<sect1> Cirrus driver (SVGA server)
-<p>
-<itemize>
-  <item>Support has been added for the CL-GD5446 and CL-GD5462.
-</itemize>
-<sect1> ET3000 driver (SVGA server)
-<p>
-<itemize>
-  <item>VGA16 support has been added to the ET3000 driver.
-</itemize>
-<sect1> Client/Library changes
-<p>
-<itemize>
-  <item>Various bugs in the previous version of xterm have been fixed.
-  <item>The termcap and terminfo entries for xterm have been updated.
-  <item>Support for ddterm's escape sequences has been added to xterm.
-  <item>Support for most vt220/vt320 escape sequenced has been added to xterm.
-  <item>xdm's session handling on BSD OSs has been fixed.
-  <item>Some buffer overrun problems which can lead to security problems
-	have been fixed in libXt and libX11.  At least one of these
-	problems has been used to exploit the setuid xterm.
-</itemize>
-<sect1> Fonts
-<p>
-<itemize>
-  <item>The Cyrillic fonts have been updated.
-</itemize>
-<p>
-<sect> New Features in 3.1.2E
-<sect1> General
-<p>
-<itemize>
-  <item>3.1.2E is based on the first publicly released form of X11R6.1
-	(i.e,. X11R6.1 public patch 1).
-  <item>Many updates have been made to the OS/2 port.
-  <item>3.1.2E also includes a first full distribution for Linux/AXP
-	(Linux on DEC Alpha/AXP architecture) with tested servers for
-	S3 and Mach64 cards.
-</itemize>
-<sect1> General X server changes
-<p>
-<itemize>
-  <item>All VGA cards with a set of discrete clocks (i.e. not a ClockChip or
-	a ClockProg) can now also use all the clocks mentioned in the
-	clocks line divided by 2.  This presents the server with twice as
-	many clocks to choose from.  Add the option "clkdiv2" to the "Device"
-	section of XF86Config to enable this.
-  <item>Some cursor colouring bugs have been fixed for servers that use
-	hardware cursors.
-  <item>Autorepeating modifier keys when using XKB have been fixed.
-</itemize>
-<sect1> XInput Extension
-<p>
-<itemize>
-  <item>A new device supporting mouse protocols has been added.
-  <item>The wacom device has been enhanced to support tilt valuators
-	and to have a motion history.
-</itemize>
-<sect1> PC98 Support
-<p>
-<itemize>
-  <item>Bugs have been fixed in some of the PC98 servers.
-  <item>Support has been added for the PowerWindow968, Cyber9320 and
-	TGUI9680.
-  <item>Support has been added for the PANIX-PC98 SVR4.0 OS.
-</itemize>
-<sect1> S3 server
-<p>
-<itemize>
   <item>Support for the ELSA Winner 2000PRO/X rev G and ELSA Gloria-8 (except
 	the GLint 300SX 3D chip) has been added.
-  <item>S3 dashed lines are finally fixed.
-  <item>Fixed some problems with the S3 Trio64V+.
+  <item>Problems with S3 dashed lines are fixed.
   <item>Added options "slow_dram" and "slow_edodram" to avoid pixel
 	errors on the display for some broken cards.
-</itemize>
-<sect1> Mach64 server
-<p>
-<itemize>
-  <item>Screen blanking for Mach64 CT cards running at 16bpp and 32bpp has
-	been fixed.
-  <item>The Mach64 server will detect the new VT and GT cards, and it should
-	work for at least the VT cards.
-  <item>A problem that caused the server to incorrectly use block I/O
-	mode on some cards has been fixed.
-  <item>A problem with ol[v]wm icons has been fixed.
-  <item>A problem with ghostview scrollbars has been fixed.  This may also
-	fix some Netscape font problems that have been reported.
-</itemize>
-<sect1> W32 server
-<p>
-<itemize>
-  <item>Support has been added for the ICD2061A clock chip (which is used
-	on the Diamond Stealth 32).
-  <item>The server's reporting of bits/RGB resolution has been fixed.
-</itemize>
-<sect1> P9000 server
-<p>
-<itemize>
-  <item>DGA support has been added to the P9000 server.
-</itemize>
-<sect1> Trident driver (SVGA server)
-<p>
-<itemize>
-  <item>Support for the TGUI9320 has been fixed (it was broken in 3.1.2D).
-</itemize>
-<sect1> ATI driver (SVGA server)
-<p>
-<itemize>
-  <item>There have been a number of updates to the ati driver.
-</itemize>
-<sect1> ARK driver (SVGA server)
-<p>
-<itemize>
-  <item>A problem which caused the server to crash when no Ramdac was given
-	in the XF86Config file has been fixed.
-</itemize>
-<sect1> Client/Library changes
-<p>
-<itemize>
-  <item>Problems with the colour support in xterm have been fixed.
-  <item>POSIX termios support has been added for xterm on most BSD systems.
-	This removes the need for the BSD kernel to built with the
-	COMPAT_43 option.  There are problems with this on FreeBSD 2.0.5
-	and earlier, so it isn't used in that case.
-  <item>The termcap and terminfo entries for xterm have been brought up to
-	date.
-</itemize>
-<p>
-<sect> New Features in 3.1.2D
-<sect1> General
-<p>
-<itemize>
-  <item>OS/2 support has advanced significantly.  There should be OS/2
-	binaries available soon.
-</itemize>
-<sect1> General X server changes
-<p>
-<itemize>
-  <item>A security problem related to the X server's lock files has been
-	fixed.
-  <item>The DGA extension has been implemented now for all servers that
-	can support it, and some bugs in the previous version have been
-	fixed.  Connections are now only allowed from clients using a local
-	connection type (e.g., DISPLAY=":0").
-  <item>The VidMode extension (as used by xvidtune) now by default only allows
-	changes to modes by clients using a local connection type.  There is
-	also an option to completely disable mode changes via this extension.
-  <item>A new server extension called "XFree86-Misc" has been added.  The
-	primary purpose of this is to allow reconfiguration of some parameters	
-	while the server is running.  Some functions previously in the
-	VidMode extension (like screen save functions) have been moved to
-	this new extension.
-  <item>Support has been added for the ALPS GlidePoint.  A tap on the pad
-	is treated as a fourth button.
-  <item>A RecolorCursor problem that was present in servers/drivers using
-	HW cursors has been fixed.
-  <item>The XKEYBOARD extension is included in the servers as part of X11R6.1.
-	It is enabled by default, but can be disabled either from the command
-	line (see the Xserver man page) or from the XF86Config file
-	(see XkbDisable in the XF86Config man page).  With this extension
-	enabled, you may see some differences in the keyboard mappings.
-</itemize>
-<sect1> PC98 Support
-<p>
-<itemize>
-  <item>Initial release of the PC98 NKV-NEC(cirrus) server. This server is
-	based on the PC-AT SVGA(cirrus) server.
-  <item>Initial release of the PC98 WABS server. This server is based
-	on the PC-AT SVGA(cirrus) server.
-  <item>Initial release of the PC98 GANB-WAP server. This server is based
-	on the PC-AT SVGA(cirrus) server.
-  <item>Initial release of the PC98 WAB-EP server. This server is based
-	on the PC-AT SVGA(cirrus) server.
-  <item>Initial release of the PC98 WSN-A2F server. This server is based
-	on the PC-AT SVGA(cirrus) server.
-  <item>Initial release of the PC98 EGC server. This server is based
-	on the PC-AT VGA16(generic) server.
-  <item>Initial release of the PC98 PEGC-480 server. This server is based
-	on the PC-AT SVGA(generic) server.
-</itemize>
-<sect1> S3 server
-<p>
-<itemize>
   <item>A Ti3026 clock problem that appears on some SPEA cards has been fixed.
   <item>Code has been added to automatically detect the Trio32 bug that causes
-	font cache problems.  If you've needed to use the "trio32_fc_bug"
-	option in 3.1.2B, try removing it and let us know if there are any
-	problems.
+	font cache problems.  When detected, a workaround is activated..
   <item>Framebuffer address problems with some 1MB Trio64 VLB cards should
 	be fixed.
   <item>The low ICS5342 clock limit has been removed.
-  <item>A workaround is included for the "bright left border" problem that
-	shows up with some Trio64V+ cards.
   <item>Detection of Diamond S3 cards has been improved.  If you've needed
 	to use the "diamond" option to avoid screen wrapping in previous
 	releases, try removing it and let us know if there are any problems.
@@ -533,223 +297,43 @@ Note, items marked with `*' have been added since the last beta release
 	XF86Config with previous versions, you should remove it now.
   <item>The handling of the S3RefClk XF86Config setting has been fixed
 	for cards with an IBM Ramdac.
-  <item>Fixes for S3 dashed lines are included.  Part of this is a workaround
-	for a dashed line bug in some 968 chips.
-</itemize>
-<sect1> Mach64 server
-<p>
-<itemize>
-  <item>The Mach64 server now correctly initialises Block I/O mode on cards
-	which report that it is available.  This fixes the problem of some
-	Mach64 CT cards not being recognised in earlier versions.
-  <item>In addition to the known problems listed below for version 3.1.2B,
-	the following problems are known:
-	<itemize>
-	  <item>Olvwm icons may be displayed with some pieces missing.
-	  <item>Screen blanking at 16bpp doesn't work properly with CT
-		(and other?) cards.
-	</itemize>
-</itemize>
-<sect1> I128 server
-<p>
-<itemize>
-  <item>Problems detecting some I128 cards have been fixed.
-  <item>The server doesn't yet support 8MB cards.
-  <item>The server is still completely unaccelerated.
-</itemize>
-<sect1> SVGA/VGA16/Mono servers
-<p>
-<itemize>
-  <item>A PCI probe has been added to these servers.  If it causes problems,
-	it can be disabled by adding the line:
-	<verb>
-	Option "no_pci_probe"
-	</verb>
-	to the Device section in your XF86Config file.
-</itemize>
-<sect1> Trident driver (SVGA server)
-<p>
-<itemize>
-  <item>Known problems with TGUI9440 cards have been fixed (including
-	interlaced modes).
-  <item>Support for TGUI9660/9680 cards has been improved.
-</itemize>
-<sect1> ARK driver (SVGA server)
-<p>
-<itemize>
-  <item>The ICS5342 clock support (required for the Diamond Stealth64
-	Graphics 2001 series) has been fixed.
-</itemize>
-<sect1> ATI driver (SVGA server)
-<p>
-<itemize>
-  <item>The driver name has been changed back from "vgawonder" to "ati".
-  <item>Support is included for most recent Mach64 cards.
-  <item>The "undoc_clocks" option has been removed.  If you had been using
-	it, remove it from your XF86Config file.
-  <item>A colourmap problem with VGA Wonder V3 boards has been fixed.
-</itemize>
-<sect1> ET4000 driver (SVGA server)
-<p>
-<itemize>
-  <item>The ET4000 driver support in the SVGA server was broken in 3.1.2B
-	for old ET4000 (non-W32) cards.  This has been fixed.
-</itemize>
-<sect1> Compaq AVGA driver (SVGA server)
-<p>
-<itemize>
-  <item>The Compaq AVGA driver has been disabled in this release because it
-	doesn't work, and nobody seems interested in fixing it.
-</itemize>
-<sect1> Hercules mono driver
-<p>
-<itemize>
-  <item>The Hercules mono driver has been disabled in this release because
-	it has problems, and isn't likely to be fixed soon.
-</itemize>
-<sect1> XInput Extension
-<p>
-<itemize>
-  <item>Bugs with the Wacom Tablet support have been fixed.
-  <item>The Eraser button of a Wacom stylus may now be used as a third
-	button.
-  <item>Joystick support is now included for NetBSD.
-  <item>XInput drivers are now dynamically loadable for Linux/ELF, FreeBSD,
-	and NetBSD.
-  <item>Multiple instances of XInput devices may be specified.  As a
-	consequence, the "Joystick2" device has been removed.
-</itemize>
-<sect1> SuperProbe
-<p>
-<itemize>
-  <item>Much improved detection for Mach64 cards.
-  <item>Improved detection for Trident cards.
-  <item>Added detection of SiS cards. 
-</itemize>
-<sect1> Client/Library Changes
-<p>
-<itemize>
-  <item>As part of the change to X11R6.1, the shared library revisions
-	for libX11, libXaw, libXext, and libXtst have been incremented
-	to 6.1.
-  <item>The client-side library code for the XFree86 extensions and the
-	ScreenSaver extension has been moved into separate libraries.
-	The old libXExExt has been removed.
-  <item>Colour support is now included by default in xterm.  I18N support
-	in xterm has been improved (as part of X11R6.1).  If you've previously
-	been using one of the many "color_xterm" variants, try this and let
-	us know if you have any problems.
-  <item>xdpyinfo has been updated to provide more detailed information
-	about the XInput extension and the XFree86 extensions.
-  <item>The setting/examining of extended screen saver parameters has
-	been added to xset (was in xvidtune).  xset can now also be used
-	to set the keyboard repeat parameters.
-</itemize>
-
-<sect> New Features in 3.1.2B
-<sect1> General X server changes
-<p>
-<itemize>
-  <item>A new extension called XFree86-DGA is now provided.  This allows
-	a client program to get direct access to the video card's memory.
-	This is currently only implemented for the S3 and Mach64 servers
-	and the Cirrus and Trident drivers of the SVGA server.  For details
-	of the client-side API, see the file README.DGA.
-  <item>An implementation of the XInput extension is now included.  It
-	has support for the following devices:
-	<itemize>
-	  <item>Joystick (Linux and FreeBSD only at the moment)
-	  <item>Wacom tablet (Wacom IV protocol only)
-	  <item>Elographics touchscreen
-	</itemize>
-	Refer to the XF86Config(4/5) manual page for configuration details.
-  <item>The default black and white pixel values are now black = 0 and
-	white = 1 for all servers.  This may be swapped with the
-	`-flipPixels' command-line option.
-  <item>The <tt>RepeatMiddle</tt> keyword that was added in 3.1.2A has been
-	removed because it didn't work properly.
-</itemize>
-<sect1> PC98 support
-<p>
-<itemize>
-  <item>Support has been added for PC98 machines.  These are Intel based
-	machines which are common in Japan.
-  <item>Initial release of the PC98 NEC(S3) server. This server is based on
-	the PC-AT S3 server.
-  <item>Initial release of the PC98 SKB-PowerWindow(S3) server. This server is
-	based on the PC-AT S3 server.
-  <item>Initial release of the PC98 PowerWindowLB(S3) server. This server
-	is based on the PC-AT S3 server.
-</itemize>
-<sect1> Number Nine Imagine 128 server
-<p>
-<itemize>
-  <item>A new server for the Number Nine Imagine 128 card is included.
-	This server is currently not accelerated.
-</itemize>
-<sect1> Trident driver (SVGA server)
-<p>
-<itemize>
-  <item>TGUI9440 is now fully supported by the SVGA server.
-  <item>Major updates for most of the trident family of chips.
-  <item>Preliminary support for the 9660/9680 chipsets - please test!
-  <item>Hardware Cursor support has problems when mode switching.
-	This is only a positioning issue and shouldn't cause any problems.
-  <item>Check README.trident distributed with this release for full details.
-  <item>Known problems:
-	<itemize>
-	  <item>There is a problem with interlaced modes with the SVGA
-		driver.
-	</itemize>
-</itemize>
-<sect1> ARK driver (SVGA server)
-<p>
-<itemize>
-  <item>The ICS5342 clock support (required for the Diamond Stealth64
-	Graphics 2001 series) reportedly didn't work in the 3.1.2A version.
-	A problem with it has been found and fixed in 3.1.2B, but it hasn't
-	been tested.
-</itemize>
-<sect1> S3 server
-<p>
-<itemize>
-  <item>Workaround for the hardware bug in some new Trio32 chips that
-	causes font corruption.  To enable this workaround, add the following
-	line to the Device section of your XF86Config:
-	<tscreen><verb>
-	Option "trio32_fc_bug"
-	</verb></tscreen>
   <item>Support for S3 and Bt485 HW cursor in doublescan modes.
   <item>Fix positioning of IBM RGB Ramdac HW cursor in interlace and
 	doublescan modes (the cursor shape still isn't correct).
-  <item>Fixed detection of Trio64V+ cards.
   <item>Improved linear fb detection for PCI cards.  In particular this
 	should allow most Trio64V+ cards to use the linear fb, which
 	seems to prevent a lot of the lockups that have been reported.
   <item>Support for the ELSA Elsa Winner2000PRO/X-2,4 Rev.G which uses
 	an ICS9161A clock chip as well as the Ti3026 RAMDAC (clock
 	doubling not supported yet).
-  <item>The AT&amp;T20C409 RAMDAC now supported at clocks up to 135MHz
-	in 8bpp mode.
+  <item>The default InvertVCLK settings have been changed for &num;9 Motion
+	771 cards and Hercules Terminator 64 Pro cards.  If you have
+	needed to add Invert_VCLK lines to your XF86Config file to avoid
+	screen wrapping with version 3.1.2, please remove them when
+	testing this version.  If there are problems with the new
+	defaults, please report them to us.
+  <item>*Text clipping performance has been improved.
 </itemize>
 <sect1> Mach64 server
 <p>
 <itemize>
+  <item>Most problems in the handling of block_write have been fixed.  
+	Nevertheless, you still might need to add the "no_block_write" option
+	to your XF86Config if the BIOS doesn't correctly initialise the
+	chip.
+  <item>Screen blanking for some Mach64 CT cards running at 16bpp and 32bpp
+	has been fixed.  Problems remain for some revisions of the CT chip.
+  <item>The Mach64 server supports the VT and GT chipset.  The GT is also
+	known as "Rage".  The newer Rage II is not yet supported.
+  <item>A problem with ol[v]wm icons has been fixed.
+  <item>A problem with ghostview scrollbars has been fixed.  This may also
+	fix some Netscape font problems that have been reported.
   <item>The Mach64 CT (also known as the 264CT, or 215CT22200) chip is now
 	supported.  This chip has a integrated RAMDAC and clockchip, and
 	is used on some Graphics Xpression and WinBoost cards.
   <item>The Mach64 GX-F (GX rev 3) is now supported.
   <item>The IBM RGB514 RAMDAC is now supported (as used on the ATI
 	Graphics Turbo Pro 1600).
-  <item>The <tt>"program_clocks"</tt> option added in the 3.1.2A version
-	has been removed, so if you have been using it in your XF86Config you
-	will need to remove it.  The use of programmed clocks is now the
-	default when a programmable clock chip is present.  This can be
-	disabled if necessary by adding the following line to the Device
-	section of the XF86Config:
-	<tscreen><verb>
-	Option "no_program_clocks"
-	</verb></tscreen>
   <item>The memory base should now be correctly detected for VLB cards.
 	If you've needed to add a `MemBase' line to the XF86Config for
 	previous versions, please try removing it, and let us know if there
@@ -760,23 +344,26 @@ Note, items marked with `*' have been added since the last beta release
 	fixed.
   <item>8 bit-per-RGB mode (when running at 8bpp) is now default for
 	RAMDACs that support it.
-  <item>Known problems with this version of the Mach64 server are:
-	<itemize>
-	  <item>The Background colour is not correctly set after exiting
-		the server when using a GPT1600 card.
-	  <item>VT switching does not work for cards with the CH8398 and
-		AT&amp;T20C409 RAMDACs.
-	  <item>The background colour of the cursor in xterms for the
-		CH8398 and AT&amp;T20C409 RAMDACs is blue instead of
-		black in 16bpp and 32bpp modes.
-	  <item>When using the software cursor, after switching to the
-		console and back, it leaves ``droppings'' when entering
-		and exiting windows (this bug is also present in 3.1.2).
-	</itemize>
+  <item>Hardware cursor mask problem has been fixed.
+  <item>Support for the AT&amp;T 20C408 RAMDAC/Clockchip has been added.
+  <item>Arbitrary clocks can be used on most boards with supported clock chips.
+  <item>*The reliability of the Mach64 detection code has been improved.
 </itemize>
-<sect1> ET4000/W32 server
+<sect1> Mach32 server
 <p>
 <itemize>
+  <item>Hardware cursor mask problem has been fixed.
+  <item>*16bpp support has been added for the AT&amp;T 20C490 and Bt481
+	RAMDACs.
+  <item>*Some VT switching problems have been fixed.
+</itemize>
+<sect1> W32 server
+<p>
+<itemize>
+  <item>Support has been added for the ET6000
+  <item>Support has been added for the ICD2061A clock chip (which is used
+	on the Diamond Stealth 32).
+  <item>The server's reporting of bits/RGB resolution has been fixed.
   <item>Support for the STG1703 RAMDAC/clock has been added.  Clocks up to
 	135MHz should be OK.  To use the programmable clock add the
 	following line to the Device section of the XF86Config:
@@ -792,112 +379,6 @@ Note, items marked with `*' have been added since the last beta release
 	Option "w32_interleave_on"
 	Option "w32_interleave_off"
 	</verb></tscreen>
-</itemize>
-<sect1> SiS 86C201 support
-<p>
-<itemize>
-  <item>Support is included in 3.1.2B for the SiS 86C201 PCI graphics card.
-	It is currently only supported by the VGA16 and Mono servers.
-	Support for 256 colour operation is being worked on.
-</itemize>
-<sect1> Client/Library changes
-<p>
-<itemize>
-  <item>The following new clients have been added:
-	<itemize>
-	  <item>dga -- a test program for the XFree86-DGA extension.
-	  <item>xsetmode, xsetpointer -- programs for use with the XInput
-		extension.
-	</itemize>
-</itemize>
-<p>
-
-<sect> New Features in 3.1.2A
-<sect1> General X server changes
-<p>
-<itemize>
-  <item>Underscore characters are now ignored in Options and keywords in the 
-	XF86Config file.
-  <item>The built-in X server malloc is used by default.
-  <item>Fix a problem that can cause the X server to crash when running
-	xvidtune.
-  <item>A new pointer keyword <tt>RepeatMiddle</tt> has been added to support
-	dual-protocol 3-button mice which repeat the previous button event
-	when the middle button is pressed in Microsoft-compatible mode.  If
-	you've had problems getting the middle button working on your mouse,
-	try this.
-  <item>Bitmap fontpath elements can have <tt>&dquot;:unscaled&dquot;</tt>
-	appended to prevent the fonts from being treated as scalable.  This
-	works with the fontserver (xfs) too.
-</itemize>
-<sect1> Trident driver (SVGA server)
-<p>
-<itemize>
-  <item>Preliminary support is included for the TGUI 9440.
-</itemize>
-<sect1> Cirrus driver (SVGA server)
-<p>
-<itemize>
-  <item>Support has been added for the CL-GD7543.
-  <item>The programmable clock code has been improved to avoid unstable
-	settings.
-</itemize>
-<sect1> ARK driver (SVGA server)
-<p>
-<itemize>
-  <item>Preliminary support has been added for the ICS5342 RAMDAC/programmable
-	clock, which is used on the Stealth64 Graphics 2001 card.  This
-	has had very little testing so far.
-	To enable this, add the following lines to the Device section of your
-	XF86Config file:
-	<tscreen><verb>
-	Ramdac    "ics5342"
-	ClockChip "ics5342"
-	</verb></tscreen>
-	Do not include any <tt>Clocks</tt> lines in your XF86Config file.
-  <item>Panning has been fixed for ARK2000PV cards with 2MB of video memory.
-</itemize>
-<sect1> WD90C24 driver (SVGA server)
-<p>
-<itemize>
-  <item>A problem with snow at high clocks has been fixed.
-</itemize>
-<sect1> S3 server
-<p>
-<itemize>
-  <item>The default InvertVCLK settings have been changed for &num;9 Motion
-	771 cards and Hercules Terminator 64 Pro cards.  If you have
-	needed to add Invert_VCLK lines to your XF86Config file to avoid
-	screen wrapping with version 3.1.2, please remove them when
-	testing this version.  If there are problems with the new
-	defaults, please report them to us.
-  <item>Preliminary support has been added for the AT&amp;T 20C409 and
-	AT&amp;T 20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
-	currently does not work.
-  <item>The IBM RGB526 RAMDAC used on the newer Diamond Stealth64
-        Video 3240/3400 cards isn't yet auto-detected, but it will work
-	if the following line is added to the Device section of your
-	XF86Config file:
-	<tscreen><verb>
-	Ramdac "ibm_rgb526"
-	</verb></tscreen>
-</itemize>
-<sect1> Mach32 server
-<p>
-<itemize>
-  <item>Hardware cursor mask problem has been fixed.
-</itemize>
-<sect1> Mach64 server
-<p>
-<itemize>
-  <item>Hardware cursor mask problem has been fixed.
-  <item>Support for the AT&amp;T 20C408 RAMDAC/Clockchip has been added.
-  <item>Arbitrary clocks can be used on most boards with supported clock chips.
-	This is enabled with the <tt>&dquot;program_clocks&dquot;</tt> option.
-</itemize>
-<sect1> ET4000/W32 server
-<p>
-<itemize>
   <item>Support has been added for the ICS5341 programmable clock.
 	To enable this, add the following lines to the Device section of your
 	XF86Config file:
@@ -907,11 +388,37 @@ Note, items marked with `*' have been added since the last beta release
 	</verb></tscreen>
   <item>Problems that could cause the W32 server to crash at startup or
 	get stuck in a loop at exit have been fixed.
+  <item>*Some drawing bugs have been fixed.
 </itemize>
 <sect1> AGX server
 <p>
 <itemize>
   <item>Fix for clock probing with AGX-010 chips.
+</itemize>
+<sect1> I128 server
+<p>
+<itemize>
+  <item>A new server for the Number Nine Imagine 128 card is included.
+	This server is currently not accelerated.
+  <item>Support has been added for the Series 2 cards.
+  <item>Support has been added for 8MB cards.
+</itemize>
+<sect1> TGA server
+<p>
+<itemize>
+  <item>*A new server for the DEC 21030 (TGA) is included.  This is only
+	available for Alpha machines.  This server is currently not
+	accelerated.
+</itemize>
+<sect1> SVGA/VGA16/Mono servers
+<p>
+<itemize>
+  <item>A PCI probe has been added to these servers.  If it causes problems,
+	it can be disabled by adding the line:
+	<verb>
+	Option "no_pci_probe"
+	</verb>
+	to the Device section in your XF86Config file.
 </itemize>
 <sect1> VGA16 server
 <p>
@@ -919,6 +426,184 @@ Note, items marked with `*' have been added since the last beta release
   <item>A problem preventing the StaticGray visual from working has been
 	fixed.
 </itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>TGUI9440 is now fully supported by the SVGA server.
+  <item>Major updates for most of the trident family of chips.
+  <item>TGUI9660/9680 chipsets are now fully supported
+  <item>Check <htmlurl name="README.trident" url="trident.html"> distributed
+	with this release for full details.
+  <item>Known problems: ?
+	<itemize>
+	  <item>There is a problem with interlaced modes with the SVGA
+		driver.
+	</itemize>
+</itemize>
+<sect1> Ark driver (SVGA server)
+<p>
+<itemize>
+  <item>The Ark driver will now detect the ARK2000MT, but it is treated
+	as an ARK2000PV.
+  <item>A problem which caused the server to crash when no Ramdac was given
+	in the XF86Config file has been fixed.
+  <item>ICS5342 clock support (required for the Diamond Stealth64
+	Graphics 2001 series) has been added.
+	To enable this, add the following lines to the Device section of your
+	XF86Config file:
+	<tscreen><verb>
+	Ramdac    "ics5342"
+	ClockChip "ics5342"
+	</verb></tscreen>
+	Do not include any <tt>Clocks</tt> lines in your XF86Config file.
+  <item>Panning has been fixed for ARK2000PV cards with 2MB of video memory.
+  <item>*Some basic BitBlt acceleration has been added.
+  <item>*24bpp packed pixel support has been added for some cards/RAMDACs.
+  <item>*Memory bandwidth problems have been fixed.
+  <item>*Hardware cursor support has been added.
+</itemize>
+<sect1> ET6000 driver (SVGA server)
+<p>
+<itemize>
+  <item>*This driver includes support for linear memory and 16bpp, 24bpp and
+	32bpp operation.  Note, this support isn't currently present in
+	the W32 accelerated server.
+</itemize>
+<sect1> Alliance ProMotion driver (SVGA server)
+<p>
+<itemize>
+  <item>A driver for the Alliance ProMotion 6442 has been added (from
+	Alliance Semiconductor). This has not been thoroughly tested.
+</itemize>
+<sect1> NVidia NV1 / SGS Thomson SGT2000 driver (SVGA server)
+<p>
+<itemize>
+  <item>*A driver for the NV1/SGT2000 has beed added.  This chipset is used
+	on the Diamond Edge 3D card.  This is a very new
+	driver, and is considered "beta".  It includes support for
+	8bpp and 16bpp.
+</itemize>
+<sect1> Matrox Millennium driver (SVGA server)
+<p>
+<itemize>
+  <item>*A driver for the Matrox Millennium (mga2064w) has been added.  This
+	is a very new driver, and is considered "beta".  It includes support
+	for 8bpp, 16bpp, 24bpp and 32bpp.  The acceleration capabilities of
+	this chipset are only used to a very limited extent at this stage.
+</itemize>
+<sect1> Cirrus driver (SVGA server)
+<p>
+<itemize>
+  <item>Support has been added for the CL-GD5446, CL-GD5462 and CL-GD5464.
+  <item>Support has been added for the CL-GD7543.
+  <item>Support for the CL-GD754x series of laptop chips is included, but
+	it appears to be broken in this release.
+  <item>The programmable clock code has been improved to avoid unstable
+	settings.
+  <item>*Some FIFO setting problems have been fixed.
+  <item>*Packed 24bpp support has been added fo the 54xx.
+  <item>*Some problems with 16bpp for a 1MB 5434 have been fixed.
+</itemize>
+<sect1> SiS driver (SVGA server)
+<p>
+<itemize>
+  <item>Support is included for the SiS 86C201 PCI graphics card.
+  <item>256 colour support has been added.
+  <item>SiS 86c202 and 86c205 somewhat work when "sis86c201" is specified
+  	as chipset.
+</itemize>
+<sect1> Chips and Technologies driver (SVGA server)
+<p>
+<itemize>
+  <item>This driver has been significantly reworked.
+  <item>Support has been added for the 65546, 65548, 65550 and 65554.
+  <item>Linear addressing support for the 65530 and above.
+  <item>16bpp and 24bpp (packed) support for the 65545 an above.
+  <item>BitBLT and some other acceleration for the 65545, 65546, 65548
+	and 65550.
+</itemize>
+<sect1> ALI driver (SVGA server)
+<p>
+<itemize>
+  <item>Interlaced modes now work with this driver.
+</itemize>
+<sect1> ATI driver (SVGA server)
+<p>
+<itemize>
+  <item>Mach64 support has been improved.
+  <item>The driver name has been changed back from "vgawonder" to "ati".
+  <item>Support is included for most recent Mach64 cards.
+  <item>The "undoc_clocks" option has been removed.  If you had been using
+	it, remove it from your XF86Config file.
+  <item>A colourmap problem with VGA Wonder V3 boards has been fixed.
+</itemize>
+<sect1> WD90C24 driver (SVGA server)
+<p>
+<itemize>
+  <item>A problem with snow at high clocks has been fixed.
+</itemize>
+<sect1> ET3000 driver (SVGA server)
+<p>
+<itemize>
+  <item>VGA16 support has been added to the ET3000 driver.
+</itemize>
+<sect1> Compaq AVGA driver (SVGA server)
+<p>
+<itemize>
+  <item>The Compaq AVGA driver has been disabled in this release because it
+	doesn't work, and nobody seems interested in fixing it.
+</itemize>
+<sect1> Hercules mono driver
+<p>
+<itemize>
+  <item>The Hercules mono driver has been disabled in this release because
+	it has problems, and isn't likely to be fixed soon.
+</itemize>
+<sect1> Client/Library changes
+<p>
+<itemize>
+  <item>Support for most vt220/vt320 escape sequenced has been added to xterm.
+  <item>Support for ddterm's escape sequences has been added to xterm.
+  <item>The termcap and terminfo entries for xterm have been updated in line
+	with the new features present.  These entries are not comletely
+	compatible with earlier versions of xterm.
+  <item>xdm's session handling on BSD OSs has been fixed.
+  <item>Some buffer overrun problems which can lead to security problems
+	have been fixed in libXt and libX11.  At least one of these
+	problems has been used to exploit the setuid xterm.
+  <item>POSIX termios support has been added for xterm on most BSD systems.
+	This removes the need for the BSD kernel to built with the
+	COMPAT_43 option.
+  <item>As part of the change to X11R6.1, the shared library revisions
+	for libX11, libXaw, libXext, and libXtst have been incremented
+	to 6.1.
+  <item>The client-side library code for the XFree86 extensions and the
+	ScreenSaver extension has been moved into separate libraries.
+	The old libXExExt has been removed.
+  <item>Colour support is now included by default in xterm.  I18N support
+	in xterm has been improved (as part of X11R6.1).  If you've previously
+	been using one of the many "color_xterm" variants, try this and let
+	us know if you have any problems.
+  <item>xdpyinfo has been updated to provide more detailed information
+	about the XInput extension and the XFree86 extensions.
+  <item>The setting/examining of extended screen saver parameters has
+	been added to xset (was in xvidtune).  xset can now also be used
+	to set the keyboard repeat parameters.
+  <item>The following new clients have been added:
+	<itemize>
+	  <item>dga -- a test program for the XFree86-DGA extension.
+	  <item>xsetmode, xsetpointer -- programs for use with the XInput
+		extension.
+	</itemize>
+  <item>The xdm security fix from the X Consortium's R6 fix-13 is included.
+  <item>xconsole has been updated for Unixware 2.x.
+  <item>XNLS support has been added for KOI8-R.
+  <item>xrdb dynamically allocates string space to avoid overruns.
+  <item>A memory overrun problem in xterm has been fixed.
+  <item>An "AllowNullPasswd" resource has been added to xdm.
+  <item>libXt bug fix from the X Consortium's R6 fix-13.
+</itemize>
+<p>
 <sect1> xf86config utility
 <p>
 <itemize>
@@ -930,21 +615,15 @@ Note, items marked with `*' have been added since the last beta release
   <item>Added detection for C&amp;T 65548, Cirrus CL-GD7543/1, AT&amp;T
 	20C409, AT&amp;T20C499, and fixed an incorrect ET4000/W32 probe
 	problem.
+  <item>Much improved detection for Mach64 cards.
+  <item>Improved detection for Trident cards.
+  <item>Added detection of SiS, ARK, S3 ViRGE cards. 
 </itemize>
-<sect1> Client/Library changes
+<sect1> Fonts
 <p>
 <itemize>
-  <item>The xdm security fix from the X Consortium's fix-13 is included.
-  <item>xconsole has been updated for Unixware 2.x.
-  <item>Colour support has been added to xterm.
-  <item>XNLS support has been added for KOI8-R.
-  <item>xrdb dynamically allocates string space to avoid overruns.
-  <item>A memory overrun problem in xterm has been fixed.
-  <item>An "AllowNullPasswd" resource has been added to xdm.
-  <item>libXt bug fix from the X Consortium's fix-13.
+  <item>The Cyrillic fonts have been updated.
 </itemize>
-<p>
-
 <!--
 <sect>Installing the XFree86 3.1.2E Beta Release
 <p>
@@ -1069,27 +748,26 @@ For example:
 </verb></tscreen>
 -->
 
-<sect>Installing the XFree86 3.1.2G Beta Release
+<sect>Installing the XFree86 3.2 Release
 <p>
-The XFree86 3.1.2G binary beta release is distributed as a full release,
+The XFree86 3.2 binary release is distributed as a full release,
 not as an upgrade.
 
-What follows is a list of the XFree86 3.1.2G components.  There may be
+What follows is a list of the XFree86 3.2 components.  There may be
 some variations in this for some OSs.
 
 The following are required for all installations:
 <quote>
 <verb>
-BetaReport         Beta test report template form
-preinst.sh         Pre-installation script
-postinst.sh        Post-installation script
-312Gbin.tgz        Clients, run-time libs, and app-defaults files
-312Gdoc.tgz        Documentation
-312Gfnts.tgz       75dpi and misc fonts
-312Glib.tgz        Data files required at run-time
-312Gman.tgz        Manual pages
-312Gset.tgz        XF86Setup utility
-312GVG16.tgz       16 colour VGA server (XF86Setup needs this server)
+preinst.sh      Pre-installation script
+postinst.sh     Post-installation script
+X32bin.tgz      Clients, run-time libs, and app-defaults files
+X32doc.tgz      Documentation
+X32fnts.tgz     75dpi and misc fonts
+X32lib.tgz      Data files required at run-time
+X32man.tgz      Manual pages
+X32set.tgz      XF86Setup utility
+X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
 </verb>
 </quote>
 
@@ -1098,18 +776,25 @@ matches your hardware, as well as the VGA16 server.  The VGA16 server is
 required by the new configuration utility (XF86Setup).
 <quote>
 <verb>
-312G8514.tgz       8514/A server
-312GAGX.tgz        AGX server
-312GI128.tgz       I128 server
-312GMa32.tgz       Mach 32 server
-312GMa64.tgz       Mach 64 server
-312GMa8.tgz        Mach 8 server
-312GMono.tgz       Mono server
-312GP9K.tgz        P9000 server
-312GS3.tgz         S3 server
-312GSVGA.tgz       SVGA server
-312GVG16.tgz       16 colour VGA server (XF86Setup needs this server)
-312GW32.tgz        ET4000/W32, ET6000 server
+X328514.tgz     8514/A server
+X32AGX.tgz      AGX server
+X32I128.tgz     I128 server
+X32Ma32.tgz     Mach 32 server
+X32Ma64.tgz     Mach 64 server
+X32Ma8.tgz      Mach 8 server
+X32Mono.tgz     Mono server
+X32P9K.tgz      P9000 server
+X32S3.tgz       S3 server
+X32S3V.tgz      S3 ViRGE server
+X32SVGA.tgz     SVGA server
+X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
+X32W32.tgz      ET4000/W32, ET6000 server
+</verb>
+</quote>
+The following X server is for Alpha hardware.
+<quote>
+<verb>
+X32TGA.tgz      DEC 21030 (TGA) server
 </verb>
 </quote>
 The following X servers are for PC98 hardware.  If you have a PC98 machine,
@@ -1117,31 +802,36 @@ choose one which suits your hardware.  If you don't know what a PC98 machine
 is, you don't need any of these.
 <quote>
 <verb>
-312G9NS3.tgz       PC98 NEC(S3) server
-312G9SPW.tgz       PC98 PCSKB-PowerWindow(S3) server
-312G9LPW.tgz       PC98 PowerWindowLB(S3) server
-312G9EGC.tgz       PC98 EGC(generic) server
-312G9GA9.tgz       PC98 GA-968V4/PCI(S3 968) server
-312G9GAN.tgz       PC98 GANB-WAP(cirrus) server
-312G9480.tgz       PC98 PEGC-480(generic) server
-312G9NKV.tgz       PC98 NKV-NEC(cirrus) server
-312G9WBS.tgz       PC98 WABS(cirrus) server
-312G9WEP.tgz       PC98 WAB-EP(cirrus) server
-312G9WSN.tgz       PC98 WSN-A2F(cirrus) server
+X329NS3.tgz     PC98 NEC(S3) server
+X329SPW.tgz     PC98 PCSKB-PowerWindow(S3) server
+X329LPW.tgz     PC98 PowerWindowLB(S3) server
+X329EGC.tgz     PC98 EGC(generic) server
+X329GA9.tgz     PC98 GA-968V4/PCI(S3 968) server
+X329GAN.tgz     PC98 GANB-WAP(cirrus) server
+X329480.tgz     PC98 PEGC-480(generic) server
+X329NKV.tgz     PC98 NKV-NEC(cirrus) server
+X329WBS.tgz     PC98 WABS(cirrus) server
+X329WEP.tgz     PC98 WAB-EP(cirrus) server
+X329WSN.tgz     PC98 WSN-A2F(cirrus) server
+X329TGU.tgz     PC98 TGUI server
 </verb>
 </quote>
 The following are optional.
 <quote>
 <verb>
-312Gf100.tgz      100dpi fonts
-312Gfcyr.tgz      Cyrillic fonts
-312Gfnon.tgz      Other fonts (Chinese, Japanese, Korean, Hebrew)
-312Gfscl.tgz      Scalable fonts (Speedo and Type1)
-312Gfsrv.tgz      Font server and config files
-312Gprog.tgz      X header files, config files and compile-time libs
-312Gcfg.tgz       sample config files for xinit, xdm
-312Gnest.tgz      Nested X server
-312Gvfb.tgz       Virtual framebuffer X server
+X32f100.tgz    100dpi fonts
+X32fcyr.tgz    Cyrillic fonts
+X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
+X32fscl.tgz    Scalable fonts (Speedo and Type1)
+X32fsrv.tgz    Font server and config files
+X32cfg.tgz     sample config files for xinit, xdm
+X32prog.tgz    X header files, config files and compile-time libs
+X32lkit.tgz    X server LinkKit
+X32lk98.tgz    PC98 X server LinkKit
+X32nest.tgz    Nested X server
+X32vfb.tgz     Virtual framebuffer X server
+X32ps.tgz      PostScript version of the documentation
+X32html.tgz    HTML version of the documentation
 </verb>
 </quote>
 
@@ -1176,21 +866,24 @@ The <tt>.tgz</tt> files are gzipped tar files.  To extract them, go to
 <tt>/usr/X11R6</tt>, and run the following as <bf>root</bf> for each
 file you need:
 <tscreen><verb>
-	gzip -d < 312Gfile.tgz | tar vxf -
+	gzip -d < X32file.tgz | tar vxf -
 </verb></tscreen>
 On some OSs, you might get some "Broken Pipe" messages.  Providing there
 are no other messages associated with this, they can be safely ignored.
+Note: You should not be running X while doing this installation.  Doing
+so may cause the installation to fail, or cause your X session to crash.
 
-If you are using NetBSD or FreeBSD, a more reliable way of doing this is
-to extract the <tt>.tgz</tt> files with:
+If you are using NetBSD or FreeBSD, a more reliable (and highly recommended)
+way of doing this is to extract the <tt>.tgz</tt> files with:
 <tscreen><verb>
-        gzip -d < 312Gfile.tgz | tar -v -x --unlink -f -
+        gzip -d < X32file.tgz | tar -v -x --unlink -f -
 </verb></tscreen>
 
-If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable way of
-doing this is to extract the <tt>.tgz</tt> files with:
+If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable (and
+highly recommended) way of doing this is to extract the <tt>.tgz</tt>
+files with:
 <tscreen><verb>
-	gzip -d < 312Gfile.tgz | cpio -i -v -u -H ustar
+	gzip -d < X32file.tgz | cpio -i -v -u -H ustar
 </verb></tscreen>
 
 Once the required <tt>.tgz</tt> files have been extracted, copy the
@@ -1208,35 +901,6 @@ at least include <tt>/usr/lib</tt> and <tt>/usr/X11R6/lib</tt> on the
 command line.  Check <tt>/etc/rc</tt> to see how ldconfig gets run at
 boot time.
 
-<!--
-If you don't already have XFree86 3.1.2 installed, first install that.
-If you have already installed 3.1.2A, that's fine.
-Then, you will need to get at least one of the XFree86 3.1.2B X servers
-plus the update set (<tt/X312Bupd.tgz/), the post-install script (make
-sure you have the correct version of this script - check that the
-<tt>BETAVERSION</tt> matches the version you are installing), and
-the BetaReport file.  It is recommended that this release be
-installed in the directory <tt>/usr/XFree86-3.1.2B</tt>.  You will need
-to be `root' to do the installation.  The following example is for
-installing the S3 and Mono servers, and it assumes that the above files
-are located in <tt>/var/tmp</tt>:
-
-<tscreen><verb>
-	mkdir /usr/XFree86-3.1.2B
-	cd /usr/XFree86-3.1.2B
-	gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
-	gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
-	gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
-	sh /var/tmp/postinst.sh
-</verb></tscreen>
-	
-The <tt>postinst.sh</tt> script makes a backup copy of the 3.1.2 versions
-you already had installed in /usr/X11R6.  It puts the backups into the
-/usr/XFree86-3.1.2 directory.  It then links the 3.1.2B versions into
-/usr/X11R6.  If you had installed 3.1.2A previously according to the
-instructions, the files for that version will still be in the
-/usr/XFree86-3.1.2A directory.
--->
 <p>
 <verb>
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.42 1996/09/14 13:10:28 dawes Exp $

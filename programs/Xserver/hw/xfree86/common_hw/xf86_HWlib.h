@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.26 1996/10/06 13:16:32 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.27 1996/10/18 15:02:57 dawes Exp $ */ 
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -313,14 +313,6 @@ extern void IBMRGBSetClock(
 	int,
 	long,
 	long
-#endif
-);
-
-/* ATTDac.c */
-extern void Att409SetClock(
-#if NeedFunctionPrototypes
-	long,
-	int
 #endif
 );
 

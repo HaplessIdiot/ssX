@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.7 1996/10/17 15:18:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.8 1996/10/18 15:01:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -91,7 +91,7 @@ __inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r,
    if (S_in_ROP)  {			/* The stipple code */
 #define SWPBIT(s) (s3SwapBits[pb[(s)]])
 
-      int i, h, pix, n=0;
+      int i, h, pix;
       unsigned int getbuf;
 
       for (h = 0; h < height; h++) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.28 1996/09/01 04:15:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.29 1996/09/14 13:09:38 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1179,20 +1179,11 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 				       ((unsigned char *)(ptmp) + (srcx >> 3));
 		    x2 = srcx & 7;		/* Offset within byte. */
 		    if( np >= 16 ) {
-#ifdef __alpha__
 		      pix = (unsigned short)(ldl_u((unsigned int *)(pnt)) >> x2);
-#else
-		      pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
-#endif
 		    }
 		    else if( pw >= 16 ) {
-#ifdef __alpha__
 		      pix = (unsigned short)((ldl_u((unsigned int *)(pnt)) >> x2)
 					     & MSKBIT(np)) | (*ptmp << np);
-#else
-		      pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
-					     & MSKBIT(np)) | (*ptmp << np);
-#endif
 		    }
 		    else if( pw >= 8 ) {
 			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)

@@ -929,18 +929,18 @@
   11.  References
 
 
-     o  Programmer's Guide to the EGA and VGA Cards, 2nd ed.
+     o  Programmer's Guide to the EGA and VGA Cards, 3rd ed.
 
         Richard Ferraro
 
         Addison-Wesley, 1990
 
-        ISBN 0-201-57025-4
+        ISBN 0-201-62490-7
 
         (This is the bible of SVGA programming - it has a few errors, so
         watch out).
 
-     o  vgadoc3.zip
+     o  vgadoc4.zip
 
         Finn Thoegersen
 
@@ -1032,7 +1032,7 @@
         (714) 932-4900
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.8 1996/02/04 09:08:26 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.9 1996/10/20 13:33:22 dawes Exp $
 
 
 

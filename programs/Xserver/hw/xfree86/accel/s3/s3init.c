@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.101 1996/09/24 13:53:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.102 1996/10/03 08:32:51 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2994,7 +2994,7 @@ s3Init(mode)
       outb(vgaCRIndex, 0x36);
       tmp = inb(vgaCRReg);
       if ((tmp & 0x0c) == 0x00) 		/* 1-cycle EDO */
-	 outb(vgaCRReg, tmp | 0x08);		/* 2-cycel EDO */
+	 outb(vgaCRReg, tmp | 0x08);		/* 2-cycle EDO */
    }
 
 

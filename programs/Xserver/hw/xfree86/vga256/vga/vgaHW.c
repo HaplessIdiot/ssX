@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.35 1996/08/16 12:32:48 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.36 1996/09/14 13:13:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -554,7 +554,7 @@ setExternClock(clock)
         {
           char *progname, clockarg[8], clockindex[3];
 
-          if (progname = rindex(vga256InfoRec.clockprog, '/'))
+          if ((progname = rindex(vga256InfoRec.clockprog, '/')))
             progname++;
           else
             progname = vga256InfoRec.clockprog;

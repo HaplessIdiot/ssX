@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.9 1996/09/03 07:28:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.10 1996/09/29 12:51:07 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -423,7 +423,7 @@ proc Card_set_cboxlists { win args } {
 		eval [list $w.card.options.list.cbox linsert end] \
 			$CardOptions($cardServer)
 	} else {
-		$w.card.options.cbox.list.button configure -state disabled
+		$w.card.options.list.cbox.button configure -state disabled
 	}
 	set options ""
 	foreach option [split [$w.card.options.list.cbox eget] ,] {
