@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.9 2002/02/15 07:36:11 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.10 2002/02/19 07:51:20 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -924,7 +924,7 @@ XftTextRenderUtf8 (Display  *dpy,
 	len -= l;
     }
     XftGlyphRender (dpy, PictOpOver, src, public, dst,
-		     srcx, srcy, x, y, glyphs, len);
+		     srcx, srcy, x, y, glyphs, i);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
