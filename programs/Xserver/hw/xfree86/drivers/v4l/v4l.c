@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.19 2000/06/13 02:28:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.20 2001/02/08 18:56:29 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -19,9 +19,6 @@
 
 
 #include <asm/ioctl.h>		/* _IORW(xxx) #defines are here */
-#if 0
-typedef unsigned long ulong;
-#endif
 
 /* XXX Lots of xalloc() calls don't check for failure. */
 
@@ -116,9 +113,7 @@ typedef struct _PortPrivRec {
     Bool			StreamOn;
 
     /* file handle */
-    int 			fd;
-    char                        devname[16];
-    int                         useCount;
+    int 			nr;
     struct video_capability     cap;
 
     /* RGB overlay */
@@ -131,6 +126,8 @@ typedef struct _PortPrivRec {
     struct video_audio          audio;
 
     XF86VideoEncodingPtr        enc;
+    int                         *input;
+    int                         *norm;
     int                         nenc,cenc;
 
     /* yuv to offscreen */
@@ -170,18 +167,36 @@ InputVideoFormats[] = {
 
 #define V4L_ATTR (sizeof(Attributes) / sizeof(XF86AttributeRec))
 
-static XF86AttributeRec Attributes[] = {
-   {XvSettable | XvGettable, -1000,    1000, XV_ENCODING},
-   {XvSettable | XvGettable, -1000,    1000, XV_BRIGHTNESS},
-   {XvSettable | XvGettable, -1000,    1000, XV_CONTRAST},
-   {XvSettable | XvGettable, -1000,    1000, XV_SATURATION},
-   {XvSettable | XvGettable, -1000,    1000, XV_HUE},
-   {XvSettable | XvGettable,     0,       1, XV_MUTE},
-   {XvSettable | XvGettable,     0, 16*1000, XV_FREQ},
+static const XF86AttributeRec Attributes[] = {
+    {XvSettable | XvGettable, -1000,    1000, XV_ENCODING},
+    {XvSettable | XvGettable, -1000,    1000, XV_BRIGHTNESS},
+    {XvSettable | XvGettable, -1000,    1000, XV_CONTRAST},
+    {XvSettable | XvGettable, -1000,    1000, XV_SATURATION},
+    {XvSettable | XvGettable, -1000,    1000, XV_HUE},
 };
-static XF86AttributeRec VolumeAttr = 
-   {XvSettable | XvGettable, -1000,    1000, XV_VOLUME};
+static const XF86AttributeRec VolumeAttr = 
+    {XvSettable | XvGettable, -1000,    1000, XV_VOLUME};
+static const XF86AttributeRec MuteAttr = 
+    {XvSettable | XvGettable,     0,       1, XV_MUTE};
+static const XF86AttributeRec FreqAttr = 
+    {XvSettable | XvGettable,     0, 16*1000, XV_FREQ};
 
+
+#define MAX_V4L_DEVICES 4
+#define V4L_FD   (v4l_devices[pPPriv->nr].fd)
+#define V4L_REF  (v4l_devices[pPPriv->nr].useCount)
+#define V4L_NAME (v4l_devices[pPPriv->nr].devName)
+
+static struct V4L_DEVICE {
+    int  fd;
+    int  useCount;
+    char devName[16];
+} v4l_devices[MAX_V4L_DEVICES] = {
+    { -1 },
+    { -1 },
+    { -1 },
+    { -1 },
+};
 
 /* ---------------------------------------------------------------------- */
 /* forward decl */
@@ -194,21 +209,8 @@ static void V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 
 static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 {
-
-#if 0
-    /* I don't know if this is needed or not. Alan Cox says no. EE */
-    if (!xf86NoSharedMem(pScrn->scrnIndex)) {
-	xf86Msg(X_ERROR,"Screen %i cannot grant access to fb\n",
-		pScrn->scrnIndex);
-	return 1;
-    }
-#endif
-    pPPriv->useCount++;
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-			"Xv/open: refcount=%d\n",pPPriv->useCount));
-
-    if (pPPriv->fd == -1) {
-	pPPriv->fd = open(pPPriv->devname, O_RDWR, 0);
+    if (-1 == V4L_FD) {
+	V4L_FD = open(V4L_NAME, O_RDWR, 0);
 
 	pPPriv->rgb_fbuf.width        = pScrn->virtualX;
 	pPPriv->rgb_fbuf.height       = pScrn->virtualY;
@@ -232,21 +234,24 @@ static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 	}
     }
 
-    if (pPPriv->fd == -1)
+    if (-1 == V4L_FD)
 	return errno;
-   
+    
+    V4L_REF++;
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+			 "Xv/open: refcount=%d\n",V4L_REF));
+
     return 0;
 }
 
-static void V4lCloseDevice(PortPrivPtr pPPriv)
+static void V4lCloseDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 {
-    pPPriv->useCount--;
-    
-    DEBUG(xf86DrvMsgVerb(0, X_INFO, 2,
-			"Xv/close: refcount=%d\n",pPPriv->useCount));
-    if(pPPriv->useCount == 0 && pPPriv->fd != -1) {
-	close(pPPriv->fd);
-	pPPriv->fd = -1;
+    V4L_REF--;
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+			 "Xv/close: refcount=%d\n",V4L_REF));
+    if (0 == V4L_REF && -1 != V4L_FD) {
+	close(V4L_FD);
+	V4L_FD = -1;
     }
 }
 
@@ -268,7 +273,7 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     /* Open a file handle to the device */
     if (VIDEO_OFF == pPPriv->VideoOn) {
 	if (V4lOpenDevice(pPPriv, pScrn))
-	    return BadAccess;
+	    return Success;
     }
 
     if (pPPriv->have_yuv) {
@@ -319,19 +324,17 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 	}
 
 	/* program driver */
-	if (VIDEO_YUV != pPPriv->VideoOn) {
-	    if (-1 == ioctl(pPPriv->fd,VIDIOCSFBUF,&(pPPriv->yuv_fbuf)))
-		perror("ioctl VIDIOCSFBUF");
-	    if (-1 == ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict))
-		perror("ioctl VIDIOCGPICT");
-	    pPPriv->pict.palette = VIDEO_PALETTE_YUV422;
-	    if (-1 == ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict))
-		perror("ioctl VIDIOCSPICT");
-	    if (-1 == ioctl(pPPriv->fd,VIDIOCSWIN,&(pPPriv->yuv_win)))
-		perror("ioctl VIDIOCSWIN");
-	    if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &one))
-		perror("ioctl VIDIOCCAPTURE(1)");
-	}
+	if (-1 == ioctl(V4L_FD,VIDIOCSFBUF,&(pPPriv->yuv_fbuf)))
+	    perror("ioctl VIDIOCSFBUF");
+	if (-1 == ioctl(V4L_FD,VIDIOCGPICT,&pPPriv->pict))
+	    perror("ioctl VIDIOCGPICT");
+	pPPriv->pict.palette = VIDEO_PALETTE_YUV422;
+	if (-1 == ioctl(V4L_FD,VIDIOCSPICT,&pPPriv->pict))
+	    perror("ioctl VIDIOCSPICT");
+	if (-1 == ioctl(V4L_FD,VIDIOCSWIN,&(pPPriv->yuv_win)))
+	    perror("ioctl VIDIOCSWIN");
+	if (-1 == ioctl(V4L_FD, VIDIOCCAPTURE, &one))
+	    perror("ioctl VIDIOCCAPTURE(1)");
 
 	if (0 == (pPPriv->myfmt->flags & VIDEO_INVERT_CLIPLIST)) {
 	    /* invert cliplist */
@@ -427,18 +430,16 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     }
 
     /* start */
-    if (VIDEO_RGB != pPPriv->VideoOn) {
-	if (-1 == ioctl(pPPriv->fd,VIDIOCSFBUF,&(pPPriv->rgb_fbuf)))
-	    perror("ioctl VIDIOCSFBUF");
-	if (-1 == ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict))
-	    perror("ioctl VIDIOCGPICT");
-	pPPriv->pict.palette = pPPriv->rgbpalette;
-	if (-1 == ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict))
-	    perror("ioctl VIDIOCSPICT");
-    }
-    if (-1 == ioctl(pPPriv->fd,VIDIOCSWIN,&(pPPriv->rgb_win)))
+    if (-1 == ioctl(V4L_FD,VIDIOCSFBUF,&(pPPriv->rgb_fbuf)))
+	perror("ioctl VIDIOCSFBUF");
+    if (-1 == ioctl(V4L_FD,VIDIOCGPICT,&pPPriv->pict))
+	perror("ioctl VIDIOCGPICT");
+    pPPriv->pict.palette = pPPriv->rgbpalette;
+    if (-1 == ioctl(V4L_FD,VIDIOCSPICT,&pPPriv->pict))
+	perror("ioctl VIDIOCSPICT");
+    if (-1 == ioctl(V4L_FD,VIDIOCSWIN,&(pPPriv->rgb_win)))
 	perror("ioctl VIDIOCSWIN");
-    if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &one))
+    if (-1 == ioctl(V4L_FD, VIDIOCCAPTURE, &one))
 	perror("ioctl VIDIOCCAPTURE(1)");
     pPPriv->VideoOn = VIDEO_RGB;
 
@@ -475,7 +476,7 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
     if (!exit) {
 	/* just reclipping, we have to stop DMA transfers to the visible screen */
 	if (VIDEO_RGB == pPPriv->VideoOn) {
-	    if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &zero))
+	    if (-1 == ioctl(V4L_FD, VIDIOCCAPTURE, &zero))
 		perror("ioctl VIDIOCCAPTURE(0)");
 	    pPPriv->VideoOn = VIDEO_RECLIP;
 	}
@@ -487,10 +488,10 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 	    xfree(pPPriv->surface);
 	    pPPriv->surface = NULL;
 	}
-	if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &zero))
+	if (-1 == ioctl(V4L_FD, VIDIOCCAPTURE, &zero))
 	    perror("ioctl VIDIOCCAPTURE(0)");
 	
-	V4lCloseDevice(pPPriv);
+	V4lCloseDevice(pPPriv,pScrn);
 	pPPriv->VideoOn = VIDEO_OFF;
     }
 }
@@ -520,19 +521,19 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     int ret = Success;
 
     if (V4lOpenDevice(pPPriv, pScrn))
-	return BadAccess;
+	return Success;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d\n",
-	attribute, value));
+			 attribute, value));
 
-    if (-1 == pPPriv->fd) {
-	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
+    if (-1 == V4L_FD) {
+	ret = Success;
     } else if (attribute == xvEncoding) {
 	if (value >= 0 && value < pPPriv->nenc) {
 	    pPPriv->cenc = value;
-	    chan.channel = value/3;
-	    chan.norm    = value%3;
-	    if (-1 == ioctl(pPPriv->fd,VIDIOCSCHAN,&chan))
+	    chan.channel = pPPriv->input[value];
+	    chan.norm    = pPPriv->norm[value];
+	    if (-1 == ioctl(V4L_FD,VIDIOCSCHAN,&chan))
 		perror("ioctl VIDIOCSCHAN");
 	} else {
 	    ret = BadValue;
@@ -541,16 +542,16 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
                attribute == xvContrast   ||
                attribute == xvSaturation ||
                attribute == xvHue) {
-	ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict);
+	ioctl(V4L_FD,VIDIOCGPICT,&pPPriv->pict);
 	if (attribute == xvBrightness) pPPriv->pict.brightness = xv_to_v4l(value);
 	if (attribute == xvContrast)   pPPriv->pict.contrast   = xv_to_v4l(value);
 	if (attribute == xvSaturation) pPPriv->pict.colour     = xv_to_v4l(value);
 	if (attribute == xvHue)        pPPriv->pict.hue        = xv_to_v4l(value);
-	if (-1 == ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict))
+	if (-1 == ioctl(V4L_FD,VIDIOCSPICT,&pPPriv->pict))
 	    perror("ioctl VIDIOCSPICT");
     } else if (attribute == xvMute ||
 	       attribute == xvVolume) {
-	ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio);
+	ioctl(V4L_FD,VIDIOCGAUDIO,&pPPriv->audio);
 	if (attribute == xvMute) {
 	    if (value)
 		pPPriv->audio.flags |= VIDEO_AUDIO_MUTE;
@@ -563,10 +564,10 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
 	    ret = BadValue;
 	}
 	if (ret != BadValue)
-	    if (-1 == ioctl(pPPriv->fd,VIDIOCSAUDIO,&pPPriv->audio))
+	    if (-1 == ioctl(V4L_FD,VIDIOCSAUDIO,&pPPriv->audio))
 		perror("ioctl VIDIOCSAUDIO");
     } else if (attribute == xvFreq) {
-	if (-1 == ioctl(pPPriv->fd,VIDIOCSFREQ,&value))
+	if (-1 == ioctl(V4L_FD,VIDIOCSFREQ,&value))
 	    perror("ioctl VIDIOCSFREQ");
     } else if (pPPriv->have_yuv &&
 	       pPPriv->myfmt->setAttribute) {
@@ -576,7 +577,7 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
 	ret = BadValue;
     }
 
-    V4lCloseDevice(pPPriv);
+    V4lCloseDevice(pPPriv,pScrn);
     return ret;
 }
 
@@ -588,24 +589,27 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
     int ret = Success;
 
     if (V4lOpenDevice(pPPriv, pScrn))
-	return BadAccess;
+	return Success;
 
-    if (-1 == pPPriv->fd) {
-	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/GPA %d\n",
+			 attribute));
+
+    if (-1 == V4L_FD) {
+	ret = Success;
     } else if (attribute == xvEncoding) {
 	*value = pPPriv->cenc;
     } else if (attribute == xvBrightness ||
                attribute == xvContrast   ||
                attribute == xvSaturation ||
                attribute == xvHue) {
-	ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict);
+	ioctl(V4L_FD,VIDIOCGPICT,&pPPriv->pict);
 	if (attribute == xvBrightness) *value = v4l_to_xv(pPPriv->pict.brightness);
 	if (attribute == xvContrast)   *value = v4l_to_xv(pPPriv->pict.contrast);
 	if (attribute == xvSaturation) *value = v4l_to_xv(pPPriv->pict.colour);
 	if (attribute == xvHue)        *value = v4l_to_xv(pPPriv->pict.hue);
     } else if (attribute == xvMute ||
 	       attribute == xvVolume) {
-	ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio);
+	ioctl(V4L_FD,VIDIOCGAUDIO,&pPPriv->audio);
 	if (attribute == xvMute) {
 	    *value = (pPPriv->audio.flags & VIDEO_AUDIO_MUTE) ? 1 : 0;
 	} else if (attribute == xvVolume) {
@@ -615,7 +619,7 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
 	    ret = BadValue;
 	}
     } else if (attribute == xvFreq) {
-	ioctl(pPPriv->fd,VIDIOCGFREQ,value);
+	ioctl(V4L_FD,VIDIOCGFREQ,value);
     } else if (pPPriv->have_yuv &&
 	       pPPriv->myfmt->getAttribute) {
 	/* not mine -> pass to yuv scaler driver */
@@ -627,7 +631,7 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/GPA %d, %d\n",
 	attribute, *value));
 
-    V4lCloseDevice(pPPriv);
+    V4lCloseDevice(pPPriv,pScrn);
     return ret;
 }
 
@@ -679,55 +683,114 @@ fixname(char *str)
     return str;
 }
 
-static XF86VideoEncodingPtr
-V4LBuildEncodings(int fd, int *count, int channels)
+static void
+v4l_add_enc(XF86VideoEncodingPtr enc, int i,
+	    char *norm, char *input, int width, int height, int n, int d)
+{
+    enc[i].id     = i;
+    enc[i].name   = xalloc(strlen(norm)+strlen(input)+2);
+    enc[i].width  = width;
+    enc[i].height = height;
+    enc[i].rate.numerator   = n;
+    enc[i].rate.denominator = d;
+    sprintf(enc[i].name,"%s-%s",norm,fixname(input));
+}
+
+static void
+V4LBuildEncodings(PortPrivPtr p, int fd, int channels)
 {
     static struct video_channel     channel;
-    XF86VideoEncodingPtr            enc;
-    int i;
+    int i,entries,have_bttv;
 
-    enc = xalloc(sizeof(XF86VideoEncodingRec)*3*channels);
-    memset(enc,0,sizeof(XF86VideoEncodingRec)*3*channels);
+#define BTTV_VERSION _IOR('v' , BASE_VIDIOCPRIVATE+6, int)
+    have_bttv = 0;
+    if (-1 != ioctl(fd,BTTV_VERSION,NULL))
+	have_bttv = 1;
+	
+    entries = (have_bttv ? 7 : 3) * channels;
+    p->enc = xalloc(sizeof(XF86VideoEncodingRec) * entries);
+    memset(p->enc,0,sizeof(XF86VideoEncodingRec) * entries);
+    p->norm = xalloc(sizeof(int) * entries);
+    memset(p->norm,0,sizeof(int) * entries);
+    p->input = xalloc(sizeof(int) * entries);
+    memset(p->input,0,sizeof(int) * entries);
 
-    for (i = 0; i < 3*channels; ) {
-	channel.channel = i/3;
+    p->nenc = 0;
+    for (i = 0; i < channels; i++) {
+	channel.channel = i;
 	if (-1 == ioctl(fd,VIDIOCGCHAN,&channel)) {
 	    perror("ioctl VIDIOCGCHAN");
-	    return NULL;
+	    continue;
 	}
+	
+	v4l_add_enc(p->enc, p->nenc,"pal", channel.name, 768,576, 1,50);
+	p->norm[p->nenc]  = VIDEO_MODE_PAL;
+	p->input[p->nenc] = i;
+	p->nenc++;
+	
+	v4l_add_enc(p->enc,p->nenc,"ntsc", channel.name, 640,480, 1001,60000);
+	p->norm[p->nenc]  = VIDEO_MODE_NTSC;
+	p->input[p->nenc] = i;
+	p->nenc++;
+	
+	v4l_add_enc(p->enc,p->nenc,"secam",channel.name, 768,576, 1,50);
+	p->norm[p->nenc]  = VIDEO_MODE_SECAM;
+	p->input[p->nenc] = i;
+	p->nenc++;
 
-	/* one for PAL ... */
-	enc[i].id     = i;
-	enc[i].name   = malloc(strlen(channel.name)+8);
-	enc[i].width  = 768;
-	enc[i].height = 576;
-	enc[i].rate.numerator   =  1;
-	enc[i].rate.denominator = 50;
-	sprintf(enc[i].name,"pal-%s",fixname(channel.name));
-	i++;
+	if (have_bttv) {
+	    /* workaround for a v4l design flaw:  The v4l API knows just pal,
+	       ntsc and secam.  But there are a few more norms (pal versions
+	       with a different timings used in south america for example).
+	       The bttv driver can handle these too. */
+	    v4l_add_enc(p->enc,p->nenc,"palnc",channel.name, 640, 576, 1,50);
+	    p->norm[p->nenc]  = 3;
+	    p->input[p->nenc] = i;
+	    p->nenc++;
 
-	/* NTSC */
-	enc[i].id     = i;
-	enc[i].name   = malloc(strlen(channel.name)+8);
-	enc[i].width  = 640;
-	enc[i].height = 480;
-	enc[i].rate.numerator   =  1001;
-	enc[i].rate.denominator = 60000;
-	sprintf(enc[i].name,"ntsc-%s",fixname(channel.name));
-	i++;
+	    v4l_add_enc(p->enc,p->nenc,"palm",channel.name, 640, 576, 1,50);
+	    p->norm[p->nenc]  = 3;
+	    p->input[p->nenc] = i;
+	    p->nenc++;
 
-	/* SECAM */
-	enc[i].id     = i;
-	enc[i].name   = malloc(strlen(channel.name)+8);
-	enc[i].width  = 768;
-	enc[i].height = 576;
-	enc[i].rate.numerator   =  1;
-	enc[i].rate.denominator = 50;
-	sprintf(enc[i].name,"secam-%s",fixname(channel.name));
-	i++;
+	    v4l_add_enc(p->enc, p->nenc,"paln", channel.name, 768,576, 1,50);
+	    p->norm[p->nenc]  = VIDEO_MODE_PAL;
+	    p->input[p->nenc] = i;
+	    p->nenc++;
+	    
+	    v4l_add_enc(p->enc,p->nenc,"ntscjp", channel.name, 640,480, 1001,60000);
+	    p->norm[p->nenc]  = VIDEO_MODE_NTSC;
+	    p->input[p->nenc] = i;
+	    p->nenc++;
+	}
     }
-    *count = i;
-    return enc;
+}
+
+/* add a attribute a list */
+static void
+v4l_add_attr(XF86AttributeRec **list, int *count,
+	     const XF86AttributeRec *attr)
+{
+    XF86AttributeRec *oldlist = *list;
+    int i;
+
+    for (i = 0; i < *count; i++) {
+	if (0 == strcmp((*list)[i].name,attr->name)) {
+	    DEBUG(xf86Msg(X_INFO, "v4l: skip dup attr %s\n",attr->name));
+	    return;
+	}
+    }
+    
+    DEBUG(xf86Msg(X_INFO, "v4l: add attr %s\n",attr->name));
+    *list = xalloc((*count + 1) * sizeof(XF86AttributeRec));
+    if (NULL == *list) {
+	*count = 0;
+	return;
+    }
+    if (*count)
+	memcpy(*list, oldlist, *count * sizeof(XF86AttributeRec));
+    memcpy(*list + *count, attr, sizeof(XF86AttributeRec));
+    (*count)++;
 }
 
 static int
@@ -737,13 +800,12 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
     PortPrivPtr pPPriv;
     DevUnion *Private;
     XF86VideoAdaptorPtr *VAR = NULL;
-    XF86VideoEncodingPtr enc;
     char dev[18];
-    int  fd,i,j,nenc;
+    int  fd,i,j;
 
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < MAX_V4L_DEVICES; i++) {
 	sprintf(dev, "/dev/video%d", i);
 	fd = open(dev, O_RDWR, 0);
 	if (fd == -1) {
@@ -752,27 +814,23 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	    if (fd == -1)
 		break;
 	}
-	
-	DEBUG(xf86Msg(X_INFO,  "v4l: %s ok\n",dev));
+	DEBUG(xf86Msg(X_INFO,  "v4l: %s open ok\n",dev));
 
 	/* our private data */
 	pPPriv = xalloc(sizeof(PortPrivRec));
 	if (!pPPriv)
 	    return FALSE;
 	memset(pPPriv,0,sizeof(PortPrivRec));
-	pPPriv->fd    = -1;
-	strncpy(pPPriv->devname, dev, 16);
-	pPPriv->useCount=0;
 
 	/* check device */
-	if (-1   == ioctl(fd,VIDIOCGCAP,&pPPriv->cap)	||
-	    NULL == (enc = V4LBuildEncodings
-		     (fd,&nenc,pPPriv->cap.channels))) {
+	if (-1 == ioctl(fd,VIDIOCGCAP,&pPPriv->cap) ||
+	    0 == (pPPriv->cap.type & VID_TYPE_OVERLAY)) {
+	    DEBUG(xf86Msg(X_INFO,  "v4l: %s: no overlay support\n",dev));
 	    xfree(pPPriv);
 	    break;
 	}
-	pPPriv->enc = enc;
-	pPPriv->nenc = nenc;
+	strncpy(V4L_NAME, dev, 16);
+	V4LBuildEncodings(pPPriv,fd,pPPriv->cap.channels);
 
 #if 1
 	/* check for yuv (see if the driver accepts VIDEO_PALETTE_YUV422) */
@@ -808,20 +866,36 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	    return FALSE;
 	memset(VAR[i],0,sizeof(XF86VideoAdaptorRec));
 
-	/* add attribute lists */
-	if (pPPriv->have_yuv) {
-	    VAR[i]->nAttributes = V4L_ATTR + pPPriv->myfmt->num_attributes;
-	    VAR[i]->pAttributes = xalloc(VAR[i]->nAttributes *
-					 sizeof(XF86AttributeRec));
-	    memcpy(VAR[i]->pAttributes, Attributes,
-		   sizeof(XF86AttributeRec) * V4L_ATTR);
-	    memcpy(VAR[i]->pAttributes+V4L_ATTR, pPPriv->myfmt->attributes,
-		   sizeof(XF86AttributeRec) * pPPriv->myfmt->num_attributes);
-	} else {
-	    VAR[i]->nAttributes = V4L_ATTR;
-	    VAR[i]->pAttributes = Attributes;
-	}
 
+	/* build attribute list */
+	for (j = 0; j < V4L_ATTR; j++) {
+	    /* video attributes */
+	    v4l_add_attr(&VAR[i]->pAttributes, &VAR[i]->nAttributes,
+			 &Attributes[j]);
+	}
+	if (0 == ioctl(fd,VIDIOCGAUDIO,&pPPriv->audio)) {
+	    /* audio attributes */
+	    if (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)
+		v4l_add_attr(&VAR[i]->pAttributes, &VAR[i]->nAttributes,
+			     &VolumeAttr);
+	    if (pPPriv->audio.flags & VIDEO_AUDIO_MUTABLE)
+		v4l_add_attr(&VAR[i]->pAttributes, &VAR[i]->nAttributes,
+			     &MuteAttr);
+	}
+	if (pPPriv->cap.type & VID_TYPE_TUNER) {
+	    /* tuner attributes */
+	    v4l_add_attr(&VAR[i]->pAttributes, &VAR[i]->nAttributes,
+			 &FreqAttr);
+	}
+	if (pPPriv->have_yuv) {
+	    /* pass throuth scaler attributes */
+	    for (j = 0; j < pPPriv->myfmt->num_attributes; j++) {
+		v4l_add_attr(&VAR[i]->pAttributes, &VAR[i]->nAttributes,
+			     pPPriv->myfmt->attributes+j);
+	    }
+	}
+	
+	
 	/* hook in private data */
 	Private = xalloc(sizeof(DevUnion));
 	if (!Private)
@@ -843,31 +917,11 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	VAR[i]->GetPortAttribute = V4lGetPortAttribute;
 	VAR[i]->QueryBestSize = V4lQueryBestSize;
 
-	VAR[i]->nEncodings = nenc;
-	VAR[i]->pEncodings = enc;
+	VAR[i]->nEncodings = pPPriv->nenc;
+	VAR[i]->pEncodings = pPPriv->enc;
 	VAR[i]->nFormats =
 		sizeof(InputVideoFormats) / sizeof(InputVideoFormats[0]);
 	VAR[i]->pFormats = InputVideoFormats;
-
-	/* Check whether we have VIDEO_AUDIO_VOLUME */
-	if (!ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio) && 
-	    pPPriv->audio.flags & VIDEO_AUDIO_VOLUME) {
-	  XF86AttributeRec *oldattrs = VAR[i]->pAttributes;
-	  int nattrs = VAR[i]->nAttributes;
-
-	  DEBUG(xf86Msg(X_INFO, "v4l: Volume supported, adding XV_VOLUME to attribute list\n"));
-
-	  VAR[i]->pAttributes = xalloc((nattrs + 1) *
-					 sizeof(XF86AttributeRec));
-	  memcpy(VAR[i]->pAttributes, oldattrs,
-		sizeof(XF86AttributeRec) * nattrs);
-	  memcpy(VAR[i]->pAttributes+nattrs, &VolumeAttr, 
-		 sizeof(XF86AttributeRec));
-	  VAR[i]->nAttributes++;
-	} else {
-	  DEBUG(xf86Msg(X_INFO, "v4l: Volume not supported\n"));
-	}
-	  
 
 	if (fd != -1)
 	    close(fd);
