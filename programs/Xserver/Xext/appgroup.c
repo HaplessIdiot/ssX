@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.3 2000/08/11 23:59:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.4 2001/01/17 22:13:14 dawes Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -71,9 +71,9 @@ static int		XagCallbackRefCount = 0;
 static RESTYPE		RT_APPGROUP;
 static AppGroupPtr	appGrpList = NULL;
 
-extern WindowPtr* WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char* ConnectionInfo;
+extern int connBlockScreenStart;
 
 static 
 int XagAppGroupFree (what, id)
@@ -118,7 +118,7 @@ void XagClientStateChange (pcbl, nulldata, calldata)
     NewClientInfoRec* pci = (NewClientInfoRec*) calldata;
     ClientPtr pClient = pci->client;
     AppGroupPtr pAppGrp;
-    XID authId;
+    XID authId = 0;
 
     if (!pClient->appgroup) {
 	switch (pClient->clientState) {
@@ -217,13 +217,13 @@ XagExtensionInit ()
 {
     ExtensionEntry* extEntry;
 
-    if (extEntry = AddExtension (XAGNAME,
+    if ((extEntry = AddExtension (XAGNAME,
 				0,
 				XagNumberErrors,
 				ProcXagDispatch,
 				SProcXagDispatch,
 				XagResetProc,
-				StandardMinorOpcode)) {
+				StandardMinorOpcode))) {
 	XagReqCode = (unsigned char)extEntry->base;
 	XagErrorBase = extEntry->errorBase;
 	RT_APPGROUP = CreateNewResourceType (XagAppGroupFree);
@@ -306,8 +306,6 @@ static
 void CreateConnectionInfo (pAppGrp)
     AppGroupPtr pAppGrp;
 {
-    extern int connBlockScreenStart;
-    xConnSetup *setup = (xConnSetup*) ConnectionInfo;
     xWindowRoot* rootp;
     xWindowRoot* roots[MAXSCREENS];
     unsigned int rootlens[MAXSCREENS];
@@ -373,7 +371,6 @@ AppGroupPtr CreateAppGroup (client, appgroupId, attrib_mask, attribs)
     CARD32* attribs;
 {
     AppGroupPtr pAppGrp;
-    int i;
 
     pAppGrp = (AppGroupPtr) xalloc (sizeof(AppGroupRec));
     if (pAppGrp) {

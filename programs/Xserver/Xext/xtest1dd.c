@@ -48,7 +48,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.2 1999/03/14 03:21:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.3 2001/01/17 22:13:19 dawes Exp $ */
 
 /***************************************************************
  * include files
@@ -849,7 +849,7 @@ int		locy;
 	 * time delta from previous event
 	 */
 	CARD16			tchar;
-	char		keytrans;
+	char		keytrans = 0;
 
 	/*
 	 * update the logical position of the locator if the physical position

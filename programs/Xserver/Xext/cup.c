@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.6 2001/01/17 22:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.7 2001/08/01 00:44:44 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -123,13 +123,13 @@ XcupExtensionInit ()
 {
     ExtensionEntry* extEntry;
 
-    if (extEntry = AddExtension (XCUPNAME,
+    if ((extEntry = AddExtension (XCUPNAME,
 				0,
 				XcupNumberErrors,
 				ProcDispatch,
 				SProcDispatch,
 				ResetProc,
-				StandardMinorOpcode)) {
+				StandardMinorOpcode))) {
 	ReqCode = (unsigned char)extEntry->base;
 	ErrorBase = extEntry->errorBase;
     }
@@ -216,7 +216,6 @@ int ProcStoreColors (client)
 	int ncolors, n;
 	xXcupStoreColorsReply rep;
 	xColorItem* cptr;
-	Pixel pixel;
 
 	if (!(pcmp->class & DynamicClass))
 	    return BadMatch;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.13 2001/01/17 22:13:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.14 2001/05/31 16:35:16 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -128,8 +128,6 @@ static DISPATCH_PROC(SProcShapeSelectInput);
 #ifdef PANORAMIX
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
-extern int PanoramiXNumScreens;
-extern Bool noPanoramiXExtension;
 #endif
 
 static unsigned char ShapeReqCode = 0;
@@ -393,7 +391,7 @@ ProcPanoramiXShapeRectangles (client)
 {
     REQUEST(xShapeRectanglesReq);
     PanoramiXRes	*win;
-    int        		j, result;
+    int        		j, result = 0;
 
     REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
 
@@ -482,7 +480,7 @@ ProcPanoramiXShapeMask (client)
 {
     REQUEST(xShapeMaskReq);
     PanoramiXRes	*win, *pmap;
-    int 		j, result;
+    int 		j, result = 0;
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
 
@@ -597,7 +595,7 @@ ProcPanoramiXShapeCombine (client)
 {
     REQUEST(xShapeCombineReq);
     PanoramiXRes	*win, *win2;
-    int 		j, result;
+    int 		j, result = 0;
 
     REQUEST_AT_LEAST_SIZE (xShapeCombineReq);
 
@@ -666,7 +664,7 @@ ProcPanoramiXShapeOffset (client)
 {
     REQUEST(xShapeOffsetReq);
     PanoramiXRes *win;
-    int j, result;
+    int j, result = 0;
 
     REQUEST_AT_LEAST_SIZE (xShapeOffsetReq);
    

@@ -46,7 +46,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.8 2001/01/17 22:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.9 2001/07/23 13:15:44 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -320,7 +320,6 @@ static DISPATCH_PROC(ProcSyncDispatch);
 static DISPATCH_PROC(ProcSyncGetPriority);
 static DISPATCH_PROC(ProcSyncInitialize);
 static DISPATCH_PROC(ProcSyncListSystemCounters);
-static DISPATCH_PROC(ProcSyncListSystemCounters);
 static DISPATCH_PROC(ProcSyncQueryAlarm);
 static DISPATCH_PROC(ProcSyncQueryCounter);
 static DISPATCH_PROC(ProcSyncSetCounter);
@@ -332,7 +331,6 @@ static DISPATCH_PROC(SProcSyncCreateAlarm);
 static DISPATCH_PROC(SProcSyncCreateCounter);
 static DISPATCH_PROC(SProcSyncDestroyAlarm);
 static DISPATCH_PROC(SProcSyncDestroyCounter);
-static DISPATCH_PROC(SProcSyncDispatch);
 static DISPATCH_PROC(SProcSyncDispatch);
 static DISPATCH_PROC(SProcSyncGetPriority);
 static DISPATCH_PROC(SProcSyncInitialize);
@@ -1413,7 +1411,7 @@ ProcSyncListSystemCounters(client)
 {
     xSyncListSystemCountersReply  rep;
     int i, len;
-    xSyncSystemCounter *list, *walklist;
+    xSyncSystemCounter *list = NULL, *walklist = NULL;
     
     REQUEST_SIZE_MATCH(xSyncListSystemCountersReq);
 

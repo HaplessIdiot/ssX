@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.6 2001/01/17 22:13:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.7 2001/08/06 20:51:03 dawes Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -78,9 +78,6 @@ int (*SwappedUntrustedProcVector[256])(
     ClientPtr /*client*/
 #endif
 );
-
-extern int ProcBadRequest();
-
 
 /* SecurityAudit
  *
@@ -147,7 +144,7 @@ SecurityDeleteAuthorization(value, id)
 
     /* send revoke events */
 
-    while (pEventClient = pAuth->eventClients)
+    while ((pEventClient = pAuth->eventClients))
     {
 	/* send revocation event event */
 	ClientPtr client = rClient(pEventClient);
@@ -392,7 +389,6 @@ ProcSecurityGenerateAuthorization(client)
     Bool removeAuth = FALSE;	/* if bailout, call RemoveAuthorization? */
     SecurityAuthorizationPtr pAuth = NULL;  /* auth we are creating */
     int err;			/* error to return from this function */
-    int status;			/* return value from os functions */
     XID authId;			/* authorization ID assigned by os layer */
     xSecurityGenerateAuthorizationReply rep; /* reply struct */
     unsigned int trustLevel;    /* trust level of new auth */
@@ -785,7 +781,7 @@ SecurityCheckDeviceAccess(client, dev, fromRequest)
     Bool untrusted_got_event;
     Bool found_event_window;
     Mask eventmask;
-    int reqtype;
+    int reqtype = 0;
 
     /* trusted clients always allowed to do anything */
     if (client->trustLevel == XSecurityClientTrusted)
@@ -1441,7 +1437,6 @@ SecurityParsePropertyAccessRule(p)
     char action = SecurityDefaultAction;
     char readAction, writeAction, destroyAction;
     PropertyAccessPtr pacl, prev, cur;
-    ATOM atom;
     char *mustHaveProperty = NULL;
     char *mustHaveValue = NULL;
     Bool invalid;

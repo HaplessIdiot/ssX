@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.2 2001/01/17 22:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.3 2001/08/01 00:44:44 tsi Exp $ */
 
 /* dixsleep.c - implement millisecond timeouts for X clients */
 
@@ -180,7 +180,7 @@ SertafiedBlockHandler (data, wt, LastSelectMask)
     pointer	    LastSelectMask;
 {
     SertafiedPtr	    pReq, pNext;
-    unsigned long	    newdelay, olddelay;
+    unsigned long	    delay;
     TimeStamp		    now;
 
     if (!pPending)
@@ -205,8 +205,8 @@ SertafiedBlockHandler (data, wt, LastSelectMask)
     pReq = pPending;
     if (!pReq)
 	return;
-    newdelay = pReq->revive.milliseconds - now.milliseconds;
-    AdjustWaitForDelay (wt, newdelay);
+    delay = pReq->revive.milliseconds - now.milliseconds;
+    AdjustWaitForDelay (wt, delay);
 }
 
 static void

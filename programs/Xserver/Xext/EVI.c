@@ -167,11 +167,11 @@ EVIResetProc(ExtensionEntry *extEntry)
 void
 EVIExtensionInit(void)
 {
-    ExtensionEntry *extEntry, *AddExtension();
-    if (extEntry = AddExtension(EVINAME, 0, 0,
+    ExtensionEntry *extEntry;
+    if ((extEntry = AddExtension(EVINAME, 0, 0,
 				ProcEVIDispatch,
 				SProcEVIDispatch,
-				EVIResetProc, StandardMinorOpcode))
+				EVIResetProc, StandardMinorOpcode)))
     {
 	XEVIReqCode = (unsigned char)extEntry->base;
 	eviPriv = eviDDXInit();

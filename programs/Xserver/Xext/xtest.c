@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.4 2001/01/17 22:13:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.5 2001/08/01 00:44:44 tsi Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -162,12 +162,12 @@ ProcXTestFakeInput(client)
     int nev;
     int	n;
     xEvent *ev;
-    DeviceIntPtr dev;
+    DeviceIntPtr dev = NULL;
     WindowPtr root;
     int type;
 #ifdef XINPUT
     Bool extension = FALSE;
-    deviceValuator *dv;
+    deviceValuator *dv = NULL;
     int base;
     int *values;
 #endif /* XINPUT */

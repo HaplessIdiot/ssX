@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.27 2001/08/01 00:44:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.28 2001/08/11 21:00:05 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -98,7 +98,6 @@ static void PanoramiXResetProc(ExtensionEntry*);
 extern int SProcPanoramiXDispatch();
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
-extern int (* ProcVector[256]) ();
 extern xConnSetupPrefix connSetupPrefix;
 
 /*
@@ -448,7 +447,7 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 {
     int 	     	i;
     Bool	     	success = FALSE;
-    ExtensionEntry 	*extEntry, *AddExtension();
+    ExtensionEntry 	*extEntry;
     ScreenPtr		pScreen;
     PanoramiXScreenPtr	pScreenPriv;
     int			w, h;
@@ -750,7 +749,7 @@ Bool PanoramiXCreateConnectionBlock(void)
 extern
 void PanoramiXConsolidate(void)
 {
-    int 	i, j, k, l;
+    int 	i, j, k;
     VisualPtr   pVisual, pVisual2;
     ScreenPtr   pScreen, pScreen2;
     PanoramiXRes *root, *defmap;
@@ -1123,7 +1122,6 @@ XineramaGetImageData(
     BoxRec SrcBox, *pbox;
     int x, y, w, h, i, j, nbox, size, sizeNeeded, ScratchPitch, inOut, depth;
     DrawablePtr pDraw = pDrawables[0];
-    ScreenPtr pScreen = pDraw->pScreen;
     char *ScratchMem = NULL;
 
     size = 0;
