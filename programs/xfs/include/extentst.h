@@ -43,6 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)extentst.h	4.1	91/05/02
  *
  */
+/* $XFree86$ */
 
 #ifndef _EXTENTST_H_
 #define _EXTENTST_H_

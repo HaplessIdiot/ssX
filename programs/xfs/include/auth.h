@@ -43,6 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)auth.h	4.1	91/05/02
  *
  */
+/* $XFree86$ */
 
 #ifndef _AUTH_H_
 #define _AUTH_H_

@@ -44,6 +44,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)accstr.h	4.1	91/05/02
  *
  */
+/* $XFree86$ */
 
 #ifndef _ACCSTR_H_
 #define _ACCSTR_H_

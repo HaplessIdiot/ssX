@@ -8,6 +8,8 @@ COMMENT Characters above 127 designed and made by
 COMMENT Thomas Bagli (pyramid!pcsbst!tom@uunet.UU.NET)
 COMMENT PCS Computer Systeme, West Germany
 COMMENT ""
+COMMENT $XFree86$
+COMMENT ""
 FONT -Misc-Fixed-Bold-R-Normal--13-120-75-75-C-70-ISO8859-15
 SIZE 13 78 78
 FONTBOUNDINGBOX 7 13 0 -2

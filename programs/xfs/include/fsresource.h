@@ -48,6 +48,8 @@ in this Software without prior written authorization from the X Consortium.
  * @(#)resource.h	4.1	91/05/02
  *
  */
+/* $XFree86$ */
+
 #ifndef _RESOURCE_H_
 #define _RESOURCE_H_
 

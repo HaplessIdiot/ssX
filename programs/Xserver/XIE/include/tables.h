@@ -66,6 +66,7 @@ terms and conditions:
 	Dean Verheiden, Robert NC Shelley -- AGE Logic, Inc. April 1993
 
 ******************************************************************************/
+/* $XFree86$ */
 
 #ifndef _XIEH_TABLES
 #define _XIEH_TABLES

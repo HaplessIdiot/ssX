@@ -43,6 +43,8 @@ in this Software without prior written authorization from The Open Group.
  * @(#)cache.h	4.1	91/05/02
  *
  */
+/* $XFree86$ */
+
 #ifndef _CACHE_H_
 #define	_CACHE_H_
 

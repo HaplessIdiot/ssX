@@ -24,6 +24,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+/* $XFree86$ */
 
 
 /* @(#)Tekparse.h	X10/6.6	11/7/86 */

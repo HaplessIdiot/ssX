@@ -66,6 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. September 1993
   
 *****************************************************************************/
+/* $XFree86$ */
 
 #define MIUNCOMP_BP_ARGS \
      BytePixel *src, \
