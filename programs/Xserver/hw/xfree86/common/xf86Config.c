@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.262 2002/09/17 19:30:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.263 2002/10/11 01:40:29 dawes Exp $ */
 
 
 /*
@@ -36,6 +36,10 @@ extern DeviceAssocRec mouse_assoc;
 #ifdef XKB
 #define XKB_IN_SERVER
 #include "XKBsrv.h"
+#endif
+
+#ifdef RENDER
+#include "picture.h"
 #endif
 
 #if (defined(i386) || defined(__i386__)) && \
@@ -702,7 +706,8 @@ typedef enum {
     FLAG_XINERAMA,
     FLAG_ALLOW_DEACTIVATE_GRABS,
     FLAG_ALLOW_CLOSEDOWN_GRABS,
-    FLAG_LOG
+    FLAG_LOG,
+    FLAG_RENDER_COLORMAP_MODE
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -764,6 +769,8 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_LOG,			"Log",				OPTV_STRING,
 	{0}, FALSE },
+  { FLAG_RENDER_COLORMAP_MODE, "RenderColormapMode",            OPTV_STRING,
+        {0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE },
 };
@@ -897,6 +904,22 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
         }
     }
     
+#ifdef RENDER
+    {
+	const char *s;
+
+	if ((s = xf86GetOptValString(FlagOptions, FLAG_RENDER_COLORMAP_MODE))){
+	    int policy = PictureParseCmapPolicy (s);
+	    if (policy == PictureCmapPolicyInvalid)
+		xf86Msg(X_WARNING, "Unknown colormap policy \"%s\"\n", s);
+	    else
+	    {
+		xf86Msg(X_CONFIG, "Render colormap policy set to %s\n", s);
+		PictureCmapPolicy = policy;
+	    }
+	}
+    }
+#endif
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
     if (i >= 0)

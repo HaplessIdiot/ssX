@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.4 2001/07/31 21:06:56 alanh Exp $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.5 2002/05/13 05:25:11 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -34,54 +34,110 @@
 #include "mipict.h"
 #include "colormapst.h"
 
+static unsigned short  CubeLevels[] = { 
+    0x0000, 0x5555, 0xaaaa, 0xffff
+};
+
+#define NUM_CUBE_LEVELS	(sizeof (CubeLevels) / sizeof (CubeLevels[0]))
+
+static unsigned short  GrayLevels[] = { 
+    0x0000, 0x1555, 0x2aaa,
+    0x4000, 0x5555, 0x6aaa,
+    0x8000, 0x9555, 0xaaaa,
+    0xbfff, 0xd555, 0xeaaa, 0xffff,
+};
+		    
+#define NUM_GRAY_LEVELS	(sizeof (GrayLevels) / sizeof (GrayLevels[0]))
+
 Bool
 miBuildRenderColormap (ColormapPtr  pColormap,
-		       int	    num,
 		       Pixel	    *first,
 		       Pixel	    *last)
 {
-    int		cube, ramp;
     int		r, g, b;
     unsigned short  red, green, blue;
     Pixel	pix;
-    
-    cube = 0;
-    if ((pColormap->pVisual->class | DynamicClass) == PseudoColor)
+    int		policy = PictureCmapPolicy;
+    int		num = pColormap->pVisual->ColormapEntries;
+    int		needed;
+
+    if (policy == PictureCmapPolicyDefault)
     {
-	for (cube = 0; cube * cube * cube < num; cube++)
-	    ;
-	cube--;
+	if (num >= 256)
+	    policy = PictureCmapPolicyColor;
+	else if (num >= 64)
+	    policy = PictureCmapPolicyGray;
+	else
+	    policy = PictureCmapPolicyMono;
     }
-    if (cube == 1)
-	cube = 0;
-    ramp = num - (cube * cube * cube);
-    *first = MI_MAX_INDEXED;
-    *last = 0;
-    for (r = 0; r < cube; r++)
-	for (g = 0; g < cube; g++)
-	    for (b = 0; b < cube; b++)
-	    {
-		red = r * 65535 / (cube - 1);
-		green = g * 65535 / (cube - 1);
-		blue = b * 65535 / (cube - 1);
-		if (AllocColor (pColormap, &red, &green, &blue, &pix, 0) != Success)
-		    return FALSE;
-		if (pix < *first)
-		    *first = pix;
-		if (pix > *last)
-		    *last = pix;
-	    }
-    for (g = 0; g < ramp; g++)
+    /*
+     * Make sure enough cells are free for the chosen policy
+     */
+    for (;;)
     {
-	red = 
-	green = 
-	blue = g * 65535 / (ramp - 1);
-	if (AllocColor (pColormap, &red, &green, &blue, &pix, 0) != Success)
-	    return FALSE;
-	if (pix < *first)
-	    *first = pix;
-	if (pix > *last)
-	    *last = pix;
+	switch (policy) {
+	case PictureCmapPolicyColor:
+	    needed = 71;
+	    break;
+	case PictureCmapPolicyGray:
+	    needed = 11;
+	    break;
+	case PictureCmapPolicyMono:
+	default:
+	    needed = 0;
+	    break;
+	}
+	if (needed <= pColormap->freeRed)
+	    break;
+	policy--;
+    } 
+    
+    /*
+     * Initialize the search bounds for the mapping code
+     */
+    if (pColormap->pScreen->whitePixel > pColormap->pScreen->blackPixel)
+    {
+	*first = pColormap->pScreen->blackPixel;
+	*last = pColormap->pScreen->whitePixel;
+    }
+    else
+    {
+	*first = pColormap->pScreen->whitePixel;
+	*last = pColormap->pScreen->blackPixel;
+    }
+    
+    switch (policy) {
+    case PictureCmapPolicyColor:
+	for (r = 0; r < NUM_CUBE_LEVELS; r++)
+	    for (g = 0; g < NUM_CUBE_LEVELS; g++)
+		for (b = 0; b < NUM_CUBE_LEVELS; b++)
+		{
+		    red = CubeLevels[r];
+		    green = CubeLevels[g];
+		    blue = CubeLevels[b];
+		    if (AllocColor (pColormap, &red, &green, 
+				    &blue, &pix, 0) != Success)
+			return FALSE;
+		    if (pix < *first)
+			*first = pix;
+		    if (pix > *last)
+			*last = pix;
+		}
+	/* fall through ... */
+    case PictureCmapPolicyGray:
+	for (g = 0; g < NUM_GRAY_LEVELS; g++)
+	{
+	    red = green = blue = GrayLevels[g];
+	    if (AllocColor (pColormap, &red, &green, &blue, &pix, 0) != Success)
+		return FALSE;
+	    if (pix < *first)
+		*first = pix;
+	    if (pix > *last)
+		*last = pix;
+	}
+	/* fall through ... */
+    case PictureCmapPolicyMono:
+	break;
     }
 
     return TRUE;
@@ -150,7 +206,6 @@ miInitIndexed (ScreenPtr	pScreen,
 	       PictFormatPtr	pFormat)
 {
     miIndexedPtr    pIndexed;
-    int		    num;
     Pixel	    first, last;
     Pixel	    pix[MI_MAX_INDEXED];
     xrgb	    rgb[MI_MAX_INDEXED];
@@ -161,23 +216,11 @@ miInitIndexed (ScreenPtr	pScreen,
     pIndexed = xalloc (sizeof (miIndexedRec));
     if (!pIndexed)
 	return FALSE;
-    num = pFormat->pVisual->ColormapEntries;
     first = 0;
-    last = num - 1;
+    last = pFormat->pVisual->ColormapEntries - 1;
     if (pFormat->pVisual->class & DynamicClass)
     {
-	/* 
-	 * Use just a few entries to avoid
-	 * annoying existing apps
-	 */
-	if (pFormat->pVisual->vid == pScreen->rootVisual)
-	{
-	    if (num > 100)
-		num = num / 3;
-	    else
-		num = num / 2;
-	}
-	if (!miBuildRenderColormap (pFormat->pColormap, num, &first, &last))
+	if (!miBuildRenderColormap (pFormat->pColormap, &first, &last))
 	{
 	    xfree (pIndexed);
 	    return FALSE;

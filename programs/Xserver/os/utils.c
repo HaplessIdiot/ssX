@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.82 2002/05/31 18:46:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.83 2002/10/08 23:55:22 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -113,6 +113,10 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
 #include "security.h"
+#endif
+
+#ifdef RENDER
+#include "picture.h"
 #endif
 
 #define X_INCLUDE_NETDB_H
@@ -537,6 +541,9 @@ void UseMsg()
     ErrorF("-nopn                  reject failure to listen on all ports\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
+#ifdef RENDER
+    ErrorF("-render [default|mono|gray|color] set render color alloc policy\n");
+#endif
     ErrorF("-s #                   screen-saver timeout (minutes)\n");
 #ifdef XCSECURITY
     ErrorF("-sp file               security policy file\n");
@@ -957,6 +964,22 @@ char	*argv[];
 	    }
 	    else
 		UseMsg();
+	}
+#endif
+#ifdef RENDER
+	else if ( strcmp( argv[i], "-render" ) == 0)
+	{
+	    if (++i < argc)
+	    {
+		int policy = PictureParseCmapPolicy (argv[i]);
+
+		if (policy != PictureCmapPolicyInvalid)
+		    PictureCmapPolicy = policy;
+		else
+		    UseMsg ();
+	    }
+	    else
+		UseMsg ();
 	}
 #endif
  	else
