@@ -1726,7 +1726,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->clockIndex = -1;		/* programmable */
     clockRanges->interlaceAllowed = TRUE;
     clockRanges->doubleScanAllowed = TRUE;
-
+    clockRanges->ClockMulFactor = 1;
+    clockRanges->ClockDivFactor = 1;
+    
     /* Only set MemClk if appropriate for the ramdac */
     if (pMga->Dac.SetMemClk) {
 	if (pMga->MemClk == 0) {
