@@ -1,5 +1,5 @@
 /* $XConsortium: s3Ti3020.h,v 1.1 94/03/28 21:14:12 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.0 1994/06/11 06:11:19 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -76,6 +76,7 @@
 #define   TI_ICLK_CLK1_DOUBLE	0x11
 #define TI_OUTPUT_CLOCK_SELECT	0x1B
 #define   TI_OCLK_VGA		0x3E
+#define   TI_OCLK_S_V1_R8	0x43
 #define   TI_OCLK_S_V2_R8	0x4B
 #define   TI_OCLK_S_V4_R8	0x53
 #define   TI_OCLK_S_V8_R8	0x5B

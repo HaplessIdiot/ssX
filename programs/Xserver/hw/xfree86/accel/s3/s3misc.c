@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.1 1994/06/11 06:11:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.2 1994/06/18 16:24:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -197,44 +197,65 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       ErrorF("%s %s: Local bus LAW31-26 is %X\n", 
 		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 24) & 0xfc);
 	    } else {
-	       for (i = 0xfc; i >= 0; i-=4) {
-	          unsigned long addr;
-	    
-	          /* Start at LAW(hw) + 48MB */
-	          addr = (i << 24) + (0x3<<24);
-	          s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-				             (pointer)addr, s3BankSize);
-	          poker = (long *) s3VideoMem; 
+	       if (S3_x64_SERIES(s3ChipId)) {
+		  /* So far, only tested for the PCI ELSA W2000Pro */
+		  unsigned long addr;
 
-	          if (s3TryAddress(poker, pVal, addr, 1)) {
-	             /* We found some ram, but is it ours? */
-	       
-		     /* move it up by 12MB to LAW(hw) + 60MB */
-		     outb(vgaCRIndex, 0x5a);
-		     outb(vgaCRReg, 0xC0);
-		     if (!s3TryAddress(poker, pVal, addr, 2)) {
- 	                addr += (0x0C<<20);
-		        xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
-				        s3BankSize);
-		        s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-						   (pointer)addr, s3BankSize);
-		     
-		        if (s3TryAddress((long *)s3VideoMem, pVal, addr, 3)) {
-		           ErrorF("%s %s: Local bus LAW31-26 is %X\n", 
-			          XCONFIG_PROBED, s3InfoRec.name, i);
-		           s3LinearAperture = TRUE;
-		           break;
-		        }
-		     } else {
-			ErrorF("%s %s: linear framebuffer found, but",
-			       XCONFIG_PROBED, s3InfoRec.name);
-			ErrorF(" it appears to be in a cachable\n");
-			ErrorF("\t address range.\n");
-			CachedFrameBuffer = TRUE;
-		     }
+	          outb(vgaCRIndex, 0x59);
+	          addr = inb(vgaCRReg) << 8;
+	          outb(vgaCRIndex, 0x5a);
+	          addr |= inb(vgaCRReg);
+	          addr <<= 16;
+                  if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
+		     ErrorF("Read LAW as 0x%08X \n", addr);
 	          }
-	          xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
-			          s3BankSize);
+		  s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+                                             (pointer)addr, s3BankSize);
+		  s3LinearAperture = TRUE;
+                  ErrorF("%s %s: Local bus LAW is 0x%08lX\n", 
+                         XCONFIG_PROBED, s3InfoRec.name, addr);
+	       } else {
+	          for (i = 0xfc; i >= 0; i-=4) {
+		     unsigned long addr;
+	    
+		     /* Start at LAW(hw) + 48MB */
+		     addr = (i << 24) + (0x3<<24);
+		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						(pointer)addr, s3BankSize);
+		     poker = (long *) s3VideoMem; 
+
+		     if (s3TryAddress(poker, pVal, addr, 1)) {
+			/* We found some ram, but is it ours? */
+	       
+			/* move it up by 12MB to LAW(hw) + 60MB */
+			outb(vgaCRIndex, 0x5a);
+			outb(vgaCRReg, 0xC0);
+			if (!s3TryAddress(poker, pVal, addr, 2)) {
+			   addr += (0x0C<<20);
+			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
+					   s3VideoMem, s3BankSize);
+			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						      (pointer)addr,
+						      s3BankSize);
+		     
+			   if (s3TryAddress((long *)s3VideoMem, pVal,
+					    addr, 3)) {
+			      ErrorF("%s %s: Local bus LAW31-26 is %X\n", 
+				     XCONFIG_PROBED, s3InfoRec.name, i);
+			      s3LinearAperture = TRUE;
+			      break;
+			   }
+			} else {
+			   ErrorF("%s %s: linear framebuffer found, but",
+				  XCONFIG_PROBED, s3InfoRec.name);
+			   ErrorF(" it appears to be in a cachable\n");
+			   ErrorF("\t address range.\n");
+			   CachedFrameBuffer = TRUE;
+			}
+		     }
+		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
+				     s3BankSize);
+		  }
 	       }
 	    }
 
@@ -262,7 +283,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       outb(vgaCRIndex, 0x53);
 	       outb(vgaCRReg, reg53tmp | 0x10);
 	    }
-
          }
       }
 
@@ -284,7 +304,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
       s3Port59 = inb(vgaCRReg);
       outb(vgaCRIndex, 0x5A);
       s3Port5A = inb(vgaCRReg);
-	
    } else
       s3Init(s3InfoRec.modes);
 

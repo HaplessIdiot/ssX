@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.6 1994/06/22 04:18:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.7 1994/06/28 12:28:34 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -44,20 +44,6 @@
 #include "s3Bt485.h"
 #include "s3Ti3020.h"
 
-#ifdef NEW_INIT_SAVE_RESTORE
-typedef struct {
-   vgaHWRec std;                /* good old IBM VGA */
-   unsigned char SC15025[2];    /* Sierra SC 15025/6 command registers */
-   unsigned char ATT490_1;	/* AT&T 20C490/1 command register */
-   unsigned char ATT498;	/* AT&T 20C498 command register */
-   unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
-   unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
-   unsigned char s3reg[13];     /* Video Atribute (CR30-3C) */
-   unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D) */
-   unsigned short AdvFuncCntl;  /* 0x4AE8 */
-}
-vgaS3Rec, *vgaS3Ptr;
-#else
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
    unsigned char SC15025[2];    /* Sierra SC 15025/6 command registers */
@@ -69,7 +55,6 @@ typedef struct {
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
 }
 vgaS3Rec, *vgaS3Ptr;
-#endif
 
 int   vgaIOBase = 0x3d0; /* These defaults are overriden in s3Probe() */
 int   vgaCRIndex = 0x3d4;
@@ -92,11 +77,7 @@ extern int s3DisplayWidth;
 extern Bool s3Localbus;
 extern Bool s3Mmio928;
 
-#ifdef NEW_INIT_SAVE_RESTORE
-#define new ((vgaS3Ptr)vgaNewVideoState)
-#else
 #define new ((vgaHWPtr)vgaNewVideoState)
-#endif
 
 short s3ChipId = 0;
 
@@ -272,7 +253,6 @@ s3CleanUp(void)
    xf86DisableIOPorts(s3InfoRec.scrnIndex);
 }
 
-#ifndef NEW_INIT_SAVE_RESTORE
 Bool
 s3Init(mode)
      DisplayModePtr mode;
@@ -430,8 +410,10 @@ s3Init(mode)
    else
       pixel_multiplexing = FALSE;
 
-   if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options) ||
-       OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options))
+   if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
+      pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
+		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
+   else if (OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options))
       pixMuxShift = 1;
    else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
       pixMuxShift = 0;
@@ -793,48 +775,65 @@ s3Init(mode)
 	 s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);
 
       if (pixel_multiplexing) {
-         /* fun timing mods for pixel-multiplexing!                     */
+	 /* fun timing mods for pixel-multiplexing!                     */
 
-       if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
-         /* set CR40 acording to Bernhard Bender */
-         outb(vgaCRIndex, 0x40);
-         outb(vgaCRReg, 0xd1);
-        } else {
-         /* set s3 reg53 to parallel addressing by or'ing 0x20          */
-         outb(vgaCRIndex, 0x53);
-         tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp | 0x20);
+	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+	    /* set CR40 acording to Bernhard Bender */
+	    outb(vgaCRIndex, 0x40);
+	    outb(vgaCRReg, 0xd1);
+	 } else {
+            /* set s3 reg53 to parallel addressing by or'ing 0x20          */
+            outb(vgaCRIndex, 0x53);
+            tmp = inb(vgaCRReg);
+            outb(vgaCRReg, tmp | 0x20);
 
-         /* set s3 reg55 to external serial by or'ing 0x08              */
-         outb(vgaCRIndex, 0x55);
-         tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp | 0x08);
-        }
-         /* the input clock is already set to clk1 or clk1double (s3.c) */
+            /* set s3 reg55 to external serial by or'ing 0x08              */
+            outb(vgaCRIndex, 0x55);
+            tmp = inb(vgaCRReg);
+            outb(vgaCRReg, tmp | 0x08);
+	 }
+	 /* the input clock is already set to clk1 or clk1double (s3.c) */
 
-         /* set aux control to self clocked, window function complement */
-         s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
+	 /* set aux control to self clocked, window function complement */
+	 s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
 		       TI_AUX_SELF_CLOCK | TI_AUX_W_CMPL);
 
-         /*
-          * set output clocking to VCLK/4, RCLK/8 like the fixed Bt485.
-          * RCLK/8 is used because of the 8:1 pixel-multiplexing below.
-          * the RCLK output is tied to the LCLK input which is the same
-          * as SCLK but with no blanking.  SCLK is the actual pixel
-          * shift clock for the pixel bus.
-          */
-       if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
-         /*
-          *  XXXX we need to calculate the correct value depending
-          *       on the clock frequency used
-          */
-         s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R8);
-         outb(vgaCRIndex, 0x66);
-         tmp = inb(vgaCRReg);
-         outb(vgaCRReg, (tmp & 0xf8) | 0x02);
-        } else {
-         s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
-        }
+	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+	    /*
+	     * The 964 needs different VCLK division depending on the 
+	     * clock frequenzy used. VCLK/1 for 0-60MHz, VCLK/2 for
+	     * 60-120MHz and VCLK/4 for 120-175MHz (or -200MHz, depending
+	     * on the RAMDAC actually used)
+	     * the RCLK output is tied to the LCLK input which is the same
+	     * as SCLK but with no blanking.  SCLK is the actual pixel
+	     * shift clock for the pixel bus.
+	     * RCLK/8 is used because of the 8:1 pixel-multiplexing below.
+	     * (964 uses always 8:1 in 256 color modes)
+	     */
+	    if (s3InfoRec.clock[mode->Clock] > 120000) {
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
+	       outb(vgaCRIndex, 0x66);
+	       tmp = inb(vgaCRReg);
+	       outb(vgaCRReg, (tmp & 0xf8) | 0x01);
+	    } else if (s3InfoRec.clock[mode->Clock] > 60000){
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R8);
+	       outb(vgaCRIndex, 0x66);
+	       tmp = inb(vgaCRReg);
+	       outb(vgaCRReg, (tmp & 0xf8) | 0x02);
+            } else {
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V1_R8);
+	       outb(vgaCRIndex, 0x66);
+	       tmp = inb(vgaCRReg);
+	       outb(vgaCRReg, (tmp & 0xf8) | 0x03);
+            }
+	 } else {
+	    /*
+	     * for all other boards with Ti3020 (only #9 level 14/16 ?)
+	     * set output clocking to VCLK/4, RCLK/8 like the fixed Bt485.
+	     * RCLK/8 is used because of the 8:1 pixel-multiplexing below.
+	     */
+	    s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
+	 }
 
          /*
           * set the serial access mode 256 words control
@@ -851,15 +850,15 @@ s3Init(mode)
          /* change to 8-bit DAC and re-route the data path and clocking */
          s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, TI_GIC_ALL_BITS);
          if (s3DAC8Bit) {
-          if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) 
-            s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_8BIT );
-          else
-            s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_8BIT);
+            if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) 
+               s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_8BIT );
+            else
+               s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_8BIT);
          } else {
-          if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options))
-	    s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_6BIT );
-          else
-            s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
+            if(OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options))
+	       s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_6BIT );
+            else
+               s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
          }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
@@ -929,7 +928,7 @@ s3Init(mode)
    else
       s3Port31 = 0x8d;
    if (S3_x64_SERIES(s3ChipId)) 
-     s3Port31 &= 0x7f; /* x64: bit 7 is reserved */
+      s3Port31 &= 0x7f; /* x64: bit 7 is reserved */
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, s3Port31);
@@ -947,7 +946,7 @@ s3Init(mode)
           NOTE: there are known problems with PCI burst mode in SATURN chipset rev. 2 
                 so this is commented out, maybe a new Xconfig option should be used */
    if (S3_x64_SERIES(s3ChipId))
-     outb(vgaCRReg, 0xb5 & 0x7f);
+      outb(vgaCRReg, 0xb5 & 0x7f);
    else
 #endif
    outb(vgaCRReg, 0xb5);		/* was 95 */
@@ -1228,7 +1227,6 @@ s3Init(mode)
    LOCK_SYS_REGS;
    return TRUE;
 }
-#endif
 
 /* InitLUT() */
 
@@ -1342,623 +1340,3 @@ s3Unlock()
 
 }
 
-/* XXXX With some work we can use this in place of the above */
-/*
- * This still needs a lot of work.  At present, a lot of register
- * initialisation is done in other places.  We can't use the "svga"
- * model until they are all put in here.  Since the most important thing
- * for now is to make use of vgaHWInit(), we can just use a modified
- * version of the old s3Init() until these major cleanups are done.
- */
-#ifdef NEW_INIT_SAVE_RESTORE
-void
-s3Init(mode)
-     DisplayModePtr mode;
-{
-   int div;
-
-   if (mode->Flags & V_INTERLACE) {
-      div = 2;
-   } else {
-      div = 1;
-   }
-
-   vgaHWInit(mode, sizeof(vgaS3Rec));
-
-   new->std.MiscOutReg |= 0x0C;		/* enable CR42 clock selection */
-   new->std.Sequencer[0] = 0x03;	/* XXXX shouldn't need this */
-
-   new->std.CRTC[19] = s3DisplayWidth >> 3;
-   new->std.CRTC[23] = 0xE3;		/* XXXX shouldn't need this */
-   new->std.Attribute[17] = 0xFF;	/* The overscan gets colour gets */
-					/* disabled anyway */
-	
-   if (S3_801_928_SERIES(s3ChipId)) {
-      s3Port51 = 0;
-      new->s3sysreg[0x11] = 0;
-   }
-
-   new->s3reg[0x01] = 0x8D;
-   new->s3reg[0x02] = 0x00;
-   new->s3reg[0x03] = 0x20;
-   new->s3reg[0x04] = 0x10;
-   new->s3reg[0x05] = 0x00;
-   new->s3reg[0x0A] = 0xB5;
-   new->s3reg[0x0B] = (new->std.CRTC[0] + new->std.CRTC[4] + 1) / 2;
-   new->s3reg[0x0C] = new->std.CRTC[0] / 2;
-
-   /* XXXX Should really save these values during the Probe() */
-   /* x64: CR40 changed a lot for 864/964; wait and see if this still works */
-   outb(vgaCRIndex, 0x40);
-   if (S3_911_SERIES (s3ChipId)) {
-      s3Port40 = (inb(vgaCRReg) & 0xF2) | 0x09;
-   } else {
-      if (s3Localbus) {
-	 s3Port40 = (inb(vgaCRReg) & 0xF2) | 0x05;
-      } else {
-	 s3Port40 = (inb(vgaCRReg) & 0xF6) | 0x01;
-      }
-   }
-   new->s3sysreg[0x00] = s3Port40;
-   if (S3_801_928_SERIES(s3ChipId)) {
-      s3sysreg[0x1E] = (((mode->VTotal  / div - 2) & 0x400) >> 10) |
-		       (((mode->VDisplay / div - 1) & 0x400) >> 9) |
-		       (((mode->VSyncStart / div) & 0x400) >> 8)  |
-		       (((mode->VSyncStart / div) & 0x400) >> 6) | 0x40;
-   }
-   new->s3sysreg[0x03] = 0x00;
-   new->s3sysreg[0x04] = 0x00;
-   new->s3sysreg[0x05] = 0x01;
-
-   if (S3_801_928_SERIES(s3ChipId)) {   /* S3 801 specific initialization */
-      switch (s3DisplayWidth) {
-	case 640:
-	   new->s3sysreg[0x10] = 0x40;
-	   break;
-	case 800:
-	   new->s3sysreg[0x10] = 0x80;
-	   break;
-	case 1152:
-	   new->s3sysreg[0x10] = 0x01;
-	   break;
-	case 1280:
-	   new->s3sysreg[0x10] = 0xC0;
-	   break;
-	case 1600:
-	   new->s3sysreg[0x10] = 0x81;
-	   break;
-	default:
-	   new->s3sysreg[0x10] = 0x00;
-      }
-      new->sysreg[0x18] = 0x00;
-      if (S3_x64_SERIES(s3ChipId)) {
-	 /* ELSA Winner 1000PRO Windows 3.1 driver uses the following values:
-	    Clock   25   33   40   52   65   85  110  135
-	    CR54   208  200  192  184  160  144  112   88
-	    CR54/8  26   25   24   23   20   18   14   11
-	    */
-	 s3Port54 = (232-s3InfoRec.clock[mode->Clock]/900) & ~8;
-      } else if (s3InfoRec.videoRam == 512)
-	 s3Port54 = 0x00;
-      else
-	 s3Port54 = 0xA0;
-      new->sysreg[0x14] = s3Port54;
-
-      new->s3sysreg[0x21] = 0x81;
-      if (s3DisplayWidth >= 1152) {
-	 new->s3sysreg[0x20] = 0x7F;
-	 new->s3sysreg[0x22] = 0xA1;
-	 new->s3sysreg[0x15] = 0x40;
-      } else {
-	 if (s3InfoRec.videoRam == 512)
-	    new->s3sysreg[0x20] = 0xFF;
-	 else
-	    new->s3sysreg[0x20] = 0x3F;
-	 new->s3sysreg[0x22] = 0x00;
-      }
-      if (mode->Flags & V_INTERLACE) {
-	 new->s3sysreg[0x02] = 0x20;
-      }
-
-      if (S3_864_SERIES(s3ChipId)) {
-	 /* ELSA Winner 1000PRO Windows 3.1 driver uses the following values:
-	    Clock   25   33   40   52   65   85  110  135
-	    CR60    20   20   20   22   26   29   37   43
-	    */
-	 new->s3sysreg[0x20] =  10 + s3InfoRec.clock[mode->Clock]/4000;
-	 if (new->s3sysreg[0x20] < 20) new->s3sysreg[0x20] = 20;
-	 new->s3sysreg[0x21] = 0x80;
-	 
-	 if (s3InfoRec.videoRam < 2048)
-	    new->s3sysreg[0x22] = s3DisplayWidth / 4;
-	 else
-	    new->s3sysreg[0x22] = s3DisplayWidth / 8;
-      }
-   }
-      
-   if (s3DisplayWidth == 1024)
-      new->AdvFuncCntl = 0x0007;
-   else
-      new->AdvFuncCntl = 0x0003;
-}
-#endif
-
-#ifndef NEW_INIT_SAVE_RESTORE
-/* s3Save and s3Restore are not currently used */
-#if 0
-void
-s3Restore(restore)
-     vgaS3Ptr restore;
-{
-   int   i;
-   unsigned char c;
-
-   UNLOCK_SYS_REGS;
-
-   vgaProtect(TRUE);
-
-   WaitQueue(8);
-   outb(vgaCRIndex, 0x35);		/* select bank zero */
-   i = inb(vgaCRReg);
-   outb(vgaCRReg, (i & 0xf0));
-   cebank();
-
-   vgaHWRestore((vgaHWPtr)restore);
-
-   (void) (s3ClockSelectFunc) (restore->std.NoClock);
-   outw(0x3c4, 0x0300);
-   return;
-
- /* restore s3 special bits */
-   if (S3_801_928_SERIES(s3ChipId)) {
-    /* restore 801 specific registers */
-
-      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
-	 outb(vgaCRIndex, 0x40 + i);
-	 outb(vgaCRReg, restore->s3sysreg[i]);
-
-      }
-      for (i = 0; i < 16; i++) {
-	 if (!((1 << i) & reg50_mask))
-	   continue;
-	 outb(vgaCRIndex, 0x50 + i);
-	 outb(vgaCRReg, restore->s3sysreg[i + 16]);
-      }
-   }
-   for (i = 0; i < 5; i++) {
-      outb(vgaCRIndex, 0x30 + i);
-      outb(vgaCRReg, restore->s3reg[i]);
-      outb(vgaCRIndex, 0x38 + i);
-      outb(vgaCRReg, restore->s3reg[5 + i]);
-   }
-
-   for (i = 0; i < 16; i++) {
-      outb(vgaCRIndex, 0x40 + i);
-      outb(vgaCRReg, restore->s3sysreg[i]);
-   }
-
-   /*
-    * Restore AT&T 20C490/1 command register.
-    */
-   if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
-      xf86setdaccomm(oldS3->ATT490_1);
-   }
-
-   /*
-    * Restore AT&T 20C498 command register.
-    */
-   if (DAC_IS_ATT498) {
-      xf86setdaccomm(oldS3->ATT498);
-   }
-
-   /*
-    * Restore Sierra SC 15025/6 registers.
-    */
-    LOCK_SYS_REGS;
-    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
-      c=xf86getdaccomm();
-      xf86setdaccomm( c | 0x10 );  /* set internal register access */
-      (void)xf86dactocomm();
-      outb(0x3c7, 0x8);
-      outb(0x3c8, oldS3->SC15025[1]);
-      xf86setdaccomm( c );
-      xf86setdaccomm(oldS3->SC15025[0]);
-   }
-   UNLOCK_SYS_REGS;
-
-#if 0
-   /*
-    * Restore Bt485 Registers
-    */
-   if (DAC_IS_BT485_SERIES) {
-      s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x01);
-      s3OutBtRegCom3(0x00, restore->Bt485[3]);
-      if (s3Bt485PixMux) {
-         s3OutBtReg(BT_COMMAND_REG_2, 0x00, restore->Bt485[2]);
-         s3OutBtReg(BT_COMMAND_REG_1, 0x00, restore->Bt485[1]);
-      }
-      s3OutBtReg(BT_COMMAND_REG_0, 0x00, restore->Bt485[0]);
-   }
-
-   /*
-    * Restore Ti3020 registers
-    */
-   if (DAC_IS_TI3020) {
-      s3OutTiIndReg(TI_CURS_CONTROL, 0x00, restore->Ti3020[TI_CURS_CONTROL]);
-      s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, restore->Ti3020[TI_MUX_CONTROL_1]);
-      s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, restore->Ti3020[TI_MUX_CONTROL_2]);
-      s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00,
-		    restore->Ti3020[TI_INPUT_CLOCK_SELECT]);
-      s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00,
-		    restore->Ti3020[TI_OUTPUT_CLOCK_SELECT]);
-      s3OutTiIndReg(TI_GENERAL_CONTROL, 0x00,
-		    restore->Ti3020[TI_GENERAL_CONTROL]);
-      s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0x00,
-		    restore->Ti3020[TI_AUXILLARY_CONTROL]);
-      s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
-      s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00,
-		    restore->Ti3020[TI_GENERAL_IO_DATA]);
-   }
-#endif
-
-
-   vgaProtect(FALSE);
-   LOCK_SYS_REGS;
-}
-
-void *
-s3Save(save)
-     vgaS3Ptr save;
-{
-   int   i;
-
- /* blanket save of state */
-
-   s3Unlock();
-
-   outb(vgaCRIndex, 0x35);		/* select segment 0 */
-   i = inb(vgaCRReg);
-   outb(vgaCRReg, i & 0xf0);
-   cebank();
-
-   save = vgaHWSave(save, sizeof(vgaS3Rec));
-
-   /*
-    * Save AT&T 20C490/1 command register.
-    */
-   if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
-      oldS3->ATT490_1 = xf86getdaccomm();
-   }
-
-   /*
-    * Save AT&T 20C498 command register.
-    */
-   if (DAC_IS_ATT498) {
-      oldS3->ATT498 = xf86getdaccomm();
-   }
-
-   /*
-    * Save Sierra SC15025 command register.
-    */
-   LOCK_SYS_REGS;
-   if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
-      oldS3->SC15025[0] = xf86getdaccomm();
-      xf86setdaccomm((oldS3->SC15025[0] | 0x10));
-      (void)xf86dactocomm();
-      outb(0x3c7,0x8);
-      oldS3->SC15025[1] = inb(0x3c8);
-      xf86setdaccomm(oldS3->SC15025[0]);
-   }
-   UNLOCK_SYS_REGS;
-
-   /*
-    * Save Bt485 Registers
-    */
-   if (DAC_IS_BT485_SERIES) {
-      save->Bt485[0] = s3InBtReg(BT_COMMAND_REG_0);
-      if (s3Bt485PixMux) {
-         save->Bt485[1] = s3InBtReg(BT_COMMAND_REG_1);
-         save->Bt485[2] = s3InBtReg(BT_COMMAND_REG_2);
-      }
-      save->Bt485[3] = s3InBtRegCom3();
-   }
-
-   /*
-    * Save Ti3020 registers
-    */
-   if (DAC_IS_TI3020) {
-      save->Ti3020[TI_CURS_CONTROL] = s3InTiIndReg(TI_CURS_CONTROL);
-      save->Ti3020[TI_MUX_CONTROL_1] = s3InTiIndReg(TI_MUX_CONTROL_1);
-      save->Ti3020[TI_MUX_CONTROL_2] = s3InTiIndReg(TI_MUX_CONTROL_2);
-      save->Ti3020[TI_INPUT_CLOCK_SELECT] =
-            s3InTiIndReg(TI_INPUT_CLOCK_SELECT);
-      save->Ti3020[TI_OUTPUT_CLOCK_SELECT] =
-            s3InTiIndReg(TI_OUTPUT_CLOCK_SELECT);
-      save->Ti3020[TI_GENERAL_CONTROL] = s3InTiIndReg(TI_GENERAL_CONTROL);
-      save->Ti3020[TI_AUXILLARY_CONTROL] = s3InTiIndReg(TI_AUXILLARY_CONTROL);
-      s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
-      save->Ti3020[TI_GENERAL_IO_DATA] = s3InTiIndReg(TI_GENERAL_IO_DATA);
-   }
-
-   for (i = 0; i < 5; i++) {
-      outb(vgaCRIndex, 0x30 + i);
-      save->s3reg[i] = inb(vgaCRReg);
-      outb(vgaCRIndex, 0x38 + i);
-      save->s3reg[5 + i] = inb(vgaCRReg);
-   }
-
-   outb(vgaCRIndex, 0x11);		/* allow writing? */
-   outb(vgaCRReg, 0x00);
-   for (i = 0; i < 16; i++) {
-      outb(vgaCRIndex, 0x40 + i);
-      save->s3sysreg[i] = inb(vgaCRReg);
-   }
-
-   if (S3_801_928_SERIES(s3ChipId)) 
-      for (i = 0; i < 16; i++) {
-	 if (!((1 << i) & reg50_mask))
-	   continue;
-         outb(vgaCRIndex, 0x50 + i);
-         save->s3sysreg[i + 16] = inb(vgaCRReg);
-       }
-
-   for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
-      outb(vgaCRIndex, 0x40 + i);
-      save->s3sysreg[i] = inb(vgaCRReg);
-   }
-
-   s3Initialised = 1;	/* XXXX ??? */
-
-   LOCK_SYS_REGS;
-   return save;
-}
-#endif
-
-#else
-
-/* New (unfinished) versions */
-
-/*
- * S3Save -- save the current video mode
- */
-
-static void *
-S3Save(save)
-     vgaS3Ptr save;
-{
-   int   i;
-   unsigned char temp;
-
-   UNLOCK_SYS_REGS;
-   temp = inb(0x3CD);
-   outb(0x3CD, 0x00);		/* segment select */
-
-   save = (vgaS3Ptr) vgaHWSave(save, sizeof(vgaS3Rec));
-
-   /*
-    * Save AT&T 20C490/1 command register.
-    */
-   if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
-      oldS3->ATT490_1 = xf86getdaccomm();
-   }
-
-   /*
-    * Save AT&T 20C498 command register.
-    */
-   if (DAC_IS_ATT498) {
-      oldS3->ATT498 = xf86getdaccomm();
-   }
-
-   /*
-    * Save Sierra SC15025 command register.
-    */
-   LOCK_SYS_REGS;
-   if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
-      oldS3->SC15025[0] = xf86getdaccomm();
-      xf86setdaccomm((oldS3->SC15025[0] | 0x10));
-      (void)xf86dactocomm();
-      outb(0x3c7,0x8);
-      oldS3->SC15025[1] = inb(0x3c8);
-      xf86setdaccomm(oldS3->SC15025[0]);
-   }
-   UNLOCK_SYS_REGS;
-
-   /*
-    * Save Bt485 Registers
-    */
-   if (DAC_IS_BT485_SERIES) {
-      save->Bt485[0] = s3InBtReg(BT_COMMAND_REG_0);
-      if (s3Bt485PixMux) {
-         save->Bt485[1] = s3InBtReg(BT_COMMAND_REG_1);
-         save->Bt485[2] = s3InBtReg(BT_COMMAND_REG_2);
-      }
-      save->Bt485[3] = s3InBtRegCom3();
-   }
-
-   /*
-    * Save Ti3020 registers
-    */
-   if (DAC_IS_TI3020) {
-      save->Ti3020[TI_CURS_CONTROL] = s3InTiIndReg(TI_CURS_CONTROL);
-      save->Ti3020[TI_MUX_CONTROL_1] = s3InTiIndReg(TI_MUX_CONTROL_1);
-      save->Ti3020[TI_MUX_CONTROL_2] = s3InTiIndReg(TI_MUX_CONTROL_2);
-      save->Ti3020[TI_INPUT_CLOCK_SELECT] =
-             s3InTiIndReg(TI_INPUT_CLOCK_SELECT);
-      save->Ti3020[TI_OUTPUT_CLOCK_SELECT] =
-             s3InTiIndReg(TI_OUTPUT_CLOCK_SELECT);
-      save->Ti3020[TI_GENERAL_CONTROL] = s3InTiIndReg(TI_GENERAL_CONTROL);
-      save->Ti3020[TI_AUXILLARY_CONTROL] = s3InTiIndReg(TI_AUXILLARY_CONTROL);
-      s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
-      save->Ti3020[TI_GENERAL_IO_DATA] = s3InTiIndReg(TI_GENERAL_IO_DATA);
-   }
-
-   for (i = 0; i < 5; i++) {
-      outb(vgaCRIndex, 0x31 + i);
-      save->s3reg[i] = inb(vgaCRReg);
-      outb(vgaCRIndex, 0x38 + i);
-      save->s3reg[5 + i] = inb(vgaCRReg);
-   }
-
-   outb(vgaCRIndex, 0x11);		/* allow writting? */
-   outb(vgaCRReg, 0x00);
-
-   for (i = 0; i < 16; i++) {
-      outb(vgaCRIndex, 0x40 + i);
-      save->s3sysreg[i] = inb(vgaCRReg);
-   }
-
-   if (S3_801_928_SERIES(s3ChipId)) 
-      for (i = 0; i < 16; i++) {
-	 if (!((1 << i) & reg50_mask))
-	   continue;
-         outb(vgaCRIndex, 0x50 + i);
-         save->s3sysreg[i + 16] = inb(vgaCRReg);
-       }
-
-   for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
-      outb(vgaCRIndex, 0x40 + i);
-      save->s3sysreg[i] = inb(vgaCRReg);
-   }
-
-   i = inb(vgaIOBase + 0x0A);	/* reset flip-flop */
-   outb(0x3C0, 0x36);
-   save->Misc = inb(0x3C1);
-   outb(0x3C0, save->Misc);
-
-   LOCK_SYS_REGS;
-   return ((void *)save);
-}
-
-/*
- * S3Restore -- restore a video mode
- */
-
-static void
-S3Restore(restore)
-     vgaS3Ptr restore;
-{
-   unsigned char i;
-   extern Bool xf86Exiting;
-
-   UNLOCK_SYS_REGS;
-
-   vgaProtect(TRUE);
-
-   outb(vgaCRIndex, 0x35);		/* select bank zero */
-   i = inb(vgaCRReg);
-   outb(vgaCRReg, (i & 0xf0));
-   outb(0x3CD, 0x00);		/* segment select */
-   cebank();
-
-   vgaHWRestore((vgaHWPtr)restore);
-
-   i = inb(vgaIOBase + 0x0A);	/* reset flip-flop */
-   outb(0x3C0, 0x36);
-   outb(0x3C0, restore->Misc);
-
- /* restore s3 special bits */
-   if (S3_801_928_SERIES) {
-    /* restore 801 specific registers */
-
-      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
-	 outb(vgaCRIndex, 0x40 + i);
-	 outb(vgaCRReg, restore->s3sysreg[i]);
-      }
-
-      for (i = 0; i < 16; i++) {
-	 if (!((1 << i) & reg50_mask))
-	   continue;
-	 outb(vgaCRIndex, 0x50 + i);
-	 outb(vgaCRReg, restore->s3sysreg[i + 16]);
-      }
-   }
-   for (i = 0; i < 5; i++) {
-      outb(vgaCRIndex, 0x31 + i);
-      outb(vgaCRReg, restore->s3reg[i]);
-   }
-   for (i = 2; i < 5; i++) {	/* don't restore the locks */
-      if (S3_911_SERIES || i != 3) {
-	 outb(vgaCRIndex, 0x38 + i);
-	 outb(vgaCRReg, restore->s3reg[5 + i]);
-      }
-   }
-
-   for (i = 0; i < 16; i++) {
-      outb(vgaCRIndex, 0x40 + i);
-      outb(vgaCRReg, restore->s3sysreg[i]);
-   }
-
-   /*
-    * Restore AT&T 20C490/1 command register.
-    */
-   if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
-      xf86setdaccomm(oldS3->ATT490_1);
-   }
-
-   /*
-    * Restore AT&T 20C498 command register.
-    */
-   if (DAC_IS_ATT498) {
-      xf86setdaccomm(oldS3->ATT498);
-   }
-
-   /*
-    * Restore Sierra SC15025 command register.
-    */
-    LOCK_SYS_REGS;
-    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
-      i=xf86getdaccomm();
-      xf86setdaccomm( i | 0x10 );  /* set internal register access */
-      (void)xf86dactocomm();
-      outb(0x3c7, 0x8);
-      outb(0x3c8, oldS3->SC15025[1]);
-      xf86setdaccomm( i );
-      xf86setdaccomm(oldS3->SC15025[0]);
-   }
-   UNLOCK_SYS_REGS;	
-
-   /*
-    * Restore Bt485 Registers
-    */
-   if (DAC_IS_BT485_SERIES) {
-      s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x01);
-      s3OutBtRegCom3(0x00, restore->Bt485[3]);
-      if (s3Bt485PixMux) {
-         s3OutBtReg(BT_COMMAND_REG_2, 0x00, restore->Bt485[2]);
-         s3OutBtReg(BT_COMMAND_REG_1, 0x00, restore->Bt485[1]);
-      }
-      s3OutBtReg(BT_COMMAND_REG_0, 0x00, restore->Bt485[0]);
-   }
-
-   /*
-    * Restore Ti3020 registers
-    */
-   if (DAC_IS_TI3020) {
-      s3OutTiIndReg(TI_CURS_CONTROL, 0x00, restore->Ti3020[TI_CURS_CONTROL]);
-      s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, restore->Ti3020[TI_MUX_CONTROL_1]);
-      s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, restore->Ti3020[TI_MUX_CONTROL_2]);
-      s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00,
-		    restore->Ti3020[TI_INPUT_CLOCK_SELECT]);
-      s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00,
-		    restore->Ti3020[TI_OUTPUT_CLOCK_SELECT]);
-      s3OutTiIndReg(TI_GENERAL_CONTROL, 0x00,
-		    restore->Ti3020[TI_GENERAL_CONTROL]);
-      s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0x00,
-		    restore->Ti3020[TI_AUXILLARY_CONTROL]);
-      s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
-      s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00,
-		    restore->Ti3020[TI_GENERAL_IO_DATA]);
-   }
-
-   if (restore->std.NoClock >= 0)
-      (s3ClockSelectFunc) (restore->std.NoClock);
-
-   if (xf86Exiting)
-      outb(0x3c2, old_clock);
-   outw(0x3C4, 0x0300);		/* now reenable the timing sequencer */
-   LOCK_SYS_REGS;
-
-   vgaProtect(FALSE);
-}
-
-#endif
