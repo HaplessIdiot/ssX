@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.0 1996/11/18 13:22:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.1 1996/11/24 09:57:18 dawes Exp $ */
 
 
 /*
@@ -29,6 +29,22 @@ unsigned int *xf86DrawBitmapScanlineMSBFirst(
 #endif
     );
 
+unsigned int *xf86DrawBitmapScanlineFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int *src,
+    int nbytes
+#endif
+    );
+
+unsigned int *xf86DrawBitmapScanlineMSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int *src,
+    int nbytes
+#endif
+    );
+
 unsigned int *xf86DrawBitmapScanline3(
 #if NeedFunctionPrototypes
     unsigned int *base,
@@ -38,6 +54,22 @@ unsigned int *xf86DrawBitmapScanline3(
     );
 
 unsigned int *xf86DrawBitmapScanline3MSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int *src,
+    int npixels
+#endif
+    );
+
+unsigned int *xf86DrawBitmapScanline3FixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int *src,
+    int npixels
+#endif
+    );
+
+unsigned int *xf86DrawBitmapScanline3MSBFirstFixedBase(
 #if NeedFunctionPrototypes
     unsigned int *base,
     unsigned int *src,
@@ -92,6 +124,114 @@ unsigned int *xf86DrawTextScanlineMSBFirst(
 #endif
     );
 
+/*
+ * This function is for devices that do not have a memory window accepting
+ * monochrome data, but require all data to be written to a fixed address.
+ */
+
+unsigned int *xf86DrawTextScanlineFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int line,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextScanlineMSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int line,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+/* Byte-padding at the end of scanlines. Transfers whole bitmap. */
+
+unsigned int *xf86DrawTextBytePad(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextBytePadMSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextBytePadFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextBytePadMSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+/* No padding at the end of scanlines. */
+
+unsigned int *xf86DrawTextNoPad(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextNoPadMSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextNoPadFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextNoPadMSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int height,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
 
 /*
  * This structure passes addititional information for non-terminal
@@ -167,6 +307,25 @@ unsigned int *xf86DrawTextScanline3MSBFirst(
 #endif
     );
 
+unsigned int *xf86DrawTextScanline3FixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int line,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
+
+unsigned int *xf86DrawTextScanline3MSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned int **glyphp,
+    int line,
+    int nglyph,
+    int glyphwidth
+#endif
+    );
 
 /*
  * The following structure is the return type of yet another version
@@ -219,6 +378,30 @@ unsigned int *xf86DrawStippleScanline(
 );
 
 unsigned int *xf86DrawStippleScanlineMSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+
+unsigned int *xf86DrawStippleScanlineFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+
+unsigned int *xf86DrawStippleScanlineMSBFirstFixedBase(
 #if NeedFunctionPrototypes
     unsigned int *base,
     unsigned char *src,		/* Pointer to stipple bitmap. */

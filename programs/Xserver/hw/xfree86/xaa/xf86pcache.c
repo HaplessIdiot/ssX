@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.1 1996/12/09 11:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.2 1996/12/18 03:13:31 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -133,12 +133,17 @@ static unsigned int pixmap_cache_clock = 1;
 static int FirstWideSlot;
 static int MaxWideSlotHeight;
 
-void xf86InitPixmapCache(infoRec, memoryStart, memoryEnd)
+void xf86InitPixmapCacheSlots()
+{
     ScrnInfoPtr infoRec;
     int memoryStart, memoryEnd;
-{
     int width_in_bytes, cache_start_y, i;
     int height_left, standard_slots, wide_slots, wide_slot_width;
+
+    infoRec = xf86AccelInfoRec.ServerInfoRec;
+    memoryStart = xf86AccelInfoRec.PixmapCacheMemoryStart;
+    memoryEnd = xf86AccelInfoRec.PixmapCacheMemoryEnd;
+
     width_in_bytes = infoRec->displayWidth * infoRec->bitsPerPixel / 8;
     standard_slots = infoRec->displayWidth / 128;
     cache_start_y = (memoryStart + width_in_bytes - 1) / width_in_bytes;
@@ -156,7 +161,7 @@ void xf86InitPixmapCache(infoRec, memoryStart, memoryEnd)
    if (MaxHeight < 1) {
        /* Disable pixmap caching if the memory parameters are wrong. */
        xf86AccelInfoRec.Flags &= ~PIXMAP_CACHE;
-       ErrorF("%s %s: Pixmap cache disabled - no memory available\n",
+       ErrorF("%s %s: Pixmap cache disabled - no video memory available\n",
                XCONFIG_PROBED, infoRec->name);
        return;
     }
@@ -463,20 +468,18 @@ static void Expand8x8Pattern(x, y, w, h, pSrc, srcwidth)
         xf86AccelInfoRec.Sync();
 }
 
+
 /*
- * Write a monochrome 8x8 pattern for use with color-expand pattern fill.
- * On each scanline, 8 vertically rotated versions are written.
- * There are 8 scanlines with horizontally rotated versions, for a total
- * of 64 patterns.
+ * Convert a stipple to a monochrome 8x8 pattern, expanding if
+ * necessary.
  */
 
-static void Write8x8MonoPattern(x, y, w, h, pSrc, srcwidth)
-    int x, y, w, h;
+static void ExpandStippleTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern)
+    int w, h;
     unsigned char *pSrc;
     int srcwidth;
+    unsigned char *pattern;	/* 8 bytes of resulting pattern data */
 {
-    unsigned char pattern[8];
-    unsigned char *buf;
     int i, nh;
     w = min(w, 8);
     h = min(h, 8);
@@ -499,13 +502,33 @@ static void Write8x8MonoPattern(x, y, w, h, pSrc, srcwidth)
             pattern[nh + j] = pattern[j];
         nh *= 2;
     }
+}
+
+/*
+ * Write a monochrome 8x8 pattern for use with color-expand pattern fill.
+ * On each scanline, 8 vertically rotated versions are written.
+ * There are 8 scanlines with horizontally rotated versions, for a total
+ * of 64 patterns.
+ */
+
+static void Write8x8MonoPattern(x, y, w, h, pSrc, srcwidth)
+    int x, y, w, h;
+    unsigned char *pSrc;
+    int srcwidth;
+{
+    unsigned char pattern[8];
+    unsigned char *buf;
+    int i;
+
+    ExpandStippleTo8x8MonoPattern(w, h, pSrc, srcwidth, pattern);
+
     /* Note extra bytes to support 24bpp ImageWrite. */
     buf = (unsigned char *)ALLOCATE_LOCAL(8 * 8 + 8);
     /* For each horizontal rotation position. */
     for (i = 0; i < 8; i++) {
         /* Write 8 vertically rotated versions. */
         int j;
-        if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST) {
+        if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
             int k;
             for (k = 0; k < 8; k++)
                 buf[k] = byte_reversed[pattern[k]];
@@ -848,13 +871,26 @@ static void DoCacheStipple(pDrawable, pGC)
              * The height is 1, 2, 4, or 8.
 	     *
 	     * For a "mono" pattern, we'll be writing 64 rotated
-	     * versions.
+	     * versions (unless we have special support as checked for
+	     * below).
 	     */
-	    ErrorF("Writing rotated mono patterns (%dx%d).\n",
-	        pci->pix_w, pci->pix_h);
-            Write8x8MonoPattern(pci->x, pci->y, pix->drawable.width,
-                pix->drawable.height, pix->devPrivate.ptr, pix->devKind);
-            ErrorF("Finished writing mono patterns.\n");
+	    if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS)
+	    && (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+	        /*
+	         * Easy, just put the 8x8 stipple data into two ints.
+	         * No need to use the pixmap cache slot at all.
+	         */
+	        ExpandStippleTo8x8MonoPattern(pix->drawable.width,
+	            pix->drawable.height, pix->devPrivate.ptr,
+	            pix->devKind, &(pci->pattern0));
+	    }
+	    else {
+	        ErrorF("Writing rotated mono patterns (%dx%d).\n",
+	            pci->pix_w, pci->pix_h);
+                Write8x8MonoPattern(pci->x, pci->y, pix->drawable.width,
+                    pix->drawable.height, pix->devPrivate.ptr, pix->devKind);
+                ErrorF("Finished writing mono patterns.\n");
+            }
             pci->flags = 2;
             return;
         }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.1 1996/11/24 09:57:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.2 1996/12/09 11:55:21 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -49,8 +49,7 @@ extern unsigned char *byte_reversed;
  * expansion functions available.
  *
  * Requirements for CPU-to-screen color expansion:
- *     CPU_SCANLINE_PAD_DWORD or CPU_SCANLINE_PAD_BYTE
- *     !CPU_TRANSFER_BASE_FIXED
+ *     CPU_SCANLINE_PAD_DWORD or CPU_SCANLINE_PAD_BYTE [disabled]
  *     !(CPU_SCANLINE_PAD_BYTE and BIT_ORDER_IN_BYTE_LSBFIRST)
  *
  * Requirements for buffered scanline-by-scanline screen-to-screen color
@@ -98,16 +97,19 @@ srcx, srcy)
 	    if (bytecount == 4) {
  	        *(unsigned int *)base = dworddata;
  	        dworddata = 0;
-	        base += 4;
-	    }
-            if (base >= (unsigned char *)
-            xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-                base = (unsigned char *)
-                    xf86AccelInfoRec.CPUToScreenColorExpandBase;
+	        if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
+	            base += 4;
+                    if (base >= (unsigned char *)
+                    xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                        base = (unsigned char *)
+                            xf86AccelInfoRec.CPUToScreenColorExpandBase;
+                }
+            }
 	}
 	if (bytecount) {
 	    *(unsigned int *)base = dworddata;
-	    base += 4;
+	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED))
+	        base += 4;
 	}
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
 	    if ((unsigned long)((unsigned long)base -
@@ -123,11 +125,13 @@ srcx, srcy)
 	        dworddata = *srcp << shift;
 	    srcp += srcwidth;
  	    *(unsigned int *)base = dworddata;
-	    base += 4;
-            if (base >= (unsigned char *)
-            xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-                base = (unsigned char *)
-                    xf86AccelInfoRec.CPUToScreenColorExpandBase;
+	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
+	        base += 4;
+                if (base >= (unsigned char *)
+                xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                    base = (unsigned char *)
+                        xf86AccelInfoRec.CPUToScreenColorExpandBase;
+            }
 	}
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
             if (h & 0x1)
@@ -154,8 +158,7 @@ srcy, bg, fg, rop, planemask)
         /* First fill-in the background. */
         xf86AccelInfoRec.SetupForFillRectSolid(bg, rop, planemask);
         xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
-        if ((xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        && !(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
             xf86AccelInfoRec.Sync();
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
             -1, fg, rop, planemask);
@@ -213,15 +216,25 @@ srcy, bg, fg, rop, planemask)
         int i;
         for (i = 0; i < h; i++) {
             if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-                base = (unsigned char *)xf86DrawBitmapScanlineMSBFirst(
-                    (unsigned int *)base, (unsigned int *)srcp, bytewidth);
+                if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                    xf86DrawBitmapScanlineMSBFirstFixedBase(
+                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
+                else
+                    base = (unsigned char *)xf86DrawBitmapScanlineMSBFirst(
+                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
             else
-                base = (unsigned char *)xf86DrawBitmapScanline(
-                    (unsigned int *)base, (unsigned int *)srcp, bytewidth);
-            if (base >= (unsigned char *)
-                         xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-                base = (unsigned char *)
-                         xf86AccelInfoRec.CPUToScreenColorExpandBase;
+                if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                    xf86DrawBitmapScanlineFixedBase(
+                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
+                else
+                    base = (unsigned char *)xf86DrawBitmapScanline(
+                        (unsigned int *)base, (unsigned int *)srcp, bytewidth);
+	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
+                if (base >= (unsigned char *)
+                             xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                    base = (unsigned char *)
+                             xf86AccelInfoRec.CPUToScreenColorExpandBase;
+            }
             srcp += srcwidth;
         }
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
@@ -400,6 +413,8 @@ xf86FillRectStippled(pDrawable, pGC, nBox, pBoxInit)
  *
  * This currently requires CPU-to-screen color expansion with
  * SCANLINE_PAD_DWORD.
+ *
+ * CPU_TRANSFER_BASE_FIXED is not yet supported.
  */
 
 static int color24bpp;

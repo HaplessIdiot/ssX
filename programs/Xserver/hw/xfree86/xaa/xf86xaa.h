@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.1 1996/11/24 09:57:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.2 1996/12/18 03:13:34 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -19,6 +19,9 @@
 #define NO_SYNC_AFTER_CPU_COLOR_EXPAND  0x2000
 #define TWO_POINT_LINE_ERROR_TERM	0x4000
 #define HARDWARE_PATTERN_MOD_64_OFFSET  0x8000
+#define HARDWARE_PATTERN_PROGRAMMED_BITS	0x10000
+#define HARDWARE_PATTERN_PROGRAMMED_ORIGIN	0x20000
+#define HARDWARE_PATTERN_BIT_ORDER_MSBFIRST	0x40000
 
 /* Graphics operation flags */
 
@@ -241,8 +244,7 @@ typedef struct {
     int CopyAreaFlags;
    
 /*
- * These fall-back function are set in ValidateGC, which may be
- * an argument for putting them in a seperate structure.
+ * These fall-back functions are set during screen initialization.
  */
     void (*FillSpansFallBack)(
 #if NeedNestedPrototypes
@@ -723,6 +725,9 @@ typedef struct {
     int ScratchBufferSize;
     int ErrorTermBits;
     int UsingVGA256;
+    ScrnInfoPtr ServerInfoRec;
+    int PixmapCacheMemoryStart;
+    int PixmapCacheMemoryEnd;
 } xf86AccelInfoRecType;
 
 extern xf86AccelInfoRecType xf86AccelInfoRec;

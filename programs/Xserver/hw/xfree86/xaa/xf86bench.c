@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.0 1996/11/18 13:22:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.1 1996/12/09 11:55:20 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -87,7 +87,7 @@ static void fastmemset(dest, data, nbytes)
 {
     unsigned char *end;
     end = dest + nbytes;
-    while (dest <= end - 32) {
+    while (dest <= end - 128) {
         *(unsigned int *)dest = data;
         *(unsigned int *)(dest + 4) = data;
         *(unsigned int *)(dest + 8) = data;
@@ -96,7 +96,31 @@ static void fastmemset(dest, data, nbytes)
         *(unsigned int *)(dest + 20) = data;
         *(unsigned int *)(dest + 24) = data;
         *(unsigned int *)(dest + 28) = data;
-        dest += 32;
+        *(unsigned int *)(dest + 32) = data;
+        *(unsigned int *)(dest + 36) = data;
+        *(unsigned int *)(dest + 40) = data;
+        *(unsigned int *)(dest + 44) = data;
+        *(unsigned int *)(dest + 48) = data;
+        *(unsigned int *)(dest + 52) = data;
+        *(unsigned int *)(dest + 56) = data;
+        *(unsigned int *)(dest + 60) = data;
+        *(unsigned int *)(dest + 64) = data;
+        *(unsigned int *)(dest + 68) = data;
+        *(unsigned int *)(dest + 72) = data;
+        *(unsigned int *)(dest + 76) = data;
+        *(unsigned int *)(dest + 80) = data;
+        *(unsigned int *)(dest + 84) = data;
+        *(unsigned int *)(dest + 88) = data;
+        *(unsigned int *)(dest + 92) = data;
+        *(unsigned int *)(dest + 96) = data;
+        *(unsigned int *)(dest + 100) = data;
+        *(unsigned int *)(dest + 104) = data;
+        *(unsigned int *)(dest + 108) = data;
+        *(unsigned int *)(dest + 112) = data;
+        *(unsigned int *)(dest + 116) = data;
+        *(unsigned int *)(dest + 120) = data;
+        *(unsigned int *)(dest + 124) = data;
+        dest += 128;
     }
     while (dest < end) {
         *(unsigned int *)dest = data;

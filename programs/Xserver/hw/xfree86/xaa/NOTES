@@ -23,6 +23,9 @@ H.Hanemaayer@inter.nl.net
 Here's a list of known problems (roughly in order of importance). If you
 can confirm a problem using the lastest version, please do so.
 
+- I've seen crashes when using Netscape related to stipple functions. These
+  might be caused by the "fall-back" logic still getting it wrong.
+
 - A crash occurs because of recursive calling of
   xf86miFillRectStippledFallBack. Fixed by mod 135?
 
@@ -31,8 +34,6 @@ can confirm a problem using the lastest version, please do so.
   (which would point towards a problem in NonTE text color expansion).
   These functions are currently disabled.
 
-- The pixmap cache has been re-enabled.
-
 - The "NO_PLANEMASK" restriction has been reported not to work correctly --
   non-trivial planemasks may be passed to low-level solid rectangle fill
   despite this flag. This might have been fixed now by mod 129.
@@ -40,18 +41,55 @@ can confirm a problem using the lastest version, please do so.
 - At 24bpp, the cursor in an rxvt has a wrong color, and when selecting
   text the colors are wrong. This looks like a missing RGB_EQUAL check.
 
-- Color expanded 8x8 pattern is not working correctly yet.
+- Color expanded (monochrome) 8x8 pattern is not working correctly yet.
 
 - The disabled non-terminal emulator font acceleration is suspect, I
   don't think it handles horizontally overlapping characters correctly
-  (no visible evidence yet) in the xf86DrawNonTETextScanline function.
+  (no visible evidence yet) in the xf86DrawNonTETextScanline function. 
+  I don't know enough about the X font parameters to correctly
+  implement it.
+
+- The SCANLINE_PAD_BYTE and SCANLINE_NO_PAD text transfer code for CPU
+  to screen color expansion has not been tested, nor has the FIXED_BASE
+  support.
 
 When the server crashes, run 'gdb -c core XF86_SVGA' and print a
 back-trace ('backtrace').
 
 Change Log:
 
-Version of 17 December 1996
+152. Add HARDWARE_PATTERN_BIT_ORDER_MSBFIRST flag to differentiate between
+     mono hardware pattern and regular color expansion.
+151. Fix missing fields in xf86defs.c.
+150. Delay the actual initialization of the pixmap cache until general XAA
+     initialization. A server InfoRec field and pixmap cache memory boundary
+     fields are added to the xf86AccelInfoRec. This also eliminates the
+     dependency of the XAA code on vga256 (the SVGA server).
+149. Lift the SCANLINE_PAD_DWORD requirement in xf86initac.c for the
+     enabling of text color expansion.
+148. Add functions in xf86expblt.c for whole text bitmap transfer in the
+     case of BYTE padding or no padding at the end of scanlines, and
+     support this in xf86text.c.
+147. Add a cfb8-based layer to support stand-alone servers not using
+     vga256.
+146. Enable fixed-base CPU-to-screen color-expansion for bitmap and TE text.
+145. Add FIXEDBASE support to color expansion functions in xf86expblt.c.
+144. Add the HARDWARE_PATTERN_PROGRAMMABLE_BITS and HARDWARE_PATTERN_
+     PROGRAMMABLE_ORIGIN flags, and implement 8x8 mono pattern code
+     used when both flags are set.
+143. Don't use scanline-byte-padded CPU to screen color expansion since
+     it doesn't work.
+142. Use MSB-first versions of Pentium-optimized text transfer functions
+     when required.
+141. Finally fix the flawed fall-back function schemes, potentially crashes
+     associated with some span and rectangle fills. Still not stable.
+140. More heavily unroll the CPU to framebuffer benchmark code (mainly
+     for the Cyrix 6x86).
+
+XFree86 3.2g
+139. Enable 24bpp CopyPlane acceleration (Dirk).
+
+Version of 17 December 1996 (XFree86 3.2f)
 138. Enable the Pentium-optimized text transfer functions for 6 and 8-pixel
      wide fonts.
 137. Fix a problem with accelerated horizontal and vertical lines clashing
@@ -426,6 +464,22 @@ Flags
     indicates the vertical offset into the pattern. This flag is
     mutually exclusive to HARDWARE_PATTERN_ALIGN_64.
 
+    HARDWARE_PATTERN_PROGRAMMABLE_BITS
+
+    Indicates that the monochrome (color expand) 8x8 pattern data must be
+    programmed into registers, rather than stored in video memory. This
+    is only supported in combination with the following flag.
+
+    HARDWARE_PATTERN_PROGRAMMABLE_ORIGIN
+
+    Indicates that the hardware pattern supports a programmable origin
+    (x and y offsets into the pattern).
+
+    HARDWARE_PATTERN_BIT_ORDER_MSBFIRST
+
+    Indicates that the monochrome 8x8 pattern data is in MSB-first bit
+    order ("Windows-style").
+
     ONLY_TWO_BITBLT_DIRECTIONS
 
     Indicates that ScreenToScreenCopy is only allowed with xdir = ydir
@@ -583,6 +637,13 @@ SetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planemask)
     indicate the video memory address where the pattern is stored,
     which will be on an 8 byte boundary relative to the start of a
     scanline. The pattern x-coordinate will be in units of "bits".
+
+    If HARDWARE_PATTERN_PROGRAMMABLE_BITS is set, patternx and patterny
+    are overloaded as follows: patternx holds the first 4 lines (32
+    pixels) of the pattern, with each byte in MSB-first bit order and
+    corresponding to a scanline of the pattern. patterny holds the
+    second half of the pattern. This is the so-called "Windows-format".
+
     A background color of -1 indicates transparency (support of
     transparency is indicated by the ColorExpandFlags).
 
@@ -594,6 +655,9 @@ Subsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
     video memory address where the pattern is stored. Any rotating
     issues are handled by the generic code by generating pre-rotated
     copies of the pattern.
+
+    If HARDWARE_PATTERN_PROGRAMMABLE_ORIGIN is set, patternx and
+    patterny hold the origin (x and y offsets into the pattern).
 
 ColorExpandFlags
 
@@ -612,7 +676,8 @@ ColorExpandFlags
 	graphics chip at the end of each scanline in multi-scanline
 	color-expansion operations from the CPU to the screen. DWORD
         padding is preferred. These flags do not apply to screen-to-screen
-        color expansion.
+        color expansion. Currently, not defining SCANLINE_PAD_DWORD will
+        result in the disabling of CPU-to-screen color expansion.
 
     CPU_TRANSFER_PAD_DWORD
     CPU_TRANSFER_PAD_QWORD
@@ -784,6 +849,19 @@ ErrorTermBits
     have 14 significant bits, you would probably use 13 here because of
     the sign bit.
 
+ServerInfoRec
+
+   This is a pointer to the XFree86 server InfoRec. It must be defined.
+   The InitPixmapCache function initializes it for compatibility with
+   earlier versions of XAA.
+
+PixmapCacheMemoryStart
+PixmapCacheMemoryEnd
+
+   These values must be defined if the pixmap cache is enabled. The
+   InitPixmapCache function initializes them, for compatibility with
+   earlier versions of XAA.
+
 
 1.6	Commonly Used Parameters
 
@@ -828,14 +906,16 @@ defines:
 
 For each graphics operation you can define that only GXcopy is supported
 by setting the GXCOPY_ONLY flag in the flags for that particular
-operation.
+operation. Similarly, NO_PLANEMASK indicates that the plane mask is
+not supported.
 
 
 1.5	The best strategy
 
 Start with simple filled solid rectangles and screen-to-screen copies
 (BitBLT). Those two functions alone will accelerate the vast majority
-of graphic operations requested.
+of graphic operations requested. The sample driver can be used as a
+starting point.
 
 Next you might want to look at color expansion (CPUToScreen, or if
 that can't be done, ScanlineScreenToScreen), BresenhamLine or
@@ -1212,36 +1292,75 @@ performance. This is of course hazardous and prone to lock-ups etc.
 
 ARK Logic
 
-    BACKGROUND_OPERATIONS
-    COP_FRAMEBUFFER_CONCURRENCY
-    FillSolidRect (24bpp: RGB_EQUAL, NO_PLANEMASK)
-    ScreenToScreenCopy (24bpp: NO_PLANEMASK, NO_TRANSPARENCY)
-    BresenhamLine
-    Fill8x8Pattern
+    Uses BACKGROUND_OPERATIONS and COP_FRAMEBUFFER_CONCURRENCY. The
+    latter is vital for high-performance color expansion, since the
+    ARK chips don't appear to have CPU-to-screen color expansion.
+    There's no need to "sync" during a batch of accelerator commands;
+    the ARK chips seem to have "PCI-Retry" support.
 
-    Color expansion:
-    ScanlineScreenToScreenColorExpand (24bpp: RGB_EQUAL, NO_PLANEMASK)
-    ScratchBuffer
-    VIDEO_SOURCE_GRANULARITY_PIXEL
-    BIT_ORDER_IN_BYTE_LSBFIRST
-    24bpp: TRIPLE_BITS_24BPP (untested)
+    Screen locations are programmed as pixel addresses. The ARK chip
+    also supports coordinates, but that restricts the possible
+    framebuffer widths and I don't think it would be faster.
 
+    FillRectSolid is provided. At 24bpp, it uses 8bpp coprocessor mode
+    which leads to RGB_EQUAL and NO_PLANEMASK restrictions. 
+    ScreenToScreenCopy is supported, again restrictions at 24bpp:
+    NO_PLANEMASK and NO_TRANSPARENCY. BresenhamLine is very
+    straightforward.
 
-Cirrus Logic GD5426/28/29/30/34/40/46
+    Fill8x8Pattern is supported; the ARK chip requires the pattern to
+    be aligned on a 64-pixel boundary (HARDWARE_PATTERN_ALIGN_64) and
+    the address modulo 64 seems to indicate the vertical offset (y
+    origin) (HARDWARE_PATTERN_MOD_64_OFFSET). The latter means the
+    pattern can actually be used (when the framebuffer width is a
+    multiple of 64), despite the limited support for 64-pixel pattern
+    alignment in XAA. The ARK chips don't seem to have support for
+    a monochrome pattern.
 
-    BACKGROUND_OPERATIONS
-    FillSolidRect (NO_PLANEMASK, 24bpp non-5436/46: RGB_EQUAL)
-    ScreenToScreenCopy (NO_PLANEMASK, 5429/30/34 or 24bpp: NO_TRANSPARENCY)
+    Color expansion is implemented using ScanlineScreenToScreen-
+    ColorExpand (24bpp: RGB_EQUAL, NO_PLANEMASK), which is pretty fast
+    thanks to COP_FRAMEBUFFER_CONCURRENCY.
+    Color expansion flags are VIDEO_SOURCE_GRANULARITY_PIXEL and
+    BIT_ORDER_IN_BYTE_LSBFIRST. At 24bpp, TRIPLE_BITS_24BPP would be
+    useful but is not yet supported by XAA.
 
-    Color expansion:
-    CPUToScreenColorExpand [NO_PLANEMASK, 24bpp non-5436/46: RGB_EQUAL]
-    5436/46: SCANLINE_PAD_DWORD, others: SCANLINE_PAD_BYTE 
-    CPU_TRANSFER_PAD_DWORD
-    24bpp 5436/46: ONLY_TRANSPARENCY_SUPPORTED others: TRIPLE_BITS_24BPP
-    BIT_ORDER_IN_BYTE_MSBFIRST
-    LEFT_EDGE_CLIPPING
-    VIDEO_SOURCE_GRANULARITY_DWORD
+    ScreenToScreenColorExpand is provided for future use by XAA. One
+    thing that ARK chips can accelerate but is not yet provided by XAA
+    is styled (patterned) line drawing.
 
+Cirrus Logic GD5426/28/29/30/34/40/46 and 7543/48
+
+    Uses BACKGROUND_OPERATIONS. The driver is shared by a very wide
+    range of largely compatible chips, from the first-generation
+    accelerator CL-GD5426 to the recent CL-GD5446, which is the only
+    one to support COP_FRAMEBUFFER_CONCURRENCY and also doesn't need
+    "sync"-ing between coprocessor operations. Screen locations are
+    programmed as byte addresses (which makes the driver larger than,
+    for example, ARK). The driver is compiled twice, with programmed I/O
+    (required for earlier chips) and with memory-mapped I/O.
+
+    FillSolidRect is provided (NO_PLANEMASK, since the chips don't
+    support a planemask), and at 24bpp on a non-5436/46 uses 8bpp mode
+    in which case RGB_EQUAL is set.
+
+    ScreenToScreenCopy is supported (NO_PLANEMASK). A few chips
+    (5429/30/34) don't support transparency color compare at all
+    (NO_TRANSPARENCY), and none of the chips support it at pixel depths
+    greater than 16bpp.
+
+    For CPU-to-screen color expansion, chips earlier than the CL-GD5436
+    don't support DWORD padding of scanlines, so the XAA code isn't
+    usable for them. Instead, these chips use byte-padding-aware text
+    acceleration code from the old accelerated driver, and the
+    ScanlineScreenToScreenColorExpand method (which isn't very fast
+    on these chips) is provided for other things. NO_PLANEMASK.  The
+    5436/46 support 24bpp color expansion, but only with transparency
+    (ONLY_TRANSPARENCY_SUPPORTED); the others would benefit from
+    TRIPLE_BITS_24BPP. The bit order is BIT_ORDER_IN_BYTE_MSBFIRST. The
+    LEFT_EDGE_CLIPPING parameter (a value from 0 to 7) is supported for
+    CPU-to-screen color expansion. Screen-to-screen color expansion is
+    provided for future use. It requires the source to be aligned on a
+    DWORD boundary (VIDEO_SOURCE_GRANULARITY_DWORD).
 
 Matrox Millenium
 
@@ -1265,33 +1384,33 @@ Matrox Millenium
 This table is intended to help with determining what kinds of
 operations best suit a particular chip. It shows the results (in MB/s)
 for the low-level bandwidth benchmarks run at start-up. Because refresh
-is disabled at the time time benchmark is run, the result reflect the
+is disabled at the time time benchmark is run, the result reflects the
 full DRAM bandwidth on DRAM-based cards (the dot clock doesn't really
 matter). For this reason, the comparison isn't really fair (biased against
 VRAM/WRAM and MDRAM). The virtual display width can have an influence.
 
 Chip	          ARK1000PV Trid9385  CLGD5434  TGUI9440  MGA-Mill  ET6000
 Memory            1MB DRAM  2MB DRAM  2MB DRAM  1MB DRAM  2MB WRAM  2MB MDRAM
-CPU               DX4/100   ?         DX4/100   P60       AMK5/100  6x86P150+
-Bus		  PCI 33MHz PCI       VLB 33MHz PCI 30MHz PCI 33MHz PCI 30MHz
+CPU               DX4/100   ?         DX4/100   AMK5/100  AMK5/100  6x86P150+
+Bus		  PCI 33MHz PCI       VLB 33MHz PCI 33MHz PCI 33MHz PCI 30MHz
 bpp, width        8bpp 1024 8bpp      8bpp 1024 8bpp      8bpp      8bpp
 -----------------------------------------------------------------------------
-framebuffer        43.95     15.89     32.76     19.96     44.48     79.31
+framebuffer        43.95     15.89     32.76     44.23     44.48     61.40
 solid filled rect
-10x1                7.38      3.14      4.58      1.84     34.99     28.22
-40x40              85.82     89.93    120.34     54.05    369.84    143.84
-400x400           108.81    157.20    211.18     80.10   1618.11    264.35
+10x1                7.38      3.14      4.58      8.72     34.99     28.22
+40x40              85.82     89.93    120.34     62.60    369.84    143.84
+400x400           108.81    157.20    211.18     80.03   1618.11    264.35
 screen copy
-10x10		   24.77     11.26     20.49      8.93     28.14     20.23
-40x40		   38.81     43.90     41.68     28.86     89.27     67.35
-400x400		   46.70     68.59     54.47     34.20    126.88    193.07
-400x400 scroll       -         -       55.63       -         -         -
+10x10		   24.77     11.26     20.49     18.53     28.14     24.22
+40x40		   38.81     43.90     41.68     32.11     89.27     70.57
+400x400		   46.70     68.59     54.47     34.14    126.88    194.23
+400x400 scroll       -         -       55.63     40.22       -      189.34
 8x8 pattern fill
-400x400		  105.16    116.08       -         -         -         -
+400x400		  105.16    116.08       -       80.02       -      264.34
 color expansion
 CPU to screen        -         -      116.25       -      261.03*      -
-scanl. scr-to-scr  71.75       -       80.64       -         -         -
-10x10 scr-to-scr   29.90       -       26.69       -         -         -
+scanl. scr-to-scr  71.75       -       80.64       -         -      187.25
+10x10 scr-to-scr   29.90       -       26.69     20.07       -         -
 
 Chip	          MGA-Mill  MGA-Mill  MGA-Mill  TGUI9680  ARK2000PV
 Memory            2MB WRAM  4MB WRAM  2MB WRAM  2MB DRAM  2MB EDO
@@ -1316,28 +1435,28 @@ CPU to screen     211.11*   419.09*   416.23*      -         -
 scanl. scr-to-scr    -         -         -         -      137.97   
 10x10 scr-to-scr     -         -         -       15.26     36.79   
 
-Chip		  ARK2000PV ARK2000PV MGA-Mill  CL-GD5426
-Memory		  2MB EDO   2MB EDO   2MB WRAM  1MB DRAM
-CPU		  6x86P150+ 6x86P166+ 6x86P166+ DX4/100
-Bus		  PCI 30MHz PCI 33Mhz PCI 33MHz VLB 33MHz
-bpp, width	  8bpp 1024 8bpp 1024 8bpp 1024 8bpp 1024
----------------------------------------------------------
-framebuffer	   46.77     51.70     51.70     13.22
+Chip		  ARK2000PV ARK2000PV MGA-Mill  CL-GD5426 
+Memory		  2MB EDO   2MB EDO   2MB WRAM  1MB DRAM  
+CPU		  6x86P150+ 6x86P166+ 6x86P166+ DX4/100   
+Bus		  PCI 30MHz PCI 33Mhz PCI 33MHz VLB 33MHz 
+bpp, width	  8bpp 1024 8bpp 1024 8bpp 1024 8bpp 1024 
+-------------------------------------------------------------------
+framebuffer	   88.84    100.45     92.18     13.22    
 solid filled rect
-10x1		   20.64     22.82     41.22      1.16
-40x40		  157.00    157.00    457.12     28.88
-400x400		  244.34    244.34   1961.74     41.74
+10x1		   20.99     22.82     41.30      1.16    
+40x40		  157.00    157.00    458.38     28.88    
+400x400		  244.34    244.34   1961.74     41.74    
 screen copy
-10x10	           33.22     33.23     35.09      5.35
-40x40		   78.81     78.81     99.93     15.83
-400x400		   99.13     99.02    137.87     20.98
-400x400 scroll	  100.09    100.09    664.02     21.18
+10x10	           33.22     33.23     35.09      5.35    
+40x40		   78.81     78.81     99.93     15.83    
+400x400		   99.13     99.02    137.87     20.98    
+400x400 scroll	  100.09    100.09    664.02     21.18    
 8x8 pattern fill
-400x400		  228.68    228.72       -       41.10
+400x400		  228.68    228.72       -       41.10    
 color expansion
-CPU to screen	     -                411.52       -
-scanl. scr-to-scr 138.01    138.09       -       19.56
-10x10 scr-to-scr   36.87     36.86     39.19      6.16
+CPU to screen	     -                730.52       -      
+scanl. scr-to-scr 138.01    138.09       -       19.56    
+10x10 scr-to-scr   36.87     36.86     39.19      6.16    
 
 (*) After this benchmark was taken, the color expansion benchmark was
     changed to write a pattern including both colors instead of just the

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.2 1996/12/09 11:55:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.3 1996/12/18 03:13:29 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -37,10 +37,8 @@
 #include "xf86pcache.h"
 
 /*
- * This is just for the messages, it's about the only thing that
- * prevents a server that doesn't use vga256 from using the XAA code.
+ * This is just for the messages.
  */
-extern ScrnInfoRec vga256InfoRec;
 #include "xf86_Config.h"
 
 #ifdef PIXPRIV
@@ -62,13 +60,13 @@ xf86InitializeAcceleration(pScreen)
     int ScanlineScreenToScreenColorExpand = FALSE;
  
     ErrorF("%s %s: Using XAA (XFree86 Acceleration Architecture)\n",
-        XCONFIG_PROBED, vga256InfoRec.name);
+        XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
 
 #if 0
     if (xf86AccelInfoRec.Flags & PIXMAP_CACHE) {
         xf86AccelInfoRec.Flags &= ~PIXMAP_CACHE;
         ErrorF("%s %s: Sorry, pixmap cache is broken (disabled)\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
 #endif
 
@@ -80,41 +78,41 @@ xf86InitializeAcceleration(pScreen)
     xf86AccelInfoRec.SubsequentFillRectSolid) {
         SimpleFillRectSolid = TRUE;
         ErrorF("%s %s: accel: Solid filled rectangles\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForScreenToScreenCopy &&
     xf86AccelInfoRec.SubsequentScreenToScreenCopy) {
         SimpleScreenToScreenCopy = TRUE;
         ErrorF("%s %s: accel: Screen-to-screen copy\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForCPUToScreenColorExpand &&
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand) {
         CPUToScreenColorExpand = TRUE;
         ErrorF("%s %s: accel: CPU-to-screen color expand\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForScreenToScreenColorExpand &&
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand) {
         ScreenToScreenColorExpand = TRUE;
         ErrorF("%s %s: accel: Screen-to-screen color expand\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand &&
     xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand) {
         ScanlineScreenToScreenColorExpand = TRUE;
         ErrorF("%s %s: accel: Scanline screen-to-screen color expand\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupForFill8x8Pattern &&
     xf86AccelInfoRec.SubsequentFill8x8Pattern) {
         ErrorF("%s %s: accel: 8x8 pattern fill\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
     if (xf86AccelInfoRec.SetupFor8x8PatternColorExpand &&
     xf86AccelInfoRec.Subsequent8x8PatternColorExpand) {
         ErrorF("%s %s: accel: 8x8 color expand pattern fill\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
     }
 
     /*
@@ -213,22 +211,22 @@ xf86InitializeAcceleration(pScreen)
     }
 
     if (CPUToScreenColorExpand
-    && (xf86AccelInfoRec.ColorExpandFlags & (SCANLINE_PAD_DWORD
-        | SCANLINE_PAD_BYTE))
-    && !(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-    && !((xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_BYTE)
-        && !(xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST))
+/*    && (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) */
+/*    && !(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED) */
     ) {
-        if (!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
+        ErrorF("%s %s: accel: CPU to screen color expansion (",
+	    XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
+        if ((!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
         || SimpleFillRectSolid)
+        && (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD)) {
             xf86AccelInfoRec.WriteBitmap =
                 xf86WriteBitmapCPUToScreenColorExpand;
-        ErrorF("%s %s: accel: CPU to screen color expansion (bitmap",
-	    XCONFIG_PROBED, vga256InfoRec.name);
+            ErrorF("bitmap, ");
+        }
         if (!xf86AccelInfoRec.ImageTextTE && !xf86GCInfoRec.ImageGlyphBltTE &&
         (!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
         || SimpleFillRectSolid)
-        && (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD)) {
+        ) {
             xf86AccelInfoRec.ImageTextTE =
                 xf86ImageTextTECPUToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltTEFlags =
@@ -243,7 +241,8 @@ xf86InitializeAcceleration(pScreen)
         }
         if (!xf86AccelInfoRec.PolyTextTE && !xf86GCInfoRec.PolyGlyphBltTE
         && !(xf86AccelInfoRec.ColorExpandFlags & NO_TRANSPARENCY)
-        && (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD)) {
+/*        && (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) */
+        ) {
             xf86AccelInfoRec.PolyTextTE =
                 xf86PolyTextTECPUToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltTEFlags =
@@ -263,7 +262,7 @@ xf86InitializeAcceleration(pScreen)
     && xf86AccelInfoRec.ScratchBufferAddr
     && xf86AccelInfoRec.FramebufferBase) {
         ErrorF("%s %s: accel: Indirect CPU to screen color expansion "
-            "(", XCONFIG_PROBED, vga256InfoRec.name);
+            "(", XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         if ((xf86AccelInfoRec.ColorExpandFlags &
         VIDEO_SOURCE_GRANULARITY_PIXEL) &&
         (!(xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED)
@@ -321,8 +320,10 @@ xf86InitializeAcceleration(pScreen)
 
     /* Pixmap caching. */
     if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE) && SimpleScreenToScreenCopy) {
+        /* Perform the actual pixmap cache initialization/allocation. */
+        xf86InitPixmapCacheSlots();
         ErrorF("%s %s: accel: Caching tiles ",
-	    XCONFIG_PROBED, vga256InfoRec.name);
+	    XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         xf86GCInfoRec.PolyFillRectTiled = xf86PolyFillRect;
         xf86GCInfoRec.PolyFillRectTiledFlags = xf86GCInfoRec.CopyAreaFlags;
         if (!xf86GCInfoRec.FillSpansTiled) {
@@ -410,7 +411,7 @@ xf86InitializeAcceleration(pScreen)
                 xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
                     NO_CAP_NOT_LAST;
             ErrorF("%s %s: accel: General lines and segments\n",
-	        XCONFIG_PROBED, vga256InfoRec.name);
+	        XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
         else
         if (SimpleFillRectSolid) {
@@ -425,10 +426,10 @@ xf86InitializeAcceleration(pScreen)
 	        xf86GCInfoRec.PolyFillRectSolidFlags;
             if (xf86AccelInfoRec.SubsequentTwoPointLine)
                 ErrorF("%s %s: accel: Non-clipped general lines and segments\n",
-                    XCONFIG_PROBED, vga256InfoRec.name);
+                    XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
             else
                 ErrorF("%s %s: accel: Horizontal and vertical lines and segments\n",
-                    XCONFIG_PROBED, vga256InfoRec.name);
+                    XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
 
     /*
@@ -445,4 +446,17 @@ xf86InitializeAcceleration(pScreen)
      */
     pScreen->PaintWindowBackground = miPaintWindow;
     pScreen->PaintWindowBorder = miPaintWindow;
+}
+
+/*
+ * This function just initializes some fields of the xf86AccelInfoRec.
+ */
+
+void xf86InitPixmapCache(infoRec, memoryStart, memoryEnd)
+    ScrnInfoPtr infoRec;
+    int memoryStart, memoryEnd;
+{
+    xf86AccelInfoRec.ServerInfoRec = infoRec;
+    xf86AccelInfoRec.PixmapCacheMemoryStart = memoryStart;
+    xf86AccelInfoRec.PixmapCacheMemoryEnd = memoryEnd;
 }

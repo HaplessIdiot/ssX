@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.0 1996/11/18 13:22:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.1 1996/12/09 11:55:27 dawes Exp $ */
 
 
 #ifdef VGA256
@@ -31,6 +31,10 @@
 #define xf86GCNewCopyArea XF86NAME(xf86GCNewCopyArea)
 #define xf86ImageGlyphBltFallBack XF86NAME(xf86ImageGlyphBltFallBack)
 #define xf86PolyGlyphBltFallBack XF86NAME(xf86PolyGlyphBltFallBack)
+#define xf86FillSpansFallBack XF86NAME(xf86FillSpansFallBack)
+#define xf86FillRectTileFallBack XF86NAME(xf86FillRectTileFallBack)
+#define xf86FillRectStippledFallBack XF86NAME(xf86FillRectStippledFallBack)
+#define xf86FillRectOpaqueStippledFallBack XF86NAME(xf86FillRectOpaqueStippledFallBack)
 /* xf86im.c */
 #define xf86ImageWriteFallBack XF86NAME(xf86ImageWriteFallBack)
 #define xf86WriteBitmapFallBack XF86NAME(xf86WriteBitmapFallBack)

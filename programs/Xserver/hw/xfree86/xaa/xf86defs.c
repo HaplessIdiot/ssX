@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.0 1996/11/18 13:22:12 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -80,10 +80,16 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     0,		/* Flags */
     0,		/* ColorExpandFlags */
     NULL,	/* CPUToScreenColorExpandBase */
+    NULL,	/* CPUToScreenColorExpandEndMarker */
+    0,		/* CPUToScreenColorExpandRange */
     NULL,	/* FramebufferBase */
+    0,		/* FramebufferWidth */
     0,		/* BitsPerPixel */
     0,		/* ScratchBufferAddr */
     0,		/* ScratchBufferSize */
     0,		/* ErrorTermBits */
     0,		/* UsingVGA256 */
+    NULL,	/* ServerInfoRec */
+    0,		/* PixmapCacheMemoryStart */
+    0,		/* PixmapCacheMemoryEnd */
 };

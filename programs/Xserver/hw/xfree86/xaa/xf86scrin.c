@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.0 1996/11/18 13:22:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.1 1996/12/09 11:55:33 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -247,6 +247,11 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     xf86GCInfoRec.CopyPlane1toNFallBack = xf86CopyPlane1toN;
     xf86GCInfoRec.ImageGlyphBltFallBack = xf86ImageGlyphBltFallBack;
     xf86GCInfoRec.PolyGlyphBltFallBack = xf86PolyGlyphBltFallBack;
+    xf86GCInfoRec.FillSpansFallBack = xf86FillSpansFallBack;
+    xf86AccelInfoRec.FillRectTiledFallBack = xf86FillRectTileFallBack;
+    xf86AccelInfoRec.FillRectStippledFallBack = xf86FillRectStippledFallBack;
+    xf86AccelInfoRec.FillRectOpaqueStippledFallBack =
+        xf86FillRectOpaqueStippledFallBack;
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/sampledrv.c,v 3.0 1996/11/18 13:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/sampledrv.c,v 3.1 1996/12/18 03:13:24 dawes Exp $ */
 
 
 /*
@@ -45,11 +45,12 @@ void ChipSubsequentScreenToScreenCopy();
 
 /*
  * The following function sets up the supported acceleration. Call it
- * from the FbInit() function in the SVGA driver.
+ * from the FbInit() function in the SVGA driver, or before ScreenInit
+ * in a monolithic server.
  */
 void ChipAccelInit() {
     /*
-     * If you to disable acceleration, just don't modify anything
+     * If you want to disable acceleration, just don't modify anything
      * in the AccelInfoRec.
      */
 
@@ -103,16 +104,26 @@ void ChipAccelInit() {
         ChipSubsequentScreenToScreenCopy;
 
     /*
+     * Set a pointer to the server InfoRec so that XAA knows how to
+     * format its start-up messages. If you are not using the SVGA
+     * server, you would provide a pointer to the ScrnInfoRec defined
+     * for the server. The SVGA server correctly initializes this
+     * field itself, so this line can be omitted when using the SVGA
+     * server.
+     */
+/*    xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec; */
+
+    /*
      * Finally, we set up the video memory space available to the pixmap
      * cache. In this case, all memory from the end of the virtual screen
-     * to the end of video memory minus 1K, can be used.
+     * to the end of video memory minus 1K, can be used. If you haven't
+     * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
      */
-    xf86InitPixmapCache(
-        &vga256InfoRec,
-        vga256InfoRec.virtualY * vga256InfoRec.displayWidth *
-            vga256InfoRec.bitsPerPixel / 8,
-        vga256InfoRec.videoRam * 1024 - 1024
-    );
+     xf86AccelInfoRec.PixmapCacheMemoryStart =
+         vga256InfoRec.virtualY * vga256InfoRec.displayWidth
+         * vga256InfoRec.bitsPerPixel / 8;
+     xf86AccelInfoRec.PixmapCacheMemoryEnd =
+        vga256InfoRec.videoRam * 1024 - 1024;
 }
 
 /*

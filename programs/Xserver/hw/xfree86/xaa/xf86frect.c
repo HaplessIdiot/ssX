@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.2 1996/12/09 11:55:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.3 1996/12/18 03:13:28 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.2 1996/12/09 11:55:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.3 1996/12/18 03:13:28 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -615,19 +615,30 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
             adjLeftX = ((pGC->patOrg.x + drawableXOrg) & 0x07);
             adjTopY = ((pGC->patOrg.y + drawableYOrg) & 0x07);
 
-	    patternx = pci->x;
-	    patterny = pci->y;
-	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+	    if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS)
+	    && (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
 	        /*
- 	         * Since we have horizontally rotated copies on consecutive
-	         * scanlines, rotation is very simple.
+	         * Special case; pattern data is passed in function arguments.
 	         */
-	        patterny += (- adjLeftX) & 7;
-                /*
-                 * Because we have 8 vertically rotated copies of the
-                 * pattern on the scanline, vertical rotation is also easy.
-                 */
-	        patternx += ((- adjTopY) & 7) * 64;
+	        patternx = pci->pattern0;
+	        patterny = pci->pattern1;
+	    }
+            else {
+                /* Video memory location of pattern data. */
+	        patternx = pci->x;
+	        patterny = pci->y;
+	        if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+	            /*
+ 	             * Since we have horizontally rotated copies on consecutive
+	             * scanlines, rotation is very simple.
+	             */
+	            patterny += (- adjLeftX) & 7;
+                    /*
+                     * Because we have 8 vertically rotated copies of the
+                     * pattern on the scanline, vertical rotation is also easy.
+                     */
+	            patternx += ((- adjTopY) & 7) * 64;
+	        }
 	    }
 
             if (pGC->fillStyle == FillStippled)
@@ -652,6 +663,18 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
                 rectHeight = rectY2 - rectY1;
 
 		if ((rectWidth > 0) && (rectHeight > 0)) {
+	            if ((xf86AccelInfoRec.Flags &
+	            HARDWARE_PATTERN_PROGRAMMED_BITS)
+	            && (xf86AccelInfoRec.Flags &
+	            HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+	                /* Special case: origin offset is passed. */
+		        xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
+		            (rectY1 - adjTopY) & 7,
+		            (rectX1 - adjLeftX) & 7,
+		            rectX1, rectY1, rectWidth,
+		            rectHeight);
+	            }
+	            else
 		    if (xf86AccelInfoRec.Flags
 		    & HARDWARE_PATTERN_SCREEN_ORIGIN)
 		        /* patternx, patterny are ignored in this case. */

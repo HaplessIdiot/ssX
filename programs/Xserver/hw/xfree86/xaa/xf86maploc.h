@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.0 1996/11/18 13:22:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.1 1996/12/09 11:55:31 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -103,6 +103,48 @@ xf86PolyGlyphBltFallBack(
     int			nglyph,
     CharInfoPtr		*ppci,
     unsigned char *	pglyphBase
+#endif
+);
+
+void
+xf86FillSpansFallBack(
+#if NeedFunctionPrototypes
+    DrawablePtr pDrawable,
+    GC		*pGC,
+    int		nInit,
+    DDXPointPtr pptInit,
+    int *pwidthInit,
+    int fSorted
+#endif
+);
+
+void
+xf86FillRectTileFallBack(
+#if NeedFunctionPrototypes
+    DrawablePtr	    pDrawable,
+    GCPtr	    pGC,
+    int		    nBox,
+    BoxPtr	    pBox
+#endif
+);
+
+void
+xf86FillRectStippledFallBack(
+#if NeedFunctionPrototypes
+    DrawablePtr	    pDrawable,
+    GCPtr	    pGC,
+    int		    nBox,
+    BoxPtr	    pBox
+#endif
+);
+
+void
+xf86FillRectOpaqueStippledFallBack(
+#if NeedFunctionPrototypes
+    DrawablePtr	    pDrawable,
+    GCPtr	    pGC,
+    int		    nBox,
+    BoxPtr	    pBox
 #endif
 );
 

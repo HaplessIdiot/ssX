@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.1 1996/11/24 09:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.2 1996/12/09 11:55:34 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -265,6 +265,24 @@ static void DrawTextTECPUToScreenColorExpand(
 #endif
 );
 
+static void DrawTextTECPUToScreenColorExpandBytePad(
+#if NeedFunctionPrototypes
+    int nglyph,
+    int h,
+    unsigned int **glyphp,
+    int glyphwidth
+#endif
+);
+
+static void DrawTextTECPUToScreenColorExpandNoPad(
+#if NeedFunctionPrototypes
+    int nglyph,
+    int h,
+    unsigned int **glyphp,
+    int glyphwidth
+#endif
+);
+
 static void DrawTextTEScreenToScreenColorExpand(
 #if NeedFunctionPrototypes
     int nglyph,
@@ -394,12 +412,14 @@ nglyph, ppci, pglyphBase)
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
         x, y, w, h, 0);
 
-#if 0
-    if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-        DrawTextTECPUToScreenColorExpandBytePadded(
-            nglyph, w, h, glyphp, glyphwidth);
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_BYTE)
+        DrawTextTECPUToScreenColorExpandBytePad(
+            nglyph, h, glyphp, glyphWidth);
     else
-#endif
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_NO_PAD)
+        DrawTextTECPUToScreenColorExpandNoPad(
+            nglyph, h, glyphp, glyphWidth);
+    else
         DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphWidth);
 
     DEALLOCATE_LOCAL(glyphp);
@@ -535,12 +555,14 @@ nglyph, ppci, pglyphBase)
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
         x, y, nglyph * glyphWidth, h, 0);
 
-#if 0
-    if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-        DrawTextTECPUToScreenColorExpandBytePadded(
-            nglyph, w, h, glyphp, glyphwidth);
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_BYTE)
+        DrawTextTECPUToScreenColorExpandBytePad(
+            nglyph, h, glyphp, glyphWidth);
     else
-#endif
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_NO_PAD)
+        DrawTextTECPUToScreenColorExpandNoPad(
+            nglyph, h, glyphp, glyphWidth);
+    else
         DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphWidth);
 
     DEALLOCATE_LOCAL(glyphp);
@@ -736,7 +758,7 @@ nglyph, ppci, pglyphBase)
 
 #if 0
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-        DrawTextNonTECPUToScreenColorExpandBytePadded(
+        DrawTextNonTECPUToScreenColorExpandBytePad(
             nglyph, w, h, glyphp, glyphwidth);
     else
 #endif
@@ -885,7 +907,7 @@ nglyph, ppci, pglyphBase)
 
 #if 0
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-        DrawTextNonTECPUToScreenColorExpandBytePadded(
+        DrawTextNonTECPUToScreenColorExpandBytePad(
             nglyph, w, h, glyphinfop);
     else
 #endif
@@ -990,79 +1012,189 @@ static void DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphwidth)
 
     if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
         if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-            DrawTextScanlineFunc = xf86DrawTextScanline3MSBFirst;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawTextScanline3MSBFirstFixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawTextScanline3MSBFirst;
         else
-            DrawTextScanlineFunc = xf86DrawTextScanlineMSBFirst;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawTextScanlineMSBFirstFixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawTextScanlineMSBFirst;
     else
         if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-            DrawTextScanlineFunc = xf86DrawTextScanline3;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawTextScanline3FixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawTextScanline3;
         else
-            DrawTextScanlineFunc = xf86DrawTextScanline;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawTextScanlineFixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawTextScanline;
 
     base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
 
     line = 0;
     while (line < h) {
-	base = (unsigned char *)(*DrawTextScanlineFunc)(
-	    (unsigned int *)base, glyphp, line, nglyph, glyphwidth);
-        if (base >=
-        (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-            base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
-	line++;
+        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	    (*DrawTextScanlineFunc)(
+	        (unsigned int *)base, glyphp, line, nglyph, glyphwidth);
+	else {
+	    base = (unsigned char *)(*DrawTextScanlineFunc)(
+	        (unsigned int *)base, glyphp, line, nglyph, glyphwidth);
+            if (base >=
+            (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+	    line++;
+	}
     }
 
-    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-        if (((long)base - (long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
+        int words;
+        words = ((glyphwidth * nglyph + 31) & ~31) * h / 32;
+        if (words & 1)
             *(unsigned int *)base = 0;
+    }
 
     xf86AccelInfoRec.Sync();
 }
-
-#if 0
 
 /*
  * Used for Imagetext/Polytext with TE font with CPU-to-screen
  * color expansion (BYTE padding at the end of scanlines).
  *
- * This is not yet implemented. The ASM function in the cirrus driver
- * could be used.
+ * This has not yet been tested. The ASM function in the old cirrus driver
+ * implements similar functionality.
  */
 
-static void DrawTextTECPUToScreenColorExpandBytePadded(nglyph, h, glyphp,
+static void DrawTextTECPUToScreenColorExpandBytePad(nglyph, h, glyphp,
 glyphwidth)
     int nglyph;
     int h;
     unsigned int **glyphp;
     int glyphwidth;
 {
-    int bitmapwidth;
-    int line;
     unsigned char *base;
-    ScanlineReturn sr;
+    unsigned int *(*DrawTextFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        unsigned int **glyphp,
+        int height,
+        int nglyph,
+        int glyphwidth
+#endif
+    );
 
-    base = xf86AccelInfoRec.CPUToScreenColorExpandBase;
+    base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
 
-    /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
-    /* in units of pixels. */
-    bitmapwidth = (w + 31) & ~31;
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+#if 0
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextScanline3MSBFirstFixedBase;
+            else
+                DrawTextFunc = xf86DrawTextScanline3MSBFirst;
+        else
+#endif
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextBytePadMSBFirstFixedBase;
+            else
+                DrawTextFunc = xf86DrawTextBytePadMSBFirst;
+    else
+#if 0
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextScanline3FixedBase;
+            else
+                DrawTextFunc = xf86DrawTextScanline3;
+        else
+#endif
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextBytePadFixedBase;
+            else
+                DrawTextFunc = xf86DrawTextBytePad;
 
-    line = 0;
-    while (line < h) {
-	sr = xf86DrawTextScanlineMSBFirstBytePadded(
-	    base, glyphp, line, nglyph, glyphWidth);
-        if (base >= xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-            base = xf86AccelInfoRec.CPUToScreenColorExpandBase;
-	line++;
-    }
+    base = (unsigned char *)(*DrawTextFunc)(
+	        (unsigned int *)base, glyphp, h, nglyph, glyphwidth);
 
-    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-        if ((base - xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
+        int words;
+        words = ((((glyphwidth * nglyph + 7) & ~7) * h + 31) & ~31) / 32;
+        if (words & 1)
             *(unsigned int *)base = 0;
+    }
 
     xf86AccelInfoRec.Sync();
 }
 
+/*
+ * Used for Imagetext/Polytext with TE font with CPU-to-screen
+ * color expansion (NO padding at the end of scanlines).
+ *
+ * This has not yet been tested.
+ */
+
+static void DrawTextTECPUToScreenColorExpandNoPad(nglyph, h, glyphp,
+glyphwidth)
+    int nglyph;
+    int h;
+    unsigned int **glyphp;
+    int glyphwidth;
+{
+    unsigned char *base;
+    unsigned int *(*DrawTextFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        unsigned int **glyphp,
+        int height,
+        int nglyph,
+        int glyphwidth
 #endif
+    );
+
+    base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+#if 0
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextScanline3MSBFirstFixedBase;
+            else
+                DrawTextFunc = xf86DrawTextScanline3MSBFirst;
+        else
+#endif
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextNoPadMSBFirstFixedBase;
+            else
+                DrawTextFunc = xf86DrawTextNoPadMSBFirst;
+    else
+#if 0
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextScanline3FixedBase;
+            else
+                DrawTextFunc = xf86DrawTextScanline3;
+        else
+#endif
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextFunc = xf86DrawTextNoPadFixedBase;
+            else
+                DrawTextFunc = xf86DrawTextNoPad;
+
+    base = (unsigned char *)(*DrawTextFunc)(
+	        (unsigned int *)base, glyphp, h, nglyph, glyphwidth);
+
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
+        int words;
+        words = ((glyphwidth * nglyph * h + 31) & ~31) / 32;
+        if (words & 1)
+            *(unsigned int *)base = 0;
+    }
+
+    xf86AccelInfoRec.Sync();
+}
+
 
 /*
  * The following function is used for Imagetext/Polytext with TE font

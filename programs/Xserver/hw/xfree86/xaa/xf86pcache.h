@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.h,v 3.0 1996/11/18 13:22:32 dawes Exp $ */
 
 
 typedef struct _CacheInfo {
@@ -16,10 +16,8 @@ typedef struct _CacheInfo {
     int cache_width;    /* width of cache slot (typically 64, 128, or 256) */
     int cache_height;   /* height of cache slot (typically 64, 128, or 256) */
     int flags;          /* non zero if fixed pattern */
-#if 0
     int pattern0;       /* if fixed pattern, pattern 0 register contents */
     int pattern1;       /* if fixed pattern, pattern 1 register contents */
-#endif
     unsigned int lru;   /* lru counter */
 } CacheInfo, *CacheInfoPtr;
 

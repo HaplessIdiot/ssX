@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.2 1996/12/09 11:55:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.3 1996/12/19 02:58:02 dawes Exp $ */
 
 /***********************************************************
 
@@ -159,7 +159,7 @@ xf86CreateGC(pGC)
      * on being a color frame buffer, they don't change 
      */
 
-    pGC->ops = &cfbNonTEOps;
+    pGC->ops = &NonTEOps;
     pGC->funcs = &xf86GCFuncs;
 
     /* cfb wants to translate before scan conversion */

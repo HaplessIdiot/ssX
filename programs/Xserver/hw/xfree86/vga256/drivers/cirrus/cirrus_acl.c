@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.0 1996/11/18 13:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.1 1996/12/18 03:12:59 dawes Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -13,12 +13,13 @@
  * CL-GD5430/40	Yes				Yes			Yes
  * CL-GD5434	Yes					Yes (1)
  * CL-GD5436	Yes	Yes	Yes	Yes	Yes	Yes	?	Yes
- * CL-GD5446	Yes	Yes	Yes?	Yes?	?	?	?	?
+ * CL-GD5446	Yes	Yes	Yes	Yes	Yes	Yes	Yes (2)	Yes
  * CL-GD7543							Yes
  * CL-GD7548	Yes	Yes					Yes
  * CL-GD7555	Yes	Yes	?	?	?	?	?	?
  *
  * (1) 8x8 non-color expand pattern fill not supported at 32bpp.
+ * (2) Not supported at 24/32bpp.
  *
  * In the case of the 7548, I wonder if it shares some of the other newer
  * BitBLT features such as clipping for color expansion. The databook doesn't
@@ -27,6 +28,10 @@
  * Also, it's unclear whether the CL-GD5436 has transparency color compare
  * (maybe it was a late feature).
  *
+ * The CL-GD5446 has "PCI-retry" support for MMIO with Auto-Start, which
+ * eliminates the need for BitBLT polling. It requires that a MMIO index
+ * below 0x10 is written first.
+ *
  * I have made the assumption that it is OK on all chips with MMIO to write
  * a 32-bit word to the MMIO address 0x18:
  *
@@ -34,6 +39,12 @@
  * 0x19		Undefined
  * 0x1A		Raster OP
  * 0x1B         BLT Mode Extensions (GD5436/46 only)
+ *
+ * The driver is not yet ready for future increased XAA concurrency where
+ * the SetUp functions might be called while a blit is still going on.
+ * One issue is that the CL-GD5446 (which doesn't need polling) requires
+ * that a MMIO index below 0x10 is written first, which is not the case
+ * for the color-expansion SetUp functions.
  */
 
 #include "vga256.h"
@@ -43,7 +54,11 @@
 #include "xf86xaa.h"
 
 #include "cir_driver.h"
+#ifdef MMIO
 #include "cirBlitMM.h"
+#else
+#include "cirBlitter.h"
+#endif
 
 
 #define CHIPHASPACKED24FILL() \
@@ -53,10 +68,22 @@
     (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 || \
     cirrusChip == CLGD7548)
 
+#define CHIPHASPCIRETRYSUPPORT() \
+    (cirrusChip == CLGD5446)
+
+#ifdef MMIO
 #define CHIPHASSOLIDCOLORFILL() \
     (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
-    
+#else
+#define CHIPHASSOLIDCOLORFILL() (0)
+#endif
+
 #define CHIPHASTRANSPARENCYCOMPARE() \
+    (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 || \
+    cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || \
+    cirrusChip == CLGD5446)
+
+#define CHIPHASTRANSPARENCYCOMPAREMASK() \
     (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 || \
     cirrusChip == CLGD7543 || cirrusChip == CLGD7548)
 
@@ -68,26 +95,37 @@
 #define CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD() \
     (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
 
-#define WAITEMPTY()
+#define CHIPHASCPUFRAMEBUFFERCONCURRENCY() \
+    (cirrusChip == CLGD5446)
+
+#define CHIPHASFGCOLORREGISTERSIDEEFFECT() \
+    (cirrusChip <= CLGD5429)	/* At least the 5426/28. */
 
 #define BPPADJUST(x) \
     vga256InfoRec.bitsPerPixel == 8 ? x : \
     vga256InfoRec.bitsPerPixel == 16 ? x * 2 : \
     vga256InfoRec.bitsPerPixel == 24 ? x * 3 : x * 4
 
+#define WAITEMPTY() { \
+    if (!cirrusPCIRetrySupport) \
+        CirrusBLTWaitEmpty(); }
+
 #ifndef MMIO    
 
 int cirrusUseAutoStart = FALSE;
 int cirrusUseSolidColorFill = FALSE;
+int cirrusPCIRetrySupport = FALSE;
+int cirrusChipFeatures = 0;
 
 #else
 
-extern int cirrusUseAutoStart, cirrusUseSolidColorFill;
+extern int cirrusUseAutoStart, cirrusUseSolidColorFill, cirrusPCIRetrySupport;
 
 #define MMIONAME(x) x##MMIO
 
-#define CirrusSync MMIONAME(CirrusSync)
 #define CirrusAccelInit MMIONAME(CirrusAccelInit)
+#define CirrusInitializeBitBLTEngine MMIONAME(CirrusInitializeBitBLTEngine)
+#define CirrusSync MMIONAME(CirrusSync)
 #define CirrusSetupForFillRectSolid MMIONAME(CirrusSetupForFillRectSolid)
 #define Cirrus8SubsequentFillRectSolid MMIONAME(Cirrus8SubsequentFillRectSolid)
 #define Cirrus16SubsequentFillRectSolid MMIONAME(Cirrus16SubsequentFillRectSolid)
@@ -108,7 +146,6 @@ extern int cirrusUseAutoStart, cirrusUseSolidColorFill;
 #define CirrusSubsequent8x8PatternFill MMIONAME(CirrusSubsequent8x8PatternFill)
 #define CirrusSetupFor8x8PatternColorExpand MMIONAME(CirrusSetupFor8x8PatternColorExpand)
 #define CirrusSubsequent8x8PatternColorExpand MMIONAME(CirrusSubsequent8x8PatternColorExpand)
-#define CirrusInitializeBitBLTEngine MMIONAME(CirrusInitializeBitBLTEngine)
 
 #endif
 
@@ -138,12 +175,14 @@ void CirrusAccelInit() {
     /* Initialization for chips with MMIO. */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
         | ONLY_TWO_BITBLT_DIRECTIONS | HARDWARE_PATTERN_ALIGN_64;
+    if (CHIPHASCPUFRAMEBUFFERCONCURRENCY())
+        xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;	/* 5446 */
     xf86AccelInfoRec.Sync = CirrusSync;
     xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
     if (vga256InfoRec.bitsPerPixel == 24 && !CHIPHASPACKED24FILL())
         xf86GCInfoRec.PolyFillRectSolidFlags |= RGB_EQUAL;
     xf86AccelInfoRec.SetupForFillRectSolid = CirrusSetupForFillRectSolid;
-    switch (vgaBitsPerPixel) {
+    switch (vga256InfoRec.bitsPerPixel) {
     case 8 :
         xf86AccelInfoRec.SubsequentFillRectSolid = Cirrus8SubsequentFillRectSolid;
         break;
@@ -158,7 +197,11 @@ void CirrusAccelInit() {
         break;
     }
     xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
-    if (!CHIPHASTRANSPARENCYCOMPARE())
+    if (!CHIPHASTRANSPARENCYCOMPARE() || vga256InfoRec.bitsPerPixel > 16)
+        /*
+         * There are currently no chips supporting transparency color
+         * compare at bpp > 16.
+         */
         xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
     xf86AccelInfoRec.SetupForScreenToScreenCopy = CirrusSetupForScreenToScreenCopy;
     switch (vgaBitsPerPixel) {
@@ -175,10 +218,10 @@ void CirrusAccelInit() {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy = Cirrus32SubsequentScreenToScreenCopy;
         break;
     }
-#if 0
-    xf86AccelInfoRec.SetupForFill8x8Pattern = CirrusSetupFor8x8PatternFill;
-    xf86AccelInfoRec.SubsequentFill8x8Pattern = CirrusSubsequent8x8PatternFill;
-#endif
+    if (vga256InfoRec.bitsPerPixel != 24) {
+        xf86AccelInfoRec.SetupForFill8x8Pattern = CirrusSetupFor8x8PatternFill;
+        xf86AccelInfoRec.SubsequentFill8x8Pattern = CirrusSubsequent8x8PatternFill;
+    }
     /* Color expansion. */
     if (vga256InfoRec.bitsPerPixel != 24 || CHIPHASPACKED24FILL()) {
         xf86AccelInfoRec.ColorExpandFlags =
@@ -201,23 +244,40 @@ void CirrusAccelInit() {
             CirrusSubsequent8x8PatternColorExpand;
 #endif
 	if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD()) {
+	    /*
+	     * Modern chip with 32-bit scanline alignment. Compatible
+	     * with XAA CPU-to-screen color expansion.
+	     */
             if (CHIPHASWRITEMASK())
                 xf86AccelInfoRec.ColorExpandFlags |= LEFT_EDGE_CLIPPING;
             xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
                 CirrusSetupForCPUToScreenColorExpand;
             xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
                 CirrusSubsequentCPUToScreenColorExpand;
-            xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
-                CirrusSetupForScreenToScreenColorExpand;
-            xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
-                CirrusSubsequentScreenToScreenColorExpand;
         }
         else {
             /*
-             * CPU-to-screen color expansion with BYTE padding doesn't
+             * XAA CPU-to-screen color expansion with BYTE padding doesn't
              * work yet, so we have to use the indirect method (which
              * isn't particularly fast because there's no coprocessor/
-             * CPU framebuffer concurrency.
+             * CPU framebuffer concurrency).
+             *
+             * However, for "TE" text, we use the "legacy" cirrus
+             * driver text color expansion that uses fast ASM routines
+             * and correctly handles the BYTE padding.
+             */
+#ifdef MMIO
+            xf86GCInfoRec.ImageGlyphBltTE = CirrusMMIOImageGlyphBlt;
+            xf86GCInfoRec.PolyGlyphBltTE = CirrusMMIOPolyGlyphBlt;
+#else
+            xf86GCInfoRec.ImageGlyphBltTE = CirrusImageGlyphBlt;
+            xf86GCInfoRec.PolyGlyphBltTE = CirrusPolyGlyphBlt;
+#endif
+            xf86GCInfoRec.ImageGlyphBltTEFlags = NO_PLANEMASK;
+            xf86GCInfoRec.PolyGlyphBltTEFlags = NO_PLANEMASK;
+            /*
+             * Set up indirect color expansion primitives. These will
+             * only be used when linear addressing is enabled.
              */
             xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
                 CirrusSetupForScanlineScreenToScreenColorExpand;
@@ -226,9 +286,16 @@ void CirrusAccelInit() {
             xf86AccelInfoRec.ScratchBufferAddr = cirrusBufferSpaceAddr;
             xf86AccelInfoRec.ScratchBufferSize = cirrusBufferSpaceSize;
         }
+        xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
+            CirrusSetupForScreenToScreenColorExpand;
+        xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
+            CirrusSubsequentScreenToScreenColorExpand;
     }
-    if (CHIPHASAUTOSTART())
+    if (CHIPHASAUTOSTART()) {
         cirrusUseAutoStart = TRUE;
+        if (CHIPHASPCIRETRYSUPPORT())
+            cirrusPCIRetrySupport = TRUE;
+    }
     if (CHIPHASSOLIDCOLORFILL())
         cirrusUseSolidColorFill = TRUE;
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
@@ -241,14 +308,20 @@ void CirrusInitializeBitBLTEngine() {
    bytewidth = vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8;
    SETSRCPITCH(bytewidth);
    SETDESTPITCH(bytewidth);
-   if (CHIPHASTRANSPARENCYCOMPARE())
+   if (CHIPHASTRANSPARENCYCOMPAREMASK())
        SETTRANSPARENCYCOLORMASK16(0);
    if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD())
        SETBLTMODEEXT(SOURCEDWORDGRANULARITY);
+   if (cirrusUseAutoStart)
+       SETBLTSTATUS(0x80);
 }
 
 void CirrusSync() {
     WAITUNTILFINISHED();
+#ifndef MMIO
+    if (CHIPHASFGCOLORREGISTERSIDEEFFECT())
+        SETFOREGROUNDCOLOR(0);
+#endif
 #if 0
     /*
      * This is not necessary, as long as in every operation the
@@ -313,11 +386,10 @@ void Cirrus8SubsequentFillRectSolid(x, y, w, h)
     int destaddr;
     destaddr = y * vga256InfoRec.displayWidth + x;
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
-    SETWIDTH(w);				/* 8 */
-    SETHEIGHT(h);
+    SETWIDTHANDHEIGHT(w, h);			/* 8 */
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);				/* 20 */
@@ -333,11 +405,10 @@ void Cirrus16SubsequentFillRectSolid(x, y, w, h)
     int destaddr;
     destaddr = (y * vga256InfoRec.displayWidth + x) * 2;
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
-    SETWIDTH(w * 2);
-    SETHEIGHT(h);				/* 10 */
+    SETWIDTHANDHEIGHT(w * 2, h);		/* 10 */
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);				/* 20 */
@@ -353,11 +424,10 @@ void Cirrus24SubsequentFillRectSolid(x, y, w, h)
     int destaddr;
     destaddr = (y * vga256InfoRec.displayWidth + x) * 3;
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
-    SETWIDTH(w * 3);				/* 8 */
-    SETHEIGHT(h);				/* 10 */
+    SETWIDTHANDHEIGHT(w * 3, h);		/* 8 */
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);				/* 20 */
@@ -373,11 +443,10 @@ void Cirrus32SubsequentFillRectSolid(x, y, w, h)
     int destaddr;
     destaddr = (y * vga256InfoRec.displayWidth + x) * 4;
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
-    SETWIDTH(w * 4);				/* 8 */
-    SETHEIGHT(h);				/* 10 */
+    SETWIDTHANDHEIGHT(w * 4, h);		/* 8 */
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);				/* 20 */
@@ -468,12 +537,12 @@ void Cirrus##bpp##SubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h) \
 	destaddr += x2 * (bpp / 8); \
     } \
     if (cirrusUseAutoStart) \
-        WAITEMPTY(); \
+        WAITEMPTY() \
     else \
         WAITUNTILFINISHED(); \
-    SETSRCADDR(srcaddr); \
     w *= (bpp / 8); \
     SETWIDTHANDHEIGHT(w, h); \
+    SETSRCADDR(srcaddr); \
     SETDESTADDR(destaddr); \
     if (!cirrusUseAutoStart) \
         STARTBLT(); \
@@ -503,7 +572,7 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
      * - The CL-GD5426/28/7543/7548, which have a transparency compare
      *   color. The background color and the 16-bit transparency color
      *   (doubled at 8bpp) must both be loaded with the same unique value.
-     * - The CL-GD5434. It requires requires the 32-bit background color
+     * - The CL-GD5434. It requires the 32-bit background color
      *   to be set to the logical inverse of the foreground color, with both
      *   loaded with 32 bits worth of pixels for 8bpp and 16bpp.
      * - The CL-GD5429/30/40, which do not require any additional
@@ -680,7 +749,7 @@ void CirrusSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
     int srcaddr, destaddr;
     w = BPPADJUST(w);
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w, h);
@@ -782,7 +851,7 @@ void CirrusSubsequentScanlineScreenToScreenColorExpand(srcaddr)
     int srcaddr;
 {
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
     srcaddr /= 8;
@@ -827,7 +896,7 @@ void CirrusSubsequent8x8PatternFill(patternx, patterny, x, y, w, h)
     destaddr = BPPADJUST(destaddr);
     w = BPPADJUST(w);
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w, h);
@@ -919,7 +988,7 @@ void CirrusSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
     /* The pattern x-coordinate is in "bit" units. */
     srcaddr += patternx / 8;
     if (cirrusUseAutoStart)
-        WAITEMPTY();
+        WAITEMPTY()
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w, h);

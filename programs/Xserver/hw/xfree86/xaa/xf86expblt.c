@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.2 1996/12/09 11:55:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.3 1996/12/18 03:13:25 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -26,12 +26,19 @@
 
 #include "compiler.h"
 #include "misc.h"
+#include "windowstr.h"
+#include "gcstruct.h"
+#include "regionstr.h"
+
+#include "xf86.h"
+#include "xf86xaa.h"
 
 #include "xf86expblt.h"
 
 /*
  * When compiled with MSBFIRST defined,
  * this file produces MSB-first versions of most of the functions.
+ * When compiled with FIXEDBASE, fixed-base versions are produced.
  */
 
 /* These are macros for 64-bit integer handling. */
@@ -57,7 +64,8 @@
 
 extern unsigned char byte_reversed[256];
 /* This is isn't defined yet. Keep the compiler happy. */
-#ifndef MSBFIRST
+#if !defined(MSBFIRST) && !defined(FIXEDBASE)
+/* Define once. */
 unsigned int byte_reversed_expand3[1] = { 0x00000000 };
 unsigned int byte_expand3[1] = { 0x00000000 };
 #else
@@ -69,7 +77,15 @@ extern unsigned int byte_reversed_expand3[1];
 
 #ifndef MSBFIRST
 
-#define WRITE_IN_BITORDER(dest, data) *(dest) = data;
+#ifdef FIXEDBASE
+
+#define WRITE_IN_BITORDER(dest, offset, data) *(dest) = data;
+
+#else  /* Increasing base address. */
+
+#define WRITE_IN_BITORDER(dest, offset, data) *(dest + offset) = data;
+
+#endif
 
 #else	/* "Nasty" bit order within bytes. */
 
@@ -110,15 +126,24 @@ static __inline__ unsigned int reverse_bitorder(data) {
 #endif
 	return data;
 }
-#define WRITE_IN_BITORDER(dest, data) *(dest) = reverse_bitorder(data);
+#ifdef FIXEDBASE
+#define WRITE_IN_BITORDER(dest, offset, data) *(dest) = reverse_bitorder(data);
+#else
+#define WRITE_IN_BITORDER(dest, offset, data) \
+    *(dest + offset) = reverse_bitorder(data);
+#endif
 #else	/* If no (gcc on i386), don't use asm. */
-#define WRITE_IN_BITORDER(dest, data) \
+#define WRITE_IN_BITORDER(dest, offset, data) \
 	{ unsigned data2; \
 	data2 = byte_reversed[data & 0xFF]; \
 	data2 |= byte_reversed[(data & 0xFF00) >> 8] << 8; \
 	data2 |= byte_reversed[(data & 0xFF0000) >> 16] << 16; \
 	data2 |= byte_reversed[(data & 0xFF000000) >> 24] << 24; \
+#ifdef FIXEDBASE \
 	*(dest) = data2; \
+#else \	
+	*(dest + offset) = data2; \
+#endif \
 	}
 #endif
 
@@ -153,35 +178,97 @@ static __inline__ unsigned int reverse_bitorder(data) {
 	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest, data, mapping) \
 	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest, data, mapping)
 
-#ifndef MSBFIRST
-#define WRITE_IN_BITORDER3(dest, data) \
-	WRITE_IN_BITORDER3_MACRO(dest, data, byte_expand3)
-#define WRITE_IN_BITORDER3_FIRSTWORD(dest, data) \
-	WRITE_IN_BITORDER3_FIRSTWORD_MACRO(dest, data, byte_expand3)
-#define WRITE_IN_BITORDER3_SECONDWORD(dest, data) \
-	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest, data, byte_expand3)
-#define WRITE_IN_BITORDER3_THIRDWORD(dest, data) \
-	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest, data, byte_expand3)
+#ifdef MSBFIRST
+#define BYTE_EXPAND byte_reversed_expand3
 #else
-#define WRITE_IN_BITORDER3(dest, data) \
-	WRITE_IN_BITORDER3_MACRO(dest, data, byte_reversed_expand3)
-#define WRITE_IN_BITORDER3_FIRSTWORD(dest, data) \
-	WRITE_IN_BITORDER3_FIRSTWORD_MACRO(dest, data, byte_reversed_expand3)
-#define WRITE_IN_BITORDER3_SECONDWORD(dest, data) \
-	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest, data, byte_reversed_expand3)
-#define WRITE_IN_BITORDER3_THIRDWORD(dest, data) \
-	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest, data, byte_reversed_expand3)
+#define BYTE_EXPAND byte_expand3
 #endif
 
+#ifndef FIXEDBASE
+#define WRITE_IN_BITORDER3(dest, offset, data) \
+	WRITE_IN_BITORDER3_MACRO(dest + offset, data, BYTE_EXPAND)
+#define WRITE_IN_BITORDER3_FIRSTWORD(dest, offset, data) \
+	WRITE_IN_BITORDER3_FIRSTWORD_MACRO(dest + offset, data, BYTE_EXPAND)
+#define WRITE_IN_BITORDER3_SECONDWORD(dest, offset, data) \
+	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest + offset, data, BYTE_EXPAND)
+#define WRITE_IN_BITORDER3_THIRDWORD(dest, offset, data) \
+	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest + offset, data, BYTE_EXPAND)
+#else
+#define WRITE_IN_BITORDER3(dest, offset, data) \
+	WRITE_IN_BITORDER3_MACRO(dest, data, BYTE_EXPAND)
+#define WRITE_IN_BITORDER3_FIRSTWORD(dest, offset, data) \
+	WRITE_IN_BITORDER3_FIRSTWORD_MACRO(dest, data, BYTE_EXPAND)
+#define WRITE_IN_BITORDER3_SECONDWORD(dest, offset, data) \
+	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest, data, BYTE_EXPAND)
+#define WRITE_IN_BITORDER3_THIRDWORD(dest, offset, data) \
+	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest, data, BYTE_EXPAND)
+#endif
 
+#ifdef MSBFIRST
+#ifdef FIXEDBASE
+#define MAPPEDNAME(x) x##MSBFirstFixedBase
+#else
+#define MAPPEDNAME(x) x##MSBFirst
+#endif
+#else
+#ifdef FIXEDBASE
+#define MAPPEDNAME(x) x##FixedBase
+#else
+#define MAPPEDNAME(x) x
+#endif
+#endif
+
+/*
+ * Overview of supported low-level color expansion bitmap transfer functions:
+ *
+ *			Bit order:	LSB	MSB	LSB	MSB(-first)
+ *			FIXEDBASE?	No	No	Yes	Yes
+ *
+ * TE Text, SCANLINE_PAD_DWORD		X/O	X/O	u/o	u/o
+ * TE Text, SCANLINE_PAD_BYTE		u/w	u/w	u/w	u/w
+ * TE Text, SCANLINE_NO_PAD		u/w	u/w	u/w	u/w
+ * TE Text3, SCANLINE_PAD_DWORD		u	u	u	u
+ * TE Text3, SCANLINE_PAD_BYTE		-	-	-	-
+ * TE Text3, SCANLINE_NO_PAD		-	-	-	-
+ * Non-TE Text, SCANLINE_PAD_DWORD	d	d	d	d
+ * Non-TE Text, other padding		-	-	-	-
+ * Non-TE Text3, any padding		-	-	-	-
+ * Bitmap, SCANLINE_PAD_DWORD		X	X	u	u
+ * Bitmap, SCANLINE_PAD_BYTE		d	d	d	d
+ * Bitmap, SCANLINE_NO_PAD		d	d	d	d
+ * Stipple, any padding			d	d	d	d
+ *
+ * X = Supported, tested
+ * u = Supported, untested
+ * d = Disabled/unfinished
+ * - = Not supported
+ * w = Only supports transfer of the whole bitmap, not scanline-by-scanline.
+ * o = Optimized
+ * O = Really optimized
+ *
+ * Text3 = Bitmap transfer function for 24bpp with 8bpp color expansion.
+ */
+
+#define xf86DrawBitmapScanline \
+    MAPPEDNAME(xf86DrawBitmapScanline)
+#define xf86DrawBitmapScanline3 \
+    MAPPEDNAME(xf86DrawBitmapScanline3)
+#define xf86DrawTextScanline \
+    MAPPEDNAME(xf86DrawTextScanline)
+#define xf86DrawTextNoPad \
+    MAPPEDNAME(xf86DrawTextNoPad)
+#define xf86DrawTextBytePad \
+    MAPPEDNAME(xf86DrawTextBytePad)
+#define xf86DrawTextScanline3 \
+    MAPPEDNAME(xf86DrawTextScanline3)
+#define xf86DrawNonTETextScanline \
+    MAPPEDNAME(xf86DrawNonTETextScanline)
+#define xf86DrawStippleScanline \
+    MAPPEDNAME(xf86DrawStippleScanline)
 
 /* Functions for plain bitmap scanlines. */
 
-#ifdef MSBFIRST
-unsigned int *xf86DrawBitmapScanlineMSBFirst(base, src, nbytes)
-#else
 unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
-#endif
     unsigned int *base;
     unsigned int *src;
     int nbytes;
@@ -190,28 +277,32 @@ unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
     nwords = nbytes / 4;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER(base, ldl_u(src));
-    	WRITE_IN_BITORDER(base + 1, ldl_u(src + 1));
+    	WRITE_IN_BITORDER(base, 0, ldl_u(src));
+    	WRITE_IN_BITORDER(base, 1, ldl_u(src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER(base + 2, ldl_u(src + 2));
+    	WRITE_IN_BITORDER(base, 2, ldl_u(src + 2));
+#ifndef FIXEDBASE
     	base += 4;
-    	WRITE_IN_BITORDER(base - 1, ldl_u(src + 3));
+#endif
+    	WRITE_IN_BITORDER(base, -1, ldl_u(src + 3));
     	src += 4;
     }
     for (i = 0; i < nwords; i++) {
-    	WRITE_IN_BITORDER(base + i, ldl_u(src + i));
+    	WRITE_IN_BITORDER(base, i, ldl_u(src + i));
     }
     src += i;
+#ifndef FIXEDBASE
     base += i;
+#endif
     switch (nbytes % 4) {
     case 1 :
-        WRITE_IN_BITORDER(base, *(unsigned char *)src);
+        WRITE_IN_BITORDER(base, 0, *(unsigned char *)src);
         return base + 1;
     case 2 :
-        WRITE_IN_BITORDER(base, ldw_u(src));
+        WRITE_IN_BITORDER(base, 0, ldw_u(src));
         return base + 1;
     case 3 :
-        WRITE_IN_BITORDER(base,
+        WRITE_IN_BITORDER(base, 0,
             ldw_u(src) | (*((unsigned char *)src + 2) << 16));
         return base + 1;
     default :
@@ -220,11 +311,7 @@ unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
     return base;
 }
 
-#ifdef MSBFIRST
-unsigned int *xf86DrawBitmapScanline3MSBFirst(base, src, w)
-#else
 unsigned int *xf86DrawBitmapScanline3(base, src, w)
-#endif
     unsigned int *base;
     unsigned int *src;
     int w;
@@ -235,18 +322,22 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
     nwords = w / 32;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER3(base, ldl_u(src));
-    	WRITE_IN_BITORDER3(base + 3, ldl_u(src + 1));
+    	WRITE_IN_BITORDER3(base, 0, ldl_u(src));
+    	WRITE_IN_BITORDER3(base, 3, ldl_u(src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER3(base + 6, ldl_u(src + 2));
+    	WRITE_IN_BITORDER3(base, 6, ldl_u(src + 2));
+#ifndef FIXEDBASE
     	base += 12;
-    	WRITE_IN_BITORDER3(base - 3, ldl_u(src + 3));
+#endif
+    	WRITE_IN_BITORDER3(base, -3, ldl_u(src + 3));
     	src += 4;
     }
     while (nwords >= 1) {
-    	WRITE_IN_BITORDER3(base, ldl_u(src));
+    	WRITE_IN_BITORDER3(base, 0, ldl_u(src));
     	src++;
+#ifndef FIXEDBASE
     	base += 3;
+#endif
     	nwords --;
     }
     w &= 31;
@@ -266,14 +357,20 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
     default : /* 4 */
         bits = ldl_u(src);
     }
-    WRITE_IN_BITORDER3_FIRSTWORD(base, bits);
+    WRITE_IN_BITORDER3_FIRSTWORD(base, 0, bits);
+#ifndef FIXEDBASE
     base++;
+#endif
     if (w >= 11) {
-        WRITE_IN_BITORDER3_SECONDWORD(base, bits);
+        WRITE_IN_BITORDER3_SECONDWORD(base, 0, bits);
+#ifndef FIXEDBASE
         base++;
+#endif
         if (w >= 22) {
-            WRITE_IN_BITORDER3_THIRDWORD(base, bits);
+            WRITE_IN_BITORDER3_THIRDWORD(base, 0, bits);
+#ifndef FIXEDBASE
             base++;
+#endif
         }
     }
     return base;
@@ -284,7 +381,7 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
  * This isn't used yet. It doesn't work.
  */
 
-#ifdef MSBFIRST
+#if defined(MSBFIRST) && !defined(FIXEDBASE)
 ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(base, src, bits, nbytes)
     unsigned int *base;
     unsigned int *src;
@@ -341,23 +438,25 @@ ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(base, src, bits, nbytes)
     }
     if (leftedgebytes > 0) {
         base = (unsigned int *)((unsigned long)base & ~3L);
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         nbytes -= leftedgebytes;
+#ifdef FIXEDBASE
         base++;
+#endif
     }
     nwords = nbytes / 4;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER(base, *src);
-    	WRITE_IN_BITORDER(base + 1, *(src + 1));
+    	WRITE_IN_BITORDER(base, 0, *src);
+    	WRITE_IN_BITORDER(base, 1, *(src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER(base + 2, *(src + 2));
+    	WRITE_IN_BITORDER(base, 2, *(src + 2));
     	base += 4;
-    	WRITE_IN_BITORDER(base - 1, *(src + 3));
+    	WRITE_IN_BITORDER(base, -1, *(src + 3));
     	src += 4;
     }
     for (i = 0; i < nwords; i++) {
-    	WRITE_IN_BITORDER(base + i, *(src + i));
+    	WRITE_IN_BITORDER(base, i, *(src + i));
     }
     switch (nbytes) {
     case 0 :
@@ -386,8 +485,10 @@ ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(base, src, bits, nbytes)
 
 static unsigned int *DrawTextScanlineWidth6();
 unsigned int *DrawTextScanlineWidth6P();	/* Pentium-opt ASM version */
+unsigned int *DrawTextScanlineWidth6PMSBFirst();
 static unsigned int *DrawTextScanlineWidth8();
 unsigned int *DrawTextScanlineWidth8P();
+unsigned int *DrawTextScanlineWidth8PMSBFirst();
 static unsigned int *DrawTextScanlineWidth10();
 static unsigned int *DrawTextScanlineWidth12();
 static unsigned int *DrawTextScanlineWidth14();
@@ -395,7 +496,7 @@ static unsigned int *DrawTextScanlineWidth16();
 static unsigned int *DrawTextScanlineWidth18();
 static unsigned int *DrawTextScanlineWidth24();
 
-#ifdef MSBFIRST
+#if defined(MSBFIRST) || defined(FIXEDBASE)
 /* Export just the non-MSBFirst version. */
 static
 #endif
@@ -406,14 +507,22 @@ unsigned int *(*glyphwidth_function[32])(
 ) = {
     NULL, NULL, NULL, NULL, 
     NULL,
-#if defined(__i386__) /* && defined(NEVER) */
-    DrawTextScanlineWidth6P,	/* Pentium-optimized ASM version. */
+#if defined(__i386__) && !defined(FIXEDBASE) /* && defined(NEVER) */
+#ifdef MSBFIRST
+    DrawTextScanlineWidth6PMSBFirst,	/* Pentium-optimized ASM version. */
+#else
+    DrawTextScanlineWidth6P,		/* Pentium-optimized ASM version. */
+#endif
 #else
     DrawTextScanlineWidth6,
 #endif
     NULL,
-#if defined(__i386__) /* && defined(NEVER) */
-    DrawTextScanlineWidth8P,	/* Pentium-optimized ASM version. */
+#if defined(__i386__) && !defined(FIXEDBASE) /* && defined(NEVER) */
+#ifdef MSBFIRST
+    DrawTextScanlineWidth8PMSBFirst,	/* Pentium-optimized ASM version. */
+#else
+    DrawTextScanlineWidth8P,		/* Pentium-optimized ASM version. */
+#endif
 #else
     DrawTextScanlineWidth8,
 #endif
@@ -425,7 +534,7 @@ unsigned int *(*glyphwidth_function[32])(
     NULL, NULL, NULL, NULL,
 };
 
-#ifndef MSBFIRST
+#if defined(MSBFIRST) && !defined(FIXEDBASE)
 /* This one needs to be defined only once. */
 int glyphwidth_stretchsize[32] = {
     0, 0, 0, 0, 0, 16, 0, 8, 0, 16, 0, 8, 0, 16, 0, 8,
@@ -435,11 +544,7 @@ int glyphwidth_stretchsize[32] = {
 extern int glyphwidth_stretchsize[32];
 #endif
 
-#ifdef MSBFIRST
-unsigned int *xf86DrawTextScanlineMSBFirst(base, glyphp, line, nglyph, glyphwidth)
-#else
 unsigned int *xf86DrawTextScanline(base, glyphp, line, nglyph, glyphwidth)
-#endif
     unsigned int *base;
     unsigned int **glyphp;
     int line;
@@ -472,26 +577,137 @@ unsigned int *xf86DrawTextScanline(base, glyphp, line, nglyph, glyphwidth)
         shift += glyphwidth;
         if (shift >= 32) {
             /* Write a 32-bit word. */
-            WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
             base++;
+#endif
             shift -= 32;
             UINT64_SHIFTRIGHT32(bits);
         }
         i++;
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
         base++;
+#endif
+    }
+    return base;
+}
+
+/*
+ * This function does not transfer one scanline worth of bits like all the
+ * other ones, but instead transfers the whole bitmap (padded to a DWORD
+ * boundary), without any end-of-scanline padding (SCANLINE_NO_PAD).
+ * This function violates the non-XAA dependency of the functions defined
+ * in this file (it references the xf86AccelInfoRec).
+ */
+
+unsigned int *xf86DrawTextNoPad(base, glyphp, height, nglyph, glyphwidth)
+    unsigned int *base;
+    unsigned int **glyphp;
+    int height;
+    int nglyph;
+    int glyphwidth;
+{
+    UINT64_DECLARE(bits);
+    int shift, i, line;
+
+    UINT64_ASSIGN(bits, 0, 0);
+    shift = 0;
+    for (line = 0; line < height; line++) {
+        i = 0;
+        while (i < nglyph) {
+            UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+            shift += glyphwidth;
+            if (shift >= 32) {
+                /* Write a 32-bit word. */
+                WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+    #ifndef FIXEDBASE
+                base++;
+    #endif
+                shift -= 32;
+                UINT64_SHIFTRIGHT32(bits);
+            }
+            i++;
+        }
+#ifndef FIXEDBASE
+        if ((unsigned char *)base >= (unsigned char *)
+                     xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+           base = (unsigned int *)
+                     xf86AccelInfoRec.CPUToScreenColorExpandBase;
+#endif
+    }
+    if (shift > 0) {
+        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+        base++;
+#endif
+    }
+    return base;
+}
+
+/*
+ * Similarly, this is for BYTE-padded scanlines.
+ */
+
+unsigned int *xf86DrawTextBytePad(base, glyphp, height, nglyph, glyphwidth)
+    unsigned int *base;
+    unsigned int **glyphp;
+    int height;
+    int nglyph;
+    int glyphwidth;
+{
+    UINT64_DECLARE(bits);
+    int shift, i, line;
+
+    UINT64_ASSIGN(bits, 0, 0);
+    shift = 0;
+    for (line = 0; line < height; line++) {
+        i = 0;
+        while (i < nglyph) {
+            UINT64_ORLEFTSHIFTEDINT(bits, glyphp[i][line], shift);
+            shift += glyphwidth;
+            if (shift >= 32) {
+                /* Write a 32-bit word. */
+                WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+                base++;
+#endif
+                shift -= 32;
+                UINT64_SHIFTRIGHT32(bits);
+            }
+            i++;
+        }
+        /* Pad to nearest BYTE boundary. */
+        shift = (shift + 7) & (~7);
+        if (shift >= 32) {
+            /* Write a 32-bit word. */
+            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+            base++;
+#endif
+            shift -= 32;
+            UINT64_SHIFTRIGHT32(bits);
+        }
+#ifndef FIXEDBASE
+        if ((unsigned char *)base >= (unsigned char *)
+                     xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+           base = (unsigned int *)
+                     xf86AccelInfoRec.CPUToScreenColorExpandBase;
+#endif
+    }
+    if (shift > 0) {
+        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+        base++;
+#endif
     }
     return base;
 }
 
 
-#ifdef MSBFIRST
-unsigned int *xf86DrawNonTETextScanlineMSBFirst(base, glyphinfop, line, nglyph)
-#else
 unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
-#endif
     unsigned int *base;
     NonTEGlyphInfo *glyphinfop;
     int line;
@@ -515,26 +731,26 @@ unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
          */
         if (shift >= 32) {
             /* Write a 32-bit word. */
-            WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
             base++;
+#endif
             shift -= 32;
             UINT64_SHIFTRIGHT32(bits);
         }
         i++;
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
         base++;
+#endif
     }
     return base;
 }
 
 
-#ifdef MSBFIRST
-unsigned int *xf86DrawTextScanline3MSBFirst(base, glyphp, line, nglyph, glyphwidth)
-#else
 unsigned int *xf86DrawTextScanline3(base, glyphp, line, nglyph, glyphwidth)
-#endif
     unsigned int *base;
     unsigned int **glyphp;
     int line;
@@ -552,22 +768,30 @@ unsigned int *xf86DrawTextScanline3(base, glyphp, line, nglyph, glyphwidth)
         shift += glyphwidth;
         if (shift >= 32) {
             /* Write a 32-bit word. */
-            WRITE_IN_BITORDER3(base, UINT64_LOW32(bits));
+            WRITE_IN_BITORDER3(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
             base += 3;
+#endif
             shift -= 32;
             UINT64_SHIFTRIGHT32(bits);
         }
         i++;
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER3_FIRSTWORD(base, UINT64_LOW32(bits));
+        WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
         base++;
+#endif
         if (shift >= 11) {
-            WRITE_IN_BITORDER3_SECONDWORD(base, UINT64_LOW32(bits));
+            WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
             base++;
+#endif
             if (shift >= 22) {
-                WRITE_IN_BITORDER3_THIRDWORD(base, UINT64_LOW32(bits));
+                WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
                 base++;
+#endif
             }
         }
     }
@@ -595,22 +819,24 @@ static unsigned int *DrawTextScanlineWidth6(base, glyphp, line, nglyph)
         bits |= glyphp[3][line] << 18;
         bits |= glyphp[4][line] << 24;
         bits |= glyphp[5][line] << 30;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[5][line] >> 2;
         bits |= glyphp[6][line] << 4;
         bits |= glyphp[7][line] << 10;
         bits |= glyphp[8][line] << 16;
         bits |= glyphp[9][line] << 22;
         bits |= glyphp[10][line] << 28;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[10][line] >> 4;
         bits |= glyphp[11][line] << 2;
         bits |= glyphp[12][line] << 8;
         bits |= glyphp[13][line] << 14;
         bits |= glyphp[14][line] << 20;
         bits |= glyphp[15][line] << 26;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
+#ifndef FIXEDBASE
         base += 3;
+#endif
         nglyph -= 16;
         glyphp += 16;
     }
@@ -639,8 +865,12 @@ static unsigned int *DrawTextScanlineWidth8(base, glyphp, line, nglyph)
         bits |= byte_reversed[glyphp[5][line]] << 8;
         bits |= byte_reversed[glyphp[6][line]] << 16;
         bits |= byte_reversed[glyphp[7][line]] << 24;
+#ifndef FIXEDBASE
         *(base + 1) = bits;
         base += 2;
+#else
+	*base = bits;
+#endif
         nglyph -= 8;	    
         glyphp += 8;
     }
@@ -651,13 +881,15 @@ static unsigned int *DrawTextScanlineWidth8(base, glyphp, line, nglyph)
         bits |= glyphp[1][line] << 8;
         bits |= glyphp[2][line] << 16;
         bits |= glyphp[3][line] << 24;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[4][line];
         bits |= glyphp[5][line] << 8;
         bits |= glyphp[6][line] << 16;
         bits |= glyphp[7][line] << 24;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
+#ifndef FIXEDBASE
         base += 2;
+#endif
         nglyph -= 8;	    
         glyphp += 8;
     }
@@ -677,7 +909,7 @@ static unsigned int *DrawTextScanlineWidth8(base, glyphp, line, nglyph)
             break;
         bits |= glyphp[11][line] << 24;
     } while (0);
-    WRITE_IN_BITORDER(base, bits);
+    WRITE_IN_BITORDER(base, 0, bits);
     if (nglyph <= 4)
         return base + 1;
     do {
@@ -692,7 +924,7 @@ static unsigned int *DrawTextScanlineWidth8(base, glyphp, line, nglyph)
             break;
         bits |= glyphp[11][line] << 24;
     } while (0);
-    WRITE_IN_BITORDER(base + 1, bits);
+    WRITE_IN_BITORDER(base, 1, bits);
     return base + 2;
 #endif
     return base;
@@ -710,28 +942,30 @@ static unsigned int *DrawTextScanlineWidth10(base, glyphp, line, nglyph)
         bits |= glyphp[1][line] << 10;
         bits |= glyphp[2][line] << 20;
         bits |= glyphp[3][line] << 30;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[3][line] >> 2;
         bits |= glyphp[4][line] << 8;
         bits |= glyphp[5][line] << 18;
         bits |= glyphp[6][line] << 28;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[6][line] >> 4;
         bits |= glyphp[7][line] << 6;
         bits |= glyphp[8][line] << 16;
         bits |= glyphp[9][line] << 26;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
         bits = glyphp[9][line] >> 6;
         bits |= glyphp[10][line] << 4;
         bits |= glyphp[11][line] << 14;
         bits |= glyphp[12][line] << 24;
-        WRITE_IN_BITORDER(base + 3, bits);
+        WRITE_IN_BITORDER(base, 3, bits);
         bits = glyphp[12][line] >> 8;
         bits |= glyphp[13][line] << 2;
         bits |= glyphp[14][line] << 12;
         bits |= glyphp[15][line] << 22;
-        WRITE_IN_BITORDER(base + 4, bits);
+        WRITE_IN_BITORDER(base, 4, bits);
+#ifndef FIXEDBASE
         base += 5;
+#endif
         nglyph -= 16;
         glyphp += 16;
     }
@@ -749,17 +983,19 @@ static unsigned int *DrawTextScanlineWidth12(base, glyphp, line, nglyph)
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 12;
         bits |= glyphp[2][line] << 24;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[2][line] >> 8;
         bits |= glyphp[3][line] << 4;
         bits |= glyphp[4][line] << 16;
         bits |= glyphp[5][line] << 28;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[5][line] >> 4;
         bits |= glyphp[6][line] << 8;
         bits |= glyphp[7][line] << 20;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
+#ifndef FIXEDBASE
         base += 3;
+#endif
         nglyph -= 8;
         glyphp += 8;
     }
@@ -777,33 +1013,35 @@ static unsigned int *DrawTextScanlineWidth14(base, glyphp, line, nglyph)
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 14;
         bits |= glyphp[2][line] << 28;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[2][line] >> 4;
         bits |= glyphp[3][line] << 10;
         bits |= glyphp[4][line] << 24;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[4][line] >> 8;
         bits |= glyphp[5][line] << 6;
         bits |= glyphp[6][line] << 20;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
         bits = glyphp[6][line] >> 12;
         bits |= glyphp[7][line] << 2;
         bits |= glyphp[8][line] << 16;
         bits |= glyphp[9][line] << 30;
-        WRITE_IN_BITORDER(base + 3, bits);
+        WRITE_IN_BITORDER(base, 3, bits);
         bits = glyphp[9][line] >> 2;
         bits |= glyphp[10][line] << 12;
         bits |= glyphp[11][line] << 26;
-        WRITE_IN_BITORDER(base + 4, bits);
+        WRITE_IN_BITORDER(base, 4, bits);
         bits = glyphp[11][line] >> 6;
         bits |= glyphp[12][line] << 8;
         bits |= glyphp[13][line] << 22;
-        WRITE_IN_BITORDER(base + 5, bits);
+        WRITE_IN_BITORDER(base, 5, bits);
         bits = glyphp[13][line] >> 10;
         bits |= glyphp[14][line] << 4;
         bits |= glyphp[15][line] << 18;
-        WRITE_IN_BITORDER(base + 6, bits);
+        WRITE_IN_BITORDER(base, 6, bits);
+#ifndef FIXEDBASE
         base += 7;
+#endif
         nglyph -= 16;
         glyphp += 16;
     }
@@ -820,17 +1058,19 @@ static unsigned int *DrawTextScanlineWidth16(base, glyphp, line, nglyph)
         unsigned int bits;
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 16;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[2][line];
         bits |= glyphp[3][line] << 16;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[4][line];
         bits |= glyphp[5][line] << 16;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
         bits = glyphp[6][line];
         bits |= glyphp[7][line] << 16;
-        WRITE_IN_BITORDER(base + 3, bits);
+        WRITE_IN_BITORDER(base, 3, bits);
+#ifndef FIXEDBASE
         base += 4;
+#endif
         nglyph -= 8;	    
         glyphp += 8;
     }
@@ -847,38 +1087,40 @@ static unsigned int *DrawTextScanlineWidth18(base, glyphp, line, nglyph)
         unsigned int bits;
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 18;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[1][line] >> 14;
         bits |= glyphp[2][line] << 4;
         bits |= glyphp[3][line] << 22;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[3][line] >> 10;
         bits |= glyphp[4][line] << 8;
         bits |= glyphp[5][line] << 26;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
         bits = glyphp[5][line] >> 6;
         bits |= glyphp[6][line] << 12;
         bits |= glyphp[7][line] << 30;
-        WRITE_IN_BITORDER(base + 3, bits);
+        WRITE_IN_BITORDER(base, 3, bits);
         bits = glyphp[7][line] >> 2;
         bits |= glyphp[8][line] << 16;
-        WRITE_IN_BITORDER(base + 4, bits);
+        WRITE_IN_BITORDER(base, 4, bits);
         bits = glyphp[8][line] >> 16;
         bits |= glyphp[9][line] << 2;
         bits |= glyphp[10][line] << 20;
-        WRITE_IN_BITORDER(base + 5, bits);
+        WRITE_IN_BITORDER(base, 5, bits);
         bits = glyphp[10][line] >> 12;
         bits |= glyphp[11][line] << 6;
         bits |= glyphp[12][line] << 24;
-        WRITE_IN_BITORDER(base + 6, bits);
+        WRITE_IN_BITORDER(base, 6, bits);
         bits = glyphp[12][line] >> 8;
         bits |= glyphp[13][line] << 10;
         bits |= glyphp[14][line] << 28;
-        WRITE_IN_BITORDER(base + 7, bits);
+        WRITE_IN_BITORDER(base, 7, bits);
         bits = glyphp[14][line] >> 4;
         bits |= glyphp[15][line] << 14;
-        WRITE_IN_BITORDER(base + 8, bits);
+        WRITE_IN_BITORDER(base, 8, bits);
+#ifndef FIXEDBASE
         base += 9;
+#endif
         nglyph -= 16;
         glyphp += 16;
     }
@@ -895,14 +1137,16 @@ static unsigned int *DrawTextScanlineWidth24(base, glyphp, line, nglyph)
         unsigned int bits;
         bits = glyphp[0][line];
         bits |= glyphp[1][line] << 24;
-        WRITE_IN_BITORDER(base, bits);
+        WRITE_IN_BITORDER(base, 0, bits);
         bits = glyphp[1][line] >> 8;
         bits |= glyphp[2][line] << 16;
-        WRITE_IN_BITORDER(base + 1, bits);
+        WRITE_IN_BITORDER(base, 1, bits);
         bits = glyphp[2][line] >> 16;
         bits |= glyphp[3][line] << 8;
-        WRITE_IN_BITORDER(base + 2, bits);
+        WRITE_IN_BITORDER(base, 2, bits);
+#ifndef FIXEDBASE
         base += 3;
+#endif
         nglyph -= 4;
         glyphp += 4;
     }
@@ -916,13 +1160,8 @@ static unsigned int *DrawTextScanlineWidth24(base, glyphp, line, nglyph)
  * Source data access can be unaligned.
  */
  
-#ifdef MSBFIRST
-unsigned int *xf86DrawStippleScanlineMSBFirst(base, src, srcwidth,
-stipplewidth, srcoffset, w)
-#else
 unsigned int *xf86DrawStippleScanline(base, src, srcwidth, stipplewidth,
 srcoffset, w)
-#endif
     unsigned int *base;
     unsigned char *src;		/* Pointer to stipple bitmap. */
     int srcwidth;		/* Width of stipple bitmap in bytes. */
@@ -949,7 +1188,7 @@ srcoffset, w)
          */
         dw = min(w, sw);
         if (dw >= 32) {
-            UINT64_ORLEFTSHIFTEDINT(bits, *((unsigned int *)srcp), shift);
+            UINT64_ORLEFTSHIFTEDINT(bits, ldl_u(srcp), shift);
             shift += 32;
             sw -= 32;
             w -= 32;
@@ -958,18 +1197,18 @@ srcoffset, w)
         else {
             /* Make sure no source overrunning occurs. */
             if (dw > 24) {
-                UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned int *)srcp, shift);
+                UINT64_ORLEFTSHIFTEDINT(bits, ldl_u(srcp), shift);
             }
             else
             if (dw > 16) {
                 unsigned int data;
-                data = *(unsigned short *)srcp +
+                data = ldw_u(srcp) +
                     (*(unsigned char *)(srcp + 2) << 16);
                 UINT64_ORLEFTSHIFTEDINT(bits, data, shift);
             }
             else
             if (dw > 8) {
-                UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned short *)srcp, shift);
+                UINT64_ORLEFTSHIFTEDINT(bits, ldw_u(srcp), shift);
             }
             else {
                 UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned char *)srcp, shift);
@@ -980,8 +1219,10 @@ srcoffset, w)
         }
         if (shift >= 32) {
             /* Write a 32-bit word. */
-            WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+            WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
             base++;
+#endif
             shift -= 32;
             UINT64_SHIFTRIGHT32(bits);
         }
@@ -993,8 +1234,10 @@ srcoffset, w)
         }
     }
     if (shift > 0) {
-        WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+        WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
         base++;
+#endif
     }
     return base;
 }
