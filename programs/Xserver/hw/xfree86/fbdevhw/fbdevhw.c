@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.22 2001/01/21 21:19:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.23 2001/04/01 14:00:12 tsi Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -811,4 +811,22 @@ fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 
 	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)fbmode))
 		perror("ioctl FBIOBLANK");
+}
+
+Bool
+fbdevHWSaveScreen(ScreenPtr pScreen, int mode)
+{
+	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+	unsigned long unblank;
+
+	if (!pScrn->vtSema)
+		return;
+
+	unblank = xf86IsUnblank(mode);
+
+	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)(1-unblank)))
+		return FALSE;
+
+	return TRUE;
 }

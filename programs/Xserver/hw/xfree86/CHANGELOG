@@ -1,4 +1,14 @@
 XFree86 4.0.99.2 (6 April 2001)
+ 360. Fbdev driver updates, including:
+       - Switch from shadowfb to mishadow.
+       - Add RENDER extension support.
+       - Add DGA support.
+       - Fix SaveScreen function
+       - Blank screen in ScreenInit so the former framebuffer contents aren't
+         visible
+      (#4544, Michel Dänzer).
+ 359. Remove references to th_TH compose file from compose.dir (#4543,
+      Theppitak Karoonboonyanan).
  358. Fix for improper setting of the maxHValue limit in the tseng driver.
       This makes modes like 1152x864@24bpp possible (#A.355, Stanislav Brabec).
  357. Fix a hw cursor related lockup that shows up with some mga G400
@@ -12887,4 +12897,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1669 2001/04/06 02:16:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1670 2001/04/06 16:51:12 dawes Exp $
