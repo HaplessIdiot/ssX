@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.21 2002/01/23 18:48:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.22 2002/01/25 21:56:09 tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -292,7 +292,6 @@ static const char *fbSymbols[] =
 	"cfbScreenInit",
 	"cfb16ScreenInit",
 	"cfb24ScreenInit",
-	"cfb24_32ScreenInit",
 	"cfb32ScreenInit",
 	"cfb16BresS",
 	"cfb24BresS",
