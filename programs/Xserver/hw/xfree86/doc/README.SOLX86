@@ -165,46 +165,7 @@ number of ioctl() calls are broken.
 4.  Notes for building XFree86 on Solaris x86
 
   1.  The majority of all modifications you will need to make are now in
-      ~xc/config/cf/xf86site.def, except one. You will need to set OSName, and
-      OSMinorVersion correctly in ~xc/config/cf/sun.cf.
-
-
-      Under Solaris 2.1 for x86, sun.cf needs to read (near the top of the
-      file)
-
-
-		#ifdef SVR4Architecture
-		#ifdef i386Architecture
-		#define OSName		 SunOS 5.1 x86
-		XCOMM operating system:  OSName
-		#define OSMajorVersion	      5
-		#define OSMinorVersion	      1
-
-
-
-      Under Solaris 2.4 for x86, sun.cf needs to read (near the top of the
-      file)
-
-
-		#ifdef SVR4Architecture
-		#ifdef i386Architecture
-		#define OSName		 SunOS 5.4 x86
-		XCOMM operating system:  OSName
-		#define OSMajorVersion	      5
-
-
-
-
-
-
-
-
-Information for Solaris for x86 Users
-
-
-
-		#define OSMinorVersion	      4
-
+      ~xc/config/cf/xf86site.def.
 
 
   2.  Both Gcc, and ProWorks are supported by XFree86. Gcc-2.5.8 or gcc-2.7.2
@@ -222,40 +183,13 @@ Information for Solaris for x86 Users
       It is recommended that you set ThreadedX in ~xc/config/cf/sun.cf to NO,
       if you are using GCC.  ProWorks does not have this problem.
 
-  3.  If you are using ProWorks to compile the XFree86 distribution, you need
-      to modify your PATH appropriately so the ProWorks tools are available.
+  3.   To build XFree86 with gcc you need gcc and (optionnally) c++filt from
+      GNU binutils. Don't install gas or ld from GNU binutils, use the one pro-
+      vided by Sun.
 
-  4.  You MUST put /usr/ccs/bin at the front of your PATH. There are known
-      problems with some GNU replacements for the utilities found there. So the
-      /usr/ccs/bin versions of these programs must be found before any other
-      possible GNU versions. (Most notably GNU 'ar' does not work during the
-      build).
-
-  5.  If you wish to use the "memory aperture" feature of the S3, and Mach32
-      servers, you need to compile, and install the Solaris x86 aperture driver
-      for memory mapped I/O support.  This driver is REQUIRED for the I128,
-      P9000 and Mach 64 servers.
-
-      The source for this driver is included in ~xc/pro-
-      grams/Xserver/hw/xfree86/etc/apSolx86.shar.  Building, and installing the
-      driver is relatively straight forward. Please read its accompanying
-      README file.
-
-      You also need to set HasSolx86apertureDrv to YES in ~xc/con-
-      fig/cf/xf86site.def.
-
-  6.  If you don't have c++filt or if you have troubles in making World with
-      c++filt, you need to set UseExportLists to NO in ~xc/config/cf/host.def.
-
-      If you use c++filt, you need to check the definition of PATH in ~xc/con-
-      fig/util/elistgen.sun.
-
-
-5.  Notes for running XFree86 on Solaris x86
-
-  1.  If you have not made the Virtual Terminal devices, you will need to spec-
-      ify the terminal device to run the Xserver on.  The correct device is
-      vt00 so your xinit command would look like so:
+      With XFree86 3.3, you will need to setup a /opt/SUNWspro/bin directory
+      containing symbolic links named cc, CC, and c++filt pointing respectively
+      to the actual gcc, g++ and c++filt commands.
 
 
 
@@ -268,6 +202,47 @@ Information for Solaris for x86 Users
 Information for Solaris for x86 Users
 
 
+
+  4.  If you don't have c++filt or if you have troubles in making World with
+      c++filt, you need to set UseExportLists to NO in ~xc/config/cf/host.def.
+
+
+
+  5.  If you are using ProWorks to compile the XFree86 distribution, you need
+      to modify your PATH appropriately so the ProWorks tools are available.
+      Normally, they should be in /opt/SUNWspro/bin
+
+  6.  You MUST put /usr/ccs/bin at the front of your PATH. There are known
+      problems with some GNU replacements for the utilities found there. So the
+      /usr/ccs/bin versions of these programs must be found before any other
+      possible GNU versions. (Most notably GNU 'ar' does not work during the
+      build).
+
+  7.  If you wish to use the "memory aperture" feature of the S3, and Mach32
+      servers, you need to compile, and install the Solaris x86 aperture driver
+      for memory mapped I/O support.  This driver is REQUIRED for the I128,
+      P9000 and Mach 64 servers.
+
+      You  need to set HasSolx86apertureDrv to YES in ~xc/con-
+      fig/cf/xf86site.def.
+
+       to enable the aperture driver.
+
+      Under Solaris 2.5 and 2.5.1, there's a system driver (/dev/xsvc/ that
+      provides this functionality. It will be detected automatically by the
+      server, so you don't need to install the driver.
+
+      For Solaris 2.1 and 2.4, the source for this driver is included in
+      ~xc/programs/Xserver/hw/xfree86/etc/apSolx86.shar.  Building, and
+      installing the driver is relatively straight forward. Please read its
+      accompanying README file.
+
+
+5.  Notes for running XFree86 on Solaris x86
+
+  1.  If you have not made the Virtual Terminal devices, you will need to spec-
+      ify the terminal device to run the Xserver on.  The correct device is
+      vt00 so your xinit command would look like so:
 
 		     xinit -- vt00
 
@@ -282,6 +257,17 @@ Information for Solaris for x86 Users
       /usr/X11R6/lib:/usr/openwin/lib:/usr/dt/lib.  Including /usr/X11R6/lib in
       your LD_LIBRARY_PATH is probably not necessary, however it doesn't hurt.
       :)
+
+
+
+
+
+
+
+
+Information for Solaris for x86 Users
+
+
 
       Including /usr/openwin/lib in the LD_LIBRARY_PATH is recommended because
       some Sun supplied binaries were not compiled with LD_RUN_PATH set prop-
@@ -312,9 +298,6 @@ Information for Solaris for x86 Users
 
       There is no known work around.
 
-  2.  It has been reported that the aperture driver doesn't work under Solaris
-      2.5.1. It probably doesn't work either under 2.5.
-
 
 7.  Bug Notification
 
@@ -322,62 +305,13 @@ Bug reports need to be sent to XFree86@XFree86.org, or posted to the comp.win-
 dows.x.i386unix newsgroup.  Questions or comments about the Solaris support, or
 the Solaris distribution need to be made to davidh@use.com, or danson@lgc.com.
 
-
-
-
-
-
-
-
-
-
-Information for Solaris for x86 Users
-
-
-
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.13 1997/05/17 12:02:32 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.14 1997/05/21 15:17:08 dawes Exp $
 
 
 
 
 
      $XConsortium: SOLX86.sgml /main/7 1996/10/28 05:43:28 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
