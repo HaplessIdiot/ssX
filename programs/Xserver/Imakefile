@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.183 2000/05/06 22:17:37 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.184 2000/06/17 00:03:10 martin Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -533,8 +533,11 @@ XNEST = Xnest
 #if XVirtualFramebufferServer && !MakeDllModules
 XVFB = Xvfb
 #endif
-#if defined(XF86Server) || (!MakeDllModules && (defined(XnestServer) || defined(XVirtualFramebufferServer)))
-MakeMutex($(XF86SERVER) $(XNEST) $(XVFB))
+#if XWinServer && !MakeDllModules
+XWIN = XWin
+#endif
+#if defined(XF86Server) || (!MakeDllModules && (defined(XnestServer) || defined(XVirtualFramebufferServer) || defined(XWinServer)))
+MakeMutex($(XF86SERVER) $(XNEST) $(XVFB) $(XWIN))
 #endif
 MakeMutex($(STDDIRS) mfb fb cfb cfb16 cfb24 cfb32)
 #endif
@@ -980,21 +983,21 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
-#ifndef Win32Architecture
-XVFBDDXDIR = hw/vfb
+#if defined(Win32Architecture)
+VFBDDXDIR = hw
 #else
-XVFBDDXDIR = hw
+XVFBDDXDIR = hw/vfb
 #endif
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
 #ifndef Win32Architecture
 #if BuildDPMS
-XVFBDPMSSTUBOBJS = hw/vfb/dpmsstubs.o
+XVFBDPMSSTUBOBJS = $(VFBDDXDIR)/dpmsstubs.o
 #endif
-XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBDPMSSTUBOBJS)
+XVFBOBJS = $(VFBDDXDIR)/stubs.o $(VFBDDXDIR)/miinitext.o $(XVFBDPMSSTUBOBJS)
 #else
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
-XVFB = hw/vfb/LibraryTargetName(vfb)
+XVFB = $(VFBDDXDIR)/LibraryTargetName(vfb)
 #if DoLoadableServer
 XVFBLIBS = PreFbLibs $(XVFB) $(CFB) PostFbLibs $(MI)
 #else
@@ -1013,6 +1016,45 @@ ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS), \
 #endif /* XVirtualFramebufferServer */
 
 
+#if XWinServer && !MakeDllModules
+XCOMM
+XCOMM server with DirectX framebuffer for Windows
+XCOMM
+MFBDIR   = mfb
+CFB8DIR  = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
+#ifndef Win32Architecture
+XWINDDXDIR = hw/xwin
+#else
+XWINDDXDIR = hw
+#endif
+XWINDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XWINDDXDIR) $(DEPDIRS)
+#if BuildDPMS
+XWINOBJS = hw/xwin/InitInput.o hw/xwin/InitOutput.o hw/xwin/stubs.o hw/xwin/directx.o hw/xwin/dpmsstubs.o dix/main.o hw/xwin/ntux_xf.o
+#else
+XWINOBJS = hw/xwin/InitInput.o hw/xwin/InitOutput.o hw/xwin/stubs.o hw/xwin/directx.o dix/main.o hw/xwin/ntux_xf.o
+#endif
+XWIN = hw/xwin/LibraryTargetName(XWin)
+XWINLIBS = PreFbLibs $(XWIN) $(CFB) PostFbLibs $(MI) $(SURFLIB) 
+XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XWINDIRS) $(XWINOBJS) $(XWIN) $(XWINLIBS) $(XWINSYSLIBS))
+#endif
+#if ForceServerRemake
+$(XWINOBJS) $(XWIN) $(XWINLIBS) $(XWINSYSLIBS):: $(XWINDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
+	$(XWINLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XWINSYSLIBS)) 
+
+#ifndef ServerToInstall
+#define ServerToInstall XWin
+#endif
+#endif /* XWinServer */
+ 
+ 
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)

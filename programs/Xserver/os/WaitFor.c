@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.23 1999/11/19 13:55:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.24 2000/05/05 17:53:50 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -144,6 +144,9 @@ WaitForSomething(pClientsReady)
 {
     int i;
     struct timeval waittime, *wt;
+#ifdef __CYGWIN__
+    struct timeval waittime0, *wt0;
+#endif
     INT32 timeout;
 #ifdef DPMSExtension
     INT32 standbyTimeout, suspendTimeout, offTimeout;
@@ -238,7 +241,12 @@ WaitForSomething(pClientsReady)
 			      (now - lastDeviceEventTime.milliseconds));
 #endif /* DPMSExtension */
 
-	    if (timeout <= 0
+	    if (
+#ifndef __CYGWIN__
+		timeout <= 0
+#else
+		timeout = 0
+#endif
 #ifdef DPMSExtension
 		 && ScreenSaverTime > 0
 #endif /* DPMSExtension */
@@ -338,6 +346,10 @@ WaitForSomething(pClientsReady)
 #ifdef XTESTEXT1
 	/* XXX how does this interact with new write block handling? */
 	if (playback_on) {
+#ifdef __CYGWIN__
+	    waittime.tv_sec = 0;
+	    waittime.tv_usec = 0;
+#endif
 	    wt = &waittime;
 	    XTestComputeWaitTime (&waittime);
 	}
@@ -350,8 +362,17 @@ WaitForSomething(pClientsReady)
 	    XFD_COPYSET(&ClientsWriteBlocked, &clientsWritable);
 	    i = Select (MaxClients, &LastSelectMask, &clientsWritable, NULL, wt);
 	}
-	else
+	else 
+	{
+#ifndef __CYGWIN__
 	    i = Select (MaxClients, &LastSelectMask, NULL, NULL, wt);
+#else
+	    waittime0.tv_sec = 0;
+	    waittime0.tv_usec = 10000;
+	    wt0 = &waittime0;
+	    i = Select (MaxClients, &LastSelectMask, NULL, NULL, wt0);
+#endif
+	}
 	selecterr = errno;
 	WakeupHandler(i, (pointer)&LastSelectMask);
 #ifdef XTESTEXT1

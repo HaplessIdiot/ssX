@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_blt.c,v 1.3 1997/01/18 07:19:01 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/do_blt.c,v 1.4 1999/02/28 11:19:52 dawes Exp $ */
 
 #include "x11perf.h"
 #include <stdio.h>
@@ -337,7 +337,11 @@ DoPutImage(XParms xp, Parms p, int reps)
 
 #include <sys/types.h>
 #ifndef Lynx
+#ifndef __CYGWIN__
 #include <sys/ipc.h>
+#else
+#include <sys/cygipc.h>
+#endif
 #include <sys/shm.h>
 #else
 #include <ipc.h>

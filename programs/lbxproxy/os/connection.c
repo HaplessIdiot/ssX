@@ -56,7 +56,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.11 2000/05/14 20:27:58 alanh Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.12 2000/05/18 23:46:26 dawes Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -88,7 +88,7 @@ extern int errno;
 
 #if defined (TCPCONN) || defined(STREAMSCONN)
 # include <netinet/in.h>
-# ifndef hpux
+# if !defined(hpux) && !defined(__CYGWIN__)
 #  ifdef apollo
 #   ifndef NO_TCP_H
 #    include <netinet/tcp.h>

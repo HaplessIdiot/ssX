@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.21 1999/11/19 13:55:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.22 2000/05/18 23:46:26 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -804,7 +804,7 @@ FlushAllOutput()
     OsCommPtr oc;
     register ClientPtr client;
     Bool newoutput = NewOutputPending;
-#ifdef WIN32
+#if defined(WIN32) || defined(__CYGWIN__)
     fd_set newOutputPending;
 #endif
 

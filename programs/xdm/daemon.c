@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.9 1998/10/10 15:25:32 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.10 1999/12/27 00:40:08 robin Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -145,7 +145,7 @@ BecomeDaemon (void)
     	_exit(0);
 #endif
 #else /* !MINIX */
-#if !((defined(SYSV) || defined(SVR4)) && defined(i386))
+#if !((defined(SYSV) || defined(SVR4)) && defined(i386)) && !defined(__CYGWIN__)
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
 	int zero = 0;

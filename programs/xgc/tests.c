@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.2 2000/02/14 19:21:02 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.3 2000/04/05 18:14:07 dawes Exp $
 **
 */
 
@@ -28,7 +28,7 @@
 #define random lrand48
 #endif
 
-#if !defined(sgi) && !defined(linux) && !defined(__alpha__)
+#if !defined(sgi) && !defined(linux) && !defined(__alpha__) && !defined(__CYGWIN__)
 extern long random();
 #endif
 
