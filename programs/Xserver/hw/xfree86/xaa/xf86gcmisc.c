@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.11 1997/04/10 11:34:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.12 1997/04/12 13:46:44 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -228,19 +228,16 @@ void
 xf86GCNewText(pGC)
     GCPtr pGC;
 {
-    void (*PolyGlyphBltFunc) ();
-    void (*ImageGlyphBltFunc) ();
+    void (*PolyGlyphBltFunc) () = miPolyGlyphBlt;
+    void (*ImageGlyphBltFunc) () = miImageGlyphBlt;
     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
 
  
     /* This is the MatchCommon logic. */
  
-    if (FONTMAXBOUNDS(pGC->font, rightSideBearing) -
+    if(!(FONTMAXBOUNDS(pGC->font, rightSideBearing) -
 	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32 ||
-	FONTMINBOUNDS(pGC->font, characterWidth) < 0) {
-	PolyGlyphBltFunc = miPolyGlyphBlt;
-	ImageGlyphBltFunc = miImageGlyphBlt;
-    } else {
+	FONTMINBOUNDS(pGC->font, characterWidth) < 0)) {
 	if (TERMINALFONT(pGC->font)
 #ifdef FOUR_BIT_CODE
 	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
@@ -250,7 +247,6 @@ xf86GCNewText(pGC)
 	   PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltWrapper;
  	   ImageGlyphBltFunc = cfbImageGlyphBlt8;
 #else
-	   PolyGlyphBltFunc = miPolyGlyphBlt;
  	   ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltWrapper;
 #endif
 	} else {

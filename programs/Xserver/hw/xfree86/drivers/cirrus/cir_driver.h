@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.h,v 1.2 1997/03/27 08:30:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.h,v 1.3 1997/04/08 13:16:23 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -236,6 +236,7 @@ enum {CLGD5420 = 0,
       CLGD5430,
       CLGD5436,
       CLGD5446,
+      CLGD5480,
       CLGD5462,
       CLGD5464,
       CLGD5465,
@@ -336,23 +337,24 @@ typedef struct
 
 #define HAVE75XX() (cirrusChip >= CLGD7541 && cirrusChip <= CLGD7555)
 
-#define HAVE546X() (cirrusChip == CLGD5462 || cirrusChip == CLGD5465)
+#define HAVE546X() (cirrusChip >= CLGD5462 && cirrusChip <= CLGD5465)
 
 /*
  * The following macro is true for chips that have a more-or-less
  * 543x based register achitecture (as opposed to 542x).
  */
 #define HAVEALPINE() (HAVE543X() || cirrusChip == CLGD5446 || \
-    cirrusChip == CLGD7548 || cirrusChip == CLGD7555)
+    cirrusChip == CLGD5480 || cirrusChip == CLGD7548 || \
+    cirrusChip == CLGD7555)
 
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
 
 #define HAVEBLTWRITEMASK() (cirrusChip == CLGD5429 || \
 	cirrusChip == CLGD5430 || cirrusChip == CLGD5436 || \
-        cirrusChip == CLGD5446)
+        cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
 
 #define HAVEBLTEXTENSIONS() (cirrusChip == CLGD5436 || \
-	cirrusChip == CLGD5446)
+	cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
 
 #define SETWRITEMODE(n) \
 	if (n != cirrusWriteModeShadow) { \

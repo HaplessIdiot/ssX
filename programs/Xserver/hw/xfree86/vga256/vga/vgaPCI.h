@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.25 1997/03/27 08:31:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.26 1997/04/08 10:14:07 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -66,6 +66,7 @@
 #define PCI_CHIP_GD5434_8	0x00A8
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446         0x00B8
+#define PCI_CHIP_GD5480         0x00BC
 #define PCI_CHIP_GD5462		0x00D0
 #define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD5464BD	0x00D5
@@ -215,6 +216,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD5434_8,	"GD5434"},
 				{PCI_CHIP_GD5436,	"GD5436"},
 				{PCI_CHIP_GD5446,       "GD5446"},
+				{PCI_CHIP_GD5480,       "GD5480"},
 				{PCI_CHIP_GD5462,       "GD5462"},
 				{PCI_CHIP_GD5464,       "GD5464"},
 				{PCI_CHIP_GD5464BD,     "GD5464BD"},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.3 1997/04/08 13:16:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.4 1997/04/10 11:34:25 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -14,6 +14,7 @@
  * CL-GD5434	Yes					Yes (1)
  * CL-GD5436	Yes	Yes	Yes	Yes	Yes	Yes	?	Yes (3)
  * CL-GD5446	Yes	Yes	Yes	Yes	Yes	Yes (6)	Yes (2)	Yes
+ * CL-GD5480	Yes	Yes	Yes	Yes	Yes	Yes	Yes (2)	Yes
  * CL-GD7543							Yes
  * CL-GD7548	Yes	Yes					Yes
  * CL-GD7555	Yes (4)	Yes	Yes	Yes	Yes	No	? (5)	?
@@ -33,9 +34,9 @@
  * Also, it's unclear whether the CL-GD5436 has transparency color compare
  * (maybe it was a late feature).
  *
- * The CL-GD5446 has "PCI-retry" support for MMIO with Auto-Start, which
- * eliminates the need for BitBLT polling. It requires that a MMIO index
- * below 0x10 is written first.
+ * The CL-GD5446 and CL-GD5480 have "PCI-retry" support for MMIO with 
+ * Auto-Start, which eliminates the need for BitBLT polling. It requires 
+ * that a MMIO index below 0x10 is written first.
  *
  * I have made the assumption that it is OK on all chips with MMIO to write
  * a 32-bit word to the MMIO address 0x18:
@@ -47,9 +48,9 @@
  *
  * The driver is not yet ready for future increased XAA concurrency where
  * the SetUp functions might be called while a blit is still going on.
- * One issue is that the CL-GD5446 (which doesn't need polling) requires
- * that a MMIO index below 0x10 is written first, which is not the case
- * for the color-expansion SetUp functions.
+ * One issue is that the CL-GD5446 and CL-GD5480 (which don't need polling) 
+ * require that a MMIO index below 0x10 is written first, which is not the 
+ * case for the color-expansion SetUp functions.
  */
 
 #include "vga256.h"
@@ -65,6 +66,12 @@
 #else
 #include "cirBlitter.h"
 #endif
+
+
+#define DO_FILL_RECT   1
+#define DO_COPY        1
+#define DO_PATTERNS    1
+#define DO_COLEXP      1
 
 #define CHIPHAS(feature) (cirrusChipFeatures & feature)
 
@@ -170,8 +177,8 @@ void CirrusSubsequent8x8PatternColorExpand();
 static void InitializeChipFeatures() {
     cirrusChipFeatures = 0;
 
-    if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446
-    || cirrusChip == CLGD7555) {
+    if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
+	cirrusChip == CLGD5480 || cirrusChip == CLGD7555) {
         cirrusChipFeatures |= PACKED24FILL;
         cirrusChipFeatures |= DWORDCOLOREXPANSIONSCANLINEPAD;
 #ifdef MMIO
@@ -181,19 +188,22 @@ static void InitializeChipFeatures() {
 
 #ifdef MMIO
     if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
-    cirrusChip == CLGD7548 || cirrusChip == CLGD7555)
+	cirrusChip == CLGD5480 || cirrusChip == CLGD7548 || 
+	cirrusChip == CLGD7555)
         cirrusChipFeatures |= AUTOSTART;
 #endif
 
-    if (cirrusChip == CLGD5446)	/* Non conclusive data on 7555. */
+    if (cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
+        /* Non conclusive data on 7555. */
         cirrusChipFeatures |= PCIRETRYSUPPORT;
 
     if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
-    cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || cirrusChip == CLGD5446)
+	cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || 
+	cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
 	/* No conclusive data on 7555. */
         cirrusChipFeatures |= TRANSPARENCYCOLORCOMPARE;
 
-    if (cirrusChip == CLGD5446)
+    if (cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
         cirrusChipFeatures |= ONLYGXCOPYTRANSPARENCYCOLORCOMPARE;
 
     if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
@@ -205,11 +215,12 @@ static void InitializeChipFeatures() {
         cirrusChipFeatures |= TRANSPARENCYNEEDSBGCOLOR;
 
     /* "Write Mask" is used for left-edge clipping. */
-    if (cirrusChip == CLGD5430 || cirrusChip == CLGD5436 || \
-    cirrusChip == CLGD5446 || cirrusChip == CLGD7555)
+    if (cirrusChip == CLGD5430 || cirrusChip == CLGD5436 ||
+	cirrusChip == CLGD5446 || cirrusChip == CLGD5480 ||
+	cirrusChip == CLGD7555)
         cirrusChipFeatures |= WRITEMASK;
 
-    if (cirrusChip == CLGD5446)
+    if (cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
         cirrusChipFeatures |= CPUFRAMEBUFFERCONCURRENCY;
 
     if (cirrusChip <= CLGD5429 || HAVE75XX())
@@ -220,7 +231,7 @@ static void InitializeChipFeatures() {
     	/* No conclusive data on 7555. */
         cirrusChipFeatures |= OLDSTYLEPATTERNOFFSET;
 
-    if (cirrusChip == CLGD5446)
+    if (cirrusChip == CLGD5446 || cirrusChip == CLGD5480)
         cirrusChipFeatures |= NEWSTYLEPATTERNOFFSET;
 
     if (cirrusChip == CLGD5434)
@@ -237,9 +248,10 @@ void CirrusAccelInit() {
         | ONLY_TWO_BITBLT_DIRECTIONS;
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64;
     if (CHIPHAS(CPUFRAMEBUFFERCONCURRENCY))
-        xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;	/* 5446 */
+        xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;	/* '46, '80 */
     xf86AccelInfoRec.Sync = CirrusSync;
 
+#if DO_FILL_RECT
     xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
     if (vga256InfoRec.bitsPerPixel == 24 && !CHIPHAS(PACKED24FILL))
           xf86GCInfoRec.PolyFillRectSolidFlags |= RGB_EQUAL;
@@ -263,7 +275,9 @@ void CirrusAccelInit() {
 	  Cirrus32SubsequentFillRectSolid;
         break;
       }
+#endif /* DO_FILL_RECT */
 
+#if DO_COPY
     xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
     if (!CHIPHAS(TRANSPARENCYCOLORCOMPARE) || vga256InfoRec.bitsPerPixel > 16)
         /*
@@ -288,7 +302,9 @@ void CirrusAccelInit() {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy = Cirrus32SubsequentScreenToScreenCopy;
         break;
     }
+#endif /* DO_COPY */
 
+#if DO_PATTERNS
     /* Pattern fills. */
     if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET))
         xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
@@ -312,12 +328,18 @@ void CirrusAccelInit() {
             xf86AccelInfoRec.SubsequentFill8x8Pattern =
                 CirrusSubsequent8x8PatternFill;
         }
+
+#if 0
+	/* The 8x8 ColExp code isn't correct yet! --corey, 4.12.97 */
         xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
             CirrusSetupFor8x8PatternColorExpand;
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CirrusSubsequent8x8PatternColorExpand;
+#endif
     }
+#endif /* DO_PATTERNS */
 
+#if DO_COLEXP
     /* Color expansion. */
     if (vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL)) {
 
@@ -346,7 +368,13 @@ void CirrusAccelInit() {
          * The "indirect" color expansion was pretty useless anyway, because
          * of the DWORD source alignment requirement.
          */
-	if (1) {
+
+	/* 
+	 * Using CPUToScreen ColExp locks the machine with the 5480, and
+	 * probably other Alpine cards.  Let's just not use it until the 
+	 * bugs can be worked out.  --corey 4.12.97
+	 */
+	if (vga256InfoRec.bitsPerPixel != 24) {
 	    /*
 	     * A modern chip with 32-bit scanline alignment is compatible
 	     * with optimized XAA CPU-to-screen color expansion.
@@ -407,6 +435,7 @@ void CirrusAccelInit() {
             CirrusSubsequentScreenToScreenColorExpand;
     }
     /* end of colexp functions */
+#endif /* DO_COLEXP */
 
 
     if (CHIPHAS(AUTOSTART)) {
@@ -537,6 +566,9 @@ void Cirrus8SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
+
+    /* Without this sync, the Cirrus Alpine chips lock up */
+    CirrusSync();
 }
 
 void Cirrus16SubsequentFillRectSolid(x, y, w, h)
@@ -558,6 +590,9 @@ void Cirrus16SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);			/* 10 */
     if (!cirrusUseAutoStart)
         STARTBLT();
+
+    /* Without this sync, the Cirrus Alpine chips lock up */
+    CirrusSync();
 }
 
 void Cirrus24SubsequentFillRectSolid(x, y, w, h)
@@ -579,6 +614,9 @@ void Cirrus24SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
+
+    /* Without this sync, the Cirrus Alpine chips lock up */
+    CirrusSync();
 }
 
 void Cirrus32SubsequentFillRectSolid(x, y, w, h)
@@ -600,6 +638,9 @@ void Cirrus32SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
+
+    /* Without this sync, the Cirrus Alpine chips lock up */
+    CirrusSync();
 }
 
 /*
@@ -703,7 +744,13 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
     int bltmode, loadbg;
     bltmode = 0;
 
+
     if (NeedToSync) {
+#if 1
+      /* The 5480 hangs if we don't do a full WAITUNTILFINISHED() when
+	 we NeedToSync.  Don't know why... --corey 4.12.97 */
+      WAITUNTILFINISHED();
+#else
         if (cirrusUseAutoStart) {
             WAITEMPTY()
             if (CHIPHAS(PCIRETRYSUPPORT))
@@ -712,6 +759,7 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
         }
         else
             WAITUNTILFINISHED();
+#endif
         NeedToSync = FALSE;
     }
 
