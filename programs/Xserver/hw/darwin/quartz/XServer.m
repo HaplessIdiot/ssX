@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.16 2003/11/12 20:21:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.17 2003/11/14 20:27:58 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -140,11 +140,6 @@ static io_connect_t root_port;
                                 forMode:NSDefaultRunLoopMode];
     [[NSRunLoop currentRunLoop] addPort:signalPort
                                 forMode:NSModalPanelRunLoopMode];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                          selector:@selector(windowBecameKey:)
-                                          name:NSWindowDidBecomeKeyNotification
-                                          object:nil];
 
     return self;
 }
@@ -489,6 +484,15 @@ static io_connect_t root_port;
 
     if (![self loadDisplayBundle])
         [NSApp terminate:nil];
+
+    // In rootless mode register to receive notification of key window changes
+    if (quartzRootless) {
+        [[NSNotificationCenter defaultCenter]
+                addObserver:self
+                selector:@selector(windowBecameKey:)
+                name:NSWindowDidBecomeKeyNotification
+                object:nil];
+    }
 
     // Start the X server thread
     serverState = server_Starting;
@@ -1194,8 +1198,10 @@ static io_connect_t root_port;
 }
 
 // Some NSWindow became the key window
-- (void)windowBecameKey:(NSWindow *)window
+- (void)windowBecameKey:(NSNotification *)notification
 {
+    NSWindow *window = [notification object];
+
     if (quartzProcs->IsX11Window(window, [window windowNumber])) {
         if (!x11Active)
             [self activateX11:YES];
