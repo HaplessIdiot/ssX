@@ -32,7 +32,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_hwmc.c,v 1.1 2001/09/27 08:25:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_hwmc.c,v 1.2 2001/11/06 15:53:10 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -82,14 +82,15 @@ typedef struct {
 } I810XvMCCreateContextRec;
 
 
-static int yv12_subpicture_index_list[1] = 
+static int yv12_subpicture_index_list[2] = 
 {
-  FOURCC_IA44
+  FOURCC_IA44,
+  FOURCC_AI44
 };
 
 static XF86MCImageIDList yv12_subpicture_list =
 {
-  1,
+  2,
   yv12_subpicture_index_list
 };
  
@@ -131,10 +132,12 @@ static XF86MCSurfaceInfoPtr ppSI[2] =
 
 /* List of subpicture types that we support */
 static XF86ImageRec ia44_subpicture = XVIMAGE_IA44;
+static XF86ImageRec ai44_subpicture = XVIMAGE_AI44;
 
-static XF86ImagePtr i810_subpicture_list[1] =
+static XF86ImagePtr i810_subpicture_list[2] =
 {
-  (XF86ImagePtr)&ia44_subpicture
+  (XF86ImagePtr)&ia44_subpicture,
+  (XF86ImagePtr)&ai44_subpicture
 };
 
 /* Fill in the device dependent adaptor record. 
@@ -147,9 +150,9 @@ static XF86ImagePtr i810_subpicture_list[1] =
 static XF86MCAdaptorRec pAdapt = 
 {
   "I810 Video Overlay",		/* name */
-  1,				/* num_surfaces */
+  2,				/* num_surfaces */
   ppSI,				/* surfaces */
-  1,				/* num_subpictures */
+  2,				/* num_subpictures */
   i810_subpicture_list,		/* subpictures */
   (xf86XvMCCreateContextProcPtr)I810XvMCCreateContext,
   (xf86XvMCDestroyContextProcPtr)I810XvMCDestroyContext,

@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.19 2001/09/27 08:25:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.20 2001/11/03 21:59:19 dawes Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -215,15 +215,14 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
    {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
 };
 
-#define NUM_IMAGES 5
+#define NUM_IMAGES 4
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
 	XVIMAGE_YUY2,
 	XVIMAGE_YV12,
 	XVIMAGE_I420,
-	XVIMAGE_UYVY,
-	XVIMAGE_IA44
+	XVIMAGE_UYVY
 };
 
 typedef struct {
@@ -736,10 +735,6 @@ I810DisplayVideo(
     unsigned int swidth;
 
     switch(id) {
-    /* IA44 is for XvMC only */
-    case FOURCC_IA44:
-	return;
-	break;
     case FOURCC_YV12:
     case FOURCC_I420:
 	swidth = (width + 7) & ~7;
@@ -965,10 +960,6 @@ I810PutImage(
     int top, left, npixels, nlines, size, loops;
     BoxRec dstBox;
 
-    /* IA44 is for XvMC only */
-    if(id == FOURCC_IA44) {
-	return BadValue;
-    }
 
     /* Clip */
     x1 = src_x;
@@ -1100,6 +1091,7 @@ I810QueryImageAttributes(
     switch(id) {
       /* IA44 is for XvMC only */
     case FOURCC_IA44:
+    case FOURCC_AI44:
 	if(pitches) pitches[0] = *w;
 	size = *w * *h;
 	break;
