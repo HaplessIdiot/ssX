@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.2 2002/11/05 17:46:09 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.3 2002/12/16 16:18:59 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -688,14 +688,14 @@ static GLboolean radeon_run_render( GLcontext *ctx,
       return GL_TRUE;
    }
 		
+   tnl->Driver.Render.Start( ctx );
+
    if (VB->Elts) {
       tab = TAG(render_tab_elts);
       if (!rmesa->swtcl.indexed_verts.buf)
 	 if (!TAG(emit_elt_verts)(ctx, 0, VB->Count))
 	    return GL_TRUE;	/* too many vertices */
    }
-
-   tnl->Driver.Render.Start( ctx );
 
    for (i = 0 ; !(flags & PRIM_LAST) ; i += length)
    {
