@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xss/Imakefile,v 3.2 2000/06/15 20:49:58 dawes Exp $
+XCOMM $XFree86: xc/lib/Xss/Imakefile,v 3.4 2003/01/16 16:09:06 eich Exp $
 #define DoNormalLib NormalLibXss
 #define DoSharedLib SharedLibXss
 #define DoExtraLib SharedLibXss
@@ -28,6 +28,20 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 #define IncludeSharedObjectInNormalLib
 
+MANSUFFIX=$(LIBMANSUFFIX)
+InstallManPage(LibName,$(LIBMANDIR))
+#if ExpandManNames
+InstallManPageAliases(LibName,$(MANDIR), XScreenSaverQueryExtension \	@@\
+	XScreenSaverQueryVersion \ 					@@\
+	XScreenSaverAllocInfo \						@@\
+	XScreenSaverQueryInfo \						@@\
+	XScreenSaverSelectInput \					@@\
+	XScreenSaverSetAttributes \					@@\
+	XScreenSaverUnsetAttributes \					@@\
+	XScreenSaverRegister \						@@\
+	XScreenSaverUnregister \					@@\
+	XScreenSaverGetRegistered)
+#endif
 #include <Library.tmpl>
 
 DependTarget()
