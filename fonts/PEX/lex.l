@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: lex.l,v 5.7 94/06/04 17:03:52 rws Exp $ */
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.3 1994/06/06 06:42:18 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.4 1994/06/09 10:42:01 dawes Exp $ */
 
 /*****************************************************************
 
@@ -59,7 +59,7 @@ SOFTWARE.
 #if !defined(X_NOT_STDC_ENV) || defined(SCO)
 #include <stdlib.h>
 #else
-#if defined(ISC) && __STDC__
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
 #endif

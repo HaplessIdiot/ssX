@@ -229,7 +229,7 @@ String _XtGetUserName()
 #else
     int uid;
     extern int getuid();
-#ifndef SYSV386
+#if !defined(i386) && !defined(SYSV)
     extern struct passwd *getpwuid(), *getpwnam();
 #endif
 #endif
@@ -276,7 +276,7 @@ static String XtGetRootDirName(buf, slash)
 #else
      int uid;
      extern int getuid();
-#ifndef SYSV386
+#if !defined(i386) && !defined(SYSV)
      extern struct passwd *getpwuid(), *getpwnam();
 #endif
 #endif

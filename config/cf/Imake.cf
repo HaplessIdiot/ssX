@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.7 1994/11/19 07:32:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.8 1994/11/27 07:01:20 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -293,6 +293,30 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.7 1994/11/19 07:32:15 dawes Exp $
 #   endif
 #   undef SCO
 #  endif /* SCO */
+#  ifdef ISC
+#   define i386Architecture	
+#   define i386SVR3Architecture	
+#   define MacroIncludeFile <isc.cf>
+#   define MacroFile isc.cf
+#   define i386IscArchitecture
+#   undef ISC
+#   ifdef ISC202
+#    define IscVersion 202
+#    undef ISC202
+#   else
+#    ifdef ISC30
+#     define IscVersion 300
+#     undef ISC30
+#    else
+#     ifdef ISC40
+#      define IscVersion 400
+#      undef ISC40
+#     else
+#      define IscVersion 221
+#     endif /* ISC40 */
+#    endif /* ISC30 */
+#   endif /* ISC202 */
+#  endif /* ISC */
 #  ifndef MacroFile
 #   define i386SVR3Architecture
 #   define MacroIncludeFile <x386.cf>

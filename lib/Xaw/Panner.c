@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Panner.c,v 1.49 94/04/17 20:12:31 kaleb Exp $
- * $XFree86$
+ * $XFree86: xc/lib/Xaw/Panner.c,v 3.0 1994/05/21 23:46:24 dawes Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 
@@ -41,7 +41,7 @@ in this Software without prior written authorization from the X Consortium.
 
 extern Bool XmuDistinguishablePixels(); /* not defined in any Xmu headers */
 
-#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #else
 #if !defined(X_NOT_STDC_ENV) || defined(SCO)

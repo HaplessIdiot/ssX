@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.25 94/06/02 10:59:43 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.3 1994/06/09 10:45:56 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.4 1994/10/20 06:06:49 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1294,7 +1294,7 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
+#if (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
 
 /*
  * emulate readv
@@ -1328,7 +1328,7 @@ int 		iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 || WIN32 || __sxg__ || SCO */
+#endif /* SYSV && i386 || WIN32 || __sxg__ || SCO */
 
 #if defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
 

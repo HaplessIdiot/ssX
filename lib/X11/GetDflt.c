@@ -84,7 +84,7 @@ static char *GetHomeDir (dest, destlen)
 #else
 	int uid;
 	extern int getuid();
-#ifndef SYSV386
+#if !defined(i386) && !defined(SYSV)
 	extern struct passwd *getpwuid(), *getpwnam();
 #endif
 #endif

@@ -1,3 +1,17 @@
+XFree86 3.1.0f (1 December 1994)
+102. Detect and reject Mach64 boards whose ROM or VGA capability has been
+     disabled (Marc Aurele La France).
+101. Expermental code in the vgawonder driver to reset Mach* boards.  This
+     is enabled with the "noaccel" option (Marc Aurele La France).
+100. Fix clashes with K_SCROLLLOCK and related symbols defined in newer
+     Linux releases (Marc Aurele La France).
+ 99. Change SuperProbe to detect the Mach64, and deal with ATI DAC classes
+     6 and 7, and recognise the ATI 28800-6 chip (Marc Aurele La France).
+ 98. ISC 3.x and 4.x support (Michael Rohleder).
+ 97. Add support for 640 and 800 line widths to AGX server (Henry Worth).
+ 96. Fix cursor/screen scrolling problem for doublescan modes (Henry Worth).
+ 95. Add missing XF86_Mach64.c file.
+
 XFree86 3.1.0e (27 November 1994)
  94. Add missing install rule for gccmakedep.
  93. Define CSRG_BASED for *BSD (Kaleb Keithley).
