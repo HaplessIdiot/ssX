@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales, UK.
+ * Copyright 2000-2001 by Alan Hourihane, Sychdyn, North Wales, UK.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dga.c,v 1.1 2000/05/10 18:55:29 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -54,9 +54,8 @@ DGAFunctionRec GLINTDGAFuncs = {
    GLINT_GetViewport,
    GLINT_Sync,
    GLINT_FillRect,
-   NULL,
-#if 0
    GLINT_BlitRect,
+#if 0
    GLINT_BlitTransRect
 #else
    NULL

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 by Sven Luther <luther@dpt-info.u-strasbg.fr>.
+ * Copyright 2000-2001 by Sven Luther <luther@dpt-info.u-strasbg.fr>.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.12 2001/01/30 14:31:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.13 2001/01/30 17:31:06 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -60,6 +60,7 @@
 
 /* Sync */
 void Permedia3Sync(ScrnInfoPtr pScrn);
+void DualPermedia3Sync(ScrnInfoPtr pScrn);
 /* Clipping */
 static void Permedia3SetClippingRectangle(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h);
@@ -98,6 +99,16 @@ static void Permedia3SetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
 static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, 
 				int x, int y, int w, int h, int skipleft);
 static void Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno);
+static void Permedia3RestoreAccelState(ScrnInfoPtr pScrn);
+static void Permedia3WritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+				unsigned char *src, int srcwidth, int rop,
+				unsigned int planemask, int transparency_color,
+				int bpp, int depth);
+static void Permedia3WriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h, 
+				unsigned char *src, int srcwidth, int skipleft, 
+				int fg, int bg, int rop,unsigned int planemask);
+
+#define MAX_FIFO_ENTRIES 120 /* PM3 reports bogus entries above 120 */
 
 void
 Permedia3InitializeEngine(ScrnInfoPtr pScrn)
@@ -108,14 +119,23 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     /* Initialize the Accelerator Engine to defaults */
     TRACE_ENTER("Permedia3InitializeEngine");
 
+    if (pGlint->MultiAperture) {
+    	/* Only write the following register to the first PM3 */
+    	GLINT_SLOW_WRITE_REG(1, BroadcastMask);
+    	GLINT_SLOW_WRITE_REG(0x00000001,    ScanLineOwnership);
+
+    	/* Only write the following register to the second PM3 */
+    	GLINT_SLOW_WRITE_REG(2, BroadcastMask);
+    	GLINT_SLOW_WRITE_REG(0x00000005,    ScanLineOwnership);
+
+    	/* Make sure the rest of the register writes go to both PM3's */
+    	GLINT_SLOW_WRITE_REG(3, BroadcastMask);
+    }
+
     /* Host out PreInit */
     /* Set filter mode to enable sync tag & data output */
     GLINT_SLOW_WRITE_REG(0x400,		FilterMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, StatisticMode);
-    Permedia3Sync(pScrn);
-
-    TRACE("Permedia3InitializeEngine : first sync");
-    /* Disable most units by default */
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, PM3DeltaMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, RasterizerMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, ScissorMode);
@@ -164,7 +184,6 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(0, PM3DeltaControl);
 
     GLINT_SLOW_WRITE_REG(0xffffffff, BitMaskPattern);
-    Permedia3Sync(pScrn);
 
     /* ScissorStippleUnit Initialization (is it needed ?) */
     pGlint->ClippingOn = FALSE;
@@ -177,14 +196,12 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
 	(0&0xffff)|((0&0xffff)<<16),
 	WindowOrigin);
     */
-    Permedia3Sync(pScrn);
 
     /* StencilDepthUnit Initialization */
     GLINT_SLOW_WRITE_REG(0, PM3Window);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, DepthMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, StencilMode);
     GLINT_SLOW_WRITE_REG(0, StencilData);
-    Permedia3Sync(pScrn);
 
     /* FBReadUnit Initialization */
     TRACE("Permedia3InitializeEngine : only syncs upto now");
@@ -235,30 +252,29 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     TRACE("Permedia3InitializeEngine : SourceRead");
     switch (pScrn->bitsPerPixel) {
 	case 8:
-	    GLINT_SLOW_WRITE_REG(0x2, PixelSize);
+	    pGlint->PM3_PixelSize = 2;
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 	    pGlint->RasterizerSwap = 3<<15;	/* Swap host data */
 #endif
 	    break;
 	case 16:
-	    GLINT_SLOW_WRITE_REG(0x1, PixelSize);
+	    pGlint->PM3_PixelSize = 1;
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 	    pGlint->RasterizerSwap = 2<<15;	/* Swap host data */
 #endif
 	    break;
 	case 32:
-	    GLINT_SLOW_WRITE_REG(0x0, PixelSize);
+	    pGlint->PM3_PixelSize = 0;
 	    break;
     }
+    GLINT_SLOW_WRITE_REG(pGlint->PM3_PixelSize, PixelSize);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     GLINT_SLOW_WRITE_REG(1 | pGlint->RasterizerSwap, RasterizerMode);
 #endif
     TRACE("Permedia3InitializeEngine : PixelSize");
-    Permedia3Sync(pScrn);
 
     /* LogicalOpUnit Initialization */
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
-    Permedia3Sync(pScrn);
 
     /* FBWriteUnit Initialization */
     GLINT_SLOW_WRITE_REG(
@@ -271,7 +287,6 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(
 	PM3FBWriteBufferWidth_Width(pScrn->displayWidth),
 	PM3FBWriteBufferWidth0);
-    Permedia3Sync(pScrn);
     /*
     GLINT_SLOW_WRITE_REG(0, PM3FBWriteBufferAddr1);
     GLINT_SLOW_WRITE_REG(0, PM3FBWriteBufferOffset1);
@@ -298,7 +313,6 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
 	    (pScrn->bitsPerPixel * pScrn->displayWidth)),
 	PM3SizeOfFramebuffer);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
-    Permedia3Sync(pScrn);
     TRACE("Permedia3InitializeEngine : FBHardwareWriteMask & SizeOfFramebuffer");
     /* Color Format */
     switch (pScrn->depth) {
@@ -339,7 +353,7 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(0, StartXSub);
     GLINT_SLOW_WRITE_REG(0, StartY);
     GLINT_SLOW_WRITE_REG(0, GLINTCount);
-    Permedia3Sync(pScrn);
+    (*pGlint->AccelInfoRec->Sync)(pScrn);
     TRACE_EXIT("Permedia3InitializeEngine");
 }
 
@@ -354,36 +368,30 @@ Permedia3AccelInit(ScreenPtr pScreen)
     pGlint->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
 
-    Permedia3InitializeEngine(pScrn);
-
     /* Generic accel engine flags */
-    infoPtr->Flags =
-	PIXMAP_CACHE |
-	OFFSCREEN_PIXMAPS |
-	LINEAR_FRAMEBUFFER;
+    infoPtr->Flags = PIXMAP_CACHE |
+		     OFFSCREEN_PIXMAPS |
+		     LINEAR_FRAMEBUFFER;
 
     /* Synchronization of the accel engine */
-    infoPtr->Sync = Permedia3Sync;
+    if (pGlint->MultiAperture)
+    	infoPtr->Sync = DualPermedia3Sync;
+    else
+    	infoPtr->Sync = Permedia3Sync;
+
+    Permedia3InitializeEngine(pScrn);
 
     /* Clipping Setup */
     infoPtr->ClippingFlags = 0;
-    /* This does not work correctly, i don't know why, but i guess it is
-     * because the clipping stuff is not ok ...
-     * Let's disable it for now (also in the respective functions, we 
-     * clear the UserScissorEnable bit in Render2D.
-	HARDWARE_CLIP_MONO_8x8_FILL |
-	HARDWARE_CLIP_SOLID_FILL;
-	*/
     infoPtr->SetClippingRectangle = Permedia3SetClippingRectangle;
     infoPtr->DisableClipping = Permedia3DisableClipping;
 
     /* ScreenToScreenCopy */
-    infoPtr->ScreenToScreenCopyFlags =
-	NO_TRANSPARENCY; 
+    infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
     infoPtr->SetupForScreenToScreenCopy =
-	Permedia3SetupForScreenToScreenCopy;
+					Permedia3SetupForScreenToScreenCopy;
     infoPtr->SubsequentScreenToScreenCopy =
-	Permedia3SubsequentScreenToScreenCopy;
+					Permedia3SubsequentScreenToScreenCopy;
 
     /* SolidFill */
     infoPtr->SolidFillFlags = 0;
@@ -391,15 +399,14 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillRect = Permedia3SubsequentFillRectSolid;
 
     /* 8x8 Mono Pattern Fills */
-    infoPtr->Mono8x8PatternFillFlags = 
-    	HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
-    	HARDWARE_PATTERN_PROGRAMMED_BITS |
-    	HARDWARE_PATTERN_SCREEN_ORIGIN |
-	BIT_ORDER_IN_BYTE_LSBFIRST;
+    infoPtr->Mono8x8PatternFillFlags =  HARDWARE_PATTERN_PROGRAMMED_BITS |
+    					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+    					HARDWARE_PATTERN_SCREEN_ORIGIN |
+					BIT_ORDER_IN_BYTE_LSBFIRST;
     infoPtr->SetupForMono8x8PatternFill =
-	Permedia3SetupForMono8x8PatternFill;
+				Permedia3SetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect = 
-	Permedia3SubsequentMono8x8PatternFillRect;
+				Permedia3SubsequentMono8x8PatternFillRect;
 
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
 						LEFT_EDGE_CLIPPING |
@@ -408,6 +415,9 @@ Permedia3AccelInit(ScreenPtr pScreen)
 						CPU_TRANSFER_PAD_DWORD;
 
     infoPtr->NumScanlineColorExpandBuffers = 1;
+    pGlint->ScratchBuffer                 = xalloc(((pScrn->virtualX+62)/32*4)
+					    + (pScrn->virtualX
+					    * pScrn->bitsPerPixel / 8));
     infoPtr->ScanlineColorExpandBuffers = 
 					pGlint->XAAScanlineColorExpandBuffers;
     pGlint->XAAScanlineColorExpandBuffers[0] = 
@@ -435,6 +445,12 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentImageWriteScanline = 
 			Permedia3SubsequentImageWriteScanline;
 
+    infoPtr->WriteBitmap = Permedia3WriteBitmap;
+    infoPtr->WriteBitmapFlags = 0;
+
+    infoPtr->WritePixmap = Permedia3WritePixmap;
+    infoPtr->WritePixmapFlags = 0;
+
     /* Available Framebuffer Area for XAA. */
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
@@ -446,6 +462,18 @@ Permedia3AccelInit(ScreenPtr pScreen)
 
     /* Permedia3 has a maximum 4096x4096 framebuffer */
     if (AvailFBArea.y2 > 4095) AvailFBArea.y2 = 4095;
+
+    {
+	Bool shared_accel = FALSE;
+	int i;
+
+	for(i = 0; i < pScrn->numEntities; i++) {
+	    if(xf86IsEntityShared(pScrn->entityList[i]))
+		shared_accel = TRUE;
+	}
+	if(shared_accel == TRUE)
+	    infoPtr->RestoreAccelState = Permedia3RestoreAccelState;
+    }
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -469,12 +497,40 @@ Permedia3Sync(ScrnInfoPtr pScrn)
     CHECKCLIPPING;
 
     while (GLINT_READ_REG(DMACount) != 0);
-    GLINT_WAIT(2);
-    GLINT_WRITE_REG(0x400, FilterMode);
+    GLINT_WAIT(1);
     GLINT_WRITE_REG(0, GlintSync);
     do {
    	while(GLINT_READ_REG(OutFIFOWords) == 0);
-    } while (GLINT_READ_REG(OutputFIFO) != PM3SyncTag);
+    } while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
+}
+
+void
+DualPermedia3Sync(
+	ScrnInfoPtr pScrn
+){
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    CHECKCLIPPING;
+
+    while (GLINT_READ_REG(DMACount) != 0);
+    GLINT_WAIT(3);
+    GLINT_WRITE_REG(3, BroadcastMask); /* hack! this shouldn't need to be reloaded */
+    GLINT_WRITE_REG(0x400, FilterMode);
+    GLINT_WRITE_REG(0, GlintSync);
+
+    /* Read 1st PM3 until Sync Tag shows */
+    ACCESSCHIP1();
+    do {
+   	while(GLINT_READ_REG(OutFIFOWords) == 0);
+    } while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
+
+    ACCESSCHIP2();
+    /* Read 2nd PM3 until Sync Tag shows */
+    do {
+   	while(GLINT_READ_REG(OutFIFOWords) == 0);
+    } while (GLINT_READ_REG(OutputFIFO) != Sync_tag);
+
+    ACCESSCHIP1();
 }
 
 static void
@@ -502,26 +558,34 @@ Permedia3SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SetupForScreenToScreenCopy");
+
     pGlint->PM3_Render2D =
 	PM3Render2D_SpanOperation |
 	PM3Render2D_Operation_Normal;
+
     pGlint->ClippingOn = TRUE;
+
     pGlint->PM3_Config2D =
 	PM3Config2D_UserScissorEnable |
 	PM3Config2D_ForegroundROPEnable |
 	PM3Config2D_ForegroundROP(rop) |
 	PM3Config2D_FBWriteEnable;
+
     if (xdir == 1) pGlint->PM3_Render2D |= PM3Render2D_XPositive;
     if (ydir == 1) pGlint->PM3_Render2D |= PM3Render2D_YPositive;
+
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXnoop)&&(rop!=GXinvert)) {
 	pGlint->PM3_Render2D |= PM3Render2D_FBSourceReadEnable;
 	pGlint->PM3_Config2D |= PM3Config2D_Blocking;
     }
+
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
+
     GLINT_WAIT(2);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
+
     TRACE_EXIT("Permedia3SetupForScreenToScreenCopy");
 }
 static void
@@ -578,10 +642,6 @@ Permedia3SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     }
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
-#if 0
-    if (pGlint->ClippingOn)
-	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
-#endif
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
     TRACE_EXIT("Permedia3SetupForFillRectSolid");
@@ -591,7 +651,7 @@ Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SubsequentFillRectSolid");
-    GLINT_WAIT(2);
+
     GLINT_WRITE_REG(
 	PM3RectanglePosition_XOffset(x) |
 	PM3RectanglePosition_YOffset(y),
@@ -599,6 +659,7 @@ Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     GLINT_WRITE_REG(pGlint->PM3_Render2D |
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
+
     TRACE_EXIT("Permedia3SubsequentFillRectSolid");
 }
 /* 8x8 Mono Pattern Fills */
@@ -624,10 +685,6 @@ Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 	PM3Config2D_FBWriteEnable;
     if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
 	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
-    /* Clipping is not working correctly yet ...
-    if (pGlint->ClippingOn)
-	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
-    */
     pGlint->PM3_AreaStippleMode = 1;
 /* Mirror stipple pattern horizontally */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
@@ -738,8 +795,18 @@ Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
 
-    GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);
-    GLINT_WAIT(pGlint->dwords);
+    if (pGlint->dwords <= MAX_FIFO_ENTRIES) {
+	/* Turn on direct for less than 120 dword colour expansion */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
+	pGlint->ScanlineDirect = 1;
+    	GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);
+    	GLINT_WAIT(pGlint->dwords);
+    } else {
+	/* Use indirect for anything else */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->ScratchBuffer;
+	pGlint->ScanlineDirect   = 0;
+    }
+
     pGlint->cpucount--;
 }
 
@@ -748,8 +815,29 @@ Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    if (pGlint->cpucount--)
-    	GLINT_WAIT(pGlint->dwords);
+    if (pGlint->ScanlineDirect) {
+    	if (pGlint->cpucount--)
+    	    GLINT_WAIT(pGlint->dwords);
+	return;
+    } else {
+	while(pGlint->dwords >= MAX_FIFO_ENTRIES) {
+	    GLINT_WAIT(MAX_FIFO_ENTRIES);
+            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
+			MAX_FIFO_ENTRIES - 1);
+	    pGlint->dwords -= MAX_FIFO_ENTRIES - 1;
+	}
+	if(pGlint->dwords) {
+	    GLINT_WAIT(pGlint->dwords + 1);
+            GLINT_WRITE_REG(((pGlint->dwords - 1) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
+			pGlint->dwords);
+	}
+    }
 }
 
 /* Images Writes */
@@ -781,8 +869,8 @@ static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SubsequentScanlineImageWrite");
-    pGlint->dwords = ((w + 31) >> 5); /* dwords per scanline */
- 
+    pGlint->dwords = (((w * pScrn->bitsPerPixel) + 3) >> 2); /* per scanline */
+
     pGlint->cpucount = h;
     GLINT_WAIT(5);
     GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
@@ -794,8 +882,20 @@ static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
     GLINT_WRITE_REG(pGlint->PM3_Render2D |
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
-    GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | (0x15<<4) | 0x05, OutputFIFO);
-    GLINT_WAIT(pGlint->dwords);
+
+    if (pGlint->dwords <= MAX_FIFO_ENTRIES) {
+	/* Turn on direct for less than 120 dword colour expansion */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
+	pGlint->ScanlineDirect = 1;
+    	GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | (0x15<<4) | 0x05, 
+								OutputFIFO);
+    	GLINT_WAIT(pGlint->dwords);
+    } else {
+	/* Use indirect for anything else */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->ScratchBuffer;
+	pGlint->ScanlineDirect   = 0;
+    }
+
     pGlint->cpucount--;
     TRACE_EXIT("Permedia3SubsequentScanlineImageWrite");
 }
@@ -805,6 +905,206 @@ Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    if (pGlint->cpucount--)
-    	GLINT_WAIT(pGlint->dwords);
+    if (pGlint->ScanlineDirect) {
+    	if (pGlint->cpucount--)
+    	    GLINT_WAIT(pGlint->dwords);
+	return;
+    } else {
+	while(pGlint->dwords >= MAX_FIFO_ENTRIES) {
+	    GLINT_WAIT(MAX_FIFO_ENTRIES);
+            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) |
+							0x05, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
+			MAX_FIFO_ENTRIES - 1);
+	    pGlint->dwords -= MAX_FIFO_ENTRIES - 1;
+	}
+	if(pGlint->dwords) {
+	    GLINT_WAIT(pGlint->dwords + 1);
+            GLINT_WRITE_REG(((pGlint->dwords - 1) << 16) | (0x15 << 4) | 
+							0x05, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
+			pGlint->dwords);
+	}
+    }
+}
+
+static void
+Permedia3RestoreAccelState(ScrnInfoPtr pScrn)
+{
+    Permedia3Sync(pScrn);
+}
+
+static void
+Permedia3WritePixmap(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int trans,
+    int bpp, int depth
+)
+{
+    int dwords;
+    int count;
+    int skipleft = (long)src & 0x03L;
+    int Bpp = bpp >> 3;
+    CARD32 *srcp;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("Permedia3WritePixmap");
+
+    if (skipleft) {
+	/* Skipleft is either
+	 *   - 0, 1, 2 or 3 in 8 bpp
+	 *   - 0 or 1 in 16 bpp
+	 *   - 0 in 32 bpp
+	 */
+	skipleft /= Bpp;
+
+	x -= skipleft;	     
+	w += skipleft;
+
+	src = (unsigned char*)((long)src & ~0x03L);     
+    }
+
+    pGlint->PM3_Render2D =
+	PM3Render2D_SpanOperation |
+	PM3Render2D_XPositive |
+	PM3Render2D_YPositive |
+	PM3Render2D_Operation_SyncOnHostData;
+    pGlint->PM3_Config2D =
+	PM3Config2D_UserScissorEnable |
+	PM3Config2D_ForegroundROPEnable |
+	PM3Config2D_ForegroundROP(rop) |
+	PM3Config2D_FBWriteEnable;
+    if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
+	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
+    GLINT_WAIT(6);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
+    GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
+    GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
+    GLINT_WRITE_REG(
+	PM3RectanglePosition_XOffset(x) |
+	PM3RectanglePosition_YOffset(y),
+	PM3RectanglePosition);
+    GLINT_WRITE_REG(pGlint->PM3_Render2D |
+	PM3Render2D_Width(w) | PM3Render2D_Height(h),
+	PM3Render2D);
+    /* width of the stuff to copy in 32 bit words */
+    dwords = ((w * Bpp) + 3) >> 2;
+
+    while(h--) {
+	count = dwords;
+	srcp = (CARD32*)src;
+	while(count >= MAX_FIFO_ENTRIES) {
+	    GLINT_WAIT(MAX_FIFO_ENTRIES);
+	    /* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
+            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+					0x05, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
+	    count -= MAX_FIFO_ENTRIES - 1;
+	    srcp += MAX_FIFO_ENTRIES - 1;
+	}
+	if(count) {
+	    GLINT_WAIT(count + 1);
+	    /* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
+            GLINT_WRITE_REG(((count - 1) << 16) | (0x15 << 4) | 
+					0x05, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, count);
+	}
+	src += srcwidth;
+    }  
+
+    Permedia3DisableClipping(pScrn);
+    Permedia3Sync(pScrn);
+}
+
+static void
+Permedia3WriteBitmap(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth, int skipleft,
+    int fg, int bg, int rop,
+    unsigned int planemask
+)
+{
+    int dwords;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int count;
+    CARD32 *srcp;
+    TRACE_ENTER("Permedia3WriteBitmap");
+
+    w += skipleft;
+    x -= skipleft;
+    dwords = (w + 31) >>5;
+
+    REPLICATE(fg);
+    pGlint->PM3_Render2D =
+	PM3Render2D_SpanOperation |
+	PM3Render2D_XPositive |
+	PM3Render2D_YPositive |
+	PM3Render2D_Operation_SyncOnBitMask;
+    pGlint->PM3_Config2D =
+	PM3Config2D_UserScissorEnable |
+	PM3Config2D_UseConstantSource |
+	PM3Config2D_ForegroundROPEnable |
+	PM3Config2D_ForegroundROP(rop) |
+	PM3Config2D_FBWriteEnable;
+    if ((rop!=GXclear)&&(rop!=GXset)&&(rop!=GXcopy)&&(rop!=GXcopyInverted))
+	pGlint->PM3_Config2D |= PM3Config2D_FBDestReadEnable;
+    if (bg != -1) {
+	REPLICATE(bg);
+	pGlint->PM3_Config2D |= PM3Config2D_OpaqueSpan;
+	GLINT_WAIT(8);
+    	GLINT_WRITE_REG(bg, BackgroundColor);
+    }
+    else GLINT_WAIT(7);
+    GLINT_WRITE_REG(fg, PM3ForegroundColor);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
+    GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
+    GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
+    GLINT_WRITE_REG(
+	PM3RectanglePosition_XOffset(x) |
+	PM3RectanglePosition_YOffset(y),
+	PM3RectanglePosition);
+    GLINT_WRITE_REG(pGlint->PM3_Render2D |
+	PM3Render2D_Width(w) | PM3Render2D_Height(h),
+	PM3Render2D);
+
+    while(h--) {
+	count = dwords;
+	srcp = (CARD32*)src;
+	while(count >= MAX_FIFO_ENTRIES) {
+	    GLINT_WAIT(MAX_FIFO_ENTRIES);
+            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) |
+					0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
+	    count -= MAX_FIFO_ENTRIES - 1;
+	    srcp += MAX_FIFO_ENTRIES - 1;
+	}
+	if(count) {
+	    GLINT_WAIT(count + 1);
+            GLINT_WRITE_REG(((count - 1) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, count);
+	}
+	src += srcwidth;
+    }  
+
+    Permedia3DisableClipping(pScrn);
+    Permedia3Sync(pScrn);
 }

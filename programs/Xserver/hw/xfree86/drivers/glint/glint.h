@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.38 2000/12/20 11:13:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.39 2001/01/30 10:06:34 alanh Exp $ */
 /*
- * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
+ * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -45,7 +45,7 @@
 #include "glint_dripriv.h"
 #endif
 
-#define GLINT_MAX_MX_DEVICES 2
+#define GLINT_MAX_MULTI_DEVICES 2
 #define GLINT_VGA_MMIO_OFF 0x6000
 
 #define VERSION 4000
@@ -56,22 +56,29 @@
 #define GLINT_PATCHLEVEL 0
 
 typedef struct {
+	/* number of glintRegs match the number of MAX_MULTI_DEVICES */
 	CARD32 glintRegs[0x2000];
-	CARD32 glintSecondRegs[0x2000];
-	CARD32 DacRegs[0x100];  /* used by internal DACs */
+	CARD32 DacRegs[0x100];
 	CARD8 cmap[0x300];
 } GLINTRegRec, *GLINTRegPtr;
 
 #define GLINTPTR(p)	((GLINTPtr)((p)->driverPrivate))
 
 typedef struct {
+    int			lastInstance;
+    int			refCount;
+} GLINTEntRec, *GLINTEntPtr;
+
+typedef struct {
     pciVideoPtr		PciInfo;
-    pciVideoPtr		MXPciInfo[GLINT_MAX_MX_DEVICES];
-    int			numMXDevices;
+    pciVideoPtr		MultiPciInfo[GLINT_MAX_MULTI_DEVICES];
+    int			numMultiDevices;
+    int			MultiChip;
+    Bool		MultiAperture;
     PCITAG		PciTag;
     EntityInfoPtr	pEnt;
+    GLINTEntPtr		entityPrivate;	
     RamDacHelperRecPtr	RamDac;
-    int			MemClock;
     int			Chipset;
     int                 ChipRev;
     int			HwBpp;
@@ -94,14 +101,16 @@ typedef struct {
     int			cpuheight;
     int			cpucount;
     int			planemask;
-    int			realMXWidth;
+    int			realWidth;
     CARD32		IOAddress;
     unsigned long	FbAddress;
     int                 irq;
     unsigned char *     IOBase;
     unsigned char *     IOBaseVGA;
+    CARD8		VGAdata[65536];
     unsigned char *	FbBase;
     long		FbMapSize;
+    long		IOOffset;
     DGAModePtr		DGAModes;
     int			numDGAModes;
     Bool		DGAactive;
@@ -115,17 +124,19 @@ typedef struct {
     Bool		Dac6Bit;
     Bool		HWCursor;
     Bool		ClippingOn;
-    Bool		UsePCIRetry;
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
     Bool		VGAcore;
+    Bool		ScanlineDirect;
     int			MXFbSize;
     CARD32		rasterizerMode;
     int			MinClock;
     int			MaxClock;
     int			RefClock;
-    GLINTRegRec		SavedReg;
+    GLINTRegRec		SavedReg; /* Reflect GLINT_MAX_MULTI_DEVICES */
+    GLINTRegRec		SavedReg2;
     GLINTRegRec		ModeReg;
+    GLINTRegRec		ModeReg2;
     CARD32		AccelFlags;
     CARD32		ROP;
     CARD32		FrameBufferReadMode;
@@ -136,20 +147,23 @@ typedef struct {
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
+    ScreenBlockHandlerProcPtr BlockHandler;
     GCPtr		CurrentGC;
     DrawablePtr		CurrentDrawable;
     I2CBusPtr		DDCBus, VSBus;
+    CARD32		FGCursor;
+    CARD32		BGCursor;
+    CARD8		HardwareCursorPattern[1024];
     CARD8*		XAAScanlineColorExpandBuffers[2];
+    CARD8*		ScratchBuffer;
     CARD32		RasterizerSwap;
+    void		(*LoadCursorCallback)(ScrnInfoPtr);
+    void		(*CursorColorCallback)(ScrnInfoPtr);
+    CARD32		PM3_PixelSize;
     int			PM3_Config2D;
     int			PM3_Render2D;
     int			PM3_AreaStippleMode;
     int			PM3_VideoControl;
-    Bool		PM3_UseGamma;
-    pciVideoPtr		PM3_GammaPciInfo;
-    PCITAG		PM3_GammaPciTag;
-    CARD32		PM3_GammaIOAddress;
-    unsigned char *     PM3_GammaIOBase;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;
@@ -218,13 +232,13 @@ void Permedia3PreInit(ScrnInfoPtr pScrn);
 int Permedia3MemorySizeDetect(ScrnInfoPtr pScrn);
 void Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
-Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg);
 Bool Permedia3AccelInit(ScreenPtr pScreen);
 void Permedia3InitializeEngine(ScrnInfoPtr pScrn);
 
 void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
-Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr glintReg);
 Bool TXAccelInit(ScreenPtr pScreen);
 void TXInitializeEngine(ScrnInfoPtr pScrn);
 
@@ -250,17 +264,17 @@ Bool glintIBM640HWCursorInit(ScreenPtr pScreen);
 void glintOutTIIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
 unsigned char glintInTIIndReg(ScrnInfoPtr pScrn, CARD32 reg);
-void DUALglintOutTIIndReg(ScrnInfoPtr pScrn,
+void GMX2000OutIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
-unsigned char DUALglintInTIIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+unsigned char GMX2000InIndReg(ScrnInfoPtr pScrn, CARD32 reg);
 void glintTIWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintTIReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintTIWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char glintTIReadData(ScrnInfoPtr pScrn);
-void DUALglintTIWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
-void DUALglintTIReadAddress(ScrnInfoPtr pScrn, CARD32 index);
-void DUALglintTIWriteData(ScrnInfoPtr pScrn, unsigned char data);
-unsigned char DUALglintTIReadData(ScrnInfoPtr pScrn);
+void GMX2000WriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void GMX2000ReadAddress(ScrnInfoPtr pScrn, CARD32 index);
+void GMX2000WriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char GMX2000ReadData(ScrnInfoPtr pScrn);
 Bool glintTIHWCursorInit(ScreenPtr pScreen);
 
 void Permedia2OutIndReg(ScrnInfoPtr pScrn,
@@ -275,6 +289,10 @@ void TIramdacLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 void Permedia2LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
     			  LOCO *colors, VisualPtr pVisual);
 void Permedia2LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
+    			  LOCO *colors, VisualPtr pVisual);
+void Permedia3LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+    			  LOCO *colors, VisualPtr pVisual);
+void Permedia3LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
     			  LOCO *colors, VisualPtr pVisual);
 void Permedia2I2CUDelay(I2CBusPtr b, int usec);
 void Permedia2I2CPutBits(I2CBusPtr b, int scl, int sda);
@@ -310,4 +328,10 @@ void GLINT_VERB_WRITE_REG(GLINTPtr, CARD32 v, int r, char *file, int line);
 CARD32 GLINT_VERB_READ_REG(GLINTPtr, CARD32 r, char *file, int line);
 
 void GLINTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
+void GLINT_MoveBYTE(CARD32* dest, unsigned char* src, int dwords);
+void GLINT_MoveWORDS(CARD32* dest, unsigned short* src, int dwords);
+void GLINT_MoveDWORDS(CARD32* dest, CARD32* src, int dwords);
+
+int Shiftbpp(ScrnInfoPtr pScrn, int value);
 #endif /* _GLINT_H_ */
