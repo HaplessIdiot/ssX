@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.37 2000/07/26 01:52:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.39 2000/08/04 16:13:42 eich Exp $ */
 
 /*
  *
@@ -25,14 +25,6 @@
 #include "compiler.h"
 
 #include "xf86cmap.h"
-
-/*
- * XXX The PC98 bits have been removed for now.  The structure of the
- * code here has been reorganised to the point where they need to be
- * redone anyway.  In the meantime the older version can be found in
- * xfree86/olddrivers/vgahw/.
- */
-
 
 #ifndef SAVE_FONT1
 #define SAVE_FONT1

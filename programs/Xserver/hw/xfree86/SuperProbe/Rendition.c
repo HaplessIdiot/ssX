@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/GLINT.c,v 3.1 1997/03/07 00:28:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Rendition.c,v 3.2 1999/11/19 13:54:16 hohndel Exp $ */
 /*
  * (c) Copyright 1997 by Dirk Hohndel <hohndel@xfree86.org>
  *
@@ -30,11 +30,7 @@
 
 #define PCI_EN 0x80000000
 
-#ifdef PC98
-static Word Ports[] = {0xCF8, 0xCF9, 0xCFC, 0x000 };
-#else
 static Word Ports[] = {0xCF8, 0xCFA, 0xCFC, 0x000 };
-#endif
 
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 

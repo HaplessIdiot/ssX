@@ -7,7 +7,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.9 1999/03/14 03:21:42 dawes Exp $ */
 
 /* #define DEBUGPCI */
 
@@ -23,11 +23,7 @@ xf86scanpci()
     unsigned int i, j, idx = 0;
     int func;
     struct pci_config_reg pcr;
-#ifdef PC98
-    Word PCI_CtrlIOPorts[] = { 0xCF8, 0xCF9, 0xCFC };
-#else
     Word PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
-#endif
     int Num_PCI_CtrlIOPorts = 3;
     unsigned PCI_DevIOAddrPorts[16*16];
     int Num_PCI_DevIOAddrPorts = 16*16;

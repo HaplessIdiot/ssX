@@ -1,4 +1,13 @@
 XFree86 4.0.1b (11 August 2000)
+ 507. Remove obsolete PC98 code (#4081, Takaaki Nomura).
+ 506. Fix PC98 keyboard problems (#4081, Osamu Tomita).
+ 505. Imake support for building on Linux/arm32 (#4080, Andrew E. Mileski).
+ 504. Fix a problem with restoring the PIXCONF register in the i810 driver
+      (#4078, Jonathan Bian).
+ 503. Fix a build problem with the sis dri driver Imakefile (#4076,
+      Takaaki Nomura).
+ 502. Add DPMS support to the fbdev driver (#4075, Ani Joshi).
+ 501. Add DPMS support to the fbdevhw module (#4074, Ani Joshi).
  500. Fix VGA detection bug with Mach64 integrated controllers
       (Marc La France).
  499. Accelerated line support for the NV driver (Chas Inman, Mark Vojkovich).
@@ -10971,4 +10980,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1264 2000/08/11 06:15:33 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1265 2000/08/11 16:50:27 tsi Exp $

@@ -2,7 +2,7 @@
  * copyed from from linux kernel 2.2.4
  * removed internal stuff (#ifdef __KERNEL__)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbpriv.h,v 1.1 2000/01/19 23:02:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbpriv.h,v 1.2 2000/01/21 02:30:02 dawes Exp $ */
 
 #ifndef _LINUX_FB_H
 #define _LINUX_FB_H
@@ -32,6 +32,7 @@
 /* #define FBIOSWITCH_MONIBIT	0x460E */
 #define FBIOGET_CON2FBMAP	0x460F
 #define FBIOPUT_CON2FBMAP	0x4610
+#define FBIOBLANK		0x4611
 
 #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
 #define FB_TYPE_PLANES			1	/* Non interleaved planes */

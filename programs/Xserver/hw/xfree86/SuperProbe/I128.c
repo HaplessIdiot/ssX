@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.8 1999/03/14 03:21:40 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Robin Cutshaw <robin@xfree86.org>
  *
@@ -30,11 +30,7 @@
 
 #include "Probe.h"
 
-#ifdef PC98
-static Word Ports[] = {0xCF8, 0xCF9, 0xCFC, 0x000 };
-#else
 static Word Ports[] = {0xCF8, 0xCFA, 0xCFC, 0x000 };
-#endif
 
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 

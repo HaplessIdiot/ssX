@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.39 2000/06/15 20:49:57 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.40 2000/08/09 23:40:09 dawes Exp $ */
 
 
 /* 
@@ -339,6 +339,9 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef __alpha__
 	"-D__alpha__",
 # endif
+#ifdef __arm__
+	"-D__arm__",
+#endif
 # ifdef __sparc__
 	"-D__sparc__",
 # endif

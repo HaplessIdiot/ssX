@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.94 2000/05/18 23:21:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.95 2000/08/10 17:40:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -339,7 +339,7 @@ xf86PostKbdEvent(unsigned key)
     goto special;
 #endif /* __sparc__ */
 
-#if defined (i386) && defined (SVR4) && !defined (PC98)
+#if defined (i386) && defined (SVR4)
     /* 
      * PANIX returns DICOP standards based keycodes in using 106jp 
      * keyboard. We need to remap some keys. 
@@ -374,8 +374,6 @@ xf86PostKbdEvent(unsigned key)
   if (xf86Info.scanPrefix == 0) {
 
     switch (scanCode) {
-      
-#ifndef PC98
     case KEY_Prefix0:
     case KEY_Prefix1:
 #if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
@@ -388,11 +386,9 @@ xf86PostKbdEvent(unsigned key)
       }
       break;
 #endif
-#endif /* not PC98 */
     }
   }
 
-#ifndef PC98
   else if (
 #ifdef CSRG_BASED
            (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
@@ -458,7 +454,6 @@ xf86PostKbdEvent(unsigned key)
       if (scanCode != KEY_NumLock) return;
       scanCode = KEY_Pause;       /* pause */
     }
-#endif /* not PC98 */  
 #endif /* !ASSUME_CUSTOM_KEYCODES */
 
   /*
@@ -470,6 +465,27 @@ xf86PostKbdEvent(unsigned key)
 #else /* ASSUME_CUSTOM_KEYCODES */
   specialkey = scanCode;
 #endif /* ASSUME_CUSTOM_KEYCODES */
+
+  if (xf86IsPc98()) {
+    switch (scanCode) {
+      case 0x0e: specialkey = 0x0e; break; /* KEY_BackSpace */
+      case 0x40: specialkey = 0x4a; break; /* KEY_KP_Minus  */
+      case 0x49: specialkey = 0x4e; break; /* KEY_KP_Plus   */
+      case 0x62: specialkey = 0x3b; break; /* KEY_F1        */
+      case 0x63: specialkey = 0x3c; break; /* KEY_F2        */
+      case 0x64: specialkey = 0x3d; break; /* KEY_F3        */
+      case 0x65: specialkey = 0x3e; break; /* KEY_F4        */
+      case 0x66: specialkey = 0x3f; break; /* KEY_F5        */
+      case 0x67: specialkey = 0x40; break; /* KEY_F6        */
+      case 0x68: specialkey = 0x41; break; /* KEY_F7        */
+      case 0x69: specialkey = 0x42; break; /* KEY_F8        */
+      case 0x6a: specialkey = 0x43; break; /* KEY_F9        */
+      case 0x6b: specialkey = 0x44; break; /* KEY_F10       */
+      /* case 0x73: specialkey = 0x38; break; KEY_Alt       */
+      /* case 0x74: specialkey = 0x1d; break; KEY_LCtrl     */
+      default:   specialkey = 0x00; break;
+    }
+  }
 
 #if defined (__sparc__)
 special:
@@ -704,17 +720,13 @@ special:
 
       /* Ignore these keys -- ie don't let them cancel an alt-sysreq */
       case KEY_Alt:
-#ifndef PC98
       case KEY_AltLang:
-#endif /* not PC98 */
 	break;
 
-#ifndef PC98
       case KEY_SysReqest:
         if (down && (ModifierDown(AltMask) || ModifierDown(AltLangMask)))
           VTSysreqToggle = TRUE;
 	break;
-#endif /* not PC98 */
 
       default:
         if (VTSysreqToggle)
@@ -822,7 +834,6 @@ special:
    * ignore releases, toggle on & off on presses.
    * Don't deal with the Caps_Lock keysym directly, but check the lock modifier
    */
-#ifndef PC98
   if (keyc->modifierMap[keycode] & LockMask ||
       keysym[0] == XK_Scroll_Lock ||
       keysym[1] == XF86XK_ModeLock ||
@@ -844,7 +855,6 @@ special:
       if (keysym[1] == XF86XK_ModeLock)   xf86Info.modeSwitchLock = flag;
       updateLeds = TRUE;
     }
-#endif /* not PC98 */	
 
 #ifndef ASSUME_CUSTOM_KEYCODES
   /*

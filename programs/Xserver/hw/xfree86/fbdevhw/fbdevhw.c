@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.14 2000/05/23 23:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.15 2000/07/01 01:40:46 martin Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -751,3 +751,32 @@ fbdevHWLeaveVT(int scrnIndex, int flags)
 	fbdevHWRestore(pScrn);
 }
 
+void
+fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
+{
+#ifdef DPMSExtension
+	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+	int fbmode;
+
+	if (!pScrn->vtSema)
+		return;
+
+	switch (mode) {
+		case DPMSModeOn:
+			fbmode = 0;
+			break;
+		case DPMSModeStandby:
+			fbmode = 2;
+			break;
+		case DPMSModeSuspend:
+			fbmode = 3;
+			break;
+		case DPMSModeOff:
+			fbmode = 4;
+			break;
+	}
+
+	if (-1 == ioctl(fPtr->fd, FBIOBLANK, fbmode))
+		perror("ioctl FBIOBLANK");
+#endif    /* DPMSExtension */
+}

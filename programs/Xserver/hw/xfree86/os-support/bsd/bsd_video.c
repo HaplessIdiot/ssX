@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.33 2000/02/12 20:45:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.34 2000/03/05 16:59:17 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -332,11 +332,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 	}
 		
 	/* else, mmap /dev/vga */
-#ifndef PC98
 	if ((unsigned long)Base < 0xA0000 || (unsigned long)Base >= 0xC0000)
-#else
-	if ((unsigned long)Base < 0xA0000 || (unsigned long)Base >= 0xE8000)
-#endif
 	{
 		FatalError("%s: Address 0x%x outside allowable range\n",
 			   "xf86MapVidMem", Base);
