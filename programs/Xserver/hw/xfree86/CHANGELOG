@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 453. Fix an initialization problem in the calcomp input driver (#A.1056,
+      Josef Walzer).
  452. Add command line and XF86Config options to control Render color
       allocation on dynamic indexed visuals (Olivier Chapuis, Keith Packard)
  451. Keep track of whether the 830/845G HW cursor should be visible or
@@ -15450,4 +15452,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2368 2002/11/05 02:43:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2369 2002/11/05 05:41:54 keithp Exp $
