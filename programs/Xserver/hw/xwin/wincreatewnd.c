@@ -77,7 +77,13 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   RegisterClass (&wc);
 
   /* Set display and screen-specific tooltip text */
-  snprintf (szTitle,
+  if (g_pszQueryHost != NULL)
+    snprintf (szTitle,
+	    sizeof (szTitle),
+	    WINDOW_TITLE_XDMCP,
+	    g_pszQueryHost); 
+  else    
+    snprintf (szTitle,
 	    sizeof (szTitle),
 	    WINDOW_TITLE,
 	    display, 
@@ -277,7 +283,13 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 #endif
 
   /* Set display and screen-specific tooltip text */
-  snprintf (szTitle,
+  if (g_pszQueryHost != NULL)
+    snprintf (szTitle,
+	    sizeof (szTitle),
+	    WINDOW_TITLE_XDMCP,
+	    g_pszQueryHost); 
+  else    
+    snprintf (szTitle,
 	    sizeof (szTitle),
 	    WINDOW_TITLE,
 	    display, 

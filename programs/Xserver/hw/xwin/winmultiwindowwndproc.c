@@ -29,7 +29,7 @@
  *		Earle F. Philhower, III
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.5 2002/11/07 10:31:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmultiwindowwndproc.c,v 1.2 2003/10/02 13:30:11 eich Exp $ */
 
 #include "win.h"
 #include "dixevents.h"
@@ -741,10 +741,10 @@ winTopLevelWindowProc (HWND hwnd, UINT message,
       /* Also bail if we're maximizing, we'll do the whole thing in WM_SIZE */
       {
 	WINDOWPLACEMENT windPlace;
-	windPlace.length = sizeof(WINDOWPLACEMENT);
+	windPlace.length = sizeof (WINDOWPLACEMENT);
 
 	/* Get current window placement */
-	GetWindowPlacement(hwnd, &windPlace);
+	GetWindowPlacement (hwnd, &windPlace);
 
 	/* Bail if maximizing */
 	if (windPlace.showCmd == SW_MAXIMIZE
@@ -835,7 +835,7 @@ winTopLevelWindowProc (HWND hwnd, UINT message,
 	      SetWindowLongPtr (hwnd, GWL_STYLE,
 				WS_POPUP | WS_SIZEBOX | WS_OVERLAPPEDWINDOW);
 
-	      /* Positon the Windows window */
+	      /* Position the Windows window */
 	      SetWindowPos (hwnd, HWND_TOP,
 			    rcNew.left, rcNew.top,
 			    rcNew.right - rcNew.left, rcNew.bottom - rcNew.top,
@@ -863,7 +863,28 @@ winTopLevelWindowProc (HWND hwnd, UINT message,
     case WM_SIZING:
       /* Need to legalize the size according to WM_NORMAL_HINTS */
       /* for applications like xterm */
-      return ValidateSizing(hwnd, pWin, wParam, lParam);
+      return ValidateSizing (hwnd, pWin, wParam, lParam);
+
+    case WM_WINDOWPOSCHANGED:
+      {
+	LPWINDOWPOS pwindPos = (LPWINDOWPOS) lParam;
+
+	/* Bail if window z order was not changed */
+	if (pwindPos->flags & SWP_NOZORDER)
+	  break;
+
+#if CYGMULTIWINDOW_DEBUG
+	ErrorF ("winTopLevelWindowProc - hwndInsertAfter: %p\n",
+		pwindPos->hwndInsertAfter);
+#endif
+	
+	/* Pass the message to the root window */
+	SendMessage (hwndScreen, message, wParam, lParam);
+	
+	if (s_pScreenPriv != NULL)
+	  s_pScreenPriv->fWindowOrderChanged = TRUE;
+      }
+      return 0;
 
     case WM_SIZE:
       /* see dix/window.c */

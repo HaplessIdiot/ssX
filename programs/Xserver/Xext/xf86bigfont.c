@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.14 2003/09/24 02:43:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.15 2003/10/02 13:29:38 eich Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -123,9 +123,15 @@ CheckForShmSyscall(void)
 
     badSysCall = FALSE;
     shmid = shmget(IPC_PRIVATE, 4096, IPC_CREAT);
-    /* Clean up */
-    if (shmid != -1) {
+    if (shmid != -1)
+    {
+        /* Successful allocation - clean up */
 	shmctl(shmid, IPC_RMID, (struct shmid_ds *)NULL);
+    }
+    else
+    {
+        /* Allocation failed */
+        badSysCall = TRUE;
     }
     signal(SIGSYS, oldHandler);
     return (!badSysCall);

@@ -163,7 +163,7 @@ static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
 }
 
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__CYGWIN__)
 #include <sys/signal.h>
 
 static Bool badSysCall = FALSE;
@@ -185,23 +185,32 @@ static Bool CheckForShmSyscall()
 
     badSysCall = FALSE;
     shmid = shmget(IPC_PRIVATE, 4096, IPC_CREAT);
-    /* Clean up */
+
     if (shmid != -1)
     {
+        /* Successful allocation - clean up */
 	shmctl(shmid, IPC_RMID, (struct shmid_ds *)NULL);
+    }
+    else
+    {
+        /* Allocation failed */
+        badSysCall = TRUE;
     }
     signal(SIGSYS, oldHandler);
     return(!badSysCall);
 }
+
+#define MUST_CHECK_FOR_SHM_SYSCALL
+
 #endif
-    
+
 void
 ShmExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
     int i;
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#ifdef MUST_CHECK_FOR_SHM_SYSCALL
     if (!CheckForShmSyscall())
     {
 	ErrorF("MIT-SHM extension disabled due to lack of kernel support\n");

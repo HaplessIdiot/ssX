@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.19 2003/05/27 22:27:07 tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.20 2003/09/24 02:43:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -877,16 +877,29 @@ Status		status;
 		 * -- Branden Robinson
 		 */
 		int outputFileFd;
+		int binMode = 0;
+		const char *openMode = "w";
 		unlink(outputFile);
+#ifdef O_BINARY
+		switch (outputFormat) {
+		    case WANT_XKM_FILE:
+		        binMode = O_BINARY;
+			openMode = "wb";
+			break;
+		    default:
+		        binMode = 0;
+			break;
+		}
+#endif
 		outputFileFd= open(outputFile, O_WRONLY|O_CREAT|O_EXCL,
-			    S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		    S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH|binMode);
 		if (outputFileFd<0) {
 		    ERROR1("Cannot open \"%s\" to write keyboard description\n",
 								outputFile);
 		    ACTION("Exiting\n");
 		    exit(1);
 		}
-		out= fdopen(outputFileFd, "w");
+		out= fdopen(outputFileFd, openMode);
 		/* end BR */
 		if (out==NULL) {
 		    ERROR1("Cannot open \"%s\" to write keyboard description\n",

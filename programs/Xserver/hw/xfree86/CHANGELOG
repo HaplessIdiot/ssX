@@ -1,4 +1,21 @@
 XFree86 4.3.99.14 (xx October 2003)
+ 483. Added support for Siliconmotion Cougar3DR chip (Bugzilla #754, 
+      Chris Edgington).
+ 482. Cygwin:
+      * Added another German keyboard layout.
+      * Added Japanese keyboard layout to the list of defaults as jp.
+      * Added a new default keyboard layout for Portuguese (Brazil, ABNT2).
+      * Print the layout number in hexadecimal.
+      * Display the argument to the -query option in the window title.
+        (Bugzilla #763, Alexander Gottwald)
+ 481. Add processing for WM_WINDOWPOSCHANGED to cause window to repaint when
+      using TweakUI's focus-follows-mouse behavior.  (Bugzilla #763, 
+      Harold L Hunt II)
+ 480. Added runtime detection of SHM support by checking the return value of 
+      shmget to the SHM and xf86BIGFONT extension to support SHM on Cygwin 
+      (Bugzilla #764, Harold L Hunt II).
+ 479. Adding O_BINRAY flag when opening an xkm file if this flag is defined
+      (Bugzilla #768, Alexander Gottwald).
  478. Radeon driver fixes (Hui Yu@ATI)
       - 9200 DVI fix and TMDS_PLL initialization for all chips
       - New chips support (9800XT/SE, 9600XT/SE, M11, T2/X2 etc.)
@@ -17856,7 +17873,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2871 2003/10/06 18:22:16 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2872 2003/10/07 22:47:08 martin Exp $
 
 
 

@@ -27,7 +27,7 @@
  *
  * Authors: Alexander Gottwald	
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winconfig.c,v 1.1 2002/10/17 08:18:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winconfig.c,v 1.3 2003/10/02 13:30:10 eich Exp $ */
 
 #include "win.h"
 #include "winconfig.h"
@@ -204,7 +204,7 @@ winReadConfigfile ()
 /* Set the keyboard configuration */
 
 typedef struct {
-    int winlayout;
+    unsigned int winlayout;
     int winkbtype;
     char *xkbmodel;
     char *xkblayout;
@@ -217,6 +217,7 @@ WinKBLayoutRec winKBLayouts[] = {
     {  0x405, -1, "pc105", "cz",      NULL, NULL, "Czech"},
     {  0x406, -1, "pc105", "dk",      NULL, NULL, "Danish"},
     {  0x407, -1, "pc105", "de",      NULL, NULL, "German (Germany)"},
+    {0x10407, -1, "pc105", "de",      NULL, NULL, "German (Germany, IBM)"},
     {  0x807, -1, "pc105", "de_CH",   NULL, NULL, "German (Switzerland)"},
     {0x10409, -1, "pc105", "dvorak",  NULL, NULL, "English (USA, Dvorak)"}, 
     {0x20409, -1, "pc105", "us_intl", NULL, NULL, "English (USA, International)"}, 
@@ -226,8 +227,10 @@ WinKBLayoutRec winKBLayouts[] = {
     {  0x40c, -1, "pc105", "fr",      NULL, NULL, "French (Standard)"},
     {  0x80c, -1, "pc105", "be",      NULL, NULL, "French (Belgian)"},
     {  0x410, -1, "pc105", "it",      NULL, NULL, "Italian"},
+    {  0x411, -1, "jp",    "jp",      NULL, NULL, "Japanese"},
     {  0x414, -1, "pc105", "no",      NULL, NULL, "Norwegian"},
-    {  0x416, -1, "pc105", "pt",      NULL, NULL, "Portuguese (Brazil)"},
+    {  0x416, -1, "pc105", "pt",      NULL, NULL, "Portuguese (Brazil, ABNT)"},
+    {0x10416, -1, "abnt2", "br",      NULL, NULL, "Portuguese (Brazil, ABNT2)"},
     {  0x816, -1, "pc105", "pt",      NULL, NULL, "Portuguese (Portugal)"},
     {  0x41d, -1, "pc105", "se",      NULL, NULL, "Swedish (Sweden)"},
     {     -1, -1, NULL,    NULL,      NULL, NULL, NULL}
@@ -238,7 +241,7 @@ Bool
 winConfigKeyboard (DeviceIntPtr pDevice)
 {
   char                          layoutName[KL_NAMELENGTH];
-  int                           layoutNum;
+  unsigned int                  layoutNum;
   int                           keyboardType;  
   XF86ConfInputPtr		kbd = NULL;
   XF86ConfInputPtr		input_list = NULL;
@@ -267,11 +270,18 @@ winConfigKeyboard (DeviceIntPtr pDevice)
   keyboardType = GetKeyboardType (0);
   if (keyboardType > 0 && GetKeyboardLayoutName (layoutName)) 
   {
-    WinKBLayoutPtr	pLayout = winKBLayouts;
-
-    winMsg (X_DEFAULT, "winConfigKeyboard - Layout: \"%s\" \n", layoutName);
-
-    layoutNum = strtol (layoutName, (char **)NULL, 16);   
+    WinKBLayoutPtr	pLayout;
+      
+    layoutNum = strtoul (layoutName, (char **)NULL, 16);
+    if ((layoutNum & 0xffff) == 0x411) {
+        /* The japanese layouts know a lot of different IMEs which all have
+	  different layout numbers set. Map them to a single entry. 
+	  Same might apply for chinese, korean and other symbol languages
+	  too */
+        layoutNum = (layoutNum & 0xffff);
+    }
+    winMsg (X_DEFAULT, "winConfigKeyboard - Layout: \"%s\" (%08x) \n", 
+            layoutName, layoutNum);
 
     for (pLayout = winKBLayouts; pLayout->winlayout != -1; pLayout++)
       {

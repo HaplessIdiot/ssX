@@ -48,6 +48,9 @@ SM712
 .TP 12
 .B Lynx3DM
 SM720
+.TP 12
+.B Cougar3DR
+SM730
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -61,7 +64,7 @@ names may optionally be specified in the config file
 section, and will override the auto-detection:
 .PP
 .RS 4
-"lynx", "lynxe", "lynx3d", "lynxem", "lynxem+", "lynx3dm".
+"lynx", "lynxe", "lynx3d", "lynxem", "lynxem+", "lynx3dm", "cougar3dr".
 .RE
 
 .PP

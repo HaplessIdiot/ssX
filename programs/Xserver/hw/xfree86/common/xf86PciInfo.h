@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.153 2003/09/24 22:23:03 daenzer Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.154 2003/10/07 22:47:11 martin Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -614,6 +614,7 @@
 #define PCI_CHIP_SMI710			0x0710
 #define PCI_CHIP_SMI712			0x0712
 #define PCI_CHIP_SMI720			0x0720
+#define PCI_CHIP_SMI731			0x0730
 
 /* VMware */
 #define PCI_CHIP_VMWARE0405		0x0405
