@@ -28,11 +28,11 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.4 1999/07/18 16:04:14 dawes Exp $ */
 
 #ifndef _XTTCCONVP_H_
 #define _XTTCCONVP_H_ 1

@@ -4,7 +4,7 @@
    Copyright (c) 1998 Go Watanabe, All rights reserved.
    Copyright (c) 1998 Takuya SHIOZAKI, All rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved.
-  
+
 ===Notice
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -27,11 +27,11 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/xttcommon.h,v 1.4 1999/07/18 16:04:15 dawes Exp $ */
 
 #ifndef _XTTCOMMON_H_
 #define _XTTCOMMON_H_ (1)
@@ -93,7 +93,7 @@ Notice===
 #endif
 
 #include <freetype.h>
-
+#include <ftxsbit.h>
 
 /******************************************************
   Macros
@@ -119,6 +119,11 @@ Notice===
 /* compare strings with ignoring case */
 Bool /* False == equal, True == not equal */
 mystrcasecmp(char const *s1, char const *s2);
+
+/* strdup clone */
+char *
+Xstrdup(char const *str);
+#define xstrdup(s) Xstrdup((char const*)s)
 
 #endif
 

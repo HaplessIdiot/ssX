@@ -4,7 +4,7 @@
    Copyright (c) 1998 Kazushi (Jam) Marukawa, All rights reserved.
    Copyright (c) 1998 Takuya SHIOZAKI, All rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved.
-  
+
 ===Notice
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -27,11 +27,11 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.4 1999/06/13 16:18:06 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -58,10 +58,44 @@ static char const * const releaseID =
 #include "xttcommon.h"
 #include "xttcap.h"
 #include "xttcconv.h"
-#include "xttcache.h"
 #include "xttstruct.h"
 
-/* prototypes */
+/*
+ * Any bit blitters are not included in FreeType 1.x.
+ * Because bitmap glyph is visible for client aplictions and
+ * FreeType is not provide any text renderers.
+ */
+#include "xttblit.h"
+
+/*
+ * macros
+ */
+#ifndef ABS
+#define ABS(a)  (((a)<0)?-(a):(a))
+#endif
+
+#ifndef MIN
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#endif
+#ifndef MAX
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#endif
+
+#define FLOOR64(x) ((x) & -64)
+#define CEIL64(x) (((x) + 64 - 1) & -64)
+
+#define XTT_PROPORTIONAL_SPACING  1
+#define XTT_MONOSPACED            0
+#define XTT_CONSTANT_SPACING     -1
+
+#define IS_TT_Matrix_Unit(matrix) \
+(((matrix).xx == 65536) && ((matrix).yx == 0) && \
+ ((matrix).xy == 0    ) && ((matrix).yy == 65536))
+
+/*
+ * prototypes
+ */
+
 /* from lib/font/fontfile/defaults.c */
 extern void
 FontDefaultFormat(int *bit, int *byte, int *glyph, int *scan);
@@ -80,6 +114,11 @@ FontComputeInfoAccelerators(FontInfoPtr pFontInfo);
 static int FreeType_InitCount = 0;
 static TT_Engine engine;
 
+struct xtt_char_width {
+    int pixel;   /* pixel */
+    int raw;     /* 1000 pixel */
+};
+
 static int
 FreeType_Init(void)
 {
@@ -89,6 +128,8 @@ FreeType_Init(void)
             fprintf(stderr, "freetype: Could not create engine instance\n");
             return -1;
         }
+        if (TT_Init_SBit_Extension(engine))
+            fprintf(stderr, "freetype: This engine is not provided sbit extension\n");
     }
     FreeType_InitCount++;
     return 0;
@@ -119,8 +160,8 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
     TT_Face face;
     TT_Face_Properties prop;
     TT_Glyph glyph;
+    TT_SBit_Image* sbit;
     FreeTypeFaceInfoPtr ptr;
-    int ttcno = 0;
     SPropRecValContainer contRecValue;
 
     dprintf((stderr,
@@ -136,90 +177,28 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
         TT_Close_Face(face);
         fprintf(stderr, "freetype: can't get face property.\n");
         return -1;
-    }   
+    }
 
-    if (SPropRecValList_search_record(refHints->refListPropRecVal,
-                                      &contRecValue,
-                                      "FaceNumber")) {
-        /* get face number from Property File directly */
-        if (SPropContainer_value_int(contRecValue)<0 ||
-            SPropContainer_value_int(contRecValue)>=prop.num_Faces) {
-            fprintf(stderr, "Bad face collection:%d\n",
-                    SPropContainer_value_int(contRecValue));
+    if ( refHints->ttcno ) {
+        TT_Close_Face(face);
+        if ( refHints->ttcno<0 || refHints->ttcno>=prop.num_Faces ) {
+            fprintf(stderr, "Bad face collection:%d\n", refHints->ttcno);
             return -1;
         }
-        ttcno = SPropContainer_value_int(contRecValue);
-        if (ttcno) {
-            TT_Close_Face(face);
-            if ((error = TT_Open_Collection(engine, refHints->ttFontName, ttcno,
-                                            &face))) {
-                fprintf(stderr, "Can't Open face collection:%d\n", ttcno);
-                return -1;
-            }
+        if ((error = TT_Open_Collection(engine, refHints->ttFontName,
+                                        refHints->ttcno, &face))) {
+            fprintf(stderr, "Can't Open face collection:%d\n",
+                    refHints->ttcno);
+            return -1;
         }
     }
-#ifdef USE_XLFD_AUTO_CONTROL
-    else {
-        /* check font's family name from face infomation */
-        int n, i, j;
-        TT_UShort len;
-        short platform, encoding, language, id;
-        char *str;
-        for (i = prop.num_Faces - 1; i>=0; i--) {
-            TT_Close_Face(face);
-            dprintf((stderr, "Open Collection No:%d\n", i));
-            if ((error = TT_Open_Collection(engine, refHints->ttFontName, i,
-                                            &face))) {
-                fprintf(stderr, "Can't open face collection:%d\n", i);
-                return -1;
-            }
-            n = TT_Get_Name_Count(face);
-            for (j=0;j<n;j++) {
-                TT_Get_Name_ID(face, j, &platform, &encoding, &language, &id);
-                TT_Get_Name_String(face, j, &str, &len);
-#if 0
-                if (str)
-                    fprintf(stderr, "id:%02d [%x] [%x] [%x] [%d] %*.*s\n", 
-                            id, platform, encoding, language, len, len, len, str);
-#endif
-                if (str && id == 4 /*Name Id*/) {
-                    if (platform == 3 && encoding == 1) {   /* MS-Unicode */
-                        int k;
-                        len /= 2;
-#if 0
-                        for (k=0;k<len;k++)
-                            fprintf(stderr, "%c", str[k*2+1]);
-                        fprintf(stderr, "\n");
-#endif
-                        for (k=0;k<len;k++) {
-                            if (str[k*2+1] == '-' && refHints->familyName[k] == '_')
-                                continue;
-                            if (tolower(str[k*2+1]) != tolower(refHints->familyName[k]))
-                                break;
-                        }
-                        if (k == len)
-                            goto ttccheck_end;
-                    } else {
-#if 0
-                        fprintf(stderr, "%*.*s\n", len, len, str);
-#endif
-                        if (!strncasecmp(str, refHints->familyName, len))
-                            goto ttccheck_end;
-                    }
-                }
-            }
-        }
-    ttccheck_end:
-        ttcno = i;
-    }
-#endif /* USE_XLFD_AUTO_CONTROL - obsoleted. */
-    
-    dprintf((stderr, "Select Collection %d\n", ttcno));
+
+    dprintf((stderr, "Select Collection %d\n", refHints->ttcno));
 
     /* check !! */
     for (i = 0; i < faceTableCount; i++) {
         if (strcmp(faceTable[i].fontName, refHints->fontName) == 0 &&
-            faceTable[i].ttcno == ttcno) {
+            faceTable[i].ttcno == refHints->ttcno) {
             /* reopen */
             if (faceTable[i].flag) {
                 if ((error = TT_Get_Face_Properties(face, &prop))) {
@@ -237,10 +216,25 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
                     fprintf(stderr, "freetype: can't get new glyph.\n");
                     return -1;
                 }
+                {
+                    /* check and initialize support stuffs for sbit extesion */
+                    TT_EBLC eblc; /* fake */
+
+                    if (!TT_Get_Face_Bitmaps(face, &eblc)) {
+                        if ((error = TT_New_SBit_Image(&sbit))) {
+                            TT_Close_Face(face);
+                            fprintf(stderr,
+                                    "freetype: can't get new sbit image.\n");
+                            return -1;
+                        }
+                    } else
+                        sbit = NULL;
+                }
                 faceTable[i].face   = face;
-                faceTable[i].ttcno  = ttcno;
+                faceTable[i].ttcno  = refHints->ttcno;
                 faceTable[i].prop   = prop;
                 faceTable[i].glyph  = glyph;
+                faceTable[i].sbit   = sbit;
                 faceTable[i].mapnum = num;
                 faceTable[i].flag   = 0;
             } else
@@ -256,13 +250,13 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
           xrealloc(faceTable, (faceTableCount+1) * sizeof(*ptr)))){
         fprintf(stderr, "xrealloc: can't alloc memory for fonttable\n");
         return -1;
-    }   
+    }
 
     if ((error = TT_Get_Face_Properties(face, &prop))) {
         TT_Close_Face(face);
         fprintf(stderr, "freetype: can't get face property.\n");
         return -1;
-    }       
+    }
     if ((num = TT_Get_CharMap_Count(face)) < 0) {
         TT_Close_Face(face);
         fprintf(stderr, "freetype: can't get charmap count.\n");
@@ -273,53 +267,30 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
         fprintf(stderr, "freetype: can't get new glyph.\n");
         return -1;
     }
+    {
+        /* check support stuff for sbit extesion */
+        TT_EBLC eblc; /* use only for checking the stuff */
+
+        if (!TT_Get_Face_Bitmaps(face, &eblc)) {
+            if ((error = TT_New_SBit_Image(&sbit))) {
+                TT_Close_Face(face);
+                fprintf(stderr, "freetype: can't get new sbit image.\n");
+                return -1;
+            }
+        } else
+            sbit = NULL;
+    }
 
     faceTable = ptr;
-    faceTable[faceTableCount].fontName = strdup(refHints->fontName);
-    faceTable[faceTableCount].ttcno    = ttcno;
+    faceTable[faceTableCount].fontName = xstrdup(refHints->fontName);
+    faceTable[faceTableCount].ttcno    = refHints->ttcno;
     faceTable[faceTableCount].refCount = 1;
     faceTable[faceTableCount].face     = face;
     faceTable[faceTableCount].prop     = prop;
     faceTable[faceTableCount].glyph    = glyph;
+    faceTable[faceTableCount].sbit     = sbit;
     faceTable[faceTableCount].mapnum   = num;
     faceTable[faceTableCount].flag     = 0;
-    faceTable[faceTableCount].scaleWidth     = 1.0;
-    faceTable[faceTableCount].scaleBBoxWidth = 1.0;
-    faceTable[faceTableCount].isAutoBold     = False;
-    if (SPropRecValList_search_record(refHints->refListPropRecVal,
-                                      &contRecValue,
-                                      "ScaleWidth")) {
-        /* Scaling to Width */
-        double scaleWidth = SPropContainer_value_dbl(contRecValue);
-
-        if (scaleWidth<=0.0) {
-            fprintf(stderr, "ScaleWitdh needs plus.\n");
-            return -1;
-        }
-        faceTable[faceTableCount].scaleWidth = scaleWidth;
-    }
-    if (SPropRecValList_search_record(refHints->refListPropRecVal,
-                                      &contRecValue,
-                                      "ScaleBBoxWidth")) {
-        /* Scaling to Bounding Box Width */
-        double scaleBBoxWidth = SPropContainer_value_dbl(contRecValue);
-
-        if (scaleBBoxWidth<=0.0) {
-            fprintf(stderr, "ScaleBBoxWitdh needs plus.\n");
-            return -1;
-        }
-        faceTable[faceTableCount].scaleBBoxWidth = scaleBBoxWidth;
-    }
-    faceTable[faceTableCount].scaleBBoxWidth *=
-        faceTable[faceTableCount].scaleWidth;
-    if (SPropRecValList_search_record(refHints->refListPropRecVal,
-                                      &contRecValue,
-                                      "AutoBold")) {
-        /* Set or Reset Auto Bold Flag */
-        if (SPropContainer_value_bool(contRecValue))
-            faceTable[faceTableCount].isAutoBold = True;
-    }
-
 
     i = faceTableCount++;
     return i;
@@ -336,6 +307,8 @@ FreeType_CloseFace(int index)
         }
         if (--faceTable[index].refCount == 0) {
             TT_Done_Glyph(faceTable[index].glyph);
+            if (faceTable[index].sbit)
+                TT_Done_SBit_Image(faceTable[index].sbit);
             TT_Close_Face(faceTable[index].face);
             faceTable[index].flag = -1;
         }
@@ -355,7 +328,7 @@ convertBitOrder(FreeTypeFont *ft, unsigned char *p, int size)
 {
     extern void
         BitOrderInvert(register unsigned char *buf, register int nbytes);
-    
+
     BitOrderInvert(p, size);
 }
 
@@ -364,7 +337,7 @@ convertByteOrder(FreeTypeFont *ft, unsigned char *p, int size)
 {
     extern void TwoByteSwap(register unsigned char *buf, register int nbytes);
     extern void FourByteSwap(register unsigned char *buf, register int nbytes);
-    
+
     if (ft->pFont->bit != ft->pFont->byte) {
         switch (ft->pFont->scan) {
         case 1:
@@ -384,7 +357,6 @@ convertBitByteOrder(FreeTypeFont *ft, unsigned char *p, int size)
     convertByteOrder(ft, p, size);
 }
 
-#define ABS(a)  (((a)<0)?-(a):(a))
 
 static int
 FreeType_OpenFont(FreeTypeFont *ft,
@@ -395,13 +367,13 @@ FreeType_OpenFont(FreeTypeFont *ft,
     FreeTypeFaceInfo *fi;
     TT_Instance instance;
     double base_size;
+    int num_faces, linesize;
 
     base_size = hypot(vals->point_matrix[2], vals->point_matrix[3]);
-   
+
     result = Successful;
     fid = -1;
-    ft->pool = NULL;
-    
+
     if (FreeType_Init()< 0) {
         result = AllocError;
         goto abort;
@@ -419,7 +391,7 @@ FreeType_OpenFont(FreeTypeFont *ft,
                                         &ft->codeConverterInfo,
                                         &mapID)) {
         fprintf(stderr,
-                "FreeType_OpenFont: don't mach charset %s\n",
+                "FreeType_OpenFont: don't match charset %s\n",
                 refHints->charsetName);
         result = BadFontName;
         goto deinitQuit;
@@ -434,7 +406,7 @@ FreeType_OpenFont(FreeTypeFont *ft,
     }
 
     /* set resolution of instance */
-    if ((error = TT_Set_Instance_Resolutions(instance, 
+    if ((error = TT_Set_Instance_Resolutions(instance,
                                              (int)vals->x, (int)vals->y))) {
         result = BadFontName;
         goto doneInstQuit;
@@ -442,12 +414,12 @@ FreeType_OpenFont(FreeTypeFont *ft,
 
     {
         int flRotated = 0, flStretched = 0;
-        
+
         if (vals->point_matrix[1] != 0 || vals->point_matrix[2] != 0)
             flRotated = flStretched = 1;
         else if (vals->point_matrix[0] != vals->point_matrix[3])
             flStretched = 1;
-        else if (fi->scaleWidth != 1.0)
+        else if (ft->scaleWidth != 1.0)
             flStretched = 1;
 
         TT_Set_Instance_Transform_Flags(instance, flRotated, flStretched);
@@ -463,10 +435,10 @@ FreeType_OpenFont(FreeTypeFont *ft,
         }
         /* set matrix */
         ft->matrix.xx =
-            fi->scaleWidth *
+            ft->scaleWidth *
             vals->point_matrix[0] / base_size * 65536;
         ft->matrix.xy =
-            fi->scaleWidth *
+            ft->scaleWidth *
             vals->point_matrix[2] / base_size * 65536;
         ft->matrix.yx =
             vals->point_matrix[1] / base_size * 65536;
@@ -474,52 +446,24 @@ FreeType_OpenFont(FreeTypeFont *ft,
             vals->point_matrix[3] / base_size * 65536;
 
         dprintf((stderr, "matrix: %x %x %x %x\n",
-                 ft->matrix.xx, 
-                 ft->matrix.yx, 
-                 ft->matrix.xy, 
-                 ft->matrix.yy)); 
+                 ft->matrix.xx,
+                 ft->matrix.yx,
+                 ft->matrix.xy,
+                 ft->matrix.yy));
     }
-
-#if 0
-    /*
-     * ft->map will be calculated in get_glyph_prop and get_glyph_const.
-     * So now commented out them.
-     */
-    {
-        int bytes;
-        ft->map.rows = ABS(vals->pixel_matrix[3]) 
-            + ABS(vals->pixel_matrix[1]) + 0.5;
-        if (ft->spacing)
-            bytes =
-                (fi->scaleWidth*
-                 (ABS(vals->pixel_matrix[0]) + ABS(vals->pixel_matrix[2]))
-                 +(fi->isAutoBold?1.0:0.0)
-                 +7.5) / 8;
-        else
-            bytes =
-                (fi->scaleBBoxWidth*
-                 (ABS(vals->pixel_matrix[0]) + ABS(vals->pixel_matrix[2]))
-                 +(fi->isAutoBold?1.0:0.0)
-                 +7.5) / 8;
-        bytes += glyph - 1;
-        bytes -= bytes % glyph;
-        ft->map.cols  = bytes;
-        ft->map.width = bytes * 8;
-        ft->map.flow = TT_Flow_Down;
-        ft->map.size = ft->map.rows * ft->map.cols;
-        dprintf((stderr, "rows:%d cols:%d\n", ft->map.rows, ft->map.cols));
-    }
-#endif
 
     ft->instance = instance;
     TT_Get_Instance_Metrics(instance, &ft->imetrics);
 
-    if ((ft->pool = CharInfoPool_Alloc()) == NULL) {
-        result = AllocError;
-        goto doneInstQuit;
+    if (fi->prop.num_Faces == 0) {
+        num_faces = 1;
     }
-
-    if ((ft->btree = BTree_Alloc()) == NULL) {
+    if ((fi->prop.num_Glyphs / num_faces) > 256) {
+        linesize = 128;
+    } else {
+        linesize = 16;
+    }
+    if ((ft->cache = FontCacheOpenCache((void *) linesize)) == NULL) {
         result = AllocError;
         goto doneInstQuit;
     }
@@ -529,8 +473,6 @@ FreeType_OpenFont(FreeTypeFont *ft,
  doneInstQuit:
     TT_Done_Instance(instance);
  deinitQuit:
-    if (ft->pool)
-        CharInfoPool_Free(ft->pool);
     if (fid>=0)
         FreeType_CloseFace(fid);
     FreeType_Deinit();
@@ -546,21 +488,23 @@ FreeType_CloseFont(FontPtr pFont)
     dprintf((stderr, "FreeType_CloseFont: %x\n", pFont));
 
     TT_Done_Instance(ft->instance);
-    BTree_Free(ft->btree);
-    CharInfoPool_Free(ft->pool);
+    FontCacheCloseCache(ft->cache);
 
     FreeType_CloseFace(ft->fid);
     FreeType_Deinit();
     codeconv_free_code_converter(&ft->codeConverterInfo);
-    
+
     xfree(ft);
     xfree(pFont->info.props);
 }
 
 static char nochardat;
-static CharInfoRec nocharinfo = {/*metrics*/{0,0,0,0,0,0}, 
+static CharInfoRec nocharinfo = {/*metrics*/{0,0,0,0,0,0},
                                      /*bits*/&nochardat};
-
+/*
+ * Pseudo enbolding similar as Microsoft Windows.
+ * It is useful but poor.
+ */
 static void
 make_up_bold_bitmap(TT_Raster_Map *map)
 {
@@ -577,125 +521,131 @@ make_up_bold_bitmap(TT_Raster_Map *map)
     }
 }
 
+/* font cache private area */
 
-/* Back Door into the FreeType... */
-
-#ifndef VERY_LAZY
-#define VERY_LAZY 1
-#endif
+struct fc_tt_private {
+    int shift;
+};
 
 
-#if VERY_LAZY
-/* table "HMTX" */
-typedef struct  
+static void
+fc_tt_private_dispose(void *f_private)
 {
-    TT_UShort  advance;
-    TT_Short   bearing;
-} TT_LongMetrics;
-typedef TT_Short TT_ShortMetrics;
-#endif
+    if ( f_private )
+        xfree(f_private);
+}
+
+static struct fc_entry_vfuncs fc_tt_vfuncs = {
+    &fc_tt_private_dispose   /* f_private_dispose */
+};
+
+#define FC_TT_INIT_PRIVATE(entry) \
+  { \
+    (entry)->f_private = xalloc(sizeof(struct fc_tt_private)); \
+    bzero((entry)->f_private, sizeof(struct fc_tt_private)); \
+  }
+#define FC_TT_PRIVATE(entry) ((struct fc_tt_private *)((entry)->f_private))
+#define FC_TT_SETVFUNC(entry) ((void)((entry)->vfuncs=&fc_tt_vfuncs))
 
 
 /* calculate glyph metric from glyph index */
 
 static xCharInfo *
-get_metrics(FreeTypeFont *ft, int c)
+get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
 {
     FreeTypeFaceInfo *fi = &faceTable[ft->fid];
 
+    FontCacheEntryPtr entry;
     CharInfoPtr charInfo;
     int width, ascent, descent;
     int lbearing, rbearing;
     TT_Glyph_Metrics metrics;
 
-    TT_BBox bbox;
+    TT_BBox* bbox = &metrics.bbox;
 
-    if (!BTree_Search(ft->btree, c, (void **)&charInfo)) {
-#if VERY_LAZY
+    /*
+     * Check invalid char index.
+     */
+    if ( c <= 0 ) {
+        charInfo = &nocharinfo;
+        goto next;
+    }
+
+    if (!FontCacheSearchEntry(ft->cache, c, &entry)) {
         if (!ft->isVeryLazy) {
-#endif
-
-            TT_Load_Glyph(ft->instance, fi->glyph, c,  ft->flag);
-            TT_Get_Glyph_Metrics(fi->glyph, &metrics);
-
-            {
-                TT_Outline outline;
-                TT_Get_Glyph_Outline(fi->glyph, &outline);
-                outline.dropout_mode = 2;
-                TT_Transform_Outline(&outline, &ft->matrix);
-                TT_Get_Outline_BBox(&outline, &bbox);
+            /*
+             * load sbit's metrics.
+             * load outline's metrics if fails now.
+             * But it is better that we are able to select
+             * another way, i.e. load NULL glyph if fails.
+             */
+            if ( fi->sbit &&
+                 IS_TT_Matrix_Unit(ft->matrix) &&
+                 ft->isEmbeddedBitmap ) {
+                if ( TT_Load_Glyph_Bitmap(fi->face, ft->instance, c,
+                                          fi->sbit) ) {
+                    fi->sbit->map.size = 0;
+                } else {
+                    metrics.bbox     = fi->sbit->metrics.bbox;
+                    metrics.bearingX = fi->sbit->metrics.horiBearingX;
+                    metrics.bearingY = fi->sbit->metrics.horiBearingY;
+                    metrics.advance  = fi->sbit->metrics.horiAdvance;
+                }
+            } else
+                if ( fi->sbit )
+                    fi->sbit->map.size = 0;
+            if ( (!fi->sbit) || (!fi->sbit->map.size) ) {
+                /* load outline's metrics */
+                TT_Load_Glyph(ft->instance, fi->glyph, c, ft->flag);
+                TT_Get_Glyph_Metrics(fi->glyph, &metrics);
+                {
+                    TT_Outline outline;
+                    TT_Get_Glyph_Outline(fi->glyph, &outline);
+                    outline.dropout_mode = 2;
+                    TT_Transform_Outline(&outline, &ft->matrix);
+                    TT_Get_Outline_BBox(&outline, bbox);
+                }
             }
-#if VERY_LAZY
         } else {
-            /* very lazy method */
-#ifndef MIN
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef MAX
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#endif
+            /*
+             * very lazy method,
+             * parse the htmx field in TrueType font.
+             */
             TT_Vector p0, p1, p2, p3;
 
             {
                 /* horizontal */
-                TT_Horizontal_Header *pHH = fi->prop.horizontal;
-                int numHMs = pHH->number_Of_HMetrics;
-                
-                if (c<numHMs) {
-                    metrics.advance =
-                        TT_MulFix( ((TT_LongMetrics*)pHH->long_metrics+c)
-                                                                   ->advance,
-                                   ft->imetrics.x_scale );
-                    metrics.bbox.xMax =
-                        TT_MulFix( ((TT_LongMetrics*)pHH->long_metrics+c)
-                                                                   ->advance
-#if 0
-                                               - pHH->min_Right_Side_Bearing,
-#else
-                                   ,
-#endif
-                                   ft->imetrics.x_scale );
-                    metrics.bbox.xMin = metrics.bearingX =
-                        TT_MulFix( ((TT_LongMetrics*)pHH->long_metrics+c)
-                                                                   ->bearing,
-                                   ft->imetrics.x_scale );
-                } else {
-                    metrics.advance =
-                        TT_MulFix( ((TT_LongMetrics*)pHH
-                                                 ->long_metrics+numHMs-1)
-                                                                    ->advance,
-                                   ft->imetrics.x_scale );
-                    metrics.bbox.xMax =
-                        TT_MulFix( ((TT_LongMetrics*)pHH
-                                                 ->long_metrics+numHMs-1)
-                                                                    ->advance
-                                                - pHH->min_Right_Side_Bearing,
-                                   ft->imetrics.x_scale );
-                    metrics.bbox.xMin = metrics.bearingX =
-                        TT_MulFix( *((TT_ShortMetrics*)pHH
-                                                 ->short_metrics+c-numHMs),
-                                   ft->imetrics.x_scale );
-                }
+                TT_Short   leftBearing = 0;
+                TT_UShort  advance = 0;
+
+                TT_Get_Face_Metrics(fi->face, c, c,
+                                    &leftBearing, &advance,
+                                    NULL, NULL);
+
+                bbox->xMax = metrics.advance =
+                    TT_MulFix( advance, ft->imetrics.x_scale );
+                bbox->xMin = metrics.bearingX =
+                    TT_MulFix( leftBearing, ft->imetrics.x_scale );
             }
             {
                 /* vertical */
                 TT_Header *pH = fi->prop.header;
-                metrics.bbox.yMin = TT_MulFix( pH->yMin,
-                                               ft->imetrics.y_scale );
-                metrics.bbox.yMax = TT_MulFix( pH->yMax,
-                                               ft->imetrics.y_scale );
+                bbox->yMin = TT_MulFix( pH->yMin,
+                                        ft->imetrics.y_scale );
+                bbox->yMax = TT_MulFix( pH->yMax,
+                                        ft->imetrics.y_scale );
             }
-            p0.x = p2.x = metrics.bbox.xMin;
-            p1.x = p3.x = metrics.bbox.xMax;
-            p0.y = p1.y = metrics.bbox.yMin;
-            p2.y = p3.y = metrics.bbox.yMax;
+            p0.x = p2.x = bbox->xMin;
+            p1.x = p3.x = bbox->xMax;
+            p0.y = p1.y = bbox->yMin;
+            p2.y = p3.y = bbox->yMax;
 
             TT_Transform_Vector(&p0.x, &p0.y, &ft->matrix);
             TT_Transform_Vector(&p1.x, &p1.y, &ft->matrix);
             TT_Transform_Vector(&p2.x, &p2.y, &ft->matrix);
             TT_Transform_Vector(&p3.x, &p3.y, &ft->matrix);
 #if 0
-            fprintf(stderr, 
+            fprintf(stderr,
                     "(%.1f %.1f) (%.1f %.1f)"
                     "(%.1f %.1f) (%.1f %.1f)\n",
                     p0.x / 64.0, p0.y / 64.0,
@@ -703,53 +653,113 @@ get_metrics(FreeTypeFont *ft, int c)
                     p2.x / 64.0, p2.y / 64.0,
                     p3.x / 64.0, p3.y / 64.0);
 #endif
-            bbox.xMin = MIN(p0.x, MIN(p1.x, MIN(p2.x, p3.x)));
-            bbox.xMax = MAX(p0.x, MAX(p1.x, MAX(p2.x, p3.x)));
-            bbox.yMin = MIN(p0.y, MIN(p1.y, MIN(p2.y, p3.y)));
-            bbox.yMax = MAX(p0.y, MAX(p1.y, MAX(p2.y, p3.y)));
-        }
-#endif  /* VERY_LAZY */
+            bbox->xMin = MIN(p0.x, MIN(p1.x, MIN(p2.x, p3.x)));
+            bbox->xMax = MAX(p0.x, MAX(p1.x, MAX(p2.x, p3.x)));
+            bbox->yMin = MIN(p0.y, MIN(p1.y, MIN(p2.y, p3.y)));
+            bbox->yMax = MAX(p0.y, MAX(p1.y, MAX(p2.y, p3.y)));
 
-        
+            {
+                TT_SBit_Strike strike;
+                /*
+                 * We use TTCap but it is naive.
+                 * It has better provide  another calculation way.
+                 */
+                double sbit_scale = ft->scaleBitmap;
+
+                TT_Pos bbox_width = bbox->xMax - bbox->xMin;
+                TT_Pos add_width;
+
+                /* parse sbit entry */
+                if (!TT_Get_SBit_Strike(fi->face, ft->instance, &strike)) {
+                    TT_SBit_Range*  range = strike.sbit_ranges;
+                    TT_SBit_Range*  limit = range + strike.num_ranges;
+
+                    while((range<limit) &&
+                          (range->first_glyph <= c) &&
+                          (c <= range->last_glyph ))
+                        range++;
+
+                    if (range<limit) {
+                        add_width = bbox_width * (sbit_scale - 1);
+                        bbox->xMin -= add_width / 2;
+                        bbox->xMax += add_width / 2;
+                    }
+                }
+            }
+        }
+
         /*
          * Use floor64 and ceil64 to calulate exectly since values might
          * be minus.
          */
-#define FLOOR64(x) ((x) & -64)
-#define CEIL64(x) (((x) + 64 - 1) & -64)
-        ascent = FLOOR64(bbox.yMax + 32) / 64;
-        descent = CEIL64(-bbox.yMin - 32) / 64;
-        lbearing = FLOOR64(bbox.xMin + 32) / 64;
-        rbearing = FLOOR64(bbox.xMax + 32) / 64 + (fi->isAutoBold?1:0);
+        ascent   = FLOOR64(bbox->yMax + 32) / 64;
+        descent  = CEIL64(-bbox->yMin - 32) / 64;
+        lbearing = FLOOR64(bbox->xMin + 32) / 64;
+        rbearing = FLOOR64(bbox->xMax + 32) / 64 + (ft->isDoubleStrike?1:0);
 
-        width =
-            FLOOR64((int)floor(metrics.advance * fi->scaleBBoxWidth
-                               * ft->pixel_width_unit_x + 0.5) + 32) / 64;
+        width    = FLOOR64((int)floor(metrics.advance * ft->scaleBBoxWidth
+                              * ft->pixel_width_unit_x + .5) + 32) / 64;
 
-        if ((charInfo = CharInfoPool_Get(ft->pool)) == NULL) {
+        if ((entry = FontCacheGetEntry()) == NULL) {
             charInfo = &nocharinfo;
-            fprintf(stderr, "can't get charinfo area\n");
+            fprintf(stderr, "can't get cache entry\n");
             goto next;
+        }
+        FC_TT_SETVFUNC(entry);
+        FC_TT_INIT_PRIVATE(entry);
+        charInfo = &entry->charInfo;
+
+        /* monospaced */
+        if ( char_width.pixel && width) {
+            /* XXX */
+            FC_TT_PRIVATE(entry)->shift = (char_width.pixel - width) / 2;
+
+            /* Shift to "correct" position. */
+            lbearing += FC_TT_PRIVATE(entry)->shift;
+            rbearing += FC_TT_PRIVATE(entry)->shift;
+
+            /* when char_width < 0 ??? */
+            /* It is always lbearing < rbeaing */
+            if (rbearing - lbearing <= char_width.pixel) {
+                if (lbearing < 0) {
+                    rbearing                    -= lbearing;
+                    FC_TT_PRIVATE(entry)->shift -= lbearing;
+                    lbearing                     = 0;
+                }
+                if (rbearing > char_width.pixel) {
+                    lbearing                    -=
+                        (rbearing - char_width.pixel);
+                    FC_TT_PRIVATE(entry)->shift -=
+                        (rbearing - char_width.pixel);
+                    rbearing                     = char_width.pixel;
+                }
+            }
+            width = char_width.pixel;
         }
         charInfo->metrics.leftSideBearing  = lbearing;
         charInfo->metrics.rightSideBearing = rbearing;
         charInfo->metrics.ascent           = ascent;
         charInfo->metrics.descent          = descent;
         charInfo->metrics.characterWidth   = width;
-        charInfo->metrics.attributes =  
-            (unsigned short)(short)(floor(metrics.advance/64. * 1000.
-                                          / ft->pixel_size));
-        BTree_Insert(ft->btree, c, charInfo);
-    }   
+        charInfo->metrics.attributes       =
+            (char_width.raw ? char_width.raw :
+             (unsigned short)(short)(floor(1000 * metrics.advance / 64.
+                                           / ft->pixel_size)));
+        FontCacheInsertEntry(ft->cache, c, entry);
+    } else {
+        charInfo = &entry->charInfo;
+    }
  next:
     return &charInfo->metrics;
 }
 
 
+/* unify get_glyph_prop and get_glyph_const */
 static CharInfoPtr
-get_glyph_prop(FreeTypeFont *ft, int c)
+get_glyph(FreeTypeFont *ft, int c, int spacing)
 {
     FreeTypeFaceInfo *fi = &faceTable[ft->fid];
+    FontCacheEntryPtr entry;
     CharInfoPtr charInfo;
     TT_Outline outline;
 
@@ -757,112 +767,119 @@ get_glyph_prop(FreeTypeFont *ft, int c)
     int glyph = ft->pFont->glyph;
     int bytes;
 
-    if (!BTree_Search(ft->btree, c, (void **)&charInfo) ||
-        charInfo->bits == NULL) {
-        if (!charInfo) {
-            /* Make charInfo */
-            get_metrics(ft, c);
-            /* Retry to get it created in get_metrics(). */
-            BTree_Search(ft->btree, c, (void **)&charInfo);
-            if (!charInfo) {
-                charInfo = &nocharinfo;
-                fprintf(stderr, "can't get charinfo area\n");
-                goto next;
-            }
-        }
-
-        TT_Load_Glyph(ft->instance, fi->glyph, c,  ft->flag);
-        TT_Get_Glyph_Outline(fi->glyph, &outline);
-        outline.dropout_mode = 2;
-        TT_Transform_Outline(&outline, &ft->matrix);
-
-        lbearing = charInfo->metrics.leftSideBearing;
-        descent  = charInfo->metrics.descent;
-        width    = charInfo->metrics.rightSideBearing - lbearing;
-        height   = charInfo->metrics.ascent + descent;
-
-        /* Make just fit bitmap and draw character on it */
-        ft->map.rows  = height;
-        bytes = (width + 7) / 8;
-        bytes = (bytes + (glyph) - 1) & -glyph;
-        ft->map.cols  = bytes;
-        ft->map.width = width;
-        ft->map.flow = TT_Flow_Down;
-        ft->map.size  = ft->map.rows * ft->map.cols;
-        CharInfoPool_Set(ft->pool, charInfo, ft->map.size);
-        ft->map.bitmap = charInfo->bits;
-
-        TT_Translate_Outline(&outline, -lbearing * 64, descent * 64);
-        TT_Get_Outline_Bitmap(engine, &outline, &ft->map);
-        if (fi->isAutoBold)
-            make_up_bold_bitmap(&ft->map);
-        (*ft->convert)(ft, ft->map.bitmap, ft->map.size);
+    /*
+     * Check invalid char index.
+     */
+    if ( c <= 0 ) {
+        charInfo = &nocharinfo;
+        goto next;
     }
- next:
-    return charInfo;
-}
 
-static CharInfoPtr
-get_glyph_const(FreeTypeFont *ft, int c)
-{
-    FreeTypeFaceInfo *fi = &faceTable[ft->fid];
-    CharInfoPtr charInfo;
-    TT_Outline outline;
-
-    int width, height, descent, lbearing;
-    int glyph = ft->pFont->glyph;
-    int bytes;
-
-    if (!BTree_Search(ft->btree, c, (void **)&charInfo) ||
-        charInfo->bits == NULL) {
+    if (FontCacheSearchEntry(ft->cache, c, &entry)) {
+        if (entry->charInfo.bits != NULL) {
+            return &entry->charInfo;
+        }
+    }
+    if (entry == NULL) {
+        struct xtt_char_width char_width;
+        /* Make charInfo */
+        if ( spacing == XTT_MONOSPACED ) {
+            char_width.pixel = ft->pFont->info.maxbounds.characterWidth;
+            char_width.raw   = ft->pFont->info.maxbounds.attributes;
+        } else
+            char_width.pixel = char_width.raw = 0;
+        get_metrics(ft, c, char_width);
+        /* Retry to get it created in get_metrics(). */
+        FontCacheSearchEntry(ft->cache, c, &entry);
         if (!charInfo) {
-#if 1
-            if ((charInfo = CharInfoPool_Get(ft->pool)) == NULL) {
-                charInfo = &nocharinfo;
-                fprintf(stderr, "can't get charinfo area\n");
-                goto next;
-            }
-            BTree_Insert(ft->btree, c, charInfo);
-#else
-            /* Make charInfo */
-            get_metrics(ft, c);
-            /* Retry to get it created in get_metrics(). */
-            BTree_Search(ft->btree, c, (void **)&charInfo);
-            if (!charInfo) {
-                charInfo = &nocharinfo;
-                fprintf(stderr, "can't get charinfo area\n");
-                goto next;
-            }
-#endif
+            charInfo = &nocharinfo;
+            fprintf(stderr, "can't get cache entry\n");
+            goto next;
+        }
+    }
+    charInfo = &entry->charInfo;
+    {
+        if (fi->sbit && IS_TT_Matrix_Unit(ft->matrix) &&
+            ft->isEmbeddedBitmap) {
+            if (TT_Load_Glyph_Bitmap(fi->face, ft->instance, c, fi->sbit))
+                fi->sbit->map.size = 0;
+        } else {
+            if (fi->sbit)
+                fi->sbit->map.size = 0;
+        }
+        /*
+         * load outline if fails now.
+         * But it is better that we are able to select
+         * another way, i.e. load NULL glyph if fails.
+         */
+        if ((!fi->sbit) || (!fi->sbit->map.size)) {
+            TT_Load_Glyph(ft->instance, fi->glyph, c,  ft->flag);
+            TT_Get_Glyph_Outline(fi->glyph, &outline);
+            outline.dropout_mode = 2;
+            TT_Transform_Outline(&outline, &ft->matrix);
+        }
+        /*
+         * set glyph metrics for drawing a character.
+         */
+        /* prepare to shift */
+        lbearing = 0;
+        switch (spacing) {
+        case XTT_CONSTANT_SPACING:
+            /* Make maxbounds bitmap and draw character on it */
+            lbearing = ft->pFont->info.maxbounds.leftSideBearing;
+            descent  = ft->pFont->info.maxbounds.descent;
+            width    = ft->pFont->info.maxbounds.rightSideBearing - lbearing;
+            height   = ft->pFont->info.maxbounds.ascent + descent;
+
+            /* Write charInfo->metrics as constant charcell */
+            charInfo->metrics = ft->pFont->info.maxbounds;
+            break;
+
+        case XTT_MONOSPACED:
+            /* shift */
+            lbearing -= FC_TT_PRIVATE(entry)->shift;
+        case XTT_PROPORTIONAL_SPACING:
+        default:
+            /* Make just fit bitmap and draw character on it */
+            lbearing += charInfo->metrics.leftSideBearing;
+            descent   = charInfo->metrics.descent;
+            width     = charInfo->metrics.rightSideBearing -
+                charInfo->metrics.leftSideBearing;
+            height   = charInfo->metrics.ascent + descent;
+            break;
         }
 
-        TT_Load_Glyph(ft->instance, fi->glyph, c,  ft->flag);
-        TT_Get_Glyph_Outline(fi->glyph, &outline);
-        outline.dropout_mode = 2;
-        TT_Transform_Outline(&outline, &ft->matrix);
-
-        lbearing = ft->pFont->info.maxbounds.leftSideBearing;
-        descent = ft->pFont->info.maxbounds.descent;
-        width = ft->pFont->info.maxbounds.rightSideBearing - lbearing;
-        height = ft->pFont->info.maxbounds.ascent + descent;
-
-        /* Make maxbounds bitmap and draw character on it */
         ft->map.rows  = height;
         bytes = (width + 7) / 8;
+        /* aligenment */
         bytes = (bytes + (glyph) - 1) & -glyph;
         ft->map.cols  = bytes;
         ft->map.width = width;
         ft->map.flow = TT_Flow_Down;
         ft->map.size  = ft->map.rows * ft->map.cols;
-        CharInfoPool_Set(ft->pool, charInfo, ft->map.size);
+        if (!FontCacheGetBitmap(entry, ft->map.size)) {
+            charInfo = &nocharinfo;
+            fprintf(stderr, "can't get glyph image area\n");
+            goto next;
+        }
         ft->map.bitmap = charInfo->bits;
 
-        /* Write metrics */
-        charInfo->metrics = ft->pFont->info.maxbounds;
-
-        TT_Translate_Outline(&outline, -lbearing * 64, descent * 64);
-        TT_Get_Outline_Bitmap(engine, &outline, &ft->map);
-        if (fi->isAutoBold)
+        /*
+         * draw a sbit or an outline glyph
+         */
+        if (fi->sbit && fi->sbit->map.size &&
+            IS_TT_Matrix_Unit(ft->matrix) && ft->isEmbeddedBitmap)
+            /*
+             * Metrics on sbits are already cropped.
+             * And the parameters, ?_offset, on XTT_Get_SBit_Bitmap are
+             * different from TT_Get_Glyph_Bitmap's one.
+             */
+            XTT_Get_SBit_Bitmap(&ft->map, fi->sbit, -lbearing, descent);
+        else {
+            TT_Translate_Outline(&outline, -lbearing * 64, descent * 64);
+            TT_Get_Outline_Bitmap(engine, &outline, &ft->map);
+        }
+        if (ft->isDoubleStrike)
             make_up_bold_bitmap(&ft->map);
         (*ft->convert)(ft, ft->map.bitmap, ft->map.size);
     }
@@ -881,83 +898,60 @@ FreeTypeGetGlyphs (FontPtr pFont,
     FreeTypeFont *ft = (FreeTypeFont*) pFont->fontPrivate;
     CharInfoPtr *glyphsBase = glyphs;
 
+    int spacing;
+
     dprintf((stderr, "FreeTypeGetGlyphs: %p %d\n", pFont, count));
 
-    if (ft->spacing == 'p' || ft->spacing == 'm') {         /* proportional */
-        switch (encoding) {
-        case Linear8Bit:
-        case TwoD8Bit:
-            while (count--) {
-                unsigned c = *chars++;
-                c = ft->codeConverterInfo.ptrCodeConverter(c);
-                dprintf((stderr, "%04x\n", c));
-                *glyphs++ = get_glyph_prop(ft,
-                                           TT_Char_Index(ft->charmap, c));
-            }               
-            break;
-        case Linear16Bit:
-        case TwoD16Bit:
-            while (count--) {
-                unsigned c1, c2;
-                c1 = *chars++;
-                c2 = *chars++;
-                dprintf((stderr, "code: %02x%02x ->", c1,c2));
-                if (!(c1 >= pFont->info.firstRow &&
-                      c1 <= pFont->info.lastRow  &&
-                      c2 >= pFont->info.firstCol &&
-                      c2 <= pFont->info.lastCol)) {
-                    *glyphs++ = &nocharinfo;
-                    dprintf((stderr, "invalid code\n"));
-                } else {
-                    c1 = ft->codeConverterInfo.ptrCodeConverter(c1<<8|c2);
-                    dprintf((stderr, "%04x\n", c1));
-                    *glyphs++ = get_glyph_prop(ft,
-                                               TT_Char_Index(ft->charmap, c1));
-                }
-            }
-            break;
+    switch(ft->spacing) {
+    case 'p':
+        spacing = XTT_PROPORTIONAL_SPACING;
+        break;
+    case 'm':
+        spacing = XTT_MONOSPACED;
+        break;
+    case 'c':
+        spacing = XTT_CONSTANT_SPACING;
+        break;
+    }
+
+    switch (encoding) {
+    case Linear8Bit:
+    case TwoD8Bit:
+        while (count--) {
+            unsigned c = *chars++;
+            c = ft->codeConverterInfo.ptrCodeConverter(c);
+            dprintf((stderr, "%04x\n", c));
+            *glyphs++ = get_glyph(ft, TT_Char_Index(ft->charmap, c), spacing);
         }
-    } else {
-        switch (encoding) {
-        case Linear8Bit:
-        case TwoD8Bit:
-            while (count--) {
-                unsigned c = *chars++;
-                c = ft->codeConverterInfo.ptrCodeConverter(c);
-                *glyphs++ = get_glyph_const(ft,
-                                            TT_Char_Index(ft->charmap, c));
+        break;
+    case Linear16Bit:
+    case TwoD16Bit:
+        while (count--) {
+            unsigned c1, c2;
+            c1 = *chars++;
+            c2 = *chars++;
+            dprintf((stderr, "code: %02x%02x ->", c1,c2));
+            if (!(c1 >= pFont->info.firstRow &&
+                  c1 <= pFont->info.lastRow  &&
+                  c2 >= pFont->info.firstCol &&
+                  c2 <= pFont->info.lastCol)) {
+                *glyphs++ = &nocharinfo;
+                dprintf((stderr, "invalid code\n"));
+            } else {
+                c1 = ft->codeConverterInfo.ptrCodeConverter(c1<<8|c2);
+                dprintf((stderr, "%04x\n", c1));
+                *glyphs++ = get_glyph(ft, TT_Char_Index(ft->charmap, c1),
+                                      spacing);
             }
-            break;
-        case Linear16Bit:
-        case TwoD16Bit:
-            while (count--) {
-                unsigned c1, c2;
-                c1 = *chars++;
-                c2 = *chars++;
-                dprintf((stderr, "code: %02x%02x ->", c1,c2));
-                if (!(c1 >= pFont->info.firstRow &&
-                      c1 <= pFont->info.lastRow  &&
-                      c2 >= pFont->info.firstCol &&
-                      c2 <= pFont->info.lastCol)) {
-                    *glyphs++ = &nocharinfo;
-                    dprintf((stderr, "invalid code\n"));
-                } else {
-                    c1 = ft->codeConverterInfo.ptrCodeConverter(c1<<8|c2);
-                    dprintf((stderr, "%04x\n", c1));
-                    *glyphs++ = get_glyph_const(ft,
-                                                TT_Char_Index(ft->charmap,
-                                                              c1));
-                }
-            }
-            break;
         }
+        break;
     }
 
     *pCount = glyphs - glyphsBase;
     return Successful;
 }
 
-int 
+int
 FreeTypeGetMetrics (FontPtr pFont,
                     unsigned long count,
                     unsigned char *chars,
@@ -971,6 +965,14 @@ FreeTypeGetMetrics (FontPtr pFont,
 
     /*dprintf((stderr, "FreeTypeGetMetrics: %d\n", count));*/
     if (ft->spacing == 'm' || ft->spacing == 'p') {
+        struct xtt_char_width char_width;
+
+        if (ft->spacing == 'm') {
+            char_width.pixel = ft->pFont->info.maxbounds.characterWidth;
+            char_width.raw = ft->pFont->info.maxbounds.attributes;
+        } else
+            char_width.pixel = char_width.raw = 0;
+
         switch (encoding) {
         case Linear8Bit:
         case TwoD8Bit:
@@ -979,7 +981,9 @@ FreeTypeGetMetrics (FontPtr pFont,
 /*              dprintf((stderr, "code: %04x ->", c));*/
                 c = ft->codeConverterInfo.ptrCodeConverter(c);
 /*              dprintf((stderr, "%04x\n", c));*/
-                *glyphs++ = get_metrics(ft, TT_Char_Index(ft->charmap, c));
+                *glyphs++ =
+                    get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                char_width);
             }
             break;
         case Linear16Bit:
@@ -989,7 +993,9 @@ FreeTypeGetMetrics (FontPtr pFont,
 /*              dprintf((stderr, "code: %04x ->", c));*/
                 c = ft->codeConverterInfo.ptrCodeConverter(c);
 /*              dprintf((stderr, "%04x\n", c));*/
-                *glyphs++ = get_metrics(ft, TT_Char_Index(ft->charmap, c));
+                *glyphs++ =
+                    get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                char_width);
             }
             break;
         }
@@ -1036,20 +1042,20 @@ struct {
 
 static void
 adjust_min_max(minc, maxc, tmp)
-     xCharInfo  *minc, *maxc, *tmp; 
+     xCharInfo  *minc, *maxc, *tmp;
 {
 #define MINMAX(field,ci) \
     if (minc->field > (ci)->field) \
     minc->field = (ci)->field; \
     if (maxc->field < (ci)->field) \
-    maxc->field = (ci)->field;  
-            
+    maxc->field = (ci)->field;
+
     MINMAX(ascent, tmp);
     MINMAX(descent, tmp);
     MINMAX(leftSideBearing, tmp);
     MINMAX(rightSideBearing, tmp);
     MINMAX(characterWidth, tmp);
-    
+
     if ((INT16)minc->attributes > (INT16)tmp->attributes)
         minc->attributes = tmp->attributes;
     if ((INT16)maxc->attributes < (INT16)tmp->attributes)
@@ -1060,7 +1066,8 @@ adjust_min_max(minc, maxc, tmp)
 void
 freetype_compute_bounds(FreeTypeFont *ft,
                         FontInfoPtr pinfo,
-                        FontScalablePtr vals)
+                        FontScalablePtr vals,
+                        struct xtt_char_width char_width)
 {
     int row, col;
     short c;
@@ -1068,7 +1075,7 @@ freetype_compute_bounds(FreeTypeFont *ft,
     int overlap, maxOverlap;
     long swidth      = 0;
     long total_width = 0;
-    int num_chars    = 0; 
+    int num_chars    = 0;
 
     minchar.ascent = minchar.descent =
     minchar.leftSideBearing = minchar.rightSideBearing =
@@ -1089,7 +1096,14 @@ freetype_compute_bounds(FreeTypeFont *ft,
             fprintf(stderr, "%x\n", c);
 #endif
             if (c) {
-                tmpchar = get_metrics(ft, TT_Char_Index(ft->charmap, c));
+                tmpchar =
+                    get_metrics(ft, TT_Char_Index(ft->charmap, c),
+                                char_width);
+                }
+
+            if (!tmpchar->characterWidth)
+                continue;
+
                 adjust_min_max(&minchar, &maxchar, tmpchar);
                 overlap = tmpchar->rightSideBearing - tmpchar->characterWidth;
                 if (maxOverlap < overlap)
@@ -1097,10 +1111,9 @@ freetype_compute_bounds(FreeTypeFont *ft,
                 num_chars++;
                 swidth += ABS(tmpchar->characterWidth);
                 total_width += tmpchar->characterWidth;
-            }
         }
     }
-    
+
     if (num_chars > 0) {
         swidth = (swidth * 10.0 + num_chars / 2.0) / num_chars;
         if (total_width < 0)
@@ -1108,6 +1121,11 @@ freetype_compute_bounds(FreeTypeFont *ft,
         vals->width = swidth;
     } else
         vals->width = 0;
+
+    if(char_width.pixel) {
+        maxchar.characterWidth = char_width.pixel;
+        minchar.characterWidth = char_width.pixel;
+    }
 
     pinfo->maxbounds     = maxchar;
     pinfo->minbounds     = minchar;
@@ -1126,16 +1144,16 @@ freetype_compute_bounds(FreeTypeFont *ft,
 
 static void
 restrict_code_range(unsigned short *refFirstCol,
-                   unsigned short *refFirstRow,
-                   unsigned short *refLastCol,
-                   unsigned short *refLastRow,
-                   fsRange const *ranges, int nRanges)
+                    unsigned short *refFirstRow,
+                    unsigned short *refLastCol,
+                    unsigned short *refLastRow,
+                    fsRange const *ranges, int nRanges)
 {
     if (nRanges) {
         int minCol = 256, minRow = 256, maxCol = -1, maxRow = -1;
         fsRange const *r = ranges;
         int i;
-        
+
         for (i=0; i<nRanges; i++) {
             if (r->min_char_high != r->max_char_high) {
                 minCol = 0x00;
@@ -1157,12 +1175,12 @@ restrict_code_range(unsigned short *refFirstCol,
             *refFirstCol = *refLastCol;
         else if (minCol > *refFirstCol)
             *refFirstCol = minCol;
-        
+
         if (maxCol < *refFirstCol)
             *refLastCol = *refFirstCol;
         else if (maxCol < *refLastCol)
             *refLastCol = maxCol;
-        
+
         if (minRow > *refLastRow) {
             *refFirstRow = *refLastRow;
             *refFirstCol = *refLastCol;
@@ -1203,7 +1221,7 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
             val = strtol(p, (char **)&q, 0);
             if (p == q)
                 /* end or illegal */
-                break; 
+                break;
             if (val<0 || val>65535) {
                 /* out of zone */
                 break;
@@ -1211,7 +1229,7 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
             minpoint = val;
             p=q;
         }
-        
+
         /* skip space */
         while (isspace(*p))
             p++;
@@ -1224,11 +1242,11 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
             else
                 /* end or illegal */
                 break;
-            
+
             /* skip space */
             while (isspace(*p))
                 p++;
-            
+
             val = strtol(p, (char **)&q, 0);
             if (p != q) {
                 if (val<0 || val>65535)
@@ -1241,7 +1259,7 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
         } else
             /* comma - single code */
             maxpoint = minpoint;
-        
+
         if (minpoint>maxpoint) {
             int tmp;
             tmp = minpoint;
@@ -1260,7 +1278,7 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
             break;
         {
             fsRange *r = ranges+nRanges-1;
-            
+
             r->min_char_low = minpoint & 0xff;
             r->max_char_low = maxpoint & 0xff;
             r->min_char_high = (minpoint>>8) & 0xff;
@@ -1277,7 +1295,7 @@ restrict_code_range_by_str(unsigned short *refFirstCol,
 
 
 int
-FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals, 
+FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                       format, fmask, non_cachable_font)
      FontPathElementPtr fpe;
      FontPtr            *ppFont;
@@ -1295,22 +1313,26 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     FontInfoPtr pinfo;
     FreeTypeFont *ft;
     int ret, bit, byte, glyph, scan, image;
-/*    FontScalableRec tmpvals;*/
 
     char xlfdName[MAXFONTNAMELEN];
     char familyname[MAXFONTNAMELEN];
     char charset[MAXFONTNAMELEN], slant[MAXFONTNAMELEN];
     int spacing = 'r'; /* avoid 'uninitialized variable using' warning */
 
+#define MAXCOPYRIGHTLEN 256
+    char  copyright_string[MAXCOPYRIGHTLEN + 1] =
+        "Copyright Notice is not available or not able to read yet.";
+
     SDynPropRecValList listPropRecVal;
     FreeTypeOpenFaceHints hints;
     char *dynStrTTFileName = NULL;
     char *dynStrRealFileName = NULL;
     SPropRecValContainer contRecValue;
+    int setwidth_value;
 
     double base_width, base_height;
 
-    dprintf((stderr, 
+    dprintf((stderr,
              "\n+FreeTypeOpenScalable(%x, %x, %x, %x, %s, %x, %x, %x, %x)\n",
              fpe, ppFont, flags, entry, fileName, vals,
              format, fmask, non_cachable_font));
@@ -1326,8 +1348,8 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     hints.charsetName = charset;
     hints.familyName = familyname;
     hints.refListPropRecVal = &listPropRecVal;
+    hints.ttcno = 0;
 
-    
     if (SPropRecValList_new(&listPropRecVal)) {
         result = AllocError;
         goto quit;
@@ -1350,74 +1372,12 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                     strcpy(dynStrRealFileName+dirLen, p2+1);
                     capHead = p1+1;
                 } else
-                    dynStrRealFileName = strdup(fileName);
+                    dynStrRealFileName = xstrdup(fileName);
             else
-                dynStrRealFileName = strdup(fileName);
+                dynStrRealFileName = xstrdup(fileName);
         } /* font cap */
 
-#ifdef USE_TTP_FILE
-        /* ttp file - obsoleted. */
-        if (len>0 && 'p' == fileName[len-1]) {
-            hints.isProp = True;
-            if (SPropRecValList_read_prop_file(&listPropRecVal,
-                                               dynStrRealFileName)) {
-                result = BadFontFormat;
-                goto quit;
-            }
-            if (SPropRecValList_search_record(&listPropRecVal,
-                                              &contRecValue,
-                                              "FontFile")) {
-                /* TrueTypeFont File from Property File Record */
-#if 0
-                fprintf(stderr, "FontFile %s\n",
-                        SPropContainer_value_str(contRecValue));
-#endif
-                if ('/' == SPropContainer_value_str(contRecValue)[0])
-                    /* absolute path */
-                dynStrTTFileName =
-                strdup(SPropContainer_value_str(contRecValue));
-                else {
-                    /* relative path */
-                    char const *baseName =
-                        strrchr(fileName, '/');
-                    if (NULL == baseName)
-                        /* relative from current path */
-                        dynStrTTFileName =
-                            strdup(SPropContainer_value_str(contRecValue));
-                    else {
-                        int lenDirName =
-                            baseName-fileName+1;
-                        dynStrTTFileName =
-                            xalloc(lenDirName+
-                                   strlen(
-                                       SPropContainer_value_str(contRecValue))
-                                   +1);
-                        memcpy(dynStrTTFileName, fileName, lenDirName);
-                        strcpy(&dynStrTTFileName[lenDirName],
-                               SPropContainer_value_str(contRecValue));
-                    }
-                }
-#if 0
-                fprintf(stderr, "FontFile(after) %s\n",
-                        dynStrTTFileName);
-#endif
-            } else {
-                /* TrueTypeFont File from Property File Name */
-                dynStrTTFileName = strdup(dynStrRealFileName);
-                dynStrTTFileName[len-1] = 'f';
-                if (access(dynStrTTFileName, F_OK)) {
-                    dynStrTTFileName[len-1] = 'c';
-                    if (access(dynStrTTFileName, F_OK)) {
-                        result = BadFontPath;
-                        xfree(dynStrTTFileName);
-                        goto quit;
-                    }
-                }
-            }
-            hints.ttFontName = dynStrTTFileName;
-        } else
-#endif /* USE_TTP_FILE  --- obsoleted. */
-            hints.ttFontName = dynStrRealFileName;
+        hints.ttFontName = dynStrRealFileName;
 
         {
             /* font cap */
@@ -1450,17 +1410,33 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                 strncpy(slant, p1, p-p1);
                 slant[p-p1] = '\0';
                 break;
-            case 4: /* width   */
-            case 5: /* none    */
-            case 6: /* pixel   */
-            case 7: /* point   */
-            case 8: /* res x   */
-            case 9: /* res y   */
+            case 4: /* setwidth */
+                setwidth_value = 0;
+#if 0
+                /* Oops, polymorphic XLFD parser is not implemented! */
+                if ( '-' != *p1 ) {
+                    /* polymorphic setwidth */
+                    /* 500 = normal width */
+                    /* 1000 = double width */
+                    char *endptr;
+                    setwidth_value = strtol(p1, &endptr, 10);
+                    if ( '-' != *endptr )
+                        setwidth_value = 0;
+                    if ( setwidth_value>1000 )
+                        setwidth_value=1000;
+                }
+                break;
+#endif
+            case 5: /* additional style */
+            case 6: /* pixel size */
+            case 7: /* point size */
+            case 8: /* res x */
+            case 9: /* res y */
                 break;
             case 10: /* spacing */
                 spacing = tolower(*p1);
                 break;
-            case 11: /* av width */
+            case 11: /* avarage width */
                 break;
             case 12: /* charset */
                 strcpy(charset, p1);
@@ -1473,34 +1449,40 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
             }
         }
     }
-    dprintf((stderr, "charset: %s spacing: %d slant: %s\n", 
+    dprintf((stderr, "charset: %s spacing: %d slant: %s\n",
              charset, spacing, slant));
 
+
+    /* get face number from Property File directly */
+    if ( SPropRecValList_search_record(&listPropRecVal,
+                                       &contRecValue,
+                                       "FaceNumber"))
+        hints.ttcno = SPropContainer_value_int(contRecValue);
 
     /* slant control */
     if (SPropRecValList_search_record(&listPropRecVal,
                                       &contRecValue,
                                       "AutoItalic")) {
-        vals->pixel_matrix[2] += 
+        vals->pixel_matrix[2] +=
             vals->pixel_matrix[0] * SPropContainer_value_dbl(contRecValue);
-        vals->point_matrix[2] += 
+        vals->point_matrix[2] +=
             vals->point_matrix[0] * SPropContainer_value_dbl(contRecValue);
-        vals->pixel_matrix[3] += 
+        vals->pixel_matrix[3] +=
             vals->pixel_matrix[1] * SPropContainer_value_dbl(contRecValue);
-        vals->point_matrix[3] += 
+        vals->point_matrix[3] +=
             vals->point_matrix[1] * SPropContainer_value_dbl(contRecValue);
     }
 #ifdef USE_XLFD_AUTO_CONTROL
-    else 
+    else
         for (i=0; i<sizeof(slantinfo)/sizeof(slantinfo[0]); i++) {
             if (!mystrcasecmp(slant, slantinfo[i].name)) {
-                vals->pixel_matrix[2] += 
+                vals->pixel_matrix[2] +=
                     vals->pixel_matrix[0] * slantinfo[i].sign * 0.5;
-                vals->point_matrix[2] += 
+                vals->point_matrix[2] +=
                     vals->point_matrix[0] * slantinfo[i].sign * 0.5;
-                vals->pixel_matrix[3] += 
+                vals->pixel_matrix[3] +=
                     vals->pixel_matrix[1] * slantinfo[i].sign * 0.5;
-                vals->point_matrix[3] += 
+                vals->point_matrix[3] +=
                     vals->point_matrix[1] * slantinfo[i].sign * 0.5;
                 break;
             }
@@ -1554,29 +1536,46 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         if (!SPropContainer_value_bool(contRecValue))
             ft->flag = TTLOAD_SCALE_GLYPH;
 
-    if ((ret = FreeType_OpenFont(ft, vals, glyph, &hints))
-        != Successful) {
-        xfree(ft);
-        DestroyFontRec(pFont);
-        result = BadFontName;
-        goto quit;
+    /* scaling */
+    ft->scaleWidth = 1.0;
+    if (SPropRecValList_search_record(&listPropRecVal,
+                                      &contRecValue,
+                                      "ScaleWidth")) {
+        /* Scaling to Width */
+        double scaleWidth = SPropContainer_value_dbl(contRecValue);
+
+        if (scaleWidth<=0.0) {
+            fprintf(stderr, "ScaleWitdh needs plus.\n");
+            return -1;
+        }
+        ft->scaleWidth = scaleWidth;
+    }
+    if ( setwidth_value ) {
+        ft->scaleWidth *= (double)setwidth_value / 500.0;
+    }
+    ft->scaleBBoxWidth = 1.0;
+    if (SPropRecValList_search_record(&listPropRecVal,
+                                      &contRecValue,
+                                      "ScaleBBoxWidth")) {
+        /* Scaling to Bounding Box Width */
+        double scaleBBoxWidth = SPropContainer_value_dbl(contRecValue);
+
+        if (scaleBBoxWidth<=0.0) {
+            fprintf(stderr, "ScaleBBoxWitdh needs plus.\n");
+            return -1;
+        }
+        ft->scaleBBoxWidth = scaleBBoxWidth;
+    }
+    ft->scaleBBoxWidth *= ft->scaleWidth;
+    ft->isDoubleStrike = False;
+    if (SPropRecValList_search_record(&listPropRecVal,
+                                      &contRecValue,
+                                      "DoubleStrike")) {
+        /* Set or Reset Auto Bold Flag */
+        if (SPropContainer_value_bool(contRecValue))
+            ft->isDoubleStrike = True;
     }
 
-    ft->pFont = pFont;
-    if (bit == MSBFirst) {
-        if (byte == LSBFirst) {
-            ft->convert = convertNothing;
-        } else {
-            ft->convert = convertByteOrder;
-        }
-    } else {
-        if (byte == LSBFirst) {
-            ft->convert = convertBitOrder;
-        } else {
-            ft->convert = convertBitByteOrder;
-        }
-    }
-        
     ft->spacing = spacing;
 #if True /* obsoleted ->->-> */
     if (SPropRecValList_search_record(&listPropRecVal,
@@ -1590,7 +1589,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                                            "ForceSpacing")) {
             char *strSpace = SPropContainer_value_str(contRecValue);
             Bool err = False;
-        
+
             if (1 != strlen(strSpace))
                 err = True;
             else
@@ -1615,9 +1614,56 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     if (SPropRecValList_search_record(&listPropRecVal,
                                       &contRecValue,
                                       "VeryLazyMetrics"))
+#if 0
         if (NULL == getenv("NOVERYLAZY"))
             /* If NOVERYLAZY is defined, the vl option is ignored. */
+#endif
             ft->isVeryLazy = SPropContainer_value_bool(contRecValue);
+
+    /* embedded bitmap */
+    ft->isEmbeddedBitmap = True;
+    if (SPropRecValList_search_record(&listPropRecVal,
+                                      &contRecValue,
+                                      "EmbeddedBitmap"))
+        ft->isEmbeddedBitmap = SPropContainer_value_bool(contRecValue);
+
+    if ((ret = FreeType_OpenFont(ft, vals, glyph, &hints))
+        != Successful) {
+        xfree(ft);
+        DestroyFontRec(pFont);
+        result = BadFontName;
+        goto quit;
+    }
+
+    ft->scaleBitmap = 1.0;
+    if((ft->isVeryLazy) &&
+       SPropRecValList_search_record(&listPropRecVal,
+                                     &contRecValue,
+                                     "VeryLazyBitmapWidthScale")) {
+        /* Scaling to Bitmap Bounding Box Width */
+        double scaleBitmapWidth = SPropContainer_value_dbl(contRecValue);
+
+        if (scaleBitmapWidth<=0.0) {
+            fprintf(stderr, "ScaleBitmapWitdh needs plus.\n");
+            return -1;
+        }
+        ft->scaleBitmap = scaleBitmapWidth;
+    }
+
+    ft->pFont = pFont;
+    if (bit == MSBFirst) {
+        if (byte == LSBFirst) {
+            ft->convert = convertNothing;
+        } else {
+            ft->convert = convertByteOrder;
+        }
+    } else {
+        if (byte == LSBFirst) {
+            ft->convert = convertBitOrder;
+        } else {
+            ft->convert = convertBitByteOrder;
+        }
+    }
 
     /* Fill in font record. Data format filled in by reader. */
     pFont->format = format;
@@ -1641,7 +1687,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     pinfo->defaultCh = ft->codeConverterInfo.refCharSetInfo->defaultCh;
     /* restriction of the code range */
     {
-        
+
         if (SPropRecValList_search_record(&listPropRecVal,
                                            &contRecValue,
                                            "CodeRange")) {
@@ -1665,12 +1711,15 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     pFont->info.pad = (short)0xf0f0; /* 0, 0xf0f0 ??? */
 
     {
-        /* exact bounding box */
+        /*
+         * calculate exact bounding box
+         */
         int raw_ascent, raw_descent, raw_width;     /* RAW */
         int lsb, rsb, desc, asc;
         double newlsb, newrsb, newdesc, newasc;
         double point[2];
         double scale;
+        struct xtt_char_width char_width = {0,0};
 
         /*
          * X11's values are not same as TrueType values.
@@ -1689,7 +1738,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         desc  = -(faceTable[ft->fid].prop.horizontal->Descender);
         lsb   = faceTable[ft->fid].prop.horizontal->min_Left_Side_Bearing;
         rsb   = faceTable[ft->fid].prop.horizontal->xMax_Extent;
-		if (rsb == 0) 
+        if (rsb == 0)
             rsb = faceTable[ft->fid].prop.horizontal->advance_Width_Max;
 
         raw_width   = faceTable[ft->fid].prop.horizontal->advance_Width_Max;
@@ -1699,9 +1748,9 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
         /*
          * Apply scaleBBoxWidth.
          */
-        lsb    = (int)floor(lsb * faceTable[ft->fid].scaleBBoxWidth);
-        rsb    = (int)floor(rsb * faceTable[ft->fid].scaleBBoxWidth + 0.5);
-        raw_width = raw_width * faceTable[ft->fid].scaleBBoxWidth;
+        lsb    = (int)floor(lsb * ft->scaleBBoxWidth);
+        rsb    = (int)floor(rsb * ft->scaleBBoxWidth + 0.5);
+        raw_width = raw_width * ft->scaleBBoxWidth;
 
 #define TRANSFORM_POINT(matrix, x, y, dest) \
     ((dest)[0] = (matrix)[0] * (x) + (matrix)[2] * (y), \
@@ -1715,10 +1764,10 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
 
         /* Compute new extents for this glyph */
         TRANSFORM_POINT(vals->pixel_matrix, lsb, -desc, point);
-        newlsb = point[0];
-        newrsb = newlsb;
+        newlsb  = point[0];
+        newrsb  = newlsb;
         newdesc = -point[1];
-        newasc = -newdesc;
+        newasc  = -newdesc;
         TRANSFORM_POINT(vals->pixel_matrix, lsb, asc, point);
         CHECK_EXTENT(newlsb, newrsb, newdesc, newasc, point);
         TRANSFORM_POINT(vals->pixel_matrix, rsb, -desc, point);
@@ -1730,29 +1779,77 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
          * TrueType font is scaled.  So we made scaling value.
          */
         scale = 1.0 / faceTable[ft->fid].prop.header->Units_Per_EM;
-        lsb  = (int)floor(newlsb * scale + 0.5);
-        rsb  = (int)floor(newrsb * scale + 0.5);
-        desc = (int)ceil(newdesc * scale - 0.5);
-        asc  = (int)floor(newasc * scale + 0.5);
-        
+        /* ???: lsb = (int)floor(newlsb * scale); */
+        lsb   = (int)floor(newlsb * scale + 0.5);
+        rsb   = (int)floor(newrsb * scale + 0.5);
+        desc  = (int)ceil(newdesc * scale - 0.5);
+        asc   = (int)floor(newasc * scale + 0.5);
+
+        /*
+         * raw_* for are differs.
+         */
         raw_width   *= base_width * 1000. * scale / base_height;
         raw_ascent  *= 1000. * scale;
         raw_descent *= 1000. * scale;
 
+        /*
+         * Get sbit line metrics.
+         * This line metrics returns the line metrics of font file,
+         * but not X's font as you want.
+         */
+        if (IS_TT_Matrix_Unit(ft->matrix) &&
+            faceTable[ft->fid].sbit && ft->isEmbeddedBitmap)
+        {
+            TT_SBit_Strike strike;
+            TT_UFWord adv_width_max =
+                faceTable[ft->fid].prop.horizontal->advance_Width_Max;
+            int scaleBBoxWidth = ft->scaleBBoxWidth;
+            int sbit_lsb, sbit_rsb, sbit_desc, sbit_asc;
+
+            if (TT_Get_SBit_Strike(faceTable[ft->fid].face, ft->instance,
+                                    &strike))
+                faceTable[ft->fid].sbit->map.size = 0;
+            else {
+                sbit_lsb  = (int)floor(strike.hori.min_origin_SB
+                                  * scaleBBoxWidth);
+                /* XXX: It is not correct value */
+                sbit_rsb  = MAX((int)floor(strike.hori.max_width
+                                  * scaleBBoxWidth + .5),
+                                (int)floor((adv_width_max * scale
+                                  - strike.hori.min_advance_SB)
+                                  * scaleBBoxWidth + .5));
+
+                sbit_desc = strike.hori.min_after_BL * -1;
+                sbit_asc  = strike.hori.max_before_BL;
+
+                /* We set line metrics as bellow */
+                lsb  = MIN(lsb,  sbit_lsb);
+                rsb  = MAX(rsb,  sbit_rsb);
+                desc = MAX(desc, sbit_desc);
+                asc  = MAX(asc,  sbit_asc);
+
+                dprintf((stderr, "outline: lsb %d, rsb %d, desc %d, asc %d\n",
+                         lsb, rsb, desc, asc));
+                dprintf((stderr, "sbit: lsb %d, rsb %d, desc %d, asc %d\n",
+                         sbit_lsb, sbit_rsb, sbit_desc, sbit_asc));
+            }
+        }
+
+
         /* ComputeBounds */
         if (ft->spacing == 'c' || ft->spacing == 'm') { /* constant width */
 
-            int width = 
+            int width =
                 faceTable[ft->fid].prop.horizontal->advance_Width_Max
-                    * faceTable[ft->fid].scaleBBoxWidth;
-            
-            /* AVERAGE_WIDTH ... 1/10 pixel unit */
-            vals->width =(int)floor(width * 10.0 * 
-                                    vals->pixel_matrix[0] * scale + 0.5);
-            /* width */
+                    * ft->scaleBBoxWidth;
+
+            /* width: all widths are identical */
             width = (int)floor(width * vals->pixel_matrix[0]  * scale + 0.5);
 
-            if (ft->spacing == 'c') {
+            /* AVERAGE_WIDTH ... 1/10 pixel unit */
+            vals->width = width * 10;
+
+            if (ft->spacing == 'c') { /* constant charcell */
                 /* Use same maxbounds and minbounds to make fast. */
                 pFont->info.maxbounds.leftSideBearing  = lsb;
                 pFont->info.maxbounds.rightSideBearing = rsb;
@@ -1762,8 +1859,45 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                 pFont->info.maxbounds.attributes       = raw_width;
 
                 pFont->info.minbounds = pFont->info.maxbounds;
-            } else {
-                /* Use different maxbounds and minbounds 
+            } else { /* monospaced */
+                static const struct em_index {
+                    char* registry;
+                    unsigned index;
+                } em_indexarray[] = {
+                    "ascii", 0x4d,
+                    "iso8859", 0x4d,
+                    "iso646", 0x4d,
+                    "jisx0201", 0x4d,
+                    "koi8", 0x4d
+                };
+                unsigned i=0;
+
+#define CodeConv(x) ft->codeConverterInfo.ptrCodeConverter(x)
+#define NUM_EM_ARRAY   sizeof(em_indexarray)/sizeof(struct em_index)
+
+                /* calculate pedantic way */
+                for(;i<NUM_EM_ARRAY;i++) {
+                    if (!strncasecmp(em_indexarray[i].registry,
+                                     charset,
+                                     strlen(em_indexarray[i].registry))) {
+                        short c;
+                        xCharInfo *em_char;
+                        /* get em-square */
+                        c = CodeConv(em_indexarray[i].index);
+                        if (c) {
+                            em_char =
+                                get_metrics(ft,
+                                            TT_Char_Index(ft->charmap, c),
+                                            char_width);
+                            char_width.pixel = em_char->characterWidth;
+                            char_width.raw   = em_char->attributes;
+                            freetype_compute_bounds(ft, pinfo, vals,
+                                                    char_width);
+                            goto OK;
+                        }
+                    }
+                }
+                /* Use different maxbounds and minbounds
                    to let X check metrics. */
                 pFont->info.maxbounds.leftSideBearing  = 0;
                 pFont->info.maxbounds.rightSideBearing = rsb;
@@ -1785,22 +1919,69 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
             pFont->info.maxOverlap    = rsb - width;
 
         } else { /* proportional */
-            freetype_compute_bounds(ft, pinfo, vals);
+            freetype_compute_bounds(ft, pinfo, vals, char_width);
         }
-
+        OK:
         /* set ascent/descent */
         pFont->info.fontAscent  = asc;
         pFont->info.fontDescent = desc;
-    
+
         /* set name for property */
         strncpy(xlfdName, vals->xlfdName, sizeof(xlfdName));
         FontParseXLFDName(xlfdName, vals, FONT_XLFD_REPLACE_VALUE);
         dprintf((stderr, "name: %s\n", xlfdName));
 
+        {
+            /* set copyright notice */
+            char* name_string;
+            unsigned short name_len, copyright_len;
+
+            int i, n;
+            unsigned short  platform, encoding, language, id;
+
+            for (n=0;n<faceTable[ft->fid].prop.num_Names;n++) {
+                if (TT_Get_Name_ID(faceTable[ft->fid].face,
+                                   n, &platform, &encoding, &language, &id) ||
+                    TT_Get_Name_String(faceTable[ft->fid].face,
+                                       n, &name_string, &name_len))
+                    continue;
+
+                if (id != 0) /* not copyright */
+                    continue;
+
+                if ((platform == 1) && /* Macintosh script */
+                    (encoding == 0) && /* Roman */
+                    ((language == 0) || /* English */
+                     (language == 1041))) { /* broken (Canon FontGallay) */
+                    copyright_len = MIN(name_len, MAXCOPYRIGHTLEN);
+                    memcpy(copyright_string, name_string, copyright_len);
+                    /* name_string may NOT be null terminated */
+                    copyright_string[copyright_len] = '\0';
+                    break;
+                }
+
+                if (((platform == 3) && /* Microsoft */
+                     ((encoding == 0) || (encoding == 1)) &&
+                     ((language & 0x3FF) == 0x009)) /* English */ ||
+                    ((platform == 0) && /* Apple Unicode */
+                     (encoding == 0))) { /* Default semantics */
+                    /* It is 2-byte aligned */
+                    name_len = MIN(name_len, MAXCOPYRIGHTLEN * 2);
+                    copyright_len = 0;
+
+                    for (i=1;i<name_len;i+=2) {
+                        copyright_string[copyright_len++] = name_string[i];
+                    }
+                    copyright_string[copyright_len] = '\0';
+                    break;
+                }
+            }
+        }
         /* set properties */
-        freetype_compute_props(&pFont->info, vals, 
+        freetype_compute_props(&pFont->info, vals,
                                raw_width, raw_ascent, raw_descent,
-                               xlfdName);
+                               xlfdName,
+                               copyright_string);
     }
 
     /* Set the pInfo flags */
@@ -1816,9 +1997,9 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     DumpFont(pFont);
 #endif
     *ppFont = pFont;
-    
+
     result = Successful;
-    
+
  quit:
     if (dynStrTTFileName)
         xfree(dynStrTTFileName);
@@ -1844,7 +2025,7 @@ FreeTypeGetInfoScalable(fpe, pFontInfo, entry, fontName, fileName, vals)
 
     dprintf((stderr, "FreeTypeGetInfoScalable\n"));
 
-    ret = FreeTypeOpenScalable(fpe, &pfont, flags, entry, 
+    ret = FreeTypeOpenScalable(fpe, &pfont, flags, entry,
                                fileName, vals, format, fmask, 0);
     if (ret != Successful)
         return ret;
@@ -1852,36 +2033,27 @@ FreeTypeGetInfoScalable(fpe, pFontInfo, entry, fontName, fileName, vals)
 
     pfont->info.props = NULL;
     pfont->info.isStringProp = NULL;
-    
+
     FreeType_CloseFont(pfont);
     return Successful;
 }
 
 static FontRendererRec renderers[] =
 {
-    {   
+    {
         ".ttf", 4,
         (int (*)()) 0, FreeTypeOpenScalable,
         (int (*)()) 0, FreeTypeGetInfoScalable,
         0, CAP_MATRIX | CAP_CHARSUBSETTING
     },
-    {   
+    {
         ".ttc", 4,
         (int (*)()) 0, FreeTypeOpenScalable,
         (int (*)()) 0, FreeTypeGetInfoScalable,
         0, CAP_MATRIX | CAP_CHARSUBSETTING
     }
-#ifdef USE_TTP_FILE
-    ,
-    {   
-        ".ttp", 4,
-        (int (*)()) 0, FreeTypeOpenScalable,
-        (int (*)()) 0, FreeTypeGetInfoScalable,
-        0, CAP_MATRIX | CAP_CHARSUBSETTING
-    }
-#endif /* obsoleted */
 };
-    
+
 int
 XTrueTypeRegisterFontFileFunctions()
 {
