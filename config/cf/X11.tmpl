@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.165 2002/09/09 17:13:11 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.166 2002/09/11 21:57:07 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3276,7 +3276,7 @@ clean::									@@\
 # ifndef InstallFcCache
 #  define InstallFcCache(dest)						@@\
 install::								@@\
-	RunProgram(FCCACHE, $(FCCACHEOPTS) dest)
+	RunProgram(FCCACHE, $(FCCACHEOPTS) $(DESTDIR)dest)
 # endif /* InstallFcCache */
 
 #else

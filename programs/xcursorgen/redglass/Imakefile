@@ -26,9 +26,9 @@ dst: src								@@\
 clean::									@@\
 	$(RM) dst							@@\
 									@@\
-install.link:: $(THEMEDIR)/src						@@\
-	RemoveFile($(THEMEDIR)/dst)					@@\
-	(set -x; cd $(THEMEDIR) && $(LN) src dst)
+install.link:: $(DESTDIR)$(THEMEDIR)/src				@@\
+	RemoveFile($(DESTDIR)$(THEMEDIR)/dst)				@@\
+	(set -x; cd $(DESTDIR)$(THEMEDIR) && $(LN) src dst)
 
 CursorTarget(X_cursor)
 CursorLinkTarget(arrow,right_ptr)
