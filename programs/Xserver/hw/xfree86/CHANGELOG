@@ -1,4 +1,7 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 648. Fix a problem with the v4l driver not seeing all the tv-norms
+      available under the bttv driver with the Linux 2.6.0-test11 kernel
+      (#5976, Marco Antonio Alvarez).
  647. Build fix after recent REGION_* changes (Part of #5983, Oswald
       Buddenhagen, and #5984, Alexander Stohr).
  646. Fix for XKB map 'altwin' to avoid one keysym to more than one modifier
@@ -18330,7 +18333,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3015 2003/12/03 14:11:48 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3016 2003/12/04 16:59:36 tsi Exp $
 
 
 
