@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.18 2002/07/11 20:11:51 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.19 2002/09/20 13:47:49 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -151,10 +151,6 @@ do {									\
 #       define RADEON_AGP_2X_MODE           0x02
 #       define RADEON_AGP_4X_MODE           0x04
 #       define RADEON_AGP_MODE_MASK         0x07
-#define RADEON_AMCGPIO_A_REG                0x01a0
-#define RADEON_AMCGPIO_EN_REG               0x01a8
-#define RADEON_AMCGPIO_MASK                 0x0194
-#define RADEON_AMCGPIO_Y_REG                0x01a4
 #define RADEON_ATTRDR                       0x03c1 /* VGA */
 #define RADEON_ATTRDW                       0x03c0 /* VGA */
 #define RADEON_ATTRX                        0x03c0 /* VGA */
@@ -596,6 +592,14 @@ do {									\
 #define RADEON_DST_Y                        0x1420
 #define RADEON_DST_Y_SUB                    0x15a8
 #define RADEON_DST_Y_X                      0x1438
+
+#define RADEON_FCP_CNTL                     0x0910
+#      define RADEON_FCP0_SRC_PCICLK             0
+#      define RADEON_FCP0_SRC_PCLK               1
+#      define RADEON_FCP0_SRC_PCLKb              2
+#      define RADEON_FCP0_SRC_HREF               3
+#      define RADEON_FCP0_SRC_GND                4
+#      define RADEON_FCP0_SRC_HREFb              5
 #define RADEON_FLUSH_1                      0x1704
 #define RADEON_FLUSH_2                      0x1708
 #define RADEON_FLUSH_3                      0x170c
@@ -794,16 +798,12 @@ do {									\
 #define RADEON_MM_DATA                      0x0004
 #define RADEON_MM_INDEX                     0x0000
 #define RADEON_MPLL_CNTL                    0x000e /* PLL */
-#define RADEON_MPP_TB_CONFIG                0x01c0 /* ? */
-#define RADEON_MPP_GP_CONFIG                0x01c8 /* ? */
 
 #define RADEON_N_VIF_COUNT                  0x0248
 
-#define RADEON_OVR_CLR                      0x0230
-#define RADEON_OVR_WID_LEFT_RIGHT           0x0234
-#define RADEON_OVR_WID_TOP_BOTTOM           0x0238
-#define RADEON_OV0_Y_X_START                0x0400
-#define RADEON_OV0_Y_X_END                  0x0404
+#define RADEON_OV0_AUTO_FLIP_CNTL           0x0470
+#define RADEON_OV0_COLOUR_CNTL              0x04E0
+#define RADEON_OV0_DEINTERLACE_PATTERN      0x0474
 #define RADEON_OV0_EXCLUSIVE_HORZ           0x0408
 #       define  RADEON_EXCL_HORZ_START_MASK        0x000000ff
 #       define  RADEON_EXCL_HORZ_END_MASK          0x0000ff00
@@ -812,6 +812,68 @@ do {									\
 #define RADEON_OV0_EXCLUSIVE_VERT           0x040C
 #       define  RADEON_EXCL_VERT_START_MASK        0x000003ff
 #       define  RADEON_EXCL_VERT_END_MASK          0x03ff0000
+#define RADEON_OV0_FILTER_CNTL              0x04A0
+#define RADEON_OV0_FOUR_TAP_COEF_0          0x04B0
+#define RADEON_OV0_FOUR_TAP_COEF_1          0x04B4
+#define RADEON_OV0_FOUR_TAP_COEF_2          0x04B8
+#define RADEON_OV0_FOUR_TAP_COEF_3          0x04BC
+#define RADEON_OV0_FOUR_TAP_COEF_4          0x04C0
+#define RADEON_OV0_GAMMA_000_00F            0x0d40
+#define RADEON_OV0_GAMMA_010_01F            0x0d44
+#define RADEON_OV0_GAMMA_020_03F            0x0d48
+#define RADEON_OV0_GAMMA_040_07F            0x0d4c
+#define RADEON_OV0_GAMMA_080_0BF            0x0e00
+#define RADEON_OV0_GAMMA_0C0_0FF            0x0e04
+#define RADEON_OV0_GAMMA_100_13F            0x0e08
+#define RADEON_OV0_GAMMA_140_17F            0x0e0c
+#define RADEON_OV0_GAMMA_180_1BF            0x0e10
+#define RADEON_OV0_GAMMA_1C0_1FF            0x0e14
+#define RADEON_OV0_GAMMA_200_23F            0x0e18
+#define RADEON_OV0_GAMMA_240_27F            0x0e1c
+#define RADEON_OV0_GAMMA_280_2BF            0x0e20
+#define RADEON_OV0_GAMMA_2C0_2FF            0x0e24
+#define RADEON_OV0_GAMMA_300_33F            0x0e28
+#define RADEON_OV0_GAMMA_340_37F            0x0e2c
+#define RADEON_OV0_GAMMA_380_3BF            0x0d50
+#define RADEON_OV0_GAMMA_3C0_3FF            0x0d54
+#define RADEON_OV0_GRAPHICS_KEY_CLR_LOW     0x04EC
+#define RADEON_OV0_GRAPHICS_KEY_CLR_HIGH    0x04F0
+#define RADEON_OV0_H_INC                    0x0480
+#define RADEON_OV0_KEY_CNTL                 0x04F4
+#       define  RADEON_VIDEO_KEY_FN_MASK    0x00000003L
+#       define  RADEON_VIDEO_KEY_FN_FALSE   0x00000000L
+#       define  RADEON_VIDEO_KEY_FN_TRUE    0x00000001L
+#       define  RADEON_VIDEO_KEY_FN_EQ      0x00000002L
+#       define  RADEON_VIDEO_KEY_FN_NE      0x00000003L
+#       define  RADEON_GRAPHIC_KEY_FN_MASK  0x00000030L
+#       define  RADEON_GRAPHIC_KEY_FN_FALSE 0x00000000L
+#       define  RADEON_GRAPHIC_KEY_FN_TRUE  0x00000010L
+#       define  RADEON_GRAPHIC_KEY_FN_EQ    0x00000020L
+#       define  RADEON_GRAPHIC_KEY_FN_NE    0x00000030L
+#       define  RADEON_CMP_MIX_MASK         0x00000100L
+#       define  RADEON_CMP_MIX_OR           0x00000000L
+#       define  RADEON_CMP_MIX_AND          0x00000100L
+#define RADEON_OV0_LIN_TRANS_A              0x0d20
+#define RADEON_OV0_LIN_TRANS_B              0x0d24
+#define RADEON_OV0_LIN_TRANS_C              0x0d28
+#define RADEON_OV0_LIN_TRANS_D              0x0d2c
+#define RADEON_OV0_LIN_TRANS_E              0x0d30
+#define RADEON_OV0_LIN_TRANS_F              0x0d34
+#define RADEON_OV0_P1_BLANK_LINES_AT_TOP    0x0430
+#       define  RADEON_P1_BLNK_LN_AT_TOP_M1_MASK   0x00000fffL
+#       define  RADEON_P1_ACTIVE_LINES_M1          0x0fff0000L
+#define RADEON_OV0_P1_H_ACCUM_INIT          0x0488
+#define RADEON_OV0_P1_V_ACCUM_INIT          0x0428
+#       define  RADEON_OV0_P1_MAX_LN_IN_PER_LN_OUT 0x00000003L
+#       define  RADEON_OV0_P1_V_ACCUM_INIT_MASK    0x01ff8000L
+#define RADEON_OV0_P1_X_START_END           0x0494
+#define RADEON_OV0_P2_X_START_END           0x0498
+#define RADEON_OV0_P23_BLANK_LINES_AT_TOP   0x0434
+#       define  RADEON_P23_BLNK_LN_AT_TOP_M1_MASK  0x000007ffL
+#       define  RADEON_P23_ACTIVE_LINES_M1         0x07ff0000L
+#define RADEON_OV0_P23_H_ACCUM_INIT         0x048C
+#define RADEON_OV0_P23_V_ACCUM_INIT         0x042C
+#define RADEON_OV0_P3_X_START_END           0x049C
 #define RADEON_OV0_REG_LOAD_CNTL            0x0410
 #       define  RADEON_REG_LD_CTL_LOCK                 0x00000001L
 #       define  RADEON_REG_LD_CTL_VBLANK_DURING_LOCK   0x00000002L
@@ -836,7 +898,7 @@ do {									\
 #       define  RADEON_SCALER_SOURCE_VYUY422       0x00000B00L
 #       define  RADEON_SCALER_SOURCE_YVYU422       0x00000C00L
 #       define  RADEON_SCALER_ADAPTIVE_DEINT       0x00001000L
-#       define  R200_SCALER_TEMPORAL_DEINT         0x00002000L
+#       define  RADEON_SCALER_TEMPORAL_DEINT       0x00002000L
 #       define  RADEON_SCALER_SMART_SWITCH         0x00008000L
 #       define  RADEON_SCALER_BURST_PER_PLANE      0x007F0000L
 #       define  RADEON_SCALER_DOUBLE_BUFFER        0x01000000L
@@ -845,18 +907,11 @@ do {									\
 #       define  RADEON_SCALER_ENABLE               0x40000000L
 #       define  RADEON_SCALER_SOFT_RESET           0x80000000L
 #       define  RADEON_SCALER_ADAPTIVE_DEINT       0x00001000L
-
+#define RADEON_OV0_STEP_BY                  0x0484
+#define RADEON_OV0_TEST                     0x04F8
 #define RADEON_OV0_V_INC                    0x0424
-#define RADEON_OV0_P1_V_ACCUM_INIT          0x0428
-#       define  RADEON_OV0_P1_MAX_LN_IN_PER_LN_OUT 0x00000003L
-#       define  RADEON_OV0_P1_V_ACCUM_INIT_MASK    0x01ff8000L
-#define RADEON_OV0_P23_V_ACCUM_INIT         0x042C
-#define RADEON_OV0_P1_BLANK_LINES_AT_TOP    0x0430
-#       define  RADEON_P1_BLNK_LN_AT_TOP_M1_MASK   0x00000fffL
-#       define  RADEON_P1_ACTIVE_LINES_M1          0x0fff0000L
-#define RADEON_OV0_P23_BLANK_LINES_AT_TOP   0x0434
-#       define  RADEON_P23_BLNK_LN_AT_TOP_M1_MASK  0x000007ffL
-#       define  RADEON_P23_ACTIVE_LINES_M1         0x07ff0000L
+#define RADEON_OV0_VID_BUF_PITCH0_VALUE     0x0460
+#define RADEON_OV0_VID_BUF_PITCH1_VALUE     0x0464
 #define RADEON_OV0_VID_BUF0_BASE_ADRS       0x0440
 #       define  RADEON_VIF_BUF0_PITCH_SEL          0x00000001L
 #       define  RADEON_VIF_BUF0_TILE_ADRS          0x00000002L
@@ -875,82 +930,15 @@ do {									\
 #define RADEON_OV0_VID_BUF3_BASE_ADRS       0x044C
 #define RADEON_OV0_VID_BUF4_BASE_ADRS       0x0450
 #define RADEON_OV0_VID_BUF5_BASE_ADRS       0x0454
-#define RADEON_OV0_VID_BUF_PITCH0_VALUE     0x0460
-#define RADEON_OV0_VID_BUF_PITCH1_VALUE     0x0464
-#define RADEON_OV0_AUTO_FLIP_CNTL           0x0470
-#define RADEON_OV0_DEINTERLACE_PATTERN      0x0474
-#define RADEON_OV0_H_INC                    0x0480
-#define RADEON_OV0_STEP_BY                  0x0484
-#define RADEON_OV0_P1_H_ACCUM_INIT          0x0488
-#define RADEON_OV0_P23_H_ACCUM_INIT         0x048C
-#define RADEON_OV0_P1_X_START_END           0x0494
-#define RADEON_OV0_P2_X_START_END           0x0498
-#define RADEON_OV0_P3_X_START_END           0x049C
-#define RADEON_OV0_FILTER_CNTL              0x04A0
-#define RADEON_OV0_FOUR_TAP_COEF_0          0x04B0
-#define RADEON_OV0_FOUR_TAP_COEF_1          0x04B4
-#define RADEON_OV0_FOUR_TAP_COEF_2          0x04B8
-#define RADEON_OV0_FOUR_TAP_COEF_3          0x04BC
-#define RADEON_OV0_FOUR_TAP_COEF_4          0x04C0
-#define RADEON_OV0_COLOUR_CNTL              0x04E0
-#define RADEON_OV0_VIDEO_KEY_CLR_LOW        0x04E4
 #define RADEON_OV0_VIDEO_KEY_CLR_HIGH       0x04E8
-#define RADEON_OV0_GRAPHICS_KEY_CLR_LOW     0x04EC
-#define RADEON_OV0_GRAPHICS_KEY_CLR_HIGH    0x04F0
-
-#define RADEON_OV0_KEY_CNTL                 0x04F4
-#       define  RADEON_VIDEO_KEY_FN_MASK    0x00000003L
-#       define  RADEON_VIDEO_KEY_FN_FALSE   0x00000000L
-#       define  RADEON_VIDEO_KEY_FN_TRUE    0x00000001L
-#       define  RADEON_VIDEO_KEY_FN_EQ      0x00000002L
-#       define  RADEON_VIDEO_KEY_FN_NE      0x00000003L
-#       define  RADEON_GRAPHIC_KEY_FN_MASK  0x00000030L
-#       define  RADEON_GRAPHIC_KEY_FN_FALSE 0x00000000L
-#       define  RADEON_GRAPHIC_KEY_FN_TRUE  0x00000010L
-#       define  RADEON_GRAPHIC_KEY_FN_EQ    0x00000020L
-#       define  RADEON_GRAPHIC_KEY_FN_NE    0x00000030L
-#       define  RADEON_CMP_MIX_MASK         0x00000100L
-#       define  RADEON_CMP_MIX_OR           0x00000000L
-#       define  RADEON_CMP_MIX_AND          0x00000100L
-#define RADEON_OV0_TEST                     0x04F8
-
-#define RADEON_OV0_GAMMA_0_F                0x0d40
-#define RADEON_OV0_GAMMA_10_1F              0x0d44
-#define RADEON_OV0_GAMMA_20_3F              0x0d48
-#define RADEON_OV0_GAMMA_40_7F              0x0d4c
-/* the registers that control gamma in the 80-37f range do not
-   exist on pre-R200 radeons */
-#define RADEON_OV0_GAMMA_80_BF              0x0e00
-#define RADEON_OV0_GAMMA_C0_FF              0x0e04
-#define RADEON_OV0_GAMMA_100_13F            0x0e08
-#define RADEON_OV0_GAMMA_140_17F            0x0e0c
-#define RADEON_OV0_GAMMA_180_1BF            0x0e10
-#define RADEON_OV0_GAMMA_1C0_1FF            0x0e14
-#define RADEON_OV0_GAMMA_200_23F            0x0e18
-#define RADEON_OV0_GAMMA_240_27F            0x0e1c
-#define RADEON_OV0_GAMMA_280_2BF            0x0e20
-#define RADEON_OV0_GAMMA_2C0_2FF            0x0e24
-#define RADEON_OV0_GAMMA_300_33F            0x0e28
-#define RADEON_OV0_GAMMA_340_37F            0x0e2c
-#define RADEON_OV0_GAMMA_380_3BF            0x0d50
-#define RADEON_OV0_GAMMA_3C0_3FF            0x0d54
-#define RADEON_OV0_LIN_TRANS_A              0x0d20
-#define RADEON_OV0_LIN_TRANS_B              0x0d24
-#define RADEON_OV0_LIN_TRANS_C              0x0d28
-#define RADEON_OV0_LIN_TRANS_D              0x0d2c
-#define RADEON_OV0_LIN_TRANS_E              0x0d30
-#define RADEON_OV0_LIN_TRANS_F              0x0d34
-
-/* capture related registers */
-
-/* this is _not_ a PLL register, unlike in rage128 */
-#define RADEON_FCP_CNTL                     0x0012 /* PLL */
-#      define RADEON_FCP_CNTL__PCICLK            0
-#      define RADEON_FCP_CNTL__PCLK              1
-#      define RADEON_FCP_CNTL__PCLKb             2
-#      define RADEON_FCP_CNTL__HREF              3
-#      define RADEON_FCP_CNTL__GND               4
-#      define RADEON_FCP_CNTL__HREFb             5
+#define RADEON_OV0_VIDEO_KEY_CLR_LOW        0x04E4
+#define RADEON_OV0_Y_X_START                0x0400
+#define RADEON_OV0_Y_X_END                  0x0404
+#define RADEON_OV1_Y_X_START                0x0600
+#define RADEON_OV1_Y_X_END                  0x0604
+#define RADEON_OVR_CLR                      0x0230
+#define RADEON_OVR_WID_LEFT_RIGHT           0x0234
+#define RADEON_OVR_WID_TOP_BOTTOM           0x0238
 
 #define RADEON_P2PLL_CNTL                   0x002a /* P2PLL */
 #       define RADEON_P2PLL_RESET                (1 <<  0)

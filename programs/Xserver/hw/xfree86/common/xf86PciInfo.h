@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.133 2002/07/25 13:58:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.135 2002/09/16 18:05:47 eich Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -109,6 +109,10 @@
 #define PCI_CHIP_MACH64GX		0x4758
 #define PCI_CHIP_MACH64GY		0x4759
 #define PCI_CHIP_MACH64GZ		0x475A
+#define PCI_CHIP_RV250_Id		0x4964
+#define PCI_CHIP_RV250_Ie		0x4965
+#define PCI_CHIP_RV250_If		0x4966
+#define PCI_CHIP_RV250_Ig		0x4967
 #define PCI_CHIP_MACH64LB		0x4C42
 #define PCI_CHIP_MACH64LD		0x4C44
 #define PCI_CHIP_RAGE128LE		0x4C45
@@ -125,8 +129,16 @@
 #define PCI_CHIP_RADEON_LX		0x4C58
 #define PCI_CHIP_RADEON_LY		0x4C59
 #define PCI_CHIP_RADEON_LZ		0x4C5A
+#define PCI_CHIP_RV250_Ld		0x4C64
+#define PCI_CHIP_RV250_Le		0x4C65
+#define PCI_CHIP_RV250_Lf		0x4C66
+#define PCI_CHIP_RV250_Lg		0x4C67
 #define PCI_CHIP_RAGE128MF		0x4D46
 #define PCI_CHIP_RAGE128ML		0x4D4C
+#define PCI_CHIP_R300_ND		0x4E44
+#define PCI_CHIP_R300_NE		0x4E45
+#define PCI_CHIP_R300_NF		0x4E46
+#define PCI_CHIP_R300_NG		0x4E47
 #define PCI_CHIP_RAGE128PD		0x5044
 #define PCI_CHIP_RAGE128PF		0x5046
 #define PCI_CHIP_RAGE128PP		0x5050
@@ -139,6 +151,7 @@
 #define PCI_CHIP_R200_QN		0x514E
 #define PCI_CHIP_R200_QO		0x514F
 #define PCI_CHIP_RV200_QW		0x5157
+#define PCI_CHIP_RV200_QX		0x5158
 #define PCI_CHIP_RADEON_QY		0x5159
 #define PCI_CHIP_RADEON_QZ		0x515A
 #define PCI_CHIP_R200_Ql		0x516C

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.18 2002/07/15 14:22:40 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.19 2002/07/22 17:36:22 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -80,16 +80,29 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_QG, "ATI Radeon QG (AGP)" },
     { PCI_CHIP_RADEON_QY, "ATI Radeon VE QY (AGP)" },
     { PCI_CHIP_RADEON_QZ, "ATI Radeon VE QZ (AGP)" },
-    { PCI_CHIP_RADEON_LW, "ATI Radeon Mobility LW (AGP)" },
-    { PCI_CHIP_RADEON_LX, "ATI Radeon Mobility LX (AGP)" },
-    { PCI_CHIP_RADEON_LY, "ATI Radeon Mobility LY (AGP)" },
-    { PCI_CHIP_RADEON_LZ, "ATI Radeon Mobility LZ (AGP)" },
+    { PCI_CHIP_RADEON_LW, "ATI Radeon Mobility M7 LW (AGP)" },
+    { PCI_CHIP_RADEON_LX, "ATI Radeon Mobility M7 LX (AGP)" },
+    { PCI_CHIP_RADEON_LY, "ATI Radeon Mobility M6 LY (AGP)" },
+    { PCI_CHIP_RADEON_LZ, "ATI Radeon Mobility M6 LZ (AGP)" },
     { PCI_CHIP_R200_QL, "ATI Radeon 8500 QL (AGP)" },
     { PCI_CHIP_R200_QN, "ATI Radeon 8500 QN (AGP)" },
     { PCI_CHIP_R200_QO, "ATI Radeon 8500 QO (AGP)" },
     { PCI_CHIP_R200_Ql, "ATI Radeon 8500 Ql (AGP)" },
     { PCI_CHIP_R200_BB, "ATI Radeon 8500 BB (AGP)" },
     { PCI_CHIP_RV200_QW, "ATI Radeon 7500 QW (AGP)" },
+    { PCI_CHIP_RV200_QX, "ATI Radeon 7500 QX (AGP)" },
+    { PCI_CHIP_RV250_Id, "ATI Radeon 9000 Id (AGP)" },
+    { PCI_CHIP_RV250_Ie, "ATI Radeon 9000 Ie (AGP)" },
+    { PCI_CHIP_RV250_If, "ATI Radeon 9000 If (AGP)" },
+    { PCI_CHIP_RV250_Ig, "ATI Radeon 9000 Ig (AGP)" },
+    { PCI_CHIP_RV250_Ld, "ATI Radeon Mobility M9 Ld (AGP)" },
+    { PCI_CHIP_RV250_Le, "ATI Radeon Mobility M9 Le (AGP)" },
+    { PCI_CHIP_RV250_Lf, "ATI Radeon Mobility M9 Lf (AGP)" },
+    { PCI_CHIP_RV250_Lg, "ATI Radeon Mobility M9 Lg (AGP)" },
+    { PCI_CHIP_R300_ND, "ATI Radeon 9700 ND (AGP)" },
+    { PCI_CHIP_R300_NE, "ATI Radeon 9700 NE (AGP)" },
+    { PCI_CHIP_R300_NF, "ATI Radeon 9700 NF (AGP)" },
+    { PCI_CHIP_R300_NG, "ATI Radeon 9700 NG (AGP)" },
     { -1,                 NULL }
 };
 
@@ -110,6 +123,19 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_R200_Ql, PCI_CHIP_R200_Ql, RES_SHARED_VGA },
     { PCI_CHIP_R200_BB, PCI_CHIP_R200_BB, RES_SHARED_VGA },
     { PCI_CHIP_RV200_QW, PCI_CHIP_RV200_QW, RES_SHARED_VGA },
+    { PCI_CHIP_RV200_QX, PCI_CHIP_RV200_QX, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Id, PCI_CHIP_RV250_Id, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Ie, PCI_CHIP_RV250_Ie, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_If, PCI_CHIP_RV250_If, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Ig, PCI_CHIP_RV250_Ig, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Ld, PCI_CHIP_RV250_Ld, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Le, PCI_CHIP_RV250_Le, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Lf, PCI_CHIP_RV250_Lf, RES_SHARED_VGA },
+    { PCI_CHIP_RV250_Lg, PCI_CHIP_RV250_Lg, RES_SHARED_VGA },
+    { PCI_CHIP_R300_ND, PCI_CHIP_R300_ND, RES_SHARED_VGA },
+    { PCI_CHIP_R300_NE, PCI_CHIP_R300_NE, RES_SHARED_VGA },
+    { PCI_CHIP_R300_NF, PCI_CHIP_R300_NF, RES_SHARED_VGA },
+    { PCI_CHIP_R300_NG, PCI_CHIP_R300_NG, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 
@@ -229,19 +255,13 @@ RADEONProbe(DriverPtr drv, int flags)
 
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	    /* VE/M6 card support Dual-Head, mark the entity as sharable */
-	    if (pEnt->chipset == PCI_CHIP_RADEON_QY ||
-		pEnt->chipset == PCI_CHIP_RADEON_QZ ||
-		pEnt->chipset == PCI_CHIP_R200_QL ||
-		pEnt->chipset == PCI_CHIP_R200_QN ||
-		pEnt->chipset == PCI_CHIP_R200_QO ||
-		pEnt->chipset == PCI_CHIP_R200_Ql ||
-		pEnt->chipset == PCI_CHIP_R200_BB ||
-		pEnt->chipset == PCI_CHIP_RV200_QW ||
-		pEnt->chipset == PCI_CHIP_RADEON_LW ||
-		pEnt->chipset == PCI_CHIP_RADEON_LX ||
-		pEnt->chipset == PCI_CHIP_RADEON_LY ||
-		pEnt->chipset == PCI_CHIP_RADEON_LZ) {
+	    /* All Radeon chips except the original ones support
+	     * Dual-Head, mark the entity as sharable.
+	     */
+	    if (pEnt->chipset != PCI_CHIP_RADEON_QD &&
+		pEnt->chipset != PCI_CHIP_RADEON_QE &&
+		pEnt->chipset != PCI_CHIP_RADEON_QF &&
+		pEnt->chipset != PCI_CHIP_RADEON_QG) {
 		static int  instance = 0;
 		DevUnion   *pPriv;
 

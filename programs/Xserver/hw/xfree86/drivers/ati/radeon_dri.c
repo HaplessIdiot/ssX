@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.18 2002/10/08 22:14:04 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -756,7 +756,7 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
     }
 
     /* Workaround for some hardware bugs */
-    if (!info->IsR200)
+    if (info->ChipFamily < CHIP_FAMILY_R200)
 	OUTREG(RADEON_AGP_CNTL, INREG(RADEON_AGP_CNTL) | 0x000e0020);
 
 				/* Modify the mode if the default mode
@@ -778,14 +778,17 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 
     if ((vendor == PCI_VENDOR_AMD) &&
 	(device == PCI_CHIP_AMD761)) {
-	/* The combination of 761 with M6 will lockup the system;
-	 * however, currently there is no such a product on the market,
-	 * so this is not yet a problem
+	/* The combination of 761 with MOBILITY chips will lockup the
+	 * system; however, currently there is no such a product on the
+	 * market, so this is not yet a problem.
 	 */
-	if (info->IsM6) return FALSE;
+	if ((info->ChipFamily == CHIP_FAMILY_M6) ||
+	    (info->ChipFamily == CHIP_FAMILY_M7) || 
+	    (info->ChipFamily == CHIP_FAMILY_M9))
+	    return FALSE;
 
 	/* Disable fast write for AMD 761 chipset, since they cause
-	 * lockups when enabled
+	 * lockups when enabled.
 	 */
 	mode &= ~0x10; /* FIXME: Magic number */
     }

@@ -1,4 +1,13 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 390. Rewrite Radeon DDC/DFP mode detection and management (Kevin Martin).
+ 389. Integrate ATI patch:
+      - Add 2D support for Radeon 9000 (RV250), Mobility M9 (RV250 mobile)
+        and Radeon 9700 (R300)
+      - Clone mode fixes and improvements
+      - Dell VE card fixes
+      - Dual-head VT switching fixes
+      - General code clean up
+      (#A.1217, Hui Yu@ATI).
  388. Rewrite XDarwin's event handling to fix some bugs and to use
       SetInputCheck() for a performance boost (Torrey T. Lyons).
  387. Add a little utility to write files through mmap() (Marc La France).
@@ -15310,4 +15319,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2336 2002/10/11 20:23:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2337 2002/10/12 00:29:55 torrey Exp $
