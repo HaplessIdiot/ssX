@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.11 2000/06/13 02:28:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.12 2000/06/19 15:01:02 tsi Exp $ */
 /*
  * includes
  */
@@ -9,7 +9,9 @@
 #include "vloaduc.h"
 #include "vos.h"
 
-
+#if defined(SCO) || defined(SCO325)
+#define PATH_MAX 1024
+#endif
 
 /* 
  * global data

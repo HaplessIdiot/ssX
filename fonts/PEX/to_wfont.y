@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.10 2001/01/17 17:33:08 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.11 2001/04/01 13:59:58 tsi Exp $ */
 
 
 #define YYMAXDEPTH 10000
@@ -352,7 +352,7 @@ check_num_ch()
 
 yyerror()
 {
-#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__) && !defined(__QNX__)
+#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__) && !defined(__QNX__) && !defined(SCO)
 	extern int      yylineno;
 #endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
@@ -375,7 +375,7 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
-#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__) && !defined(__QNX__)
+#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__) && !defined(__QNX__) && !defined(SCO)
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);
 #else
 		fprintf(stderr, "%s.\n", str);

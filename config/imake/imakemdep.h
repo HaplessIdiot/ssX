@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.50 2001/04/25 16:44:54 tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.51 2001/06/07 18:30:40 alanh Exp $ */
 
 
 /* 
@@ -65,7 +65,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef imake_ccflags
 #undef imake_ccflags
 #endif
-#define imake_ccflags "-Dsco -DSYSV"
+#define imake_ccflags "-Dsco -DSYSV -DSCO -DSCO325"
 #endif
 
 #ifdef sony
@@ -460,7 +460,7 @@ char *cpp_argv[ARGUMENTS] = {
 #  ifdef SCO
 	"-DSCO",
 #   ifdef _SCO_DS
-    "-DSCO325 -DSVR4",
+    "-DSCO325",
 #   endif
 #  endif
 # endif
@@ -498,7 +498,7 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef SCO
 	"-DSCO",
 #  ifdef _SCO_DS
-	"-DSCO325 -DSVR4",
+	"-DSCO325",
 #  endif
 # endif
 # ifdef ESIX

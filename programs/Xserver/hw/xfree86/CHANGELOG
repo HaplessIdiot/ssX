@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 111. Freshen SCO port (J. Kean Johnston).
  110. Fix int10 build for GCC 3.0 (Marc La France).
  109. An attempt at fixing the i740 driver to not reference options before they
       are collected (Marc La France).
@@ -13512,4 +13513,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1857 2001/06/26 08:41:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1858 2001/06/30 21:53:58 tsi Exp $
