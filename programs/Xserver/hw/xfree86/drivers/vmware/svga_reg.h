@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/svga_reg.h,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
 /* **********************************************************
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
@@ -36,9 +36,11 @@
 #endif
 
 #define SVGA_MAX_BITS_PER_PIXEL		32
+#ifndef USE_MAKEDEPEND
 #if SVGA_MAX_WIDTH * SVGA_MAX_HEIGHT * SVGA_MAX_BITS_PER_PIXEL / 8 > \
     SVGA_FB_MAX_SIZE
 #error "Bad SVGA maximum sizes"
+#endif
 #endif
 #define SVGA_MAX_PSEUDOCOLOR_DEPTH	8
 #define SVGA_MAX_PSEUDOCOLORS		(1 << SVGA_MAX_PSEUDOCOLOR_DEPTH)

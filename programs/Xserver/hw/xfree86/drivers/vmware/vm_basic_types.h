@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vm_basic_types.h,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vm_basic_types.h,v 1.2 2001/04/10 16:08:02 dawes Exp $ */
 /* **********************************************************
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
@@ -49,7 +49,8 @@ typedef signed __int64 int64;
 #pragma warning (disable :4146) // unary minus operator applied to unsigned type, result still unsigned
 #pragma warning (disable :4142) // benign redefinition of type
 
-#elif __GNUC__
+#else
+#if defined(__GNUC__)
 /* The Xserver source compiles with -ansi -pendantic */
 #ifndef __STRICT_ANSI__
 typedef unsigned long long uint64;
@@ -57,6 +58,7 @@ typedef long long int64;
 #endif
 #else
 #error - Need compiler define for int64/uint64
+#endif
 #endif
 
 typedef unsigned int       uint32;
