@@ -4,7 +4,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.37 1996/08/10 13:02:03 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.38 1996/08/26 06:19:52 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 
@@ -75,6 +75,11 @@ XCOMM operating system:  OSName
 #define UseGas			YES
 #define GnuCpp			YES
 
+/* OpenBSD has gcc 2.7.2.1 which fixes the strength-reduce bug */
+#ifdef OpenBSDArchitecture
+#define DefaultGcc2i386Opt	-O2
+#endif
+
 #define NeedConstPrototypes	YES
 #define NeedFunctionPrototypes	YES
 #define NeedNestedPrototypes	YES
@@ -86,6 +91,11 @@ XCOMM operating system:  OSName
 #define CppCmd          	/usr/libexec/cpp
 #define StandardCppDefines	-traditional
 #define PreProcessCmd   	CppCmd
+#ifndef OpenBSDArchitecture
+#define PreIncDir		/usr/include
+#else
+#define PreIncDir /usr/lib/gcc-lib/i386-unknown-openbsd1.2/2.7.2.1/include
+#endif
 
 #undef CcCmd
 #define CcCmd 			gcc
@@ -139,7 +149,11 @@ XCOMM operating system:  OSName
 #define ExtraLibraries		/**/
 #endif
 #ifndef UseGnuMalloc
-#define UseGnuMalloc		YES
+#ifndef OpenBSDArchitecture
+#  define UseGnuMalloc		YES
+#else
+#  define UseGnuMalloc		NO
+#endif
 #endif
 #ifndef GnuMallocLibrary
 #define GnuMallocLibrary	-lgnumalloc
