@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xvmc.h,v 1.3 2001/04/01 14:00:08 tsi Exp $ */
 
 #ifndef _XF86XVMC_H
 #define _XF86XVMC_H
 
-#include "xvmc.h"
+#include "xvmcext.h"
 #include "xf86xv.h"
 
 typedef struct {
