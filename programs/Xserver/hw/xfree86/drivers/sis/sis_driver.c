@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.23 1999/04/18 04:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.24 1999/04/25 10:02:19 dawes Exp $ */
 
 #define DEBUG
 
@@ -1294,7 +1294,7 @@ SISUnmapMem(ScrnInfoPtr pScrn)
     pSiS->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->FbBase, pSis->FbMapSize);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->FbBase, pSiS->FbMapSize);
     pSiS->FbBase = NULL;
     return TRUE;
 }

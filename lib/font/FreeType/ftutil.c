@@ -21,15 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.7 1998/10/05 13:22:01 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.8 1999/04/25 10:01:37 dawes Exp $ */
 
 #ifndef FONTMODULE
-#include <string.h>
 #include <ctype.h>
-#else
-#include "xf86_ansic.h"
 #endif
-
 #include "font.h"
 #include "ttconfig.h"
 #include "freetype.h"
