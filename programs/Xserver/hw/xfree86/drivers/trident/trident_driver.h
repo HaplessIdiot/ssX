@@ -22,7 +22,10 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.4 1997/08/26 10:01:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.5 1997/10/13 17:16:46 hohndel Exp $ */
+
+extern int TVGAchipset;
+extern Bool IsCyber;
 
 /*
  * Trident Chipset Definitions
@@ -43,22 +46,25 @@
 #define TGUI9420DGi	12
 #define TGUI9430DGi	13
 #define TGUI9440AGi	14
-#define TGUI9320LCD	15
-#define TGUI96xx	16
-#define CYBER938x	17
-
-/* Revisions */
-#define TGUI9660	0x00
-#define TGUI9680	0x01
-#define TGUI9682	0x10
-#define TGUI9685	0x21
+#define CYBER9320	15
+#define TGUI96xx	16 /* Backwards compatibility */
+#define TGUI9660	16
+#define TGUI9680	17
+#define TGUI9682	18
+#define TGUI9685	19
+#define CYBER9382	20
+#define CYBER9385	21
+#define CYBER9397	22
 
 /* defines */
 #define IsTGUI9440	(TVGAchipset == TGUI9440AGi)
-#define IsTGUI9660	((TVGAchipset == TGUI96xx) && (revision == TGUI9660))
-#define IsTGUI9680	((TVGAchipset == TGUI96xx) && (revision == TGUI9680))
-#define IsTGUI9682	((TVGAchipset == TGUI96xx) && (revision == TGUI9682))
-#define IsTGUI9685	((TVGAchipset == TGUI96xx) && (revision == TGUI9685))
+#define IsTGUI9660	((TVGAchipset == TGUI9660))
+#define IsTGUI9680	((TVGAchipset == TGUI9680))
+#define IsTGUI9682	((TVGAchipset == TGUI9682))
+#define IsTGUI9685	((TVGAchipset == TGUI9685))
+#define IsAdvCyber	((TVGAchipset == CYBER9382) || \
+			 (TVGAchipset == CYBER9385) || \
+			 (TVGAchipset == CYBER9397))
 
 #ifdef INITIALIZE_LIMITS
 /* Clock Limits */
@@ -80,6 +86,12 @@ int tridentClockLimit[] = {
 	90000,
 	90000,
 	135000,
+	135000,
+	135000,
+	170000,
+	135000,
+	135000,
+	170000,
 };
 
 int tridentClockLimit16bpp[] = {
@@ -100,7 +112,39 @@ int tridentClockLimit16bpp[] = {
 	45000,
 	45000,
 	135000,
+	135000,
+	135000,
+	170000,
+	135000,
+	135000,
+	170000,
 }; 
+
+int tridentClockLimit24bpp[] = {
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	70000,
+	70000,
+	70000,
+	85000,
+	70000,
+	70000,
+	85000,
+};
 
 int tridentClockLimit32bpp[] = {
 	25180,
@@ -120,12 +164,19 @@ int tridentClockLimit32bpp[] = {
 	25180,
 	25180,
 	70000,
+	70000,
+	70000,
+	85000,
+	70000,
+	70000,
+	85000,
 };
 
 #else
 
 extern int tridentClockLimit[];
 extern int tridentClockLimit16bpp[];
+extern int tridentClockLimit24bpp[];
 extern int tridentClockLimit32bpp[];
 
 #endif
@@ -137,6 +188,3 @@ extern int tridentClockLimit32bpp[];
 
 #define TKD8001		0
 #define TGUIDAC		1
-
-extern int TVGAchipset;
-extern Bool IsCyber;

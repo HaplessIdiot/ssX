@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.13 1996/10/17 15:22:47 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.14 1996/10/18 15:05:41 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -43,7 +43,7 @@ main(int argc, char *argv[])
     int MajorVersion, MinorVersion;
     int EventBase, ErrorBase;
     Display *dis;
-    int i;
+    int i, bpp;
     char *addr;
     int width, bank, banks, ram;
     XEvent event;
@@ -106,8 +106,13 @@ main(int argc, char *argv[])
 		GrabModeAsync, GrabModeAsync, None,  None, CurrentTime);
    /* we want _our_ cmap */
    vis = DefaultVisual(dis, DefaultScreen(dis));
-   cmap = XCreateColormap(dis, DefaultRootWindow(dis), vis, AllocAll);
+   
+   bpp = DisplayPlanes (dis, DefaultScreen(dis));
+   
 
+   if (bpp <= 8)
+   {
+   cmap = XCreateColormap(dis, DefaultRootWindow(dis), vis, AllocAll);
 
    for (i = 0; i < 256; i++) {
        XColor xcol;
@@ -119,22 +124,26 @@ main(int argc, char *argv[])
        xcol.flags = DoBlue | DoGreen | DoRed;
        XStoreColor(dis, cmap, &xcol);
    }
+   }
 
    /*
     * Lets go live
     */
 
    XF86DGAGetVideo(dis, DefaultScreen(dis), &addr, &width, &bank, &ram);
-   fprintf(stderr, "%x addr:%X, width %d, bank size %d\n", True,
-	   addr, width, bank);
+   fprintf(stderr, "%x addr:0x%X, width %d, bank size %d, depth %d planes\n", True,
+	   addr, width, bank, bpp);
 
    XF86DGADirectVideo(dis, DefaultScreen(dis),
 			   XF86DGADirectGraphics|
 			   XF86DGADirectMouse|
 			   XF86DGADirectKeyb);
 
+   if (bpp <= 8)
+   {
    /* must be called _after_ entering DGA DirectGraphics mode */
    XF86DGAInstallColormap(dis, DefaultScreen(dis), cmap);
+   }
 
 
 #ifndef __EMX__
@@ -164,26 +173,57 @@ main(int argc, char *argv[])
 	 fprintf(stderr,"KeyPress [%d]: %s\n", event.xkey.keycode, buf);
 
 	 if (buf[0] == 'b') {
+	   /*
+	    * Benchmark mode: run write/read speed test for 1 second each
+	    */
 	    int start_clock,finish_clock,diff_clock;
-	    int cycle;
-	    int numcycles = 500;
+	    int cycles;
 	    int size = 64;
+	    void *membuf;
 
 	    if (bank < 65536)
 		size = bank / 1024;
 
-	    start_clock = GetTimeInMillis();
-
+	    /* get write timings */
 	    XF86DGASetVidPage(dis, DefaultScreen(dis), i);
-	    for (cycle = 0; cycle < numcycles; cycle++)
-	       memset(addr, (char) (cycle % 255), size * 1024);
 
-	    finish_clock = GetTimeInMillis();
+	    start_clock = GetTimeInMillis(); finish_clock = start_clock;
+
+	    cycles=0;
+	    while ((finish_clock - start_clock) < 1000)
+	    {
+	      cycles++;
+	      memset(addr, (char) (cycles % 255), size * 1024);
+	      finish_clock = GetTimeInMillis();
+	    }
+
 	    diff_clock = finish_clock - start_clock;
 
-	    fprintf(stderr, "Timing: %3d.%03ds, %dK/s\n",
-		    diff_clock / 1000, (diff_clock % 1000),
-		    (size * 1000 * numcycles) / diff_clock);
+	    fprintf(stderr, "Framebuffer write speed: %6dK/s\n",
+		    (size * 1000 * cycles) / diff_clock);
+
+	    /* get read timings */
+	    if (membuf=malloc(size*1024))
+	    {
+		XF86DGASetVidPage(dis, DefaultScreen(dis), i);
+
+		start_clock = GetTimeInMillis(); finish_clock = start_clock; 
+
+	        cycles=0;
+	        while ((finish_clock - start_clock) < 1000)
+	        {
+	            cycles++;
+		    memcpy(membuf, addr, size * 1024);
+	            finish_clock = GetTimeInMillis();
+	        }
+
+		diff_clock = finish_clock - start_clock;
+
+		fprintf(stderr, "Framebuffer read speed: %6dK/s\n",
+		    (size * 1000 * cycles) / diff_clock);
+	    }
+	    else
+	      fprintf(stderr, "could not allocate scratch buffer -- read timing measurement skipped\n");
 	 }
 
          for (i = 0; i < banks; i++) {

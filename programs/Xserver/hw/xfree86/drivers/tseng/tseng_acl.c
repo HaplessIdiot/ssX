@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.9 1997/08/26 10:01:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.10 1997/10/13 17:16:48 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -205,7 +205,7 @@ void tseng_init_acl()
        * to only 2MB, supposing we ONLY redirect MMU aperture 2 to the CPU.
        * (see data book W32p, page 207)
        */
-      CPU2ACLBase = (LongP) ((long)vgaLinearBase + 0x300000); /* MMU aperture 2 */
+      CPU2ACLBase = (LongP) ((long)vgaLinearBase + 0x200000); /* MMU aperture 2 */
     }
     else
     {

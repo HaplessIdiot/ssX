@@ -1,14 +1,16 @@
-.\" $XFree86: xc/programs/xf86dga/dga.man,v 3.2 1996/01/14 14:07:34 dawes Exp $
+.\" $XFree86: xc/programs/xf86dga/dga.man,v 3.3 1996/10/19 15:17:58 dawes Exp $
 .\"
-.TH dga 1 "3.2" "XFree86"
+.TH dga 1 "4.0" "XFree86"
 .SH NAME
 dga \- test program for the XFree86-DGA extension
 .SH SYNOPSIS
 .B dga
 .SH DESCRIPTION
 Dga is a simple test client for the XFree86-DGA extension.  It fills
-the screen with a different colour for each key pressed.  It also prints
+the screen with a different colour for each key pressed.
+It prints some basic framebuffer parameters, and also
 keyboard and pointer events to stdout.  To exit, hit the `q' key.
-Hitting the 'b' key runs a simple benchmark.
+Hitting the `b' key runs a simple benchmark, measuring raw framebuffer
+write and read speed (this takes one second each).
 .SH AUTHOR
 Jon Tombs

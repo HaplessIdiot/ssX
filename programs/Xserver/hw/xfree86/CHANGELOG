@@ -1,9 +1,35 @@
-XFree86 3.9v (1 November 1997)
+XFree86 3.9v (9 November 1997)
+1387. Add read speed benchmark and support for >8bpp modes to dga test
+      program (#1134, Koen Gadeyne).
+1386. Fix dashed lines for vga256 (#1133, Alan Hourihane).
+1385. Enable trapezoid fill on mga (#1132, Radek Kapitan).
+1384. Fix ImageWriteFlags in trident driver (#1131, Alan Hourihane).
+1383. Fix wide line problem in the static server (#1129, Brian Wainscott).
+1382. Fix syncing problems with the scanline routines in XAA (#1128,
+      Alan Hourihane).
+1381. Restructure glint server to call the AccelInit function in a sane
+      manner (#1127, Alan Hourihane).
+1380. Add planemask support for the tridents and add hardware clipping for
+      the Cyber chipsets. Add Cyber 9397 detection (#1126,1130, Alan Hourihane).
+1379. Fix a typo in vgaPCI.h (#1125, Alan Hourihane).
+1378. Fix a problem with setting the maximum clock value on s3 cards at depths
+      other than 8bpp (#1123, Steve Forsythe).
+1377. Fix dashed lines for matrox driver (#1122, Radek Kapitan).
+1376. Use correct arguments to xf86ImageWrite when uploading cursor image to 
+      videoram. Units of pixels instead of bytes (#1120, Mark Vojkovich).
+1375. Fix s3/svga cursor location computation error (#1119, Mark Vojkovich).
+1374. Improve GC validation code in XAA (#1117,1118,1121, Mark Vojkovich,
+      David Bateman).
+1373. Add accelerated color expansion for all color depths and for all 
+      W32-style chips (#1116, Koen Gadeyne).
+1372. Add Warpnext/Warpprev to twm (#1114, Benjamin Gras).
+1371. One more fix to restore changes to variable types made in change 1347.
+      This should fix MouseSystem mice (#1111,1124, Steve Forsythe).
 1370. Add missing pm_accel.c.
 1369. Add ImageWrite support to glint server (Alan Hourihane).
 
 XFree86 3.9u (1 November 1997)
-1368. Add support for I128 Revolution to scanpci and SuperProbe (#1100,
+1368. Add support for I128 Revolution to scanpci and SuperProbe (#1108,
       Robin Cutshaw).
 1367. Compile fixes for ARM32/NetBSD (#1099, Katrina Maffey).
 1366. Change mga to use bresenham lines instead of two point (#1098,
@@ -89,7 +115,7 @@ XFree86 3.9t (26 October 1997)
 1321. Add some resonable limit for when a trapezoid fill is used rather than 
       using spans (#1051, Mark Vojkovich).
 1320. Add bindist decription files for an OpenBSD/sparc binary distribution
-      (#1045, Matthieu Herrb).
+      (#1045, Todd Fries).
 1319. Some fixes and additions to the PCI databases (#1046,1050, Dejan Ilic).
 1318. Add 543x cirrus driver for PowerPC, fix some LynxOS related problems
       (#1044, Thomas Mueller).
@@ -5536,4 +5562,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.541 1997/11/01 15:04:24 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.542 1997/11/02 11:22:53 hohndel Exp $

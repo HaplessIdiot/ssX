@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.195 94/04/17 20:38:17 kaleb Exp $
+ * $XConsortium: menus.c /main/152 1996/02/02 14:26:16 kaleb $
  *
  * twm menu code
  *
@@ -76,6 +76,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/bitmaps/menu12>
 #include "version.h"
 #include <X11/extensions/sync.h>
+#include <X11/SM/SMlib.h>
 
 extern XEvent Event;
 
@@ -119,6 +120,7 @@ static void Identify();
 #define SHADOWWIDTH 5			/* in pixels */
 
 
+
 
 /***********************************************************************
  *
@@ -608,7 +610,7 @@ UpdateMenu()
 			   /*(savey + ActiveItem->item_num * Scr->EntryHeight +
 			    (Scr->EntryHeight >> 1))*/, False);
 	    } else if (!badItem) {
-		XBell (dpy, 0);
+		Bell(XkbBI_MinorError,0,None);
 		badItem = ActiveItem;
 	    }
 
@@ -1406,6 +1408,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_WARPTO:
     case F_WARPRING:
     case F_WARPTOICONMGR:
+    case F_WARPNEXT:
+    case F_WARPPREV:
     case F_COLORMAP:
 	break;
     default:
@@ -1427,12 +1431,18 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
 
     case F_RESTART:
+    {
+	extern SmcConn smcConn;
+
 	XSync (dpy, 0);
 	Reborder (eventp->xbutton.time);
 	XSync (dpy, 0);
+	if (smcConn)
+	    SmcCloseConnection (smcConn, 0, NULL);
 	execvp(*Argv, Argv);
 	fprintf (stderr, "%s:  unable to restart:  %s\n", ProgramName, *Argv);
 	break;
+    }
 
     case F_UPICONMGR:
     case F_DOWNICONMGR:
@@ -1475,8 +1485,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		SortIconManager((IconMgr *) NULL);
 	    else if (tmp_win->iconmgr)
 		SortIconManager(tmp_win->iconmgrp);
-	    else
-		XBell(dpy, 0);
+	    else 
+		Bell(XkbBI_Info,0,tmp_win->w);
 
 	    Scr->SortIconMgr = save_sort;
 	}
@@ -1503,7 +1513,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
 
     case F_BEEP:
-	XBell(dpy, 0);
+	Bell(XkbBI_Info,0,None);
 	break;
 
     case F_POPUP:
@@ -2024,7 +2034,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    return TRUE;
 
 	if (tmp_win->iconmgr)
-	    XBell(dpy, 0);
+	    Bell(XkbBI_MinorError,0,tmp_win->w);
 	else
 	    XKillClient(dpy, tmp_win->w);
 	break;
@@ -2038,7 +2048,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	else if (tmp_win->protocols & DoesWmDeleteWindow)
 	  SendDeleteWindowMessage (tmp_win, LastTimestamp());
 	else
-	  XBell (dpy, 0);
+	  Bell(XkbBI_MinorError,0,tmp_win->w);
 	break;
 
     case F_SAVEYOURSELF:
@@ -2048,7 +2058,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	if (tmp_win->protocols & DoesWmSaveYourself)
 	  SendSaveYourselfMessage (tmp_win, LastTimestamp());
 	else
-	  XBell (dpy, 0);
+	  Bell(XkbBI_MinorError,0,tmp_win->w);
 	break;
 
     case F_CIRCLEUP:
@@ -2131,6 +2141,40 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	break;
 
+    case F_WARPPREV:
+    case F_WARPNEXT:
+	{
+		register TwmWindow *t;
+		static TwmWindow *savedwarp = NULL;
+		TwmWindow *of, *l, *n;
+		int c=0;
+
+#define wseq(w) (func == F_WARPNEXT ? (w)->next : (w)->prev)
+#define nwin(w) ((w) && (n=wseq(w)) != NULL && n != &Scr->TwmRoot ? n : l)
+#define bwin(w) (!(w)||(w)->iconmgr||(w)==of||!(Scr->WarpUnmapped||(w)->mapped))
+
+		of=(Scr->Focus ? Scr->Focus : &Scr->TwmRoot);
+
+		for(t=Scr->TwmRoot.next; t; t=t->next) if(!bwin(t)) break;
+		if(!t) break;	/* no windows we can use */
+
+		if(func == F_WARPPREV) for(l=of; l->next; l=l->next) ;
+		else l = Scr->TwmRoot.next;
+
+		for(t=of; bwin(t) && c < 2; t=nwin(t)) if(t == of) c++;
+
+		if(bwin(t) || c >= 2) Bell(XkbBI_MinorError,0,None);
+		else {
+			if(of && of == savedwarp) {
+				Iconify(of, 0, 0);
+				savedwarp = NULL;
+			}
+			if(!t->mapped) savedwarp = t; else savedwarp = NULL;
+			WarpThere(t);
+		}
+		break;
+	}
+
     case F_WARPTO:
 	{
 	    register TwmWindow *t;
@@ -2156,7 +2200,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 
 	    if (!t) 
-		XBell (dpy, 0);
+		Bell(XkbBI_MinorError,0,None);
 	}
 	break;
 
@@ -2191,7 +2235,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		XRaiseWindow (dpy, raisewin);
 		XWarpPointer (dpy, None, iconwin, 0,0,0,0, 5, 5);
 	    } else {
-		XBell (dpy, 0);
+		Bell(XkbBI_MinorError,0,None);
 	    }
 	}
 	break;
@@ -2205,7 +2249,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    WarpAlongRing (&eventp->xbutton, False);
 	    break;
 	  default:
-	    XBell (dpy, 0);
+	    Bell(XkbBI_MinorError,0,None);
 	    break;
 	}
 	break;
@@ -2402,26 +2446,18 @@ MenuRoot *root;
  */
 
 #if defined(sun) && defined(SVR4)
-static void System (s)
+static int System (s)
     char *s;
 {
-    int pid;
-    char* shell;
-    char* shellname;
-
+    int pid, status;
     if ((pid = fork ()) == 0) {
 	(void) setpgrp();
-	if ((shell = getenv ("SHELL")) != NULL) {
-	    shellname = strrchr(shell, '/');
-	    if (shellname == NULL)
-		shellname = shell;
-	    else
-		shellname++;
-	    execl (shell, shellname, "-c", s, 0);
-	}
 	execl ("/bin/sh", "sh", "-c", s, 0);
-    }
+    } else
+	waitpid (pid, &status, 0);
+    return status;
 }
+#define system(s) System(s)
 #endif
 
 void
@@ -2458,11 +2494,7 @@ Execute(s)
 	restorevar = 1;
     }
 
-#if defined(sun) && defined(SVR4)
-    System (s);
-#else
     (void) system (s);
-#endif
 
     if (restorevar) {		/* why bother? */
 	(void) sprintf (buf, "DISPLAY=%s", oldDisplay);
@@ -2803,7 +2835,7 @@ WarpToScreen (n, inc)
 	    }
 	    fprintf (stderr, "%s:  unable to warp to unmanaged screen %d\n", 
 		     ProgramName, n);
-	    XBell (dpy, 0);
+	    Bell(XkbBI_MinorError,0,None);
 	    return;
 	}
     }

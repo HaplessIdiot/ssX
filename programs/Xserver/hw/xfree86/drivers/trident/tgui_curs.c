@@ -24,7 +24,7 @@
  * Written by Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.4 1997/09/19 08:30:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.5 1997/10/13 17:16:44 hohndel Exp $ */
 
 
 
@@ -47,9 +47,14 @@ void TridentShowCursor() {
 		/* Max 64x64 cursor */
 		outb(GER_BYTE0, XAACursorInfoRec.MaxWidth - 1); 
 		outb(GER_BYTE2, XAACursorInfoRec.MaxHeight - 1);
-	} else 
-	/* X11 mode, 64x64 */
-	wrinx(vgaIOBase + 4, 0x50, 0xC1);
+	} else {
+		if (IsCyber) 
+			/* 128x128 */
+			wrinx(vgaIOBase + 4, 0x50, 0xC2);
+		else
+			/* 64x64 */
+			wrinx(vgaIOBase + 4, 0x50, 0xC1);
+	}
 
 	if (tridentHWCursorType == 2)
 	{
@@ -61,10 +66,10 @@ void TridentShowCursor() {
 	}
 	else
 	{
-		wrinx(vgaIOBase + 4, 0x44,
-			((TridentCursorAddress/1024) & 0x00FF));
-		wrinx(vgaIOBase + 4, 0x45,
-			((TridentCursorAddress/1024) & 0xFF00) >> 8);
+		outw(vgaIOBase + 4,
+			(((TridentCursorAddress/1024) & 0xFF) << 8) | 0x44);
+		outw(vgaIOBase + 4,
+			((TridentCursorAddress/1024) & 0xFF00) | 0x45);
 	}
 }
 
@@ -73,8 +78,12 @@ void TridentHideCursor() {
 	{
 		outb(GER_INDEX, 0x34);
 		outb(GER_BYTE2, 0x00);	/* Disable Cursor in GER */
-	} else
-	wrinx(vgaIOBase + 4, 0x50, 0x41);
+	} else {
+		if (IsCyber)
+			wrinx(vgaIOBase + 4, 0x50, 0x42);
+		else
+			wrinx(vgaIOBase + 4, 0x50, 0x41);
+	}
 }
 
 void TridentSetCursorPosition(x, y, xorigin, yorigin)
@@ -129,7 +138,7 @@ TridentSetCursorColors(bg, fg)
 	outb(GER_BYTE1, 0xFF);
    }
    else
-   if (TVGAchipset == TGUI96xx)
+   if (TVGAchipset >= TGUI96xx)
    {
 	/* We've got specific colours now for the cursor */
 
@@ -142,12 +151,4 @@ TridentSetCursorColors(bg, fg)
 	wrinx(vgaIOBase + 4, 0x4E, (bg & 0x00FF0000) >> 16);
 	wrinx(vgaIOBase + 4, 0x4F, (bg & 0xFF000000) >> 24);
    }
-}
-
-TridentLoadCursorImage(bits, xorigin, yorigin)
-	unsigned long *bits;
-	int xorigin, yorigin;
-{
-	xf86memcpy((unsigned char *)vgaLinearBase + TridentCursorAddress,
-			bits, ((XAACursorInfoRec.MaxWidth * XAACursorInfoRec.MaxHeight/8)*2));
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.17 1997/09/29 08:40:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.18 1997/10/13 17:16:46 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -128,6 +128,7 @@ typedef struct {
 	unsigned char PCIRetry;		/* For 9685 PCI Retry		*/
 	unsigned char TVinterface;	/* For 9685 TVinterface 	*/
 	unsigned char TVMode;		/* For 9685 ClearTV		*/
+	unsigned char Multiplex;	/* For Multiplex mode		*/
 } vgaTVGA8900Rec, *vgaTVGA8900Ptr;
 
 static Bool TVGA8900ClockSelect();
@@ -153,7 +154,6 @@ extern void TridentShowCursor();
 extern void TridentHideCursor();
 extern void TridentSetCursorPosition();
 extern void TridentSetCursorColors();
-extern void TridentLoadCursorImage();
 extern Bool TridentUseHWCursor();
 extern Bool XAACursorInit();
 extern void XAARestoreCursor();
@@ -379,14 +379,12 @@ TGUISetClock(no)
 
 	freq = vga256InfoRec.clock[no];
 
-	if ((vgaBitsPerPixel == 16) && (TVGAchipset <= TGUI9320LCD))
+	if ((vgaBitsPerPixel == 16) && (TVGAchipset <= CYBER9320))
 		freq *= 2; 
 	if (vgaBitsPerPixel == 32)
 		freq *= 2;
 	if ((TVGAchipset < TGUI96xx) && (vgaBitsPerPixel == 24))
 		freq *= 3;
-	if ((TVGAchipset >= TGUI96xx) && (vgaBitsPerPixel == 24))
-		freq *= 2;
 
 	for (k=0;k<=endk;k++)
 	  for (n=startn;n<=endn;n++)
@@ -574,8 +572,10 @@ TVGA8900Ident(n)
 				   "tvga9200cxr",
 				   "tgui9400cxi", "tgui9420",
 				   "tgui9420dgi", "tgui9430dgi",
-				   "tgui9440agi", "tgui9320lcd",
-				   "tgui96xx", "cyber938x",
+				   "tgui9440agi", "cyber9320",
+				   "tgui9660", "tgui9680", "tgui9682",
+				   "tgui9685", "cyber9382", "cyber9385",
+				   "cyber9397"
 				  };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
@@ -747,14 +747,35 @@ TVGA8900Probe()
 			TVGAchipset = TGUI9440AGi;
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(15)))
 		{
-			TVGAchipset = TGUI9320LCD;
+			TVGAchipset = CYBER9320;
 			IsCyber = TRUE;
 		}
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
-			TVGAchipset = TGUI96xx;
+			TVGAchipset = TGUI9660;
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+			TVGAchipset = TGUI9680;
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+			TVGAchipset = TGUI9682;
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		{
+			TVGAchipset = TGUI9685;
+			NewClockCode = TRUE;
+		}
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		{
+			TVGAchipset = CYBER9382;
+			IsCyber = TRUE;
+			NewClockCode = TRUE;
+		}
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		{
+			TVGAchipset = CYBER9385;
+			IsCyber = TRUE;
+			NewClockCode = TRUE;
+		}
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(17)))
 		{
-			TVGAchipset = TGUI96xx;
+			TVGAchipset = CYBER9397;
 			IsCyber = TRUE;
 			NewClockCode = TRUE;
 		}
@@ -862,7 +883,7 @@ TVGA8900Probe()
 			TVGAName = "TGUI9400CXi";
 			break;
 		case 0xA3:
-			TVGAchipset = TGUI9320LCD;
+			TVGAchipset = CYBER9320;
 			TVGAName = "Cyber9320";
 			break;
 		case 0xD3:
@@ -880,6 +901,31 @@ TVGA8900Probe()
       		default:
       			TVGAName = "UNKNOWN";
       		}
+		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+		{
+			switch (vgaPCIInfo->ChipType) {
+				case PCI_CHIP_9320:
+					TVGAchipset = CYBER9320;
+					TVGAName = "Cyber9320";
+					break;
+				case PCI_CHIP_9420:
+					TVGAchipset = TGUI9420;
+					TVGAName = "TGUI9420";
+					break;
+				case PCI_CHIP_9440:
+					TVGAchipset = TGUI9440AGi;
+					TVGAName = "TGUI9440AGi";
+					break;
+				case PCI_CHIP_9660:
+					TVGAchipset = TGUI96xx;
+					TVGAName = "TGUI96xx";
+					break;
+				case PCI_CHIP_9397:
+					TVGAchipset = TGUI96xx;
+					TVGAName = "Cyber9397";
+					break;
+			}
+		}
       		ErrorF("%s Trident chipset version: 0x%02x (%s)\n", 
                        XCONFIG_PROBED, temp, TVGAName);
 		if (TreatAs != (char *)NULL)
@@ -919,7 +965,7 @@ TVGA8900Probe()
 		tridentDACtype = TKD8001;
 		TRIDENT.ChipHas16bpp = TRUE;
 		break;
-	case TGUI9320LCD:
+	case CYBER9320:
 		tridentIsTGUI = TRUE;		/* Reports of this works */
 		tridentLinearOK = TRUE;
 		tridentDACtype = TGUIDAC;
@@ -976,47 +1022,60 @@ TVGA8900Probe()
 		tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
 		TRIDENT.ChipHas32bpp = TRUE;
-		/* TRIDENT.ChipHas24bpp = TRUE; - not yet */
+		TRIDENT.ChipHas24bpp = TRUE;
 		/* We've found a 96xx graphics engine */
 		/* Let's probe furthur */
 		switch (revision) {
 			case 0x00:
 				REV = "9660";
+				TVGAchipset = TGUI9660;
 				break;
 			case 0x01:
 				REV = "9680";
+				TVGAchipset = TGUI9680;
 				break;
 			case 0x10:
 				REV = "ProVidia 9682";
+				TVGAchipset = TGUI9682;
 				break;
 			case 0x21:
 				REV = "ProVidia 9685";
+				TVGAchipset = TGUI9685;
 				NewClockCode = TRUE;
 				ClearTV = TRUE;
 				OFLG_SET(OPTION_PCI_RETRY, &TRIDENT.ChipOptionFlags);
-				/* Disable for now, bugs ! */
-				/* Have to recode accel for linear mode */
-				if ( (vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32) )
-					tridentHasAcceleration = FALSE;
+				break;
+			case 0x22:
+				REV = "Cyber 9397";
+				TVGAchipset = CYBER9397;
+				NewClockCode = TRUE;
 				break;
 			case 0x30:
 			case 0x33: /* Guessing */
 			case 0x34:
 			case 0xB3:
-				REV = "9385";
+				REV = "Cyber 9385";
+				TVGAchipset = CYBER9385;
+				NewClockCode = TRUE;
 				IsCyber = TRUE;
 				break;
 			case 0x38:
-				REV = "9385-1";
+				REV = "Cyber 9385-1";
+				TVGAchipset = CYBER9385;
+				NewClockCode = TRUE;
 				IsCyber = TRUE;
 				break;
 			case 0x40:
 			case 0x42: /* Guessing */
-				REV = "9382";
+				REV = "Cyber 9382";
+				TVGAchipset = CYBER9382;
+				NewClockCode = TRUE;
 				IsCyber = TRUE;
 				break;
 			case 0x50:
 				REV = "ProVidia 9692";
+				TVGAchipset = TGUI9685;
+				NewClockCode = TRUE;
 				break;
 			default:
 				REV = "Unknown ID - Please report to trident@xfree86.org";
@@ -1150,7 +1209,7 @@ TVGA8900Probe()
 			break;
 		case 1: 
 		case 5:	/* New TGUI's don't support less than 1MB */
-			if (TVGAchipset == TGUI96xx)
+			if (TVGAchipset >= TGUI96xx)
 				vga256InfoRec.videoRam = 4096;
 			else
 				vga256InfoRec.videoRam = 512; 
@@ -1163,7 +1222,7 @@ TVGA8900Probe()
 			vga256InfoRec.videoRam = 1024; 
 			break;
 		case 7:
-			if (((temp & 0x0F) == 0x0F) && (revision == TGUI9685))
+			if (((temp & 0x0F) == 0x0F) && (IsTGUI9685))
 				vga256InfoRec.videoRam = 4096;
 			else
 				vga256InfoRec.videoRam = 2048;
@@ -1350,6 +1409,14 @@ TVGA8900Probe()
 			}
 			break;
 		case 24:
+			vga256InfoRec.maxClock = 
+				tridentClockLimit24bpp[TVGAchipset];
+			if (!tridentTGUIProgrammableClocks)
+			{
+				TRIDENT..ChipClockMulFactor = 3;
+				vga256InfoRec.maxClock *= 3;
+			}
+			break;
 		case 32:
 			vga256InfoRec.maxClock = 
 				tridentClockLimit32bpp[TVGAchipset];
@@ -1512,24 +1579,29 @@ TVGA8900FbInit()
 				" memory for hw cursor, using sw cursor.\n",
 				XCONFIG_PROBED, vga256InfoRec.name);
 		else {
-			TridentCursorAddress = ((vga256InfoRec.videoRam - 4) << 10);
+			TridentCursorAddress = (vga256InfoRec.videoRam - 4) * 1024;
 			XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
 					      HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 					      HARDWARE_CURSOR_LONG_BIT_FORMAT |
-					      HARDWARE_CURSOR_PROGRAMMED_BITS |
 					      HARDWARE_CURSOR_PROGRAMMED_ORIGIN;
 			vgaHWCursor.Init = XAACursorInit;
 			vgaHWCursor.Initialized = TRUE;
 			vgaHWCursor.Restore = XAARestoreCursor;
 			vgaHWCursor.Warp = XAAWarpCursor;
 			vgaHWCursor.QueryBestSize = XAAQueryBestSize;
-			XAACursorInfoRec.MaxHeight = 64;
-			XAACursorInfoRec.MaxWidth = 64;
+			if (IsCyber) {
+				XAACursorInfoRec.MaxHeight = 128;
+				XAACursorInfoRec.MaxWidth = 128;
+			} else {
+				XAACursorInfoRec.MaxHeight = 64;
+				XAACursorInfoRec.MaxWidth = 64;
+			}
+			XAACursorInfoRec.CursorDataX = TridentCursorAddress % (vgaBitsPerPixel/8 * vga256InfoRec.displayWidth);
+			XAACursorInfoRec.CursorDataY = TridentCursorAddress / (vgaBitsPerPixel/8 * vga256InfoRec.displayWidth);
 			XAACursorInfoRec.ShowCursor = TridentShowCursor;
 			XAACursorInfoRec.HideCursor = TridentHideCursor;
 			XAACursorInfoRec.SetCursorColors = TridentSetCursorColors;
 			XAACursorInfoRec.SetCursorPosition = TridentSetCursorPosition;
-			XAACursorInfoRec.LoadCursorImage = TridentLoadCursorImage;
 			XAACursorInfoRec.GetInstalledColormaps = vgaGetInstalledColormaps;
 			ErrorF("%s %s: Using hardware cursor\n",
 				XCONFIG_PROBED, vga256InfoRec.name);
@@ -1739,9 +1811,7 @@ TVGA8900Restore(restore)
 			outw(0x3CE, ((restore->CyberEnhance) << 8) | 0x31);
 		}
 
-		if (vgaBitsPerPixel >= 8) {
 		outw(0x3CE, ((restore->MiscExtFunc) << 8) | 0x0F);
-		}
 
 		outw(vgaIOBase + 4, ((restore->VLBusReg) << 8) | 0x2A);
 		
@@ -1759,6 +1829,7 @@ TVGA8900Restore(restore)
 						| 0xCF);
 			}
 			outw(vgaIOBase + 4, ((restore->PixelBusReg) << 8) | 0x38);
+			outb(0x83C8, 0x00); outb(0x83C6, restore->Multiplex);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
 		else
@@ -1798,7 +1869,7 @@ TVGA8900Restore(restore)
 		}
 	}
 
-	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685) &&
+	if ((IsTGUI9685) &&
 	    (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options)))
 		outw(vgaIOBase + 4, ((restore->PCIRetry) << 8) | 0x62);
 
@@ -1918,9 +1989,7 @@ TVGA8900Save(save)
 			save->CyberHExp = inb(0x3CF);
 		}
 
-		if (vgaBitsPerPixel >= 8) {
 		outb(0x3CE, 0x0F); save->MiscExtFunc = inb(0x3CF);
-		}
 
 		outb(vgaIOBase + 4, 0x2A); save->VLBusReg = inb(vgaIOBase + 5);
 
@@ -1942,6 +2011,8 @@ TVGA8900Save(save)
 			save->GraphEngReg = inb(vgaIOBase + 5);
 			outb(vgaIOBase + 4, 0x38); 
 			save->PixelBusReg = inb(vgaIOBase + 5);
+			outb(0x83C8, 0x00);
+			save->Multiplex = inb(0x83C6);
 			outb(0x3CE, 0x2F);
 			save->MiscIntContReg = inb(0x3CF);
 			if (TVGAchipset >= TGUI96xx) 
@@ -1986,7 +2057,7 @@ TVGA8900Save(save)
 		}
 	}
 
-	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685) &&
+	if ((IsTGUI9685) &&
 	    (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))) {
 		outb(vgaIOBase + 4, 0x62);
 		save->PCIRetry = inb(vgaIOBase + 5);
@@ -2154,14 +2225,16 @@ TVGA8900Init(mode)
  			(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
  			0x08;
 
+	outb(0x3CE, 0x0F);
+	new->MiscExtFunc = inb(0x3CF) & 0xB7;
+
 	if (vgaBitsPerPixel >= 8) {
 	if (tridentIsTGUI)
 	{
 		/* Turn on 32 bit mode - applies to VLBus and PCI */
 		outb(vgaIOBase + 4, 0x2A);
 		new->VLBusReg = inb(vgaIOBase + 5) | 0x40; /* 32bit mode */
-		outb(0x3CE, 0x0F);
-		new->MiscExtFunc = inb(0x3CF) | 0x07; /* Set Dual Banks */
+		new->MiscExtFunc |= 0x07; /* Set Dual Banks */
 	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
 
@@ -2356,12 +2429,24 @@ TVGA8900Init(mode)
 		outb(0x3CE, 0x2F);
 		new->MiscIntContReg = inb(0x3CF) | 0x04; /* double line width */
 		new->PixelBusReg = 0x00;
-		if (IsTGUI9682)
+		if ((IsTGUI9682) || (IsAdvCyber))
 			GE_OP |= 0x100; /* Disable Clip by default */
+		if (vgaBitsPerPixel == 8) 
+		{
+			if (IsTGUI9685) 
+			{
+#if 0
+				new->CommandReg = 0x20;
+				outb(0x83C8, 0x00);
+				new->Multiplex = 0x40 | inb(0x83C6);
+				new->PixelBusReg |= 0x01;
+#endif
+			}
+		}
 		if (vgaBitsPerPixel == 16)
 		{
 			new->std.Attribute[17] = 0x00;
-			if (TVGAchipset <= TGUI9320LCD)
+			if (TVGAchipset <= CYBER9320)
 				new->MiscExtFunc |= 0x08; /* Clock Div. by 2 */
 			new->CommandReg = 0x30;	 /* 16bpp */
 			new->PixelBusReg |= 0x04;
@@ -2373,12 +2458,11 @@ TVGA8900Init(mode)
 		{
 			new->std.Attribute[17] = 0x00;
 			new->CommandReg = 0xD0; /* 24bpp */
-			if (TVGAchipset >= TGUI96xx) {
-				new->MiscExtFunc |= 0x08; /* Clock Div. by 2*/
-				new->PixelBusReg |= 0x28; /* Packed 24bit */
-			} else {
+			if (TVGAchipset < TGUI96xx) {
 				new->MiscExtFunc |= 0x40; /* Clock Div. by 3 */
 				new->PixelBusReg |= 0x08;
+			} else {
+				new->PixelBusReg |= 0x29;
 			}
 			GE_OP |= 0x03; /* 24bpp in GE */
 		}
@@ -2393,7 +2477,7 @@ TVGA8900Init(mode)
 		}
 	}
 
-	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685) &&
+	if ((IsTGUI9685) &&
 	    (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))) {
 		outb(vgaIOBase + 4, 0x62);
 		new->PCIRetry = inb(vgaIOBase + 5) | 0x70;

@@ -504,6 +504,8 @@ static TwmKeyword keytable[] = {
     { "f.version",		FKEYWORD, F_VERSION },
     { "f.vlzoom",		FKEYWORD, F_LEFTZOOM },
     { "f.vrzoom",		FKEYWORD, F_RIGHTZOOM },
+    { "f.warpnext",		FKEYWORD, F_WARPNEXT },
+    { "f.warpprev",		FKEYWORD, F_WARPPREV },
     { "f.warpring",		FSKEYWORD, F_WARPRING },
     { "f.warpto",		FSKEYWORD, F_WARPTO },
     { "f.warptoiconmgr",	FSKEYWORD, F_WARPTOICONMGR },

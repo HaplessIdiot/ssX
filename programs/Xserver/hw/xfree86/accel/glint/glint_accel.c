@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.14 1997/11/01 23:11:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.15 1997/11/01 23:31:54 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -150,11 +150,6 @@ void            GLINTSubsequentScanlineScreenToScreenCopy ();
 void
 GLINTAccelInit ()
 {
-  int             vramsave;
-
-  if (IS_3DLABS_TX_MX_CLASS (coprotype))
-    {
-
       xf86AccelInfoRec.Flags =
 	PIXMAP_CACHE |
 	ONLY_LEFT_TO_RIGHT_BITBLT |
@@ -246,9 +241,6 @@ GLINTAccelInit ()
                         GLINTSubsequentScanlineScreenToScreenCopy;
       }
 #endif /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
-    }
-  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
-    PermediaAccelInit ();
 
   xf86AccelInfoRec.ServerInfoRec = &glintInfoRec;
 

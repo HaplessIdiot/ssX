@@ -117,6 +117,8 @@ extern void TwmOutput();
 #define F_HIDELIST		45
 
 #define F_MENU			101	/* string */
+#define F_WARPNEXT		112	/* string */
+#define F_WARPPREV		113	/* string */
 #define F_WARPTO		102	/* string */
 #define F_WARPTOICONMGR		103	/* string */
 #define F_WARPRING		104	/* string */

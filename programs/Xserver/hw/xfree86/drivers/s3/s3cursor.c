@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.5 1997/09/30 04:51:02 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.6 1997/10/13 17:16:42 hohndel Exp $
 *
 */
 
@@ -148,7 +148,8 @@ void S3CursorInit()
  	   return;
 	}
 
-        XAACursorInfoRec.CursorDataX = CursorAddress % s3BppDisplayWidth;
+        XAACursorInfoRec.CursorDataX = 
+		(CursorAddress % s3BppDisplayWidth) / s3Bpp;
         XAACursorInfoRec.CursorDataY = CursorAddress / s3BppDisplayWidth;
         s3CursorBytes = 1024;
         CursorAddress >>= 10;

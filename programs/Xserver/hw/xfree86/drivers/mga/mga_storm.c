@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.8 1997/10/25 13:50:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.9 1997/11/01 15:04:49 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -80,7 +80,7 @@ void MGANAME(AccelInit)()
                              PIXMAP_CACHE | 
                              DO_NOT_BLIT_STIPPLES |
                              HARDWARE_CLIP_LINE |
-			     /* LINE_PATTERN_MSBFIRST_DECREASING | */
+                             LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
                              NO_SYNC_AFTER_CPU_COLOR_EXPAND;
     /*
      * Currently, no ScreenToScreenCopy for this chip -- why?
@@ -103,13 +103,10 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.SubsequentBresenhamLine = MGANAME(SubsequentBresenhamLine);
     xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
 
-#if 0 /* server crashes with olvwm */
     xf86AccelInfoRec.SetupForDashedLine = MGANAME(SetupForDashedLine);
     xf86AccelInfoRec.SubsequentDashedBresenhamLine = MGANAME(SubsequentDashedBresenhamLine);
     xf86AccelInfoRec.LinePatternBuffer = (void *) &mgaDashedPatternBuf[0];
     xf86AccelInfoRec.LinePatternMaxLength = 128;
-    xf86AccelInfoRec.ErrorTermBits = 15;
-#endif
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -138,10 +135,9 @@ void MGANAME(AccelInit)()
     				MGANAME(SetupForFillRectSolid);
     xf86AccelInfoRec.SubsequentFillRectSolid = 
     				MGANAME(SubsequentFillRectSolid);
-#if 0  /* there are some problems, probably with error term */
+
     xf86AccelInfoRec.SubsequentFillTrapezoidSolid =
     				MGANAME(SubsequentFillTrapezoidSolid);
-#endif
 
     if( MGAchipset != PCI_CHIP_MGA2164_AGP ) 
     {
@@ -497,16 +493,18 @@ void MGANAME(SubsequentFillTrapezoidSolid)(y, h, left, dxL, dyL, eL,
     int y, h, left, dxL, dyL, eL, right, dxR, dyR, eR;
 {
     int sdxl = (dxL < 0);
+    int ar2 = sdxl? dxL : -dxL;
     int sdxr = (dxR < 0);
+    int ar5 = sdxr? dxR : -dxR;
     
     /* change command because we are after SetupForFillRectSolid */
     OUTREG(MGAREG_DWGCTL, mga_cmd & ~(MGADWG_ARZERO | MGADWG_SGNZERO));
 
     OUTREG(MGAREG_AR0, dyL);
-    OUTREG(MGAREG_AR1, sdxl? (dxL + dyL - 1) : -dxL);
-    OUTREG(MGAREG_AR2, sdxl? dxL : -dxL);
-    OUTREG(MGAREG_AR4, sdxr? (dxR + dyR - 1) : -dxR);
-    OUTREG(MGAREG_AR5, sdxr? dxR : -dxR);
+    OUTREG(MGAREG_AR1, ar2 - eL);
+    OUTREG(MGAREG_AR2, ar2);
+    OUTREG(MGAREG_AR4, ar5 - eR);
+    OUTREG(MGAREG_AR5, ar5);
     OUTREG(MGAREG_AR6, dyR);
     OUTREG(MGAREG_SGN, (sdxl << 1) | (sdxr << 5));
     OUTREG(MGAREG_FXBNDRY, ((right + 1) << 16) | left);
@@ -838,7 +836,7 @@ void MGANAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
  
 void
 MGANAME(SubsequentBresenhamLine)(x1, y1, octant, err, e1, e2, length)
-	int x1, y1, octant, err, e1, e2, length;
+    int x1, y1, octant, err, e1, e2, length;
 {
     register int oct = ((octant & YDECREASING) << 1) |
                        ((octant & XDECREASING) >> 1) |
@@ -862,6 +860,29 @@ MGANAME(SubsequentBresenhamLine)(x1, y1, octant, err, e1, e2, length)
     OUTREG(MGAREG_DWGCTL, mga_lastcmd);
 }
 
+void 
+MGANAME(SubsequentDashedBresenhamLine)(int x1, int y1, int octant, int err, 
+                                       int e1, int e2, int length, int start)
+{
+    register int oct = ((octant & YDECREASING) << 1) |
+                       ((octant & XDECREASING) >> 1) |
+                       !(octant & YMAJOR);
+
+    OUTREG(MGAREG_SHIFT, (mgaStylelen << 16 ) | (mgaStylelen - start));
+    OUTREG(MGAREG_SGN, oct);
+    OUTREG(MGAREG_AR0, e1);
+    OUTREG(MGAREG_AR1, err);
+    OUTREG(MGAREG_AR2, e2);
+    OUTREG(MGAREG_XDST, x1);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y1 << 16) | length);
+
+    /* disable one-time clipping (see XAA notes) */
+    if ( mga_ClipRect )
+    {
+	DISABLECLIPPING();
+    }
+}
+
 void
 MGANAME(SetupForDashedLine)(int fg, int bg, int rop, unsigned int planemask,
 				 int size)
@@ -869,13 +890,7 @@ MGANAME(SetupForDashedLine)(int fg, int bg, int rop, unsigned int planemask,
     /* handle transparent background */
     int transc = ( bg == -1 );
 
-    MGAStormSync();
-
-    /* load the style length part into the SHIFT register */
-
-    mgaStylelen = ( (size - 1) << 16 ) & 0x007f0000;
-    OUTREG(MGAREG_SHIFT, mgaStylelen);
-    mgaStylelen = size;
+    mgaStylelen = size - 1;
 
     /* load the pattern */
     
@@ -887,8 +902,8 @@ MGANAME(SetupForDashedLine)(int fg, int bg, int rop, unsigned int planemask,
  	default: OUTREG(MGAREG_SRC0, mgaDashedPatternBuf[0]); 
     }
 
-    /* closed Bresenham lines with a linestyle, p5-19 or p5-30 */
-    mga_cmd = MGADWG_LINE_CLOSE | MGADWG_BFCOL;
+    /* open Bresenham lines with a linestyle, p5-19 or p5-30 */
+    mga_cmd = MGADWG_LINE_OPEN | MGADWG_BFCOL;
     
     /*
      * check transparency and set bg/fg colors
@@ -936,72 +951,11 @@ MGANAME(SetupForDashedLine)(int fg, int bg, int rop, unsigned int planemask,
     DISABLECLIPPING();
 }
 
-void 
-MGANAME(SubsequentDashedBresenhamLine)(int x1, int y1, int octant, int err, 
-                                       int e1, int e2, int length, int start)
-{
-    unsigned int oct = 0;
-    unsigned int startPos = mgaStylelen - start;
-
-#ifdef DEBUG
-    if ( start < 0 )
-	ErrorF("mga dashed lines: -ve start (%d, %d)\n", mgaStylelen, start);
-
-    if ( startPos > mgaStylelen )
- 	ErrorF("mga dashed lines: startpos > mgaStylelen (%d, %d)\n", mgaStylelen, start);
-
-    if ( startPos > 127 )
-        ErrorF("mga dashed lines: startPos > 127 (%d, %d)\n", mgaStylelen, start);
-#endif
-
-    OUTREG16(MGAREG_SHIFT, startPos & 0x7f);
-
-    /* load the xy position. The Mill documentation has an error, xdst not ydst */
-
-    OUTREG16(MGAREG_XDST, x1);
-    OUTREG(MGAREG_YDSTLEN, (y1 << 16) | length);
-
-    if ( octant & YDECREASING )
-	oct |= 4;
-
-    if ( octant & XDECREASING )
-	oct |= 2;
-
-    if ( !((octant & YMAJOR) == YMAJOR) )
-	oct |= 1;
-
-    OUTREG16(MGAREG_SGN, oct);
-    OUTREG(MGAREG_AR0, e1 & 0x3ffff);
-    OUTREG(MGAREG_AR1, err & 0x0fffffff);
-    OUTREG(MGAREG_AR2 + MGAREG_EXEC, e2 & 0x3ffff);
-
-    /* disable one-time clipping (see XAA notes) */
-    if ( mga_ClipRect )
-    {
-	DISABLECLIPPING();
-    }
-}
-
 void
 MGANAME(SetClippingRectangle)(x1, y1, x2, y2)
         int x1, y1, x2, y2;
 {
         int tmp;
-
-#if 0  /* [rdk] I think we don't need it, see xaa/NOTES */
-        if ( x2 < x1 )
-        {
-                tmp = x2;
-                x2 = x1;
-                x1 = tmp;
-        }
-        if ( y2 < y1 )
-        {
-                tmp = y2;
-                y2 = y1;
-                y1 = tmp;
-        }
-#endif
 
         OUTREG(MGAREG_CXBNDRY, (x2 << 16) | x1);
         OUTREG(MGAREG_YTOP,
