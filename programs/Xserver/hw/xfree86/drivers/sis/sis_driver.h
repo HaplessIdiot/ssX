@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.0 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.24 2003/10/26 13:49:49 twini Exp $ */
 /*
  * Global data and definitions
  *
@@ -1040,8 +1040,8 @@ static Bool SISSaveScreenDH(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void SISFreeScreen(int scrnIndex, int flags);
-static int  SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-                         int flags);
+static ModeStatus SISValidMode(int scrnIndex, DisplayModePtr mode,
+			       Bool verbose, int flags);
 
 /* Internally used functions */
 static Bool    SISMapMem(ScrnInfoPtr pScrn);

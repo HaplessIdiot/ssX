@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.94 2003/08/29 21:07:57 tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.95 2003/09/24 02:43:29 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2765,7 +2765,7 @@ TsengAdjustFrame(int scrnIndex, int x, int y, int flags)
 
 }
 
-ModeStatus
+static ModeStatus
 TsengValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.81 2003/09/28 20:15:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.82 2003/10/08 15:48:38 eich Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -3353,8 +3353,8 @@ Bool R128SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 }
 
 /* Used to disallow modes that are not supported by the hardware. */
-int R128ValidMode(int scrnIndex, DisplayModePtr mode,
-		  Bool verbose, int flags)
+ModeStatus R128ValidMode(int scrnIndex, DisplayModePtr mode,
+			 Bool verbose, int flags)
 {
     ScrnInfoPtr   pScrn = xf86Screens[scrnIndex];
     R128InfoPtr   info  = R128PTR(pScrn);

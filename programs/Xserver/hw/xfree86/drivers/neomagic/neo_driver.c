@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.70 2003/09/24 02:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.71 2003/09/24 03:16:55 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -123,8 +123,8 @@ static Bool     NEOEnterVT(int scrnIndex, int flags);
 static void     NEOLeaveVT(int scrnIndex, int flags);
 static Bool     NEOCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void     NEOFreeScreen(int scrnIndex, int flags);
-static int      NEOValidMode(int scrnIndex, DisplayModePtr mode,
-                                 Bool verbose, int flags);
+static ModeStatus NEOValidMode(int scrnIndex, DisplayModePtr mode,
+                               Bool verbose, int flags);
 
 /* Internally used functions */
 static int      neoFindIsaDevice(GDevPtr dev);
@@ -1914,7 +1914,7 @@ NEOFreeScreen(int scrnIndex, int flags)
 }
 
 /* Optional */
-static int
+static ModeStatus
 NEOValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

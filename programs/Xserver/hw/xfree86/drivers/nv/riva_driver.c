@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.2 2003/08/23 15:03:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_driver.c,v 1.3 2003/08/23 16:09:18 dawes Exp $ */
 
 #include "riva_include.h"
 
@@ -44,8 +44,8 @@ static Bool    RivaSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void    RivaFreeScreen(int scrnIndex, int flags);
-static int     RivaValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-                           int flags);
+static ModeStatus RivaValidMode(int scrnIndex, DisplayModePtr mode,
+				Bool verbose, int flags);
 
 /* Internally used functions */
 
@@ -439,7 +439,7 @@ RivaFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 RivaValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     return (MODE_OK);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.63 2003/08/23 16:09:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.64 2003/10/02 13:29:57 eich Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -36,8 +36,8 @@ static Bool     ApmEnterVT(int scrnIndex, int flags);
 static void     ApmLeaveVT(int scrnIndex, int flags);
 static Bool     ApmCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void     ApmFreeScreen(int scrnIndex, int flags);
-static int      ApmValidMode(int scrnIndex, DisplayModePtr mode,
-                                 Bool verbose, int flags);
+static ModeStatus ApmValidMode(int scrnIndex, DisplayModePtr mode,
+                               Bool verbose, int flags);
 static Bool	ApmSaveScreen(ScreenPtr pScreen, int mode);
 static void	ApmUnlock(ApmPtr pApm);
 static void	ApmLock(ApmPtr pApm);
@@ -2282,7 +2282,7 @@ ApmFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 ApmValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)

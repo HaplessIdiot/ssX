@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.63 2003/05/17 22:36:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.64 2003/08/23 16:09:23 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -87,7 +87,7 @@ static int                  VGAFindIsaDevice(GDevPtr dev);
 static Bool                 GenericMapMem(ScrnInfoPtr scrp);
 #endif
 
-static int GenericValidMode(int, DisplayModePtr, Bool, int);
+static ModeStatus GenericValidMode(int, DisplayModePtr, Bool, int);
 
 /* The root of all evil... */
 DriverRec VGA =
@@ -1564,7 +1564,7 @@ GenericFreeScreen(int scrnIndex, int flags)
 }
 
 
-static int
+static ModeStatus
 GenericValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 {
     if (pMode->Flags & V_INTERLACE)

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.31 2003/09/24 02:43:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.32 2003/09/24 03:16:53 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -84,8 +84,8 @@ static Bool	I128SaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void	I128FreeScreen(int scrnIndex, int flags);
-static int	I128ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static ModeStatus I128ValidMode(int scrnIndex, DisplayModePtr mode,
+				Bool verbose, int flags);
 static void	I128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
@@ -1740,7 +1740,7 @@ I128FreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 I128ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     int lace;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.108 2003/10/07 22:47:12 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.109 2003/10/11 00:29:57 daenzer Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -6787,8 +6787,8 @@ Bool RADEONHandleMessage(int scrnIndex, const char* msgtype,
 #endif
 
 /* Used to disallow modes that are not supported by the hardware */
-int RADEONValidMode(int scrnIndex, DisplayModePtr mode,
-		    Bool verbose, int flag)
+ModeStatus RADEONValidMode(int scrnIndex, DisplayModePtr mode,
+			   Bool verbose, int flag)
 {
     /* There are problems with double scan mode at high clocks
      * They're likely related PLL and display buffer settings.

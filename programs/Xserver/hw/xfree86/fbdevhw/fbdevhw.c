@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.31 2003/04/03 16:30:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.32 2003/08/26 10:57:03 daenzer Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -747,7 +747,7 @@ fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 /* -------------------------------------------------------------------- */
 /* these can be hooked directly into ScrnInfoRec                        */
 
-int
+ModeStatus
 fbdevHWValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

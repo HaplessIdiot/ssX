@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.92 2003/09/28 20:15:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.93 2003/10/08 15:48:40 eich Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -96,8 +96,8 @@ static void I810FreeScreen(int scrnIndex, int flags);
 static void I810DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagermentMode,
 					  int flags);
-static int I810ValidMode(int scrnIndex, DisplayModePtr mode, Bool
-			 verbose, int flags);
+static ModeStatus I810ValidMode(int scrnIndex, DisplayModePtr mode,
+				Bool verbose, int flags);
 #endif /* I830_ONLY */
 
 
@@ -2411,7 +2411,7 @@ I810FreeScreen(int scrnIndex, int flags)
       vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
-static int
+static ModeStatus
 I810ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
    if (mode->Flags & V_INTERLACE) {

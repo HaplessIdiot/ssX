@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.239 2003/09/24 06:03:10 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.240 2003/09/28 20:16:00 alanh Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -124,8 +124,8 @@ static void     VgaIORestore(int i, void *arg);
 
 /* Optional functions */
 static void	MGAFreeScreen(int scrnIndex, int flags);
-static int	MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static ModeStatus MGAValidMode(int scrnIndex, DisplayModePtr mode,
+			       Bool verbose, int flags);
 
 /* Internally used functions */
 static Bool	MGAMapMem(ScrnInfoPtr pScrn);
@@ -3926,7 +3926,7 @@ MGAFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     int lace;

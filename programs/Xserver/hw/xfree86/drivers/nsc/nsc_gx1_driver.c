@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.8 2003/04/23 21:51:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.9 2003/08/23 15:03:09 dawes Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
- * $Revision: 1.9 $
- * $Author: dawes $
+ * $Revision: 1.10 $
+ * $Author: tsi $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -271,7 +271,7 @@ static void GX1LeaveVT(int, int);
 static void GX1FreeScreen(int, int);
 void GX1AdjustFrame(int, int, int, int);
 Bool GX1SwitchMode(int, DisplayModePtr, int);
-static int GX1ValidMode(int, DisplayModePtr, Bool, int);
+static ModeStatus GX1ValidMode(int, DisplayModePtr, Bool, int);
 static void GX1LoadPalette(ScrnInfoPtr pScreenInfo,
 			   int numColors, int *indizes,
 			   LOCO * colors, VisualPtr pVisual);
@@ -2306,7 +2306,7 @@ GX1FreeScreen(int scrnIndex, int flags)
  * Comments     :none.
 *----------------------------------------------------------------------------
 */
-static int
+static ModeStatus
 GX1ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 {
    ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];

@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.27 2003/08/23 16:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.28 2003/09/24 02:43:21 dawes Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -99,8 +99,8 @@ static void	CYRIXAdjustFrame(int scrnIndex, int x, int y, int flags);
 /* Optional functions */
 static void	CYRIXFreeScreen(int scrnIndex, int flags);
 static int	CYRIXFindIsaDevice(GDevPtr dev);
-static int	CYRIXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static ModeStatus CYRIXValidMode(int scrnIndex, DisplayModePtr mode,
+				 Bool verbose, int flags);
 
 /* Internally used functions */
 static void	CYRIXSave(ScrnInfoPtr pScrn);
@@ -1501,7 +1501,7 @@ CYRIXFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 CYRIXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     return(MODE_OK);

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.159 2003/08/26 15:22:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.160 2003/09/24 02:43:22 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -91,8 +91,8 @@ static Bool	GLINTSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void	GLINTFreeScreen(int scrnIndex, int flags);
-static int	GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static ModeStatus GLINTValidMode(int scrnIndex, DisplayModePtr mode,
+				 Bool verbose, int flags);
 
 /* Internally used functions */
 static Bool	GLINTMapMem(ScrnInfoPtr pScrn);
@@ -3528,7 +3528,7 @@ GLINTFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

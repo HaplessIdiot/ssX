@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.59 2003/04/23 21:51:48 tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -90,8 +90,8 @@ static void	TGAAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 static void	TGAFreeScreen(int scrnIndex, int flags);
-static int	TGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static ModeStatus TGAValidMode(int scrnIndex, DisplayModePtr mode,
+			       Bool verbose, int flags);
 
 /* Internally used functions */
 static Bool	TGAMapMem(ScrnInfoPtr pScrn);
@@ -1550,7 +1550,7 @@ TGAFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 TGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)

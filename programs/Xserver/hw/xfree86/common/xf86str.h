@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.95 2003/09/09 03:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.96 2003/10/17 20:02:12 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -757,7 +757,7 @@ typedef void xf86AdjustFrameProc          (int, int, int, int);
 typedef Bool xf86EnterVTProc              (int, int);
 typedef void xf86LeaveVTProc              (int, int);
 typedef void xf86FreeScreenProc           (int, int);
-typedef int  xf86ValidModeProc            (int, DisplayModePtr, Bool, int);
+typedef ModeStatus xf86ValidModeProc      (int, DisplayModePtr, Bool, int);
 typedef void xf86EnableDisableFBAccessProc(int, Bool);
 typedef int  xf86SetDGAModeProc           (int, int, DGADevicePtr);
 typedef int  xf86ChangeGammaProc          (int, Gamma);
