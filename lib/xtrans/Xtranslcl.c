@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.3 1994/11/19 07:47:07 dawes Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.20 94/12/12 20:14:30 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.4 1994/12/11 10:50:19 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -654,10 +654,6 @@ char		*port;
 	return -1;
     }
 
-#if defined(I_BIGPIPE)
-    ioctl( fd, I_BIGPIPE, &str );
-#endif /* I_BIGPIPE */
-
     if (isastream(fd) <= 0) {
 	PRMSG(1,"%s is not a streams device\n", server_path, 0,0 );
 	(void) close(fd);
@@ -902,7 +898,7 @@ char		*port;
     char	server_dev_path[64];
     struct 	strfdinsert buf;
     long	temp;
-    mode_t 	spmode; /* use mode_t, the header file says not to use o_mode_t */
+    mode_t 	spmode;
     struct stat 	filestat;
     
     PRMSG(2,"TRANS(ISCOpenClient)(%s)\n", port, 0,0 );
@@ -1792,6 +1788,8 @@ TRANS(LocalGetNextTransport)()
 	
 	typetocheck=workingXLOCAL;
 	workingXLOCAL=strchr(workingXLOCAL,':');
+	if (!workingXLOCAL)
+	    return NULL;
 	if(*workingXLOCAL)
 	    *workingXLOCAL++='\0';
 	

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtrans.c,v 1.25 94/06/02 10:59:43 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.4 1994/10/20 06:06:49 dawes Exp $ */
+/* $XConsortium: Xtrans.c,v 1.28 94/12/01 16:30:09 kaleb Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.5 1994/11/30 20:34:38 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -379,6 +379,14 @@ char	*address;
     Xtransport		*thistrans;
 
     PRMSG (2,"TRANS(Open) (%d,%s)\n", type, address, 0);
+
+#if defined(WIN32) && (defined(TCPCONN) || defined(DNETCONN))
+    if (TRANS(WSAStartup)())
+    {
+	PRMSG (1,"TRANS(Open): WSAStartup failed\n", 0, 0, 0);
+	return NULL;
+    }
+#endif
 
     /* Parse the Address */
 

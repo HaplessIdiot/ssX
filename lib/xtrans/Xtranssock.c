@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.7 1994/11/30 20:34:41 dawes Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.33 94/12/01 16:33:12 kaleb Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.8 1994/12/20 12:09:09 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -357,17 +357,8 @@ int type;
 
 {
     XtransConnInfo	ciptr;
-#ifdef WIN32
-    static WSADATA wsadata;
-#endif /* WIN32 */
 
     PRMSG (3,"TRANS(SocketOpen) (%d,%d)\n", i, type, 0);
-
-#ifdef WIN32
-    if (Sockettrans2devtab[i].family == AF_INET &&
-	!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
-	return NULL;
-#endif /* WIN32 */
 
     if ((ciptr = (XtransConnInfo) calloc (
 	1, sizeof(struct _XtransConnInfo))) == NULL)
@@ -1000,11 +991,14 @@ XtransConnInfo ciptr;
 
     PRMSG (3, "TRANS(SocketUNIXResetListener) (%x,%d)\n", ciptr, ciptr->fd, 0);
 
-    if (stat (unsock->sun_path, &statb) == -1
-#ifdef S_IFSOCK
-		|| (statb.st_mode & S_IFMT) != S_IFSOCK
+    if (stat (unsock->sun_path, &statb) == -1 ||
+        ((statb.st_mode & S_IFMT) !=
+#if (defined (sun) && defined(SVR4)) || defined(NCR)
+	  		S_IFIFO))
+#else
+			S_IFSOCK))
 #endif
-	) {
+    {
 	int oldUmask = umask (0);
 
 #ifdef UNIX_DIR

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtransutil.c,v 1.17 94/05/19 11:00:07 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.1 1994/05/22 06:45:53 dawes Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.18 94/10/18 15:57:42 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.2 1994/06/09 10:46:01 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -426,6 +426,21 @@ XtransConnInfo  ciptr;
 }
 
 #endif /* ICE_t */
+
+
+#if defined(WIN32) && (defined(TCPCONN) || defined(DNETCONN))
+int
+TRANS(WSAStartup) ()
+{
+    static WSADATA wsadata;
+
+    PRMSG (2,"TRANS(WSAStartup)()\n", 0, 0, 0);
+
+    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+        return 1;
+    return 0;
+}
+#endif
 
 
 static int

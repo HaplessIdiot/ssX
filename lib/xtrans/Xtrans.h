@@ -1,5 +1,5 @@
-/* $XConsortium: Xtrans.h,v 1.27 94/06/02 10:49:08 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.1 1994/05/22 06:45:48 dawes Exp $ */
+/* $XConsortium: Xtrans.h,v 1.28 94/10/18 15:57:42 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.2 1994/06/09 10:45:58 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -475,5 +475,9 @@ TRANS(GetPeerNetworkId)(
 );
 
 #endif /* ICE_t */
+
+#if defined(WIN32) && (defined(TCPCONN) || defined(DNETCONN))
+int TRANS(WSAStartup)();
+#endif
 
 #endif /* _XTRANS_H_ */
