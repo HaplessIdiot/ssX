@@ -14,7 +14,7 @@ tested and working.
 
    o Support for 8 and 24 bit pixel depths
 
-   o Harware cursor support to reduce flicker
+   o Hardware cursor support to reduce flicker
 
 3.  Notes
 
@@ -60,7 +60,7 @@ However, if you have problems with auto-detection, you can specify:
 
    o all the guys who wrote the newport_con linux kernel code
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/newport.sgml,v 1.5 2003/02/25 03:42:04 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/newport.sgml,v 1.6 2003/02/25 19:31:02 dawes Exp $
 
 
 $XFree86: $

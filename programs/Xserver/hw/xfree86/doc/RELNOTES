@@ -106,7 +106,7 @@ here.
    o  The XFree86 server's hot keys (including those for switching modes and
      virtual terminals) can now be configured via XKB.  Previously they were
      hard coded.  An X server configuration option has been added to allow
-     the VT swithing hot keys to be disabled.
+     the VT switching hot keys to be disabled.
 
 2.4  Client and Library Updates
 
@@ -435,7 +435,7 @@ ual page for more comprehensive information:
 
      The new option AllowDeactivateGrabs allows deactivating any active grab
      with the key sequence Ctrl+Alt+Keypad-Divide and the new option Allow-
-     ClosedownGrabs allows closing the conection to the grabbing client with
+     ClosedownGrabs allows closing the connection to the grabbing client with
      the key sequence Ctrl+Alt+Keypad-Multiply. Note that these options are
      off by default as they allow users to remove the grab used by screen
      saver/locker programs.
@@ -830,120 +830,31 @@ The xgamma utility makes use of this feature.  Compatibility with the 3.3.x
 version of the extension is provided.  The missing parts of this extension
 and some new features should be completed in a future release.
 
-4.13  Xaw
+4.13  xedit
 
-Two versions of the Xaw library are provided with XFree86 4.x. A version with
-bug fixes and a few binary compatible improvements and a new version with
-several new features.
+Xedit has several new features, including:
 
-New features:
+   o An embeded lisp interpreter that allows easier extension of the editor.
 
-   o A displayList resource is available to all Xaw widgets. It basically
-     consists of a list of drawing commands, fully described in the Xaw(3)
-     manual page, that enables a integration of Xaw programs with the new
-     window/desktop managers that allows for configurable themes.
+   o Several new syntax highlight modes, and indentation rules for C and
+     Lisp.
 
-   o Some new actions were added to all Xaw widgets, to allow more config-
-     urable control of the widgets, and to allow setting resources at run
-     time.
+   o Flexible search/replace interface that allows regex matches.
 
-   o Since Xpm was integrated into XFree86, programs linked with the new Xaw
-     library     will also link with Xpm. This allows for color background
-     pixmaps, and also for shaped widgets.
+   o Please refer to xedit(1) for more details.
 
-   o The text widget is the widget that will present more changes. These
-     include:
-
-        o Block cursor.
-
-        o Compile time limit of 16384 undo/redo levels (that will automati-
-          cally grow if the text is not saved when this mark is reached).
-
-        o Overwrite mode.
-
-        o Text killed is inserted in a kill ring list, this text is not for-
-          gotten, pressing M-y allows traversing the kill ring list.
-
-        o International support for latin languages is available even if the
-          international resource is not set. Users will need to properly set
-          the locale environment to make complete use of this feature.
-
-        o A better multiply interface is provided. Pressing C-u,<number>
-          (where number can be negative) allows passing parameters for text
-          actions.
-
-        o Text can be formatted to have left, right, center or full justifi-
-          cation.
-
-        o Text indentation support is also available.
-
-Bug fixes:
-
-   o The simple menu widget geometry management code was improved to solve
-     problems with menu entries not visible in the screen.
-
-   o The form widget geometry code was changed to solve problems with integer
-     round problems in the child widgets geometry when resizing the parent
-     form widget.
-
-   o Several bugs were fixed in the text code, while some code was rewritten
-     from scratch.
-
-4.14  Xpm
-
-Version 3.4k of the Xpm (X pixmap) library is now integrated into XFree86.
-
-4.15  xedit
-
-Xedit have been changed to use most of the new features added to the new ver-
-sion of the Xaw library, and some xedit only features were added. Emacs users
-will find that several of the emacs key bindings work with the new version of
-xedit. These include:
-
-   o File name tab completion. Including a Emacs dired like window, that will
-     be shown when there are more than one match, when C-x,d is pressed, or
-     when a directory name is specified.
-
-   o An unlimited number of files can be edited at the same time. Including
-     multiple views of the same or different files.
-
-   o The line number of the cursor position is always visible. It can also be
-     customized to show the column number, the position offset and the cur-
-     rent size of the file.
-
-   o There is an autoReplace resource, that enables automatic text replace-
-     ment at the time text is typed. This feature is useful to create simple
-     macros, or to correct common spelling errors.
-
-   o A fully featured ispell interface is also available. This interface is
-     expected to provide most of the features of the terminal interface of
-     the ispell program, with some extra features that include:
-
-        o A compile time limit of 16 undo levels.
-
-        o Terse mode switch.
-
-        o Dictionary change.
-
-        o The interface also checks for repeated words.
-
-   o A first tentative to add programming modes was done. Currently, there is
-     one mode:
-
-        o C-mode: this mode is expected to be stable, and fully usable.
-
-4.16  Font support
+4.14  Font support
 
 Details about the font support in XFree86 4.x can be found in the
 README.fonts document.
 
-4.17  TrueType support
+4.15  TrueType support
 
 XFree86 4.x comes with two TrueType backends, known as `xfsft' (the
 "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these back-
 ends are based on the FreeType library.
 
-4.18  CID font support
+4.16  CID font support
 
 Support for CID-keyed fonts is included in XFree86 4.x.  The CID-keyed font
 format was designed by Adobe Systems <URL:http://www.adobe.com> for fonts
@@ -951,7 +862,7 @@ with large character sets.  The CID-keyed font support in XFree86 was donated
 by SGI <URL:http://www.sgi.com>.  See the LICENSE document for a copy of the
 CID Font Code Public License.
 
-4.19  Internationalisation of the scalable font backends
+4.17  Internationalisation of the scalable font backends
 
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends to
 use a common method of font re-encoding.  This re-encoding makes it possible
@@ -960,14 +871,14 @@ layer is used by the Type1 and Speedo backends and the `xfsft' version of the
 TrueType backend.  The `X-TrueType' version of the TrueType backend uses a
 different re-encoding method based on loadable encoding modules.
 
-4.20  Large font optimisation
+4.18  Large font optimisation
 
 The glyph metrics array, which all the X clients using a particular font have
 access to, is placed in shared memory, so as to reduce redundant memory con-
 sumption.  For non-local clients, the glyph metrics array is transmitted in a
 compressed format.
 
-4.21  Unicode/ISO 10646 support
+4.19  Unicode/ISO 10646 support
 
 What is included in 4.x:
 
@@ -1000,7 +911,7 @@ What is included in 4.x:
    o Both the xfsft (the "freetype" module) and the X-TrueType (the "xtt"
      module) TrueType font backends support Unicode-encoded fonts.
 
-4.22  Luxi fonts from Bigelow and Holmes
+4.20  Luxi fonts from Bigelow and Holmes
 
 XFree86 now includes the ``Luxi'' family of Type 1 fonts and TrueType fonts.
 This family consists of the fonts ``Luxi Serif'', ``Luxi Sans'' and
@@ -1025,7 +936,7 @@ as well as in the License document.  For further information, please contact
 <design@bigelowandholmes.com> or <info@urwpp.de>, or consult the URW++ web
 site <URL:http://www.urwpp.de>.
 
-4.23  Directory rearrangements
+4.21  Directory rearrangements
 
 Some changes to the installed XFree86 directory structure have been imple-
 mented for 4.x.  One important change is a modified search path for the X
@@ -1036,7 +947,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.76 2003/02/25 05:05:33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.78 2003/02/25 21:27:38 dawes Exp $
 
 
 $XFree86: $

@@ -2,35 +2,47 @@
 
                           The XFree86 Project, Inc
 
-                              24 February 2003
+                              25 February 2003
 
                                   Abstract
 
      XFree86 is an Open Source version of the X Window System that sup-
-     ports several UNIX(R) and UNIX-like operating systems (such as
-     Linux, the BSDs and Solaris x86) on Intel and other platforms.
-     This version is compatible with X11R6.6.
+     ports many UNIX(R) and UNIX-like operating systems (such as Linux,
+     FreeBSD, NetBSD, OpenBSD and Solaris x86) on Intel and other plat-
+     forms.  This version is compatible with X11R6.6.
 
 1.  What is XFree86 4.3.0?
 
-XFree86 4.3.0 is the sixth full release in the XFree86 4 series.
+XFree86 4.3.0 is the sixth full release in the XFree86 4.x series.
 
 XFree86 4.x is the current XFree86 release series.  The first release in this
 series was in early 2000.  The core of XFree86 4.x is a modular X server.
-The 4.3.0 version is an upgrade to 4.2.1, which include more hardware ports,
-functional enhancements and bug fixes.
+The 4.3.0 version is a new release that includes additional hardware support,
+functional enhancements and bug fixes.  Specific release enhancements can be
+viewed in the Release Notes.
 
-While some drivers for legacy hardware available in the old 3.3.x release
-series have not been converted over to the 4.x series, those required for
-most modern video hardware are available.  Most PC video hardware not explic-
-itly supported can be used with "vesa" driver in 4.x.  Please check the
-Driver Status document first to see whether your hardware is supported before
-upgrading to the 4.x series.
+Most modern PC video hardware is supported in XFree86 4.3.0, and most PC
+video hardware that isn't supported explicitly can be used with the "vesa"
+driver.  The Driver Status document has a summary of what hardware is sup-
+ported in 4.3.0 compared with the old 3.3.x (3.3.6) series.  It is a good
+idea to check there before upgrading if you are currently running 3.3.6 with
+older hardware.
 
-Specific release enhancements can be viewed in the Release Notes.
+XFree86 is produced by The XFree86 Project, Inc, which is a group of mostly
+volunteer independent developers.  XFree86 is a non-commercial organisation,
+and would not be viable without the development contributions of volunteers.
+XFree86 has no ties to any commercial organisations, and receives no direct
+funding or support from any commercial organisations.  XFree86 values its
+independence highly.
 
-The XFree86 version numbering system (including historical information) can
-be found in the Versions Document.
+2.  Pointers to additional information
+
+The documentation for this release can be found online at the XFree86 web
+site <URL:http://www.xfree86.org/4.3.0/>.  Documentation for the latest
+release version can always be found here <URL:http://www.xfree86.org/cur-
+rent/>, and documentation for the latest pre-release snapshot can be found
+here <URL:http://www.xfree86.org/snapshot/>.  Checking those last two links
+is a good way of finding out the latest versions available from XFree86.
 
 Information about binary distributions and the attendant installation
 instructions can be found in the Installation Document.
@@ -38,35 +50,42 @@ instructions can be found in the Installation Document.
 Copyright and Licensing information for this release and all XFree86 releases
 can be found in the License Document.
 
-2.  The Public Mailing Lists
+The XFree86 version numbering system (including historical information) can
+be found in the Versions Document.
 
-2.1  CVS Commit
+Additional information may be available at the XFree86 web site
+<URL:http://www.xfree86.org/>, and pointers to other information are avail-
+able at the XFree86 support page <URL:http://www.xfree86.org/support.html>.
+
+3.  The Public Mailing Lists
+
+3.1  CVS Commit
 
 For those who want to see what has been committed recently to our CVS reposi-
 tory this is the list that will show you those updates.  This list is updated
 dynamically every time the repository is updated after the the commit hap-
 pens.
 
-2.2  Devel
+3.2  Devel
 
 This list is available for discussions about XFree86 development and for fol-
 lowing up well-defined bug reports.  Many experienced XFree86 developers are
 present on this list.
 
-2.3  XFree86
+3.3  XFree86
 
 This list is available for any discussions and questions related to XFree86.
 Support related questions should be sent here.  Many experienced XFree86
 developers monitor this list.
 
-3.  Contributing to XFree86
+4.  Contributing to XFree86
 
 If you have any new work or enhancements/bug fixes for existing work, please
 submit them to <fixes@XFree86.org>.  This will ensure that they are included
 in future releases.  For new work, it's usually a good idea to discuss it
 first on the <devel@XFree86.org> list.
 
-4.  How to get XFree86 4.3.0
+5.  How to get XFree86 4.3.0
 
 XFree86 4.3.0 can be found at the XFree86 ftp server
 <URL:ftp://ftp.xfree86.org/pub/XFree86/4.3.0/>, and at mirrors of this
@@ -124,7 +143,7 @@ browse the XFree86 CVS repository at our CVSWeb server
 "xf-4_3-branch".  To check out the latest development version, don't specify
 any tag.
 
-5.  Reporting Bugs
+6.  Reporting Bugs
 
 Bugs should be reported to <XFree86@XFree86.org>.  Before reporting bugs,
 please check the XFree86 server log file, which can be found at
@@ -133,7 +152,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.129 2003/02/24 17:09:16 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.131 2003/02/25 19:31:01 dawes Exp $
 
 
 $XFree86: $

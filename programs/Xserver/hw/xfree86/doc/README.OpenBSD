@@ -35,7 +35,7 @@ if you have comments or suggestions about this file and we'll revise it.
 
 See the Release Notes for non-OS dependent new features in XFree86 4.3.0.
 
-3.1  New OS dependant features in 4.3
+3.1  New OS related features in 4.3
 
    o Support for some VGA cards on OpenBSD/alpha
 
@@ -298,7 +298,7 @@ particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
 Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
 vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.29 2003/02/16 17:21:11 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.30 2003/02/25 19:31:01 dawes Exp $
 
 
 $XFree86: $

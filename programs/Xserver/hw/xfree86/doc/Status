@@ -533,15 +533,15 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             by the XF86_SVGA server with the sis driver.
 
       4.3.0:
-            Support (accelerated) for the SiS 6326, 530, 620, 300, 540, 630,
-            730, 315, 550, 650, 740 is provided by the "sis" driver. The
-            Xabre (SiS 330) might be supported by this is completely
-            untested.
+            Support (accelerated) for the SiS 5597, 5598, 6326, 530, 620,
+            300, 540, 630, 730, 315, 550, 650, 651 and 740 is provided by the
+            "sis" driver. The Xabre (SiS 330) might be supported by this is
+            completely untested.
 
       Summary:
-            Support for the 86C201, 86C202, 86C205, 86C215, 86C225, 5597 and
-            5598 is currently only available in 3.3.6.  Support for some
-            newer chipsets is only available in 4.3.0.
+            Support for the 86C201, 86C202, 86C205, 86C215 and 86C225 is cur-
+            rently only available in 3.3.6.  Support for some newer chipsets
+            is only available in 4.3.0.
 
 32.  Silicon Motion, Inc.
 
@@ -663,7 +663,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.3.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.42 2003/02/25 05:05:33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.43 2003/02/25 16:32:41 dawes Exp $
 
 
 $XFree86: $

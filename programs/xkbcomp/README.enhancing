@@ -51,7 +51,7 @@ modules:
             bolic names (always four bytes long):
 
                o  names which express some traditional meaning like <SPCE>
-                 (stands for spacebar) or
+                 (stands for space bar) or
 
                o  names which express some relative positioning on a key-
                  board, for example <AE01> (an exclamation mark on US key-
@@ -180,7 +180,7 @@ explanation of syntax of xkb configuration files.
 
 4.1  Predefined XKB Symbol Sets
 
-If you are about to define some european symbol map extension, you might want
+If you are about to define some European symbol map extension, you might want
 to use on of four predefined latin alphabet layouts.
 
 Okay, let's assume you want extend an existing keymap and you want to over-
@@ -339,15 +339,15 @@ ate a new one.
 4.2.1  More On Definitions Of Types
 
 When the XKB software deals with a separate type description it gets a com-
-plete list of modifiers that should be taken into account from the 'mod-
-ifers=<list of modifiers>' list and expects that a set of 'map[<combination
+plete list of modifiers that should be taken into account from the 'modi-
+fiers=<list of modifiers>' list and expects that a set of 'map[<combination
 of modifiers>]=<list of modifiers>' instructions that contain the mapping for
 each combination of modifiers mentioned in that list. Modifiers that are not
-explitly listed are NOT taken into account when the resulting shift level is
-computed.  If some combination is ommited the program (subroutine) should
-choose the first level for this combination (a quite resonable behavior).
+explicitly listed are NOT taken into account when the resulting shift level
+is computed.  If some combination is omitted the program (subroutine) should
+choose the first level for this combination (a quite reasonable behavior).
 
-Lets consider an example with two modifers ModOne and ModTwo:
+Lets consider an example with two modifiers ModOne and ModTwo:
 
      type "..." {
          modifiers = ModOne+ModTwo;
@@ -355,8 +355,8 @@ Lets consider an example with two modifers ModOne and ModTwo:
          map[ModOne] = Level2;
      };
 
-In this case the map statements for ModTwo only and ModOne+ModTwo are
-ommited.  It means that if the ModTwo is active the subroutine can't found
+In this case the map statements for ModTwo only and ModOne+ModTwo are omit-
+ted.  It means that if the ModTwo is active the subroutine can't found
 explicit mapping for such combination an will use the default level i.e.
 Level1.
 
@@ -380,13 +380,13 @@ in the second case the capitalization will be applied to the symbol chosen
 accordingly to he first modifier - and this can be the symbol from the first
 as well as from the second level.
 
-Usually, all modifiers introduced in 'modifers=<list of modifiers>' list are
+Usually, all modifiers introduced in 'modifiers=<list of modifiers>' list are
 used for shift level calculation and then discarded. Sometimes this is not
 desirable. If you want to use a modifier for shift level calculation but you
 don't want to discard it, you may list in 'preserve[<combination of modi-
 fiers>]=<list of modifiers>'. That means, for a given combination all listed
 modifiers will be preserved. If the Lock modifier is preserved then the
-resulting symbol is passed to internal capitalization routine regardles
+resulting symbol is passed to internal capitalization routine regardless
 whether it has been used for a shift level calculation or not.
 
 Any key type description can use both real and virtual modifiers. Since real
@@ -402,16 +402,16 @@ as seen in for example basic, pc or mousekeys key type definitions.
 
 Once you are finished with your symbol map you need to add it to rules file.
 The rules file describes how all the five basic keycodes, types, compat, sym-
-bos and geometry components should be composed to give a senceful resulting
+bols and geometry components should be composed to give a sensible resulting
 xkb configuration.
 
 The main advantage of rules over formerly used keymaps is a possibility to
-simply parametrize (once) fixed patterns of configurations and thus to ele-
+simply parameterize (once) fixed patterns of configurations and thus to ele-
 gantly allow substitutions of various local configurations into predefined
 templates.
 
 A pattern in a rules file (often located in /usr/lib/X11/xkb/rules) can be
-parametrized with four other arguments: Model, Layout, Variant and Options.
+parameterized with four other arguments: Model, Layout, Variant and Options.
 For most cases parameters model and layout should be sufficient for choosing
 a functional keyboard mapping.
 
@@ -445,11 +445,11 @@ this:
 Each rule defines what certain combination of values on the left side of
 equal sign ('=') results in. For example a (keyboard) model macintosh_old
 instructs xkb to take definitions of keycodes from file keycodes/macintosh
-while the rest of models (represented by a wildcard '*') instructs it to take
-them from file keycodes/xfree86. The wildcard represents all possible values
-on the left side which were not found in any of the previous rules.  The more
-specialized (more complete) rules have higher precedence than general ones,
-i.e. the more general rules supply reasonable default values.
+while the rest of models (represented by a wild card '*') instructs it to
+take them from file keycodes/xfree86. The wild card represents all possible
+values on the left side which were not found in any of the previous rules.
+The more specialized (more complete) rules have higher precedence than gen-
+eral ones, i.e. the more general rules supply reasonable default values.
 
 As you can see some lines contain substitution parameters - the parameters
 preceded by the percent sign ('%'). The first alphabetical character after
@@ -458,7 +458,7 @@ For example +%l%(v) expands into +cz(bksl) if the respective values on the
 left side were cz layout in its bksl variant. More, if the layout resp. vari-
 ant  parameter is followed by a pair of brackets ('[', ']') it means that xkb
 should place the layout resp. variant into specified xkb group. If the brack-
-ets are ommited the first group is the default value.
+ets are omitted the first group is the default value.
 
 So the second block of rules enhances symbol definitions for some particular
 keyboard models with extra keys (for internet, multimedia, ...) . Other mod-
@@ -505,7 +505,7 @@ rules file described above the .lst file could look like:
 
 And that should be it. Enjoy creating your own xkb mapping.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/XKB-Enhancing.sgml,v 1.1 2002/12/10 03:52:56 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/XKB-Enhancing.sgml,v 1.2 2003/02/25 19:31:02 dawes Exp $
 
 
 $XFree86: $
