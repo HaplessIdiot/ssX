@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.7 2001/04/16 06:51:48 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.8 2001/04/30 16:26:01 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -115,7 +115,7 @@ Bool QuartzAddScreen(ScreenPtr pScreen)
  * QuartzCapture
  *  Capture the screen so we can draw.
  */
-static void QuartzCapture(void)
+void QuartzCapture(void)
 {
     if (! CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayCapture(kCGDirectMainDisplay);
@@ -132,6 +132,7 @@ static void QuartzRelease(void)
     if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayRelease(kCGDirectMainDisplay);
     }
+    QuartzMessageMainThread(kQuartzServerHidden);
 }
 
 
@@ -182,8 +183,7 @@ void QuartzOsVendorInit(void)
 /* 
  * QuartzShow
  *  Show the X server on screen. Does nothing if already shown.
- *  Recapture the screen, restore the X clip regions, and restore
- *  the X server cursor state.
+ *  Restore the X clip regions the X server cursor state.
  */
 void QuartzShow(
     int x,	// cursor location
@@ -191,7 +191,6 @@ void QuartzShow(
 {
     int i;
 
-    QuartzCapture();
     if (xhidden) {
         for (i = 0; i < darwinNumScreens; i++) {
             if (darwinScreens[i]) {

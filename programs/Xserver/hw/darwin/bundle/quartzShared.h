@@ -2,7 +2,7 @@
  * Shared definitions between the Darwin X Server
  * and the Cocoa front end. 
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.3 2001/04/05 06:08:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H
@@ -16,7 +16,9 @@ extern int                  quartzUseSysBeep;
 extern int                  darwinFakeButtons;
 extern char                 *darwinKeymapFile;
 
+void QuartzCapture(void);
 void QuartzReadPreferences(void);
+void QuartzMessageMainThread(unsigned msg);
 
 // NX_APPDEFINED event subtypes for special commands to the X server
 // update modifiers: update all modifier keys
@@ -33,6 +35,12 @@ enum {
   kXDarwinQuit, 
   kXDarwinReadPasteboard,
   kXDarwinWritePasteboard
+};
+
+// Messages that can be sent to the main thread.
+enum {
+  kQuartzServerHidden,
+  kQuartzServerDied
 };
 
 #endif	/* _QUARTZSHARED_H */

@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.6 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.7 2001/05/09 07:16:19 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -17,7 +17,6 @@
     NSLock *serverLock;
     NSTask *clientTask;
     NSPort *signalPort;
-    NSPortMessage *signalMessage;
     BOOL serverVisible;
     BOOL appQuitting;
     UInt32 mouseState;

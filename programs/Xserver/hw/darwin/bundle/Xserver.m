@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.16 2001/04/30 16:26:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.17 2001/05/09 07:16:19 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -26,6 +26,8 @@ extern char **envpGlobal;
 extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
+
+static NSPortMessage *signalMessage;
 
 @implementation Xserver
 
@@ -109,9 +111,11 @@ extern void ShowMenuBar(void);
             ev.type=NSMouseMoved;
             break;
         case NSSystemDefined:
-            if(([anEvent subtype]==7) && ([anEvent data1] & 1))
+            if (![anEvent subtype]==7)
+                return NO; // we only use multibutton mouse events
+            if ([anEvent data1] & 1)
                 return NO; // skip mouse button 1 events
-            if(mouseState==[anEvent data2])
+            if (mouseState==[anEvent data2])
                 return NO; // ignore double events
             ev.data.compound.subType=[anEvent subtype];
             ev.data.compound.misc.L[0]=[anEvent data1];
@@ -238,7 +242,7 @@ extern void ShowMenuBar(void);
     serverVisible = NO;
     [serverLock unlock];
     [pool release];
-    [signalMessage sendBeforeDate:[NSDate distantPast]];
+    QuartzMessageMainThread(kQuartzServerDied);
 }
 
 // Close the help splash screen and show the X server
@@ -304,9 +308,10 @@ extern void ShowMenuBar(void);
     ev.type = NX_APPDEFINED;
 
     if (show) {
+        QuartzCapture();
+        HideMenuBar();
         ev.data.compound.subType = kXDarwinShow;
         [self sendNXEvent:&ev];
-        HideMenuBar();
 
         // inform the X server of the current modifier state
         ev.flags = [[NSApp currentEvent] modifierFlags];
@@ -354,16 +359,29 @@ extern void ShowMenuBar(void);
     // FIXME: handle bad writes better?
 }
 
-// Handle message that X server thread is finished
+// Handle messages from the X server thread
 - (void)handlePortMessage:(NSPortMessage *)portMessage {
-    if (appQuitting) {
-        // If we quit before the clients start, they may sit and wait
-        // for the X server to start. Kill them instead.
-        if ([clientTask isRunning])
-            [clientTask terminate];
-        [NSApp replyToApplicationShouldTerminate:YES];
-    } else {
-        [NSApp terminate:nil];	// quit if we aren't already
+    unsigned msg = [portMessage msgid];
+
+    switch(msg) {
+        case kQuartzServerHidden:
+            // FIXME: This hack is necessary (but not completely effective)
+            // since Mac OS X 10.0.2
+            [NSCursor unhide];
+            break;
+        case kQuartzServerDied:
+            if (appQuitting) {
+                // If we quit before the clients start, they may sit and wait
+                // for the X server to start. Kill them instead.
+                if ([clientTask isRunning])
+                    [clientTask terminate];
+                [NSApp replyToApplicationShouldTerminate:YES];
+            } else {
+                [NSApp terminate:nil];	// quit if we aren't already
+            }
+            break;
+        default:
+            NSLog(@"Unknown message from server thread.");
     }
 }
 
@@ -398,3 +416,11 @@ extern void ShowMenuBar(void);
 }
 
 @end
+
+// Send a message to the main thread, which calls handlePortMessage in
+// response. Must only be called from the X server thread because
+// NSPort is not thread safe.
+void QuartzMessageMainThread(unsigned msg) {
+    [signalMessage setMsgid:msg];
+    [signalMessage sendBeforeDate:[NSDate distantPast]];
+}
