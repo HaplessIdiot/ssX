@@ -57,7 +57,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.5 1997/05/31 13:51:15 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.6 1997/06/08 15:31:44 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -78,7 +78,7 @@ extern char *getenv();
 char *
 _Xsetlocale(
     int		  category,
-    _Xconst char *name
+    char	  *name
 )
 #else
 char *

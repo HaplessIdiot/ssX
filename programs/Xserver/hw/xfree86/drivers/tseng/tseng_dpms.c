@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.1 1997/06/15 23:23:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.2 1997/06/16 00:26:31 dawes Exp $ */
 
 #ifdef DPMSExtension
 
@@ -241,4 +241,6 @@ TsengHVSyncDPMSSet(Mode)
     outb(vgaIOBase+5, tmpb);
   }
 }
+#else
+static int nodpms;
 #endif
