@@ -32,7 +32,7 @@ Equipment Corporation.
  * @(#)RCSfile: dpms.c,v Revision: 1.1.4.5  (DEC) Date: 1996/03/04 15:27:00
  */
 
-/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.5 1998/07/25 08:48:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.6 1999/03/07 11:40:25 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -115,6 +115,7 @@ ProcDPMSCapable(register ClientPtr client)
 {
     REQUEST(xDPMSCapableReq);
     xDPMSCapableReply rep;
+    register int n;
 
     REQUEST_SIZE_MATCH(xDPMSCapableReq);
 
@@ -123,6 +124,9 @@ ProcDPMSCapable(register ClientPtr client)
     rep.sequenceNumber = client->sequence;
     rep.capable = DPMSCapableFlag;
 
+    if (client->swapped) {
+	swaps(&rep.sequenceNumber, n);
+    }
     WriteToClient(client, sizeof(xDPMSCapableReply), (char *)&rep);
     return(client->noClientException);
 }

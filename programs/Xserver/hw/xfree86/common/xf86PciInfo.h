@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.65 2000/06/30 17:15:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.66 2000/08/11 05:02:04 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -143,6 +143,7 @@
 #define PCI_VENDOR_CYCLADES	0x120E
 #define PCI_VENDOR_3DFX		0x121A
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
+#define PCI_VENDOR_SMI		0x126f
 #define PCI_VENDOR_ENSONIQ	0x1274
 #define PCI_VENDOR_ROCKWELL	0x127A
 #define PCI_VENDOR_YOKOGAWA	0x1281
@@ -563,6 +564,14 @@
 #define PCI_CHIP_I810_E			0x7125
 #define PCI_CHIP_I740_AGP		0x7800
 
+/* Silicon Motion Inc. */
+#define PCI_CHIP_SMI910		0x910
+#define PCI_CHIP_SMI810		0x810
+#define PCI_CHIP_SMI820		0x820
+#define PCI_CHIP_SMI710		0x710
+#define PCI_CHIP_SMI712		0x712
+#define PCI_CHIP_SMI720		0x720
+
 /*
  * first the VendorId - VendorName mapping
  */
@@ -681,6 +690,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_ATRONICS, "Atronics"},
     {PCI_VENDOR_ARK,	"ARK Logic"},
     {PCI_VENDOR_YAMAHA, "Yamaha"},
+    {PCI_VENDOR_SMI,	"Silicon Motion Inc."},
     {0,NULL}
 };
 #endif
@@ -1446,6 +1456,14 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x000a,	        "YMF740-V Audio",0},
 				{0x0000,		NULL,0}}},
 #endif
+    {PCI_VENDOR_SMI, {
+				{PCI_CHIP_SMI910,	"Lynx",0},
+				{PCI_CHIP_SMI810,	"LynxE",0},
+				{PCI_CHIP_SMI820,	"Lynx3D",0},
+				{PCI_CHIP_SMI710,	"LynxEM",0},
+				{PCI_CHIP_SMI712,	"LynxEM+",0},
+				{PCI_CHIP_SMI720,	"Lynx3DM",0},
+				{0x0000,		NULL,0}}},
     {0x0000, {
 				{0x0000,		NULL,0}}},
 };

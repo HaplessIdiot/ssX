@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.13 2000/02/25 18:27:59 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.14 2000/04/05 18:13:24 dawes Exp $ */
 
 #ifndef FONT_MODULE
 #include <string.h>
@@ -143,6 +143,7 @@ FreeTypeOpenFace(TTFFace **facep, char *fileName)
   if(ttf_checkForTTCName(fileName, &realFileName, &faceNumber)) {
     ftrc=TT_Open_Collection(ftypeEngine, realFileName, faceNumber,
                             &face->face);
+    xfree(realFileName);
   } else {
     ftrc=TT_Open_Face(ftypeEngine, fileName, &face->face);
   }

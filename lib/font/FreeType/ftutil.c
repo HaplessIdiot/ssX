@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.9 1999/04/25 11:34:09 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.10 1999/10/13 04:20:50 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -210,30 +210,42 @@ ttf_checkForTTCName(char *fileName, char **realFileName, int *faceNumber)
 {
   int length;
   int fn;
-  int i;
+  int i, j;
+  char *start, *realName;
 
   length=strlen(fileName);
-  if(length<3)
+  if(length<4)
     return 0;
 
-  if(strcasecmp(fileName+(length-3), ".ttc"))
+  if(strcasecmp(fileName+(length-4), ".ttc"))
     return 0;
 
-  if(fileName[0]==':') {
+  if (!(realName = xalloc(length + 1)))
+    return 0;
+
+  strcpy(realName, fileName);
+  *realFileName=realName;
+  start = strchr(realName, ':');
+  if (start) {
     fn=0;
     i=1;
-    while(isdigit(fileName[i])) {
+    while(isdigit(start[i])) {
       fn*=10;
-      fn+=fileName[i]-'0';
+      fn+=start[i]-'0';
+      i++;
     }
-    if(fileName[i]==':') {
+    if(start[i]==':') {
       *faceNumber=fn;
-      *realFileName=&(fileName[i+1]);
+      i++;
+      j = 0;
+      while (start[i]) {
+	start[j++] = start[i++];
+      }
+      start[j] = '\0';
       return 1;
     }
   }
 
   *faceNumber=0;
-  *realFileName=fileName;
   return 1;
 }

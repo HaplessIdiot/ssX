@@ -6,10 +6,10 @@
 
 <title>Driver Status for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>3 March 2000
+<date>11 August 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.16 2000/06/15 01:26:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.17 2000/06/19 15:00:54 tsi Exp $
 </ident>
 
 <abstract>
@@ -153,8 +153,7 @@ dependencies/limitations, other architectures known to work on
 	Support for the AL2101, ALI2228, ALI2301, ALI2302, ALI2308,
 	ALI2401 chipsets.  Support is provided by the XF86_SVGA server,
 	using the al2101 driver for the AL2101, and the ali driver for
-	the others.  The status of this support is unknown because we
-	don't have any recent test reports, and these drivers have no
+	the others.  These drivers reportedly work, but they have no
 	maintainer.
 
 <tag>&relvers;:</tag>
