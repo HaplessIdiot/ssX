@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.36 2000/06/22 10:40:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.37 2000/06/22 13:00:30 alanh Exp $ */
 
 /*
  * Authors:
@@ -109,6 +109,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Required Functions: */
 
+static OptionInfoPtr	TDFXAvailableOptions(int chipid, int busid);
 /* Print a driver identifying message. */
 static void TDFXIdentify(int flags);
 
@@ -157,6 +158,7 @@ DriverRec TDFX = {
 #endif
   TDFXIdentify,
   TDFXProbe,
+  TDFXAvailableOptions,
   NULL,
   0
 };
@@ -388,6 +390,26 @@ TDFXIdentify(int flags) {
   xf86PrintChipsets(TDFX_NAME, "Driver for 3dfx Banshee/Voodoo3 chipsets", TDFXChipsets);
 }
 
+static
+OptionInfoPtr
+TDFXAvailableOptions(int chipid, int busid)
+{
+    return TDFXOptions;
+}
+
+void
+TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+#ifdef XFree86LOADER
+    if (xf86LoadSubModule(pScrn, "vbe"))
+#endif
+    {
+	pVbe =  VBEInit(NULL,index);
+	vbeDoEDID(pVbe, NULL);
+    }
+}
+
 /*
  * TDFXProbe --
  *
@@ -535,16 +557,6 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   return memSize*1024;
 }
 
-static void
-TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
-{
-    vbeInfoPtr pVbe;
-    if (xf86LoadSubModule(pScrn, "vbe")) {
-        pVbe = VBEInit(NULL,index);
-        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
-    }
-}
-
 static int TDFXCfgToSize(int cfg)
 {
   if (cfg<4) return 0x8000000<<cfg;
@@ -656,6 +668,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   pTDFX->initDone=FALSE;
   pTDFX->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+
+  if (flags & PROBE_DETECT) {
+	TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
+	return TRUE;
+  }
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
