@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.5 1997/04/17 08:17:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.6 1997/05/03 09:17:46 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -142,7 +142,7 @@ unsigned char ctSWTmp;
 
 /* HW cursor related */
 Bool ctHWCursor = FALSE;
-extern void CHIPSCursorInit();
+extern Bool CHIPSCursorInit();
 extern void CHIPSRestoreCursor();
 extern void CHIPSWarpCursor();
 extern void CHIPSQueryBestSize();

@@ -1,4 +1,7 @@
-XFree86 3.9b (3 May 1997)
+XFree86 3.9b (4 May 1997)
+ 753. Add BuildPC98Servers as an easy way to enable/disable building
+      all PC98 servers.
+ 752. Build Xvfb by default to help pick up build problems.
  751. Make 'makedepend' understand '-U' on the command line.
  750. Some fix-trackers from TOG, includes:
         lib/Xi: missing error message (#352 -- we already had this fix)
@@ -4494,4 +4497,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.456 1997/05/03 09:16:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.457 1997/05/03 12:52:48 dawes Exp $

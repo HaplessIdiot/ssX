@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.5 1997/04/13 13:57:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.6 1997/05/03 09:17:52 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -286,7 +286,7 @@ extern void     cirrusSetRead2MB();
 extern void     cirrusSetWrite2MB();
 extern void     cirrusSetReadWrite2MB();
 
-extern void 	cirrusCursorInit();
+extern Bool 	cirrusCursorInit();
 extern void 	cirrusRestoreCursor();
 extern void 	cirrusWarpCursor();
 extern void 	cirrusQueryBestSize();
