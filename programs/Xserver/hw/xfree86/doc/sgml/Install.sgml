@@ -9,13 +9,12 @@
 <date>29 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.3 2000/02/27 04:44:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.4 2000/02/29 18:01:17 dawes Exp $
 </ident>
 
 <abstract>
 
-This document contains information about installing
-XFree86 &relvers;.
+How to install XFree86.
 
 </abstract>
 
@@ -23,21 +22,19 @@ XFree86 &relvers;.
 
 <sect>Introduction
 <p>
-This document contains information about installing XFree86 &relvers;
-binary distributions as provided by The XFree86 Project.  The installation
-procedures for binary distributions provided by others may be different.
+This document contains information about installing the XFree86 binaries
+as provided by The XFree86 Project.
 
-The XFree86 binary distributions that we provide for UNIX-like OSs are
-packaged in the platform-independent gzipped tar format (referred to as
-"tarballs").  Our tarballs can be identified by the "<tt>.tgz</tt>"
-suffix.  We do not provide binaries in RPM format or any other platform
-specific package format.  If you need them in such a format, you should
-contact your OS vendor.  Together with the binary distributions, we
-provide a customised version of GNU tar called "extract", and an
-installation script.  We recommend that these be used to install the
-binary distributions.
+<p>
+The XFree86 binaries that we provide for UNIX-like OS's (Linux, the BSDs
+and Solaris) are packaged in a platform-specific gzipped format (aka
+"tarballs" identified by the <tt>.tgz</tt> suffix.  Along with the
+binaries we provide a customized version of the GNU tar utility called
+"extract" and an installation script.  We recommend that these be
+used to install the binaries.
 
-<sect>How to get the XFree86 &relvers; binary distributions
+
+<sect>Downloading the XFree86 &relvers; binaries
 <p>
 We, The XFree86 Project, provide XFree86 &relvers; binaries for a range
 of operating systems at our
@@ -49,78 +46,82 @@ url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers/binaries/">.
 <url name="ftp site"
 url="ftp://ftp.xfree86.org/pub/XFree86/&relvers/binaries/">.
 ]]>
-Our ftp site is also mirrored by many sites around the world.  There is
-a sub-directory for each OS/platform that we have binaries for.  The
-first thing you need to do is to decide which of these suits you.  In
-most cases, the choice is straightforward.  In some cases (e.g., Linux)
-there may be a number of choices depending on what architecture or libc
-version you are using.  We recommend that you first download the
-<tt>Xinstall.sh</tt> script, and run it as follows to find out which
-binary distribution you should download.
+Often during releases, our ftp site is heavily loaded.  Instead of
+downloading directly from us we recommend that instead you use on of
+our mirror sites.  Another advantage of using our mirror sites is that
+some of them support http access (ours does not).
+
+<p>
+Our binaries are organized by sub-directories which correspond to each
+of the OS/platforms for which we provide binaries.  First go to the
+sub-directory  that represents your OS Platform. In some cases (e.g.,
+Linux) there may be a number of choices depending on the architecture
+or libc version your platform uses.  In all case we recommend that you
+first download the <tt>Xinstall.sh</tt> script, and run it as in the
+following example  to find out which binary distribution you should
+download.
 
 <tscreen><verb>
 sh Xinstall.sh -check
 </verb></tscreen>
 
-This should tell you which binary distribution is the correct one for
-your system.  Getting this right may save from wasting time downloading
-the wrong distribution.
+The output of this utility tells you which is the correct set of  binaries
+for you to download.   If you are careful with this step you  will save
+yourself a lot  time and trouble  from NOT downloading an incompatible
+distribution.
 
-The next step is to download the necessary files.  The mandatory files
-for all installations are listed below.  All of them must be downloaded
-to do the installation.  The installer script will complain if they are not
-all present.
+Once that is done download the necessary files.  The twelve  (12)
+mandatory files for all installations are listed below.  If you have
+not downloaded all of the files, the installer script will complain.
 
 <quote><verb>
-Xinstall.sh      The installer script
-extract          The utility for extracting tarballs
-Xbin.tgz         X clients/utilities and run-time libraries
-Xlib.tgz         Some data files required at run-time
-Xman.tgz         Manual pages
-Xdoc.tgz         XFree86 documentation
-Xfnts.tgz        Base set of fonts
-Xfenc.tgz        Base set of font encoding data
-Xetc.tgz         Run-time configuration files
-Xvar.tgz         Run-time data
-Xxserv.tgz       XFree86 X server
-Xmod.tgz         XFree86 X server modules
+1.   Xinstall.sh      The installer script
+2.   extract          The utility for extracting tarballs
+3.   Xbin.tgz         X clients/utilities and run-time libraries
+4.   Xlib.tgz         Some data files required at run-time
+5.   Xman.tgz         Manual pages
+6.   Xdoc.tgz         XFree86 documentation
+7.   Xfnts.tgz        Base set of fonts
+8.   Xfenc.tgz        Base set of font encoding data
+9.   Xetc.tgz         Run-time configuration files
+10.  Xvar.tgz         Run-time data
+11.  Xxserv.tgz       XFree86 X server
+12.  Xmod.tgz         XFree86 X server modules
 </verb></quote>
 
 NOTES:
 <itemize>
   <item>Some web browsers have a problem downloading the <tt>extract</tt>
 	utility correctly.  If you encounter this problem, download the
-	version called <tt>extract.exe</tt> instead.  The "<tt>.exe</tt>"
-	suffix is only there to make the troublesome web browsers do
-	the right thing.  It is not a DOS/Windows executable.
+	version called <tt>extract.exe</tt> instead.  This should fix the
+	problem.  (This is not a DOS/Windows executable.)
 
   <item>A few distributions don't have or require the <tt>Xvar.tgz</tt>
 	tarball.  If it is present in the <tt>binaries</tt> sub-directory
 	for your platform, then it is required.
 
-  <item>Some distributions may have additional mandatory tarballs.  This
-	is rare.  In these cases, the installer script will tell you
-	if any are missing.
+  <item>Some distributions may have additional mandatory tarballs.
+	While rare, the installer script will tell you if any are missing.
 
 </itemize>
 
-The following tarballs are optional.  You should download the ones you
-want to install.
+The following thirteen (13) tarballs are optional.  You should download
+the ones you want to install.
 
 <quote><verb>
-Xfsrv.tgz        Font server
-Xnest.tgz        Nested X server
-Xprog.tgz        X header files, config files and compile-time libs
-Xprt.tgz         X Print server
-Xvfb.tgz         Virtual framebuffer X server
-Xf100.tgz        100dpi fonts
-Xfcyr.tgz        Cyrillic fonts
-Xflat2.tgz       Latin-2 fonts
-Xfnon.tgz        Some large bitmap fonts
-Xfscl.tgz        Scalable fonts (Speedo and Type1)
-Xhtml.tgz        HTML version of the documentation
-Xps.tgz          PostScript version of the documentation
-Xjdoc.tgz        Documentation in Japanese
+1.   Xfsrv.tgz        Font server
+2.   Xnest.tgz        Nested X server
+3.   Xprog.tgz        X header files, config files and compile-time libs
+4.   Xprt.tgz         X Print server
+5.   Xvfb.tgz         Virtual framebuffer X server
+6.   Xf100.tgz        100dpi fonts
+7.   Xfcyr.tgz        Cyrillic fonts
+8.   Xflat2.tgz       Latin-2 fonts
+9.   Xfnon.tgz        Some large bitmap fonts
+10.  Xfscl.tgz        Scalable fonts (Speedo and Type1)
+11.  Xhtml.tgz        HTML version of the documentation
+12.  Xps.tgz          PostScript version of the documentation
+13.  Xjdoc.tgz        Documentation in Japanese
 </verb></quote>
 
 NOTES:
@@ -129,34 +130,34 @@ NOTES:
 
 </itemize>
 
-If you miss some and want to install them later, you can do so by following
-the appropriate part of the section that describes manual installation.
+If you miss some and want to install them later, go to the
+<ref id="manual-install" name="Manual Installation"> section.
 
 <sect>Installing XFree86 &relvers; using the <tt>Xinstall.sh</tt> script
 <p>
-We strongly recommend that our XFree86 &relvers; binary distributions
-be installed using the <tt>Xinstall.sh</tt> script that we provide.
-The main reason that we make this recommendation is that there are a lot
-of steps in the manual installation process, and those steps can vary
-according to the situation.  There is, however, a description of the
-manual installation process for the most common cases below for those who
-might need it.
+We strongly recommend that our XFree86 &relvers; binaries be installed
+using the <tt>Xinstall.sh</tt> script that we provide.  There are a lot of
+steps in the manual installation process, and those steps can vary
+according to the platform and hardware setup.  There is a description of
+the manual installation process for the most common cases <ref
+id="manual-install" name="below">.
 
-Put all of the downloaded files into a single directory (choose some
-temporary location with enough space).  Become the super user (root),
-cd to that directory, then run the installer script as follows:
+You must login as the super user (root) to run the installer script.
+Place all of the downloaded files into a single directory (choose a
+temporary location with enough space).  Use the cd command to change to
+that directory and then run the installer script as follows:
 
 <tscreen><verb>
 sh Xinstall.sh
 </verb></tscreen>
 
-Answer the prompts that come up.  If you are missing something that is
-required to run this version of XFree86, the installer may tell you to
-install it before trying again.  If you don't have all of the mandatory
-files listed above, then the installer will tell you which ones are
-missing and ask you to download them before trying again.
+Answer the prompts as they come up.  If you are missing something that
+is required, the installer may tell you to install it before trying
+again.  If the problem is that you did not download all of mandatory
+files aforementioned, then the installer will tell you which ones are
+missing and ask you to download them before proceeding.
 
-<sect1>Answering the questions that the installer may ask
+<sect1>Questions the installer may ask
 <p>
 The installer asks some questions that may not have obvious answers.  The
 information here should help you answer them.  In most cases, apart from
@@ -196,13 +197,14 @@ the existing ones for you and create the necessary symbolic links.  If
 you don't want to have these configuration files under <tt>/etc/X11</tt>,
 then you should answer "no" when asked about it.  Answering "no" here
 also means that the new configuration files will be installed in the
-old <tt>/usr/X11R6/lib/X11</tt> location.  Note: for the rare systems
-that don't have symbolic links, this question will not be asked.
-The default answer is "yes" because that is best for most situations.
-It is our new default.  It makes it easier to share the <tt>/usr/X11R6</tt>
-directory between multiple hosts, and allows it to be mounted read-only.
-If you don't need these features, then you can safely answer "no" if you
-don't want them moved.
+old <tt>/usr/X11R6/lib/X11</tt> location.
+
+Note: for the rare systems that don't have symbolic links, this question
+will not be asked.  The default answer is "yes" because that is best
+for most situations.  It is our new default.  It makes it easier to
+share the <tt>/usr/X11R6</tt> directory between multiple hosts, and
+allows it to be mounted read-only.  If you don't need these features,
+then you can safely answer "no" if you don't want them moved.
 
 When installing over an existing version, you will be prompted before
 each set of configuration files is installed.  If you haven't made any
@@ -210,9 +212,10 @@ customisations to your existing configuration files, then you can safely
 answer "yes" for each of these.  If you have made customisations, you
 can try answering "no".  If you run into problems later, you may need
 to manually merge your customisations into the the new version of the
-configuration files.  The configuration files can all be found in
-the <tt>Xetc.tgz</tt> tarball.  See the section below about manual
-installation for information about extracting them separately.
+configuration files.  The configuration files can all be found in the
+<tt>Xetc.tgz</tt> tarball.  See the <ref id="manual-install" name="section
+below"> about manual installation for information about extracting them
+separately.
 
 After the configuration files have been dealt with, the other mandatory
 components of the binary distribution will be installed.  This should
@@ -233,6 +236,14 @@ see if your system has a termcap file or terminfo files.  If it finds
 the former, it tells you how my may update the entries in that file.
 If it finds the latter, it asks you if you want it to update them
 for you.
+
+You may be asked if you want to create links for the GL libraries and
+header files.  The OpenGL standard on some platforms (Linux in particular)
+says that these should be installed in the standard system locations,
+so the installer offers to create the appropriate links.  If you're running
+Linux, you should probably answer yes.  For other platforms it is your
+choice.  If you already have another version of libGL in /usr/lib, answering
+"yes. will remove it and replace it with a link to the version we supply.
 
 Finally, the installer asks you if you want a link created for the
 <tt>rstart</tt> utility.  On most modern systems, the link isn't essential,
@@ -268,7 +279,7 @@ operation of the new X server, you can safely remove the old
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-<sect>Installing XFree86 &relvers; manually
+<sect>Installing XFree86 &relvers; manually<label id="manual-install">
 <p>
 This section describes how to manually install the XFree86 &relvers; binary
 distributions.  You should only use this method if you know what you're

@@ -9,7 +9,7 @@
 <date>7 June 30 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.37 2000/06/30 20:11:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.38 2000/07/01 02:28:13 dawes Exp $
 </ident>
 
 <abstract>
@@ -93,8 +93,8 @@ for numeric overflow.
 <item>Correct potential out-of-bounds indexing.
 <item>Change Sun function keys to workaround redefinition of the token sun
  by xrdb on Solaris.
-<item>Change line speed from 9600bd to 38400bd to accomodate users who mistakenly use $TERM set to vt100 and reduce padding.
-<item>Portability fixes for os390, AIX 4.2, Digitial Unix 4.0 and IRIS 6.5.
+<item>Change line speed from 9600bd to 38400bd to accommodate users who mistakenly use $TERM set to vt100 and reduce padding.
+<item>Portability fixes for os390, AIX 4.2, Digital Unix 4.0 and IRIS 6.5.
 </itemize>
 </p>
 <sect1>a sample section heading copy and item your bullets and proper heading
