@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.1 1999/05/09 06:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.2 1999/05/14 14:11:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -36,7 +36,10 @@ typedef enum {
     PROT_NUMPROTOS	/* This must always be last. */
 } ProtocolID;
 
-/* Mouse device private record */
+/*
+ * Mouse device record.  This is shared by the mouse driver and the OSMouse
+ * layer.
+ */
 
 typedef struct _MouseDevRec {
     DeviceProc		mseProc;	/* procedure for initializing */
@@ -76,12 +79,13 @@ typedef struct _MouseDevRec {
     unsigned char	protoBuf[8];
     unsigned char	protoPara[8];
     unsigned char	inSync;		/* driver in sync with datastream */
+    pointer		mousePriv;	/* private area */
+#if 0
     /* xqueue part */
     int			xquePending;	/* was xqueFd, but nothing uses that */
     int			xqueSema;
-#ifdef XINPUT
-    struct _LocalDeviceRec *local;
 #endif
+    InputInfoPtr	pInfo;
 } MouseDevRec, *MouseDevPtr;
 
 #ifndef XINPUT
