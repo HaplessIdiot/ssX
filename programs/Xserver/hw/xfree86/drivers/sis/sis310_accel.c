@@ -168,7 +168,12 @@ SiSInitializeAccelerator(ScrnInfoPtr pScrn)
 	SISPtr  pSiS = SISPTR(pScrn);
 
 	pSiS->DoColorExpand = FALSE;
-	CmdQueLen = ((128 * 1024) / 4) - 64;
+	if(pSiS->ChipFlags & SiSCF_Integrated) {
+        /* CmdQueLen = ((128 * 1024) / 4) - 64; - decreases system latecy dramatically */
+	   CmdQueLen = 0;
+        } else {
+	   CmdQueLen = ((128 * 1024) / 4) - 64; 
+        }
 }
 
 Bool

@@ -279,6 +279,7 @@ typedef unsigned char UChar;
 #define SiSCF_IsM760       0x00000200
 #define SiSCF_Is66x        (SiSCF_IsM660 | SiSCF_IsM760)
 #define SiSCF_XabreCore    0x00010000
+#define SiSCF_Integrated   0x80000000
 
 /* For backup of register contents */
 typedef struct {
