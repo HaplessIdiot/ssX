@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.26 1998/09/05 10:38:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.27 1998/09/13 05:23:40 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -20,8 +20,6 @@
 #include "xaalocal.h"
 #include "xf86fbman.h"
 #include "miline.h"
-
-#include "vgaHWmmio.h"
 
 #include "mga_bios.h"
 #include "mga.h"

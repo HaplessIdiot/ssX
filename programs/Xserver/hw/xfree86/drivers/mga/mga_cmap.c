@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_cmap.c,v 1.3 1998/08/29 05:43:30 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -20,8 +20,6 @@
 
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
-
-#include "vgaHWmmio.h"
 
 #include "mga_bios.h"
 #include "mga.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.7 1998/09/13 05:23:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.8 1998/09/19 12:14:57 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -562,7 +562,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 static void
 GenericSave(ScrnInfoPtr pScreenInfo)
 {
-    vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, TRUE);
+    vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
 }
 
 
@@ -573,7 +573,7 @@ GenericRestore(ScrnInfoPtr pScreenInfo)
     vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
 
     vgaHWProtect(pScreenInfo, TRUE);
-    vgaHWRestore(pScreenInfo, &pvgaHW->SavedReg, TRUE);
+    vgaHWRestore(pScreenInfo, &pvgaHW->SavedReg, VGA_SR_ALL);
     vgaHWProtect(pScreenInfo, FALSE);
 }
 
@@ -611,7 +611,7 @@ GenericSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 
     /* Programme the registers */
     vgaHWProtect(pScreenInfo, TRUE);
-    vgaHWRestore(pScreenInfo, &pvgaHW->ModeReg, FALSE);
+    vgaHWRestore(pScreenInfo, &pvgaHW->ModeReg, VGA_SR_MODE | VGA_SR_CMAP);
     vgaHWProtect(pScreenInfo, FALSE);
 
     return TRUE;

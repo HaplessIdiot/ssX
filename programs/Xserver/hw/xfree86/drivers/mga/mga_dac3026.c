@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.26 1998/09/13 05:23:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.27 1998/09/19 12:14:55 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -46,11 +46,6 @@
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
-
-/* We use the mmio version of vgaHW */
-#include "vgaHWmmio.h"
-
-#include "xf86Cursor.h"
 
 #include "mga_bios.h"
 #include "mga_reg.h"
@@ -691,7 +686,8 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
-	vgaHWRestoreMMIO(pScrn, vgaReg, restoreFonts);
+	vgaHWRestore(pScrn, vgaReg,
+			VGA_SR_MODE | (restoreFonts ? VGA_SR_FONTS : 0));
 	MGA3026RestorePalette(pScrn, vgaReg->DAC);
 
 	/*
@@ -761,7 +757,7 @@ MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	 * This function will handle creating the data structure and filling
 	 * in the generic VGA portion.
 	 */
-	vgaHWSaveMMIO(pScrn, vgaReg, saveFonts);
+	vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | (saveFonts ? VGA_SR_FONTS : 0));
 	MGA3026SavePalette(pScrn, vgaReg->DAC);
 
 	/*

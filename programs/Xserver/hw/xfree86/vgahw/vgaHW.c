@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.6 1998/08/29 08:56:44 dawes Exp $ */
+
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.5 1998/08/29 05:44:03 dawes Exp $
  *
  * Copyright 1991-1998 by The XFree86 Project, Inc.
  *
@@ -8,7 +9,6 @@
  *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  */
-/* $XConsortium: vgaHW.c /main/19 1996/10/28 04:55:33 kaleb $ */
 
 #if !defined(AMOEBA) && !defined(MINIX)
 #define _NEED_SYSI86
@@ -17,47 +17,31 @@
 #include "X.h"
 #include "misc.h"
 
-#ifndef VGA_MMIO
 #include "compiler.h"
-#define VGANAME(x) x
-#else 
-#define VGANAME(x) x##MMIO
-#endif /* VGA_MMIO */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
-#ifndef VGA_MMIO
 #include "vgaHW.h"
-#else
-#include "vgaHWmmio.h"
-#endif
 
-/* XXX The PC98 bits here need to be cleaned up */
+/*
+ * XXX The PC98 bits have been removed for now.  The structure of the
+ * code here has been reorganised to the point where they need to be
+ * redone anyway.  In the meantime the older version can be found in
+ * xfree86/olddrivers/vgahw/.
+ */
 
-#ifdef PC98_EGC
-/* I/O port address define for extended EGC */
-#define		EGC_READ	0x4a2	/* EGC FGC,EGC,Read Plane  */
-#define		EGC_MASK	0x4a8	/* EGC Mask register       */
-#define		EGC_ADD		0x4ac	/* EGC Dest/Source address */
-#define		EGC_LENGTH	0x4ae	/* EGC Bit length          */
-#endif
 
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-#if !defined(MONOVGA) && !defined(SCO)
 #ifndef SAVE_FONT1
 #define SAVE_FONT1
-#endif
 #endif
 
 #if defined(Lynx) || defined(CSRG_BASED) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
 #ifndef NEED_SAVED_CMAP
 #define NEED_SAVED_CMAP
 #endif
-#ifndef MONOVGA
 #ifndef SAVE_TEXT
 #define SAVE_TEXT
-#endif
 #endif
 #ifndef SAVE_FONT2
 #define SAVE_FONT2
@@ -65,15 +49,10 @@
 #endif
 
 /* bytes per plane to save for text */
-#if defined(Lynx) || defined(linux) || defined(MINIX)
 #define TEXT_AMOUNT 16384
-#else
-#define TEXT_AMOUNT 4096
-#endif
 
 /* bytes per plane to save for font data */
 #define FONT_AMOUNT 8192
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 
 #if 0
 /* Override all of these for now */
@@ -89,16 +68,6 @@
 #define TEXT_AMOUNT 65536
 #endif
 
-#if defined(CSRG_BASED) || defined(MACH386)
-#include <sys/time.h>
-#endif
-
-#ifdef MACH386
-#define WEXITSTATUS(x) (x.w_retcode)
-#define WTERMSIG(x) (x.w_termsig)
-#define WSTOPSIG(x) (x.w_stopsig)
-#endif
-
 /* DAC indices for white and black */
 #define WHITE_VALUE 0x3F
 #define BLACK_VALUE 0x00
@@ -110,14 +79,14 @@
 #define VGAHWPTRLVAL(p) (p)->privates[vgaHWPrivateIndex].ptr
 #define VGAHWPTR(p) ((vgaHWPtr)(VGAHWPTRLVAL(p)))
 
-#ifndef VGA_MMIO
-int vgaRamdacMask = 0x3F;
-int vgaHWPrivateIndex = -1;
+static int vgaHWPrivateIndex = -1;
+
+#define DAC_TEST_MASK 0x3F
 
 #ifdef NEED_SAVED_CMAP
 /* This default colourmap is used only when it can't be read from the VGA */
 
-unsigned char defaultDAC[768] =
+static CARD8 defaultDAC[768] =
 {
      0,  0,  0,    0,  0, 42,    0, 42,  0,    0, 42, 42,
     42,  0,  0,   42,  0, 42,   42, 21,  0,   42, 42, 42,
@@ -185,7 +154,6 @@ unsigned char defaultDAC[768] =
      0,  0,  0,    0,  0,  0,    0,  0,  0,    0,  0,  0,
 };
 #endif /* NEED_SAVED_CMAP */
-#endif /* VGA_MMIO */
 
 /*
  * With Intel, the version in os-support/misc/SlowBcopy.s is used.
@@ -200,14 +168,354 @@ unsigned char defaultDAC[768] =
 #define slowbcopy_frombus(src,dst,count) xf86SlowBcopy(src,dst,count)
 #endif /* __alpha__ */
 
+
+/*
+ * Standard VGA versions of the register access functions.
+ */
+static void
+stdWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    outb(hwp->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    outb(hwp->IOBase + VGA_CRTC_DATA_OFFSET, value);
+}
+
+static CARD8
+stdReadCrtc(vgaHWPtr hwp, CARD8 index)
+{
+    outb(hwp->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    return inb(hwp->IOBase + VGA_CRTC_DATA_OFFSET);
+}
+
+static void
+stdWriteGr(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    outb(VGA_GRAPH_INDEX, index);
+    outb(VGA_GRAPH_DATA, value);
+}
+
+static CARD8
+stdReadGr(vgaHWPtr hwp, CARD8 index)
+{
+    outb(VGA_GRAPH_INDEX, index);
+    return inb(VGA_GRAPH_DATA);
+}
+
+static void
+stdWriteSeq(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    outb(VGA_SEQ_INDEX, index);
+    outb(VGA_SEQ_DATA, value);
+}
+
+static CARD8
+stdReadSeq(vgaHWPtr hwp, CARD8 index)
+{
+    outb(VGA_SEQ_INDEX, index);
+    return inb(VGA_SEQ_DATA);
+}
+
+static void
+stdWriteAttr(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    CARD8 tmp;
+
+    if (hwp->paletteEnabled)
+	index &= ~0x20;
+    else
+	index |= 0x20;
+
+    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    outb(VGA_ATTR_INDEX, index);
+    outb(VGA_ATTR_DATA_W, value);
+}
+
+static CARD8
+stdReadAttr(vgaHWPtr hwp, CARD8 index)
+{
+    CARD8 tmp;
+
+    if (hwp->paletteEnabled)
+	index &= ~0x20;
+    else
+	index |= 0x20;
+
+    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    outb(VGA_ATTR_INDEX, index);
+    return inb(VGA_ATTR_DATA_R);
+}
+
+static void
+stdWriteMiscOut(vgaHWPtr hwp, CARD8 value)
+{
+    outb(VGA_MISC_OUT_W, value);
+}
+
+static CARD8
+stdReadMiscOut(vgaHWPtr hwp)
+{
+    return inb(VGA_MISC_OUT_R);
+}
+
+static void
+stdEnablePalette(vgaHWPtr hwp)
+{
+    CARD8 tmp;
+
+    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    outb(VGA_ATTR_INDEX, 0x00);
+    hwp->paletteEnabled = TRUE;
+}
+
+static void
+stdDisablePalette(vgaHWPtr hwp)
+{
+    CARD8 tmp;
+
+    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    outb(VGA_ATTR_INDEX, 0x20);
+    hwp->paletteEnabled = FALSE;
+}
+
+static void
+stdWriteDacMask(vgaHWPtr hwp, CARD8 value)
+{
+    outb(VGA_DAC_MASK, value);
+}
+
+static CARD8
+stdReadDacMask(vgaHWPtr hwp)
+{
+    return inb(VGA_DAC_MASK);
+}
+
+static void
+stdWriteDacReadAddr(vgaHWPtr hwp, CARD8 value)
+{
+    outb(VGA_DAC_READ_ADDR, value);
+}
+
+static void
+stdWriteDacWriteAddr(vgaHWPtr hwp, CARD8 value)
+{
+    outb(VGA_DAC_WRITE_ADDR, value);
+}
+
+static void
+stdWriteDacData(vgaHWPtr hwp, CARD8 value)
+{
+    outb(VGA_DAC_DATA, value);
+}
+
+static CARD8
+stdReadDacData(vgaHWPtr hwp)
+{
+    return inb(VGA_DAC_DATA);
+}
+
+void
+vgaHWSetStdFuncs(vgaHWPtr hwp)
+{
+    hwp->writeCrtc		= stdWriteCrtc;
+    hwp->readCrtc		= stdReadCrtc;
+    hwp->writeGr		= stdWriteGr;
+    hwp->readGr			= stdReadGr;
+    hwp->writeAttr		= stdWriteAttr;
+    hwp->readAttr		= stdReadAttr;
+    hwp->writeSeq		= stdWriteSeq;
+    hwp->readSeq		= stdReadSeq;
+    hwp->writeMiscOut		= stdWriteMiscOut;
+    hwp->readMiscOut		= stdReadMiscOut;
+    hwp->enablePalette		= stdEnablePalette;
+    hwp->disablePalette		= stdDisablePalette;
+    hwp->writeDacMask		= stdWriteDacMask;
+    hwp->readDacMask		= stdReadDacMask;
+    hwp->writeDacWriteAddr	= stdWriteDacWriteAddr;
+    hwp->writeDacReadAddr	= stdWriteDacReadAddr;
+    hwp->writeDacData		= stdWriteDacData;
+    hwp->readDacData		= stdReadDacData;
+}
+
+/*
+ * MMIO versions of the register access functions.  These require
+ * hwp->MemBase to be set in such a way that when the standard VGA port
+ * adderss is added the correct memory address results.
+ */
+
+#define minb(p) *(volatile CARD8 *)(hwp->MemBase + (p))
+#define moutb(p,v) *(volatile CARD8 *)(hwp->MemBase + (p)) = (v)
+
+static void
+mmioWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    moutb(hwp->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    moutb(hwp->IOBase + VGA_CRTC_DATA_OFFSET, value);
+}
+
+static CARD8
+mmioReadCrtc(vgaHWPtr hwp, CARD8 index)
+{
+    moutb(hwp->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    return minb(hwp->IOBase + VGA_CRTC_DATA_OFFSET);
+}
+
+static void
+mmioWriteGr(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    moutb(VGA_GRAPH_INDEX, index);
+    moutb(VGA_GRAPH_DATA, value);
+}
+
+static CARD8
+mmioReadGr(vgaHWPtr hwp, CARD8 index)
+{
+    moutb(VGA_GRAPH_INDEX, index);
+    return minb(VGA_GRAPH_DATA);
+}
+
+static void
+mmioWriteSeq(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    moutb(VGA_SEQ_INDEX, index);
+    moutb(VGA_SEQ_DATA, value);
+}
+
+static CARD8
+mmioReadSeq(vgaHWPtr hwp, CARD8 index)
+{
+    moutb(VGA_SEQ_INDEX, index);
+    return minb(VGA_SEQ_DATA);
+}
+
+static void
+mmioWriteAttr(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+    CARD8 tmp;
+
+    if (hwp->paletteEnabled)
+	index &= ~0x20;
+    else
+	index |= 0x20;
+
+    tmp = minb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    moutb(VGA_ATTR_INDEX, index);
+    moutb(VGA_ATTR_DATA_W, value);
+}
+
+static CARD8
+mmioReadAttr(vgaHWPtr hwp, CARD8 index)
+{
+    CARD8 tmp;
+
+    if (hwp->paletteEnabled)
+	index &= ~0x20;
+    else
+	index |= 0x20;
+
+    tmp = minb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    moutb(VGA_ATTR_INDEX, index);
+    return minb(VGA_ATTR_DATA_R);
+}
+
+static void
+mmioWriteMiscOut(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(VGA_MISC_OUT_W, value);
+}
+
+static CARD8
+mmioReadMiscOut(vgaHWPtr hwp)
+{
+    return minb(VGA_MISC_OUT_R);
+}
+
+static void
+mmioEnablePalette(vgaHWPtr hwp)
+{
+    CARD8 tmp;
+
+    tmp = minb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    moutb(VGA_ATTR_INDEX, 0x00);
+    hwp->paletteEnabled = TRUE;
+}
+
+static void
+mmioDisablePalette(vgaHWPtr hwp)
+{
+    CARD8 tmp;
+
+    tmp = minb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    moutb(VGA_ATTR_INDEX, 0x20);
+    hwp->paletteEnabled = FALSE;
+}
+
+static void
+mmioWriteDacMask(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(VGA_DAC_MASK, value);
+}
+
+static CARD8
+mmioReadDacMask(vgaHWPtr hwp)
+{
+    return minb(VGA_DAC_MASK);
+}
+
+static void
+mmioWriteDacReadAddr(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(VGA_DAC_READ_ADDR, value);
+}
+
+static void
+mmioWriteDacWriteAddr(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(VGA_DAC_WRITE_ADDR, value);
+}
+
+static void
+mmioWriteDacData(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(VGA_DAC_DATA, value);
+}
+
+static CARD8
+mmioReadDacData(vgaHWPtr hwp)
+{
+    return minb(VGA_DAC_DATA);
+}
+
+void
+vgaHWSetMmioFuncs(vgaHWPtr hwp, unsigned long memBase)
+{
+    hwp->writeCrtc		= mmioWriteCrtc;
+    hwp->readCrtc		= mmioReadCrtc;
+    hwp->writeGr		= mmioWriteGr;
+    hwp->readGr			= mmioReadGr;
+    hwp->writeAttr		= mmioWriteAttr;
+    hwp->readAttr		= mmioReadAttr;
+    hwp->writeSeq		= mmioWriteSeq;
+    hwp->readSeq		= mmioReadSeq;
+    hwp->writeMiscOut		= mmioWriteMiscOut;
+    hwp->readMiscOut		= mmioReadMiscOut;
+    hwp->enablePalette		= mmioEnablePalette;
+    hwp->disablePalette		= mmioDisablePalette;
+    hwp->writeDacMask		= mmioWriteDacMask;
+    hwp->readDacMask		= mmioReadDacMask;
+    hwp->writeDacWriteAddr	= mmioWriteDacWriteAddr;
+    hwp->writeDacReadAddr	= mmioWriteDacReadAddr;
+    hwp->writeDacData		= mmioWriteDacData;
+    hwp->readDacData		= mmioReadDacData;
+    hwp->MemBase		= memBase;
+}
+
 /*
  * vgaHWProtect --
  *	Protect VGA registers and memory from corruption during loads.
  */
+
 void
-VGANAME(vgaHWProtect)(ScrnInfoPtr pScrn, Bool on)
+vgaHWProtect(ScrnInfoPtr pScrn, Bool on)
 {
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   
   unsigned char tmp;
@@ -217,69 +525,58 @@ VGANAME(vgaHWProtect)(ScrnInfoPtr pScrn, Bool on)
       /*
        * Turn off screen and disable sequencer.
        */
-      outb(0x3C4, 0x01);
-      tmp = inb(0x3C5);
+      tmp = hwp->readSeq(hwp, 0x01);
 
-      VGANAME(vgaHWSeqReset)(hwp, TRUE);	/* start synchronous reset */
-      outw(0x3C4, ((tmp | 0x20) << 8) | 0x01);	/* disable the display */
+      vgaHWSeqReset(hwp, TRUE);			/* start synchronous reset */
+      hwp->writeSeq(hwp, 0x01, tmp | 0x20);	/* disable the display */
 
-      tmp = inb(hwp->IOBase + 0x0A);
-      outb(0x3C0, 0x00);			/* enable pallete access */
-    }
-    else {
+      hwp->enablePalette(hwp);
+    } else {
       /*
        * Reenable sequencer, then turn on screen.
        */
-      outb(0x3C4, 0x01);
-      tmp = inb(0x3C5);
+  
+      tmp = hwp->readSeq(hwp, 0x01);
 
-      outw(0x3C4, ((tmp & 0xDF) << 8) | 0x01);	/* reenable display */
-      VGANAME(vgaHWSeqReset)(hwp, FALSE);	/* clear synchronousreset */
+      hwp->writeSeq(hwp, 0x01, tmp & ~0x20);	/* reenable display */
+      vgaHWSeqReset(hwp, FALSE);		/* clear synchronousreset */
 
-      tmp = inb(hwp->IOBase + 0x0A);
-      outb(0x3C0, 0x20);			/* disable pallete access */
+      hwp->disablePalette(hwp);
     }
   }
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 }
+
 
 /*
  * vgaHWBlankScreen -- blank the screen.
  */
 
 void
-VGANAME(vgaHWBlankScreen)(ScrnInfoPtr pScrn, Bool on)
+vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
 {
   vgaHWPtr hwp = VGAHWPTR(pScrn);
-#if !defined(PC98_EGC) && !defined(PC98_PEGC)
   unsigned char scrn;
 
-  outb(0x3C4,1);
-  scrn = inb(0x3C5);
+  scrn = hwp->readSeq(hwp, 0x01);
 
-  if(on) {
-    scrn &= 0xDF;			/* enable screen */
-  }else {
+  if (on) {
+    scrn &= ~0x20;			/* enable screen */
+  } else {
     scrn |= 0x20;			/* blank screen */
   }
 
-  VGANAME(vgaHWSeqReset)(hwp, TRUE);
-  outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
-  VGANAME(vgaHWSeqReset)(hwp, FALSE);
-#else
-  if(on) 
-    outb(0xa2, 0xd);
-  else
-    outb(0xa2, 0xc);
-#endif
+  vgaHWSeqReset(hwp, TRUE);
+  hwp->writeSeq(hwp, 0x01, scrn);	/* change mode */
+  vgaHWSeqReset(hwp, FALSE);
 }
+
 
 /*
  * vgaHWSaveScreen -- blank the screen.
  */
 
 Bool
-VGANAME(vgaHWSaveScreen)(ScreenPtr pScreen, Bool on)
+vgaHWSaveScreen(ScreenPtr pScreen, Bool on)
 {
    ScrnInfoPtr pScrn = NULL;
 
@@ -290,10 +587,11 @@ VGANAME(vgaHWSaveScreen)(ScreenPtr pScreen, Bool on)
       SetTimeSinceLastInputEvent();
 
    if ((pScrn != NULL) && pScrn->vtSema) {
-     VGANAME(vgaHWBlankScreen)(pScrn, on);
+     vgaHWBlankScreen(pScrn, on);
    }
    return (TRUE);
 }
+
 
 /*
  * vgaHWDPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
@@ -304,15 +602,15 @@ VGANAME(vgaHWSaveScreen)(ScreenPtr pScreen, Bool on)
  */
 
 void
-VGANAME(vgaHWDPMSSet)(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
+vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
 #ifdef DPMSExtension
-  unsigned char seq1, crtc17;
+  unsigned char seq1 = 0, crtc17 = 0;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
 
   if (!pScrn->vtSema) return;
-  switch (PowerManagementMode)
-  {
+
+  switch (PowerManagementMode) {
   case DPMSModeOn:
     /* Screen: On; HSync: On, VSync: On */
     seq1 = 0x00;
@@ -334,17 +632,16 @@ VGANAME(vgaHWDPMSSet)(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
     crtc17 = 0x00;
     break;
   }
-  outw(0x3C4, 0x0100);	/* Synchronous Reset */
-  outb(0x3C4, 0x01);	/* Select SEQ1 */
-  seq1 |= inb(0x3C5) & ~0x20;
-  outb(0x3C5, seq1);
-  outb(hwp->IOBase+4, 0x17); /* Select CRTC17 */
-  crtc17 |= inb(hwp->IOBase+5) & ~0x80;
+  hwp->writeSeq(hwp, 0x00, 0x01);		/* Synchronous Reset */
+  seq1 |= hwp->readSeq(hwp, 0x01) & ~0x20;
+  hwp->writeSeq(hwp, 0x01, seq1);
+  crtc17 |= hwp->readCrtc(hwp, 0x17) & ~0x80;
   usleep(10000);
-  outb(hwp->IOBase+5, crtc17);
-  outw(0x3C4, 0x0300);	/* End Reset */
+  hwp->writeCrtc(hwp, 0x17, crtc17);
+  hwp->writeSeq(hwp, 0x00, 0x03);		/* End Reset */
 #endif
 }
+
 
 /*
  * vgaHWSeqReset
@@ -352,367 +649,437 @@ VGANAME(vgaHWDPMSSet)(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
  */
 
 void
-VGANAME(vgaHWSeqReset)(vgaHWPtr hwp, Bool start)
+vgaHWSeqReset(vgaHWPtr hwp, Bool start)
 {
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-  if (start == TRUE)
-    outw(0x3C4, 0x0100);        /* synchronous reset */
+  if (start)
+    hwp->writeSeq(hwp, 0x00, 0x01);		/* Synchronous Reset */
   else
-    outw(0x3C4, 0x0300);        /* end reset */
-#endif
+    hwp->writeSeq(hwp, 0x00, 0x03);		/* End Reset */
 }
 
-/*
- * vgaHWRestore --
- *      restore a video mode
- */
 
 void
-VGANAME(vgaHWRestore)(ScrnInfoPtr scrninfp, vgaRegPtr restore, Bool restoreFonts)
+vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore)
 {
-    int i,tmp;
     vgaHWPtr hwp = VGAHWPTR(scrninfp);
-  
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-  tmp = inb(hwp->IOBase + 0x0A);		/* Reset flip-flop */
-  outb(0x3C0, 0x00);			/* Enables pallete access */
+    int savedIOBase;
+    unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4;
 
-  outb(0x3C2, restore->MiscOutReg | 0x01);      /* Force to colour emulation */
-#endif
-
-  /*
-   * This here is a workaround a bug in the kd-driver. We MUST explicitely
-   * restore the font we got, when we entered graphics mode.
-   * The bug was seen on ESIX, and ISC 2.0.2 when using a monochrome
-   * monitor. 
-   *
-   * BTW, also GIO_FONT seems to have a bug, so we cannot use it, to get
-   * a font.
-   */
-  
-  VGANAME(vgaHWBlankScreen)(scrninfp, FALSE);
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
-  if (restoreFonts)
-  if(hwp->FontInfo1 || hwp->FontInfo2 || hwp->TextInfo) {
+
+    /* If nothing to do, return now */
+    if (!hwp->FontInfo1 && !hwp->FontInfo2 && !hwp->TextInfo)
+	return;
+
+    /* save the registers that are needed here */
+    miscOut = hwp->readMiscOut(hwp);
+    attr10 = hwp->readAttr(hwp, 0x10);
+    gr1 = hwp->readGr(hwp, 0x01);
+    gr3 = hwp->readGr(hwp, 0x03);
+    gr4 = hwp->readGr(hwp, 0x04);
+    gr5 = hwp->readGr(hwp, 0x05);
+    gr6 = hwp->readGr(hwp, 0x06);
+    gr8 = hwp->readGr(hwp, 0x08);
+    seq2 = hwp->readSeq(hwp, 0x02);
+    seq4 = hwp->readSeq(hwp, 0x04);
+
+    /* save hwp->IOBase and temporarily set it for colour mode */
+    savedIOBase = hwp->IOBase;
+    hwp->IOBase = VGA_IOBASE_COLOR;
+
+    /* Force into colour mode */
+    hwp->writeMiscOut(hwp, miscOut | 0x01);
+
+    vgaHWBlankScreen(scrninfp, FALSE);
+
     /*
      * here we temporarily switch to 16 colour planar mode, to simply
-     * copy the font-info and saved text
+     * copy the font-info and saved text.
      *
      * BUG ALERT: The (S)VGA's segment-select register MUST be set correctly!
      */
-    tmp = inb(0x3D0 + 0x0A); /* reset flip-flop */
-    outb(0x3C0,0x30); outb(0x3C0, 0x01); /* graphics mode */
+
+    hwp->writeAttr(hwp, 0x10, 0x01);	/* graphics mode */
     if (scrninfp->depth == 4) {
-      outw(0x3CE,0x0003); /* GJA - don't rotate, write unmodified */
-      outw(0x3CE,0xFF08); /* GJA - write all bits in a byte */
-      outw(0x3CE,0x0001); /* GJA - all planes come from CPU */
+	/* GJA */
+	hwp->writeGr(hwp, 0x03, 0x00);	/* don't rotate, write unmodified */
+	hwp->writeGr(hwp, 0x08, 0xFF);	/* write all bits in a byte */
+	hwp->writeGr(hwp, 0x01, 0x00);	/* all planes come from CPU */
     }
+
 #ifdef SAVE_FONT1
     if (hwp->FontInfo1) {
-      outw(0x3C4, 0x0402);    /* write to plane 2 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0204);    /* read plane 2 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_tobus(hwp->FontInfo1, hwp->Base, FONT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x04);	/* write to plane 2 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x02);	/* read plane 2 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_tobus(hwp->FontInfo1, hwp->Base, FONT_AMOUNT);
     }
 #endif
+
 #ifdef SAVE_FONT2
     if (hwp->FontInfo2) {
-      outw(0x3C4, 0x0802);    /* write to plane 3 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0304);    /* read plane 3 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_tobus(hwp->FontInfo2, hwp->Base, FONT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x08);	/* write to plane 3 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x03);	/* read plane 3 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_tobus(hwp->FontInfo2, hwp->Base, FONT_AMOUNT);
     }
 #endif
+
 #ifdef SAVE_TEXT
     if (hwp->TextInfo) {
-      outw(0x3C4, 0x0102);    /* write to plane 0 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0004);    /* read plane 0 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_tobus(hwp->TextInfo, hwp->Base, TEXT_AMOUNT);
-      outw(0x3C4, 0x0202);    /* write to plane 1 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0104);    /* read plane 1 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_tobus((unsigned char *)hwp->TextInfo + TEXT_AMOUNT,
-        hwp->Base, TEXT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x01);	/* write to plane 0 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x00);	/* read plane 0 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_tobus(hwp->TextInfo, hwp->Base, TEXT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x02);	/* write to plane 1 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x01);	/* read plane 1 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_tobus((unsigned char *)hwp->TextInfo + TEXT_AMOUNT,
+			hwp->Base, TEXT_AMOUNT);
     }
 #endif
-  }
+
+    vgaHWBlankScreen(scrninfp, TRUE);
+
+    /* restore the registers that were changed */
+    hwp->writeMiscOut(hwp, miscOut);
+    hwp->writeAttr(hwp, 0x10, attr10);
+    hwp->writeGr(hwp, 0x01, gr1);
+    hwp->writeGr(hwp, 0x03, gr3);
+    hwp->writeGr(hwp, 0x04, gr4);
+    hwp->writeGr(hwp, 0x05, gr5);
+    hwp->writeGr(hwp, 0x06, gr6);
+    hwp->writeGr(hwp, 0x08, gr8);
+    hwp->writeSeq(hwp, 0x02, seq2);
+    hwp->writeSeq(hwp, 0x04, seq4);
+    hwp->IOBase = savedIOBase;
+
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
-
-  VGANAME(vgaHWBlankScreen)(scrninfp, TRUE);
-
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-
-  tmp = inb(0x3D0 + 0x0A);			/* Reset flip-flop */
-  outb(0x3C0, 0x00);				/* Enables pallete access */
-
-  if (restore->MiscOutReg & 0x01)
-    hwp->IOBase = 0x3D0;
-  else
-    hwp->IOBase = 0x3B0;
-
-  outb(0x3C2, restore->MiscOutReg);
-
-  for (i=1; i<5;  i++) outw(0x3C4, (restore->Sequencer[i] << 8) | i);
-  
-  /* Ensure CRTC registers 0-7 are unlocked by clearing bit 7 or CRTC[17] */
-
-  outw(hwp->IOBase + 4, ((restore->CRTC[17] & 0x7F) << 8) | 17);
-
-  for (i=0; i<25; i++) outw(hwp->IOBase + 4,(restore->CRTC[i] << 8) | i);
-
-  for (i=0; i<9;  i++) outw(0x3CE, (restore->Graphics[i] << 8) | i);
-
-  for (i=0; i<21; i++) {
-    tmp = inb(hwp->IOBase + 0x0A);
-    outb(0x3C0,i); outb(0x3C0, restore->Attribute[i]);
-  }
-  
-#if 0
-  if (clgd6225Lcd)
-  {
-    for (i= 0; i<768; i++)
-    {
-      /* The LCD doesn't like white */
-      if (restore->DAC[i] == 63) restore->DAC[i]= 62;
-    }
-  }
-#endif
-
-  outb(0x3C6,0xFF);
-  outb(0x3C8,0x00);
-  for (i=0; i<768; i++)
-  {
-     outb(0x3C9, restore->DAC[i]);
-     DACDelay(hwp);
-  }
-
-  /* Turn on PAS bit */
-  tmp = inb(hwp->IOBase + 0x0A);
-  outb(0x3C0, 0x20);
-
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
-
 }
 
+
+void
+vgaHWRestoreMode(ScrnInfoPtr scrninfp, vgaRegPtr restore)
+{
+    vgaHWPtr hwp = VGAHWPTR(scrninfp);
+    int i;
+
+    if (restore->MiscOutReg & 0x01)
+	hwp->IOBase = VGA_IOBASE_COLOR;
+    else
+	hwp->IOBase = VGA_IOBASE_MONO;
+
+    hwp->writeMiscOut(hwp, restore->MiscOutReg);
+
+    for (i = 1; i < 5; i++)
+	hwp->writeSeq(hwp, i, restore->Sequencer[i]);
+  
+    /* Ensure CRTC registers 0-7 are unlocked by clearing bit 7 or CRTC[17] */
+
+    hwp->writeCrtc(hwp, 17, restore->CRTC[17] & ~0x80);
+
+    for (i = 0; i < 25; i++)
+	hwp->writeCrtc(hwp, i, restore->CRTC[i]);
+
+    for (i = 0; i < 9; i++)
+	hwp->writeGr(hwp, i, restore->Graphics[i]);
+
+    hwp->enablePalette(hwp);
+    for (i = 0; i < 21; i++)
+	hwp->writeAttr(hwp, i, restore->Attribute[i]);
+    hwp->disablePalette(hwp);
+}
+
+
+void
+vgaHWRestoreColormap(ScrnInfoPtr scrninfp, vgaRegPtr restore)
+{
+    vgaHWPtr hwp = VGAHWPTR(scrninfp);
+    int i;
+
+    hwp->enablePalette(hwp);
+
+    hwp->writeDacMask(hwp, 0xFF);
+    hwp->writeDacWriteAddr(hwp, 0x00);
+    for (i = 0; i < 768; i++) {
+	hwp->writeDacData(hwp, restore->DAC[i]);
+	DACDelay(hwp);
+    }
+
+    hwp->disablePalette(hwp);
+}
+
+
 /*
- * vgaHWSave --
- *      save the current video mode
+ * vgaHWRestore --
+ *      restore the VGA state
  */
 
 void
-VGANAME(vgaHWSave)(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
+vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, int flags)
 {
-  static Bool	first_time = TRUE;
-  int           i,tmp;
-  vgaHWPtr      hwp = VGAHWPTR(scrninfp);
+    if (flags & VGA_SR_FONTS)
+	vgaHWRestoreFonts(scrninfp, restore);
 
-  if (save == NULL) {
-    return;
-  }
+    if (flags & VGA_SR_MODE)
+	vgaHWRestoreMode(scrninfp, restore);
 
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-  save->MiscOutReg = inb(0x3CC);
-#ifdef PC98
-  save->MiscOutReg |= 0x01;
-#endif
-  hwp->IOBase = (save->MiscOutReg & 0x01) ? 0x3D0 : 0x3B0;
+    if (flags & VGA_SR_CMAP)
+	vgaHWRestoreColormap(scrninfp, restore);
+}
 
-  tmp = inb(hwp->IOBase + 0x0A); /* reset flip-flop */
-  outb(0x3C0, 0x00);
-
-#ifdef NEED_SAVED_CMAP
-  /*
-   * Some recent (1991) ET4000 chips have a HW bug that prevents the reading
-   * of the color lookup table.  Mask rev 9042EAI is known to have this bug.
-   *
-   * XF86 already keeps track of the contents of the color lookup table so
-   * reading the HW isn't needed.  Therefore, as a workaround for this HW
-   * bug, the following (correct) code has been #ifdef'ed out.  This is also
-   * a valid change for ET4000 chips that don't have the HW bug.  The code
-   * is really just being retained for reference.  MWS 22-Aug-91
-   *
-   * This is *NOT* true for 386BSD, Mach -- the initial colour map must be
-   * restored.  When saving the text mode, we check if the colourmap is
-   * readable.  If so we read it.  If not, we set the saved map to a
-   * default map (taken from Ferraro's "Programmer's Guide to the EGA and
-   * VGA Cards" 2nd ed).
-   */
-
-  if (first_time)
-  {
-    int read_error = 0;
-
-    outb(0x3C6,0xFF);
-    /*
-     * check if we can read the lookup table
-     */
-    outb(0x3C7,0x00);
-    for (i=0; i<3; i++) save->DAC[i] = inb(0x3C9);
-#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
-    for (i=0; i<300; i++) inb(hwp->IOBase + 4);
-#endif
-    outb(0x3C8,0x00);
-    for (i=0; i<3; i++) outb(0x3C9, ~save->DAC[i] & vgaRamdacMask);
-#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
-    for (i=0; i<300; i++) inb(hwp->IOBase + 4);
-#endif
-    outb(0x3C7,0x00);
-    for (i=0; i<3; i++)
-    {
-      unsigned char tmp2 = inb(0x3C9);
-#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
-      if (tmp2 != (~save->DAC[i]&0xFF))
-#endif
-      if (tmp2 != (~save->DAC[i] & vgaRamdacMask)) read_error++;
-    }
-  
-    if (read_error)
-    {
-      /*			 
-       * save the default lookup table
-       */
-      memmove(save->DAC, defaultDAC, 768);
-      xf86DrvMsg(scrninfp->scrnIndex, X_WARNING,
-	   "Cannot read colourmap from VGA.  Will restore with default\n");
-    }
-    else
-    {
-      /*			 
-       * save the colorlookuptable 
-       */
-      outb(0x3C7,0x01);
-      for (i=3; i<768; i++)
-      {
-	save->DAC[i] = inb(0x3C9); 
-	DACDelay(hwp);
-      }
-    }
-  }
-  first_time = FALSE;
-#endif /* NEED_SAVED_CMAP */
-
-  for (i=0; i<25; i++) { outb(hwp->IOBase + 4,i);
-			 save->CRTC[i] = inb(hwp->IOBase + 5); }
-
-  for (i=0; i<21; i++) {
-    tmp = inb(hwp->IOBase + 0x0A);
-    outb(0x3C0,i);
-    save->Attribute[i] = inb(0x3C1);
-  }
-
-  for (i=0; i<9;  i++) { outb(0x3CE,i); save->Graphics[i]  = inb(0x3CF); }
-
-  for (i=0; i<5;  i++) { outb(0x3C4,i); save->Sequencer[i]   = inb(0x3C5); }
-
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
-
-  VGANAME(vgaHWBlankScreen)(scrninfp, FALSE);
-  
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-  outb(0x3C2, save->MiscOutReg | 0x01);		/* shift to colour emulation */
-  /* Since forced to colour mode, must use 0x3Dx instead of (vgaIOBase + x) */
+void
+vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
+{
+    vgaHWPtr hwp = VGAHWPTR(scrninfp);
+    int savedIOBase;
+    unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4;
 
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
-  /*
-   * get the character sets, and text screen if required
-   */
-  if (saveFonts && !(save->Attribute[0x10] & 0x01)) {
+
+    /* If in graphics mode, don't save anything */
+    attr10 = hwp->readAttr(hwp, 0x10);
+    if (attr10 & 0x01)
+	return;
+
+    /* save the registers that are needed here */
+    miscOut = hwp->readMiscOut(hwp);
+    gr4 = hwp->readGr(hwp, 0x04);
+    gr5 = hwp->readGr(hwp, 0x05);
+    gr6 = hwp->readGr(hwp, 0x06);
+    seq2 = hwp->readSeq(hwp, 0x02);
+    seq4 = hwp->readSeq(hwp, 0x04);
+
+    /* save hwp->IOBase and temporarily set it for colour mode */
+    savedIOBase = hwp->IOBase;
+    hwp->IOBase = VGA_IOBASE_COLOR;
+
+    /* Force into colour mode */
+    hwp->writeMiscOut(hwp, miscOut | 0x01);
+
+    vgaHWBlankScreen(scrninfp, FALSE);
+  
+    /*
+     * get the character sets, and text screen if required
+     */
+    /*
+     * Here we temporarily switch to 16 colour planar mode, to simply
+     * copy the font-info
+     *
+     * BUG ALERT: The (S)VGA's segment-select register MUST be set correctly!
+     */
+
+    hwp->writeAttr(hwp, 0x10, 0x01);	/* graphics mode */
+
 #ifdef SAVE_FONT1
-#if defined(BIT_PLANE) && (BIT_PLANE != 2)
-    if (scrninfp->depth > 1)
-#endif
     if (hwp->FontInfo1 || (hwp->FontInfo1 = (pointer)xalloc(FONT_AMOUNT))) {
-      /*
-       * Here we temporarily switch to 16 colour planar mode, to simply
-       * copy the font-info
-       *
-       * BUG ALERT: The (S)VGA's segment-select register MUST be set correctly!
-       */
-      tmp = inb(0x3D0 + 0x0A); /* reset flip-flop */
-      outb(0x3C0,0x30); outb(0x3C0, 0x01); /* graphics mode */
-      outw(0x3C4, 0x0402);    /* write to plane 2 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0204);    /* read plane 2 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_frombus(hwp->Base, hwp->FontInfo1, FONT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x04);	/* write to plane 2 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x02);	/* read plane 2 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_frombus(hwp->Base, hwp->FontInfo1, FONT_AMOUNT);
     }
 #endif /* SAVE_FONT1 */
 #ifdef SAVE_FONT2
-#if defined(BIT_PLANE) && (BIT_PLANE != 3)
-    if (scrninfp->depth > 1)
-#endif
     if (hwp->FontInfo2 || (hwp->FontInfo2 = (pointer)xalloc(FONT_AMOUNT))) {
-      tmp = inb(0x3D0 + 0x0A); /* reset flip-flop */
-      outb(0x3C0,0x30); outb(0x3C0, 0x01); /* graphics mode */
-      outw(0x3C4, 0x0802);    /* write to plane 3 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0304);    /* read plane 3 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_frombus(hwp->Base, hwp->FontInfo2, FONT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x08);	/* write to plane 3 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x03);	/* read plane 3 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_frombus(hwp->Base, hwp->FontInfo2, FONT_AMOUNT);
     }
 #endif /* SAVE_FONT2 */
 #ifdef SAVE_TEXT
-#if defined(BIT_PLANE) && (BIT_PLANE != 0) && (BIT_PLANE != 1)
-    if (scrninfp->depth > 1)
-#endif
     if (hwp->TextInfo || (hwp->TextInfo = (pointer)xalloc(2 * TEXT_AMOUNT))) {
-      tmp = inb(0x3D0 + 0x0A); /* reset flip-flop */
-      outb(0x3C0,0x30); outb(0x3C0, 0x01); /* graphics mode */
-      /*
-       * This is a quick hack to save the text screen for system that don't
-       * restore it automatically.
-       */
-      outw(0x3C4, 0x0102);    /* write to plane 0 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0004);    /* read plane 0 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_frombus(hwp->Base, hwp->TextInfo, TEXT_AMOUNT);
-      outw(0x3C4, 0x0202);    /* write to plane 1 */
-      outw(0x3C4, 0x0604);    /* enable plane graphics */
-      outw(0x3CE, 0x0104);    /* read plane 1 */
-      outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
-      outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy_frombus(hwp->Base,
-        (unsigned char *)hwp->TextInfo + TEXT_AMOUNT, TEXT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x01);	/* write to plane 0 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x00);	/* read plane 0 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_frombus(hwp->Base, hwp->TextInfo, TEXT_AMOUNT);
+	hwp->writeSeq(hwp, 0x02, 0x02);	/* write to plane 1 */
+	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
+	hwp->writeGr(hwp, 0x04, 0x01);	/* read plane 1 */
+	hwp->writeGr(hwp, 0x05, 0x00);	/* write mode 0, read mode 0 */
+	hwp->writeGr(hwp, 0x06, 0x05);	/* set graphics */
+	slowbcopy_frombus(hwp->Base,
+		(unsigned char *)hwp->TextInfo + TEXT_AMOUNT, TEXT_AMOUNT);
     }
 #endif /* SAVE_TEXT */
 
     /* Restore clobbered registers */
-    tmp = inb(0x3D0 + 0x0A);
-    outb(0x3C0, 0x30);  outb(0x3C0, save->Attribute[0]);
-    outw(0x3C4, (save->Sequencer[2] << 8) | 0x02);
-    outw(0x3C4, (save->Sequencer[4] << 8) | 0x04);
-    outw(0x3CE, (save->Graphics[4] << 8) | 0x04);
-    outw(0x3CE, (save->Graphics[5] << 8) | 0x05);
-    outw(0x3CE, (save->Graphics[6] << 8) | 0x06);
-  }
+    hwp->writeAttr(hwp, 0x10, attr10);
+    hwp->writeSeq(hwp, 0x02, seq2);
+    hwp->writeSeq(hwp, 0x04, seq4);
+    hwp->writeGr(hwp, 0x04, gr4);
+    hwp->writeGr(hwp, 0x05, gr5);
+    hwp->writeGr(hwp, 0x06, gr6);
+    hwp->writeMiscOut(hwp, miscOut);
+    hwp->IOBase = savedIOBase;
+
+    vgaHWBlankScreen(scrninfp, TRUE);
+
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
-
-  outb(0x3C2, save->MiscOutReg);		/* back to original setting */
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
-  
-  VGANAME(vgaHWBlankScreen)(scrninfp, TRUE);
-
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
-  /* Turn on PAS bit */
-  tmp = inb(hwp->IOBase + 0x0A);
-  outb(0x3C0, 0x20);
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
-  
 }
 
+void
+vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save)
+{
+    vgaHWPtr hwp = VGAHWPTR(scrninfp);
+    int i;
+
+    save->MiscOutReg = hwp->readMiscOut(hwp);
+    if (save->MiscOutReg & 0x01)
+	hwp->IOBase = VGA_IOBASE_COLOR;
+    else
+	hwp->IOBase = VGA_IOBASE_MONO;
+
+    for (i = 0; i < 25; i++) {
+	save->CRTC[i] = hwp->readCrtc(hwp, i);
+#ifdef DEBUG
+	ErrorF("CRTC[0x%02x] = 0x%02x\n", i, save->CRTC[i]);
+#endif
+    }
+
+    hwp->enablePalette(hwp);
+    for (i = 0; i < 21; i++) {
+	save->Attribute[i] = hwp->readAttr(hwp, i);
+#ifdef DEBUG
+	ErrorF("Attribute[0x%02x] = 0x%02x\n", i, save->Attribute[i]);
+#endif
+    }
+    hwp->disablePalette(hwp);
+
+    for (i = 0; i < 9; i++) {
+	save->Graphics[i] = hwp->readGr(hwp, i);
+#ifdef DEBUG
+	ErrorF("Graphics[0x%02x] = 0x%02x\n", i, save->Graphics[i]);
+#endif
+    }
+
+    for (i = 0; i < 5; i++) {
+	save->Sequencer[i] = hwp->readSeq(hwp, i);
+#ifdef DEBUG
+	ErrorF("Sequencer[0x%02x] = 0x%02x\n", i, save->Sequencer[i]);
+#endif
+    }
+}
+
+
+void
+vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save)
+{
+    vgaHWPtr hwp = VGAHWPTR(scrninfp);
+    Bool readError = FALSE;
+    int i;
+
+#ifdef NEED_SAVED_CMAP
+    /*
+     * Some ET4000 chips from 1991 have a HW bug that prevents the reading
+     * of the color lookup table.  Mask rev 9042EAI is known to have this bug.
+     *
+     * If the colourmap is not readable, we set the saved map to a default
+     * map (taken from Ferraro's "Programmer's Guide to the EGA and VGA
+     * Cards" 2nd ed).
+     */
+
+    /* Only save it once */
+    if (hwp->cmapSaved)
+	return;
+
+    hwp->enablePalette(hwp);
+
+    hwp->writeDacMask(hwp, 0xFF);
+    /*
+     * check if we can read the lookup table
+     */
+    hwp->writeDacReadAddr(hwp, 0x00);
+    for (i = 0; i < 3; i++) {
+	save->DAC[i] = hwp->readDacData(hwp);
+#ifdef DEBUG
+	switch (i % 3) {
+	case 0:
+	    ErrorF("DAC[0x%02x] = 0x%02x, ", i / 3, save->DAC[i]);
+	    break;
+	case 1:
+	    ErrorF("0x%02x, ", save->DAC[i]);
+	    break;
+	case 2:
+	    ErrorF("0x%02x\n", save->DAC[i]);
+	}
+#endif
+    }
+    hwp->writeDacWriteAddr(hwp, 0x00);
+    for (i = 0; i < 3; i++)
+	hwp->writeDacData(hwp, ~save->DAC[i] & DAC_TEST_MASK);
+    hwp->writeDacReadAddr(hwp, 0x00);
+    for (i = 0; i < 3; i++) {
+	if (hwp->readDacData(hwp) != (~save->DAC[i] & DAC_TEST_MASK))
+	    readError = TRUE;
+    }
+  
+    if (readError) {
+	/*			 
+	 * save the default lookup table
+	 */
+	memmove(save->DAC, defaultDAC, 768);
+	xf86DrvMsg(scrninfp->scrnIndex, X_WARNING,
+	   "Cannot read colourmap from VGA.  Will restore with default\n");
+    } else {
+	/* save the colourmap */
+	hwp->writeDacReadAddr(hwp, 0x01);
+	for (i = 3; i < 768; i++) {
+	    save->DAC[i] = hwp->readDacData(hwp);
+	    DACDelay(hwp);
+#ifdef DEBUG
+	    switch (i % 3) {
+	    case 0:
+		ErrorF("DAC[0x%02x] = 0x%02x, ", i / 3, save->DAC[i]);
+		break;
+	    case 1:
+		ErrorF("0x%02x, ", save->DAC[i]);
+		break;
+	    case 2:
+		ErrorF("0x%02x\n", save->DAC[i]);
+	    }
+#endif
+	}
+    }
+    hwp->disablePalette(hwp);
+    hwp->cmapSaved = TRUE;
+#endif
+}
+
+/*
+ * vgaHWSave --
+ *      save the current VGA state
+ */
+
+void
+vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, int flags)
+{
+    if (save == NULL)
+	return;
+
+   if (flags & VGA_SR_CMAP)
+	vgaHWSaveColormap(scrninfp, save);
+
+   if (flags & VGA_SR_MODE)
+	vgaHWSaveMode(scrninfp, save);
+
+   if (flags & VGA_SR_FONTS)
+	vgaHWSaveFonts(scrninfp, save);
+}
 
 
 /*
@@ -721,7 +1088,6 @@ VGANAME(vgaHWSave)(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
  *      Return FALSE on failure.
  */
 
-#ifndef VGA_MMIO
 Bool
 vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
 {
@@ -859,8 +1225,7 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->Graphics[8] = 0xFF;
   
     if (depth == 1) {
-        /* Initialise the Mono map according to which bit-plane gets written to */
-
+        /* Initialise the Mono map according to which bit-plane gets used */
         for (i=0; i<16; i++)
             if (i & (1<<BIT_PLANE))
                 regp->Attribute[i] = WHITE_VALUE;
@@ -896,32 +1261,7 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->Attribute[18] = 0x0F;
     regp->Attribute[19] = 0x00;
     regp->Attribute[20] = 0x00;
-#if 0
-#ifdef PC98_EGC
-    /* There should be no writing of registers in this function */
-    outb (0x7c, 0x00);
-    /* set to 16color mode */
-    outb(0x6a, 0x01);
-    /* set EGC enable */
-    outb(0x7c, 0xc0); /* GRCG enable, RMW mode */
-    outb(0x6a, 0x07);
-    outb(0x6a, 0x05);
-    outb(0x6a, 0x06);
 
-    for (i = 0; i < 4 ; i++)
-        {
-            outb (0x7e,0xff);
-        }
-
-    /* set up VGA registers */
-
-    outw (EGC_READ, 0x0000) ;
-    outw (EGC_MASK, 0xffff) ;
-    outw (EGC_READ ,0x40ff) ;
-    outw (EGC_ADD, 0x0000) ;
-    outw (EGC_LENGTH, 0x000f) ;
-#endif /* PC98_EGC */
-#endif
     return(TRUE);
 }
 
@@ -942,6 +1282,7 @@ Bool
 vgaHWGetHWRec(ScrnInfoPtr scrp)
 {
     vgaRegPtr regp;
+    vgaHWPtr hwp;
     int i;
     
     /*
@@ -954,7 +1295,7 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
      */
     if (VGAHWPTR(scrp))
 	return TRUE;
-    VGAHWPTRLVAL(scrp) = xnfcalloc(sizeof(vgaHWRec), 1);
+    hwp = VGAHWPTRLVAL(scrp) = xnfcalloc(sizeof(vgaHWRec), 1);
     regp = &VGAHWPTR(scrp)->ModeReg;
     if (scrp->bitsPerPixel == 1) {
         /*
@@ -1001,10 +1342,17 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 	regp->DAC[766] = 0x00; 
 	regp->DAC[767] = 0x3F; 
 	regp->Attribute[17] = 0xFF;
-	VGAHWPTR(scrp)->ShowOverscan = TRUE;
+	hwp->ShowOverscan = TRUE;
     } else
-	VGAHWPTR(scrp)->ShowOverscan = FALSE;
-	
+	hwp->ShowOverscan = FALSE;
+
+    hwp->paletteEnabled = FALSE;
+    hwp->cmapSaved = FALSE;
+    hwp->pScrn = scrp;
+
+    /* Initialise the function pointers with the standard VGA versions */
+    vgaHWSetStdFuncs(hwp);
+
     return TRUE;
 }
 
@@ -1032,23 +1380,8 @@ vgaHWMapMem(ScrnInfoPtr scrp)
     vgaHWPtr hwp = VGAHWPTR(scrp);
     int scr_index = scrp->scrnIndex;
     
-#if defined(PC98_WAB) || defined(PC98_WABEP)
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER, (pointer)0xE0000,
-			    hwp->MapSize);
-#elif defined(PC98_GANB_WAP) || defined(PC98_WSNA) || defined(PC98_NKVNEC)
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER, (pointer)0xF00000,
-			    hwp->MapSize);
-#elif defined(PC98_TGUI)
-    if(!vgaUseLinearAddressing && pc98PvramBase != NULL)
-        hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER,
-                                pc98PvramBase, hwp->MapSize);
-#elif defined(PC98_EGC) || defined(PC98_PEGC)
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER, (pointer)0xA8000,
-			    hwp->MapSize);
-#else    
     hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER, (pointer)0xA0000,
 			    hwp->MapSize);
-#endif
     return hwp->Base != NULL;
 }
 
@@ -1069,40 +1402,27 @@ vgaHWGetIndex()
 }
 
 
-#endif /* VGA_MMIO */
- 
 void
-VGANAME(vgaHWGetIOBase)(vgaHWPtr hwp)
+vgaHWGetIOBase(vgaHWPtr hwp)
 {
-    hwp->IOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+    hwp->IOBase = (hwp->readMiscOut(hwp) & 0x01) ?
+				VGA_IOBASE_COLOR : VGA_IOBASE_MONO;
 }
 
 
 
 void
-VGANAME(vgaHWLock)(vgaHWPtr hwp)
+vgaHWLock(vgaHWPtr hwp)
 {
-    unsigned char temp;
-
-#ifndef PC98_EGC
     /* Protect CRTC[0-7] */
-    outb(hwp->IOBase + 4, 0x11);
-    temp = inb(hwp->IOBase + 5);
-    outb(hwp->IOBase + 5, temp & 0x7F);
-#endif
+    hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) & ~0x80);
 }
 
 void
-VGANAME(vgaHWUnlock)(vgaHWPtr hwp)
+vgaHWUnlock(vgaHWPtr hwp)
 {
-    unsigned char temp;
-
-#ifndef PC98_EGC
     /* Unprotect CRTC[0-7] */
-    outb(hwp->IOBase + 4, 0x11);
-    temp = inb(hwp->IOBase + 5);
-    outb(hwp->IOBase + 5, (temp & 0x7F) | 0x80);
-#endif
+     hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) | 0x80);
 }
 
 

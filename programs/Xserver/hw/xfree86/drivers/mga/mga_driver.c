@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.46 1998/09/13 09:10:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.47 1998/09/19 12:14:55 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -63,9 +63,6 @@
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
-
-/* We use the MMIO version of vgaHW */
-#include "vgaHWmmio.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -1501,7 +1498,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg;
 
-    vgaHWUnlockMMIO(hwp);
+    vgaHWUnlock(hwp);
 
     /* Initialise the ModeReg values */
     if (!vgaHWInit(pScrn, mode))
@@ -1512,7 +1509,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
 
     /* Program the registers */
-    vgaHWProtectMMIO(pScrn, TRUE);
+    vgaHWProtect(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
     mgaReg = &pMga->ModeReg;
 
@@ -1520,7 +1517,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
-    vgaHWProtectMMIO(pScrn, FALSE);
+    vgaHWProtect(pScrn, FALSE);
 
     return TRUE;
 }
@@ -1546,9 +1543,9 @@ MGARestore(ScrnInfoPtr pScrn)
     xf86EnableAccess(&pScrn->Access);
 
     /* Only restore text mode fonts/text for the primary card */
-    vgaHWProtectMMIO(pScrn, TRUE);
+    vgaHWProtect(pScrn, TRUE);
     (*pMga->Restore)(pScrn, vgaReg, mgaReg, xf86IsPrimaryPci(pMga->PciInfo));
-    vgaHWProtectMMIO(pScrn, FALSE);
+    vgaHWProtect(pScrn, FALSE);
 
     xf86DelControlledResource(&pScrn->Access, FALSE);
 
@@ -1584,9 +1581,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!MGAMapMem(pScrn))
 	return FALSE;
 
-    /* Set the IO base */
-    hwp->MemBase = (long)pMga->IOBase + PORT_OFFSET;
-    vgaHWGetIOBaseMMIO(hwp);
+    /* Initialise the MMIO vgahw functions */
+    vgaHWSetMmioFuncs(hwp, pMga->IOBase + PORT_OFFSET);
+    vgaHWGetIOBase(hwp);
 
     /* Map the VGA memory when the primary video */
     if (xf86IsPrimaryPci(pMga->PciInfo)) {
@@ -1830,7 +1827,7 @@ MGALeaveVT(int scrnIndex, int flags)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     MGARestore(pScrn);
-    vgaHWLockMMIO(hwp);
+    vgaHWLock(hwp);
 }
 
 
@@ -1850,7 +1847,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     MGAPtr pMga = MGAPTR(pScrn);
 
     MGARestore(pScrn);
-    vgaHWLockMMIO(hwp);
+    vgaHWLock(hwp);
     MGAUnmapMem(pScrn);
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);
@@ -1909,7 +1906,7 @@ MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 MGASaveScreen(ScreenPtr pScreen, Bool unblank)
 {
-    return vgaHWSaveScreenMMIO(pScreen, unblank);
+    return vgaHWSaveScreen(pScreen, unblank);
 }
 
 

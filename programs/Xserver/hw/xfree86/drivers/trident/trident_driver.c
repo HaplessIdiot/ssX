@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.28 1998/09/13 05:23:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.29 1998/09/13 09:10:23 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1144,7 +1144,7 @@ TRIDENTSave(ScrnInfoPtr pScrn)
     vgaReg = &VGAHWPTR(pScrn)->SavedReg;
     tridentReg = &pTrident->SavedReg;
 
-    vgaHWSave(pScrn, vgaReg, TRUE);
+    vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
 
     TridentSave(pScrn, tridentReg);
 }
@@ -1187,7 +1187,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     vgaReg->CRTC[19] = pScrn->displayWidth >> 3;
 
-    vgaHWRestore(pScrn, vgaReg, FALSE);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
 
     TridentRestore(pScrn, tridentReg);
 
@@ -1216,7 +1216,7 @@ TRIDENTRestore(ScrnInfoPtr pScrn)
 
     TridentRestore(pScrn, tridentReg);
 
-    vgaHWRestore(pScrn, vgaReg, TRUE);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
     vgaHWProtect(pScrn, FALSE);
 }
