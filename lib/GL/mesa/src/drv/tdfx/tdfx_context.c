@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.8 2002/04/10 16:20:04 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -756,7 +756,7 @@ GLboolean tdfxInitGlide(tdfxContextPtr tmesa)
    }         
 
 #define GET_FUNCTION(PTR, NAME, CHECK)					\
-   *((void **)(tmesa->Glide.PTR)) = dlsym(libHandle, NAME);		\
+   *((void **)&(tmesa->Glide.PTR)) = dlsym(libHandle, NAME);		\
    if (CHECK && !tmesa->Glide.PTR) {					\
       __driUtilMessage("couldn't find Glide function %s in %s.",	\
               NAME, libName);						\
