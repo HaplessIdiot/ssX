@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.45 1999/03/07 11:40:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.46 1999/03/14 03:22:05 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1940,8 +1940,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pTrident->DDC));
 #endif
 
+#if 0
     /* Turn on the screen now */
     TRIDENTSaveScreen(pScreen, TRUE);
+#endif
 
     return TRUE;
 }
