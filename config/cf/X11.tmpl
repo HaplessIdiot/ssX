@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.164 2002/09/04 03:09:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.165 2002/09/09 17:13:11 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3270,7 +3270,7 @@ fonts.cache: deplist							@@\
 	RunProgram(FCCACHE, $(FCCACHEOPTS) .)				@@\
 									@@\
 clean::									@@\
-	RemoveFile(fonts.cache)
+	RemoveFiles(fonts.cache*)
 # endif /* MakeFcCache */
 
 # ifndef InstallFcCache
