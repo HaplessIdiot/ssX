@@ -1,4 +1,9 @@
-XFree86 3.1.2Db (4 March 1996)
+XFree86 3.1.2Db (5 March 1996)
+427. Fix a problem where hw cursors get recoloured incorrectly.
+426. Fix another possible Trio32 font cache problem (Harald Koenig).
+425. Another S3 968 dashed line fix (Harald Koenig).
+424. Fix RecolorCursor problems for S3 hw cursors in RAMDACs and for
+     sw cursor (Harald Koenig).
 423. Add a Japanese version of the FreeBSD README (Takefumi Tsukada).
 422. Fix for problems with XF86_WSNA server (X98 core team).
 421. Add a mapping for Pointer_EnableKeys to the XKB symbols/us map (Joe Moss).
