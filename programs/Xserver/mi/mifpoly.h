@@ -41,7 +41,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mifpoly.h,v 1.2 2001/08/06 20:51:18 dawes Exp $ */
+
+#ifndef __MIFPOLY_H__
+#define __MIFPOLY_H__
 
 #define EPSILON	0.000001
 #define ISEQUAL(a,b) (Fabs((a) - (b)) <= EPSILON)
@@ -100,3 +103,5 @@ extern void miFillSppPoly(
     double /*xFtrans*/,
     double /*yFtrans*/
 );
+
+#endif /* __MIFPOLY_H__ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.h,v 3.4 2001/01/17 22:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.h,v 3.5 2001/08/06 20:51:18 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -22,6 +22,9 @@ in this Software without prior written authorization from The Open Group.
 ********************************************************/
 
 /* $Xorg: mifillarc.h,v 1.3 2000/08/17 19:53:37 cpqbld Exp $ */
+
+#ifndef __MIFILLARC_H__
+#define __MIFILLARC_H__
 
 #define FULLCIRCLE (360 * 64)
 
@@ -206,3 +209,4 @@ extern void miFillArcSliceSetup(
     GCPtr /*pGC*/
 );
 
+#endif /* __MIFILLARC_H__ */

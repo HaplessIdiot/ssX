@@ -22,11 +22,12 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miwideline.h,v 1.9 2001/04/05 17:42:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.h,v 1.10 2001/08/06 20:51:20 dawes Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
 #include "mispans.h"
+#include "mifpoly.h" /* for ICEIL */
 
 /* 
  * interface data to span-merging polygon filler
@@ -149,21 +150,6 @@ typedef struct _LineFace {
 	ValidateGC (pDrawable, pGC); \
     } \
 }
-
-#ifdef NOINLINEICEIL
-#define ICEIL(x) ((int)ceil(x))
-#else
-#ifdef __GNUC__
-static __inline int ICEIL(double x)
-{
-    int _cTmp = x;
-    return ((x == _cTmp) || (x < 0.0)) ? _cTmp : _cTmp+1;
-}
-#else
-#define ICEIL(x) ((((x) == (_cTmp = (x))) || ((x) < 0.0)) ? _cTmp : _cTmp+1)
-#define ICEILTEMPDECL static int _cTmp;
-#endif
-#endif
 
 extern void miFillPolyHelper(
     DrawablePtr /*pDrawable*/,
