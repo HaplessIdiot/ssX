@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.4 1994/08/31 04:23:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.5 1994/09/07 15:50:50 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -28,10 +28,10 @@
 #define CRT           0   
 #define ATT_C         21
 #define ATT_IW        0x3C0
-#define ATT           CRT+CRT_C
+#define ATT_          CRT+CRT_C
 #define ATT_R         0x3C1
 #define GRA_C         9
-#define GRA           ATT+ATT_C
+#define GRA           ATT_+ATT_C
 #define GRA_I         0x3CE         /* Graphics Controller Index */
 #define GRA_D         0x3CF         /* Graphics Controller Data Register */
 #define SEQ_C         5

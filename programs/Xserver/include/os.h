@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h,v 1.61 94/04/17 20:25:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.0 1994/05/21 23:58:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.1 1994/10/23 13:01:43 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -101,7 +101,7 @@ pragma on(alloca);
 #endif /* defined(__HIGHC__) */
 
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(alloca)
 #define alloca __builtin_alloca
 #endif
 

@@ -77,10 +77,10 @@ SOFTWARE.
 #  include <net/if.h>
 # endif
 #else
-#if defined(SVR4) || defined(SYSV386)
+#if defined(SVR4) || (defined(SYSV) && defined(i386))
 # include <sys/utsname.h>
 #endif
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
 # include <sys/stream.h>
 #endif
 #ifdef ESIX

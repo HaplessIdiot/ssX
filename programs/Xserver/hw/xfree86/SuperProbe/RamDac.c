@@ -29,7 +29,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.4 1994/09/19 14:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.5 Exp $ */
 
 #include "Probe.h"
 
@@ -50,7 +50,7 @@ static Bool S3_TVP3020Check __STDCARGS((int *));
 static Bool S3_ATT498Check __STDCARGS((int *));
 static Bool S3_STG1700Check __STDCARGS((int *));
 static Bool S3_GENDACCheck __STDCARGS((int *));
-static void CheckMach32 __STDCARGS((int *));
+static void CheckMach32_64 __STDCARGS((int, int *));
 
 #ifdef __STDC__
 static void ReadPelReg(Byte Index, Byte *Pixel)
@@ -501,14 +501,18 @@ int *RamDac;
 	return(Found);
 }
 
-static void CheckMach32(RamDac)
+static void CheckMach32_64(ChipSet, RamDac)
+int ChipSet;
 int *RamDac;
 {
 	Word Port = CONFIG_STATUS_1;
 
+	if (ChipSet >= CHIP_ATI88800)
+		Port = CONFIG_STATUS_0;
+
 	EnableIOPorts(1, &Port);
 
-	switch ((inpw(CONFIG_STATUS_1) & 0x0E00) >> 9)
+	switch ((inpw(Port) & 0x0E00) >> 9)
 	{
 	case 0x00:
 		*RamDac = DAC_ATI68830;
@@ -543,8 +547,13 @@ int *RamDac;
 			*RamDac |= DAC_8BIT;
 		}
 		break;
-	default:
-		*RamDac = DAC_UNKNOWN;
+	case 0x06:
+		*RamDac = DAC_STG1700;
+		*RamDac |= DAC_6_8_PROGRAM;
+		break;
+	case 0x07:
+		*RamDac = DAC_ATT498;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	}
 
@@ -601,7 +610,7 @@ int *RamDac;
 	    }
 	    else
 	    {
-		CheckMach32(RamDac);
+		CheckMach32_64(Chipset, RamDac);
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }

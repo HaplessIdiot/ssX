@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.27 1994/10/29 22:37:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.28 Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1011,10 +1011,10 @@ configKeyboardSection()
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
   xf86Info.specialKeyMap = (int *)xalloc((RIGHTCTL - LEFTALT + 1) *
                                             sizeof(int));
-  xf86Info.specialKeyMap[LEFTALT - LEFTALT] = K_META;
-  xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = K_META;
-  xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = K_COMPOSE;
-  xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = K_CONTROL;
+  xf86Info.specialKeyMap[LEFTALT - LEFTALT] = KM_META;
+  xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = KM_META;
+  xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = KM_COMPOSE;
+  xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = KM_CONTROL;
 
   while ((token = getToken(KeyboardTab)) != ENDSECTION) {
     switch (token) {
@@ -1065,12 +1065,12 @@ configKeyboardSection()
 	configError("KeyMap type token expected");
       else {
 	switch(ntoken) {
-	case K_META:
-	case K_COMPOSE:
-	case K_MODESHIFT:
-	case K_MODELOCK:
-	case K_SCROLLLOCK:
-	case K_CONTROL:
+	case KM_META:
+	case KM_COMPOSE:
+	case KM_MODESHIFT:
+	case KM_MODELOCK:
+	case KM_SCROLLLOCK:
+	case KM_CONTROL:
           xf86Info.specialKeyMap[token - LEFTALT] = ntoken;
 	  break;
 	default:

@@ -50,7 +50,7 @@ from the X Consortium.
 #include <stdlib.h>
 #endif
 
-#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
 

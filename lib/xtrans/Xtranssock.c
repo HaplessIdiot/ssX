@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.5 1994/10/21 11:21:32 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.6 1994/11/19 07:47:10 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -95,14 +95,14 @@ from the X Consortium.
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
-#if (defined(SYSV386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
 #if !defined(_SEQUENT_) && !defined(ESIX)
 #include <net/errno.h>
 #endif /* _SEQUENT_  || ESIX */
 #ifndef ISC
 #include <sys/stropts.h>
 #endif
-#endif /* SYSV386 ** SYSV || _SEQUENT_ */
+#endif /* i386 && SYSV && !SCO || _SEQUENT_ */
 #endif /* !WIN32 */
 
 #ifdef WIN32
@@ -1542,7 +1542,7 @@ char dummybuf[1500];
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (defined(SYSV386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
 #if defined(__EMX__)
@@ -1550,7 +1550,7 @@ char dummybuf[1500];
 #else
     return ioctl (ciptr->fd, FIONREAD, (char *) pend);
 #endif /* __EMX__ */
-#endif /* SYSV386 && SYSV || _SEQUENT_ */
+#endif /* i386 && SYSV && !SCO || _SEQUENT_ */
 #endif /* WIN32 */
 }
 

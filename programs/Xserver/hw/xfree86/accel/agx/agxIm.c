@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.7 1994/11/19 07:50:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.8 1994/11/26 12:40:00 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -1051,7 +1051,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
 
 void
-#if NeedFunctionPrototypes
+#if NeedFunctionPrototypes && 0
 agxImageStipple(int x, int y, int w, int h, char *psrc, int pwidth, int pw,
 		int ph, int pox, int poy, Pixel fgPixel, Pixel bgPixel,
 		short fgAlu, short bgAlu, unsigned long planemask)

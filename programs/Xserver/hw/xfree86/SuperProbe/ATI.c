@@ -25,22 +25,28 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.0 1994/05/14 06:50:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.1 Exp $ */
 
 #include "Probe.h"
+
+static Word Ports[] = {0x01CE, 0x01CF,
+		       CHIP_ID, CONFIG_CHIP_ID };
+#define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_ATI __STDCARGS((int));
 
 Chip_Descriptor ATI_Descriptor = {
 	"ATI",
 	Probe_ATI,
-	NULL,
-	0,
-	FALSE,
+	Ports,
+	NUMPORTS,
+	TRUE,
 	TRUE,
 	TRUE,
 	MemProbe_ATI,
 };
+
+extern Chip_Descriptor ATIMach_Descriptor;
 
 #ifdef __STDC__
 Bool Probe_ATI(int *Chipset)
@@ -52,7 +58,45 @@ int *Chipset;
 	Bool result = FALSE;
 	Byte bios[10];
 	Byte *signature = (Byte *)"761295520";
-	Word GUP;
+	int chip;
+
+	/*
+	 * First, look for a Mach32 or a Mach64.
+	 */
+	if (ATIMach_Descriptor.f(&chip) &&
+	   ((chip == CHIP_MACH32) | (chip == CHIP_MACH64)))
+	{
+		EnableIOPorts(NUMPORTS, Ports);
+
+		if (chip == CHIP_MACH64)
+			*Chipset = CHIP_ATI88800;
+		else
+		{
+			chip = inpw(CHIP_ID);
+			switch (chip & 0x03FF)
+			{
+			case 0x0000:
+				*Chipset = CHIP_ATI68800_3;
+				break;
+			case 0x02F7:
+				*Chipset = CHIP_ATI68800_6;
+				break;
+			case 0x0177:
+				*Chipset = CHIP_ATI68800LX;
+				break;
+			case 0x0017:
+				*Chipset = CHIP_ATI68800AX;
+				break;
+			default:
+				Chip_data = ((chip >> 5) & 0x1F) + 0x41;
+				*Chipset = CHIP_ATI_UNK;
+				break;
+			}
+		}
+
+		DisableIOPorts(NUMPORTS, Ports);
+		return (TRUE);
+	}
 
 	if (ReadBIOS(0x31, bios, 9) != 9)
 	{
@@ -87,46 +131,42 @@ int *Chipset;
 			case '5':
 				*Chipset = CHIP_ATI28800_5;
 				break;
-			case 'a':
-			case 'b':
-			case 'c':
-				/*
-				 * 68800-??
-				 *
-				 * Chipset ID encoded as:
-				 *	Bits 0-4 - low letter
-				 *	Bits 5-9 - high letter
-				 *  Add 0x41 to each to get ascii letter.
-				 *
-				 * Started at 68800-6, so 0 shows up for the
-				 * 68800-3.
-				 */
-				GUP = inpw(CHIP_ID);
-				switch (GUP & 0x03FF)
-				{
-				case 0x0000:
-					*Chipset = CHIP_ATI68800_3;
-					break;
-				case 0x02F7:	/* XX */
-					*Chipset = CHIP_ATI68800_6;
-					break;
-				case 0x0177:	/* LX */
-					*Chipset = CHIP_ATI68800LX;
-					break;
-				case 0x0017:	/* AX */
-					*Chipset = CHIP_ATI68800AX;
-					break;
-				default:
-					Chip_data = ((GUP >> 5) & 0x1F) + 0x41;
-					*Chipset = CHIP_ATI_UNK;
-					break;
-				}
+			case '6':
+				*Chipset = CHIP_ATI28800_6;
 				break;
 			default:
 				Chip_data = bios[3];
 				*Chipset = CHIP_ATI_UNK;
 				break;
 			}
+
+			/* Set up Ports array */
+			if (ReadBIOS(0x10, bios, sizeof(Word)) != sizeof(Word))
+			{
+				fprintf(stderr,
+					"%s: Failed to read ATI BIOS data\n",
+					MyName);
+				return (FALSE);
+			}
+			Ports[0] = *((Word *)bios);
+			Ports[1] = Ports[0] + 1;
+			EnableIOPorts(NUMPORTS, Ports);
+
+			/*
+			 * Sometimes, the BIOS lies about the chip.
+			 */
+			if (*Chipset >= CHIP_ATI28800_4)
+			{
+				chip = rdinx(Ports[0], 0xAA) & 0x0F;
+				if (chip < 7)
+				{
+					chip = SVGA_TYPE(V_ATI, chip);
+					if (chip > *Chipset)
+						*Chipset = chip;
+				}
+			}
+
+			DisableIOPorts(NUMPORTS, Ports);
 		}
 	}
 	return(result);
@@ -135,44 +175,29 @@ int *Chipset;
 static int MemProbe_ATI(Chipset)
 int Chipset;
 {
-	Word Ports[3] = {0x000, 0x000, MISC_OPTIONS};
-	Byte bios[20];
 	int Mem = 0;
 
-	if (ReadBIOS(0x40, bios, 20) != 20)
-	{
-		fprintf(stderr, "%s: Failed to read ATI BIOS data\n", MyName);
-		return(0);
-	}
-	Ports[0] = *((Word *)bios + 0x08);
-	Ports[1] = Ports[0] + 1;
-	EnableIOPorts(3, Ports);
+	if (Chipset >= CHIP_ATI88800)
+		return (ATIMach_Descriptor.memcheck(CHIP_MACH64));
+	if (Chipset >= CHIP_ATI68800_3)
+		return (ATIMach_Descriptor.memcheck(CHIP_MACH32));
+
+	/* Ports array should already be set up */
+	EnableIOPorts(NUMPORTS, Ports);
 
 	switch (Chipset)
 	{
 	case CHIP_ATI18800:
 	case CHIP_ATI18800_1:
 		if (rdinx(Ports[0], 0xBB) & 0x20)
-		{
 			Mem = 512;
-		}
 		else
-		{
 			Mem = 256;
-		}
 		break;
 	case CHIP_ATI28800_2:
-		if (rdinx(Ports[0], 0xB0) & 0x10)
-		{
-			Mem = 512;
-		}
-		else
-		{
-			Mem = 256;
-		}
-		break;
 	case CHIP_ATI28800_4:
 	case CHIP_ATI28800_5:
+	case CHIP_ATI28800_6:
 		switch (rdinx(Ports[0], 0xB0) & 0x18)
 		{
 		case 0x00:
@@ -187,27 +212,9 @@ int Chipset;
 			break;
 		}
 		break;
-	default:
-		/* GUP */
-		switch ((inpw(MISC_OPTIONS) & 0x000C) >> 2)
-		{
-		case 0x00:
-			Mem = 512;
-			break;
-		case 0x01:
-			Mem = 1024;
-			break;
-		case 0x02:
-			Mem = 2048;
-			break;
-		case 0x03:
-			Mem = 4096;
-			break;
-		}
-		break;
 	}
 
-	DisableIOPorts(3, Ports);
+	DisableIOPorts(NUMPORTS, Ports);
 	return(Mem);
 
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.3 1994/11/19 07:32:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.4 1994/11/19 13:53:18 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -123,11 +123,19 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.3 1994/11/19 07:32:31 dawes Exp $
 #endif
 
 #ifndef StandardDefines
-#define StandardDefines		-DSYSV -DSYSV386 OSDefines -Di386
+#ifdef i386Architecture
+#define StandardDefines		-DSYSV OSDefines -Di386
+#else
+#define StandardDefines		-DSYSV OSDefines
+#endif
 #endif
 
 #ifndef ServerOSDefines
-# define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
+# ifdef i386Architecture
+#  define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
+# else
+#  define ServerOSDefines -DDDXTIME
+# endif
 #endif
 
 #ifndef XawI18nDefines
@@ -312,5 +320,8 @@ install.man::                                                           @@\
 #endif
 
 #include <sv3Lib.rules>
+
+#ifdef i386Architecture
 #include <xfree86.cf>
+#endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.2 1994/10/29 22:45:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.3 1994/11/05 23:50:59 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -511,6 +511,21 @@
 #define CRTC_OFF_PITCH		0x16ec
 #define CRTC_INT_CNTL		0x1aec
 #define CRTC_GEN_CNTL		0x1eec
+#define CRTC_DBL_SCAN_EN		0x00000001
+#define CRTC_INTERLACE_EN		0x00000002
+#define CRTC_HSYNC_DIS			0x00000004
+#define CRTC_VSYNC_DIS			0x00000008
+#define CRTC_CSYNC_EN			0x00000010
+#define CRTC_PIX_BY_2_EN		0x00000020
+/*	?				0x000000C0 */
+#define CRTC_PIX_WIDTH			0x00000700
+#define CRTC_BYTE_PIX_ORDER		0x00000800
+/*	?				0x0000F000 */
+#define CRTC_FIFO_LWM			0x000F0000
+/*	?				0x00F00000 */
+#define CRTC_EXT_DISP_EN		0x01000000
+#define CRTC_EN				0x02000000
+/*	?				0xFC000000 */
 #define OVR_CLR			0x22ec
 #define OVR_WID_LEFT_RIGHT	0x26ec
 #define OVR_WID_TOP_BOTTOM	0x2aec
@@ -523,6 +538,23 @@
 #define SCRATCH_REG1		0x46ec
 #define CLOCK_CNTL		0x4aec
 #define BUS_CNTL		0x4eec
+#define BUS_WS				0x0000000F
+#define BUS_ROM_WS			0x000000F0
+#define BUS_ROM_PAGE			0x00000F00
+#define BUS_ROM_DIS			0x00001000
+#define BUS_IO_16_EN			0x00002000
+#define BUS_DAC_SNOOP_EN		0x00004000
+/*	?				0x00008000 */
+#define BUS_FIFO_WS			0x000F0000
+#define BUS_FIFO_ERR_INT_EN		0x00100000
+#define BUS_FIFO_ERR_INT		0x00200000
+#define BUS_HOST_ERR_INT_EN		0x00400000
+#define BUS_HOST_ERR_INT		0x00800000
+#define BUS_PCI_DAC_WS			0x07000000
+#define BUS_PCI_DAC_DLY			0x08000000
+#define BUS_PCI_MEMW_WS			0x10000000
+#define BUS_PCI_BURST_DEC		0x20000000
+#define BUS_RDY_READ_DLY		0xC0000000
 #define MEM_INFO		0x52ec		/* Changed from MEM_CNTL */
 #define CTL_MEM_SIZE			0x00000007
 /*	?				0x00000008 */
@@ -541,7 +573,40 @@
 #define DAC_REGS		0x5eec		/* Actually 4 separate bytes */
 #define DAC_CNTL		0x62ec
 #define GEN_TEST_CNTL		0x66ec
+#define GEN_EE_DATA_OUT			0x00000001
+#define GEN_EE_CLOCK			0x00000002
+#define GEN_EE_CHIP_SEL			0x00000004
+#define GEN_EE_DATA_IN			0x00000008
+#define GEN_EE_EN			0x00000010
+#define GEN_OVR_OUTPUT_EN		0x00000020
+#define GEN_OVR_POLARITY		0x00000040
+#define GEN_CUR_EN			0x00000080
+#define GEN_GUI_EN			0x00000100
+#define GEN_BLOCK_WR_EN			0x00000200
+/*	?				0x0000FC00 */
+#define GEN_TEST_FIFO_EN		0x00010000
+#define GEN_TEST_GUI_REGS_EN		0x00020000
+#define GEN_TEST_VECT_EN		0x00040000
+#define GEN_TEST_CRC_STR		0x00080000
+#define GEN_TEST_MODE			0x00700000
+/*	?				0x00800000 */
+#define GEN_TEST_MEM_WR			0x01000000
+#define GEN_TEST_MEM_STROBE		0x02000000
+#define GEN_TEST_DST_SS_EN		0x04000000
+#define GEN_TEST_DST_SS_STROBE		0x08000000
+#define GEN_TEST_SRC_SS_EN		0x10000000
+#define GEN_TEST_SRC_SS_STROBE		0x20000000
+#define GEN_TEST_CC_EN			0x40000000
+#define GEN_TEST_CC_STROBE		0x80000000
 #define CONFIG_CNTL		0x6aec
+#define CFG_MEM_AP_SIZE			0x00000003
+#define CFG_MEM_VGA_AP_EN		0x00000004
+/*	?				0x00000008 */
+#define CFG_MEM_AP_LOC			0x00003FF0
+/*	?				0x0000C000 */
+#define CFG_CARD_ID			0x00070000
+#define CFG_VGA_DIS			0x00080000
+/*	?				0xFFF00000 */
 #define CONFIG_CHIP_ID		0x6eec		/* Read */
 #define CFG_CHIP_TYPE0			0x000000FF
 #define CFG_CHIP_TYPE1			0x0000FF00

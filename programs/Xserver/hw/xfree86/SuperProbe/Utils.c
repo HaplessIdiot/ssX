@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Utils.c,v 3.0 1994/05/14 06:51:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Utils.c,v 3.1 Exp $ */
 
 #include "Probe.h"
 #include "AsmMacros.h"
@@ -57,6 +57,19 @@ Word port;
 }
 
 /*
+ * Return the long value of register 'port'
+ */
+#ifdef __STDC__
+Long inpl(Word port)
+#else
+Long inpl(port)
+Word port;
+#endif
+{
+	return(inl(port));
+}
+
+/*
  * Set the byte register 'port' to 'val'
  */
 #ifdef __STDC__
@@ -81,6 +94,20 @@ Word port, val;
 #endif
 {
 	outw(port, val);
+}
+
+/*
+ * Set the long register 'port' to 'val'
+ */
+#ifdef __STDC__
+void outpl(Word port, Long val)
+#else
+void outpl(port, val)
+Word port;
+Long val;
+#endif
+{
+	outl(port, val);
 }
 
 /*

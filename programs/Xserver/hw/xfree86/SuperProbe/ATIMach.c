@@ -25,12 +25,13 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.0 1994/05/14 06:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.1 Exp $ */
 
 #include "Probe.h"
 
 static Word Ports[] = {ROM_ADDR_1,DESTX_DIASTP,READ_SRC_X,
-		       CONFIG_STATUS_1,MISC_OPTIONS};
+		       CONFIG_STATUS_1,MISC_OPTIONS,GP_STAT,
+		       SCRATCH_REG0, MEM_INFO};
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_ATIMach __STDCARGS((int));
@@ -55,68 +56,80 @@ Chip_Descriptor ATIMach_Descriptor = {
 Bool Probe_ATIMach(Chipset)
 int *Chipset;
 {
-	Bool result = FALSE;
-	Word tmp;
-	int chip = -1;
+	Long tmp;
+	static int chip = -1;
+	static Bool Already_Called = FALSE;
+
+	if (Already_Called)
+	{
+		if (chip != -1)
+			*Chipset = chip;
+		return (chip != -1);
+	}
+	Already_Called = TRUE;
 
 	EnableIOPorts(NUMPORTS, Ports);
 
-	/*
-	 * Check for 8514/A registers first.  Don't read BIOS, or an
-	 * attached 8514 Ultra won't be detected (the slave SVGA's BIOS
-	 * is in the normal SVGA place).
+	/* 
+	 * First check for a Mach64.
 	 */
-	tmp = inpw(ROM_ADDR_1);
-	outpw(ROM_ADDR_1, 0x5555);
-	WaitIdleEmpty();
-	if (inpw(ROM_ADDR_1) == 0x5555)
+	tmp = inpl(SCRATCH_REG0);
+	outpl(SCRATCH_REG0, 0x55555555);		/* Test odd bits */
+	if (inpl(SCRATCH_REG0) == 0x55555555)
 	{
-		outpw(ROM_ADDR_1, 0x2A2A);
-		WaitIdleEmpty();
-		if (inpw(ROM_ADDR_1) == 0x2A2A)
-		{
-			result = TRUE;
-		}
+		outpl(SCRATCH_REG0, 0xAAAAAAAA);	/* Test even bits */
+		if (inpl(SCRATCH_REG0) == 0xAAAAAAAA)
+			chip = CHIP_MACH64;
 	}
-	outpw(ROM_ADDR_1, tmp);
-	if (result)
+	outpl(SCRATCH_REG0, tmp);
+
+	if (chip = -1)
 	{
 		/*
-		 * Accelerator is really present; now figure
-		 * out which one.
+		 * Check for 8514/A registers.  Don't read BIOS, or an attached
+		 * 8514 Ultra won't be detected (the slave SVGA's BIOS is in
+		 * the normal SVGA place).
 		 */
-		outpw(DESTX_DIASTP, 0xAAAA);
+		tmp = inpw(ROM_ADDR_1);
+		outpw(ROM_ADDR_1, 0x5555);
 		WaitIdleEmpty();
-		if (inpw(READ_SRC_X) != 0x02AA)
+		if (inpw(ROM_ADDR_1) == 0x5555)
 		{
-			chip = CHIP_MACH8;
+			outpw(ROM_ADDR_1, 0x2A2A);
+			WaitIdleEmpty();
+			if (inpw(ROM_ADDR_1) == 0x2A2A)
+				chip = CHIP_8514;
 		}
-		else
+		outpw(ROM_ADDR_1, tmp);
+		if (chip != -1)
 		{
-			chip = CHIP_MACH32;
-		}
-		outpw(DESTX_DIASTP, 0x5555);
-		WaitIdleEmpty();
-		if (inpw(READ_SRC_X) != 0x0555)
-		{
-			if (chip != CHIP_MACH8)
+			/*
+			 * An 8514 accelerator is really present;  now figure
+			 * out which one.
+			 */
+			outpw(DESTX_DIASTP, 0xAAAA);
+			WaitIdleEmpty();
+			if (inpw(READ_SRC_X) != 0x02AA)
+				chip = CHIP_MACH8;
+			else
+				chip = CHIP_MACH32;
+			outpw(DESTX_DIASTP, 0x5555);
+			WaitIdleEmpty();
+			if (inpw(READ_SRC_X) != 0x0555)
 			{
-				/*
-				 * Something bizarre is happening.
-				 */
-				chip = -1;
-				result = FALSE;
+				if (chip != CHIP_MACH8)
+					/*
+					 * Something bizarre is happening.
+					 */
+					chip = -1;
 			}
-		}
-		else
-		{
-			if (chip != CHIP_MACH32)
+			else
 			{
-				/*
-				 * Something bizarre is happening.
-				 */
-				chip = -1;
-				result = FALSE;
+				if (chip != CHIP_MACH32)
+					/*
+					 * Something bizarre is happening.
+					 */
+					chip = -1;
 			}
 		}
 	}
@@ -127,13 +140,18 @@ int *Chipset;
 	}
 
 	DisableIOPorts(NUMPORTS, Ports);
-	return(result);
+	return(chip != -1);
 }
 
 static int MemProbe_ATIMach(Chipset)
 int Chipset;
 {
-	int Mem = 0;
+	static int Mem = 0;
+	static Bool Already_Called = FALSE;
+
+	if (Already_Called)
+		return (Mem);
+	Already_Called = TRUE;
 
 	EnableIOPorts(NUMPORTS, Ports);
 	if (Chipset == CHIP_MACH8)
@@ -147,7 +165,7 @@ int Chipset;
 			Mem = 512;
 		}
 	}
-	else
+	else if (Chipset == CHIP_MACH32)
 	{
 		switch ((inpw(MISC_OPTIONS) & 0x000C) >> 2)
 		{
@@ -162,6 +180,36 @@ int Chipset;
 			break;
 		case 0x03:
 			Mem = 4096;
+			break;
+		}
+	}
+	else if (Chipset == CHIP_MACH64)
+	{
+		switch (inpl(MEM_INFO) & 0x00000007)
+		{
+		case 0x00:
+			Mem = 512;
+			break;
+		case 0x01:
+			Mem = 1024;
+			break;
+		case 0x02:
+			Mem = 2048;
+			break;
+		case 0x03:
+			Mem = 4096;
+			break;
+		case 0x04:
+			Mem = 6144;
+			break;
+		case 0x05:
+			Mem = 8192;
+			break;
+		case 0x06:
+			Mem = 12288;
+			break;
+		case 0x07:
+			Mem = 8192;
 			break;
 		}
 	}

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.3 1994/11/05 23:42:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.4 Exp $ */
 
 /*
  * Includes
@@ -120,8 +120,10 @@ void ShortSleep __STDCARGS((const int Delay));
 /* Utils.c */
 Byte inp __STDCARGS((Word));
 Word inpw __STDCARGS((Word));
+Long inpl __STDCARGS((Word));
 void outp __STDCARGS((Word, Byte));
 void outpw __STDCARGS((Word, Word));
+void outpl __STDCARGS((Word, Long));
 Byte rdinx __STDCARGS((Word, Byte));
 void wrinx __STDCARGS((Word, Byte, Byte));
 void wrinx2 __STDCARGS((Word, Byte, Word));
@@ -259,6 +261,11 @@ extern Chip_Descriptor ATIMach_Descriptor;
 #define READ_SRC_X	0xDAEE
 #define GP_STAT		0x9AE8
 #define GPBUSY		0x0200
+/* Mach64 */
+#define SCRATCH_REG0	0x42EC
+#define MEM_INFO	0x52EC
+#define CONFIG_CHIP_ID	0x6EEC
+#define CONFIG_STATUS_0	0x72EC
 
 /*
  * RAMDAC Types
@@ -372,10 +379,12 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI28800_2	SVGA_TYPE(V_ATI,3)	/* ATI 28800-2 		*/
 #define CHIP_ATI28800_4	SVGA_TYPE(V_ATI,4)	/* ATI 28800-4		*/
 #define CHIP_ATI28800_5	SVGA_TYPE(V_ATI,5)	/* ATI 28800-5		*/
-#define CHIP_ATI68800_3	SVGA_TYPE(V_ATI,6)	/* ATI 68800-3		*/
-#define CHIP_ATI68800_6	SVGA_TYPE(V_ATI,7)	/* ATI 68800-6 		*/
-#define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,8)	/* ATI 68800-LX		*/
-#define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,9)	/* ATI 68800-AX		*/
+#define CHIP_ATI28800_6	SVGA_TYPE(V_ATI,6)	/* ATI 28800-6		*/
+#define CHIP_ATI68800_3	SVGA_TYPE(V_ATI,7)	/* ATI 68800-3		*/
+#define CHIP_ATI68800_6	SVGA_TYPE(V_ATI,8)	/* ATI 68800-6 		*/
+#define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,9)	/* ATI 68800-LX		*/
+#define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,10)	/* ATI 68800-AX		*/
+#define CHIP_ATI88800	SVGA_TYPE(V_ATI,11)	/* ATI 88800		*/
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/
@@ -529,14 +538,17 @@ extern struct RamDac_Name RamDac_Names[];
 #define COPROC_TYPE(c,n)	(((c) << 16) | ((n) << 8) | CHIP_COPROC)
 #define C_8514		0
 #define C_XGA		1
+#define C_MACH64	2
 
-#define NUM_CP_TYPES	2
+#define NUM_CP_TYPES	3
 #define CHPS_PER_CPTYPE	6
 
 #define CHIP_8514	COPROC_TYPE(C_8514,0)	/* 8514/A or true clone */
-#define CHIP_MACH8	COPROC_TYPE(C_8514,1)	/* ATI Mach-8		*/
-#define CHIP_MACH32	COPROC_TYPE(C_8514,2)	/* ATI Mach-32		*/
+#define CHIP_MACH8	COPROC_TYPE(C_8514,1)	/* ATI Mach8		*/
+#define CHIP_MACH32	COPROC_TYPE(C_8514,2)	/* ATI Mach32		*/
 #define CHIP_CT480	COPROC_TYPE(C_8514,3)	/* C&T 82c480		*/
+
+#define CHIP_MACH64	COPROC_TYPE(C_MACH64,0)	/* ATI Mach64		*/
 
 /*
  * Useful macros

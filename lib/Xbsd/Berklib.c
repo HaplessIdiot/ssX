@@ -1,5 +1,5 @@
 /* $XConsortium: Berklib.c,v 1.24 94/04/17 20:23:08 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.0 1994/05/21 23:47:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987 X Consortium
@@ -64,7 +64,7 @@ from the X Consortium.
 #define WANT_FFS
 #endif
 
-#ifdef SYSV386
+#ifdef i386
 #ifdef SYSV
 #define WANT_FFS
 #define WANT_MEMMOVE

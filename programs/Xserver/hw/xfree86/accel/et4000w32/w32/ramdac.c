@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.2 1994/11/19 07:52:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -429,6 +429,7 @@ static check_ramdac()
 
     if (inb(RMR) != 0xff)
     {
+	cr_saved = FALSE;
 	ErrorF("Ramdac:  ATT20C47xA or Sierra 1502[5-6]\n");
 	return;
     }

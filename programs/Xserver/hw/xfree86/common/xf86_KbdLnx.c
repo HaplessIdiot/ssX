@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_KbdLnx.c,v 1.1 94/03/28 21:24:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.1 1994/09/23 10:13:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.2 Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -99,7 +99,7 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
     }
     if (j >= 0)
       switch (xf86Info.specialKeyMap[j]) {
-        case K_META:
+        case KM_META:
           if (k[0] == XK_Alt_R)
             k[1] = XK_Meta_R;
           else {
@@ -107,21 +107,21 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
             k[1] = XK_Meta_L;
           }
           break;
-        case K_COMPOSE:
+        case KM_COMPOSE:
           k[0] = XK_Multi_key;
           break;
-        case K_MODESHIFT:
+        case KM_MODESHIFT:
           k[0] = XK_Mode_switch;
           k[1] = NoSymbol;
           break;
-        case K_MODELOCK:
+        case KM_MODELOCK:
           k[0] = XK_Mode_switch;
           k[1] = XK_Mode_Lock;
           break;
-        case K_SCROLLLOCK:
+        case KM_SCROLLLOCK:
           k[0] = XK_Scroll_Lock;
           break;
-        case K_CONTROL:
+        case KM_CONTROL:
           k[0] = XK_Control_R;
           break;
       }
@@ -188,7 +188,6 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
   pKeySyms->maxKeyCode = MAX_KEYCODE;
 }
 
-#undef K_COMPOSE
 #include <linux/keyboard.h>
 
 static KeySym linux_to_x[256] = {
@@ -355,11 +354,11 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
    * First, figure out which tables to use for the modeswitch columns
    * above, from the XF86Config fields.
    */
-  if (xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] == K_MODESHIFT ||
-      xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] == K_MODELOCK)
+  if (xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] == KM_MODESHIFT ||
+      xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] == KM_MODELOCK)
     tbl[2] = 4;	/* control */
-  else if (xf86Info.specialKeyMap[K_INDEX_RIGHTALT] == K_MODESHIFT ||
-           xf86Info.specialKeyMap[K_INDEX_RIGHTALT] == K_MODELOCK)
+  else if (xf86Info.specialKeyMap[K_INDEX_RIGHTALT] == KM_MODESHIFT ||
+           xf86Info.specialKeyMap[K_INDEX_RIGHTALT] == KM_MODELOCK)
     tbl[2] = 2;	/* AltGr */
   else
     tbl[2] = 8;	/* alt */

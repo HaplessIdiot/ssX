@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.1 1994/08/31 04:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.2 Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -594,6 +594,7 @@ char *argv[];
     	Ports[0] = 0x3CC;
     	EnableIOPorts(1, Ports);
     	vgaIOBase = (inp(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+	DisableIOPorts(1, Ports);
     	if (vgaIOBase == 0x3D0)
     	{
     	    /*
@@ -613,99 +614,95 @@ char *argv[];
     	}
     
     	if (!Probe_VGA(&Primary))
-    	{
     	    Primary = CHIP_EGA;
-	    Check_CoProc = TRUE;
-    	}
     
     	/*
-     	 * If it's a VGA, do SVGA probing
+     	 * Do SVGA probing, even if no VGA is detected.  Some SVGA can emulate
+	 * pre-VGA adapters (such as EGA) and be left in such a state by BIOS
+	 * initialization.
      	 */
-    	if (IS_VGA(Primary))
-    	{
-	    if (Verbose)
+	if (Verbose)
+	{
+	    printf("Doing Super-VGA Probes...\n");
+	    fflush(stdout);
+	}
+	matched = &VGA_Descriptor;
+
+	if (order == NULL)
+	{
+	    /* 
+	     * Use default ordering.
+	     */
+	    for (i=0; SVGA_Descriptors[i] != NULL; i++)
 	    {
-		printf("Found VGA; doing Super-VGA Probes...\n");
-		fflush(stdout);
-	    }
-	    matched = &VGA_Descriptor;
-
-    	    if (order == NULL)
-    	    {
-    	    	/* 
-    	    	 * Use default ordering.
-    	    	 */
-    	    	for (i=0; SVGA_Descriptors[i] != NULL; i++)
-    	    	{
-    	    	    chip_p = SVGA_Descriptors[i];
-    	    	    if (TestChip(chip_p, &Primary))
-    	    	    {
-			matched = chip_p;
-    	    	    	break;
-    	    	    }
-    	    	}
-    	    }
-    	    else
-    	    {
-    	        /*
-    	         * Use user specified order
-    	         */
-    	        p = order;
-    	        while (p)
-    	        {
-    	            order = strchr(order, ',');
-    	            if (order != NULL)
-    	            {
-    	                *order = '\0';
-			order++;
-    	            }
-    	    	    flag = FALSE;
-    	            for (i=0; SVGA_Descriptors[i] != NULL; i++)
-		    {
-    	    	    	chip_p = SVGA_Descriptors[i];
-    	    	    	if (StrCaseCmp(p, chip_p->name) == 0)
-    	    	    	{
-    	    		    flag = TRUE;
-    	    		    break;
-    	    	        }
-    	    	    }
-    	    	    if (flag)
-    	    	    {
-    	    	        if (TestChip(chip_p, &Primary))
-    	    	        {
-			    matched = chip_p;
-    	    		    break;
-    	    	        }
-    	    	    }
-    	    	    else
-    	    	    {
-    	    	        fprintf(stderr, "%s: Chip class '%s' not known\n",
-    	    		        MyName, p);
-    	    	    }
-    	    	    p = order;
-    	        }
-    	    }
-
-	    Check_CoProc = matched->check_coproc;
-
-	    if (Probe_Mem)
-	    {
-	    	if (matched->memcheck != (MemCheckFunc)NULL)
-	    	{
-		    MemVGA = (*matched->memcheck)(Primary);
-	    	}
-		else if (Verbose)
+		chip_p = SVGA_Descriptors[i];
+		if (TestChip(chip_p, &Primary))
 		{
-		    printf("Memory probe not supported for this chipset.\n");
-		    fflush(stdout);
+		    matched = chip_p;
+		    break;
 		}
+	    }
+	}
+	else
+	{
+	    /*
+	     * Use user specified order
+	     */
+	    p = order;
+	    while (p)
+	    {
+		order = strchr(order, ',');
+		if (order != NULL)
+		{
+		    *order = '\0';
+		    order++;
+		}
+		flag = FALSE;
+		for (i=0; SVGA_Descriptors[i] != NULL; i++)
+		{
+		    chip_p = SVGA_Descriptors[i];
+		    if (StrCaseCmp(p, chip_p->name) == 0)
+		    {
+			flag = TRUE;
+			break;
+		    }
+		}
+		if (flag)
+		{
+		    if (TestChip(chip_p, &Primary))
+		    {
+			matched = chip_p;
+			break;
+		    }
+		}
+		else
+		{
+		    fprintf(stderr, "%s: Chip class '%s' not known\n",
+			MyName, p);
+		}
+		p = order;
+	    }
+	}
+
+	Check_CoProc = matched->check_coproc;
+
+	if (Probe_Mem)
+	{
+	    if (matched->memcheck != (MemCheckFunc)NULL)
+	    {
+		MemVGA = (*matched->memcheck)(Primary);
 	    }
 	    else if (Verbose)
 	    {
-		printf("Skipping memory probe\n");
+		printf("Memory probe not supported for this chipset.\n");
 		fflush(stdout);
 	    }
-    	}
+	}
+	else if (Verbose)
+	{
+	    printf("Skipping memory probe\n");
+	    fflush(stdout);
+	}
 
 	/*
 	 * If this chipset doesn't exclude probing for a coprocessor,

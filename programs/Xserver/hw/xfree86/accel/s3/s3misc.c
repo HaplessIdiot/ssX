@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.15 1994/11/05 23:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.16 1994/11/06 09:51:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -269,9 +269,24 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	          }
 		  s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
                                              (pointer)addr, s3BankSize);
-		  s3LinearAperture = TRUE;
-                  ErrorF("%s %s: Local bus LAW is 0x%08lX\n", 
-                         XCONFIG_PROBED, s3InfoRec.name, addr);
+		  poker = (long *) s3VideoMem;
+		  if (s3TryAddress(poker, pVal, addr, 1)) {
+		     s3LinearAperture = TRUE;
+		     if (xf86Verbose) {
+			ErrorF("%s %s: Local bus LAW is 0x%08lX\n", 
+			       XCONFIG_PROBED, s3InfoRec.name, addr);
+		     }
+		  } else {
+		     s3LinearAperture = FALSE;
+		     CachedFrameBuffer = TRUE;
+		     if (xf86Verbose) {
+			ErrorF("%s %s: Local bus LAW is 0x%08lX %s\n", 
+			       XCONFIG_PROBED, s3InfoRec.name, addr,
+			       "but linear fb not usable");
+		     }
+		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
+				     s3BankSize);
+		  }
 	       } else {
 	          for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
 		     unsigned long addr = (i << 24);

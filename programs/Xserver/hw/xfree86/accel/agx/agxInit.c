@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.10 1994/11/19 07:50:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.11 1994/11/26 12:40:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -874,7 +874,7 @@ agxGetClocks(num, scale, knownclkindex, knownclkvalue, InfoRec)
    saved_nice = getpriority(PRIO_PROCESS, 0);
    setpriority(PRIO_PROCESS, 0, -20);
 #endif
-#if defined(SYSV386) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux)
    saved_nice = nice(0);
    nice(-20 - saved_nice);
 #endif
@@ -941,7 +941,7 @@ finish:
 #if defined(CSRG_BASED) || defined(MACH386)
    setpriority(PRIO_PROCESS, 0, saved_nice);
 #endif
-#if defined(SYSV386) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(linux)
    nice(20 + saved_nice);
 #endif
 
@@ -1417,12 +1417,12 @@ agxSaveLUT(lut)
 
    for (i = 0; i < 256; i++) {
       inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
+      inb(agxIdxReg);   
       lut[i].r = inb(palDataReg);
-      inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
+      inb(agxIdxReg);
       lut[i].g = inb(palDataReg);
-      inb(agxIdxReg);   /* Some RAMDAC's can't take full speed */
+      inb(agxIdxReg);
       lut[i].b = inb(palDataReg);
-      inb(agxIdxReg);   /* Some RAMDAC's can't take full speed */
    }
 
    outb(agxIdxReg, oldIndex);

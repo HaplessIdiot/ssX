@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.15 1994/10/23 12:58:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.16 Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -317,21 +317,21 @@ extern SymTabRec TimingTab[];
 #define K_INDEX_RIGHTCTL	3
 
 /* Values for the specialKeyMap array */
-#define K_META		0
-#define K_COMPOSE	1
-#define K_MODESHIFT	2
-#define K_MODELOCK	3
-#define K_SCROLLLOCK	4
-#define K_CONTROL	5
+#define KM_META		0
+#define KM_COMPOSE	1
+#define KM_MODESHIFT	2
+#define KM_MODELOCK	3
+#define KM_SCROLLLOCK	4
+#define KM_CONTROL	5
 
 #ifdef INIT_CONFIG
 static SymTabRec KeyMapTab[] = {
-  { K_META,		"meta" },
-  { K_COMPOSE,		"compose" },
-  { K_MODESHIFT,	"modeshift" },
-  { K_MODELOCK,		"modelock" },
-  { K_SCROLLLOCK,	"scrolllock" },
-  { K_CONTROL,		"control" },
+  { KM_META,		"meta" },
+  { KM_COMPOSE,		"compose" },
+  { KM_MODESHIFT,	"modeshift" },
+  { KM_MODELOCK,	"modelock" },
+  { KM_SCROLLLOCK,	"scrolllock" },
+  { KM_CONTROL,		"control" },
   { -1,			"" },
 };
 #endif /* INIT_CONFIG */

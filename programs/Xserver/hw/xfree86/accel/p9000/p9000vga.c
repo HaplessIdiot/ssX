@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.4 1994/09/07 15:50:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.5 1994/09/22 15:49:35 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -115,7 +115,7 @@ int p9000VGASaveRegs(unsigned char *regs)
        p9000VGADelay();
        outb(ATT_IW, i); 
        p9000VGADelay();
-       regs[ATT+i] = inb(ATT_R); 
+       regs[ATT_+i] = inb(ATT_R); 
        p9000VGADelay();
   }
   for (i = 0; i < GRA_C; i++) {
@@ -193,7 +193,7 @@ int p9000VGASetRegs(const unsigned char *regs)
       p9000VGADelay();
       outb(ATT_IW, i);
       p9000VGADelay();
-      outb(ATT_IW, regs[ATT+i]);
+      outb(ATT_IW, regs[ATT_+i]);
       p9000VGADelay();
   }
 

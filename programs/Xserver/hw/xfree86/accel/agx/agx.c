@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.18 1994/11/19 07:49:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.19 1994/11/26 12:39:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -637,44 +637,55 @@ memory size in your XF86Config file.\n",
        * xf86LookupMode returns FALSE if it ran into an invalid
        * parameter 
        */
-
+   
       if (!xf86LookupMode(pMode, &agxInfoRec)) {
          xf86DeleteMode(&agxInfoRec, pMode);
-      } else if (pMode->HDisplay > 2048) {
-         ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
-                XCONFIG_PROBED, agxInfoRec.name, pMode->name, 2048);
-         xf86DeleteMode(&agxInfoRec, pMode);
-      } else if ((pMode->HDisplay * (1 + pMode->VDisplay)) >
-                 agxInfoRec.videoRam * 1024) {
-         ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
-                agxInfoRec.name, pMode->name);
-         xf86DeleteMode(&agxInfoRec, pMode);
-      } else if (((tx > 0) && (pMode->HDisplay > tx)) ||
-                 ((ty > 0) && (pMode->VDisplay > ty))) {
-         ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
-                XCONFIG_PROBED, agxInfoRec.name,
-                pMode->HDisplay, pMode->VDisplay, tx, ty);
-         xf86DeleteMode(&agxInfoRec, pMode);
-      } else {
-         /*
-          * Successfully looked up this mode.  If pEnd isn't
-          * initialized, set it to this mode.
-          */
-         if (pEnd == (DisplayModePtr) NULL)
-            pEnd = pMode;
+      }
+      else {
+         int effVDisplay;
 
-         agxInfoRec.virtualX = max(agxInfoRec.virtualX, pMode->HDisplay);
-         agxInfoRec.virtualY = max(agxInfoRec.virtualY, pMode->VDisplay);
-         pMode = pMode->next;
+         effVDisplay = (pMode->Flags & V_DBLSCAN) ?
+                          pMode->VDisplay >> 1 : pMode->VDisplay; 
+
+         if (pMode->HDisplay > 2048) {
+            ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
+                   XCONFIG_PROBED, agxInfoRec.name, pMode->name, 2048);
+            xf86DeleteMode(&agxInfoRec, pMode);
+         }
+         else if ((pMode->HDisplay * (1 + effVDisplay)) >
+                    agxInfoRec.videoRam * 1024) {
+            ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
+                   agxInfoRec.name, pMode->name);
+            xf86DeleteMode(&agxInfoRec, pMode);
+         }
+         else if (((tx > 0) && (pMode->HDisplay > tx)) ||
+                    ((ty > 0) && (effVDisplay > ty))) {
+            ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+                   XCONFIG_PROBED, agxInfoRec.name,
+                   pMode->HDisplay, effVDisplay, tx, ty);
+            xf86DeleteMode(&agxInfoRec, pMode);
+         }
+         else {
+            /*
+             * Successfully looked up this mode.  If pEnd isn't
+             * initialized, set it to this mode.
+             */
+            if (pEnd == (DisplayModePtr) NULL)
+               pEnd = pMode;
+   
+            agxInfoRec.virtualX = max( agxInfoRec.virtualX, pMode->HDisplay );
+            agxInfoRec.virtualY = max( agxInfoRec.virtualY, effVDisplay );
+            pMode = pMode->next;
+         }
       }
       pMode = pModeSv;
    } while (pMode != pEnd);
 
-   agxVirtX = agxInfoRec.virtualX;
-   agxVirtY = agxInfoRec.virtualY;
-
    if ((tx != agxInfoRec.virtualX) || (ty != agxInfoRec.virtualY))
       OFLG_CLR(XCONFIG_VIRTUAL,&agxInfoRec.xconfigFlag);
+
+   agxVirtX = agxInfoRec.virtualX;
+   agxVirtY = agxInfoRec.virtualY;
 
    /*
     * AGX 014,015,016 display map width must be power of
@@ -682,66 +693,39 @@ memory size in your XF86Config file.\n",
     * and later have a +256 adjust. The -016 has some additional
     * adjusts for 640 and 800.
     */
-   agx128WidthAdjust = FALSE;
-   agx256WidthAdjust = FALSE;
-   agx288WidthAdjust = FALSE;
-   agxAdjustedVirtX  = agxVirtX;
-   agxDisplayWidth   = agxVirtX;
    if (AGX_SERIES(agxChipId)) {
-      int i = 0;
-      unsigned int width = 1;
-
-      while( width < agxVirtX && i < 13 ) {
-         width <<= 1;
-         i++;
+      agx128WidthAdjust = FALSE;
+      agx256WidthAdjust = FALSE;
+      agx288WidthAdjust = FALSE;
+      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 640) {
+         agx128WidthAdjust = TRUE;
+         agxAdjustedVirtX = 512;
+         agxDisplayWidth = 640;
       }
-      agxAdjustedVirtX = width;
-      agxDisplayWidth = width;  
-
-      if (agxVirtX != width && AGX_15_16_ONLY(agxChipId)) {
-#if 0   /* doesn't work yet - may only be good for 640 and 800 widths */
-         if (AGX_16_ONLY(agxChipId) && ((width>>1) + 128) >= agxVirtX) {
-            agx128WidthAdjust = TRUE;
-            width >>= 1;
-            agxAdjustedVirtX = width;
-            agxDisplayWidth = width + 128;
-         }
-         else 
-#else
-         if (AGX_16_ONLY(agxChipId) && agxVirtX == 640) {
-            agx128WidthAdjust = TRUE;
-            width = 512;
-            agxAdjustedVirtX = width;
-            agxDisplayWidth = width + 128;
-         }
-         else 
-         if (AGX_16_ONLY(agxChipId) && agxVirtX == 800) {
-            agx288WidthAdjust = TRUE;
-            width = 512;
-            agxAdjustedVirtX = width;
-            agxDisplayWidth = width + 288;
-         }
-         else 
-#endif
-         if (((width>>1) + 256) >= agxVirtX) {
-               agx256WidthAdjust = TRUE;
-               width >>= 1;
-               agxAdjustedVirtX = width;
-               agxDisplayWidth = width + 256;
-         } 
-#if 0
-         else if (AGX_16_ONLY(agxChipId) && ((width>>1) + 288) >= agxVirtX) {
-               agx288WidthAdjust = TRUE;
-               width >>= 1;
-               agxAdjustedVirtX = width;
-               agxDisplayWidth = width + 288;
-         } 
-#endif
+      else
+      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 800) {
+         agx288WidthAdjust = TRUE;
+         agxAdjustedVirtX = 512;
+         agxDisplayWidth = 800;
+      }
+      else
+      if (agxVirtX <= 1024) {
+         agxAdjustedVirtX = 1024;
+         agxDisplayWidth = 1024;
+      }
+      else
+      if (AGX_15_16_ONLY(agxChipId) && agxVirtX <= 1280) {
+         agx256WidthAdjust = TRUE;
+         agxAdjustedVirtX = 1024;
+         agxDisplayWidth = 1280;
+      }
+      else
+      if (agxVirtX <= 2048) {
+         agxAdjustedVirtX = 2048;
+         agxDisplayWidth = 2048;
       }
    }        
 
-   agxInfoRec.virtualX = agxVirtX;
-   agxInfoRec.virtualY = agxVirtY;
    agxMaxX = agxVirtX - 1;
    agxMaxY = agxVirtY - 1;
 

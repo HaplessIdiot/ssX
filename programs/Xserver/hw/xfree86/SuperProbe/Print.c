@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.3 1994/11/05 23:42:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.4 Exp $ */
 
 #include "Probe.h"
 
@@ -36,9 +36,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Ahead V5000 Version A", "Ahead V5000 Version B" },
 /* ATI */	{ "ATI (chipset unknown)", 
 		  "ATI 18800", "ATI 18800-1",
-		  "ATI 28800-2", "ATI 28800-4", "ATI 28800-5", 
+		  "ATI 28800-2", "ATI 28800-4", "ATI 28800-5", "ATI 28800-6",
 		  "ATI 68800-3", "ATI 68800-6", 
-		  "ATI 68800-LX", "ATI 68800-AX" },
+		  "ATI 68800-LX", "ATI 68800-AX",
+		  "ATI 88800" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -189,8 +190,10 @@ struct RamDac_Name RamDac_Names[] =
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 
 {
 /* 8514 */	{ "8514/A (or true clone)",
-		  "ATI Mach-8", "ATI Mach-32",
+		  "ATI Mach8", "ATI Mach32",
 		  "Chips & Technologies 82C480 (8514/A clone)" },
+/* XGA */	{ "" },
+/* Mach64 */	{ "ATI Mach64" },
 };
 
 void Print_SVGA_Name(Chipset)

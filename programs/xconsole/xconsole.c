@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c,v 1.19 94/04/17 20:39:48 rws Exp $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.1 1994/06/28 12:31:54 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.2 1994/08/20 07:37:37 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -64,7 +64,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
+#if defined(__STDC__) && defined(ISC)
 extern FILE *fdopen(int, char const *);
 #endif
 
@@ -147,7 +147,7 @@ static char ttydev[64], ptydev[64];
 #endif
 #endif
 
-#if defined(SVR4) || (defined(SYSV) && defined(SYSV386))
+#if defined(SVR4) || (defined(SYSV) && defined(i386))
 #define USE_OSM
 #include <signal.h>
 FILE *osm_pipe();

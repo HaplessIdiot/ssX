@@ -25,8 +25,8 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.0 1994/05/14 06:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.1 Exp $ */
 
 #define VERSION 	2
-#define PATCHLEV 	2
+#define PATCHLEV 	3
 #define PRINT_VERSION	printf("\n%s Version %d.%d\n",MyName,VERSION,PATCHLEV)

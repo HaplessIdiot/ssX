@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.7 1994/11/05 23:49:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.8 Exp $ */
 /* ati.test.c -- Gather information about ATI video adapters.
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -539,10 +539,14 @@ main(void)
 		if (inl(SCRATCH_REG0) == 0xAAAAAAAA)
 		{
 			/* Mach64 detected */
+			IO_Value2 = inl(CONFIG_STATUS_0);
+			if ((IO_Value2 & (CFG_VGA_EN | CFG_CHIP_EN)) !=
+			    (CFG_VGA_EN | CFG_CHIP_EN))
+				printf("Mach64 detected but VGAWonder "
+                                       "capability cannot be enabled.\n");
 			ATIChip = ATI_CHIP_88800;
 			ATIBoard = ATI_BOARD_MACH64;
-			ATIDac =
-				(inl(CONFIG_STATUS_0) & CFG_INIT_DAC_TYPE) >> 9;
+			ATIDac = (IO_Value2 & CFG_INIT_DAC_TYPE) >> 9;
 			MachvideoRam =
 				videoRamSizes[(inl(MEM_INFO) & 0x0007) + 2];
 			IO_Value2 = inl(CONFIG_CHIP_ID);

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.2 1994/11/22 02:38:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.3 1994/11/26 12:45:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -450,7 +450,7 @@ xf86PostKbdEvent(key)
 	if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
 	return;
 
-#if defined(linux) || defined(CSRG_BASED)
+#if defined(linux) || (defined(CSRG_BASED) && !defined(__bsdi__))
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching

@@ -1,5 +1,5 @@
 /* $XConsortium: main.c,v 1.83 94/04/17 20:10:36 gildea Exp $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.0 1994/05/08 05:13:25 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.1 1994/10/20 06:00:48 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -113,7 +113,7 @@ catch (sig)
 	fatalerr ("got signal %d\n", sig);
 }
 
-#if defined(USG) || (defined(SYSV386) && defined(SYSV)) || defined(WIN32) || defined(__EMX__)
+#if defined(USG) || (defined(i386) && defined(SYSV)) || defined(WIN32) || defined(__EMX__)
 #define USGISH
 #endif
 

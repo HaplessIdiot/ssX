@@ -35,7 +35,7 @@ Version 0.6 - June 28, 1993
 Version 0.7 -
 	- Update RAMDAC probes to check 6/8-bit wide lookup tables and to
 	  identify the different AT&T RAMDACs.
-	- Add support for 8514/A and ATI Mach-XX detection.
+	- Add support for 8514/A, ATI Mach8 and ATI Mach32 detection.
 
 Version 0.8 - 
 	- Update the S3 probes with all currently-known information.
@@ -96,3 +96,6 @@ Version 2.1 - April 13, 1994
 
 Version 2.2 - August 28, 1994
 	- More small updates
+
+Version 2.3 - November 18, 1994
+	- Add support for ATI Mach64.
