@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.11 2001/06/25 08:12:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.12 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -600,9 +600,11 @@ winInitVisualsShadowDD (ScreenPtr pScreen)
 
     case 8:
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
-				     StaticColorMask,
+				     pScreenInfo->fFullScreen 
+				     ? PseudoColorMask : StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
-				     StaticColor,
+				     pScreenInfo->fFullScreen 
+				     ? PseudoColor : StaticColor,
 				     pScreenPriv->dwRedMask,
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
@@ -732,16 +734,11 @@ winBltExposedRegionsShadowDD (ScreenPtr pScreen)
       goto winBltExposedRegionsShadowDD_Exit;
     }
   
-  /* Map the client coords to client relative coords */
-  if (MapWindowPoints (pScreenPriv->hwndScreen,
-		       HWND_DESKTOP,
-		       (LPPOINT)&rcClient,
-		       2) == 0)
-    {
-      fReturn = FALSE;
-      ErrorF ("winBltExposedRegionsShadowDD () - MapWindowPoints () failed\n");
-      goto winBltExposedRegionsShadowDD_Exit;
-    }
+  /* Map the client coords to screen coords */
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient,
+		   2);
 	  
   /* Source can be enter shadow surface, as Blt should clip */
   rcSrc.left = 0;
@@ -836,6 +833,202 @@ winActivateAppShadowDD (ScreenPtr pScreen)
   return TRUE;
 }
 
+
+/*
+ * Reblit the shadow framebuffer to the screen.
+ */
+
+Bool
+winRedrawScreenShadowDD (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  HRESULT		ddrval = DD_OK;
+  RECT			rcClient, rcSrc;
+
+  /* Get location of display window's client area, in screen coords */
+  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient, 2);
+
+  /* Source can be entire shadow surface, as Blt should clip for us */
+  rcSrc.left = 0;
+  rcSrc.top = 0;
+  rcSrc.right = pScreenInfo->dwWidth;
+  rcSrc.bottom = pScreenInfo->dwHeight;
+
+  /* Redraw the whole window, to take account for the new colors */
+  ddrval = IDirectDrawSurface2_Blt (pScreenPriv->pddsPrimary,
+				    &rcClient,
+				    pScreenPriv->pddsShadow,
+				    &rcSrc,
+				    DDBLT_WAIT,
+				    NULL);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winRedrawScreenShadowDD () - IDirectDrawSurface_Blt () "
+	      "failed: %08x\n",
+	      ddrval);
+    }
+
+  return TRUE;
+}
+
+
+/* Realize the currently installed colormap */
+Bool
+winRealizeInstalledPaletteShadowDD (ScreenPtr pScreen)
+{
+  return TRUE;
+}
+
+
+/* Install the specified colormap */
+Bool
+winInstallColormapShadowDD (ColormapPtr pColormap)
+{
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  winCmapPriv(pColormap);
+  HRESULT		ddrval = DD_OK;
+
+  /* Install the DirectDraw palette on the primary surface */
+  ddrval = IDirectDrawSurface2_SetPalette (pScreenPriv->pddsPrimary,
+					   pCmapPriv->lpDDPalette);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winInstallColormapShadowDD () - Failed installing the "
+	      "DirectDraw palette.\n");
+      return FALSE;
+    }
+
+  /* Save a pointer to the newly installed colormap */
+  pScreenPriv->pcmapInstalled = pColormap;
+
+  return TRUE;
+}
+
+
+/* Store the specified colors in the specified colormap */
+Bool
+winStoreColorsShadowDD (ColormapPtr pColormap, 
+			int ndef,
+			xColorItem *pdefs)
+{
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winCmapPriv(pColormap);
+  ColormapPtr curpmap = pScreenPriv->pcmapInstalled;
+  HRESULT		ddrval = DD_OK;
+  
+  /* Put the X colormap entries into the Windows logical palette */
+  ddrval = IDirectDrawPalette_SetEntries (pCmapPriv->lpDDPalette,
+					  0,
+					  pdefs[0].pixel,
+					  ndef,
+					  pCmapPriv->peColors 
+					  + pdefs[0].pixel);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winStoreColorsShadowDDNL () - SetEntries () failed\n");
+      return FALSE;
+    }
+
+  /* Don't install the DirectDraw palette if the colormap is not installed */
+  if (pColormap != curpmap)
+    {
+      return TRUE;
+    }
+
+  if (!winInstallColormapShadowDD (pColormap))
+    {
+      ErrorF ("winStoreColorsShadowDDNL () - Failed installing colormap\n");
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+
+/* Colormap initialization procedure */
+Bool
+winCreateColormapShadowDD (ColormapPtr pColormap)
+{
+  HRESULT		ddrval = DD_OK;
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winCmapPriv(pColormap);
+  
+  /* Create a DirectDraw palette */
+  ddrval = IDirectDraw2_CreatePalette (pScreenPriv->pdd,
+				       DDPCAPS_8BIT | DDPCAPS_ALLOW256,
+				       pCmapPriv->peColors,
+				       &pCmapPriv->lpDDPalette,
+				       NULL);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winCreateColormapShadowDDNL () - CreatePalette failed\n");
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+
+/* Colormap destruction procedure */
+Bool
+winDestroyColormapShadowDD (ColormapPtr pColormap)
+{
+  winScreenPriv(pColormap->pScreen);
+  winCmapPriv(pColormap);
+  HRESULT		ddrval = DD_OK;
+
+  /*
+   * Is colormap to be destroyed the default?
+   *
+   * Non-default colormaps should have had winUninstallColormap
+   * called on them before we get here.  The default colormap
+   * will not have had winUninstallColormap called on it.  Thus,
+   * we need to handle the default colormap in a special way.
+   */
+  if (pColormap->flags & IsDefault)
+    {
+#if CYGDEBUG
+      ErrorF ("winDestroyColormapShadowDDNL () - Destroying default "
+	      "colormap\n");
+#endif
+      
+      /*
+       * FIXME: Walk the list of all screens, popping the default
+       * palette out of each screen device context.
+       */
+      
+      /* Pop the palette out of the primary surface */
+      ddrval = IDirectDrawSurface2_SetPalette (pScreenPriv->pddsPrimary,
+					       NULL);
+      if (FAILED (ddrval))
+	{
+	  ErrorF ("winDestroyColormapShadowDDNL () - Failed freeing the "
+		  "default colormap DirectDraw palette.\n");
+	  return FALSE;
+	}
+
+      /* Clear our private installed colormap pointer */
+      pScreenPriv->pcmapInstalled = NULL;
+    }
+  
+  /* Release the palette */
+  IDirectDrawPalette_Release (pCmapPriv->lpDDPalette);
+ 
+  /* Invalidate the colormap privates */
+  pCmapPriv->lpDDPalette = NULL;
+
+  return TRUE;
+}
+
+
 /* Set engine specific functions */
 Bool
 winSetEngineFunctionsShadowDD (ScreenPtr pScreen)
@@ -856,9 +1049,13 @@ winSetEngineFunctionsShadowDD (ScreenPtr pScreen)
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
   pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowDD;
   pScreenPriv->pwinActivateApp = winActivateAppShadowDD;
-  pScreenPriv->pwinRedrawScreen = (winRedrawScreenProcPtr) NoopDDA;
+  pScreenPriv->pwinRedrawScreen = winRedrawScreenShadowDD;
   pScreenPriv->pwinRealizeInstalledPalette
-    = (winRealizeInstalledPaletteProcPtr) NoopDDA;
+    = winRealizeInstalledPaletteShadowDD;
+  pScreenPriv->pwinInstallColormap = winInstallColormapShadowDD;
+  pScreenPriv->pwinStoreColors = winStoreColorsShadowDD;
+  pScreenPriv->pwinCreateColormap = winCreateColormapShadowDD;
+  pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowDD;
 
   return TRUE;
 }

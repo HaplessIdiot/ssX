@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.12 2001/06/25 08:12:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.13 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -445,21 +445,6 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 	}
       break;
 
-#if 0 /* Old StaticColor root visual support.  Pre PseudoColor support. */
-      if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
-				     StaticColorMask,
-				     pScreenPriv->dwBitsPerRGB,
-				     StaticColor,
-				     pScreenPriv->dwRedMask,
-				     pScreenPriv->dwGreenMask,
-				     pScreenPriv->dwBlueMask))
-	{
-	  ErrorF ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
-	  return FALSE;
-	}
-      break;
-#endif
-
     default:
       ErrorF ("winInitVisualsGDI () - Unknown screen depth\n");
       return FALSE;
@@ -595,9 +580,11 @@ winActivateAppShadowGDI (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /*
  * Reblit the shadow framebuffer to the screen.
  */
+
 Bool
 winRedrawScreenShadowGDI (ScreenPtr pScreen)
 {
@@ -659,6 +646,220 @@ winRealizeInstalledPaletteShadowGDI (ScreenPtr pScreen)
   return TRUE;
 }
 
+
+/* Install the specified colormap */
+Bool
+winInstallColormapShadowGDI (ColormapPtr pColormap)
+{
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  winCmapPriv(pColormap);
+
+  /*
+   * Tell Windows to install the new colormap
+   */
+  if (SelectPalette (pScreenPriv->hdcScreen,
+		     pCmapPriv->hPalette,
+		     FALSE) == NULL)
+    {
+      ErrorF ("winInstallColormapShadowGDI () - SelectPalette () failed\n");
+      return FALSE;
+    }
+      
+  /* Realize the palette */
+  if (GDI_ERROR == RealizePalette (pScreenPriv->hdcScreen))
+    {
+      ErrorF ("winInstallColormapShadowGDI () - RealizePalette () failed\n");
+      return FALSE;
+    }
+
+  /* Set the DIB color table */
+  if (SetDIBColorTable (pScreenPriv->hdcShadow,
+			0,
+			WIN_NUM_PALETTE_ENTRIES,
+			pCmapPriv->rgbColors) == 0)
+    {
+      ErrorF ("winInstallColormapShadowGDI () - SetDIBColorTable () failed\n");
+      return FALSE;
+    }
+
+  /* Redraw the whole window, to take account for the new colors */
+  BitBlt (pScreenPriv->hdcScreen,
+	  0, 0,
+	  pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+	  pScreenPriv->hdcShadow,
+	  0, 0,
+	  SRCCOPY);
+
+  /* Save a pointer to the newly installed colormap */
+  pScreenPriv->pcmapInstalled = pColormap;
+
+  return TRUE;
+}
+
+
+/* Store the specified colors in the specified colormap */
+Bool
+winStoreColorsShadowGDI (ColormapPtr pColormap,
+			 int ndef,
+			 xColorItem *pdefs)
+{
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winCmapPriv(pColormap);
+  ColormapPtr curpmap = pScreenPriv->pcmapInstalled;
+  
+  /* Put the X colormap entries into the Windows logical palette */
+  if (SetPaletteEntries (pCmapPriv->hPalette,
+			 pdefs[0].pixel,
+			 ndef,
+			 pCmapPriv->peColors + pdefs[0].pixel) == 0)
+    {
+      ErrorF ("winStoreColorsShadowGDI () - SetPaletteEntries () failed\n");
+      return FALSE;
+    }
+
+  /* Don't install the Windows palette if the colormap is not installed */
+  if (pColormap != curpmap)
+    {
+      return TRUE;
+    }
+
+  /* Try to install the newly modified colormap */
+  if (!winInstallColormapShadowGDI (pColormap))
+    {
+      ErrorF ("winInstallColormapShadowGDI () - winInstallColormapShadowGDI "
+	      "failed\n");
+      return FALSE;
+    }
+
+#if 0
+  /* Tell Windows that the palette has changed */
+  RealizePalette (pScreenPriv->hdcScreen);
+  
+  /* Set the DIB color table */
+  if (SetDIBColorTable (pScreenPriv->hdcShadow,
+			pdefs[0].pixel,
+			ndef,
+			pCmapPriv->rgbColors + pdefs[0].pixel) == 0)
+    {
+      ErrorF ("winInstallColormapShadowGDI () - SetDIBColorTable () failed\n");
+      return FALSE;
+    }
+
+  /* Save a pointer to the newly installed colormap */
+  pScreenPriv->pcmapInstalled = pColormap;
+#endif
+
+  return TRUE;
+}
+
+
+/* Colormap initialization procedure */
+Bool
+winCreateColormapShadowGDI (ColormapPtr pColormap)
+{
+  LPLOGPALETTE		lpPaletteNew = NULL;
+  DWORD			dwEntriesMax;
+  VisualPtr		pVisual;
+  HPALETTE		hpalNew = NULL;
+  winCmapPriv(pColormap);
+
+  /* Get a pointer to the visual that the colormap belongs to */
+  pVisual = pColormap->pVisual;
+
+  /* Get the maximum number of palette entries for this visual */
+  dwEntriesMax = pVisual->ColormapEntries;
+
+  /* Allocate a Windows logical color palette with max entries */
+  lpPaletteNew = xalloc (sizeof (LOGPALETTE)
+			 + (dwEntriesMax - 1) * sizeof (PALETTEENTRY));
+  if (lpPaletteNew == NULL)
+    {
+      ErrorF ("winCreateColormapShadowGDI () - Couldn't allocate palette "
+	      "with %d entries\n",
+	      dwEntriesMax);
+      return FALSE;
+    }
+
+  /* Zero out the colormap */
+  ZeroMemory (lpPaletteNew, sizeof (LOGPALETTE)
+	      + (dwEntriesMax - 1) * sizeof (PALETTEENTRY));
+  
+  /* Set the logical palette structure */
+  lpPaletteNew->palVersion = 0x0300;
+  lpPaletteNew->palNumEntries = dwEntriesMax;
+
+  /* Tell Windows to create the palette */
+  hpalNew = CreatePalette (lpPaletteNew);
+  if (hpalNew == NULL)
+    {
+      ErrorF ("winCreateColormapShadowGDI () - CreatePalette () failed\n");
+      free (lpPaletteNew);
+      return FALSE;
+    }
+
+  /* Save the Windows logical palette handle in the X colormaps' privates */
+  pCmapPriv->hPalette = hpalNew;
+
+  /* Free the palette initialization memory */
+  xfree (lpPaletteNew);
+
+  return TRUE;
+}
+
+
+/* Colormap destruction procedure */
+Bool
+winDestroyColormapShadowGDI (ColormapPtr pColormap)
+{
+  winScreenPriv(pColormap->pScreen);
+  winCmapPriv(pColormap);
+
+  /*
+   * Is colormap to be destroyed the default?
+   *
+   * Non-default colormaps should have had winUninstallColormap
+   * called on them before we get here.  The default colormap
+   * will not have had winUninstallColormap called on it.  Thus,
+   * we need to handle the default colormap in a special way.
+   */
+  if (pColormap->flags & IsDefault)
+    {
+#if CYGDEBUG
+      ErrorF ("winDestroyColormapShadowGDI () - Destroying default "
+	      "colormap\n");
+#endif
+      
+      /*
+       * FIXME: Walk the list of all screens, popping the default
+       * palette out of each screen device context.
+       */
+      
+      /* Pop the palette out of the device context */
+      SelectPalette (pScreenPriv->hdcScreen,
+		     GetStockObject (DEFAULT_PALETTE),
+		     FALSE);
+
+      /* Clear our private installed colormap pointer */
+      pScreenPriv->pcmapInstalled = NULL;
+    }
+  
+  /* Try to delete the logical palette */
+  if (DeleteObject (pCmapPriv->hPalette) == 0)
+    {
+      ErrorF ("winDestroyColormap () - DeleteObject () failed\n");
+      return FALSE;
+    }
+  
+  /* Invalidate the colormap privates */
+  pCmapPriv->hPalette = NULL;
+
+  return TRUE;
+}
+
+
 /* Set engine specific funtions */
 Bool
 winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
@@ -682,6 +883,10 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   pScreenPriv->pwinRedrawScreen = winRedrawScreenShadowGDI;
   pScreenPriv->pwinRealizeInstalledPalette = 
     winRealizeInstalledPaletteShadowGDI;
+  pScreenPriv->pwinInstallColormap = winInstallColormapShadowGDI;
+  pScreenPriv->pwinStoreColors = winStoreColorsShadowGDI;
+  pScreenPriv->pwinCreateColormap = winCreateColormapShadowGDI;
+  pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowGDI;
 
   return TRUE;
 }

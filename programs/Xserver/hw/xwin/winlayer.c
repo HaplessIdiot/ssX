@@ -33,7 +33,7 @@
 
 
 /*
- * Shamelessly stolen from kdrive/vesa.  Not sure what it does yet.
+ * Create initial layer.  Cygwin only needs one initial layer.
  */
 
 LayerPtr
@@ -63,12 +63,13 @@ winLayerCreate (ScreenPtr pScreen)
  		     pPixmap,
  		     pScreenPriv->pwinShadowUpdate,
  		     NULL, /* No ShadowWindowProc */
+		     0, /* Rotate */
  		     0);
 }
 
 #ifdef RANDR
 /*
- * Used a function parameter to WalkTree.
+ * Used as a function parameter to WalkTree.
  */
 
 int
@@ -87,7 +88,7 @@ winLayerAdd (WindowPtr pWindow, pointer value)
 
 
 /*
- * Used as function parameter to WalkTree.
+ * Used as a function parameter to WalkTree.
  */
 
 int
@@ -105,17 +106,17 @@ winLayerRemove (WindowPtr pWindow, pointer value)
 
 
 /*
- * Shamelessly stolen from kdrive/fbdev.  Not sure what it does yet.
+ * Answer queries about the RandR features supported.
  */
 
 Bool
 winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations)
 {
   winScreenPriv(pScreen);
-  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  winScreenInfo			*pScreenInfo = pScreenPriv->pScreenInfo;
   int				n;
   RRVisualGroupPtr		pVisualGroup;
-  RRGroupOfVisualGroupPtr	pGroupOfVisualGroup;
+  RRGroupOfVisualGroupPtr	pGroupOfVisualGroup = NULL;
   Rotation			rotateKind;
   RRScreenSizePtr		pSize;
 
@@ -165,11 +166,15 @@ winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations)
     }
   
   /* I can't afford a clue */
-  pGroupOfVisualGroup = RRRegisterGroupOfVisualGroup (pScreen, pGroupOfVisualGroup);
+  pGroupOfVisualGroup = RRRegisterGroupOfVisualGroup (pScreen, 
+						      pGroupOfVisualGroup);
   if (!pGroupOfVisualGroup)
     return FALSE;
   
-  /* */
+  /*
+   * Register supported sizes.  This can be called many times, but
+   * we only support one size for now.
+   */
   pSize = RRRegisterSize (pScreen,
 			  pScreenInfo->dwWidth,
 			  pScreenInfo->dwHeight,
@@ -188,7 +193,7 @@ winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations)
 
 
 /*
- * Shamelessly stolen from kdrive/fbdev.  Not sure what it does yet.
+ * Configure which RandR features are supported.
  */
 
 Bool

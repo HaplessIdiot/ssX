@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.8 2001/06/25 08:12:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.9 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -121,7 +121,6 @@ winWindowProc (HWND hWnd, UINT message,
       (*pScreenPriv->pwinBltExposedRegions) (pScreen);
       return 0;
 
-#if WIN_PSEUDO_SUPPORT
     case WM_PALETTECHANGED:
       {
 #if CYGDEBUG
@@ -129,7 +128,9 @@ winWindowProc (HWND hWnd, UINT message,
 #endif
 	/* Don't process if we don't have privates */
 	if (pScreenPriv == NULL
+#if 0
 	    || pScreenInfo->dwEngine != WIN_SERVER_SHADOW_GDI
+#endif
 	    || pScreenPriv->pcmapInstalled == NULL)
 	  break;
 
@@ -148,7 +149,6 @@ winWindowProc (HWND hWnd, UINT message,
 	(*pScreenPriv->pwinRedrawScreen) (pScreen);
 	return 0;
       }
-#endif
 
     case WM_MOUSEMOVE:
       /* We can't do anything without privates */

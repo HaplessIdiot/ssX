@@ -30,10 +30,18 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.12 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.13 2001/07/25 14:30:08 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
+
+#if 0
+/* Standard build */
+gcc -o XWin.exe -O2 -fno-strength-reduce -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/xwin/stubs.o dix/libdix.a os/libos.a ../../lib/Xau/libXau.a ../../lib/Xdmcp/libXdmcp.a  hw/xwin/libXwin.a fb/libfb.a dix/libxpstubs.a mi/libmi.a Xext/libext.a xkb/libxkb.a Xi/libxinput.a lbx/liblbx.a ../../lib/lbxutil/liblbxutil.a dbe/libdbe.a record/librecord.a GL/glx/libglx.a GL/mesa/src/X/libGLcoreX.a GL/mesa/src/libGLcore.a render/librender.a randr/librandr.a miext/layer/liblayer.a miext/shadow/libshadow.a -L/usr/X11R6/lib ../../lib/font/libXfont.a dix/libxpstubs.a -L../../exports/lib -lXext -lX11 -lz.dll -lgdi32 -lddraw
+
+/* Debug build */
+gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/xwin/stubs.o dix/libdix.a os/libos.a ../../lib/Xau/libXau.a ../../lib/Xdmcp/libXdmcp.a hw/xwin/libXwin.a fb/libfb.a dix/libxpstubs.a mi/libmi.a Xext/libext.a xkb/libxkb.a Xi/libxinput.a lbx/liblbx.a ../../lib/lbxutil/liblbxutil.a dbe/libdbe.a record/librecord.a GL/glx/libglx.a GL/mesa/src/X/libGLcoreX.a GL/mesa/src/libGLcore.a render/librender.a randr/librandr.a miext/layer/liblayer.a miext/shadow/libshadow.a -L/usr/X11R6/lib ../../lib/font/libXfont.a dix/libxpstubs.a -L../../exports/lib -lXext -lX11 -lz.dll -lgdi32 -lddraw
+#endif
 
 #ifndef NO
 #define NO			0
@@ -45,33 +53,32 @@
 /*
  * Build toggles for experimental features
  */
-#define WIN_PSEUDO_SUPPORT	YES
 #define WIN_NATIVE_GDI_SUPPORT	YES
-#define WIN_LAYER_SUPPORT	YES
+#define WIN_LAYER_SUPPORT	NO
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
 
 /* Debugging macros */
-#if CYGDEBUG
+#if CYGDEBUG || YES
 #define DEBUG_MSG(str) if (fDebugProcMsg == TRUE) MessageBox(NULL, str, szFunctionName, MB_OK )
 #else
 #define DEBUG_MSG(str)
 #endif
 
-#if CYGDEBUG
+#if CYGDEBUG || YES
 #define DEBUG_FN_NAME(str) PTSTR szFunctionName = str
 #else
 #define DEBUG_FN_NAME(str)
 #endif
 
-#if CYGDEBUG
+#if CYGDEBUG || YES
 #define DEBUGVARS BOOL fDebugProcCon = FALSE, fDebugProcMsg = FALSE
 #else
 #define DEBUGVARS
 #endif
 
-#if CYGDEBUG
+#if CYGDEBUG || YES
 #define DEBUGPROC_CON fDebugProcCon = TRUE
 #define DEBUGPROC_MSG fDebugProcMsg = TRUE
 #else
@@ -228,6 +235,15 @@ typedef Bool (*winRedrawScreenProcPtr)(ScreenPtr pScreen);
 
 typedef Bool (*winRealizeInstalledPaletteProcPtr)(ScreenPtr pScreen);
 
+typedef Bool (*winInstallColormapProcPtr)(ColormapPtr pColormap);
+
+typedef Bool (*winStoreColorsProcPtr)(ColormapPtr pmap, 
+				      int ndef, xColorItem *pdefs);
+
+typedef Bool (*winCreateColormapProcPtr)(ColormapPtr pColormap);
+
+typedef Bool (*winDestroyColormapProcPtr)(ColormapPtr pColormap);
+
 /*
  * Privates structures
  */
@@ -249,11 +265,13 @@ typedef struct
   HBITMAP		hBitmap;
   void			*pvBits;
   DWORD			dwScanlineBytes;
+  BITMAPINFOHEADER	*pbmih;
 } winPrivPixmapRec, *winPrivPixmapPtr;
 
 typedef struct
 {
   HPALETTE		hPalette;
+  LPDIRECTDRAWPALETTE	lpDDPalette;
   RGBQUAD		rgbColors[WIN_NUM_PALETTE_ENTRIES];
   PALETTEENTRY		peColors[WIN_NUM_PALETTE_ENTRIES];
 } winPrivCmapRec, *winPrivCmapPtr;
@@ -357,6 +375,10 @@ typedef struct
   winActivateAppProcPtr			pwinActivateApp;
   winRedrawScreenProcPtr		pwinRedrawScreen;
   winRealizeInstalledPaletteProcPtr	pwinRealizeInstalledPalette;
+  winInstallColormapProcPtr		pwinInstallColormap;
+  winStoreColorsProcPtr			pwinStoreColors;
+  winCreateColormapProcPtr		pwinCreateColormap;
+  winDestroyColormapProcPtr		pwinDestroyColormap;
 } winPrivScreenRec, *winPrivScreenPtr;
 
 extern winScreenInfo		g_ScreenInfo[];
@@ -445,6 +467,7 @@ extern HBITMAP			g_hbmpGarbage;
 DWORD
 winBitsPerPixel (DWORD dwDepth);
 
+
 /*
  * winallpriv.c
  */
@@ -458,6 +481,7 @@ winInitCmapPrivates (ColormapPtr pCmap);
 Bool
 winAllocateCmapPrivates (ColormapPtr pCmap);
 
+
 /*
  * winblock.c
  */
@@ -468,12 +492,14 @@ winBlockHandler (int nScreen,
 		 pointer pTimeout,
 		 pointer pReadMask);
 
+
 /*
  * winclip.c
  */
 
 RegionPtr
 winPixmapToRegionNativeGDI (PixmapPtr pPix);
+
 
 /*
  * wincmap.c
@@ -516,6 +542,7 @@ winSetVisualTypesNativeGDI (int nDepth, int nVisuals, int nBitsPerRGB);
 void
 winClearVisualTypes (void);
 
+
 /*
  * wincursor.c
  */
@@ -525,6 +552,7 @@ winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y);
 
 void
 winCrossScreen (ScreenPtr pScreen, Bool fEntering);
+
 
 /*
  * winfillsp.c
@@ -538,6 +566,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 		       int		*pWidths,
 		       int		fSorted);
 
+
 /*
  * winfont.c
  */
@@ -547,6 +576,7 @@ winRealizeFontNativeGDI (ScreenPtr pScreen, FontPtr pFont);
 
 Bool
 winUnrealizeFontNativeGDI (ScreenPtr pScreen, FontPtr pFont);
+
 
 /*
  * wingc.c
@@ -581,6 +611,7 @@ winDestroyClipNativeGDI (GCPtr pGC);
 void
 winCopyClipNativeGDI (GCPtr pGCdst, GCPtr pGCsrc);
 
+
 /*
  * wingetsp.c
  */
@@ -592,6 +623,7 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
 		      int		*pWidths, 
 		      int		nSpans, 
 		      char		*pDst);
+
 
 /*
  * winkeybd.c
@@ -654,6 +686,7 @@ winRandRSetConfig (ScreenPtr		pScreen,
 Bool
 winRandRInit (ScreenPtr pScreen);
 
+
 /*
  * winmisc.c
  */
@@ -667,6 +700,7 @@ winCountBits (DWORD dw);
 
 Bool
 winUpdateFBPointer (ScreenPtr pScreen, void *pbits);
+
 
 /*
  * winmouse.c
@@ -688,6 +722,7 @@ int
 winMouseButtonsHandle (ScreenPtr pScreen,
 		       int iEventType, int iButton,
 		       WPARAM wParam);
+
 
 /*
  * winnativegdi.c
@@ -712,6 +747,7 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
 Bool
 winSetEngineFunctionsNativeGDI (ScreenPtr pScreen);
 
+
 /*
  * winpfbddd.c
  */
@@ -733,6 +769,7 @@ winActivateAppPrimaryDD (ScreenPtr pScreen);
 
 Bool
 winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen);
+
 
 /*
  * winpixmap.c
@@ -762,12 +799,14 @@ winModifyPixmapHeaderNativeGDI (PixmapPtr pPixmap,
 				int devKind,
 				pointer pPixData);
 
+
 /*
  * winpntwin.c
  */
 
 void
 winPaintWindowNativeGDI (WindowPtr pWin, RegionPtr pRegion, int what);
+
 
 /*
  * winpolyline.c
@@ -779,6 +818,7 @@ winPolyLineNativeGDI (DrawablePtr	pDrawable,
 		      int		mode,
 		      int		npt,
 		      DDXPointPtr	ppt);
+
 
 /*
  * winscrinit.c
@@ -819,6 +859,7 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen);
 
 Bool
 winCreateBoundingWindowWindowed (ScreenPtr pScreen);
+
 
 /*
  * winsetsp.c
@@ -862,6 +903,27 @@ winActivateAppShadowDD (ScreenPtr pScreen);
 Bool
 winSetEngineFunctionsShadowDD (ScreenPtr pScreen);
 
+Bool
+winRedrawScreenShadowDD (ScreenPtr pScreen);
+
+Bool
+winRealizeInstalledPaletteShadowDD (ScreenPtr pScreen);
+
+Bool
+winInstallColormapShadowDD (ColormapPtr pColormap);
+
+Bool
+winStoreColorsShadowDD (ColormapPtr pmap, 
+			int ndef,
+			xColorItem *pdefs);
+
+Bool
+winCreateColormapShadowDD (ColormapPtr pColormap);
+
+Bool
+winDestoryColormapShadowDD (ColormapPtr pColormap);
+
+
 /*
  * winshadddnl.c
  */
@@ -890,6 +952,27 @@ winActivateAppShadowDDNL (ScreenPtr pScreen);
 
 Bool
 winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen);
+
+Bool
+winRedrawScreenShadowDDNL (ScreenPtr pScreen);
+
+Bool
+winRealizeInstalledPaletteShadowDDNL (ScreenPtr pScreen);
+
+Bool
+winInstallColormapShadowDDNL (ColormapPtr pColormap);
+
+Bool
+winStoreColorsShadowDDNL (ColormapPtr pmap, 
+			  int ndef,
+			  xColorItem *pdefs);
+
+Bool
+winCreateColormapShadowDDNL (ColormapPtr pColormap);
+
+Bool
+winDestroyColormapShadowDDNL (ColormapPtr pColormap);
+
 
 /*
  * winshadgdi.c
@@ -923,6 +1006,21 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen);
 Bool
 winRealizeInstalledPaletteShadowGDI (ScreenPtr pScreen);
 
+Bool
+winInstallColormapShadowGDI (ColormapPtr pColormap);
+
+Bool
+winStoreColorsShadowGDI (ColormapPtr pmap, 
+			 int ndef,
+			 xColorItem *pdefs);
+
+Bool
+winCreateColormapShadowGDI (ColormapPtr pColormap);
+
+Bool
+winDestroyColormapShadowGDI (ColormapPtr pColormap);
+
+
 /*
  * winwakeup.c
  */
@@ -932,6 +1030,7 @@ winWakeupHandler (int nScreen,
 		  pointer pWakeupData,
 		  unsigned long ulResult,
 		  pointer pReadmask);
+
 
 /*
  * winwindow.c
@@ -959,6 +1058,7 @@ winUnmapWindowNativeGDI (WindowPtr pWindow);
 
 Bool
 winMapWindowNativeGDI (WindowPtr pWindow);
+
 
 /*
  * winwndproc.c
