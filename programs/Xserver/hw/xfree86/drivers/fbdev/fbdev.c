@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.22 2000/06/13 02:28:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.23 2000/08/11 17:27:13 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -284,6 +284,9 @@ FBDevProbe(DriverPtr drv, int flags)
 		    pScrn = xf86ConfigPciEntity(pScrn,0,entity,
 						      NULL,RES_SHARED_VGA,
 						      NULL,NULL,NULL,NULL);
+		    /* xf86DrvMsg() can't be called without setting these */
+		    pScrn->driverName    = FBDEV_DRIVER_NAME;
+		    pScrn->name          = FBDEV_NAME;
 		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			       "claimed PCI slot %d:%d:%d\n",bus,device,func);
 
