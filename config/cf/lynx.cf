@@ -1,9 +1,4 @@
-XCOMM $Xorg: lynx.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-
-
-
-
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.48 2004/01/09 00:35:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.49 2004/03/25 03:36:21 dawes Exp $
 
 
 #ifndef OSName
