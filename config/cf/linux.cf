@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.11 95/01/23 18:32:03 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.22 1995/01/28 15:40:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.23 1995/04/09 13:39:19 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -7,12 +7,12 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.22 1995/01/28 15:40:22 dawe
 #define OSMinorVersion		2
 #define OSTeenyVersion		1
 
-#ifndef UseElfFormat
-#if OSMajorVersion > 1 || (OSMajorVersion == 1 && OSMinorVersion > 1)
-#define UseElfFormat		YES
-#else
-#define UseElfFormat		NO
+#ifndef LinuxElfDefault
+#define LinuxElfDefault		NO
 #endif
+
+#ifndef UseElfFormat
+#define UseElfFormat		NO
 #endif
 #define HasGcc			YES
 #define HasGcc2			YES
@@ -40,8 +40,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.22 1995/01/28 15:40:22 dawe
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 
-/* Assume default tools are for ELF for versions 1.2 and later */
-#if OSMajorVersion > 1 || (OSMajorVersion == 1 && OSMinorVersion > 1)
+#if LinuxElfDefault
 #if UseElfFormat
 #define CcCmd			gcc
 #define AsCmd			as

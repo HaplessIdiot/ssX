@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.38 1995/03/08 04:55:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.39 1995/03/11 14:02:54 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -272,6 +272,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.38 1995/03/08 04:55:46 dawes Exp $
  * uncomment this.
  *
 #define ForceNormalLib		YES
+ */
+
+/*
+ * Uncomment this if your default tools (eg, gcc, ld, as, etc) are
+ * the Linux ELF versions.
+ *
+#define LinuxElfDefault		YES
  */
 
 /*
