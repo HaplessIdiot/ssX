@@ -2783,7 +2783,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	} else {
 	  pTrident->RefreshArea = TRIDENTRefreshArea;
 	}
-	ShadowFBInit(pScreen, pTrident->RefreshArea);
+	shadowInit (pScreen, TRIDENTShadowUpdate, 0);
     }
 
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)TRIDENTDisplayPowerManagementSet, 0);
