@@ -1,4 +1,19 @@
 XFree86 4.0.1i (xx December 2000)
+2022. Don't reference libc wrapper names directly in the newport driver
+      (David Dawes).
+2021. Fix the fr_CH xkb Macintosh symbols file (#4345, Olaf Hering).
+2020. Revert the Estonian_Estonia.1257 change in patch #4297 because
+      windows-1257 is a closer match to iso8859-13 than iso8859-15.
+      Also add entries for the et_EE.ISO8859-1 locale (while not perfect for
+      Estonian, it is commonly used) (#4344, Ville Hallik).
+2019. Change name of long Unicode keysyms from 6 to 8 hex digits, which
+      matches conventional usage better (#4343, Ivan Pascal).
+2018. Make XF86VidModeSetViewPort() actually set the viewport to the
+      X and Y coordinates specified as opposed to always setting it to (0,0)
+      (#4342, Joe Moss).
+2017. Work around some build problems on SVR4.0 (#4341, Satoshi Kimura).
+2016. Compose characters for the Macedonian UTF-8 locale (#4338,
+      Damjan Georgievski).
 2015. Fix build problems with the wacom driver on Linux 2.4 when building
       a static server (Frederic Lepied, David Dawes).
 2014. Changed name of server binary to call by xf86cfg back to "XFree86
@@ -11925,4 +11940,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1451 2000/12/06 15:35:02 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1452 2000/12/06 20:39:49 dawes Exp $

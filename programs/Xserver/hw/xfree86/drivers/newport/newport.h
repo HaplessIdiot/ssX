@@ -1,14 +1,10 @@
 /* 
  * Id: newport.h,v 1.4 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.1 2000/12/01 19:47:58 dawes Exp $ */
 
 #ifndef __NEWPORT_H__
 #define __NEWPORT_H__
-
-#ifndef XFree86LOADER
-# define NEED_XF86_TYPES /* to make XF86FILE, etc available */
-#endif
 
 /*
  * All drivers should include these:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.1 2000/12/02 01:16:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.2 2000/12/02 15:30:49 tsi Exp $ */
 
 /*
  *
@@ -304,6 +304,7 @@ SavageSetGBD( ScrnInfoPtr pScrn )
     SavagePtr psav = SAVPTR(pScrn);
     unsigned int vgaCRIndex = hwp->IOBase + 4;
     unsigned int vgaCRReg = hwp->IOBase + 5;
+    unsigned char tmp;
 
     if( !psav->SavedGbd )
     {
@@ -320,7 +321,8 @@ SavageSetGBD( ScrnInfoPtr pScrn )
     /* Set stride to use GBD. */
 
     VGAOUT8(vgaCRIndex, 0x50);
-    VGAOUT8(vgaCRReg, inb(vgaCRReg) | 0xC1);
+    tmp = inb(vgaCRReg);
+    VGAOUT8(vgaCRReg, tmp | 0xC1);
 
     /* Enable 2D engine. */
 

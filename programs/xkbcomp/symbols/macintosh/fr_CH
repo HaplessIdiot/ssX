@@ -1,5 +1,5 @@
 // $XConsortium: fr_CH /main/3 1996/08/31 12:19:48 kaleb $
-// $XFree86: xc/programs/xkbcomp/symbols/fr_CH,v 3.3 1996/12/23 07:13:24 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/macintosh/fr_CH,v 1.1 2000/09/19 12:46:25 eich Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -24,5 +24,5 @@ xkb_symbols "basic" {
 
 partial alphanumeric_keys
 xkb_symbols "nodeadkeys" {
-    include "macintosh/de_CH" // for consistent naming
+    include "macintosh/fr_CH" // for consistent naming
 };

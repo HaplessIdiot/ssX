@@ -162,7 +162,7 @@ while ($#ARGV > 0) {
 	}
     }
 
-    @chars = sort {$a <=> $b} keys(%map);
+    @chars = sort {$a <=> $b;} keys(%map);
     if ($fsource =~ /^(.*).bdf$/i) {
 	$fout = $1 . "-$registry-$encoding.bdf";
     } else {
