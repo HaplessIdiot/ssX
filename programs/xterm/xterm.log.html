@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.7 1998/06/04 16:44:04 hohndel Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.8 1998/07/04 14:48:31 robin Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_82">Patch #82 - 1998/7/15 - XFree86 3.9Aj</A>
+<LI><A HREF="#xterm_81">Patch #81 - 1998/7/14 - XFree86 3.9Aj</A>
 <LI><A HREF="#xterm_80">Patch #80 - 1998/6/29 - XFree86 3.9Ai</A>
 <LI><A HREF="#xterm_79">Patch #79 - 1998/6/28 - XFree86 3.9Ai</A>
 <LI><A HREF="#xterm_78">Patch #78 - 1998/6/3 - XFree86 3.9Ah and 3.3.2</A>
@@ -122,6 +124,40 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_82">Patch #82 - 1998/7/15 - XFree86 3.9Aj</A></H1>
+Bug fix for patch #81:
+<ul>
+	<li>remove an #undef for NBBY, which caused compile problem on FreeBSD
+	  (reported by David Dawes).
+</ul>
+
+<H1><A NAME="xterm_81">Patch #81 - 1998/7/14 - XFree86 3.9Aj</A></H1>
+More bug fixes:
+<ul>
+	<li>fix conflicting ifdef's for TIOCSLTC when building with Linux on
+	  AXP aka DEC Alpha (reported by Robin Cutshaw).
+
+	<li>correction to patch #79, move assignment for *utptr-&gt;ut_user = 0;
+	  back into non-SVR4 ifdef in main.c, since this clobbers username on
+	  Solaris 2.5.1 (analysis by Will Day
+	  &lt;willday@rom.oit.gatech.edu&gt;).
+
+	<li>corrected khome/kend in xterm-8bit terminfo description.
+
+	<li>improve cursor color by making it always the reverse of fg/bg
+	  unless the cursorColor resource is set, i.e., to something other than
+	  the default foreground (reported by Vikas Agnihotri and Bram
+	  Moolenaar).
+
+	<li>minor fixes for compiler warnings, including a syntax error in
+	  the AMOEBA ifdef's.
+</ul>
+From resync with XFree86 3.9Aj:
+<ul>
+	<li>correcton to patch #73, supply missing #else for fallback definitions
+	  of size_t, time_t (Robin Cutshaw &lt;robin@intercore.com&gt;).
+</ul>
 
 <H1><A NAME="xterm_80">Patch #80 - 1998/6/29 - XFree86 3.9Ai</A></H1>
 This fixes a couple of items leftover or introduced by patch 79:

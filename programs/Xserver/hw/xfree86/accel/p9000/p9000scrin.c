@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.12 1996/12/23 06:40:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.13 1998/04/05 16:42:15 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -360,13 +360,12 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			 rootdepth, ndepths, depths, defaultVisual,
 			 nvisuals, visuals);
-  if (Rstatus)
-	miInitializeBackingStore(pScreen);
   switch (rootdepth)
     {
     case 8:
       pScreen->GetScreenPixmap = cfbGetScreenPixmap;
       pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+      pScreen->CloseScreen = cfbCloseScreen;
       break;
     case 15:
     case 16:
@@ -375,6 +374,7 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->devPrivate = oldDevPrivate;
       pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
       pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+      pScreen->CloseScreen = cfb16CloseScreen;
       break;
     case 24:
       pScreen->CreateScreenResources = cfb32CreateScreenResources;
@@ -382,8 +382,12 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->devPrivate = oldDevPrivate;
       pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
       pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
+      pScreen->CloseScreen = cfb32CloseScreen;
       break;
     }
 
-    return Rstatus;
+  if (Rstatus)
+	miInitializeBackingStore(pScreen);
+
+  return Rstatus;
 }

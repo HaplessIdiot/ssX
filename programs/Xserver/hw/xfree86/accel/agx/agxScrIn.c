@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.10 1996/12/23 06:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.11 1998/04/05 16:42:12 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -255,10 +255,6 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals);
-    if (Rstatus) {
-	pScreen->BackingStoreFuncs = agxBSFuncRec;
-	miInitializeBackingStore(pScreen);
-    }
 #ifdef AGX_32BPP
     if (rootdepth > 16) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
@@ -266,6 +262,7 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
+	pScreen->CloseScreen = cfb32CloseScreen;
     }
     else 
 #endif
@@ -275,11 +272,17 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+	pScreen->CloseScreen = cfb16CloseScreen;
     }
     else
     {
 	pScreen->GetScreenPixmap = cfbGetScreenPixmap;
 	pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+	pScreen->CloseScreen = cfbCloseScreen;
+    }
+    if (Rstatus) {
+	pScreen->BackingStoreFuncs = agxBSFuncRec;
+	miInitializeBackingStore(pScreen);
     }
     return Rstatus;
 }

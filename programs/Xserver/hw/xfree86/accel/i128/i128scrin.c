@@ -44,7 +44,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.6 1998/04/05 16:42:12 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.7 1998/06/27 12:54:07 hohndel Exp $ */
 
 
 #include "X.h"
@@ -315,6 +315,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     case 8:
       pScreen->GetScreenPixmap = cfbGetScreenPixmap;
       pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+      pScreen->CloseScreen = cfbCloseScreen;
       break;
     case 15:
     case 16:
@@ -323,6 +324,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->devPrivate = oldDevPrivate;
       pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
       pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+      pScreen->CloseScreen = cfb16CloseScreen;
       break;
     case 24:
       pScreen->CreateScreenResources = cfb32CreateScreenResources;
@@ -330,6 +332,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->devPrivate = oldDevPrivate;
       pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
       pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
+      pScreen->CloseScreen = cfb32CloseScreen;
       break;
     }
 

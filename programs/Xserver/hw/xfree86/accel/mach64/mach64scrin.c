@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.8 1996/12/23 06:39:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.9 1998/04/05 16:42:14 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -282,11 +282,6 @@ mach64ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals);
 
-    if (Rstatus) {
-	pScreen->BackingStoreFuncs = mach64BSFuncRec;
-	miInitializeBackingStore(pScreen);
-    }
-
     if (rootdepth > 16) 
     {
         pScreen->CreateScreenResources = cfb32CreateScreenResources;
@@ -294,6 +289,7 @@ mach64ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
         pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
+	pScreen->CloseScreen = cfb32CloseScreen;
     }
     else if (rootdepth > 8) 
     {
@@ -302,9 +298,17 @@ mach64ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+	pScreen->CloseScreen = cfb16CloseScreen;
     } else {
 	pScreen->GetScreenPixmap = cfbGetScreenPixmap;
 	pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+	pScreen->CloseScreen = cfbCloseScreen;
     }
+
+    if (Rstatus) {
+	pScreen->BackingStoreFuncs = mach64BSFuncRec;
+	miInitializeBackingStore(pScreen);
+    }
+
     return Rstatus;
 }

@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.21 1998/04/27 03:14:56 robin Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.22 1998/06/04 16:43:49 hohndel Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -170,7 +170,7 @@ Boolean SendMousePosition(Widget w, XEvent* event)
 	    EditorButton((XButtonEvent *)event);
 	    return True;
 	}
-	/* fall through */
+	/* FALLTHRU */
 
       default:
 	return False;
@@ -823,7 +823,7 @@ PointToRowCol(
        maximum value. */
 {
 	register TScreen *screen = &term->screen;
-	register row, col;
+	register int row, col;
 
 	row = (y - screen->border) / FontHeight(screen);
 	if(row < firstValidRow)

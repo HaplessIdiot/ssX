@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.14 1997/01/08 20:34:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.15 1998/04/05 16:42:16 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -269,16 +269,13 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals);
-    if (Rstatus) {
-	pScreen->BackingStoreFuncs = s3BSFuncRec;
-	miInitializeBackingStore(pScreen);
-    }
     if (xf86bpp > 24) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
+	pScreen->CloseScreen = cfb32CloseScreen;
     }
     else if (xf86bpp > 16) {
 	pScreen->CreateScreenResources = cfb24CreateScreenResources;
@@ -286,6 +283,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb24GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb24SetScreenPixmap;
+	pScreen->CloseScreen = cfb24CloseScreen;
     }
     else if (xf86bpp > 8) {
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
@@ -293,10 +291,16 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->devPrivate = oldDevPrivate;
 	pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
 	pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+	pScreen->CloseScreen = cfb16CloseScreen;
     }
     else {
 	pScreen->GetScreenPixmap = cfbGetScreenPixmap;
 	pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+	pScreen->CloseScreen = cfbCloseScreen;
+    }
+    if (Rstatus) {
+	pScreen->BackingStoreFuncs = s3BSFuncRec;
+	miInitializeBackingStore(pScreen);
     }
     return Rstatus;
 }

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.32 1997/01/08 20:33:41 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.33 1998/01/24 16:57:08 hohndel Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -164,8 +164,15 @@ s3CursorInit(pm, pScr)
    if (s3CursGeneration != serverGeneration) {
       s3hotX = 0;
       s3hotY = 0;
-      miDCInitialize (pScr, &xf86PointerScreenFuncs);
+#ifndef __FIX_ME__
+      if (!miDCInitialize(pScr, &xf86PointerScreenFuncs))
+	 return FALSE;
+#endif
       if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
+#ifdef  __FIX_ME__
+         if (!miDCInitialize(pScr, &xf86PointerScreenFuncs))
+	    return FALSE;
+#endif
 	 useSWCursor = TRUE;
       } else if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
          if (!(miPointerInitialize(pScr, &s3BtPointerSpriteFuncs,
@@ -185,6 +192,10 @@ s3CursorInit(pm, pScr)
             return FALSE;
       } else if (s3InfoRec.bitsPerPixel == 32 
 		 && S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
+#ifdef  __FIX_ME__
+         if (!miDCInitialize(pScr, &xf86PointerScreenFuncs))
+	    return FALSE;
+#endif
 	 useSWCursor = TRUE;
       } else {
          if (!(miPointerInitialize(pScr, &s3PointerSpriteFuncs,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.18 1997/07/29 12:07:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.19 1998/06/27 12:54:17 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -561,7 +561,11 @@ s3CloseScreen(screen_idx, pScreen)
       ppix = NULL;
    }
    pScreen->CloseScreen = saveCloseScreen;
+#ifdef  __FIX_ME__
    return (*saveCloseScreen)(screen_idx, pScreen);
+#else
+   return TRUE;
+#endif
 }
 
 /*

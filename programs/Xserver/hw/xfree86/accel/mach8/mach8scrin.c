@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.6 1996/12/23 06:40:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.7 1998/04/05 16:42:14 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -184,6 +184,7 @@ mach8ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			8, NUMDEPTHS, depths,
 			visuals[i].vid, NUMVISUALS, visuals))
 	return FALSE;
+    pScreen->CloseScreen = cfbCloseScreen;
     pScreen->BackingStoreFuncs = mach8BSFuncRec;
     miInitializeBackingStore(pScreen);
     pScreen->GetScreenPixmap = cfbGetScreenPixmap;

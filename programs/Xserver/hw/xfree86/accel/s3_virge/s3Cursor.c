@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.7 1997/06/03 14:11:36 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.8 1998/01/24 16:57:15 hohndel Exp $
  *
  * Copyright 1991 MIPS Computer Systems, Inc.
  *
@@ -99,8 +99,15 @@ s3CursorInit(pm, pScr)
    if (s3CursGeneration != serverGeneration) {
       s3hotX = 0;
       s3hotY = 0;
-      miDCInitialize (pScr, &xf86PointerScreenFuncs);
+#ifndef __FIX_ME__
+      if (!miDCInitialize(pScr, &xf86PointerScreenFuncs))
+	return FALSE;
+#endif
       if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
+#ifdef  __FIX_ME__
+         if (!miDCInitialize(pScr, &xf86PointerScreenFuncs))
+	    return FALSE;
+#endif
 	 useSWCursor = TRUE;
       } else {
          if (!(miPointerInitialize(pScr, &s3PointerSpriteFuncs,
