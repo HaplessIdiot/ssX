@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.1 1999/11/19 13:54:43 hohndel Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -145,6 +145,7 @@ static SymTabRec R128Chipsets[] = {
     { PCI_CHIP_RAGE128RF, "ATI Rage 128 RF (AGP)" },
     { PCI_CHIP_RAGE128RK, "ATI Rage 128 RK (PCI)" },
     { PCI_CHIP_RAGE128RL, "ATI Rage 128 RL (AGP)" },
+    { PCI_CHIP_RAGE128PF, "ATI Rage 128 Pro PF (AGP)" },
     { -1,                 NULL }
 };
 
@@ -153,6 +154,7 @@ static PciChipsets R128PciChipsets[] = {
     { PCI_CHIP_RAGE128RF, PCI_CHIP_RAGE128RF, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128RK, PCI_CHIP_RAGE128RK, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128RL, PCI_CHIP_RAGE128RL, RES_SHARED_VGA },
+    { PCI_CHIP_RAGE128PF, PCI_CHIP_RAGE128PF, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 
@@ -1053,6 +1055,7 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
     ScrnInfoPtr pScrn  = xf86Screens[pScreen->myNum];
     R128InfoPtr info   = R128PTR(pScrn);
     BoxRec      MemBox;
+    int         y2;
 
     R128TRACE(("R128ScreenInit %x %d\n", pScrn->memPhysBase, pScrn->fbOffset));
     
@@ -1179,7 +1182,9 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
     MemBox.x1 = 0;
     MemBox.y1 = 0;
     MemBox.x2 = pScrn->displayWidth;
-    MemBox.y2 = info->FbMapSize / (pScrn->displayWidth * info->pixel_bytes);
+    y2        = info->FbMapSize / (pScrn->displayWidth * info->pixel_bytes);
+    if (y2 >= 32768) y2 = 32767; /* because MemBox.y2 is signed short */
+    MemBox.y2 = y2;
 
 				/* The acceleration engine uses 14 bit
                                    signed coordinates, so we can't have any
@@ -1188,7 +1193,8 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     if (!xf86InitFBManager(pScreen, &MemBox)) {
 	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Memory manager initialization failed\n");
+		   "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
+		   MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2);
 	return FALSE;
     } else {
 	int       width, height;
