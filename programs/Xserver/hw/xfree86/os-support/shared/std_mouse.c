@@ -1,4 +1,5 @@
 /* $XConsortium: std_mouse.c,v 1.1 94/03/28 21:31:56 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -43,8 +44,11 @@ Bool doclose;
 		if (xf86Info.mseType == P_LOGI)
 		{
 			write(xf86Info.mseFd, "U", 1);
-			xf86SetMouseSpeed(xf86Info.baudRate, 1200,
-				  	  xf86MouseCflags[P_LOGI]);
+		}
+		if (xf86Info.oldBaudRate > 0) {
+			xf86SetMouseSpeed(xf86Info.baudRate,
+					  xf86Info.oldBaudRate,
+				  	  xf86MouseCflags[xf86Info.mseType]);
 		}
 		close(xf86Info.mseFd);
 	}
