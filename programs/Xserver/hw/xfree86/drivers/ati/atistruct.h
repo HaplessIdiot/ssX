@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.10 1999/11/18 16:52:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.11 2000/02/18 12:19:40 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -216,6 +216,7 @@ typedef struct _ATIRec
     XAAInfoRecPtr pXAAInfo;
     int nAvailableFIFOEntries, nFIFOEntries;
     CARD8 EngineIsBusy, EngineIsLocked, PitchModifier;
+    CARD32 dst_cntl;    /* For SetupFor/Subsequent communication */
 
     /*
      * Clock-related definitions.

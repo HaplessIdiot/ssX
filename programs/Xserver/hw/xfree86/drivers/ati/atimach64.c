@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.10 2000/02/18 12:19:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.11 2000/03/01 16:00:58 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -764,6 +764,162 @@ ATIMach64Sync
 }
 
 /*
+ * ATIMach64SetupForScreenToScreenCopy --
+ *
+ * This function sets up the draw engine for a series of screen-to-screen copy
+ * operations.
+ */
+static void
+ATIMach64SetupForScreenToScreenCopy
+(
+    ScrnInfoPtr  pScreenInfo,
+    int          xdir,
+    int          ydir,
+    int          rop,
+    unsigned int planemask,
+    int          TransparencyColour
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    pATI->dst_cntl = 0;
+
+    if (ydir > 0)
+        pATI->dst_cntl |= DST_Y_DIR;
+    if (xdir > 0)
+        pATI->dst_cntl |= DST_X_DIR;
+
+    if (pATI->PitchModifier == 1)
+    {
+        ATIMach64WaitForFIFO(4);
+        outm(DST_CNTL, pATI->dst_cntl);
+    }
+    else
+    {
+        ATIMach64WaitForFIFO(3);
+        pATI->dst_cntl |= DST_24_ROT_EN;
+    }
+
+    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
+    outm(DP_WRITE_MASK, planemask);
+    outm(DP_SRC, SetBits(DP_MONO_SRC_ALLONES, DP_MONO_SRC) |
+        SetBits(SRC_BLIT, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+}
+
+/*
+ * ATIMach64SubsequentScreenToScreenCopy --
+ *
+ * This function performs a screen-to-screen copy operation.
+ */
+static void
+ATIMach64SubsequentScreenToScreenCopy
+(
+    ScrnInfoPtr pScreenInfo,
+    int         xSrc,
+    int         ySrc,
+    int         xDst,
+    int         yDst,
+    int         w,
+    int         h
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    xSrc *= pATI->PitchModifier;
+    xDst *= pATI->PitchModifier;
+    w    *= pATI->PitchModifier;
+
+    if (!(pATI->dst_cntl & DST_X_DIR))
+    {
+        xSrc += w - 1;
+        xDst += w - 1;
+    }
+
+    if (!(pATI->dst_cntl & DST_Y_DIR))
+    {
+        ySrc += h - 1;
+        yDst += h - 1;
+    }
+
+    if (pATI->PitchModifier == 1)
+        ATIMach64WaitForFIFO(4);
+    else
+    {
+        ATIMach64WaitForFIFO(5);
+        outm(DST_CNTL, pATI->dst_cntl | SetBits((xDst / 4) % 6, DST_24_ROT));
+    }
+
+    outm(SRC_Y_X, SetWord(xSrc, 1) | SetWord(ySrc, 0));
+    outm(SRC_WIDTH1, w);
+    outm(DST_Y_X, SetWord(xDst, 1) | SetWord(yDst, 0));
+    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+}
+
+/*
+ * ATIMach64SetupForSolidFill --
+ *
+ * This function sets up the draw engine for a series of solid fills.
+ */
+static void
+ATIMach64SetupForSolidFill
+(
+    ScrnInfoPtr  pScreenInfo,
+    int          colour,
+    int          rop,
+    unsigned int planemask
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    if (pATI->PitchModifier != 1)
+        ATIMach64WaitForFIFO(4);
+    else
+    {
+        ATIMach64WaitForFIFO(5);
+        outm(DST_CNTL, pATI->NewHW.dst_cntl);
+    }
+
+    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
+    outm(DP_WRITE_MASK, planemask);
+    outm(DP_SRC, SetBits(DP_MONO_SRC_ALLONES, DP_MONO_SRC) |
+        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+    outm(DP_FRGD_CLR, colour);
+}
+
+/*
+ * ATIMach64SubsequentSolidFillRect --
+ *
+ * This function performs a solid rectangle fill.
+ */
+static void
+ATIMach64SubsequentSolidFillRect
+(
+    ScrnInfoPtr pScreenInfo,
+    int         x,
+    int         y,
+    int         w,
+    int         h
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    if (pATI->PitchModifier == 1)
+       ATIMach64WaitForFIFO(2);
+    else
+    {
+        x *= pATI->PitchModifier;
+        w *= pATI->PitchModifier;
+
+        ATIMach64WaitForFIFO(3);
+        outm(DST_CNTL, pATI->NewHW.dst_cntl | DST_24_ROT_EN |
+            SetBits((x / 4) % 6, DST_24_ROT));
+    }
+
+    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+}
+
+/*
  * ATIMach64SetClippingRectangle --
  *
  * This function sets the draw engine's clipping rectangle.
@@ -808,71 +964,6 @@ ATIMach64DisableClipping
 }
 
 /*
- * ATIMach64SetupForSolidFill --
- *
- * This function sets up the draw engine for a series of solid fills.
- */
-static void
-ATIMach64SetupForSolidFill
-(
-    ScrnInfoPtr  pScreenInfo,
-    int          colour,
-    int          rop,
-    unsigned int planemask
-)
-{
-    ATIPtr pATI = ATIPTR(pScreenInfo);
-
-    if (pATI->PitchModifier != 1)
-        ATIMach64WaitForFIFO(4);
-    else
-    {
-        ATIMach64WaitForFIFO(5);
-        outm(DST_CNTL, pATI->NewHW.dst_cntl);
-    }
-
-    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
-        SetBits(MIX_DST, DP_BKGD_MIX));
-    outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, SetBits(DP_MONO_SRC_ALLONES, DP_MONO_SRC) |
-        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
-    outm(DP_FRGD_CLR, colour);
-}
-
-/*
- * ATIMach64SubsequentSolidFillRect --
- *
- * This function performs a solid rectangle fill.
- */
-static void
-ATIMach64SubsequentSolidFillRect
-(
-    ScrnInfoPtr pScreenInfo,
-    int         x,
-    int         y,
-    int         w,
-    int         h
-)
-{
-    ATIPtr pATI = ATIPTR(pScreenInfo);
-
-    if (pATI->PitchModifier == 1)
-       ATIMach64WaitForFIFO(2);
-    else
-    {
-        x *= pATI->PitchModifier;
-        w *= pATI->PitchModifier;
-
-        ATIMach64WaitForFIFO(3);
-        outm(DST_CNTL, pATI->NewHW.dst_cntl | DST_24_ROT_EN |
-            SetBits((x / 4) % 6, DST_24_ROT));
-    }
-
-    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
-    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
-}
-
-/*
  * ATIMach64AccelInit --
  *
  * This function fills in structure fields needed for acceleration on Mach64
@@ -898,6 +989,16 @@ ATIMach64AccelInit
     /* Sync */
     pXAAInfo->Sync = ATIMach64Sync;
 
+    /* Screen-to-screen copy */
+    pXAAInfo->ScreenToScreenCopyFlags = NO_TRANSPARENCY;        /* For now */
+    pXAAInfo->SetupForScreenToScreenCopy = ATIMach64SetupForScreenToScreenCopy;
+    pXAAInfo->SubsequentScreenToScreenCopy =
+        ATIMach64SubsequentScreenToScreenCopy;
+
+    /* Solid fills */
+    pXAAInfo->SetupForSolidFill = ATIMach64SetupForSolidFill;
+    pXAAInfo->SubsequentSolidFillRect = ATIMach64SubsequentSolidFillRect;
+
     /* Clips */
     pXAAInfo->ClippingFlags = HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND |
         HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY | HARDWARE_CLIP_MONO_8x8_FILL |
@@ -905,10 +1006,6 @@ ATIMach64AccelInit
         HARDWARE_CLIP_DASHED_LINE | HARDWARE_CLIP_SOLID_LINE;
     pXAAInfo->SetClippingRectangle = ATIMach64SetClippingRectangle;
     pXAAInfo->DisableClipping = ATIMach64DisableClipping;
-
-    /* Solid fills */
-    pXAAInfo->SetupForSolidFill = ATIMach64SetupForSolidFill;
-    pXAAInfo->SubsequentSolidFillRect = ATIMach64SubsequentSolidFillRect;
 
     return TRUE;
 }
