@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.248 2001/10/04 20:02:33 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.249 2001/10/28 03:32:50 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -104,13 +104,13 @@ INSTPGMFLAGS =
           XIDIR = Xi
 #endif
 #if BuildXIE 
-      XIEEXT = XIE/dixie/ModuleLibraryTargetName(dixie) \
-	       XIE/mixie/ModuleLibraryTargetName(mixie)
-      XIEDIR = XIE
+         XIEEXT = XIE/dixie/ModuleLibraryTargetName(dixie) \
+	          XIE/mixie/ModuleLibraryTargetName(mixie)
+         XIEDIR = XIE
 #endif
 #if BuildXKB
-      XKBEXT = xkb/LibraryTargetName(xkb)
-      XKBDIR = xkb
+         XKBEXT = xkb/LibraryTargetName(xkb)
+         XKBDIR = xkb
 #endif
 #if BuildLBX
          LBXEXT = lbx/LibraryTargetName(lbx) \
@@ -124,24 +124,28 @@ INSTPGMFLAGS =
          DBEDIR = dbe
 #endif
 #if BuildRECORD
-         RECORDEXT = record/LibraryTargetName(record)
+      RECORDEXT = record/LibraryTargetName(record)
 #endif
 #if BuildRECORD || BuildRECORDlib
-         RECORDDIR = record
+      RECORDDIR = record
+#endif
+#if BuildXTrap
+       XTRAPEXT = XTrap/LibraryTargetName(xtrap)
+       XTRAPDIR = XTrap
 #endif
 #ifdef SiteExtensionLibs
-     SITEEXTS = SiteExtensionLibs
+       SITEEXTS = SiteExtensionLibs
 #endif
 #ifdef SiteExtensionDirs
-     SITEEXTDIRS = SiteExtensionDirs
+    SITEEXTDIRS = SiteExtensionDirs
 #endif
 #if DoLoadableServer && HasDlopen
-        LIBDL = DlLibrary
+          LIBDL = DlLibrary
 #endif
-     LIBREGEX = RegexLibrary
+       LIBREGEX = RegexLibrary
 
 #if DoLoadableServer
-  LIBCWRAPPER = os/libcwrapper.o
+    LIBCWRAPPER = os/libcwrapper.o
 #endif
 
 #if BuildXprint
@@ -196,18 +200,19 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) $(RENDERLIB) $(RANDRLIB)
    LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
-                  $(GLXEXT)
+                  $(GLXEXT) $(XTRAPEXT)
         MISCEXT = Xext/LibraryTargetName(ext)
       OTHEREXTS = Xext/LibraryTargetName(exts) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(SITEEXTS)
 #else
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXEXT) $(RENDERLIB) $(RANDRLIB)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
-                  $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+                  $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) \
+                  $(SITEEXTS) $(XTRAPEXT)
 #endif
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(GLXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS) \
-                  $(RENDERDIR) $(RANDRDIR)
+                  $(RENDERDIR) $(RANDRDIR) $(XTRAPDIR)
 #if BuildLBX || GzipFontCompression
            ZLIB = GzipLibrary
 #endif

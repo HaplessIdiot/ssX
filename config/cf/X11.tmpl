@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.131 2001/10/30 16:55:40 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.132 2001/11/02 13:33:24 alanh Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -359,6 +359,13 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildXKBfilelib
 #define BuildXKBfilelib		(BuildXKB && !BuildServersOnly)
 #endif
+#ifndef BuildXTrap
+#define BuildXTrap		YES
+#endif
+#ifndef BuildXTrapLibrary
+#define BuildXTrapLibrary	(BuildXTrap && !BuildServersOnly)
+#endif
+
 	/*
 	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
 	 *          between many clients (such as xterm) and pre-XKB shared
@@ -718,6 +725,13 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define XTestDefines /**/
 #endif
 #endif
+#ifndef XTrapDefines
+#if BuildXTrap
+#define XTrapDefines -DXTRAP
+#else
+#define XTrapDefines /**/
+#endif
+#endif
 #ifndef XSyncDefines
 #if BuildSyncExt
 #define XSyncDefines -DXSYNC
@@ -999,8 +1013,8 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #ifndef BaseExtensionDefines
 #define BaseExtensionDefines \
-	MultibufferDefines MITMiscDefines XTestDefines XSyncDefines \
-	XCMiscDefines RECORDDefines \
+	MultibufferDefines MITMiscDefines XTestDefines XTrapDefines \
+	XSyncDefines XCMiscDefines RECORDDefines \
 	PexDefines ShmDefines XieDefines BigReqDefines VidModeExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
 	ScreenSaverExtensionDefines XvExtensionDefines XvMCExtensionDefines \
@@ -2494,10 +2508,10 @@ ProjectUnsharedLibReferences(FONTSTUB,fntstubs,$(FONTSUBLIBSRC),XBuildLibDir)
 
 
 #ifndef SharedLibFontEnc
-#define SharedLibFontEnc HasSharedLibraries
+#define SharedLibFontEnc	NO
 #endif
 #ifndef NormalLibFontEnc
-#define NormalLibFontEnc (!SharedLibFont | ForceNormalLib)
+#define NormalLibFontEnc (!SharedLibFontEnc | ForceNormalLib)
 #endif
 #ifndef DebugLibFontEnc
 #define DebugLibFontEnc		NO	/* debugged fontenc library */
@@ -2689,6 +2703,28 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
+#endif
+
+#ifndef SharedLibXTrap
+#define SharedLibXTrap HasSharedLibraries
+#endif
+#ifndef NormalLibXTrap
+#define NormalLibXTrap (!SharedLibXTrap | ForceNormalLib)
+#endif
+#ifndef DebugLibXTrap
+#define DebugLibXTrap		NO	/* debugged XTrap library */
+#endif
+#ifndef ProfileLibXTrap
+#define ProfileLibXTrap		NO	/* profiled XTrap library */
+#endif
+        XTRAPLIBSRC = $(LIBSRC)/XTrap
+#if SharedLibXTrap
+#ifndef SharedXTrapRev
+#define SharedXTrapRev 6.4
+#endif
+SharedLibReferences(XTRAP,XTrap,$(XTRAPLIBSRC),SOXTRAPREV,SharedXTrapRev)
+#else
+ProjectUnsharedLibReferences(XTRAP,XTrap,$(XTRAPLIBSRC),XBuildLibDir)
 #endif
 
 #ifndef NeedDefaultDepLibs

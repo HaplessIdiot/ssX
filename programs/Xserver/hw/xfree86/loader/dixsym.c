@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.40 2001/08/16 15:00:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.41 2001/08/28 12:20:03 alanh Exp $ */
 
 
 /*
@@ -289,14 +289,9 @@ LOOKUP dixLookupTab[] = {
   /* connection.c */
   SYMFUNC(IgnoreClient)
   SYMFUNC(AttendClient)
-  SYMFUNC(ListenToAllClients)
   SYMFUNC(AddEnabledDevice)
   SYMFUNC(RemoveEnabledDevice)
-  SYMVAR(AllClients)
-  SYMVAR(AllSockets)
-  SYMVAR(ClientsWithInput)
   SYMVAR(GrabInProgress)
-  SYMVAR(LastSelectMask)
   /* utils.c */
   SYMFUNC(AdjustWaitForDelay)
   SYMVAR(noTestExtensions)
