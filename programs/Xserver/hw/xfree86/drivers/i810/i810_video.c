@@ -31,11 +31,8 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 	Jonathan Bian <jonathan.bian@intel.com>
  *
  * Notes:
- * 	This module currently allocates 810KB out of "SysMem" for the YUV 
- * 	buffers.  This should be OK as the 2D does not use a big pixmap cache
- * 	as the other drivers do.  If this ever becomes a problem then it 
- * 	could be changed to allocate the buffers on-demand in I810PutImage() 
- * 	in the future ...
+ * 	This module currently allocates 810*2KB out of "SysMem" for the YUV 
+ * 	buffers.  This may not be the best solution ...
  *
  */
 
@@ -125,7 +122,15 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define	YUV_411			0x00002400
 #define	YUV_420			0x00003000
 #define	YUV_410			0x00003800
+#define BUFFER_AND_FIELD		0x00000006
+#define	BUFFER0_FIELD0			0x00000000
+#define	BUFFER1_FIELD0			0x00000004
 #define OVERLAY_ENABLE			0x00000001
+
+/*
+ * DOV0STA - Display/Overlay 0 Status Register
+ */
+#define	DOV0STA 	0x30008
 
 #define MINUV_SCALE	0x1
 
@@ -265,9 +270,15 @@ typedef struct {
 } I810OverlayRegRec, *I810OverlayRegPtr;
 
 typedef struct {
-	CARD32       YBufVirtAddr;
-	CARD32       UBufVirtAddr;
-	CARD32       VBufVirtAddr;
+	CARD32       YBuf0VirtAddr;
+	CARD32       UBuf0VirtAddr;
+	CARD32       VBuf0VirtAddr;
+
+	CARD32       YBuf1VirtAddr;
+	CARD32       UBuf1VirtAddr;
+	CARD32       VBuf1VirtAddr;
+
+	unsigned char currentBuf;
 
 	unsigned char brightness;
 	unsigned char contrast;
@@ -286,19 +297,18 @@ typedef struct {
 void I810ResetVideo(ScrnInfoPtr pScrn) 
 {
     I810Ptr pI810 = I810PTR(pScrn);
-    I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
     I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
 
     /*
      * Default to maximum image size in YV12
      */
 
-    overlay->OBUF_0Y = pI810->OverlayBuf.Start;
-    overlay->OBUF_1Y = 0;
+    overlay->OBUF_0Y = pI810->OverlayBuf0.Start;
+    overlay->OBUF_1Y = pI810->OverlayBuf1.Start;
     overlay->OBUF_0U = overlay->OBUF_0Y + Y_BUF_SIZE;
     overlay->OBUF_0V = overlay->OBUF_0U + (Y_BUF_SIZE >> 2);
-    overlay->OBUF_1U = 0;
-    overlay->OBUF_1V = 0;
+    overlay->OBUF_1U = overlay->OBUF_1Y + Y_BUF_SIZE;
+    overlay->OBUF_1V = overlay->OBUF_1U + (Y_BUF_SIZE >> 2);
     overlay->OV0STRIDE = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15); /* YV12 */
     overlay->YRGB_VPH = 0;
     overlay->UV_VPH = 0;
@@ -374,17 +384,25 @@ I810SetupImageVideo(ScreenPtr pScreen)
     pPriv->contrast = 128;
 
 #ifndef XF86DRI
-    if (!I810AllocHigh(&(pI810->OverlayBuf), &(pI810->SysMem), Y_BUF_SIZE*2))
+    if (!I810AllocHigh(&(pI810->OverlayBuf0), &(pI810->SysMem), Y_BUF_SIZE*2))
+	return NULL;
+    if (!I810AllocHigh(&(pI810->OverlayBuf1), &(pI810->SysMem), Y_BUF_SIZE*2))
 	return NULL;
 #endif
 
-    if(!pI810->OverlayBuf.Start)
+    if((!pI810->OverlayBuf0.Start) || (!pI810->OverlayBuf1.Start))
 	return NULL;
 
-    pPriv->YBufVirtAddr = (CARD32) (pI810->FbBase + pI810->OverlayBuf.Start);
-    pPriv->UBufVirtAddr = pPriv->YBufVirtAddr + Y_BUF_SIZE;
-    pPriv->VBufVirtAddr = pPriv->UBufVirtAddr + (Y_BUF_SIZE >> 2);
+    pPriv->YBuf0VirtAddr = (CARD32) (pI810->FbBase + pI810->OverlayBuf0.Start);
+    pPriv->UBuf0VirtAddr = pPriv->YBuf0VirtAddr + Y_BUF_SIZE;
+    pPriv->VBuf0VirtAddr = pPriv->UBuf0VirtAddr + (Y_BUF_SIZE >> 2);
     
+    pPriv->YBuf1VirtAddr = (CARD32) (pI810->FbBase + pI810->OverlayBuf1.Start);
+    pPriv->UBuf1VirtAddr = pPriv->YBuf1VirtAddr + Y_BUF_SIZE;
+    pPriv->VBuf1VirtAddr = pPriv->UBuf1VirtAddr + (Y_BUF_SIZE >> 2);
+
+    pPriv->currentBuf = 0;
+
     /* gotta uninit this someplace */
     REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
 
@@ -623,7 +641,12 @@ I810CopyPackedData(
     unsigned char *src, *dst;
     
     src = buf + (top*srcPitch) + (left<<1);
-    dst = (unsigned char*) pPriv->YBufVirtAddr;
+
+    if (pPriv->currentBuf == 0)
+	dst = (unsigned char*) pPriv->YBuf0VirtAddr;
+    else
+	dst = (unsigned char*) pPriv->YBuf1VirtAddr;
+
     w <<= 1;
     while(h--) {
 	memcpy(dst, src, w);
@@ -650,7 +673,11 @@ I810CopyPlanarData(
 
     /* Copy Y data */
     src1 = buf + (top*srcPitch) + left;
-    dst1 = (unsigned char *) pPriv->YBufVirtAddr;
+    if (pPriv->currentBuf == 0)
+	dst1 = (unsigned char *) pPriv->YBuf0VirtAddr;
+    else
+	dst1 = (unsigned char *) pPriv->YBuf1VirtAddr;
+
     for (i = 0; i < h; i++) {
 	memcpy(dst1, src1, w);
 	src1 += srcPitch;
@@ -659,7 +686,11 @@ I810CopyPlanarData(
 
     /* Copy V data */
     src2 = buf + (h*srcPitch) + (top*(srcPitch>>1)) + (left>>1);
-    dst2 = (unsigned char *) pPriv->VBufVirtAddr;
+    if (pPriv->currentBuf == 0)
+	dst2 = (unsigned char *) pPriv->VBuf0VirtAddr;
+    else
+	dst2 = (unsigned char *) pPriv->VBuf1VirtAddr;
+
     for (i = 0; i < h/2; i++) {
 	memcpy(dst2, src2, w/2);
 	src2 += srcPitch>>1;
@@ -668,7 +699,11 @@ I810CopyPlanarData(
 
     /* Copy U data */
     src3 = buf + (h*srcPitch) + (h*srcPitch/4) + (top*(srcPitch>>1)) + (left>>1);
-    dst3 = (unsigned char *) pPriv->UBufVirtAddr;
+    if (pPriv->currentBuf == 0)
+	dst3 = (unsigned char *) pPriv->UBuf0VirtAddr;
+    else
+	dst3 = (unsigned char *) pPriv->UBuf1VirtAddr;
+    
     for (i = 0; i < h/2; i++) {
 	memcpy(dst3, src3, w/2);
 	src3 += srcPitch>>1;
@@ -687,13 +722,11 @@ I810DisplayVideo(
     short drw_w, short drw_h
 ){
     I810Ptr pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
     I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
     int xscaleInt, xscaleFract, yscaleInt, yscaleFract;
-    int xscaleIntUV, xscaleFractUV, yscaleIntUV, yscaleFractUV;
+    int xscaleIntUV = 0, xscaleFractUV = 0, yscaleIntUV = 0, yscaleFractUV = 0;
     unsigned int swidth;
-
-    xscaleIntUV = 0;
-    yscaleIntUV = 0;
 
     switch(id) {
     case 0x32315659: /* YV12 */
@@ -825,7 +858,22 @@ I810DisplayVideo(
 	break;
     }
 
+    overlay->OV0CMD &= ~BUFFER_AND_FIELD;
+    if (pPriv->currentBuf == 0)
+	overlay->OV0CMD |= BUFFER0_FIELD0;
+    else
+	overlay->OV0CMD |= BUFFER1_FIELD0;
+
     OVERLAY_UPDATE(pI810->OverlayPhysical);
+
+    /* wait for the current buffer flipped in */
+    while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
+
+    /* buffer swap */
+    if (pPriv->currentBuf == 0)
+	pPriv->currentBuf = 1;
+    else
+	pPriv->currentBuf = 0;
 }
 
 static int 
