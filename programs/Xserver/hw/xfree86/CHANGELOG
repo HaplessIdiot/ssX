@@ -4,9 +4,9 @@ XFree86 4.4.99.3 (xx March 2004)
   68. Fix sessreg.c for NetBSD (#6251, Mark Davies).
   67. Fix segfaults that occur in the MGA driver under options
       XaaNoSolidFillRect and/or XaaNoMono8x8PatternFillRect
-      (Marc La France, with Frank Geissler's debugging assistance).
+      (Marc La France, with Frank Giessler's debugging assistance).
   66. Fix segfault when XAA's overlay acceleration is invoked with option
-      XaaNoSolidFillRect (Marc La France, with Frank Geissler's debugging
+      XaaNoSolidFillRect (Marc La France, with Frank Giessler's debugging
       assistance).
   65. Fix typo in lnxLib.rules (Bugzilla #1328, Bernhard Rosenkraenzer).
   64. Initial support for building 64-bit libraries on Solaris/SPARC
@@ -18845,7 +18845,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3218 2004/04/06 21:40:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3219 2004/04/07 02:36:25 dawes Exp $
 
 
 
