@@ -1,4 +1,6 @@
 XFree86 3.1.2Cf (19 February 1996)
+366. S3 update for ELSA Winner1000 cards with the AT&T 20C409 Ramdac
+     (Dirk Hohndel).
 365. PC98 updates, including a new xkbcomp/compat/pc98 description
      (X98 core team).
 364. SiS driver updated (Alan Hourihane).
