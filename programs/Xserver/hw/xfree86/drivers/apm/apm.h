@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.14 2000/04/04 19:25:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.15 2000/06/30 18:27:02 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -33,18 +33,7 @@
 #include "xf1bpp.h"
 #include "xf4bpp.h"
 
-/* Drivers using cfb need this */
-
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-
-/* Drivers supporting bpp 16, 24 or 32 with cfb need these */
-
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
+#include "fb.h"
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"

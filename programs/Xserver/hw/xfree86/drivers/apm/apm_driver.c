@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.47 2001/01/06 21:29:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.48 2001/01/21 21:19:17 tsi Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -54,7 +54,6 @@ static void	ApmProbeDDC(ScrnInfoPtr pScrn, int index);
 
 int ApmPixmapIndex = -1;
 static int ApmGeneration = -1;
-static int pix24bpp = 0;
 
 DriverRec APM = {
 	VERSION,
@@ -196,14 +195,11 @@ static const char *shadowSymbols[] = {
 
 #ifdef XFree86LOADER
 
-static const char *cfbSymbols[] = {
+static const char *fbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
-    "cfb24_32ScreenInit",
+    "fbScreenInit",
+    "fbPictureInit",
     NULL
 };
 
@@ -237,7 +233,7 @@ apmSetup(pointer module, pointer opts, int *errmaj, int *errmain)
 	setupDone = TRUE;
 	xf86AddDriver(&APM, module, 0);
 
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
 			  /*xf8_32bppSymbols,*/ ramdacSymbols, vbeSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
 
@@ -478,8 +474,6 @@ ddc1Read(ScrnInfoPtr pScrn)
     while (!(STATUS_IOP() & 0x800));             
     return (STATUS_IOP() & STATUS_SDA) != 0;
 }
-
-extern xf86MonPtr ConfiguredMonitor;
 
 static void
 ApmProbeDDC(ScrnInfoPtr pScrn, int index)
@@ -1047,25 +1041,11 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	req = "xf4bppScreenInit";
 	break;
     case 8:
-	mod = "cfb";
-	req = "cfbScreenInit";
-	break;
     case 16:
-	mod = "cfb16";
-	req = "cfb16ScreenInit";
-	break;
     case 24:
-	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    req = "cfb24ScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    req = "cfb24_32ScreenInit";
-	}
-	break;
     case 32:
-	mod = "cfb32";
-	req = "cfb32ScreenInit";
+	mod = "fb";
+	req = "fbScreenInit";
 	break;
     }
 
@@ -1802,25 +1782,7 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ApmAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     /*
-     * The next step is to setup the screen's visuals, and initialise the
-     * framebuffer code.  In cases where the framebuffer's default
-     * choices for things like visual layouts and bits per RGB are OK,
-     * this may be as simple as calling the framebuffer's ScreenInit()
-     * function.  If not, the visuals will need to be setup before calling
-     * a fb ScreenInit() function and fixed up after.
-     *
-     * XXX NOTE: cfbScreenInit() will not result in the default visual
-     * being set correctly when there is a screen-specific value given
-     * in the config file as opposed to a global value given on the
-     * command line.  Saving and restoring 'defaultColorVisualClass'
-     * around the fb's ScreenInit() solves this problem.
-     *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
-     * are not appropriate.  In this driver, we fixup the visuals after.
-     */
-
-    /*
-     * Reset cfb's visual list.
+     * Reset fb's visual list.
      */
     miClearVisualTypes();
 
@@ -1862,6 +1824,8 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ApmHWCursorReserveSpace(pApm);
     ApmAccelReserveSpace(pApm);
 
+    miSetPixmapDepths();
+
     switch (pScrn->bitsPerPixel) {
     case 1:
 	ret = xf1bppScreenInit(pScreen, FbBase,
@@ -1876,31 +1840,14 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 8:
-	ret = cfbScreenInit(pScreen, FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
-	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
-	break;
     case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FbBase,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, FbBase,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, FbBase, pScrn->virtualX,
+	ret = fbScreenInit(pScreen, FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
+	    pScrn->displayWidth, pScrn->bitsPerPixel);
+	if (ret)
+		fbPictureInit(pScreen, 0, 0);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
