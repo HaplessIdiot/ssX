@@ -1,6 +1,6 @@
-.\" $XFree86: xc/programs/Xserver/hw/darwin/Xdarwin.man,v 1.1 2000/11/15 01:36:13 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/darwin/Xdarwin.man,v 1.2 2000/12/01 19:47:38 dawes Exp $
 .\"
-.TH XDARWIN 1 "Release 6.4" "X Version 11"
+.TH XDARWIN 1 "Release 4.0.2" "XFree86"
 .SH NAME
 Xdarwin \- X window system server for Darwin operating system
 .SH SYNOPSIS
@@ -44,7 +44,7 @@ Print out the server version and patchlevel.
 Same as \fB\-showconfig\fP.
 .SH "SEE ALSO"
 .PP
-X(1), Xserver(1), xdm(1), xinit(1)
+X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1)
 .SH BUGS
 .I Xdarwin
 and this man page still have many limitations. Some of the more obvious
