@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.11tsi Exp $
+XCOMM $XFree86: xc/config/imake/Imakefile,v 3.13 2002/04/04 14:05:34 eich Exp $
 
 XCOMM Some compilers generate fatal errors if an -L directory does
 XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
@@ -17,7 +17,6 @@ CPP_PROGRAM = CppCmd
 CPP_DEFINES = -DCPP_PROGRAM="\"$(CPP_PROGRAM)\""
 GCC_COMMAND = $(CC) -fmerge-constants -xc /dev/null -S -o /dev/null 2> /dev/null 1> /dev/null
 GCC_DEFINES = -DHAS_MERGE_CONSTANTS=`if $(GCC_COMMAND); then echo 1; else echo 0; fi`
-DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES) $(GCC_DEFINES)
 
 #ifdef CrossCompileDir
 CROSSCOMPILEDIR = CrossCompileDir
@@ -28,7 +27,7 @@ CROSSCOMPILEDEFINES=
 BOOTSTRAPDEFINES =
 #endif
 
-DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES) \
+DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES) $(GCC_DEFINES) \
 	 $(CROSSCOMPILEDEFINES)
 
 #if defined(MacIIArchitecture) || defined(SequentArchitecture) || defined(i386ScoArchitecture)
