@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_wrap.h,v 1.1 1999/06/14 07:23:38 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_wrap.h,v 1.2 2000/02/08 17:18:33 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,15 +30,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/glx/indirect_wrap.h,v 1.1 1999/03/23 06:20:14 martin Exp $
  */
+
+/* NOTE: This file could be automatically generated */
 
 #ifndef _INDIRECT_WRAP_H_
 #define _INDIRECT_WRAP_H_
-
-#if defined(GLX_DIRECT_RENDERING) && defined(NEED_GL_FUNCS_WRAPPED)
-
-/* NOTE: This file could be automatically generated */
 
 #define glAccum __indirect_glAccum
 #define glAlphaFunc __indirect_glAlphaFunc
@@ -636,5 +633,4 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define glMultTransposeMatrixdARB __indirect_glMultTransposeMatrixdARB
 #define glMultTransposeMatrixfARB __indirect_glMultTransposeMatrixfARB
 
-#endif
 #endif /* _INDIRECT_WRAP_H_ */

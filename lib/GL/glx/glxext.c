@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.4 2000/02/08 17:18:32 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.5 2000/02/15 07:13:27 martin Exp $ */
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -32,13 +32,11 @@
 #include <stdio.h>
 #include <Xext.h>
 #include <extutil.h>
-#ifdef GLX_DIRECT_RENDERING
+#include <assert.h>
 #include "indirect_init.h"
 #include "glapi.h"
-#include <assert.h>
 #ifdef XTHREADS
 #include "Xthreads.h"
-#endif
 #endif
 
 #ifdef DEBUG
@@ -67,12 +65,10 @@ static __GLXcontext dummyContext = {
 };
 
 
-#ifdef GLX_DIRECT_RENDERING
 /*
 ** All indirect rendering contexts will share the same indirect dispatch table.
 */
 static __GLapi *IndirectAPI = NULL;
-#endif
 
 
 /*

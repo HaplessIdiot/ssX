@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.2 2000/02/08 17:18:32 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.3 2000/02/15 07:13:27 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,8 +31,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Brian Paul <brian@precisioninsight.com>
  */
-
-#ifdef GLX_DIRECT_RENDERING
 
 #include "indirect_init.h"
 #include "indirect.h"
@@ -404,5 +402,3 @@ __GLapi *__glXNewIndirectAPI(void)
 
     return glAPI;
 }
-
-#endif

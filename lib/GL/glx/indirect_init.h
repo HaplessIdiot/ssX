@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.h,v 1.1 1999/06/14 07:23:37 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.h,v 1.2 2000/02/08 17:18:33 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,17 +30,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/glx/indirect_init.h,v 1.2 1999/04/05 05:24:32 martin Exp $
  */
 
 #ifndef _INDIRECT_INIT_H_
 #define _INDIRECT_INIT_H_
 
-#ifdef GLX_DIRECT_RENDERING
-
 #include "glxclient.h"
 
 extern __GLapi *__glXNewIndirectAPI(void);
 
-#endif
 #endif /* _INDIRECT_INIT_H_ */
