@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX February 2002)
+  44. Macintosh flat panel fix in the "nv" driver (Mark Vojkovich).
   43. XDarwin fixes and improvements for full screen Quartz mode:
        - Pull full screen specific code out of generic Quartz support.
        - Install new colormaps correctly with PseudoColor.
@@ -14644,4 +14645,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2174 2002/02/15 23:50:13 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2175 2002/02/17 03:15:16 torrey Exp $
