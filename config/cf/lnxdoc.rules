@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.21 2000/12/07 16:36:54 tsi Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.22 2000/12/18 02:43:27 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -109,6 +109,10 @@ update.docs:: textfile							@@\
 	@$(RM) __tmp1__ __tmp2__
 #endif
 
+/*
+ * Avoid using LinuxDocTargetLong with base != sgmlfile because HTML
+ * index generation assumes that base == sgmlfile.
+ */
 #define LinuxDocTargetLong(sgmlfile,textfile,base)			@@\
 LinuxDocSgmlToText(sgmlfile,textfile)					@@\
 LinuxDocSgmlToHtml(sgmlfile,base)					@@\
