@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.4 2002/10/17 02:22:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.5 2004/02/13 23:58:49 dawes Exp $
 XCOMM
 XCOMM Copyright 2001 The XFree86 Project, Inc.
 XCOMM All rights reserved.
@@ -82,7 +82,11 @@ INCLUDES = -I. -I$(XF86OSSRC) -I$(XF86COMSRC) \
 	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext \
 	   -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
-DEFINES = -DUSESTDRES
+#if !HasStrlcat
+STRLCAT_DEFS = -DNEED_STRLCAT
+#endif
+
+DEFINES = -DUSESTDRES $(STRLCAT_DEFS)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
