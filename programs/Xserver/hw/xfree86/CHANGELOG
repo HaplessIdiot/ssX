@@ -1,4 +1,8 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 399. Try to make the state of libXfont more consistent.  It shouldn't depend
+      on whether a static or loadable XFree86 server is being built, so it
+      now always has a dependency on the FreeType2 library (when FreeType
+      support is enabled) (David Dawes).
  398. Make the specification of a Monitor in the Screen sections of the
       XF86Config file optional.  Some drivers may need changes (coming later)
       to maximise the utility of this (David Dawes).
@@ -17605,7 +17609,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2821 2003/08/24 19:57:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2822 2003/08/24 20:52:23 dawes Exp $
 
 
 
