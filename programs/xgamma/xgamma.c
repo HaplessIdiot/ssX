@@ -21,6 +21,7 @@
  * 
  * Written by David Bateman
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <errno.h>
