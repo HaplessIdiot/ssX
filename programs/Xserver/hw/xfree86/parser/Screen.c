@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.23 2003/01/01 19:22:22 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.24 2003/01/04 20:20:23 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -541,15 +541,3 @@ xf86findScreen (const char *ident, XF86ConfScreenPtr p)
 	return (NULL);
 }
 
-XF86ConfDisplayPtr
-xf86findDisplay (int depth, XF86ConfDisplayPtr p)
-{
-	while (p)
-	{
-		if (depth == p->disp_depth)
-			return (p);
-
-		p = p->list.next;
-	}
-	return (NULL);
-}

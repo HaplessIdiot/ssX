@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.28 2001/06/30 04:00:24 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.30 2002/09/16 18:06:16 eich Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -427,7 +427,6 @@ XF86ConfMonitorPtr xf86findMonitor(const char *ident, XF86ConfMonitorPtr p);
 XF86ConfModesPtr xf86findModes(const char *ident, XF86ConfModesPtr p);
 XF86ConfModeLinePtr xf86findModeLine(const char *ident, XF86ConfModeLinePtr p);
 XF86ConfScreenPtr xf86findScreen(const char *ident, XF86ConfScreenPtr p);
-XF86ConfDisplayPtr xf86findDisplay(int depth, XF86ConfDisplayPtr p);
 XF86ConfInputPtr xf86findInput(const char *ident, XF86ConfInputPtr p);
 XF86ConfInputPtr xf86findInputByDriver(const char *driver, XF86ConfInputPtr p);
 XF86ConfVendorPtr xf86findVendor(const char *name, XF86ConfVendorPtr list);
