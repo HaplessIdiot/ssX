@@ -660,6 +660,29 @@ correctness issues.
  
 Further information can be found in the nv man page.
 
+3.12.8 Glide
+
+This driver is for Voodoo 1 and Voodoo 2 boards. It runs X on top of
+the 3DFX Glide API (where this is available, like for Linux). You need
+to have Glide 2.x installed before you can run this driver. This
+driver uses no hardware acceleration (since there is no 2D
+acceleration in these boards) but is rather quick anyway since the CPU
+renders to local RAM which is then copied block-wise to the
+board. Unfortunately the Voodoo 1/2 boards are rather limited in
+resolution. The Voodoo 1 can do 800x600 and the Voodoo 2 can do
+1024x768 at best, but still it has some use as a second head in 
+Xinerama or multihead mode.
+
+16 and 24 bpp modes are supported (24 bit in 32-bit sparse-packed
+mode).
+
+Further information about this driver can be found in the 'glide' driver
+manpage for XFree86. You will not get this driver running before
+reading this manpage.
+
+For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx
+driver which talks directly to the hardware and is much faster.
+
 4.  X libraries and clients
 
 4.1  Xaw
@@ -927,4 +950,4 @@ tion 3.2, page 1) section.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.18 1999/08/31 08:39:09 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.71 1999/12/31 22:30:27 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.72 2000/01/03 14:54:36 robin Exp $
