@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.31 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.33 2002/09/16 18:05:47 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -127,10 +127,10 @@ typedef struct {
 #if defined(i386) || defined(__i386__)
     Bool		pc98;
 #endif
-    Bool                pmFlag;
+    Bool		pmFlag;
     Log			log;
-    int                 estimateSizesAggressively;
-    Bool                kbdCustomKeycodes;
+    int			estimateSizesAggressively;
+    Bool		kbdCustomKeycodes;
     struct {
 	Bool		disabled;		/* enable/disable deactivating
 						 * grabs or closing the
