@@ -1,4 +1,8 @@
 XFree86 4.3.99.3 (xx April 2003)
+  91. More reliable workaround for handling the I830Sync() function being
+      called while VT switched away (David Dawes).
+  90. Fix references to DRI functions in non-DRI i810_driver.c build
+      (David Dawes).
   89. Import expat 1.95.4 (Matthieu Herrb). 
 
 XFree86 4.3.99.2 (10 April 2003)
@@ -16719,4 +16723,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2626 2003/04/10 13:26:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2627 2003/04/10 20:22:13 herrb Exp $
