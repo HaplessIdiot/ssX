@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.17 2003/02/18 19:10:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.18 2003/02/21 15:06:19 eich Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -636,7 +636,11 @@ ShadowFillSpans(
 	}
 
 	box.y2++;
-	TRIM_AND_TRANSLATE_BOX(box, pDraw, pGC);
+
+        if(!pGC->miTranslate) {
+           TRANSLATE_BOX(box, pDraw);
+        }
+        TRIM_BOX(box, pGC); 
 
 	if(BOX_NOT_EMPTY(box)) {
             if(pPriv->preRefresh)
@@ -688,7 +692,11 @@ ShadowSetSpans(
 	}
 
 	box.y2++;
-	TRIM_AND_TRANSLATE_BOX(box, pDraw, pGC);
+
+        if(!pGC->miTranslate) {
+           TRANSLATE_BOX(box, pDraw);
+        }
+        TRIM_BOX(box, pGC);
 
 	if(BOX_NOT_EMPTY(box)) {
            if(pPriv->preRefresh)
@@ -1769,9 +1777,15 @@ ShadowPushPixels(
     SHADOW_GC_OP_PROLOGUE(pGC);
 
     if(IS_VISIBLE(pDraw)) {
-	box.x1 = xOrg + pDraw->x;
+	box.x1 = xOrg;
+	box.y1 = yOrg;
+
+        if(!pGC->miTranslate) {
+           box.x1 += pDraw->x;          
+           box.y1 += pDraw->y;          
+        }
+
 	box.x2 = box.x1 + dx;
-	box.y1 = yOrg + pDraw->y;
 	box.y2 = box.y1 + dy;
 
 	TRIM_BOX(box, pGC);
