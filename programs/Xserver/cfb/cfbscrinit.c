@@ -88,7 +88,7 @@ libcfb32ModuleInit(data,magic)
 #ifdef CFB_NEED_SCREEN_PRIVATE
     case 1:
     	* magic = MAGIC_CCD_SCREEN_PRIV_IDX;
-	* data  = (pointer &cfbScreenPrivateIndex;
+	* data  = (pointer) &cfbScreenPrivateIndex;
 	break;
 #endif
     default:
