@@ -25,6 +25,7 @@ HEADERS= \
         ftnames.h \
         ftoutln.h \
         ftrender.h \
+        ftsizes.h \
         ftsnames.h \
         ftsynth.h \
         ftsystem.h \
@@ -53,6 +54,7 @@ LinkSourceFile(ftmodule.h,$(FREETYPEINC))
 LinkSourceFile(ftnames.h,$(FREETYPEINC))
 LinkSourceFile(ftoutln.h,$(FREETYPEINC))
 LinkSourceFile(ftrender.h,$(FREETYPEINC))
+LinkSourceFile(ftsizes.h,$(FREETYPEINC))
 LinkSourceFile(ftsnames.h,$(FREETYPEINC))
 LinkSourceFile(ftsynth.h,$(FREETYPEINC))
 LinkSourceFile(ftsystem.h,$(FREETYPEINC))
