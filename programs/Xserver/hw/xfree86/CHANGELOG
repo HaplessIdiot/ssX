@@ -1,6 +1,4 @@
 XFree86 4.3.99.3 (xx April 2003)
- 139. Add test for vtSema to i8x0Sync() to prevent touching MMIO registers
-      while switched away (Egbert Eich).
  138. Fix mmapw SEGV (Marc La France).
  137. From the DRI trunk...
        - Install dummy/noop read & poll fops unless the driver has
@@ -16874,7 +16872,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2657 2003/04/24 15:20:36 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2658 2003/04/24 15:42:45 eich Exp $
 
 
 
