@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.13 2003/10/16 23:50:09 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.14 2003/11/11 01:22:32 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -48,6 +48,7 @@
     BOOL quitWithoutQuery;
     UInt32 mouseState;
     BOOL sendServerEvents;
+    BOOL x11Active;
 
     // Aqua interface
     IBOutlet NSWindow *modeWindow;
@@ -88,6 +89,8 @@
 - (void)sendXEvent:(xEvent *)xe;
 - (void)sendShowHide:(BOOL)show;
 - (void)clientProcessDone:(int)clientStatus;
+- (void)activateX11:(BOOL)state;
+- (void)windowBecameKey:(NSWindow *)window;
 - (void)setX11WindowList:(NSArray *)list;
 - (void)setX11WindowCheck:(NSNumber *)nn;
 
