@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.184 2001/10/29 18:16:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.185 2002/01/15 01:56:56 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -898,7 +898,8 @@ InitInput(argc, argv)
 {
     IDevPtr pDev;
     InputDriverPtr pDrv;
-    InputInfoPtr pInfo, coreKeyboard = NULL, corePointer = NULL;
+    InputInfoPtr pInfo;
+    static InputInfoPtr coreKeyboard = NULL, corePointer = NULL;
 
     xf86Info.vtRequestsPending = FALSE;
     xf86Info.inputPending = FALSE;

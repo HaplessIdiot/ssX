@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.125 2002/01/23 18:56:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.126 2002/01/23 19:19:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -950,7 +950,8 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
 	XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
 	if (XFD_ANYSET(&devicesWithInput)) {
-	    (xf86Info.kbdEvents)();
+	    if (xf86Info.kbdEvents)
+	    	(xf86Info.kbdEvents)();
 	    pInfo = xf86InputDevs;
 	    while (pInfo) {
 		if (pInfo->read_input && pInfo->fd >= 0 &&
