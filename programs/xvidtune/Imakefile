@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
