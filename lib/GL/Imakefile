@@ -1,0 +1,74 @@
+
+XCOMM Header: /p0/cvs/X39-3D/xc/lib/GL/Imakefile,v 1.3 1999/02/26 08:35:31 martin Exp $
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+#if BuildXF86DRI
+DRIDIRS = dri
+#endif
+SUBDIRS = glx $(DRIDIRS)
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+     LIBNAME = GL
+     SOREV   = $(SOGLREV)
+
+     GLXOBJS = glx/?*.o
+    GLXUOBJS = glx/unshared/?*.o
+    GLXDOBJS = glx/debugger/?*.o
+    GLXPOBJS = glx/profiled/?*.o
+    GLXDONES = glx/DONE
+
+#if BuildXF86DRI
+     DRIOBJS = dri/?*.o
+    DRIUOBJS = dri/unshared/?*.o
+    DRIDOBJS = dri/debugger/?*.o
+    DRIPOBJS = dri/profiled/?*.o
+    DRIDONES = dri/DONE
+
+     DRMOBJS = dri/drm/?*.o
+    DRMUOBJS = dri/drm/unshared/?*.o
+    DRMDOBJS = dri/drm/debugger/?*.o
+    DRMPOBJS = dri/drm/profiled/?*.o
+    DRMDONES = dri/drm/DONE
+#endif
+
+        OBJS = $(GLXOBJS)  $(DRIOBJS)  $(DRMOBJS)
+       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRMUOBJS)
+       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRMDOBJS)
+       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRMPOBJS)
+       DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES)
+
+#if 0
+XCOMM This works for now... NOT_DONE
+$(GLXOBJS):
+$(GLXUOBJS):
+#if BuildXF86DRI
+$(DRIOBJS):
+$(DRIUOBJS):
+$(DRMOBJS):
+$(DRMUOBJS):
+#endif
+#endif
+
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
+
+#if NormalLibGlx
+NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(UOBJS))
+InstallLibrary($(LIBNAME),$(USRLIBDIR))
+#endif
+#if SharedLibGlx
+SharedDepLibraryTarget($(LIBNAME),$(SOREV),$(SUBDIRS) $(DONES),$(OBJS),.,.)
+InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
+#endif
+#if DebugLibGlx
+DebuggedDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(DOBJS))
+InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
+#endif
+#if ProfileLibGlx
+ProfiledDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(POBJS))
+InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.37 1998/11/15 05:03:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.38 1999/01/31 12:22:20 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -159,6 +159,9 @@ extern void XFree86DGAExtensionInit(INITARGS);
 #ifdef GLXEXT
 extern void GlxExtensionInit(INITARGS);
 #endif
+#ifdef XF86DRI
+extern void XFree86DRIExtensionInit(INITARGS);
+#endif
 #ifdef TOGCUP
 extern void XcupExtensionInit(INITARGS);
 #endif
@@ -277,6 +280,11 @@ InitExtensions(argc, argv)
     XFree86DGAExtensionInit();
 #endif
 #endif
+#ifdef XF86DRI
+#ifndef XPRINT	/* we don't want Glx in the Xprint server */
+    XFree86DRIExtensionInit();
+#endif
+#endif
 #ifdef GLXEXT
 #ifndef XPRINT	/* we don't want Glx in the Xprint server */
     GlxExtensionInit();
@@ -332,6 +340,7 @@ ExtensionModule extension[] =
     { NULL, "NOXINERAMA", NULL, NULL },
 #endif
     { NULL, "XAnti", NULL, NULL },
+    { NULL, "XFree86-DRI", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 
@@ -403,6 +412,7 @@ InitExtensions(argc, argv)
     extension[31].initFunc = PanoramiXExtensionInit;
 #endif
     /* 31 - XAnti */
+    /* 32 - XF86DRI */
 
 #endif
     for (i = 0; extension[i].name != NULL; i++) 

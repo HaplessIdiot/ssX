@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.12 1998/07/26 09:56:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.13 1998/10/02 06:15:02 dawes Exp $
 /*
  * Server imakefile info  - this contains any special redefinitions, etc.
  * that Imakefiles in the server subtree will need.
@@ -42,10 +42,6 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #endif
 #endif /* SetUIDServerTarget */
 
-#ifndef GlxModule
-#define GlxModule		DoLoadableServer
-#endif
-
          CC = ServerCcCmd
   CCOPTIONS = ServerCCOptions
 #if DoThreadedServer
@@ -58,9 +54,12 @@ EXT_DEFINES = ExtensionDefines
 GLX_DEFINES = GlxDefines
  
 #ifndef GlxStaticServerLib
-#define GlxStubLib    YES
-#else
+#ifndef GlxStubLib
 #define GlxStubLib    NO
+#endif
+#endif
+#ifndef GlxUseSGISI
+#define GlxUseSGISI   NO
 #endif
 
 #ifdef XFree86Version

@@ -1,0 +1,36 @@
+
+XCOMM Header: /p0/cvs/X39-3D/xc/lib/GL/dri/drm/Imakefile,v 1.2 1999/02/26 08:35:32 martin Exp $
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+      DEFINES = $(ALLOC_DEFINES)
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+         SRCS = drmlib.c
+         OBJS = drmlib.o
+
+#if defined(LinuxArchitecture)
+OS_SUBDIR = linux
+#endif
+
+LinkSourceFile(drmlib.c, \
+	../../../../programs/Xserver/hw/xfree86/os-support/$(OS_SUBDIR)/drm)
+LinkSourceFile(drm.h, \
+	../../../../programs/Xserver/hw/xfree86/os-support/$(OS_SUBDIR)/drm)
+LinkSourceFile(drmlib.h, \
+	../../../../programs/Xserver/hw/xfree86/os-support/$(OS_SUBDIR)/drm)
+
+all::
+	LibMkdir(unshared)
+
+.c.o:
+	UnsharedLibObjCompile($(_NOOP_))
+	NormalSharedLibObjCompile($(_NOOP_))
+
+all:: $(OBJS)
+
+clean::
+	LibCleanDir(unshared)
+
+DependTarget()

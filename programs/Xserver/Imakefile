@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.149 1999/02/12 22:51:47 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.150 1999/02/13 16:44:50 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -58,13 +58,34 @@ INSTPGMFLAGS =
           PEXDIR = PEX5
 #endif
 
-#if BuildGlxExt && !GlxModule
-#if GlxStubLib 
+#if BuildGlxExt
+#if GlxStubLib && !DoLoadableServer
       GLXLIB = glxStub/LibraryTargetName(ServerGlx) 
-      GLXDIR = glxStub 
+      GLXDIR = glxStub
 #else
+#if defined(GlxStaticServerLib) && !DoLoadableServer
       GLXLIB = GlxStaticServerLib
       GLXDIR = 
+#else
+#if BuildXF86DRI
+      DRILIB = GL/dri/ModuleLibraryTargetName(dri) \
+               GL/dri/drm/ModuleLibraryTargetName(drm)
+#else
+      DRILIB = 
+#endif
+#if GlxUseSGISI
+      GLXLIB = GL/glx/ModuleLibraryTargetName(glx) \
+               GL/sgi-si/ModuleLibraryTargetName(GLcore) \
+               $(DRILIB)
+#else
+      GLXLIB = GL/glx/ModuleLibraryTargetName(glx) \
+               GL/mesa/src/ModuleLibraryTargetName(GLcore) \
+               GL/mesa/src/X/ModuleLibraryTargetName(GLcoreX) \
+               $(DRILIB)
+#endif
+      GLXDIR = GL
+      GLXEXT = $(GLXLIB)
+#endif
 #endif
 #endif
 
@@ -152,7 +173,8 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) 
-   LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT)
+   LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
+                  $(GLXEXT)
         MISCEXT = Xext/LibraryTargetName(ext)
       OTHEREXTS = Xext/LibraryTargetName(exts) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(SITEEXTS)

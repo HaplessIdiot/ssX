@@ -1,0 +1,33 @@
+
+XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/dri/Imakefile,v 1.5 1999/02/26 08:37:30 martin Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+      SUBDIRS = drm
+
+         SRCS = xf86dri.c
+         OBJS = xf86dri.o
+
+     INCLUDES = -I$(SERVERSRC)/include -I$(XTOP)/include -I$(EXTINCSRC)
+      DEFINES = $(GLX_DEFINES)
+
+LinkSourceFile(xf86dri.h,../../../../lib/GL/dri)
+LinkSourceFile(xf86dristr.h,../../../../lib/GL/dri)
+
+#if DoLoadableServer
+ModuleObjectRule()
+SubdirLibraryRule($(OBJS))
+#else
+MakeSubdirs($(SUBDIRS))
+NormalLibraryTarget(dri,$(OBJS))
+NormalLibraryObjectRule()
+#endif
+
+DependTarget()
+
+DependSubdirs($(SUBDIRS))
+MakeLintLibSubdirs($(SUBDIRS))
+LintSubdirs($(SUBDIRS))

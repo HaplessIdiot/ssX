@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.204 1999/02/19 21:26:47 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.205 1999/02/28 11:19:14 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -393,14 +393,39 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /*
  * Build GLX server interface
- *   --- Does't work for 1-bit and 4-bit servers
+ *   --- Doesn't work for 1-bit and 4-bit servers
  */
 #if !defined(BuildGlxExt)
-#  if XF86Server
-#    define BuildGlxExt             DoLoadableServer
-#  else
-#    define BuildGlxExt             NO
+#if XF86Server
+#  define BuildGlxExt             YES
+#  ifndef BuildXF86DRI
+#    define BuildXF86DRI          NO
 #  endif
+
+#  if !defined(GlxStaticServerLib) && !GlxStubLib
+#    if BuildXF86DRI
+#      define DRIDefines -DXF86DRI
+#    else
+#      define DRIDefines /**/
+#    endif
+#    if defined(GlxUseSGISI) && GlxUseSGISI
+#      define GlxCoreLibDefines -DGLX_USE_SGI_SI
+#    else
+#      define GlxCoreLibDefines -DGLX_USE_MESA
+#    endif
+#  else
+#    define DRIDefines /**/
+#    define GlxCoreLibDefines /**/
+#  endif
+
+#  ifndef GlxExtraDefines
+#    define GlxExtraDefines DRIDefines GlxCoreLibDefines
+#  endif
+
+#else
+#  define BuildGlxExt             NO
+#  define BuildXF86DRI            NO
+#endif
 #endif
 
 /*
@@ -492,6 +517,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 #ifndef BuildXantiLibrary
 #define BuildXantiLibrary	YES
+#endif
+#ifndef BuildGLXLibrary
+#define BuildGLXLibrary		YES
 #endif
 
 /* Don't build these two now because the interface hasn't been done yet */
