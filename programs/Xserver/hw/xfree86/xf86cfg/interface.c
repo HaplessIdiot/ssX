@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.22 2001/05/15 18:22:23 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.23 2001/05/18 16:03:14 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -130,7 +130,7 @@ static char XF86Config_path_static[1024];
 static char XkbConfig_path_static[1024];
 Bool xf86config_set = False;
 
-Bool textmode = False;
+Bool textmode = False, nomodules = False;
 
 xf86cfgComputer computer;
 xf86cfgDevice cpu_device;
@@ -252,6 +252,8 @@ main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-textmode") == 0)
 	    textmode = True;
 #endif
+	else if (strcmp(argv[i], "-nomodules") == 0)
+	    nomodules = True;
     }
 
 #ifdef HAS_NCURSES
@@ -482,24 +484,8 @@ main(int argc, char *argv[])
     }
 
 #ifdef USE_MODULES
+    if (!nomodules)
 	LoaderInitializeOptions();
-#if 0
-{
-    xf86cfgModuleOptions *o = module_options;
-
-    while (o) {
-	OptionInfoPtr opt = o->option;
-
-	while (opt && opt->name) {
-	    char *desc = GetOptionDescription(o->name, opt->name);
-
-	    printf("%s.%s: %s\n\n", o->name, opt->name, desc ? desc : "** NO DESCRIPTION AVAILABLE **");
-	    ++opt;
-	}
-	o = o->next;
-    }
-}
-#endif
 #endif
 
     if (!config_set && startedx) {
@@ -1467,7 +1453,7 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    options = (XF86OptionPtr*)&(((XF86ConfInputPtr)
 			(computer.devices[i]->config))->inp_option_lst);
 #ifdef USE_MODULES
-		    {
+		    if (!nomodules) {
 			char *drv = ((XF86ConfInputPtr)
 				(computer.devices[i]->config))->inp_driver;
 
@@ -1488,7 +1474,7 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    options = (XF86OptionPtr*)&(((XF86ConfDevicePtr)
 			(computer.devices[i]->config))->dev_option_lst);
 #ifdef USE_MODULES
-		    {
+		    if (!nomodules) {
 			char *drv = ((XF86ConfDevicePtr)
 				(computer.devices[i]->config))->dev_driver;
 
