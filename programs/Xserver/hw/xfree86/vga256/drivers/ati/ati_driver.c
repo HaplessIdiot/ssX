@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.34 1996/08/24 12:53:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.35 1996/09/14 13:11:33 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2088,7 +2088,7 @@ ATIProbe(void)
         int mode_flags;
         int ROMTable = 0, ClockTable = 0, FrequencyTable = 0, Index;
         const DACRec *DAC;
-        struct pci_config_reg *PCIDevice;
+        pciConfigPtr PCIDevice;
 
         /*
          * Get out if this isn't the driver the user wants.

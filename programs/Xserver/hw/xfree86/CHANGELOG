@@ -1,3 +1,10 @@
+XFree86 3.1.2Gb (15 September 1996)
+808. Update PC98 Imakefiles (Michio "Karl" Jinbo).
+807. Fixes for problems with the PC98 TGUI server (Michio "Karl" Jinbo).
+806. Fix/workaround to avoid DGAInstallColormap() being affected by
+     window managers.
+805. Fix some problems related to the change in the xf86scanpci() interface.
+
 XFree86 3.1.2Ga (14 September 1996)
 804. Implement s3ValidMode() (Mark Vojkovich).
 803. Modify the ValidMode interface in preparation for some VidMode extension

@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.37 1996/09/03 06:38:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.38 1996/09/14 13:13:38 dawes Exp $
 
 #Chips & Technologies
 
@@ -175,7 +175,7 @@ SEE Cirrus Logic GD543x
 
 NAME STB Nitro 64
 CHIPSET CL-GD5446
-SEE Cirrus Logic GD5446
+SEE Cirrus Logic GD544x
 
 NAME STB Horizon
 CHIPSET CL-GD5426/28

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.7 1996/02/04 09:14:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.8 1996/03/29 22:18:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -229,8 +229,11 @@ vgaInstallColormap(pmap)
   prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
   defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-  if ( oldmap != NOMAPYET)
-    WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
+#ifdef XFreeXDGA
+  if (xf86VTSema || !(vga256InfoRec.directMode & XF86DGAHasColormap))
+#endif
+    if ( oldmap != NOMAPYET)
+      WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
   InstalledMaps[pmap->pScreen->myNum] = pmap;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.53 1996/09/03 15:22:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.54 1996/09/14 13:09:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -481,10 +481,11 @@ s3Initialize(scr_index, pScreen, argc, argv)
       if (!s3VideoMem) {
 	 s3VideoMem = vgaBase;
 	 addr = 0xA0000;
-	 if (s3NewMmio)  /* doesn't work without linear mapping (yet?) */
+	 if (s3NewMmio) {  /* doesn't work without linear mapping (yet?) */
 	    ErrorF("%s %s: Chipset \"newmmio\" needs linear framebuffer\n",
 		       XCONFIG_GIVEN, s3InfoRec.name);
 	    ErrorF("\t\tplease specify Chipset \"mmio_928\"\n");
+	 }
 	 /* If using VGA aperture, set it up */
 	 if (s3BankSize == 0x10000) {
 #ifndef PC98

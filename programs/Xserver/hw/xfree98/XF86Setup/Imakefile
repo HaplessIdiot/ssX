@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.4 1996/08/24 12:54:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.5 1996/09/14 13:13:45 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -46,6 +46,11 @@ includes::
         LDPRELIB = 
 #undef XawClientDepLibs
 #define XawClientDepLibs /**/
+#endif
+
+#if defined(SVR4Architecture) && defined(SunArchitecture)
+/* Solaris needs this */
+    EXTRASYSLIBS = -ldl
 #endif
 
 #if XF86SetupUsesStaticTkTcl
@@ -120,7 +125,7 @@ LinkSourceFile(tclxkbui.c,$(XF86SRC)/XF86Setup)
 LinkSourceFile(tkother.c,$(XF86SRC)/XF86Setup)
 LinkSourceFile(xfsconf.h,$(XF86SRC)/XF86Setup)
 
-NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES),NullParameter)
+NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES) $(EXTRASYSLIBS),NullParameter)
 #ifndef DontInstallPC98Version
 InstallProgram(XF86Setup,$(BINDIR))
 #endif

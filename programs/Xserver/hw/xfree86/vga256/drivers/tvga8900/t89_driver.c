@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.41 1996/09/01 04:47:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.42 1996/09/14 13:13:21 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -194,9 +194,10 @@ static TGUI_Bpp_Clocks[] = {
 };
 
 #ifdef PC98_TGUI
+#include "pc98_tgui.h"
 extern pointer mmioBase;
 extern Bool BoardInit(void);
-extern void (*crtswitch)(short);
+extern PC98TGUiTable *pc98TGUi;
 #endif
 
 /*
@@ -930,11 +931,18 @@ TVGA8900Probe()
 		 */
 		if (DRAMspeed == 0) 
 		{
+#ifdef PC98_TGUI
+			DRAMspeed = pc98TGUi->DRAMspeed;
+			tridentReprogrammedMCLK = pc98TGUi->MCLK;
+			vga256InfoRec.maxClock =
+				pc98TGUi->Bpp_Clocks[(vgaBitsPerPixel/8)-1];
+#else
 			tridentReprogrammedMCLK = 0; /* Don't Reprogram */
 #ifndef MONOVGA
 			vga256InfoRec.maxClock =
 				TGUI_Bpp_Clocks[(vgaBitsPerPixel/8)-1];
 #endif
+#endif/*XF98_TGUI*/
 		}
 		/* Enable extra IO ports for the TGUI */
 		xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_TGUI_ExtPorts,
@@ -1114,13 +1122,13 @@ TVGA8900EnterLeave(enter)
       		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       		outb(vgaIOBase + 5, temp & 0x7F);
 #ifdef PC98_TGUI
-		crtswitch(1);
+		pc98TGUi->crtsw(1);
 #endif
     	}
   	else
     	{
 #ifdef PC98_TGUI
-		crtswitch(0);
+		pc98TGUi->crtsw(0);
 #endif
       		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     	}

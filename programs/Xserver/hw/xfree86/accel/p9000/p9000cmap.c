@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.5 1996/05/06 05:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.6 1996/05/10 06:57:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -197,8 +197,11 @@ p9000InstallColormap(pmap)
   prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
   defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-  if ( oldmap != NOMAPYET)
-    WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
+#ifdef XFreeXDGA
+  if (xf86VTSema || !(p9000InfoRec.directMode & XF86DGAHasColormap))
+#endif
+    if ( oldmap != NOMAPYET)
+      WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
   InstalledMaps[pmap->pScreen->myNum] = pmap;
 

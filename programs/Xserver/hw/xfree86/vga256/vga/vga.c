@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.57 1996/08/18 01:52:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.58 1996/09/14 13:13:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -917,10 +917,16 @@ vgaProbe()
 #endif /* !MONOVGA */
 #endif /* !XF86VGA16 */
 
-	/* Free PCI information */
-	xf86cleanpci();
-	vgaPCIInfo->ThisCard = (pciConfigPtr)NULL;
-	vgaPCIInfo->AllCards = (pciConfigPtr *)NULL;
+#if !defined(PC98) || defined(PC98_TGUI)
+	if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
+	  /* Free PCI information */
+	  xf86cleanpci();
+	  if (vgaPCIInfo) {
+	    vgaPCIInfo->ThisCard = (pciConfigPtr)NULL;
+	    vgaPCIInfo->AllCards = (pciConfigPtr *)NULL;
+	  }
+	}
+#endif
 
 	return TRUE;
       }

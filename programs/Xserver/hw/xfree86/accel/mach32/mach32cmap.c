@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.4 1996/02/04 09:02:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.5 1996/03/29 22:15:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -150,8 +150,11 @@ mach32InstallColormap(pmap)
   prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
   defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-  if ( oldmap != NOMAPYET)
-    WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
+#ifdef XFreeXDGA
+  if (xf86VTSema || !(mach32InfoRec.directMode & XF86DGAHasColormap))
+#endif
+    if ( oldmap != NOMAPYET)
+      WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
   InstalledMaps[pmap->pScreen->myNum] = pmap;
 

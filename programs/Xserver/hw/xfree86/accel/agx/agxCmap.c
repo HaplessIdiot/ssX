@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.3 1996/02/04 08:57:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCmap.c,v 3.4 1996/08/10 13:05:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994    by Henry A. Worth, Sunnyvale, California.
@@ -217,8 +217,11 @@ agxInstallColormap(pmap)
   prgb = (xrgb *)ALLOCATE_LOCAL( entries * sizeof(xrgb));
   defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-  if ( oldmap != NOMAPYET)
-    WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
+#ifdef XFreeXDGA
+  if (xf86VTSema || !(agxInfoRec.directMode & XF86DGAHasColormap))
+#endif
+    if ( oldmap != NOMAPYET)
+      WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
   InstalledMaps[pmap->pScreen->myNum] = pmap;
 

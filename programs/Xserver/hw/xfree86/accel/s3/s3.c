@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.143 1996/09/03 15:12:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.144 1996/09/14 13:09:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -616,6 +616,10 @@ s3GetPCIInfo()
    int i = 0;
 
    pcrpp = xf86scanpci(s3InfoRec.scrnIndex);
+
+   if (!pcrpp)
+      return NULL;
+
    while (pcrp = pcrpp[i]) {
       if (pcrp->_vendor == PCI_S3_VENDOR_ID) {
 	 found = TRUE;
@@ -3792,6 +3796,9 @@ s3ConnectPCI(vendor, device)
 
     pcrpp = xf86scanpci(s3InfoRec.scrnIndex);
 
+    if (!pcrpp)
+	return;
+
     for (dev = 0; (pcrp = pcrpp[dev]) != NULL; dev ++)
     {
 	if (pcrp->_vendor == vendor && pcrp->_device == device)
@@ -3820,7 +3827,10 @@ s3DisconnectPCI(vendor, device)
     pciConfigPtr pcrp, *pcrpp;
     unsigned int dev;
 
-    xf86scanpci(s3InfoRec.scrnIndex);
+    pcrpp = xf86scanpci(s3InfoRec.scrnIndex);
+
+    if (!pcrpp)
+	return;
 
     for (dev = 0; (pcrp = pcrpp[dev]) != NULL; dev ++)
     {

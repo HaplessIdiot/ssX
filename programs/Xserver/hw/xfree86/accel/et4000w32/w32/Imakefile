@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.8 1995/12/09 11:07:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.9 1996/02/04 09:00:34 dawes Exp $
 
 
 
@@ -10,10 +10,10 @@ XCOMM $XConsortium: Imakefile /main/6 1995/12/09 15:52:44 kaleb $
 #include <Server.tmpl>
 
 SRCS = 	vgaHW.c vga.c vgaBank.s et4_bank.s w32vars.c \
-	et4000.c et4000w32.c dummy.c ramdac.c
+	et4000.c et4000w32.c dummy.c ramdac.c vgaPCI.c
 
 OBJS = 	vgaHW.o vga.o vgaBank.o et4_bank.o w32vars.o \
-	et4000.o et4000w32.o dummy.o ramdac.o
+	et4000.o et4000w32.o dummy.o ramdac.o vgaPCI.o
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -33,6 +33,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(w32,$(OBJS))
 
 LinkSourceFile(vgaHW.c,../../../vga256/vga)
+LinkSourceFile(vgaPCI.c,../../../vga256/vga)
 LinkSourceFile(vgaBank.s,../../../vga256/vga)
 ObjectFromSpecialSource(et4000,$(VGADRIVERSRC)/et4000/et4_driver,NullParameter)
 ObjectFromSpecialAsmSource(et4_bank,$(VGADRIVERSRC)/et4000/bank,NullParameter)

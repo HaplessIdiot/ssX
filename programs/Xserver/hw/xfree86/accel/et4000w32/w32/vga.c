@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.31 1996/08/18 01:47:44 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.32 1996/09/14 13:08:33 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -43,6 +43,7 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 #include "vga.h"
+#include "vgaPCI.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "w32version.h"
@@ -122,6 +123,7 @@ pointer vgaOrigVideoState = NULL;
 pointer vgaNewVideoState = NULL;
 pointer vgaBase = NULL;
 pointer vgaVirtBase = NULL;
+vgaPCIInformation *vgaPCIInfo = NULL;
 
 void (* vgaEnterLeaveFunc)(
 #if NeedFunctionPrototypes
@@ -262,6 +264,11 @@ vgaProbe()
       return(FALSE);
     }
 
+  /* First do a general PCI probe (unless disabled) */
+  if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
+    vgaPCIInfo = vgaGetPCIInfo();
+  }
+
   for (i=0; Drivers[i]; i++)
   {
     vgaSaveScreenFunc = Drivers[i]->ChipSaveScreen;
@@ -394,6 +401,7 @@ vgaProbe()
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
 	OFLG_SET(OPTION_POWER_SAVER, &vgaOptionFlags);
 	OFLG_SET(OPTION_CLKDIV2, &vgaOptionFlags);
+	OFLG_SET(OPTION_NO_PCI_PROBE, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
@@ -560,6 +568,14 @@ vgaProbe()
                  vga256InfoRec.virtualX, vga256InfoRec.virtualY);
 
         vgaHWCursor.Initialized = FALSE;
+
+	/* Free PCI information */
+	xf86cleanpci();
+	if (vgaPCIInfo) {
+	  vgaPCIInfo->ThisCard = (pciConfigPtr)NULL;
+	  vgaPCIInfo->AllCards = (pciConfigPtr *)NULL;
+	}
+
 	return TRUE;
       }
   }

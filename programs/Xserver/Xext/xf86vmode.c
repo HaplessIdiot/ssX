@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.21 1996/03/10 11:53:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.22 1996/05/06 05:55:40 dawes Exp $ */
 
 /*
 
@@ -572,7 +572,7 @@ ProcXF86VidModeModModeLine(client)
     }
 
     /* Check that the driver is happy with the mode */
-    if (!vptr->ValidMode(&modetmp)) {
+    if (vptr->ValidMode(&modetmp, xf86Verbose) != MODE_OK) {
 	DEALLOCATE_LOCAL(modetmp.Private);
 	return vidmodeErrorBase + XF86VidModeModeUnsuitable;
     }

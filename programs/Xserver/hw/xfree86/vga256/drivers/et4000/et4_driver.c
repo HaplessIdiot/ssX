@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.28 1996/08/13 11:31:32 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.29 1996/09/14 13:12:10 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -472,6 +472,7 @@ ET6000Probe()
     * the full PCI probe.
     */
 
+#define USE_VGA256_PCI
 #ifdef USE_VGA256_PCI   /* this uses VGA256 specific stuff... */
    if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TSENG)
    {
@@ -491,11 +492,10 @@ ET6000Probe()
    }
 
 #else
-   /* Why is this necessary?? */
-   if (!vgaPCIInfo || !vgaPCIInfo->AllCards)
+   /* There should be no need for this now */
+   pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+   if (!pcrpp)
       return FALSE;
-   
-   pcrpp = vgaPCIInfo->AllCards;
    while (pcrp = pcrpp[i]) {
       if (pcrp->_vendor == PCI_TSENG_VENDOR_ID) {
          switch (pcrp->_device) {

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.14 1996/08/18 01:47:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.15 1996/09/14 13:08:47 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -215,6 +215,10 @@ i128Probe()
    pciConfigPtr pcrp, *pcrpp;
 
    pcrpp = xf86scanpci(i128InfoRec.scrnIndex);
+
+   if (!pcrpp)
+      return(FALSE);
+
    i = 0;
    while ((pcrp = pcrpp[i]) != (pciConfigPtr)NULL) {
       if ((pcrp->_device_vendor == I128_DEVICE_ID1) ||
@@ -222,6 +226,9 @@ i128Probe()
         break;
       i++;
    }
+
+   if (!pcrp)
+      return(FALSE);
 
    iobase = (unsigned short )pcrp->_base5 & 0xFF00;
 

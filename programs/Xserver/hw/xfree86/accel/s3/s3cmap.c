@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.9 1996/08/10 13:06:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.10 1996/09/14 13:09:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -207,8 +207,11 @@ s3InstallColormap(pmap)
    prgb = (xrgb *) ALLOCATE_LOCAL(entries * sizeof(xrgb));
    defs = (xColorItem *) ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-   if (oldmap != NOMAPYET)
-      WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
+#ifdef XFreeXDGA
+   if (xf86VTSema || !(s3InfoRec.directMode & XF86DGAHasColormap))
+#endif
+      if (oldmap != NOMAPYET)
+         WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
 
    InstalledMaps[pmap->pScreen->myNum] = pmap;
 

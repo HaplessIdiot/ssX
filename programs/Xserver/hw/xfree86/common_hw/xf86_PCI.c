@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.9 1996/08/23 11:03:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.10 1996/09/14 13:10:06 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -791,8 +791,8 @@ xf86scanpci(int scrnIndex)
 		memcpy(pci_devp[idx++], &pcr, sizeof(pciConfigRec));
 		pci_devp[idx] = (pciConfigPtr)NULL;
 		if (xf86Verbose > 1) {
-		    ErrorF("PCI: Bus 0x%x Card 0x%x Func 0x%x Vendor 0x%04x "
-			   "Dev 0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
+		    ErrorF("PCI: Bus 0x%x Card 0x%02x Func 0x%x ID 0x%04x,"
+			   "0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
 			   pcr._bus, pcr._cardnum, pcr._func, pcr._vendor,
 			   pcr._device, pcr._rev_id, pcr._base_class,
 			   pcr._sub_class);
