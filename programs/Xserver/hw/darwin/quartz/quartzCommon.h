@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCommon.h,v 1.5 2002/02/17 03:15:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -40,13 +40,9 @@
 // the basic X server headers. Use QD_<name> to use the QuickDraw
 // definition of any of these symbols, or the normal name for the
 // X11 definition.
-#define AllocCursor  QD_AllocCursor
-#define InitFonts    QD_InitFonts
 #define Cursor       QD_Cursor
 #define WindowPtr    QD_WindowPtr
 #include <ApplicationServices/ApplicationServices.h>
-#undef AllocCursor
-#undef InitFonts
 #undef Cursor
 #undef WindowPtr
 
