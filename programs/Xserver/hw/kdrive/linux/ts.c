@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/kdrive/linux/ts.c,v 1.9 2002/08/15 18:07:48 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/kdrive/linux/ts.c,v 1.10 2002/11/12 22:20:42 keithp Exp $
  *
  * Derived from ps2.c by Jim Gettys
  *
@@ -199,6 +199,10 @@ TsFini (void)
 	{
 	    mi->driver = 0;
 	    mi->inputType = 0;
+	    if (mi->name != NULL) {
+		free(mi->name);
+		mi->name = NULL;
+	    }
 	}
     }
 }
