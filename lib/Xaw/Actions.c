@@ -275,6 +275,7 @@ get_token(XawEvalInfo *info)
 	      /* '\\' may have been used to escape a resource name.
 	       */
 
+	      succed = True;
 	      info->value = info->parse_proc(info->widget, value, info->event,
 					     &succed) & 1;
 	      if (!succed)
