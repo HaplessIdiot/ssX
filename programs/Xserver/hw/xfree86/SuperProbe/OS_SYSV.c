@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.15 1996/12/27 06:53:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.16 1997/03/07 00:29:00 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -261,7 +261,7 @@ Byte *MapVGA()
 	return(base);
 }
 
-Byte *MapMem(adress,size)
+Byte *MapMem(address,size)
 	unsigned long address;
 	unsigned long size;
 {
