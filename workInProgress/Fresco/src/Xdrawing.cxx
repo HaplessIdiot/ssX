@@ -1,6 +1,6 @@
 /*
- * $XConsortium: Xdrawing.cxx,v 1.4 94/04/07 11:29:29 matt Exp $
- * $XFree86$
+ * $XConsortium: Xdrawing.cxx,v 1.5 94/09/01 18:45:46 matt Exp $
+ * $XFree86: xc/workInProgress/Fresco/src/Xdrawing.cxx,v 3.0 1994/06/28 12:39:59 dawes Exp $
  */
 
 /*
@@ -503,7 +503,7 @@ void FontImpl::load() {
 	/* raise exception? */
 	return;
     }
-    ULong value;
+    unsigned long value;
     if (XGetFontProperty(xfont_, XA_POINT_SIZE, &value)) {
 	point_size_ = Coord(value) / 10.0;
     }
@@ -2044,7 +2044,7 @@ Boolean XPainterImpl::scale_field(
     if (!zero) {
 	XCoord xvalue = atoi(spec.field(field));
 	if (xvalue != 0) {
-	    pvalue = xvalue * scale;
+	    pvalue = PixelCoord(xvalue * scale);
 	    zero = true;
 	}
     }
