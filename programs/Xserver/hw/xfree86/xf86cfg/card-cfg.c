@@ -258,9 +258,8 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
     XawListReturnStruct *info = (XawListReturnStruct *)call_data;
-    char tip[4096], *str;
+    char tip[4096];
     int len;
-    static int first = 1;
 
     XtSetArg(args[0], XtNstring, info->string);
     XtSetValues(filter, args, 1);
@@ -300,23 +299,13 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	len += XmuSnprintf(tip + len, sizeof(tip) - len,
 			   "\n%s\n", card_entry->lines);
 
-    /* the first tip memory, if any, cannot be released */
-    if (!first) {
-	XtSetArg(args[0], XtNtip, &str);
-	XtGetValues(filter, args, 1);
-	XtFree(str);
-    }
-    else
-	first = 0;
-
 #ifndef USE_MODULES
     XtSetArg(args[0], XtNstring,
 	     card_entry->driver ? card_entry->driver : "vga");
     XtSetValues(driver, args, 1);
 #endif
 
-    str = XtNewString(tip);
-    XtSetArg(args[0], XtNtip, str);
+    XtSetArg(args[0], XtNtip, tip);
     XtSetValues(filter, args, 1);
 }
 
