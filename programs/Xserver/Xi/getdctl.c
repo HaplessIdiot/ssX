@@ -1,4 +1,5 @@
 /* $XConsortium: getdctl.c,v 1.4 94/04/17 20:33:09 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -135,7 +136,7 @@ ProcXGetDeviceControl(client)
 	    return Success;
 	}
 
-    buf = (char *) Xalloc (total_length);
+    buf = (char *) xalloc (total_length);
     if (!buf)
 	{
 	SendErrorToClient(client, IReqCode, X_GetDeviceControl, 0, 
@@ -157,7 +158,7 @@ ProcXGetDeviceControl(client)
     rep.length = (total_length+3) >> 2;
     WriteReplyToClient(client, sizeof(xGetDeviceControlReply), &rep);
     WriteToClient(client, total_length, savbuf);
-    Xfree (savbuf);
+    xfree (savbuf);
     return Success;
     }
 

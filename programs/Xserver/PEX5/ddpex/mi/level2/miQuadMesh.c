@@ -1,4 +1,5 @@
 /* $XConsortium: miQuadMesh.c,v 5.5 94/04/17 20:37:16 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -127,7 +128,7 @@ miQuadMesh(pRend, pExecuteOC)
 
   /* Allocate space for a Generic Structure Element */
 
-  if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) + 
+  if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) + 
 					 sizeof(miTriangleStripStruct))))) {
       status = BadAlloc;
       goto exit;
@@ -163,7 +164,7 @@ miQuadMesh(pRend, pExecuteOC)
      * each time, since the allocation routines rotate through
      * the headers, and will overwrite any particular header
      * after four calls.  This coould perhaps be avoided by
-     * directly using Xalloc, but we do it this way for
+     * directly using xalloc, but we do it this way for
      * consistency.
      */
 
@@ -265,6 +266,6 @@ miQuadMesh(pRend, pExecuteOC)
 
   exit:
 
-  Xfree((char *)pGStr);
+  xfree((char *)pGStr);
   return (status);
 }

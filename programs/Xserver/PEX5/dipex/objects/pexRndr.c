@@ -1,4 +1,5 @@
 /* $XConsortium: pexRndr.c,v 5.28 94/04/17 20:36:12 rws Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -167,7 +168,7 @@ pexCreateRendererReq    *strmPtr;
     if (!LegalNewID(strmPtr->rdr, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->rdr,cntxtPtr);
 
-    prend = (ddRendererStr *) Xalloc ((unsigned long)(sizeof(ddRendererStr)));
+    prend = (ddRendererStr *) xalloc ((unsigned long)(sizeof(ddRendererStr)));
     if (!prend) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
     prend->rendId = strmPtr->rdr;
@@ -210,12 +211,12 @@ pexCreateRendererReq    *strmPtr;
     */
     fakepm = FakeClientID(cntxtPtr->client->index);
     prend->pickstr.client = cntxtPtr->client;
-    prend->pickstr.pseudoPM = (diPMHandle) Xalloc ((unsigned long)sizeof(ddPMResource));
+    prend->pickstr.pseudoPM = (diPMHandle) xalloc ((unsigned long)sizeof(ddPMResource));
     if (!prend->pickstr.pseudoPM)  PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     (prend->pickstr.pseudoPM)->id = fakepm;
     err = CreatePseudoPickMeasure (prend);
     if (err){
-	Xfree((pointer)(prend->pickstr.pseudoPM));
+	xfree((pointer)(prend->pickstr.pseudoPM));
 	PEX_ERR_EXIT(err,0,cntxtPtr);	
     }
     /* the fakepm resource gets added at the end of this routine now */
@@ -228,13 +229,13 @@ pexCreateRendererReq    *strmPtr;
     /* create a phony structure to pack OCs into 
        for doing immediate mode renderer picking
     */
-    fakeStr = (diStructHandle)Xalloc((unsigned long)
+    fakeStr = (diStructHandle)xalloc((unsigned long)
 					  sizeof(ddStructResource));
     if (!fakeStr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     fakeStr->id = -666;
     err = CreateStructure(fakeStr);
     if (err) {
-	Xfree((pointer)(fakeStr));
+	xfree((pointer)(fakeStr));
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
 
@@ -265,14 +266,14 @@ pexCreateRendererReq    *strmPtr;
 	SKIP_PADDING(ptr,sizeof(CARD32));
 	err = UpdatePCRefs (ppc, prend, (ddAction)ADD);
 	if (err != Success) {
-	    Xfree((pointer)prend);
+	    xfree((pointer)prend);
 	    PEX_ERR_EXIT(err,0,cntxtPtr); }
     } else prend->pPC = 0;
 
 
     prend->curPath = puCreateList(DD_ELEMENT_REF);	
     if (!(prend->curPath)) {
-        Xfree((pointer)prend);
+        xfree((pointer)prend);
         PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
     if (strmPtr->itemMask & PEXRDCurrentPath)  {
@@ -375,7 +376,7 @@ pexCreateRendererReq    *strmPtr;
 	    puDeleteList(prend->curPath);
 	    if (prend->pPC)
 		(void)UpdatePCRefs (prend->pPC, prend, (ddAction)(REMOVE));
-	    Xfree((pointer)prend);
+	    xfree((pointer)prend);
 	    PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
     if (strmPtr->itemMask & PEXRDClipList) {
@@ -396,7 +397,7 @@ pexCreateRendererReq    *strmPtr;
 
     prend->pickStartPath = puCreateList(DD_PICK_PATH);	
     if (!(prend->pickStartPath)) {
-        Xfree((pointer)prend);
+        xfree((pointer)prend);
         PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
     if (strmPtr->itemMask & PEXRDPickStartPath) {
@@ -410,7 +411,7 @@ pexCreateRendererReq    *strmPtr;
 	   storage and use 
 	*/
 	EXTRACT_CARD32( numpaths, ptr);
-	ppathStart = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
+	ppathStart = (ddPickPath *)xalloc(numpaths * sizeof(ddPickPath));
 	ppath = ppathStart;
 
 	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++,
@@ -425,7 +426,7 @@ pexCreateRendererReq    *strmPtr;
 	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
-	Xfree((pointer)ppathStart);
+	xfree((pointer)ppathStart);
     }
 
     if (strmPtr->itemMask & PEXRDBackgroundColour) {
@@ -465,7 +466,7 @@ pexCreateRendererReq    *strmPtr;
 	puDeleteList(prend->curPath);
 	if (prend->pPC)
 	    (void)UpdatePCRefs (prend->pPC, prend, (ddAction)(REMOVE));
-	Xfree((pointer)prend);
+	xfree((pointer)prend);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     };
 
@@ -519,7 +520,7 @@ pexRenderer id;
 	  }
 	}
 
-	Xfree((pointer)prend);
+	xfree((pointer)prend);
     }
 
     return( err );
@@ -571,7 +572,7 @@ pexChangeRendererReq 	*strmPtr;
 	SKIP_PADDING(ptr,sizeof(CARD32));
 	err = UpdatePCRefs (ppc, prend, (ddAction)ADD);
 	if (err != Success) {
-	    Xfree((pointer)prend);
+	    xfree((pointer)prend);
 	    PEX_ERR_EXIT(err,0,cntxtPtr); }
 	prend->pPC = ppc;
     };
@@ -688,7 +689,7 @@ pexChangeRendererReq 	*strmPtr;
            storage and use 
 	*/
 	EXTRACT_CARD32( numpaths, ptr);
-        ppathStart = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
+        ppathStart = (ddPickPath *)xalloc(numpaths * sizeof(ddPickPath));
         ppath = ppathStart;
 
 	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++,
@@ -704,7 +705,7 @@ pexChangeRendererReq 	*strmPtr;
 	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
-	Xfree((pointer)ppathStart);
+	xfree((pointer)ppathStart);
     }
 
 
@@ -1094,7 +1095,7 @@ pexAccumulateStateReq   *strmPtr;
 
     LU_RENDERER(strmPtr->rdr, prend);
 
-    pAccSt = (ddAccStStr *)Xalloc((unsigned long)sizeof(ddAccStStr));
+    pAccSt = (ddAccStStr *)xalloc((unsigned long)sizeof(ddAccStStr));
     if (!pAccSt) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
     pAccSt->numElRefs = strmPtr->numElRefs;
@@ -1118,7 +1119,7 @@ pexAccumulateStateReq   *strmPtr;
 
     /* clean up */
     puDeleteList(pAccSt->Path);
-    Xfree((pointer)pAccSt);
+    xfree((pointer)pAccSt);
 
     return( err );
 

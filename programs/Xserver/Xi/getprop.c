@@ -1,4 +1,5 @@
 /* $XConsortium: getprop.c,v 1.11 94/04/17 20:33:12 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -130,7 +131,7 @@ ProcXGetDeviceDontPropagateList (client)
 	if (count)
 	    {
 	    rep.count = count;
-	    buf = (XEventClass *) Xalloc (rep.count * sizeof(XEventClass));
+	    buf = (XEventClass *) xalloc (rep.count * sizeof(XEventClass));
 	    rep.length = (rep.count * sizeof (XEventClass) + 3) >> 2;
 
 	    tbuf = buf;
@@ -147,7 +148,7 @@ ProcXGetDeviceDontPropagateList (client)
 	{
 	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient( client, count * sizeof(XEventClass), buf);
-	Xfree (buf);
+	xfree (buf);
 	}
     return Success;
     }

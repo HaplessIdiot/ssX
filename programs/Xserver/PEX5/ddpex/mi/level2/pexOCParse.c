@@ -1,4 +1,5 @@
 /* $XConsortium: pexOCParse.c,v 5.10 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -117,7 +118,7 @@ SOFTWARE.
 #define GET_DD_STORAGE(DD_ST, TYPE, SIZE)				\
     if (*ppExecuteOC == 0) {						\
 	*ppExecuteOC =							\
-	    (miGenericElementPtr) Xalloc((unsigned long)((SIZE)		\
+	    (miGenericElementPtr) xalloc((unsigned long)((SIZE)		\
 					+ sizeof(miGenericElementStr)));\
       if (!(*ppExecuteOC)) return (BadAlloc);	                        \
     }			                                                \
@@ -125,7 +126,7 @@ SOFTWARE.
 
 #define GET_MORE_STORAGE(DD_ST, TYPE, SIZE)			\
     if ((SIZE) > 0) {						\
-	(DD_ST) = (TYPE *)Xalloc((unsigned long)(SIZE));	\
+	(DD_ST) = (TYPE *)xalloc((unsigned long)(SIZE));	\
 	if (!(DD_ST)) err = BadAlloc; }				\
     else DD_ST = 0;
 

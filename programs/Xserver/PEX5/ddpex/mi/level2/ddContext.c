@@ -1,4 +1,5 @@
 /* $XConsortium: ddContext.c,v 5.10 94/04/17 20:37:00 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -106,19 +107,19 @@ CreateDDContext(pRend)
      * Create the dd attribute context: this requires creating both the
      * static and Dynamic portions of the DDContext.
      */
-    pddc = (miDDContext *) Xalloc(sizeof(miDDContext));
+    pddc = (miDDContext *) xalloc(sizeof(miDDContext));
     if (!pddc)
 	return (BadAlloc);
-    pddc->Dynamic = (miDynamicDDContext *) Xalloc(sizeof(miDynamicDDContext));
+    pddc->Dynamic = (miDynamicDDContext *) xalloc(sizeof(miDynamicDDContext));
     if (!pddc->Dynamic) {
-	Xfree((char *) pddc);
+	xfree((char *) pddc);
 	return (BadAlloc);
     }
     /* allocate storage for local copy of PC */
-    pddc->Dynamic->pPCAttr = (ddPCAttr *) Xalloc(sizeof(ddPCAttr));
+    pddc->Dynamic->pPCAttr = (ddPCAttr *) xalloc(sizeof(ddPCAttr));
     if (!pddc->Dynamic->pPCAttr) {
-	Xfree((char *) pddc->Dynamic);
-	Xfree((char *) pddc);
+	xfree((char *) pddc->Dynamic);
+	xfree((char *) pddc);
 	return (BadAlloc);
     }
 
@@ -217,7 +218,7 @@ CreateDDContext(pRend)
      * Allocate storage and initialize the DD context rendering attributes.
      */
     if (!(pddc->Static.attrs =
-	  (miDDContextRendAttrs *) Xalloc(sizeof(miDDContextRendAttrs)))) {
+	  (miDDContextRendAttrs *) xalloc(sizeof(miDDContextRendAttrs)))) {
 	DeleteDDContext(pddc);
 	return (BadAlloc);
     }
@@ -338,7 +339,7 @@ DeleteDDContext(pDDContext)
 
     /* Free the ddcontext attribute store */
     if (pDDContext->Static.attrs) {
-	Xfree((char *) (pDDContext->Static.attrs));
+	xfree((char *) (pDDContext->Static.attrs));
 	pDDContext->Static.attrs = 0;
     }
 
@@ -352,7 +353,7 @@ DeleteDDContext(pDDContext)
 
     for (i = 0; i < MI_MAXTEMPFACETLISTS; i++)
 	if (pDDContext->Static.misc.facets[i].maxData) {
-	    Xfree((char *)(pDDContext->Static.misc.facets[i].facets.pNoFacet));
+	    xfree((char *)(pDDContext->Static.misc.facets[i].facets.pNoFacet));
 	    pDDContext->Static.misc.facets[i].facets.pNoFacet = 0;
 	}
 
@@ -399,7 +400,7 @@ DeleteDDContext(pDDContext)
     pDDContext->Dynamic = NULL;
 
     /* Lastly, free the ddcontext pointer itself.... */
-    Xfree((char *) (pDDContext));
+    xfree((char *) (pDDContext));
 
     return (Success);
 }				/* DeleteDDContext */
@@ -439,10 +440,10 @@ deleteDynamicDDContext(pdddc)
 	    pdddc->pPCAttr->lightState = NULL;
 	}
 	/* pc attr */
-	Xfree((char *) pdddc->pPCAttr);
+	xfree((char *) pdddc->pPCAttr);
 	pdddc->pPCAttr = NULL;
     }
-    Xfree((char *) pdddc);
+    xfree((char *) pdddc);
 }				/* deleteDynamicDDContext */
 
 /*++
@@ -493,7 +494,7 @@ PushddContext(pRend)
 #endif
 
     /* First, create a new dynamic dd context  */
-    if (!(newDContext = (miDynamicDDContext *) Xalloc(sizeof(miDynamicDDContext)))) {
+    if (!(newDContext = (miDynamicDDContext *) xalloc(sizeof(miDynamicDDContext)))) {
 	return (BadAlloc);
     }
 
@@ -504,8 +505,8 @@ PushddContext(pRend)
     *newDContext = *oldDContext;
 
     /* now, create a new PC for the new dd context */
-    if (!(newDContext->pPCAttr = (ddPCAttr *) Xalloc(sizeof(ddPCAttr)))) {
-	Xfree((char *) newDContext);
+    if (!(newDContext->pPCAttr = (ddPCAttr *) xalloc(sizeof(ddPCAttr)))) {
+	xfree((char *) newDContext);
 	return (BadAlloc);
     }
     /* Copy static portion of PC attrs */
@@ -1053,7 +1054,7 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
       numrects = pRend->clipList->numObj;
       if (numrects) {
         ddrects = (ddDeviceRect *) pRend->clipList->pList;
-        xrects = (xRectangle*) Xalloc(numrects * sizeof(xRectangle));
+        xrects = (xRectangle*) xalloc(numrects * sizeof(xRectangle));
         if (!xrects) return BadAlloc;
         /* Need to convert to XRectangle format */
         for (i = 0, p = xrects; i < numrects; i++, p++, ddrects++) {
@@ -1073,7 +1074,7 @@ ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs)
                      (int)numrects, xrects, Unsorted);
         SetClipRects(pddc->Static.misc.pTextGC, 0, 0,
                      (int)numrects, xrects, Unsorted);
-        Xfree((char*)xrects);
+        xfree((char*)xrects);
       }
       else {
 	gcval = None;

@@ -1,4 +1,5 @@
 /* $XConsortium: miNSurf.c,v 5.10 94/04/17 20:37:12 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -218,7 +219,7 @@ miNurbsSurface(pRend, pExecuteOC)
     if ( surface_state.reps.markers ) {
 
 	/* allocate polyline command block */
-	if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+	if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                                sizeof(miMarkerStruct))))) {
 	  status = BadAlloc;
           goto exit;
@@ -232,7 +233,7 @@ miNurbsSurface(pRend, pExecuteOC)
 	*ddMarker = *((miMarkerStruct *)(surface_state.markers));
 	status = InitExecuteOCTable[(int)(pGStr->elementType)](pRend, pGStr);
 
-	Xfree(pGStr);
+	xfree(pGStr);
 
     } else {
 
@@ -252,7 +253,7 @@ miNurbsSurface(pRend, pExecuteOC)
 	  */
 
 	  /* allocate polyline command block */
-	  if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+	  if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                                sizeof(miQuadMeshStruct))))) {
 	    status = BadAlloc;
             goto exit;
@@ -296,7 +297,7 @@ miNurbsSurface(pRend, pExecuteOC)
 	   */
 
 	  /* allocate polyline command block */
-	  if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+	  if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                                sizeof(miSOFASStruct))))) {
 	    status = BadAlloc;
             goto exit;
@@ -313,14 +314,14 @@ miNurbsSurface(pRend, pExecuteOC)
 
 	}
 
-	Xfree(pGStr);
+	xfree(pGStr);
 	/* restore edge flag */
 	pddc->Static.attrs->edges = save_edges;
 
      } else if ( surface_state.reps.hollow ) {
 
 	/* allocate fill area command block */
-	if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+	if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                                sizeof(miFillAreaStruct))))) {
 	  status = BadAlloc;
           goto exit;
@@ -342,14 +343,14 @@ miNurbsSurface(pRend, pExecuteOC)
 	ddFillArea->points = *(surface_state.hollow);
 	status = InitExecuteOCTable[(int)(pGStr->elementType)](pRend, pGStr);
 
-	Xfree(pGStr);
+	xfree(pGStr);
 
      }
 
      if ( surface_state.reps.isocrvs ) {
 
 	/* allocate polyline command block */
-	if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+	if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                                sizeof(miPolylineStruct))))) {
 	  status = BadAlloc;
           goto exit;
@@ -363,7 +364,7 @@ miNurbsSurface(pRend, pExecuteOC)
 	*ddPolyline = *((miPolylineStruct *)(surface_state.isocrvs));
 	status = InitExecuteOCTable[(int)(pGStr->elementType)](pRend, pGStr);
 
-	Xfree(pGStr);
+	xfree(pGStr);
 
      }
 
@@ -377,7 +378,7 @@ miNurbsSurface(pRend, pExecuteOC)
 	pddc->Static.attrs->intStyle = PEXInteriorStyleEmpty;
 
 	/* allocate fill area command block */
-	if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+	if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                                sizeof(miFillAreaStruct))))) {
 	  status = BadAlloc;
           goto exit;
@@ -399,7 +400,7 @@ miNurbsSurface(pRend, pExecuteOC)
 	ddFillArea->points = *(surface_state.edges);
 	status = InitExecuteOCTable[(int)(pGStr->elementType)](pRend, pGStr);
 
-	Xfree(pGStr);
+	xfree(pGStr);
 
 	/* restore edge flag */
 	pddc->Static.attrs->edges = save_edges;
@@ -2252,28 +2253,28 @@ nurb_surf_state_free( state )
 	MI_FREELISTHEADER(state->facets);
         for (facet = 0; facet < state->grids.number; facet++)
             MI_FREELISTHEADER(state->facets + facet);
-	Xfree(state->facets);
+	xfree(state->facets);
       }
       else if ( state->sofas ) {
 	MI_FREELISTHEADER(&(state->sofas->points));
-	Xfree(state->sofas);
+	xfree(state->sofas);
       }
     }
     if ( state->reps.edges && state->edges ) {
 	MI_FREELISTHEADER(state->edges);
-	Xfree(state->edges);
+	xfree(state->edges);
     }
     if ( state->reps.isocrvs && state->isocrvs ) {
 	MI_FREELISTHEADER(state->isocrvs);
-	Xfree(state->isocrvs);
+	xfree(state->isocrvs);
     }
     if ( state->reps.markers && state->markers) {
 	/* Note that markers are a copy of the input data - DON`T FREE IT */
-	Xfree(state->markers);
+	xfree(state->markers);
     }
     if ( state->reps.hollow && state->hollow ) {
 	MI_FREELISTHEADER(state->hollow);
-	Xfree(state->hollow);
+	xfree(state->hollow);
     }
 
     if ( state->grids.number > 0 ) {
@@ -2332,10 +2333,10 @@ add_pgon_point(  state, surface, ddSOFAS, op, ep )
 	if (data_count > ddSOFAS->connects.maxData) {
 	  if (ddSOFAS->connects.data) {
 	    ddSOFAS->connects.data = 
-		 (miConnListList *)Xrealloc(ddSOFAS->connects.data, data_count);
+		 (miConnListList *)xrealloc(ddSOFAS->connects.data, data_count);
 	    ddSOFAS->connects.maxData = data_count;
 	  } else {
-	    ddSOFAS->connects.data = (miConnListList *)Xalloc(data_count);
+	    ddSOFAS->connects.data = (miConnListList *)xalloc(data_count);
 	    ddSOFAS->connects.maxData = data_count;
 	  }
 
@@ -2371,11 +2372,11 @@ add_pgon_point(  state, surface, ddSOFAS, op, ep )
 
 	  if (ConnListList->pConnLists) {
 	    ConnListList->pConnLists = 
-				(miConnList *)Xrealloc(ConnListList->pConnLists,
+				(miConnList *)xrealloc(ConnListList->pConnLists,
 						       data_count );
 	    ConnListList->maxData = data_count;
 	  } else {
-	    ConnListList->pConnLists = (miConnList *)Xalloc(data_count);
+	    ConnListList->pConnLists = (miConnList *)xalloc(data_count);
 	    ConnListList->maxData = data_count;
 	  }
 
@@ -2407,11 +2408,11 @@ add_pgon_point(  state, surface, ddSOFAS, op, ep )
 
 	if (data_count > ConnList->maxData) {
 	  if (ConnList->pConnects) {
-	    ConnList->pConnects = (ddUSHORT *)Xrealloc( ConnList->pConnects,
+	    ConnList->pConnects = (ddUSHORT *)xrealloc( ConnList->pConnects,
 							data_count);
 	    ConnList->maxData = data_count;
 	  } else {
-	    ConnList->pConnects = (ddUSHORT *)Xalloc(data_count);
+	    ConnList->pConnects = (ddUSHORT *)xalloc(data_count);
 	    ConnList->maxData = data_count;
 	  }
 

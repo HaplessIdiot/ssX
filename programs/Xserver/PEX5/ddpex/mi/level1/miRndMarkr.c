@@ -1,4 +1,5 @@
 /* $XConsortium: miRndMarkr.c,v 5.6 94/04/17 20:36:55 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -165,9 +166,9 @@ miRenderMarker(pRend, pddc, input_list)
 	       */
 	      if (parcs)
 	        pcurarcs = parcs = 
-			(xArc *)Xrealloc(parcs,sizeof(xArc)*pddlist1->numPoints);
+			(xArc *)xrealloc(parcs,sizeof(xArc)*pddlist1->numPoints);
 	      else pcurarcs = parcs = 
-			(xArc *)Xalloc(sizeof(xArc)*pddlist1->numPoints);
+			(xArc *)xalloc(sizeof(xArc)*pddlist1->numPoints);
 
 	      in_pt = pddlist1->pts.p2DSpt;
 
@@ -197,7 +198,7 @@ miRenderMarker(pRend, pddc, input_list)
 	    }
 
 	    /* free temporary resources */
-	    if (parcs) Xfree(parcs);
+	    if (parcs) xfree(parcs);
 
 	   }
 	   break;

@@ -1,4 +1,5 @@
 /* $XConsortium: miCellArray.c,v 5.6 94/04/17 20:37:02 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -128,7 +129,7 @@ miCellArray(pRend, pExecuteOC)
  *	S = P + dR + dQ
  */
 
-    if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+    if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                          sizeof(miPolylineStruct))))) 
         return(BadAlloc);
 
@@ -262,11 +263,11 @@ miCellArray(pRend, pExecuteOC)
     /* clean up memory allocation */
 
     for(i = 0, pddolist = output->ddList; i < nGridLines; i++){
-      Xfree((char *)pddolist->pts.ptr);
+      xfree((char *)pddolist->pts.ptr);
       pddolist++;
     }
-    Xfree((char *)output->ddList);
-    Xfree((char *)pGStr);
+    xfree((char *)output->ddList);
+    xfree((char *)pGStr);
 
     return(status);
 } 

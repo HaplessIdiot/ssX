@@ -1,3 +1,15 @@
+XFree86 3.1.1Cb (7 July 1995)
+197. Minor IBM RGB updates (Harald Koenig).
+196. MCLK detection for STG1703 (Harald Koenig).
+195. Add detection for new S3 Trio64V+ chip to the S3 server and
+     SuperProbe (Harald Koenig).
+194. Fix some clashing option numbers (Harald Koenig).
+193. Preliminary STG1703 clock programming code.
+192. A new malloc for use by the Xserver.  It is enabled by setting
+     UseInternalMalloc to YES (Pascal Haible).
+191. Fix for threads lib problem on Unixware 2.0
+190. Support for the WD90C24 in the pvga1 driver (Bradley Bosch).
+
 XFree86 3.1.1Ca (5 July 1995)
 189. Don't enable HAS_MMAP for Xvfb on Linux (Marc Aurele La France).
 188. Code to detect the STG1703 RAMDAC in SuperProbe and the S3 server

@@ -1,4 +1,5 @@
 /* $XConsortium: miDestroy.c,v 5.4 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -84,7 +85,7 @@ OC_DESTROY_FUNC_HEADER(NoOp)
 /* Most OC's are allocated in one hunk */
 OC_DESTROY_FUNC_HEADER(OC_PEX)
 {
-    Xfree(pExecuteOC);		/* was allocated in one hunk */
+    xfree(pExecuteOC);		/* was allocated in one hunk */
     return;
 }
 
@@ -105,15 +106,15 @@ OC_DESTROY_FUNC_HEADER(NurbSurface)
 	    for (   j=0, ddTC = ddTrim->pTC;
 		    j < ddTrim->count;
 		    j++, ddTC++ ) {
-		if (ddTC->pKnots)	    Xfree(ddTC->pKnots);
-		if (ddTC->points.pts.ptr)   Xfree(ddTC->points.pts.ptr);
+		if (ddTC->pKnots)	    xfree(ddTC->pKnots);
+		if (ddTC->points.pts.ptr)   xfree(ddTC->points.pts.ptr);
 		else break;
 	    }
-	    Xfree(ddTrim->pTC);
+	    xfree(ddTrim->pTC);
 	} else break;
     }
 
-    Xfree(pExecuteOC);
+    xfree(pExecuteOC);
 
     return;
 }
@@ -135,11 +136,11 @@ OC_DESTROY_FUNC_HEADER(SOFAS)
 	    for (   j=0, pCList=(miConnList *)(pCLL->pConnLists);
 		    j<pCLL->numLists;
 		    j++, pCList++) {
-		if (pCList->pConnects) Xfree(pCList->pConnects);
+		if (pCList->pConnects) xfree(pCList->pConnects);
 		else break;
 	    }
 	} else break;
-	Xfree(pCLL->pConnLists);
+	xfree(pCLL->pConnLists);
     }
-    Xfree(pExecuteOC);
+    xfree(pExecuteOC);
 }

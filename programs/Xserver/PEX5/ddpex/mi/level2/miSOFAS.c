@@ -1,4 +1,5 @@
 /* $XConsortium: miSOFAS.c,v 5.4 94/04/17 20:37:17 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -112,7 +113,7 @@ miSOFAS(pRend, pExecuteOC)
        * to perform the rendering.
        */
       /* Allocate storage for the fill area command block */
-      if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+      if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
                                              sizeof(miFillAreaStruct)))))
 	return(BadAlloc);
 
@@ -215,7 +216,7 @@ miSOFAS(pRend, pExecuteOC)
       }
 
 exit:
-      Xfree(pGStr);
+      xfree(pGStr);
 
       return(status);
 

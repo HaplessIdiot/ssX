@@ -1,5 +1,5 @@
 /* $XConsortium: xf86fcache.c,v 1.4 95/01/05 20:25:04 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.5 1994/11/26 12:40:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.7 1995/01/28 16:57:43 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -79,7 +79,7 @@ xf86InitFontCache( FontCache, MaxWidth, MaxHeight, FontOpStippleFunc )
     xf86FontPool = FontCache;
     xf86MaxWidth = MaxWidth / 32;
     xf86MaxHeight = MaxHeight;
-    xf86HeadFont = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
+    xf86HeadFont = (CacheFont8Ptr) xcalloc(1,sizeof(CacheFont8Rec));
     xf86FontOpStippleFunc = FontOpStippleFunc;
 }
 
@@ -128,11 +128,11 @@ xf86UnCacheFont8(font)
 
 	 if (ptr != xf86HeadFont) {
 	    last->next = ptr->next;
-	    Xfree(ptr);
+	    xfree(ptr);
 	 } else {
 	    if (ptr->next != NULL) { /* move the head down */
 	       xf86HeadFont=ptr->next;
-	       Xfree(ptr);		  
+	       xfree(ptr);		  
 	    } else { /* one and only entry */
 	       xf86HeadFont->font = NULL;
 	    }
@@ -184,7 +184,7 @@ xf86CacheFont8(font)
    if (xf86HeadFont->font == NULL)
      ret = xf86HeadFont;
    else
-     ret = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
+     ret = (CacheFont8Ptr) xcalloc(1,sizeof(CacheFont8Rec));
 
    if (ret == NULL)
      return NULL;

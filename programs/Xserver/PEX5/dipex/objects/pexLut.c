@@ -1,4 +1,5 @@
 /* $XConsortium: pexLut.c,v 5.4 94/04/17 20:36:08 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -105,14 +106,14 @@ pexCreateLookupTableReq	*strmPtr;	/* stream pointer 	*/
 
     LU_DRAWABLE(strmPtr->drawableExample, pdraw);
 
-    lutptr = (diLUTHandle) Xalloc ((unsigned long)sizeof(ddLUTResource));
+    lutptr = (diLUTHandle) xalloc ((unsigned long)sizeof(ddLUTResource));
     if (!lutptr) PEX_ERR_EXIT (BadAlloc,0,cntxtPtr);
     lutptr->id = strmPtr->lut;
     lutptr->lutType = strmPtr->tableType;
     
     err = CreateLUT( pdraw, lutptr);
     if (err) {
-	Xfree((pointer)lutptr);
+	xfree((pointer)lutptr);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
 

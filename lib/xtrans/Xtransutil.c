@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransutil.c,v 1.19 95/02/10 17:54:09 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.3 1995/01/12 05:54:23 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.4 1995/06/20 14:24:50 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -190,11 +190,11 @@ Xtransaddr	**addrp;
 	if (len > 0) {
 	    if (*addrp && *addrlenp < (len + 1))
 	    {
-		free ((char *) *addrp);
+		xfree ((char *) *addrp);
 		*addrp = NULL;
 	    }
 	    if (!*addrp)
-		*addrp = (Xtransaddr *) malloc (len + 1);
+		*addrp = (Xtransaddr *) xalloc (len + 1);
 	    if (*addrp) {
 		strcpy ((char *) *addrp, hostnamebuf);
 		*addrlenp = len;
@@ -205,7 +205,7 @@ Xtransaddr	**addrp;
 	else
 	{
 	    if (*addrp)
-		free ((char *) *addrp);
+		xfree ((char *) *addrp);
 	    *addrp = NULL;
 	    *addrlenp = 0;
 	}
@@ -244,7 +244,7 @@ XtransConnInfo  ciptr;
     case AF_UNIX:
     {
 	struct sockaddr_un *saddr = (struct sockaddr_un *) addr;
-	networkId = (char *) malloc (3 + strlen (transName) +
+	networkId = (char *) xalloc (3 + strlen (transName) +
 	    strlen (hostnamebuf) + strlen (saddr->sun_path));
 	sprintf (networkId, "%s/%s:%s", transName,
 	    hostnamebuf, saddr->sun_path);
@@ -259,7 +259,7 @@ XtransConnInfo  ciptr;
 	char portnumbuf[10];
 
 	sprintf (portnumbuf, "%d", ntohs (saddr->sin_port));
-	networkId = (char *) malloc (3 + strlen (transName) +
+	networkId = (char *) xalloc (3 + strlen (transName) +
 	    strlen (hostnamebuf) + strlen (portnumbuf));
 	sprintf (networkId, "%s/%s:%s", transName, hostnamebuf, portnumbuf);
 	break;
@@ -271,7 +271,7 @@ XtransConnInfo  ciptr;
     {
 	struct sockaddr_dn *saddr = (struct sockaddr_dn *) addr;
 
-	networkId = (char *) malloc (
+	networkId = (char *) xalloc (
 	    13 + strlen (hostnamebuf) + saddr->sdn_objnamel);
 	sprintf (networkId, "dnet/%s::%s",
 	    hostnamebuf, saddr->sdn_objname);
@@ -415,7 +415,7 @@ XtransConnInfo  ciptr;
     }
 
 
-    hostname = (char *) malloc (
+    hostname = (char *) xalloc (
 	strlen (ciptr->transptr->TransName) + strlen (addr) + 2);
     strcpy (hostname, ciptr->transptr->TransName);
     strcat (hostname, "/");

@@ -1,4 +1,5 @@
 /* $XConsortium: pexUtils.c,v 5.8 94/04/17 20:36:06 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -84,7 +85,7 @@ puBuffRealloc(pBuffer, minSize)
 
     minSize += hsiz;
 
-    if ((newbuf = (ddPointer) Xrealloc(	(pointer)(pBuffer->pHead),
+    if ((newbuf = (ddPointer) xrealloc(	(pointer)(pBuffer->pHead),
 					(unsigned long)minSize))
 	== NULL)
     {
@@ -211,7 +212,7 @@ static unsigned long obj_array_sizes[] = {
 	newmax = (atleast); \
     if (plist->pList == (ddPointer) (plist + 1)) \
 	abort (); \
-    pList = (ddPointer)Xrealloc( (pointer)(plist->pList), 	\
+    pList = (ddPointer)xrealloc( (pointer)(plist->pList), 	\
 		(unsigned long)(newmax * obj_struct_sizes[(int)(plist->type)] ));	\
     if (!pList ) return( BadAlloc );	\
 	\
@@ -289,7 +290,7 @@ ddListType	type;
     listofObj	*pList;
 
     /* allocate in two chunks */
-    pList = (listofObj *)Xalloc( sizeof(listofObj) );
+    pList = (listofObj *)xalloc( sizeof(listofObj) );
     if ( !pList ) return NULL;
 
     pList->type = type;
@@ -299,11 +300,11 @@ ddListType	type;
     if (!pList->maxObj)
 	pList->pList = (ddPointer) NULL;
     else
-	pList->pList = (ddPointer) Xalloc (pList->maxObj * obj_struct_sizes[(int)type]);
+	pList->pList = (ddPointer) xalloc (pList->maxObj * obj_struct_sizes[(int)type]);
 
     if (!pList->pList)
     {
-	Xfree (pList);
+	xfree (pList);
 	return NULL;
     }
 
@@ -317,8 +318,8 @@ listofObj	*pList;
     if ( pList ) 
     {
 	if (pList->pList && pList->pList != (ddPointer) (pList + 1))
-	    Xfree ((pointer) pList->pList);
-	Xfree( (pointer)pList );
+	    xfree ((pointer) pList->pList);
+	xfree( (pointer)pList );
     }
     return;
 }	/* puDeleteList */

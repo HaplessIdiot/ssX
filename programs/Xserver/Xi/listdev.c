@@ -1,4 +1,5 @@
 /* $XConsortium: listdev.c,v 1.18 94/04/17 20:33:18 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -132,7 +133,7 @@ ProcXListInputDevices (client)
 	SizeDeviceInfo (d, &namesize, &size);
 
     total_length = numdevs * sizeof (xDeviceInfo) + size + namesize;
-    devbuf = (char *) Xalloc (total_length);
+    devbuf = (char *) xalloc (total_length);
     classbuf = devbuf + (numdevs * sizeof (xDeviceInfo));
     namebuf = classbuf + size;
     savbuf = devbuf;
@@ -147,7 +148,7 @@ ProcXListInputDevices (client)
     rep.length = (total_length + 3) >> 2;
     WriteReplyToClient (client, sizeof (xListInputDevicesReply), &rep);
     WriteToClient(client, total_length, savbuf);
-    Xfree (savbuf);
+    xfree (savbuf);
     return Success;
     }
 

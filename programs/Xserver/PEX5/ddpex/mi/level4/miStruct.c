@@ -1,4 +1,5 @@
 /* $XConsortium: miStruct.c,v 5.12 94/04/17 20:37:33 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -1747,7 +1748,7 @@ StoreElements(pStruct, numOCs, pOCs, ppErr)
 	}
 
     if (err != Success) {
-	*ppErr = (pexOutputCommandError *)Xalloc(sizeof(pexOutputCommandError));
+	*ppErr = (pexOutputCommandError *)xalloc(sizeof(pexOutputCommandError));
 	(*ppErr)->type = 0;
 	(*ppErr)->errorCode = PEX_ERROR_CODE(PEXOutputCommandError);
 	(*ppErr)->resourceId = pStruct->id;

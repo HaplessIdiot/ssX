@@ -1,4 +1,5 @@
 /* $XConsortium: pexNs.c,v 5.3 94/04/17 20:36:09 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -83,11 +84,11 @@ pexCreateNameSetReq     *strmPtr;
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->id,cntxtPtr);
 
 
-    nsptr = (diNSHandle) Xalloc ((unsigned long)sizeof(ddNSResource));
+    nsptr = (diNSHandle) xalloc ((unsigned long)sizeof(ddNSResource));
     if (!nsptr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     nsptr->id = strmPtr->id;
     err = CreateNameSet(nsptr);
-    if (err) Xfree((pointer)nsptr);
+    if (err) xfree((pointer)nsptr);
 
     ADDRESOURCE(strmPtr->id, PEXNameType, nsptr);
 

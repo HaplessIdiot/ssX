@@ -1,4 +1,5 @@
 /* $XConsortium: miPickPrim.c,v 5.8 94/04/17 20:37:15 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -383,7 +384,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
     ddNpcSubvolume     pv;
     miViewEntry       *view_entry;
     ddViewEntry       *view;
-    ddULONG            numChars; /* Needed for Xalloc */
+    ddULONG            numChars; /* Needed for xalloc */
     pexMonoEncoding   *pMono;
     ddCoord2D          align;    /* alignment info */
     ddFLOAT            tc_to_npc_xform[4][4];
@@ -709,7 +710,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
 
     /* Free up space allocated for text stroke data */
 
-    Xfree ((char *)save_ptr);
+    xfree ((char *)save_ptr);
 
     return (Success);
 }
@@ -752,7 +753,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
     ddNpcSubvolume     pv;
     miViewEntry       *view_entry;
     ddViewEntry       *view;
-    ddULONG            numChars; /* Needed for Xalloc */
+    ddULONG            numChars; /* Needed for xalloc */
     pexMonoEncoding   *pMono;
     ddCoord2D          align;    /* alignment info */
     ddFLOAT            tc_to_npc_xform[4][4];
@@ -1082,7 +1083,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
 
     /* Free up space allocated for text stroke data */
 
-    Xfree ((char *)save_ptr);
+    xfree ((char *)save_ptr);
 
     return (Success);
 }

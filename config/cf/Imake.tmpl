@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.227 95/05/05 17:42:07 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.14 1995/06/18 13:48:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.15 1995/06/24 10:21:12 dawes Exp $
 XCOMM
 
 /*
@@ -227,9 +227,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #define MallocLibraries	/**/
 #endif
-#endif
-#ifndef UseMemLeak
-#define UseMemLeak		NO
 #endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes	NO

@@ -1,4 +1,5 @@
 /* $XConsortium: miRender.c,v 5.21 94/04/17 20:37:25 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -638,13 +639,13 @@ RenderElements(pRend, pStr, range)
 	   must be allocated
 	*/
 
-        REfakeStr = (diStructHandle)Xalloc((unsigned long)
+        REfakeStr = (diStructHandle)xalloc((unsigned long)
                                               sizeof(ddStructResource));
         if (!REfakeStr) return (BadAlloc);
         REfakeStr->id = -666;
         err = CreateStructure(REfakeStr);
         if (err != Success) {
-            Xfree((pointer)(REfakeStr));
+            xfree((pointer)(REfakeStr));
             return (err);
         }
 
@@ -655,7 +656,7 @@ RenderElements(pRend, pStr, range)
 	REfakePos.offset = 0;
 	err = CopyElements(pStr, range, REfakeStr, &REfakePos);
         if (err != Success) {
-            Xfree((pointer)(REfakeStr));
+            xfree((pointer)(REfakeStr));
             return (err);
         }
 
@@ -1141,7 +1142,7 @@ BeginRendering(pRend, pDrawable)
       numrects = pRend->clipList->numObj;
       if (numrects) {
         ddrects = (ddDeviceRect *) pRend->clipList->pList;
-        xrects = (xRectangle*) Xalloc(numrects * sizeof(xRectangle));
+        xrects = (xRectangle*) xalloc(numrects * sizeof(xRectangle));
         if (!xrects) return BadAlloc;
         /* Need to convert to XRectangle format and flip Y */
         for (i = 0, p = xrects; i < numrects; i++, p++, ddrects++) {
@@ -1151,7 +1152,7 @@ BeginRendering(pRend, pDrawable)
           p->height = ddrects->ymax - ddrects->ymin + 1;
         }
         SetClipRects(pGC, 0, 0, (int)numrects, xrects, Unsorted);
-        Xfree((char*)xrects);
+        xfree((char*)xrects);
       }
       ValidateGC(pDraw, pGC);
       /* Now draw a filled rectangle to clear the image buffer */
@@ -1281,13 +1282,13 @@ BeginStructure(pRend, sId)
 	curpp[(pRend->pickstr.fakeStrlist)->numObj-1].offset++;
 
 	/* allocate a new fake structure and add to both lists */
-	fakeStr = (diStructHandle)Xalloc((unsigned long)
+	fakeStr = (diStructHandle)xalloc((unsigned long)
 					      sizeof(ddStructResource));
 	if (!fakeStr) return (BadAlloc);
 	fakeStr->id = -666;
 	err = CreateStructure(fakeStr);
 	if (err != Success) {
-	    Xfree((pointer)(fakeStr));
+	    xfree((pointer)(fakeStr));
 	    return (err);
 	}
 
@@ -1296,7 +1297,7 @@ BeginStructure(pRend, sId)
 	fakeStrpp.pickid = 0;
 	err = puAddToList((ddPointer) &fakeStrpp, (ddULONG) 1, pRend->pickstr.fakeStrlist);
 	if (err != Success) {
-	    Xfree((pointer)(fakeStr));
+	    xfree((pointer)(fakeStr));
 	    return (err);
 	}
 
@@ -1306,7 +1307,7 @@ BeginStructure(pRend, sId)
 	sIDpp.pickid = sId;
 	err = puAddToList((ddPointer) &sIDpp, (ddULONG) 1, pRend->pickstr.sIDlist);
 	if (err != Success) {
-	    Xfree((pointer)(fakeStr));
+	    xfree((pointer)(fakeStr));
 	    return (err);
 	}
 

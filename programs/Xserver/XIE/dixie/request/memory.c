@@ -1,4 +1,5 @@
 /* $XConsortium: memory.c,v 1.6 94/04/17 20:33:56 rws Exp $ */
+/* $XFree86$ */
 /* Module memory.c */
 
 /****************************************************************************
@@ -92,7 +93,7 @@ int ALLOCS = 0; /* DEBUG */
 pointer XieMalloc(size)
  unsigned size;
 {
-  char *memptr = (char *)Xalloc(size);
+  char *memptr = (char *)xalloc(size);
 
   if(memptr)
     ++ALLOCS; /* DEBUG */
@@ -104,13 +105,13 @@ pointer XieRealloc(ptr,size)
  char *ptr;
  unsigned size;
 {
-    return (pointer )Xrealloc(ptr,size);    
+    return (pointer )xrealloc(ptr,size);    
 }
 
 pointer XieCalloc(size)
  unsigned size;
 {
-  char *memptr = (char *)Xalloc(size);
+  char *memptr = (char *)xalloc(size);
 
   if(memptr) {
     ++ALLOCS; /* DEBUG */
@@ -124,14 +125,9 @@ pointer XieFree(ptr)
 {
   if(ptr) {
     --ALLOCS; /* DEBUG */
-    Xfree(ptr);
+    xfree(ptr);
   }
   return(0);
 }
 
 /* End of module memory.c */
-
-
-
-
-

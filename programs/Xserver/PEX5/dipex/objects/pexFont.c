@@ -1,4 +1,5 @@
 /* $XConsortium: pexFont.c,v 5.7 94/04/17 20:36:07 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -129,7 +130,7 @@ pexOpenFontReq  *strmPtr;
 		dif->refcnt += 1; }
 	} else {
 
-	    dif = (dipexFont *) Xalloc ((unsigned long)sizeof(dipexFont));
+	    dif = (dipexFont *) xalloc ((unsigned long)sizeof(dipexFont));
 	    if (!dif) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 	    dif->ddFont.id = strmPtr->font;
 	    dif->refcnt = 1;
@@ -137,7 +138,7 @@ pexOpenFontReq  *strmPtr;
 	    err = OpenPEXFont(	(ddULONG)(strmPtr->numBytes), 
 				(ddUCHAR *)(strmPtr + 1), &(dif->ddFont));
 	    if (err) {
-		Xfree((pointer)dif);
+		xfree((pointer)dif);
 		PEX_ERR_EXIT(err,0,cntxtPtr);
 	    }
 

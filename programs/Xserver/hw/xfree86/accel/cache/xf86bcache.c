@@ -1,5 +1,5 @@
 /* $XConsortium: xf86bcache.c,v 1.2 94/10/12 19:48:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86bcache.c,v 3.1 1994/07/15 06:57:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86bcache.c,v 3.3 1995/01/28 16:57:41 dawes Exp $ */
 /*
  * Based on the S3 block allocator code in XFree86-2.0 by Jon Tombs.
  * The original copyright is reproduced below.
@@ -109,7 +109,7 @@ unsigned int Alignment;
 {
   CachePool CPool;
 
-    if(( CPool = (CachePool)Xcalloc( sizeof (struct CachePoolRec) )) == NULL )
+    if(( CPool = (CachePool)xcalloc(1, sizeof (struct CachePoolRec) )) == NULL )
       return( NULL );
 
     CPool->alignment = Alignment - 1;
@@ -144,7 +144,7 @@ unsigned int Id;
      * Create a linked list of all rows. Initially there
      * is only one row.
      */
-    bptr = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
+    bptr = (bitMapRowPtr) xcalloc(1,sizeof(bitMapRowRec));
     bptr->x = x;
     bptr->y = y;
     bptr->freew = Width;
@@ -154,7 +154,7 @@ unsigned int Id;
     /*
      * Link the new row to the pool via the CacheRec list.
      */
-    CrPtr = (CacheRecPtr) Xcalloc( sizeof( struct _cacherec ) );
+    CrPtr = (CacheRecPtr) xcalloc(1, sizeof( struct _cacherec ) );
     CrPtr->width = Width;
     CrPtr->height = Height;
     CrPtr->blocks = bptr;
@@ -214,11 +214,11 @@ CacheBlock Block;
 	    tmpr->prev->next = tmpr->next;
 	    if( tmpr->next )
 	      tmpr->next->prev = tmpr->prev;
-	    Xfree(tmpr);
+	    xfree(tmpr);
 	  }
 	}
 	ERROR_F(("\n"));
-	Xfree(bptr);
+	xfree(bptr);
       } else if ((bptr->next != NULL)
 		&& (bptr->id == bptr->next->id)
 		&& (bptr->next->blocks == NULL)) {
@@ -233,7 +233,7 @@ CacheBlock Block;
 	} else {	  /* promote the row below to new head row */
 	  ((CacheRecPtr)(bptr->crchain))->blocks = bptr->next; 
 	}
-	Xfree(bptr);
+	xfree(bptr);
        	ERROR_F(("returning row to below\n"));
       } else {  /* just zero our length */
 	ERROR_F(("left empty row %d high\n",bptr->h));
@@ -287,7 +287,7 @@ CacheBlock Block;
   if( Block->reference != NULL )
     *(Block->reference)=NULL; 
 
-  Xfree(Block);
+  xfree(Block);
 
 }
 
@@ -326,7 +326,7 @@ short Width, Height;
         while( bptr != NULL ) {
         if (bptr->h >= Height ) {
           if (bptr->blocks == NULL) {    /* First use of this row. */
-	    bptr->blocks = (bitMapBlockPtr) Xcalloc(sizeof(bitMapBlockRec));
+	    bptr->blocks = (bitMapBlockPtr) xcalloc(1,sizeof(bitMapBlockRec));
 	    bptr->blocks->x = bptr->x;
 	    bptr->blocks->y = bptr->y;
 	    bptr->blocks->h = Height;
@@ -337,7 +337,7 @@ short Width, Height;
 	    if (bptr->h > Height) { /* split the row. We create a new row with
 	                             * the unused height of the first.
 				     */
-	      bitMapRowPtr nbptr=(bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
+	      bitMapRowPtr nbptr=(bitMapRowPtr) xcalloc(1,sizeof(bitMapRowRec));
 
 	      nbptr->h = bptr->h - Height;
 	      nbptr->freew = bptr->freew;
@@ -364,7 +364,7 @@ short Width, Height;
 	        bbptr = bbptr->next; 
 
 	      /* and add this block onto the end */
-	      bbptr->next = (bitMapBlockPtr) Xcalloc(sizeof(bitMapBlockRec));
+	      bbptr->next = (bitMapBlockPtr) xcalloc(1,sizeof(bitMapBlockRec));
 	      bbptr->next->x = bbptr->x + bbptr->w;
 	      bbptr->next->y = bptr->y;
 	      bbptr->next->h = Height;

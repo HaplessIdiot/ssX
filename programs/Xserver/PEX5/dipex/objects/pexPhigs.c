@@ -1,4 +1,5 @@
 /* $XConsortium: pexPhigs.c,v 5.5 94/04/17 20:36:11 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -97,14 +98,14 @@ static void RemoveWksFromDrawableList();
 #define AddLut(lut_id, wks_lut_entry) \
     if (! ((lut) = (diLUTHandle) LookupIDByType ((lut_id), PEXLutType)) ) { \
 	err = PEX_ERROR_CODE(PEXLookupTableError); \
-	Xfree((pointer)pw);\
+	xfree((pointer)pw);\
 	PEX_ERR_EXIT(err,(lut_id),cntxtPtr); }\
     wks_lut_entry = lut;
 
 #define AddNs(ns_id, wks_ns_entry) \
     if (! (ns = (diNSHandle) LookupIDByType ((ns_id), PEXNameType)) ) { \
 	err = PEX_ERROR_CODE(PEXNameSetError); \
-	Xfree((pointer)pw);\
+	xfree((pointer)pw);\
 	PEX_ERR_EXIT(err,(ns_id),cntxtPtr); } \
     wks_ns_entry = ns;
 
@@ -132,7 +133,7 @@ pexCreatePhigsWksReq    *strmPtr;
 
     LU_DRAWABLE(strmPtr->drawable, pdraw);
 
-    pw = (dipexPhigsWks *) Xalloc ((unsigned long)(sizeof(dipexPhigsWks)));
+    pw = (dipexPhigsWks *) xalloc ((unsigned long)(sizeof(dipexPhigsWks)));
     if (!pw) {
 	PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
@@ -190,7 +191,7 @@ pexCreatePhigsWksReq    *strmPtr;
     if (!LegalNewID(strmPtr->drawable, cntxtPtr->client)) {
 
 	wks_draw =
-	    (dipexWksDrawable *) Xalloc ((unsigned long)(sizeof(dipexWksDrawable)
+	    (dipexWksDrawable *) xalloc ((unsigned long)(sizeof(dipexWksDrawable)
 						+ sizeof(dipexWksDrawableLink)));
 	if (!wks_draw) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 	wks_draw->id = strmPtr->drawable;
@@ -204,9 +205,9 @@ pexCreatePhigsWksReq    *strmPtr;
 	    PEX_ERR_EXIT(BadAlloc,0,cntxtPtr); }
     } else {
 	plink = (dipexWksDrawableLink *) 
-			Xalloc ((unsigned long)(sizeof(dipexWksDrawableLink)));
+			xalloc ((unsigned long)(sizeof(dipexWksDrawableLink)));
 	if (!plink) {
-	    Xfree((pointer)pw);
+	    xfree((pointer)pw);
 	    PEX_ERR_EXIT(BadAlloc,0,cntxtPtr); }
 	plink->next = wks_draw->wks_list;
 	plink->wksid = strmPtr->wks;
@@ -218,7 +219,7 @@ pexCreatePhigsWksReq    *strmPtr;
     err = CreatePhigsWks (&tables, &(pw->dd_data));
     if (err) {
 	RemoveWksFromDrawableList(strmPtr->wks, wks_draw);
-	Xfree((pointer)pw);
+	xfree((pointer)pw);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     };
 
@@ -243,7 +244,7 @@ dipexWksDrawable    *drawlist;
 	if (plink->wksid == wksid) {
 	    if (prev) {
 		prev->next = plink->next;
-		Xfree((pointer)plink);
+		xfree((pointer)plink);
 	    } else { drawlist->wks_list = plink->next; }
 	    plink = 0;
 	} else {
@@ -757,7 +758,7 @@ Drawable id;
     if (!ptr) return (Success);
 
     if (ptr->id == PEXAlreadyFreed) {
-	Xfree((pointer)ptr);
+	xfree((pointer)ptr);
 	return(Success); }
 
     if (ptr->id != id) {
@@ -771,11 +772,11 @@ Drawable id;
 	while (plink) {
 	    pnext = plink->next;
 	    LostDrawable(plink->wks);
-	    Xfree((pointer)plink);
+	    xfree((pointer)plink);
 	    plink = pnext;
 	} }
 
-    Xfree((pointer)ptr);
+    xfree((pointer)ptr);
 
     return (Success);
 }

@@ -1,4 +1,5 @@
 /* $XConsortium: pexPick.c,v 5.3 94/04/17 20:36:11 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -109,7 +110,7 @@ pexCreatePickMeasureReq *strmPtr;
     pmh = (diPMHandle)LookupIDByType(strmPtr->pm, PEXPickType);
     if (pmh) PEX_ERR_EXIT(BadIDChoice,strmPtr->pm,cntxtPtr);
 
-    pmh = (diPMHandle) Xalloc ((unsigned long)sizeof(ddPMResource));
+    pmh = (diPMHandle) xalloc ((unsigned long)sizeof(ddPMResource));
     if (!pmh) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
     LU_PHIGSWKS (strmPtr->wks, pw);
@@ -117,7 +118,7 @@ pexCreatePickMeasureReq *strmPtr;
     pmh->id = strmPtr->pm;
     err = CreatePickMeasure ((diWKSHandle)pw, strmPtr->devType, pmh);
     if (err){
-	Xfree((pointer)pmh);
+	xfree((pointer)pmh);
 	PEX_ERR_EXIT(err,0,cntxtPtr);	
     }
 

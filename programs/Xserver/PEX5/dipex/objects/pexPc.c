@@ -1,4 +1,5 @@
 /* $XConsortium: pexPc.c,v 5.10 94/04/17 20:36:10 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -440,7 +441,7 @@ unsigned char	*ptr;
 		EXTRACT_CARD16(pca->psc.data.mcLevelCurves.numberIntersections,ptr);
 		SKIP_PADDING(ptr,2);
 		pca->psc.data.mcLevelCurves.pPoints = (ddFLOAT *)
-		    Xalloc((unsigned long) (sizeof(ddFLOAT) *
+		    xalloc((unsigned long) (sizeof(ddFLOAT) *
 			    pca->psc.data.mcLevelCurves.numberIntersections));
 		EXTRACT_STRUCT(	pca->psc.data.mcLevelCurves.numberIntersections,
 				PEXFLOAT, pca->psc.data.mcLevelCurves.pPoints,
@@ -454,7 +455,7 @@ unsigned char	*ptr;
 		EXTRACT_CARD16(pca->psc.data.wcLevelCurves.numberIntersections,ptr);
 		SKIP_PADDING(ptr,2);
 		pca->psc.data.wcLevelCurves.pPoints = (ddFLOAT *)
-		    Xalloc((unsigned long) (sizeof(ddFLOAT) *
+		    xalloc((unsigned long) (sizeof(ddFLOAT) *
 			    pca->psc.data.wcLevelCurves.numberIntersections));
 		EXTRACT_STRUCT(	pca->psc.data.wcLevelCurves.numberIntersections,
 				PEXFLOAT, pca->psc.data.wcLevelCurves.pPoints,
@@ -544,20 +545,20 @@ pexCreatePipelineContextReq	*strmPtr;
     if (!LegalNewID(strmPtr->pc, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->pc,cntxtPtr);
 
-    pc = (ddPCStr *)Xalloc((unsigned long)(sizeof(ddPCStr) + sizeof(ddPCAttr)));
+    pc = (ddPCStr *)xalloc((unsigned long)(sizeof(ddPCStr) + sizeof(ddPCAttr)));
     if (!pc) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
     pc->PCid = strmPtr->pc;
     pc->rendRefs = puCreateList(DD_RENDERER);
     if (!pc->rendRefs) {
-	Xfree((pointer)pc);
+	xfree((pointer)pc);
 	PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
     pc->pPCAttr = (ddPCAttr *)(pc+1);
     DefaultPC(pc->pPCAttr);
     if (!pc->pPCAttr->modelClipVolume || !pc->pPCAttr->lightState) {
 	puDeleteList(pc->rendRefs);
-	Xfree((pointer)pc);
+	xfree((pointer)pc);
 	PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
 
@@ -567,7 +568,7 @@ pexCreatePipelineContextReq	*strmPtr;
 	puDeleteList(pc->rendRefs);
 	puDeleteList(pc->pPCAttr->modelClipVolume);
 	puDeleteList(pc->pPCAttr->lightState);
-	Xfree((pointer)pc);
+	xfree((pointer)pc);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
 
@@ -929,7 +930,7 @@ pexPC id;
     puDeleteList(pc->rendRefs);
     puDeleteList(pc->pPCAttr->modelClipVolume);
     puDeleteList(pc->pPCAttr->lightState);
-    Xfree((pointer)pc);
+    xfree((pointer)pc);
 
     return (err);
 }

@@ -1,4 +1,5 @@
 /* $XConsortium: miCopy.c,v 5.9 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -84,7 +85,7 @@ SOFTWARE.
 
 #define DST_STORE_AND_COPY(DD_ST, TYPE, SIZE) \
     *ppDst = (miGenericElementPtr) \
-		Xalloc((unsigned long)((SIZE) + sizeof(miGenericElementStr))); \
+		xalloc((unsigned long)((SIZE) + sizeof(miGenericElementStr))); \
     if (!(*ppDst)) return (BadAlloc); \
     memmove(  (char *)(*ppDst), (char *)pSrc, \
 	    (int)((SIZE) + sizeof(miGenericElementStr))); \
@@ -95,7 +96,7 @@ SOFTWARE.
 
 #define COPY_MORE(DST, TYPE, NUMBER, SRC) \
     if ((NUMBER) > 0) { \
-	DST = (TYPE *)Xalloc((unsigned long)((NUMBER) * sizeof(TYPE))); \
+	DST = (TYPE *)xalloc((unsigned long)((NUMBER) * sizeof(TYPE))); \
 	if (!(DST)) err = BadAlloc; \
 	else memmove((char *)(DST),(char *)(SRC),(int)((NUMBER)*sizeof(TYPE))); } \
     else DST = 0;
@@ -879,7 +880,7 @@ OC_COPY_FUNC_HEADER(NurbSurface)
 	 i<dstNurb->numTrimCurveLists;
 	 i++, dstTrim++, srcTrim++) {
 
-	dstTrim->pTC = (ddTrimCurve *)Xalloc(srcTrim->count*sizeof(ddTrimCurve));
+	dstTrim->pTC = (ddTrimCurve *)xalloc(srcTrim->count*sizeof(ddTrimCurve));
 	COPY_MORE(dstTrim->pTC, ddTrimCurve, srcTrim->count, srcTrim->pTC);
 	if (err) {
 	    destroyNurbSurface(dstNurb);

@@ -1,4 +1,5 @@
 /* $XConsortium: miFont.c,v 5.7 94/04/17 20:37:39 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -109,7 +110,7 @@ OpenPEXFont(strLen, pName, pFont)
     Ch_stroke_data **ch_data;
     ddpex43rtn	    err = Success;
 
-    font = (miFontHeader *)Xalloc((unsigned long)(sizeof(miFontHeader)));
+    font = (miFontHeader *)xalloc((unsigned long)(sizeof(miFontHeader)));
     if (font == NULL) return (BadAlloc);
     pFont->deviceData = (ddPointer)font;
     font->lutRefCount = 0;
@@ -124,7 +125,7 @@ OpenPEXFont(strLen, pName, pFont)
 
     err = LoadPEXFontFile(strLen, pName, pFont);
     if (err != Success) {
-	Xfree(font);
+	xfree(font);
 	return (err); }
 
     /*
@@ -168,7 +169,7 @@ really_free_font(pFont)
     int				  j;
 
     if (font->properties)
-	Xfree((char *) font->properties);
+	xfree((char *) font->properties);
 
     if (font->ch_data) {
 	for (j = 0, ch_data = font->ch_data; j < font->num_ch; j++, ch_data++) {
@@ -176,12 +177,12 @@ really_free_font(pFont)
 		MI_FREELISTHEADER(&((*ch_data)->strokes));
 		if (!firstChar) firstChar = *ch_data; } }
 
-	Xfree((char *) (firstChar));
-	Xfree((char *) (font->ch_data));
+	xfree((char *) (firstChar));
+	xfree((char *) (font->ch_data));
     }
 
-    Xfree((char *) font);
-    Xfree((char *) pFont);
+    xfree((char *) font);
+    xfree((char *) pFont);
 
 } 
 
@@ -293,9 +294,9 @@ ListPEXFonts(patLen, pPattern, maxNames, pNumNames, pBuffer)
 	pbuf += sizeof(CARD16);
 	memcpy( (char *)pbuf, names[i], (int)(strlen(names[i])));
 	pbuf += strlen(names[i]) + PADDING(2 + strlen(names[i]));
-	Xfree(names[i]);
+	xfree(names[i]);
     }
-    Xfree(names);
+    xfree(names);
     
     *pNumNames = n;
     pBuffer->dataSize = total_space;
@@ -404,7 +405,7 @@ ListPEXFontsPlus(patLen, pPattern, maxNames, pNumNames, pBuffer)
 	if (fontData.font_info.numProps > 0) {
 	    PACK_LISTOF_STRUCT(	fontData.font_info.numProps, pexFontProp,
 				fontData.properties, pBuf);
-	    Xfree(fontData.properties);
+	    xfree(fontData.properties);
 	    fontData.properties = 0; }
 
 	if (fontData.ch_data) {
@@ -413,21 +414,21 @@ ListPEXFontsPlus(patLen, pPattern, maxNames, pNumNames, pBuffer)
 		    j++, ch_data++) {
 		if (*ch_data) {
 		    MI_FREELISTHEADER(&	((*ch_data)->strokes));
-		    Xfree((char *)(*ch_data)); } }
-	    Xfree((char *) (fontData.ch_data)); }
+		    xfree((char *)(*ch_data)); } }
+	    xfree((char *) (fontData.ch_data)); }
 
-	Xfree(names[i]);
+	xfree(names[i]);
     }
 
-    Xfree(names);
+    xfree(names);
 
     *pNumNames = n;
     pBuffer->pBuf = pBuf;
     return (Success);
 
 free_names:
-    for (i = 0; i < n; i++) Xfree(names[i]);
-    Xfree(names);
+    for (i = 0; i < n; i++) xfree(names[i]);
+    xfree(names);
     pBuffer->dataSize = 0;
     if (err) return(err);
     return(BadAlloc);
