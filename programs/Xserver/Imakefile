@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.190 2000/08/31 04:36:01 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.191 2000/08/31 22:47:20 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -239,6 +239,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
          LMFCFB = lmfcfb/LibraryTargetName(cfb)
 #endif
              MI = mi/LibraryTargetName(mi)
+    MISHADOWLIB = miext/shadow/LibraryTargetName(shadow)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
        FONTBASE = $(FONTLIBSRC)/fontbase.o \
@@ -262,7 +263,9 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 	$(EXTRASYSLIBS)
 #endif
            CBRT = mi/LibraryTargetName(cbrt)
-        STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
+    MISHADOWDIR = miext/shadow
+      MIEXTDIRS = $(MISHADOWDIR)
+        STDDIRS = include dix os mi $(MIEXTDIRS) $(XPDDXDIR) $(EXTDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -624,7 +627,7 @@ XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
               $(XF8_32BPPLIB) $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
-	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(AFBLIB)
+	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(MISHADOWLIB) $(AFBLIB)
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o
 XF86IDRVLIBS = $(XF86IDRIVERLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
