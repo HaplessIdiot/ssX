@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.10 2002/10/01 00:02:11 alanh Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -60,5 +60,4 @@ InstallLibraryModule(freetype,$(MODULEDIR),fonts)
 
 DependTarget()
 
-
-InstallDriverSDKLibraryModule(freetype2,$(DRIVERSDKMODULEDIR),fonts)
+InstallDriverSDKLibraryModule(freetype,$(DRIVERSDKMODULEDIR),fonts)
