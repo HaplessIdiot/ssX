@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+ 108. Enable wsmouse support on OpenBSD/i386 (Matthieu Herrb).
+ 107. Xdarwin bug fixes and updates (#4440-4442, Torrey T. Lyons).
  106. ATI driver Sparc compile fix (David S. Miller).
  105. Implement BlockFills at 32bpp in the Permedia3 driver (Alan Hourihane).
  104. Ensure PCI retry is off for Permedia3, and fix an over by 1 error on
@@ -12365,4 +12367,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1554 2001/02/02 16:17:14 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1555 2001/02/02 21:44:22 tsi Exp $
