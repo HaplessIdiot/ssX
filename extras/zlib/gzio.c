@@ -4,6 +4,7 @@
  *
  * Compile this file with -DNO_DEFLATE to avoid the compression code.
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 
