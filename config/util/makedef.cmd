@@ -1,5 +1,5 @@
 /* This is OS/2 REXX */
-/* $XFree86: xc/config/util/makedef.cmd,v 1.3 2003/11/06 03:25:41 dawes Exp $
+/* $XFree86: xc/config/util/makedef.cmd,v 1.4 2003/11/12 00:10:24 dawes Exp $
  *
  * This file was taken from Odin32 project and modified to suit
  * XFree86 4.x build process
@@ -22,13 +22,13 @@ sOrdinals       = 0;
 sASDFeatureId   = '';
 sCountryCode    = '';
 sDateTime       = left(' 'date()' 'time(), 26);
-sDescription    = 'XFree86 4.3';
+sDescription    = 'XFree86 4.4';
 sFixPakVer      = '';
 sHostname       = strip(substr(VALUE('HOSTNAME',,'OS2ENVIRONMENT'), 1, 11));
 sLanguageCode   = '';
 sMiniVer        = '';
 sVendor         = 'XFree86';
-sVersion        = '4.3.0';
+sVersion        = '4.4.0';
 
 
 /*
@@ -580,7 +580,7 @@ UpdateDefFile: procedure expose ordHash.;
 	    iterate
 	end
         if firstsym = 'VERSION' then do
-          call lineout outfile, 'DESCRIPTION "'sDescription sRealName'"'
+          call lineout outfile, 'DESCRIPTION "'sDescription sLibrary'"'
           fDescription = 1;
           AddCodeDataSection(outfile);
 	end   
@@ -600,7 +600,7 @@ UpdateDefFile: procedure expose ordHash.;
      */
     if (\fDescription) then
     do
-        call lineout outfile,"DESCRIPTION '"||sDescription sRealName||"'";
+        call lineout outfile,"DESCRIPTION '"||sDescription sLibrary||"'";
         AddCodeDataSection(outfile);
     end
 
