@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:41:08 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.0 1994/05/31 08:12:40 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -23,15 +23,13 @@ INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 
 VGA2DRIVERS = XF86Vga2Drivers
 
-ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),configvga2.sh,$(VGA2DRIVERS))
+NormalDepLibraryTarget(vga2,$(SUBDIRS) $(DONES),$(OBJS))
 
-all:: subdirs libvga2.a
+ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),configvga2.sh,$(VGA2DRIVERS))
 
 NormalLibraryObjectRule()
 
-NamedMakeSubdirs(subdirs,$(SUBDIRS))
-
-NormalDepLibraryTarget(vga2,$(SUBDIRS) $(DONES),$(OBJS))
+ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(vga2,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(configvga2.sh,$(LINKKITDIR))
