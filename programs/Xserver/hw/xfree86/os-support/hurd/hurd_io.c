@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.7 2000/11/14 18:20:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.8 2002/10/11 01:40:35 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -129,7 +129,7 @@ xf86KbdEvents()
 #include "xf86OSKbd.h"
 
 Bool
-xf86OSKbdPreInit(KbdDevPtr pKbd)
+xf86OSKbdPreInit(InputInfoPtr pInfo)
 {
     return FALSE;
 }

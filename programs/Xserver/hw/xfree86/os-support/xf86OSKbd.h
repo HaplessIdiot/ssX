@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSKbd.h,v 1.1 2002/10/11 01:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSKbd.h,v 1.2 2002/10/17 02:30:17 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -11,9 +11,9 @@ Bool ATScancode(InputInfoPtr pInfo, int *scanCode);
 
 /* Public interface to OS-specific keyboard support. */
 
-typedef	void	(*KbdInitProc)(InputInfoPtr pInfo);
-typedef	int	(*KbdOnProc)(InputInfoPtr pInfo);
-typedef	int	(*KbdOffProc)(InputInfoPtr pInfo);
+typedef	int	(*KbdInitProc)(InputInfoPtr pInfo, int what);
+typedef	int	(*KbdOnProc)(InputInfoPtr pInfo, int what);
+typedef	int	(*KbdOffProc)(InputInfoPtr pInfo, int what);
 typedef	void	(*BellProc)(InputInfoPtr pInfo,
                             int loudness, int pitch, int duration);
 typedef	void	(*SetLedsProc)(InputInfoPtr pInfo, int leds);
@@ -89,4 +89,4 @@ typedef struct {
     KbdProtocolId	id;
 } KbdProtocolRec;
 
-Bool xf86OSKbdPreInit(KbdDevPtr pKbd);
+Bool xf86OSKbdPreInit(InputInfoPtr pInfo);

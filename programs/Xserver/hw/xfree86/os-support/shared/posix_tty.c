@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.24 1999/11/19 13:55:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.27 2002/09/16 18:06:14 eich Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
@@ -506,7 +506,8 @@ xf86FlushInput(int fd)
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 	while (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) > 0) {
-		read(fd, &c, sizeof(c));
+		if (read(fd, &c, sizeof(c)) < 1)
+		    return 0;
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);
 	}
