@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.146 2002/02/27 00:51:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.147 2002/03/01 22:04:41 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3095,7 +3095,7 @@ clean::									@@\
 
 #ifndef InstallXftCache
 #define InstallXftCache(dest)						@@\
-InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)			@@\
+InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)
 #endif /* InstallXftCache */
 
 #else
