@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.63tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.64tsi Exp $ */
 
 
 /* 
@@ -203,7 +203,7 @@ in this Software without prior written authorization from The Open Group.
 
 /*
  * Step 3:  FIXUP_CPP_WHITESPACE
- *     If your cpp collapses tabs macro expansions into a single space and
+ *     If your cpp collapses tabs in macro expansions into a single space and
  *     replaces escaped newlines with a space, define this symbol.  This will
  *     cause imake to attempt to patch up the generated Makefile by looking
  *     for lines that have colons in them (this is why the rules file escapes
@@ -307,12 +307,10 @@ in this Software without prior written authorization from The Open Group.
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
 #endif
 #endif
-#if defined(__GNUC__) && !defined(DEFAULT_CC)
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
-    defined(__FreeBSD__) || defined(MACH) || defined(linux) || \
-    defined(__GNU__) || defined(__bsdi__)
-#define DEFAULT_CC "gcc"
+#if defined(__GNUC__) && !defined(USE_CC_E)
 #define USE_CC_E
+#ifndef DEFAULT_CC
+#define DEFAULT_CC "gcc"
 #endif
 #endif
 
@@ -346,7 +344,7 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
     defined(__FreeBSD__) || defined(MACH) || defined(linux) || \
-    defined(__GNU__) || defined(__bsdi__)
+    defined(__GNU__) || defined(__bsdi__) || defined(__GNUC__)
 # ifdef __i386__
 	"-D__i386__",
 #  if defined (__GNUC__) && __GNUC__ > 3 || \
@@ -717,7 +715,7 @@ char *cpp_argv[ARGUMENTS] = {
 /*
  * Step 6: DEFAULT_OS_MAJOR_REV, DEFAULT_OS_MINOR_REV, DEFAULT_OS_TEENY_REV,
  *	and DEFAULT_OS_NAME.
- *	If your systems provides a way to generate the default major,
+ *	If your system provides a way to generate the default major,
  *	minor, teeny, or system names at runtime add commands below.
  *	The syntax of the _REV strings is 'f fmt' where 'f' is an argument
  *	you would give to uname, and "fmt" is a scanf() format string.
@@ -1059,15 +1057,23 @@ struct symtab	predefs[] = {
 #ifdef __GNUC__
 # if __GNUC__ == 1
 	{"__GNUC__", "1"},
-# else
+# elif __GNUC__ == 2
 	{"__GNUC__", "2"},
+# elif __GNUC__ == 3
+	{"__GNUC__", "3"},
 # endif
 #endif
 #ifdef __STRICT_ANSI__
 	{"__STRICT_ANSI__", "1"},
 #endif
-#if __STDC__
+#ifdef __STDC__
+# if __STDC__ == 0
+	{"__STDC__", "0"},
+# elif __STDC__ == 1
 	{"__STDC__", "1"},
+# elif __STDC__ == 2
+	{"__STDC__", "2"},
+# endif
 #endif
 #ifdef __HIGHC__
 	{"__HIGHC__", "1"},
@@ -1267,6 +1273,12 @@ struct symtab	predefs[] = {
 # endif
 # ifdef k6
 	{"k6", "1"},
+# endif
+# ifdef sparc
+	{"sparc", "1"},
+# endif
+# ifdef __sparc__
+	{"__sparc__", "1"},
 # endif
 # ifdef __s390__
 	{"__s390__", "1"},
