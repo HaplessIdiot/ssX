@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.9 2000/09/08 22:43:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.10 2000/09/09 13:10:37 tsi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -55,8 +55,8 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dixstruct.h"
 #include "fourcc.h"
 
-#define OFF_DELAY 	200  /* milliseconds */
-#define FREE_DELAY 	60000
+#define OFF_DELAY 	250  /* milliseconds */
+#define FREE_DELAY 	15000
 
 #define OFF_TIMER 	0x01
 #define FREE_TIMER	0x02
@@ -116,22 +116,22 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define HL_PIXEL_DROPPING	0x00280000
 #define HL_DOWN_INTERPOLATION	0x00300000
 
-#define Y_ADJUST			0x00010000	
-#define OV_BYTE_ORDER			0x0000C000
+#define Y_ADJUST		0x00010000	
+#define OV_BYTE_ORDER		0x0000C000
 #define UV_SWAP			0x00004000
 #define Y_SWAP			0x00008000
 #define Y_AND_UV_SWAP		0x0000C000
-#define SOURCE_FORMAT			0x00003C00
+#define SOURCE_FORMAT		0x00003C00
 #define	RGB_555			0x00000800
 #define	RGB_565			0x00000C00
 #define	YUV_422			0x00002000
 #define	YUV_411			0x00002400
 #define	YUV_420			0x00003000
 #define	YUV_410			0x00003800
-#define BUFFER_AND_FIELD		0x00000006
-#define	BUFFER0_FIELD0			0x00000000
-#define	BUFFER1_FIELD0			0x00000004
-#define OVERLAY_ENABLE			0x00000001
+#define BUFFER_AND_FIELD	0x00000006
+#define	BUFFER0_FIELD0		0x00000000
+#define	BUFFER1_FIELD0		0x00000004
+#define OVERLAY_ENABLE		0x00000001
 
 /*
  * DOV0STA - Display/Overlay 0 Status Register
@@ -143,6 +143,9 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define RGB16ToColorKey(c) \
 	(((c & 0xF800) << 8) | ((c & 0x07E0) << 5) | ((c & 0x001F) << 3))
 
+#define RGB15ToColorKey(c) \
+        (((c & 0x7c00) << 9) | ((c & 0x03E0) << 6) | ((c & 0x001F) << 3))
+
 void I810InitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -150,7 +153,7 @@ void I810InitVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
 	
-    if ((pScrn->depth == 16) || (pScrn->depth == 24)) 
+    if (pScrn->bitsPerPixel != 8) 
     {
 	newAdaptor = I810SetupImageVideo(pScreen);
     }
@@ -192,11 +195,11 @@ static XF86VideoEncodingRec DummyEncoding[1] =
  }
 };
 
-#define NUM_FORMATS 2
+#define NUM_FORMATS 3
 
 static XF86VideoFormatRec Formats[NUM_FORMATS] = 
 {
-   {16, TrueColor}, {24, TrueColor}
+  {15, TrueColor}, {16, TrueColor}, {24, TrueColor}
 };
 
 #define NUM_ATTRIBUTES 3
@@ -307,12 +310,16 @@ static void I810ResetVideo(ScrnInfoPtr pScrn)
     /*
      * Enable destination color keying
      */
-    if (pScrn->depth == 16) {
-	overlay->DCLRKV = RGB16ToColorKey(pPriv->colorKey);
-	overlay->DCLRKM = 0x80070307;
-    } else {
-	overlay->DCLRKV = pPriv->colorKey;
-	overlay->DCLRKM = 0x80000000;
+    switch(pScrn->depth) {
+    case 16: overlay->DCLRKV = RGB16ToColorKey(pPriv->colorKey);
+             overlay->DCLRKM = 0x80070307;
+             break;
+    case 15: overlay->DCLRKV = RGB15ToColorKey(pPriv->colorKey);
+             overlay->DCLRKM = 0x80070707;
+             break;
+    default: overlay->DCLRKV = pPriv->colorKey;
+             overlay->DCLRKM = 0x80000000;
+             break;
     }
 
     overlay->SCLRKVH = 0;
@@ -572,10 +579,13 @@ I810SetPortAttribute(
   } else
   if(attribute == xvColorKey) {
 	pPriv->colorKey = value;
-	if (pScrn->depth == 16) {
-	    overlay->DCLRKV = RGB16ToColorKey(pPriv->colorKey);
-	} else {
-	    overlay->DCLRKV = pPriv->colorKey;
+	switch(pScrn->depth) {
+	case 16: overlay->DCLRKV = RGB16ToColorKey(pPriv->colorKey);
+	         break;
+	case 15: overlay->DCLRKV = RGB15ToColorKey(pPriv->colorKey);
+                 break;
+	default: overlay->DCLRKV = pPriv->colorKey;
+                 break;
 	}
 	OVERLAY_UPDATE(pI810->OverlayPhysical);
 	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
