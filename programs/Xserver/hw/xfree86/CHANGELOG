@@ -1,4 +1,8 @@
 XFree86 3.9Po (23 May 1999)
+2679. Enable the new input code (NewInput) by default in xfree86.cf
+      (David Dawes).
+2678. Add compatibilty support for interpreting "Pointer" sections as
+      "InputDevice" sections in the reworked input device code (David Dawes).
 2677. Modify mkfontdir to handle duplicate encodings in a reasonable way
       when generating the encodings.dir file (#2812, Juliusz Chroboczek).
 2676. Xaw and xedit updates (see lib/Xaw/Changelog for details) (#2811,
@@ -8046,4 +8050,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.755 1999/05/22 08:39:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.756 1999/05/23 06:33:39 dawes Exp $

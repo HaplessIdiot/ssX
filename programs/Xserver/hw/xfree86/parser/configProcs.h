@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.6 1999/04/05 07:13:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.7 1999/04/29 05:13:02 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -49,7 +49,11 @@ void freeModesList(XF86ConfModesPtr ptr);
 void freeModeLineList(XF86ConfModeLinePtr ptr);
 int validateMonitor(XF86ConfigPtr p, XF86ConfScreenPtr screen);
 /* Pointer.c */
+#ifndef NEW_INPUT
 XF86ConfPointerPtr parsePointerSection(void);
+#else
+XF86ConfInputPtr parsePointerSection(void);
+#endif
 void printPointerSection(FILE *cf, XF86ConfPointerPtr ptr);
 void freePointer(XF86ConfPointerPtr ptr);
 /* Screen.c */

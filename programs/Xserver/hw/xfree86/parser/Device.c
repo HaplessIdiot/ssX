@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.7 1999/04/25 10:02:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.8 1999/04/27 12:05:21 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -356,7 +356,7 @@ xf86FindDevice (const char *ident, XF86ConfDevicePtr p)
 }
 
 char *
-ConfigStrdup (char *s)
+ConfigStrdup (const char *s)
 {
 	char *tmp = xf86confmalloc (sizeof (char) * (strlen (s) + 1));
 	if (tmp)

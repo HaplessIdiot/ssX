@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.11 1999/04/27 12:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.12 1999/04/29 05:13:02 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -66,6 +66,8 @@ typedef struct
 }
 XF86ConfModuleRec, *XF86ConfModulePtr;
 
+#define CONF_IMPLICIT_KEYBOARD	"Implicit Core Keyboard"
+
 /* Device tokens */
 typedef struct
 {
@@ -91,6 +93,8 @@ XF86ConfKeyboardRec, *XF86ConfKeyboardPtr;
 
 #define CONF_ZAXIS_MAPTOX	-1
 #define CONF_ZAXIS_MAPTOY	-2
+
+#define CONF_IMPLICIT_POINTER	"Implicit Core Pointer"
 
 typedef struct
 {
@@ -405,6 +409,7 @@ XF86ConfModeLinePtr xf86FindModeLine(const char *ident, XF86ConfModeLinePtr p);
 XF86ConfScreenPtr xf86FindScreen(const char *ident, XF86ConfScreenPtr p);
 XF86ConfDisplayPtr xf86FindDisplay(int depth, XF86ConfDisplayPtr p);
 XF86ConfInputPtr xf86FindInput(const char *ident, XF86ConfInputPtr p);
+XF86ConfInputPtr xf86FindInputByDriver(const char *driver, XF86ConfInputPtr p);
 XF86ConfVendorPtr xf86FindVendor(const char *name, XF86ConfVendorPtr list);
 XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident,
 						XF86ConfVideoAdaptorPtr p);

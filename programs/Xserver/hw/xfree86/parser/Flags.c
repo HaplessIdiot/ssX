@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.5 1999/01/14 13:05:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.6 1999/05/09 06:06:33 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -30,6 +30,7 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 #include "Configint.h"
+#include <math.h>
 
 extern LexRec val;
 
@@ -403,5 +404,19 @@ OptionListMerge (XF86OptionPtr head, XF86OptionPtr tail)
 
 	OptionListFree (f);
 	return (head);
+}
+
+char *
+ULongToString(unsigned long i)
+{
+	char *s;
+    int l;
+
+	l = (int)(ceil(log10((double)i) + 2.5));
+	s = xf86confmalloc(l);
+	if (!s)
+		return NULL;
+	sprintf(s, "%lu", i);
+	return s;
 }
 
