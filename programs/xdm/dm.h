@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.26 2001/08/26 16:21:29 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.27 2001/12/14 20:01:21 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -52,15 +52,8 @@ from The Open Group.
 #include <limits.h>
 #undef _POSIX_C_SOURCE
 #else
-#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
 #include <setjmp.h>
 #include <limits.h>
-#else
-#define _POSIX_SOURCE
-#include <setjmp.h>
-#include <limits.h>
-#undef _POSIX_SOURCE
-#endif
 #endif
 #include <time.h>
 #define Time_t time_t
