@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.50 1998/09/20 14:41:02 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2027,7 +2027,9 @@ ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
  * some functions to track input/output in the server
  */
 
-CARD8 dbg_inreg8(ScrnInfoPtr pScrn,int addr,int verbose) {
+CARD8
+dbg_inreg8(ScrnInfoPtr pScrn,int addr,int verbose)
+{
     MGAPtr pMga;
     CARD8 ret;
 
@@ -2038,7 +2040,9 @@ CARD8 dbg_inreg8(ScrnInfoPtr pScrn,int addr,int verbose) {
     return ret;
 }
 
-CARD16 dbg_inreg16(ScrnInfoPtr pScrn,int addr,int verbose) {
+CARD16
+dbg_inreg16(ScrnInfoPtr pScrn,int addr,int verbose)
+{
     MGAPtr pMga;
     CARD16 ret;
 
@@ -2049,7 +2053,9 @@ CARD16 dbg_inreg16(ScrnInfoPtr pScrn,int addr,int verbose) {
     return ret;
 }
 
-CARD32 dbg_inreg32(ScrnInfoPtr pScrn,int addr,int verbose) {
+CARD32
+dbg_inreg32(ScrnInfoPtr pScrn,int addr,int verbose)
+{
     MGAPtr pMga;
     CARD32 ret;
 
@@ -2060,7 +2066,9 @@ CARD32 dbg_inreg32(ScrnInfoPtr pScrn,int addr,int verbose) {
     return ret;
 }
 
-void dbg_outreg8(ScrnInfoPtr pScrn,int addr,int val) {
+void
+dbg_outreg8(ScrnInfoPtr pScrn,int addr,int val)
+{
     MGAPtr pMga;
     CARD8 ret;
 
@@ -2079,7 +2087,9 @@ void dbg_outreg8(ScrnInfoPtr pScrn,int addr,int val) {
     *(volatile CARD8 *)(pMga->IOBase + (addr)) = (val);
 }
 
-void dbg_outreg16(ScrnInfoPtr pScrn,int addr,int val) {
+void
+dbg_outreg16(ScrnInfoPtr pScrn,int addr,int val)
+{
     MGAPtr pMga;
     CARD16 ret;
 
@@ -2093,7 +2103,9 @@ void dbg_outreg16(ScrnInfoPtr pScrn,int addr,int val) {
     *(volatile CARD16 *)(pMga->IOBase + (addr)) = (val);
 }
 
-void dbg_outreg32(ScrnInfoPtr pScrn,int addr,int val) {
+void
+dbg_outreg32(ScrnInfoPtr pScrn,int addr,int val)
+{
     MGAPtr pMga;
     CARD32 ret;
 
