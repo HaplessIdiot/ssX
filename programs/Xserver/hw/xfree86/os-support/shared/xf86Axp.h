@@ -19,13 +19,6 @@ typedef enum {
   IRONGATE
 } axpDevice;
   
-typedef struct 
- { char* sysName; 
-   char* sysVari; 
-   char* cpu; 
-   axpDevice sys; }
-AXP;
-
 typedef struct {
   axpDevice id;
   unsigned long hae_thresh;
