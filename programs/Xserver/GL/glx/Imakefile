@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.6 1999/06/14 14:28:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.7tsi Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -43,7 +43,7 @@ ModuleObjectRule()
 NormalLibraryObjectRule()
 #endif
 SubdirLibraryRule($(OBJS))
-NormalLibraryTarget(glx,$(OBJS))
+LibraryModuleTarget(glx,$(OBJS))
 
 LintLibraryTarget(glx,$(SRCS))
 NormalLintTarget($(SRCS))

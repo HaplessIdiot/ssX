@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/Imakefile,v 1.5 1999/08/14 10:49:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/Imakefile,v 1.6tsi Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -42,7 +42,7 @@ $(DONES): $(SUBDIRS)
 
 ModuleObjectRule()
 
-NormalDepLibraryTarget(glx,$(SUBDIRS) $(DONES) $(MOBJS),$(OBJS))
+DepLibraryModuleTarget(glx,$(SUBDIRS) $(DONES) $(MOBJS),$(OBJS))
 
 InstallLibraryModule(glx,$(MODULEDIR),extensions)
 ForceSubdirs($(SUBDIRS))

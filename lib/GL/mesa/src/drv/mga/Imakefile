@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.7tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -31,8 +31,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I../../../include -I../.. -I../../X -I../common
 #endif
 
-MESA_INCLUDES = -I. -I.. -I../../include
-
+MESA_INCLUDES = -I. -I.. -I../../include \
+		-I../../../../dri/drm
 
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFS)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.5 2000/08/16 01:45:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.6tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -30,7 +30,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines $(SIS_DEFINES)
   DRI_INCLUDES = -I../../../../dri -I../../../../glx \
-		-I../../../dri -I../../../../dri/drm \
+		-I../../../dri \
       		-I$(TOP)/include -I$(TOP)/include/GL \
     		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/sis \
@@ -38,7 +38,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
                 -I../common/
 #endif
 
-MESA_INCLUDES = -I. -I.. -I../../include
+MESA_INCLUDES = -I. -I.. -I../../include \
+		-I../../../../dri/drm
 
 LinkSourceFile(xdriP.h, ../../X)
 

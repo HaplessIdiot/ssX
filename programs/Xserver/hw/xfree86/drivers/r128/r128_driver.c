@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.40 2000/08/04 16:13:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.41tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -578,10 +578,12 @@ void R128WaitForVerticalSync(ScrnInfoPtr pScrn)
 {
     int i;
     R128MMIO_VARS();
+    unsigned int j;
 
     OUTREG(R128_GEN_INT_STATUS, R128_VSYNC_INT_AK);
     for (i = 0; i < R128_TIMEOUT; i++) {
-	if (INREG(R128_GEN_INT_STATUS) & R128_VSYNC_INT) break;
+	j = INREG(R128_GEN_INT_STATUS);
+	if (j & R128_VSYNC_INT) break;
     }
 }
 

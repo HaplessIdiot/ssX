@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.12 2000/06/25 16:03:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.13tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -138,11 +138,12 @@ static struct {
 void R128EngineFlush(ScrnInfoPtr pScrn)
 {
     int i;
+    unsigned int j;
     R128MMIO_VARS();
     
     OUTREGP(R128_PC_NGUI_CTLSTAT, R128_PC_FLUSH_ALL, ~R128_PC_FLUSH_ALL);
     for (i = 0; i < R128_TIMEOUT; i++) {
-	if (!(INREG(R128_PC_NGUI_CTLSTAT) & R128_PC_BUSY)) break;
+	if (!((j=INREG(R128_PC_NGUI_CTLSTAT)) & R128_PC_BUSY)) break;
     }
 }
 
@@ -153,6 +154,7 @@ void R128EngineReset(ScrnInfoPtr pScrn)
     CARD32      clock_cntl_index;
     CARD32      mclk_cntl;
     CARD32      gen_reset_cntl;
+    unsigned int j;
     R128MMIO_VARS();
 	
     R128EngineFlush(pScrn);
@@ -165,9 +167,9 @@ void R128EngineReset(ScrnInfoPtr pScrn)
     gen_reset_cntl   = INREG(R128_GEN_RESET_CNTL);
 
     OUTREG(R128_GEN_RESET_CNTL, gen_reset_cntl | R128_SOFT_RESET_GUI);
-    INREG(R128_GEN_RESET_CNTL);
+    j = INREG(R128_GEN_RESET_CNTL);
     OUTREG(R128_GEN_RESET_CNTL, gen_reset_cntl & ~R128_SOFT_RESET_GUI);
-    INREG(R128_GEN_RESET_CNTL);
+    j = INREG(R128_GEN_RESET_CNTL);
 
     OUTPLL(R128_MCLK_CNTL,        mclk_cntl);
     OUTREG(R128_CLOCK_CNTL_INDEX, clock_cntl_index);
@@ -184,16 +186,18 @@ void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 {
     R128InfoPtr info = R128PTR(pScrn);
     int         i;
+    unsigned int j;
     R128MMIO_VARS();
 
     for (;;) {
 	for (i = 0; i < R128_TIMEOUT; i++) {
-	    info->fifo_slots = INREG(R128_GUI_STAT) & R128_GUI_FIFOCNT_MASK;
+	    j = INREG(R128_GUI_STAT);
+	    info->fifo_slots = j & R128_GUI_FIFOCNT_MASK;
 	    if (info->fifo_slots >= entries) return;
 	}
 	R128TRACE(("FIFO timed out: %d entries, stat=0x%08x, probe=0x%08x\n",
-		   INREG(R128_GUI_STAT) & R128_GUI_FIFOCNT_MASK,
-		   INREG(R128_GUI_STAT),
+		   j & R128_GUI_FIFOCNT_MASK,
+		   j,
 		   INREG(R128_GUI_PROBE)));
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "FIFO timed out, resetting engine...\n");
@@ -211,20 +215,22 @@ void R128WaitForIdle(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info = R128PTR(pScrn);
     int         i;
+    unsigned int j;
     R128MMIO_VARS();
+	
 
     R128WaitForFifoFunction(pScrn, 64);
 
     for (;;) {
 	for (i = 0; i < R128_TIMEOUT; i++) {
-	    if (!(INREG(R128_GUI_STAT) & R128_GUI_ACTIVE)) {
+	    if (!((j=INREG(R128_GUI_STAT)) & R128_GUI_ACTIVE)) {
 		R128EngineFlush(pScrn);
 		return;
 	    }
 	}
 	R128TRACE(("Idle timed out: %d entries, stat=0x%08x, probe=0x%08x\n",
-		   INREG(R128_GUI_STAT) & R128_GUI_FIFOCNT_MASK,
-		   INREG(R128_GUI_STAT),
+		   j & R128_GUI_FIFOCNT_MASK,
+		   j,
 		   INREG(R128_GUI_PROBE)));
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Idle timed out, resetting engine...\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.28 2000/08/04 21:07:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.29tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -382,9 +382,13 @@ ATIPreInit
 {
 #   define           BIOS_SIZE       0x00010000U     /* 64kB */
     CARD8            BIOS[BIOS_SIZE];
-#   define           BIOSByte(_n)    (*((CARD8  *)(BIOS + (_n))))
-#   define           BIOSWord(_n)    (*((CARD16 *)(BIOS + (_n))))
-#   define           BIOSLong(_n)    (*((CARD32 *)(BIOS + (_n))))
+#   define           BIOSByte(_n)    (BIOS[_n])
+#   define           BIOSWord(_n)    (BIOS[_n] ||               \
+                                      (BIOS[(_n) + 1] << 8))
+#   define           BIOSLong(_n)    (BIOS[_n] ||               \
+                                      (BIOS[(_n) + 1] << 8) ||  \
+                                      (BIOS[(_n) + 2] << 16) || \
+                                      (BIOS[(_n) + 3] << 24))
     unsigned int     BIOSSize = 0;
     unsigned int     ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
     unsigned int     LCDTable = 0, LCDPanelInfo = 0;
@@ -861,8 +865,13 @@ ATIPreInit
             FrequencyTable = BIOSWord(ClockTable - 0x02U);
             if ((FrequencyTable > 0) &&
                 ((FrequencyTable + 0x20U) <= BIOSSize))
+            {
                 for (i = 0;  i < 16;  i++)
-                    pATI->BIOSClocks[i] = (&BIOSWord(FrequencyTable))[i];
+                {
+                    pATI->BIOSClocks[i] = BIOSWord(FrequencyTable);
+                    FrequencyTable += 2;
+                }
+            }
             pATI->ProgrammableClock = BIOSByte(ClockTable);
             pATI->ClockNumberToProgramme = BIOSByte(ClockTable + 0x06U);
             switch (BIOSWord(ClockTable + 0x08U) / 10)
@@ -1070,8 +1079,14 @@ ATIPreInit
                          * More than one possibility, but don't care if all
                          * tables describe panels of the same size.
                          */
-                        if (BIOSLong(LCDPanelInfo + 0x19U) ==
-                            BIOSLong(i + 0x19U))
+                        if ((BIOSByte(LCDPanelInfo + 0x19U) ==
+                             BIOSByte(i + 0x19U)) &&
+                            (BIOSByte(LCDPanelInfo + 0x1AU) ==
+                             BIOSByte(i + 0x1AU)) &&
+                            (BIOSByte(LCDPanelInfo + 0x1BU) ==
+                             BIOSByte(i + 0x1BU)) &&
+                            (BIOSByte(LCDPanelInfo + 0x1CU) ==
+                             BIOSByte(i + 0x1CU)))
                             continue;
 
                         LCDPanelInfo = 0;
@@ -1791,13 +1806,13 @@ ATIPreInit
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 
-                    /* Account for MMIO area, if it cannot be disabled */
+                    /*
+                     * Account for MMIO area, if it cannot be disabled.  This
+                     * relinquishes the entire last page of the linear aperture
+                     * to prevent the server from write-combining it.
+                     */
                     if (pATI->Chip < ATI_CHIP_264VTB)
-                    {
-                        AcceleratorVideoRAM--;
-                        if (pATI->Chip >= ATI_CHIP_264VT)
-                            AcceleratorVideoRAM--;
-                    }
+                        AcceleratorVideoRAM -= getpagesize() >> 10;
 
 #else /* if X_BYTE_ORDER == X_BIG_ENDIAN */
 

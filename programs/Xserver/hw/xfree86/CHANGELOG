@@ -1,4 +1,14 @@
 XFree86 4.0.1c (25 August 2000)
+ 535. Engine polling changes in r128 driver (David Mosberger).
+ 534. Fix linear memory mapping in ATI driver (Marc La France).
+ 533. Fix endianness problems in the ATI driver when accessing BIOS images
+      (Marc La France).
+ 532. Allow building Xptr, Xnest and Xvfb with MakeDllModules
+      (Bill Nottingham).
+ 531. Build DRI drivers on IA-64 (David Mosberger, Marc La France).
+ 530. Use $(CC) instead of $(LD) when building modules (Bill Nottingham).
+ 529. When building with MakeDllModules, generate both dynamic and static
+      libraries (Bill Nottingham, Marc La France).
  528. Fix detection problem with ramdac for Glint Permedia1's 
       (Alan Hourihane).
  527. Fix minor symbol resoltion problem in dlopen() loader (Marc La France).
@@ -11028,4 +11038,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1277 2000/08/23 22:10:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1278 2000/08/24 11:40:21 alanh Exp $
