@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.147tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.148 2002/04/10 16:20:09 tsi Exp $ */
 
 
 /* main.c */
@@ -2944,6 +2944,8 @@ spawn (void)
 #if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__) || defined(SCO325) || defined(__QNX__)
 #if !defined(USE_SYSV_PGRP)
 		int pgrp = setsid();
+#else
+		(void)setsid();
 #endif
 #else
 		int pgrp = getpid();
