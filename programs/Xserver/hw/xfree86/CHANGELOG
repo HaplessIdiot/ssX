@@ -1,4 +1,14 @@
 XFree86 4.4.99.10 (xx July 2004)
+ 162. Install new pc/hu symbols file (#6576, Szilveszter Adam).
+ 161. Add an option for fixing flickering and blank screen problems for
+      iBooks (#6527, Emmanuel Dreyfus).
+ 160. Updates for the vmware driver:
+       - Save and restore the ID register.
+       - Send the cursor hot spot for both alpha and core cursors, fixing
+         host-cursor mode.
+       - Allow any reasonable bpp if 8BIT_EMULATION is set, supporting
+         non-host depths.
+      (#6522, Nolan Leake).
  159. Protect inlines everywhere io.h is used in TinyX (reported by
       Andrew Aitchison).
  158. Disable R&R when using rotation with the savage driver (Tim Roberts).
@@ -19049,7 +19059,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3296 2004/07/21 20:37:23 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3297 2004/07/25 20:17:02 dawes Exp $
 
 
 

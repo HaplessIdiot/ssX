@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.16 2004/04/03 13:43:42 pascal Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.17 2004/06/19 13:53:47 pascal Exp $
 XCOMM
 
      DATAFILES = al am ar \
@@ -9,7 +9,7 @@ XCOMM
 		ee el en_US es \
 		fi fr fr-latin9 \
 		gb ge_la ge_ru guj gur \
-		hr hsb\
+		hr hsb hu \
 		ie il il_phonetic ir is it iu \
 		kan \
 		la latin lo lt lv lat\
