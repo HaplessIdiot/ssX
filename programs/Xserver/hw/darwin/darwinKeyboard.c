@@ -38,7 +38,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.18 2003/05/14 05:27:55 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.20 2004/03/31 22:29:09 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -769,7 +769,7 @@ DarwinBuildModifierMaps(
         }
 
 #if ALT_IS_MODE_SWITCH
-        if (k[0] == XK_Alt_L || k[0] == XK_Alt_R)
+        if (k[0] == XK_Alt_L)
             k[0] = XK_Mode_switch;
 #endif
     }
