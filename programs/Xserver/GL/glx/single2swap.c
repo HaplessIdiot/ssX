@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/single2swap.c,v 1.5 2001/03/21 16:29:37 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -218,7 +218,6 @@ int __glXDispSwap_RenderMode(__GLXclientState *cl, GLbyte *pc)
 int __glXDispSwap_Flush(__GLXclientState *cl, GLbyte *pc)
 {
 	__GLXcontext *cx;
-	ClientPtr client = cl->client;
 	int error;
 	__GLX_DECLARE_SWAP_VARIABLES;
 
@@ -268,7 +267,6 @@ int __glXDispSwap_GetString(__GLXclientState *cl, GLbyte *pc)
     const char *string;
     __GLX_DECLARE_SWAP_VARIABLES;
     int error;
-    GLubyte *answer;
     char *buf = NULL, *buf1 = NULL;
     GLint length = 0;
 

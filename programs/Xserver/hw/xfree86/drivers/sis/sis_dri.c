@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.17 2001/06/14 23:37:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.18 2001/08/18 02:51:13 dawes Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -180,7 +180,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
+#if 000
   drmVersionPtr version;
+#endif
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for canonical symbols in each module. */
@@ -454,7 +456,6 @@ SISDRIFinishScreenInit(ScreenPtr pScreen)
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   SISPtr pSiS = SISPTR(pScrn);
   SISDRIPtr pSISDRI;
-  drmVersionPtr version;
 
   pSiS->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
   /* pSiS->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */

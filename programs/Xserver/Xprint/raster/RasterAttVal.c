@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/RasterAttVal.c,v 1.2 2001/08/01 00:44:46 tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -38,7 +38,7 @@ copyright holders.
 #include "dixstruct.h"
 #include "scrnintstr.h"
 #include "screenint.h"
-#include "extensions/Print.h"
+#include <X11/extensions/Print.h>
 #include "Raster.h"
 
 #include "attributes.h"

@@ -44,9 +44,9 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.14 2001/08/17 22:08:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.15 2001/10/28 03:32:53 tsi Exp $ */
 
-#include <Xproto.h>
+#include <X11/Xproto.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -56,9 +56,9 @@ copyright holders.
 #include <wchar.h>
 #endif
 
-#include <scrnintstr.h>
+#include "scrnintstr.h"
 
-#include "extensions/Printstr.h"
+#include <X11/extensions/Printstr.h>
 
 #include "attributes.h"
 #include "Xrm.c"

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: util.c /main/42 1996/01/14 16:51:55 kaleb $
- * $XFree86: xc/programs/xmh/util.c,v 3.4 2001/08/01 00:45:06 tsi Exp $
+ * $XFree86: xc/programs/xmh/util.c,v 3.5 2001/10/28 03:34:40 tsi Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -114,7 +114,7 @@ char *MakeNewTempFileName()
     static int  uniqueid = 0;
     do {
 	(void) sprintf(name, "%s/xmh_%ld_%d", app_resources.temp_dir,
-		       getpid(), uniqueid++);
+		       (long)getpid(), uniqueid++);
     } while (FileExists(name));
     return name;
 }

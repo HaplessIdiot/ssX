@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.18 2001/10/01 13:44:16 eich Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.19 2001/10/28 03:34:28 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -374,7 +374,9 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 			return 0;
 		} /* else: null passwd okay */
 	}
+#ifdef KERBEROS
 done:
+#endif
 #ifdef __OpenBSD__
 	/*
 	 * Only accept root logins if allowRootLogin resource is set

@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.5 2001/08/01 00:44:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.6 2001/10/28 03:32:57 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -71,7 +71,7 @@ copyright holders.
 #include "mfb.h"
 #include "mi.h"
 
-#include "extensions/Print.h"
+#include <X11/extensions/Print.h>
 #include "Raster.h"
 
 #include "attributes.h"

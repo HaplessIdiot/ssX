@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.12 2001/07/06 02:04:10 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.13 2001/07/10 21:46:27 paulo Exp $
  */
 
 #include <stdio.h>
@@ -1355,7 +1355,7 @@ ScreenConfig(void)
     XF86ConfDevicePtr device;
     XF86ConfMonitorPtr monitor;
     XF86ConfDisplayPtr display;
-    XF86ModePtr mode, ptr;
+    XF86ModePtr mode, ptr = NULL;
     char *checks;
 
     nlist = 0;

@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.h,v 1.2 2001/08/01 00:44:46 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -60,7 +60,7 @@ typedef char *XPointer;
 #include <Xfuncproto.h>
 #include "Xresource.h"
 
-#include "extensions/Printstr.h"
+#include <X11/extensions/Printstr.h>
 
 #define MAX_TOKEN_LEN 512
 

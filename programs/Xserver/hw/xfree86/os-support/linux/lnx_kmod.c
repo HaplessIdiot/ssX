@@ -1,11 +1,11 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kmod.c,v 3.5 2001/10/01 13:44:14 eich Exp $ */
 
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include "xf86_OSproc.h"
+#include "xf86_OSlib.h"
 #include "xf86.h"
 
 
@@ -76,7 +76,7 @@ xf86LoadKernelModule(const char *modName)
       }
       setenv("PATH","/sbin",1);
       n = execl(mpPath, "modprobe", modName, NULL);
-      xf86Msg(X_WARNING,"LoadKernelModule %s\n",xf86strerror(xf86GetErrno()));
+      xf86Msg(X_WARNING,"LoadKernelModule %s\n",strerror(errno));
       exit(EXIT_FAILURE);  /* if we get here the child's exec failed */
       break;
    case -1:  /* fork failed */

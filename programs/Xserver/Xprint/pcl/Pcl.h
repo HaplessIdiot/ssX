@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.9 2001/08/27 17:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.10 2001/10/28 03:32:54 tsi Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -52,24 +52,12 @@ copyright holders.
 #include <stdio.h>
 #include "scrnintstr.h"
 
-#if 0
-#include "X.h"
-#include "Xproto.h"
-#include "Xatom.h"
-#include "misc.h"
-#include "screenint.h"
-#include "colormapst.h"
-#include "windowstr.h"
-#include "propertyst.h"
-#include "servermd.h" 	/* needed for IMAGE_BUFSIZE */
-#endif
-
 #include "PclDef.h"
 #include "Pclmap.h"
 #include "PclSFonts.h"
 
-#include "extensions/Print.h"
-#include "extensions/Printstr.h"
+#include <X11/extensions/Print.h>
+#include <X11/extensions/Printstr.h>
 
 #include "miscstruct.h"
 #include "fontstruct.h"

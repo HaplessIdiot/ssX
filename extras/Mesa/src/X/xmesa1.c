@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa1.c,v 1.15 2001/10/28 03:32:08 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4.2
@@ -598,6 +598,7 @@ static GLboolean alloc_shm_back_buffer( XMesaBuffer b )
  */
 void xmesa_alloc_back_buffer( XMesaBuffer b )
 {
+   (void)DitherValues;
    if (b->db_state==BACK_XIMAGE) {
       /* Deallocate the old backimage, if any */
       if (b->backimage) {
