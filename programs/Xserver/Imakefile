@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.262 2002/07/15 19:28:16 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.263 2002/07/19 04:24:32 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1257,14 +1257,15 @@ FBDIR = fb
 DARWINDDXDIR = hw/darwin
 DARWINDIRS = $(STDDIRS) $(FBDIR) $(DARWINDDXDIR) $(DEPDIRS)
 DARWINOBJS = $(DARWINDDXDIR)/xfIOKitStartup.o
-DARWINLIBS = PreFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin) FbPostFbLibs
+DARWINLIBS = PreFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin)
+DARWINEXTLIBS = FbPostFbLibs
 DARWINSYSLIBS = $(FONTLIBS) $(SYSLIBS) -framework IOKit
 
 /*
  * IOKit X server
  */
 SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
-	$(DARWINLIBS),$(DARWINSYSLIBS))
+	$(DARWINLIBS) $(DARWINEXTLIBS),$(DARWINSYSLIBS))
 
 #if DarwinQuartzSupport
 
@@ -1273,8 +1274,33 @@ SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
  * CoreGraphics in ApplicationServices, HIToolbox in Carbon, CoreAudio
  * and Cocoa.
  */
+
+#if GlxUseAqua
+/* Override Mesa GL. Replace GLXLIB and everything constructed with it */
+AQUAGLXLIB = GL/glx/LibraryTargetName(glx) \
+             GL/aqua/LibraryTargetName(AquaGLcore)
+
+#if DoLoadableServer
+AQUALOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
+                   $(AQUAGLXLIB)
+#else
+AQUAEXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(AQUAGLXLIB) $(RENDERLIB) $(RANDRLIB)
+#endif
+
+#if !BuildXinerama
+#define AquaPostFbLibs NoMfbBarePostFbLibs $(AQUAEXTENSIONS)
+#else
+#define AquaPostFbLibs $(AQUAEXTENSIONS) NoMfbBarePostFbLibs $(AQUAEXTENSIONS)
+#endif
+QUARTZEXTLIBS = $(FB) AquaPostFbLibs
+QUARTZGLSYSLIBS = -framework OpenGL -framework AGL
+#else
+QUARTZEXTLIBS = $(DARWINEXTLIBS)
+#endif /* GlxUseAqua */
+
 QUARTZSYSLIBS = -framework ApplicationServices -framework Cocoa \
-                -framework CoreAudio -framework Carbon -ObjC
+                -framework CoreAudio -framework Carbon -ObjC \
+                $(QUARTZGLSYSLIBS)
 QUARTZOBJS = $(DARWINDDXDIR)/quartz/quartzStartup.o
 #if NothingOutsideProjectRoot
 XDARWINAPPDIR = $(BINDIR)/XDarwin.app/Contents/MacOS
@@ -1286,7 +1312,8 @@ XDARWINAPPDIR = /Applications/XDarwin.app/Contents/MacOS
  * Quartz X server (installed in its application bundle)
  */
 SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(QUARTZOBJS), \
-	$(DARWINLIBS) $(DARWINDDXDIR)/quartz/LibraryTargetName(XQuartz), \
+	$(DARWINLIBS) $(QUARTZEXTLIBS) \
+	$(DARWINDDXDIR)/quartz/LibraryTargetName(XQuartz), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
 
 install::

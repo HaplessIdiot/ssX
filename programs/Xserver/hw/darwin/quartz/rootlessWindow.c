@@ -27,12 +27,31 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.8 2002/07/15 19:58:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.9 2002/07/24 05:58:33 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
 
 #include "fb.h"
+
+
+/*
+ * RootlessFrameForWindow
+ *  Returns the rootless frame for the given window, or 
+ *  NULL if the the window is not inside a frame.
+ *  Unrealized windows never have a frame.
+ */
+RootlessFramePtr 
+RootlessFrameForWindow(WindowPtr pWin)
+{
+    WindowPtr top = TopLevelParent(pWin);
+    RootlessWindowRec *winRec;
+
+    if (!top) return NULL;
+    winRec = WINREC(top);
+    if (!winRec) return NULL;
+    return &winRec->frame;
+}
 
 
 // RootlessCreateWindow
