@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.2 2001/09/27 08:34:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,7 +39,7 @@ Bool S3Trio64DACProbe(ScrnInfoPtr pScrn)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
 
-	if (pS3->Chipset != PCI_CHIP_TRIO)
+	if (!S3_TRIO_SERIES())
 		return FALSE;
 
 	RamDacInit(pScrn, pS3->RamDacRec);

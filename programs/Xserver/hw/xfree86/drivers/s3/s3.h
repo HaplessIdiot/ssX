@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.12 2001/08/15 11:54:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.13 2001/09/27 08:34:28 alanh Exp $ */
 
 
 #ifndef _S3_H
@@ -232,5 +232,14 @@ Bool S3_CursorInit(ScreenPtr pScreen);
 
 #define BIOS_BSIZE	1024
 #define	BIOS_BASE	0xc0000
+
+/*
+ * Chip...Sets...
+ */
+
+#define S3_964_SERIES()		((pS3->Chipset == PCI_CHIP_964_0) ||	\
+			 	 (pS3->Chipset == PCI_CHIP_964_1))
+#define	S3_TRIO_SERIES()	((pS3->Chipset == PCI_CHIP_TRIO) ||	\
+			 	 (pS3->Chipset == PCI_CHIP_AURORA64VP))
 
 #endif /* _S3_H */
