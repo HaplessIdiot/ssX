@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.109 2001/10/06 01:20:46 torrey Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.110 2001/10/10 19:06:35 herrb Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -769,6 +769,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef DriverManDir
 #define DriverManDir $(MANSOURCEPATH)$(DRIVERMANSUFFIX)
+#endif
+#ifndef AppLoadDefs
+#define AppLoadDefs -D__apploaddir__=$(XAPPLOADDIR)
 #endif
 #ifndef FileManDefs
 #define FileManDefs -D__filemansuffix__=$(FILEMANSUFFIX)
@@ -1556,7 +1559,7 @@ INSTALLED_INCLUDES = -I$(INCROOT)
   DRIVERMANSUFFIX = DriverManSuffix	/* suffix for driver man pages */
      MANSRCSUFFIX = ManSrcSuffix	/* suffix for man page source */
      MANNEWSUFFIX = ManNewSuffix	/* suffix for preprocessed man source */
-          MANDEFS = FileManDefs MiscManDefs DriverManDefs ProjectManDefs $(XORGMANDEFS) $(VENDORMANDEFS)
+          MANDEFS = AppLoadDefs FileManDefs MiscManDefs DriverManDefs ProjectManDefs $(XORGMANDEFS) $(VENDORMANDEFS)
 
    COMPRESSMANCMD = CompressManCmd
 
