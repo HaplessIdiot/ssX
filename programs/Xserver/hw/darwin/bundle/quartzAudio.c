@@ -10,7 +10,7 @@
 // Smoothing transitions between sounds
 //  http://www.wam.umd.edu/~mphoenix/dss/dss.html
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzAudio.c,v 1.1 2001/04/01 07:12:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzAudio.c,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
 
 #include <CoreAudio/AudioHardware.h>
 #include <pthread.h>
@@ -238,10 +238,9 @@ void QuartzBell(
         return;
     }
 
-    // FIXME: how is NSBeep volume set?
     if (quartzUseSysBeep) {
-        NSBeep();
-        return;
+        if (volume)
+            NSBeep();
     } else {
         QuartzCoreAudioBell(volume, pitch, duration);
     }
