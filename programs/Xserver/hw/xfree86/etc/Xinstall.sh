@@ -1,13 +1,13 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.11 2000/06/13 02:28:35 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.12 2000/06/17 17:44:25 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
 #
-# This script should be used to install XFree86 4.0.
+# This script should be used to install XFree86 4.0.1.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -17,7 +17,7 @@
 # Authors:	David Dawes <dawes@xfree86.org>
 #
 
-VERSION=4.0
+VERSION=4.0.1
 
 RUNDIR=/usr/X11R6
 ETCDIR=/etc/X11
@@ -1015,6 +1015,67 @@ if [ -d $TINFODIR ]; then
 		echo "They can be installed later by running:"
 		echo ""
 		echo "  tic $RUNDIR/lib/X11/etc/xterm.terminfo"
+		;;
+	esac
+fi
+
+if [ -f $RUNDIR/lib/libGL.so ]; then
+	existing=""
+	if [ -f /usr/lib/libGL.so ]; then
+		existing="$existing /usr/lib/libGL.so"
+	fi
+	if [ -f /usr/lib/libGL.so.1 ]; then
+		existing="$existing /usr/lib/libGL.so.1"
+	fi
+	if [ -d /usr/include/GL ]; then
+		existing="$existing /usr/include/GL"
+	fi
+	echo ""
+	echo "On some platforms (e.g., Linux), the OpenGL standard requires"
+	echo "that the GL shared library and header files be visible from the"
+	echo "standard system lib and include directories (/usr/lib and"
+	echo "/usr/include).  This can be done by installing links in those"
+	echo "directories to the files that have been installed under $RUNDIR."
+	echo ""
+	echo "NOTE: installing these links will overwrite existing files or"
+	echo "links."
+	if [ X"$existing" != X ]; then
+		echo ""
+		echo "The follwing links/files/directories already exist:"
+		echo ""
+		ls -ld $existing
+	fi
+	echo ""
+	Echo "Do you wish to have the (new) links installed (y/n)? [n] "
+	read response
+	case "$response" in
+	[yY]*)
+		rm -f /usr/lib/libGL.so
+		if [ ! -f /usr/lib/libGL.so ]; then
+			echo "Creating link from $RUNDIR/lib/libGL.so to /usr/lib/libGL.so"
+			ln -s $RUNDIR/lib/libGL.so /usr/lib/libGL.so
+		else
+			echo "Could not remove existing /usr/lib/libGL.so, so the new"
+			echo "link has not been created."
+		fi
+		rm -f /usr/lib/libGL.so.1
+		if [ ! -f /usr/lib/libGL.so.1 ]; then
+			echo "Creating link from $RUNDIR/lib/libGL.so.1 to /usr/lib/libGL.so.1"
+			ln -s $RUNDIR/lib/libGL.so.1 /usr/lib/libGL.so.1
+		else
+			echo "Could not remove existing /usr/lib/libGL.so.1, so the new"
+			echo "link has not been created."
+		fi
+		if [ -d $RUNDIR/include/GL ]; then
+			rm -f /usr/include/GL
+			if [ ! -d /usr/include/GL ]; then
+				echo "Creating link from $RUNDIR/include/GL to /usr/include/GL"
+				ln -s $RUNDIR/include/GL /usr/include/GL
+			else
+				echo "Could not remove existing /usr/include/GL, so the new"
+				echo "link has not been created."
+			fi
+		fi
 		;;
 	esac
 fi
