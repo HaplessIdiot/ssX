@@ -1047,7 +1047,45 @@ xedit.c:
    the later release was not completely correct.
 
 
+#2834 29 May 1999
+-- Xaw --
+ + Added a ChangeSensitive function to Command.c, to avoid it creating an
+   incorrect insensitive border if the button is set. This is a side effect of
+   the function XawCommandToggle I added some time ago. The solution for the
+   problem is not very elegant, since it copies almost verbatim the code from
+   Simple.c, but it works as expected.
+ + Moved some calls to _XawTextSetLineAndColumnNumber in Text.c to other places,
+   to make sure it is safe to change the text when the positionCallback is
+   called (like what is done by the new xedit file hook.c).
+ + Another optimization was added to the undo/redo code. Now it also merge
+   erases, needing yet less memory for undo, and this way, generating less
+   undo/redo steps.
+ + Removed the default translation to call the toggle-overwrite action from
+   TextTr.c. Only the xedit edit windows calls this translation now, instead of
+   every text widget.
+
+-- xedit --
+ + Changed the auto replace feature to be a bit more easier to use. The new
+   behaviour is almost identical, but if the user types some text, and it is
+   auto replaced, only one undo step is enough to correct it. Example:
+   1) user types 'nto.'
+   2) text is auto replaced by 'not.'
+   3) user call undo action
+   4) text is converted to 'nto.'
+   It should be a very infrequent problem, but makes the xedit behaviour
+   identical to a "well known text editor", from where this feature was borrowed.
+ + Added a 'Check' button to the ispell interface. This button allows
+   checking the word in the text field. This feature was borrowed from the spell
+   checking interface of the Netscape html editor.
+ + The ispell checking interface now also asks for user interaction if there are
+   two identical words togheter.
+ + Added a status bar to the ispell interface, to give feedback to the user
+   about what is happening.
+ + Added some new resources, to let easier customization of the ispell status
+   bar strings. The new resources are documented in xedit.man.
 
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.21 1999/05/16 10:12:47 dawes Exp $
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.22 1999/05/23 06:33:26 dawes Exp $

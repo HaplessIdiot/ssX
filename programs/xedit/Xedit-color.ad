@@ -1,4 +1,4 @@
-! $XFree86$
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.1 1999/05/16 10:13:07 dawes Exp $
 
 #include "Xedit"
 
@@ -104,3 +104,5 @@ foreground	gray30;\
 lines		-1,+0,+0,+0,+0,-1;\
 foreground	gray60;\
 lines		+2,-2,-2,-2,-2,+2
+*ispell*status.backgroundPixmap:	XtUnspecifiedPixmap
+*ispell*status.background:	gray96

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/hook.c,v 1.1 1999/05/23 06:33:52 dawes Exp $ */
 
 /*
  * This file is intended to be used to add all the necessary hooks to xedit
@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #endif
 #include <string.h>
+#include <ctype.h>
 
 /*
  * Types
@@ -59,12 +60,12 @@ static void ActionHook(Widget, XtPointer, String, XEvent*, String*, Cardinal*);
 static void AutoReplaceHook(Widget, String, XEvent*);
 static Bool StartAutoReplace(void);
 static char *ReplacedWord(char*, char*);
-static Bool AutoReplace(Widget, XEvent*, Bool);
+static void AutoReplace(Widget, XEvent*);
+static void AutoReplaceCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Initialization
  */
-extern Widget textwindow;
 #define STRTBLSZ	11
 static ReplaceList *replace_list[STRTBLSZ];
 
@@ -95,25 +96,31 @@ ActionHook(Widget w, XtPointer client_data, String action, XEvent *event,
 }
 
 /*** auto replace ***/
+struct {
+    Widget widget;
+    String text;
+    Cardinal length;
+    XawTextPosition left, right;
+    Bool replace;
+} auto_replace;
+
 static void
 AutoReplaceHook(Widget w, String action, XEvent *event)
 {
-    static Widget widget;
-    static Bool state, multiply;
+    static Bool multiply;
 
-    if (w != textwindow) {
-	state = False;
-	widget = w;
+    if (w != textwindow)
 	return;
-    }
 
-    if (widget != textwindow) {
-	widget = textwindow;
-	state = False;
+    if (auto_replace.widget != textwindow) {
+	if (auto_replace.replace) {
+	    auto_replace.replace = False;
+	    XtRemoveCallback(auto_replace.widget, XtNpositionCallback,
+			     AutoReplaceCallback, NULL);
+	}
     }
     else if (strcmp(action, "multiply") == 0) {
 	multiply = True;
-	state = False;
 	return;
     }
     else if (strcmp(action, "numeric") == 0) {
@@ -122,12 +129,11 @@ AutoReplaceHook(Widget w, String action, XEvent *event)
     }
     else if (strcmp(action, "insert-char") && strcmp(action, "newline") &&
 	strcmp(action, "newline-and-indent")) {
-	state = False;
 	return;
     }
     multiply = False;
 
-    state = AutoReplace(w, event, state);
+    AutoReplace(w, event);
 }
 
 static Bool
@@ -226,12 +232,12 @@ ReplacedWord(char *word, char *replace)
     return (list->replace);
 }
 
-static Bool
-AutoReplace(Widget w, XEvent *event, Bool state)
+static void
+AutoReplace(Widget w, XEvent *event)
 {
     static XComposeStatus compose = {NULL, 0};
     KeySym keysym;
-    XawTextBlock block, tmp;
+    XawTextBlock block;
     XawTextPosition left, right, pos;
     Widget source;
     int i, len, size;
@@ -240,7 +246,7 @@ AutoReplace(Widget w, XEvent *event, Bool state)
     size = XLookupString((XKeyEvent*)event, mb, sizeof(mb), &keysym, &compose);
 
     if (size != 1 || isalnum(*mb))
-	return (True);
+	return;
 
     source = XawTextGetSource(w);
     right = XawTextGetInsertionPoint(w);
@@ -248,21 +254,19 @@ AutoReplace(Widget w, XEvent *event, Bool state)
 			     XawsdLeft, 1, False);
 
     if (left < 0 || left == right)
-	return (!isspace(*mb));
-    else if (!state)
-	return (True);
+	return;
 
     len = 0;
     str = buf;
     size = sizeof(buf);
     pos = left;
     while (pos < right) {
-	pos = XawTextSourceRead(source, pos, &tmp, right - pos);
-	for (i = 0; i < tmp.length; i++) {
-	    if (tmp.format == FMT8BIT)
-		*mb = tmp.ptr[i];
+	pos = XawTextSourceRead(source, pos, &block, right - pos);
+	for (i = 0; i < block.length; i++) {
+	    if (block.format == FMT8BIT)
+		*mb = block.ptr[i];
 	    else
-		wctomb(mb, ((wchar_t*)tmp.ptr)[i]);
+		wctomb(mb, ((wchar_t*)block.ptr)[i]);
 	    str[len++] = *mb;
 	    if (len + 2 >= size) {
 		if (str == buf)
@@ -273,16 +277,62 @@ AutoReplace(Widget w, XEvent *event, Bool state)
 	}
     }
     str[len] = '\0';
-    if ((block.ptr = ReplacedWord(str, NULL)) != NULL) {
-	block.firstPos = 0;
-	block.format = FMT8BIT;
-	block.length = strlen(block.ptr);
-	(void)XawTextReplace(w, left, right, &block);
-	XawTextSetInsertionPoint(w, left + block.length);
-	state = False;
+    if ((auto_replace.text = ReplacedWord(str, NULL)) != NULL) {
+	auto_replace.length = strlen(auto_replace.text);
+	auto_replace.left = left;
+	auto_replace.right = right;
+	auto_replace.replace = True;
+	XtAddCallback(auto_replace.widget = w, XtNpositionCallback,
+		      AutoReplaceCallback, NULL);
     }
     if (str != buf)
 	XtFree(str);
+}
 
-    return (state);
+/*ARGSUSED*/
+static void
+AutoReplaceCallback(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    int i, inc;
+    XawTextBlock block, text;
+    char buffer[1024], mb[sizeof(wchar_t)];
+    XawTextPosition left, right, pos;
+
+    if (!auto_replace.replace || w != auto_replace.widget)
+	return;
+
+    XtRemoveCallback(auto_replace.widget, XtNpositionCallback,
+		     AutoReplaceCallback, NULL);
+    auto_replace.replace = False;
+
+    inc = XawTextGetInsertionPoint(w) - auto_replace.right;
+    if (auto_replace.length + inc > sizeof(buffer))
+	block.ptr = XtMalloc(auto_replace.length + inc);
+    else
+	block.ptr = buffer;
+    memcpy(block.ptr, auto_replace.text, auto_replace.length);
+
+    block.length = auto_replace.length;
+    pos = left = auto_replace.right;
+    right = left + inc;
+    while (pos < right) {
+	pos = XawTextSourceRead(XawTextGetSource(w), pos, &text, inc);
+	for (i = 0; i < text.length; i++) {
+	    if (text.format == FMT8BIT)
+		*mb = text.ptr[i];
+	    else
+		wctomb(mb, ((wchar_t*)text.ptr)[i]);
+	    block.ptr[block.length++] = *mb;
+	}
+    }
+
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+
+    if (XawTextReplace(w, auto_replace.left, auto_replace.right + inc,
+		       &block) == XawEditDone)
+	XawTextSetInsertionPoint(w, auto_replace.left + block.length);
+
+    if (block.ptr != buffer)
+	XtFree(block.ptr);
 }

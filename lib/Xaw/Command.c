@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Command.c,v 1.7 1998/08/20 13:58:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Command.c,v 1.8 1998/10/03 08:42:02 dawes Exp $ */
 
 /*
  * Command.c - Command button widget
@@ -71,6 +71,7 @@ static void XawCommandRealize(Widget, Mask*, XSetWindowAttributes*);
 static void XawCommandResize(Widget);
 static void XawCommandRedisplay(Widget, XEvent*, Region);
 static Boolean XawCommandSetValues(Widget, Widget, Widget, ArgList, Cardinal*);
+static Bool ChangeSensitive(Widget);
 
 /*
  * Prototypes
@@ -191,7 +192,7 @@ CommandClassRec commandClassRec = {
   },
   /* simple */
   {
-    XtInheritChangeSensitive,		/* change_sensitive */
+    ChangeSensitive,			/* change_sensitive */
   },
   /* label */
   {
@@ -604,4 +605,35 @@ XawCommandResize(Widget w)
     ShapeButton((CommandWidget) w, False);
 
     (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
+}
+
+static Bool
+ChangeSensitive(Widget w)
+{
+    CommandWidget cbw = (CommandWidget)w;
+
+    if (XtIsRealized(w)) {
+	if (XtIsSensitive(w)) {
+	    if (w->core.border_pixmap != XtUnspecifiedPixmap)
+		XSetWindowBorderPixmap(XtDisplay(w), XtWindow(w),
+				       w->core.border_pixmap);
+	    else
+		XSetWindowBorder(XtDisplay(w), XtWindow(w),
+				 w->core.border_pixel);
+	}
+	else {
+	    if (cbw->simple.insensitive_border == None)
+		cbw->simple.insensitive_border =
+		    XmuCreateStippledPixmap(XtScreen(w),
+					    w->core.border_pixel,
+					    cbw->command.set ?
+						cbw->label.foreground :
+						w->core.background_pixel,
+					    w->core.depth);
+	    XSetWindowBorderPixmap(XtDisplay(w), XtWindow(w),
+				   cbw->simple.insensitive_border);
+	}
+    }
+
+    return (False);
 }

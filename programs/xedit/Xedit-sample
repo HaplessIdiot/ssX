@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-sample,v 1.4 1999/04/11 13:11:22 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-sample,v 1.5 1999/04/25 10:02:47 dawes Exp $
 
 Xedit*insertFile*text.width:		150
 Xedit*search*searchText.width:		192
@@ -163,14 +163,18 @@ Xedit*dirwindow*foreground:		rgb:9/0/2
 Xedit*dirwindow.backgroundPixmap:	gradient:vertical?dimension=3&start=rgb:e/d/d&end=rgb:f/e/e
 Xedit*viewport*Scrollbar.thumb:		hlines2
 Xedit*ispell*text.width:		192
-Xedit*ispell*commands.vertDistance:	8
+Xedit*ispell*commands.vertDistance:	6
+Xedit*ispell.form.defaultDistance:	4
 Xedit*ispell*Command.vertDistance:	0
-Xedit*ispell*undo.vertDistance:		4
+Xedit*ispell*check.vertDistance:	3
+Xedit*ispell*undo.vertDistance:		2
 Xedit*ispell*Command.height:		22
 Xedit*ispell*replaceAll.width:		37
 Xedit*ispell*ignoreAll.width:		37
+Xedit*ispell*check.width:		100
 Xedit*ispell*undo.width:		100
 Xedit*ispell*add.width:			100
+Xedit*ispell*suspend.vertDistance:	2
 Xedit*ispell*suspend.width:		100
 Xedit*ispell*cancel.width:		100
 Xedit*ispell*replace.internalWidth:	0

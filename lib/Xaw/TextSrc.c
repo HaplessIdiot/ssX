@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.13 1999/05/09 10:51:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.14 1999/05/23 06:33:29 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -763,44 +763,68 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
     }
     else if (enable_undo) {
 	XawTextUndoList *list = src->textSrc.undo->list;
+	XawTextUndoBuffer *unl, *lnl;
+	Bool erase = undo->right->length == 0 && undo->left->length == 1 &&
+		     list && list->right->length == 0 && list->left->position - 1
+		     == undo->left->position;
+
+	if (erase) {
+	    unl = l_state;
+	    lnl = list->left;
+	}
+	else {
+	    unl = r_state;
+	    lnl = list ? list->right : NULL;
+	}
 
 	/* Try to merge the undo buffers */
-	if (list
-	    && ((list->left->length == 0 && undo->left->length == 0) ||
-		(list->left->length == list->right->length &&
-		 undo->left->length == 1))
-	    && undo->right->length == 1
+	if ((erase ||
+	     (list && ((list->left->length == 0 && undo->left->length == 0) ||
+		       (list->left->length == list->right->length &&
+			undo->left->length == 1)) &&
+	      undo->right->length == 1 &&
+	      list->right->position + list->right->length
+	      == undo->right->position))
 	    && src->textSrc.undo->pointer == list
-	    && list->right->position + list->right->length
-	    == undo->right->position
-	    && undo->right->format == list->right->format
-	    && ((undo->right->format == XawFmt8Bit
-		 && undo->right->buffer[0] != XawLF)
-		|| (undo->right->format == XawFmtWide
-		    && *(wchar_t*)(undo->right->buffer) != _Xaw_atowc(XawLF)))
-	    && ((list->right->format == XawFmt8Bit
-		 && list->right->buffer[0] != XawLF)
-		|| (list->right->format == XawFmtWide
-		    && *(wchar_t*)(list->right->buffer) != _Xaw_atowc(XawLF)))) {
-	    unsigned size = list->right->format == XawFmtWide ?
+	    && unl->format == list->right->format
+	    && ((unl->format == XawFmt8Bit && unl->buffer[0] != XawLF) ||
+		(unl->format == XawFmtWide &&
+		 *(wchar_t*)(unl->buffer) != _Xaw_atowc(XawLF)))
+	    && ((lnl->format == XawFmt8Bit && lnl->buffer[0] != XawLF) ||
+		(lnl->format == XawFmtWide &&
+		 *(wchar_t*)(lnl->buffer) != _Xaw_atowc(XawLF)))) {
+	    unsigned size = lnl->format == XawFmtWide ?
 		sizeof(wchar_t) : sizeof(char);
 
-	    list->right->buffer = XtRealloc(list->right->buffer,
-					    (list->right->length + 1) * size);
-	    memcpy(list->right->buffer + list->right->length * size,
-		   undo->right->buffer, size);
-	    ++list->right->length;
+	    if (!erase) {
+		list->right->buffer = XtRealloc(list->right->buffer,
+						(list->right->length + 1) * size);
+		memcpy(list->right->buffer + list->right->length * size,
+		       undo->right->buffer, size);
+		++list->right->length;
+		XtFree(r_state->buffer);
+	    }
+	    else {
+		--list->left->position;
+		--list->right->position;
+	    }
 
 	    src->textSrc.undo->l_save = l_state;
-	    XtFree(r_state->buffer);
 	    src->textSrc.undo->r_save = r_state;
 	    src->textSrc.undo->u_save = undo;
 
 	    if (list->left->length) {
 		list->left->buffer = XtRealloc(list->left->buffer,
 					       (list->left->length + 1) * size);
-		memcpy(list->left->buffer + list->left->length * size,
-		       undo->left->buffer, size);
+		if (!erase)
+		    memcpy(list->left->buffer + list->left->length * size,
+			   undo->left->buffer, size);
+		else {
+		    /* use memmove, since strings overlap */
+		    memmove(list->left->buffer + size, list->left->buffer,
+			    list->left->length * size);
+		    memcpy(list->left->buffer, undo->left->buffer, size);
+		}
 		++list->left->length;
 		XtFree(l_state->buffer);
 	    }

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.10 1999/05/09 10:51:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.11 1999/05/23 06:33:29 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -123,7 +123,6 @@ char _XawDefaultTextTranslations[] =
 ":<Key>9:"		"numeric(9)\n"
 ":<Key>-:"		"numeric(-)\n"
 ":c<Key>_:"		"undo()\n"
-"~s <Key>Insert:"	"toggle-overwrite()\n"
 "s <Key>Insert:"	"insert-selection(PRIMARY, CUT_BUFFER0)\n"
 "<Ctrl>Q,<Key>:"	"insert-char()\n"
 "<Key>:"		"insert-char()\n"
