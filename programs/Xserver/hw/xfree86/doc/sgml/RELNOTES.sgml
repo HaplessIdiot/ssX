@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>14 January 2005
+<date>26 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.119 2004/06/09 18:24:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.120 2005/01/15 04:36:18 dawes Exp $
 </ident>
 
 <abstract>
@@ -157,7 +157,204 @@ The following security issues have been fixed in this release:
 <p>
 <sect2>Xterm
 <p>
-Add details here...
+The changes to xterm since XFree86 4.4 are:
+
+Improved behavior
+<itemize>
+<item>Change resource settings for color4 and color12, add some discussion
+	in XTerm-col.ad.
+
+<item>Modify the criteria for disowning primary selection.  Previously,
+	this happened anytime the cursor was moved before the end of the
+	selection.  That would ensure that any insert/delete of char or
+	line, as well as scrolling, would disown the selection.  The new
+	criteria change this to checking if the operations would modify
+	the data which is highlighted.
+
+<item>Change default translations so a BtnDown which is not recognized
+	is simply ignored rather than emitting a bell.  That makes it
+	less obtrusive when the user tries to use a mouse which provides
+	more capabilities than the X mouse driver supports, e.g., one
+	with a horizontal scroll wheel.
+
+<item>Modify to allow turning UTF-8 mode via escape sequence even if
+	-wc option was not given at startup.
+
+<item>Add menu items and corresponding actions for switching on/off the
+	UTF-8 mode and Xft (TrueType) support.
+
+<item>Modify FreeType support to allow resizing the font, in the same
+	ways the window can be resized if fixed fonts are used.  The
+	relative font sizes are derived from the fixed font sizes.
+
+<item>Implement blinking text, using the timer for blinking cursor.
+
+<item>Add translation to ASCII of commonly-used characters that groff
+	translates to Unicode, when the font in use does not provide the
+	corresponding glyphs.
+
+<item>Modify constraints in form used to layout toolbar, to work with
+	newer Xaw in XFree86 4.x.
+
+<item>Make active-icon work properly when TrueType fonts are used, as
+	well as when UTF-8 mode is used.
+
+<item>Improve rendering for Xft, allow it to draw non-linedrawing
+	characters such as "pi", which were drawn from internal tables
+	with patch #180.
+
+<item>Modify initialization of 256- and 88-colors so that colors beyond
+	16 are normally not X resources.  This works around a hard-coded
+	limit in Xt which breaks xterm when 256-colors and luit are both
+	configured (report by Noah Friedman).
+
+<item>Fix problem responding to session management events, e.g., which
+	would make logging out very slow.
+
+</itemize>
+
+Modified behavior
+
+<itemize>
+
+<item>Enable utmpx support for NetBSD 1.6C and newer.
+
+<item>Modify Help() to make "xterm -h" write to standard output rather
+	than standard error.
+
+<item>Improve error-reporting for root user by checking if $DISPLAY is
+	set rather than using the useless message from X11 library.
+
+<item>Improve $WINDOWID for configuration with toolbar by making it
+	refer to the top-level shell rather than the parent of the
+	current window.  For that case, the parent is a form widget,
+	which does not have a name, which made the $WINDOWID not very
+	useful as a parameter for xwininfo.
+
+<item>Improve pattern used in uxterm to check for UTF-8 locale, e.g.,
+	for HPUX.
+
+<item>Modify uxterm script to use locale program to verify if the
+	derived locale is installed.
+
+<item>Add case to uxterm to accommodate locales ending with "@euro",
+	e.g., fr_FR.UTF-8@euro.
+
+<item>For Linux, if IUTF8 is defined, e.g., on recent 2.6.x kernels,
+	set the corresponding flag for the slave pty, to enable UTF-8
+	interpretation of backspace in cooked mode.
+
+<item>Modify faceSize resource to use a floating-point internal value.
+
+<item>Modify XTerm.ad to set saveLines default to 1024.
+
+<item>Change xterm version string to use __vendorversion__ where that
+	is available, and "XTerm" otherwise.  Rather than reporting the
+	version of X that was current when xterm was modified, it reports
+	the version against which it was built.
+
+</itemize>
+
+New resource settings
+
+<itemize>
+
+<item>Add scoFunctionKeys resource, to match manpage.
+
+<item>Add -fd option and resource faceNameDoublesize to specify
+	double-wide fonts with Xft.
+
+<item>Add resource showMissingGlyphs to outline places on the screen
+	where a font lacks the corresponding glyph.
+
+<item>Add resource showBlinkAsBold to control whether blinking text
+	should be shown as bold or actual blinking text.
+
+<item>Add utmpDisplayId resource to allow users to control whether the
+	display identifier (display number and screen number) are
+	retained in the connection information recorded in utmp.
+
+<item>Add bellOnReset resource to allow users to disable bell which
+	sounds on hard reset since patch #183 changes to DECSCL.
+
+</itemize>
+
+New configure script options
+
+<itemize>
+
+<item>Add --disable-setuid option to configure script.
+
+<item>Add --disable-full-tgetent option to configure script, allowing
+	one to ignore a termcap library in favor of ncurses/curses.
+
+</itemize>
+
+Other new features
+
+<itemize>
+
+<item>Add mini-luit feature, which supports Latin9 directly rather than
+	via luit, provided that Unicode fonts are used.
+
+<item>Add dynamic abbreviation support like Emacs.
+
+<item>Add "erase2" and "eol2" keywords to ttyModes resource, for
+	recent/current FreeBSD.
+
+</itemize>
+
+Bug-fixes (see http://invisible-island.net/xterm/xterm.log.html for a
+more complete list):
+
+<itemize>
+
+<item>Modify initialization and cleanup of utmp data to also compare
+	the ut_line member.
+
+<item>Correct table entry for DEL in the ground state, which marked it
+	as a printable character from patch #171.
+
+<item>Correct change from patch #157 which uses getlogin() to check for
+	an alias; the storage used for the related getpwuid() call was
+	overwritten by the data used for comparison.
+
+<item>Correct case of SCS for character set 0 (line-drawing) to allow
+	it to be selected into GR.
+
+<item>Modify creat_as() to only fork if xterm is actually running as
+	setuid and/or setgid.  This works around a Cygwin bug which hangs
+	when logging is enabled and makes xterm a little faster for
+	systems using interfaces such as utempter.
+
+<item>Modify Cleanup() to avoid operations such as X calls that might
+	use unsafe functions when it is called by a signal handler.
+
+<item>Check for type of failure in xim_real_init() to avoid looping
+	when the problem is an unsupported input method rather than a
+	failure to connect to the XIM server.  Problem was introduced in
+	patch #175.
+
+<item>Add missing #undef OPT_SESSION_MGT to xtermcfg.hin to make the
+	configure script's --disable-session-mgt option work.
+
+<item>Correct options parsing for -into option so it can be combined
+	with -e.
+
+<item>Make escape sequence reporting dynamic colors consistent with the
+	logic that sets it; choosing the opposite color when reverse
+	video is set.
+
+<item>Fix a repainting bug introduced in patch #180:  when using a font
+	lacking line-drawing characters, a repaint of the screen could
+	skip horizontally an extra amount after filling in the missing
+	character.
+
+<item>Modify terminfo to accommodate luit, which relies on G1 being
+	used via an ISO-2022 escape sequence.  Note that this relies in
+	turn on bug fixes in ncurses after the 5.4 release.
+
+</itemize>
 
 <sect1>I18N and Font Updates
 
