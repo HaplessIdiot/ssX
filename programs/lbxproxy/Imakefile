@@ -4,7 +4,7 @@ XCOMM $TOG: Imakefile /main/16 1997/05/25 15:12:17 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.7 1997/02/12 08:56:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.8 1997/07/05 15:16:48 dawes Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -13,15 +13,15 @@ LBXPROXYCONFIGDIR = LbxproxyConfigSubdir
 
    ZLIB = GzipLibrary
 SUBDIRS = di os $(LBXPROXYCONFIGDIR)
-LBXLIBS = di/LibraryTargetName(dilbx) os/LibraryTargetName(os) $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil) $(ZLIB)
+LBXLIBS = di/LibraryTargetName(dilbx) os/LibraryTargetName(os) $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil)
   
 #ifdef i386IscArchitecture
-OTHERLIBS = $(ICELIB) $(XLIB) -linet
+OTHERLIBS = $(ICELIB) $(XLIB) -linet $(ZLIB)
 #else
 #ifdef LynxOSArchitecture
-OTHERLIBS = $(ICELIB) $(XLIB) -lbsd
+OTHERLIBS = $(ICELIB) $(XLIB) -lbsd $(ZLIB)
 #else
-OTHERLIBS = $(ICELIB) $(XLIB)
+OTHERLIBS = $(ICELIB) $(XLIB) $(ZLIB)
 #endif
 #endif
 
