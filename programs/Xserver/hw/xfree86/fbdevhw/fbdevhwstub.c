@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.3 1999/04/11 13:11:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.4 1999/04/11 14:54:04 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86cmap.h"
@@ -40,6 +40,12 @@ fbdevHWGetName(ScrnInfoPtr pScrn)
 
 int
 fbdevHWGetDepth(ScrnInfoPtr pScrn)
+{
+	return -1;
+}
+
+int
+fbdevHWGetType(ScrnInfoPtr pScrn)
 {
 	return -1;
 }
