@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.2 2000/11/29 17:40:37 dawes Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -69,7 +69,7 @@ XftRenderString16 (Display *dpy, Picture src,
 	XftGlyphLoad (dpy, font, missing, nmissing);
     XRenderCompositeString16 (dpy, PictOpOver, src, dst,
 			      font->format, font->glyphset,
-			      srcx, srcy, x, y, (unsigned short *) string, len);
+			      srcx, srcy, x, y, string, len);
 }
 
 void
@@ -77,11 +77,11 @@ XftRenderString32 (Display *dpy, Picture src,
 		   XftFontStruct *font, Picture dst,
 		   int srcx, int srcy,
 		   int x, int y,
-		   unsigned long *string, int len)
+		   unsigned int *string, int len)
 {
     unsigned long   missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned long   *s;
+    unsigned int    *s;
     int		    l;
 
     s = string;
@@ -93,7 +93,7 @@ XftRenderString32 (Display *dpy, Picture src,
 	XftGlyphLoad (dpy, font, missing, nmissing);
     XRenderCompositeString32 (dpy, PictOpOver, src, dst,
 			      font->format, font->glyphset,
-			      srcx, srcy, x, y, (unsigned long *) string, len);
+			      srcx, srcy, x, y, string, len);
 }
 
 void
@@ -209,13 +209,13 @@ XftRenderExtents16 (Display	    *dpy,
 void
 XftRenderExtents32 (Display	    *dpy,
 		    XftFontStruct   *font,
-		    unsigned long   *string, 
+		    unsigned int    *string, 
 		    int		    len,
 		    XGlyphInfo	    *extents)
 {
     unsigned long   missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned long   *s;
+    unsigned int    *s;
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;

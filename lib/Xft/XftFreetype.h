@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.2 2000/11/30 06:59:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -85,7 +85,7 @@ XftRenderString32 (Display *dpy, Picture src,
 		   XftFontStruct *font, Picture dst,
 		   int srcx, int srcy,
 		   int x, int y,
-		   unsigned long *string, int len);
+		   unsigned int *string, int len);
 
 void
 XftRenderExtents8 (Display	    *dpy,
@@ -104,7 +104,7 @@ XftRenderExtents16 (Display	    *dpy,
 void
 XftRenderExtents32 (Display	    *dpy,
 		    XftFontStruct   *font,
-		    unsigned long   *string, 
+		    unsigned int    *string, 
 		    int		    len,
 		    XGlyphInfo	    *extents);
 

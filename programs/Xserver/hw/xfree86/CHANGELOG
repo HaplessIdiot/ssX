@@ -1,4 +1,8 @@
 XFree86 4.0.1h (1 December 2000)
+1057. Fix Xrender library to handle strings > 254 chars long.
+      Change Xrender and Xft interfaces to use 'unsigned int'
+      instead of 'unsigned long' for 32-bit glyph values.
+      (Keith Packard)
 1056. Fix neomagic driver mangled acceleration test (#4309, 4310,
       Chip Salzenberg).
 1055. Add a rudimentary driver for the SGI Indy's newport cards (only
@@ -11773,4 +11777,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1430 2000/12/01 17:43:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1431 2000/12/01 19:47:40 dawes Exp $

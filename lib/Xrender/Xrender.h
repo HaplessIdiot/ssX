@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.3 2000/11/20 07:13:11 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.4 2000/11/29 08:25:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -232,7 +232,7 @@ XRenderCompositeString32 (Display	    *dpy,
 			  int		    ySrc,
 			  int		    xDst,
 			  int		    yDst,
-			  unsigned long	    *string,
+			  unsigned int	    *string,
 			  int		    nchar);
 
 void

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrender/Picture.c,v 1.3 2000/11/20 07:13:11 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -25,7 +25,7 @@
 
 #include "Xrenderint.h"
 
-void
+static void
 _XRenderProcessPictureAttributes (Display		    *dpy,
 				  xRenderChangePictureReq   *req,
 				  unsigned long		    valuemask,
@@ -84,7 +84,7 @@ XRenderCreatePicture (Display			*dpy,
     GetReq(RenderCreatePicture, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderCreatePicture;
-    req->pid = pid = _XAllocID(dpy);
+    req->pid = pid = XAllocID(dpy);
     req->drawable = drawable;
     req->format = format->id;
     if ((req->mask = valuemask))

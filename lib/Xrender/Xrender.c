@@ -28,7 +28,7 @@
 XExtensionInfo XRenderExtensionInfo;
 char XRenderExtensionName[] = RENDER_NAME;
 
-static int XRenderCloseDisplay();
+static int XRenderCloseDisplay(Display *dpy, XExtCodes *codes);
 
 static /* const */ XExtensionHooks render_extension_hooks = {
     NULL,				/* create_gc */
@@ -115,7 +115,7 @@ Status XRenderQueryVersion (Display *dpy,
     return 1;
 }
 
-XRenderPictFormat *
+static XRenderPictFormat *
 _XRenderFindFormat (XRenderInfo *xri, PictFormat format)
 {
     int	nf;
@@ -126,7 +126,7 @@ _XRenderFindFormat (XRenderInfo *xri, PictFormat format)
     return 0;
 }
 
-Visual *
+static Visual *
 _XRenderFindVisual (Display *dpy, VisualID vid)
 {
     XVisualInfo	temp, *vi;
