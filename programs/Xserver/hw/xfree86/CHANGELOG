@@ -1,4 +1,5 @@
 XFree86 3.9.16Za (xx December 1999)
+3411. Fix ct_driver for static server (#3521, Takaaki Nomura).
 3410. Fix the last Xaw user of XtOffset (#3520, Keith Packard).
 3409. FreeBSD-current compile fix (#3519, Eric Anholt).
 3408. Xterm patch #122. (#3517, Thomas Dickey).
@@ -9207,4 +9208,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.907 1999/12/30 02:09:27 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.908 1999/12/30 02:12:51 robin Exp $

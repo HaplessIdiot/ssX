@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.70 1999/12/03 19:17:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.71 1999/12/13 01:39:48 robin Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1014,10 +1014,12 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
     }
 #endif
+#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
+#endif
     
     /* Now that we've identified the chipset, setup the capabilities flags */
     switch (cPtr->Chipset) {
@@ -2014,10 +2016,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 
+#ifdef XFree86LOADER
 	if (cPtr->pVbe) {
 	    if (xf86PrintEDID(vbeDoEDID(cPtr->pVbe))) 
 		ddc_done = TRUE;
 	}
+#endif
 
 	if (!ddc_done)
 	    if (xf86LoadSubModule(pScrn, "i2c")) {
@@ -2468,12 +2472,13 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 		(float)(cPtr->MaxClock / 1000.));
     }
     
+#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
 	    xf86PrintEDID(vbeDoEDID(cPtr->pVbe));
     }
-    
+#endif    
     return TRUE;
 }
 
@@ -3209,12 +3214,13 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "Memory clock option not supported for this chipset\n");
     
+#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
 	    xf86PrintEDID(vbeDoEDID(cPtr->pVbe));
     }
-
+#endif
     return TRUE;
 }
     
