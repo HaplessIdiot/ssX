@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:45 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/xkb/Imakefile,v 3.19 2002/11/20 04:49:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/xkb/Imakefile,v 3.20 2002/11/29 16:30:00 alanh Exp $
 
 #define SGIHyperOpt
 #include <Server.tmpl>
@@ -80,8 +80,21 @@ LinkSourceFile(XKBMAlloc.c,$(XLIBSRC))
 LinkSourceFile(XKBAlloc.c,$(XLIBSRC))
 LinkSourceFile(XKBGAlloc.c,$(XLIBSRC))
 
-#if UseConfDirForXkb && BuildLibraries
+#if BuildLibraries
+#if UseConfDirForXkb
 LinkConfDirectory(xkb,.,xkb,.)
+ODIR = $(CONFDIR)
+#else
+ODIR = $(LIBDIR)
+#endif
+#ifdef VarDbDirectory
+NDIR = $(VARDBDIR)
+#else
+NDIR = $(CONFDIR)
+#endif
+#if !UseConfDirForXkb || defined(VarDbDirectory)
+LinkConfDirectoryLong(xkb,xkb,compiled,compiled,$(ODIR),$(NDIR))
+#endif
 #endif
 
 DependTarget()
