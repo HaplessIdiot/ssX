@@ -1,7 +1,7 @@
 
 // Common Latin alphabet layout
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/pc/latin,v 1.3 2002/12/20 20:18:34 paulo Exp $
 
 default partial
 xkb_symbols "basic" {
@@ -57,7 +57,7 @@ xkb_symbols "basic" {
     key <AB09>	{ [    period,    greater, periodcentered,   division ]	};
     key <AB10>	{ [     slash,   question, dead_belowdot, dead_abovedot ] };
 
- };
+};
 
 // Northern Europe ( Danish, Finnish, Norwegian, Swedish) common layout
 
@@ -138,3 +138,42 @@ xkb_symbols "type4" {
     key <AB09>	{ [  period,      colon, periodcentered,     division ]	};
     key <AB10>	{ [   minus, underscore, dead_belowdot, dead_abovedot ]	};
 };
+
+partial
+xkb_symbols "nodeadkeys" {
+
+    key <AE12>	{ [     equal,       plus,     cedilla,        ogonek ]	};
+    key <AD11>	{ [bracketleft,  braceleft,  diaeresis,        degree ]	};
+    key <AD12>	{ [bracketright, braceright, asciitilde,       macron ]	};
+    key <AC10>	{ [ semicolon,      colon,       acute,   doubleacute ]	};
+    key <AC11>	{ [apostrophe,   quotedbl, asciicircum,         caron ]	};
+    key <BKSL>	{ [ backslash,        bar,       grave,         breve ]	};
+    key <AB10>	{ [     slash,   question, dead_belowdot,    abovedot ]	};
+};
+
+partial
+xkb_symbols "type2_nodeadkeys" {
+ 
+    include "pc/latin(nodeadkeys)"
+
+    key <AD11>	{ [     aring,      Aring,   diaeresis,        degree ]	};
+    key <AD12>	{ [ diaeresis, asciicircum, asciitilde,         caron ]	};
+    key <AB08>	{ [     comma,  semicolon,     cedilla,        ogonek ]	};
+    key <AB09>	{ [    period,   colon, periodcentered,      abovedot ]	};
+    key <AB10>	{ [   minus, underscore, dead_belowdot,      abovedot ]	};
+};
+
+partial
+xkb_symbols "type3_nodeadkeys" {
+ 
+    include "pc/latin(nodeadkeys)"
+};
+
+partial
+xkb_symbols "type4_nodeadkeys" {
+ 
+    include "pc/latin(nodeadkeys)"
+
+    key <AB10>	{ [   minus, underscore, dead_belowdot,      abovedot ]	};
+};
+

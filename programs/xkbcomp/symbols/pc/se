@@ -1,12 +1,16 @@
 
 // based on a keyboard map from an 'xkb/symbols/se' file
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/se,v 1.3 2002/12/14 01:41:12 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/se,v 1.4 2002/12/19 01:07:56 dawes Exp $
 
 partial alphanumeric_keys
 xkb_symbols "basic" {
-
     include "pc/latin(type2)"
+    include "pc/se(se)"
+};
+
+partial alphanumeric_keys
+xkb_symbols "se" {
 
     name[Group1]="Swedish";
 
@@ -36,11 +40,11 @@ xkb_symbols "nodeadkeys" {
 
     // Modifies the basic Swedish layout to eliminate all dead keys
 
-    include "pc/se(basic)"
+    include "pc/latin(type2)"
+    include "pc/latin(type2_nodeadkeys)"
+    include "pc/se(se)"
 
-    key <AE12>	{ [     acute,      grave ]	};
-    key <AD12>	{ [ diaeresis, asciicircum ]	};
-    key <AB08>	{ [     comma,  semicolon,      cedilla,       ogonek ]	};
-    key <AB09>	{ [    period,      colon, periodcentered,   abovedot ]	};
+    key <AE12>	{ [     acute,      grave,    plusminus,      notsign ]	};
 
 };
+

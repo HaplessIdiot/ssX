@@ -1,15 +1,19 @@
 // based on a keyboard map from an 'xkb/symbols/fi' file
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/fi,v 1.5 2003/01/04 02:20:52 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/fi,v 1.6 2003/01/20 03:23:18 dawes Exp $
 
+
+partial default alphanumeric_keys
+xkb_symbols "basic" {
+    include "pc/latin(type2)
+    include "pc/fi(fi)"
+}
 
 partial alphanumeric_keys
-xkb_symbols "basic" {
+xkb_symbols "fi" {
 
     // a Finnish keyboard with dead key support and all of
     // ISO-8859-1 and ISO-8859-15 characters available.
-
-    include "pc/latin(type2)"
 
     name[Group1]="Finnish";
 
@@ -28,7 +32,6 @@ xkb_symbols "basic" {
     key <AE08> { [       8,  parenleft,    bracketleft,   guillemotleft	] };
     key <AE09> { [       9, parenright,   bracketright,  guillemotright	] };
     key <AE10> { [       0,      equal,     braceright,          degree	] };
-    key <AB08> { [   comma,  semicolon,   dead_cedilla,     dead_ogonek	] };
     key <AB09> { [  period,      colon, periodcentered,         notsign	] };
     key <AB01> { [       z,          Z,         zcaron,	         Zcaron	] };
     key <AB02> { [       x,          X,       multiply,	       division	] };
@@ -59,3 +62,14 @@ xkb_symbols "basic" {
                   [ ISO_Level3_Shift, Multi_key ]   };
     modifier_map Mod5   { <RALT> };
 };
+
+partial alphanumeric_keys
+xkb_symbols "nodeadkeys" {
+    include "pc/latin(type2)"
+    include "pc/latin(type2_nodeadkeys)"
+    include "pc/fi(fi)"
+
+    key <AE12> { [ acute, grave ] };
+    key <AD12> { [ diaeresis, asciicircum, asciitilde, caron ] };
+}
+
