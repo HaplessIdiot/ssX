@@ -1,10 +1,10 @@
-  README for XFree86 3.1.1 on BSD/386 1.1
+  README for XFree86 3.1.2 on BSD/OS 2.0
   Hans Nasten
-  27 January 1995
+  30 May 1996
 
   1.  What and Where is XFree86?
 
-  XFree86 3.1.1 is a port of X11R6 that supports several versions of
+  XFree86 3.1.2 is a port of X11R6 that supports several versions of
   Intel-based Unix.  It is derived from X386 1.2, which was the X server
   distributed with X11R5.  This release consists of many new features
   and performance improvements as well as many bug fixes.  The release
@@ -16,20 +16,27 @@
   ftp.XFree86.org:/pub/XFree86/current
   (ftp://ftp.XFree86.org/pub/XFree86/current)
 
-  Binaries for BSD/386 1.1 will be available from:
+  Binaries for BSD/OS 2.0 will be available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/Bsdi
   (ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Bsdi)
 
-  If you're running BSD 1.0, you'll have to build it from source.
-  Building the distribution on BSD/386 1.0 is untested, but believed to
-  work correctly. If you run into trouble building on BSD/386 1.0,
-  please let us know so that we can correct any incompatibilities.  If
-  you've done it and want to share your binaries, please let the Bsdi
-  mailing list know.  The binaries are compiled using gcc 2.5.8. There
-  may be problems using XFree86 3.1 on a 386/486 without a math
-  coprocessor. If you experience these kind of problems, you may have
-  better luck building from the source using gcc 1.42 instead.
+  If you're running a earlier version of BSD/OS, you'll have to build
+  the distribution from source.  Building the distribution on BSD/386
+  1.1 and 1.0 is untested, but believed to work correctly. If you run
+  into trouble building on a earlier release, please let us know so that
+  we can correct any incompatibilities.  If you've done it and want to
+  share your binaries, please let the Bsdi mailing list know.  The
+  binaries are built using gcc 2.6.3 as distributed with BSD/OS 2.0.
+  The XFree86 3.1.2 server displays large amounts of diagnostic output
+  to stderr when the server is started. If the server is started from
+  the console on BSD/OS 2.0, the output to stderr will block and the
+  server will hang.  The workaround for this is to redirect stdout and
+  stderr to a file when using startx or xinit. This problem does only
+  appear on BSD/OS 2.0, earlier versions are not affected.  If you build
+  the distribution from source using a gcc compiler built using the
+  generic gcc source code, you may run into problems using the binaries
+  on a 386/486 not equipped with a math coprocessor.
 
 
   2.  Bug Reports for This Document
@@ -56,65 +63,67 @@
 
      REQUIRED:
 
-        X311doc.tgz
+
+        X312doc.tgz
            READMEs and XFree86 specific man pages.
 
-        X311bin.tgz
+        X312bin.tgz
            all of the executable X client applications.
 
-        X311fnts.tgz
+        X312fnts.tgz
            all fonts
-        X311lib.tgz
+
+        X312lib.tgz
            data files needed at runtime
 
      Choose at least one of the following to match your hardware:
 
-        X311SVGA.tgz
+        X312SVGA.tgz
            the 8-bit pseudo-color X server for Super VGA cards
 
-        X311VG16.tgz
+        X312VG16.tgz
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        X311Mono.tgz
+        X312Mono.tgz
            the Monochrome X Server
 
-        X3118514.tgz
+        X3128514.tgz
            the X server for IBM 8514/A and compatible boards
 
-        X311AGX.tgz
+        X312AGX.tgz
            the X server for AGX boards
 
-        X311Ma8.tgz
+        X312Ma8.tgz
            the X server for ATI Mach8 boards
 
-        X311Ma32.tgz
+        X312Ma32.tgz
            the X server for ATI Mach32 boards
 
-        X311Ma64.tgz
+        X312Ma64.tgz
            the X server for ATI Mach64 boards
 
-        X311P9K.tgz
+        X312P9K.tgz
            the X server for P9000 based boards
 
-        X311S3.tgz
+        X312S3.tgz
            the X server for S3 based boards
 
-        X311W32.tgz
+        X312W32.tgz
            the X server for ET4000/W32 based boards
 
      OPTIONAL:
 
-        X311fsrv.tgz
+        X312fsrv.tgz
            the font server with man pages.
 
-        X311prog.tgz
+        X312prog.tgz
            the include/X11 header files and static libraries needed only
            for compiling other X applications
 
-        X311man.tgz
+        X312man.tgz
            all man pages
 
-        X311link.tgz
+        X312link.tgz
            the server reconfiguration kit.
 
   If this is your first time, then you should be able to safely install
@@ -138,7 +147,7 @@
      2. You must be logged in as root to unpack the archives and use a
         `umask' value of 022.  Typing `umask 022' sets it.  Caution: If
         you do not extract the files as user `root' with the correct
-        umask you may not be able to run XFree86 3.1.1. The X server
+        umask you may not be able to run XFree86 3.1.2. The X server
         needs special permissions that are only granted to the root
         user. You must also cd to / before extracting the archives.
 
@@ -187,7 +196,6 @@
   XFree86 3.1 and later releases uses a new configuration file format.
   Consult the XF86Config man page and the general INSTALL file for
   instructions.
-
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
      # reconfig <Xconfig >XF86Config
@@ -260,8 +268,6 @@
   in the xc directory.
 
 
-
-
   8.  Building New X Clients
 
   The easiest way to build a new client (X application) is to use xmkmf
@@ -289,17 +295,18 @@
 
   For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
-  and __bsdi__ for BSD/386.
+  and __bsdi__ for BSD/OS.
 
 
 
-  9.  Linear access to the frame buffer
+  9.  Linear access to the frame buffer using BSD/386 1.1
 
   The stock BSD/386 1.1 kernel has problems when trying to mmap the
   frame buffer as a linear ( unbanked ) memory area in high memory. This
   patch removes the check in /sys/i386/isa/vga.c that disables mmapping
   the frame buffer in linear mode. Please consult the BSD/386 1.1
-  release notes for instructions on how to build a new kernel.
+  release notes for instructions on how to build a new kernel. This
+  patch is not needed on BSD/OS 2.0.
 
      o  save the patch below in a separate file.
 
@@ -312,13 +319,6 @@
      o  reboot.
 
   vga.c patch:
-
-
-
-
-
-
-
 
 
 
@@ -350,7 +350,7 @@
 
 
   $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.9 1995/01/28 16:01:18 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.10 1995/06/01 08:25:23 dawes Exp $
 
 
 
