@@ -1,4 +1,9 @@
 XFree86 4.4.99.17 (xx October 2004)
+ 215. Cleanup handling of mmap and SHM existence (David Dawes).
+ 214. Disable direct I/O writes to kbd controller on Linux by default
+      (David Dawes).
+ 213. Apply same fix for opcode 0xe8.
+ 212. Fix x86emu's handling of opcode 0xe9 (Bugzilla #1443, Alexei Kosut).
  211. Add experimental '-novt' and '-nohw' options to the XFree86 server
       (David Dawes).
  210. Restore default mode "zoom" behaviour by not marking multiple
@@ -117,7 +122,7 @@ XFree86 4.4.99.10 (27 July 2004)
  153. Add __sparc64__ to imakemdep.h (Bugzilla #1424, John Heasley).
  152. Fix argument type for FIONREAD (Bugzilla #1426, John Heasley).
  151. Fix typo in Hu text in xfree86.xml (Bugzilla #1441, busmanus).
- 150. Fix x86emu's handling of opcode 0xe9 (Bugzilla #1443, Alexei Kosut).
+ 150.
  149. Fix a problem with wsmouse driver loosing events on 64bit 
       architectures (Bugzilla #1438, John Heasley).
  148. Xterm patch #193 (Thomas Dickey).
@@ -19156,7 +19161,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3338 2004/11/05 02:56:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3339 2004/11/07 04:20:58 dawes Exp $
 
 
 

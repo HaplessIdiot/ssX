@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.27 2004/03/03 18:53:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.28 2004/06/01 00:17:06 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -80,6 +80,15 @@
 #include "xf86_OSlib.h"
 
 #define KBC_TIMEOUT 250        /* Timeout in ms for sending to keyboard controller */
+
+#ifndef KBD_DIRECTHW
+#define KBD_DIRECTHW 0
+#endif
+
+#if !(defined(__alpha__) || defined (__i386__) || defined(__ia64__))
+#undef KBD_DIRECTHW
+#define KBD_DIRECTHW 0
+#endif
 
 void
 xf86SoundKbdBell(int loudness, int pitch, int duration)
@@ -198,7 +207,7 @@ void xf86SetKbdRepeat(char rad)
   int         delay = 250;     /* Default delay */
 #endif
 
-#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+#if KBD_DIRECTHW
   int i;
   int timeout;
   int         value = 0x7f;    /* Maximum delay with slowest rate */
@@ -228,7 +237,7 @@ void xf86SetKbdRepeat(char rad)
   if (xf86IsPc98())
     return;
 
-#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+#if KBD_DIRECTHW
 
   /* The ioport way */
 
@@ -260,7 +269,7 @@ void xf86SetKbdRepeat(char rad)
   usleep(10000);
   outb(0x60, value);
 
-#endif /* __alpha__ || __i386__ || __ia64__ */
+#endif /* KBD_DIRECTHW */
 }
 
 static int kbdtrans;
