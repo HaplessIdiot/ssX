@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.1 2002/05/13 05:25:33 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.2 2002/05/15 06:46:19 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -157,17 +157,21 @@ miTriangles (CARD8	    op,
     if (maskFormat)
     {
 	miTriangleBounds (ntri, tris, &bounds);
+	if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
+	    return;
 	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
 	    return;
     }
-    while (ntri--)
+    for (; ntri; ntri--, tris++)
     {
 	if (!maskFormat)
 	{
 	    miTriangleBounds (1, tris, &bounds);
+	    if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
+		continue;
 	    pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
@@ -182,7 +186,6 @@ miTriangles (CARD8	    op,
 			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
-	tris++;
 	/* XXX adjust xSrc and ySrc */
     }
     if (maskFormat)
@@ -214,13 +217,15 @@ miTriStrip (CARD8	    op,
     if (maskFormat)
     {
 	miPointFixedBounds (npoint, points, &bounds);
+	if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
+	    return;
 	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
 	    return;
     }
-    while (npoint-- > 2)
+    for (; npoint >= 3; npoint--, points++)
     {
 	tri.p1 = points[0];
 	tri.p2 = points[1];
@@ -228,11 +233,13 @@ miTriStrip (CARD8	    op,
 	if (!maskFormat)
 	{
 	    miTriangleBounds (1, &tri, &bounds);
+	    if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
+		continue;
 	    pPicture = miCreateAlphaPicture (pScreen, maskFormat, 
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)
-		break;
+		continue;
 	}
 	miRasterizeTriangle (pPicture, &tri, -bounds.x1, -bounds.y1);
 	if (!maskFormat)
@@ -242,7 +249,6 @@ miTriStrip (CARD8	    op,
 			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
-	points++;
     }
     if (maskFormat)
     {
@@ -274,6 +280,8 @@ miTriFan (CARD8		op,
     if (maskFormat)
     {
 	miPointFixedBounds (npoint, points, &bounds);
+	if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
+	    return;
 	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
@@ -282,7 +290,7 @@ miTriFan (CARD8		op,
     }
     first = points++;
     npoint--;
-    while (npoint-- > 1)
+    for (; npoint >= 2; npoint--, points++)
     {
 	tri.p1 = *first;
 	tri.p2 = points[0];
@@ -290,11 +298,13 @@ miTriFan (CARD8		op,
 	if (!maskFormat)
 	{
 	    miTriangleBounds (1, &tri, &bounds);
+	    if (bounds.x2 <= bounds.x1 || bounds.y2 <= bounds.y1)
+		continue;
 	    pPicture = miCreateAlphaPicture (pScreen, maskFormat, 
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)
-		break;
+		continue;
 	}
 	miRasterizeTriangle (pPicture, &tri, -bounds.x1, -bounds.y1);
 	if (!maskFormat)
@@ -304,7 +314,6 @@ miTriFan (CARD8		op,
 			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
-	points++;
     }
     if (maskFormat)
     {

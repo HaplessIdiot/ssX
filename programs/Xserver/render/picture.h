@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.8 2002/05/13 05:25:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.9 2002/05/17 17:07:36 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -137,6 +137,7 @@ typedef	Fixed_16_16	Fixed;
 #define FixedE		((Fixed) 1)
 #define Fixed1		(IntToFixed(1))
 #define Fixed1MinusE	(Fixed1 - FixedE)
+#define FixedFrac(f)	((f) & Fixed1MinusE)
 #define FixedFloor(f)	((f) & ~Fixed1MinusE)
 #define FixedCeil(f)	FixedFloor((f) + Fixed1MinusE)
 

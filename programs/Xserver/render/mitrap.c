@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.2 2002/05/13 07:22:38 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.3 2002/05/15 06:44:59 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -64,7 +64,7 @@ miCreateAlphaPicture (ScreenPtr pScreen, PictFormatPtr pPictFormat,
     rect.width = width;
     rect.height = height;
     (*pGC->ops->PolyFillRect)(&pPixmap->drawable, pGC, 1, &rect);
-	
+    FreeScratchGC (pGC);
     pPicture = CreatePicture (0, &pPixmap->drawable, pPictFormat,
 			      0, 0, serverClient, &error);
     (*pScreen->DestroyPixmap) (pPixmap);
@@ -143,10 +143,12 @@ miTrapezoids (CARD8	    op,
     }
     for (; ntrap; ntrap--, traps++)
     {
+	if ((int) (traps->top - traps->bottom) >= 0)
+	    continue;
 	if (!maskFormat)
 	{
 	    miTrapezoidBounds (1, traps, &bounds);
-	    if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x1)
+	    if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
 		continue;
 	    pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					     bounds.x2 - bounds.x1,
@@ -154,8 +156,6 @@ miTrapezoids (CARD8	    op,
 	    if (!pPicture)
 		continue;
 	}
-	if ((int) (traps->top - traps->bottom) >= 0)
-	    continue;
 	(*ps->RasterizeTrapezoid) (pPicture, traps, 
 				   -bounds.x1, -bounds.y1);
 	if (!maskFormat)
