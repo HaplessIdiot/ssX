@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:57:03 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/wabs/Imakefile,v 3.5 1996/02/09 08:22:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/wabs/Imakefile,v 3.6 1996/08/14 14:38:48 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -12,14 +12,16 @@ SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
        cirFillRct.c cir_blitter.c cir_textblt.s cir_cursor.c \
        cir_blitmm.c cir_immm.c cir_tebltmm.c cir_span.s cir_alloc.c \
        cir_blt16.c cir_solid.c cir_line.c cir_seg.c cir_orect.c \
-       cir_orect16.c cir_orect32.c linearline.c cir_pc98.c
+       cir_orect16.c cir_orect32.c linearline.c cir_fillLG.c cir_blitLG.c \
+       cir_pc98.c 
 
 OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o cir_bank.o \
        cir_imblt.o cir_colexp.o cirFillSt.o cir_teblt8.o \
        cirFillRct.o cir_blitter.o cir_textblt.o cir_cursor.o \
        cir_blitmm.o cir_immm.o cir_tebltmm.o cir_span.o cir_alloc.o \
        cir_blt16.o cir_solid.o cir_line.o cir_seg.o cir_orect.o \
-       cir_orect16.o cir_orect32.o linearline.o cir_pc98.o
+       cir_orect16.o cir_orect32.o linearline.o cir_fillLG.o cir_blitLG.o \
+       cir_pc98.o
 
 DEFINES = -DPSZ=8 -DPC98 -DPC98_WAB
 
@@ -48,6 +50,8 @@ LinkSourceFile(cirFillSt.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_alloc.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_alloc.h,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_bank.s,$(XF86SRC)/vga256/drivers/cirrus)
+LinkSourceFile(cir_blitLG.c,$(XF86SRC)/vga256/drivers/cirrus)
+LinkSourceFile(cir_blitLG.h,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_blitter.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_blt.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_blt16.c,$(XF86SRC)/vga256/drivers/cirrus)
@@ -57,6 +61,7 @@ LinkSourceFile(cir_cursor.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_driver.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_driver.h,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_fill.c,$(XF86SRC)/vga256/drivers/cirrus)
+LinkSourceFile(cir_fillLG.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_im.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_imblt.s,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_inline.h,$(XF86SRC)/vga256/drivers/cirrus)

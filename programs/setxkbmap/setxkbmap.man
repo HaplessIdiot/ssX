@@ -20,7 +20,7 @@ specified on the command line.
 .P
 An XKB keymap is constructed from a number of components which are compiled
 only as needed.  The source for all of the components can be found in
-/usr/lib/X11/xkb.
+<XRoot>/lib/X11/xkb.
 .SH OPTIONS
 .TP 8
 .B \-help
@@ -79,7 +79,9 @@ a keyboard layout.
 Specifies which variant of the keyboard layout should be used to determine 
 the components which make up the keyboard description.  Only one variant
 may be specified on the command line.
+.ig
 .SH SEE ALSO
 keyboards(1)
+..
 .SH FILES
-.I /usr/lib/X11/xkb
+.I <XRoot>/lib/X11/xkb
