@@ -1,3 +1,8 @@
+XFree86 3.0Ba (11 June 1994)
+ 85. Preliminary ELSA Winner 2000PRO support (S3 964) (Dirk Hohndel).
+ 84. Updates to S3 864 support (Harald Koenig).
+ 83. Merge in XC fix-02.
+
 XFree86 3.0B (6 June 1994)
  82. bitblt fixes (including big memory leak) for 8514, Mach8, Mach32 and
      S3 servers (Tiago Gons).
