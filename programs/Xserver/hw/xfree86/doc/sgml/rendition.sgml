@@ -8,14 +8,14 @@
 <date>12 December 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.5 2000/01/21 18:11:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.6 2000/01/24 19:38:30 dawes Exp $
 </ident>
 
 <toc>
 
 <sect>Supported hardware <p>
 All cards based on the V1000 or the V2x00 should be supported. The server
-was tested on a miroCRYSTAL VRX (V1000), Intergraph Intense-100 3D (V1000), Diamond Stealth II S220 (V2100), Hercules Thriller3D (V2200) and Innovision Warrior3D (V2200).
+was tested on a miroCRYSTAL VRX (V1000), Intergraph Intense-100 3D (V1000), Diamond Stealth II S220 (V2100), Hercules Thriller3D (V2200), Innovision Warrior3D (V2200) and Genoa V-Raptor (v2200).
 
 <sect>Limitations <p>
 V1000 cards can only work as primary display card due to hardware limitations. <p>
@@ -56,6 +56,20 @@ Set custom ramdac limit. We have currently no way of knowing if the v2x00 chip i
 If writecombine is disabled in BIOS, and you add this option in in configuration file, then the driver will try to request writecombined access to the framebuffer. This can drastically increase the performance on unaccelerated server. Requires that "MTRR"-support is compiled into the OS-kernel.
 <tag>Option "NoDDC"</tag>
 Disable probing of DDC-information from your monitor. This information is not used yet and is only there for informational purposes. This might change before final XFree86 4.0 release. Safe to disable if you experience problems during startup of X-server.
+<tag>Option "ShadowFB"</tag>
+If this option is enabled, the driver will cause the CPU to do each drawing
+operation first into a shadow frame buffer in system virtual memory and then
+copy the result into video memory.
+If this option is not active, the CPU will draw directly into video memory.
+Enabling this option is beneficial for those systems where reading from video
+memory is, on average, slower than the corresponding read/modify/write
+operation in system virtual memory.
+This is normally the case for PCI or AGP adapters, and, so, this option is
+enabled by default unless acceleration is enabled.
+<tag>Rotate</tag>
+The option expect a value "CW" for clockwise or "CCW" for counterclockwise rotation of the screen. This is useful when you need more height then width on the screen. Desktop publishing is one example where a monitor could display the whole page at once on a monitor laying on the side.
+Notice that this option requires "ShadowFB" and automatically enable it. It also disables the acceleration.
+The option is not activated by default.
 </descrip>
 
 <sect>News in this release <p>
@@ -63,9 +77,15 @@ Disable probing of DDC-information from your monitor. This information is not us
 <item>Acceleration! Disabled for the moment.
 </itemize>
 
-<sect>Major fixes in this release <p>
+<sect>Major changes in this release <p>
 <itemize>
+<item>ShadowFB support added
 <item>To be determined before final release.
+</itemize>
+
+<sect>Bugfixes<p>
+<itemize>
+<item>8bpp finally works correctly again
 </itemize>
 
 <sect>Known problems in current driver<p>

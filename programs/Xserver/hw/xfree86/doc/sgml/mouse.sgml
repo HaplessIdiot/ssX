@@ -8,7 +8,7 @@
 <date>9 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.9 2000/02/12 20:45:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.10 2000/02/29 03:09:16 dawes Exp $
 </ident>
 
 <toc>
@@ -440,7 +440,7 @@ of those buttons into <tt>N</tt> too.
 </verb>
 
 <sect1>ZAxisMappping <p>
-This option maps the Z axis (wheel) motion to a pair of buttons or to
+This option maps the Z axis (wheel) motion to buttons or to
 another axis.
 
 <verb>
@@ -460,11 +460,24 @@ or <tt>N2</tt> actually exists in the mouse,
 their actions won't be detected by the X server.
 
 The last example is useful for the mouse with two wheels of which
-the second wheel is used to generate horizontal scroll action.
+the second wheel is used to generate horizontal scroll action,
+and the mouse which has a knob or a stick which can detect the horizontal
+force applied by the user.
 The motion of the second wheel will be mapped to the buttons <tt>N3</tt>,
 for the negative direction, and <tt>N4</tt>, for the positive direction.
 If the buttons <tt>N3</tt> and <tt>N4</tt> actually exist in this mouse,
 their actions won't be detected by the X server.
+
+NOTE #1: horizontal movement may not always be detected
+by the current version of the XFree86 X servers,
+because there appears to be no accepted standard as to how the horizontal
+direction is encoded in mouse data.
+
+NOTE #2: Some mice think left is the negative horizontal direction, 
+others may think otherwise.  
+Moreover, there are some mice whose two wheels are both mounted vertically,
+and the direction of the second vertical wheel does not match the
+first one's.
 
 Currently this option can not be set in the <tt>XF86Setup</tt> program.
 You need to edit the <tt>XF86Config</tt> file by hand to add this option.

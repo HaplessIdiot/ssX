@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition_options.h,v 1.2 1999/10/14 04:43:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition_options.h,v 1.3 1999/11/02 16:16:42 tsi Exp $ */
 
 #ifndef __RENDITION_OPTION_H__
 #define __RENDITION_OPTION_H__
@@ -9,7 +9,9 @@ typedef enum {
     OPTION_SW_CURSOR,
     OPTION_NOACCEL,
     OPTION_OVERCLOCK_MEM,
-    OPTION_NO_DDC
+    OPTION_NO_DDC,
+    OPTION_SHADOW_FB,
+    OPTION_ROTATE
 } renditionOpts;
 
 
@@ -24,6 +26,8 @@ static OptionInfoRec renditionOptions[]={
     { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_SHADOW_FB, "ShadowFB", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_ROTATE,    "Rotate",   OPTV_ANYSTR,  {0}, FALSE },
     { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
 };
 /*********************************/

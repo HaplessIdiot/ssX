@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.2 2000/02/10 18:57:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.4 2000/02/12 23:56:20 eich Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -126,7 +126,7 @@ xf86OSPMOpen(void)
    if (APMihPtr || !xf86Info.pmFlag)
        return NULL;
    
-   if (access( APM_PROC, R_OK ) || (fd = open( APM_PROC, O_RDONLY) == -1))
+   if (access( APM_PROC, R_OK ) || ((fd = open( APM_PROC, O_RDONLY)) == -1))
        return NULL;
    close( fd );
 
