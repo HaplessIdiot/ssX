@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -27,6 +28,10 @@ from The Open Group.
 
 #ifndef _XAGSRV_H_
 #define _XAGSRV_H_
+
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 extern void XagExtensionInit(
 #if NeedFunctionPrototypes
