@@ -22,14 +22,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.7 1998/10/02 06:15:26 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.8 1998/10/05 13:21:51 dawes Exp $ */
 
 /* From the original /bin/sh script:
 
   Used to create a copy of the a directory tree that has links for all
-  non-directories (except those named RCS, SCCS or CVS.adm).  If you are
-  building the distribution on more than one machine, you should use
-  this technique.
+  non-directories (except, by default, those named RCS, SCCS or CVS.adm).
+  If you are building the distribution on more than one machine, you
+  should use this technique.
 
   If your master sources are located in /usr/local/src/X and you would like
   your link tree to be in /usr/local/src/new-X, do the following:
@@ -77,6 +77,7 @@ extern int errno;
 #endif
 int silent = 0;			/* -silent */
 int ignore_links = 0;		/* -ignorelinks */
+int with_revinfo = 0;		/* -withrevinfo */
 
 char *rcurdir;
 char *curdir;
@@ -223,14 +224,16 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 		    (dp->d_name[1] == '\0' || (dp->d_name[1] == '.' &&
 					       dp->d_name[2] == '\0')))
 		    continue;
-		if (!strcmp (dp->d_name, "RCS"))
-		    continue;
-		if (!strcmp (dp->d_name, "SCCS"))
-		    continue;
-		if (!strcmp (dp->d_name, "CVS"))
-		    continue;
-		if (!strcmp (dp->d_name, "CVS.adm"))
-		    continue;
+		if (!with_revinfo) {
+		    if (!strcmp (dp->d_name, "RCS"))
+			continue;
+		    if (!strcmp (dp->d_name, "SCCS"))
+			continue;
+		    if (!strcmp (dp->d_name, "CVS"))
+			continue;
+		    if (!strcmp (dp->d_name, "CVS.adm"))
+			continue;
+		}
 		ocurdir = rcurdir;
 		rcurdir = buf;
 		curdir = silent ? buf : (char *)0;
@@ -303,6 +306,8 @@ main (int ac, char *av[])
 	    silent = 1;
 	else if (strcmp(*av, "-ignorelinks") == 0)
 	    ignore_links = 1;
+	else if (strcmp(*av, "-withrevinfo") == 0)
+	    with_revinfo = 1;
 	else if (strcmp(*av, "--") == 0) {
 	    ++av, --ac;
 	    break;
