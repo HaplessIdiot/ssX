@@ -31,7 +31,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.34 2003/07/09 01:45:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.35tsi Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -1173,8 +1173,6 @@ int drmGetLock(int fd, drmContext context, drmLockFlags flags)
 	;
     return 0;
 }
-
-static void (*drm_unlock_callback)( void ) = 0;
 
 /**
  * Release the hardware lock.
