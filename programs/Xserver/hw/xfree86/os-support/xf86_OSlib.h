@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.14 1995/01/28 17:04:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.15 1995/03/11 14:14:56 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -398,6 +398,7 @@ extern capability iopcap;
 #  define LED_SCR 0x10
 
   /* mouse driver */
+# define OSMOUSE_ONLY
 # define MOUSE_PROTOCOL_IN_KERNEL
 
 #endif
@@ -446,6 +447,12 @@ extern int sys_nerr;
 
 #ifndef VT_SYSREQ_DEFAULT
 #define VT_SYSREQ_DEFAULT FALSE
+#endif
+
+#ifdef OSMOUSE_ONLY
+# ifndef MOUSE_PROTOCOL_IN_KERNEL
+#  define MOUSE_PROTOCOL_IN_KERNEL
+# endif
 #endif
 
 /* The Region arg to xf86[Un]Map* */
