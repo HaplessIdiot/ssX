@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.20 2002/02/15 07:36:10 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.22 2002/02/21 05:30:31 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -170,6 +170,9 @@ XftDrawDestroy (XftDraw	*draw);
 
 Picture
 XftDrawPicture (XftDraw *draw);
+
+Picture
+XftDrawSrcPicture (XftDraw *draw, XftColor *color);
 
 void
 XftDrawGlyphs (XftDraw	*draw,

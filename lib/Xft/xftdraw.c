@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.16 2002/02/15 07:36:11 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.17 2002/02/19 07:56:29 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -287,8 +287,8 @@ XftDrawDestroy (XftDraw	*draw)
     free (draw);
 }
 
-static Picture
-_XftDrawSrcPicture (XftDraw *draw, XftColor *color)
+Picture
+XftDrawSrcPicture (XftDraw *draw, XftColor *color)
 {
     Display	    *dpy = draw->dpy;
     XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
@@ -435,7 +435,7 @@ XftDrawGlyphs (XftDraw	*draw,
 	Picture	    src;
 	
 	if (_XftDrawRenderPrepare (draw) &&
-	    (src = _XftDrawSrcPicture (draw, color)))
+	    (src = XftDrawSrcPicture (draw, color)))
 	    XftGlyphRender (draw->dpy, _XftDrawOp (draw, color),
 			     src, public, draw->render.pict,
 			     0, 0, x, y, glyphs, nglyphs);
@@ -591,7 +591,7 @@ XftDrawGlyphSpec (XftDraw	*draw,
 	Picture	src;
 
 	if (_XftDrawRenderPrepare (draw) &&
-	    (src = _XftDrawSrcPicture (draw, color)))
+	    (src = XftDrawSrcPicture (draw, color)))
 	{
 	    XftGlyphSpecRender (draw->dpy, _XftDrawOp (draw, color),
 				src, public, draw->render.pict,
@@ -626,7 +626,7 @@ XftDrawGlyphFontSpec (XftDraw		*draw,
 		i++;
 	    }
 	    if (_XftDrawRenderPrepare (draw) &&
-		(src = _XftDrawSrcPicture (draw, color)))
+		(src = XftDrawSrcPicture (draw, color)))
 	    {
 		XftGlyphFontSpecRender (draw->dpy, _XftDrawOp (draw, color),
 					src, draw->render.pict,
