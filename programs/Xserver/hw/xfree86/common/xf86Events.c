@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.133 2002/10/11 01:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.134 2002/11/20 04:49:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -714,7 +714,7 @@ special:
       case KEY_H: 
 	if (VTSysreqToggle && down)
         {
-	  xf86ProcessActionEvents(ACTION_SWITCHSCREEN, (void *) &0);
+	  xf86ProcessActionEvent(ACTION_SWITCHSCREEN, NULL);
           VTSysreqToggle = 0;
           return; 
         }
@@ -729,7 +729,7 @@ special:
       case KEY_N:
 	if (VTSysreqToggle && down)
 	{
-	  xf86ProcessActionEvents(ACTION_SWITCHSCREEN_NEXT, NULL);
+	  xf86ProcessActionEvent(ACTION_SWITCHSCREEN_NEXT, NULL);
           VTSysreqToggle = FALSE;
           return;
         }
@@ -738,7 +738,7 @@ special:
       case KEY_P:
 	if (VTSysreqToggle && down)
 	{
-	  xf86ProcessActionEvents(ACTION_SWITCHSCREEN_NEXT, NULL);
+	  xf86ProcessActionEvent(ACTION_SWITCHSCREEN_NEXT, NULL);
           VTSysreqToggle = FALSE;
           return;
         }
@@ -804,7 +804,7 @@ special:
      */
     if (specialkey == KEY_Print && ModifierDown(ControlMask)) {
       if (down)
-	xf86ProcessActionEvents(ACTION_SWITCHSCREEN_NEXT, NULL);
+	xf86ProcessActionEvent(ACTION_SWITCHSCREEN_NEXT, NULL);
       return;
     }
 #endif /* SCO */
