@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.1 1999/04/04 09:00:21 dawes Exp $
 .TH s3virge __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 s3virge \- S3 ViRGE video driver
@@ -126,14 +126,6 @@ memory settings which should increase performance, so you should at
 least use
 .B "fifo_conservative"
 (this uses the chip defaults).  Default: none.
-.TP
-.BI "Option """ optionname """
-Common XAA acceleration options to disable primitives for test purposes:
-	"XaaNoScreenToScreenCopy"
-	"XaaNoSolidFillRect"
-	"XaaNoColor8x8PatternFillRect"
-	"XaaNoImageWriteRect"
-	"XaaNoPixmapCache"
 
 .PP
 The following PCI bus

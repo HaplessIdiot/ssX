@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.39 1999/05/03 12:16:13 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.40 1999/05/09 10:52:11 dawes Exp $
  */
 
 /*
@@ -1807,9 +1807,9 @@ curXtermChrSet(int row)
 /*
  * Returns a single 8/16-bit number for the given cell
  */
-int getXtermCell (TScreen *screen, int row, int col)
+unsigned getXtermCell (TScreen *screen, int row, int col)
 {
-    int ch = SCRN_BUF_CHARS(screen, row)[col];
+    unsigned ch = SCRN_BUF_CHARS(screen, row)[col];
     if_OPT_WIDE_CHARS(screen,{
 	ch |= (SCRN_BUF_WIDEC(screen, row)[col] << 8);
     })
