@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.22 2002/12/11 17:01:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.23 2002/12/12 17:58:34 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1133,6 +1133,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    int i, n;
    pointer pDDCModule, pVBEModule;
    Bool enable;
+   const char *chipname;
 
    if (pScrn->numEntities != 1)
       return FALSE;
@@ -1232,6 +1233,18 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       return FALSE;
    }
 
+   switch (pI830->PciInfo->chipType) {
+   case PCI_CHIP_I830_M:
+      chipname = "830M";
+      break;
+   case PCI_CHIP_845_G:
+      chipname = "845G";
+      break;
+   default:
+      chipname = "unknown chipset";
+      break;
+   }
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Chipset: Intel(R) %s\n", chipname);
 
    pVbe = pI830->pVbe;
 

@@ -25,7 +25,7 @@
 /* Adapted for use in the I830M driver: 
  *   Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.3 2002/12/10 01:26:53 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.h,v 1.4 2002/12/16 16:18:51 dawes Exp $ */
 
 #ifndef I830CONTEXT_INC
 #define I830CONTEXT_INC
@@ -301,8 +301,6 @@ extern int I830_DEBUG;
 
 #define PCI_CHIP_845_G			0x2562
 #define PCI_CHIP_I830_M			0x3577
-
-
 
 	
 #endif

@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.5 2002/12/10 01:26:53 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.6 2002/12/18 15:49:00 dawes Exp $ */
 
 /*
  * Authors:
@@ -82,7 +82,7 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
       case GL_VENDOR:
 	 return (GLubyte *)"2d3D, Inc";
       case GL_RENDERER:
-	 return (GLubyte *)"Mesa DRI I845 " DRIVER_DATE;
+	 return (GLubyte *)"Mesa DRI Intel(R) 845G " DRIVER_DATE;
       default:
 	 return 0;
       }
@@ -92,7 +92,7 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
       case GL_VENDOR:
 	 return (GLubyte *)"VA Linux, Inc";
       case GL_RENDERER:
-	 return (GLubyte *)"Mesa DRI I830 " DRIVER_DATE;
+	 return (GLubyte *)"Mesa DRI Intel(R) 830M " DRIVER_DATE;
       default:
 	 return 0;
       }
