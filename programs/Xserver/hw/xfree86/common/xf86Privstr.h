@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.26 2001/07/23 13:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.27 2001/08/15 16:25:21 paulo Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -59,6 +59,9 @@ typedef struct {
 #if defined(SVR4) && defined(i386)
     Bool		panix106;
 #endif  /* SVR4 && i386 */
+#if defined(__OpenBSD__)
+    int                 wsKbdType;
+#endif
 
     /* mouse part */
     DeviceIntPtr	pMouse;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.118 2001/08/28 17:00:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.119 2001/08/29 11:55:50 alanh Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -283,14 +283,14 @@ xf86PostKbdEvent(unsigned key)
   KeySym      *keysym;
   int         keycode;
   static int  lockkeys = 0;
-#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
   static Bool first_time = TRUE;
 #endif
 #if defined(__sparc__)
   static int  kbdSun = -1;
 #endif
 
-#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
   if (first_time)
   {
     first_time = FALSE;
@@ -345,13 +345,13 @@ xf86PostKbdEvent(unsigned key)
     switch (scanCode) {
     case KEY_Prefix0:
     case KEY_Prefix1:
-#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
+#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
       if (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
 	  || xf86Info.consType == PCVT) {
 #endif
         xf86Info.scanPrefix = scanCode;  /* special prefixes */
         return;
-#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
+#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
       }
       break;
 #endif
@@ -433,6 +433,7 @@ xf86PostKbdEvent(unsigned key)
 #ifdef __linux__
 customkeycodes:
 #endif
+#if defined(i386) || defined(__i386__)
   if (xf86IsPc98()) {
     switch (scanCode) {
       case 0x0e: specialkey = 0x0e; break; /* KEY_BackSpace */
@@ -456,7 +457,7 @@ customkeycodes:
       default:   specialkey = 0x00; break;
     }
   }
-
+#endif
 #if defined (__sparc__)
 special:
   if (kbdSun) {
@@ -588,7 +589,7 @@ special:
 		break;
 #endif
 
-#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT))) || defined(SCO)
+#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT))) || defined(SCO)
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching
@@ -605,7 +606,7 @@ special:
       case KEY_F9:
       case KEY_F10:
         if (VTSwitchEnabled && !xf86Info.vtSysreq
-#if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
+#if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)))
 	    && (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
 #endif
 	    )
@@ -622,7 +623,7 @@ special:
       case KEY_F11:
       case KEY_F12:
         if (VTSwitchEnabled && !xf86Info.vtSysreq
-#if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
+#if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)))
 	    && (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
 #endif
 	    )
@@ -1375,34 +1376,23 @@ XTestGenerateEvent(int dev_type, int keycode, int keystate, int mousex,
 
 /* XXX Currently XKB is mandatory. */
 
+extern int WSKbdToKeycode(int);
+
 void
 xf86PostWSKbdEvent(struct wscons_event *event)
 {
-  int         type = event->type;
-  int         value = event->value;
-  Bool        down = (type == WSCONS_EVENT_KEY_DOWN ? TRUE : FALSE);
-  KeyClassRec *keyc = ((DeviceIntPtr)xf86Info.pKeyboard)->key;
-  xEvent      kevent;
-  KeySym      *keysym;
-  int         keycode;
-
-  /*
-   * Now map the scancodes to real X-keycodes ...
-   */
-  keycode = value + MIN_KEYCODE;
-  keysym = keyc->curKeySyms.map +
-	keyc->curKeySyms.mapWidth * (keycode - keyc->curKeySyms.minKeyCode);
-	    
-  /*
-   * check for an autorepeat-event
-   */
-  if ((down && KeyPressed(keycode)) &&
-      (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
-    return;
-
-  xf86Info.lastEventTime = kevent.u.keyButtonPointer.time
-	= event->time.tv_sec * 1000 + event->time.tv_nsec / 1000000;
-
-  ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+  int type = event->type;
+  int value = event->value;
+  Bool down = (type == WSCONS_EVENT_KEY_DOWN ? TRUE : FALSE);
+  unsigned int keycode;
+  int blocked;
+  
+  /* map the scancodes to standard XFree86 scancode */  
+  keycode = WSKbdToKeycode(value);
+  if (!down) keycode |= 0x80;
+  /* It seems better to block SIGIO there */
+  blocked = xf86BlockSIGIO();
+  xf86PostKbdEvent(keycode);
+  xf86UnblockSIGIO(blocked);
 }
 #endif /* WSCONS_SUPPORT */

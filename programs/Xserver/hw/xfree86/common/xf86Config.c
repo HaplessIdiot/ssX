@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.247 2001/08/19 02:47:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.248 2001/08/29 11:55:50 alanh Exp $ */
 
 
 /*
@@ -761,6 +761,7 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
 };
 
+#if defined(i386) || defined(__i386__)
 static Bool
 detectPC98(void)
 {
@@ -777,6 +778,7 @@ detectPC98(void)
     return FALSE;
 #endif
 }
+#endif /* __i386__ */
 
 static Bool
 configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
@@ -1011,7 +1013,7 @@ configInputKbd(IDevPtr inputp)
      int xf86WSKbdProc(DeviceIntPtr, int);
 
      xf86Info.kbdProc    = xf86WSKbdProc;
-     xf86Info.kbdEvents  = xf86KbdEvents;
+     xf86Info.kbdEvents  = NULL;
      xfree(s);
      s = xf86SetStrOption(inputp->commonOptions, "Device", NULL);
      xf86Msg(X_CONFIG, "Keyboard: Protocol: wskbd\n");
@@ -1027,6 +1029,31 @@ configInputKbd(IDevPtr inputp)
        return FALSE;
      }
      xfree(s);
+     /* Find out keyboard type */
+     if (ioctl(xf86Info.kbdFd, WSKBDIO_GTYPE, &xf86Info.wsKbdType) == -1) {
+	     xf86ConfigError("cannot get keyboard type");
+	     close(xf86Info.kbdFd);
+	     return FALSE;
+     }
+     switch (xf86Info.wsKbdType) {
+     case WSKBD_TYPE_PC_XT:
+	     xf86Msg(X_PROBED, "Keyboard type: XT\n");
+	     break;
+     case WSKBD_TYPE_PC_AT:
+	     xf86Msg(X_PROBED, "Keyboard type: AT\n");
+	     break;
+     case WSKBD_TYPE_USB:
+	     xf86Msg(X_PROBED, "Keyboard type: USB\n");
+	     break;
+     case WSKBD_TYPE_ADB:
+	     xf86Msg(X_PROBED, "Keyboard type: ADB\n");
+	     break;
+     default:
+	     xf86ConfigError("Unsupported wskbd type \"%d\"", 
+			     xf86Info.wsKbdType);
+	     close(xf86Info.kbdFd);
+	     return FALSE;
+     }
 #endif
   } else {
     xf86ConfigError("\"%s\" is not a valid keyboard protocol name", s);
