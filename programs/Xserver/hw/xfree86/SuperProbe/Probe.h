@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.28 1996/02/22 05:11:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.29tsi Exp $ */
 
 /*
  * Includes
@@ -318,7 +318,7 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_ATT499	39	/* AT&T 20C499 15/16/24-bit DAC */
 #define DAC_TKD8001	40	/* Trident TKD8001 15/16/24-bit DAC */
 #define DAC_TGUIDAC	41	/* Trident TGUIDAC 15/16/24-bit DAC */
-#define DAC_ATI_CT_ET   42      /* ATI Mach64CT/ET integrated DAC */
+#define DAC_ATI_INTERNAL 42     /* ATI Mach64 integrated DAC */
 #define DAC_MU9C1880	43	/* Music 9C1880 */
 #define DAC_IMSG174	44	/* Inmos G-174 */
 #define DAC_STG1702	45	/* STG 1703 15/16/24-bit DAC w/pixel-mux */
@@ -411,8 +411,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI88800GXE SVGA_TYPE(V_ATI,13)	/* ATI 88800GX-E	*/
 #define CHIP_ATI88800GXF SVGA_TYPE(V_ATI,14)	/* ATI 88800GX-F	*/
 #define CHIP_ATI88800CX	SVGA_TYPE(V_ATI,15) 	/* ATI 88800CX		*/
-#define CHIP_ATI88800CT	SVGA_TYPE(V_ATI,16) 	/* ATI 88800CT		*/
-#define CHIP_ATI88800ET	SVGA_TYPE(V_ATI,17) 	/* ATI 88800ET		*/
+#define CHIP_ATI264CT	SVGA_TYPE(V_ATI,16) 	/* ATI 264CT		*/
+#define CHIP_ATI264ET	SVGA_TYPE(V_ATI,17) 	/* ATI 264ET		*/
+#define CHIP_ATI264VT	SVGA_TYPE(V_ATI,18) 	/* ATI 264VT		*/
+#define CHIP_ATI264GT	SVGA_TYPE(V_ATI,19) 	/* ATI 264GT		*/
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/

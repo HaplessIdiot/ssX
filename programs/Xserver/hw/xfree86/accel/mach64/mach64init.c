@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.13 1996/02/04 09:03:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.14tsi Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -331,7 +331,7 @@ int mach64FIFOdepth(cdepth, clock, width)
     case MEM_SIZE_4M:
     case MEM_SIZE_6M:
     case MEM_SIZE_8M:
-	if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET)
+	if (mach64IntegratedController)
 	    fifo_v1 /= 10;
 	else
 	    fifo_v1 /= 12;
@@ -342,7 +342,7 @@ int mach64FIFOdepth(cdepth, clock, width)
     case CRTC_PIX_WIDTH_8BPP:
 	switch (mach64MemorySize) {
 	case MEM_SIZE_512K:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
 	    } else {
 		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
@@ -350,7 +350,7 @@ int mach64FIFOdepth(cdepth, clock, width)
 	    if (fifo_v1 > 0x0c) fifo_v1 = 0x0c;
 	    break;
 	case MEM_SIZE_1M:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
 		if (fifo_v1 > 0x08) fifo_v1 = 0x08;
 	    } else {
@@ -362,7 +362,7 @@ int mach64FIFOdepth(cdepth, clock, width)
 	case MEM_SIZE_4M:
 	case MEM_SIZE_6M:
 	case MEM_SIZE_8M:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (width <= 640) {
 		    if (fifo_v1 < 0x09) fifo_v1 = 0x09;
 		} else if (width <= 1024) {
@@ -383,7 +383,7 @@ int mach64FIFOdepth(cdepth, clock, width)
 	switch (mach64MemorySize) {
 	case MEM_SIZE_512K:
 	case MEM_SIZE_1M:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
 		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
 	    } else {
@@ -395,7 +395,7 @@ int mach64FIFOdepth(cdepth, clock, width)
 	case MEM_SIZE_4M:
 	case MEM_SIZE_6M:
 	case MEM_SIZE_8M:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (width <= 800) {
 		    if (fifo_v1 < 0x08) fifo_v1 = 0x08;
 		} else {
@@ -414,7 +414,7 @@ int mach64FIFOdepth(cdepth, clock, width)
 	switch (mach64MemorySize) {
 	case MEM_SIZE_512K:
 	case MEM_SIZE_1M:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
 		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
 	    } else {
@@ -426,7 +426,7 @@ int mach64FIFOdepth(cdepth, clock, width)
 	case MEM_SIZE_4M:
 	case MEM_SIZE_6M:
 	case MEM_SIZE_8M:
-	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	    if (mach64IntegratedController) {
 		if (width <= 640) {
 		    if (fifo_v1 < 0x0d) fifo_v1 = 0x0d;
 		} else {
@@ -2106,7 +2106,7 @@ void mach64InitDisplay(screen_idx)
 
     WaitIdleEmpty();
 
-    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+    if (!mach64IntegratedController) {
 	outb(ATIExtReg, ATI2E); old_ATI2E = inb(ATIExtReg+1);
 	outb(ATIExtReg, ATI32); old_ATI32 = inb(ATIExtReg+1);
 	outb(ATIExtReg, ATI36); old_ATI36 = inb(ATIExtReg+1);
@@ -2205,7 +2205,7 @@ void mach64InitDisplay(screen_idx)
 	break;
     }
 
-    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+    if (mach64IntegratedController) {
 	oldClockFreq = mach64GetCTClock(mach64CXClk);
 #ifdef DEBUG
 	ErrorF("oldClockFreq = %d\n", oldClockFreq);
@@ -2228,7 +2228,7 @@ void mach64InitDisplay(screen_idx)
     old_SRC_OFF_PITCH = regr(SRC_OFF_PITCH);
 
     /* Turn off the VGA memory boundary */
-    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET)
+    if (!mach64IntegratedController)
 	regw(MEM_CNTL, old_MEM_CNTL & ~(MEM_BNDRY | MEM_BNDRY_EN));
 
 #ifdef DEBUG
@@ -2275,7 +2275,7 @@ void mach64CleanUp()
 
     WaitIdleEmpty();
 
-    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET)
+    if (mach64IntegratedController)
     	mach64ProgramClk(mach64CXClk, oldClockFreq);
 
     mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, FALSE, 5035);
@@ -2386,7 +2386,7 @@ void mach64CleanUp()
     mach64CursorOff();
 
     WaitIdleEmpty();
-    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+    if (!mach64IntegratedController) {
 	/* Reset the VGA registers */
 	outw(ATIExtReg, ATI2E | old_ATI2E << 8);
 	outw(ATIExtReg, ATI32 | old_ATI32 << 8);

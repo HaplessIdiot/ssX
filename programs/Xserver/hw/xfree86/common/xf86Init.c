@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.47 1996/03/11 13:13:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.48 1996/03/29 22:16:16 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -376,9 +376,9 @@ InitInput(argc, argv)
   RegisterKeyboardDevice(xf86Info.pKeyboard); 
   RegisterPointerDevice(xf86Info.pMouse); 
 
+#ifdef XINPUT
   ((DeviceIntPtr) xf86Info.pMouse)->public.devicePrivate = (pointer) &xf86Info.mouseDev;
   
-#ifdef XINPUT
   InitExtInput();
 #endif
 

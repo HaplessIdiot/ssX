@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.9 1995/12/16 08:19:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.10tsi Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -82,6 +82,8 @@ extern int mach64NAdj;
 extern int mach64CXClk;
 extern int mach64MemClk;
 extern int mach64VRAMMemClk;
+
+extern Bool mach64IntegratedController;
 
 extern unsigned int mach64MemorySize;
 extern unsigned int mach64ApertureSize;

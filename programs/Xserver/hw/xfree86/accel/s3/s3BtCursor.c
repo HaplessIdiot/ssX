@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.9 1995/12/17 05:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.10 1996/02/04 09:04:50 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -324,7 +324,8 @@ s3BtMoveCursor(pScr, x, y)
    x += 64;
    x -= s3hotX;
    /* Compensate for using Bt485 Cursor without pixel multiplexing. */
-   if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+   if ((OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) &&
        !s3PixelMultiplexing)
      x -= 2;
 

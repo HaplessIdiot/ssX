@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.28 1996/02/12 11:12:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.29tsi Exp $ */
 
 #include "Probe.h"
 
@@ -41,7 +41,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ATI 68800-3", "ATI 68800-6", "ATI 68800LX", "ATI 68800AX",
 		  "ATI 88800GX-C", "ATI 88800GX-D", "ATI 88800GX-E",
 		  "ATI 88800GX-F",
-		  "ATI 88800CX", "ATI Mach64 CT", "ATI Mach64 ET" },
+		  "ATI 88800CX",
+		  "ATI 264CT", "ATI 264ET", "ATI 264VT or 264VT2", "ATI 264GT" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -212,7 +213,7 @@ struct RamDac_Name RamDac_Names[] =
 	{ "20C499", "AT&T 20C499 15/16/24-bit DAC" },
 	{ "TKD8001", "Trident Built-In 15/16/24-bit DAC" },
 	{ "TGUIDAC", "Trident Built-In 15/16/24-bit DAC" },
-	{ "Integrated", "ATI Mach64CT/ET integrated 15/16/24/32-bit DAC w/clock" },
+	{ "Integrated", "ATI Mach64 integrated 15/16/24/32-bit DAC w/clock" },
 	{ "MU9C1880", "Music 9C1880"},
 	{ "IMSG174", "Inmos G-174" },
 	{ "STG1702", "STG1702 15/16/24-bit DAC w/cursor,pixel-mux" },

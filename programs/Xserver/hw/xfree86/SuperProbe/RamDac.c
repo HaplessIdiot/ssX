@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.18 1996/02/22 05:11:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.19tsi Exp $ */
 
 #include "Probe.h"
 
@@ -772,7 +772,7 @@ int *RamDac;
 	case 0x04:  case 0x05:  case 0x06:  case 0x07:
 	case 0x08:  case 0x09:  case 0x0A:  case 0x0B:
 	case 0x0C:  case 0x0D:  case 0x0E:  case 0x0F:
-		*RamDac = DAC_ATI_CT_ET;
+		*RamDac = DAC_ATI_INTERNAL;
 		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x10:

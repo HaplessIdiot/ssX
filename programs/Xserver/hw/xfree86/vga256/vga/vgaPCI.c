@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.2 1996/02/04 09:14:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.3tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -37,7 +37,6 @@ vgaGetPCIInfo()
 	    if ((info = (vgaPCIInformation *)
 		 xalloc(sizeof(vgaPCIInformation))) == NULL)
 		return NULL;
-	    info->PCIPtr = pcrp;
 	    info->Vendor = pcrp->_vendor;
 	    info->ChipType = pcrp->_device;
 	    info->ChipRev = pcrp->_class_revision & 0xFF;

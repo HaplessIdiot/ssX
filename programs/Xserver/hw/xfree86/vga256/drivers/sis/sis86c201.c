@@ -29,7 +29,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.4 1996/02/19 12:18:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.5 1996/02/22 05:13:21 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -264,6 +264,7 @@ SISProbe()
 		vgaGetClocks(numClocks, SISClockSelect);
 	}
 
+	vga256InfoRec.bankedMono = TRUE;
 #ifndef MONOVGA
 	/* MaxClock set at 90MHz for 256 - ??? */
 	OFLG_SET(OPTION_LINEAR, &SIS.ChipOptionFlags);

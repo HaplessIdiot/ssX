@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.87 1996/03/11 12:34:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.88 1996/03/29 22:15:59 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -289,6 +289,17 @@ s3CleanUp(void)
             outb(vgaCRReg, tmp & 0xDF);
 	    outb(vgaCRIndex, 0x5C);
 	    outb(vgaCRReg, 0x00);
+         }
+         if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options) &&
+             S3_928_ONLY(s3ChipId))
+	 {
+	    outb(vgaCRIndex, 0x5C);
+	    outb(vgaCRReg, 0x40); /* XXXXXXXXXXXXXXXXXXXXX */
+	    outb(0x3C7, 0x00);
+	    /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
+            outb(vgaCRIndex, 0x53);
+            tmp = inb(vgaCRReg);
+            outb(vgaCRReg, tmp & 0xDF);
          }
       }
 	 
@@ -1014,6 +1025,27 @@ s3Init(mode)
      vgaBase = vgaBaseHigh;
    }
 
+   if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options) &&
+       !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options) &&
+       s3Mmio928) {
+     int CR5C;
+     outb(vgaCRIndex, 0x5C);
+     CR5C = inb(vgaCRReg);
+     outb(vgaCRIndex, 0x5C);
+       switch(s3InfoRec.depth) {
+       case 24:
+	 outb(vgaCRReg, CR5C | 0xf0);
+	 break;
+       case 16:
+       case 15:
+	 outb(vgaCRReg, CR5C | 0x70);
+	 break;
+       default:
+	 outb(vgaCRReg, CR5C | 0xa0);
+       }
+       vgaBase = vgaBaseHigh;
+}
+
    /* Don't change the clock bits when using an external clock program */
 
    if (new->NoClock < 0) {
@@ -1551,7 +1583,8 @@ s3Init(mode)
 	   2048, external SID enabled (CR55.3), and split transfers
 	   disabled (CR51.6).
 	 */
-	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) {
+	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	     OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {
 	   outb(vgaCRIndex, 0x53);
 	   tmp = inb(vgaCRReg);
 	   outb(vgaCRReg, tmp | 0x20);
@@ -1576,10 +1609,11 @@ s3Init(mode)
          /* set s3 reg55 to external serial by or'ing 0x08              */
          outb(vgaCRIndex, 0x55);
          tmp = inb(vgaCRReg); /* XXXX Something should be masked here */
-	 if (s3InfoRec.bitsPerPixel == 32)  /* 24bpp truecolor */
-	    tmp |= 0x48;
+	 if (s3InfoRec.bitsPerPixel == 32 &&
+	     !OFLG_ISSET(OPTION_MIRO_MAGIC_S4,&s3InfoRec.options))  /* 24bpp truecolor */
+ 	   tmp |= 0x48;
 	 else
-	    tmp |= 0x08;
+	   tmp |= 0x08;
          outb(vgaCRReg, tmp);
 
 	 if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
@@ -1624,6 +1658,8 @@ s3Init(mode)
 	    outb(vgaCRReg, tmp | 0x20);
  	    /* set s3 reg65 for some unknown reason                      */
 	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
+	  } else if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {
+	     /* do nothing */ ;
 	  } else if ((s3DisplayWidth >= 1024) || (s3InfoRec.depth == 24)) {
 #ifndef PC98_PW
 	    outb(vgaCRReg, tmp | 0x40);
@@ -1663,6 +1699,13 @@ s3Init(mode)
 	    outb(vgaCRReg, 0x20);
 	    outb(0x3C7, 0x00);
 	 }
+	 if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options) &&
+             S3_928_ONLY(s3ChipId))
+	 {
+	    outb(vgaCRIndex, 0x5C);
+	    outb(vgaCRReg, 0x20);
+	    outb(0x3C7, 0x00);
+	 }
 
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
@@ -1686,11 +1729,19 @@ s3Init(mode)
 	    outb(vgaCRReg, 0x00);
 	 }
 
-         /* set s3 reg55 to non-external serial by and'ing 0xF7         */
-         outb(vgaCRIndex, 0x55);
-         tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp & 0xF7);
-
+	 if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options))
+	 {
+ 	    outb(vgaCRIndex, 0x5C);
+	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRIndex, 0x55);
+	    outb(vgaCRReg, 0x20);
+	 } else {
+	   /* set s3 reg55 to non-external serial by and'ing 0xF7         */
+	   outb(vgaCRIndex, 0x55);
+	   tmp = inb(vgaCRReg);
+	   outb(vgaCRReg, tmp & 0xF7);
+	 }
+	 
 	 if (s3InfoRec.depth == 24)			/* 24bpp */
 	    tmp = 0x10;
 	 else if (s3InfoRec.depth == 16)		/* 5-6-5 */
@@ -2391,7 +2442,8 @@ s3Init(mode)
    } else {
       if (s3Localbus) {
 	 i = (inb(vgaCRReg) & 0xf2);
-	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	     OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options))
 	   /* Set no wait states on STB Pegasus. */
 	   s3Port40 = (i | 0x01);
 	 else s3Port40 = (i | 0x05);
@@ -2504,7 +2556,8 @@ s3Init(mode)
       outb(vgaCRIndex, 0x51);
       s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3BppDisplayWidth >> 7) & 0x30);
 
-      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	  OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {
 	if (s3PixelMultiplexing)
 	  /* In Pixel Multiplexing mode, disable split transfers. */
 	  s3Port51 |= 0x40;
@@ -2566,7 +2619,9 @@ s3Init(mode)
       else
 	 m = 20;
       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
-	s3Port54 = 0x7F;
+ 	s3Port54 = 0x7F;
+      else if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options))
+	s3Port54 = 0;
       else s3Port54 = m << 3;
       outb(vgaCRReg, s3Port54);
       
@@ -2576,9 +2631,11 @@ s3Init(mode)
       outb(vgaCRIndex, 0x60);
       outb(vgaCRReg, n);
 
-      outb(vgaCRIndex, 0x55);
-      tmp = inb(vgaCRReg) & 0x08;       /* save the external serial bit  */
-      outb(vgaCRReg, tmp | 0x40);	/* remove mysterious dot at 60Hz */
+      if(!OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {
+	outb(vgaCRIndex, 0x55);
+	tmp = inb(vgaCRReg) & 0x08;       /* save the external serial bit  */
+	outb(vgaCRReg, tmp | 0x40);	/* remove mysterious dot at 60Hz */
+      }
 
       outb(vgaCRIndex, 0x58);
       outb(vgaCRReg, s3SAM256);
@@ -2657,11 +2714,11 @@ s3Init(mode)
 
    if (mode->Private) {
       if (mode->Private[0] & (1 << S3_INVERT_VCLK)) {
-	 outb(vgaCRIndex, 0x67);
-	 tmp = inb(vgaCRReg) & 0xfe;
-	 if (mode->Private[S3_INVERT_VCLK])
-	    tmp |= 1;
-	 outb(vgaCRReg, tmp);
+	outb(vgaCRIndex, 0x67);
+	tmp = inb(vgaCRReg) & 0xfe;
+	if (mode->Private[S3_INVERT_VCLK])
+	  tmp |= 1;
+	outb(vgaCRReg, tmp);
       }
       if (mode->Private[0] & (1 << S3_BLANK_DELAY)) {
 	 outb(vgaCRIndex, 0x6d);

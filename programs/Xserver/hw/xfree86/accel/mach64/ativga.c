@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.4 1995/12/16 08:19:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.5tsi Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -118,7 +118,7 @@ void mach64SaveVGAInfo(screen_idx)
     * xf86/vga256/drivers/ati/driver.c
     */
 
-   if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+   if (!mach64IntegratedController) {
      /* Unlock ATI specials */
      outb(ATIExtReg, (((b8_save = inATI(0xb8)) & 0xC0) << 8) | 0xb8);
 
@@ -128,7 +128,7 @@ void mach64SaveVGAInfo(screen_idx)
 
    vgaNewVideoState = vgaHWSave(vgaNewVideoState, sizeof(SaveBlock));
 
-   if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+   if (!mach64IntegratedController) {
      save->ATIReg0  = inATI(0xb0);
      save->ATIReg1  = inATI(0xb1);
      save->ATIReg2  = b2_save;
@@ -159,7 +159,7 @@ void mach64RestoreVGAInfo()
     * xf86/vga256/drivers/ati/driver.c
     */
 
-   if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+   if (!mach64IntegratedController) {
      /* Unlock ATI specials */
      outw(ATIExtReg, ((inATI(0xb8) & 0xC0) << 8) | 0xb8);
 

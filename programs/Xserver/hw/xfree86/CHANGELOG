@@ -1,3 +1,34 @@
+XFree86 3.1.2De (31 March 1996)
+471. Change the default HSkew calculation (Marc Aurele La France).
+470. Add detection of the ATI 264VT, 264VT2 and 264GT to the ati driver,
+     SuperProbe, scanpci, and the Mach64 server (Marc Aurele La France).
+469. Fix the W32 server's reporting of the bits/rgb resolution (Koen Gadeyne).
+468. Add ICD2061A clockchip support to the W32 server (Koen Gadeyne and
+     Peter Chang).
+467. Add support for PowerWindow968, Cyber9320 and TGUI9680 (X98 core team).
+466. Fixes for XF98_NEC480 on PANIX-PC98 (X98 core team).
+465. Remove X98 style version info from the server startup messages
+     (X98 core team).
+464. Improve stability of the XF98_PWSK server (X98 core team).
+463. Add some missing XFreeXDGA #ifdefs (Kaleb Keithley).
+462. Fix problem of the XKB keymaps not getting loaded when using the
+     Xqueue keyboard driver on SVR4 (Joe Moss).
+461. Add POSIX termios support to xterm, and use it for BSD Net/2
+     derived systems.  This removes the need for kernels on those systems
+     to be compiled with COMPAT_43 in order to run xterm (Matthieu Herrb).
+460. Update the I/O enabling in the X servers and SuperProbe for
+     NetBSD-current (Matthieu Herrb).
+459. Save the S3 cursor colour stack (CR4A/CR4B) (Harald Koenig).
+458. Add macro button support to the Wacom driver, and handle more than
+     six valuators to post events (Frederic Lepied).
+457. Support for the Miro Magic S4 (S3 928 + Bt485).  A known problem is
+     that switching between pixmux an non-pixmux modes doesn't work
+     (Bernd Strobel).
+456. Fix banked mono for the SiS driver (Alan Hourihane).
+455. X server prototype cleanups and fixes, particularly in the Xi code
+     (Thomas E. Dickey).
+454. Possible fix for tvga9000 and tvga8900d problems (Alan Hourihane).
+
 XFree86 3.1.2Dd (17 March 1996)
 453. Include R6.1 public patch 1.
 452. Fix incorrect type in SuperProbe/PCI.c (Thomas E. Dickey).
@@ -25,8 +56,7 @@ XFree86 3.1.2Dc (11 March 1996)
      path is given (Thomas E. Dickey).
 438. Updates to Ti3026 PLL paramter limits (Harald Koenig).
 437. Support for ELSA Winner 2000PRO/X rev G (Harald Koenig).
-436. PANIX-PC98 support, and fix 'make clean' problems for PC98
-     (Takefumi Tsukada).
+436. Fix 'make clean' problems for PC98 (Takefumi Tsukada).
 435. OS/2 updates (Holger Veit).
 434. Remove DEVINTPTR ifdefs by renaming the entrypoints of the affected
      functions (Thomas E. Dickey).

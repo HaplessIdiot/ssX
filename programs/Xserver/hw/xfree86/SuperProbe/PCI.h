@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.0 1996/02/12 11:25:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.1tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -218,6 +218,8 @@ void xf86writepci(
 #define PCI_CHIP_MACH64CX	0x4358
 #define PCI_CHIP_MACH64CT	0x4354
 #define PCI_CHIP_MACH64ET	0x4554
+#define PCI_CHIP_MACH64VT	0x5654
+#define PCI_CHIP_MACH64GT	0x4754
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
@@ -273,33 +275,5 @@ void xf86writepci(
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16
-
-typedef struct vgaPCIInformation {
-    int Vendor;
-    int ChipType;
-    int ChipRev;
-    unsigned long MemBase;
-    unsigned long IOBase;
-    struct pci_config_reg *PCIPtr;
-} vgaPCIInformation;
-
-extern vgaPCIInformation *vgaPCIInfo;
-
-typedef struct pciVendorDeviceInfo {
-    unsigned short VendorID;
-    char *VendorName;
-    struct pciDevice {
-	unsigned short DeviceID;
-	char *DeviceName;
-    } Device[MAX_DEV_PER_VENDOR];
-} pciVendorDeviceInfo;
-
-extern pciVendorDeviceInfo xf86PCIVendorInfo[];
-
-extern vgaPCIInformation *vgaGetPCIInfo(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
    
 #endif /* _PCI_H */

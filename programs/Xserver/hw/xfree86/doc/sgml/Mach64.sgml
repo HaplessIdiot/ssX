@@ -114,7 +114,7 @@ type from the BIOS.  If you wish to override the default RAMDAC type
 (not recommended unless the BIOS incorrectly reports your RAMDAC
 type), you can specify the RAMDAC type in the XF86Config file with the
 "Ramdac" entry.  The Mach64 X server will also program the clocks
-based on the clock chip read from the BIOS.  If you with to override
+based on the clock chip read from the BIOS.  If you wish to override
 the default clock chip type (not recommended unless the BIOS
 incorrectly reports your clock chip type), you may specify the clock
 chip in the XF86Config file with the "ClockChip" entry.  If, however,
@@ -227,7 +227,7 @@ comp.windows.x.i386unix newsgroup.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.9 1996/02/04 09:08:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.10tsi Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.41 1996/03/16 12:46:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.42 1996/03/29 22:15:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -326,6 +326,8 @@ SymTabRec mach64ChipTable[] = {
     { MACH64_CX, "Mach64 CX" },
     { MACH64_CT, "Mach64 CT" },
     { MACH64_ET, "Mach64 ET" },
+    { MACH64_VT, "Mach64 VT or VT2" },
+    { MACH64_GT, "Mach64 GT" },
     { -1, "" },
 };
 
@@ -359,7 +361,7 @@ int	mach64NAdj;
 int	mach64CXClk;
 int	mach64MemClk;
 int	mach64VRAMMemClk;
-
+Bool	mach64IntegratedController;
 
 static ATIInformationBlock *GetATIInformationBlock()
 {
@@ -442,6 +444,12 @@ static ATIInformationBlock *GetATIInformationBlock()
 	break;
    case MACH64_ET_ID:
 	info.ChipType = MACH64_ET;
+	break;
+   case MACH64_VT_ID:
+	info.ChipType = MACH64_VT;
+	break;
+   case MACH64_GT_ID:
+	info.ChipType = MACH64_GT;
 	break;
    default:
 	info.ChipType = MACH64_UNKNOWN;
@@ -566,6 +574,12 @@ GetATIPCIInformation()
 		break;
 	    case PCI_MACH64_ET:
 		info.ChipType = MACH64_ET;
+		break;
+	    case PCI_MACH64_VT:
+		info.ChipType = MACH64_VT;
+		break;
+	    case PCI_MACH64_GT:
+		info.ChipType = MACH64_GT;
 		break;
 	    default:
 		info.ChipType = MACH64_UNKNOWN;
@@ -787,8 +801,14 @@ mach64Probe()
 		"Sparse", 0x2EC);
     }
 
+    if (mach64ChipType == MACH64_GX || mach64ChipType == MACH64_CX)
+	mach64IntegratedController = FALSE;
+    else
+	/* Even for MACH64_UNKNOWN more than likely */
+	mach64IntegratedController = TRUE;
+
 #ifdef DEBUG
-    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET)
+    if (mach64IntegratedController)
 	mach64PrintCTPLL();
 #endif
 
@@ -947,7 +967,7 @@ mach64Probe()
     mach64InfoRec.chipset = "mach64";
     xf86ProbeFailed = FALSE;
 
-    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+    if (mach64IntegratedController) {
 	if (pciInfo)
 	    mach64BusType = PCI;
 	else

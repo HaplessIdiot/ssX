@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.47 1996/02/20 14:34:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.48 1996/03/29 22:16:25 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -115,6 +115,7 @@ typedef struct {
 #define OPTION_GENOA		76 /* Genoa boards (S3) */
 #define OPTION_STB		77 /* STB boards (S3) */
 #define OPTION_HERCULES		78 /* Hercules boards (S3) */
+#define OPTION_MIRO_MAGIC_S4	79 /* miroMagic S4 with (S3) 928 and BT485 */
 
 /* Misc options */
 #define OPTION_CSYNC		90 /* Composite sync */
@@ -278,6 +279,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "genoa",		OPTION_GENOA },
   { "stb",		OPTION_STB },
   { "hercules",		OPTION_HERCULES },
+  { "miro_magic_s4",	OPTION_MIRO_MAGIC_S4},
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },

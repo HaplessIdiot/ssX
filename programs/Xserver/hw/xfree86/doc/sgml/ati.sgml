@@ -5,13 +5,13 @@
 
 <title>ATI adapters README
 <author>Marc Aurele La France
-<date>13 March 1996
+<date>23 March 1996
 <abstract>
 This is the README for the XFree86 ATI VGA driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
 Users of ATI adapters based on the Mach8, Mach32 or Mach64 accelerators should
 be using the accelerated servers (XF86_Mach8, XF86_Mach32 or XF86_Mach64).
-The unaccelerated servers (XF86_Mono, XF86_VGA16 and XF86_SVGA) might still
+The unaccelerated servers (XF86_Mono, XF86_VGA16 and XF86_SVGA) should still
 work, but are a waste of capabilities.
 </abstract>
 
@@ -52,7 +52,9 @@ with this driver:
 VGA Wonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
     Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
     Mach64 series:  88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX,
-                    88800CT, 88800ET</verb>
+                    264CT, 264ET, 264VT, 264VT2, 264GT</verb>
+The 264xT series are integrated controllers, meaning that they include an
+internal RAMDAC and clock generator.
 Some early Mach32 adapters will not work with this driver because they do not
 provide VGA functionality.
 Also, early Mach8 adapters will not work for the same reason, unless the
@@ -208,14 +210,14 @@ Video memory banking does not work in the 16-colour and monochrome servers on
 V3, V4 and V5 adapters.<p>
 Interlaced modes do not work in the monochrome server on 28800-x adapters when
 using a virtual resolution wider than 1024 pixels.<p>
-Some (particularly low resolution) interlaced modes do not work on 88800CT
-&amp; 88800ET adapters (Graphics Xpression PCI).<p>
+Some (particularly low resolution) interlaced modes do not work on 264xT
+adapters.<p>
 Support for virtual resolutions using more than 1MB of video memory is still
 incomplete.
-Specifically, such support works on Mach32 adapters, and on 88800CT &amp;
-88800ET adapters, but not on any other Mach64 adapters.<p>
+Specifically, such support works on Mach32 adapters, and on 264xT adapters,
+but not on any other Mach64 adapters.<p>
 There is some controversy over whether or not clocks higher than 135MHz should
-be allowed on CT &amp; ET adapters.
+be allowed on 264xT adapters.
 For now, clocks will be limited to 135MHz by default.  
 This limit can only be increased (up to a driver-calculated absolute maximum)
 through the DACSpeed option in XF86Config.
@@ -225,12 +227,7 @@ accelerated functionality.<p>
 Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.9 1996/02/24 10:19:22 dawes Exp $
-
-
-
-
-
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.10tsi Exp $
 $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
 </verb>
 </article>

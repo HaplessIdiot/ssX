@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.42 1996/03/10 12:04:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.43 1996/03/29 22:16:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -126,7 +126,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
       s3BankSize = 0x10000;
       s3LinApOpt = 0x14;
 
-      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+      if ((OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	   OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) &&
 	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options) &&
 	  s3Mmio928) {
 	vgaBaseLow = xf86MapVidMem(scr_index, VGA_REGION,

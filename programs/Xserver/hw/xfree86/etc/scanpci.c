@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.8 1996/02/04 09:09:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.9tsi Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -388,6 +388,8 @@ struct pci_vendor_device {
                             { 0x4358, "Mach64 CX", print_mach64 },
                             { 0x4354, "Mach64 CT", print_mach64 },
                             { 0x4554, "Mach64 ET", print_mach64 },
+                            { 0x5654, "Mach64 VT", print_mach64 },
+                            { 0x4754, "Mach64 GT", print_mach64 },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1004, "VLSI", {
                             { 0x0005, "82C592-FC1", NF },

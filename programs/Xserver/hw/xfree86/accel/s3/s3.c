@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.123 1996/03/11 12:34:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.124 1996/03/29 22:15:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -845,6 +845,7 @@ s3Probe()
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
+   OFLG_SET(OPTION_MIRO_MAGIC_S4, &validOptions);
 #ifdef PC98
    OFLG_SET(OPTION_PCSKB, &validOptions);
    OFLG_SET(OPTION_PCSKB4, &validOptions);
@@ -1976,6 +1977,7 @@ s3Probe()
        (
 	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
 	S3_964_SERIES(s3ChipId)))
       s3Bt485PixMux = TRUE;
@@ -2085,6 +2087,18 @@ s3Probe()
 	  nonMuxMaxClock = 0;
 	  pixMuxMinWidth = 0;
 	}
+      }else if (OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {
+	allowPixMuxSwitching = FALSE;
+	pixMuxLimitedWidths = TRUE;
+ 	/* For 8bpp mode, allow PIXMUX selection based on Clock and Width. */
+ 	if (s3Bpp == 1) {
+ 	  nonMuxMaxClock = 85000;
+ 	  pixMuxMinWidth = 1024;
+ 	} else {
+	  /* For 16bpp and 32bpp modes, require PIXMUX. */
+	  nonMuxMaxClock = 0;
+	  pixMuxMinWidth = 0;
+ 	}
       } else if (S3_964_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
@@ -2937,7 +2951,8 @@ s3Probe()
 	    if (s3InfoRec.videoRam > nonMuxMaxMemory)
 	       pMode->Flags |= V_PIXMUX;
 	    /* XXXX this needs some changes */
-	    if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+	    if ((OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+		 OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) &&
 		s3InfoRec.virtualX * s3InfoRec.virtualY > 2*1024*1024) {
 	      /* PIXMUX must be used to access more than 2mb memory. */
 	      pMode->Flags |= V_PIXMUX;
@@ -3025,7 +3040,8 @@ s3Probe()
 
    /* pixmux on Bt485 requires use of Bt's cursor */
    if (((s3Bt485PixMux && s3UsingPixMux) ||
-	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) &&
+	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) &&
        !OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
       OFLG_SET(OPTION_BT485_CURS, &s3InfoRec.options);
       ErrorF("%s %s: Using hardware cursor from Bt485/20C505 RAMDAC\n",
@@ -3064,7 +3080,8 @@ s3Probe()
 	    {
 	       int c;
 
-	       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+	       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+		   OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options))
 		  c = 85000;
 	       else if (S3_964_SERIES(s3ChipId) && s3Bpp == 4)
 		  c = 90000;

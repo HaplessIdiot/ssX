@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.27 1996/02/09 08:20:03 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.28tsi Exp $
 .TH XF86_SVGA 1 "Version 3.1.2D"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -33,7 +33,8 @@ on certain configurations.  Generic VGA cards are also supported at 8bpp
 .TP 4
 ATI:
 18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
-68800LX, 88800GX-C, 88800GX_D, 88800GX-E, 88800GX-F, 88800CX, 88800CT, 88800ET
+68800LX, 88800GX-C, 88800GX_D, 88800GX-E, 88800GX-F, 88800CX, 264CT, 264ET,
+264VT, 264VT2, 264GT
 .TP 4
 Tseng:
 ET3000, ET4000, ET4000/W32
