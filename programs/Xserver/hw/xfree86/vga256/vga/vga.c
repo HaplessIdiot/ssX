@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.13 1994/09/04 10:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.14 1994/09/07 15:56:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -95,7 +95,7 @@ ScrnInfoRec vga256InfoRec = {
 #else
   8,			/* int depth */
 #endif
-  {0, 0, 0},            /* xrgb weight */
+  {5, 6, 5},            /* xrgb weight */
   8,			/* int bitsPerPixel */
   PseudoColor,		/* int defaultVisual */
 #endif
