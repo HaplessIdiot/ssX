@@ -3,12 +3,13 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.3 2001/03/15 22:24:27 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
 #include <drivers/event_status_driver.h>	// for NXEvent
 #include <unistd.h>
+#include <stdlib.h>
 
 @interface Xserver : NSObject {
     // server state
@@ -33,6 +34,7 @@
 + (void)append:(NSString*)value toEnv:(NSString*)name;
 
 - (void)run;
+- (void)startClients;
 - (void)toggle;
 - (void)show;
 - (void)hide;

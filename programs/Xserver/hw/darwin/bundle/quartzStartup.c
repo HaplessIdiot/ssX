@@ -3,7 +3,7 @@
  * Startup code for the Quartz Darwin X Server
  *
  **************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.1 2001/03/24 23:08:53 torrey Exp $ */
 
 #include <fcntl.h>
 #include "opaque.h"
@@ -26,7 +26,7 @@ void DarwinHandleGUI(
     char        *envp[] )
 {
     static Bool been_here = FALSE;
-    int         main_exit;
+    int         main_exit, i;
     int         fd[2];
 
     if (been_here)
@@ -43,6 +43,14 @@ void DarwinHandleGUI(
     argcGlobal = argc;
     argvGlobal = argv;
     envpGlobal = envp;
+
+    // Determine if we need to start X clients    
+    quartzStartClients = 1;
+    for (i = argc-1; i; i--) {
+        if (!strcmp(argv[i], "-nostartx")) {
+            quartzStartClients = 0;
+        }
+    }
 
     quartz = TRUE;
     main_exit = NSApplicationMain(argc, argv);
