@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.1 1994/06/18 16:24:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.2 1994/08/01 12:12:22 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1031,14 +1031,6 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
       }
    }
    BLOCK_CURSOR;
-
-#if 0
-WaitQueue(4);
-S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | y);
-S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | x);
-S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (x+w)-1);
-S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (y+h)-1);
-#endif
 
    WaitQueue (7);
    S3_OUTW (WRT_MASK, planemask);   
