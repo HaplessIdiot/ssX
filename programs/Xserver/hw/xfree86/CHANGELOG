@@ -1,4 +1,9 @@
 XFree86 4.0.1Z (8 December 2000)
+1150. Bugfix to xf86UDelay() (Egbert Eich).
+1149. Added a sanity check to  pciConvertRange2Host() (Egbert Eich).
+1148. Added more log messages to Linux APM code (Egbert Eich).
+1147. Added a sanity check to xf86ConfigPciEntity() (Egbert Eich).
+1146. Resync with DRI CVS trunk (tdfx driver updates) (Daryll Strauss).
 1145. Add -textmode mode option for xf86cfg, to run a ncurses interface, and
       add the "expert" interface, to provide more control over the config file.
       Updates to vesa driver, removed debug messages and fixed problem with
@@ -11990,4 +11995,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1460 2000/12/08 19:36:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1461 2000/12/08 22:04:37 paulo Exp $
