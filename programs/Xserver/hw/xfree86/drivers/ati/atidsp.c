@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.15 2002/01/29 03:42:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.16 2002/02/14 22:08:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -157,7 +157,7 @@ ATIDSPPreInit
          (!dsp_config || !((dsp_config ^ vga_dsp_config) & DSP_XCLKS_PER_QW))))
     {
         if (ATIDivide(GetBits(vga_dsp_on_off, VGA_DSP_OFF),
-                      GetBits(vga_dsp_config, VGA_DSP_XCLKS_PER_QW), 5, 1) > 23)
+                      GetBits(vga_dsp_config, VGA_DSP_XCLKS_PER_QW), 5, 1) > 24)
             pATI->DisplayFIFODepth = 32;
         else
             pATI->DisplayFIFODepth = 24;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.52 2002/01/25 21:55:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.53 2002/01/29 17:47:56 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -311,6 +311,36 @@ static const char *i2cSymbols[] = {
     "xf86I2CBusInit",
     NULL
 };
+
+void RADEONLoaderRefSymLists(void)
+{
+    /*
+     * Tell the loader about symbols from other modules that this module might
+     * refer to.
+     */
+    xf86LoaderRefSymLists(vgahwSymbols,
+#ifdef USE_FB
+		      fbSymbols,
+#else
+		      cfbSymbols,
+#endif
+		      xaaSymbols,
+#if 0
+		      xf8_32bppSymbols,
+#endif
+		      ramdacSymbols,
+#ifdef XF86DRI
+		      drmSymbols,
+		      driSymbols,
+#endif
+		      fbdevHWSymbols,
+		      vbeSymbols,
+		      int10Symbols,
+		      ddcSymbols,
+		      /* i2csymbols, */
+		      /* shadowSymbols, */
+		      NULL);
+}
 
 extern int gRADEONEntityIndex;
 
@@ -2128,33 +2158,6 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef __alpha__
     CARD32 save1, save2;
 #endif
-
-    /*
-     * Tell the loader about symbols from other modules that this module might
-     * refer to.
-     */
-    xf86LoaderRefSymLists(vgahwSymbols,
-#ifdef USE_FB
-		      fbSymbols,
-#else
-		      cfbSymbols,
-#endif
-		      xaaSymbols,
-#if 0
-		      xf8_32bppSymbols,
-#endif
-		      ramdacSymbols,
-#ifdef XF86DRI
-		      drmSymbols,
-		      driSymbols,
-#endif
-		      fbdevHWSymbols,
-		      vbeSymbols,
-		      int10Symbols,
-		      ddcSymbols,
-		      /* i2csymbols, */
-		      /* shadowSymbols, */
-		      NULL);
 
     RADEONTRACE(("RADEONPreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;

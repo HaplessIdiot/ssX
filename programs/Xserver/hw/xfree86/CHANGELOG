@@ -1,4 +1,11 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 107. Rework ati, atimisc, r128 and radeon module versioning (Marc La France).
+ 106. Code clean up for the original Rage LT (Marc La France).
+ 105. An attempt at disabling display switches while the server is running on
+      an LT Pro or Mobility M1 (Marc La France).
+ 104. Make atimisc, r128 and radeon modules register the symbols they reference
+      at module load time, rather than PreInit() (Marc La France).
+ 103. Fix rounding error in Mach64 DSP calculation (Marc La France).
  102. Convert xmh to ANSI C (Thomas Dickey).
  101. Xterm patch #166 (Thomas Dickey).
  100. Fix keyboard beeps on Cygwin/XFree86 (#5211, Harold Hunt).
@@ -14746,4 +14753,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2195 2002/04/04 14:05:38 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2196 2002/04/05 21:08:32 dickey Exp $

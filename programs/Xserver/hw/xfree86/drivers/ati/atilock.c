@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.13 2002/01/29 03:42:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.14 2002/02/14 22:08:02 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -137,6 +137,16 @@ ATIUnlock
             if (pATI->Chip >= ATI_CHIP_264XL)
                 outr(LCD_INDEX, pATI->LockData.lcd_index &
                     ~(LCD_MONDET_INT_EN | LCD_MONDET_INT));
+
+            /*
+             * Prevent BIOS initiated display switches on dual-CRT controllers.
+             */
+            if (pATI->Chip != ATI_CHIP_264XL)
+            {
+                pATI->LockData.scratch_reg3 = inr(SCRATCH_REG3);
+                outr(SCRATCH_REG3,
+                    pATI->LockData.scratch_reg3 | DISPLAY_SWITCH_DISABLE);
+            }
         }
 
         pATI->LockData.mem_cntl = inr(MEM_CNTL);
@@ -216,7 +226,7 @@ ATIUnlock
 
                 /* Setup to unlock non-shadow registers */
                 lcd_gen_ctrl = saved_lcd_gen_ctrl &
-                    ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN);
+                    ~(SHADOW_EN | SHADOW_RW_EN);
                 outr(LCD_GEN_CTRL, lcd_gen_ctrl);
             }
             else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
@@ -402,7 +412,7 @@ ATILock
 
                 /* Setup to lock non-shadow registers */
                 lcd_gen_ctrl = saved_lcd_gen_ctrl &
-                    ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN);
+                    ~(SHADOW_EN | SHADOW_RW_EN);
                 outr(LCD_GEN_CTRL, lcd_gen_ctrl);
             }
             else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
@@ -527,7 +537,11 @@ ATILock
         if (pATI->Chip < ATI_CHIP_264CT)
             outr(MEM_CNTL, pATI->LockData.mem_cntl);
         if ((pATI->LCDPanelID >= 0) && (pATI->Chip != ATI_CHIP_264LT))
+        {
             outr(LCD_INDEX, pATI->LockData.lcd_index);
+            if (pATI->Chip != ATI_CHIP_264XL)
+                outr(SCRATCH_REG3, pATI->LockData.scratch_reg3);
+        }
         if (pATI->Chip >= ATI_CHIP_264VTB)
         {
             outr(MPP_CONFIG, pATI->LockData.mpp_config);

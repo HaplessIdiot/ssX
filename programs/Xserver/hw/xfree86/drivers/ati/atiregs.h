@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.18 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.19 2002/01/29 03:42:28 tsi Exp $ */
 /*
  * Copyright 1994 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -901,6 +901,9 @@
 /*	?				0xffff0000ul */
 #define SCRATCH_REG2		BlockIOTag(0x22u)	/* LT */
 #define SCRATCH_REG3		BlockIOTag(0x23u)	/* GTPro */
+/*	Not described here		0x07fffffful */
+#define DISPLAY_SWITCH_DISABLE		0x08000000ul
+/*	Not described here		0xf0000000ul */
 #define CLOCK_CNTL		IOPortTag(0x12u, 0x24u)
 #define CLOCK_BIT			0x00000004ul	/* For ICS2595 */
 #define CLOCK_PULSE			0x00000008ul	/* For ICS2595 */
@@ -1201,22 +1204,27 @@
 #define CRT_ON				0x00000001ul
 #define LCD_ON				0x00000002ul
 #define HORZ_DIVBY2_EN			0x00000004ul
-#define DONT_DS_ICON			0x00000008ul
+#define TRISTATE_MEM_EN			0x00000008ul
+#define DONT_DS_ICON			0x00000008ul	/* LTPro */
 #define LOCK_8DOT			0x00000010ul
 #define ICON_ENABLE			0x00000020ul
 #define DONT_SHADOW_VPAR		0x00000040ul
-#define V2CLK_PM_EN			0x00000080ul
+#define TOGGLE_EN			0x00000080ul
+#define V2CLK_PM_EN			0x00000080ul	/* LTPro */
 #define RST_FM				0x00000100ul
 #define DISABLE_PCLK_RESET		0x00000200ul	/* XC/XL */
 #define DIS_HOR_CRT_DIVBY2		0x00000400ul
 #define SCLK_SEL			0x00000800ul
 #define SCLK_DELAY			0x0000f000ul
-#define TVCLK_PM_EN			0x00010000ul
+#define MCLK_PM_EN			0x00010000ul
+#define TVCLK_PM_EN			0x00010000ul	/* LTPro */
 #define VCLK_DAC_PM_EN			0x00020000ul
 #define VCLK_LCD_OFF			0x00040000ul
-#define SELECT_WAIT_4MS			0x00080000ul
+#define SLOWDOWN_XMCLK			0x00080000ul
+#define SELECT_WAIT_4MS			0x00080000ul	/* LTPro */
 #define XTALIN_PM_EN			0x00080000ul	/* XC/XL */
-#define V2CLK_DAC_PM_EN			0x00100000ul
+#define LCD_CLK_RATIO			0x00100000ul
+#define V2CLK_DAC_PM_EN			0x00100000ul	/* LTPro */
 #define LVDS_EN				0x00200000ul
 #define LVDS_PLL_EN			0x00400000ul
 #define LVDS_PLL_RESET			0x00800000ul
@@ -1239,7 +1247,7 @@
 #define KEYBD_SNOOP			0x00000200ul
 #define USE_F32KHZ			0x00000400ul	/* LTPro */
 #define DONT_USE_XTALIN			0x00000400ul	/* XC/XL */
-#define TRISTATE_MEM_EN			0x00000800ul	/* LTPro */
+#define TRISTATE_MEM_EN_P		0x00000800ul	/* LTPro */
 #define LCDENG_TEST_MODE		0x0000f000ul
 #define STANDBY_COUNT			0x000f0000ul
 #define SUSPEND_COUNT			0x00f00000ul

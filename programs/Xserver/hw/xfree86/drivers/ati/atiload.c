@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.8 2002/01/16 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.9 2002/02/14 22:08:01 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,7 +30,7 @@
 
 /*
  * All symbol lists belong here.  They are externalised so that they can be
- * referenced elsewhere.
+ * referenced elsewhere.  Note the naming convention for these things...
  */
 
 const char *ATIint10Symbols[] =
@@ -135,28 +135,6 @@ ATILoadModules
     ATIPtr      pATI
 )
 {
-    /*
-     * Tell loader about symbols from other modules that this module might
-     * refer to.
-     */
-    xf86LoaderRefSymLists(
-        ATIint10Symbols,
-        ATIddcSymbols,
-        ATIvbeSymbols,
-
-#ifndef AVOID_CPIO
-
-        ATIxf1bppSymbols,
-        ATIxf4bppSymbols,
-
-#endif /* AVOID_CPIO */
-
-        ATIfbSymbols,
-        ATIshadowfbSymbols,
-        ATIxaaSymbols,
-        ATIramdacSymbols,
-        NULL);
-
     /* Load shadow frame buffer code if needed */
     if (pATI->OptionShadowFB &&
         !ATILoadModule(pScreenInfo, "shadowfb", ATIshadowfbSymbols))

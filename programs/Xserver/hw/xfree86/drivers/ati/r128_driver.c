@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.57 2002/01/04 21:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.58 2002/01/25 21:55:56 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -325,6 +325,31 @@ static const char *int10Symbols[] = {
     NULL
 };
 
+void R128LoaderRefSymLists(void)
+{
+    /*
+     * Tell the loader about symbols from other modules that this module might
+     * refer to.
+     */
+    xf86LoaderRefSymLists(vgahwSymbols,
+#ifdef USE_FB
+		      fbSymbols,
+#else
+		      cfbSymbols,
+#endif
+		      xaaSymbols,
+		      ramdacSymbols,
+#ifdef XF86DRI
+		      drmSymbols,
+		      driSymbols,
+#endif
+		      fbdevHWSymbols,
+		      vbeSymbols,
+		      /* ddcsymbols, */
+		      i2cSymbols,
+		      /* shadowSymbols, */
+		      NULL);
+}
 
 /* Allocate our private R128InfoRec. */
 static Bool R128GetRec(ScrnInfoPtr pScrn)
@@ -1748,29 +1773,6 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     xf86Int10InfoPtr pInt10 = NULL;
 
     R128TRACE(("R128PreInit\n"));
-
-    /*
-     * Tell the loader about symbols from other modules that this module might
-     * refer to.
-     */
-    xf86LoaderRefSymLists(vgahwSymbols,
-#ifdef USE_FB
-		      fbSymbols,
-#else
-		      cfbSymbols,
-#endif
-		      xaaSymbols,
-		      ramdacSymbols,
-#ifdef XF86DRI
-		      drmSymbols,
-		      driSymbols,
-#endif
-		      fbdevHWSymbols,
-		      vbeSymbols,
-		      /* ddcsymbols, */
-		      i2cSymbols,
-		      /* shadowSymbols, */
-		      NULL);
 
     if (pScrn->numEntities != 1) return FALSE;
 
