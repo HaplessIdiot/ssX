@@ -22,11 +22,11 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.14 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.15 2001/07/03 11:18:49 alanh Exp $ */
 
 #include "win.h"
 
-int		g_iNumScreens;
+int		g_iNumScreens = 0;
 winScreenInfo	g_ScreenInfo[MAXSCREENS];
 int		g_iLastScreen = -1;
 int		g_fdMessageQueue = WIN_FD_INVALID;
@@ -36,6 +36,7 @@ int		g_iGCPrivateIndex = -1;
 int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 HBITMAP		g_hbmpGarbage = NULL;
+static Bool	g_fScreenInfoInitialized = FALSE;
 
 static PixmapFormatRec g_PixmapFormats[] = {
         { 1,    1,      BITMAP_SCANLINE_PAD },
@@ -53,14 +54,18 @@ void
 winInitializeDefaultScreens (void)
 {
   int                   i;
+  
+  /* Set a default DPI, if no parameter was passed */
+  if (monitorResolution == 0)
+    monitorResolution = WIN_DEFAULT_DPI;
 
-  for (i = 0; i < MAXSCREENS; i++)
+  for (i = 0; i < MAXSCREENS; ++i)
     {
       g_ScreenInfo[i].dwScreen = i;
       g_ScreenInfo[i].dwWidth  = WIN_DEFAULT_WIDTH;
       g_ScreenInfo[i].dwHeight = WIN_DEFAULT_HEIGHT;
       g_ScreenInfo[i].dwDepth  = WIN_DEFAULT_DEPTH;
-      g_ScreenInfo[i].dwRefreshRate = 0; /* Use current refresh rate */
+      g_ScreenInfo[i].dwRefreshRate = WIN_DEFAULT_REFRESH;
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
@@ -69,7 +74,6 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwHeight_mm = (WIN_DEFAULT_HEIGHT / WIN_DEFAULT_DPI)
 	* 25.4;
     }
-  g_iNumScreens = 1;
 }
 
 DWORD
@@ -119,6 +123,19 @@ OsVendorInit (void)
 #if CYGDEBUG
   ErrorF ("OsVendorInit ()\n");
 #endif
+
+  /* Add a default screen if no screens were specified */
+  if (g_iNumScreens == 0)
+    {
+      if (!g_fScreenInfoInitialized)
+	winInitializeDefaultScreens ();
+
+      g_iNumScreens = 1;
+      g_iLastScreen = 0;
+
+      g_ScreenInfo[0].dwWidth = GetSystemMetrics (SM_CXSCREEN);
+      g_ScreenInfo[0].dwHeight = GetSystemMetrics (SM_CYSCREEN);
+    }
 }
 
 /* See Porting Layer Definition - p. 57 */
@@ -166,13 +183,13 @@ ddxUseMsg (void)
 int
 ddxProcessArgument (int argc, char *argv[], int i)
 {
-  static Bool		fFirstTime = TRUE;
+  ErrorF ("ddxProcessArgument ()\n");
 
   /* Run some initialization procedures the first time through */
-  if (fFirstTime)
+  if (!g_fScreenInfoInitialized)
     {
       winInitializeDefaultScreens ();
-      fFirstTime = FALSE;
+      g_fScreenInfoInitialized = TRUE;
     }
   
   /* Set a default DPI */
@@ -232,6 +249,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  return 0;
 	}
 
+
       /* Calculate the screen width and height in millimeters */
       g_ScreenInfo[nScreenNum].dwWidth_mm
 	= (g_ScreenInfo[nScreenNum].dwWidth
@@ -241,18 +259,14 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	   / monitorResolution) * 25.4;
 
       /*
-       * FIXME: This logic is surely broken.  I have no idea what it
-       * is supposed to accomplish.  It may not even be used.
-       */
-      if (nScreenNum >= g_iNumScreens)
-        g_iNumScreens = nScreenNum + 1;
-
-      /*
        * Keep track of the last screen number seen, as parameters seen
        * before a screen number apply to all screens, whereas parameters
        * seen after a screen number apply to that screen number only.
        */
       g_iLastScreen = nScreenNum;
+
+      /* Keep a count of the number of screens */
+      ++g_iNumScreens;
 
       return iArgsProcessed;
     }
@@ -473,6 +487,10 @@ void
 InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 {
   int		i;
+
+#if CYGDEBUG
+  ErrorF ("InitOutput ()\n");
+#endif
 
   /* Setup global screen info parameters */
   screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;

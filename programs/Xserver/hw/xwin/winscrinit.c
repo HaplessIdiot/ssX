@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.13 2001/06/25 08:12:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.14 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -453,6 +453,15 @@ winFinishScreenInitFB (int index,
 #endif
 
 #if WIN_LAYER_SUPPORT
+  /* We use shadow for the primary layer, so setup shadow now */
+  if (!shadowInit (pScreen,
+		   pScreenPriv->pwinShadowUpdate,
+		   NULL))
+    {
+      ErrorF ("winFinishScreenInitFB () - shadowInit () failed\n");
+      return FALSE;
+    }
+
   /* KDrive does LayerStartInit right after fbPictureInit */
   if (!LayerStartInit (pScreen))
     {
@@ -474,7 +483,7 @@ winFinishScreenInitFB (int index,
       ErrorF ("winFinishScreenInitFB () - winLayerCreate () failed\n");
       return FALSE;
     }
-
+  
   /* KDrive does RandRInit right after LayerCreate */
 #ifdef RANDR
   if (!winRandRInit (pScreen))
