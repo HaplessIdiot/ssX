@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.6 2001/01/17 22:37:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.7 2001/08/27 17:41:00 dawes Exp $ */
 
 /*
  * authorization hooks for the server
@@ -204,8 +204,10 @@ CheckAuthorization (
 
     if (!authorization_file || stat(authorization_file, &buf))
     {
-	lastmod = 0;
-	ShouldLoadAuth = TRUE;	/* stat lost, so force reload */
+	if (lastmod != 0) {
+	    lastmod = 0;
+	    ShouldLoadAuth = TRUE;	/* stat lost, so force reload */
+	}
     }
     else if (buf.st_mtime > lastmod)
     {

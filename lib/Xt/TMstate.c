@@ -1,4 +1,4 @@
-/* $Xorg: TMstate.c,v 1.4 2000/08/17 19:46:19 cpqbld Exp $ */
+/* $Xorg: TMstate.c,v 1.6 2001/02/09 02:03:58 xorgcvs Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMstate.c,v 1.5 2001/01/17 19:43:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/TMstate.c,v 1.6 2001/08/22 22:52:20 dawes Exp $ */
 
 /*
 
@@ -1713,10 +1713,16 @@ static XtTranslations MergeThem(dest, first, second)
 	UNLOCK_PROCESS;
 	return NULL;
     }
-    UNLOCK_PROCESS;
+    UNLOCK_PROCESS; 
+
+#ifndef REFCNT_TRANSLATIONS
+
     if (cache_ref)
 	XtAddCallback(dest, XtNdestroyCallback,
 		      XtCallbackReleaseCacheRef, (XtPointer)cache_ref);
+
+#endif
+
     return newTable;
 }
 

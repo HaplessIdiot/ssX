@@ -1,4 +1,4 @@
-/* $Xorg: xprint.c,v 1.4 2000/08/17 19:47:59 cpqbld Exp $ */
+/* $Xorg: xprint.c,v 1.5 2001/03/05 20:42:26 pookie Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -64,7 +64,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.11 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.12 2001/10/28 03:32:51 tsi Exp $ */
 
 #define _XP_PRINT_SERVER_
 #include "X.h"
@@ -1254,7 +1254,7 @@ XpFreeContext(pointer data, XID id)
 static int
 XpFreeClient(pointer data, XID id)
 {
-    FreeXpClient((XpClientPtr)data, FALSE);
+    FreeXpClient((XpClientPtr)data, TRUE);
     return Success;
 }
 

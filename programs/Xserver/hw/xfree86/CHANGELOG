@@ -1,4 +1,16 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 519. Fix the size of some lbx struct members on 64-bit architectures
+      (#5053, Chris Bare, from X11R6.6).
+ 518. Fix the size of some xXagGetAttrReply struct members on 64-bit
+      architectures (#5052, Chris Bare, from X11R6.6).
+ 517. Add a NULL check that was missing in the CID part of the Type1 code
+      (#5050, Mark Snitily, from X11R6.6).
+ 516. XKB AccessX LED beep feature (#5047, Chris Bare, from X11R6.6).
+ 515. Fix WriteToClient flushing bug (#5046, Chris Bare, from X11R6.6).
+ 514. Fix improper freeing of widget translations in libXt when
+      REFCNT_TRANSLATIONS is defined (#5044, Chris Bare, from X11R6.6).
+ 513. Fix XPrint memory leak (#5042, Chris Bare, from X11R6.6).
+ 512. Local Authorization Fix (#5041, Chris Bare, from X11R6.6).
  511. Add locale entries for Sami (#5055, Børre Gaup).
  510. Fix XProcessInternalConnection man page duplication (#5040, Chris Bare,
       from X11R6.6).
@@ -14215,4 +14227,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2056 2001/11/21 22:42:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2057 2001/11/21 22:54:14 dawes Exp $
