@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.4 2003/09/16 00:36:15 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.5 2003/10/16 23:50:16 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -37,6 +37,7 @@
 #include "rootless.h"
 #include "safeAlpha.h"
 #include "dri.h"
+#include "globals.h"
 #include "Xplugin.h"
 #define _APPLEWM_SERVER_
 #include "applewmstr.h"
@@ -335,8 +336,13 @@ xprSetupScreen(int index, ScreenPtr pScreen)
 static void
 xprInitInput(int argc, char **argv)
 {
+    int i;
+
     rootlessGlobalOffsetX = darwinMainScreenX;
     rootlessGlobalOffsetY = darwinMainScreenY;
+
+    for (i = 0; i < screenInfo.numScreens; i++)
+        AppleWMSetScreenOrigin(WindowTable[i]);
 }
 
 

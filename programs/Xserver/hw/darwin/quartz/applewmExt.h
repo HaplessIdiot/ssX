@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/apple/applewmstr.h,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewmExt.h,v 1.1 2003/09/16 00:36:13 torrey Exp $ */
 
 #ifndef _APPLEWMEXT_H_
 #define _APPLEWMEXT_H_
@@ -67,7 +67,13 @@ void AppleWMExtensionInit(
 #endif
 );
 
-void AppleWMSendEvent (
+void AppleWMSetScreenOrigin(
+#if NeedFunctionPrototypes
+    WindowPtr pWin
+#endif
+);
+
+void AppleWMSendEvent(
 #if NeedFunctionPrototypes
     int			/* type */,
     unsigned int	/* mask */,
@@ -76,7 +82,7 @@ void AppleWMSendEvent (
 #endif
 );
 
-unsigned int AppleWMSelectedEvents (
+unsigned int AppleWMSelectedEvents(
 #if NeedFunctionPrototypes
     void
 #endif

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.2 2003/06/30 01:45:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.3 2003/09/16 00:36:14 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -40,10 +40,12 @@
 #include "rootless.h"
 #include "safeAlpha.h"
 #include "pseudoramiX.h"
+#include "applewmExt.h"
 
 #include "regionstr.h"
 #include "scrnintstr.h"
 #include "picturestr.h"
+#include "globals.h"
 #undef BOOL
 
 // Name of GLX bundle using AGL framework
@@ -252,8 +254,13 @@ CRSetupScreen(int index, ScreenPtr pScreen)
 static void
 CRInitInput(int argc, char **argv)
 {
+    int i;
+
     rootlessGlobalOffsetX = darwinMainScreenX;
     rootlessGlobalOffsetY = darwinMainScreenY;
+
+    for (i = 0; i < screenInfo.numScreens; i++)
+        AppleWMSetScreenOrigin(WindowTable[i]);
 }
 
 
