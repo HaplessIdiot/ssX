@@ -64,6 +64,7 @@ static XrmOptionDescRec options[] = {
 #ifdef XRENDER
 {"-face",	"*clock.face",		XrmoptionSepArg,	NULL},
 {"-render",	"*clock.render",	XrmoptionNoArg,		"TRUE"},
+{"-norender",	"*clock.render",	XrmoptionNoArg,		"FALSE"},
 {"-sharp",	"*clock.sharp",		XrmoptionNoArg,		"TRUE"},
 #endif
 };

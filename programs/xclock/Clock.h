@@ -112,6 +112,9 @@ SOFTWARE.
 		/* Boolean: use Render extension if TRUE */
 #define XtNrender "render"
 
+		/* Boolean: use backing pixmap for double buffering */
+#define XtNbuffer "buffer"
+
 		/* RenderColor: colors for various clock elements */
 #define XtNhourColor "hourColor"
 #define XtNminuteColor "minuteColor"
