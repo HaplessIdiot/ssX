@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.28 1999/04/25 10:01:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.29 1999/07/11 08:49:11 dawes Exp $
 
 
 #ifndef OSName
@@ -298,7 +298,7 @@ install.man:: file.man                                                  @@\
 	/^\.SH[ 	]*NAME/ 	{ 	\			@@\
 		getline; sub("\\\\", "(" p ") "); print; exit	\	@@\
 	}' p=suffix file.man  >> $(DESTDIR)destdir/../whatis	@@\
-	$(RM) /tmp/file.man)
+	$(RM) /tmp/file.man
 #endif
 
 #ifndef InstallMultipleMan
