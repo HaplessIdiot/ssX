@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# $XFree86$
+# $XFree86: xc/config/util/mkhtmlindex.pl,v 1.1 2001/03/14 23:42:00 dawes Exp $
 #
 # Copyright © 2000,2001 by VA Linux Systems, Inc.
 #
@@ -31,9 +31,9 @@ $indexprefix = "manindex";
 
 foreach $vol (@vollist) {
 	$empty = "yes";
-	$indexname="$indexprefix$vol.html";
+	$indexname="$dir/$indexprefix$vol.html";
 
-	print "Processing volume $vol\n";
+	# print "Processing volume $vol\n";
 
 	open(mindex, ">$indexname") || die "Can't create $indexname";
 	opendir(dir, "$dir") || die "Can't open $dir";
@@ -54,7 +54,7 @@ EOF
 
 	foreach $file (readdir dir) {
 		if ($file =~ "\.$vol\.html") {
-			open(file, "<$file") || die "Can't open $file";
+			open(file, "<$dir/$file") || die "Can't open $dir/$file";
 			while (<file>) {
 				chop;
 				if (/^<H2>/) {
@@ -97,7 +97,7 @@ EOF
 	close mindex;
 	closedir dir;
 	if (defined $empty) {
-		print "Removing empty $indexname\n";
+		# print "Removing empty $indexname\n";
 		unlink $indexname;
 	}
 }
