@@ -54,12 +54,12 @@
   properly.  This means that ISA Mach64 cards in systems with more than
   12Mb of main memory will not work.
 
-
   2.  Optimizing the speed of the Mach64 X server
 
   To maximize the speed of the Mach64 X server, I suggest that you use
   the following maximum resolutions.  This will allow room for the font
   and pixmap caches and a hardware cursor.
+
 
 
 
@@ -89,7 +89,6 @@
   mapped registers which are mapped to the last 1024 bytes of the memory
   aperture.  This takes away another line from video memory.  Thus, you
   need at least a video memory area of 1024x257.
-
 
   3.  XF86Config options
 
@@ -131,7 +130,6 @@
         mode only works on certain types of VRAM cards, and this option
         has no effect on DRAM based cards.  If you want to override the
         probed default, you can use this option.
-
      Option "power_saver"
         This option allows the server to use the power saving features
         of certain "green" monitors instead of blanking when the screen
@@ -150,9 +148,11 @@
         If the Mach64 X server is dying with a seg. fault, then try
         setting the aperture address to another location.
 
-
-
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.5 1995/07/21 14:40:46 dawes Exp $
+
+
+
+
 
 
 

@@ -8,11 +8,9 @@
   HT216-32 chip, but should work on other Video 7/Headland Technologies
   chips as well.
 
-
   Currently this implementation of the video7 driver only supports
   single bank mode, which can cause performance degradation, and makes
   no attempt to distinguish between the different video7 chips.
-
 
   It also does not probe for memory, so in your XF86Config file, make
   sure that you use the following line:
@@ -32,9 +30,7 @@
   seems to be what is used in the BIOS mode (0x69) which is the 800x600
   in 256 colors.
 
-
   2.  Known bugs and What's been tested:
-
 
   2.1.  Known bugs:
 
@@ -42,55 +38,41 @@
      1. No video ram probing. Only known way to get this info is through
         an INT 10 call, but you can't do this in a user process.
 
-
      2. Clock probing. I'm not sure the docs in vgadoc3 are correct.
 
-
      3. Random lockups with the SVGA server
-
 
   2.2.  What's been tested:
 
 
      1. An HT216-32 chip.
 
-
      2. 800x600 mode and 640x480 mode
-
 
      3. Mode switching and switching to text mode through CTRL-ALT-F1
 
-
      4. Only been tested on Linux.
-
 
   3.  Who to contact:
 
   Craig Struble (cstruble@acm.vt.edu) Video 7 driver
 
-
   4.  Acknowledgments
-
 
   4.1.  Thanks to:
 
 
      o  Cara Cocking for loving me and supporting me. Without her I'd be
         a bowl of jello.
-
-
      o  XFree86 team for the great stub code that allowed me to get this
         going.
-
 
      o  Finn Thoegersen for compiling vgadoc3. Without this I would not
         have had a clue.
 
-
      o  Harm Hanemaayer for the vga.c program in svgalib. Without this I
         would not have had the breakthroughs I needed to get the thing
         up and running.
-
 
   4.2.  Other things I've already done:
 
@@ -99,20 +81,14 @@
        modes to work on the Video 7 card.
 
 
-
-
   4.3.  Things to do:
 
 
      o  Try dual banking mode.
 
-
      o  Write an svgalib driver.
 
-
      o  Go back to graduate school. (I'm a glutton for punishment.)
-
-
 
   4.4.  Disclaimer:
 
@@ -127,50 +103,8 @@
        USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-
-
-
   $XConsortium: Video7.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Video7.sgml,v 3.2 1995/01/28 16:02:44 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -29,7 +29,6 @@
   mode, because the monochrome server uses a maximum of one fourth of
   the available video memory.
 
-
   2.  What is the ATI VGA driver *not*?
 
   This driver does not yet support more than 8 bits of pixel depth.
@@ -43,7 +42,6 @@
   use the VGA hardware (which, for Mach32's and Mach64's, is integrated
   into the accelerator).  This can make opaque moves, for example, quite
   jerky.
-
 
   3.  What video adapters will the driver work with?
 
@@ -64,6 +62,7 @@
   are available with or without a mouse.  When they do have a mouse (ISA
   boards only), it is either a proprietary ATIXL busmouse, or one that
   uses the Logitech busmouse protocol.
+
   VGA Wonder V3 boards use a 18800 video controller and generate dot
   clocks with crystals.  VGA Wonder V4 boards have a 18800-1 and also
   use crystals.  VGA Wonder V5 boards also use a 18800-1, but have a
@@ -75,7 +74,6 @@
   under the name VGA1024.  Thus, the ATI VGA driver also supports
   VGA1024, VGA1024D, VGA1024XL, VGA1024DXL and VGA1024VLB boards, among
   others.
-
 
   4.  What should I put in my XF86Config file?
 
@@ -120,15 +118,6 @@
             13.303  14.967  25.000  21.667  16.783  18.880   0.000  14.967
              7.560   8.000  27.500  20.000  10.739  12.193  23.100   9.000
              9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
-
-
-
-
-
-
-
-
-
 
   ATI 18811-1 and ATI 18811-2 clock generators:
 
@@ -184,7 +173,6 @@
   default mode are derived from the timings of the mode (usually a text
   mode) in effect when the server is started.
 
-
   5.  Upgrading from other releases
 
   If you have an Xconfig for XFree86 versions earlier than 2.1.1, or for
@@ -199,7 +187,6 @@
   that are already driving your monitor close to its tolerance limits.
   You might need to change the dot clock used to one with the next lower
   (or higher) frequency.
-
 
   6.  What is the history of the driver?
 
@@ -220,7 +207,6 @@
   I (Marc La France) have since taken the driver over after Rik got rid
   of his VGA Wonder card.
 
-
   7.  Miscellaneous notes
 
   Dot clocks greater than 80MHz cannot be used as a way still needs to
@@ -236,6 +222,20 @@
 
   $XConsortium: ati.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.5 1995/06/25 09:53:45 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -4,7 +4,6 @@
 
   1.  Supported chipsets
 
-
   The "ark" driver in the SVGA server is for ARK Logic graphics
   chipsets.  The following chipsets are supported:
 
@@ -28,10 +27,7 @@
   The chipset may not be detected automatically. In this case use a line
   like Chipset "ark1000pv" in the Device section of the XF86Config file.
 
-
-
   2.  Supported RAMDACs
-
 
   If no RAMDAC is specified, a standard RAMDAC supporting 256 colors up
   to 80 MHz dot clock frequency is assumed. The following RAMDAC types
@@ -63,15 +59,12 @@
   RAMDAC, but it must be used with care.
 
   To run XF86_SVGA at 16 bpp, pass options to the X server as follows:
-
   startx -- -bpp 16               5-6-5 RGB ('64K color', XGA)
   startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor')
 
 
 
-
   3.  Basic configuration
-
 
   It is recommended that you generate an XF86Config file using the
   `xf86config' program, which should produce a working high-resolution
@@ -99,6 +92,13 @@
   Usenet newsgroup "comp.windows.x.i386unix".
 
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.1 1995/07/07 15:40:20 dawes Exp $
+
+
+
+
+
+
+
 
 
 

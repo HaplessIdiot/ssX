@@ -4,7 +4,6 @@
 
   1.  Binary Distribution
 
-
   The following files are provided in the binary distribution, where XXX
   is the new version and NNN is the previous version:
 
@@ -15,10 +14,8 @@
           gunzip.Z
              The GNU uncompress utility.
 
-
           *XFXXX-doc.tz
              The XFree86 specific documentation.
-
 
           XFNNN-XXX.tz
              Files to upgrade from all NNN versions to XXX.  This
@@ -64,9 +61,9 @@
 
           XFXXX-lkit.tz
              The server link kit (all drivers + PEX).
-     XFXXX-util.tz
-        Lots of PD utilities provided as is.
 
+          XFXXX-util.tz
+             Lots of PD utilities provided as is.
      XFXXX-pex.tz
         All files relating to PEX including libraries and
         header files.  The LinkKit is required to obtain
@@ -79,14 +76,12 @@
   except of course "gunzip.Z" which is compressed using the conventional
   compress program.
 
-
   To install the XFree86 binaries just follow these steps.
 
      1. Obtain the files you require.
 
 
         as root,
-
 
      2. create a directory /usr/X11R6, permissions 755 should do nicely.
 
@@ -115,19 +110,13 @@
   archive).  Information on the author(s) can usually be located in the
   man page or by running the executable.
 
-
-
   2.  Source Distribution
-
 
   The SCO port comes as part of the standard XFree86 distribution.
   Consult the XFree86 README for more information on the location of
   sources.
 
-
-
   3.  Before Running XFree86
-
 
 
   Before you can run XFree86 with shared libraries enabled you must up
@@ -144,7 +133,6 @@
   The SCO xterm terminfo description is not compatible with the xterm in
   the R5 distribution.
 
-
   To use a Bus/Keyboard or PS2 mouse you should configure the mouse
   drivers under SCO as above using 'mkdev mouse'. You may then use the
   OsMouse option in your XF86Config to specify that XFree86 should use
@@ -152,7 +140,6 @@
   the Pointer section of your XF86Config file.  You can also use
   "OsMouse" for your serial mouse, especially if you are having trouble
   getting your mouse to work using the XFree86 mouse drivers.
-
 
   If you are using an Accelerated Localbus/EISA card you may wish to
   install the "dmmap" driver.  This driver allows the server to use a
@@ -162,10 +149,7 @@
   located in /usr/X11R6/lib/X11/etc.  Both distributions provide
   instructions for installation/removal within the README file.
 
-
-
   4.  Switching Consoles
-
 
   XFree86 uses similar console switching keys as the SCO R4 and R5
   servers.  That is, Ctrl-PrntScr takes you to the next console along
@@ -174,10 +158,7 @@
   switching should look in
   xc/programs/Xserver/hw/xfree86/common/xf86Events.c.
 
-
-
   5.  Setting up Man Pages
-
 
   After compiling the tree, or after installing the binary distribution
   you can get man to recognise the XFree86 man pages by adding
@@ -192,27 +173,20 @@
   own MANPATH environment variable if you do not want everyone to access
   the man pages.
 
-
   By default the man pages are compressed using "pack" under 3.2.2 and
   "compress" under 3.2.4 to conserve space.  If you do not want to
   compress the man pages change CompressManPages to NO in your
   xf86site.def.  Those using the binary distribution can use "unpack" or
   "uncompress" as appropriate to uncompress the man pages.
 
-
-
   6.  Using SCO binaries/servers.
-
 
   XFree86 will accept connections from SCO binaries (R3 upwards) and the
   SCO R5 server will also accept connections from XFree86 binaries. This
   means you may mix and match the two if you have ODT.  For example you
   may still use the Motif window manager (mwm) if you prefer.
 
-
-
   7.  Compiling XFree86 under 3.2.2
-
 
   Currently XFree86 is configured to install under /usr/X11R6.  The
   binary distribution will be configured to go into this directory.  If
@@ -234,9 +208,7 @@
   Use gcc, preferably 2.5.8 or later but an earlier version may still do
   the job.  Configure it with "./configure i386-*-sco".
 
-
   Make sure you do the fixincludes for gcc.
-
 
   In order to compile the current XFree86 version for SCO you will have
   to create the following header files in the appropriate places.
@@ -258,25 +230,21 @@
 
        B) create a /usr/include/net/errno.h containing
 
+           #ifndef _XFREE86_ERRNO_
+           #define _XFREE86_ERRNO_ 1
+           #include <errno.h>
+           #endif /* _XFREE86_ERRNO_ */
 
+       C) create a /usr/include/sys/bsdtypes.h which is empty for
+       now.
 
-
-
-      #ifndef _XFREE86_ERRNO_
-      #define _XFREE86_ERRNO_ 1
-      #include <errno.h>
-      #endif /* _XFREE86_ERRNO_ */
-
-  C) create a /usr/include/sys/bsdtypes.h which is empty for
-  now.
-
-  D) create a < sys/time.h > under the gnu include directory
-  containing the following (this protects the system header
-  file from multiple inclusions) You do not have to change the
-  system header file!
-      #ifndef _SYS_TIME_H_
-      #define _SYS_TIME_H_ 1
-      #include < /usr/include/sys/time.h >    #endif /* _SYS_TIME_H_ */
+       D) create a < sys/time.h > under the gnu include directory
+       containing the following (this protects the system header
+       file from multiple inclusions) You do not have to change the
+       system header file!
+           #ifndef _SYS_TIME_H_
+           #define _SYS_TIME_H_ 1
+           #include < /usr/include/sys/time.h >    #endif /* _SYS_TIME_H_ */
 
 
 
@@ -284,7 +252,6 @@
   supplement from SCO.  The supplement is available on the SCO ftp site,
   sosco.sco.com (The name may have changed) as an SLS, lng225.  This is
   required for the correct compilation of "xdm".
-
 
   To compile from here, follow the XFree86 README, basically after
   obtaining X11r5, applying the XFree86 patches and completing the above
@@ -317,9 +284,7 @@
   ----------8<-----------------8<------------------------------------
 
 
-
   8.  Compiling XFree86 under 3.2.4
-
 
   Compiling gcc2.5.8 is accomplished after doing the following.
 
@@ -328,8 +293,8 @@
 
 
   DO NOT USE "./configure i386-*-sco" it will not work.
-  Make sure you run the "make fix-includes" after you have installed.
 
+  Make sure you run the "make fix-includes" after you have installed.
 
   It is recommended that you use a gcc compiled without any changes to
   the value of __STDC__.  Some people may have compiled gcc by adding
@@ -337,8 +302,6 @@
   done this and are able to recompile gcc without this change then you
   should.  Otherwise refer to the end of this section for instructions
   on how to fix the XFree86 tree so that it will still compile.
-
-
 
   Compiling XFree86,
 
@@ -363,6 +326,8 @@
            of -DNO_PROTOTYPE as this is what 3.2.4 expects.
 
      4. If you have problems with mkshlib reporting an error like
+
+
                 mkshlib: : cannot exec /bin/sh
 
 
@@ -373,7 +338,6 @@
      The error is related to a lack of environment space.
 
   9.  Compiling with __STDC__=0
-
 
   DO NOT make these changes unless you have gcc configured with
   STDC_VALUE=0.  You can test for this by compiling this small program.
@@ -394,6 +358,7 @@
 
 
   should become,
+
            #define GCC_STDC_VALUE 0
 
 
@@ -403,10 +368,7 @@
   These changes may become obsolete or invalid in a later version of
   XFree86.
 
-
-
   10.  Relevant Documentation
-
 
   Some relevant documentation for SCO Users and Developers can be found
   in the following files.
@@ -422,7 +384,6 @@
         /usr/X11R6/lib/X11/doc/VideoModes.doc and the README files for
         particular video cards.
 
-
   11.  Known Problems
 
 
@@ -431,14 +392,9 @@
         scancodes and is of no concern.  This will be fixed in a future
         release.
 
-
      o  Not all of the applications in /usr/X11R6/bin have been
         debugged.
-
-
      o  Shared libraries are not implemented in XFree86 3.1 yet.
-
-
 
   12.  Trouble Shooting
 
@@ -459,6 +415,7 @@
           If this is not possible then installing the "dmmap"
           driver from the distribution may allow the server to
           operate correctly.
+
 
      Problem:
 
@@ -492,7 +449,6 @@
 
         2. xterm does not work but other programs like xclock do work.
 
-
      Causes:
 
           Not enough or no pseudo ttys devices are present on your
@@ -504,12 +460,12 @@
                 cd /etc/conf/cf.d; ./configure and increase the
                 number of pseudo ttys.  Rebuild the kernel.  "ls
                 -al /dev/ttyp0 /dev/ptyp0" to get the major numbers
-                for the slave and master drivers.  Use mknod to
-                create the extra devices using the naming schemes
-                ttyp[0-9a-f] and ptyp[0-9a-f].
+           for the slave and master drivers.  Use mknod to
+           create the extra devices using the naming schemes
+           ttyp[0-9a-f] and ptyp[0-9a-f].
 
-             3.2.4
-                Run "mkdev ptty" and increase the number of ptty's.
+        3.2.4
+           Run "mkdev ptty" and increase the number of ptty's.
 
 
      Problem:
@@ -570,8 +526,6 @@
           When linking against the SCO motif library I get an unre-
           solved external for "XtDisplayStringConversionWarning"
           when using gcc.
-
-
      Causes:
 
 
@@ -591,10 +545,9 @@
 
      Problem:
 
-
-     When compiling the XFree86 source under 3.2.4, libX11
-     fails to get built with an error like "mkshlib : : cannot
-     exec /bin/sh"
+          When compiling the XFree86 source under 3.2.4, libX11
+          fails to get built with an error like "mkshlib : : cannot
+          exec /bin/sh"
 
 
      Causes:
@@ -625,44 +578,57 @@
 
              3. You need a file in /etc/conf/node.d which contains
                 something like:
-                        clone   spx             c       sp
-                        sp      X0S             c       127
-                        sp      X0R             c       126
-                        sp      X1S             c       125
-                        sp      X1R             c       124
-                        sp      X2S             c       123
-                        sp      X2R             c       122
-                        sp      X3S             c       121
-                        sp      X3R             c       120
-                        sp      X4S             c       119
-                        sp      X4R             c       118
-                        sp      X5S             c       117
-                        sp      X5R             c       116
-                        sp      X6S             c       115
-                        sp      X6R             c       114
-                        sp      X7S             c       113
-                        sp      X7R             c       112
 
 
-          if you don't have something like this (maybe called
-          "Xsco") then create one and that should fix your problem.
-          As far as I can tell the streams pseudo tty driver should
-          be there.
 
-          The simplest way to get the devices if you had to create
-          this file is to rebuild the kernel and the environment.
-          If you don't want to do this then:
 
-                  touch /etc/.new_unix
-                  cd /etc/conf/bin
-                  ./idmkenv
+
+
+
+
+
+
+
+
+
+
+                   clone   spx             c       sp
+                   sp      X0S             c       127
+                   sp      X0R             c       126
+                   sp      X1S             c       125
+                   sp      X1R             c       124
+                   sp      X2S             c       123
+                   sp      X2R             c       122
+                   sp      X3S             c       121
+                   sp      X3R             c       120
+                   sp      X4S             c       119
+                   sp      X4R             c       118
+                   sp      X5S             c       117
+                   sp      X5R             c       116
+                   sp      X6S             c       115
+                   sp      X6R             c       114
+                   sp      X7S             c       113
+                   sp      X7R             c       112
+
+
+     if you don't have something like this (maybe called
+     "Xsco") then create one and that should fix your problem.
+     As far as I can tell the streams pseudo tty driver should
+     be there.
+
+     The simplest way to get the devices if you had to create
+     this file is to rebuild the kernel and the environment.
+     If you don't want to do this then:
+
+             touch /etc/.new_unix
+             cd /etc/conf/bin
+             ./idmkenv
 
 
      and try it out.
 
 
   13.  Acknowledgements
-
 
   Thanks to the Core team for their previous and continuing help with
   the SCO work.  Many thanks to Stacey Campbell at SCO for all the
@@ -681,38 +647,6 @@
 
   $XConsortium: SCO.sgml,v 1.4 95/01/27 16:14:31 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.7 1995/07/21 14:40:54 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

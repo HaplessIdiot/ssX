@@ -1,6 +1,6 @@
   README for XFree86 3.1.2 on BSD/OS 2.0
   Hans Nasten
-  30 May 1995
+  24 July 1995
 
   1.  What and Where is XFree86?
 
@@ -32,13 +32,11 @@
   using the generic gcc source code, you may run into problems using the
   binaries on a 386/486 not equipped with a math coprocessor.
 
-
   2.  Bug Reports for This Document
 
   Send email to nasten@Everyware.SE (Hans Nasten) or XFree86@XFree86.org
   if you have comments or suggestions about this file and we'll revise
   it.
-
 
   3.  Installing the Binaries
 
@@ -63,9 +61,8 @@
         X312bin.tgz
            all of the executable X client applications.
 
-
         X312fnts.tgz
-           all fonts
+           all fonts except the cyrillic fonts
 
         X312lib.tgz
            data files needed at runtime
@@ -109,6 +106,9 @@
 
         X312fsrv.tgz
            the font server with man pages.
+
+        X312cfnt.tgz
+           cyrillic fonts
 
         X312prog.tgz
            the include/X11 header files and static libraries needed only
@@ -157,8 +157,6 @@
   If you want to uncompress them anyway, don't forget to run `mkfontdir'
   in each directory after that.
 
-
-
   4.  Installing Xdm, the display manager
 
   The display manager makes your PC look like an X terminal.  That is,
@@ -179,7 +177,6 @@
   console "/usr/libexec/getty std.9600"   ibmpc3  off secure
 
 
-
   5.  Configuring X for Your Hardware
 
   The XF86Config file tells the X server what kind of monitor, video
@@ -196,6 +193,7 @@
 
   and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
+
   In order to protect your hardware from damage, the server will no
   longer read XF86Config files from a user's home directory, but
   requires that it be in /etc/XF86Config,
@@ -225,7 +223,6 @@
   If you plan to fine tune the screen size or position on your monitor
   you'll need the specs for sync frequencies from your monitor's manual.
 
-
   6.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
@@ -240,7 +237,6 @@
   To get out of X windows, type `exit' in the console xterm.  You can
   customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
   your home directory as described in the xinit and startx man pages.
-
 
   7.  Rebuilding the XFree86 Distribution
 
@@ -259,8 +255,6 @@
     make World
 
   in the xc directory.
-
-
 
   8.  Building New X Clients
 
@@ -291,8 +285,6 @@
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
   and __bsdi__ for BSD/OS.
 
-
-
   9.  Linear access to the frame buffer using BSD/386 1.1
 
   The stock BSD/386 1.1 kernel has problems when trying to mmap the
@@ -313,21 +305,6 @@
      o  reboot.
 
   vga.c patch:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   *** vga.c.orig  Sun Dec 19 09:35:01 1993
   --- vga.c       Mon Oct 24 01:38:44 1994
   ***************
@@ -349,8 +326,31 @@
     #endif
 
 
+
+
   $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.13 1995/07/19 12:43:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.14 1995/07/24 05:56:15 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

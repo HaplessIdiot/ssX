@@ -4,7 +4,6 @@
 
   1.  X11R6/XFree86[TM] on Interactive Unix
 
-
   This document provides some additional information about compiling and
   using X11R6 and XFree86 on your Interactive Unix, also referred to as
   ISC.
@@ -23,16 +22,13 @@
 
   comp.windows.x.i386unix
 
-
   There is currently no support for shared Libraries so it will be
   filespace consuming if you want to build X11-clients with X11R6. Best
   you mix X11R6 Server with X11R5 and X11R4 clients. And only compile
   clients who need the new facilities provided in the X11R6 Libraries
   against them.
 
-
   2.  Things needed for compiling the sources
-
 
 
       gcc-2.6.x
@@ -68,9 +64,7 @@
 
 
 
-
   3.  Changes to the System Header Files
-
 
   You have to change some of the standard header files supplied with
   your version of Interactive. You also need to change some of the
@@ -81,7 +75,6 @@
   /usr/local/lib/gcc-lib/i[345]86-isc[34].[0-9]/2.6.x
 
   referred to as "gcc-lib"
-
 
   3.1.  /usr/include/sys/limits.h
 
@@ -99,7 +92,6 @@
   OPEN_MAX had to be increased to prevent Xlib Errors (max no. of
   clients reached).
 
-
   3.2.  /usr/include/sys/ioctl.h
 
   surrounded by
@@ -110,7 +102,6 @@
 
 
   to prevent multiple includes.
-
 
   3.3.  /usr/include/errno.h
 
@@ -130,10 +121,14 @@
 
   to prevent multiple includes were <net/errno.h> is explicit included
   from the sources.
+
   3.4.  /usr/include/rpc/types.h
 
   copy this file to gcc-lib/include/rpc/types.h and change the
   declaration of malloc() to
+
+
+
 
            #if !defined(__cplusplus)
            extern char *malloc();
@@ -142,8 +137,6 @@
 
 
   Note that this is only necessary if you want to build Fresco
-
-
 
   4.  make World
 
@@ -157,7 +150,6 @@
         these two defines are necessary to build the release I don't
         know if the build will succeed for ISC versions prior than 3.x
 
-
      -DISC40
         are only for getting the ISC version and therefore set the
         HasSymLinks to Yes ('cause symbolic linking were only supported
@@ -170,16 +162,12 @@
         A build on ISC 4.x only needs -DISC40 defined in the
         BOOTSTRAPCFLAGS -- the -DISC30 will be included automatically.
 
-
      -DSYSV [-Di386]
         standard defines for SystemV Release3 on x86 platform.  You
         don't need to explicitly define -Di386 because this is pre-
         defined in /lib/cpp.
 
-
-
   5.  linear Addressing
-
 
 
      o  Compiling ...
@@ -200,9 +188,7 @@
      /usr/include/sys/mmap.h for compiling the X11R6/XFree86 source
      tree, with linear addressing enabled.
 
-
      o  Using ...
-
 
         To use the linear address-mapping of the framebuffer you need
         the mmap Driver by Thomas Wolfram (Version 2.2.3) installed in
@@ -224,7 +210,6 @@
            with different mappings into the address space results in no
            Graphics displayed or a spontaneous reboot.
 
-
         +  ATI GUP      - mach32   - VLB
 
            with 32MB MainMemory installed I could map the CardMemory at
@@ -242,11 +227,7 @@
 
 
 
-
-
-
   6.  Fresco
-
 
 
      o  Compiling ...
@@ -257,9 +238,7 @@
 
      in either xf86site.def (just uncomment the appropriate definition.
 
-
      o  Using ...
-
 
         To use the library you need the gnu-ld installed.  The standard
         ISC ld couldn't link libFresco.a inside a program.
@@ -277,13 +256,11 @@
      play Argument when starting the Fresco application. On TCP/IP
      transport you got a workable Fresco App.
 
-
-
   7.  Installation
-
 
   After your make World BOOTSTRAPCFLAGS="... succeed,
   make install
+
 
   to install in /usr/X11R6. Make sure you have enough space, and
   /usr/X11R6 exists either as a directory or a symlink to another direc-
@@ -308,9 +285,7 @@
   ______________________________________________________________________
 
 
-
   8.  Using ...
-
 
 
      o  Keyboard:
@@ -326,7 +301,6 @@
         +  RightCtl Compose
 
         in your XF86Config - Section "Keyboard"
-
 
      o  xpcterm:
 
@@ -351,14 +325,12 @@
 
      You have to call your xpcterm with the option -name XEga -fn ega
 
-
      o  Switching between X11R5 and X11R6 configuration
 
         to compile X11-Clients as either R6 or R5 clients, should be as
         easy as you only switch the PATH components so that either
         /usr/X11R6/bin/xmkmf or /usr/X386/bin/xmkmf would make the new
         Makefile.
-
 
      o  ISC Streams Pipes
 
@@ -373,18 +345,46 @@
         maybe abort due to a SIGSYS.  We tried to catch this signal, so
         if it dumps please send me a note.
 
-
-
   9.  Acknowledgements
-
 
   All thanks should go to the members of the XFree86 Team for their
   great work and the X Consortium for their Public Release of X11R6, as
   to all who contribute to this excellent piece of free software.
 
-
   $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.7 1995/07/07 15:40:21 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

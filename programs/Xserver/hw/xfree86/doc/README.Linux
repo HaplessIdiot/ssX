@@ -10,7 +10,6 @@
   ld.so (libc-4.5.26 or newer is *REQUIRED* !).  The DLL X libraries are
   produced with the 2.16 DLL-tools by Eric Youngdale.
 
-
   2.  Backwards Compatibility
 
   X11R6 is considered a major update from X11R5, so the shared libraries
@@ -31,7 +30,6 @@
   better recompile XView with relative library names or get a newer
   ld.so.
 
-
   3.  Installing XFree86
 
   Starting with version 3.0, XFree86 is installed in /usr/X11R6. If you
@@ -44,7 +42,6 @@
   installation document relevant to that release. The most up-to-date
   information is kept there, while this document describes basic
   features of XFree86 3.X on Linux and how to compile the sources.
-
 
   4.  Running XFree86
 
@@ -122,7 +119,6 @@
   be setuid root.  As xconsole is not designed with running setuid root
   in mind, this opens a big security problem.
 
-
   5.  Compiling XFree86
 
   There are no special instructions required for compiling XFree86.
@@ -134,7 +130,6 @@
   processor, but the binary will run on the 386 processor (there is a
   slight increase in binary size over using -m386, but no loss of
   performance).
-
   All extensions and clients have been ported and tested. By default,
   the servers are compiled without any extra extensions (PEX, XIE, etc),
   but libraries for those extensions are always generated. By modifying
@@ -165,7 +160,6 @@
   DLL libs, on which the current method (developed by Orest Zborowski
   (orestz@eskimo.com)) is based.
 
-
   6.  Bug Notification
 
   Bug reports should be sent to XFree86@XFree86.org or posted to the
@@ -174,6 +168,12 @@
 
   $XConsortium: Linux.sgml,v 1.2 95/01/23 15:34:44 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 dawes Exp $
+
+
+
+
+
+
 
 
 

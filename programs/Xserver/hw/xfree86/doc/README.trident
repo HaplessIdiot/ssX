@@ -36,7 +36,6 @@
   supported, however, by the ``generic'' driver for the monochrome
   server.
 
-
   2.  Special considerations for 512k boards
 
   There are no longer any special considerations for 512k Trident
@@ -52,7 +51,6 @@
   16 clocks, and can support much higher clocks, which will allow
   800x600 modes, non-interlaced.
 
-
   3.  Additional Notes
 
   We have had reports of the server failing to detect the amount of
@@ -63,11 +61,10 @@
   the dot-clocks, try adding the following line to your XF86Config file:
           Clocks  25 28 45 36 57 65 50 40
 
-
   This line gives the clock values provided by older Trident clock syn-
   thesizer chipsets.  This also appears to be the standard first 8
-  clocks for the newer clock synthesizers, but you should have no prob-
-  lems on newer boards.
+  clocks for the newer clock synthesizers, but you should have no
+  problems on newer boards.
 
   Some newer Trident 8900B/C boards are apparently being built with the
   clock synthesizers used on the 9000 and 8900CL boards.  If your board
@@ -96,6 +93,9 @@
 
   $XConsortium: trident.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.3 1995/07/19 13:05:23 dawes Exp $
+
+
+
 
 
 

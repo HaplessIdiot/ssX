@@ -42,13 +42,11 @@
   XFree86 3.1.2 also builds on NetBSD/sparc. See section ``Building on
   NetBSD/sparc'' for details.
 
-
   2.  Bug Reports for This Document
 
   Send email to matthieu@laas.fr (Matthieu Herrb) or XFree86@XFree86.org
   if you have comments or suggestions about this file and we'll revise
   it.
-
 
   3.  Installing the Binaries
 
@@ -64,9 +62,8 @@
   Note that many clients were moved from the X11R6 distribution to the
   ``contrib'' area. However, they are still distributed with the XFree86
   binary distribution.
+
   The contents of the packages are:
-
-
      REQUIRED:
 
         X312doc
@@ -120,7 +117,6 @@
         X312w32
            the X server for et4000w32 based boards
 
-
      OPTIONAL:
 
         X312fs
@@ -133,6 +129,7 @@
         X312man
            man pages except XFree86 specific ones in the doc archive
 
+
         X312xfnt
            the other fonts (100dpi, scaled, Japanese, Chinese, etc)
 
@@ -142,7 +139,6 @@
   If this is your first time, then you can safely install all of the
   packages.  As a minimal install, you'll need doc, bin, fonts lib,
   config, and one X server.
-
 
   3.1.  Installing the packages with pkg_add
 
@@ -160,7 +156,6 @@
      details. Then make a symbolic link /usr/X11R6 to this directory.
 
   Continue with item ``Additional Setup'' below.
-
 
   3.2.  Installing the packages without pkg_add
 
@@ -196,6 +191,11 @@
 
 
 
+
+
+
+
+
       cd /usr/X11R6
 
       tar xzf X312doc.tgz
@@ -215,7 +215,6 @@
      And unpack the server(s) you need:
 
            tar xzf X312<server>.tgz
-
 
 
 
@@ -262,6 +261,7 @@
 
 
 
+
       if [ -d /usr/X11R6/lib ]; then
          echo 'Adding X shared libraries'
          ldconfig /usr/X11R6/lib
@@ -281,7 +281,6 @@
        NOTE: you don't need to uncompress the fonts files in
        lib/X11/fonts. If you want to uncompress them anyway, don't
        forget to run ``mkfontdir'' in each directory after that.
-
 
 
   4.  Installing Xdm, the display manager
@@ -309,8 +308,6 @@
 
 
         ttyv0  "/usr/libexec/getty Pc" pc      off secure
-
-
 
 
 
@@ -354,17 +351,14 @@
   and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
 
-
   If your mouse does not work try using kermit or tip to connect to the
   mouse serial port and verify that it does indeed generate characters.
-
 
   5.1.  Configuring a PS/2 mouse for XFree86 on NetBSD
 
   The NetBSD pms mouse driver handles PS/2 style mice as Busmouse.
   Specify the protocol `busmouse' in the mouse section of your
   XF86Config file if you're using a PS/2 mouse.
-
 
   6.  Running X
 
@@ -382,7 +376,6 @@
   To get out of X windows, type: ``exit'' in the console xterm.  You can
   customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
   your home directory as described in the xinit and startx man pages.
-
 
   7.  Kernel Support for X
 
@@ -441,8 +434,6 @@
   then delete /dev/ttyv0. I don't know why ``MAKEDEV'' move /dev/ttyqf
   to /dev/ttyv0. (from Hung-Chi Chu hcchu@r350.ee.ntu.edu.tw)
 
-
-
   7.1.  Aperture Driver
 
   By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
@@ -467,10 +458,12 @@
 
         a. add the following lines to the end of /etc/rc.local:
 
-              KERNDIR=/usr/X11R6/lib/X11/kernel
-              if [ -f ${KERNDIR}/ap.o ]; then
-                modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
-              fi
+
+
+         KERNDIR=/usr/X11R6/lib/X11/kernel
+         if [ -f ${KERNDIR}/ap.o ]; then
+           modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
+         fi
 
 
 
@@ -487,7 +480,6 @@
        once X is launched). This means that if you run multiple
        servers on multiples VT, only the first one will have linear
        memory access.
-
 
 
   7.2.  MIT-SHM
@@ -523,14 +515,9 @@
   Then install your new kernel and re-boot:
 
 
-
-
-
-   # cp /netbsd /onetbsd
-   # cp netbsd /
-   # reboot
-
-
+        # cp /netbsd /onetbsd
+        # cp netbsd /
+        # reboot
 
 
 
@@ -547,7 +534,6 @@
   You should configure the distribution by editing
   xc/config/cf/xf86site.def  before compiling.  To compile the sources,
   invoke ``make World'' in the xc directory.
-
 
   8.1.  Console drivers
 
@@ -581,7 +567,6 @@
   If you don't define XFree86ConsoleDefines in xf86site.def the pccons,
   pcvt and syscons drivers will be supported.
 
-
   8.2.  console.h and ioctl_pc.h files:
 
   If you want to build a server supporting syscons or codrv and you
@@ -603,7 +588,6 @@
   If you have installed the syscons or codrv console drivers, these
   files should be taken from your installed version of the driver.
 
-
   8.3.  Support for shared libs under NetBSD 1.0
 
   By default XFree86 3.1.2 builds for NetBSD 1.0 with shared libraries
@@ -613,7 +597,6 @@
 
 
        #define BuildBsdSharedLibs      NO
-
 
 
   8.4.  Building on NetBSD/sparc
@@ -638,7 +621,6 @@
   sparc@NetBSD.Org mailing list or directly to me matthieu@laas.fr
   rather than to the xfree86 mailing list.
 
-
   9.  Building New X Clients
 
   The easiest way to build a new client (X application) is to use xmkmf
@@ -658,6 +640,8 @@
   of the symbol can be used to distinguish different BSD releases.  For
   example, code specific to the Net-2 and later releases can use:
 
+
+
        #if (BSD >= 199103)
 
 
@@ -674,7 +658,7 @@
 
 
 
-       ld.so: undefined symbol _XtCvtStringToFont
+  ld.so: undefined symbol _XtCvtStringToFont
 
 
   at run-time, you've stumbled on a semantic weakness of NetBSD 1.0
@@ -683,7 +667,6 @@
   included in the Makefile automagically -- you'll not see the problem.
   Otherwise, just add ``-lXt'' to your library list in the Imakefile or
   Makefile and relink.
-
 
   10.  Thanks
 
@@ -703,6 +686,23 @@
 
   $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.15 1995/07/21 14:40:47 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -21,7 +21,6 @@
        build under your OS.
 
 
-
   We highly recommend using GCC-2 to build XFree86.  Do not use version
   2.6.0 or 2.4.x versions prior to 2.4.5 due to bugs that cause either
   build or execution failures.  Most of the XFree86 3.1.2 binary kits
@@ -60,6 +59,7 @@
            distribution.  It is possible to reduce the space required by
            removing some parts which are not essential to the build
            process:
+
 
 
 
@@ -297,7 +297,6 @@
         -a; make''.  When that is completed, run ``make install'' and
         ``make install.man'' to install it.
 
-
   2.  Using and Configuring XFree86
 
 
@@ -323,11 +322,12 @@
         may be slow to start, and may not exit when your last client
         finishes.
 
-
   3.  Reconfiguring the server (source distribution)
 
   To build a different set of servers or servers with a different set of
   drivers installed:
+
+
      1. Make sure the source for any new drivers is in the correct place
         (e.g., driver source for the SVGA server should be in a
         subdirectory of xc/programs/Xserver/hw/xfree86/vga256/drivers).
@@ -346,7 +346,6 @@
 
 
 
-
   4.  Reconfiguring the server (binary distribution)
 
   If you have installed the server Binary LinkKit, it is possible to
@@ -356,6 +355,7 @@
 
   $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.12 1995/07/22 09:42:53 dawes Exp $
+
 
 
 

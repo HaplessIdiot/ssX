@@ -39,7 +39,6 @@
   an exception), or SVR4.2.  If you run XFree86 on another version of
   SVR4 that's not in this list, please let us know about it.
 
-
   2.  How to cope with VT-switching hotkeys
 
   Some versions of SVR4 (Esix and Microport) have mechanisms for
@@ -63,12 +62,10 @@
         levels at which this can be handled:
 
 
-
         1. There is a kernel tunable that determines which mode is the
            default.  The tunable is the initialisation of kd_2keysw in
            /etc/conf/pack.d/kd/space.c.  When set to 1 (the default),
            2-key mode is enabled.  When set to 0 it is disabled.
-
 
         2. The mode can be changed for individual VTs programatically by
            an ioctl().  To make life easier for XFree86 users, a program
@@ -82,11 +79,9 @@
            that 2-key switching will be turned off while in the server's
            VT, but will still be on for the other VTs.
 
-
         For further details, refer to the keyboard(7) man page included
         with the release notes (the on-line man page doesn't have this
         information).
-
 
   3.  Running SVR3 binaries on SVR4.0.4 and SVR4.2
 
@@ -120,7 +115,6 @@
   Search for /tmp/.X11-unix, and change it to /dev/X/ISCCONN.  Now you
   just have to worry about base-OS compatibility.
 
-
   4.  Notes for building XFree86 on SVR4
 
 
@@ -128,22 +122,19 @@
         gcc-2.4.5 (or a later stable release).  Version 2.6.0 has some
         problems on i386 platforms and is not recommended.
 
-
-
      2. It is recommended that you increase the UFSNINODE (for a UFS
         filesystem) and/or the S5NINODE (for an S5 filesystem) kernel
         parameter to about 650 before attempting to build the
         distribution.  See the "Notes for running XFree86 on SVR4"
         section for some other parameters you may want to change.
 
-
      3. The BOOTSTRAPCFLAGS required are:
 
-          For Unixware:     "-DUSL"
+     For Unixware:     "-DUSL"
 
-          For NCR:          "-DNCR"
+     For NCR:          "-DNCR"
 
-          For other SVR4:   "-DSVR4 -Di386"
+     For other SVR4:   "-DSVR4 -Di386"
 
 
   5.  Notes for running XFree86 on SVR4
@@ -155,7 +146,6 @@
      1. For SVR4, you may also need to add /usr/X11R6/lib to your
         LD_LIBRARY_PATH, but this is not required for running properly
         built clients.
-
 
      2. You may want to increase some kernel parameters (either by
         running idtune, or editing /etc/conf/cf.d/stune, and rebuilding
@@ -169,7 +159,6 @@
           ARG_MAX            max length of an arg list
 
 
-
      3. Choose which mouse driver you will use.  For SVR4 the best
         choice depends on which version you are using.  If you have a
         bus mouse then Xqueue is probably the only option.  For a serial
@@ -179,7 +168,6 @@
         Esix 4.0.3
            Xqueue works.  It is also possible to use the standard asy
            driver directly, but the mouse operation is "jerky".
-
 
         Microport SVR4 [34].1
            Xqueue works fine, and the asy driver can also be used
@@ -196,11 +184,11 @@
         If you have problems with both Xqueue and your standard asy
         driver with SVR4, then you should install SAS.  When using SAS,
         set up XF86Config as you would for the standard driver.
+
         SAS is available from ftp.physics.su.oz.au.  When using SAS for
         a serial mouse, you will get smoother operation if you change
         EVENT_TIME from 80 to 30 in sas.h.  A couple of details which
         aren't spelled out in the SAS README are:
-
 
         - An example of the line you should add to /etc/ap/chan.ap is:
               MAJOR    0       255     ldterm ttcompat
@@ -220,13 +208,11 @@
           3b) Rebuild the kernel by running /etc/conf/bin/idbuild
 
 
-
      4. If you want to use xdm with SVR4, extract the files from the
         shar file in /usr/X11R6/lib/X11/etc/XdmConf.svr4 into a
         temporary directory.  The README file tells where the individual
         files should be installed.  Be sure to read through each file
         and make any site-specific changes that you need.
-
 
         NOTE: Some SVR4 versions (one example is Esix 4.0.3) have a
         default inittab which runs `vtgetty' on the console. This does
@@ -237,20 +223,16 @@
         /etc/inittab, remember to also change /etc/conf/cf.d/init.base
         or you will lose the changes when you next rebuild the kernel.
 
-
-
      5. If you want to change the number of VTs available on SVR4, just
         edit the file /etc/default/workstations and change the number
         there.  The device nodes will be created/deleted next time you
         reboot.
-
 
      6. The default local connection types have changed in X11R6.  Unix
         domain sockets are no longer treated as a "local" connection
         type.  This means that a client connecting to :0 will use not
         use a Unix socket for the connection.  To use the Unix socket
         connection, the client must connect to unix:0.
-
 
         The local connection types available are "NAMED" (named streams
         pipe), "PTS" (old-stype USL streams pipe), "SCO" (SCO Xsight
@@ -265,8 +247,6 @@
         is set and exported in your .xinitrc file (when using xinit or
         startx) or your /usr/X11R6/lib/xdm/Xsession script (when using
         xdm).
-
-
 
   6.  Notes for running XFree86 on SVR4.2
 
@@ -286,8 +266,6 @@
   This is not a problem for clients using the X11R6 X libraries because
   UNIX is no longer considered a local connection type.
 
-
-
   7.  Building non-core clients with SVR4
 
 
@@ -302,7 +280,6 @@
      The best solution is to modify the code so it compiles correctly
      without -DSYSV.
 
-
   8.  Using DOS/Merge 2.2 with XFree86
 
   It is possible to use the Locus DOS/Merge 2.2 X clients with XFree86.
@@ -314,7 +291,6 @@
      1. Set and export $XMERGE in your .xinitrc and/or .xsession files.
         In general, you should set XMERGE=vga.
 
-
      2. You MUST use the "xqueue" driver instead of the server's native
         keyboard and mouse driver, if you intend to use the "zoom"
         feature of the `dos' client.  Otherwise the mouse will cease to
@@ -322,7 +298,6 @@
         client uses the native driver, and the server will not be able
         to access the mouse after the zoom ends).  The only other
         alternative is to use separate mice on separate devices.
-
 
      3. You need to install the `dos' client fonts in the XFree86 font
         directories.  Locate the BDF files (search for files with names
@@ -353,8 +328,6 @@
      It will be obvious if this new code table is needed, as the arrow
      keys on the keypad will fail to function in the `dos' client if the
      wrong table is installed.
-
-
      5. For the "zoom" feature to work correctly, you must run `dos'
         with $DISPLAY set to "unix:N" or "host_name:N".  If you use just
         ":0", the client will not function properly.  `dos' does not
@@ -390,10 +363,6 @@
 
   to your .xinitrc file (or your Xsetup file if using xdm).
 
-
-
-
-
   10.  A kernel patch that is required for accelerated servers
 
   SVR4.0 has a bug handling programs that access extended I/O registers
@@ -404,12 +373,10 @@
   both install and back out the patch.  You must install this if you
   intend to use the S3, 8514, Mach8, Mach32, P9000, AGX or W32 servers.
 
-
   Dell 2.2 is known to not need the patch, because Thomas Roell found
   and fixed the bug while he was working for Dell.  Microport has fixed
   this in their 4.0 v4.2 release.  Also, SVR4.2 does not need this
   patch, as the problem has been fixed by USL.
-
 
   The patch scripts are located in xc/programs/Xserver/hw/xfree86/etc in
   the source tree, and /usr/X11R6/lib/X11/etc in the binary
@@ -422,7 +389,6 @@
   program, and a copy of the removal script are stored in the directory
   /etc/conf/pack.d/kernel/.xfree86
 
-
   Thanks to John M. Sully of Microport for helping us find a simple
   workaround for this problem, and giving us permission to release the
   information.
@@ -430,6 +396,40 @@
 
   $XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.6 1995/07/21 14:40:56 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -176,9 +176,7 @@
 
         o  Removed banking support   :-(
 
-
   2.  Supported Cards
-
 
 
 
@@ -189,7 +187,6 @@
   Viper PCI's, the probe may detect you have a Viper PCI when you really
   have a Viper VLB.  If this happens, put chipset "vipervlb" into your
   XF86Config file.
-
 
   2.2.  Diamond Viper PCI
 
@@ -220,14 +217,12 @@
   Eventually we would like to autodetect the IOBase and memBase, but
   this doesn't yet work.
 
-
   3.  Orchid P9000 and random clones
 
   The Orchid P9000 and other cards based on the Weitek board design
   (such as the STAR 2000) should now work.  Talk to
   harry@brain.jpl.nasa.gov if you have problems with this.  Specify the
   chipset "orchid_p9000" in the Device section of XF86Config
-
 
   4.  Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!)
 
@@ -239,7 +234,6 @@
   that costs about $99.  Send email to info@xinside.com for more
   information.  Their P9000 server is also much faster than ours at
   present (but then this server is free :-)
-
 
   5.  Acceleration
 
@@ -255,7 +249,6 @@
      o  MoveWindow (8/16/32bpp)
 
      o  CopyArea (8bpp)
-
 
   6.  High Color and TrueColor
 
@@ -290,7 +283,6 @@
         for the selection tool.  I think later versions may have fixed
         this.
 
-
   7.  Random Notes
 
   Text restoration should now be fixed.  Color restoration should also
@@ -310,13 +302,11 @@
   something slower, call their tech support and they will send you a RMA
   to get the board replaced.
 
-
   8.  Operating System Notes
 
   Any operating system that can memory map linear regions in really high
   memory should work.  This should include Linux, FreeBSD, SVR4, and
   more.
-
 
   8.1.  NetBSD
 
@@ -324,9 +314,6 @@
   Extract the file apNetBSD.shar (in
   xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar) and read the README
   contained therein.
-
-
-
 
   9.  XF86Config
 
@@ -339,6 +326,7 @@
 
   The current supported keywords in the Device section of the XF86Config
   file are:
+
 
      VideoRAM
         1024 or 2048  (use 2048 for ``3MB'' Orchid P9000's)
@@ -392,7 +380,6 @@
         almost any valid mode (there are constraints on the horiz res so
         not all values are possible)
 
-
   The current supported keywords in the Display section of the
   XF86Config file are:
 
@@ -432,7 +419,6 @@
   EndSection
 
 
-
   10.  Known Bugs
 
   There are currently problems with the server when used in conjunction
@@ -446,7 +432,6 @@
   amount of memory you have.  If you have a 1 MB card, try put VideoRAM
   1024 into the Device section of your XF86Config file.  If this doesn't
   work, try adding Option "vram_128" to the Device section.
-
 
   11.  Credits
 
@@ -474,6 +459,21 @@
 
   $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.12 1995/07/21 14:40:49 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

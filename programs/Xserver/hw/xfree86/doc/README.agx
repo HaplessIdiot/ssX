@@ -4,7 +4,6 @@
 
   1.  General Notes
 
-
   This server currently supports the IIT AGX-016, AGX-015, AGX-014 and
   XGA-2 chipsets. The AGX chipset is based on XGA architecture, but is
   missing several features and differs on others. There's also untested
@@ -32,7 +31,6 @@
   a generic board that uses a UMC RAMDAC that may be an AT&T 20C490
   Clone.
 
-
   2.  Acknowledgments
 
   First, to Hercules Customer Support for providing a loaner board to
@@ -41,7 +39,6 @@
   Second, to the XFree86 team, and those who who have contributed to
   their efforts to the project, for the foundation of work that provided
   a basis for bootstrapping this server.
-
 
   3.  Known Problems
 
@@ -52,23 +49,19 @@
         lines. Seems to have been reduced/fixed in previous releases but
         need more testing.
 
-
-
      o  Some special-case speedup added to cached font rendering in
         3.1.1 has been disabled as is over-aggressive in some cases.
         This cuts the performance on terminal-fonts in half, and font
         performance is already low for the AGX chips compared to their
         contemporaries.
 
-
-
      o  As in all software, needs more testing.
+
 
   4.  ToDo
 
 
      o  Address the above known problems.
-
 
 
      o  Additional acceleration routines and general performance
@@ -79,14 +72,10 @@
         some of the general per-operation overhead to set-up the
         graphics context should be moved to the ValidatGC() routines.
 
-
-
      o  Complete HW cursor support, most of the code is done (or
         borrowed from other servers). There just remains a little setup
         code and then finding a lot of time to debug and test the
         numerous permutations.
-
-
 
      o  Complete support for the Graphite Pro's 84-pin RAMDAC.  (the 2MB
         version of the Graphite Pro has both RAMDACs, the 1Mb only the
@@ -94,8 +83,6 @@
         in clock-doubled pixmux mode, the server will switch between
         RAMDACs as required by the video mode In >8bpp modes this
         switching does not occur.
-
-
 
      o  Implement more HW probing, this will be difficult as it appears
         some (all?) AGX-based vendors don't implement the VESA VXE POS
@@ -106,18 +93,14 @@
         POS probing is supported for the XGA chips and some code for
         EISA POS is also included but not tested.
 
-
-
      o  Micro-optimizations, in particularly reducing processing
         overhead for common special cases that don't require full
         generality.
-
 
   5.  XF86Config
 
 
   Device Section Entries and Options Currently Supported:
-
 
   The minimum that must be specified in the XF86Config device section
   for the AGX-014, AGX-015, AGX-016, and ISA-based XGA-1 and XGA-2 is
@@ -149,7 +132,6 @@
            specified. Most boards should work with this parm, but some
            capabilities will be unavailable. Only 8bpp is available.
 
-
         "bt481"
            bt481 RAMDAC (supports 8-bit DAC)
 
@@ -160,12 +142,10 @@
            BT481/2 are limited to 85Mhz.  8bpp, 15bpp, 16bpp are
            supported.
 
-
         "ATT20c490"
            AT&T490 RAMDAC (includes 49[123] - supports 8-bit DAC).
            Limited to 110Mhz at 8bpp. 8bpp, 15bpp, and 16bpp are
            supported.
-
 
         "SC15025"
            Sierra SC15025 and SC15021 RAMDAC (support 8-bit DAC). The
@@ -173,7 +153,6 @@
            the RAMDAC's actual rating, some SC15025's used in AGX based
            boards are only rated to 110Mhz. 8bpp, 15bpp, and 16bpp are
            supported.
-
 
         "herc_dual_dac"
            Hercules Graphite Pro RAMDAC probe.  If the 84-pin Big-RAMDAC
@@ -191,18 +170,16 @@
 
            Not supported by the HG210 Graphite.
 
-
         "herc_small_dac"
            Hercules Graphite Pro RAMDAC probe.  Forces use of only the
            BT481/482 RAMDAC. 8bpp, 15bpp, 16bpp, and unpacked 24/32bpp
            are supported.
-           Not supported by the HG210 Graphite.
 
+           Not supported by the HG210 Graphite.
 
         "xga"
            To allow overriding the default VGA style RAMDAC control for
            the AGX-010.
-
 
 
      Ramdac related Option Flags:
@@ -210,12 +187,10 @@
         "dac_8_bit"
            Sets supported RAMDAC's to 8-bit DAC mode (all but "normal").
 
-
         "sync_on_green"
            Composite sync on green for RAMDAC's that support this
            feature (BT481/481 and AT&T20c490). However, whether any
            boards have necessary traces and glue logic is doubtful.
-
 
 
      Chipset:
@@ -244,11 +219,9 @@
         configuration parms described in the XGA section can be used to
         override the AGX defaults for I/O and memory addresses.
 
-
      VideoRam:
         Will be probed if not specified. The startup will be a little
         faster if specified.
-
 
      Tuning Option flags:
 
@@ -261,13 +234,11 @@
               Set or clear CPU access wait state, default is the POST
               setting.
 
-
            "fifo_conserv"
               Disable Memory I/O Buffer, AGX-015 and AGX-016.  MS-
               Windows driver default. Required by some VLB systems with
               `aggressive timing'.  The default for this server is to
               disable the buffer.
-
 
            "fifo_moderate"
               Enable the AGX-015/016's Memory I/O buffer.
@@ -296,7 +267,6 @@
               if directly specifying VRAM options in order to clear POST
               settings.
 
-
         Debugging:
            These shouldn't generally be required:
 
@@ -304,10 +274,8 @@
            "noaccel"
               (AGX,XGA) Disable Font Cache.
 
-
            "crtc_delay"
               (AGX) Force XGA mode CRTC delay.
-
 
            "engine_delay"
               AGX-015 only? adds additional VLB wait state.
@@ -327,6 +295,7 @@
            "vlb_a", "vlb_b"
               VLB transaction type, default is to leave this bit
               unchanged from POST value.
+
 
      Virtual resolution:
         The server now accepts any virtual width, however the actual
@@ -350,7 +319,6 @@
           XGA,AGX-010 : 512, 640, 800, 1024, 1280, 1152, and 2048.
 
 
-
      When panning I occasionally get streaks if the virtual resolution
      is much greater than the physical resolution.  Moving the mouse a
      little makes it disappear. The Hercules manual indicates this also
@@ -358,8 +326,6 @@
 
      The server requires at least a 64KB scratchpad (16KB for XGA's).
      Additional memory is useful for font cache and a larger scratchpad.
-
-
 
 
      AGX Clocks:
@@ -393,7 +359,6 @@
                     25.175 28.322 32.512 36.000 40.00 44.90 50.35 65.00
                     70.00  75.00  80.00  85.00  90.00 95.00 100.0 108.0
 
-
      These are the values to be used in the clock statement if specify-
      ing the "normal", "bt481", or "herc_small_dac" RAMDAC in your
      XF86Config and your clockchip matches that above.
@@ -419,7 +384,6 @@
      versions rated to lesser values than the server assumes. You should
      check the rating and limit yourself to that value.
 
-
      Modes:
         One difference I've noted from the Mach8, is that the AGX's CRTC
         doesn't like the start of the horizontal sync to be equal to
@@ -435,9 +399,7 @@
         match the apparent resolutions, e.g. for 400x300 the timings
         should describe 300 lines, not 600.
 
-
      Examples:
-
         For the Hercules HG720 (2MB VLB AGX-015, with BT481 and
         AT&T20C5050 RAMDACs), I use the following XF86Config "Device"
         section:
@@ -456,10 +418,6 @@
 
      For the Spider Black Widow Plus (2MB VLB AGX-016, with Sierra
      SC15021 RAMDAC):
-
-
-
-
                   Section "Device"
                       Identifier "SBWP"
                       VendorName "Spider"
@@ -476,14 +434,10 @@
 
   6.  Xga configuration
 
-
-
-
   This server now has tested support for XGA-2 compatible boards (aka.
   XGA-NI). The main issue for XGA-1 support is whether clock probing
   works. At this time probing for board configuration is limited and
   detailed configuration may need to be done manually.
-
 
   By default the ISA POS register will be performed. If the XGA Instance
   number is specified the scope of probing will be narrowed a bit. To
@@ -492,16 +446,13 @@
   card. MCA probing is not supported.
 
 
-
      Instance       nn
         XGA instance number (0-7).
-
 
      IObase        nnnn
         The I/O address of the the XGA general control registers. The
         standard, and default, is 0x21i0, where i is the instance
         number.
-
 
      MEMbase        nnnn
         The XGA display memory address (the address the XGA coprocessor
@@ -517,7 +468,6 @@
 
         The AGX-01[456] chips have a fixed display memory address.
 
-
      COPbase     nnnnnn
         Address of the graphics engine's memory mapped control
         registers.
@@ -531,7 +481,6 @@
 
         The AGX-01[456] chips support 0xB1F00 (default) and 0xD1F00.
 
-
      BIOSbase     nnnnnn
         Address of the XGA BIOS (not VGA BIOS).  Can be specified as an
         alternate to COPbase.
@@ -543,7 +492,6 @@
         where ext_mem_addr is the high order 4-bits of POS register 2
         (0-16 -- the server assumes zero).
 
-
      VGAbase        nnnn
         Can be used to override the default 0xA0000 address for the 64KB
         video memory address used by the server. The only values
@@ -551,7 +499,6 @@
         not work under Linux if 0xB0000 is specified.
 
         AGX-01[456] also default to 0xA0000.
-
 
      POSbase       nnnn
         Can be used to specify an alternate POS register probe address
@@ -561,12 +508,10 @@
         A value of zero will disable POS register probing (required for
         MCA).
 
-
      DACspeed      nnnn
         Can be used to override the servers default maximum Pixel Clock
         for XGA-2 of 80Mhz.  The limit can be raised as high as 90Mhz,
         or set to lower values.
-
 
   An alternate way to determine the POS register values is with the
   setup/diag programs that should have been included with your video
@@ -592,20 +537,9 @@
   For XGA-1 cards the clocks must be specified as for the AGX chips, it
   is not known whether the clockprobing will work. Some XGA-1 chips may
   support 16bpp.
+
   $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.13 1995/07/21 14:41:00 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -4,7 +4,6 @@
 
   1.  Supported chipsets
 
-
   The driver is used in the 8-bit / 256-color SVGA server and the mono
   server. The following chipsets for Oak Tech. Inc. are supported:
 
@@ -34,9 +33,7 @@
   Accelerated support is included only for OTI087 chipsets, also Mono
   server is only included for 067/077 chipsets.
 
-
   2.  XF86Config options
-
 
   The following options are of particular interest to the Oak driver.
   Each of them must be specified in the 'svga' driver section of the
@@ -64,6 +61,7 @@
         This option will set the FIFO to a safe value of 14, slowing the
         board by a 50%, use this only if you experience streaks or
         anomalies on the screen.
+
      Option "favour_bitblt" (OTI087)
         This option will enable an internal cache on the board that will
         be used as a rudimentary bitblt engine. Performance boost is
@@ -72,10 +70,7 @@
         xterms and leaving mouse droppings throughout the screen. As a
         rule of thumb, enable it, if it works badly, disable it ;).
 
-
-
   3.  Mode issues
-
 
   The use of very high dot-clocks has a REAL negative effect on the
   performance of the boards, due to its limited 80Mbit/sec, higher dot
@@ -90,9 +85,7 @@
   a 78 MHz dot clock, a standard OTI087 based card is a poor match
   anyway.
 
-
   4.  Linear addressing
-
 
   Linear addressing is hardwired to 14 Mbytes for ISA boards and 78
   Mbytes for VLB boards, thus if you have more than that on your board
@@ -104,11 +97,18 @@
   addressing will work on ISA boards, VLB ones are fine (I am writing
   this stuff on mine).
 
-
   GOOD LUCK!!!!
 
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.4 1995/07/19 12:43:27 dawes Exp $
   $XConsortium: Oak.sgml,v 1.1 95/01/23 15:05:36 kaleb Exp $
+
+
+
+
+
+
+
+
 
 
 

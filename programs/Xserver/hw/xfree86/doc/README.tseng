@@ -10,7 +10,6 @@
   details about the accelerated ET4000/W32 server, refer to README.W32
   <W32.html>.
 
-
   2.  Clock selection problems with some ET4000 boards
 
   XFree86 has some problems getting the clock selection right with some
@@ -40,7 +39,6 @@
     Option "hibit_high"
 
 
-
   3.  Text mode restore problems
 
   In XFree86 1.3, an option flag ``force_bits'' was provided as an
@@ -51,6 +49,8 @@
 
   $XConsortium: tseng.sgml,v 1.2 95/01/23 15:34:58 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.4 1995/01/28 16:03:19 dawes Exp $
+
+
 
 
 

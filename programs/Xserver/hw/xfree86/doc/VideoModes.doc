@@ -5,7 +5,6 @@
 
   1.  Introduction
 
-
   Please direct comments, criticism, and suggestions for improvement to
   esr@snark.thyrsus.com.
 
@@ -39,9 +38,7 @@
   mode in the database doesn't match what your card has available, but
   that's easy.
 
-
   2.  How Video Displays Work
-
 
   Knowing how the display works is essential to understanding what
   numbers to put in the various fields in the file Xconfig.  Those
@@ -55,6 +52,9 @@
   strike each dot for an equal amount of time, the beam is swept across
   the display in a constant pattern.
 
+  The pattern starts at the top left of the screen, goes across the
+  screen to the right in a straight line, and stops temporarily on the
+
 
 
     1. (from an original by Chin Fang
@@ -64,8 +64,6 @@
 
 
   to by Bob Crosson crosson@cam.nist.gov,
-  The pattern starts at the top left of the screen, goes across the
-  screen to the right in a straight line, and stops temporarily on the
   right side of the screen.  Then the beam is swept back to the left
   side of the display, but down one line.  The new line is swept from
   left to right just as the first line was.  This pattern is repeated
@@ -115,9 +113,7 @@
   In a later section, we'll come back to these basics with definitions,
   formulas and examples to help you use them.
 
-
   3.  Basic Things to Know about your Display and Adapter
-
 
   There are some fundamental things you need to know before hacking an
   Xconfig entry.  These are:
@@ -266,7 +262,6 @@
   editing, as long as the difference is not so significant as to cause
   severe image distortion (your eyes would tell you right away if this
   were so).
-
   What these control:
 
   The sync frequency ranges of your monitor, together with your video
@@ -277,9 +272,7 @@
   device driver but less capable hardware, you can push the hardware's
   envelope a little.  This is the design philosophy of XFree86.
 
-
   4.  Interpreting the Basic Specifications
-
 
   This section explains what the specifications above mean, and some
   other things you'll need to know.  First, some definitions.  Next to
@@ -290,23 +283,19 @@
      horizontal sync frequency (HSF)
         Horizontal scans per second (see above).
 
-
      vertical sync frequency (VSF)
         Vertical scans per second (see above).  Mainly important as the
         upper limit on your refresh rate.
-
 
      dot clock  (DCF)
         More formally, `driving clock frequency'; sometimes loosely
         called `bandwidth'.  The frequency of the crystal or VCO on your
         adaptor --- the maximum dots-per-second it can emit.
 
-
      video bandwidth (VB)
         The highest frequency at which your monitor's video signal can
         change.  This constrains the highest dot clock you can use and
         the overall sharpness of fine details in the video image.
-
 
      frame length (HFL, VFL)
         Horizontal frame length (HFL) is the number of dot-clock ticks
@@ -314,7 +303,6 @@
         line, *including the inactive left and right borders*.  Vertical
         frame length (VFL) is the number of scan lines in the *entire*
         image, including the inactive top and bottom borders.
-
 
      screen refresh rate (RR)
         The number of times per second your screen is repainted.  Higher
@@ -328,6 +316,7 @@
      Note that the product in the denominator is *not* the same as the
      monitor's visible resolution, but typically somewhat larger.  We'll
      get to the details of this below.
+
   About Bandwidth:
 
   Monitor makers like to advertise high bandwidth because it constrains
@@ -397,9 +386,7 @@
   trades off resolution against flicker in whatever way suits your
   needs.
 
-
   5.  Tradeoffs in Configuring your System
-
 
   Another way to look at the formula we derived above is
 
@@ -445,9 +432,7 @@
   So let's say you've picked a minimum acceptable refresh rate.  In
   choosing your HFL and VFL, you'll have some room for maneuver.
 
-
   6.  Memory Requirements
-
 
   Available frame-buffer RAM may limit the resolution you can achieve on
   color or gray-scale displays.  It probably isn't a factor on displays
@@ -487,9 +472,7 @@
   example, normally do 1024x768x256.  You can make them do 1280x1024x16
   with depth 4.
 
-
   7.  Computing Frame Sizes
-
 
   Warning: this method was developed for multisync monitors.  It will
   probably work with fixed-frequency monitors as well, but no
@@ -553,7 +536,6 @@
   So far, most of this is simple arithmetic and basic facts about raster
   displays.  Hardly any black magic at all!
 
-
   8.  Black Magic and Sync Pulses
 
   OK, now you've computed HFL/VFL numbers for your chosen dot clock,
@@ -590,6 +572,7 @@
                                 |   |<----->|   |
                                 |<->|  HSP  |<->|
                                 HGT1         HGT2
+
 
 
   Now, we would like to place a sync pulse of length HSP as shown above,
@@ -671,14 +654,18 @@
   Figuring the vertical sync pulse layout is similar:
 
 
-        |___ __ __ __ __ __ __ __ __ __ __ __ __
-        |_ _ _ _ _ _ _ _ _ _ _ _                |
-        |_______________________|_______________|_____
-        0                      VR              VFL     unit: ticks
-                                ^   ^       ^
-                                |   |       |
-                                |<->|<----->|
-                                 VGT    VSP
+
+
+
+
+   |___ __ __ __ __ __ __ __ __ __ __ __ __
+   |_ _ _ _ _ _ _ _ _ _ _ _                |
+   |_______________________|_______________|_____
+   0                      VR              VFL     unit: ticks
+                           ^   ^       ^
+                           |   |       |
+                           |<->|<----->|
+                            VGT    VSP
 
 
 
@@ -696,9 +683,7 @@
   50us and 300us.  As an example let's use 150us, which translates into
   8 vertical clock ticks (150us/18.95us 8).
 
-
   9.  Putting it All Together
-
 
   The Xconfig file Table of Video Modes contains lines of numbers, with
   each line being a complete specification for one mode of X-server
@@ -735,10 +720,14 @@
 
   Example:
 
-            #Modename    clock  horizontal timing  vertical timing
 
-            "752x564"     40    752 784  944 1088  564 567 569 611
-                          44.5  752 792  976 1240  564 567 570 600
+
+
+
+       #Modename    clock  horizontal timing  vertical timing
+
+       "752x564"     40    752 784  944 1088  564 567 569 611
+                     44.5  752 792  976 1240  564 567 570 600
 
 
 
@@ -790,7 +779,7 @@
   Xconfig as follows:
 
 
-  < name >   DCF     HR  SH1 SH2   HFL   VR  SV1 SV2 VFL
+       < name >   DCF     HR  SH1 SH2   HFL   VR  SV1 SV2 VFL
 
 
 
@@ -799,17 +788,17 @@
   pulse and SV2 is its end tick.
 
 
-       #name    clock   horizontal timing   vertical timing    flag
-       936x702  65      936 968 1200 1232   702 702 710 737
+
+
+  #name    clock   horizontal timing   vertical timing    flag
+  936x702  65      936 968 1200 1232   702 702 710 737
 
 
 
   No special flag necessary; this is a non-interlaced mode.  Now we are
   really done.
 
-
   10.  Questions and Answers
-
 
   Q. The example you gave is not a standard screen size, can I use it?
 
@@ -856,6 +845,7 @@
   present speeds, interlaced monitors are a bad idea for X.
 
   Q. Can you summarize what we have discussed so far?
+
   A. In a nutshell:
 
 
@@ -866,8 +856,6 @@
      2. if high resolution is desirable and your monitor supports it,
         try to get a SVGA card that provides a matching dot clock or
         DCF. The higher, the better!
-
-
   11.  Two More Example Calculations
 
   Here's another hypothetical:
@@ -887,7 +875,6 @@
   the number of seconds per dot.
 
   1/40,000,000 = .000000025 = .025 microseconds per dot
-
 
   Thus the number of dots for a 3.8 microsecond sync pulse is
 
@@ -968,7 +955,6 @@
 
   or
 
-
   600 603 609 630
 
   Before we do anything else, we must check that the display can handle
@@ -1047,7 +1033,6 @@
 
   "800x?"  40  800 832 992 1136...
 
-
   A line of 1136 dots at .025 microsecond/dot means that a line
   represents 1136 x .025 = 28.4 microseconds.
 
@@ -1120,6 +1105,21 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
        # the following line works but is right of center
        "752x564"  40  752  784  944 1088  564 567 569 611
        #        44.5  752 792  976 1240  564 567 570 600
@@ -1163,9 +1163,7 @@
 
 
 
-
   12.  Fixing Problems with the Image.
-
 
   OK, so you've got your X configuration numbers.  You put them in
   Xconfig with a test mode label.  You fire up X, hot-key to the new
@@ -1231,6 +1229,8 @@
 
   $XConsortium: VidModes.sgml,v 1.3 95/01/27 16:14:33 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.6 1995/07/21 14:40:58 dawes Exp $
+
+
 
 
 

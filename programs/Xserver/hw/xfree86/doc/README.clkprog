@@ -38,7 +38,6 @@
   probably make use of the index, while cards with a fully programmable
   clock would use the frequency argument.
 
-
   2.  Developing an extern clock setting program
 
   When such an external program is being used, the server does not
@@ -74,6 +73,7 @@
 
   $XConsortium: clkprog.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.2 1995/01/28 16:03:06 dawes Exp $
+
 
 
 

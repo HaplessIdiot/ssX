@@ -5,7 +5,6 @@
 
   1.  Supported chipsets
 
-
   There are two different SVGA drivers for Cirrus chipsets, one called
   ``cirrus'' and one called ``cl64xx''.  The ``cirrus'' driver is used
   in the 256-color SVGA server (with acceleration) and the mono server
@@ -116,10 +115,7 @@
   startx -- -bpp 32               8-8-8 XRGB truecolor (5434)
 
 
-
-
   2.  Basic configuration
-
 
   It is recommended that you generate an XF86Config file using the
   `xf86config' program, which should produce a working high-resolution
@@ -148,7 +144,6 @@
   Lastly, on the 543x, it is advisable to use the "mmio" option in the
   Device section for better acceleration (this might also apply to the
   5429, which has not been tested).
-
 
   3.  XF86Config options
 
@@ -201,7 +196,6 @@
         0x1c (50 MHz)
            This is usually the BIOS default.  It is forced by the
            "slow_dram" option.
-
         0x1f (55 MHz)
            Value used by the "med_dram" option.  Highest value that 542x
            based cards seem to be able to handle with linear addressing
@@ -262,6 +256,7 @@
         flashing `streaks', `jitter' or horizontally repeated display
         areas on the screen (especially when a BitBLT operation is in
         progress, e.g.  scrolling).
+
      Option "fifo_aggressive" (5424/6/8/9/30)
         This option will set the CRT FIFO threshold to an aggressive
         value; it will be the same as that used for lower dot clocks. It
@@ -327,22 +322,17 @@
         has no effect when not using the BitBLT engine (e.g. when using
         "no_bitblt").
 
-
      Option "sw_cursor" (542x/3x)
         This disables use of the hardware cursor provided by the chip.
         Try this if the cursor seems to have problems. In particular,
         use this when using dot clocks greater than 85 MHz on the 5434/6
         since the chip doesn't fully support the hardware cursor at
         those clocks.
-
      Option "clgd6225_lcd"
         Provides a work-around for problems on the LCD screen of some
         62x5 laptop chipsets with maximum white colors.
 
-
-
   4.  Mode issues
-
 
   The accelerated 256-color driver uses 256 bytes of scratch space in
   video memory, and the hardware cursor also uses 1K. Consequently, a
@@ -370,9 +360,7 @@
   series. The 543x chips also make more efficient use of the available
   DRAM bandwidth.
 
-
   5.  Linear addressing and 16bpp/32bpp modes
-
 
   Currently the unaccelerated 16-bit and 32-bit pixel support in the
   SVGA server requires linear addressing. This restriction will
@@ -462,30 +450,39 @@
   defined for each depth that you want to run, with separate Modes and
   virtual screen size. Example (2Mb of video memory):
 
-       Section "screen"
-           SubSection "Display"
-               Depth 8
-               Virtual 1152 900
-               ViewPort 0 0
-               Modes "640x480" "800x600" "1024x768"
-               Option "linear"
-           EndSubSection
-           SubSection "Display"
-               Depth 16
-               Virtual 1152 900
-               ViewPort 0 0
-               Modes "640x480" "800x600" "1024x768"
-               Option "linear"
-           EndSubSection
-           SubSection "Display"
-               Depth 32
-               Virtual 800 600
-               ViewPort 0 0
-               Modes "640x480" "800x600"
-               Option "linear"
-           EndSubSection
-       EndSection
 
+
+
+
+
+
+
+
+
+
+  Section "screen"
+      SubSection "Display"
+          Depth 8
+          Virtual 1152 900
+          ViewPort 0 0
+          Modes "640x480" "800x600" "1024x768"
+          Option "linear"
+      EndSubSection
+      SubSection "Display"
+          Depth 16
+          Virtual 1152 900
+          ViewPort 0 0
+          Modes "640x480" "800x600" "1024x768"
+          Option "linear"
+      EndSubSection
+      SubSection "Display"
+          Depth 32
+          Virtual 800 600
+          ViewPort 0 0
+          Modes "640x480" "800x600"
+          Option "linear"
+      EndSubSection
+  EndSection
 
 
 
@@ -529,7 +526,6 @@
   modes is about 0.75MB e.g.  1024x768.  If you set the virtual
   resolution above this, you will see what might be described as a
   compressed aliased band when the accelerated area is displayed.
-
   Currently, the driver does not support switching of screen modes among
   LCD, CRT, and SimulScan, and, at least on the NP9200, the mode must be
   chosen at OS boot time (e.g. Linux's LILO) while the BIOS is still
@@ -552,7 +548,6 @@
 
   The primary contact for the cl6440 problems with ``cl64xx'' driver is
   Randy Hendry <randy@sgi.com>.
-
 
   7.  Trouble shooting with the ``cirrus'' driver
 
@@ -663,7 +658,6 @@
   reached at hhanemaa@cs.ruu.nl), or post in the Usenet newsgroup
   "comp.windows.x.i386unix".
 
-
   8.  Driver Changes
 
   Bugs fixed since XFree86 3.1:
@@ -723,66 +717,6 @@
 
   $XConsortium: cirrus.sgml,v 1.4 95/01/27 16:14:36 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

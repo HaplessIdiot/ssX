@@ -1,7 +1,7 @@
   README for XFree86[TM] 3.1.2
   The XFree86 Project, Inc
 
-  22 July 1995
+  24 July 1995
 
   XFree86 is a port of X11R6 that supports several versions of Intel-
   based Unix and Unix-like operating systems.  This release consists of
@@ -10,7 +10,6 @@
   X11R6 code, as well as binary distributions for many architectures.
 
   1.  What's new in XFree86 3.1.2
-
 
   The following items have been added since XFree86 3.1.1 was released
   in January 1995:
@@ -36,53 +35,55 @@
      9. Bug fixes for the Mach32 server.
 
      10.
-        Bug fixes for the VGA16 and Mono servers.
+        Improved performance for the P9000 server.
 
      11.
+        Bug fixes for the VGA16 and Mono servers.
+
+     12.
         A new Xserver extension (and client) to allow interactive video
         mode tuning.
 
-     12.
+     13.
         Improved VESA DPMS screensaver support for some servers.
 
-     13.
+     14.
         New chipset support for the SVGA server.  This includes the ARK
         Logic ARK1000PV and ARK2000PV and RealTek RTG3106.
 
-     14.
+     15.
         Support for the WD90C24 series of laptop chipsets.
 
-     15.
+     16.
         Updates to the SVGA vgawonder driver.
 
-     16.
+     17.
         Improved 3 Button mouse emulation.
 
-     17.
+     18.
         Support for LynxOS AT versions 2.2.1 and 2.3.
 
-     18.
-        Support for Unixware 2.0.
 
      19.
-        Support for BSD/OS 2.0.
+        Support for Unixware 2.0.
 
      20.
-        Support for Linux/ELF.
+        Support for BSD/OS 2.0.
 
      21.
-        Workarounds for some NumLock problems.
+        Support for Linux/ELF.
 
      22.
+        Workarounds for some NumLock problems.
+
+     23.
         Cyrillic fonts (using KIO8-R encoding) from Cronyx Ltd.
 
 
   Plus a lots of other small items.  Refer to the CHANGELOG file in the
   source distribution for full details.
 
-
   2.  What's new in XFree86 3.1.1
-
 
   The following items have been added since XFree86 3.1 was released in
   October 1994:
@@ -129,7 +130,6 @@
      14.
         The `xf86config' utility for generating XF86Config files has
         been improved and now uses a database of video cards.
-
      15.
         The X server LinkKit has been updated to include support for
         LBX.
@@ -141,9 +141,7 @@
   Plus a number of other small items.  Refer to the CHANGELOG file in
   the source distribution for full details.
 
-
   3.  Systems XFree86 has been tested on
-
 
 
      SVR4.0:
@@ -169,7 +167,6 @@
         o  SunSoft: Solaris x86 2.1, 2.4
 
 
-
      SVR4.2:
 
         o  Consensys
@@ -177,13 +174,11 @@
         o  Novell UnixWare
 
 
-
      SVR3:
 
         o  SCO: 3.2.2, 3.2.4
 
         o  ISC: 3.0, 4.0, 4.1
-
 
 
      Others:
@@ -200,15 +195,13 @@
 
         o  Amoeba
 
+
         o  Minix-386
 
         o  LynxOS AT 2.2.1, 2.3
 
 
-
-
   4.  Supported video-card chip-sets
-
 
   At this time, XFree86 3.1.2 supports the following accelerated
   chipsets:
@@ -261,13 +254,13 @@
         WD90C00, WD90C10, WD90C11, WD90C24, WD90C24A, WD90C30,
         WD90C31,WD90C33
 
-
      Genoa
         GVGA
 
      Trident
         TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
         TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
+
 
      ATI
         18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
@@ -325,7 +318,6 @@
   up to about 1600x1200 (with 1MB of video memory).  For other chipsets
   the display size is limited to approximately 800x600.
 
-
   Note: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards
   are NOT supported, even though they use the ET4000.  The Stealth 32
   which uses the ET4000/W32p is also not fully supported.  The Weitek
@@ -336,11 +328,7 @@
 
   The Trident TGUI9440 series of chips is not yet supported, but we are
   working on this.
-
-
-
   5.  Important Changes between version 2.1.1 and 3.1
-
 
   There are a number of important user-visible changes between XFree86
   2.1.1 and XFree86 3.1.  The first is the default install location.
@@ -375,11 +363,7 @@
   administrator.  For further details, refer to the XFree86(1) manual
   page.
 
-
-
-
   6.  Where to get more information
-
 
   Additional documentation is available in the XFree86(1),
   XF86Config(4/5), XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1),
@@ -411,7 +395,6 @@
 
 
   7.  Credits
-
 
   XFree86 was originally put together by:
 
@@ -458,7 +441,6 @@
      o  Rich Murphey <rich@XFree86.org>
 
      o  Hans Nasten <nasten@everyware.se>
-
 
      o  Mark Snitily <mark@sgcs.com>
 
@@ -525,7 +507,6 @@
 
         o  Paul Vixie <paul@vix.com>
 
-
      Solaris support by:
 
         o  Doug Anson <danson@lgc.com>,
@@ -542,8 +523,8 @@
 
         o  Dirk Hohndel <hohndel@XFree86.org>
 
-
      Original accelerated code by:
+
 
         o  Kevin Martin <martin@cs.unc.edu>,
 
@@ -591,7 +572,6 @@
 
         o  Kevin Martin <martin@cs.unc.edu>,
 
-
         o  Rik Faith <faith@cs.unc.edu>,
 
         o  Tiago Gons <tiago@comosjn.hobby.nl>,
@@ -636,16 +616,13 @@
 
         o  Jorge Delgado <ernar@dit.upm.es>,
 
-
      16 color VGA server by:
 
         o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
-
      2 color VGA and non-VGA mono servers by:
 
         o  Pascal Haible <haible@izfm.uni-stuttgart.de>
-
 
      ATI SVGA driver by:
 
@@ -723,18 +700,15 @@
 
      Video7 SVGA driver by:
 
-
         o  Craig Struble <cstruble@acm.vt.edu>
 
      RealTek SVGA driver by:
 
         o  Peter Trattler <peter@sbox.tu-graz.ac.at>
 
-
      Apollo Mono driver by:
 
         o  Hamish Coleman <hamish@zot.apana.org.au>
-
 
      XFree86-VidModeExtension and xvidtune client by:
 
@@ -746,20 +720,16 @@
 
         o  Joe Moss <joe@morton.rain.com>
 
-
      Other contributors:
 
         o  Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked
            mono),
-
         o  Eric Raymond <esr@snark.thyrsus.com> (new video mode
            documentation),
 
         o  and an entire horde of beta-testers around the world!
 
-
   8.  Contact information
-
 
   Ongoing development planning and support is coordinated by the XFree86
   Core Team.  At this time the Core Team consists of (in alphabetical
@@ -782,13 +752,10 @@
   Mail sent to <Core@XFree86.org> will reach the core team.  Please note
   that support questions should be sent to <XFree86@XFree86.org>.
 
-
   9.  The XFree86 Project, Inc.
-
 
   The XFree86 Project, Inc, has been founded to accomplish two major
   goals:
-
 
      1. To provide a vehicle by which XFree86 can be represented in X
         Consortium, Inc, the organization responsible for the design,
@@ -823,7 +790,6 @@
 
   The current Board of Directors and Officers of the The XFree86
   Project, Inc, are:
-
      o  David Dawes, President and Secretary
 
      o  Dirk Hohndel, Vice-President
@@ -870,11 +836,11 @@
 
   Also deserving of special mention are the organizers and attendees of
   the 1st German Linux Congress in Heidelberg.  Significant funding to
-  The XFree86 Project has bee provided from its proceeds.
+  The XFree86 Project has been provided from its proceeds.
 
 
-     o  AIB Software Corporation <ftp://ftp.uu.net/vendor/AIB/>, Dulles,
-        VA
+     o  AIB Software Corporation <ftp://ftp.uu.net/vendor/AIB/>,
+        Herndon, VA
 
      o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
 
@@ -903,15 +869,21 @@
 
      o  Hercules Computer Technology, Inc. <http://www.hercules.com/>
 
+     o  Ralf Hockens
+
      o  Dirk Hohndel
+
+     o  InfoMagic <http://www.infomagic.com/>, Flagstaff, AZ
 
      o  Daniel Kraemer
 
      o  Frank & Paige McCormick
 
-     o  InfoMagic <http://www.infomagic.com/>, Flagstaff, AZ
+     o  Linux International
 
-     o  LunetIX Softfair, Berlin, Germany
+     o  Linux Support Team, Erlangen, Germany
+
+     o  LunetIX Softfair <http://www.lunetix.de>, Berlin, Germany
 
      o  Morse Telecommunications <http://www.morse.net>, Long Beach, NY
 
@@ -920,7 +892,6 @@
      o  Rich & Amy Murphey
 
      o  Brett Neumeier
-
 
      o  Number Nine, Lexington, MA
 
@@ -950,6 +921,7 @@
 
      o  Unifix Software GmbH, Braunschweig, Germany
 
+
      o  Vixie Enterprises <http://www.vix.com/>, La Honda, CA
 
      o  Walnut Creek CDROM <http://www.cdrom.com/>, Concord, CA
@@ -962,9 +934,7 @@
   with the papers.  For more information, contact The XFree86 Project,
   Inc, at <BOD@XFree86.org>
 
-
   10.  Source and binary archive sites
-
 
   Source patches are available to upgrade X11R6 PL12 from the X
   Consortium to XFree86 3.1.2.  They and binaries for many OSs are
@@ -979,7 +949,7 @@
      o  North America:
 
         +  ftp.bsdi.com:/contrib/X11/XFree86
-           <ftp://ftp.bsdi.com/contrib/X11/XFree86> (source and BSD/386
+           <ftp://ftp.bsdi.com/contrib/X11/XFree86> (source and BSD/OS
            binaries)
 
         +  XFree86.cdrom.com:/pub/XFree86
@@ -988,6 +958,7 @@
         +  ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2
            <ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2> (source
            patches and NetBSD binaries)
+
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
 
@@ -1020,8 +991,9 @@
         +  ftp.switch.ch:/mirror/XFree86
            <ftp://ftp.switch.ch/mirror/XFree86> (source and binaries)
 
-        +  ftp.fee.vutbr.cz:/pub/XFree86
-           <ftp://ftp.fee.vutbr.cz/pub/XFree86> (source and binaries)
+        +  ftp.fee.vutbr.cz:/pub/XFree86/3.1.2
+           <ftp://ftp.fee.vutbr.cz/pub/XFree86> (source patches and
+           binaries)
 
         +  ftp.gwdg.de:/pub/xfree86 <ftp://ftp.gwdg.de/pub/xfree86>
            (source and binaries)
@@ -1041,12 +1013,19 @@
            <ftp://anasgard.calvacom.fr/pub/unix/X/XFree86> (source and
            binaries)
 
+        +  ftp.ibp.fr:/pub/X11/XFree86
+           <ftp://ftp.ibp.fr/pub/X11/XFree86> (source and binaries)
+
         +  ftp.laas.fr:/pub/netbsd/XFree86-3.1.2
            <ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.2> (NetBSD binaries
            only)
 
         +  ftp.unipi.it:/pub/mirrors/XFree86-3.1.2
            <ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.2> (source and
+           binaries)
+
+        +  ftp.pvv.unit.no:/pub/XFree86/current
+           <ftp://ftp.pvv.unit.no/pub/XFree86/current> (source and
            binaries)
 
 
@@ -1061,14 +1040,12 @@
         +  ftp.hk.super.net:/mirror/XFree86
            <ftp://ftp.hk.super.net/mirror/XFree86> (source and binaries)
 
-        +  ftp.nectec.or.th:/pub/mirrors/XFree86
-           <ftp://ftp.nectec.or.th/pub/mirrors/XFree86> (source patches
-           and binaries)
+        +  ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2
+           <ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2> (source
+           patches and binaries)
 
         +  ftp.edu.tw:/X/XFree86/3.1.2
            <ftp://ftp.edu.tw/X/XFree86/3.1.2> (source and binaries)
-
-
 
 
   Refer to the README file under the specified directory for information
@@ -1081,7 +1058,30 @@
   building the distribution.
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.26 1995/07/22 13:03:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.27 1995/07/24 05:56:20 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

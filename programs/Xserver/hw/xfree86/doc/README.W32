@@ -50,7 +50,6 @@
   been tested.  Also do not expect it to work on a board without a
   w32p_rev_c or later chip.
 
-
   2.  Acknowledgments
 
   Jerry J. Shekhel (jerry@msi.com) gave me the 1-M Mirage ET4000/W32 VLB
@@ -65,7 +64,6 @@
   I apologize for my failure to keep track of the people who tested
   X_W32, but the names of the people involved with the XF86_W32 testing
   are listed below:
-
      Linux:
         bf11620@coewl.cen.uiuc.edu (Byron Thomas Faber)
 
@@ -100,9 +98,11 @@
       FreeBSD:
         ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
 
-
   $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.5 1995/07/19 13:03:59 dawes Exp $
+
+
+
 
 
 

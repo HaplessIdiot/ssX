@@ -17,7 +17,6 @@
   a WD90C24, WD90C31 or WD90C33 is detected, or specified in the
   XF86Config file.
 
-
   2.  Special considerations
 
   All of the Western Digital chipsets after the PVGA1 support the
@@ -48,7 +47,6 @@
   have provided the "swap_hibit" option to invert this behavior.  If the
   clocks detected by the server show a very low last clock (under
   28Mhz), then this option is likely needed.
-
 
   3.  WD90C24 features
 
@@ -108,7 +106,6 @@
         the same way as some of the other servers, 8 of the 17 clocks
         may be set to (almost) any value via the Clocks line. It also
         supports options for adjusting the VRAM clock.
-
 
   4.  WD90C24 clocks
 
@@ -196,6 +193,9 @@
      ModeLine  "1024x768.72" 72  1024 1056 1192 1280 768 770 776 806 -hsync -vsync
 
 
+
+
+
   5.  Additional WD90C24 information
 
   Standard disclaimers apply.  Use this driver at your own risk.  If you
@@ -207,9 +207,9 @@
   darin@castle.net or dernst@pppl.gov.  I only provided the WD90C24
   specific code.  You can reach me (Brad Bosch) at brad@Lachman.com.
 
-
   $XConsortium: WstDig.sgml,v 1.2 95/01/16 13:17:51 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.3 1995/07/15 04:26:15 dawes Exp $
+
 
 
 
