@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.1.2.1 1998/06/04 17:35:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.2 1998/07/25 16:56:39 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -13,6 +13,13 @@ XCOMM Alpha (Linux) PCI driver
 
 PCIDRVRSRC = axpPci.c
 PCIDRVROBJ = axpPci.o
+
+#elif defined(LinuxArchitecture) && defined(PpcArchitecture)
+
+XCOMM generic linux PCI driver (using /proc/bus/pci, requires kernel 2.2)
+
+PCIDRVRSRC = linuxPci.c
+PCIDRVROBJ = linuxPci.o
 
 #elif defined(PpcArchitecture)
 
@@ -27,6 +34,8 @@ XCOMM ix86 PCI driver
 
 PCIDRVRSRC = ix86Pci.c
 PCIDRVROBJ = ix86Pci.o
+XCOMM PCIDRVRSRC = linuxPci.c
+XCOMM PCIDRVROBJ = linuxPci.o
 
 #else
 XCOMM no PCI driver -- shouldn't get here

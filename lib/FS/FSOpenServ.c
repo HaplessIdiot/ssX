@@ -1,4 +1,4 @@
-/* $XConsortium: FSOpenServ.c,v 1.6 94/04/17 20:15:16 dpw Exp $ */
+/* $TOG: FSOpenServ.c /main/8 1998/05/01 11:35:00 kaleb $ */
 
 /* @(#)FSOpenServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -27,14 +27,9 @@
 
 /*
 
-Copyright (c) 1987, 1994  X Consortium
+Copyright 1987, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,13 +37,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -66,13 +61,35 @@ static fsReq _dummy_request = {
     0, 0, 0
 };
 
+static void OutOfMemory ( FSServer *svr, char *setup );
+
 FSServer   *_FSHeadOfServerList = NULL;
 
-extern Bool _FSWireToEvent();
-extern Status _FSUnknownNativeEvent();
-extern Bool _FSUnknownWireEvent();
+void _FSFreeServerStructure(svr)
+    FSServer   *svr;
+{
+    if (svr->server_name)
+	FSfree(svr->server_name);
+    if (svr->vendor)
+	FSfree(svr->vendor);
 
-static      OutOfMemory();
+    if (svr->buffer)
+	FSfree(svr->buffer);
+
+    FSfree((char *) svr);
+}
+
+static
+void OutOfMemory(svr, setup)
+    FSServer   *svr;
+    char       *setup;
+{
+
+    _FSDisconnectServer(svr->trans_conn);
+    _FSFreeServerStructure(svr);
+    FSfree(setup);
+    errno = ENOMEM;
+}
 
 /*
  * connects to a server, makes a FSServer object and returns a pointer
@@ -97,8 +114,6 @@ FSOpenServer(server)
     int         altlen;
     char       *vendor_string;
     long        setuplength;
-    extern int  _FSSendClientPrefix();
-    extern XtransConnInfo _FSConnectServer();
 #ifdef X_NOT_STDC_ENV
     extern char *getenv();
 #endif
@@ -161,14 +176,14 @@ FSOpenServer(server)
 		FSfree((char *) alts[i].name);
 	    }
 	    FSfree((char *) alts);
-	    FSFree((char *) alt_data);
+	    FSfree((char *) alt_data);
 	    FSfree((char *) svr);
 	    errno = ENOMEM;
 	    return (FSServer *) 0;
 	}
 	bcopy(ad, alts[i].name, altlen);
 	alts[i].name[altlen] = '\0';
-	ad += altlen + (4 - (altlen + 2) & 3);
+	ad += altlen + ((4 - (altlen + 2)) & 3);
     }
     FSfree((char *) alt_data);
 
@@ -254,27 +269,3 @@ FSOpenServer(server)
     return (svr);
 }
 
-static
-OutOfMemory(svr, setup)
-    FSServer   *svr;
-    char       *setup;
-{
-    _FSDisconnectServer(svr->trans_conn);
-    _FSFreeServerStructure(svr);
-    FSfree(setup);
-    errno = ENOMEM;
-}
-
-_FSFreeServerStructure(svr)
-    FSServer   *svr;
-{
-    if (svr->server_name)
-	FSfree(svr->server_name);
-    if (svr->vendor)
-	FSfree(svr->vendor);
-
-    if (svr->buffer)
-	FSfree(svr->buffer);
-
-    FSfree((char *) svr);
-}

@@ -39,11 +39,11 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/fstobdf/chars.c,v 3.2 1996/08/13 11:32:34 dawes Exp $ */
+/* $XFree86: xc/programs/fstobdf/chars.c,v 3.3 1998/10/04 09:40:05 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xlib.h>
-#include	"FSlib.h"
+#include	"fstobdf.h"
 
 extern long yResolution;	/* intended vertical resoultion for font */
 extern long pointSize;		/* font height in points */
@@ -68,13 +68,12 @@ extern long pointSize;		/* font height in points */
 
 
 static void
-EmitBitmap(outFile, fontHeader, charInfo, encoding, bpr, data)
-    FILE       *outFile;
-    FSXFontInfoHeader *fontHeader;
-    FSXCharInfo *charInfo;
-    unsigned int encoding;
-    int         bpr;
-    unsigned char *data;
+EmitBitmap(FILE *outFile, 
+	   FSXFontInfoHeader *fontHeader, 
+	   FSXCharInfo *charInfo, 
+	   unsigned int encoding, 
+	   int bpr, 
+	   unsigned char *data)
 {
     char       *glyphName;
     unsigned int row;
@@ -148,11 +147,10 @@ EmitBitmap(outFile, fontHeader, charInfo, encoding, bpr, data)
 
 
 Bool
-EmitCharacters(outFile, fontServer, fontHeader, fontID)
-    FILE       *outFile;
-    FSServer   *fontServer;
-    FSXFontInfoHeader *fontHeader;
-    Font        fontID;
+EmitCharacters(FILE *outFile, 
+	       FSServer *fontServer, 
+	       FSXFontInfoHeader *fontHeader, 
+	       Font fontID)
 {
     FSXCharInfo *extents;
     FSXCharInfo *charInfo;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.17 1999/01/31 12:22:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.18 1999/02/05 04:49:55 dawes Exp $ */
 
 /*
  *
@@ -1200,30 +1200,30 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->CRTC[0]  = (mode->CrtcHTotal >> 3) - 5;
     regp->CRTC[1]  = (mode->CrtcHDisplay >> 3) - 1;
     regp->CRTC[2]  = (mode->CrtcHBlankStart >> 3) - 1;
-    regp->CRTC[3]  = (((mode->CrtcHBlankEnd >> 3) - 1 - 1) & 0x1F ) | 0x80;
+    regp->CRTC[3]  = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F) | 0x80;
     i = (((mode->CrtcHSkew << 2) + 0x10) & ~0x1F);
     if (i < 0x80)
-        regp->CRTC[3] |= i;
+	regp->CRTC[3] |= i;
     regp->CRTC[4]  = (mode->CrtcHSyncStart >> 3);
-    regp->CRTC[5]  = ((((mode->CrtcHBlankEnd >> 3) - 1 - 1) & 0x20 ) << 2 )
-        | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
+    regp->CRTC[5]  = ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2)
+	| (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
     regp->CRTC[6]  = (mode->CrtcVTotal - 2) & 0xFF;
-    regp->CRTC[7]  = (((mode->CrtcVTotal -2) & 0x100) >> 8 )
-        | (((mode->CrtcVDisplay -1) & 0x100) >> 7 )
-        | ((mode->CrtcVSyncStart & 0x100) >> 6 )
-	| (((mode->CrtcVBlankStart-1) & 0x100) >> 5 )
-        | 0x10
-        | (((mode->CrtcVTotal -2) & 0x200)   >> 4 )
-        | (((mode->CrtcVDisplay -1) & 0x200) >> 3 )
-        | ((mode->CrtcVSyncStart & 0x200) >> 2 );
+    regp->CRTC[7]  = (((mode->CrtcVTotal - 2) & 0x100) >> 8)
+	| (((mode->CrtcVDisplay - 1) & 0x100) >> 7)
+	| ((mode->CrtcVSyncStart & 0x100) >> 6)
+	| (((mode->CrtcVBlankStart - 1) & 0x100) >> 5)
+	| 0x10
+	| (((mode->CrtcVTotal - 2) & 0x200)   >> 4)
+	| (((mode->CrtcVDisplay - 1) & 0x200) >> 3)
+	| ((mode->CrtcVSyncStart & 0x200) >> 2);
     regp->CRTC[8]  = 0x00;
-    regp->CRTC[9]  = (((mode->CrtcVBlankStart-1) & 0x200) >>4) | 0x40;
+    regp->CRTC[9]  = (((mode->CrtcVBlankStart - 1) & 0x200) >> 4) | 0x40;
     if (mode->Flags & V_DBLSCAN)
-        regp->CRTC[9] |= 0x80;
+	regp->CRTC[9] |= 0x80;
     if (mode->VScan >= 32)
-        regp->CRTC[9] |= 0x1F;
+	regp->CRTC[9] |= 0x1F;
     else if (mode->VScan > 1)
-        regp->CRTC[9] |= mode->VScan - 1;
+	regp->CRTC[9] |= mode->VScan - 1;
     regp->CRTC[10] = 0x00;
     regp->CRTC[11] = 0x00;
     regp->CRTC[12] = 0x00;
@@ -1232,16 +1232,82 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->CRTC[15] = 0x00;
     regp->CRTC[16] = mode->CrtcVSyncStart & 0xFF;
     regp->CRTC[17] = (mode->CrtcVSyncEnd & 0x0F) | 0x20;
-    regp->CRTC[18] = (mode->CrtcVDisplay -1) & 0xFF;
+    regp->CRTC[18] = (mode->CrtcVDisplay - 1) & 0xFF;
     regp->CRTC[19] = scrninfp->displayWidth >> 4;  /* just a guess */
     regp->CRTC[20] = 0x00;
-    regp->CRTC[21] = (mode->CrtcVBlankStart-1) & 0xFF; 
-    regp->CRTC[22] = (mode->CrtcVBlankEnd-1 - 1) & 0xFF;
+    regp->CRTC[21] = (mode->CrtcVBlankStart - 1) & 0xFF; 
+    regp->CRTC[22] = (mode->CrtcVBlankEnd - 1) & 0xFF;
     if (depth < 8)
-        regp->CRTC[23] = 0xE3;
+	regp->CRTC[23] = 0xE3;
     else
-        regp->CRTC[23] = 0xC3;
+	regp->CRTC[23] = 0xC3;
     regp->CRTC[24] = 0xFF;
+
+    /*
+     * OK, so much for theory.  Now, let's deal with the >real< world...
+     *
+     * The above CRTC settings are precise in theory, except that many, if not
+     * most, VGA clones fail to reset the blanking signal when the character or
+     * line counter reaches [HV]Total.  In this case, the signal is only
+     * unblanked when the counter reaches [HV]BlankEnd (mod 64, 128 or 256 as
+     * the case may be) at the start of the >next< scanline or frame, which
+     * means only part of the screen shows.  This affects how null overscans
+     * are to be implemented on such adapters.
+     *
+     * Henceforth, VGA cores that implement this broken, but unfortunately
+     * common, behaviour are to be designated as KGA's, in honour of Koen
+     * Gadeyne, whose zeal to eliminate overscans (read: fury) set in motion
+     * a series of events that led to the discovery of this problem.
+     *
+     * Some VGA's are KGA's only in the horizontal, or only in the vertical,
+     * some in both, others in neither.  Don't let anyone tell you there is
+     * such a thing as a VGA "standard"...  And, thank the Creator for the fact
+     * that Hilbert spaces are not yet implemented in this industry.
+     *
+     * The following implements a trick suggested by David Dawes.  This sets
+     * [HV]BlankEnd to zero if the blanking interval does not already contain a
+     * 0-point, and decrements it by one otherwise.  In the latter case, this
+     * will produce a left and/or top overscan which the colourmap code will
+     * (still) need to ensure is as close to black as possible.  This will make
+     * the behaviour consistent across all chipsets, while allowing all
+     * chipsets to display the entire screen.  Non-KGA drivers can ignore the
+     * following in their own copy of this code.
+     *
+     * --  TSI @ UQV,  1998.08.21
+     */
+
+    /* First the horizontal case */
+    if ((mode->CrtcHBlankEnd >> 3) == (mode->CrtcHTotal >> 3))
+    {
+	i = (regp->CRTC[3] & 0x1F) | ((regp->CRTC[5] & 0x80) >> 2);
+	if ((i-- > (regp->CRTC[2] & 0x1F)) &&
+	    (mode->CrtcHBlankEnd == mode->CrtcHTotal))
+	    i = 0;
+	regp->CRTC[3] = (regp->CRTC[3] & ~0x1F) | (i & 0x1F);
+	regp->CRTC[5] = (regp->CRTC[5] & ~0x80) | ((i << 2) & 0x80);
+    }
+
+    /*
+     * The vertical case is a little trickier.  Some VGA's ignore bit 0x80 of
+     * CRTC[22].  Also, in some cases, a zero CRTC[22] will still blank the
+     * very first scanline in a double- or multi-scanned mode.  This last case
+     * needs further investigation.
+     */
+    if (mode->CrtcVBlankEnd == mode->CrtcVTotal)	/* Null top overscan */
+    {
+	i = regp->CRTC[22];
+	if ((i > regp->CRTC[21]) &&			/* 8-bit case */
+	    ((i & 0x7F) > (regp->CRTC[21] & 0x7F)) &&	/* 7-bit case */
+	    !(regp->CRTC[9] & 0x9F))			/* 1 scanline/row */
+	    i = 0;
+	else
+	    i = (CARD8)(i - 1);
+	regp->CRTC[22] = i;
+    }
+
+    /*
+     * Theory resumes here....
+     */
 
     /*
      * Graphics Display Controller
@@ -1266,8 +1332,11 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
   
     if (depth == 1) {
         /* Initialise the Mono map according to which bit-plane gets used */
+
+	Bool flipPixels = xf86GetFlipPixels();
+
         for (i=0; i<16; i++)
-            if (i & (1<<BIT_PLANE))
+            if (((i & (1 << BIT_PLANE)) != 0) != flipPixels)
                 regp->Attribute[i] = WHITE_VALUE;
             else
                 regp->Attribute[i] = BLACK_VALUE;

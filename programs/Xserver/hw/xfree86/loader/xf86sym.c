@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.65 1999/02/13 16:44:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.66 1999/02/15 18:47:35 hohndel Exp $ */
 
 /*
  *
@@ -88,7 +88,7 @@ extern void* __remq(long, long);
 extern void* __remqu(long, long);
 #endif
 
-#if defined(__powerpc__) && defined(Lynx)
+#if defined(__powerpc__) && (defined(Lynx) || defined(linux))
 void eieio();
 void _restf17();
 void _restf23();

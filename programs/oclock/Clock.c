@@ -1,14 +1,9 @@
 /*
- * $XConsortium: Clock.c,v 1.28 94/04/17 20:37:56 rws Exp $
+ * $TOG: Clock.c /main/29 1998/02/09 13:44:48 kaleb $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  */
 
 /*
@@ -78,9 +73,16 @@ static XtResource resources[] = {
 #undef offset
 #undef goffset
 
-static void 	new_time();
-
-static void Initialize(), Realize(), Destroy(), Redisplay(), Resize();
+static void ClassInitialize ( void );
+static void Initialize ( Widget greq, Widget gnew, ArgList args, 
+			 Cardinal *num_args );
+static void Resize ( Widget widget );
+static void Realize ( Widget gw, XtValueMask *valueMask, 
+		      XSetWindowAttributes *attrs );
+static void Destroy ( Widget gw );
+static void Redisplay ( Widget gw, XEvent *event, Region region );
+static double clock_to_angle ( double clock );
+static void new_time ( XtPointer client_data, XtIntervalId *id );
 
 # define BORDER_SIZE(w)    ((w)->clock.border_size)
 # define WINDOW_WIDTH(w)    (2.0 - BORDER_SIZE(w)*2)
@@ -92,8 +94,6 @@ static void Initialize(), Realize(), Destroy(), Redisplay(), Resize();
 # define HOUR_LENGTH(w)	    (MINUTE_LENGTH(w) * 0.6)
 # define JEWEL_X(w)	    (0.0)
 # define JEWEL_Y(w)	    (1.0 - (BORDER_SIZE(w) + JEWEL_SIZE(w)))
-
-static void ClassInitialize();
 
 ClockClassRec clockClassRec = {
     { /* core fields */
@@ -365,7 +365,7 @@ static void Realize (gw, valueMask, attrs)
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
     if (!w->clock.transparent)
-	Resize (w);
+	Resize (gw);
     new_time ((XtPointer) gw, 0);
 }
 
@@ -457,11 +457,12 @@ static void new_time (client_data, id)
 			     (60 - tm->tm_sec) * 1000, new_time, client_data);
 	compute_hands (w);
 	if (w->clock.transparent)
-	    Resize (w);
+	    Resize ((Widget)w);
 	else
 	    paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
 } /* new_time */
 
+void
 paint_jewel (w, d, gc)
 ClockWidget w;
 Drawable    d;
@@ -481,7 +482,7 @@ GC	    gc;
 /*
  * check to see if the polygon intersects the circular jewel
  */
-
+int
 check_jewel_poly (w, poly)
 ClockWidget	w;
 TPoint		poly[POLY_SIZE];
@@ -505,8 +506,8 @@ TPoint		poly[POLY_SIZE];
 		b2 = sqr (poly[i+1].x - x) + sqr (poly[i+1].y - y);
 		c2 = sqr (poly[i].x - poly[i+1].x) + sqr (poly[i].y - poly[i+1].y);
 		d2 = a2 + b2 - c2;
-		if (d2 <= sqr (size) &&
-		    a2 <= 2 * c2 && b2 <= 2 * c2 ||
+		if ((d2 <= sqr (size) &&
+		    a2 <= 2 * c2 && b2 <= 2 * c2) ||
  		    a2 <= sqr (size) ||
 		    b2 <= sqr (size))
 			return 1;
@@ -515,6 +516,7 @@ TPoint		poly[POLY_SIZE];
     return 0;
 }
 
+void
 check_jewel (w, d, gc)
 ClockWidget	w;
 Drawable	d;
@@ -535,7 +537,7 @@ GC		gc;
  * A hand is a rectangle with a triangular cap at the far end.
  * This is represented with a five sided polygon.
  */
-
+void
 compute_hand (w, a, l, width, poly)
 ClockWidget	w;
 double		a, l, width;
@@ -559,6 +561,7 @@ TPoint		poly[POLY_SIZE];
 	poly[5].y = poly[0].y;
 }
 
+void
 compute_hands (w)
 ClockWidget	w;
 {
@@ -569,6 +572,7 @@ ClockWidget	w;
 	w->clock.polys_valid = 1;
 }
 
+void
 paint_hand (w, d, gc, poly)
 ClockWidget	w;
 Drawable	d;
@@ -579,6 +583,7 @@ TPoint		poly[POLY_SIZE];
 			Convex, CoordModeOrigin);
 }
 
+void
 paint_hands (w, d, minute_gc, hour_gc)
 ClockWidget	w;
 Drawable	d;

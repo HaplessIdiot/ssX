@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/bitmap/Requests.h,v 1.2 1999/02/01 11:56:09 dawes Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -31,10 +31,10 @@ from The Open Group.
 #ifndef _Requests_h
 #define _Requests_h
 
-typedef (*DrawOnePointProc)(Widget, Position, Position, int);
-typedef (*DrawTwoPointProc)(Widget, Position, Position,
+typedef int (*DrawOnePointProc)(Widget, Position, Position, int);
+typedef int (*DrawTwoPointProc)(Widget, Position, Position,
 				Position, Position, int);
-typedef (*InterfaceProc)(Widget);
+typedef int (*InterfaceProc)(Widget);
 
 typedef struct {
     Boolean  success;

@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <limits.h>
+#include <ctype.h>
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/XKBlib.h>
@@ -128,6 +129,23 @@ XkbDescPtr		xkb= NULL;
 #define	ERR1(s,a)	fprintf(stderr,s,a)
 #define	ERR2(s,a,b)	fprintf(stderr,s,a,b)
 #define	ERR3(s,a,b,c)	fprintf(stderr,s,a,b,c)
+
+/***====================================================================***/
+
+Bool addToList ( int *sz, int *num, char ***listIn, char *newVal );
+void usage ( int argc, char ** argv );
+void dumpNames ( Bool wantRules, Bool wantCNames );
+void trySetString ( int which, char * newVal, int src );
+Bool setOptString ( int *arg, int argc, char **argv, int which, int src );
+int parseArgs ( int argc, char ** argv );
+Bool getDisplay ( int argc, char ** argv );
+Bool getServerValues ( void );
+FILE * findFileInPath ( char * name, char * subdir );
+Bool addStringToOptions ( char * opt_str, int * sz_opts, int * num_opts, char *** opts );
+char * stringFromOptions ( char * orig, int numNew, char ** newOpts );
+Bool applyConfig ( char * name );
+Bool applyRules ( void );
+Bool applyComponentNames ( void );
 
 /***====================================================================***/
 
@@ -611,7 +629,7 @@ Bool	ok;
     ok= XkbCFParse(fp,XkbCFDflts,NULL,&cfgResult);
     fclose(fp);
     if (!ok) {
-	ERR("Couldn't find configuration file \"%s\"\n");
+	ERR1("Couldn't find configuration file \"%s\"\n", name);
 	return False;
     }
     if (cfgResult.rules_file) {
@@ -823,4 +841,5 @@ main(argc,argv)
 	exit(-5);
     if (dpy)
 	XCloseDisplay(dpy);
+    exit(0);
 }

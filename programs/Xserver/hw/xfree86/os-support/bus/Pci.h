@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.3 1998/09/13 05:23:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.4 1998/09/19 12:14:58 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -136,7 +136,10 @@
 /*
  * Select architecture specific PCI init function
  */
-#if defined(__powerpc__)
+#if defined(__powerpc__) && defined(linux)
+# define ARCH_PCI_INIT linuxPciInit
+# define INCLUDE_XF86_MAP_PCI_MEM
+#elif defined(__powerpc__)
 # define ARCH_PCI_INIT ppcPciInit
 # if !defined(PowerMAX_OS)
 #  define INCLUDE_XF86_MAP_PCI_MEM

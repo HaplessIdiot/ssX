@@ -1,4 +1,4 @@
-/* $XConsortium: FSClServ.c,v 1.5 94/04/17 20:15:09 dpw Exp $ */
+/* $TOG: FSClServ.c /main/9 1998/05/01 12:50:19 kaleb $ */
 
 /* @(#)FSClServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -27,14 +27,9 @@
 
 /*
 
-Copyright (c) 1987, 1994  X Consortium
+Copyright 1987, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,30 +37,31 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
+#include	"FSlib.h"
 #include	"FSlibint.h"
 
 extern FSServer *_FSHeadOfServerList;
 
+int 
 FSCloseServer(svr)
     FSServer     *svr;
 {
     _FSExtension *ext;
     FSServer    **sv = &_FSHeadOfServerList;
     FSServer     *s = _FSHeadOfServerList;
-    extern void _FSFreeQ();
 
     svr->flags |= FSlibServerClosing;
-    FSSync(svr, 1);		/* throw out pending events */
+    (void) FSSync(svr, 1);	/* throw out pending events */
     ext = svr->ext_procs;
     while (ext) {
 	if (ext->close_server != NULL)
@@ -85,4 +81,5 @@ FSCloseServer(svr)
     if (_FSHeadOfServerList == NULL) {
 	_FSFreeQ();
     }
+    return 1;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.c,v 1.4 1998/10/04 09:40:37 dawes Exp $ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.5 1998/12/20 11:58:10 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -61,7 +61,6 @@ in this Software without prior written authorization from The Open Group.
 #include <stdio.h>
 #include "twm.h"
 #include <X11/Xatom.h>
-#include "add_window.h"
 #include "util.h"
 #include "resize.h"
 #include "parse.h"
@@ -70,6 +69,8 @@ in this Software without prior written authorization from The Open Group.
 #include "menus.h"
 #include "screen.h"
 #include "iconmgr.h"
+#include "session.h"
+#include "add_window.h"
 
 #define gray_width 2
 #define gray_height 2
@@ -83,7 +84,11 @@ int AddingH;
 
 static int PlaceX = 50;
 static int PlaceY = 50;
-static void CreateWindowTitlebarButtons();
+
+static void do_add_binding ( int button, int context, int modifier, int func );
+static Window CreateHighlightWindow ( TwmWindow *tmp_win );
+static void CreateWindowTitlebarButtons ( TwmWindow *tmp_win );
+
 
 char NoName[] = "Untitled"; /* name if no name is specified */
 
@@ -96,7 +101,7 @@ char NoName[] = "Untitled"; /* name if no name is specified */
  * 
  ************************************************************************
  */
-
+void
 GetGravityOffsets (tmp, xp, yp)
     TwmWindow *tmp;			/* window from which to get gravity */
     int *xp, *yp;			/* return values */
@@ -1001,6 +1006,7 @@ static void do_add_binding (button, context, modifier, func)
     mb->item = NULL;
 }
 
+void
 AddDefaultBindings ()
 {
     /*
@@ -1367,6 +1373,7 @@ static void CreateWindowTitlebarButtons (tmp_win)
 }
 
 
+void
 SetHighlightPixmap (filename)
     char *filename;
 {
@@ -1383,6 +1390,7 @@ SetHighlightPixmap (filename)
 }
 
 
+void
 FetchWmProtocols (tmp)
     TwmWindow *tmp;
 {
@@ -1479,7 +1487,8 @@ CreateColormapWindow(w, creating_parent, property_window)
 
     return (cwin);
 }
-		
+
+void		
 FetchWmColormapWindows (tmp)
     TwmWindow *tmp;
 {
@@ -1489,12 +1498,11 @@ FetchWmColormapWindows (tmp)
     int number_cmap_windows = 0;
     ColormapWindow **cwins = NULL;
     int previously_installed;
-    extern void free_cwins();
 
     number_cmap_windows = 0;
 
-    if (/* SUPPRESS 560 */previously_installed = 
-       (Scr->cmapInfo.cmaps == &tmp->cmaps && tmp->cmaps.number_cwins)) {
+    if (/* SUPPRESS 560 */(previously_installed = 
+       (Scr->cmapInfo.cmaps == &tmp->cmaps && tmp->cmaps.number_cwins))) {
 	cwins = tmp->cmaps.cwins;
 	for (i = 0; i < tmp->cmaps.number_cwins; i++)
 	    cwins[i]->colormap->state = 0;

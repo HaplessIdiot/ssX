@@ -1,15 +1,9 @@
-/* $XConsortium: pmint.h /main/8 1996/11/30 23:55:06 swick $ */
+/* $TOG: pmint.h /main/9 1998/02/09 13:45:49 kaleb $ */
 
 /*
-Copyright (c) 1996  X Consortium
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 */
 
 #include <stdio.h>
@@ -33,6 +27,7 @@ from the X Consortium.
 #include <X11/Xfuncs.h>
 #include <X11/Xmd.h>
 #include <X11/ICE/ICElib.h>
+#include <X11/Intrinsic.h>
 
 #define Status int
 #define Bool int
@@ -53,23 +48,28 @@ typedef struct {
     char *release;
 } PMconn;
 
-extern void
-SendGetProxyAddrReply (
-    PMconn* /* requestor */,
-    int /* status */,
-    char* /* addr */,
-    char* /* error */);
 
-extern void
-ForwardRequest(
-    PMconn* /* requestor */,
-    char* /* serviceName */,
-    char* /* serverAddress */,
-    char* /* hostAddress */,
-    char* /* startOptions */,
-    int /* authLen */,
-    char* /* authName */,
-    char* /* authData */);
+/* config.c: $TOG: config.c /main/12 1998/02/09 13:45:22 kaleb $ */
+
+extern int GetConfig ( char *configFile, char *serviceName, int *managed, char **startCommand, char **proxyAddress );
+
+/* main.c: $TOG: main.c /main/36 1998/03/04 11:30:05 barstow $ */
+
+extern void ForwardRequest ( PMconn *requestor, char *serviceName, char *serverAddress, char *hostAddress, char *startOptions, int authLen, char *authName, char *authData );
+extern int HostBasedAuthProc ( char *hostname );
+extern int InitWatchProcs ( XtAppContext appContext );
+extern void InstallIOErrorHandler ( void );
+extern int main ( int argc, char **argv );
+extern void MyIoErrorHandler ( IceConn ice_conn );
+extern void NewConnectionXtProc ( XtPointer client_data, int *source, XtInputId *id );
+extern void PMReplyProcessMessages ( IceConn iceConn, IcePointer clientData, int opcode, unsigned long length, int swap );
+extern void PMSetupProcessMessages ( IceConn iceConn, IcePointer clientData, int opcode, unsigned long length, int swap, IceReplyWaitInfo *replyWait, int *replyReadyRet );
+extern void SendGetProxyAddrReply ( PMconn *requestor, int status, char *addr, char *error );
+extern void SetCloseOnExec ( int fd );
+extern void Usage ( void );
+extern void _XtIceWatchProc ( IceConn ice_conn, IcePointer client_data, int opening, IcePointer *watch_data );
+extern void _XtProcessIceMsgProc ( XtPointer client_data, int *source, XtInputId *id );
+
 
 
 /*

@@ -1,4 +1,15 @@
-XFree86 3.9Pb (14 February 1999)
+XFree86 3.9Pb (20 February 1999)
+2265. Allow YaccCmd to be overridden in host.def (#2474-2476, 
+      Christopher Sekiya).
+2264. Implement null overscans in VGA, minor fixups to VGA generic
+      default mode, re-add #ifndef's in VGA generic driver erroneously
+      deleted in 3.9No (#2473, Marc LaFrance).
+2263. More MULTIBUFFER extension fixes (#2471, Marc LaFrance).
+2262. Add support for the Matrox G200 SDRAM cards; G100 SGRAM still
+      doesn't work (Dirk Hohndel).
+2261. Support Linux PowerPC. Add Linux 2.2 PCI config space code
+      (#2470, Gerd Knorr).
+2260. Remove gcc warnings in the clients and lib/FS (#2469, Matthieu Herrb).
 2259. Updates to the PCI database (Dirk Hohndel, David Monro).
 
 XFree86 3.9Pa (14 February 1999)
@@ -7293,4 +7304,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.690 1999/02/14 12:14:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.691 1999/02/15 18:47:30 hohndel Exp $

@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/iceauth/iceauth.h,v 3.0 1996/06/10 11:00:26 dawes Exp $ */
+/* $XFree86: xc/programs/iceauth/iceauth.h,v 3.1 1998/10/04 09:40:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xos.h>
@@ -45,8 +45,11 @@ extern char *malloc(), *realloc();
 #include <stdlib.h>
 #endif
 
-int process_command(), auth_initialize(), auth_finalize();
-extern int print_help();
+extern int auth_initialize ( char *authfilename );
+extern int auth_finalize ( void );
+extern int process_command ( char *inputfilename, int lineno, int argc, char **argv );
+extern int print_help ( FILE *fp, char *cmd );
+
 extern int verbose;
 extern Bool ignore_locks;
 extern Bool break_locks;

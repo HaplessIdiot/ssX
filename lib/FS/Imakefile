@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/20 1996/09/28 16:32:46 rws $
-XCOMM $XFree86: xc/lib/FS/Imakefile,v 3.2 1996/12/23 05:58:51 dawes Exp $
+XCOMM $XFree86: xc/lib/FS/Imakefile,v 3.3 1998/12/20 11:56:48 dawes Exp $
 #define DoNormalLib NormalLibFS
 #define DoSharedLib SharedLibFS
 #define DoExtraLib SharedLibFS
@@ -40,6 +40,7 @@ SOCK_DEFINES = -DBSD44SOCKETS
 #include <Library.tmpl>
 
 SpecialCLibObjectRule(FSlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(FSOpenServ,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(FSConnServ,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 SpecialCLibObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
 LinkSourceFile(transport.c,$(TRANSCOMMSRC))

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/oclock/transform.c,v 3.0 1996/08/25 14:14:13 dawes Exp $ */
+/* $XFree86: xc/programs/oclock/transform.c,v 3.1 1998/10/04 09:40:31 dawes Exp $ */
 
 
 /*
@@ -38,12 +38,9 @@ from The Open Group.
 char *malloc();
 #endif
 
-static XPoint *
-TranslatePoints (points, n_points, t, mode)
-TPoint	*points;
-int	n_points;
-Transform	*t;
-int	mode;
+static XPoint * 
+TranslatePoints(TPoint *points, int n_points, 
+		Transform *t, int mode)
 {
 	XPoint	*xpoints;
 	int	i;
@@ -63,6 +60,7 @@ int	mode;
 	return xpoints;
 }
 
+void
 TFillPolygon (dpy, d, gc, t, points, n_points, shape, mode)
 register Display	*dpy;
 Drawable		d;
@@ -83,6 +81,7 @@ int			mode;
 	}
 }
 
+void
 TDrawArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
 	register Display	*dpy;
 	Drawable		d;
@@ -108,6 +107,7 @@ TDrawArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
 	XDrawArc (dpy, d, gc, xx, xy, xw, xh, angle1, angle2);
 }
 
+void
 TFillArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
 	register Display	*dpy;
 	Drawable		d;
@@ -133,6 +133,7 @@ TFillArc (dpy, d, gc, t, x, y, width, height, angle1, angle2)
 	XFillArc (dpy, d, gc, xx, xy, xw, xh, angle1, angle2);
 }
 
+void
 SetTransform (t, xx1, xx2, xy1, xy2, tx1, tx2, ty1, ty2)
 Transform	*t;
 int		xx1, xx2, xy1, xy2;

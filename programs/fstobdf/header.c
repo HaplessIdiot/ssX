@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/fstobdf/header.c,v 3.1 1996/05/13 07:30:58 dawes Exp $ */
+/* $XFree86: xc/programs/fstobdf/header.c,v 3.2 1998/10/04 09:40:06 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xosdefs.h>
@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
 #include	<stdlib.h>
 #include	<string.h>
 #endif
-#include	"FSlib.h"
+#include	"fstobdf.h"
 
 long        pointSize;
 long        yResolution;
@@ -65,12 +65,11 @@ static char *warning[] =
 };
 
 static char *
-FindStringProperty(propName, propLength, propInfo, propOffsets, propData)
-    char       *propName;
-    int        *propLength;
-    FSPropInfo *propInfo;
-    FSPropOffset *propOffsets;
-    unsigned char *propData;
+FindStringProperty(char *propName, 
+		   int *propLength, 
+		   FSPropInfo *propInfo, 
+		   FSPropOffset *propOffsets, 
+		   unsigned char *propData)
 {
     FSPropOffset *propOffset;
     int         length;
@@ -103,12 +102,11 @@ FindStringProperty(propName, propLength, propInfo, propOffsets, propData)
 }
 
 static int
-FindNumberProperty(propName, propValue, propInfo, propOffsets, propData)
-    char       *propName;
-    int        *propValue;
-    FSPropInfo *propInfo;
-    FSPropOffset *propOffsets;
-    unsigned char *propData;
+FindNumberProperty(char *propName, 
+		   unsigned long *propValue, 
+		   FSPropInfo *propInfo, 
+		   FSPropOffset *propOffsets, 
+		   unsigned char *propData)
 {
     FSPropOffset *propOffset;
     int         i;
@@ -134,12 +132,11 @@ FindNumberProperty(propName, propValue, propInfo, propOffsets, propData)
  * FONTBOUNDINGBOX lines
  */
 Bool
-EmitHeader(outFile, fontHeader, propInfo, propOffsets, propData)
-    FILE       *outFile;
-    FSXFontInfoHeader *fontHeader;
-    FSPropInfo *propInfo;
-    FSPropOffset *propOffsets;
-    unsigned char *propData;
+EmitHeader(FILE *outFile, 
+	   FSXFontInfoHeader *fontHeader, 
+	   FSPropInfo *propInfo, 
+	   FSPropOffset *propOffsets, 
+	   unsigned char *propData)
 {
     int         len;
     int         type;
@@ -198,7 +195,8 @@ EmitHeader(outFile, fontHeader, propInfo, propOffsets, propData)
 	pointSize = ((fontHeader->font_ascent + fontHeader->font_descent)
 		     * 72) / yResolution;
 
-    fprintf(outFile, "SIZE %d %d %d\n", pointSize, xResolution, yResolution);
+    fprintf(outFile, "SIZE %lu %lu %lu\n", pointSize, xResolution, 
+	    yResolution);
 
     /*
      * FONTBOUNDINGBOX width height xoff yoff
