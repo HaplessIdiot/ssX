@@ -1,4 +1,15 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 199. ATI patch to:
+      - Fix Dell OEM VE card support
+      - Add better clone mode support
+      - Fix large panel (>= 1600x1200) detection and initialization problems
+      - Remove "PanelSize" and "CrtScreen" options since they are no longer
+        needed with new CloneMode and improved flat panel support
+      - Add "DDCMode" option to detect and use DDC modes
+      - Add "PanelOff" option to disable panel on laptops
+      - Fix corrupted console problem
+      - Other misc fixes
+      (#A.1043, Hui Yu@ATI).
  198. Remove -DNO_TCP_H from cygwin.cf for Cygwin/XFree86 (#5320, Harold Hunt).
  197. Major updates to Cygwin/XFree86.
        - fix depth 24 issues.
@@ -14925,4 +14936,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2257 2002/07/05 09:19:20 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2258 2002/07/06 09:59:16 alanh Exp $

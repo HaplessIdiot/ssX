@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.15 2002/04/24 16:20:40 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.17 2002/06/27 22:39:29 keithp Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -446,6 +446,8 @@ do {									\
 #       define RADEON_TV_DAC_RDACPD         (1 <<  24)
 #       define RADEON_TV_DAC_GDACPD         (1 <<  25)
 #       define RADEON_TV_DAC_BDACPD         (1 <<  26)
+#define RADEON_DISP_HW_DEBUG                0x0d14
+#       define RADEON_CRT2_DISP1_SEL        (1 <<  5)
 #define RADEON_DISP_OUTPUT_CNTL             0x0d64
 #       define RADEON_DISP_DAC_SOURCE_MASK  0x03
 #       define RADEON_DISP_DAC_SOURCE_CRTC2 0x01
@@ -643,10 +645,9 @@ do {									\
 #       define RADEON_FP_USE_SHADOW_EN         (1 << 24)
 #       define RADEON_FP_CRT_SYNC_ALT          (1 << 26)
 #define RADEON_FP2_GEN_CNTL                 0x0288
-#       define RADEON_FP2_FPON                 (1 <<  0)
-#       define RADEON_FP2_TMDS_EN              (1 <<  2)
-#       define RADEON_FP2_EN_TMDS              (1 <<  7)
-#       define RADEON_FP2_DETECT_SENSE         (1 <<  8)
+#       define RADEON_FP2_BLANK_EN             (1 <<  1)
+#       define RADEON_FP2_ON                   (1 <<  2)
+#       define RADEON_FP2_PANEL_FORMAT         (1 <<  3)
 #       define RADEON_FP2_SEL_CRTC2            (1 << 13)
 #       define RADEON_FP2_FP_POL               (1 << 16)
 #       define RADEON_FP2_LP_POL               (1 << 17)
@@ -1090,7 +1091,7 @@ do {									\
 #define RADEON_TEST_DEBUG_CNTL              0x0120
 #define RADEON_TEST_DEBUG_MUX               0x0124
 #define RADEON_TEST_DEBUG_OUT               0x012c
-#define RADEON_TMDS_CRC                     0x02a0
+#define RADEON_TMDS_PLL_CNTL                0x02a8
 #define RADEON_TRAIL_BRES_DEC               0x1614
 #define RADEON_TRAIL_BRES_ERR               0x160c
 #define RADEON_TRAIL_BRES_INC               0x1610
@@ -1636,7 +1637,7 @@ do {									\
 #       define RADEON_VC_32BIT_SWAP         (2 << 0)
 #       define RADEON_VC_HALF_DWORD_SWAP    (3 << 0)
 #       define RADEON_TCL_BYPASS            (1 << 8)
-#define RADEON_SE_COORD_FMT                 0x15c0
+#define RADEON_SE_COORD_FMT                 0x1c50
 #       define RADEON_VTX_XY_PRE_MULT_1_OVER_W0  (1 <<  0)
 #       define RADEON_VTX_Z_PRE_MULT_1_OVER_W0   (1 <<  1)
 #       define RADEON_VTX_ST0_NONPARAMETRIC      (1 <<  8)

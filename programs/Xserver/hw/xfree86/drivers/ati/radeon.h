@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.25 2002/04/24 16:20:39 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.26 2002/05/29 22:48:38 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -71,6 +71,10 @@
 #define RADEON_MMIOSIZE 0x80000
 
 #define RADEON_VBIOS_SIZE 0x00010000
+#define RADEON_USE_RMX 0x80000000 /* mode flag for using RMX 
+				   * Need to comfirm this is not used 
+				   * for something else.
+				   */
 
 #if RADEON_DEBUG
 #define RADEONTRACE(x)							\
@@ -143,6 +147,7 @@ typedef struct {
 
     CARD32            dac2_cntl;
     CARD32            disp_output_cntl;
+    CARD32            disp_hw_debug;
     CARD32            crtc2_h_total_disp;
     CARD32            crtc2_h_sync_strt_wid;
     CARD32            crtc2_v_total_disp;
@@ -154,14 +159,17 @@ typedef struct {
     CARD32            fp_crtc_h_total_disp;
     CARD32            fp_crtc_v_total_disp;
     CARD32            fp_gen_cntl;
+    CARD32            fp2_gen_cntl;
     CARD32            fp_h_sync_strt_wid;
+    CARD32            fp2_h_sync_strt_wid;
     CARD32            fp_horz_stretch;
     CARD32            fp_panel_cntl;
     CARD32            fp_v_sync_strt_wid;
+    CARD32            fp2_v_sync_strt_wid;
     CARD32            fp_vert_stretch;
     CARD32            lvds_gen_cntl;
     CARD32            lvds_pll_cntl;
-    CARD32            tmds_crc;
+    CARD32            tmds_pll_cntl;
 
 				/* Computed values for PLL */
     CARD32            dot_clock_freq;
@@ -269,15 +277,23 @@ typedef struct {
     BOOL              HasCRTC2;         /* VE/M6/M7                          */
     BOOL              IsR200;           /* R200 chip                         */
     BOOL              IsRV200;          /* RV200 chip                        */
-    BOOL              IsSecondary;      /* second Screen                     */
+    BOOL              IsSecondary;      /* Second Screen                     */
+    BOOL              IsSwitching;      /* Flag for switching mode           */
+    BOOL              IsDell;           /* Dell OEM VE card                  */
+    int               DellType;
     BOOL              Clone;            /* Force second head to clone primary*/
+    RADEONMonitorType CloneType;
+    RADEONDDCType     CloneDDCType;
     DisplayModePtr    CloneModes;
     DisplayModePtr    CurCloneMode;
     int               CloneFrameX0;
     int               CloneFrameY0;
-    BOOL              UseCRT;           /* force use CRT port as primary     */
+    BOOL              PanelOff;         /* Force panel (LCD/DFP) off         */
     BOOL              IsM6;             /* M6 card, for some workarounds     */
     int               FPBIOSstart;      /* Start of the flat panel info      */
+    BOOL              ddc_mode;         /* Validate mode by matching exactly  
+					 * the modes supported in DDC data
+					 */
 
 				/* EDID or BIOS values for FPs */
     int               PanelXRes;
@@ -297,7 +313,6 @@ typedef struct {
     BOOL              ddc2;
     I2CBusPtr         pI2CBus;
     CARD32            DDCReg;
-    BOOL              HasEDID;
 
     RADEONPLLRec      pll;
     RADEONRAMPtr      ram;
@@ -383,6 +398,7 @@ typedef struct {
     CARD32            pciCommand;
 
     Bool              CPInUse;          /* CP has been used by X server */
+    Bool              CPStarted;        /* CP has started */
     int               CPMode;           /* CP mode that server/clients use */
     int               CPFifoSize;       /* Size of the CP command FIFO */
     int               CPusecTimeout;    /* CP timeout in usecs */
@@ -513,6 +529,7 @@ do {									\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
 		   "%s: CP start %d\n", __FUNCTION__, _ret);		\
     }									\
+    info->CPStarted = TRUE;                                             \
 } while (0)
 
 #define RADEONCP_STOP(pScrn, info)					\
@@ -522,6 +539,7 @@ do {									\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
 		   "%s: CP stop %d\n", __FUNCTION__, _ret);		\
     }									\
+    info->CPStarted = FALSE;                                            \
     RADEONEngineRestore(pScrn);						\
 } while (0)
 

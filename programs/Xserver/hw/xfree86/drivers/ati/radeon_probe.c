@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.15 2002/01/16 02:00:44 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.16 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -227,7 +227,7 @@ RADEONProbe(DriverPtr drv, int flags)
 
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	    /* VE/M6 card support Dual-Head, mark the entity as sharable*/
+	    /* VE/M6 card support Dual-Head, mark the entity as sharable */
 	    if (pEnt->chipset == PCI_CHIP_RADEON_QY ||
 		pEnt->chipset == PCI_CHIP_RADEON_QZ ||
 		pEnt->chipset == PCI_CHIP_R200_QL ||
@@ -263,6 +263,16 @@ RADEONProbe(DriverPtr drv, int flags)
 		    }
 		}
 		instance++;
+		if (instance == 2) {
+		    DevUnion     *pPriv;
+		    RADEONEntPtr  pRADEONEnt;
+
+		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
+						 gRADEONEntityIndex);
+		    pRADEONEnt = pPriv->ptr;		
+		    pRADEONEnt->HasSecondary = TRUE;
+		}
+
 	    }
 	    xfree(pEnt);
 	}
