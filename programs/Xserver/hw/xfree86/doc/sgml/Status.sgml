@@ -9,7 +9,7 @@
 <date>23 January 2000
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.1 2000/01/23 18:23:14 dawes Exp $
 </ident>
 
 <abstract>
@@ -90,12 +90,12 @@ dependencies/limitations, other architectures known to work on
 	support is provided by the "apm" driver.  This driver currently
 	has no native support for the AP6422 and AT24.  The driver status
 	is uncertain.  Test reports are required.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
 
 <tag>Summary:</tag>
 	The AT24 and AP6422 are supported in &legacyvers; but not in
 	&relvers;.  The AT25 is supported in &relvers; but not in
 	&legacyvers;.  The status of the driver in &relvers; is uncertain.
-	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
 
 </descrip>
 
@@ -103,10 +103,17 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (including acceleration) for the ARK1000PV, ARK2000PV,
+	and ARK2000MT.
+	Support is provided by the XF86_SVGA server with the ark driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No ARK Logic chips are supported in &relvers;.
 
 </descrip>
 
@@ -114,11 +121,30 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
-
+	Accelerated support is provided for the Mach8 chips (by the
+	XF86_Mach8 server), Mach32 chips (by the XF86_Mach32 server),
+	the following Mach64 and Rage chips: GX, CX, CT, ET, VT, VT3, GT,
+	RageII+DVD, RagePro (GB, GD, GI, FP, GQ), VT4, Rage IIC (GV, GW, GZ),
+	Rage LT Pro (LD, LB, LI, LP), Rage LT, Rage XL or XC (GL, GM, GN, GO,
+	GR, GS) and Rage Mobility (LM, LN, LR, LS) (by the XF86_Mach64 server).
+	Unaccelerated support is provided for most of the above (except
+	some early Mach8 and Mach32 adapters), as well the old VGAWonder
+	series chipsets (18800, 18800-1, 28800-2, 28800-4, 28800-5,
+	28800-6) by the XF86_SVGA server with the ati driver.  Accelerated
+	support is provided for the Rage 128 chips by the XF86_SVGA
+	server with the r128 driver.
+	
 <tag>&relvers;:</tag>
-	Support for ....  Acceleration currently only for the Rage 128
-	chips.
+	Accelerated support is provided for the Rage 128 chips by the
+	"r128" driver.  Unaccelerated support is provided for all of the
+	others except the Mach8 and some early Mach32 chips by the "ati"
+	driver.
+
+<tag>Summary:</tag>
+	All chips supported in &legacyvers; are supported in &relvers;
+	except for Mach8 and some old Mach32 chips.  The support in
+	&relvers; is, however, unaccelerated for all chips except the
+	Rage 128.
 
 </descrip>
 
@@ -127,12 +153,19 @@ dependencies/limitations, other architectures known to work on
 <descrip>
 <tag>&legacyvers;:</tag>
 	Support for the AL2101, ALI2228, ALI2301, ALI2302, ALI2308,
-	ALI2401 chipsets.  The status of this support is unknown because
-	we don't have any recent test reports.
+	ALI2401 chipsets.  Support is provided by the XF86_SVGA server,
+	using the al2101 driver for the AL2101, and the ali driver for
+	the others.  The status of this support is unknown because we
+	don't have any recent test reports.
 
 <tag>&relvers;:</tag>
-	No native support for any chipsets.  NEED TO CHECK IF
-	fbdev OR SIMILAR WILL WORK FOR THEM.
+<tag>&relvers;:</tag>
+	No native support for these chipsets, because the old drivers
+	have not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Avance Logic chips are supported in &relvers;.
 
 </descrip>
 
