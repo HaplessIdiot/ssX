@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.13 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.14 2002/12/04 05:27:57 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -694,4 +694,16 @@ LispGetSstring(LispString *string, int *length)
     }
 
     return (string->string);
+}
+
+int
+LispRename(char *from, char *to)
+{
+    return (rename(from, to));
+}
+
+int
+LispUnlink(char *name)
+{
+    return (unlink(name));
 }

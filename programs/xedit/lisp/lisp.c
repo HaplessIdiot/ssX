@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.80 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.81 2002/12/04 05:27:57 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -316,6 +316,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_DeleteDuplicates, "delete-duplicates sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_DeleteIf, "delete-if predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_DeleteIfNot, "delete-if-not predicate sequence &key from-end start end count key"},
+    {LispFunction, Lisp_DeleteFile, "delete-file filename"},
     {LispFunction, Lisp_Denominator, "denominator rational"},
     {LispFunction, Lisp_DigitChar, "digit-char weight &optional radix"},
     {LispFunction, Lisp_DigitCharP, "digit-char-p character &optional radix"},
@@ -509,6 +510,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_Remprop, "remprop symbol indicator"},
+    {LispFunction, Lisp_RenameFile, "rename-file filename new-name", 1},
     {LispMacro, Lisp_Return, "return &optional result", 1, 0, Com_Return},
     {LispMacro, Lisp_ReturnFrom, "return-from name &optional result", 1, 0, Com_ReturnFrom},
     {LispFunction, Lisp_Reverse, "reverse sequence"},

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.46 2002/11/26 04:06:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.47 2002/11/30 23:13:12 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -372,6 +372,10 @@ typedef struct _LispMac LispMac;
 #define XPATHNAMEP(object)	((object)->type == LispPathname_t)
 #define PATHNAMEP(object)	(POINTERP(object) && XPATHNAMEP(object))
 #define PATHNAME(object)	LispNewPathname(object)
+#define CHECK_PATHNAME(object)						\
+    if (!PATHNAMEP(object))						\
+	LispDestroy("%s: %s is not a pathname",				\
+		    STRFUN(builtin), STROBJ(object))
 
 
 /* stream */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.6 2002/11/20 07:44:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.7 2002/11/30 23:13:12 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -98,6 +98,8 @@ char *LispFgets(LispFile*, char*, int);
 int LispFputs(LispFile*, char*);
 int LispFread(LispFile*, void*, int);
 int LispFwrite(LispFile*, void*, int);
+int LispRename(char*, char*);
+int LispUnlink(char*);
 
 	/* io wrappers */
 io_write_fn LispSetFileWrite(LispFile*, io_write_fn);
