@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.1 2001/09/27 08:25:03 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.2 2001/09/27 08:58:01 alanh Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -2821,7 +2821,7 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
   int diff;
   int clipped_srcx, clipped_srcy, clipped_destx, clipped_desty;
   int clipped_srcw, clipped_srch, clipped_destw, clipped_desth;
-  uint x1,y1;
+  uint x1,y1,root_width,root_height;
   int x2 = 0, y2 = 0;
   uint nChilds;
   int stat;
@@ -2878,22 +2878,25 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
     y1 += y2;
     win = parent;
   }while(win != root);
-  XGetGeometry(display,root, &root, &x2, &y2, &d, &d, &d, &d);
+  XGetGeometry(display,root, &root, &d, &d, &root_width, &root_height, &d, &d);
 
-  /* Extents is the window clipped with the screen */
+  /* Left edge of Video window clipped to screen */
   extents.x1 = 0;
   if(x1 > extents.x1) {
     extents.x1 = x1;
   }
-  extents.x2 = x2;
+  /* Right edge of Video window clipped to screen */
+  extents.x2 = root_width;
   if(extents.x2 > (x1 + window_width)) {
     extents.x2 = x1 + window_width;
   }
+  /* Top edge of Video window clipped to screen */
   extents.y1 = 0;
   if(y1 > extents.y1) {
     extents.y1 = y1;
   }
-  extents.y2 = y2;
+  /* Bottom edge of Video window clipped to screen */
+  extents.y2 = root_height;
   if(extents.y2 > (y1 + window_height)) {
     extents.y2 = y1 + window_height;
   }
