@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.7 2001/07/19 03:01:39 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.8 2001/07/19 04:42:10 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -145,6 +145,71 @@ miCompositeRects (CARD8		op,
 		  xRenderColor  *color,
 		  int		nRect,
 		  xRectangle    *rects);
+
+void
+miTrapezoidBounds (int ntrap, xTrapezoid *traps, BoxPtr box);
+
+void
+miTrapezoids (CARD8	    op,
+	      PicturePtr    pSrc,
+	      PicturePtr    pDst,
+	      PictFormatPtr maskFormat,
+	      INT16	    xSrc,
+	      INT16	    ySrc,
+	      int	    ntrap,
+	      xTrapezoid    *traps);
+
+void
+miPointFixedBounds (int npoint, xPointFixed *points, BoxPtr bounds);
+    
+void
+miTriangleBounds (int ntri, xTriangle *tris, BoxPtr bounds);
+
+void
+miRasterizeTriangle (PicturePtr	pMask,
+		     xTriangle	*tri,
+		     int	x_off,
+		     int	y_off);
+
+void
+miTriangles (CARD8	    op,
+	     PicturePtr	    pSrc,
+	     PicturePtr	    pDst,
+	     PictFormatPtr  maskFormat,
+	     INT16	    xSrc,
+	     INT16	    ySrc,
+	     int	    ntri,
+	     xTriangle	    *tris);
+
+void
+miTriStrip (CARD8	    op,
+	    PicturePtr	    pSrc,
+	    PicturePtr	    pDst,
+	    PictFormatPtr   maskFormat,
+	    INT16	    xSrc,
+	    INT16	    ySrc,
+	    int		    npoint,
+	    xPointFixed	    *points);
+
+void
+miTriFan (CARD8		op,
+	  PicturePtr	pSrc,
+	  PicturePtr	pDst,
+	  PictFormatPtr maskFormat,
+	  INT16		xSrc,
+	  INT16		ySrc,
+	  int		npoint,
+	  xPointFixed	*points);
+
+PicturePtr
+miCreateAlphaPicture (ScreenPtr pScreen, PictFormatPtr pPictFormat,
+		      CARD16 width, CARD16 height);
+
+Bool
+miBuildRenderColormap (ColormapPtr  pColormap,
+		       int	    num,
+		       Pixel	    *first,
+		       Pixel	    *last);
 
 Bool
 miInitIndexed (ScreenPtr	pScreen,

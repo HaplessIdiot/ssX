@@ -24,18 +24,24 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
      
          SRCS = Xrender.c \
-	 	Composite.c \
-		Glyph.c \
-		Picture.c \
-		FillRect.c \
-		FillRects.c
-		
+                Composite.c \
+                Glyph.c \
+                Picture.c \
+                FillRect.c \
+                FillRects.c \
+                Poly.c \
+                Trap.c \
+                Tri.c
+
          OBJS = Xrender.o \
-	 	Composite.o \
-		Glyph.o \
-		Picture.o \
-		FillRect.o \
-		FillRects.o
+                Composite.o \
+                Glyph.o \
+                Picture.o \
+                FillRect.o \
+                FillRects.o \
+                Poly.o \
+                Trap.o \
+                Tri.o
 
      LINTLIBS = $(LINTXLIB)
 

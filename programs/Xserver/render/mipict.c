@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.9 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.10 2001/07/19 04:42:10 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -492,5 +492,15 @@ miPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->InitIndexed = miInitIndexed;
     ps->CloseIndexed = miCloseIndexed;
     ps->UpdateIndexed = miUpdateIndexed;
+
+    /* MI rendering routines */
+    ps->Composite	= 0;			/* requires DDX support */
+    ps->Glyphs		= miGlyphs;
+    ps->CompositeRects	= miCompositeRects;
+    ps->Trapezoids	= miTrapezoids;
+    ps->Triangles	= miTriangles;
+    ps->TriStrip	= miTriStrip;
+    ps->TriFan		= miTriFan;
+    
     return TRUE;
 }

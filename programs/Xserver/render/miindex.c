@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.3 2001/07/20 19:22:37 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.4 2001/07/31 21:06:56 alanh Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -166,10 +166,14 @@ miInitIndexed (ScreenPtr	pScreen,
     last = num - 1;
     if (pFormat->pVisual->class & DynamicClass)
     {
+	/* 
+	 * Use just a few entries to avoid
+	 * annoying existing apps
+	 */
 	if (pFormat->pVisual->vid == pScreen->rootVisual)
 	{
 	    if (num > 100)
-		num = num - 10;
+		num = num / 3;
 	    else
 		num = num / 2;
 	}

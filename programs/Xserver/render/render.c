@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.11 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.14 2002/02/12 07:19:41 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -563,6 +563,7 @@ ProcRenderComposite (ClientPtr client)
     PicturePtr	pSrc, pMask, pDst;
     REQUEST(xRenderCompositeReq);
 
+    REQUEST_SIZE_MATCH(xRenderCompositeReq);
     if (!PictOpValid (stuff->op))
     {
 	client->errorValue = stuff->op;
@@ -601,25 +602,175 @@ ProcRenderScale (ClientPtr client)
 static int
 ProcRenderTrapezoids (ClientPtr client)
 {
-    return BadImplementation;
+    int		ntraps;
+    PicturePtr	pSrc, pDst;
+    PictFormatPtr   pFormat;
+    REQUEST(xRenderTrapezoidsReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTrapezoidsReq);
+    if (!PictOpValid (stuff->op))
+    {
+	client->errorValue = stuff->op;
+	return BadValue;
+    }
+    VERIFY_PICTURE (pSrc, stuff->src, client, SecurityReadAccess, 
+		    RenderErrBase + BadPicture);
+    VERIFY_PICTURE (pDst, stuff->dst, client, SecurityWriteAccess, 
+		    RenderErrBase + BadPicture);
+    if (pSrc->pDrawable->pScreen != pDst->pDrawable->pScreen)
+	return BadMatch;
+    if (stuff->maskFormat)
+    {
+	pFormat = (PictFormatPtr) SecurityLookupIDByType (client,
+							  stuff->maskFormat,
+							  PictFormatType,
+							  SecurityReadAccess);
+	if (!pFormat)
+	{
+	    client->errorValue = stuff->maskFormat;
+	    return RenderErrBase + BadPictFormat;
+	}
+    }
+    else
+	pFormat = 0;
+    ntraps = (client->req_len << 2) - sizeof (xRenderTrapezoidsReq);
+    if (ntraps % sizeof (xTrapezoid))
+	return BadLength;
+    ntraps /= sizeof (xTrapezoid);
+    if (ntraps)
+	CompositeTrapezoids (stuff->op, pSrc, pDst, pFormat,
+			     stuff->xSrc, stuff->ySrc,
+			     ntraps, (xTrapezoid *) &stuff[1]);
+    return client->noClientException;
 }
 
 static int
 ProcRenderTriangles (ClientPtr client)
 {
-    return BadImplementation;
+    int		ntris;
+    PicturePtr	pSrc, pDst;
+    PictFormatPtr   pFormat;
+    REQUEST(xRenderTrianglesReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTrianglesReq);
+    if (!PictOpValid (stuff->op))
+    {
+	client->errorValue = stuff->op;
+	return BadValue;
+    }
+    VERIFY_PICTURE (pSrc, stuff->src, client, SecurityReadAccess, 
+		    RenderErrBase + BadPicture);
+    VERIFY_PICTURE (pDst, stuff->dst, client, SecurityWriteAccess, 
+		    RenderErrBase + BadPicture);
+    if (pSrc->pDrawable->pScreen != pDst->pDrawable->pScreen)
+	return BadMatch;
+    if (stuff->maskFormat)
+    {
+	pFormat = (PictFormatPtr) SecurityLookupIDByType (client,
+							  stuff->maskFormat,
+							  PictFormatType,
+							  SecurityReadAccess);
+	if (!pFormat)
+	{
+	    client->errorValue = stuff->maskFormat;
+	    return RenderErrBase + BadPictFormat;
+	}
+    }
+    else
+	pFormat = 0;
+    ntris = (client->req_len << 2) - sizeof (xRenderTrianglesReq);
+    if (ntris % sizeof (xTriangle))
+	return BadLength;
+    ntris /= sizeof (xTriangle);
+    if (ntris)
+	CompositeTriangles (stuff->op, pSrc, pDst, pFormat,
+			    stuff->xSrc, stuff->ySrc,
+			    ntris, (xTriangle *) &stuff[1]);
+    return client->noClientException;
 }
 
 static int
 ProcRenderTriStrip (ClientPtr client)
 {
-    return BadImplementation;
+    int		npoints;
+    PicturePtr	pSrc, pDst;
+    PictFormatPtr   pFormat;
+    REQUEST(xRenderTrianglesReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTrianglesReq);
+    if (!PictOpValid (stuff->op))
+    {
+	client->errorValue = stuff->op;
+	return BadValue;
+    }
+    VERIFY_PICTURE (pSrc, stuff->src, client, SecurityReadAccess, 
+		    RenderErrBase + BadPicture);
+    VERIFY_PICTURE (pDst, stuff->dst, client, SecurityWriteAccess, 
+		    RenderErrBase + BadPicture);
+    if (pSrc->pDrawable->pScreen != pDst->pDrawable->pScreen)
+	return BadMatch;
+    if (stuff->maskFormat)
+    {
+	pFormat = (PictFormatPtr) SecurityLookupIDByType (client,
+							  stuff->maskFormat,
+							  PictFormatType,
+							  SecurityReadAccess);
+	if (!pFormat)
+	{
+	    client->errorValue = stuff->maskFormat;
+	    return RenderErrBase + BadPictFormat;
+	}
+    }
+    else
+	pFormat = 0;
+    npoints = ((client->req_len << 2) - sizeof (xRenderTriStripReq)) >> 2;
+    if (npoints >= 3)
+	CompositeTriStrip (stuff->op, pSrc, pDst, pFormat,
+			   stuff->xSrc, stuff->ySrc,
+			   npoints, (xPointFixed *) &stuff[1]);
+    return client->noClientException;
 }
 
 static int
 ProcRenderTriFan (ClientPtr client)
 {
-    return BadImplementation;
+    int		npoints;
+    PicturePtr	pSrc, pDst;
+    PictFormatPtr   pFormat;
+    REQUEST(xRenderTrianglesReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTrianglesReq);
+    if (!PictOpValid (stuff->op))
+    {
+	client->errorValue = stuff->op;
+	return BadValue;
+    }
+    VERIFY_PICTURE (pSrc, stuff->src, client, SecurityReadAccess, 
+		    RenderErrBase + BadPicture);
+    VERIFY_PICTURE (pDst, stuff->dst, client, SecurityWriteAccess, 
+		    RenderErrBase + BadPicture);
+    if (pSrc->pDrawable->pScreen != pDst->pDrawable->pScreen)
+	return BadMatch;
+    if (stuff->maskFormat)
+    {
+	pFormat = (PictFormatPtr) SecurityLookupIDByType (client,
+							  stuff->maskFormat,
+							  PictFormatType,
+							  SecurityReadAccess);
+	if (!pFormat)
+	{
+	    client->errorValue = stuff->maskFormat;
+	    return RenderErrBase + BadPictFormat;
+	}
+    }
+    else
+	pFormat = 0;
+    npoints = ((client->req_len << 2) - sizeof (xRenderTriStripReq)) >> 2;
+    if (npoints >= 3)
+	CompositeTriFan (stuff->op, pSrc, pDst, pFormat,
+			 stuff->xSrc, stuff->ySrc,
+			 npoints, (xPointFixed *) &stuff[1]);
+    return client->noClientException;
 }
 
 static int
