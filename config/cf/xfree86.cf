@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.299 2000/06/30 17:15:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.300 2000/06/30 19:30:15 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -65,10 +65,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /*
- * For Intel x86 platforms, the default is to build all modules which
+ * For Intel platforms, the default is to build all modules which
  * are supported on this platform.
  */
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(ia64Architecture)
 # ifndef XF86Server
 #  define XF86Server		YES
 # endif
@@ -165,86 +165,6 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				GlideDriver fbdev \
 				ati r128 AgpGartDrivers DevelDrivers cyrix \
 				vga XF86OSCardDrivers XF86ExtraCardDrivers
-# endif
-#endif
-
-/* IA-64 */
-
-#ifdef ia64Architecture
-# ifndef XF86Server
-#  define XF86Server		YES
-# endif
-/* 1bpp module */
-# ifndef XF1Bpp
-#  define XF1Bpp		YES
-# endif
-/* 4bpp module */
-# ifndef XF4Bpp
-#  define XF4Bpp		YES
-# endif
-/* 8/32bpp overlay module */
-# ifndef XF8_32Bpp
-#  define XF8_32Bpp		YES
-# endif
-/* 8/16bpp dual fb module */
-# ifndef XF8_16Bpp
-#  define XF8_16Bpp		YES
-# endif
-/* 24/32bpp conversion module */
-# ifndef XF24_32Bpp
-#  define XF24_32Bpp		YES
-# endif
-/* shadow fb module */
-# ifndef XFShadowFB
-#  define XFShadowFB		YES
-# endif
-/* vgahw module */
-# ifndef XF86VgaHw
-#  define XF86VgaHw		YES
-# endif
-/* fbdevhw module */
-# ifndef XF86FBDevHw
-#  define XF86FBDevHw		YES
-# endif
-/* XAA module */
-# ifndef XF86XAA
-#  define XF86XAA		YES
-# endif
-/* ramdac module */
-# ifndef XF86Ramdac
-#  define XF86Ramdac		YES
-# endif
-/* I2C module */
-# ifndef XF86I2C
-#  define XF86I2C		YES
-# endif
-/* DDC module */
-# ifndef XF86DDC
-#  define XF86DDC		YES
-# endif
-/* RAC (Resource Access Control) module */
-# ifndef XF86RAC
-#  define XF86RAC		YES
-# endif
-
-/* int10 module */
-# ifndef XF86Int10
-#  define XF86Int10		YES
-# endif
-
-/*
- * XXX Should change this to allow such drivers to be built without agpgart
- * support (when it is useful to do so).
- */
-# if HasAgpGart
-#  define AgpGartDrivers		i810
-# else
-#  define AgpGartDrivers		/**/
-# endif
-
-/* Pure PCI drivers should go first */
-# ifndef XF86CardDrivers
-#  define XF86CardDrivers	mga vga
 # endif
 #endif
 
@@ -358,7 +278,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # endif
 /* 1bpp module */
 # ifndef XF1Bpp
-#  define XF1Bpp		NO
+#  define XF1Bpp		YES
 # endif
 /* 4bpp module */
 # ifndef XF4Bpp
@@ -417,7 +337,8 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	mga tdfx glint s3virge rendition tga \
-				r128 vga XF86OSCardDrivers XF86ExtraCardDrivers
+				r128 ati vga \
+				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 
@@ -490,11 +411,19 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #  define XF86Int10		YES
 # endif
 
+# ifndef DevelDrivers
+#  if XFree86Devel
+#   define DevelDrivers		ati
+#  else
+#   define DevelDrivers		/* */
+#  endif
+# endif
+
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	r128 mga glint s3virge sis cirrus tseng \
 				trident chips fbdev \
-				vga XF86OSCardDrivers XF86ExtraCardDrivers
+				DevelDrivers vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 
@@ -503,9 +432,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * For Mips/Arc platforms, the default is to build all modules which
  * are supported on this platform. 
  */
-# ifdef ArcArchitecture
-#  ifndef XF86Server
-# define XF86Server		YES
+#ifdef ArcArchitecture
+# ifndef XF86Server
+#  define XF86Server		YES
 # endif
 #endif
 
@@ -563,7 +492,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * The server-side of PEX is not 64-bit clean.
  */
 #if !defined(BuildPexExt)
-# if XF86Server && !defined(AlphaArchitecture)
+# if XF86Server && !defined(AlphaArchitecture) && !defined(ia64Architecture)
 #  define BuildPexExt		YES
 # else
 #  define BuildPexExt		NO

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.10 2000/02/15 02:00:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.11 2000/05/03 00:44:20 tsi Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -46,13 +46,18 @@ static int vidMapIndex = -1;
 #define VIDMAPPTR(p) ((VidMapPtr)((p)->privates[vidMapIndex].ptr))
 
 static VidMemInfo vidMemInfo = {FALSE, };
+static VidMapRec  vidMapRec  = {0, NULL, TRUE, X_DEFAULT, FALSE, NULL};
 
 static VidMapPtr
 getVidMapRec(int scrnIndex)
 {
 	VidMapPtr vp;
+	ScrnInfoPtr pScrn;
 
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	if ((scrnIndex < 0) ||
+	    !(pScrn = xf86Screens[scrnIndex]))
+		return &vidMapRec;
+
 	if (vidMapIndex < 0)
 		vidMapIndex = xf86AllocateScrnInfoPrivateIndex();
 
@@ -118,7 +123,7 @@ static OptionInfoRec opts[] =
 static void
 checkMtrrOption(VidMapPtr vp)
 {
-	if (!vp->mtrrOptChecked && vp->pScrn->options != NULL) {
+	if (!vp->mtrrOptChecked && vp->pScrn && vp->pScrn->options != NULL) {
 		OptionInfoRec options[nopts];
 
 		(void)memcpy(options, opts, sizeof(opts));
@@ -139,7 +144,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 
 	if (((Flags & VIDMEM_FRAMEBUFFER) &&
 	     (Flags & (VIDMEM_MMIO | VIDMEM_MMIO_32BIT))))
-	    FatalError("Mapping memory with more than one type");
+	    FatalError("Mapping memory with more than one type\n");
 	    
 	if (!vidMemInfo.initialised) {
 		memset(&vidMemInfo, 0, sizeof(VidMemInfo));
