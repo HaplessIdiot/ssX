@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.5 2003/06/30 01:45:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.6 2003/09/16 00:36:14 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -79,9 +79,9 @@ void DarwinHandleGUI(
 
     // Make a pipe to pass events
     assert( pipe(fd) == 0 );
-    darwinEventFD = fd[0];
-    quartzEventWriteFD = fd[1];
-    fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
+    darwinEventReadFD = fd[0];
+    darwinEventWriteFD = fd[1];
+    fcntl(darwinEventReadFD, F_SETFL, O_NONBLOCK);
 
     // Store command line arguments to pass back to main()
     argcGlobal = argc;

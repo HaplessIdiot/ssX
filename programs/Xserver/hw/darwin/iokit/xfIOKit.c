@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.18 2003/03/15 18:02:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKit.c,v 1.1 2003/05/14 05:27:55 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -171,10 +171,8 @@ static void ClearEvent(NXEvent * ep)
  *  Read the HID System event queue, translate it to an X event,
  *  and queue it for processing.
  */
-static void *XFIOKitHIDThread(void *arg)
+static void *XFIOKitHIDThread(void *unused)
 {
-    int iokitEventWriteFD = (int)arg;
-
     for (;;) {
         NXEQElement             *oldHead;
         mach_msg_return_t       kr;
@@ -187,7 +185,6 @@ static void *XFIOKitHIDThread(void *arg)
         while (evg->LLEHead != evg->LLETail) {
             NXEvent ev;
             xEvent xe;
-            char byte = 0;
 
             // Extract the next event from the kernel queue
             oldHead = (NXEQElement*)&evg->lleq[evg->LLEHead];
@@ -271,10 +268,8 @@ static void *XFIOKitHIDThread(void *arg)
                 default:
                     continue;
             }
-
+ 
             DarwinEQEnqueue(&xe);
-            // signal there is an event ready to handle
-            write(iokitEventWriteFD, &byte, 1);
         }
     }
 
@@ -754,10 +749,11 @@ void DarwinModeInitInput(
 
     // Start event passing thread
     assert( pipe(fd) == 0 );
-    darwinEventFD = fd[0];
-    fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
+    darwinEventReadFD = fd[0];
+    darwinEventWriteFD = fd[1];
+    fcntl(darwinEventReadFD, F_SETFL, O_NONBLOCK);
     pthread_create(&inputThread, NULL,
-                   XFIOKitHIDThread, (void *) fd[1]);
+                   XFIOKitHIDThread, NULL);
 
 }
 

@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.51 2003/04/30 23:15:37 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.52 2003/05/14 05:27:55 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -68,7 +68,8 @@
 int                     darwinScreensFound = 0;
 int                     darwinScreenIndex = 0;
 io_connect_t            darwinParamConnect = 0;
-int                     darwinEventFD = -1;
+int                     darwinEventReadFD = -1;
+int                     darwinEventWriteFD = -1;
 int                     darwinMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
 
@@ -366,13 +367,13 @@ static int DarwinMouseProc(
 
         case DEVICE_ON:
             pPointer->public.on = TRUE;
-            AddEnabledDevice( darwinEventFD );
+            AddEnabledDevice( darwinEventReadFD );
             return Success;
 
         case DEVICE_CLOSE:
         case DEVICE_OFF:
             pPointer->public.on = FALSE;
-            RemoveEnabledDevice( darwinEventFD );
+            RemoveEnabledDevice( darwinEventReadFD );
             return Success;
     }
 
@@ -392,11 +393,11 @@ static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
             break;
         case DEVICE_ON:
             pDev->public.on = TRUE;
-            AddEnabledDevice( darwinEventFD );
+            AddEnabledDevice( darwinEventReadFD );
             break;
         case DEVICE_OFF:
             pDev->public.on = FALSE;
-            RemoveEnabledDevice( darwinEventFD );
+            RemoveEnabledDevice( darwinEventReadFD );
             break;
         case DEVICE_CLOSE:
             break;
@@ -517,7 +518,9 @@ void InitInput( int argc, char **argv )
     darwinKeyboard = AddInputDevice(DarwinKeybdProc, TRUE);
     RegisterKeyboardDevice( darwinKeyboard );
 
-    DarwinEQInit( (DevicePtr)darwinKeyboard, (DevicePtr)darwinPointer );
+    if (serverGeneration == 1) {
+        DarwinEQInit( (DevicePtr)darwinKeyboard, (DevicePtr)darwinPointer );
+    }
 
     DarwinModeInitInput(argc, argv);
 }

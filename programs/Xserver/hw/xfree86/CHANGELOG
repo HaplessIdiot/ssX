@@ -1,4 +1,10 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 504. XDarwin improvements:
+       - Add complete server side support for AppleWM with xpr.
+       - Allow Aqua and X11 windows to interleave when AppleWM-aware window
+         manager is present.
+       - Fix hang on server reset.
+      (Torrey T. Lyons, John Harper).
  503. Fix double-free at server regeneration in the screensave/DPMS timer
       code (David Dawes).
  502. Build most libraries as shared by default. (Matthieu Herrb, 
@@ -419,9 +425,9 @@ XFree86 4.3.99.11 (25 August 2003)
  374. Fixed XDarwin fullscreen crash in some screen sizes (Torrey T. Lyons).
  373. Be a little more precise about differentiating between active and
       inactive non-video PCI resources (Marc La France).
- 372. Added Apple-WM extension and library (Apple and Torrey T. Lyons).
+ 372. Added Apple-WM extension and library (John Harper, Torrey T. Lyons).
  371. Fixed indirect GLX on Mac OS X when the client can not make a
-      connection to the CoreGraphics window server (Apple).
+      connection to the CoreGraphics window server (John Harper).
  370. Fixed support for 64bit PCI bus on 32bit systems (Egbert Eich).
  369. Added support for using aliases in the -nolisten option. '-nolisten tcp'
       aliases to IPv4 and IPv6 (Matthieu Herrb, Egbert Eich).
@@ -769,7 +775,8 @@ XFree86 4.3.99.8 (10 July 2003)
  257. Don't sleep on Darwin for directory owner/mode problems (John Harper).
  256. Limit 430TX and 430VX to 128 and 32 PCI buses respectively
       (Marc La France).
- 255. Add direct GLX rendering on Mac OS X and Apple-DRI extension (Apple).
+ 255. Add direct GLX rendering on Mac OS X and Apple-DRI extension
+      (John Harper).
  254. Replaced inline asms with compier intrinsics for Intel compiler
       (Bugzilla #427, Slava Sysoltsev).
  253. Partly fixed build problems caused by mkfontdir replacement
@@ -1025,7 +1032,7 @@ XFree86 4.3.99.4 (10 May 2003)
         (Bugzilla #225, Séamus Ó Ciardhuáin);
       - fix wrong group number in Russian keyboard map (Ivan Pascal).
  157. Add rootless implementation for XDarwin using Apple's Xplugin API
-      (Apple and Torrey T. Lyons).
+      (John Harper, Torrey T. Lyons).
  156. Fix precision problems in xf86XVClipVideoHelper and in Mach64 XVideo
       support (Marc La France).
  155. Add missing symbols when DRI is disabled to glint driver
@@ -1180,7 +1187,7 @@ XFree86 4.3.99.3 (25 April 2003)
       will now stop on the first error.  To get the old behaviour, run
       'make WORLDOPTS=-k World' (David Dawes).
  100. Add preliminary version of generic rootless code based on XDarwin's
-      rootless mode (Torrey T. Lyons and Apple).
+      rootless mode (Torrey T. Lyons, John Harper).
   99. Remove PEX and XIE source code (Matthieu Herrb).
   98. The XKB version of XRefreshKeyboardMapping() had an UnlockDisplay()
       call without a preceding LockDisplay() call (Yoel Perl).
@@ -1457,7 +1464,7 @@ XFree86 4.3.0 (27 February 2003)
       ARGB cursors by always using the ARGB mode (#A.1639, Michel Dänzer and
       Fredrik Höglund).
  944. Fix rootless XDarwin crash when trying to GetImage with a rectangle
-      bigger then the associated top level window (Apple).
+      bigger then the associated top level window (John Harper).
  943. Add support for multi-head on ZX1-based Itanium2 systems  (Marc La France
       with documentation and assistance from Hewlett-Packard).
  942. Correctly initialize the RE_LINE_PATTERN register in the radeon
@@ -1809,7 +1816,7 @@ XFree86 4.2.99.901 (4 February 2003)
  797. Fix for memory fences on PowerPC (Marc La France).
  796. Work-around for Radeon int10 problems (Marc La France).
  795. Fix XDarwin crash in rootless mode with 16-bit color by ensuring that
-      window pixmap pointers are 32-bit aligned (Apple, Torrey T. Lyons).
+      window pixmap pointers are 32-bit aligned (John Harper, Torrey T. Lyons).
  794. Update the i810 2D driver and i830 3D drivers to recognise and handle
       the Intel 852GM/855GM integrated graphics chipsets (David Dawes,
       Keith Whitwell).
@@ -1849,7 +1856,7 @@ XFree86 4.2.99.901 (4 February 2003)
       (#A.1539, Juergen Keil).
  773. Fix artifacts left by XDarwin when reshaping a shaped window (reported
       by Adrian Umpleby).
- 772. Fix XDarwin rootless crash when resizing a window (Apple).
+ 772. Fix XDarwin rootless crash when resizing a window (John Harper).
  771. Fix vbe module to not assume BIOS call results are zero-extended
       (Paulo Cesar Pereira de Andrade).
  770. Fix improper initialisation of pciConfigRec's.  Reported by Marcel
@@ -1861,7 +1868,7 @@ XFree86 4.2.99.901 (4 February 2003)
       (reported by Alexis Vartanian).
 
 XFree86 4.2.99.4 (20 January 2003)
- 766. Fix XDarwin's rootless mode with 16-bit color (Apple).
+ 766. Fix XDarwin's rootless mode with 16-bit color (John Harper).
  765. Allow UTF8 conversion to work for Japanese locales (#A.1527,
       Etsushi Kato).
  764. Add a method for working around a problem that can show up when
@@ -17946,7 +17953,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2884 2003/10/15 21:23:38 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2885 2003/10/16 04:27:28 dawes Exp $
 
 
 

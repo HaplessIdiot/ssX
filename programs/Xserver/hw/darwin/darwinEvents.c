@@ -180,6 +180,7 @@ DarwinEQEnqueue(
     const xEvent *e)
 {
     HWEventQueueType oldtail, newtail;
+    char byte = 0;
 
     oldtail = darwinEventQueue.tail;
 
@@ -208,6 +209,9 @@ DarwinEQEnqueue(
 
     // Update the tail after the event is prepared
     darwinEventQueue.tail = newtail;
+
+    // Signal there is an event ready to handle
+    write(darwinEventWriteFD, &byte, 1);
 }
 
 
@@ -252,7 +256,7 @@ void ProcessInputEvents(void)
     // Empty the signaling pipe
     x = sizeof(xe);
     while (x == sizeof(xe)) {
-        x = read(darwinEventFD, &xe, sizeof(xe));
+        x = read(darwinEventReadFD, &xe, sizeof(xe));
     }
 
     while (darwinEventQueue.head != darwinEventQueue.tail)

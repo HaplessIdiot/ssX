@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.10 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.11 2003/09/16 00:36:14 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -37,7 +37,8 @@
 #include "quartzAudio.h"
 #include "pseudoramiX.h"
 #define _APPLEWM_SERVER_
-#include "applewmstr.h"
+#include "applewm.h"
+#include "applewmExt.h"
 
 // X headers
 #include "scrnintstr.h"
@@ -156,7 +157,9 @@ void DarwinModeInitInput(
     int argc,
     char **argv )
 {
-    QuartzMessageMainThread(kQuartzServerStarted, NULL, 0);
+    if (serverGeneration == 1) {
+        QuartzMessageMainThread(kQuartzServerStarted, NULL, 0);
+    }
 
     // Do final display mode specific initialization before handling events
     if (quartzProcs->InitInput)
@@ -167,7 +170,8 @@ void DarwinModeInitInput(
 /*
  * QuartzShow
  *  Show the X server on screen. Does nothing if already shown.
- *  Restore the X clip regions and the X server cursor state.
+ *  Calls mode specific screen resume to restore the X clip regions
+ *  (if needed) and the X server cursor state.
  */
 static void QuartzShow(
     int x,	// cursor location
@@ -189,8 +193,8 @@ static void QuartzShow(
 /*
  * QuartzHide
  *  Remove the X server display from the screen. Does nothing if already
- *  hidden. Set X clip regions to prevent drawing, and restore the Aqua
- *  cursor.
+ *  hidden. Calls mode specific screen suspend to set X clip regions to
+ *  prevent drawing (if needed) and restore the Aqua cursor.
  */
 static void QuartzHide(void)
 {
@@ -229,6 +233,38 @@ static void QuartzSetRootClip(
 
 
 /*
+ * QuartzMessageServerThread
+ *  Send the X server thread a message by placing it on the event queue.
+ */
+void
+QuartzMessageServerThread(
+    int type,
+    int argc, ...)
+{
+    xEvent xe;
+    INT32 *argv;
+    int i, max_args;
+    va_list args;
+
+    memset(&xe, 0, sizeof(xe));
+    xe.u.u.type = type;
+    xe.u.clientMessage.u.l.type = type;
+
+    argv = &xe.u.clientMessage.u.l.longs0;
+    max_args = 4;
+
+    if (argc > 0 && argc <= max_args) {
+	va_start (args, argc);
+	for (i = 0; i < argc; i++)
+	    argv[i] = (int) va_arg (args, int);
+	va_end (args);
+    }
+
+    DarwinEQEnqueue(&xe);
+}
+
+
+/*
  * DarwinModeProcessEvent
  *  Process Quartz specific events.
  */
@@ -237,12 +273,18 @@ void DarwinModeProcessEvent(
 {
     switch (xe->u.u.type) {
 
-        case kXDarwinShow:
+        case kXDarwinActivate:
             QuartzShow(xe->u.keyButtonPointer.rootX,
                        xe->u.keyButtonPointer.rootY);
+            AppleWMSendEvent(AppleWMActivationNotify,
+                             AppleWMActivationNotifyMask,
+                             AppleWMIsActive, 0);
             break;
 
-        case kXDarwinHide:
+        case kXDarwinDeactivate:
+            AppleWMSendEvent(AppleWMActivationNotify,
+                             AppleWMActivationNotifyMask,
+                             AppleWMIsInactive, 0);
             QuartzHide();
             break;
 
@@ -262,6 +304,9 @@ void DarwinModeProcessEvent(
             QuartzWritePasteboard();
             break;
 
+        /*
+         * AppleWM events
+         */
         case kXDarwinControllerNotify:
             AppleWMSendEvent(AppleWMControllerNotify,
                              AppleWMControllerNotifyMask,
@@ -269,8 +314,22 @@ void DarwinModeProcessEvent(
 			     xe->u.clientMessage.u.l.longs1);
             break;
 
+        case kXDarwinPasteboardNotify:
+            AppleWMSendEvent(AppleWMPasteboardNotify,
+                             AppleWMPasteboardNotifyMask,
+                             xe->u.clientMessage.u.l.longs0,
+                             xe->u.clientMessage.u.l.longs1);
+            break;
+
+        case kXDarwinDisplayChanged:
+        case kXDarwinWindowState:
+        case kXDarwinWindowMoved:
+            // FIXME: Not implemented yet
+            break;
+
         default:
-            ErrorF("Unknown application defined event.\n");
+            ErrorF("Unknown application defined event type %d.\n",
+                   xe->u.u.type);
     }
 }
 

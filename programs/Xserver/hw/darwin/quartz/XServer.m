@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.11 2003/08/19 19:21:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.12 2003/09/16 00:36:12 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -46,6 +46,7 @@
 #include "quartz.h"
 #define _APPLEWM_SERVER_
 #include "applewm.h"
+#include "applewmExt.h"
 #undef BOOL
 
 #import "XServer.h"
@@ -66,14 +67,6 @@
 #import <mach/mach_init.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 #import <IOKit/IOMessage.h>
-
-#define ENQUEUE(xe)                                                         \
-{                                                                           \
-    char byte = 0;                                                          \
-    DarwinEQEnqueue(xe);                                                    \
-    /* signal there is an event ready to handle */                          \
-    write(eventWriteFD, &byte, 1);                                          \
-}
 
 // Types of shells
 enum {
@@ -131,7 +124,6 @@ static io_connect_t root_port;
     queueShowServer = YES;
     quartzServerQuitting = NO;
     mouseState = 0;
-    eventWriteFD = quartzEventWriteFD;
 
     // set up a port to safely send messages to main thread from server thread
     signalPort = [[NSPort port] retain];
@@ -738,6 +730,12 @@ static io_connect_t root_port;
     [NSApp activateIgnoringOtherApps:YES];
 }
 
+// Show the Aqua-X11 switch panel useful for fullscreen mode
+- (IBAction)showSwitchPanel:(id)sender
+{
+    [switchWindow orderFront:nil];
+}
+
 // Show the X server when sent message from GUI
 - (IBAction)showAction:(id)sender
 {
@@ -816,7 +814,7 @@ static io_connect_t root_port;
             quartzProcs->CaptureScreens();
             HideMenuBar();
         }
-        xe.u.u.type = kXDarwinShow;
+        xe.u.u.type = kXDarwinActivate;
         [self sendXEvent:&xe];
 
         // the mouse location will have moved; track it
@@ -834,7 +832,7 @@ static io_connect_t root_port;
         // put the X cut buffer on the pasteboard
         [self writePasteboard];
 
-        xe.u.u.type = kXDarwinHide;
+        xe.u.u.type = kXDarwinDeactivate;
         [self sendXEvent:&xe];
     }
 
@@ -903,7 +901,7 @@ static io_connect_t root_port;
     }
 #endif
 
-    ENQUEUE(xe);
+    DarwinEQEnqueue(xe);
 }
 
 // Handle messages from the X server thread
@@ -941,7 +939,7 @@ static io_connect_t root_port;
         case kQuartzPostEvent:
         {
             const xEvent *xe = [[[portMessage components] lastObject] bytes];
-            ENQUEUE(xe);
+            DarwinEQEnqueue(xe);
             break;
         }
 
@@ -996,7 +994,7 @@ static io_connect_t root_port;
 }
 
 // User selected an X11 window from a menu
-- (void)itemSelected:sender
+- (IBAction)itemSelected:(id)sender
 {
     xEvent xe;
 
@@ -1007,6 +1005,64 @@ static io_connect_t root_port;
     xe.u.clientMessage.u.l.longs0 = AppleWMWindowMenuItem;
     xe.u.clientMessage.u.l.longs1 = [sender tag];
     [self sendXEvent:&xe];
+}
+
+// User selected Next from window menu
+- (IBAction)nextWindow:(id)sender
+{
+    QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                              AppleWMNextWindow);
+}
+
+// User selected Previous from window menu
+- (IBAction)previousWindow:(id)sender
+{
+    QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                              AppleWMPreviousWindow);
+}
+
+/*
+ * The XPR implementation handles close, minimize, and zoom actions for X11
+ * windows here, while CR handles these in the NSWindow class.
+ */
+
+// Handle Close from window menu for X11 window in XPR implementation
+- (IBAction)performClose:(id)sender
+{
+    QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                              AppleWMCloseWindow);
+}
+
+// Handle Minimize from window menu for X11 window in XPR implementation
+- (IBAction)performMiniaturize:(id)sender
+{
+    QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                              AppleWMMinimizeWindow);
+}
+
+// Handle Zoom from window menu for X11 window in XPR implementation
+- (IBAction)performZoom:(id)sender
+{
+    QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                              AppleWMZoomWindow);
+}
+
+// Handle "Bring All to Front" from window menu
+- (IBAction)bringAllToFront:(id)sender
+{
+    if ((AppleWMSelectedEvents() & AppleWMControllerNotifyMask) != 0) {
+        QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                                  AppleWMBringAllToFront);
+    } else {
+        [NSApp arrangeInFront:nil];
+    }
+}
+
+// This ends up at the end of the responder chain.
+- (IBAction)copy:(id)sender
+{
+    QuartzMessageServerThread(kXDarwinPasteboardNotify, 1,
+                              AppleWMCopyToPasteboard);
 }
 
 // Set the Apple-WM specifiable part of the window menu
@@ -1097,6 +1153,45 @@ static io_connect_t root_port;
     checkedWindowItem = n;
 }
 
+// Return whether or not a menu item should be enabled
+- (BOOL)validateMenuItem:(NSMenuItem *)item
+{
+    NSMenu *menu = [item menu];
+
+    if (menu == windowMenu && [item tag] == 30) {
+        // Mode switch panel is for fullscreen only
+        return !quartzRootless;
+    }
+    else if ((menu == windowMenu && [item tag] != 40) || menu == dockMenu) {
+        // The special window and dock menu items should not be active unless
+        // there is an AppleWM-aware window manager running.
+	return (AppleWMSelectedEvents() & AppleWMControllerNotifyMask) != 0;
+    }
+    else {
+	return TRUE;
+    }
+}
+
+- (void)applicationDidHide:(NSNotification *)aNotification
+{
+    if ((AppleWMSelectedEvents() & AppleWMControllerNotifyMask) != 0) {
+        QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                                  AppleWMHideAll);
+    } else {
+        // FIXME: We need to hide Xplugin windows here
+    }
+}
+
+- (void)applicationDidUnhide:(NSNotification *)aNotification
+{
+    if ((AppleWMSelectedEvents() & AppleWMControllerNotifyMask) != 0) {
+        QuartzMessageServerThread(kXDarwinControllerNotify, 1,
+                                  AppleWMShowAll);
+    } else {
+        [NSApp arrangeInFront:nil];
+    }
+}
+
 // Called when the user clicks the application icon,
 // but not when Cmd-Tab is used.
 // Rootless: Don't switch until applicationWillBecomeActive.
@@ -1116,8 +1211,15 @@ static io_connect_t root_port;
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification
 {
-    if (quartzRootless)
+    if (quartzRootless) {
         [self showServer:YES];
+
+        // If there is no AppleWM-aware window manager, we can't allow
+        // interleaving of Aqua and X11 windows.
+        if ((AppleWMSelectedEvents() & AppleWMControllerNotifyMask) == 0) {
+            [NSApp arrangeInFront:nil];
+        }
+    }
 }
 
 @end
