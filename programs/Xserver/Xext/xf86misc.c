@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.26 1998/03/20 21:04:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.27 1998/03/27 23:22:58 hohndel Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -40,11 +40,7 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
-
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
-#endif
+#include "xf86_ansic.h"
 
 extern int xf86ScreenIndex;
 extern Bool xf86MiscModInDevEnabled;
