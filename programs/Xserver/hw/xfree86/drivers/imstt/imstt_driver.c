@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.15 2001/05/16 06:48:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.16 2001/06/13 23:34:15 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -794,8 +794,6 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 		return FALSE;
 	}
 
-	fbPictureInit (pScreen, 0, 0);
-
 	if (pScrn->bitsPerPixel > 8) {
 		visual = pScreen->visuals + pScreen->numVisuals;
 		while (--visual >= pScreen->visuals) {
@@ -809,6 +807,8 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 			}
 		}
 	}
+
+	fbPictureInit (pScreen, 0, 0);
 
 	xf86SetBlackWhitePixels(pScreen);
 	miInitializeBackingStore(pScreen);

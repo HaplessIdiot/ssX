@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.42 2001/05/16 06:48:10 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.43 2001/06/15 21:22:54 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1170,8 +1170,6 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!Inited)
         return FALSE;
 
-    fbPictureInit (pScreen, 0, 0);
-
     if (pScreenInfo->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual=pScreen->visuals+pScreen->numVisuals;
@@ -1225,6 +1223,9 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif  /* Never used fixup code */
 	}
     }
+
+    /* must be after RGB ordering fixed */
+    fbPictureInit (pScreen, 0, 0);
 
     xf86SetBlackWhitePixels(pScreen);
     miInitializeBackingStore(pScreen);

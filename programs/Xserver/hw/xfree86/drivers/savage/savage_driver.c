@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.19 2001/05/18 23:35:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.20 2001/06/15 21:22:57 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -2172,6 +2172,9 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	}
     }
 
+    /* must be after RGB ordering fixed */
+    fbPictureInit (pScreen, 0, 0);
+
     if( !psav->NoAccel ) {
 	SavageInitAccel(pScreen);
     }
@@ -2281,9 +2284,6 @@ static int SavageInternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 		       pScrn->xDpi, pScrn->yDpi,
 		       displayWidth,
 		       pScrn->bitsPerPixel);
-    if (ret)
-	fbPictureInit (pScreen, 0, 0);
-
     return ret;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.22 2001/05/25 02:44:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.23 2001/08/01 00:44:53 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -166,24 +166,6 @@ ATIScreenInit
             if (!pATI->Closeable)
                 return FALSE;
 
-            if (pATI->OptionShadowFB)
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                    "RENDER extension not supported with a shadowed"
-                    " framebuffer.\n");
-
-#ifndef AVOID_CPIO
-
-            else if (pATI->BankInfo.BankSize)
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                    "RENDER extension not supported with a banked"
-                    " framebuffer.\n");
-
-#endif /* AVOID_CPIO */
-
-            else if (!fbPictureInit(pScreen, NULL, 0))
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                    "RENDER extension initialisation failed.\n");
-
             break;
 
         default:
@@ -211,6 +193,28 @@ ATIScreenInit
             pVisual->greenMask = pScreenInfo->mask.green;
             pVisual->blueMask = pScreenInfo->mask.blue;
         }
+    }
+
+    /* must be after RGB ordering fixed */
+    if (pATI->bitsPerPixel > 4)
+    {
+	if (pATI->OptionShadowFB)
+	    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+		"RENDER extension not supported with a shadowed"
+		" framebuffer.\n");
+
+#ifndef AVOID_CPIO
+
+	else if (pATI->BankInfo.BankSize)
+	    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+		"RENDER extension not supported with a banked"
+		" framebuffer.\n");
+
+#endif /* AVOID_CPIO */
+
+	else if (!fbPictureInit(pScreen, NULL, 0))
+	    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+		"RENDER extension initialisation failed.\n");
     }
 
     xf86SetBlackWhitePixels(pScreen);

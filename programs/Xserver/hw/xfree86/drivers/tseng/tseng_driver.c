@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.84 2001/05/04 19:05:48 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.85 2001/06/15 21:23:04 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2072,8 +2072,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth, pScrn->bitsPerPixel);
-	if (ret)
-	  fbPictureInit(pScreen, 0, 0);
 	break;
     }
 
@@ -2081,9 +2079,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     xf86SetBlackWhitePixels(pScreen);
-
-    if (pScrn->depth >= 8)
-        TsengDGAInit(pScreen);
 
     if (pScrn->bitsPerPixel > 8) {
 	/* Fixup RGB ordering */
@@ -2099,6 +2094,13 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
     }
+
+    /* must be after RGB ordering fixed */
+    if (pScrn->bitsPerPixel > 4)
+	fbPictureInit(pScreen, 0, 0);
+
+    if (pScrn->depth >= 8)
+        TsengDGAInit(pScreen);
 
     /*
      * If banking is needed, initialise an miBankInfoRec (defined in

@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.55 2001/06/05 17:52:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.56 2001/06/15 21:23:02 dawes Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -1300,8 +1300,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, pTga->FbBase, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth, pScrn->bitsPerPixel);
-	if (ret)
-    	    fbPictureInit (pScreen, 0, 0);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1312,10 +1310,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
     if (!ret)
 	return FALSE;
-
-    miInitializeBackingStore(pScreen);
-    xf86SetBackingStore(pScreen);
-    xf86SetSilkenMouse(pScreen);
 
     xf86SetBlackWhitePixels(pScreen);
 
@@ -1333,6 +1327,14 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
     }
+
+    /* must be after RGB ordering fixed */
+    
+    fbPictureInit (pScreen, 0, 0);
+    
+    miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
+    xf86SetSilkenMouse(pScreen);
 
     /* we should ALWAYS do this */
     if (pScrn->bitsPerPixel == 8) {

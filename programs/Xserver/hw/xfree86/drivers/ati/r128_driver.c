@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.34 2001/06/15 21:22:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.35 2001/07/25 08:04:43 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1637,7 +1637,6 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
 		       pScrn->bitsPerPixel))
 	return FALSE;
-    fbPictureInit (pScreen, 0, 0);
 #else
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -1697,6 +1696,10 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+#ifdef USE_FB    
+    /* must be after RGB order fixed */
+    fbPictureInit (pScreen, 0, 0);
+#endif
 				/* Memory manager setup */
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {

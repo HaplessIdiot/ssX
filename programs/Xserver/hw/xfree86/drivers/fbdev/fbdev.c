@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.33 2001/06/15 21:22:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.34 2001/06/15 22:29:58 paulo Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -622,6 +622,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	FBDevPtr fPtr = FBDEVPTR(pScrn);
 	VisualPtr visual;
+	int init_picture = 0;
 	int ret,flags,width,height;
 
 	TRACE_ENTER("FBDevScreenInit");
@@ -720,9 +721,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		case 32:
 			ret = fbScreenInit(pScreen, fPtr->fbstart, width, height,
 					   pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth, pScrn->bitsPerPixel);
-			if (ret && !fbPictureInit(pScreen, NULL, 0))
-			  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-				     "RENDER extension initialisation failed.\n");
+			init_picture = 1;
 			break;
 	 	default:
 			xf86DrvMsg(scrnIndex, X_ERROR,
@@ -780,6 +779,10 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 
+	/* must be after RGB ordering fixed */
+	if (init_picture && !fbPictureInit(pScreen, NULL, 0))
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			   "RENDER extension initialisation failed.\n");
 #if 0
 	switch (pScrn->bitsPerPixel)
 	{

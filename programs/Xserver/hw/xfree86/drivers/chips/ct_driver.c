@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.112 2001/06/13 23:34:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.113 2001/06/15 21:22:47 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -3783,6 +3783,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     CHIPSPtr cPtr;
     CHIPSACLPtr cAcl;
     int ret;
+    int init_picture = 0;
     VisualPtr visual;
     int allocatebase, freespace, currentaddr;
     unsigned int racflag = 0;
@@ -3958,8 +3959,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth,pScrn->bitsPerPixel);
-	if (ret) 
-	    fbPictureInit (pScreen, 0, 0);
+	init_picture = 1;
 	break;
     }
 
@@ -3981,6 +3981,10 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    /* must be after RGB ordering fixed */
+    if (init_picture)
+	fbPictureInit (pScreen, 0, 0);
+    
     xf86SetBlackWhitePixels(pScreen);
 
     cPtr->BlockHandler = pScreen->BlockHandler;

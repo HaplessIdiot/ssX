@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.38 2001/06/13 23:34:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.39 2001/06/15 21:22:49 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -1423,8 +1423,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!ret)
 		return FALSE;
 
-	fbPictureInit(pScreen, 0, 0);
-
 #ifdef LG_DEBUG
 	ErrorF("LgScreenInit after depth dependent init\n");
 #endif
@@ -1443,6 +1441,10 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			}
 		}
 	}
+
+	/* must be after RGB ordering fixed */
+
+	fbPictureInit(pScreen, 0, 0);
 
 	miInitializeBackingStore(pScreen);
 

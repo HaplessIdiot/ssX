@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.10 2001/05/16 06:48:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.11 2001/06/13 23:34:18 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -489,8 +489,6 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 	if(!ret)
 		return FALSE;
 
-	fbPictureInit (pScreen, 0, 0);
-
 	/* we need rgb ordering if bitsPerPixel > 8 */
 	if (pScrn->bitsPerPixel > 8) {
 		for (i = 0, visual = pScreen->visuals;
@@ -506,6 +504,8 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 
+	/* must be after RGB ordering fixed */
+	fbPictureInit (pScreen, 0, 0);
 
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);

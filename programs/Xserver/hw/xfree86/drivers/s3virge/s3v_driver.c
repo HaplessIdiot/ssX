@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.76 2001/05/28 08:22:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.77 2001/06/15 21:22:55 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -2472,6 +2472,11 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
   }
+
+  /* must be after RGB ordering fixed */
+  if (ps3v->UseFB)
+    fbPictureInit (pScreen, 0, 0);
+    
   	      				/* Initialize acceleration layer */
   if (!ps3v->NoAccel) {
     if(pScrn->bitsPerPixel == 32) {
@@ -2635,8 +2640,6 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
 	  ret = FALSE;
 	  break;
 	}
-      if (ret)
-	fbPictureInit (pScreen, 0, 0);
     }
   else
     {
