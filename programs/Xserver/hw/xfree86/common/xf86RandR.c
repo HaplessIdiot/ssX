@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.2 2002/10/14 18:01:39 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -32,6 +32,18 @@
 #include "mipointer.h"
 #include <randrstr.h>
 
+typedef struct _xf86RandRInfo {
+    CreateScreenResourcesProcPtr    CreateScreenResources;
+    CloseScreenProcPtr		    CloseScreen;
+    int				    virtualX;
+    int				    virtualY;
+} XF86RandRInfoRec, *XF86RandRInfoPtr;
+    
+static int	    xf86RandRIndex;
+static int	    xf86RandRGeneration;
+
+#define XF86RANDRINFO(p)    ((XF86RandRInfoPtr) (p)->devPrivates[xf86RandRIndex].ptr)
+
 static int
 xf86RandRModeRefresh (DisplayModePtr mode)
 {
@@ -46,40 +58,77 @@ xf86RandRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 {
     RRScreenSizePtr	    pSize;
     ScrnInfoPtr		    scrp = XF86SCRNINFO(pScreen);
+    XF86RandRInfoPtr	    randrp = XF86RANDRINFO(pScreen);
     DisplayModePtr	    mode;
+    Bool		    reportVirtual = TRUE;
+    int			    refresh0 = 60;
     
     *rotations = RR_Rotate_0;
 
     for (mode = scrp->modes; ; mode = mode->next)
     {
 	int refresh = xf86RandRModeRefresh (mode);
+	if (mode == scrp->modes)
+	    refresh0 = refresh;
 	pSize = RRRegisterSize (pScreen,
 				mode->HDisplay, mode->VDisplay,
 				pScreen->mmWidth, pScreen->mmHeight);
 	if (!pSize)
 	    return FALSE;
+	if (mode->HDisplay == randrp->virtualX && 
+	    mode->VDisplay == randrp->virtualY)
+	    reportVirtual = FALSE;
 	RRRegisterRate (pScreen, pSize, refresh);
-	if (mode == scrp->currentMode)
+	if (mode == scrp->currentMode &&
+	    mode->HDisplay == pScreen->width && mode->VDisplay == pScreen->height)
 	    RRSetCurrentConfig (pScreen, RR_Rotate_0, refresh, pSize);
 	if (mode->next == scrp->modes)
 	    break;
+    }
+    if (reportVirtual)
+    {
+	mode = scrp->modes;
+	pSize = RRRegisterSize (pScreen,
+				randrp->virtualX, randrp->virtualY,
+				pScreen->mmWidth * randrp->virtualX / mode->HDisplay,
+				pScreen->mmHeight * randrp->virtualY / mode->VDisplay);
+	if (!pSize)
+	    return FALSE;
+	RRRegisterRate (pScreen, pSize, refresh0);
+	if (pScreen->width == randrp->virtualX && 
+	    pScreen->height == randrp->virtualY)
+	{
+	    RRSetCurrentConfig (pScreen, RR_Rotate_0, refresh0, pSize);
+	}
     }
     return TRUE;
 }
 
 static Bool
 xf86RandRSetMode (ScreenPtr	    pScreen,
-		  DisplayModePtr    mode)
+		  DisplayModePtr    mode,
+		  Bool		    useVirtual)
 {
-    ScrnInfoPtr	    scrp = XF86SCRNINFO(pScreen);
-    int		    oldWidth = pScreen->width;
-    int		    oldHeight = pScreen->height;
-    WindowPtr	    pRoot = WindowTable[pScreen->myNum];
+    ScrnInfoPtr		scrp = XF86SCRNINFO(pScreen);
+    XF86RandRInfoPtr	randrp = XF86RANDRINFO(pScreen);
+    int			oldWidth = pScreen->width;
+    int			oldHeight = pScreen->height;
+    WindowPtr		pRoot = WindowTable[pScreen->myNum];
     
     if (pRoot)
 	xf86EnableDisableFBAccess (pScreen->myNum, FALSE);
-    scrp->virtualX = pScreen->width = mode->HDisplay;
-    scrp->virtualY = pScreen->height = mode->VDisplay;
+    if (useVirtual)
+    {
+	scrp->virtualX = randrp->virtualX;
+	scrp->virtualY = randrp->virtualY;
+    }
+    else
+    {
+	scrp->virtualX = mode->HDisplay;
+	scrp->virtualY = mode->VDisplay;
+    }
+    pScreen->width = scrp->virtualX;
+    pScreen->height = scrp->virtualY;
     if (!xf86SwitchMode (pScreen, mode))
     {
 	scrp->virtualX = pScreen->width = oldWidth;
@@ -103,8 +152,10 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
 		    RRScreenSizePtr	pSize)
 {
     ScrnInfoPtr		    scrp = XF86SCRNINFO(pScreen);
+    XF86RandRInfoPtr	    randrp = XF86RANDRINFO(pScreen);
     DisplayModePtr	    mode;
     int			    px, py;
+    Bool		    useVirtual = FALSE;
 
     miPointerPosition (&px, &py);
     for (mode = scrp->modes; ; mode = mode->next)
@@ -114,9 +165,18 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
 	    (rate == 0 || xf86RandRModeRefresh (mode) == rate))
 	    break;
 	if (mode->next == scrp->modes)
+	{
+	    if (pSize->width == randrp->virtualX &&
+		pSize->height == randrp->virtualY)
+	    {
+		mode = scrp->modes;
+		useVirtual = TRUE;
+		break;
+	    }
 	    return FALSE;
+	}
     }
-    if (!xf86RandRSetMode (pScreen, mode))
+    if (!xf86RandRSetMode (pScreen, mode, useVirtual))
 	return FALSE;
     /*
      * Move the cursor back where it belongs; SwitchMode repositions it
@@ -128,18 +188,6 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
     }
     return TRUE;
 }
-
-typedef struct _xf86RandRInfo {
-    CreateScreenResourcesProcPtr    CreateScreenResources;
-    CloseScreenProcPtr		    CloseScreen;
-    int				    virtualX;
-    int				    virtualY;
-} XF86RandRInfoRec, *XF86RandRInfoPtr;
-    
-static int	    xf86RandRIndex;
-static int	    xf86RandRGeneration;
-
-#define XF86RANDRINFO(p)    ((XF86RandRInfoPtr) (p)->devPrivates[xf86RandRIndex].ptr)
 
 /*
  * Wait until the screen is initialized before whacking the
@@ -159,7 +207,7 @@ xf86RandRCreateScreenResources (ScreenPtr pScreen)
     
     mode = scrp->currentMode;
     if (mode)
-	xf86RandRSetMode (pScreen, mode);
+	xf86RandRSetMode (pScreen, mode, TRUE);
     
     return TRUE;
 }
