@@ -9,7 +9,7 @@
 <date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.5 2000/07/01 04:18:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.6 2000/07/02 02:35:27 dawes Exp $
 </ident>
 
 <abstract>
@@ -70,9 +70,20 @@ for you to download.   If you are careful with this step you  will save
 yourself a lot  time and trouble  from NOT downloading an incompatible
 distribution.
 
-Once that is done download the necessary files.  The twelve  (12)
-mandatory files for all installations are listed below.  If you have
-not downloaded all of the files, the installer script will complain.
+<bf>NOTE</bf>: the Xinstall.sh script must be downloaded in binary mode,
+otherwise it won't run correctly.  If you get lots of "command not found"
+messages when you try to run it, then it is most likely because the
+script wasn't downloaded in binary mode.  Some web browsers won't do
+this for files of that name, so we also have a copy of it called
+"<tt>Xinstall.bin</tt>", and most browsers should download that correctly.
+When downloading it under this name, select "save as" on your browser,
+and save the file under the name "<tt>Xinstall.sh</tt>".
+
+Once you're run the <tt>Xinstall.sh</tt> script and found which binary
+distribution is suitable for your system, download the necessary files.
+The twelve  (12) mandatory files for all installations are listed below.
+If you have not downloaded all of the files, the installer script will
+complain.
 
 <quote><verb>
 1.   Xinstall.sh      The installer script
