@@ -27,9 +27,10 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.12 2002/09/22 07:09:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.13 2002/09/29 02:55:00 paulo Exp $ */
 
 #include "write.h"
+#include "hash.h"
 #include <math.h>
 
 #define	FLOAT_PREC	17
@@ -240,9 +241,9 @@ write_again:
     switch (object->type) {
 	case LispNil_t:
 	    if (object == DOT)
-		length += LispWriteStr(mac, stream, "DOT", 3);
+		length += LispWriteStr(mac, stream, "#<DOT>", 6);
 	    else if (object == UNBOUND)
-		length += LispWriteStr(mac, stream, "UNBOUND", 7);
+		length += LispWriteStr(mac, stream, "#<UNBOUND>", 10);
 	    else
 		length += LispWriteStr(mac, stream, Snil, 3);
 	    break;
@@ -284,7 +285,8 @@ write_again:
 	    char *ptr;
 
 	    sz = mpi_getsize(mpr_num(object->data.mp.ratio), 10) + 1 +
-		 mpi_getsize(mpr_den(object->data.mp.ratio), 10) + 1;
+		 mpi_getsize(mpr_den(object->data.mp.ratio), 10) + 1 +
+		 (mpi_sgn(mpr_num(object->data.mp.ratio)) < 0);
 	    if (sz > sizeof(stk))
 		ptr = LispMalloc(mac, sz);
 	    else
@@ -425,6 +427,19 @@ write_again:
 	    length += LispWriteCPointer(mac, stream,
 					object->data.bytecode.bytecode);
 	    length += LispWriteChar(mac, stream, '>');
+	    break;
+	case LispHashTable_t:
+	    length += LispWriteStr(mac, stream, "#<HASH-TABLE ", 13);
+	    length += LispWriteStr(mac, stream, STRPTR(object->data.hash.test),
+				   strlen(STRPTR(object->data.hash.test)));
+	    snprintf(stk, sizeof(stk), " %g %g",
+		     object->data.hash.table->rehash_size,
+		     object->data.hash.table->rehash_threshold);
+	    length += LispWriteStr(mac, stream, stk, strlen(stk));
+	    snprintf(stk, sizeof(stk), " %ld/%ld>",
+		     object->data.hash.table->count,
+		     object->data.hash.table->num_entries);
+	    length += LispWriteStr(mac, stream, stk, strlen(stk));
 	    break;
     }
 

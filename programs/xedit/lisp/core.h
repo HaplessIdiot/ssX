@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.22 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.23 2002/09/22 07:09:06 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -112,6 +112,7 @@ LispObj *Lisp_MemberIf(LispMac*, LispBuiltin*);		/* member-if */
 LispObj *Lisp_MemberIfNot(LispMac*, LispBuiltin*);	/* member-if-not */
 LispObj *Lisp_MultipleValueBind(LispMac*, LispBuiltin*);/* multiple-value-bind */
 LispObj *Lisp_MultipleValueList(LispMac*, LispBuiltin*);/* multiple-value-list */
+LispObj *Lisp_MultipleValueSetq(LispMac*, LispBuiltin*);/* multiple-value-setq */
 LispObj *Lisp_Nconc(LispMac*, LispBuiltin*);		/* nconc */
 LispObj *Lisp_Nreverse(LispMac*, LispBuiltin*);		/* nreverse */
 LispObj *Lisp_NsetDifference(LispMac*, LispBuiltin*);	/* nset-difference */
@@ -176,6 +177,7 @@ LispObj *Lisp_Unless(LispMac*, LispBuiltin*);		/* unless */
 LispObj *Lisp_Until(LispMac*, LispBuiltin*);		/* until */
 LispObj *Lisp_Unsetenv(LispMac*, LispBuiltin*);		/* unsetenv */
 LispObj *Lisp_UnwindProtect(LispMac*, LispBuiltin*);	/* unwind-protect */
+LispObj *Lisp_Values(LispMac*, LispBuiltin*);		/* values */
 LispObj *Lisp_Vector(LispMac*, LispBuiltin*);		/* vector */
 LispObj *Lisp_When(LispMac*, LispBuiltin*);		/* when */
 LispObj *Lisp_While(LispMac*, LispBuiltin*);		/* while */

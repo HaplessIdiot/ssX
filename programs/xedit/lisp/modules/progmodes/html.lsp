@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/html.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/html.lsp,v 1.2 2002/09/22 18:41:27 paulo Exp $
 ;;
 
 (require "syntax")
@@ -156,10 +156,10 @@
     `(let
 	((label (intern (string-concat ,name "$") 'keyword))
 	 (nested-label (intern (string (gensym)) 'keyword)))
-	(syntable label *prop-html-tag*
+	(syntable label *prop-html-tag* nil
 	    (synaugment :generic-tag)
 	    (syntoken ">" :nospec t :property *prop-html-tag* :begin nested-label)
-	    (syntable nested-label ,property
+	    (syntable nested-label ,property nil
 		(syntoken (string-concat "</" ,name ">")
 		    :icase t :nospec t :property *prop-html-tag* :switch -2)
 		(syntoken (string-concat "</" ,name "\\s*$")
@@ -167,9 +167,9 @@
 		(synaugment :main)))))
 
 
-(defsyntax *html* "HTML" :main *prop-html-default*
+(defsyntax *html-mode* :main *prop-html-default* nil nil
     (syntoken "<!--" :nospec t :contained t :begin :comment)
-    (syntable :comment *prop-html-comment*
+    (syntable :comment *prop-html-comment* nil
 	(syntoken "-->" :nospec t :switch -1))
     (syntoken "&([a-zA-Z0-9_.-]+|#\\x\\x?);?" :property *prop-html-entity*)
     (syntoken "<li>" :nospec t :icase t :property *prop-html-li*)
@@ -187,7 +187,7 @@
 	    "h1|h2|h3|h4|h5|title|font|ol|ul|dl|dt|dd|menu"
 	    ")\\>")
 	:icase t :property *prop-html-unknown* :begin :unbalanced)
-    (syntable :unbalanced *prop-html-unknown*
+    (syntable :unbalanced *prop-html-unknown* nil
 	(syntoken ">" :nospec t :switch :main)
 	(synaugment :generic-tag)
     )
@@ -228,34 +228,34 @@
     ;; Cannot hack html-syntoken and html-syntable to handle this,
     ;; as the option to <a may be in the next line.
     (syntoken "<a\\>" :icase t :contained t :begin :a)
-    (syntable :a *prop-html-tag*
+    (syntable :a *prop-html-tag* nil
 	;; Tag is open
 	(syntoken "\\<href\\>" :icase t :begin :a-href)
 	(syntoken "\\<name\\>" :icase t :begin :a-name)
 	(syntoken "<" :nospec t :property *prop-html-unknown* :switch -2)
 	(synaugment :generic-tag)
 	(syntoken ">" :nospec t :begin :a-generic-text)
-	(syntable :a-href *prop-html-tag*
+	(syntable :a-href *prop-html-tag* nil
 	    (syntoken ">" :nospec t :begin :a-href-text)
 	    (synaugment :generic-tag)
-	    (syntable :a-href-text *prop-html-link*
+	    (syntable :a-href-text *prop-html-link* nil
 		(syntoken "</a>"
 		    :icase t :nospec t :property *prop-html-tag* :switch -3)
 		(syntoken "</a\\s*$" :icase t :begin :continued-nested-end-tag)
 		(synaugment :main)
 	    )
 	)
-	(syntable :a-name *prop-html-tag*
+	(syntable :a-name *prop-html-tag* nil
 	    (syntoken ">" :nospec t :begin :a-name-text)
 	    (synaugment :generic-tag)
-	    (syntable :a-name-text *prop-html-name*
+	    (syntable :a-name-text *prop-html-name* nil
 		(syntoken "</a>"
 		    :icase t :nospec t :property *prop-html-tag* :switch -3)
 		(syntoken "</a\\s*$" :icase t :begin :continued-nested-end-tag)
 		(synaugment :main)
 	    )
 	)
-	(syntable :a-generic-text nil
+	(syntable :a-generic-text nil nil
 	    (syntoken "</a>"
 		:icase t :nospec t :property *prop-html-tag* :switch -2)
 	    (syntoken "<a/\\s$" :icase t :begin :continued-end-tag)
@@ -302,25 +302,25 @@
     (html-syntable "font" *prop-control*)
 
     (syntoken "<" :nospec t :contained t :begin :tag)
-    (syntable :generic-tag *prop-html-tag*
+    (syntable :generic-tag *prop-html-tag* nil
 	(syntoken "\"" :nospec t :contained t :begin :string)
 	(syntoken "<" :nospec t :property *prop-html-unknown*)
     )
-    (syntable :tag *prop-html-tag*
+    (syntable :tag *prop-html-tag* nil
 	(syntoken ">" :nospec t :switch -1)
 	(synaugment :generic-tag)
     )
 	;; Tag ended in a newline, common practice...
-    (syntable :continued-end-tag *prop-html-tag*
+    (syntable :continued-end-tag *prop-html-tag* nil
 	(syntoken ">" :nospec t :switch -3)
 	(synaugment :generic-tag)
     )
-    (syntable :continued-nested-end-tag *prop-html-tag*
+    (syntable :continued-nested-end-tag *prop-html-tag* nil
 	(syntoken ">" :nospec t :switch -4)
 	(synaugment :generic-tag)
     )
 
-    (syntable :string *prop-html-string*
+    (syntable :string *prop-html-string* nil
 	(syntoken "\\\\.")
 	(syntoken "\"" :nospec t :switch -1)
     )

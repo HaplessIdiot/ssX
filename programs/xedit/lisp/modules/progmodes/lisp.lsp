@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
 ;;
 
 (require "syntax")
@@ -67,7 +67,7 @@
 	;; the reparse of a region, Xaw will automatically mark some
 	;; regions to be updated when the new entities are added.
 #+notdef
-(defsyntax *lisp* "Lisp/Scheme" :main nil
+(defsyntax *lisp-mode* :main nil nil nil
     (syntoken "(" :nospec t :property *prop-punctuation* :begin :cons)
     (syntoken ";" :nospec t :contained t :begin :simple-comment)
     (syntoken "\"" :nospec t :begin :string :contained t)
@@ -92,7 +92,7 @@
     ;; Read time conditionals, evaluations and functions.
     (syntoken "#\\s*([+'cCsS-]|\\d+[aA])?" :begin :preprocessor :contained t)
 
-    (syntable :cons nil
+    (syntable :cons nil nil
 	;; Highlight car
 	(syntoken "[][a-zA-Z0-9_?!+/<=>*%@${}&^~-]+"
 	    :property *prop-keyword*
@@ -101,7 +101,7 @@
 	(syntoken ")" :nospec t :property *prop-punctuation* :switch -1)
 	(syntoken "[^(#\"',;|:`]|$" :begin :cdr)
 
-	(syntable :cdr nil
+	(syntable :cdr nil nil
 	    (syntoken ")" :nospec t :property *prop-punctuation* :switch -2)
 	    (synaugment :main)
 	)
@@ -109,30 +109,30 @@
 	(synaugment :main)
     )
 
-    (syntable :simple-comment *prop-comment*
+    (syntable :simple-comment *prop-comment* nil
 	(syntoken "$" :switch -1)
 	(syntoken "XXX|FIXME|TODO" :property *prop-annotation*)
     )
 
-    (syntable :string *prop-string*
+    (syntable :string *prop-string* nil
 	(syntoken "\\\\.")
 	(syntoken "\"" :nospec t :switch -1)
     )
 
-    (syntable :comment *prop-comment*
+    (syntable :comment *prop-comment* nil
 	(syntoken "#|" :nospec t :begin :comment)
 	(syntoken "|#" :nospec t :switch -1)
 	(syntoken "XXX|FIXME|TODO" :property *prop-annotation*)
     )
 
-    (syntable :quote nil
+    (syntable :quote nil nil
 	(syntoken "(" :nospec t :property *prop-quote* :begin :quote-expression)
 	(syntoken "[][a-zA-Z0-9_?!+/<=>*:%@${}&^~-]+" :switch -1)
 
-	(syntable :quote-expression nil
+	(syntable :quote-expression nil nil
 	    (syntoken "(" :nospec t :property *prop-quote* :begin :quote-recursive)
 	    (syntoken ")" :nospec t :property *prop-quote* :switch -2)
-	    (syntable :quote-recursive nil
+	    (syntable :quote-recursive nil nil
 		(syntoken "(" :nospec t :property *prop-quote* :begin :quote-recursive)
 		(syntoken ")" :nospec t :property *prop-quote* :switch -1)
 		(synaugment :main)
@@ -142,16 +142,16 @@
 	(synaugment :main)
     )
 
-    (syntable :backquote nil
+    (syntable :backquote nil nil
 	(syntoken "(" :nospec t :property *prop-quote* :begin :backquote-expression)
 	(syntoken "'|,@?" :property *prop-quote*)
 	(syntoken "[][a-zA-Z0-9_?!+/<=>*:%@${}&^~-]+" :switch -1)
 
-	(syntable :backquote-expression nil
+	(syntable :backquote-expression nil nil
 	    (syntoken ",@?" :property *prop-quote*)
 	    (syntoken "(" :nospec t :property *prop-quote* :begin :backquote-recursive)
 	    (syntoken ")" :nospec t :property *prop-quote* :switch -2)
-	    (syntable :backquote-recursive nil
+	    (syntable :backquote-recursive nil nil
 		(syntoken "(" :nospec t :property *prop-quote* :begin :backquote-recursive)
 		(syntoken "'|,@?" :property *prop-quote*)
 		(syntoken ")" :nospec t :property *prop-quote* :switch -1)
@@ -162,24 +162,24 @@
 	(synaugment :main)
     )
 
-    (syntable :preprocessor *prop-preprocessor*
+    (syntable :preprocessor *prop-preprocessor* nil
 	(syntoken ";" :nospec t :begin :simple-comment :contained t)
 	(syntoken "#|" :nospec t :begin :comment :contained t)
 	(syntoken "[][a-zA-Z0-9_?!+/<=>*:%@${}&^~-]+" :switch -1)
 	(syntoken "(" :nospec t :contained t :begin :preprocessor-expression)
 
-	(syntable :preprocessor-expression *prop-preprocessor*
+	(syntable :preprocessor-expression *prop-preprocessor* nil
 	    (syntoken "(" :nospec t :contained t :begin :preprocessor-recursive)
 	    (syntoken ")" :nospec t :switch -2)
 
-	    (syntable :preprocessor-recursive *prop-preprocessor*
+	    (syntable :preprocessor-recursive *prop-preprocessor* nil
 		(syntoken "(" :nospec t :contained t :begin :preprocessor-recursive)
 		(syntoken ")" :nospec t :switch -1)
 	    )
 	)
     )
 
-    (syntable :unreadable *prop-unreadable*
+    (syntable :unreadable *prop-unreadable* nil
 	(syntoken "\\\\.")
 	(syntoken "|" :nospec t :switch -1)
     )
@@ -193,7 +193,7 @@
 	;; This version isn't also optimal, but it's performance is
 	;; acceptable, could be simplified and handle better usage of
 	;; some characters.
-(defsyntax *lisp* "Lisp/Scheme" :main nil
+(defsyntax *lisp-mode* :main nil nil nil
     ;;	Higlight all list CARs that looks like a function call
     (syntoken "\\(\\s*[A-Za-z0-9_+/<=>*%@-]+[?!()]*(\\s|$)"
 	:property *prop-keyword*)
@@ -268,7 +268,7 @@
 	:contained t)
 
     ;; Define a syntax table just to highlight a few tokens...
-    (syntable :simple-comment *prop-comment*
+    (syntable :simple-comment *prop-comment* nil
 	;;  Return to previous state.
 	(syntoken "$"
 	    :switch -1)
@@ -278,7 +278,7 @@
     )
 
     ;;  Rules for strings.
-    (syntable :string *prop-string*
+    (syntable :string *prop-string* nil
 	;;  Ignore escaped characters, this includes \".
 	(syntoken "\\\\.")
 
@@ -289,7 +289,7 @@
     )
 
     ;;  Rules for "conditionals"
-    (syntable :preprocessor *prop-preprocessor*
+    (syntable :preprocessor *prop-preprocessor* nil
 
 	;;  One line comments.
 	(syntoken ";"
@@ -312,7 +312,7 @@
 	    :begin :preprocessor-expression
 	    :contained t)
 
-	(syntable :preprocessor-expression *prop-preprocessor*
+	(syntable :preprocessor-expression *prop-preprocessor* nil
 
 	    ;;  Recursive rule.
 	    (syntoken "("
@@ -324,7 +324,7 @@
 		:nospec t
 		:switch -2)
 
-	    (syntable :preprocessor-recursive *prop-preprocessor*
+	    (syntable :preprocessor-recursive *prop-preprocessor* nil
 		(syntoken "("
 		    :nospec t
 		    :begin :preprocessor-recursive
@@ -338,7 +338,7 @@
     )
 
     ;;  Rules for multiline comments.
-    (syntable :comment *prop-comment*
+    (syntable :comment *prop-comment* nil
 	;;  Multiline comments can nest.
 	(syntoken "#|"
 	    :nospec t
@@ -357,7 +357,7 @@
 	:property *prop-control*)
 
     ;;  Rules for "unreadable" symbols.
-    (syntable :unreadable *prop-unreadable*
+    (syntable :unreadable *prop-unreadable* nil
 	;;  Ignore escaped characters, this includes \|.
 	(syntoken "\\\\.")
 

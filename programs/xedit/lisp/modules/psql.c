@@ -122,7 +122,7 @@ psqlLoadModule(LispMac *mac)
     PGconn_t = LispRegisterOpaqueType(mac, "PGconn*");
     PGresult_t = LispRegisterOpaqueType(mac, "PGresult*");
 
-    GCProtect();
+    GCDisable();
     /* NOTE: Implemented just enough to make programming examples
      * (and my needs) work.
      * Completing this is an exercise to the reader, or may be implemented
@@ -168,7 +168,7 @@ psqlLoadModule(LispMac *mac)
 			  REAL(PGRES_NONFATAL_ERROR), fname, 0);
     (void)LispSetVariable(mac, ATOM2("PGRES-FATAL-ERROR"),
 			  REAL(PGRES_FATAL_ERROR), fname, 0);
-    GCUProtect();
+    GCEnable();
 
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
@@ -548,7 +548,7 @@ polygon_type:
     size = PQgetlength(res, tuple, field);
     polygon = (POLYGON*)(string - sizeof(int));
 
-    GCProtect();
+    GCDisable();
     /* get polygon->boundbox */
     cdr = EVAL(CONS(ATOM("MAKE-PG-POINT"),
 		    CONS(KEYWORD("X"),
@@ -590,7 +590,7 @@ polygon_type:
 					      CONS(box,
 						   CONS(KEYWORD("POINTS"),
 							CONS(QUOTE(p), NIL))))))))));
-    GCUProtect();
+    GCEnable();
 
     return (poly);
   }
@@ -664,14 +664,14 @@ Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
     if ((notifies = PQnotifies(conn)) == NULL)
 	return (NIL);
 
-    GCProtect();
+    GCDisable();
     code = CONS(ATOM("MAKE-PG-NOTIFY"),
 		  CONS(KEYWORD("RELNAME"),
 		       CONS(STRING(notifies->relname),
 			    CONS(KEYWORD("BE-PID"),
 				 CONS(REAL(notifies->be_pid), NIL)))));
     COD = CONS(code, COD);
-    GCUProtect();
+    GCEnable();
     result = EVAL(code);
     COD = cod;
 

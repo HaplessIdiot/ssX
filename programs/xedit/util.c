@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.20 2002/05/31 18:46:11 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.22 2002/09/22 07:09:05 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -287,6 +287,7 @@ KillTextSource(xedit_flist_item *item)
 	    }
 	}
 
+    UnsetTextProperties(item);
     XtFree(item->name);
     XtFree(item->filename);
     XtDestroyWidget(item->sme);

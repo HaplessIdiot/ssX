@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/man.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
 ;;
 
 (require "syntax")
@@ -90,12 +90,12 @@
 	:begin (intern (string ,pattern) 'keyword)))
 
 (defmacro man-syntable (pattern property)
-    `(syntable (intern (string ,pattern) 'keyword) ,property
+    `(syntable (intern (string ,pattern) 'keyword) ,property nil
 	(syntoken "$" :switch -1)
 	(synaugment :extras)))
 
 
-(defsyntax *man* "Man Page source file" :main nil
+(defsyntax *man-mode* :main nil nil nil
     (syntoken "^\\.\\\\\".*"
 	:property *prop-comment*)
 
@@ -122,7 +122,7 @@
 	:icase t
 	:property *prop-preprocessor*)
 
-    (syntable :extras nil
+    (syntable :extras nil nil
 	(syntoken "\\<__\\l+__\\>"
 	    :property *prop-constant*)
 	(syntoken "\\\\fB"
@@ -140,14 +140,14 @@
 	(syntoken "\""
 	    :property *prop-man-string*)
 
-	(syntable :i *prop-man-i*
+	(syntable :i *prop-man-i* nil
 	    (syntoken "$"
 		:switch :main)
 	    (syntoken "\\\\f\\u"
 		:property *prop-preprocessor*
 		:switch -1)
 	)
-	(syntable :b *prop-man-b*
+	(syntable :b *prop-man-b* nil
 	    (syntoken "$"
 		:switch :main)
 	    (syntoken "\\\\f\\u"

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.37 2002/09/22 18:41:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.38 2002/09/29 02:55:00 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -472,9 +472,7 @@ LispCoerce(LispMac *mac, LispBuiltin *builtin,
 		    goto coerce_fail;
 		break;
 	    case LispPathname_t:
-		GCProtect();
-		result = APPLY(Oparse_namestring, CONS(object, NIL));
-		GCUProtect();
+		result = APPLY1(Oparse_namestring, object);
 		break;
 	    default:
 		goto coerce_fail;
@@ -718,8 +716,9 @@ LispReallyDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
 
 	/* Update symbols and check exit condition */
 	if (times) {
+	    ++count;
 	    LispSetVar(mac, symbol, SMALLINT(count));
-	    if ((count += 1) >= end)
+	    if (count >= end)
 		break;
 	}
 	else {

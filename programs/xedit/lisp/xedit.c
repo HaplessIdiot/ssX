@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.1 2002/09/22 07:09:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.2 2002/09/29 02:55:00 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -44,22 +44,32 @@ typedef struct {
     XrmQuark property;
 } EntityInfo;
 
+/* Typedef'ed to XeditLispData in ../xedit.h */
+struct _XeditLispData {
+    LispObj *syntaxp;		/* Syntax definition */
+    LispObj *syntablep;		/* Syntax-table the cursor is located */
+    int disable_highlight;	/* Working in the buffer */
+};
+
 /*
  * Prototypes
  */
 static void XeditPrint(LispMac*, Widget, LispObj*);
 static void XeditInteractiveCallback(Widget, XtPointer, XtPointer);
+static void XeditIndentationCallback(Widget, XtPointer, XtPointer);
+static LispObj *XeditCharAt(LispMac*, LispBuiltin*, int);
+static LispObj *XeditSearch(LispMac*, LispBuiltin*, XawTextScanDirection);
 
 /*
  * Initialization
  */
 extern LispMac *lisp_handler;		/* Hack... */
 
-static LispObj *Oauto_mode, *Osyntax_highlight;
+static LispObj *Oauto_mode, *Osyntax_highlight, *Osyntable_indent;
 
 /* Just to make calling interactive reparse easier */
 static LispObj interactive_left, interactive_right;
-static LispObj interactive_arguments[3];
+static LispObj interactive_arguments[4];
 
 static LispObj *justify_modes[4];
 static LispObj *wrap_modes[3];
@@ -77,15 +87,18 @@ static LispBuiltin xeditbuiltins[] = {
     {LispFunction, Xedit_AddEntity, "add-entity offset length identifier"},
     {LispFunction, Xedit_AutoFill, "auto-fill &optional (value nil specified)"},
     {LispFunction, Xedit_Background, "background &optional (color nil specified)"},
+    {LispFunction, Xedit_CharAfter, "char-after &optional offset"},
+    {LispFunction, Xedit_CharBefore, "char-before &optional offset"},
     {LispFunction, Xedit_ClearEntities, "clear-entities left right"},
     {LispFunction, Xedit_ConvertPropertyList, "convert-property-list name definition"},
     {LispFunction, Xedit_Font, "font &optional (font nil specified)"},
     {LispFunction, Xedit_Foreground, "foreground &optional (color nil specified)"},
+    {LispFunction, Xedit_GotoChar, "goto-char offset"},
     {LispFunction, Xedit_HorizontalScrollbar, "horizontal-scrollbar &optional (state nil specified)"},
     {LispFunction, Xedit_Insert, "insert text"},
     {LispFunction, Xedit_Justification, "justification &optional (value nil specified)"},
     {LispFunction, Xedit_LeftColumn, "left-column &optional (left nil specified)"},
-    {LispFunction, Xedit_Point, "point &optional (position nil specified)"},
+    {LispFunction, Xedit_Point, "point"},
     {LispFunction, Xedit_PointMax, "point-max"},
     {LispFunction, Xedit_PointMin, "point-min"},
     {LispFunction, Xedit_PropertyList, "property-list &optional (value nil specified)"},
@@ -93,8 +106,8 @@ static LispBuiltin xeditbuiltins[] = {
     {LispFunction, Xedit_ReplaceText, "replace-text left right text"},
     {LispFunction, Xedit_RightColumn, "right-column &optional (left nil specified)"},
     {LispFunction, Xedit_Scan, "scan offset type direction &key (count 1) include"},
-    {LispFunction, Xedit_SearchBackward, "search-backward string &optional ignore-case"},
-    {LispFunction, Xedit_SearchForward, "search-forward string &optional ignore-case"},
+    {LispFunction, Xedit_SearchBackward, "search-backward string &optional offset ignore-case"},
+    {LispFunction, Xedit_SearchForward, "search-forward string &optional offset ignore-case"},
     {LispFunction, Xedit_VerticalScrollbar, "vertical-scrollbar &optional (state nil specified)"},
     {LispFunction, Xedit_WrapMode, "wrap-mode &optional (value nil specified)"},
 
@@ -151,6 +164,7 @@ LispXeditInitialize(LispMac *mac)
     /* Create these objects in the xedit package */
     Oauto_mode		= STATIC_ATOM("AUTO-MODE");
     Osyntax_highlight	= STATIC_ATOM("SYNTAX-HIGHLIGHT");
+    Osyntable_indent	= STATIC_ATOM("SYNTABLE-INDENT");
 
     /*  Import symbols from the LISP and EXT packages */
     for (list = PACK; CONS_P(list); list = CDR(list)) {
@@ -183,14 +197,21 @@ LispXeditInitialize(LispMac *mac)
 
     /* Initialize interactive edition function arguments */
     interactive_left.type = interactive_right.type = LispInteger_t;
+    /* first argument is syntax table */
     interactive_arguments[0].type = LispCons_t;
     interactive_arguments[0].data.cons.cdr = &interactive_arguments[1];
+    /* second argument is where to start reparsing */
     interactive_arguments[1].type = LispCons_t;
     interactive_arguments[1].data.cons.car = &interactive_left;
     interactive_arguments[1].data.cons.cdr = &interactive_arguments[2];
+    /* third argument is where to stop reparsing */
     interactive_arguments[2].type = LispCons_t;
     interactive_arguments[2].data.cons.car = &interactive_right;
-    interactive_arguments[2].data.cons.cdr = NIL;
+    interactive_arguments[2].data.cons.cdr = &interactive_arguments[3];
+    /* fourth argument is interactive flag */
+    interactive_arguments[3].type = LispCons_t;
+    interactive_arguments[3].data.cons.car = T;
+    interactive_arguments[3].data.cons.cdr = NIL;
 
     /* Load extra functions and data type definitions */
     EXECUTE("(require \"xedit\")");
@@ -303,6 +324,8 @@ XeditLispSetEditMode(LispMac *mac, xedit_flist_item *item)
     GC_ENTER();
     LispObj *syntax, *name;
 
+    item->xldata = (XeditLispData*)XtCalloc(1, sizeof(XeditLispData));
+
     /* Don't call abort if a fatal error happens */
     mac->running = 1;
     if (sigsetjmp(mac->jmp, 1) != 0) {
@@ -329,6 +352,8 @@ XeditLispSetEditMode(LispMac *mac, xedit_flist_item *item)
 	LispObj arguments;
 	XawTextPropertyList *property_list;
 
+	item->xldata->syntaxp = syntax;
+
 	/* Apply the syntax highlight to the current buffer */
 	arguments.type = LispCons_t;
 	arguments.data.cons.car = syntax;
@@ -343,7 +368,7 @@ XeditLispSetEditMode(LispMac *mac, xedit_flist_item *item)
 
 	/* Add callback for interactive changes */
 	XtAddCallback(item->source, XtNpropertyCallback,
-		      XeditInteractiveCallback, syntax);
+		      XeditInteractiveCallback, item->xldata);
     }
     else
 	item->properties = NULL;
@@ -351,6 +376,15 @@ XeditLispSetEditMode(LispMac *mac, xedit_flist_item *item)
     /* Return to the toplevel and or do any cleanup */
     LispTopLevel(mac);
     mac->running = 0;
+}
+
+void
+XeditLispUnsetEditMode(LispMac *mac, xedit_flist_item *item)
+{
+    if (item->xldata) {
+	XtFree((XtPointer)item->xldata);
+	item->xldata = NULL;
+    }
 }
 
 #define MAX_INFOS	32
@@ -371,19 +405,23 @@ static void
 XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 {
     LispMac *mac = lisp_handler;
-    LispObj *syntax = (LispObj*)client_data;
+    XeditLispData *data = (XeditLispData*)client_data;
+    LispObj *syntax = data->syntaxp;
     XawTextPropertyInfo *info = (XawTextPropertyInfo*)call_data;
-    LispObj *result;
+    LispObj *result, *syntable;
     XawTextAnchor *anchor;
     XawTextEntity *entity;
     XawTextPosition first, last, left, right, begin, next, tmp, position;
-    int i, j;
+    int i, j, indent;
     TextSrcObject src = (TextSrcObject)w;
     EntityInfo oinfo[MAX_INFOS], ninfo[MAX_INFOS];
     XrmQuark props[MAX_INFOS];
     int num_oinfo, num_ninfo, num_props;
     XmuScanline *clip, *oclip, *nclip;
     XmuSegment segment, *seg;
+
+    if (data->disable_highlight)
+	return;
 
     /* Don't call abort if a fatal error happens */
     mac->running = 1;
@@ -397,6 +435,9 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 
     left = info->left;
     right = left + info->block->length;
+
+    /* For now, only call the indent hook if a single character was typed */
+    indent = (info->right == left) && (right == left + 1);
 
     /* Always reparse full lines */
     left = begin = XawTextSourceScan(w, left, XawstEOL, XawsdLeft, 1, False);
@@ -467,6 +508,11 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     interactive_left.data.integer = left;
     interactive_right.data.integer = right;
     result = APPLY(Osyntax_highlight, &interactive_arguments[0]);
+    /* Indent table is the second return value */
+    if (RETURN_COUNT)
+	syntable = RETURN(0);
+    else
+	syntable = NIL;
 
     /* This normally is the same value as right, but the parser may have
      * continued when the syntax table stack did not finish. */
@@ -557,6 +603,47 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 				  seg->x1, seg->x2 + (seg->x2 > next));
     }
     XmuDestroyScanline(clip);
+
+    /* Return to the toplevel and or do any cleanup */
+    LispTopLevel(mac);
+    mac->running = 0;
+
+    data->syntablep = syntable;
+    if (indent && syntable != NIL)
+	XtAddCallback(textwindow, XtNpositionCallback,
+		      XeditIndentationCallback, data);
+}
+
+/*
+ * This callback is called if the syntax table where the cursor is located
+ * defines an indentation function.
+ */
+static void
+XeditIndentationCallback(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    LispMac *mac = lisp_handler;
+    LispObj *indentp;
+    XeditLispData *data = (XeditLispData*)client_data;
+
+    data->disable_highlight = True;
+    XtRemoveCallback(w, XtNpositionCallback, XeditIndentationCallback, data);
+
+    /* Don't call abort if a fatal error happens */
+    mac->running = 1;
+    if (sigsetjmp(mac->jmp, 1) != 0) {
+	mac->running = 0;
+	data->disable_highlight = False;
+	return;
+    }
+
+    /* Get pointer to indentation function */
+    indentp = APPLY1(Osyntable_indent, data->syntablep);
+
+    /* Execute indentation function */
+    if (indentp != NIL)
+	APPLY2(indentp, data->syntaxp, data->syntablep);
+
+    data->disable_highlight = False;
 
     /* Return to the toplevel and or do any cleanup */
     LispTopLevel(mac);
@@ -660,6 +747,62 @@ Xedit_Background(LispMac *mac, LispBuiltin *builtin)
     }
 
     return (color);
+}
+
+static LispObj *
+XeditCharAt(LispMac *mac, LispBuiltin *builtin, int before)
+{
+    Widget source = XawTextGetSource(textwindow);
+    XawTextPosition first, point, last;
+    XawTextBlock block;
+
+    LispObj *offset;
+
+    offset = ARGUMENT(0);
+    if (offset != NIL) {
+	ERROR_CHECK_INDEX(offset);
+    }
+
+    first = XawTextSourceScan(source, 0, XawstAll, XawsdLeft, 1, True);
+    if (INT_P(offset))
+	point = offset->data.integer;
+    else
+	point = XawTextGetInsertionPoint(textwindow);
+    if (before && point > first) {
+	XawTextPosition position =
+	    XawTextSourceScan(source, point, XawstPositions, XawsdLeft, 1, True);
+
+	if (position < point)
+	    point = position;
+	else
+	    return (NIL);
+    }
+    last = XawTextSourceScan(source, 0, XawstAll, XawsdRight, 1, True);
+
+    if (point < first || point > last)
+	return (NIL);
+
+    XawTextSourceRead(source, point, &block, 1);
+
+    return (block.length ? CHAR(block.ptr[0]) : NIL);
+}
+
+LispObj *
+Xedit_CharAfter(LispMac *mac, LispBuiltin *builtin)
+/*
+ char-after &optional offset
+ */
+{
+    return (XeditCharAt(mac, builtin, 0));
+}
+
+LispObj *
+Xedit_CharBefore(LispMac *mac, LispBuiltin *builtin)
+/*
+ char-before &optional offset
+ */
+{
+    return (XeditCharAt(mac, builtin, 1));
 }
 
 LispObj *
@@ -823,6 +966,26 @@ Xedit_Foreground(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Xedit_GotoChar(LispMac *mac, LispBuiltin *builtin)
+/*
+ goto-char offset
+ */
+{
+    LispObj *offset;
+    XawTextPosition point;
+
+    offset = ARGUMENT(0);
+
+    ERROR_CHECK_INDEX(offset);
+    XawTextSetInsertionPoint(textwindow, offset->data.integer);
+    point = XawTextGetInsertionPoint(textwindow);
+    if (point != offset->data.integer)
+	offset = SMALLINT(point);
+
+    return (offset);
+}
+
+LispObj *
 Xedit_HorizontalScrollbar(LispMac *mac, LispBuiltin *builtin)
 /*
  horizontal-scrollbar &optional (state NIL specified)
@@ -950,22 +1113,10 @@ Xedit_LeftColumn(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Xedit_Point(LispMac *mac, LispBuiltin *builtin)
 /*
- point &optional (position NIL specified)
+ point
  */
 {
-    LispObj *position, *specified;
-
-    specified = ARGUMENT(1);
-    position = ARGUMENT(0);
-
-    if (specified != NIL) {
-	ERROR_CHECK_INDEX(position);
-	XawTextSetInsertionPoint(textwindow, position->data.integer);
-    }
-    else
-	position = SMALLINT(XawTextGetInsertionPoint(textwindow));
-
-    return (position);
+    return (SMALLINT(XawTextGetInsertionPoint(textwindow)));
 }
 
 LispObj *
@@ -1101,7 +1252,7 @@ Xedit_ReplaceText(LispMac *mac, LispBuiltin *builtin)
     right = oright->data.integer;
     if (left > last)
 	left = last;
-    if (right > left)
+    if (left > right)
 	right = left;
     else if (right > last)
 	right = last;
@@ -1200,60 +1351,53 @@ Xedit_Scan(LispMac *mac, LispBuiltin *builtin)
     return (SMALLINT(offset));
 }
 
-LispObj *
-Xedit_SearchBackward(LispMac *mac, LispBuiltin *builtin)
-/*
- search-backward string &optional ignore-case
- */
+static LispObj *
+XeditSearch(LispMac *mac, LispBuiltin *builtin, XawTextScanDirection direction)
 {
     XawTextBlock block;
     XawTextPosition position;
 
-    LispObj *string, *ignore_case;
+    LispObj *string, *offset, *ignore_case;
 
-    ignore_case = ARGUMENT(1);
+    ignore_case = ARGUMENT(2);
+    offset = ARGUMENT(1);
     string = ARGUMENT(0);
 
     ERROR_CHECK_STRING(string);
-
-    position = XawTextGetInsertionPoint(textwindow);
+    if (offset != NIL) {
+	ERROR_CHECK_INDEX(offset);
+	position = offset->data.integer;
+    }
+    else
+	position = XawTextGetInsertionPoint(textwindow);
 
     block.firstPos = (ignore_case != NIL) ? 1 : 0;
     block.format = FMT8BIT;
     block.length = STRLEN(string);
     block.ptr = THESTR(string);
     position = XawTextSourceSearch(XawTextGetSource(textwindow),
-				   position, XawsdLeft, &block);
+				   position, direction, &block);
 
     return (position != XawTextSearchError ? SMALLINT(position) : NIL);
+}
+
+
+LispObj *
+Xedit_SearchBackward(LispMac *mac, LispBuiltin *builtin)
+/*
+ search-backward string &optional offset ignore-case
+ */
+{
+    return (XeditSearch(mac, builtin, XawsdLeft));
 }
 
 LispObj *
 Xedit_SearchForward(LispMac *mac, LispBuiltin *builtin)
 /*
- search-forward string &optional ignore-case
+ search-forward string &optional offset ignore-case
  */
 {
-    XawTextBlock block;
-    XawTextPosition position;
-
-    LispObj *string, *ignore_case;
-
-    ignore_case = ARGUMENT(1);
-    string = ARGUMENT(0);
-
-    ERROR_CHECK_STRING(string);
-
-    position = XawTextGetInsertionPoint(textwindow);
-
-    block.firstPos = (ignore_case != NIL) ? 1 : 0;
-    block.format = FMT8BIT;
-    block.length = STRLEN(string);
-    block.ptr = THESTR(string);
-    position = XawTextSourceSearch(XawTextGetSource(textwindow),
-				   position, XawsdRight, &block);
-
-    return (position != XawTextSearchError ? SMALLINT(position) : NIL);
+    return (XeditSearch(mac, builtin, XawsdRight));
 }
 
 LispObj *

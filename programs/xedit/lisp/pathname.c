@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.10 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.11 2002/09/15 21:32:22 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -172,18 +172,18 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
  directory pathname &key all if-cannot-read
  */
 {
+    GC_ENTER();
     DIR *dir;
     struct stat st;
     struct dirent *ent;
-    int length, listdirs, i, ndirs, nmatches, protect = mac->protect.length;
+    int length, listdirs, i, ndirs, nmatches;
     char name[PATH_MAX + 1], path[PATH_MAX + 2], directory[PATH_MAX + 2];
     char *sep, *base, *ptr, **dirs, **matches,
 	  dot[] = {'.', PATH_SEP, '\0'},
 	  dotdot[] = {'.', '.', PATH_SEP, '\0'};
     int cannot_read;
 
-    LispObj *pathname, *all, *if_cannot_read,
-	    *result, *cons, *object, *function, *arguments;
+    LispObj *pathname, *all, *if_cannot_read, *result, *cons, *object;
 
     if_cannot_read = ARGUMENT(2);
     all = ARGUMENT(1);
@@ -221,12 +221,6 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: pathname too long %s",
 		    STRFUN(builtin), name);
 
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-
-    mac->protect.objects[mac->protect.length++] = arguments = CONS(NIL, NIL);
-    function = Oparse_namestring;
-
     if (length == 0) {
 	if (getcwd(path, sizeof(path) - 2) == NULL)
 	    LispDestroy(mac, "%s: getcwd(): %s",
@@ -236,9 +230,8 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	    path[length++] = PATH_SEP;
 	    path[length] = '\0';
 	}
-	RPLACA(arguments, LSTRING(path, length));
-	result = APPLY(function, arguments);
-	mac->protect.length = protect;
+	result = APPLY1(Oparse_namestring, LSTRING(path, length));
+	GC_LEAVE();
 
 	return (result);
     }
@@ -437,12 +430,10 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     }
 
     for (i = 0; i < ndirs; i++) {
-	RPLACA(arguments, STRING(dirs[i]));
-	LispFree(mac, dirs[i]);
-	object = APPLY(function, arguments);
+	object = APPLY1(Oparse_namestring, STRING2(dirs[i]));
 	if (result == NIL) {
 	    result = cons = CONS(object, NIL);
-	    mac->protect.objects[mac->protect.length++] = result;
+	    GC_PROTECT(result);
 	}
 	else {
 	    RPLACD(cons, CONS(object, NIL));
@@ -450,7 +441,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	}
     }
     LispFree(mac, dirs);
-    mac->protect.length = protect;
+    GC_LEAVE();
 
     return (result);
 }
@@ -461,6 +452,9 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
  parse-namestring object &optional host defaults &key start end junk-allowed
  */
 {
+    GC_ENTER();
+    LispObj *result;
+
     LispObj *object, *host, *defaults, *ostart, *oend, *junk_allowed;
 
     junk_allowed = ARGUMENT(5);
@@ -474,8 +468,10 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	ERROR_CHECK_STRING(host);
     }
     if (defaults != NIL) {
-	if (!PATHNAME_P(defaults))
+	if (!PATHNAME_P(defaults)) {
 	    defaults = APPLY1(Oparse_namestring, defaults);
+	    GC_PROTECT(defaults);
+	}
     }
 
     if (STREAM_P(object)) {
@@ -484,13 +480,17 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	/* else just check for JUNK-ALLOWED... */
     }
     else if (PATHNAME_P(object)) {
-	if (defaults == NIL)
+	if (defaults == NIL) {
+	    GC_LEAVE();
+
 	    return (object);
+	}
 	object = CAR(object->data.pathname);
     }
 
+    result = NIL;
     if (STRING_P(object)) {
-	LispObj *result, *cons, *cdr;
+	LispObj *cons, *cdr;
 	char *name = THESTR(object), *ptr, *str, data[PATH_MAX + 1],
 	      string[PATH_MAX + 1], *namestr, *typestr;
 	long start, end, length, alength;
@@ -508,9 +508,9 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (PATHNAME_P(defaults))
 	    defaults = defaults->data.pathname;
 
-	GCProtect();
 	/* string name */
 	result = cons = CONS(NIL, NIL);
+	GC_PROTECT(result);
 
 	/* host */
 	if (defaults != NIL)
@@ -587,7 +587,6 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	    defaults = CDR(defaults);
 	cdr = defaults == NIL ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
-	GCUProtect();
 
 	/* string representation, must be done here to use defaults */
 	ptr = strrchr(string, PATH_SEP);
@@ -618,17 +617,17 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	}
 	string[length] = '\0';
 
-	GCProtect();		/* XXX result is not gc protected */
 	RPLACA(result,  STRING(string));
-	GCUProtect();
 
-	return (PATHNAME(result));
+	result = PATHNAME(result);
     }
     else if (junk_allowed == NIL)
 	LispDestroy(mac, "%s: bad argument %s",
 		    STRFUN(builtin), STROBJ(object));
 
-    return (NIL);
+    GC_LEAVE();
+
+    return (result);
 }
 
 LispObj *
@@ -637,6 +636,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
  make-pathname &key host device directory name type version defaults
  */
 {
+    GC_ENTER();
     int length, alength;
     char *string, pathname[PATH_MAX + 1];
     LispObj *result, *cdr, *cons;
@@ -651,36 +651,30 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     device = ARGUMENT(1);
     host = ARGUMENT(0);
 
-    if (host != NIL && !STRING_P(host))
-	LispDestroy(mac, "%s: bad :HOST %s",
-		    STRFUN(builtin), STROBJ(host));
-
-    if (device != NIL && !STRING_P(device))
-	LispDestroy(mac, "%s: bad :DEVICE %s",
-		    STRFUN(builtin), STROBJ(device));
+    if (host != NIL) {
+	ERROR_CHECK_STRING(host);
+    }
+    if (device != NIL) {
+	ERROR_CHECK_STRING(device);
+    }
 
     if (directory != NIL) {
 	Atom_id atom;
 
-	if (!CONS_P(directory))
-	    LispDestroy(mac, "%s: bad :DIRECTORY %s",
-			STRFUN(builtin), STROBJ(directory));
-	if (!KEYWORD_P(CAR(directory)))
-	    LispDestroy(mac, "%s: bad directory type %s",
-			STRFUN(builtin), STROBJ(CAR(directory)));
+	ERROR_CHECK_CONS(directory);
+	ERROR_CHECK_KEYWORD(CAR(directory));
 	atom = ATOMID(CAR(directory));
 	if (atom != Sabsolute && atom != Srelative)
 	    LispDestroy(mac, "%s: bad directory type %s",
 			STRFUN(builtin), STROBJ(CAR(directory)));
     }    
 
-    if (name != NIL && !STRING_P(name))
-	LispDestroy(mac, "%s: bad :NAME %s",
-		    STRFUN(builtin), STROBJ(name));
-
-    if (type != NIL && !STRING_P(type))
-	LispDestroy(mac, "%s: bad :TYPE %s",
-		    STRFUN(builtin), STROBJ(type));
+    if (name != NIL) {
+	ERROR_CHECK_STRING(name);
+    }
+    if (type != NIL) {
+	ERROR_CHECK_STRING(type);
+    }
 
     if (version != NIL && (!FIXNUM_P(version) || FIXNUM_VALUE(version) < 0))
 	LispDestroy(mac, "%s: bad :VERSION %s",
@@ -688,11 +682,13 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 
     if (defaults != NIL && !PATHNAME_P(defaults) &&
 	(host == NIL || device == NIL || directory == NIL ||
-	 name == NIL || type == NIL || version == NIL))
+	 name == NIL || type == NIL || version == NIL)) {
 	defaults = APPLY1(Oparse_namestring, defaults);
+	GC_PROTECT(defaults);
+    }
 
     if (defaults != NIL) {
-	defaults = defaults->data.quote;
+	defaults = defaults->data.pathname;
 	defaults = CDR(defaults);	/* host */
 	if (host == NIL)
 	    host = CAR(defaults);
@@ -713,7 +709,6 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	    version = CAR(defaults);
     }
 
-    GCProtect();
     /* string representation */
     length = 0;
     if (directory != NIL) {
@@ -721,9 +716,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	    pathname[length++] = PATH_SEP;
 
 	for (cdr = CDR(directory); CONS_P(cdr); cdr = CDR(cdr)) {
-	    if (!STRING_P(CAR(cdr)))
-		LispDestroy(mac, "%s: bad directory element %s",
-			    STRFUN(builtin), STROBJ(CAR(cdr)));
+	    ERROR_CHECK_STRING(CAR(cdr));
 	    string = THESTR(CAR(cdr));
 	    alength = STRLEN(CAR(cdr));
 	    if (alength > NAME_MAX)
@@ -764,11 +757,11 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     }
     pathname[length] = '\0';
     result = cons = CONS(STRING(pathname), NIL);
+    GC_PROTECT(result);
 
     /* host */
     RPLACD(cons, CONS(host, NIL));
     cons = CDR(cons);
-    GCUProtect();
 
     /* device */
     RPLACD(cons, CONS(device, NIL));
@@ -793,7 +786,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     /* version */
     RPLACD(cons, CONS(version, NIL));
 
-    GCUProtect();
+    GC_LEAVE();
 
     return (PATHNAME(result));
 }

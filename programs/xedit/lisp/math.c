@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.13 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.14 2002/09/15 21:32:21 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -1246,6 +1246,33 @@ Lisp_Minusp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Mod(LispMac *mac, LispBuiltin *builtin)
+/*
+ mod number divisor
+ */
+{
+    LispObj *result;
+
+    LispObj *number, *divisor;
+
+    divisor = ARGUMENT(1);
+    number = ARGUMENT(0);
+
+    if ((XTYPE(number) == FI || XTYPE(number) == BI) &&
+	(XTYPE(divisor) == FI || XTYPE(divisor) == BI)) {
+	result = copy_number(mac, builtin, number);
+	mod_accumulator(mac, builtin, result, divisor);
+    }
+    else {
+	math_divide(mac, builtin, DIVIDE_FLOOR, 0);
+	result = RETURN(0);
+	RETURN_COUNT = 0;
+    }
+
+    return (result);
+}
+
+LispObj *
 Lisp_Numberp(LispMac *mac, LispBuiltin *builtin)
 /*
  numberp object
@@ -1415,6 +1442,33 @@ Lisp_Realpart(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Rem(LispMac *mac, LispBuiltin *builtin)
+/*
+ rem number divisor
+ */
+{
+    LispObj *result;
+
+    LispObj *number, *divisor;
+
+    divisor = ARGUMENT(1);
+    number = ARGUMENT(0);
+
+    if ((XTYPE(number) == FI || XTYPE(number) == BI) &&
+	(XTYPE(divisor) == FI || XTYPE(divisor) == BI)) {
+	result = copy_number(mac, builtin, number);
+	rem_accumulator(mac, builtin, result, divisor);
+    }
+    else {
+	math_divide(mac, builtin, DIVIDE_TRUNC, 0);
+	result = RETURN(0);
+	RETURN_COUNT = 0;
+    }
+
+    return (result);
+}
+
+LispObj *
 Lisp_Sqrt(LispMac *mac, LispBuiltin *builtin)
 /*
  sqrt number
@@ -1459,4 +1513,76 @@ Lisp_Zerop(LispMac *mac, LispBuiltin *builtin)
     }
 
     return (result);
+}
+
+LispObj *
+Lisp_Ceiling(LispMac *mac, LispBuiltin *builtin)
+/*
+ ceiling number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_CEIL, 0));
+}
+
+LispObj *
+Lisp_Fceiling(LispMac *mac, LispBuiltin *builtin)
+/*
+ fceiling number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_CEIL, 1));
+}
+
+LispObj *
+Lisp_Floor(LispMac *mac, LispBuiltin *builtin)
+/*
+ floor number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_FLOOR, 0));
+}
+
+LispObj *
+Lisp_Ffloor(LispMac *mac, LispBuiltin *builtin)
+/*
+ ffloor number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_FLOOR, 1));
+}
+
+LispObj *
+Lisp_Round(LispMac *mac, LispBuiltin *builtin)
+/*
+ round number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_ROUND, 0));
+}
+
+LispObj *
+Lisp_Fround(LispMac *mac, LispBuiltin *builtin)
+/*
+ fround number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_ROUND, 1));
+}
+
+LispObj *
+Lisp_Truncate(LispMac *mac, LispBuiltin *builtin)
+/*
+ truncate number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_TRUNC, 0));
+}
+
+LispObj *
+Lisp_Ftruncate(LispMac *mac, LispBuiltin *builtin)
+/*
+ ftruncate number &optional divisor
+ */
+{
+    return (math_divide(mac, builtin, DIVIDE_TRUNC, 1));
 }

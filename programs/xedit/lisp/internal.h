@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.31 2002/09/15 21:32:20 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.32 2002/09/22 07:09:07 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -122,8 +122,8 @@
 /* create a new unique static atom string */
 #define GETATOMID(string)	LispGetAtomString(mac, string, 1)
 
-#define	GCProtect()		++gcpro
-#define	GCUProtect()		--gcpro
+#define	GCDisable()		++gcpro
+#define	GCEnable()		--gcpro
 
 /* pointer to string of a LispAtom_t object */
 #define	STRPTR(obj)		(obj)->data.atom->string
@@ -179,6 +179,7 @@
 #define CONS_P(obj)		((obj)->type == LispCons_t)
 #define KEYWORD_P(obj)		((obj)->data.atom->package == mac->keyword)
 #define PATHNAME_P(obj)		((obj)->type == LispPathname_t)
+#define HASHTABLE_P(obj)	((obj)->type == LispHashTable_t)
 
 #define STREAM_P(obj)		((obj)->type == LispStream_t)
 
@@ -213,28 +214,11 @@
 #define ARGUMENT(index)					\
 	mac->stack.values[mac->stack.base + (index)]
 
-
-/* only extra return values are stored, that is, only
- *	(cdr (multiple-value-list (<form>)))
- * is stored in mac->returns.values, the first value is
- * the value returned by <form>
- *
- * when returning multiple values, a function should do
- * something like:
- *	RETURN_CHECK(<number-of-return-values>);
- *	for (RETURN_COUNT = 0; RETURN_COUNT < <number-of-values>; RETURN_COUNT++)
- *		RETURN(RETURN_COUNT) = <nth-return-value>;
- */
-#define RETURN(index)					\
-	mac->returns.values[(index)]
-#define RETURN_COUNT					\
-	mac->returns.length
-#define RETURN_CHECK(count)				\
-    if ((count) > mac->returns.space) {			\
-	do						\
-	    LispMoreReturns(mac);			\
-	while (mac->returns.space < (count));		\
-    }
+#define RETURN(index)	mac->returns.values[(index)]
+#define RETURN_COUNT	mac->returns.count
+#define RETURN_CHECK(value)				\
+    value < MULTIPLE_VALUES_LIMIT ?			\
+	value : MULTIPLE_VALUES_LIMIT
 
 #define GC_ENTER()					\
     int gc__protect = mac->protect.length
@@ -251,6 +235,11 @@
 #define ERROR_CHECK_SYMBOL(object)				\
     if (!SYMBOL_P(object))					\
 	LispDestroy(mac, "%s: %s is not a symbol",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_KEYWORD(object)				\
+    if (!SYMBOL_P(object) || !KEYWORD_P(object))		\
+	LispDestroy(mac, "%s: %s is not a keyword",		\
 		    STRFUN(builtin), STROBJ(object))
 
 #define ERROR_CHECK_LIST(object)				\
@@ -320,6 +309,11 @@
 	LispDestroy(mac, "%s: %s is not a regexp",		\
 		    STRFUN(builtin), STROBJ(object))
 
+#define ERROR_CHECK_HASHTABLE(object)				\
+    if (!HASHTABLE_P(object))					\
+	LispDestroy(mac, "%s: %s is not a hash-table",		\
+		    STRFUN(builtin), STROBJ(object))
+
 #define ERROR_CHECK_SPECIAL_FORM(atom)					\
     if (atom->property->fun.builtin->compile)				\
 	LispDestroy(mac, "%s: the special form %s cannot be redefined",	\
@@ -336,6 +330,7 @@ typedef struct _LispFile LispFile;
 typedef struct _LispString LispString;
 typedef struct _LispPackage LispPackage;
 typedef struct _LispBytecode LispBytecode;
+typedef struct _LispHashTable LispHashTable;
 
 /* Bytecode compiler data */
 typedef struct _LispCom LispCom;
@@ -376,7 +371,8 @@ typedef enum _LispType {
     LispPathname_t,
     LispPackage_t,
     LispRegex_t,
-    LispBytecode_t
+    LispBytecode_t,
+    LispHashTable_t
 } LispType;
 
 typedef enum _LispFunType {
@@ -484,6 +480,10 @@ struct _LispObj {
 	    LispBytecode *bytecode;
 	    LispObj *code;		/* object used to generate bytecode */
 	} bytecode;
+	struct {
+	    LispHashTable *table;
+	    LispObj *test;
+	} hash;
     } data;
 };
 

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/xrdb.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
 ;;
 
 (require "syntax")
@@ -51,7 +51,7 @@
     :foreground	"OrangeRed4"
 )
 
-(defsyntax *xrdb* "X Resource" :main nil
+(defsyntax *xrdb-mode* :main nil nil nil
     (syntoken "^\\s*!.*"
 	:property *prop-xrdb-comment*)
     (syntoken "^\\s*#.*"
@@ -65,18 +65,18 @@
 
     ;; Extra comments
     (syntoken "/*" :nospec t :begin :comment :contained t)
-    (syntable :comment *prop-comment*
+    (syntable :comment *prop-comment* nil
 	(syntoken "/*" :nospec t :property *prop-error*)
 	;;  Rule to finish a comment.
 	(syntoken "*/" :nospec t :switch -1)
     )
 
-    (syntable :resource nil
+    (syntable :resource nil nil
 	(syntoken "\\*|\\.|\\?" :property *prop-xrdb-punctuation*)
 	(syntoken ":\\s*" :property *prop-xrdb-punctuation* :begin :value)
     )
 
-    (syntable :value *prop-string*
+    (syntable :value *prop-string* nil
 	(syntoken "\\\\$" :property *prop-constant*)
 
 

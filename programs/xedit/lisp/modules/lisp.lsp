@@ -150,6 +150,9 @@
 (defsetf get (symbol key &optional default) (value)
     `(lisp::put ,symbol ,key ,value))
 
+(defsetf gethash (key hash-table &optional default) (value)
+    `(lisp::puthash ,key ,hash-table ,value))
+
 (defsetf char lisp::char-store)
 (defsetf schar lisp::char-store)
 (defsetf elt lisp::elt-store)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.11 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.12 2002/08/25 02:48:31 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -157,6 +157,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
  open filename &key direction element-type if-exists if-does-not-exist external-format
  */
 {
+    GC_ENTER();
     char *string;
     LispObj *stream = NIL;
     int mode, flags, direction, exist, noexist;
@@ -174,9 +175,8 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     filename = ARGUMENT(0);
 
     if (STRING_P(filename)) {
-	GCProtect();
-	filename = EVAL(CONS(Oparse_namestring, CONS(filename, NIL)));
-	GCUProtect();
+	filename = APPLY1(Oparse_namestring, filename);
+	GC_PROTECT(filename);
     }
     else if (STREAM_P(filename)) {
 	if (filename->data.stream.type != LispStreamFile)
@@ -190,7 +190,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
     if (odirection != NIL) {
 	direction = -1;
-	if (KEYWORD_P(odirection)) {
+	if (SYMBOL_P(odirection) && KEYWORD_P(odirection)) {
 	    atom = ATOMID(odirection);
 
 	    if (atom == Sprobe)
@@ -224,7 +224,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
     if (if_exists != NIL) {
 	exist = -1;
-	if (KEYWORD_P(if_exists)) {
+	if (SYMBOL_P(if_exists) && KEYWORD_P(if_exists)) {
 	    atom = ATOMID(if_exists);
 
 	    if (atom == Serror)
@@ -251,7 +251,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
     if (if_does_not_exist != NIL) {
 	noexist = -1;
-	if (KEYWORD_P(if_does_not_exist)) {
+	if (SYMBOL_P(if_does_not_exist) && KEYWORD_P(if_does_not_exist)) {
 	    atom = ATOMID(if_does_not_exist);
 
 	    if (atom == Serror)
@@ -286,8 +286,11 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     /* check what to do, if file already exist */
     if (direction == DIR_OUTPUT || direction == DIR_IO) {
 	if (access(string, F_OK) == 0) {
-	    if (exist == EXT_NIL)
+	    if (exist == EXT_NIL) {
+		GC_LEAVE();
+
 		return (NIL);
+	    }
 	    else if (exist == EXT_ERROR)
 		LispDestroy(mac, "%s: file %s already exists",
 			    STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
@@ -321,8 +324,11 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     }
     else {
 	if (access(string, F_OK) != 0) {
-	    if (noexist == NOEXT_NIL)
+	    if (noexist == NOEXT_NIL) {
+		GC_LEAVE();
+
 		return (NIL);
+	    }
 	    else if (noexist == NOEXT_ERROR)
 		LispDestroy(mac, "%s: file %s does not exist",
 			    STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
@@ -360,6 +366,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    flags |= STREAM_WRITE;
     }
     stream = FILESTREAM(file, filename, flags);
+    GC_LEAVE();
 
     return (stream);
 }
@@ -665,7 +672,6 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
     }
 
 read_line_done:
-    RETURN_CHECK(1);
     RETURN(0) = status;
     RETURN_COUNT = 1;
 

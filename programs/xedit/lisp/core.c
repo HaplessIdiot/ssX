@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.50 2002/09/15 21:32:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.51 2002/09/22 07:09:06 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1591,6 +1591,8 @@ Lisp_Lambda(LispMac *mac, LispBuiltin *builtin)
  lambda lambda-list &rest body
  */
 {
+    GC_ENTER();
+    LispObj *name;
     LispArgList *alist;
 
     LispObj *lambda, *lambda_list, *body;
@@ -1600,12 +1602,13 @@ Lisp_Lambda(LispMac *mac, LispBuiltin *builtin)
 
     alist = LispCheckArguments(mac, LispLambda, lambda_list, STRPTR(Olambda));
 
+    name = OPAQUE(alist, LispArgList_t);
     lambda_list = LispListProtectedArguments(mac, alist);
-    GCProtect();
-    lambda = LispNewLambda(mac, OPAQUE(alist, LispArgList_t),
-			   body, lambda_list, LispLambda);
-    GCUProtect();
+    GC_PROTECT(name);
+    GC_PROTECT(lambda_list);
+    lambda = LispNewLambda(mac, name, body, lambda_list, LispLambda);
     LispUseArgList(mac, alist);
+    GC_LEAVE();
 
     return (lambda);
 }
@@ -2272,7 +2275,7 @@ make_array_error:
 	    /* reset loop */
 	    memset(loop, 0, sizeof(int) * (rank - 1));
 
-	    GCProtect();
+	    GCDisable();
 	    /* fill array with supplied values */
 	    array = NIL;
 	    while (loop[0] < dims[0]) {
@@ -2302,11 +2305,11 @@ make_array_error:
 	    LispFree(mac, dims);
 	    LispFree(mac, loop);
 	    array = LispReverse(array);
-	    GCUProtect();
+	    GCEnable();
 	}
     }
     else {
-	GCProtect();
+	GCDisable();
 	/* allocate array */
 	if (count) {
 	    --count;
@@ -2317,7 +2320,7 @@ make_array_error:
 		count--;
 	    }
 	}
-	GCUProtect();
+	GCEnable();
     }
 
     if (type == LispNil_t)
@@ -2623,6 +2626,45 @@ Lisp_MultipleValueList(LispMac *mac, LispBuiltin *builtin)
 	cons = CDR(cons);
     }
     GC_LEAVE();
+
+    return (result);
+}
+
+LispObj *
+Lisp_MultipleValueSetq(LispMac *mac, LispBuiltin *builtin)
+/*
+ multiple-value-setq symbols form
+ */
+{
+    int i;
+    LispObj *result, *symbol, *value;
+
+    LispObj *symbols, *form;
+
+    form = ARGUMENT(1);
+    symbols = ARGUMENT(0);
+
+    if (symbols != NIL) {
+	ERROR_CHECK_LIST(symbols);
+    }
+    result = EVAL(form);
+    if (CONS_P(symbols)) {
+	symbol = CAR(symbols);
+	ERROR_CHECK_SYMBOL(symbol);
+	ERROR_CHECK_CONSTANT(symbol);
+	LispSetVar(mac, symbol, result);
+	symbols = CDR(symbols);
+    }
+    for (i = 0; CONS_P(symbols); symbols = CDR(symbols), i++) {
+	symbol = CAR(symbols);
+	ERROR_CHECK_SYMBOL(symbol);
+	ERROR_CHECK_CONSTANT(symbol);
+	if (i < RETURN_COUNT)
+	    value = RETURN(i);
+	else
+	    value = NIL;
+	LispSetVar(mac, symbol, value);
+    }
 
     return (result);
 }
@@ -4166,6 +4208,7 @@ Lisp_Return(LispMac *mac, LispBuiltin *builtin)
 	    /* if reached a function call */
 	    break;
 	if (block->type == LispBlockTag && block->tag->type == LispNil_t) {
+	    RETURN_COUNT = 0;
 	    mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
 	    LispBlockUnwind(mac, block);
 	    BLOCKJUMP(block);
@@ -4212,6 +4255,7 @@ Lisp_ReturnFrom(LispMac *mac, LispBuiltin *builtin)
 	    }
 	    if (jmp &&
 		(block->type == LispBlockTag || block->type == LispBlockClosure)) {
+		RETURN_COUNT = 0;
 		mac->block.block_ret = NCONSTANT_P(result) ?
 		    EVAL(result) : result;
 		LispBlockUnwind(mac, block);
@@ -4977,9 +5021,9 @@ Lisp_Subseq(LispMac *mac, LispBuiltin *builtin)
 	result = STRING2(string);
     }
     else {
+	GC_ENTER();
 	LispObj *object;
 
-	GCProtect();
 	if (end > start) {
 	    /* list or array */
 	    int count;
@@ -4993,6 +5037,7 @@ Lisp_Subseq(LispMac *mac, LispBuiltin *builtin)
 	    for (count = 0; count < start; count++, object = CDR(object))
 		;
 	    result = cons = CONS(CAR(object), NIL);
+	    GC_PROTECT(result);
 	    for (++count, object = CDR(object); count < end; count++,
 		 object = CDR(object)) {
 		RPLACD(cons, CONS(CAR(object), NIL));
@@ -5003,7 +5048,8 @@ Lisp_Subseq(LispMac *mac, LispBuiltin *builtin)
 	    result = NIL;
 
 	if (sequence->type == LispArray_t) {
-	    object = LispNew(mac, result, NIL);
+	    object = LispNew(mac, NIL, NIL);
+	    GC_PROTECT(object);
 	    object->type = LispArray_t;
 	    object->data.array.list = result;
 	    object->data.array.dim = CONS(SMALLINT(seqlength), NIL);
@@ -5012,7 +5058,7 @@ Lisp_Subseq(LispMac *mac, LispBuiltin *builtin)
 	    object->data.array.zero = length == 0;
 	    result = object;
 	}
-	GCUProtect();
+	GC_LEAVE();
     }
 
     return (result);
@@ -5305,6 +5351,7 @@ Lisp_Throw(LispMac *mac, LispBuiltin *builtin)
 
 	if (block->type == LispBlockCatch && tag->type == block->tag->type) {
 	    if (XEQ(tag, block->tag) != NIL) {
+		RETURN_COUNT = 0;
 		mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
 		LispBlockUnwind(mac, block);
 		BLOCKJUMP(block);
@@ -5485,6 +5532,35 @@ Lisp_UnwindProtect(LispMac *mac, LispBuiltin *builtin)
     else if (mac->destroyed)
 	/* no cleanup code */
 	LispDestroy(mac, NULL);	/* special handling if mac->destroyed */
+
+    return (result);
+}
+
+LispObj *
+Lisp_Values(LispMac *mac, LispBuiltin *builtin)
+/*
+ values &rest objects
+ */
+{
+    long i, count;
+    LispObj *result;
+
+    LispObj *objects;
+
+    objects = ARGUMENT(0);
+
+    count = LispLength(mac, objects) - 1;
+
+    if (count >= 0) {
+	result = CAR(objects);
+	RETURN_COUNT = count;
+	count = RETURN_CHECK(count);
+	for (i = 0, objects = CDR(objects); count && CONS_P(objects);
+	     count--, i++, objects = CDR(objects))
+	    RETURN(i) = CAR(objects);
+    }
+    else
+	result = UNBOUND;
 
     return (result);
 }

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/imake.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
 ;;
 
 (require "syntax")
@@ -60,7 +60,7 @@
 )
 
 
-(defsyntax *imake* "X imake files" :main nil
+(defsyntax *imake-mode* :main nil nil nil
     (syntoken "^\\s*XCOMM\\W?.*$"
 	:property *prop-xcomm*)
 
@@ -98,7 +98,7 @@
 	:nospec t
 	:contained t)
 
-    (syntable :shell *prop-variable*
+    (syntable :shell *prop-variable* nil
 	(syntoken ")"
 	    :nospec t
 	    :property *prop-shell*
@@ -106,7 +106,7 @@
     )
 
     ;;  Rules for comments.
-    (syntable :comment *prop-comment*
+    (syntable :comment *prop-comment* nil
 
 	;;  Match nested comments as an error.
 	(syntoken "/*"
@@ -123,7 +123,7 @@
     )
 
     ;;  Rules for preprocessor.
-    (syntable :preprocessor *prop-preprocessor*
+    (syntable :preprocessor *prop-preprocessor* nil
 
 	;;  Preprocessor includes comments.
 	(syntoken "/*"
@@ -144,7 +144,7 @@
     )
 
     ;;  Rules for strings.
-    (syntable :string *prop-string*
+    (syntable :string *prop-string* nil
 
 	;;  Ignore escaped characters, this includes \".
 	(syntoken "\\\\.")
@@ -163,7 +163,7 @@
     )
 
     ;;  Rules for quoted strings.
-    (syntable :quoted-string *prop-constant*
+    (syntable :quoted-string *prop-constant* nil
 
 	;;  Rule to finish the quoted string.
 	(syntoken "\\\""
@@ -181,7 +181,7 @@
 	    :begin :error)
     )
 
-    (syntable :error *prop-error*
+    (syntable :error *prop-error* nil
 	(syntoken "^.*$"
 	    :switch -2)
     )

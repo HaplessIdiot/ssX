@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/sgml.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
 ;;
 
 (require "syntax")
@@ -145,7 +145,7 @@
 	(label (intern (string-concat ,name "$") 'keyword))
 	(nested-label (intern (string (gensym)) 'keyword))
 	)
-	(syntable label *prop-preprocessor*
+	(syntable label *prop-preprocessor* nil
 	    ;; tag is still open, process any options
 	    (synaugment :generic-tag)
 	    (syntoken ">"
@@ -154,7 +154,7 @@
 		:begin nested-label)
 	    ;;	Generate a nested table that includes everything, and only
 	    ;; returns when the closing tag is found.
-	    (syntable nested-label ,property
+	    (syntable nested-label ,property nil
 		(syntoken (string-concat "</" ,name ">")
 		    :icase t
 		    :nospec t
@@ -174,7 +174,7 @@
 	(label (intern (string-concat ,name "$") 'keyword))
 	(nested-label (intern (string (gensym)) 'keyword))
 	)
-	(syntable label *prop-preprocessor*
+	(syntable label *prop-preprocessor* nil
 	    ;; tag is still open, process any options
 	    (synaugment :generic-tag)
 	    (syntoken ">"
@@ -183,7 +183,7 @@
 		:begin nested-label)
 	    ;;	Generate a nested table that finishes whenever an unmatched
 	    ;; start or end tag is found.
-	    (syntable nested-label ,property
+	    (syntable nested-label ,property nil
 		(syntoken "</"
 		    :icase t
 		    :nospec t
@@ -216,9 +216,7 @@
 	:begin (intern (string-concat ,name "/") 'keyword))
 )
 (defmacro sgml-syntable-short (name property)
-    `(syntable
-	(intern (string-concat ,name "/") 'keyword)
-	,property
+    `(syntable (intern (string-concat ,name "/") 'keyword) ,property nil
 	(syntoken "/"
 	    :nospec t
 	    :property *prop-preprocessor*
@@ -231,13 +229,13 @@
 
 
 ;; The main SGML syntax table
-(defsyntax *sgml* "SGML" :main *prop-sgml-default*
+(defsyntax *sgml-mode* :main *prop-sgml-default* nil nil
     ;; Comments
     (syntoken "<!--"
 	:nospec t
 	:contained t
 	:begin :comment)
-    (syntable :comment *prop-comment*
+    (syntable :comment *prop-comment* nil
 	;; Only one rule, to finish the comment.
 	(syntoken "-->"
 	    :nospec t
@@ -252,7 +250,7 @@
 	:property *prop-sgml-maybe-entity*)
 
     ;; Strings
-    (syntable :string *prop-string*
+    (syntable :string *prop-string* nil
 	;;  Ignore escaped characters.
 	(syntoken "\\\\.")
 	;;  Rule to finish the string.
@@ -262,7 +260,7 @@
     )
 
     ;; Links
-    (syntable :link *prop-preprocessor*
+    (syntable :link *prop-preprocessor* nil
 	;; No link string following "url="
 	(syntoken ">"
 	    :nospec t
@@ -272,7 +270,7 @@
 	    :nospec t
 	    :contained t
 	    :begin :link-string)
-	(syntable :link-string *prop-sgml-link*
+	(syntable :link-string *prop-sgml-link* nil
 	    ;; Ignore escaped characters.
 	    (syntoken "\\\\.")
 	    ;; Rule to finish the link, note that returns two levels.
@@ -288,7 +286,7 @@
 	:contained t
 	:begin :special-tag)
     ;;  Rules for "special" tags
-    (syntable :special-tag *prop-preprocessor*
+    (syntable :special-tag *prop-preprocessor* nil
 	(syntoken "["
 	    :nospec t
 	    :property *prop-preprocessor*
@@ -297,7 +295,7 @@
 	(syntoken ">"
 	    :nospec t
 	    :switch -1)
-	(syntable :brackets *prop-sgml-default*
+	(syntable :brackets *prop-sgml-default* nil
 	    (syntoken "]"
 		:nospec t
 		:property *prop-preprocessor*
@@ -336,7 +334,7 @@
     (syntoken "<\\w+/"
 	:property *prop-preprocessor*
 	:begin :short-tag)
-    (syntable :short-tag *prop-sgml-default-short*
+    (syntable :short-tag *prop-sgml-default-short* nil
 	(syntoken "/"
 	    :nospec t
 	    :property *prop-preprocessor*
@@ -383,7 +381,7 @@
     ;;	      folowed by one that has a special property defined here,
     ;;	      it may not be detected, i.e. put a <p> after the <sect>
     ;;	      and it will work.
-    (syntable :simple-nested-tag *prop-preprocessor*
+    (syntable :simple-nested-tag *prop-preprocessor* nil
 	;; tag is still open, process any options
 	(synaugment :generic-tag)
 	(syntoken ">"
@@ -404,7 +402,7 @@
 	:contained t
 	:begin :tag)
     ;; Table :generic-tag is defined to be augmented, no rule to finish it.
-    (syntable :generic-tag *prop-preprocessor*
+    (syntable :generic-tag *prop-preprocessor* nil
 	;; Start string
 	(syntoken "\""
 	    :nospec t
@@ -419,7 +417,7 @@
 	    :nospec t
 	    :property *prop-control*)
     )
-    (syntable :tag *prop-preprocessor*
+    (syntable :tag *prop-preprocessor* nil
 	;; Finish the tag
 	(syntoken ">"
 	    :nospec t

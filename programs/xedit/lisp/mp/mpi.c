@@ -746,7 +746,9 @@ mpi_divqri(mpi *qrop, mpi *num, long den)
     memset(&rrop, '\0', sizeof(mpi));
     mpi_init(&rrop);
     mpi_divqr(qrop, &rrop, num, &dop);
-    remainder = rrop.digs[0] | (BNI)(rrop.digs[1]) << BNSBITS;
+    remainder = rrop.digs[0];
+    if (rrop.size > 1)
+	remainder |= (BNI)(rrop.digs[1]) << BNSBITS;
     if (rrop.sign)
 	remainder = -remainder;
     mpi_clear(&rrop);

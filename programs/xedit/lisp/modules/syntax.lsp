@@ -185,21 +185,39 @@ is used.
 ;;  Creates a "special" variable with the given name, associating to
 ;; it an already compiled syntax table.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro defsyntax (variable name label property &rest lists)
+(defmacro defsyntax (variable label property indent options &rest lists)
     `(if (boundp ',variable)
 	,variable
 	(progn
 	    (proclaim '(special ,variable))
 	    (setq ,variable
 		(compile-syntax-table
-		    ,name
-		    (syntable ,label ,property ,@lists)
+		    (string ',variable) ,options
+		    (syntable ,label ,property ,indent ,@lists)
 		)
 	    )
 	)
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Just a wrapper to create a hash-table and bound it to a symbol.
+;;  Example of call:
+;;	(defsynoptions *my-syntax-options*
+;;	    (:indent		.	8)
+;;	    (:indent-option-1	.	1)
+;;	    (:indent-option-2	.	2)
+;;	)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro defsynoptions (variable &rest options)
+    `(if (boundp ',variable)
+	,variable
+	(progn
+	    (proclaim '(special ,variable))
+	    (setq ,variable (make-hash-table :initial-contents ',options))
+	)
+    )
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These definitions should be "private".
@@ -287,6 +305,7 @@ is used.
 (defstruct syntable
     label		;; A keyword naming this syntax table.
     property		;; NIL or a default synprop structure.
+    indent		;; Indentation function for the syntax table.
     tokens		;; A list of syntoken structures.
     tables		;; A list of syntable structures.
     augments		;;  A list of synaugment structures, used only
@@ -306,7 +325,7 @@ is used.
 ;; XXX Same comments as for syntoken about the use of a constructor for
 ;; structures. TODO: when/if clos is implemented in the interpreter.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun syntable (label default-property &rest definitions)
+(defun syntable (label default-property indent &rest definitions)
 
     ;; Check for possible errors in the arguments.
     (unless (keywordp label)
@@ -347,6 +366,7 @@ is used.
     (make-syntable
 	:label		label
 	:property	default-property
+	:indent		indent
 	:tokens		(remove-if-not #'syntoken-p definitions)
 	:tables		(remove-if-not #'syntable-p definitions)
 	:augments	(remove-if-not #'synaugment-p definitions)
@@ -495,7 +515,7 @@ is used.
 ;; "Compile" the main structure of the syntax highlight code.
 ;; Variables "switches" and "begins" are used only for error checking.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compile-syntax-table (name main-table &aux syntax elements
+(defun compile-syntax-table (name options main-table &aux syntax elements
 			     switches begins tables properties)
     (unless (stringp name)
 	(error "COMPILE-SYNTAX-TABLE: ~A is not a string" name)
@@ -659,6 +679,7 @@ is used.
     (setq syntax
 	(make-syntax
 	    :name	name
+	    :options	options
 	    :labels	tables
 	    :quark
 		(compile-syntax-property-list
@@ -676,21 +697,31 @@ is used.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Loop applying the specifed syntax table to the text.
+;;  XXX This function needs a review. Should compile the regex patterns
+;; with newline sensitive match (and scan the entire file), and keep a
+;; cache of matched tokens (that may be at a very longer offset), and,
+;; when the match is removed from the cache, readd the token to the
+;; token-list; if the token does not match, it will not be in the cache,
+;; but should be removed from the token-list. If properly implemented, it
+;; should be somewhat like 4 times faster, but I would not be surprised
+;; if it becames even faster.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun syntax-highlight (*syntax*
 			 &optional
 			 (*from* (point-min))
 			 (*to* (point-max))
+			 interactive
 			 &aux
 #+debug			 (*line-number* 0)
 			 stream
+			 indent-table
 			)
 
 #+debug
     (setq *from* 0 *to* 0)
 
 #-debug
-    (and (>= *from* *to*) (return-from syntax-highlight *from*))
+    (and (>= *from* *to*) (return-from syntax-highlight (values *from* nil)))
 
     ;;  Remove any existing properties from the text.
     (clear-entities *from* (1+ *to*))
@@ -705,7 +736,13 @@ is used.
 
     (prog*
 	(
+	;;  Used to check if end of file found but syntax stack did
+	;; not finish.
 	(point-max (point-max))
+
+	;;  Used in interactive mode, to return the syntax table
+	;; where the cursor is located.
+	(point (point))
 
 	;;  The current stack of states.
 	stack
@@ -806,7 +843,7 @@ is used.
 		(go :again)
 	    )
 #-debug	    (close stream)
-	    (return *to*)
+	    (return)
 	)
 
 ;------------------------------------------------------------------------
@@ -1044,6 +1081,10 @@ is used.
 
 	    ;;  Result already known, and there is no syntax table
 	    ;; change, bypass :PARSE.
+	    (and interactive
+		(null indent-table)
+		(<= 0 (- point *from*) length)
+		(setq indent-table syntax-table))
 	    (go :process)
 	)
 
@@ -1200,6 +1241,10 @@ is used.
 
 
 	;;  Update start offset in the input now!
+	(and interactive
+	    (null indent-table)
+	    (<= start (- point *from*) right)
+	    (setq indent-table syntax-table))
 	(setq start right)
 
 
@@ -1409,6 +1454,7 @@ is used.
     )
 
 #+debug (terpri)
+    (values *to* indent-table)
 )
 
 (compile 'syntax-highlight)

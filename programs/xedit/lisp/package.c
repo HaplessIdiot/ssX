@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.11 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.12 2002/09/15 21:32:22 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -534,7 +534,6 @@ Lisp_Intern(LispMac *mac, LispBuiltin *builtin)
 	}
     }
 
-    RETURN_CHECK(1);
     if (symbol == NULL) {
 	/* symbol does not exist in the specified package, create a new
 	 * internal symbol */

@@ -225,7 +225,7 @@ xtLoadModule(LispMac *mac)
 
     LispExecute(mac, "(DEFSTRUCT XT-WIDGET-LIST NUM-CHILDREN CHILDREN)\n");
 
-    GCProtect();
+    GCDisable();
     (void)LispSetVariable(mac, ATOM2("CORE-WIDGET-CLASS"),
 			  OPAQUE(coreWidgetClass, xtWidgetClass_t),
 			  fname, 0);
@@ -266,7 +266,7 @@ xtLoadModule(LispMac *mac)
 			  INTEGER(XtInputWriteMask), fname, 0);
     (void)LispSetVariable(mac, ATOM2("XT-INPUT-EXCEPT-MASK"),
 			  INTEGER(XtInputExceptMask), fname, 0);
-    GCUProtect();
+    GCEnable();
 
     qCardinal = XrmPermStringToQuark(XtRCardinal);
     qInt = XrmPermStringToQuark(XtRInt);
@@ -287,13 +287,13 @@ LispXtCallback(Widget w, XtPointer user_data, XtPointer call_data)
     LispMac *mac = args->mac;
     LispObj *code, *ocod = COD;
 
-    GCProtect();
+    GCDisable();
 		/* callback name */	   /* reall caller */
     code = CONS(CDR(CDR(args->data)), CONS(OPAQUE(w, xtWidget_t),
 		CONS(CAR(CDR(args->data)), CONS(OPAQUE(call_data, 0), NIL))));
 		     /* user arguments */
     COD = CONS(code, COD);
-    GCUProtect();
+    GCEnable();
 
     (void)EVAL(code);
     COD = ocod;
@@ -317,13 +317,13 @@ LispXtInputCallback(XtPointer closure, int *source, XtInputId *id)
     LispMac *mac = args->mac;
     LispObj *code, *ocod = COD;
 
-    GCProtect();
+    GCDisable();
 		/* callback name */	  /* user arguments */
     code = CONS(CDR(CDR(args->data)), CONS(CAR(CDR(args->data)),
 		CONS(INTEGER(*source), CONS(CAR(args->data), NIL))));
 		     /* input source */	   /* input id */
     COD = CONS(code, COD);
-    GCUProtect();
+    GCEnable();
 
     (void)EVAL(code);
     COD = ocod;
@@ -353,7 +353,7 @@ Lisp_XtCoerceToWidgetList(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(opaque));
     children = (WidgetList)(opaque->data.opaque.data);
 
-    GCProtect();
+    GCDisable();
     widget_list = cons = NIL;
     for (i = 0; i < num_children; i++) {
 	result = CONS(OPAQUE(children[i], xtWidget_t), NIL);
@@ -370,7 +370,7 @@ Lisp_XtCoerceToWidgetList(LispMac *mac, LispBuiltin *builtin)
 			CONS(INTEGER(num_children),
 			     CONS(KEYWORD("CHILDREN"),
 				  CONS(widget_list, NIL)))));
-    GCUProtect();
+    GCEnable();
 
     return (result);
 }
@@ -465,9 +465,9 @@ Lisp_XtAppAddInput(LispMac *mac, LispBuiltin *builtin)
 
     id = XtAppAddInput(appcon, source, (XtPointer)condition,
 		       LispXtInputCallback, (XtPointer)arguments);
-    GCProtect();
+    GCDisable();
     input = OPAQUE(id, xtInputId_t);
-    GCUProtect();
+    GCEnable();
     RPLACA(data, input);
     PROTECT(input, data);
 
@@ -885,7 +885,7 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
     plist =  XtParent(widget) ?
 	     GetResourceList(XtClass(XtParent(widget))) : NULL;
 
-    GCProtect();
+    GCDisable();
     result = NIL;
     for (list = arguments; CONS_P(list); list = CDR(list)) {
 	ERROR_CHECK_STRING(CAR(list));
@@ -976,7 +976,7 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
 	    cons = CDR(cons);
 	}
     }
-    GCUProtect();
+    GCEnable();
 
     return (result);
 }
