@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.126 2001/08/27 17:40:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.127 2001/09/13 08:21:47 alanh Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2512,7 +2512,7 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
           FREETYPE2LIBSRC = $(LIBSRC)/freetype2
 #if SharedLibFreetype2
 #ifndef SharedFreetype2Rev
-#define SharedFreetype2Rev 6.0
+#define SharedFreetype2Rev 7.0
 #endif
 SharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),SOFREETYPE2REV,SharedFreetype2Rev)
 #else
