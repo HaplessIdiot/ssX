@@ -128,6 +128,8 @@
               Imakefile, a .c file for the driver, and a .s file for the
               bank- switching functions.
 
+
+
         vga2/
            The monochrome vga server directories.  Most of the files are
            linked from vga256, and the differences handled by
@@ -193,9 +195,11 @@
         encourages) putting drivers for multiple related chipsets in a
         single driver, it is usually best to use the vendor name, rather
         than a chipset version.  The fact that older XFree86 drivers do
+
         not follow this convention should not deter you from using it
         now - most of that code was developed before the driver
         interface had been made flexible and extensible.
+
         For this documentation, we'll use chips from the SuperDuper
         Chips vendor.  Hence, we'll use `sdc' for the name of the
         driver.
@@ -218,17 +222,21 @@
         o  If you are working in the source tree, create the following
            directories:
 
+
               xc/programs/Xserver/hw/xfree86/vga256/drivers/sdc
               xc/programs/Xserver/hw/xfree86/vga16/drivers/sdc
               xc/programs/Xserver/hw/xfree86/vga2/drivers/sdc
 
 
+
         o  If you are working in the Link Kit, create the following
            directories:
+
 
               /usr/X11R6/lib/Server/drivers/vga256/sdc
               /usr/X11R6/lib/Server/drivers/vga16/sdc
               /usr/X11R6/lib/Server/drivers/vga2/sdc
+
 
 
 
@@ -254,13 +262,10 @@
               entries in this file.  This is the prototype `site.def'
               file that will be installed in the Link Kit.
 
-
-
         o  If you are working in the Link Kit, edit the file
            /usr/X11R6/lib/Server/site.def, and add `sdc' to the
            `XF86Vga256Drivers', `XF86Vga16Drivers' and `XF86Vga2Drivers'
            definitions as described in (a) above.
-
 
      5. Now copy the prototype files into your new directories:
 
@@ -328,6 +333,7 @@
   scheme would improve the performance of the server, it is not
   currently supported.  Hence there is no way to use such features for a
   new chipset.
+
   Most SVGA chipsets have two bank registers.  This is the most
   desirable structure (if any banking structure can be called
   ``desirable''), because data can be moved from one area of the screen
@@ -387,12 +393,12 @@
         data structure contains pointers to the driver functions and
         some data-structure initialization as well.
 
+
      2. Provide a driver-local data structure to hold the contents of
         the chipset registers.  This data structure will contain a
         generic part and a driver-specific part.  It is used to save the
         initial chipset state, and is initialized by the driver to put
         the chipset into different modes.
-
 
      3. Provide an identification function that the server will call to
         list the chipsets that the driver is capable of supporting.
@@ -428,9 +434,11 @@
         most cases  it is sufficient to put the following near the top
         of the stub_driver.c file:
 
+
            #ifdef XF86VGA16
            #define MONOVGA
            #endif
+
 
 
      2. The color server uses the SVGA's 8-bit packed-pixel mode.  The
@@ -450,6 +458,7 @@
         standard Miscellaneous Output Register; most SVGA chipsets will
         include 1 or 2 more bits, allowing the use of 8 or 16 discrete
         clocks.
+
 
      2. Bank selection.  The SVGA chipset will have one or two registers
         that control read/write bank selection.
@@ -499,7 +508,7 @@
   supports the SDC-1a, SDC-1b, and SDC-2 chipsets.  The -1a and -1b are
   essentially the same, but different from the -2 chipset.  Your driver
   should support the -1 and -2 chipsets, and not distinguish between the
-  -1a and -1a.  This will simplify things for the end user.
+  -1a and -1b.  This will simplify things for the end user.
 
   In cases where you want to give the user control of driver behavior,
   or there are things that cannot be determined without user
@@ -513,6 +522,9 @@
   #define, and define the string->symbol mapping in the table in that
   file.  To see how option flags are used, look at the ET4000, PVGA1/WD,
   and Trident drivers.
+
+
+
 
   6.2.  Data Structures
 
@@ -579,6 +591,7 @@
 
      2. ChipOptionFlags - this should always be `{0,}' in the data
         structure initialization.  This is a bitfield that contains the
+
         Option flags that are valid for this driver.  The appropriate
         bits are initialized at the end of the Probe function.
 
@@ -644,6 +657,7 @@
         XF86Config file, the values for the available dot-clocks must be
         determined.  This is done by calling the vgaGetClocks()
         function, and passing it the number of clocks available and a
+
         pointer to the ClockSelect() function.
 
      3. It is recommended that the `maxClock' field of the server's
@@ -708,6 +722,7 @@
         information.  This function is in the vgaHW.c file.
 
      3. Extract the chipset-specific portion of the state information.
+
 
   6.9.  The Init() function
 
@@ -774,6 +789,7 @@
   server and/or a standalone program using the server's driver libraries
   to do interactive video mode adjustments.  This function will read the
   SVGA registers and fill in a DisplayModeRec structure with the current
+
   video mode.
 
   6.14.  The FbInit() function
@@ -788,7 +804,6 @@
   If you do NOT need this function, simply don't define it, and put
   `NoopDDA' in its place in the vgaVideoChipRec structure
   initialization.
-
 
   7.  Building The New Server
 
@@ -840,6 +855,7 @@
   Debugging a new driver can be a painful experience, unfortunately.  It
   is likely that incorrect programming of the SVGA chipset can lock up
   your machine.  More likely, however, is that the display will be lost,
+
   potentially requiring a reboot to correct.  It is HIGHLY recommended
   that the server be run from an attached terminal or a network login.
   This is the only rational way in which a debugger can be used on the
@@ -856,12 +872,15 @@
   can grow VERY large with debugging enabled.  It is very simple to
   rebuild your driver for debugging, though.  Do the following:
 
+
      1. Go to the driver directory.
 
      2. Edit the Makefile.  Look for the SECOND definition of
         `CDEBUGFLAGS'.  Change this definition to
 
+
                         CDEBUGFLAGS = -g -DNO_INLINE
+
 
 
 
@@ -902,6 +921,7 @@
   Newer chipsets are getting into two advanced areas: programmable clock
   generators, and accelerated capabilities (BitBlt, line drawing, HW
   cursor).  These are new areas, and the formal interfaces to them are
+
   not yet defined.  It is advised that you contact the XFree86 team and
   get involved with the development/beta-testing team if you need to be
   working in these areas.
@@ -987,7 +1007,6 @@
      S3 (911, 924, 801
         805, 928)/ (408) 980-5400
 
-
      Trident Microsystems Inc (8800, 8900, 9000)
         205 Ravendale Dr
 
@@ -1012,8 +1031,9 @@
      Western Digital
         (714) 932-4900
 
+
   $XConsortium: VGADriv.sgml,v 1.3 95/01/23 15:34:51 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.5 1995/01/28 16:02:34 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.6 1995/11/12 09:52:36 dawes Exp $
 
 
 
@@ -1034,25 +1054,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+\n$XFree86$
