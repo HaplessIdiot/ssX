@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 1.29tsi Exp $ */
+/* $XFree86$ */
 /*
  * 2D Acceleration for SiS 315 and 330 series
  * (315/550/650/740/M650/651/652/M652/330/660/661/M661/741/M741/760/M760)

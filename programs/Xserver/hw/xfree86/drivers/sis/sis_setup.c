@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.21tsi Exp $ */
+/* $XFree86$ */
 /*
  * Basic hardware and memory detection
  *
@@ -266,7 +266,7 @@ sis300Setup(ScrnInfoPtr pScrn)
     unsigned int    config, pciconfig, sr3a, ramtype;
     unsigned char   temp;
     int		    cpubuswidth;
-    MessageType     from = X_PROBED;
+    MessageType	    from = X_PROBED;
 
     pSiS->MemClock = SiSMclk(pSiS);
 

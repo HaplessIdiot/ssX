@@ -210,7 +210,8 @@ typedef struct _SiS_ModeResInfoStruct
 
 typedef UCHAR DRAM4Type[4];
 
-/* Defines for SiS_Customt */
+/* Defines for SiS_CustomT */
+/* Never change these for sisfb compatibility */
 #define CUT_NONE         0
 #define CUT_FORCENONE    1
 #define CUT_BARCO1366    2

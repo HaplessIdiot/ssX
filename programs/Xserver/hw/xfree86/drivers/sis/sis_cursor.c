@@ -403,6 +403,10 @@ SiSSetCursorPositionMerged(ScrnInfoPtr pScrn1, int x, int y)
     if(mode2->Flags & V_INTERLACE)     { y2 /= 2; y2_preset /= 2; }
     else if(mode2->Flags & V_DBLSCAN)  { y2 *= 2; y2_preset *= 2; }
 
+    /* Work around bug in Cursor engine */
+    if(x1 > mode1->HDisplay) { y1 = 2000; y1_preset = 0; }
+    if(x2 > mode2->HDisplay) { y2 = 2000; y2_preset = 0; }
+
     if(pSiS->VGAEngine == SIS_300_VGA) {
        sis300SetCursorPositionX(x1, x1_preset)
        sis300SetCursorPositionY(y1, y1_preset)

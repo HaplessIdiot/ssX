@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/300vtbl.h,v 1.17tsi Exp $ */
+/* $XFree86$ */
 /*
  * Register settings for SiS 300 series
  *
@@ -764,7 +764,7 @@ static const USHORT SiS300_RGBSenseData2 = 0x0190;
 static const USHORT SiS300_VideoSenseData2 = 0x0174;
 static const USHORT SiS300_YCSenseData2 = 0x016b;
 
-static const UCHAR SiS300_CR40[5][4];
+static const DRAM4Type SiS300_CR40[5];
 
 static UCHAR SiS300_CR49[2];
 #endif

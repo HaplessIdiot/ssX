@@ -980,6 +980,12 @@ SiSOptions(ScrnInfoPtr pScrn)
              } else if(!xf86NameCmp(strptr,"COMPOSITE")) {
                 pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_AVIDEO;
+	     } else if( (!xf86NameCmp(strptr,"COMPOSITE SVIDEO")) || /* Ugly, but shorter than a parsing function */
+	                (!xf86NameCmp(strptr,"COMPOSITE+SVIDEO")) ||
+			(!xf86NameCmp(strptr,"SVIDEO+COMPOSITE")) ||
+			(!xf86NameCmp(strptr,"SVIDEO COMPOSITE")) ) {
+	        pSiS->ForceCRT2Type = CRT2_TV;
+		pSiS->ForceTVType = (TV_SVIDEO | TV_AVIDEO);
              } else if(!xf86NameCmp(strptr,"SCART")) {
                 pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_SCART;
@@ -1011,8 +1017,8 @@ SiSOptions(ScrnInfoPtr pScrn)
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "ForceCRT2Type");
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	            "Valid parameters are \"LCD\" (=\"DVI-D\"), \"TV\", \"SVIDEO\", \"COMPOSITE\",\n"
-		    "\t\"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\", on the SiS550 also \"DSTN\"\n"
-		    "\tand \"FSTN\"\n");
+		    "\t\"SVIDEO+COMPOSITE\", \"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\", on the SiS550\n"
+		    "\talso \"DSTN\" and \"FSTN\"\n");
 	     }
 
              if(pSiS->ForceCRT2Type != CRT2_DEFAULT)

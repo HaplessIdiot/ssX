@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.44tsi Exp $ */
+/* $XFree86$ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -187,17 +187,17 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
     int M, N, P , PSN, VLD , PSNx ;
     int bestM=0, bestN=0, bestP=0, bestPSN=0, bestVLD=0;
     double abest = 42.0;
-#ifdef DEBUG
-    double bestFout;
-#endif
     double target;
     double Fvco, Fout;
     double error, aerror;
+#ifdef DEBUG
+    double bestFout;
+#endif
 
     /*
      *  fd = fref*(Numerator/Denumerator)*(Divider/PostScaler)
      *
-     *  M       = Numerator [1:128] 
+     *  M       = Numerator [1:128]
      *  N       = DeNumerator [1:32]
      *  VLD     = Divider (Vco Loop Divider) : divide by 1, 2
      *  P       = Post Scaler : divide by 1, 2, 3, 4
@@ -265,7 +265,7 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
             bestVLD = VLD;
 #ifdef DEBUG
             bestFout = Fout;
-#endif
+#endif	    
          }
      }
 

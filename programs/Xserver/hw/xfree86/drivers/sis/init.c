@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.30tsi Exp $ */
+/* $XFree86$ */
 /*
  * Mode initializing code (CRT1 section) for
  * for SiS 300/305/540/630/730 and
@@ -2553,13 +2553,11 @@ static void
 SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
                     USHORT ModeNo,USHORT ModeIdIndex,USHORT RefreshRateTableIndex)
 {
-  USHORT data,data2,data3;
+  USHORT data,data2;
   USHORT infoflag=0,modeflag;
-  USHORT resindex,xres;
+  USHORT resindex,xres,resinfo = 0;
 #ifdef SIS315H
-#if 0
-  USHORT resinfo = 0;
-#endif
+  USHORT data3;
   ULONG  longdata;
 #endif
 
@@ -2570,9 +2568,7 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      if(ModeNo > 0x13) {
     	modeflag = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_ModeFlag;
     	infoflag = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex].Ext_InfoFlag;
-#if defined(SIS315H) && 0
 	resinfo = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_RESINFO;
-#endif
      } else {
     	modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;
      }
@@ -3115,14 +3111,12 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 {
    ULONG   temp;
    USHORT  ModeIdIndex;
-#ifndef LINUX_XF86
-   USHORT  KeepLockReg;
-#endif
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
    SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
    unsigned char backupreg=0, tempr1, tempr2;
-
 #ifndef LINUX_XF86
+   USHORT  KeepLockReg;
+
    SiS_Pr->UseCustomMode = FALSE;
    SiS_Pr->CRT1UsesCustomMode = FALSE;
 #endif
@@ -4375,7 +4369,7 @@ SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfo
 	current->HDisplay, current->HSyncStart, current->HSyncEnd, current->HTotal,
 	current->VDisplay, current->VSyncStart, current->VSyncEnd, current->VTotal);
 #else
-      (void)VBS;  (void)HBS;  (void)A;
+        (void)VBS;  (void)HBS;  (void)A;
 #endif
 
       i++;

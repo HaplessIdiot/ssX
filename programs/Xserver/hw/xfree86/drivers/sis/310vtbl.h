@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/310vtbl.h,v 1.17tsi Exp $ */
+/* $XFree86$ */
 /*
  * Register settings for SiS 315/330 series
  *
@@ -803,7 +803,7 @@ static const UCHAR SiS310_ScreenOffset[] =
 	0xff
 };
 
-static const DRAM4Type SiS310_SR15[8]={
+static const DRAM4Type SiS310_SR15[8] = {
 	{0x00,0x04,0x60,0x60},
 	{0x0f,0x0f,0x0f,0x0f},
 	{0xba,0xba,0xba,0xba},
@@ -818,7 +818,7 @@ static const DRAM4Type SiS310_SR15[8]={
 
 static UCHAR SiS310_SR07 = 0x18;
 
-static const UCHAR SiS310_CR40[5][4]={
+static const DRAM4Type SiS310_CR40[5] = {
 	{0x77,0x77,0x33,0x33},
 	{0x77,0x77,0x33,0x33},
 	{0x00,0x00,0x00,0x00},
