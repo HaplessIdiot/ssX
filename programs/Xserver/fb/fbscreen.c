@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.10 2000/08/25 23:39:56 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.11 2000/09/03 05:09:47 keithp Exp $ */
 
 #include "fb.h"
 
@@ -194,6 +194,11 @@ fbFinishScreenInit(ScreenPtr	pScreen,
     {
 	fbGetScreenPrivate(pScreen)->win32bpp = bpp;
 	fbGetScreenPrivate(pScreen)->pix32bpp = bpp;
+    }
+    else
+    {
+	fbGetScreenPrivate(pScreen)->win32bpp = 32;
+	fbGetScreenPrivate(pScreen)->pix32bpp = 32;
     }
 #endif
     rootdepth = 0;
