@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.3 1997/05/03 09:18:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.4 1997/05/09 09:19:41 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -705,10 +705,11 @@ vgaMGAPtr restore;
 	for (i = 0; i < 3; i++)
 		outTi3026(TVP3026_PIX_CLK_DATA, 0, restore->DACclk[i]);
 	 
-	/* poll until pixel clock PLL LOCK bit is set */
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
-	while ( ! (inTi3026(TVP3026_PIX_CLK_DATA) & 0x40) );
-	
+	if (restore->std.MiscOutReg & 0x08) {
+		/* poll until pixel clock PLL LOCK bit is set */
+		outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
+		while ( ! (inTi3026(TVP3026_PIX_CLK_DATA) & 0x40) );
+	}
 	/* set Q divider for loop clock PLL */
 	outTi3026(TVP3026_MCLK_CTL, 0, restore->DACreg[18]);
 	
@@ -717,9 +718,11 @@ vgaMGAPtr restore;
 	for (i = 3; i < 6; i++)
 		outTi3026(TVP3026_LOAD_CLK_DATA, 0, restore->DACclk[i]);
 	
-	/* poll until loop PLL LOCK bit is set */
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
-	while ( ! (inTi3026(TVP3026_LOAD_CLK_DATA) & 0x40) );
+	if ((restore->std.MiscOutReg & 0x08) && ((restore->DACclk[3] & 0xC0) == 0xC0) ) {
+		/* poll until loop PLL LOCK bit is set */
+		outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
+		while ( ! (inTi3026(TVP3026_LOAD_CLK_DATA) & 0x40) );
+	}
 	
 	/*
 	 * restore other DAC registers

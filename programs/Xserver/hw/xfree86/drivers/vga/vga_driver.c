@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.6 1997/04/08 10:13:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.7 1997/05/03 09:18:55 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -224,7 +224,7 @@ static unsigned char vga320x200x256_CRTC[24] = {
 XF86ModuleVersionInfo vgaVersRec =
 {
 	"vga_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

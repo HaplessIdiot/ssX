@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.4 1997/04/17 08:17:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.5 1997/05/03 09:17:44 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -92,7 +92,8 @@ void _ctAccelInit() {
     /*
      * Set up the main acceleration flags.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
+                             DELAYED_SYNC;
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NO_PLANEMASK |
 	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
 	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
@@ -974,9 +975,10 @@ void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
     void *src;
     unsigned int planemask;
 {
+    volatile unsigned int *pHOSTDATA;
     unsigned long *pdSrc;
     unsigned char *pbSrc;
-    int dwords, dwordTotal;
+    int dwords, dwordTotal, line;
   
     if (h == 0 || w == 0)
         return;
@@ -1002,11 +1004,19 @@ void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
     ctSETPITCH(srcwidth, vga256InfoRec.displayWidth * vgaBytesPerPixel);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 
-    while (h--) {
+    line = 0;
+    while (line < h) {
 	dwords = dwordTotal;
 	pdSrc = (unsigned long *)pbSrc;
-	    while (dwords--)
-		*(unsigned int *)ctBltDataWindow = *pdSrc++;
+	pHOSTDATA = (unsigned int *)ctBltDataWindow;
+	while (dwords--)
+	    *pHOSTDATA++ = *pdSrc++;
 	pbSrc += srcwidth;
+	line++;
     }
+#ifdef CHIPS_HIQV
+    /* The HiQV chips need the CPU transfers to be QWORD padded */
+    if ((dwordTotal * h) & 1)
+        *(unsigned int *)ctBltDataWindow = 0;
+#endif
 }

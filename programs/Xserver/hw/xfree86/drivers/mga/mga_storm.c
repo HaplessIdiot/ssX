@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.2 1997/04/12 13:45:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.3 1997/04/14 07:05:21 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -247,6 +247,8 @@ void MGAStormAccelInit() {
  */
 void MGAStormSync() 
 {
+    int i, j;
+    
     /*
      * Flush the read cache (SDK 5-2)
      * It doesn't matter which VGA register we write,
@@ -254,7 +256,17 @@ void MGAStormSync()
      */
     OUTREG8(MGAREG_CRTC_INDEX, 0);
      
-    WAITUNTILFINISHED();
+    if (!MGAISBUSY())
+        return;
+    
+    for (j = 8; j > 0; j--) {    
+        for (i = 10000000; i > 0; i--)
+            if (!MGAISBUSY())
+                return;
+        OUTREG8(MGAREG_OPMODE, 0); /* terminate DMA sequence */
+        ErrorF("MGA: Drawing Engine time-out.\n");
+    }
+    FatalError("MGA: Drawing Engine time-out.\n");
 }
 
 /*

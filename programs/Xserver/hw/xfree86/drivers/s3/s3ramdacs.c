@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.2 1997/03/22 09:35:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.3 1997/03/27 08:30:48 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -443,9 +443,9 @@ static int BT485_SERIES_PreInit()
 	 s3clockDoublingPossible = TRUE;
       /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
       else {
-	 if (vga256InfoRec.dacSpeed < 150000)    /* 110 and 135 */
+	 if (vga256InfoRec.dacSpeeds[0] < 150000)    /* 110 and 135 */
 	    vga256InfoRec.maxClock = 90000;
 	 else				      /* 150 and 170 (if they exist) */
 	    vga256InfoRec.maxClock = 110000;
@@ -455,11 +455,11 @@ static int BT485_SERIES_PreInit()
 	 s3clockDoublingPossible = TRUE;
       /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
       else {
-	 if (vga256InfoRec.dacSpeed < 110000)	  /* 85 */
+	 if (vga256InfoRec.dacSpeeds[0] < 110000)	  /* 85 */
 	    vga256InfoRec.maxClock = 85000;
-	 else if (vga256InfoRec.dacSpeed < 135000)	  /* 110 */
+	 else if (vga256InfoRec.dacSpeeds[0] < 135000)	  /* 110 */
 	    vga256InfoRec.maxClock = 90000;
 	 else					  /* 135, 150, 170 */
 	    vga256InfoRec.maxClock = 110000;
@@ -917,7 +917,7 @@ static int TI3020_3025_PreInit()
 
         s3ClockSelectFunc = ti3025ClockSelect;
       	s3numClocks = 3;
-        s3maxRawClock = vga256InfoRec.dacSpeed; 
+        s3maxRawClock = vga256InfoRec.dacSpeeds[0]; 
 
       	outb(vgaCRIndex, 0x5c);
       	cr5c = inb(vgaCRReg);
@@ -960,7 +960,7 @@ static int TI3020_3025_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
    s3clockDoublingPossible = TRUE;
-   vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+   vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 
    return 1;
 }
@@ -1510,7 +1510,7 @@ static int ATT409_498_PreInit()
    if (OFLG_ISSET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions)) {
       s3ClockSelectFunc = att409ClockSelect;
       s3numClocks = 3;
-      s3maxRawClock = vga256InfoRec.dacSpeed; /* Is this right?? */
+      s3maxRawClock = vga256InfoRec.dacSpeeds[0]; /* Is this right?? */
       if (xf86Verbose)
 	 ErrorF("%s %s: Using ATT20C409/ATT20C499 programmable clock\n",
 		s3ClockChipProbed, vga256InfoRec.name);
@@ -1520,11 +1520,11 @@ static int ATT409_498_PreInit()
 
 
    if (s3ATT498PixMux) {
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    s3clockDoublingPossible = TRUE;
    } else {
-	 if (vga256InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	 if (vga256InfoRec.dacSpeeds[0] >= 135000) /* 20C498 -13, -15, -17 */
 	    vga256InfoRec.maxClock = 110000;
 	 else				   /* 20C498 -11 */
 	    vga256InfoRec.maxClock = 80000;
@@ -1715,15 +1715,15 @@ static int SC15025_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
 
-    if (vga256InfoRec.dacSpeed >= 125000)	/* -125 */
+    if (vga256InfoRec.dacSpeeds[0] >= 125000)	/* -125 */
 	  doubleEdgeLimit = 85000;
-    else if (vga256InfoRec.dacSpeed >= 110000)	/* -110 */
+    else if (vga256InfoRec.dacSpeeds[0] >= 110000)	/* -110 */
 	  doubleEdgeLimit = 65000;
     else					/* -80, -66 */
 	  doubleEdgeLimit = 50000;
     switch (s3Bpp) {
 	  case 1:
-	    vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	    vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 	    break;
 	  case 2:
 	    vga256InfoRec.maxClock = doubleEdgeLimit;
@@ -1942,12 +1942,12 @@ static int STG17xx_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
    if (s3ATT498PixMux) {
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    s3clockDoublingPossible = TRUE;
    }
    else {
-	 if (vga256InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	 if (vga256InfoRec.dacSpeeds[0] >= 135000) /* 20C498 -13, -15, -17 */
 	    vga256InfoRec.maxClock = 110000;
 	 else				   /* 20C498 -11 */
 	    vga256InfoRec.maxClock = 80000;
@@ -2281,11 +2281,11 @@ static int S3_SDAC_GENDAC_PreInit()
 	clock sanity checks when we return */
     if(DAC_IS_SDAC) {
     	if (s3ATT498PixMux) {
-	  vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	  vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 	  if (s3Bpp == 1)	/* XXXX is this right?? */
 	    s3clockDoublingPossible = TRUE;
         } else {
-	  if (vga256InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	  if (vga256InfoRec.dacSpeeds[0] >= 135000) /* 20C498 -13, -15, -17 */
 	    vga256InfoRec.maxClock = 110000;
 	  else				   /* 20C498 -11 */
 	    vga256InfoRec.maxClock = 80000;
@@ -2296,7 +2296,7 @@ static int S3_SDAC_GENDAC_PreInit()
 	  }
         }
      } else  /* DAC_IS_GENDAC */
-        vga256InfoRec.maxClock = vga256InfoRec.dacSpeed / s3Bpp;
+        vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0] / s3Bpp;
 
       return 1;
 }
@@ -2568,7 +2568,7 @@ static int S3_TRIO_PreInit()
     	pixMuxLimitedWidths = FALSE;
     	pixMuxMinWidth = 0;
    
-	vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
     } else if (s3Bpp < 4)
        if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
 	  vga256InfoRec.maxClock = 110000;
@@ -2948,7 +2948,7 @@ static int TI3030_3026_PreInit()
 
    if (OFLG_ISSET(CLOCK_OPTION_TI3026, &vga256InfoRec.clockOptions)) {
       s3ClockSelectFunc = ti3026ClockSelect;
-      s3maxRawClock = vga256InfoRec.dacSpeed; /* Is this right?? */
+      s3maxRawClock = vga256InfoRec.dacSpeeds[0]; /* Is this right?? */
       OFLG_SET(CLOCK_OPTION_TI3026, &vga256InfoRec.clockOptions);
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
       if (xf86Verbose)
@@ -2959,7 +2959,7 @@ static int TI3030_3026_PreInit()
       OtherClocksSetup();
 
    s3clockDoublingPossible = TRUE;
-   vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+   vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
    dacOutTi3026IndReg = s3OutTi3026IndReg;
    dacInTi3026IndReg = s3InTi3026IndReg;
 
@@ -3393,7 +3393,7 @@ static int IBMRGB52x_PreInit()
       int m0,m1,n0,n1;
       double f0,f1,f,fdiff;
 	 
-      s3maxRawClock = vga256InfoRec.dacSpeed; /* Is this right?? */
+      s3maxRawClock = vga256InfoRec.dacSpeeds[0]; /* Is this right?? */
       s3ClockSelectFunc = IBMRGBClockSelect;
       s3numClocks = 3;
 
@@ -3528,10 +3528,10 @@ static int IBMRGB52x_PreInit()
 
    s3clockDoublingPossible = FALSE;
       /* LCLK & SCLK limit is 100 MHz */
-   if ((vga256InfoRec.dacSpeed * s3Bpp) / 8 > 100000)  
+   if ((vga256InfoRec.dacSpeeds[0] * s3Bpp) / 8 > 100000)  
 	 vga256InfoRec.maxClock = (100000 * 8) / s3Bpp; 
    else
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
 
    return 1;
 }
@@ -3886,7 +3886,7 @@ static int MISC_HI_COLOR_PreInit()
 	function for external clocks*/
     OtherClocksSetup();
 
-    vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+    vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
     /* Halve it for 16bpp (32bpp not supported) */
     if (s3Bpp > 1) {
 	 vga256InfoRec.maxClock /= 2;
@@ -4605,7 +4605,7 @@ IBMRGBClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 } 
-	 (void)IBMRGBSetClock(freq, 2, vga256InfoRec.dacSpeed, 
+	 (void)IBMRGBSetClock(freq, 2, vga256InfoRec.dacSpeeds[0], 
 					vga256InfoRec.s3RefClk);
       }
    }
@@ -4812,8 +4812,8 @@ static void Probe_ELSA()
       xfree(serno);
       xfree(elsa_modes);
       
-      if (vga256InfoRec.dacSpeed <= 0)
-	 vga256InfoRec.dacSpeed = max_pix_clock;
+      if (vga256InfoRec.dacSpeeds[0] <= 0)
+	 vga256InfoRec.dacSpeeds[0] = max_pix_clock;
       
       do {
 	 switch (card_id) {

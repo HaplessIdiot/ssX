@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.3 1997/04/08 10:13:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.4 1997/04/14 07:05:25 hohndel Exp $ */
 
 
 /*
@@ -81,9 +81,11 @@ static long Pat;
 /* Do we use PCI-retry or busy-waiting */
 extern Bool Use_Pci_Retry;
 
+
 /*
- * The following function sets up the supported acceleration. Call it
- * from the FbInit() function in the SVGA driver.
+ * The following function sets up the supported acceleration. Call it from
+ * the FbInit() function in the SVGA driver. Do NOT initialize any hardware
+ * in here. That belongs in tseng_init_acl().
  */
 void TsengAccelInit() {
     /*
@@ -154,9 +156,9 @@ void TsengAccelInit() {
      */
 
 #ifdef BPP24_BUG
-    if ( !((et4000_type < TYPE_ET6000) && (vga256InfoRec.bitsPerPixel == 24)) )
+    if ( !((et4000_type < TYPE_ET6000) && (vgaBitsPerPixel == 24)) )
 #else
-    if ( !(vga256InfoRec.bitsPerPixel == 24) )
+    if ( !(vgaBitsPerPixel == 24) )
 #endif
     {
       xf86AccelInfoRec.SetupForFill8x8Pattern =
@@ -169,6 +171,8 @@ void TsengAccelInit() {
      * Setup hardware-line-drawing code.
      */
 
+    if (et4000_type >= TYPE_ET4000W32P)
+    {
 #if 0
     /* -- currently disabled because of major bugs... */
     xf86AccelInfoRec.SubsequentBresenhamLine =
@@ -183,6 +187,7 @@ void TsengAccelInit() {
          NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
     xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
          NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
+    }
 
     /*
      * Color expansion primitives.
@@ -200,7 +205,7 @@ void TsengAccelInit() {
      *
      */
 
-    if ( (et4000_type >= TYPE_ET6000) || (vga256InfoRec.bitsPerPixel == 8) )
+    if ( (et4000_type >= TYPE_ET6000) || (vgaBitsPerPixel == 8) )
     {
       xf86AccelInfoRec.ColorExpandFlags =
           BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
@@ -225,7 +230,7 @@ void TsengAccelInit() {
        */
       xf86AccelInfoRec.PingPongBuffers = 3;
 
-      xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
+      xf86AccelInfoRec.ScratchBufferSize = scratchVidBase + 1024 - (long) W32Mix;
       xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
 
       if (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
@@ -292,15 +297,14 @@ void TsengAccelInit() {
      */
     xf86InitPixmapCache(
         &vga256InfoRec,
-        vga256InfoRec.virtualY * vga256InfoRec.displayWidth *
-            vga256InfoRec.bitsPerPixel / 8,
+        vga256InfoRec.virtualY * vga256InfoRec.displayWidth * vgaBitsPerPixel / 8,
         vga256InfoRec.videoRam * 1024
     );
     
     /*
      * For Tseng, we set up some often-used values
      */
-     bytesperpixel = vga256InfoRec.bitsPerPixel / 8;
+     bytesperpixel = vgaBitsPerPixel / 8;
      switch (bytesperpixel)   /* for MULBPP optimization */
      {
        case 1: powerPerPixel = 0;
@@ -313,12 +317,6 @@ void TsengAccelInit() {
      
      tseng_line_width = vga256InfoRec.displayWidth * bytesperpixel;
 
-    /*
-     * We'll set some registers that never change here.
-     */
-
-     *ACL_DESTINATION_Y_OFFSET = tseng_line_width-1;
-     
      /*
       * Init ping-pong registers.
       * This might be obsoleted by the BACKGROUND_OPERATIONS flag.

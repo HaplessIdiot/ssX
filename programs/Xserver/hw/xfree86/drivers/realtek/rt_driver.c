@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.1 1997/03/06 23:16:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.2 1997/05/03 09:18:27 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -305,7 +305,7 @@ static int Num_RTVGA_ExtPorts =
 XF86ModuleVersionInfo realtekVersRec =
 {
 	"realtek_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

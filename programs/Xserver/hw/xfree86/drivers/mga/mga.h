@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.2 1997/04/12 13:45:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.3 1997/05/03 09:18:08 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -32,8 +32,9 @@
 #define OUTREG(addr, val) *(volatile CARD32 *)(MGAMMIOBase + (addr)) = (val)
 #endif /* __alpha__ */
 
+#define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
 #define MGAWAITFIFO() while(INREG16(MGAREG_FIFOSTATUS) & 0x100);
-#define MGAWAITFREE() while(INREG8(MGAREG_Status + 2) & 0x01);
+#define MGAWAITFREE() while(MGAISBUSY());
 #define MGAWAITFIFOSLOTS(slots) while ( ((INREG16(MGAREG_FIFOSTATUS) & 0x3f) - (slots)) < 0 );
 
 typedef struct {

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.8 1997/04/14 07:05:29 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.9 1997/05/03 09:18:50 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -98,7 +98,11 @@ extern void     ET4000HWSaveScreen();
 
 unsigned char 	tseng_save_divide = 0;
 #ifdef USE_XAA
+/* Do we use PCI-retry or busy-waiting */
 Bool Use_Pci_Retry = 0;
+
+/* Do we use the XAA acceleration architecture */
+static Bool Use_ACL = FALSE;
 #endif
 
 #ifndef MONOVGA
@@ -121,9 +125,6 @@ static unsigned char    initialET6KPerfContr = 0x3a;
 static unsigned char    save_VSConf1=0x03;
 
 static int bustype=0;    /* W32 bus type (currently used for lin mem on W32i) */
-#define BUS_ISA 0
-#define BUS_MCA 1
-#define BUS_VLB 2
 
 /* some exported variables */
 t_tseng_type et4000_type = TYPE_UNKNOWN;
@@ -219,7 +220,7 @@ static unsigned int ET6000_PCIPorts[Num_ET6000_PCIPorts];
 XF86ModuleVersionInfo tsengVersRec =
 {
 	"tseng_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -294,6 +295,15 @@ ET4000LinMem(Bool autodetect)
   * be decoded into any 4MB block in the address range 0..128MB.
   */
 
+ /*
+  * For non-PCI cards (especially VLB), most motherboards don't decode all
+  * 32 address bits. The weird default memory base below will always end up
+  * at the end of the decoded address space -- independent of the number of
+  * address bits that are decoded.
+  */
+#define DEFAULT_LIN_MEMBASE ( (256 + 128 + 64 + 32 + 16 + 8 + 4) * 1024*1024 )
+#define DEFAULT_LIN_MEMBASE_PCI (DEFAULT_LIN_MEMBASE & 0xFF000000)
+
  /* This code will probably only work for PCI and VLB bus cards. MCA is weird,
   * ISA is out of the question (I think).
   */
@@ -314,33 +324,72 @@ ET4000LinMem(Bool autodetect)
     case TYPE_ET4000W32I:
     case TYPE_ET4000W32Ib:
     case TYPE_ET4000W32Ic:
+        /*
+         * Notation: SMx = bit x of Segment Map Comparator (CRTC index 0x30)
+         *
+         * We assume the driver code disables the image port (which it does)
+         *
+         * ISA:      [ A23, A22, A21, A20 ] ==      [ SM1, SM0, 0, 0 ]
+         * MCA: [ A24, A23, A22, A21, A20 ] == [ SM2, SM1, SM0, 0, 0 ]
+         * VLB: [ /A26, /A25, /A24, A23, A22, A21, A20 ] ==   ("/" means inverted!)
+         *       [ SM4,  SM3,  SM2, SM1, SM0, 0  , 0   ]
+         */
         outb(0x217A, 0xEF); bus = inb(0x217B) & 0x60;   /* Determine bus type */
         ErrorF("%s %s: Detected W32i bus type: ", XCONFIG_PROBED, vga256InfoRec.name);
         switch (bus) {
-            case 0x00:
-            case 0x20:
-                ErrorF("ISA.\n");
-                bustype = BUS_ISA;
-                break;
             case 0x40:
                 ErrorF("MCA.\n");
                 bustype = BUS_MCA;
+                mask = 0x01C00000; /* MADE24, A23 and A22 are decoded */
                 break;
             case 0x60:
                 ErrorF("Local Bus.\n");
                 bustype = BUS_VLB;
+                mask = 0x07C00000; /* A26..A22 are decoded */
+                break;
+            case 0x00:
+            case 0x20:
+            default:
+                ErrorF("ISA.\n");
+                bustype = BUS_ISA;
+                mask = 0x00C00000; /* SEGE and A22 are decoded */
                 break;
         }
-        mask = 0x07C00000; /* A26..A22 are decoded (depending on bus type) */
         break;
     case TYPE_ET4000W32P:
     case TYPE_ET4000W32Pa:
     case TYPE_ET4000W32Pb:
-        mask = 0x3FC00000; /* A29..A22 */
-        break;
-    case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
+    case TYPE_ET4000W32Pc:
     case TYPE_ET4000W32Pd:
-        mask = 0xFFC00000; /* A31..A22 are decoded */
+        outb(0x217A, 0xEF); bus = inb(0x217B) >> 3;   /* Determine bus type */
+        ErrorF("%s %s: Detected W32p bus type (0x%02x): ",
+               XCONFIG_PROBED, vga256InfoRec.name, bus);
+        switch (bus) {
+            case 0x1C:
+                ErrorF("Local Buffered Bus or PCI.\n");
+                bustype = BUS_PCI;
+                mask = 0x3FC00000; /* A29..A22 */
+                break;
+            case 0x13:
+                ErrorF("Local Bus option 1a.\n");
+                bustype = BUS_VLB;
+                mask = 0x1FC00000; /* SEGI,A27..A22 */
+                break;
+            case 0x11:
+                ErrorF("Local Bus option 1b.\n");
+                bustype = BUS_VLB;
+                mask = 0x00C00000; /* SEGI,A22 */
+                break;
+            case 0x08:
+            case 0x0B:
+            default:
+                ErrorF("Local Bus option 2.\n");
+                bustype = BUS_VLB;
+                mask = 0x3FC00000; /* A29..A22 */
+                break;
+        }
+        if ( (et4000_type >= TYPE_ET4000W32Pc) && (mask = 0x3FC00000) )
+           mask |= 0xC0000000; /* A31,A30 decoded from PCI config space */
         break;
     case TYPE_ET6000:
         mask = 0xFF000000;
@@ -363,38 +412,22 @@ ET4000LinMem(Bool autodetect)
       case TYPE_ET4000W32I:
       case TYPE_ET4000W32Ib:
       case TYPE_ET4000W32Ic:
-        /*
-         * Notation: SMx = bit x of Segment Map Comparator (CRTC index 0x30)
-         *
-         * We assume the driver code disables the image port (which it does)
-         *
-         * ISA:      [ A23, A22, A21, A20 ] ==      [ SM1, SM0, 0, 0 ]
-         * MCA: [ A24, A23, A22, A21, A20 ] == [ SM2, SM1, SM0, 0, 0 ]
-         * VLB: [ /A26, /A25, /A24, A23, A22, A21, A20 ] ==   ("/" means inverted!)
-         *       [ SM4,  SM3,  SM2, SM1, SM0, 0  , 0   ]
-         */
-        switch (bustype) {
-            case BUS_ISA:
-                vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x03) << 22;
-                break;
-            case BUS_MCA:
-                vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x07) << 22;
-                break;
-            case BUS_VLB:
-                vga256InfoRec.MemBase = ((inb(vgaIOBase+0x05) & 0x1F) ^ 0x1C) << 22;
-                break;
-        }
+        vga256InfoRec.MemBase = DEFAULT_LIN_MEMBASE;
         break;
       case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
       case TYPE_ET4000W32Pa:
       case TYPE_ET4000W32Pb:
-        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & mask;
-        else vga256InfoRec.MemBase = 512*1024*1024; /* map memory at 512MB by default */
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0;
+        else vga256InfoRec.MemBase = DEFAULT_LIN_MEMBASE;
+        if (vga256InfoRec.MemBase > mask)           /* ... except if we can't decode that much */
+          vga256InfoRec.MemBase = mask - 4*1024*1024; /* top of decodable memory */
         break;
       case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space, but in PCI mode only */
       case TYPE_ET4000W32Pd:
-        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & mask;
-        else vga256InfoRec.MemBase = 0xF0000000; /* map memory near top of memory by default */
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0;
+        else vga256InfoRec.MemBase = 0xC0000000 | DEFAULT_LIN_MEMBASE_PCI;
+        if (vga256InfoRec.MemBase > mask)           /* ... except if we can't decode that much */
+          vga256InfoRec.MemBase = mask - 4*1024*1024; /* top of decodable memory */
         break;
       case TYPE_ET6000:
         if (tseng_pcr && autodetect) /* don't trust PCI when not autodetecting */
@@ -408,6 +441,7 @@ ET4000LinMem(Bool autodetect)
         else vga256InfoRec.MemBase = 0xF0000000; /* map memory near top of memory by default */
         break;
     }
+    vga256InfoRec.MemBase &= mask;
   }
 
   /* One final check for a valid MemBase */
@@ -500,8 +534,6 @@ ET6000InitVars(Bool autodetect)
    */
   
   ClockSelect = Tseng_ET6000ClockSelect;
-  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-  OFLG_SET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions);
 
   outb(ET6Kbase+0x67, 0x0f);
   ErrorF("%s %s: ET6000: CLKDAC ID: 0x%X\n",
@@ -731,7 +763,7 @@ static int et6000_check_videoram(int ram)
   outb(0x3C4, 2); outb(0x3C5, oldSEQ2);
   outb(0x3C4, 4); outb(0x3C5, oldSEQ4);
 
-  xf86MapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
+  xf86UnMapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
                 (pointer)0xA0000, 0x10000);
 
   return real_ram;
@@ -914,130 +946,151 @@ ET4000Probe()
   * Check for RAMDAC type
   */
   Check_Tseng_Ramdac();
-  tseng_init_clockscale(vga256InfoRec.bitsPerPixel/8);
-  tseng_set_dacspeed(vga256InfoRec.bitsPerPixel/8);
+  tseng_init_clockscale(vgaBitsPerPixel/8);
+  tseng_set_dacspeed(vgaBitsPerPixel/8);
 
 #ifdef USE_XAA
   /*
-   * Linear mode and >8bpp mode handling
+   * Linear mode and >8bpp mode handling.
+   *
+   * Defaults: banked addressing in 8bpp modes,
+   *           linear addressing in >8bpp modes.
+   *
+   * unless of course it is overridden from XF86Config.
    */
 
   if (vgaBitsPerPixel >= 8) {
 
-  /* currently only W32p rev C and up support linear memory */
-  if (et4000_type >= TYPE_ET4000W32I)
-  {
-    OFLG_SET(OPTION_LINEAR, &TSENG.ChipOptionFlags);
-    if ( (vgaBitsPerPixel > 8) && (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) )
-    {
-      ErrorF("%s %s: %dbpp modes REQUIRE option \"linear\" in your XF86Config file.\n",
-             XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
-    }
+  if (CHIP_SUPPORTS_LINEAR) {
+    /* enable using option "linear" in XF86Config */
+    OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
   }
-
-  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-  {
-    if (et4000_type < TYPE_ET4000W32I)
-    {
-      ErrorF("%s %s: Linear memory mode disabled (not yet supported on this device).\n",
-             XCONFIG_PROBED, vga256InfoRec.name);
-      OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
-    }
-    else    /* Use banked addressing by default. */
-    {
-      if (!ET4000LinMem(autodetect))
-        ErrorF("%s %s: Linear memory mode not supported on this device.\n",
-               XCONFIG_PROBED, vga256InfoRec.name);
-    }
-  }
-
-  if (et4000_type >= TYPE_ET6000)
-  {
-    TSENG.ChipHas16bpp = TRUE;
-    TSENG.ChipHas24bpp = TRUE;
-    TSENG.ChipHas32bpp = TRUE;
+  else {
+    /* clear the option flag if it isn't supported */
+    OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
   }
   
-  if (TsengRamdacType == ICS5341_DAC)
-  {
-    TSENG.ChipHas16bpp = TRUE;
-    TSENG.ChipHas24bpp = TRUE;
-    TSENG.ChipHas32bpp = TRUE;
+  if (vgaBitsPerPixel > 8) {
+    if (!CHIP_SUPPORTS_LINEAR) {
+      FatalError("%s %s: A color depth of %d bits per pixel is not supported on this device.\n",
+                 XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
+    }
+    /* OK, so we can do > 8bpp. Force linear mode -- can't do banked at >8bpp */
+    OFLG_SET(OPTION_LINEAR, &vga256InfoRec.options);
   }
 
-  if ( (TsengRamdacType == CH8398_DAC) || (TsengRamdacType == STG1703_DAC) || (TsengRamdacType == STG1702_DAC) )
-  {
-    TSENG.ChipHas16bpp = TRUE;
-    TSENG.ChipHas24bpp = TRUE;
+  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) {
+    if (!ET4000LinMem(autodetect))
+      FatalError("%s %s: Linear memory mode not supported on this device.\n",
+                 XCONFIG_PROBED, vga256InfoRec.name);
   }
 
-  if (DAC_IS_ATT49x)
-  {
-    TSENG.ChipHas16bpp = TRUE;
-    TSENG.ChipHas24bpp = TRUE;
+  /* what color depths can we handle? */
+  switch(TsengRamdacType) {
+    case ET6000_DAC:
+    case ICS5341_DAC:
+       ET4000.ChipHas16bpp = TRUE;
+       ET4000.ChipHas24bpp = TRUE;
+       ET4000.ChipHas32bpp = TRUE;
+       break;
+    case STG1703_DAC:
+    case STG1702_DAC:
+    case ATT20C490_DAC:
+    case ATT20C491_DAC:
+    case ATT20C492_DAC:
+    case ATT20C493_DAC:
+       ET4000.ChipHas16bpp = TRUE;
+       ET4000.ChipHas24bpp = TRUE;
+       break;
+    case CH8398_DAC:  /* CH8398 seems to have trouble with "hibit" (MCLK/2) clocks at 24bpp */
+    case STG1700_DAC: /* STG1700 can't do packed 24bpp over a 16-bit bus */
+       ET4000.ChipHas16bpp = TRUE;
+       break;
   }
 
-  /*
-   * acceleration-related stuff
-   *
-   * Currently only works on W32p or newer chips. W32i doesn't work yet.
-   */  
+ /*
+  * Acceleration is currently only supported on W32p or newer chips. W32i
+  * doesn't work yet.
+  */  
 
-  if (et4000_type >= TYPE_ET4000W32P) 
-  {
-    if (et4000_type < TYPE_ET6000)
-    {
-      if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-      {
-        if (vga256InfoRec.videoRam > 2048)
-        {
-           ErrorF("%s %s: Only 2048 kb of memory can be used in accelerated mode with linear memory mapping.\n",
-                  XCONFIG_PROBED, vga256InfoRec.name);
-           vga256InfoRec.videoRam = 2048;
-        }
-      }
-      else
-      {
-        if (vga256InfoRec.videoRam > (4096-516))
-        {
-           ErrorF("%s %s: Only 4096-516 kb of memory can be used in banked accelerated mode.\n",
-                  XCONFIG_PROBED, vga256InfoRec.name);
-           vga256InfoRec.videoRam = 4096-516;
-        }
-      }
-    }
-    else
-    {
-      if (vga256InfoRec.videoRam > (4096-8))
-      {
-         ErrorF("%s %s: Only 4096-8 kb of memory can be used in accelerated mode.\n",
-                XCONFIG_PROBED, vga256InfoRec.name);
-         vga256InfoRec.videoRam = 4096-8;
-      }
-    }
-    
-    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
-        && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-    {
-      if (et4000_type < TYPE_ET4000W32Pc)
-      {
-        ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
-               XCONFIG_PROBED, vga256InfoRec.name);
-        OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
-      }
-    }
-
-    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-    {
-      ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
-             XCONFIG_PROBED, vga256InfoRec.name);
-      vga256InfoRec.videoRam -= 1; /* 1kb reserved for accelerator code */
-    }
-  }
-  else   /* no acceleration supported */
+  if (et4000_type < TYPE_ET4000W32P)
   {
     /* this makes life easier in the rest of the server code */
     OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+  }
+
+ /*
+  * Acceleration combined with linear mode doesn't work yet on chips before
+  * W32p rev c.
+  */  
+
+  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
+      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+  {
+    if (et4000_type < TYPE_ET4000W32Pc)
+    {
+      ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
+             XCONFIG_PROBED, vga256InfoRec.name);
+      OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+    }
+  }
+
+ /*
+  * Some combinations can't use all available memory.
+  */  
+
+#define TSENG_MEMLIMIT(m,reason) \
+    { \
+      if (vga256InfoRec.videoRam > (m)) \
+      { \
+        ErrorF("%s %s: Only %d kb of memory can be used in %s.\n", \
+              XCONFIG_PROBED, vga256InfoRec.name, (m), (reason)); \
+        vga256InfoRec.videoRam = (m); \
+      } \
+    }
+
+  /* This is from experience, and not from the data book. Should get fixed some day */
+  if ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type < TYPE_ET4000W32Pc)
+      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) )
+  {
+      TSENG_MEMLIMIT(1024, "linear memory mode on W32p rev a & b");
+  }
+
+  /* more differentiation could be used later, but it'll do for now */
+  if ( (et4000_type < TYPE_ET6000)
+      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)
+      && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) )
+  {
+      TSENG_MEMLIMIT(2048, "accelerated mode with linear memory mapping on any W32");
+  }
+
+#ifdef KMG_FORGOT_WHY_THIS_WAS
+  if ( (et4000_type < TYPE_ET6000)
+      && !OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)
+      && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) )
+  {
+      TSENG_MEMLIMIT(4096-516, "banked accelerated mode on any W32");
+  }
+#endif
+
+  if ( !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
+      && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) )
+  {
+      TSENG_MEMLIMIT(4096-8, "accelerated mode with linear memory mapping on any Tseng card");
+  }
+
+  TSENG_MEMLIMIT(4096, "Tseng cards");
+
+ /*
+  * Acceleration requires 1kb scratch buffer memory.
+  */  
+
+  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+  {
+    ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    vga256InfoRec.videoRam -= 1;
+    scratchVidBase = vga256InfoRec.videoRam * 1024;
   }
 
       /* Hardware Cursor support */
@@ -1062,6 +1115,7 @@ ET4000Probe()
           ErrorF("%s %s: Reserving 1kb of video memory for hardware cursor.\n",
                  XCONFIG_PROBED, vga256InfoRec.name);
           vga256InfoRec.videoRam -= 1; /* 1kb reserved for hardware cursor */
+          tsengCursorAddress = vga256InfoRec.videoRam * 1024;
       }
       else   /* clear illegal option */
           OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
@@ -1145,7 +1199,12 @@ ET4000Probe()
       else
         {
           ClockSelect = Tseng_ET4000ClockSelect;
-          if( et4000_type > TYPE_ET4000 )
+          /*
+           * The CH8398 RAMDAC uses CS3 for register selection (RS2), not for clock selection.
+           * The ICS5341 RAMDAC only has 8 clocks. Together with MCLK/2, that's 16 clocks.
+           */
+          if ( ( et4000_type > TYPE_ET4000 ) && (TsengRamdacType != CH8398_DAC)
+             && (TsengRamdacType != ICS5341_DAC) )
              numClocks = 32;
   	else
              numClocks = 16;
@@ -1262,30 +1321,35 @@ ET4000FbInit()
            XCONFIG_GIVEN : XCONFIG_PROBED,
            vga256InfoRec.name, useSpeedUp);
   }
-  if (useSpeedUp & SPEEDUP_FILLRECT)
+
+
+  if (!ET4000.ChipUseLinearAddressing)
   {
-    vga256LowlevFuncs.fillRectSolidCopy = speedupvga256FillRectSolidCopy;
-  }
-  if (useSpeedUp & SPEEDUP_BITBLT)
-  {
-    vga256LowlevFuncs.doBitbltCopy = speedupvga256DoBitbltCopy;
-  }
-  if (useSpeedUp & SPEEDUP_LINE)
-  {
-    vga256LowlevFuncs.lineSS = speedupvga256LineSS;
-    vga256LowlevFuncs.segmentSS = speedupvga256SegmentSS;
-    vga256TEOps1Rect.Polylines = speedupvga256LineSS;
-    vga256TEOps1Rect.PolySegment = speedupvga256SegmentSS;
-    vga256TEOps.Polylines = speedupvga256LineSS;
-    vga256TEOps.PolySegment = speedupvga256SegmentSS;
-    vga256NonTEOps1Rect.Polylines = speedupvga256LineSS;
-    vga256NonTEOps1Rect.PolySegment = speedupvga256SegmentSS;
-    vga256NonTEOps.Polylines = speedupvga256LineSS;
-    vga256NonTEOps.PolySegment = speedupvga256SegmentSS;
-  }
-  if (useSpeedUp & SPEEDUP_FILLBOX)
-  {
-    vga256LowlevFuncs.fillBoxSolid = speedupvga256FillBoxSolid;
+    if (useSpeedUp & SPEEDUP_FILLRECT)
+    {
+      vga256LowlevFuncs.fillRectSolidCopy = speedupvga256FillRectSolidCopy;
+    }
+    if (useSpeedUp & SPEEDUP_BITBLT)
+    {
+      vga256LowlevFuncs.doBitbltCopy = speedupvga256DoBitbltCopy;
+    }
+    if (useSpeedUp & SPEEDUP_LINE)
+    {
+      vga256LowlevFuncs.lineSS = speedupvga256LineSS;
+      vga256LowlevFuncs.segmentSS = speedupvga256SegmentSS;
+      vga256TEOps1Rect.Polylines = speedupvga256LineSS;
+      vga256TEOps1Rect.PolySegment = speedupvga256SegmentSS;
+      vga256TEOps.Polylines = speedupvga256LineSS;
+      vga256TEOps.PolySegment = speedupvga256SegmentSS;
+      vga256NonTEOps1Rect.Polylines = speedupvga256LineSS;
+      vga256NonTEOps1Rect.PolySegment = speedupvga256SegmentSS;
+      vga256NonTEOps.Polylines = speedupvga256LineSS;
+      vga256NonTEOps.PolySegment = speedupvga256SegmentSS;
+    }
+    if (useSpeedUp & SPEEDUP_FILLBOX)
+    {
+      vga256LowlevFuncs.fillBoxSolid = speedupvga256FillBoxSolid;
+    }
   }
 
       /* Hardware cursor setup */
@@ -1309,6 +1373,21 @@ ET4000FbInit()
       Use_Pci_Retry = 1;
     }
 
+#ifdef USE_XAA
+  if (vgaBitsPerPixel >= 8) {
+  if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+    {
+      Use_ACL = FALSE;
+    }
+    else
+    {
+      /* initialize the XAA interface software */
+      /* TsengAccelInit();
+         This relies on variables that are setup later, so it's called there */ 
+      Use_ACL = TRUE;
+    }
+  }
+#endif
 #endif /* MONOVGA */
 }
 
@@ -1327,8 +1406,11 @@ ET4000EnterLeave(enter)
 #ifndef MONOVGA
 #ifdef XFreeXDGA
   if (vgaBitsPerPixel >= 8) {
-  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
-    return;
+    if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
+      if (vgaHWCursor.Initialized == TRUE)
+        TsengHideCursor();
+      return;
+    }
   }
 #endif
 #endif
@@ -1372,7 +1454,9 @@ ET4000Restore(restore)
   vgaProtect(TRUE);
 #endif
 
-  outb(0x3CD, 0x00); /* segment select */
+  outb(0x3CD, 0x00); /* segment select bits 0..3 */
+  if (et4000_type > TYPE_ET4000)
+    outb(0x3CB, 0x00); /* segment select bits 4,5 */
 
 #ifdef W32_SUPPORT
   if (TsengRamdacType == ICS5341_DAC)
@@ -1399,9 +1483,10 @@ ET4000Restore(restore)
      outb(vgaIOBase + 5, i & ~0x40);
   }
 
-  if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC) )
+  if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC)
+      || (TsengRamdacType == STG1700_DAC) )
   {
-     /* Restore STG 1703 GenDAC Command and PLL registers 
+     /* Restore STG 170x GenDAC Command and PLL registers 
       * we share one data structure with the gendac code, so the names
       * are not too good.
       */
@@ -1496,7 +1581,9 @@ ET4000Restore(restore)
 #endif
     outw(vgaIOBase + 4, (restore->RCConf << 8)  | 0x32);
 #endif
-  outb(0x3CD, restore->SegSel);
+  outb(0x3CD, restore->SegSel1);
+  if (et4000_type > TYPE_ET4000)
+    outb(0x3CB, restore->SegSel2);
 
   /*
    * This might be required for the Legend clock setting method, but
@@ -1514,16 +1601,10 @@ ET4000Restore(restore)
       }
 
 #ifdef USE_XAA
-  /* MEGA-kludge: we need to know if we're "restoring" a graphics mode or not.
-   * If so, init the ACL, else, don't touch it...  Yuck.
-   */
-  if (vgaBitsPerPixel >= 8) {
-  if (restore->Gr_Mode && (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)))
-  {
-    tseng_init_acl(); /* initialize the accelerator registers for XAA interface */
-  }
-  }
+  if (Use_ACL & (restore->std.Attribute[16] & 1)) /* are we going to graphics mode? */
+    tseng_init_acl(); /* initialize acceleration hardware */
 #endif
+
 #ifndef W32_ACCEL_SUPPORT
   vgaProtect(FALSE);
 #endif
@@ -1540,22 +1621,27 @@ static void *
 ET4000Save(save)
      vgaET4000Ptr save;
 {
-  unsigned char             i;
-  unsigned char             temp1, temp2;
+  unsigned char             temp, saveseg1=0, saveseg2=0;
 
   /*
    * we need this here , cause we MUST disable the ROM SYNC feature
    * this bit changed with W32p_rev_c...
    */
-     outb(vgaIOBase + 4, 0x34); temp1 = inb(vgaIOBase + 5);
+  outb(vgaIOBase + 4, 0x34); temp = inb(vgaIOBase + 5);
   if( et4000_type < TYPE_ET4000W32Pc) {
-     outb(vgaIOBase + 5, temp1 & 0x1F);
+     outb(vgaIOBase + 5, temp & 0x1F);
   }
-  temp2 = inb(0x3CD); outb(0x3CD, 0x00); /* segment select */
+
+  saveseg1 = inb(0x3CD); outb(0x3CD, 0x00); /* segment select 1 */
+  if (et4000_type > TYPE_ET4000) {
+    saveseg2 = inb(0x3CB);
+    outb(0x3CB, 0x00); /* segment select 2 */
+  }
 
   save = (vgaET4000Ptr)vgaHWSave((vgaHWPtr)save, sizeof(vgaET4000Rec));
-  save->Compatibility = temp1;
-  save->SegSel = temp2;
+  save->Compatibility = temp;
+  save->SegSel1 = saveseg1;
+  save->SegSel2 = saveseg2;
 
   outb(vgaIOBase + 4, 0x33); save->ExtStart     = inb(vgaIOBase + 5);
   outb(vgaIOBase + 4, 0x35); save->OverflowHigh = inb(vgaIOBase + 5);
@@ -1579,15 +1665,15 @@ ET4000Save(save)
   outb(0x3C4, 6); save->StateControl  = inb(0x3C5);
   outb(0x3C4, 7); save->AuxillaryMode = inb(0x3C5);
   save->AuxillaryMode |= 0x14;
-  i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
+  temp = inb(vgaIOBase + 0x0A); /* reset flip-flop */
   outb(0x3C0,0x36); save->Misc = inb(0x3C1); outb(0x3C0, save->Misc);
 #ifdef W32_SUPPORT
   if (TsengRamdacType == ICS5341_DAC)
   {
      /* Save ICS 5341 GenDAC Command and PLL registers */
      outb(vgaIOBase + 4, 0x31);
-     i = inb(vgaIOBase + 5);
-     outb(vgaIOBase + 5, i | 0x40);
+     temp = inb(vgaIOBase + 5);
+     outb(vgaIOBase + 5, temp | 0x40);
 
      save->gendac.cmd_reg = inb(0x3c6);      /* Enhanced command register */
      if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
@@ -1601,10 +1687,11 @@ ET4000Save(save)
        save->gendac.PLL_ctrl = inb(0x3c9);     /* PLL control */
       }
      outb(vgaIOBase + 4, 0x31);
-     outb(vgaIOBase + 5, i & ~0x40);
+     outb(vgaIOBase + 5, temp & ~0x40);
   }
   
-  if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC) )
+  if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC) 
+      || (TsengRamdacType == STG1700_DAC) )
   {
      /* Restore STG 1703 GenDAC Command and PLL registers 
       * unfortunately we reuse the gendac data structure, so the 
@@ -1630,7 +1717,7 @@ ET4000Save(save)
   if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
        (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions)) ) {
      /* Save ET6000 CLKDAC PLL registers */
-     i = inb(ET6Kbase+0x67); /* remember old CLKDAC index register pointer */
+     temp = inb(ET6Kbase+0x67); /* remember old CLKDAC index register pointer */
      outb(ET6Kbase+0x67, 2);
      save->gendac.PLL_f2_M = inb(ET6Kbase+0x69);
      save->gendac.PLL_f2_N = inb(ET6Kbase+0x69);
@@ -1639,7 +1726,7 @@ ET4000Save(save)
      save->ET6KMclkM = inb(ET6Kbase+0x69);
      save->ET6KMclkN = inb(ET6Kbase+0x69);
      /* restore old index register */
-     outb(ET6Kbase+0x67, i);
+     outb(ET6Kbase+0x67, temp);
   }
 
   if (DAC_IS_ATT49x) save->ATTdac_cmd = xf86getdaccomm();
@@ -1654,10 +1741,8 @@ ET4000Save(save)
   }
   
   outb(vgaIOBase + 4, 0x30); save->SegMapComp = inb(vgaIOBase + 5);
-  outb(vgaIOBase + 4, 0x30); save->GenPurp = inb(vgaIOBase + 5);
+  outb(vgaIOBase + 4, 0x31); save->GenPurp = inb(vgaIOBase + 5);
   outb(vgaIOBase + 4, 0x3F); save->HorOverflow = inb(vgaIOBase + 5);
-
-  save->Gr_Mode=FALSE;
 
   return ((void *) save);
 }
@@ -1674,7 +1759,7 @@ ET4000Init(mode)
      DisplayModePtr mode;
 {
   int row_offset;
-  int BytesPerPix = vga256InfoRec.bitsPerPixel>>3;
+  int BytesPerPix = vgaBitsPerPixel>>3;
 
 #ifdef W32_SUPPORT
 
@@ -1822,12 +1907,12 @@ ET4000Init(mode)
 
        if (mode->Flags & V_PIXMUX)
        {
-         commonCalcClock(mode->SynthClock,1,1,31,2,3,100000,vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock,1,1,31,2,3,100000,vga256InfoRec.dacSpeeds[0]*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
        }
        else
        {
-         commonCalcClock(mode->SynthClock,1,1,31,0,3,100000,vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock,1,1,31,0,3,100000,vga256InfoRec.dacSpeeds[0]*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
        }
        new->gendac.PLL_w_idx = 0;
@@ -1861,7 +1946,7 @@ ET4000Init(mode)
     {
        /* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
        commonCalcClock(vga256InfoRec.clock[new->std.NoClock],1,1,31,1,3,
-                 100000,vga256InfoRec.dacSpeed*2, 
+                 100000,vga256InfoRec.dacSpeeds[0]*2, 
        		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
 
        /* ErrorF("M=0x%x ; N=0x%x\n",new->gendac.PLL_f2_M, new->gendac.PLL_f2_N);*/
@@ -1927,7 +2012,6 @@ ET4000Init(mode)
 #endif
     }
   
-#ifdef USE_XAA
   /*
    * linear mode handling
    */
@@ -1971,11 +2055,10 @@ ET4000Init(mode)
    * 16/24/32 bpp handling.
    */
 
-   if (vga256InfoRec.bitsPerPixel>=8) {
+   if (vgaBitsPerPixel>=8) {
      tseng_set_ramdac_bpp(mode, new, BytesPerPix);
      row_offset *= BytesPerPix;
    }
-#endif
    
   /*
    * Horizontal overflow settings: for modes with > 2048 pixels per line
@@ -1989,8 +2072,6 @@ ET4000Init(mode)
          | (((mode->CrtcHSyncStart>>3) & 0x100) >> 4)
            | ((row_offset & 0x200) >> 3)
              | ((row_offset & 0x100) >> 1);
-
-  new->Gr_Mode=TRUE;
 
   /*
    * Enable memory mapped IO registers when acceleration is needed.
@@ -2035,7 +2116,7 @@ ET4000Adjust(x, y)
   if (vgaBitsPerPixel < 8)
     Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
   else {
-    BytesPerPix = vga256InfoRec.bitsPerPixel>>3;
+    BytesPerPix = vgaBitsPerPixel>>3;
     Base = ((y * vga256InfoRec.displayWidth + x + 1)*BytesPerPix) >> 2;
     /* adjust Base address so it is a non-fractional multiple of BytesPerPix */
     Base -= (Base % BytesPerPix);
@@ -2062,7 +2143,7 @@ ET4000Adjust(x, y)
  *
  * The ET4000 "Video System Configuration 1" register (CRTC index 0x36),
  * which is used to set linear memory mode and MMU-related stuff, is
- * partially reset to "0" when TS register index 1 bit 1 is set (synchronous
+ * partially reset to "0" when TS register index 0 bit 1 is set (synchronous
  * reset): bits 3..5 are reset during a sync. reset. The problem is that
  * sync reset is active during the register setup (ET4000Restore()), and
  * thus VSConf1 never gets written...).

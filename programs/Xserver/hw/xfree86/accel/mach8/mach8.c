@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.36 1997/04/12 13:44:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.37 1997/05/03 09:16:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -56,7 +56,7 @@
 #include "mi.h"
 #include "cfb.h"
 
-#define XCONFIG_FLAGS_ONLY
+#include "xf86Version.h"
 #include "xf86_Config.h"
 
 extern int mach8MaxClock;
@@ -69,6 +69,52 @@ static int mach8ValidMode(
     int
 #endif
 );
+
+#if defined(XFree86LOADER)
+/*
+ * This limit is set to a value which is typical for many of the ramdacs
+ * used on Mach8 cards.  Increasing this limit could result in damage to
+ * to your hardware.
+ */
+/* XXXX This value needs to be checked (currently using 80MHz) */
+#define MAX_MACH8_CLOCK 80000
+
+int mach8MaxClock = MAX_MACH8_CLOCK;
+
+ScrnInfoPtr xf86Screens[] = 
+{
+  &mach8InfoRec,
+};
+
+int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] =
+{
+  ACCEL,
+  -1
+};
+
+int mach8ValidTokens[] =
+{
+  STATICGRAY,
+  GRAYSCALE,
+  STATICCOLOR,
+  PSEUDOCOLOR,
+  TRUECOLOR,
+  DIRECTCOLOR,
+  CHIPSET,
+  CLOCKS,
+  MODES,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  BIOSBASE,
+  -1
+};
+
+#endif
 
 ScrnInfoRec mach8InfoRec = {
     FALSE,		/* Bool configured */
@@ -96,7 +142,8 @@ ScrnInfoRec mach8InfoRec = {
     {0, },              /* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
     NULL,	       	/* char *ramdac */
-    0,			/* int dacSpeed */
+    {0, 0, 0, 0},	/* int dacSpeeds[MAXDACSPEEDS] */
+    0,			/* int dacSpeedBpp */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -139,6 +186,55 @@ ScrnInfoRec mach8InfoRec = {
     0			/* int physSize */
 #endif
 };
+
+
+#if defined(XFree86LOADER)
+ScrnInfoRec *
+ServerInit()
+{
+return &mach8InfoRec;
+}
+
+XF86ModuleVersionInfo mach8VersRec =
+{
+        "libmach8.a",
+        "The XFree86 Project",
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,
+        {0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void
+ModuleInit(data,magic)
+    pointer   * data;
+    INT32     * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+        /* MAGIC_VERSION must be first in ModuleInit */
+    case 0:
+        * data = (pointer) &mach8VersRec;
+        * magic= MAGIC_VERSION;
+        break;
+    case 1:
+        * data = (pointer) &mach8InfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 2:
+        * data = (pointer) "libxf86cache.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif
 
 short mach8alu[16] = {
     MIX_0,

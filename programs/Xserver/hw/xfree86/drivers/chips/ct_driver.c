@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.7 1997/05/04 05:26:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.8 1997/05/12 13:28:05 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -228,8 +228,8 @@ int ctAluConv2[] =
     0x0A,			       /* dest &= ~src; GXandInverted, 0x4 */
     0xAA,			       /* dest = dest; GXnoop, 0x5 */
     0x5A,			       /* dest = ^src; GXxor, 0x6 */
-    0xFC,			       /* dest |= src; GXor, 0x7 */
-    0x03,			       /* dest = ~src & ~dest;GXnor, 0x8 */
+    0xFA,			       /* dest |= src; GXor, 0x7 */
+    0x05,			       /* dest = ~src & ~dest;GXnor, 0x8 */
     0xA5,			       /*?? dest ^= ~src ;GXequiv, 0x9 */
     0x55,			       /* dest = ~dest; GXInvert, 0xA */
     0xF5,			       /* dest = src|~dest ;GXorReverse, 0xB */
@@ -469,7 +469,7 @@ static unsigned char CHIPSchipset;
 XF86ModuleVersionInfo chipsVersRec =
 {
 	"chips_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

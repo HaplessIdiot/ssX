@@ -1,4 +1,127 @@
-XFree86 3.9c (xx May 1997)
+XFree86 3.9c (3 June 1997)
+ 952. Fix a problem with the HW cursor being drawn in the overscan area
+      with the svga/s3v driver and cleanup some of the register
+      save/restore (#585, Harald Koenig).
+ 951. Disable the banked-mode speedups for the Tseng driver when running
+      in linear mode (#584, David Bateman).
+ 950. Fix for CR53 not being restored unless xf86Verbose > 1 in the svga/s3v
+      driver (#572, Sebastien Marineau).
+ 720. Fix problems restoring some non-standard text modes for the Millennium
+      (#571,573, Radoslaw Kapitan, #574, Ansgar Hockmann).
+ 948. Fix svga/s3v panning at 24bpp (#570, Harald Koenig).
+ 947. Fix S3V panning at 24bpp (#569, Harald Koenig).
+ 946. Fix misleading messages in the svga/s3v driver when the SVGA server
+      is started with a non-ViRGE S3 card (#568, Sebastien Marineau).
+ 945. Alternate S3V 32<->24 bpp translation to avoid unaligned traps
+      on Alpha platforms (#567, Harald Koenig).
+ 944. Disable 8x8 pattern fill when less than 8 scanlines are available
+      in the XAA pixmap cache (#566, David Bateman).
+ 943. Fix a screen restore problem for the Mystique when the server is
+      started with '-probeonly' (#559, Radoslaw Kapitan).
+ 942. Turn the monitor back on after DPMS has done its thing for
+      OSs where the input devices are not selectable (558, Jack Thomasson).
+ 941. Fix some incorrect ROP definitions in the C&T driver (#557,
+      David Bateman).
+ 940. Fix some text font corruption for the S3 Trio64 (#549,554 Harald Koenig).
+ 939. XF86Setup carddata updates (#547, Koen Gadeyne, #552, Matthieu Herrb).
+ 938. Modify xon to use the fully qualified hostname on Linux (#544,
+      Burchard Steinbild, Dirk Hohndel).
+ 937. Exclude ROPs with no source from XAA CopyPlane functions (#538,
+      David Bateman).
+ 936. Mach32 updates, including accepting '-bpp 15' and increasing the
+      16bpp clock limit for the 68875 ramdac to 80MHz (#536, Bryan Feir).
+ 935. PC98 doc updates (#535, Takaaki Nomura).
+ 934. Fix for an S3V server problem at 16bpp introduced in change 650
+      (#532, Huver Hu).
+ 933. Further fix for Mystique problems when VT switching (#531,
+      Radoslaw Kapitan).
+ 932. Fix a blit bug with the ViRGE chip in the svga/s3v driver which
+      shows up with xv rubber-banding (#529, Sebastien Marineau).
+ 931. Fix a blank screen problem when switching back to the Xserver
+      from a text VT with the Mystique (#520, Radoslaw Kapitan).
+ 930. Some minor Tseng code cleanups (#519, Koen Gadeyne).
+ 929. Add a timeout to the MGA Sync() funtion (#518, Radoslaw Kapitan).
+ 928. Map only the amount of video memory present in the MGA driver
+      rather than always 8MB (#516, Radoslaw Kapitan).
+ 927. Disable the HW cursor in the tseng driver when entering DGA mode
+      (#514, Koen Gadeyne).
+ 926. Fix a S3V server text console corruption problem when running at 24bpp
+      (#513, Kevin Brosius).
+ 925. Update NetBSD/OpenBSD docs (#512, Matthieu Herrb).
+ 925. Update Cirrus docs (#509, Harm Hanemaayer).
+ 924. Change Tseng memory mapped registers to volatile (#507, Koen Gadeyne).
+ 923. Disable Tseng 24bpp for CH8398 RAMDAC (#507, Koen Gadeyne).
+ 922. Update docs to reflect change 643 (#507, Koen Gadeyne).
+ 921. Re-enable Tseng 8bpp+linear+accel combination (#507, OEyvind Aabling).
+ 920. Update mga docs (#502, #503, Radoslaw Kapitan).
+ 919. Fix font and LUT corruption on VT switch for the svga/s3v driver
+      (#497, Harald Koenig).
+ 918. Fix some acceleration bugs in the TGUI driver (#495,496, Alan Hourihane).
+ 917. Updates to the I128 server for Alpha platforms (#494, Robin Cutshaw).
+ 916. Fix a Mystique colour problem when switching VTs (#488, Guy Desbief).
+ 915. Fix a bug in Mystique memory detection (2MB was detected as 4MB)
+      (#482, Radoslaw Kapitan).
+ 914. Merge in simple dashed horizontal and vertical line drawing in the
+      S3V server into s3line.c, and use this for 24/32bpp (#474, Huver Hu).
+ 913. Modify the S3V server to advertise a 32 bits-per-pixel pixmap
+      format to clients, and translate to/from packed 24bpp when accessing
+      the framebuffer.  This allows a lot of clients which didn't know
+      how to handle the 24 bits-per-pixel pixmap format to work
+      (#474, Huver Hu).
+ 912. Start cleanup of depth/bitPerPixel usage in the SVGA server.  xdpyinfo
+      should now report the correct information (#472, Mark Vojkovich).
+ 911. Change chiprounding from 128 to 64 in 8bpp for the Mystique, which
+      allows 1600x1200x8 on 2MB boards (#467, Radoslaw Kapitan).
+ 910. Position the tseng accel scratchpad area correctly (#461, Koen Gadeyne).
+ 909. Fix a problem with the W32 server that causes it to hang with
+      W32i cards (#456, Koen Gadeyne).
+ 908. Save the initial state of bit 7 of CR58 in the S3, S3V servers and
+      svga/s3v driver, and change the "ras_precharge" option to allow it
+      to be turned on or off (#458, Harald Koenig).
+ 907. Enable the clockchip in the tseng driver by default when a suitable
+      RAMDAC/clockchip is found (#448, Koen Gadeyne).
+ 906. Fix text mode restore with ViRGE (#443, Harald Koenig).
+ 905. Add CH8398 probing to XF86_W32 (#439, Kurt Olsen).
+ 904. Add STG1702 probing to XF86_W32 (#434, Stuart Lamble).
+ 903. Fix blitbug widths in SVGA/S3V and S3V servers, enable the hardware
+      cursor in doublescan mode in SVGA/S3V server, fix the 24bpp problem in
+      SVGA/S3V server when mode switching (#432, Sebastien Marineau).
+ 902. Disable 24bpp on the STG1700, new "default" linear memory base for W32p
+      cards, fix STG170x problems (#430 Koen Gadeyne).
+ 901. Add MODULEVENDORSTRING to the ModuleVersionInfo (#423, Stuart Anderson).
+ 900. Finetuning for Miro 80SV support. Add "no_pci_disconnect" Option
+      (for some Alpha boxes, Alphastation255 and UDB) (#416, Harald Koenig).
+ 899. Fix serveral problems with the tseng driver. Don't allow pixmux modes
+      in the VGA16 or MONO server (it doesn't work), disable the combination
+      8bpp + linear + acceleration, fix maximal pixel clock for W32p, fix
+      cut'n'paste bug where CRTC 0x31 was restored incorrectly, update the
+      XF86_SVGA manual pages (#414,415, Koen Gadeyne).
+ 898. NetBSD and OpenBSD doc updates (#412, Matthieu Herrb).
+ 897. LynxOS documentation updates (#411,537 Thomas Mueller).
+ 896. LynxOS microSPARC fixes (#410, Thomas Mueller).
+ 895. Small fixes for dacspeed and set_mclk code in the S3V server (#401,
+      Harald Koenig).
+ 894. Fix text mode restauration in S3V server (#400, Harald Koenig).
+ 893. Some misc bug fixes (#395, Harald Koenig).
+ 892. Change clock limits for S3 /DX and /GX chips to 170/170/135 based
+      on information from S3 (#395, Harald Koenig).
+ 891. Add detection and higher clock limits for MELCO S3 ViRGE card
+      (#395, Harald Koenig).
+ 890. Add set_mclk for S3V and S3/Trio64 (#395, Harald Koenig).
+ 889. Add support for specifying DACSpeeds separately for 8/16/24/32bpp
+      (#395, Harald Koenig).
+ 888. Fix module handle leak in LoaderOpen (#393, Eric Nygren).
+ 877. Add Mach8 and 8514 to loader server (#387,394, Hans Nasten).
+ 876. More 68k loader updates (#380, Alan Hourihane).
+ 875. Some updates to the S3 server (#374, Harald Koenig).
+ 874. Fix some hangs on C&T 65550/65554 (#370, David Bateman).
+ 873. Several OS/2 fixes: Add the creation of host.def if not present. Get
+      errno declared correctly. Add missing commandline options (#403,405
+      Holger Veit).
+ 872. Fix a problem in the tseng driver which was causing it to fail at >8bpp
+      with the STG1700 RAMDAC (#594, Koen Gadeyne).
+ 871. Tseng doc updates (#594, Koen Gadeyne).
+ 870. Enable shadow passwords by default for xdm on Linux-Elf.
  869. Fix Xrm buffer overflow in Xprint ddx (#591, Kaleb Keithley).
  868. Fix for incorrect handling of negative values in cfb (#586, Harald
       Koenig).
@@ -4703,4 +4826,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.481 1997/05/28 13:24:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.482 1997/05/31 13:51:23 dawes Exp $

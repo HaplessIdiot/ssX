@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati_driver.c,v 1.2 1997/03/27 18:39:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati_driver.c,v 1.3 1997/05/03 09:17:38 dawes Exp $ */
 /*
  * Copyright 1994 through 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -412,7 +412,7 @@ vgaVideoChipRec ATI =
 static XF86ModuleVersionInfo ATIModuleVersionInfo =
 {
         "ati_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
@@ -3361,15 +3361,15 @@ ATIProbe(void)
          */
         if ((ATIDac & ~0x0FU) == ATI_DAC_INTERNAL)
         {
-                if (vga256InfoRec.dacSpeed < vga256InfoRec.maxClock)
+                if (vga256InfoRec.dacSpeeds[0] < vga256InfoRec.maxClock)
                 {
                         int DefaultmaxClock = 135000;
 
                         if (ATIChip >= ATI_CHIP_264VTB)
                                 DefaultmaxClock = 170000;
-                        if (vga256InfoRec.dacSpeed > DefaultmaxClock)
+                        if (vga256InfoRec.dacSpeeds[0] > DefaultmaxClock)
                                 vga256InfoRec.maxClock =
-                                        vga256InfoRec.dacSpeed;
+                                        vga256InfoRec.dacSpeeds[0];
                         else
                         if (DefaultmaxClock < vga256InfoRec.maxClock)
                                 vga256InfoRec.maxClock = DefaultmaxClock;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mx/mx_driver.c,v 1.1 1997/03/06 23:16:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mx/mx_driver.c,v 1.2 1997/05/03 09:18:19 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -230,7 +230,7 @@ static int Num_MX_ExtPorts =
 XF86ModuleVersionInfo mxVersRec =
 {
 	"mx_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

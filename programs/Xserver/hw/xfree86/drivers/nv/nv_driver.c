@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.2 1997/03/22 09:35:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.3 1997/05/03 09:18:23 dawes Exp $ */
 
 #include <math.h>
 
@@ -205,7 +205,7 @@ vgaVideoChipRec NV =
 XF86ModuleVersionInfo nvVersRec =
 {
         "nv_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

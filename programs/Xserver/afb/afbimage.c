@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbimage.c,v 3.0 1996/08/18 01:45:40 dawes Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -8,6 +8,7 @@
 #include "afb.h"
 #include "maskbits.h"
 #include "servermd.h"
+#include "mfb.h"
 
 void
 afbPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)

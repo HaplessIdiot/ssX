@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gc.c,v 3.3 1996/02/04 09:03:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gc.c,v 3.4 1996/12/23 06:39:55 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -365,7 +365,7 @@ cfbDestroyOps (ops)
 	    CT_other ==> pCompositeClip is the pixmap bounding box
 */
 
-void
+static void
 cfbValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
     Mask	    changes;

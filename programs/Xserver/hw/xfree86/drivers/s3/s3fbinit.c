@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3fbinit.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.1 1997/03/06 23:16:35 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -96,7 +96,7 @@ void S3FbInit(void)
 		     vga256InfoRec.clocks = 16;
 	        }
 	        if (vga256InfoRec.clock[i] * 2 > pixMuxMinClock &&
-		   vga256InfoRec.clock[i] * 2 <= vga256InfoRec.dacSpeed)
+		   vga256InfoRec.clock[i] * 2 <= vga256InfoRec.dacSpeeds[0])
 		  vga256InfoRec.clock[i + 16] = vga256InfoRec.clock[i] * 2;
 	        else
 		  vga256InfoRec.clock[i + 16] = 0;

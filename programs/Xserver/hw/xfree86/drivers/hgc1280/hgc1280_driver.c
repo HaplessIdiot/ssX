@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/hgc1280driv.c,v 3.8 1997/03/04 10:41:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hgc1280/hgc1280_driver.c,v 1.1 1997/03/06 23:15:55 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -725,7 +725,7 @@ register /*signed*/ long deltabank;
 XF86ModuleVersionInfo hgc1280VersRec =
 {
 	"hgc1280_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.2 1997/04/12 15:34:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.3 1997/05/03 09:18:09 dawes Exp $ */
 
 
 /*
@@ -79,22 +79,22 @@ static unsigned char MGADACbpp8[] = {
 
 static unsigned char MGADACbpp16[] = {
         0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
+	0x4B, 0xE4, 0xF9, 0x80, 0x02, 0x09, 0x20, 0x1F, 
 	0x00, 0x1A, 0x40, 0x00, 0x07,
 	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
 
 static unsigned char MGADACbpp24[] = {
         0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
+	0x4B, 0xE4, 0xF9, 0x80, 0x03, 0x09, 0x20, 0x1F, 
 	0x00, 0x1A, 0x40, 0x00, 0x07,
 	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
 
 static unsigned char MGADACbpp32[] = {
         0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
-	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
-	0x00, 0x1A, 0x0A, 0x72, 0x10,
+	0x4B, 0xE4, 0xF9, 0x80, 0x07, 0x09, 0x20, 0x1F, 
+	0x00, 0x1A, 0x40, 0x00, 0x07,
 	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
 
@@ -541,28 +541,27 @@ DisplayModePtr mode;
 	int hd, hs, he, ht, vd, vs, ve, vt, wd;
 	int i, index_1d;
 	unsigned char* initDAC;
+	int weight555 = FALSE;
 
 	ErrorF("MGA1064Init: depth %x bits\n",vgaBitsPerPixel);
 	switch(vgaBitsPerPixel)
 	{
 	case 8:
 		initDAC = MGADACbpp8;
-		initDAC[12] = MGA1064_MUL_CTL_8bits;
 		break;
 	case 16:
 		initDAC = MGADACbpp16;
-		initDAC[12] = MGAinterleave? 0x54 : 0x53;
 		if ( (xf86weight.red == 5) && (xf86weight.green == 5)
-					&& (xf86weight.blue == 5) )
-			initDAC[1] = 0x04 ;
+					&& (xf86weight.blue == 5) ) {
+			weight555 = TRUE;
+			initDAC[12] = 0x01 ;
+		}
 		break;
 	case 24:
 		initDAC = MGADACbpp24;
-		initDAC[12] = MGAinterleave? 0x5C : 0x5B;
 		break;
 	case 32:
-		initDAC = MGADACbpp8;
-		initDAC[12] = MGAinterleave? 0x5C : 0x5B;
+		initDAC = MGADACbpp32;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");
@@ -618,10 +617,6 @@ DisplayModePtr mode;
 		newVS->ExtVga[3]	= (((1 << MGABppShft) * 3) - 1) | 0x80;
 	else
 		newVS->ExtVga[3]	= ((1 << MGABppShft) - 1) | 0x80;
-
-	/* Set viddelay (CRTCEXT3 Bits 3-4). */
-	newVS->ExtVga[3] |= (vga256InfoRec.videoRam == 8192 ? 0x10
-			     : vga256InfoRec.videoRam == 2048 ? 0x08 : 0x00);
 
 	newVS->ExtVga[4]	= 0;
 		
@@ -704,6 +699,26 @@ DisplayModePtr mode;
 		vga256InfoRec.clock[newVS->std.NoClock], 1 << MGABppShft
 	);
 
+	/*
+	 * init palette for palettized depths
+	 */
+	for(i = 0; i < 256; i++) {
+		switch(vgaBitsPerPixel) 
+		{
+		case 16:
+			newVS->std.DAC[i * 3 + 0] = i << 3;
+			newVS->std.DAC[i * 3 + 1] = i << (weight555 ? 3 : 2);
+			newVS->std.DAC[i * 3 + 2] = i << 3;
+			break;
+		case 24:
+		case 32:
+			newVS->std.DAC[i * 3 + 0] = i;
+			newVS->std.DAC[i * 3 + 1] = i;
+			newVS->std.DAC[i * 3 + 2] = i;
+			break;
+		}
+	}
+		
 #ifdef DEBUG		
 	ErrorF("MGA1064Init: Inforec pixclk=\n");
 	ErrorF("%6ld pixclk: m=%02X n=%02X p=%02X\n"
@@ -771,6 +786,8 @@ vgaMGAPtr restore;
 	 * Code to restore SVGA registers that have been saved/modified
 	 * goes here. 
 	 */
+	outw(0x3DE, (restore->ExtVga[0] << 8) | 0);
+	
 	j = 0;
 	/* restore Pix pll C regs */
 	for (i = 0; i < 3; i++)
@@ -851,7 +868,7 @@ vgaMGAPtr save;
 	index_reg = MGA1064_PIX_PLLC_M;
 /* C pix pll registers bank only */	
 	for (i = 0; i < 3; i++) {
-		save->DACclk[index_sav++] = inMGA1064(index_reg++);
+		save->DACclk[i] = inMGA1064(index_reg++);
 	}
 /*	save ->std.MiscOutReg = inb(0x3CC); */	
 	save->DAClong = pciReadLong(MGAPciTag, PCI_OPTION_REG);

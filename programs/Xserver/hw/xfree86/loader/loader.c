@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.12 1997/04/08 10:13:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.13 1997/05/03 12:53:14 dawes Exp $ */
 
 
 
@@ -537,20 +537,6 @@ if ( ! been_here ) {
 	}
   
   /*
-   * Find a free handle.
-   */
-  new_handle = 0 ;
-  while ( freeHandles[new_handle] && new_handle < MAX_HANDLE )
-    new_handle ++ ;
-    
-  if ( new_handle == MAX_HANDLE ) {
-    ErrorF( "Out of loader space\n" ) ; /* XXX */
-    return -1 ;
-  }
-  else
-    freeHandles[new_handle] = HANDLE_USED ;
-
-  /*
    * Check to see if the module is already loaded.
    */
   tmp = listHead ;
@@ -568,6 +554,20 @@ if ( ! been_here ) {
    * OK, it's a new one. Add it.
    */
   ErrorF( "Loading %s\n", module ) ;
+
+  /*
+   * Find a free handle.
+   */
+  new_handle = 0 ;
+  while ( freeHandles[new_handle] && new_handle < MAX_HANDLE )
+    new_handle ++ ;
+    
+  if ( new_handle == MAX_HANDLE ) {
+    ErrorF( "Out of loader space\n" ) ; /* XXX */
+    return -1 ;
+  }
+  else
+    freeHandles[new_handle] = HANDLE_USED ;
 
 
   if( (fd=open(module, O_RDONLY)) < 0 ) {

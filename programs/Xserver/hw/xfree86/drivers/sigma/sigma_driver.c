@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.7 1997/03/04 10:42:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sigma/sigma_driver.c,v 1.1 1997/03/06 23:16:44 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -580,7 +580,7 @@ register /*signed*/ int deltabank;
 XF86ModuleVersionInfo sigmaVersRec =
 {
 	"sigma_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.12 1997/03/24 13:08:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.13 1997/04/08 10:11:23 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -35,7 +35,7 @@ extern char *xf86ModulePath;
 XF86ModuleVersionInfo mmio_928VersRec =
 {
 	"mmio_928.o", 
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.3 1997/03/22 09:35:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.4 1997/05/03 09:18:29 dawes Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -229,7 +229,7 @@ short s3alu[16] =
 XF86ModuleVersionInfo s3VersRec =
 {
 	"s3_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

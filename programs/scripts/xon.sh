@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium: xon.sh,v 1.8 92/08/17 13:57:21 rws Exp $
+# $XConsortium: xon.sh,v 1.10 94/12/09 22:53:55 gildea Exp $
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 case $# in
@@ -28,9 +28,16 @@ unix:*)
 esac
 case $DISPLAY in
 :*)
-	fullname=`hostname`
+	case `uname` in
+	Linux*)
+		fullname=`hostname -f`
+		;;
+	*)
+		fullname=`hostname`
+		;;
+	esac
 	hostname=`echo $fullname | sed 's/\..*$//'`
-	if [ $hostname = $target -o $fullname = $target ]; then
+	if [ $hostname = $target ] || [ $fullname = $target ]; then
 		DISPLAY=$DISPLAY
 		rcmd="sh -c"
 	else
@@ -39,6 +46,7 @@ case $DISPLAY in
 	;;
 esac
 username=
+sess_mangr=
 xauth=
 case x$XUSERFILESEARCHPATH in
 x)
@@ -108,7 +116,14 @@ x*)
 	xauth="XAUTHORITY=$XAUTHORITY "
 	;;
 esac
-vars="$xpath$xauth"DISPLAY="$DISPLAY"
+case x$SESSION_MANAGER in
+x)
+	;;
+x*)
+	sess_mangr="SESSION_MANAGER=$SESSION_MANAGER "
+	;;
+esac
+vars="$xpath$xauth$sess_mangr"DISPLAY="$DISPLAY"
 case $# in
 0)
 	$rcmd 'sh -c '"'$vars"' xterm '$ls' -name "'"$resource"'" -T "'"$label"'" -n "'"$label"'" '"$redirect'"

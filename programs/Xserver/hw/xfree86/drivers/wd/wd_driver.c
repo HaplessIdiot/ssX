@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.3 1997/05/03 09:18:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.4 1997/05/26 15:35:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -355,7 +355,7 @@ PVGA1lcd24power(int PowerManagementMode)
 XF86ModuleVersionInfo wdVersRec =
 {
         "wd_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

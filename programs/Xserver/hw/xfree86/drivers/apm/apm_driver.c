@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.2 1997/03/10 10:12:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.3 1997/05/03 09:17:33 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -264,7 +264,7 @@ unsigned long   apm_xbase;
 XF86ModuleVersionInfo apmVersRec =
 {
 	"apm_drv.o",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

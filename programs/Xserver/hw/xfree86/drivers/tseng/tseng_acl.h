@@ -1,13 +1,12 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.2 1997/03/11 13:06:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.3 1997/04/08 10:13:29 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
 
-typedef unsigned char *ByteP; 
-typedef volatile unsigned char *VByteP;
-typedef unsigned short *WordP;
-typedef unsigned *LongP;
+typedef volatile unsigned char *ByteP; 
+typedef volatile unsigned short *WordP;
+typedef volatile unsigned *LongP;
 
 /*
  * Shortcuts to Tseng memory-mapped accelerator-control registers
@@ -120,6 +119,8 @@ extern LongP MemW32PatternPong;
 extern LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */ 
 
 extern LongP CPU2ACLBase;
+
+extern long scratchVidBase;
 
 extern Bool Use_Pci_Retry; /* Often checked value */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.6 1997/03/03 15:55:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.7 1997/05/03 09:19:02 dawes Exp $ */
 
 
 
@@ -105,10 +105,10 @@ typedef	struct {
  * to try later after more odules have been loaded.
  */
 typedef struct _elf_reloc {
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 	Elf32_Rel	*rel;
 #endif
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 	Elf32_Rela	*rel;
 #endif
 	ELFModulePtr	file;
@@ -185,10 +185,10 @@ static void
 ElfDelayRelocation(elffile,secp,rel)
 ELFModulePtr	elffile;
 char		*secp;
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 Elf32_Rel	*rel;
 #endif
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 Elf32_Rela	*rel;
 #endif
 {
@@ -536,25 +536,25 @@ static void
 Elf_RelocateEntry(elffile,secp,rel)
 ELFModulePtr	elffile;
 unsigned char *secp;	/* Begining of the target section */
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 Elf32_Rel	*rel;
 #endif
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 Elf32_Rela	*rel;
 #endif
 {
 unsigned long *dest32;	/* address of the 32 bit place being modified */
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 unsigned short *dest16;	/* address of the 16 bit place being modified */
 #endif
 Elf32_Addr symval;	/* value of the indicated symbol */
 
 #ifdef ELFDEBUG
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 	ELFDEBUG( "%x %d %d\n", rel->r_offset,
 		ELF32_R_SYM(rel->r_info),ELF32_R_TYPE(rel->r_info) );
 #endif
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 	ELFDEBUG( "%x %d %d %x\n", rel->r_offset,
 		ELF32_R_SYM(rel->r_info),ELF32_R_TYPE(rel->r_info),
 		rel->r_addend );
@@ -563,7 +563,7 @@ Elf32_Addr symval;	/* value of the indicated symbol */
 
 switch( ELF32_R_TYPE(rel->r_info) )
 	{
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 	case R_386_32:
 		dest32=(unsigned long *)(secp+rel->r_offset);
 		symval=ElfGetSymbolValue(elffile,ELF32_R_SYM(rel->r_info));
@@ -612,6 +612,55 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 
 		break;
 #endif /* i386/alpha */
+#if defined(__mc68000__)
+	case R_68K_32:
+		dest32=(unsigned long *)(secp+rel->r_offset);
+		symval=ElfGetSymbolValue(elffile,ELF32_R_SYM(rel->r_info));
+		if( symval == 0 ) {
+#ifdef ELFDEBUG
+			ELFDEBUG( "***Unable to resolve symbol %s\n",
+			   ElfGetSymbolName(elffile,ELF32_R_SYM(rel->r_info)) );
+#endif
+			ElfDelayRelocation(elffile,secp,rel);
+			break;
+			}
+#ifdef ELFDEBUG
+ELFDEBUG( "R_68K_32\t", dest32 );
+ELFDEBUG( "dest32=%x\t", dest32 );
+ELFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+		*dest32=symval+(*dest32); /* S + A */
+#ifdef ELFDEBUG
+ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+		break;
+	case R_68K_PC32:
+		dest32=(unsigned long *)(secp+rel->r_offset);
+		symval=ElfGetSymbolValue(elffile,ELF32_R_SYM(rel->r_info));
+		if( symval == 0 ) {
+#ifdef ELFDEBUG
+			ELFDEBUG( "***Unable to resolve symbol %s\n", ElfGetSymbolName(elffile,ELF32_R_SYM(rel->r_info)) );
+#endif
+			ElfDelayRelocation(elffile,secp,rel);
+			break;
+			}
+
+#ifdef ELFDEBUG
+ELFDEBUG( "R_68K_PC32 %s\t", ElfGetSymbolName(elffile,ELF32_R_SYM(rel->r_info)) );
+ELFDEBUG( "secp=%x\t", secp );
+ELFDEBUG( "symval=%x\t", symval );
+ELFDEBUG( "dest32=%x\t", dest32 );
+ELFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+
+		*dest32=symval+(*dest32)-(Elf32_Addr)dest32; /* S + A - P */
+
+#ifdef ELFDEBUG
+ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+
+		break;
+#endif /* __mc68000__ */
 #if defined(__powerpc__)
 	case R_PPC_DISP24: /* 11 */
 		dest32=(unsigned long *)(secp+rel->r_offset);
@@ -993,10 +1042,10 @@ int	index; /* The section to use as relocation data */
 {
 int	i, numrel;
 Elf32_Shdr	*sect=&(elffile->sections[index]);
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 Elf32_Rel	*rel=(Elf32_Rel *)elffile->saddr[index];
 #endif
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 Elf32_Rela	*rel=(Elf32_Rela *)elffile->saddr[index];
 #endif
 unsigned char *secp;	/* Begining of the target section */
@@ -1250,7 +1299,7 @@ ELFDEBUG(".strtab starts at %x\n", elffile->straddr );
 #endif
 		continue;
 		}
-#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
+#if defined(i386) || defined(__alpha__)
 	/* .rel.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".rel.text" ) == 0 ) {
@@ -1291,7 +1340,7 @@ ELFDEBUG(".rel.rodata starts at %x\n", elffile->relrodata );
 		continue;
 		}
 #endif /* i386/alpha */
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 	/* .rela.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".rela.text" ) == 0 ) {
@@ -1331,7 +1380,7 @@ ELFDEBUG(".rela.rodata starts at %x\n", elffile->relrodata );
 #endif
 		continue;
 		}
-#endif /* __powerpc__ */
+#endif /* __powerpc__ || __mc68000__ */
 	/* .shstrtab */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".shstrtab" ) == 0 ) {
@@ -1367,7 +1416,7 @@ ELFDEBUG(".rela.rodata starts at %x\n", elffile->relrodata );
 							".rel.line" ) == 0 ) {
 		continue;
 		}
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mc68000__)
 	/* .rela.tdesc */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".rela.tdesc" ) == 0 ) {

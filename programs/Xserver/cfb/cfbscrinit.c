@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.9 1997/02/27 13:57:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.10 1997/02/27 16:45:47 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -68,7 +68,7 @@ miBSFuncRec cfbBSFuncRec = {
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb.a",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -83,7 +83,7 @@ void libcfbModuleInit(data,magic)
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb16.a",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -98,7 +98,7 @@ void libcfb16ModuleInit(data,magic)
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb24.a",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
@@ -113,7 +113,7 @@ void libcfb24ModuleInit(data,magic)
 XF86ModuleVersionInfo cfbVersRec =
 {
 	"libcfb32.a",
-	"The XFree86 Project",
+	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,

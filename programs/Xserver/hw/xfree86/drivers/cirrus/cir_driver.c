@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.6 1997/05/03 09:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.7 1997/05/04 05:26:45 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -690,7 +690,7 @@ int defaultTilesPerLineIndex = 5; /* 2048 byte, skinny tiles */
 XF86ModuleVersionInfo cirrusVersRec =
 {
         "cir_drv.o",
-        "The XFree86 Project",
+        MODULEVENDORSTRING,
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,

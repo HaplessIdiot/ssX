@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.3 1997/04/08 10:13:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.4 1997/04/14 07:05:26 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -10,7 +10,6 @@
 extern void TsengAccelInit();
 
 ByteP W32Buffer;
-VByteP ACL; 
 
 LongP MBP0, MBP1, MBP2; 
 ByteP MMU_CONTROL;
@@ -147,6 +146,9 @@ LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */
 
 LongP CPU2ACLBase;
 
+long scratchVidBase; /* will be initialized in the Probe */
+
+
 /**********************************************************************/
 
 void tseng_terminate_acl()
@@ -166,12 +168,11 @@ void tseng_terminate_acl()
 
 void tseng_init_acl()
 {
-    long MMioBase, scratchVidBase, scratchMemBase;
+    long MMioBase, scratchMemBase;
 
     /*
      * prepare some shortcuts for faster access to memory mapped registers
      */
-    scratchVidBase = vga256InfoRec.videoRam * 1024 - 1024; /* the last 1024 bytes */
 
     if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
     {
@@ -335,47 +336,41 @@ void tseng_init_acl()
         /* Enable the W32p startup bit and set use an eight-bit pixel depth */
         *ACL_NQ_X_POSITION = 0;
         *ACL_NQ_Y_POSITION = 0;
-	*ACL_PIXEL_DEPTH = (vga256InfoRec.bitsPerPixel - 8) << 1;
+	*ACL_PIXEL_DEPTH = (vgaBitsPerPixel - 8) << 1;
 	/* writing destination address will start ACL */
         *ACL_OPERATION_STATE = 0x10;
     }
+    *ACL_DESTINATION_Y_OFFSET = vga256InfoRec.displayWidth * (vgaBitsPerPixel / 8) - 1;
     *ACL_XY_DIRECTION = 0;
 
     *MMU_CONTROL = 0x74;
 
-#if 1
     if ((et4000_type < TYPE_ET6000) && (et4000_type > TYPE_ET4000W32I)
          && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) /* W32p */
     {
       /*
-       * Another kludge...
-       *
        * Since the w32p revs C and D don't have any memory mapped when the
        * accelerator registers are used it is necessary to use the MMUs to
        * provide a semblance of linear memory. Fortunately on these chips
-       * the MMU appetures are 1 megabyte each. So as long as we are willing
+       * the MMU appertures are 1 megabyte each. So as long as we are willing
        * to only use 3 megs of video memory we can have some acceleration.
        * If we ever get the CPU-to-screen-color-expansion stuff working then
        * we will only be able to use 2 megs since MMU 2 will be used for
        * that.
+       *
+       * MBP2 is hardwired to 0x200000 on when linear memory mode is enabled,
+       * except on rev a (where it is programmable).
        */
-      /* ErrorF("--- linear base kludge ---\n"); */
       *((LongP) (MMioBase + 0x00)) = 0x0L;
       *((LongP) (MMioBase + 0x04)) = 0x100000;
     }
-#endif
     
-    TsengAccelInit();  /* XAA interface init */
-    
-#ifdef DEBUG_ACL_REGS
-    {
-      for (int i=0; i<256; i++)
-      {
-        if (!((i)%16)) ErrorF("0x%02x: ", i);
-        ErrorF("0x%02x ", *((ByteP)(MMioBase+i)) );
-        if (!((i+1)%16)) ErrorF("\n");
-      }
-    }
-#endif
+    /*
+     * Initialize the XAA data structures. This should be done in
+     * ET4000FbInit(), but that is called _before_ this tseng_init_acl(),
+     * and it relies on variables that are only setup here.
+     */
+
+    TsengAccelInit(); 
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.5 1997/04/14 07:05:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.6 1997/05/31 13:51:35 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -50,7 +50,7 @@ extern xf86InfoRec xf86Info;
 
 static int              tsengCursorGeneration = -1;
 static unsigned char    tsengCursorControlMode;
-static int              tsengCursorAddress;
+int                     tsengCursorAddress; /* initialized in the Probe */
 
 /*
  * This is the set variables that defines the cursor state within the
@@ -89,12 +89,6 @@ Bool TsengCursorInit(pm, pScr)
 	tsengCursorGeneration = serverGeneration;
 
 	tsengCursorControlMode = 0;
-
-        /* This needs to be moved to et4_driver.c
-           Assumes that cursor image is just above end of framebuffer
-           memory
-           */
-        tsengCursorAddress = vga256InfoRec.videoRam * 1024;
 
 	return TRUE;
 }
