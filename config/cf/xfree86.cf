@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.404 2002/09/17 00:15:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.405 2002/09/18 14:30:45 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1728,6 +1728,10 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #   define UseGccMakeDepend YES
 #  endif
 # endif
+#endif
+
+#ifndef GccAliasingArgs
+#define GccAliasingArgs /* */
 #endif
 
 #if HasGcc2 && defined(i386Architecture)
