@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.4 1997/01/22 11:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.5 1997/01/23 11:03:09 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -780,7 +780,7 @@ planemask)
     CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 	ctAluConv2[rop & 0xF];
 
-    patternaddr = patterny * vga256InfoRec.displayWidth +
+    patternaddr = patterny * vga256InfoRec.displayWidth * vgaBytesPerPixel +
 		   (patternx >> 3);
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);

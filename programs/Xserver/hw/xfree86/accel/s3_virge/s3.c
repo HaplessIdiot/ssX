@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.13 1997/01/18 06:55:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.14 1997/01/20 12:35:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1089,7 +1089,7 @@ s3Probe()
    case S3_TRIO64_DAC:
       if (s3ATT498PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else if (s3Bpp < 4 && !S3_ViRGE_VX_SERIES(s3ChipId))
+      else if (s3Bpp < 3 && !S3_ViRGE_VX_SERIES(s3ChipId))
 	 s3InfoRec.maxClock = 80000;
       else
 	 if (S3_ViRGE_VX_SERIES(s3ChipId))
