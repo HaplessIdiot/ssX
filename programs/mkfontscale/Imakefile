@@ -5,9 +5,9 @@ LOCAL_LIBRARIES = $(XFONTENCLIB) $(FREETYPE2LIB)
 
 SYS_LIBRARIES = GzipLibrary
 
-SRCS = mkfontscale.c list.c
+SRCS = mkfontscale.c list.c hash.c ident.c
 
-OBJS = mkfontscale.o list.o
+OBJS = mkfontscale.o list.o hash.o ident.o
 
 #if !HasSnprintf
 SNPRINTF_DEFINES  = -DNEED_SNPRINTF

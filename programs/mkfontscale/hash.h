@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2002 by Juliusz Chroboczek
+  Copyright (c) 2003 by Juliusz Chroboczek
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -19,24 +19,19 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86$ */
 
-char *dsprintf(char *f, ...);
-
-typedef struct _List {
+typedef struct _HashBucket {
+    char *key;
     char *value;
-    struct _List *next;
-} ListRec, *ListPtr;
+    int prio;
+    struct _HashBucket *next;
+} HashBucketRec, *HashBucketPtr;
 
-int listMember(char *elt, ListPtr list);
-ListPtr listCons(char *car, ListPtr cdr);
-ListPtr listAdjoin(char *car, ListPtr cdr);
-ListPtr listConsF(ListPtr cdr, char *f, ...);
-ListPtr listAdjoinF(ListPtr cdr, char *f, ...);
-int listLength(ListPtr list);
-ListPtr appendList(ListPtr first, ListPtr second);
-ListPtr makeList(char **a, int n, ListPtr old, int begin);
-ListPtr reverseList(ListPtr old);
-void destroyList(ListPtr old);
-void deepDestroyList(ListPtr old);
+typedef HashBucketPtr* HashTablePtr;
 
+HashTablePtr makeHashTable(void);
+void destroyHashTable(HashTablePtr table);
+char *getHash(HashTablePtr table, char *key);
+int putHash(HashTablePtr table, char *key, char *value, int prio);
+int hashElements(HashTablePtr table);
+HashBucketPtr *hashArray(HashTablePtr table, int value_first);

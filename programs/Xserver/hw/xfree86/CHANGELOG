@@ -1,4 +1,11 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 234. Added fonttosfnt, a utility that generates bitmap-only TTFs. It is
+      capable of reading most font formats (Bugzilla #389, 
+      Juliusz Chroboczek). 
+ 233. Added functionalities to mkfontscale so mkfontscale performs every
+      functionality mkfontdir does (Bugzilla #387, Juliusz Chroboczek).
+ 232. Removed absolute path from cpp for Linux as /usr/bin/ should be
+      in the default search patch (Egbert Eich).
  231. Fix regression of Xvideo not working with some videos on the
       CyberBladeXP/Ai1 chips (Bugzilla #251, Stephane Voltz).
  230. Added early failure and warning message when not sufficient memory

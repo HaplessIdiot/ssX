@@ -115,7 +115,7 @@ XTRAPCLIENTDIRS = xtrap
 SUBDIRS = $(XSSRCDIR)
 #else
 SUBDIRS = \
-	appres bdftopcf bitmap \
+	appres bdftopcf fonttosfnt bitmap \
 	$(SCREENSAVESRCDIR) editres $(FCDIRS) $(FCLANGDIR) fslsfonts fstobdf \
 	iceauth ico listres luit \
 	$(MAKEPSRESDIR) $(DPSCLIENTDIRS) \
@@ -134,7 +134,7 @@ SUBDIRS = \
 	$(XTERMSRCDIR) $(XTRAPCLIENTDIRS) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
 	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) \
 	$(XSSRCDIR) $(XASSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR) \
-	$(GLXCLIENTDIRS) $(XRANDRDIR) $(XCURSORGENDIR)
+	$(GLXCLIENTDIRS) $(XRANDRDIR) $(XCURSORGENDIR) 
 #endif
 
 MakeSubdirs($(SUBDIRS))

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2002 by Juliusz Chroboczek
+  Copyright (c) 2002-2003 by Juliusz Chroboczek
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 
 #include <sys/types.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include <X11/fonts/fontenc.h>
 #include <freetype/freetype.h>
@@ -34,9 +36,22 @@
 #include <freetype/tttables.h>
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
+#include <freetype/ftbdf.h>
+#include <freetype/tttables.h>
 
 #include "list.h"
+#include "hash.h"
 #include "data.h"
+#include "ident.h"
+
+#define NPREFIX 1024
+
+#ifndef MAXFONTFILENAMELEN
+#define MAXFONTFILENAMELEN 1024
+#endif
+#ifndef MAXFONTNAMELEN
+#define MAXFONTNAMELEN 1024
+#endif
 
 char *encodings_array[] =
     { "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
@@ -59,22 +74,33 @@ char *outfilename;
 
 #define countof(_a) (sizeof(_a)/sizeof((_a)[0]))
 
-int doDirectory(char*);
+int doDirectory(char*, int, ListPtr);
 static int checkEncoding(FT_Face face, char *encoding_name);
 static int checkExtraEncoding(FT_Face face, char *encoding_name, int found);
 static int find_cmap(int type, int pid, int eid, FT_Face face);
 static char* notice_foundry(char *notice);
 static char* vendor_foundry(signed char *vendor);
+int readFontScale(HashTablePtr entries, char *dirname);
+ListPtr makeXLFD(char *filename, FT_Face face, int);
 
 static FT_Library ft_library;
 static float bigEncodingFuzz = 0.02;
+
+static int doScalable;
+static int doBitmaps;
+static int doEncodings;
+static ListPtr encodingsToDo;
+static int reencodeLegacy;
+char *encodingPrefix = NULL;
 
 static void
 usage(void)
 {
     fprintf(stderr, 
-            "mkfontscale [ -o filename ] [ -e encoding ] [ -f fuzz ] "
-            "[ directory ]\n");
+            "mkfontscale [ -b ] [ -s ] [ -o filename ] \n"
+            "            [ -x encoding ] [ -f fuzz ] [ -l ] "
+            "[ -e directory ] [ -p prefix ]\n"
+            "            [ directory ]...\n");
 }
 
 int
@@ -82,14 +108,28 @@ main(int argc, char **argv)
 {
     int argn;
     FT_Error ftrc;
+    int rc;
+    char prefix[NPREFIX];
 
-    outfilename = "fonts.scale";
+    if(getcwd(prefix, NPREFIX - 1) == NULL) {
+        perror("Couldn't get cwd");
+        exit(1);
+    }
+    if(prefix[strlen(prefix) - 1] != '/')
+        strcat(prefix, "/");
+
+    outfilename = NULL;
 
     encodings = makeList(encodings_array, countof(encodings_array), NULL, 0);
 
     extra_encodings = makeList(extra_encodings_array, 
                                countof(extra_encodings_array),
                                NULL, 0);
+    doBitmaps = 0;
+    doScalable = 1;
+    reencodeLegacy = 1;
+    doEncodings = 0;
+    encodingsToDo = NULL;
 
     argn = 1;
     while(argn < argc) {
@@ -98,21 +138,51 @@ main(int argc, char **argv)
         if(argv[argn][1] == '-') {
             argn++;
             break;
-        } else if(argv[argn][1] == 'e') {
+        } else if(strcmp(argv[argn], "-x") == 0) {
             if(argn >= argc - 1) {
                 usage();
                 exit(1);
             }
             makeList(&argv[argn + 1], 1, encodings, 0);
             argn += 2;
-        } else if(argv[argn][1] == 'o') {
+        } else if(strcmp(argv[argn], "-p") == 0) {
+            if(argn >= argc - 1) {
+                usage();
+                exit(1);
+            }
+            if(strlen(argv[argn + 1]) > NPREFIX - 1) {
+                usage();
+                exit(1);
+            }
+            strcpy(prefix, argv[argn + 1]);
+            argn += 2;
+        } else if(strcmp(argv[argn], "-e") == 0) {
+            if(argn >= argc - 1) {
+                usage();
+                exit(1);
+            }
+            doEncodings = 1;
+            rc = readEncodings(encodingsToDo, argv[argn + 1]);
+            if(rc < 0)
+                exit(1);
+            argn += 2;
+        } else if(strcmp(argv[argn], "-b") == 0) {
+            doBitmaps = 1;
+            argn++;
+        } else if(strcmp(argv[argn], "-s") == 0) {
+            doScalable = 0;
+            argn++;
+        } else if(strcmp(argv[argn], "-l") == 0) {
+            reencodeLegacy = !reencodeLegacy;
+            argn++;
+        } else if(strcmp(argv[argn], "-o") == 0) {
             if(argn >= argc - 1) {
                 usage();
                 exit(1);
             }
             outfilename = argv[argn + 1];
             argn += 2;
-        } else if(argv[argn][1] == 'f') {
+        } else if(strcmp(argv[argn], "-f") == 0) {
             if(argn >= argc - 1) {
                 usage();
                 exit(1);
@@ -125,6 +195,15 @@ main(int argc, char **argv)
         }
     }
 
+    encodingPrefix = dsprintf("%s", prefix);
+
+    if(outfilename == NULL) {
+        if(doBitmaps)
+            outfilename = "fonts.dir";
+        else 
+            outfilename = "fonts.scale";
+    }
+
     ftrc = FT_Init_FreeType(&ft_library);
     if(ftrc) {
         fprintf(stderr, "Could not initialise FreeType library: %d\n", ftrc);
@@ -133,10 +212,10 @@ main(int argc, char **argv)
         
 
     if (argn == argc)
-        doDirectory(".");
+        doDirectory(".", doEncodings, encodingsToDo);
     else
         while(argn < argc) {
-            doDirectory(argv[argn]);
+            doDirectory(argv[argn], doEncodings, encodingsToDo);
             argn++;
         }
     return 0;
@@ -328,17 +407,6 @@ t1Weight(char *weight)
     }
 }
 
-static char*
-strcat_reliable(char *a, char *b) 
-{
-    char *c = malloc(strlen(a) + strlen(b) + 1);
-    if(c == NULL)
-        return NULL;
-    strcpy(c, a);
-    strcat(c, b);
-    return c;
-}
-
 static int
 unsafe(char c)
 {
@@ -379,8 +447,252 @@ safe(char* s)
     return t;
 }
 
+ListPtr
+makeXLFD(char *filename, FT_Face face, int isBitmap)
+{
+    ListPtr xlfd = NULL;
+    char *foundry, *family, *weight, *slant, *sWidth, *adstyle, 
+        *spacing, *full_name;
+    TT_Header *head;
+    TT_HoriHeader *hhea;
+    TT_OS2 *os2;
+    TT_Postscript *post;
+    PS_FontInfoRec *t1info, t1info_rec;
+    int rc;
+
+    foundry = NULL;
+    family = NULL;
+    weight = NULL;
+    slant = NULL;
+    sWidth = NULL;
+    adstyle = NULL;
+    spacing = NULL;
+    full_name = NULL;
+
+    head = FT_Get_Sfnt_Table(face, ft_sfnt_head);
+    hhea = FT_Get_Sfnt_Table(face, ft_sfnt_hhea);
+    os2 = FT_Get_Sfnt_Table(face, ft_sfnt_os2);
+    post = FT_Get_Sfnt_Table(face, ft_sfnt_post);
+
+    rc = FT_Get_PS_Font_Info(face, &t1info_rec);
+    if(rc == 0)
+        t1info = &t1info_rec;
+    else
+        t1info = NULL;
+        
+    if(!family)
+        family = getName(face, TT_NAME_ID_FONT_FAMILY);
+    if(!family)
+        family = getName(face, TT_NAME_ID_FULL_NAME);
+    if(!family)
+        family = getName(face, TT_NAME_ID_PS_NAME);
+
+    if(!full_name)
+        full_name = getName(face, TT_NAME_ID_FULL_NAME);
+    if(!full_name)
+        full_name = getName(face, TT_NAME_ID_PS_NAME);
+
+    if(os2 && os2->version != 0xFFFF) {
+        if(!weight)
+            weight = os2Weight(os2->usWeightClass);
+        if(!sWidth)
+            sWidth = os2Width(os2->usWidthClass);
+        if(!foundry)
+            foundry = vendor_foundry(os2->achVendID);
+        if(!slant)
+            slant = os2->fsSelection & 1 ? "i" : "r";
+    }
+
+    if(post) {
+        if(!spacing) {
+            if(post->isFixedPitch) {
+                if(hhea->min_Left_Side_Bearing >= 0 &&
+                   hhea->xMax_Extent <= hhea->advance_Width_Max) {
+                    spacing = "c";
+                } else {
+                    spacing = "m";
+                }
+            } else {
+                spacing = "p";
+            }
+        }
+    }
+            
+    if(t1info) {
+        if(!family)
+            family = t1info->family_name;
+        if(!family)
+            family = t1info->full_name;
+        if(!full_name)
+            full_name = t1info->full_name;
+        if(!foundry)
+            foundry = notice_foundry(t1info->notice);
+        if(!weight)
+            weight = t1Weight(t1info->weight);
+        if(!spacing)
+            spacing = t1info->is_fixed_pitch ? "m" : "p";
+        if(!slant) {
+            /* Bitstream fonts have positive italic angle. */
+            slant =
+                t1info->italic_angle <= -4 || t1info->italic_angle >= 4 ?
+                "i" : "r";
+        }
+    }
+
+    if(!full_name) {
+        fprintf(stderr, "Couldn't determine full name for %s\n", filename);
+        full_name = filename;
+    }
+
+    if(head) {
+        if(!slant)
+            slant = head->Mac_Style & 2 ? "i" : "r";
+        if(!weight)
+            weight = head->Mac_Style & 1 ? "bold" : "medium";
+    }
+
+    if(!slant) {
+        fprintf(stderr, "Couldn't determine slant for %s\n", filename);
+        slant = "r";
+    }
+
+    if(!weight) {
+        fprintf(stderr, "Couldn't determine weight for %s\n", filename);
+        weight = "medium";
+    }
+
+    if(!foundry) {
+        char *notice;
+        notice = getName(face, TT_NAME_ID_TRADEMARK);
+        if(notice) {
+            foundry = notice_foundry(notice);
+        }
+        if(!foundry) {
+            notice = getName(face, TT_NAME_ID_MANUFACTURER);
+            if(notice) {
+                foundry = notice_foundry(notice);
+            }
+        }
+    }
+
+    if(strcmp(slant, "i") == 0) {
+        if(strstr(full_name, "Oblique"))
+            slant = "o";
+        if(strstr(full_name, "Slanted"))
+            slant = "o";
+    }
+
+    if(!sWidth)
+        sWidth = nameWidth(full_name);
+
+    if(!foundry) foundry = "misc";
+    if(!family) {
+        fprintf(stderr, "Couldn't get family name for %s\n", filename);
+        family = filename;
+    }
+
+    if(!weight) weight = "medium";
+    if(!slant) slant = "r";
+    if(!sWidth) sWidth = "normal";
+    if(!adstyle) adstyle = "";
+    if(!spacing) spacing = "p";
+
+    /* Yes, it's a memory leak. */
+    foundry = safe(foundry);
+    family = safe(family);
+
+    if(!isBitmap) {
+        xlfd = listConsF(xlfd,
+                         "-%s-%s-%s-%s-%s-%s-0-0-0-0-%s-0",
+                         foundry, family,
+                         weight, slant, sWidth, adstyle, spacing);
+    } else {
+        int i, w, h, xres, yres;
+        for(i = 0; i < face->num_fixed_sizes; i++) {
+            w = face->available_sizes[i].width;
+            h = face->available_sizes[i].height;
+            xres = 75;
+            yres = (double)h / w * xres;
+            xlfd = listConsF(xlfd,
+                             "-%s-%s-%s-%s-%s-%s-%d-%d-%d-%d-%s-%d",
+                             foundry, family,
+                             weight, slant, sWidth, adstyle,
+                             h, ((int)(h / (double)yres + 0.5)) * 10,
+                             xres, yres,
+                             spacing, 60);
+        }
+    }
+    return xlfd;
+}
+
 int
-doDirectory(char *dirname_given)
+readFontScale(HashTablePtr entries, char *dirname)
+{
+    int n = strlen(dirname);
+    char *filename;
+    FILE *in;
+    int rc, count, i;
+    char file[MAXFONTFILENAMELEN], font[MAXFONTNAMELEN];
+    char format[100];
+
+    snprintf(format, 100, "%%%ds %%%d[^\n]\n", 
+             MAXFONTFILENAMELEN, MAXFONTNAMELEN);
+
+    if(dirname[n - 1] == '/')
+        filename = dsprintf("%sfonts.scale", dirname);
+    else
+        filename = dsprintf("%s/fonts.scale", dirname);
+    if(filename == NULL)
+        return -1;
+
+    in = fopen(filename, "r");
+    free(filename);
+    if(in == NULL) {
+        if(errno != ENOENT)
+            perror("open(fonts.scale)");
+        return -1;
+    }
+
+    rc = fscanf(in, "%d\n", &count);
+    if(rc != 1) {
+        fprintf(stderr, "Invalid fonts.scale in %s.\n", dirname);
+        fclose(in);
+        return -1;
+    }
+
+    for(i = 0; i < count; i++) {
+        rc = fscanf(in, format, file, font);
+        if(rc != 2)
+            break;
+        putHash(entries, font, file, 100);
+    }
+    fclose(in);
+    return 1;
+}
+
+static int
+filePrio(char *filename)
+{
+    int n = strlen(filename);
+    if(n < 4)
+        return 0;
+    if(memcmp(filename + n - 4, ".otf", 4) == 0)
+        return 4;
+    if(memcmp(filename + n - 4, ".OTF", 4) == 0)
+        return 4;
+    if(memcmp(filename + n - 4, ".ttf", 4) == 0)
+        return 3;
+    if(memcmp(filename + n - 4, ".TTF", 4) == 0)
+        return 3;
+    if(memcmp(filename + n - 3, ".gz", 3) == 0)
+        return 2;
+    if(memcmp(filename + n - 2, ".Z", 2) == 0)
+        return 1;
+    return 0;
+}
+
+int
+doDirectory(char *dirname_given, int doEncodings, ListPtr encodingsToDo)
 {
     char *dirname, *fontscale_name, *filename;
     FILE *fontscale;
@@ -388,36 +700,58 @@ doDirectory(char *dirname_given)
     struct dirent *entry;
     FT_Error ftrc;
     FT_Face face;
-    TT_Header *head;
-    TT_HoriHeader *hhea;
-    TT_OS2 *os2;
-    TT_Postscript *post;
-    PS_FontInfoRec *t1info, t1info_rec;
-    char *foundry, *family, *weight, *slant, *sWidth, *adstyle, 
-        *spacing, *full_name;
-    ListPtr encoding, entries = NULL;
-    int i, found, rc;
+    ListPtr encoding, xlfd, lp;
+    HashTablePtr entries;
+    HashBucketPtr *array;
+    int i, n, found, rc;
+    int isBitmap;
 
     i = strlen(dirname_given);
     if(i == 0)
-        dirname = strcat_reliable(".", "/");
+        dirname = dsprintf("./");
     else if(dirname_given[i - 1] != '/')
-        dirname = strcat_reliable(dirname_given, "/");
+        dirname = dsprintf("%s/", dirname_given);
     else
-        dirname = strcat_reliable(dirname_given, "");
+        dirname = dsprintf("%s", dirname_given);
 
     if(dirname == NULL) {
         perror("dirname");
         exit(1);
     }
 
+    if(doEncodings) {
+        char *e = dsprintf("%s%s", dirname, "encodings.dir");
+        FILE *out;
+        ListPtr l;
+
+        if(e == NULL) {
+            perror("encodings");
+            exit(1);
+        }
+        unlink(e);
+        out = fopen(e, "w");
+        if(out == NULL) {
+            perror("open(encodings.dir)");
+            exit(1);
+        }
+        fprintf(out, "%d\n", listLength(encodingsToDo));
+        for(l = encodingsToDo; l; l = l->next) {
+            fprintf(out, "%s\n", l->value);
+        }
+    }
+
+    entries = makeHashTable();
+    if(doBitmaps && !doScalable) {
+        readFontScale(entries, dirname);
+    }
+
     if(strcmp(outfilename, "-") == 0)
         fontscale_name = NULL;
     else {
         if(outfilename[0] == '/')
-            fontscale_name = strcat_reliable(outfilename, "");
+            fontscale_name = dsprintf("%s", outfilename);
         else
-            fontscale_name = strcat_reliable(dirname, outfilename);
+            fontscale_name = dsprintf("%s%s", dirname, outfilename);
         if(fontscale_name == NULL) {
             perror("fontscale_name");
             exit(1);
@@ -441,186 +775,138 @@ doDirectory(char *dirname_given)
         perror("fopen(w)");
         return 0;
     }
-    
-    for(;;) {
-        entry = readdir(dirp);
-        if(entry == NULL)
-            break;
-        filename = strcat_reliable(dirname, entry->d_name);
-        ftrc = FT_New_Face(ft_library, filename, 0, &face);
-        if(ftrc)
-            continue;
 
-        if((face->face_flags & FT_FACE_FLAG_SCALABLE) == 0)
-            continue;
+    while((entry = readdir(dirp)) != NULL) {
+        int have_face = 0;
+        char *xlfd_name = NULL;
+        xlfd = NULL;
+        filename = dsprintf("%s%s", dirname, entry->d_name);
+
+        if(doBitmaps)
+            rc = bitmapIdentify(filename, &xlfd_name);
+        else
+            rc = 0;
+
+        if(rc < 0)
+            goto done;
+
+        if(rc == 0) {
+            ftrc = FT_New_Face(ft_library, filename, 0, &face);
+            if(ftrc)
+                goto done;
+            have_face = 1;
+
+            isBitmap = ((face->face_flags & FT_FACE_FLAG_SCALABLE) == 0);
+
+            if(!isBitmap) {
+                /* Workaround for bitmap-only TTF fonts */
+                if(face->num_fixed_sizes > 0) {
+                    TT_MaxProfile *maxp;
+                    maxp = FT_Get_Sfnt_Table(face, ft_sfnt_maxp);
+                    if(maxp != NULL && maxp->maxContours == 0)
+                        isBitmap = 1;
+                }
+            }
+        
+            if(isBitmap) {
+                if(!doBitmaps)
+                    goto done;
+            } else {
+                if(!doScalable)
+                    goto done;
+            }
+
+            if(isBitmap) {
+                BDF_PropertyRec prop;
+                int n;
+                rc = FT_Get_BDF_Property(face, "FONT", &prop);
+                if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
+                    n = strlen(prop.u.atom);
+                    xlfd_name = malloc(strlen(prop.u.atom) + 1);
+                    if(xlfd_name == NULL)
+                        goto done;
+                    strcpy(xlfd_name, prop.u.atom);
+                }
+            }
+        }
+
+        if(xlfd_name) {
+            /* We know it's a bitmap font, and we know its XLFD */
+            char *s;
+            int n = strlen(xlfd_name);
+            if(reencodeLegacy &&
+               n >= 12 && strcasecmp(xlfd_name + n - 11, "-iso10646-1") == 0) {
+                s = malloc(n - 10);
+                memcpy(s, xlfd_name, n - 11);
+                s[n - 11] = '\0';
+                xlfd = listCons(s, xlfd);
+            } else {
+                /* Not a reencodable font -- skip all the rest of the loop body */
+                putHash(entries, xlfd_name, entry->d_name, filePrio(entry->d_name));
+                goto done;
+            }
+        }
+
+        if(!have_face) {
+            ftrc = FT_New_Face(ft_library, filename, 0, &face);
+            if(ftrc)
+                goto done;
+            have_face = 1;
+            isBitmap = ((face->face_flags & FT_FACE_FLAG_SCALABLE) == 0);
+
+            if(!isBitmap) {
+                if(face->num_fixed_sizes > 0) {
+                    TT_MaxProfile *maxp;
+                    maxp = FT_Get_Sfnt_Table(face, ft_sfnt_maxp);
+                    if(maxp != NULL && maxp->maxContours == 0)
+                        isBitmap = 1;
+                }
+            }
+        }
+
+        if(xlfd == NULL)
+            xlfd = makeXLFD(entry->d_name, face, isBitmap);
 
         found = 0;
 
-        foundry = NULL;
-        family = NULL;
-        weight = NULL;
-        slant = NULL;
-        sWidth = NULL;
-        adstyle = NULL;
-        spacing = NULL;
-        full_name = NULL;
-
-        head = FT_Get_Sfnt_Table(face, ft_sfnt_head);
-        hhea = FT_Get_Sfnt_Table(face, ft_sfnt_hhea);
-        os2 = FT_Get_Sfnt_Table(face, ft_sfnt_os2);
-        post = FT_Get_Sfnt_Table(face, ft_sfnt_post);
-
-        rc = FT_Get_PS_Font_Info(face, &t1info_rec);
-        if(rc == 0)
-            t1info = &t1info_rec;
-        else
-            t1info = NULL;
-        
-        if(!family)
-            family = getName(face, TT_NAME_ID_FONT_FAMILY);
-        if(!family)
-            family = getName(face, TT_NAME_ID_FULL_NAME);
-        if(!family)
-            family = getName(face, TT_NAME_ID_PS_NAME);
-
-        if(!full_name)
-            full_name = getName(face, TT_NAME_ID_FULL_NAME);
-        if(!full_name)
-            full_name = getName(face, TT_NAME_ID_PS_NAME);
-
-        if(os2 && os2->version != 0xFFFF) {
-            if(!weight)
-                weight = os2Weight(os2->usWeightClass);
-            if(!sWidth)
-                sWidth = os2Width(os2->usWidthClass);
-            if(!foundry)
-                foundry = vendor_foundry(os2->achVendID);
-            if(!slant)
-                slant = os2->fsSelection & 1 ? "i" : "r";
-        }
-
-        if(post) {
-            if(!spacing) {
-                if(post->isFixedPitch) {
-                    if(hhea->min_Left_Side_Bearing >= 0 &&
-                       hhea->xMax_Extent <= hhea->advance_Width_Max) {
-                        spacing = "c";
-                    } else {
-                        spacing = "m";
-                    }
-                } else {
-                    spacing = "p";
+        for(lp = xlfd; lp; lp = lp->next) {
+            char buf[MAXFONTNAMELEN];
+            for(encoding = encodings; encoding; encoding = encoding->next) {
+                if(checkEncoding(face, encoding->value)) {
+                    found = 1;
+                    snprintf(buf, MAXFONTNAMELEN, "%s-%s",
+                            lp->value, encoding->value);
+                    putHash(entries, buf, entry->d_name, filePrio(entry->d_name));
+                }
+            }
+            for(encoding = extra_encodings; encoding; 
+                encoding = encoding->next) {
+                if(checkExtraEncoding(face, encoding->value, found)) {
+                    /* Do not set found! */
+                    snprintf(buf, MAXFONTNAMELEN, "%s-%s",
+                            lp->value, encoding->value);
+                    putHash(entries, buf, entry->d_name, filePrio(entry->d_name));
                 }
             }
         }
-            
-        if(t1info) {
-            if(!family)
-                family = t1info->family_name;
-            if(!family)
-                family = t1info->full_name;
-            if(!full_name)
-                full_name = t1info->full_name;
-            if(!foundry)
-                foundry = notice_foundry(t1info->notice);
-            if(!weight)
-                weight = t1Weight(t1info->weight);
-            if(!spacing)
-                spacing = t1info->is_fixed_pitch ? "m" : "p";
-            if(!slant) {
-                /* Bitstream fonts have positive italic angle. */
-                slant =
-                    t1info->italic_angle <= -4 || t1info->italic_angle >= 4 ?
-                    "i" : "r";
-            }
+    done:
+        if(have_face) {
+            FT_Done_Face(face);
+            have_face = 0;
         }
-
-        if(head) {
-            if(!slant)
-                slant = head->Mac_Style & 2 ? "i" : "r";
-            if(!weight)
-                weight = head->Mac_Style & 1 ? "bold" : "medium";
-        }
-
-        if(!slant) {
-            fprintf(stderr, "Couldn't determine slant for %s\n", filename);
-            slant = "r";
-        }
-
-        if(!weight) {
-            fprintf(stderr, "Couldn't determine weight for %s\n", filename);
-            weight = "medium";
-        }
-
-        if(!foundry) {
-            char *notice;
-            notice = getName(face, TT_NAME_ID_TRADEMARK);
-            if(notice) {
-                foundry = notice_foundry(notice);
-            }
-            if(!foundry) {
-                notice = getName(face, TT_NAME_ID_MANUFACTURER);
-                if(notice) {
-                    foundry = notice_foundry(notice);
-                }
-            }
-        }
-
-        if(strcmp(slant, "i") == 0) {
-            if(strstr(full_name, "Oblique"))
-                slant = "o";
-            if(strstr(full_name, "Slanted"))
-                slant = "o";
-        }
-
-        if(!sWidth)
-            sWidth = nameWidth(full_name);
-
-        if(!foundry) foundry = "misc";
-        if(!family) {
-            fprintf(stderr, "Couldn't get family name for %s\n", filename);
-            family = entry->d_name;
-        }
-
-        if(!weight) weight = "medium";
-        if(!slant) slant = "r";
-        if(!sWidth) sWidth = "normal";
-        if(!adstyle) adstyle = "";
-        if(!spacing) spacing = "p";
-
-        /* Yes, it's a memory leak. */
-        foundry = safe(foundry);
-        family = safe(family);
-
-        for(encoding = encodings; encoding; encoding = encoding->next)
-            if(checkEncoding(face, encoding->value)) {
-                found = 1;
-                entries = listConsF(entries,
-                                    "%s -%s-%s-%s-%s-%s-%s-0-0-0-0-%s-0-%s",
-                                    entry->d_name,
-                                    foundry, family, 
-                                    weight, slant, sWidth, adstyle, spacing,
-                                    encoding->value);
-            }
-        for(encoding = extra_encodings; encoding; encoding = encoding->next)
-            if(checkExtraEncoding(face, encoding->value, found)) {
-                /* Do not set found! */
-                entries = listConsF(entries,
-                                    "%s -%s-%s-%s-%s-%s-%s-0-0-0-0-%s-0-%s",
-                                    entry->d_name,
-                                    foundry, family, 
-                                    weight, slant, sWidth, adstyle, spacing,
-                                    encoding->value);
-            }
+        deepDestroyList(xlfd);
+        xlfd = NULL;
         free(filename);
     }
-    entries = reverseList(entries);
-    fprintf(fontscale, "%d\n", listLength(entries));
-    while(entries) {
-        fprintf(fontscale, "%s\n", entries->value);
-        entries = entries->next;
-    }
-    deepDestroyList(entries);
+
+    closedir(dirp);
+    n = hashElements(entries);
+    fprintf(fontscale, "%d\n", n);
+    array = hashArray(entries, 1);
+    for(i = 0; i < n; i++)
+        fprintf(fontscale, "%s %s\n", array[i]->value, array[i]->key);
+    destroyHashArray(array);
+    entries = NULL;
     if(fontscale_name) {
         fclose(fontscale);
         free(fontscale_name);
@@ -880,4 +1166,59 @@ vendor_foundry(signed char *vendor)
         if(vendor_match(vendor, vendor_foundries[i][0]))
             return vendor_foundries[i][1];
     return NULL;
+}
+
+int
+readEncodings(ListPtr encodings, char *dirname)
+{
+    char *fullname;
+    int slash;
+    DIR *dirp;
+    struct dirent *file;
+    char **names, **name;
+
+    if(strlen(dirname) > 1 && dirname[strlen(dirname) - 1] == '/')
+        dirname[strlen(dirname) - 1] = '\0';
+
+    dirp = opendir(dirname);
+    if(dirp == NULL) {
+        perror("opendir");
+        return -1;
+    }
+
+    while((file = readdir(dirp)) != NULL) {
+        fullname = dsprintf("%s/%s", dirname, file->d_name);
+        if(fullname == NULL) {
+            fprintf(stderr, "Couldn't allocate fullname\n");
+            closedir(dirp);
+            return -1;
+        }
+        
+        names = FontEncIdentify(fullname);
+        if(!names)
+            continue;
+
+        for(name = names; *name; name++) {
+            if(fullname[0] != '/') {
+                char *n;
+                n = dsprintf("%s%s", encodingPrefix, fullname);
+                if(n == NULL) {
+                    fprintf(stderr, "Couldn't allocate name\n");
+                    closedir(dirp);
+                    return -1;
+                }
+                free(fullname);
+                fullname = n;
+            }
+            encodingsToDo = listConsF(encodingsToDo, "%s %s", fullname, *name);
+            if(encodingsToDo == NULL) {
+                fprintf(stderr, "Couldn't allocate encodings\n");
+                closedir(dirp);
+                return -1;
+            }
+        }
+        free(names);            /* only the spine */
+    }
+    closedir(dirp);
+    return 0;
 }

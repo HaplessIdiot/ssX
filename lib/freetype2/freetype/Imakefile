@@ -8,6 +8,7 @@ SUBDIRS=config cache internal
 FREETYPETOP = $(TOP)/extras/freetype2
 FREETYPESRC = $(FREETYPETOP)/src
 FREETYPEINC = $(FREETYPETOP)/include/freetype
+FREETYPESRCINC = $(FREETYPETOP)/src
 
 HEADERS= \
         freetype.h \
@@ -43,7 +44,10 @@ HEADERS= \
         t1tables.h \
         ttnameid.h \
         tttables.h \
-        tttags.h
+        tttags.h \
+	bdf.h \
+	bdfdrivr.h \
+	pcf.h
 
 BuildIncludes($(HEADERS),freetype2/freetype,../..)
 InstallMultipleFlags($(HEADERS),$(INCDIR)/freetype2/freetype,$(INSTINCFLAGS))
@@ -82,5 +86,8 @@ LinkSourceFile(t1tables.h,$(FREETYPEINC))
 LinkSourceFile(ttnameid.h,$(FREETYPEINC))
 LinkSourceFile(tttables.h,$(FREETYPEINC))
 LinkSourceFile(tttags.h,$(FREETYPEINC))
+LinkSourceFile(bdf.h,$(FREETYPESRCINC)/bdf)
+LinkSourceFile(bdfdrivr.h,$(FREETYPESRCINC)/bdf)
+LinkSourceFile(pcf.h,$(FREETYPESRCINC)/pcf)
 
 DependSubdirs($(SUBDIRS))
