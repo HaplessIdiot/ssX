@@ -1,4 +1,5 @@
 /* $XConsortium: mach8win.c,v 1.2 94/04/17 20:31:02 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -115,7 +116,9 @@ mach8CopyWindow(pWin, ptOldOrg, prgnSrc)
 	return;
     }
 
-    mach8FindOrdering(pWin, pWin, &dummyGC, nbox, pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x, pWin->drawable.y, ordering);
+    mach8FindOrdering((DrawablePtr)pWin, (DrawablePtr)pWin, &dummyGC, nbox,
+		      pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x,
+		      pWin->drawable.y, ordering);
 
     WaitQueue(3);
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);
