@@ -2,8 +2,9 @@
  * VIA TV additions
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.70 2003/01/05 18:09:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_tv.c,v 1.1 2003/04/15 22:13:43 alanh Exp $ */
 
+#include "xf86_ansic.h"
 #include "trident.h"
 #include "trident_regs.h"
 
