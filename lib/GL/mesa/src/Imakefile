@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.19 2000/10/20 12:57:22 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.20 2000/11/13 23:31:25 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -348,13 +348,16 @@ LinkSourceFile(zoom.h, $(MESASRCDIR)/src)
 #ifdef i386Architecture
      ASM_SRCS = 
      ASM_OBJS = 
-#ifdef MesaUse3DNow
+#if MesaUseMMX
+     MMX_DEFS = -DUSE_MMX_ASM
+#endif
+#if MesaUse3DNow
    3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
-#ifdef MesaUseKatmai
+#if MesaUseKatmai
   KATMAI_DEFS = -DUSE_KATMAI_ASM
 #endif
-     ASM_DEFS = -DUSE_X86_ASM -DUSE_MMX_ASM $(3DNOW_DEFS) $(KATMAI_DEFS)
+     ASM_DEFS = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
 #endif
 
 #ifdef UseCompaqMathLibrary

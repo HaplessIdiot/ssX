@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.11 2000/10/20 12:57:22 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.12 2000/11/13 23:31:28 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -13,13 +13,16 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #ifdef i386Architecture
-#ifdef MesaUse3DNow
+#if MesaUseMMX
+     MMX_DEFS = -DUSE_MMX_ASM
+#endif
+#if MesaUse3DNow
    3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
-#ifdef MesaUseKatmai
+#if MesaUseKatmai
   KATMAI_DEFS = -DUSE_KATMAI_ASM
 #endif
-  ASM_DEFINES = -DUSE_X86_ASM -DUSE_MMX_ASM $(3DNOW_DEFS) $(KATMAI_DEFS)
+  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
 #endif
 
 #if BuildXF86DRI
@@ -257,11 +260,13 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../X86/x86_xform_raw3.o \
 		../../X86/x86_xform_raw4.o
 
+#if MesaUseMMX
      MMX_SRCS = ../../X86/mmx_blend.S
 
      MMX_OBJS = ../../X86/mmx_blend.o
+#endif
 
-#ifdef MesaUse3DNow
+#if MesaUse3DNow
    3DNOW_SRCS = ../../X86/3dnow.c \
 		../../X86/3dnow_norm_raw.S \
 		../../X86/3dnow_vertex.S \
@@ -287,7 +292,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../X86/3dnow_xform_raw4.o
 #endif
 
-#ifdef MesaUseKatmai
+#if MesaUseKatmai
   KATMAI_SRCS = ../../X86/katmai.c \
 		../../X86/katmai_norm_raw.S \
 		../../X86/katmai_vertex.S \
