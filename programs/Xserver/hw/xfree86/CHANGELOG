@@ -1,4 +1,7 @@
 XFree86 4.0a (31 March 2000)
+  77. Fix Overlay support in the TI ramdac module (Alan Hourihane).
+  76. Fix mixup between TVP3026/3030 ramdacs in the ramdac module 
+      (Alan Hourihane).
   75. Increase usage of ReadPixmap within XAA (Mark Vojkovich).
   74. Allow the v4l driver to use offscreen YUV surfaces exported by the
       chipset drivers (Gerd Knorr).
