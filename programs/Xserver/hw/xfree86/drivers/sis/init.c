@@ -220,6 +220,8 @@ InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    SiS_Pr->SiS_LVDSBARCO1366Data_2 = SiS_LVDSBARCO1366Data_2;
    SiS_Pr->SiS_LVDSBARCO1024Data_1 = SiS_LVDSBARCO1024Data_1;
    SiS_Pr->SiS_LVDSBARCO1024Data_2 = SiS_LVDSBARCO1024Data_2;
+   SiS_Pr->SiS_LVDS848x480Data_1   = SiS_LVDS848x480Data_1;
+   SiS_Pr->SiS_LVDS848x480Data_2   = SiS_LVDS848x480Data_2;
 
    SiS_Pr->SiS_LCDA1400x1050Data_1 = SiS_LCDA1400x1050Data_1;
    SiS_Pr->SiS_LCDA1400x1050Data_2 = SiS_LCDA1400x1050Data_2;
@@ -2150,7 +2152,7 @@ SiSBIOSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, ScrnI
 
    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3, "Setting standard mode 0x%x\n", ModeNo);
 
-   return(SiSSetMode(SiS_Pr, HwDeviceExtension, pScrn, ModeNo, TRUE));   
+   return(SiSSetMode(SiS_Pr, HwDeviceExtension, pScrn, ModeNo, TRUE));
 }
 
 #ifdef SISDUALHEAD
@@ -2545,8 +2547,8 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Mod
    
    if(SiS_Pr->UseCustomMode) {
       ModeNo = 0xfe;
-   }      
-   
+   }
+
    SiSInitPtr(SiS_Pr, HwDeviceExtension);
 
    SiSRegInit(SiS_Pr, BaseAddr);
@@ -2574,7 +2576,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Mod
    if(!SiS_Pr->UseCustomMode) {
       /* TW: Shift the clear-buffer-bit away */
       ModeNo = ((ModeNo & 0x80) << 8) | (ModeNo & 0x7f);
-   }      
+   }
 
 #ifdef LINUX_XF86
    /* We never clear the buffer in X */
@@ -2595,17 +2597,17 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Mod
    SiS_UnLockCRT2(SiS_Pr, HwDeviceExtension, BaseAddr);
 
    if(!SiS_Pr->UseCustomMode) {
-   
+
       /* 2.Get ModeID Table  */
       temp = SiS_SearchModeID(SiS_Pr,ROMAddr,&ModeNo,&ModeIdIndex);
       if(temp == 0) return(0);
-      
+
    } else {
-   
+
       ModeIdIndex = 0;
-      
+
    }
-    
+
    /* Determine VBType (301,301B,301LV,302B,302LV) */
    SiS_GetVBType(SiS_Pr,BaseAddr,HwDeviceExtension);
 
@@ -3737,6 +3739,7 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDe
   USHORT data,data2,data3;
   USHORT infoflag=0,modeflag;
   USHORT resindex,xres;
+  ULONG  longdata;
 
   if(SiS_Pr->UseCustomMode) {
      modeflag = SiS_Pr->CModeFlag;
@@ -3873,9 +3876,9 @@ SiS_SetCRT1ModeRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDe
 	  data2 *= data3;
 
 	  data3 = SiS_GetMCLK(SiS_Pr,ROMAddr, HwDeviceExtension);
-	  data3 *= 1024;
+	  longdata = data3 * 1024;
 
-	  data2 = data3 / data2;
+	  data2 = longdata / data2;
 
 	  if(SiS_Pr->SiS_ModeType != Mode16Bpp) {
             if(data2 >= 0x19c)      data = 0xba;

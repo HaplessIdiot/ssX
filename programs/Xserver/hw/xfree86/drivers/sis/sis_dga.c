@@ -208,8 +208,8 @@ SISDGAInit(ScreenPtr pScreen)
 
    /* 8 */
 #ifdef SISDUALHEAD
-   /* TW: We don't ever use 8bpp modes in dual head mode,
-          so don't offer them to DGA either
+   /* We don't ever use 8bpp modes in dual head mode,
+    * so don't offer them to DGA either
     */
    if(!pSiS->DualHeadMode) {
 #endif

@@ -172,6 +172,7 @@ typedef enum _SIS_LCD_TYPE {
     LCD_1024x600,
     LCD_640x480_2,     /* FSTN, DSTN */
     LCD_640x480_3,     /* FSTN, DSTN */
+    LCD_848x480,
     LCD_CUSTOM,
     LCD_UNKNOWN
 } SIS_LCD_TYPE;
@@ -311,7 +312,13 @@ struct _SISFB_INFO {
 	
 	unsigned char sisfb_lcda;
 
-	char reserved[235]; 		/* for future use */
+	unsigned long sisfb_vbflags;
+	unsigned long sisfb_currentvbflags;
+
+	int sisfb_scalelcd;
+	unsigned long sisfb_specialtiming;
+
+	char reserved[219]; 		/* for future use */
 };
 #endif
 

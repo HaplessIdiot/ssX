@@ -6,8 +6,6 @@
  *
  * Based on sis_video.c which is
  *    Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
- *    Parts Copyright 2000 Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
- *    All Rights Reserved.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -27,8 +25,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:
- *      Thomas Winischhofer <thomas@winischhofer.net>
+ * Author:	Thomas Winischhofer <thomas@winischhofer.net>
  */
 
 #include "sis.h"

@@ -305,6 +305,7 @@
 #define Panel_320x480           0x0e    /* fstn - TW: This is fake, can be any */
 #define Panel_Custom		0x0f
 #define Panel_Barco1366         0x10
+#define Panel_848x480		0x11
 
 /* Index in ModeResInfo table */
 #define SIS_RI_320x200 0
@@ -376,12 +377,14 @@
 #define VCLK81_300		0x3f   /* Index in VCLKData table (300) */
 #define VCLK108_3_300           0x42   /* Index in VCLKData table (300) */
 #define VCLK100_300             0x43   /* Index in VCLKData table (300) */
+#define VCLK34_300              0x3d   /* Index in VCLKData table (300) */
 #define VCLK65_315              0x0b   /* Index in (VB)VCLKData table (315) */
 #define VCLK108_2_315           0x19   /* Index in (VB)VCLKData table (315) */
 #define VCLK81_315		0x5b   /* Index in (VB)VCLKData table (315) */
 #define VCLK162_315             0x21   /* Index in (VB)VCLKData table (315) */
 #define VCLK108_3_315           0x45   /* Index in VBVCLKData table (315) */
 #define VCLK100_315             0x46   /* Index in VBVCLKData table (315) */
+#define VCLK34_315              0x55   /* Index in VBVCLKData table (315) */
 
 #define TVCLKBASE_300		0x21   /* Indices on TV clocks in VCLKData table (300) */
 #define TVCLKBASE_315	        0x3a   /* Indices on TV clocks in (VB)VCLKData table (315) */

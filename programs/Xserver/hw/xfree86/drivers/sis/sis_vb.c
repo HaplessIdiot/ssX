@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
- *		(Entirely rewritten)
+ *		
  */
 
 #include "xf86.h"
@@ -199,6 +199,14 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 		((CR36 & 0xf0) >> 4),
 		(CR37 & 0x10) ? "" : "non-",
 		(CR37 & 0x01) ? 18 : 24);
+       } else if(pSiS->SiS_Pr->SiS_CustomT == CUT_PANEL848) {
+          pSiS->VBLCDFlags |= VB_LCD_848x480;
+	  pSiS->LCDwidth = pSiS->SiS_Pr->CP_MaxX = 848;
+	  pSiS->LCDheight = pSiS->SiS_Pr->CP_MaxY = 480;
+	  pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	  pSiS->sishw_ext.ulCRT2LCDType = LCD_848x480;
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+	  	"Assuming LCD/plasma panel (848x480, expanding, RGB24)\n");
        } else {
 	  if((pSiS->VGAEngine == SIS_315_VGA) && (!CR36)) {
 	     /* TW: Old 650/301LV BIOS version "forgot" to set CR36, CR37 */

@@ -2,8 +2,10 @@
 /*
  * Mode setup and basic video bridge detection
  *
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
+ *
+ * Init() function for old series based on old code which was
+ * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

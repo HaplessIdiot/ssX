@@ -3,7 +3,7 @@
  * 2D acceleration for SiS5597/5598 and 6326
  *
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
- * Parts Copyright 2002 Thomas Winischhofer, Vienna, Austria.
+ * Parts Copyright 2002-2003 Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

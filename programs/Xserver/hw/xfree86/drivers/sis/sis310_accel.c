@@ -1,7 +1,7 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 0.1 2002/04/17 12:12:00 tw Exp $ */
 /*
- * 2D Acceleration for SiS 315 series (315, 550, 650, 740, M650, 651)
- * Does this work on the Xabre/660?
+ * 2D Acceleration for SiS 315 and Xabre series
+ * (315/550/650/740/M650/651/652/M652/330/660/M660/760/M760)
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
@@ -25,7 +25,7 @@
  *
  * Based on sis300_accel.c
  *
- *      Author:  Thomas Winischhofer <thomas@winischhofer.net>
+ * Author:  	Thomas Winischhofer <thomas@winischhofer.net>
  *
  */
 
@@ -168,6 +168,7 @@ SiSInitializeAccelerator(ScrnInfoPtr pScrn)
 	SISPtr  pSiS = SISPTR(pScrn);
 
 	pSiS->DoColorExpand = FALSE;
+	CmdQueLen = ((128 * 1024) / 4) - 64;
 }
 
 Bool
@@ -256,10 +257,13 @@ SiS315AccelInit(ScreenPtr pScreen)
 #ifdef CTSCE
         /* 650, 740, 660: We don't use this, it's much slower than doing it by the CPU.
 	 * On 650, 740, 660 we know that we are running on a P4; for other chipsets like
-	 * 315 and 330, we don't. On 550, this should be faster than the CPU in any 
-	 * case.
+	 * 315, we don't. On 550, this should be faster than the CPU in any case.
+	 * I now disabled this for the Xabre as well; people owning a "high speed 3D" card
+	 * have presumably CPUs fast enough.
 	 */
-        if((pSiS->Chipset != PCI_CHIP_SIS650) && (pSiS->Chipset != PCI_CHIP_SIS660)) {
+        if((pSiS->Chipset != PCI_CHIP_SIS650) &&
+	   (pSiS->Chipset != PCI_CHIP_SIS660) &&
+	   (pSiS->Chipset != PCI_CHIP_SIS330)) {
 	   infoPtr->NumScanlineColorExpandBuffers = pSiS->ColorExpandBufferNumber;
 	   infoPtr->ScanlineColorExpandBuffers = (unsigned char **)&pSiS->ColorExpandBufferAddr[0];
 	   infoPtr->SetupForScanlineCPUToScreenColorExpandFill = SiSSetupForScanlineCPUToScreenColorExpandFill;
