@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.5 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.6 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -81,6 +81,7 @@ const GCOps winGCOps = {
 #endif
 };
 
+
 /* See Porting Layer Definition - p. 45 */
 /* See mfb/mfbgc.c - mfbCreateGC() */
 /* See Strategies for Porting - pp. 15, 16 */
@@ -125,6 +126,7 @@ winCreateGCNativeGDI (GCPtr pGC)
 
   return TRUE;
 }
+
 
 /* See Porting Layer Definition - p. 45 */
 void
@@ -181,7 +183,6 @@ winValidateGCNativeGDI (GCPtr pGC,
 	    {
 	      ErrorF ("winValidateGC - Selecting BLACK_PEN\n");
 	      SelectObject (pGCPriv->hdcMem, GetStockObject (BLACK_PEN));
-	      
 	    }
 	  break;
 	  

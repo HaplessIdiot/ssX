@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.20 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.21 2001/10/04 20:02:36 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -46,43 +46,18 @@
 /*
  * Build toggles for experimental features
  */
-#define WIN_NATIVE_GDI_SUPPORT	NO
+#define WIN_NATIVE_GDI_SUPPORT	YES
 #define WIN_LAYER_SUPPORT	YES
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
-
-/* Debugging macros */
-#if CYGDEBUG || YES
-#define DEBUG_MSG(str) if (fDebugProcMsg == TRUE) MessageBox (NULL, str, szFunctionName, MB_OK)
-#else
-#define DEBUG_MSG(str)
-#endif
-
-#if CYGDEBUG || YES
-#define DEBUG_FN_NAME(str) PTSTR szFunctionName = str
-#else
-#define DEBUG_FN_NAME(str)
-#endif
-
-#if CYGDEBUG || YES
-#define DEBUGVARS BOOL fDebugProcMsg = FALSE
-#else
-#define DEBUGVARS
-#endif
-
-#if CYGDEBUG || YES
-#define DEBUGPROC_MSG fDebugProcMsg = TRUE
-#else
-#define DEBUGPROC_MSG
-#endif
 
 /* Constant strings */
 #define WINDOW_CLASS		"cygwin/xfree86"
 #define WINDOW_TITLE		"Cygwin/XFree86"
 #define WIN_SCR_PROP		"cyg_screen_prop"
 #define WIN_MSG_QUEUE_FNAME	"/dev/windows"
-#define WIN_LOG_FNAME		"XWin.log"
+#define WIN_LOG_FNAME		"/var/log/XWin.log"
 
 #define NEED_EVENTS
 
@@ -195,13 +170,57 @@
  */
 #include "winms.h"
 
+
 /* Cygwin's winuser.h does not define VK_KANA as of 28Mar2001 */
 /* NOTE: Cygwin's winuser.h was fixed shortly after 28Mar2001. */
 #ifndef VK_KANA
 #define VK_KANA 15
 #endif
 
-#include <stdio.h>
+
+/*
+ * Debugging macros
+ */
+
+#if CYGDEBUG || YES
+#define DEBUG_MSG(str,...) \
+if (fDebugProcMsg) \
+{ \
+  char *pszTemp; \
+  int iLength; \
+  \
+  iLength = sprintf (NULL, str, ##__VA_ARGS__); \
+  \
+  pszTemp = malloc (iLength + 1); \
+  \
+  sprintf (pszTemp, str, ##__VA_ARGS__); \
+  \
+  MessageBox (NULL, pszTemp, szFunctionName, MB_OK); \
+  \
+  free (pszTemp); \
+}
+#else
+#define DEBUG_MSG(str,...)
+#endif
+
+#if CYGDEBUG || YES
+#define DEBUG_FN_NAME(str) PTSTR szFunctionName = str
+#else
+#define DEBUG_FN_NAME(str)
+#endif
+
+#if CYGDEBUG || YES
+#define DEBUGVARS BOOL fDebugProcMsg = FALSE
+#else
+#define DEBUGVARS
+#endif
+
+#if CYGDEBUG || YES
+#define DEBUGPROC_MSG fDebugProcMsg = TRUE
+#else
+#define DEBUGPROC_MSG
+#endif
+
 
 /*
  * Typedefs for engine dependent function pointers
@@ -257,7 +276,7 @@ typedef struct
 {
   HDC			hdcSelected;
   HBITMAP		hBitmap;
-  void			*pvBits;
+  BYTE			*pbBits;
   DWORD			dwScanlineBytes;
   BITMAPINFOHEADER	*pbmih;
 } winPrivPixmapRec, *winPrivPixmapPtr;
@@ -739,7 +758,7 @@ winMouseButtonsHandle (ScreenPtr pScreen,
 
 HBITMAP
 winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
-		       void **ppvBits, BITMAPINFO **ppbmi);
+		       BYTE **ppbBits, BITMAPINFO **ppbmi);
 
 Bool
 winAllocateFBNativeGDI (ScreenPtr pScreen);

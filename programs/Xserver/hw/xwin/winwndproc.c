@@ -30,16 +30,18 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.14 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.15 2001/10/04 20:02:36 alanh Exp $ */
 
 #include "Xatom.h"
 
 #include "win.h"
 
+
 /*
  * Called by winWakeupHandler
  * Processes current Windows message
  */
+
 LRESULT CALLBACK
 winWindowProc (HWND hWnd, UINT message, 
 	       WPARAM wParam, LPARAM lParam)
@@ -56,10 +58,6 @@ winWindowProc (HWND hWnd, UINT message,
   RECT				rcClient, rcSrc;
   int				iScanCode;
   int				i;
-#if 0
-  HGLOBAL			hGlobal;
-  char				*pGlobal;
-#endif
 
   /* Watch for server regeneration */
   if (g_ulServerGeneration != ulServerGeneration)
@@ -108,67 +106,7 @@ winWindowProc (HWND hWnd, UINT message,
 
       /* Store the mode key states so restore doesn't try to restore them */
       winStoreModeKeyStates (pScreen);
-
-#if 0
-      /* Add ourselves to the clipboard viewer chain */
-      pScreenPriv->hwndNextViewer = SetClipboardViewer (hWnd);
-#endif
       return 0;
-
-#if 0
-    case WM_CHANGECBCHAIN:
-      /* We can't do anything without privates */
-      if (pScreenPriv == NULL)
-	break;
-
-      if ((HWND) wParam == pScreenPriv->hwndNextViewer)
-	pScreenPriv->hwndNextViewer = (HWND) lParam;
-      else if (pScreenPriv->hwndNextViewer)
-	SendMessage (pScreenPriv->hwndNextViewer, message, wParam, lParam);
-      return 0;
-
-    case WM_DRAWCLIPBOARD:
-      /* We can't do anything without privates */
-      if (pScreenPriv == NULL || !pScreenPriv->fEnabled)
-	break;
-
-      /* Pass the message on the next window in the clipboard viewer chain */
-      if (pScreenPriv->hwndNextViewer)
-	SendMessage (pScreenPriv->hwndNextViewer, message, 0, 0);
-
-      /* Get a pointer to the clipboard text */
-      OpenClipboard (hWnd);
-      hGlobal = GetClipboardData (CF_TEXT);
-      if (!hGlobal)
-	{
-	  ErrorF ("winWindowProc () - Non-text clipboard data.\n");
-	  CloseClipboard ();
-	  return 0;
-	}
-      pGlobal = (PTSTR) GlobalLock (hGlobal);
-      
-#if 0
-      ErrorF ("Clipboard string:\n%s\n\n", pGlobal);
-#endif
-
-      /* Copy the clipboard data to the X clipboard. */
-      /*
-       * FIXME: This is just a temporary hack that works.
-       */
-      ChangeWindowProperty(WindowTable[pScreen->myNum],
-			   XA_CUT_BUFFER0,
-			   XA_STRING,
-			   8,
-			   PropModeReplace,
-			   strlen(pGlobal),
-			   (pointer)pGlobal,
-			   TRUE);
-
-      /* Release the clipboard data */
-      GlobalUnlock (hGlobal);
-      CloseClipboard ();
-      return 0;
-#endif /* 0 */
 
     case WM_PAINT:
 #if CYGDEBUG
@@ -217,14 +155,10 @@ winWindowProc (HWND hWnd, UINT message,
 	return 0;
       }
 
-      /*
-       * FIXME: NativeGDI can't handle mouse movement yet.  It gives
-       * a STATUS_ACCESS_VIOLATION if this section is enabled.
-       */
-#if !WIN_NATIVE_GDI_SUPPORT
     case WM_MOUSEMOVE:
       /* We can't do anything without privates */
-      if (pScreenPriv == NULL)
+      if (pScreenPriv == NULL
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
 	break;
       
       /* Has the mouse pointer crossed screens? */
@@ -287,7 +221,6 @@ winWindowProc (HWND hWnd, UINT message,
       /* Store pointer to last window handle */
       hwndLastMouse = hWnd;
       return 0;
-#endif /* WIN_NATIVE_GDI_SUPPORT */
 
     case WM_NCMOUSEMOVE:
       /* Non-client mouse movement, show Windows cursor */
@@ -326,29 +259,50 @@ winWindowProc (HWND hWnd, UINT message,
       hwndLastMouse = hWnd;
       return 0;
 
-#if !WIN_NATIVE_GDI_SUPPORT
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseButtonsHandle (pScreen, ButtonPress, Button1, wParam);
       
     case WM_LBUTTONUP:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseButtonsHandle (pScreen, ButtonRelease, Button1, wParam);
 
     case WM_MBUTTONDBLCLK:
     case WM_MBUTTONDOWN:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseButtonsHandle (pScreen, ButtonPress, Button2, wParam);
       
     case WM_MBUTTONUP:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseButtonsHandle (pScreen, ButtonRelease, Button2, wParam);
       
     case WM_RBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseButtonsHandle (pScreen, ButtonPress, Button3, wParam);
       
     case WM_RBUTTONUP:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseButtonsHandle (pScreen, ButtonRelease, Button3, wParam);
 
     case WM_TIMER:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
+
       switch (wParam)
 	{
 	case WIN_E3B_TIMER_ID:
@@ -366,9 +320,16 @@ winWindowProc (HWND hWnd, UINT message,
       return 0;
 
     case WM_MOUSEWHEEL:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return winMouseWheel (pScreen, GET_WHEEL_DELTA_WPARAM(wParam));
 
     case WM_KILLFOCUS:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
+
 #if CYGDEBUG      
       ErrorF ("winWindowProc () - WM_KILLFOCUS hWnd %08x\n", hWnd);
 #endif     
@@ -377,10 +338,17 @@ winWindowProc (HWND hWnd, UINT message,
       return 0;
 
     case WM_SETFOCUS:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
       return 0;
 
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
+
       /*
        * FIXME: Catching Alt-F4 like this is really terrible.  This should
        * be generalized to handle other Windows keyboard signals.  Actually,
@@ -443,6 +411,10 @@ winWindowProc (HWND hWnd, UINT message,
 
     case WM_SYSKEYUP:
     case WM_KEYUP:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
+
       /*
        * Don't do anything for the Windows keys, as focus will soon
        * be returned to Windows.  We may be able to trap the Windows keys,
@@ -469,7 +441,8 @@ winWindowProc (HWND hWnd, UINT message,
       return 0;
 
     case WM_HOTKEY:
-      if (pScreenPriv == NULL)
+      if (pScreenPriv == NULL
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
 	break;
 
       /* Handle each engine type */
@@ -566,6 +539,10 @@ winWindowProc (HWND hWnd, UINT message,
       break;
 
     case WM_ACTIVATE:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
+
 #if CYGDEBUG
       ErrorF ("winWindowProc () - WM_ACTIVATE\n");
 #endif
@@ -659,6 +636,10 @@ winWindowProc (HWND hWnd, UINT message,
       return 0;
 
     case WM_ACTIVATEAPP:
+      if (pScreenPriv == NULL 
+	  || pScreenPriv->pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+	break;
+
 #if CYGDEBUG
       ErrorF ("winWindowProc () - WM_ACTIVATEAPP\n");
 #endif
@@ -689,7 +670,6 @@ winWindowProc (HWND hWnd, UINT message,
       /* Call engine specific screen activation/deactivation function */
       (*pScreenPriv->pwinActivateApp) (pScreen);
       return 0;
-#endif /* WIN_NATIVE_GDI_SUPPORT */
 
     case WM_CLOSE:
       /* Tell X that we are giving up */

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.15 2001/08/31 07:58:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.16 2001/09/07 08:41:54 alanh Exp $ */
 
 #include "win.h"
 
@@ -496,11 +496,6 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
   /* Redisplay the Windows cursor */
   if (!pScreenPriv->fCursor)
       ShowCursor (TRUE);
-
-#if 0
-  /* Remove our window from the clipboard viewer chain */
-  ChangeClipboardChain (pScreenPriv->hwndScreen, pScreenPriv->hwndNextViewer);
-#endif
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)
