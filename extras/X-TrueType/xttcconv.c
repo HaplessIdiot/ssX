@@ -30,7 +30,7 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.7 2000/02/29 16:07:13 tsi Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.8 2000/05/18 23:46:10 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -193,6 +193,7 @@ ENTRYFUNC_PROTO_TEMPLATE(ISO8859_1_entrypoint);
 #ifdef OPT_ENCODINGS
 ENTRYFUNC_PROTO_TEMPLATE(BIG5_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(GB2312_entrypoint);
+ENTRYFUNC_PROTO_TEMPLATE(GBK_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0201_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0208_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0212_entrypoint);
@@ -232,6 +233,7 @@ static mod_entrypoint_ptr_t preloadedCodeConverter[] = {
 #ifdef OPT_ENCODINGS
     BIG5_entrypoint,
     GB2312_entrypoint,
+    GBK_entrypoint,
     JISX0201_entrypoint,
     JISX0208_entrypoint,
     JISX0212_entrypoint,

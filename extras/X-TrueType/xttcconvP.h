@@ -32,7 +32,7 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.5 2000/02/13 05:24:36 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.6 2000/06/27 21:26:32 tsi Exp $ */
 
 #ifndef _XTTCCONVP_H_
 #define _XTTCCONVP_H_ 1
@@ -101,7 +101,8 @@ enum {
     EEncMSSymbol      =  0,
     EEncMSUnicode     =  1,
     EEncMSShiftJIS    =  2,
-    EEncMSBig5WGL4    =  4,
+    EEncMSBig5WGL4    =  3,
+    EEncMSGB2312      =  4,
     EEncMSWansung     =  5,
     EEncAny           = -1
 };
