@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.10 1997/01/18 06:57:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.11 1997/01/19 12:52:06 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -267,7 +267,7 @@ WaitForSomething(pClientsReady)
 #endif
 		timeTilFrob = 0;
 	    }
-	    if (timeTilFrob >= 0 && (!wt || timeout < (timers->expires - now)))
+	    if (timeout > 0 && (!wt || timeout < (timers->expires - now)))
 	    {
 		waittime.tv_sec = timeout / MILLI_PER_SECOND;
 		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
@@ -351,9 +351,16 @@ WaitForSomething(pClientsReady)
 		    if (! XFD_ANYSET (&AllClients))
 			return 0;
 		}
+		else if (selecterr == EINVAL)
+		{
+		    FatalError("WaitForSomething(): select: errno=%d\n",
+			selecterr);
+		}
 		else if (selecterr != EINTR)
+		{
 		    ErrorF("WaitForSomething(): select: errno=%d\n",
 			selecterr);
+		}
 	    if (timers)
 	    {
 		now = GetTimeInMillis();

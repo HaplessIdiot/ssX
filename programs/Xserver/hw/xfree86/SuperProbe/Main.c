@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.21 1997/03/27 08:29:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.22 1997/05/17 13:11:37 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -526,18 +526,10 @@ char *argv[];
     printf("\thaving been obtained.  Additional information obtained from\n");
     printf("\t'Programmer's Guide to the EGA and VGA, 2nd ed', by Richard\n");
     printf("\tFerraro, and from manufacturer's data books\n\n");
-#ifndef __EMX__
     printf("The author welcomes bug reports and other comments mailed to\n");
     printf("the electronic mail address above.  In particular, reports of\n");
     printf("chipsets that this program fails to correctly detect are\n");
     printf("appreciated.\n\n");
-#else
-/* this will be removed again in future. */
-    printf("This is a PRELIMINARY TEST VERSION for OS/2! Please send bug reports\n");
-    printf("and other comments, e.g. false detections of boards or chipsets to\n");
-    printf("Holger.Veit@gmd.de.\n");
-    printf("If necessary, they will be forwarded to the author of the program.\n\n");
-#endif
     printf("Before submitting a report, please make sure that you have the\n");
     printf("latest version of SuperProbe (see http://www.xfree86.org/FAQ).\n\n");
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.65 1997/04/17 08:16:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.66 1997/05/12 13:28:01 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -230,6 +230,10 @@ static SymTabRec FilesTab[] = {
 #define DISABLEMODINDEV		1056
 #define MODINDEVALLOWNONLOCAL	1057
 #define ALLOWMOUSEOPENFAIL	1058
+#define PCIPROBE1		1059
+#define PCIPROBE2		1060
+#define PCIFORCECONFIG1		1061
+#define PCIFORCECONFIG2		1062
 
 #ifdef INIT_CONFIG
 static SymTabRec ServerFlagsTab[] = {
@@ -242,18 +246,22 @@ static SymTabRec ServerFlagsTab[] = {
   { DISABLEMODINDEV, "disablemodindev" },
   { MODINDEVALLOWNONLOCAL, "allownonlocalmodindev" },
   { ALLOWMOUSEOPENFAIL, "allowmouseopenfail" },
+  { PCIPROBE1, "pciprobe1" },
+  { PCIPROBE2, "pciprobe2" },
+  { PCIFORCECONFIG1, "pciforceconfig1" },
+  { PCIFORCECONFIG2, "pciforceconfig2" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
 
-#define DISPLAYSIZE	1060
-#define MODELINE	1061
-#define MODEL		1062
-#define BANDWIDTH	1063
-#define HORIZSYNC	1064
-#define VERTREFRESH	1065
-#define MODE		1066
-#define GAMMA		1067
+#define DISPLAYSIZE	1070
+#define MODELINE	1071
+#define MODEL		1072
+#define BANDWIDTH	1073
+#define HORIZSYNC	1074
+#define VERTREFRESH	1075
+#define MODE		1076
+#define GAMMA		1077
 
 #ifdef INIT_CONFIG
 static SymTabRec MonitorTab[] = {
@@ -272,12 +280,12 @@ static SymTabRec MonitorTab[] = {
 };
 #endif /* INIT_CONFIG */
 
-#define DOTCLOCK	1070
-#define HTIMINGS	1071
-#define VTIMINGS	1072
-#define FLAGS		1073
-#define HSKEW		1074
-#define ENDMODE		1075
+#define DOTCLOCK	1090
+#define HTIMINGS	1091
+#define VTIMINGS	1092
+#define FLAGS		1093
+#define HSKEW		1094
+#define ENDMODE		1095
 
 #ifdef INIT_CONFIG
 static SymTabRec ModeTab[] = {
@@ -291,15 +299,15 @@ static SymTabRec ModeTab[] = {
 };
 #endif /* INIT_CONFIG */
 
-#define DRIVER		1080
-#define MDEVICE		1081
-#define MONITOR		1082
-#define SCREENNO	1083
-#define BLANKTIME	1084
-#define STANDBYTIME	1085
-#define SUSPENDTIME	1086
-#define OFFTIME		1087
-#define DEFBPP		1088
+#define DRIVER		1110
+#define MDEVICE		1111
+#define MONITOR		1112
+#define SCREENNO	1113
+#define BLANKTIME	1114
+#define STANDBYTIME	1115
+#define SUSPENDTIME	1116
+#define OFFTIME		1117
+#define DEFBPP		1118
 
 #ifdef INIT_CONFIG
 static SymTabRec ScreenTab[] = {
@@ -320,16 +328,16 @@ static SymTabRec ScreenTab[] = {
 #endif /* INIT_CONFIG */
 
 /* Mode timing keywords */
-#define TT_INTERLACE	1090
-#define TT_PHSYNC	1091
-#define TT_NHSYNC	1092
-#define TT_PVSYNC	1093
-#define TT_NVSYNC	1094
-#define TT_CSYNC	1095
-#define TT_PCSYNC	1096
-#define TT_NCSYNC	1097
-#define TT_DBLSCAN	1098
-#define TT_HSKEW	1099
+#define TT_INTERLACE	1130
+#define TT_PHSYNC	1131
+#define TT_NHSYNC	1132
+#define TT_PVSYNC	1133
+#define TT_NVSYNC	1134
+#define TT_CSYNC	1135
+#define TT_PCSYNC	1136
+#define TT_NCSYNC	1137
+#define TT_DBLSCAN	1138
+#define TT_HSKEW	1139
 
 #ifdef INIT_CONFIG
 SymTabRec TimingTab[] = {

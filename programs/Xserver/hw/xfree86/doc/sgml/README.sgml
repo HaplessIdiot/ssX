@@ -78,8 +78,8 @@ Note: Not all systems listed here have been tested with the current release.
 
     <tag/Others:/
 	<itemize>	
-	<ITEM>NetBSD 1.0, 1.1, 1.2
-	<ITEM>OpenBSD 2.0
+	<ITEM>NetBSD 1.0, 1.1, 1.2, 1.2.1
+	<ITEM>OpenBSD 2.0, 2.1
 	<ITEM>FreeBSD 2.0.5, 2.1, 2.1.5, 2.1.6, 2.1.7, 2.1.7.1, 2.2,
 		2.2.1, 2.2.2, 3.0-current
 <!--
@@ -1039,7 +1039,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.79 1997/05/14 10:33:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.80 1997/05/17 12:02:32 dawes Exp $
 
 
 

@@ -3,7 +3,7 @@
 
 <title>Notes on Rebuilding XFree86/OS2 from Scratch
 <author>Holger Veit
-<date>Last modified 26 Jan 1997
+<date>Last modified 17 May 1997
 
 <toc>
 
@@ -20,13 +20,17 @@ from scratch under OS/2.
 Please also read README.OS2 for end-user information, and set at least the
 environment variables described there.
 <p>
-At the current time, the most recent version available is XFree86-3.2A.
-This is a beta version for which principally no source code is released.
-The last available source code is XFree86-3.2.
+At the current time, the most recent version available is XFree86-3.3.
+This is a full and unrestricted version which comes with complete source 
+code. 3.3 is an intermediate version which was released because the last
+beta version (3.2A) was about to expire and the new 4.0 version was not
+completely finished in time. 3.3 is the last ``classical'' version which
+has separate Xservers for different video cards.
+
 If you want to join the XFree86 developer team, e.g. to add support for
-certain hardware, please send a request to XFree86@XFree86.org. Please
+certain hardware, please send a request to BOD@XFree86.org. Please
 think about such a step carefully before, though, since much work is 
-involved. Please use the XFree86-3.2 source code as a test example how
+involved. Please use the XFree86-3.3 source code as a test example how
 to compile the system. The ability to manage that is a basic requirement
 for becoming a developer.
 
@@ -42,7 +46,7 @@ Most of this software is available from <tt/hobbes.nmsu.edu/ or <tt/ftp.leo.org/
 via anonymous FTP. The following shopping list shows what you will need:
 
 <itemize>
-<item>gcc	EMX/gcc emx 0.9C or later
+<item>gcc	EMX/gcc emx 0.9C patch2 or later
 <item>gzip	GNU zip/unzip
 <item>tar	GNU tar
 <item>patch	Larry Wall's patch utility (attention: incompatible tool with same name in OS/2)
@@ -65,7 +69,7 @@ which might still be available from some archives is NOT compatible.
 
 Furthermore, you need the XFree86 sources. These are available from 
 the common XFree86 repositories. Look into a directory which is 
-often named /pub/XFree86/3.2/source.
+often named /pub/XFree86/3.3/source.
 
 <sect>Compiling and Installing
 <p>
@@ -180,7 +184,7 @@ Well, you see, this was quite easy :-)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.3 1997/01/24 09:32:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.4 1997/01/27 06:57:50 dawes Exp $
 
 
 

@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.15 1997/02/25 16:04:38 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.16 1997/03/10 10:09:44 hohndel Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -81,6 +81,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.15 1997/02/25 16:04:38 hohndel Exp $
 
 #undef AssembleObject
 #define AssembleObject(flags) ModCPPOnlyAsm($*,flags)			@@\
+	RemoveFile($*.o)						@@\
 	$(MODAS) $(MODASFLAGS) -o $*.o $*.i				@@\
 	RemoveFile($*.i)
 

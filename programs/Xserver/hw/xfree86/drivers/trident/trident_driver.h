@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.1 1997/03/06 23:17:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.2 1997/05/03 11:31:44 dawes Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -86,7 +86,7 @@ int tridentClockLimit16bpp[] = {
 	40000,
 	40000,
 	45000,
-	70000,
+	135000,
 }; 
 
 int tridentClockLimit32bpp[] = {
@@ -106,7 +106,7 @@ int tridentClockLimit32bpp[] = {
 	25180,
 	25180,
 	25180,
-	40000,
+	70000,
 };
 
 #else

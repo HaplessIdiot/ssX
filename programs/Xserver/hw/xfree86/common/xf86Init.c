@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.70 1997/03/07 00:29:23 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.71 1997/04/12 13:45:06 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -85,6 +85,7 @@ Bool xf86MiscModInDevEnabled = TRUE;
 Bool xf86MiscModInDevAllowNonLocal = FALSE;
 #endif
 Bool xf86AllowMouseOpenFail = FALSE;
+PciProbeType xf86PCIFlags = PCIProbe1;
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
 Bool xf86fpFlag = FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.7 1997/04/17 08:17:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.8 1997/05/03 09:18:46 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -347,9 +347,11 @@ TGUISetClock(no)
 
 	freq = vga256InfoRec.clock[no];
 
-	if (vgaBitsPerPixel == 16)
+	if ((vgaBitsPerPixel == 16) && (TVGAchipset <= TGUI9440AGi))
+		freq *= 2; 
+	if (vgaBitsPerPixel == 32)
 		freq *= 2;
-	if ((vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32))
+	if (vgaBitsPerPixel == 24)
 		freq *= 3;
 
 	for (k=1;k<3;k++)
@@ -844,12 +846,8 @@ TVGA8900Probe()
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
 		tridentHasAcceleration = TRUE;
-		if (vgaBitsPerPixel == 24)
-			tridentHasAcceleration = FALSE;
-		else
-			tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
-		TRIDENT.ChipHas24bpp = TRUE;
+		TRIDENT.ChipHas32bpp = TRUE;
 		if (vgaBitsPerPixel >= 8)
 			TRIDENT.ChipUse2Banks = TRUE;
 		if (IsCyber)
@@ -1186,33 +1184,30 @@ TVGA8900Probe()
 static void TVGA8900DisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
-#ifdef Control
-#undef Control		/* stupid define in vt.h on LynxOS */
-#endif
-	unsigned char Control;
+	unsigned char Cont;
 	if (!xf86VTSema) return;
 	outb(0x3CE, 0x23); /* Read DPMS Control */
-	Control = inb(0x3CF) & 0xFC;
+	Cont = inb(0x3CF) & 0xFC;
 	switch (PowerManagementMode)
 	{
 	case DPMSModeOn:
 		/* Screen: On, HSync: On, VSync: On */
-		Control |= 0x00;
+		Cont |= 0x00;
 		break;
 	case DPMSModeStandby:
 		/* Screen: Off, HSync: Off, VSync: On */
-		Control |= 0x01;
+		Cont |= 0x01;
 		break;
 	case DPMSModeSuspend:
 		/* Screen: Off, HSync: On, VSync: Off */
-		Control |= 0x02;
+		Cont |= 0x02;
 		break;
 	case DPMSModeOff:
 		/* Screen: Off, HSync: Off, VSync: Off */
-		Control |= 0x03;
+		Cont |= 0x03;
 		break;
 	}
-	outb(0x3CF, Control);
+	outb(0x3CF, Cont);
 }
 #endif
 
@@ -2010,7 +2005,7 @@ TVGA8900Init(mode)
 
 		if (TVGAchipset >= TGUI96xx)
 		{
-			new->AddColReg |= (offset & 0x200) >> 4;
+			new->AddColReg |= ((offset & 0x200) >> 4);
 			outb(vgaIOBase + 4, 0x2F);
 			new->Performance = inb(vgaIOBase + 5) | 0x10;
 		}
@@ -2064,15 +2059,18 @@ TVGA8900Init(mode)
 		if (vgaBitsPerPixel == 16)
 		{
 			new->std.Attribute[17] = 0x00;
-			new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
+			if (TVGAchipset <= TGUI9440AGi)
+				new->MiscExtFunc |= 0x08; /* Clock Div. by 2 */
 			new->CommandReg = 0x30;	 /* 16bpp */
 			new->PixelBusReg |= 0x04;
+			if (TVGAchipset >= TGUI96xx)
+				new->PixelBusReg |= 0x01; /* 16bit bus */
 			GE_OP |= 0x01; /* 16bpp in GE */
 		}
 		if (vgaBitsPerPixel == 24)
 		{
 			new->std.Attribute[17] = 0x00;
-			new->CommandReg = 0xD0; /* 32bpp */
+			new->CommandReg = 0xD0; /* 24bpp */
 			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
 			new->PixelBusReg |= 0x08;
 			GE_OP |= 0x03; /* 24bpp in GE */
@@ -2081,8 +2079,8 @@ TVGA8900Init(mode)
 		{
 			new->std.Attribute[17] = 0x00;
 			new->CommandReg = 0xD0; /* 32bpp */
-			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
-			new->PixelBusReg |= 0x08;
+			new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
+			new->PixelBusReg |= 0x09; /* 16bit bus */
 			GE_OP |= 0x02; /* 32bpp in GE */
 		}
 		}
@@ -2131,33 +2129,34 @@ TVGA8900Adjust(x, y)
 	int x, y;
 {
 	unsigned char temp;
-	int base = vga256InfoRec.displayWidth * y + x;
+	int base = y * vga256InfoRec.displayWidth + x;
 	int shift = 0;
 
 	if (vgaBitsPerPixel >= 8) {
-	if (vgaBitsPerPixel == 16)
+	   if ((TVGAchipset >= TGUI96xx) && (vgaBitsPerPixel == 8))
+		base &= 0xFFFFFFF8;
+	   if (vgaBitsPerPixel == 16)
 		shift = 1;
-	if (vgaBitsPerPixel == 24)
+	   if (vgaBitsPerPixel == 24)
 		base = ((base + 1) & ~0x03) * 3;
-	if (vgaBitsPerPixel == 32)
+	   if (vgaBitsPerPixel == 32)
 		shift = 2;
 	/* 
 	 * Go see the comments in the Init function.
 	 */
-	if (tridentIsTGUI)
+	   if (tridentIsTGUI)
 		base >>= (2 - shift);
-	else
-	{
+	   else
+	   {
 		if (vga256InfoRec.videoRam < 1024) 
 			base = (y * vga256InfoRec.displayWidth + x + 1)
 								>> (2 - shift);
 		else
 			base = (y * vga256InfoRec.displayWidth + x + 3) 
 								>> (3 - shift);
-	}
-	} else
-	{
-	base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+	   }
+	} else {
+	   base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 	}
 
   	outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
@@ -2264,7 +2263,7 @@ TGUIPitchAdjust()
 	if (X <= 512)
 		pitch = 512;
 
-	memory = (pitch * vga256InfoRec.virtualY) / 1024;
+	memory = ((pitch * vga256InfoRec.virtualY) / 1024) * vgaBitsPerPixel/8;
 
 	if (memory > vga256InfoRec.videoRam)
 	{

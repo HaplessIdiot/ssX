@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.57 1997/05/03 09:17:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.58 1997/05/12 13:27:57 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -429,6 +429,18 @@ extern Bool xf86VidModeAllowNonLocal;
 extern Bool xf86MiscModInDevEnabled;
 extern Bool xf86MiscModInDevAllowNonLocal;
 #endif
+
+/* PCI probe flags */
+
+
+typedef enum {
+    PCIProbe1 = 0,
+    PCIProbe2,
+    PCIForceConfig1,
+    PCIForceConfig2
+} PciProbeType;
+
+extern PciProbeType xf86PCIFlags;
 
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES

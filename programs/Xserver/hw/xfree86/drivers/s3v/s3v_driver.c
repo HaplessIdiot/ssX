@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.9 1997/04/17 08:17:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.10 1997/05/03 09:18:36 dawes Exp $ */
 
 /*
  *
@@ -455,8 +455,10 @@ unsigned char tmp;
    ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout = restore->MMPR3;
    outb(vgaCRReg, tmp);  /* Restore CR53 for MMIO */
 
-   ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
-   S3VPrintRegs();
+   if (xf86Verbose > 1) {
+      ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
+      S3VPrintRegs();
+   }
 
    vgaProtect(FALSE);
 
@@ -568,17 +570,18 @@ unsigned char tmp;
    save->MMPR2 = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
    save->MMPR3 = ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout;
 
-   /* Debug */
-   ErrorF("MMPR regs: %08x %08x %08x %08x\n",
-      ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control,
-      ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control,
-      ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout,
-      ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout );
-   outb(vgaCRReg, tmp);   /* Restore CR53 to original for MMIO */
+   if (xf86Verbose > 1) {
+      /* Debug */
+      ErrorF("MMPR regs: %08x %08x %08x %08x\n",
+         ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control,
+         ((mmtr)s3vMmioMem)->memport_regs.regs.miu_control,
+         ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout,
+         ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout );
+      outb(vgaCRReg, tmp);   /* Restore CR53 to original for MMIO */
 
-
-   ErrorF("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
-   S3VPrintRegs();
+      ErrorF("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
+      S3VPrintRegs();
+   }
 
    return ((void *) save);
 }
@@ -607,6 +610,9 @@ int mclk;
    /* For now, we only use the PCI probing; add in later VLB */
 
    pciInfo = s3vGetPCIInfo();
+   if (!pciInfo)
+      return FALSE;
+
    if (pciInfo && pciInfo->MemBase)
       vga256InfoRec.MemBase = pciInfo->MemBase;
    if (pciInfo)
@@ -624,7 +630,7 @@ int mclk;
          ErrorF("%s %s: using driver for chipset \"%s\"\n",XCONFIG_PROBED, 
             vga256InfoRec.name, S3VIdent(0));
 	 }
-
+   
    vga256InfoRec.chipset = S3VIdent(0);
 
    /* Add/enable IO ports to list: call EnterLeave */

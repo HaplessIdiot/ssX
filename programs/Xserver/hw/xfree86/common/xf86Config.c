@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.126 1997/04/12 13:45:00 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.128 1997/05/12 13:27:58 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1331,6 +1331,18 @@ configServerFlagsSection()
 #endif
     case ALLOWMOUSEOPENFAIL:
       xf86AllowMouseOpenFail = TRUE;
+      break;
+    case PCIPROBE1:
+      xf86PCIFlags = PCIProbe1;
+      break;
+    case PCIPROBE2:
+      xf86PCIFlags = PCIProbe2;
+      break;
+    case PCIFORCECONFIG1:
+      xf86PCIFlags = PCIForceConfig1;
+      break;
+    case PCIFORCECONFIG2:
+      xf86PCIFlags = PCIForceConfig2;
       break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
