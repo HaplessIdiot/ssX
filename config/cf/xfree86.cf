@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.417 2002/11/14 21:01:14 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.418 2002/11/19 15:17:09 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -146,6 +146,13 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #ifndef BuildModuleInSubdir
 #define BuildModuleInSubdir	NO
 #endif
+
+#ifndef MakeDllModules
+#define MakeDllModules		NO
+#endif
+#ifndef DoLoadableServer
+#define DoLoadableServer	NO
+#endif 
 
 /*
  * Default settings for which X Servers to build.
@@ -1898,7 +1905,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # define DefaultGcc2DebugOpt -g
 #endif
 
-#if HasGcc2 && DebuggableLibraries
+#if HasGcc2 && defined(DebuggableLibraries) && DebuggableLibraries
 # define LibraryDebugOpt DefaultGcc2DebugOpt
 #endif
 
