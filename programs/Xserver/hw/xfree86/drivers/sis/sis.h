@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   8
-#define SISDRIVERVERSIONDAY     7
+#define SISDRIVERVERSIONDAY     10
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -731,7 +731,7 @@ typedef struct {
     Atom		xv_QVF, xv_QVV, xv_USD, xv_SVF, xv_QDD, xv_TAF, xv_TSA, xv_TEE, xv_GSF;
     Atom		xv_TTE, xv_TCO, xv_TCC, xv_TCF, xv_TLF, xv_CMD, xv_CMDR, xv_CT1, xv_SGA;
     Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI, xv_TXS, xv_TYS, xv_CFI, xv_COC, xv_COF;
-    Atom		xv_YFI, xv_GSS;
+    Atom		xv_YFI, xv_GSS, xv_BRR, xv_BRG, xv_BRB, xv_PBR, xv_PBG, xv_PBB;
     BOOLEAN		xv_sisdirectunlocked;
     unsigned long	xv_sd_result;
     int			CRT1isoff;
@@ -774,6 +774,8 @@ typedef struct {
     CARD32		CurFGCol, CurBGCol;
     unsigned char *	CurMonoSrc;
     CARD32 *            CurARGBDest;
+    int			GammaBriR, GammaBriG, GammaBriB;
+    int			GammaPBriR, GammaPBriG, GammaPBriB;
 #ifdef SISMERGED
     Bool		MergedFB;
     SiSScrn2Rel		CRT2Position;

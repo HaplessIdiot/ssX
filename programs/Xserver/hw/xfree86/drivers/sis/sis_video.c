@@ -356,10 +356,16 @@ static char sisxvsdenablegamma[]			= "XV_SD_ENABLEGAMMA";
 static char sisxvsdtvxscale[] 				= "XV_SD_TVXSCALE";
 static char sisxvsdtvyscale[] 				= "XV_SD_TVYSCALE";
 static char sisxvsdgetscreensize[] 			= "XV_SD_GETSCREENSIZE";
+static char sisxvsdstorebrir[] 				= "XV_SD_STOREDGAMMABRIR";
+static char sisxvsdstorebrig[] 				= "XV_SD_STOREDGAMMABRIG";
+static char sisxvsdstorebrib[] 				= "XV_SD_STOREDGAMMABRIB";
+static char sisxvsdstorepbrir[] 			= "XV_SD_STOREDGAMMAPBRIR";
+static char sisxvsdstorepbrig[] 			= "XV_SD_STOREDGAMMAPBRIG";
+static char sisxvsdstorepbrib[] 			= "XV_SD_STOREDGAMMAPBRIB";
 
 #ifndef SIS_CP
-#define NUM_ATTRIBUTES_300 44
-#define NUM_ATTRIBUTES_315 46
+#define NUM_ATTRIBUTES_300 50
+#define NUM_ATTRIBUTES_315 52
 #endif
 
 static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
@@ -408,6 +414,12 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
    {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
    {             XvGettable, 0, 0xffffffff,    sisxvsdgetscreensize},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrir},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrig},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrib},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrir},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -461,6 +473,12 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
    {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
    {             XvGettable, 0, 0xffffffff,    sisxvsdgetscreensize},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrir},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrig},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrib},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrir},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -1217,6 +1235,12 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_TXS	      = MAKE_ATOM(sisxvsdtvxscale);
     pSiS->xv_TYS	      = MAKE_ATOM(sisxvsdtvyscale);
     pSiS->xv_GSS	      = MAKE_ATOM(sisxvsdgetscreensize);
+    pSiS->xv_BRR	      = MAKE_ATOM(sisxvsdstorebrir);
+    pSiS->xv_BRG	      = MAKE_ATOM(sisxvsdstorebrig);
+    pSiS->xv_BRB	      = MAKE_ATOM(sisxvsdstorebrib);
+    pSiS->xv_PBR	      = MAKE_ATOM(sisxvsdstorepbrir);
+    pSiS->xv_PBG	      = MAKE_ATOM(sisxvsdstorepbrig);
+    pSiS->xv_PBB	      = MAKE_ATOM(sisxvsdstorepbrib);
 #ifdef SIS_CP
     SIS_CP_VIDEO_ATOMS
 #endif
@@ -1521,6 +1545,42 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
      if(pSiS->xv_sisdirectunlocked) {
         SiS_SetTVyscale(pScrn, value);
      }
+  } else if(attribute == pSiS->xv_BRR) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        pSiS->GammaBriR = value;
+     }
+  } else if(attribute == pSiS->xv_BRG) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        pSiS->GammaBriG = value;
+     }
+  } else if(attribute == pSiS->xv_BRB) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        pSiS->GammaBriB = value;
+     }
+  } else if(attribute == pSiS->xv_PBR) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        pSiS->GammaPBriR = value;
+     }
+  } else if(attribute == pSiS->xv_PBG) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        pSiS->GammaPBriG = value;
+     }
+  } else if(attribute == pSiS->xv_PBB) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        pSiS->GammaPBriB = value;
+     }
 #ifdef SIS_CP
   SIS_CP_VIDEO_SETATTRIBUTE
 #endif
@@ -1656,6 +1716,18 @@ SISGetPortAttribute(
      *value = SiS_GetTVyscale(pScrn);
   } else if(attribute == pSiS->xv_GSS) {
      *value = (pScrn->virtualX << 16) | pScrn->virtualY;
+  } else if(attribute == pSiS->xv_BRR) {
+     *value = pSiS->GammaBriR;
+  } else if(attribute == pSiS->xv_BRG) {
+     *value = pSiS->GammaBriG;
+  } else if(attribute == pSiS->xv_BRB) {
+     *value = pSiS->GammaBriB;
+  } else if(attribute == pSiS->xv_PBR) {
+     *value = pSiS->GammaPBriR;
+  } else if(attribute == pSiS->xv_PBG) {
+     *value = pSiS->GammaPBriG;
+  } else if(attribute == pSiS->xv_PBB) {
+     *value = pSiS->GammaPBriB;
 #ifdef SIS_CP
   SIS_CP_VIDEO_GETATTRIBUTE
 #endif
