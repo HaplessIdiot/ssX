@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XvMC.h,v 1.4 2001/06/11 23:21:00 mvojkovi Exp $ */
+/* $XFree86: xc/include/extensions/XvMC.h,v 1.5 2001/09/27 08:25:02 alanh Exp $ */
 
 #ifndef _XVMC_H_
 #define _XVMC_H_
@@ -25,6 +25,7 @@
 #define XVMC_OVERLAID_SURFACE                   0x00000001
 #define XVMC_BACKEND_SUBPICTURE                 0x00000002
 #define XVMC_SUBPICTURE_INDEPENDENT_SCALING     0x00000004
+#define XVMC_INTRA_UNSIGNED                     0x00000008
 
 /* Motion Compensation types */
 #define XVMC_IDCT                       0x00010000
