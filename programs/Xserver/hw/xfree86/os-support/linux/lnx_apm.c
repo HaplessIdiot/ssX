@@ -45,8 +45,10 @@ static struct {
 #if defined(APM_CAPABILITY_CHANGED)
     { APM_CAPABILITY_CHANGED, XF86_CAPABILITY_CHANGED },
 #endif
+#if 0
     { APM_STANDBY_FAILED, XF86_APM_STANDBY_FAILED },
     { APM_SUSPEND_FAILED, XF86_APM_SUSPEND_FAILED }
+#endif
 };
 
 #define numApmEvents (sizeof(LinuxToXF86) / sizeof(LinuxToXF86[0]))

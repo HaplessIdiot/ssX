@@ -145,4 +145,8 @@ xf86AccResFromOS(resPtr ret)
     return ret;
 }
 
+#else
+
+#error : Put your platform dependent code here!!
+
 #endif
