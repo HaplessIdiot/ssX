@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.54 1999/04/25 15:30:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.55 1999/04/27 12:05:15 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1468,50 +1468,85 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
 
 /*
+ * Enable MMIO.
+ */
+
+static void
+TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    unsigned char temp;
+
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+
+    /* Goto New Mode */
+    outb(0x3C4, 0x0B); inb(0x3C5);
+
+    /* Unprotect registers */
+    outb(0x3C4, NewMode1); temp = inb(0x3C5);
+    outb(0x3C5, 0xC0);
+
+    /* Enable MMIO */
+    outb(vgaIOBase + 4, PCIReg); pTrident->REGPCIReg = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01);
+
+    xf86DelControlledResource(&pScrn->Access, FALSE);
+
+    xf86AddControlledResource(pScrn,MEM);
+    xf86EnableAccess(&pScrn->Access);
+
+    /* Protect registers */
+    MMIO_OUTB(0x3C4, NewMode1);
+    MMIO_OUTB(0x3C5, temp);
+}
+
+/*
+ * Disable MMIO.
+ */
+
+static void
+TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    unsigned char temp;
+
+    /* Goto New Mode */
+    MMIO_OUTB(0x3C4, 0x0B); temp = MMIO_INB(0x3C5);
+
+    /* Unprotect registers */
+    MMIO_OUTB(0x3C4, NewMode1); temp = MMIO_INB(0x3C5);
+    MMIO_OUTB(0x3C5, 0xC0);
+
+    /* Disable MMIO access */
+    MMIO_OUTB(vgaIOBase + 4, PCIReg);
+    MMIO_OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
+
+    xf86DelControlledResource(&pScrn->Access, FALSE);
+
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+
+    /* Protect registers */
+    outb(0x3C4, NewMode1);
+    outb(0x3C5, temp);
+
+    xf86DelControlledResource(&pScrn->Access, FALSE);
+}
+
+
+/*
  * Map the framebuffer and MMIO memory.
  */
 
 static Bool
 TRIDENTMapMem(ScrnInfoPtr pScrn)
 {
-    CARD32 save = 0;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
     int mmioFlags;
-
-    save = pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG);
-    pTrident->PCISTAT = save;
-
-#if 0
-    ErrorF("PCI start 0x%x\n", pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG));
-
-    if (xf86IsPrimaryPci(pTrident->PciInfo)) {
-#endif
-    	xf86AddControlledResource(pScrn,IO);
-    	xf86EnableAccess(&pScrn->Access);
-
-#if 0
-    ErrorF("PCI IO 0x%x\n", pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG));
-#endif
-    	/* Goto New Mode */
-    	outb(0x3C4, 0x0B); inb(0x3C5);
-
-    	/* Unprotect registers */
-	outb(0x3C4, NewMode1); temp = inb(0x3C5);
-    	outb(0x3C5, 0xC0);
-
-	/* Enable MMIO */
-	outb(vgaIOBase + 4, PCIReg); pTrident->REGPCIReg = inb(vgaIOBase + 5);
-	outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01);
-
-        xf86DelControlledResource(&pScrn->Access, FALSE);
-#if 0
-    }
-#endif
-
-    xf86AddControlledResource(pScrn,MEM);
-    xf86EnableAccess(&pScrn->Access);
 
     /*
      * Map IO registers to virtual address space
@@ -1551,17 +1586,7 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
 	    return FALSE;
     }
 
-#if 0
-    ErrorF("PCI MEM 0x%x\n", pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG));
-    if (xf86IsPrimaryPci(pTrident->PciInfo)) {
-#endif 
-    	/* Protect registers */
-	MMIO_OUTB(0x3C4, NewMode1);
-    	MMIO_OUTB(0x3C5, temp);
-#if 0
-    }
-#endif
-
+    TRIDENTEnableMMIO(pScrn);
     return TRUE;
 }
 
@@ -1576,24 +1601,8 @@ TRIDENTUnmapMem(ScrnInfoPtr pScrn)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     unsigned char temp;
-    CARD32 save = pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG);
 
-#if 0
-    if (xf86IsPrimaryPci(pTrident->PciInfo)) {
-#endif
-    	/* Goto New Mode */
-    	MMIO_OUTB(0x3C4, 0x0B); temp = MMIO_INB(0x3C5);
-
-    	/* Unprotect registers */
-	MMIO_OUTB(0x3C4, NewMode1); temp = MMIO_INB(0x3C5);
-    	MMIO_OUTB(0x3C5, 0xC0);
-
-	/* Disable MMIO access */
-	MMIO_OUTB(vgaIOBase + 4, PCIReg);
-	MMIO_OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
-#if 0
-    }
-#endif
+    TRIDENTDisableMMIO(pScrn);
 
     /*
      * Unmap IO registers to virtual address space
@@ -1611,30 +1620,6 @@ TRIDENTUnmapMem(ScrnInfoPtr pScrn)
     	pTrident->FbBase = NULL;
     }
 
-    xf86DelControlledResource(&pScrn->Access, FALSE);
-
-#if 0
-    if (xf86IsPrimaryPci(pTrident->PciInfo)) {
-#endif
-    	xf86AddControlledResource(pScrn,IO);
-    	xf86EnableAccess(&pScrn->Access);
-
-#if 0
-    pciWriteLong(pTrident->PciTag, PCI_CMD_STAT_REG,
-		 (save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)) |
-			   PCI_CMD_IO_ENABLE);
-    ErrorF("PCI IO 0x%x\n", pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG));
-#endif
-    	/* Protect registers */
-	outb(0x3C4, NewMode1);
-    	outb(0x3C5, temp);
-
-    	xf86DelControlledResource(&pScrn->Access, FALSE);
-#if 0
-    }
-    pciWriteLong(pTrident->PciTag, PCI_CMD_STAT_REG, pTrident->PCISTAT);
-    ErrorF("PCI Leaving 0x%x\n", pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG));
-#endif
     return TRUE;
 }
 
@@ -2056,8 +2041,11 @@ static Bool
 TRIDENTEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    unsigned char temp;
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    TRIDENTMapMem(pScrn);
+    TRIDENTEnableMMIO(pScrn);
 
     /* Should we re-save the text mode on each VT enter? */
     if (!TRIDENTModeInit(pScrn, pScrn->currentMode))
@@ -2080,11 +2068,14 @@ TRIDENTLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+    int vgaIOBase = hwp->IOBase;
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    unsigned char temp;
 
     TRIDENTRestore(pScrn);
     vgaHWLock(hwp);
    
-    TRIDENTUnmapMem(pScrn);
+    TRIDENTDisableMMIO(pScrn);
 }
 
 
