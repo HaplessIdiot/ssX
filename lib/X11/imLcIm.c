@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcIm.c,v 1.10 2002/09/21 02:46:04 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcIm.c,v 1.11 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <stdio.h>
 /*
@@ -212,17 +212,43 @@ Private void
 _XimCreateDefaultTree(
     Xim		im)
 {
-    FILE *fp;
-    char *name;
+    FILE *fp = NULL;
+    char *name, *tmpname = NULL;
 
-    name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
-    if (name == (char *)NULL)
-         return;
-    fp = _XFopenFile (name, "r");
-    Xfree(name);
-    if (fp == (FILE *)NULL)
-	 return;
-    _XimParseStringFile(fp, &im->private.local.top);
+    name = getenv("XCOMPOSEFILE");
+
+    if (name == (char *) NULL) {
+    	char *home = getenv("HOME");
+    	if (home != (char *) NULL) {
+    	    int hl = strlen(home);
+            tmpname = name = Xmalloc(hl + 10 + 1);
+            if (name != (char *) NULL) {
+            	strcpy(name, home);
+            	strcpy(name + hl, "/.XCompose");
+                fp = _XFopenFile (name, "r");
+                if (fp == (FILE *) NULL) {
+                    Xfree(name);
+                    name = tmpname = NULL;
+                }
+            }
+        }
+    }
+
+    if (name == (char *) NULL) {
+        tmpname = name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
+    }
+
+    if (name == (char *) NULL)
+        return;
+    if (fp == (FILE *) NULL) {
+        fp = _XFopenFile (name, "r");
+    }
+    if (tmpname != (char *) NULL) {
+        Xfree(tmpname);
+    }
+    if (fp == (FILE *) NULL)
+	return;
+    _XimParseStringFile(fp, im);
     fclose(fp);
 }
 
@@ -264,8 +290,6 @@ _XimLocalOpenIM(
     }
     _XimSetCurrentIMValues(im, &im_values);
 
-    _XimCreateDefaultTree(im);
-
     if (!(conv = _XlcOpenConverter(lcd,	XlcNCompoundText, lcd, XlcNMultiByte)))
 	goto Open_Error;
     private->ctom_conv = conv;
@@ -297,6 +321,8 @@ _XimLocalOpenIM(
     if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNUtf8String)))
 	goto Open_Error;
     private->ucstoutf8_conv = conv;
+
+    _XimCreateDefaultTree(im);
 
     im->methods = &Xim_im_local_methods;
     private->current_ic = (XIC)NULL;
