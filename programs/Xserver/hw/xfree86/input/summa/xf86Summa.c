@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.8 2001/04/05 17:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.9 2001/04/23 16:17:11 tsi Exp $ */
 
 static const char identification[] = "$Identification: 18 $";
 
@@ -1614,7 +1614,6 @@ InputDriverRec SUMMA = {
 static void
 xf86SumUnplug(pointer	p)
 {
-    DBG(2, ErrorF("xf86SumUnplug\n"));
 }
 
 /*
@@ -1628,8 +1627,6 @@ xf86SumPlug(pointer	module,
 	    int		*errmaj,
 	    int		*errmin)
 {
-    DBG(2, ErrorF("xf86SumPlug\n"));
-	
     xf86AddInputDriver(&SUMMA, module, 0);
 
     return module;

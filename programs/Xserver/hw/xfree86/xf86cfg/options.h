@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.h,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.h,v 1.3 2000/10/20 14:59:07 alanh Exp $
  */
 
 #include "config.h"
@@ -39,7 +39,10 @@
  */
 #ifdef USE_MODULES
 void OptionsPopup(XF86OptionPtr*, char*, OptionInfoPtr);
+void ModuleOptionsPopup(Widget, XtPointer, XtPointer);
 #else
 void OptionsPopup(XF86OptionPtr*);
 #endif
 void OptionsCancelAction(Widget, XEvent*, String*, Cardinal*);
+void ModuleOptionsCancelAction(Widget, XEvent*, String*, Cardinal*);
+char *GetOptionDescription(char *module, char *option);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.29 2001/02/04 03:19:28 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.30 2001/05/04 19:05:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -13,6 +13,7 @@
 #include "xf86fbman.h"
 #include "servermd.h"
 
+static const OptionInfoRec *XAAAvailableOptions(void *unused);
 
 /*
  * XAA Config options
@@ -88,6 +89,58 @@ static const OptionInfoRec XAAOptions[] = {
     { -1,				NULL,
 				OPTV_NONE,	{0}, FALSE }
 };
+
+#ifdef XFree86LOADER
+static MODULESETUPPROTO(xaaSetup);
+
+static XF86ModuleVersionInfo xaaVersRec =
+{
+	"xaa",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	1, 0, 0,
+	ABI_CLASS_VIDEODRV,		/* requires the video driver ABI */
+	ABI_VIDEODRV_VERSION,
+	MOD_CLASS_NONE,
+	{0,0,0,0}
+};
+
+XF86ModuleData xaaModuleData = { &xaaVersRec, xaaSetup, NULL };
+
+ModuleInfoRec XAA = {
+    1,
+    "XAA",
+    NULL,
+    0,
+    XAAAvailableOptions,
+};
+
+/*ARGSUSED*/
+static pointer
+xaaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
+{
+    static Bool Initialised = FALSE;
+
+    if (!Initialised) {
+	Initialised = TRUE;
+#ifndef REMOVE_LOADER_CHECK_MODULE_INFO
+	if (xf86LoaderCheckSymbol("xf86AddModuleInfo"))
+#endif
+	xf86AddModuleInfo(&XAA, Module);
+    }
+
+    return (pointer)TRUE;
+}
+#endif
+
+/*ARGSUSED*/
+static const OptionInfoRec *
+XAAAvailableOptions(void *unused)
+{
+    return (XAAOptions);
+}
 
 Bool
 XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)

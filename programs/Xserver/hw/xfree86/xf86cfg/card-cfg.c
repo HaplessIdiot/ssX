@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.4 2000/12/01 23:27:54 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.5 2001/03/24 01:17:20 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -387,14 +387,16 @@ CardModel(XF86SetupInfo *info)
 					 NULL, 0);
 	{
 	    Widget menu, sme;
-	    xf86cfgDriverOptions *opts = video_driver_info;
+	    xf86cfgModuleOptions *opts = module_options;
 
 	    menu = XtCreatePopupShell("driverM", simpleMenuWidgetClass,
 				      driver, NULL, 0);
 	    while (opts) {
-		sme = XtCreateManagedWidget(opts->name, smeBSBObjectClass,
-					    menu, NULL, 0);
-		XtAddCallback(sme, XtNcallback, DriverCallback, NULL);
+		if (opts->type == VideoModule) {
+		    sme = XtCreateManagedWidget(opts->name, smeBSBObjectClass,
+						menu, NULL, 0);
+		    XtAddCallback(sme, XtNcallback, DriverCallback, NULL);
+		}
 		opts = opts->next;
 	    }
 	}

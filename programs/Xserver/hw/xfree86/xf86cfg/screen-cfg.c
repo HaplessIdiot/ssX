@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.6 2000/12/08 21:51:06 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.7 2001/04/01 14:00:15 tsi Exp $
  */
 
 #include "xf86config.h"
@@ -406,7 +406,7 @@ ScreenDialog(XF86SetupInfo *info)
     XF86ConfModeLinePtr mline = mon != NULL ? mon->mon_modeline_lst : NULL;
     int i;
 #ifdef USE_MODULES
-    xf86cfgDriverOptions *drv_opts = video_driver_info;
+    xf86cfgModuleOptions *drv_opts = module_options;
     Bool foundRotate = False;
 #endif
 
@@ -487,7 +487,8 @@ ScreenDialog(XF86SetupInfo *info)
 
 #ifdef USE_MODULES
     while (drv_opts) {
-	if (strcmp(drv_opts->name, screen->scrn_device->dev_driver) == 0) {
+	if (drv_opts->type == VideoModule &&
+	    strcmp(drv_opts->name, screen->scrn_device->dev_driver) == 0) {
 	    OptionInfoPtr opts = drv_opts->option;
 
 	    while (opts->name) {

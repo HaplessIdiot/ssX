@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.20 2001/03/29 16:54:30 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.21 2001/04/01 14:00:15 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -171,6 +171,7 @@ static XtActionsRec actions[] = {
     {"testmode-cancel", CancelTestModeAction},
     {"help-close", HelpCancelAction},
     {"expert-close", ExpertCloseAction},
+    {"module-options-close", ModuleOptionsCancelAction},
 };
 
 static char *device_names[] = {
@@ -214,7 +215,7 @@ main(int argc, char *argv[])
     XGCValues values;
     XF86ConfLayoutPtr lay;
     int i, startedx;
-    char *menuPixmapPath;
+    char *menuPixmapPath = NULL;
     XrmValue from, to;
 
 #ifdef USE_MODULES
@@ -259,8 +260,8 @@ main(int argc, char *argv[])
 #endif
     
     startedx = startx();
-/*    if (XF86Config_path == NULL)
-	XF86Config_path = "/etc/X11/XF86Config-4";*/
+    if (XF86Config_path == NULL)
+	XF86Config_path = "XF86Config-4";
     if (XkbConfig_path == NULL)
 	XkbConfig_path = XkbConfigDir XkbConfigFile;
     toplevel = XtAppInitialize(&appcon, "XF86Cfg",
@@ -271,9 +272,9 @@ main(int argc, char *argv[])
     if (DPY == NULL)
 	DPY = XtDisplay(toplevel);
 
-    if (strlen(menuPixmapPath)) {
-	XtGetApplicationResources(toplevel, (XtPointer)&menuPixmapPath,
-				  appResources, XtNumber(appResources), NULL, 0);
+    XtGetApplicationResources(toplevel, (XtPointer)&menuPixmapPath,
+			      appResources, XtNumber(appResources), NULL, 0);
+    if (menuPixmapPath && strlen(menuPixmapPath)) {
 	from.size = strlen(menuPixmapPath);
 	from.addr = menuPixmapPath;
 	to.size = sizeof(Pixmap);
@@ -480,6 +481,23 @@ main(int argc, char *argv[])
 
 #ifdef USE_MODULES
 	LoaderInitializeOptions();
+#if 0
+{
+    xf86cfgModuleOptions *o = module_options;
+
+    while (o) {
+	OptionInfoPtr opt = o->option;
+
+	while (opt && opt->name) {
+	    char *desc = GetOptionDescription(o->name, opt->name);
+
+	    printf("%s.%s: %s\n\n", o->name, opt->name, desc ? desc : "** NO DESCRIPTION AVAILABLE **");
+	    ++opt;
+	}
+	o = o->next;
+    }
+}
+#endif
 #endif
 
     if (!config_set && startedx) {
@@ -1419,7 +1437,7 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
     int i;
     XF86OptionPtr *options;
 #ifdef USE_MODULES
-    xf86cfgDriverOptions *drv_opts = NULL;
+    xf86cfgModuleOptions *drv_opts = NULL;
 #endif
 
     if (config_mode == CONFIG_SCREEN) {
@@ -1446,6 +1464,23 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		case KEYBOARD:
 		    options = (XF86OptionPtr*)&(((XF86ConfInputPtr)
 			(computer.devices[i]->config))->inp_option_lst);
+#ifdef USE_MODULES
+		    {
+			char *drv = ((XF86ConfInputPtr)
+				(computer.devices[i]->config))->inp_driver;
+
+			if (drv) {
+			    drv_opts = module_options;
+			    while (drv_opts) {
+				if (drv_opts->type == InputModule &&
+				    strcmp(drv_opts->name, drv) == 0)
+				    break;
+				drv_opts = drv_opts->next;
+			    }
+			}
+		    }
+#endif
+
 		    break;
 		case CARD:
 		    options = (XF86OptionPtr*)&(((XF86ConfDevicePtr)
@@ -1456,9 +1491,10 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 				(computer.devices[i]->config))->dev_driver;
 
 			if (drv) {
-			    drv_opts = video_driver_info;
+			    drv_opts = module_options;
 			    while (drv_opts) {
-				if (strcmp(drv_opts->name, drv) == 0)
+				if (drv_opts->type == VideoModule &&
+				    strcmp(drv_opts->name, drv) == 0)
 				    break;
 				drv_opts = drv_opts->next;
 			    }

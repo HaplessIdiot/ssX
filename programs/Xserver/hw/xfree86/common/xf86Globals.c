@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.28 2000/03/08 05:38:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.30 2001/05/15 10:19:35 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -160,6 +160,8 @@ DriverPtr *xf86DriverList = NULL;
 int xf86NumDrivers = 0;
 InputDriverPtr *xf86InputDriverList = NULL;
 int xf86NumInputDrivers = 0;
+ModuleInfoPtr *xf86ModuleInfoList = NULL;
+int xf86NumModuleInfos = 0;
 #endif
 int xf86NumScreens = 0;
 

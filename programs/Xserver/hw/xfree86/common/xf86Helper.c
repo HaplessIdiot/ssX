@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.109 2001/01/06 20:19:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.110 2001/05/04 19:05:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -69,6 +69,7 @@ xf86DeleteDriver(int drvIndex)
 	&& (!xf86DriverHasEntities(xf86DriverList[drvIndex]))) {
 	if (xf86DriverList[drvIndex]->module)
 	    UnloadModule(xf86DriverList[drvIndex]->module);
+	xfree(xf86DriverList[drvIndex]);
 	xf86DriverList[drvIndex] = NULL;
     }
 }
@@ -100,7 +101,38 @@ xf86DeleteInputDriver(int drvIndex)
 {
     if (xf86InputDriverList[drvIndex] && xf86InputDriverList[drvIndex]->module)
 	UnloadModule(xf86InputDriverList[drvIndex]->module);
+    xfree(xf86InputDriverList[drvIndex]);
     xf86InputDriverList[drvIndex] = NULL;
+}
+
+void
+xf86AddModuleInfo(ModuleInfoPtr info, pointer module)
+{
+    /* Don't add null entries */
+    if (!module)
+	return;
+
+    if (xf86ModuleInfoList == NULL)
+	xf86NumModuleInfos = 0;
+
+    xf86NumModuleInfos++;
+    xf86ModuleInfoList = xnfrealloc(xf86ModuleInfoList,
+				    xf86NumModuleInfos * sizeof(ModuleInfoPtr));
+    xf86ModuleInfoList[xf86NumModuleInfos - 1] = xnfalloc(sizeof(ModuleInfoRec));
+    *xf86ModuleInfoList[xf86NumModuleInfos - 1] = *info;
+    xf86ModuleInfoList[xf86NumModuleInfos - 1]->module = module;
+    xf86ModuleInfoList[xf86NumModuleInfos - 1]->refCount = 0;
+}
+
+void
+xf86DeleteModuleInfo(int idx)
+{
+    if (xf86ModuleInfoList[idx]) {
+	if (xf86ModuleInfoList[idx]->module)
+	    UnloadModule(xf86ModuleInfoList[idx]->module);
+	xfree(xf86ModuleInfoList[idx]);
+	xf86ModuleInfoList[idx] = NULL;
+    }
 }
 #endif
 

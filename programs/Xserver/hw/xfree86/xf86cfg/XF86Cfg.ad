@@ -26,7 +26,7 @@
 !!
 !! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.10 2001/03/24 01:17:21 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.12 2001/03/29 16:54:30 paulo Exp $
 !!
 
 *Form.background:			gray85
@@ -475,6 +475,8 @@ XF86Cfg.translations:	#override \
 <Message>WM_PROTOCOLS:	testmode-cancel()
 .xf86cfg.Expert.translations:	#override \
 <Message>WM_PROTOCOLS:	expert-close()
+.xf86cfg.options.moduleOptions.translations:	#override \
+<Message>WM_PROTOCOLS:	module-options-close()
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -488,6 +490,7 @@ XF86Cfg.translations:	#override \
 
 *options*commands.remove.fromHoriz:	add
 *options*commands.update.fromHoriz:	remove
+*options*commands.help.fromHoriz:	update
 *options*commands.min:			30
 *options*commands.max:			30
 *options*commands.showGrip:		False
@@ -501,18 +504,18 @@ XF86Cfg.translations:	#override \
 *options*label3.fromHoriz:		value
 *options*viewport.fromVert:		name
 *options*Label.borderWidth:		0
-*options*Label.internalWidth:		0
-*options*Label.height:			21
-*options*Text.height:			19
-*options*Label.top:			chainTop
-*options*Text.top:			chainTop
-*options*Label.bottom:			chainTop
-*options*Text.bottom:			chainTop
-*options*Label.horizDistance:		0
-*options*Text.horizDistance:		0
-*options*Label.vertDistance:		8
-*options*Text.vertDistance:		8
-*options*Text.width:			147
+*options.pane.form.Label.internalWidth:	0
+*options.pane.form.Label.height:	21
+*options.pane.form.Text.height:		19
+*options.pane.form.Label.top:		chainTop
+*options.pane.form.Text.top:		chainTop
+*options.pane.form.Label.bottom:	chainTop
+*options.pane.form.Text.bottom:		chainTop
+*options.pane.form.Label.horizDistance:	0
+*options.pane.form.Text.horizDistance:	0
+*options.pane.form.Label.vertDistance:	8
+*options.pane.form.Text.vertDistance:	8
+*options.pane.form.Text.width:		147
 *options*viewport.width:		390
 *options*viewport.height:		50
 
@@ -522,13 +525,47 @@ XF86Cfg.translations:	#override \
 *options*viewport.right:		chainRight
 *options*list.longest:			376
 
-*options*driverOpts.label:		Options for driver\ 
+*options*driverOpts.label:		Options for module\ 
 *options*driverOpts.justify:		left
 *options*driverOpts.width:		278
 *options*popdown.label:			Popdown dialog
 *options*driverOpts.tip:		This menu shows:\n\
  o option name\n\
  o option type
+
+.xf86cfg*options.moduleOptions.geometry:			360x245
+.xf86cfg*options.moduleOptions.minWidth:			360
+.xf86cfg*options.moduleOptions.maxWidth:			360
+.xf86cfg*options.moduleOptions.minHeight:			245
+.xf86cfg*options.moduleOptions.maxHeight:			245
+*options.moduleOptions*descriptions*labelType.label:		Select option
+*options.moduleOptions*descriptions*labelType.width:		348
+*options.moduleOptions*descriptions*module.fromVert:		labelType
+*options.moduleOptions*descriptions*module.label:		Module
+*options.moduleOptions*descriptions*Label.horizDistance:	8
+*options.moduleOptions*descriptions*option.fromVert:		labelType
+*options.moduleOptions*descriptions*option.label:		Option
+*options.moduleOptions*descriptions*option.fromHoriz:		viewM
+*options.moduleOptions*descriptions*viewM.fromVert:		module
+*options.moduleOptions*descriptions*viewM.width:		120
+*options.moduleOptions*descriptions*viewM.height:		94
+*options.moduleOptions*descriptions*modL.longest:		100
+*options.moduleOptions*descriptions*viewO.fromHoriz:		viewM
+*options.moduleOptions*descriptions*viewO.fromVert:		option
+*options.moduleOptions*descriptions*viewO.width:		220
+*options.moduleOptions*descriptions*viewO.height:		94
+*options.moduleOptions*descriptions*optL.longest:		220
+*options.moduleOptions*descriptions*desc.horizDistance:		4
+*options.moduleOptions*descriptions*desc.fromVert:		viewM
+*options.moduleOptions*descriptions*desc.width:			348
+*options.moduleOptions*descriptions*desc.height:		62
+*options.moduleOptions*descriptions*desc.wrap:			word
+*options.moduleOptions*descriptions*desc.scrollVertical:	Always
+*options.moduleOptions*descriptions*desc.Scrollbar.foreground:	rgb:a/5/5
+*options.moduleOptions*descriptions*desc.Scrollbar.borderWidth:	1
+*options.moduleOptions*descriptions*desc.Scrollbar.borderColor:	gray60
+*options.moduleOptions*descriptions.showGrip:			False
+*options.moduleOptions*popdown.label:				Popdown dialog
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! monitor
@@ -1300,11 +1337,16 @@ kbd?family=Courier&pixelsize=10,\
 code?family=Courier&pixelsize=10,\
 samp?family=Courier&pixelsize=10,\
 tt?family=Courier&pixelsize=10
-*help*close.min:	18
-*help*close.max:	18
-*help*close.showGrip:	False
+*help*commands.min:	22
+*help*commands.max:	22
+*help*commands.showGrip:False
 *help*wrap:		word
+*help*commands.close.label:	Close
 .xf86cfg.help.geometry:		320x369
+.xf86cfg.help.minWidth:		320
+.xf86cfg.help.maxWidth:		320
+.xf86cfg.help.minHeight:	369
+.xf86cfg.help.maxHeight:	369
 .xf86cfg.help.translations:	#override \
 <Message>WM_PROTOCOLS:	help-close()
 *help*text.translations:\
