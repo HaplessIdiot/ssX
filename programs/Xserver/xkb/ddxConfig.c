@@ -1,4 +1,5 @@
 /* $XConsortium: ddxConfig.c /main/5 1996/01/14 16:45:41 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
