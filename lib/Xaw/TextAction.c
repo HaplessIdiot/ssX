@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.43 2001/12/14 19:54:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.44 2002/01/04 23:04:17 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2910,9 +2910,9 @@ TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
     if (focus[i].widget != w) {
 	Widget old = focus[i].widget;
 
-	focus[i].widget = w;
 	if (old != NULL)
 	    TextFocusOut(old, event, p, n);
+	focus[i].widget = w;
 	XtAddCallback(w, XtNdestroyCallback,
 		      DestroyFocusCallback, (XtPointer)&focus[i]);
     }
@@ -2944,9 +2944,11 @@ TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
 	 || event->xfocus.detail == NotifyPointer)
 	return;
 
-    if (i < num_focus && focus[i].widget)
+    if (i < num_focus && focus[i].widget) {
 	XtRemoveCallback(focus[i].widget, XtNdestroyCallback,
 			 DestroyFocusCallback, (XtPointer)&focus[i]);
+	focus[i].widget = NULL;
+    }
 
     /* Let the input method know focus has left.*/
     _XawImUnsetFocus(w);
