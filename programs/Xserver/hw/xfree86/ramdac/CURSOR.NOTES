@@ -1,31 +1,29 @@
-			XAA.CURSOR
+			CURSOR.NOTES
 
   This file describes how to add hardware cursor support to a chipset
-driver.  Though the XAA cursor support itself is in the XAA module,
-XAA cursor management is separate from the rest of the graphics 
-acceleration management and XAAInit() does not need to be called to
-use the XAA Cursor interface.
+driver.  Though the cursor support itself is in the ramdac module,
+cursor management is separate from the rest of the module.
 
 
-1) XAA CURSOR INITIALIZATION AND SHUTDOWN
+1) CURSOR INITIALIZATION AND SHUTDOWN
 
-   All relevant prototypes and defines are in xaacursor.h.
+   All relevant prototypes and defines are in xf86Cursor.h.
 
-  To initialize the XAA cursor, the driver should allocate an 
-XAACursorInfoRec via XAACreateCursorInfoRec(), fill it out as described 
-later in this  document and pass it to XAAInitCursor().  XAAInitCursor() 
+  To initialize the cursor, the driver should allocate an 
+xf86CursorInfoRec via xf86CreateCursorInfoRec(), fill it out as described 
+later in this  document and pass it to xf86InitCursor().  xf86InitCursor() 
 must be called _after_ the software cursor initialization (usually
 miDCInitialize).
 
-   When shutting down, the driver should free the XAACursorInfoRec
-structure in its CloseScreen function via XAADestroyCursorInfoRec().
+   When shutting down, the driver should free the xf86CursorInfoRec
+structure in its CloseScreen function via xf86DestroyCursorInfoRec().
 
 
-2) FILLING OUT THE XAACURSORINFOREC
+2) FILLING OUT THE xf86CursorInfoRec
 
-   The driver informs XAA of it's hardware cursor capablities by
-filling out an XAACursorInfoRec structure and passing it to XAAInitCursor().
-The XAACursorInfoRec contains the following function pointers:
+   The driver informs the ramdac module of it's hardware cursor capablities by
+filling out an xf86CursorInfoRec structure and passing it to xf86InitCursor().
+The xf86CursorInfoRec contains the following function pointers:
 
 
 /**** These functions are required ****/
@@ -53,20 +51,20 @@ void SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     
 void LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
 
-    LoadCursorImage is how XAA will pass the hardware cursor bits
-    computed by the RealizeCursor function to the driver when the
-    cursor shape needs to be changed. 
+    LoadCursorImage is how the hardware cursor bits computed by the
+    RealizeCursor function will be passed to the driver when the cursor
+    shape needs to be changed.
 
 
 /**** These functions are optional ****/
 
     
-unsigned char* RealizeCursor(XAACursorInfoPtr infoPtr, CursorPtr pCurs) 
+unsigned char* RealizeCursor(xf86CursorInfoPtr infoPtr, CursorPtr pCurs) 
 
-    If RealizeCursor is not provided by the driver, XAA will provide
-    one for you based on the Flags field described below.  The driver
-    must provide this function if the hardware cursor format is not one
-    of the common ones supported by XAA.
+    If RealizeCursor is not provided by the driver, one will be provided
+    for you based on the Flags field described below.  The driver must
+    provide this function if the hardware cursor format is not one of
+    the common ones supported by this module.
   
 
 Bool UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
@@ -86,7 +84,7 @@ MaxWidth
 MaxHeight
 
     These indicate the largest sized cursor that can be a hardware
-    cursor.  XAA will fall back to a software cursor when a cursor
+    cursor.  It will fall back to a software cursor when a cursor
     exceeding this size needs to be used.
 
 
@@ -124,7 +122,7 @@ Flags
 
    HARDWARE_CURSOR_AND_SOURCE_WITH_MASK
 
-   This flag will have XAA logical AND the source with the mask to make  
+   This flag will have the module logical AND the source with the mask to make  
    sure there are no source bits set if the corresponding mask bits 
    aren't set.  Some hardware will not care if source bits are set where
    there are supposed to be transparent areas, but some hardware will
@@ -133,14 +131,14 @@ Flags
 
    HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
 
-   By default, XAA assumes that the least significant bit in each byte
+   By default, it is assumed that the least significant bit in each byte
    corresponds to the leftmost pixel on the screen.  If your hardware
    has this reversed you should set this flag.
 
 
    /* Source-Mask interleaving flags */
 
-   By default XAA inlines the source and mask data (source first unless
+   By default is to inline the source and mask data (source first unless
    the HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK flag is set).  Some hardware
    will require the source and mask to be interleaved, that is, X number
    of source bits should packed and then X number of mask bits repeating
@@ -165,4 +163,4 @@ Flags
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.CURSOR,v 1.1.2.2 1998/07/24 11:36:42 dawes Exp $
+$XFree86$
