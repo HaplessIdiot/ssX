@@ -1,4 +1,9 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 710. Fixes and updates for XKB keyboard maps:
+      - Fix Armenian phonetic keymap (Bugzilla #1016, Ani).
+      - Fix rules for Brasilian ABNT2 keyboard (Ricardo Y. Igarashi).
+      - Add Shift+CapsLock group switcher (Ivan Pascal, see Bugzilla #1025).
+      - Update rules/xfree86.lst with missing descriptions (Ivan Pascal).
  709. Build fix for Solaris Express (Bugzilla #1032, Alan Coopersmith).
  708. Fix warning in lib/Xt/Alloc.c (Bugzilla #1035, Nicolas Jolly).
  707. Fix short overflow problem with box clipping in fb/fbcopy.c
@@ -18415,7 +18420,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3057 2003/12/30 01:45:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3058 2003/12/30 01:53:53 tsi Exp $
 
 
 
