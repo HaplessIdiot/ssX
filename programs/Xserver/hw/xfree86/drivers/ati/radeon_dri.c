@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.15 2002/02/22 21:45:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.16 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1652,7 +1652,8 @@ void RADEONDRICloseScreen(ScreenPtr pScreen)
 
 				/* Stop the CP */
     if (info->directRenderingEnabled) {
-	RADEONCP_STOP(pScrn, info);
+	if (info->CPStarted) RADEONCP_STOP(pScrn, info);
+	else                 DRIUnlock(pScreen);
     }
 
 				/* De-allocate vertex buffers */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.11 2002/05/16 15:11:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.13 2002/06/19 05:48:50 keithp Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -160,45 +160,34 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	}
     }
 
-#if 0
-    /* This test is NOT needed, and is the cause of jerky behavior
-     * as the mouse approaches the left edge of the screen, especially
-     * at high acceleration.
-     *
-     * Nowhere below is x (or y) used when they are negative!
-     */
-     if(x >= 0)
-#endif
-     {
-	if (!info->IsSecondary) {
-	    OUTREG(RADEON_CUR_HORZ_VERT_OFF,  (RADEON_CUR_LOCK
-					       | (xorigin << 16)
-					       | yorigin));
-	    OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
-					       | ((xorigin ? 0 : x) << 16)
-					       | (yorigin ? 0 : y)));
-	    OUTREG(RADEON_CUR_OFFSET, info->cursor_start + yorigin * 16);
-	} else {
-	    OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
-						| (xorigin << 16)
-						| yorigin));
-	    OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
-						| ((xorigin ? 0 : x) << 16)
-						| (yorigin ? 0 : y)));
-	    OUTREG(RADEON_CUR2_OFFSET,
-		   info->cursor_start + pScrn->fbOffset + yorigin * 16);
-	}
+    if (!info->IsSecondary) {
+	OUTREG(RADEON_CUR_HORZ_VERT_OFF,  (RADEON_CUR_LOCK
+					   | (xorigin << 16)
+					   | yorigin));
+	OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
+					   | ((xorigin ? 0 : x) << 16)
+					   | (yorigin ? 0 : y)));
+	OUTREG(RADEON_CUR_OFFSET, info->cursor_start + yorigin * 16);
+    } else {
+	OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
+					    | (xorigin << 16)
+					    | yorigin));
+	OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
+					    | ((xorigin ? 0 : x) << 16)
+					    | (yorigin ? 0 : y)));
+	OUTREG(RADEON_CUR2_OFFSET,
+	       info->cursor_start + pScrn->fbOffset + yorigin * 16);
+    }
 
-	if (info->Clone) {
-	    OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
-						| (0 << 16)
-						| 0));
-	    OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
-						| (X2 << 16)
-						| Y2));
-	    OUTREG(RADEON_CUR2_OFFSET,
-		   info->cursor_start + pScrn->fbOffset + yorigin * 16);
-	}
+    if (info->Clone) {
+	OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
+					    | (xorigin << 16)
+					    | yorigin));
+	OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
+					    | ((xorigin ? 0 : X2) << 16)
+					    | (yorigin ? 0 : Y2)));
+	OUTREG(RADEON_CUR2_OFFSET,
+	       info->cursor_start + pScrn->fbOffset + yorigin * 16);
     }
 }
 
