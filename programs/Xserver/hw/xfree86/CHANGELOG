@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 355. Add new command line options to glxinfo for more detailed output
+      (#5354, Brian Paul).
  354. Support for 24bpp, fix screen blanking and bug fixes for newport driver
       (#5329, #5349, Guido Guenther).
  353. Add RandR support to XFree86 DDX. (Keith Packard)
@@ -15226,4 +15228,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2315 2002/09/29 23:54:31 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2316 2002/09/30 22:17:53 alanh Exp $
