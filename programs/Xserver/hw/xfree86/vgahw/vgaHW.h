@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.26 2001/02/15 18:31:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.27 2001/05/02 14:53:23 dawes Exp $ */
 
 
 /*
@@ -232,4 +232,5 @@ CARD32 vgaHWHBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits,
 	       unsigned int Flags);
 CARD32 vgaHWVBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits, 
 	       unsigned int Flags);
+Bool vgaHWAllocDefaultRegs(vgaRegPtr regp);
 #endif /* _VGAHW_H */

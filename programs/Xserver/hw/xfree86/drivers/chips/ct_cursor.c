@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.20 2000/04/04 19:25:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.21 2001/05/09 19:57:04 dbateman Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -70,7 +70,7 @@ CHIPSShowCursor(ScrnInfoPtr pScrn)
     if (IS_HiQV(cPtr)) {
 	tmp = cPtr->readXR(cPtr, 0xA0);
 	cPtr->writeXR(cPtr, 0xA0, (tmp & 0xF8) | 5);
-	if ((cPtr->Flags & ChipsDualChannelSupport) && 
+	if (cPtr->UseDualChannel && 
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -109,7 +109,7 @@ CHIPSHideCursor(ScrnInfoPtr pScrn)
     if (IS_HiQV(cPtr)) {
 	tmp = cPtr->readXR(cPtr, 0xA0);
 	cPtr->writeXR(cPtr, 0xA0, tmp & 0xF8);
-	if ((cPtr->Flags & ChipsDualChannelSupport) && 
+	if (cPtr->UseDualChannel && 
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -157,7 +157,7 @@ CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	cPtr->writeXR(cPtr, 0xA5, (x >> 8) & 0x87);
 	cPtr->writeXR(cPtr, 0xA6, y & 0xFF);
 	cPtr->writeXR(cPtr, 0xA7, (y >> 8) & 0x87);
-	if ((cPtr->Flags & ChipsDualChannelSupport) && 
+	if (cPtr->UseDualChannel && 
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -229,7 +229,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 	/* Enable normal palette addressing */
 	cPtr->writeXR(cPtr, 0x80, xr80);
 
-	if ((cPtr->Flags & ChipsDualChannelSupport) && 
+	if (cPtr->UseDualChannel && 
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
@@ -339,7 +339,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     if (IS_HiQV(cPtr)) {
 	cPtr->writeXR(cPtr, 0xA2, (cAcl->CursorAddress >> 8) & 0xFF);
 	cPtr->writeXR(cPtr, 0xA3, (cAcl->CursorAddress >> 16) & 0x3F);
-	if ((cPtr->Flags & ChipsDualChannelSupport) && 
+	if (cPtr->UseDualChannel && 
 	    (! xf86IsEntityShared(pScrn->entityList[0]))) {
 	    unsigned int IOSS, MSS;
 	    IOSS = cPtr->readIOSS(cPtr);
