@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/wsna/Imakefile,v 1.7 1998/03/20 19:08:11 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/wsna/Imakefile,v 1.8 1998/03/20 21:07:55 hohndel Exp $
 
 
 #define IHaveModules
@@ -12,8 +12,8 @@ ASM_OBJS = cir_imblt.o cir_textblt.o cir_span.o
 #else
 BANK_SRCS = cir_bankc.c
 BANK_OBJS = cir_bankc.o
-OTHER_SRCS = cir_imbltc.c cir_textbltc.c
-OTHER_OBJS = cir_imbltc.o cir_textbltc.o
+OTHER_SRCS = cir_imbltc.c cir_textbltc.c cir_spanc.c
+OTHER_OBJS = cir_imbltc.o cir_textbltc.o cir_spanc.o
 #endif
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c $(BANK_SRCS) \
@@ -22,7 +22,7 @@ SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c $(BANK_SRCS) \
        cir_blitmm.c cir_immm.c cir_tebltmm.c cir_alloc.c \
        /* cir_blt16.c */ cir_solid.c /* cir_line.c cir_seg.c cir_orect.c */ \
        /* cir_orect16.c cir_orect32.c linearline.c cir_fillLG.c cir_blitLG.c */ \
-       cirrus_acl.c cirrus_aclm.c laguna_acl.c \
+       cirrus_acl.c cirrus_aclm.c laguna_acl.c $(XSRCS) \
        cir_pc98.c 
 
 OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o $(BANK_OBJS) \
@@ -31,14 +31,10 @@ OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o $(BANK_OBJS) \
        cir_blitmm.o cir_immm.o cir_tebltmm.o cir_alloc.o \
        /* cir_blt16.o */ cir_solid.o /* cir_line.o cir_seg.o cir_orect.o */ \
        /* cir_orect16.o cir_orect32.o linearline.o cir_fillLG.o cir_blitLG.o */ \
-       cirrus_acl.o cirrus_aclm.o laguna_acl.o \
+       cirrus_acl.o cirrus_aclm.o laguna_acl.o $(XOBJS) \
        cir_pc98.o
 
-#if defined(i386Architecture)
 DEFINES = -DPSZ=8 -DPC98 -DPC98_WSNA
-#else
-DEFINES = -DPSZ=8 -DAVOID_ASM_ROUTINES
-#endif
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -53,8 +49,12 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
+
 NormalLibraryObjectRule()
+
+#if defined(i386Architecture)
 NormalAsmObjectRule()
+#endif
 
 NormalRelocatableTarget(wsna_drv, $(OBJS))
 
@@ -88,6 +88,7 @@ LinkSourceFile(cir_orect.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_solid.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_span.h,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_span.s,$(XF86SRC)/drivers/cirrus)
+LinkSourceFile(cir_spanc.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_teblt8.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_textblt.s,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_textbltc.c,$(XF86SRC)/drivers/cirrus)
@@ -121,6 +122,7 @@ InstallLinkKitNonExecFile(cir_span.s,$(XF98LINKKITDIR)/drivers98/svga/wsna)
 InstallLinkKitNonExecFile(cir_bankc.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
 InstallLinkKitNonExecFile(cir_imbltc.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
 InstallLinkKitNonExecFile(cir_textbltc.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
+InstallLinkKitNonExecFile(cir_spanc.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
 #endif
 InstallLinkKitNonExecFile(cir_colexp.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
 InstallLinkKitNonExecFile(cirFillSt.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
@@ -152,4 +154,6 @@ InstallLinkKitNonExecFile(cir_pc98.c,$(XF98LINKKITDIR)/drivers98/svga/wsna)
 InstallDynamicModule(wsna_drv.o, $(MODULEDIR))
 #endif
 
+#ifndef OS2Architecture
 DependTarget()
+#endif

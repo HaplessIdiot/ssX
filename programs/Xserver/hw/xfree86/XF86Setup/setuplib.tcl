@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.18 1997/09/09 10:27:39 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.19 1997/12/14 10:03:56 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -83,6 +83,8 @@ proc initconfig {xwinhome} {
 	set Pointer(Emulate3Timeout)	""
 	set Pointer(ChordMiddle)	""
 	set Pointer(SampleRate)		""
+	set Pointer(Resolution)		""
+	set Pointer(Buttons)		""
 	set Pointer(ClearDTR)		""
 	set Pointer(ClearRTS)		""
 
@@ -287,8 +289,8 @@ proc writeXF86Config {filename args} {
 	} elseif { [string length $Pointer(Device)] } {
 		puts $fd "   Device          \"$Pointer(Device)\""
 	}
-	foreach key {BaudRate Emulate3Timeout SampleRate} {
-		if { [string length $Pointer($key)] } {
+	foreach key {BaudRate Emulate3Timeout SampleRate Resolution Buttons} {
+		if { [string length $Pointer($key)] && $Pointer($key) } {
 			puts $fd [format "   %-15s %s" $key $Pointer($key)]
 		}
 	}
@@ -427,7 +429,7 @@ proc writeXF86Config {filename args} {
 	    puts $fd "EndSection"
 	}
 
-	foreach drvr {Accel Mono VGA2 VGA16 SVGA} {
+	foreach drvr {Accel SVGA VGA16 VGA2 Mono} {
 
 		if $pc98 {
 			if {![string compare $drvr "Mono"] || \

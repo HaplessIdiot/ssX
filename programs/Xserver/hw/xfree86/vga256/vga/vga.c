@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.107 1998/01/24 16:58:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.108 1998/03/20 21:07:14 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -187,6 +187,8 @@ ScrnInfoRec vga256InfoRec = {
   NULL,			/* char* DCConfig */
   NULL,			/* char* DCOptions */
   0,			/* int MemClk */
+  0,			/* int busType */
+  0,			/* PCITAG pciTag */
 #ifdef XFreeXDGA
   0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
@@ -1349,9 +1351,6 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       return FALSE;
   }
 
-#ifndef DIRTY_STARTUP
-  (*pScreen->SaveScreen)(NULL, FALSE);
-#endif
   (*vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
 
   if (vgaHWCursor.Initialized)
@@ -1388,6 +1387,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     	break;
   }
 #ifndef DIRTY_STARTUP		/* { */
+  (*pScreen->SaveScreen)(NULL, FALSE);
   /* Fill the screen with black */
   if (serverGeneration == 1)
   {

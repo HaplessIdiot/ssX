@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.26 1998/01/01 14:51:35 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.27 1998/03/22 13:29:27 robin Exp $
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.26 1998/01/01 14:51:35 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.27 1998/03/22 13:29:27 robin Exp $
 
 
 #define IHaveModules
@@ -49,7 +49,9 @@ DEFINES = -DS3_SERVER -DPSZ=8
 
 S3DRIVERS = XF86S3Drivers
 
-all::	s3newmmio/LibraryTargetName(s3newmmio) s3mmio/LibraryTargetName(s3mmio)
+all::	s3newmmio/LibraryTargetName(s3newmmio) s3mmio/LibraryTargetName(s3mmio)\
+	drivers
+
 
 s3newmmio/LibraryTargetName(s3newmmio):	s3newmmio
 

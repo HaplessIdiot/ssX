@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Pci.c,v 3.3 1998/01/24 23:58:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Pci.c,v 3.4 1998/03/20 21:06:24 hohndel Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -891,7 +891,7 @@ xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag, pointer Base, unsigned long
 int
 xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag, unsigned char *Buf, int Len)
 {
-    pointer hostbase = pciBusAddrToHostAddr(Tag, Base);
+    pointer hostbase = pciBusAddrToHostAddr(Tag, (ADDRESS)Base);
     
     return(xf86ReadBIOS(Base, Offset, Buf, Len));
 }

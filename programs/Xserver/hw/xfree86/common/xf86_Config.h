@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.73 1998/01/24 21:42:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.74 1998/02/07 08:58:16 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -220,7 +220,7 @@ static SymTabRec MouseTab[] = {
   { MMANPLUSPS2,"mousemanplusps/2" },
   { GLIDEPOINTPS2,"glidepointps/2" },
   { NETPS2,	"netmouseps/2" },
-  { NETSCROLLPS2,"netmouseps/2" },
+  { NETSCROLLPS2,"netscrollps/2" },
   { SYSMOUSE,	"sysmouse" },
   { AUTOMOUSE,	"auto" },
   { XQUE,	"xqueue" },
@@ -385,6 +385,7 @@ extern SymTabRec TimingTab[];
 #endif /* !defined(INIT_CONFIG) */
 
 #define LOAD		2000
+#define LOAD_DRIVER	2001
 
 #ifdef INIT_CONFIG
 SymTabRec ModuleTab[] = {
@@ -559,8 +560,8 @@ static SymTabRec KeyboardTab[] = {
 						   [CHRIS-211092] */
 #define P_PS2		6			/* PS/2 mouse */
 #define P_MMHIT		7			/* MM_HitTab */
-#define P_GLIDEPOINT	8		/* ALPS seiral GlidePoint */
-#define P_IMSERIAL      9		/* Microsoft serial IntelliMouse */
+#define P_GLIDEPOINT	8		/* ALPS serial GlidePoint */
+#define P_IMSERIAL	9		/* Microsoft serial IntelliMouse */
 #define P_THINKING	10		/* Kensington serial ThinkingMouse */
 #define P_IMPS2		11		/* Microsoft PS/2 IntelliMouse */
 #define P_THINKINGPS2	12		/* Kensington PS/2 ThinkingMouse */
@@ -584,9 +585,9 @@ static SymTabRec KeyboardTab[] = {
 #define REPEATEDMIDDLE	59
 #define DEVICE_NAME	60
 #define ALWAYSCORE	61
-#define BUTTONS		62
-#define PRESOLUTION	63
-#define ZAXISMAPPING	64
+#define PRESOLUTION	62
+#define ZAXISMAPPING	63
+#define PBUTTONS	64
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
@@ -610,8 +611,8 @@ static SymTabRec PointerTab[] = {
 #ifdef XINPUT
   { ALWAYSCORE,"alwayscore" },
 #endif
-  { BUTTONS,"buttons" },
-  { ZAXISMAPPING,"zaxismapping" },
+  { ZAXISMAPPING, "zaxismapping" },
+  { PBUTTONS,	"buttons" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

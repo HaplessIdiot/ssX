@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.32 1998/01/24 16:57:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.33 1998/02/07 08:58:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -455,14 +455,14 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
  
       /*
        * [KAZU-241097] We don't know exactly how many buttons the
-       * device has... Assume the maximum number for now.
+       * device has...
        */
       for (nbuttons = 0; nbuttons < MSE_MAXBUTTONS; ++nbuttons)
         map[nbuttons + 1] = nbuttons + 1;
 
       InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
-			      MSE_MAXBUTTONS, 
+			      min(mouse->buttons, MSE_MAXBUTTONS),
 			      miPointerGetMotionEvents,
 			      ctrl, 
 			      miPointerGetMotionBufferSize());

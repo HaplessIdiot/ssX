@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.21 1997/05/28 13:24:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.22 1997/12/14 10:03:54 hohndel Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -31,6 +31,7 @@ includes::
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
+		   mseproto.tcl \
 		   mondata.tcl monitor.tcl modeselect.tcl mouse.tcl LICENSE
     TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl tcllib/misc.tcl \
 		   tcllib/downarrow.xbm tcllib/dialog.tcl tcllib/entry.tcl \
@@ -52,6 +53,8 @@ includes::
 #undef XawClientDepLibs
 #define XawClientDepLibs /**/
 #endif
+
+   MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 
 #if defined(SVR4Architecture) || (defined(LinuxArchitecture) && UseElfFormat)
 /* Some OSs need this, and it should(?) be harmless when not needed */
@@ -82,11 +85,13 @@ includes::
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
          DEFINES = -DCARD_DATABASE_FILE='"$(CARDDBFILE)"' \
-		   $(XCONFIG_DEFINES)
+		   $(XCONFIG_DEFINES) $(MODULEDEFINES) -DOLD_PARSER
         INCLUDES = -I../os-support -I../common \
 		   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(INCLUDESRC) \
 		   -I$(EXTINCSRC) $(USEINSTALLEDINC) \
 		   -I$(TCLINCDIR) -I$(TKINCDIR)
+
+    MSEPROTODEFS = $(STD_DEFINES)
 
 #if HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR):$(TCLLIBDIR)
@@ -100,6 +105,8 @@ LinkSourceFile(cards.h,../xf86config)
 LinkSourceFile(cards.c,../xf86config)
 LinkSourceFile(xf86Config.c,../common)
 LinkSourceFile(xf86_Config.h,../common)
+
+CppFileTarget(mseproto.tcl, mseproto.cpp, $(MSEPROTODEFS), NullParameter)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

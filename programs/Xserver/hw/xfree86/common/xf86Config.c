@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.139 1998/02/07 08:58:14 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.140 1998/03/20 21:06:21 hohndel Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -260,7 +260,7 @@ xf86ValidateFontPath(path)
 	continue;
       }
       else {
-	p1 = (char *)xnfalloc(strlen(dir_elem)+strlen(DIR_FILE)+1);
+	p1 = (char *)xalloc(strlen(dir_elem)+strlen(DIR_FILE)+1);
 	strcpy(p1, dir_elem);
 	strcat(p1, DIR_FILE);
 	flag = stat(p1, &stat_buf);
@@ -316,8 +316,13 @@ getStringToken(tab,s)
  *      interesting is printed.  Even a pointer to the erroneous place is
  *      printed.  Maybe our e-mail will be less :-)
  */
+#ifdef XF86SETUP
+int
+XF86SetupXF86ConfigError(char *msg, ...)
+#else
 void
 xf86ConfigError(char *msg, ...)
+#endif
 {
   va_list ap;
 
@@ -506,11 +511,13 @@ configFiles(XF86ConfFilesPtr fileconf)
    }
    else
    {
+#ifdef XFree86LOADER
       xf86ModulePath = (char*)xcalloc(1, strlen(DEFAULT_MODULE_PATH)+1);
       strcpy(xf86ModulePath, DEFAULT_MODULE_PATH);
       if (xf86Verbose)
 	 ErrorF("%s no ModulePath specified using default: %s\n",
                                XCONFIG_PROBED, DEFAULT_MODULE_PATH);
+#endif
    }
 
   if (xf86Verbose)
@@ -519,9 +526,9 @@ configFiles(XF86ConfFilesPtr fileconf)
       OFLG_ISSET(XCONFIG_MODULEPATH, &GenericXF86ConfigFlag) ? XCONFIG_GIVEN :
       XCONFIG_PROBED, xf86ModulePath);
 #else
-    ErrorF("%s ModulePath \"%s\" is ignored in a static server\n", 
-      OFLG_ISSET(XCONFIG_MODULEPATH, &GenericXF86ConfigFlag) ? XCONFIG_GIVEN :
-      XCONFIG_PROBED, xf86ModulePath);
+    if (xf86ModulePath)
+      ErrorF("%s ModulePath \"%s\" is ignored in a static server\n", 
+        XCONFIG_GIVEN, xf86ModulePath);
 #endif
 
   return 1;
@@ -744,21 +751,31 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
   return 1;
 }
 
+/* XXX The following table is defined in xf86_Config.h. Why do we have
+   to duplicate it here... */
 static SymTabRec MouseTab[] = {
-  { MICROSOFT,  "microsoft" },
-  { MOUSESYS,   "mousesystems" },
-  { MMSERIES,   "mmseries" },
-  { LOGITECH,   "logitech" },
-  { BUSMOUSE,   "busmouse" },
-  { LOGIMAN,    "mouseman" },
-  { PS_2,       "ps/2" },
-  { MMHITTAB,   "mmhittab" },
-  { GLIDEPOINT, "glidepoint" },
-  { IMSERIAL,   "intellimouse" },
-  { IMPS2,      "imps/2" },
-  { XQUE,       "xqueue" },
-  { OSMOUSE,    "osmouse" },
-  { -1,         "" },
+  { MICROSOFT,	"microsoft" },
+  { MOUSESYS,	"mousesystems" },
+  { MMSERIES,	"mmseries" },
+  { LOGITECH,	"logitech" },
+  { BUSMOUSE,	"busmouse" },
+  { LOGIMAN,	"mouseman" },
+  { PS_2,	"ps/2" },
+  { MMHITTAB,	"mmhittab" },
+  { GLIDEPOINT,	"glidepoint" },
+  { IMSERIAL,	"intellimouse" },
+  { THINKING,	"thinkingmouse" },
+  { IMPS2,	"imps/2" },
+  { THINKINGPS2,"thinkingmouseps/2" },
+  { MMANPLUSPS2,"mousemanplusps/2" },
+  { GLIDEPOINTPS2,"glidepointps/2" },
+  { NETPS2,	"netmouseps/2" },
+  { NETSCROLLPS2,"netscrollps/2" },
+  { SYSMOUSE,	"sysmouse" },
+  { AUTOMOUSE,	"auto" },
+  { XQUE,	"xqueue" },
+  { OSMOUSE,	"osmouse" },
+  { -1,		"" },
 };
 
 /* XXXSTU The interface in xf86XInput.c also needs to change to match this.
@@ -767,13 +784,14 @@ static SymTabRec MouseTab[] = {
 static int
 configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 {
-  int mtoken=0;
   char *mouseType = "unknown";
+  int mtoken = -1;
 
   /* Set defaults */
   mouse_dev->baudRate        = 1200;
   mouse_dev->oldBaudRate     = -1;
   mouse_dev->sampleRate      = 0;
+  mouse_dev->buttons         = MSE_DFLTBUTTONS;
   mouse_dev->emulate3Buttons = FALSE;
   mouse_dev->emulate3Timeout = 50;
   mouse_dev->chordMiddle     = FALSE;
@@ -781,6 +799,9 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   mouse_dev->mseProc         = NULL;
   mouse_dev->mseDevice       = NULL;
   mouse_dev->mseType         = -1;
+  mouse_dev->mseModel        = 0;
+  mouse_dev->negativeZ       = 0;
+  mouse_dev->positiveZ       = 0;
 
   if ( pointerconf->pntr_protocol ) {
 #if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
@@ -789,6 +810,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
           ErrorF("%s OsMouse selected for mouse input\n", XCONFIG_GIVEN);
       mouse_dev->mseProc   = xf86OsMouseProc;
       mouse_dev->mseEvents = (void(*)(MouseDevPtr))xf86OsMouseEvents;
+      mtoken               = OSMOUSE;
     }
 #endif
 #ifdef XQUEUE
@@ -796,6 +818,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
       mouse_dev->mseProc   = xf86XqueMseProc;
       mouse_dev->mseEvents = (void(*)(MouseDevPtr))xf86XqueEvents;
       mouse_dev->xqueSema  = 0;
+      mtoken               = XQUEUE;
       if (xf86Verbose)
         ErrorF("%s Xqueue selected for mouse input\n",
                XCONFIG_GIVEN);
@@ -817,7 +840,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
       mouse_dev->mseProc    = xf86MseProc;
       mouse_dev->mseEvents  = xf86MseEvents;
 #endif
-      mouse_dev->mseType    = mtoken - MICROSOFT;
+      mouse_dev->mseType  = mtoken - MICROSOFT;
       if (!xf86MouseSupported(mouse_dev->mseType))
       {
         xf86ConfigError("Mouse type not supported by this OS");
@@ -843,7 +866,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 #endif
 
   if( pointerconf->pntr_baudrate ) {
-    if (mouse_dev->mseType + MICROSOFT == LOGIMAN) {
+    if (mtoken == LOGIMAN) {
       /*
        * XXXX This should be extended to other mouse types -- most
        * support only 1200.  Should also disallow baudrate for bus mice
@@ -867,7 +890,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   }
 
   if( pointerconf->pntr_samplerate ) {
-    if (mouse_dev->mseType + MICROSOFT == LOGIMAN) {
+    if (mtoken == LOGIMAN) {
       /* XXXX Most mice don't allow this */
       /* Moan about illegal sample rate!  [CHRIS-211092] */
       xf86ConfigError("Selection of sample rate is not supported by MouseMan");
@@ -875,6 +898,15 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
     }
     mouse_dev->sampleRate = pointerconf->pntr_samplerate;
   }
+
+  if( pointerconf->pntr_resolution ) {
+    if (pointerconf->pntr_resolution <= 0) {
+      xf86ConfigError("Resolution must be a positive value");
+      return FALSE;
+    }
+    mouse_dev->resolution = pointerconf->pntr_resolution;
+  }
+
 #endif /* OSMOUSE_ONLY */
   if( pointerconf->pntr_emulate3Buttons ) {
     if( pointerconf->pntr_chordMiddle ) {
@@ -888,8 +920,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   }
 #ifndef OSMOUSE_ONLY
   if( pointerconf->pntr_chordMiddle ) {
-    if (mouse_dev->mseType + MICROSOFT == MICROSOFT ||
-        mouse_dev->mseType + MICROSOFT == LOGIMAN) {
+    if (mtoken == MICROSOFT || mtoken == LOGIMAN) {
       if (mouse_dev->emulate3Buttons) {
         xf86ConfigError("Can't use ChordMiddle with Emulate3Buttons");
         return FALSE;
@@ -897,14 +928,14 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
     mouse_dev->chordMiddle = pointerconf->pntr_chordMiddle;
     }
     else {
-      xf86ConfigError("ChordMiddle is only supported for Microsoft and Logiman");
+      xf86ConfigError("ChordMiddle is only supported for Microsoft and MouseMan");
       return FALSE;
     }
   }
 
   if( pointerconf->pntr_clearDtr ) {
 #ifdef CLEARDTR_SUPPORT
-    if (mouse_dev->mseType + MICROSOFT == MOUSESYS)
+    if (mtoken == MOUSESYS)
       mouse_dev->mouseFlags |= MF_CLEAR_DTR;
     else
       xf86ConfigError("ClearDTR only supported for MouseSystems mouse");
@@ -915,7 +946,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 
   if( pointerconf->pntr_clearRts ) {
 #ifdef CLEARDTR_SUPPORT
-    if (mouse_dev->mseType + MICROSOFT == MOUSESYS)
+    if (mtoken == MOUSESYS)
       mouse_dev->mouseFlags |= MF_CLEAR_RTS;
     else
       xf86ConfigError("ClearRTS only supported for MouseSystems mouse");
@@ -933,11 +964,45 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   }
 #endif /* OSMOUSE_ONLY */
 
+  if( pointerconf->pntr_buttons ) {
+    if (pointerconf->pntr_buttons <= 0 
+	|| pointerconf->pntr_buttons > MSE_MAXBUTTONS)
+      xf86ConfigError("Number of buttons (1..12) expected");
+    mouse_dev->buttons = pointerconf->pntr_buttons;
+  }
+
+  if( pointerconf->pntr_positiveZ ) {
+    switch (pointerconf->pntr_positiveZ) {
+      case MSE_MAPTOX:
+      case MSE_MAPTOY:
+        mouse_dev->negativeZ = mouse_dev->positiveZ 
+	  = pointerconf->pntr_positiveZ;
+	break;
+      default:	/* number */
+        if (pointerconf->pntr_negativeZ <= 0
+	    || pointerconf->pntr_negativeZ > MSE_MAXBUTTONS
+            || pointerconf->pntr_positiveZ <= 0 
+	    || pointerconf->pntr_positiveZ > MSE_MAXBUTTONS)
+	  xf86ConfigError("Button number (1..12) expected");
+        mouse_dev->negativeZ = 1 << (pointerconf->pntr_negativeZ - 1);
+        mouse_dev->positiveZ = 1 << (pointerconf->pntr_positiveZ - 1);
+	if (pointerconf->pntr_negativeZ > mouse_dev->buttons)
+	  mouse_dev->buttons = pointerconf->pntr_negativeZ;
+	if (pointerconf->pntr_positiveZ > mouse_dev->buttons)
+	  mouse_dev->buttons = pointerconf->pntr_positiveZ;
+        break;
+    }
+  }
+
   if (xf86Verbose && mouse_dev->mseType >= 0) {
     Bool formatFlag = FALSE;
     ErrorF("%s Mouse: type: %s, device: %s",
        XCONFIG_GIVEN, mouseType, mouse_dev->mseDevice);
-    if (mtoken != BUSMOUSE && mtoken != PS_2)
+    if (mtoken != BUSMOUSE       && mtoken != PS_2
+	&& mtoken != IMPS2       && mtoken != THINKINGPS2
+	&& mtoken != MMANPLUSPS2 && mtoken != GLIDEPOINTPS2
+	&& mtoken != NETPS2      && mtoken != NETSCROLLPS2
+	&& mtoken != SYSMOUSE)
     {
       formatFlag = TRUE;
       ErrorF(", baudrate: %d", mouse_dev->baudRate);
@@ -948,12 +1013,39 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
              mouse_dev->sampleRate);
       formatFlag = !formatFlag;
     }
+    if (mouse_dev->resolution)
+    {
+      ErrorF("%sresolution: %d", formatFlag ? ",\n       " : ", ",
+             mouse_dev->resolution);
+      formatFlag = !formatFlag;
+    }
+    ErrorF("%sbuttons: %d", formatFlag ? ",\n       " : ", ",
+           mouse_dev->buttons);
+    formatFlag = !formatFlag;
     if (mouse_dev->emulate3Buttons)
+    {
       ErrorF("%s3 button emulation (timeout: %dms)",
              formatFlag ? ",\n       " : ", ", mouse_dev->emulate3Timeout);
+      formatFlag = !formatFlag;
+    }
     if (mouse_dev->chordMiddle)
       ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
     ErrorF("\n");
+
+    switch (mouse_dev->negativeZ) {
+    case 0: /* none */
+      break;
+    case MSE_MAPTOX:
+      ErrorF("       zaxismapping: X\n");
+      break;
+    case MSE_MAPTOY:
+      ErrorF("       zaxismapping: Y\n");
+      break;
+    default: /* buttons */
+      ErrorF("       zaxismapping: (-)%d (+)%d\n", 
+	     pointerconf->pntr_negativeZ, pointerconf->pntr_positiveZ);
+      break;
+    }
   }
 
   return TRUE;
@@ -1709,7 +1801,7 @@ xf86Config (vtopen)
   xf86Info.caughtSignal = FALSE;
 
   /* Allocate mouse device */
-#if defined(XINPUT)
+#if defined(XINPUT) && !defined(XF86SETUP)
   local = mouse_assoc.device_allocate();
   xf86Info.mouseLocal = (pointer) local;
   xf86Info.mouseDev = (MouseDevPtr) local->private;
@@ -3137,6 +3229,7 @@ configPointerSection(MouseDevPtr	mouse_dev,
   mouse_dev->oldBaudRate     = -1;
   mouse_dev->sampleRate      = 0;
   mouse_dev->resolution      = 0;
+  mouse_dev->buttons         = MSE_DFLTBUTTONS;
   mouse_dev->emulate3Buttons = FALSE;
   mouse_dev->emulate3Timeout = 50;
   mouse_dev->chordMiddle     = FALSE;
@@ -3306,11 +3399,6 @@ configPointerSection(MouseDevPtr	mouse_dev,
 	*devicename = strdup(val.str);
 	break;
 
-    case BUTTONS:
-	if (xf86GetToken(NULL) != NUMBER)
-	    xf86ConfigError("Number of mouse buttons expected");
-	break;
-
 #ifndef XF86SETUP
 #ifdef XINPUT
     case ALWAYSCORE:
@@ -3341,6 +3429,14 @@ configPointerSection(MouseDevPtr	mouse_dev,
       }
       break;
 
+    case PBUTTONS:
+      if (xf86GetToken(NULL) != NUMBER)
+	xf86ConfigError("Number of buttons (1..12) expected");
+      if (val.num <= 0 || val.num > MSE_MAXBUTTONS)
+	xf86ConfigError("Number of buttons must be a positive value (1..12)");
+      mouse_dev->buttons = val.num;
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -3365,6 +3461,23 @@ configPointerSection(MouseDevPtr	mouse_dev,
   if (mouse_dev->mseType >= 0 && !mouse_dev->mseDevice)
   {
     xf86ConfigError("No mouse device given");
+  }
+
+  switch (mouse_dev->negativeZ) {
+  case 0: /* none */
+  case MSE_MAPTOX:
+  case MSE_MAPTOY:
+    break;
+  default: /* buttons */
+    for (i = 0; mouse_dev->negativeZ != (1 << i); ++i)
+      ;
+    if (i + 1 > mouse_dev->buttons)
+      mouse_dev->buttons = i + 1;
+    for (i = 0; mouse_dev->positiveZ != (1 << i); ++i)
+      ;
+    if (i + 1 > mouse_dev->buttons)
+      mouse_dev->buttons = i + 1;
+    break;
   }
 
   if (xf86Verbose && mouse_dev->mseType >= 0)
@@ -3397,6 +3510,9 @@ configPointerSection(MouseDevPtr	mouse_dev,
 	     formatFlag ? XCONFIG_GIVEN : ", ", mouse_dev->resolution);
       formatFlag = !formatFlag;
     }
+    ErrorF(formatFlag ? "\n%s Mouse: buttons: %d" : "%sbuttons: %d",
+	   formatFlag ? XCONFIG_GIVEN : ", ", mouse_dev->buttons);
+    formatFlag = !formatFlag;
     if (mouse_dev->emulate3Buttons)
     {
       ErrorF(formatFlag ? "\n%s Mouse: 3 button emulation (timeout: %dms)" :

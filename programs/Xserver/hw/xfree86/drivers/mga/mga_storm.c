@@ -744,7 +744,6 @@ MGANAME(SetupForDashedLine)(fg, bg, rop, planemask, size)
   unsigned int planemask;
   int size;
 {
-    extern unsigned char byte_reversed[256];
     int dwords = (size + 31) >> 5;
     DashCMD = MGADWG_BFCOL | MGAAtypeNoBLK[rop];
 

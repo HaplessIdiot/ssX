@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.32 1998/03/21 00:12:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.33 1998/03/21 00:33:40 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -25,6 +25,7 @@
  *
  */
 /* $XConsortium: xf86_Mouse.c /main/21 1996/10/27 11:05:32 kaleb $ */
+/* Patch for PS/2 Intellimouse - Tim Goodwin 1997-11-06. */
 
 /*
  * [JCH-96/01/21] Added fourth button support for P_GLIDEPOINT mouse protocol.
@@ -96,12 +97,16 @@ Bool xf86SupportedMouseTypes[] =
 	TRUE,	/* Logitech */
 	TRUE,	/* BusMouse */
 	TRUE,	/* MouseMan */
+#if !defined(PC98)
 	TRUE,	/* PS/2 */
+#else
+	FALSE,	/* PS/2 */
+#endif
 	TRUE,	/* Hitachi Tablet */
 	TRUE,	/* ALPS GlidePoint (serial) */
 	TRUE,   /* Microsoft IntelliMouse (serial) */
 	TRUE,	/* Kensington ThinkingMouse (serial) */
-#if !defined(__FreeBSD__) && !defined(Lynx)
+#if !defined(__FreeBSD__) && !defined(Lynx) && !defined(__NetBSD__)
 	TRUE,   /* Microsoft IntelliMouse (PS/2) */
 	TRUE,	/* Kensington ThinkingMouse (PS/2) */
 	TRUE,	/* Logitech MouseMan+ (PS/2) */
@@ -115,8 +120,12 @@ Bool xf86SupportedMouseTypes[] =
 	FALSE,	/* ALPS GlidePoint (PS/2) */
 	FALSE,	/* Genius NetMouse (PS/2) */
 	FALSE,	/* Genius NetScroll (PS/2) */
-#endif /* __FreeBSD__ */
+#endif /* __FreeBSD__, Lynx, __NetBSD__ */
+#if defined(__FreeBSD__)
 	TRUE,	/* sysmouse */
+#else
+	FALSE,	/* sysmouse */
+#endif
 #ifdef PNP_MOUSE
 	TRUE,	/* auto */
 #else
@@ -445,6 +454,8 @@ MouseDevPtr mouse;
       case P_MSC:		/* MouseSystems Corp */
 	xf86SetMouseSpeed(mouse, mouse->baudRate, mouse->baudRate,
                           xf86MouseCflags[mouse->mseType]);
+	usleep(100000);
+	xf86FlushInput(mouse->mseFd);
 #ifdef CLEARDTR_SUPPORT
         if (mouse->mouseFlags & MF_CLEAR_DTR)
           {
@@ -605,6 +616,7 @@ MouseDevPtr mouse;
 	  xf86FlushInput(mouse->mseFd);
 	}
 
+      mouse->protoBufTail = 0;
 #endif /* !MOUSE_PROTOCOL_IN_KERNEL || MACH386 */
 }
  
@@ -615,10 +627,10 @@ xf86MouseProtocol(device, rBuf, nBytes)
     unsigned char *rBuf;
     int nBytes;
 {
-  int                  i, buttons, dx, dy, dz;
-  static int           pBufP = 0;
-  static unsigned char pBuf[8];
   MouseDevPtr          mouse = MOUSE_DEV(device);
+  int                  i, buttons, dx, dy, dz;
+  int                  pBufP = mouse->protoBufTail;
+  unsigned char        *pBuf = mouse->protoBuf;
   
 #ifdef EXTMOUSEDEBUG
     ErrorF("received %d bytes ",nBytes);
@@ -647,7 +659,9 @@ xf86MouseProtocol(device, rBuf, nBytes)
      *         we could use bit 0x08 in the header byte for resyncing, since
      *         that bit is supposed to be always on, but nobody told
      *         Microsoft...)
+     *
      */
+#if 0
     if (pBufP != 0 &&
 #if !defined(__NetBSD__)
 	mouse->mseType != P_PS2 &&
@@ -655,8 +669,26 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	((rBuf[i] & mouse->protoPara[2]) != mouse->protoPara[3] 
 	 || rBuf[i] == 0x80))
       {
-	pBufP = 0;          /* skip package */
+	pBufP = 0;
       }
+#endif
+
+     /*
+      * [KAZU,OYVIND-120398]
+      * The above hack is wrong!  Because of b) above, we shall see
+      * erroneous mouse events so often when the MouseSystem mouse is
+      * moved quickly.  As for the PS/2 and its variants, we don't need 
+      * to treat them as special cases, because protoPara[2] and 
+      * protoPara[3] are both 0x00 for them, thus, any data bytes will 
+      * never be discarded.  0x80 is rejected for MMSeries, Logitech 
+      * and MMHittab protocols, because protoPara[2] and protoPara[3] 
+      * are 0x80 and 0x00 respectively.  The other protocols are 7-bit 
+      * protocols; there is no use checking 0x80.  
+      * 
+      * All in all we should check the condition a) only.
+      */
+    if (pBufP != 0 && (rBuf[i] & mouse->protoPara[2]) != mouse->protoPara[3])
+      pBufP = 0;	/* skip package */
 
     if (pBufP == 0 && (rBuf[i] & mouse->protoPara[0]) != mouse->protoPara[1])
       continue;
@@ -939,6 +971,8 @@ post_event:
      * byte in some protocols. See above.
      */
   }
+
+  mouse->protoBufTail = pBufP;
 }
 #endif /* MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -990,7 +1024,7 @@ xf86MouseConfig(array, inx, max, val)
     
 /*
     configPointerSection(mouse, ENDSUBSECTION, &dev->name);
- */
+*/
 
     return Success;
 }
@@ -1021,7 +1055,6 @@ xf86MouseProc(device, what)
     } else {
 	if ((what == DEVICE_INIT) &&
 	    (ret == Success)) {
-	    AssignTypeAndName(device, local->atom, local->name);
 #ifdef EXTMOUSEDEBUG
 	    ErrorF("assigning 0x%x atom=%d name=%s\n", device,
 		   local->atom, local->name);
@@ -1055,6 +1088,36 @@ xf86MouseReadInput(local)
 /*
  ***************************************************************************
  *
+ * xf86MouseConvert --
+ *	Convert valuators to X and Y.
+ *
+ ***************************************************************************
+ */
+static Bool
+xf86MouseConvert(LocalDevicePtr	local,
+		 int		first,
+		 int		num,
+		 int		v0,
+		 int		v1,
+		 int		v2,
+		 int		v3,
+		 int		v4,
+		 int		v5,
+		 int*		x,
+		 int*		y)
+{
+    if (first != 0 || num != 2)
+      return FALSE;
+
+    *x = v0;
+    *y = v1;
+
+    return TRUE;
+}
+
+/*
+ ***************************************************************************
+ *
  * xf86MouseAllocate --
  *
  ***************************************************************************
@@ -1077,6 +1140,7 @@ xf86MouseAllocate()
     local->control_proc = 0;
     local->close_proc = 0;
     local->switch_mode = 0;
+    local->conversion_proc = xf86MouseConvert;
     local->fd = -1;
     local->atom = 0;
     local->dev = NULL;

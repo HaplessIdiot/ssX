@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.10 1998/01/11 03:48:34 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.11 1998/03/20 21:08:33 hohndel Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -568,7 +568,9 @@ AC_REQUIRE([CF_CHECK_CACHE])
 SYSTEM_NAME=`echo "$cf_cv_system_name"|tr ' ' -`
 cf_have_X_LIBS=no
 case $SYSTEM_NAME in
-irix5*) ;;
+changequote(,)dnl
+irix[56]*) ;;
+changequote([,])dnl
 clix*)
 	# FIXME: modify the library lookup in autoconf to
 	# allow _s.a suffix ahead of .a

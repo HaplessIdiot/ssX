@@ -8,7 +8,7 @@
  *
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.4 1997/08/26 10:01:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.5 1998/01/24 16:58:05 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -148,14 +148,33 @@ vgaVideoChipRec GLINT = {
 	 */
 	0,
 	/*
-	 * This is the size	 of the linear-mapped frame buffer (when used).
+	 * This is the size of the linear-mapped frame buffer (when used).
 	 * Set it to 0 when not in use.
 	 */
 	0x00800000,
 	/*
+	 * This is TRUE if the driver has support for 1bpp for the detected
+	 * configuration.
+	 */
+	FALSE,		/* ??? */
+	/*
+	 * This is TRUE if the driver has support for 4bpp for the detected
+	 * configuration.
+	 */
+	FALSE,		/* ??? */
+	/*
+	 * This is TRUE if the driver has support for 8bpp for the detected
+	 * configuration.
+	 */
+	TRUE,
+	/*
+	 * This is TRUE if the driver has support for 15bpp for the detected
+	 * configuration.
+	 */
+	TRUE,
+	/*
 	 * This is TRUE if the driver has support for 16bpp for the detected
-	 * configuration. It must be set in the Probe function.
-	 * It most cases it should be FALSE.
+	 * configuration.
 	 */
 	TRUE,
 	/*

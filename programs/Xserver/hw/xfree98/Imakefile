@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:39:23 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.25 1998/03/20 21:07:35 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.26 1998/03/22 05:09:26 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -27,8 +27,12 @@ VGA16SCREEN = vga16
 ACCELDIRS = accel
 #endif
 
-#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && !defined(ArcArchitecture) && !defined(Arm32Architecture)
+#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && !defined(ArcArchitecture) && !defined(Arm32Architecture) && !defined(PpcArchitecture)
 SUPERPROBE = SuperProbe
+#endif
+
+#if !defined(PpcArchitecture) && !defined(LynxOsArchitecture)
+RECONFIG = reconfig
 #endif
 
 #if BuildXF86Setup
@@ -43,8 +47,9 @@ DRIVERS = drivers
 SCREENS = $(VGA16SCREEN) $(VGA256SCREEN) $(ACCELDIRS) $(DRIVERS)
 
 SUBDIRS = os-support common common_hw xaa $(SCREENS) \
-          config $(LOADERDIR) doc reconfig xf86config $(XF86SETUPDIR) etc \
-          LinkKit VGADriverDoc $(SUPERPROBE)
+          config $(LOADERDIR) doc \
+          $(RECONFIG) xf86config $(XF86SETUPDIR) etc LinkKit \
+          VGADriverDoc $(SUPERPROBE)
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config
@@ -91,7 +96,7 @@ DPI100USFONTPATH=\"$(LIBDIR)/fonts/100dpi/:unscaled\"
 #endif
 
 #ifdef FreeBSDArchitecture
-  FREEBSDMOUSEDEV=" Device      \"/dev/mse0\""
+  FREEBSDMOUSEDEV="    Device      \"/dev/mse0\""
 #else
   FREEBSDMOUSEDEV="XCOMM    Device      \"/dev/mse0\""
 #endif
@@ -107,6 +112,12 @@ DPI100USFONTPATH=\"$(LIBDIR)/fonts/100dpi/:unscaled\"
 #else
   NETBSDOLDMOUSEDEV="XCOMM     Device      \"/dev/mms0\""
   NETBSDNEWMOUSEDEV="XCOMM     Device      \"/dev/lms0\""
+#endif
+
+#ifdef LinuxArchitecture
+  LINUXMOUSEDEV="    Device      \"/dev/mouse\""
+#else
+  LINUXMOUSEDEV="XCOMM    Device      \"/dev/mouse\""
 #endif
 
 #ifdef MinixArchitecture

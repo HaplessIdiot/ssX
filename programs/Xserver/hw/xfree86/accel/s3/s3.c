@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.176 1998/01/24 16:57:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.177 1998/03/20 21:06:04 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -205,6 +205,8 @@ ScrnInfoRec s3InfoRec =
    NULL,                        /* char* DCConfig */
    NULL,                        /* char* DCOptions */
    0,	                        /* int MemClk */
+   0,				/* int busType */
+   0,				/* PCITAG pciTag */
 #ifdef XFreeXDGA
    0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */

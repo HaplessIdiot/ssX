@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.12 1997/09/09 11:38:55 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.13 1997/12/14 10:03:55 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -78,6 +78,7 @@ if { [llength $retval] < 4 } {
 # Setup the default bindings for the various widgets
 source $tcl_library/tk.tcl
 
+source $XF86Setup_library/mseproto.tcl
 source $XF86Setup_library/mouse.tcl
 source $XF86Setup_library/keyboard.tcl
 source $XF86Setup_library/card.tcl

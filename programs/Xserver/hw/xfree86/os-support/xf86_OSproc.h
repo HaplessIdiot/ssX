@@ -59,7 +59,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.14 1997/12/05 06:39:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.15 1998/01/24 16:58:32 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -383,6 +383,11 @@ extern int xf86MouseOff(
 extern void xf86MouseEvents(
 #if NeedFunctionPrototypes
         MouseDevPtr
+#endif
+);
+extern int xf86FlushInput(
+#if NeedFunctionPrototypes
+	int
 #endif
 );
 extern int  xf86XqueKbdProc(

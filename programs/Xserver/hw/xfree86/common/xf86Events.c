@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.49 1998/01/24 16:57:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.50 1998/02/07 08:58:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1133,7 +1133,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
       /*
        * emulate the third button by the other two
        */
-      if ((id = stateTab[buttons + private->emulateState][0]) != 0)
+      if ((id = stateTab[(buttons & 0x07) + private->emulateState][0]) != 0)
 	{
 #ifndef XINPUT
             ENQUEUE(mevent,
@@ -1144,7 +1144,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
 #endif 
 	}
 
-      if ((id = stateTab[buttons + private->emulateState][1]) != 0)
+      if ((id = stateTab[(buttons & 0x07) + private->emulateState][1]) != 0)
 	{
 #ifndef XINPUT
             ENQUEUE(mevent,
@@ -1155,9 +1155,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
 #endif
 	}
 
-      private->emulateState = stateTab[buttons + private->emulateState][2];
-      if (stateTab[buttons + private->emulateState][0] ||
-          stateTab[buttons + private->emulateState][1])
+      private->emulateState = stateTab[(buttons & 0x07) + private->emulateState][2];
+      if (stateTab[(buttons & 0x07) + private->emulateState][0] ||
+          stateTab[(buttons & 0x07) + private->emulateState][1])
         {
 	    private->truebuttons = truebuttons;
 	    timer = TimerSet(timer, 0, private->emulate3Timeout, buttonTimer,

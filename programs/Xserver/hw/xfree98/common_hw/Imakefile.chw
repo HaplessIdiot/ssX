@@ -1,24 +1,53 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/Imakefile.chw,v 1.5 1998/03/20 21:07:51 hohndel Exp $ 
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/Imakefile.chw,v 1.6 1998/03/21 13:48:58 dawes Exp $ 
 XCOMM
 
 #include <Server.tmpl>
 
 #if defined(LinuxArchitecture) && defined(AlphaArchitecture)
+
+XCOMM Alpha (Linux) PCI driver
+
+PCIDRVRSRC = axpPci.c
+PCIDRVROBJ = axpPci.o
+
 #if !UseElfFormat  /* fix/replacement for broken libc-0.43 io.c */
-IOSRC=glibcAxpIo.c
-IOOBJ=glibcAxpIo.o
+IOSRC = glibcAxpIo.c
+IOOBJ = glibcAxpIo.o
 #endif
+
+XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(IOSRC) $(PCIDRVRSRC)
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(IOOBJ) $(PCIDRVROBJ)
+
+#elif defined(PpcArchitecture)
+
+XCOMM PowerPC PCI drivers
+
+PCIDRVRSRC = ppcPci.c
+PCIDRVROBJ = ppcPci.o
+
+XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(PCIDRVRSRC)
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(PCIDRVROBJ)
+
+#elif defined(i386Architecture)
+
+XCOMM ix86 PCI driver
+
+PCIDRVRSRC = ix86Pci.c
+PCIDRVROBJ = ix86Pci.o
+
+XSRCS = BUSmemcpy.s IODelay.s SlowBcopy.s $(PCIDRVRSRC)
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(PCIDRVROBJ)
+
+#else
+#if defined(ArcArchitecture) || defined(PpcArchitecture) || defined(Arm32Architecture)
 XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(IOSRC)
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(IOOBJ)
 #else
-#if defined(ArcArchitecture) || defined(ppcArchitecture) || defined(Arm32Architecture)
-XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(IOSRC)
-XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(IOOBJ)
-#else
-XSRCS = BUSmemcpy.s IODelay.s SlowBcopy.s ix86Pci.c
-XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o ix86Pci.o
+XSRCS = BUSmemcpy.s IODelay.s SlowBcopy.s
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #endif
 #endif
+
 
 SRCS = I2061Acal.c I2061Aset.c I2061Aalt.c xf86_ClkPr.c \
        SC11412.c ATTDac.c S3gendac.c Ti3025clk.c \
@@ -40,7 +69,7 @@ NormalAsmObjectRule()
 
 NormalLibraryTarget(xf86_hw,$(OBJS))
 
-#if !(defined(LinuxArchitecture) && defined(AlphaArchitecture)) && !defined(ArcArchitecture) && !defined(ppcArchitecture) && !defined(Arm32Architecture)
+#if !(defined(LinuxArchitecture) && defined(AlphaArchitecture)) && !defined(ArcArchitecture) && !defined(PpcArchitecture) && !defined(Arm32Architecture)
 ObjectFromAsmSource(BUSmemcpy,NullParameter)
 ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)

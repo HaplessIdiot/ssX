@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.11 1997/11/16 06:18:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.12 1998/01/24 16:56:45 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -49,8 +49,7 @@
 
 #define NOMAPYET        (ColormapPtr) 0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-				/* current colormap for each screen */
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 int
 mach32ListInstalledColormaps(pScreen, pmaps)

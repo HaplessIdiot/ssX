@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.14 1997/05/11 01:50:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.15 1997/11/16 06:18:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -57,8 +57,7 @@
 
 #define NOMAPYET        (ColormapPtr) 0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-				/* current colormap for each screen */
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 static LUTENTRY currentp9000dac[256];
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.6 1997/11/16 06:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.7 1998/01/24 16:57:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,9 +49,7 @@
 
 #define NOMAPYET        (ColormapPtr) 0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-
-/* current colormap for each screen */
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 LUTENTRY currents3dac[256];
 extern int currents3dac_border;

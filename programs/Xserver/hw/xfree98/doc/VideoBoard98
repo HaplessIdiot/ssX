@@ -1,4 +1,4 @@
-DATE:971026
+DATE:980213
                        XFree86 PC98 Server
                         Video System List
 
@@ -66,6 +66,7 @@ NEC
 |PC9821Xa16/R            |TGUI9680       | B/I   |  B/I   |2|  o?   |O|
 |PC9821Xa16/W            |TGUI9682       | B/I   |  B/I   |2|  o?   |O|
 |PC9821Xa20/D,W          |TGUI9682       | B/I   |  B/I   |2|  o?   |O|
+|PC9821Xa200/D,W         |TGUI9682       | B/I   |  B/I   |2|  o?   |O|
 |PC9821Xb10              |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Xc13/M,S          |TGUI9680       | B/I   |  B/I   |2|  o?   |O|
 |PC9821Xc13/S5           |CLGD5446       | B/I   |  B/I   |1|  o?   |X|
@@ -158,6 +159,7 @@ NEC
 |PC9821Nr13/D14,S14      |CLGD7556       | B/I   |  B/I   |2|   D   | |
 |PC9821Nr15              |Cyber9385      | B/I   |  B/I   |2|   X   | |
 |PC9821Nr150             |Cyber9385      | B/I   |  B/I   |2|   X   | |
+|PC9821Nr150/S20         |Cyber9385-1    | B/I   |  B/I   |2|   X   | |
 |PC9821Nr166             |Cyber9385      | B/I   |  B/I   |2|   X   | |
 |PC9821Nw133             |Cyber9385-1    | B/I   |  B/I   |2|   X   | |
 |PC9821Nw150             |Cyber9385-1    | B/I   |  B/I   |2|   X   | |
@@ -291,6 +293,8 @@ MELCO
 |WGP-VG2DX               |S3-ViRGE/DX    | B/I   |  B/I   |2|   X   | |
 |WGP-VG4DX               |S3-ViRGE/DX    | B/I   |  B/I   |4|   X   | |
 |WGP-VX8                 |S3-ViRGE/VX    | B/I   |  B/I   |8|   X   | |
+|WHP-PS8                 |PERMEDIA2      |       |        |8|   X   | |
+|WHP-PS4                 |PERMEDIA2      |       |        |4|   X   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
 							    
@@ -319,6 +323,9 @@ IO DATA
 |GA-PG3D4/98PCI          |S3-ViRGE       | B/I   |  B/I   |4|   X   | |
 |GA-PG3DVX4/98PCI        |S3-ViRGE/VX    | B/I   |  B/I   |4|   X   | |
 |GA-PG3DVX8/98PCI        |S3-ViRGE/VX    | B/I   |  B/I   |8|   X   | |
+|GA-PII8/PCI             |PERMEDIA2      |       |        |8|   X   | |
+|GA-RUSH6/PCI            |Promotion AT25 |       |        |4|   X   | |
+|                        |Voodoo RUSH    |       |        |2|       | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
 
@@ -372,4 +379,4 @@ Force
 |WinFrame928             |S3-928         |       |        |2|   ?   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.9 1997/09/19 09:01:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.10 1997/11/01 15:05:04 hohndel Exp $ */

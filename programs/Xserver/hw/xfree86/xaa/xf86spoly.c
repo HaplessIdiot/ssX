@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spoly.c,v 3.1 1998/01/11 03:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spoly.c,v 3.2 1998/03/20 21:07:30 hohndel Exp $ */
  
 
 #include "X.h"
@@ -369,6 +369,9 @@ xf86FillPolygonStippled(pDrawable, pGC, shape, mode, count, ptsIn)
 				HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
 	    if(xf86AccelInfoRec.PatternFlags
                         & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+		if(xf86AccelInfoRec.Subsequent8x8TrapezoidColorExpand)
+		    SubsequentTrapFunction = 
+			ExpandingTrapPROGRAMMED_ORIGIN_SCREEN_ORIGIN;
       		SubsequentRectFunction = 
 			ExpandingPROGRAMMED_ORIGIN_SCREEN_ORIGIN;
 	    } else

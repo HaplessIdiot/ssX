@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.77 1998/01/24 16:56:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.78 1998/03/20 21:05:39 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -184,6 +184,8 @@ ScrnInfoRec mach32InfoRec = {
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
     0,			/* int MemClk */
+    0,			/* int busType */
+    0,			/* PCITAG pciTag */
 #ifdef XFreeXDGA
     0,			/* int directMode */
     mach32SetVGAPage,	/* Set Vid Page */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.16 1997/09/19 09:01:19 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.17 1997/10/13 17:16:52 hohndel Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -48,7 +48,7 @@ XCOMM Multiple FontPath entries are allowed (which are concatenated together),
 XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
-FontPath	MISCFONTPATH
+    FontPath	MISCFONTPATH
 USE_75FONTS	DPI75USFONTPATH
 USE_100FONTS	DPI100USFONTPATH
 USE_T1FONTS	T1FONTPATH
@@ -190,6 +190,8 @@ XCOMM For NetBSD/pc98 (based on NetBSD 1.1 or later)
 NETBSDNEWMOUSEDEV
 XCOMM For NetBSD/pc98 (based on NetBSD 1.0)
 NETBSDOLDMOUSEDEV
+XCOMM For Linux/98
+LINUXMOUSEDEV
 
 XCOMM When using XQUEUE, comment out the above two lines, and uncomment
 XCOMM the following line.
@@ -477,7 +479,7 @@ Section "Device"
     ChipSet     "clgd5434"
     ClockChip   "cirrus"
     Option      "ga98nb1"
-    Option	"no_mmio"
+    Option      "no_mmio"
 XCOMM    Option     "mmio"
 XCOMM    Option     "sw_cursor"
 EndSection
@@ -489,7 +491,7 @@ Section "Device"
     ChipSet     "clgd5434"
     ClockChip   "cirrus"
     Option      "ga98nb2"
-    Option	"no_mmio"
+    Option      "no_mmio"
 XCOMM    Option     "mmio"
 XCOMM    Option     "sw_cursor"
 EndSection
@@ -501,7 +503,7 @@ Section "Device"
     ChipSet     "clgd5434"
     ClockChip   "cirrus"
     Option      "ga98nb4"
-    Option	"no_mmio"
+    Option      "no_mmio"
 XCOMM    Option     "mmio"
 XCOMM    Option     "sw_cursor"
 EndSection
@@ -533,6 +535,8 @@ Section "Device"
     Identifier	"NECTrident"
     VendorName	"NEC"
     BoardName	"NEC Trident"
+    Option	"xaa_no_color_exp"
+XCOMM    Option	"noaccel"
 XCOMM    Option	"Linear"
 XCOMM    Option	"med_dram"
 XCOMM    Option	"hw_cursor"
@@ -542,6 +546,7 @@ Section "Device"
     Identifier	"GA-DRV98"
     VendorName	"IO DATA"
     BoardName	"GA-DRV/98"
+    Option	"noaccel"
 XCOMM    Option	"med_dram"
 XCOMM    Option	"hw_cursor"
     VideoRam	4096
@@ -549,10 +554,9 @@ XCOMM    VideoRam	2048
 Endsection
 
 Section "Device"
-    Identifier  "MGA"
-    VendorName  "Matrox"
-    BoardName   "Millennium"
-XCOMM    Option	"noaccel"
+    Identifier	"MGA"
+    VendorName	"Matrox"
+    BoardName	"Millennium"
 EndSection
 
 Section "Device"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/vgaHW.c,v 1.1 1997/12/06 07:52:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/vgaHW.c,v 1.2 1997/12/20 14:20:53 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -115,16 +115,6 @@ Bool clgd6225Lcd= FALSE;
 #define WHITE_VALUE 0x3F
 #define BLACK_VALUE 0x00
 #define OVERSCAN_VALUE 0x01
-
-static Bool
-setExternClock(
-#if NeedFunctionPrototypes
-     int	/* clock */
-#endif
-);
-
-static int currentGraphicsClock = -1;
-static int currentExternClock = -1;
 
 Bool (*vgaBlankScreenFunc)()=vgaBlankScreen;
 

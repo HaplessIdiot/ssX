@@ -24,7 +24,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128cmap.c,v 3.4 1997/11/16 06:18:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128cmap.c,v 3.5 1998/01/24 16:56:36 hohndel Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
@@ -49,9 +49,7 @@
 
 #define NOMAPYET        (ColormapPtr) 0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-
-/* current colormap for each screen */
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 LUTENTRY currenti128dac[256];
 

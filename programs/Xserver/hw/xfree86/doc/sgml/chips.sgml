@@ -581,7 +581,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
   65.10MHz is not. So for unexplained problems not addressed above, please
   try to alter the clock you are using slightly, say in steps of 0.05MHz
   and see if the problem goes away. Alternatively, using the
-  "<tt>use_vclk1<tt>" option with chips later than the 65550 might also
+  "<tt>use_vclk1</tt>" option with chips later than the 65550 might also
   help.
 
 
@@ -634,7 +634,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.18 1997/11/01 15:04:40 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.19 1998/03/20 21:06:27 hohndel Exp $
 </verb>
 
 </article>

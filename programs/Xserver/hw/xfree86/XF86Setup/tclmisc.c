@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.10 1997/10/25 13:50:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.11 1997/11/22 00:00:07 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -400,7 +400,10 @@ TCL_XF86MiscSetKbdSettings(clientData, interp, argc, argv)
 static char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 			    "Logitech", "BusMouse", "Mouseman", "PS/2",
 			    "MMHitTab", "GlidePoint", "IntelliMouse",
-			    "Xqueue", "OSMouse" };
+			    "ThinkingMouse", "IMPS/2", "ThinkingMousePS/2",
+			    "MouseManPlusPS/2", "GlidePointPS/2", 
+			    "NetMousePS/2", "NetScrollPS/2", "SysMouse",
+			    "Auto", "Xqueue", "OSMouse" };
 #define MSETABLESIZE	(sizeof(msetable)/sizeof(char *))
 
 /*
@@ -433,12 +436,20 @@ TCL_XF86MiscGetMouseSettings(clientData, interp, argc, argv)
 			(char *) NULL);
 		return TCL_ERROR;
 	} else {
-		if (mseinfo.type >= MSETABLESIZE)
-			mseinfo.type = -1;  /* Unknown */
-		sprintf(tmpbuf, "%s %s %d %d %s %d %s",
+		char *name;
+		if (mseinfo.type == MTYPE_XQUEUE)
+			name = "Xqueue";
+		else if (mseinfo.type == MTYPE_OSMOUSE)
+			name = "OSMouse";
+		else if (mseinfo.type < 0 || (mseinfo.type >= MSETABLESIZE))
+			name = "Unknown";
+		else
+			name = msetable[mseinfo.type+1];
+		sprintf(tmpbuf, "%s %s %d %d %d %d %s %d %s",
 			mseinfo.device==NULL? "{}": mseinfo.device,
-			mseinfo.type<0 ? "Unknown": msetable[mseinfo.type+1],
+			name,
 			mseinfo.baudrate, mseinfo.samplerate,
+			mseinfo.resolution, mseinfo.buttons,
 			mseinfo.emulate3buttons? "on": "off",
 			mseinfo.emulate3timeout,
 			mseinfo.chordmiddle? "on": "off");
@@ -461,8 +472,8 @@ TCL_XF86MiscGetMouseSettings(clientData, interp, argc, argv)
 
 static char *setmouseusage =
 		"Usage: xf86misc_setmouse <device> <mousetype>"
-		" <baudrate> <samplerate> on|off <timeout>"
-		" on|off [ClearDTR] [ClearRTS] [ReOpen]";
+		" <baudrate> <samplerate> <resolution> <buttons>"
+		" on|off <timeout> on|off [ClearDTR] [ClearRTS] [ReOpen]";
 
 int
 TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
@@ -475,7 +486,7 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
 	int i;
 	Tk_Window tkwin;
 
-        if (argc < 8 || argc > 11) {
+        if (argc < 9 || argc > 12) {
                 Tcl_SetResult(interp, setmouseusage, TCL_STATIC);
                 return TCL_ERROR;
         }
@@ -489,6 +500,10 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
 			mseinfo.type = i - 1;
 		}
 	}
+	if (!StrCaseCmp("Xqueue", argv[2]))
+		mseinfo.type = MTYPE_XQUEUE;
+	else if (!StrCaseCmp("OSMouse", argv[2]))
+		mseinfo.type = MTYPE_OSMOUSE;
 	if (mseinfo.type == -1) {
                 Tcl_AppendResult(interp, "Invalid mouse type\n",
 				 setmouseusage, (char *) NULL);
@@ -496,19 +511,21 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
         }
 	mseinfo.baudrate = atoi(argv[3]);
 	mseinfo.samplerate = atoi(argv[4]);
-	if (!StrCaseCmp(argv[5], "on"))
+	mseinfo.resolution = atoi(argv[5]);
+	mseinfo.buttons = atoi(argv[6]);
+	if (!StrCaseCmp(argv[7], "on"))
 		mseinfo.emulate3buttons = 1;
-	else if (!StrCaseCmp(argv[5], "off"))
+	else if (!StrCaseCmp(argv[7], "off"))
 		mseinfo.emulate3buttons = 0;
 	else {
                 Tcl_AppendResult(interp, "Option must be either on or off\n",
 				setmouseusage, (char *) NULL);
                 return TCL_ERROR;
 	}
-	mseinfo.emulate3timeout = atoi(argv[6]);
-	if (!StrCaseCmp(argv[7], "on"))
+	mseinfo.emulate3timeout = atoi(argv[8]);
+	if (!StrCaseCmp(argv[9], "on"))
 		mseinfo.chordmiddle = 1;
-	else if (!StrCaseCmp(argv[7], "off"))
+	else if (!StrCaseCmp(argv[9], "off"))
 		mseinfo.chordmiddle = 0;
 	else {
                 Tcl_AppendResult(interp, "Option must be either on or off\n",
@@ -516,7 +533,7 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
                 return TCL_ERROR;
 	}
 	mseinfo.flags = 0;
-	for (i = 8; i < argc; i++) {
+	for (i = 10; i < argc; i++) {
 		if (!StrCaseCmp(argv[i], "cleardtr"))
 			mseinfo.flags |= MF_CLEAR_DTR;
 		else if (!StrCaseCmp(argv[i], "clearrts"))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.22 1998/01/24 01:53:43 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.23 1998/03/20 21:08:40 hohndel Exp $ */
 /*
  * Common/useful definitions for XTERM application.
  *
@@ -96,6 +96,7 @@ extern void ToggleAlternate PROTO((TScreen *screen));
 extern void VTReset PROTO((int full, int saved));
 extern void VTRun PROTO((void));
 extern void dotext PROTO((TScreen *screen, int charset, Char *buf, Char *ptr));
+extern void resetCharsets PROTO((TScreen *screen));
 extern void set_cursor_gcs PROTO((TScreen *screen));
 extern void unparseputc PROTO((int c, int fd));
 extern void unparseputc1 PROTO((int c, int fd));

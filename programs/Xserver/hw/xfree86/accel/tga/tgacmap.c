@@ -24,7 +24,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacmap.c,v 3.2 1997/11/16 06:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgacmap.c,v 3.3 1998/01/24 16:57:18 hohndel Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
@@ -33,7 +33,6 @@
  *
  * Adapted for the DEC TGA by Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
-
 
 #include "X.h"
 #include "Xproto.h"
@@ -50,9 +49,7 @@ extern struct tgamem tgamem;
 
 #define NOMAPYET        (ColormapPtr) 0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-
-/* current colormap for each screen */
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 LUTENTRY currenttgadac[256];
 

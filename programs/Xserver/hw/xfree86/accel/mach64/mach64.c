@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.88 1998/01/24 16:56:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.89 1998/03/20 21:05:47 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -198,6 +198,8 @@ ScrnInfoRec mach64InfoRec = {
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
     0,			/* int MemClk */
+    0,			/* int busType */
+    0,			/* PCITAG pciTag */
 #ifdef XFreeXDGA
     0,                  /* int directMode */
     NULL,               /* Set Vid Page */

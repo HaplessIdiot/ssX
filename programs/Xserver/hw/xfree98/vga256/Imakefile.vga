@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile.vga,v 1.4 1998/03/20 19:08:13 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile.vga,v 1.5 1998/03/20 21:07:58 hohndel Exp $
 XCOMM
 XCOMM
 XCOMM This is the Imakefile for the server-specific subdirectories
@@ -6,10 +6,11 @@ XCOMM (egc, ganbwap, nkvnec, pegc, trident, wabep, wabs, wsna). It is
 XCOMM included from the Imakefiles in these directories. VGADEFINES
 XCOMM should be correctly defined for a specific server.
 
-#define IHaveModules
 #include <Server.tmpl>
 
 #ifdef i386Architecture
+#define UseSpeedups   1
+
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
          fFillXor.s fFillSet.s vgabres.s vgalineH.s vgalineV.s
 BSRCS = BitBlt.s BitBlt2.s Box.s Line.s VHLine.s vgaBank.s
@@ -17,6 +18,7 @@ BSRCS = BitBlt.s BitBlt2.s Box.s Line.s VHLine.s vgaBank.s
 FOBJS =  fBitBlt.o fFillCopy.o fFillOr.o fFillAnd.o \
          fFillXor.o fFillSet.o vgabres.o vgalineH.o vgalineV.o
 BOBJS = BitBlt.o BitBlt2.o Box.o Line.o VHLine.o vgaBank.o
+
 #else
 FSRCS = vgaBltFillc.c vgaLinec.c
 BSRCS = vgaBankc.c
@@ -25,48 +27,56 @@ FOBJS = vgaBltFillc.o vgaLinec.o
 BOBJS = vgaBankc.o
 #endif
 
+#if defined(UseSpeedups)
+SUSRCS = vgabltCS.c vgapwinS.c vgasegS.c vgateblt8S.c \
+	vgalineS.c vgarctstp8S.c vgasolidCS.c
+
+SUOBJS = vgabltCS.o vgapwinS.o vgasegS.o vgateblt8S.o \
+	vgalineS.o vgarctstp8S.o vgasolidCS.o SpeedUpBlt.o
+#endif
+
 SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
-	 vgapntwin.c vgapwinS.c vgabitblt.c \
+	 vgapntwin.c vgabitblt.c \
 	 vgafillsp.c vgasetsp.c vgaimage.c \
 	 vgagetsp.c vgafillrct.c vgaBitBlt1.c \
-	 vgasolidC.c vgasolidCS.c vgasolidX.c \
+	 vgasolidC.c vgasolidX.c \
 	 vgasolidO.c vgasolidA.c vgasolidG.c \
 	 vgatile32C.c vgatile32G.c \
 	 vgatileoddC.c vgatileoddG.c \
 	 vgazerarcC.c vgazerarcX.c vgazerarcG.c \
 	 vgafillarcC.c vgafillarcG.c \
 	 vgategblt.c vgabstore.c vga8cppl.c \
-	 vgabltC.c vgabltCS.c vgabltX.c vgabltO.c vgabltG.c \
-	 vgateblt8.c vgateblt8S.c vgaglblt8.c vgaglrop8.c \
-	 vgapush8.c vgarctstp8.c vgarctstp8S.c vgapolypnt.c \
-	 vgaline.c vgalineS.c vgabresd.c \
-	 vgalined.c vgasegd.c vgaseg.c vgasegS.c \
+	 vgabltC.c vgabltX.c vgabltO.c vgabltG.c \
+	 vgateblt8.c vgaglblt8.c vgaglrop8.c \
+	 vgapush8.c vgarctstp8.c vgapolypnt.c \
+	 vgaline.c vgabresd.c \
+	 vgalined.c vgasegd.c vgaseg.c \
 	 vgaply1rctC.c vgaply1rctG.c vgafuncs.c \
-	 SpeedUpBlt.c $(BSRCS) \
+	 $(SUSRCS) $(BSRCS) \
 	 vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c \
-	 vgaPCI.c vgatables.c
+	 vgaPCI.c
 
 OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgagetsp.o vgafillrct.o vgaimage.o \
-	 vgasolidC.o vgasolidCS.o vgasolidX.o \
+	 vgasolidC.o vgasolidX.o \
 	 vgasolidO.o vgasolidA.o vgasolidG.o \
 	 vgatile32C.o vgatile32G.o \
 	 vgatileoddC.o vgatileoddG.o \
 	 vgafillsp.o vgasetsp.o \
-	 vgapntwin.o vgapwinS.o vgaBitBlt1.o \
+	 vgapntwin.o vgaBitBlt1.o \
 	 vgazerarcC.o vgazerarcX.o vgazerarcG.o \
 	 vgafillarcC.o vgafillarcG.o \
 	 vgategblt.o vgabstore.o vga8cppl.o \
-	 vgateblt8.o vgateblt8S.o vgaglblt8.o vgaglrop8.o \
-	 vgarctstp8.o vgarctstp8S.o vgapolypnt.o \
-	 vgaline.o vgalineS.o vgabresd.o \
-	 vgalined.o vgasegd.o vgaseg.o vgasegS.o \
-	 vgabitblt.o vgabltC.o vgabltCS.o vgabltX.o \
+	 vgateblt8.o vgaglblt8.o vgaglrop8.o \
+	 vgarctstp8.o vgapolypnt.o \
+	 vgaline.o vgabresd.o \
+	 vgalined.o vgasegd.o vgaseg.o \
+	 vgabitblt.o vgabltC.o vgabltX.o \
 	 vgabltO.o vgabltG.o \
 	 vgapush8.o vgaply1rctC.o vgaply1rctG.o $(STIPPLEOBJ) vgafuncs.o \
-	 SpeedUpBlt.o $(BOBJS) \
+	 $(SUOBJS) $(BOBJS) \
 	 vgaBanks.o $(FOBJS) vgaHW.o vga.o vgaCmap.o \
-	 vgaPCI.o vgatables.o
+	 vgaPCI.o
 
    INCLUDES = -I. -I$(XF98COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -82,9 +92,6 @@ STARTUPDEFINES = -DDIRTY_STARTUP
 
     DEFINES = $(SPEEDUPDEFINES) $(STARTUPDEFINES) -DPSZ=8 -DPC98 VGADEFINES
 
-#ifdef i386Architecture
-SUDEFINE = -DSPEEDUP
-#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -156,7 +163,6 @@ LinkSourceFile(vgaBltFillc.c,EnhancedDir)
 LinkSourceFile(vgaLinec.c,EnhancedDir)
 #endif
 LinkFile(vgaBitBlt1.c,EnhancedDir/vgaBitBlt.c)
-LinkSourceFile(SpeedUpBlt.c,EnhancedDir)
 LinkSourceFile(vgaFasm.h,EnhancedDir)
 
 ObjectFromSpecialSource(vgaseg,vgaline,-DPOLYSEGMENT)
@@ -164,10 +170,15 @@ ObjectFromSpecialSource(vgasegd,vgalined,-DPOLYSEGMENT)
 ObjectFromSpecialSource(vgaglrop8,vgaglblt8,-DGLYPHROP)
 SpecialObjectRule(vgaglblt8.o,vgaglblt8.c,$(STIPPLEDEF))
 
-ObjectFromSpecialSource(vgalineS,vgaline,$(SUDEFINE))
-ObjectFromSpecialSource(vgasegS,vgaline,$(SUDEFINE) -DPOLYSEGMENT)
-ObjectFromSpecialSource(vgateblt8S,vgateblt8,$(SUDEFINE))
-ObjectFromSpecialSource(vgarctstp8S,vgarctstp8,$(SUDEFINE))
+#if defined(UseSpeedups)
+LinkSourceFile(SpeedUpBlt.c,EnhancedDir)
+ObjectFromSpecialSource(vgalineS,vgaline,-DSPEEDUP)
+ObjectFromSpecialSource(vgasegS,vgaline,-DSPEEDUP -DPOLYSEGMENT)
+ObjectFromSpecialSource(vgateblt8S,vgateblt8,-DSPEEDUP)
+ObjectFromSpecialSource(vgarctstp8S,vgarctstp8,-DSPEEDUP)
+ObjectFromSpecialSource(vgabltCS,vgablt,-DMROP=Mcopy -DSPEEDUP)
+ObjectFromSpecialSource(vgasolidCS,vgasolid,-DRROP=GXcopy -DSPEEDUP)
+#endif
 
 ObjectFromSpecialSource(vgafillarcC,vgafillarc,-DRROP=GXcopy)
 ObjectFromSpecialSource(vgafillarcG,vgafillarc,-DRROP=GXset)
@@ -176,13 +187,11 @@ ObjectFromSpecialSource(vgazerarcC,vgazerarc,-DRROP=GXcopy)
 ObjectFromSpecialSource(vgazerarcX,vgazerarc,-DRROP=GXxor)
 ObjectFromSpecialSource(vgazerarcG,vgazerarc,-DRROP=GXset)
 
-ObjectFromSpecialSource(vgabltCS,vgablt,-DMROP=Mcopy $(SUDEFINE))
 ObjectFromSpecialSource(vgabltX,vgablt,-DMROP=Mxor)
 ObjectFromSpecialSource(vgabltO,vgablt,-DMROP=Mor)
 ObjectFromSpecialSource(vgabltG,vgablt,-DMROP=0)
 
 ObjectFromSpecialSource(vgasolidC,vgasolid,-DRROP=GXcopy)
-ObjectFromSpecialSource(vgasolidCS,vgasolid,-DRROP=GXcopy $(SUDEFINE))
 ObjectFromSpecialSource(vgasolidX,vgasolid,-DRROP=GXxor)
 ObjectFromSpecialSource(vgasolidO,vgasolid,-DRROP=GXor)
 ObjectFromSpecialSource(vgasolidA,vgasolid,-DRROP=GXand)

@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.10 1997/07/29 12:07:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.11 1998/03/20 21:05:13 hohndel Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -223,8 +223,10 @@ ScrnInfoRec fbdevInfoRec = {
     -1,				/* int s3BlankDelay */
     0,				/* int textClockFreq */
     NULL,			/* char *DCConfig */
-    NULL			/* char *DCOptions */
+    NULL,			/* char *DCOptions */
     0,				/* int MemClk */
+    0,				/* int busType */
+    0,				/* PCITAG pciTag */
 #ifdef XFreeXDGA
     0,				/* int directMode */
     0,				/* void (*setBank)() */
@@ -306,9 +308,7 @@ extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 #define NOMAPYET	(ColormapPtr)0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-	/* current colormap for each screen */
-
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 #define StaticGrayMask	(1 << StaticGray)
 #define GrayScaleMask	(1 << GrayScale)

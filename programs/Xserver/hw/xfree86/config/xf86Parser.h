@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.1.2.6 1997/07/22 13:50:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/xf86Parser.h,v 1.1 1998/01/24 16:57:47 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -110,14 +110,16 @@ typedef struct
 	char *pntr_protocol;
 	char *pntr_device;
 	int pntr_buttons;
-	int pntr_emulate3buttons;
 	int pntr_baudrate;
 	int pntr_samplerate;
+	int pntr_resolution;
 	int pntr_emulate3Buttons;
 	int pntr_emulate3Timeout;
 	int pntr_chordMiddle;
 	int pntr_clearDtr;
 	int pntr_clearRts;
+	int pntr_negativeZ;
+	int pntr_positiveZ;
 	int pntr_alwaysCore;
 }
 XF86ConfPointerRec, *XF86ConfPointerPtr;

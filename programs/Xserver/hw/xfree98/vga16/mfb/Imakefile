@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.4 1997/03/17 07:18:52 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.5 1997/04/12 13:47:00 hohndel Exp $
 
 
 
@@ -6,7 +6,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.4 1997/03
 
 XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:34:39 rws $
 
+#define IHaveModules
 #include <Server.tmpl>
+
+#if DoLoadableServer
+XF86INCL = -I$(XF86COMSRC) -I$(XF86SRC)
+XFMODSRC = mfbmodule.c
+XFMODOBJ = mfbmodule.o
+#endif
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbfillrct.c mfbpntwin.c maskbits.c mfbpixmap.c \
@@ -20,7 +27,8 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 SRCS =	 $(SRCS1) mfbseg1.c mfbpgbwht.c mfbpgbblak.c mfbpgbinv.c mfbigbwht.c \
 	 mfbigbblak.c mfbpawhite.c mfbpablack.c mfbpainv.c mfbtewhite.c \
 	 mfbteblack.c mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
-	 mfbtileC.c mfbtileG.c mfbplywhite.c mfbplyblack.c mfbplyinv.c
+	 mfbtileC.c mfbtileG.c mfbplywhite.c mfbplyblack.c mfbplyinv.c \
+	 $(XFMODSRC)
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
@@ -33,11 +41,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtileC.o mfbtileG.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o \
-	 mfbplywhite.o mfbplyblack.o mfbplyinv.o
-
-#if DoLoadableServer
-XF86INCL = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I$(XF86SRC)
-#endif
+	 mfbplywhite.o mfbplyblack.o mfbplyinv.o $(XFMODOBJ)
 
 INCLUDES = -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) $(XF86INCL)
@@ -90,6 +94,7 @@ ObjectMapIncludeFromSpecialSource(mfbtile,MfbSourceDir/mfbtile,/**/)
 ObjectMapIncludeFromSpecialSource(mfbwindow,MfbSourceDir/mfbwindow,/**/)
 ObjectMapIncludeFromSpecialSource(mfbzerarc1,MfbSourceDir/mfbzerarc,/**/)
 LinkSourceFile(mfbmap.h,$(XF86SRC)/vga16/mfb)
+LinkSourceFile(mfbmodule.c,$(XF86SRC)/vga16/mfb)
 
 ObjectFromSpecialSource(mfbseg1,mfbline1,-DPOLYSEGMENT)
 

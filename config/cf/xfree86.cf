@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.176 1998/01/24 16:56:16 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.177 1998/01/24 19:15:07 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1211,6 +1211,14 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 
 #ifndef ManSuffix
 #define ManSuffix	1
+#endif
+
+#ifndef XConfigFile
+#define XConfigFile	XF86Config
+#endif
+
+#ifndef XConfigDir
+#define XConfigDir	$(LIBDIR)
 #endif
 
 /*

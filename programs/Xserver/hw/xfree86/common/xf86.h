@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.70 1998/02/07 08:58:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.71 1998/03/21 00:12:54 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -476,6 +476,8 @@ typedef struct _MouseDevRec {
     int           negativeZ;
     int           positiveZ;
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
+    int           protoBufTail;
+    unsigned char protoBuf[8];
     unsigned char protoPara[7];
 #endif
     
