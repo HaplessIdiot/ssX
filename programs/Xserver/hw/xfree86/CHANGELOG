@@ -1,4 +1,15 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 798.  SiS driver fixes:
+	- Fix for SiS730+LVDS machines (display modes restricted due to 
+	  hardware limits; LCD text mode restoration fixed)
+	- Fix for SiS300 bus width detection
+	- Fix for Fn+Fx output device switching on some machines (still 
+	  does not work on all)
+	- Numerous Dual Head fixes
+	- Added color hardware cursor support on 300/310/325/330 series
+	- Added PAL-M and PAL-N support for Chrontel 701x
+	- Added ModeLine handling for 300/310/325/330 series (CRT1 only)
+        (Thomas Winischhofer).
  797. Fix for memory fences on PowerPC (Marc La France).
  796. Work-around for Radeon int10 problems (Marc La France).
  795. Fix XDarwin crash in rootless mode with 16-bit color by ensuring that
@@ -16139,4 +16150,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2504 2003/01/29 15:17:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2505 2003/01/29 15:23:15 tsi Exp $

@@ -406,29 +406,8 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     		mode->CrtcVBlankStart, mode->CrtcVBlankEnd);
 #endif
 
-#if 0
-    /* TEST */
-    vgaReg->CRTC[0] = 0xce;
-    vgaReg->CRTC[1] = 0x9f;
-    vgaReg->CRTC[2] = 0x9f;
-    vgaReg->CRTC[3] = 0x92;
-    vgaReg->CRTC[4] = 0xa4;
-    vgaReg->CRTC[5] = 0x16;
-    vgaReg->CRTC[6] = 0x28;
-    vgaReg->CRTC[7] = 0x5a;
-    vgaReg->CRTC[0x10] = 0x00;
-    vgaReg->CRTC[0x11] = 0x04;
-    vgaReg->CRTC[0x12] = 0xff;
-    vgaReg->CRTC[0x15] = 0xff;
-    vgaReg->CRTC[0x16] = 0x29;
-    vgaReg->CRTC[9] |= 0x20;
-    pReg->sisRegs3C4[0x12] = 0x00;
-    pReg->sisRegs3C4[0x0A] |= 0x09;
-    /* TEST */
-#endif
-
     /* enable (or disable) line compare */
-    if(mode->CrtcVDisplay > 1024)
+    if(mode->CrtcVDisplay >= 1024)
         pReg->sisRegs3C4[0x38] |= 0x04;
     else
         pReg->sisRegs3C4[0x38] &= 0xFB;
@@ -500,11 +479,6 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifdef TWDEBUG
 	xf86DrvMsg(0, X_INFO, "2a: %x 2b: %x 13: %x clock %d\n",
 		pReg->sisRegs3C4[0x2A], pReg->sisRegs3C4[0x2B], pReg->sisRegs3C4[0x13], clock);
-#endif
-#if 0   /* TEST */
-        pReg->sisRegs3C4[0x13] &= ~0x40;
-	pReg->sisRegs3C4[0x2A] = 0x5d;
-	pReg->sisRegs3C4[0x2B] = 0x24;
 #endif
 
     } else {
@@ -940,7 +914,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	  if(pSiS->Chipset == PCI_CHIP_SIS330) temp = 0x11b;
           if(pSiS->BIOS[temp] & 0x08) {
 	      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	          "SiS30x: Video bridge has (unsupported) DVI connector\n");
+	          "SiS30x: Video bridge has (unsupported) DVI combo connector\n");
 	      orSISIDXREG(SISCR, 0x32, 0x80);
           } else {
 	      andSISIDXREG(SISCR, 0x32, 0x7f);
@@ -1046,7 +1020,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	testsvhs_tempch = 0x06;	testsvhs_tempcl = 0x04;
 	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x04;
 
-    } else {  /* 550, 650, 740 */
+    } else {  /* 550?, 650, 740 */
 
         if(pSiS->sishw_ext.UseROM) {
 	   testvga2_tempbh = pSiS->BIOS[0xbe]; testvga2_tempbl = pSiS->BIOS[0xbd];
@@ -1130,8 +1104,8 @@ void SISSense30x(ScrnInfoPtr pScrn)
                                testsvhs_tempcl, testsvhs_tempch);
     if(result) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	      "SiS30x: Detected TV connected to SVHS output\n");
-        /* TW: So we can be sure that there IS a SVHS output */
+	      "SiS30x: Detected TV connected to SVIDEO output\n");
+        /* TW: So we can be sure that there IS a SVIDEO output */
 	pSiS->VBFlags |= TV_SVIDEO;
 	orSISIDXREG(SISCR, 0x32, 0x02);
 	pSiS->postVBCR32 |= 0x02;
@@ -1143,7 +1117,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	                           testcvbs_tempcl, testcvbs_tempch);
 	if(result) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	          "SiS30x: Detected TV connected to CVBS output\n");
+	          "SiS30x: Detected TV connected to COMPOSITE output\n");
 	    /* TW: So we can be sure that there IS a CVBS output */
 	    pSiS->VBFlags |= TV_AVIDEO;
 	    orSISIDXREG(SISCR, 0x32, 0x01);
@@ -1210,7 +1184,7 @@ SISSense6326(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		"SiS6326: Detected TV connected to %s output\n",
 		(pSiS->SiS6326Flags & SIS6326_TVSVIDEO) ?
-			"SVIDEO" : "CVBS");
+			"SVIDEO" : "COMPOSITE");
     } else {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		"SiS6326: No TV detected\n");
@@ -1279,7 +1253,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS301LVX video bridge (Revision 0x%x)\n",
 				temp1);
-	}else if (temp1 >= 0xD0) {
+	} else if (temp1 >= 0xD0) {
 	   	pSiS->VBFlags |= VB_30xLV;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301LV;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -1297,6 +1271,13 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS301 video bridge (Revision 0x%x)\n",
 				temp1);
+	}
+	if (pSiS->VBFlags & (VB_30xLV | VB_30xLVX)) {
+	   inSISIDXREG(SISCR, 0x38, temp);
+	   if((temp & 0x03) == 0x03) {
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		                "[SiS301LV/LVX: LCD channel A]\n");
+	   }
 	}
 
 	SISSense30x(pScrn);
@@ -1326,10 +1307,9 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	}
 	if (pSiS->VBFlags & (VB_302B | VB_30xLV | VB_30xLVX)) {
 	   inSISIDXREG(SISCR, 0x38, temp);
-	   temp &= 0x03;
-	   if (temp == 0x03) {
+	   if((temp & 0x03) == 0x03) {
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		                "[SiS30xB/LV: LCD channel A]\n");
+		                "[SiS302B/LV/LVX: LCD channel A]\n");
 	   }
 	}
 
@@ -1376,7 +1356,11 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		   }
 		   if(temp1 & 0x08) {
 		      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		                 "[LVDS: HiVisionTV]\n");
+		                 "[LVDS: HDTV]\n");
+		   }
+		   if(temp1 & 0x08) {
+		      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		                 "[LVDS: SCART]\n");
 		   }
 	       }
 	}
@@ -1487,7 +1471,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		switch(temp1) {
 		     case 0x01:
 		        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		  	   "Chrontel: Detected TV connected to CVBS output\n");
+		  	   "Chrontel: Detected TV connected to COMPOSITE output\n");
 		        /* TW: So we can be sure that there IS a CVBS output */
 			pSiS->VBFlags |= TV_AVIDEO;
 			orSISIDXREG(SISCR, 0x32, 0x01);
@@ -1495,17 +1479,26 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
                         break;
                      case 0x02:
 			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Chrontel: Detected TV connected to SVHS output\n");
-			/* TW: So we can be sure that there IS a SVHS output */
+			   "Chrontel: Detected TV connected to SVIDEO output\n");
+			/* TW: So we can be sure that there IS a SVIDEO output */
 			pSiS->VBFlags |= TV_SVIDEO;
 			orSISIDXREG(SISCR, 0x32, 0x02);
 			pSiS->postVBCR32 |= 0x02;
                         break;
 		     case 0x04:
-			/* TW: This should not happen */
 			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Chrontel: Detected TV connected to SCART output!?\n");
-			pSiS->VBFlags |= TV_SCART;
+			   "Chrontel: Detected TV connected to SCART output or 480i HDTV\n");
+			if(pSiS->chtvtype == -1) {
+			   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			      "Chrontel: Use CHTVType option to select either SCART or HDTV\n");
+			   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			      "Chrontel: Using SCART by default\n");
+			   pSiS->chtvtype = 1;
+			}
+			if(pSiS->chtvtype)
+			    pSiS->VBFlags |= TV_CHSCART;
+			else
+			    pSiS->VBFlags |= TV_CHHDTV;
                         break;
 		     default:
 		        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,

@@ -92,7 +92,9 @@ static Atom xvAutopaintColorKey, xvSetDefaults;
 #define IMAGE_MAX_WIDTH_5597  384  
 #define IMAGE_MAX_HEIGHT_5597 288
 
+#if 0
 static int oldH, oldW;
+#endif
 
 /****************************************************************************
  * Raw register access : These routines directly interact with the sis's
@@ -136,9 +138,8 @@ static void setvideoregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
 /* VBlank */
 static CARD8 vblank_active_CRT1(SISPtr pSiS)
 {
-    return (inb(SISINPSTAT) & 0x08);
+    return (inSISREG(SISINPSTAT) & 0x08);
 }
-
 
 /* Scanline - unused */
 #if 0
@@ -187,8 +188,9 @@ void SIS6326InitVideo(ScreenPtr pScreen)
 
     if(newAdaptors)
     	xfree(newAdaptors);
-
+#if 0
     oldW = 0; oldH = 0;  /* DEBUG */
+#endif
 }
 
 /* client libraries expect an encoding */
@@ -253,8 +255,8 @@ static XF86ImageRec SIS6326Images[NUM_IMAGES] =
       16,
       XvPacked,
       1,
-/*    15, 0x001F, 0x03E0, 0x7C00,  */
-      15, 0x7C00, 0x03E0, 0x001F,  /* TW: Should be more correct than the other... */
+/*    15, 0x001F, 0x03E0, 0x7C00,  - incorrect! */
+      15, 0x7C00, 0x03E0, 0x001F,  
       0, 0, 0,
       0, 0, 0,
       0, 0, 0,
@@ -271,8 +273,8 @@ static XF86ImageRec SIS6326Images[NUM_IMAGES] =
       16,
       XvPacked,
       1,
-/*    16, 0x001F, 0x07E0, 0xF800,   */
-      16, 0xF800, 0x07E0, 0x001F,   /* TW: Should be more correct than the other... */
+/*    16, 0x001F, 0x07E0, 0xF800,  - incorrect!  */
+      16, 0xF800, 0x07E0, 0x001F, 
       0, 0, 0,
       0, 0, 0,
       0, 0, 0,
@@ -406,11 +408,11 @@ SIS6326ResetVideo(ScrnInfoPtr pScrn)
 
     /* Unlock registers */
 #ifdef UNLOCK_ALWAYS
-    sisSaveUnlockExtRegisterLock(pSiS, NULL);
+    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
     if(getvideoreg (pSiS, Index_VI6326_Passwd) != 0xa1) {
         setvideoreg (pSiS, Index_VI6326_Passwd, 0x86);
-        if (getvideoreg (pSiS, Index_VI6326_Passwd) != 0xa1)
+        if(getvideoreg (pSiS, Index_VI6326_Passwd) != 0xa1)
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                        "Xv: Video password could not unlock video registers\n");
     }
@@ -704,6 +706,10 @@ calc_scale_factor(SISPtr pSiS, SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
 	dstH <<= 1;
   }
+  /* TW: For interlace modes, we need to half the height */
+  if(pSiS->CurrentLayout.mode->Flags & V_INTERLACE) {
+	dstH >>= 1;
+  }
 
   /* Horizontal */
   if(dstW < IMAGE_MIN_WIDTH) dstW = IMAGE_MIN_WIDTH;
@@ -918,6 +924,11 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
     	 top <<= 1;
 	 bottom <<= 1;
+    }
+    /* TW: Interlace modes require Y coordinates / 2 */
+    if(pSiS->CurrentLayout.mode->Flags & V_INTERLACE) {
+    	 top >>= 1;
+	 bottom >>= 1;
     }
 
     h_over = (((left>>8) & 0x07) | ((right>>4) & 0x70));
@@ -1419,8 +1430,9 @@ SIS6326QueryImageAttributes(
 static void
 SIS6326VideoTimerCallback (ScrnInfoPtr pScrn, Time now)
 {
-    SISPtr pSiS = SISPTR(pScrn);
+    SISPtr         pSiS = SISPTR(pScrn);
     SISPortPrivPtr pPriv = NULL;
+    unsigned char  sridx, cridx;
 
     pSiS->VideoTimerCallback = NULL;
 
@@ -1438,7 +1450,9 @@ SIS6326VideoTimerCallback (ScrnInfoPtr pScrn, Time now)
 	if(pPriv->offTime < currentTime.milliseconds) {
           if(pPriv->videoStatus & OFF_TIMER) {
               /* Turn off the overlay */
+	      sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
               close_overlay(pSiS, pPriv);
+	      outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
 	      pPriv->mustwait = 1;
               pPriv->videoStatus = FREE_TIMER;
               pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;

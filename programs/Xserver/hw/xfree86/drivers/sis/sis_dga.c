@@ -227,7 +227,7 @@ SISDGAInit(ScreenPtr pScreen)
 				? 0 : pScrn->displayWidth),
 			   0xf800, 0x07e0, 0x001f, TrueColor);
 
-   if(pSiS->VGAEngine == SIS_530_VGA) {
+   if((pSiS->VGAEngine == SIS_530_VGA) || (pSiS->VGAEngine == SIS_OLD_VGA)) {
      /* 24 */
      modes = SISSetupDGAMode(pScrn, modes, &num, 24, 24,
 	 		     (pScrn->bitsPerPixel == 24),
@@ -235,13 +235,15 @@ SISDGAInit(ScreenPtr pScreen)
 				? 0 : pScrn->displayWidth),
 			      0xff0000, 0x00ff00, 0x0000ff, TrueColor);
    }
-   
-   /* 32 */
-   modes = SISSetupDGAMode(pScrn, modes, &num, 32, 24,
+
+   if(pSiS->VGAEngine != SIS_OLD_VGA) {
+     /* 32 */
+     modes = SISSetupDGAMode(pScrn, modes, &num, 32, 24,
 			   (pScrn->bitsPerPixel == 32),
 			   ((pScrn->bitsPerPixel != 32)
 				? 0 : pScrn->displayWidth),
 			   0xff0000, 0x00ff00, 0x0000ff, TrueColor);
+   }
 
    pSiS->numDGAModes = num;
    pSiS->DGAModes = modes;

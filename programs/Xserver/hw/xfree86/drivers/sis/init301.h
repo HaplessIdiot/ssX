@@ -55,7 +55,7 @@ BOOLEAN  SiS_IsM650or651(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtens
 BOOLEAN  SiS_IsDisableCRT2(SiS_Private *SiS_Pr, USHORT BaseAddr);
 BOOLEAN  SiS_IsVAMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
 BOOLEAN  SiS_IsDualEdge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
-BOOLEAN  SiS_CRT2IsLCD(SiS_Private *SiS_Pr, USHORT BaseAddr);
+BOOLEAN  SiS_CRT2IsLCD(SiS_Private *SiS_Pr, USHORT BaseAddr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 void     SiS_SetDefCRT2ExtRegs(SiS_Private *SiS_Pr, USHORT BaseAddr);
 USHORT   SiS_GetRatePtrCRT2(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT ModeNo,USHORT ModeIdIndex,
                             PSIS_HW_DEVICE_INFO HwDeviceExtension);
@@ -234,10 +234,11 @@ BOOLEAN  SiS_WeHaveBacklightCtrl(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDevi
 BOOLEAN  SiS_IsSomethingCR5F(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
 #endif
 BOOLEAN  SiS_IsYPbPr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
-BOOLEAN  SiS_IsTVOrYPbPr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
+BOOLEAN  SiS_IsChScart(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
+BOOLEAN  SiS_IsTVOrYPbPrOrScart(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
 BOOLEAN  SiS_IsLCDOrLCDA(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
 void     SiS_SetCH701xForLCD(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USHORT BaseAddr);
-void     SiS_Chrontel19f2(SiS_Private *SiS_Pr);
+void     SiS_ChrontelPowerSequencing(SiS_Private *SiS_Pr);
 BOOLEAN  SiS_CR36BIOSWord23b(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 BOOLEAN  SiS_CR36BIOSWord23d(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 BOOLEAN  SiS_IsSR13_CR30(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);

@@ -28,16 +28,20 @@
  *           David Thomas <davtom@dream.org.uk>.
  *
  *	     Thomas Winischhofer <thomas@winischhofer.net>:
- *              - Many fixes for 540/630/730 chipset,
- *              - (deprecated) VESA mode switching,
- *              - CRT2 video bridge extended handling support,
- *              - dual head support
- *              - 310/325 series (315/550/650/740/M650) support
+ *              - 310/325 series (315/550/650/651/740/M650) support
+ *		- (possibly incomplete) Xabre (SiS330) support
+ *              - new mode switching code for 300, 310/325 and 330 series
+ *              - many fixes for 300/540/630/730 chipsets,
+ *              - many fixes for 5597/5598, 6326 and 530/620 chipsets,
+ *              - VESA mode switching (deprecated),
+ *              - extended CRT2/video bridge handling support,
+ *              - dual head support on 300, 310/325 and 330 series
  *              - 650/LVDS (up to 1400x1050), 650/Chrontel 701x support
- *              - 30xB/30xLV video bridge support
- *              - video overlay enhancements
- *              - Xv support for 6326, 530/620
- *              - entire new mode switching code for 300/310/325 series
+ *              - 30xB/30xLV/30xLVX video bridge support (300, 310/325, 330 series)
+ *              - Xv support for 5597/5598, 6326, 530/620 and 310/325 series
+ *              - video overlay enhancements for 300 series
+ *              - TV and hi-res support for the 6326
+ *		- Color hardware cursor support for 300/310/325/330 series
  *              - etc.
  */
 
@@ -98,6 +102,10 @@ typedef unsigned long IOADDRESS;
 #define SISGAMMA	/* TW: Include code for gamma correction */
 #endif
 
+#if 1			/* TW: Include code for color hardware cursors */
+#define SIS_ARGB_CURSOR
+#endif
+
 /* TW: new for SiS315/550/650/740/330 - these should be moved elsewhere! */
 #ifndef PCI_CHIP_SIS315H
 #define PCI_CHIP_SIS315H		0x0310
@@ -126,7 +134,7 @@ typedef unsigned long IOADDRESS;
 #define SIS_CURRENT_VERSION     ((SIS_MAJOR_VERSION << 16) | \
                                 (SIS_MINOR_VERSION << 8) | SIS_PATCHLEVEL )
 
-/* pSiS->Flags */
+/* pSiS->Flags (old series only) */
 #define SYNCDRAM                0x00000001
 #define RAMFLAG                 0x00000002
 #define ESS137xPRESENT          0x00000004
@@ -158,9 +166,11 @@ typedef unsigned long IOADDRESS;
 #define TV_AVIDEO               0x00000100
 #define TV_SVIDEO               0x00000200
 #define TV_SCART                0x00000400
-#define TV_INTERFACE            (TV_AVIDEO | TV_SVIDEO | TV_SCART)
+#define TV_INTERFACE            (TV_AVIDEO | TV_SVIDEO | TV_SCART | TV_CHSCART | TV_CHHDTV)
 #define TV_PALM                 0x00001000
 #define TV_PALN                 0x00002000
+#define TV_CHSCART              0x00008000
+#define TV_CHHDTV               0x00010000
 #define VGA2_CONNECTED          0x00040000
 #define DISPTYPE_CRT1		0x00080000  	/* TW: CRT1 connected and used */
 #define DISPTYPE_DISP1		DISPTYPE_CRT1
@@ -170,9 +180,9 @@ typedef unsigned long IOADDRESS;
 #define VB_303			0x00800000
 #define VB_LVDS                 0x01000000
 #define VB_CHRONTEL             0x02000000
-#define VB_30xLV                0x04000000  	/* TW: new for SiS310/325 series */
-#define VB_30xLVX               0x08000000  	/* TW: new for SiS310/325 series */
-#define VB_TRUMPION		0x10000000      /* TW: new */
+#define VB_30xLV                0x04000000  	
+#define VB_30xLVX               0x08000000  	
+#define VB_TRUMPION		0x10000000     
 #define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_302B|VB_303|VB_30xLV|VB_30xLVX| \
 				 VB_LVDS|VB_CHRONTEL|VB_TRUMPION) /* TW */
 #define VB_SISBRIDGE            (VB_301|VB_301B|VB_302B|VB_303|VB_30xLV|VB_30xLVX)
@@ -240,7 +250,7 @@ typedef unsigned char UChar;
 #define SIS_300_VGA 3
 #define SIS_315_VGA 4
 
-/* TW: oldChiset */
+/* TW: oldChipset */
 #define OC_UNKNOWN  0
 #define OC_SIS6205A 3
 #define OC_SIS6205B 4
@@ -256,10 +266,13 @@ typedef unsigned char UChar;
 #define CHRONTEL_700x 0
 #define CHRONTEL_701x 1
 
+/* Flags650 */
+#define SiS650_LARGEOVERLAY 0x00000001
+
 /* TW: For backup of register contents */
 typedef struct {
         unsigned char sisRegs3C4[0x50];
-        unsigned char sisRegs3D4[0x70];
+        unsigned char sisRegs3D4[0x90];
         unsigned char sisRegs3C2;
         unsigned char VBPart1[0x50];
         unsigned char VBPart2[0x50];
@@ -268,6 +281,7 @@ typedef struct {
         unsigned short ch70xx[64];
 	unsigned long sisMMIO85C0;    /* TW: Queue location for 310/325 series */
 	unsigned char sis6326tv[0x46];
+	unsigned long sisRegsPCI50, sisRegsPCIA0;
 } SISRegRec, *SISRegPtr;
 
 typedef struct _sisModeInfoPtr {
@@ -349,7 +363,12 @@ typedef struct {
     int			tvxpos;
     int			tvypos;
     int			ForceTVType;
+    int			chtvtype;
     int                 NonDefaultPAL;
+    unsigned short	tvx, tvy;
+    unsigned char	p2_01, p2_02, p2_2d;
+    unsigned short      cursorBufferNum;
+    BOOLEAN		restorebyset;
 } SISEntRec, *SISEntPtr;
 #endif
 
@@ -581,6 +600,24 @@ typedef struct {
     int			newFastVram;		/* TW: Replaces FastVram */
     int			ForceTVType;
     int                 NonDefaultPAL;
+    unsigned long       lockcalls;		/* TW: Count unlock calls for debug */
+    unsigned short	tvx, tvy;		/* TW: Backup TV position registers */
+    unsigned char	p2_01, p2_02, p2_2d;    /* TW: Backup TV position registers */
+    unsigned short      tvx1, tvx2, tvx3, tvy1; /* TW: Backup TV position registers */
+    BOOLEAN		ForceCursorOff;	
+    BOOLEAN		HaveCustomModes;	
+    BOOLEAN		IsCustom;
+    DisplayModePtr	backupmodelist;
+    int			chtvtype;
+    Atom                xvBrightness, xvContrast, xvColorKey, xvHue, xvSaturation;
+    Atom                xvAutopaintColorKey, xvSetDefaults;
+    unsigned long       Flags650;
+    BOOLEAN		UseHWARGBCursor;
+    int			OptUseColorCursor;
+    int			OptUseColorCursorBlend;
+    CARD32		OptColorCursorBlendThreshold;
+    unsigned short      cursorBufferNum;
+    BOOLEAN		restorebyset;
 } SISRec, *SISPtr;
 
 typedef struct _ModeInfoData {
@@ -623,8 +660,8 @@ typedef struct _chswtable {
     char *cardName;
 } chswtable;
 
-extern void  sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg);
-extern void  sisRestoreExtRegisterLock(SISPtr pSiS, unsigned char reg);
+extern void  sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *reg2);
+extern void  sisRestoreExtRegisterLock(SISPtr pSiS, unsigned char reg1, unsigned char reg2);
 extern void  SiSOptions(ScrnInfoPtr pScrn);
 extern const OptionInfoRec * SISAvailableOptions(int chipid, int busid);
 extern void  SiSSetup(ScrnInfoPtr pScrn);
@@ -638,4 +675,36 @@ extern Bool  SISDGAInit(ScreenPtr pScreen);
 extern void  SISInitVideo(ScreenPtr pScreen);
 extern void  SIS6326InitVideo(ScreenPtr pScreen);
 
+extern void  SiS_SetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVlumabandwidthsvideo(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVlumaflickerfilter(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVchromabandwidth(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVchromaflickerfilter(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVcvbscolor(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVtextenhance(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetCHTVcontrast(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSISTVedgeenhance(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSISTVantiflicker(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSISTVsaturation(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSIS6326TVantiflicker(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSIS6326TVenableyfilter(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSIS6326TVyfilterstrong(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val);
+extern int   SiS_GetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVlumabandwidthsvideo(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVlumaflickerfilter(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVchromabandwidth(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVchromaflickerfilter(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVcvbscolor(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVtextenhance(ScrnInfoPtr pScrn);
+extern int   SiS_GetCHTVcontrast(ScrnInfoPtr pScrn);
+extern int   SiS_GetSISTVedgeenhance(ScrnInfoPtr pScrn);
+extern int   SiS_GetSISTVantiflicker(ScrnInfoPtr pScrn);
+extern int   SiS_GetSISTVsaturation(ScrnInfoPtr pScrn);
+extern int   SiS_GetSIS6326TVantiflicker(ScrnInfoPtr pScrn);
+extern int   SiS_GetSIS6326TVenableyfilter(ScrnInfoPtr pScrn);
+extern int   SiS_GetSIS6326TVyfilterstrong(ScrnInfoPtr pScrn);
+extern int   SiS_GetTVxposoffset(ScrnInfoPtr pScrn);
+extern int   SiS_GetTVyposoffset(ScrnInfoPtr pScrn);
 #endif

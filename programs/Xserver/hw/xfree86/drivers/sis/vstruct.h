@@ -392,6 +392,10 @@ typedef struct _SiS_Private
 	const SiS_LVDSDataStruct  *SiS_CHTVONTSCData;
 	const SiS_LVDSDataStruct  *SiS_CHTVUPALData;
 	const SiS_LVDSDataStruct  *SiS_CHTVOPALData;
+	const SiS_LVDSDataStruct  *SiS_CHTVUPALMData;
+	const SiS_LVDSDataStruct  *SiS_CHTVOPALMData;
+	const SiS_LVDSDataStruct  *SiS_CHTVUPALNData;
+	const SiS_LVDSDataStruct  *SiS_CHTVOPALNData;
 	const SiS_LVDSDataStruct  *SiS_CHTVSOPALData;
 	const SiS_LVDSDesStruct  *SiS_PanelType00_1;
 	const SiS_LVDSDesStruct  *SiS_PanelType01_1;
@@ -520,12 +524,45 @@ typedef struct _SiS_Private
 	const SiS_CHTVRegDataStruct *SiS_CHTVReg_ONTSC;
 	const SiS_CHTVRegDataStruct *SiS_CHTVReg_UPAL;
 	const SiS_CHTVRegDataStruct *SiS_CHTVReg_OPAL;
+	const SiS_CHTVRegDataStruct *SiS_CHTVReg_UPALM;
+	const SiS_CHTVRegDataStruct *SiS_CHTVReg_OPALM;
+	const SiS_CHTVRegDataStruct *SiS_CHTVReg_UPALN;
+	const SiS_CHTVRegDataStruct *SiS_CHTVReg_OPALN;
 	const SiS_CHTVRegDataStruct *SiS_CHTVReg_SOPAL;
 	const UCHAR *SiS_CHTVVCLKUNTSC;
 	const UCHAR *SiS_CHTVVCLKONTSC;
 	const UCHAR *SiS_CHTVVCLKUPAL;
 	const UCHAR *SiS_CHTVVCLKOPAL;
+	const UCHAR *SiS_CHTVVCLKUPALM;
+	const UCHAR *SiS_CHTVVCLKOPALM;
+	const UCHAR *SiS_CHTVVCLKUPALN;
+	const UCHAR *SiS_CHTVVCLKOPALN;
 	const UCHAR *SiS_CHTVVCLKSOPAL;
+	
+	BOOLEAN UseCustomMode;
+	BOOLEAN CRT1UsesCustomMode;
+	USHORT  CHDisplay;
+	USHORT  CHSyncStart;
+	USHORT  CHSyncEnd;
+	USHORT  CHTotal;
+	USHORT  CHBlankStart;
+	USHORT  CHBlankEnd;
+	USHORT  CVDisplay;
+	USHORT  CVSyncStart;
+	USHORT  CVSyncEnd;
+	USHORT  CVTotal;
+	USHORT  CVBlankStart;
+	USHORT  CVBlankEnd;
+	ULONG   CDClock;
+	ULONG   CFlags;   
+	UCHAR   CCRT1CRTC[17];
+	UCHAR   CSR2B;
+	UCHAR   CSR2C;
+	USHORT  CSRClock;
+	USHORT  CModeFlag;
+	USHORT  CInfoFlag;
+	BOOLEAN SiS_CHPALM;
+	BOOLEAN SiS_CHPALN;
 } SiS_Private;
 
 #endif

@@ -29,6 +29,8 @@
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
+#include "xf86str.h"
+#include "xf86Cursor.h"
 
 #include "sis.h"
 
@@ -74,7 +76,12 @@ typedef enum {
     OPTION_TVYPOSOFFSET,
     OPTION_SIS6326ANTIFLICKER,
     OPTION_SIS6326ENABLEYFILTER,
-    OPTION_SIS6326YFILTERSTRONG
+    OPTION_SIS6326YFILTERSTRONG,
+    OPTION_CHTVTYPE,
+    OPTION_USERGBCURSOR,
+    OPTION_USERGBCURSORBLEND,
+    OPTION_USERGBCURSORBLENDTH,
+    OPTION_RESTOREBYSET
 } SISOpts;
 
 static const OptionInfoRec SISOptions[] = {
@@ -102,6 +109,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_USEOEM, 		"UseOEMData",		  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_SBIOSN,            "BIOSFile",               OPTV_STRING,    {0}, FALSE },
     { OPTION_NOYV12, 		"NoYV12",		  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_CHTVTYPE,		"CHTVType",	          OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CHTVOVERSCAN,	"CHTVOverscan",	          OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CHTVSOVERSCAN,	"CHTVSuperOverscan",      OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_CHTVLUMABANDWIDTHCVBS,	"CHTVLumaBandwidthCVBS",  OPTV_INTEGER,   {0}, -1    },
@@ -120,6 +128,10 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_SIS6326ANTIFLICKER,	"SIS6326TVAntiFlicker",   OPTV_STRING,    {0}, FALSE  },
     { OPTION_SIS6326ENABLEYFILTER,	"SIS6326TVEnableYFilter", OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_SIS6326YFILTERSTRONG,	"SIS6326TVYFilterStrong", OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_USERGBCURSOR, 	"UseColorHWCursor",	  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_USERGBCURSORBLEND,	"ColorHWCursorBlending",  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_USERGBCURSORBLENDTH,	"ColorHWCursorBlendThreshold", 	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_RESTOREBYSET,	"RestoreBySetMode", 	  OPTV_BOOLEAN,   {0}, -1    },
     { -1,                       NULL,                     OPTV_NONE,      {0}, FALSE }
 };
 
@@ -178,9 +190,22 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->sis6326antiflicker = -1;	/* TW: SiS6326 TV settings */
     pSiS->sis6326enableyfilter = -1;
     pSiS->sis6326yfilterstrong = -1;
-    pSiS->tvxpos = 0;			/* TW: Some day hopefully general TV settings (Chrontel, 6326 only now) */
+    pSiS->tvxpos = 0;			/* TW: Some day hopefully general TV settings */
     pSiS->tvypos = 0;
     pSiS->NonDefaultPAL = -1;
+    pSiS->chtvtype = -1;
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)    
+    pSiS->OptUseColorCursor = 0;
+#else
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+    	pSiS->OptUseColorCursor = 0;
+	pSiS->OptUseColorCursorBlend = 1;
+	pSiS->OptColorCursorBlendThreshold = 0x37000000;
+    } else if(pSiS->VGAEngine == SIS_315_VGA) {
+    	pSiS->OptUseColorCursor = 1;
+    }
+#endif    
+    pSiS->restorebyset = 0;
 
     if(pSiS->Chipset == PCI_CHIP_SIS530) {
     	 /* TW: TQ still broken on 530/620? */
@@ -195,9 +220,57 @@ SiSOptions(ScrnInfoPtr pScrn)
     if(xf86ReturnOptValBool(pSiS->Options, OPTION_SW_CURSOR, FALSE)) {
         from = X_CONFIG;
         pSiS->HWCursor = FALSE;
+	pSiS->OptUseColorCursor = 0;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
                                 pSiS->HWCursor ? "HW" : "SW");
+				
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
+#ifdef ARGB_CURSOR
+#ifdef SIS_ARGB_CURSOR		
+    if((pSiS->HWCursor) && ((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA))) {
+       from = X_DEFAULT;
+       if(xf86GetOptValBool(pSiS->Options, OPTION_USERGBCURSOR, &pSiS->OptUseColorCursor)) {
+    	   from = X_CONFIG;
+       }
+       xf86DrvMsg(pScrn->scrnIndex, from, "Color HW cursor is %s\n",
+                    pSiS->OptUseColorCursor ? "enabled" : "disabled");
+		    
+       if(pSiS->VGAEngine == SIS_300_VGA) {
+          from = X_DEFAULT;
+          if(xf86GetOptValBool(pSiS->Options, OPTION_USERGBCURSORBLEND, &pSiS->OptUseColorCursorBlend)) {
+    	     from = X_CONFIG;
+          }
+          if(pSiS->OptUseColorCursor) {
+             xf86DrvMsg(pScrn->scrnIndex, from,
+	   	"HW cursor color blending emulation is %s\n",
+		(pSiS->OptUseColorCursorBlend) ? "enabled" : "disabled");
+	  }
+	  { 
+	  int temp;
+	  from = X_DEFAULT;
+	  if(xf86GetOptValInteger(pSiS->Options, OPTION_USERGBCURSORBLENDTH, &temp)) {
+	     if((temp >= 0) && (temp <= 255)) {
+	        from = X_CONFIG;
+		pSiS->OptColorCursorBlendThreshold = (temp << 24);
+	     } else {
+	        temp = pSiS->OptColorCursorBlendThreshold >> 24;
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Illegal color HW cursor blending threshold, valid range 0-255\n");
+	     }
+	  }
+	  if(pSiS->OptUseColorCursor) {
+	     if(pSiS->OptUseColorCursorBlend) {
+	        xf86DrvMsg(pScrn->scrnIndex, from,
+	          "HW cursor color blending emulation threshold is %d\n", temp);
+ 	     }
+	  }
+	  }
+       }
+    }
+#endif
+#endif
+#endif
 
     /* Accel */
     if(xf86ReturnOptValBool(pSiS->Options, OPTION_NOACCEL, FALSE)) {
@@ -265,8 +338,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->ForceTVType = -1;
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
       strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE);
-      if (strptr != NULL)
-      {
+      if(strptr != NULL) {
         if((!strcmp(strptr,"TV")) || (!strcmp(strptr,"tv")))
             pSiS->ForceCRT2Type = CRT2_TV;
  	else if((!strcmp(strptr,"SVIDEO")) || (!strcmp(strptr,"svideo"))) {
@@ -286,14 +358,30 @@ SiSOptions(ScrnInfoPtr pScrn)
             pSiS->ForceCRT2Type = 0;
 	else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	    	"\"%s\" is not a valid value for Option \"ForceCRT2Type\"}n", strptr);
+	    	"\"%s\" is not a valid parameter for Option \"ForceCRT2Type\"\n", strptr);
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	        "Valid options are \"LCD\", \"TV\", \"SVIDEO\", \"COMPOSITE\", \"SCART\", \"VGA\" or \"NONE\"\n");
+	        "Valid parameters are \"LCD\", \"TV\", \"SVIDEO\", \"COMPOSITE\", \"SCART\", \"VGA\" or \"NONE\"\n");
 	}
 
         if(pSiS->ForceCRT2Type != CRT2_DEFAULT)
             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                     "CRT2 type shall be %s\n", strptr);
+      }
+      strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CHTVTYPE);
+      if(strptr != NULL) {
+        if((!strcmp(strptr,"SCART")) || (!strcmp(strptr,"scart")))
+            pSiS->chtvtype = 1;
+ 	else if((!strcmp(strptr,"HDTV")) || (!strcmp(strptr,"hdtv")))
+	    pSiS->chtvtype = 0;
+	else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    	"\"%s\" is not a valid parameter for Option \"CHTVType\"\n", strptr);
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	        "Valid parameters are \"SCART\" or \"HDTV\"\n");
+	}
+        if(pSiS->chtvtype != -1)
+            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                    "Chrontel TV type shall be %s\n", strptr);
       }
     }
 
@@ -330,12 +418,25 @@ SiSOptions(ScrnInfoPtr pScrn)
                     "Rotating screen counter clockwise (acceleration and Xv disabled)\n");
         } else {
             xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-                    "\"%s\" is not a valid value for Option \"Rotate\"\n", strptr);
+                    "\"%s\" is not a valid parameter for Option \"Rotate\"\n", strptr);
             xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-                    "Valid options are \"CW\" or \"CCW\"\n");
+                    "Valid parameters are \"CW\" or \"CCW\"\n");
         }
     }
-
+    
+    /* RestoreBySetMode */
+    /* TW: Set this to force the driver to set the old mode instead of restoring
+     *     the register contents. This can be used to overcome problems with
+     *     LCD panels and video bridges.
+     */
+    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+       Bool val;
+       if(xf86GetOptValBool(pSiS->Options, OPTION_RESTOREBYSET, &val)) {
+          if(val) pSiS->restorebyset = TRUE;
+	  else    pSiS->restorebyset = FALSE;
+       }
+    }
+    
     /* NOXvideo:
      * Set this to TRUE to disable Xv hardware video acceleration
      */
@@ -489,14 +590,24 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     pSiS->OptTVStand = 0;
 	  else {
 	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	     	"\"%s\" is not a valid value for Option \"TVStandard\"\n", strptr);
+	     	"\"%s\" is not a valid parameter for Option \"TVStandard\"\n", strptr);
              xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	        "Valid options are \"PAL\", \"PALM\", \"PALN\" or \"NTSC\"\n");
 	  }
 
-	  if(pSiS->OptTVStand != -1)
-	      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Standard shall be %s\n",
-		       pSiS->OptTVStand ? "PAL":"NTSC");
+	  if(pSiS->OptTVStand != -1) {
+	     if(pSiS->Chipset == PCI_CHIP_SIS6326) {
+	         pSiS->NonDefaultPAL = -1;
+	         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Standard shall be %s\n",
+		       pSiS->OptTVStand ? "PAL" : "NTSC");
+	     } else {
+	         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Standard shall be %s\n",
+		       (pSiS->OptTVStand ? 
+		          ( (pSiS->NonDefaultPAL == -1) ? "PAL" : 
+			      ((pSiS->NonDefaultPAL) ? "PALM" : "PALN") )
+				           : "NTSC"));
+	     }
+	  }
         }
     }
 
@@ -632,9 +743,9 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  else {
 	     pSiS->sis6326antiflicker = -1;
 	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	     	"\"%s\" is not a valid value for Option \"SIS6326TVAntiFlicker\"\n", strptr);
+	     	"\"%s\" is not a valid parameter for Option \"SIS6326TVAntiFlicker\"\n", strptr);
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	        "Valid options are \"OFF\", \"LOW\", \"MED\", \"HIGH\" or \"ADAPTIVE\"\n");
+	        "Valid parameters are \"OFF\", \"LOW\", \"MED\", \"HIGH\" or \"ADAPTIVE\"\n");
 	  }
 	}
 	xf86GetOptValBool(pSiS->Options, OPTION_SIS6326ENABLEYFILTER,

@@ -257,14 +257,42 @@ sis300Setup(ScrnInfoPtr pScrn)
                                     100, 100, 100, 100};
     unsigned int    config;
     unsigned char   temp;
+    int		    cpubuswidth;
 
     pSiS->MemClock = SiSMclk(pSiS);
 
     inSISIDXREG(SISSR, 0x14, config);
     pScrn->videoRam = ((config & 0x3F) + 1) * 1024;
-    pSiS->BusWidth = bus[config >> 6];
-    if(pSiS->Chipset == PCI_CHIP_SIS630) {
-        /* TW: Terrible hack, but some 630 BIOS set SR14 incorrectly */
+    cpubuswidth = bus[config >> 6];
+    
+    /* TW: What we need here is the GPU-To-VRAM bus width. SR14
+     * only tells us the CPU-To-VRAM bus width, which is not
+     * relevant for refresh rate calculations!
+     * The GPU-To-VRAM bus width seems to be 64bit in all
+     * integrated variants of 300 series GPUs, 128 on the 300.
+     * (SR14 is set by the BIOS by storing 32bit values to 
+     * video RAM and comparing this values. This makes it
+     * clear that SR14 only gives information on the CPU-To-VRAM
+     * bus width; it does not inform us with what bus witdh the
+     * CRT controller can access the RAM. (This is especially
+     * of importance on eg 300/305 cards: These are PCI 32 bit
+     * compatible, but the CRT controller can access the RAM
+     * with a bus width of 64bit.)
+     */
+     
+    switch(pSiS->Chipset) {
+    case PCI_CHIP_SIS300:
+    	pSiS->BusWidth = 128;
+	break;
+    case PCI_CHIP_SIS540:
+    	pSiS->BusWidth = 64;
+	break;
+    case PCI_CHIP_SIS630:
+    	pSiS->BusWidth = 64;
+	break;
+    default:
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Internal error: sis300setup() called with invalid chipset!\n");
 	pSiS->BusWidth = 64;
     }
 
@@ -279,20 +307,25 @@ sis300Setup(ScrnInfoPtr pScrn)
             pSiS->MemClock/1000.0);
 
     if(pSiS->Chipset == PCI_CHIP_SIS300) {
-       inSISIDXREG(SISSR, 0x3A, temp);
-       xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-            "(Adapter assumes MCLK being %d Mhz)\n",
-	    adaptermclk300[(temp & 0x07)]);
-
+       if(pSiS->ChipRev > 0x13) {
+          inSISIDXREG(SISSR, 0x3A, temp);
+          xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+             "(Adapter assumes MCLK being %d Mhz)\n",
+	     adaptermclk300[(temp & 0x07)]);
+       }
     } else {
        inSISIDXREG(SISSR, 0x1A, temp);
        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
             "(Adapter assumes MCLK being %d Mhz)\n",
 	    adaptermclk[(temp & 0x07)]);
     }
-
+    
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-            "Detected DRAM bus width: %d bit\n",
+            "Detected CPU-To-DRAM bus width: %d bit\n",
+	    cpubuswidth);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+            "Assumed GPU-To-DRAM bus width: %d bit\n",
 	    pSiS->BusWidth);
 }
 

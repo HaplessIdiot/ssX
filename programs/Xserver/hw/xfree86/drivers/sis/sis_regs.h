@@ -28,17 +28,19 @@
  *           David Thomas <davtom@dream.org.uk>
  *
  *	     Thomas Winischhofer <thomas@winischhofer.net>
- *              - Many fixes and enhancements for 540/630/730 chipset,
+ *              - 310/325 series (315/550/650/651/740/M650) support
+ *		- (possibly incomplete) Xabre (SiS330) support
+ *              - new mode switching code for 300, 310/325 and 330 series
+ *              - many fixes for 300/540/630/730 chipsets,
+ *              - many fixes for 5597/5598, 6326 and 530/620 chipsets,
  *              - VESA mode switching (deprecated),
- *              - CRT2 and video bridge extended support,
- *              - dual head support
- *              - 310/325 series (315/550/650/740/M650) support
+ *              - extended CRT2/video bridge handling support,
+ *              - dual head support on 300, 310/325 and 330 series
  *              - 650/LVDS (up to 1400x1050), 650/Chrontel 701x support
- *              - 30xB/30xLV video bridge support
- *              - video overlay enhancements
- *              - Xv support for 6326, 530/620
- *              - entire new mode switching code for 300/310/325 series
- *              - everything marked with "TW"
+ *              - 30xB/30xLV/30xLVX video bridge support (300, 310/325, 330 series)
+ *              - Xv support for 5597/5598, 6326, 530/620 and 310/325 series
+ *              - video overlay enhancements for 300 series
+ *              - TV and hi-res support for the 6326
  *              - etc.
  */
 
@@ -197,7 +199,7 @@
 #define  Index_SR_Power_On_Trap2                0x39
 #define  Index_SR_Power_On_Trap3                0x3A
 
-/* video registers (630/730/315/650/740 only) */
+/* video registers (300/630/730/315/550/650/740 only) */
 #define  Index_VI_Passwd                        0x00
 
 /* Video overlay horizontal start/end, unit=screen pixels */

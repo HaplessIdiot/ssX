@@ -107,7 +107,7 @@ just place them in your Screen section. Example:
 .PP
 .BI "Modes \*qSIS1600x1200-60\*q \*qSIS1280x1024x75\*q \*q1024x768\*q ...
 .PP
-1280x1024 is only available at 8 and 16bpp. 1600x1200 is available
+1280x1024 is only available at 8, 15 and 16bpp. 1600x1200 is available
 at 8bpp only.
 .PP
 TV support for the 6326
@@ -127,9 +127,11 @@ Enable or disable TurboQueue mode.  Default: off for SIS530/620, on for
 the others
 .TP
 .BI "Option \*qFastVram\*q \*q" boolean \*q
-Enable or disable FastVram mode.  This sets the video RAM timing to
-only one cycle per read/write operation instead of two cycles.
-Default: on.
+Enable or disable FastVram mode.  Enabling this sets the video RAM timing 
+to only one cycle per read operation instead of two cycles. Disabling
+this will set 2 cycles for read and write operations. Leaving this
+option out uses the default.
+Default: off for read, on for write.
 .TP
 .BI "Option \*qNoHostBus\*q \*q" boolean \*q
 (SiS5597/5598 only). Disable CPU-to-VGA host bus support. This
@@ -142,8 +144,8 @@ Disable XV (XVideo) extension support. Default: XVideo is on.
 (6326 only) Possible parameters are
 .B PAL
 or
-.B NTSC
-. The default is set by a jumper on the card.
+.B NTSC.
+The default is set by a jumper on the card.
 .TP
 .BI "Option \*qTVXPosOffset\*q \*q" integer \*q
 (6326 only) This option allows horizontal relocation the TV output.
@@ -300,15 +302,15 @@ LCD dependent information. If the folks at SiS some day
 decide to change the location of this data inside the
 BIOS image, the display might not be initialized correctly.
 In order to prevent this, set this option's parameter to
-.B false
-. Default: ROM data is used
+.B false.
+Default: ROM data is used
 .TP
 .BI "Option \*qTVStandard\*q \*q" string \*q
 Force the TV standard to either
 .B PAL
 or
-.B NTSC
-. On some machines with 630, 730 or 650/740,
+.B NTSC.
+On some machines with 630, 730 or 650/740,
 .B PALM
 and
 .B PALN

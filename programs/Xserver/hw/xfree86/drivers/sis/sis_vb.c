@@ -215,7 +215,8 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 void SISTVPreInit(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    unsigned char SR16, SR17, SR38, CR32, CR79;
+    unsigned char SR16, SR17, SR38, CR32, CR38=0, CR79;
+    int temp = 0;
 
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE))
         return;
@@ -224,6 +225,17 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     inSISIDXREG(SISSR, 0x17, SR17);
     inSISIDXREG(SISSR, 0x16, SR16);
     inSISIDXREG(SISSR, 0x38, SR38);
+    switch(pSiS->VGAEngine) {
+    case SIS_300_VGA: 
+       if(pSiS->Chipset != PCI_CHIP_SIS300) temp = 0x35;
+       break;
+    case SIS_315_VGA:
+       temp = 0x38;
+       break;
+    }
+    if(temp) {
+       inSISIDXREG(SISCR, temp, CR38);
+    }
 
 #ifdef TWDEBUG
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "(vb.c: SR17=%02x CR32=%02x)\n", SR17, CR32);
@@ -262,14 +274,20 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
                 pSiS->VBFlags |= TV_AVIDEO;
         else if(CR32 & 0x40)
                 pSiS->VBFlags |= (TV_SVIDEO | TV_HIVISION);
-
+	else if((CR38 & 0x04) && (pSiS->VBFlags & VB_CHRONTEL)) 
+		pSiS->VBFlags |= (TV_CHSCART | TV_PAL);
+	else if((CR38 & 0x08) && (pSiS->VBFlags & VB_CHRONTEL))
+		pSiS->VBFlags |= (TV_CHHDTV | TV_NTSC);
+	        
 	if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO | TV_HIVISION)) {
 	   if( (pSiS->Chipset == PCI_CHIP_SIS550) ||   /* TW: ? */
 	       (pSiS->Chipset == PCI_CHIP_SIS650) ) {
 	      inSISIDXREG(SISCR, 0x79, CR79);
-	      if(CR79 & 0x20)
+	      if(CR79 & 0x20) {
                   pSiS->VBFlags |= TV_PAL;
- 	      else
+		  if(CR38 & 0x40)      pSiS->VBFlags |= TV_PALM;
+		  else if(CR38 & 0x80) pSiS->VBFlags |= TV_PALN;
+ 	      } else
 	          pSiS->VBFlags |= TV_NTSC;
 	   } else if(pSiS->VGAEngine == SIS_300_VGA) {
 	      /* TW: Should be SR38 here as well, but this
@@ -280,12 +298,23 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
               else
 	          pSiS->VBFlags |= TV_NTSC;
 	   } else {	/* 315, 330 */
-	      if(SR38 & 0x01)
+	      if(SR38 & 0x01) {
                   pSiS->VBFlags |= TV_PAL;
- 	      else
+		  if(CR38 & 0x40)      pSiS->VBFlags |= TV_PALM;
+		  else if(CR38 & 0x80) pSiS->VBFlags |= TV_PALN;
+ 	      } else
 	          pSiS->VBFlags |= TV_NTSC;
 	   }
 	}
+    }
+    if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO | TV_HIVISION | TV_CHSCART | TV_CHHDTV)) {
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			"%sTV standard %s\n",
+			(pSiS->VBFlags & (TV_CHSCART | TV_CHHDTV)) ? "Using " : "Detected default ",
+			(pSiS->VBFlags & TV_NTSC) ? 
+			   ((pSiS->VBFlags & TV_CHHDTV) ? "480i HDTV" : "NTSC") :
+			   ((pSiS->VBFlags & TV_PALM) ? "PALM" :
+			   	((pSiS->VBFlags & TV_PALN) ? "PALN" : "PAL")));
     }
 }
 
