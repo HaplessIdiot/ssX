@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.3 1995/07/12 15:41:28 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -26,25 +26,11 @@
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4)
-#ifdef sun
-#define __EXTENSIONS__
-#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
-#ifdef NCR
-#define __STDC
 #include <sys/sysi86.h>
-#undef __STDC
-#else
-#include <sys/sysi86.h>
-#endif
-#ifndef sun
 #include <sys/seg.h>
-#endif
 #include <sys/v86.h>
-#ifdef sun
-#include <sys/psw.h>
-#endif
 #endif
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
 #include <sys/file.h>
@@ -58,17 +44,7 @@
 #define GCCUSESGAS
 #endif
 #if defined(SCO)
-#  include <sys/console.h>
-#  include <sys/param.h>
-#  include <sys/immu.h>
-#  include <sys/region.h>
-#  include <sys/proc.h>
-#  include <sys/tss.h>
-#  include <sys/sysi86.h>
-#  include <sys/v86.h>
-#endif
-#if defined(Lynx_22)
-#  define GCCUSESGAS
+#include <sys/console.h>
 #endif
 
 
@@ -481,19 +457,4 @@ xf86DisableIOPorts(int dummy)
 #if defined(MACH386)
     close(io_fd);
 #endif
-}
-
-/* These are to allow libxf86_hw.a use Xalloc(), Xfree() */
-
-unsigned long *
-Xalloc(unsigned long amount)
-{
-	return (unsigned long *)malloc(amount);
-}
-
-void
-Xfree(void *ptr)
-{
-	free(ptr);
-	return;
 }

@@ -22,7 +22,7 @@
  */
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_init.c,v 3.0 1995/06/02 10:18:03 dawes Exp $ */
+/* $XFree86: $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -40,7 +40,7 @@ static int VTnum = -1;
 void xf86OpenConsole()
 {
     struct vt_mode VT;
-    char vtname1[11];
+    char vtname1[10];
     int i, fd, pgrp;
 
     if (serverGeneration == 1) 

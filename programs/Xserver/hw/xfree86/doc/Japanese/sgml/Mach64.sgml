@@ -158,6 +158,9 @@ Mach64 X サーバー用に &dquot;Device&dquot; 節でいくつかのオプションをサ
 
 <p>
 
+<verb>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.5 1995/07/21 14:40:46 dawes Exp $
+</verb>
 <hrule>
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,
 v 3.5 1995/07/21 14:40:46   を、岡本  一幸 
@@ -170,7 +173,7 @@ name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私
 に、電子メールで送って下さい。
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/Mach64.sgml,v 3.0 1995/10/22 10:40:51 dawes Exp $
+$XFree86$
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;

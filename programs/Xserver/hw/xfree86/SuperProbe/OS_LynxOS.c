@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.0 1995/06/02 10:08:44 dawes Exp $ */
+/* $XFree86: $ */
 
 #include "Probe.h"
 
@@ -83,7 +83,7 @@ Byte *MapVGA()
 #define SMEM_NAME	"SuperProbe-VGA"
 	Byte *base;
 
-	base = (Byte *) smem_create(SMEM_NAME, (char *)0xA0000,
+	base = smem_create(SMEM_NAME, (char *)0xA0000,
 		 0x10000, SM_READ|SM_WRITE);
 	if ((long)base == -1)
 	{
@@ -101,7 +101,7 @@ Byte *MapVGA()
 void UnMapVGA(base)
 Byte *base;
 {
-	smem_create(NULL, (char *)base, 0, SM_DETACH);
+	smem_create(NULL, base, 0, SM_DETACH);
 	smem_remove(SMEM_NAME);
 	return;
 }

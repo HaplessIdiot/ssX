@@ -22,8 +22,6 @@
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
 
-/* $XFree86$ */
-
 /*
  * Trident Chipset Definitions
  */

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.0 1995/06/02 10:18:06 dawes Exp $ */
+/* $XFree86: $ */
 
 #include "X.h"
 #include "input.h"
@@ -92,12 +92,15 @@ unsigned long Size;
 {
 	int	i;
 
+	ErrorF("xf86UnMapVidMem: Screen %d Region %d Base %lx Size %lx\n",
+		ScreenNum, Region, Base, Size);
 	for (i = 0; i < MAX_SMEMS; i++)
 	{
-		if (*smems[i].name && smems[i].ptr == Base && smems[i].Size == Size)
+		if (*smems[i].name && smems[i].Base == Base && smems[i].Size == Size)
 		{
 			int x;
 			x = (int) smem_create(smems[i].name, smems[i].ptr, Size, SM_DETACH);
+			ErrorF("xf86UnMapVidMem: %s, %08lx result %x\n", smems[i].name, smems[i].ptr, x);
 			smem_remove(smems[i].name);
 			*smems[i].name = '\0';
 			return;

@@ -5,13 +5,14 @@
  * Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.1 1995/07/01 10:48:59 dawes Exp $ */
+/* $XFree86$ */
 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
 
 
+#define DEBUG
 #define S3_SERVER
 #include "IBMRGB.h" 
 
@@ -24,7 +25,7 @@ extern int vgaCRReg;
  * RGB52x registers only.
  */
 
-#if NeedFunctionPrototypes
+#ifdef __STDC__
 void s3OutIBMRGBIndReg(unsigned char reg, unsigned char mask, unsigned char data)
 #else
 void s3OutIBMRGBIndReg(reg, mask, data)
@@ -49,7 +50,7 @@ unsigned char data;
    outb(vgaCRReg, tmp);
 }
 
-#if NeedFunctionPrototypes
+#ifdef __STDC__
 unsigned char s3InIBMRGBIndReg(unsigned char reg)
 #else
 unsigned char s3InIBMRGBIndReg(reg)
@@ -71,7 +72,7 @@ volatile   unsigned char tmp, ret;
    return(ret);
 }
 
-#if NeedFunctionPrototypes
+#ifdef __STDC__
 static void
 s3ProgramIBMRGBClock(int clk, unsigned char m, unsigned char n, 
 		     unsigned char df)
@@ -95,7 +96,7 @@ unsigned char df;
    s3OutIBMRGBIndReg(IBMRGB_pll_ctrl1, 0xf8, 3);
 }
 
-#if NeedFunctionPrototypes
+#ifdef __STDC__
 void IBMRGBSetClock(long freq, int clk, long dacspeed, long fref)
 #else
 void

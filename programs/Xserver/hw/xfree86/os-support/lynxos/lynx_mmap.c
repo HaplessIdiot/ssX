@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_mmap.c,v 3.0 1995/06/02 10:18:05 dawes Exp $ */
+/* $XFree86: $ */
 
 #include "X.h"
 #include "input.h"
@@ -45,7 +45,7 @@ int Len;
 	int mlen;
 
 	mlen = (Offset + Len + 4095) & ~4096;
-	p = smem_create("BIOS-probe", (char *)Base, mlen, SM_READ);
+	p = smem_create("BIOS-probe", Base, mlen, SM_READ);
 	if (p == NULL)
 	{
 		ErrorF("xf86ReadBios: Failed to smem_create Base %x len %x %s \n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.2 1995/11/12 09:52:55 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -21,8 +21,6 @@
  * SOFTWARE.
  * 
  * Written by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
- * Modified for Diamond Stealth64 Graphics 2001 by Leon Bottou
- *   (bottou@laforia.ibp.fr).
  */
 
 
@@ -39,10 +37,11 @@
  * This initial driver supports 8bpp only, the default max dotclock
  * is 80 MHz.
  *
- * The ARK chips use an external clock generator and RAMDAC. The
- * driver supports either 16 fixed external clock frequencies or the
- * ICS5342 programmable clock chip. Cards that have an unsupported
- * clock device will need specific support for that clock device,
+ * The ARK chips use an external clock generator and RAMDAC. There
+ * are 16 external clock frequencies, and for cards that are set up with
+ * a set of useful fixed clocks, the driver should provide fairly
+ * complete SVGA functionality. Cards that have a different type
+ * of clock device will need specific support for that clock device,
  * although the standard VGA 25 MHz clock will be available yielding
  * 640x480x256.
  *
@@ -55,7 +54,7 @@
  */
 
 /*
- * Saved registers:
+ * Used registers:
  *
  * VGA Misc Output holds bits of 0-1 of the clock select index.
  * SR11 (Video Clock Select) bits 6-7 hold bits 2-3 of the clock
@@ -180,7 +179,6 @@ typedef struct {
 	/* RAMDAC registers. */
 	unsigned char DACCOMMAND;
 	unsigned char STG17XX[3];	/* In addition to DACCOMMAND. */
-	unsigned char GENDAC[6];	/* For ICS5342 GENDAC */
 } vgaArkRec, *vgaArkPtr;
 
 
@@ -197,6 +195,8 @@ static Bool	ArkValidMode();
 static void *   ArkSave();
 static void     ArkRestore();
 static void     ArkAdjust();
+static void     ArkSaveScreen();
+static void     ArkGetMode();
 static void	ArkFbInit();
 /*
  * These are the bank select functions.  There are defined in stub_bank.s
@@ -222,7 +222,7 @@ vgaVideoChipRec ARK = {
 	ArkSave,
 	ArkRestore,
 	ArkAdjust,
-	vgaHWSaveScreen,
+	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
 	ArkFbInit,
 	ArkSetRead,
@@ -356,7 +356,6 @@ static SymTabRec chipsets[] = {
 #define ATT498	1
 #define ZOOMDAC 2
 #define STG1700 3
-#define ICS5342 4
 
 static SymTabRec ramdacs[] = {
 	{ ATT490,	"att20c490" },	/* Industry-standard 8-bit DAC */
@@ -367,7 +366,6 @@ static SymTabRec ramdacs[] = {
 	{ ZOOMDAC,	"w30c516" },	/* IC Works ZoomDac */
 	{ ZOOMDAC,	"zoomdac" },
 	{ STG1700,	"stg1700" },
-	{ ICS5342,	"ics5342" },
 	{ -1,		"" },
 };
 
@@ -395,38 +393,6 @@ int n;
 		return chipsets[n].name;
 }
 
-
-/*
- * ICS5342Mode(PLLMode)
- * Sets ICS5342 in DAC or PLL mode
- */
-static void
-ICS5342Mode(PLLMode)
-Bool PLLMode;
-{
-	if (PLLMode)
-		modinx(0x3C4,0x1C,0x80,0x80);
-	else
-		modinx(0x3C4,0x1C,0x80,0x00);
-}
-
-
-/*
- * ICS5342Init(reg, freq)
- * Set programmable clock on ICS5342
- */
-static int
-ICS5342Init(reg, freq)
-vgaArkPtr reg;
-long freq;
-{
-	commonCalcClock(freq, 1, 100000, 250000, &(reg->GENDAC[3]),
-			&(reg->GENDAC[4]));
-	reg->std.MiscOutReg &= ~0xC;
-	reg->std.MiscOutReg |= 0x8;
-	reg->SR11 &= ~0xC0;
-	return(0);
-}
 
 /*
  * ArkClockSelect --
@@ -490,7 +456,6 @@ static Bool
 ArkProbe()
 {
 	int maxclock8bpp, maxclock16bpp, maxclock32bpp;
-	char *clockprobed = XCONFIG_GIVEN;
 
 	/*
 	 * Set up I/O ports to be used by this card.  Only do the second
@@ -604,10 +569,25 @@ ArkProbe()
 		arkBus = PCI;
 
 	/*
+	 * Again, if the user has specified the clock values in the XF86Config
+	 * file, we respect those choices.
+	 */
+  	if (!vga256InfoRec.clocks)
+    	{
+		/*
+		 * This utility function will probe for the clock values.
+		 * It is passed the number of supported clocks, and a
+		 * pointer to the clock-select function.
+		 */
+      		vgaGetClocks(16, ArkClockSelect);
+    	}
+
+	/*
 	 * Parse the specified RAMDAC and determine sane maximum
 	 * supported pixel clock limits. Unsupported depths will
 	 * be ruled out out by a max dot clock of 0.
 	 */
+	arkRamdac = xf86StringToToken(ramdacs, vga256InfoRec.ramdac);
 	maxclock8bpp = 0;
 	maxclock16bpp = 0;
 	maxclock32bpp = 0;
@@ -618,8 +598,6 @@ ArkProbe()
 		vga256InfoRec.dacSpeed = 80000;
 	switch (arkRamdac) {
 	case ATT490 :	/* Industry-standard 8-bit DAC. */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
 		maxclock8bpp = vga256InfoRec.dacSpeed;
 		maxclock16bpp = maxclock8bpp / 2;
 		break;
@@ -629,8 +607,6 @@ ArkProbe()
 		 * Trust the DAC speed rating for 8bpp (use RAMDAC
 		 * clock doubling for high clocks, 16-bit path).
 		 */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
 		maxclock8bpp = vga256InfoRec.dacSpeed;
 #else
@@ -653,8 +629,6 @@ ArkProbe()
 		 * IC Works ZoomDAC, used on Hercules Stingray 64
 		 * and Stingray Pro/V.
 		 */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
 		maxclock8bpp = vga256InfoRec.dacSpeed;
 #else
@@ -681,36 +655,8 @@ ArkProbe()
 		arkMultiplexingThreshold = 999999;
 #endif
 		break;
-	case ICS5342:
-		/* ICS5342 GENDAC used on Diamond Stealth64 Graphics 2001 */
-		if (vga256InfoRec.dacSpeed >= 135000)
-			vga256InfoRec.dacSpeed = 135000;
-		else if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 110000;	/* guess */
-#ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
-		maxclock8bpp = vga256InfoRec.dacSpeed;
-#else
-		maxclock8bpp = ARK_DEFAULT_MAX_RAW_CLOCK_IN_KHZ;
-#endif
-		if (arkChip == ARK1000PV) {
-			/* ARK1000PV, 8-bit path to RAMDAC. */
-			maxclock16bpp = vga256InfoRec.dacSpeed / 2;
-		} else {
-			/* ARK2000PV, 16-bit path to RAMDAC. */
-			maxclock16bpp = vga256InfoRec.dacSpeed; /* Not right */
-			maxclock32bpp = maxclock16bpp / 2;
-			arkDacPathWidth = 16;
-#ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
-			arkMultiplexingThreshold = maxclock8bpp / 2;
-#else
-			arkMultiplexingThreshold = 999999;
-#endif
-		}
-		break;
 	default :
 		/* Unknown DAC. Only allow 8pp at conservative rate. */
-		if (vga256InfoRec.dacSpeed <= 0)
-			vga256InfoRec.dacSpeed = 80000;
 		maxclock8bpp = ARK_DEFAULT_MAX_RAW_CLOCK_IN_KHZ;
 		break;
 	}
@@ -722,77 +668,13 @@ ArkProbe()
 			maxclock16bpp = 60000;
 	}
 	if (arkChip == ARK2000PV) {
-#ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
 		if (maxclock8bpp > 240000)
 			maxclock8bpp = 240000;
-#else
-		if (maxclock8bpp > 120000)
-			maxclock8bpp = 120000;
-#endif
 		if (maxclock16bpp > 120000)
 			maxclock16bpp = 120000;
 		if (maxclock32bpp > 60000)
 			maxclock32bpp = 60000;
 	}
-
-	if ((arkRamdac == ICS5342) &&
-	    !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
-	{
-		OFLG_SET(CLOCK_OPTION_PROGRAMABLE,
-			 &vga256InfoRec.clockOptions);
-		OFLG_SET(CLOCK_OPTION_ICS5342, &vga256InfoRec.clockOptions);
-		clockprobed = XCONFIG_PROBED;
-	}
-	if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
-		       &vga256InfoRec.clockOptions))
-	{
-		if (OFLG_ISSET(CLOCK_OPTION_ICS5342,
-			       &vga256InfoRec.clockOptions))
-		{
-			int m, n, mclk;
-
-			/* We can read MCLK from register 10 */
-			ICS5342Mode(TRUE);
-			outb(0x3C7, 10);
-			m = inb(0x3C9) & 0x7F;
-			n = inb(0x3C9) & 0x7F;
-			ICS5342Mode(FALSE);
-			mclk = ((1431818*(m+2)) / ((n&0x1f)+2) /
-				(1<<(n>>5)) + 50) / 100;
-			if (vga256InfoRec.s3MClk==0)
-				vga256InfoRec.s3MClk = mclk;
-			if (xf86Verbose)
-			{
-				ErrorF("%s %s: Using ICS5342 programmable"
-				       " clock (MCLK %1.3f MHz)\n",
-				       clockprobed, vga256InfoRec.name,
-				       mclk / 1000.0);
-			}
-		}
-		else
-		{
-			ErrorF("%s %s: Unsupported programmable clock chip.\n",
-			       XCONFIG_PROBED, vga256InfoRec.name);
-			ArkEnterLeave(LEAVE);
-			return(FALSE);
-		}
-	}
-	/*
-	 * Again, if the user has specified the clock values in the XF86Config
-	 * file, and a programmable clock is not being used, we respect
-	 * those choices.
-	 */
-	if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)
-	    && !vga256InfoRec.clocks)
-    	{
-		/*
-		 * This utility function will probe for the clock values.
-		 * It is passed the number of supported clocks, and a
-		 * pointer to the clock-select function.
-		 */
-      		vgaGetClocks(16, ArkClockSelect);
-    	}
-
 	/*
 	 * It would be nice to know the memory clock to adjust
 	 * the max clocks according to DRAM bandwidth. For now
@@ -810,7 +692,7 @@ ArkProbe()
 	          * to be taken up by screen refresh. Satisfies
 	          *	total bandwidth >= refresh bandwidth * 1.1
 	          */
-		bandwidth_limit = (DRAM_bandwidth * 100) / 110;
+		bandwidth_limit = (DRAM_bandwidth * 10) / 11;
 		if (maxclock8bpp > bandwidth_limit)
 			maxclock8bpp = bandwidth_limit;
 		if (maxclock16bpp > bandwidth_limit / 2)
@@ -863,7 +745,6 @@ ArkProbe()
 				vga256InfoRec.MemBase;
 		else
 			if (arkBus == PCI)
-				/* PCI: get pnp information */
 				ARK.ChipLinearBase =
 					(rdinx(0x3C4, 0x13) << 16) +
 					(rdinx(0x3C4, 0x14) << 24);
@@ -871,10 +752,6 @@ ArkProbe()
 				/* VESA local bus. */
 				/* Pray that 2048MB works. */
 				ARK.ChipLinearBase = 0x80000000;
-		/*
-		 * Set 16bpp and 32bpp information into the ARK chipset
-		 * structure only when linear mode is enabled.
-		 */
 		ARK.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 		if (maxclock16bpp > 0)
 			ARK.ChipHas16bpp = TRUE;
@@ -924,10 +801,9 @@ ArkFbInit()
     	 * due to a framebuffer code architecture issue.
     	 */
 	if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)
-	    && vgaBitsPerPixel != 8) {
+	&& vgaBitsPerPixel != 8) {
 		if (offscreen_available < 256)
-			ErrorF("%s %s: %s: Not enough off-screen video"
-				" memory for hardware cursor\n",
+			ErrorF("%s %s: %s: Not enough off-screen video memory for hardware cursor\n",
 				XCONFIG_PROBED, vga256InfoRec.name,
 				vga256InfoRec.chipset);
 		else {
@@ -1101,18 +977,6 @@ vgaArkPtr restore;
 		usleep(500);
 		xf86dactopel();
 	}
-	if (arkRamdac == ICS5342) {
-		ICS5342Mode(TRUE);
-		outb(0x3c6, restore->GENDAC[0]); /* Enhanced command register */
-		outb(0x3c8, 2);			 /* index to f2 reg */
-		outb(0x3c9, restore->GENDAC[3]); /* f2 PLL M divider */
-		outb(0x3c9, restore->GENDAC[4]); /* f2 PLL N1/N2 divider */
-		outb(0x3c8, 0x0e);		 /* index to PLL control */
-		outb(0x3c9, restore->GENDAC[5]); /* PLL control */
-		outb(0x3c8, restore->GENDAC[2]); /* PLL write index */
-		outb(0x3c7, restore->GENDAC[1]); /* PLL read index */
-		ICS5342Mode(FALSE);
-	}
 
 	/*
 	 * This function handles restoring the generic VGA registers.
@@ -1192,18 +1056,7 @@ vgaArkPtr save;
 		save->STG17XX[2] = inb(0x3C6);	/* PLL control. */
 		xf86dactopel();
 	}
-	if (arkRamdac == ICS5342) {
-		ICS5342Mode(TRUE);
-		save->GENDAC[0] = inb(0x3c6);	/* Enhanced command register */
-		save->GENDAC[2] = inb(0x3c8);	/* PLL write index */
-		save->GENDAC[1] = inb(0x3c7);	/* PLL read index */
-		outb(0x3c7, 2);			/* index to f2 reg */
-		save->GENDAC[3] = inb(0x3c9);	/* f2 PLL M divider */
-		save->GENDAC[4] = inb(0x3c9);	/* f2 PLL N1/N2 divider */
-		outb(0x3c7, 0x0e);		/* index to PLL control */
-		save->GENDAC[5] = inb(0x3c9);	/* PLL control */
-		ICS5342Mode(FALSE);
-	}
+
   	return ((void *) save);
 }
 
@@ -1225,7 +1078,6 @@ ArkInit(mode)
 DisplayModePtr mode;
 {
 	int multiplexing;
-	int dac16;
 
 	/* 
 	 * Determine if 8bpp clock doubling is to be used
@@ -1285,27 +1137,6 @@ DisplayModePtr mode;
 	 *
 	 */
 
-	/* Select 8 or 16-bit video output to RAMDAC on 2000PV. */
-	if (arkChip == ARK2000PV) {
-		new->CR46 = rdinx(vgaIOBase + 4, 0x46) & ~0x04;	/* 8-bit */
-		dac16 = 0;
-		if (multiplexing)
-			/* High resolution 8bpp with 16-bit DAC. */
-			dac16 = 1;
-		if (vga256InfoRec.bitsPerPixel == 16)
-			/* 16bpp at pixel rate. */
-			dac16 = 1;
-		/* Note: with an 8-bit DAC, 16bpp is Clock * 2. */
-		if (vga256InfoRec.bitsPerPixel == 32)
-			/* 32bpp at Clock * 2. */
-			dac16 = 1;
-		if (arkDacPathWidth == 8)
-			/* If an 8-bit DAC is used, forget it. */
-			dac16 = 0;
-		if (dac16)
-			new->CR46 |= 0x04; /* 16-bit */
-	}
-
 	/*
 	 * The ARK chips have a scale factor of 8 for the 
 	 * scanline offset. There is one extended bit in addition
@@ -1316,10 +1147,10 @@ DisplayModePtr mode;
 		int offset;
 		offset = (vga256InfoRec.virtualX *
 			vga256InfoRec.bitsPerPixel / 8)	>> 3;
-		/* Bits 0-7 are in generic register */
 		new->std.CRTC[0x13] = offset;
-		/* Bit 8 resides at CR41 bit 3. */
-		new->CR41 = (offset & 0x100) >> 5;
+		/* Bit 8 resides at CR40 bit 3. */
+		new->CR40 = rdinx(vgaIOBase, 0x40) & ~0x08;
+		new->CR40 |= (offset & 0x100) >> 5;
 	}
 
 	/* Set Giant Shift Register for SVGA mode and set COP pixel depth. */
@@ -1395,7 +1226,12 @@ DisplayModePtr mode;
 		new->CR40 = val;
 
 		/* Horizontal Overflow. */
-		val = new->CR41;	/* Initialized earlier */
+		val = rdinx(vgaIOBase + 4, 0x41);
+		val &= 0x0F;
+		/*
+		 * Bit 3 (bit 9 of the scanline offset) was
+		 * initialized earlier.
+		 */
 		if ((mode->CrtcHTotal / 8 - 5) & 0x100)
 			val |= 0x80;
 		if ((mode->CrtcHDisplay / 8 - 1) & 0x100)
@@ -1406,7 +1242,7 @@ DisplayModePtr mode;
 		/* HRetraceStart is equal to HSyncStart. */
 		if ((mode->CrtcHSyncStart / 8) & 0x100)
 			val |= 0x10;
-		new->CR41 |= val;
+		new->CR41 = val;
 	}
 	/* Set VGA Enhancement register. */
 	/* No interlace, standard character clock. */
@@ -1442,6 +1278,28 @@ DisplayModePtr mode;
 		new->SR18 = val;
 	}
 
+	/* Select 8 or 16-bit video output to RAMDAC on 2000PV. */
+	if (arkChip == ARK2000PV) {
+		int dac16;
+		new->CR46 = rdinx(vgaIOBase + 4, 0x46) & ~0x04;	/* 8-bit */
+		dac16 = 0;
+		if (multiplexing)
+			/* High resolution 8bpp with 16-bit DAC. */
+			dac16 = 1;
+		if (vga256InfoRec.bitsPerPixel == 16)
+			/* 16bpp at pixel rate. */
+			dac16 = 1;
+		/* Note: with an 8-bit DAC, 16bpp is Clock * 2. */
+		if (vga256InfoRec.bitsPerPixel == 32)
+			/* 32bpp at Clock * 2. */
+			dac16 = 1;
+		if (arkDacPathWidth == 8)
+			/* If an 8-bit DAC is used, forget it. */
+			dac16 = 0;
+		if (dac16)
+			new->CR46 |= 0x04; /* 16-bit */
+	}
+
 	/*
 	 * A special case - when using an external clock-setting program,
 	 * this function must not change bits associated with the clock
@@ -1452,21 +1310,12 @@ DisplayModePtr mode;
 	 */
 
 	if (new->std.NoClock >= 0) {
-		if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
-			      &vga256InfoRec.clockOptions)) {
-			if (OFLG_ISSET(CLOCK_OPTION_ICS5342,
-				       &vga256InfoRec.clockOptions)) {
-			    ICS5342Init(new,
-					vga256InfoRec.clock[new->std.NoClock]);
-			}
-		} else {
-			/* Program clock select. */
-			new->std.MiscOutReg &= ~0xC;
-			new->std.MiscOutReg |= (new->std.NoClock & 3) << 2;
-			/* The rest of SR11 was initialized earlier. */
-			new->SR11 &= ~0xC0;
-			new->SR11 |= (new->std.NoClock & 0xC) << 4;
-		}
+		/* Program clock select. */
+		new->std.MiscOutReg &= ~0xC;
+		new->std.MiscOutReg |= (new->std.NoClock & 3) << 2;
+		/* The rest of SR11 was initialized earlier. */
+		new->SR11 &= ~0xC0;
+		new->SR11 |= (new->std.NoClock & 0xC) << 4;
 	}
 
 	/* Set up the RAMDAC registers. */
@@ -1536,25 +1385,6 @@ DisplayModePtr mode;
 		/* Get rid of white border. */
 		new->std.Attribute[0x11] = 0x00;
 
-	if (arkRamdac == ICS5342) {
-		/* 8 bpp, 1clk/1pixel */
-		new->GENDAC[0] = new->DACCOMMAND = 0;
-		/* 8 bpp, 1clk/2pixel */
-		if (vgaBitsPerPixel==8 && multiplexing)
-			new->GENDAC[0] = new->DACCOMMAND = 0x10;
-		/* 16 bpp, 2clk/1pixel */
-		/* 16 bpp, 1clk/1pixel */
-		if (vgaBitsPerPixel == 16 && arkDacPathWidth == 16) {
-			if (xf86weight.green == 5)
-				new->GENDAC[0] = new->DACCOMMAND = 0x30;
-			else
-				new->GENDAC[0] = new->DACCOMMAND = 0x50;
-		}
-		/* 32 bpp, 2clk/1pixel */
-		if (vgaBitsPerPixel == 32 && arkDacPathWidth == 16)
-			new->GENDAC[0] = new->DACCOMMAND = 0x70;
-	}
-	
 	/*
 	 * Hardware cursor registers.
 	 * Generally the SVGA server will take care of enabling the
@@ -1590,15 +1420,8 @@ ArkAdjust(x, y)
 int x, y;
 {
 	int Base = ((y * vga256InfoRec.displayWidth + x)
-		* (vgaBitsPerPixel / 8));
+		* (vgaBitsPerPixel / 8)) >> 2;
 
-	/*
-	 * 64 bit memory access when 'ark2000pv' with 'memory>=2048'
-	 */
-	if (arkChip == ARK2000PV && vga256InfoRec.videoRam >= 2048)
-		Base >>= 3;
-	else
-		Base >>= 2;
 	/*
 	 * These are the generic starting address registers.
 	 */

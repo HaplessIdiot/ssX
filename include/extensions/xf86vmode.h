@@ -1,5 +1,4 @@
-/* $XConsortium: xf86vmode.h /main/2 1995/09/01 10:41:23 kaleb $ */
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.9 1995/12/02 05:03:03 dawes Exp $ */
+
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -31,40 +30,21 @@ from the Kaleb S. KEITHLEY
 */
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-#ifndef _XF86VIDMODE_H_
-#define _XF86VIDMODE_H_
+#ifndef _XVGAHELP_H_
+#define _XVGAHELP_H_
 
 #include <X11/Xfuncproto.h>
 
 #define X_VGAHelpQueryVersion		0
 #define X_VGAHelpGetModeLine		1
 #define X_VGAHelpModModeLine		2
-#define X_VGAHelpSwitchMode		3
-#define X_VGAHelpGetMonitor		4
-#define X_XF86VidModeLockModeSwitch	5
-#define X_XF86VidModeGetSaver		6
-#define X_XF86VidModeSetSaver		7
-#define X_XF86VidModeGetServerName	8
 
-#ifdef XF86VIDMODE_EVENTS
-#define XF86VidModeNotify		0
-#define XF86VidModeNumberEvents		(XF86VidModeNotify + 1)
+#define VGAHelpNumberEvents		0
 
-#define XF86VidModeNotifyMask		0x00000001
+#define BadClock			0
+#define VGAHelpNumberErrors		(BadClock + 1)
 
-#define XF86VidModeNonEvent		0
-#define XF86VidModeModeChange		1
-#else
-#define XF86VidModeNumberEvents		0
-#endif
-
-#define XF86VidModeBadClock		0
-#define XF86VidModeBadHTimings		1
-#define XF86VidModeBadVTimings		2
-#define XF86VidModeModeUnsuitable	3
-#define XF86VidModeNumberErrors		(XF86VidModeModeUnsuitable + 1)
-
-#ifndef _XF86VIDMODE_SERVER_
+#ifndef _XVGAHELP_SERVER_
 
 typedef struct {
     unsigned short	hdisplay;
@@ -76,45 +56,11 @@ typedef struct {
     unsigned short	vsyncend;
     unsigned short	vtotal;
     unsigned int	flags;
-    int			privsize;
-    INT32		*private;
-} XF86VidModeModeLine;
-
-typedef struct {
-    float		hi;
-    float		lo;
-} XF86VidModeSyncRange;
-
-typedef struct {
-    char*			vendor;
-    char*			model;
-    float			bandwidth;
-    unsigned char		nhsync;
-    XF86VidModeSyncRange*	hsync;
-    unsigned char		nvsync;
-    XF86VidModeSyncRange*	vsync;
-} XF86VidModeMonitor;
-    
-typedef struct {
-    int type;			/* of event */
-    unsigned long serial;	/* # of last request processed by server */
-    Bool send_event;		/* true if this came from a SendEvent req */
-    Display *display;		/* Display the event was read from */
-    Window root;		/* root window of event screen */
-    int state;			/* What happened */
-    int kind;			/* What happened */
-    Bool forced;		/* extents of new region */
-    Time time;			/* event timestamp */
-} XF86VidModeNotifyEvent;
-
-#define XF86VidModeSelectNextMode(disp, scr) \
-	XF86VidModeSwitchMode(disp, scr, 1)
-#define XF86VidModeSelectPrevMode(disp, scr) \
-	XF86VidModeSwitchMode(disp, scr, -1)
+} XVGAHelpModeLine;
 
 _XFUNCPROTOBEGIN
 
-Bool XF86VidModeQueryVersion(
+Bool XVGAHelpQueryVersion(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
@@ -122,70 +68,20 @@ Bool XF86VidModeQueryVersion(
 #endif
 );
 
-Bool XF86VidModeQueryExtension(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    int*		/* event_base */,
-    int*		/* error_base */
-#endif
-);
-
-Status XF86VidModeGetModeLine(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int*			/* dotclock */,
-    XF86VidModeModeLine*	/* modeline */
-#endif
-);
-
-Status XF86VidModeModModeLine(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    XF86VidModeModeLine*	/* modeline */
-#endif
-);
-
-Status XF86VidModeSwitchMode(
+Status XVGAHelpGetModeLine(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
-    int			/* zoom */
+    int*		/* dotclock */,
+    XVGAHelpModeLine*	/* modeline */
 #endif
 );
 
-Status XF86VidModeLockModeSwitch(
+Status XVGAHelpModModeLine(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
-    int			/* lock */
-#endif
-);
-
-Status XF86VidModeGetMonitor(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    int			/* screen */,
-    XF86VidModeMonitor*	/* monitor */
-#endif
-);
-
-Status XF86VidModeGetSaver(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int*			/* suspendtime */,
-    int*			/* offtime */
-#endif
-);
-
-Status XF86VidModeSetSaver(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int				/* suspendtime */,
-    int				/* offtime */
+    XVGAHelpModeLine*	/* modeline */
 #endif
 );
 

@@ -162,6 +162,10 @@ Hohndel (<it>hohndel@aib.com</it>) 氏に感謝します。
 グループに投稿して下さい。Linux のサポートや Linux の配付物に関する質問や
 コメントは <it>orestz@eskimo.com.</it> で行なわれています。
 
+<verb>
+$XConsortium: Linux.sgml,v 1.2 95/01/23 15:34:44 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 dawes Exp $
+</verb>
 <hrule>
 このファイルは xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28
  16:01:43 を、岡本  一幸 
@@ -174,7 +178,7 @@ name="&lt;ikko-@pacific.rim.or.jp&gt;"> ) が XFree86 3.1.2 を
 XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
 電子メールで送って下さい。
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/sgml/Linux.sgml,v 3.0 1995/10/22 10:40:50 dawes Exp $
+$XFree86$
 </verb>
 <hrule>
 &lsqb;EOF&rsqb;
