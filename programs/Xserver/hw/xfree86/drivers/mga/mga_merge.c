@@ -1,4 +1,4 @@
-/* include file for mga_driver.c  DO NOT try to generate a .o with this file.*/
+/* $XFree86$ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -315,12 +315,13 @@ MGAPreInitMergedFB(ScrnInfoPtr pScrn1, int flags)
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-	pScrn->chipset = pScrn1->chipset;
-        pMga->Chipset = pMga1->Chipset;
-        pMga->ChipRev = pMga1->ChipRev;
+    pScrn->chipset = pScrn1->chipset;
+    pMga->Chipset = pMga1->Chipset;
+    pMga->ChipRev = pMga1->ChipRev;
 
+#ifdef XF86DRI
     pMga->agpMode = pMga1->agpMode;
-
+#endif
 
     pMga->NoAccel = pMga1->NoAccel;
     pMga->UsePCIRetry = pMga1->UsePCIRetry;
