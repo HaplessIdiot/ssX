@@ -59,11 +59,11 @@ Will enable syncing on green for sync-on-green monitors (these are typically
 fixed frequency workstation monitors).
 </itemize>
 
-<sect>Mode lines for the SiliconGraphics flat panel display:
+<sect>Mode lines for the Silicon Graphics flat panel display:
 <p>
 <itemize>
 <item>These mode lines are required for use with the T2R4 (Rev 4) and the
-SiliconGraphics Flat Panel display.
+Silicon Graphics Flat Panel display.
 <item>Modeline "1600x1024d32" 103.125  1600 1600 1656 1664 1024 1024 1029 1030 HSkew 7 +Hsync +Vsync
 <item>Modeline "1600x1024d16" 103.125  1600 1600 1656 1664 1024 1024 1029 1030 HSkew 5 +Hsync +Vsync
 <item>Modeline "1600x1024d08" 103.125  1600 1600 1656 1664 1024 1024 1029 1030 HSkew 1 +Hsync +Vsync
@@ -84,7 +84,7 @@ and special help from:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.1.2.3 1999/01/02 02:32:16 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.2 1999/08/23 06:18:32 dawes Exp $
 </verb>
 
 </article>

@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.9 1999/06/05 15:55:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.10 1999/08/28 09:01:16 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -81,7 +81,7 @@ static InputInfoPtr
 MuTouchPreInit(InputDriverPtr drv, IDevPtr dev, int flags);
 
 
-InputDriverRec MUTOUCH = {
+InputDriverRec MICROTOUCH = {
   1,
   "microtouch",
   NULL,
@@ -169,7 +169,7 @@ SetupProc(	pointer module,
 			int *errmin )
 {
         xf86LoaderReqSymLists(reqSymbols, NULL);
-	xf86AddInputDriver(&MUTOUCH, module, 0);
+	xf86AddInputDriver(&MICROTOUCH, module, 0);
 	return (pointer) 1;
 }
 

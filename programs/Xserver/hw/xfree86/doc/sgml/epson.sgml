@@ -85,7 +85,7 @@ one with "fifo_conservative" it is incremented by two.
 
 <sect> Video modes <p>
 
-The driver probes wether the chip is configured for CRT only or
+The driver probes whether the chip is configured for CRT only or
 LCD/simultaneous mode of operation. In the former case it will
 enable clock programming and will support any mode which is
 within the limits of the hardware. If the chip is configured for
@@ -149,7 +149,7 @@ Thanks to Epson Europe Electronics and ProBIT GmbH, Berlin for providing a
 loaner system and documentation to get things started.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/epson.sgml,v 1.1.2.3 1998/11/13 13:00:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/epson.sgml,v 1.2 1999/08/23 06:18:34 dawes Exp $
 </verb>
 
 </article>
