@@ -63,14 +63,13 @@ for the general X11 documentation.  The third contains the general X11 docu-
 mentation in hardcopy format.
 
 A source patch relative to version 3.9.18 is also available.  Because of its
-size, it is split into three parts.  The patch files are 3.9.18-4.0.diff1.gz,
-3.9.18-4.0.diff2.gz and 3.9.18-4.0.diff3.gz.  These patches should be applied
-to a clean 3.9.18 source tree, working from the directory containing the xc/
-directory.  The patches should be applied by running:
+size, it is split into two parts.  The patch files are 3.9.18-4.0.diff1.gz
+and 3.9.18-4.0.diff2.gz.  These patches should be applied to a clean 3.9.18
+source tree, working from the directory containing the xc/ directory.  The
+patches should be applied by running:
 
      gunzip < 3.9.18-4.0.diff1.gz | patch -p0 -E
      gunzip < 3.9.18-4.0.diff2.gz | patch -p0 -E
-     gunzip < 3.9.18-4.0.diff3.gz | patch -p0 -E
 
 The contrib part of the distribution has now been folded into the main source
 tree, so a separate contrib tarball is no longer required.
@@ -92,7 +91,7 @@ If you have patches (bug fixes or enhancements, etc) that you'd like to sub-
 mit for inclusion in a future version of XFree86, please send them to
 <fixes@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.102 2000/02/29 18:01:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.103 2000/03/08 20:36:43 dawes Exp $
 
 
 $XFree86$
