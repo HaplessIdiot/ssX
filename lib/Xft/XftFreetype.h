@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.5 2000/12/05 03:13:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.6 2000/12/08 07:51:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,18 +25,16 @@
 #ifndef _XFTFREETYPE_H_
 #define _XFTFREETYPE_H_
 
-#include "Xft.h"
-#ifdef FREETYPE2
+#include <X11/Xft/Xft.h>
 #include <freetype/freetype.h>
-#endif
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xosdefs.h>
 
+extern FT_Library	_XftFTlibrary;
+
 struct _XftFontStruct {
-#ifdef FREETYPE2
     FT_Face		face;      /* handle to face object */
-#endif
     GlyphSet		glyphset;
     int			min_char;
     int			max_char;
@@ -55,6 +53,13 @@ struct _XftFontStruct {
 };
 
 _XFUNCPROTOBEGIN
+
+/* xftfreetype.c */
+XftFontStruct *
+XftFreeTypeOpen (Display *dpy, XftPattern *pattern);
+
+void
+XftFreeTypeClose (Display *dpy, XftFontStruct *font);
 
 /* xftglyphs.c */
 void

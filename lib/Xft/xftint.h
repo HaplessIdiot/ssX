@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.13 2000/12/12 00:45:17 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.14 2000/12/14 23:03:55 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,7 +26,11 @@
 #define _XFTINT_H_
 
 #include <X11/Xlib.h>
+#ifdef FREETYPE2
 #include "XftFreetype.h"
+#else
+#include "Xft.h"
+#endif
 
 typedef struct _XftMatcher {
     char    *object;
@@ -69,9 +73,6 @@ typedef struct _XftDisplayInfo {
     Bool		    hasRender;
 } XftDisplayInfo;
 
-#ifdef FREETYPE2
-extern FT_Library	_XftFTlibrary;
-#endif
 extern XftFontSet	*_XftGlobalFontSet;
 extern XftDisplayInfo	*_XftDisplayInfo;
 extern char		**XftConfigDirs;
@@ -298,12 +299,6 @@ _XftFontDebug (void);
 XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count);
 
-XftFontStruct *
-XftFreeTypeOpen (Display *dpy, XftPattern *pattern);
-
-void
-XftFreeTypeClose (Display *dpy, XftFontStruct *font);
-    
 /* xftfs.c */
 /* xftglyphs.c */
 /* xftgram.y */

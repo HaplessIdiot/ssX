@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftextent.c,v 1.2 2000/12/01 21:32:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftextent.c,v 1.3 2000/12/08 07:51:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -35,10 +35,12 @@ XftTextExtents8 (Display	*dpy,
     {
 	XftCoreExtents8 (dpy, font->u.core.font, string, len, extents);
     }
+#ifdef FREETYPE2
     else
     {
 	XftRenderExtents8 (dpy, font->u.ft.font, string, len, extents);
-    }	
+    }
+#endif
 }
 
 void
@@ -52,10 +54,12 @@ XftTextExtents16 (Display	    *dpy,
     {
 	XftCoreExtents16 (dpy, font->u.core.font, string, len, extents);
     }
+#ifdef FREETYPE2
     else
     {
 	XftRenderExtents16 (dpy, font->u.ft.font, string, len, extents);
-    }	
+    }
+#endif
 }
 
 void
@@ -69,8 +73,10 @@ XftTextExtents32 (Display	*dpy,
     {
 	XftCoreExtents32 (dpy, font->u.core.font, string, len, extents);
     }
+#ifdef FREETYPE2
     else
     {
 	XftRenderExtents32 (dpy, font->u.ft.font, string, len, extents);
-    }	
+    }
+#endif
 }

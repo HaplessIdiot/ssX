@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.4 2000/12/08 07:51:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.5 2000/12/11 21:48:40 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,9 +24,7 @@
 
 #include <stdlib.h>
 #include "xftint.h"
-#ifdef FREETYPE2
 #include <freetype/ftoutln.h>
-#endif
 
 static const int    filters[3][3] = {
     /* red */
@@ -52,7 +50,6 @@ XftGlyphLoad (Display		*dpy,
 	      XftChar32		*glyphs,
 	      int		nglyph)
 {
-#ifdef FREETYPE2
     FT_Error	    error;
     FT_ULong	    charcode;
     FT_UInt	    glyphindex;
@@ -315,7 +312,6 @@ XftGlyphLoad (Display		*dpy,
 	free (bufBitmap);
     if (bufBitmapRgba != bufLocalRgba)
 	free (bufBitmapRgba);
-#endif
 }
 
 #define STEP	    256
@@ -327,7 +323,6 @@ XftGlyphCheck (Display		*dpy,
 	       XftChar32	*missing,
 	       int		*nmissing)
 {
-#ifdef FREETYPE2
     XGlyphInfo	    **realized;
     int		    nrealized;
     int		    n;
@@ -366,7 +361,6 @@ XftGlyphCheck (Display		*dpy,
 	else
 	    font->realized[glyph] = 0;
     }
-#endif
 }
 
 Bool
@@ -374,11 +368,7 @@ XftFreeTypeGlyphExists (Display		*dpy,
 			XftFontStruct	*font,
 			XftChar32	glyph)
 {
-#ifdef FREETYPE2
     if (font->encoded)
 	glyph = (XftChar32) FT_Get_Char_Index (font->face, (FT_ULong) glyph);
     return glyph && glyph <= font->face->num_glyphs;
-#else
-    return False;
-#endif
 }

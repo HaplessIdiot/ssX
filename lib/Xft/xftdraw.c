@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.8 2000/12/08 07:51:27 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.9 2000/12/12 00:45:17 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -261,11 +261,13 @@ XftDrawString8 (XftDraw		*draw,
 	XDrawString (draw->dpy, draw->drawable, draw->core.draw_gc, x, y, 
 		     (char *) string, len);
     }
+#ifdef FREETYPE2
     else if (XftDrawRenderPrepare (draw, color, font))
     {
 	XftRenderString8 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
 			  draw->render.pict, 0, 0, x, y, string, len);
     }
+#endif
 }
 
 #define N16LOCAL    256
@@ -291,11 +293,13 @@ XftDrawString16 (XftDraw	*draw,
 	if (xc != xcloc)
 	    free (xc);
     }
+#ifdef FREETYPE2
     else if (XftDrawRenderPrepare (draw, color, font))
     {
 	XftRenderString16 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
 			   draw->render.pict, 0, 0, x, y, string, len);
     }
+#endif
 }
 
 void
@@ -319,11 +323,13 @@ XftDrawString32 (XftDraw	*draw,
 	if (xc != xcloc)
 	    free (xc);
     }
+#ifdef FREETYPE2
     else if (XftDrawRenderPrepare (draw, color, font))
     {
 	XftRenderString32 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
 			   draw->render.pict, 0, 0, x, y, string, len);
     }
+#endif
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfont.c,v 1.5 2000/12/12 00:45:17 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfont.c,v 1.4 2000/12/08 07:51:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -78,27 +78,33 @@ XftFontMatch (Display *dpy, int screen, XftPattern *pattern, XftResult *result)
 XftFont *
 XftFontOpenPattern (Display *dpy, XftPattern *pattern)
 {
-    Bool	    core;
+    Bool	    core = True;
     XFontStruct	    *xfs = 0;
-    XftFontStruct   *fs = 0;
     XftFont	    *font;
+#ifdef FREETYPE2
+    XftFontStruct   *fs = 0;
 
     if (XftPatternGetBool (pattern, XFT_CORE, 0, &core) != XftResultMatch)
 	return 0;
     if (core)
+#endif
     {
 	xfs = XftCoreOpen (dpy, pattern);
 	if (!xfs) return 0;
     }
+#ifdef FREETYPE2
     else
     {
 	fs = XftFreeTypeOpen (dpy, pattern);
 	if (!fs) return 0;
     }
+#endif
     font = (XftFont *) malloc (sizeof (XftFont));
     font->core = core;
     font->pattern = pattern;
+#ifdef FREETYPE2
     if (core)
+#endif
     {
 	font->u.core.font = xfs;
 	font->ascent = xfs->ascent;
@@ -106,6 +112,7 @@ XftFontOpenPattern (Display *dpy, XftPattern *pattern)
 	font->height = xfs->ascent + xfs->descent;
 	font->max_advance_width = xfs->max_bounds.width;
     }
+#ifdef FREETYPE2
     else
     {
 	font->u.ft.font = fs;
@@ -114,6 +121,7 @@ XftFontOpenPattern (Display *dpy, XftPattern *pattern)
 	font->height = fs->height;
 	font->max_advance_width = fs->max_advance_width;
     }
+#endif
     return font;
 }
 
@@ -268,8 +276,10 @@ XftFontClose (Display *dpy, XftFont *font)
 {
     if (font->core)
 	XFreeFont (dpy, font->u.core.font);
+#ifdef FREETYPE2
     else
 	XftFreeTypeClose (dpy, font->u.ft.font);
+#endif
     if (font->pattern)
 	XftPatternDestroy (font->pattern);
     free (font);
@@ -281,5 +291,9 @@ XftGlyphExists (Display *dpy, XftFont *font, XftChar32 glyph)
     if (font->core)
 	return XftCoreGlyphExists (dpy, font->u.core.font, glyph);
     else
+#ifdef FREETYPE2
 	return XftFreeTypeGlyphExists (dpy, font->u.ft.font, glyph);
+#else
+	return False;
+#endif
 }
