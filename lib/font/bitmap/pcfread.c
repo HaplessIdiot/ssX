@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.5 1998/10/03 09:07:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.6 1999/01/31 12:21:25 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -357,7 +357,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     int         nink_metrics;
     CharInfoPtr metrics = 0;
     xCharInfo  *ink_metrics = 0;
-    unsigned char *bitmaps = 0;
+    char       *bitmaps = 0;
     CharInfoPtr *encoding = 0;
     int         nencoding;
     int         encodingOffset;
