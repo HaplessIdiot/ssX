@@ -1,5 +1,61 @@
-XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.5 2002/05/17 22:34:18 keithp Exp $
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.6 2002/05/31 06:38:43 keithp Exp $
 
+XCOMM Allow for builds against old installed bits
+XCOMM note that this requires that additional files be
+XCOMM copied into this directory
+#if UseInstalled
+
+#ifndef SharedLibXrender
+#define SharedLibXrender		YES
+#endif
+
+#ifndef NormalLibXrender
+#define NormalLibXrender (!SharedLibXrender | ForceNormalLib)
+#endif
+
+#ifndef DebugLibXrender
+#define DebugLibXrender		NO
+#endif
+
+#ifndef ProfileLibXrender
+#define ProfileLibXrender		NO
+#endif
+
+#ifdef SharedXrenderRev
+#undef SharedXrenderRev
+#endif
+
+#define SharedXrenderRev	1.1
+
+#if SharedLibXrender
+SharedLibReferences(XFT1,Xft,$(XFT1SRC),SOXFT1REV,SharedXft1Rev)
+#else
+ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1SRC),BuildLibDir)
+#endif
+
+#undef LinkBuildLibrary
+#define LinkBuildLibrary(lib) MakeDir($(BUILDLIBDIR))			@@\
+	RemoveFile($(BUILDLIBDIR)/lib)					@@\
+	cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
+
+#undef LinkBuildLibraryMaybe
+#define LinkBuildLibraryMaybe(lib,doit) MakeDir($(BUILDLIBDIR))		@@\
+	@if doit; then (set -x; \					@@\
+	  RemoveFile($(BUILDLIBDIR)/lib); \				@@\
+	  cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .); fi
+
+#ifdef LdPreLibs
+# undef LdPreLibs
+#endif
+#define LdPreLibs -L$(BUILDLIBDIR) LdPreLib XLdPreLibs
+
+LDPRELIBS=LdPreLibs
+
+NONSTANDARD_HEADERS=render.h renderproto.h
+
+#endif
 
 #define DoNormalLib NormalLibXrender
 #define DoSharedLib SharedLibXrender
@@ -7,8 +63,13 @@ XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.5 2002/05/17 22:34:18 keithp Exp $
 #define DoProfileLib ProfileLibXrender
 #define LibName Xrender
 #define SoRev SOXRENDERREV
+
+#ifdef XFree86Version
 #define IncSubdir X11
 #define IncSubSubdir extensions
+#else
+#define IncSubdir extensions
+#endif
 
 #include <Threads.tmpl>
 
@@ -51,7 +112,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
      LINTLIBS = $(LINTXLIB)
 
-HEADERS = Xrender.h
+HEADERS = Xrender.h $(NONSTANDARD_HEADERS)
 
 #include <Library.tmpl>
 
