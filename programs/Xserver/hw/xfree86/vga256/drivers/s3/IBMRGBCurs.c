@@ -139,15 +139,19 @@ s3IBMRGBRealizeCursor(pScr, pCurs)
 void 
 s3IBMRGBCursorOn()
 {
+   unsigned char tmp;
+
    UNLOCK_SYS_REGS;
 
    /* turn on external cursor */
    outb(vgaCRIndex, 0x55);
-   outb(vgaCRReg, (inb(vgaCRReg) & 0xDF) | 0x20);
+   tmp = (inb(vgaCRReg) & 0xDF) | 0x20;
+   outb(vgaCRReg, tmp);
 
    /* Enable IBMRGB */
    outb(vgaCRIndex, 0x45);
-   outb(vgaCRReg, inb(vgaCRReg) & ~0x20);
+   tmp = inb(vgaCRReg) & ~0x20;
+   outb(vgaCRReg, tmp);
    
    /* Enable cursor - X11 mode */
    s3OutIBMRGBIndReg(IBMRGB_curs, 0, 0x27);

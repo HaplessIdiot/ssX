@@ -86,7 +86,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.39 1997/
             DIX = lib/LibraryTargetName(dix)
              MI = lib/LibraryTargetName(mi)
         XPSTUBS = lib/LibraryTargetName(xpstubs)
-#ifndef HasGzipLibrary
+#if !HasGzipLibrary
            ZLIB = lib/LibraryTargetName(z)
 #else
            ZLIB = GzipLibrary

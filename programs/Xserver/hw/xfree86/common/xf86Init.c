@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.65 1997/01/18 06:55:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.66 1997/01/19 12:50:34 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -91,6 +91,7 @@ Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
 Bool xf86sFlag = FALSE;
 Bool xf86ProbeOnly = FALSE;
+Bool xf86ShowUnresolved = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
 int  xf86bpp = -1;
 xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
@@ -607,6 +608,11 @@ ddxProcessArgument (argc, argv, i)
       FatalError("XF86Config path name too long\n");
     strcpy(xf86ConfigFile, argv[i+1]);
     return 2;
+  }
+  if (!strcmp(argv[i],"-showunresolved"))
+  {
+    xf86ShowUnresolved = TRUE;
+    return 1;
   }
   if (!strcmp(argv[i],"-probeonly"))
   {

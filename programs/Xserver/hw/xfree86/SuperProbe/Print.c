@@ -121,6 +121,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 ViRGE/VX",
 		  "S3 Aurora64V+",
 		  "S3 Trio64UV+",
+		  "S3 Trio64V2",
 	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",

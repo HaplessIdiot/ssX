@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.23 1996/12/23 06:41:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.24 1997/01/14 22:16:45 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -103,7 +103,9 @@
 #define S3_AURORA64VP_SERIES(chip)  ((chip&0xfff0)==0x12e0)
 #define S3_TRIO64UVP_SERIES(chip)  ((chip&0xfff0)==0x14e0)
 #define S3_TRIO64V2_SERIES(chip)  ((chip&0xfff0)==0x1e0)
-#define S3_TRIOxx_SERIES(chip)  ((chip&0xfaf0)==0x10e0)  /* (S3_TRIO32_SERIES(chip) || S3_TRIO64_SERIES(chip) || S3_TRIO64UVP_SERIES(chip)) */
+#define S3_TRIOxx_SERIES(chip)  (S3_TRIO32_SERIES(chip) || \
+				 S3_TRIO64_SERIES(chip) || \
+				 S3_TRIO64UVP_SERIES(chip))
 #define S3_ViRGE_SERIES(chip)   ((chip&0xfff0)==0x31e0)
 #define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) ||  S3_TRIOxx_SERIES(chip))
 #define S3_928_SERIES(chip)     (S3_928_ONLY(chip) || S3_x64_SERIES(chip))

@@ -1,4 +1,20 @@
 // $XConsortium: ru /main/3 1996/08/31 12:20:12 kaleb $
+
+
+
+// $XFree86: xc/programs/xkbcomp/symbols/ru,v 3.3 1996/12/28 08:25:05 dawes Exp $
+
+partial alphanumeric_keys 
+xkb_symbols "toggle" {
+    include "ru(basic)"
+    key	<CAPS> {	[  ISO_Next_Group,	 Caps_Lock	]	};
+};
+partial alphanumeric_keys 
+xkb_symbols "shift_toggle" {
+    include "ru(basic)"
+    key <LFSH>	{	[	Shift_L,	ISO_Prev_Group ]	};
+    key <RTSH>	{	[	Shift_R,	ISO_Next_Group ]	};
+};
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -12,7 +28,6 @@ xkb_symbols "basic" {
 			[     Cyrillic_io,     Cyrillic_IO	]	};
     key	<LSGT> {	[	     less,	   greater	],
 			[	      bar,	 brokenbar	]	};
-    key	<CAPS> {	[  ISO_Next_Group,	 Caps_Lock	]	};
     key	<AD01> {	[		q,		 Q	],
 			[ Cyrillic_shorti, Cyrillic_SHORTI	]	};
     key	<AE01> {	[		1,	    exclam	],
@@ -104,15 +119,15 @@ xkb_symbols "basic" {
     key	<AD12> {	[    bracketright,	braceright	],
 			[Cyrillic_hardsign,Cyrillic_HARDSIGN	]	};
     key	<BKSL> {	[	backslash,	       bar	],
-			[	backslash,             bar	]	};
+			[	backslash,	       bar	]	};
 
     // End alphanumeric section
     
     // Begin modifier mappings 
 
-    modifier_map Shift  { Shift_L };
-    modifier_map Lock   { Caps_Lock, ISO_Lock };
+    modifier_map Shift	{ Shift_L };
+    modifier_map Lock	{ Caps_Lock, ISO_Lock };
     modifier_map Control{ Control_L };
-    modifier_map Mod3   { Mode_switch };
+    modifier_map Mod3	{ Mode_switch };
 };
 

@@ -299,7 +299,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	 outb(0x3C7, 0x21);
 	 /* set s3 reg53 to parallel addressing by or'ing 0x20		*/
 	 outb(vgaCRIndex, 0x53);
-	 outb(vgaCRReg, inb(vgaCRReg) | 0x20);  
+	 tmp = inb(vgaCRReg) | 0x20;
+	 outb(vgaCRReg, tmp);
 	 outb(vgaCRIndex, 0x5C);
 	 outb(vgaCRReg, 0x00);
       } else {
@@ -308,7 +309,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	 outb(0x3C7, 0x00); 
 	 /* set s3 reg53 to non-parallel addressing by and'ing 0xDF	*/
 	 outb(vgaCRIndex, 0x53);
-	 outb(vgaCRReg, inb(vgaCRReg) & 0xDF);
+	 tmp = inb(vgaCRReg) & 0xDF;
+	 outb(vgaCRReg, tmp);
 	 outb(vgaCRIndex, 0x5C);
 	 outb(vgaCRReg, 0x00);
       }
@@ -462,7 +464,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 
    /* PCI Read Burst Disable ? */
    outb(vgaCRIndex, 0x66);  
-   outb(vgaCRReg, inb(vgaCRReg) | 0x80);
+   tmp = inb(vgaCRReg) | 0x80;
+   outb(vgaCRReg, tmp);
    outb(vgaCRIndex, 0x3a);
    if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &vga256InfoRec.options))
 	outb(vgaCRReg, 0xb7);
@@ -691,7 +694,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       if(!OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &vga256InfoRec.options)) {
 	outb(vgaCRIndex, 0x55);
 	/* remove mysterious dot at 60Hz */
-	outb(vgaCRReg, (inb(vgaCRReg) & 0x08) | 0x40);      
+	tmp = (inb(vgaCRReg) & 0x08) | 0x40;
+	outb(vgaCRReg, tmp);
       }
 
       /* This shouldn't be needed -- they should be set by vgaHWInit() */
@@ -764,7 +768,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       outb(vgaCRReg, (new->CRTC[0] + ((i&0x01)<<8)) /2);	
 
       outb(vgaCRIndex, 0x5d);
-      outb(vgaCRReg, (inb(vgaCRReg) & 0x80) | i);
+      tmp = (inb(vgaCRReg) & 0x80) | i;
+      outb(vgaCRReg, tmp);
 
       if (vga256InfoRec.videoRam > 1024 && S3_x64_SERIES(s3ChipId)) 
 	 i = mode->HDisplay * s3Bpp / 8 + 1;
@@ -772,7 +777,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	 i = mode->HDisplay * s3Bpp / 4 + 1; /* XXX should be checked for 801/805 */
       
       outb(vgaCRIndex, 0x61);
-      outb(vgaCRReg, 0x80 | (inb(vgaCRReg) & 0x60) | (i >> 8));
+      tmp = 0x80 | (inb(vgaCRReg) & 0x60) | (i >> 8);
+      outb(vgaCRReg, tmp);
       outb(vgaCRIndex, 0x62);
       outb(vgaCRReg, i & 0xff);
    } /*  (S3_801_928_SERIES(s3ChipId) || S3_964_SERIES(s3ChipId)) */
@@ -780,11 +786,13 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 
    if ((mode->Flags & V_INTERLACE) != 0) {
       outb(vgaCRIndex, 0x42);
-      outb(vgaCRReg, 0x20 | inb(vgaCRReg));
+      tmp = 0x20 | inb(vgaCRReg);
+      outb(vgaCRReg, tmp);
    }
    else {
       outb(vgaCRIndex, 0x42);
-      outb(vgaCRReg, ~0x20 & inb(vgaCRReg));
+      tmp = ~0x20 & inb(vgaCRReg);
+      outb(vgaCRReg, tmp);
    }
 
    if (mode->Private) {
@@ -817,7 +825,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       outb(vgaCRReg, 0xa5);
       outb(vgaCRIndex, 0x68);
       /* -RAS low timing 3.5 MCLKs, -RAS precharge timing 2.5 MCLKs */
-      outb(vgaCRReg, inb(vgaCRReg) | 0xf0);
+      tmp = inb(vgaCRReg) | 0xf0;
+      outb(vgaCRReg, tmp);
    }
 
    if (OFLG_ISSET(OPTION_SLOW_VRAM, &vga256InfoRec.options)) {
@@ -841,7 +850,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       outb(vgaCRIndex, 0x39);
       outb(vgaCRReg, 0xa5);
       outb(vgaCRIndex, 0x68);
-      outb(vgaCRReg, inb(vgaCRReg) & 0xf7);	/* 3.5 MCLKs */
+      tmp = inb(vgaCRReg) & 0xf7;
+      outb(vgaCRReg, tmp);	/* 3.5 MCLKs */
    }
 
    if (OFLG_ISSET(OPTION_SLOW_EDODRAM, &vga256InfoRec.options)) {
@@ -890,7 +900,8 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	       last = i1;
 	       outb(vgaCRIndex, 0x67);
 		/* clock should be inverted */
-	       outb(vgaCRReg, inb(vgaCRReg) ^ 0x01);
+	       tmp = inb(vgaCRReg) ^ 0x01;
+	       outb(vgaCRReg, tmp);
 	    }
 	    if (last-i1 > 4) break;
 	 }

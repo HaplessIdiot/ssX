@@ -39,6 +39,7 @@
 #include "sym.h"
 #include "loader.h"
 
+#include "xf86Priv.h"
 /*
 #ifndef LDTEST
 #define ELFDEBUG ErrorF
@@ -1479,13 +1480,13 @@ ELFCheckForUnresolved()
 		addr = (char**)(erel->secp+erel->rel->r_offset);
 		*addr += ((int) &LoaderDefaultFunc - (int)addr);
 
-#ifdef ELFDEBUG
-
-		ErrorF("Unresolved Symbol %s from %s\n",
-			ElfGetSymbolName(erel->file, 
-				ELF32_R_SYM(erel->rel->r_info)),
+		if (xf86ShowUnresolved)
+		{
+			ErrorF("Unresolved Symbol %s from %s\n",
+				ElfGetSymbolName(erel->file, 
+					ELF32_R_SYM(erel->rel->r_info)),
 				_LoaderHandleToName(erel->file->handle));
-#endif
+		}
 		erel=erel->next;
 	}
 	return 1;

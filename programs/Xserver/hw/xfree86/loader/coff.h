@@ -92,8 +92,8 @@ typedef struct COFF_syment
 	char	  _n_name[E_SYMNMLEN];	/* Symbol name (first 8 chars)	*/
 	struct 
 	{
-		char	  _n_zeroes[4]; /* Leading zeros		*/
-		char	  _n_offset[4]; /* Offset for a header section  */
+		long	  _n_zeroes;	 /* Leading zeros		*/
+		long	  _n_offset;	 /* Offset for a header section  */
 	} _n_n;
 	} _n;
 
@@ -113,7 +113,7 @@ typedef struct COFF_syment
 #define COFF_E_FILNMLEN	14	/* characters in a file name		*/
 #define COFF_E_DIMNUM	 4	/* array dimensions in aux entry        */
 #define SYMNMLEN	COFF_E_SYMNMLEN
-#define SYMESZ		sizeof(SYMENT)
+#define SYMESZ		18	/* not really sizeof(SYMENY) due to padding */
 
 /* Special section number found in the symbol section */
 #define	N_UNDEF	0

@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.3 1997/01/18 07:18:20 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -48,7 +48,7 @@ extern int errno;
  * The following is taken from the xtrans code, almost as is,
  * it would be nice to share it...
  */
-#if defined(WIN32) || defined(__sxg__) || defined(SCO)
+#if defined(WIN32) || defined(__sxg__) || (defined(SCO) && !defined(SVR4))
 static int
 writev(int fildes, const struct iovec *iov, int iovcnt)
 {

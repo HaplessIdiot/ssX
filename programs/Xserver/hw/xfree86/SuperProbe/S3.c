@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.14 1996/11/24 09:52:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.15 1996/12/23 06:31:36 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -309,6 +309,8 @@ int *Chipset;
 			      *Chipset = CHIP_S3_968;
 			   else if (chip_id_low==0x31) 
 			      *Chipset = CHIP_S3_ViRGE;
+			   else if (chip_id_low==0x01)
+			      *Chipset = CHIP_S3_Trio64V2;
 			   else {
 			      Chip_data = rev;
 			      Chip_data = (Chip_data << 8) | chip_id_high;

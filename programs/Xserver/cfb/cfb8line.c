@@ -1,6 +1,7 @@
 /*
  * $XConsortium: cfb8line.c,v 1.30 95/01/03 15:28:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.1 1996/08/25 14:05:38 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.2 1997/01/08 20:32:40 dawes Exp $
+ * Jeff Anton'x fixes: cfb8line.c   97/02/07
  *
 Copyright (c) 1990  X Consortium
 
@@ -466,8 +467,8 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	    if (_x2 < ex_x1 || _x2 >= ex_x2 ||
 		_y2 < ex_y1 || _y2 >= ex_y2)
 #else
-	    if (_x1 < extents_x1 || _x1 >= extents_x2 ||
-		_y1 < extents_y1 || _y1 >= extents_y2)
+	    if (_x2 < extents_x1 || _x2 >= extents_x2 ||
+		_y2 < extents_y1 || _y2 >= extents_y2)
 #endif
 	    {
 		break;
