@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.43 2003/01/01 05:58:20 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.44 2003/01/01 06:15:20 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1504,8 +1504,8 @@ static void LoadStateExt
 
                 if((chip->Chipset & 0x0ff0) >= 0x0300) {
                     if(!chip->flatPanel) {
-                       chip->PRAMDAC0[0x0578/4] &= 0x7fffffff;
-                       chip->PRAMDAC0[0x057C/4] &= 0x7fffffff;
+                       chip->PRAMDAC0[0x0578/4] = state->vpllB;
+                       chip->PRAMDAC0[0x057C/4] = state->vpll2B;
                     }
                     chip->PGRAPH[0x00000724/4] = format | (format << 5);
                     chip->PGRAPH[0x0000008C/4] |= 1;
@@ -1725,6 +1725,8 @@ static void UnloadStateExt
     state->interlace    = VGA_RD08(chip->PCIO, 0x03D5);
     state->vpll         = chip->PRAMDAC0[0x00000508/4];
     state->vpll2        = chip->PRAMDAC0[0x00000520/4];
+    state->vpllB        = chip->PRAMDAC0[0x00000578/4];
+    state->vpll2B       = chip->PRAMDAC0[0x0000057C/4];
     state->pllsel       = chip->PRAMDAC0[0x0000050C/4];
     state->general      = chip->PRAMDAC[0x00000600/4];
     state->scale        = chip->PRAMDAC[0x00000848/4];

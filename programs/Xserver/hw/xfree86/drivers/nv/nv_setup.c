@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.23 2003/01/01 02:21:17 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.24 2003/01/01 02:50:19 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -220,6 +220,14 @@ NVIsSecond (ScrnInfoPtr pScrn)
        case 0x0187:
        case 0x0286:
        case 0x028C:
+       case 0x0316:
+       case 0x0317:
+       case 0x031A:
+       case 0x031B:
+       case 0x031C:
+       case 0x031D:
+       case 0x031E:
+       case 0x031F:
            pNv->SecondCRTC = TRUE;
            break;
        default:
@@ -358,6 +366,14 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        case 0x0187:
        case 0x0286:
        case 0x028C:
+       case 0x0316:
+       case 0x0317:
+       case 0x031A:
+       case 0x031B:
+       case 0x031C:
+       case 0x031D:
+       case 0x031E:
+       case 0x031F:
            xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                       "On a laptop.  Assuming Digital Flat Panel\n");
            pNv->FlatPanel = 1;

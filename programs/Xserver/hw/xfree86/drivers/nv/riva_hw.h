@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.21 2002/10/14 18:22:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.22 2002/12/06 00:50:53 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -390,6 +390,8 @@ typedef struct _riva_hw_state
     U032 arbitration1;
     U032 vpll;
     U032 vpll2;
+    U032 vpllB;
+    U032 vpll2B;
     U032 pllsel;
     U032 general;
     U032 crtcOwner;
