@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.6 95/01/16 20:07:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.6 1995/03/04 08:41:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.7 1995/03/11 14:13:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -424,10 +424,9 @@ xf86MseProc(pPointer, what)
 /*
  * xf86MseEvents --
  *      Read the new events from the device, and pass them to the eventhandler.
- *      This should not be called if there is only an OS_MOUSE driver
- *      like with OS/2 (hv)
+ *      This should is not used if there is only an OS_MOUSE driver.
  */
-#ifndef __EMX__
+#ifndef OSMOUSE_ONLY
 void
 xf86MseEvents()
 {

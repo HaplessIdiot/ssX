@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.2 1994/12/17 09:32:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.3 1995/03/11 14:02:46 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -167,7 +167,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.2 1994/12/17 09:32:44 dawes E
 # define ServerOSDefines 	/**/
 #endif
 #ifdef i386Architecture
-#define ServerExtraDefines -DUSE_OSMOUSE GccGasOption XFree86ServerDefines
+#define ServerExtraDefines GccGasOption XFree86ServerDefines
 #else
 #define ServerExtraDefines GccGasOption
 #endif

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.37 1995/03/06 14:47:46 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.38 1995/03/11 14:13:37 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1142,7 +1142,7 @@ configPointerSection()
 
     case PROTOCOL:
       if (getToken(NULL) != STRING) configError("Mouse name expected");
-#ifdef USE_OSMOUSE
+#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
       if ( StrCaseCmp(val.str,"osmouse") == 0 ) {
         if (xf86Verbose)
           ErrorF("%s OsMouse selected for mouse input\n", XCONFIG_GIVEN);
@@ -1170,7 +1170,7 @@ configPointerSection()
       }
 #endif
 
-#ifndef __EMX__ /* only supports OSMOUSE */
+#ifndef OSMOUSE_ONLY
 #if defined(MACH) || defined(AMOEBA)
       mouseType = (char *) xalloc (strlen (val.str) + 1);
       strcpy (mouseType, val.str);
@@ -1185,18 +1185,21 @@ configPointerSection()
       xf86Info.mseProc    = xf86MseProc;
       xf86Info.mseEvents  = xf86MseEvents;
 #endif
-#endif /* !__EMX__ */
       xf86Info.mseType    = mtoken - MICROSOFT;
       if (!xf86MouseSupported(xf86Info.mseType))
       {
         configError("Mouse type not supported by this OS");
       }
+#else /* OSMOUSE_ONLY */
+      configError("Mouse type not supported by this OS");
+#endif /* OSMOUSE_ONLY */
+
 #ifdef MACH386
       /* Don't need to specify the device for MACH -- should always be this */
       xf86Info.mseDevice  = "/dev/mouse";
 #endif
       break;
-#ifndef __EMX__
+#ifndef OSMOUSE_ONLY
     case PDEVICE:
       if (getToken(NULL) != STRING) configError("Mouse device expected");
       xf86Info.mseDevice  = val.str;
@@ -1226,14 +1229,14 @@ configPointerSection()
 	}
       xf86Info.sampleRate = val.num;
       break;
-#endif /* __EMX__ */
+#endif /* OSMOUSE_ONLY */
     case EMULATE3:
       if (xf86Info.chordMiddle)
         configError("Can't use Emulate3Buttons with ChordMiddle");
       xf86Info.emulate3Buttons = TRUE;
       break;
 
-#ifndef __EMX__
+#ifndef OSMOUSE_ONLY
     case CHORDMIDDLE:
       if (xf86Info.mseType + MICROSOFT == MICROSOFT ||
           xf86Info.mseType + MICROSOFT == LOGIMAN)
@@ -1266,7 +1269,7 @@ configPointerSection()
       configError("ClearRTS not supported on this OS");
 #endif
       break;
-#endif /* !__EMX__ */
+#endif /* OSMOUSE_ONLY */
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */

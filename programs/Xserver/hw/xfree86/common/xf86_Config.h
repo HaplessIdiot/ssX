@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.19 1995/01/11 03:50:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.21 1995/01/28 17:03:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -440,15 +440,17 @@ static SymTabRec KeyboardTab[] = {
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
-  { PDEVICE,	"device"},
-  { ENDSECTION,	"endsection"},
   { PROTOCOL,	"protocol" },
-  { BAUDRATE,	"baudrate" },
   { EMULATE3,	"emulate3buttons" },
+  { ENDSECTION,	"endsection"},
+#ifndef OSMOUSE_ONLY
+  { PDEVICE,	"device"},
+  { BAUDRATE,	"baudrate" },
   { SAMPLERATE,	"samplerate" },
   { CLEARDTR,	"cleardtr" },
   { CLEARRTS,	"clearrts" },
   { CHORDMIDDLE,"chordmiddle" },
+#endif
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
