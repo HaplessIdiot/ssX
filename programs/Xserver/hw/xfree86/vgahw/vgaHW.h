@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.8 1998/09/27 04:43:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.9 1998/11/01 12:36:06 dawes Exp $ */
 
 
 /*
@@ -192,6 +192,7 @@ void vgaHWGetIOBase(vgaHWPtr hwp);
 void vgaHWLock(vgaHWPtr hwp);
 void vgaHWUnlock(vgaHWPtr hwp);
 void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
+Bool vgaHWHandleColormaps(ScreenPtr pScreen);
 
 
 /* vgaCmap.c */

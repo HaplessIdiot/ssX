@@ -1689,7 +1689,7 @@ so it should be used whenever possible.
 
 Initialization of the XFree86 framebuffer manager is done via
 
-   Bool xf86InitFBManager(ScreenPtr pScreen,  BoxPtr FullBox);
+    Bool xf86InitFBManager(ScreenPtr pScreen,  BoxPtr FullBox);
 
 FullBox represents the area of the framebuffer that the manager
 is allowed to manage.  This is typically a box with a width of
@@ -1716,7 +1716,48 @@ required when multiple framebuffers are stored in video memory
 a second framebuffer in offscreen memory).
 
 
-Section 11: DPMS Extension
+Section 11: Colormap Handling
+=============================
+
+A generic colormap handling layer is provided within the XFree86 common layer.
+This layer takes care of most of the details, and only requires a function
+from the driver that loads the hardware palette when required.  To use
+the colormap layer, a driver calls the xf86HandleColormaps() function.
+
+
+    Bool xf86HandleColormaps(ScreenPtr pScreen, int maxColors,
+                             int sigRGBbits, LoadPaletteFuncPtr loadPalette,
+                             unsigned int flags)
+
+      This function must be called after the default colormap has been
+      initialised.  The pScrn->gamma field must also be initialised,
+      preferably by calling xf86SetGamma().  maxColors is the number of
+      entries in the palette.  sigRGBbits is the number of significant
+      bits in each colour component.  This would normally be the same as
+      pScrn->rgbBits.  loadPalette is a driver-provided function for loading
+      a colormap into the harwdare, and is described below.  flags may
+      be set to the following (which may be ORed together):
+
+        CMAP_PALETTED_TRUECOLOR     the TrueColor visual is paletted and is
+                                    just a special case of DirectColor.  This
+                                    flag is only valid for bpp > 8.
+
+        CMAP_RELOAD_ON_MODE_SWITCH  reload the colormap automatically when
+                                    VT switching back to the Xserver.
+
+
+    void LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+                     LOCO *colors, short visualClass)
+
+      LoadPalette is a driver-provide function for loading a colormap into
+      hardware.  numColors is the number of colormap entries to write out.
+      indices is a list of the index values of the entries to be written,
+      and colors is the colormap entries corresponding to each if the
+      indices.
+
+
+
+Section 12: DPMS Extension
 ==========================
 
 Support code for the DPMS extension is included in the XFree86 common layer.
@@ -1750,7 +1791,7 @@ that gets called when the DPMS level is changed:
       values are defined in "extensions/dpms.h".
 
 
-Section 12: DGA Extension
+Section 13: DGA Extension
 =========================
 
 Support code for the DGA extension is included in the XFree86 common layer.
@@ -1854,7 +1895,7 @@ The following functions may optionally be provided:
       Report when the view port has actually changed.
 
 
-Section 13: The XFree86 X Video Extension (Xv) Device Dependent Layer
+Section 14: The XFree86 X Video Extension (Xv) Device Dependent Layer
 =====================================================================
 
  XFree86 offers the X Video Extension which allows clients to treat 
@@ -4151,4 +4192,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.16 1998/11/01 12:35:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.17 1998/11/15 04:30:14 dawes Exp $
