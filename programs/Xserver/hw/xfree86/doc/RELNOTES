@@ -1,4 +1,4 @@
-                     Release Notes for XFree86[tm] 4.3.0
+                   Release Notes for XFree86[tm] 4.3.99.15
 
                           The XFree86 Project, Inc
 
@@ -7,17 +7,17 @@
                                   Abstract
 
      This document contains some information about features present in
-     XFree86 4.3.0 and their status.
+     XFree86 4.3.99.15 and their status.
 
 1.  Introduction to the 4.x Release Series
 
-XFree86 4.0 was the first official release of the new XFree86 4 series.  The
-current release (4.3.0) is the latest in that series.  XFree86 4 represents a
-significant redesign of the XFree86 X server.  Not all of the hardware
-drivers from 3.3.x have been ported to 4.x yet, but conversely, 4.x has sup-
-port for a lot of hardware that is not supported in 3.3.x.  Our Driver Status
-document summarizes how the hardware driver support compares between 3.3.6
-and 4.3.0.  Please check there first before downloading 4.3.0.
+XFree86 4.0 was the first official release of the new XFree86 4 series.
+XFree86 4 represents a significant redesign of the XFree86 X server.  Not all
+of the hardware drivers from 3.3.x have been ported to 4.x yet, but con-
+versely, 4.x has support for a lot of hardware that is not supported in
+3.3.x.  Our Driver Status document summarizes how the hardware driver support
+compares between 3.3.6 and 4.3.99.15.  Please check there first before down-
+loading 4.3.99.15.
 
 The 4.0.1 release introduced a new graphical configuration tool, "xf86cfg",
 and a text mode interface was added to it for the 4.0.2 release.  It is the
@@ -32,7 +32,7 @@ To try it out, just run (as root):
 
 Each of these configuration options will give you a reasonable starting point
 for a suitable configuration file.  We've put some effort into documenting
-the 4.3.0 config file format, and you can find that information in the
+the 4.3.99.15 config file format, and you can find that information in the
 XF86Config manual page.  Check there and the driver-specific manual pages and
 the related documentation for further information.  References to this
 driver-specific information can be found in the tables below (section 3.,
@@ -47,11 +47,9 @@ release, please have a quick read through the Installation Document.  It may
 save you some time and help you figure out which of the binary releases you
 need.
 
-The next section describes what is new in the latest version (4.3.0) compared
-with the previous full release (4.2.0).  The other sections below describe
-some of the new features and changes between 3.3.x and 4.0.  There are lot's
-of new features, and we definitely don't have enough space to cover them all
-here.
+The other sections below describe some of the new features and changes
+between 3.3.x and 4.0.  There are lot's of new features, and we definitely
+don't have enough space to cover them all here.
 
 2.  Summary of new features in 4.3.0.
 
@@ -208,7 +206,7 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 3.1  Video Drivers
 
-XFree86 4.3.0 includes the following video drivers:
+XFree86 4.3.99.15 includes the following video drivers:
 
 +--------------+--------------------------+---------------------------------------------+
 |Driver Name   | Description              | Further Information                         |
@@ -263,7 +261,7 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.3.0 includes the following input drivers:
+XFree86 4.3.99.15 includes the following input drivers:
 
 3.2  Input Drivers
 
@@ -300,13 +298,13 @@ Drivers marked with (*) are available for Linux only.
 4.  Overview of XFree86 4.x.
 
 Unlike XFree86 3.3.x where there are multiple X server binaries, each of
-which drive different hardware, XFree86 4.3.0 has a single X server binary
-called XFree86.  This binary can either have one or more video drivers linked
-in statically, or, more usually, dynamically load the video drivers and other
-modules that are needed.
+which drive different hardware, XFree86 4.3.99.15 has a single X server
+binary called XFree86.  This binary can either have one or more video drivers
+linked in statically, or, more usually, dynamically load the video drivers
+and other modules that are needed.
 
-XFree86 4.3.0 has X server support for most UNIX(R) and UNIX-like operating
-systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
+XFree86 4.3.99.15 has X server support for most UNIX(R) and UNIX-like operat-
+ing systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
 IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on support
 for additional architectures and operating systems is in progress, and is
 planned for future releases.
@@ -327,8 +325,8 @@ they do not need to be recompiled for every different operating system.  In
 the future we plan to take advantage of this to provide more frequent driver
 module updates in between major releases.
 
-The loader in version 4.3.0 has support for Intel (x86), Alpha and PowerPC
-platforms.  It also has preliminary support for Sparc platforms.
+The loader in version 4.3.99.15 has support for Intel (x86), Alpha and Pow-
+erPC platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb, cfb,
@@ -493,10 +491,10 @@ ual page for more comprehensive information:
    o A new section called ServerLayout has been added to allow the layout of
      the screens and the selection of input devices to be specified.  The
      ServerLayout sections may also include options that are normally found
-     in the ServerFlags section.  Multiple ServerLayout sections may be pre-
-     sent, and selected from the command line.  The following example shows a
-     ServerLayout section for a dual-headed configuration with two Matrox
-     cards, and two mice:
+     in the ServerFlags section.  Multiple ServerLayout sections may be
+     present, and selected from the command line.  The following example
+     shows a ServerLayout section for a dual-headed configuration with two
+     Matrox cards, and two mice:
 
                Section "ServerLayout"
                    Identifier  "Layout 1"
@@ -675,10 +673,10 @@ Known problems:
 
 4.7  DGA version 2
 
-DGA 2.0 is included in 4.3.0, but is not implemented by all drivers.  Prelim-
-inary documentation for the client libraries can be found in the README.DGA
-document.  A good degree of backwards compatibility with version 1.0 is pro-
-vided.
+DGA 2.0 is included in 4.3.99.15, but is not implemented by all drivers.
+Preliminary documentation for the client libraries can be found in the
+README.DGA document.  A good degree of backwards compatibility with version
+1.0 is provided.
 
 4.8  DDC
 
@@ -744,7 +742,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.3.0 provides a partial implementation of Render sufficient for
+XFree86 4.3.99.15 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -779,15 +777,15 @@ the Xft(3) man page.
 
 4.11.2  FreeType support in Xft
 
-XFree86 4.3.0 includes sources for FreeType version 2.1.1, and, by default,
-they are built and installed automatically.
+XFree86 4.3.99.15 includes sources for FreeType version 2.1.1, and, by
+default, they are built and installed automatically.
 
 4.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.3.0 to work with the
-Render extension and the Xft and FreeType libraries to provide anti-aliased
-text.  Xterm, xditview and x11perf.  Migration of other applications may
-occur in future releases.
+Only three applications have been modified in XFree86 4.3.99.15 to work with
+the Render extension and the Xft and FreeType libraries to provide anti-
+aliased text.  Xterm, xditview and x11perf.  Migration of other applications
+may occur in future releases.
 
 By default, xterm uses core fonts through the standard core API.  It has a
 command line option and associated resource to direct it to use Xft instead:

@@ -16,8 +16,8 @@ this document for background information.
 
 1.1  Two font systems
 
-XFree86 includes two font systems: the core X11 fonts system, which is pre-
-sent in all implementations of X11, and the Xft fonts system, which is not
+XFree86 includes two font systems: the core X11 fonts system, which is
+present in all implementations of X11, and the Xft fonts system, which is not
 currently distributed with implementations of X11 that are not based on
 XFree86 but will hopefully be included by them in the future
 

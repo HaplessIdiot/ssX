@@ -40,8 +40,8 @@ anything other than the Identifier in the Section "Device" of the XF86Config
 file.  When running the XF86Setup or xf86config programs one merely needs to
 select an I128 card so that the correct server will be used.  One need not
 and should not specify a RAMDAC, clockchip or allow the setup program to
-probe for clocks. The driver will auto-detect the amount of video ram pre-
-sent.
+probe for clocks. The driver will auto-detect the amount of video ram
+present.
 
 The following Section "Device" options are supported by the I128 driver:
 

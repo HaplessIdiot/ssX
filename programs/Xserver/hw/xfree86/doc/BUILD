@@ -17,56 +17,19 @@
 We highly recommend using gcc to build XFree86, but it generally also builds
 with the native compiler for each platform;
 
-1.  How to get the XFree86 4.3.0 source
+1.  How to get the XFree86 4.3.99.15 source
 
-The recommended way of getting the XFree86 4.3.0 source is to get it directly
-from the XFree86 CVS repository.  There are several ways of doing that, and
-they are described at our CVS web page <URL:http://www.xfree86.org/cvs/>  The
-CVS tag for this release is "xf-4_3_0", and the tag for the maintenance
-branch for this release is "xf-4_3-branch".
+The recommended way of getting the XFree86 4.3.99.15 source is to get it
+directly from the XFree86 CVS repository.  There are several ways of doing
+that, and they are described at our CVS web page
+<URL:http://www.xfree86.org/cvs/>  The CVS tag for this release is
+"xf-4_3_99_15", and the tag for the maintenance branch for this release is
+"xf-4_4-branch".
 
-Another method of getting the XFree86 4.3.0 source is to either download the
-4.3.0 source tarballs from the XFree86 ftp site.  The procedure for this is
-as follows:
-
-   o The XFree86 4.3.0 source is contained in the files X430src-1.tgz,
-     X430src-2.tgz, X430src-3.tgz, X430src-4.tgz, X430src-5.tgz,
-     X430src-6.tgz and X430src-7.tgz.  These can be found at
-     ftp://ftp.xfree86.org/pub/XFree86/4.3.0/source/ and similar locations on
-     XFree86 mirror sites.  X430src-4.tgz and X430src-5.tgz contains the
-     fonts.  X430src-6.tgz contains the documentation source.  X430src-7.tgz
-     contains the hardcopy documentation.  X430src-1.tgz, X430src-2.tgz and
-     X430src-3.tgz contains everything else.  If you don't need the docs or
-     fonts you can get by with only X430src-1.tgz, X430src-2.tgz and
-     X430src-3.tgz.
-
-   o Extract each of these files by running the following from a directory on
-     a filesystem containing enough space (the full source requires around
-     305MB, and a similar amount is required in addition to this for the com-
-     piled binaries):
-
-          gzip -d < X430src-1.tgz | tar vxf -
-
-          gzip -d < X430src-2.tgz | tar vxf -
-
-          gzip -d < X430src-3.tgz | tar vxf -
-
-          gzip -d < X430src-4.tgz | tar vxf -
-
-          gzip -d < X430src-5.tgz | tar vxf -
-
-          gzip -d < X430src-6.tgz | tar vxf -
-
-          gzip -d < X430src-7.tgz | tar vxf -
-
-Alternatively, if you already have a pristine copy of the XFree86 4.2.0
-source, you can download patches from
-ftp://ftp.xfree86.org/pub/XFree86/4.3.0/patches/ that will allow you to con-
-vert it to 4.3.0.  Information about which patch files to download and how to
-apply them can be found in the "How to get XFree86" section of the README for
-this release.
-
-All methods will produce one main source directory called xc.
+The source for the XFree86 4.3.99.15 snapshot is available from the XFree86
+CVS repository.  See See http://www.xfree86.org/cvs/ for details.  The tag
+for this snapshot is "xf-4_3_99_15".  To get the current development version,
+don't specify any tag.
 
 2.  Configuring the source before building
 
@@ -84,9 +47,6 @@ A general rule to follow is to only change things that you understand and
 have a good reason to change.  It is easy to create build problems by chang-
 ing the default configuration.  Many of the configuration parameters are doc-
 umented in xc/config/cf/README.
-
-If you are using just the X430src-1.tgz, X430src-2.tgz and X430src-3.tgz
-parts of the source dist, you will need to define BuildFonts to NO.
 
 3.  Using a shadow directory of symbolic links for the build
 

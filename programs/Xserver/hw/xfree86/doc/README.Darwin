@@ -66,11 +66,11 @@ Developers' Tools.
 
 If you don't feel the need to live on the cutting edge, you can save some
 time and effort by using the precompiled binaries available on the XFree86
-FTP server at <URL:ftp://ftp.xfree86.org/pub/XFree86/4.3.0/binaries/>.  Fol-
-low the instructions in the Install document to install it. This will create
-two new directory trees, /usr/X11R6 and /etc/X11 For Mac OS X Quartz support,
-download the optional Xquartz.tgz tarball. With Quartz support, the XDarwin
-application will be installed in /Applications.
+FTP server at <URL:ftp://ftp.xfree86.org/pub/XFree86/4.3.99.15/binaries/>.
+Follow the instructions in the Install document to install it. This will cre-
+ate two new directory trees, /usr/X11R6 and /etc/X11 For Mac OS X Quartz sup-
+port, download the optional Xquartz.tgz tarball. With Quartz support, the
+XDarwin application will be installed in /Applications.
 
 If you get the precompiled binaries you can skip ahead to the section on run-
 ning the X Window System (section 4., page 1) On the other hand, if you want

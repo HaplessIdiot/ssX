@@ -70,8 +70,8 @@ the accelerator's CRTC.
 The driver currently supports the SuperVGA capabilities of all ATI adapters
 except some early Mach8 and Mach32 adapters that do not provide the required
 functionality.  This support works for monochrome, 16-colour and 256-colour
-video modes, if one of the following ATI graphics controller chips is pre-
-sent:
+video modes, if one of the following ATI graphics controller chips is
+present:
 
      VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
         Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX

@@ -192,7 +192,7 @@ been obsoleted by previously described rules files which are far more flexi-
 ble and allow simpler and more intuitive syntax. It is preserved merely for
 compatibility reasons. Avoid using it if it is possible.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/XKB-Config.sgml,v 1.3 eich Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/XKB-Config.sgml,v 1.4 dawes Exp $
 
 
 $XFree86: $
