@@ -55,8 +55,8 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.77 94/04/17 20:38:24 kaleb Exp $
- * $XFree86$
+ * $XConsortium: twm.h,v 1.84 94/12/27 19:05:22 mor Exp $
+ * $XFree86: xc/programs/twm/twm.h,v 3.0 1994/05/08 05:26:02 dawes Exp $
  *
  * twm include file
  *
@@ -75,12 +75,13 @@ from the X Consortium.
 #include <X11/cursorfont.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xfuncs.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>
 
 #ifndef WithdrawnState
 #define WithdrawnState 0
 #endif
 
-typedef unsigned long Pixel;
 #define PIXEL_ALREADY_TYPEDEFED		/* for Xmu/Drawing.h */
 
 #ifdef SIGNALRETURNSINT
@@ -310,7 +311,36 @@ typedef struct TwmWindow
 	Bool cursor_valid;
 	int curs_x, curs_y;
     } ring;
+
+    Bool nameChanged;	/* did WM_NAME ever change? */
+
+    /* did the user ever change the width/height? {yes, no, or unknown} */
+
+    Bool widthEverChangedByUser;
+    Bool heightEverChangedByUser;
+
 } TwmWindow;
+
+
+typedef struct TWMWinConfigEntry
+{
+    struct TWMWinConfigEntry *next;
+    int tag;
+    char *client_id;
+    char *window_role;
+    XClassHint class;
+    char *wm_name;
+    int wm_command_count;
+    char **wm_command;
+    short x, y;
+    unsigned short width, height;
+    short icon_x, icon_y;
+    Bool iconified;
+    Bool icon_info_present;
+    Bool width_ever_changed_by_user;
+    Bool height_ever_changed_by_user;
+} TWMWinConfigEntry;
+
 
 #define DoesWmTakeFocus		(1L << 0)
 #define DoesWmSaveYourself	(1L << 1)
@@ -337,6 +367,7 @@ void ComputeCommonTitleOffsets();
 void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 extern char *ProgramName;
 extern Display *dpy;
+extern XtAppContext appContext;
 extern Window ResizeWindow;	/* the window we are resizing */
 extern int HasShape;		/* this server supports Shape extension */
 extern int HasSync;		/* this server supports SYNC extension */
@@ -394,5 +425,8 @@ extern Atom TwmAtoms[];
 #define _XA_WM_TAKE_FOCUS		TwmAtoms[5]
 #define _XA_WM_SAVE_YOURSELF		TwmAtoms[6]
 #define _XA_WM_DELETE_WINDOW		TwmAtoms[7]
+#define _XA_SM_CLIENT_ID		TwmAtoms[8]
+#define _XA_WM_CLIENT_LEADER		TwmAtoms[9]
+#define _XA_WM_WINDOW_ROLE		TwmAtoms[10]
 
 #endif /* _TWM_ */

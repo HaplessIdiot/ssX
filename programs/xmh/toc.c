@@ -1,5 +1,5 @@
-/* $XConsortium: toc.c,v 2.57 93/12/06 15:19:08 kaleb Exp $
- * $XFree86$
+/* $XConsortium: toc.c,v 2.59 95/01/09 16:52:53 swick Exp $
+ * $XFree86: xc/programs/xmh/toc.c,v 3.0 1994/06/28 12:33:34 dawes Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -443,7 +443,7 @@ Scrn scrn;
 	toc->scrn = (Scrn *) XtRealloc((char *) toc->scrn,
 				       (unsigned)toc->num_scrns*sizeof(Scrn));
 	toc->scrn[toc->num_scrns - 1] = scrn;
-	TUEnsureScanIsValidAndOpen(toc);
+	TUEnsureScanIsValidAndOpen(toc, True);
 	TUResetTocLabel(scrn);
 	if (app_resources.prefix_wm_and_icon_name) {
 	    char wm_name[64];
@@ -766,7 +766,7 @@ Toc toc;
 {
     Msg msg;
     static int looping = False;
-    TUEnsureScanIsValidAndOpen(toc);
+    TUEnsureScanIsValidAndOpen(toc, False);
     msg = TUAppendToc(toc, "####  empty\n");
     if (FileExists(MsgFileName(msg))) {
 	if (looping++) Punt( "Cannot correct scan file" );
@@ -856,6 +856,17 @@ char *name;
 }
 
 
+Boolean TocHasChanges(toc)
+    Toc toc;
+{
+    int i;
+    for (i=0 ; i<toc->nummsgs ; i++)
+	if (toc->msgs[i]->fate != Fignore) return True;
+
+    return False;
+}
+
+
 
 /* Throw out all changes to this toc, and close all views of msgs in it.
    Requires confirmation by the user. */
@@ -884,7 +895,6 @@ int TocConfirmCataclysm(toc, confirms, cancels)
     XtCallbackList	cancels;
 {	
     register int	i;
-    int			found = False;
     static XtCallbackRec yes_callbacks[] = {
 	{TocCataclysmOkay,	(XtPointer) NULL},
 	{(XtCallbackProc) NULL,	(XtPointer) NULL},
@@ -894,13 +904,9 @@ int TocConfirmCataclysm(toc, confirms, cancels)
     if (! toc)
 	return 0;
 
-    for (i=0 ; i<toc->nummsgs && !found ; i++)
-	if (toc->msgs[i]->fate != Fignore) found = True;
-
-    if (found) {
+    if (TocHasChanges(toc)) {
 	char		str[300];
 	Widget		tocwidget;
-	int		i;
 
 	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
 		      toc->foldername);
