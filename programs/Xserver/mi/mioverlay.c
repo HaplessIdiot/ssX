@@ -9,6 +9,7 @@
 #include "regionstr.h"
 #include "mivalidate.h"
 #include "mioverlay.h"
+#include "migc.h"
 
 #include "globals.h"
 
@@ -42,6 +43,7 @@ typedef struct {
    CreateWindowProcPtr  	CreateWindow;
    DestroyWindowProcPtr 	DestroyWindow;
    UnrealizeWindowProcPtr	UnrealizeWindow;
+   RealizeWindowProcPtr		RealizeWindow;
    miOverlayTransFunc		MakeTransparent;
    int				overlayDepth;
    Bool				underlayMarked;
@@ -61,6 +63,7 @@ static Bool miOverlayCloseScreen(int, ScreenPtr);
 static Bool miOverlayCreateWindow(WindowPtr);
 static Bool miOverlayDestroyWindow(WindowPtr);
 static Bool miOverlayUnrealizeWindow(WindowPtr);
+static Bool miOverlayRealizeWindow(WindowPtr);
 static void miOverlayMarkWindow(WindowPtr);
 static void miOverlayReparentWindow(WindowPtr, WindowPtr);
 static void miOverlayRestackWindow(WindowPtr, WindowPtr);
@@ -133,11 +136,13 @@ miInitOverlay(
     pScreenPriv->CreateWindow = pScreen->CreateWindow;
     pScreenPriv->DestroyWindow = pScreen->DestroyWindow;
     pScreenPriv->UnrealizeWindow = pScreen->UnrealizeWindow;
+    pScreenPriv->RealizeWindow = pScreen->RealizeWindow;
 
     pScreen->CloseScreen = miOverlayCloseScreen;
     pScreen->CreateWindow = miOverlayCreateWindow;
     pScreen->DestroyWindow = miOverlayDestroyWindow;
     pScreen->UnrealizeWindow = miOverlayUnrealizeWindow;
+    pScreen->RealizeWindow = miOverlayRealizeWindow;
 
     pScreen->ReparentWindow = miOverlayReparentWindow;
     pScreen->RestackWindow = miOverlayRestackWindow;
@@ -166,6 +171,8 @@ miOverlayCloseScreen(int i, ScreenPtr pScreen)
    pScreen->CloseScreen = pScreenPriv->CloseScreen; 
    pScreen->CreateWindow = pScreen->CreateWindow;
    pScreen->DestroyWindow = pScreen->DestroyWindow;
+   pScreen->UnrealizeWindow = pScreen->UnrealizeWindow;
+   pScreen->RealizeWindow = pScreen->RealizeWindow;
 
    xfree(pScreenPriv);
 
@@ -272,6 +279,36 @@ miOverlayUnrealizeWindow(WindowPtr pWin)
     return result;
 }
 
+
+static Bool 
+miOverlayRealizeWindow(WindowPtr pWin)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    miOverlayScreenPtr pScreenPriv = MIOVERLAY_GET_SCREEN_PRIVATE(pScreen);
+    Bool result = TRUE;
+
+    if(pScreenPriv->RealizeWindow) {
+	pScreen->RealizeWindow = pScreenPriv->RealizeWindow;
+	result = (*pScreen->RealizeWindow)(pWin);
+	pScreen->RealizeWindow = miOverlayRealizeWindow;
+    }
+
+    /* we only need to cache the root window realization */
+
+    if(result && !pWin->parent && 
+       (pWin->drawable.depth != pScreenPriv->overlayDepth)) 
+    {
+	BoxRec box;
+	box.x1 = box.y1 = 0;
+	box.x2 = pWin->drawable.width;
+	box.y2 = pWin->drawable.height;
+	(*pScreenPriv->MakeTransparent)(pScreen, 1, &box);
+    }
+
+    return result;
+}
+
+
 static void 
 miOverlayReparentWindow(WindowPtr pWin, WindowPtr pPriorParent)
 {
@@ -311,7 +348,7 @@ miOverlayMarkOverlappedWindows(
 
     box = REGION_EXTENTS(pScreen, &pWin->borderSize);
 
-    if(pChild = pFirst) {
+    if((pChild = pFirst)) {
 	pLast = pChild->parent->lastChild;
 	while (1) {
 	    if (pChild == pWin) markAll = TRUE;
@@ -1498,7 +1535,6 @@ miOverlaySetShape(WindowPtr pWin)
 {
     Bool	WasViewable = (Bool)(pWin->viewable);
     ScreenPtr 	pScreen = pWin->drawable.pScreen;
-    WindowPtr	pParent = pWin->parent;
     RegionPtr	pOldClip, bsExposed;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
