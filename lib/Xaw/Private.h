@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.3 1998/06/28 11:02:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.4 1998/06/28 11:23:48 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -92,6 +92,8 @@ void XawRunDisplayList(Widget, XawDisplayList*, XEvent*, Region);
 void XawDisplayListInitialize();
 
 XawDisplayList *XawCreateDisplayList(String, Screen*, Colormap, int);
+void XawDestroyDisplayList(XawDisplayList*);
+String XawDisplayListString(XawDisplayList*);
 XawDLClass *XawGetDisplayListClass(String);
 XawDLClass *XawCreateDisplayListClass(String,
 				      XawDLArgsInitProc, XawDLArgsDestructor,
@@ -126,6 +128,7 @@ typedef Boolean (*XawPixmapLoader)(XawParams*, Screen*, Colormap, int,
 extern Boolean XawPixmapsInitialize();
 extern Boolean XawAddPixmapLoader(String, String, XawPixmapLoader);
 extern XawPixmap *XawLoadPixmap(String, Screen*, Colormap, int);
+extern XawPixmap *XawPixmapFromXPixmap(Pixmap, Screen*, Colormap, int);
 extern XawParams *XawParseParamsString(String name);
 extern void XawFreeParamsStruct(XawParams *params);
 extern XawArgVal *XawFindArgVal(XawParams *params, String name);

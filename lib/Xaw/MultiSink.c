@@ -251,13 +251,26 @@ PaintText(w, gc, x, y, buf, len)
     if ( ((int) width) <= -x)	           /* Don't draw if we can't see it. */
       return(width);
 
-    XwcDrawImageString(XtDisplay(ctx), XtWindow(ctx), fontset, gc,
+    if (ctx->core.background_pixmap != XtUnspecifiedPixmap
+	&& gc == sink->multi_sink.normgc)
+      {
+	XwcTextItem item;
+
+	item.chars = buf;
+	item.nchars = len;
+	item.delta = 0;
+	item.font_set = fontset;
+	XawTextSinkClearToBackground(w, x, y - abs(ext->max_logical_extent.y),
+				     width, ext->max_logical_extent.height);
+	XwcDrawText(XtDisplay(ctx), XtWindow(ctx), gc, x, y, &item, 1);
+      }
+    else
+      XwcDrawImageString(XtDisplay(ctx), XtWindow(ctx), fontset, gc,
                      (int) x, (int) y, buf, len);
     if ( (((Position) width + x) > max_x) && (ctx->text.margin.right != 0) ) {
 	x = ctx->core.width - ctx->text.margin.right;
 	width = ctx->text.margin.right;
-	XFillRectangle(XtDisplay((Widget) ctx), XtWindow( (Widget) ctx),
-		       sink->multi_sink.normgc, (int) x,
+	XawTextSinkClearToBackground(w, (int) x,
                        (int) y - abs(ext->max_logical_extent.y),
                        (unsigned int) width,
                        (unsigned int) ext->max_logical_extent.height);
@@ -279,6 +292,7 @@ DisplayText(w, x, y, pos1, pos2, highlight)
     Boolean highlight;
     XawTextPosition pos1, pos2;
 {
+  TextWidget ctx = (TextWidget)XtParent(w);
     MultiSinkObject sink = (MultiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
     wchar_t buf[BUFSIZ];
@@ -312,7 +326,15 @@ DisplayText(w, x, y, pos1, pos2, highlight)
 
 	        x += temp;
                 width = CharWidth(w, x, _Xaw_atowc(XawTAB));
-		XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
+		if (!highlight
+		    && ctx->core.background_pixmap != XtUnspecifiedPixmap)
+		  XawTextSinkClearToBackground
+		    (w, (int)x,
+		     (int) y - abs(ext->max_logical_extent.y),
+		     (unsigned int) width,
+		     (unsigned int) ext->max_logical_extent.height);
+		else
+		  XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 			       invgc, (int) x,
                                (int) y - abs(ext->max_logical_extent.y),
                                (unsigned int)width,

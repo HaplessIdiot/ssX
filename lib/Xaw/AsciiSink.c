@@ -224,14 +224,28 @@ int len;
     if ( ((int) width) <= -x)	           /* Don't draw if we can't see it. */
       return(width);
 
-    XDrawImageString(XtDisplay(ctx), XtWindow(ctx), gc, 
-		     (int) x, (int) y, (char *) buf, len);
+    if (ctx->core.background_pixmap != XtUnspecifiedPixmap
+	&& gc == sink->ascii_sink.normgc)
+      {
+	XTextItem item;
+
+	item.chars = buf;
+	item.nchars = len;
+	item.delta = 0;
+	item.font = sink->ascii_sink.font->fid;
+
+	XawTextSinkClearToBackground(w, x, y - sink->ascii_sink.font->ascent,
+				     width, sink->ascii_sink.font->ascent
+				     + sink->ascii_sink.font->descent);
+	XDrawText(XtDisplay(ctx), XtWindow(ctx), gc, x, y, &item, 1);
+      }
+    else
+      XDrawImageString(XtDisplay(ctx), XtWindow(ctx), gc, 
+		       (int) x, (int) y, (char *) buf, len);
     if ( (((Position) width + x) > max_x) && (ctx->text.margin.right != 0) ) {
 	x = ctx->core.width - ctx->text.margin.right;
 	width = ctx->text.margin.right;
-	XFillRectangle(XtDisplay((Widget) ctx), XtWindow( (Widget) ctx),
-		       sink->ascii_sink.normgc, (int) x,
-		       (int) y - sink->ascii_sink.font->ascent, 
+	XawTextSinkClearToBackground(w, x, y - sink->ascii_sink.font->ascent, 
 		       (unsigned int) width,
 		       (unsigned int) (sink->ascii_sink.font->ascent +
 				       sink->ascii_sink.font->descent));
@@ -253,6 +267,7 @@ Position x, y;
 Boolean highlight;
 XawTextPosition pos1, pos2;
 {
+  TextWidget ctx = (TextWidget)XtParent(w);
     AsciiSinkObject sink = (AsciiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
     unsigned char buf[BUFSIZ];
@@ -285,7 +300,16 @@ XawTextPosition pos1, pos2;
 
 	        x += temp;
 		width = CharWidth(w, x, (unsigned char) '\t');
-		XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
+		if (!highlight
+		    && ctx->core.background_pixmap != XtUnspecifiedPixmap)
+		  XawTextSinkClearToBackground
+		    (w, (int)x,
+		     (int) y - sink->ascii_sink.font->ascent,
+		     (unsigned int) width,
+		     (unsigned int) (sink->ascii_sink.font->ascent +
+				     sink->ascii_sink.font->descent));
+		else
+		  XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 			       invgc, (int) x,
 			       (int) y - sink->ascii_sink.font->ascent,
 			       (unsigned int) width,

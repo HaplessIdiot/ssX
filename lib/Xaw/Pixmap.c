@@ -25,11 +25,19 @@
  * XFree86 Project.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.1 1998/06/28 11:23:48 dawes Exp $ */
+
+#if DO_SYSLOG
+#include <sys/types.h>
+#include <unistd.h>
+#include <syslog.h>
+#include <varargs.h>
+#endif
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <X11/IntrinsicP.h>
 #include "Private.h"
 
@@ -62,32 +70,60 @@ static int qcmp_long(register _Xconst void*, register _Xconst void *);
 static int bcmp_long(register _Xconst void*, register _Xconst void *);
 static int qcmp_string(register _Xconst void*, register _Xconst void *);
 static int bcmp_string(register _Xconst void*, register _Xconst void *);
+Boolean XawSecurePixmapFile(String);
 
 /*
  * Initialization
  */
 static XawCache xaw_pixmaps;
+static XawCache x_pixmaps;   /* for fast reverse search */
 static XawPixmapLoaderInfo **loader_info;
 static Cardinal num_loader_info;
 
 /*
  * Implementation
  */
+Boolean XawSecurePixmapFile(String filename)
+{
+  struct stat sb;
+
+  if (!filename)
+    return (False);
+
+  if (stat(filename, &sb) == 0)
+    {
+      if ((S_ISREG(sb.st_mode))                    /* (is) regular file */
+	  && ((sb.st_mode & S_IRGRP) == S_IRGRP)   /* (is) group readable */
+	  && ((sb.st_mode & S_ISUID) != S_ISUID)   /* (not) set user id */
+	  && ((sb.st_mode & S_ISGID) != S_ISGID))  /* (not) set group id */
+	return (True);
+
+#if DO_SYSLOG
+      {
+	String libXaw = "libXaw";
+
+	openlog(libXaw, LOG_PID | LOG_NDELAY, LOG_LOCAL2);
+	setlogmask(LOG_UPTO(LOG_WARNING));
+	syslog(LOG_WARNING, "Attempt to read \"%s\" as backgroundPixmap "
+	       "resource.", filename);
+	closelog();
+      }
+#endif
+    }
+
+  return (False);
+}
+
 Boolean
 XawPixmapsInitialize()
 {
   Boolean first_time = True;
-  static char *bitmap = "bitmap";
 
   if (!first_time)
     return (False);
 
   (void)XawAddPixmapLoader(NULL, NULL, BitmapLoader);
-  (void)XawAddPixmapLoader(NULL, "bm", BitmapLoader);
-  (void)XawAddPixmapLoader(NULL, "xbm", BitmapLoader);
-  (void)XawAddPixmapLoader(bitmap, NULL, BitmapLoader);
-  (void)XawAddPixmapLoader(bitmap, "bm", BitmapLoader);
-  (void)XawAddPixmapLoader(bitmap, "xbm", BitmapLoader);
+  (void)XawAddPixmapLoader("bitmap", NULL, BitmapLoader);
   (void)XawAddPixmapLoader("gradient", NULL, GradientLoader);
 
   return (True);
@@ -117,9 +153,16 @@ XawParseParamsString(String name)
   if (tok)
     {
       *tok = '\0';
-      ++tok;
-      type = XtNewString(str);
-      bcopy(tok, str, strlen(tok) + 1);
+      if (strchr(str, '?'))
+	{
+	  *tok = ':';
+	}
+      else
+	{
+	  ++tok;
+	  type = XtNewString(str);
+	  bcopy(tok, str, strlen(tok) + 1);
+	}
     }
 
   /* Find params */
@@ -151,7 +194,11 @@ XawParseParamsString(String name)
 	break;
     }
   if (ext)
-    ++ext;
+    {
+      ++ext;
+      if (strchr(ext, '/'))
+	ext = NULL;
+    }
 
   xaw_params->name = XtNewString(str);
   xaw_params->type = type;
@@ -228,7 +275,8 @@ XawFreeParamsStruct(XawParams *params)
       XtFree((char *)params->args[i]);
     }
 
-  XtFree((char *)params->args);
+  if (params->args)
+    XtFree((char *)params->args);
   XtFree((char *)params);
 }
 
@@ -272,7 +320,21 @@ XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
 
   index = _XawFindPixmapLoaderIndex(xaw_params->type, xaw_params->ext);
   if (index < 0)
-    return (NULL);
+    {
+      if (xaw_params->ext)
+	{
+	  /* Try again, without extension */
+	  index = _XawFindPixmapLoaderIndex(xaw_params->type, NULL);
+	  if (index < 0)
+	    return (NULL);
+	}
+      else
+	return (NULL);
+    }
+
+#ifdef DIAGNOSTIC
+  fprintf(stderr, "(*) Loading pixmap \"%s\": ", name);
+#endif
 
   success = loader_info[index]->loader(xaw_params, screen, colormap, depth,
 				       &pixmap, &mask, &width, &height);
@@ -288,6 +350,10 @@ XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
     }
 
   XawFreeParamsStruct(xaw_params);
+
+#ifdef DIAGNOSTIC
+  fprintf(stderr, "%s", success ? "success\n" : "failed\n");
+#endif
 
   return (success ? xaw_pixmap : NULL);
 }
@@ -362,6 +428,19 @@ _XawFindPixmapLoaderIndex(String type, String ext)
 }
 
 static int
+qcmp_x_cache(register _Xconst void *left, register _Xconst void *right)
+{
+  return ((int)((*(XawPixmap **)left)->pixmap) -
+	  (int)((*(XawPixmap **)right)->pixmap));
+}
+
+static int
+bcmp_x_cache(register _Xconst void *pixmap, register _Xconst void *xaw)
+{
+  return ((int)pixmap - (int)((*(XawPixmap **)xaw)->pixmap));
+}
+
+static int
 qcmp_long(register _Xconst void *left, register _Xconst void *right)
 {
   return ((long)((*(XawCache **)left)->value) -
@@ -392,36 +471,134 @@ bcmp_string(register _Xconst void *string,
 #define FIND_SCREEN   1
 #define FIND_COLORMAP 2
 #define FIND_DEPTH    3
-static XawCache **
-_XawFindCache(Screen *screen, Colormap colormap, int depth, int flags)
+static XawCache *
+_XawFindCache(XawCache *xaw,
+	      Screen *screen, Colormap colormap, int depth, int flags)
 {
   XawCache **cache;
 
-  if (!xaw_pixmaps.num_elems)
+  if (!xaw->num_elems)
     return (NULL);
 
   /* Screen */
-  cache = (XawCache **)bsearch(screen, xaw_pixmaps.elems,
-			       xaw_pixmaps.num_elems, sizeof(XtPointer),
+  cache = (XawCache **)bsearch(screen, xaw->elems,
+			       xaw->num_elems, sizeof(XtPointer),
 			       bcmp_long);
-  if (flags == FIND_SCREEN)
-    return (cache);
-  if (!cache || !(*cache)->num_elems)
+  if (!cache)
     return (NULL);
+  if (flags == FIND_SCREEN)
+    return (*cache);
 
   /* Colormap */
   cache = (XawCache **)bsearch((void *)colormap, (*cache)->elems,
 			       (*cache)->num_elems, sizeof(XtPointer),
 			       bcmp_long);
-  if (flags == FIND_COLORMAP)
-    return (cache);
-  if (!cache || !(*cache)->num_elems)
+  if (!cache)
     return (NULL);
+  if (flags == FIND_COLORMAP)
+    return (*cache);
 
   /* Depth */
   cache = (XawCache **)bsearch((void *)depth, (*cache)->elems,
 			       (*cache)->num_elems, sizeof(XtPointer),
 			       bcmp_long);
+
+  if (!cache)
+    return (NULL);
+  return (*cache);
+}
+
+static XawCache *
+_XawGetCache(XawCache *xaw, Screen *screen, Colormap colormap, int depth)
+{
+  XawCache *s_cache, *c_cache, *d_cache, *cache, *pcache;
+
+  cache = _XawFindCache(xaw, screen, colormap, depth, FIND_ALL);
+
+  if (!cache)
+    {
+      s_cache = _XawFindCache(xaw,
+			      screen, colormap, depth, FIND_SCREEN);
+      if (!s_cache)
+	{
+	  pcache = (XawCache *)XtMalloc(sizeof(XawCache));
+	  if (!xaw->num_elems)
+	    {
+	      xaw->num_elems = 1;
+	      xaw->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
+	    }
+	  else
+	    {
+	      ++xaw->num_elems;
+	      xaw->elems = (XtPointer*)
+		XtRealloc((char *)xaw->elems,
+			  sizeof(XtPointer) * xaw->num_elems);
+	    }
+	  pcache->value = (long)screen;
+	  pcache->elems = (XtPointer *)NULL;
+	  pcache->num_elems = 0;
+	  xaw->elems[xaw->num_elems - 1] = (XtPointer)pcache;
+	  s_cache = (XawCache *)xaw->elems[xaw->num_elems - 1];
+	  if (xaw->num_elems > 1)
+	    qsort(xaw->elems, xaw->num_elems, sizeof(XtPointer), qcmp_long);
+	}
+
+      c_cache = _XawFindCache(xaw,
+			      screen, colormap, depth, FIND_COLORMAP);
+      if (!c_cache)
+	{
+	  pcache = (XawCache *)XtMalloc(sizeof(XawCache));
+	  if (!s_cache->num_elems)
+	    {
+	      s_cache->num_elems = 1;
+	      s_cache->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
+	    }
+	  else
+	    {
+	      ++s_cache->num_elems;
+	      s_cache->elems = (XtPointer*)
+		XtRealloc((char *)s_cache->elems,
+			  sizeof(XtPointer) * s_cache->num_elems);
+	    }
+	  pcache->value = (long)colormap;
+	  pcache->elems = (XtPointer *)NULL;
+	  pcache->num_elems = 0;
+	  s_cache->elems[s_cache->num_elems - 1] = (XtPointer)pcache;
+	  c_cache = (XawCache *)s_cache->elems[s_cache->num_elems - 1];
+	  if (s_cache->num_elems > 1)
+	    qsort(s_cache->elems, s_cache->num_elems,
+		  sizeof(XtPointer), qcmp_long);
+	}
+
+      d_cache = _XawFindCache(xaw,
+			      screen, colormap, depth, FIND_DEPTH);
+      if (!d_cache)
+	{
+	  pcache = (XawCache *)XtMalloc(sizeof(XawCache));
+	  if (!c_cache->num_elems)
+	    {
+	      c_cache->num_elems = 1;
+	      c_cache->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
+	    }
+	  else
+	    {
+	      ++c_cache->num_elems;
+	      c_cache->elems = (XtPointer*)
+		XtRealloc((char *)c_cache->elems,
+			  sizeof(XtPointer) * c_cache->num_elems);
+	    }
+	  pcache->value = (long)depth;
+	  pcache->elems = (XtPointer *)NULL;
+	  pcache->num_elems = 0;
+	  c_cache->elems[c_cache->num_elems - 1] = (XtPointer)pcache;
+	  d_cache = (XawCache *)c_cache->elems[c_cache->num_elems - 1];
+	  if (c_cache->num_elems > 1)
+	    qsort(c_cache->elems, c_cache->num_elems,
+		  sizeof(XtPointer), qcmp_long);
+	}
+
+      cache = d_cache;
+    }
 
   return (cache);
 }
@@ -429,17 +606,17 @@ _XawFindCache(Screen *screen, Colormap colormap, int depth, int flags)
 XawPixmap *
 _XawFindPixmap(String name, Screen *screen, Colormap colormap, int depth)
 {
-  XawCache **cache;
+  XawCache *cache;
   XawPixmap **pixmap;
 
-  cache = _XawFindCache(screen, colormap, depth, FIND_ALL);
+  cache = _XawFindCache(&xaw_pixmaps, screen, colormap, depth, FIND_ALL);
 
-  if (!cache || !(*cache)->num_elems)
+  if (!cache)
     return (NULL);
 
   /* Name */
-  pixmap = (XawPixmap **)bsearch((void *)name, (*cache)->elems,
-				 (*cache)->num_elems, sizeof(XtPointer),
+  pixmap = (XawPixmap **)bsearch((void *)name, cache->elems,
+				 cache->num_elems, sizeof(XtPointer),
 				 bcmp_string);
   if (!pixmap)
     return (NULL);
@@ -447,117 +624,72 @@ _XawFindPixmap(String name, Screen *screen, Colormap colormap, int depth)
   return (*pixmap);
 }
 
+XawPixmap *
+XawPixmapFromXPixmap(Pixmap pixmap,
+		     Screen *screen, Colormap colormap, int depth)
+{
+  XawCache *cache;
+  XawPixmap **x_pixmap;
+
+  cache = _XawFindCache(&x_pixmaps, screen, colormap, depth, FIND_ALL);
+
+  if (!cache)
+    return (NULL);
+
+  /* Pixmap */
+  x_pixmap = (XawPixmap **)bsearch((void *)pixmap, cache->elems,
+				   cache->num_elems, sizeof(XtPointer),
+				   bcmp_x_cache);
+  if (!x_pixmap)
+    return (NULL);
+
+  return (*x_pixmap);
+}
+
 void
 _XawCachePixmap(XawPixmap *pixmap,
 		Screen *screen, Colormap colormap, int depth)
 {
-  XawCache **s_cache, **c_cache, **d_cache, **cache, *pcache;
+  XawCache *xaw_cache, *x_cache;
 
-  cache = _XawFindCache(screen, colormap, depth, FIND_ALL);
+  xaw_cache = _XawGetCache(&xaw_pixmaps, screen, colormap, depth);
+  x_cache = _XawGetCache(&x_pixmaps, screen, colormap, depth);
 
-  if (!cache)
+  if (!xaw_cache->num_elems)
     {
-      s_cache = _XawFindCache(screen, colormap, depth, FIND_SCREEN);
-      if (!s_cache)
-	{
-	  pcache = (XawCache *)XtMalloc(sizeof(XawCache));
-	  if (!xaw_pixmaps.num_elems)
-	    {
-	      xaw_pixmaps.num_elems = 1;
-	      xaw_pixmaps.elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
-	    }
-	  else
-	    {
-	      ++xaw_pixmaps.num_elems;
-	      xaw_pixmaps.elems = (XtPointer*)
-		XtRealloc((char *)xaw_pixmaps.elems,
-			  sizeof(XtPointer) * xaw_pixmaps.num_elems);
-	    }
-	  pcache->value = (long)screen;
-	  pcache->elems = (XtPointer *)NULL;
-	  pcache->num_elems = 0;
-	  xaw_pixmaps.elems[xaw_pixmaps.num_elems - 1] = (XtPointer)pcache;
-	  s_cache = (XawCache **)
-	    (&xaw_pixmaps.elems[xaw_pixmaps.num_elems - 1]);
-	  if (xaw_pixmaps.num_elems > 1)
-	    qsort(xaw_pixmaps.elems, xaw_pixmaps.num_elems,
-		  sizeof(XtPointer), qcmp_long);
-	}
-
-      c_cache = _XawFindCache(screen, colormap, depth, FIND_COLORMAP);
-      if (!c_cache)
-	{
-	  pcache = (XawCache *)XtMalloc(sizeof(XawCache));
-	  if (!(*s_cache)->num_elems)
-	    {
-	      (*s_cache)->num_elems = 1;
-	      (*s_cache)->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
-	    }
-	  else
-	    {
-	      ++(*s_cache)->num_elems;
-	      (*s_cache)->elems = (XtPointer*)
-		XtRealloc((char *)(*s_cache)->elems,
-			  sizeof(XtPointer) * (*s_cache)->num_elems);
-	    }
-	  pcache->value = (long)colormap;
-	  pcache->elems = (XtPointer *)NULL;
-	  pcache->num_elems = 0;
-	  (*s_cache)->elems[(*s_cache)->num_elems - 1] = (XtPointer)pcache;
-	  c_cache = (XawCache **)
-	    &(*s_cache)->elems[(*s_cache)->num_elems - 1];
-	  if ((*s_cache)->num_elems > 1)
-	    qsort((*s_cache)->elems, (*s_cache)->num_elems,
-		  sizeof(XtPointer), qcmp_long);
-	}
-
-      d_cache = _XawFindCache(screen, colormap, depth, FIND_DEPTH);
-      if (!d_cache)
-	{
-	  pcache = (XawCache *)XtMalloc(sizeof(XawCache));
-	  if (!(*c_cache)->num_elems)
-	    {
-	      (*c_cache)->num_elems = 1;
-	      (*c_cache)->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
-	    }
-	  else
-	    {
-	      ++(*c_cache)->num_elems;
-	      (*c_cache)->elems = (XtPointer*)
-		XtRealloc((char *)(*c_cache)->elems,
-			  sizeof(XtPointer) * (*c_cache)->num_elems);
-	    }
-	  pcache->value = (long)depth;
-	  pcache->elems = (XtPointer *)NULL;
-	  pcache->num_elems = 0;
-	  (*c_cache)->elems[(*c_cache)->num_elems - 1] = (XtPointer)pcache;
-	  d_cache = (XawCache **)
-	    &(*c_cache)->elems[(*c_cache)->num_elems - 1];
-	  if ((*c_cache)->num_elems > 1)
-	    qsort((*c_cache)->elems, (*c_cache)->num_elems,
-		  sizeof(XtPointer), qcmp_long);
-	}
-
-      cache = d_cache;
-    }
-
-  if (!(*cache)->num_elems)
-    {
-      (*cache)->num_elems = 1;
-      (*cache)->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
+      xaw_cache->num_elems = 1;
+      xaw_cache->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
     }
   else
     {
-      ++(*cache)->num_elems;
-      (*cache)->elems = (XtPointer*)XtRealloc((char *)(*cache)->elems,
-					      sizeof(XtPointer) *
-					      (*cache)->num_elems);
+      ++xaw_cache->num_elems;
+      xaw_cache->elems = (XtPointer*)XtRealloc((char *)xaw_cache->elems,
+					       sizeof(XtPointer) *
+					       xaw_cache->num_elems);
     }
 
-  (*cache)->elems[(*cache)->num_elems - 1] = (XtPointer)pixmap;
-  if ((*cache)->num_elems > 1)
-    qsort((*cache)->elems, (*cache)->num_elems,
+  xaw_cache->elems[xaw_cache->num_elems - 1] = (XtPointer)pixmap;
+  if (xaw_cache->num_elems > 1)
+    qsort(xaw_cache->elems, xaw_cache->num_elems,
 	  sizeof(XtPointer), qcmp_string);
+
+
+  if (!x_cache->num_elems)
+    {
+      x_cache->num_elems = 1;
+      x_cache->elems = (XtPointer*)XtMalloc(sizeof(XtPointer));
+    }
+  else
+    {
+      ++x_cache->num_elems;
+      x_cache->elems = (XtPointer*)XtRealloc((char *)x_cache->elems,
+					     sizeof(XtPointer) *
+					     x_cache->num_elems);
+    }
+
+  x_cache->elems[x_cache->num_elems - 1] = (XtPointer)pixmap;
+  if (x_cache->num_elems > 1)
+    qsort(x_cache->elems, x_cache->num_elems, sizeof(XtPointer), qcmp_x_cache);
 }
 
 Boolean
@@ -611,6 +743,13 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
     }
   else
     filename = params->name;
+
+  if (!XawSecurePixmapFile(filename))
+    {
+      if (filename != params->name)
+	XtFree(filename);
+      return (FALSE);
+    }
 
   if (XReadBitmapFileData(filename, &width, &height, &data,
 			  &hotX, &hotY) == BitmapSuccess)
