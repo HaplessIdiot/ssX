@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.35 2004/10/26 22:26:38 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -148,6 +148,7 @@ typedef enum {
     OPTION_TVENCODER,
     OPTION_REFRESH,
     OPTION_DISABLEVQ,
+    OPTION_DISABLEIRQ,
     OPTION_CAP0_DEINTERLACE,
     OPTION_CAP1_DEINTERLACE,
     OPTION_CAP0_FIELDSWAP,
@@ -178,6 +179,7 @@ static OptionInfoRec VIAOptions[] =
     {OPTION_TVENCODER,  "TVEncoder",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_REFRESH,    "Refresh",      OPTV_INTEGER, {0}, FALSE},
     {OPTION_DISABLEVQ,  "DisableVQ",    OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_DISABLEIRQ, "DisableIRQ",    OPTV_BOOLEAN, {0}, FALSE},
     {OPTION_CAP0_DEINTERLACE, "Cap0Deinterlace",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_CAP1_DEINTERLACE, "Cap1Deinterlace",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_CAP0_FIELDSWAP, "Cap0FieldSwap",    OPTV_BOOLEAN,  {0}, FALSE},
@@ -968,6 +970,15 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     else {
         pVia->VQEnable = TRUE;
+    }
+
+    if (xf86ReturnOptValBool(VIAOptions, OPTION_DISABLEIRQ, FALSE)) {
+        pVia->DRIIrqEnable = FALSE;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                   "Option: DisableIRQ - DRI IRQ Disabled\n");
+    }
+    else {
+        pVia->DRIIrqEnable = TRUE;
     }
 
     /* ActiveDevice Option for device selection */

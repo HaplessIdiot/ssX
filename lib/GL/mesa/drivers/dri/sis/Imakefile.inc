@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/sis/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/sis/Imakefile.inc,v 1.2 2004/04/22 13:58:40 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -23,7 +23,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(GLXLIBSRC)/include \
 		-I$(SERVERSRC)/GL/dri \
 		-I$(XF86OSSRC) \
-		-I$(XF86OSSRC)/shared/drm/kernel \
+		-I$(DRMSRCDIR)/shared \
 		-I$(XF86DRIVERSRC)/sis \
 		-I$(GLXLIBSRC)/dri/drm
 #endif
@@ -31,6 +31,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa/glapi \
+		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/include \
 		-I$(MESADRVSRCDIR)/common \
 		-I$(MESADRVSRCDIR)/sis
@@ -62,7 +63,6 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)sis_tex.c \
 		$(MESADRVSISBUILDDIR)sis_texstate.c \
 		$(MESADRVSISBUILDDIR)sis_tris.c \
-		$(MESADRVSISBUILDDIR)sis_vb.c \
 		$(DEBUG_SRC)
 
       SISOBJS = $(MESADRVSISBUILDDIR)sis_alloc.o \
@@ -78,7 +78,6 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)sis_tex.o \
 		$(MESADRVSISBUILDDIR)sis_texstate.o \
 		$(MESADRVSISBUILDDIR)sis_tris.o \
-		$(MESADRVSISBUILDDIR)sis_vb.o \
 		$(DEBUG_OBJ)
 
       SISEOBJS = $(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_alloc.o \
@@ -94,7 +93,6 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_tex.o \
 		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_texstate.o \
 		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_tris.o \
-		$(MESADRVSISBUILDDIR)$(EXTRASUBDIR)/sis_vb.o \
 		$(DEBUG_EOBJ)
 
       SISUOBJS = $(MESADRVSISBUILDDIR)unshared/sis_alloc.o \
@@ -110,7 +108,6 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)unshared/sis_tex.o \
 		$(MESADRVSISBUILDDIR)unshared/sis_texstate.o \
 		$(MESADRVSISBUILDDIR)unshared/sis_tris.o \
-		$(MESADRVSISBUILDDIR)unshared/sis_vb.o \
 		$(DEBUG_UOBJ)
 
       SISDOBJS = $(MESADRVSISBUILDDIR)debugger/sis_alloc.o \
@@ -126,7 +123,6 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)debugger/sis_tex.o \
 		$(MESADRVSISBUILDDIR)debugger/sis_texstate.o \
 		$(MESADRVSISBUILDDIR)debugger/sis_tris.o \
-		$(MESADRVSISBUILDDIR)debugger/sis_vb.o \
 		$(DEBUG_DOBJ)
 
       SISPOBJS = $(MESADRVSISBUILDDIR)profiled/sis_alloc.o \
@@ -142,7 +138,6 @@ LinkSourceFile(sis_debug.c, $(MESADRVSRCDIR)/sis)
 		$(MESADRVSISBUILDDIR)profiled/sis_tex.o \
 		$(MESADRVSISBUILDDIR)profiled/sis_texstate.o \
 		$(MESADRVSISBUILDDIR)profiled/sis_tris.o \
-		$(MESADRVSISBUILDDIR)profiled/sis_vb.o \
 		$(DEBUG_POBJ)
 
 #ifdef NeedToLinkMesaSrc
@@ -174,6 +169,4 @@ LinkSourceFile(sis_texstate.c, $(MESADRVSRCDIR)/sis)
 LinkSourceFile(sis_tris.c, $(MESADRVSRCDIR)/sis)
 LinkSourceFile(sis_tris.h, $(MESADRVSRCDIR)/sis)
 LinkSourceFile(sis_tritmp.h, $(MESADRVSRCDIR)/sis)
-LinkSourceFile(sis_vb.c, $(MESADRVSRCDIR)/sis)
-LinkSourceFile(sis_vb.h, $(MESADRVSRCDIR)/sis)
 #endif

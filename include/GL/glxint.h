@@ -1,7 +1,7 @@
 #ifndef __GLX_glxint_h__
 #define __GLX_glxint_h__
 
-/* $XFree86: xc/include/GL/glxint.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/include/GL/glxint.h,v 1.6 2004/08/04 16:33:34 tsi Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -25,6 +25,7 @@
 
 #include <X11/X.h>
 #include <X11/Xdefs.h>
+#include "GL/gl.h"
 
 typedef struct __GLXvisualConfigRec __GLXvisualConfig;
 typedef struct __GLXFBConfigRec __GLXFBConfig;
@@ -91,36 +92,36 @@ struct __GLXFBConfigRec {
 
     unsigned int id;          
 
-    unsigned char rgbMode;
-    unsigned char colorIndexMode;
-    unsigned char doubleBufferMode;
-    unsigned char stereoMode;
-    unsigned char haveAccumBuffer;
-    unsigned char haveDepthBuffer;
-    unsigned char haveStencilBuffer;
+    GLboolean rgbMode;
+    GLboolean colorIndexMode;
+    GLboolean doubleBufferMode;
+    GLboolean stereoMode;
+    GLboolean haveAccumBuffer;
+    GLboolean haveDepthBuffer;
+    GLboolean haveStencilBuffer;
 
     /* The number of bits present in various buffers */
-    int accumRedBits, accumGreenBits, accumBlueBits, accumAlphaBits;
-    int depthBits;
-    int stencilBits;
-    int indexBits;
-    int redBits, greenBits, blueBits, alphaBits;
-    unsigned int redMask, greenMask, blueMask, alphaMask;
+    GLint accumRedBits, accumGreenBits, accumBlueBits, accumAlphaBits;
+    GLint depthBits;
+    GLint stencilBits;
+    GLint indexBits;
+    GLint redBits, greenBits, blueBits, alphaBits;
+    GLuint redMask, greenMask, blueMask, alphaMask;
 
-    unsigned int multiSampleSize;     /* Number of samples per pixel (0 if no ms) */
+    GLuint multiSampleSize;     /* Number of samples per pixel (0 if no ms) */
 
-    unsigned int nMultiSampleBuffers; /* Number of availble ms buffers */
-    int maxAuxBuffers;
+    GLuint nMultiSampleBuffers; /* Number of availble ms buffers */
+    GLint maxAuxBuffers;
 
     /* frame buffer level */
-    int level;
+    GLint level;
 
     /* color ranges (for SGI_color_range) */
-    unsigned char extendedRange;
-    double minRed, maxRed;
-    double minGreen, maxGreen;
-    double minBlue, maxBlue;
-    double minAlpha, maxAlpha;
+    GLboolean extendedRange;
+    GLdouble minRed, maxRed;
+    GLdouble minGreen, maxGreen;
+    GLdouble minBlue, maxBlue;
+    GLdouble minAlpha, maxAlpha;
 };
 
 #define __GLX_TOTAL_FBCONFIG_PROPS	 35

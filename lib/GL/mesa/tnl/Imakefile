@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile,v 1.8 2002/11/25 12:58:55 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/tnl/Imakefile,v 1.1 2004/04/08 10:08:00 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -76,6 +76,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/math \
 		-I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa/glapi \
+		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/src/mesa/swrast_setup \
 		-I$(MESASRCDIR)/src/mesa/tnl \
 		-I$(MESASRCDIR)/include \

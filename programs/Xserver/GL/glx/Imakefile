@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.15 2004/06/01 00:16:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.16 2004/06/02 22:42:55 dawes Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -60,7 +60,16 @@ MSRCS = glxmodule.c
 MOBJS = glxmodule.o
 #endif
 
+/* Large PIC tables needed for SPARC builds */
+#if defined(sparc) || defined(SparcArchitecture)
+# define LargePICTable YES
+   PICFLAGS = LargePositionIndependentCFlags
+#endif
+
 #include <Server.tmpl>
+
+LinkSourceFile(glcontextmodes.c, $(MESASRCDIR)/src/mesa/drivers/dri/common)
+LinkSourceFile(glcontextmodes.h, $(MESASRCDIR)/src/mesa/drivers/dri/common)
 
          SRCS = global.c glxbuf.c glxcmds.c glxcmdsswap.c glxext.c \
                 glxfb.c glximports.c glxmem.c glxpix.c glxscreens.c \
@@ -69,7 +78,7 @@ MOBJS = glxmodule.o
                 single2swap.c singlepix.c singlepixswap.c \
                 singlesize.c xfont.c g_disptab.c g_disptab_EXT.c \
                 g_render.c g_renderswap.c g_single.c g_singleswap.c \
-                $(MSRCS)
+                glcontextmodes.c $(MSRCS)
 
          OBJS = global.o glxbuf.o glxcmds.o glxcmdsswap.o glxext.o \
                 glxfb.o glximports.o glxmem.o glxpix.o glxscreens.o \
@@ -78,7 +87,7 @@ MOBJS = glxmodule.o
                 single2swap.o singlepix.o singlepixswap.o \
                 singlesize.o xfont.o g_disptab.o g_disptab_EXT.o \
                 g_render.o g_renderswap.o g_single.o g_singleswap.o \
-                $(MOBJS)
+                glcontextmodes.o $(MOBJS)
 
      INCLUDES = -I$(SERVERSRC)/GL/glx -I$(SERVERSRC)/GL/include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(MESASRCDIR)/include \
                 -I$(XINCLUDESRC) -I$(SERVERSRC)/mi \

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.44 2003/09/28 20:14:58 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.45 2004/04/08 10:07:32 alanh Exp $
 
 XCOMM
 XCOMM Imake tokens which are significant to building libGL:
@@ -87,7 +87,7 @@ LIBGLBUILDDIR = GL
  *   BuildXF86DRI
  */
 #if BuildXF86DRI
-      DRIDIRS = dri
+      DRIDIRS = dri/drm
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/single2.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/single2.c,v 1.15 2004/04/26 00:23:36 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include "glxclient.h"
 #include "packsingle.h"
+#include "glxextensions.h"
 
 /* Used for GL_ARB_transpose_matrix */
 static void TransposeMatrixf(GLfloat m[16])
@@ -848,10 +849,29 @@ void glFinish(void)
     __GLX_SINGLE_END();
 }
 
+
+/**
+ * Extract the major and minor version numbers from a version string.
+ */
+static void
+version_from_string( const char * ver, 
+		     int * major_version, int * minor_version )
+{
+    const char * end;
+    long major;
+    long minor;
+
+    major = strtol( ver, (char **) & end, 10 );
+    minor = strtol( end + 1, NULL, 10 );
+    *major_version = major;
+    *minor_version = minor;
+}
+
+
 const GLubyte *glGetString(GLenum name)
 {
-    __GLX_SINGLE_DECLARE_VARIABLES();
-    xGLXSingleReply reply;
+    __GLXcontext *gc = __glXGetCurrentContext();
+    Display *dpy = gc->currentDpy;
     GLubyte *s = NULL;
 
     if (!dpy) return 0;
@@ -880,66 +900,116 @@ const GLubyte *glGetString(GLenum name)
     /*
     ** Get requested string from server
     */
-    __GLX_SINGLE_LOAD_VARIABLES();
-    __GLX_SINGLE_BEGIN(X_GLsop_GetString,4);
-    __GLX_SINGLE_PUT_LONG(0,name);
-    __GLX_SINGLE_READ_XREPLY();
-    __GLX_SINGLE_GET_SIZE(compsize);
-    s = (GLubyte*) Xmalloc(compsize);
+
+    (void) __glXFlushRenderBuffer( gc, gc->pc );
+    s = (GLubyte *) __glXGetStringFromServer( dpy, gc->majorOpcode,
+				  X_GLsop_GetString, gc->currentContextTag,
+				  name );
     if (!s) {
 	/* Throw data on the floor */
-	_XEatData(dpy, compsize);
 	__glXSetError(gc, GL_OUT_OF_MEMORY);
     } else {
-	__GLX_SINGLE_GET_CHAR_ARRAY(s,compsize);
-
 	/*
 	** Update local cache
 	*/
 	switch(name) {
-	  case GL_VENDOR:
+	case GL_VENDOR:
 	    gc->vendor = s;
 	    break;
-	  case GL_RENDERER:
+
+	case GL_RENDERER:
 	    gc->renderer = s;
 	    break;
-	  case GL_VERSION: {
-	     double server_version = strtod((char *)s, NULL);
-	     double client_version = strtod(__glXGLClientVersion, NULL);
 
-	     if ( server_version <= client_version ) {
+	case GL_VERSION: {
+	    int client_major;
+	    int client_minor;
+
+	    version_from_string( (char *) s, 
+				 & gc->server_major, & gc->server_minor );
+	    __glXGetGLVersion( & client_major, & client_minor );
+
+	    if ( (gc->server_major < client_major)
+		 || ((gc->server_major == client_major) 
+		     && (gc->server_minor <= client_minor)) ) {
 		gc->version = s;
-	     }
-	     else {
-		gc->version = Xmalloc( strlen(__glXGLClientVersion)
-				       + strlen((char *)s) + 4 );
+	    }
+	    else {
+		/* Allow 7 bytes for the client-side GL version.  This allows
+		 * for upto version 999.999.  I'm not holding my breath for
+		 * that one!  The extra 4 is for the ' ()\0' that will be
+		 * added.
+		 */
+		const size_t size = 7 + strlen( (char *) s ) + 4;
+
+		gc->version = Xmalloc( size );
 		if ( gc->version == NULL ) {
-		   /* If we couldn't allocate memory for the new string,
-		    * make a best-effort and just copy the client-side version
-		    * to the string and use that.  It probably doesn't
-		    * matter what is done here.  If there not memory available
-		    * for a short string, the system is probably going to die
-		    * soon anyway.
-		    */
-		   strcpy((char *)s, __glXGLClientVersion);
+		    /* If we couldn't allocate memory for the new string,
+		     * make a best-effort and just copy the client-side version
+		     * to the string and use that.  It probably doesn't
+		     * matter what is done here.  If there not memory available
+		     * for a short string, the system is probably going to die
+		     * soon anyway.
+		     */
+		    snprintf( (char *) s, strlen( (char *) s ) + 1, "%u.%u",
+			      client_major, client_minor );
+		    gc->version = s;
 		}
 		else {
-		   sprintf( (char *)gc->version, "%s (%s)", __glXGLClientVersion, s );
-		   Xfree( s );
-		   s = gc->version;
+		    snprintf( (char *)gc->version, size, "%u.%u (%s)",
+			      client_major, client_minor, s );
+		    Xfree( s );
+		    s = gc->version;
 		}
-	     }
-	     break;
-	  }
-	  case GL_EXTENSIONS:
-	    gc->extensions = (GLubyte *)__glXCombineExtensionStrings( (char *)s,
-				__glXGLClientExtensions );
+	    }
+	    break;
+	}
+
+	case GL_EXTENSIONS: {
+	    int major = 1;
+	    int minor = 0;
+
+	    /* This code is currently disabled.  I was reminded that some
+	     * vendors intentionally exclude some extensions from their
+	     * extension string that are part of the core version they
+	     * advertise.  In particular, on Nvidia drivers this means that
+	     * the functionality is supported by the driver, but is not
+	     * hardware accelerated.  For example, a TNT will show core
+	     * version 1.5, but most of the post-1.2 functionality is a
+	     * software fallback.
+	     * 
+	     * I don't want to break applications that rely on this odd
+	     * behavior.  At the same time, the code is written and tested,
+	     * so I didn't want to throw it away.  Therefore, the code is here
+	     * but disabled.  In the future, we may wish to and an environment
+	     * variable to enable it.
+	     */
+	    
+#if 0
+	    /* Call glGetString just to make sure that gc->server_major and
+	     * gc->server_minor are set.  This version may be higher than we
+	     * can completely support, but it may imply support for some
+	     * extensions that we can support.
+	     * 
+	     * For example, at the time of this writing, the client-side
+	     * library only supports upto core GL version 1.2.  However, cubic
+	     * textures, multitexture, multisampling, and some other 1.3
+	     * features are supported.  If the server reports back version
+	     * 1.3, but does not report all of those extensions, we will
+	     * enable them.
+	     */
+	    (void *) glGetString( GL_VERSION );
+	    major = gc->server_major,
+	    minor = gc->server_minor;
+#endif
+
+	    __glXCalculateUsableGLExtensions( gc, (char *) s, major, minor );
 	    XFree( s );
 	    s = gc->extensions;
 	    break;
 	}
+	}
     }
-    __GLX_SINGLE_END();
     return s;
 }
 

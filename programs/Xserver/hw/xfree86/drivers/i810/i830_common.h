@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.3 2004/06/10 13:08:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.4 2004/06/10 18:07:06 alanh Exp $ */
 
 #ifndef _I830_COMMON_H_
 #define _I830_COMMON_H_
@@ -103,7 +103,7 @@ typedef struct {
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
         int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-        XF86DRIClipRectRec *cliprects; /* pointer to userspace cliprects */
+        drm_clip_rect_t *cliprects; /* pointer to userspace cliprects */
 } drmI830BatchBuffer;
 
 typedef struct {
@@ -112,7 +112,7 @@ typedef struct {
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
         int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO*/
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-        XF86DRIClipRectRec *cliprects; /* pointer to userspace cliprects */
+        drm_clip_rect_t *cliprects; /* pointer to userspace cliprects */
 } drmI830CmdBuffer;
 
 typedef struct {

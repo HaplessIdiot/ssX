@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.28 2004/04/26 16:24:26 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.29 2004/06/01 00:16:56 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -83,10 +83,13 @@ XCOMM 	glw
 
 LinkSourceFile(glapi.c, $(MESASRCDIR)/src/mesa/glapi)
 LinkSourceFile(glthread.c, $(MESASRCDIR)/src/mesa/glapi)
-#if defined(i386Architecture)
+LinkSourceFile(glcontextmodes.c, $(MESASRCDIR)/src/mesa/drivers/dri/common)
+LinkSourceFile(glcontextmodes.h, $(MESASRCDIR)/src/mesa/drivers/dri/common)
+
+#ifdef i386Architecture
 LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/mesa/x86)
 #endif
-#if defined(SparcArchitecture) && !defined(OpenBSDArchitecture)
+#ifdef SparcArchitecture
 LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 #endif
 
@@ -116,10 +119,13 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 		single2.c \
 		singlepix.c \
 		vertarr.c \
-	        xfont.c
+		xfont.c \
+		glx_pbuffer.c \
+		glx_query.c \
+		glx_texture_compression.c
 
      GLX_OBJS = \
-	        clientattrib.o \
+		clientattrib.o \
 		compsize.o \
 		dispatch.o \
 		eval.o \
@@ -140,9 +146,13 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 		single2.o \
 		singlepix.o \
 		vertarr.o \
-	        xfont.o
+		xfont.o \
+		glx_pbuffer.o \
+		glx_query.o \
+		glx_texture_compression.o
 
-     GLX_DEFS = GlxDefines VidModeExtensionDefines
+     GLX_DEFS = GlxDefines VidModeExtensionDefines \
+	        -DDEFAULT_DRIVER_DIR=\"$(MODULEDIR)/dri\"
 
 #ifdef i386Architecture
       ASM_DIR = x86
@@ -152,7 +162,10 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 #endif
 
 #if BuildXF86DRI
-     DRI_INCS = -I$(GLXLIBSRC)/dri -I$(SERVERSRC)/GL/dri
+     DRI_SRCS = dri_glx.c XF86dri.c
+     DRI_OBJS = dri_glx.o XF86dri.o
+
+     DRI_INCS = -I$(SERVERSRC)/GL/dri
 #if defined(i386Architecture) && MesaUseX86Asm
      ASM_SRCS = glapi_x86.S
      ASM_OBJS = glapi_x86.o
@@ -169,25 +182,33 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/mesa/sparc)
 #endif
 #endif
 
-#if defined(DarwinArchitecture) || defined(OS2Architecture)
-  ALIAS_DEFINES = -DGLX_ALIAS_UNSUPPORTED
+#if defined(DarwinArchitecture) || defined(OS2Architecture) || \
+defined(LynxOSArchitecture)
+ALIAS_DEFINES = -DGLX_ALIAS_UNSUPPORTED
+#endif
+#if defined(DarwinArchitecture) && BuildAppleDRI
+     DRI_SRCS = XF86dri.c
+     DRI_OBJS = XF86dri.o
+
+     DRI_INCS = -I$(SERVERSRC)/GL/dri
 #endif
 
-         SRCS = $(GLX_SRCS) $(ASM_SRCS)
-         OBJS = $(GLX_OBJS) $(ASM_OBJS)
-      DEFINES = $(GLX_DEFS) $(ASM_DEFS) $(XMESA_DEFINES) $(ALIAS_DEFINES)
+         SRCS = $(GLX_SRCS) $(ASM_SRCS) $(DRI_SRCS)
+         OBJS = $(GLX_OBJS) $(ASM_OBJS) $(DRI_OBJS)
+      DEFINES = $(GLX_DEFS) $(ASM_DEFS) $(XMESA_DEFINES) $(ALIAS_DEFINES) \
+	        $(THREADS_DEFINES)
 
      INCLUDES = -I$(XINCLUDESRC) \
 		-I$(MESASRCDIR)/include \
 		-I$(EXTINCSRC) \
-		-I$(INCLUDESRC)/GL \
 		-I$(GLXLIBSRC)/glx \
 		-I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa/glapi \
 		-I$(MESASRCDIR)/src/mesa/drivers/x11 \
 		-I$(MESASRCDIR)/src/mesa/$(ASM_DIR) \
 		-I$(XF86OSSRC) \
- 		$(DRI_INCS)
+		-I$(DRMSRCDIR)/shared \
+		$(DRI_INCS)
 
 #include <Library.tmpl>
 
@@ -201,7 +222,7 @@ STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 ObjectFromAsmSource(glapi_sparc, NullParameter)
 #endif
 
-AllTarget($(OBJS))
+SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
 DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/Imakefile,v 1.1 2004/04/08 10:07:34 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/Imakefile,v 1.2 2004/10/19 04:27:49 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -104,7 +104,7 @@ ASM_SUBDIRS = sparc
 #define IHaveSubdirs
 #define PassCDebugFlags
 
-SUBDIRS = $(ASM_SUBDIRS) array_cache main math swrast swrast_setup tnl
+SUBDIRS = $(ASM_SUBDIRS) array_cache main math shader swrast swrast_setup tnl
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.3 2004/04/26 00:23:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.4 2004/06/11 08:10:33 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -65,6 +65,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/internal/glcore.h>
 #endif
 
+#include "glcontextmodes.h"
 
 /*
  * This structure is statically allocated in the __glXScreens[]
@@ -75,11 +76,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * struct.  In particular, the contextCreate, pGlxVisual, numVisuals,
  * and numUsableVisuals fields must be initialized.
  */
-__GLXscreenInfo __glDDXScreenInfo = {
+static __GLXscreenInfo __glDDXScreenInfo = {
     __MESA_screenProbe,   /* Must be generic and handle all screens */
     __MESA_createContext, /* Substitute screen's createContext routine */
     __MESA_createBuffer,  /* Substitute screen's createBuffer routine */
-    NULL,                 /* Set up pGlxVisual in probe */
+    NULL,                 /* Set up modes in probe */
     NULL,                 /* Set up pVisualPriv in probe */
     0,                    /* Set up numVisuals in probe */
     0,                    /* Set up numUsableVisuals in probe */
@@ -89,14 +90,23 @@ __GLXscreenInfo __glDDXScreenInfo = {
     NULL                  /* WrappedPositionWindow is overwritten */
 };
 
-__GLXextensionInfo __glDDXExtensionInfo = {
+void *__glXglDDXScreenInfo(void) {
+    return &__glDDXScreenInfo;
+}
+
+static __GLXextensionInfo __glDDXExtensionInfo = {
     GL_CORE_MESA,
     __MESA_resetExtension,
     __MESA_initVisuals,
     __MESA_setVisualConfigs
 };
 
+void *__glXglDDXExtensionInfo(void) {
+    return &__glDDXExtensionInfo;
+}
+
 static __MESA_screen  MESAScreens[MAXSCREENS];
+static __GLcontext   *MESA_CC        = NULL;
 
 static int                 numConfigs     = 0;
 static __GLXvisualConfig  *visualConfigs  = NULL;
@@ -117,18 +127,19 @@ static int count_bits(unsigned int n)
 
 static XMesaVisual find_mesa_visual(int screen, VisualID vid)
 {
-    XMesaVisual xm_vis = NULL;
-    __MESA_screen *pMScr = &MESAScreens[screen];
-    int i;
+    __MESA_screen * const pMScr = &MESAScreens[screen];
+    const __GLcontextModes *modes;
+    unsigned i = 0;
 
-    for (i = 0; i < pMScr->num_vis; i++) {
-	if (pMScr->glx_vis[i].vid == vid) {
-	    xm_vis = pMScr->xm_vis[i];
+    for ( modes = pMScr->modes ; modes != NULL ; modes = modes->next ) {
+	if ( modes->visualID == vid ) {
 	    break;
 	}
+
+	i++;
     }
 
-    return xm_vis;
+    return (modes != NULL) ? pMScr->xm_vis[i] : NULL;
 }
 
 
@@ -256,7 +267,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
     VisualPtr pVisual = *visualp;
     VisualPtr pVisualNew = NULL;
     VisualID *orig_vid = NULL;
-    __GLXvisualConfig *glXVisualPtr = NULL;
+    __GLcontextModes *modes;
     __GLXvisualConfig *pNewVisualConfigs = NULL;
     void **glXVisualPriv;
     void **pNewVisualPriv;
@@ -330,9 +341,8 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
     }
 
     /* Alloc space for the list of glXVisuals */
-    glXVisualPtr = (__GLXvisualConfig *)__glXMalloc(numNewVisuals *
-						    sizeof(__GLXvisualConfig));
-    if (!glXVisualPtr) {
+    modes = _gl_context_modes_create(numNewVisuals, sizeof(__GLcontextModes));
+    if (modes == NULL) {
 	__glXFree(orig_vid);
 	__glXFree(pNewVisualPriv);
 	__glXFree(pNewVisualConfigs);
@@ -342,7 +352,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
     /* Alloc space for the list of glXVisualPrivates */
     glXVisualPriv = (void **)__glXMalloc(numNewVisuals * sizeof(void *));
     if (!glXVisualPriv) {
-	__glXFree(glXVisualPtr);
+	_gl_context_modes_destroy( modes );
 	__glXFree(orig_vid);
 	__glXFree(pNewVisualPriv);
 	__glXFree(pNewVisualConfigs);
@@ -353,7 +363,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
     pVisualNew = (VisualPtr)__glXMalloc(numNewVisuals * sizeof(VisualRec));
     if (!pVisualNew) {
 	__glXFree(glXVisualPriv);
-	__glXFree(glXVisualPtr);
+	_gl_context_modes_destroy( modes );
 	__glXFree(orig_vid);
 	__glXFree(pNewVisualPriv);
 	__glXFree(pNewVisualConfigs);
@@ -362,6 +372,7 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 
     /* Initialize the new visuals */
     found_default = FALSE;
+    MESAScreens[screenInfo.numScreens-1].modes = modes;
     for (i = j = 0; i < numVisuals; i++) {
         int is_rgb = (pVisual[i].class == TrueColor ||
 		      pVisual[i].class == DirectColor);
@@ -369,6 +380,8 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 	for (k = 0; k < numNewConfigs; k++) {
 	    if (pNewVisualConfigs[k].rgba != is_rgb)
 		continue;
+
+	    assert( modes != NULL );
 
 	    /* Initialize the new visual */
 	    pVisualNew[j] = pVisual[i];
@@ -384,8 +397,8 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 	    orig_vid[j] = pVisual[i].vid;
 
 	    /* Initialize the glXVisual */
-	    glXVisualPtr[j] = pNewVisualConfigs[k];
-	    glXVisualPtr[j].vid = pVisualNew[j].vid;
+	    _gl_copy_visual_to_context_mode( modes, & pNewVisualConfigs[k] );
+	    modes->visualID = pVisualNew[j].vid;
 
 	    /*
 	     * If the class is -1, then assume the X visual information
@@ -393,30 +406,27 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 	     * visual.  NOTE: if class != -1, then all other fields MUST
 	     * be initialized.
 	     */
-	    if (glXVisualPtr[j].class == -1) {
-		glXVisualPtr[j].class      = pVisual[i].class;
-		glXVisualPtr[j].redSize    = count_bits(pVisual[i].redMask);
-		glXVisualPtr[j].greenSize  = count_bits(pVisual[i].greenMask);
-		glXVisualPtr[j].blueSize   = count_bits(pVisual[i].blueMask);
-		glXVisualPtr[j].alphaSize  = glXVisualPtr[j].alphaSize;
-		glXVisualPtr[j].redMask    = pVisual[i].redMask;
-		glXVisualPtr[j].greenMask  = pVisual[i].greenMask;
-		glXVisualPtr[j].blueMask   = pVisual[i].blueMask;
-		glXVisualPtr[j].alphaMask  = glXVisualPtr[j].alphaMask;
-		if (is_rgb) {
-		    glXVisualPtr[j].bufferSize = glXVisualPtr[j].redSize +
-		                                 glXVisualPtr[j].greenSize +
-		                                 glXVisualPtr[j].blueSize +
-		                                 glXVisualPtr[j].alphaSize;
-		} else {
-		    glXVisualPtr[j].bufferSize = rootDepth;
-		}
+	    if (modes->visualType == GLX_NONE) {
+		modes->visualType = _gl_convert_from_x_visual_type( pVisual[i].class );
+		modes->redBits    = count_bits(pVisual[i].redMask);
+		modes->greenBits  = count_bits(pVisual[i].greenMask);
+		modes->blueBits   = count_bits(pVisual[i].blueMask);
+		modes->alphaBits  = modes->alphaBits;
+		modes->redMask    = pVisual[i].redMask;
+		modes->greenMask  = pVisual[i].greenMask;
+		modes->blueMask   = pVisual[i].blueMask;
+		modes->alphaMask  = modes->alphaMask;
+		modes->rgbBits = (is_rgb)
+		    ? (modes->redBits + modes->greenBits +
+		       modes->blueBits + modes->alphaBits)
+		    : rootDepth;
 	    }
 
 	    /* Save the device-dependent private for this visual */
 	    glXVisualPriv[j] = pNewVisualPriv[k];
 
 	    j++;
+	    modes = modes->next;
 	}
     }
 
@@ -424,7 +434,6 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 
     /* Save the GLX visuals in the screen structure */
     MESAScreens[screenInfo.numScreens-1].num_vis = numNewVisuals;
-    MESAScreens[screenInfo.numScreens-1].glx_vis = glXVisualPtr;
     MESAScreens[screenInfo.numScreens-1].private = glXVisualPriv;
 
     /* Set up depth's VisualIDs */
@@ -498,27 +507,28 @@ static void fixup_visuals(int screen)
 {
     ScreenPtr pScreen = screenInfo.screens[screen];
     __MESA_screen *pMScr = &MESAScreens[screen];
-    __GLXvisualConfig *pGLXVis  = pMScr->glx_vis;
-    VisualPtr pVis;
-    int i, j;
+    int j;
+    __GLcontextModes *modes;
 
-    for (i = 0; i < pMScr->num_vis; i++, pGLXVis++) {
-	pVis = pScreen->visuals;
+    for ( modes = pMScr->modes ; modes != NULL ; modes = modes->next ) {
+	const int vis_class = _gl_convert_to_x_visual_type( modes->visualType );
+	const int nplanes = (modes->rgbBits - modes->alphaBits);
+	const VisualPtr pVis = pScreen->visuals;
 
 	/* Find a visual that matches the GLX visual's class and size */
-	for (j = 0; j < pScreen->numVisuals; j++, pVis++) {
-	    if (pVis->class == pGLXVis->class &&
-		pVis->nplanes == (pGLXVis->bufferSize - pGLXVis->alphaSize)) {
+	for (j = 0; j < pScreen->numVisuals; j++) {
+	    if (pVis[j].class == vis_class &&
+		pVis[j].nplanes == nplanes) {
 
 		/* Fixup the masks */
-		pGLXVis->redMask   = pVis->redMask;
-		pGLXVis->greenMask = pVis->greenMask;
-		pGLXVis->blueMask  = pVis->blueMask;
+		modes->redMask   = pVis[j].redMask;
+		modes->greenMask = pVis[j].greenMask;
+		modes->blueMask  = pVis[j].blueMask;
 
 		/* Recalc the sizes */
-		pGLXVis->redSize   = count_bits(pGLXVis->redMask);
-		pGLXVis->greenSize = count_bits(pGLXVis->greenMask);
-		pGLXVis->blueSize  = count_bits(pGLXVis->blueMask);
+		modes->redBits   = count_bits(modes->redMask);
+		modes->greenBits = count_bits(modes->greenMask);
+		modes->blueBits  = count_bits(modes->blueMask);
 	    }
 	}
     }
@@ -527,9 +537,8 @@ static void fixup_visuals(int screen)
 static void init_screen_visuals(int screen)
 {
     ScreenPtr pScreen = screenInfo.screens[screen];
-    __GLXvisualConfig *pGLXVis = MESAScreens[screen].glx_vis;
+    __GLcontextModes *modes;
     XMesaVisual *pXMesaVisual;
-    VisualPtr pVis;
     int *used;
     int i, j;
 
@@ -539,49 +548,70 @@ static void init_screen_visuals(int screen)
     __glXMemset(pXMesaVisual, 0,
 		MESAScreens[screen].num_vis * sizeof(XMesaVisual));
 
+    /* FIXME: Change 'used' to be a array of bits (rather than of ints),
+     * FIXME: create a stack array of 8 or 16 bytes.  If 'numVisuals' is less
+     * FIXME: than 64 or 128 the stack array can be used instead of calling
+     * FIXME: __glXMalloc / __glXFree.  If nothing else, convert 'used' to
+     * FIXME: array of bytes instead of ints!
+     */
     used = (int *)__glXMalloc(pScreen->numVisuals * sizeof(int));
     __glXMemset(used, 0, pScreen->numVisuals * sizeof(int));
 
-    for (i = 0; i < MESAScreens[screen].num_vis; i++, pGLXVis++) {
+    i = 0;
+    for ( modes = MESAScreens[screen].modes 
+	  ; modes != NULL
+	  ; modes = modes->next ) {
+	const int vis_class = _gl_convert_to_x_visual_type( modes->visualType );
+	const int nplanes = (modes->rgbBits - modes->alphaBits);
+	const VisualPtr pVis = pScreen->visuals;
 
-	pVis = pScreen->visuals;
-	for (j = 0; j < pScreen->numVisuals; j++, pVis++) {
-
-	    if (pVis->class == pGLXVis->class &&
-		pVis->nplanes == (pGLXVis->bufferSize - pGLXVis->alphaSize) &&
+	for (j = 0; j < pScreen->numVisuals; j++) {
+	    if (pVis[j].class     == vis_class &&
+		pVis[j].nplanes   == nplanes &&
+		pVis[j].redMask   == modes->redMask &&
+		pVis[j].greenMask == modes->greenMask &&
+		pVis[j].blueMask  == modes->blueMask &&
 		!used[j]) {
 
-		if (pVis->redMask   == pGLXVis->redMask &&
-		    pVis->greenMask == pGLXVis->greenMask &&
-		    pVis->blueMask  == pGLXVis->blueMask) {
+		/* Create the XMesa visual */
+		pXMesaVisual[i] =
+		    XMesaCreateVisual(pScreen,
+				      pVis,
+				      modes->rgbMode,
+				      (modes->alphaBits > 0),
+				      modes->doubleBufferMode,
+				      modes->stereoMode,
+				      GL_TRUE, /* ximage_flag */
+				      modes->depthBits,
+				      modes->stencilBits,
+				      modes->accumRedBits,
+				      modes->accumGreenBits,
+				      modes->accumBlueBits,
+				      modes->accumAlphaBits,
+				      modes->samples,
+				      modes->level,
+				      modes->visualRating);
+		/* Set the VisualID */
+		modes->visualID = pVis[j].vid;
 
-		    /* Create the XMesa visual */
-		    pXMesaVisual[i] =
-                         XMesaCreateVisual(pScreen,
-					   pVis,
-					   pGLXVis->rgba,
-					   (pGLXVis->alphaSize > 0),
-					   pGLXVis->doubleBuffer,
-					   pGLXVis->stereo,
-					   GL_TRUE, /* ximage_flag */
-					   pGLXVis->depthSize,
-					   pGLXVis->stencilSize,
-					   pGLXVis->accumRedSize,
-					   pGLXVis->accumGreenSize,
-					   pGLXVis->accumBlueSize,
-					   pGLXVis->accumAlphaSize,
-                                           0,  /* numSamples */
-					   pGLXVis->level,
-                                           pGLXVis->visualRating );
-		    /* Set the VisualID */
-		    pGLXVis->vid = pVis->vid;
-
-		    /* Mark this visual used */
-		    used[j] = 1;
-		    break;
-		}
+		/* Mark this visual used */
+		used[j] = 1;
+		break;
 	    }
 	}
+
+	if ( j == pScreen->numVisuals ) {
+	    ErrorF("No matching visual for __GLcontextMode with "
+		   "visual class = %d (%d), nplanes = %u\n",
+		   vis_class, 
+		   modes->visualType,
+		   (modes->rgbBits - modes->alphaBits) );
+	}
+	else if ( modes->visualID == -1 ) {
+	    FatalError( "Matching visual found, but visualID still -1!\n" );
+	}
+
+	i++;
     }
 
     __glXFree(used);
@@ -594,7 +624,7 @@ Bool __MESA_screenProbe(int screen)
     /*
      * Set up the current screen's visuals.
      */
-    __glDDXScreenInfo.pGlxVisual = MESAScreens[screen].glx_vis;
+    __glDDXScreenInfo.modes = MESAScreens[screen].modes;
     __glDDXScreenInfo.pVisualPriv = MESAScreens[screen].private;
     __glDDXScreenInfo.numVisuals =
 	__glDDXScreenInfo.numUsableVisuals = MESAScreens[screen].num_vis;
@@ -633,25 +663,30 @@ extern void __MESA_resetExtension(void)
 		MESAScreens[i].xm_vis[j] = NULL;
 	  }
 	}
-	__glXFree(MESAScreens[i].glx_vis);
-	MESAScreens[i].glx_vis = NULL;
+	_gl_context_modes_destroy( MESAScreens[i].modes );
+	MESAScreens[i].modes = NULL;
 	__glXFree(MESAScreens[i].private);
 	MESAScreens[i].private = NULL;
 	__glXFree(MESAScreens[i].xm_vis);
 	MESAScreens[i].xm_vis = NULL;
 	MESAScreens[i].num_vis = 0;
     }
-    __glDDXScreenInfo.pGlxVisual = NULL;
+    __glDDXScreenInfo.modes = NULL;
+    MESA_CC = NULL;
 }
 
 void __MESA_createBuffer(__GLXdrawablePrivate *glxPriv)
 {
     DrawablePtr pDraw = glxPriv->pDraw;
     XMesaVisual xm_vis = find_mesa_visual(pDraw->pScreen->myNum,
-					  glxPriv->pGlxVisual->vid);
+					  glxPriv->modes->visualID);
     __GLdrawablePrivate *glPriv = &glxPriv->glPriv;
     __MESA_buffer buf;
 
+    if (xm_vis == NULL) {
+	ErrorF("find_mesa_visual returned NULL for visualID = 0x%04x\n",
+	       glxPriv->modes->visualID);
+    }
     buf = (__MESA_buffer)__glXMalloc(sizeof(struct __MESA_bufferRec));
 
     /* Create Mesa's buffers */
@@ -732,12 +767,17 @@ __GLinterface *__MESA_createContext(__GLimports *imports,
     if (shareGC) 
        m_share = (__GLcontext *)shareGC;
 
-    xm_vis = find_mesa_visual(glxc->pScreen->myNum, glxc->pGlxVisual->vid);
+    xm_vis = find_mesa_visual(glxc->pScreen->myNum, glxc->modes->visualID);
     if (xm_vis) {
        XMesaContext xmshare = m_share ? m_share->DriverCtx : 0;
        XMesaContext xmctx = XMesaCreateContext(xm_vis, xmshare);
        gl_ctx = xmctx ? &xmctx->mesa : 0;
     }
+    else {
+	ErrorF("find_mesa_visual returned NULL for visualID = 0x%04x\n",
+	       glxc->modes->visualID);
+    }
+
 
     if (!gl_ctx)
        return NULL;
@@ -769,6 +809,7 @@ GLboolean __MESA_destroyContext(__GLcontext *gc)
 GLboolean __MESA_loseCurrent(__GLcontext *gc)
 {
     XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
+    MESA_CC = NULL;
     __glXLastContext = NULL;
     return XMesaLoseCurrent(xmesa);
 }
@@ -781,6 +822,7 @@ GLboolean __MESA_makeCurrent(__GLcontext *gc)
     __MESA_buffer readBuf = (__MESA_buffer)readPriv->private;
     XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
 
+    MESA_CC = gc;
     return XMesaMakeCurrent2(xmesa, drawBuf->xm_buf, readBuf->xm_buf);
 }
 
@@ -796,7 +838,7 @@ GLboolean __MESA_copyContext(__GLcontext *dst, const __GLcontext *src,
 			     GLuint mask)
 {
     XMesaContext xm_dst = (XMesaContext) dst->DriverCtx;
-    const XMesaContext xm_src = (XMesaContext) src->DriverCtx;
+    const XMesaContext xm_src = (const XMesaContext) src->DriverCtx;
     _mesa_copy_context(&xm_src->mesa, &xm_dst->mesa, mask);
     return GL_TRUE;
 }
@@ -804,6 +846,7 @@ GLboolean __MESA_copyContext(__GLcontext *dst, const __GLcontext *src,
 GLboolean __MESA_forceCurrent(__GLcontext *gc)
 {
     XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
+    MESA_CC = gc;
     return XMesaForceCurrent(xmesa);
 }
 

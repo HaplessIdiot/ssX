@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.14 2004/04/03 21:39:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.15 2004/04/03 22:05:02 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -342,6 +342,8 @@ typedef struct _VIA {
     Bool 		IsPCI;
     Bool 		drixinerama;
 #endif
+    Bool		DRIIrqEnable;
+
     unsigned char	ActiveDevice;	/* if SAMM, non-equal pBIOSInfo->ActiveDevice */
     unsigned char       *CursorImage;
     CARD32		CursorFG;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glxint.h,v 1.4 2002/02/22 21:45:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glxint.h,v 1.1 2004/04/08 10:08:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -39,15 +39,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/gl.h>
 #include <GL/xmesa.h>
 
-/*  struct __GLcontextRec { */
-/*      __GLinterface iface; */
-/*      XMesaContext xm_ctx; */
-/*  }; */
-
 typedef struct __MESA_screenRec __MESA_screen;
 struct __MESA_screenRec {
     int num_vis;
-    __GLXvisualConfig *glx_vis;
+    __GLcontextModes *modes;
     XMesaVisual *xm_vis;
     void **private;
 };

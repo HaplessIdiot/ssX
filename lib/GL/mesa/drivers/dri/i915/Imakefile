@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.1 2004/06/10 18:14:01 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.2 2004/10/19 04:27:49 dawes Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -68,6 +68,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.1 2004/06/10 18:14
 #include "../../../array_cache/Imakefile.inc"
 #include "../../../main/Imakefile.inc"
 #include "../../../math/Imakefile.inc"
+#include "../../../shader/Imakefile.inc"
 #include "../../../swrast/Imakefile.inc"
 #include "../../../swrast_setup/Imakefile.inc"
 #include "../../../tnl/Imakefile.inc"
@@ -81,9 +82,6 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.1 2004/06/10 18:14
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
 
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
-
-      DRIOBJS = $(GLXLIBSRC)/dri/dri_util.o \
-		$(GLXLIBSRC)/dri/glcontextmodes.o
 
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \
@@ -99,7 +97,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i915/Imakefile,v 1.1 2004/06/10 18:14
 #endif
 
          SRCS = $(GDGSRCS)
-         OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(COREMESAOBJS) \
+         OBJS = $(LOOBJS) $(DRMOBJS) $(COREMESAOBJS) \
 		$(MESA_ASM_OBJS) $(COMMONOBJS) $(GDGOBJS) $(HIOBJS)
 
 REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) $(EXPATLIB)

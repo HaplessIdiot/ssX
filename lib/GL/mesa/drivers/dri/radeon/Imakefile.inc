@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/radeon/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/radeon/Imakefile.inc,v 1.2 2004/04/22 13:58:40 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -24,7 +24,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(SERVERSRC)/GL/dri \
 		-I$(XF86OSSRC) \
 		-I$(XF86COMSRC) \
-		-I$(XF86OSSRC)/shared/drm/kernel \
+		-I$(DRMSRCDIR)/shared \
 		-I$(XF86DRIVERSRC)/ati \
 		-I$(GLXLIBSRC)/dri/drm
 #endif
@@ -32,6 +32,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa/glapi \
+		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/include \
 		-I$(MESADRVSRCDIR)/common \
 		-I$(MESADRVSRCDIR)/radeon

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.42 2003/09/28 20:15:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.43 2004/06/10 13:08:28 alanh Exp $ */
 
 /*
  * Authors:
@@ -245,11 +245,11 @@ typedef struct _I810Rec {
    unsigned long xvmcHandle;
    unsigned long sysmemHandle;
    Bool agpAcquired;
-   drmHandle buffer_map;
-   drmHandle ring_map;
-   drmHandle overlay_map;
-   drmHandle mc_map;
-   drmHandle xvmcContext;
+   drm_handle_t buffer_map;
+   drm_handle_t ring_map;
+   drm_handle_t overlay_map;
+   drm_handle_t mc_map;
+   drm_handle_t xvmcContext;
 #endif
    Bool agpAcquired2d;
 
