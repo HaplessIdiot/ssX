@@ -1,31 +1,31 @@
 XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.15 2001/09/29 17:47:16 herrb Exp $
 
-#define DoNormalLib NormalLibXft
-#define DoSharedLib SharedLibXft
-#define DoExtraLib SharedLibXft
-#define DoDebugLib DebugLibXft
-#define DoProfileLib ProfileLibXft
+#define DoNormalLib NO
+#define DoSharedLib SharedLibXft1
+#define DoExtraLib NO
+#define DoDebugLib NO
+#define DoProfileLib NO
 #define HasSharedData YES
 #define LibName Xft
-#define SoRev SOXFTREV
-#define IncSubdir X11
-#define IncSubSubdir Xft
+#define SoRev SOXFT1REV
+#define LibHeaders NO
+#define NoSoSymlink
 
 #include <Threads.tmpl>
 
 YFLAGS = -d
 
-#ifndef XftLibDir
-#define XftLibDir $(LIBDIR)
+#ifndef Xft1LibDir
+#define Xft1LibDir $(LIBDIR)
 #endif
-#ifndef XftType1Dir
-#define XftType1Dir $(LIBDIR)/fonts/Type1
+#ifndef Xft1Type1Dir
+#define Xft1Type1Dir $(LIBDIR)/fonts/Type1
 #endif
 
-XFTLIBDIR=XftLibDir
-XFTCONFIG=$(XFTLIBDIR)/XftConfig
+XFT1LIBDIR=Xft1LibDir
+XFT1CONFIG=$(XFT1LIBDIR)/XftConfig
 
-TYPE1DIR=XftType1Dir
+TYPE1DIR=Xft1Type1Dir
 CONFIG_DEFS=-DXFT_TYPE1_DIR=\"$(TYPE1DIR)\"
 INCLUDES=$(FREETYPE2INCLUDES)
 DEFINES=-DXFT_DEFAULT_PATH=\"$(XFTCONFIG)\" $(FREETYPE2DEFINES) $(RENDERDEFINES)
@@ -68,12 +68,12 @@ all:: XftConfig
 CppFileTarget(XftConfig,XftConfig.cpp,$(CONFIG_DEFS),$(ICONFIGFILES))
 
 #if InstallFSConfig
-InstallNonExecFile(XftConfig,$(XFTLIBDIR))
+InstallNonExecFile(XftConfig,$(XFT1LIBDIR))
 #else
-InstallNonExecFileNoClobber(XftConfig,$(XFTLIBDIR))
+InstallNonExecFileNoClobber(XftConfig,$(XFT1LIBDIR))
 #endif
 
-LinkConfFileLong(XftConfig,XftConfig,$(XFTLIBDIR),$(CONFDIR))
+LinkConfFileLong(XftConfig,XftConfig,$(XFT1LIBDIR),$(CONFDIR))
 
 MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Xft,$(LIBMANDIR))
