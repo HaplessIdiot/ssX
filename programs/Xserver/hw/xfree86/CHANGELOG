@@ -1,4 +1,5 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 120. Fix a potential bug in ZX1 support (Marc La France).
  119. Fix a buffer overflow in xkbprint (Ivan Pascal).
  118. Fix a bug in Xlib that prevents a vertical text drawing with
       X[mb|wc]DrawString (bugzilla #178, OSAME Ken-ichiro).
@@ -16811,4 +16812,9 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2648 2003/04/21 12:32:06 sven Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2649 2003/04/22 14:03:14 pascal Exp $
+
+
+
+
+
