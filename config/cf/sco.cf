@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.6 1994/12/17 09:32:47 dawes Exp $
+XCOMM platform:  $XFree86$
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -11,9 +11,9 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.6 1994/12/17 09:32:47 dawes E
 /* You must manually compute BootstrapCFlags for initial build */
 
 #ifdef i386Sco324Architecture
-# define BootstrapCFlags	-DSYSV -Di386 -DSCO -DSCO324
+# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO -DSCO324
 #else
-# define BootstrapCFlags	-DSYSV -Di386 -DSCO
+# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO
 #endif
 
 #define	OSMinorVersion	2
@@ -47,8 +47,6 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.6 1994/12/17 09:32:47 dawes E
 # define CompressManCmd pack
 #endif /* ! i386Sco324Architecture */
 
-#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
-
 /*
  *	XBSDLIB is included with the Socket libraries, because SCO
  *	needs Xbsd as its bcopy routine doesn't handle overlapping
@@ -61,7 +59,7 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.6 1994/12/17 09:32:47 dawes E
 #define ManSourcePath		$(MANPATH)/cat.
 
 #if ScoOsMouse
-# define	ServerExtraDefines	-DUSE_OSMOUSE XFree86ServerDefines
+# define	ServerExtraDefines	-DUSE_OSMOUSE
 # define	LocalLibraries		-lmalloc -lpt -levent
 #else
 # define	LocalLibraries		-lmalloc -lpt
@@ -69,23 +67,8 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.6 1994/12/17 09:32:47 dawes E
 
 #define Malloc0ReturnsNull		YES
 #define RemoveDSDENroffMacros   NO
-#define ServerExtraSysLibs		$(CBRT) -lm
-
-#ifndef CompressManPages
 #define CompressManPages        YES
-#endif
-
-/*
- *	The user should override this in their
- *	site.def if they have the real crypt library,
- *	we default to the international crypt library
- *	here as anyone may obtain that
- */
-
-#ifndef HasLibCrypt
-#define	HasLibCrypt				YES
-#define	SpecialLibCrypt			-lcrypt_i
-#endif
+#define ServerExtraSysLibs		$(CBRT)
 
 /*
  * due to the extra '.' chars in the SCO man pages file name we have
@@ -97,8 +80,8 @@ install.man::                                                           @@\
         @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f3,4 -d.`; \     @@\
         for i in aliases; do (set -x; \                                 @@\
         $(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
-        (cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
-        $$i.$${SUFFIX})); \                                             @@\
+        $(LN) $(DESTDIR)destdir/file.$${SUFFIX} \                       @@\
+        $(DESTDIR)destdir/$$i.$${SUFFIX}); \                            @@\
         done)
 
 #include <svr3.cf>
