@@ -18,6 +18,8 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from The
 .\" Open Group.
+.\" Shorthand for "#" that survives preprocessing
+.ds h \N'35'
 .TH MAKESTRS 1 "Release 6.4" "X Version 11"
 .SH NAME
 makestrs \- makes string table C source and header(s)
@@ -79,41 +81,29 @@ no abioptions are specified.
 .SH SYNTAX
 The syntax for string-list file is (items in square brackets are optional):
 .RS 4
-#prefix <text>
+\*hprefix <text>
 .RE
 .RS 4
-#feature <text>
+\*hfeature <text>
 .RE
 .RS 4
-#externref <text>
+\*hexternref <text>
 .RE
 .RS 4
-#externdef [<text>]
+\*hexterndef [<text>]
 .RE
 .RS 4
-[#ctempl <text>]
+[\*hctempl <text>]
 .RE
 .LP
 .RS 4
-#file <filename>
+\*hfile <filename>
 .RE
 .RS 4
-#table <tablename>
+\*htable <tablename>
 .RE
 .RS 4
-[#htempl]
-.RE
-.RS 4
-<text>
-.RE
-.RS 4
-...
-.RE
-.RS 4
-<text>
-.RE
-.RS 4
-[#table <tablename>
+[\*hhtempl]
 .RE
 .RS 4
 <text>
@@ -125,19 +115,31 @@ The syntax for string-list file is (items in square brackets are optional):
 <text>
 .RE
 .RS 4
+[\*htable <tablename>
+.RE
+.RS 4
+<text>
+.RE
+.RS 4
 ...
 .RE
 .RS 4
-#table <tablename>
+<text>
 .RE
 .RS 4
-...]
+ ...
 .RE
 .RS 4
-[#file <filename>
+\*htable <tablename>
 .RE
 .RS 4
-...]
+ ...]
+.RE
+.RS 4
+[\*hfile <filename>
+.RE
+.RS 4
+ ...]
 .RE
 .LP
 In words you may have one or more #file directives. Each #file may have

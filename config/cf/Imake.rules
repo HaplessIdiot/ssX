@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.87 2001/01/15 20:56:13 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.88 2001/01/17 16:22:30 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1197,7 +1197,9 @@ InstallTarget(install.ln,Concat(llib-l,libname.ln),$(INSTLIBFLAGS),dest)
 #define	InstallManPageLong(file,destdir,dest)				@@\
 BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
 									@@\
-InstallNamedTarget(install.man,file.man,$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
+CppManTarget(file,$(EXTRAMANDEFS))					@@\
+									@@\
+InstallNamedTarget(install.man,file.$(MANNEWSUFFIX),$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
 #endif /* InstallManPageLong */
 
 
@@ -1227,9 +1229,12 @@ install.man::								@@\
 #define	InstallGenManPageLong(file,destdir,dest,suffix)			@@\
 BuildInstallHtmlManPage(file,dest,suffix)				@@\
 									@@\
-install.man:: file.man							@@\
+CppManTarget(file, $(EXTRAMANDEFS))					@@\
+									@@\
+install.man:: file.$(MANNEWSUFFIX)					@@\
 	MakeDir($(DESTDIR)destdir)					@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.suffix
+	$(INSTALL) -c $(INSTMANFLAGS) file.$(MANNEWSUFFIX) \		@@\
+		$(DESTDIR)destdir/dest.suffix
 #endif /* InstallGenManPageLong */
 
 
@@ -1256,10 +1261,12 @@ install.man::								@@\
 #define InstallManPageLong(file,destdir,dest)				@@\
 BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
 									@@\
-install.man:: file.man							@@\
+CppManTarget(file, $(EXTRAMANDEFS))					@@\
+									@@\
+install.man:: file.$(MANNEWSUFFIX)					@@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*			@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man \			@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.$(MANNEWSUFFIX) \		@@\
 	  $(DESTDIR)destdir/dest.$(MANSUFFIX)				@@\
 	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.$(MANSUFFIX)
 #endif
@@ -1268,10 +1275,12 @@ install.man:: file.man							@@\
 #define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
 BuildInstallHtmlManPage(file,dest,suffix)				@@\
 									@@\
-install.man:: file.man							@@\
+CppManTarget(file, $(EXTRAMANDEFS))					@@\
+									@@\
+install.man:: file.$(MANNEWSUFFIX)					@@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man \			@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.$(MANNEWSUFFIX) \		@@\
 	  $(DESTDIR)destdir/dest.suffix					@@\
 	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.suffix
 #endif
@@ -1376,10 +1385,10 @@ ProgramTargetName($(RMAN)):						@@\
 #define BuildInstallHtmlManPage(file,dest,suffix)			@@\
 AllTarget(dest.suffix.html)						@@\
 									@@\
-dest.suffix.html: file.man RmanCmdDependency				@@\
+dest.suffix.html: file.$(MANNEWSUFFIX) RmanCmdDependency		@@\
 	RemoveFiles(dest.suffix.html dest.suffix-html)			@@\
-	RunProgram(RMAN,$(RMANOPTIONS) < file.man > dest.suffix-html) && \ @@\
-	  $(MV) dest.suffix-html $@					@@\
+	RunProgram(RMAN,$(RMANOPTIONS) < file.$(MANNEWSUFFIX) \		@@\
+	  > dest.suffix-html) && $(MV) dest.suffix-html $@		@@\
 									@@\
 install.man:: dest.suffix.html						@@\
 	MakeDir($(DESTDIR)$(DOCHTMLDIR))				@@\
@@ -3150,8 +3159,8 @@ clean::									@@\
  */
 #ifndef CppManTarget
 #define CppManTarget(name,defs)						@@\
-AllTarget(name.man)							@@\
-CppRawFileTarget(name.man,name.cpp,$(MANDEFS) defs,NullParameter)
+AllTarget(name.$(MANNEWSUFFIX))						@@\
+CppRawFileTarget(name.$(MANNEWSUFFIX),name.$(MANSRCSUFFIX),$(MANDEFS) defs,NullParameter)
 #endif /* CppManTarget */
 
 /*

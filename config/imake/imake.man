@@ -127,8 +127,8 @@ For example, the macro
 .ta 1i 1.6i 5i
 .nf
 
-#define	program_target(program, objlist)	@@\e
-program:	objlist		@@\e
+ #define	program_target(program, objlist)	@@\e
+ program:	objlist		@@\e
 	$(CC)  \-o  $@  objlist  $(LDFLAGS)
 
 .fi
@@ -137,7 +137,7 @@ when called with
 will expand to
 .nf
 
-foo:	foo1.o  foo2.o
+ foo:	foo1.o  foo2.o
 	$(CC)  \-o  $@  foo1.o  foo2.o  $(LDFLAGS)
 
 .fi

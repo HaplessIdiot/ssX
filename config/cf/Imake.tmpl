@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.89 2001/01/17 16:22:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.90 2001/01/21 21:19:07 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1353,6 +1353,12 @@ TCLIBDIR = TclLibDir
 #define ExpandManNames YES
 #endif
 #endif
+#ifndef ManSrcSuffix
+#define ManSrcSuffix	man
+#endif
+#ifndef ManNewSuffix
+#define ManNewSuffix	_man
+#endif
 #ifndef TOPDIR
 #define TOPDIR .
 #endif
@@ -1471,6 +1477,8 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
     FILEMANSUFFIX = FileManSuffix	/* suffix for file format man pages */
     MISCMANSUFFIX = MiscManSuffix	/* suffix for misc man pages */
   DRIVERMANSUFFIX = DriverManSuffix	/* suffix for driver man pages */
+     MANSRCSUFFIX = ManSrcSuffix	/* suffix for man page source */
+     MANNEWSUFFIX = ManNewSuffix	/* suffix for preprocessed man source */
           MANDEFS = FileManDefs MiscManDefs DriverManDefs ExtraManDefs
    COMPRESSMANCMD = CompressManCmd
 
