@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.356 2001/04/18 14:52:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.357 2001/04/20 15:59:17 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1015,6 +1015,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #ifndef BuildXF86BigfontExt
 # define BuildXF86BigfontExt		YES
+#endif
+
+/*
+ * Build SuperProbe
+ */
+#ifndef BuildSuperProbe
+# define BuildSuperProbe 		NO
 #endif
 
 /*

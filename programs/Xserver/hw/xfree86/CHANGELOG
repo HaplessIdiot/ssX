@@ -1,4 +1,5 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 407. Disable building of SuperProbe by default (Alan Hourihane).
  406. Make OS_DEFINES available to all server Makefiles (Marc La France).
  405. Add support to xman for parsing '\" <string> formatting hints.
       Also cleanup some of the vendor-specific definitions and fix
@@ -13023,4 +13024,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1702 2001/04/19 19:54:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1703 2001/04/20 15:51:17 tsi Exp $
