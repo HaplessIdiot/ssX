@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbrop.h,v 1.1 1999/11/19 13:53:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbrop.h,v 1.2 2000/01/21 15:06:17 dawes Exp $ */
 
 #ifndef _FBROP_H_
 #define _FBROP_H_
@@ -52,21 +52,21 @@ extern const FbMergeRopRec	FbMergeRopBits[16];
 /* AND has higher precedence than XOR */
 
 #define FbDoMergeRop(src, dst) \
-    ((dst) & ((src) & _ca1 ^ _cx1) ^ ((src) & _ca2 ^ _cx2))
+    (((dst) & (((src) & _ca1) ^ _cx1)) ^ (((src) & _ca2) ^ _cx2))
 
-#define FbDoDestInvarientMergeRop(src)	((src) & _ca2 ^ _cx2)
+#define FbDoDestInvarientMergeRop(src)	(((src) & _ca2) ^ _cx2)
 
 #define FbDoMaskMergeRop(src, dst, mask) \
-    ((dst) & (((src) & _ca1 ^ _cx1) | ~(mask)) ^ (((src) & _ca2 ^ _cx2) & (mask)))
+    (((dst) & ((((src) & _ca1) ^ _cx1) | ~(mask))) ^ ((((src) & _ca2) ^ _cx2) & (mask)))
 
 #define FbDoLeftMaskByteMergeRop(dst, src, lb, l) { \
-    FbBits  __xor = (src) & _ca2 ^ _cx2; \
-    FbDoLeftMaskByteRRop(dst,lb,l,(src) & _ca1 ^ _cx1,__xor); \
+    FbBits  __xor = ((src) & _ca2) ^ _cx2; \
+    FbDoLeftMaskByteRRop(dst,lb,l,((src) & _ca1) ^ _cx1,__xor); \
 }
 
 #define FbDoRightMaskByteMergeRop(dst, src, rb, r) { \
-    FbBits  __xor = (src) & _ca2 ^ _cx2; \
-    FbDoRightMaskByteRRop(dst,rb,r,(src) & _ca1 ^ _cx1,__xor); \
+    FbBits  __xor = ((src) & _ca2) ^ _cx2; \
+    FbDoRightMaskByteRRop(dst,rb,r,((src) & _ca1) ^ _cx1,__xor); \
 }
 
 #define FbDoRRop(dst, and, xor)	(((dst) & (and)) ^ (xor))
@@ -114,16 +114,16 @@ extern const FbBits	*const fbStippleTable[];
     (FbDoMaskRRop(dst, fa, fx, m) & (b)) | (FbDoMaskRRop(dst, ba, bx, m) & ~(b))
 						       
 #define FbDoLeftMaskByteStippleRRop(dst, b, fa, fx, ba, bx, lb, l) { \
-    FbBits  __xor = (fx) & (b) | (bx) & ~(b); \
-    FbDoLeftMaskByteRRop(dst, lb, l, (fa) & (b) | (ba) & ~(b), __xor); \
+    FbBits  __xor = ((fx) & (b)) | ((bx) & ~(b)); \
+    FbDoLeftMaskByteRRop(dst, lb, l, ((fa) & (b)) | ((ba) & ~(b)), __xor); \
 }
 
 #define FbDoRightMaskByteStippleRRop(dst, b, fa, fx, ba, bx, rb, r) { \
-    FbBits  __xor = (fx) & (b) | (bx) & ~(b); \
-    FbDoRightMaskByteRRop(dst, rb, r, (fa) & (b) | (ba) & ~(b), __xor); \
+    FbBits  __xor = ((fx) & (b)) | ((bx) & ~(b)); \
+    FbDoRightMaskByteRRop(dst, rb, r, ((fa) & (b)) | ((ba) & ~(b)), __xor); \
 }
 
-#define FbOpaqueStipple(b, fg, bg) ((fg) & (b) | (bg) & ~(b))
+#define FbOpaqueStipple(b, fg, bg) (((fg) & (b)) | ((bg) & ~(b)))
     
 /*
  * Compute rop for using tile code for 1-bit dest stipples; modifies

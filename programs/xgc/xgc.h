@@ -7,11 +7,6 @@
 #include "constants.h"
 
 typedef struct {
-  char *string;
-  int    code;
-} StringTable;
-
-typedef struct {
   Display  *dpy;		/* the display! */
   Screen   *scr;		/* the screen! */
   Window    win;		/* the window the test runs in */
@@ -44,15 +39,15 @@ typedef struct {
 } ChoiceStuff;			/* All the info needed to deal with a 
 				   choice widget */
 typedef struct {
-  char *name;
-  char *text;
+  const char *name;
+  const char *text;
   int code;
 } XgcData;
 
 typedef struct {
   struct {
-    char *name;
-    char *text;
+    const char *name;
+    const char *text;
     int   num_toggles;
     int   columns;
   } choice;

@@ -78,8 +78,9 @@ static XtResource Resources[] = {
 
 #undef Offset
 
-char *ProgramName;
+const char *ProgramName;
 
+void
 usage ()
 {
     fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
@@ -175,7 +176,7 @@ static void list_known_widgets ()
 /* ARGSUSED */
 static void print_resources (node, format, topnode, showsuper, showvar)
     XmuWidgetNode *node;
-    char *format;
+    const char *format;
     XmuWidgetNode *topnode;
     Bool showsuper;
     Bool showvar;
@@ -210,9 +211,10 @@ static void print_resources (node, format, topnode, showsuper, showvar)
  * list_resources - display resources of a widget, identifying class from
  * which they come
  */
-static list_resources (node, format, topnode, toplevel, showsuper, showvar)
+static void
+list_resources (node, format, topnode, toplevel, showsuper, showvar)
     XmuWidgetNode *node;
-    char *format;
+    const char *format;
     XmuWidgetNode *topnode;
     Widget toplevel;
     Bool showsuper;
@@ -238,6 +240,7 @@ static list_resources (node, format, topnode, toplevel, showsuper, showvar)
 }
 
 
+int
 main (argc, argv)
     int argc;
     char **argv;

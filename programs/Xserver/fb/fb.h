@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.6 2000/01/21 15:06:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.7 2000/02/12 03:39:42 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -759,6 +759,80 @@ fbPolySegment16 (DrawablePtr	pDrawable,
 		 int		nseg,
 		 xSegment	*pseg);
 
+
+void	
+fbBresSolid24(DrawablePtr   pDrawable,
+	      GCPtr	    pGC,
+	      int	    dashOffset,
+	      int	    signdx,
+	      int	    signdy,
+	      int	    axis,
+	      int	    x1,
+	      int	    y1,
+	      int	    e,
+	      int	    e1,
+	      int	    e3,
+	      int	    len);
+
+void	
+fbBresDash24(DrawablePtr    pDrawable,
+	     GCPtr	    pGC,
+	     int	    dashOffset,
+	     int	    signdx,
+	     int	    signdy,
+	     int	    axis,
+	     int	    x1,
+	     int	    y1,
+	     int	    e,
+	     int	    e1,
+	     int	    e3,
+	     int	    len);
+
+void	
+fbDots24(FbBits	    *dst,
+	 FbStride   dstStride,
+	 int	    dstBpp,
+	 BoxPtr	    pBox,
+	 xPoint	    *pts,
+	 int	    npt,
+	 int	    xoff,
+	 int	    yoff,
+	 FbBits	    and,
+	 FbBits	    xor);
+
+void	
+fbArc24(FbBits	    *dst,
+	FbStride    dstStride,
+	int	    dstBpp,
+	xArc	    *arc,
+	int	    dx,
+	int	    dy,
+	FbBits	    and,
+	FbBits	    xor);
+
+void
+fbGlyph24(FbBits    *dstLine,
+	  FbStride  dstStride,
+	  int	    dstBpp,
+	  FbStip    *stipple,
+	  FbBits    fg,
+	  int	    height,
+	  int	    shift);
+
+void
+fbPolyline24 (DrawablePtr   pDrawable,
+	      GCPtr	    pGC,
+	      int	    mode,
+	      int	    npt,
+	      DDXPointPtr   ptsOrig);
+
+void
+fbPolySegment24 (DrawablePtr	pDrawable,
+		 GCPtr		pGC,
+		 int		nseg,
+		 xSegment	*pseg);
+
+
 void	
 fbBresSolid32(DrawablePtr   pDrawable,
 	      GCPtr	    pGC,
@@ -990,6 +1064,9 @@ fbExpandDirectColors (ColormapPtr   pmap,
 
 Bool
 fbCreateDefColormap(ScreenPtr pScreen);
+
+void
+fbClearVisualTypes(void);
 
 Bool
 fbSetVisualTypes (int depth, int visuals, int bitsPerRGB);
@@ -1267,6 +1344,13 @@ fbGetImage (DrawablePtr	    pDrawable,
  */
 
 void
+fbZeroLine (DrawablePtr	pDrawable,
+	    GCPtr	pGC,
+	    int		mode,
+	    int		npt,
+	    DDXPointPtr	ppt);
+
+void
 fbPolyLine (DrawablePtr	pDrawable,
 	    GCPtr	pGC,
 	    int		mode,
@@ -1301,6 +1385,18 @@ fbPixmapToRegion(PixmapPtr pPix);
 /*
  * fbpoint.c
  */
+
+void
+fbDots (FbBits	    *dstOrig,
+	FbStride    dstStride,
+	int	    dstBpp,
+	BoxPtr	    pBox,
+	xPoint	    *pts,
+	int	    npt,
+	int	    xoff,
+	int	    yoff,
+	FbBits	    andOrig,
+	FbBits	    xorOrig);
 
 void
 fbPolyPoint (DrawablePtr    pDrawable,
@@ -1353,6 +1449,19 @@ fbPush1toN (DrawablePtr	pSrcDrawable,
 	    void	*closure);
 
 void
+fbPushImage (DrawablePtr    pDrawable,
+	     GCPtr	    pGC,
+	     
+	     FbStip	    *src,
+	     FbStride	    srcStride,
+	     int	    srcX,
+
+	     int	    x,
+	     int	    y,
+	     int	    width,
+	     int	    height);
+
+void
 fbPushPixels (GCPtr	    pGC,
 	      PixmapPtr	    pBitmap,
 	      DrawablePtr   pDrawable,
@@ -1374,6 +1483,11 @@ fbRealizeFont(ScreenPtr pScreen, FontPtr pFont);
 
 Bool
 fbUnrealizeFont(ScreenPtr pScreen, FontPtr pFont);
+
+void
+fbQueryBestSize (int class, 
+		 unsigned short *width, unsigned short *height,
+		 ScreenPtr pScreen);
 
 Bool
 fbSetupScreen(ScreenPtr	pScreen, 
@@ -1637,6 +1751,9 @@ fbTile (FbBits	    *dst,
  */
 FbBits
 fbReplicatePixel (Pixel p, int bpp);
+
+void
+fbReduceRasterOp (int rop, FbBits fg, FbBits pm, FbBits *andp, FbBits *xorp);
 
 /*
  * fbwindow.c

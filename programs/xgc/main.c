@@ -69,6 +69,7 @@ extern void GC_change_foreground();
 extern void GC_change_background();
 extern void GC_change_font();
 extern void close_file_if_recording();
+extern void set_text (Widget ww, char *string);
 
 #ifdef notdef
 int fildes[2];			/* for pipe */
@@ -121,7 +122,7 @@ static Widget percentchoice;	/* form for choosing percentage of test */
 ** starts the event loop.
 */
 
-void
+int
 main(argc,argv)
      int argc;
      char **argv;
@@ -325,6 +326,8 @@ main(argc,argv)
   /* Loop forever, dealing with events */
 
   XtAppMainLoop(appcontext);
+
+  return 0;
 }
 
 /* fill_up_commandform(w)

@@ -29,6 +29,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
@@ -53,13 +54,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/WidgetNode.h>
 #include <X11/Xaw/AllWidgets.h>
 
-extern char *malloc(), *calloc();
-
 #define widget_list XawWidgetArray  /* or motif or ol or ... */
 #define nwidgets XawWidgetCount
 
 typedef struct {
-    char **resource_labels;		/* names of res added by widget */
+    const char **resource_labels;	/* names of res added by widget */
     Cardinal nnewresources;		/* number res added by widget */
     Cardinal nnewconstraints;		/* number res added by widget */
     Cardinal nnew;			/* number new */
@@ -88,17 +87,17 @@ struct {
   selected_list.elements[VData(node)->selection_index] = \
   (XmuWidgetNode *) NULL; VData(node)->selection_index = (-1)
 
-char *ProgramName;
+const char *ProgramName;
 static int NumberShowing = 0;
 
 static Arg sensitiveargs[2] = {{ XtNsensitive, (XtArgVal) FALSE },
 			       { XtNsensitive, (XtArgVal) TRUE }};
 
-static char *help_message[] = {
+static const char *help_message[] = {
     "-top name        object to be top of tree",
     "-variable        show variable name instead of class name",
     "-vertical        list the tree vertically",
-    (char *) NULL
+    NULL
 };
 
 static XrmOptionDescRec Options[] = {
@@ -126,7 +125,7 @@ static XtResource Resources[] = {
 
 #undef Offset
 
-static char *fallback_resources[] = {
+static const char *fallback_resources[] = {
     "*allowShellResize: true",
     "*Porthole.top: ChainTop",
     "*Porthole.left: ChainLeft",
@@ -146,7 +145,7 @@ static char *fallback_resources[] = {
     "*Paned*allowResize: true",
     "*buttonbox.quit.Translations:  #override \\n <Btn1Down>,<Btn1Up>: Quit() unset()",
     "*Toggle.Translations: #augment \\n <Btn2Down>,<Btn2Up>: set() notify() Resources(toggle)",
-    (char *) NULL
+    NULL
 };
 
 static void ActionQuit(), ActionSetLableType(), ActionSetOrientation();
@@ -188,7 +187,7 @@ static Atom wm_delete_window;
 #define SELECT_number 9
 
 static struct _nametable {
-    char *name;
+    const char *name;
     int value;
 } select_nametable[] = {
     { "nothing", SELECT_NOTHING },
@@ -225,7 +224,7 @@ static Arg true_args[1] = {{ XtNstate, (XtArgVal) TRUE }};
  */
 static void usage ()
 {
-    char **cpp;
+    const char **cpp;
     fprintf (stderr, "usage:  %s [-options...]\n", ProgramName);
     fprintf(stderr, "\nwhere options include:\n");
     for (cpp = help_message; *cpp; cpp++) {
@@ -289,15 +288,15 @@ static Boolean set_resource_labels (node)
     XmuWidgetNode *node;
 {
     int i;
-    char **cur;
+    const char **cur;
     XtResourceList res;
     XmuWidgetNode **wn;
     ViewresData *d = VData(node);
 
     if (!d->resource_labels) {
 	d->resource_labels =
-	  (char **) calloc ((unsigned) d->nnew * 3,
-			    (unsigned) sizeof (char *));
+	  (const char **) calloc ((unsigned) d->nnew * 3,
+				  (unsigned) sizeof (const char *));
 	if (!d->resource_labels) return FALSE;
     }
 
@@ -312,7 +311,7 @@ static Boolean set_resource_labels (node)
 	}
     }
     if (d->nnewconstraints > 0) {
-	char *s;
+	const char *s;
 
 	*cur++ = s = "";
 	*cur++ = s;
@@ -338,7 +337,7 @@ static ViewresData *create_viewres_data (node)
       (ViewresData *) malloc ((unsigned) sizeof(ViewresData));
 
     if (d) {
-	d->resource_labels = (char **) NULL;
+	d->resource_labels = NULL;
 	d->nnewresources = XmuWnCountOwnedResources (node, node, False);
 	d->nnewconstraints = XmuWnCountOwnedResources (node, node, True);
 	d->nnew = (d->nnewresources + (d->nnewconstraints 
@@ -626,7 +625,7 @@ static void select_callback (gw, closure, data)
 	if (node) {
 	    do {
 		add_to_selected_list (node, TRUE);
-	    } while (node = node->superclass);
+	    } while ((node = node->superclass) != NULL);
 	} else {
 	    for (i = 0; i < nselected; i++) {
 		XmuWidgetNode *parent = selected_list.elements[i];
@@ -635,7 +634,7 @@ static void select_callback (gw, closure, data)
 		 * chain up the tree, but stop if we get to nodes that
 		 * are already in the selected list.
 		 */
-		while (parent = parent->superclass) {  /* do ancestors */
+		while ((parent = parent->superclass) != NULL) {
 		    if (VData(parent)->selection_index >= 0) break;
 		    add_to_selected_list (parent, TRUE);
 		}
@@ -818,7 +817,7 @@ static void oneof_sensitive (choosea, a, b)
     Boolean choosea;
     Widget a, b;
 {
-    static Arg args[1] = { XtNsensitive, (XtArgVal) NULL };
+    static Arg args[1] = { { XtNsensitive, (XtArgVal) NULL } };
 
     args[0].value = (XtArgVal) TRUE;
     XtSetValues (choosea ? a : b, args, ONE);
@@ -868,6 +867,7 @@ static void set_orientation_menu (grav, dosetvalues)
  *                                                                           *
  *****************************************************************************/
 
+int
 main (argc, argv)
     int argc;
     char **argv;
@@ -887,7 +887,7 @@ main (argc, argv)
 
     toplevel = XtAppInitialize (&app_con, "Viewres", 
 				Options, XtNumber (Options),
-				&argc, argv, fallback_resources, 
+				&argc, argv, (char **) fallback_resources, 
 				(ArgList) NULL, ZERO);
     if (argc != 1) usage ();
 
@@ -1056,6 +1056,8 @@ main (argc, argv)
 
     XRaiseWindow (XtDisplay(panner), XtWindow(panner));
     XtAppMainLoop (app_con);
+
+    return 0;
 }
 
 
@@ -1083,7 +1085,7 @@ static void ActionSetLableType (w, event, params, num_params)
     String *params;
     Cardinal *num_params;
 {
-    char *cmd;
+    const char *cmd;
     Boolean oldvar = options.show_variable, newvar;
 
     switch (*num_params) {
@@ -1179,14 +1181,13 @@ static void do_single_arg (w, params, nparams, table, nentries, proc)
     for (i = 0; i < nentries; i++) {
 	if (XmuCompareISOLatin1 (params[0], table[i].name) == 0) {
 	    obj = table[i].value;
-	    break;
+	    goto found;
 	}
     }
-    if (i == nentries) {
-	XBell (XtDisplay(w), 0);
-	return;
-    }
+    XBell (XtDisplay(w), 0);
+    return;
 
+  found:
     /*
      * use any old widget
      */

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.2 2000/01/21 01:11:57 dawes Exp $ */
 
 #include "fb.h"
 
@@ -384,8 +384,6 @@ fbDoCopy (DrawablePtr	pSrcDrawable,
 
     RegionPtr prgnExposed = NULL;
     RegionRec rgnDst;
-    register BoxPtr pbox;
-    int i;
     register int dx;
     register int dy;
     xRectangle origSource;
@@ -583,7 +581,6 @@ fbDoCopy (DrawablePtr	pSrcDrawable,
 					(int)origSource.height,
 					origDest.x, origDest.y, 
 					(unsigned long) bitPlane);
-bail:
     REGION_UNINIT(pGC->pScreen, &rgnDst);
     if (freeSrcClip)
 	REGION_DESTROY(pGC->pScreen, prgnSrcClip);

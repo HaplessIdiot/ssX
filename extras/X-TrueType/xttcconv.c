@@ -191,7 +191,6 @@ static const char* convModuleSubdir[] = {
 ENTRYFUNC_PROTO_TEMPLATE(ISO8859_1_entrypoint);
 #ifdef OPT_ENCODINGS
 ENTRYFUNC_PROTO_TEMPLATE(BIG5_entrypoint);
-ENTRYFUNC_PROTO_TEMPLATE(BIG5ETEN_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(GB2312_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0201_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0208_entrypoint);
@@ -231,7 +230,6 @@ static mod_entrypoint_ptr_t preloadedCodeConverter[] = {
     ISO8859_1_entrypoint,
 #ifdef OPT_ENCODINGS
     BIG5_entrypoint,
-    BIG5ETEN_entrypoint,
     GB2312_entrypoint,
     JISX0201_entrypoint,
     JISX0208_entrypoint,

@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: contrib/programs/xgc/tests.c,v 3.4 1999/04/29 09:12:42 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.1 2000/02/13 03:26:28 dawes Exp $
 **
 */
 
@@ -9,9 +9,7 @@
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xos.h>
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include <math.h>
 #include "xgc.h"
 #ifdef SVR4
@@ -37,6 +35,7 @@ extern long random();
 extern XStuff X;
 extern Widget result;
 
+extern void GC_change_font();
 extern void print_if_recording();
 void show_result();
 
@@ -425,11 +424,12 @@ polyfillarc_test()
   genericarc_test(TRUE);
 }
 
+static const char string8[] = "pack my box with five dozen liquor jugs";
+
 void
 polytext8_test()
 {
   int num_strings = 200;
-  static char string[] = "pack my box with five dozen liquor jugs";
   int i;
   long totaltime;
   char buf[80];
@@ -440,7 +440,7 @@ polytext8_test()
   start_timer();
   for (i=0;i<num_strings;++i) {
     XDrawString(X.dpy,X.win,X.gc,(i%2 ? i : num_strings - i),i,
-		string,sizeof(string));
+		string8,sizeof(string8)-1);
   }
   XSync(X.dpy,0);
   totaltime = end_timer();
@@ -454,7 +454,6 @@ void
 imagetext8_test()
 {
   int num_strings = 200;
-  static char string[] = "pack my box with five dozen liquor jugs";
   int i;
   long totaltime;
   char buf[80];
@@ -465,10 +464,92 @@ imagetext8_test()
   start_timer();
   for (i=0;i<num_strings;++i) {
     XDrawImageString(X.dpy,X.win,X.gc,(i%2 ? i : num_strings - i),i,
-		string,sizeof(string));
+		     string8,sizeof(string8)-1);
   }
   XSync(X.dpy,0);
   totaltime = end_timer();
+
+  sprintf(buf,"%d strings in %.2f seconds.",num_strings,
+	  (double) totaltime/1000000.);
+  show_result(buf);
+}
+
+static const char unicode_font[] =
+  "-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1";
+
+static const XChar2b string16[] = {
+  { 0x00, 0x20 }, { 0x00, 0x20 }, { 0x22, 0x2E }, { 0x00, 0x20 },
+  { 0x00, 0x45 }, { 0x22, 0xC5 }, { 0x00, 0x64 }, { 0x00, 0x61 },
+  { 0x00, 0x20 }, { 0x00, 0x3D }, { 0x00, 0x20 }, { 0x00, 0x51 },
+  { 0x00, 0x2C }, { 0x00, 0x20 }, { 0x00, 0x20 }, { 0x00, 0x6E },
+  { 0x00, 0x20 }, { 0x21, 0x92 }, { 0x00, 0x20 }, { 0x22, 0x1E },
+  { 0x00, 0x2C }, { 0x00, 0x20 }, { 0x22, 0x11 }, { 0x00, 0x20 },
+  { 0x00, 0x66 }, { 0x00, 0x28 }, { 0x00, 0x69 }, { 0x00, 0x29 },
+  { 0x00, 0x20 }, { 0x00, 0x3D }, { 0x00, 0x20 }, { 0x22, 0x0F },
+  { 0x00, 0x20 }, { 0x00, 0x67 }, { 0x00, 0x28 }, { 0x00, 0x69 },
+  { 0x00, 0x29 }, { 0x00, 0x2C }, { 0x00, 0x20 }, { 0x22, 0x00 },
+  { 0x00, 0x78 }, { 0x22, 0x08 }, { 0x21, 0x1D }, { 0x00, 0x3A },
+  { 0x00, 0x20 }, { 0x23, 0x08 }, { 0x00, 0x78 }, { 0x23, 0x09 },
+  { 0x00, 0x20 }, { 0x00, 0x3D }, { 0x00, 0x20 }, { 0x22, 0x12 },
+  { 0x23, 0x0A }, { 0x22, 0x12 }, { 0x00, 0x78 }, { 0x23, 0x0B },
+  { 0x00, 0x2C }, { 0x00, 0x20 }, { 0x03, 0xB1 }, { 0x00, 0x20 },
+  { 0x22, 0x27 }, { 0x00, 0x20 }, { 0x00, 0xAC }, { 0x03, 0xB2 },
+  { 0x00, 0x20 }, { 0x00, 0x3D }, { 0x00, 0x20 }, { 0x00, 0xAC },
+  { 0x00, 0x28 }, { 0x00, 0xAC }, { 0x03, 0xB1 }, { 0x00, 0x20 },
+  { 0x22, 0x28 }, { 0x00, 0x20 }, { 0x03, 0xB2 }, { 0x00, 0x29 },
+  { 0x00, 0x2C }
+};
+
+void
+polytext16_test()
+{
+  int num_strings = 50;
+  int i;
+  long totaltime;
+  char buf[80];
+
+  num_strings *= X.percent;
+
+  GC_change_font(unicode_font,FALSE);
+
+  XSync(X.dpy,0);
+  start_timer();
+  for (i=0;i<num_strings;++i) {
+    XDrawString16(X.dpy,X.win,X.gc,(i%2 ? i : num_strings - i),10*i,
+		  string16,sizeof(string16)/sizeof(XChar2b));
+  }
+  XSync(X.dpy,0);
+  totaltime = end_timer();
+
+  GC_change_font(X.fontname,FALSE);
+
+  sprintf(buf,"%d strings in %.2f seconds.",num_strings,
+	  (double) totaltime/1000000.);
+  show_result(buf);
+}
+
+void
+imagetext16_test()
+{
+  int num_strings = 50;
+  int i;
+  long totaltime;
+  char buf[80];
+
+  num_strings *= X.percent;
+
+  GC_change_font(unicode_font,FALSE);
+
+  XSync(X.dpy,0);
+  start_timer();
+  for (i=0;i<num_strings;++i) {
+    XDrawImageString16(X.dpy,X.win,X.gc,(i%2 ? i : num_strings - i),10*i,
+		       string16,sizeof(string16)/sizeof(XChar2b));
+  }
+  XSync(X.dpy,0);
+  totaltime = end_timer();
+
+  GC_change_font(X.fontname,FALSE);
 
   sprintf(buf,"%d strings in %.2f seconds.",num_strings,
 	  (double) totaltime/1000000.);
@@ -525,6 +606,8 @@ run_test()
     case PolyFillArc:   polyfillarc_test();        break;
     case PolyText8:     polytext8_test();          break;
     case ImageText8:    imagetext8_test();         break;
+    case PolyText16:    polytext16_test();         break;
+    case ImageText16:   imagetext16_test();        break;
     case PutImage:      putimage_test();           break;
     default: fprintf(stderr,"That test doesn't exist yet.\n");
     }

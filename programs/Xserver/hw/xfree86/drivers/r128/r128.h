@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.4 2000/02/12 20:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.5 2000/02/13 19:33:55 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -37,7 +37,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _R128_H_
 #define _R128_H_
 
-#define R128_DEBUG    1		/* Turn on debugging output                */
+#define R128_DEBUG    0		/* Turn off debugging output                */
 #define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
 #define R128_MMIOSIZE 0x80000
 

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.5 2000/01/21 01:11:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.6 2000/01/21 15:06:18 dawes Exp $ */
 
 #include "fb.h"
 
@@ -87,8 +87,6 @@ fbSetupScreen(ScreenPtr	pScreen,
 	      int	width,		/* pixel width of frame buffer */
 	      int	bpp)		/* bits per pixel for screen */
 {
-    int	i;
-
     if (!fbAllocatePrivates(pScreen, (int *) 0))
 	return FALSE;
     pScreen->defColormap = FakeClientID(0);
@@ -142,7 +140,6 @@ fbFinishScreenInit(ScreenPtr	pScreen,
 		   int		width,
 		   int		bpp)
 {
-    int	i, j;
     VisualPtr	visuals;
     DepthPtr	depths;
     int		nvisuals;

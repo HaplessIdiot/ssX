@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpoint.c,v 1.2 1999/12/30 02:33:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpoint.c,v 1.3 2000/01/21 01:11:58 dawes Exp $ */
 
 #include "fb.h"
 
@@ -144,6 +144,9 @@ fbPolyPoint (DrawablePtr    pDrawable,
 	switch (dstBpp) {
 	case 8:	    dots = fbDots8; break;
 	case 16:    dots = fbDots16; break;
+#ifdef FB_24BIT
+	case 24:    dots = fbDots24; break;
+#endif
 	case 32:    dots = fbDots32; break;
 	}
     }

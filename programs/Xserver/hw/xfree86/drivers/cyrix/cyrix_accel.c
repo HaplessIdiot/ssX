@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_accel.c,v 1.1 2000/02/13 00:56:10 dawes Exp $ */
 
 #include "vgaHW.h"
 #include "xf86.h"
@@ -36,6 +36,9 @@
 #include "miline.h"
 #include "xf86_libc.h"
 
+#ifndef __GNUC__
+#define __inline__ /**/
+#endif
 
 /* size of color expand source area (embedded in frame buffer) */
 #define CYRIXexpandSize       32768

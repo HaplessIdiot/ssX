@@ -1,5 +1,5 @@
 /* $XConsortium: showfont.c,v 1.13 94/04/17 20:44:07 gildea Exp $ */
-/* $XFree86: contrib/programs/showfont/showfont.c,v 3.0 1994/08/20 06:53:44 dawes Exp $ */
+/* $XFree86: xc/programs/showfont/showfont.c,v 1.1 2000/02/13 03:26:15 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -51,6 +51,8 @@ from the X Consortium.
 
 */
 #include	<stdio.h>
+#include	<stdlib.h>
+#include	<string.h>
 #include	<ctype.h>
 #include	"FSlib.h"
 
@@ -72,7 +74,7 @@ int         scan_pad = 8;	/* -pad: ScanlinePad */
 int         scan_unit = 8;	/* -unit: ScanlineUnit */
 int         first_ch = 0;	/* -start: first character*/
 int         end_ch = ~0;	/* -end: end character */
-char       *cmd;
+const char *ProgramName;
 Bool	    no_props = False;	/* -noprops: don't show font properties */
 Bool        extents_only = False; /* -extents_only */
 
@@ -80,323 +82,6 @@ FSServer   *svr;
 
 /* set from bitmap_pad to ImageRectMin, ImageMaxWidth, or ImageMax */
 int	    bitmap_format;	
-
-static FSBitmapFormat make_format();
-
-static void
-usage()
-{
-    printf("%s: [-server servername] [-extents_only] [-noprops] [-lsb] [-msb] [-LSB] [-MSB] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
-    exit(0);
-}
-
-main(argc, argv)
-    int         argc;
-    char      **argv;
-{
-    char       *servername = NULL; /* -server: font server name */
-    char       *fontname = "xconq"; /* -fn: font name */
-    int         i;
-    Font        fid,
-                dummy;
-    FSBitmapFormat format;
-    FSBitmapFormatMask fmask;
-    FSChar2b    first,
-                last;
-    FSXFontInfoHeader hdr;
-    Bool        show_all = True;
-
-    cmd = argv[0];
-
-    for (i = 1; i < argc; i++) {
-	if (!strncmp(argv[i], "-se", 3)) {
-	    if (argv[++i])
-		servername = argv[i];
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-ext", 4)) {
-	    extents_only = True;
-	} else if (!strncmp(argv[i], "-noprops", 7)) {
-	    no_props = True;
-	} else if (!strncmp(argv[i], "-lsb", 4)) {
-	    bitorder = LSBFirst;
-	} else if (!strncmp(argv[i], "-msb", 4)) {
-	    bitorder = MSBFirst;
-	} else if (!strncmp(argv[i], "-LSB", 4)) {
-	    byteorder = LSBFirst;
-	} else if (!strncmp(argv[i], "-MSB", 4)) {
-	    byteorder = MSBFirst;
-	} else if (!strncmp(argv[i], "-p", 2)) {
-	    if (argv[++i])
-		scan_pad = atoi(argv[i]);
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-u", 2)) {
-	    if (argv[++i])
-		scan_unit = atoi(argv[i]);
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-b", 2)) {
-	    if (argv[++i])
-		bitmap_pad = atoi(argv[i]);
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-st", 3)) {
-	    if (argv[++i])
-		first_ch = atoi(argv[i]);
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-e", 2)) {
-	    if (argv[++i])
-		end_ch = atoi(argv[i]);
-	    else
-		usage();
-	} else if (!strncmp(argv[i], "-f", 2)) {
-	    if (argv[++i])
-		fontname = argv[i];
-	    else
-		usage();
-	} else
-	    usage();
-    }
-
-    if (first_ch != 0 && end_ch != ~0 && end_ch < first_ch) {
-	fprintf(stderr,
-		"bad character range -- end (%d) is less than start (%d)\n",
-		end_ch, first_ch);
-	exit(1);
-    }
-    if ((svr = FSOpenServer(servername)) == NULL) {
-	if(FSServerName(servername) != NULL)
-		fprintf(stderr, "can't open server \"%s\"\n", FSServerName(servername));
-	else
-		fprintf(stderr, "can't open server \"\"\n");
-	exit(1);
-    }
-    format = make_format();
-    fmask = (BitmapFormatMaskByte | BitmapFormatMaskBit |
-	     BitmapFormatMaskImageRectangle | BitmapFormatMaskScanLinePad |
-	     BitmapFormatMaskScanLineUnit);
-    fid = FSOpenBitmapFont(svr, format, fmask, fontname, &dummy);
-    if (fid) {
-	printf("opened font %s\n", fontname);
-	show_info(fid, &hdr, &first, &last);
-	if (first_ch != 0 &&
-		((unsigned)first_ch >= (first.low + (first.high << 8)))) {
-	    first.low = first_ch & 0xff;
-	    first.high = first_ch >> 8;
-	    show_all = False;
-	}
-	if (end_ch != ~0 &&
-		((unsigned)end_ch <= (last.low + (last.high << 8)))) {
-	    last.low = end_ch & 0xff;
-	    last.high = end_ch >> 8;
-	    show_all = False;
-	}
-	/* make sure the range is legal */
-	if ((first.high > last.high) || (first.high == last.high &&
-					 first.low > last.low)) {
-	    last = first;
-	    fprintf(stderr,
-		    "adjusting range -- specifed first char is after end\n");
-	}
-	show_glyphs(fid, &hdr, show_all, first, last);
-	FSCloseFont(svr, fid);
-    } else {
-	fprintf(stderr, "couldn't get font %s\n", fontname);
-	FSCloseServer(svr);
-	exit(1);
-    }
-    FSCloseServer(svr);
-    exit(0);
-}
-
-
-show_glyphs(fid, hdr, show_all, first, last)
-    Font        fid;
-    FSXFontInfoHeader *hdr;
-    Bool        show_all;
-    FSChar2b    first,
-                last;
-{
-    FSXCharInfo *extents;
-    int         err,
-                ch,
-                start,
-                end;
-    int         offset = 0;
-    unsigned char *glyphs;
-    FSOffset   *offsets;
-    int         scanpad;
-    int         r,
-                b;
-    FSBitmapFormat format;
-    FSChar2b    chars[2];
-    int         num_chars;
-
-    if (show_all) {
-	num_chars = 0;
-    } else {
-	chars[0] = first;
-	chars[1] = last;
-	num_chars = 2;
-    }
-    FSQueryXExtents16(svr, fid, True, chars, num_chars, &extents);
-
-    if (!extents_only) {
-	format = make_format();
-	err = FSQueryXBitmaps16(svr, fid, format, True, chars, num_chars,
-				&offsets, &glyphs);
-
-	if (err != FSSuccess) {
-	    fprintf(stderr, "QueryGlyphs failed\n");
-	    exit(1);
-	}
-    }
-    start = first.low + (first.high << 8);
-    end = last.low + (last.high << 8);
-
-    scanpad = scan_pad >> 3;
-
-    for (ch = 0; ch <= (end - start); ch++) {
-	int         bottom,
-	            bpr,
-	            charwidth;
-
-	printf("char #%d", ch + start);
-	if (isprint(ch + start))
-	    printf(" '%c'\n", (char) (ch + start));
-	else
-	    printf(" '\\%03o'\n", (ch + start)&0377);
-	show_char_info(&extents[ch]);
-	if (extents_only)
-	    continue;
-	if (offset != offsets[ch].position)
-	    fprintf(stderr, "offset mismatch: expected %d, got %d\n",
-		    offset, offsets[ch].position);
-	switch (bitmap_format) {
-	case BitmapFormatImageRectMin:
-	    bottom = extents[ch].descent + extents[ch].ascent;
-	    charwidth = extents[ch].right - extents[ch].left;
-	    break;
-	case BitmapFormatImageRectMaxWidth:
-	    bottom = extents[ch].descent + extents[ch].ascent;
-	    charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
-	    break;
-	case BitmapFormatImageRectMax:
-	    bottom = hdr->max_bounds.ascent +
-		hdr->max_bounds.descent;
-	    charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
-	    break;
-	}
-
-	if (extents[ch].left == 0 &&
-	    extents[ch].right == 0 &&
-	    extents[ch].width == 0 &&
-	    extents[ch].ascent == 0 &&
-	    extents[ch].descent == 0)
-	{
-	    printf ("Nonexistent character\n");
-	    continue;
-	}
-	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
-	if (offsets[ch].length != bottom * bpr) {
-	    fprintf (stderr, "length mismatch: expected %d (%dx%d), got %d\n",
-			 bottom * bpr, bpr, bottom, offsets[ch].length);
-	}
-	offset = offsets[ch].position;
-	for (r = 0; r < bottom; r++) {
-	    unsigned char *row = glyphs + offset;
-
-	    for (b = 0; b < charwidth; b++) {
-		putchar((row[b >> 3] &
-			 (1 << (7 - (b & 7)))) ? '#' : '-');
-	    }
-	    putchar('\n');
-	    offset += bpr;
-	}
-    }
-    FSFree((char *) extents);
-    if (!extents_only) {
-	FSFree((char *) offsets);
-	FSFree((char *) glyphs);
-    }
-}
-
-show_char_info(ci)
-    FSXCharInfo *ci;
-{
-    printf("Left: %-3d    Right: %-3d    Ascent: %-3d    Descent: %-3d    Width: %d\n",
-	   ci->left, ci->right, ci->ascent, ci->descent, ci->width);
-}
-
-show_info(fid, hdr, first, last)
-    Font        fid;
-    FSXFontInfoHeader *hdr;
-    FSChar2b   *first,
-               *last;
-{
-    FSPropInfo  pi;
-    FSPropOffset *po;
-    unsigned char *pd;
-
-    FSQueryXInfo(svr, fid, hdr, &pi, &po, &pd);
-    printf("Direction: %s\n", (hdr->draw_direction == LeftToRightDrawDirection)
-	   ? "Left to Right" : "Right to Left");
-    *first = hdr->char_range.min_char;
-    *last = hdr->char_range.max_char;
-    printf("Range:	%d to %d\n",
-	   first->low + (first->high << 8),
-	   last->low + (last->high << 8));
-    if (hdr->flags & FontInfoAllCharsExist)
-	printf("All chars exist\n");
-    printf("Default char: %d\n",
-	   hdr->default_char.low + (hdr->default_char.high << 8));
-    printf("Min bounds: \n");
-    show_char_info(&hdr->min_bounds);
-    printf("Max bounds: \n");
-    show_char_info(&hdr->max_bounds);
-    printf("Font Ascent: %d  Font Descent: %d\n",
-	   hdr->font_ascent, hdr->font_descent);
-
-    if (!no_props)
-	show_props(&pi, po, pd);
-    FSFree((char *) po);
-    FSFree((char *) pd);
-}
-
-show_props(pi, po, pd)
-    FSPropInfo *pi;
-    FSPropOffset *po;
-    unsigned char *pd;
-{
-    int         i;
-    char        buf[512];
-    int         num_props;
-
-    num_props = pi->num_offsets;
-    for (i = 0; i < num_props; i++, po++) {
-	strncpy(buf, (char *) (pd + po->name.position), po->name.length);
-	buf[po->name.length] = '\0';
-	printf("%s\t", buf);
-	switch (po->type) {
-	case PropTypeString:
-	    strncpy(buf, pd + po->value.position, po->value.length);
-	    buf[po->value.length] = '\0';
-	    printf("%s\n", buf);
-	    break;
-	case PropTypeUnsigned:
-	    printf("%d\n", (unsigned long) po->value.position);
-	    break;
-	case PropTypeSigned:
-	    printf("%d\n", (long) po->value.position);
-	    break;
-	default:
-	    fprintf(stderr, "bogus property\n");
-	    break;
-	}
-    }
-}
 
 static      FSBitmapFormat
 make_format()
@@ -461,4 +146,328 @@ make_format()
 	BitmapFormatByteOrderLSB;
 
     return format;
+}
+
+void
+show_char_info(ci)
+    FSXCharInfo *ci;
+{
+    printf("Left: %-3d    Right: %-3d    Ascent: %-3d    Descent: %-3d    Width: %d\n",
+	   ci->left, ci->right, ci->ascent, ci->descent, ci->width);
+}
+
+void
+show_glyphs(fid, hdr, show_all, first, last)
+    Font        fid;
+    FSXFontInfoHeader *hdr;
+    Bool        show_all;
+    FSChar2b    first,
+                last;
+{
+    FSXCharInfo *extents;
+    int         err,
+                ch,
+                start,
+                end;
+    int         offset = 0;
+    unsigned char *glyphs;
+    FSOffset   *offsets;
+    int         scanpad;
+    int         r,
+                b;
+    FSBitmapFormat format;
+    FSChar2b    chars[2];
+    int         num_chars;
+
+    if (show_all) {
+	num_chars = 0;
+    } else {
+	chars[0] = first;
+	chars[1] = last;
+	num_chars = 2;
+    }
+    FSQueryXExtents16(svr, fid, True, chars, num_chars, &extents);
+
+    if (!extents_only) {
+	format = make_format();
+	err = FSQueryXBitmaps16(svr, fid, format, True, chars, num_chars,
+				&offsets, &glyphs);
+
+	if (err != FSSuccess) {
+	    fprintf(stderr, "QueryGlyphs failed\n");
+	    exit(1);
+	}
+    }
+    start = first.low + (first.high << 8);
+    end = last.low + (last.high << 8);
+
+    scanpad = scan_pad >> 3;
+
+    for (ch = 0; ch <= (end - start); ch++) {
+	int         bottom,
+	            bpr,
+	            charwidth;
+
+	printf("char #%d", ch + start);
+	if ((ch + start >= 0) && (ch + start <= 127) && isprint(ch + start))
+	    printf(" '%c'\n", (char) (ch + start));
+	else
+	    printf(" 0x%04x\n", ch + start);
+	show_char_info(&extents[ch]);
+	if (extents_only)
+	    continue;
+	if (offset != offsets[ch].position)
+	    fprintf(stderr, "offset mismatch: expected %d, got %d\n",
+		    offset, offsets[ch].position);
+	switch (bitmap_format) {
+	case BitmapFormatImageRectMin:
+	    bottom = extents[ch].descent + extents[ch].ascent;
+	    charwidth = extents[ch].right - extents[ch].left;
+	    break;
+	case BitmapFormatImageRectMaxWidth:
+	    bottom = extents[ch].descent + extents[ch].ascent;
+	    charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
+	    break;
+	case BitmapFormatImageRectMax:
+	    bottom = hdr->max_bounds.ascent +
+		hdr->max_bounds.descent;
+	    charwidth = hdr->max_bounds.right - hdr->min_bounds.left;
+	    break;
+	default:
+	    bottom = 0;
+	    charwidth = 0;
+	}
+
+	if (extents[ch].left == 0 &&
+	    extents[ch].right == 0 &&
+	    extents[ch].width == 0 &&
+	    extents[ch].ascent == 0 &&
+	    extents[ch].descent == 0)
+	{
+	    printf ("Nonexistent character\n");
+	    continue;
+	}
+	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
+	if (offsets[ch].length != bottom * bpr) {
+	    fprintf (stderr, "length mismatch: expected %d (%dx%d), got %d\n",
+			 bottom * bpr, bpr, bottom, offsets[ch].length);
+	}
+	offset = offsets[ch].position;
+	for (r = 0; r < bottom; r++) {
+	    unsigned char *row = glyphs + offset;
+
+	    for (b = 0; b < charwidth; b++) {
+		putchar((row[b >> 3] &
+			 (1 << (7 - (b & 7)))) ? '#' : '-');
+	    }
+	    putchar('\n');
+	    offset += bpr;
+	}
+    }
+    FSFree((char *) extents);
+    if (!extents_only) {
+	FSFree((char *) offsets);
+	FSFree((char *) glyphs);
+    }
+}
+
+void
+show_props(pi, po, pd)
+    FSPropInfo *pi;
+    FSPropOffset *po;
+    unsigned char *pd;
+{
+    int         i;
+    char        buf[512];
+    int         num_props;
+
+    num_props = pi->num_offsets;
+    for (i = 0; i < num_props; i++, po++) {
+	strncpy(buf, (char *) (pd + po->name.position), po->name.length);
+	buf[po->name.length] = '\0';
+	printf("%s\t", buf);
+	switch (po->type) {
+	case PropTypeString:
+	    strncpy(buf, pd + po->value.position, po->value.length);
+	    buf[po->value.length] = '\0';
+	    printf("%s\n", buf);
+	    break;
+	case PropTypeUnsigned:
+	    printf("%lu\n", (unsigned long) po->value.position);
+	    break;
+	case PropTypeSigned:
+	    printf("%ld\n", (long) po->value.position);
+	    break;
+	default:
+	    fprintf(stderr, "bogus property\n");
+	    break;
+	}
+    }
+}
+
+void
+show_info(fid, hdr, first, last)
+    Font        fid;
+    FSXFontInfoHeader *hdr;
+    FSChar2b   *first,
+               *last;
+{
+    FSPropInfo  pi;
+    FSPropOffset *po;
+    unsigned char *pd;
+
+    FSQueryXInfo(svr, fid, hdr, &pi, &po, &pd);
+    printf("Direction: %s\n", (hdr->draw_direction == LeftToRightDrawDirection)
+	   ? "Left to Right" : "Right to Left");
+    *first = hdr->char_range.min_char;
+    *last = hdr->char_range.max_char;
+    printf("Range:	%d to %d\n",
+	   first->low + (first->high << 8),
+	   last->low + (last->high << 8));
+    if (hdr->flags & FontInfoAllCharsExist)
+	printf("All chars exist\n");
+    printf("Default char: %d\n",
+	   hdr->default_char.low + (hdr->default_char.high << 8));
+    printf("Min bounds: \n");
+    show_char_info(&hdr->min_bounds);
+    printf("Max bounds: \n");
+    show_char_info(&hdr->max_bounds);
+    printf("Font Ascent: %d  Font Descent: %d\n",
+	   hdr->font_ascent, hdr->font_descent);
+
+    if (!no_props)
+	show_props(&pi, po, pd);
+    FSFree((char *) po);
+    FSFree((char *) pd);
+}
+
+static void
+usage()
+{
+    printf("%s: [-server servername] [-extents_only] [-noprops] [-lsb] [-msb] [-LSB] [-MSB] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", ProgramName);
+    exit(0);
+}
+
+int
+main(argc, argv)
+    int         argc;
+    char      **argv;
+{
+    const char *servername = "localhost:7100"; /* -server: font server name */
+    const char *fontname = NULL; /* -fn: font name */
+    int         i;
+    Font        fid,
+                dummy;
+    FSBitmapFormat format;
+    FSBitmapFormatMask fmask;
+    FSChar2b    first,
+                last;
+    FSXFontInfoHeader hdr;
+    Bool        show_all = True;
+
+    ProgramName = argv[0];
+
+    for (i = 1; i < argc; i++) {
+	if (!strncmp(argv[i], "-se", 3)) {
+	    if (++i < argc)
+		servername = argv[i];
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-ext", 4)) {
+	    extents_only = True;
+	} else if (!strncmp(argv[i], "-noprops", 7)) {
+	    no_props = True;
+	} else if (!strncmp(argv[i], "-lsb", 4)) {
+	    bitorder = LSBFirst;
+	} else if (!strncmp(argv[i], "-msb", 4)) {
+	    bitorder = MSBFirst;
+	} else if (!strncmp(argv[i], "-LSB", 4)) {
+	    byteorder = LSBFirst;
+	} else if (!strncmp(argv[i], "-MSB", 4)) {
+	    byteorder = MSBFirst;
+	} else if (!strncmp(argv[i], "-p", 2)) {
+	    if (++i < argc)
+		scan_pad = atoi(argv[i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-u", 2)) {
+	    if (++i < argc)
+		scan_unit = atoi(argv[i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-b", 2)) {
+	    if (++i < argc)
+		bitmap_pad = atoi(argv[i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-st", 3)) {
+	    if (++i < argc)
+		first_ch = atoi(argv[i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-e", 2)) {
+	    if (++i < argc)
+		end_ch = atoi(argv[i]);
+	    else
+		usage();
+	} else if (!strncmp(argv[i], "-f", 2)) {
+	    if (++i < argc)
+		fontname = argv[i];
+	    else
+		usage();
+	} else
+	    usage();
+    }
+    if (fontname == NULL)
+	usage();
+
+    if (first_ch != 0 && end_ch != ~0 && end_ch < first_ch) {
+	fprintf(stderr,
+		"bad character range -- end (%d) is less than start (%d)\n",
+		end_ch, first_ch);
+	exit(1);
+    }
+    if ((svr = FSOpenServer(servername)) == NULL) {
+	if(FSServerName(servername) != NULL)
+		fprintf(stderr, "can't open server \"%s\"\n", FSServerName(servername));
+	else
+		fprintf(stderr, "can't open server \"\"\n");
+	exit(1);
+    }
+    format = make_format();
+    fmask = (BitmapFormatMaskByte | BitmapFormatMaskBit |
+	     BitmapFormatMaskImageRectangle | BitmapFormatMaskScanLinePad |
+	     BitmapFormatMaskScanLineUnit);
+    fid = FSOpenBitmapFont(svr, format, fmask, fontname, &dummy);
+    if (fid) {
+	printf("opened font %s\n", fontname);
+	show_info(fid, &hdr, &first, &last);
+	if (first_ch != 0 &&
+		((unsigned)first_ch >= (first.low + (first.high << 8)))) {
+	    first.low = first_ch & 0xff;
+	    first.high = first_ch >> 8;
+	    show_all = False;
+	}
+	if (end_ch != ~0 &&
+		((unsigned)end_ch <= (last.low + (last.high << 8)))) {
+	    last.low = end_ch & 0xff;
+	    last.high = end_ch >> 8;
+	    show_all = False;
+	}
+	/* make sure the range is legal */
+	if ((first.high > last.high) || (first.high == last.high &&
+					 first.low > last.low)) {
+	    last = first;
+	    fprintf(stderr,
+		    "adjusting range -- specifed first char is after end\n");
+	}
+	show_glyphs(fid, &hdr, show_all, first, last);
+	FSCloseFont(svr, fid);
+    } else {
+	fprintf(stderr, "couldn't get font %s\n", fontname);
+	FSCloseServer(svr);
+	exit(1);
+    }
+    FSCloseServer(svr);
+    exit(0);
 }

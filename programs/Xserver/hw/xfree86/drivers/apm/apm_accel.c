@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.11 2000/02/08 13:13:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.12 2000/02/11 22:35:55 dawes Exp $ */
 
 
 #include "apm.h"
@@ -90,7 +90,8 @@ ApmCacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
 	xf86FreeOffscreenArea(pCache->area);
     }
 
-    draw = xf86AllocateLinearOffscreenArea(pApm->pScreen, (W * h + 7) / 8, 8,
+    draw = xf86AllocateLinearOffscreenArea(pApm->pScreen, (W * h + 7) / 8,
+				    (pApm->CurrentLayout.mask32 + 1) << 1,
 				    ApmMoveStipple, ApmRemoveStipple, pCache);
     if (!draw)
 	return NULL;	/* Let's hope this will never happen... */
@@ -332,7 +333,7 @@ ApmAccelInit(ScreenPtr pScreen)
 #endif
 
     /* Pixmap cache setup */
-    pXAAinfo->CachePixelGranularity = 64 / pScrn->bitsPerPixel;
+    pXAAinfo->CachePixelGranularity = (pApm->CurrentLayout.mask32 + 1) << 1;
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;

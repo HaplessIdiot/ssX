@@ -31,6 +31,7 @@ from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
@@ -39,8 +40,7 @@ from the X Consortium.
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Scrollbar.h>
 
-extern char *malloc();
-extern char *ProgramName;
+extern const char *ProgramName;
 extern int default_exitstatus;
 
 typedef struct _ButtonRecord {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.15 1999/11/02 16:16:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.16 2000/02/08 17:19:15 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -217,7 +217,7 @@ S3VNopAllCmdSets(ScrnInfoPtr pScrn)
 
   if (xf86GetVerbosity() > 1) {
      ErrorF("\tTrio3D -- S3VNopAllCmdSets: SubsysStats#1 = 0x%08lx\n",
-        IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000);
+        IN_SUBSYS_STAT());
   }
 
   mem_barrier();
@@ -239,7 +239,7 @@ S3VNopAllCmdSets(ScrnInfoPtr pScrn)
 
   if (xf86GetVerbosity() > 1) {
      ErrorF("\tTrio3D -- S3VNopAllCmdSets: SubsysStats#2 = 0x%08lx\n",
-        IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000);;
+        IN_SUBSYS_STAT());
   }
 }
 
@@ -347,8 +347,9 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 
       /* turn off the GE */
 
+      VGAOUT8(vgaCRIndex,resetidx);
       if(tmp & 0x01) {
-        tmp &= ~0x01;
+	/*        tmp &= ~0x01; */
         VGAOUT8(vgaCRReg, tmp);
         ge_was_on = 1;
         usleep(10000);
@@ -359,6 +360,7 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
       usleep(10000);
 
       VerticalRetraceWait();
+      VGAOUT8(vgaCRIndex,resetidx);
       VGAOUT8(vgaCRReg, (tmp & ~0x02));
       usleep(10000);
 
@@ -370,15 +372,13 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 
       if (xf86GetVerbosity() > 2) {
           ErrorF("\tTrio3D -- GE was %s ST#1: 0x%08lx ST#2: 0x%08lx\n",
-             (ge_was_on) ? "on" : "off",
-             (long)(gs1 & 0x3f802000 & 0x20002000),
-             (long)(gs2 & 0x3f802000 & 0x20002000) );
+		 (ge_was_on) ? "on" : "off", gs1, gs2);
       }
 
       VerticalRetraceWait();
 
       if (!from_timeout) {
-      S3VNopAllCmdSets(pScrn);
+	S3VNopAllCmdSets(pScrn);
         WaitIdleEmpty();
       }
 
@@ -388,7 +388,7 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
       if((IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000) != 0x20002000) {
         if(xf86GetVerbosity() > 1)
           ErrorF("restarting S3 graphics engine reset %2d ..."
-                 "%lx\n",r,IN_SUBSYS_STAT() & 0x3f802000 & 0x20002000);
+                 "%lx\n",r,IN_SUBSYS_STAT());
       }
         else
           break;

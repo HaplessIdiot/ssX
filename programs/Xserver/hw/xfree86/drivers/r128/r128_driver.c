@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.13 2000/02/12 20:45:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.14 2000/02/13 19:33:56 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -71,6 +71,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mipointer.h"
 #include "micmap.h"
 
+#undef USE_FB			/* not until overlays and 24->32 code added */
+#ifdef USE_FB
+#include "fb.h"
+#else
 				/* CFB support */
 #define PSZ 8
 #include "cfb.h"
@@ -79,7 +83,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cfb24.h"
 #include "cfb32.h"
 #include "cfb24_32.h"
-
+#endif
 				/* Xv support */
 #include "xf86xv.h"
 #include "Xv.h"
@@ -248,6 +252,12 @@ static const char *i2cSymbols[] = {
 #endif
 
 #ifdef XFree86LOADER
+#ifdef USE_FB
+static const char *fbSymbols[] = {
+    "fbScreenInit",
+    NULL
+};
+#else
 static const char *cfbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
@@ -256,6 +266,7 @@ static const char *cfbSymbols[] = {
     "cfb24_32ScreenInit",
     NULL
 };
+#endif
 
 static const char *xf8_32bppSymbols[] = {
     "xf86Overlay8Plus32Init",
@@ -320,7 +331,11 @@ static pointer R128Setup(pointer module, pointer opts, int *errmaj,
          * might refer to.
          */
         LoaderRefSymLists(vgahwSymbols,
+#ifdef USE_FB
+			  fbSymbols,
+#else
 			  cfbSymbols,
+#endif
 			  xaaSymbols, 
                           xf8_32bppSymbols,
 			  ramdacSymbols,
@@ -368,21 +383,25 @@ static Bool R128MapMMIO(ScrnInfoPtr pScrn)
 
     if (info->FBDev) {
 	info->MMIO = fbdevHWMapMMIO(pScrn);
+#ifdef __alpha__
+	info->MMIO32 = info->MMIO; /* XXX */
+#endif
     } else {
 	info->MMIO = xf86MapPciMem(pScrn->scrnIndex,
 				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
 				   info->PciTag,
 				   info->MMIOAddr,
 				   R128_MMIOSIZE);
+#ifdef __alpha__
+	info->MMIO32 = xf86MapPciMem(pScrn->scrnIndex,
+				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_MMIO_32BIT,
+				   info->PciTag,
+				   info->MMIOAddr,
+				   R128_MMIOSIZE);
+#endif
     }
 
 #ifdef __alpha__
-    info->MMIO32 = xf86MapPciMem(pScrn->scrnIndex,
-			       VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_MMIO_32BIT,
-			       info->PciTag,
-			       info->MMIOAddr,
-			       R128_MMIOSIZE);
-
     if (!info->MMIO32) return FALSE;
 #endif
     if (!info->MMIO) return FALSE;
@@ -1000,6 +1019,9 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
     xf86SetDpi(pScrn, 0, 0);
 
 				/* Get ScreenInit function */
+#ifdef USE_FB
+    mod = "fb"; Sym = "fbScreenInit";
+#else
     switch (pScrn->bitsPerPixel) {
     case  8: mod = "cfb";   Sym = "cfbScreenInit";   break;
     case 16: mod = "cfb16"; Sym = "cfb16ScreenInit"; break;
@@ -1012,6 +1034,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 	break;
     case 32: mod = "cfb32"; Sym = "cfb32ScreenInit"; break;
     }
+#endif
     if (mod && !xf86LoadSubModule(pScrn, mod)) return FALSE;
     xf86LoaderReqSymbols(Sym, NULL);
     
@@ -1230,6 +1253,13 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 			  pScrn->rgbBits,
 			  pScrn->defaultVisual)) return FALSE;
 
+#ifdef USE_FB
+    if (!fbScreenInit (pScreen, info->FB,
+		       pScrn->virtualX, pScrn->virtualY,
+		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
+		       pScrn->bitsPerPixel))
+	return FALSE;
+#else
     switch (pScrn->bitsPerPixel) {
     case 8:
 	if (!cfbScreenInit(pScreen, info->FB,
@@ -1269,6 +1299,7 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 		   "Invalid bpp (%d)\n", pScrn->bitsPerPixel);
 	return FALSE;
     }
+#endif
     xf86SetBlackWhitePixels(pScreen);
 
     if (pScrn->bitsPerPixel > 8) {

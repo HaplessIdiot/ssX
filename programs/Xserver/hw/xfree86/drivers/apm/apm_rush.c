@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.4 1999/09/27 06:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.5 2000/02/11 22:35:58 dawes Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -499,15 +499,15 @@ SProcXF86RushDispatch (register ClientPtr client)
 static int 
 ProcXF86RushOverlayPixmap(ClientPtr client)
 {
-    DrawablePtr	pDraw;
-    ScrnInfoPtr	pScrn;
-    PixmapPtr	pPixmap;
-    XvPortPtr	pPort;
-    XvImagePtr	pImage = NULL;
-    GCPtr	pGC;
-    int		status, i;
-    char	*offset;
-    ApmPtr	pApm;
+    DrawablePtr		pDraw;
+    ScrnInfoPtr		pScrn;
+    PixmapPtr		pPixmap;
+    XvPortPtr		pPort;
+    XvImagePtr		pImage = NULL;
+    GCPtr		pGC;
+    int			status, i;
+    unsigned char	*offset;
+    ApmPtr		pApm;
     ApmPixmapPtr	pPriv;
     REQUEST(xXF86RushOverlayPixmapReq);
 
@@ -557,7 +557,7 @@ ProcXF86RushOverlayPixmap(ClientPtr client)
 	client->errorValue = stuff->pixmap;
 	return (BadMatch);
     }
-    offset = (char *)pApm->FbBase +
+    offset = (unsigned char *)pApm->FbBase +
 	    pApm->RushY[pPriv->num - 1] * pApm->CurrentLayout.bytesPerScanline +
 	    pPixmap->drawable.x * pScrn->bitsPerPixel / 8;
 

@@ -160,7 +160,7 @@ create_testfrac_choice(w)
     {XtNscrollProc,      (XtArgVal) NULL}
   };
     
-  static char *translationtable = "<Leave>: Update()";
+  static const char *translationtable = "<Leave>: Update()";
 
   static XtActionsRec actiontable[] = {
     {"Update",  (XtActionProc) update},

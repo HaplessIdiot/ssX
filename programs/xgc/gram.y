@@ -11,6 +11,8 @@
 
 extern int yylineno;
 extern FILE *yyin;
+int yylex();
+void yyerror();
 
 extern void GC_change_function();
 extern void GC_change_foreground();
@@ -24,6 +26,7 @@ extern void GC_change_fillrule();
 extern void GC_change_arcmode();
 extern void GC_change_dashlist();
 extern void GC_change_planemask();
+extern void GC_change_font();
 extern void change_test();
 extern void change_percent();
 extern void run_test();
@@ -104,8 +107,9 @@ stmt		: error
 		;
 
 %%
+void
 yyerror(s)
-     char *s;
+     const char *s;
 {
   fprintf(stderr, "xgc: syntax error, line %d\n", yylineno);
 }

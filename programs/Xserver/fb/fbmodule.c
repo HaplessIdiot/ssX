@@ -23,14 +23,12 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/fb/fbmodule.c,v 1.2 2000/01/21 18:41:49 dawes Exp $ */
 
 #ifdef XFree86LOADER
 
 #include "xf86Module.h"
 #include "fb.h"
-
-static MODULESETUPPROTO(fbSetup);
 
 static XF86ModuleVersionInfo VersRec =
 {
@@ -46,11 +44,6 @@ static XF86ModuleVersionInfo VersRec =
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-XF86ModuleData fbModuleData = { &VersRec, fbSetup, NULL };
-
-static pointer
-fbSetup(pointer module, pointer opts, int *errmaj, int *errmin)
-{
-}
+XF86ModuleData fbModuleData = { &VersRec, NULL, NULL };
 
 #endif

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbsetsp.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -43,13 +43,12 @@ fbSetSpans (DrawablePtr	    pDrawable,
     int		    n;
     int		    xoff;
     int		    x1, x2;
-    FbBits	    srcpm, dstpm;
     
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
     while (nspans--)
     {
 	d = dst + ppt->y * dstStride;
-	xoff = (((int) src) & (FB_MASK >> 3));
+	xoff = (int) (((long) src) & (FB_MASK >> 3));
 	s = (FbBits *) (src - xoff);
 	xoff <<= 3;
 	n = REGION_NUM_RECTS(pClip);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.10 2000/02/11 22:35:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.11 2000/02/13 03:06:36 dawes Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -96,6 +96,7 @@ typedef struct {
     int			displayWidth, displayHeight;
     int			bitsPerPixel, bytesPerScanline;
     int			depth, Scanlines;
+    CARD32		mask32;		/* Mask to have 32bit aligned data */
     unsigned int	Setup_DEC;
     DisplayModePtr	pMode;
 } ApmFBLayout;

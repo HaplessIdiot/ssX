@@ -8,6 +8,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Form.h>
@@ -27,15 +28,15 @@ static char textstrings[NUMTEXTWIDGETS][80];
 
 static char oldtextstrings[NUMTEXTWIDGETS][80];
 
-static char *defaultstrings[NUMTEXTWIDGETS] = {"0","6x10","0","1"};
+static const char *defaultstrings[NUMTEXTWIDGETS] = {"0","6x10","0","1"};
 
 /* The labels displayed next to them */
-static char *labels[NUMTEXTWIDGETS] = {"Line Width","Font","Foreground",
-				       "Background"};
+static const char *labels[NUMTEXTWIDGETS] = {"Line Width","Font","Foreground",
+					     "Background"};
 
 /* the first half of what gets sent to interpret() */
-static char *names[NUMTEXTWIDGETS] = {"linewidth ","font ","foreground ",
-				      "background "};
+static const char *names[NUMTEXTWIDGETS] = {"linewidth ","font ","foreground ",
+					    "background "};
 
 /* create_text_choice(w,type,length,width)
 ** ---------------------------------------

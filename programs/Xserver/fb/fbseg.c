@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbseg.c,v 1.2 2000/01/20 01:40:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbseg.c,v 1.3 2000/01/21 01:11:59 dawes Exp $ */
 
 #include "fb.h"
 #include "miline.h"
@@ -350,19 +350,19 @@ fbBresFillDash (DrawablePtr pDrawable,
 }
 
 #ifdef FB_24BIT
-void
-fbBresSolid24 (DrawablePtr  pDrawable,
-	       GCPtr	    pGC,
-	       int	    dashOffset,
-	       int	    signdx,
-	       int	    signdy,
-	       int	    axis,
-	       int	    x1,
-	       int	    y1,
-	       int	    e,
-	       int	    e1,
-	       int	    e3,
-	       int	    len)
+static void
+fbBresSolid24RRop (DrawablePtr  pDrawable,
+		   GCPtr	pGC,
+		   int		dashOffset,
+		   int		signdx,
+		   int		signdy,
+		   int		axis,
+		   int		x1,
+		   int		y1,
+		   int		e,
+		   int		e1,
+		   int		e3,
+		   int		len)
 {
     FbStip	*dst;
     FbStride	dstStride;
@@ -372,7 +372,6 @@ fbBresSolid24 (DrawablePtr  pDrawable,
     FbStip	xor = pPriv->xor;
     FbStip	leftMask, rightMask;
     int		nl;
-    FbStip	bits;
     FbStip	*d;
     int		x;
     int		rot;
@@ -423,19 +422,20 @@ fbBresSolid24 (DrawablePtr  pDrawable,
 	}
     }
 }
-void
-fbBresDash24 (DrawablePtr   pDrawable,
-	      GCPtr	    pGC,
-	      int	    dashOffset,
-	      int	    signdx,
-	      int	    signdy,
-	      int	    axis,
-	      int	    x1,
-	      int	    y1,
-	      int	    e,
-	      int	    e1,
-	      int	    e3,
-	      int	    len)
+
+static void
+fbBresDash24RRop (DrawablePtr	pDrawable,
+		  GCPtr		pGC,
+		  int		dashOffset,
+		  int		signdx,
+		  int		signdy,
+		  int		axis,
+		  int		x1,
+		  int		y1,
+		  int		e,
+		  int		e1,
+		  int		e3,
+		  int		len)
 {
     FbStip	*dst;
     FbStride	dstStride;
@@ -448,7 +448,6 @@ fbBresDash24 (DrawablePtr   pDrawable,
     FbStip	bgxor = pPriv->bgxor;
     FbStip	leftMask, rightMask;
     int		nl;
-    FbStip	bits;
     FbStip	*d;
     int		x;
     int		rot;
@@ -534,7 +533,7 @@ fbBresDash24 (DrawablePtr   pDrawable,
 	    even = !even;
 	}
     }
-  }
+}
 #endif
 
 /*
@@ -559,20 +558,20 @@ fbSelectBres (DrawablePtr   pDrawable,
 	    bres = fbBresSolid;
 #ifdef FB_24BIT
 	    if (dstBpp == 24)
-		bres = fbBresSolid24;
-#ifndef FBNOPIXADDR
-	    else
-#endif
+		bres = fbBresSolid24RRop;
 #endif
 #ifndef FBNOPIXADDR
-		if (pPriv->and == 0)
-		{
-		    switch (dstBpp) {
-		    case 8:	bres = fbBresSolid8; break;
-		    case 16:	bres = fbBresSolid16; break;
-		    case 32:	bres = fbBresSolid32; break;
-		    }
+	    if (pPriv->and == 0)
+	    {
+		switch (dstBpp) {
+		case 8:	bres = fbBresSolid8; break;
+		case 16: bres = fbBresSolid16; break;
+#ifdef FB_24BIT
+		case 24: bres = fbBresSolid24; break;
+#endif
+		case 32: bres = fbBresSolid32; break;
 		}
+	    }
 #endif
 	}
     }
@@ -584,19 +583,21 @@ fbSelectBres (DrawablePtr   pDrawable,
 	    bres = fbBresDash;
 #ifdef FB_24BIT
 	    if (dstBpp == 24)
-		bres = fbBresDash24;
-	    else
+		bres = fbBresDash24RRop;
 #endif
 #ifndef FBNOPIXADDR
-		if (pPriv->and == 0 && 
-		    (pGC->lineStyle == LineOnOffDash || pPriv->bgand == 0))
-		{
-		    switch (dstBpp) {
-		    case 8:	bres = fbBresDash8; break;
-		    case 16:	bres = fbBresDash16; break;
-		    case 32:	bres = fbBresDash32; break;
-		    }
+	    if (pPriv->and == 0 && 
+		(pGC->lineStyle == LineOnOffDash || pPriv->bgand == 0))
+	    {
+		switch (dstBpp) {
+		case 8:	bres = fbBresDash8; break;
+		case 16: bres = fbBresDash16; break;
+#ifdef FB_24BIT
+		case 24: bres = fbBresDash24; break;
+#endif
+		case 32: bres = fbBresDash32; break;
 		}
+	    }
 #endif
 	}
     }
@@ -636,7 +637,6 @@ fbSegment (DrawablePtr	pDrawable,
     RegionPtr	pClip = fbGetCompositeClip(pGC);
     BoxPtr	pBox;
     int		nBox;
-    int		tmp;
     int		adx;		/* abs values of dx and dy */
     int		ady;
     int		signdx;		/* sign of dx and dy */

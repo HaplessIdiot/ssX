@@ -28,13 +28,12 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: contrib/programs/xmessage/readfile.c,v 1.3 1997/05/17 13:49:03 dawes Exp $ */
+/* $XFree86: xc/programs/xmessage/readfile.c,v 1.1 2000/02/13 03:26:34 dawes Exp $ */
 
 #include <X11/Xos.h>			/* for types.h */
 #include <sys/stat.h>
 #include <stdio.h>
-
-extern char *malloc();
+#include <stdlib.h>
 
 /*
  * get_data_from_file - read data from a file into a single buffer; meant 
@@ -82,37 +81,39 @@ static char *get_data_from_file (filename, len_return)
 }
 
 /*
- * get_data_from_stdin - copy data from stdin to file, use get_data_from_file,
- * and then remove file.  Read data twice, but avoid mallocing extra memory.
- * Meant for small files.
+ * get_data_from_stdin - read data from stdin into a single buffer.
  */
-static char *get_data_from_stdin (len)
-    int *len;			/* return */
+static char *get_data_from_stdin (len_return)
+    int *len_return;
 {
-    char filename[80];
-    char buf[BUFSIZ];
-    int mfile;
-    int n;
     char *cp;
+    int count;
+    int allocated;
+    int n;
 
-    strcpy (filename, "/tmp/xmsg-XXXXXX");
-#ifndef HAS_MKSTEMP
-    mktemp (filename);
-    if (!filename[0])
+    allocated = BUFSIZ;
+    cp = malloc (allocated + 1);
+    if (!cp) {
+	fprintf(stderr, "cannot get memory for message file\n");
 	return NULL;
-
-    mfile = creat(filename, 0600);
-#else
-    mfile = mkstemp(filename);
-#endif
-    if (mfile < 0) return NULL;
-    while ((n = fread (buf, 1, BUFSIZ, stdin)) > 0) {
-	(void) write (mfile, buf, n);
     }
-    (void) close (mfile);
+    count = 0;
 
-    cp = get_data_from_file (filename, len);
-    (void) unlink (filename);
+    while ((n = fread (cp + count, 1, BUFSIZ, stdin)) > 0) {
+	count += n;
+	/* Here count <= allocated. Prepare for next round. */
+	if (count + BUFSIZ > allocated) {
+	    allocated = 2 * allocated;
+	    cp = realloc (cp, allocated + 1);
+	    if (!cp) {
+		fprintf(stderr, "cannot get memory for message file\n");
+		return NULL;
+	    }
+	}
+    }
+
+    cp[count] = '\0';		/* since we allocated one extra */
+    *len_return = count;
     return cp;
 }
 

@@ -1,4 +1,24 @@
 XFree86 3.9.17Z (14 February 2000)
+3779. Cleanups for the contrib programs recently moved into the main xc/
+      tree (#3701, Bruno Haible).
+3778. Small lynx.cf fix (#3700, Thomas Mueller).
+3777. Initialise MMIO32 for r128 when using fbdev (#3699, Kostas Gewrgiou).
+3776. Avoid most lockups for Trio3D startup (s3virge driver) (#3698,
+      Harald Koenig).
+3775. Fix unresolved and conflicting symbols in X-TT, and fix the broken
+      BIG5 converter (#3697, Takuya Shiozaki).
+3774. Update README.fonts (#3696, Juliusz Chroboczek).
+3773. Add dot, line, arc accelerations for 24bpp in fb, and cleanup most
+      warnings (#3695, Keith Packard).
+3772. Make it possible to build the r128 driver with support for fb
+      (disabled by default) (#3693, Keith Packard).
+3771. Fix a problem with lnx_ev56 (#3693, Keith Packard).
+3770. Fix references to noPanoramiXExtension when Xinerama is not built
+      (#3691, Christopher Sekiya).
+3769. Fix possible races in xauth and libXau (#3690, 3694, Colin Phipps).
+3768. Fix some Xv and PC-98 init bugs in the apm driver (#3689, Loic Grenie).
+3767. Fix SVR4.0 build problem in the cyrix driver (David Dawes).
+3766. Fix SVR4.0 build problems in the sis driver (#3687, Takaaki Nomura).
 3765. Change CppProgram to /usr/bin/cpp for FreeBSD.
 3764. DPS build fixes (#3686, Juliusz Chroboczek, David Dawes).
 3763. Back out the pMga->PointerMoved change.
@@ -9663,4 +9683,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1004 2000/02/14 06:27:16 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1005 2000/02/14 18:11:48 dawes Exp $

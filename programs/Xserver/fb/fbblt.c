@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.3 2000/01/21 15:06:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.4 2000/02/12 03:39:42 dawes Exp $ */
 
 #include "fb.h"
 
@@ -326,7 +326,7 @@ getPixel (char *src, int x)
 }
 #endif
 
-void
+static void
 fbBlt24Line (FbBits	    *src,
 	     int	    srcX,
 

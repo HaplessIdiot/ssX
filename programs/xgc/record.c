@@ -21,6 +21,7 @@ static void print_out_gc_values();
 static void chose_playback_filename();
 static void cancel_playback();
 extern void get_filename();
+extern void yyparse();
 
 extern XgcStuff TestStuff;
 extern XgcStuff FunctionStuff;
@@ -130,7 +131,7 @@ done_choosing_filename()
   XtSetArg(args[0], XtNstring, &filename);
   XtGetValues(filename_text_widget, args, (Cardinal) 1);
 
-  if (recordfile = fopen(filename,"w")) {
+  if ((recordfile = fopen(filename,"w")) != NULL) {
     recording = TRUE;
     sprintf(tmp,"End Record");
     recordargs[0].value = (XtArgVal) tmp;
@@ -232,9 +233,9 @@ print_out_gc_values()
     }
   }
   fprintf(recordfile,"linewidth %d\n",X.gcv.line_width);
-  fprintf(recordfile,"foreground %d\n",X.gcv.foreground);
-  fprintf(recordfile,"background %d\n",X.gcv.background);
-  fprintf(recordfile,"planemask %d\n",X.gcv.plane_mask);
+  fprintf(recordfile,"foreground %ld\n",X.gcv.foreground);
+  fprintf(recordfile,"background %ld\n",X.gcv.background);
+  fprintf(recordfile,"planemask %ld\n",X.gcv.plane_mask);
   fprintf(recordfile,"dashlist %d\n",X.gcv.dashes);
   fprintf(recordfile,"font %s\n",X.fontname);
 }  
@@ -278,7 +279,7 @@ chose_playback_filename()
   XtSetArg(args[0], XtNstring, &filename);
   XtGetValues(filename_text_widget, args, (Cardinal) 1);
 
-  if (playbackfile = fopen(filename,"r")) {
+  if ((playbackfile = fopen(filename,"r")) != NULL) {
     yyin = playbackfile;
     yyparse();
   }

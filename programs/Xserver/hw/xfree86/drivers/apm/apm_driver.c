@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.29 2000/02/12 18:52:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.30 2000/02/13 03:06:36 dawes Exp $ */
 
 
 #include "apm.h"
@@ -6,6 +6,7 @@
 #include "shadowfb.h"
 #include "xf86Resources.h"
 #include "xf86int10.h"
+#include "xf86RAC.h"
 
 #include "compiler.h"
 
@@ -758,6 +759,11 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86RegisterResources(pEnt->index, NULL, ResNone);
     xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResDisableOpr);
+    pScrn->racMemFlags = 0;	/* For noLinear, access to 0xA0000 */
+    if (pApm->VGAMap)
+	pScrn->racIoFlags = 0;
+    else
+	pScrn->racIoFlags = RAC_COLORMAP | RAC_VIEWPORT;
 
     if (pEnt->device->videoRam != 0) {
 	pScrn->videoRam = pEnt->device->videoRam;
@@ -1063,6 +1069,10 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     pApm->CurrentLayout.bytesPerScanline= (pApm->CurrentLayout.displayWidth * pApm->CurrentLayout.bitsPerPixel) >> 3;
     pApm->CurrentLayout.depth		= pScrn->depth;
     pApm->CurrentLayout.Scanlines	= 2 * (pScrn->videoRam << 10) / pApm->CurrentLayout.bytesPerScanline;
+    if (pScrn->bitsPerPixel == 24)
+	pApm->CurrentLayout.mask32	= 3;
+    else
+	pApm->CurrentLayout.mask32	= 32 / pScrn->bitsPerPixel - 1;
 
     return TRUE;
 }
@@ -1134,10 +1144,9 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	}
     }
     /*
-     * Save and set color mode
+     * Save color mode
      */
     pApm->MiscOut = hwp->readMiscOut(hwp);
-    hwp->writeMiscOut(hwp, pApm->MiscOut | 0x0F);
 
     return TRUE;
 }
@@ -1443,7 +1452,7 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		  pApm->CurrentLayout.bitsPerPixel / 8)	>> 3;
 	hwp->ModeReg.CRTC[0x13] = offset;
 	/* Bit 8 resides at CR1C bits 7:4. */
-	ApmReg->CRT[0x1C] = (offset & 0xf00) >> 4;
+	ApmReg->CRT[0x1C] = (offset & 0xF00) >> 4;
     }
 
     /* Set pixel depth. */

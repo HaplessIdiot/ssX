@@ -1,5 +1,5 @@
 /* $XConsortium: lex.l,v 1.8 94/03/31 20:40:44 rws Exp $ */
-/* $XFree86: contrib/programs/xgc/lex.l,v 3.6 1995/07/24 04:12:27 dawes Exp $ */
+/* $XFree86: xc/programs/xgc/lex.l,v 1.1 2000/02/13 03:26:27 dawes Exp $ */
 /*
 ** lex file for xgc syntax
 */
@@ -165,5 +165,5 @@ PieSlice			{ yylval.num = ArcPieSlice;
 %%
 
 #ifndef yywrap
-yywrap() { return (1); }
+int yywrap() { return (1); }
 #endif

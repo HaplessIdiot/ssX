@@ -5,6 +5,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
@@ -73,7 +74,7 @@ extern FILE *yyin;
 
 void
 interpret(string)
-     String string;
+     const char *string;
 {
   char word1[20], word2[80];
   int i;
@@ -173,7 +174,7 @@ interpret(string)
 #ifdef notdef
 void
 interpret(instring)
-     char *instring;
+     const char *instring;
 {
   FILE *inend;
   
@@ -220,7 +221,7 @@ GC_change_foreground(foreground,feedback)
   XSetTile(X.dpy,X.gc,X.tile);
   XSetTile(X.dpy,X.miscgc,X.tile);
   if (feedback) {
-    sprintf(text,"%d",foreground);
+    sprintf(text,"%lu",foreground);
     change_text(foregroundtext,text);
   }
 }
@@ -245,7 +246,7 @@ GC_change_background(background,feedback)
   XClearWindow(X.dpy,XtWindow(test));
 
   if (feedback) {
-    sprintf(text,"%d",background);
+    sprintf(text,"%lu",background);
     change_text(backgroundtext,text);
   }
 }
@@ -399,7 +400,7 @@ change_test(test,feedback)
 
 void
 GC_change_font(str,feedback)
-     String str;
+     const char *str;
      Boolean feedback;
 {
   int num_fonts;		/* number of fonts that match the string */

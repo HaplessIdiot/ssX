@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.4 1999/06/13 16:18:06 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.5 2000/02/13 05:24:37 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -542,7 +542,7 @@ static struct fc_entry_vfuncs fc_tt_vfuncs = {
 #define FC_TT_INIT_PRIVATE(entry) \
   { \
     (entry)->f_private = xalloc(sizeof(struct fc_tt_private)); \
-    bzero((entry)->f_private, sizeof(struct fc_tt_private)); \
+    memset((entry)->f_private, 0, sizeof(struct fc_tt_private)); \
   }
 #define FC_TT_PRIVATE(entry) ((struct fc_tt_private *)((entry)->f_private))
 #define FC_TT_SETVFUNC(entry) ((void)((entry)->vfuncs=&fc_tt_vfuncs))
@@ -1319,9 +1319,12 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     char charset[MAXFONTNAMELEN], slant[MAXFONTNAMELEN];
     int spacing = 'r'; /* avoid 'uninitialized variable using' warning */
 
-#define MAXCOPYRIGHTLEN 256
-    char  copyright_string[MAXCOPYRIGHTLEN + 1] =
+    /* XXX: To avoid gcc to embed memset function implicitly, we need to
+            store strings to fixed-size array indirectly with using strcpy. */
+    char const *copyright_string_default = 
         "Copyright Notice is not available or not able to read yet.";
+#define MAXCOPYRIGHTLEN 256
+    char  copyright_string[MAXCOPYRIGHTLEN + 1];
 
     SDynPropRecValList listPropRecVal;
     FreeTypeOpenFaceHints hints;
@@ -1336,6 +1339,8 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
              "\n+FreeTypeOpenScalable(%x, %x, %x, %x, %s, %x, %x, %x, %x)\n",
              fpe, ppFont, flags, entry, fileName, vals,
              format, fmask, non_cachable_font));
+
+    strcpy(copyright_string, copyright_string_default);
 
 #ifdef DUMP
     DumpFontPathElement(fpe);

@@ -25,26 +25,48 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.11 2000/02/12 20:45:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.12 2000/02/12 23:08:08 dawes Exp $ */
 
 #include "vgaHW.h"
 
 #define	inSISREG(base)			inb(base)
 #define	outSISREG(base,val)		outb(base,val)
-#define orSISREG(base,val)		outSISREG(base, inb(base)|(val))
-#define andSISREG(base,val)		outSISREG(base, inb(base)&(val))
+#define orSISREG(base,val)		do { \
+					  unsigned char temp = inb(base); \
+					  outSISREG(base, temp | (val)); \
+					} while (0)
+#define andSISREG(base,val)		do { \
+					  unsigned char temp = inb(base); \
+					  outSISREG(base, temp & (val)); \
+					} while (0)
 
-#define	inSISIDXREG(base,idx,var)	outb(base,idx); var=inb((base)+1);
+#define	inSISIDXREG(base,idx,var)	do { \
+					  outb(base,idx); var=inb((base)+1); \
+					} while (0)
 #if 0
 #define	outSISIDXREG(base,idx,val)	outw(base, (val)<<8 | (idx));
 #endif
-#define	outSISIDXREG(base,idx,val)	outb(base,idx); outb((base)+1,val);
-#define orSISIDXREG(base,idx,val)	outb(base,idx);	\
-		outSISIDXREG(base,idx,inb((base)+1)|(val));
-#define andSISIDXREG(base,idx,and)	outb(base,idx);	\
-		outSISIDXREG(base,idx,inb((base)+1)&(and));
-#define	setSISIDXREG(base,idx,and,or)	outb(base,idx);	\
-		outSISIDXREG(base,idx,(inb((base)+1)&(and))|(or));
+#define	outSISIDXREG(base,idx,val)	do { \
+					  outb(base,idx); outb((base)+1,val); \
+					} while (0)
+#define orSISIDXREG(base,idx,val)	do { \
+					  unsigned char temp; \
+					  outb(base,idx);	\
+					  temp = inb((base)+1)|(val); \
+					  outSISIDXREG(base,idx,temp); \
+					} while (0)
+#define andSISIDXREG(base,idx,and)	do { \
+					  unsigned char temp; \
+					  outb(base,idx);	\
+					  temp = inb((base)+1)&(and); \
+					  outSISIDXREG(base,idx,temp); \
+					} while (0)
+#define	setSISIDXREG(base,idx,and,or)	do { \
+					  unsigned char temp; \
+					  outb(base,idx);	\
+					  temp = (inb((base)+1)&(and))|(or); \
+					  outSISIDXREG(base,idx,temp); \
+					} while (0)
 
 #define	BITMASK(h,l)	(((unsigned)(1U << ((h)-(l)+1))-1)<<(l))
 #define	GENMASK(mask)	BITMASK(1?mask,0?mask)

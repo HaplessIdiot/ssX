@@ -17,9 +17,9 @@ typedef struct {
 
 /* structure of the include files which define the polyhedra */
 typedef struct {
-	char *longname;		/* long name of object */
-	char *shortname;	/* short name of object */
-	char *dual;		/* long name of dual */
+	const char *longname;	/* long name of object */
+	const char *shortname;	/* short name of object */
+	const char *dual;	/* long name of dual */
 	int numverts;		/* number of vertices */
 	int numedges;		/* number of edges */
 	int numfaces;		/* number of faces */

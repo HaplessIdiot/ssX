@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.3 2000/01/21 01:11:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.4 2000/01/21 15:06:17 dawes Exp $ */
 
 #include "fb.h"
 
@@ -64,8 +64,6 @@ const GCOps	fbGCOps = {
 Bool
 fbCreateGC(GCPtr pGC)
 {
-    FbGCPrivPtr	pPriv;
-
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
 
@@ -156,7 +154,7 @@ fbLineRepeat (FbBits *bits, int len, int width)
  * The even stipple code wants the first FB_UNIT/bpp bits on
  * each scanline to represent the entire stipple
  */
-Bool
+static Bool
 fbCanEvenStipple (PixmapPtr pStipple, int bpp)
 {
     int	    len = FB_UNIT / bpp;
@@ -232,7 +230,6 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
      */
     if (changes & (GCForeground|GCBackground|GCPlaneMask|GCFunction))
     {
-	int	n;
 	int	s;
 	FbBits	depthMask;
 	

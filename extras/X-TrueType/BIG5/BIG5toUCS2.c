@@ -26,12 +26,12 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 
    This table data derived from Unicode, Inc.
-   (ftp://ftp.unicode.org/Public/MAPPING/EASTASIA/OTHER/BIG5.TXT)
+   (ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/OTHER/BIG5.TXT)
  */
 
 #include "xttversion.h"
@@ -46,7 +46,7 @@ static char const * const releaseID =
 
 #define ALTCHR 0x3000
 
-static ucs2_t tblBig5EtenToUcs2[] = {
+static ucs2_t tblBig5ToUcs2[] = {
 /* 0xA140 - 0xA1FF */
     0x3000, 0xFF0C, 0x3001, 0x3002, 0xFF0E, 0x2022, 0xFF1B, 0xFF1A, 
     0xFF1F, 0xFF01, 0xFE30, 0x2026, 0x2025, 0xFE50, 0xFF64, 0xFE52, 
@@ -2274,8 +2274,8 @@ static ucs2_t tblBig5EtenToUcs2[] = {
     ALTCHR, ALTCHR, ALTCHR, ALTCHR, ALTCHR, ALTCHR, ALTCHR, ALTCHR, 
 };
 
-CODE_CONV_TWO_OCTET_TO_UCS2(cc_big5eten_to_ucs2, /* function name */
-                            tblBig5EtenToUcs2, /* table name */
+CODE_CONV_TWO_OCTET_TO_UCS2(cc_big5_to_ucs2, /* function name */
+                            tblBig5ToUcs2, /* table name */
                             0x00A1, 0x00F9, /* code range (high byte) */
                             0x0040, 0x00FF, /* code range (low byte) */
                             ALTCHR /* alt char code (on UCS2) */

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.1 1999/11/19 13:53:47 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -108,7 +108,6 @@ fbCopyWindow(WindowPtr	    pWin,
 	     DDXPointRec    ptOldOrg, 
 	     RegionPtr	    prgnSrc)
 {
-    ScreenPtr	pScreen = pWin->drawable.pScreen;
     RegionRec	rgnDst;
     int		dx, dy;
     WindowPtr	pwinRoot;
@@ -230,7 +229,6 @@ fbFillRegionTiled (DrawablePtr	pDrawable,
 void
 fbPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    int	    n;
     WindowPtr	pBgWin;
     
     switch (what) {

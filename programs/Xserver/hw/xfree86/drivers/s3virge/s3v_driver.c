@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.46 2000/02/08 17:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.47 2000/02/12 20:45:30 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -2595,11 +2595,10 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       ps3v->HorizScaleFactor = 1;
     }
     else if (pScrn->bitsPerPixel == 16) {
-      if (pScrn->bitsPerPixel == 16)
-	if (S3_TRIO_3D_SERIES(ps3v->Chipset) && mode->Clock > 115000)
-	  ps3v->HorizScaleFactor = 1;
-	else
-	  ps3v->HorizScaleFactor = 2;
+      if (S3_TRIO_3D_SERIES(ps3v->Chipset) && mode->Clock > 115000)
+	ps3v->HorizScaleFactor = 1;
+      else
+	ps3v->HorizScaleFactor = 2;
     }
     else {
       ps3v->HorizScaleFactor = 1;
@@ -3180,9 +3179,20 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 /* Mandatory */
 static Bool
-S3VSaveScreen(ScreenPtr pScreen, Bool unblank)
+S3VSaveScreen(ScreenPtr pScreen, int mode)
 {
-  return vgaHWSaveScreen(pScreen, unblank);
+  switch (mode) {
+  case SCREEN_SAVER_OFF:
+  case SCREEN_SAVER_FORCER:
+    return vgaHWSaveScreen(pScreen, TRUE);
+    break;
+  case SCREEN_SAVER_ON:
+  case SCREEN_SAVER_CYCLE:
+    return vgaHWSaveScreen(pScreen, FALSE);
+    break;
+  default:
+    return FALSE;
+  }
 }
 
 
@@ -3310,14 +3320,6 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
 		   ((y * pScrn->displayWidth + (x & ~3)) *
 		    pScrn->bitsPerPixel / 8));
       }
-
-   if (ps3v->hwcursor && ps3v->CursorInfoRec && ps3v->CursorInfoRec->SetCursorPosition) {
-     int px, py;
-
-     miPointerPosition(&px, &py);
-     VerticalRetraceWait();
-     (*ps3v->CursorInfoRec->SetCursorPosition)(ps3v->CursorInfoRec->pScrn, px-x, py-y);
-   }
 
    return;
 }

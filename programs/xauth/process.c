@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.5 1999/02/28 11:20:05 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.6 1999/03/07 11:40:49 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -767,7 +767,8 @@ auth_initialize(char *authfilename)
 static int 
 write_auth_file(char *tmp_nam)
 {
-    FILE *fp;
+    FILE *fp = NULL;
+    int fd;
     AuthList *list;
 
     /*
@@ -776,8 +777,11 @@ write_auth_file(char *tmp_nam)
     strcpy (tmp_nam, xauth_filename);
     strcat (tmp_nam, "-n");		/* for new */
     (void) unlink (tmp_nam);
-    fp = fopen (tmp_nam, "wb");		/* umask is still set to 0077 */
+    /* CPhipps 2000/02/12 - fix file unlink/fopen race */
+    fd = open(tmp_nam, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    if (fd != -1) fp = fdopen (fd, "wb");
     if (!fp) {
+        if (fd != -1) close(fd);
 	fprintf (stderr, "%s:  unable to open tmp file \"%s\"\n",
 		 ProgramName, tmp_nam);
 	return -1;

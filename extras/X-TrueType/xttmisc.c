@@ -26,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 */
@@ -37,6 +37,7 @@ static char const * const releaseID =
     _XTT_RELEASE_NAME;
 
 #include "xttcommon.h"
+#include "fontmisc.h"
 
 /**************************************************************************
   Functions
@@ -70,6 +71,21 @@ mystrcasecmp(char const *s1, char const *s2)
   quit:
     ;
 #endif
+
+    return result;
+}
+
+
+/* strdup clone with using the allocator of X server */
+char *
+XttXstrdup(char const *str)
+{
+    char *result;
+    
+    result = (char *)xalloc(strlen(str)+1);
+
+    if (result)
+        strcpy(result, str);
 
     return result;
 }

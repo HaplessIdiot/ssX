@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.1 1999/11/19 13:53:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbline.c,v 1.2 2000/01/21 01:11:58 dawes Exp $ */
 
 #include "fb.h"
 
@@ -37,8 +37,6 @@ fbZeroLine (DrawablePtr	pDrawable,
     int		    x, y;
     int		    dashOffset;
     int		    totalDash;
-    int		    n;
-    unsigned char   *dash;
 
     x = pDrawable->x;
     y = pDrawable->y;
@@ -106,6 +104,9 @@ fbPolyLine (DrawablePtr	pDrawable,
 	    switch (pDrawable->bitsPerPixel) {
 	    case 8:  line = fbPolyline8; break;
 	    case 16: line = fbPolyline16; break;
+#ifdef FB_24BIT
+	    case 24: line = fbPolyline24; break;
+#endif
 	    case 32: line = fbPolyline32; break;
 	    }
 	}
@@ -139,6 +140,9 @@ fbPolySegment (DrawablePtr  pDrawable,
 	switch (pDrawable->bitsPerPixel) {
 	case 8:  seg = fbPolySegment8; break;
 	case 16: seg = fbPolySegment16; break;
+#ifdef FB_24BIT
+	case 24: seg = fbPolySegment24; break;
+#endif
 	case 32: seg = fbPolySegment32; break;
 	}
     }
