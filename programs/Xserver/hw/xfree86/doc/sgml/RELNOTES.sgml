@@ -9,7 +9,7 @@
 <date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.59 2001/02/09 00:35:03 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.60.2.2 2001/06/04 18:55:38 herrb Exp $
 </ident>
 
 <abstract>
@@ -88,13 +88,86 @@ don't have enough space to cover them all here.
 ]]>
 
 <sect>Summary of new features in &fullrelvers;.
+
+<sect1>Card drivers enhancements
+
+<p>
+<itemize>
+<item> more drivers converted to use the 'fb' layer and render extension
+  (and thus supporting anti-aliased TT fonts)
+<item> big endian support for the mga and tdfx drivers
+<item> ATI Radeon on alpha (Linux)
+<item> vmware driver for use by X servers running under a VMWare guest OS
+<item> matrox G450 support
+<item> support for Trident CyberBladeXP and CyberBladeXPm
+<item> support for NVidia GeForce 3
+<item> XvImage support for GeForce 3 chips
+<item> add 1400x1050 builtin modes
+<item> savage driver updates
+<item> GLINT driver updates, including support for the SGI 1600SW flat panel
+<item> cirrus driver updates
+<item> DRI driver for Radeon 
+<item> acceleration for Trident Cyber9388
+
+</itemize>
+
+<sect1>Miscelaneous X Server / Extensions updates
+
+<p>
+<itemize>
+<item> Mesa 3.4.2
+<item> FreeType 2.0.2
+<item> UCS versions of most bitmap fonts
+<item> more locale/international keyboards support
+<item> initial DPS extension support
+<item> support several 'internet' keyboards additional keys
+<item> X11R6.5.1 merge
+<item> lots of int10 support bug fixes
+<item> add XvMC extension (an experimental, not yet finished video
+  acceleration extension) 
+<item> fix a crash in Shape extension
+<item> XFree86-VidModeExtension now allows setting of gamma ramps rather
+  than just gamma values
+</itemize>
+
+<sect1>New clients - updates to existing clients 
+
+<p>
+<itemize>
+<item> add glxgears
+<item> add libXmuu (Xmu version that don't rely on Xt/Xaw)
+<item> add libGLU
+<item> security problem in XAsyncReply
+<item> make xdm xinerama-aware (avoid the split login widget)
+</itemize>
+
+<sect1>Os support
+
+<p>
+<itemize>
+<item> support for DRI on Linux/ppc
+<item> i810 and i815 support on FreeBSD
+<item> lots for XDarwin updates
+<item> lots of Cygwin support updates
+</itemize>
+
+<sect1>Build updates
+
+<p>
+<itemize>
+<item> new distclean make target
+<item> makedepend scripts updates
+</itemize>
+
+<sect>Summary of new features in &prevrelvers;.
 <p>
 <sect1>X server
 <p>
 <itemize>
-  <item>Darwin/Mac OS X is now supported and the X server runs on PowerPC.
-	The X server for this platform is called "Xdarwin", and its
-	installation and configuration is different from the "XFree86"
+  <item>Darwin/Mac OS X is now supported on PowerPC and Intel/x86.  The X
+	server runs from the console or in cooperation with the Mac OS X
+	Aqua GUI.  The X server for this platform is called "XDarwin", and
+	its installation and configuration is different from the "XFree86"
 	server used on other platforms.  Please read the <htmlurl
 	url="Darwin.html" name="XFree86 on Darwin and Mac OS X"> document
 	for further information.
@@ -458,6 +531,8 @@ XFree86 &relvers; includes the following video drivers:
 		name="vesa(4)" url="vesa.4.html"></tabrow>
    <tabrow><tt>vga</tt><colsep>Generic VGA<colsep><htmlurl
 		name="vga(4)" url="vga.4.html"></tabrow>
+   <tabrow><tt>vmware</tt><colsep>VMWare guest OS<colsep><htmlurl
+		name="vmware(4)" url="vmware.4.html"></tabrow>
 </tabular>
 </table>
 
