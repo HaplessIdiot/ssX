@@ -26,7 +26,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.31 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.32 2002/03/03 20:21:39 mvojkovi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -2323,7 +2323,6 @@ int PanoramiXFreeColors(ClientPtr client)
     FOR_NSCREENS_BACKWARD(j) {
         stuff->cmap = cmap->info[j].id;
         result = (* SavedProcVector[X_FreeColors])(client);
-	if(result != Success) break;
     }
     return (result);
 }
