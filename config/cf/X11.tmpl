@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.172 2002/10/01 16:44:40 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.173 2002/10/08 23:07:42 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2660,10 +2660,26 @@ ProjectUnsharedFontLibReferences()
 XCOMM ProjectUnsharedLibReferences(XFONT,Xfont,$(FONTLIBSRC),XBuildLibDir)
 #endif
 
+/*
+ * There's no reason to use the statically built FreeType unless
+ * you're using a loadable server.
+ */
+ 
+#ifndef FontLibSharedFreeType
+#if BuildFreeType && UseFreetype2 && !DoLoadableServer 
+#define FontLibSharedFreeType YES
+#else
+#define FontLibSharedFreeType NO
+#endif
+#endif
+
+#if FontLibSharedFreeType
+         FONTFT2LIB = $(FREETYPE2LIB)
+#endif
      FONTSTUBLIBSRC = $(FONTLIBSRC)/stubs
 ProjectUnsharedLibReferences(FONTSTUB,fntstubs,$(FONTSUBLIBSRC),XBuildLibDir)
          DEPFONTLIB = $(DEPXFONTLIB) $(DEPFONTSTUBLIB)
-            FONTLIB = $(XFONTLIB) $(FONTSTUBLIB)
+            FONTLIB = $(XFONTLIB) $(FONTSTUBLIB) $(FONTFT2LIB)
 
 
 #ifndef SharedLibFontEnc
