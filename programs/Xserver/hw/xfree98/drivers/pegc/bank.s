@@ -1,3 +1,6 @@
+/* $XFree86: $ */
+
+
 #include "assyntax.h"
 
 	FILE("pegc_bank.s")

@@ -27,6 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
+/* $XFree86: $ */
 
 /*
 
