@@ -5794,6 +5794,7 @@ SISRestore(ScrnInfoPtr pScrn)
            if(((pSiS->OldMode <= 0x13) || (!pSiS->sisfbfound)) && (pSiS->pVbe)) {
 	      int vmode = SiSTranslateToVESA(pScrn, pSiS->OldMode);
 	      if(vmode > 0) {
+	         if(vmode > 0x13) vmode |= ((1 << 15) | (1 << 14));
                  if(VBESetVBEMode(pSiS->pVbe, vmode, NULL) == TRUE) {
 	            SISSpecialRestore(pScrn);
 		    SiS_GetSetModeID(pScrn,pSiS->OldMode);
@@ -11170,8 +11171,8 @@ SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    irefresh = SiSCalcVRate(mode);
    if(!irefresh) {
-        if(xres == 800 || xres == 1024 || xres == 1280) return 0x02;
-   	else return 0x01;
+      if(xres == 800 || xres == 1024 || xres == 1280) return 0x02;
+      else return 0x01;
    }
    
    /* SiS730 has troubles on CRT2 if CRT1 is at 32bpp */
