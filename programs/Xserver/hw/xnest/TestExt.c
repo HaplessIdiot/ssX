@@ -1,5 +1,5 @@
 /* $XConsortium: TestExt.c,v 1.3 94/10/28 20:47:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.0 1994/05/21 23:57:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.1 1996/01/05 13:19:09 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -16,6 +16,7 @@ is" without express or implied warranty.
 #include "X.h"
 #include "Xproto.h"
 #include "Xlib.h"
+#undef Bool
 #include "screenint.h"
 #include "input.h"
 #include "misc.h"
