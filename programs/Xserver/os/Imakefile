@@ -65,12 +65,20 @@ KRB5SRCS = k5auth.c k5encode.c
    LBX_OBJS =
 #endif
 
+#if DDXOsColor
+COLOR_SRCS=
+COLOR_OBJS=
+#else
+COLOR_SRCS=oscolor.c
+COLOR_OBJS=oscolor.o
+#endif
+
 BOOTSTRAPCFLAGS = 
-           SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
+           SRCS = WaitFor.c access.c connection.c io.c $(COLOR_SRCS) \
                   osinit.c utils.c auth.c mitauth.c secauth.c $(XDMAUTHSRCS) \
                   $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources \
                   transport.c xalloc.c $(LBX_SRCS)
-           OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
+           OBJS = WaitFor.o access.o connection.o io.o $(COLOR_OBJS) \
                   osinit.o utils.o auth.o mitauth.o secauth.o $(XDMAUTHOBJS) \
                   $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects \
                   transport.o xalloc.o $(LBX_OBJS)

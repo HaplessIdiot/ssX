@@ -264,9 +264,15 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define MkdirHierCmd		mkdir -p
 #if LinuxElfDefault
 #if UseElfFormat
+#ifndef CcCmd
 #define CcCmd			gcc
+#endif
+#ifndef AsCmd
 #define AsCmd			as
+#endif
+#ifndef LdCmd
 #define LdCmd			ld
+#endif
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++
 #ifndef LinuxUsesNcurses
@@ -357,7 +363,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define PreProcessCmd		CcCmd -E
 #define PostIncDir		DefaultGccIncludeDir
 #define LdCombineFlags		-r
+#ifndef LdPostLib
 #define LdPostLib		/* Never needed */
+#endif
 #define HasWChar32		YES
 #define StandardCppOptions	-traditional
 #define StandardCppDefines	StandardDefines
@@ -410,7 +418,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define PositionIndependentCplusplusFlags -fpic
 #endif
 
+#ifndef StandardDefines
 #define StandardDefines		-Dlinux LinuxMachineDefines LinuxSourceDefines
+#endif
 
 #if UseElfFormat
 #define DlLibrary		-rdynamic -ldl
@@ -462,4 +472,12 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define TtClientDepLibs $(DEPTTLIB) $(DEPXTOOLLIB) $(DEPXLIB)
 
 #include <lnxLib.rules>
+#ifdef KDriveXServer
+#include <kdrive.cf>
+#else
 #include <xfree86.cf>
+#endif
+
+#ifndef XFree86ServerOSDefines
+#define XFree86ServerOSDefines
+#endif

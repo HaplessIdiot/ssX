@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.4 1999/06/13 05:18:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.3 1999/06/05 15:55:25 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -156,7 +156,7 @@ static SymTabRec EloTab[] = {
   { HISTORY_SIZE,      "historysize" },
   { LINK_SPEED,        "linkspeed" },
   { ALWAYS_CORE,       "alwayscore" },
-  { SWAP_AXES,	       "swapaxes" },
+  { SWAP_AXES,	       "swapxy" },
   { PORTRAIT_MODE,     "portraitmode" },
   { -1,                "" },
 };
@@ -1282,6 +1282,11 @@ xf86EloControl(DeviceIntPtr	dev,
 	return !Success;
       }
       
+      if (InitFocusClassDeviceStruct(dev) == FALSE) {
+	ErrorF("Unable to allocate Elographics touchscreen FocusClassDeviceStruct\n");
+	return !Success;
+      }
+      
       /*
        * Device reports motions on 2 axes in absolute coordinates.
        * Axes min and max values are reported in raw coordinates.
@@ -1672,7 +1677,7 @@ xf86EloInit(InputDriverPtr	drv,
   xf86Msg(X_CONFIG, "Elographics maximum y position: %d\n", priv->max_y);
   priv->min_y = xf86SetIntOption(local->options, "MinimumYPosition", 0);
   xf86Msg(X_CONFIG, "Elographics minimum y position: %d\n", priv->min_y);
-  priv->swap_axes = xf86SetBoolOption(local->options, "SwapAxes", 0);
+  priv->swap_axes = xf86SetBoolOption(local->options, "SwapXY", 0);
   if (priv->swap_axes) {
     xf86Msg(X_CONFIG, "Elographics device will work with X and Y axes swapped\n");
   }

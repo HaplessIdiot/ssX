@@ -464,14 +464,29 @@ ReadRequestFromClient(client)
 	    )
 	    FD_SET(fd, &ClientsWithInput);
 	else
-	    YieldControlNoInput();
+	{
+#ifdef SMART_SCHEDULE
+	    if (!SmartScheduleDisable)
+		FD_CLR(fd, &ClientsWithInput);
+	    else
+#endif
+		YieldControlNoInput();
+	}
     }
     else
     {
 	if (!gotnow)
 	    AvailableInput = oc;
-	YieldControlNoInput();
+#ifdef SMART_SCHEDULE
+	if (!SmartScheduleDisable)
+	    FD_CLR(fd, &ClientsWithInput);
+	else
+#endif
+	    YieldControlNoInput();
     }
+#ifdef SMART_SCHEDULE
+    if (SmartScheduleDisable)
+#endif
     if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
 #ifdef BIGREQS

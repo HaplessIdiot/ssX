@@ -1,10 +1,10 @@
 <!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
-<title>README for XFree86 on OpenBSD
+<title>README for XFree86 3.9.17 on OpenBSD
 <author>
 Matthieu Herrb
-<Date>Last modified on: 25 June 1999
+<Date>Last modified on: 13 November 1999
 
 <toc>
 
@@ -12,7 +12,7 @@ Matthieu Herrb
 <sect>What and Where is XFree86?
 
 <p>
-XFree86 is a port of X11R6.3 that supports several versions of
+XFree86 is a port of X11R6.4 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
@@ -26,10 +26,12 @@ The sources for XFree86 are available by anonymous ftp from:
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
+<!--
 Binaries for OpenBSD 2.5 and later are available from:
 
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD">
+-->
 
 A list of mirror sites is provided by
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS"
@@ -51,19 +53,21 @@ this file and we'll revise it.
 <sect>New features in this release
 <p>
 <itemize>
-<item>The maximum number of open connections in the server has been
-raised to 128,
-<item>the <tt>resize</tt> utility was fixed.
+<item><em>Silken mouse</em> is supported for serial mices, and, under
+post 2.6 OpenBSD-current for PS/2 mices.
+<item>MTRR Write Combining is enabled uner post 2.6 OpenBSD-current. 
 </itemize>
 <p>
 See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
-non-OS dependent new features in XFree86 3.3.4.
+non-OS dependent new features in XFree86 3.9.17
 
+<!--
 <sect>Installing the Binaries
 
 <p>
 Refer to section 5 of the <htmlurl url="RELNOTES.html" name="Release
 Notes">  for detailed installation instructions.
+-->
 
 <sect>Configuring X for Your Hardware
 
@@ -73,10 +77,12 @@ monitor,
 video card and mouse you have.  You <em/must/ create it to tell the
 server what specific hardware you have.
 <p>
+<!--
 The easiest way to create this file is to run the <bf/XF86Setup/
 utility as root. Refer to <htmlurl url="QuickStart.html"
 name="QuickStart.doc"> for details about its use.
 <p>
+-->
 You'll need info on your hardware:
 <itemize>
 <item>Your mouse type, baud rate and its /dev entry.
@@ -121,54 +127,10 @@ intellimouse, or mouseman+ with a "3D" roller).
 See <htmlurl url="mouse.html" name="README.mouse">  for general
 instruction on mouse configuration in XFree86.
 
-<sect1>Other input devices
-<p>
-XFree86  supports the dynamic loading of drivers for external
-input devices using the <tt/XInput/ extension. Currently supported
-devices are:
-<itemize>
-<item>Joystick (<tt/xf86Jstk.so/)
-<item>Wacom tablets (Wacom IV protocol only, <tt/xf86Wacom.so/)
-<item>SummaSketch tablets (<tt/xf86Summa.so/)
-<item>Elographics touchscreen (<tt/xf86Elo.so/)
-</itemize>
-
-To use a specific device, add the line
-<tscreen>
-<tt/load/ <tt/"/<em/module/<tt/"/
-</tscreen>
-in the <bf/Module/ section of <tt/XF86Config/, where <em/module/ is
-the name of the <tt/.so/ file corresponding to your device.
-You also need to set up a <bf/XInput/ section in <tt/XF86Config/. 
-Refer to the <em>XF86Config(5)</em> man page for detailed
-configuration instructions.
-<p>
-You can then change the device used to drive the X pointer with the
-<em/xsetpointer(1)/ command.
-<p>
-For joystick support, you'll need to enable the joystick device
-driver in the kernel.  See <em/joy(4)/ for details.
-
-<sect1>Configuring PEX and XIE extensions
-<p>
-The PEX and XIE extensions are  supported as external modules.
-If you want to have access to these extensions, add the following
-lines to the <bf/Module/ section of <tt/XF86Config/:
-<tscreen><verb>
-   load    "pex5.so"
-   load    "xie.so"
-</verb></tscreen>
 
 <sect>Running X
 
 <p>
-8mb of memory is a recommended minimum for running X.  The server,
-window manager and an xterm take about 4 Mb of memory themselves.  On
-a 4Mb system that would leave nothing left over for other applications
-like gcc that expect a few meg free.  X will work with 4Mb of memory,
-but in practice compilation while running X can take 5 or 10 times as
-long due to constant paging.
-
 
 <sect1>Starting xdm, the display manager
 
@@ -240,54 +202,21 @@ accelerated servers can take advantage of it, but do not require it.
 Some drivers in the SVGA server require linear memory access too,
 notably the Matrox driver.
 
-The preferred  way to allow XFree86 to access linear memory is to use
-the aperture driver 
-
-Ths step is highly dependent from your exact operating
-system version:
-<itemize>
-<item> OpenBSD 2.0
-    
-Use the aperture driver from /usr/lkm: 
-    
-add the following lines to the end of <tt>/etc/rc.local</tt>:
-<tscreen><verb>
- KERNDIR=/usr/lkm
- if [ -f ${KERNDIR}/ap.o ]; then
-   modload -o ${KERNDIR}/ap -e ap -p \
-   ${KERNDIR}/apinstall ${KERNDIR}/ap.o
- fi
-</verb></tscreen>
-
-<item> OpenBSD 2.1, 2.2
-    
-Uncomment the lines loading the aperture driver from
-<tt>/etc/rc.securelevel</tt> 
-
-<item> OpenBSD 2.3
+OpenBSD now requires the aperture driver to be enabled for all X
+servers, because the aperture driver also controls access to the
+I/O ports of the video boards.
      
 The aperture driver is part of the kernel.  Add 'option APERTURE' to
 your kernel configuration file, build and install the new kernel and
 run <tt>./MAKEDEV std</tt> in <tt>/dev</tt>. Edit
 <tt>/etc/sysctl.conf</tt> to set the variable
 <bf>machdep.allowaperture</bf> to 1.
-
-<item> OpenBSD 2.4 and later
-
-OpenBSD now requires the aperture driver to be enabled for all X
-servers, because the aperture driver also controls access to the
-I/O ports of the video boards.
-
-</itemize>
-
-After doing that, reboot your system. XFree86 will auto-detect the
-aperture driver if available.
-
 <p>
-<bf/Warning:/ if you boot another kernel than <tt>/bsd</tt>,
-loadable kernel modules can crash your system. Always boot in
-single user mode when you want to run another kernel.
-
+Another (less recommended) way to enable linear memory access is to
+disable the kernel security feature by adding ``option INSECURE'' in
+your kernel configuration file and build a new kernel.  In OpenBSD 2.2
+and later, you will also need to comment out the line initializing
+<tt/securelevel/ to 1 in <tt>/etc/rc.securelevel</tt>.
 <p>
 <quote>
 <bf/Caveat:/ the aperture driver only allows one access at a time
@@ -297,12 +226,6 @@ VT, only the first one will have linear memory access.  Use 'option
 INSECURE' if you need more that one X server at a time.
 </quote>
 
-
-Another (less recommended) way to enable linear memory access is to
-disable the kernel security feature by adding ``option INSECURE'' in
-your kernel configuration file and build a new kernel.  In OpenBSD 2.2
-and later, you will also need to comment out the line initializing
-<tt/securelevel/ to 1 in <tt>/etc/rc.securelevel</tt>.
 
 <sect1>MIT-SHM
 <p>
@@ -325,7 +248,7 @@ to your kernel config file.
 <sect> Rebuilding the XFree86 Distribution
 
 <p>
-The server link kit allow you to rebuild just the X server with a
+The server developper's kit allow you to rebuild just the X server with a
 minimum amount of disk space.  Just unpack it, make the appropriate
 changes to the <tt/xf86site.def/, type ``<tt>./mkmf</tt>'' and
 ``<tt/make/'' to link the server.  See <tt>/usr/X11R6/lib/Server/README</tt>
@@ -363,6 +286,7 @@ pccons and pcvt drivers will be supported.
 <p>
 XFree86 also compiles on other OpenBSD architectures. 
 
+<!--
 The XFree86 servers can also been built on OpenBSD/mips. The S3 server
 has been tested on an Acer Mips system with a S3/928 board. Contact
 Per Fogelstrom (pefo@OpenBSD.org) for details.
@@ -375,6 +299,7 @@ the sparc and the sun3.
 The client side of XFree86 also builds on the alpha, pmax, amiga,
 mac68k and mvme68k architectures.
 
+-->
 Problems with this port should be reported directly to the OpenBSD 
 mailing lists rather than to the xfree86 mailing list. 
 
@@ -397,6 +322,12 @@ necessary and type ``<tt/make/''.  Whenever you install additional man
 pages you should update <tt/whatis.db/ by running ``<tt>makewhatis
 /usr/X11R6/man</tt>''.
 
+<sect> Thanks
+<p>
+Many thanks to all people who contributed to make XFree86 work on
+*BSD, in particular, <bf/David Dawes/,
+<bf/Pace Willison/, <bf/Amancio Hasty/, <bf/Christoph Robitschko/,
+<bf/Nate Williams/, <bf/Rod Grimes/, <bf/Jack Velte/ and <bf/Michael Smith/.
 
 <verb>
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.1.2.10 1999/06/30 13:00:28 hohndel Exp $

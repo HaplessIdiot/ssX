@@ -470,10 +470,13 @@
 #define PCI_CHIP_TRIO64V2_DXGX	0x8901
 #define PCI_CHIP_PLATO_PX	0x8902
 #define PCI_CHIP_Trio3D		0x8904
+#define PCI_CHIP_Trio3D_2X	0x8A13
 #define PCI_CHIP_VIRGE_DXGX	0x8A01
 #define PCI_CHIP_VIRGE_GX2	0x8A10
 #define PCI_CHIP_Savage3D	0x8A20
 #define PCI_CHIP_Savage3D_MV	0x8A21
+#define PCI_CHIP_SAVAGE4	0x8A22
+#define PCI_CHIP_SAVAGE2000	0x9102
 #define PCI_CHIP_VIRGE_MX	0x8C01
 #define PCI_CHIP_VIRGE_MXPLUS	0x8C01
 #define PCI_CHIP_VIRGE_MXP	0x8C03
@@ -1226,11 +1229,14 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_TRIO64V2_DXGX,"Trio64V2/DX or /GX"},
 				{PCI_CHIP_PLATO_PX,	"PLATO/PX"},
 				{PCI_CHIP_Trio3D,	"Trio3D"},
+				{PCI_CHIP_Trio3D_2X,	"Trio3D/2X"},
 				{PCI_CHIP_VIRGE_VX,	"ViRGE/VX"},
 				{PCI_CHIP_VIRGE_DXGX,	"ViRGE/DX or /GX"},
 				{PCI_CHIP_VIRGE_GX2,	"ViRGE/GX2"},
 				{PCI_CHIP_Savage3D,	"Savage3D (86E391)"},
 				{PCI_CHIP_Savage3D_MV,	"Savage3D+MacroVision (86E390)"},
+				{PCI_CHIP_Savage4,	"Savage4"},
+				{PCI_CHIP_Savage2000,	"Savage2000"},
 				{PCI_CHIP_VIRGE_MX,	"ViRGE/MX"},
 				{PCI_CHIP_VIRGE_MXPLUS,	"ViRGE/MX+"},
 				{PCI_CHIP_VIRGE_MXP,	"ViRGE/MX+MV"},

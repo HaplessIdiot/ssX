@@ -15,6 +15,8 @@
 #include <dev/wscons/wsconsio.h>
 #endif
 
+static void wsconsSigioReadInput (int fd, void *closure);
+
 static int
 SupportedInterfaces(void)
 {
@@ -194,7 +196,8 @@ wsconsMouseProc(DeviceIntPtr pPointer, int what)
 		pInfo->fd = -1;
 	    } else {
 		xf86FlushInput(pInfo->fd);
-		AddEnabledDevice(pInfo->fd);
+		if (!xf86InstallSIGIOHandler (pInfo->fd, wsconsSigioReadInput, pInfo))
+		    AddEnabledDevice(pInfo->fd);
 	    }
 	}
 	pMse->lastButtons = 0;
@@ -276,6 +279,13 @@ wsconsReadInput(InputInfoPtr pInfo)
     }
     return;
 }
+
+static void
+wsconsSigioReadInput (int fd, void *closure)
+{
+    wsconsReadInput ((InputInfoPtr) closure);
+}
+
 
 /* This function is called when the protocol is "wsmouse". */
 static Bool

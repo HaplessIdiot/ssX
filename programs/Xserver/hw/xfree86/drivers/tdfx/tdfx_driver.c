@@ -1511,6 +1511,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
+  xf86SetSilkenMouse(pScreen);
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
@@ -1743,11 +1744,11 @@ TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     break;
   case DPMSModeStandby:
     /* Screen: Off; HSync: Off, VSync: On */
-    state=BIT(1);
+    state=BIT(3);
     break;
   case DPMSModeSuspend:
     /* Screen: Off; HSync: On, VSync: Off */
-    state=BIT(3);
+    state=BIT(1);
     break;
   case DPMSModeOff:
     /* Screen: Off; HSync: Off, VSync: Off */

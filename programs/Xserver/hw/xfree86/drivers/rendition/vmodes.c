@@ -288,12 +288,12 @@ int v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
     }
 
     if (pRendition->board.chip != V1000_DEVICE) {
-      if(!xf86ReturnOptValBool(renditionOptions, OPTION_OVERCLOCK_MEM,0)){
+      if(!pRendition->board.overclock_mem){
 	v_out32(iob+SCLKPLL, 0xa484d);  /* mclk=110 sclk=50 */
                                         /* M/N/P/P = 77/5/2/4 */
       }
       else{
-	ErrorF ("*** OVERCLOCKING ***\n");
+	ErrorF ("RENDITION: *** OVERCLOCKING MEM/CLK mclk=125 sclk=60 ***\n");
 	/* increase Mem/Sys clock on request */
 	v_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
                                         /* M/N/P/P = 84/5/2/4 */
@@ -425,8 +425,9 @@ int v_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride
 
     /* for now, I implemented a linear search only, should be fixed <ml> */
     while (0 != width_to_stride_table[c].width8bpp) {
-        if (width_to_stride_table[c].width8bpp==bytesperline 
-            && width_to_stride_table[c].chip == pRendition->board.chip) {
+        if (width_to_stride_table[c].width8bpp==bytesperline &&
+           ((width_to_stride_table[c].chip == pRendition->board.chip) ||
+	    (V2000_DEVICE == pRendition->board.chip))) {
             *stride0=width_to_stride_table[c].stride0;
             *stride1=width_to_stride_table[c].stride1;
             return 1;

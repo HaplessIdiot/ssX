@@ -1069,7 +1069,7 @@ can also use the latest integer feedback to control this feature. When the
 value of the feedback is zero, the feature is disabled. The feature
 is enabled for any other value.
 .TP 4
-.B SwapAxes
+.B SwapXY
 Exchange the X and Y axes at the driver level. This is useful to cope with
 defective screen assemblies.
 .TP 4
@@ -1141,7 +1141,7 @@ sets the level of debugging info reported. Valid values range from 0 to 5.
 A value of zero suppress all debugging reports and a value of 5 ask for the
 maximum verbosity.
 .TP 4
-.B SwapAxes
+.B SwapXY
 Exchange the X and Y axes at the driver level. This is useful to cope with
 defective screen assemblies.
 .TP 4

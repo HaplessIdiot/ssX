@@ -1257,6 +1257,7 @@ struct pci_vendor_device {
                             { 0x8C01, "ViRGE/MX", NF },
                             { 0x8C02, "ViRGE/MX+", NF },
                             { 0x8C03, "ViRGE/MX+MV", NF },
+                            { 0x9102, "Savage2000", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x8086, "Intel", {
                             { 0x0482, "82375EB pci-eisa bridge", NF },

@@ -117,8 +117,16 @@ xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 	    if (fd >= xf86SigIOMaxFd)
 		xf86SigIOMaxFd = fd + 1;
 	    FD_SET (fd, &xf86SigIOMask);
-	    fcntl(fd, F_SETOWN, getpid());
-	    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_ASYNC);
+	    if (fcntl(fd, F_SETOWN, getpid()) == -1) {
+		xf86Msg(X_WARNING, "fcntl(%d, F_SETOWN): %s\n", 
+			fd, strerror(errno));
+		return 0;
+	    }
+	    if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_ASYNC) == -1) {
+		xf86Msg(X_WARNING, "fcntl(%d, O_ASYNC): %s\n", 
+			fd, strerror(errno));
+		return 0;
+	    }
 	    return 1;
 	}
     }
@@ -213,9 +221,10 @@ xf86AssertBlockedSIGIO (char *where)
 #endif
 
 /* XXX This is a quick hack for the benefit of xf86SetSilkenMouse() */
-Bool
+
+int
 xf86SIGIOSupported ()
 {
-    return TRUE;
+    return 1;
 }
 

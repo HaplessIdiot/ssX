@@ -150,8 +150,21 @@ auto-detected should be commented out.
 Suppress most informational messages at startup.
 .TP 8
 .B \-bpp \fIn\fP
-Set number of bits per pixel.  The default is 8.  Legal values are
-1, 4, 8, 15, 16, 24, 32.  Not all servers support all values.
+No longer supported.  Use \fB\-depth\fP to set the color depth, and
+use \fB\-fbbpp\fP if you really need to force a non-default
+framebuffer (hardware) pixel format.
+.TP 8
+.B \-depth \fIn\fP
+Sets the default color depth.  Legal values are 8, 15, 16, and 24.
+Not all servers support all values.
+.TP 8
+.B \-fbbpp \fIn\fP
+Sets the number of framebuffer bits per pixel.  You should only set
+this if you're sure it's necessary; normally the server can deduce the
+correct value from \fB\-depth\fP above.  Useful if you want to run a
+depth 24 configuration with a 24 bpp framebuffer rather than the
+(possibly default) 32 bpp framebuffer.  Legal values are 8, 16, 24,
+32.  Not all servers support all values.
 .TP 8
 .B \-weight \fInnn\fP
 Set RGB weighting at 16 bpp.  The default is 565.  This applies

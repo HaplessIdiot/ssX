@@ -1,3 +1,59 @@
+XFree86 3.9.16d (18 November 1999)
+3336. Fx up new MMIO macros (#3337, Matt Grossman).
+3335. Clean up compiler warnings in lib/font/bitmap (#3411, Matt Grossman).
+3334. TGA fixes, add sync on green (#3410, Matt Grossman).
+3333. Fix NULL pointer dereference in libXaw (#3406, Christopher Sekiya).
+3332. Add Rage128 support (#3405, Rik Faith, funded by ATI).
+3331. Add MTRR support for NetBSD and OpenBSD. Add new NetBSD aperture driver
+      (#3404, Matthieu Herrb).
+3330. Xterm patch #121 (#3402, Thomas Dickey).
+3329. Rendition driver bugfixes and alpha related cleanups (#3400,
+      Dejan Ilic, Marc Langenbach, Egbert Eich).
+3328. Add void input device (ä3392, Frederic Lepied).
+3327. Changed the Xon serial option to be able to select xon/xoff for input,
+      output or both. Add support for Graphire models. Change wacom init
+      phase to use new Xoff option (#3391, Frederic Lepied).
+3326. Change the SwapAxes option to SwapXY in elographics/microtouch driver
+      to match an already existing option in the Dynapro driver. Add a Focus 
+      class capability to the elographics driver (#3395, Patrick Lecoanet).
+3325. Update mouse rate handling (#3388, Harald Koenig).
+3324. Fix NULL pointer dereference in misprite.c (#3380, Edward Wang).
+3323. Add FBDev and ShadowFB support to glint driver. Add new option
+      "NoWriteBitmap" (#3383, Michel Daenzer).
+3322. Update SuperProbe to handle S3 Savage4, Savage200 and clean up 
+      Trio3D/Savage3D detection (#3382,3384 Harald Koenig).
+3321. Add new framebuffer code and tiny X DDX architecture (#3379,
+      Keith Packard).
+3320. Add DGA2 documentation (#3378, Mark Vojkovich).
+3319. Update XFree86 manpage wrt -bpp/-depth/-fbbpp (#3377, Andy Isaacson).
+3318. Make SuperProbe check primary cards, only (#3374, Harald Koenig).
+3317. Add SilkenMouse to *BSD (#3373, Matthieu Herrb).
+3316. Allow SilkenMouse to work if not all drivers of an OS support SIGIO
+      (#3372, Keith Packard).
+3315. Fix a few problems in TGA driver and add support for backing store
+      and SilkenMouse (#3371, Matt Grossman).
+3314. Add smarter scheduler (#3370, Keith Packard).
+3313. Xterm patch #120 (#3369, Thomas Dickey).
+3312. Enable xf86SetKbdRate function on Solaris 8 (#3364, David Holland).
+3311. Fix some bugs and add acceleration to Rendition server (#3360,
+      Dejan Ilic).
+3310. Make raw DDC information available as properties in the root window
+      (#3357, Andrew Aitchison).
+3309. Fix for xf86CreateRootWindow (#3355, Andrew Aitchison).
+3308. Add manpage for the chips driver (#3353, David Bateman).
+3307. Update contact info (#3352, Andrew van der Stock).
+3306. Add kbd rate support for Linux (#3363, Harald Koenig).
+3305. Update Portuguese XKB map (#3351, Joao Esteves, Francisco Colaco).
+3304. Fix text clipping in 3dfx driver (#3349, Henrik Harmsen).
+3303. Fix S3 ViRGE hw cursor (#3348, Harald Koenig).
+3302. Fix clipping in 3dfx driver (#3342, Daryll Strauss).
+3301. Enable SilkenMouse for 3dfx driver (#3341, Henrik Harmsen).
+3300. Enable SIGIO support on LynxOS (#3339, Thomas Mueller).
+3299. Get TRUE defined in sigio.c. Fix xterm compile problem on ISC
+      (#3338, Michael Rohleder).
+3298. Correct DPMS suspend/standby modes for 3dfx driver (#3336, 
+      Henrik Harmsen)
+3297. Xterm patch #119 (#3335, Thomas Dickey).
 3296. ATI LCD changes to add interlaced mode support and near-final rework of
       mode validation (Marc La France).
 3295. Keep track of a mode's hsync and vrefresh rates used for monitor checks

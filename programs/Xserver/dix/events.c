@@ -1254,7 +1254,15 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	}
 
 	if (BitIsOn(criticalEvents, type))
+	{
+#ifdef SMART_SCHEDULE
+	    extern int	SmartMaxPriority;
+	    
+	    if (client->smart_priority < SmartMaxPriority)
+		client->smart_priority++;
+#endif
 	    SetCriticalOutputPending();
+	}
 
 	WriteEventsToClient(client, count, pEvents);
 #ifdef DEBUG

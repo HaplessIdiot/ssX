@@ -749,9 +749,6 @@ static XtResource resources[] = {
 {XtNutf8, XtCUtf8, XtRInt, sizeof(int),
 	XtOffsetOf(XtermWidgetRec, screen.utf8_mode),
 	XtRString, "0"},
-{XtNutf8controls, XtCUtf8controls, XtRBoolean, sizeof(Boolean),
-	XtOffsetOf(XtermWidgetRec, screen.utf8_controls),
-	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNwideChars, XtCWideChars, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.wide_chars),
 	XtRBoolean, (XtPointer) &defaultFALSE},
@@ -844,6 +841,15 @@ void SGR_Background(int color)
 {
 	register TScreen *screen = &term->screen;
 	Pixel	bg;
+
+	/*
+	 * An indexing operation may have set screen->scroll_amt, which would
+	 * normally result in calling FlushScroll() in WriteText().  However,
+	 * if we're changing the background color now, then the new value
+	 * should not apply to the pending blank lines.
+	 */
+	if (screen->scroll_amt && (color != term->cur_background))
+		FlushScroll(screen);
 
 	if (color >= 0) {
 		term->flags |= BG_COLOR;
@@ -1504,6 +1510,26 @@ static void VTparse(void)
 				reply.a_param[count++] = 8; /* user-defined-keys */
 				reply.a_param[count++] = 9; /* national replacement charsets */
 				reply.a_param[count++] = 15; /* technical characters */
+				if_OPT_ISO_COLORS(screen,{
+				    reply.a_param[count++] = 22; /* ANSI color, VT525 */
+				})
+#if OPT_DEC_LOCATOR
+				reply.a_param[count++] = 29; /* ANSI text locator */
+#endif
+#if 0				/* not sure how this fits in */
+				if_OPT_ISO_COLORS(screen,{
+				    reply.a_param[count++] = 30 +
+					(((term->flags & FG_COLOR) != 0
+					 && (term->cur_foreground >= 0))
+					    ? term->cur_foreground
+					    : 9);
+				    reply.a_param[count++] = 40 +
+					(((term->flags & BG_COLOR) != 0
+					 && (term->cur_background >= 0))
+					    ? term->cur_background
+					    : 9);
+				})
+#endif
 			    }
 			    reply.a_nparam = count;
 			    reply.a_inters = 0;
@@ -1758,7 +1784,7 @@ static void VTparse(void)
 				break;
 			case 15:
 				/* printer status */
-				reply.a_param[count++] = 13; /* FIXME: implement printer */
+				reply.a_param[count++] = 13; /* implement printer */
 				break;
 			case 25:
 				/* UDK status */
@@ -1772,6 +1798,14 @@ static void VTparse(void)
 					reply.a_param[count++] = 0; /* ready */
 					reply.a_param[count++] = 0; /* LK201 */
 				}
+				break;
+			case 53:
+				/* Locator status */
+#if OPT_DEC_LOCATOR
+				reply.a_param[count++] = 50; /* locator ready */
+#else
+				reply.a_param[count++] = 53; /* no locator */
+#endif
 				break;
 			}
 
@@ -2122,7 +2156,7 @@ static void VTparse(void)
 			break;
 
 		 case CASE_DECEFR:
-			/* DECEFR - Enable Filter Rectangle */
+			TRACE(("DECEFR - Enable Filter Rectangle\n"));
 			if (screen->send_mouse_pos == DEC_LOCATOR) {
 			    MotionOff( screen, term );
 			    if((screen->loc_filter_top = param[0]) < 1)
@@ -2139,11 +2173,12 @@ static void VTparse(void)
 			break;
 
 		 case CASE_DECELR:
-			/* DECELR - Enable Locator Reports */
 			MotionOff( screen, term );
 			if (param[0] <= 0 || param[0] > 2) {
 			    screen->send_mouse_pos = MOUSE_OFF;
+			    TRACE(("DECELR - Disable Locator Reports\n"));
 			} else {
+			    TRACE(("DECELR - Enable Locator Reports\n"));
 			    screen->send_mouse_pos = DEC_LOCATOR;
 			    if (param[0] == 2) {
 				screen->locator_reset = TRUE;
@@ -2161,7 +2196,7 @@ static void VTparse(void)
 			break;
 
 		 case CASE_DECSLE:
-			/* DECSLE - Select Locator Events */
+			TRACE(("DECSLE - Select Locator Events\n"));
 			for (count=0; count<nparam; ++count) {
 			    switch (param[count]) {
 				case DEFAULT:
@@ -2188,7 +2223,7 @@ static void VTparse(void)
 			break;
 
 		 case CASE_DECRQLP:
-			/* DECRQLP - Request Locator Position */
+			TRACE(("DECRQLP - Request Locator Position\n"));
 			if( param[0] < 2 ) {
 			    /* Issue DECLRP Locator Position Report */
 			    GetLocatorPosition( term );
@@ -4169,7 +4204,6 @@ static void VTInitialize (
    if (request->screen.utf8_mode) {
       wnew->screen.wide_chars = True;
       wnew->screen.utf8_mode = 2; /* disable further change */
-      wnew->screen.utf8_controls = request->screen.utf8_controls;
       TRACE(("initialized UTF-8 mode\n"));
    }
    if (wnew->screen.wide_chars != False)

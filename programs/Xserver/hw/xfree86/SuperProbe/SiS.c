@@ -54,7 +54,7 @@ int *Chipset;
 	if (!NoPCI)
 	{
 	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
-		if (pcrp->_vendor == PCI_VENDOR_SIS)
+		if (pcrp->_vendor == PCI_VENDOR_SIS && pcrp->_status_command & 7)
 		{
 			switch (pcrp->_device)
 			{

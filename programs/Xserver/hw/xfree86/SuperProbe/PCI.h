@@ -360,6 +360,8 @@ extern struct pci_config_reg *pci_devp[];
 #define PCI_CHIP_TRIO3D_2X	0x8A13
 #define PCI_CHIP_SAVAGE3D	0x8A20
 #define PCI_CHIP_SAVAGE3D_M	0x8A21
+#define PCI_CHIP_SAVAGE4	0x8A22
+#define PCI_CHIP_SAVAGE2000	0x9102
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091

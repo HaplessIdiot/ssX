@@ -147,6 +147,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 Savage3D",
 		  "S3 Savage3D (Macrovision Support)",
 		  "S3 Trio3D/2X",
+		  "S3 Savage4",
+		  "S3 Savage2000",
 	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",

@@ -8,6 +8,21 @@ XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.6 1999/01/11 09:39:26 dawes Exp
 SUBDIRS = module
 #endif
 
+#ifndef KDriveXServer
+BDFSRCS=bdfread.c bdfutils.c
+BDFOBJS=bdfread.o bdfutils.o
+BDFDEFS=-DBDFFORMAT
+
+SNFSRCS=snfread.c
+SNFOBJS=snfread.o
+SNFDEFS=-DSNFFORMAT
+#endif
+
+PCFSRCS=pcfread.c pcfwrite.c
+PCFOBJS=pcfread.o pcfwrite.o
+PCFDEFS=-DPCFFORMAT
+
+
         INCLUDES = -I$(FONTINCSRC) -I../include 
          HEADERS = 
 #ifdef FontFormatDefines
@@ -16,13 +31,14 @@ SUBDIRS = module
 #if GzipFontCompression
        GZIP_DEFS = -DX_GZIP_FONT_COMPRESSION
 #endif
+         DEFINES = $(BDFDEFS) $(PCFDEFS) $(SNFDEFS)
 
-            SRCS = bdfread.c bdfutils.c bitmap.c bitmaputil.c bitscale.c \
-		   bitmapfunc.c pcfread.c pcfwrite.c snfread.c \
+            SRCS = $(BDFSRCS) bitmap.c bitmaputil.c bitscale.c \
+		   bitmapfunc.c $(PCFSRCS) $(SNFSRCS) \
 		   fontink.c 
 
-            OBJS = bdfread.o bdfutils.o bitmap.o bitmaputil.o bitscale.o \
-		   bitmapfunc.o pcfread.o pcfwrite.o snfread.o \
+            OBJS = $(BDFOBJS) bitmap.o bitmaputil.o bitscale.o \
+		   bitmapfunc.o $(PCFOBJS) $(SNFOBJS) \
 		   fontink.o
 
 #define DoNormalLib NormalLibFont

@@ -37,6 +37,9 @@
 
 #include <sys/kbd.h>
 
+void sol8_setkbdinitiate(double value);
+void sol8_setkbdrepeat(double value);
+
 static	int	sol8_otranslation = -1;
 static	int	sol8_odirect = -1;
 
@@ -52,6 +55,9 @@ xf86GetKbdLeds()
 void
 xf86SetKbdRepeat(char rad)
 {
+
+	sol8_setkbdinitiate( (double) xf86Info.kbdDelay / 1000.0 );
+	sol8_setkbdrepeat( (double) xf86Info.kbdRate / 1000.0 );
 	return;
 }
 

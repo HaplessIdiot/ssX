@@ -88,11 +88,21 @@ authorization.
 #define HAVE_UTMP 1
 #endif
 
-#if (defined(SVR4) || defined(SCO325)) && !defined(__CYGWIN__)
+#if (defined(__MVS__) || defined(SVR4) || defined(SCO325)) && !defined(__CYGWIN__)
 #define UTMPX_FOR_UTMP 1
 #endif
 
+#ifndef ISC
 #define HAVE_UTMP_UT_HOST 1
+#endif
+
+#if defined(UTMPX_FOR_UTMP) && !(defined(__MVS__) || defined(__hpux))
+#define HAVE_UTMP_UT_SESSION 1
+#endif
+
+#if !(defined(linux) && (!defined(__GLIBC__) || (__GLIBC__ < 2))) && !defined(SVR4)
+#define ut_xstatus ut_exit.e_exit
+#endif
 
 #if defined(SVR4) || defined(SCO325) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && !(defined(__powerpc__) && (__GLIBC__ == 2) && (__GLIBC_MINOR__ == 0)))
 #define HAVE_UTMP_UT_XTIME 1
@@ -111,6 +121,17 @@ authorization.
 
 #if defined(__GNU__) || defined(__MVS__)
 #define USE_TTY_GROUP
+#endif
+
+#if defined(__MVS__)
+#undef ut_xstatus
+#define ut_name ut_user
+#define ut_xstatus ut_exit.ut_e_exit
+#define ut_xtime ut_tv.tv_sec
+#endif
+
+#if defined(ut_xstatus)
+#define HAVE_UTMP_UT_XSTATUS 1
 #endif
 
 #endif /* HAVE_CONFIG_H */
@@ -165,8 +186,15 @@ extern int errno;
 #endif
 
 #ifdef USE_SYS_SELECT_H
+
 #include <sys/types.h>
+
+#if defined(AIXV3) && defined(NFDBITS)
+#undef NFDBITS	/* conflict between X11/Xpoll.h and sys/select.h */
+#endif
+
 #include <sys/select.h>
+
 #endif
 
 #include <setjmp.h>
@@ -271,7 +299,6 @@ extern int errno;
 #define XtNtrimSelection	"trimSelection"
 #define XtNunderLine		"underLine"
 #define XtNutf8			"utf8"
-#define XtNutf8controls		"utf8controls"
 #define XtNvisualBell		"visualBell"
 #define XtNwideChars		"wideChars"
 #define XtNxmcAttributes	"xmcAttributes"
@@ -345,7 +372,6 @@ extern int errno;
 #define XtCTrimSelection	"TrimSelection"
 #define XtCUnderLine		"UnderLine"
 #define XtCUtf8			"Utf8"
-#define XtCUtf8controls		"Utf8controls"
 #define XtCVisualBell		"VisualBell"
 #define XtCWideChars		"WideChars"
 #define XtCXmcAttributes	"XmcAttributes"
@@ -558,7 +584,7 @@ extern void FlushLog (TScreen *screen);
 extern int xtermPrinterControl (int chr);
 extern void xtermAutoPrint (int chr);
 extern void xtermMediaControl (int param, int private_seq);
-extern void xtermPrintScreen (void);
+extern void xtermPrintScreen (Boolean use_DECPEX);
 
 /* ptydata.c */
 extern int getPtyData (TScreen *screen, fd_set *select_mask, PtyData *data);

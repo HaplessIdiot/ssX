@@ -15,8 +15,8 @@
  * to be based on Radoslaw's original source
  *
  * Contributors:
- *		Andrew Vanderstock, Melbourne, Australia
- *			vanderaj@mail2.svhm.org.au
+ *		Andrew van der Stock
+ *			ajv@greebo.net
  *		additions, corrections, cleanups
  *
  *		Dirk Hohndel
@@ -975,6 +975,8 @@ MGAdoDDC(ScrnInfoPtr pScrn)
   if (xf86IsPrimaryPci(pMga->PciInfo) && !pMga->FBDev) {
     vgaHWUnmapMem(pScrn);
   }
+
+  xf86SetDDCproperties(pScrn, MonInfo);
 
   return MonInfo;
 }

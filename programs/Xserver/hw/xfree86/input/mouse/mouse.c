@@ -68,7 +68,7 @@ static void MouseUnInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags);
 #endif
 
 static int MouseProc(DeviceIntPtr device, int what);
-static void MouseReadInput(InputInfoPtr pInfo);
+static void MouseNoSigioReadInput(InputInfoPtr pInfo);
 static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 		 	     int v1, int v2, int v3, int v4, int v5, int *x,
 		 	     int *y);
@@ -399,7 +399,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->type_name = XI_MOUSE;
     pInfo->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
     pInfo->device_control = MouseProc;
-    pInfo->read_input = MouseReadInput;
+    pInfo->read_input = MouseNoSigioReadInput;
     pInfo->motion_history_proc = xf86GetMotionEvents;
     pInfo->history_size = 0;
     pInfo->control_proc = NULL;
@@ -717,14 +717,14 @@ SetupMouse(InputInfoPtr pInfo)
 	pInfo->options = options;
 
         /* Select report rate/frequency. */
-	if      (pMse->sampleRate <=   0)  c = 'O';
-	else if (pMse->sampleRate <=  15)  c = 'J';
-	else if (pMse->sampleRate <=  27)  c = 'K';
-	else if (pMse->sampleRate <=  42)  c = 'L';
-	else if (pMse->sampleRate <=  60)  c = 'R';
-	else if (pMse->sampleRate <=  85)  c = 'M';
-	else if (pMse->sampleRate <= 125)  c = 'Q';
-	else                               c = 'N';
+	if      (pMse->sampleRate <=   0)  c = 'O';  /* 100 */
+	else if (pMse->sampleRate <=  15)  c = 'J';  /*  10 */
+	else if (pMse->sampleRate <=  27)  c = 'K';  /*  20 */
+	else if (pMse->sampleRate <=  42)  c = 'L';  /*  35 */
+	else if (pMse->sampleRate <=  60)  c = 'R';  /*  50 */
+	else if (pMse->sampleRate <=  85)  c = 'M';  /*  67 */
+	else if (pMse->sampleRate <= 125)  c = 'Q';  /* 100 */
+	else                               c = 'N';  /* 150 */
 	xf86WriteSerial(pInfo->fd, &c, 1);
 	break;
 
@@ -1327,6 +1327,16 @@ post_event:
 	 */
     }
     pMse->protoBufTail = pBufP;
+}
+
+static void
+MouseNoSigioReadInput (InputInfoPtr info)
+{
+    int	i;
+
+    i = xf86BlockSIGIO ();
+    MouseReadInput (info);
+    xf86UnblockSIGIO (i);
 }
 
 static void

@@ -2,50 +2,16 @@
 #ifndef __V2KREGS_H__
 #define __V2KREGS_H__
 
-#include "vtypes.h"
-
-#define FIFO_SIZE	0x1f
-
-/* IO register offsets. */
-#define FIFO_SWAP_NO    0x00 /* FIFO. No byte swap. */
-#define FIFO_SWAP_END   0x04 /* FIFO. Swap bytes 3<>0, 2<>1. */
-#define FIFO_SWAP_INHW  0x08 /* FIFO. Swap bytes 3<>2, 1<>0. */
-#define FIFO_SWAP_HW    0x0c /* FIFO. Swap half-words. */
-#define FIFOINFREE      0x40 /* Input FIFO free entry count. */
-#define FIFOOUTVALID    0x41 /* Output FIFO valid entry count. */
-#define COMM            0x42 /* dual 4 bit communications ports */
-#define MEMENDIAN       0x43 /* set byte swapping on PCI mem accesses */
-#define INTR            0x44 /* which interrupts occurred */
-#define INTREN          0x46 /* enable different interrupts */
-#define DEBUGREG        0x48 /* soft resets, RISC hold/single step */
-#define LOWWATERMARK    0x49 /* Input FIFO low water mark for interrupt */
+/* New registers and values found from V2K and on */
 #define STATUS          0x4A /* specifies which blocks of the V2000 are busy */
 #define XBUSCTL         0x4B /* XBus control register */
-#define PCITEST         0x4C /* PCI test */
-#define DMACMDPTR       0x50 /* DMA command list pointer */
-#define DMA_ADDRESS     0x54 /* DMA data address */
-#define DMA_COUNT       0x58 /* DMA remaining transfer count */
-#define STATEINDEX      0x60 /* state index info */
-#define STATEDATA       0x64 /* state data info */
+
 #define SCLKPLL         0x68 /* system clock PLL control register */
 #define SCRATCH         0x70 /* 16-bit BIOS scratch space */
-#define MODEREG         0x72 /* Mode -- to differentiate from old MODE */
-#define MODE_           MODEREG
-#define	MODE		MODEREG
-#define BANKSELECT      0x74 /* Local memory to A0000 mapping */
-#define	BANKSELECT_PHYSADDR	((unsigned long)(0xA0000))
-#define CRTCTEST        0x80 /* CRTC test register */
-#define CRTCCTL         0x84 /* CRTC mode */
-#define CRTCHORZ        0x88 /* CRTC horizontal timing */
-#define CRTCVERT        0x8c /* CRTC vertical timing */
-#define FRAMEBASEB      0x90 /* Stereoscopic frame base b address */
-#define FRAMEBASEA      0x94 /* Frame base A address */
-#define CRTCOFFSET      0x98 /* CRTC StrideOffset */
-#define CRTCSTATUS      0x9c /* CRTC video scan position */
-#define DRAMCTL         0xa0 /* DRAM timing */
+
 #define MEMDIAG         0xa4 /* Memory diagnostic register #1 */
 #define CURSORBASE      0xac /* cursor base address bits [23:10] aligne to 1024 byte boundary */
-#define PALETTE         0xb0 /* Access to DAC */
+
 #define PCLKPLL         0xc0 /* external device 0 */
 #define VINEVENBASE     0xd0 /* video input even field base address */
 #define VINODDBASE      0xd4 /* video input odd field base address */

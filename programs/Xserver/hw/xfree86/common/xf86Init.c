@@ -18,6 +18,7 @@ extern int atoi();
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
+#include "Xatom.h"
 #include "input.h"
 #include "servermd.h"
 #include "windowstr.h"
@@ -110,46 +111,14 @@ extern InputDriverRec MOUSE;
 static Bool
 xf86CreateRootWindow(WindowPtr pWin)
 {
-  int ret;
+  int ret = TRUE;
   int err = Success;
   ScreenPtr pScreen = pWin->drawable.pScreen;
-  PropertyPtr pRegProp;
+  PropertyPtr pRegProp, pOldRegProp;
   CreateWindowProcPtr CreateWindow =
     (CreateWindowProcPtr)(pScreen->devPrivates[xf86CreateRootWindowIndex].ptr);
 
 ErrorF("xf86CreateRootWindow(%p)\n", pWin);
-
-  if (pWin->parent == NULL) {
-    if (xf86RegisteredPropertiesTable == NULL)
-      err = Success;
-    else
-      for (pRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
-	   pRegProp != NULL && err==Success;
-	   pRegProp = pRegProp->next ) {
-	ErrorF("about to call ChangeWindowProperty(%p,%d,%d,%d,PropModeReplace,%d,%p,FALSE)\n",
-	       pWin,
-	       pRegProp->propertyName, pRegProp->type,
-	       pRegProp->format,
-	       pRegProp->size, pRegProp->data
-	       );
-	err = ChangeWindowProperty(pWin,
-				   pRegProp->propertyName, pRegProp->type,
-				   pRegProp->format, PropModeReplace,
-				   pRegProp->size, pRegProp->data,
-				   FALSE
-				   );
-      }
-
-    /* Look at err */
-    ret = (err==Success);
-
-    /* free memory */
-
-  } else {
-    ErrorF("xf86CreateRootWindow unexpectedly called with non-root window %p (parent %p)\n",
-	   pWin, pWin->parent);
-    ret = FALSE;
-  }
 
   if ( pScreen->CreateWindow != xf86CreateRootWindow ) {
     /* Can't find hook we are hung on */
@@ -164,7 +133,52 @@ ErrorF("xf86CreateRootWindow(%p)\n", pWin);
 
   /* ... and call the previous CreateWindow fuction, if any */
   if (NULL!=pScreen->CreateWindow) {
-    ret &= (*pScreen->CreateWindow)(pWin);
+    ret = (*pScreen->CreateWindow)(pWin);
+  }
+
+  /* Now do our stuff */
+
+  if (xf86RegisteredPropertiesTable != NULL) {
+    if (pWin->parent == NULL && xf86RegisteredPropertiesTable != NULL) {
+      for (pRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
+	   pRegProp != NULL && err==Success;
+	   pRegProp = pRegProp->next )
+	{
+	  Atom oldNameAtom = pRegProp->propertyName;
+	  char *nameString;
+	  /* propertyName was created before the screen existed,
+	   * so the atom does not belong to any screen;
+	   * we need to create a new atom with the same name.
+	   */
+	  nameString = NameForAtom(oldNameAtom);
+	  pRegProp->propertyName = MakeAtom(nameString, strlen(nameString), TRUE);
+	  err = ChangeWindowProperty(pWin,
+				     pRegProp->propertyName, pRegProp->type,
+				     pRegProp->format, PropModeReplace,
+				     pRegProp->size, pRegProp->data,
+				     FALSE
+				     );
+	}
+      
+      /* Look at err */
+      ret &= (err==Success);
+      
+      /* free memory */
+      pOldRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
+      while (pOldRegProp!=NULL) { 
+	xfree(pOldRegProp->data);
+	pOldRegProp->data = NULL;
+	
+	pRegProp = pOldRegProp->next;
+	xfree(pOldRegProp);
+	pOldRegProp = pRegProp;
+      }  
+      xf86RegisteredPropertiesTable[pScreen->myNum] = NULL;
+    } else {
+      ErrorF("xf86CreateRootWindow unexpectedly called with non-root window %p (parent %p)\n",
+	     pWin, pWin->parent);
+      ret = FALSE;
+    }
   }
 
   ErrorF("xf86CreateRootWindow() returns %d\n", ret);
@@ -941,7 +955,12 @@ InitInput(argc, argv)
 	pInfo = pInfo->next;
     }
 
-    xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
+    if (coreKeyboard) {
+      xf86Info.pKeyboard = coreKeyboard->dev;
+    }
+    else {
+      xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE);
+    }
     if (corePointer)
 	xf86Info.pMouse = corePointer->dev;
     RegisterKeyboardDevice(xf86Info.pKeyboard); 

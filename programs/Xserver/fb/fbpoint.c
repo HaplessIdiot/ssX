@@ -1,0 +1,155 @@
+/*
+ * $Id: fbpoint.c,v 1.1 1999/11/19 13:53:45 hohndel Exp $
+ *
+ * Copyright © 1998 Keith Packard
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+/* $XFree86: $ */
+
+#include "fb.h"
+
+typedef void	(*FbDots)  (FbBits	*dst,
+			    FbStride    dstStride,
+			    int		dstBpp,
+			    BoxPtr	pBox,
+			    xPoint	*pts,
+			    int		npt,
+			    FbBits	and,
+			    FbBits	xor);
+
+void
+fbDots (FbBits	    *dst,
+	FbStride    dstStride,
+	int	    dstBpp,
+	BoxPtr	    pBox,
+	xPoint	    *pts,
+	int	    npt,
+	FbBits	    and,
+	FbBits	    xor)
+{
+    int		x1, y1, x2, y2;
+    int		x, y;
+    FbBits	*d;
+
+    x1 = pBox->x1;
+    y1 = pBox->y1;
+    x2 = pBox->x2;
+    y2 = pBox->y2;
+    while (npt--)
+    {
+	x = pts->x;
+	y = pts->y;
+	pts++;
+	if (x1 <= x && x < x2 && y1 <= y && y < y2)
+	{
+	    x *= dstBpp;
+	    d = dst + (y * dstStride) + (x >> FB_SHIFT);
+	    x &= FB_MASK;
+	    if (dstBpp == 24)
+	    {
+		FbBits	leftMask, rightMask;
+		int	n, rot;
+		FbBits	andT, xorT;
+		
+		rot = x % 24;
+		andT = FbRot24(and,rot);
+		xorT = FbRot24(xor,rot);
+		FbMaskBits (x, 24, leftMask, n, rightMask);
+		if (leftMask)
+		{
+		    *d = FbDoMaskRRop (*d, andT, xorT, leftMask);
+		    andT = FbNext24Pix(andT);
+		    xorT = FbNext24Pix(xorT);
+		    d++;
+		}
+		if (rightMask)
+		    *d = FbDoMaskRRop(*d, andT, xorT, rightMask);
+	    }
+	    else
+	    {
+		FbBits	mask;
+		mask = FbBitsMask(x, dstBpp);
+		*d = FbDoMaskRRop (*d, and, xor, mask);
+	    }
+	}
+    }
+}
+
+void
+fbPolyPoint (DrawablePtr    pDrawable,
+	     GCPtr	    pGC,
+	     int	    mode,
+	     int	    nptInit,
+	     xPoint	    *pptInit)
+{
+    FbGCPrivPtr pPriv = fbGetGCPrivate (pGC);
+    RegionPtr	pClip = pGC->pCompositeClip;
+    FbBits	*dst;
+    FbStride	dstStride;
+    int		dstBpp;
+    FbDots	dots;
+    FbBits	and, xor;
+    xPoint	*ppt;
+    int		npt;
+    BoxPtr	pBox;
+    int		nBox;
+    
+    /* make pointlist origin relative */
+    ppt = pptInit;
+    npt = nptInit;
+    if (mode == CoordModePrevious)
+    {
+	ppt->x += pDrawable->x;
+	ppt->y += pDrawable->y;
+	npt--;
+	while(npt--)
+	{
+	    ppt++;
+	    ppt->x += (ppt-1)->x;
+	    ppt->y += (ppt-1)->y;
+	}
+    }
+    else
+    {
+	while (npt--)
+	{
+	    ppt->x += pDrawable->x;
+	    ppt->y += pDrawable->y;
+	    ppt++;
+	}
+    }
+    fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
+    and = pPriv->and;
+    xor = pPriv->xor;
+    dots = fbDots;
+#ifndef FBNOPIXADDR
+    if (and == 0)
+    {
+	switch (dstBpp) {
+	case 8:	    dots = fbDots8; break;
+	case 16:    dots = fbDots16; break;
+	case 32:    dots = fbDots32; break;
+	}
+    }
+#endif
+    for (nBox = REGION_NUM_RECTS (pClip), pBox = REGION_RECTS (pClip);
+	 nBox--; pBox++)
+	(*dots) (dst, dstStride, dstBpp, pBox, pptInit, nptInit, and, xor);
+}

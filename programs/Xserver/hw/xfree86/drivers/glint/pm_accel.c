@@ -117,7 +117,7 @@ static void PermediaPolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
 
 #define MAX_FIFO_ENTRIES 15
 
-static void
+void
 PermediaInitializeEngine(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);

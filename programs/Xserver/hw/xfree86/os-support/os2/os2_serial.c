@@ -235,7 +235,7 @@ int xf86SetSerial (int fd, pointer options)
 
 	if ((s = xf86FindOptionValue (options, "FlowControl"))) {
 		xf86MarkOptionUsedByName (options, "FlowControl");
-		if (xf86NameCmp (s, "Xon") == 0)
+		if (xf86NameCmp (s, "XonXoff") == 0)
 			dcb.fbFlowReplace |= 0x03;
 		else if (xf86NameCmp (s, "None") == 0)
 			dcb.fbFlowReplace &= ~0x03;

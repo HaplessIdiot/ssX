@@ -50,6 +50,7 @@ typedef struct _BitmapFileFunctions {
  *
  */
 static BitmapFileFunctionsRec readers[] = {
+#ifdef PCFFORMAT
     { pcfReadFont, pcfReadFontInfo} ,
     { pcfReadFont, pcfReadFontInfo} ,
 #ifdef X_GZIP_FONT_COMPRESSION
@@ -58,17 +59,24 @@ static BitmapFileFunctionsRec readers[] = {
 #ifdef __EMX__
     { pcfReadFont, pcfReadFontInfo},
 #endif
+#endif
+#ifdef SNFFORMAT
     { snfReadFont, snfReadFontInfo},
     { snfReadFont, snfReadFontInfo},
 #ifdef X_GZIP_FONT_COMPRESSION
     { snfReadFont, snfReadFontInfo} ,
 #endif
+#endif
+#ifdef BDFFORMAT
     { bdfReadFont, bdfReadFontInfo} ,
     { bdfReadFont, bdfReadFontInfo} ,
 #ifdef X_GZIP_FONT_COMPRESSION
     { bdfReadFont, bdfReadFontInfo} ,
 #endif
+#endif
+#ifdef PCFFORMAT
     { pmfReadFont, pcfReadFontInfo} ,
+#endif
 };
 
 

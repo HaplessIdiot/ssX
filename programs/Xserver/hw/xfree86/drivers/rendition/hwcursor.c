@@ -36,6 +36,35 @@ static void RENDITIONLoadCursorImage(ScrnInfoPtr pScreenInfo, unsigned char* src
 /*
  * This is top-level initialization funtion
  */
+void
+RenditionHWCursorPreInit (ScrnInfoPtr pScreenInfo)
+{
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
+    pRendition->board.hwcursor_used = TRUE;
+    if (pRendition->board.chip==V1000_DEVICE){
+      /* V1K uses special space on BT-485 RAMDAC */
+      pRendition->board.hwcursor_vmemsize = 0;
+      pRendition->board.hwcursor_membase = 0 ; /* Not used on V1K */
+    }
+    else{
+      pRendition->board.hwcursor_vmemsize = 64*64*2/8 /* 1024 bytes used */;
+      pRendition->board.hwcursor_membase = (pRendition->board.fbOffset >> 10);
+      /* Last but not least, update offset-adress */
+      pRendition->board.fbOffset += pRendition->board.hwcursor_vmemsize;
+    }
+}
+
+void
+RenditionHWCursorRelease (ScrnInfoPtr pScreenInfo)
+{
+    renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
+    xf86DestroyCursorInfoRec(pRendition->CursorInfoRec);
+    pRendition->CursorInfoRec=NULL;
+}
+
+
 Bool
 RenditionHWCursorInit(int scrnIndex, ScreenPtr pScreen)
 {
@@ -62,7 +91,8 @@ RenditionHWCursorInit(int scrnIndex, ScreenPtr pScreen)
 
     infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST  |
                      HARDWARE_CURSOR_TRUECOLOR_AT_8BPP   |
-                     HARDWARE_CURSOR_AND_SOURCE_WITH_MASK;
+                     HARDWARE_CURSOR_AND_SOURCE_WITH_MASK|
+                     HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_8;
 
 
     infoPtr->SetCursorColors      = RENDITIONSetCursorColors;
@@ -71,15 +101,6 @@ RenditionHWCursorInit(int scrnIndex, ScreenPtr pScreen)
     infoPtr->HideCursor           = RENDITIONHideCursor;
     infoPtr->ShowCursor           = RENDITIONShowCursor;
     infoPtr->UseHWCursor          = RENDITIONUseHWCursor;
-
-    pRendition->board.hwcursor_used = 1;
-    if (pRendition->board.chip==V1000_DEVICE){
-      /* V1K uses special space on BT-485 RAMDAC */
-      pRendition->board.hwcursor_vmemsize = 0;
-    }
-    else{
-      pRendition->board.hwcursor_vmemsize = 1024 /* bytes used */;
-    }
 
     return xf86InitCursor(pScreen, infoPtr);
 }

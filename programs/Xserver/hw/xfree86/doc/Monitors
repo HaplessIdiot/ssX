@@ -1324,7 +1324,7 @@ Section "Monitor"
     VertRefresh 50-130
 EndSection
 
-#From: andrew.van.der.stock@member.sage-au.org.au (Andrew van der Stock)
+#From: ajv@greebo.net (Andrew van der Stock)
 #Date: 21 May 1997, 22:00:00 AEST
 
 Section "Monitor"

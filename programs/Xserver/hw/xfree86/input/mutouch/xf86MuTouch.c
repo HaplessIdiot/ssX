@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.6 1999/06/13 05:18:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.5.2.3 1998/11/12 11:32:04 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -133,7 +133,7 @@ static SymTabRec MuTTab[] = {
   { HISTORY_SIZE,      "historysize" },
   { LINK_SPEED,        "linkspeed" },
   { ALWAYS_CORE,       "alwayscore" },
-  { SWAP_AXES,	       "swapaxes" },
+  { SWAP_AXES,	       "swapxy" },
   { FREQUENCY,         "frequency" },
   { PORTRAIT_MODE,     "portraitmode" },
   { -1,                "" },
@@ -1759,7 +1759,7 @@ xf86MuTInit(InputDriverPtr	drv,
   xf86Msg(X_CONFIG, "Microtouch minimum y position: %d\n", priv->min_y);
   priv->frequency = xf86SetIntOption(local->options, "Frequency", 0);
   xf86Msg(X_CONFIG, "Microtouch ThruGlass frequency is: %d\n", priv->frequency);
-  priv->swap_axes = xf86SetBoolOption(local->options, "SwapAxes", 0);
+  priv->swap_axes = xf86SetBoolOption(local->options, "SwapXY", 0);
   if (priv->swap_axes) {
     xf86Msg(X_CONFIG, "Microtouch %s device will work with X and Y axes swapped\n",
 	    local->name);

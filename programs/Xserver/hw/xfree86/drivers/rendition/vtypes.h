@@ -38,10 +38,6 @@ typedef CARD8  vu8;
 typedef INT32 vs32;
 typedef INT16 vs16;
 typedef INT8  vs8;
-#ifdef __alpha__
-typedef unsigned long vu64;
-typedef          long vs64;
-#endif
 
 typedef enum {
     V_PIXFMT_DSTFMT=0,
@@ -114,14 +110,19 @@ struct v_board_t {
     vu32 mem_size;
     vu8 *mem_base;
     vu8 *vmem_base;
-    Bool accel;
     Bool init;
+
+    /* */
+    Bool accel;
 
     /* */
     vu32 csucode_base;
     vu32 ucode_base;
     vu32 ucode_entry;
     vu32 cursor_base;
+
+    int Rop;
+    int Color;
 
     /* mode information */
     struct v_modeinfo_t mode;
@@ -133,11 +134,15 @@ struct v_board_t {
     vu8 offset_low;
     vu8 *scr_contents;
 
-    /* Is HW-cursor used? */
-    Bool hwcursor_used;
+    Bool hwcursor_used;     /* Is HW-cursor used? */
+    vu16 hwcursor_vmemsize; /* How much videomem does it use */
+    vu32 hwcursor_membase;  /* videomem adress for V2K-cursor */
+                            /* Has to be on 1024-byte boundry */
 
-    /* How much videomem does it use */
-    vu16 hwcursor_vmemsize;
+    vu32 fbOffset;          /* Currently busy fb-memory marker */
+    Bool overclock_mem;     /* Memory overclock ? */
+
+    vu8 ucode_buffer[MC_SIZE]; /* Space for microcode, when not needed */
 };
     
 
@@ -153,6 +158,7 @@ typedef struct _renditionRec
     EntityInfoPtr pEnt;                 /* entity information */
     CloseScreenProcPtr CloseScreen;     /* wrap CloseScreen */
     xf86CursorInfoPtr CursorInfoRec;    /* Cursor data */
+    XAAInfoRecPtr AccelInfoRec;         /* Needed for XAA */
 } renditionRec, *renditionPtr;
 
 #define RENDITIONPTR(p)     ((renditionPtr)((p)->driverPrivate))

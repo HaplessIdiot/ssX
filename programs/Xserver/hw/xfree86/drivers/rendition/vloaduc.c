@@ -3,9 +3,6 @@
  * includes
  */
 
-#if 0
-/* Fix later */
-
 #include "rendition.h"
 #include "v1kregs.h"
 #include "vloaduc.h"
@@ -16,11 +13,11 @@
  * defines 
  */
 
-#ifdef LITTLE_ENDIAN
+#ifdef X_LITTLE_ENDIAN
 
 /* maybe swap word */
-#define SW32(x) swapl(x)
-#define SW16(x) swaps(x)
+#define SW32(x) lswapl(x)
+#define SW16(x) lswaps(x)
 #else /* BIG_ENDIAN */
 #define SW32(x) (x)
 #define SW16(x) (x)
@@ -31,11 +28,6 @@
 /*
  * local function prototypes 
  */
-
-#ifdef LITTLE_ENDIAN 
-static vu32 swapl(vu32 x);
-static vu16 swaps(vu16 x);
-#endif
 void loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr);
 void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr);
 static int seek_and_read_hdr(int fd, void *ptr, long int offset,
@@ -59,6 +51,7 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr);
 int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo); 
+
   int num;
   int sz;
   int fd;
@@ -66,23 +59,22 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   Elf32_Shdr *pshdr, *orig_pshdr=NULL;
   Elf32_Ehdr ehdr ;
 
-#ifdef DEBUG
+#if DEBUG
   ErrorF("RENDITION: Loading microcode %s\n", file_name); 
 #endif
 
   /* open file and read ELF-header */
-  if (-1 == (fd=open(file_name, O_RDONLY))) {
+  if (-1 == (fd=xf86open(file_name, O_RDONLY))) {
     ErrorF("RENDITION: Cannot open microcode %s\n", file_name); 
     return -1;
   }
 
-  if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
-    ErrorF("RENDITION: Cannot read microcode %s\n", file_name); 
+  if (xf86read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+    ErrorF("RENDITION: Cannot read microcode header %s\n", file_name); 
     return -1;
   }
-  if (0 != strncmp((char *)&ehdr.e_ident[1], "ELF", 3)) {
-    ErrorF("RENDITION: Microcode %s(%s) is corrupt\n", 
-               file_name, &ehdr.e_ident[1]); 
+  if (0 != xf86strncmp((char *)&ehdr.e_ident[1], "ELF", 3)) {
+    ErrorF("RENDITION: Microcode header in %s is corrupt\n", file_name); 
     return -1;
   }
 
@@ -90,18 +82,18 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   sz=SW16(ehdr.e_phentsize);
   num=SW16(ehdr.e_phnum);
   if (0!=sz && 0!=num) {
-	orig_pphdr=pphdr=(Elf32_Phdr *)malloc(sz*num);
+	orig_pphdr=pphdr=(Elf32_Phdr *)xf86malloc(sz*num);
 	if (!pphdr) {
-      ErrorF("RENDITION: Cannot allocate global memory (1)\n"); 
-      close(fd);
-      return -1;
-    }
+	  ErrorF("RENDITION: Cannot allocate global memory (1)\n"); 
+	  xf86close(fd);
+	  return -1;
+	}
 
 	if (seek_and_read_hdr(fd, pphdr, SW32(ehdr.e_phoff), sz, num)) {
-      ErrorF("RENDITION: Error reading microkernel (1)\n");
-      close(fd);
-      return -1;
-    }
+	  ErrorF("RENDITION: Error reading microcode (1)\n");
+	  xf86close(fd);
+	  return -1;
+	}
 
 	orig_pshdr=pshdr=(Elf32_Shdr *)0;
   }
@@ -112,16 +104,16 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
     sz=SW16(ehdr.e_shentsize);
     num=SW16(ehdr.e_shnum);
     if (0!=sz && 0!=num) {
-      orig_pshdr=pshdr=(Elf32_Shdr *)malloc(sz*num);
+      orig_pshdr=pshdr=(Elf32_Shdr *)xf86malloc(sz*num);
       if (!pshdr) {
         ErrorF("RENDITION: Cannot allocate global memory (2)\n"); 
-        close(fd);
+        xf86close(fd);
         return -1;
       }
 
       if (seek_and_read_hdr(fd, pshdr, SW32(ehdr.e_shoff), sz, num)) {
         ErrorF("RENDITION: Error reading microcode (2)\n");
-        close(fd);
+        xf86close(fd);
         return -1;
       }
     }
@@ -131,24 +123,23 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 
   if (pphdr) {
     do {
-	  if (SW32(pphdr->p_type) == PT_LOAD) 
-        loadSegment2board(board, fd, pphdr);
+      if (SW32(pphdr->p_type) == PT_LOAD) 
+        loadSegment2board(pScreenInfo, fd, pphdr);
         pphdr=(Elf32_Phdr *)(((char *)pphdr)+sz);
       } while (--num);
-      free(orig_pphdr);
-  }    
+      xf86free(orig_pphdr);
+  }
   else {
     do {
       if (SW32(pshdr->sh_size) && (SW32(pshdr->sh_flags) & SHF_ALLOC)
           && ((SW32(pshdr->sh_type)==SHT_PROGBITS) 
                || (SW32(pshdr->sh_type)==SHT_NOBITS))) 
-        loadSection2board(board, fd, pshdr);
+        loadSection2board(pScreenInfo, fd, pshdr);
 	  pshdr=(Elf32_Shdr *)(((char *)pshdr)+sz);
 	} while (--num) ;
-	free(orig_pshdr);
+	xf86free(orig_pshdr);
   }
-
-  close(fd);
+  xf86close(fd);
 
   return SW32(ehdr.e_entry);
 }
@@ -158,30 +149,6 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 /*
  * local functions
  */
-
-#ifdef LITTLE_ENDIAN 
-static vu32 swapl(vu32 x)
-{
-  vu32 tmp;
-
-  tmp=x>>8;
-  tmp&=0xFF00FF;
-  x&=0xFF00FF;
-  x<<=8;
-  x|=tmp;
-  tmp=x>>16;
-  return (x<<16)|tmp;
-}
-
-
-
-static vu16 swaps(vu16 x)
-{
-  return (x<<8)+(x>>8);
-}
-#endif /* #ifdef LITTLE_ENDIAN */
-
-
 
 void loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr)
 {
@@ -198,25 +165,26 @@ void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
   vu32 offset=SW32(phdr->p_offset);
   vu32 size=SW32(phdr->p_filesz);
   vu32 physAddr=SW32(phdr->p_paddr);
-    
-  if (lseek(fd, offset, SEEK_SET) != offset) {
-	ErrorF("RENDITION: Failure in loadSegmentToBoard, offset %x\n", offset);
-    abort();
+
+  if (xf86lseek(fd, offset, SEEK_SET) != offset) {
+	ErrorF("RENDITION: Failure in loadSegmentToBoard, offset %lx\n", offset);
+    return;
   }
 
-  data=(vu8 *)malloc(size);
-  if (NULL == data)
+  data=(vu8 *)xf86malloc(size);
+  if (NULL == data){
 	ErrorF("RENDITION: GlobalAllocPtr couldn't allocate %x bytes", size);
+	return;
+  }
 
-  if (read(fd, data, size) != size)
+  if (xf86read(fd, data, size) != size){
 	ErrorF("RENDITION: v_readfile Failure, couldn't read %x bytes ", size);
+	return;
+  }
 
-#ifdef DEBUG
-  ErrorF("RENDITION: Writing %d bytes to 0x%x\n", size, physAddr);
-#endif
-  mmve(board, size, data, physAddr);
+  mmve(pScreenInfo, size, data, physAddr);
 
-  free(data);
+  xf86free(data);
 }
 
 
@@ -224,11 +192,11 @@ void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
 static int seek_and_read_hdr(int fd, void *ptr, long int offset, int size, 
                              int cnt)
 {
-  if (lseek(fd, offset, SEEK_SET) != offset)
-	return 1 ;
+  if (xf86lseek(fd, offset, SEEK_SET) != offset)
+    return 1 ;
 
-  if (size*cnt != read(fd, ptr, size*cnt))
-	return 2 ;
+  if (size*cnt != xf86read(fd, ptr, size*cnt))
+    return 2 ;
 
   return 0 ;
 }
@@ -250,16 +218,11 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
 
   while (size > 0) {
     v_write_memory32(vmb, out, *dataout);
-	out++;
+	out+=4;
 	dataout++;
 	size-=4;
   }
 }
-
-
-/* fix later */
-#endif
-
 
 /*
  * end of file vloaduc.c

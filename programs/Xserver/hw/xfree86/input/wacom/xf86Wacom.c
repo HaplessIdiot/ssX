@@ -49,7 +49,7 @@
  *
  */
 
-static const char identification[] = "$Identification: 8 $";
+static const char identification[] = "$Identification: 12 $";
 
 #include <xf86Version.h>
 
@@ -68,10 +68,12 @@ static const char identification[] = "$Identification: 8 $";
 #include <misc.h>
 #include <xf86.h>
 #define NEED_XF86_TYPES
+#if !defined(DGUX)
 #include <xf86_ansic.h>
+#include <xisb.h>
+#endif
 #include <xf86_OSproc.h>
 #include <xf86Xinput.h>
-#include <xisb.h>
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
 #include <keysym.h>
 #include <mipointer.h>
@@ -110,19 +112,7 @@ static const char *default_options[] =
 	"Parity", "None",
 	"Vmin", "1",
 	"Vtime", "10",
-	"FlowControl", "None",
-	NULL
-};
-
-static const char *b19200_options[] =
-{
-	"BaudRate", "19200",
-	"StopBits", "1",
-	"DataBits", "8",
-	"Parity", "None",
-	"Vmin", "1",
-	"Vtime", "10",
-	"FlowControl", "None",
+	"FlowControl", "Xoff",
 	NULL
 };
 
@@ -174,6 +164,10 @@ static InputDriverPtr wcmDrv;
 #endif
 
 #endif /* Pre 3.9 headers */
+
+#if defined(__QNX__) || defined(__QNXNTO__)
+#define POSIX_TTY
+#endif
 
 /******************************************************************************
  * debugging macro
@@ -254,6 +248,7 @@ typedef struct
     double		factorX;	/* X factor */
     double		factorY;	/* Y factor */
     unsigned int	serial;	        /* device serial number */
+    int			initNumber;     /* magic number for the init phasis */
 
     struct _WacomCommonRec *common;	/* common info pointer */
     
@@ -290,6 +285,7 @@ typedef struct _WacomCommonRec
     int			wcmProtocolLevel; /* 4 for Wacom IV, 5 for Wacom V */
     int			wcmThreshold;	/* Threshold for counting pressure as a button */
     WacomDeviceState	wcmDevStat[2];	/* device state for each tool */
+    int			wcmInitNumber;  /* magic number for the init phasis */
 } WacomCommonRec, *WacomCommonPtr;
 
 /******************************************************************************
@@ -424,7 +420,7 @@ static const char * intuos_setup_string = WC_V_MULTI WC_V_ID WC_RATE;
 
 #define HANDLE_TILT(comm) ((comm)->wcmPktLength == 9)
 
-#define mils(res) (res * 1000 / 2.54) /* resolution */
+#define mils(res) (res * 100 / 2.54) /* resolution */
 
 /******************************************************************************
  * Function/Macro keys variables
@@ -1569,13 +1565,20 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	bit 0  Yt1
        
 	*/
-  
+
 	if ((common->wcmIndex == 0) && !(buffer[loop] & HEADER_BIT)) { /* magic bit is not OK */
-	    DBG(6, ErrorF("xf86WcmReadInput bad magic number 0x%x (pktlength=%d)\n",
-			  buffer[loop], common->wcmPktLength));;
+	    DBG(6, ErrorF("xf86WcmReadInput bad magic number 0x%x (pktlength=%d) %d\n",
+			  buffer[loop], common->wcmPktLength, loop));
 	    continue;
 	}
-
+	else { /* magic bit at wrong place */
+	    if ((common->wcmIndex != 0) && (buffer[loop] & HEADER_BIT)) {
+		DBG(6, ErrorF("xf86WcmReadInput magic number 0x%x detetected at index %d loop=%d\n",
+			      (unsigned int) buffer[loop], common->wcmIndex, loop));
+		common->wcmIndex = 0;
+	    }
+	}
+	
 	common->wcmData[common->wcmIndex++] = buffer[loop];
 
 	if (common->wcmProtocolLevel == 4 &&
@@ -1839,7 +1842,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	    /* Suppress data */
 	    if (have_data &&
 		xf86WcmSuppress(common->wcmSuppress, &old_ds, ds)) {
-	        DBG(10, ErrorF("Suppressing data\n"));
+	        DBG(10, ErrorF("Suppressing data according to filter\n"));
 		*ds = old_ds;
 		have_data = 0;
 	    }
@@ -1871,8 +1874,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	    }
 	}
     }
-    DBG(7, ErrorF("xf86WcmReadInput END   local=0x%x priv=0x%x\n",
-		  local, priv));
+    DBG(7, ErrorF("xf86WcmReadInput END   local=0x%x priv=0x%x index=%d\n",
+		  local, priv, common->wcmIndex));
 }
 
 /*
@@ -1930,6 +1933,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     int			loop, idx;
     float		version = 0.0;
     int			is_a_penpartner = 0;
+    int			is_a_graphire = 0;
     
     DBG(1, ErrorF("opening %s\n", common->wcmDevice));
 
@@ -1947,7 +1951,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 
     /* Set the speed of the serial link to 19200 */
 #ifdef XFREE86_V4
-   if (xf86SetSerial(local->fd, b19200_options) < 0) {
+   if (xf86SetSerialSpeed(local->fd, 19200) < 0) {
        return !Success;
    }
 #else
@@ -1977,7 +1981,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 
     /* Set the speed of the serial link to 9600 */
 #ifdef XFREE86_V4
-   if (xf86SetSerial(local->fd, local->options) < 0) {
+   if (xf86SetSerialSpeed(local->fd, 9600) < 0) {
        return !Success;
    }
 #else
@@ -2033,7 +2037,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     if (buffer[2] == 'G' && buffer[3] == 'D') {
 	DBG(2, ErrorF("detected an Intuos model\n"));
 	common->wcmProtocolLevel = 5;
-	common->wcmMaxZ = 1023;		/* max Z value */
+	common->wcmMaxZ = 1024;		/* max Z value */
 	common->wcmResolX = 2540;	/* X resolution in points/inch */
 	common->wcmResolY = 2540;	/* Y resolution in points/inch */
 	common->wcmResolZ = 2540;	/* Z resolution in points/inch */
@@ -2049,11 +2053,25 @@ xf86WcmOpen(LocalDevicePtr	local)
 	common->wcmPktLength = 9;
     }
 
-    /* Check for a PenPartner model which doesn't answer WC_CONFIG request */
-    if (buffer[2] == 'C' && buffer[3] == 'T') {
-	DBG(2, ErrorF("detected a PenPartner model\n"));
+    /* Check for a PenPartner or Graphire model which doesn't answer WC_CONFIG
+     * request. The Graphire model is handled like a PenPartner except that
+     * it doesn't answer WC_COORD requests.
+     */
+    if ((buffer[2] == 'C' || buffer[2] == 'E') && buffer[3] == 'T') {
+	if (buffer[2] == 'E') {
+	    DBG(2, ErrorF("detected a Graphire model\n"));
+	    is_a_graphire=1;
+	    /* Graphire models don't answer WC_COORD requests */
+	    common->wcmMaxX = 5103;
+	    common->wcmMaxY = 3711;
+	    common->wcmMaxZ = 512;
+	}
+	else {
+	    DBG(2, ErrorF("detected a PenPartner model\n"));
+	}
 	common->wcmResolX = 1000;
 	common->wcmResolY = 1000;
+	common->wcmMaxZ = 256;
 	is_a_penpartner = 1;
     }
     else if (common->wcmProtocolLevel == 4) {
@@ -2072,19 +2090,22 @@ xf86WcmOpen(LocalDevicePtr	local)
 	    ErrorF("WACOM: unable to read resolution. Using default.\n");
 	}
     }
-    
-    DBG(2, ErrorF("reading max coordinates\n"));
-    if (!send_request(local->fd, WC_COORD, buffer))
-	return !Success;
-    DBG(2, ErrorF("%s\n", buffer));
-    if (sscanf(buffer+2, "%d,%d", &common->wcmMaxX, &common->wcmMaxY) != 2) {
-	ErrorF("WACOM: unable to read max coordinates. Using default.\n");
-    }
 
+    if (!is_a_graphire) {
+	DBG(2, ErrorF("reading max coordinates\n"));
+	if (!send_request(local->fd, WC_COORD, buffer))
+	    return !Success;
+	DBG(2, ErrorF("%s\n", buffer));
+	if (sscanf(buffer+2, "%d,%d", &common->wcmMaxX, &common->wcmMaxY) != 2) {
+	    ErrorF("WACOM: unable to read max coordinates. Using default.\n");
+	}
+    }
+    
     DBG(2, ErrorF("setup is max X=%d max Y=%d resol X=%d resol Y=%d\n",
 		  common->wcmMaxX, common->wcmMaxY, common->wcmResolX,
 		  common->wcmResolY));
-  
+
+    /* We can't change the resolution on PenPartner and Graphire models */
     if (!is_a_penpartner && common->wcmProtocolLevel == 4) {
 	/* Force the resolution.
 	 */
@@ -2207,7 +2228,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     
 	    /* Set the speed of the serial link to 19200 */
 #ifdef XFREE86_V4
-	    if (xf86SetSerial(local->fd, b19200_options) < 0) {
+	    if (xf86SetSerialSpeed(local->fd, 19200) < 0) {
 		return !Success;
 	    }
 #else
@@ -2250,17 +2271,25 @@ xf86WcmOpenDevice(DeviceIntPtr       pWcm)
     int			loop;
     
     if (local->fd < 0) {
-	if (xf86WcmOpen(local) != Success) {
-	    if (local->fd >= 0) {
-		SYSCALL(close(local->fd));
+        if (common->wcmInitNumber > 2 ||
+	    priv->initNumber == common->wcmInitNumber) {
+	    if (xf86WcmOpen(local) != Success) {
+	        if (local->fd >= 0) {
+		    SYSCALL(close(local->fd));
+	        }
+	        local->fd = -1;
 	    }
-	    local->fd = -1;
+	    else {
+	        /* report the file descriptor to all devices */
+	        for(loop=0; loop<common->wcmNumDevices; loop++) {
+		    common->wcmDevices[loop]->fd = local->fd;
+	        }
+	    }
+	    common->wcmInitNumber++;
+	    priv->initNumber = common->wcmInitNumber;
 	}
 	else {
-	    /* report the file descriptor to all devices */
-	    for(loop=0; loop<common->wcmNumDevices; loop++) {
-		common->wcmDevices[loop]->fd = local->fd;
-	    }
+	  priv->initNumber = common->wcmInitNumber;
 	}
     }
 
@@ -2354,7 +2383,7 @@ xf86WcmOpenDevice(DeviceIntPtr       pWcm)
     InitValuatorAxisStruct(pWcm,
 			   2,
 			   - common->wcmMaxZ / 2, /* min val */
-			   common->wcmMaxZ / 2, /* max val */
+			   (common->wcmMaxZ / 2) - 1, /* max val */
 			   mils(common->wcmResolZ), /* resolution */
 			   0, /* min_res */
 			   mils(common->wcmResolZ)); /* max_res */
@@ -2514,8 +2543,12 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 
 	    if ((local->fd < 0) && (!xf86WcmOpenDevice(pWcm))) {
 		return !Success;
-	    }      
+	    }
+#ifndef XFREE86_V4	    
+	    xf86AddEnabledDevice(local);
+#else
 	    AddEnabledDevice(local->fd);
+#endif
 	    pWcm->public.on = TRUE;
 	    break;
       
@@ -2523,7 +2556,11 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    DBG(1, ErrorF("xf86WcmProc  pWcm=0x%x what=%s\n", pWcm,
 			  (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    if (local->fd >= 0) {
+#ifndef XFREE86_V4	    
+		xf86RemoveEnabledDevice(local);
+#else
 		RemoveEnabledDevice(local->fd);
+#endif
 		xf86WcmClose(local);
 	    }
 	    pWcm->public.on = FALSE;
@@ -2672,6 +2709,7 @@ xf86WcmAllocate(char *  name,
     priv->common = common;		/* common info pointer */
     priv->oldProximity = 0;		/* previous proximity */
     priv->serial = 0;		        /* serial number */
+    priv->initNumber = 0;	        /* magic number for the init phasis */
     
     common->wcmDevice = "";		/* device file name */
 #if defined(sun) && !defined(i386)
@@ -2698,7 +2736,7 @@ xf86WcmAllocate(char *  name,
     common->wcmStylusSide = TRUE;	/* eraser or stylus ? */
     common->wcmStylusProximity = FALSE;	/* a stylus is in proximity ? */
     common->wcmProtocolLevel = 4;	/* protocol level */
-
+    common->wcmInitNumber = 0;	        /* magic number for the init phasis */
     return local;
 }
 
@@ -2821,7 +2859,7 @@ init_xf86Wacom(unsigned long    server_version)
 #else /* XFREE86_V4 */
 
 /*
- * xf86WcmUnplug --
+ * xf86WcmUninit --
  *
  * called when the driver is unloaded.
  */
@@ -2832,7 +2870,7 @@ xf86WcmUninit(InputDriverPtr	drv,
 {
     WacomDevicePtr	priv = (WacomDevicePtr) local->private;
     
-    ErrorF("xf86WcmUnplug\n");
+    DBG(1, ErrorF("xf86WcmUninit\n"));
     
     xf86WcmProc(local->dev, DEVICE_OFF);
     
@@ -2841,7 +2879,7 @@ xf86WcmUninit(InputDriverPtr	drv,
 }
 
 /*
- * xf86WcmPlug --
+ * xf86WcmInit --
  *
  * called when the module subsection is found in XF86Config
  */
@@ -3021,7 +3059,7 @@ xf86WcmInit(InputDriverPtr	drv,
 		    val);
     }
     /* mark the device configured */
-    local->flags |= XI86_CONFIGURED;
+    local->flags |= XI86_POINTER_CAPABLE | XI86_CONFIGURED;
 
     /* return the LocalDevice */
     return (local);
@@ -3111,6 +3149,7 @@ XF86ModuleData wacomModuleData = {&xf86WcmVersionRec,
 /*
  * Local variables:
  * change-log-default-name: "~/xinput.log"
+ * c-file-style: "bsd"
  * End:
  */
 /* end of xf86Wacom.c */

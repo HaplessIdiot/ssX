@@ -55,8 +55,7 @@
 #define PSZ 8
 #include "cfb.h"
 #undef PSZ
-/*  #include "cfb16.h" */
-/*  #include "cfb24.h" */
+
 #include "cfb32.h"
 
 /* more RAC stuff */
@@ -157,7 +156,9 @@ typedef enum {
     OPTION_HW_CURSOR,
     OPTION_PCI_RETRY,
     OPTION_RGB_BITS,
-    OPTION_NOACCEL
+    OPTION_NOACCEL,
+    OPTION_SYNC_ON_GREEN,
+    OPTION_DAC_6_BIT
 } TGAOpts;
 
 static OptionInfoRec TGAOptions[] = {
@@ -166,6 +167,8 @@ static OptionInfoRec TGAOptions[] = {
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SYNC_ON_GREEN,     "SyncOnGreen",  OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_DAC_6_BIT,          "Dac6Bit",      OPTV_BOOLEAN,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -262,10 +265,10 @@ TGAFreeRec(ScrnInfoPtr pScrn)
 	return;
 
     pTga = TGAPTR(pScrn);
-#ifdef __alpha__
+
     if(pTga->buffers)
       free(pTga->buffers[0]);
-#endif
+
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
 }
@@ -543,6 +546,17 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pTga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
+
+    if(xf86ReturnOptValBool(TGAOptions, OPTION_SYNC_ON_GREEN, FALSE)) {
+	pTga->SyncOnGreen = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
+    }
+
+    if(xf86ReturnOptValBool(TGAOptions, OPTION_DAC_6_BIT, FALSE)) {
+	pTga->Dac6Bit = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "6 bit DAC enabled\n");
+    }
+    
     /* end option processing */
     
     /*
@@ -587,14 +601,10 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) {
-	/* XXX This is here just to test options. */
 	/* Default to 8 */
 	pScrn->rgbBits = 8;
-	if (xf86GetOptValInteger(TGAOptions, OPTION_RGB_BITS,
-				 &pScrn->rgbBits)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
-		       pScrn->rgbBits);
-	}
+	if(pTga->Dac6Bit)
+	    pScrn->rgbBits = 6;
     }
     from = X_DEFAULT;
 
@@ -931,7 +941,7 @@ TGAMapMem(ScrnInfoPtr pScrn)
     /* TGA doesn't need a sparse memory mapping, because all register
        accesses are doublewords */
     
-    pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+    pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, 0x0,
 				      pTga->PciTag,
 				      pTga->IOAddress, 0x100000);
     if (pTga->IOBase == NULL)
@@ -1175,6 +1185,8 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
+    xf86SetSilkenMouse(pScreen);
 
     xf86SetBlackWhitePixels(pScreen);
 
@@ -1323,8 +1335,8 @@ TGALeaveVT(int scrnIndex, int flags)
     pTga = TGAPTR(pScrn);
     TGARestore(pScrn);
 
-    /* clear the screen...there's probably a better way to do this */
-    memset(pTga->FbBase, 0, pTga->FbMapSize);
+    /* no longer necessary with new VT switching code */
+/*      memset(pTga->FbBase, 0, pTga->FbMapSize); */
     return;
 }
 

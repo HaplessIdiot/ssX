@@ -9,74 +9,47 @@
 #define __VOS_H__
 
 
+/* Define IODEBUG if you need to debug out/in functions.  <DI> */
+/* IODEBUG define is used in compiler.h. DON'T MOVE DOWN!      */
+
+/* #define IODEBUG */
 
 /*
  * includes
  */
 
+#include "compiler.h"
 #include "vtypes.h"
 
 /*
  * function prototypes
  */
-
-/* IO port programming */
-#ifdef DEBUG
 #define /*void*/ v_out8(/*vu16*/ port, /*vu8*/ data) \
-    ErrorF("v_out8(%x, %x)\n", port, data); \
-    outb(port, data)
+                   outb(port, data)
+
 #define /*void*/ v_out16(/*vu16*/ port, /*vu16*/ data) \
-    ErrorF("v_out16(%x, %x)\n", port, data); \
-    outw(port, data)
+                   outw(port, data)
+
 #define /*void*/ v_out32(/*vu16*/ port, /*vu32*/ data) \
-    ErrorF("v_out32(%x, %x)\n", port, data); \
-    outl(port, data)
-#else
-#define /*void*/ v_out8(/*vu16*/ port, /*vu8*/ data)   outb(port, data)
-#define /*void*/ v_out16(/*vu16*/ port, /*vu16*/ data) outw(port, data)
-#define /*void*/ v_out32(/*vu16*/ port, /*vu32*/ data) outl(port, data)
-#endif
+                   outl(port, data)
 
 #define /*vu8*/  v_in8(/*vu16*/ io_base)  ((vu8)inb(io_base))
 #define /*vu16*/ v_in16(/*vu16*/ io_base) ((vu16)inw(io_base))
 #define /*vu32*/ v_in32(/*vu16*/ io_base) ((vu32)inl(io_base))
 
 /* memory accesses */
-#ifdef __alpha__
-#define v_read_memory32(base, offset) xf86ReadSparse32(base, 4*(offset))
-#define v_read_memory16(base, offset) xf86ReadSparse16(base, 2*(offset))
-#define v_read_memory8(base, offset) xf86ReadSparse8(base, offset)
-#define v_write_memory32(base, offset, data) xf86WriteSparse32(data,base,4*(offset))
-#define v_write_memory16(base, offset, data) xf86WriteSparse16(data,base,2*(offset))
-#define v_write_memory8(base, offset, data) xf86WriteSparse8(data,base,offset)
-#else
-#define /*vu8*/ v_read_memory8(/*vu8 **/ vmem_base, /*vu32*/ offset) \
-    (*((vmem_base)+(offset)))
-#define /*vu16*/ v_read_memory16(/*vu8 **/ vmem_base, /*vu32*/ offset) \
-    (*(((vu16 *)(vmem_base))+(offset)))
-#define /*vu32*/ v_read_memory32(/*vu8 **/ vmem_base, /*vu32*/ offset) \
-    (*(((vu32 *)(vmem_base))+(offset)))
+#define v_read_memory32(base, offset) MMIO_IN32(base, offset)
+#define v_read_memory16(base, offset) MMIO_IN16(base, offset)
+#define v_read_memory8(base, offset)  MMIO_IN8(base, offset)
+#define v_write_memory32(base, offset, data) MMIO_OUT32(base, offset, data)
+#define v_write_memory16(base, offset, data) MMIO_OUT16(base, offset, data)
+#define v_write_memory8(base, offset, data)  MMIO_OUT8(base, offset, data)
 
-#define /*void*/ v_write_memory8(/*vu8 **/ vmem_base, /*vu32*/ offset, \
-                                  /*vu8*/ data) \
-    (*((vmem_base)+(offset)))=(data)
-#define /*void*/ v_write_memory16(/*vu8 **/ vmem_base, /*vu32*/ offset, \
-                                  /*vu16*/ data) \
-    (*(((vu16 *)(vmem_base))+(offset)))=(data)
-#define /*void*/ v_write_memory32(/*vu8 **/ vmem_base, /*vu32*/ offset, \
-                                  /*vu32*/ data) \
-    (*(((vu32 *)(vmem_base))+(offset)))=(data)
-#endif
-
-
+/* the rest of it */
 void v_enableio(void);
 void v_disableio(void);
 vu8 *v_mapmemory(vu8 *membase, vu32 size);
 void v_unmapmemory(vu8 *vmembase, vu32 size);
-
-struct v_board_t *v_findverite(void);
-
-
 
 #endif /* #ifndef _VOS_H_ */
 

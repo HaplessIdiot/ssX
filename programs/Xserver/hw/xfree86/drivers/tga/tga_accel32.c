@@ -161,11 +161,13 @@ fb_offset(ScrnInfoPtr pScrn, int x, int y)
 void
 TGASync(ScrnInfoPtr pScrn)
 {
-#if 0
-	mb();
-	while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
-#endif
-	return;
+    TGAPtr pTga = NULL;
+    
+    pTga = TGAPTR(pScrn);
+
+    while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
+
+    return;
 }
 
 /*

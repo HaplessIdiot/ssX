@@ -417,6 +417,14 @@ This option indicates that margin bell should not be rung.
 .B "\-mc milliseconds"
 This option specifies the maximum time between multi-click selections.
 .TP 8
+.B \-mesg
+Turn off the \fBmessages\fP resource, i.e.,
+disallow write access to the terminal.
+.TP 8
+.B \+mesg
+Turn on the \fBmessages\fP resource, i.e.,
+allow write access to the terminal.
+.TP 8
 .BI \-ms " color"
 This option specifies the color to be used for the pointer cursor.  The default
 is to use the foreground color.
@@ -737,6 +745,11 @@ It is not necessarily obeyed by all window managers.
 .TP 8
 .B "iconName (\fPclass\fB IconName)"
 Specifies the icon name.  The default is the application name.
+.TP 8
+.B "messages (\fPclass\fB Messages)"
+Specifies whether write access to the terminal is allowed initially.  See
+.BR mesg (1).
+The default is ``true''.
 .TP 8
 .B "ptyInitialErase (\fPclass\fB PtyInitialErase)"
 If ``true'', \fIxterm\fP will use the pseudo-terminal's sense of the stty erase
@@ -1366,15 +1379,6 @@ If you set this resource, \fIxterm\fP also sets the \fBwideChars\fP resource as 
 When set via a resource, \fIxterm\fP cannot be switched via control sequences out of UTF-8 mode.
 The default is ``0'' (off).
 Any other value will turn on UTF-8 mode.
-.TP 8
-.B "utf8controls (\fPclass\fB Utf8controls)"
-If \fIxterm\fP is running in UTF-8 mode, this specifies whether to
-interpret UTF-8 forms as control characters,
-e.g., 0xC0 0x8A (which is interpreted as U+000A) as a C0 control.
-The Unicode standard does not cover this area, leaving it unspecified for
-higher level protocols.
-Your application may require this interpretation.
-The default is ``false.''
 .TP 8
 .B "visualBell (\fPclass\fB VisualBell)"
 Specifies whether or not a visible bell (i.e. flashing) should be used instead

@@ -41,6 +41,9 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_121">Patch #121 - 1999/11/14 - XFree86 3.9.16c</A>
+<LI><A HREF="#xterm_120">Patch #120 - 1999/10/28 - XFree86 3.9.16c</A>
+<LI><A HREF="#xterm_119">Patch #119 - 1999/10/16 - XFree86 3.9.16c</A>
 <LI><A HREF="#xterm_118">Patch #118 - 1999/10/5 - XFree86 3.9.16b</A>
 <LI><A HREF="#xterm_117">Patch #117 - 1999/9/29 - XFree86 3.9.16b</A>
 <LI><A HREF="#xterm_116">Patch #116 - 1999/9/25 - XFree86 3.9.16a</A>
@@ -162,6 +165,137 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_121">Patch #121 - 1999/11/14 - XFree86 3.9.16c</A></H1>
+<ul>
+	<li>change label on "Sun/PC Keyboard" popup menu entry to "VT220
+	  Keyboard", since the checked state corresponds to VT220 rather than
+	  Sun/PC.
+
+	<li>add configure test CF_UTMP_UT_XSTATUS to handle the variants of
+	  utmp exit status (reports by Dave Ellement, Jeremie Petit, Tomas
+	  Vanhala).
+
+	<li>amend treatment of ALT key (see patch #94) so that if ALT is used
+	  as a modifier in key translations, then no parameter will be sent
+	  in escape sequences for Sun/PC function keys (request by Dr Werner Fink).
+
+	<li>modify default for OPT_I18N_SUPPORT to assume that
+	  <code>XtSetLanguageProc()</code> is available in X11R5.
+	  <p>
+	  Caveat: <code>XtSetLanguageProc()</code> was
+	  added fairly late in the X11R5 patches, and some vendors shipped
+	  buggy versions of this function (request by Tomas Vanhala).
+
+	<li>correct configure macro CF_SYSV_UTMP to test-link with functions
+	  consistent with the header, e.g., getutent() for utmp.h and
+	  getutxent() for utmpx.h (reported by Greg Smith).
+
+	<li>modify terminfo entry for <code>xterm-xfree86</code> to reflect
+	  modifiers for shift and control which (from a patch by Alexander V
+	  Lukyanov).
+
+	<li>modify terminfo entry for <code>xterm-sun</code> to match the
+	  function-key definitions in ncurses.  The pageup/pagedown and
+	  related function keys correspond to the Sun keyboard, which does
+	  not necessarily correspond with X's notion of those keys.
+
+	<li>modify treatment of XK_Delete keysym so it transmits parameterized
+	  VT220-style <code>&lt;esc&gt;[3~</code> if modifiers (shift, control
+	  alt) are given (request by Alexander V Lukyanov).
+
+	<li>corrected misspelled resource name in command-line option for
+	  HP function keys.
+</ul>
+
+<H1><A NAME="xterm_120">Patch #120 - 1999/10/28 - XFree86 3.9.16c</A></H1>
+<ul>
+	<li>refine the change to <code>SGR_Background()</code> in patch #119,
+	  by not flushing the pending scrolling operation if the background
+	  color is not actually changing.  This combination occurs when using
+	  color-ls to display a long listing, since each line ends with an SGR0
+	  which affects only the foreground color.  The unnecessary flushing
+	  made it noticeably slower (reported by D Roland Walker
+	  &lt;walker@pobox.com&gt;).
+
+	<li>remove obsolete documentation about modifiers which can be returned
+	  in mouse tracking mode, and modify logic to ignore modifiers other
+	  than the existing ones, e.g., NumLock (prompted by discussions with
+	  Christian Weisgerber and Brad Pepers &lt;brad@linuxcanada.com&gt;).
+
+	<li>use free bit from obsolete shift-modifier coding of mouse tracking
+	  button events to encode buttons 4 and 5, e.g., for a wheel mouse
+	  (requests by Brad Pepers and Bram Moolenaar).
+
+	<li>correct a place where the ptyInitialErase logic did not set the
+	  backarrowKey state, and modify it further to use tgetstr() rather
+	  than parse the termcap data returned from tgetent() so the
+	  ptyInitialErase logic will work when xterm is linked with a terminfo
+	  library (based on a patch by Dr Werner Fink &lt;werner@suse.de&gt;).
+
+	<li>fix definition of HAVE_UTMP_UT_HOST for ISC configuration (patch by
+	  &lt;michael.rohleder@stadt-frankfurt.de&gt;)
+
+	<li>improve configure script's utmp tests (based on reports by Greg
+	  Smith for os390, and David Ellement for HPUX).
+
+	<li>modify sinstall.sh to use uid=0 rather than 'root' to determine if
+	  the installer is privileged.  This is needed on some systems since
+	  more than one account may be privileged (report by Greg Smith).
+
+	<li>add an application resource, <code>messages</code> (and a
+	  corresponding -/+mesg option) which controls the initial permission
+	  on the terminal:  if messages is set to true (the default), behavior
+	  is as without the patch; if it is set to false (as per -mesg), the
+	  terminal is opened in mode 0600, thus producing the effect of the
+	  <code>mesg n</code> command.  This is useful for users who want to
+	  redirect all their messages to one particular xterm:  it is more
+	  pleasant to do this with xterm resources than with explicit calls to
+	  the <code>mesg</code> program  (patch, description by David Madore
+	  &lt;madore@clipper.ens.fr&gt;).
+</ul>
+
+<H1><A NAME="xterm_119">Patch #119 - 1999/10/16 - XFree86 3.9.16c</A></H1>
+<ul>
+	<li>add responses (DA and DSR) for DEC locator mode
+
+	<li>add coding for ANSI color to DA response
+
+	<li>implement UTF-8 translation for Media Copy (print) operations.
+
+	<li>implement vt320 control sequences for Print Composed Main Display
+	  and for Print All Pages.  The latter directs xterm to print the
+	  current screen as well as the scrollback buffer.
+
+	<li>correct error in _GNU_SOURCE configure test, which left it always
+	  defined.
+
+	<li>add more information, i.e., with strerror for some system calls in
+	  the main program which may fail due to insufficient permissions
+	  (prompted by a problem report for <code>-C</code> by Jeremie Petit
+	  &lt;Jeremie.Petit@digital.com&gt;).
+
+	<li>add workaround for conflict between &lt;X11/XPoll.h&gt; and
+	  &lt;sys/select.h&gt; on AIX 4.3 (Richard Griswold
+	  &lt;griswold@acm.org&gt;).
+
+	<li>add configure script test to resolve conflict between between
+	  &lt;X11/XPoll.h&gt; and &lt;sys/select.h&gt;
+
+	<li>modify translation of UTF-8 sequences to reject "overly long"
+	  variations (patch by Markus Kuhn).
+
+	<li>remove <code>utf8controls</code> resource, since Markus' change
+	  removes the corresponding logic.
+
+	<li>correct a case where colors were not rendered properly.  This
+	  happened when an application inserted several lines, then changed
+	  colors.  If this was done all in one write, then there would be no
+	  intervening refresh, and the new color was applied to the pending
+	  scrolling operation which was awaiting the next refresh (reported
+	  by Stephane Chazelas &lt;Stephane_Chazelas@Raytheon.com&gt;).
+
+</ul>
+
 <H1><A NAME="xterm_118">Patch #118 - 1999/10/5 - XFree86 3.9.16b</A></H1>
 <ul>
 	<li>refine configure test for utmp versus utmpx, to build on HP-UX 10.x
@@ -274,7 +408,7 @@ xc/programs/Xserver/hw/xfree86).
 	    <li>Bug 2: 
 	      The check for the last non-empty column (while (last &gt; 0) ... in 
 	      print.c/printLine) omits the rightmost column of the screen, the loop must 
-	      start with last = screen->max_col+1 instead of last = screen->max_col. 
+	      start with last = screen-&gt;max_col+1 instead of last = screen-&gt;max_col. 
 	 
 	    <li>Bug 3: 
 	      Any attributes of the first character (and of all immediately following 
@@ -420,7 +554,7 @@ longterm plan to allow configuring with Motif libraries.
 	  <li>fix OSC 4 xx ?  (report ansi color) to report a string which can
 	    actually be used to set the color back
 
-	  <li>fix OSC 4 xx yy (change ansi color) to not allow setting colors >
+	  <li>fix OSC 4 xx yy (change ansi color) to not allow setting colors &gt;
 	    15 in 16 color mode
 
 	  <li>simplify the COLOR_ settings a bit in ptyx.h, along with setting

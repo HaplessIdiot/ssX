@@ -248,7 +248,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.149 1999/09/27 06:29:02 dawes Exp 
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
-				ati vga XF86ExtraCardDrivers
+				ati r128 vga XF86ExtraCardDrivers
  */
 
 /*

@@ -126,7 +126,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
-				ati vga XF86ExtraCardDrivers
+				ati r128 vga XF86ExtraCardDrivers
 #endif
 #endif
 
@@ -810,12 +810,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				XFree86LoaderDefines -DXFree86Server \
 				VidModeExtensionDefines \
 				ServerSnprintfDefines \
-				-DX_BYTE_ORDER=ByteOrder
+				-DX_BYTE_ORDER=ByteOrder \
+				-DSMART_SCHEDULE
 #endif
 
 #ifndef XFree86ServerOSDefines
 #define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK -DDDXOSFATALERROR \
-				-DDDXOSVERRORF
+				-DDDXOSVERRORF -DSMART_SCHEDULE
 #endif
 
 #ifndef XFree86ConsoleDefines

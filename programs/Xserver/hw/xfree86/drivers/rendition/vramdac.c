@@ -7,6 +7,7 @@
 #include "vramdac.h"
 #include "vos.h"
 #include "v1kregs.h"
+#include "v2kregs.h"
 
 /*
  * defines
@@ -289,13 +290,18 @@ void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
 void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
 {
     int c, bytes, row;
-    vu8 *src;
+    vu8 *src = cursorimage;
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 tmp;
+    vu8 memend; /* Added for byte-swap fix */
 
     if (NULL == cursorimage) 
         return;
+
+    /* Following two lines added for the byte-swap fix */
+    memend = v_in8(pRendition->board.io_base + MEMENDIAN);
+    v_out8(pRendition->board.io_base + MEMENDIAN, MEMENDIAN_HW);
 
     size&=1;
     if (size)
@@ -306,50 +312,53 @@ void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
 
     if (pRendition->board.chip == V1000_DEVICE) {
       /* now load the cursor data into the cursor ram */
-/*
-  Bt485_write_cmd3_masked(iob, 0xfc, 0x00);
-  Bt485_write_masked(iob, BT485_COMMAND_REG_0, 0x7d, 0x00);
-*/
-      /*Bt485_write_masked(iob, BT485_COMMAND_REG_0, 0x7f, 0x80);*/
+
       tmp=v_in8(iob+BT485_COMMAND_REG_0)&0x7f;
       v_out8(iob+BT485_COMMAND_REG_0, tmp|0x80);
+
       v_out8(iob+BT485_WRITE_ADDR, BT485_COMMAND_REG_3);
-      /*Bt485_write_masked(iob, BT485_STATUS_REG, 0xfc, size<<2);*/
+
       tmp=v_in8(iob+BT485_STATUS_REG)&0xf8;
       v_out8(iob+BT485_STATUS_REG, tmp|(size<<2));
       v_out8(iob+BT485_WRITE_ADDR, 0x00);
 
       /* output cursor image */
-      src=cursorimage+1;
-      
-      for (c=0; c<bytes; c++)  {
-        v_out8(iob+BT485_CURS_RAM_DATA, *src);
-        src+=2;
-      }
-/*
-    tmp=v_in8(iob+BT485_STATUS_REG)&0xf8;
-    v_out8(iob+BT485_STATUS_REG, tmp|(size<<2)|(1<<size));
-    if (size)
-        v_out8(iob+BT485_WRITE_ADDR, 0x00);
-*/
-
       src=cursorimage;
+      
+      /* First plane data */
       for (c=0; c<bytes; c++)  {
         v_out8(iob+BT485_CURS_RAM_DATA, *src);
         src+=2;
       }
-    } else {                                            /* V2x00 */
-      v_out32(iob+0xAC /* CURSORBASE - v2k */, 0);
+
+      /* Second plane data */
+      src=cursorimage+1;
+      for (c=0; c<bytes; c++)  {
+        v_out8(iob+BT485_CURS_RAM_DATA, *src);
+        src+=2;
+      }
+    }
+    else {
+      /* V2x00 HW-Cursor, supports only 64x64x2 size */
+
+      v_out32(iob+CURSORBASE, pRendition->board.hwcursor_membase);
+
+      /* First plane data */
       for (row=0; row<64; row++)
 	for (c=0, src=cursorimage+1+16*row; c<8; c++, src+=2)
 	  v_write_memory8(pRendition->board.vmem_base, 16*(63-row)+c,
-			  (c&1)?(*(src-2)):(*(src+2)));
-
+     			  (c&1)?(*(src-2)):(*(src+2)));
+      /* Second plane data */
       for (row=0; row<64; row++)
 	for (c=0, src=cursorimage+16*row; c<8; c++, src+=2)
 	  v_write_memory8(pRendition->board.vmem_base, 8+16*(63-row)+c,
 			  (c&1)?(*(src-2)):(*(src+2)));
+
     }
+#if 1
+    /* Following line added for the byte-swap fix */
+    v_out8(pRendition->board.io_base + MEMENDIAN, memend);
+#endif
 }
 
 

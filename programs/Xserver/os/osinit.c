@@ -49,6 +49,10 @@ SOFTWARE.
 #include "osdep.h"
 #include "Xos.h"
 
+#ifdef SMART_SCHEDULE
+#include "dixstruct.h"
+#endif
+
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
@@ -205,6 +209,11 @@ OsInit()
     TimerInit();
 #ifdef DDXOSINIT
     OsVendorInit();
+#endif
+#ifdef SMART_SCHEDULE
+    if (!SmartScheduleDisable)
+	if (!SmartScheduleInit ())
+	    SmartScheduleDisable = TRUE;
 #endif
     OsInitAllocator();
     if (!OsDelayInitColors) OsInitColors();

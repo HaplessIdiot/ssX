@@ -218,6 +218,7 @@ S3VHWCursorInit(ScreenPtr pScreen)
     infoPtr->MaxHeight = 64;
     infoPtr->Flags = HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_16 |
     				 HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
+				 HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
         			 HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
 
     infoPtr->SetCursorColors = S3VSetCursorColors;

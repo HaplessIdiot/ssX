@@ -49,13 +49,13 @@ FontCharInkMetrics(FontPtr pFont, CharInfoPtr pCI, xCharInfo *pInk)
                 descent;
     register int vpos,
                 hpos,
-                bpos;
+                bpos = 0;
     int         bitmapByteWidth,
                 bitmapByteWidthPadded;
     int         bitmapBitWidth;
     int         span;
     register unsigned char *p;
-    unsigned char *ink_mask;
+    unsigned char *ink_mask = 0;
     register int bmax;
     register unsigned char charbits;
 

@@ -111,6 +111,10 @@ static mutex print_lock;
 
 #include "opaque.h"
 
+#ifdef SMART_SCHEDULE
+#include "dixstruct.h"
+#endif
+
 #include <errno.h>
 extern int errno;
 
@@ -984,6 +988,12 @@ char	*argv[];
             SyncOn++;
         }
 #endif
+#ifdef SMART_SCHEDULE
+	else if ( strcmp( argv[i], "-dumbSched") == 0)
+	{
+	    SmartScheduleDisable = TRUE;
+	}
+#endif
  	else
  	{
 	    ErrorF("Unrecognized option: %s\n", argv[i]);
@@ -1529,6 +1539,60 @@ ErrorF(
 #endif /* AIXV3 */
 #endif
 }
+
+#ifdef SMART_SCHEDULE
+
+#ifdef SIGVTALRM
+#define SMART_SCHEDULE_POSSIBLE
+#endif
+
+#ifdef SMART_SCHEDULE_POSSIBLE
+#define SMART_SCHEDULE_SIGNAL		SIGVTALRM
+
+void
+SmartScheduleTimer (int sig)
+{
+    SmartScheduleTime += SmartScheduleInterval;
+}
+#endif
+
+Bool
+SmartScheduleInit (void)
+{
+#ifdef SMART_SCHEDULE_POSSIBLE
+    struct sigaction	act;
+    struct itimerval	timer;
+
+    if (SmartScheduleDisable)
+	return TRUE;
+    
+    /* Set up the timer signal function */
+    act.sa_handler = SmartScheduleTimer;
+    sigemptyset (&act.sa_mask);
+    sigaddset (&act.sa_mask, SMART_SCHEDULE_SIGNAL);
+    act.sa_flags = 0;
+    act.sa_restorer = 0;
+    if (sigaction (SMART_SCHEDULE_SIGNAL, &act, 0) < 0)
+    {
+	perror ("sigaction for smart scheduler");
+	return FALSE;
+    }
+    /* Set up the virtual timer */
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = SmartScheduleInterval * 1000;
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = SmartScheduleInterval * 1000;
+    if (setitimer (ITIMER_VIRTUAL, &timer, 0) < 0)
+    {
+	perror ("scheduling timer");
+	return FALSE;
+    }
+    return TRUE;
+#else
+    return FALSE;
+#endif
+}
+#endif
 
 #if !defined(WIN32) && !defined(__EMX__)
 /*

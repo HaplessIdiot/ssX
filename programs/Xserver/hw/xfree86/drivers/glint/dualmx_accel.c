@@ -109,7 +109,7 @@ static void DualMXPolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
 
 #define MAX_FIFO_ENTRIES		15
 
-static void
+void
 DualMXInitializeEngine(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);

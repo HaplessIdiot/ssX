@@ -29,11 +29,7 @@
 #define PSZ 8
 #include "cfb.h"
 #undef PSZ
-/*
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-*/
+
 #include "micmap.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -58,6 +54,8 @@
 #define USE_OPAQUE_FILL 3
 #define MIX_SRC 0x03
 
+#define CE_BUFSIZE 256
+
 /* prototypes */
 
 static unsigned int __inline__ fb_offset(ScrnInfoPtr pScrn, int x, int y);
@@ -65,7 +63,7 @@ static void TGACopyLineForwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			 int y2, int w);
 static void TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			  int y2, int w);
-static void TGASync();
+static void TGASync(ScrnInfoPtr pScrn);
 static void TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 			  unsigned int planemask);
 static void TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h);
@@ -91,13 +89,6 @@ TGASubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 						int h, int skipleft);
 static void
 TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
-
-/*
-static int block_or_opaque_p;
-static int blitdir;
-static unsigned int current_rop;
-static int transparent_pattern_p;
-*/
 
 
 /*
@@ -152,12 +143,11 @@ DEC21030AccelInit8(ScreenPtr pScreen)
 
 /* color expand */
   
-#ifdef __alpha__
   TGA_AccelInfoRec->ScanlineCPUToScreenColorExpandFillFlags =
     BIT_ORDER_IN_BYTE_LSBFIRST | LEFT_EDGE_CLIPPING;
   
   TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
-  pTga->buffers[0] = (CARD64 *)malloc(1024); /* make it 8-byte aligned */
+  pTga->buffers[0] = (CARD32 *)malloc(CE_BUFSIZE);
   TGA_AccelInfoRec->ScanlineColorExpandBuffers =
       (unsigned char **)pTga->buffers;
   TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =
@@ -166,7 +156,6 @@ DEC21030AccelInit8(ScreenPtr pScreen)
     TGASubsequentScanlineCPUToScreenColorExpandFill;
   TGA_AccelInfoRec->SubsequentColorExpandScanline = 
     TGASubsequentColorExpandScanline;
-#endif
   
     /* initialize the pixmap cache */
     
@@ -192,17 +181,19 @@ fb_offset(ScrnInfoPtr pScrn, int x, int y)
  * This is the implementation of the Sync() function.
  */
 void
-TGASync()
+TGASync(ScrnInfoPtr pScrn)
 {
-#if 0
-	mb();
-	while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
-#endif
-	return;
+    TGAPtr pTga = NULL;
+    
+    pTga = TGAPTR(pScrn);
+
+    while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
+
+    return;
 }
 
 
-#ifdef __alpha__
+
 static void
 TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 					      int fg, int bg, int rop,
@@ -305,12 +296,16 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     TGAPtr pTga;
     unsigned char *p = NULL;
     int width = 0;
-    unsigned long addr;
+    unsigned int addr;
     unsigned int pixelmask = 0;
     unsigned int stipple;
     int align = 0;
     int skipleft;
 
+    CARD32 c = 0, d = 0;
+    CARD32 *e = NULL;
+    int i = 0, num_dwords = 0;
+    
     pTga = TGAPTR(pScrn);
     TGA_GET_IOBASE();
     TGA_GET_OFFSET();
@@ -334,27 +329,23 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 /*  	    ErrorF("aligment is %d\n", align); */
 	    addr -= align;
 	    width += align;
-	    {
-		CARD64 c = 0, d = 0;
-		CARD64 *e = NULL;
-		int i = 0, j = 0;
 
-		e = (CARD64 *)p;
-		j = (width / 64) + 1;
-		if(j > 128) { /* shouldn't happen */
-		    ErrorF("TGASubsequentColorExpandScanline passed scanline %d bytes long, truncating\n", j * 8);
-		    j = 128;
-		}
-		for(i = 0; i < j; i++) {
-		    c = e[i];
-		    if(i == 0)
-			e[i] = c << align;
-		    else
-			e[i] = (d >> (64 - align)) | (c << align);
-		    d = c;
-		}
+	    e = (CARD32 *)p;
+	    num_dwords = (width / 32) + 1;
+	    if(num_dwords > (CE_BUFSIZE / 4)) { /* shouldn't happen */
+		ErrorF("TGASubsequentColorExpandScanline passed scanline %d bytes long, truncating\n", num_dwords * 4);
+		num_dwords = CE_BUFSIZE / 4;
+	    }
+	    for(i = 0; i < num_dwords; i++) {
+		c = e[i];
+		if(i == 0)
+		    e[i] = c << align;
+		else
+		    e[i] = (d >> (32 - align)) | (c << align);
+		d = c;
 	    }
 	}
+	
 	
 	if(!pTga->transparent_pattern_p) {
 	    if(skipleft) {
@@ -366,7 +357,7 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	}
 	else {
 	    unsigned int *i = NULL;
-
+	
 /*  	    ErrorF("transparent scanline with x = %d, y = %d, w = %d, h = %d\n",  pTga->ce_x, pTga->ce_y, pTga->ce_width, pTga->ce_height); */
 	    if(skipleft) {
 		i = (unsigned int *)p;
@@ -378,7 +369,7 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 		*i &= (0xFFFFFFFF >> (32 - width));
 	    }
 	}
-		
+    
 	if(!pTga->transparent_pattern_p)
 	    TGA_FAST_WRITE_REG(pixelmask, TGA_PIXELMASK_REG);
 	TGA_FAST_WRITE_REG(addr, TGA_ADDRESS_REG);
@@ -403,7 +394,6 @@ TGASubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     TGA_SAVE_OFFSET();
     return;
 }
-#endif /* __alpha__ */
 
 /* Block Fill mode is faster, but only works for certain rops.  So we will
    have to implement Opaque Fill anyway, so we will do that first, then

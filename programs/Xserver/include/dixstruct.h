@@ -146,7 +146,21 @@ typedef struct _Client {
 		int *		/* num */
 #endif
 );
+#ifdef SMART_SCHEDULE
+    int	    smart_priority;
+    long    smart_start_tick;
+    long    smart_stop_tick;
+#endif
 }           ClientRec;
+
+#ifdef SMART_SCHEDULE
+/*
+ * Scheduling interface
+ */
+extern long SmartScheduleTime;
+extern long SmartScheduleInterval;
+extern Bool SmartScheduleDisable;
+#endif
 
 /* This prototype is used pervasively in Xext, dix */
 #if NeedFunctionPrototypes

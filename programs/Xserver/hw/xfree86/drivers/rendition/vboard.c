@@ -17,6 +17,7 @@
 
 #include "cscode.h"
 
+/* Global imported during compile-time */
 char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
 
 
@@ -46,30 +47,28 @@ int v_initboard(ScrnInfoPtr pScreenInfo)
   /* Note that CS ucode must wait on address in csucode_base
    * when initialized for later context switch code to work. */
   vmb=pRendition->board.vmem_base;
-  offset=pRendition->board.csucode_base/4;
-  for (c=0; c<sizeof(csrisc)/sizeof(vu32); c++, offset++)
+  offset=pRendition->board.csucode_base;
+  for (c=0; c<sizeof(csrisc)/sizeof(vu32); c++, offset+=sizeof(vu32))
     v_write_memory32(vmb, offset, csrisc[c]);
 
-  /* ... and start it */
-  v1k_flushicache(pScreenInfo);
-  v1k_start(pScreenInfo, pRendition->board.csucode_base);
-
-#if 0
-  c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
-#else
-  c = -1;
-#endif
-  if (c == -1) {
-    ErrorF( "Jeuch\n");
+  if (V1000_DEVICE == pRendition->board.chip){
+    c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
   }
   else {
-    pRendition->board.ucode_entry=c;
-    v_out32(iob, 0);     /* a0 - ucode init command */
-    v_out32(iob, 0);     /* a1 - 1024 byte context store area */
-    v_out32(iob, 0);     /* a2 */
-    v_out32(iob, pRendition->board.ucode_entry);
+    /* V2x00 chip */
+    c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
   }
 
+  if (c == -1) {
+    ErrorF( "RENDITION: Microcode loading failed !!!\n");
+    return 1;
+  }
+
+  pRendition->board.ucode_entry=c;
+
+  ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry);
+
+  /* Everything's OK */
   return 0;
 }
 
@@ -78,8 +77,8 @@ int v_resetboard(ScrnInfoPtr pScreenInfo)
 {
   /*
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    v1k_softreset(pScreenInfo);
   */
+  v1k_softreset(pScreenInfo);
   return 0;
 }
 
@@ -115,7 +114,7 @@ int v_getmemorysize(ScrnInfoPtr pScreenInfo)
 #ifdef DEBUG
         ErrorF( "Testing %d MB: ", offset/ONEMEG);
 #endif
-        pattern=v_read_memory32(pRendition->board.vmem_base, offset/4);
+        pattern=v_read_memory32(pRendition->board.vmem_base, offset);
         if (START == pattern) {
 #ifdef DEBUG
             ErrorF( "Back at the beginning\n");
@@ -124,18 +123,18 @@ int v_getmemorysize(ScrnInfoPtr pScreenInfo)
         }
         
         pattern^=PATTERN;
-        v_write_memory32(pRendition->board.vmem_base, offset/4, pattern);
+        v_write_memory32(pRendition->board.vmem_base, offset, pattern);
         
 #ifdef DEBUG
         ErrorF( "%x <-> %x\n", (int)pattern, 
-                    (int)v_read_memory32(pRendition->board.vmem_base, offset/4));
+                    (int)v_read_memory32(pRendition->board.vmem_base, offset));
 #endif
 
-        if (pattern != v_read_memory32(pRendition->board.vmem_base, offset/4)) {
+        if (pattern != v_read_memory32(pRendition->board.vmem_base, offset)) {
             offset-=ONEMEG;
             break;    
         }
-        v_write_memory32(pRendition->board.vmem_base, offset/4, pattern^PATTERN);
+        v_write_memory32(pRendition->board.vmem_base, offset, pattern^PATTERN);
     }
     v_write_memory32(pRendition->board.vmem_base, 0, start);
 

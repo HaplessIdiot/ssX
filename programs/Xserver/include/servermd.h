@@ -455,6 +455,14 @@ SOFTWARE.
 
 #endif
 
+/* linux on the Compaq Itsy */
+#if defined(linux) && defined(__arm__)
+#define IMAGE_BYTE_ORDER	LSBFirst
+#define BITMAP_BIT_ORDER	LSBFirst
+#define GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
+#endif
+ 
 /* size of buffer to use with GetImage, measured in bytes. There's obviously
  * a trade-off between the amount of stack (or whatever ALLOCATE_LOCAL gives
  * you) used and the number of times the ddx routine has to be called.

@@ -315,9 +315,17 @@ xf86SetSerial (int fd, pointer options)
 	if ((s = xf86SetStrOption (options, "FlowControl", NULL)))
 	{
 		xf86MarkOptionUsedByName (options, "FlowControl");
-		if (xf86NameCmp (s, "Xon") == 0)
+		if (xf86NameCmp (s, "Xoff") == 0)
 		{
-			t.c_iflag |= IXON | IXOFF;
+			t.c_iflag |= IXOFF;
+		}
+		else if (xf86NameCmp (s, "Xon") == 0)
+		{
+			t.c_iflag |= IXON;
+		}
+		else if (xf86NameCmp (s, "XonXoff") == 0)
+		{
+			t.c_iflag |= IXON|IXOFF;
 		}
 		else if (xf86NameCmp (s, "None") == 0)
 		{

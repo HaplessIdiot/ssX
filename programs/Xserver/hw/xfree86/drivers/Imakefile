@@ -15,7 +15,7 @@ OBJS = al2101/?*.o mx/?*.o oak/?*.o realtek/?*.o sis/?*.o trident/?*.o \
 	cirrus/?*.o cl64xx/?*.o compaq/?*.o et3000/?*.o glint/?*.o \
 	gvga/?*.o hercules/?*.o hgc1280/?*.o mga/?*.o ncr/?*.o \
 	nv/?*.o s3_pio/?*.o s3_newmmio/?*.o sigma/?*.o tseng/?*.o \
-	vga/?*.o video7/?*.o wd/?*.o i740/?*.o
+	vga/?*.o video7/?*.o wd/?*.o i740/?*.o r128/?.o
 
 #endif
 

@@ -43,6 +43,8 @@ INSTPGMFLAGS =
 
 #define NoMFBCFBLibs PreFbLibs $(CFB) NoMfbPostFbLibs
 #define NoMFBCFB8Libs PreFbLibs $(CFB8) NoMfbPostFbLibs
+#define FbPostFbLibs  $(FB) NoMfbPostFbLibs
+#define FBLibs PreFbLibs FbPostFbLibs
 
 #if BuildPexExt
          PEXLIBS = PEX5/dipex/dispatch/ModuleLibraryTargetName(didipex) \
@@ -202,6 +204,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
         BSDEMUL = $(DEPXBSDLIB)
 #if DoLoadableServer
             MFB = mfb/ModuleLibraryTargetName(mfb)
+             FB = fb/ModuleLibraryTargetName(fb)
             CFB = cfb/ModuleLibraryTargetName(cfb) \
 		  cfb16/ModuleLibraryTargetName(cfb16) \
 		  cfb24/ModuleLibraryTargetName(cfb24) \
@@ -217,6 +220,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 		  cfb32/ModuleLibraryTargetName(cfb32)
 #else 
             MFB = mfb/LibraryTargetName(mfb)
+             FB = fb/LibraryTargetName(fb)
             CFB = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb16) \
 		  cfb24/LibraryTargetName(cfb24) cfb32/LibraryTargetName(cfb32)
            CFB8 = cfb/LibraryTargetName(cfb)
@@ -519,8 +523,7 @@ XNEST = Xnest
 #if XVirtualFramebufferServer && !MakeDllModules
 XVFB = Xvfb
 #endif
-#if defined(XF86Server) || (!MakeDllModules &&
-    (defined(XnestServer) || defined(XVirtualFramebufferServer)))
+#if defined(XF86Server) || (!MakeDllModules && (defined(XnestServer) || defined(XVirtualFramebufferServer)))
 MakeMutex($(XF86SERVER) $(XNEST) $(XVFB))
 #endif
 MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
@@ -638,6 +641,170 @@ ServerDriverSDKTarget(XFree86)
 #endif
 #endif        /* XF86Server */
 
+#if XfbdevServer
+XCOMM
+XCOMM server with Keith's fbdev driver only
+XCOMM
+FBDIR   = fb
+XFBDEVDIR = hw/kdrive/fbdev
+XKDDDXDIR= hw/kdrive
+XFBDEVDIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) $(XFBDEVDIR) $(DEPDIRS)
+XFBDEV = $(XFBDEVDIR)/LibraryTargetName(fbdev)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XFBDEVLIBS =  PreFbLibs $(XFBDEV) $(XKD) FbPostFbLibs
+XFBDEVSYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XFBDEVDIRS) $(XFBDEVOBJS) $(XFBDEVLIBS) $(XFBDEVSYSLIBS))
+#endif
+#if HasGnuMake
+$(XFBDEVOBJS) $(XFBDEV) $(XFBDEVLIBS) $(XFBDEVSYSLIBS):: $(XFBDEVDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xfbdev,$(XFBDEVDIRS),$(XFBDEVOBJS),$(XFBDEVLIBS),$(XFBDEVSYSLIBS))
+#endif /* XFBDEVServer */
+
+#if XSavageServer
+XCOMM
+XCOMM server with Keith's S3 Savage driver
+XCOMM
+FBDIR   = fb
+XSAVAGEDIR = hw/kdrive/savage
+XKDDDXDIR= hw/kdrive
+XSAVAGEDIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) $(XSAVAGEDIR) $(DEPDIRS)
+XSAVAGE = $(XSAVAGEDIR)/LibraryTargetName(savage)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XSAVAGELIBS =  PreFbLibs $(XSAVAGE) $(XKD) FbPostFbLibs
+XSAVAGESYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XSAVAGEDIRS) $(XSAVAGEOBJS) $(XSAVAGELIBS) $(XSAVAGESYSLIBS))
+#endif
+#if HasGnuMake
+$(XSAVAGEOBJS) $(XSAVAGE) $(XSAVAGELIBS) $(XSAVAGESYSLIBS):: $(XSAVAGEDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xsavage,$(XSAVAGEDIRS),$(XSAVAGEOBJS),$(XSAVAGELIBS),$(XSAVAGESYSLIBS))
+#endif /* XSAVAGEServer */
+
+#if XTridentServer
+XCOMM
+XCOMM server with Keith's TRIDENT Cyber9525 driver
+XCOMM
+FBDIR   = fb
+XKDDDXDIR= hw/kdrive
+XFBDEVDIR = hw/kdrive/fbdev
+XTRIDENTDIR = hw/kdrive/trident
+XTRIDENTDIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) $(XTRIDENTDIR) $(XFBDEVDIR) $(DEPDIRS)
+XTRIDENT = $(XTRIDENTDIR)/LibraryTargetName(trident)
+XFBDEV = $(XFBDEVDIR)/LibraryTargetName(fbdev)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XTRIDENTLIBS = PreFbLibs $(XTRIDENT) $(XFBDEV) $(XKD) FbPostFbLibs
+XTRIDENTSYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XTRIDENTDIRS) $(XTRIDENTOBJS) $(XTRIDENTLIBS) $(XTRIDENTSYSLIBS))
+#endif
+#if HasGnuMake
+$(XTRIDENTOBJS) $(XTRIDENT) $(XTRIDENTLIBS) $(XTRIDENTSYSLIBS):: $(XTRIDENTDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xtrident,$(XTRIDENTDIRS),$(XTRIDENTOBJS),$(XTRIDENTLIBS),$(XTRIDENTSYSLIBS))
+#endif /* XTRIDENTServer */
+
+#if XSis530Server
+XCOMM
+XCOMM server with Keith's SiS 530 driver
+XCOMM
+FBDIR   = fb
+XSIS530DIR = hw/kdrive/sis530
+XKDDDXDIR= hw/kdrive
+XSIS530DIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) $(XSIS530DIR) $(DEPDIRS)
+XSIS530 = $(XSIS530DIR)/LibraryTargetName(sis530)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XSIS530LIBS =  PreFbLibs $(XSIS530) $(XKD) FbPostFbLibs
+XSIS530SYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XSIS530DIRS) $(XSIS530OBJS) $(XSIS530LIBS) $(XSIS530SYSLIBS))
+#endif
+#if HasGnuMake
+$(XSIS530OBJS) $(XSIS530) $(XSIS530LIBS) $(XSIS530SYSLIBS):: $(XSIS530DIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xsis530,$(XSIS530DIRS),$(XSIS530OBJS),$(XSIS530LIBS),$(XSIS530SYSLIBS))
+#endif /* XSIS530Server */
+
+#if XTrioServer
+XCOMM
+XCOMM server with Keith's S3 Trio driver
+XCOMM
+FBDIR   = fb
+XTRIODIR = hw/kdrive/trio
+XKDDDXDIR= hw/kdrive
+XTRIODIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) $(XTRIODIR) $(DEPDIRS)
+XTRIO = $(XTRIODIR)/LibraryTargetName(trio)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XTRIOLIBS =  PreFbLibs $(XTRIO) $(XKD) FbPostFbLibs
+XTRIOSYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XTRIODIRS) $(XTRIOOBJS) $(XTRIOLIBS) $(XTRIOSYSLIBS))
+#endif
+#if HasGnuMake
+$(XTRIOOBJS) $(XTRIO) $(XTRIOLIBS) $(XTRIOSYSLIBS):: $(XTRIODIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xtrio,$(XTRIODIRS),$(XTRIOOBJS),$(XTRIOLIBS),$(XTRIOSYSLIBS))
+#endif /* XTRIOServer */
+
+#if XTS300Server
+XCOMM
+XCOMM server with Keith's S3 Trio and SiS530 driver for the TS300/TS400
+XCOMM
+FBDIR   = fb
+XTRIODIR = hw/kdrive/trio
+XSIS530DIR = hw/kdrive/sis530
+XTS300DIR = hw/kdrive/ts300
+XKDDDXDIR= hw/kdrive
+XTS300DIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) \
+		$(XTRIODIR) $(XSIS530DIR) $(XTS300DIR) $(DEPDIRS)
+XTS300 = $(XTS300DIR)/LibraryTargetName(ts300)
+XTRIO = $(XTRIODIR)/LibraryTargetName(trio)
+XSIS530 = $(XSIS530DIR)/LibraryTargetName(sis530)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XTS300LIBS =  PreFbLibs $(XTS300) $(XTRIO) $(XSIS530) $(XKD) FbPostFbLibs
+XTS300SYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XTS300DIRS) $(XTS300OBJS) $(XTS300LIBS) $(XTS300SYSLIBS))
+#endif
+#if HasGnuMake
+$(XTS300OBJS) $(XTS300) $(XTS300LIBS) $(XTS300SYSLIBS):: $(XTS300DIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xts300,$(XTS300DIRS),$(XTS300OBJS),$(XTS300LIBS),$(XTS300SYSLIBS))
+#endif /* XTS300Server */
+
+#if XItsyServer
+XCOMM
+XCOMM server with Keith's FB driver only
+XCOMM
+FBDIR   = fb
+XITSYDIR = hw/kdrive/itsy
+XKDDDXDIR= hw/kdrive
+XITSYDIRS = $(STDDIRS) $(FBDIR) $(XKDDDXDIR) $(XITSYDIR) $(DEPDIRS)
+XITSY = $(XITSYDIR)/LibraryTargetName(itsy)
+XKD = $(XKDDDXDIR)/LibraryTargetName(kdrive)
+XITSYLIBS = PreFbLibs $(XITSY) $(XKD) FbPostFbLibs
+XITSYSYSLIBS = $(FONTLIBS) $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XITSYDIRS) $(XITSYOBJS) $(XITSYLIBS) $(XITSYSYSLIBS))
+#endif
+#if HasGnuMake
+$(XITSYOBJS) $(XITSY) $(XITSYLIBS) $(XITSYSYSLIBS):: $(XITSYDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xitsy,$(XITSYDIRS),$(XITSYOBJS),$(XITSYLIBS),$(XITSYSYSLIBS))
+#endif /* XItsyServer */
+
+KDRIVEDIRS=$(XKDDDXDIR) $(XFBDEVDIR) \
+	$(XSAVAGEDIR) $(XTRIDENTDIR) $(XSIS530DIR) $(XTRIODIR) \
+	$(XTS300DIR) $(XITSYDIR)
 
 #if XprtServer && !MakeDllModules
 XCOMM
@@ -773,7 +940,7 @@ CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \
-          $(LMFCFBDIR) $(DDXDIRS)
+          $(LMFCFBDIR) $(DDXDIRS) $(FBDIR) $(KDRIVEDIRS)
 
 #if defined(ServerToInstall) && !defined(OS2Architecture)
 install::

@@ -72,7 +72,7 @@ int *Chipset;
 	while (pci_devp[++i] != NULL)
 	{
 	    pcip = pci_devp[i];
-	    if (pcip->_vendor == PCI_VENDOR_RENDITION)
+	    if (pcip->_vendor == PCI_VENDOR_RENDITION && pcrp->_status_command & 7)
 	    {
 	    	switch (pcip->_device)
 		{

@@ -83,7 +83,7 @@ int *Chipset;
 	while (pci_devp[++i] != NULL)
 	{
 	    pcip = pci_devp[i];
-	    if (pcip->_vendor == PCI_VENDOR_3DLABS)
+	    if (pcip->_vendor == PCI_VENDOR_3DLABS && pcip->_status_command & 7)
 	    {
 	    	switch (pcip->_device)
 		{
@@ -217,7 +217,7 @@ int Chipset;
 
 	while ((pci_devp[++i] != NULL) && !found)
 	{
-	    if (pci_devp[i]->_vendor == PCI_VENDOR_3DLABS)
+	    if (pci_devp[i]->_vendor == PCI_VENDOR_3DLABS && pci_devp[i]->_status_command & 7)
 	    {
 	    	/*
 		 * ignore the Delta chip and use one of the real 
