@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.26 2002/09/19 13:21:59 tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.27 2002/09/24 20:52:48 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -50,7 +50,7 @@ from The Open Group.
 #endif
 
 /* Should get this from elsewhere */
-extern int serverGeneration;
+extern unsigned long serverGeneration;
 
 static void bitmapUnloadScalable (FontPtr pFont);
 static void ScaleBitmap ( FontPtr pFont, CharInfoPtr opci, 
@@ -153,7 +153,7 @@ FindToScale find_scale[] =
     FindPmfToScale,
 };
 
-static unsigned long fontGeneration = 0;	/* initialization flag */
+static unsigned long bitscaleGeneration = 0;	/* initialization flag */
 
 static fontProp fontNamePropTable[] = {
     { "FOUNDRY", 0, atom },
@@ -724,9 +724,9 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
     char	*isStringProp;
     int		nProps;
 
-    if (fontGeneration != serverGeneration) {
+    if (bitscaleGeneration != serverGeneration) {
 	initFontPropTable();
-	fontGeneration = serverGeneration;
+	bitscaleGeneration = serverGeneration;
     }
     nProps = NPROPS + 1 + sizeof(fontPropTable) / sizeof(fontProp) +
 			  sizeof(rawFontPropTable) / sizeof(fontProp);
