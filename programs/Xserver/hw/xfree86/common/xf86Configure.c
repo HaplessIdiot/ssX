@@ -665,6 +665,8 @@ DoConfigure()
 
     if (!foundMouse) {
 	ErrorF("XFree86 is not able to detect your mouse. Edit the file and correct the Device.\n");
+    } else {
+	ErrorF("XFree86 detected your mouse at device /dev/mouse. Please check your config\nif the mouse is still not operational, as by default XFree86 tries to autodetect\nthe protocol.\n");
     }
 
     if (xf86NumScreens > 1) {
