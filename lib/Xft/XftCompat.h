@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftCompat.h,v 1.2 2002/02/19 07:51:20 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftCompat.h,v 1.3 2002/05/22 17:14:33 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -133,7 +133,7 @@ typedef FcObjectSet	XftObjectSet;
 #define XftPatternDel		FcPatternDel
 #define XftPatternAddInteger	FcPatternAddInteger
 #define XftPatternAddDouble	FcPatternAddDouble
-#define XftPatternAddString	FcPatternAddString
+#define XftPatternAddString(p,e,s)	FcPatternAddString(p,e,(FcChar8 *)(s))
 #define XftPatternAddMatrix	FcPatternAddMatrix
 #define XftPatternAddBool	FcPatternAddBool
 #define XftPatternGetInteger	FcPatternGetInteger

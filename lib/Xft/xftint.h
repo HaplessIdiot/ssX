@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.26 2001/07/13 18:16:10 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.29 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -143,6 +143,7 @@ struct _XftDraw {
     Visual	    *visual;	/* NULL for bitmaps */
     Colormap	    colormap;
     Region	    clip;
+    int		    subwindow_mode;
     struct {
 	Picture		pict;
     } render;
