@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.31 2003/02/07 20:41:13 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.32 2003/02/08 23:24:28 tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -537,6 +537,7 @@ ATIChipID
 
         case NewChipID('R', 'E'):
         case NewChipID('R', 'F'):
+        case NewChipID('R', 'G'):
         case NewChipID('S', 'K'):
         case NewChipID('S', 'L'):
         case NewChipID('S', 'M'):
