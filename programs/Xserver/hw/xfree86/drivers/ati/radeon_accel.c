@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.22 2001/11/08 23:18:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.23 2001/11/24 14:38:19 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -411,7 +411,7 @@ static void RADEONEngineInit(ScrnInfoPtr pScrn)
     OUTREG(RADEON_RB3D_CNTL, 0);
 #if defined(__powerpc__)
 #if defined(XF86_DRI)
-    if(!info->directRenderinEnabled)
+    if(!info->directRenderingEnabled)
 #endif
     {
 	OUTREG(RADEON_MC_FB_LOCATION, 0xffff0000);
