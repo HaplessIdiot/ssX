@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.14 2003/01/07 02:17:27 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.16 2003/01/29 22:15:33 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -862,6 +862,7 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
             goto next;
         }
         ft->map.bitmap = charInfo->bits;
+        if ( ft->map.bitmap == NULL ) goto next;
 
         /*
          * draw a sbit or an outline glyph
