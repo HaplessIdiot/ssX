@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.21 2000/08/28 18:12:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.22 2000/08/30 19:27:21 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -124,12 +124,14 @@ static PciChipsets I810PciChipsets[] = {
 typedef enum {
    OPTION_NOACCEL,
    OPTION_SW_CURSOR,
+   OPTION_COLOR_KEY,
    OPTION_DAC_6BIT
 } I810Opts;
 
 static OptionInfoRec I810Options[] = {
    { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_COLOR_KEY, "ColorKey", OPTV_INTEGER, {0}, FALSE },
    { OPTION_DAC_6BIT, "Dac6Bit", OPTV_BOOLEAN, {0}, FALSE},
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
@@ -751,6 +753,16 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 	 return FALSE;
       }
       xf86LoaderReqSymLists(ramdacSymbols, NULL);
+   }
+
+   if (xf86GetOptValInteger(I810Options, OPTION_COLOR_KEY, &(pI810->colorKey)))
+   {
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video overlay key set to 0x%x\n",
+                                                pI810->colorKey);
+   } else {
+	pI810->colorKey = (1 << pScrn->offset.red) | 
+                          (1 << pScrn->offset.green) |
+        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
    }
 
    /*  We wont be using the VGA access after the probe */

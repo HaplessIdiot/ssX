@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.4 2000/08/26 15:11:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.5 2000/08/31 20:22:00 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -298,7 +298,7 @@ typedef struct {
 #define GET_PORT_PRIVATE(pScrn) \
    (I810PortPrivPtr)((I810PTR(pScrn))->adaptor->pPortPrivates[0].ptr)
 
-void I810ResetVideo(ScrnInfoPtr pScrn) 
+static void I810ResetVideo(ScrnInfoPtr pScrn) 
 {
     I810Ptr pI810 = I810PTR(pScrn);
     I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
@@ -393,8 +393,7 @@ I810SetupImageVideo(ScreenPtr pScreen)
     adapt->PutImage = I810PutImage;
     adapt->QueryImageAttributes = I810QueryImageAttributes;
 
-    pPriv->colorKey = (1 << pScrn->offset.red) | (1 << pScrn->offset.green) |
-	(((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
+    pPriv->colorKey = pI810->colorKey & ((1 << pScrn->depth) - 1);
     pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->contrast = 128;
