@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.21 1996/01/10 05:39:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.22 1996/02/04 09:09:47 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -8,7 +8,7 @@
  * Copyright 1992 by Orest Zborowski <obz@eskimo.com>
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
- * Copyright 1994 by Holger Veit <veit@gmd.de>
+ * Copyright 1994, 1996 by Holger Veit <Holger.Veit@gmd.de>
  * Copyright 1994, 1995 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -444,6 +444,8 @@ extern capability iopcap;
 # define OSMOUSE_ONLY
 # define MOUSE_PROTOCOL_IN_KERNEL
 
+extern char* __SrvRedirRoot(char*);
+
 #endif
 
 /**************************************************************************/
@@ -531,8 +533,8 @@ _XFUNCPROTOBEGIN
 /* xf86_Util.c */
 extern int StrCaseCmp(
 #if NeedFunctionPrototypes
-	char *,
-	char *
+	const char *,
+	const char *
 #endif
 );
 

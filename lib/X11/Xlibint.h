@@ -1,5 +1,5 @@
 /* $XConsortium: Xlibint.h /main/111 1996/02/02 14:10:09 kaleb $ */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.3 1996/01/05 13:11:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.4 1996/02/04 08:54:27 dawes Exp $ */
 
 /*
 
@@ -80,7 +80,11 @@ struct _XDisplay
 	XID resource_mask;	/* resource ID mask bits */
 	XID resource_id;	/* allocator current ID */
 	int resource_shift;	/* allocator shift to correct bits */
-	XID (*resource_alloc)(); /* allocator function */
+	XID (*resource_alloc)(	/* allocator function */
+#if NeedFunctionPrototypes
+		struct _XDisplay*
+#endif
+		);
 	int byte_order;		/* screen byte order, LSBFirst, MSBFirst */
 	int bitmap_unit;	/* padding and data requirements */
 	int bitmap_pad;		/* padding requirements on bitmaps */
@@ -99,7 +103,11 @@ struct _XDisplay
 	char *bufmax;		/* Output buffer maximum+1 address. */
 	unsigned max_request_size; /* maximum number 32 bit words in request*/
 	struct _XrmHashBucketRec *db;
-	int (*synchandler)();	/* Synchronization handler */
+	int (*synchandler)(	/* Synchronization handler */
+#if NeedFunctionPrototypes
+		struct _XDisplay*
+#endif
+		);
 	char *display_name;	/* "host:display" string used on this connect*/
 	int default_screen;	/* default screen for operations */
 	int nscreens;		/* number of screens on this server*/

@@ -54,7 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: lex.l,v 1.70 95/03/01 16:37:51 kaleb Exp $
- * $XFree86: xc/programs/twm/lex.l,v 3.6 1995/06/17 12:21:30 dawes Exp $
+ * $XFree86: xc/programs/twm/lex.l,v 3.7 1995/06/20 14:32:59 dawes Exp $
  *
  * .twmrc lex file
  *
@@ -124,7 +124,7 @@ number				[0-9]+
 				  return (NUMBER);
 				}
 \#[^\n]*\n			{;}
-[\n\t ]				{;}
+[\r\n\t ]			{;}
 .				{
 				  twmrc_error_prefix();
 				  fprintf (stderr, 

@@ -1,4 +1,5 @@
-/* $XConsortium: imInsClbk.c,v 1.3 94/03/26 17:00:23 rws Exp $ */
+/* $XConsortium: imInsClbk.c /main/4 1995/11/18 16:08:11 kaleb $ */
+/* $XFree86$ */
 /******************************************************************
 
            Copyright 1993, 1994 by Sony Corporation
@@ -45,14 +46,8 @@ typedef struct _XimInstCallback {
     XrmDatabase			 rdb;
     char			*res_name;
     char			*res_class;
-    void			(*callback)(
-#if NeedNestedPrototype
-				    Display*	/* display */,
-				    XPointer	/* client_data */,
-				    XPointer	/* call_data */
-#endif
-				);
-    XPointer			*client_data;
+    XIDProc			 callback;
+    XPointer			 client_data;
     struct _XimInstCallback	*next;
 } XimInstCallbackRec, *XimInstCallback;
 
@@ -88,11 +83,19 @@ MakeLocale( lcd, locale )
 
 
 Private Bool
+#if NeedFunctionPrototypes
+_XimFilterPropertyNotify(
+    Display	*display,
+    Window	 window,
+    XEvent	*event,
+    XPointer	 client_data)
+#else
 _XimFilterPropertyNotify( display, window, event, client_data )
     Display	*display;
     Window	 window;
     XEvent	*event;
     XPointer	 client_data;
+#endif
 {
     Atom		ims, actual_type, *atoms;
     int			actual_format;
@@ -121,7 +124,7 @@ _XimFilterPropertyNotify( display, window, event, client_data )
 
     lock = True;
     for( ii = 0; ii < nitems; ii++, atoms ) {
-	if( ims_window = XGetSelectionOwner( display, atoms[ii] ) ) {
+	if((ims_window = XGetSelectionOwner (display, atoms[ii]))) {
 	    for( icb = callback_list; icb; icb = icb->next ) {
 		if( !icb->call  &&  !icb->destroy ) {
 		    xim = (*icb->lcd->methods->open_im)( icb->lcd, display,
@@ -163,18 +166,28 @@ _XimFilterPropertyNotify( display, window, event, client_data )
 
 
 Public Bool
+#if NeedFunctionPrototypes
+_XimRegisterIMInstantiateCallback(
+    XLCd	 lcd,
+    Display	*display,
+    XrmDatabase	 rdb,
+    char	*res_name,
+    char	*res_class,
+    XIDProc	 callback,
+    XPointer	 client_data)
+#else
 _XimRegisterIMInstantiateCallback( lcd, display, rdb, res_name, res_class,
 				   callback, client_data )
     XLCd	 lcd;
     Display	*display;
     XrmDatabase	 rdb;
     char	*res_name, *res_class;
-    XIMProc	 callback;
-    XPointer	*client_data;
+    XIDProc	 callback;
+    XPointer	 client_data;
+#endif
 {
     XimInstCallback	icb, tmp;
     XIM			xim;
-    int			ii;
     Window		root;
     XWindowAttributes	attr;
 
@@ -227,14 +240,25 @@ _XimRegisterIMInstantiateCallback( lcd, display, rdb, res_name, res_class,
 
 
 Public Bool
+#if NeedFunctionPrototypes
+_XimUnRegisterIMInstantiateCallback(
+    XLCd	 lcd,
+    Display	*display,
+    XrmDatabase	 rdb,
+    char	*res_name,
+    char	*res_class,
+    XIDProc	 callback,
+    XPointer	 client_data)
+#else
 _XimUnRegisterIMInstantiateCallback( lcd, display, rdb, res_name, res_class,
 				     callback, client_data )
     XLCd	 lcd;
     Display	*display;
     XrmDatabase	 rdb;
     char	*res_name, *res_class;
-    XIMProc	 callback;
-    XPointer	*client_data;
+    XIDProc	 callback;
+    XPointer	 client_data;
+#endif
 {
     char		locale[XIM_MAXLCNAMELEN];
     XimInstCallback	icb, picb;
@@ -286,7 +310,6 @@ Public void
 _XimResetIMInstantiateCallback( xim )
     Xim		xim;
 {
-    char		*language, *territory;
     char		 locale[XIM_MAXLCNAMELEN];
     XimInstCallback	 icb;
     XLCd	 	 lcd = xim->core.lcd;

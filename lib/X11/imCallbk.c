@@ -1,4 +1,5 @@
 /* $XConsortium: imCallbk.c /main/15 1995/12/06 11:23:10 kaleb $ */
+/* $XFree86$ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -309,7 +310,7 @@ _XimGeometryCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.geometry_callback;
+    XICCallback* cb = &ic->core.geometry_callback;
 
     /* invoke the callack
      */
@@ -340,7 +341,7 @@ _XimStrConversionCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.string_conversion_callback; /* check HM */
+    XICCallback* cb = &ic->core.string_conversion_callback; /* check HM */
     XIMStringConversionCallbackStruct cbrec;
 
     /* invoke the callback
@@ -356,7 +357,7 @@ _XimStrConversionCallback(im, ic, proto, len)
 	cbrec.factor = (unsigned short)
 	    *(CARD32*)&proto[p];
 
-	(*cb->callback)((XIC)ic, cb->client_data, &cbrec);
+	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)&cbrec);
     }
     else {
 
@@ -431,19 +432,13 @@ _XimPreeditStartCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.preedit_attr.start_callback;
+    XICCallback* cb = &ic->core.preedit_attr.start_callback;
     int ret;
 
     /* invoke the callback
      */
     if (cb && cb->callback){
-	ret = (*(int (*)(
-#if NeedNestedPrototypes
-			XIC, XPointer, XPointer
-#endif
-			))(cb->callback))((XIC)ic, 
-					   cb->client_data, 
-					   (XPointer)NULL);
+	ret = (*(cb->callback))((XIC)ic, cb->client_data, (XPointer)NULL);
     }
     else {
 
@@ -494,7 +489,7 @@ _XimPreeditDoneCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.preedit_attr.done_callback;
+    XICCallback* cb = &ic->core.preedit_attr.done_callback;
 
     /* invoke the callback
      */
@@ -550,7 +545,7 @@ _read_text_from_packet(im, buf, text_ptr)
 
 	tmp_len = (int)*(CARD16*)buf;
 	buf += sz_CARD16;
-	if (tmp_buf = (char*)Xmalloc(tmp_len + 1)) {
+	if ((tmp_buf = (char*)Xmalloc(tmp_len + 1)) != 0) {
 	    memcpy(tmp_buf, buf, tmp_len);
 	    tmp_buf[tmp_len] = '\0';
 
@@ -559,7 +554,7 @@ _read_text_from_packet(im, buf, text_ptr)
 					tmp_buf, tmp_len, 
 					NULL, 0, &s); /* CT? HM */
 	    if (s != XLookupNone) {
-		if (text->string.multi_byte = (char*)Xmalloc(text->length+1)) {
+		if ((text->string.multi_byte = (char*)Xmalloc(text->length+1)) != 0) {
 			int tmp;
 			tmp = im->methods->ctstombs((XIM)im,
 					   tmp_buf, tmp_len, 
@@ -645,7 +640,7 @@ _XimPreeditDrawCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.preedit_attr.draw_callback;
+    XICCallback* cb = &ic->core.preedit_attr.draw_callback;
     XIMPreeditDrawCallbackStruct cbs;
 
     /* invoke the callback
@@ -656,7 +651,7 @@ _XimPreeditDrawCallback(im, ic, proto, len)
 	cbs.chg_length = (int)*(INT32*)proto; proto += sz_INT32;
 	_read_text_from_packet(im, proto, &cbs.text);
 
-	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
+	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)&cbs);
 
 	_free_memory_for_text((XIMText*)cbs.text);
     }
@@ -684,7 +679,7 @@ _XimPreeditCaretCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.preedit_attr.caret_callback;
+    XICCallback* cb = &ic->core.preedit_attr.caret_callback;
     XIMPreeditCaretCallbackStruct cbs;
 
     /* invoke the callback
@@ -694,7 +689,7 @@ _XimPreeditCaretCallback(im, ic, proto, len)
 	cbs.direction = (XIMCaretDirection)*(CARD32*)proto; proto += sz_CARD32;
 	cbs.style     = (XIMCaretStyle)*(CARD32*)proto; proto += sz_CARD32;
 
-	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
+	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)&cbs);
     }
     else {
 
@@ -744,7 +739,7 @@ _XimStatusStartCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.status_attr.start_callback;
+    XICCallback* cb = &ic->core.status_attr.start_callback;
 
     /* invoke the callback
      */
@@ -775,7 +770,7 @@ _XimStatusDoneCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.status_attr.done_callback;
+    XICCallback* cb = &ic->core.status_attr.done_callback;
 
     /* invoke the callback
      */
@@ -806,7 +801,7 @@ _XimStatusDrawCallback(im, ic, proto, len)
   int len;
 #endif
 {
-    XIMCallback* cb = &ic->core.status_attr.draw_callback;
+    XICCallback* cb = &ic->core.status_attr.draw_callback;
     XIMStatusDrawCallbackStruct cbs;
 
     /* invoke the callback
@@ -845,7 +840,7 @@ _XimPreeditStateNotifyCallback( im, ic, proto, len )
     int		 len;
 #endif
 {
-    XIMCallback	*cb = &ic->core.preedit_attr.state_notify_callback;
+    XICCallback	*cb = &ic->core.preedit_attr.state_notify_callback;
 
     /* invoke the callack
      */
@@ -853,7 +848,7 @@ _XimPreeditStateNotifyCallback( im, ic, proto, len )
 	XIMPreeditStateNotifyCallbackStruct cbrec;
 
 	cbrec.state = *(BITMASK32 *)proto;
-	(*cb->callback)( (XIC)ic, cb->client_data, &cbrec );
+	(*cb->callback)( (XIC)ic, cb->client_data, (XPointer)&cbrec );
     }
     else {
 	/* no callback registered

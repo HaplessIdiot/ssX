@@ -1,5 +1,5 @@
 /* $XConsortium: fserve.c,v 1.44 95/04/05 19:58:07 kaleb Exp $ */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.0 1994/10/20 06:06:37 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.1 1996/01/05 13:14:00 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -164,8 +164,15 @@ static Bool
 fs_name_check(name)
     char       *name;
 {
+#ifdef __EMX__
+    /* OS/2 uses D:/XFree86/.... as fontfile pathnames, so check that
+     * there is not only a protocol/ prefix, but also that the first chars
+     * are not a drive letter
+     */
+    if (name && isalpha(*name) && name[1] == ':')
+      return FALSE;
+#endif
     /* Just make sure there is a protocol/ prefix */
-
     return (name && *name != '/' && strchr(name, '/'));
 }
 

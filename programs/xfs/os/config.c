@@ -282,6 +282,26 @@ SetConfigValues()
     font_catalogue = NULL;
 }
 
+#ifdef __EMX__
+char *__XFSRedirRoot(char *fname)
+{
+    static char redirname[300]; /* enough for long filenames */
+    char *root;
+
+    /* if name does not start with /, assume it is not root-based */
+    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
+	return fname;
+
+    root = (char*)getenv("X11ROOT");
+    if (root==0 ||
+	(fname[1]==':' && isalpha(fname[0])) ||
+	(strlen(fname)+strlen(root)+2) > 300))
+	return fname;
+    sprintf(redirname,"%s%s",root,fname);
+    return redirname;
+}
+#endif
+
 int
 ReadConfigFile(filename)
     char       *filename;
@@ -296,6 +316,9 @@ ReadConfigFile(filename)
 	ErrorF(ConfigErrors[CONFIG_ERR_MEMORY], filename);
 	return FSBadAlloc;
     }
+#ifdef __EMX__
+    filename = __XFSRedirRoot(filename);
+#endif
     if ((fp = fopen(filename, "r")) == NULL) {
 	fsfree(data);
 	ErrorF(ConfigErrors[CONFIG_ERR_OPEN], filename);
@@ -475,7 +498,11 @@ config_set_file(parm, val)
     t = *val;
     *val = '\0';
     if (!strcmp(parm->parm_name, "error-file")) {
+#ifndef __EMX__
 	memmove( ErrorFile, start, val - start + 1);
+#else
+	strcpy( ErrorFile, __XFSRedirRoot(start));
+#endif
     }
     *val = t;
     return val;
@@ -609,3 +636,4 @@ config_set_snf_format (parm, val)
     SnfSetFormat (bit, byte, glyph, scan);
     return val;
 }
+

@@ -1,6 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.27 94/02/10 16:55:34 rws Exp $
+XCOMM $XFree86$
 
 all::
 
+#ifndef OS2Architecture
 InstallNamedProg(xon.sh,xon,$(BINDIR))
 InstallManPage(xon,$(MANDIR))
+#endif

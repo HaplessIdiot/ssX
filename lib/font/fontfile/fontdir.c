@@ -1,5 +1,5 @@
 /* $XConsortium: fontdir.c,v 1.23 95/02/21 14:25:17 mor Exp $ */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.4 1995/11/16 11:02:54 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.5 1995/11/30 12:54:39 dawes Exp $ */
 
 /*
 
@@ -111,7 +111,12 @@ FontFileMakeDir(dirName, size)
 #endif
 
 #ifdef FONTDIRATTRIB
+#ifndef __EMX__
     attrib = strchr(dirName, ':');
+#else
+    /* OS/2 uses the colon in the drive letter descriptor, skip this */
+    attrib = strchr(dirName+2, ':');
+#endif
     if (attrib) {
 	dirlen = attrib - dirName;
 	attriblen = strlen(attrib);

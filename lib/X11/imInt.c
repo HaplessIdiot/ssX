@@ -1,4 +1,5 @@
 /* $XConsortium: imInt.c,v 1.3 94/03/26 17:00:26 rws Exp $ */
+/* $XFree86$ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -39,8 +40,13 @@ Private Xim 		*_XimCurrentIMlist  = (Xim *)NULL;
 Private int		 _XimCurrentIMcount = 0;
 
 Private Bool
+#if NeedFunctionPrototypes
+_XimSetIMStructureList(
+    Xim		  im)
+#else
 _XimSetIMStructureList(im)
     Xim		  im;
+#endif
 {
     register int  i;
     Xim		 *xim;
@@ -97,7 +103,7 @@ _XimServerDestroy()
 	    continue;
 
 	if (im->core.destroy_callback.callback)
-	    (*im->core.destroy_callback.callback)(im,
+	    (*im->core.destroy_callback.callback)((XIM)im,
 			im->core.destroy_callback.client_data, NULL);
 	for (ic = im->core.ic_chain; ic; ic = ic->core.next) {
 	    if (ic->core.destroy_callback.callback) {
@@ -143,13 +149,19 @@ _XimServerReconectableDestroy()
 #endif /* XIM_CONNECTABLE */
 
 Private char	*
+#if NeedFunctionPrototypes
+_XimStrstr(
+    register char	*src,
+    register char	*dest)
+#else
 _XimStrstr(src, dest)
     register char	*src, *dest;
+#endif
 {
     int			 len;
     
     len = strlen(dest);
-    while(src = strchr(src, *dest)) {
+    while ((src = strchr(src, *dest)) != 0) {
 	if(!strncmp(src, dest, len))
 	    return src;
 	src++;
@@ -158,8 +170,13 @@ _XimStrstr(src, dest)
 }
 
 Private char *
+#if NeedFunctionPrototypes
+_XimMakeImName(
+    XLCd	   lcd)
+#else
 _XimMakeImName(lcd)
     XLCd	   lcd;
+#endif
 {
     char	   buf[BUFSIZE];
     register char *mod;
@@ -182,12 +199,21 @@ _XimMakeImName(lcd)
     return ret;
 }
 
-Public XIM
+Private XIM
+#if NeedFunctionPrototypes
+_XimOpenIM(
+    XLCd		 lcd,
+    Display		*dpy,
+    XrmDatabase		 rdb,
+    char		*res_name,
+    char		*res_class)
+#else
 _XimOpenIM(lcd, dpy, rdb, res_name, res_class)
     XLCd		 lcd;
     Display		*dpy;
     XrmDatabase		 rdb;
     char		*res_name, *res_class;
+#endif
 {
     Xim			 im;
     register int	 i;

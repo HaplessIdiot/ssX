@@ -1,4 +1,5 @@
-/* $XConsortium: xkbpath.c /main/2 1995/12/07 21:26:34 kaleb $ */
+/* $XConsortium: xkbpath.c /main/4 1996/01/14 16:48:53 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -35,6 +36,7 @@
 #include <stdlib.h>
 #endif
 #include <X11/extensions/XKM.h>
+#include "xkbpath.h"
 
 #ifndef DFLT_XKB_CONFIG_ROOT
 #define DFLT_XKB_CONFIG_ROOT	"/usr/lib/X11/xkb"
@@ -52,11 +54,16 @@ static	int	 nPathEntries;
 static	char **	 includePath;
 
 Bool
+#if NeedFunctionPrototypes
+XkbParseIncludeMap(char **str_inout,char **file_rtrn,char **map_rtrn,
+							char *nextop_rtrn)
+#else
 XkbParseIncludeMap(str_inout,file_rtrn,map_rtrn,nextop_rtrn)
     char **	str_inout;
     char **	file_rtrn;
     char **	map_rtrn;
     char *	nextop_rtrn;
+#endif
 {
 char *tmp,*str,*next;
 
@@ -111,7 +118,11 @@ char *tmp,*str,*next;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbInitIncludePath(void)
+#else
 XkbInitIncludePath()
+#endif
 {
     szPath= PATH_CHUNK;
     includePath=  (char **)calloc(szPath,sizeof(char *));
@@ -119,10 +130,15 @@ XkbInitIncludePath()
 	return False;
     XkbAddDirectoryToPath(".");
     XkbAddDirectoryToPath(DFLT_XKB_CONFIG_ROOT);
+    return True;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbClearIncludePath(void)
+#else
 XkbClearIncludePath()
+#endif
 {
 register int i;
 
@@ -140,17 +156,24 @@ register int i;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbAddDirectoryToPath(char *dir)
+#else
 XkbAddDirectoryToPath(dir)
     char	*dir;
+#endif
 {
 int	len;
     if ((dir==NULL)||(dir[0]=='\0')) {
 	XkbClearIncludePath();
 	return True;
     }
+#ifdef __EMX__
+    dir = (char*)__XOS2RedirRoot(dir);
+#endif
     len= strlen(dir);
     if (len+2>=PATH_MAX) { /* allow for '/' and at least one character */
-	uError("Path entry (%s) too long (maxiumum length is %d)\n",
+	ERROR2("Path entry (%s) too long (maxiumum length is %d)\n",
 							dir,PATH_MAX-3);
 	return False;
     }
@@ -160,13 +183,13 @@ int	len;
 	szPath+= PATH_CHUNK;
 	includePath= (char **)realloc(includePath,szPath*sizeof(char *));
 	if (includePath==NULL) {
-	    uInternalError("Allocation failed (includePath)\n");
+	    WSGO("Allocation failed (includePath)\n");
 	    return False;
 	}
     }
     includePath[nPathEntries]= (char *)calloc(strlen(dir)+1,sizeof(char));
     if (includePath[nPathEntries]==NULL) {
-	uInternalError("Allocation failed (includePath[%d])\n",nPathEntries);
+	WSGO1("Allocation failed (includePath[%d])\n",nPathEntries);
 	return False;
     }
     strcpy(includePath[nPathEntries++],dir);
@@ -176,8 +199,12 @@ int	len;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbDirectoryForInclude(unsigned type)
+#else
 XkbDirectoryForInclude(type)
     unsigned	type;
+#endif
 {
 static char buf[32];
 
@@ -226,18 +253,22 @@ typedef struct _FileCacheEntry {
 static FileCacheEntry	*fileCache;
 
 void *
+#if NeedFunctionPrototypes
+XkbAddFileToCache(char *name,unsigned type,char *path,void *data)
+#else
 XkbAddFileToCache(name,type,path,data)
     char *	name;
     unsigned	type;
     char *	path;
     void *	data;
+#endif
 {
 FileCacheEntry	*entry;
 
     for (entry=fileCache;entry!=NULL;entry=entry->next) {
 	if ((type==entry->type)&&(uStringEqual(name,entry->name))) {
 	    void *old= entry->data;
-	    uInternalError("Replacing file cache entry (%s/%d)\n",name,type);
+	    WSGO2("Replacing file cache entry (%s/%d)\n",name,type);
 	    entry->path= path;
 	    entry->data= data;
 	    return old;
@@ -256,10 +287,14 @@ FileCacheEntry	*entry;
 }
 
 void *
+#if NeedFunctionPrototypes
+XkbFindFileInCache(char *name,unsigned type,char **pathRtrn)
+#else
 XkbFindFileInCache(name,type,pathRtrn)
     char *	name;
     unsigned	type;
     char **	pathRtrn;
+#endif
 {
 FileCacheEntry	*entry;
 
@@ -275,10 +310,14 @@ FileCacheEntry	*entry;
 /***====================================================================***/
 
 FILE *
+#if NeedFunctionPrototypes
+XkbFindFileInPath(char *name,unsigned type,char **pathRtrn)
+#else
 XkbFindFileInPath(name,type,pathRtrn)
     char *	name;
     unsigned	type;
     char **	pathRtrn;
+#endif
 {
 register int i;
 FILE	*file;
@@ -291,8 +330,8 @@ char	 buf[PATH_MAX],*typeDir;
     for (i=0;i<nPathEntries;i++) {
 	pathLen= strlen(includePath[i]);
 	if ((nameLen+pathLen+1)>=PATH_MAX) {
-	    uError("File name (%s/%s) too long\n",includePath[i],name);
-	    uAction("Ignored\n");
+	    ERROR2("File name (%s/%s) too long\n",includePath[i],name);
+	    ACTION("Ignored\n");
 	    continue;
 	}
 	sprintf(buf,"%s/%s",includePath[i],name);
@@ -303,9 +342,9 @@ char	 buf[PATH_MAX],*typeDir;
 	     continue;
 
 	if ((nameLen+typeLen+pathLen+2)>=PATH_MAX) {
-	    uError("File name (%s/%s/%s) too long\n",includePath[i],typeDir,
+	    ERROR3("File name (%s/%s/%s) too long\n",includePath[i],typeDir,
 	    							    name);
-	    uAction("Ignored\n");
+	    ACTION("Ignored\n");
 	    continue;
 	}
 	sprintf(buf,"%s/%s/%s",includePath[i],typeDir,name);

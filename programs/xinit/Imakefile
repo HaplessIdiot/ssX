@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/25 1996/01/15 12:19:07 gildea $
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.1 1994/05/22 00:02:27 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.2 1996/01/21 01:57:02 dawes Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
@@ -13,12 +13,14 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
           SRCS1 = xinit.c 
           OBJS1 = xinit.o 
    SAMPLECONFIG = xinitrc
-       PROGRAMS = xinit startx $(SAMPLECONFIG)
+       PROGRAMS = ProgramTargetName(xinit) startx $(SAMPLECONFIG)
 
 
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
 
+#ifndef OS2Architecture
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
+#endif
 
 #ifdef i386ScoArchitecture
 MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR))
@@ -26,6 +28,11 @@ MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR))
 MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
 #endif
 
+#ifdef OS2Architecture
+InstallNamedProg(startx.cmd,startx.cmd,$(BINDIR))
+InstallManPage(startx,$(MANDIR))
+InstallNonExecFile(xinitrc.cmd,$(XINITDIR))
+#else
 InstallNamedProg(startx,startx,$(BINDIR))
 InstallManPage(startx,$(MANDIR))
 
@@ -33,4 +40,5 @@ InstallManPage(startx,$(MANDIR))
 InstallNonExecFile($(SAMPLECONFIG),$(XINITDIR))
 #else
 InstallNonExecFileNoClobber($(SAMPLECONFIG),$(XINITDIR))
+#endif
 #endif

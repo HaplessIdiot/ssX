@@ -1,4 +1,5 @@
-/* $XConsortium: Ximint.h,v 1.6 94/03/29 22:51:06 rws Exp $ */
+/* $XConsortium: Ximint.h,v 1.9 94/10/10 18:33:16 kaleb Exp $ */
+/* $XFree86$ */
 /******************************************************************
 
                 Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -46,8 +47,8 @@ typedef struct _Xic	*Xic;
 /*
  * Input Method data
  */
-#include "XimintL.h"
 #include "XimintP.h"
+#include "XimintL.h"
 
 /*
  * XIM dependent data
@@ -98,15 +99,14 @@ typedef struct _XimDefICValues {
     Window			 client_window;
     Window			 focus_window;
     unsigned long		 filter_events;
-    XIMCallback			 geometry_callback;
+    XICCallback			 geometry_callback;
     char			*res_name;
     char			*res_class;
-    XIMCallback			 destroy_callback;
-    XIMCallback			 preedit_state_notify_callback;
-    XIMCallback			 string_conversion_callback;
+    XICCallback			 destroy_callback;
+    XICCallback			 preedit_state_notify_callback;
+    XICCallback			 string_conversion_callback;
     XIMStringConversionText	 string_conversion;
     XIMResetState		 reset_state;
-    XIMResetReturn		 reset_return;
     XIMHotKeyTriggers		*hotkey;
     XIMHotKeyState		 hotkey_state;
     ICPreeditAttributes		 preedit_attr;
@@ -556,6 +556,17 @@ extern Bool	_XimErrorCallback(
 #endif
 );
 
+extern Bool	_XimError(
+#if NeedFunctionPrototypes
+    Xim		 im,
+    Xic		 ic,
+    CARD16	 error_code,
+    INT16	 detail_length,
+    CARD16	 type,
+    char	*detail
+#endif
+);
+
 extern Bool	_XimRegisterTriggerKeysCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
@@ -714,7 +725,7 @@ extern Bool	_XimExtenMove(
 
 extern int	_Ximctstombs(
 #if NeedFunctionPrototypes
-    Xim		 im,
+    XIM		 im,
     char	*from,
     int		from_len,
     char	*to,
@@ -725,7 +736,29 @@ extern int	_Ximctstombs(
 
 extern int	_Ximctstowcs(
 #if NeedFunctionPrototypes
-    Xim		 im,
+    XIM		 im,
+    char	*from,
+    int		 from_len,
+    wchar_t	*to,
+    int		 to_len,
+    Status	*state
+#endif
+);
+
+extern int	_XimLcctstombs(
+#if NeedFunctionPrototypes
+    XIM		 im,
+    char	*from,
+    int		from_len,
+    char	*to,
+    int		to_len,
+    Status	*state
+#endif
+);
+
+extern int	_XimLcctstowcs(
+#if NeedFunctionPrototypes
+    XIM		 im,
     char	*from,
     int		 from_len,
     wchar_t	*to,
@@ -864,8 +897,8 @@ extern Bool	_XimRegisterIMInstantiateCallback(
     XrmDatabase	 rdb,
     char	*res_name,
     char	*res_class,
-    XIMProc	 callback,
-    XPointer	*client_data
+    XIDProc	 callback,
+    XPointer	 client_data
 #endif
 );
 
@@ -876,8 +909,8 @@ extern Bool	_XimUnRegisterIMInstantiateCallback(
     XrmDatabase	 rdb,
     char	*res_name,
     char	*res_class,
-    XIMProc	 callback,
-    XPointer	*client_data
+    XIDProc	 callback,
+    XPointer	 client_data
 #endif
 );
 
@@ -1099,7 +1132,7 @@ extern Bool _XimEncodeSavedIMATTRIBUTE(
     int			*idx,
     char		*buf,
     int			 size,
-    int			 ret_len,
+    int			*ret_len,
     XPointer		 top,
     unsigned long	 mode
 #endif

@@ -1,4 +1,5 @@
 /* $XConsortium: imDefLkup.c /main/16 1995/12/06 11:23:31 kaleb $ */
+/* $XFree86$ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -843,6 +844,15 @@ _XimErrorCallback(xim, len, data, call_data)
 }
 
 Public Bool
+#if NeedFunctionPrototypes
+_XimError(
+    Xim		 im,
+    Xic		 ic,
+    CARD16	 error_code,
+    INT16	 detail_length,
+    CARD16	 type,
+    char	*detail)
+#else
 _XimError(im, ic, error_code, detail_length, type, detail)
     Xim		 im;
     Xic		 ic;
@@ -850,6 +860,7 @@ _XimError(im, ic, error_code, detail_length, type, detail)
     INT16	 detail_length;
     CARD16	 type;
     char	*detail;
+#endif /* NeedFunctionPrototypes */
 {
     CARD32	 buf32[BUFSIZE/4];
     CARD8	*buf = (CARD8 *)buf32;

@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c,v 5.8 94/04/17 20:36:01 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.0 1995/07/07 15:36:29 dawes Exp $ */
 
 /*
 
@@ -116,9 +116,16 @@ pex_get_font_directory_path()
 	       (char *)xalloc((unsigned long)(1+strlen(getenv("PEX_FONTPATH"))));
 	    strcpy(font_dir_path, getenv("PEX_FONTPATH"));
 	} else {
+#ifndef __EMX__
 	    font_dir_path =
 		(char *)xalloc((unsigned long)(1+strlen(PEX_DEFAULT_FONTPATH)));
 	    strcpy(font_dir_path, PEX_DEFAULT_FONTPATH);
+#else
+	    char *p = (char*)__SrvRedirRoot(PEX_DEFAULT_FONTPATH);
+	    font_dir_path =
+		(char *)xalloc((unsigned long)(1+strlen(p)));
+	    strcpy(font_dir_path, p);
+#endif
 	}
 	already_determined = 1;
     }

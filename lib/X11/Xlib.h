@@ -1,5 +1,5 @@
 /* $XConsortium: Xlib.h /main/118 1995/09/19 10:00:22 kaleb $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.6 1996/01/05 13:11:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.7 1996/01/30 15:24:57 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -1126,19 +1126,32 @@ typedef struct {
     char **font_name_list;
 } XOMFontInfo;
 
+typedef struct _XIM *XIM;
+typedef struct _XIC *XIC;
+
 typedef void (*XIMProc)(
-/* FIX this later -- XIMProc is used in too many conflicting ways, including
- * returning a value!
 #if NeedFunctionPrototypes
-    XPointer,
+    XIM,
     XPointer,
     XPointer
 #endif
- */
 );
 
-typedef struct _XIM *XIM;
-typedef struct _XIC *XIC;
+typedef Bool (*XICProc)(
+#if NeedFunctionPrototypes
+    XIC,
+    XPointer,
+    XPointer
+#endif
+);
+
+typedef void (*XIDProc)(
+#if NeedFunctionPrototypes
+    Display*,
+    XPointer,
+    XPointer
+#endif
+);
 
 typedef unsigned long XIMStyle;
 
@@ -1217,6 +1230,11 @@ typedef struct {
     XPointer client_data;
     XIMProc callback;
 } XIMCallback;
+
+typedef struct {
+    XPointer client_data;
+    XICProc callback;
+} XICCallback;
 
 typedef unsigned long XIMFeedback;
 
@@ -4635,8 +4653,8 @@ extern Bool XRegisterIMInstantiateCallback(
     struct _XrmHashBucketRec*	/* rdb */,
     char*			/* res_name */,
     char*			/* res_class */,
-    XIMProc			/* callback */,
-    XPointer*			/* client_data */
+    XIDProc			/* callback */,
+    XPointer			/* client_data */
 #endif
 );
 
@@ -4646,8 +4664,8 @@ extern Bool XUnregisterIMInstantiateCallback(
     struct _XrmHashBucketRec*	/* rdb */,
     char*			/* res_name */,
     char*			/* res_class */,
-    XIMProc			/* callback */,
-    XPointer*			/* client_data */
+    XIDProc			/* callback */,
+    XPointer			/* client_data */
 #endif
 );
 

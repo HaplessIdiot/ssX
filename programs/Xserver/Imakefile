@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/4 1996/01/13 13:05:30 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.46 1996/01/24 21:59:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.47 1996/02/04 08:54:55 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -436,6 +436,9 @@ XF98NKVNEC = XF98_NKVNEC
 #if XF98WABSServer
 XF98WABS = XF98_WABS
 #endif
+#if XF98WABEPServer
+XF98WABEP = XF98_WABEP
+#endif
 #if XF98EGCServer
 XF98EGC = XF98_EGC
 #endif
@@ -783,7 +786,7 @@ CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
 XF98GANBWAPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98GANBWAPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/ganbwapConf.o
+XF98GANBWAPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98GANBWAPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverganbwap) \
 		  $(XF98SRC)/vga256/LibraryTargetName(ganbwap) $(XF98LIBS) \
 		  CFBLibs $(XF98OSLIB)
@@ -837,7 +840,7 @@ CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
 XF98NKVNECSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98NKVNECOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/nkvnecConf.o
+XF98NKVNECOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98NKVNECLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernkvnec) \
 		 $(XF98SRC)/vga256/LibraryTargetName(nkvnec) $(XF98LIBS) \
 		 CFBLibs $(XF98OSLIB)
@@ -864,7 +867,7 @@ CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
 XF98WABSSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98WABSOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/wabsConf.o
+XF98WABSOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
 XF98WABSLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabs) \
 	       $(XF98SRC)/vga256/LibraryTargetName(wabs) $(XF98LIBS) CFBLibs \
 	       $(XF98OSLIB)
@@ -880,6 +883,33 @@ SetUIDServerTarget(XF98_WABS,$(XF98WABSSUBDIRS),$(XF98WABSOBJS),$(XF98WABSLIBS),
 LinkFile(XF98_WABS.def,SVGA.def)
 #endif
 #endif	/* XF98WABSServer */
+
+#if XF98WABEPServer
+XCOMM
+XCOMM XFree98 WAB-EP Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98WABEPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98WABEPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o
+XF98WABEPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabep) \
+	       $(XF98SRC)/vga256/LibraryTargetName(wabep) $(XF98LIBS) CFBLibs \
+	       $(XF98OSLIB)
+XF98WABEPSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98WABEPSUBDIRS) $(XF98WABEPOBJS) $(XF98WABEPLIBS) $(XF98WABEPSYSLIBS))
+#endif
+SetUIDServerTarget(XF98_WABEP,$(XF98WABEPSUBDIRS),$(XF98WABEPOBJS),$(XF98WABEPLIBS),$(XF98WABEPSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_WABEP
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_WABEP.def,SVGA.def)
+#endif
+#endif	/* XF98WABEPServer */
 
 #if XF98EGCServer
 XCOMM
