@@ -52,7 +52,7 @@ xkb_symbols "basic" {
 			[ bracketright			]	};
     key <AC08> {	[         k,	K        	],
 			[   lstroke			]	};
-    key <AC09> {	[         l,	l        	],
+    key <AC09> {	[         l,	L        	],
 			[   Lstroke			]	};
     key <AC10> {	[    ccaron,	Ccaron   	]	};
     key <AC11> {	[    cacute,	Cacute   	],
