@@ -1,4 +1,7 @@
 XFree86 4.1.99.2 (12 December 2001)
+ 567. Added debugging helpers (Egbert Eich).
+ 566. Added support for the Trident CyberBladeXPAi1 (Egbert Eich).
+ 565. Fixed Mono8x8Fill problem in S3 Virge and Savage drivers (Egbert Eich).
  564. Fix XDarwin GetImage bug on screens other than 0 in rootless mode
       (Gregory Parker).
  563. Fix acceleration, hw cursor and console restoration in the "nv" driver
@@ -14318,4 +14321,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2085 2001/12/12 03:52:48 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2086 2001/12/12 18:21:14 dawes Exp $

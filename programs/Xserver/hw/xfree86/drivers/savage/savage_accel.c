@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.11 2001/08/09 19:14:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.13 2001/11/30 12:11:59 eich Exp $ */
 
 /*
  *
@@ -436,7 +436,7 @@ SavageInitAccel(ScreenPtr pScreen)
     xaaptr->Mono8x8PatternFillFlags = 0
 	| HARDWARE_PATTERN_PROGRAMMED_BITS 
 	| HARDWARE_PATTERN_SCREEN_ORIGIN
-	| BIT_ORDER_IN_BYTE_LSBFIRST
+	| BIT_ORDER_IN_BYTE_MSBFIRST
 	;
     if( psav->Chipset == S3_SAVAGE4 )
 	xaaptr->Mono8x8PatternFillFlags |= NO_TRANSPARENCY;
