@@ -1,4 +1,6 @@
 XFree86 4.0e (20 June 2000)
+ 351. Fix a lib/GL build problem when the DRI isn't enabled (#4014,
+      Nicholas J Brealey).
  350. Fix location of dri module links in the xc/exports directory of the
       build tree.
  349. Replace LoaderSymbol() with xf86LoaderCheckSymbol() in drivers.
@@ -10677,4 +10679,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1195 2000/06/20 20:07:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1196 2000/06/20 21:31:04 dawes Exp $
