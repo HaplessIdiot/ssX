@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/rules/sgi.lst,v 3.5 2001/01/17 23:45:57 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/rules/sgi.lst,v 3.6 2001/05/18 23:35:34 dawes Exp $
 
 ! model
   indy			SGI O2, Indigo^2 or Indy
@@ -44,7 +44,7 @@
   jp			Japanese
   no			Norwegian
   pl			Polish
-  pt			Portugese
+  pt			Portuguese
   ru			Russian
   se			Swedish
   sk			Slovak

@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/rules/sun.lst,v 3.3 2000/12/06 20:18:08 eich Exp $
+// $XFree86: xc/programs/xkbcomp/rules/sun.lst,v 3.4 2001/05/18 23:35:34 dawes Exp $
 
 ! model
   type4			Sun Type4
@@ -27,7 +27,7 @@
   jp			Japanese
   no			Norwegian
   pl			Polish
-  pt			Portugese
+  pt			Portuguese
   ru			Russian
   se			Swedish
   sk			Slovak

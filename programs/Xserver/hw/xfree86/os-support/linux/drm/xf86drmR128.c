@@ -26,7 +26,7 @@
  * Author: Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.8 2001/03/21 18:08:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.9 2001/04/10 16:08:04 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -75,7 +75,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "drm.h"
 
 #define R128_BUFFER_RETRY	32
-#define R128_IDLE_RETRY		16
+#define R128_IDLE_RETRY		32
 
 
 int drmR128InitCCE( int fd, drmR128Init *info )
