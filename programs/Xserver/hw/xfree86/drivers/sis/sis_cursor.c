@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.6 2001/09/28 07:47:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.9 2003/01/29 15:42:16 eich Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
@@ -351,7 +351,7 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     else if(pScrn->currentMode->Flags & V_DBLSCAN)
         y *= 2;
 
- #ifdef SISDUALHEAD
+#ifdef SISDUALHEAD
     if (pSiS->DualHeadMode) {
 	if (pSiS->SecondHead) {
 		/* TW: Head 2 is always CRT1 */
