@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.482 2004/07/07 03:46:21 martin Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.483tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -259,55 +259,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.482 2004/07/07 03:46:21 martin Exp $
 #define HasAgpGart NO
 #endif
 
-/* The glide driver only works for the loadable server at the moment */
-#ifndef HasGlide2
-#define HasGlide2 NO
-#endif
-#if HasGlide2 && DoLoadableServer
-#define GlideDriver glide
-#else
-#define GlideDriver /**/
-#endif
-
-/*
- * There are three parameters that determine where and how the Matrox HAL
- * library is used:
- *
- *   HaveMatroxHal  -- You have the HALlib.a binary library installed
- *                     in xfree86/drivers/mga/HALlib, and you want it to
- *                     be used.
- *                     Default: NO
- *
- *   BuildMatroxHal -- You have the source for the HALlib library (installed
- *                     in xfree86/drivers/mga/hallib), and want to build and
- *                     use it.
- *                     Default: NO
- *
- *   UseMatroxHal   -- You want to build support for loading/using the HAL
- *                     library into the mga driver.  For module server builds
- *                     you don't need to have the HALlib library to do this.
- *                     but you want to build support for loading it and using
- *                     it into the mga driver module.
- *                     Default: YES for loadable server build
- *                              (HaveMatroxHal || BuildMatroxHal) for static
- */
-
-#ifndef HaveMatroxHal
-#define HaveMatroxHal NO
-#endif
-
-#ifndef BuildMatroxHal
-#define BuildMatroxHal NO
-#endif
-
-#ifndef UseMatroxHal
-#if DoLoadableServer
-#define UseMatroxHal YES
-#else
-#define UseMatroxHal (HaveMatroxHal || BuildMatroxHal)
-#endif
-#endif
-
 /*
  * For Intel platforms, the default is to build all modules which
  * are supported on this platform.
@@ -440,7 +391,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.482 2004/07/07 03:46:21 martin Exp $
 #  define XF86Server		YES
 # endif
 # ifndef XF86AFB
-#  define XF86AFB              !DoLoadableServer
+#  define XF86AFB		(!XF86Server || !DoLoadableServer)
 # endif
 /* 1bpp module */
 # ifndef XF1Bpp
@@ -1168,6 +1119,55 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.482 2004/07/07 03:46:21 martin Exp $
 #if !XF86Server
 # undef DoLoadableServer
 # define DoLoadableServer	NO
+#endif
+
+/* The glide driver only works for the loadable server at the moment */
+#ifndef HasGlide2
+#define HasGlide2 NO
+#endif
+#if HasGlide2 && DoLoadableServer
+#define GlideDriver glide
+#else
+#define GlideDriver /**/
+#endif
+
+/*
+ * There are three parameters that determine where and how the Matrox HAL
+ * library is used:
+ *
+ *   HaveMatroxHal  -- You have the HALlib.a binary library installed
+ *                     in xfree86/drivers/mga/HALlib, and you want it to
+ *                     be used.
+ *                     Default: NO
+ *
+ *   BuildMatroxHal -- You have the source for the HALlib library (installed
+ *                     in xfree86/drivers/mga/hallib), and want to build and
+ *                     use it.
+ *                     Default: NO
+ *
+ *   UseMatroxHal   -- You want to build support for loading/using the HAL
+ *                     library into the mga driver.  For module server builds
+ *                     you don't need to have the HALlib library to do this.
+ *                     but you want to build support for loading it and using
+ *                     it into the mga driver module.
+ *                     Default: YES for loadable server build
+ *                              (HaveMatroxHal || BuildMatroxHal) for static
+ */
+
+#ifndef HaveMatroxHal
+#define HaveMatroxHal NO
+#endif
+
+#ifndef BuildMatroxHal
+#define BuildMatroxHal NO
+#endif
+
+#ifndef UseMatroxHal
+#if DoLoadableServer
+#define UseMatroxHal YES
+#else
+#define UseMatroxHal (HaveMatroxHal || BuildMatroxHal)
+#endif
 #endif
 
 /*

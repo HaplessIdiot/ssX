@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/render/tiny/Imakefile,v 1.1tsi Exp $
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -46,9 +46,21 @@ XCOMM $XFree86$
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#undef XF86Server
+#define XF86Server NO
+#undef DoLoadableServer
+#define DoLoadableServer NO
 #undef BuildTinyDIX
 #define BuildTinyDIX YES
 #define LinkDirectory ..
 
+/*
+ * The above doesn't really work because rules that depend on the symbols being
+ * over-ridden above have already been #define'd.  Catch this at the Makefiles
+ * stage.
+ */
+IMAKE_DEFINES=-DXF86Server=NO -DBuildTinyDIX=YES
+
 #include "../Imakefile"
 
+Makefiles:: Makefile

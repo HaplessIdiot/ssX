@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_tex.c,v 1.4 2002/11/05 17:46:07 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/gamma/gamma_tex.c,v 1.1.1.3tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include "texstore.h"
 #include "teximage.h"
 #include "texformat.h"
+#include "texobj.h"
 #include "swrast/swrast.h"
 
 #include "mm.h"
@@ -298,7 +299,6 @@ static void gammaTexSubImage2D( GLcontext *ctx,
 			     texImage);
 }
 
-
 static void gammaBindTexture( GLcontext *ctx, GLenum target,
 			     struct gl_texture_object *tObj )
 {
@@ -323,8 +323,8 @@ static void gammaBindTexture( GLcontext *ctx, GLenum target,
          if (target == GL_TEXTURE_2D) {
             t->TextureAddressMode |= TAM_TexMapType_2D;
             t->TextureReadMode |= TRM_TexMapType_2D;
-         } else
-         if (target == GL_TEXTURE_1D) {
+         }
+         else if (target == GL_TEXTURE_1D) {
             t->TextureAddressMode |= TAM_TexMapType_1D;
             t->TextureReadMode |= TRM_TexMapType_1D;
          }
@@ -352,7 +352,6 @@ static void gammaBindTexture( GLcontext *ctx, GLenum target,
       }
 }
 
-
 static void gammaDeleteTexture( GLcontext *ctx, struct gl_texture_object *tObj )
 {
    gammaTextureObjectPtr t = (gammaTextureObjectPtr)tObj->DriverData;
@@ -377,7 +376,25 @@ static GLboolean gammaIsTextureResident( GLcontext *ctx,
    return t && t->MemBlock;
 }
 
-static void gammaInitTextureObjects( GLcontext *ctx )
+#ifdef UNUSED
+/**
+ * Allocate a new texture object.
+ * Called via ctx->Driver.NewTextureObject.
+ * Note: this function will be called during context creation to
+ * allocate the default texture objects.
+ * Note: we could use containment here to 'derive' the driver-specific
+ * texture object from the core mesa gl_texture_object.  Not done at this time.
+ */
+static struct gl_texture_object *
+gammaNewTextureObject( GLcontext *ctx, GLuint name, GLenum target )
+{
+   struct gl_texture_object *obj;
+   obj = _mesa_new_texture_object(ctx, name, target);
+   return obj;
+}
+#endif
+
+void gammaInitTextureObjects( GLcontext *ctx )
 {
    struct gl_texture_object *texObj;
    GLuint tmp = ctx->Texture.CurrentUnit;
@@ -404,27 +421,13 @@ static void gammaInitTextureObjects( GLcontext *ctx )
 }
 
 
-void gammaDDInitTextureFuncs( GLcontext *ctx )
+void gammaDDInitTextureFuncs( struct dd_function_table *functions )
 {
-   ctx->Driver.TexEnv = gammaTexEnv;
-   ctx->Driver.ChooseTextureFormat = _mesa_choose_tex_format;
-   ctx->Driver.TexImage1D = _mesa_store_teximage1d;
-   ctx->Driver.TexImage2D = gammaTexImage2D;
-   ctx->Driver.TexImage3D = _mesa_store_teximage3d;
-   ctx->Driver.TexSubImage1D = _mesa_store_texsubimage1d;
-   ctx->Driver.TexSubImage2D = gammaTexSubImage2D;
-   ctx->Driver.TexSubImage3D = _mesa_store_texsubimage3d;
-   ctx->Driver.CopyTexImage1D = _swrast_copy_teximage1d;
-   ctx->Driver.CopyTexImage2D = _swrast_copy_teximage2d;
-   ctx->Driver.CopyTexSubImage1D = _swrast_copy_texsubimage1d;
-   ctx->Driver.CopyTexSubImage2D = _swrast_copy_texsubimage2d;
-   ctx->Driver.CopyTexSubImage3D = _swrast_copy_texsubimage3d;
-   ctx->Driver.BindTexture = gammaBindTexture;
-   ctx->Driver.DeleteTexture = gammaDeleteTexture;
-   ctx->Driver.TexParameter = gammaTexParameter;
-   ctx->Driver.UpdateTexturePalette = 0;
-   ctx->Driver.IsTextureResident = gammaIsTextureResident;
-   ctx->Driver.TestProxyTexImage = _mesa_test_proxy_teximage;
-
-   gammaInitTextureObjects( ctx );
+   functions->TexEnv = gammaTexEnv;
+   functions->TexImage2D = gammaTexImage2D;
+   functions->TexSubImage2D = gammaTexSubImage2D;
+   functions->BindTexture = gammaBindTexture;
+   functions->DeleteTexture = gammaDeleteTexture;
+   functions->TexParameter = gammaTexParameter;
+   functions->IsTextureResident = gammaIsTextureResident;
 }

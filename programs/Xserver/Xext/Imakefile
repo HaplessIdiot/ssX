@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.46 2004/06/29 00:02:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.47tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -143,7 +143,7 @@ XF86BIGFOBJS = xf86bigfont.o
 #if !(BuildSeparateTinyDIX && BuildTinyDIX) && XdmxServer
          DMXSRCS = dmx.c
          DMXOBJS = dmx.o
-     DMXINCLUDES = -I../hw/dmx
+     DMXINCLUDES = -I$(SERVERSRC)/hw/dmx
 #endif
 #if BuildDPMS
         DPMSSRCS = dpms.c
@@ -246,6 +246,7 @@ LinkSourceFile(EVI.c,LinkDirectory)
 LinkSourceFile(appgroup.c,LinkDirectory)
 LinkSourceFile(bigreq.c,LinkDirectory)
 LinkSourceFile(cup.c,LinkDirectory)
+LinkSourceFile(dmx.c,LinkDirectory)
 LinkSourceFile(dpms.c,LinkDirectory)
 LinkSourceFile(dpmsstubs.c,LinkDirectory)
 LinkSourceFile(fontcache.c,LinkDirectory)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.1 2004/06/30 20:21:38 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dmx.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2002-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -297,7 +297,9 @@ static int ProcDMXForceWindowCreation(ClientPtr client)
         return -1;               /* BadWindow */
 
     dmxForceWindowCreation(pWin);
+#ifdef PANORAMIX
   doreply:
+#endif
     dmxFlushPendingSyncs();
     rep.type           = X_Reply;
     rep.sequenceNumber = client->sequence;
@@ -432,7 +434,7 @@ static int ProcDMXChangeScreensAttributes(ClientPtr client)
         value_list += count;
     }
 
-#if PANORAMIX
+#ifdef PANORAMIX
     status = dmxConfigureScreenWindows(stuff->screenCount,
 				       screen_list,
 				       attribs,
@@ -735,7 +737,7 @@ static int ProcDMXChangeDesktopAttributes(ClientPtr client)
     dmxGetDesktopAttributes(&attr);
     dmxFetchDesktopAttributes(stuff->valueMask, &attr, value_list);
 
-#if PANORAMIX
+#ifdef PANORAMIX
     status = dmxConfigureDesktop(&attr);
 #endif
     if (status == BadValue) return status;
