@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.3 1998/06/27 12:53:26 hohndel Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.4 1998/06/28 03:52:36 dawes Exp $ */
 
 #include <string.h>
 
@@ -410,6 +410,28 @@ static struct ttf_encoding_alternative iso8859_10[]=
   {-1,-1,0}
 };
 
+static unsigned
+iso8859_15_to_unicode(unsigned isocode)
+{
+  switch(isocode) {
+  case 0xA4: return 0x20AC;
+  case 0xA6: return 0x0160;
+  case 0xA8: return 0x0161;
+  case 0xB4: return 0x017D;
+  case 0xB8: return 0x017E;
+  case 0xBC: return 0x0152;
+  case 0xBD: return 0x0153;
+  case 0xBE: return 0x0178;
+  default: return isocode;
+  }
+}
+
+static struct ttf_encoding_alternative iso8859_15[]=
+{
+  {0,0,iso8859_15_to_unicode},
+  {-1,-1,0}
+};
+
 static unsigned short koi8_r_tophalf[]=
 { 0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524,
   0x252C, 0x2534, 0x253C, 0x2580, 0x2584, 0x2588, 0x258C, 0x2590,
@@ -443,6 +465,96 @@ static struct ttf_encoding_alternative koi8_r[]=
   {-1,-1,0}
 };
 
+/* See RFC 2319 */
+
+static unsigned 
+koi8_u_to_unicode(unsigned koicode)
+{
+  switch(koicode) {
+  case 0xA4: return 0x0454;
+  case 0xA6: return 0x0456;
+  case 0xA7: return 0x0457;
+  case 0xAD: return 0x0491;
+  case 0xB4: return 0x0403;
+  case 0xB6: return 0x0406;
+  case 0xB7: return 0x0407;
+  case 0xBD: return 0x0490;
+  default: return koi8_r_to_unicode(koicode);
+  }
+}
+
+static struct ttf_encoding_alternative koi8_u[]=
+{
+  {0,0,koi8_u_to_unicode},
+  {-1,-1,0}
+};
+
+static unsigned 
+koi8_ru_to_unicode(unsigned koicode)
+{
+  switch(koicode) {
+  case 0x93: return 0x201C;
+  case 0x96: return 0x201D;
+  case 0x97: return 0x2014;
+  case 0x98: return 0x2116;
+  case 0x99: return 0x2122;
+  case 0x9B: return 0x00BB;
+  case 0x9C: return 0x00AE;
+  case 0x9D: return 0x00AB;
+  case 0x9F: return 0x00A4;
+  case 0xA4: return 0x0454;
+  case 0xA6: return 0x0456;
+  case 0xA7: return 0x0457;
+  case 0xAD: return 0x0491;
+  case 0xAE: return 0x045E;
+  case 0xB4: return 0x0404;
+  case 0xB6: return 0x0406;
+  case 0xB7: return 0x0407;
+  case 0xBD: return 0x0490;
+  case 0xBE: return 0x040E;
+  default: return koi8_r_to_unicode(koicode);
+  }
+}
+
+static struct ttf_encoding_alternative koi8_ru[]=
+{
+  {0,0,koi8_ru_to_unicode},
+  {-1,-1,0}
+};
+
+static unsigned short koi8_uni_tophalf[]=
+{ 0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524,
+  0x252C, 0x2534, 0x253C, 0x2580, 0x2584, 0x2588, 0x258C, 0x2590,
+  0x2591, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
+  0x00A9, 0x2122, 0x00A0, 0x00BB, 0x00AE, 0x00AB, 0x00B7, 0x00A4,
+  0x00A0, 0x0452, 0x0453, 0x0451, 0x0454, 0x0455, 0x0456, 0x0457,
+  0x0458, 0x0459, 0x045A, 0x045B, 0x045C, 0x0491, 0x045E, 0x045F,
+  0x2116, 0x0402, 0x0403, 0x0401, 0x0404, 0x0405, 0x0406, 0x0407,
+  0x0408, 0x0409, 0x040A, 0x040B, 0x040C, 0x0490, 0x040E, 0x040F,
+  0x044E, 0x0430, 0x0431, 0x0446, 0x0434, 0x0435, 0x0444, 0x0433,
+  0x0445, 0x0438, 0x0439, 0x043A, 0x043B, 0x043C, 0x043D, 0x043E,
+  0x043F, 0x044F, 0x0440, 0x0441, 0x0442, 0x0443, 0x0436, 0x0432,
+  0x044C, 0x044B, 0x0437, 0x0448, 0x044D, 0x0449, 0x0447, 0x044A,
+  0x042E, 0x0410, 0x0411, 0x0426, 0x0414, 0x0415, 0x0424, 0x0413,
+  0x0425, 0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E,
+  0x041F, 0x042F, 0x0420, 0x0421, 0x0422, 0x0423, 0x0416, 0x0412,
+  0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A };
+
+static unsigned 
+koi8_uni_to_unicode(unsigned koicode)
+{
+  if(koicode<=0x80)
+    return koicode;
+  else
+    return koi8_uni_tophalf[koicode-0x80];
+}
+
+static struct ttf_encoding_alternative koi8_uni[]=
+{
+  {0,0,koi8_uni_to_unicode},
+  {-1,-1,0}
+};
+
 /* Apparently, Microsoft Symbol aims at being compatible with Unicode
  * by using the 16 columns of the Private Use Area starting at code
  * 0xF000. */
@@ -463,7 +575,7 @@ static struct ttf_encoding_alternative apple_roman[]=
 
 static struct ttf_encoding_info ttf_encoding_info[]=
 {
-  {"iso10646-0",256*256,iso10646}, /* Unicode */
+  {"iso10646-1",256*256,iso10646}, /* Unicode */
   {"iso8859-1",256,iso8859_1},  /* Latin 1 (West European) */
   {"iso8859-2",256,iso8859_2},  /* Latin 2 (East European) */
   {"iso8859-3",256,iso8859_3},  /* Latin 3 (South European) */
@@ -474,7 +586,12 @@ static struct ttf_encoding_info ttf_encoding_info[]=
   {"iso8859-8",256,iso8859_8},  /* Hebrew */
   {"iso8859-9",256,iso8859_9},  /* Latin 5 (Turkish) */
   {"iso8859-10",256,iso8859_10},/* Latin 6 (Nordic) */
-  {"koi8-r",256,koi8_r},
+  {"iso8859-15",256,iso8859_15},/* Latin 9 */
+  {"fcd8859-15",256,iso8859_15},/* for compatibility with X11R6.4 */
+  {"koi8-r",256,koi8_r},        /* Russian */
+  {"koi8-u",256,koi8_u},        /* Ukrainian */
+  {"koi8-ru",256,koi8_ru},      /* Ukrainian too */
+  {"koi8-uni",256,koi8_uni},    /* Russian/Ukrainian/Bielorussian */
   {"microsoft-symbol",256,microsoft_symbol},
   {"apple-roman",256,apple_roman},
   {0,0,0}
@@ -536,13 +653,16 @@ int ttf_find_cmap_default(TT_Face face,
 static int 
 ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
 {
-  int i;
-  short p,e;
-  for(i = 0; i < TT_Get_CharMap_Count(face); i++) {
+  int i, n;
+  unsigned short p,e;
+
+  n=TT_Get_CharMap_Count(face);
+
+  for(i = 0; i < n; i++) {
     if(!TT_Get_CharMap_ID(face, i, &p, &e) &&
        (pid!=0?
         (p==pid && e==eid):
-        (p==0 || p==3 && e==1 || p==2 && e==1)))
+        (p==3 && e==1 || p==0 || p==2 && e==1)))
       if(!TT_Get_CharMap(face, i, cmap)) {
         return 0;
       }
@@ -579,7 +699,7 @@ ttf_pick_cmap(char *name, int length, TT_Face face,
 
   if(p) {
     len=length-(p-name)-1;
-    memcpy(charset,p+1,length);
+    memcpy(charset,p+1,len);
     charset[len]=0;
 
     /* check for a subset specification */
