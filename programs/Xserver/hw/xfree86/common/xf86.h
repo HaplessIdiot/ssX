@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.84 1999/01/03 03:58:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.85 1999/01/13 03:19:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -149,7 +149,6 @@ void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 		   int maskval, int knownclkindex, int knownclkvalue);
 const char *xf86GetVisualName(int visual);
 int xf86GetVerbosity(void);
-int xf86GetBpp(void);
 Pix24Flags xf86GetPix24(void);
 Pix24Flags xf86GetConfigPix24(void);
 int xf86GetDepth(void);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.5 1999/01/12 06:24:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.6 1999/01/13 03:19:35 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -163,9 +163,6 @@ char *xf86LayoutName = NULL;
 char *xf86ScreenName = NULL;
 Bool xf86ProbeOnly = FALSE;
 int xf86Verbose = DEFAULT_VERBOSE;
-#ifdef KEEP_BPP
-int xf86Bpp = -1;
-#endif
 int xf86FbBpp = -1;
 Pix24Flags xf86Pix24 = Pix24DontCare;
 int xf86Depth = -1;

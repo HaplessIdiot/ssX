@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.13 1999/01/12 06:24:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.14 1999/01/13 03:19:37 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -383,9 +383,6 @@ typedef struct _ScrnInfoRec {
     PixmapFormatRec	fbFormat;
 
     int			bitsPerPixel;		/* fb bpp */
-#ifndef KEEP_BPP
-    int			pixmapBPP;		/* bpp of default visual */
-#endif
     Pix24Flags		pixmap24;		/* pixmap pref for depth 24 */
     int			depth;			/* depth of default visual */
     MessageType		depthFrom;		/* set from config? */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.87 1999/01/13 03:19:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.88 1999/01/13 08:31:03 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -893,27 +893,11 @@ ddxProcessArgument(int argc, char **argv, int i)
   }
   if (!strcmp(argv[i], "-bpp"))
   {
-#ifndef KEEP_BPP
     if (++i >= argc)
       return 0;
     ErrorF("The -bpp option is no longer supported."
 	   "  Use -depth and/or -fbbpp\n");
     return 2;
-#else
-    int bpp;
-    if (++i >= argc)
-      return 0;
-    if (sscanf(argv[i], "%d", &bpp) == 1)
-    {
-      xf86Bpp = bpp;
-      return 2;
-    }
-    else
-    {
-      ErrorF("Invalid bpp\n");
-      return 0;
-    }
-#endif
   }
   if (!strcmp(argv[i], "-pixmap24"))
   {
@@ -1031,9 +1015,6 @@ ddxUseMsg()
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
-#ifdef KEEP_BPP
-  ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
-#endif
   ErrorF("-pixmap24              use 24bpp pixmaps for depth 24\n");
   ErrorF("-pixmap32              use 32bpp pixmaps for depth 24\n");
   ErrorF("-fbbpp n               set bpp for the framebuffer. Default: 8\n");

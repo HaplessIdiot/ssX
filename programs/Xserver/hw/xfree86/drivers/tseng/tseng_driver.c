@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.43 1998/11/29 10:50:30 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.44 1998/12/13 10:33:46 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2064,7 +2064,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if (pScrn->pixmapBPP == 8) { /* cfb and xf4bpp */
+    if (pScrn->depth == 4 || pScrn->depth == 8) { /* cfb and xf4bpp */
 	vgaHWHandleColormaps(pScreen);
     }
 

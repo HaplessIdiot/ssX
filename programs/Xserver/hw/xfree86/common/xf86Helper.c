@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.17 1999/01/12 06:24:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.18 1999/01/13 03:19:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -206,12 +206,10 @@ xf86AddPixFormat(ScrnInfoPtr pScrn, int depth, int bpp, int pad)
  * Also find a Display subsection matching the depth/bpp found.
  *
  * Sets the following ScrnInfoRec fields:
- *     bitsPerPixel, pixmapBpp, depth, display, imageByteOrder,
+ *     bitsPerPixel, pixmap24, depth, display, imageByteOrder,
  *     bitmapScanlinePad, bitmapScanlineUnit, bitmapBitOrder, numFormats,
  *     formats, fbFormat.
  */
-
-#ifndef KEEP_BPP
 
 /* Can the screen handle 24 bpp pixmaps */
 #define DO_PIX24(f) ((f & Support24bppFb) || \
@@ -245,7 +243,6 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
     Bool nomatch = FALSE;
 
     scrp->bitsPerPixel = -1;
-    scrp->pixmapBPP = -1;
     scrp->depth = -1;
     scrp->pixmap24 = Pix24DontCare;
     scrp->bitsPerPixelFrom = X_DEFAULT;
@@ -490,303 +487,6 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 
     return TRUE;
 }
-
-#else
-Bool
-xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp, int fbbpp,
-		int depth24flags)
-{
-    int i;
-    DispPtr disp;
-
-    scrp->bitsPerPixel = -1;
-    scrp->pixmapBPP = -1;
-    scrp->depth = -1;
-    scrp->bitsPerPixelFrom = X_DEFAULT;
-    scrp->pixmapBPPFrom = X_DEFAULT;
-    scrp->depthFrom = X_DEFAULT;
-
-    if (xf86Bpp > 0) {
-	scrp->pixmapBPP = xf86Bpp;
-	scrp->pixmapBPPFrom = X_CMDLINE;
-    }
-
-    if (xf86FbBpp > 0) {
-	scrp->bitsPerPixel = xf86FbBpp;
-	scrp->bitsPerPixelFrom = X_CMDLINE;
-    }
-
-    if (xf86Depth > 0) {
-	scrp->depth = xf86Depth;
-	scrp->depthFrom = X_CMDLINE;
-    }
-
-    /* If user doesn't override from commandline, probe the config file */
-    if (xf86Bpp < 0 && xf86FbBpp < 0 && xf86Depth < 0) {
-        if (scrp->confScreen->defaultbpp > 0) {
-	    scrp->pixmapBPP = scrp->confScreen->defaultbpp;
-	    scrp->pixmapBPPFrom = X_CONFIG;
-        }
-        if (scrp->confScreen->defaultfbbpp > 0) {
-	    scrp->bitsPerPixel = scrp->confScreen->defaultfbbpp;
-	    scrp->bitsPerPixelFrom = X_CONFIG;
-        }
-        if (scrp->confScreen->defaultdepth > 0) {
-	    scrp->depth = scrp->confScreen->defaultdepth;
-	    scrp->depthFrom = X_CONFIG;
-        }
-    }
-
-    /* If none of these is set, pick a default */
-    if (scrp->bitsPerPixel < 0 && scrp->pixmapBPP < 0 && scrp->depth < 0) {
-        if (bpp > 0 || fbbpp > 0 || depth > 0) {
-	    if (bpp > 0)
-		scrp->pixmapBPP = bpp;
-	    if (fbbpp > 0)
-		scrp->bitsPerPixel = fbbpp;
-	    if (depth > 0)
-		scrp->depth = depth;
-	} else {
-	    scrp->bitsPerPixel = 8;
-	    scrp->pixmapBPP = 8;
-	    scrp->depth = 8;
-	}
-    }
-
-    /* If any are not given, determine a default for the others */
-    if (scrp->pixmapBPP < 0) {
-	/* First try to derive it from the depth if that is given */
-	if (scrp->depth > 0) {
-	    if (scrp->depth == 1)
-		scrp->pixmapBPP = 1;
-	    else if (scrp->depth <= 8)
-		scrp->pixmapBPP = 8;
-	    else if (scrp->depth <= 16)
-		scrp->pixmapBPP = 16;
-	    else if (scrp->depth <= 24) {
-		/* XXX This default may change */
-		if (((depth24flags & Support24bppFb) &&
-		     !(depth24flags & ForceConvert32to24)) ||
-		    ((depth24flags & Support32bppFb) &&
-		     (depth24flags & SupportConvert24to32))) {
-		    scrp->pixmapBPP = 24;
-		} else {
-		    scrp->pixmapBPP = 32;
-		}
-	    } else if (scrp->depth <= 32) {
-		scrp->pixmapBPP = 32;
-	    } else {
-		xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-			   "Specified depth (%d) is greater than 32\n",
-			   scrp->depth);
-		return FALSE;
-	    }
-	} else {
-	    /* Otherwise set it from the fb bitsPerPixel */
-	    switch (scrp->bitsPerPixel) {
-	    case 4:
-		scrp->pixmapBPP = 8;
-		break;
-	    case 24:
-		if (depth24flags & ForceConvert32to24)
-		    scrp->pixmapBPP = 32;
-		else
-		    scrp->pixmapBPP = 24;
-		break;
-	    case 32:
-		if (depth24flags & ForceConvert24to32)
-		    scrp->pixmapBPP = 24;
-		else
-		    scrp->pixmapBPP = 32;
-		break;
-	    default:
-		scrp->pixmapBPP = scrp->bitsPerPixel;
-		break;
-	    }
-	}
-	scrp->pixmapBPPFrom = X_PROBED;
-    }
-
-    if (scrp->bitsPerPixel < 0) {
-	/* The pixmapBPP is already set, so use it as a guide */
-	switch (scrp->pixmapBPP) {
-	case 4:
-	    /* XXX Should this be allowed?  It is intended to catch '-bpp 4' */
-	    scrp->bitsPerPixel = 4;
-	    scrp->pixmapBPP = 8;
-	    break;
-	case 24:
-	    if (depth24flags & ForceConvert24to32)
-		scrp->bitsPerPixel = 32;
-	    else
-		scrp->bitsPerPixel = 24;
-	    break;
-	case 32:
-	    if (depth24flags & ForceConvert32to24)
-		scrp->bitsPerPixel = 24;
-	    else
-		scrp->bitsPerPixel = 32;
-	    break;
-	default:
-	    if (scrp->depth == 4)
-		scrp->bitsPerPixel = 4;
-	    else
-		scrp->bitsPerPixel = scrp->pixmapBPP;
-	    break;
-	}
-	scrp->bitsPerPixelFrom = X_PROBED;
-    }
-
-    if (scrp->depth <= 0) {
-	/* Both pixmapBPP and bitsPerPixel are already set */
-	switch (scrp->pixmapBPP) {
-	case 4:
-	    scrp->depth = 4;
-	    scrp->bitsPerPixel = 4;
-	    scrp->pixmapBPP = 8;
-	    break;
-	case 15:
-	    scrp->depth = 15;
-	    scrp->bitsPerPixel = 16;
-	    scrp->pixmapBPP = 16;
-	    break;
-	case 32:
-	    scrp->depth = 24;
-	    break;
-	default:
-	    /* 1, 8, 16 and 24 */
-	    scrp->depth = scrp->bitsPerPixel;
-	    break;
-	}
-	scrp->depthFrom = X_PROBED;
-    }
-
-    /* Sanity checks */
-    if (scrp->depth < 1 || scrp->depth > 32) {
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-		   "Specified depth (%d) is not in the range 1-32\n",
-		    scrp->depth);
-	return FALSE;
-    }
-    switch (scrp->pixmapBPP) {
-    case 1:
-    case 4:
-    case 8:
-    case 16:
-    case 24:
-    case 32:
-	break;
-    default:
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-		   "Specified bpp (%d) is not a permitted value\n",
-		    scrp->pixmapBPP);
-	return FALSE;
-    }
-    switch (scrp->bitsPerPixel) {
-    case 1:
-    case 4:
-    case 8:
-    case 16:
-    case 24:
-    case 32:
-	break;
-    default:
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-		   "Specified fbbpp (%d) is not a permitted value\n",
-		   scrp->bitsPerPixel);
-	return FALSE;
-    }
-    if (scrp->depth > scrp->pixmapBPP) {
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-		   "Specified depth (%d) is greater than the bpp (%d)\n",
-		   scrp->depth, scrp->pixmapBPP);
-	return FALSE;
-    }
-    if (scrp->depth > scrp->bitsPerPixel) {
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-		   "Specified depth (%d) is greater than the fbbpp (%d)\n",
-		   scrp->depth, scrp->bitsPerPixel);
-	return FALSE;
-    }
-    do {
-        if (scrp->depth == 4 &&
-            scrp->bitsPerPixel == 4 &&
-            scrp->pixmapBPP == 8)
-            break;
-        if (scrp->bitsPerPixel == scrp->pixmapBPP)
-            break;
-        if (scrp->depth == 24) {
-            if (scrp->bitsPerPixel == 32 &&
-                scrp->pixmapBPP == 24 &&
-                (depth24flags & SupportConvert24to32))
-               break;
-            if (scrp->bitsPerPixel == 24 &&
-                scrp->pixmapBPP == 32 &&
-                (depth24flags & SupportConvert32to24))
-               break;
-        }
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
-		   "Specified bpp (%d) and fbbpp (%d) are not compatible\n",
-		   scrp->pixmapBPP, scrp->bitsPerPixel);
-        return FALSE;
-    } while(0);
-
-    /*
-     * Find the Display subsection matching the depth/bpp and initialise
-     * scrp->display with it.
-     */
-    for (i = 0, disp = scrp->confScreen->displays;
-	 i < scrp->confScreen->numdisplays; i++, disp++) {
-	if ((disp->depth == scrp->depth && disp->bpp == scrp->pixmapBPP)
-	    || (disp->depth == scrp->depth && disp->bpp <= 0)
-	    || (disp->bpp == scrp->pixmapBPP && disp->depth <= 0)) {
-	    scrp->display = disp;
-	    break;
-	}
-    }
-    if (i == scrp->confScreen->numdisplays) {
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR, "No Display subsection "
-		   "in Screen section \"%s\" for depth/bpp %d/%d\n",
-		   scrp->confScreen->id, scrp->depth, scrp->pixmapBPP);
-	return FALSE;
-    }
-
-    /*
-     * Setup defaults for the display-wide attributes the framebuffer will
-     * need.  This should probably be moved into some pre-ScreenInit
-     * framebuffer function but doing this here allows the driver to override
-     * the attributes.  Not to mention that the framebuffer might not have
-     * been loaded yet.
-     */
-    scrp->imageByteOrder = IMAGE_BYTE_ORDER;
-    scrp->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-    if (scrp->depth < 8) {
-	scrp->bitmapScanlineUnit = 8;
-	scrp->bitmapBitOrder = MSBFirst;
-    } else {
-	scrp->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-	scrp->bitmapBitOrder = BITMAP_BIT_ORDER;
-    }
-
-    /* Initialise pixmap formats for this screen */
-    scrp->numFormats = 1;
-    scrp->formats[0].depth = 1;
-    scrp->formats[0].bitsPerPixel = 1;
-    scrp->formats[0].scanlinePad = BITMAP_SCANLINE_PAD;
-    if (scrp->depth > 1) {
-	scrp->numFormats++;
-	scrp->formats[1].depth = scrp->depth;
-	scrp->formats[1].bitsPerPixel = scrp->pixmapBPP;
-	scrp->formats[1].scanlinePad = BITMAP_SCANLINE_PAD;
-    }
-    /* Initialise the framebuffer format for this screen */
-    scrp->fbFormat.depth = scrp->depth;
-    scrp->fbFormat.bitsPerPixel = scrp->bitsPerPixel;
-    scrp->fbFormat.scanlinePad = BITMAP_SCANLINE_PAD;
-
-    return TRUE;
-}
-#endif
 
 /*
  * Print out the selected depth and bpp.
@@ -2002,17 +1702,6 @@ int
 xf86GetVerbosity()
 {
     return xf86Verbose;
-}
-
-
-int
-xf86GetBpp()
-{
-#ifdef KEEP_BPP
-    return xf86Bpp;
-#else
-    return 0;
-#endif
 }
 
 
