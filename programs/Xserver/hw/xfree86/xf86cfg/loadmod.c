@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.6 2001/05/28 21:35:26 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.1 2001/07/06 02:04:10 paulo Exp $
  */
 
 #ifdef USE_MODULES
@@ -55,6 +55,10 @@ void *xf86GetPciConfigInfo(void);
 
 extern char *loaderPath, **loaderList, **ploaderList;
 xf86cfgModuleOptions *module_options;
+FontModule *font_module;
+int numFontModules;
+
+extern int noverify, error_level;
 
 int xf86ShowUnresolved = 1;
 
@@ -339,6 +343,10 @@ xf86cfgLoaderInitList(int type)
 	"input",
 	NULL
     };
+    static const char *font[] = {
+	"fonts",
+	NULL
+    };
     char **subdirs;
 
     switch (type) {
@@ -351,9 +359,12 @@ xf86cfgLoaderInitList(int type)
 	case InputModule:
 	    subdirs = (char**)input;
 	    break;
+	case FontRendererModule:
+	    subdirs = (char**)font;
+	    break;
 	default:
 	    fprintf(stderr, "Invalid value passed to xf86cfgLoaderInitList.\n");
-	    subdirs = generic;
+	    subdirs = (char**)generic;
 	    break;
     }
     LoaderSetPath(loaderPath);
@@ -371,10 +382,13 @@ xf86cfgCheckModule(void)
 {
     int errmaj, errmin;
     ModuleDescPtr module;
+    int nfonts;
+    FontModule *fonts, *pfont_module;
 
     driver = NULL;
     chips = NULL;
     info = NULL;
+    pfont_module = NULL;
     vendor = -1;
     module_type = GenericModule;
 
@@ -393,6 +407,57 @@ xf86cfgCheckModule(void)
     }
     else if (info && info->AvailableOptions)
 	AddModuleOptions(*ploaderList, (*info->AvailableOptions)(NULL));
+
+    if (!noverify) {
+	XF86ModuleData *initdata = NULL;
+	char *p;
+
+	p = XtMalloc(strlen(*ploaderList) + strlen("ModuleData") + 1);
+	strcpy(p, *ploaderList);
+	strcat(p, "ModuleData");
+	initdata = LoaderSymbol(p);
+	if (initdata) {
+	    XF86ModuleVersionInfo *vers;
+
+	    vers = initdata->vers;
+	    if (vers && strcmp(*ploaderList, vers->modname)) {
+		/* This was a problem at some time for some video drivers */
+		printf("  WARNING file/module name mismatch: \"%s\" \"%s\"\n",
+		       *ploaderList, vers->modname);
+		++error_level;
+	    }
+	}
+    }
+
+    nfonts = numFontModules;
+    numFontModules = 0;
+    fonts = FontModuleList;
+    if (fonts) {
+	while (fonts->name) {
+	    if (strcmp(fonts->name, *ploaderList) == 0)
+		pfont_module = fonts;
+	    ++numFontModules;
+	    ++fonts;
+	}
+    }
+    if (pfont_module)
+	module_type = FontRendererModule;
+    else if (nfonts + 1 <= numFontModules) {
+	/* loader.c will flag a warning if -noverify is not set */
+	pfont_module = &FontModuleList[nfonts];
+	module_type = FontRendererModule;
+    }
+
+    if (font_module) {
+	XtFree((XtPointer)font_module->name);
+	XtFree((XtPointer)font_module);
+	font_module = NULL;
+    }
+    if (pfont_module) {
+	font_module = XtNew(FontModule);
+	memcpy(font_module, pfont_module, sizeof(FontModule));
+	font_module->name = XtNewString(pfont_module->name);
+    }
 
     UnloadModule(module);
 
