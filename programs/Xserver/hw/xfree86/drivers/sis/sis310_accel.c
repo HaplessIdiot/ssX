@@ -77,9 +77,7 @@
   			 * see comments below.
 			 */
 
-#undef INCL_RENDER	/* Use/Don't use RENDER extension acceleration
-			 * Should work, but how do I test this?
-			 */
+#define INCL_RENDER	/* Use/Don't use RENDER extension acceleration */
 
 #ifdef INCL_RENDER
 #ifdef RENDER
@@ -366,16 +364,24 @@ SiS315AccelInit(ScreenPtr pScreen)
 #ifdef RENDER
         /* Render (can later also be used for Translucent windows with constant Alpha) */
         if((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32)) {
-           infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
-	   infoPtr->SubsequentCPUToScreenAlphaTexture = SiSSubsequentCPUToScreenTexture;
-	   infoPtr->CPUToScreenAlphaTextureFormats = SiSAlphaTextureFormats;
-	   infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE;
+	   int i, j;
+	   if((pSiS->RenderAccelArray = xnfcalloc(65536, 1))) {
+	      for(i = 0; i < 256; i++) {
+	         for(j = 0; j < 256; j++) {
+	            pSiS->RenderAccelArray[(i << 8) + j] = (i * j) / 255;
+		 }
+	      }
+	      infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
+	      infoPtr->SubsequentCPUToScreenAlphaTexture = SiSSubsequentCPUToScreenTexture;
+	      infoPtr->CPUToScreenAlphaTextureFormats = SiSAlphaTextureFormats;
+	      infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE;
 
-           infoPtr->SetupForCPUToScreenTexture = SiSSetupForCPUToScreenTexture;
-           infoPtr->SubsequentCPUToScreenTexture = SiSSubsequentCPUToScreenTexture;
-           infoPtr->CPUToScreenTextureFormats = SiSTextureFormats;
-	   infoPtr->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
-	   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "RENDER acceleration enabled\n");
+              infoPtr->SetupForCPUToScreenTexture = SiSSetupForCPUToScreenTexture;
+              infoPtr->SubsequentCPUToScreenTexture = SiSSubsequentCPUToScreenTexture;
+              infoPtr->CPUToScreenTextureFormats = SiSTextureFormats;
+	      infoPtr->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
+	      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "RENDER acceleration enabled\n");
+	   }
 	}
 #endif
 #endif
@@ -1562,8 +1568,6 @@ SiSAllocateLinear(ScrnInfoPtr pScrn, int sizeNeeded)
    	return(pSiS->AccelLinearScratch != NULL);
 }
 
-#define RENDER_OP 0xCC /* Has no function whatsoever. No value matters. */
-
 Bool
 SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
    			int op, CARD16 red, CARD16 green,
@@ -1573,17 +1577,20 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
    			int height, int	flags)
 {
     	SISPtr pSiS = SISPTR(pScrn);
-    	int pitch, sizeNeeded, offset;   
-	
+    	int x, pitch, sizeNeeded, offset;
+	CARD8  myalpha;
+	CARD32 *dstPtr;
+	unsigned char *renderaccelarray;
+
 #ifdef ACCELDEBUG
-	xf86DrvMsg(0, X_INFO, "AT: RGB %x %x %x, w %d h %d A-pitch %d\n",
-		red, green, blue, width, height, alphaPitch);
-	/* xf86DrvMsg(0, X_INFO, "    %02x %02x %02x %02x %02x %02x %02x %02x\n",
+	xf86DrvMsg(0, X_INFO, "AT: op %d RGB %x %x %x, w %d h %d A-pitch %d\n",
+		op, red, green, blue, width, height, alphaPitch);
+	xf86DrvMsg(0, X_INFO, "    %02x %02x %02x %02x %02x %02x %02x %02x\n",
 		alphaPtr[0],alphaPtr[1],alphaPtr[2],alphaPtr[3],
-		alphaPtr[4],alphaPtr[5],alphaPtr[6],alphaPtr[7]);  */
+		alphaPtr[4],alphaPtr[5],alphaPtr[6],alphaPtr[7]);
 #endif
 
-    	if(op != PictOpOver)  
+    	if(op != PictOpOver)
 	   return FALSE;
 
     	if((width > 2048) || (height > 2048))
@@ -1591,7 +1598,7 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 
     	pitch = (width + 31) & ~31;
     	sizeNeeded = pitch * height;
-    	if(pScrn->bitsPerPixel == 16)  /* Texture is always 8888, adapt for AllocLinear */
+    	if(pScrn->bitsPerPixel == 16)
 	   sizeNeeded <<= 1;
 
     	if(!SiSAllocateLinear(pScrn, sizeNeeded))
@@ -1604,30 +1611,39 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
 	SiSSetupSRCPitchDSTRect((pitch << 2), pSiS->scrnOffset, -1);
-	SiSSetupROP(RENDER_OP)
+	SiSSetupAlpha(alpha >> 8)
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA)
 #else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
 	SiSSetupSRCPitch((pitch << 2));
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
-	SiSSetupROP(RENDER_OP)
+	SiSSetupAlpha(alpha >> 8)
+	SiSSetupROP(0)
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA | pSiS->SiS310_AccelDepth)
 #endif
+
+        red &= 0xff00;
+	green &= 0xff00;
+	blue &= 0xff00;
+	dstPtr = (CARD32*)(pSiS->FbBase + offset);
+	renderaccelarray = pSiS->RenderAccelArray;
 
 	if(pSiS->alphaBlitBusy) {
 	   pSiS->alphaBlitBusy = FALSE;
 	   SiSIdle
 	}
 
-    	XAA_888_plus_PICT_a8_to_8888(
-		(blue >> 8) | (green & 0xff00) | ((red & 0xff00) << 8),
-		alphaPtr, alphaPitch, (CARD32*)(pSiS->FbBase + offset),
-        	pitch, width, height);
-
-#if 0
-	/* For constant alpha, we need to do this and set A_CONSTANTALPHA instead */
-	SiSSetupAlpha(0x99)
-#endif
+        while(height--) {
+	   for(x = 0; x < width; x++) {
+	      myalpha = alphaPtr[x];
+	      dstPtr[x] = (renderaccelarray[red + myalpha] << 16)  |
+	   		  (renderaccelarray[green + myalpha] << 8) |
+			  renderaccelarray[blue + myalpha]         |
+			  myalpha << 24;
+	   }
+	   dstPtr += pitch;
+	   alphaPtr += alphaPitch;
+        }
 
     	return TRUE;
 }
@@ -1639,14 +1655,15 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
    			int height, int	flags)
 {
     	SISPtr pSiS = SISPTR(pScrn);
-    	int i, pitch, sizeNeeded, offset;
-	
+    	int pitch, sizeNeeded, offset;
+	CARD8 *dst;
+
 #ifdef ACCELDEBUG
 	xf86DrvMsg(0, X_INFO, "T: type %d op %d w %d h %d T-pitch %d\n",
 		texType, op, width, height, texPitch);
 #endif
 
-    	if(op != PictOpOver)  
+    	if(op != PictOpOver)
 	   return FALSE;
 
     	if((width > 2048) || (height > 2048))
@@ -1654,7 +1671,7 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
 
     	pitch = (width + 31) & ~31;
     	sizeNeeded = pitch * height;
-    	if(pScrn->bitsPerPixel == 16)  /* Texture is always 8888, adapt for AllocLinear */
+    	if(pScrn->bitsPerPixel == 16)
 	   sizeNeeded <<= 1;
 
     	if(!SiSAllocateLinear(pScrn, sizeNeeded))
@@ -1664,33 +1681,33 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
     	if(pScrn->bitsPerPixel == 32)
            offset <<= 1;
 
+	width <<= 2;
+	pitch <<= 2;
+
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
-	SiSSetupSRCPitchDSTRect((pitch << 2), pSiS->scrnOffset, -1);
-	SiSSetupROP(RENDER_OP)
+	SiSSetupSRCPitchDSTRect(pitch, pSiS->scrnOffset, -1);
+	SiSSetupAlpha(0x00)
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA)
 #else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-	SiSSetupSRCPitch((pitch << 2));
+	SiSSetupSRCPitch(pitch);
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
-	SiSSetupROP(RENDER_OP)
+	SiSSetupAlpha(0x00)
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA | pSiS->SiS310_AccelDepth)
 #endif
 
-	{
-	   CARD8 *dst = (CARD8*)(pSiS->FbBase + offset);
-	   i = height;
+	dst = (CARD8*)(pSiS->FbBase + offset);
 
-	   if(pSiS->alphaBlitBusy) {
-	      pSiS->alphaBlitBusy = FALSE;
-	      SiSIdle
-	   }
+	if(pSiS->alphaBlitBusy) {
+	   pSiS->alphaBlitBusy = FALSE;
+	   SiSIdle
+	}
 
-	   while(i--) {
-             memcpy(dst, texPtr, width << 2);
-	     texPtr += texPitch;
-	     dst += pitch << 2;
-	   }
+	while(height--) {
+	   memcpy(dst, texPtr, width);
+	   texPtr += texPitch;
+	   dst += pitch;
         }
 
 	return TRUE;
@@ -1708,7 +1725,7 @@ SiSSubsequentCPUToScreenTexture(ScrnInfoPtr pScrn,
 	srcbase = pSiS->AccelLinearScratch->offset << 1;
 	if(pScrn->bitsPerPixel == 32)
 	   srcbase <<= 1;
-	
+
 #ifdef ACCELDEBUG
 	xf86DrvMsg(0, X_INFO, "FIRE: dx %d dy %d w %d h %d\n",
 		dst_x, dst_y, width, height);

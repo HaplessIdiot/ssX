@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.114tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -4081,8 +4081,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * the other modules (eg. accel and Xv) use dhmOffset for hardware
      * pointer settings relative to VideoRAM start and won't need to be changed.
      */
-    if (pSiS->DualHeadMode) {
-        if (pSiS->SecondHead == FALSE) {
+    if(pSiS->DualHeadMode) {
+        if(pSiS->SecondHead == FALSE) {
 	    /* ===== First head (always CRT2) ===== */
 	    /* We use only half of the memory available */
 	    pSiS->maxxfbmem /= 2;
@@ -4117,6 +4117,21 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * mode into account.)
      */
 
+    pSiS->DRIheapstart = pSiS->maxxfbmem;
+    pSiS->DRIheapend = pSiS->availMem;
+#ifdef SISDUALHEAD
+    if(pSiS->DualHeadMode) {
+       pSiS->DRIheapstart = pSiS->DRIheapend = 0;
+    } else
+#endif
+    if(pSiS->DRIheapstart == pSiS->DRIheapend) {
+#if 0  /* For future use */
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       	  "No memory for DRI heap. Please set the option \"MaxXFBMem\" to\n"
+	  "\tlimit the memory XFree should use and leave the rest to DRI\n");
+#endif
+       pSiS->DRIheapstart = pSiS->DRIheapend = 0;
+    }
 
     /* Now for something completely different: DDC.
      * For 300 and 315 series, we provide our
@@ -7524,6 +7539,11 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if(pSiS->AccelLinearScratch) {
        xf86FreeOffscreenLinear(pSiS->AccelLinearScratch);
        pSiS->AccelLinearScratch = NULL;
+    }
+
+    if(pSiS->RenderAccelArray) {
+       xfree(pSiS->RenderAccelArray);
+       pSiS->RenderAccelArray = NULL;
     }
 
     if(pSiS->AccelInfoPtr) {

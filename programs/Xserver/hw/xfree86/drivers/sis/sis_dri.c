@@ -335,7 +335,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
                  version->version_minor,
                  version->version_patchlevel);
       drmFreeVersion(version);
-      R128DRICloseScreen(pScreen);
+      SISDRICloseScreen(pScreen);
       return FALSE;
     }
     drmFreeVersion(version);

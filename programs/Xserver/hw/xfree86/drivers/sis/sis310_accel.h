@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.h,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.h,v 1.10 2003/08/27 16:47:50 tsi Exp $ */
 /*
  * 2D Acceleration for SiS 315 and Xabre series
  * Definitions for the SIS engine communication.
@@ -628,6 +628,15 @@
       }
 
 /* Alpha blended BitBlt (alpha = 8 bit) */
+
+#define SiSSetupAlpha(alpha) \
+      { \
+         CARD32 ttt = SiSGetSwWP(); \
+	 pointer tt = (char *)pSiS->cmdQueueBase + ttt; \
+         ((CARD32 *)(tt))[0] = (CARD32)(SIS_SKPC_HEADER + ALPHA_ALPHA);	\
+         ((CARD32 *)(tt))[1] = (CARD32)(alpha);	 			\
+         SiSNILandUpdateSWQueue \
+      }
 
 #define SiSSetPattern(num, value) \
       { \
