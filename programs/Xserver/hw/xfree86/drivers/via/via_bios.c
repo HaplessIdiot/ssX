@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.8 2003/12/17 18:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.9 2003/12/31 05:42:04 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -7232,8 +7232,8 @@ Bool VIAGetBIOSTable(VIABIOSInfoPtr pBIOSInfo)
             case 0x14:
             case 0x15:
             case 0x16:
-                pViaModeTable->Modes[j].Height = 1024;
-                pViaModeTable->Modes[j].Width = 576;
+                pViaModeTable->Modes[j].Height = 576;
+                pViaModeTable->Modes[j].Width = 1024;
                 break;
             case 0x22:
             case 0x23:
