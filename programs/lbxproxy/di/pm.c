@@ -24,7 +24,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.13 2003/07/20 16:12:20 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.14 2003/09/13 21:33:10 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -441,7 +441,9 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	    (void)memset(&hints, 0, sizeof(hints));
 	    hints.ai_flags = AI_CANONNAME;
 	    if (bracketed == True) {
+#ifdef AI_NUMERICHOST
 		hints.ai_flags |= AI_NUMERICHOST;
+#endif
 		addrtype = AF_INET6;
 	    } else if (protocol != NULL) {
 		if (strcmp(protocol, "inet") == 0) {
