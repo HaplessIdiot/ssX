@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.39 2001/01/30 22:06:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.40 2001/02/12 03:36:58 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1624,7 +1624,7 @@ ATIProbe
             {
                 if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                     (pVideo->chipType == PCI_CHIP_MACH32) ||
-                    pVideo->base[1])
+                    pVideo->size[1])
                     continue;
 
                 /* Check if this one has already been detected */
