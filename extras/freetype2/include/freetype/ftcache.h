@@ -14,6 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
+/* $XFree86$ */
 
 
   /*************************************************************************/
@@ -42,6 +43,8 @@
 
 FT_BEGIN_HEADER
 
+#ifndef USE_MAKEDEPEND
+
 #define  FT_CACHE_MANAGER_H               FT_PUBLIC_FILE(cache/ftcmanag.h)
 #define  FT_CACHE_IMAGE_H                 FT_PUBLIC_FILE(cache/ftcimage.h)
 #define  FT_CACHE_SMALL_BITMAPS_H         FT_PUBLIC_FILE(cache/ftcsbits.h)
@@ -49,6 +52,18 @@ FT_BEGIN_HEADER
 #define  FT_CACHE_INTERNAL_LRU_H          FT_PUBLIC_FILE(cache/ftlru.h)
 #define  FT_CACHE_INTERNAL_GLYPH_H        FT_PUBLIC_FILE(cache/ftcglyph.h)
 #define  FT_CACHE_INTERNAL_CHUNK_H        FT_PUBLIC_FILE(cache/ftcchunk.h)
+
+#else /* USE_MAKEDEPEND */
+
+#define  FT_CACHE_MANAGER_H               <freetype/cache/ftcmanag.h>
+#define  FT_CACHE_IMAGE_H                 <freetype/cache/ftcimage.h>
+#define  FT_CACHE_SMALL_BITMAPS_H         <freetype/cache/ftcsbits.h>
+
+#define  FT_CACHE_INTERNAL_LRU_H          <freetype/cache/ftlru.h>
+#define  FT_CACHE_INTERNAL_GLYPH_H        <freetype/cache/ftcglyph.h>
+#define  FT_CACHE_INTERNAL_CHUNK_H        <freetype/cache/ftcchunk.h>
+
+#endif /* USE_MAKEDEPEND */
 
 
   /*************************************************************************/
