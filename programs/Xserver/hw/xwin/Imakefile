@@ -9,6 +9,7 @@ SHMDEF = -DHAS_SHM
 
 MMAPDEF = -DHAS_MMAP
 
+
 SRCS =	InitInput.c \
 	InitOutput.c \
 	stubs.c \
@@ -61,7 +62,23 @@ SRCS =	InitInput.c \
 	wintrayicon.c \
 	windialogs.c \
 	winrop.c \
-	winpushpxl.c
+	winpushpxl.c \
+	winprefsyacc.y \
+	winprefslex.l \
+	winprefs.c
+
+winprefsyacc.c: winprefsyacc.y
+	bison -d -o winprefsyacc.c winprefsyacc.y
+
+winprefsyacc.h: winprefsyacc.c
+
+winprefslex.c: winprefsyacc.y winprefslex.l winprefsyacc.h
+	flex -owinprefslex.c winprefslex.l
+
+clean::
+	$(RM) winprefslex.c winprefsyacc.h winprefsyacc.c
+
+depend:: winprefslex.c winprefsyacc.h winprefsyacc.c
 
 /*
  * NOTE: The XWin.rc file is compiled into XWin.res.
@@ -123,7 +140,10 @@ OBJS =	InitInput.o \
 	wintrayicon.o \
 	windialogs.o \
 	winrop.o \
-	winpushpxl.o
+	winpushpxl.o \
+	winprefs.o \
+	winprefsyacc.o \
+	winprefslex.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \

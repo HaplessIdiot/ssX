@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.33 2003/09/08 11:22:14 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.34 2003/09/09 03:20:43 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -414,7 +414,7 @@ FILE *	file;
 	else if (strlen(xkm_output_dir)+strlen(mapName)+5 <= PATH_MAX)
 	    sprintf(buf,"%s%s.xkm",xkm_output_dir,mapName);
 	if (buf[0] != '\0')
-	    file= fopen(buf,"r");
+	    file= fopen(buf,"rb");
 	else file= NULL;
     }
     else file= NULL;

@@ -84,7 +84,7 @@ static pciBusInfo_t freebsdPci0 = {
 /* bridge      */	NULL
 };
 
-#if !defined(__OpenBSD__)
+#if !defined(__OpenBSD__) && !defined(__FreeBSD__)
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 #ifdef __sparc__
 #ifndef ASI_PL

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.128 2003/08/23 16:09:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.129 2003/09/24 02:43:20 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -6614,9 +6614,9 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
     
     if (cPtr->PanelType & ChipsLCD) 
-        ChipsNew->XR[0x51] |= 0x02;
+        ChipsNew->XR[0x51] |= 0x04;
     else 
-        ChipsNew->XR[0x51] &= ~0x02;
+        ChipsNew->XR[0x51] &= ~0x04;
 
     /* Program the registers */
     /*vgaHWProtect(pScrn, TRUE);*/

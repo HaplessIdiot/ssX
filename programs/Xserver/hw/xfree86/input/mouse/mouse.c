@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.75 2003/08/04 10:32:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.76 2003/09/17 03:46:32 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1359,14 +1359,14 @@ MouseReadInput(InputInfoPtr pInfo)
 		      (pBuf[0] & 0x80) >> 3;        /* button 5 */
 	    dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
 	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
-	    dz = (signed char)pBuf[3];
-	    if ((dz >= 7) || (dz <= -8)) {
-		if (pMse->autoProbe && !(pBuf[3] & 0xC0)) {
+	    dz = (char)(pBuf[3] | ((pBuf[3] & 0x08) ? 0xf8 : 0));
+	    if ((pBuf[3] & 0xf8) && ((pBuf[3] & 0xf8) != 0xf8)) {
+		if (pMse->autoProbe) {
 		    SetMouseProto(pMse, PROT_EXPPS2);
 		    xf86Msg(X_INFO,
 			    "Mouse autoprobe: Changing protocol to %s\n",
 			    pMse->protocol); 
-
+		    
 		    goto REDO_INTERPRET; 
 		} else  
 		    dz = 0;

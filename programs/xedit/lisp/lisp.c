@@ -2630,7 +2630,8 @@ Lisp__New(LispObj *car, LispObj *cdr)
 
     obj = objseg.freeobj;
     objseg.freeobj = CDR(obj);
-
+    --objseg.nfree;
+    
     return (obj);
 }
 
@@ -2641,9 +2642,11 @@ LispNew(LispObj *car, LispObj *cdr)
 
     if (obj == NIL)
 	obj = Lisp__New(car, cdr);
-    else
+    else {
 	objseg.freeobj = CDR(obj);
-
+	--objseg.nfree;
+    }
+    
     return (obj);
 }
 
@@ -2782,9 +2785,10 @@ LispNewDFloat(double value)
 
     if (dfloat == NIL)
 	dfloat = Lisp__New(NIL, NIL);
-    else
+    else {
 	objseg.freeobj = CDR(dfloat);
-
+	--objseg.nfree;
+    }
     dfloat->type = LispDFloat_t;
     dfloat->data.dfloat = value;
 
@@ -2799,9 +2803,10 @@ LispNewString(char *str, long length, int alloced)
 
     if (string == NIL)
 	string = Lisp__New(NIL, NIL);
-    else
+    else {
 	objseg.freeobj = CDR(string);
-
+	--objseg.nfree;
+    }
     if (alloced)
 	cstring = str;
     else {
@@ -2825,9 +2830,10 @@ LispNewComplex(LispObj *realpart, LispObj *imagpart)
 
     if (complexp == NIL)
 	complexp = Lisp__New(realpart, imagpart);
-    else
+    else {
 	objseg.freeobj = CDR(complexp);
-
+	--objseg.nfree;
+    }
     complexp->type = LispComplex_t;
     complexp->data.complex.real = realpart;
     complexp->data.complex.imag = imagpart;
@@ -2843,9 +2849,10 @@ LispNewInteger(long integer)
 
 	if (object == NIL)
 	    object = Lisp__New(NIL, NIL);
-	else
+	else {
 	    objseg.freeobj = CDR(object);
-
+	    --objseg.nfree;
+	}
 	object->type = LispInteger_t;
 	object->data.integer = integer;
 
@@ -2861,9 +2868,10 @@ LispNewRatio(long num, long den)
 
     if (ratio == NIL)
 	ratio = Lisp__New(NIL, NIL);
-    else
+    else {
 	objseg.freeobj = CDR(ratio);
-
+	--objseg.nfree;
+    }
     ratio->type = LispRatio_t;
     ratio->data.ratio.numerator = num;
     ratio->data.ratio.denominator = den;
@@ -2936,9 +2944,10 @@ LispNewCons(LispObj *car, LispObj *cdr)
 
     if (cons == NIL)
 	cons = Lisp__New(car, cdr);
-    else
+    else {
 	objseg.freeobj = CDR(cons);
-
+	--objseg.nfree;
+    }
     CAR(cons) = car;
     CDR(cons) = cdr;
 

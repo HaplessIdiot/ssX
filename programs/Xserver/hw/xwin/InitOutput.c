@@ -30,7 +30,7 @@ from The Open Group.
 
 #include "win.h"
 #include "winconfig.h"
-
+#include "winprefs.h"
 
 /*
  * General global variables
@@ -47,13 +47,15 @@ int		g_iPixmapPrivateIndex = -1;
 int		g_iWindowPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 Bool		g_fInitializedDefaultScreens = FALSE;
-FILE		*g_pfLog = NULL;
 DWORD		g_dwEnginesSupported = 0;
 HINSTANCE	g_hInstance = 0;
 HWND		g_hDlgDepthChange = NULL;
 HWND		g_hDlgExit = NULL;
 Bool		g_fCalledSetLocale = FALSE;
 Bool		g_fCalledXInitThreads = FALSE;
+int         g_iLogVerbose = 4;
+char *      g_pszLogFile = WIN_LOG_FNAME;
+Bool        g_fLogInited = FALSE;
 
 
 /*
@@ -180,6 +182,10 @@ ddxGiveUp()
   ErrorF ("ddxGiveUp\n");
 #endif
 
+  /* Notify the worker threads we're exiting */
+  winDeinitClipboard ();
+  winDeinitMultiWindowWM ();
+
   /* Close our handle to our message queue */
   if (g_fdMessageQueue != WIN_FD_INVALID)
     {
@@ -190,15 +196,11 @@ ddxGiveUp()
       g_fdMessageQueue = WIN_FD_INVALID;
     }
 
-  /* Close the log file handle */
-  if (g_pfLog != NULL)
-    {
-      /* Close log file */
-      fclose (g_pfLog);
-      
-      /* Set the file handle to invalid */
-      g_pfLog = NULL;
-    }
+  if (!g_fLogInited) {
+    LogInit(g_pszLogFile, NULL);
+    g_fLogInited = TRUE;
+  }  
+  LogClose();
 
   /*
    * At this point we aren't creating any new screens, so
@@ -242,11 +244,14 @@ OsVendorInit (void)
 #ifdef DDXOSVERRORF
   if (!OsVendorVErrorFProc)
     OsVendorVErrorFProc = OsVendorVErrorF;
-
-  /* Open log file if not yet open */
-  if (g_pfLog == NULL)
-    g_pfLog = fopen (WIN_LOG_FNAME, "w");
 #endif
+
+  if (!g_fLogInited) {
+    LogInit(g_pszLogFile, NULL);
+    g_fLogInited = TRUE;
+  }  
+  LogSetParameter(XLOG_FLUSH, 1);
+  LogSetParameter(XLOG_VERBOSITY, g_iLogVerbose);
 
   /* Add a default screen if no screens were specified */
   if (g_iNumScreens == 0)
@@ -402,10 +407,6 @@ ddxProcessArgument (int argc, char *argv[], int i)
        * that are generated before OsInit () is called.
        */
       OsVendorVErrorFProc = OsVendorVErrorF;
-
-      /* Open log file if not yet open */
-      if (g_pfLog == NULL)
-	g_pfLog = fopen (WIN_LOG_FNAME, "w");
 #endif
 
       s_fBeenHere = TRUE;
@@ -1208,6 +1209,26 @@ ddxProcessArgument (int argc, char *argv[], int i)
       return 2;
     }
 
+  /*
+   * Look for the '-logfile' argument
+   */
+  if (IS_OPTION ("-logfile"))
+    {
+      CHECK_ARGS (1);
+      g_pszLogFile = argv[++i];
+      return 2;
+    }
+
+  /*
+   * Look for the '-logverbose' argument
+   */
+  if (IS_OPTION ("-logverbose"))
+    {
+      CHECK_ARGS (1);
+      g_iLogVerbose = atoi(argv[++i]);
+      return 2;
+    }
+
   return 0;
 }
 
@@ -1317,6 +1338,8 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 	  FatalError ("InitOutput - Couldn't add screen %d", i);
 	}
     }
+
+  LoadPreferences();
 
 #if CYGDEBUG || YES
   ErrorF ("InitOutput - Returning.\n");

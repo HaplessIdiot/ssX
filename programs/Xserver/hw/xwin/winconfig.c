@@ -145,16 +145,7 @@ winReadConfigfile ()
     }
   xf86closeConfigFile ();
 
-  winMsg (X_NONE, "Markers: ");
-  winMsg (X_PROBED, "probed, ");
-  winMsg (X_CONFIG, "from config file, ");
-  winMsg (X_DEFAULT, "default setting,\n         ");
-  winMsg (X_CMDLINE, "from command line, ");
-  winMsg (X_NOTICE, "notice, ");
-  winMsg (X_INFO, "informational,\n         ");
-  winMsg (X_WARNING, "warning, ");
-  winMsg (X_ERROR, "error, ");
-  winMsg (X_UNKNOWN, "unknown.\n");
+  LogPrintMarkers();
 
   /* set options from data structure */
 
@@ -223,20 +214,22 @@ typedef struct {
 } WinKBLayoutRec, *WinKBLayoutPtr;
 
 WinKBLayoutRec winKBLayouts[] = {
-    {  0x405,  4, "pc105", "cz",      NULL, NULL, "Czech"},
-    {  0x406,  4, "pc105", "dk",      NULL, NULL, "Danish"},
-    {  0x407,  4, "pc105", "de",      NULL, NULL, "German (Germany)"},
-    {  0x807,  4, "pc105", "de_CH",   NULL, NULL, "German (Switzerland)"},
+    {  0x405, -1, "pc105", "cz",      NULL, NULL, "Czech"},
+    {  0x406, -1, "pc105", "dk",      NULL, NULL, "Danish"},
+    {  0x407, -1, "pc105", "de",      NULL, NULL, "German (Germany)"},
+    {  0x807, -1, "pc105", "de_CH",   NULL, NULL, "German (Switzerland)"},
+    {0x10409, -1, "pc105", "dvorak",  NULL, NULL, "English (USA, Dvorak)"}, 
     {0x20409, -1, "pc105", "us_intl", NULL, NULL, "English (USA, International)"}, 
-    {  0x809,  4, "pc105", "gb",      NULL, NULL, "English (United Kingdom)"},
-    {  0x40a,  4, "pc105", "es",      NULL, NULL, "Spanish (Spain, Traditional Sort)"},
-    {  0x40b,  4, "pc105", "fi",      NULL, NULL, "Finnish"},
-    {  0x40c,  4, "pc105", "fr",      NULL, NULL, "French (Standard)"},
-    {  0x80c,  4, "pc105", "be",      NULL, NULL, "French (Belgian)"},
-    {  0x410,  4, "pc105", "it",      NULL, NULL, "Italian"},
-    {  0x416,  4, "pc105", "pt",      NULL, NULL, "Portuguese (Brazil)"},
-    {  0x816,  4, "pc105", "pt",      NULL, NULL, "Portuguese (Portugal)"},
-    {  0x41d,  4, "pc105", "se",      NULL, NULL, "Swedish (Sweden)"},
+    {  0x809, -1, "pc105", "gb",      NULL, NULL, "English (United Kingdom)"},
+    {  0x40a, -1, "pc105", "es",      NULL, NULL, "Spanish (Spain, Traditional Sort)"},
+    {  0x40b, -1, "pc105", "fi",      NULL, NULL, "Finnish"},
+    {  0x40c, -1, "pc105", "fr",      NULL, NULL, "French (Standard)"},
+    {  0x80c, -1, "pc105", "be",      NULL, NULL, "French (Belgian)"},
+    {  0x410, -1, "pc105", "it",      NULL, NULL, "Italian"},
+    {  0x414, -1, "pc105", "no",      NULL, NULL, "Norwegian"},
+    {  0x416, -1, "pc105", "pt",      NULL, NULL, "Portuguese (Brazil)"},
+    {  0x816, -1, "pc105", "pt",      NULL, NULL, "Portuguese (Portugal)"},
+    {  0x41d, -1, "pc105", "se",      NULL, NULL, "Swedish (Sweden)"},
     {     -1, -1, NULL,    NULL,      NULL, NULL, NULL}
 };
 
@@ -275,6 +268,8 @@ winConfigKeyboard (DeviceIntPtr pDevice)
   if (keyboardType > 0 && GetKeyboardLayoutName (layoutName)) 
   {
     WinKBLayoutPtr	pLayout = winKBLayouts;
+
+    winMsg (X_DEFAULT, "winConfigKeyboard - Layout: \"%s\" \n", layoutName);
 
     layoutNum = strtol (layoutName, (char **)NULL, 16);   
 

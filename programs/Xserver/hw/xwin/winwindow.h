@@ -100,6 +100,7 @@ typedef struct _winWMMessageRec{
 #define		WM_WM_ACTIVATE		(WM_USER + 8)
 #define	        WM_WM_NAME_EVENT	(WM_USER + 9)
 #define	        WM_WM_HINTS_EVENT	(WM_USER + 10)
+#define		WM_WM_CHANGE_STATE	(WM_USER + 11)
 
 
 /*
@@ -115,6 +116,13 @@ winInitWM (void **ppWMInfo,
 	   pthread_t *ptXMsgProc,
 	   pthread_mutex_t *ppmServerStarted,
 	   int dwScreen);
+
+void
+winDeinitMultiWindowWM ();
+
+void
+winMinimizeWindow (Window id);
+
 
 /*
  * winmultiwindowicons.c

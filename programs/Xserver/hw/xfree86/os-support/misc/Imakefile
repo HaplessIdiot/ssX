@@ -8,7 +8,8 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:24:12 rws $
 #include <Server.tmpl>
 
 
-#if defined(i386Architecture) && !defined(cygwinArchitecture)
+#if defined(i386Architecture) && !defined(cygwinArchitecture) \
+	&& !defined(OS2Architecture)
 XSRCS = BUSmemcpy.S IODelay.S SlowBcopy.S
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #else
@@ -31,7 +32,8 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-#if defined(i386Architecture) && !defined(cygwinArchitecture)
+#if defined(i386Architecture) && !defined(cygwinArchitecture) \
+	&& !defined(OS2Architecture)
 ObjectFromAsmSource(BUSmemcpy,NullParameter)
 ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)

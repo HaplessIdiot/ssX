@@ -33,7 +33,8 @@
 
 #include "win.h"
 #include "dixevents.h"
-
+#include "winmultiwindowclass.h"
+#include "winprefs.h"
 
 /*
  * External global variables
@@ -62,6 +63,215 @@ static UINT_PTR		g_uipMousePollingTimerID = 0;
 
 #define MOUSE_POLLING_INTERVAL		500
 #define WIN_MULTIWINDOW_SHAPE		YES
+
+
+
+/*
+ * ConstrainSize - Taken from TWM sources - Respects hints for sizing
+ */
+#define makemult(a,b) ((b==1) ? (a) : (((int)((a)/(b))) * (b)) )
+static void
+ConstrainSize (WinXSizeHints hints, int *widthp, int *heightp)
+{
+  int minWidth, minHeight, maxWidth, maxHeight, xinc, yinc, delta;
+  int baseWidth, baseHeight;
+  int dwidth = *widthp, dheight = *heightp;
+  
+  if (hints.flags & PMinSize)
+    {
+      minWidth = hints.min_width;
+      minHeight = hints.min_height;
+    }
+  else if (hints.flags & PBaseSize)
+    {
+      minWidth = hints.base_width;
+      minHeight = hints.base_height;
+    }
+  else
+    minWidth = minHeight = 1;
+  
+  if (hints.flags & PBaseSize)
+    {
+      baseWidth = hints.base_width;
+      baseHeight = hints.base_height;
+    } 
+  else if (hints.flags & PMinSize)
+    {
+      baseWidth = hints.min_width;
+      baseHeight = hints.min_height;
+    }
+  else
+    baseWidth = baseHeight = 0;
+
+  if (hints.flags & PMaxSize)
+    {
+      maxWidth = hints.max_width;
+      maxHeight = hints.max_height;
+    }
+  else
+    {
+      maxWidth = MAXINT;
+      maxHeight = MAXINT;
+    }
+
+  if (hints.flags & PResizeInc)
+    {
+      xinc = hints.width_inc;
+      yinc = hints.height_inc;
+    }
+  else
+    xinc = yinc = 1;
+
+  /*
+   * First, clamp to min and max values
+   */
+  if (dwidth < minWidth)
+    dwidth = minWidth;
+  if (dheight < minHeight)
+    dheight = minHeight;
+
+  if (dwidth > maxWidth)
+    dwidth = maxWidth;
+  if (dheight > maxHeight)
+    dheight = maxHeight;
+
+  /*
+   * Second, fit to base + N * inc
+   */
+  dwidth = ((dwidth - baseWidth) / xinc * xinc) + baseWidth;
+  dheight = ((dheight - baseHeight) / yinc * yinc) + baseHeight;
+  
+  /*
+   * Third, adjust for aspect ratio
+   */
+
+  /*
+   * The math looks like this:
+   *
+   * minAspectX    dwidth     maxAspectX
+   * ---------- <= ------- <= ----------
+   * minAspectY    dheight    maxAspectY
+   *
+   * If that is multiplied out, then the width and height are
+   * invalid in the following situations:
+   *
+   * minAspectX * dheight > minAspectY * dwidth
+   * maxAspectX * dheight < maxAspectY * dwidth
+   * 
+   */
+  
+  if (hints.flags & PAspect)
+    {
+      if (hints.min_aspect.x * dheight > hints.min_aspect.y * dwidth)
+        {
+	  delta = makemult(hints.min_aspect.x * dheight / hints.min_aspect.y - dwidth, xinc);
+	  if (dwidth + delta <= maxWidth)
+	    dwidth += delta;
+	  else
+            {
+	      delta = makemult(dheight - dwidth*hints.min_aspect.y/hints.min_aspect.x, yinc);
+	      if (dheight - delta >= minHeight)
+		dheight -= delta;
+            }
+        }
+      
+      if (hints.max_aspect.x * dheight < hints.max_aspect.y * dwidth)
+        {
+	  delta = makemult(dwidth * hints.max_aspect.y / hints.max_aspect.x - dheight, yinc);
+	  if (dheight + delta <= maxHeight)
+	    dheight += delta;
+	  else
+            {
+	      delta = makemult(dwidth - hints.max_aspect.x*dheight/hints.max_aspect.y, xinc);
+	      if (dwidth - delta >= minWidth)
+		dwidth -= delta;
+            }
+        }
+    }
+  
+  /* Return computed values */
+  *widthp = dwidth;
+  *heightp = dheight;
+}
+#undef makemult
+
+
+
+/*
+ * ValidateSizing - Ensures size request respects hints
+ */
+static int
+ValidateSizing (HWND hwnd, WindowPtr pWin,
+		WPARAM wParam, LPARAM lParam)
+{
+  WinXSizeHints sizeHints;
+  RECT *rect;
+  int iWidth, iHeight, iTopBorder;
+  POINT pt;
+
+  /* Invalid input checking */
+  if (pWin==NULL || lParam==0)
+    return FALSE;
+
+  /* No size hints, no checking */
+  if (!winMultiWindowGetWMNormalHints (pWin, &sizeHints))
+    return FALSE;
+  
+  /* Avoid divide-by-zero */
+  if (sizeHints.flags & PResizeInc)
+    {
+      if (sizeHints.width_inc == 0) sizeHints.width_inc = 1;
+      if (sizeHints.height_inc == 0) sizeHints.height_inc = 1;
+    }
+  
+  rect = (RECT*)lParam;
+  
+  iWidth = rect->right - rect->left;
+  iHeight = rect->bottom - rect->top;
+
+  /* Get title bar height, there must be an easier way?! */
+  pt.x = pt.y = 0;
+  ClientToScreen(hwnd, &pt);
+  iTopBorder = pt.y - rect->top;
+  
+  /* Now remove size of any borders */
+  iWidth -= 2 * GetSystemMetrics(SM_CXSIZEFRAME);
+  iHeight -= GetSystemMetrics(SM_CYSIZEFRAME) + iTopBorder;
+
+  /* Constrain the size to legal values */
+  ConstrainSize (sizeHints, &iWidth, &iHeight);
+
+  /* Add back the borders */
+  iWidth += 2 * GetSystemMetrics(SM_CXSIZEFRAME);
+  iHeight += GetSystemMetrics(SM_CYSIZEFRAME) + iTopBorder;
+
+  /* Adjust size according to where we're dragging from */
+  switch(wParam) {
+  case WMSZ_TOP:
+  case WMSZ_TOPRIGHT:
+  case WMSZ_BOTTOM:
+  case WMSZ_BOTTOMRIGHT:
+  case WMSZ_RIGHT:
+    rect->right = rect->left + iWidth;
+    break;
+  default:
+    rect->left = rect->right - iWidth;
+    break;
+  }
+  switch(wParam) {
+  case WMSZ_BOTTOM:
+  case WMSZ_BOTTOMRIGHT:
+  case WMSZ_BOTTOMLEFT:
+  case WMSZ_RIGHT:
+  case WMSZ_LEFT:
+    rect->bottom = rect->top + iHeight;
+    break;
+  default:
+    rect->top = rect->bottom - iHeight;
+    break;
+  }
+  return TRUE;
+}
 
 
 /*
@@ -168,65 +378,22 @@ winTopLevelWindowProc (HWND hwnd, UINT message,
 
     case WM_INIT_SYS_MENU:
       /*
-       * Add Always On Top command to system menu
+       * Add whatever the setup file wants to for this window
        */
-      {
-	HMENU			sys;
-	
-	sys = GetSystemMenu (hwnd, FALSE);
-	
-	AppendMenu (sys, MF_SEPARATOR, 0, NULL);
-	AppendMenu (sys, MF_STRING, ID_APP_ALWAYS_ON_TOP, "Always On Top");
-      }
+      SetupSysMenu ((unsigned long)hwnd);
       return 0;
 
     case WM_SYSCOMMAND:
       /*
-       * Any window menu items go through here, presently only Always On Top
+       * Any window menu items go through here
        */
-      if (LOWORD(wParam) == ID_APP_ALWAYS_ON_TOP)
-	{
-	  DWORD			dwExStyle;
-
-	  /* Get extended window style */
-	  dwExStyle = GetWindowLong (hwnd, GWL_EXSTYLE);
-
-	  /* Handle topmost windows */
-	  if (dwExStyle & WS_EX_TOPMOST)
-	    SetWindowPos (hwnd,
-			  HWND_NOTOPMOST,
-			  0, 0,
-			  0, 0,
-			  SWP_NOSIZE | SWP_NOMOVE);
-	  else
-	    SetWindowPos (hwnd,
-			  HWND_TOPMOST,
-			  0, 0,
-			  0, 0,
-			  SWP_NOSIZE | SWP_NOMOVE);
-
-	  return 0;
-	}
+      HandleCustomWM_COMMAND ((unsigned long)hwnd, LOWORD(wParam));
       break;
 
     case WM_INITMENU:
       /* Checks/Unchecks any menu items before they are displayed */
-      {
-	DWORD			dwExStyle;
-
-	/* Get extended window style */
-	dwExStyle = GetWindowLong (hwnd, GWL_EXSTYLE);
-
-	if (dwExStyle & WS_EX_TOPMOST)
-	  CheckMenuItem ((HMENU)wParam,
-			 ID_APP_ALWAYS_ON_TOP,
-			 MF_BYCOMMAND | MF_CHECKED);
-	else
-	  CheckMenuItem ((HMENU)wParam,
-			 ID_APP_ALWAYS_ON_TOP,
-			 MF_BYCOMMAND | MF_UNCHECKED);
-      }
-      return 0;
+      HandleCustomWM_INITMENU ((unsigned long)hwnd, wParam);
+      break;
 
     case WM_PAINT:
       /* Only paint if our window handle is valid */
@@ -692,6 +859,11 @@ winTopLevelWindowProc (HWND hwnd, UINT message,
       if (s_pScreenPriv != NULL)
 	s_pScreenPriv->fWindowOrderChanged = TRUE;
       return 0;
+
+    case WM_SIZING:
+      /* Need to legalize the size according to WM_NORMAL_HINTS */
+      /* for applications like xterm */
+      return ValidateSizing(hwnd, pWin, wParam, lParam);
 
     case WM_SIZE:
       /* see dix/window.c */

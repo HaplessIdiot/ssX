@@ -62,12 +62,15 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 DEFINES = $(OS_DEFINES) $(EXT_DEFINES) -DNO_HW_ONLY_EXTS \
 	  -UXFree86LOADER  -UMITSHM
 
+XKB_DEFINES = -DXKB_BASE_DIRECTORY=\"$(LIBDIR)/xkb/\"
+
 all:: $(OBJS)
 
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 SpecialCObjectRule(Init,$(ICONFIGFILES),$(_NOOP_))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),-UDPMSExtension)
+SpecialCObjectRule(Keyboard,$(ICONFIGFILES),$(XKB_DEFINES))
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xnest,$(OBJS))

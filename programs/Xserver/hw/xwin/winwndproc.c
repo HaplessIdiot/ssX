@@ -35,6 +35,7 @@
 
 #include "win.h"
 #include <commctrl.h>
+#include "winprefs.h"
 
 /*
  * Global variables
@@ -1046,11 +1047,18 @@ winWindowProc (HWND hwnd, UINT message,
 	  ShowWindow (s_pScreenPriv->hwndScreen, SW_SHOW);
 	  s_pScreenPriv->fRootWindowShown = TRUE;
 	  return 0;
+
+	default:
+	  /* It's probably one of the custom menus... */
+	  return HandleCustomWM_COMMAND (0, LOWORD (wParam));
+	  
 	}
       break;
 
     case WM_GIVEUP:
        /* Tell X that we are giving up */
+      winDeinitClipboard ();
+      winDeinitMultiWindowWM ();
       GiveUp (0);
       return 0;
 

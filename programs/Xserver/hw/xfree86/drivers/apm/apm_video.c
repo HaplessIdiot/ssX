@@ -2,6 +2,7 @@
 
 #if PSZ != 24
 #include "dixstruct.h"
+#include "fourcc.h"
 
 /*
  * Ported from mga_video.c by Loïc Grenié
@@ -115,7 +116,7 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
     {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
 };
 
-#define NUM_IMAGES 8
+#define NUM_IMAGES 9
 typedef char c8;
 
 static XF86ImageRec Images[NUM_IMAGES] =
@@ -171,6 +172,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	XvTopToBottom
    },
+   XVIMAGE_YUY2,
    {
 	0x59595959,
         XvYUV,
@@ -926,6 +928,7 @@ ApmQueryImageAttributes(ScrnInfoPtr pScrn, int id,
     case 0x59565955:
     case 0x55595659:
     case 0x59555956:
+    case 0x32595559:
 	size = *w << 1;
 	goto common;
     case 0x59595959:

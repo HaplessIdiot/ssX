@@ -578,8 +578,8 @@ extern DWORD			g_dwEnginesSupported;
 extern HINSTANCE		g_hInstance;
 extern HWND			g_hDlgDepthChange;
 extern HWND			g_hDlgExit;
-extern int			g_copyROP[];
-extern int			g_patternROP[];
+extern int                      g_copyROP[];
+extern int                      g_patternROP[];
 
 
 /*
@@ -733,6 +733,13 @@ Bool
 winInitClipboard (pthread_t *ptClipboardProc,
 		  pthread_mutex_t *ppmServerStarted,
 		  DWORD dwScreen);
+
+/*
+ * winclipboardthread.c
+ */
+
+void
+winDeinitClipboard ();
 
 
 /*

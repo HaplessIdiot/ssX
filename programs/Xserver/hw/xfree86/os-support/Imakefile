@@ -13,6 +13,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:38:46 kaleb $
 #if defined(i386Architecture) || defined(ia64Architecture) || \
 	(defined(SunArchitecture) && defined(SparcArchitecture)) || \
 	(defined(FreeBSDArchitecture) && defined(AlphaArchitecture)) || \
+	(defined(FreeBSDArchitecture) && defined(Sparc64Architecture)) || \
 	(defined(NetBSDArchitecture) && defined(AlphaArchitecture)) || \
 	(defined(NetBSDArchitecture) && defined(PpcArchitecture)) || \
 	(defined(NetBSDArchitecture) && defined(SparcArchitecture)) || \

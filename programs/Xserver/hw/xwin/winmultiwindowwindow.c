@@ -34,6 +34,7 @@
 #include "win.h"
 #include "dixevents.h"
 #include "winmultiwindowclass.h"
+#include "winprefs.h"
 
 
 /*
@@ -472,6 +473,9 @@ winCreateWindowsWindow (WindowPtr pWin)
 
   /* Load default X icon in case it's not ready yet */
   if (!g_hiconX)
+    g_hiconX = (HICON)winOverrideDefaultIcon();
+  
+  if (!g_hiconX)
     g_hiconX = LoadIcon (g_hInstance, MAKEINTRESOURCE(IDI_XWIN));
   
   /* Try and get the icon from WM_HINTS */
@@ -512,7 +516,7 @@ winCreateWindowsWindow (WindowPtr pWin)
   strcat (pszClass, pszWindowID);
 
 #if CYGMULTIWINDOW_DEBUG
-  ErrorF ("winCreateWindowsWindow - Creating class: %s\n", classStr);
+  ErrorF ("winCreateWindowsWindow - Creating class: %s\n", pszClass);
 #endif
 
   /* Setup our window class */
@@ -617,7 +621,8 @@ winDestroyWindowsWindow (WindowPtr pWin)
 #endif
       
       /* Only delete if it's not the default */
-      if (hiconClass != g_hiconX)
+      if (hiconClass != g_hiconX &&
+	  !winIconIsOverride((unsigned long)hiconClass))
 	{ 
 	  iReturn = DestroyIcon (hiconClass);
 #if CYGMULTIWINDOW_DEBUG
@@ -836,4 +841,22 @@ winReorderWindowsMultiWindow (ScreenPtr pScreen)
 
   pScreenPriv->fRestacking = FALSE;
   pScreenPriv->fWindowOrderChanged = FALSE;
+}
+
+
+/*
+ * winMinimizeWindow - Minimize in response to WM_CHANGE_STATE
+ */
+
+void
+winMinimizeWindow (Window id)
+{
+  WindowPtr		pWin;
+  winPrivWinPtr	pWinPriv;
+  
+  pWin = LookupIDByType (id, RT_WINDOW);
+  
+  pWinPriv = winGetWindowPriv (pWin);
+  
+  ShowWindow (pWinPriv->hWnd, SW_MINIMIZE);
 }

@@ -157,6 +157,7 @@ winMutliWindowWMIOErrorHandler (Display *pDisplay);
 
 static int			g_nQueueSize;
 static jmp_buf			g_jmpEntry;
+static Bool                     g_shutdown = FALSE;
 
 
 
@@ -488,7 +489,11 @@ UpdateName (WMInfoPtr pWMInfo, Window iWindow)
 			    iWindow,
 			    &attr);
       if (!attr.override_redirect)
-	SetWindowText (hWnd, pszName);
+	{
+	  SetWindowText (hWnd, pszName);
+	  winUpdateIcon (iWindow);
+	}
+
       free (pszName);
     }
 }
@@ -585,7 +590,7 @@ winMultiWindowWMProc (void *pArg)
 #endif
 	  
 	  /* Unmap the window */
-	  XUnmapWindow(pWMInfo->pDisplay, pNode->msg.iWindow);
+	  XUnmapWindow (pWMInfo->pDisplay, pNode->msg.iWindow);
 	  break;
 
 	case WM_WM_KILL:
@@ -639,6 +644,11 @@ winMultiWindowWMProc (void *pArg)
 
 	case WM_WM_HINTS_EVENT:
 	  winUpdateIcon (pNode->msg.iWindow);
+	  break;
+
+	case WM_WM_CHANGE_STATE:
+	  /* Minimize the window in Windows */
+	  winMinimizeWindow (pNode->msg.iWindow);
 	  break;
 
 	default:
@@ -724,6 +734,7 @@ winMultiWindowXMsgProc (void *pArg)
   XEvent		event;
   Atom                  atmWmName;
   Atom                  atmWmHints;
+  Atom			atmWmChange;
   int			iReturn;
   XIconSize		*xis;
 
@@ -829,13 +840,16 @@ winMultiWindowXMsgProc (void *pArg)
 		     xis,
 		     1);
       XFree (xis);
-  }
+    }
 
   atmWmName   = XInternAtom (pProcArg->pDisplay,
 			     "WM_NAME",
 			     False);
   atmWmHints   = XInternAtom (pProcArg->pDisplay,
 			      "WM_HINTS",
+			      False);
+  atmWmChange  = XInternAtom (pProcArg->pDisplay,
+			      "WM_CHANGE_STATE",
 			      False);
 
   /* Loop until we explicitly break out */
@@ -871,6 +885,19 @@ winMultiWindowXMsgProc (void *pArg)
 	  msg.iWindow = event.xproperty.window;
 
 	  /* Other fields ignored */
+	  winSendMessageToWM (pProcArg->pWMInfo, &msg);
+	}
+      else if (event.type == ClientMessage
+	       && event.xclient.message_type == atmWmChange
+	       && event.xclient.data.l[0] == IconicState)
+	{
+	  ErrorF ("winMultiWindowXMsgProc - WM_CHANGE_STATE - IconicState\n");
+
+	  memset (&msg, 0, sizeof (msg));
+
+	  msg.msg = WM_WM_CHANGE_STATE;
+	  msg.iWindow = event.xclient.window;
+
 	  winSendMessageToWM (pProcArg->pWMInfo, &msg);
 	}
     }
@@ -1038,6 +1065,12 @@ winInitMultiWindowWM (WMInfoPtr pWMInfo, WMProcArgPtr pProcArg)
 	      iReturn);
       pthread_exit (NULL);
     }
+  else if (g_shutdown)
+    {
+      /* Shutting down, the X server severed out connection! */
+      ErrorF ("winInitMultiWindowWM - Detected shutdown in progress\n");
+      pthread_exit (NULL);
+    }
   else if (iReturn == WIN_JMP_ERROR_IO)
     {
       ErrorF ("winInitMultiWindowWM - setjmp returned WIN_JMP_ERROR_IO\n");
@@ -1135,4 +1168,16 @@ winMutliWindowWMIOErrorHandler (Display *pDisplay)
   longjmp (g_jmpEntry, WIN_JMP_ERROR_IO);
   
   return 0;
+}
+
+
+/*
+ * Notify the MWM thread we're exiting and not to reconnect
+ */
+
+void
+winDeinitMultiWindowWM ()
+{
+  ErrorF ("winDeinitMultiWindowWM - Noting shutdown in progress\n");
+  g_shutdown = TRUE;
 }

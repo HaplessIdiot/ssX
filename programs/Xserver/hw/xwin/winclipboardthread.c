@@ -43,6 +43,7 @@ extern Bool g_fCalledSetLocale;
  */
 
 static jmp_buf			g_jmpEntry;
+static Bool                     g_shutdown = FALSE;
 
 
 /*
@@ -152,6 +153,12 @@ winClipboardProc (void *pArg)
       /* setjmp returned an unknown value, exit */
       ErrorF ("winClipboardProc - setjmp returned: %d exiting\n",
 	      iReturn);
+      pthread_exit (NULL);
+    }
+  else if (g_shutdown) 
+    {
+      /* Shutting down, the X server severed out connection! */
+      ErrorF ("winClipboardProc - Detected shutdown in progress\n");
       pthread_exit (NULL);
     }
   else if (iReturn == WIN_JMP_ERROR_IO)
@@ -462,4 +469,16 @@ winClipboardIOErrorHandler (Display *pDisplay)
   longjmp (g_jmpEntry, WIN_JMP_ERROR_IO);
   
   return 0;
+}
+
+
+/*
+ * Notify the clipboard thread we're exiting and not to reconnect
+ */
+
+void
+winDeinitClipboard ()
+{
+  ErrorF ("winDeinitClipboard - Noting shutdown in progress\n");
+  g_shutdown = TRUE;
 }

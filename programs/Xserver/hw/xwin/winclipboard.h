@@ -119,6 +119,8 @@ winClipboardUNIXtoDOS (unsigned char **ppszData, int iLength);
 void *
 winClipboardProc (void *pArg);
 
+void
+winDeinitClipboard ();
 
 /*
  * winclipboardunicode.c

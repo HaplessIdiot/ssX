@@ -32,7 +32,7 @@
 
 #include "win.h"
 #include <shellapi.h>
-
+#include "winprefs.h"
 
 /*
  * Initialize the tray icon
@@ -176,9 +176,11 @@ winHandleIconMessage (HWND hwnd, UINT message,
 
 	    /* Remove separator */
 	    RemoveMenu (hmenuTray,
-			1,
+			0,
 			MF_BYPOSITION);
 	  }
+
+	SetupRootMenu ((unsigned long)hmenuTray);
 
 	/*
 	 * NOTE: This three-step procedure is required for

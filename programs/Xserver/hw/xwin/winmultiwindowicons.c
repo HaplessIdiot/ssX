@@ -32,6 +32,7 @@
 #include "win.h"
 #include "dixevents.h"
 #include "winmultiwindowclass.h"
+#include "winprefs.h"
 
 
 /*
@@ -341,6 +342,7 @@ winXIconToHICON (WindowPtr pWin)
 }
 
 
+
 /*
  * Change the Windows window icon 
  */
@@ -352,7 +354,10 @@ winUpdateIcon (Window id)
   HICON			hIcon, hiconOld;
 
   pWin = LookupIDByType (id, RT_WINDOW);
-  hIcon = winXIconToHICON (pWin);
+  hIcon = (HICON)winOverrideIcon ((unsigned long)pWin);
+
+  if (!hIcon)
+    hIcon = winXIconToHICON (pWin);
 
   if (hIcon)
     {
@@ -365,7 +370,8 @@ winUpdateIcon (Window id)
 					   (int) hIcon);
 	  
 	  /* Delete the icon if its not the default */
-	  if (hiconOld != g_hiconX)
+	  if (hiconOld != g_hiconX &&
+	      !winIconIsOverride((unsigned long)hiconOld))
 	    DeleteObject (hiconOld);
 	}
     }
