@@ -32,7 +32,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/pseudoramiX.c,v 1.1 2001/12/22 05:28:34 torrey Exp $ */
 
 #include "pseudoramiX.h"
 
@@ -101,15 +101,20 @@ PseudoramiXAddScreen(int x, int y, int w, int h)
     s->h = h;
 }
 
+
 // Initialize PseudoramiX.
 // Copied from PanoramiXExtensionInit
 void PseudoramiXExtensionInit(int argc, char *argv[])
 {
     Bool	     	success = FALSE;
     ExtensionEntry 	*extEntry;
+    extern int darwinScreensFound; // in case AddScreen hasn't been called yet
 
-    if (noPseudoramiXExtension) {
-        pseudoramiXNumScreens = 0;
+    if (noPseudoramiXExtension) return;
+
+    if (pseudoramiXNumScreens == 1  ||  darwinScreensFound == 1) {
+        // Only one screen - disable Xinerama extension.
+        noPseudoramiXExtension = TRUE;
         return;
     }
 
@@ -166,12 +171,12 @@ static int ProcPseudoramiXGetState(ClientPtr client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.state = pseudoramiXNumScreens > 1; // was !noPanoramiXExtension;
+    rep.state = !noPseudoramiXExtension;
     if (client->swapped) {
         swaps (&rep.sequenceNumber, n);
         swapl (&rep.length, n);
         swaps (&rep.state, n);
-    }	
+    }
     WriteToClient (client, sizeof (xPanoramiXGetStateReply), (char *) &rep);
     return client->noClientException;
 }
@@ -192,12 +197,12 @@ static int ProcPseudoramiXGetScreenCount(ClientPtr client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.ScreenCount = pseudoramiXNumScreens; // was PanoramiXNumScreens;
+    rep.ScreenCount = pseudoramiXNumScreens;
     if (client->swapped) {
         swaps (&rep.sequenceNumber, n);
         swapl (&rep.length, n);
         swaps (&rep.ScreenCount, n);
-    }	
+    }
     WriteToClient (client, sizeof(xPanoramiXGetScreenCountReply), (char *)&rep);
     return client->noClientException;
 }
@@ -228,7 +233,7 @@ static int ProcPseudoramiXGetScreenSize(ClientPtr client)
         swapl (&rep.length, n);
         swaps (&rep.width, n);
         swaps (&rep.height, n);
-    }	
+    }
     WriteToClient (client, sizeof(xPanoramiXGetScreenSizeReply), (char *)&rep);
     return client->noClientException;
 }
@@ -245,13 +250,13 @@ static int ProcPseudoramiXIsActive(ClientPtr client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.state = pseudoramiXNumScreens > 1; // was !noPanoramiXExtension;
+    rep.state = !noPseudoramiXExtension;
     if (client->swapped) {
 	register int n;
 	swaps (&rep.sequenceNumber, n);
 	swapl (&rep.length, n);
 	swapl (&rep.state, n);
-    }	
+    }
     WriteToClient (client, sizeof (xXineramaIsActiveReply), (char *) &rep);
     return client->noClientException;
 }
@@ -267,18 +272,17 @@ static int ProcPseudoramiXQueryScreens(ClientPtr client)
 
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.number = pseudoramiXNumScreens > 1 ? pseudoramiXNumScreens : 0;
-    // was (noPanoramiXExtension) ? 0 : PanoramiXNumScreens;
+    rep.number = noPseudoramiXExtension ? 0 : pseudoramiXNumScreens;
     rep.length = rep.number * sz_XineramaScreenInfo >> 2;
     if (client->swapped) {
 	register int n;
 	swaps (&rep.sequenceNumber, n);
 	swapl (&rep.length, n);
 	swapl (&rep.number, n);
-    }	
+    }
     WriteToClient (client, sizeof (xXineramaQueryScreensReply), (char *) &rep);
 
-    if (pseudoramiXNumScreens > 1) {
+    if (!noPseudoramiXExtension) {
 	xXineramaScreenInfo scratch;
 	int i;
 
@@ -287,7 +291,7 @@ static int ProcPseudoramiXQueryScreens(ClientPtr client)
 	    scratch.y_org  = pseudoramiXScreens[i].y;
 	    scratch.width  = pseudoramiXScreens[i].w;
 	    scratch.height = pseudoramiXScreens[i].h;
-	
+
 	    if(client->swapped) {
 		register int n;
 		swaps (&scratch.x_org, n);
@@ -343,7 +347,7 @@ SProcPseudoramiXGetState(ClientPtr client)
 	REQUEST(xPanoramiXGetStateReq);
 	register int n;
 
- 	swaps (&stuff->length, n);	
+ 	swaps (&stuff->length, n);
 	REQUEST_SIZE_MATCH(xPanoramiXGetStateReq);
 	return ProcPseudoramiXGetState(client);
 }
