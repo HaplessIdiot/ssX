@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.53 2001/09/18 21:25:30 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.55 2001/10/01 13:44:06 eich Exp $ */
 
 /*
  * Authors:
@@ -71,7 +71,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Required Functions: */
 
 static void I810Identify(int flags);
-static const OptionInfoRec *	I810AvailableOptions(int chipid, int busid);
 static Bool I810Probe(DriverPtr drv, int flags);
 static Bool I810PreInit(ScrnInfoPtr pScrn, int flags);
 static Bool I810ScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
@@ -102,7 +101,8 @@ static SymTabRec I810Chipsets[] = {
    { PCI_CHIP_I810,       "i810"},
    { PCI_CHIP_I810_DC100, "i810-dc100"},
    { PCI_CHIP_I810_E,     "i810e"},
-   { PCI_CHIP_I815,	  "i815"},
+   { PCI_CHIP_I815,	      "i815"},
+   { PCI_CHIP_I830_M,     "i830M"},
    { -1, NULL }
 };
 
@@ -110,20 +110,10 @@ static PciChipsets I810PciChipsets[] = {
    { PCI_CHIP_I810,       PCI_CHIP_I810,       RES_SHARED_VGA },
    { PCI_CHIP_I810_DC100, PCI_CHIP_I810_DC100, RES_SHARED_VGA },
    { PCI_CHIP_I810_E,     PCI_CHIP_I810_E,     RES_SHARED_VGA },
-   { PCI_CHIP_I815,	  PCI_CHIP_I815,       RES_SHARED_VGA },
+   { PCI_CHIP_I815,	      PCI_CHIP_I815,       RES_SHARED_VGA },
+   { PCI_CHIP_I830_M,     PCI_CHIP_I830_M,     RES_SHARED_VGA },
    { -1, -1, RES_UNDEFINED }
 };
-
-typedef enum {
-   OPTION_NOACCEL,
-   OPTION_SW_CURSOR,
-   OPTION_COLOR_KEY,
-   OPTION_CACHE_LINES,
-   OPTION_DAC_6BIT,
-   OPTION_DRI,
-   OPTION_NO_DDC,
-   OPTION_XVMC_SURFACES
-} I810Opts;
 
 static const OptionInfoRec I810Options[] = {
    { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
@@ -142,6 +132,7 @@ static const char *vgahwSymbols[] = {
    "vgaHWGetHWRec",
    "vgaHWGetIOBase",
    "vgaHWGetIndex",
+   "vgaHWHandleColormaps",
    "vgaHWInit",
    "vgaHWLock",
    "vgaHWMapMem",
@@ -161,6 +152,11 @@ static const char *fbSymbols[] = {
    NULL
 };
 
+static const char *miscSymbols[] = {
+   "GetTimeInMillis",
+   NULL
+};
+
 static const char *vbeSymbols[] = {
    "VBEInit",
    "vbeDoEDID",
@@ -175,10 +171,14 @@ static const char *ddcSymbols[] = {
 };
 
 static const char *xaaSymbols[] = {
+   "XAACachePlanarMonoStipple",
    "XAACreateInfoRec",
    "XAADestroyInfoRec",
    "XAAFillSolidRects"
    "XAAInit",
+   "XAAOverlayFBfuncs",
+   "XAAScreenIndex",
+   "XAAStippleScanlineFuncLSBFirst",
    NULL
 };
 
@@ -199,6 +199,7 @@ static const char *drmSymbols[] = {
    "drmAgpEnable",
    "drmAgpFree",
    "drmAgpRelease",
+   "drmAvailable",
    "drmCtlInstHandler",
    "drmFreeVersion",
    "drmGetInterruptFromBusID",
@@ -213,6 +214,8 @@ static const char *driSymbols[] = {
     "DRICreateInfoRec",
     "DRIDestroyInfoRec",
     "DRIFinishScreenInit",
+	"DRIGetContext",
+	"DRIGetDrawableIndex",
     "DRIGetSAREAPrivate",
     "DRILock",
     "DRIQueryVersion",
@@ -286,6 +289,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			fbSymbols, 
 			xaaSymbols, 
 			ramdacSymbols,
+			miscSymbols,
 #ifdef XF86DRI
 			drmSymbols, 
 			driSymbols,
@@ -342,9 +346,11 @@ I810Identify(int flags) {
    xf86PrintChipsets(I810_NAME, "Driver for Intel i810 chipset", I810Chipsets);
 }
 
-static const OptionInfoRec *
+const OptionInfoRec *
 I810AvailableOptions(int chipid, int busid)
 {
+	const OptionInfoRec *pOptions;
+	if ((pOptions = I830BIOSAvailableOptions (chipid,busid))) return pOptions;
     return I810Options;
 }
 /*
@@ -389,20 +395,40 @@ I810Probe(DriverPtr drv, int flags) {
        /* Allocate new ScrnInfoRec and claim the slot */
        if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
 					      I810PciChipsets, 0, 0, 0, 0, 0))){
-	   pScrn->driverVersion = I810_VERSION;
-	   pScrn->driverName = I810_DRIVER_NAME;
-	   pScrn->name = I810_NAME;
-	   pScrn->Probe = I810Probe;
-	   pScrn->PreInit = I810PreInit;
-	   pScrn->ScreenInit = I810ScreenInit;
-	   pScrn->SwitchMode = I810SwitchMode;
-	   pScrn->AdjustFrame = I810AdjustFrame;
-	   pScrn->EnterVT = I810EnterVT;
-	   pScrn->LeaveVT = I810LeaveVT;
-	   pScrn->FreeScreen = I810FreeScreen;
-	   pScrn->ValidMode = I810ValidMode;
-	   foundScreen = TRUE;
-      }
+		   EntityInfoPtr pEnt;
+
+		   pEnt = xf86GetEntityInfo(usedChips[i]);
+
+		   if (pEnt->chipset == PCI_CHIP_I830_M) {
+			   pScrn->driverVersion = I810_VERSION;
+			   pScrn->driverName = I810_DRIVER_NAME;
+			   pScrn->name = I810_NAME;
+			   pScrn->Probe = I810Probe;
+			   pScrn->PreInit = I830BIOSPreInit;
+			   pScrn->ScreenInit = I830BIOSScreenInit;
+			   pScrn->SwitchMode = I830BIOSSwitchMode;
+			   pScrn->AdjustFrame = I830BIOSAdjustFrame;
+			   pScrn->EnterVT = I830BIOSEnterVT;
+			   pScrn->LeaveVT = I830BIOSLeaveVT;
+			   pScrn->FreeScreen = I830BIOSFreeScreen;
+			   pScrn->ValidMode = I810ValidMode;
+			   foundScreen = TRUE;
+		   } else {
+			   pScrn->driverVersion = I810_VERSION;
+			   pScrn->driverName = I810_DRIVER_NAME;
+			   pScrn->name = I810_NAME;
+			   pScrn->Probe = I810Probe;
+			   pScrn->PreInit = I810PreInit;
+			   pScrn->ScreenInit = I810ScreenInit;
+			   pScrn->SwitchMode = I810SwitchMode;
+			   pScrn->AdjustFrame = I810AdjustFrame;
+			   pScrn->EnterVT = I810EnterVT;
+			   pScrn->LeaveVT = I810LeaveVT;
+			   pScrn->FreeScreen = I810FreeScreen;
+			   pScrn->ValidMode = I810ValidMode;
+			   foundScreen = TRUE;
+		   }
+	   }
    }
 
    xfree(usedChips);
@@ -881,7 +907,7 @@ I810MapMMIO(ScrnInfoPtr pScrn)
 
 
 
-static Bool
+Bool
 I810MapMem(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
@@ -904,7 +930,7 @@ I810MapMem(ScrnInfoPtr pScrn)
    return TRUE;
 }
 
-static Bool
+Bool
 I810UnmapMem(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
@@ -1285,7 +1311,7 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
 }
 
 
-static void
+void
 I810SetRingRegs( ScrnInfoPtr pScrn ) {
    unsigned int itemp;
    I810Ptr pI810 = I810PTR(pScrn);
@@ -1299,7 +1325,11 @@ I810SetRingRegs( ScrnInfoPtr pScrn ) {
    OUTREG(LP_RING + RING_START, itemp );
 
    itemp = INREG(LP_RING + RING_LEN);
-   itemp &= ~(RING_NR_PAGES | RING_REPORT_MASK | RING_VALID_MASK);
+   if (IS_I830 (pI810)) {
+	   itemp &= ~(I830_RING_NR_PAGES | RING_REPORT_MASK | RING_VALID_MASK);
+   } else {
+	   itemp &= ~(RING_NR_PAGES | RING_REPORT_MASK | RING_VALID_MASK);
+   }
    itemp |= ((pI810->LpRing.mem.Size-4096) | RING_NO_REPORT | RING_VALID);
    OUTREG(LP_RING + RING_LEN, itemp );
 }
@@ -1732,27 +1762,43 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
       xf86DrvMsg(pScrn->scrnIndex,
 		 X_WARNING, "Framebuffer allocation failed\n");
       return FALSE;
-   }
+   } else
+		DPRINTF ("Frame buffer at 0x%.8x (%luk, %lu bytes)\n",
+				 pI810->FrontBuffer.Start,
+				 pI810->FrontBuffer.Size / 1024,
+				 pI810->FrontBuffer.Size);
    
    memset( &(pI810->LpRing), 0, sizeof( I810RingBuffer ) );
    if(I810AllocLow( &(pI810->LpRing.mem), &(pI810->SysMem), 16*4096 )) {
-	 if (I810_DEBUG & DEBUG_VERBOSE_MEMORY)
-	    ErrorF( "ring buffer at local %lx\n", 
-		    pI810->LpRing.mem.Start);
+	   DPRINTF ("Ring buffer at 0x%.8x (%luk, %lu bytes)\n",
+				pI810->LpRing.mem.Start,
+				pI810->LpRing.mem.Size / 1024,
+				pI810->LpRing.mem.Size);
 
 	 pI810->LpRing.tail_mask = pI810->LpRing.mem.Size - 1;
 	 pI810->LpRing.virtual_start = pI810->FbBase + pI810->LpRing.mem.Start;
 	 pI810->LpRing.head = 0;
 	 pI810->LpRing.tail = 0;      
 	 pI810->LpRing.space = 0;		 
+   } else {
+	   xf86DrvMsg (pScrn->scrnIndex,X_ERROR,"Ring buffer allocation failed\n");
+	   return (FALSE);
    }
-   
+
    if ( I810AllocLow( &pI810->Scratch, &(pI810->SysMem), 64*1024 ) || 
 	I810AllocLow( &pI810->Scratch, &(pI810->SysMem), 16*1024 ) ) {
+	   DPRINTF ("Scratch memory at 0x%.8x (%luk, %lu bytes)\n",
+				pI810->Scratch.Start,
+				pI810->Scratch.Size / 1024,
+				pI810->Scratch.Size);
+
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		 "Allocated Scratch Memory\n");
+   } else {
+	   xf86DrvMsg (pScrn->scrnIndex,X_ERROR,"Scratch memory allocation failed\n");
+	   return (FALSE);
    }
-   
+
    pI810->DoneFrontAlloc = TRUE;
    return TRUE;
 }
