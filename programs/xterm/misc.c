@@ -2,7 +2,7 @@
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.79tsi Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.80 2003/10/24 20:38:24 tsi Exp $ */
 
 /*
  *
@@ -1477,13 +1477,17 @@ do_osc(Char * oscbuf, int len GCC_UNUSED, int final)
 		unparseputs(buf, screen->respond);
 	    }
 	    unparseputc1(final, screen->respond);
-	} else {
+	} else if (buf != 0) {
+	    VTFontNames fonts;
+
+	    memset(&fonts, 0, sizeof(fonts));
+
 	    /*
 	     * If the font specification is a "#", followed by an
 	     * optional sign and optional number, lookup the
 	     * corresponding menu font entry.
 	     */
-	    if (buf != 0 && *buf == '#') {
+	    if (*buf == '#') {
 		int num = screen->menu_font_number;
 		int rel = 0;
 
@@ -1498,16 +1502,18 @@ do_osc(Char * oscbuf, int len GCC_UNUSED, int final)
 		if (isdigit(CharOf(*buf))) {
 		    int val = atoi(buf);
 		    if (rel > 0)
-			num += val;
+			rel = val;
 		    else if (rel < 0)
-			num -= val;
+			rel = -val;
 		    else
 			num = val;
-		} else if (rel) {
-		    num += rel;
-		} else {
+		} else if (rel == 0) {
 		    num = 0;
 		}
+
+		if (rel != 0)
+		    num = lookupRelativeFontSize(screen,
+						 screen->menu_font_number, rel);
 
 		if (num < 0
 		    || num > fontMenu_lastBuiltin
@@ -1516,7 +1522,8 @@ do_osc(Char * oscbuf, int len GCC_UNUSED, int final)
 		    break;
 		}
 	    }
-	    SetVTFont(fontMenu_fontescape, True, VT_FONTSET(buf, NULL, NULL, NULL));
+	    fonts.f_n = buf;
+	    SetVTFont(fontMenu_fontescape, True, &fonts);
 	}
 	break;
     case 51:

@@ -5,7 +5,7 @@
 # XFree86 updates/notes/new entries (including xterm-8bit, xterm-16color)
 # - Thomas E. Dickey
 #
-# $XFree86: xc/programs/xterm/terminfo,v 3.47 2003/05/19 00:47:33 dickey Exp $
+# $XFree86: xc/programs/xterm/terminfo,v 3.48 2003/10/20 00:58:55 dickey Exp $
 #
 # Special Capabilities:
 # --------------------
@@ -96,7 +96,10 @@
 #
 # Note however, that even though the terminfo says a key might be sent, there
 # may be conflicts which prevent this.  For example, it is common to use
-# shifted pageup and pagedown for window manager functions. 
+# shifted pageup and pagedown for window manager functions.  The default
+# translation for xterm since X11R4 has overridden shifted Insert, Select,
+# PageUp and PageDown, which correspond to terminfo kIC, kEND, kPRV and kNXT
+# respectively.
 #
 xterm-xfree86|xterm-new|xterm terminal emulator (XFree86),
 	npc,
