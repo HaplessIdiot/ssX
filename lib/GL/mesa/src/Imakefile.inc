@@ -239,7 +239,7 @@ COREMESAOBJS =	$(MESABUILDDIR)aatriangle.o \
 		$(MESABUILDDIR)zoom.o
 
 COREMESAUOBJS =	$(MESABUILDDIR)unshared/aatriangle.o \
-		$(MESABUILDDIR)unshared/unshared/accum.o \
+		$(MESABUILDDIR)unshared/accum.o \
 		$(MESABUILDDIR)unshared/alpha.o \
 		$(MESABUILDDIR)unshared/alphabuf.o \
 		$(MESABUILDDIR)unshared/attrib.o \
