@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.14 2002/05/17 20:24:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.15 2002/05/23 01:14:31 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -77,6 +77,7 @@ LispObj *Lisp_Get(LispMac*, LispBuiltin*);		/* get */
 LispObj *Lisp_Getenv(LispMac*, LispBuiltin*);		/* getenv */
 LispObj *Lisp_Go(LispMac*, LispBuiltin*);		/* go */
 LispObj *Lisp_If(LispMac*, LispBuiltin*);		/* if */
+LispObj *Lisp_Intersection(LispMac*, LispBuiltin*);	/* intersection */
 LispObj *Lisp_Keywordp(LispMac*, LispBuiltin*);		/* keywordp */
 LispObj *Lisp_Lambda(LispMac*, LispBuiltin*);		/* lambda */
 LispObj *Lisp_Last(LispMac*, LispBuiltin*);		/* last */
@@ -124,11 +125,17 @@ LispObj *Lisp_Rplaca(LispMac*, LispBuiltin*);		/* rplaca */
 LispObj *Lisp_Rplacd(LispMac*, LispBuiltin*);		/* rplaca */
 LispObj *Lisp_Setenv(LispMac*, LispBuiltin*);		/* setenv */
 LispObj *Lisp_Set(LispMac*, LispBuiltin*);		/* set */
+LispObj *Lisp_SetDifference(LispMac*, LispBuiltin*);	/* set-difference */
+LispObj *Lisp_SetExclusiveOr(LispMac*, LispBuiltin*);	/* set-exclusive-or */
 LispObj *Lisp_Setf(LispMac*, LispBuiltin*);		/* setf */
 LispObj *Lisp_SetQ(LispMac*, LispBuiltin*);		/* setq */
 LispObj *Lisp_Sleep(LispMac*, LispBuiltin*);		/* sleep */
 LispObj *Lisp_Stringp(LispMac*, LispBuiltin*);		/* stringp */
 LispObj *Lisp_Subseq(LispMac*, LispBuiltin*);		/* subseq */
+LispObj *Lisp_Subsetp(LispMac*, LispBuiltin*);		/* subsetp */
+LispObj *Lisp_Substitute(LispMac*, LispBuiltin*);	/* substitute */
+LispObj *Lisp_SubstituteIf(LispMac*, LispBuiltin*);	/* substitute-if */
+LispObj *Lisp_SubstituteIfNot(LispMac*, LispBuiltin*);	/* substitute-if-not */
 LispObj *Lisp_Symbolp(LispMac*, LispBuiltin*);		/* symbolp */
 LispObj *Lisp_SymbolPlist(LispMac*, LispBuiltin*);	/* symbol-plist */
 LispObj *Lisp_Tagbody(LispMac*, LispBuiltin*);		/* tagbody */
