@@ -5,11 +5,11 @@
 <article>
 
 <title>Fonts in XFree86
-<author>Juliusz Chroboczek, <email/jch@xfree86.org/
+<author>Juliusz Chroboczek, <email/jch@pps.jussieu.fr/
 <date>17 November 2003</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.24 2003/12/20 19:30:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.25 2005/02/06 22:41:41 dawes Exp $
 </ident>
 
 <toc>
