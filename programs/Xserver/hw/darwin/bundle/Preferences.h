@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -32,6 +32,7 @@
 + (void)setFakeButtons:(BOOL)newFakeButtons;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
 + (void)setSystemBeep:(BOOL)newSystemBeep;
++ (void)saveToDisk;
 
 + (NSString*)switchString;
 + (unsigned int)keyCode;
