@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.1 1994/05/31 08:15:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.2 1994/06/01 01:02:22 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -27,6 +27,7 @@
 
 /*
  * Accelerated support for 90C31 added by Mike Tierney <floyd@eng.umd.edu>
+ * Accelerated support for 90C33 added by Bill Conn <conn@bnr.ca>
  */
 
 /*
@@ -59,6 +60,11 @@ extern void pvgacfbFillRectSolidCopy();
 extern void pvgacfbDoBitbltCopy();
 extern void pvgacfbFillBoxSolid();
 extern void pvgaBitBlt();
+
+extern void C33cfbFillRectSolidCopy();
+extern void C33cfbDoBitbltCopy();
+extern void C33cfbFillBoxSolid();
+extern void C33BitBlt();
 #endif
 
 typedef struct {
@@ -144,6 +150,18 @@ static unsigned PVGA1_ExtPorts[] = {            /* extra ports for WD90C31 */
 
 static int NumPVGA1_ExtPorts =
              ( sizeof(PVGA1_ExtPorts) / sizeof(PVGA1_ExtPorts[0]) );
+
+static unsigned C33_ExtPorts[] = {            /* extra ports for WD90C33 */
+             0x23C0,
+	     0x23C1,
+	     0x23C2,
+	     0x23C3,
+	     0x23C4,
+	     0x23C5,
+	     0x23CE };
+
+static int NumC33_ExtPorts =
+             ( sizeof(C33_ExtPorts) / sizeof(C33_ExtPorts[0]) );
 
 
 /*
@@ -382,27 +400,41 @@ PVGA1Probe()
       	PVGA1EnterLeave(ENTER);
     }
 
+    if (WDchipset == WD90C33)  /* enable extra hardware accel registers */
+    {
+        xf86AddIOPorts(vga256InfoRec.scrnIndex,
+                       NumC33_ExtPorts, C33_ExtPorts);
+      	PVGA1EnterLeave(LEAVE);   /* force update of IO ports enable */
+      	PVGA1EnterLeave(ENTER);
+    }
+
 
     /*
      * Detect how much memory is installed
      */
     if (!vga256InfoRec.videoRam) {
-        unsigned char config;
+      unsigned char config;
 
-        outb(0x3CE, 0x0B); config = inb(0x3CF);
+      outb(0x3CE, 0x0B); config = inb(0x3CF);
       
-        switch(config & 0xC0) {
-        case 0x00:
-        case 0x40:
-	    vga256InfoRec.videoRam = 256;
-	    break;
-        case 0x80:
-	    vga256InfoRec.videoRam = 512;
-	    break;
-        case 0xC0:
-	    vga256InfoRec.videoRam = 1024;
-	    break;
-        }
+      switch(config & 0xC0) {
+      case 0x00:
+      case 0x40:
+	vga256InfoRec.videoRam = 256;
+	break;
+      case 0x80:
+	vga256InfoRec.videoRam = 512;
+	break;
+      case 0xC0:
+	vga256InfoRec.videoRam = 1024;
+	if (WDchipset == WD90C33){ 
+	  outb(vgaIOBase+4,0x3e); 
+	  if (inb(vgaIOBase + 5) & 0x80) {
+	    vga256InfoRec.videoRam = 2048; 
+	  }
+	}
+	break;
+      }
     }
 
     /*
@@ -508,7 +540,7 @@ PVGA1FbInit()
 #ifndef MONOVGA
   int useSpeedUp;
 
-  if (WDchipset != WD90C31 ||
+  if (((WDchipset != WD90C31) && (WDchipset != WD90C33)) ||
       OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
      return;
 
@@ -524,14 +556,17 @@ PVGA1FbInit()
   {
    /** must save default because if not screen to screen must use default **/
     pvga1_stdcfbFillRectSolidCopy = cfbLowlevFuncs.fillRectSolidCopy;
-    cfbLowlevFuncs.fillRectSolidCopy = pvgacfbFillRectSolidCopy;
+    if (WDchipset == WD90C31) cfbLowlevFuncs.fillRectSolidCopy = pvgacfbFillRectSolidCopy;
+    if (WDchipset == WD90C33) cfbLowlevFuncs.fillRectSolidCopy = C33cfbFillRectSolidCopy;
   }
   if (useSpeedUp & SPEEDUP_BITBLT)
   {
     pvga1_stdcfbDoBitbltCopy = cfbLowlevFuncs.doBitbltCopy;
-    cfbLowlevFuncs.doBitbltCopy = pvgacfbDoBitbltCopy;
+    if (WDchipset == WD90C31) cfbLowlevFuncs.doBitbltCopy = pvgacfbDoBitbltCopy;
+    if (WDchipset == WD90C33) cfbLowlevFuncs.doBitbltCopy = C33cfbDoBitbltCopy;
     pvga1_stdcfbBitblt = cfbLowlevFuncs.vgaBitblt;
-    cfbLowlevFuncs.vgaBitblt = pvgaBitBlt;
+    if (WDchipset == WD90C31) cfbLowlevFuncs.vgaBitblt = pvgaBitBlt;
+    if (WDchipset == WD90C33) cfbLowlevFuncs.vgaBitblt = C33BitBlt;
   }
   if (useSpeedUp & SPEEDUP_LINE)
   {
@@ -540,7 +575,8 @@ PVGA1FbInit()
   if (useSpeedUp & SPEEDUP_FILLBOX)
   {
     pvga1_stdcfbFillBoxSolid = cfbLowlevFuncs.fillBoxSolid;
-    cfbLowlevFuncs.fillBoxSolid = pvgacfbFillBoxSolid;
+    if (WDchipset == WD90C31) cfbLowlevFuncs.fillBoxSolid = pvgacfbFillBoxSolid;
+    if (WDchipset == WD90C33) cfbLowlevFuncs.fillBoxSolid = C33cfbFillBoxSolid;
   }
 #endif /* MONOVGA */
 }
