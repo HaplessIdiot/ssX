@@ -39,6 +39,11 @@ PERFORMANCE OF THIS SOFTWARE.
  
 */
 
+/*
+ * Snarfed Hans Nasten's simple pixmap expansion cache from Mach-8 server
+ * -- David Wexelblat <dwex@xfree86.org>, July 12, 1994
+ */
+
 
 /*
  * Fill rectangles.
@@ -63,6 +68,485 @@ PERFORMANCE OF THIS SOFTWARE.
 #define NUM_STACK_RECTS	1024
 extern int s3MAX_SLOTS;
 
+typedef struct _CacheInfo {
+    int x;
+    int y;
+    int w;
+    int h;
+    int nx;
+    int ny;
+    int pix_w;
+    int pix_h;
+} CacheInfo, *CacheInfoPtr;
+
+static CacheInfo cInfo;
+static int pixmap_x;
+static int pixmap_y;
+static int pixmap_size = 0;
+
+void s3InitFrect(x, y, size)
+     int x;
+     int y;
+     int size;
+{
+   pixmap_x = x;
+   pixmap_y = y;
+   pixmap_size = size;
+}
+
+static void
+DoCacheExpandPixmap(pci)
+     CacheInfoPtr pci;
+{
+   int   cur_w = pci->pix_w;
+   int   cur_h = pci->pix_h;
+
+   BLOCK_CURSOR;
+   WaitQueue(7);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+   S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
+   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   S3_OUTW(WRT_MASK, 0xffff);
+
+ /* Expand in the x direction */
+
+   while (cur_w * 2 <= pci->w) {
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)pci->x);
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)(pci->x + cur_w));
+      S3_OUTW(DESTY_AXSTP, (short)pci->y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(cur_w - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      cur_w *= 2;
+   }
+
+   if (cur_w != pci->w) {
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)pci->x);
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)(pci->x + cur_w));
+      S3_OUTW(DESTY_AXSTP, (short)pci->y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - cur_w - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      cur_w = pci->w;
+   }
+ /* Expand in the y direction */
+   while (cur_h * 2 <= pci->h) {
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)pci->x);
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)pci->x);
+      S3_OUTW(DESTY_AXSTP, (short)(pci->y + cur_h));
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(cur_w - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      cur_h *= 2;
+   }
+
+   if (cur_h != pci->h) {
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)pci->x);
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)pci->x);
+      S3_OUTW(DESTY_AXSTP, (short)(pci->y + cur_h));
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(cur_w - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - cur_h - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+   }
+   WaitQueue(2);
+   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   UNBLOCK_CURSOR;
+}
+
+static CacheInfoPtr
+DoCacheTile(pix)
+     PixmapPtr pix;
+{
+   CacheInfoPtr pci = &cInfo;
+
+   if( (pixmap_size) && (pix->drawable.width <= pixmap_size) &&
+       (pix->drawable.height <= pixmap_size) ) {
+      pci->pix_w = pix->drawable.width;
+      pci->pix_h = pix->drawable.height;
+      pci->nx = pixmap_size / pix->drawable.width;
+      pci->ny = pixmap_size / pix->drawable.height;
+      pci->x = pixmap_x;
+      pci->y = pixmap_y;
+      pci->w = pci->nx * pci->pix_w;
+      pci->h = pci->ny * pci->pix_h;
+      (s3ImageWriteFunc) (pci->x, pci->y, pci->pix_w, pci->pix_h,
+		          pix->devPrivate.ptr, pix->devKind, 0, 0,
+		          MIX_SRC, 0xffff);
+
+      DoCacheExpandPixmap(pci);
+      WaitIdleEmpty(); /* Make sure that all commands have finished */
+      return(pci);
+   }
+   else
+      return(NULL);
+}
+
+static CacheInfoPtr
+DoCacheOpStipple(pix)
+     PixmapPtr pix;
+{
+   CacheInfoPtr pci = &cInfo;
+
+   if( (pixmap_size) && (pix->drawable.width <= pixmap_size) &&
+       (pix->drawable.height <= pixmap_size) ) {
+      pci->pix_w = pix->drawable.width;
+      pci->pix_h = pix->drawable.height;
+      pci->nx = pixmap_size / pix->drawable.width;
+      pci->ny = pixmap_size / pix->drawable.height;
+      pci->x = pixmap_x;
+      pci->y = pixmap_y;
+      pci->w = pci->nx * pci->pix_w;
+      pci->h = pci->ny * pci->pix_h;
+
+      s3ImageOpStipple(pci->x, pci->y, pci->pix_w, pci->pix_h,
+		       pix->devPrivate.ptr, pix->devKind,
+		       pci->pix_w, pci->pix_h, pci->x, pci->y,
+		       255, 0, MIX_SRC, 0xffff);
+
+      DoCacheExpandPixmap(pci);
+      WaitIdleEmpty(); /* Make sure that all commands have finished */   
+      return(pci);
+   }
+   else
+      return(NULL);
+}
+
+static void
+DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu, 
+		 fgmix, bgmix, planemask)
+     CacheInfoPtr pci;
+     int   x;
+     int   y;
+     int   w;
+     int   h;
+     int   pox;
+     int   poy;
+     short fgalu;
+     short bgalu;
+     short fgmix;
+     short bgmix;
+     short planemask;
+{
+   int   xwmid, ywmid, orig_xwmid;
+   int   startx, starty, endx, endy;
+   int   orig_x = x;
+
+   if (w == 0 || h == 0)
+      return;
+
+   modulus(x - pox, pci->w, startx);
+   modulus(y - poy, pci->h, starty);
+   modulus(x - pox + w - 1, pci->w, endx);
+   modulus(y - poy + h - 1, pci->h, endy);
+
+   orig_xwmid = xwmid = w - (pci->w - startx + endx + 1);
+   ywmid = h - (pci->h - starty + endy + 1);
+
+   BLOCK_CURSOR;
+   WaitQueue(7);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+   S3_OUTW(FRGD_MIX, fgmix | fgalu);
+   S3_OUTW(BKGD_MIX, bgmix | bgalu);
+   S3_OUTW(WRT_MASK, planemask);
+
+   if (starty + h - 1 < pci->h) {
+      if (startx + w - 1 < pci->w) {
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)(pci->x + startx));
+	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      } else {
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)(pci->x + startx));
+	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	 x += pci->w - startx;
+
+	 while (xwmid > 0) {
+	    WaitQueue(7);
+	    S3_OUTW(CUR_X, (short)pci->x);
+	    S3_OUTW(CUR_Y, (short)(pci->y + starty));
+	    S3_OUTW(DESTX_DIASTP, (short)x);
+	    S3_OUTW(DESTY_AXSTP, (short)y);
+	    S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+	    S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
+	    S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR |
+		  WRTDATA);
+	    x += pci->w;
+	    xwmid -= pci->w;
+	 }
+
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)pci->x);
+	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      }
+   } else if (startx + w - 1 < pci->w) {
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)(pci->x + startx));
+      S3_OUTW(CUR_Y, (short)(pci->y + starty));
+      S3_OUTW(DESTX_DIASTP, (short)x);
+      S3_OUTW(DESTY_AXSTP, (short)y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      y += pci->h - starty;
+
+      while (ywmid > 0) {
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)(pci->x + startx));
+	 S3_OUTW(CUR_Y, (short)pci->y);
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	 y += pci->h;
+	 ywmid -= pci->h;
+      }
+
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)(pci->x + startx));
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)x);
+      S3_OUTW(DESTY_AXSTP, (short)y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+   } else {
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)(pci->x + startx));
+      S3_OUTW(CUR_Y, (short)(pci->y + starty));
+      S3_OUTW(DESTX_DIASTP, (short)x);
+      S3_OUTW(DESTY_AXSTP, (short)y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      x += pci->w - startx;
+
+      while (xwmid > 0) {
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)pci->x);
+	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT |
+	       (short)(pci->h - starty - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	 x += pci->w;
+	 xwmid -= pci->w;
+      }
+
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)pci->x);
+      S3_OUTW(CUR_Y, (short)(pci->y + starty));
+      S3_OUTW(DESTX_DIASTP, (short)x);
+      S3_OUTW(DESTY_AXSTP, (short)y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      y += pci->h - starty;
+
+      while (ywmid > 0) {
+	 x = orig_x;
+	 xwmid = orig_xwmid;
+
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)(pci->x + startx));
+	 S3_OUTW(CUR_Y, (short)pci->y);
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	 x += pci->w - startx;
+
+	 while (xwmid > 0) {
+	    WaitQueue(7);
+	    S3_OUTW(CUR_X, (short)pci->x);
+	    S3_OUTW(CUR_Y, (short)pci->y);
+	    S3_OUTW(DESTX_DIASTP, (short)x);
+	    S3_OUTW(DESTY_AXSTP, (short)y);
+	    S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+	    S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+	    S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR |
+		  WRTDATA);
+
+	    x += pci->w;
+	    xwmid -= pci->w;
+	 }
+
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)pci->x);
+	 S3_OUTW(CUR_Y, (short)pci->y);
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	 y += pci->h;
+	 ywmid -= pci->h;
+      }
+
+      x = orig_x;
+      xwmid = orig_xwmid;
+
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)(pci->x + startx));
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)x);
+      S3_OUTW(DESTY_AXSTP, (short)y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);      
+
+      x += pci->w - startx;
+
+      while (xwmid > 0) {
+	 WaitQueue(7);
+	 S3_OUTW(CUR_X, (short)pci->x);
+	 S3_OUTW(CUR_Y, (short)pci->y);
+	 S3_OUTW(DESTX_DIASTP, (short)x);
+	 S3_OUTW(DESTY_AXSTP, (short)y);
+	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
+	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+	 x += pci->w;
+	 xwmid -= pci->w;
+      }
+
+      WaitQueue(7);
+      S3_OUTW(CUR_X, (short)pci->x);
+      S3_OUTW(CUR_Y, (short)pci->y);
+      S3_OUTW(DESTX_DIASTP, (short)x);
+      S3_OUTW(DESTY_AXSTP, (short)y);
+      S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+   }
+
+   WaitQueue(2);
+   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   UNBLOCK_CURSOR;
+}
+
+static void
+s3CImageFill(pci, x, y, w, h, pox, poy, alu, planemask)
+     CacheInfoPtr pci;
+     int   x;
+     int   y;
+     int   w;
+     int   h;
+     int   pox;
+     int   poy;
+     short alu;
+     short planemask;
+{
+
+   DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, 
+		    MIX_SRC, FSS_BITBLT, BSS_BITBLT, planemask);
+
+}
+
+static void
+s3CImageStipple(pci, x, y, w, h, pox, poy, fg, alu, planemask)
+     CacheInfoPtr pci;
+     int   x;
+     int   y;
+     int   w;
+     int   h;
+     int   pox;
+     int   poy;
+     int   fg;
+     short alu;
+     short planemask;
+{
+   BLOCK_CURSOR;
+   WaitQueue(3);
+   S3_OUTW(FRGD_COLOR, fg);
+   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+   S3_OUTW(RD_MASK, 0x01);
+
+   DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, 
+		    MIX_DST, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
+
+   WaitQueue(2);
+   S3_OUTW(RD_MASK, 0xff);
+   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+   UNBLOCK_CURSOR;
+}
+
+static void
+s3CImageOpStipple(pci, x, y, w, h, pox, poy, fg, bg, alu, planemask)
+     CacheInfoPtr pci;
+     int   x;
+     int   y;
+     int   w;
+     int   h;
+     int   pox;
+     int   poy;
+     int   fg;
+     int   bg;
+     short alu;
+     short planemask;
+{
+   BLOCK_CURSOR;
+   WaitQueue(4);
+   S3_OUTW(FRGD_COLOR, fg);
+   S3_OUTW(BKGD_COLOR, bg);
+   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+   S3_OUTW(RD_MASK, 0x01);
+
+   DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, alu, 
+		    FSS_FRGDCOL, BSS_BKGDCOL, planemask);
+
+   WaitQueue(2);
+   S3_OUTW(RD_MASK, 0xff);
+   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+   UNBLOCK_CURSOR;
+}
+
 void
 s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
      DrawablePtr pDrawable;
@@ -85,6 +569,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    PixmapPtr pPix;
    int   pixWidth;
    int   xrot, yrot;
+   CacheInfoPtr pci;
 
    if (!xf86VTSema)
    {
@@ -244,30 +729,18 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	   pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	   if (s3MAX_SLOTS && s3CacheTile(pPix, (pextent->x2 - pboxClipped->x1)
-					      - width)) {
+	   if (pci = DoCacheTile(pPix)) {
 	      while (n--) {
-	        int w, h;
-		w = pboxClipped->x2 - pboxClipped->x1;
-		h = pboxClipped->y2 - pboxClipped->y1;
-		if ((w > 9) || (h > 9))
-		 s3CImageFill(pPix->slot,
-			      pboxClipped->x1, pboxClipped->y1,
+		 int w, h;
+		 w = pboxClipped->x2 - pboxClipped->x1;
+		 h = pboxClipped->y2 - pboxClipped->y1;
+		 s3CImageFill(pci, pboxClipped->x1, pboxClipped->y1,
 			      w, h,
 			      xrot, yrot,
 			      s3alu[pGC->alu], pGC->planemask);
-		 else
-		   (s3ImageFillFunc) (pboxClipped->x1, pboxClipped->y1,
-				    w, h,
-				    pPix->devPrivate.ptr, pixWidth,
-				    width, height, xrot, yrot,
-				    s3alu[pGC->alu], pGC->planemask);
 		 pboxClipped++;
 	      }
-	   } else
-#endif
-	   {
+	   } else {
 	      while (n--) {
 		 (s3ImageFillFunc) (pboxClipped->x1, pboxClipped->y1,
 				    pboxClipped->x2 - pboxClipped->x1,
@@ -289,31 +762,18 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	   pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	   if (s3MAX_SLOTS &&
-	       s3CacheStipple(pPix, (pextent->x2 - pboxClipped->x1) - width)) {
+	   if (pci = DoCacheOpStipple(pPix)) {
 	      while (n--) {
 	         int w, h;
 	         w = pboxClipped->x2 - pboxClipped->x1;
 		 h = pboxClipped->y2 - pboxClipped->y1;
-		 if ((w > 9) || (h > 9))
-	       		  s3CImageStipple(pPix->slot,
-				 pboxClipped->x1, pboxClipped->y1,
+	       	 s3CImageStipple(pci, pboxClipped->x1, pboxClipped->y1,
 				 w, h,
 				 xrot, yrot, pGC->fgPixel,
 				 s3alu[pGC->alu], pGC->planemask);
-		 else
-		  s3ImageStipple(pboxClipped->x1, pboxClipped->y1,
-				w, h,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height, xrot, yrot,
-				pGC->fgPixel,
-				s3alu[pGC->alu], pGC->planemask);
 		 pboxClipped++;
 	      }
-	   } else
-#endif
-	   {
+	   } else {
 	      while (n--) {
 		 s3ImageStipple(pboxClipped->x1, pboxClipped->y1,
 				pboxClipped->x2 - pboxClipped->x1,
@@ -336,34 +796,20 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	   pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	   if (s3MAX_SLOTS && s3CacheOpStipple(pPix,
-				(pextent->x2 - pboxClipped->x1) - width)) {
+	   if (pci = DoCacheOpStipple(pPix)) {
 	      while (n--) {
       	         int w, h;
 	         w = pboxClipped->x2 - pboxClipped->x1;
 		 h = pboxClipped->y2 - pboxClipped->y1;
-		 if ((w > 9) || (h > 9))
-		  s3CImageOpStipple(pPix->slot,
-				   pboxClipped->x1, pboxClipped->y1,
+		 s3CImageOpStipple(pci, pboxClipped->x1, pboxClipped->y1,
 				   w, h,
 				   xrot, yrot,
 				   pGC->fgPixel, pGC->bgPixel,
 				   s3alu[pGC->alu],
 				   pGC->planemask);
-		  else
-		     s3ImageOpStipple(pboxClipped->x1, pboxClipped->y1,
-				  w, h,
-				  pPix->devPrivate.ptr, pixWidth,
-				  width, height, xrot, yrot,
-				  pGC->fgPixel, pGC->bgPixel,
-				  s3alu[pGC->alu],
-				  pGC->planemask);		   
 		 pboxClipped++;
 	      }
-	   } else
-#endif
-	   {
+	   } else {
 	      while (n--) {
 		 s3ImageOpStipple(pboxClipped->x1, pboxClipped->y1,
 				  pboxClipped->x2 - pboxClipped->x1,

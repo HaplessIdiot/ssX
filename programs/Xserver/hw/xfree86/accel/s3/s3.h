@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.1 1994/06/11 06:11:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.2 1994/06/19 11:05:14 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -499,6 +499,13 @@ void s3PolyFillRect(
     GCPtr,
     int,
     xRectangle *
+#endif
+);
+void s3InitFrect(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int
 #endif
 );
 /* s3text.c */

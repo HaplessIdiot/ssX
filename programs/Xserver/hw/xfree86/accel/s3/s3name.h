@@ -72,6 +72,7 @@
 #define s3FindOrdering CUSTOMNAME(_s3FindOrdering)
 #define s3CopyPlane CUSTOMNAME(_s3CopyPlane)
 #define s3CacheInit CUSTOMNAME(_s3CacheInit)
+#define s3InitFrect CUSTOMNAME(_s3InitFrect)
 #define s3CacheFreeSlot CUSTOMNAME(_s3CacheFreeSlot)
 #define s3CacheTile CUSTOMNAME(_s3CacheTile)
 #define s3CacheStipple CUSTOMNAME(_s3CacheStipple)

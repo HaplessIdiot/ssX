@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.8 1994/06/19 11:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.9 1994/06/22 04:18:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -726,7 +726,9 @@ s3Probe()
    }
 #endif
 
-   if (DAC_IS_ATT498 && OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options))
+   if (DAC_IS_ATT498 && 
+       (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
+        OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
       s3ATT498PixMux = TRUE;
 
    /* Set clock limit */
@@ -767,7 +769,8 @@ s3Probe()
          nonMuxMaxClock = 0;  /* 964 kann only be in pixmux mode when 
                                * working in enhanced mode */  
    } else if (s3ATT498PixMux) {
-      if (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
+          OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
 	 pixMuxPossible = TRUE;
 	 nonMuxMaxClock = 67500;
 	 allowPixMuxInterlace = FALSE;

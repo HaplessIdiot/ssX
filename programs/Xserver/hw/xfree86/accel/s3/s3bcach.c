@@ -54,6 +54,8 @@ extern Bool xf86Verbose;
 static void showcache();
 #endif
 
+#define PIXMAP_WIDTH 64
+
 /*
  * TERMS:
  * A bitmap row is a rectangular section of the offscreen memory, which may
@@ -89,7 +91,6 @@ s3BitCache8Init(w, y)
       }
       return;
    }
-   reEntry = TRUE;
 
    /* y now includes the cursor space */
    s3FC_MAX_HEIGHT = s3ScissB + 1 - y;
@@ -97,11 +98,22 @@ s3BitCache8Init(w, y)
 
    /* Currently no pixmap cache when s3DisplayWidth < 1024 */
 
-   if (s3FC_MAX_HEIGHT < 32 || s3DisplayWidth < 1024) /* no pixmap cache */
+   if ((s3FC_MAX_HEIGHT < PIXMAP_WIDTH) || 
+       (s3DisplayWidth < 1024)) { /* no pixmap cache */
       s3CacheLen = s3DisplayWidth;
-   else
+      ErrorF("%s %s: No pixmap expanding area available\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   } else {
       s3CacheLen = 768;
+      if (!reEntry) {
+	 s3InitFrect(768, y, PIXMAP_WIDTH);
+      }
+      ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
+	     XCONFIG_PROBED, s3InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH);
+   }
       
+   reEntry = TRUE;
+
    if (s3FC_MAX_HEIGHT >= 8) {
       s3HeadFont = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
       headBitRow = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
