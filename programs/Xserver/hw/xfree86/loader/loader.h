@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.7 1997/06/25 08:25:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.8 1997/11/16 11:51:14 dawes Exp $ */
 
 
 
@@ -36,6 +36,9 @@
 #include <X11/Xosdefs.h>
 #include <X11/Xfuncproto.h>
 #include <X11/Xmd.h>
+
+/* For LOOKUP definition */
+#include "sym.h"
 
 #ifdef DBMALLOC
 #include <debug/malloc.h>

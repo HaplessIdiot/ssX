@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.2 1997/03/03 15:55:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.3 1997/04/08 10:13:48 hohndel Exp $ */
 
 
 
@@ -34,11 +34,13 @@ void (*LoaderSymbol())(
 char *
 #endif
 );
+#if 0
 metroScreenRecPtr LoaderInitDriver(
 #if NeedFunctionPrototypes
 char *
 #endif
 );
+#endif
 int LoaderOpen(
 #if NeedFunctionPrototypes
 char *
