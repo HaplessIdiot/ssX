@@ -13,6 +13,7 @@ written prior permission.  M.I.T. makes no representations about the
 suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
+/* $XFree86$ */
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */
