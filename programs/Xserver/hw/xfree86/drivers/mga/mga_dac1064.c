@@ -1,3 +1,6 @@
+/* $XFree86: $ */
+
+
 /*
  * Mystique RAMDAC driver
  */
