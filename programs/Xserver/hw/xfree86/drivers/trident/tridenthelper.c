@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.7 1999/04/25 10:02:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.8 1999/06/13 15:49:06 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -15,7 +15,7 @@
 static void IsClearTV(ScrnInfoPtr pScrn);
 
 void
-TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
+TGUISetClock(ScrnInfoPtr pScrn, int clock, CARD8 *a, CARD8 *b)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 	int powerup[4] = { 1,2,4,8 };
@@ -99,7 +99,7 @@ IsClearTV(ScrnInfoPtr pScrn)
 {	
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    unsigned char temp;
+    CARD8 temp;
 
     if (pTrident->frequency != 0) return;
 
@@ -118,9 +118,9 @@ CalculateMCLK(ScrnInfoPtr pScrn)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int a,b;
     int m,n,k;
-    float freq = 0;
+    float freq = 0.0;
     int powerup[4] = { 1,2,4,8 };
-    unsigned char temp;
+    CARD8 temp;
 
     if (pTrident->HasSGRAM) {
 	MMIO_OUTB(vgaIOBase + 4, 0x28);
@@ -180,13 +180,13 @@ CalculateMCLK(ScrnInfoPtr pScrn)
 	    n = ((a & 0xF8)>>3)|((b&0x01)<<5);
 	}
 
-	freq = ((n+8)*pTrident->frequency)/((m-2)*powerup[k]);
+	freq = ((n+8)*pTrident->frequency)/((m+2)*powerup[k]);
     }
     return (freq);
 }
 
 void
-TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
+TGUISetMCLK(ScrnInfoPtr pScrn, int clock, CARD8 *a, CARD8 *b)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int powerup[4] = { 1,2,4,8 };

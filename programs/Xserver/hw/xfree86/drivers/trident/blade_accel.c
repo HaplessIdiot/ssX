@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.1 1999/04/15 06:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.2 1999/04/25 10:02:27 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -34,7 +34,6 @@
 
 #include "miline.h"
 
-#define TRIDENT_MMIO
 #include "trident_regs.h"
 #include "trident.h"
 
@@ -44,9 +43,14 @@
 static void BladeSync(ScrnInfoPtr pScrn);
 static void BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
-static void BladeSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
-        			int x, int y, int dmaj, int dmin, int e, 
-				int len, int octant);
+static void BladeSubsequentSolidTwoPointLine( ScrnInfoPtr pScrn,
+        			int x1, int y1, int x2, int y2, int flags); 
+static void BladeSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg,
+				int rop, unsigned int planemask, int length,
+				unsigned char *pattern);
+static void BladeSubsequentDashedTwoPointLine( ScrnInfoPtr pScrn,
+        			int x1, int y1, int x2, int y2, int flags,
+				int phase); 
 static void BladeSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void BladeSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
@@ -72,10 +76,6 @@ static void BladeSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 static void BladeSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, 
 				int x2, int y2);
 static void BladeDisableClipping(ScrnInfoPtr pScrn);
-static void BladeWritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
-    				unsigned char *src, int srcwidth, int rop,
-    				unsigned int planemask, int transparency_color,
-    				int bpp, int depth);
 static void BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int fg, int bg, 
 				int rop, unsigned int planemask);
@@ -88,60 +88,41 @@ static void BladeSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 static void BladeSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
-static void BladeSetupForImageWrite(	
-   ScrnInfoPtr pScrn,
-   int rop,
-   unsigned int planemask,
-   int transparency_color,
-   int bpp, int depth
-);
-static void BladeSubsequentImageWriteRect(
-   ScrnInfoPtr pScrn,
-   int x, int y, int w, int h,
-   int skipleft
-);
+static void BladeSetupForImageWrite(ScrnInfoPtr pScrn, int rop,
+   				unsigned int planemask, int transparency_color,
+   				int bpp, int depth);
+static void BladeSubsequentImageWriteRect(ScrnInfoPtr pScrn, int x, int y,
+   				int w, int h, int skipleft);
 
 static void
 BladeInitializeAccelerator(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    CARD32 stride;
 
-#if 0
-    BLADE_OUT(0x24, 0x80);
-    BLADE_OUT(0x24, 0);
-#endif
-    BLADE_OUT(0x2C, 0xFFFF0000);
-
-    pTrident->EngineOperation = (pScrn->displayWidth >> 3) << 20;
-    BLADE_OUT(0xC8, pTrident->EngineOperation);
-    BLADE_OUT(0xCC, pTrident->EngineOperation);
-    BLADE_OUT(0xD0, pTrident->EngineOperation);
-    BLADE_OUT(0xD4, pTrident->EngineOperation);
+    stride = (pScrn->displayWidth >> 3) << 20;
+    BLADE_OUT(0x21C8, stride);
+    BLADE_OUT(0x21CC, stride);
+    BLADE_OUT(0x21D0, stride);
+    BLADE_OUT(0x21D4, stride);
     switch (pScrn->depth) {
 	case 8:
-	    pTrident->EngineOperation |= 0<<29;
+	    stride |= 0<<29;
 	    break;
 	case 15:
-	    pTrident->EngineOperation |= 5<<29;
+	    stride |= 5<<29;
 	    break;
 	case 16:
-	    pTrident->EngineOperation |= 1<<29;
+	    stride |= 1<<29;
 	    break;
 	case 24:
-	    pTrident->EngineOperation |= 2<<29;
+	    stride |= 2<<29;
 	    break;
     }
-    BLADE_OUT(0xB8, pTrident->EngineOperation);
-    BLADE_OUT(0xBC, pTrident->EngineOperation);
-    BLADE_OUT(0xC0, pTrident->EngineOperation);
-    BLADE_OUT(0xC4, pTrident->EngineOperation);
-
-    BLADE_OUT(0x54, 0);
-    BLADE_OUT(0x58, 4095 << 16 | 4095);
-    BLADE_OUT(0x60, 0);
-    BLADE_OUT(0x64, 0);
-    BLADE_OUT(0x68, 0);
-    BLADE_OUT(0x6C, 0);
+    BLADE_OUT(0x21B8, stride);
+    BLADE_OUT(0x21BC, stride);
+    BLADE_OUT(0x21C0, stride);
+    BLADE_OUT(0x21C4, stride);
 }
 
 Bool
@@ -155,8 +136,6 @@ BladeAccelInit(ScreenPtr pScreen)
     pTrident->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
 
-return FALSE; /* Disabled acceleration */
-
     BladeInitializeAccelerator(pScrn);
 
     infoPtr->Flags = PIXMAP_CACHE |
@@ -167,37 +146,39 @@ return FALSE; /* Disabled acceleration */
 
     infoPtr->SetClippingRectangle = BladeSetClippingRectangle;
     infoPtr->DisableClipping = BladeDisableClipping;
-    infoPtr->ClippingFlags = HARDWARE_CLIP_SOLID_FILL |
-#if 0
-			     HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
-#else
-0;
-#endif
+    infoPtr->ClippingFlags = /* HARDWARE_CLIP_SOLID_FILL | */
+			     HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
+			     HARDWARE_CLIP_MONO_8x8_FILL;
 
-#if 0 /* Lines are slower than cfb/mi */
+#if 0
     infoPtr->SolidLineFlags = NO_PLANEMASK;
-    infoPtr->SetupForSolidLine = TridentSetupForSolidLine;
-    infoPtr->SolidBresenhamLineErrorTermBits = 11;
-    infoPtr->SubsequentSolidBresenhamLine = TridentSubsequentSolidBresenhamLine;
+    infoPtr->SetupForSolidLine = BladeSetupForSolidLine;
+    infoPtr->SubsequentSolidTwoPointLine = BladeSubsequentSolidTwoPointLine;
+    infoPtr->SetupForDashedLine = BladeSetupForDashedLine;
+    infoPtr->SubsequentDashedTwoPointLine = BladeSubsequentDashedTwoPointLine;
+    infoPtr->DashPatternMaxLength = 16;
+    infoPtr->DashedLineFlags = LINE_PATTERN_LSBFIRST_LSBJUSTIFIED |
+			       LINE_PATTERN_POWER_OF_2_ONLY |
+			       NO_TRANSPARENCY |
+			       NO_PLANEMASK;
 #endif
 
     infoPtr->SolidFillFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidFill = BladeSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = BladeSubsequentFillRectSolid;
     
-#if 0
     infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK |
-				       ONLY_TWO_BITBLT_DIRECTIONS |
-				       NO_TRANSPARENCY;
+				       NO_TRANSPARENCY |
+				       ONLY_TWO_BITBLT_DIRECTIONS;
 
     infoPtr->SetupForScreenToScreenCopy = 	
 				BladeSetupForScreenToScreenCopy;
     infoPtr->SubsequentScreenToScreenCopy = 		
 				BladeSubsequentScreenToScreenCopy;
 
-#if 0
     infoPtr->Mono8x8PatternFillFlags =  NO_PLANEMASK | 
 					NO_TRANSPARENCY |
+					BIT_ORDER_IN_BYTE_MSBFIRST |
 					HARDWARE_PATTERN_SCREEN_ORIGIN |
 					HARDWARE_PATTERN_PROGRAMMED_BITS;
 
@@ -206,6 +187,7 @@ return FALSE; /* Disabled acceleration */
     infoPtr->SubsequentMono8x8PatternFillRect = 
 				BladeSubsequentMono8x8PatternFillRect;
 
+#if 0
     infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK | 
 					HARDWARE_PATTERN_SCREEN_ORIGIN | 
 					NO_TRANSPARENCY | 
@@ -222,37 +204,36 @@ return FALSE; /* Disabled acceleration */
 				BladeSetupForScreenToScreenColorExpand;
     infoPtr->SubsequentScreenToScreenColorExpandFill = 		
 				BladeSubsequentScreenToScreenColorExpand;
+#endif
 
     infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
-				NO_TRANSPARENCY |
+				LEFT_EDGE_CLIPPING |
 				SYNC_AFTER_COLOR_EXPAND |
 				BIT_ORDER_IN_BYTE_MSBFIRST |
 			        SCANLINE_PAD_DWORD |
 			        NO_PLANEMASK;
-    infoPtr->ColorExpandRange = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
-    infoPtr->ColorExpandBase = pTrident->FbBase;
+    infoPtr->ColorExpandRange = 0x8000;
+    infoPtr->ColorExpandBase = pTrident->IOBase + 0x10000;
     infoPtr->SetupForCPUToScreenColorExpandFill = 	
-				TridentSetupForCPUToScreenColorExpand;
+				BladeSetupForCPUToScreenColorExpand;
     infoPtr->SubsequentCPUToScreenColorExpandFill = 		
-				TridentSubsequentCPUToScreenColorExpand;
+				BladeSubsequentCPUToScreenColorExpand;
 
-    infoPtr->WritePixmap = BladeWritePixmap;
-    infoPtr->WritePixmapFlags = NO_PLANEMASK;
     infoPtr->SetupForImageWrite = BladeSetupForImageWrite;
     infoPtr->SubsequentImageWriteRect = BladeSubsequentImageWriteRect;
     infoPtr->ImageWriteFlags = NO_TRANSPARENCY | NO_PLANEMASK |
-				CPU_TRANSFER_PAD_QWORD |
+				LEFT_EDGE_CLIPPING |
+				CPU_TRANSFER_PAD_DWORD |
 				SYNC_AFTER_IMAGE_WRITE;
-    infoPtr->ImageWriteBase = pTrident->IOBase + 0x56;
-    infoPtr->ImageWriteRange = 8;
-#endif
-#endif
+    infoPtr->ImageWriteBase = pTrident->IOBase + 0x10000;
+    infoPtr->ImageWriteRange = 0x10000;
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y2 = (pTrident->FbMapSize - 4096) / (pScrn->displayWidth *
 					    pScrn->bitsPerPixel / 8);
+    if (AvailFBArea.y2 > 4095) AvailFBArea.y2 = 4095;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -260,31 +241,42 @@ return FALSE; /* Disabled acceleration */
 }
 
 static void
+BladeSyncClip(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int busy;
+    int cnt = 500000;
+
+    BLADEBUSY(busy);
+    while (busy != 0) {
+	if (--cnt < 0) {
+	    ErrorF("GE timeout\n");
+	    BLADE_OUT(0x2120, 0x00000000);
+	    BladeInitializeAccelerator(pScrn);
+	    break;
+	}
+    	BLADEBUSY(busy);
+    }
+}
+
+static void
 BladeSync(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int count = 0, timeout = 0;
     int busy;
+    int cnt = 500000;
 
-return;
-    for (;;) {
-	BLADEBUSY(busy);
-ErrorF("0x%x\n",busy);
-	if (busy == 0) {
-	    return;
+    if (pTrident->Clipping) BladeDisableClipping(pScrn);
+
+    BLADEBUSY(busy);
+    while (busy != 0) {
+	if (--cnt < 0) {
+	    ErrorF("GE timeout\n");
+	    BLADE_OUT(0x2120, 0x00000000);
+	    BladeInitializeAccelerator(pScrn);
+	    break;
 	}
-	count++;
-	if (count == 1000000) {
-	    ErrorF("Trident: BitBLT engine time-out.\n");
-	    count = 999000;
-	    timeout++;
-	    if (timeout == 8) {
-		/* Reset BitBLT Engine */
-		BLADE_OUT(0x20, 0);
-		return;
-	    }
-	}
+    	BLADEBUSY(busy);
     }
 }
 
@@ -295,19 +287,10 @@ BladeSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    pTrident->ROP = rop;
     pTrident->BltScanDirection = 0;
-    if ((xdir < 0) || (ydir < 0)) pTrident->BltScanDirection |= 1<<2;
+    if ((xdir < 0) || (ydir < 0)) pTrident->BltScanDirection |= 1<<1;
 
-    if (transparency_color != -1) {
-	pTrident->DstEnable = TRUE;
-	IMAGE_OUT(0x20, 0x70000000 | 1<<25 | (transparency_color&0xFFFFFF));
-    } else {
-	pTrident->DstEnable = FALSE;
-	IMAGE_OUT(0x20, 0x70000000);
-    }
-
-    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
+    BLADE_OUT(0x2148, XAACopyROP[rop]);
 }
 
 static void
@@ -317,24 +300,23 @@ BladeSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int clip = 0;
 
-    if (pTrident->BltScanDirection) {
-	IMAGE_OUT(0x00, (y1+h-1)<<16 | (x1+w-1));
-	IMAGE_OUT(0x04, y1<<16 | x1);
-	IMAGE_OUT(0x08, (y2+h-1)<<16 | (x2+w-1));
-	IMAGE_OUT(0x0C, y2<<16 | x2);
-    } else {
-	IMAGE_OUT(0x00, y1<<16 | x1);
-	IMAGE_OUT(0x04, (y1+h-1)<<16 | (x1+w-1));
-	IMAGE_OUT(0x08, y2<<16 | x2);
-	IMAGE_OUT(0x0C, (y2+h-1)<<16 | (x2+w-1));
-    }
-
     if (pTrident->Clipping) clip = 1;
 
-    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<7 | 1<<10 | pTrident->BltScanDirection | clip);
+    BLADE_OUT(0x2144, 0xE0000000 | 1<<19 | 1<<4 | 1<<2 | pTrident->BltScanDirection | clip);
 
+    if (pTrident->BltScanDirection) {
+	BLADE_OUT(0x2100, (y1+h-1)<<16 | (x1+w-1));
+	BLADE_OUT(0x2104, y1<<16 | x1);
+	BLADE_OUT(0x2108, (y2+h-1)<<16 | (x2+w-1));
+	BLADE_OUT(0x210C, y2<<16 | x2);
+    } else {
+	BLADE_OUT(0x2100, y1<<16 | x1);
+	BLADE_OUT(0x2104, (y1+h-1)<<16 | (x1+w-1));
+	BLADE_OUT(0x2108, y2<<16 | x2);
+	BLADE_OUT(0x210C, (y2+h-1)<<16 | (x2+w-1));
+    }
     if (!pTrident->UsePCIRetry)
-    	BladeSync(pScrn);
+    	BladeSyncClip(pScrn);
 }
 
 static void
@@ -342,8 +324,8 @@ BladeSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    BLADE_OUT(0x54, y1<<16 | x1);
-    BLADE_OUT(0x58, y2<<16 | x2);
+    BLADE_OUT(0x2154, (y1&0x0fff)<<16 | (x1&0x0fff));
+    BLADE_OUT(0x2158, (y2&0x0fff)<<16 | (x2&0x0fff));
     pTrident->Clipping = TRUE;
 }
 
@@ -361,29 +343,72 @@ BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
     REPLICATE(color);
-    TGUI_FCOLOUR(color);
-    TGUI_BCOLOUR(color);
-    TGUI_FMIX(XAAPatternROP[rop]);
+    BLADE_OUT(0x2160, color);
+    BLADE_OUT(0x2148, XAACopyROP[rop]);
 }
 
 static void 
-BladeSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
-        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+BladeSubsequentSolidTwoPointLine( ScrnInfoPtr pScrn,
+        int x1, int y1, int x2, int y2, int flags)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    pTrident->BltScanDirection = 0;
-    if (octant & YMAJOR) pTrident->BltScanDirection |= YMAJ;
-    if (octant & XDECREASING) pTrident->BltScanDirection |= XNEG;
-    if (octant & YDECREASING) pTrident->BltScanDirection |= YNEG;
-    TGUI_DRAWFLAG(SOLIDFILL | STENCIL | pTrident->BltScanDirection);
-    TGUI_SRC_XY(dmin-dmaj,dmin);
-    TGUI_DEST_XY(x,y);
-    TGUI_DIM_XY(dmin+e,len);
-    TGUI_COMMAND(GE_BRESLINE);
+    if (flags & OMIT_LAST)
+	BladeSetClippingRectangle(pScrn,x1,y1,x2-1,y2-1);
+
+    BLADE_OUT(0x2144, 0x20000000 | 1<<19 | 1<<4 | 2<<2);
+    BLADE_OUT(0x2108, y1<<16 | x1);
+    BLADE_OUT(0x210C, y2<<16 | x2);
+
+    if (flags & OMIT_LAST)
+	BladeDisableClipping(pScrn);
+
     if (!pTrident->UsePCIRetry)
-    	BladeSync(pScrn);
-    CHECKCLIPPING;
+    	BladeSyncClip(pScrn);
+}
+
+static void
+BladeSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
+		unsigned int planemask, int length, unsigned char *pattern)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    pTrident->LinePattern = *((CARD16 *)pattern) & ((1<<length) - 1);
+    switch (length) {
+	case 2:
+	    pTrident->LinePattern = pTrident->LinePattern | (pTrident->LinePattern << 2);
+	case 4:
+	    pTrident->LinePattern = pTrident->LinePattern | (pTrident->LinePattern << 4);
+	case 8:
+	    pTrident->LinePattern = pTrident->LinePattern | (pTrident->LinePattern << 8);
+    }
+
+    REPLICATE(fg);
+    REPLICATE(bg);
+    BLADE_OUT(0x2160, fg);
+    BLADE_OUT(0x2164, bg);
+    BLADE_OUT(0x2148, XAACopyROP[rop]);
+}
+
+static void 
+BladeSubsequentDashedTwoPointLine( ScrnInfoPtr pScrn,
+        int x1, int y1, int x2, int y2, int flags, int phase)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    if (flags & OMIT_LAST)
+	BladeSetClippingRectangle(pScrn,x1,y1,x2-1,y2-1);
+
+    BLADE_OUT(0x216C, (pTrident->LinePattern >> phase) | (pTrident->LinePattern << (16-phase)));
+    BLADE_OUT(0x2144, 0x20000000 | 1<<27 | 1<<19 | 1<<4 | 2<<2);
+    BLADE_OUT(0x2108, y1<<16 | x1);
+    BLADE_OUT(0x210C, y2<<16 | x2);
+
+    if (flags & OMIT_LAST)
+	BladeDisableClipping(pScrn);
+
+    if (!pTrident->UsePCIRetry)
+    	BladeSyncClip(pScrn);
 }
 
 static void
@@ -391,15 +416,11 @@ BladeSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				    int rop, unsigned int planemask)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int mix = XAAHelpSolidROP(pScrn, &color, planemask, &rop);
 
+    pTrident->ROP = rop;
     REPLICATE(color);
-    if (mix & ROP_PAT) {
-	BLADE_OUT(0x74, color);
-    } else {
-    	BLADE_OUT(0x60, color);
-    }
-    BLADE_OUT(0x48, rop);
+    BLADE_OUT(0x2160, color);
+    BLADE_OUT(0x2148, XAACopyROP[rop]);
 }
 
 static void
@@ -409,11 +430,11 @@ BladeSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     int clip = 0;
 
     if (pTrident->Clipping) clip = 1;
-    BLADE_OUT(0x08, y<<16 | x);
-    BLADE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    BLADE_OUT(0x44, 0x80000000 | 3<<19 | 1<<4 | 2<<2 | clip);
+    BLADE_OUT(0x2144, 0x20000000 | 1<<19 | 1<<4 | 2<<2 | clip);
+    BLADE_OUT(0x2108, y<<16 | x);
+    BLADE_OUT(0x210C, (y+h-1)<<16 | (x+w-1));
     if (!pTrident->UsePCIRetry)
-    	BladeSync(pScrn);
+    	BladeSyncClip(pScrn);
 }
 
 static void 
@@ -444,9 +465,6 @@ BladeSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 	IMAGE_OUT(0x0C, (y+h-1)<<16 | (x+w-1));
 
     IMAGE_OUT(0x24, 0x80000000 | 3<<22 | 1<<7 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | offset<<25);
-
-    if (!pTrident->UsePCIRetry)
-    	BladeSync(pScrn);
 }
 
 static void 
@@ -456,18 +474,13 @@ BladeSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
+    if (bg == -1) pTrident->ROP = 2<<19;
+    else	  pTrident->ROP = 3<<19;
     REPLICATE(fg);
     REPLICATE(bg);
-    TGUI_FCOLOUR(fg);
-    TGUI_BCOLOUR(bg);
-
-    if (bg != -1) {
-    	TGUI_DRAWFLAG(SRCMONO);
-    } else {
-	TGUI_DRAWFLAG(SRCMONO | 1<<12);
-    }
-    TGUI_SRC_XY(0,0);
-    TGUI_FMIX(XAACopyROP[rop]);
+    BLADE_OUT(0x2160, fg);
+    BLADE_OUT(0x2164, bg);
+    BLADE_OUT(0x2148, XAACopyROP[rop]);
 }
 
 static void
@@ -476,17 +489,10 @@ BladeSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    BladeSetClippingRectangle(pScrn,x,y,((w+x)*(pScrn->bitsPerPixel>>3))-1,y+h-1);
-
-#if 0
-ErrorF("%d %d %d %d\n",x,y,w,h);
-#endif
-if (w == 0) return;
-if (h == 0) return;
-
-    TGUI_DEST_XY(x,y);
-    TGUI_DIM_XY(w,h);
-    TGUI_COMMAND(GE_BLT);
+    if (skipleft) BladeSetClippingRectangle(pScrn,x+skipleft,y,(x+w-1),(y+h-1));
+    BLADE_OUT(0x2144, 0xE0000000 | pTrident->ROP | 1<<4 | (skipleft ? 1 : 0));
+    BLADE_OUT(0x2108, y<<16 | x);
+    BLADE_OUT(0x210C, (y+h-1)<<16 | (x+w-1));
 }
 
 static void MoveDWORDS(
@@ -517,70 +523,6 @@ static void MoveDWORDS(
      src += 1;
 }
 
-static void
-BladeWritePixmap(
-    ScrnInfoPtr pScrn,
-    int x, int y, int w, int h,
-    unsigned char *src,
-    int srcwidth,
-    int rop,
-    unsigned int planemask,
-    int transparency_color,
-    int bpp, int depth
-)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    CARD32 *srcp;
-
-    BladeSetClippingRectangle(pScrn,x,y,w+x-1,y+h-1);
-
-#if 0
-    if (w & 7)
-    	w += 8 - (w & 7);
-#endif
-
-    if (transparency_color != -1) {
-	pTrident->DstEnable = TRUE;
-	IMAGE_OUT(0x20, 0x70000000 | 1<<27 | transparency_color);
-    }
-    IMAGE_OUT(0x00, 0);
-    IMAGE_OUT(0x04, 0);
-    IMAGE_OUT(0x08, y<<16 | x);
-    IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
-    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<10 | 1);
-
-#if 0
-    if (pScrn->bitsPerPixel == 8)
-    	w >>= 2;
-    if (pScrn->bitsPerPixel == 16)
-    	w >>= 1;
-#endif
-	w = (w + 3) >> 2;
-
-    if (w&1) w+=1;
-    w /= 2;
-    while (h--) {
-    	srcp = (CARD32 *)src;	/* Is *src really on a 4-byte boundary ?!?! */
-	while (w--) {
-	    IMAGE_OUT(0x56, *srcp++);
-	    IMAGE_OUT(0x60, *srcp++);
-	}
-	src += srcwidth;
-    }
-
-    if (pTrident->UsePCIRetry)
-    	SET_SYNC_FLAG(infoRec);
-    else 
-    	BladeSync(pScrn);
-
-    if (pTrident->DstEnable) {
-	IMAGE_OUT(0x20, 0x70000000);
-	pTrident->DstEnable = FALSE;
-    }
-}
-
 static void 
 BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
 					   int patternx, int patterny, 
@@ -589,24 +531,24 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    IMAGE_OUT(0x20, 0x90000000 | XAAPatternROP[rop]);
+    BLADE_OUT(0x2148, XAAPatternROP[rop]);
+    if (bg == -1) {
     REPLICATE(fg);
-    if (bg != -1) {
-    REPLICATE(bg);
-    IMAGE_OUT(0x20, 0x80000000 | 1<<27 |1<<26);
+    BLADE_OUT(0x216C, 0x80000000 | 1<<30);
+    BLADE_OUT(0x216C, 0x80000000 | 1<<28 | 1<<30);
+    BLADE_OUT(0x2170, patternx);
+    BLADE_OUT(0x2170, patterny);
+    BLADE_OUT(0x2174, fg);
     } else {
-    IMAGE_OUT(0x20, 0x80000000 | 1<<27);
+    REPLICATE(fg);
+    REPLICATE(bg);
+    BLADE_OUT(0x216C, 0x80000000);
+    BLADE_OUT(0x216C, 0x80000000 | 1<<28);
+    BLADE_OUT(0x2170, patternx);
+    BLADE_OUT(0x2170, patterny);
+    BLADE_OUT(0x2174, fg);
+    BLADE_OUT(0x2178, bg);
     }
-    IMAGE_OUT(0x30, (patternx & 0xFF000000)>>24);
-    IMAGE_OUT(0x30, (patternx & 0xFF0000)>>16);
-    IMAGE_OUT(0x30, (patternx & 0xFF00)>>8);
-    IMAGE_OUT(0x30, (patternx & 0xFF));
-    IMAGE_OUT(0x30, (patterny & 0xFF000000)>>24);
-    IMAGE_OUT(0x30, (patterny & 0xFF0000)>>16);
-    IMAGE_OUT(0x30, (patterny & 0xFF00)>>8);
-    IMAGE_OUT(0x30, (patterny & 0xFF));
-    IMAGE_OUT(0x50, fg);
-    IMAGE_OUT(0x54, bg);
 }
 
 static void 
@@ -616,12 +558,14 @@ BladeSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
 				   int w, int h)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-  
-    IMAGE_OUT(0x08, y<<16 | x);
-    IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x24, 0x80000000 | 7<<18 | 1<<10 | 3<<22 | 1<<9);
+    int clip = 0;
+
+    if (pTrident->Clipping) clip = 1;
+    BLADE_OUT(0x2144, 0x20000000 | 7<<12 | 1<<4 | 1<<19 | 2<<2 | clip);
+    BLADE_OUT(0x2108, y<<16 | x);
+    BLADE_OUT(0x210C, (y+h-1)<<16 | (x+w-1));
     if (!pTrident->UsePCIRetry)
-    	BladeSync(pScrn);
+    	BladeSyncClip(pScrn);
 }
 
 static void 
@@ -655,8 +599,6 @@ BladeSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
-    if (!pTrident->UsePCIRetry)
-    	BladeSync(pScrn);
     CHECKCLIPPING;
 }
 
@@ -669,7 +611,7 @@ static void BladeSetupForImageWrite(
 ){
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
+    BLADE_OUT(0x2148, XAACopyROP[rop]);
 }
 
 static void BladeSubsequentImageWriteRect(
@@ -679,7 +621,8 @@ static void BladeSubsequentImageWriteRect(
 ){
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    IMAGE_OUT(0x08, y<<16 | x);
-    IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<10 | 1<<9);
+    if (skipleft) BladeSetClippingRectangle(pScrn,x+skipleft,y,(x+w-1),(y+h-1));
+    BLADE_OUT(0x2144, 0xE0000000 | 1<<19 | 1<<4 | (skipleft ? 1 : 0));
+    BLADE_OUT(0x2108, y<<16 | x);
+    BLADE_OUT(0x210C, (y+h-1)<<16 | (x+w-1));
 }

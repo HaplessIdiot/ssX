@@ -1,4 +1,13 @@
 XFree86 3.9Pt (20 June 1999)
+2761. Fix a glint scanline interleave bug introduced by the change in
+      device scaning order in the new RAC code (#2890, Jens Owen).
+2760. Fix a dual head Xinerama crash that happens when running the xv program
+      (#2889, Itai Nahshon).
+2759. Add v4l Xv support to the trident driver (#2877, Alan Hourihane).
+2758. Trident Image series and standard chipset acceleration fixes (#2877,
+      Alan Hourihane).
+2757. Add more Blade3D acceleration to the trident driver (#2877,
+      Alan Hourihane).
 2756. Fix for DPMS with the new RAC (Itai Nahshon).
 2755. RAC updates, including changing the way PCI resource validation works
       (Egbert Eich).
@@ -8194,4 +8203,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.778 1999/06/14 13:37:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.779 1999/06/20 05:23:22 dawes Exp $

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.41 1999/06/14 09:13:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.42 1999/06/20 05:23:37 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/06/09 20:05:12 jens Exp $ */
 
 #define PSZ 8
@@ -2019,9 +2019,9 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
                   use16xProduct    | 
                   inputXSpan       );
 	GLINT_SLOW_WRITE_REG(value, GMultGLINTAperture);
-	value = pGlint->MXPciInfo[1]->memBase[2] & 0xFF800000;
-	GLINT_SLOW_WRITE_REG(value, GMultGLINT1);
 	value = pGlint->MXPciInfo[0]->memBase[2] & 0xFF800000;
+	GLINT_SLOW_WRITE_REG(value, GMultGLINT1);
+	value = pGlint->MXPciInfo[1]->memBase[2] & 0xFF800000;
 	GLINT_SLOW_WRITE_REG(value, GMultGLINT2);
     }
 
