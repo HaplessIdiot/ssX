@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.124 2004/03/13 22:07:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.125 2004/04/05 00:13:51 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -191,7 +191,7 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0332, "GeForce FX 5900XT" },
   { 0x10DE0333, "GeForce FX 5950 Ultra" },
   { 0x10DE033F, "Quadro FX 700" },
-  { 0x10DE0334, "0x0334" },
+  { 0x10DE0334, "GeForce FX 5900ZT" },
   { 0x10DE0338, "Quadro FX 3000" },
   { 0x10DE0341, "GeForce FX 5700 Ultra" },
   { 0x10DE0342, "GeForce FX 5700" },
@@ -205,11 +205,37 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE034C, "Quadro FX Go1000" },
   { 0x10DE034E, "Quadro FX 1100" },
   { 0x10DE034F, "0x034F" },
-  { 0x10DE0040, "0x0040" },
-  { 0x10DE0041, "0x0041" },
-  { 0x10DE0042, "0x0042" },
+  { 0x10DE0040, "GeForce 6800 Ultra" },
+  { 0x10DE0041, "GeForce 6800" },
+  { 0x10DE0042, "GeForce 6800 LE" },
   { 0x10DE0043, "0x0043" },
-  { 0x10DE004E, "0x004E" },
+  { 0x10DE0045, "GeForce 6800 GT" },
+  { 0x10DE0049, "0x0049" },
+  { 0x10DE004E, "Quadro FX 4000" },
+  { 0x10DE00C0, "0x00C0" },
+  { 0x10DE00C1, "0x00C1" },
+  { 0x10DE00C2, "0x00C2" },
+  { 0x10DE00C8, "0x00C8" },
+  { 0x10DE00C9, "0x00C9" },
+  { 0x10DE00CC, "0x00CC" },
+  { 0x10DE00CE, "0x00CE" },
+  { 0x10DE0140, "GeForce 6600 GT" },
+  { 0x10DE0141, "GeForce 6600" },
+  { 0x10DE0142, "0x0142" },
+  { 0x10DE0143, "0x0143" },
+  { 0x10DE0144, "0x0144" },
+  { 0x10DE0145, "GeForce 6610 XL" },
+  { 0x10DE0146, "0x0146" },
+  { 0x10DE0147, "0x0147" },
+  { 0x10DE0148, "0x0148" },
+  { 0x10DE0149, "0x0149" },
+  { 0x10DE014B, "0x014B" },
+  { 0x10DE014C, "0x014C" },
+  { 0x10DE014D, "0x014D" },
+  { 0x10DE014E, "Quadro FX 540" },
+  { 0x10DE014F, "0x014F" },
+  { 0x10DE0160, "0x0160" },
+  { 0x10DE0166, "0x0166" },
   {-1, NULL}
 };
 
@@ -357,7 +383,8 @@ typedef enum {
     OPTION_VIDEO_KEY,
     OPTION_FLAT_PANEL,
     OPTION_FP_DITHER,
-    OPTION_CRTC_NUMBER
+    OPTION_CRTC_NUMBER,
+    OPTION_FP_SCALE
 } NVOpts;
 
 
@@ -372,6 +399,7 @@ static const OptionInfoRec NVOptions[] = {
     { OPTION_FLAT_PANEL,	"FlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FP_DITHER, 	"FPDither",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CRTC_NUMBER,	"CrtcNumber",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_FP_SCALE,          "FPScale",      OPTV_BOOLEAN,   {0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -595,10 +623,12 @@ NVProbe(DriverPtr drv, int flags)
                case 0x0040:
                case 0x00C0:
                case 0x0120:
-               case 0x0130:
+               case 0x0140:
                case 0x0160:
+               case 0x0130:
                case 0x01D0:
                case 0x0090:
+               case 0x0210:
                    NVChipsets[numUsed].token = pciid;
                    NVChipsets[numUsed].name = "Unknown NVIDIA chip";
                    NVPciChipsets[numUsed].numChipset = pciid;
@@ -1090,6 +1120,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pNv->HWCursor ? "HW" : "SW");
+
+    pNv->FpScale = TRUE;
+    if (xf86GetOptValBool(pNv->Options, OPTION_FP_SCALE, &pNv->FpScale)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Flat panel scaling %s\n",
+                   pNv->FpScale ? "on" : "off");
+    }
     if (xf86ReturnOptValBool(pNv->Options, OPTION_NOACCEL, FALSE)) {
 	pNv->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
@@ -1268,9 +1304,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     case 0x00C0:
     case 0x0120:
     case 0x0130:
+    case 0x0140:
     case 0x0160:
     case 0x01D0:
     case 0x0090:
+    case 0x0210:
          pNv->Architecture =  NV_ARCH_40;
          break;
     default:

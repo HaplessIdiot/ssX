@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.7 2004/03/15 00:19:45 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.8 2004/03/20 01:52:16 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1336,6 +1336,11 @@ void NVLoadStateExt (
        pNv->PRAMDAC[0x0848/4] = state->scale;
     }
     pNv->PRAMDAC[0x0600/4] = state->general;
+
+    if(((pNv->Chipset & 0xffff) == 0x0328) && (state->bpp == 32)) {
+       /* At least one NV34 laptop needs this workaround. */
+       pNv->PRAMDAC[0x0828/4] &= 0xfffffffe;
+    }
 
     pNv->PCRTC[0x0140/4] = 0;
     pNv->PCRTC[0x0100/4] = 1;
