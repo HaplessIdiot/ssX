@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.4 1997/04/10 11:34:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.5 1997/04/12 13:46:48 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -143,11 +143,7 @@ xf86ImageGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     SYNC_CHECK;
 
-#if PSZ == 8
-    cfbTEGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
-#else
-    cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
-#endif
+    cfbImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 }
 
 void static
