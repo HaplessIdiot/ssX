@@ -36,6 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "colormapst.h"
 #include "resource.h"
 
+#ifndef XFree86Server
 ColormapPtr FbInstalledMaps[MAXSCREENS];
 
 int
@@ -591,3 +592,95 @@ fbInitVisuals (VisualPtr    *visualp,
     *defaultVisp = depth[i].vids[j];
     return TRUE;
 }
+#else
+
+#include "micmap.h"
+
+int
+fbListInstalledColormaps(pScreen, pmaps)
+    ScreenPtr	pScreen;
+    Colormap	*pmaps;
+{
+    return miListInstalledColormaps(pScreen, pmaps);
+}
+
+void
+fbInstallColormap(pmap)
+    ColormapPtr	pmap;
+{
+    miInstallColormap(pmap);
+}
+
+void
+fbUninstallColormap(pmap)
+    ColormapPtr	pmap;
+{
+    miUninstallColormap(pmap);
+}
+
+void
+fbResolveColor(pred, pgreen, pblue, pVisual)
+    unsigned short	*pred, *pgreen, *pblue;
+    register VisualPtr	pVisual;
+{
+    miResolveColor(pred, pgreen, pblue, pVisual);
+}
+
+Bool
+fbInitializeColormap(pmap)
+    register ColormapPtr	pmap;
+{
+    return miInitializeColormap(pmap);
+}
+
+int
+fbExpandDirectColors (pmap, ndef, indefs, outdefs)
+    ColormapPtr	pmap;
+    int		ndef;
+    xColorItem	*indefs, *outdefs;
+{
+    return miExpandDirectColors(pmap, ndef, indefs, outdefs);
+}
+
+Bool
+fbCreateDefColormap(pScreen)
+    ScreenPtr pScreen;
+{
+    return miCreateDefColormap(pScreen);
+}
+
+void
+fbClearVisualTypes()
+{
+    miClearVisualTypes();
+}
+
+Bool
+fbSetVisualTypes (depth, visuals, bitsPerRGB)
+    int	    depth;
+    int	    visuals;
+    int     bitsPerRGB;
+{
+    return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
+}
+
+/*
+ * Given a list of formats for a screen, create a list
+ * of visuals and depths for the screen which coorespond to
+ * the set which can be used with this version of fb.
+ */
+
+Bool
+fbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, sizes, bitsPerRGB)
+    VisualPtr	*visualp;
+    DepthPtr	*depthp;
+    int		*nvisualp, *ndepthp;
+    int		*rootDepthp;
+    VisualID	*defaultVisp;
+    unsigned long   sizes;
+    int		bitsPerRGB;
+{
+    return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
+			 defaultVisp, sizes, bitsPerRGB, -1);
+}
+#endif

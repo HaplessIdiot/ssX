@@ -24,6 +24,10 @@
 /* $XFree86: $ */
 
 #include "fb.h"
+#ifdef XFree86LOADER
+#include "xf86.h"
+#include "xf86_ansic.h"
+#endif
 
 
 void

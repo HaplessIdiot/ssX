@@ -196,7 +196,9 @@ fbScreenInit(ScreenPtr	pScreen,
     if (!fbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, 
 			    width, bpp))
 	return FALSE;
+#ifndef XFree86Server
     fbInitializeBackingStore (pScreen);
+#endif
     return TRUE;
 }
 
