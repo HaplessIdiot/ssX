@@ -98,8 +98,8 @@ Usually a name is assigned to a window so that the
 window manager can use a text representation when the window is iconified.
 This option is unused since you can't iconify the background.
 .IP "\fB-display\fP \fIdisplay\fP"
-Specifies the server to connect to; see \fIX(1)\fP.
+Specifies the server to connect to; see \fIX(__miscmansuffix__)\fP.
 .SH "SEE ALSO"
-X(1), xset(1), xrdb(1)
+X(__miscmansuffix__), xset(1), xrdb(1)
 .SH AUTHOR
 Mark Lillibridge, MIT Project Athena

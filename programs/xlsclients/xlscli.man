@@ -53,6 +53,6 @@ print out.  The default is 10000.
 .B DISPLAY
 To get the default host, display number, and screen.
 .SH "SEE ALSO"
-X(1), xwininfo(1), xprop(1)
+X(__miscmansuffix__), xwininfo(1), xprop(1)
 .SH AUTHOR
 Jim Fulton, MIT X Consortium

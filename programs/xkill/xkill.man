@@ -68,7 +68,7 @@ the root.
 Specifies a specific pointer button number or the word "any" to use when 
 selecting windows.
 .SH "SEE ALSO"
-X(1), xwininfo(1), XKillClient and XGetPointerMapping in the Xlib Programmers 
+X(__miscmansuffix__), xwininfo(1), XKillClient and XGetPointerMapping in the Xlib Programmers 
 Manual, KillClient in the X Protocol Specification
 .SH AUTHOR
 Jim Fulton, MIT X Consortium

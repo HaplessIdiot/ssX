@@ -42,9 +42,9 @@ This option specifies the name to assign to the created window.
 .B \-rv
 This option specifies that the window should be in reverse video.
 .SH "SEE ALSO"
-X(1), xwininfo(1), xdpyinfo(1), Xlib Programmers Manual, X Protocol
+X(__miscmansuffix__), xwininfo(1), xdpyinfo(1), Xlib Programmers Manual, X Protocol
 Specification
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium

@@ -81,7 +81,7 @@ obscured.
 .TP 8
 .B "-display \fIdisplay\fP"
 This argument allows you to specify the server to connect to;
-see \fIX(1)\fP.
+see \fIX(__miscmansuffix__)\fP.
 .PP
 .TP 8
 .B "-len \fIn\fP"
@@ -332,6 +332,6 @@ To get default display.
 Specifies the name of a file from which additional formats are to be obtained.
 .PP
 .SH SEE ALSO
-X(1), xwininfo(1)
+X(__miscmansuffix__), xwininfo(1)
 .SH AUTHOR
 Mark Lillibridge, MIT Project Athena

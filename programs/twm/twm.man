@@ -1261,7 +1261,7 @@ This variable is used as the prefix for files that begin with a tilde and
 for locating the \fItwm\fP startup file.
 .SH "SEE ALSO"
 .PP
-X(1), Xserver(1), xdm(1), xrdb(1)
+X(__miscmansuffix__), Xserver(1), xdm(1), xrdb(1)
 .SH AUTHORS
 Tom LaStrange, Solbourne Computer; Jim Fulton, MIT X Consortium;
 Steve Pitschke, Stardent Computer; Keith Packard, MIT X Consortium;

@@ -19,8 +19,10 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.14 2000/06/14 00:16:14 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.15 2001/01/17 23:45:22 dawes Exp $
 .\" 
+.\" Shorthand for "#" that survives preprocessing
+.ds h \N'35'
 .TH XDM 1 "Release 6.4" "X Version 11"
 .SH NAME
 xdm \- X Display Manager with support for XDMCP, host chooser
@@ -657,13 +659,13 @@ Here is an example Xaccess file:
 .LP
 .ta 2i 4i
 .nf
-#
-# Xaccess \- XDMCP access control file
-#
+XCOMM
+XCOMM Xaccess \- XDMCP access control file
+XCOMM
 
-#
-# Direct/Broadcast query entries
-#
+XCOMM
+XCOMM Direct/Broadcast query entries
+XCOMM
 
 !xtra.lcs.mit.edu	# disallow direct/broadcast service for xtra
 bambi.ogi.edu	# allow access from this particular display
@@ -672,9 +674,9 @@ bambi.ogi.edu	# allow access from this particular display
 *.deshaw.com	NOBROADCAST	# allow only direct access
 *.gw.com			# allow direct and broadcast
 
-#
-# Indirect query entries
-#
+XCOMM
+XCOMM Indirect query entries
+XCOMM
 
 %HOSTS	expo.lcs.mit.edu xenon.lcs.mit.edu \\
 	excess.lcs.mit.edu kanga.lcs.mit.edu
@@ -812,7 +814,7 @@ parameters for that widget:
 Please note the translations entry; it specifies
 a few new translations for the widget which allow users to escape from the
 default session (and avoid troubles that may occur in it).  Note that if
-#override is not specified, the default translations are removed and replaced
+\*hoverride is not specified, the default translations are removed and replaced
 by the new value, not a very useful result as some of the default translations
 are quite useful (such as ``<Key>: insert-char ()'' which responds to normal
 typing).
@@ -1293,10 +1295,10 @@ Kerberos credentials cache
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-.IR X (1),
+.IR X (__miscmansuffix__),
 .IR xinit (1),
 .IR xauth (1),
-.IR Xsecurity (1),
+.IR Xsecurity (__miscmansuffix__),
 .IR sessreg (1),
 .IR Xserver (1),
 .\" .IR chooser (1), \" except that there isn't a manual for it yet

@@ -72,7 +72,7 @@ all such properties, should be removed.
 \fImap\fP may be one of: default, best, red, green, blue, gray, or all.
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the host and display to use; see \fIX(1)\fP.
+This option specifies the host and display to use; see \fIX(__miscmansuffix__)\fP.
 .TP 8
 .B \-gray
 This option indicates that the RGB_GRAY_MAP should be defined.
@@ -99,7 +99,7 @@ standard colormap properties.
 .B DISPLAY
 to get default host and display number.
 .SH SEE ALSO
-X(1)
+X(__miscmansuffix__)
 .SH AUTHOR
 Donna Converse, MIT X Consortium
 

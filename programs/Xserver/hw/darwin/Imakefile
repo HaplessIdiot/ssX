@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.5 2001/01/14 16:44:55 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.6 2001/01/23 21:14:26 herrb Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -37,7 +37,6 @@ DEFINES = $(CUSTOMVERDEF) $(QUARTZDEF)
 NormalLibraryObjectRule()
 NormalLibraryTarget(darwin,$(OBJS))
 
-CppManTarget(Xdarwin,$(QUARTZDEF))
 InstallManPage(Xdarwin,$(MANDIR))
 
 DependTarget()

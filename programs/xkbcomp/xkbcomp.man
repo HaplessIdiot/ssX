@@ -3,7 +3,7 @@
 .\"
 .\"
 .\"
-.\" $XFree86: xc/programs/xkbcomp/xkbcomp.man,v 1.6 2000/08/03 12:24:03 dawes Exp $
+.\" $XFree86: xc/programs/xkbcomp/xkbcomp.man,v 1.7 2001/01/17 23:45:45 dawes Exp $
 .\"
 .TH XKBCOMP 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -94,10 +94,10 @@ Generate a source description of the keyboard as output (.xkb extension).
 .B \-xkm
 Generate a compiled keymap file as output (.xkm extension).
 .SH "SEE ALSO"
-X(1)
+X(__miscmansuffix__)
 .SH COPYRIGHT
 Copyright 1994, Silicon Graphics Computer Systems and X Consortium, Inc.
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Erik Fortune, Silicon Graphics

@@ -86,11 +86,11 @@ Forces synchronization of all X requests.  Slow.
 Print more information, including debugging messages.   Multiple 
 specifications of \fI-v\fP cause more output, to a point.
 .SH "SEE ALSO"
-X(1)
+X(__miscmansuffix__)
 .SH COPYRIGHT
 Copyright 1995, Silicon Graphics Computer Systems
 Copyright 1995, 1998  The Open Group
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Erik Fortune, Silicon Graphics

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/xfs/xfs.man,v 3.11 2000/12/06 20:39:55 dawes Exp $
+.\" $XFree86: xc/programs/xfs/xfs.man,v 3.12 2001/01/17 23:45:27 dawes Exp $
 .\"
 .\" Copyright 1991, 1998  The Open Group
 .\" 
@@ -165,31 +165,31 @@ enabled for all fonts, and "16", meaning it is enabled only for
 .\" list means the server will talk to any client.
 .SH "EXAMPLE"
 .nf
-#
-# sample font server configuration file
-#
+XCOMM
+XCOMM sample font server configuration file
+XCOMM
 
-# allow a max of 10 clients to connect to this font server
+XCOMM allow a max of 10 clients to connect to this font server
 client-limit = 10
 
-# when a font server reaches its limit, start up a new one
+XCOMM when a font server reaches its limit, start up a new one
 clone-self = on
 
-# alternate font servers for clients to use
+XCOMM alternate font servers for clients to use
 alternate-servers = hansen:7101,hansen:7102
 
-# where to look for fonts
-# the first is a set of Speedo outlines, the second is a set of 
-# misc bitmaps and the last is a set of 100dpi bitmaps
-#
+XCOMM where to look for fonts
+XCOMM the first is a set of Speedo outlines, the second is a set of 
+XCOMM misc bitmaps and the last is a set of 100dpi bitmaps
+XCOMM
 catalogue = /usr/X11R6/lib/X11/fonts/speedo,
 	/usr/X11R6/lib/X11/fonts/misc,
 	/usr/X11R6/lib/X11/fonts/100dpi/
 
-# in 12 points, decipoints
+XCOMM in 12 points, decipoints
 default-point-size = 120
 
-# 100 x 100 and 75 x 75
+XCOMM 100 x 100 and 75 x 75
 default-resolutions = 100,100,75,75
 use-syslog = off
 .fi
@@ -227,7 +227,7 @@ with '+' as a separator.
 .PP
 Examples: \fIDECnet/SRVNOD::FONT$DEFAULT\fP, \fIdecnet/44.70::font$special/symbols\fP.
 .SH "SEE ALSO"
-X(1), \fIThe X Font Service Protocol\fP,
+X(__miscmansuffix__), \fIThe X Font Service Protocol\fP,
 .br
 \fIFont server implementation overview\fP
 .SH BUGS

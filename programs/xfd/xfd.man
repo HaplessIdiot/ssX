@@ -173,7 +173,7 @@ character does not exist.  The default is "no such character
 0x%02x%02x (%u,%u) (%#o,%#o)".  The arguments that will come after the
 format string are the same as for the \fBselectFormat\fP resource.
 .SH "SEE ALSO"
-X(1), xlsfonts(1), xrdb(1), xfontsel(1),
+X(__miscmansuffix__), xlsfonts(1), xrdb(1), xfontsel(1),
 .I "X Logical Font Description Conventions"
 .SH "BUGS"
 The program should skip over pages full of non-existent characters.

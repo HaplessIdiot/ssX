@@ -1,4 +1,7 @@
 XFree86 4.X.Ya (?? January 2001)
+  79. Preprocess all man pages to make sure that the references to pages
+      in sections that are platform-dependent are correct.  Also fixed some
+      misc formatting problems found while doing that (David Dawes).
   78. Ensure client side version checking in 3D drivers for Rage128 and
       Radeon chipsets (Alan Hourihane).
   77. Nv driver update to fix the cursor for double scan modes, and to
@@ -12303,4 +12306,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1534 2001/01/22 23:18:37 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1535 2001/01/23 18:14:32 alanh Exp $

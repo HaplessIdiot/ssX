@@ -26,10 +26,10 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH "SEE ALSO"
-X(1)
+X(__miscmansuffix__)
 .SH BUGS
 This program isn't really finished yet.
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Dan Schmidt, MIT

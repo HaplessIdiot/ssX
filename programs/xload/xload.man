@@ -14,7 +14,7 @@ program displays a periodically updating histogram of the system load average.
 .SH OPTIONS
 .PP
 .I Xload
-accepts all of the standard X Toolkit command line options (see \fIX(1)\fP).
+accepts all of the standard X Toolkit command line options (see \fIX(__miscmansuffix__)\fP).
 The order of the options in unimportant.  \fIxload also accepts the
 following additional options:
 .PP
@@ -84,7 +84,7 @@ stored in the RESOURCE_MANAGER property.
 .SH FILES
 <XRoot>/lib/X11/app-defaults/XLoad - specifies required resources
 .SH SEE ALSO
-X(1), xrdb(1), mem(4), Athena StripChart Widget.
+X(__miscmansuffix__), xrdb(1), mem(4), Athena StripChart Widget.
 .SH BUGS
 This program requires the ability to open and read the special system
 file \fI/dev/kmem\fP.  Sites that do not allow general access to this file
@@ -96,7 +96,7 @@ used to read it (get_load.c) must be ported to each new operating system.
 .SH COPYRIGHT
 Copyright \(co X Consortium
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 K. Shane Hartman (MIT-LCS) and Stuart A. Malone (MIT-LCS);
 .br

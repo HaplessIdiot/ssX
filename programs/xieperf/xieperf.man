@@ -768,7 +768,7 @@ A somewhat large flo which uses control planes, LUTs, Point, PasteUp, Logical, C
 .SH X DEFAULTS
 There are no X defaults used by this program.
 .SH "SEE ALSO"
-X(1), x11perf(1), x11perfcomp(1)
+X(__miscmansuffix__), x11perf(1), x11perfcomp(1)
 .SH BUGS
 There should be a IMAGES environment variable to augment the -images option.
 .PP

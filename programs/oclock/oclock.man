@@ -48,10 +48,10 @@ choose a different color for the hour hand of the clock.
 selects an appropriate level of backing store.
 .TP 8
 .B \-geometry \fIgeometry\fB
-define the initial window geometry; see \fIX(1)\fP.
+define the initial window geometry; see \fIX(__miscmansuffix__)\fP.
 .TP 8
 .B \-display \fIdisplay\fB
-specify the display to use; see \fIX(1)\fP.
+specify the display to use; see \fIX(__miscmansuffix__)\fP.
 .TP 8
 .B \-bd \fIcolor\fB
 choose a different color for the window border.
@@ -92,6 +92,6 @@ Clock*jewel: yellow
 .br
 Clock*minute: yellow
 .SH "SEE ALSO"
-X(1), X Toolkit documentation
+X(__miscmansuffix__), X Toolkit documentation
 .SH AUTHOR
 Keith Packard, MIT X Consortium

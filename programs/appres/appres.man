@@ -80,6 +80,6 @@ use the \-1 option.  For example,
 will list the resources matching the \fIxterm\fP vt100 widget.
 .SH "SEE ALSO"
 .PP
-X(1), xrdb(1), listres(1)
+X(__miscmansuffix__), xrdb(1), listres(1)
 .SH AUTHOR
 Jim Fulton, MIT X Consortium

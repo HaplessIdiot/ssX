@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.34 94/04/17 20:24:06 dpw Exp $
+.\" $XConsortium: xmh.man /main/39 1996/12/09 17:10:05 kaleb $
 .\" Copyright (c) 1989, 1991, 1994  X Consortium
 .\" Copyright 1988, 1989, Digital Equipment Corporation.
 .\" 
@@ -25,9 +25,9 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XMH 1 "Release 6" "X Version 11"
+.TH XMH 1 "Release 6.3" "X Version 11"
 .SH NAME
-\fIxmh\fR \- send and read mail with an X interface to MH
+xmh \- send and read mail with an X interface to MH
 .SH SYNOPSIS
 .B xmh
 [\-path \fImailpath\fR] [\-initial \fIfoldername\fR] [\-flag] [\-\fItoolkitoption\fR ...]
@@ -70,7 +70,7 @@ These three options have corresponding application-specific resources,
 \fBMailPath\fR, \fBInitialFolder\fR, and \fBMailWaitingFlag\fR, which
 can be specified in a resource file.
 .PP
-The standard toolkit command line options are given in \fIX(1)\fP.
+The standard toolkit command line options are given in \fIX(__miscmansuffix__)\fP.
 
 .SH INSTALLATION
 .PP
@@ -674,7 +674,18 @@ otherwise dangerous, a popup dialog box will appear asking you to confirm the
 action.  This window will contain an ``Abort'' or ``No'' button and a
 ``Confirm'' or ``Yes''
 button.  Pressing the ``No'' button cancels the operation, and pressing
-the ``Yes'' will proceed with the operation. 
+the ``Yes'' will proceed with the operation.
+
+When \fIxmh\fR is run under a Release 6 session manager it will prompt
+the user for confirmation during a checkpoint operation.  The dialog
+box asks whether any current changes should be committed (saved)
+during the checkpoint.  Responding ``Yes'' will have the same effect
+as pressing the ``Commit Changes'' or ``Save Message'' buttons in the
+respective folder and view windows.  Responding ``No'' will cause the
+checkpoint to continue successfully to completion without actually
+saving any pending changes.  If the session manager disallows user
+interaction during the checkpoint a ``Yes'' response is assumed; i.e.
+all changes will be committed during the checkpoint.
 
 Some dialog boxes contain messages from \fIMH\fR.  Occasionally when the
 message is more than one line long,
@@ -997,12 +1008,14 @@ The following resources are defined:
 .TP 8
 .B banner
 A short string that is the default label of the folder, Table of Contents,
-and view.  The default is "xmh    X Consortium    R6".
+and view.  The default shows the program name, vendor, and release.
 .PP
 .TP 8
 .B blockEventsOnBusy
 Whether to disallow user input and show a busy cursor while \fIxmh\fP is
-busy processing a command.  Default is true.
+busy processing a command.  If false, the user can `mouse ahead' and
+type ahead; if true, user input is discarded when processing lengthy
+\fImh\fP commands.  The default is true.
 .PP
 .TP 8
 .B busyCursor
@@ -1477,7 +1490,7 @@ MH - to get the location of the \fIMH\fP profile file
 .br
 /tmp - temporary files, see \fBtempDir\fP.
 .SH SEE ALSO
-X(1), xrdb(1), X Toolkit Intrinsics, Athena Widget Set, mh(1), enscript(1)
+X(__miscmansuffix__), xrdb(1), X Toolkit Intrinsics, Athena Widget Set, mh(1), enscript(1)
 .br
 At least one book has been published about \fIMH\fP and \fIxmh\fP.
 .SH BUGS
@@ -1514,6 +1527,9 @@ of the first toc and view, while trying to keep other \fIxmh\fP windows around.
 if any sequence definition in a particular folder contains more
 than \fIBUFSIZ\fP characters.  \fIxmh\fP tries to capture these messages
 and display them when they occur, but it cannot correct the problem.
+.br
+- Should save a temporary checkpoint file rather than requiring changes
+to be committed in the non-shutdown case.
 .SH AUTHOR
 Terry Weissman, formerly of Digital Western Research Laboratory
 .br
