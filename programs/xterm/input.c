@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.9 1996/11/18 13:25:51 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.10 1996/12/23 07:14:28 dawes Exp $
  */
 
 /*
@@ -128,7 +128,7 @@ Input (keyboard, screen, event, eightbit)
 		key = TRUE;
         } else if (IsCursorKey(keysym) &&
         	keysym != XK_Prior && keysym != XK_Next) {
-       		if (keyboard->flags & CURSOR_APL) {
+       		if (keyboard->flags & MODE_DECCKM) {
 			reply.a_type = SS3;
 			reply.a_final = cur[keysym-XK_Home];
 			VT52_CURSOR_KEYS
@@ -187,7 +187,7 @@ Input (keyboard, screen, event, eightbit)
 		 && keysym == XK_KP_Add)
 			keysym = XK_KP_Separator;
 #endif
-	  	if (keyboard->flags & KYPD_APL)	{
+	  	if (keyboard->flags & MODE_DECKPAM)	{
 			reply.a_type   = SS3;
 			reply.a_final = kypd_apl[keysym-XK_KP_Space];
 			VT52_KEYPAD

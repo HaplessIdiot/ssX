@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.11 1996/12/23 07:14:41 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.12 1996/12/24 02:28:10 dawes Exp $
  */
 
 /*
@@ -697,10 +697,7 @@ ClearInLine(screen, row, col, len)
 	memset(SCRN_BUF_ATTRS(screen, row) + col, flags, len);
 
 	if_OPT_ISO_COLORS(screen,{
-		memset(SCRN_BUF_FORES(screen, row) + col,
-			flags & FG_COLOR ? term->cur_foreground : 0, len);
-		memset(SCRN_BUF_BACKS(screen, row) + col,
-			flags & BG_COLOR ? term->cur_background : 0, len);
+		memset(SCRN_BUF_COLOR(screen, row) + col, xtermColorPair(), len);
 	})
 
 	return rc;
@@ -1294,6 +1291,7 @@ drawXtermText(screen, flags, gc, x, y, text, len)
 	char *text;
 	int len;
 {
+	y += FontAscent(screen);
 	XDrawImageString(screen->display, TextWindow(screen), gc, 
 		x, y,  text, len);
 	if ((flags & BOLD) && screen->enbolden)
@@ -1380,6 +1378,58 @@ resetXtermGC(screen, flags, hilite)
 }
 
 #if OPT_ISO_COLORS
+/*
+ * Extract the foreground-color index from a one-byte color pair.  If we've got
+ * BOLD or UNDERLINE color-mode active, those will be used unless we've got
+ * an SGR foreground color active.
+ */
+unsigned
+extract_fg (color, flags)
+	unsigned color;
+	unsigned flags;
+{
+	unsigned fg = (color >> 4) & 0xf;
+	if (fg == extract_bg(color))
+	{
+		if (term->screen.colorULMode && (flags & UNDERLINE))
+			fg = COLOR_UL;
+		if (term->screen.colorBDMode && (flags & BOLD))
+			fg = COLOR_BD;
+	}
+	return fg;
+}
+
+unsigned
+extract_bg (color)
+	unsigned color;
+{
+	return color & 0xf;
+}
+
+/*
+ * Combine the current foreground and background into a single 8-bit number.
+ * Note that we're storing the SGR foreground, since cur_foreground may be set
+ * to COLOR_UL or COLOR_BD, which would make the code larger than 8 bits.
+ *
+ * FIXME: I'm using the coincidence of fg/bg values to unmask COLOR_UL/COLOR_BD,
+ * which will require more work...
+ */
+unsigned
+makeColorPair (fg, bg)
+	int fg;
+	int bg;
+{
+	unsigned my_bg = (bg >= 0) && (bg < 16) ? bg : 0;
+	unsigned my_fg = (fg >= 0) && (fg < 16) ? fg : my_bg;
+	return (my_fg << 4) | my_bg;
+}
+
+unsigned
+xtermColorPair ()
+{
+	return makeColorPair(term->sgr_foreground, term->cur_background);
+}
+
 Pixel
 getXtermForeground(flags, color)
 	int flags;

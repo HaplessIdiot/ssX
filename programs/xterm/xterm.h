@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.7 1996/08/13 11:37:12 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.8 1996/12/24 02:28:12 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -204,6 +204,10 @@ extern void scrolling_copy_area PROTO((TScreen *screen, int firstline, int nline
 
 extern Pixel getXtermBackground PROTO((int flags, int color));
 extern Pixel getXtermForeground PROTO((int flags, int color));
+extern unsigned extract_bg PROTO((unsigned color));
+extern unsigned extract_fg PROTO((unsigned color, unsigned flags));
+extern unsigned makeColorPair PROTO((int fg, int bg));
+extern unsigned xtermColorPair PROTO((void));
 extern void ClearCurBackground PROTO((TScreen *screen, int top, int left, unsigned height, unsigned width));
 extern void useCurBackground PROTO((Bool flag));
 
@@ -212,6 +216,9 @@ extern void useCurBackground PROTO((Bool flag));
 #define ClearCurBackground(screen, top, left, height, width) \
 	XClearArea (screen->display, TextWindow(screen), \
 		left, top, width, height, FALSE)
+
+#define extract_fg(color, flags) term->cur_foreground
+#define extract_bg(color) term->cur_background
 
 		/* FIXME: Reverse-Video? */
 #define getXtermBackground(flags, color) term->core.background_pixel

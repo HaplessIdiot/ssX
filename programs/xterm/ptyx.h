@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.17 1996/11/18 13:25:52 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.18 1996/12/23 07:14:37 dawes Exp $
  */
 
 /*
@@ -336,8 +336,7 @@ typedef struct {
 #define BUF_ATTRS(buf, row) (buf[MAX_PTRS * (row) + 1])
 
 #if OPT_ISO_COLORS
-#define BUF_FORES(buf, row) (buf[MAX_PTRS * (row) + 2])
-#define BUF_BACKS(buf, row) (buf[MAX_PTRS * (row) + 3])
+#define BUF_COLOR(buf, row) (buf[MAX_PTRS * (row) + 2])
 #endif
 
 	/* TScreen-level macros */
@@ -345,8 +344,7 @@ typedef struct {
 #define SCRN_BUF_ATTRS(screen, row) BUF_ATTRS(screen->buf, row)
 
 #if OPT_ISO_COLORS
-#define SCRN_BUF_FORES(screen, row) BUF_FORES(screen->buf, row)
-#define SCRN_BUF_BACKS(screen, row) BUF_BACKS(screen->buf, row)
+#define SCRN_BUF_COLOR(screen, row) BUF_COLOR(screen->buf, row)
 #endif
 
 typedef struct {
@@ -617,10 +615,9 @@ typedef struct _TekClassRec {
     TekClassPart tek_class;
 } TekClassRec;
 
-/* define masks for flags */
-#define CAPS_LOCK	0x01
-#define KYPD_APL	0x02
-#define CURSOR_APL	0x04
+/* define masks for keyboard.flags */
+#define MODE_DECKPAM	0x02	/* keypad application mode */
+#define MODE_DECCKM	0x04	/* cursor keys */
 
 
 #define N_MARGINBELL	10
@@ -637,6 +634,7 @@ typedef struct _XtermWidgetRec {
     unsigned    cur_foreground;	/* current foreground color	*/
     unsigned    cur_background;	/* current background color	*/
 #if OPT_ISO_COLORS
+    unsigned    sgr_foreground;	/* current SGR foreground color	*/
     int         num_ptrs;	/* number of pointers per row in 'ScrnBuf' */
 #endif
     unsigned	initflags;	/* initial mode flags		*/
