@@ -102,8 +102,6 @@ EXPORTS
  XSecurityFreeXauth
  XSecurityGenerateAuthorization
  XSecurityRevokeAuthorization
- XLbxQueryExtension
- XLbxQueryVersion
  XagQueryVersion
  XagCreateAssociation
  XagCreateEmbeddedApplicationGroup
@@ -139,4 +137,4 @@ EXPORTS
  XeviQueryVersion
  XeviGetVisualInfo
 /* $Xorg: Xext-def.cpp,v 1.3 2000/08/17 19:45:53 cpqbld Exp $ */
-/* $XFree86: xc/lib/Xext/Xext-def.cpp,v 1.6 2000/08/09 23:40:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/Xext-def.cpp,v 1.7 2001/01/17 19:42:46 dawes Exp $ */
