@@ -136,6 +136,11 @@ xf86RandRSetMode (ScreenPtr	    pScreen,
 	return FALSE;
     }
     /*
+     * Make sure the layout is correct
+     */
+    xf86ReconfigureLayout();
+
+    /*
      * Make sure the whole screen is visible
      */
     xf86SetViewport (pScreen, pScreen->width, pScreen->height);

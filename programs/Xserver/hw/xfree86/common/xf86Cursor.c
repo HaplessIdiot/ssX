@@ -731,3 +731,22 @@ xf86InitOrigins(void)
 	}
     }
 }
+
+void
+xf86ReconfigureLayout(void)
+{
+    int i;
+
+    for (i = 0; i < MAXSCREENS; i++) {
+	xf86ScreenLayoutPtr sl = &xf86ScreenLayout[i];
+	/* we don't have to zero these, xf86InitOrigins() takes care of that */
+	if (sl->left) xfree(sl->left);
+	if (sl->right) xfree(sl->right);
+	if (sl->up) xfree(sl->up);
+	if (sl->down) xfree(sl->down);
+    }
+
+    xf86InitOrigins();
+}
+
+	

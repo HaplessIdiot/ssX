@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.167 2002/12/12 18:29:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.168 2003/02/09 00:18:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -177,6 +177,7 @@ void xf86ZoomViewport(ScreenPtr pScreen, int zoom);
 Bool xf86SwitchMode(ScreenPtr pScreen, DisplayModePtr mode);
 void *xf86GetPointerScreenFuncs(void);
 void xf86InitOrigins(void);
+void xf86ReconfigureLayout(void);
  
 /* xf86DPMS.c */
 
