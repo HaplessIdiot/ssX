@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/141 1995/12/08 14:09:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.18 1996/01/06 05:25:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.19 1996/01/24 22:04:21 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -129,7 +129,7 @@ extern int errno;
 #ifdef LBX
 #ifndef X_NOT_POSIX
 #include <unistd.h>
-#ifdef NCR
+#if defined(NCR) || defined(__EMX__)
 /* 
  * this might be temporary, loosing version of SVR4 (MP/RAS 4.0 3.0
  * doesn't have a * prototype for writev in unistd.h. Perhaps it's in

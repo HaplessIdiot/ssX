@@ -1,5 +1,5 @@
 /* OS/2 REXX */
-/* $XFree86: xc/programs/xinit/startx.cmd,v 3.0 1996/02/09 08:22:52 dawes Exp $
+/* $XFree86: xc/programs/xinit/startx.cmd,v 3.1 1996/03/10 12:14:19 dawes Exp $
  * 
  * This is just a sample implementation of a slightly less primitive 
  * interface than xinit.  It looks for user xinitrc.cmd and xservrc.cmd
@@ -11,6 +11,7 @@
  * Site administrators are STRONGLY urged to write nicer versions.
  */
 '@echo off'
+ADDRESS CMD
 env = 'OS2ENVIRONMENT'
 x11root = VALUE('X11ROOT',,env)
 IF x11root = '' THEN DO
@@ -20,7 +21,9 @@ END
 
 home = VALUE('HOME',,env)
 IF home = '' THEN home = x11root
-os_shell = VALUE('OS2_SHELL',,env)
+os_shell = VALUE('X11SHELL',,env)
+IF os_shell = '' THEN os_shell = VALUE('SHELL',,env)
+IF os_shell = '' THEN os_shell = VALUE('OS2_SHELL',,env)
 IF os_shell = '' THEN DO
 	SAY "There is no command interpreter in OS2_SHELL ???"
 	EXIT
@@ -61,9 +64,9 @@ DO i=1 TO WORDS(all)
 		whoseargs = "server"
 	ELSE 
 	IF whoseargs = "client" THEN
-		clientargs = clientargs||cur
+		clientargs = clientargs' 'cur
 	ELSE
-		serverargs = serverargs||cur
+		serverargs = serverargs' 'cur
 END
 
 'xinit 'os_shell' /c 'clientargs' -- 'serverargs

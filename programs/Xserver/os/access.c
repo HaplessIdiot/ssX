@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.11 1996/02/18 03:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.12 1996/02/19 09:52:07 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -811,6 +811,10 @@ ResetHosts (display)
 	    continue;
     	if (ptr = strchr(ohostname, '\n'))
     	    *ptr = 0;
+#ifdef __EMX__
+    	if (ptr = strchr(ohostname, '\r'))
+    	    *ptr = 0;
+#endif
         hostlen = strlen(ohostname) + 1;
         for (i = 0; i < hostlen; i++)
 	    lhostname[i] = tolower(ohostname[i]);
