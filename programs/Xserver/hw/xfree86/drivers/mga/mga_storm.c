@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.70 2000/07/08 22:09:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.71 2000/09/24 13:51:28 alanh Exp $ */
 
 
 /* All drivers should typically include these */
@@ -314,6 +314,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 					SCANLINE_PAD_DWORD |
 					LEFT_EDGE_CLIPPING |
 					LEFT_EDGE_CLIPPING_NEGATIVE_X |
+					NO_TRANSPARENCY |
 					NO_GXCOPY;
 
     infoPtr->SetupForScanlineImageWrite = 
@@ -347,7 +348,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
     }
     if(pMga->AccelFlags & MGA_NO_PLANEMASK) {
-	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
+	infoPtr->ScanlineImageWriteFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
 	infoPtr->SolidFillFlags |= NO_PLANEMASK;
