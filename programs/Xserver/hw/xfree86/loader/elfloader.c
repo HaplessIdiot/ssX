@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.47 2002/11/25 14:05:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.48 2002/11/25 22:58:39 alanh Exp $ */
 
 /*
  *
@@ -2492,6 +2492,8 @@ int		*maxalign;
 	switch (SecType(i)) {
 	case SHT_STRTAB:
 	    if (!strcmp(name,".shstrtab")) /* already loaded */
+		continue;
+	    if (!strcmp(name,".stabstr"))  /* ignore debug info */
 		continue;
 	case SHT_SYMTAB:
 	    if (pass) continue;
