@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.15 2003/01/04 03:40:25 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.16 2003/02/11 02:51:10 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
@@ -21,6 +21,12 @@
 /*
  * Note, 0x1008FF02 - 0x1008FF0F are free and should be used for misc new
  * keysyms that don't fit into any of the groups below.
+ *
+ * 0x1008FF64, 0x1008FF6F, 0x1008FF71, 0x1008FF83 are no longer used,
+ * and should be used first for new keysyms.
+ *
+ * Check in keysymdef.h for generic symbols before adding new XFree86-specific
+ * symbols here.
  */
 
 
@@ -116,7 +122,6 @@
 #define XF86XK_LogOff		0x1008FF61
 #define XF86XK_Market		0x1008FF62
 #define XF86XK_Meeting		0x1008FF63
-#define XF86XK_Menu		0x1008FF64
 #define XF86XK_MenuKB		0x1008FF65
 #define XF86XK_MenuPB		0x1008FF66
 #define XF86XK_MySites		0x1008FF67
@@ -127,9 +132,7 @@
 #define XF86XK_Option		0x1008FF6C
 #define XF86XK_Paste		0x1008FF6D
 #define XF86XK_Phone		0x1008FF6E
-#define XF86XK_Print		0x1008FF6F
 #define XF86XK_Q		0x1008FF70
-#define XF86XK_Redo		0x1008FF71
 #define XF86XK_Reply		0x1008FF72
 #define XF86XK_Reload		0x1008FF73
 #define XF86XK_RotateWindows	0x1008FF74
@@ -147,7 +150,6 @@
 #define XF86XK_Terminal		0x1008FF80
 #define XF86XK_Tools		0x1008FF81
 #define XF86XK_Travel		0x1008FF82
-#define XF86XK_Undo		0x1008FF83
 #define XF86XK_UserPB		0x1008FF84
 #define XF86XK_User1KB		0x1008FF85
 #define XF86XK_User2KB		0x1008FF86

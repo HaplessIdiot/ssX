@@ -11,7 +11,7 @@
 ! suitability of this software for any purpose.  It is provided "as is"
 ! without express or implied warranty.
 !
-! $XFree86: xc/lib/X11/XKeysymDB,v 3.15 2003/01/04 03:40:25 dawes Exp $
+! $XFree86: xc/lib/X11/XKeysymDB,v 3.16 2003/02/11 02:51:10 dawes Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -283,7 +283,6 @@ XF86iTouch		:1008FF60
 XF86LogOff		:1008FF61
 XF86Market		:1008FF62
 XF86Meeting		:1008FF63
-XF86Menu		:1008FF64
 XF86MenuKB		:1008FF65
 XF86MenuPB		:1008FF66
 XF86MySites		:1008FF67
@@ -294,9 +293,7 @@ XF86Open		:1008FF6B
 XF86Option		:1008FF6C
 XF86Paste		:1008FF6D
 XF86Phone		:1008FF6E
-XF86Print		:1008FF6F
 XF86Q			:1008FF70
-XF86Redo		:1008FF71
 XF86Reply		:1008FF72
 XF86Reload		:1008FF73
 XF86RotateWindows	:1008FF74
@@ -314,7 +311,6 @@ XF86TaskPane		:1008FF7F
 XF86Terminal		:1008FF80
 XF86Tools		:1008FF81
 XF86Travel		:1008FF82
-XF86Undo		:1008FF83
 XF86UserPB		:1008FF84
 XF86User1KB		:1008FF85
 XF86User2KB		:1008FF86

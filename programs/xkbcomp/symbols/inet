@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.23 2003/01/04 03:40:25 dawes Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.24 2003/02/14 21:53:12 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -103,7 +103,7 @@ xkb_symbols "brother" {
     key <I32>	{	[ XF86ZoomIn		]	};
     key <I24>	{	[ XF86Calculator	]	};
     key <I25>	{	[ XF86Xfer		]	};
-    key <I22>	{	[ XF86Menu		]	};
+    key <I22>	{	[ Menu			]	};
     key <I26>	{	[ XF86Mail		]	};
     key <I5E>	{	[ XF86PowerOff		]	};
     key <I5F>	{	[ XF86Standby		]	};
@@ -362,7 +362,7 @@ xkb_symbols "compaqik18" {
     key <I12>	{	[ XF86LightBulb		]	};
     key <I32>	{	[ XF86Shop		]	};
 
-    key <I68>	{	[ XF86Print		]	};
+    key <I68>	{	[ Print			]	};
     key <I1F>	{	[ XF86Go		]	};
     key <I2E>	{	[ XF86AudioLowerVolume	]	};
     key <I20>	{	[ XF86AudioMute		]	};
@@ -999,9 +999,9 @@ xkb_symbols "logicdn" {
     key <I3C>	{	[ XF86Reply		]	};	// F2
     key <FK13>	{	[ XF86MailForward	]	};	// F3
     key <FK14>	{	[ XF86Send		]	};	// F4
-    key <FK15>	{	[ XF86Undo		]	};	// F5
-    key <FK15>	{	[ XF86Redo		]	};	// F6
-    key <FK16>	{	[ XF86Print		]	};	// F7
+    key <FK15>	{	[ Undo			]	};	// F5
+    key <FK15>	{	[ Redo			]	};	// F6
+    key <FK16>	{	[ Print			]	};	// F7
     key <I42>	{	[ XF86Save		]	};	// F8
     key <I43>	{	[ XF86MyComputer	]	};	// F9
     key <I44>	{	[ XF86Documents		]	};	// F10
@@ -1092,7 +1092,7 @@ xkb_symbols "logiik" {
     key <I7A>	{	[ XF86WWW		]	};
     key <I32>	{	[ XF86History		]	};
     key <I21>	{	[ XF86OpenURL		]	};
-    key <I17>	{	[ XF86Print		]	};
+    key <I17>	{	[ Print			]	};
     key <I12>	{	[ Find			]	};
     key <I26>	{	[ XF86AddFavorite	]	};
     key <I20>	{	[ XF86HotLinks		]	};
@@ -1184,7 +1184,7 @@ xkb_symbols "mx1998" {
     key <I1E>	{	[ XF86AudioRecord	]	};
     key <I23>	{	[ XF86Game		]	};
     key <I17>	{	[ XF86Close		]	};
-    key <I26>	{	[ XF86Menu		]	};
+    key <I26>	{	[ Menu			]	};
     key <UP>	{	[ XF86ScrollUp		]	};
     key <DOWN>	{	[ XF86ScrollDown	]	};
 };
@@ -1348,9 +1348,9 @@ xkb_symbols "microsoftoffice" {
     key <I73>	{	[ XF86Send		]	};
     key <I56>	{	[ XF86Spell		]	};
     key <I64>	{	[ XF86Save		]	};
-    key <I67>	{	[ XF86Print		]	};
-    key <END>	{	[ XF86Undo		]	};
-    key <I70>	{	[ XF86Redo		]	};
+    key <I67>	{	[ Print			]	};
+    key <END>	{	[ Undo			]	};
+    key <I70>	{	[ Redo			]	};
 };
 
 
@@ -1374,7 +1374,7 @@ xkb_symbols "oretec" {
     key <I32>	{	[ XF86ZoomIn		]	};
     key <I24>	{	[ XF86Calculator	]	};
     key <I25>	{	[ XF86Xfer		]	};
-    key <I22>	{	[ XF86Menu		]	};
+    key <I22>	{	[ Menu			]	};
     key <I26>	{	[ XF86Mail		]	};
     key <I5E>	{	[ XF86PowerOff		]	};
     key <I5F>	{	[ XF86Standby		]	};
@@ -1394,7 +1394,7 @@ xkb_symbols "propeller" {
     key <I68>	{	[ XF86DOS		]	};
     key <I21>	{	[ XF86Documents		]	};
     key <I32>	{	[ XF86WWW		]	};
-    key <I26>	{	[ XF86Menu		]	};
+    key <I26>	{	[ Menu			]	};
     key <I23>	{	[ XF86Game		]	};
 
     key <I22>	{	[ XF86AudioPlay, XF86AudioPause ] };
@@ -1528,7 +1528,7 @@ xkb_symbols "sk2500" {
     key <I19>	{	[ XF86AudioNext		]	};
     key <I1E>	{	[ XF86AudioRecord	]	};
     key <I12>	{	[ XF86AudioRewind	]	};
-    key <I26>	{	[ XF86Menu		]	};
+    key <I26>	{	[ Menu			]	};
     key <I18>	{	[ XF86Eject		]	};
     key <I20>	{	[ XF86AudioMute		]	};
     key <I30>	{	[ XF86AudioRaiseVolume	]	};
