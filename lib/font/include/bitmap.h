@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/bitmap.h,v 1.4 1998/07/25 06:57:09 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/bitmap.h,v 1.5 1998/10/03 09:07:29 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -62,12 +62,36 @@ typedef struct _BitmapFont {
     BitmapExtraPtr bitmapExtra;	/* stuff not used by X server */
 }           BitmapFontRec, *BitmapFontPtr;
 
-extern int  bitmapReadFont(), bitmapReadFontInfo();
-extern int  bitmapGetGlyphs(), bitmapGetMetrics();
-extern int  bitmapGetBitmaps(), bitmapGetExtents();
-extern void bitmapUnloadFont();
+extern int bitmapGetGlyphs ( FontPtr pFont, unsigned long count, 
+			     unsigned char *chars, FontEncoding charEncoding, 
+			     unsigned long *glyphCount, CharInfoPtr *glyphs );
+extern int bitmapGetMetrics ( FontPtr pFont, unsigned long count, 
+			      unsigned char *chars, FontEncoding charEncoding,
+			      unsigned long *glyphCount, xCharInfo **glyphs );
 
-extern void bitmapComputeFontBounds();
-extern void bitmapComputeFontInkBounds();
+extern void bitmapComputeFontBounds ( FontPtr pFont );
+extern void bitmapComputeFontInkBounds ( FontPtr pFont );
+extern Bool bitmapAddInkMetrics ( FontPtr pFont );
+extern int bitmapComputeWeight ( FontPtr pFont );
+
+extern int BitmapOpenBitmap ( FontPathElementPtr fpe, FontPtr *ppFont, 
+			      int flags, FontEntryPtr entry, char *fileName, 
+			      fsBitmapFormat format, fsBitmapFormatMask fmask,
+			      FontPtr non_cachable_font );
+extern int BitmapGetInfoBitmap ( FontPathElementPtr fpe, 
+				 FontInfoPtr pFontInfo, FontEntryPtr entry, 
+				 char *fileName );
+extern void BitmapRegisterFontFileFunctions ( void );
+extern int BitmapGetRenderIndex ( FontRendererPtr renderer );
+
+extern int BitmapOpenScalable ( FontPathElementPtr fpe, FontPtr *pFont, 
+				int flags, FontEntryPtr entry, char *fileName,
+				FontScalablePtr vals, fsBitmapFormat format, 
+				fsBitmapFormatMask fmask, 
+				FontPtr non_cachable_font );
+extern int BitmapGetInfoScalable ( FontPathElementPtr fpe, 
+				   FontInfoPtr pFontInfo, FontEntryPtr entry, 
+				   FontNamePtr fontName, char *fileName, 
+				   FontScalablePtr vals );
 
 #endif				/* _BITMAP_H_ */

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/bufio.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/font/include/bufio.h,v 1.2 1999/03/14 03:21:19 dawes Exp $ */
 
 #ifndef ___BUFIO_H___
 #define ___BUFIO_H___ 1
@@ -41,79 +41,39 @@ from The Open Group.
 #define BUFFILEEOF	-1
 
 typedef unsigned char BufChar;
+typedef struct _buffile *BufFilePtr;
 
 typedef struct _buffile {
     BufChar *bufp;
     int	    left;
     BufChar buffer[BUFFILESIZE];
-    int	    (*io)(/* BufFilePtr f */);
-    int	    (*skip)(/* BufFilePtr f, int count */);
-    int	    (*close)(/* BufFilePtr f */);
+    int	    (*input)( BufFilePtr /* f */);
+    int     (*output)( int /* c */, BufFilePtr /* f */);
+    int	    (*skip)( BufFilePtr /* f */, int /* count */);
+    int	    (*close)( BufFilePtr /* f */, int /* doClose */);
     char    *private;
-} BufFileRec, *BufFilePtr;
+} BufFileRec;
 
-extern BufFilePtr   BufFileCreate (
-#if NeedFunctionPrototypes
+extern BufFilePtr BufFileCreate (
     char*,
-    int (*)(),
-    int (*)(),
-    int (*)()
-#endif
-);
-extern BufFilePtr   BufFileOpenRead (
-#if NeedFunctionPrototypes
-    int
-#endif
-);
-
-extern BufFilePtr BufFileOpenWrite (
-#if NeedFunctionPrototypes
-    int
-#endif
-);
-
-extern BufFilePtr   BufFilePushCompressed (
-#if NeedFunctionPrototypes
-    BufFilePtr    
-#endif
-);
+    int (*)(BufFilePtr),
+    int (*)(int, BufFilePtr),
+    int (*)(BufFilePtr, int),
+    int (*)(BufFilePtr, int));
+extern BufFilePtr BufFileOpenRead ( int );
+extern BufFilePtr BufFileOpenWrite ( int );
+extern BufFilePtr BufFilePushCompressed ( BufFilePtr );
 #ifdef X_GZIP_FONT_COMPRESSION
-extern BufFilePtr   BufFilePushZIP (
-#if NeedFunctionPrototypes
-    BufFilePtr    
+extern BufFilePtr BufFilePushZIP ( BufFilePtr );
 #endif
-);
-#endif
-extern int	    BufFileClose (
-#if NeedFunctionPrototypes
-    BufFilePtr,
-    int
-#endif
-);
-extern int	    BufFileFlush (
-#if NeedFunctionPrototypes
-    BufFilePtr
-#endif
-);
+extern int BufFileClose ( BufFilePtr, int );
+extern int BufFileFlush ( BufFilePtr, int );
+extern int BufFileRead ( BufFilePtr, char*, int );
+extern int BufFileWrite ( BufFilePtr, char*, int );
+extern void BufFileFree ( BufFilePtr );
 
-extern int BufFileRead (
-#if NeedFunctionPrototypes
-    BufFilePtr,
-    char*,
-    int	
-#endif
-);
-
-extern int BufFileWrite (
-#if NeedFunctionPrototypes
-    BufFilePtr,
-    char*,
-    int	
-#endif
-);
-
-#define BufFileGet(f)	((f)->left-- ? *(f)->bufp++ : (*(f)->io) (f))
-#define BufFilePut(c,f)	(--(f)->left ? *(f)->bufp++ = (c) : (*(f)->io) (c,f))
+#define BufFileGet(f)	((f)->left-- ? *(f)->bufp++ : (*(f)->input) (f))
+#define BufFilePut(c,f)	(--(f)->left ? *(f)->bufp++ = (c) : (*(f)->output) (c,f))
 #define BufFileSkip(f,c)    ((*(f)->skip) (f, c))
 
 #ifndef TRUE

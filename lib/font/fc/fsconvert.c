@@ -22,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.2 1999/01/31 12:25:10 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.3 1999/03/14 11:17:47 dawes Exp $ */
 /*
  * FS data conversion
  */
@@ -39,16 +39,13 @@ extern char _fs_glyph_undefined;
 extern char _fs_glyph_requested;
 extern char _fs_glyph_zero_length;
 
-extern int _fs_load_glyphs();
 
 /*
  * converts data from font server form to X server form
  */
 
 void
-_fs_convert_char_info(src, dst)
-    fsXCharInfo *src;
-    xCharInfo *dst;
+_fs_convert_char_info(fsXCharInfo *src, xCharInfo *dst)
 {
     dst->ascent = src->ascent;
     dst->descent = src->descent;
@@ -59,9 +56,7 @@ _fs_convert_char_info(src, dst)
 }
 
 void
-_fs_init_fontinfo(conn, pfi)
-    FSFpePtr    conn;
-    FontInfoPtr pfi;
+_fs_init_fontinfo(FSFpePtr conn, FontInfoPtr pfi)
 {
     if (conn->fsMajorVersion == 1) {
 	unsigned short n;
@@ -89,11 +84,8 @@ _fs_init_fontinfo(conn, pfi)
 }
 
 int
-_fs_convert_props(pi, po, pd, pfi)
-    fsPropInfo *pi;
-    fsPropOffset *po;
-    pointer     pd;
-    FontInfoPtr pfi;
+_fs_convert_props(fsPropInfo *pi, fsPropOffset *po, pointer pd, 
+		  FontInfoPtr pfi)
 {
     FontPropPtr dprop;
     int         i,
@@ -146,13 +138,9 @@ _fs_convert_props(pi, po, pd, pfi)
 }
 
 int
-_fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
-    FSFpePtr    conn;
-    FontInfoPtr pfi;
-    fsListFontsWithXInfoReply *fsrep;
-    fsPropInfo *pi;
-    fsPropOffset *po;
-    pointer     pd;
+_fs_convert_lfwi_reply(FSFpePtr conn, FontInfoPtr pfi, 
+		       fsListFontsWithXInfoReply *fsrep, 
+		       fsPropInfo *pi, fsPropOffset *po, pointer pd)
 {
     fsUnpack_XFontInfoHeader(fsrep, pfi);
     _fs_init_fontinfo(conn, pfi);
@@ -184,14 +172,9 @@ _fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
  */
 /* ARGSUSED */
 int
-fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
-    FontPtr     pfont;
-    Bool	range_flag;
-    register unsigned int count;
-    int         item_size;
-    register unsigned char *data;
-    int	       *nranges;
-    fsRange   **ranges;
+fs_build_range(FontPtr pfont, Bool range_flag, unsigned int count, 
+	       int item_size, unsigned char *data, int *nranges, 
+	       fsRange **ranges)
 {
     FSFontDataPtr fsd = (FSFontDataPtr) (pfont->fpePrivate);
     FSFontPtr fsfont = (FSFontPtr) (pfont->fontPrivate);
@@ -351,10 +334,8 @@ fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
    requests needs to be cancelled. */
 
 void
-_fs_clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
-    FontPtr pfont;
-    int num_expected_ranges;
-    fsRange *expected_ranges;
+_fs_clean_aborted_loadglyphs(FontPtr pfont, int num_expected_ranges, 
+			     fsRange *expected_ranges)
 {
     register FSFontPtr fsfont;
     register FSFontDataRec *fsd;
@@ -408,12 +389,8 @@ _fs_clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
  */
 /* ARGSUSED */
 int
-_fs_check_extents(pfont, flags, nranges, range, blockrec)
-    FontPtr     pfont;
-    Mask        flags;
-    int         nranges;
-    fsRange    *range;
-    FSBlockDataPtr blockrec;
+_fs_check_extents(FontPtr pfont, Mask flags, int nranges, fsRange *range, 
+		  FSBlockDataPtr blockrec)
 {
 /* XXX -- either fill in the requested info if we have it somewhere
  * and return AccessDone, or else return Successful
@@ -428,13 +405,9 @@ _fs_check_extents(pfont, flags, nranges, range, blockrec)
  */
 /* ARGSUSED */
 int
-_fs_check_bitmaps(pfont, format, flags, nranges, range, blockrec)
-    FontPtr     pfont;
-    fsBitmapFormat format;
-    Mask        flags;
-    int         nranges;
-    fsRange    *range;
-    FSBlockDataPtr blockrec;
+_fs_check_bitmaps(FontPtr pfont, fsBitmapFormat format, 
+		  Mask flags, int nranges, fsRange *range, 
+		  FSBlockDataPtr blockrec)
 {
 /* XXX -- either fill in the requested info if we have it somewhere
  * and return AccessDone, or else return Successful
@@ -443,13 +416,10 @@ _fs_check_bitmaps(pfont, format, flags, nranges, range, blockrec)
 }
 
 int
-_fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;	/* RETURN */
-    CharInfoPtr *glyphs;	/* RETURN */
+_fs_get_glyphs(FontPtr pFont, unsigned long count, unsigned char *chars, 
+	       FontEncoding charEncoding, 
+	       unsigned long *glyphCount, /* RETURN */
+	       CharInfoPtr *glyphs) 	  /* RETURN  */
 {
     FSFontPtr   fsdata;
     unsigned int firstCol;
@@ -565,13 +535,10 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
 
 static int
-_fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;	/* RETURN */
-    xCharInfo **glyphs;		/* RETURN */
+_fs_get_metrics(FontPtr pFont, unsigned long count, unsigned char *chars, 
+		FontEncoding charEncoding, 
+		unsigned long *glyphCount, /* RETURN */
+		xCharInfo **glyphs) 	   /* RETURN */
 {
     FSFontPtr   fsdata;
     unsigned int firstCol;
@@ -665,8 +632,7 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
 
 void
-_fs_unload_font(pfont)
-    FontPtr     pfont;
+_fs_unload_font(FontPtr pfont)
 {
     FSFontPtr   fsdata = (FSFontPtr) pfont->fontPrivate;
 

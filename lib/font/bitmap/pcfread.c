@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.7 1999/01/31 12:53:35 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.8 1999/06/13 13:47:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -38,12 +38,11 @@ from The Open Group.
 
 /* Read PCF font files */
 
-void        pcfUnloadFont();
+static void pcfUnloadFont ( FontPtr pFont );
 static int  position;
 
 static int
-pcfGetLSB32(file)
-    FontFilePtr file;
+pcfGetLSB32(FontFilePtr file)
 {
     int         c;
 
@@ -56,9 +55,7 @@ pcfGetLSB32(file)
 }
 
 static int
-pcfGetINT32(file, format)
-    FontFilePtr file;
-    CARD32      format;
+pcfGetINT32(FontFilePtr file, CARD32 format)
 {
     int         c;
 
@@ -78,9 +75,7 @@ pcfGetINT32(file, format)
 }
 
 static int
-pcfGetINT16(file, format)
-    FontFilePtr file;
-    CARD32      format;
+pcfGetINT16(FontFilePtr file, CARD32 format)
 {
     int         c;
 
@@ -98,9 +93,7 @@ pcfGetINT16(file, format)
 #define pcfGetINT8(file, format) (position++, FontFileGetc(file))
 
 static      PCFTablePtr
-pcfReadTOC(file, countp)
-    FontFilePtr file;
-    int        *countp;
+pcfReadTOC(FontFilePtr file, int *countp)
 {
     CARD32      version;
     PCFTablePtr tables;
@@ -133,10 +126,7 @@ pcfReadTOC(file, countp)
  */
 
 static void
-pcfGetMetric(file, format, metric)
-    FontFilePtr file;
-    CARD32      format;
-    xCharInfo  *metric;
+pcfGetMetric(FontFilePtr file, CARD32 format, xCharInfo *metric)
 {
     metric->leftSideBearing = pcfGetINT16(file, format);
     metric->rightSideBearing = pcfGetINT16(file, format);
@@ -147,10 +137,7 @@ pcfGetMetric(file, format, metric)
 }
 
 static void
-pcfGetCompressedMetric(file, format, metric)
-    FontFilePtr file;
-    CARD32      format;
-    xCharInfo  *metric;
+pcfGetCompressedMetric(FontFilePtr file, CARD32 format, xCharInfo *metric)
 {
     metric->leftSideBearing = pcfGetINT8(file, format) - 0x80;
     metric->rightSideBearing = pcfGetINT8(file, format) - 0x80;
@@ -165,13 +152,8 @@ pcfGetCompressedMetric(file, format, metric)
  * in the font file
  */
 static Bool
-pcfSeekToType(file, tables, ntables, type, formatp, sizep)
-    FontFilePtr file;
-    PCFTablePtr tables;
-    int         ntables;
-    CARD32      type;
-    CARD32     *formatp;
-    CARD32     *sizep;
+pcfSeekToType(FontFilePtr file, PCFTablePtr tables, int ntables, 
+	      CARD32 type, CARD32 *formatp, CARD32 *sizep)
 {
     int         i;
 
@@ -190,10 +172,7 @@ pcfSeekToType(file, tables, ntables, type, formatp, sizep)
 }
 
 static Bool
-pcfHasType (tables, ntables, type)
-    PCFTablePtr tables;
-    int         ntables;
-    CARD32      type;
+pcfHasType (PCFTablePtr tables, int ntables, CARD32 type)
 {
     int         i;
 
@@ -211,18 +190,15 @@ pcfHasType (tables, ntables, type)
  */
 
 static Bool
-pcfGetProperties(pFontInfo, file, tables, ntables)
-    FontInfoPtr pFontInfo;
-    FontFilePtr file;
-    PCFTablePtr tables;
-    int         ntables;
+pcfGetProperties(FontInfoPtr pFontInfo, FontFilePtr file, 
+		 PCFTablePtr tables, int ntables)
 {
     FontPropPtr props = 0;
     int         nprops;
     char       *isStringProp = 0;
     CARD32      format;
     int         i;
-    int         size;
+    CARD32      size;
     int         string_size;
     char       *strings;
 
@@ -253,7 +229,7 @@ pcfGetProperties(pFontInfo, file, tables, ntables)
     if (nprops & 3)
     {
 	i = 4 - (nprops & 3);
-	FontFileSkip(file, i);
+	(void)FontFileSkip(file, i);
 	position += i;
     }
     string_size = pcfGetINT32(file, format);
@@ -291,15 +267,11 @@ Bail:
  */
 
 static Bool
-pcfGetAccel(pFontInfo, file, tables, ntables, type)
-    FontInfoPtr pFontInfo;
-    FontFilePtr file;
-    PCFTablePtr	tables;
-    int		ntables;
-    CARD32	type;
+pcfGetAccel(FontInfoPtr pFontInfo, FontFilePtr file, 
+	    PCFTablePtr tables, int ntables, CARD32 type)
 {
     CARD32      format;
-    int		size;
+    CARD32	size;
 
     if (!pcfSeekToType(file, tables, ntables, type, &format, &size))
 	goto Bail;
@@ -337,13 +309,8 @@ Bail:
 }
 
 int
-pcfReadFont(pFont, file, bit, byte, glyph, scan)
-    FontPtr     pFont;
-    FontFilePtr file;
-    int         bit,
-                byte,
-                glyph,
-                scan;
+pcfReadFont(FontPtr pFont, FontFilePtr file, 
+	    int bit, int byte, int glyph, int scan)
 {
     CARD32      format;
     CARD32      size;
@@ -594,9 +561,7 @@ Bail:
 }
 
 int
-pcfReadFontInfo(pFontInfo, file)
-    FontInfoPtr pFontInfo;
-    FontFilePtr file;
+pcfReadFontInfo(FontInfoPtr pFontInfo, FontFilePtr file)
 {
     PCFTablePtr tables;
     int         ntables;
@@ -661,9 +626,8 @@ Bail:
     return AllocError;
 }
 
-void
-pcfUnloadFont(pFont)
-    FontPtr     pFont;
+static void
+pcfUnloadFont(FontPtr pFont)
 {
     BitmapFontPtr  bitmapFont;
 
@@ -679,13 +643,8 @@ pcfUnloadFont(pFont)
 }
 
 int
-pmfReadFont(pFont, file, bit, byte, glyph, scan)
-    FontPtr     pFont;
-    FontFilePtr file;
-    int         bit,
-                byte,
-                glyph,
-                scan;
+pmfReadFont(FontPtr pFont, FontFilePtr file, 
+	    int bit, int byte, int glyph, int scan)
 {
     CARD32      format;
     CARD32      size;

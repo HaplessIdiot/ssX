@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.6 1998/07/25 03:10:19 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.7 1998/10/03 09:07:26 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -42,12 +42,14 @@ in this Software without prior written authorization from The Open Group.
 extern int errno;
 #endif
 
-static int ReadFontAlias();
+static Bool AddFileNameAliases ( FontDirectoryPtr dir );
+static int ReadFontAlias ( char *directory, Bool isFile,
+			   FontDirectoryPtr *pdir );
+static int lexAlias ( FILE *file, char **lexToken );
+static int lexc ( FILE *file );
 
 int
-FontFileReadDirectory (directory, pdir)
-    char		*directory;
-    FontDirectoryPtr	*pdir;
+FontFileReadDirectory (char *directory, FontDirectoryPtr *pdir)
 {
     char        file_name[MAXFONTFILENAMELEN];
     char        font_name[MAXFONTNAMELEN];
@@ -68,7 +70,7 @@ FontFileReadDirectory (directory, pdir)
 #ifdef FONTDIRATTRIB
     /* Check for font directory attributes */
 #ifndef __EMX__
-    if (ptr = strchr(directory, ':')) {
+    if ((ptr = strchr(directory, ':'))) {
 #else
     /* OS/2 path might start with a drive letter, don't clip this */
     if (ptr = strchr(directory+2, ':')) {
@@ -146,8 +148,7 @@ FontFileReadDirectory (directory, pdir)
 }
 
 Bool
-FontFileDirectoryChanged(dir)
-    FontDirectoryPtr	dir;
+FontFileDirectoryChanged(FontDirectoryPtr dir)
 {
     char	dir_file[MAXFONTFILENAMELEN];
     struct stat	statb;
@@ -180,8 +181,7 @@ FontFileDirectoryChanged(dir)
  */
 
 static Bool
-AddFileNameAliases(dir)
-    FontDirectoryPtr	dir;
+AddFileNameAliases(FontDirectoryPtr dir)
 {
     int		    i;
     char	    copy[MAXFONTFILENAMELEN];
@@ -232,18 +232,13 @@ AddFileNameAliases(dir)
  * token types
  */
 
-static int  lexAlias(), lexc();
-
 #define NAME		0
 #define NEWLINE		1
 #define DONE		2
 #define EALLOC		3
 
 static int
-ReadFontAlias(directory, isFile, pdir)
-    char		*directory;
-    Bool		isFile;
-    FontDirectoryPtr	*pdir;
+ReadFontAlias(char *directory, Bool isFile, FontDirectoryPtr *pdir)
 {
     char		alias[MAXFONTNAMELEN];
     char		font_name[MAXFONTNAMELEN];
@@ -332,9 +327,7 @@ ReadFontAlias(directory, isFile, pdir)
 static int  charClass;
 
 static int
-lexAlias(file, lexToken)
-    FILE       *file;
-    char      **lexToken;
+lexAlias(FILE *file, char **lexToken)
 {
     int         c;
     char       *t;
@@ -432,8 +425,7 @@ lexAlias(file, lexToken)
 }
 
 static int
-lexc(file)
-    FILE       *file;
+lexc(FILE *file)
 {
     int         c;
 

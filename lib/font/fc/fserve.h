@@ -24,6 +24,7 @@
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
  */
+/* $XFree86$ */
 
 #ifndef _FSERVE_H_
 #define _FSERVE_H_
@@ -63,6 +64,13 @@ typedef struct _fs_font_table *FSFontTablePtr;
 typedef struct _fs_blocked_bitmaps *FSBlockedBitmapPtr;
 typedef struct _fs_blocked_extents *FSBlockedExtentPtr;
 
-extern void fs_convert_char_info();
+extern void _fs_convert_char_info ( fsXCharInfo *src, xCharInfo *dst );
+
+extern int fs_load_all_glyphs ( FontPtr pfont );
+extern int _fs_load_glyphs ( pointer client, FontPtr pfont, Bool range_flag, 
+			     unsigned int nchars, int item_size, 
+			     unsigned char *data );
+extern void fs_register_fpe_functions ( void );
+extern void check_fs_register_fpe_functions ( void );
 
 #endif				/* _FSERVE_H_ */

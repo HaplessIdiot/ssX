@@ -23,6 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
+/* $XFree86$ */
 
 #ifndef _FSERVESTR_H_
 #define _FSERVESTR_H_
@@ -184,5 +185,32 @@ typedef struct _fs_reconnect {
     fsUnpack_XCharInfo((packet)->font_header_max_bounds, &(structure)->maxbounds); \
     fsUnpack_XCharInfo((packet)->font_header_max_bounds, &(structure)->ink_maxbounds)
 
+extern int _fs_load_glyphs ( pointer client, FontPtr pfont, Bool range_flag, 
+			     unsigned int nchars, int item_size, 
+			     unsigned char *data );
+extern void _fs_init_fontinfo ( FSFpePtr conn, FontInfoPtr pfi );
+extern int _fs_convert_props ( fsPropInfo *pi, fsPropOffset *po, pointer pd, 
+			       FontInfoPtr pfi );
+extern int _fs_convert_lfwi_reply ( FSFpePtr conn, FontInfoPtr pfi, 
+				    fsListFontsWithXInfoReply *fsrep, 
+				    fsPropInfo *pi, fsPropOffset *po, 
+				    pointer pd );
+extern int fs_build_range ( FontPtr pfont, Bool range_flag, 
+			    unsigned int count, int item_size, 
+			    unsigned char *data, int *nranges, 
+			    fsRange **ranges );
+extern void _fs_clean_aborted_loadglyphs ( FontPtr pfont, 
+					   int num_expected_ranges, 
+					   fsRange *expected_ranges );
+extern int _fs_check_extents ( FontPtr pfont, Mask flags, int nranges, 
+			       fsRange *range, FSBlockDataPtr blockrec );
+extern int _fs_check_bitmaps ( FontPtr pfont, fsBitmapFormat format, 
+			       Mask flags, int nranges, fsRange *range, 
+			       FSBlockDataPtr blockrec );
+extern int _fs_get_glyphs ( FontPtr pFont, unsigned long count, 
+			    unsigned char *chars, FontEncoding charEncoding, 
+			    unsigned long *glyphCount, CharInfoPtr *glyphs );
+extern void _fs_unload_font ( FontPtr pfont );
+extern void _fs_init_font ( FontPtr pfont );
 
 #endif				/* _FSERVESTR_H_ */

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.10 1998/06/28 03:52:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.11 1998/10/03 09:07:27 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -31,9 +31,7 @@ in this Software without prior written authorization from The Open Group.
 #include    <X11/keysym.h>
 
 Bool
-FontFileInitTable (table, size)
-    FontTablePtr    table;
-    int		    size;
+FontFileInitTable (FontTablePtr table, int size)
 {
     if (size)
     {
@@ -50,8 +48,7 @@ FontFileInitTable (table, size)
 }
 
 void
-FontFileFreeEntry (entry)
-    FontEntryPtr    entry;
+FontFileFreeEntry (FontEntryPtr entry)
 {
     FontScalableExtraPtr   extra;
     int i;
@@ -84,8 +81,7 @@ FontFileFreeEntry (entry)
 }
 
 void
-FontFileFreeTable (table)
-    FontTablePtr    table;
+FontFileFreeTable (FontTablePtr table)
 {
     int	i;
 
@@ -95,9 +91,7 @@ FontFileFreeTable (table)
 }
 
 FontDirectoryPtr
-FontFileMakeDir(dirName, size)
-    char       *dirName;
-    int         size;
+FontFileMakeDir(char *dirName, int size)
 {
     FontDirectoryPtr	dir;
     int			dirlen;
@@ -169,8 +163,7 @@ FontFileMakeDir(dirName, size)
 }
 
 void
-FontFileFreeDir (dir)
-    FontDirectoryPtr	dir;
+FontFileFreeDir (FontDirectoryPtr dir)
 {
     FontFileFreeTable (&dir->scalable);
     FontFileFreeTable (&dir->nonScalable);
@@ -178,9 +171,7 @@ FontFileFreeDir (dir)
 }
 
 FontEntryPtr
-FontFileAddEntry(table, prototype)
-    FontTablePtr	table;
-    FontEntryPtr	prototype;
+FontFileAddEntry(FontTablePtr table, FontEntryPtr prototype)
 {
     FontEntryPtr    entry;
     int		    newsize;
@@ -209,13 +200,7 @@ FontFileAddEntry(table, prototype)
 }
 
 static int
-#ifdef NeedFunctionPrototypes
 FontFileNameCompare(const void* a, const void* b)
-#else
-FontFileNameCompare(a, b)
-    char       *a,
-               *b;
-#endif
 {
     FontEntryPtr    a_name = (FontEntryPtr) a,
 		    b_name = (FontEntryPtr) b;
@@ -224,8 +209,7 @@ FontFileNameCompare(a, b)
 }
 
 void
-FontFileSortTable (table)
-    FontTablePtr    table;
+FontFileSortTable (FontTablePtr table)
 {
     if (!table->sorted) {
 	qsort((char *) table->entries, table->used, sizeof(FontEntryRec),
@@ -235,8 +219,7 @@ FontFileSortTable (table)
 }
 
 void
-FontFileSortDir(dir)
-    FontDirectoryPtr	dir;
+FontFileSortDir(FontDirectoryPtr dir)
 {
     FontFileSortTable (&dir->scalable);
     FontFileSortTable (&dir->nonScalable);
@@ -260,12 +243,8 @@ FontFileSortDir(dir)
 #define isWild(c)   ((c) == XK_asterisk || (c) == XK_question)
 
 static int
-SetupWildMatch(table, pat, leftp, rightp, privatep)
-    FontTablePtr    table;
-    FontNamePtr	    pat;
-    int		    *leftp,
-		    *rightp;
-    int		    *privatep;
+SetupWildMatch(FontTablePtr table, FontNamePtr pat, 
+	       int *leftp, int *rightp, int *privatep)
 {
     int         nDashes;
     char        c;
@@ -331,9 +310,7 @@ SetupWildMatch(table, pat, leftp, rightp, privatep)
 }
 
 static int
-PatternMatch(pat, patdashes, string, stringdashes)
-    char       *pat;
-    char       *string;
+PatternMatch(char *pat, int patdashes, char *string, int stringdashes)
 {
     char        c,
                 t;
@@ -393,9 +370,7 @@ PatternMatch(pat, patdashes, string, stringdashes)
 }
 
 int
-FontFileCountDashes (name, namelen)
-    char    *name;
-    int	    namelen;
+FontFileCountDashes (char *name, int namelen)
 {
     int	ndashes = 0;
 
@@ -406,8 +381,7 @@ FontFileCountDashes (name, namelen)
 }
 
 char *
-FontFileSaveString (s)
-    char    *s;
+FontFileSaveString (char *s)
 {
     char    *n;
 
@@ -419,10 +393,8 @@ FontFileSaveString (s)
 }
 
 FontEntryPtr
-FontFileFindNameInScalableDir(table, pat, vals)
-    FontTablePtr    table;
-    FontNamePtr	    pat;
-    FontScalablePtr	vals;
+FontFileFindNameInScalableDir(FontTablePtr table, FontNamePtr pat, 
+			      FontScalablePtr vals)
 {
     int         i,
                 start,
@@ -450,11 +422,11 @@ FontFileFindNameInScalableDir(table, pat, vals)
 		    cap = ~0;	/* Calling code will have to see if true */
 		else
 		    cap = 0;
-		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
-		     (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
-		    !(cap & CAP_MATRIX) ||
-		    (vs & CHARSUBSET_SPECIFIED) &&
-		    !(cap & CAP_CHARSUBSETTING))
+		if ((((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
+		      (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
+		     !(cap & CAP_MATRIX)) ||
+		    ((vs & CHARSUBSET_SPECIFIED) &&
+		     !(cap & CAP_CHARSUBSETTING)))
 		    continue;
 	    }
 	    return &table->entries[i];
@@ -466,23 +438,15 @@ FontFileFindNameInScalableDir(table, pat, vals)
 }
 
 FontEntryPtr
-FontFileFindNameInDir(table, pat)
-    FontTablePtr    table;
-    FontNamePtr	    pat;
+FontFileFindNameInDir(FontTablePtr table, FontNamePtr pat)
 {
     return FontFileFindNameInScalableDir(table, pat, (FontScalablePtr)0);
 }
 
 int
-FontFileFindNamesInScalableDir(table, pat, max, names, vals,
-			       alias_behavior, newmax)
-    FontTablePtr    table;
-    FontNamePtr	    pat;
-    int		    max;
-    FontNamesPtr    names;
-    FontScalablePtr	vals;
-    int		    alias_behavior;
-    int		   *newmax;
+FontFileFindNamesInScalableDir(FontTablePtr table, FontNamePtr pat, int max, 
+			       FontNamesPtr names, FontScalablePtr vals,
+			       int alias_behavior, int *newmax)
 {
     int		    i,
 		    start,
@@ -520,11 +484,11 @@ FontFileFindNamesInScalableDir(table, pat, max, names, vals,
 		    cap = ~0;	/* Calling code will have to see if true */
 		else
 		    cap = 0;
-		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
+		if ((((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
 		     (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
-		    !(cap & CAP_MATRIX) ||
-		    (vs & CHARSUBSET_SPECIFIED) &&
-		    !(cap & CAP_CHARSUBSETTING))
+		    !(cap & CAP_MATRIX)) ||
+		    ((vs & CHARSUBSET_SPECIFIED) &&
+		    !(cap & CAP_CHARSUBSETTING)))
 		    continue;
 	    }
 
@@ -567,11 +531,8 @@ FontFileFindNamesInScalableDir(table, pat, max, names, vals,
 }
 
 int
-FontFileFindNamesInDir(table, pat, max, names)
-    FontTablePtr    table;
-    FontNamePtr	    pat;
-    int		    max;
-    FontNamesPtr    names;
+FontFileFindNamesInDir(FontTablePtr table, FontNamePtr pat, 
+		       int max, FontNamesPtr names)
 {
     return FontFileFindNamesInScalableDir(table, pat, max, names,
 					  (FontScalablePtr)0,
@@ -579,10 +540,7 @@ FontFileFindNamesInDir(table, pat, max, names)
 }
 
 Bool
-FontFileMatchName(name, length, pat)
-    char	*name;
-    int		length;
-    FontNamePtr	pat;
+FontFileMatchName(char *name, int length, FontNamePtr pat)
 {
     /* Perform a fontfile-type name match on a single name */
     FontTableRec table;
@@ -606,10 +564,7 @@ FontFileMatchName(name, length, pat)
  */
 
 Bool
-FontFileAddFontFile (dir, fontName, fileName)
-    FontDirectoryPtr	dir;
-    char		*fontName;
-    char		*fileName;
+FontFileAddFontFile (FontDirectoryPtr dir, char *fontName, char *fileName)
 {
     FontEntryRec	    entry;
     FontScalableRec	    vals, zeroVals;
@@ -794,10 +749,7 @@ FontFileAddFontFile (dir, fontName, fileName)
 }
 
 Bool
-FontFileAddFontAlias (dir, aliasName, fontName)
-    FontDirectoryPtr	dir;
-    char		*aliasName;
-    char		*fontName;
+FontFileAddFontAlias (FontDirectoryPtr dir, char *aliasName, char *fontName)
 {
     FontEntryRec	entry;
 

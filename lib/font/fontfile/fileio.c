@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.4 1998/08/16 10:25:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.5 1998/10/03 09:07:26 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -34,8 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 FontFilePtr
-FontFileOpen (name)
-    char    *name;
+FontFileOpen (char *name)
 {
     int		fd;
     int		len;
@@ -77,8 +76,7 @@ FontFileOpen (name)
 }
 
 int
-FontFileClose (f)
-    FontFilePtr	f;
+FontFileClose (FontFilePtr f)
 {
     return BufFileClose ((BufFilePtr) f, TRUE);
 }

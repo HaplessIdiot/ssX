@@ -2,7 +2,7 @@
 /* lib/font/fontfile/gunzip.c
    written by Mark Eichin <eichin@kitten.gen.ma.us> September 1996.
    intended for inclusion in X11 public releases. */
-/* $XFree86: xc/lib/font/fontfile/gunzip.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/font/fontfile/gunzip.c,v 1.2 1999/03/14 03:21:19 dawes Exp $ */
 
 #include "fontmisc.h"
 #include <bufio.h>
@@ -16,14 +16,13 @@ typedef struct _xzip_buf {
   BufFilePtr f;
 } xzip_buf;
 
-static int BufZipFileSkip();	/* f, count */
-static int BufZipFileFill();	/* read: f;  write: char, f */
-static int BufZipFileClose();	/* f, flag */
-static int BufCheckZipHeader();	/* f */
+static int BufZipFileClose ( BufFilePtr f, int flag );
+static int BufZipFileFill ( BufFilePtr f );
+static int BufZipFileSkip ( BufFilePtr f, int c );
+static int BufCheckZipHeader ( BufFilePtr f );
 
 BufFilePtr
-BufFilePushZIP (f)
-    BufFilePtr	f;
+BufFilePushZIP (BufFilePtr f)
 {
   xzip_buf *x;
 
@@ -61,13 +60,13 @@ BufFilePushZIP (f)
 
   return BufFileCreate((char *)x,
 		       BufZipFileFill,
+		       0,
 		       BufZipFileSkip,
 		       BufZipFileClose);
 }
 
-static int BufZipFileClose(f, flag)
-     BufFilePtr f;
-     int flag;
+static int 
+BufZipFileClose(BufFilePtr f, int flag)
 {
   xzip_buf *x = (xzip_buf *)f->private;
   inflateEnd (&(x->z));
@@ -85,8 +84,8 @@ static int BufZipFileClose(f, flag)
       Z_STREAM_END, we then have 4bytes CRC and 4bytes length...
    gzio.c:gzread shows most of the mechanism.
    */
-static int BufZipFileFill (f)
-    BufFilePtr	    f;
+static int 
+BufZipFileFill (BufFilePtr f)
 {
   xzip_buf *x = (xzip_buf *)f->private;
 
@@ -149,9 +148,8 @@ static int BufZipFileFill (f)
 }
 
 /* there should be a BufCommonSkip... */
-static int BufZipFileSkip (f, c)
-     BufFilePtr	f;
-     int c;
+static int 
+BufZipFileSkip (BufFilePtr f, int c)
 {
   /* BufFileRawSkip returns the count unchanged.
      BufCompressedSkip returns 0.
@@ -192,8 +190,8 @@ static int BufZipFileSkip (f, c)
 #define RESERVED     0xE0 /* bits 5..7: reserved */
 
 #define GET(f) do {c = BufFileGet(f); if (c == BUFFILEEOF) return c;} while(0)
-static int BufCheckZipHeader(f)
-     BufFilePtr f;
+static int 
+BufCheckZipHeader(BufFilePtr f)
 {
   int c, flags;
   GET(f); if (c != 0x1f) return 1; /* magic 1 */
