@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.0 1994/06/12 16:36:58 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -31,8 +31,9 @@ int clk;
 
    ffreq = (float) freq;
 
-   if (ffreq < 20000.0 || ffreq > 110000.0) {
-      fprintf(stderr, "invalid frequency %f. [20000<freq<110000]\n", ffreq);
+   /* changed check -- this may be used for the SDAC also (Bernhard) */
+   if (ffreq < 20000.0 /* || ffreq > 110000.0 */) {
+      fprintf(stderr, "invalid frequency %f. [freq>20000]\n", ffreq);
       return 3;
    }
 

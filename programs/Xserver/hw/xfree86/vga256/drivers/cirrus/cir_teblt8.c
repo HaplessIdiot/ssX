@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.4 1994/08/01 12:15:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.5 1994/08/20 07:36:40 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -209,14 +209,14 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	if (ISSPECIALWIDTH(glyphWidth))
 		CirrusTransferText32bitSpecial(nglyph, h, glyphp, glyphWidth,
-			vgaBase);
+			CIRRUSBASE());
 	else
 		if (glyphWidth > 16 || HAVE543X())
 			CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
-				vgaBase);
+				CIRRUSBASE());
 		else
 			CirrusTransferText(nglyph, h, glyphp, glyphWidth,
-				vgaBase);
+				CIRRUSBASE());
 
 	WAITUNTILFINISHED();
 
@@ -478,7 +478,8 @@ glyphwidth, fg)
 	int glyphwidth;
 	int fg;
 {
-	int line, bank, shift_init, destaddr;
+	int line, shift_init, destaddr;
+	unsigned char *base;
 
 	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
 	SETWRITEMODE(4);	/* Transparent. */
@@ -494,9 +495,8 @@ glyphwidth, fg)
 	shift_init = destaddr & 15;
 	destaddr = (destaddr >> 3) & ~0x1;
 
-	bank = destaddr >> 14;		/* 16K units. */
-	setbank(bank);
-	destaddr &= 0x3fff;
+	CIRRUSSETSINGLE(destaddr);
+	base = CIRRUSSINGLEBASE();
 
 	line = 0;
 	while (line < h) {
@@ -504,8 +504,8 @@ glyphwidth, fg)
 		int shift;
 		int i;
 		unsigned char *destp;
-		destp = (unsigned char *)vgaBase + destaddr;
 		shift = shift_init;
+		destp = base + destaddr;
 		dworddata = 0;
 		i = 0;
 		while (i < nglyph) {
@@ -532,7 +532,12 @@ glyphwidth, fg)
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 	SETWRITEMODE(0);
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 }

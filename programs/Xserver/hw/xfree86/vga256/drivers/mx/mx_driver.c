@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.0 1994/05/14 07:02:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.1 1994/05/31 08:15:19 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -177,6 +177,9 @@ vgaVideoChipRec MX = {
 	 * will normally be 8, but may be 4 or 16 for some servers.
 	 */
 	8,	
+	FALSE,
+	0,
+	0,
 };
 
 /*

@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c,v 1.1 94/03/28 21:50:26 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.0 1994/05/31 08:14:34 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -99,6 +99,9 @@ vgaVideoChipRec COMPAQ = {
 	VGA_NO_DIVIDE_VERT,
 	{0,},
 	8,
+	FALSE,
+	0,
+	0,
 };
 
 #define new ((vgaCOMPAQPtr)vgaNewVideoState)

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.2 1994/05/08 05:23:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.3 1994/05/21 23:57:00 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -418,9 +418,10 @@ extern int sys_nerr;
 #endif
 
 /* The Region arg to xf86[Un]Map* */
-#define NUM_REGIONS 2
+#define NUM_REGIONS 3
 #define VGA_REGION 0
 #define LINEAR_REGION 1
+#define EXTENDED_REGION 2
 
 #ifndef NO_OSLIB_PROTOTYPES
 /***************************************************************************/

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.2 1994/06/05 06:00:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.3 1994/08/20 07:36:15 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -196,14 +196,12 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   /* Because of 16K bank granularity and 32K window, we don't have to */
   /* check for bank boundaries. */
   srcAddr = cirrusBLTPatternAddress;
-  setwritebank(cirrusBLTPatternAddress >> 14);
-  *(unsigned long *)(((unsigned char *)vgaBase) + 0x8000 + (srcAddr & 0x3fff)) =
-  	patternword1;
-  *(unsigned long *)(((unsigned char *)vgaBase) + 0x8000 + ((srcAddr & 0x3fff) + 4)) =
-  	patternword2;
+  CIRRUSSETWRITE(srcAddr);
+  *(unsigned long *)(CIRRUSWRITEBASE() + srcAddr) = patternword1;
+  *(unsigned long *)(CIRRUSWRITEBASE() + srcAddr + 4) = patternword2;
 
   SETDESTADDR(dstAddr);
-  SETSRCADDR(srcAddr);
+  SETSRCADDR(cirrusBLTPatternAddress);
   SETDESTPITCH(dstPitch);
   SETWIDTH(fillWidth);
   SETHEIGHT(fillHeight);
@@ -277,11 +275,11 @@ void _CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   /* Because of 16K bank granularity and 32K window, we don't have to */
   /* check for bank boundaries. */
   srcAddr = cirrusBLTPatternAddress;
-  setwritebank(srcAddr >> 14);
-  memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff), pattern, 64);
+  CIRRUSSETWRITE(srcAddr);
+  memcpy(CIRRUSWRITEBASE() + srcAddr, pattern, 64);
 
   SETDESTADDR(dstAddr);
-  SETSRCADDR(srcAddr);
+  SETSRCADDR(cirrusBLTPatternAddress);
   SETDESTPITCH(destpitch);
   SETWIDTH(w);
   SETHEIGHT(h);
@@ -346,16 +344,16 @@ void _CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   /* Because of 16K bank granularity and 32K window, we don't have to */
   /* check for bank boundaries. */
   srcAddr = cirrusBLTPatternAddress;
-  setwritebank(srcAddr >> 14);
+  CIRRUSSETWRITE(srcAddr);
   for (i = 0; i < 8; i++)
-      memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff) + i * 16,
+      memcpy(CIRRUSWRITEBASE() + srcAddr + i * 16,
           pattern + i * 32, 16);
 
   blitpitch = destpitch * 2;
   blith = (h / 2) + (h & 1);
 
   SETDESTADDR(dstAddr);
-  SETSRCADDR(srcAddr);
+  SETSRCADDR(cirrusBLTPatternAddress);
   SETDESTPITCH(blitpitch);
   SETWIDTH(w);
   SETHEIGHT(blith);
@@ -372,7 +370,7 @@ void _CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   /* Now do uneven lines. */
   /* Write pattern. */
   for (i = 0; i < 8; i++)
-	  memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff) + i * 16,
+	  memcpy(CIRRUSWRITEBASE() + srcAddr + i * 16,
 	  	pattern + i * 32 + 16, 16);
 
   dstAddr += destpitch;
@@ -380,7 +378,7 @@ void _CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   blith = (h / 2);
 
   SETDESTADDR(dstAddr);
-  SETSRCADDR(srcAddr);
+  SETSRCADDR(cirrusBLTPatternAddress);
 /* SETDESTPITCH(blitpitch); */
   SETWIDTH(w);
   SETHEIGHT(blith);
@@ -438,7 +436,7 @@ void _CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
 
   /* Set up write bank for writing pattern. */
   srcAddr = cirrusBLTPatternAddress;
-  setwritebank(srcAddr >> 14);
+  CIRRUSSETWRITE(srcAddr);
 
   /* Set up BLT parameters that remain constant. */
   blitpitch = destpitch * 4;	/* Four-way interleaving. */
@@ -451,13 +449,13 @@ void _CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
       /* Do the lines for which [index % 4 == k]. */
       /* Write 32x8 pattern. */
       for (i = 0; i < 8; i++)
-          memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff) + i * 32,
+          memcpy(CIRRUSWRITEBASE() + srcAddr + i * 32,
 	  	(unsigned char *)pattern + i * 32 * 4 + 32 * k, 32);
       blith = h / 4;
       if (h & 3 > k)
   	  blith++;
       SETDESTADDR(dstAddr);
-      SETSRCADDR(srcAddr);
+      SETSRCADDR(cirrusBLTPatternAddress);
       SETWIDTH(w);
       SETHEIGHT(blith);
       STARTBLT();
@@ -578,7 +576,7 @@ fillHeight, dstPitch)
   /* Calculate number of dwords to transfer. */
   size = ((((fillWidth + 7) / 8) * fillHeight) + 3) / 4;
 
-  CirrusWordTransfer(size, 0xffffffff, vgaBase);
+  CirrusWordTransfer(size, 0xffffffff, CIRRUSBASE());
 
   WAITUNTILFINISHED();
 
@@ -617,7 +615,7 @@ void _CirrusBLTWaitUntilFinished() {
     count++;
     if (count == 10000000) {
     	ErrorF("Cirrus: BitBLT engine time-out.\n");
-    	*(unsigned long *)vgaBase = 0;
+    	*(unsigned long *)CIRRUSBASE() = 0;
     	count = 9990000;
     	timeout++;
     	if (timeout == 8) {

@@ -1,15 +1,11 @@
-#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.0 1994/05/29 02:06:33 dawes Exp $
+#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.1 1994/06/18 16:25:29 dawes Exp $
 #
-# X386 Mode database
-# Compiled by David Wexelblat [dwex@goblin.org, dwex@aib.com]
-# Huge Contributions to v2.0 from Thomas Roell [roell@sgcs.com]
+# XFree86/X386 Mode database
+# Compiled by David Wexelblat [dwex@xfree86.org]
+# Huge Contributions to v2.0 from Thomas Roell [roell@xinside.com]
 #
-# Version 3.8
-# Apr 13, 1994
-#
-# The lastest version of this file and related documentation is available 
-# for anonymous FTP from ftp.x.org in contrib/XF86mode.tar.gz, or from the 
-# compiler at the address above.
+# Version 3.9
+# August 28, 1994
 #
 # ACCELERATED CARD NOTE:
 #   Refer to the AccelCards file for real details on accelerated cards
@@ -81,7 +77,7 @@
 #
 # FEEDBACK:
 #   The compiler of this database welcomes feedback on and contributions to
-#   this database.  Send electronic mail to dwex@goblin.org or dwex@aib.com
+#   this database.  Send electronic mail to dwex@xfree86.org
 #
 # REFERENCES:
 #   1) The XFree86 README.Config file.
@@ -125,7 +121,7 @@
 
 ###############################################################################
 # Card: 		Actix GraphicsEngine32+ 2Meg
-# Contributor: 		David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor: 		David Wexelblat [dwex@xfree86.org]
 # Last Edit Date:	8/29/93
 #
 # chip    ram   virtual   clocks                           default-mode  flags
@@ -362,6 +358,15 @@
  ET4000   1024  1152 910   46  53  60  66  72  82  90  91  "1152x910"
 
 ###############################################################################
+# Card: 		OAK Technology OTI-077
+# Contributor: 		Pedro R. Benito da Rocha [pedro@luna.gui.uva.es]
+# Last Edit Date: 	4/27/94
+#
+# chip    ram   virtual   clocks                           default-mode  flags
+ OTI077   1024  1024 768   25.40   28.32  65.40 45.20      "800x600"
+			   14.20   18.10  40.30 36.20
+
+###############################################################################
 # Card: 		Optima VGA
 # Contributor: 		Holger Veit [veit@du9ds3.uni-duisburg.de]
 # Last Edit Date: 	9/22/92
@@ -412,7 +417,7 @@
 
 ###############################################################################
 # Card: 		Orchid ProDesigner IIs
-# Contributor: 		David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor: 		David Wexelblat [dwex@xfree86.org]
 # Last Edit Date: 	10/14/91
 #
 # chip    ram   virtual   clocks                           default-mode  flags
@@ -504,7 +509,7 @@
 
 ###############################################################################
 # Card: 		Trident Generic 8900CL (TCK9004N clock chip)
-# Contributor: 		David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor: 		David Wexelblat [dwex@xfree86.org]
 # Last Edit Date: 	4/18/93
 #
 # chip    ram   virtual   clocks                           default-mode  flags
@@ -514,7 +519,7 @@
 
 ###############################################################################
 # Card: 		Trident JAX-8212B (TCK9002NP clock chip)
-# Contributor: 		David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor: 		David Wexelblat [dwex@xfree86.org]
 # Last Edit Date: 	4/18/93
 #
 # chip    ram   virtual   clocks                           default-mode  flags
@@ -525,7 +530,7 @@
 
 ###############################################################################
 # Card: 		Trident JAX-8214 
-# Contributor: 		David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor: 		David Wexelblat [dwex@xfree86.org]
 # Last Edit Date: 	9/5/92
 #
 # chip    ram   virtual   clocks                           default-mode  flags
@@ -643,8 +648,8 @@
 #
 # OFFICIAL VESA Monitor timings + IBM Standards + other generic modes - 
 #                          TRY THESE FIRST
-# Contributor:          Thomas Roell [roell@sgcs.com]
-# Contributor:		David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
+# Contributor:		David Wexelblat [dwex@xfree86.org]
 # Last Edit Date:       10/7/93
 #
 #  Mode       Refresh  Hor. Sync  Dot-clock  Interlaced?  VESA?
@@ -912,7 +917,7 @@
 
 ###############################################################################
 # Monitor:              CONRAC 7351
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1066,7 +1071,7 @@
 
 ###############################################################################
 # Monitor:              EIZO/Nanao 8060i
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1118,7 +1123,7 @@
 
 ###############################################################################
 # Monitor:              EIZO/Nanao 9070u
-# Contributor:          David Wexelblat [dwex@goblin.org, dwex@aib.com]
+# Contributor:          David Wexelblat [dwex@xfree86.org]
 # Last Edit Date:       10/14/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1141,7 +1146,7 @@
 ###############################################################################
 # Monitor:              EIZO/Nanao 9080i
 # Contributor:          Scott Everden [scott@unixland.natick.ma.us]
-#                       Thomas Roell [roell@sgcs.com]
+#                       Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1154,7 +1159,7 @@
 
 ###############################################################################
 # Monitor:              EIZO/Nanao 9400i
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1164,7 +1169,7 @@
 
 ###############################################################################
 # Monitor:              EIZO/Nanao 9500
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1210,7 +1215,7 @@
 
 ###############################################################################
 # Monitor:              EIZO/Nanao T560i
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1358,7 +1363,7 @@
 
 ###############################################################################
 # Monitor:              GraphTEC CD2060
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1366,7 +1371,7 @@
 
 ###############################################################################
 # Monitor:              Hitachi 20MVX
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1374,7 +1379,7 @@
 
 ###############################################################################
 # Monitor:              Hitachi CM2073A-301
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1469,7 +1474,7 @@
 
 ###############################################################################
 # Monitor:              IDEK MC 2185
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1478,7 +1483,7 @@
 
 ###############################################################################
 # Monitor:              IDEK MF 5421
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1489,8 +1494,31 @@
               144     1280 1312 1456 1760   1024 1036 1039 1091
 
 ###############################################################################
+# Monitor:		IDEK Iiyama MF-8617 Vision Master 
+# Contributor:		Gunar Schorcht [schorcht@theoinf.tu-ilmenau.de] 
+# Comments:		max 86kHz horizontal refresh
+# Last Edit Date:	07/14/94 
+#
+#  Mode     Refresh(Hz)  Hor.Sync(kHz)  Clock(MHz)
+#  ------------------------------------------------------------------------
+#  640x480     72           37.9          31.5   
+#  800x600     71           50.0          50.0
+#  1024x768    75           62.5          85.0
+#  1152x900    75           71.0         110.0 
+#  1280x1024   61           64.3         110.0
+#  1280x1024   74           78.8         135.0
+#
+# name        clock   horizontal timing     vertical timing      flags
+ "640x480"     31.5    640  664  704  832    480  489  492  520
+ "800x600"     50      800  840  960 1000    600  637  643  700
+ "1024x768"    85     1024 1032 1152 1360    768  784  787  823
+ "1152x900"   110     1152 1212 1500 1552    900  910  915  945          
+ "1280x1024"  110     1280 1328 1512 1712   1024 1025 1028 1054
+              135     1280 1312 1456 1712   1024 1027 1030 1064
+
+###############################################################################
 # Monitor:              Interquadram CA2020
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1615,7 +1643,7 @@
 
 ###############################################################################
 # Monitor:              MICROVITEC Definition 20
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1634,7 +1662,7 @@
 
 ###############################################################################
 # Monitor:              Mitsubishi HL 6915
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1643,7 +1671,7 @@
 
 ###############################################################################
 # Monitor:              Mitsubishi HL 6915
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1652,7 +1680,7 @@
 
 ###############################################################################
 # Monitor:              Mitsubishi HL 7925
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1660,7 +1688,7 @@
 
 ###############################################################################
 # Monitor:              Mitsubishi HL 7955
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name        clock   horizontal timing     vertical timing      flags
@@ -1765,7 +1793,7 @@
 
 ###############################################################################
 # Monitor:              NEC 4D
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -1806,7 +1834,7 @@
 
 ###############################################################################
 # Monitor:              NEC 5D
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       3/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -1888,7 +1916,7 @@
 
 ###############################################################################
 # Monitor:              NEC Multisync JC-14O1P3ED
-# Contributor:          Dirk Hohndel [hohndel@informatik.uni-wuerzburg.de]
+# Contributor:          Dirk Hohndel [hohndel@xfree86.org]
 # Last Edit Date:       05/11/93
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -1967,7 +1995,7 @@
 
 ###############################################################################
 # Monitor:              Panasonic TX 2002
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2004,7 +2032,7 @@
 
 ###############################################################################
 # Monitor:              Philips C2064
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2082,7 +2110,7 @@
 
 ###############################################################################
 # Monitor:              SANTEC DMC2185
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2135,7 +2163,7 @@
 
 ###############################################################################
 # Monitor:              Siemens C79145
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2207,7 +2235,7 @@
 
 ###############################################################################
 # Monitor:              Sony GDM 1901
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2215,7 +2243,7 @@
 
 ###############################################################################
 # Monitor:              Sony GDM 1932
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2223,7 +2251,7 @@
 
 ###############################################################################
 # Monitor:              Sony GDM 1934
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2232,7 +2260,7 @@
 
 ###############################################################################
 # Monitor:              Sony GDM 1950
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags
@@ -2245,11 +2273,21 @@
 # Last Edit Date:       1/25/94
 #
 # name        clock   horizontal timing     vertical timing      flags
+ "1024x768"    75     1024 1096 1232 1312    768  768  776  808
+               75     1024 1048 1184 1328    768  771  777  806  -hsync +vsync
+               75     1024 1048 1184 1288    768  773  777  806
+               80     1024 1072 1288 1328    768  768  771  807
 
- "1024x768v1"  75     1024 1096 1232 1312    768  768  776  808
- "1024x768v2"  75     1024 1048 1184 1328    768  771  777  806  -hsync +vsync
- "1024x768v3"  75     1024 1048 1184 1288    768  773  777  806
- "1024x768v4"  80     1024 1072 1288 1328    768  768  771  807
+###############################################################################
+# Monitor:              SYNCO CM-14XV
+# Contributor:          Pedro R. Benito da Rocha [pedro@luna.gui.uva.es]
+# Last Edit Date:       4/27/94
+#
+# name        clock   horizontal timing     vertical timing      flags
+ "640x480"     25      640  664  760  800    480  491  493  525
+	       28      640  648  752  784    480  488  496  508
+ "800x600"     36      800  816  976 1008    600  602  610  628  
+ "1024x768i"   44.9   1024 1048 1208 1264    768  776  784  817  interlace
 
 ###############################################################################
 # Monitor:              TARGA 1710 D
@@ -2283,7 +2321,7 @@
 
 ###############################################################################
 # Monitor:              TAXAN 990
-# Contributor:          Thomas Roell [roell@sgcs.com]
+# Contributor:          Thomas Roell [roell@xinside.com]
 # Last Edit Date:       03/29/91
 #
 # name         clock  horizontal timing     vertical timing      flags

@@ -1,5 +1,5 @@
 /* $XConsortium: fLineH.s,v 1.2 94/03/29 11:19:13 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineH.s,v 3.0 1994/07/24 11:58:12 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -197,7 +197,8 @@ GLNAME(fastvga256HorzS):
 	JZ		(.LX10)
 .LX9:	XOR_L		(xorv,REGIND(addrl))		/**/
 	ADD_L		(CONST(4),addrl)
-	LOOP		(.LX9)
+	DEC_L		(ECX)
+	JNZ		(.LX9)
 	CMP_L		(CONST(3),len)
 	JBE		(.LX17)
 	PUSH_L		(addrl)
@@ -210,7 +211,8 @@ GLNAME(fastvga256HorzS):
 	SHR_L		(CONST(2),count)
 .LX18:	XOR_L		(xorv,REGIND(addrl))		/**/
 	ADD_L		(CONST(4),addrl)
-	LOOP		(.LX18)
+	DEC_L		(ECX)
+	JNZ		(.LX18)
 .LX17:	CMP_L		(CONTENT(GLNAME(vgaWriteTop)),addrl)
 	JB		(.LX10)
 	PUSH_L		(addrl)
@@ -275,7 +277,8 @@ GLNAME(fastvga256HorzS):
 	AND_L		(andv,tmp)
 	XOR_L		(xorv,tmp)		/**/
 	STOS_L
-	LOOP		(.LS9)
+	DEC_L		(ECX)
+	JNZ		(.LS9)
 	CMP_L		(CONST(3),len)
 	JBE		(.LS17)
 	PUSH_L		(addrl)
@@ -290,7 +293,8 @@ GLNAME(fastvga256HorzS):
 	AND_L		(andv,tmp)
 	XOR_L		(xorv,tmp)		/**/
 	STOS_L
-	LOOP		(.LS18)
+	DEC_L		(ECX)
+	JNZ		(.LS18)
 .LS17:	CMP_L		(CONTENT(GLNAME(vgaWriteTop)),addrl)
 	JB		(.LS10)
 	PUSH_L		(addrl)
@@ -395,7 +399,8 @@ GLNAME(fastvga256HorzS):
 	JZ		(.LX2)
 .LX1:	XOR_L		(xorv,REGIND(addrl))		/**/
 	ADD_L		(CONST(4),addrl)
-	LOOP		(.LX1)
+	DEC_L		(ECX)
+	JNZ		(.LX1)
 .LX2:	CMP_L		(CONST(2),len)
 	JA		(.LX3)
 	JE		(.LX4)
@@ -443,7 +448,8 @@ GLNAME(fastvga256HorzS):
 	AND_L		(andv,tmp)
 	XOR_L		(xorv,tmp)		/**/
 	STOS_L
-	LOOP		(.LS1)
+	DEC_L		(ECX)
+	JNZ		(.LS1)
 .LS2:	CMP_L		(CONST(2),len)
 	JA		(.LS3)
 	JE		(.LS4)

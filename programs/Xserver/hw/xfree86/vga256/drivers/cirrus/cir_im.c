@@ -1,5 +1,5 @@
 /* $XConsortium: cir_im.c,v 1.1 94/03/28 21:49:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.2 1994/06/05 06:00:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.3 1994/08/20 07:36:33 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -164,7 +164,10 @@ void _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
        * Don't try this on your Sparc :-)
        */
 
-      CirrusImageWriteTransfer(w, h, psrc, widthSrc, vgaBase);
+      if (HAVE543X())
+          CirrusImageWriteTransfer(w, h, psrc, widthSrc, CIRRUSBASE());
+      else
+          CirrusImageWriteTransfer16bit(w, h, psrc, widthSrc, CIRRUSBASE());
 
       WAITUNTILFINISHED();
 
@@ -242,7 +245,7 @@ CirrusBLTImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
        *
        */
 
-      CirrusImageReadTransfer(w, h, pdst, widthDst, vgaBase);
+      CirrusImageReadTransfer(w, h, pdst, widthDst, CIRRUSBASE());
 
       WAITUNTILFINISHED();
       #ifdef CIRRUS_MMIO
@@ -292,6 +295,7 @@ srcx, srcy, bg, fg, destpitch)
 	int destaddr, i, shift, bytecount;
 	unsigned long dworddata;
 	unsigned char *srcp;
+	unsigned char *base;
 
 	destaddr = y * destpitch + x;
 
@@ -303,6 +307,8 @@ srcx, srcy, bg, fg, destpitch)
 	SETBLTMODE(SYSTEMSRC | COLOREXPAND);
 
 	STARTBLT();
+
+	base = CIRRUSBASE();	
 
 	/* Calculate pointer to origin in bitmap. */
 	srcp = bwidth * srcy + (srcx >> 3) + src;
@@ -322,12 +328,12 @@ srcx, srcy, bg, fg, destpitch)
 		bytecount++;
 		if (bytecount == 4) {
 			bytecount = 0;
-			*(unsigned long *)vgaBase = dworddata;
+			*(unsigned long *)base = dworddata;
 			dworddata = 0;
 		}
 	}
 	if (bytecount)
-		*(unsigned long *)vgaBase = dworddata;
+		*(unsigned long *)base = dworddata;
 
 	WAITUNTILFINISHED();
 }
@@ -348,6 +354,7 @@ destpitch)
 	int skipleft;
 	int bytewidth;	/* Area width in bytes. */
 	unsigned char *srcp;
+	unsigned char *base;
 
 	if (!HAVE543X() && h > 1024) {
 		/* Split into two. */
@@ -434,10 +441,12 @@ skipleftedge:
 	 * to do this locks the machine.
 	 */
 
+	base = CIRRUSBASE();
+
 	if (bytewidth == bwidth)
-		CirrusAlignedBitmapTransfer(bytewidth * h / 4, srcp, vgaBase);
+		CirrusAlignedBitmapTransfer(bytewidth * h / 4, srcp, base);
 	else
-		CirrusBitmapTransfer(bytewidth, h, bwidth, srcp, vgaBase);
+		CirrusBitmapTransfer(bytewidth, h, bwidth, srcp, base);
 
 	WAITUNTILFINISHED();
 

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.h,v 1.1 94/03/28 21:55:30 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.0 1994/06/15 15:44:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -95,6 +95,11 @@ typedef struct {
                                        interlaced modes */
   OFlagSet ChipOptionFlags;         /* option flags support by this driver */
   int ChipRounding;                 /* the horizontal resolution rounding */
+  Bool ChipUseLinearAddressing;	    /* TRUE if driver has requested linear
+  				       addressing */
+  int ChipLinearBase;		    /* Physical base address of the linear
+  				       framebuffer */
+  int ChipLinearSize;		    /* Size of the linear framebuffer */
   
 } vgaVideoChipRec, *vgaVideoChipPtr;
 
@@ -125,6 +130,7 @@ extern int vgaInterlaceType;
 extern pointer vgaOrigVideoState;    /* buffers for all video information */
 extern pointer vgaNewVideoState;
 extern pointer vgaBase;              /* the framebuffer himself */
+extern pointer vgaLinearBase;
 
 
 typedef struct {

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.2 94/03/28 21:51:05 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.0 1994/05/31 08:14:55 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.1 1994/07/24 11:56:39 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -33,6 +33,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
+#include "xf86Procs.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
@@ -63,6 +64,13 @@ typedef struct {
   } vgaET4000Rec, *vgaET4000Ptr;
 
 
+#define W32_SUPPORT
+
+#define TYPE_ET4000		0
+#define TYPE_ET4000W32		1
+#define TYPE_ET4000W32I		2
+#define TYPE_ET4000W32P		3
+
 static Bool     ET4000Probe();
 static char *   ET4000Ident();
 static Bool     ET4000ClockSelect();
@@ -76,11 +84,15 @@ static void     ET4000FbInit();
 extern void     ET4000SetRead();
 extern void     ET4000SetWrite();
 extern void     ET4000SetReadWrite();
+extern void     ET4000W32SetRead();
+extern void     ET4000W32SetWrite();
+extern void     ET4000W32SetReadWrite();
 
 static unsigned char 	save_divide = 0;
 #ifndef MONOVGA
 static unsigned char    initialRCConf = 0x70;
 #endif
+static int et4000_type;
 
 vgaVideoChipRec ET4000 = {
   ET4000Probe,
@@ -106,13 +118,31 @@ vgaVideoChipRec ET4000 = {
   VGA_NO_DIVIDE_VERT,
   {0,},
   8,
+  FALSE,
+  0,
+  0,
 };
 
 #define new ((vgaET4000Ptr)vgaNewVideoState)
 
+static SymTabRec chipsets[] = {
+  { TYPE_ET4000,	"et4000" },
+#ifdef W32_SUPPORT
+  { TYPE_ET4000W32,	"et4000w32" },
+  { TYPE_ET4000W32I,	"et4000w32i" },
+  { TYPE_ET4000W32P,	"et4000w32p" },
+#endif
+  { -1,			"" },
+};
+
 Bool (*ClockSelect)();
 
-static unsigned ET4000_ExtPorts[] = {0x3B8, 0x3BF, 0x3CD, 0x3D8};
+static unsigned ET4000_ExtPorts[] = {0x3B8, 0x3BF, 0x3CD, 0x3D8,
+#ifdef W32_SUPPORT
+	0x217a, 0x217b,		/* These last two are W32 specific */
+#endif
+};
+
 static int Num_ET4000_ExtPorts = 
 	(sizeof(ET4000_ExtPorts)/sizeof(ET4000_ExtPorts[0]));
 
@@ -124,12 +154,10 @@ static char *
 ET4000Ident(n)
      int n;
 {
-  static char *chipsets[] = {"et4000"};
-
-  if (n + 1 > sizeof(chipsets) / sizeof(char *))
+  if (chipsets[n].token < 0)
     return(NULL);
   else
-    return(chipsets[n]);
+    return(chipsets[n].name);
 }
 
 
@@ -235,7 +263,7 @@ LegendClockSelect(no)
 static Bool
 ET4000Probe()
 {
-  int numClocks;
+  int numClocks, i;
 
   /*
    * Set up I/O ports to be used by this card
@@ -246,10 +274,10 @@ ET4000Probe()
 
   if (vga256InfoRec.chipset)
     {
-      if (StrCaseCmp(vga256InfoRec.chipset, ET4000Ident(0)))
-	return (FALSE);
-      else
-	ET4000EnterLeave(ENTER);
+      et4000_type = xf86StringToToken(chipsets, vga256InfoRec.chipset);
+      if (et4000_type < 0)
+          return FALSE;
+      ET4000EnterLeave(ENTER);
     }
   else
     {
@@ -279,6 +307,46 @@ ET4000Probe()
 	  ET4000EnterLeave(LEAVE);
 	  return(FALSE);
 	}
+
+      et4000_type = TYPE_ET4000;
+
+#ifdef W32_SUPPORT
+      /*
+       * Now check for an ET4000/W32.
+       * Test for writability of 0x3cb.
+       */
+      origVal = inb(0x3cb);
+      outb(0x3cb, 0x33);	/* Arbitrary value */
+      newVal = inb(0x3cb);
+      outb(0x3cb, origVal);
+      if (newVal != 0x33)
+        {
+          /* We have an ET4000/W32. Now determine the type. */
+          outb(0x217a, 0xec);
+          temp = inb(0x217b) >> 4;
+          switch (temp) {
+          case 0 : /* ET4000/W32 */
+              et4000_type = TYPE_ET4000W32;
+              break;
+          case 1 : /* ET4000/W32i */
+              et4000_type = TYPE_ET4000W32I;
+              break;
+          case 2 : /* ET4000/W32p */
+          case 3 :
+          case 4 :
+          case 5 :
+          case 6 : /* Latest revision of ET4000/W32p */
+              et4000_type = TYPE_ET4000W32P;
+              break;
+          default :
+              ErrorF("%s %s: ET4000W32: Unknown type. Try chipset override.\n",
+                  XCONFIG_PROBED, vga256InfoRec.name);
+	      ET4000EnterLeave(LEAVE);
+	      return(FALSE);
+	  }
+        }
+#endif
+
     }
 
   /*
@@ -297,7 +365,28 @@ ET4000Probe()
       }
 
       if (config & 0x80) vga256InfoRec.videoRam <<= 1;
+
+#ifdef W32_SUPPORT
+      /* Check for interleaving on W32i/p. */
+      if (et4000_type >= TYPE_ET4000W32I) {
+          outb(vgaIOBase+0x04, 0x32);
+          config = inb(vgaIOBase+0x05);
+          if (config & 0x80) vga256InfoRec.videoRam <<= 1;
+      }
+#endif
     }
+
+#ifdef W32_SUPPORT
+  /*
+   * If more than 1MB of RAM is available on the W32i/p, use the
+   * W32-specific banking function that can address 4MB.
+   */ 
+  if (vga256InfoRec.videoRam > 1024) {
+      ET4000.ChipSetRead = ET4000W32SetRead;
+      ET4000.ChipSetWrite= ET4000W32SetWrite;
+      ET4000.ChipSetReadWrite = ET4000W32SetReadWrite;
+  }
+#endif
 
   if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options))
     {
@@ -338,7 +427,7 @@ ET4000Probe()
 
   if (!vga256InfoRec.clocks) vgaGetClocks(numClocks, ClockSelect);
 
-  vga256InfoRec.chipset = ET4000Ident(0);
+  vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);
   vga256InfoRec.bankedMono = TRUE;
 
   /* Initialize option flags allowed for this driver */
@@ -364,7 +453,10 @@ ET4000FbInit()
 #ifndef MONOVGA
   int useSpeedUp;
 
-  useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
+  if (vga256InfoRec.videoRam > 1024)
+    useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYCHIPSET;
+  else
+    useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
   if (useSpeedUp && xf86Verbose)
   {
     ErrorF("%s %s: ET4000: SpeedUps selected (Flags=0x%x)\n", 
@@ -611,7 +703,7 @@ ET4000Adjust(x, y)
 
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
-  outw(vgaIOBase + 4, ((Base & 0x030000) >> 8) | 0x33);
+  outw(vgaIOBase + 4, ((Base & 0x0F0000) >> 8) | 0x33);
 }
 
 

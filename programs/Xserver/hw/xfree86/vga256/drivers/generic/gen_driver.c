@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.0 1994/05/14 07:02:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.1 1994/05/31 08:15:05 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -103,6 +103,9 @@ vgaVideoChipRec GENERIC = {
 	VGA_NO_DIVIDE_VERT,
 	{0,},
 	8,
+	FALSE,
+	0,
+	0,
 };
 
 /* These are the fixed 100% VGA compatible CRTC register values used. */

@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.1 94/03/28 21:53:18 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.0 1994/05/31 08:19:18 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -109,6 +109,9 @@ vgaVideoChipRec TVGA8900 = {
   VGA_DIVIDE_VERT,
   {0,},
   8,				/* Set to 16 for 512k cards in Probe() */
+  FALSE,
+  0,
+  0,
 };
 
 #define new ((vgaTVGA8900Ptr)vgaNewVideoState)

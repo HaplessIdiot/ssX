@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.3 1994/07/24 11:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.4 1994/08/01 12:15:05 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -250,6 +250,9 @@ vgaVideoChipRec ATI =
         VGA_DIVIDE_VERT,        /* Divide interlaced vertical timings */
         {0,},                   /* Options are set by ATIProbe */
         16,                     /* Virtual X rounding */
+	FALSE,			/* No linear fb */
+	0,			/* Linear fb base address */
+	0,			/* Linear fb size */
 };
 
 /*

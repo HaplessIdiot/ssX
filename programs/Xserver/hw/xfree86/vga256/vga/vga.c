@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.9 1994/08/01 12:18:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.10 1994/08/12 14:03:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -151,6 +151,7 @@ pointer vgaOrigVideoState = NULL;
 pointer vgaNewVideoState = NULL;
 pointer vgaBase = NULL;
 pointer vgaVirtBase = NULL;
+pointer vgaLinearBase = NULL;
 
 void (* vgaEnterLeaveFunc)(
 #if NeedFunctionPrototypes
@@ -198,6 +199,9 @@ int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
 extern Bool vgaPowerSaver;
 extern Bool clgd6225Lcd;
+Bool vgaUseLinearAddressing;
+int vgaPhysLinearBase;
+int vgaLinearSize;
 
 #ifdef MONOVGA
 int vgaReadseg=0;
@@ -447,31 +451,54 @@ vgaProbe()
 #endif
 
         maxX = maxY = -1;
-	pMode = pEnd = vga256InfoRec.modes;
+	pMode = vga256InfoRec.modes;
+	pEnd = (DisplayModePtr) NULL;
+	tx = vga256InfoRec.virtualX;
+	ty = vga256InfoRec.virtualY;
 	do {
-	  if (!xf86LookupMode(pMode, &vga256InfoRec))
-	    {
-              vgaEnterLeaveFunc(LEAVE);
-	      return(FALSE);
-	    }
-	  if (pMode->HDisplay * pMode->VDisplay > needmem)
-	    {
-	      ErrorF("%s: Too little memory for mode %s\n", vga256InfoRec.name,
-                     pMode->name);
-              vgaEnterLeaveFunc(LEAVE);
-	      return(FALSE);
-	    }
-          if (pMode->HDisplay > maxX)
-            {
-              maxX = pMode->HDisplay;
-              pmaxX = pMode;
-            }
-          if (pMode->VDisplay > maxY)
-            {
-              maxY = pMode->VDisplay;
-              pmaxY = pMode;
-            }
-	  pMode = pMode->next;
+	  DisplayModePtr pModeSv;
+
+	  /*
+	   * xf86LookupMode returns FALSE if it ran into an invalid
+	   * parameter
+	   */
+	  if(xf86LookupMode(pMode, &vga256InfoRec) == FALSE) {
+		pModeSv = pMode->next;
+		xf86DeleteMode(&vga256InfoRec, pMode);
+		pMode = pModeSv; 
+	  } else if (pMode->HDisplay * pMode->VDisplay > needmem) {
+		pModeSv=pMode->next;
+		ErrorF("Insufficient video memory for all resolutions\n");
+		xf86DeleteMode(&vga256InfoRec, pMode);
+		pMode = pModeSv;
+	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
+		     ((ty > 0) && (pMode->VDisplay > ty))) {
+		pModeSv=pMode->next;
+		ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+			pMode->HDisplay, pMode->VDisplay, tx, ty);
+		xf86DeleteMode(&vga256InfoRec, pMode);
+		pMode = pModeSv;
+	  } else {
+		/*
+		 * Successfully looked up this mode.  If pEnd isn't 
+		 * initialized, set it to this mode.
+		 */
+		if(pEnd == (DisplayModePtr) NULL)
+			pEnd = pMode;
+
+		if (pMode->HDisplay > maxX)
+		{
+			maxX = pMode->HDisplay;
+			pmaxX = pMode;
+		}
+		if (pMode->VDisplay > maxY)
+		{
+			maxY = pMode->VDisplay;
+			pmaxY = pMode;
+		}
+
+		pMode = pMode->next;
+	  }
 	}
 	while (pMode != pEnd);
 
@@ -602,6 +629,12 @@ vgaProbe()
 	/* Initialise chip-specific enhanced fb functions */
 	vgaHWCursor.Initialized = FALSE;
 	(*vgaFbInitFunc)();
+
+	/* The driver should now have determined whether linear */
+	/* addressing is possible */
+	vgaUseLinearAddressing = Drivers[i]->ChipUseLinearAddressing;
+	vgaPhysLinearBase = Drivers[i]->ChipLinearBase;
+	vgaLinearSize = Drivers[i]->ChipLinearSize;
 #else
 #ifdef BANKEDMONOVGA
 	if (vgaUse2Banks)
@@ -651,6 +684,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   if (serverGeneration == 1) {
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 			    vgaMapSize);
+    if (vgaUseLinearAddressing)
+        vgaLinearBase = xf86MapVidMem(scr_index, LINEAR_REGION,
+        			      (pointer)vgaPhysLinearBase,
+        			      vgaLinearSize);
 
 #ifdef MONOVGA
     if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY >= vgaMapSize * 8)
@@ -673,14 +710,31 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif
 #endif
 
-    vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
-			      + (unsigned int)vgaBase); 
-    vgaReadTop     = (void *)((unsigned int)vgaReadTop
-			      + (unsigned int)vgaBase); 
-    vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom
-			      + (unsigned int)vgaBase); 
-    vgaWriteTop    = (void *)((unsigned int)vgaWriteTop
-			      + (unsigned int)vgaBase); 
+    if (vgaUseLinearAddressing)
+    {
+      vgaReadBottom = vgaLinearBase;
+      vgaReadTop = (void *)((unsigned int)vgaLinearSize
+      			    + (unsigned int)vgaLinearBase);
+      vgaWriteBottom = vgaLinearBase;
+      vgaWriteTop = (void *)((unsigned int)vgaLinearSize
+      			    + (unsigned int)vgaLinearBase);
+      vgaSegmentSize = vgaLinearSize;	/* override */
+      vgaSegmentMask = vgaLinearSize - 1;
+      vgaSetReadFunc = (void (*)())NoopDDA;
+      vgaSetWriteFunc = (void (*)())NoopDDA;
+      vgaSetReadWriteFunc = (void (*)())NoopDDA;
+    }
+    else
+    {
+      vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
+			        + (unsigned int)vgaBase); 
+      vgaReadTop     = (void *)((unsigned int)vgaReadTop
+			        + (unsigned int)vgaBase); 
+      vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom
+			        + (unsigned int)vgaBase); 
+      vgaWriteTop    = (void *)((unsigned int)vgaWriteTop
+			        + (unsigned int)vgaBase); 
+    }
   }
 
   if (!(vgaInitFunc)(vga256InfoRec.modes))
@@ -851,6 +905,8 @@ vgaEnterLeaveVT(enter, screen_idx)
       vgaSetReadWriteFunc = saveSetReadWriteFunc;
       
       xf86MapDisplay(screen_idx, VGA_REGION);
+      if (vgaUseLinearAddressing)
+        xf86MapDisplay(screen_idx, LINEAR_REGION);
 
       (vgaEnterLeaveFunc)(ENTER);
       vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
@@ -906,6 +962,8 @@ vgaEnterLeaveVT(enter, screen_idx)
 
       /* Make sure that another dirver hasn't disabeled IO */    
       xf86MapDisplay(screen_idx, VGA_REGION);
+      if (vgaUseLinearAddressing)
+        xf86MapDisplay(screen_idx, LINEAR_REGION);
 
       (vgaEnterLeaveFunc)(ENTER);
 
@@ -945,6 +1003,10 @@ vgaEnterLeaveVT(enter, screen_idx)
       (vgaEnterLeaveFunc)(LEAVE);
 
       xf86UnMapDisplay(screen_idx, VGA_REGION);
+      if (vgaUseLinearAddressing)
+      {
+        xf86UnMapDisplay(screen_idx, LINEAR_REGION);
+      }
 
       saveInitFunc = vgaInitFunc;
       saveSaveFunc = vgaSaveFunc;

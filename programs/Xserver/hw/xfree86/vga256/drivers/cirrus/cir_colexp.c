@@ -1,5 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.1 94/03/28 21:48:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.0 1994/04/29 14:10:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.1 1994/08/20 07:36:21 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -200,12 +200,10 @@ destpitch )
 	unsigned char *base;	/* Video window base address. */
 	unsigned char color[2];
 
-	base = (unsigned char *)vgaBase + 0x8000;	/* Write window. */
+	base = CIRRUSWRITEBASE();	/* Write window. */
 	destaddr = y * destpitch + x;
 
-	bank = destaddr >> 14;
-	setwritebank(bank);
-	destaddr &= 0x3fff;
+	CIRRUSSETWRITEB(destaddr, bank);
 
 	color[0] = bg;
 	color[1] = fg;
@@ -218,11 +216,7 @@ destpitch )
 		
 		bits = rotateleft(32 - (sox & 31), bits_in[syindex]);
 
-		if (destaddr >= 0x4000) {
-			bank++;
-			setwritebank(bank);
-			destaddr -= 0x4000;
-		}
+		CIRRUSCHECKWRITEB(destaddr, bank);
 		destp = base + destaddr;
 
 		count = w;
@@ -297,17 +291,25 @@ void CirrusLatchedBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	int writebank, readbank;
 	int bitoffset;
 
-	unsigned char *base;	/* Video window base address. */
+	unsigned char *readbase;	/* Video read window base address. */
+	unsigned char *writebase;	/* Video write window */
 
-	base = vgaBase;			/* Read window. */
-					/* Write window is at offset 0x8000 */
+	readbase = CIRRUSREADBASE();
+	writebase = CIRRUSWRITEBASE();
+
 	destaddr = y2 * destpitch + x2;
 	srcaddr = y1 * destpitch + x1;
 
 	/* Enable extended write modes, BY8 addressing, and 8 byte data */
 	/* latches. Every addressing byte corresponds to 8 pixels. */
-	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
-		EIGHTDATALATCHES | DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
+			EIGHTDATALATCHES);
+	}
+	else {
+		SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
+			EIGHTDATALATCHES | DOUBLEBANKED);
+	}
 
 	SETWRITEMODE(1);
 
@@ -320,33 +322,19 @@ void CirrusLatchedBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	destaddr >>= 3;			/* Divide address by 8. */
 	srcaddr >>= 3;
 
-	writebank = destaddr >> 14;	/* 16K units. */
-	setwritebank(writebank);
-	readbank = srcaddr >> 14;
-	setreadbank(readbank);
-	destaddr &= 0x3fff;
-	srcaddr &= 0x3fff;
+	CIRRUSSETREADB(srcaddr, readbank);
+	CIRRUSSETWRITEB(destaddr, writebank);
 
 	for (j = 0; j < h; j++) {
 		int count;
 
-		if (destaddr >= 0x4000) {
-			/* 16K granularity is very helpful here. */
-			/* Because of the 32K window, we completely avoid */
-			/* page breaks within scanlines. */
-			writebank++;
-			setwritebank(writebank);
-			destaddr -= 0x4000;
-		}
-		if (srcaddr >= 0x4000) {
-			readbank++;
-			setreadbank(readbank);
-			srcaddr -= 0x4000;
-		}
+		CIRRUSCHECKREADB(srcaddr, readbank);
+		CIRRUSCHECKWRITEB(destaddr, writebank);
+
 		/* Address in write window. */
-		destp = base + 0x8000 + destaddr;
+		destp = writebase + destaddr;
 		/* Address in read window. */
-		srcp = base + srcaddr;
+		srcp = readbase + srcaddr;
 
 		count = w;		/* Number of pixels left. */
 
@@ -400,7 +388,12 @@ void CirrusLatchedBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 
 	SETWRITEMODE(0);
 
@@ -416,18 +409,25 @@ void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
 	unsigned char *destp, *srcp;
 	int writebank, readbank;
 	int bitoffset;
+	unsigned char *readbase;	/* Video read window base address. */
+	unsigned char *writebase;	/* Video write window */
 
-	unsigned char *base;	/* Video window base address. */
+	readbase = CIRRUSREADBASE();
+	writebase = CIRRUSWRITEBASE();
 
-	base = vgaBase;			/* Read window. */
-					/* Write window is at offset 0x8000 */
 	destaddr = (y2 + h - 1) * destpitch + x2;
 	srcaddr = (y1 + h - 1) * destpitch + x1;
 
 	/* Enable extended write modes, BY8 addressing, and 8 byte data */
 	/* latches. Every addressing byte corresponds to 8 pixels. */
-	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
-		EIGHTDATALATCHES | DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
+			EIGHTDATALATCHES);
+	}
+	else {
+		SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
+			EIGHTDATALATCHES | DOUBLEBANKED);
+	}
 
 	SETWRITEMODE(1);
 
@@ -440,33 +440,19 @@ void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
 	destaddr >>= 3;			/* Divide address by 8. */
 	srcaddr >>= 3;
 
-	writebank = destaddr >> 14;	/* 16K units. */
-	setwritebank(writebank);
-	readbank = srcaddr >> 14;
-	setreadbank(readbank);
-	destaddr &= 0x3fff;
-	srcaddr &= 0x3fff;
+	CIRRUSSETREADB(srcaddr, readbank);
+	CIRRUSSETWRITEB(destaddr, writebank);
 
 	for (j = 0; j < h; j++) {
 		int count;
 
-		if (destaddr < 0) {
-			/* 16K granularity is very helpful here. */
-			/* Because of the 32K window, we completely avoid */
-			/* page breaks within scanlines. */
-			writebank--;
-			setwritebank(writebank);
-			destaddr += 0x4000;
-		}
-		if (srcaddr < 0) {
-			readbank--;
-			setreadbank(readbank);
-			srcaddr += 0x4000;
-		}
+		CIRRUSCHECKREADBTOP(srcaddr, readbank);
+		CIRRUSCHECKWRITEBTOP(destaddr, writebank);
+
 		/* Address in write window. */
-		destp = base + 0x8000 + destaddr;
+		destp = writebase + destaddr;
 		/* Address in read window. */
-		srcp = base + srcaddr;
+		srcp = readbase + srcaddr;
 
 		count = w;		/* Number of pixels left. */
 
@@ -520,7 +506,12 @@ void CirrusLatchedBitBltReversed( x1, y1, x2, y2, w, h, destpitch )
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 
 	SETWRITEMODE(0);
 
@@ -546,40 +537,27 @@ void CirrusSimpleBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	int writebank, readbank;
 	int bitoffset;
 	int syindex;
-
-	unsigned char *base;	/* Video window base address. */
+	unsigned char *readbase;	/* Video read window base address. */
+	unsigned char *writebase;	/* Video write window */
 	int saveGRB;
 
-	base = vgaBase;			/* Read window. */
-					/* Write window is at offset 0x8000 */
+	readbase = CIRRUSREADBASE();
+	writebase = CIRRUSWRITEBASE();
+
 	destaddr = y2 * destpitch + x2;
 	srcaddr = y1 * destpitch + x1;
 
-	writebank = destaddr >> 14;	/* 16K units. */
-	setwritebank(writebank);
-	readbank = srcaddr >> 14;
-	setreadbank(readbank);
-	destaddr &= 0x3fff;
-	srcaddr &= 0x3fff;
+	CIRRUSSETREADB(srcaddr, readbank);
+	CIRRUSSETWRITEB(destaddr, writebank);
 
 	for (j = 0; j < h; j++) {
-		if (destaddr >= 0x4000) {
-			/* 16K granularity is very helpful here. */
-			/* Because of the 32K window, we completely avoid */
-			/* page breaks within scanlines. */
-			writebank++;
-			setwritebank(writebank);
-			destaddr -= 0x4000;
-		}
-		if (srcaddr >= 0x4000) {
-			readbank++;
-			setreadbank(readbank);
-			srcaddr -= 0x4000;
-		}
+		CIRRUSCHECKREADB(srcaddr, readbank);
+		CIRRUSCHECKWRITEB(destaddr, writebank);
+
 		/* Address in write window. */
-		destp = base + 0x8000 + destaddr;
+		destp = writebase + destaddr;
 		/* Address in read window. */
-		srcp = base + srcaddr;
+		srcp = readbase + srcaddr;
 
 		__memcpy(destp, srcp, w);
 
@@ -606,7 +584,7 @@ void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
 	int nspans, bitoffset;
 	int leftmask, leftbcount, midlcount, rightbcount, rightmask;
 
-	base = (unsigned char *)vgaBase;	/* Write window. */
+	base = CIRRUSSINGLEBASE();		/* Single Read/Write window. */
 	destaddr = y * destpitch + x;
 
 	/* Enable extended write modes and BY8 addressing. */
@@ -643,15 +621,13 @@ void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
 		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
 masksdone:
 
-	bank = destaddr >> 14;		/* 16K units. */
-	setbank(bank);
-	destaddr &= 0x3fff;
+	CIRRUSSETSINGLEB(destaddr, bank);
 
 	nspans = h;	/* Number of spans to go. */
 	for (;;) {
 		int n;
 		/* Calculate how many scanlines fit in this banking region. */
-		n = (0x10000 - destaddr) / (destpitch >> 3);
+		n = CIRRUSSINGLEREGIONLINES(destaddr, destpitch >> 3);
 		if (n > nspans)
 			n = nspans;
 		nspans -= n;
@@ -663,17 +639,16 @@ masksdone:
 		if (nspans == 0)
 			break;
 		destaddr += n * (destpitch >> 3);
-		destaddr -= 0xc000;
-		bank += 3;
-		if (bank > 252) {
-			destaddr += (bank - 252) * 0x4000;
-			bank = 252;
-		}
-		setbank(bank);
+		CIRRUSCHECKSINGLEB(destaddr, bank);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 	SETWRITEMODE(0);
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 }
@@ -724,7 +699,7 @@ destpitch)
 		}
 	}
 
-	base = (unsigned char *)vgaBase;	/* Write window. */
+	base = CIRRUSSINGLEBASE();	/* Read/write window. */
 	destaddr = y * destpitch + x;
 
 	/* Enable extended write modes and BY8 addressing. */
@@ -764,9 +739,7 @@ destpitch)
 		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
 masksdone:
 
-	bank = destaddr >> 14;		/* 16K units. */
-	setbank(bank);
-	destaddr &= 0x3fff;
+	CIRRUSSETSINGLEB(destaddr, bank);
 
 	syindex = (y - soy) % sh;	/* y index into source bitmap. */
 
@@ -777,7 +750,7 @@ masksdone:
 		unsigned char *destp;
 
 		/* Calculate how many scanlines fit in this banking region. */
-		n = (0x10000 - destaddr) / (destpitch >> 3);
+		n = CIRRUSSINGLEREGIONLINES(destaddr, destpitch >> 3);
 		if (n > nspans)
 			n = nspans;
 		nspans -= n;
@@ -824,17 +797,16 @@ masksdone:
 		if (nspans == 0)
 			break;
 		destaddr += n * (destpitch >> 3);
-		bank += 3;
-		destaddr -= 0xc000;
-		if (bank > 252) {
-			destaddr += (bank - 252) * 0x4000;
-			bank = 252;
-		}
-		setbank(bank);
+		CIRRUSCHECKSINGLEB(destaddr, bank);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 	SETWRITEMODE(0);
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 
@@ -887,7 +859,7 @@ bg, fg, destpitch)
 		}
 	}
 
-	base = (unsigned char *)vgaBase;	/* Write window. */
+	base = CIRRUSSINGLEBASE();		/* Read/write window. */
 	destaddr = y * destpitch + x;
 
 	/* Enable extended write modes and BY8 addressing. */
@@ -928,9 +900,7 @@ bg, fg, destpitch)
 		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
 masksdone:
 
-	bank = destaddr >> 14;		/* 16K units. */
-	setbank(bank);
-	destaddr &= 0x3fff;
+	CIRRUSSETSINGLEB(destaddr, bank);
 
 	syindex = (y - soy) % sh;	/* y index into source bitmap. */
 
@@ -941,7 +911,7 @@ masksdone:
 		unsigned char *destp;
 
 		/* Calculate how many scanlines fit in this banking region. */
-		n = (0x10000 - destaddr) / (destpitch >> 3);
+		n = CIRRUSSINGLEREGIONLINES(destaddr, destpitch >> 3);
 		if (n > nspans)
 			n = nspans;
 		nspans -= n;
@@ -1036,17 +1006,16 @@ skiprightpart:
 		if (nspans == 0)
 			break;
 		destaddr += n * (destpitch >> 3);
-		destaddr -= 0xc000;
-		bank += 3;
-		if (bank > 252) {
-			destaddr += (bank - 252) * 0x4000;
-			bank = 252;
-		}
-		setbank(bank);
+		CIRRUSCHECKSINGLEB(destaddr, bank);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 	SETWRITEMODE(0);
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 	SETPIXELMASK(0xff);
@@ -1086,7 +1055,6 @@ toy, destpitch)
 	int writebank;
 	int tyindex;
 	unsigned char *vtilep;
-	unsigned char *base;	/* Video window base address. */
 	int tcount;
 	int *chunk8_tcount;
 	int nspans;
@@ -1094,22 +1062,31 @@ toy, destpitch)
 	int wbytes;
 	int oneextracount;
 	int tbyteindexleft, tbyteindexright, tbyteindexmiddle;
+	unsigned char *readbase;	/* Video read window base address. */
+	unsigned char *writebase;	/* Video write window */
 
-	base = vgaBase;			/* Read window. */
-					/* Write window is at offset 0x8000 */
+	readbase = CIRRUSREADBASE();
+	writebase = CIRRUSWRITEBASE();
 
 	chunk8_tcount = ALLOCATE_LOCAL(tbytes * sizeof(int));
 
 	/* Pointer to tile in read window in BY8 addressing mode. */
-	setreadbank((vtileaddr >> 3) >> 14);
-	vtilep = base + ((vtileaddr >> 3) & 0x3fff);
+	vtileaddr >>= 3;
+	CIRRUSSETREAD(vtileaddr);
+	vtilep = CIRRUSREADBASE() + vtileaddr;
 
 	destlineaddr = y * destpitch;	/* x added later. */
 
 	/* Enable extended write modes, BY8 addressing, and 8 byte data */
 	/* latches. Every addressing byte corresponds to 8 pixels. */
-	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
-		EIGHTDATALATCHES | DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
+			EIGHTDATALATCHES);
+	}
+	else {
+		SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING |
+			EIGHTDATALATCHES | DOUBLEBANKED);
+	}
 
 	SETWRITEMODE(1);
 
@@ -1118,9 +1095,7 @@ toy, destpitch)
 
 	destlineaddr >>= 3;			/* Divide address by 8. */
 
-	writebank = destlineaddr >> 14;	/* 16K units. */
-	setwritebank(writebank);
-	destlineaddr &= 0x3fff;
+	CIRRUSSETWRITEB(destlineaddr, writebank);
 
 	/* Current tile line index. */
 	tyindex = (y - toy) % theight;
@@ -1157,7 +1132,7 @@ toy, destpitch)
 		unsigned char *destp, *vtilelinep, *startvtilelinep;
 
 		/* Calculate how many scanlines fit in this banking region. */
-		n = (0x8000 - destlineaddr) / (destpitch >> 3);
+		n = CIRRUSWRITEREGIONLINES(destlineaddr, destpitch >> 3);
 		if (n > nspans)
 			n = nspans;
 		nspans -= n;
@@ -1173,7 +1148,7 @@ toy, destpitch)
 			goto skipleftedge;
 		SETPIXELMASK(leftbitmask[bitoffset]);
 		/* Address in write window. */
-		destp = base + 0x8000 + destlineaddr + (x >> 3);
+		destp = writebase + destlineaddr + (x >> 3);
 		vtilelinep = startvtilelinep + tbyteindexleft;
 		for (i = 0; i < n; i++) {
 			__volatile__ unsigned char tmp;
@@ -1191,7 +1166,7 @@ toy, destpitch)
 skipleftedge:
 
 /* Middle part. */
-		destp = base + 0x8000 + destlineaddr + (x >> 3);
+		destp = writebase + destlineaddr + (x >> 3);
 		if (bitoffset > 0)
 			destp++;
 		vtilelinep = startvtilelinep;
@@ -1243,7 +1218,7 @@ skipleftedge:
 		if ((x + w) & 7 == 0)
 			goto skiprightpart;
 		SETPIXELMASK(rightbitmask[(x + w) & 7]);
-		destp = base + 0x8000 + destlineaddr + ((x + w) >> 3);
+		destp = writebase + destlineaddr + ((x + w) >> 3);
 		vtilelinep = startvtilelinep + tbyteindexright;
 		tyindex = starttyindex;
 		for (i = 0; i < n; i++) {
@@ -1270,17 +1245,16 @@ skiprightpart:
 			tyindex -= theight;
 
 		destlineaddr += n * (destpitch >> 3);
-		destlineaddr -= 0x4000;
-		writebank += 1;
-		if (writebank > 254) {
-			destlineaddr += (writebank - 254) * 0x4000;
-			writebank = 254;
-		}
-		setwritebank(writebank);
+		CIRRUSCHECKWRITEB(destlineaddr, writebank);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
+	if (cirrusUseLinear) {
+		SETMODEEXTENSIONS(SINGLEBANKED);
+	}
+	else {
+		SETMODEEXTENSIONS(DOUBLEBANKED);
+	}
 	SETWRITEMODE(0);
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.0 1994/08/20 07:36:12 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -116,21 +116,18 @@ void CirrusUploadPattern(pattern, width, height, vidaddr, srcpitch)
 {
 	int writebank, destaddr;
 	int i;
+	unsigned char *base;
 	/* Write the image to video memory at offset vidaddr. */
-	writebank = vidaddr >> 14;
-	destaddr = vidaddr & 0x3fff;
-	setwritebank(writebank);
+	destaddr = vidaddr;
+	CIRRUSSETWRITEB(destaddr, writebank);
+	base = CIRRUSWRITEBASE();
 	for (i = 0; i < height; i++) {
 		__memcpy(
-			(unsigned char *)vgaBase + 0x8000 + destaddr,
+			base + destaddr,
 			pattern + i * srcpitch,
 			width
 			);
 		destaddr += width;
-		if (destaddr >= 0x4000) {
-			destaddr -= 0x4000;
-			writebank++;
-			setwritebank(writebank);
-		}
+		CIRRUSCHECKWRITEB(destaddr, writebank);
 	}
 }

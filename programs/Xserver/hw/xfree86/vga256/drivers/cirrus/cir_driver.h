@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.3 1994/06/22 04:38:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.4 1994/08/20 07:36:26 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -157,6 +157,8 @@ extern int cirrusChip;
 extern int cirrusBusType;
 extern Bool cirrusUseBLTEngine;
 extern Bool cirrusUseMMIO;
+extern Bool cirrusUseLinear;
+extern Bool cirrusFavourBLT;
 
 extern Bool cirrusMMIOFlag;
 extern Bool cirrusDoBackgroundBLT;
@@ -193,8 +195,11 @@ extern unsigned int cirrusForegroundColorShadow,
 #define CLGD5430    11
 #define LASTCLGD    CLGD5430
 
-#define CIRRUS_SLOWBUS 0
-#define CIRRUS_FASTBUS 1
+#define CIRRUS_BUS_SLOW 0
+#define CIRRUS_BUS_FAST 1
+#define CIRRUS_BUS_ISA 0
+#define CIRRUS_BUS_VLB 1
+#define CIRRUS_BUS_PCI 2
 
 
 #define CROP_0			0x00	/*     0 */
@@ -304,6 +309,91 @@ extern unsigned char byte_reversed[];
 	outw(0x3ce, 0x09 + ((n) << cirrusBankShift));
 
 #define setbank setreadbank
+
+/* Set up banking at video address addr. Bank is set, addr adjusted. */
+#define CIRRUSSETREAD(addr) \
+	if (!cirrusUseLinear) { \
+		setreadbank(addr >> 14); \
+		addr &= 0x3fff; \
+	}
+
+#define CIRRUSSETWRITE(addr) \
+	if (!cirrusUseLinear) { \
+		setwritebank(addr >> 14); \
+		addr &= 0x3fff; \
+	}
+
+#define CIRRUSSETSINGLE CIRRUSSETREAD
+
+/* Similar, but also assigns the bank value to a variable. */
+#define CIRRUSSETREADB(addr, bank) \
+	if (!cirrusUseLinear) { \
+		bank = addr >> 14; \
+		setreadbank(bank); \
+		addr &= 0x3fff; \
+	}
+
+#define CIRRUSSETWRITEB(addr, bank) \
+	if (!cirrusUseLinear) { \
+		bank = addr >> 14; \
+		setwritebank(bank); \
+		addr &= 0x3fff; \
+	}
+
+#define CIRRUSSETSINGLEB CIRRUSSETREADB
+
+/* Maximize the size of the banking region for the current address/bank. */
+#define CIRRUSCHECKREADB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x4000) { \
+		addr -= 0x4000; \
+		bank++; \
+		setreadbank(bank); \
+	}
+
+#define CIRRUSCHECKWRITEB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x4000) { \
+		addr -= 0x4000; \
+		bank++; \
+		setwritebank(bank); \
+	}
+
+#define CIRRUSCHECKSINGLEB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x4000) { \
+		bank += addr >> 14; \
+		addr &= 0x3fff; \
+		setbank(bank); \
+	}
+
+/* Bank adjust for routines that write from bottom to top. */
+#define CIRRUSCHECKREADBTOP(addr, bank) \
+	if (!cirrusUseLinear && addr < 0) { \
+		addr += 0x4000; \
+		bank--; \
+		setreadbank(bank); \
+	}
+
+#define CIRRUSCHECKWRITEBTOP(addr, bank) \
+	if (!cirrusUseLinear && addr < 0) { \
+		addr += 0x4000; \
+		bank--; \
+		setwritebank(bank); \
+	}
+
+/* The pointer base address of the video read/write window. */
+#define CIRRUSREADBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
+	: (unsigned char *)vgaBase)
+#define CIRRUSWRITEBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
+	: (unsigned char *)vgaBase + 0x8000)
+#define CIRRUSSINGLEBASE CIRRUSREADBASE
+#define CIRRUSBASE CIRRUSREADBASE
+
+/* Number of scanlines that fit in banking region (arbitrary number */
+/* for linear addressing mode). */
+#define CIRRUSSINGLEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
+	: (0x10000 - (addr)) / (pitch))
+
+#define CIRRUSWRITEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
+	: (0x8000 - (addr)) / (pitch))
 
 
 #if !defined(__GNUC__) || defined(NO_INLINE)

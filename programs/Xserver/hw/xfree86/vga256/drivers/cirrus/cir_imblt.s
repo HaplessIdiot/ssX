@@ -1,5 +1,5 @@
 /* $XConsortium: cir_imblt.s,v 1.2 94/03/29 11:07:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.1 1994/06/05 13:48:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.2 1994/08/20 07:36:35 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -101,7 +101,6 @@ GLNAME(CirrusImageWriteTransfer):
 	MOV_L	(height_arg,EDX)
 	TEST_L	(EDX,EDX)
 	JMP	(.loop_entry)
-	ALIGNTEXT4
 
 .line_loop:
 	MOV_L	(nu_dwords_var,ECX)	/* ECX = #dwords. */
@@ -130,7 +129,6 @@ GLNAME(CirrusImageWriteTransfer):
 	ADD_L	(CONST(0x20),ESI)
 	SUB_L	(CONST(0x08),ECX)
 	JMP	(.unrolled_word_loop)
-	ALIGNTEXT4
 
 .word_loop_check:
 	CMP_L	(CONST(0),ECX)
@@ -178,6 +176,126 @@ GLNAME(CirrusImageWriteTransfer):
 	DEC_L	(EDX)
 .loop_entry:
 	JNZ 	(.line_loop)
+
+	POP_L	(EDI)
+	POP_L	(ESI)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	ADD_L 	(CONST(0x04),ESP)	/* De-allocate local variable. */
+	POP_L	(EBP)
+	RET
+
+/*
+ * This is an image transfer function that only uses 16-bit accesses
+ * (32-bit acesses may cause occasional problems on a VLB 542x).
+ */
+
+	ALIGNTEXT4
+
+	GLOBL GLNAME(CirrusImageWriteTransfer16bit)
+GLNAME(CirrusImageWriteTransfer16bit):
+
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
+	SUB_L 	(CONST(0x04),ESP)	/* Allocate one local variable. */
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(ESI)
+	PUSH_L	(EDI)
+
+	MOV_L	(width_arg,EAX)
+	MOV_L   (EAX,EBX)
+	SHR_L	(CONST(0x02),EAX)	/* #dwords. */
+	MOV_L	(EAX,nu_dwords_var)	/* Store in local variable. */
+	AND_B   (CONST(0x03),BL)	/* Remainder. */
+
+	MOV_L   (srcaddr_arg,ESI)	/* Source address. */
+	MOV_L	(vaddr_arg,EDI)		/* Video address for blit. */
+
+	MOV_L	(height_arg,EDX)
+	TEST_L	(EDX,EDX)
+	JMP	(.loop_entry6)
+
+.line_loop6:
+	MOV_L	(nu_dwords_var,ECX)	/* ECX = #dwords. */
+
+.unrolled_word_loop6:
+	CMP_L	(CONST(0x04),ECX)	/* Do we have 4 dwords left? */
+	JL	(.word_loop_check6)	/* If not, jump over unrolled loop. */
+
+	MOV_W	(REGIND(ESI),AX)	/* Unrolled loop. */
+	MOV_W	(AX,REGIND(EDI))	/* Transfer 8 dwords. */
+	MOV_W	(REGOFF(2,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(4,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(6,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(8,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(10,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(12,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(14,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+
+	ADD_L	(CONST(16),ESI)
+	SUB_L	(CONST(0x04),ECX)
+	JMP	(.unrolled_word_loop6)
+
+.word_loop_check6:
+	CMP_L	(CONST(0),ECX)
+	JZ	(.do_remainder6)	/* No dwords left. */
+
+.word_loop6:
+	MOV_W	(REGIND(ESI),AX)	/* Transfer a dword. */
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(2,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+
+	/* Check-and-unroll could be used here. */
+
+	ADD_L	(CONST(0x04),ESI)
+	DEC_L	(ECX)
+	JNZ	(.word_loop6)
+
+.do_remainder6:
+	CMP_B	(CONST(0),BL)
+	JE 	(.line_finished6)	/* No bytes left, line finished. */
+	CMP_B	(CONST(1),BL)
+	JE	(.one_byte_remaining6)
+	CMP_B	(CONST(2),BL)
+	JE	(.two_bytes_remaining6)
+
+	/* Three bytes remaining. */
+	MOV_L	(REGOFF(-1,ESI),EAX)
+	SHR_L	(CONST(8),EAX)
+	ADD_L	(CONST(0x03),ESI)
+	MOV_W	(AX,REGIND(EDI))		/* Write dword. */
+	SHR_L	(CONST(16),EAX)
+	MOV_W	(AX,REGIND(EDI))
+	JMP	(.line_finished6)
+
+.one_byte_remaining6:
+	MOV_B	(REGIND(ESI),AL)
+	INC_L	(ESI)
+	MOV_W	(AX,REGIND(EDI))	/* Write dword with remainder. */
+	MOV_W	(AX,REGIND(EDI))
+	JMP	(.line_finished6)
+
+.two_bytes_remaining6:
+	MOV_W	(REGIND(ESI),AX)
+	ADD_L	(CONST(0x02),ESI)
+	MOV_W	(AX,REGIND(EDI))	/* Write dword with remainder. */
+	MOV_W	(AX,REGIND(EDI))
+
+.line_finished6:
+	ADD_L	(srcwidth_arg,ESI)	/* Adjust source pointer for */
+	SUB_L	(width_arg,ESI)		/* bitmap pitch. */
+	DEC_L	(EDX)
+.loop_entry6:
+	JNZ 	(.line_loop6)
 
 	POP_L	(EDI)
 	POP_L	(ESI)

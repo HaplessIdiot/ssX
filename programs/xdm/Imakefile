@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.72 94/04/01 12:37:39 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.0 1994/04/28 12:44:48 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -45,17 +45,23 @@ GREETOBJS = greet.o verify.o Login.o
 #if SystemV4 || HasShadowPasswd
 PWD_DEFINES = -DUSESHADOW
 #if SystemV || defined(SequentArchitecture)
-SYS_LIBRARIES = -lsec
+SYS_LIBRARIES1 = -lsec
 #endif
 #endif
 
 #if (defined(AIXArchitecture) && (OSMajorVersion >= 3))
-SYS_LIBRARIES = -ls
+SYS_LIBRARIES1 = -ls
 #endif
 
 #if defined(XFree86Version) && HasLibCrypt
-SYS_LIBRARIES = -lcrypt
+#ifdef SpecialLibCrypt
+SYS_LIBRARIES2 = SpecialLibCrypt
+#else
+SYS_LIBRARIES2 = -lcrypt
 #endif
+#endif
+
+SYS_LIBRARIES = $(SYS_LIBRARIES1) $(SYS_LIBRARIES2)
 
 #if HasBSD44Sockets
 SOCK_DEFINES = -DBSD44SOCKETS

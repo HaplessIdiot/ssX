@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.5 1994/08/01 12:18:12 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.6 1994/08/20 07:37:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -47,6 +47,7 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
@@ -131,6 +132,9 @@ vgaVideoChipRec PVGA1 = {
   VGA_DIVIDE_VERT,
   {0,},
   8,
+  FALSE,
+  0,
+  0,
 };
 
 #define new ((vgaPVGA1Ptr)vgaNewVideoState)
@@ -142,6 +146,19 @@ static unsigned char save_cs2 = 0;
 static Bool use_cs2 = TRUE;
 
 #undef DO_WD90C20
+
+static SymTabRec chipsets[] = {
+  { C_PVGA1,	"pvga1" },
+  { WD90C00,	"wd90c00" },
+  { WD90C10,	"wd90c10" },
+#ifdef DO_WD90C20
+  { WD90C20,	"wd90c20" },
+#endif
+  { WD90C30,	"wd90c30" },
+  { WD90C31,	"wd90c31" },
+  { WD90C33,	"wd90c33" },
+  { -1,		"" },
+};
 
 static unsigned PVGA1_ExtPorts[] = {            /* extra ports for WD90C31 */
              0x23C0, 0x23C1, 0x23C2, 0x23C3, 0x23C4, 0x23C5 };
@@ -173,18 +190,10 @@ static char *
 PVGA1Ident(n)
      int n;
 {
-#ifdef DO_WD90C20
-  static char *chipsets[] = {"pvga1","wd90c00","wd90c10",
-			     "wd90c30","wd90c31","wd90c33","wd90c20"};
-#else
-  static char *chipsets[] = {"pvga1","wd90c00","wd90c10","wd90c30","wd90c31",
-			     "wd90c33"};
-#endif
-
-  if (n + 1 > sizeof(chipsets) / sizeof(char *))
+  if (chipsets[n].token < 0)
     return(NULL);
   else
-    return(chipsets[n]);
+    return(chipsets[n].name);
 }
 
 
@@ -291,25 +300,9 @@ PVGA1Probe()
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 
     if (vga256InfoRec.chipset) {
-        if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(0)))
-	    WDchipset = C_PVGA1;
-        else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(1)))
-	    WDchipset = WD90C00;
-        else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(2)))
-	    WDchipset = WD90C10;
-        else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(3)))
-	    WDchipset = WD90C30;
-	else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(4)))
-	    WDchipset = WD90C31;
-	else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(5)))
-	    WDchipset = WD90C33;
-#ifdef DO_WD90C20
-        else if (!StrCaseCmp(vga256InfoRec.chipset, PVGA1Ident(6)))
-	    WDchipset = WD90C20;
-#endif
-        else
+	WDchipset = xf86StringToToken(chipsets, vga256InfoRec.chipset);
+        if (WDchipset < 0)
 	    return (FALSE);
-
         PVGA1EnterLeave(ENTER);
     }
     else {
@@ -325,18 +318,18 @@ PVGA1Probe()
         if (strncmp(ident, "VGA=",4)) 
 	    return(FALSE);
 #else
-	PVGA1EnterLeave(ENTER);
+	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 	tmp = rdinx(0x3CE, 0x0F);
 	wrinx(0x3CE, 0x0F, 0x17 | tmp);	/* Lock registers */
 	if (testinx2(0x3CE, 0x09, 0x7F)) {
 	    wrinx(0x3CE, 0x0F, tmp);
-	    PVGA1EnterLeave(LEAVE);
+	    xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 	    return(FALSE);
 	}
 	wrinx(0x3CE, 0x0F, 0x05);	/* Unlock them again */
 	if (!testinx2(0x3CE, 0x09, 0x7F)) {
 	    wrinx(0x3CE, 0x0F, tmp);
-	    PVGA1EnterLeave(LEAVE);
+	    xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 	    return(FALSE);
 	}
 #endif
@@ -344,9 +337,7 @@ PVGA1Probe()
         /*
          * OK.  We know it's a Paradise/WD chip.  Now to figure out which one.
          */
-#ifdef USE_BIOS_PROBE
         PVGA1EnterLeave(ENTER);
-#endif
         if (!testinx(vgaIOBase+0x04, 0x2B))
 	    WDchipset = C_PVGA1;
         else {
@@ -411,7 +402,7 @@ PVGA1Probe()
 	    wrinx(0x3C4, 0x06, tmp);
 	}
     }
-    vga256InfoRec.chipset = PVGA1Ident(WDchipset);
+    vga256InfoRec.chipset = xf86TokenToString(chipsets, WDchipset);
 
     if (WDchipset == WD90C31)  /* enable extra hardware accel registers */
     {

@@ -1,11 +1,23 @@
 
 	       XFree86 P9000 Server Beta Release Notes
-		       Last Modified 1994.07.21
+		       Last Modified 1994.08.29
 		     Erik Nygren (nygren@mit.edu)
 
 ----====<<<<< Change Log >>>>>====----
 
-1994.07.21: (This patch)
+1994.08.29: (This patch)
+	* Increased number of memory regions in xf86_OSlib.h from 2 to 3
+	  as needed by the Viper PCI (Erik Nygren)
+	* Changed method of short pauses in p9000vga.c to outb(0x80,0) (Erik)
+	* Rewrote routines to determine sysconfig from horizontal resolution.
+	  Also added check for valid hres to probe. (Erik Nygren)
+	* Added MoveWindow acceleration for all depths.  Opaque move even
+	  looks nice at 32bpp now!  (Chris Mason)
+	* Minor fixes to acceleration.  Acceleration is now enabled
+	  by default (Chris Mason)
+	* Added "noaccel" option (Erik Nygren)
+	* Added some fixes for Viper PCI (Matt Thomas)
+1994.07.21:
 	* Preliminary Viper PCI support - totally untested so disabled
 	  (Erik Nygren)
 	* Preliminary Orchid P9000 support - incomplete and totally
@@ -41,6 +53,39 @@ program from the Unixware P9000 server for now.  Run it under DOS and
 use the values to fill in MemBase and IOBase in Xconfig.  These values
 will change whenever you move cards around or add cards.
 
+I've started adding in support for other cards and for acceleration.
+Due to its untested nature, much of it is disabled.  A define at the top of
+p9000.h controls all of these features.  
+
+Viper PCI
+---------
+This is almost working, thanks to the help I've been getting from
+Bob Hollinger and Matt Thomas.  It may or may not work for you.
+You'll want to specify the chipset "viperpci" in your Xconfig file.
+You'll also need to specify an IOBase and a MemBase.  You can
+obtain these values with PCIDUMP.EXE.  This program may be obtained
+by sending email to xserver@summit.novell.com with the two lines:
+send
+*p9k
+It is very likely that this server will now work.  You may have
+to enable the Viper PCI first through the kernel...  :-(
+
+Orchid P9000
+------------
+The Orchid P9000 code is untested and may or may not work.
+It is waiting on some mods to the clock code by Harry.  
+
+Acceleration
+------------
+Some of the accelration code is working, but there are probably still
+bugs.  Only a very small number of accelerated features have been
+implemented.  Notice the new global variable p9000BytesPerPixel.
+Before working on any acceleration, please contact nygren@mit.edu so
+we don't duplicate efforts.  The code in p9000blt.c and p9000win.c
+works, but some of the stuff in p9000im.c probably doesn't.
+
+TrueColor
+---------
 Support for 16 and 24 bit truecolor is now supported.  Note that 24
 bit color is really 32 bits per pixel.  Use the -bpp option when
 starting the server.  Examples:
@@ -56,12 +101,13 @@ It's their fault...  :-)
 Example problems:
 	xv 3.00    - Works fine in 32 bpp and in 16 bpp with 24 bit images.
 		     Has problems with colors in 8 bit images in 8 bpp mode.
-	Mosaic 2.1 - Has problems with colormap in both 16 bpp and 32 bpp
+	Mosaic 2.1 - Has problems with colormap in both 16 bpp and 32 bpp.
 	mpeg_play  - Doesn't work at all in 16 bpp mode.  Works fine
   		     24 bpp mode when compiled with -DRS6000 and when
 		     run with "-dither color"
 	xpaint 2.0 - Works great in both modes but has a bug in the
                      color requestor for the selection tool.
+		     I think later versions may have fixed this.
 
 There is not yet support for screen blanking in either 16 or 32 bpp modes/
 Please send me a patch to do this if you have a good idea...
@@ -76,15 +122,9 @@ one which works with available memory, etc).  Any other modes which
 are valid and have the same dimensions are also used.  And other modes
 are ignored.
 
-Only the Diamond Viper VLB is supported.  Adding support for other
-vendors should be straightforward.  I have no Viper PCI to test code
-for it on so please send email to nygren@mit.edu if you have one.  If
-you have an Orchid P9000 or no-name P9000 card, contact
-harry@brain.jpl.nasa.gov.  I've never heard of anyone with an EISA
-board so I don't know if they'll work...  Diamond has actually been
-fairly open and helpful.  No NDA's were signed by anyone who wrote
-code and Diamond claims that none of the information they provided is
-proprietary.
+Diamond has actually been fairly open and helpful.  No NDA's were
+signed by anyone who wrote code and Diamond claims that none of the
+information they provided is proprietary.
 
 One unresolved issue is the maximum clock speed.  It is currently set
 to 135 MHz with a warning printed over 110 MHz.  Diamond claims that
@@ -106,10 +146,10 @@ ACCEL
   Viewport      0 0
   Modes         "1024x768" "1024x768i" "800x600" "640x480"
   VideoRAM      2048
-  ChipSet       "p9000"
+  ChipSet       "vipervlb"
   Clocks        81 50 31 87 115 25
   MemBase       0x80000000
-#  Option        "sw_cursor" "sync_on_green"
+#  Option        "sw_cursor" "sync_on_green" "noaccel"
 
 # DO NOT USE THESE VALUES!!!  THEY ARE PROVIDED AS AN EXAMPLE ONLY.
 # DO NOT BLINDLY USE VIDEO MODES WITHOUT UNDERSTANDING WHAT YOU ARE
@@ -130,8 +170,11 @@ Major contributors to P9000 code:
         Harry Langenbacher (harry@brain.jpl.nasa.gov)
 	Chris Mason (mason@mail.csh.rit.edu)
 
-Thanks to Andy, David, Dave, Michael, all the XFree86 core team people, and
-everyone else!
+Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
+(bob@interaccess.com) for helping to get the Viper PCI server working.
+
+Thanks to Andy, David, Dave, Michael, Bob, all the XFree86 core team
+people, and everyone else!
 
 Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu)
 whose banking patch could unfortunately not be included.
@@ -139,4 +182,4 @@ whose banking patch could unfortunately not be included.
 --------------------------------------------------------------------
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.1 1994/07/15 07:03:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.2 1994/07/24 11:50:18 dawes Exp $

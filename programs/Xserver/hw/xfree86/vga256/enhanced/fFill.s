@@ -138,14 +138,16 @@ GL_RROP_NAME:
 .byteloop:
 	RROPB	(fillb,REGIND(pdst))
 	LEA_L	(REGBID(widthPitch,pdst,1),pdst)
-	LOOP	(.byteloop)
+	DEC_L	(ECX)	
+	JNZ	(.byteloop)
 	JMP	(.finish)
 
 	ALIGNTEXT4
 .wordloop:
 	RROPW	(fillw,REGIND(pdst))
 	LEA_L	(REGBID(widthPitch,pdst,2),pdst)
-	LOOP	(.wordloop)
+	DEC_L	(ECX)	
+	JNZ	(.wordloop)
 	JMP	(.finish)
 
 	ALIGNTEXT4
@@ -153,7 +155,8 @@ GL_RROP_NAME:
 	RROPW	(fillw,REGIND(pdst))
 	RROPB	(fillb,REGOFF(2,pdst))
 	LEA_L	(REGBID(widthPitch,pdst,3),pdst)
-	LOOP	(.tribbleloop)
+	DEC_L	(ECX)	
+	JNZ	(.tribbleloop)
 	JMP	(.finish)
 
 #undef count
@@ -197,7 +200,8 @@ GL_RROP_NAME:
 	ALIGNTEXT4ifNOP
 .loop0: RROPL	(fill,REGIND(pdst))
 	ADD_L	(CONST(4),pdst)
-	LOOP	(.loop0)
+	DEC_L	(ECX)	
+	JNZ	(.loop0)
 .endloop:
 #endif
 	TEST_L	(CONST(2),CONTENT(countt))

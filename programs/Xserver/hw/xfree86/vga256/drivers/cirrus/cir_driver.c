@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.6 1994/08/01 12:15:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.7 1994/08/20 07:36:24 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -65,7 +65,15 @@
 
 /* Allow optional Memory-Mapped I/O on 543x. */
 
+#if defined(__GNUC__) || defined(__STDC__)
+
 #define CIRRUS_SUPPORT_MMIO
+
+#endif
+
+/* Allow optional linear addressing. */
+
+#define CIRRUS_SUPPORT_LINEAR
 
 
 #include "X.h"
@@ -76,6 +84,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
+#include "xf86Procs.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
@@ -104,6 +113,8 @@ Bool cirrusUseBLTEngine = FALSE;
 Bool cirrusUseMMIO = FALSE;
 Bool cirrusMMIOFlag = FALSE;
 unsigned char *cirrusMMIOBase = NULL;
+Bool cirrusUseLinear = FALSE;
+Bool cirrusFavourBLT = FALSE;
 
 #define CLGD5420_ID 0x22
 #define CLGD5422_ID 0x23
@@ -194,6 +205,9 @@ vgaVideoChipRec CIRRUS = {
   VGA_DIVIDE_VERT,		/* ChipInterlaceType -- don't divide verts */
   {0,},				/* ChipOptionFlags */
   8,				/* ChipRounding */
+  FALSE,			/* ChipUseLinearAddressing */
+  0,				/* ChipLinearBase */
+  0x100000,			/* ChipLinearSize */
 };
 
 /*
@@ -233,6 +247,17 @@ static cirrusClockRec cirrusClockTab[] = {
   { 0x7B, 0x20 },		/* 110.069 */
 };
 
+/* Doubled clocks for 16-bit clocking mode with pixel clock ~< 45 MHz. */
+
+static cirrusClockRec cirrusDoubleClockTab[] = {
+  { 0x51, 0x2E },		/* 50.424 =~ 2 * 25.227 */
+  { 0x5B, 0x2E },		/* 55.649 =~ 2 * 28.325 */
+  { 0x5C, 0x20 }, 		/* 82.328 =~ 2 * 41.164 */
+  { 0x79, 0x19 },		/* 72.186 =~ 2 * 36.082 */
+  { 0x58, 0x15 },		/* 62.999 =~ 2 * 31.500 */
+  { 0x5f, 0x22 }		/* 80.012 =~ 2 * 39.992 */
+};
+
 /* Lowest clock number for which multiplexing is required on the 5434. */
 #define CLOCK_MULTIPLEXING 14
 
@@ -245,35 +270,54 @@ static cirrusClockRec cirrusClockTab[] = {
 #define CLOCKVAL(n, d) \
      ((((n) & 0x7F) * CLOCK_FACTOR / ((d) & 0x3E)) >> ((d) & 1))
 
-int cirrusClockLimit[] = {
+static int cirrusClockLimit[] = {
 #ifdef MONOVGA
   80100,	/* 5420 */
 #else
   50200,	/* 5420 */
 #endif
+#ifdef XF86SVGA16BPP
+#if 1	/* Assumes dot clock is doubled automatically for clocks < 42.300. */
+  40100,	/* 5422 */
+  40100,	/* 5424 */
+  42300,	/* 5426 (can do 45 MHz+ with special mode) */ 
+  42300,	/* 5428 */ 
+  42300,	/* 5429 */ 
+#else
   80100,	/* 5422 */
   80100,	/* 5424 */
   85500,	/* 5426 */
   85500,	/* 5428 */
   85500,	/* 5429 */
-
-/* just guessing.... dwex */
-  75200,	/* 6205 */
-  75200,	/* 6215 */
-  75200,	/* 6225 */
-  75200,	/* 6235 */
+#endif
+#else
+  80100,	/* 5422 */
+  80100,	/* 5424 */
+  85500,	/* 5426 */
+  85500,	/* 5428 */
+  85500,	/* 5429 */
+#endif
+  45100,	/* 6205 */
+  45100,	/* 6215 */
+  45100,	/* 6225 */
+  45100,	/* 6235 */
   /*
    * The 5434 should be able to do 110+ MHz, but requires a mode of operation
    * not yet supported by this server to do it.  Without this it is limited
    * to 85MHz.
    * Multiplexing has now been added, but is untested -- HH.
    */
-#if defined(ALLOW_8BPP_MULTIPLEXING) && !defined(XF86SVGA16BPP) && !defined(MONOVGA)
+#ifdef XF86SVGA16BPP
+  42300,	/* 5434 (can do up to 90 MHz with special mode) */
+  42300,	/* 5430 (can do 45 MHz+) */
+#else
+#if defined(ALLOW_8BPP_MULTIPLEXING) && !defined(MONOVGA)
   110100,
 #else
   85500,	/* 5434 */
 #endif
   85500,	/* 5430 */
+#endif
 };
 
 /* Setting of the CRT FIFO threshold for each dot clock. There is a */
@@ -300,6 +344,22 @@ static unsigned char aggressive_FIFO_setting[] = {
 
 #define new ((vgacirrusPtr)vgaNewVideoState)
 
+static SymTabRec chipsets[] = {
+  { CLGD5420,	"clgd5420" },
+  { CLGD5422,	"clgd5422" },
+  { CLGD5424,	"clgd5424" },
+  { CLGD5426,	"clgd5426" },
+  { CLGD5428,	"clgd5428" },
+  { CLGD5429,	"clgd5429" },
+  { CLGD5430,	"clgd5430" },
+  { CLGD5434,	"clgd5434" },
+  { CLGD6205,	"clgd6205" },
+  { CLGD6215,	"clgd6215" },
+  { CLGD6225,	"clgd6225" },
+  { CLGD6235,	"clgd6235" },
+  { -1,		"" },
+};
+
 /*
  * cirrusIdent -- 
  */
@@ -307,16 +367,10 @@ static char *
 cirrusIdent(n)
      int n;
 {
-  static char *chipsets[] = {"clgd5420", "clgd5422", "clgd5424", "clgd5426",
-			     "clgd5428", "clgd5429",
-			     "clgd6205", "clgd6215", "clgd6225", "clgd6235",
-			     "clgd5434", "clgd5430"
-			    };
-
-  if (n + 1 > sizeof(chipsets) / sizeof(char *))
+  if (chipsets[n].token < 0)
     return(NULL);
-  else
-    return(chipsets[n]);
+  else 
+    return(chipsets[n].name);
 }
 
 /*
@@ -336,7 +390,7 @@ cirrusCheckClock(chip, clockno)
   if (clockval > cirrusClockLimit[chip])
   {
     ErrorF("CIRRUS: clock %7.3f is too high for %s (max is %7.3f)\n",
-	   clockval / 1000.0, cirrusIdent(chip),
+	   clockval / 1000.0, xf86TokenToString(chipsets, chip),
 	   cirrusClockLimit[chip] / 1000.0);
 
 #ifdef ALLOW_OUT_OF_SPEC_CLOCKS
@@ -498,14 +552,7 @@ cirrusProbe()
 	       ErrorF("the names listed by the -showconfig option\n");
 	       return(FALSE);
                }
-	  cirrusChip = -1;
-	  for (i = CLGD5420; i <= LASTCLGD; i++)
-	       {
-	       if (!StrCaseCmp(vga256InfoRec.chipset, cirrusIdent(i)))
-	            {
-	            cirrusChip = i;
-	            }
-	       }
+	  cirrusChip = xf86StringToToken(chipsets, vga256InfoRec.chipset);
 	  if (cirrusChip >= 0)
 	       {
 	       cirrusEnterLeave(ENTER); /* Make the timing regs writable */
@@ -617,8 +664,8 @@ cirrusProbe()
      /* OK, we are a Cirrus */
 
 #ifdef XF86SVGA16BPP
-     if (Is_62x5(cirrusChip)) {
-         ErrorF("Cirrus 62x5 chipsets not supported in 16bpp server\n");
+     if (Is_62x5(cirrusChip) || cirrusChip == CLGD5420) {
+         ErrorF("Cirrus 62x5 and 5420 chipsets not supported in 16bpp server\n");
          cirrusEnterLeave(LEAVE);
          return(FALSE);
      }
@@ -765,12 +812,14 @@ cirrusProbe()
 		  	}
 	       }
 	  }
+#if 0
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
      if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
          vga256InfoRec.videoRam--;
          ErrorF("%s %s: %s\n", XCONFIG_PROBED, vga256InfoRec.name,
 		"available videoram reduced by 1k to allow for scratch space");
      }
+#endif
 #endif
      /* 
       * Banking granularity is 16k for the 5426, 5428 or 5429
@@ -803,7 +852,7 @@ cirrusProbe()
 		      cirrusClockNo);
 	       }
 	  
-     vga256InfoRec.chipset = cirrusIdent(cirrusChip);
+     vga256InfoRec.chipset = xf86TokenToString(chipsets, cirrusChip);
      vga256InfoRec.bankedMono = TRUE;
 #ifdef ALLOW_OUT_OF_SPEC_CLOCKS
      vga256InfoRec.maxClock = MAX_OUT_OF_SPEC_CLOCK;
@@ -816,13 +865,24 @@ cirrusProbe()
      ErrorF("CIRRUS: Warning: Out of spec clocks can be enabled\n");
 #endif
      OFLG_SET(OPTION_NOACCEL, &CIRRUS.ChipOptionFlags);
-     OFLG_SET(OPTION_SLOW_DRAM, &CIRRUS.ChipOptionFlags);
      OFLG_SET(OPTION_PROBE_CLKS, &CIRRUS.ChipOptionFlags);
-     OFLG_SET(OPTION_FAST_DRAM, &CIRRUS.ChipOptionFlags);
-     OFLG_SET(OPTION_FIFO_CONSERV, &CIRRUS.ChipOptionFlags);
-     OFLG_SET(OPTION_FIFO_AGGRESSIVE, &CIRRUS.ChipOptionFlags);
-     OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
-     OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
+     OFLG_SET(OPTION_LINEAR, &CIRRUS.ChipOptionFlags);
+     if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) ||
+     cirrusChip == CLGD5434 || cirrusChip == CLGD5430) {
+         OFLG_SET(OPTION_SLOW_DRAM, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_MED_DRAM, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_FAST_DRAM, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_FIFO_CONSERV, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_FIFO_AGGRESSIVE, &CIRRUS.ChipOptionFlags);
+     }
+     if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429) ||
+     cirrusChip == CLGD5434 || cirrusChip == CLGD5430) {
+         OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_FAVOUR_BITBLT, &CIRRUS.ChipOptionFlags);
+     }
+     if (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
+         OFLG_SET(OPTION_MMIO, &CIRRUS.ChipOptionFlags);
      return(TRUE);
 }
 
@@ -843,7 +903,24 @@ cirrusFbInit()
   /* An we can't write to video memory yet to measure it. */
   /* It appears color expansion works well even on a slow bus, so we */
   /* use it with any type of bus. The busspeed is hardwired to fast. */
-  cirrusBusType = CIRRUS_FASTBUS;
+  cirrusBusType = CIRRUS_BUS_FAST;
+  if (HAVE543X()) {
+  	/* On the 543x, it is possible to read the configuration register */
+  	/* to find out the bus interface. */
+  	outb(0x3c4, 0x17);
+  	switch ((inb(0x3c5) >> 3) & 7) {
+  	case 2 :	/* VLB > 33 MHz */
+  	case 6 :	/* VLB at 33 MHz or less */
+  		cirrusBusType = CIRRUS_BUS_VLB;
+  		break;
+  	case 4 :	/* PCI */
+  		cirrusBusType = CIRRUS_BUS_PCI;
+  		break;
+  	case 7 :	/* ISA */
+  		cirrusBusType = CIRRUS_BUS_ISA;
+  		break;
+  	}
+  }
 
   cirrusUseBLTEngine = FALSE;
   if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
@@ -868,8 +945,9 @@ cirrusFbInit()
       outb(0x3c4, 0x0f);
       SRF = inb(0x3c5);
       outb(0x3c4, 0x1f);
-      ErrorF("%s %s: Internal memory clock register value is 0x%02x (%s RAS)\n",
-        XCONFIG_PROBED, cirrusIdent(cirrusChip), inb(0x3c5),
+      ErrorF(
+	"%s %s: %s: Internal memory clock register value is 0x%02x (%s RAS)\n",
+        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, inb(0x3c5),
         (SRF & 4) ? "Standard" : "Extended");
       
       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
@@ -884,30 +962,89 @@ cirrusFbInit()
       	   * On one card tested, with 80ns DRAM, 0x26 seems stable.
       	   */
 	  outw(0x3c4, 0x221f);		/* Set to 0x22 (about 62 MHz). */
-          ErrorF("%s %s: Internal memory clock register set to 0x22\n",
-            XCONFIG_GIVEN, cirrusIdent(cirrusChip));
+          ErrorF("%s %s: %s: Internal memory clock register set to 0x22\n",
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
 	  }
 
       if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
           {
           outw(0x3c4, 0x1c1f);		/* Set to 0x1c (50.1 MHz). */
-          ErrorF("%s %s: Internal memory clock register set to 0x1c\n",
-            XCONFIG_GIVEN, cirrusIdent(cirrusChip));
+          ErrorF("%s %s: %s: Internal memory clock register set to 0x1c\n",
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+          }
+
+      if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
+          {
+          outw(0x3c4, 0x1f1f);		/* Set to 0x1f. */
+          ErrorF("%s %s: %s: Internal memory clock register set to 0x1f\n",
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
           }
       }
 
+#ifdef CIRRUS_SUPPORT_LINEAR
+    if (xf86LinearVidMem() &&
+    OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) {
+        cirrusUseLinear = TRUE;
+        CIRRUS.ChipUseLinearAddressing = TRUE;
+        if (vga256InfoRec.MemBase != 0)
+            CIRRUS.ChipLinearBase = vga256InfoRec.MemBase;
+        else
+            if (HAVE543X()) {
+                if (cirrusBusType == CIRRUS_BUS_ISA) {
+		    ErrorF("%s %s: %s: Must specify MemBase for ISA bus linear "
+		           "addressing\n", XCONFIG_PROBED,
+		           vga256InfoRec.name, vga256InfoRec.chipset);
+                    goto nolinear;
+		}
+                if (cirrusBusType == CIRRUS_BUS_VLB)
+                    /* 64MB is standard. */
+        	    /* A documented jumper option is 2048MB. */
+        	    /* 32MB is an option for more recent cards. */
+        	    CIRRUS.ChipLinearBase = 0x4000000;	/* 64MB */
+                if (cirrusBusType == CIRRUS_BUS_PCI) {
+                    CIRRUS.ChipUseLinearAddressing = FALSE;
+		    ErrorF("%s %s: %s: Sorry, I don't know how to read the "
+		       "PCI Base Address\n", XCONFIG_PROBED,
+		       vga256InfoRec.name, vga256InfoRec.chipset);
+		    goto nolinear;
+		}
+	    }
+            else {
+                /* Some recent 542x-based cards should map at 64MB, others */
+                /* can only map at 14MB. */
+	        ErrorF("%s %s: %s: Must specify MemBase for 542x linear "
+		       "addressing\n", XCONFIG_PROBED,
+		       vga256InfoRec.name, vga256InfoRec.chipset);
+                goto nolinear;
+            }
+        CIRRUS.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+        ErrorF("%s %s: %s: Using linear framebuffer at 0x%08x (%dMB)\n",
+	    XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+	    CIRRUS.ChipLinearBase, (unsigned int)CIRRUS.ChipLinearBase
+	    / (1024 * 1024));
+	if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429 &&
+	OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+            ErrorF("%s %s: %s: Warning: fast_dram option not recommended"
+                "with linear addressing\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+    }
+nolinear:
+    ;
+#endif
+
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
+
   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
     int size;
     if (xf86Verbose)
       {
-        ErrorF ("%s %s: Using accelerator functions\n",
-	    XCONFIG_PROBED, cirrusIdent (cirrusChip) );
+        ErrorF ("%s %s: %s: Using accelerator functions\n",
+	    XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
       }
 
     /* Accel functions are available on all chips; some use the BitBLT */
     /* engine if available. */
- 
+
     vga256LowlevFuncs.doBitbltCopy = CirrusDoBitbltCopy;
     vga256LowlevFuncs.fillRectSolidCopy = CirrusFillRectSolidCopy;
     vga256LowlevFuncs.fillBoxSolid = CirrusFillBoxSolid;
@@ -949,28 +1086,32 @@ cirrusFbInit()
 
     CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
     size = CirrusInitializeAllocator(CirrusMemTop);
-    ErrorF("%s %s: %d bytes off-screen memory available\n",
-        XCONFIG_PROBED, cirrusIdent(cirrusChip), size);
+    ErrorF("%s %s: %s: %d bytes off-screen memory available\n",
+        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, size);
 
     if (HAVEBITBLTENGINE()) {
     	/* Need 256 bytes for BitBLT fills. */
         cirrusBLTPatternAddress = CirrusAllocate(256);
         if (cirrusBLTPatternAddress == -1) {
             cirrusUseBLTEngine = FALSE;
-            ErrorF("%s %s: Too little space: cannot use BitBLT engine\n",
-	        XCONFIG_PROBED, cirrusIdent(cirrusChip), size);
+            ErrorF("%s %s: %s: Too little space: cannot use BitBLT engine\n",
+	        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
+		size);
 	}
 	else {
-            ErrorF("%s %s: Using BitBLT engine\n",
-	        XCONFIG_PROBED, cirrusIdent(cirrusChip));
+            ErrorF("%s %s: %s: Using BitBLT engine\n",
+	        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
 	    vga256LowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
 #endif	
+            if (OFLG_ISSET(OPTION_FAVOUR_BITBLT, &vga256InfoRec.options))
+                /* Use BitBLT engine in more cases. */
+                cirrusFavourBLT = TRUE;
 	}
-    if (vga256InfoRec.virtualX & 31 != 0)
-        ErrorF("%s %s: Warning: virtual screen width not multiple of 32\n",
-            XCONFIG_GIVEN, cirrusIdent(cirrusChip), size);
     }
+    if (vga256InfoRec.virtualX & 31 != 0)
+        ErrorF("%s %s: %s: Warning: virtual screen width not multiple of 32\n",
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset, size);
 
 #ifdef CIRRUS_SUPPORT_MMIO
     /* Optional Memory-Mapped I/O. */
@@ -979,8 +1120,8 @@ cirrusFbInit()
         cirrusUseMMIO = TRUE;
         /* We can't set cirrusMMIOBase, since vgaBase hasn't been */
         /* mapped yet. For now we do that in the init function. */
-        ErrorF("%s %s: Using Memory-Mapped I/O\n",
-            XCONFIG_GIVEN, cirrusIdent(cirrusChip));
+        ErrorF("%s %s: %s: Using Memory-Mapped I/O\n",
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
     }
 #endif
 
@@ -1049,6 +1190,9 @@ cirrusRestore(restore)
   outb(0x3C4,0x0F);		/* Restoring this registers avoids */
   outb(0x3C5,restore->SRF);	/* textmode corruption on 2Mb cards. */
 
+  outb(0x3C4,0x07);		/* This will disable linear addressing */
+  outb(0x3C5,restore->SR7);	/* if enabled. */
+
   vgaHWRestore((vgaHWPtr)restore);
 
 /*  unsigned char GR9;		 Graphics Offset1 */
@@ -1076,9 +1220,6 @@ cirrusRestore(restore)
 
   outb(0x3CE,0x0B);
   outb(0x3CF,restore->GRB);
-
-  outb(0x3C4,0x07);
-  outb(0x3C5,restore->SR7);
 
   if (restore->std.NoClock >= 0)
        {
@@ -1123,12 +1264,14 @@ cirrusRestore(restore)
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
 #if defined(ALLOW_8BPP_MULTIPLEXING)
   if (cirrusChip == CLGD5434) {
+      inb(0x3c8);
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
       outb(0x3c6, restore->HIDDENDAC);
   }
 #endif
 #endif
 #ifdef XF86SVGA16BPP
+  inb(0x3c8);
   inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
   outb(0x3c6, restore->HIDDENDAC);
 #endif
@@ -1153,7 +1296,11 @@ cirrusRestore(restore)
        outb(vgaIOBase + 5, (i & 0x7f));
        }
 
+#if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
+
   CirrusInvalidateShadowVariables();
+
+#endif
 }
 
 /*
@@ -1243,12 +1390,14 @@ cirrusSave(save)
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
 #if defined(ALLOW_8BPP_MULTIPLEXING)
   if (cirrusChip == CLGD5434) {
+      inb(0x3c8);
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
       save->HIDDENDAC = inb(0x3c6);
   }
 #endif
 #endif
 #ifdef XF86SVGA16BPP
+  inb(0x3c8);
   inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
   save->HIDDENDAC = inb(0x3c6);
 #endif
@@ -1348,6 +1497,13 @@ cirrusInit(mode)
           SR = cirrusClockTab[new->std.NoClock].numer;
           SR1 = cirrusClockTab[new->std.NoClock].denom;
 
+#ifdef XF86SVGA16BPP
+	  /* Currently we only support the clocking mode whereby */
+	  /* the programmed VCLK is double the pixel rate. */
+	  SR = cirrusDoubleClockTab[new->std.NoClock].numer;
+	  SR1 = cirrusDoubleClockTab[new->std.NoClock].denom;
+#endif
+
 				/* Be nice to the reserved bits... */
           outb(0x3C4,0x0E);
           tempreg = inb(0x3C5);
@@ -1368,6 +1524,11 @@ cirrusInit(mode)
 
 				/* Enable Dual Banking */
      new->GRB = 0x01;
+#ifdef CIRRUS_SUPPORT_LINEAR
+     if (cirrusUseLinear)
+     	 /* Linear addressing requires single-banking to be set. */
+         new->GRB = 0x00;
+#endif         
 
      /* Initialize the read and write bank such a way that we initially */
      /* have an effective 64K window at the start of video memory. */
@@ -1449,17 +1610,18 @@ cirrusInit(mode)
 	  {
 	  new->GRB |= 0x20;	/* Set 16k bank granularity */
 	  if (cirrusChip != CLGD5434)
-#ifdef XF86SVGA16BPP
-	      if (vga256InfoRec.virtualX * vga256InfoRec.virtualY * 2 >
-	      (1024 * 1024)
-#endif
 #ifdef MONOVGA
 	      if (vga256InfoRec.virtualX * vga256InfoRec.virtualY / 2 >
 	      (1024 * 1024)
 #endif
-#if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
+#if !defined(MONOVGA)
+	      /* We want to be able to use all off-screen memory in */
+	      /* principle. */
+	      if (vga256InfoRec.videoRam == 2048
+#if 0
 	      if (vga256InfoRec.virtualX * vga256InfoRec.virtualY + 256 >
 	      (1024 * 1024)
+#endif
 #endif
 	      && !OFLG_ISSET(OPTION_NO_2MB_BANKSEL, &vga256InfoRec.options))
 	          new->SRF |= 0x80;	/* Enable the second MB. */
@@ -1489,6 +1651,10 @@ cirrusInit(mode)
 #endif     
 #endif
 
+#ifdef CIRRUS_SUPPORT_LINEAR
+     if (cirrusUseLinear)
+         new->SR7 |= 0x0E << 4;	/* Map at 14Mb. */
+#endif
 #if 0
 				/* Try Linear Addressing. */
      new->SR7 |= ( ((int) vgaBase) >> 16) & 0x0000F0;
@@ -1555,7 +1721,10 @@ VirtX = %x\n",
 
      new->HIDDENDAC = 0;
 #ifdef XF86SVGA16BPP
-     new->HIDDENDAC = 0xc0;	/* 5-5-5 RGB mode */
+     if (xf86weight.red == 5 && xf86weight.green == 5 && xf86weight.blue == 5)
+         new->HIDDENDAC = 0xf0;	/* 5-5-5 RGB mode */
+     if (xf86weight.red == 5 && xf86weight.green == 6 && xf86weight.blue == 5)
+         new->HIDDENDAC = 0xe1;	/* 5-6-5 RGB mode */
 #endif
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
 #if defined(ALLOW_8BPP_MULTIPLEXING)
@@ -1611,9 +1780,14 @@ cirrusAdjust(x, y)
      unsigned char lsb = Base & 7;
      Base >>= 3;
 #else
+#ifdef XF86SVGA16BPP
+     int Base = (y * vga256InfoRec.displayWidth + x) << 1;
+     Base >>= 2;
+#else
      int Base = (y * vga256InfoRec.displayWidth + x);
      unsigned char lsb = Base & 3;
      Base >>= 2;
+#endif
 #endif
      outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
      outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);

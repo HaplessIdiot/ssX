@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fill.c,v 1.1 94/03/28 21:49:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.3 1994/07/24 11:56:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.4 1994/08/20 07:36:27 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -143,7 +143,8 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	       *   faster.
 	       *   For 5434 (speculative), the bitblt engine is used.
 	       */
-	      if ((!HAVEBITBLTENGINE() || w >= 10 || h >= 10) && !HAVE543X()) {
+	      if ((!HAVEBITBLTENGINE() || w >= 11 || h >= 11) && !HAVE543X()
+		  && !cirrusFavourBLT) {
                   /* For small sizes, we use the specific function */
                   /* widths (which is not really accelerated). */          
                   if (w < 10 && h < 10) {
@@ -184,7 +185,9 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
               	      pixel2, alu);
               	  continue;
               }
+#if 0	/* Seems to give problems. */
               cirrusDoBackgroundBLT = TRUE;
+#endif
               if (cirrusUseMMIO)
 	          CirrusMMIOBLTColorExpand8x8PatternFill(dstAddr, pixel1, pixel2,
 	              w, h, widthDst, cirrus_rop[alu], 0xffffffff, 0xffffffff);
