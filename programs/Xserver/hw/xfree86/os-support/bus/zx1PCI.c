@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.4tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -391,14 +391,15 @@ GetZX1BridgeResources(int bus,
 static CARD32
 zx1FakeReadLong(PCITAG tag, int offset)
 {
-    FatalError("zx1FakeReadLong(0x%X, 0x%X) called\n", tag, offset);
+    FatalError("zx1FakeReadLong(0x%lX, 0x%X) called\n",
+	       (unsigned long)tag, offset);
 }
 
 static void
 zx1FakeWriteLong(PCITAG tag, int offset, CARD32 val)
 {
-    FatalError("zx1FakeWriteLong(0x%X, 0x%X, 0x%08X) called\n",
-	       tag, offset, val);
+    FatalError("zx1FakeWriteLong(0x%lX, 0x%X, 0x%08X) called\n",
+	       (unsigned long)tag, offset, val);
 }
 
 static void

@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.2tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.3tsi Exp $
  */
 
 #include "xf86.h"
@@ -261,7 +261,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	    xf86ErrorFVerb(DEBUG_VERB,
 		    "	LinRsvdFieldPosition: %d\n", mode->LinRsvdFieldPosition);
 	    xf86ErrorFVerb(DEBUG_VERB,
-		    "	MaxPixelClock: %ld\n", mode->MaxPixelClock);
+		    "	MaxPixelClock: %ld\n", (unsigned long)mode->MaxPixelClock);
 	}
     }
 

@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_api.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_api.c,v 1.8tsi Exp $ */
 
 /*
  * This file contains the implementations of all the XMesa* functions.
@@ -882,6 +882,8 @@ static GLboolean setup_grayscale( int client, XMesaVisual v,
 static GLboolean setup_dithered_color( int client, XMesaVisual v,
                                        XMesaBuffer buffer, XMesaColormap cmap )
 {
+   (void) DitherValues;		/* Muffle compiler */
+
    if (GET_VISUAL_DEPTH(v)<4 || GET_VISUAL_DEPTH(v)>16) {
       return GL_FALSE;
    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.84tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.85tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -711,7 +711,7 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 #endif /* __powerpc__ */
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "PLL parameters: rf=%d rd=%d min=%ld max=%ld; xclk=%d\n",
+	       "PLL parameters: rf=%d rd=%d min=%d max=%d; xclk=%d\n",
 	       pll->reference_freq,
 	       pll->reference_div,
 	       pll->min_pll_freq,

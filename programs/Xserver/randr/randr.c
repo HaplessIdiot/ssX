@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.20tsi Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.21tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -538,7 +538,7 @@ ProcRRGetScreenInfo (ClientPtr client)
     ScreenPtr		    pScreen;
     rrScrPrivPtr	    pScrPriv;
     CARD8		    *extra;
-    int			    extraLen;
+    unsigned long	    extraLen;
 
     REQUEST_SIZE_MATCH(xRRGetScreenInfoReq);
     pWin = (WindowPtr)SecurityLookupWindow(stuff->window, client,
@@ -660,8 +660,8 @@ ProcRRGetScreenInfo (ClientPtr client)
 	data8 = (CARD8 *) rates;
 
 	if (data8 - (CARD8 *) extra != extraLen)
-	    FatalError ("RRGetScreenInfo bad extra len %d != %d\n",
-			data8 - (CARD8 *) extra, extraLen);
+	    FatalError ("RRGetScreenInfo bad extra len %ld != %ld\n",
+			(unsigned long)(data8 - (CARD8 *) extra), extraLen);
 	rep.length =  (extraLen + 3) >> 2;
     }
     if (client->swapped) {

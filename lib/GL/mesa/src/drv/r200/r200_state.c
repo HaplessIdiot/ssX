@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.4 2003/02/23 23:59:01 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.5tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,6 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "api_arrayelt.h"
 #include "enums.h"
 #include "colormac.h"
+#include "state.h"
 
 #include "swrast/swrast.h"
 #include "array_cache/acache.h"

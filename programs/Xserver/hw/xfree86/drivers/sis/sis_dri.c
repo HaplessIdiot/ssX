@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.35tsi Exp $ */
 /*
  *  DRI wrapper for 300 and 315 series
  *
@@ -359,9 +359,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
       fb.size = pSIS->DRIheapend - pSIS->DRIheapstart;
       drmCommandWrite(pSIS->drmSubFD, DRM_SIS_FB_INIT, &fb, sizeof(fb));
       xf86DrvMsg(pScreen->myNum, X_INFO,
-                 "[dri] DRI video RAM memory heap: 0x%x to 0x%x (%dKB)\n",
+                 "[dri] DRI video RAM memory heap: 0x%lx to 0x%lx (%dKB)\n",
                  pSIS->DRIheapstart, pSIS->DRIheapend,
-                 (pSIS->DRIheapend - pSIS->DRIheapstart) >> 10);
+                 (int)((pSIS->DRIheapend - pSIS->DRIheapstart) >> 10));
     }
     drmFreeVersion(version);
   }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.15 2003/06/18 16:17:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.16tsi Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -299,9 +299,9 @@ unsigned int GetBlendForFourCC( int id )
 void myOUTREG( SavagePtr psav, unsigned long offset, unsigned long value )
 {
     ErrorF( "MMIO %04lx, was %08lx, want %08lx,", 
-	offset, MMIO_IN32( psav->MapBase, offset ), value );
+	offset, (unsigned long)MMIO_IN32( psav->MapBase, offset ), value );
     MMIO_OUT32( psav->MapBase, offset, value );
-    ErrorF( " now %08lx\n", MMIO_IN32( psav->MapBase, offset ) );
+    ErrorF( " now %08lx\n", (unsigned long)MMIO_IN32( psav->MapBase, offset ) );
 }
 
 void SavageInitStreamsOld(ScrnInfoPtr pScrn)

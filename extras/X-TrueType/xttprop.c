@@ -30,7 +30,7 @@
 
 Notice===
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/X-TrueType/xttprop.c,v 1.5tsi Exp $ */
 
 #include "xttversion.h"
 
@@ -240,6 +240,8 @@ freetype_compute_props(FontInfoPtr pinfo,
         case average_width:
             pp->value = vals->width;
             break;
+	default:
+	    break;
         }
     }
 

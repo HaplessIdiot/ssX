@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.24 2002/11/25 21:05:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.25tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -145,7 +145,7 @@ void
 dump_code(xf86Int10InfoPtr pInt)
 {
     int i;
-    CARD32 lina = SEG_ADR((CARD32), X86_CS, IP);
+    unsigned long lina = SEG_ADR((CARD32), X86_CS, IP);
 
     xf86DrvMsgVerb(pInt->scrnIndex, X_INFO, 3, "code at 0x%8.8lx:\n", lina);
     for (i=0; i<0x10; i++)
@@ -180,8 +180,8 @@ void
 stack_trace(xf86Int10InfoPtr pInt)
 {
     int i = 0;
-    CARD32 stack = SEG_ADR((CARD32), X86_SS, SP);
-    CARD32 tail  = (CARD32)((X86_SS << 4) + 0x1000);
+    unsigned long stack = SEG_ADR((CARD32), X86_SS, SP);
+    unsigned long tail  = (CARD32)((X86_SS << 4) + 0x1000);
 
     if (stack >= tail) return;
 

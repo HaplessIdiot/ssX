@@ -38,7 +38,7 @@
  *
  */
 
-/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glw/GLwDAUtil.c,v 1.2 2000/11/02 20:39:06 dawes Exp $ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glw/GLwDAUtil.c,v 1.3tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -61,7 +61,7 @@
 #pragma weak _XmStrings				= _Xm_Stub_Pointer_
 #pragma weak xmPrimitiveClassRec		= _Xm_Stub_Pointer_
 
-static XtPointer _Xm_Stub_Pointer_ = NULL;
+XtPointer _Xm_Stub_Pointer_ = NULL;
 #endif
 
 void GLwDrawingAreaMakeCurrent (Widget w, GLXContext ctx)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.47tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.48tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -373,7 +373,8 @@ ResetBCI2K( SavagePtr psav )
 	! (ALT_STATUS_WORD0 & 0x00200000)
     )
     {
-	ErrorF( "Resetting BCI, stat = %08lx...\n", ALT_STATUS_WORD0);
+	ErrorF( "Resetting BCI, stat = %08lx...\n",
+		(unsigned long) ALT_STATUS_WORD0);
 	/* Turn off BCI */
 	OUTREG( 0x48c18, cob & ~8 );
 	usleep(10000);

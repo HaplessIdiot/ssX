@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_vdif.c,v 1.3 2003/02/17 16:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_vdif.c,v 1.4tsi Exp $ */
 
 #include "vdif.h"
 #include "misc.h"
@@ -27,7 +27,7 @@ print_vdif(xf86VdifPtr l, char *s)
     ErrorF(" Date: %i/%i/%i, Manufactured: %i/%i/%i\n",l->Date[0],
 	   l->Date[1],l->Date[2],l->DateManufactured[0],
 	   l->DateManufactured[1],l->DateManufactured[2]);
-    ErrorF("File Revision: %li",l->FileRevision);
+    ErrorF("File Revision: %i",l->FileRevision);
     ErrorF("Manufacturer: %s\n",s + l->Manufacturer);
     ErrorF("ModelNumber: %s\n",s + l->ModelNumber);
     ErrorF("VDIFIndex: %s\n",s +l->MinVDIFIndex);
@@ -47,11 +47,11 @@ print_vdif(xf86VdifPtr l, char *s)
     case VDIF_MONITOR_MONOCHROME:
 	ErrorF("Border:  %i percent\n",
 	       l->BorderRed);
-	ErrorF("Phosphor Decay: 1: %li,",l->RedPhosphorDecay);
+	ErrorF("Phosphor Decay: 1: %i,",l->RedPhosphorDecay);
 	if (l->GreenPhosphorDecay !=0)
-	    ErrorF(" 2: %li,",l->GreenPhosphorDecay);
+	    ErrorF(" 2: %i,",l->GreenPhosphorDecay);
 	if (l->BluePhosphorDecay !=0)
-	    ErrorF(" 3: %li",l->BluePhosphorDecay);
+	    ErrorF(" 3: %i",l->BluePhosphorDecay);
 	ErrorF(" ms\n");
 	if (l->RedChromaticity_x)
 	    ErrorF("Chromaticity: 1: x:%f, y:%f;  ",
@@ -68,7 +68,7 @@ print_vdif(xf86VdifPtr l, char *s)
     case VDIF_MONITOR_COLOR:
 	ErrorF("Border: Red: %i Green: %i Blue: %i percent\n",
 	       l->BorderRed,l->BorderGreen,l->BorderBlue);
-	ErrorF("Phosphor Decay: Red: %li, Green: %li, Blue: %li ms\n",
+	ErrorF("Phosphor Decay: Red: %i, Green: %i, Blue: %i ms\n",
 	       l->RedPhosphorDecay,l->GreenPhosphorDecay,l->BluePhosphorDecay);
 	ErrorF("Chromaticity: Red: x:%f, y:%f;  Green: x:%f, y:%f;  "
 	       "Blue: x:%f, y:%f\n",
@@ -138,7 +138,7 @@ print_timings(xf86VdifTimingPtr *pt)
     xf86VdifTimingPtr t;
 
     while((t = pt[i]) != NULL) {
-	ErrorF("SVGA / SVPMI mode number: %li\n",t->PreadjustedTimingName);
+	ErrorF("SVGA / SVPMI mode number: %i\n",t->PreadjustedTimingName);
 	ErrorF("Mode %i x %i\n",t->HorPixel,t->VerPixel);
 	ErrorF("Size: %i x %i mm\n",t->HorAddrLength,t->VerAddrHeight);
 	ErrorF("Ratios: %i/%i\n",t->PixelWidthRatio,t->PixelHeightRatio);

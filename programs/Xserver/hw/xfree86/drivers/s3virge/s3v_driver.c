@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.91 2003/09/24 02:43:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.92tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1908,10 +1908,10 @@ S3VSave (ScrnInfoPtr pScrn)
 
       xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
          "MMPR regs: %08lx %08lx %08lx %08lx\n",
-	     INREG(FIFO_CONTROL_REG), 
-	     INREG(MIU_CONTROL_REG), 
-	     INREG(STREAMS_TIMEOUT_REG), 
-	     INREG(MISC_TIMEOUT_REG));
+	     (unsigned long)INREG(FIFO_CONTROL_REG), 
+	     (unsigned long)INREG(MIU_CONTROL_REG), 
+	     (unsigned long)INREG(STREAMS_TIMEOUT_REG), 
+	     (unsigned long)INREG(MISC_TIMEOUT_REG));
        }
 
       PVERB5("\n\nViRGE driver: saved current video mode. Register dump:\n\n");

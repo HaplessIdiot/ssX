@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.17 2003/03/25 04:18:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.18tsi Exp $ */
 /*
  * includes
  */
@@ -230,8 +230,8 @@ verite_check_csucode(ScrnInfoPtr pScreenInfo)
     if (csrisc[c] != verite_read_memory32(vmb, offset)) {
       ErrorF("csucode mismatch in word %02d: 0x%08lx should be 0x%08lx\n",
 	     c,
-	     verite_read_memory32(vmb, offset),
-	     csrisc[c]);
+	     (unsigned long)verite_read_memory32(vmb, offset),
+	     (unsigned long)csrisc[c]);
       mismatches++;
     }
 #ifdef DEBUG

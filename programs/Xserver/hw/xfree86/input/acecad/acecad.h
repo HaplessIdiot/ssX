@@ -23,7 +23,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.h,v 1.1 2001/08/13 19:35:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.h,v 1.2tsi Exp $ */
 
 #ifndef	_ACECAD_H_
 #define _ACECAD_H_
@@ -88,8 +88,10 @@ typedef struct
 /******************************************************************************
  *		Declarations
  *****************************************************************************/
+#ifdef XFree86LOADER
 static MODULESETUPPROTO( SetupProc );
 static void TearDownProc (void *);
+#endif
 static Bool DeviceControl (DeviceIntPtr, int);
 static Bool DeviceOn (DeviceIntPtr);
 static Bool DeviceOff (DeviceIntPtr);

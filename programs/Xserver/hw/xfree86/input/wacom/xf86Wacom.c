@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.37tsi Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -896,7 +896,8 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 		int	macro = z / 2;
 
 		DBG(6, ErrorF("macro=%d buttons=%d wacom_map[%d]=%lx\n",
-			      macro, buttons, macro, wacom_map[macro]));
+			      macro, buttons, macro,
+			      (unsigned long)wacom_map[macro]));
 
 		/* First available Keycode begins at 8 => macro+7 */
 		xf86PostKeyEvent(local->dev, macro+7, 1,
