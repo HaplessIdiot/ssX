@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.20 2002/02/14 22:26:17 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.19 2001/11/08 21:49:44 herrb Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -33,6 +33,10 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#ifdef WSCONS_SUPPORT
+#define KBD_FD(i) ((i).kbdFd != -1 ? (i).kbdFd : (i).consoleFd)
+#endif
 
 void
 xf86SoundKbdBell(int loudness, int pitch, int duration)
@@ -70,7 +74,8 @@ xf86SoundKbdBell(int loudness, int pitch, int duration)
 			wsb.pitch = pitch;
 			wsb.period = duration;
 			wsb.volume = loudness;
-			ioctl(xf86Info.kbdFd, WSKBDIO_COMPLEXBELL, &wsb);
+			ioctl(KBD_FD(xf86Info), WSKBDIO_COMPLEXBELL, 
+				      &wsb);
 			break;
 #endif
 	    	}
@@ -90,6 +95,11 @@ xf86SetKbdLeds(int leds)
 		ioctl(xf86Info.consoleFd, KDSETLED, leds);
 		break;
 #endif
+#if defined(WSCONS_SUPPORT)
+	case WSCONS:
+		ioctl(KBD_FD(xf86Info), WSKBDIO_SETLEDS, &leds);
+		break;
+#endif
 	}
 }
 
@@ -107,6 +117,11 @@ xf86GetKbdLeds()
 	case PCVT:
 		ioctl(xf86Info.consoleFd, KDGETLED, &leds);
 		break;
+#endif
+#if defined(WSCONS_SUPPORT)
+	  case WSCONS:
+		  ioctl(KBD_FD(xf86Info), WSKBDIO_GETLEDS, &leds);
+		  break;
 #endif
 	}
 	return(leds);
