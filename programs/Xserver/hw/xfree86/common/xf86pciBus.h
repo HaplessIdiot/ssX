@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.h,v 3.6 2002/04/04 14:05:40 eich Exp $ */
 
 #ifndef _XF86_PCI_BUS_H
 #define _XF86_PCI_BUS_H
@@ -23,7 +23,7 @@ typedef struct {
     CARD32 ctrl;
 } pciArg;
 
-typedef struct pci_io {
+typedef struct {
     int    busnum;
     int    devnum;
     int    funcnum;
