@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.198 2003/02/26 09:21:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.199 2003/03/25 04:18:21 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1662,7 +1662,7 @@ xf86PrintBanner()
   ErrorF("X Protocol Version %d, Revision %d, %s\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, XORG_RELEASE );
   ErrorF("Build Operating System:%s%s\n", OSNAME, OSVENDOR);
-#ifdef BUILD_DATE
+#if defined(BUILD_DATE) && (BUILD_DATE > 19000000)
   {
     struct tm t;
     char buf[100];
@@ -1674,6 +1674,20 @@ xf86PrintBanner()
     t.tm_year = BUILD_DATE / 10000 - 1900;
     if (strftime(buf, sizeof(buf), "%d %B %Y", &t))
        ErrorF("Build Date: %s\n", buf);
+  }
+#endif
+#if defined(CLOG_DATE) && (CLOG_DATE > 19000000)
+  {
+    struct tm t;
+    char buf[100];
+
+    bzero(&t, sizeof(t));
+    bzero(buf, sizeof(buf));
+    t.tm_mday = CLOG_DATE % 100;
+    t.tm_mon = (CLOG_DATE / 100) % 100 - 1;
+    t.tm_year = CLOG_DATE / 10000 - 1900;
+    if (strftime(buf, sizeof(buf), "%d %B %Y", &t))
+       ErrorF("Changelog Date: %s\n", buf);
   }
 #endif
 #if defined(BUILDERSTRING)

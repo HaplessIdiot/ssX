@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.149 2003/04/21 12:32:08 sven Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.150 2003/05/19 14:47:33 tsi Exp $
 
 
 
@@ -187,9 +187,6 @@ CUSTOMVERSION = XFree86CustomVersion
   BUILDERSTRING = BuilderString
   BUILDERMSG = -DBUILDERSTRING='$(BUILDERSTRING)'
 #endif
-#if defined(BuildDate)
-    BUILD_DATE = BuildDate
-#endif
        XORGREL = XOrgReleaseString
    XORGREL_DEF = -DXORG_RELEASE='"$(XORGREL)"'
 
@@ -250,23 +247,6 @@ clean::
 	RemoveFile(xf86DefModeSet.c)
 #else
 LinkFile(xf86DefModeSet.c,xf86DefModes.c)
-#endif
-
-includes:: xf86Build.h
-
-clean::
-	RemoveFile(xf86Build.h)
-
-#if defined(BuildDate)
-xf86Build.h: FRC
-	RemoveFile($@)
-	echo "#define BUILD_DATE $(BUILD_DATE)" > $@
-
-FRC:
-#else
-xf86Build.h:
-	RemoveFile($@)
-	echo "" > $@
 #endif
 
 DependTarget()
