@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.17 2002/02/20 00:54:09 keithp Exp $
+XCOMM $XFree86: Imakefile,v 1.18 2002/05/23 23:01:56 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -102,18 +102,18 @@ all:: xft-config.script
 
 xft-config.script: xft-config.in
 	RemoveFile($@)
-	sh config/config-subst $(SUBSTVARS) < $< > $@
+	sh config/config-subst $(SUBSTVARS) < xft-config.in > $@
 
 InstallScript(xft-config,$(BINDIR))
 
 clean::
 	RemoveFile(xft-config.script)
-	
+
 all:: xft.pc
 
 xft.pc: xft.pc.in
 	RemoveFile($@)
-	sh config/config-subst $(SUBSTVARS) < $< > $@
+	sh config/config-subst $(SUBSTVARS) < xft.pc.in > $@
 
 InstallNonExecFile(xft.pc,$(USRLIBDIR)/pkgconfig)
 
