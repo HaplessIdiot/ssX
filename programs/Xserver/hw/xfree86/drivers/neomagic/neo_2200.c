@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.8 2000/09/19 12:46:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.11 2000/10/06 12:31:03 eich Exp $ */
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
@@ -244,7 +244,7 @@ Neo2200AccelInit(ScreenPtr pScreen)
 
     lines =  nAcl->cacheEnd /
       (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
-    if(lines > 2048) lines = 2048;
+    if(lines > 1024) lines = 1024;
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;

@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.34 2000/10/06 15:50:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.35 2000/10/09 23:37:14 alanh Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -796,7 +796,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
-	maxHeight  = 2048;  /* ???? */
+	maxHeight  = 1024;  /* ???? */
 	break;
     case NM2230:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -807,7 +807,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
-	maxHeight  = 2048;  /* ???? */
+	maxHeight  = 1024;  /* ???? */
 	break;
     case NM2360:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -818,7 +818,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
-	maxHeight  = 2048;  /* ???? */
+	maxHeight  = 1024;  /* ???? */
 	break;
     case NM2380:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -829,7 +829,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
-	maxHeight  = 2048;  /* ???? */
+	maxHeight  = 1024;  /* ???? */
 	break;
     }
 

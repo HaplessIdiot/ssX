@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_dga.c,v 1.1 2000/06/22 18:09:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_dga.c,v 1.2 2000/09/25 23:57:09 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -76,11 +76,7 @@ NEODGAInit(ScreenPtr pScreen)
    imlines =  (pScrn->videoRam * 1024) /
       (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
 
-   if(pNEO->NeoChipset < NM2200) {
-	pixlines = (imlines > 1024) ? 1024 : imlines;
-   } else {
-	pixlines = (imlines > 2048) ? 2048 : imlines;
-   }
+   pixlines = (imlines > 1024) ? 1024 : imlines;
 
    pMode = firstMode = pScrn->modes;
 
