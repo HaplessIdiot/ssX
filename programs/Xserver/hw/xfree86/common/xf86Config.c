@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.281 2005/01/07 23:03:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.282 2005/01/26 05:31:48 dawes Exp $ */
 
 
 /*
@@ -207,8 +207,8 @@ static confModulesPtr convertModules(confModulesPtr modules,
 static Bool addDefaultModes(MonPtr pMonitor);
 static confDRIPtr configDRI(ConfigHandle handle, const XF86ConfDRIRec *driConf,
 			    MessageType from);
-static const confXvAdaptorPtr getNextActiveXvAdaptor(ConfigDataHandle prev);
-static const confScreenPtr getNextActiveScreen(ConfigDataHandle prev);
+static const confXvAdaptorRec *getNextActiveXvAdaptor(ConfigDataHandle prev);
+static const confScreenRec *getNextActiveScreen(ConfigDataHandle prev);
 
 static void
 xf86ConfigError(const char *msg, ...)
@@ -3853,10 +3853,10 @@ xf86ConfGetXvAdaptorByName(ConfigHandle handle, const char *name)
     return NULL;
 }
 
-static const confXvAdaptorPtr
+static const confXvAdaptorRec *
 getNextActiveXvAdaptor(ConfigDataHandle prev)
 {
-    confScreenPtr pConfScreen = NULL;
+    const confScreenRec *pConfScreen = NULL;
     int i = 0;
     Bool found = FALSE;
 
@@ -4593,7 +4593,7 @@ xf86ConfGetScreenByName(ConfigHandle handle, const char *name, int depth)
     return NULL;
 }
 
-static const confScreenPtr
+static const confScreenRec *
 getNextActiveScreen(ConfigDataHandle prev)
 {
     int i;
@@ -5384,10 +5384,10 @@ xf86ConfGetMonitorByName(ConfigHandle handle, const char *name, int depth)
     return NULL;
 }
 
-static const MonPtr
+static const MonRec *
 getNextActiveMonitor(ConfigDataHandle prev)
 {
-    confScreenPtr pConfScreen = NULL;
+    const confScreenRec *pConfScreen = NULL;
     int i = 0;
     Bool found = FALSE;
 
@@ -5482,7 +5482,7 @@ DispPtr
 xf86ConfAllocDisplay()
 {
     DispPtr pDisplay;
-    rgb noColour = {-1, -1, -1};
+    rgb noColour = {(unsigned int)-1, (unsigned int)-1, (unsigned int)-1};
 
     pDisplay = xcalloc(1, sizeof(*pDisplay));
     pDisplay->monitorNum = -1;
@@ -5879,10 +5879,10 @@ xf86ConfGetGraphicsDeviceByName(ConfigHandle handle, const char *name)
     return NULL;
 }
 
-static const GDevPtr
+static const GDevRec *
 getNextActiveGraphicsDevice(ConfigDataHandle prev)
 {
-    confScreenPtr pConfScreen = NULL;
+    const confScreenRec *pConfScreen = NULL;
     Bool found = FALSE;
 
     while ((pConfScreen = getNextActiveScreen(pConfScreen))) {
@@ -6366,7 +6366,7 @@ xf86ConfGetInputDeviceByName(ConfigHandle handle, const char *name)
     return NULL;
 }
 
-static const IDevPtr
+static const IDevRec *
 getNextActiveInputDevice(ConfigDataHandle prev)
 {
     int i;
