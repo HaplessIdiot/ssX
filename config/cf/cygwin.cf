@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.2 2000/11/30 23:29:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.3 2001/01/12 19:28:24 dawes Exp $
 XCOMM
 XCOMM - changes since B20 Cygwin32 release
 XCOMM	- avoided tons of "not in XXX directory" messages;
@@ -26,8 +26,8 @@ XCOMM	- gcc -E is invoked instead of cpp;
 #ifndef OSMinorVersion
 #define OSMinorVersion          1
 #endif
-#ifndef OSTeenyVersion		2
-#define OSTeenyVersion
+#ifndef OSTeenyVersion
+#define OSTeenyVersion		2
 #endif
 
 XCOMM #define OSDefines	             -DSYSV -DSYSV386		
