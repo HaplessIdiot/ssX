@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/OS_SYSV.c,v 2.8 1994/03/01 09:51:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.0 1994/05/14 06:51:06 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -43,12 +43,12 @@
 # include <sys/console.h>
 #else
 # include <sys/kd.h>
-#ifndef SOLX86
-# include <sys/vt.h>
-#endif
+# if !defined(sun)
+#  include <sys/vt.h>
+# endif
 #endif
 #include <sys/immu.h>
-#ifndef SOLX86
+#if !defined(sun)
 # include <sys/region.h>
 #endif
 #include <sys/proc.h>
@@ -58,7 +58,7 @@
 # include <sys/seg.h>
 #endif
 #include <sys/v86.h>
-#ifdef SOLX86
+#if defined(sun)
 # include <sys/psw.h>
 #endif
 
@@ -74,7 +74,7 @@ int munmap();
 
 #ifdef SVR4
 # include <sys/mman.h>
-# ifdef SOLX86
+# if defined(sun)
 #  define DEV_MEM	"/dev/fb"
 # else
 #  define DEV_MEM 	"/dev/pmem"
@@ -113,7 +113,7 @@ int OpenVideo()
 	else 
 	{
 
-#ifndef SOLX86
+#if !defined(sun)
 		if ((fd = open("/dev/console", O_RDWR, 0)) < 0)
 		{
 			fprintf(stderr, "%s: Cannot open /dev/console\n", 
@@ -137,7 +137,7 @@ int OpenVideo()
 				MyName, fn);
 			return(-1);
 		}
-#if !defined(SCO) && !defined(SOLX86)
+#if !defined(SCO) && !defined(sun)
 		if (ioctl(VT_fd, VT_WAITACTIVE, VT_num) != 0)
 		{
 			fprintf(stderr, "%s: VT_WAITACTIVE failed!\n", MyName);

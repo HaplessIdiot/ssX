@@ -1,4 +1,4 @@
-# $XFree86: mit/server/ddx/x386/SuperProbe/Makefile.std,v 2.8 1994/02/28 14:09:32 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.0 1994/05/14 06:50:59 dawes Exp $
 #
 # Installation parameters
 #
@@ -15,7 +15,7 @@ MODE = 4755
 #OS_DEF = -DSYSV
 #OS_DEF = -DSYSV -DSCO
 #OS_DEF = -DSYSV -DESIX
-#OS_DEF = -DSYSV -DSVR4 -DSOLX86
+#OS_DEF = -DSVR4 -Dsun
 OS_DEF = -DSYSV -DSVR4
 OS_SRC = OS_SYSV.c
 OS_OBJ = OS_SYSV.o
