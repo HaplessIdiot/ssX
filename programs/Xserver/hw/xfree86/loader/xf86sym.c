@@ -342,6 +342,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGAAvailable)
    SYMFUNC(DGAActive)
    SYMFUNC(DGASetMode)
+   SYMFUNC(DGASetInputMode)
    SYMFUNC(DGASelectInput)
    SYMFUNC(DGAGetViewportStatus)
    SYMFUNC(DGASetViewport)
