@@ -1,4 +1,5 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 182. Change the ELF loader to ignore .debug* sections (Marc La France).
  181. Simplify internal interfaces in the PCI code and remove the Xserver's
       interference with normal PCMCIA operation (Marc La France).
  180. i810/815 depth buffer needs to be a multiple of the tile size.  This
@@ -17001,7 +17002,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2701 2003/05/22 17:56:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2702 2003/05/22 20:11:36 tsi Exp $
 
 
 
