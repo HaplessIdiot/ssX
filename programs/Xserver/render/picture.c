@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.7 2000/10/07 05:58:18 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.9 2000/11/16 19:45:06 eich Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -87,7 +87,7 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     PictFormatPtr   pFormats;
     int		    i;
 
-    nformats = 6;
+    nformats = 7;
     pFormats = (PictFormatPtr) xalloc (nformats * sizeof (PictFormatRec));
     if (!pFormats)
 	return 0;
@@ -170,6 +170,19 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     pFormats[i].direct.alphaMask = 0x1;
     pFormats[i].pColormap = 0;
     i++;
+    pFormats[i].id = FakeClientID (0);
+    pFormats[i].type = PictTypeDirect;
+    pFormats[i].depth = 1;
+    pFormats[i].direct.red = 0;
+    pFormats[i].direct.redMask = 0;
+    pFormats[i].direct.green = 0;
+    pFormats[i].direct.greenMask = 0;
+    pFormats[i].direct.blue = 0;
+    pFormats[i].direct.blueMask = 0;
+    pFormats[i].direct.alpha = 0;
+    pFormats[i].direct.alphaMask = 0x1;
+    pFormats[i].pColormap = 0;
+    i++;
     *nformatp = i;
     return pFormats;
 }
@@ -240,7 +253,7 @@ PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 f)
     nformat = ps->nformats;
     while (nformat--)
     {
-	if (format->depth == depth && format->format == f & 0xffffff)
+	if (format->depth == depth && format->format == (f & 0xffffff))
 	    return format;
 	format++;
     }
@@ -646,6 +659,20 @@ ChangePicture (PicturePtr	pPicture,
 	case CPDither:
 	    pPicture->dither = NEXT_VAL(Atom);
 	    break;
+	case CPComponentAlpha:
+	    {
+		unsigned int	newca;
+
+		newca = NEXT_VAL (unsigned int);
+		if (newca <= xTrue)
+		    pPicture->componentAlpha = newca;
+		else
+		{
+		    client->errorValue = newca;
+		    error = BadValue;
+		}
+	    }
+	    break;
 	default:
 	    client->errorValue = maskQ;
 	    error = BadValue;
@@ -765,4 +792,17 @@ CompositeGlyphs (CARD8		op,
     ValidatePicture (pSrc);
     ValidatePicture (pDst);
     (*ps->Glyphs) (op, pSrc, pDst, maskFormat, xSrc, ySrc, nlist, lists, glyphs);
+}
+
+void
+CompositeRects (CARD8		op,
+		PicturePtr	pDst,
+		xRenderColor	*color,
+		int		nRect,
+		xRectangle      *rects)
+{
+    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
+    
+    ValidatePicture (pDst);
+    (*ps->CompositeRects) (op, pDst, color, nRect, rects);
 }

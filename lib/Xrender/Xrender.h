@@ -101,7 +101,15 @@ typedef struct _XRenderPictureAttributes {
     int			poly_edge;
     int			poly_mode;
     Atom		dither;
+    Bool		component_alpha;
 } XRenderPictureAttributes;
+
+typedef struct {
+    short   red;
+    short   green;
+    short   blue;
+    short   alpha;
+} XRenderColor;
 
 typedef struct _XGlyphInfo {
     unsigned short  width;
@@ -199,5 +207,22 @@ XRenderCompositeString8 (Display	    *dpy,
 			 char		    *string,
 			 int		    nchar);
 
+void
+XRenderFillRectangle (Display	    *dpy,
+		      int	    op,
+		      Picture	    dst,
+		      XRenderColor  *color,
+		      int	    x,
+		      int	    y,
+		      unsigned int  width,
+		      unsigned int  height);
+
+void
+XRenderFillRectangles (Display	    *dpy,
+		       int	    op,
+		       Picture	    dst,
+		       XRenderColor *color,
+		       XRectangle   *rectangles,
+		       int	    n_rects);
 
 #endif /* _XRENDER_H_ */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.1 2000/08/26 00:38:36 keithp Exp $
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.2 2000/08/26 16:37:56 keithp Exp $
 
 
 #define DoNormalLib NormalLibXrender
@@ -22,14 +22,21 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
       DEFINES = $(ALLOC_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+     
          SRCS = Xrender.c \
 	 	Composite.c \
 		Glyph.c \
-		Picture.c
+		Picture.c \
+		FillRect.c \
+		FillRects.c
+		
          OBJS = Xrender.o \
 	 	Composite.o \
 		Glyph.o \
-		Picture.o
+		Picture.o \
+		FillRect.o \
+		FillRects.o
+
      LINTLIBS = $(LINTXLIB)
 
 HEADERS = Xrender.h

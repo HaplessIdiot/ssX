@@ -345,6 +345,69 @@ miComputeCompositeRegion (RegionPtr	pRegion,
     return TRUE;
 }
 
+void
+miRenderColorToPixel (PictFormatPtr format,
+		      xRenderColor  *color,
+		      CARD32	    *pixel)
+{
+    CARD32  r, g, b, a;
+    
+    switch (format->type) {
+    case PictTypeDirect:
+	r = color->red >> (16 - Ones (format->direct.redMask));
+	g = color->green >> (16 - Ones (format->direct.greenMask));
+	b = color->blue >> (16 - Ones (format->direct.blueMask));
+	a = color->alpha >> (16 - Ones (format->direct.alphaMask));
+	r = r << format->direct.red;
+	g = g << format->direct.green;
+	b = b << format->direct.blue;
+	a = a << format->direct.alpha;
+	*pixel = r|g|b|a;
+	break;
+    case PictTypeIndexed:
+	*pixel = 0;
+	break;
+    }
+}
+
+static CARD16
+miFillColor (CARD32 pixel, int bits)
+{
+    while (bits < 16)
+    {
+	pixel |= pixel << bits;
+	bits <<= 1;
+    }
+    return (CARD16) pixel;
+}
+
+void
+miRenderPixelToColor (PictFormatPtr format,
+		      CARD32	    pixel,
+		      xRenderColor  *color)
+{
+    CARD32  r, g, b, a;
+    
+    switch (format->type) {
+    case PictTypeDirect:
+	r = (pixel >> format->direct.red) & format->direct.redMask;
+	g = (pixel >> format->direct.green) & format->direct.greenMask;
+	b = (pixel >> format->direct.blue) & format->direct.blueMask;
+	a = (pixel >> format->direct.alpha) & format->direct.alphaMask;
+	color->red = miFillColor (r, Ones (format->direct.redMask));
+	color->green = miFillColor (r, Ones (format->direct.greenMask));
+	color->blue = miFillColor (r, Ones (format->direct.blueMask));
+	color->alpha = miFillColor (r, Ones (format->direct.alphaMask));
+	break;
+    case PictTypeIndexed:
+	color->red = 0;
+	color->green = 0;
+	color->blue = 0;
+	color->alpha = 0;
+	break;
+    }
+}
+
 Bool
 miPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 {

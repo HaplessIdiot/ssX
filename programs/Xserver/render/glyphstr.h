@@ -31,6 +31,9 @@
 #define GlyphFormat1	0
 #define GlyphFormat4	1
 #define GlyphFormat8	2
+#define GlyphFormat16	3
+#define GlyphFormat32	4
+#define GlyphFormatNum	5
 
 typedef struct _Glyph {
     CARD32	refcnt;
@@ -72,7 +75,7 @@ typedef struct _GlyphList {
     PictFormatPtr   format;
 } GlyphListRec, *GlyphListPtr;
 
-extern GlyphHashRec	globalGlyphs[3];
+extern GlyphHashRec	globalGlyphs[GlyphFormatNum];
 
 GlyphHashSetPtr
 FindGlyphHashSet (CARD32 filled);

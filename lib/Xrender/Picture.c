@@ -59,6 +59,8 @@ _XRenderProcessPictureAttributes (Display		    *dpy,
 	*value++ = attributes->poly_mode;
     if (valuemask & CPDither)
 	*value++ = attributes->dither;
+    if (valuemask & CPComponentAlpha)
+	*value++ = attributes->component_alpha;
 
     req->length += (nvalues = value - values);
 

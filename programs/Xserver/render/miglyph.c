@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/miglyph.c,v 1.3 2000/10/02 05:25:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -107,6 +107,7 @@ miGlyphs (CARD8		op,
     int		error;
     CARD8	opTemp = op;
     BoxRec	extents;
+    CARD32	component_alpha = xTrue;
     
     if (maskFormat)
     {
@@ -123,7 +124,8 @@ miGlyphs (CARD8		op,
 	if (!pMaskPixmap)
 	    return;
 	pMask = CreatePicture (0, &pMaskPixmap->drawable,
-			       maskFormat, 0, 0, serverClient, &error);
+			       maskFormat, CPComponentAlpha, &component_alpha,
+			       serverClient, &error);
 	if (!pMask)
 	{
 	    (*pScreen->DestroyPixmap) (pMaskPixmap);
@@ -164,7 +166,8 @@ miGlyphs (CARD8		op,
 		if (!pPixmap)
 		    return;
 		pPicture = CreatePicture (0, &pPixmap->drawable, list->format,
-					  0, 0, serverClient, &error);
+					  CPComponentAlpha, &component_alpha, 
+					  serverClient, &error);
 		if (!pPicture)
 		{
 		    FreeScratchPixmapHeader (pPixmap);

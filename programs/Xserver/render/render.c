@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.6 2000/11/16 19:45:07 eich Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -564,14 +564,16 @@ ProcRenderCreateGlyphSet (ClientPtr client)
     case 8:
 	f = GlyphFormat8;
 	break;
+    case 16:
+	f = GlyphFormat16;
+	break;
+    case 32:
+	f = GlyphFormat32;
+	break;
     default:
 	return BadMatch;
     }
-    if (format->type != PictTypeDirect ||
-	format->direct.alphaMask == 0 ||
-	format->direct.redMask != 0 ||
-	format->direct.greenMask != 0 ||
-	format->direct.blueMask != 0)
+    if (format->type != PictTypeDirect)
 	return BadMatch;
     glyphSet = AllocateGlyphSet (f, format);
     if (!glyphSet)
@@ -922,6 +924,35 @@ ProcRenderCompositeGlyphs (ClientPtr client, int size)
 }
 
 static int
+ProcRenderFillRectangles (ClientPtr client)
+{
+    PicturePtr	    pDst;
+    int             things;
+    REQUEST(xRenderFillRectanglesReq);
+    
+    if (stuff->op > PictOpMaximum)
+    {
+	client->errorValue = stuff->op;
+	return BadValue;
+    }
+    VERIFY_PICTURE (pDst, stuff->dst, client, SecurityWriteAccess, 
+		    RenderErrBase + BadPicture);
+    
+    things = (client->req_len << 2) - sizeof(xRenderFillRectanglesReq);
+    if (things & 4)
+	return(BadLength);
+    things >>= 3;
+    
+    CompositeRects (stuff->op,
+		    pDst,
+		    &stuff->color,
+		    things,
+		    (xRectangle *) &stuff[1]);
+    
+    return client->noClientException;
+}
+
+static int
 ProcRenderDispatch (ClientPtr client)
 {
     REQUEST(xReq);
@@ -979,6 +1010,8 @@ ProcRenderDispatch (ClientPtr client)
 	return ProcRenderCompositeGlyphs(client, 2);
     case X_RenderCompositeGlyphs32:
 	return ProcRenderCompositeGlyphs(client, 4);
+    case X_RenderFillRectangles:
+	return ProcRenderFillRectangles(client);
     default:
 	return BadRequest;
     }
@@ -1271,6 +1304,11 @@ SProcRenderCompositeGlyphs (ClientPtr client, int size)
 }
 
 static int
+SProcRenderFillRectangles (ClientPtr client)
+{
+}
+    
+static int
 SProcRenderDispatch (ClientPtr client)
 {
     REQUEST(xReq);
@@ -1328,6 +1366,8 @@ SProcRenderDispatch (ClientPtr client)
 	return SProcRenderCompositeGlyphs(client, 2);
     case X_RenderCompositeGlyphs32:
 	return SProcRenderCompositeGlyphs(client, 4);
+    case X_RenderFillRectangles:
+	return SProcRenderFillRectangles(client);
     default:
 	return BadRequest;
     }
