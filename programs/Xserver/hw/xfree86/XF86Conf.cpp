@@ -1,5 +1,5 @@
 XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.14 1995/11/16 11:04:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.15 1995/12/26 06:03:28 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -79,6 +79,17 @@ XCOMM Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching
 XCOMM sequences.  This allows clients to receive these key events.
 
 XCOMM    DontZoom
+
+XCOMM Uncomment this to enable tuning with the xvidtune client. Without
+XCOMM it the client can still run and fetch card and monitor attributes,
+XCOMM but it will not be allowed to change them and will exit with a
+XCOMM protocol error.
+
+XCOMM	EnableVidModeExtension
+
+XCOMM Uncomment this to enable the use of a non-local xvidtune client.
+
+XCOMM	AllowNonLocalXvidtune
 
 EndSection
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.65 1996/01/05 06:28:52 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.66 1996/01/11 13:31:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1025,6 +1025,8 @@ configServerFlagsSection()
 {
   int            token;
   int            i, j;
+  extern Bool	 xf86VidModeEnabled;
+  extern Bool	 xf86VidModeAllowNonLocal;
       
   xf86Info.dontZap       = FALSE;
   xf86Info.dontZoom      = FALSE;
@@ -1040,6 +1042,10 @@ configServerFlagsSection()
     case DONTZOOM:
       xf86Info.dontZoom = TRUE;
       break;
+    case ENABLEVIDMODE:
+      xf86VidModeEnabled = TRUE;
+    case ALLOWNONLOCAL:
+      xf86VidModeAllowNonLocal = TRUE;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */

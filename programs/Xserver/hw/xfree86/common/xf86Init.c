@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.31 1996/01/05 06:28:55 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.32 1996/01/12 14:33:40 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,6 +58,8 @@ Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86ProbeFailed = TRUE;
 Bool xf86FlipPixels = FALSE;
+Bool xf86VidModeEnabled = FALSE;
+Bool xf86VidModeAllowNonLocal = FALSE;
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
 Bool xf86fpFlag = FALSE;
@@ -481,6 +483,16 @@ ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i],"-flipPixels"))
   {
     xf86FlipPixels = TRUE;
+    return 1;
+  }
+  if (!strcmp(argv[i],"-enableVidMode"))
+  {
+    xf86VidModeEnabled = TRUE;
+    return 1;
+  }
+  if (!strcmp(argv[i],"-allowNonLocalXvidtune"))
+  {
+    xf86VidModeAllowNonLocal = TRUE;
     return 1;
   }
   if (!strcmp(argv[i],"-verbose"))

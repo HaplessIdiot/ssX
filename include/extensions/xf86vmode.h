@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.10 1995/12/09 11:03:17 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.11 1996/01/07 03:45:44 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -22,7 +22,7 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the Kaleb S. KEITHLEY 
+Except as contained in this notice, the name of Kaleb S. KEITHLEY 
 shall not be used in advertising or otherwise to promote the sale, use 
 or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
@@ -37,11 +37,11 @@ from Kaleb S. KEITHLEY
 
 #include <X11/Xfuncproto.h>
 
-#define X_VGAHelpQueryVersion		0
-#define X_VGAHelpGetModeLine		1
-#define X_VGAHelpModModeLine		2
-#define X_VGAHelpSwitchMode		3
-#define X_VGAHelpGetMonitor		4
+#define X_XF86VidModeQueryVersion	0
+#define X_XF86VidModeGetModeLine	1
+#define X_XF86VidModeModModeLine	2
+#define X_XF86VidModeSwitchMode		3
+#define X_XF86VidModeGetMonitor		4
 #define X_XF86VidModeLockModeSwitch	5
 #define X_XF86VidModeGetSaver		6
 #define X_XF86VidModeSetSaver		7
@@ -63,7 +63,9 @@ from Kaleb S. KEITHLEY
 #define XF86VidModeBadHTimings		1
 #define XF86VidModeBadVTimings		2
 #define XF86VidModeModeUnsuitable	3
-#define XF86VidModeNumberErrors		(XF86VidModeModeUnsuitable + 1)
+#define XF86VidModeExtensionDisabled	4
+#define XF86VidModeClientNotLocal	5
+#define XF86VidModeNumberErrors		(XF86VidModeClientNotLocal + 1)
 
 #ifndef _XF86VIDMODE_SERVER_
 
