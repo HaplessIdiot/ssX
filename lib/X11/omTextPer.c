@@ -23,25 +23,24 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omTextPer.c,v 1.4 2001/01/17 19:41:57 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omTextPer.c,v 1.5 2001/10/28 03:32:35 tsi Exp $ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"
 #include <stdio.h>
 
 static Status
-_XomGenericTextPerCharExtents(oc, type, text, length, ink_buf, logical_buf,
-			      buf_size, num_chars, overall_ink, overall_logical)
-    XOC oc;
-    XOMTextType type;
-    XPointer text;
-    int length;
-    XRectangle *ink_buf;
-    XRectangle *logical_buf;
-    int buf_size;
-    int *num_chars;
-    XRectangle *overall_ink;
-    XRectangle *overall_logical;
+_XomGenericTextPerCharExtents(
+    XOC oc,
+    XOMTextType type,
+    XPointer text,
+    int length,
+    XRectangle *ink_buf,
+    XRectangle *logical_buf,
+    int buf_size,
+    int *num_chars,
+    XRectangle *overall_ink,
+    XRectangle *overall_logical)
 {
     XlcConv conv;
     XFontStruct *font;

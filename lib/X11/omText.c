@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omText.c,v 1.4 2001/01/17 19:41:56 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omText.c,v 1.6 2002/09/16 18:05:23 eich Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -40,9 +40,9 @@
 /* For VW/UDC */
 
 static int
-is_rotate(oc, font)
-    XOC		oc;
-    XFontStruct	*font;
+is_rotate(
+    XOC		oc,
+    XFontStruct	*font)
 {
     XOCGenericPart	*gen = XOC_GENERIC(oc);
     FontSet		font_set;
@@ -65,9 +65,9 @@ is_rotate(oc, font)
 }
 
 static int
-is_codemap(oc, font)
-    XOC		oc;
-    XFontStruct	*font;
+is_codemap(
+    XOC		oc,
+    XFontStruct	*font)
 {
     XOCGenericPart	*gen = XOC_GENERIC(oc);
     FontSet		font_set;
@@ -90,16 +90,16 @@ is_codemap(oc, font)
 }
 
 static int
-draw_vertical(dpy, d, oc, gc, font, is_xchar2b, x, y, text, length)
-    Display	*dpy;
-    Drawable	d;
-    XOC		oc;
-    GC		gc;
-    XFontStruct	*font;
-    Bool	is_xchar2b;
-    int		x, y;
-    XPointer	text;
-    int		length;
+draw_vertical(
+    Display	*dpy,
+    Drawable	d,
+    XOC		oc,
+    GC		gc,
+    XFontStruct	*font,
+    Bool	is_xchar2b,
+    int		x, int y,
+    XPointer	text,
+    int		length)
 {
     XChar2b	*buf2b;
     char	*buf;
@@ -158,18 +158,16 @@ draw_vertical(dpy, d, oc, gc, font, is_xchar2b, x, y, text, length)
 #define VROTATE       1
 #define FONTSCOPE     2
 
-extern FontData _XomGetFontDataFromFontSet();
-
 static int
-DrawStringWithFontSet(dpy, d, oc, fs, gc, x, y, text, length)
-    Display *dpy;
-    Drawable d;
-    XOC oc;
-    FontSet fs;
-    GC gc;
-    int x, y;
-    XPointer text;
-    int length;
+DrawStringWithFontSet(
+    Display *dpy,
+    Drawable d,
+    XOC oc,
+    FontSet fs,
+    GC gc,
+    int x, int y,
+    XPointer text,
+    int length)
 {
     XFontStruct *font;
     Bool is_xchar2b;
@@ -280,15 +278,15 @@ DrawStringWithFontSet(dpy, d, oc, fs, gc, x, y, text, length)
 /* For VW/UDC */
 
 int
-_XomGenericDrawString(dpy, d, oc, gc, x, y, type, text, length)
-    Display *dpy;
-    Drawable d;
-    XOC oc;
-    GC gc;
-    int x, y;
-    XOMTextType type;
-    XPointer text;
-    int length;
+_XomGenericDrawString(
+    Display *dpy,
+    Drawable d,
+    XOC oc,
+    GC gc,
+    int x, int y,
+    XOMTextType type,
+    XPointer text,
+    int length)
 {
     XlcConv conv;
     XFontStruct *font;

@@ -28,16 +28,11 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIc.c,v 3.7 2000/11/28 18:49:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIc.c,v 3.8 2001/01/17 19:41:51 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "Ximint.h"
-
-/* EXTERNS */
-
-/* imRm.c */
-extern Bool _XimCheckCreateICValues();
 
 Private Bool
 #if NeedFunctionPrototypes
@@ -288,9 +283,9 @@ _XimGetICValuesCheck(im, len, data, arg)
 }
 
 Private char *
-_XimProtoGetICValues(xic, arg)
-    XIC			 xic ;
-    XIMArg		*arg ;
+_XimProtoGetICValues(
+    XIC			 xic,
+    XIMArg		*arg)
 {
     Xic			 ic = (Xic)xic;
     Xim			 im = (Xim)ic->core.im;
@@ -665,9 +660,9 @@ _XimSetICValuesCheck(im, len, data, arg)
 }
 
 Private char *
-_XimProtoSetICValues(xic, arg)
-    XIC			 xic;
-    XIMArg		*arg;
+_XimProtoSetICValues(
+    XIC			 xic,
+    XIMArg		*arg)
 {
     Xic			 ic = (Xic)xic;
     Xim			 im = (Xim)ic->core.im;
@@ -853,8 +848,8 @@ _XimDestroyICCheck(im, len, data, arg)
 }
 
 Private void
-_XimProtoICFree(ic)
-    Xic		 ic;
+_XimProtoICFree(
+    Xic		 ic)
 {
 #ifdef XIM_CONNECTABLE
     Xim		 im = (Xim)ic->core.im;
@@ -900,8 +895,8 @@ _XimProtoICFree(ic)
 }
 
 Private void
-_XimProtoDestroyIC(xic)
-    XIC		 xic;
+_XimProtoDestroyIC(
+    XIC		 xic)
 {
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
@@ -943,8 +938,8 @@ _XimProtoDestroyIC(xic)
 }
 
 Private void
-_XimProtoSetFocus(xic)
-    XIC		 xic;
+_XimProtoSetFocus(
+    XIC		 xic)
 {
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
@@ -988,8 +983,8 @@ _XimProtoSetFocus(xic)
 }
 
 Private void
-_XimProtoUnsetFocus(xic)
-    XIC		 xic;
+_XimProtoUnsetFocus(
+    XIC		 xic)
 {
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
@@ -1070,9 +1065,9 @@ _XimResetICCheck(im, len, data, arg)
 }
 
 Private char *
-_XimProtoReset(xic, retfunc)
-    XIC		 xic;
-    char *     (*retfunc) (Xim im, Xic ic, XPointer buf);
+_XimProtoReset(
+    XIC		 xic,
+    char *     (*retfunc) (Xim im, Xic ic, XPointer buf) )
 {
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
@@ -1141,10 +1136,10 @@ _XimProtoReset(xic, retfunc)
 }
 
 Private char *
-_XimCommitedMbString(im, ic, buf)
-    Xim			 im;
-    Xic			 ic;
-    XPointer		 buf;
+_XimCommitedMbString(
+    Xim			 im,
+    Xic			 ic,
+    XPointer		 buf)
 {
     CARD16		*buf_s = (CARD16 *)buf;
     XimCommitInfo	 info;
@@ -1191,17 +1186,17 @@ Error_On_Reset:
 }
 
 Private char *
-_XimProtoMbReset(xic)
-    XIC		 xic;
+_XimProtoMbReset(
+    XIC		 xic)
 {
     return _XimProtoReset(xic, _XimCommitedMbString);
 }
 
 Private wchar_t *
-_XimCommitedWcString(im, ic, buf)
-    Xim		 im;
-    Xic		 ic;
-    XPointer	 buf;
+_XimCommitedWcString(
+    Xim		 im,
+    Xic		 ic,
+    XPointer	 buf)
 {
     CARD16		*buf_s = (CARD16 *)buf;
     XimCommitInfo	 info;
@@ -1249,18 +1244,18 @@ Error_On_Reset:
 }
 
 Private wchar_t *
-_XimProtoWcReset(xic)
-    XIC		 xic;
+_XimProtoWcReset(
+    XIC		 xic)
 {
     return (wchar_t *) _XimProtoReset(xic,
 			(char * (*) (Xim, Xic, XPointer)) _XimCommitedWcString);
 }
 
 Private char *
-_XimCommitedUtf8String(im, ic, buf)
-    Xim			 im;
-    Xic			 ic;
-    XPointer		 buf;
+_XimCommitedUtf8String(
+    Xim			 im,
+    Xic			 ic,
+    XPointer		 buf)
 {
     CARD16		*buf_s = (CARD16 *)buf;
     XimCommitInfo	 info;
@@ -1307,8 +1302,8 @@ Error_On_Reset:
 }
 
 Private char *
-_XimProtoUtf8Reset(xic)
-    XIC		 xic;
+_XimProtoUtf8Reset(
+    XIC		 xic)
 {
     return _XimProtoReset(xic, _XimCommitedUtf8String);
 }
@@ -1328,9 +1323,9 @@ Private XICMethodsRec ic_methods = {
 };
 
 Private Bool
-_XimGetInputStyle(arg, input_style)
-    XIMArg		*arg;
-    XIMStyle		*input_style;
+_XimGetInputStyle(
+    XIMArg		*arg,
+    XIMStyle		*input_style)
 {
     register XIMArg	*p;
 
@@ -1345,11 +1340,11 @@ _XimGetInputStyle(arg, input_style)
 
 #ifdef XIM_CONNECTABLE
 Private Bool
-_XimDelayModeCreateIC(ic, values, res, num)
-    Xic			 ic;
-    XIMArg		*values;
-    XIMResourceList	 res;
-    unsigned int	 num;
+_XimDelayModeCreateIC(
+    Xic			 ic,
+    XIMArg		*values,
+    XIMResourceList	 res,
+    unsigned int	 num)
 {
     Xim			 im = (Xim)ic->core.im;
     XimDefICValues	 ic_values;
@@ -1406,9 +1401,9 @@ _XimReconnectModeCreateIC(ic)
 #endif /* XIM_CONNECTABLE */
 
 Public XIC
-_XimProtoCreateIC(xim, arg)
-    XIM			 xim;
-    XIMArg		*arg;
+_XimProtoCreateIC(
+    XIM			 xim,
+    XIMArg		*arg)
 {
     Xim			 im = (Xim)xim;
     Xic			 ic;

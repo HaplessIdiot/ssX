@@ -23,21 +23,20 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omTextExt.c,v 1.3 2000/11/29 17:40:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omTextExt.c,v 1.4 2001/01/17 19:41:57 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"
 #include <stdio.h>
 
 int
-_XomGenericTextExtents(oc, type, text, length, overall_ink,
-		       overall_logical)
-    XOC oc;
-    XOMTextType type;
-    XPointer text;
-    int length;
-    XRectangle *overall_ink;
-    XRectangle *overall_logical;
+_XomGenericTextExtents(
+    XOC oc,
+    XOMTextType type,
+    XPointer text,
+    int length,
+    XRectangle *overall_ink,
+    XRectangle *overall_logical)
 {
     XlcConv conv;
     XFontStruct *font;

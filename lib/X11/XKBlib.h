@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XKBlib.h,v 3.3 2001/08/01 00:44:38 tsi Exp $ */
 
 #ifndef _XKBLIB_H_
 #define _XKBLIB_H_
@@ -1142,6 +1142,15 @@ extern	Status XkbChangeTypesOfKey(
 #endif
 );
 
+extern  Status   XkbChangeKeycodeRange(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	int			/* minKC */,
+	int			/* maxKC */,
+	XkbChangesPtr		/* changes */
+#endif
+);
+
 /***====================================================================***/
 
 extern	XkbComponentListPtr	XkbListComponents(
@@ -1352,6 +1361,23 @@ extern	Bool XkbApplyVirtualModChanges(
    XkbDescPtr		/* xkb */,
    unsigned int		/* changed */,
    XkbChangesPtr	/* changes */
+#endif
+);
+
+extern Bool XkbUpdateActionVirtualMods(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	XkbAction *		/* act */,
+	unsigned int		/* changed */
+#endif
+);
+
+extern void XkbUpdateKeyTypeVirtualMods(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	XkbKeyTypePtr		/* type */,
+	unsigned int		/* changed */,
+	XkbChangesPtr		/* changes */
 #endif
 );
 

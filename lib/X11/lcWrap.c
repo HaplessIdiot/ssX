@@ -53,7 +53,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86: xc/lib/X11/lcWrap.c,v 3.13 2001/12/14 19:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.14 2002/11/01 13:43:31 alanh Exp $ */
 
 #include <stdlib.h>
 #include "Xlibint.h"
@@ -64,6 +64,7 @@ from The Open Group.
 #undef close
 #endif
 #include <X11/Xutil.h>
+#include "XlcPubI.h"
 
 #ifdef XTHREADS
 LockInfoPtr _Xi18n_lock;
@@ -242,7 +243,7 @@ _XlcAddLoader(
 
 XLCd
 _XOpenLC(
-    const char *name)
+    char *name)
 {
     XLCd lcd;
     XlcLoaderList loader;
@@ -251,7 +252,6 @@ _XOpenLC(
     int len;
     char sinamebuf[256];
     char* siname = sinamebuf;
-    char *_XlcMapOSLocaleName();
 #endif
 
     if (name == NULL) {
@@ -495,7 +495,7 @@ XDefaultString()
     return (*lcd->methods->default_string)(lcd);
 }
 
-void
+static void
 _XlcCopyFromArg(
     char *src,
     char *dst,
@@ -519,7 +519,7 @@ _XlcCopyFromArg(
 	memcpy(dst, (char *) &src, size);
 }
 
-void
+static void
 _XlcCopyToArg(
     char *src,
     char **dst,

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.20 2002/04/10 16:20:05 tsi Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.21 2002/05/31 18:45:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -89,9 +89,9 @@ SOFTWARE.
 
 
 /*ARGSUSED*/
-static char *GetHomeDir (dest, len)
-    char *dest;
-    int len;
+static char *GetHomeDir(
+    char *dest,
+    int len)
 {
 #ifdef WIN32
     register char *ptr1;
@@ -140,8 +140,8 @@ static char *GetHomeDir (dest, len)
 }
 
 
-static XrmDatabase InitDefaults (dpy)
-    Display *dpy;			/* display for defaults.... */
+static XrmDatabase InitDefaults(
+    Display *dpy)			/* display for defaults.... */
 {
     XrmDatabase userdb;
     XrmDatabase xdb;

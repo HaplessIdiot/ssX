@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.16 2001/11/16 00:52:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.17 2003/02/03 22:11:58 paulo Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -992,8 +992,8 @@ err:
    super_class's initialize method() */
 
 static Bool
-initialize_core(lcd)
-    XLCd lcd;
+initialize_core(
+    XLCd lcd)
 {
     _XInitDynamicOM(lcd);
 

@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.8 2000/12/04 18:49:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.9 2001/01/17 19:41:49 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -321,6 +321,11 @@ extern int _XlcNCompareISOLatin1(
     const char*		str2,
     int			len
 );
+
+extern XOM
+_XDefaultOpenOM(
+    XLCd lcd, Display *dpy, XrmDatabase rdb,
+    _Xconst char *res_name, _Xconst char *res_class);
 
 _XFUNCPROTOEND
 

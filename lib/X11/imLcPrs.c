@@ -30,7 +30,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.7 2001/10/28 03:32:34 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.8 2003/01/15 02:59:33 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
@@ -80,9 +80,9 @@ extern int _Xmbstoutf8(
  */
 
 static int
-nextch(fp, lastch)
-    FILE *fp;
-    int *lastch;
+nextch(
+    FILE *fp,
+    int *lastch)
 {
     int c;
 
@@ -105,9 +105,9 @@ nextch(fp, lastch)
 }
 
 static void
-putbackch(c, lastch)
-    int c;
-    int *lastch;
+putbackch(
+    int c,
+    int *lastch)
 {
     *lastch = c;
 }
@@ -131,10 +131,10 @@ putbackch(c, lastch)
 #endif
 
 static int
-nexttoken(fp, tokenbuf, lastch)
-    FILE *fp;
-    char *tokenbuf;
-    int *lastch;
+nexttoken(
+    FILE *fp,
+    char *tokenbuf,
+    int *lastch)
 {
     int c;
     int token;
@@ -270,8 +270,8 @@ string_error:
 }
 
 static long
-modmask(name)
-    char *name;
+modmask(
+    char *name)
 {
     long mask;
 
@@ -307,10 +307,10 @@ modmask(name)
 #define SEQUENCE_MAX	10
 
 static int
-parseline(fp, top, tokenbuf)
-    FILE *fp;
-    DefTree **top;
-    char* tokenbuf;
+parseline(
+    FILE *fp,
+    DefTree **top,
+    char* tokenbuf)
 {
     int token;
     unsigned modifier_mask;
@@ -514,9 +514,9 @@ error:
 }
 
 void
-_XimParseStringFile(fp, ptop)
-    FILE *fp;
-    DefTree **ptop;
+_XimParseStringFile(
+    FILE *fp,
+    DefTree **ptop)
 {
     char tb[8192];
     char* tbp;

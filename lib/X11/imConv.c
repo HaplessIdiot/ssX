@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 /* 2000 Modifier: Ivan Pascal	The XFree86 Project.
  */
-/* $XFree86: xc/lib/X11/imConv.c,v 1.30 2000/12/04 18:49:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.31 2001/02/09 00:02:53 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -63,10 +63,6 @@ typedef int (*ucstocsConvProc)(
     ucs4_t,
     int
 #endif
-);
-
-XPointer _Utf8GetConvByName(
-    const char *	name
 );
 
 struct SubstRec {
@@ -153,12 +149,12 @@ _XimGetCharCode (ucs_conv, keysym, buf, nbytes)
 }
 
 #ifdef XKB
-static int lookup_string (event, buffer, nbytes, keysym, status)
-    XKeyEvent*		event;
-    char*		buffer;
-    int			nbytes;
-    KeySym*		keysym;
-    XComposeStatus*	status;
+static int lookup_string(
+    XKeyEvent*		event,
+    char*		buffer,
+    int			nbytes,
+    KeySym*		keysym,
+    XComposeStatus*	status)
 {
     int ret;
     unsigned ctrls = XkbGetXlibControls (event->display);

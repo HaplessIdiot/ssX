@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.22 2001/12/14 19:54:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.23 2002/05/31 18:45:42 dawes Exp $ */
 
 
 /*
@@ -86,6 +86,17 @@ typedef unsigned long wchar_t;
 #define mbtowc(a,b,c)	_Xmbtowc(a,b,c)
 #endif
 #endif
+
+extern int
+_Xmblen(
+#ifdef ISC
+    char const *str,
+    size_t len
+#else
+    char *str,
+    int len
+#endif
+    );
 
 /* API mentioning "UTF8" or "utf8" is an XFree86 extension, introduced in
    November 2000. Its presence is indicated through the following macro. */

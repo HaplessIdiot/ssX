@@ -43,26 +43,11 @@
  *		Source for XcmsTekHVCClipV() gamut compression routine.
  *
  */
-/* $XFree86: xc/lib/X11/HVCGcV.c,v 1.2 1999/05/09 10:49:31 dawes Exp $ */
+/* $XFree86: xc/lib/X11/HVCGcV.c,v 1.3 2001/01/17 19:41:37 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
-
-/*
- *	EXTERNS
- */
-extern Status _XcmsTekHVC_CheckModify();
-extern XcmsColorSpace XcmsTekHVCColorSpace;
-extern XcmsFunctionSet	XcmsLinearRGBFunctionSet;
-
-/* CvCols.c */
-extern Status _XcmsDIConvertColors();
-
-/* HVCMxVC.c */
-extern Status _XcmsTekHVCQueryMaxVCRGB();
-
-
-
+#include "Cv.h"
 
 
 /************************************************************************

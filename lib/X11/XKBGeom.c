@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBGeom.c,v 1.3 2001/01/17 19:41:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBGeom.c,v 1.4 2001/10/28 03:32:33 tsi Exp $ */
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -32,10 +32,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define NEED_EVENTS
 #define NEED_REPLIES
+#define NEED_MAP_READERS
 #include "Xlibint.h"
-#include "XKBlibint.h"
 #include <X11/extensions/XKBgeom.h>
 #include <X11/extensions/XKBproto.h>
+#include "XKBlibint.h"
 
 #ifndef MINSHORT
 #define	MINSHORT	-32768

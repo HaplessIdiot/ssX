@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.23 2001/10/30 17:41:46 tsi Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.24 2001/12/14 19:53:58 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -54,11 +54,22 @@ in this Software without prior written authorization from The Open Group.
 #include <sys/utsname.h>
 #endif
 
-static void GetAuthorization();
+#include "Xintconn.h"
 
-static char *copystring (src, len)
-    char *src;
-    int len;
+/* prototyes */
+static void GetAuthorization(
+    XtransConnInfo trans_conn,
+    int family,
+    char *saddr,
+    int saddrlen,
+    int idisplay,
+    char **auth_namep,
+    int *auth_namelenp,
+    char **auth_datap,
+    int *auth_datalenp);
+
+/* functions */
+static char *copystring (char *src, int len)
 {
     char *dst = Xmalloc (len + 1);
 
@@ -94,16 +105,15 @@ static char *copystring (src, len)
  *
  */
 XtransConnInfo
-_X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
-		      auth_namep, auth_namelenp, auth_datap, auth_datalenp)
-    char *display_name;
-    char **fullnamep;			/* RETURN */
-    int *dpynump;			/* RETURN */
-    int *screenp;			/* RETURN */
-    char **auth_namep;			/* RETURN */
-    int *auth_namelenp;			/* RETURN */
-    char **auth_datap;			/* RETURN */
-    int *auth_datalenp;			/* RETURN */
+_X11TransConnectDisplay (
+    char *display_name,
+    char **fullnamep,			/* RETURN */
+    int *dpynump,			/* RETURN */
+    int *screenp,			/* RETURN */
+    char **auth_namep,			/* RETURN */
+    int *auth_namelenp,			/* RETURN */
+    char **auth_datap,			/* RETURN */
+    int *auth_datalenp)			/* RETURN */
 {
     int family;
     int saddrlen;
@@ -438,16 +448,15 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
  *
  */
 
-int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
-		      auth_namep, auth_namelenp, auth_datap, auth_datalenp)
-    char *display_name;
-    char **fullnamep;			/* RETURN */
-    int *dpynump;			/* RETURN */
-    int *screenp;			/* RETURN */
-    char **auth_namep;			/* RETURN */
-    int *auth_namelenp;			/* RETURN */
-    char **auth_datap;			/* RETURN */
-    int *auth_datalenp;			/* RETURN */
+int _XConnectDisplay (
+    char *display_name,
+    char **fullnamep,			/* RETURN */
+    int *dpynump,			/* RETURN */
+    int *screenp,			/* RETURN */
+    char **auth_namep,			/* RETURN */
+    int *auth_namelenp,			/* RETURN */
+    char **auth_datap,			/* RETURN */
+    int *auth_datalenp)			/* RETURN */
 {
    XtransConnInfo trans_conn;
 
@@ -966,17 +975,16 @@ static int k5_clientauth(dpy, sprefix)
 #endif /* K5AUTH */
 
 static void
-GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
-		 auth_namep, auth_namelenp, auth_datap, auth_datalenp)
-    XtransConnInfo trans_conn;
-    int family;
-    int saddrlen;
-    int idisplay;
-    char *saddr;
-    char **auth_namep;			/* RETURN */
-    int *auth_namelenp;			/* RETURN */
-    char **auth_datap;			/* RETURN */
-    int *auth_datalenp;			/* RETURN */
+GetAuthorization(
+    XtransConnInfo trans_conn,
+    int family,
+    char *saddr,
+    int saddrlen,
+    int idisplay,
+    char **auth_namep,			/* RETURN */
+    int *auth_namelenp,			/* RETURN */
+    char **auth_datap,			/* RETURN */
+    int *auth_datalenp)			/* RETURN */
 {
 #ifdef SECURE_RPC
     char rpc_cred[MAX_AUTH_BYTES];

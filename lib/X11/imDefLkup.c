@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.8 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.9 2001/08/13 21:46:46 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define  NEED_EVENTS
@@ -55,9 +55,9 @@ _XimICOfXICID(im, icid)
 }
 
 Private void
-_XimProcIMSetEventMask(im, buf)
-    Xim		 im;
-    XPointer	 buf;
+_XimProcIMSetEventMask(
+    Xim		 im,
+    XPointer	 buf)
 {
     EVENTMASK	*buf_l = (EVENTMASK *)buf;
 
@@ -67,9 +67,9 @@ _XimProcIMSetEventMask(im, buf)
 }
 
 Private void
-_XimProcICSetEventMask(ic, buf)
-    Xic		 ic;
-    XPointer	 buf;
+_XimProcICSetEventMask(
+    Xic		 ic,
+    XPointer	 buf)
 {
     EVENTMASK	*buf_l = (EVENTMASK *)buf;
 
@@ -150,9 +150,9 @@ _XimSyncCheck(im, len, data, arg)
 }
 
 Public Bool
-_XimSync(im, ic)
-    Xim		 im;
-    Xic		 ic;
+_XimSync(
+    Xim		 im,
+    Xic		 ic)
 {
     CARD32	 buf32[BUFSIZE/4];
     CARD8	*buf = (CARD8 *)buf32;
@@ -208,9 +208,9 @@ _XimSync(im, ic)
 }
 
 Public Bool
-_XimProcSyncReply(im, ic)
-    Xim		 im;
-    Xic		 ic;
+_XimProcSyncReply(
+    Xim		 im,
+    Xic		 ic)
 {
     CARD32	 buf32[BUFSIZE/4];
     CARD8	*buf = (CARD8 *)buf32;
@@ -231,9 +231,9 @@ _XimProcSyncReply(im, ic)
 }
 
 Public Bool
-_XimRespSyncReply(ic, mode)
-    Xic		 ic;
-    BITMASK16	 mode;
+_XimRespSyncReply(
+    Xic		 ic,
+    BITMASK16	 mode)
 {
     if (mode & XimSYNCHRONUS) /* SYNC Request */
 	MARK_NEED_SYNC_REPLY(ic);
@@ -270,9 +270,9 @@ _XimSyncCallback(xim, len, data, call_data)
 }
 
 Private INT16
-_XimSetEventToWire(ev, event)
-    XEvent	*ev;
-    xEvent	*event;
+_XimSetEventToWire(
+    XEvent	*ev,
+    xEvent	*event)
 {
     if (!(_XimProtoEventToWire(ev, event, False)))
 	return 0;
@@ -282,10 +282,10 @@ _XimSetEventToWire(ev, event)
 }
 
 Private Bool
-_XimForwardEventCore(ic, ev, sync)
-    Xic		 ic;
-    XEvent	*ev;
-    Bool	 sync;
+_XimForwardEventCore(
+    Xic		 ic,
+    XEvent	*ev,
+    Bool	 sync)
 {
     Xim		 im = (Xim)ic->core.im;
     CARD32	 buf32[BUFSIZE/4];
@@ -354,10 +354,10 @@ _XimForwardEventCore(ic, ev, sync)
 }
 
 Public Bool
-_XimForwardEvent(ic, ev, sync)
-    Xic		 ic;
-    XEvent	*ev;
-    Bool	 sync;
+_XimForwardEvent(
+    Xic		 ic,
+    XEvent	*ev,
+    Bool	 sync)
 {
 #ifdef EXT_FORWARD
     if (((ev->type == KeyPress) || (ev->type == KeyRelease)))
@@ -368,11 +368,11 @@ _XimForwardEvent(ic, ev, sync)
 }
 
 Private void
-_XimProcEvent(d, ic, ev, buf)
-    Display		*d;
-    Xic			 ic;
-    XEvent		*ev;
-    CARD16		*buf;
+_XimProcEvent(
+    Display		*d,
+    Xic			 ic,
+    XEvent		*ev,
+    CARD16		*buf)
 {
     INT16	 serial = buf[0];
     xEvent	*xev = (xEvent *)&buf[1];
@@ -386,10 +386,10 @@ _XimProcEvent(d, ic, ev, buf)
 }
 
 Private Bool
-_XimForwardEventRecv(im, ic, buf)
-    Xim		 im;
-    Xic		 ic;
-    XPointer	 buf;
+_XimForwardEventRecv(
+    Xim		 im,
+    Xic		 ic,
+    XPointer	 buf)
 {
     CARD16	*buf_s = (CARD16 *)buf;
     Display	*d = im->core.display;
@@ -434,9 +434,9 @@ _XimForwardEventCallback(xim, len, data, call_data)
 }
 
 Private Bool
-_XimRegisterTriggerkey(im, buf)
-    Xim			 im;
-    XPointer		 buf;
+_XimRegisterTriggerkey(
+    Xim			 im,
+    XPointer		 buf)
 {
     CARD32		*buf_l = (CARD32 *)buf;
     CARD32		 len;
@@ -503,8 +503,8 @@ _XimRegisterTriggerKeysCallback(xim, len, data, call_data)
 }
 
 Public EVENTMASK
-_XimGetWindowEventmask(ic)
-    Xic		 ic;
+_XimGetWindowEventmask(
+    Xic		 ic)
 {
     Xim			im = (Xim )ic->core.im;
     XWindowAttributes	atr;
@@ -553,11 +553,11 @@ _XimTriggerNotifyCheck(im, len, data, arg)
 }
 
 Public Bool
-_XimTriggerNotify(im, ic, mode, idx)
-    Xim		 im;
-    Xic		 ic;
-    int		 mode;
-    CARD32	 idx;
+_XimTriggerNotify(
+    Xim		 im,
+    Xic		 ic,
+    int		 mode,
+    CARD32	 idx)
 {
     CARD32	 buf32[BUFSIZE/4];
     CARD8	*buf = (CARD8 *)buf32;
@@ -621,12 +621,12 @@ _XimTriggerNotify(im, ic, mode, idx)
 }
 
 Private Bool
-_XimRegCommitInfo(ic, string, string_len, keysym, keysym_len)
-    Xic			 ic;
-    char		*string;
-    int			 string_len;
-    KeySym		*keysym;
-    int			 keysym_len;
+_XimRegCommitInfo(
+    Xic			 ic,
+    char		*string,
+    int			 string_len,
+    KeySym		*keysym,
+    int			 keysym_len)
 {
     XimCommitInfo	info;
 
@@ -642,8 +642,8 @@ _XimRegCommitInfo(ic, string, string_len, keysym, keysym_len)
 }
 
 Private void
-_XimUnregCommitInfo(ic)
-    Xic			ic;
+_XimUnregCommitInfo(
+    Xic			ic)
 {
     XimCommitInfo	info;
 
@@ -660,8 +660,8 @@ _XimUnregCommitInfo(ic)
 }
 
 Public void
-_XimFreeCommitInfo(ic)
-    Xic			ic;
+_XimFreeCommitInfo(
+    Xic			ic)
 {
     while (ic->private.proto.commit_info)
 	_XimUnregCommitInfo(ic);
@@ -669,11 +669,11 @@ _XimFreeCommitInfo(ic)
 }
 
 Private Bool
-_XimProcKeySym(ic, sym, xim_keysym, xim_keysym_len)
-    Xic			  ic;
-    CARD32		  sym;
-    KeySym		**xim_keysym;
-    int			 *xim_keysym_len;
+_XimProcKeySym(
+    Xic			  ic,
+    CARD32		  sym,
+    KeySym		**xim_keysym,
+    int			 *xim_keysym_len)
 {
     Xim			 im = (Xim)ic->core.im;
 
@@ -689,12 +689,12 @@ _XimProcKeySym(ic, sym, xim_keysym, xim_keysym_len)
 }
 
 Private Bool
-_XimProcCommit(ic, buf, len, xim_string, xim_string_len)
-    Xic		  ic;
-    BYTE	 *buf;
-    int		  len;
-    char	**xim_string;
-    int		 *xim_string_len;
+_XimProcCommit(
+    Xic		  ic,
+    BYTE	 *buf,
+    int		  len,
+    char	**xim_string,
+    int		 *xim_string_len)
 {
     Xim		 im = (Xim)ic->core.im;
     char	*string;
@@ -713,10 +713,10 @@ _XimProcCommit(ic, buf, len, xim_string, xim_string_len)
 }
 
 Private Bool
-_XimCommitRecv(im, ic, buf)
-    Xim		 im;
-    Xic		 ic;
-    XPointer	 buf;
+_XimCommitRecv(
+    Xim		 im,
+    Xic		 ic,
+    XPointer	 buf)
 {
     CARD16	*buf_s = (CARD16 *)buf;
     BITMASK16	 flag = buf_s[0];
@@ -799,10 +799,10 @@ _XimCommitCallback(xim, len, data, call_data)
 }
 
 Public void
-_XimProcError(im, ic, data)
-    Xim		 im;
-    Xic		 ic;
-    XPointer	 data;
+_XimProcError(
+    Xim		 im,
+    Xic		 ic,
+    XPointer	 data)
 {
     return;
 }
@@ -899,13 +899,13 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 }
 
 Private int
-_Ximctsconvert(conv, from, from_len, to, to_len, state)
-    XlcConv	 conv;
-    char	*from;
-    int		 from_len;
-    char	*to;
-    int		 to_len;
-    Status	*state;
+_Ximctsconvert(
+    XlcConv	 conv,
+    char	*from,
+    int		 from_len,
+    char	*to,
+    int		 to_len,
+    Status	*state)
 {
     int		 from_left;
     int		 to_left;
@@ -1000,13 +1000,13 @@ _Ximctstombs(xim, from, from_len, to, to_len, state)
 }
 
 Public int
-_Ximctstowcs(xim, from, from_len, to, to_len, state)
-    XIM		 xim;
-    char	*from;
-    int		 from_len;
-    wchar_t	*to;
-    int		 to_len;
-    Status	*state;
+_Ximctstowcs(
+    XIM		 xim,
+    char	*from,
+    int		 from_len,
+    wchar_t	*to,
+    int		 to_len,
+    Status	*state)
 {
     Xim		 im = (Xim)xim;
     XlcConv	 conv = im->private.proto.ctow_conv;
@@ -1090,26 +1090,26 @@ _Ximctstowcs(xim, from, from_len, to, to_len, state)
 }
 
 Public int
-_Ximctstoutf8(xim, from, from_len, to, to_len, state)
-    XIM		 xim;
-    char	*from;
-    int		 from_len;
-    char	*to;
-    int		 to_len;
-    Status	*state;
+_Ximctstoutf8(
+    XIM		 xim,
+    char	*from,
+    int		 from_len,
+    char	*to,
+    int		 to_len,
+    Status	*state)
 {
     return _Ximctsconvert(((Xim)xim)->private.proto.ctoutf8_conv,
 			  from, from_len, to, to_len, state);
 }
 
 Public int
-_XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
-    XIC			 xic;
-    XKeyEvent		*ev;
-    char		*buffer;
-    int			 bytes;
-    KeySym		*keysym;
-    Status		*state;
+_XimProtoMbLookupString(
+    XIC			 xic,
+    XKeyEvent		*ev,
+    char		*buffer,
+    int			 bytes,
+    KeySym		*keysym,
+    Status		*state)
 {
     Xic			 ic = (Xic)xic;
     Xim			 im = (Xim)ic->core.im;
@@ -1165,13 +1165,13 @@ _XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
 }
 
 Public int
-_XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
-    XIC			 xic;
-    XKeyEvent		*ev;
-    wchar_t		*buffer;
-    int			 bytes;
-    KeySym		*keysym;
-    Status		*state;
+_XimProtoWcLookupString(
+    XIC			 xic,
+    XKeyEvent		*ev,
+    wchar_t		*buffer,
+    int			 bytes,
+    KeySym		*keysym,
+    Status		*state)
 {
     Xic			 ic = (Xic)xic;
     Xim			 im = (Xim)ic->core.im;
@@ -1227,13 +1227,13 @@ _XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
 }
 
 Public int
-_XimProtoUtf8LookupString(xic, ev, buffer, bytes, keysym, state)
-    XIC			 xic;
-    XKeyEvent		*ev;
-    char		*buffer;
-    int			 bytes;
-    KeySym		*keysym;
-    Status		*state;
+_XimProtoUtf8LookupString(
+    XIC			 xic,
+    XKeyEvent		*ev,
+    char		*buffer,
+    int			 bytes,
+    KeySym		*keysym,
+    Status		*state)
 {
     Xic			 ic = (Xic)xic;
     Xim			 im = (Xim)ic->core.im;

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omTextEsc.c,v 1.4 2000/11/28 18:49:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omTextEsc.c,v 1.5 2001/01/17 19:41:56 dawes Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -41,9 +41,9 @@
 #define	FONTSCOPE	2
 
 static int
-is_rotate(oc, font)
-    XOC         oc;
-    XFontStruct *font;
+is_rotate(
+    XOC         oc,
+    XFontStruct *font)
 {
     XOCGenericPart      *gen = XOC_GENERIC(oc);
     FontSet             font_set;
@@ -66,9 +66,9 @@ is_rotate(oc, font)
 }
 
 static int
-is_codemap(oc, font)
-    XOC         oc;
-    XFontStruct *font;
+is_codemap(
+    XOC         oc,
+    XFontStruct *font)
 {
     XOCGenericPart      *gen = XOC_GENERIC(oc);
     FontSet             font_set;
@@ -91,12 +91,12 @@ is_codemap(oc, font)
 }
 
 static int
-escapement_vertical(oc, font, is_xchar2b, text, length)
-    XOC         oc;
-    XFontStruct *font;
-    Bool        is_xchar2b;
-    XPointer    text;
-    int         length;
+escapement_vertical(
+    XOC         oc,
+    XFontStruct *font,
+    Bool        is_xchar2b,
+    XPointer    text,
+    int         length)
 {
     XChar2b	*buf2b;
     char	*buf;
@@ -125,14 +125,12 @@ escapement_vertical(oc, font, is_xchar2b, text, length)
 }
 
 
-extern FontData _XomGetFontDataFromFontSet();
-
 static int
-TextWidthWithFontSet(font_set, oc, text, length)
-    FontSet	font_set;
-    XOC		oc;
-    XPointer    text;
-    int         length;
+TextWidthWithFontSet(
+    FontSet	font_set,
+    XOC		oc,
+    XPointer    text,
+    int         length)
 {
     FontData		fd;
     XFontStruct		*font;
@@ -238,11 +236,11 @@ TextWidthWithFontSet(font_set, oc, text, length)
 /* For VW/UDC end */
 
 static int
-_XomGenericTextEscapement(oc, type, text, length)
-    XOC oc;
-    XOMTextType type;
-    XPointer text;
-    int length;
+_XomGenericTextEscapement(
+    XOC oc,
+    XOMTextType type,
+    XPointer text,
+    int length)
 {
     XlcConv conv;
     XFontStruct *font;

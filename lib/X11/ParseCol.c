@@ -24,15 +24,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ParseCol.c,v 1.3 2001/01/17 19:41:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ParseCol.c,v 1.5 2002/12/04 23:18:32 paulo Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-extern void _XcmsRGB_to_XColor();
-extern Status _XcmsResolveColorString();
 
 #if NeedFunctionPrototypes
 Status XParseColor (

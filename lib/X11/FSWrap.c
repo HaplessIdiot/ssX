@@ -56,7 +56,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/FSWrap.c,v 1.5 2001/01/17 19:41:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/FSWrap.c,v 1.6 2001/12/14 19:54:00 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -67,9 +67,9 @@ from The Open Group.
 #define	XMAXLIST	256
 
 char **
-_XParseBaseFontNameList(str, num)
-    char           *str;
-    int            *num;
+_XParseBaseFontNameList(
+    char           *str,
+    int            *num)
 {
     char           *plist[XMAXLIST];
     char          **list;
@@ -122,9 +122,9 @@ _XParseBaseFontNameList(str, num)
 }
 
 static char **
-copy_string_list(string_list, list_count)
-    char **string_list;
-    int list_count;
+copy_string_list(
+    char **string_list,
+    int list_count)
 {
     char **string_list_ret, **list_src, **list_dst, *dst;
     int length, count;

@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/omDefault.c,v 1.4 2000/11/29 17:40:25 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omDefault.c,v 1.5 2001/01/17 19:41:56 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"
@@ -41,11 +41,11 @@
 #define FreeLocalBuf(ptr)	if (ptr != local_buf) Xfree(ptr)
 
 static Bool
-wcs_to_mbs(oc, to, from, length)
-    XOC oc;
-    char *to;
-    _Xconst wchar_t *from;
-    int length;
+wcs_to_mbs(
+    XOC oc,
+    char *to,
+    _Xconst wchar_t *from,
+    int length)
 {
     XlcConv conv;
     int to_left, ret;
@@ -64,11 +64,11 @@ wcs_to_mbs(oc, to, from, length)
 }
 
 static Bool
-utf8_to_mbs(oc, to, from, length)
-    XOC oc;
-    char *to;
-    _Xconst char *from;
-    int length;
+utf8_to_mbs(
+    XOC oc,
+    char *to,
+    _Xconst char *from,
+    int length)
 {
     XlcConv conv;
     int to_left, ret;

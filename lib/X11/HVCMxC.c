@@ -44,28 +44,18 @@
  *		querying routine.
  *
  */
-/* $XFree86: xc/lib/X11/HVCMxC.c,v 1.2 1999/05/09 10:49:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/HVCMxC.c,v 1.3 2001/01/17 19:41:37 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include <math.h>
+#include "Cv.h"
 
 /*
  *	DEFINES
  */
 #define MAXBISECTCOUNT	100
 #define EPS	        0.001
-
-/*
- *	EXTERNS
- */
-extern Status _XcmsTekHVCQueryMaxVCRGB();
-extern int _XcmsTekHVC_CheckModify();
-extern XcmsColorSpace XcmsTekHVCColorSpace;
-
-/* CvColW.c */
-extern Status _XcmsConvertColorsWithWhitePt();
-
 
 
 /************************************************************************

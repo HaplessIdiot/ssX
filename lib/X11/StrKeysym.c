@@ -24,18 +24,16 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/StrKeysym.c,v 3.5 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/StrKeysym.c,v 3.6 2001/12/14 19:54:07 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 #include <X11/keysymdef.h>
-
-extern XrmQuark _XrmInternalStringToQuark();
-
-typedef unsigned long Signature;
+#include "Xresinternal.h"
 
 #define NEEDKTABLE
 #include "ks_tables.h"
+#include "Key.h"
 
 #ifndef KEYSYMDB
 #define KEYSYMDB "/usr/lib/X11/XKeysymDB"
@@ -46,7 +44,7 @@ static XrmDatabase keysymdb;
 static XrmQuark Qkeysym[2];
 
 XrmDatabase
-_XInitKeysymDB()
+_XInitKeysymDB(void)
 {
     if (!initialized)
     {

@@ -55,12 +55,13 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.16 2001/12/14 19:54:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.17 2002/05/31 18:45:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include <X11/Xlocale.h>
 #include <X11/Xos.h>
+#include "XlcPubI.h"
 
 #define MAXLOCALE	64	/* buffer size of locale name */
 
@@ -140,9 +141,9 @@ _Xsetlocale(category, name)
  */
 
 char *
-_XlcMapOSLocaleName(osname, siname)
-    char *osname;
-    char *siname;
+_XlcMapOSLocaleName(
+    char *osname,
+    char *siname)
 {
 #if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__UNIXOS2__) || defined(linux)
 # ifdef hpux

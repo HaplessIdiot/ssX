@@ -24,12 +24,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ErrHndlr.c,v 1.4 2001/01/17 19:41:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ErrHndlr.c,v 1.5 2001/12/14 19:53:59 dawes Exp $ */
 
 #include "Xlibint.h"
 
-extern int _XDefaultError();
-extern int _XDefaultIOError();
 /* 
  * XErrorHandler - This procedure sets the X non-fatal error handler
  * (_XErrorFunction) to be the specified routine.  If NULL is passed in
@@ -43,7 +41,7 @@ XErrorHandler XSetErrorHandler(handler)
     register XErrorHandler handler;
 #endif
 {
-    int (*oldhandler)();
+    int (*oldhandler)(Display *dpy, XErrorEvent *event);
 
     _XLockMutex(_Xglobal_lock);
     oldhandler = _XErrorFunction;
@@ -75,7 +73,7 @@ XIOErrorHandler XSetIOErrorHandler(handler)
     register XIOErrorHandler handler;
 #endif
 {
-    int (*oldhandler)();
+    int (*oldhandler)(Display *dpy);
 
     _XLockMutex(_Xglobal_lock);
     oldhandler = _XIOErrorFunction;

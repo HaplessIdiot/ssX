@@ -34,7 +34,7 @@
 /*
  * Modifiers: Jeff Walls, Paul Anderson (HEWLETT-PACKARD)
  */
-/* $XFree86: xc/lib/X11/omXChar.c,v 1.4 2000/11/29 17:40:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omXChar.c,v 1.5 2001/01/17 19:41:57 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPublic.h"
@@ -43,10 +43,10 @@
 
 /* for VW/UDC start */
 static Bool
-ismatch_scopes(fontdata,value, is_shift)
-    FontData      fontdata;
-    unsigned long *value;
-    Bool	  is_shift;
+ismatch_scopes(
+    FontData      fontdata,
+    unsigned long *value,
+    Bool	  is_shift)
 {
     register int side, scopes_num = fontdata->scopes_num;
     FontScope scopes = fontdata->scopes;
@@ -77,8 +77,8 @@ ismatch_scopes(fontdata,value, is_shift)
 }
 
 static int
-check_vertical_fonttype(name)
-    char	*name;
+check_vertical_fonttype(
+    char	*name)
 {
     char	*ptr;
     int		type = 0;
@@ -114,13 +114,13 @@ check_vertical_fonttype(name)
 #define FONTSCOPE     2
 
 FontData
-_XomGetFontDataFromFontSet(fs, str,len, len_ret, is2b, type)
-    FontSet fs;
-    unsigned char *str;
-    int len;
-    int *len_ret;
-    int is2b;     
-    int type;          /* VMAP , VROTATE , else */
+_XomGetFontDataFromFontSet(
+    FontSet fs,
+    unsigned char *str,
+    int len,
+    int *len_ret,
+    int is2b,     
+    int type)          /* VMAP , VROTATE , else */
 {
     unsigned long value;
     int num,i,hit,csize;
@@ -243,9 +243,9 @@ _XomGetFontDataFromFontSet(fs, str,len, len_ret, is2b, type)
 /* for VW/UDC end   */
 
 static FontSet
-_XomGetFontSetFromCharSet(oc, charset)
-    XOC oc;
-    XlcCharSet charset;
+_XomGetFontSetFromCharSet(
+    XOC oc,
+    XlcCharSet charset)
 {
     register FontSet font_set = XOC_GENERIC(oc)->font_set;
     register int num = XOC_GENERIC(oc)->font_set_num;
@@ -265,10 +265,10 @@ _XomGetFontSetFromCharSet(oc, charset)
 
 #ifdef MUSTCOPY
 static void
-cs_to_xchar2b(from, to, length)
-    register char *from;
-    register XChar2b *to;
-    register length;
+cs_to_xchar2b(
+    register char *from,
+    register XChar2b *to,
+    register length)
 {
     while (length-- > 0) {
 	to->byte1 = *from++;
@@ -278,10 +278,10 @@ cs_to_xchar2b(from, to, length)
 }
 
 static void
-cs_to_xchar2b_gl(from, to, length)
-    register char *from;
-    register XChar2b *to;
-    register length;
+cs_to_xchar2b_gl(
+    register char *from,
+    register XChar2b *to,
+    register length)
 {
     while (length-- > 0) {
 	to->byte1 = *from++ & 0x7f;
@@ -291,10 +291,10 @@ cs_to_xchar2b_gl(from, to, length)
 }
 
 static void
-cs_to_xchar2b_gr(from, to, length)
-    register char *from;
-    register XChar2b *to;
-    register length;
+cs_to_xchar2b_gr(
+    register char *from,
+    register XChar2b *to,
+    register length)
 {
     while (length-- > 0) {
 	to->byte1 = *from++ | 0x80;
@@ -305,27 +305,27 @@ cs_to_xchar2b_gr(from, to, length)
 #endif
 
 static void
-shift_to_gl(text, length)
-    register char *text;
-    register int length;
+shift_to_gl(
+    register char *text,
+    register int length)
 {
     while (length-- > 0)
 	*text++ &= 0x7f;
 }
 
 static void
-shift_to_gr(text, length)
-    register char *text;
-    register int length;
+shift_to_gr(
+    register char *text,
+    register int length)
 {
     while (length-- > 0)
 	*text++ |= 0x80;
 }
 
 static Bool
-load_font(oc, font_set)
-    XOC oc;
-    FontSet font_set;
+load_font(
+    XOC oc,
+    FontSet font_set)
 {
     font_set->font = XLoadQueryFont(oc->core.om->core.display,
 			oc->core.font_info.font_name_list[font_set->id]);
@@ -345,15 +345,15 @@ load_font(oc, font_set)
 }
 
 int
-_XomConvert(oc, conv, from, from_left, to, to_left, args, num_args)
-    XOC oc;
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+_XomConvert(
+    XOC oc,
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     XPointer cs, lc_args[1];
     XlcCharSet charset;
@@ -431,9 +431,9 @@ _XomConvert(oc, conv, from, from_left, to, to_left, args, num_args)
 }
 
 XlcConv
-_XomInitConverter(oc, type)
-    XOC oc;
-    XOMTextType type;
+_XomInitConverter(
+    XOC oc,
+    XOMTextType type)
 {
     XOCGenericPart *gen = XOC_GENERIC(oc);
     XlcConv *convp;
