@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Date.h,v 1.13 2003/04/15 03:16:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Date.h,v 1.14 2003/04/16 15:46:12 dawes Exp $ */
 
 #ifndef XF86_DATE
 
-#define XF86_DATE	"16 April 2003"
+#define XF86_DATE	"17 April 2003"
 
 #endif

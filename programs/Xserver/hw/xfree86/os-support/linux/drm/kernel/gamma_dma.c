@@ -194,7 +194,7 @@ static int gamma_do_dma(drm_device_t *dev, int locked)
 		if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
 			DRM_ERROR("Dispatching buffer %d from pid %d"
 				  " \"while locked\", but no lock held\n",
-				  buf->idx, buf->pid);
+				  buf->idx, current->pid);
 		}
 	} else {
 		if (!locked && !gamma_lock_take(&dev->lock.hw_lock->lock,
@@ -346,7 +346,8 @@ again:
 	return retcode;
 }
 
-static int gamma_dma_priority(drm_device_t *dev, drm_dma_t *d)
+static int gamma_dma_priority(struct file *filp, 
+			      drm_device_t *dev, drm_dma_t *d)
 {
 	unsigned long	  address;
 	unsigned long	  length;
@@ -384,15 +385,15 @@ static int gamma_dma_priority(drm_device_t *dev, drm_dma_t *d)
 			continue;
 		}
 		buf = dma->buflist[ idx ];
-		if (buf->pid != current->pid) {
-			DRM_ERROR("Process %d using buffer owned by %d\n",
-				  current->pid, buf->pid);
+		if (buf->filp != filp) {
+			DRM_ERROR("Process %d using buffer not owned\n",
+				  current->pid);
 			retcode = -EINVAL;
 			goto cleanup;
 		}
 		if (buf->list != DRM_LIST_NONE) {
-			DRM_ERROR("Process %d using %d's buffer on list %d\n",
-				  current->pid, buf->pid, buf->list);
+			DRM_ERROR("Process %d using buffer on list %d\n",
+				  current->pid, buf->list);
 			retcode = -EINVAL;
 			goto cleanup;
 		}
@@ -484,7 +485,8 @@ cleanup:
 	return retcode;
 }
 
-static int gamma_dma_send_buffers(drm_device_t *dev, drm_dma_t *d)
+static int gamma_dma_send_buffers(struct file *filp,
+				  drm_device_t *dev, drm_dma_t *d)
 {
 	DECLARE_WAITQUEUE(entry, current);
 	drm_buf_t	  *last_buf = NULL;
@@ -496,7 +498,7 @@ static int gamma_dma_send_buffers(drm_device_t *dev, drm_dma_t *d)
 		add_wait_queue(&last_buf->dma_wait, &entry);
 	}
 
-	if ((retcode = gamma_dma_enqueue(dev, d))) {
+	if ((retcode = gamma_dma_enqueue(filp, d))) {
 		if (d->flags & _DRM_DMA_BLOCK)
 			remove_wait_queue(&last_buf->dma_wait, &entry);
 		return retcode;
@@ -526,14 +528,13 @@ static int gamma_dma_send_buffers(drm_device_t *dev, drm_dma_t *d)
 			}
 		}
 		if (retcode) {
-			DRM_ERROR("ctx%d w%d p%d c%ld i%d l%d %d/%d\n",
+			DRM_ERROR("ctx%d w%d p%d c%ld i%d l%d pid:%d\n",
 				  d->context,
 				  last_buf->waiting,
 				  last_buf->pending,
 				  (long)DRM_WAITCOUNT(dev, d->context),
 				  last_buf->idx,
 				  last_buf->list,
-				  last_buf->pid,
 				  current->pid);
 		}
 	}
@@ -566,15 +567,15 @@ int gamma_dma(struct inode *inode, struct file *filp, unsigned int cmd,
 
 	if (d.send_count) {
 		if (d.flags & _DRM_DMA_PRIORITY)
-			retcode = gamma_dma_priority(dev, &d);
+			retcode = gamma_dma_priority(filp, dev, &d);
 		else
-			retcode = gamma_dma_send_buffers(dev, &d);
+			retcode = gamma_dma_send_buffers(filp, dev, &d);
 	}
 
 	d.granted_count = 0;
 
 	if (!retcode && d.request_count) {
-		retcode = gamma_dma_get_buffers(dev, &d);
+		retcode = gamma_dma_get_buffers(filp, &d);
 	}
 
 	DRM_DEBUG("%d returning, granted = %d\n",
@@ -612,7 +613,7 @@ static int gamma_do_init_dma( drm_device_t *dev, drm_gamma_init_t *init )
 	dev_priv->num_rast = init->num_rast;
 
 	list_for_each(list, &dev->maplist->head) {
-		drm_map_list_t *r_list = (drm_map_list_t *)list;
+		drm_map_list_t *r_list = list_entry(list, drm_map_list_t, head);
 		if( r_list->map &&
 		    r_list->map->type == _DRM_SHM &&
 		    r_list->map->flags & _DRM_CONTAINS_LOCK ) {
@@ -816,7 +817,7 @@ int gamma_setsareactx(struct inode *inode, struct file *filp,
 	down(&dev->struct_sem);
 	r_list = NULL;
 	list_for_each(list, &dev->maplist->head) {
-		r_list = (drm_map_list_t *)list;
+		r_list = list_entry(list, drm_map_list_t, head);
 		if(r_list->map &&
 		   r_list->map->handle == request.handle) break;
 	}

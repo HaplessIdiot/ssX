@@ -131,7 +131,7 @@ static struct file_operations i830_buffer_fops = {
 	.ioctl	 = DRM(ioctl),
 	.mmap	 = i830_mmap_buffers,
 	.read	 = DRM(read),
-	.fasync	 = DRM(fasync),
+	.fasync  = DRM(fasync),
       	.poll	 = DRM(poll),
 };
 
@@ -217,7 +217,6 @@ static int i830_unmap_buffer(drm_buf_t *buf)
 static int i830_dma_get_buffer(drm_device_t *dev, drm_i830_dma_t *d, 
 			       struct file *filp)
 {
-	drm_file_t	  *priv	  = filp->private_data;
 	drm_buf_t	  *buf;
 	drm_i830_buf_priv_t *buf_priv;
 	int retcode = 0;
@@ -235,7 +234,7 @@ static int i830_dma_get_buffer(drm_device_t *dev, drm_i830_dma_t *d,
 	   	DRM_ERROR("mapbuf failed, retcode %d\n", retcode);
 		return retcode;
 	}
-	buf->pid     = priv->pid;
+	buf->filp = filp;
 	buf_priv = buf->dev_private;	
 	d->granted = 1;
    	d->request_idx = buf->idx;
@@ -371,7 +370,7 @@ static int i830_dma_initialize(drm_device_t *dev,
    	memset(dev_priv, 0, sizeof(drm_i830_private_t));
 
 	list_for_each(list, &dev->maplist->head) {
-		drm_map_list_t *r_list = (drm_map_list_t *)list;
+		drm_map_list_t *r_list = list_entry(list, drm_map_list_t, head);
 		if( r_list->map &&
 		    r_list->map->type == _DRM_SHM &&
 		    r_list->map->flags & _DRM_CONTAINS_LOCK ) {
@@ -440,7 +439,7 @@ static int i830_dma_initialize(drm_device_t *dev,
 	DRM_DEBUG("pitch_bits %x\n",    init->pitch_bits);
 
 	dev_priv->cpp = init->cpp;
-	/* We are using seperate values as placeholders for mechanisms for
+	/* We are using separate values as placeholders for mechanisms for
 	 * private backbuffer/depthbuffer usage.
 	 */
 
@@ -1301,8 +1300,10 @@ static int i830_flush_queue(drm_device_t *dev)
 }
 
 /* Must be called with the lock held */
-void i830_reclaim_buffers(drm_device_t *dev, pid_t pid)
+void i830_reclaim_buffers( struct file *filp )
 {
+	drm_file_t    *priv   = filp->private_data;
+	drm_device_t  *dev    = priv->dev;
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
@@ -1316,7 +1317,7 @@ void i830_reclaim_buffers(drm_device_t *dev, pid_t pid)
 	   	drm_buf_t *buf = dma->buflist[ i ];
 	   	drm_i830_buf_priv_t *buf_priv = buf->dev_private;
 	   
-		if (buf->pid == pid && buf_priv) {
+		if (buf->filp == filp && buf_priv) {
 			int used = cmpxchg(buf_priv->in_use, I830_BUF_CLIENT, 
 					   I830_BUF_FREE);
 
