@@ -90,8 +90,8 @@ install.man:: 								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
 	for i in aliases; do \                                          @@\
 		(set -x; \						@@\
-		$(RM) $(DESTDIR)destdir/$$i.0;\  				@@\
-		$(LN) destdir/file.0 $(DESTDIR)destdir/$$i.0;\  @@\
+		$(RM) $(DESTDIR)destdir/$$i.0;\  			@@\
+		(cd $(DESTDIR)destdir; $(LN) file.0 $$i.0);\  		@@\
 		); \							@@\
 	done
 
