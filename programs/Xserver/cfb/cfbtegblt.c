@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.1 1998/03/20 21:05:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.2 1998/10/04 09:37:52 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -89,7 +89,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     FontPtr	pfont = pGC->font;
     int widthDst;
-    unsigned long *pdstBase;	/* pointer to longword with top row 
+    CfbBits *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
 
     int w;			/* width of glyph and char */
@@ -99,12 +99,12 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned char *pglyph;
     int widthGlyph;
 
-    register unsigned long *pdst;/* pointer to current longword in dst */
+    register CfbBits *pdst;/* pointer to current longword in dst */
     int hTmp;			/* counter for height */
     BoxRec bbox;		/* for clipping */
 
     register int wtmp,xtemp,width;
-    unsigned long bgfill,fgfill,*ptemp,tmpDst1,tmpDst2,*pdtmp;
+    CfbBits bgfill,fgfill,*ptemp,tmpDst1,tmpDst2,*pdtmp;
     int tmpx;
 #if PSZ == 24
     int xIndex;
@@ -185,9 +185,9 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #endif
 
 #if PSZ == 24
-		    ptemp = (unsigned long *)(pglyph + ((xtemp *3)>> 2));
+		    ptemp = (CfbBits *)(pglyph + ((xtemp *3)>> 2));
 #else
-		    ptemp = (unsigned long *)(pglyph + (xtemp >> MFB_PWSH));
+		    ptemp = (CfbBits *)(pglyph + (xtemp >> MFB_PWSH));
 #endif
 #if PSZ == 24
 		    getstipplepixels24(ptemp,xtemp,0,&bgfill,&tmpDst1, xtemp);
@@ -198,12 +198,12 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #endif
 
 		    {
-			unsigned long tmpDst = tmpDst1 | tmpDst2;
+			CfbBits tmpDst = tmpDst1 | tmpDst2;
 #if PSZ == 24
-			unsigned long *pdsttmp = pdst + ((x*3) >> 2);
+			CfbBits *pdsttmp = pdst + ((x*3) >> 2);
 			putbits24(tmpDst,tmpx,w,pdsttmp,pGC->planemask,x);
 #else
-			unsigned long *pdsttmp = pdst + (x >> PWSH);
+			CfbBits *pdsttmp = pdst + (x >> PWSH);
 			putbits(tmpDst,tmpx,w,pdsttmp,pGC->planemask);
 #endif
 		    }

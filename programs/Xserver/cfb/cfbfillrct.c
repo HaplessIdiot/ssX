@@ -1,7 +1,7 @@
 /*
  * Fill rectangles.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.5 1999/03/14 03:21:31 dawes Exp $ */
 
 /*
 
@@ -66,7 +66,7 @@ cfbFillRectTileOdd (pDrawable, pGC, nBox, pBox)
     BoxPtr	pBox;
 {
     int	xrot, yrot;
-    void    (*fill)();
+    void    (*fill)(DrawablePtr, int, BoxPtr, PixmapPtr, int, int, int, unsigned long);
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
@@ -113,7 +113,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxRec	    stackRects[NUM_STACK_RECTS];
     cfbPrivGC	    *priv;
     int		    numRects;
-    void	    (*BoxFill)();
+    void	    (*BoxFill)(DrawablePtr, GCPtr, int, BoxPtr);
     int		    n;
     int		    xorg, yorg;
 

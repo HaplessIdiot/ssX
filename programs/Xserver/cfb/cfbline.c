@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.1 1998/03/20 21:05:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.2 1998/10/04 09:37:45 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -111,7 +111,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
 
-    unsigned long *addrl;	/* address of destination pixmap */
+    CfbBits *addrl;	/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -131,7 +131,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     register int x1, x2;
     RegionPtr cclip;
     cfbPrivGCPtr    devPriv;
-    unsigned long   xor, and;
+    CfbBits   xor, and;
     int		    alu;
 
     devPriv = cfbGetGCPrivate(pGC);
@@ -425,8 +425,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		unsigned long mask;
-		unsigned long scrbits;
+		CfbBits mask;
+		CfbBits scrbits;
 
 #if PSZ == 24
 		mask = cfbmask[(x2 & 3)<<1];
@@ -478,7 +478,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     register unsigned int oc1;		/* outcode of point 1 */
     register unsigned int oc2;		/* outcode of point 2 */
 
-    unsigned long *addrl;		/* address of destination pixmap */
+    CfbBits *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -726,7 +726,7 @@ dontStep:	;
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		unsigned long	mask;
+		CfbBits	mask;
 		int		pix;
 
 		pix = 0;

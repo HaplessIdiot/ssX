@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.35 1999/11/19 13:55:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.36 1999/12/27 00:39:54 robin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -301,27 +301,13 @@ SOFTWARE.
 
 # if defined(XF86MONOVGA) || defined(XF86VGA16)
 #  define BITMAP_SCANLINE_UNIT  8
-# else
-   /* pad scanline to a longword */
-#  define BITMAP_SCANLINE_UNIT			64
 # endif
 
-# define BITMAP_SCANLINE_PAD 			64
-# define LOG2_BITMAP_PAD			6
-# define LOG2_BYTES_PER_SCANLINE_PAD		3
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
 # define FAST_CONSTANT_OFFSET_MODE
 # define LARGE_INSTRUCTION_CACHE
 # define PLENTIFUL_REGISTERS
-
-/* Add for handling protocol XPutImage and XGetImage; see comment below */
-#define INTERNAL_VS_EXTERNAL_PADDING
-#define BITMAP_SCANLINE_UNIT_PROTO		32
-
-#define BITMAP_SCANLINE_PAD_PROTO 	 	32
-#define LOG2_BITMAP_PAD_PROTO			5
-#define LOG2_BYTES_PER_SCANLINE_PAD_PROTO	2
 
 #endif /* alpha */
 
@@ -426,21 +412,6 @@ SOFTWARE.
 # define GLYPHPADBYTES		4
 # define GETLEFTBITS_ALIGNMENT	1
 
-/* pad scanline to a longword */
-#define BITMAP_SCANLINE_UNIT			64
-
-#define BITMAP_SCANLINE_PAD 			64
-#define LOG2_BITMAP_PAD				6
-#define LOG2_BYTES_PER_SCANLINE_PAD		3
-
-/* Add for handling protocol XPutImage and XGetImage; see comment below */
-#define INTERNAL_VS_EXTERNAL_PADDING
-#define BITMAP_SCANLINE_UNIT_PROTO		32
-
-#define BITMAP_SCANLINE_PAD_PROTO 	 	32
-#define LOG2_BITMAP_PAD_PROTO			5
-#define LOG2_BYTES_PER_SCANLINE_PAD_PROTO	2
-
 #else
 
 #define GLYPHPADBYTES		2
@@ -520,42 +491,8 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
 #define BitmapBytePad(w) \
     (((int)((w) + BITMAP_SCANLINE_PAD - 1) >> LOG2_BITMAP_PAD) << LOG2_BYTES_PER_SCANLINE_PAD)
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-
-/*  This is defined if the server's internal padding is different from the padding
- *  advertised in the protocol.  The protocol does not allow for padding to
- *  64 bits, for example, so if the server wants to use 64 bit padding internally,
- *  it has to advertise 32 bit padding and do padding fixups whenever images
- *  cross the wire.  (See ProcGetImage and ProcPutImage.)
- *
- *  The macros and constants that end in Proto or PROTO refer to the advertised
- *  padding, and the ones without Proto are for internal padding.
- */
-
-extern PaddingInfo PixmapWidthPaddingInfoProto[];
-
-#define PixmapWidthInPadUnitsProto(w, d) \
-    (PixmapWidthPaddingInfoProto[d].notPower2 ? \
-    (((int)(w) * PixmapWidthPaddingInfoProto[d].bytesPerPixel +  \
-	         PixmapWidthPaddingInfoProto[d].bytesPerPixel) >> \
-	PixmapWidthPaddingInfoProto[d].padBytesLog2) : \
-    ((int)((w) + PixmapWidthPaddingInfoProto[d].padRoundUp) >> \
-	PixmapWidthPaddingInfoProto[d].padPixelsLog2))
-
-#define PixmapBytePadProto(w, d) \
-    (PixmapWidthInPadUnitsProto(w, d) << \
-    PixmapWidthPaddingInfoProto[d].padBytesLog2)
-
-#define BitmapBytePadProto(w) \
-    ((((w) + BITMAP_SCANLINE_PAD_PROTO - 1) >> LOG2_BITMAP_PAD_PROTO) \
-    << LOG2_BYTES_PER_SCANLINE_PAD_PROTO)
-
-#else /* protocol and internal padding is the same */
-
 #define PixmapWidthInPadUnitsProto(w, d) PixmapWidthInPadUnits(w, d)
 #define PixmapBytePadProto(w, d) PixmapBytePad(w, d)
 #define BitmapBytePadProto(w) BitmapBytePad(w)
-
-#endif /* protocol vs. internal padding  */
 
 #endif /* SERVERMD_H */

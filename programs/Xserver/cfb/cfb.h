@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.21 2000/01/21 01:11:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.22 2000/01/26 22:05:48 tsi Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -44,6 +44,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #undef PixelType
 
 #include "cfbmap.h"
+
+#ifndef CfbBits
+#define CfbBits CARD32
+#endif
 
 #ifndef CFB_PROTOTYPES_ONLY
 #define __CFB_H__
@@ -63,7 +67,7 @@ typedef struct {
     unsigned char       ropOpStip;      /* rop for opaque stipple */
     /* this value is ropFillArea in mfb, usurped for cfb */
     unsigned char       oneRect;	/*  drawable has one clip rect */
-    unsigned long	xor, and;	/* reduced rop values */
+    CfbBits	xor, and;	/* reduced rop values */
     } cfbPrivGC;
 
 typedef cfbPrivGC	*cfbPrivGCPtr;
@@ -76,7 +80,7 @@ typedef cfbPrivGC	*cfbPrivGCPtr;
 /* way to carry RROP info around */
 typedef struct {
     unsigned char	rop;
-    unsigned long	xor, and;
+    CfbBits	xor, and;
 } cfbRRopRec, *cfbRRopPtr;
 
 /* private field of window */
@@ -97,15 +101,15 @@ typedef struct {
 
 extern int cfbSetStipple(
     int /*alu*/,
-    unsigned long /*fg*/,
-    unsigned long /*planemask*/
+    CfbBits /*fg*/,
+    CfbBits /*planemask*/
 );
 
 extern int cfbSetOpaqueStipple(
     int /*alu*/,
-    unsigned long /*fg*/,
-    unsigned long /*bg*/,
-    unsigned long /*planemask*/
+    CfbBits /*fg*/,
+    CfbBits /*bg*/,
+    CfbBits /*planemask*/
 );
 
 extern int cfbComputeClipMasks32(
@@ -427,9 +431,9 @@ extern void cfbDoBitbltXor(
 
 extern void cfbBresS(
     int /*rop*/,
-    unsigned long /*and*/,
-    unsigned long /*xor*/,
-    unsigned long * /*addrl*/,
+    CfbBits /*and*/,
+    CfbBits /*xor*/,
+    CfbBits * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -450,7 +454,7 @@ extern void cfbBresD(
     int /*numInDashList*/,
     int * /*pdashOffset*/,
     int /*isDoubleDash*/,
-    unsigned long * /*addrl*/,
+    CfbBits * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -666,11 +670,11 @@ extern void cfbPolyGlyphRop8(
 );
 /* cfbhrzvert.c */
 
-extern int cfbHorzS(
+extern void cfbHorzS(
     int /*rop*/,
-    unsigned long /*and*/,
-    unsigned long /*xor*/,
-    unsigned long * /*addrl*/,
+    CfbBits /*and*/,
+    CfbBits /*xor*/,
+    CfbBits * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -679,9 +683,9 @@ extern int cfbHorzS(
 
 extern void cfbVertS(
     int /*rop*/,
-    unsigned long /*and*/,
-    unsigned long /*xor*/,
-    unsigned long * /*addrl*/,
+    CfbBits /*and*/,
+    CfbBits /*xor*/,
+    CfbBits * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -867,10 +871,10 @@ extern void cfb8FillRectStippledUnnatural(
 
 extern int cfbReduceRasterOp(
     int /*rop*/,
-    unsigned long /*fg*/,
-    unsigned long /*pm*/,
-    unsigned long * /*andp*/,
-    unsigned long * /*xorp*/
+    CfbBits /*fg*/,
+    CfbBits /*pm*/,
+    CfbBits * /*andp*/,
+    CfbBits * /*xorp*/
 );
 /* cfbscrinit.c */
 
@@ -934,7 +938,7 @@ extern void cfbSegmentSD(
 );
 /* cfbsetsp.c */
 
-extern int cfbSetScanline(
+extern void cfbSetScanline(
     int /*y*/,
     int /*xOrigin*/,
     int /*xStart*/,
@@ -1240,7 +1244,7 @@ extern int cfbScreenPrivateIndex;
 
 #define cfbGetPixelWidth(pDrawable) cfbGetTypedWidth(pDrawable, PixelType)
 
-#define cfbGetLongWidth(pDrawable) cfbGetTypedWidth(pDrawable, unsigned long)
+#define cfbGetLongWidth(pDrawable) cfbGetTypedWidth(pDrawable, CfbBits)
     
 #define cfbGetTypedWidthAndPointer(pDrawable, width, pointer, wtype, ptype) {\
     PixmapPtr   _pPix; \
@@ -1256,7 +1260,7 @@ extern int cfbScreenPrivateIndex;
     cfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned char, unsigned char)
 
 #define cfbGetLongWidthAndPointer(pDrawable, width, pointer) \
-    cfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned long, unsigned long)
+    cfbGetTypedWidthAndPointer(pDrawable, width, pointer, CfbBits, CfbBits)
 
 #define cfbGetPixelWidthAndPointer(pDrawable, width, pointer) \
     cfbGetTypedWidthAndPointer(pDrawable, width, pointer, PixelType, PixelType)
@@ -1268,7 +1272,7 @@ extern int cfbScreenPrivateIndex;
 }
 
 #define cfbGetWindowLongWidthAndPointer(pWin, width, pointer) \
-    cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned long, unsigned long)
+    cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, CfbBits, CfbBits)
 
 #define cfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
     cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned char, unsigned char)

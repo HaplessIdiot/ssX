@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.7 1999/01/26 10:40:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.8 1999/12/13 02:13:07 robin Exp $ */
 
 /*
 
@@ -121,7 +121,7 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DDXPointPtr	    pptSrc;
     unsigned long   planemask;
 {
-    unsigned long *psrcBase, *pdstBase;	
+    CfbBits *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
     int widthSrc, widthDst;	/* add to get to same position in next line */
 
@@ -137,20 +137,20 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int xdir;			/* 1 = left right, -1 = right left/ */
     int ydir;			/* 1 = top down, -1 = bottom up */
 
-    unsigned long *psrcLine, *pdstLine;	
+    CfbBits *psrcLine, *pdstLine;	
 				/* pointers to line with current src and dst */
-    register unsigned long *psrc;/* pointer to current src longword */
-    register unsigned long *pdst;/* pointer to current dst longword */
+    register CfbBits *psrc;/* pointer to current src longword */
+    register CfbBits *pdst;/* pointer to current dst longword */
 
     MROP_DECLARE_REG()
 
 				/* following used for looping through a line */
-    unsigned long startmask, endmask;	/* masks for writing ends of dst */
+    CfbBits startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     int xoffSrc, xoffDst, xoffEnd;
     register int leftShift, rightShift;
-    register unsigned long bits;
-    register unsigned long bits1;
+    register CfbBits bits;
+    register CfbBits bits1;
     register int nl;		/* temp copy of nlMiddle */
 
 				/* place to store full source word */
@@ -416,7 +416,7 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 #endif
 #ifdef DO_UNALIGNED_BITBLT
 	    nl = xoffSrc - xoffDst;
-	    psrcLine = (unsigned long *)
+	    psrcLine = (CfbBits *)
 			(((unsigned char *) psrcLine) + nl);
 #else
 #if PSZ == 24 && MROP == 0
@@ -702,7 +702,7 @@ pdst++;
 #else
 	    nl = xoffSrc - xoffDst;
 #endif
-	    psrcLine = (unsigned long *)
+	    psrcLine = (CfbBits *)
 			(((unsigned char *) psrcLine) + nl);
 #else
 #if PSZ == 24 && MROP == 0

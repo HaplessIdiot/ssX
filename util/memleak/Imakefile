@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/09/28 17:19:05 rws $
-XCOMM $XFree86: xc/util/memleak/Imakefile,v 3.2 1996/12/23 07:19:34 dawes Exp $
+XCOMM $XFree86: xc/util/memleak/Imakefile,v 3.3 1999/12/27 00:56:41 robin Exp $
 #define DoNormalLib YES
 #define DoSharedLib NO
 #define DoDebugLib NO
@@ -47,6 +47,13 @@ GRA_SRCS = getreti386.c stackbottom.c
 #endif
 #endif
 
+#ifdef AlphaArchitecture
+#define HasGetReturnAddress	NO
+#define TopOfData \&_end
+#define TopOfStack 0x11ffffff0
+#define BottomOfData \&xf86DriverList
+#endif
+
 #ifndef HasGetReturnAddress
 #define HasGetReturnAddress NO
 #endif
@@ -55,8 +62,12 @@ GRA_SRCS = getreti386.c stackbottom.c
  GRA_DEFS = -DHAS_GET_RETURN_ADDRESS
 #endif
 
+#ifdef TopOfData
+ TOD_DEFS = -DTOP_OF_DATA=TopOfData
+#endif
+
 DEFINES = 	-DTOP_OF_STACK=TopOfStack -DBOTTOM_OF_DATA=BottomOfData\
-		$(GRA_DEFS) $(LOCAL_DEFS)
+		$(GRA_DEFS) $(TOD_DEFS) $(LOCAL_DEFS)
 
 CDEBUGFLAGS = DebuggableCDebugFlags
 

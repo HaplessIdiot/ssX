@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.2 1998/10/04 09:37:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.3 1998/10/04 13:23:58 dawes Exp $ */
 
 
 #include "X.h"
@@ -114,10 +114,10 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     BoxPtr	    pBox;
 {
     register int    m;
-    register unsigned long   *pdst;
+    register CfbBits   *pdst;
     RROP_DECLARE
-    register unsigned long   leftMask, rightMask;
-    unsigned long   *pdstBase, *pdstRect;
+    register CfbBits   leftMask, rightMask;
+    CfbBits   *pdstBase, *pdstRect;
     int		    nmiddle;
     int		    h;
     int		    w;
@@ -661,9 +661,9 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 #endif
 #if RROP == GXset
 		  *pdst = DoRRop((*pdst), piQxelAnd[0], piQxelXor[0]);
-		  *pdst++;
+		  pdst++;
 		  *pdst = DoMaskRRop((*pdst), piQxelAnd[1], piQxelXor[1], 0xFFFF);
-		  *pdst++;
+		  pdst++;
 #endif
 		  break;
 		case 3:
@@ -758,14 +758,14 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		*pwidthInit;		/* pointer to list of n widths */
     int 	fSorted;
 {
-    unsigned long   *pdstBase;
+    CfbBits   *pdstBase;
     int		    widthDst;
 
     RROP_DECLARE
     
-    register unsigned long  *pdst;
+    register CfbBits  *pdst;
     register int	    nlmiddle;
-    register unsigned long  startmask, endmask;
+    register CfbBits  startmask, endmask;
     register int	    w;
     int			    x;
     
@@ -1238,9 +1238,9 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 #endif
 #if RROP == GXset
 		  *pdst = DoRRop((*pdst), piQxelAnd[0], piQxelXor[0]);
-		  *pdst++;
+		  pdst++;
 		  *pdst = DoMaskRRop((*pdst), piQxelAnd[1], piQxelXor[1], 0xFFFF);
-		  *pdst++;
+		  pdst++;
 #endif
 		  break;
 		case 3:

@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.10 1999/03/01 02:15:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.11 1999/04/11 13:10:39 dawes Exp $ */
 
 
 #include "X.h"
@@ -36,71 +36,62 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "colormapst.h"
 #include "resource.h"
 #include "micmap.h"
+#include "cfb.h"
 
 int
-cfbListInstalledColormaps(pScreen, pmaps)
-    ScreenPtr	pScreen;
-    Colormap	*pmaps;
+cfbListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
 {
     return miListInstalledColormaps(pScreen, pmaps);
 }
 
 void
-cfbInstallColormap(pmap)
-    ColormapPtr	pmap;
+cfbInstallColormap(ColormapPtr pmap)
 {
     miInstallColormap(pmap);
 }
 
 void
-cfbUninstallColormap(pmap)
-    ColormapPtr	pmap;
+cfbUninstallColormap(ColormapPtr pmap)
 {
     miUninstallColormap(pmap);
 }
 
 void
-cfbResolveColor(pred, pgreen, pblue, pVisual)
-    unsigned short	*pred, *pgreen, *pblue;
-    register VisualPtr	pVisual;
+cfbResolveColor(unsigned short *pred, 
+		unsigned short *pgreen,
+		unsigned short *pblue,
+		VisualPtr	pVisual)
 {
     miResolveColor(pred, pgreen, pblue, pVisual);
 }
 
 Bool
-cfbInitializeColormap(pmap)
-    register ColormapPtr	pmap;
+cfbInitializeColormap(ColormapPtr pmap)
 {
     return miInitializeColormap(pmap);
 }
 
 int
-cfbExpandDirectColors (pmap, ndef, indefs, outdefs)
-    ColormapPtr	pmap;
-    int		ndef;
-    xColorItem	*indefs, *outdefs;
+cfbExpandDirectColors (ColormapPtr pmap, int ndef, 
+		       xColorItem *indefs, xColorItem *outdefs)
 {
     return miExpandDirectColors(pmap, ndef, indefs, outdefs);
 }
 
 Bool
-cfbCreateDefColormap(pScreen)
-    ScreenPtr pScreen;
+cfbCreateDefColormap(ScreenPtr pScreen)
 {
     return miCreateDefColormap(pScreen);
 }
 
 void
-cfbClearVisualTypes()
+cfbClearVisualTypes(void)
 {
     miClearVisualTypes();
 }
 
 Bool
-cfbSetVisualTypes (depth, visuals, bitsPerRGB)
-    int	    depth;
-    int	    visuals;
-    int     bitsPerRGB;
+cfbSetVisualTypes (int depth, int visuals, int bitsPerRGB)
 {
     return miSetVisualTypes(depth, visuals, bitsPerRGB, -1);
 }
@@ -112,14 +103,14 @@ cfbSetVisualTypes (depth, visuals, bitsPerRGB)
  */
 
 Bool
-cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, sizes, bitsPerRGB)
-    VisualPtr	*visualp;
-    DepthPtr	*depthp;
-    int		*nvisualp, *ndepthp;
-    int		*rootDepthp;
-    VisualID	*defaultVisp;
-    unsigned long   sizes;
-    int		bitsPerRGB;
+cfbInitVisuals (VisualPtr   *visualp,
+		DepthPtr    *depthp,
+		int	    *nvisualp,
+		int	    *ndepthp,
+		int	    *rootDepthp,
+		VisualID    *defaultVisp,
+		unsigned long	sizes,
+		int	    bitsPerRGB)
 {
     return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
 			 defaultVisp, sizes, bitsPerRGB, -1);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.1 1996/08/25 14:05:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.2 1998/10/04 09:37:37 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -58,8 +58,8 @@ void
 cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
 	 e2, len)
     int		    rop;
-    unsigned long   and, xor;
-    unsigned long   *addrl;		/* pointer to base of bitmap */
+    CfbBits   and, xor;
+    CfbBits   *addrl;		/* pointer to base of bitmap */
     int		    nlwidth;		/* width in longwords of bitmap */
     register int    signdx;
     int		    signdy;		/* signs of directions */
@@ -72,7 +72,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
 {
     register int	e3 = e2-e1;
 #if PSZ == 24
-    unsigned long piQxelXor[3],piQxelAnd[3];
+    CfbBits piQxelXor[3],piQxelAnd[3];
     char *addrb;
     int nlwidth3, signdx3;
 #endif
@@ -100,7 +100,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
     	nlwidth = -nlwidth;
     e = e-e1;			/* to make looping easier */
 #if PSZ == 24
-    nlwidth3 = nlwidth * sizeof (long);
+    nlwidth3 = nlwidth * sizeof (CfbBits);
     signdx3 = signdx * 3;
 #endif
     
@@ -226,8 +226,8 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
 	}
     }
 #else /* !PIXEL_ADDR */
-    register unsigned long   tmp, bit;
-    unsigned long leftbit, rightbit;
+    register CfbBits   tmp, bit;
+    CfbBits leftbit, rightbit;
 
     /* point to longword containing first point */
 #if PSZ == 24

@@ -1,5 +1,5 @@
 /*
- * $Id: fbblt.c,v 1.3 2000/01/21 15:06:15 dawes Exp $
+ * $Id: fbblt.c,v 1.4 2000/02/12 03:39:42 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,11 +21,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.2 2000/01/21 01:11:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.3 2000/01/21 15:06:15 dawes Exp $ */
 
 #include "fb.h"
-
-#define FbSelectPart(x,o)   FbSelectPatternPart(x,o)
 
 #define InitializeShifts(sx,dx,ls,rs) { \
     if (sx != dx) { \

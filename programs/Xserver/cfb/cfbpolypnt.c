@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.1 1998/03/20 21:05:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.2 1998/10/04 09:37:48 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -69,17 +69,17 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 {
     register INT32   pt;
     register INT32   c1, c2;
-    register unsigned long   ClipMask = 0x80008000;
-    register unsigned long   xor;
+    register CARD32    ClipMask = 0x80008000;
+    register CfbBits   xor;
 #ifdef PIXEL_ADDR
     register PixelType   *addrp;
     register int    npwidth;
     PixelType	    *addrpt;
 #else
-    register unsigned long    *addrl;
+    register CfbBits    *addrl;
     register int    nlwidth;
     register int    xoffset;
-    unsigned long   *addrlt;
+    CfbBits   *addrlt;
 #endif
 #if PSZ == 24
     RROP_DECLARE
@@ -91,7 +91,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int		    nbox;
     register int    i;
     register BoxPtr pbox;
-    unsigned long   and;
+    CfbBits   and;
     int		    rop = pGC->alu;
     int		    off;
     cfbPrivGCPtr    devPriv;

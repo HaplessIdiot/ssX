@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.6 2000/01/21 15:06:14 dawes Exp $
+ * $Id: fb.h,v 1.7 2000/02/12 03:39:42 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.5 2000/01/21 01:11:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.6 2000/01/21 15:06:14 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -46,7 +46,11 @@
  */
 
 #ifndef FB_SHIFT
-#define FB_SHIFT    5
+#define FB_SHIFT    LOG2_BITMAP_PAD
+#endif
+
+#if FB_SHIFT < LOG2_BITMAP_PAD
+    error FB_SHIFT must be >= LOG2_BITMAP_PAD
 #endif
     
 #define FB_UNIT	    (1 << FB_SHIFT)
@@ -71,7 +75,7 @@
 #define FB_STIP_ALLONES	((FbStip) -1)
     
 #define FB_STIP_ODDSTRIDE(s)	(((s) & (FB_MASK >> FB_STIP_SHIFT)) != 0)
-#define FB_STIP_ODDPTR(p)	((((int) (p)) & (FB_MASK >> 3)) != 0)
+#define FB_STIP_ODDPTR(p)	((((long) (p)) & (FB_MASK >> 3)) != 0)
     
 #define FbStipStrideToBitsStride(s) (((s) >> (FB_SHIFT - FB_STIP_SHIFT)))
 #define FbBitsStrideToStipStride(s) (((s) << (FB_SHIFT - FB_STIP_SHIFT)))
@@ -79,16 +83,29 @@
 #define FbFullMask(n)   ((n) == FB_UNIT ? FB_ALLONES : ((((FbBits) 1) << n) - 1))
     
 #if FB_SHIFT == 6
-#ifdef WIN32
+# ifdef WIN32
 typedef unsigned __int64    FbBits;
-#else
-typedef unsigned long long  FbBits;
-#endif
-#endif
-#if FB_SHIFT == 5
+# else
+#  ifdef __alpha__
 typedef unsigned long	    FbBits;
+#  else
+typedef unsigned long long  FbBits;
+#  endif
+# endif
 #endif
-typedef unsigned long	    FbStip;
+
+#if FB_SHIFT == 5
+typedef CARD32		    FbBits;
+#endif
+
+#if LOG2_BITMAP_PAD == FB_SHIFT
+typedef FbBits		    FbStip;
+#else
+# if LOG2_BITMAP_PAD == 5
+typedef CARD32		    FbStip;
+# endif
+#endif
+
 typedef int		    FbStride;
 
 
@@ -111,12 +128,14 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 /* #define FbLeftBits(x,n)	((x) & ((((FbBits) 1) << (n)) - 1)) */
 #define FbLeftStipBits(x,n) ((x) & ((((FbStip) 1) << (n)) - 1))
 #define FbStipMoveLsb(x,s,n)	(FbStipRight (x,(s)-(n)))
+#define FbPatternOffsetBits	0
 #else
 #define FbScrLeft(x,n)	((x) << (n))
 #define FbScrRight(x,n)	((x) >> (n))
 /* #define FbLeftBits(x,n)	((x) >> (FB_UNIT - (n))) */
 #define FbLeftStipBits(x,n) ((x) >> (FB_STIP_UNIT - (n)))
 #define FbStipMoveLsb(x,s,n)	(x)
+#define FbPatternOffsetBits	(sizeof (FbBits) - 1)
 #endif
 
 #define GetHighWord(x) (((int) (x)) >> 16)
@@ -186,9 +205,15 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 
 #define FbByteMaskInvalid   0x10
 
-#define FbPtrOffset(p,o,t)	    ((t *) ((CARD8 *) (p) + (o)))
-#define FbSelectPatternPart(xor,o)  ((xor) >> ((o) << 3))
-#define FbStorePart(dst,off,t,xor)  *FbPtrOffset(dst,off,t) = FbSelectPart(xor,off)
+#define FbPatternOffset(o,t)  ((o) ^ (FbPatternOffsetBits & ~(sizeof (t) - 1)))
+
+#define FbPtrOffset(p,o,t)		((t *) ((CARD8 *) (p) + (o)))
+#define FbSelectPatternPart(xor,o,t)	((xor) >> (FbPatternOffset (o,t) << 3))
+#define FbStorePart(dst,off,t,xor)	(*FbPtrOffset(dst,off,t) = \
+					 FbSelectPart(xor,off,t))
+#ifndef FbSelectPart
+#define FbSelectPart(x,o,t) FbSelectPatternPart(x,o,t)
+#endif
 
 #define FbMaskBitsBytes(x,w,copy,l,lb,n,r,rb) { \
     n = (w); \
@@ -231,7 +256,7 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 }
 
 #if FB_SHIFT == 6
-#define FbDoLeftMaskByteRRop6Cases \
+#define FbDoLeftMaskByteRRop6Cases(dst,xor) \
     case (sizeof (FbBits) - 7) | (1 << (FB_SHIFT - 3)): \
 	FbStorePart(dst,sizeof (FbBits) - 7,CARD8,xor); \
 	break; \
@@ -321,7 +346,7 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 	FbStorePart(dst,sizeof (FbBits) - 4,CARD32,xor); \
 	break;
 
-#define FbDoRightMaskByteRRop6Cases \
+#define FbDoRightMaskByteRRop6Cases(dst,xor) \
     case 4: \
 	FbStorePart(dst,0,CARD32,xor); \
 	break; \
@@ -339,13 +364,13 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 	FbStorePart(dst,6,CARD8,xor); \
 	break;
 #else
-#define FbDoLeftMaskByteRRop6Cases
-#define FbDoRightMaskByteRRop6Cases
+#define FbDoLeftMaskByteRRop6Cases(dst,xor)
+#define FbDoRightMaskByteRRop6Cases(dst,xor)
 #endif
 
 #define FbDoLeftMaskByteRRop(dst,lb,l,and,xor) { \
     switch (lb) { \
-    FbDoLeftMaskByteRRop6Cases \
+    FbDoLeftMaskByteRRop6Cases(dst,xor) \
     case (sizeof (FbBits) - 3) | (1 << (FB_SHIFT - 3)): \
 	FbStorePart(dst,sizeof (FbBits) - 3,CARD8,xor); \
 	break; \
@@ -383,7 +408,7 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 	FbStorePart(dst,0,CARD16,xor); \
 	FbStorePart(dst,2,CARD8,xor); \
 	break; \
-    FbDoRightMaskByteRRop6Cases \
+    FbDoRightMaskByteRRop6Cases(dst,xor) \
     default: \
 	*dst = FbDoMaskRRop (*dst, and, xor, r); \
     } \
@@ -404,6 +429,43 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     } \
     n >>= FB_STIP_SHIFT; \
 }
+
+/*
+ * These macros are used to transparently stipple
+ * in copy mode; the expected usage is with 'n' constant
+ * so all of the conditional parts collapse into a minimal
+ * sequence of partial word writes
+ *
+ * 'n' is the bytemask of which bytes to store, 'a' is the address
+ * of the FbBits base unit, 'o' is the offset within that unit
+ *
+ * The term "lane" comes from the hardware term "byte-lane" which
+ */
+
+#define FbLaneCase1(n,a,o)  ((n) == 0x01 ? \
+			     (*(CARD8 *) ((a)+FbPatternOffset(o,CARD8)) = \
+			      fgxor) : 0)
+#define FbLaneCase2(n,a,o)  ((n) == 0x03 ? \
+			     (*(CARD16 *) ((a)+FbPatternOffset(o,CARD16)) = \
+			      fgxor) : \
+			     (FbLaneCase1((n)&1,a,o), \
+			      FbLaneCase1((n)>>1,a,(o)+1)))
+#define FbLaneCase4(n,a,o)  ((n) == 0x0f ? \
+			     (*(CARD32 *) ((a)+FbPatternOffset(o,CARD32)) = \
+			      fgxor) : \
+			     (FbLaneCase2((n)&3,a,o), \
+			      FbLaneCase2((n)>>2,a,(o)+2)))
+#define FbLaneCase8(n,a,o)  ((n) == 0xff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
+			     (FbLaneCase4((n)&0xf,a,o), \
+			      FbLaneCase4((n)>>4,a,(o)+4)))
+
+#if FB_SHIFT == 6
+#define FbLaneCase(n,a)   FbLaneCase8(n,(CARD8 *) (a),0)
+#endif
+
+#if FB_SHIFT == 5
+#define FbLaneCase(n,a)   FbLaneCase4(n,(CARD8 *) (a),0)
+#endif
 
 /* Rotate a filled pixel value to the specified alignement */
 #define FbRot24(p,b)	    (FbScrRight(p,b) | FbScrLeft(p,24-(b)))
@@ -438,6 +500,10 @@ extern const GCFuncs	fbGCFuncs;
 #ifdef TEKX11
 #define FB_OLD_GC
 #define FB_OLD_SCREEN
+#endif
+
+#ifdef FB_OLD_SCREEN
+extern WindowPtr    *WindowTable;
 #endif
 
 /* private field of GC */

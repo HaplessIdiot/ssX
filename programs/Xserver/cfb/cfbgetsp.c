@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.4 1998/10/04 09:37:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.5 2000/01/21 01:11:54 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -116,7 +116,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	tmpSrc = *((PixelType *)(psrcBase + (ppt->y * widthSrc))
 		   + ppt->x);
 #if BITMAP_BIT_ORDER == MSBFirst
-	tmpSrc <<= (sizeof (unsigned long) - sizeof (PixelType)) * 8;
+	tmpSrc <<= (sizeof (CfbBits) - sizeof (PixelType)) * 8;
 #endif
 	*pdstStart = tmpSrc;
 	return;
@@ -128,7 +128,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     while(ppt < pptLast)
     {
 #if PSZ == 24
-	xEnd = min(ppt->x + *pwidth, widthSrc * sizeof(long) / 3);
+	xEnd = min(ppt->x + *pwidth, widthSrc * sizeof(CfbBits) / 3);
 	w = xEnd - ppt->x;
 	psrc = psrcBase + ppt->y * widthSrc;
 	srcBit = ppt->x;
@@ -152,7 +152,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	  psrc = (PixelGroup *)((unsigned long)psrcb & ~0x03);
 	  getbits24(psrc, tmpSrc, srcBit);
 	  pdst = (PixelGroup *)((unsigned long)pdstb & ~0x03);
-	  putbits24(tmpSrc, nstart, PPW, pdst, ~((unsigned long)0), xIndex);
+	  putbits24(tmpSrc, nstart, PPW, pdst, ~((CfbBits)0), xIndex);
 	  srcBit++;
 	  psrcb += 3;
 	  xIndex++;
@@ -163,7 +163,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	if (srcBit + w <= PPW) 
 	{ 
 	    getbits(psrc, srcBit, w, tmpSrc);
-	    putbits(tmpSrc, 0, w, pdst, ~((unsigned long)0)); 
+	    putbits(tmpSrc, 0, w, pdst, ~((CfbBits)0)); 
 	    pdst++;
 	} 
 	else 
@@ -174,7 +174,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    { 
 		nstart = PPW - srcBit; 
 		getbits(psrc, srcBit, nstart, tmpSrc);
-		putbits(tmpSrc, 0, nstart, pdst, ~((unsigned long)0));
+		putbits(tmpSrc, 0, nstart, pdst, ~((CfbBits)0));
 		if(srcBit + nstart >= PPW)
 		    psrc++;
 	    } 
@@ -182,7 +182,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    while (nl--) 
 	    { 
 		tmpSrc = *psrc;
-		putbits(tmpSrc, nstart, PPW, pdst, ~((unsigned long)0));
+		putbits(tmpSrc, nstart, PPW, pdst, ~((CfbBits)0));
 		psrc++;
 		pdst++;
 	    } 
@@ -190,7 +190,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    { 
 		nend = xEnd & PIM; 
 		getbits(psrc, 0, nend, tmpSrc);
-		putbits(tmpSrc, nstart, nend, pdst, ~((unsigned long)0));
+		putbits(tmpSrc, nstart, nend, pdst, ~((CfbBits)0));
 	    } 
 	    pdst = pdstNext;
 	} 

@@ -1,5 +1,5 @@
 /*
- * $Id: fbsolid.c,v 1.3 2000/01/21 15:06:19 dawes Exp $
+ * $Id: fbsolid.c,v 1.4 2000/02/12 03:39:43 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,11 +21,11 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbsolid.c,v 1.2 2000/01/21 01:11:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbsolid.c,v 1.3 2000/01/21 15:06:19 dawes Exp $ */
+
+#define FbSelectPart(xor,o,t)    xor
 
 #include "fb.h"
-
-#define FbSelectPart(xor,o)    xor
 
 void
 fbSolid (FbBits	    *dst,

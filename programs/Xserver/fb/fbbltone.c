@@ -1,5 +1,5 @@
 /*
- * $Id: fbbltone.c,v 1.4 2000/01/21 18:46:35 dawes Exp $
+ * $Id: fbbltone.c,v 1.5 2000/02/12 03:39:42 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.3 2000/01/21 15:06:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.4 2000/01/21 18:46:35 dawes Exp $ */
 
 #include "fb.h"
 
@@ -46,8 +46,6 @@
  *  rightShift = 8
  */
 
-#define FbSelectPart(x,o)   FbSelectPatternPart(x,o)
-    
 #define LoadBits {\
     if (leftShift) { \
 	bitsRight = *src++; \
@@ -59,30 +57,8 @@
 }
     
 #ifndef FBNOPIXADDR
-#define LaneBits    (FB_MASK >> 3)
     
-#define LaneOff1(o) (o)
-#define LaneOff2(o) (o)
-#define LaneOff4(o) (o)
-    
-#define LaneCase1(n,a,o)    ((n) == 0x01 ? (*(CARD8 *) ((a)+LaneOff1(o)) = fgxor) : 0)
-#define LaneCase2(n,a,o)    ((n) == 0x03 ? (*(CARD16 *) ((a)+LaneOff2(o)) = fgxor) : \
-			     (LaneCase1((n)&1,a,o), LaneCase1((n)>>1,a,(o)+1)))
-#define LaneCase4(n,a,o)    ((n) == 0x0f ? (*(CARD32 *) ((a)+LaneOff4(o)) = fgxor) : \
-			     (LaneCase2((n)&3,a,o), LaneCase2((n)>>2,a,(o)+2)))
-#define LaneCase8(n,a,o)    ((n) == 0xff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
-			     (LaneCase4((n)&0xf,a,o), LaneCase4((n)>>4,a,(o)+4)))
-
-#if FB_SHIFT == 6
-#define LaneCases1(n,a)	    case n: LaneCase8(n,a,0); break;
-#define LaneCases(a)	    LaneCases256(0,a)
-#endif
-    
-#if FB_SHIFT == 5
-#define LaneCases1(n,a)	    case n: LaneCase4(n,a,0); break;
-#define LaneCases(a)	    LaneCases16(0,a)
-#endif
-							   
+#define LaneCases1(n,a)	    case n: FbLaneCase(n,a); break;
 #define LaneCases2(n,a)	    LaneCases1(n,a) LaneCases1(n+1,a)
 #define LaneCases4(n,a)	    LaneCases2(n,a) LaneCases2(n+2,a)
 #define LaneCases8(n,a)	    LaneCases4(n,a) LaneCases4(n+4,a)
@@ -92,6 +68,14 @@
 #define LaneCases128(n,a)   LaneCases64(n,a) LaneCases64(n+64,a)
 #define LaneCases256(n,a)   LaneCases128(n,a) LaneCases128(n+128,a)
     
+#if FB_SHIFT == 6
+#define LaneCases(a)	    LaneCases256(0,a)
+#endif
+    
+#if FB_SHIFT == 5
+#define LaneCases(a)	    LaneCases16(0,a)
+#endif
+							   
 #if FB_SHIFT == 6
 CARD8	fb8Lane[256] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,

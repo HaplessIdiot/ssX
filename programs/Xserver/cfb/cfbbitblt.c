@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.8 2000/01/21 01:11:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.9 2000/01/29 18:58:25 dawes Exp $ */
 
 /*
 
@@ -400,22 +400,22 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     int width, height;	/* in pixels, unpadded, of box being copied */
     int xoffSrc; /* bit # in leftmost word of row from which copying starts */
     int xoffDst; /* byte # in leftmost word of row from which copying starts */
-    unsigned long *psrcBase, *pdstBase; /* start of drawable's pixel data */
+    CfbBits *psrcBase, *pdstBase; /* start of drawable's pixel data */
     int	widthSrc;    /* # of groups of 32 pixels (1 bit/pixel) in src bitmap*/
     int widthDst;    /* # of groups of 4 pixels (8 bits/pixel) in dst */
-    unsigned long *psrcLine, *pdstLine; /* steps a row at a time thru src/dst; 
+    CfbBits *psrcLine, *pdstLine; /* steps a row at a time thru src/dst; 
 					 * may point into middle of row */
-    register unsigned long *psrc, *pdst; /* steps within the row */
-    register unsigned long bits, tmp;	 /* bits from source */
+    register CfbBits *psrc, *pdst; /* steps within the row */
+    register CfbBits bits, tmp;	 /* bits from source */
     register int leftShift;
     register int rightShift;
-    unsigned long startmask;		/* left edge pixel mask */
-    unsigned long endmask;		/* right edge pixel mask */
+    CfbBits startmask;		/* left edge pixel mask */
+    CfbBits endmask;		/* right edge pixel mask */
     register int nlMiddle;   /* number of words in middle of the row to draw */
     register int nl;
     int firstoff;
     int secondoff;
-    unsigned long src;
+    CfbBits src;
     int nbox;		/* number of boxes in region to copy */
     BoxPtr  pbox;	/* steps thru boxes in region */
     int pixelsRemainingOnRightEdge; /* # pixels to be drawn on a row after
@@ -553,11 +553,11 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 # define FirstStep(c)	c = BitLeft (c, 8);
 #else
 /* 0x3c is 0xf << 2 (4 bits, long word) */
-# define StoreBits(o,c)	StorePixels(pdst,o,*((unsigned long *)\
+# define StoreBits(o,c)	StorePixels(pdst,o,*((CfbBits *)\
 			    (((char *) cfb8Pixels) + (c & 0x3c))))
 # define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
-    *((unsigned long *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
-    *((unsigned long *) (((char *) cfb8StippleXor) + (c & 0x3c))))
+    *((CfbBits *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
+    *((CfbBits *) (((char *) cfb8StippleXor) + (c & 0x3c))))
 # define FirstStep(c)	c = BitLeft (c, 2);
 #endif /* PGSZ */
 #endif /* BITMAP_BIT_ORDER */
@@ -738,7 +738,7 @@ cfbCopyPlane1to32 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     int	srcx, srcy, dstx, dsty;
     int width, height;
     int xoffSrc;
-    unsigned long *psrcBase, *pdstBase;
+    CfbBits *psrcBase, *pdstBase;
     int	widthSrc, widthDst;
     unsigned int *psrcLine;
     register unsigned int *psrc;
@@ -793,8 +793,8 @@ cfbCopyPlane1to32 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     /* must explicitly ask for "int" widths, as code below expects it */
     /* on some machines (Alpha), "long" and "int" are not the same size */
-    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
-    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
+    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, CfbBits)
+    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, CfbBits)
 
 #if PSZ == 16
     widthDst <<= 1;

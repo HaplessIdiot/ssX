@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.1 1998/10/04 09:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.2 1999/05/15 06:24:50 dawes Exp $ */
 
 #include "X.h"
 
@@ -219,18 +219,18 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
     BoxPtr	    pBox;
     unsigned long   pixel;
 {
-    unsigned long   *pdstBase;
+    CfbBits   *pdstBase;
     int		    widthDst;
     register int    h;
-    register unsigned long   rrop_xor;
-    register unsigned long   *pdst;
-    register unsigned long   leftMask, rightMask;
+    register CfbBits   rrop_xor;
+    register CfbBits   *pdst;
+    register CfbBits   leftMask, rightMask;
     int		    nmiddle;
     register int    m;
     int		    w;
 #if PSZ == 24
     int leftIndex, rightIndex;
-    unsigned long piQxelArray[3], xOffset, *pdstULC; /*upper left corner*/
+    CfbBits piQxelArray[3], xOffset, *pdstULC; /*upper left corner*/
 
     piQxelArray[0] = (pixel&0xFFFFFF) | ((pixel&0xFF)<<24);
     piQxelArray[1] = ((pixel&0xFFFF00)>>8) | ((pixel&0xFFFF)<<16);
@@ -467,29 +467,29 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
     BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
     PixmapPtr	    tile;	/* rotated, expanded tile */
 {
-    register unsigned long  rrop_xor;	
-    register unsigned long  *pdst;
+    register CfbBits  rrop_xor;	
+    register CfbBits  *pdst;
     register int	    m;
-    unsigned long	    *psrc;
+    CfbBits	    *psrc;
     int			    tileHeight;
 
     int			    widthDst;
     int			    w;
     int			    h;
-    register unsigned long  leftMask;
-    register unsigned long  rightMask;
+    register CfbBits  leftMask;
+    register CfbBits  rightMask;
     int			    nmiddle;
     int			    y;
     int			    srcy;
 
-    unsigned long	    *pdstBase;
+    CfbBits	    *pdstBase;
 #if PSZ == 24
     int			    leftIndex, rightIndex;
-    unsigned long piQxelArray[3], xOffset, *pdstULC;
+    CfbBits piQxelArray[3], xOffset, *pdstULC;
 #endif
 
     tileHeight = tile->drawable.height;
-    psrc = (unsigned long *)tile->devPrivate.ptr;
+    psrc = (CfbBits *)tile->devPrivate.ptr;
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase);
 

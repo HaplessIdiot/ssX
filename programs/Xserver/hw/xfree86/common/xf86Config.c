@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.205 2000/02/08 13:13:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.206 2000/02/10 00:38:26 dawes Exp $ */
 
 
 /*
@@ -1094,7 +1094,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
     ErrorF("Found %d screens in the layout section %s",
            count, conf_layout->lay_identifier);
 #endif
-    slp = xnfalloc((count + 1) * sizeof(screenLayoutRec));
+    slp = xnfcalloc(1, (count + 1) * sizeof(screenLayoutRec));
     slp[count].screen = NULL;
     /*
      * now that we have storage, loop over the list again and fill in our
@@ -1104,7 +1104,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
     adjp = conf_layout->lay_adjacency_lst;
     count = 0;
     while (adjp) {
-        slp[count].screen = xnfalloc(sizeof(confScreenRec));
+        slp[count].screen = xnfcalloc(1, sizeof(confScreenRec));
 	if (adjp->adj_scrnum < 0)
 	    scrnum = count;
 	else
@@ -1322,8 +1322,8 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
 
     /* We have exactly one screen */
 
-    slp = xnfalloc(2 * sizeof(screenLayoutRec));
-    slp[0].screen = xnfalloc(sizeof(confScreenRec));
+    slp = xnfcalloc(1, 2 * sizeof(screenLayoutRec));
+    slp[0].screen = xnfcalloc(1, sizeof(confScreenRec));
     slp[1].screen = NULL;
     if (!configScreen(slp[0].screen, conf_screen, 0, from))
 	return FALSE;
@@ -1396,10 +1396,10 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
     screenp->defaultdepth = conf_screen->scrn_defaultdepth;
     screenp->defaultbpp = conf_screen->scrn_defaultbpp;
     screenp->defaultfbbpp = conf_screen->scrn_defaultfbbpp;
-    screenp->monitor    = xnfalloc(sizeof(MonRec));
+    screenp->monitor    = xnfcalloc(1, sizeof(MonRec));
     if (!configMonitor(screenp->monitor,conf_screen->scrn_monitor))
 	return FALSE;
-    screenp->device     = xnfalloc(sizeof(GDevRec));
+    screenp->device     = xnfcalloc(1, sizeof(GDevRec));
     configDevice(screenp->device,conf_screen->scrn_device, TRUE);
     screenp->device->myScreenSection = screenp;
     screenp->options = conf_screen->scrn_option_lst;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.8 1998/10/04 09:39:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.9 1998/12/20 11:57:58 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -48,6 +48,7 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "miscstruct.h"
 #include "../mfb/maskbits.h"
+#include "mi.h"
 
 #define NPT 128
 
@@ -78,9 +79,9 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     int		dx, dy, xOrg, yOrg;
 {
     int		h, dxDivPPW, ibEnd;
-    unsigned long *pwLineStart;
-    register unsigned long	*pw, *pwEnd;
-    register unsigned long msk;
+    MiBits *pwLineStart;
+    register MiBits	*pw, *pwEnd;
+    register MiBits msk;
     register int ib, w;
     register int ipt;		/* index into above arrays */
     Bool 	fInBox;
@@ -90,21 +91,21 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     PixelType	startmask;
     if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
       if (screenInfo.bitmapBitOrder == LSBFirst)
-        startmask = (unsigned long)(-1) ^
-            LONG2CHARSSAMEORDER((unsigned long)(-1) << 1);
+        startmask = (MiBits)(-1) ^
+            LONG2CHARSSAMEORDER((MiBits)(-1) << 1);
       else
-        startmask = (unsigned long)(-1) ^
-            LONG2CHARSSAMEORDER((unsigned long)(-1) >> 1);
+        startmask = (MiBits)(-1) ^
+            LONG2CHARSSAMEORDER((MiBits)(-1) >> 1);
     else
       if (screenInfo.bitmapBitOrder == LSBFirst)
-        startmask = (unsigned long)(-1) ^
-            LONG2CHARSDIFFORDER((unsigned long)(-1) << 1);
+        startmask = (MiBits)(-1) ^
+            LONG2CHARSDIFFORDER((MiBits)(-1) << 1);
       else
-        startmask = (unsigned long)(-1) ^
-            LONG2CHARSDIFFORDER((unsigned long)(-1) >> 1);
+        startmask = (MiBits)(-1) ^
+            LONG2CHARSDIFFORDER((MiBits)(-1) >> 1);
 #endif
 
-    pwLineStart = (unsigned long *)xalloc(BitmapBytePad(dx));
+    pwLineStart = (MiBits *)xalloc(BitmapBytePad(dx));
     if (!pwLineStart)
 	return;
     ipt = 0;
@@ -129,7 +130,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 #ifdef XFree86Server
 	    msk = startmask;
 #else
-	    msk = (unsigned long)(-1) ^ SCRRIGHT((unsigned long)(-1), 1);
+	    msk = (MiBits)(-1) ^ SCRRIGHT((MiBits)(-1), 1);
 #endif
 	    for(ib = 0; ib < PPW; ib++)
 	    {
@@ -185,7 +186,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 #ifdef XFree86Server
 	    msk = startmask;
 #else
-	    msk = (unsigned long)(-1) ^ SCRRIGHT((unsigned long)(-1), 1);
+	    msk = (MiBits)(-1) ^ SCRRIGHT((MiBits)(-1), 1);
 #endif
 	    for(ib = 0; ib < ibEnd; ib++)
 	    {

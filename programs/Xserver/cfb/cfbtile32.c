@@ -2,7 +2,7 @@
  * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.1 1998/03/20 21:05:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.2 1998/10/04 09:37:52 dawes Exp $ */
 
 /*
 
@@ -212,33 +212,33 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
     int		    nBox;	/* number of boxes to fill */
     BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
 {
-    register unsigned long srcpix;	
-    unsigned long *psrc;		/* pointer to bits in tile, if needed */
+    register CfbBits srcpix;	
+    CfbBits *psrc;		/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
 
     int nlwDst;		/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
     register int h;	/* height of current box */
-    register unsigned long startmask;
-    register unsigned long endmask; /* masks for reggedy bits at either end of line */
+    register CfbBits startmask;
+    register CfbBits endmask; /* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
     register int nlw;	/* loop version of nlwMiddle */
-    register unsigned long *p;	/* pointer to bits we're writing */
+    register CfbBits *p;	/* pointer to bits we're writing */
     int y;		/* current scan line */
     int srcy;		/* current tile position */
 
-    unsigned long *pbits;/* pointer to start of pixmap */
+    CfbBits *pbits;/* pointer to start of pixmap */
     PixmapPtr	    tile;	/* rotated, expanded tile */
     MROP_DECLARE_REG()
     MROP_PREBUILT_DECLARE()
 #if PSZ == 24
-    unsigned long xtmp;
+    CfbBits xtmp;
 #endif
 
     tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
-    psrc = (unsigned long *)tile->devPrivate.ptr;
+    psrc = (CfbBits *)tile->devPrivate.ptr;
 
     MROP_INITIALIZE(pGC->alu, pGC->planemask);
 
@@ -327,25 +327,25 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int			n;	/* number of spans to fill */
     DDXPointPtr		ppt;	/* pointer to list of start points */
     int			*pwidth;/* pointer to list of n widths */
-    unsigned long	*pbits;	/* pointer to start of bitmap */
+    CfbBits	*pbits;	/* pointer to start of bitmap */
     int			nlwDst;	/* width in longwords of bitmap */
-    register unsigned long *p;	/* pointer to current longword in bitmap */
+    register CfbBits *p;	/* pointer to current longword in bitmap */
     register int	w;	/* current span width */
     register int	nlw;
     register int	x;
-    register unsigned long startmask;
-    register unsigned long endmask;
-    register unsigned long  srcpix;
+    register CfbBits startmask;
+    register CfbBits endmask;
+    register CfbBits  srcpix;
     int			y;
     int			*pwidthFree;/* copies of the pointers to free */
     DDXPointPtr		pptFree;
     PixmapPtr		tile;
-    unsigned long	*psrc;	/* pointer to bits in tile */
+    CfbBits	*psrc;	/* pointer to bits in tile */
     int			tileHeight;/* height of the tile */
     MROP_DECLARE_REG ()
     MROP_PREBUILT_DECLARE()
 #if PSZ == 24      
-    unsigned long	xtmp;
+    CfbBits	xtmp;
 #endif
 
     n = nInit * miFindMaxBand( cfbGetCompositeClip(pGC) );
@@ -365,7 +365,7 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
-    psrc = (unsigned long *)tile->devPrivate.ptr;
+    psrc = (CfbBits *)tile->devPrivate.ptr;
 
     MROP_INITIALIZE(pGC->alu, pGC->planemask);
 

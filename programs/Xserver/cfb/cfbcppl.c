@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.2 1999/09/04 09:14:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.3 2000/01/29 18:58:26 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -105,7 +105,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     register int	    i;
     register int	    curBit;
     register int	    bitPos;
-    register unsigned long  bits;
+    register CfbBits  bits;
     register PixelType	    *pdst;
     PixelType		    startmask, endmask;
     int			    niStart, niEnd;
@@ -307,8 +307,8 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     unsigned long bitPlane;
 {
     int			    srcx, srcy, dstx, dsty, width, height;
-    unsigned long	    *psrcBase;
-    unsigned long	    *pdstBase;
+    CfbBits	    *psrcBase;
+    CfbBits	    *pdstBase;
     int			    widthSrc, widthDst;
 #if PSZ == 16
     unsigned short	    *psrcLine;
@@ -345,8 +345,8 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     /* must explicitly ask for "int" widths, as code below expects it */
     /* on some machines (Alpha), "long" and "int" are not the same size */
-    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
-    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
+    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, CfbBits)
+    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, CfbBits)
 
 #if PSZ == 16
     widthSrc <<= 1;

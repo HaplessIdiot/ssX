@@ -2,7 +2,7 @@
  * Push Pixels for 8 bit displays.
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbpush8.c,v 1.2 1998/03/20 21:05:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpush8.c,v 1.3 1998/10/04 09:37:49 dawes Exp $ */
 
 /*
 
@@ -49,17 +49,17 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     DrawablePtr	pDrawable;
     int		dx, dy, xOrg, yOrg;
 {
-    register unsigned long   *src, *dst;
-    register unsigned long   pixel;
-    register unsigned long   c, bits;
-    unsigned long   *pdstLine, *psrcLine;
-    unsigned long   *pdstBase;
+    register CfbBits   *src, *dst;
+    register CfbBits   pixel;
+    register CfbBits   c, bits;
+    CfbBits   *pdstLine, *psrcLine;
+    CfbBits   *pdstBase;
     int		    srcWidth;
     int		    dstWidth;
     int		    xoff;
     int		    nBitmapLongs, nPixmapLongs;
     int		    nBitmapTmp, nPixmapTmp;
-    unsigned long   rightMask;
+    CfbBits   rightMask;
     BoxRec	    bbox;
     cfbPrivGCPtr    devPriv;
 
@@ -83,7 +83,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
 
     cfbGetLongWidthAndPointer (pDrawable, dstWidth, pdstBase)
 
-    psrcLine = (unsigned long *) pBitmap->devPrivate.ptr;
+    psrcLine = (CfbBits *) pBitmap->devPrivate.ptr;
     srcWidth = (int) pBitmap->devKind >> PWSH;
     
     pixel = devPriv->xor;

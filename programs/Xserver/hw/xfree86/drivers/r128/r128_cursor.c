@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.1 1999/11/19 13:54:43 hohndel Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -68,6 +68,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 static void R128SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     unsigned char *R128MMIO      = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     OUTREG(R128_CUR_CLR0, bg);
     OUTREG(R128_CUR_CLR1, fg);
@@ -79,6 +80,7 @@ static void R128SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           xorigin   = 0;
     int           yorigin   = 0;
     int           total_y   = pScrn->frameY1 - pScrn->frameY0;
@@ -101,6 +103,7 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     CARD32        *s        = (CARD32 *)image;
     CARD32        *d        = (CARD32 *)(info->FB + info->cursor_start);
     int           y;
@@ -121,6 +124,7 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 static void R128HideCursor(ScrnInfoPtr pScrn)
 {
     unsigned char *R128MMIO      = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     
     OUTREGP(R128_CRTC_GEN_CNTL, 0, ~R128_CRTC_CUR_EN);
 }
@@ -129,6 +133,7 @@ static void R128HideCursor(ScrnInfoPtr pScrn)
 static void R128ShowCursor(ScrnInfoPtr pScrn)
 {
     unsigned char *R128MMIO      = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     
     OUTREGP(R128_CRTC_GEN_CNTL, R128_CRTC_CUR_EN, ~R128_CRTC_CUR_EN);
 }

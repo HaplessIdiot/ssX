@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.4 1998/03/20 21:05:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.5 1998/10/04 09:37:47 dawes Exp $ */
 
 #include "X.h"
 
@@ -47,9 +47,9 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 {
     cfbPrivGCPtr    devPriv;
     int		    nwidth;
-    unsigned long   *addrl, *addr;
+    CfbBits   *addrl, *addr;
 #if PSZ == 24
-    unsigned long startmask, endmask;
+    CfbBits startmask, endmask;
     register int pidx;
 #endif
     int		    maxy;
@@ -69,7 +69,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     int		    sign1, sign2;
     int		    h;
     int		    l, r;
-    unsigned long   mask, bits = ~((unsigned long)0);
+    CfbBits   mask, bits = ~((CfbBits)0);
     int		    nmiddle;
     RROP_DECLARE
 
@@ -168,9 +168,9 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	return;
     }
 
-#define AddrYPlus(a,y)  (unsigned long *) (((unsigned char *) (a)) + (y) * nwidth)
+#define AddrYPlus(a,y)  (CfbBits *) (((unsigned char *) (a)) + (y) * nwidth)
 
-    cfbGetTypedWidthAndPointer(pDrawable, nwidth, addrl, unsigned char, unsigned long);
+    cfbGetTypedWidthAndPointer(pDrawable, nwidth, addrl, unsigned char, CfbBits);
     addrl = AddrYPlus(addrl,y + pDrawable->y);
     origin = intToX(origin);
     vertex2p = vertex1p;
@@ -275,7 +275,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #endif /* PGSZ */
 
 #if PSZ == 24
-	    addr = (unsigned long *)((char *)addrl + ((l * 3) & ~0x03));
+	    addr = (CfbBits *)((char *)addrl + ((l * 3) & ~0x03));
 #else /* PSZ == 24 */
 #if PWSH > LWRD_SHIFT
 	    l = l >> (PWSH - LWRD_SHIFT);
@@ -283,7 +283,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #if PWSH < LWRD_SHIFT
 	    l = l << (LWRD_SHIFT - PWSH);
 #endif
-	    addr = (unsigned long *) (((char *) addrl) + l);
+	    addr = (CfbBits *) (((char *) addrl) + l);
 #endif /* PSZ == 24 */
 #if PSZ == 24
 	    if (nmiddle <= 1){

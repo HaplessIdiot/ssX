@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.25 1999/03/07 11:40:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.27 2000/01/22 01:59:56 mvojkovi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -134,14 +134,6 @@ Bool CreateConnectionBlock(void);
 static void FreeScreen(ScreenPtr);
 
 PaddingInfo PixmapWidthPaddingInfo[33];
-
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-/* add padding info for 32-bit interface. PutImage and GetImage will
- * work on 32-bit padding while the rest of the server will work
- * on 64-bit padding (Alpha).
- */
-PaddingInfo PixmapWidthPaddingInfoProto[33];
-#endif
 
 int connBlockScreenStart;
 
@@ -346,19 +338,6 @@ main(argc, argv)
  	PixmapWidthPaddingInfo[1].padBytesLog2 = answer[j][k];
 	PixmapWidthPaddingInfo[1].bitsPerPixel = 1;
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	/* Fake out protocol interface to make them believe we support
-	 * a different padding than the actual internal padding.
-	 */
-	j = indexForBitsPerPixel[ 1 ];
-	k = indexForScanlinePad[ BITMAP_SCANLINE_PAD_PROTO ];
-	PixmapWidthPaddingInfoProto[1].padRoundUp = BITMAP_SCANLINE_PAD_PROTO-1;
-	PixmapWidthPaddingInfoProto[1].padPixelsLog2 = answer[j][k];
- 	j = indexForBitsPerPixel[8]; /* bits per byte */
- 	PixmapWidthPaddingInfoProto[1].padBytesLog2 = answer[j][k];
-	PixmapWidthPaddingInfo[1].bitsPerPixel = 1;
-#endif /* INTERNAL_VS_EXTERNAL_PADDING */
-
 	InitAtoms();
 	InitEvents();
 	InitGlyphCaching();
@@ -521,18 +500,8 @@ CreateConnectionBlock()
      */
     setup.imageByteOrder = screenInfo.imageByteOrder;
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    if ( screenInfo.bitmapScanlineUnit > 32 )
-    	setup.bitmapScanlineUnit  = 32;
-    else
-#endif 
-    	setup.bitmapScanlineUnit  = screenInfo.bitmapScanlineUnit;
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    if ( screenInfo.bitmapScanlinePad > 32 )
-    	setup.bitmapScanlinePad = 32;
-    else
-#endif 
-	setup.bitmapScanlinePad = screenInfo.bitmapScanlinePad;
+    setup.bitmapScanlineUnit = screenInfo.bitmapScanlineUnit;
+    setup.bitmapScanlinePad = screenInfo.bitmapScanlinePad;
 
     setup.bitmapBitOrder = screenInfo.bitmapBitOrder;
     setup.motionBufferSize = NumMotionEvents();
@@ -566,12 +535,7 @@ CreateConnectionBlock()
     {
 	format.depth = screenInfo.formats[i].depth;
 	format.bitsPerPixel = screenInfo.formats[i].bitsPerPixel;
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	if ( screenInfo.formats[i].scanlinePad > 32 )
-	    format.scanLinePad = 32;
-	else
-#endif
-	    format.scanLinePad = screenInfo.formats[i].scanlinePad;
+	format.scanLinePad = screenInfo.formats[i].scanlinePad;
 	memmove(pBuf, (char *)&format, sizeof(xPixmapFormat));
 	pBuf += sizeof(xPixmapFormat);
 	sizesofar += sizeof(xPixmapFormat);
@@ -757,30 +721,6 @@ AddScreen(pfnInit, argc, argv)
 	{
 	    PixmapWidthPaddingInfo[ depth ].notPower2 = 0;
 	}
-
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	/* Fake out protocol interface to make them believe we support
-	 * a different padding than the actual internal padding.
-	 */
- 	j = indexForBitsPerPixel[ bitsPerPixel ];
-  	k = indexForScanlinePad[ BITMAP_SCANLINE_PAD_PROTO ];
- 	PixmapWidthPaddingInfoProto[ depth ].padPixelsLog2 = answer[j][k];
- 	PixmapWidthPaddingInfoProto[ depth ].padRoundUp =
- 	    (BITMAP_SCANLINE_PAD_PROTO/bitsPerPixel) - 1;
- 	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
- 	PixmapWidthPaddingInfoProto[ depth ].padBytesLog2 = answer[j][k];
-	PixmapWidthPaddingInfo[ depth ].bitsPerPixel = bitsPerPixel;
-	if (answerBytesPerPixel[bitsPerPixel])
-	{
-	    PixmapWidthPaddingInfoProto[ depth ].notPower2 = 1;
-	    PixmapWidthPaddingInfoProto[ depth ].bytesPerPixel =
-		answerBytesPerPixel[bitsPerPixel];
-	}
-	else
-	{
-	    PixmapWidthPaddingInfoProto[ depth ].notPower2 = 0;
-	}
-#endif /* INTERNAL_VS_EXTERNAL_PADDING */
     }
   
     /* This is where screen specific stuff gets initialized.  Load the

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.6 1998/06/04 16:43:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.7 1998/10/04 09:39:24 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -270,17 +270,17 @@ miCopyArea(pSrcDrawable, pDstDrawable,
  * care about such things as scanline padding et alia.
  */
 static
-unsigned long	*
+MiBits	*
 miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     DrawablePtr		pDraw;
     int			planeNum;	/* number of the bitPlane */
     int			sx, sy, w, h;
-    unsigned long	*result;
+    MiBits	*result;
 {
     int			i, j, k, width, bitsPerPixel, widthInBytes;
     DDXPointRec 	pt;
-    unsigned long	pixel;
-    unsigned long	bit;
+    MiBits	pixel;
+    MiBits	bit;
     unsigned char	*pCharsOut;
 
 #if BITMAP_SCANLINE_UNIT == 8
@@ -303,9 +303,9 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     sy += pDraw->y;
     widthInBytes = BitmapBytePad(w);
     if(!result)
-        result = (unsigned long *)xalloc(h * widthInBytes);
+        result = (MiBits *)xalloc(h * widthInBytes);
     if (!result)
-	return (unsigned long *)NULL;
+	return (MiBits *)NULL;
     bitsPerPixel = pDraw->bitsPerPixel;
     bzero((char *)result, h * widthInBytes);
     pOut = (OUT_TYPE *) result;
@@ -392,7 +392,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     DrawablePtr pDraw;
     GCPtr	pGC;
     RegionPtr	prgnSrc;
-    unsigned long	*pbits;
+    MiBits	*pbits;
     int		srcx, w, h, dstx, dsty;
 {
     int		oldfill, i;
@@ -549,7 +549,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
     int 		dstx, dsty;
     unsigned long	bitPlane;
 {
-    unsigned long	*ptile;
+    MiBits	*ptile;
     BoxRec 		box;
     RegionPtr		prgnSrc, prgnExposed;
 
@@ -601,7 +601,7 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	ptile = miGetPlane(pSrcDrawable, ffs(bitPlane) - 1,
 			   box.x1, box.y1,
 			   box.x2 - box.x1, box.y2 - box.y1,
-			   (unsigned long *) NULL);
+			   (MiBits *) NULL);
 	if (ptile)
 	{
 	    miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
@@ -708,7 +708,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pDst)
     else
     {
 	(void) miGetPlane(pDraw, ffs(planeMask) - 1, sx, sy, w, h,
-			  (unsigned long *)pDst);
+			  (MiBits *)pDst);
     }
 }
 
@@ -762,7 +762,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	box.y2 = h;
 	prgnSrc = REGION_CREATE(pGC->pScreen, &box, 1);
 
-        miOpqStipDrawable(pDraw, pGC, prgnSrc, (unsigned long *) pImage,
+        miOpqStipDrawable(pDraw, pGC, prgnSrc, (MiBits *) pImage,
 			  leftPad, w, h, x, y);
 	REGION_DESTROY(pGC->pScreen, prgnSrc);
 	break;

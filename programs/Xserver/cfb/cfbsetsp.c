@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.0 1996/06/29 09:05:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.1 1998/10/04 09:37:51 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -64,6 +64,7 @@ SOFTWARE.
  * boxes, we may not want to start grabbing bits at psrc but at some offset
  * further on.) 
  */
+void
 cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemask)
     int			y;
     int			xOrigin;	/* where this scanline starts */
@@ -183,7 +184,7 @@ cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     int			fSorted;
 {
     unsigned int	*psrc = (unsigned int *)pcharsrc;
-    unsigned long	*pdstBase;	/* start of dst bitmap */
+    CfbBits	*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;
     register DDXPointPtr pptLast;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.1 1999/11/19 13:54:43 hohndel Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -45,15 +45,17 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef _R128_REG_H_
 #define _R128_REG_H_
+#include <compiler.h>
 
 				/* Memory mapped register access macros */
-#define INREG8(addr)        *(volatile CARD8  *)(R128MMIO + (addr))
-#define INREG16(addr)       *(volatile CARD16 *)(R128MMIO + (addr))
-#define INREG(addr)         *(volatile CARD32 *)(R128MMIO + (addr))
-#define OUTREG8(addr, val)  *(volatile CARD8  *)(R128MMIO + (addr)) = (val)
-#define OUTREG16(addr, val) *(volatile CARD16 *)(R128MMIO + (addr)) = (val)
-#define OUTREG(addr, val)   *(volatile CARD32 *)(R128MMIO + (addr)) = (val)
-#define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO + (addr)))
+#define INREG8(addr)        MMIO_IN8(R128MMIO, addr)
+#define INREG16(addr)       MMIO_IN16(R128MMIO, addr)
+#define INREG(addr)         *(volatile CARD32 *)(R128MMIO32 + (addr))
+#define OUTREG8(addr, val)  MMIO_OUT8(R128MMIO, addr, val)
+#define OUTREG16(addr, val) MMIO_OUT16(R128MMIO, addr, val)
+#define OUTREG(addr, val)   *(volatile CARD32 *)(R128MMIO32 + (addr)) = (val)
+
+#define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO32 + (addr)))
 
 #define OUTREGP(addr, val, mask)   \
     do {                           \

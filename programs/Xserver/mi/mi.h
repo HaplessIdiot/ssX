@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.4 1999/01/03 08:06:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.5 1999/04/11 13:11:18 dawes Exp $ */
 
 #ifndef MI_H
 #define MI_H
@@ -53,6 +53,8 @@ SOFTWARE.
 #include "font.h"
 #include "input.h"
 #include "cursor.h"
+
+#define MiBits	CARD32
 
 typedef struct _miDash *miDashPtr;
 #define EVEN_DASH	0
@@ -90,7 +92,7 @@ extern void miOpqStipDrawable(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     RegionPtr /*prgnSrc*/,
-    unsigned long * /*pbits*/,
+    MiBits * /*pbits*/,
     int /*srcx*/,
     int /*w*/,
     int /*h*/,

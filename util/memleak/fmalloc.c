@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.4 1998/10/04 08:19:36 dawes Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.5 1999/12/27 00:56:41 robin Exp $ */
 
 
 /*
@@ -37,8 +37,15 @@ in this Software without prior written authorization from The Open Group.
 #include    <stdio.h>
 
 extern char **environ;
+extern xf86DriverList;
 extern etext;
+extern _etext;
 extern __data_start;
+extern _end;
+
+#ifndef TOP_OF_DATA
+#define TOP_OF_DATA 0
+#endif
 
 #ifndef FALSE
 #define FALSE 0
@@ -52,6 +59,7 @@ extern __data_start;
 #endif
 
 typedef unsigned long mem;
+typedef unsigned int  magic;
 
 #ifdef HAS_GET_RETURN_ADDRESS
 #define MAX_RETURN_STACK    16
@@ -89,13 +97,13 @@ typedef struct _head {
     int		    desiredsize;
     int		    actualSize;
     int		    marked;
-    int		    headMagic;
+    magic    	    headMagic;
 } HeadRec, *HeadPtr;
 
 typedef struct _tail {
-    int		    tailMagic;
+    magic    	    tailMagic;
 #if defined(__alpha) || defined(__alpha__)
-    int		    tailPad;
+    magic    	    tailPad;
 #endif
 } TailRec, *TailPtr;
 
@@ -112,7 +120,7 @@ typedef struct _tail {
 typedef HeadRec		tree;
 typedef mem		*tree_data;
 
-#define COMPARE_ADDR(a,b,op)	(((unsigned) (a)) op ((unsigned) (b)))
+#define COMPARE_ADDR(a,b,op)	(((mem) (a)) op ((mem) (b)))
 #define COMPARE(a,b,op,s)	((!s) ? \
 			 COMPARE_ADDR(a,b,op) :\
 			(((a)->actualSize op (b)->actualSize) || \
@@ -135,7 +143,7 @@ typedef mem		*tree_data;
 
 static tree	*activeMemory, *freedMemory, *deadMemory;
 
-static mem	*endOfStaticMemory;
+static mem	*endOfStaticMemory = (mem *) TOP_OF_DATA;
 static mem	*highestAllocatedMemory;
 
 static int	freedMemoryTotal;
@@ -351,7 +359,7 @@ ValidateTree (head, headMagic, tailMagic, bodyMagic, mesg)
     char    *mesg;
 {
     TailPtr	tail;
-    mem		*p;
+    magic    	*p;
     int		i;
 
     if (!head)
@@ -363,11 +371,14 @@ ValidateTree (head, headMagic, tailMagic, bodyMagic, mesg)
     if (tail->tailMagic != tailMagic)
 	MemError (mesg, head, FALSE);
     if (bodyMagic) {
-	i = head->size / sizeof (mem);
-	p = DataForHead(head);
+	i = head->size / sizeof (magic);
+	p = (magic *) DataForHead(head);
 	while (i--) {
 	    if (*p++ != bodyMagic)
+	    {
 		MemError (mesg, head, FALSE);
+		break;
+	    }
 	}
     }
     ValidateTree (head->right, headMagic, tailMagic, bodyMagic, mesg);
@@ -392,7 +403,7 @@ AddActiveBlock (h)
     HeadPtr	h;
 {
     TailPtr	t = TailForHead(h);
-    mem		*p;
+    magic    	*p;
     int		i;
 
     tree_insert (&activeMemory, h, FALSE);
@@ -410,8 +421,8 @@ AddActiveBlock (h)
 
     h->headMagic = ACTIVE_HEAD_MAGIC;
     t->tailMagic = ACTIVE_TAIL_MAGIC;
-    i = h->size / sizeof (mem);
-    p = DataForHead(h);
+    i = h->size / sizeof (magic);
+    p = (magic *) DataForHead(h);
     while (i--)
 	*p++ = ACTIVE_DATA_MAGIC;
     activeMemoryTotal += h->desiredsize;
@@ -433,7 +444,7 @@ AddFreedBlock (h)
 {
     TailPtr	t = TailForHead(h);
     int		i;
-    mem		*p;
+    magic    	*p;
 
     tree_insert (&freedMemory, h, FALSE);
 
@@ -448,8 +459,8 @@ AddFreedBlock (h)
 
     h->headMagic = FREED_HEAD_MAGIC;
     t->tailMagic = FREED_TAIL_MAGIC;
-    i = h->size / sizeof (mem);
-    p = DataForHead(h);
+    i = h->size / sizeof (magic);
+    p = (magic *) DataForHead(h);
     while (i--)
 	*p++ = FREED_DATA_MAGIC;
     freedMemoryTotal += h->desiredsize;
@@ -514,7 +525,7 @@ morecore (size)
     {
 	alloc_size = (size + CORE_CHUNK - 1) & ~(CORE_CHUNK-1);
     	newcore = sbrk (alloc_size);
-    	if (((int) newcore) == -1)
+    	if (((long) newcore) == -1)
 	    return 0;
 	core = newcore;
 	core_left = alloc_size;
