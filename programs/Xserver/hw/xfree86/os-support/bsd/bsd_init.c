@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.21 2003/09/24 02:43:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.22 2003/10/07 23:14:55 herrb Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -37,6 +37,7 @@
 #include <stdlib.h>
 
 static Bool KeepTty = FALSE;
+static Bool DetachTty = FALSE;
 static int devConsoleFd = -1;
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 static int VTnum = -1;
@@ -153,46 +154,54 @@ xf86OpenConsole()
     int result;
     struct utsname uts;
     vtmode_t vtmode;
+    int needSwitchToVT1 = FALSE;
 #endif
     
-    if (serverGeneration == 1)
-    {
+    if (serverGeneration == 1) {
 	/* check if we are run with euid==0 */
-	if (geteuid() != 0)
-	{
+	if (geteuid() != 0) {
 	    FatalError("xf86OpenConsole: Server must be suid root");
 	}
 
-	if (!KeepTty)
-	{
+	/*
+	 * Check the controlling tty, if there is one, and keep it if it
+	 * doesn't look like a console tty.
+	 */
+	if (!KeepTty) {
+	    char *ttyn;
+
+	    /* Test stderr, which remains open. */
+	    ttyn = ttyname(2);
+	    if (ttyn && strlen(ttyn) > 8 &&
+		ttyn[8] != 'C' && ttyn[8] != 'v' && ttyn[8] != 'E') {
+		KeepTty = TRUE;
+	    }
+	}
+	    
+	if (DetachTty || !KeepTty) {
 	    /*
-	     * detaching the controlling tty solves problems of kbd character
+	     * Detaching the controlling tty solves problems of kbd character
 	     * loss.  This is not interesting for CO driver, because it is 
-	     * exclusive.
+	     * exclusive.  Check if this is still needed.
 	     */
 	    setpgrp(0, getpid());
-	    if ((i = open("/dev/tty",O_RDWR)) >= 0)
-	    {
+	    if ((i = open("/dev/tty",O_RDWR)) >= 0) {
 		ioctl(i,TIOCNOTTY,(char *)0);
 		close(i);
 	    }
 	}
 
-	/* detect which driver we are running on */
-	for (driver = xf86ConsTab; *driver; driver++)
-	{
+	/* Detect which driver we are running on. */
+	for (driver = xf86ConsTab; *driver; driver++) {
 	    if ((fd = (*driver)()) >= 0)
 		break;
 	}
 
 	/* Check that a supported console driver was found */
-	if (fd < 0)
-	{
+	if (fd < 0) {
 	    char cons_drivers[80] = {0, };
-	    for (i = 0; i < sizeof(supported_drivers) / sizeof(char *); i++)
-	    {
-		if (i)
-		{
+	    for (i = 0; i < sizeof(supported_drivers) / sizeof(char *); i++) {
+		if (i) {
 		    strcat(cons_drivers, ", ");
 		}
 		strcat(cons_drivers, supported_drivers[i]);
@@ -201,76 +210,72 @@ xf86OpenConsole()
 		"%s: No console driver found\n\tSupported drivers: %s\n\t%s",
 		"xf86OpenConsole", cons_drivers, CHECK_DRIVER_MSG);
 	}
-#if 0 /* stdin is already closed in OsInit() */
-	fclose(stdin);
-#endif
+	/* Note: stdin is closed in OsInit(). */
 	xf86Info.consoleFd = fd;
 	xf86Info.screenFd = fd;
 
-	switch (xf86Info.consType)
-	{
+	switch (xf86Info.consType) {
 #ifdef PCCONS_SUPPORT
 	case PCCONS:
-	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_MODE_ON, 0) < 0)
-	    {
+	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_MODE_ON, 0) < 0) {
 		FatalError("%s: CONSOLE_X_MODE_ON failed (%s)\n%s",
 			   "xf86OpenConsole", strerror(errno),
 			   CHECK_DRIVER_MSG);
 	    }
 	    /*
 	     * Hack to prevent keyboard hanging when syslogd closes
-	     * /dev/console
+	     * /dev/console.
 	     */
-	    if ((devConsoleFd = open("/dev/console", O_WRONLY,0)) < 0)
-	    {
+	    if ((devConsoleFd = open("/dev/console", O_WRONLY,0)) < 0) {
 		xf86Msg(X_WARNING,
-			"xf86OpenConsole: couldn't open /dev/console (%s)\n",
+			"xf86OpenConsole: Could not open /dev/console (%s).\n",
 			strerror(errno));
 	    }
 	    break;
 #endif
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case SYSCONS:
-	    /* as of FreeBSD 2.2.8, syscons driver does not need the #1 vt
-	     * switching anymore. Here we check for FreeBSD 3.1 and up.
-	     * Add cases for other *BSD that behave the same.
-	    */
-	    uname (&uts);
-	    if (strcmp(uts.sysname, "FreeBSD") == 0) {
-		i = atof(uts.release) * 100;
-		if (i >= 310) goto acquire_vt;
-	    }
-	    /* otherwise fall through */
 	case PCVT:
-	    /*
-	     * First activate the #1 VT.  This is a hack to allow a server
-	     * to be started while another one is active.  There should be
-	     * a better way.
+	    /* As of FreeBSD 2.2.8, syscons driver does not need the #1 vt
+	     * switching anymore. Here we check for FreeBSD older than 3.1.
+	     *
+	     * XXX Add cases for other BSD versions that require the VT
+	     * switching hack.
 	     */
-	    if (initialVT != 1) {
+	    if (xf86Info.consType == SYSCONS) {
+		uname(&uts);
+		if (strcmp(uts.sysname, "FreeBSD") == 0) {
+		    i = atof(uts.release) * 100;
+		    if (i < 310)
+			needSwitchToVT1 = TRUE;
+		}
+	    } else
+		needSwitchToVT1 = TRUE;
 
-		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) != 0)
-		{
+	    /*
+	     * If needed, first activate the #1 VT.  This is needed to work
+	     * around issues with some console drivers when starting a server
+	     * while another one is active.
+	     */
+	    if (needSwitchToVT1 && initialVT != 1) {
+		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) != 0) {
 		    xf86Msg(X_WARNING,
 				"xf86OpenConsole: VT_ACTIVATE failed\n");
 		}
 		sleep(1);
 	    }
 
-acquire_vt:
 	    /*
-	     * now get the VT
+	     * Now get the VT.
 	     */
 	    SYSCALL(result =
 		    ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno));
-	    if (result != 0)
-	    {
+	    if (result != 0) {
     	        xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	    }
 	    SYSCALL(result =
 		    ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno));
-	    if (result != 0)
-	    {
+	    if (result != 0) {
 	        xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	    }
 
@@ -280,19 +285,16 @@ acquire_vt:
 	    vtmode.relsig = SIGUSR1;
 	    vtmode.acqsig = SIGUSR1;
 	    vtmode.frsig = SIGUSR1;
-	    if (ioctl(xf86Info.consoleFd, VT_SETMODE, &vtmode) < 0) 
-	    {
+	    if (ioctl(xf86Info.consoleFd, VT_SETMODE, &vtmode) < 0) {
 	        FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed");
 	    }
 #if !defined(USE_DEV_IO) && !defined(USE_I386_IOPL)
-	    if (ioctl(xf86Info.consoleFd, KDENABIO, 0) < 0)
-	    {
+	    if (ioctl(xf86Info.consoleFd, KDENABIO, 0) < 0) {
 	        FatalError("xf86OpenConsole: KDENABIO failed (%s)",
 		           strerror(errno));
 	    }
 #endif
-	    if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
-	    {
+	    if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0) {
 	        FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed");
 	    }
    	    break; 
@@ -304,15 +306,11 @@ acquire_vt:
    	    break; 
 #endif
         }
-    }
-    else 
-    {
+    } else {
 	/* serverGeneration != 1 */
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
-    	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
-    	{
-	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
-	    {
+    	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT) {
+	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0) {
 	        xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	    }
         }
@@ -695,17 +693,18 @@ xf86ProcessArgument(int argc, char *argv[], int i)
 	 * Keep server from detaching from controlling tty.  This is useful 
 	 * when debugging (so the server can receive keyboard signals.
 	 */
-	if (!strcmp(argv[i], "-keeptty"))
-	{
+	if (!strcmp(argv[i], "-keeptty")) {
 		KeepTty = TRUE;
 		return(1);
 	}
+	if (!strcmp(argv[i], "-detachtty")) {
+		DetachTty = TRUE;
+		return(1);
+	}
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
-	if ((argv[i][0] == 'v') && (argv[i][1] == 't'))
-	{
+	if ((argv[i][0] == 'v') && (argv[i][1] == 't')) {
 		if (sscanf(argv[i], "vt%2d", &VTnum) == 0 ||
-		    VTnum < 1 || VTnum > 12)
-		{
+		    VTnum < 1 || VTnum > 12) {
 			UseMsg();
 			VTnum = -1;
 			return(0);
@@ -723,6 +722,8 @@ xf86UseMsg()
 	ErrorF("vtXX                   use the specified VT number (1-12)\n");
 #endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
 	ErrorF("-keeptty               ");
-	ErrorF("don't detach controlling tty (for debugging only)\n");
+	ErrorF("don't detach controlling tty\n");
+	ErrorF("-detachtty             ");
+	ErrorF("detach controlling tty\n");
 	return;
 }
