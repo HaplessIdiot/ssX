@@ -1442,7 +1442,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/06/18-1) by "
+        "SiS driver (2003/06/21-1) by "
 	"Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
