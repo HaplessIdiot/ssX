@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/Imakefile,v 1.7 2000/08/11 23:15:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/Imakefile,v 1.8 2000/08/11 23:33:50 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -25,9 +25,9 @@ NormalLintTarget($(SRCS))
 
 #ifdef LinuxArchitecture
 InstallLibraryModule(fbdevhw,$(MODULEDIR),linux)
+#endif
 CppManTarget(fbdevhw,)
 InstallModuleManPage(fbdevhw)
-#endif
 
 #ifndef OS2Architecture
 DependTarget()
