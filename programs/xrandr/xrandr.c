@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.9 2002/09/29 23:39:47 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.11 2002/10/14 18:01:43 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  * Copyright © 2002 Hewlett Pacard Company, Inc.
@@ -64,7 +64,7 @@ usage(void)
   fprintf(stderr, "  -o <normal,inverted,left,right,0,1,2,3>\n");
   fprintf(stderr, "            or --orientation <normal,inverted,left,right,0,1,2,3>\n");
   fprintf(stderr, "  -q        or --query\n");
-  fprintf(stderr, "  -s <size> or --size <size>\n");
+  fprintf(stderr, "  -s <size>/<width>x<height> or --size <size>/<width>x<height>\n");
   fprintf(stderr, "  -r <rate> or --rate <rate>\n");
   fprintf(stderr, "  -v        or --version\n");
   fprintf(stderr, "  -x        (reflect in x)\n");
@@ -104,6 +104,8 @@ main (int argc, char **argv)
   int		version = 0;
   int		event_base, error_base;
   int		reflection = 0;
+  int		width = 0, height = 0;
+  int		have_pixel_size = 0;
 
   program_name = argv[0];
   if (argc == 1) query = 1;
@@ -124,8 +126,12 @@ main (int argc, char **argv)
 
     if (!strcmp ("-s", argv[i]) || !strcmp ("--size", argv[i])) {
       if (++i>=argc) usage ();
-      size = atoi (argv[i]);
-      if (size < 0) usage();
+      if (sscanf (argv[i], "%dx%d", &width, &height) == 2)
+	have_pixel_size = 1;
+      else {
+	size = atoi (argv[i]);
+	if (size < 0) usage();
+      }
       setit = 1;
       continue;
     }
@@ -204,7 +210,19 @@ main (int argc, char **argv)
   
   current_size = XRRConfigCurrentConfiguration (sc, &current_rotation);
 
-  if (size < 0)    size = current_size;
+  sizes = XRRConfigSizes(sc, &nsize);
+
+  if (have_pixel_size) {
+    for (size = 0; size < nsize; size++)
+    {
+      if (sizes[size].width == width && sizes[size].height == height)
+	break;
+    }
+  }
+  else if (size < 0)
+    size = current_size;
+
+  if (size >= nsize) usage();
 
   if (rot < 0)
   {
@@ -214,8 +232,6 @@ main (int argc, char **argv)
   }
 
   current_rate = XRRConfigCurrentRate (sc);
-
-  if (size >= nsize) usage();
 
   if (rate < 0)
   {
@@ -231,8 +247,6 @@ main (int argc, char **argv)
     printf("Server reports RandR version %d.%d\n", 
 	   major_version, minor_version);
   }
-
-  sizes = XRRConfigSizes(sc, &nsize);
 
   if (query) {
     printf(" SZ:    Pixels          Physical       Refresh\n");
