@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.1 1999/11/19 13:53:44 hohndel Exp $ */
 
 #include "fb.h"
 #include	"fontstruct.h"
@@ -97,7 +97,7 @@ fbGlyph24 (FbBits   *dstBits,
 	dst = dstLine;
 	while (bits)
 	{
-	    switch (FbStipRight (FbLeftStipBits (bits, n), 4-n)) {
+	    switch (FbStipMoveLsb (FbLeftStipBits (bits, n), 4, n)) {
 	    case 0:
 		break;
 	    case 1:

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.1 1999/11/19 13:53:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.2 1999/12/27 01:26:21 robin Exp $ */
 
 #include "fb.h"
 
@@ -115,11 +115,13 @@ fbSetupScreen(ScreenPtr	pScreen,
     pScreen->ResolveColor = fbResolveColor;
     pScreen->BitmapToRegion = fbPixmapToRegion;
     
+#ifndef FB_OLD_SCREEN
     pScreen->BackingStoreFuncs.SaveAreas = fbSaveAreas;
     pScreen->BackingStoreFuncs.RestoreAreas = fbRestoreAreas;
     pScreen->BackingStoreFuncs.SetClipmaskRgn = 0;
     pScreen->BackingStoreFuncs.GetImagePixmap = 0;
     pScreen->BackingStoreFuncs.GetSpansPixmap = 0;
+#endif
     
     return TRUE;
 }
@@ -159,7 +161,11 @@ fbFinishScreenInit(ScreenPtr	pScreen,
 	return FALSE;
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals))
+			defaultVisual, nvisuals, visuals
+#ifdef FB_OLD_SCREEN
+		       , (miBSFuncPtr) 0
+#endif
+		       ))
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = fbCloseScreen;
@@ -169,7 +175,7 @@ fbFinishScreenInit(ScreenPtr	pScreen,
      */
     /* init backing store here so we can overwrite CloseScreen without stepping
      * on the backing store wrapped version */
-    miInitializeBackingStore (pScreen);
+    fbInitializeBackingStore (pScreen);
 #endif
     return TRUE;
 }
@@ -190,6 +196,27 @@ fbScreenInit(ScreenPtr	pScreen,
     if (!fbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, 
 			    width, bpp))
 	return FALSE;
-    miInitializeBackingStore (pScreen);
+    fbInitializeBackingStore (pScreen);
     return TRUE;
+}
+
+
+#ifdef FB_OLD_SCREEN
+const miBSFuncRec fbBSFuncRec = {
+    fbSaveAreas,
+    fbRestoreAreas,
+    (void (*)(GCPtr, RegionPtr)) 0,
+    (PixmapPtr (*)(void)) 0,
+    (PixmapPtr (*)(void)) 0,
+};
+#endif
+
+void
+fbInitializeBackingStore (ScreenPtr pScreen)
+{
+#ifdef FB_OLD_SCREEN
+    miInitializeBackingStore (pScreen, (miBSFuncRec *) &fbBSFuncRec);
+#else
+    miInitializeBackingStore (pScreen);
+#endif
 }

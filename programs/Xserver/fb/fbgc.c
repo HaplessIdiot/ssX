@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.1 1999/11/19 13:53:43 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -74,15 +74,10 @@ fbCreateGC(GCPtr pGC)
 
     /* fb wants to translate before scan conversion */
     pGC->miTranslate = 1;
-    pGC->fExpose = 1;
-    pGC->freeCompClip = 0;
 
-    pPriv = fbGetGCPrivate(pGC);
-#if 0
-    pPriv->rop = pGC->alu;
-    pPriv->fExpose = TRUE;
-#endif
-    pGC->pRotatedPixmap = 0;
+    fbGetRotatedPixmap(pGC) = 0;
+    fbGetExpose(pGC) = 1;
+    fbGetFreeCompClip(pGC) = 0;
     fbGetCompositeClip(pGC) = 0;
     return TRUE;
 }
