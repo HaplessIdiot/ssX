@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/rec.c,v 1.2 2002/09/22 07:09:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/rec.c,v 1.3 2002/11/15 07:01:33 paulo Exp $ */
 
 #include "rep.h"
 
@@ -315,9 +315,9 @@ irec_literal_pattern(irec_info *inf, int value)
 	    case Rep_String:
 		/* Augments literal string */
 		length = strlen((char*)inf->ppat->data.str);
-		if ((length % 16) < 2) {
+		if ((length % 16) >= 14) {
 		    if ((str = realloc(inf->ppat->data.str,
-				       length + 16)) == NULL) {
+				       length + 18)) == NULL) {
 			inf->ecode = RE_ESPACE;
 			return;
 		    }
@@ -380,9 +380,9 @@ irec_case_literal_pattern(irec_info *inf, int value)
 	    case Rep_CaseString:
 		/* Augments case literal string */
 		length = strlen((char*)inf->ppat->data.str);
-		if (((length) % 32) < 3) {
+		if (((length) % 32) >= 28) {
 		    if ((str = realloc(inf->ppat->data.str,
-				       length + 32)) == NULL) {
+				       length + 36)) == NULL) {
 			inf->ecode = RE_ESPACE;
 			return;
 		    }
