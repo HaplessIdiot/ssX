@@ -1,4 +1,7 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 101. Change the WORLDOPTS default to empty.  This means that 'make World'
+      will now stop on the first error.  To get the old behaviour, run
+      'make WORLDOPTS=-k World' (David Dawes).
  100. Add preliminary version of generic rootless code based on XDarwin's
       rootless mode (Torrey T. Lyons and Apple).
   99. Remove PEX and XIE source code (Matthieu Herrb).
@@ -16766,4 +16769,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2634 2003/04/14 20:38:07 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2635 2003/04/15 01:05:42 torrey Exp $
