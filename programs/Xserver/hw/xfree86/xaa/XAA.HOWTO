@@ -287,7 +287,42 @@ void SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
 
     The flags field associated with Solid Lines is SolidLineFlags and 
     the GXCOPY_ONLY, NO_PLANEMASK and RGB_EQUAL flags as described
-    in Section 2.0 are valid restrictions.
+    in Section 2.0 are valid restrictions.  Additionally, the following
+    flag is valid:
+
+      HARDWARE_CLIP_LINE
+
+	If this flag is set, the SetClippingRectangle function will 
+	be called before calling the TwoPoint or Bresenham line
+	functions whenever the line needs to be clipped.  Hardware
+	clipping is not necessary for the Bresenham interface since
+	clipping can be done by modifying the Bresenham parameters,
+	and XAA will do this automatically.  TwoPoint lines, however,
+	will have limited usage if hardware clipping is not supported.
+	If a SetClippingRectangle function was not provided, this flag
+	will be ignored.  
+
+    Some line engines have line biases hardcoded to comply with
+    Microsoft line biasing rules.  A tell-tale sign of this is the
+    hardware lines not matching the software lines in the zeroth and
+    fourth octants.  The driver can set the flag:
+	
+	MICROSOFT_ZERO_LINE_BIAS
+
+    in the AccelInfoRec.Flags field to adjust the software lines to
+    match the hardware lines.   This is in the generic flags field
+    rather than the SolidLineFlags since this flag applies to all
+    software zero-width lines on the screen and not just the solid ones.
+
+
+void SetClippingRectangle ( ScrnInfoPtr pScrn,
+        		int left, int top, int right, int bottom)
+
+    Specifies the clipping rectangle to be used for the next and only
+    the next primitive.  The driver may need to keep track of when this
+    function is called so that it can reset the clipping rectangle
+    after the next primitive is rendered.  At the moment, this function
+    is only used for clipping of lines.
 
 
 void SetupForSolidLine(ScrnInfoPtr pScrn, 
@@ -296,8 +331,8 @@ void SetupForSolidLine(ScrnInfoPtr pScrn,
     SetupForSolidLine indicates that any combination of the following 
     may follow it.
 
-	SubsequentSolidBresenhamLine	(not implemented yet)
-	SubsequentSolidTwoPointLine	(not implemented yet)
+	SubsequentSolidBresenhamLine
+	SubsequentSolidTwoPointLine
         SubsequentSolidHorVertLine 	
 
 
@@ -311,8 +346,66 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
     always extends to the right or down.
 
 
-    /*  More to come */    
 
+void SubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
+        	int x1, int y1, int x2, int y2, int flags)
+
+    Draw a line from (x1,y1) to (x2,y2).  If the flags field contains
+    the flag OMIT_LAST, the last pixel should not be drawn.  Otherwise,
+    the pixel at (x2,y2) should be drawn.
+
+    If you use the TwoPoint line interface there is a good possibility
+    that your line engine has hard-coded line biases that do not match
+    the default X zero-width lines.  If so, you may need to set the
+    MICROSOFT_ZERO_LINE_BIAS flag described above.  Note that since
+    any vertex in the 16-bit signed coordinate system is valid, your
+    line engine is expected to handle 16-bit values if you have hardware
+    line clipping enabled.  If your engine cannot handle 16-bit values,
+    do not set the HARDWARE_CLIP_LINE flag.
+
+
+void SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
+        int x, int y, int major, int minor, int err, int len, int octant)
+
+    "X" and "y" are the starting point of the line.  "Major" and "minor" 
+    are the major and minor axis increments.  "Err" is the initial error
+    term.  "Len" is the number of pixels to be drawn (inclusive). "Octant"
+    can be any combination of the following flags OR'd together:
+
+      Y_MAJOR		Y is the major axis (X otherwise)
+      X_DECREASING	The line is drawn from right to left
+      Y_DECREASING	The line is drawn from bottom to top
+	  
+    The major, minor and err terms are the "raw" Bresenham parameters
+    consistent with a line engine that does:
+
+	e = err;
+	while(len--) {
+	   DRAW_POINT(x,y);
+	   e += minor;
+	   if(e >= 0) {
+		e -= major;
+		TAKE_ONE_STEP_ALONG_MINOR_AXIS;
+	   }
+	   TAKE_ONE_STEP_ALONG_MAJOR_AXIS;
+	}
+
+    IBM 8514 style Bresenham line interfaces require their parameters
+    modified in the following way:
+
+	Axial = minor;
+	Diagonal = minor - major;
+	Error = minor + err;
+
+SolidBresenhamLineErrorTermBits
+
+    This field allows the driver to tell XAA how many bits large its
+    Bresenham parameter registers are.  Many engines have registers that
+    only accept 12 or 13 bit Bresenham parameters, and the parameters
+    for clipped lines may overflow these if they are not scaled down.
+    If this field is not set, XAA will assume the engine can accomodate
+    16 bit parameters, otherwise, it will scale the parameters to the
+    size specified.
 
 
 2.4  Dashed Lines
@@ -413,6 +506,13 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
     unless bg = -1.  In that case the pixels corresponding to the
     zeros in the bitmap shall be left unmodified by the accelerator.
 
+    For hardware that doesn't allow an easy implementation of skipleft, the
+    driver can replace CacheMonoStipple function with one that stores multiple
+    rotated copies of the stipple and select between them. In this case the
+    driver should set CacheColorExpandDensity to tell XAA how many copies of
+    the pattern are stored in the width of a cache slot. For instance if the
+    hardware can specify the starting address in bytes, then 8 rotated copies
+    of the stipple are needed and CacheColorExpandDensity should be set to 8.
 
     void SubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
@@ -1205,4 +1305,4 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.3 1998/08/02 05:17:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.4 1998/08/13 14:46:09 dawes Exp $

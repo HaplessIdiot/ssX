@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.1.2.5 1998/07/24 11:36:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.2 1998/07/25 16:55:13 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -151,6 +151,7 @@
 
 /* 3Dfx Interactive */
 #define PCI_CHIP_VOODOO_GRAPHICS 0x0001
+#define PCI_CHIP_VOODOO2	0x0002
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
@@ -339,6 +340,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_3DFX,	"3Dfx Interactive", {
 				{PCI_CHIP_VOODOO_GRAPHICS, "Voodoo Graphics"},
+				{PCI_CHIP_VOODOO2, "Voodoo2"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.64.2.46 1998/07/18 17:53:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.76 1998/07/25 16:54:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -145,7 +145,7 @@ pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
 /* xf86Mode.c */
 
 int xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2,
-			int *divider);
+			int DivFactor, int MulFactor, int *divider);
 const char *xf86ModeStatusToString(ModeStatus status);
 ModeStatus xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 			  ClockRangePtr clockRanges, LookupModeFlags strategy);

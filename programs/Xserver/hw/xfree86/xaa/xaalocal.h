@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.3 1998/07/31 10:41:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.4 1998/08/13 14:46:12 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1468,6 +1468,23 @@ XAAReadPixmap (
    int bpp, int depth
 );
 
+void
+XAAPolySegment(
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		nseg,
+    xSegment	*pSeg
+);
+
+void
+XAAPolyLines(
+    DrawablePtr pDrawable,
+    GCPtr	pGC,
+    int		mode,
+    int		npt,
+    DDXPointPtr pptInit
+);
+
  
 void 
 XAAWriteMono8x8PatternToCache(ScrnInfoPtr pScrn, XAACacheInfoPtr pCache);
@@ -1575,6 +1592,35 @@ extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
 #define CHECK_COLORS(pGC, flags) \
 	(!(flags & RGB_EQUAL) || \
 	(CHECK_RGB_EQUAL(pGC->fgPixel) && CHECK_RGB_EQUAL(pGC->bgPixel)))
+
+
+/*
+ * Moved XAAPixmapCachePrivate here from xaaPCache.c, since driver
+ * replacements for CacheMonoStipple need access to it
+ */
+
+typedef struct {
+   int Num512x512;
+   int Current512;
+   XAACacheInfoPtr Info512;
+   int Num256x256;
+   int Current256;
+   XAACacheInfoPtr Info256;
+   int Num128x128;
+   int Current128;
+   XAACacheInfoPtr Info128;
+   int NumMono;
+   int CurrentMono;
+   XAACacheInfoPtr InfoMono;
+   int NumColor;
+   int CurrentColor;
+   XAACacheInfoPtr InfoColor;
+   int NumPartial;
+   int CurrentPartial;
+   XAACacheInfoPtr InfoPartial;
+   DDXPointRec MonoOffsets[64];
+   DDXPointRec ColorOffsets[64];
+} XAAPixmapCachePrivate, *XAAPixmapCachePrivatePtr;
 
 
 #endif /* _XAALOCAL_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.3 1998/07/31 10:41:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.4 1998/08/13 14:46:10 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -327,15 +327,34 @@ XAAValidatePolylines(
 	    pGC->ops->Polylines = miWideDash;
    }
 
-   if(infoRec->PolyRectangleThinSolid &&
-	(pGC->lineWidth == 0) &&
-	(pGC->fillStyle == FillSolid) &&
-	(pGC->lineStyle == LineSolid) &&
-	CHECK_PLANEMASK(pGC,infoRec->PolyRectangleThinSolidFlags) &&
-	CHECK_ROP(pGC,infoRec->PolyRectangleThinSolidFlags) &&
-	CHECK_FG(pGC,infoRec->PolyRectangleThinSolidFlags)) {
+   if((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid)) {
 
-	pGC->ops->PolyRectangle = infoRec->PolyRectangleThinSolid;
+	if(pGC->lineStyle == LineSolid) {
+
+	   if(infoRec->PolyRectangleThinSolid &&
+		CHECK_PLANEMASK(pGC,infoRec->PolyRectangleThinSolidFlags) &&
+		CHECK_ROP(pGC,infoRec->PolyRectangleThinSolidFlags) &&
+		CHECK_FG(pGC,infoRec->PolyRectangleThinSolidFlags)) {
+
+		pGC->ops->PolyRectangle = infoRec->PolyRectangleThinSolid;
+	   }
+
+	   if(infoRec->PolySegmentThinSolid &&
+		CHECK_PLANEMASK(pGC,infoRec->PolySegmentThinSolidFlags) &&
+		CHECK_ROP(pGC,infoRec->PolySegmentThinSolidFlags) &&
+		CHECK_FG(pGC,infoRec->PolySegmentThinSolidFlags)) {
+
+		pGC->ops->PolySegment = infoRec->PolySegmentThinSolid;
+	   }
+
+	   if(infoRec->PolylinesThinSolid &&
+		CHECK_PLANEMASK(pGC,infoRec->PolylinesThinSolidFlags) &&
+		CHECK_ROP(pGC,infoRec->PolylinesThinSolidFlags) &&
+		CHECK_FG(pGC,infoRec->PolylinesThinSolidFlags)) {
+
+		pGC->ops->Polylines = infoRec->PolylinesThinSolid;
+	    }
+	}
    }
 
    if(infoRec->PolylinesWideSolid &&

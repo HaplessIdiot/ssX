@@ -2154,7 +2154,8 @@ A.3  Primary Mode functions:
         modeNames      List of mode names that the screen is requesting.
         clockRanges    A list of clock ranges allowed by the driver.  Each
                        range includes whether interlaced or multiscan modes
-                       are supported for that range.
+                       are supported for that range. See below for more
+                       on clockRanges.
         linePitches    List of supported line pitches supported by the
                        driver.  This is optional and should be NULL when not
                        used.
@@ -2239,6 +2240,60 @@ A.3  Primary Mode functions:
 
       If this function returns -1, the ChipPreInit function should return
       FALSE.
+
+      clockRanges is a linked list of clock ranges allowed by the driver. If
+      a mode doesn't fit in any of the defined clockRanges, it is rejected.
+      The first clockRange that matches all requirements is used.
+
+      clockRanges contains the following fields:
+        minClock
+        maxClock          The lower and upper mode clock bounds for which
+                          the rest of the clockRange parameters apply.
+                          Since these are the mode clocks, they are not
+                          scaled with the ClockMulFactor and ClockDivFactor.
+                          It is up to the driver to adjust these values
+                          if they depend on the clock scaling factors.
+        clockIndex        (not used yet) -1 for programmable clocks
+        interlaceAllowed  TRUE if interlacing is allowed for this range
+        doubleScanAllowed TRUE if doublescan is allowed for this range
+        ClockMulFactor
+        ClockDivFactor    Scaling factors that are applied to the mode
+                          clocks ONLY before selecting a clock index (when
+                          there is no programmable clock) or a SynthClock
+                          value. This is useful for drivers that support
+                          pixel multiplexing or that need to scale the
+                          clocks because of hardware restrictions (like
+                          sending 24bpp data to an 8 bit RAMDAC using a
+                          tripled clock).
+                          Note that these parameters describe what must be
+                          done to the mode clock to achieve the data
+                          transport clock between graphics controller and
+                          RAMDAC. For example for 2:1 pixel multiplexing,
+                          two pixels are sent to the RAMDAC on each clock.
+                          This allows the RAMDAC clock to be half of the
+                          actual pixel clock. Hence, ClockMulFactor=1 and
+                          ClockDivFactor=2.
+                          This means that the clock used for clock selection
+                          (=determining the correct clock index from the
+                          list of discrete clocks) or for the SynthClock
+                          field in case of a programmable clock is:
+                          (mode->Clock * ClockMulFactor) / ClockDivFactor.
+        PrivFlags         This field is copied into the mode->PrivFlags
+                          field when this clockRange is selected by
+                          xf86ValidateModes(). It allows the driver to find
+                          out what clock range was selected, so it knows it
+                          needs to set up pixel multplexing or any other
+                          range-dependent feature.  This field is purely
+                          driver-defined: it may contain flag bits, an index
+                          or anything else (as long as it is an INT).
+
+      Note that the mode->SynthClock field is always filled in by
+      xf86ValidateModes(): it will contain the "data transport clock", which
+      is the clock that will have to be programmed in the chip when it has a
+      programmable clock, or the clock that will be picked from the clocks
+      list when it is not a programmable one. Thus:
+      
+         mode->SynthClock = (mode->Clock * ClockMulFactor) / ClockDivFactor
 
 
     void xf86PruneDriverModes(ScrnInfoPtr scrp)
@@ -3644,4 +3699,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.4 1998/08/02 06:34:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.5 1998/08/13 14:45:42 dawes Exp $

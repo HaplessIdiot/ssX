@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.1.2.16 1998/07/19 13:22:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.2 1998/07/25 16:58:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -156,6 +156,8 @@ vgaStoreColors(pmap, ndef, pdefs)
 
         if (writeColormap)
 	{
+	    if (hwp->ShowOverscan && i == 255)
+		continue;
 #if !defined(PC98_EGC) && !defined(PC98_PEGC)
 	    outb(0x3C8, pdefs[i].pixel);
 	    DACDelay(hwp);
@@ -173,8 +175,8 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    outb(0xae, cmap[2]);
 #endif /* PC98_EGC */
 	}
-    }	
-    if (new_overscan)
+    }
+    if (new_overscan && !hwp->ShowOverscan)
     {
 	new_overscan = FALSE;
         for(i = 0; i < ndef; i++)

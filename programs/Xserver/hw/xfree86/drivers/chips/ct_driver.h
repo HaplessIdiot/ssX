@@ -22,13 +22,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.2.2.2 1998/07/11 13:52:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.9 1998/07/25 16:55:41 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
 #define _CT_DRIVER_H_
 
 #include "xaa.h"
+#include "xaalocal.h"		/* XAA internals as we replace some of XAA */
 #include "xaacursor.h"
 
 /* Clock related */
@@ -159,6 +160,8 @@ typedef struct {
     int planemask;
     /* For the 8x8 pattern fills */
     int patternyrot;
+    /* For cached stipple fills */
+    int SlotWidth;
     /* Variables for the 24bpp fill */
     unsigned char fgpixel;
     unsigned char bgpixel;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.25 1998/07/25 16:55:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.26 1998/07/31 10:41:17 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1167,20 +1167,27 @@ CHIPSProbe(DriverPtr drv, int flags)
 			break;
 		    }
 		}
-
-		if (!found && (tmp != 0)) {
-		    read_xr(0x02,tmp);
-		    switch (tmp) {
-		    case 0xE0:		/* CT65550 */
-		    case 0xE4:		/* CT65554 */
-		    case 0xE5:		/* CT65555 */
-		    case 0xF4:		/* CT68554 */
-		    case 0xC0:		/* CT69000 */
-			found = TRUE;
-			break;
-		    default:
-			break;
-		    }
+	    }
+	    
+	    /* 
+	     * We could still have a HiQV style chipset. C&T have the PCI
+	     * vendor ID stored in XR01 and XR02 for HiQV chips, regardless
+	     * of whether the chip is actually connected to a PCI BUS. So
+	     * probe for C&T vendor ID.
+	     */
+	    if (!found && (rdinx(0x3D6, 0x01) == 0x2C) &&
+			(rdinx(0x3D6, 0x02) == 0x10)) {
+		read_xr(0x02,tmp);
+		switch (tmp) {
+		case 0xE0:		/* CT65550 */
+		case 0xE4:		/* CT65554 */
+		case 0xE5:		/* CT65555 */
+		case 0xF4:		/* CT68554 */
+		case 0xC0:		/* CT69000 */
+		    found = TRUE;
+		    break;
+		default:
+		    break;
 		}
 	    }
 
@@ -4052,6 +4059,8 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    mode->CrtcHDisplay--;
 	    mode->CrtcHSyncStart <<= 1;
 	    mode->CrtcHSyncEnd <<= 1;
+	    mode->CrtcHBlankStart <<= 1;
+	    mode->CrtcHBlankEnd <<= 1;
 	    mode->CrtcHTotal <<= 1;
 	    mode->CrtcHAdjusted = TRUE;
 	}
@@ -4062,6 +4071,8 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    mode->CrtcHDisplay--;
 	    mode->CrtcHSyncStart += ((mode->CrtcHSyncStart) << 1);
 	    mode->CrtcHSyncEnd += ((mode->CrtcHSyncEnd) << 1);
+	    mode->CrtcHBlankStart += ((mode->CrtcHBlankStart) << 1);
+	    mode->CrtcHBlankEnd += ((mode->CrtcHBlankEnd) << 1);
 	    mode->CrtcHTotal += ((mode->CrtcHTotal) << 1);
 	    mode->CrtcHAdjusted = TRUE;
 	}
@@ -4144,7 +4155,7 @@ CHIPSModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	| ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6)
 	| ((((mode->CrtcHSyncEnd >> 3)) & 0x20) >> 2)
 	| ((((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 4)
-	| (((mode->CrtcHBlankEnd >> 3) & 0x40) >> 1);
+	| ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x40) >> 1);
 
 
     ChipsNew->XR[0x16]  = (((mode->CrtcVTotal -2) & 0x400) >> 10 )
@@ -4278,6 +4289,8 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    mode->CrtcHDisplay--;
 	    mode->CrtcHSyncStart <<= 1;
 	    mode->CrtcHSyncEnd <<= 1;
+	    mode->CrtcHBlankStart <<= 1;
+	    mode->CrtcHBlankEnd <<= 1;
 	    mode->CrtcHTotal <<= 1;
 	    mode->CrtcHAdjusted = TRUE;
 	}
@@ -4288,6 +4301,8 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    mode->CrtcHDisplay--;
 	    mode->CrtcHSyncStart += ((mode->CrtcHSyncStart) << 1);
 	    mode->CrtcHSyncEnd += ((mode->CrtcHSyncEnd) << 1);
+	    mode->CrtcHBlankStart += ((mode->CrtcHBlankStart) << 1);
+	    mode->CrtcHBlankEnd += ((mode->CrtcHBlankEnd) << 1);
 	    mode->CrtcHTotal += ((mode->CrtcHTotal) << 1);
 	    mode->CrtcHAdjusted = TRUE;
 	}
@@ -4378,7 +4393,7 @@ CHIPSModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    | ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6)
 	    | ((((mode->CrtcHSyncEnd >> 3)) & 0x20) >> 2)
 	    | ((((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 4)
-	    | (((mode->CrtcHBlankEnd >> 3) & 0x40) >> 1);
+	    | ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x40) >> 1);
 
 	ChipsNew->XR[0x16]  = (((mode->CrtcVTotal -2) & 0x400) >> 10 )
 	    | (((mode->CrtcVDisplay -1) & 0x400) >> 9 )

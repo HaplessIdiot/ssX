@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.7.2.9 1998/07/19 13:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.13 1998/07/25 16:56:16 dawes Exp $ */
 
 /*
  *
@@ -102,6 +102,34 @@ typedef struct _loader_item {
 	} code ;
 #endif
 	} itemRec, *itemPtr ;
+
+/* The following structures provide an interface to GDB (note that GDB
+   has copies of the definitions - if you change anything here make
+   sure that the changes are also made to GDB */
+
+typedef	struct {
+	char          *name;       /* Name of this symbol */
+	unsigned int  namelen;     /* Name of this module */
+	void          *addr;	   /* Start address of the .text section */
+} LDRCommon, *LDRCommonPtr;
+
+typedef	struct x_LDRModuleRec{
+	unsigned int  version;     /* Version of this struct */
+	char          *name;       /* Name of this module */
+	unsigned int  namelen;     /* Length of name */
+	void          *text;	   /* Start address of the .text section */
+	void          *data;	   /* Start address of the .data section */
+	void          *rodata;	   /* Start address of the .rodata section */
+	void          *bss;	   /* Start address of the .bss section */
+        LDRCommonPtr  commons;     /* List of commmon symbols */
+        int           commonslen;  /* Number of common symbols */
+	struct x_LDRModuleRec *next; /* Next module record in chain */
+} LDRModuleRec, *LDRModulePtr;
+
+extern char		   DebuggerPresent;
+extern LDRModulePtr	   ModList;
+extern LDRCommonPtr	   ldrCommons;
+extern int		   nCommons;
 
 /*
  * The loader uses loader specific alloc/calloc/free functions that
@@ -228,5 +256,6 @@ char * _LoaderHandleToName(int handle);
 /* LD_ARCHIVE */
 void *ARCHIVELoadModule(loaderPtr, int, LOOKUP **);
 
+extern void _loader_debug_state(void);
 
 #endif /* _LOADER_H */

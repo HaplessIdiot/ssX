@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 1.3.2.2 1998/07/11 13:52:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 1.6 1998/07/25 16:55:34 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -40,7 +40,6 @@ ObjectFromSpecialSource(ct_accelhi, ct_accel, -DCHIPS_MMIO -DCHIPS_HIQV)
 
 InstallLinkKitNonExecFile(ct_driver.c,$(LINKKITDIR)/drivers/svga/chips)
 InstallLinkKitNonExecFile(ct_bank.c,$(LINKKITDIR)/drivers/svga/chips)
-InstallLinkKitNonExecFile(ct_bank.s,$(LINKKITDIR)/drivers/svga/chips)
 InstallLinkKitNonExecFile(ct_cursor.c,$(LINKKITDIR)/drivers/svga/chips)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/chips)
 InstallLinkKitNonExecFile(ct_BltHiQV.h,$(LINKKITDIR)/drivers/svga/chips)

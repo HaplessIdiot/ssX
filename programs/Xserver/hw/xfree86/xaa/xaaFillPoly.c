@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.3 1998/07/31 10:41:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.4 1998/08/02 05:17:05 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -646,7 +646,8 @@ CacheExpandRectHelper (
     int x, phaseY, phaseX, skipleft, w, blit_w, blit_h;
     int cacheWidth;
 
-    cacheWidth = pCache->w * pScrn->bitsPerPixel;
+    cacheWidth = (pCache->w * pScrn->bitsPerPixel) / 
+	infoRec->CacheColorExpandDensity;
 
     phaseY = (Y - yorg) % pCache->orig_h;
     if(phaseY < 0) phaseY += pCache->orig_h;

@@ -1,14 +1,43 @@
-XFree86 3.9Nb (15 August 1998)
-1747. Some editres, xedit and xgc updates (#1788, 1842,
+XFree86 3.9Nb (19 August 1998)
+1759. Add an option "ShowOverscan" to the vgahw module which makes the
+      unblanked area of overscan clearly visible.
+1758. Adjust the builtin mode for the 8bpp generic vga driver to blank as
+      much of the overscan area as possible.
+1757. Adjust the horizontal blank end value in the vgahw module to avoid
+      excessive blanking for most chipsets when running in generic vga mode.
+1756. Tseng driver updates, including:
+       - Add support for chips with a set of discrete clocks instead of a
+         programmable clock.
+       - use the new ClockRanges code to auutomatically select between pixmux
+         and normal modes, and for 24bpp clock scaling.
+       - add a replacement for vgaHWBlankScreen() that doesn't do a
+         sequencer reset.
+       - remove some old, unused code.
+      (#1910, Koen Gadeyne).
+1755. Loader updates required for the updated gdb (#1908, Paul Flinders).
+1754. Add VSTATUS control char support to xterm (#1907, Robert Earl).
+1753. Update the register probing of the chipset for the C&T HiQV chips
+      in SuperProbe and the C&T driver (#1904, David Bateman).
+1752. Add cached screen to screen colour expansion to the C&T driver
+      (1904, David Bateman).
+1751. Add options to XAA to allow acceleration primitives to be disabled
+      individually (#1903, David Bateman).
+1750. Add preliminary solid Bresenham and two point line support for XAA,
+      and code to make use of it for the mga driver (#1900-1902,
+      Mark Vojkovich).
+1749. Introduce Helper functions for ramdac module, Save/Restore/SetBpp,
+      and update the glint and tga drivers to use them (#1899, Alan Hourihane).
+1748. Move IBM640 code from the glint driver intot he generic ramdac module
+      (#1899, Alan Hourihane).
+1747. Add ClockMulFactor and ClockDivFactor fields to clockRanges to allow
+      for scaling of clocks when doing mode validation (#1898, 1905,
+      Koen Gadeyne, 1906, Itai Nahshon).
+1746. Add recognition of the Voodoo 2 to the PCI list (#1897, Koen Gadeyne).
+1745. Some editres, xedit and xgc updates (#1788, 1842,
       Paulo Cesar Pereira de Andrade).
-1746. Lots of Xaw/Xmu updates (including ansification of Xaw and Xmu) --
+1744. Lots of Xaw/Xmu updates (including ansification of Xaw and Xmu) --
       see the Changelog in xc/lib/Xaw for further details (#1776, 1788, 1842,
       Paulo Cesar Pereira de Andrade).
-1745. Add colourmap code to the mga driver that uses MMIO (#1896,
-      Mark Vojkovich).
-1744. Change the mga driver to use function pointers for handling
-      chipset and ramdac specific operations rather than using case
-      statements (#1896, Mark Vojkovich).
 1743. Support for GNU/Hurd (#1895, UCHIYAMA Yasushi).
 1742. Remove the implicit assumption in some areas that O_RDONLY is 0
       (#1894, UCHIYAMA Yasushi).
@@ -6306,4 +6335,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.609 1998/08/14 13:35:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.610 1998/08/16 10:25:33 dawes Exp $

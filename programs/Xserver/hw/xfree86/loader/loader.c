@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.22 1998/07/25 16:56:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.23 1998/08/13 14:46:06 dawes Exp $ */
 
 /*
  *
@@ -87,6 +87,22 @@ static int refCount[MAX_HANDLE] ;
  * Archives contain multiple modules, each of which is treated seperately.
  */
 static int moduleseq = 0;
+
+/*
+ * GDB Interface
+ * =============
+ *
+ * Linked list of loaded modules - gdb will traverse this to determine
+ * whether it needs to add the symbols for the loaded module.
+ */
+LDRModulePtr ModList = 0;
+
+/* Flag which gdb sets to let us know we're being debugged */
+char DebuggerPresent = 0;
+
+/* List of common symbols */
+LDRCommonPtr ldrCommons;
+int nCommons;
 
 /* Prototypes for static functions. */
 static int _GetModuleType(int, long);
@@ -957,4 +973,9 @@ LoaderDuplicateSymbol(const char *symbol, const int handle)
 		listHead ? listHead->name : "(built-in)");
     ErrorF("Also defined in %s\n", _LoaderHandleToName(handle));
     FatalError("Module load failure\n");
+}
+
+/* GDB Sync function */
+void _loader_debug_state()
+{
 }

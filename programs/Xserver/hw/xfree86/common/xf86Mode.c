@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.1.2.16 1998/07/18 17:53:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.2 1998/07/25 16:55:10 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -21,7 +21,8 @@
  *	number of clocks is greater than zero.
  */
 int
-xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2, int *divider)
+xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2,
+    int DivFactor, int MulFactor, int *divider)
 {
     int nearestClock = 0;
     int minimumGap = abs(freq - scrp->clock[0]);
@@ -34,7 +35,7 @@ xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2, int *divider)
 
     for (i = 0;  i < scrp->numClocks;  i++) {
 	for (j = 1; j <= k; j++) {
-	    int gap = abs((freq * j) - scrp->clock[i]);
+	    int gap = abs((freq * j) - ((scrp->clock[i] * DivFactor) / MulFactor));
 	    if (gap < minimumGap) {
 	    	minimumGap = gap;
 	    	nearestClock = i;
@@ -141,6 +142,9 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     Bool found = FALSE;
     int extraFlags = 0;
     int clockIndex = -1;
+    int MulFactor = 1;
+    int DivFactor = 1;
+    int ModePrivFlags = 0;
     ModeStatus status = MODE_NOMODE;
     Bool allowDiv2 = (strategy & LOOKUP_CLKDIV2) != 0;
     strategy &= ~LOOKUP_CLKDIV2;
@@ -158,6 +162,11 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     if (clockRanges == NULL) {
 	ErrorF("xf86LookupMode: called with invalid clockRanges\n");
 	return MODE_ERROR;
+    }
+    for (cp = clockRanges; cp != NULL; cp = cp->next) {
+	/* DivFactor and MulFactor must be > 0 */
+	cp->ClockDivFactor = max(1, cp->ClockDivFactor);
+	cp->ClockMulFactor = max(1, cp->ClockMulFactor);
     }
 
     /* Scan the mode pool for matching names */
@@ -191,6 +200,9 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		found = TRUE;
 		if (strategy != LOOKUP_BEST_REFRESH) {
 		    bestMode = p;
+		    DivFactor = cp->ClockDivFactor;
+		    MulFactor = cp->ClockMulFactor;
+		    ModePrivFlags = cp->PrivFlags;
 		    break;
 		} else {
 		    refresh = p->Clock * 1000.0 / p->HTotal / p->VTotal;
@@ -204,6 +216,9 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 			refresh /= p->VScan;
 		    if (refresh > bestRefresh) {
 			bestMode = p;
+			DivFactor = cp->ClockDivFactor;
+			MulFactor = cp->ClockMulFactor;
+			ModePrivFlags = cp->PrivFlags;
 			bestRefresh = refresh;
 		    }
 		    continue;
@@ -215,15 +230,18 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	     * a matching clock.
 	     */
 
-	    i = xf86GetNearestClock(scrp, p->Clock, allowDiv2, &k);
+	    i = xf86GetNearestClock(scrp, p->Clock, allowDiv2,
+		cp->ClockDivFactor, cp->ClockMulFactor, &k);
 	    /*
 	     * If the clock is too far from the requested clock, this
 	     * mode is no good.
 	     */
 	    if (k & V_CLKDIV2)
-		gap = abs((p->Clock * 2) - scrp->clock[i]);
+		gap = abs((p->Clock * 2) -
+		    ((scrp->clock[i] * cp->ClockDivFactor) / cp->ClockMulFactor));
 	    else
-		gap = abs(p->Clock - scrp->clock[i]);
+		gap = abs(p->Clock -
+		    ((scrp->clock[i] * cp->ClockDivFactor) / cp->ClockMulFactor));
 	    if (gap > minimumGap) {
 		if (!found)
 		    status = MODE_NOCLOCK;
@@ -239,6 +257,9 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	    if (strategy != LOOKUP_BEST_REFRESH &&
 		strategy != LOOKUP_CLOSEST_CLOCK) {
 		bestMode = p;
+		DivFactor = cp->ClockDivFactor;
+		MulFactor = cp->ClockMulFactor;
+		ModePrivFlags = cp->PrivFlags;
 		extraFlags = k;
 		clockIndex = i;
 		break;
@@ -256,6 +277,9 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		    refresh /= p->VScan;
 		if (refresh > bestRefresh) {
 		    bestMode = p;
+		    DivFactor = cp->ClockDivFactor;
+		    MulFactor = cp->ClockMulFactor;
+		    ModePrivFlags = cp->PrivFlags;
 		    extraFlags = k;
 		    clockIndex = i;
 		    bestRefresh = refresh;
@@ -264,6 +288,9 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	    } else if (strategy == LOOKUP_CLOSEST_CLOCK) {
 		if (gap < minimumGap) {
 		    bestMode = p;
+		    DivFactor = cp->ClockDivFactor;
+		    MulFactor = cp->ClockMulFactor;
+		    ModePrivFlags = cp->PrivFlags;
 		    extraFlags = k;
 		    clockIndex = i;
 		    minimumGap = gap;
@@ -279,12 +306,17 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     if (scrp->progClock) {
         modep->Clock		= bestMode->Clock;
 	modep->ClockIndex	= -1;
+	modep->SynthClock	= (modep->Clock * MulFactor) / DivFactor;
     } else {
-	modep->Clock		= scrp->clock[clockIndex];
+	modep->Clock		= (scrp->clock[clockIndex] * DivFactor) / MulFactor;
 	modep->ClockIndex	= clockIndex;
-	if (extraFlags & V_CLKDIV2)
+	modep->SynthClock	= scrp->clock[clockIndex];
+	if (extraFlags & V_CLKDIV2) {
 	    modep->Clock /= 2;
+	    modep->SynthClock /= 2;
+	}
     }
+    modep->PrivFlags		= ModePrivFlags;
     modep->HDisplay		= bestMode->HDisplay;
     modep->HSyncStart		= bestMode->HSyncStart;
     modep->HSyncEnd		= bestMode->HSyncEnd;
@@ -1030,9 +1062,17 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	    refresh /= p->VScan;
 	    desc2 = " (VScan)";
 	}
-	xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz, "
-		   "%.1f kHz, %.1f Hz%s%s\n", p->name, p->Clock / 1000.0,
+	if (p->Clock == p->SynthClock) {
+	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz, "
+		   "%.1f kHz, %.1f Hz%s%s\n",
+		   p->name, p->Clock / 1000.0,
 		   hsync, refresh, desc, desc2);
+	} else {
+	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz "
+		   "(scaled from %.1f MHz), %.1f kHz, %.1f Hz%s%s\n",
+		   p->name, p->Clock / 1000.0, p->SynthClock / 1000.0,
+		   hsync, refresh, desc, desc2);
+	}
 	p = p->next;
     } while (p != NULL && p != scrp->modes);
 }

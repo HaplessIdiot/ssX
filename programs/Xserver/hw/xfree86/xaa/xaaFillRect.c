@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.3 1998/07/31 10:41:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.4 1998/08/02 05:17:06 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -514,7 +514,6 @@ XAAFillCacheBltRects(
 	height = pBox->y2 - y;
 	width = pBox->x2 - pBox->x1;
 	
-#if 0
 	if (rop == GXcopy) {
 	    while(1) {
 		w = width; skipleft = phaseX; x = pBox->x1;
@@ -538,12 +537,11 @@ XAAFillCacheBltRects(
 		if (w) {
 		    skipleft -= phaseX;
 		    if (skipleft < 0) skipleft += pCache->orig_w;
-		    blit_w = x - pBox->x1  + skipleft;
+		    blit_w = x - pBox->x1 - skipleft;
 		    while(w) {
 			if (blit_w > w) blit_w = w;
 			(*infoRec->SubsequentScreenToScreenCopy)(pScrn,
-			    pBox->x1 + skipleft, pBox->y1, x, y,
-			    blit_w, blit_h);
+			    pBox->x1 + skipleft, y, x, y, blit_w, blit_h);
 			w -= blit_w;
 			x += blit_w;
 			blit_w <<= 1;
@@ -562,7 +560,7 @@ XAAFillCacheBltRects(
 		blit_w = pBox->x2 - pBox->x1;
 		phaseY -= (pBox->y1 - yorg) % pCache->orig_h;
 		if (phaseY < 0) phaseY += pCache->orig_h;
-		blit_h = y - pBox->y1  + phaseY;
+		blit_h = y - pBox->y1  - phaseY;
 		while(height) {
 		    if (blit_h > height) blit_h = height;
 		    (*infoRec->SubsequentScreenToScreenCopy)(pScrn, pBox->x1,
@@ -572,9 +570,7 @@ XAAFillCacheBltRects(
 		    blit_h <<= 1;
 		}
 	    }
-	} else 
-#endif
-	{
+	} else {
 	    while(1) {
 		w = width; skipleft = phaseX; x = pBox->x1;
 		blit_h = pCache->h - phaseY;
@@ -728,7 +724,8 @@ XAAFillCacheExpandRects(
 
     pCache = (*infoRec->CacheMonoStipple)(pScrn, pPix);
 
-    cacheWidth = pCache->w * pScrn->bitsPerPixel;
+    cacheWidth = (pCache->w * pScrn->bitsPerPixel) / 
+	infoRec->CacheColorExpandDensity;
 
     (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
 							planemask);

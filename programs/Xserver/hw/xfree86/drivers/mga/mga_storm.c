@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.18 1998/08/02 05:16:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.19 1998/08/13 14:45:55 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -17,6 +17,7 @@
 #include "xaa.h"
 #include "xaalocal.h"
 #include "xf86fbman.h"
+#include "miline.h"
 
 #include "vgaHW.h"
 
@@ -48,6 +49,8 @@ static void MGANAME(SubsequentSolidFillTrap)(ScrnInfoPtr pScrn, int y, int h,
 				int right, int dxR, int dyR, int eR);
 static void MGANAME(SubsequentSolidHorVertLine) (ScrnInfoPtr pScrn,
                                 int x, int y, int len, int dir);
+static void MGANAME(SubsequentSolidTwoPointLine)(ScrnInfoPtr pScrn,
+				int x1, int y1, int x2, int y2, int flags);
 static void MGANAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
 				int patx, int paty, int fg, int bg,
 				int rop, unsigned int planemask);
@@ -83,7 +86,8 @@ extern void MGAWriteBitmapColorExpand(ScrnInfoPtr pScrn, int x, int y,
 extern void MGAFillColorExpandRects(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 				unsigned int planemask, int nBox, BoxPtr pBox,
 				int xorg, int yorg, PixmapPtr pPix);
-
+extern void MGASetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
+				int x2, int y2);
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -116,7 +120,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
   
 
     /* fill out infoPtr here */
-    infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = 	PIXMAP_CACHE | 
+			MICROSOFT_ZERO_LINE_BIAS;
 
     /* sync */
     infoPtr->Sync = MGAStormSync;
@@ -134,8 +139,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillTrap = MGANAME(SubsequentSolidFillTrap);
 
     /* solid lines */
+    infoPtr->SolidLineFlags = HARDWARE_CLIP_LINE;
     infoPtr->SetupForSolidLine = infoPtr->SetupForSolidFill;
-    infoPtr->SubsequentSolidHorVertLine = MGANAME(SubsequentSolidHorVertLine);
+    infoPtr->SubsequentSolidHorVertLine =
+		MGANAME(SubsequentSolidHorVertLine);
+    infoPtr->SubsequentSolidTwoPointLine = 
+		MGANAME(SubsequentSolidTwoPointLine);
+    infoPtr->SetClippingRectangle = MGASetClippingRectangle;
 
     /* 8x8 mono patterns */
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
@@ -217,7 +227,6 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	pMga->MaxFastBlitY = maxFastBlitMem / (pScrn->displayWidth * PSZ / 8);
     }
 
-    
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
@@ -328,6 +337,20 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_YBOT, 0x007FFFFF);	/* maxPixelPointer */ 
     pMga->AccelFlags &= ~CLIPPER_ON;
 }
+
+void MGASetClippingRectangle(
+   ScrnInfoPtr pScrn,
+   int x1, int y1, int x2, int y2
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    WAITFIFO(3);
+    OUTREG(MGAREG_CXBNDRY,(x2 << 16) | x1);      
+    OUTREG(MGAREG_YTOP, (y1 * pScrn->displayWidth) + pMga->YDstOrg); 
+    OUTREG(MGAREG_YBOT, (y2 * pScrn->displayWidth) + pMga->YDstOrg); 
+    pMga->AccelFlags |= CLIPPER_ON;
+}
+
 
 #endif
 
@@ -589,6 +612,31 @@ MGANAME(SubsequentSolidHorVertLine) (
 	OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD); 
     }
 }
+
+
+static void 
+MGANAME(SubsequentSolidTwoPointLine)(
+   ScrnInfoPtr pScrn,
+   int x1, int y1, int x2, int y2, int flags
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    WAITFIFO(4);
+    OUTREG(MGAREG_DWGCTL, pMga->SolidLineCMD | 
+        ((flags & OMIT_LAST) ? MGADWG_AUTOLINE_OPEN : MGADWG_AUTOLINE_CLOSE));
+    OUTREG(MGAREG_XYSTRT, (y1 << 16) | (x1 & 0xFFFF));
+    OUTREG(MGAREG_XYEND + MGAREG_EXEC, (y2 << 16) | (x2 & 0xFFFF));
+    OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD); 
+   
+    if(pMga->AccelFlags & CLIPPER_ON) {
+        WAITFIFO(3);
+        OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 
+        OUTREG(MGAREG_YTOP, 0x00000000);        /* minPixelPointer */ 
+        OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
+        pMga->AccelFlags &= ~CLIPPER_ON;
+    }
+}
+
 
 
 	/***************************\

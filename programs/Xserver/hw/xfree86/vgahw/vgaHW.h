@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.1.2.17 1998/07/18 17:54:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.2 1998/07/25 16:58:35 dawes Exp $ */
 
 
 /*
@@ -62,6 +62,7 @@ typedef struct {
     pointer   TextInfo;          /* save area for text */ 
     vgaRegRec SavedReg;          /* saved registers */
     vgaRegRec ModeReg;           /* register settings for current mode */
+    Bool      ShowOverscan;
 } vgaHWRec, *vgaHWPtr;
 
 /* Some macros that VGA drivers can use in their ChipProbe() function */

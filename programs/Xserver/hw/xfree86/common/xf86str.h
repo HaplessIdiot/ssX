@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.2 1998/07/25 16:55:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.3 1998/08/16 10:25:41 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -110,6 +110,7 @@ typedef struct _DisplayModeRec {
     Bool			CrtcVAdjusted;
     int				PrivSize;
     INT32 *			Private;
+    int				PrivFlags;
 } DisplayModeRec, *DisplayModePtr;
 
 /* The monitor description */
@@ -147,6 +148,9 @@ typedef struct x_ClockRange {
     int			clockIndex;	/* -1 for programmable clocks */
     Bool		interlaceAllowed;
     Bool		doubleScanAllowed;
+    int			ClockMulFactor;
+    int			ClockDivFactor;
+    int			PrivFlags;
 } ClockRange, *ClockRangePtr;
 
 /* Public bus-related types */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.4 1998/08/02 05:17:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.5 1998/08/13 14:46:10 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -20,7 +20,7 @@
 23           ONLY_LEFT_TO_RIGHT_BITBLT
 22           ONLY_TWO_BITBLT_DIRECTIONS
 21           HARDWARE_PATTERN_SCREEN_ORIGIN
-20           TWO_POINT_LINE_NOT_LAST
+20           
 19           
 18           HARDWARE_CLIP_LINE
 17           HARDWARE_PATTERN_PROGRAMMED_ORIGIN
@@ -117,6 +117,7 @@
 #define DEGREES_180	2
 #define DEGREES_270	3
 
+#define OMIT_LAST	1
 
 
 typedef void (* ValidateGCProcPtr)(
@@ -218,7 +219,7 @@ typedef struct _XAAInfoRec {
 
    void (*SubsequentSolidBresenhamLine)(
 	ScrnInfoPtr pScrn,
-	int x, int y, int absmaj, int absmin, int err, int len, int flags
+	int x, int y, int absmaj, int absmin, int err, int len, int octant
    );   
    int SolidBresenhamLineErrorTermBits;
 
@@ -912,6 +913,23 @@ typedef struct _XAAInfoRec {
    );
    int PolylinesWideSolidFlags;
 
+   void (*PolylinesThinSolid)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		mode,
+	int 		npt,
+	DDXPointPtr pPts
+   );
+   int PolylinesThinSolidFlags;
+
+   void (*PolySegmentThinSolid)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		nseg,
+	xSegment	*pSeg
+   );
+   int PolySegmentThinSolidFlags;
+
    void (*FillPolygonSolid)(
 	DrawablePtr	pDrawable,
 	GCPtr		pGC,
@@ -1079,6 +1097,8 @@ typedef struct _XAAInfoRec {
    int ColorPatternPitch;
    int CacheWidthColor8x8Pattern;
    int CacheHeightColor8x8Pattern;
+
+   int CacheColorExpandDensity;
 
    void (*WriteBitmapToCache) (
 	ScrnInfoPtr pScrn,

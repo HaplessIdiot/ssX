@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.3 1998/07/31 10:41:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.4 1998/08/02 05:17:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -31,30 +31,6 @@ typedef struct _CacheLink {
    int h;
    struct _CacheLink *next;
 } CacheLink, *CacheLinkPtr;
-
-typedef struct {
-   int Num512x512;
-   int Current512;
-   XAACacheInfoPtr Info512;
-   int Num256x256;
-   int Current256;
-   XAACacheInfoPtr Info256;
-   int Num128x128;
-   int Current128;
-   XAACacheInfoPtr Info128;
-   int NumMono;
-   int CurrentMono;
-   XAACacheInfoPtr InfoMono;
-   int NumColor;
-   int CurrentColor;
-   XAACacheInfoPtr InfoColor;
-   int NumPartial;
-   int CurrentPartial;
-   XAACacheInfoPtr InfoPartial;
-   DDXPointRec MonoOffsets[64];
-   DDXPointRec ColorOffsets[64];
-} XAAPixmapCachePrivate, *XAAPixmapCachePrivatePtr;
-
 
 
 static void
@@ -2051,7 +2027,8 @@ XAAStippledFillChooser(GCPtr pGC)
 
     if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheExpand && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableStippleHeight) &&
-	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth) &&
+	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth /
+	 infoRec->CacheColorExpandDensity) &&
 	!(infoRec->FillSpansCacheExpandFlags & NO_TRANSPARENCY) && 
 	((pGC->alu == GXcopy) || !(infoRec->FillSpansCacheExpandFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
@@ -2126,7 +2103,8 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 
     if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheExpand && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableStippleHeight) &&
-	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth) &&
+	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth /
+	 infoRec->CacheColorExpandDensity) &&
 	!(infoRec->FillSpansCacheExpandFlags & TRANSPARENCY_ONLY) && 
 	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
 	CHECK_COLORS(pGC,infoRec->FillSpansCacheExpandFlags) &&

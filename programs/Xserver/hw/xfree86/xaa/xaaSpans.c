@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.3 1998/07/31 10:41:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.4 1998/08/02 05:17:08 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -672,7 +672,8 @@ XAAFillCacheExpandSpans(
 
     pCache = (*infoRec->CacheMonoStipple)(pScrn, pPix);
 
-    cacheWidth = pCache->w * pScrn->bitsPerPixel;
+    cacheWidth = (pCache->w * pScrn->bitsPerPixel) / 
+	infoRec->CacheColorExpandDensity;
 
     (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
 							planemask);

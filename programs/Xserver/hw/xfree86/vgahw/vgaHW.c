@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.1.2.29 1998/07/18 17:54:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.2 1998/07/25 16:58:35 dawes Exp $
  *
  * Copyright 1991-1998 by The XFree86 Project, Inc.
  *
@@ -781,12 +781,12 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->CRTC[0]  = (mode->CrtcHTotal >> 3) - 5;
     regp->CRTC[1]  = (mode->CrtcHDisplay >> 3) - 1;
     regp->CRTC[2]  = (mode->CrtcHBlankStart >> 3) - 1;
-    regp->CRTC[3]  = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F) | 0x80;
+    regp->CRTC[3]  = (((mode->CrtcHBlankEnd >> 3) - 1 - 1) & 0x1F ) | 0x80;
     i = (((mode->CrtcHSkew << 2) + 0x10) & ~0x1F);
     if (i < 0x80)
         regp->CRTC[3] |= i;
     regp->CRTC[4]  = (mode->CrtcHSyncStart >> 3);
-    regp->CRTC[5]  = ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20 ) << 2 )
+    regp->CRTC[5]  = ((((mode->CrtcHBlankEnd >> 3) - 1 - 1) & 0x20 ) << 2 )
         | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
     regp->CRTC[6]  = (mode->CrtcVTotal - 2) & 0xFF;
     regp->CRTC[7]  = (((mode->CrtcVTotal -2) & 0x100) >> 8 )
@@ -855,7 +855,8 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
                 regp->Attribute[i] = BLACK_VALUE;
 
         regp->Attribute[16] = 0x01;  /* -VGA2- */ /* wrong for the ET4000 */
-        regp->Attribute[17] = OVERSCAN_VALUE;  /* -VGA2- */
+	if (!hwp->ShowOverscan)
+            regp->Attribute[17] = OVERSCAN_VALUE;  /* -VGA2- */
     } else {
         regp->Attribute[0]  = 0x00; /* standard colormap translation */
         regp->Attribute[1]  = 0x01;
@@ -976,7 +977,17 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
         if (scrp->depth == 8)
             regp->Attribute[17] = 0xFF;
     }
-    
+    if (xf86FindOption(scrp->confScreen->options, "ShowOverscan")) {
+	xf86MarkOptionUsedByName(scrp->confScreen->options, "ShowOverscan");
+	xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Showing overscan area\n");
+	regp->DAC[765] = 0x3F; 
+	regp->DAC[766] = 0x00; 
+	regp->DAC[767] = 0x3F; 
+	regp->Attribute[17] = 0xFF;
+	VGAHWPTR(scrp)->ShowOverscan = TRUE;
+    } else
+	VGAHWPTR(scrp)->ShowOverscan = FALSE;
+	
     return TRUE;
 }
 

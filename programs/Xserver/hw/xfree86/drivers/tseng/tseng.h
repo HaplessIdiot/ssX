@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.20 1998/08/02 05:17:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.21 1998/08/13 14:45:58 dawes Exp $ */
 
 
 
@@ -58,6 +58,12 @@
 #include "xaalocal.h"
 #include "xaacursor.h"
 #include "xf86fbman.h"
+
+
+/* functions in tseng_driver.c needed outside it */
+void TsengBlankScreen(ScrnInfoPtr pScrn, Bool unblank);
+void TsengProtect(ScrnInfoPtr pScrn, Bool on);
+
 
 #define MAX_TSENG_CLOCK 86000	       /* default max clock for standard boards */
 
@@ -124,6 +130,12 @@ typedef enum {
     CLOCKCHIP_STG1703
 } t_clockchip_type;
 
+typedef enum {
+    TSENG_MODE_NORMAL,
+    TSENG_MODE_PIXMUX,
+    TSENG_MODE_DACBUS16
+} t_clockrange_type;
+
 typedef struct {
     unsigned char cmd_reg;
     unsigned char f2_M;
@@ -162,10 +174,6 @@ typedef struct {
     int RamdacMask;		       /* typically 0x3f for 6 bit, 0xff for 8-bit ramdac */
     Bool Dac8Bit;		       /* dac is 8 bit instead of the default 6 bit */
     Bool DacPort16;		       /* Ramdac port is 16 bits wide instead of default 8 */
-    Bool pixMuxPossible;
-    int nonMuxMaxClock;
-    int ClockMulFactor;
-    int ClockDivFactor;
 } TsengDacInfoRec, *TsengDacInfoPtr;
 
 typedef struct {
@@ -194,7 +202,8 @@ typedef struct {
     Bool SetW32Interleave;
     Bool W32Interleave;
     Bool ShowCache;
-    Bool Legend;
+    Bool Legend;		       /* Sigma Legend clock select method */
+    Bool NoClockchip;		       /* disable clockchip programming clockchip (=use set-of-clocks) */
     TsengRegRec SavedReg;	       /* saved Tseng registers at server start */
     TsengRegRec ModeReg;
     unsigned long icd2061_dwv;	       /* To hold the clock data between Init and Restore */
@@ -210,6 +219,7 @@ typedef struct {
     CARD32 MMIOBase;
     int MinClock;
     int MaxClock;
+    ClockRangePtr clockRange[2];
     TsengDacInfoRec DacInfo;
     TsengMClkInfoRec MClkInfo;
     t_clockchip_type ClockChip;
@@ -257,6 +267,8 @@ typedef struct {
                       || (pTseng->DacInfo.DacType == STG1702_DAC) \
                       || (pTseng->DacInfo.DacType == STG1703_DAC) )
 
+#define DAC_IS_CHRONTEL (pTseng->DacInfo.DacType == CH8398_DAC)
+
 #define Gendac_programmable_clock \
         ( pScrn->progClock && \
           (   (pTseng->ClockChip == CLOCKCHIP_ICS5341) \
@@ -292,30 +304,49 @@ int ET4000W32SetReadWrite(ScreenPtr pScrn, unsigned int iBank);
  */
 
 Bool Tseng_check_clockchip(ScrnInfoPtr pScrn);
-Bool Tseng_ET4000ClockSelect(int no);
-Bool Tseng_LegendClockSelect(int no);
-Bool Tseng_ET6000ClockSelect(int freq);
-Bool Tseng_GenDACClockSelect(int freq);
-Bool Tseng_STG1703ClockSelect(int freq);
-Bool Tseng_ICD2061AClockSelect(int freq);
+void tseng_clock_setup(ScrnInfoPtr pScrn);
+void TsengcommonCalcClock(long freq,
+    int min_m, int min_n1, int max_n1, int min_n2, int max_n2,
+    long freq_min, long freq_max,
+    unsigned char *mdiv, unsigned char *ndiv);
+
+/*
+ * From tseng_ramdac.c
+ */
 
 void tseng_dactopel(void);
 unsigned char tseng_dactocomm(void);
 unsigned char tseng_getdaccomm(void);
 void tseng_setdaccomm(unsigned char comm);
 
-void Check_Tseng_Ramdac(ScrnInfoPtr pScrn);
-void tseng_init_clockscale(TsengPtr pTseng);
-void tseng_set_dacspeed(ScrnInfoPtr pScrn);
+Bool Check_Tseng_Ramdac(ScrnInfoPtr pScrn);
 void tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+/*
+ * From tseng_cursor.c
+ */
+
 Bool TsengHWCursorInit(ScreenPtr pScreen);
+
+/*
+ * From tseng_dpms.c
+ */
 
 #ifdef DPMSExtension
 void TsengHVSyncDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 void TsengCrtcDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
+#endif
 
+/*
+ * For debugging
+ */
 
+#undef TSENG_DEBUG
+
+#ifdef TSENG_DEBUG
+#define PDEBUG(arg) do { ErrorF(arg); } while (0)
+#else
+#define PDEBUG(arg) do {} while (0)
 #endif
 
 #endif
