@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_i2c.c,v 1.1 1998/11/15 04:30:25 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -12,79 +12,83 @@
 
 #include "vgaHW.h"
 
+#include "cir.h"
 #include "lg.h"
 
 static void
-LGI2CPutBits(I2CBusPtr b, int clock,  int data) {
-    unsigned int regval, regno;
-    LgPtr pLg = ((LgPtr)b->DriverPrivate.ptr);
-    if (b == pLg->I2CPtr1)
-        regno = 0x280;
-    else if(b == pLg->I2CPtr2)
-        regno = 0x282;
-    else return;
-    
-    regval = 0xff7e;
-    if(clock) regval |= 0x0080;
-    if(data)  regval |= 0x0001;
-    *((volatile CARD16 *)(pLg->IOBase + regno)) = regval;
-    /* ErrorF("LGI2CPutBits: %d %d\n", clock, data); */
+LgI2CPutBits(I2CBusPtr b, int clock,  int data)
+{
+	unsigned int regval, regno;
+	LgPtr pLg = ((LgPtr)b->DriverPrivate.ptr);
+	if (b == pLg->CirRec.I2CPtr1)
+		regno = 0x280;
+	else if (b == pLg->CirRec.I2CPtr2)
+		regno = 0x282;
+	else
+		return;
+
+	regval = 0xff7e;
+	if (clock) regval |= 0x0080;
+	if (data)  regval |= 0x0001;
+	*((volatile CARD16 *)(pLg->CirRec.IOBase + regno)) = regval;
+	/* ErrorF("LgI2CPutBits: %d %d\n", clock, data); */
 }
 
 static void
-LGI2CGetBits(I2CBusPtr b, int *clock, int *data) {
-    unsigned int regval, regno;
-    LgPtr pLg = ((LgPtr)b->DriverPrivate.ptr);
-    if (b == pLg->I2CPtr1)
-        regno = 0x280;
-    else if(b == pLg->I2CPtr2)
-        regno = 0x282;
-    else return;
+LgI2CGetBits(I2CBusPtr b, int *clock, int *data)
+{
+	unsigned int regval, regno;
+	LgPtr pLg = ((LgPtr)b->DriverPrivate.ptr);
+	if (b == pLg->CirRec.I2CPtr1)
+		regno = 0x280;
+	else if (b == pLg->CirRec.I2CPtr2)
+		regno = 0x282;
+	else
+		return;
 
-    regval = *((volatile CARD16 *)(pLg->IOBase + regno));
-    *clock = (regval & 0x8000) != 0;
-    *data  = (regval & 0x0100) != 0;
-    /* ErrorF("LGI2CGetBits: %d %d\n", *clock, *data); */
+	regval = *((volatile CARD16 *)(pLg->CirRec.IOBase + regno));
+	*clock = (regval & 0x8000) != 0;
+	*data  = (regval & 0x0100) != 0;
+	/* ErrorF("LgI2CGetBits: %d %d\n", *clock, *data); */
 }
 
-Bool 
-LGI2CInit(ScreenPtr pScreen)
+Bool
+LgI2CInit(ScrnInfoPtr pScrn)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    LgPtr pLg = LGPTR(pScrn);
-    I2CBusPtr I2CPtr;
+	LgPtr pLg = LGPTR(pScrn);
+	I2CBusPtr I2CPtr;
 
-#ifdef CIR_DEBUG
-    ErrorF("LGI2CInit\n");
+#ifdef LG_DEBUG
+	ErrorF("LgI2CInit\n");
 #endif
 
-    I2CPtr = xf86CreateI2CBusRec();
-    if(!I2CPtr) return FALSE;
+	I2CPtr = xf86CreateI2CBusRec();
+	if (!I2CPtr) return FALSE;
 
-    pLg->I2CPtr1 = I2CPtr;
+	pLg->CirRec.I2CPtr1 = I2CPtr;
 
-    I2CPtr->BusName    = "I2C bus 1";
-    I2CPtr->scrnIndex  = pScrn->scrnIndex;
-    I2CPtr->I2CPutBits = LGI2CPutBits;
-    I2CPtr->I2CGetBits = LGI2CGetBits;
-    I2CPtr->DriverPrivate.ptr = pLg;
-    
-    if(!xf86I2CBusInit(I2CPtr))
-       return FALSE;
+	I2CPtr->BusName				= "I2C bus 1";
+	I2CPtr->scrnIndex			= pScrn->scrnIndex;
+	I2CPtr->I2CPutBits			= LgI2CPutBits;
+	I2CPtr->I2CGetBits			= LgI2CGetBits;
+	I2CPtr->DriverPrivate.ptr	= pLg;
 
-    I2CPtr = xf86CreateI2CBusRec();
-    if(!I2CPtr) return FALSE;
+	if (!xf86I2CBusInit(I2CPtr))
+		return FALSE;
 
-    pLg->I2CPtr2 = I2CPtr;
+	I2CPtr = xf86CreateI2CBusRec();
+	if (!I2CPtr) return FALSE;
 
-    I2CPtr->BusName    = "I2C bus 2";
-    I2CPtr->scrnIndex  = pScrn->scrnIndex;
-    I2CPtr->I2CPutBits = LGI2CPutBits;
-    I2CPtr->I2CGetBits = LGI2CGetBits;
-    I2CPtr->DriverPrivate.ptr = pLg;
-    
-    if(!xf86I2CBusInit(I2CPtr))
-       return FALSE;
+	pLg->CirRec.I2CPtr2 = I2CPtr;
 
-    return TRUE;
+	I2CPtr->BusName				= "I2C bus 2";
+	I2CPtr->scrnIndex			= pScrn->scrnIndex;
+	I2CPtr->I2CPutBits			= LgI2CPutBits;
+	I2CPtr->I2CGetBits			= LgI2CGetBits;
+	I2CPtr->DriverPrivate.ptr	= pLg;
+
+	if (!xf86I2CBusInit(I2CPtr))
+		return FALSE;
+
+	return TRUE;
 }

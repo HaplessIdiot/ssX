@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.10 1999/05/09 10:51:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.12 1999/12/03 19:17:32 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -11,92 +11,50 @@
 
 #define CIR_DEBUG
 
-/* Saved registers that are not part of the core VGA */
-/* CRTC >= 0x19; Sequencer >= 0x05; Graphics >= 0x09; Attribute >= 0x15 */
-enum {
-    /* CR regs */
-    CR1A,
-    CR1B,
-    CR1D,
-    /* SR regs */
-    SR07,
-    SR0E,
-    SR12,
-    SR13,
-    SR1E,
-    /* GR regs */
-    GR17,
-    GR18,
-    /* HDR */
-    HDR,
-    /* Must be last! */
-    CIR_NSAVED
-};
-
-typedef struct {
-    unsigned char	ExtVga[CIR_NSAVED];
-} CIRRegRec, *CIRRegPtr;
-
 /* Card-specific driver information */
-#define CIRPTR(p) ((CIRPtr)((p)->driverPrivate))
 
 typedef struct {
-    ScrnInfoPtr		pScrn;
-    pciVideoPtr		PciInfo;
-    PCITAG		PciTag;
-    EntityInfoPtr	pEnt;
-    int			Chipset;
-    int                 ChipRev;
-    int			Rounding;
-    int			BppShift;
-    Bool		HasFBitBlt;
-    CARD32		IOAddress;
-    CARD32		FbAddress;
-    unsigned char *     IOBase;
-    unsigned char *	FbBase;
-    long		FbMapSize;
-    int			MinClock;
-    int			MaxClock;
-    Bool		NoAccel;
-    Bool		HWCursor;
-    Bool		UseMMIO;
-    XAAInfoRecPtr       AccelInfoRec;
-    xf86CursorInfoPtr   CursorInfoRec;
+	ScrnInfoPtr			pScrn;
+	pciVideoPtr			PciInfo;
+	PCITAG				PciTag;
+	EntityInfoPtr		pEnt;
+	int					Chipset;
+	int					ChipRev;
+	int					Rounding;
+	int					BppShift;
+	Bool				HasFBitBlt;
+	CARD32				IOAddress;
+	CARD32				FbAddress;
+	unsigned char *		IOBase;
+	unsigned char *		FbBase;
+	long				FbMapSize;
+	long				IoMapSize;
+	int					MinClock;
+	int					MaxClock;
+	Bool				NoAccel;
+	Bool				HWCursor;
+	Bool				UseMMIO;
+	XAAInfoRecPtr		AccelInfoRec;
+	xf86CursorInfoPtr	CursorInfoRec;
 #if 0
-    DGAInfoPtr          DGAInfo;
+	DGAInfoPtr			DGAInfo;
 #endif
-    I2CBusPtr		I2CPtr1;
-    I2CBusPtr		I2CPtr2;
-    CloseScreenProcPtr  CloseScreen;
-    
-/* Difference from Laguna start here */
-    unsigned char *     HWCursorBits;
-    Bool		CursorIsSkewed;
-    unsigned char *	CursorBits;
+	I2CBusPtr			I2CPtr1;
+	I2CBusPtr			I2CPtr2;
+	CloseScreenProcPtr	CloseScreen;
 
-    CIRRegRec		SavedReg;
-    CIRRegRec		ModeReg;
-
-/* XXX For XF86Config based mem configuration */
-    CARD32		SR0F, SR17;
-
-#if 0
-    CARD32		BltScanDirection;
-    CARD32		FilledRectCMD;
-    CARD32		SolidLineCMD;
-    CARD32		PatternRectCMD;
-    CARD32		AccelFlags;
-#endif
-} CIRRec, *CIRPtr;
-
-
-extern Bool CIRHWCursorInit(ScreenPtr pScreen);
-extern Bool CIRXAAInit(ScreenPtr pScreen);
-extern Bool CIRXAAInitMMIO(ScreenPtr pScreen);
-extern Bool CIRDGAInit(ScreenPtr pScreen);
-extern Bool CIRI2CInit(ScreenPtr pScreen);
+	Bool				CursorIsSkewed;
+} CirRec, *CirPtr;
 
 /* CirrusClk.c */
-extern CARD16 CirrusSetClock(ScrnInfoPtr pScrn, int freq);
+extern Bool
+CirrusFindClock(int *rfreq, int max_clock, int *num_out, int *den_out);
+
+/* cir_driver.c */
+extern SymTabRec CIRChipsets[];
+extern PciChipsets CIRPciChipsets[];
+
+extern Bool CirMapMem(CirPtr pCir, int scrnIndex);
+extern Bool CirUnmapMem(CirPtr pCir, int scrnIndex);
 
 #endif /* CIR_H */
