@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.1 2000/11/02 02:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.2 2000/11/02 23:36:43 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -215,7 +215,7 @@ static int      debug_level = 0;
 static InputInfoPtr CitronPreInit(InputDriverPtr drv, IDevPtr dev, int flags);
 
 
-InputDriverRec CIT = {
+InputDriverRec CITRON = {
 	1,
 	"citron",
 	NULL,
@@ -268,7 +268,7 @@ SetupProc(	pointer module,
 			int *errmin )
 {
 /*	xf86LoaderReqSymLists(reqSymbols, NULL); */
-	xf86AddInputDriver(&CIT, module, 0);
+	xf86AddInputDriver(&CITRON, module, 0);
 	DBG(5, ErrorF ("%sSetupProc called\n", CI_INFO));
 
 	return (pointer) 1;
@@ -1032,7 +1032,7 @@ DeviceClose (DeviceIntPtr dev)
 			priv->buffer = NULL;
 		}
 		xf86CloseSerial(local->fd);
-		local->fd = NULL;
+		local->fd = 0;
 	}
 
 	dev->public.on = FALSE;
@@ -1835,7 +1835,7 @@ cit_SendCommand (XISBuffer *b, unsigned char cmd, int cnt, ...)
 	x = CTS_ESC;
 	while (cnt-- > 0)
 	{	/* encode and transmit optional parameters	*/
-		data = va_arg(ap, unsigned char);
+		data = va_arg(ap, int);
 		if (data >= CTS_CTRLMIN && data <= CTS_CTRLMAX)
 		{	/* data has to be encoded	*/
 			data |= CTS_ENCODE;
