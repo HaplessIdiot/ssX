@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.72 2001/05/04 19:05:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.73 2001/05/10 16:32:52 dawes Exp $ */
 
 /*
  * Authors:
@@ -661,12 +661,14 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   pTDFX->initDone=FALSE;
   pTDFX->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 
-#if !defined(__powerpc__)
   if (flags & PROBE_DETECT) {
+#if !defined(__powerpc__)
     TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
     return TRUE;
-  }
+#else
+    return FALSE;
 #endif
+  }
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
