@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.82 2004/05/08 07:26:53 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.83 2004/06/19 13:53:46 pascal Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -55,7 +55,9 @@
   everex	=	everex(STEPnote)
   winbook	=	winbook(XP5)
   pc98		=	nec(pc98)
-  abnt2		=	pc(abnt2)
+  abnt2_104	=	pc(abnt2_104)
+  abnt2_107	=	pc(abnt2_107)
+  abnt2		=	pc(abnt2_104)
  $mac		=	macintosh(macintosh)
   *		=       pc(pc104)
 

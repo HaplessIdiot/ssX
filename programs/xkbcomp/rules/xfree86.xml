@@ -160,20 +160,14 @@
     </model>
     <model>
       <configItem>
-        <name>abnt2</name>
-        <description>Brazilian ABNT2</description>
-        <description xml:lang="bg">бразилска ABNT2</description>
-        <description xml:lang="cs">Brazilské ABNT2</description>
-        <description xml:lang="da">Brasiliansk ABNT2</description>
-        <description xml:lang="fr">Brézilien ABNT2</description>
-        <description xml:lang="hu">brazil ABNT2</description>
-        <description xml:lang="nl">Braziliaans ABNT2</description>
-        <description xml:lang="ru">ABNT2</description>
-        <description xml:lang="sk">Brazílska ABNT2</description>
-        <description xml:lang="sr">бразилски ABNT2</description>
-        <description xml:lang="tr">Brazilya dili ABNT2</description>
-        <description xml:lang="uk">Бразильська ABTN2</description>
-        <description xml:lang="zh_CN">巴西 ABNT2</description>
+        <name>abnt2_104</name>
+        <description>Brazilian ABNT2 with 104 keys</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
+        <name>abnt2_107</name>
+        <description>Brazilian ABNT2 with 107 keys</description>
       </configItem>
     </model>
     <model>
@@ -3171,6 +3165,13 @@
     </layout>
     <layout>
       <configItem>
+        <name>lat</name>
+        <description>Classical Latin</description>
+      </configItem>
+      <variantList/>
+    </layout>
+    <layout>
+      <configItem>
         <name>lt</name>
         <shortDescription>Ltu</shortDescription>
         <shortDescription xml:lang="cs">Lit</shortDescription>
@@ -3301,7 +3302,32 @@
         <description xml:lang="uk">Латишська</description>
         <description xml:lang="zh_CN">拉脱维亚</description>
       </configItem>
-      <variantList/>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>basic</name>
+            <description>Latvian Basic (RALT) variant</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>apostrophe</name>
+            <description>Latvian Apostrophe (') variant</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>tilde</name>
+            <description>Latvian Tilde (~) variant</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>fkey</name>
+            <description>Latvian F-letter (F) variant</description>
+          </configItem>
+        </variant>
+      </variantList>
     </layout>
     <layout>
       <configItem>
