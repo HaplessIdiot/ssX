@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/36 1998/05/20 15:10:33 kaleb $
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.15 2000/12/08 19:37:48 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.16 2000/12/08 21:53:05 dawes Exp $
 
 
 /*
@@ -989,9 +989,5 @@ LinkFile(10x20-ISO8859-1.bdf,10x20-L1.bdf)
 #endif
 
 InstallFonts($(FONTINSTDIR))
-#if DerivedUCSFonts
 InstallFontAliases($(FONTINSTDIR))
-#else
-InstallNamedFontAliases(fonts.alias.ucs,$(FONTINSTDIR))
-#endif
 InstallEncodingsDir($(ENCODINGSSRC),$(FONTINSTDIR))
