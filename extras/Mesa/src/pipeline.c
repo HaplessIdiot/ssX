@@ -1,3 +1,4 @@
+/* $Id: pipeline.c,v 1.6 2000/11/30 15:39:04 dawes Exp $*/
 
 /*
  * Mesa 3-D graphics library
@@ -219,11 +220,19 @@ static void build_full_precalc_pipeline( GLcontext *ctx )
    GLuint changed_ops = 0;
    GLuint oldoutputs = pre->outputs;
    GLuint oldinputs = pre->inputs;
+#ifdef VAO
+   GLuint fallback = (VERT_CURRENT_DATA & ctx->Current.Flag & 
+		      ~ctx->Array.Current->Summary);
+   GLuint changed_outputs = (ctx->Array.NewArrayState | 
+			     (fallback & cva->orflag));
+   GLuint available = fallback | ctx->Array.Current->Flags;
+#else
    GLuint fallback = (VERT_CURRENT_DATA & ctx->Current.Flag & 
 		      ~ctx->Array.Summary);
    GLuint changed_outputs = (ctx->Array.NewArrayState | 
 			     (fallback & cva->orflag));
    GLuint available = fallback | ctx->Array.Flags;
+#endif
 
    pre->cva_state_change = 0;
    pre->ops = 0;
@@ -232,10 +241,18 @@ static void build_full_precalc_pipeline( GLcontext *ctx )
    pre->forbidden_inputs = 0;
    pre->fallback = 0;
    
+#ifdef VAO
+   if (ctx->Array.Current->Summary & VERT_ELT) 
+#else
    if (ctx->Array.Summary & VERT_ELT) 
+#endif
       cva->orflag &= VERT_MATERIAL;
   
+#ifdef VAO
+   cva->orflag &= ~(ctx->Array.Current->Summary & ~VERT_OBJ_ANY);
+#else
    cva->orflag &= ~(ctx->Array.Summary & ~VERT_OBJ_ANY);
+#endif
    available &= ~cva->orflag;
    
    pre->outputs = available;
@@ -429,7 +446,11 @@ void gl_update_pipelines( GLcontext *ctx )
    if (newstate ||
        cva->lock_changed ||
        cva->orflag != cva->last_orflag ||
+#ifdef VAO
+       ctx->Array.Current->Flags != cva->last_array_flags)
+#else
        ctx->Array.Flags != cva->last_array_flags)
+#endif
    {   
       GLuint flags = VERT_WIN;
 
@@ -470,13 +491,25 @@ void gl_update_pipelines( GLcontext *ctx )
       cva->lock_changed = 0;
    }
 
+#ifdef VAO
    if (ctx->Array.NewArrayState != cva->last_array_new_state)
+#else
+   if (ctx->Array.NewArrayState != cva->last_array_new_state)
+#endif
       cva->pre.pipeline_valid = 0;
 
    cva->pre.data_valid = 0;
+#ifdef VAO
    cva->last_array_new_state = ctx->Array.NewArrayState;
+#else
+   cva->last_array_new_state = ctx->Array.NewArrayState;
+#endif
    cva->last_orflag = cva->orflag;
+#ifdef VAO
+   cva->last_array_flags = ctx->Array.Current->Flags;
+#else
    cva->last_array_flags = ctx->Array.Flags;
+#endif
 }
 
 void gl_run_pipeline( struct vertex_buffer *VB )

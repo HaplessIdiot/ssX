@@ -104,6 +104,21 @@ void gl_init_all_x86_transform_asm( void )
 /* Note: the above function must be called before this one, so that
  * gl_x86_cpu_features gets correctly initialized.
  */
+void gl_init_all_x86_shade_asm( void )
+{
+#ifdef USE_X86_ASM
+   if ( gl_x86_cpu_features ) {
+      /* Nothing here yet... */
+   }
+
+#ifdef USE_3DNOW_ASM
+   if ( cpu_has_3dnow && getenv( "MESA_NO_3DNOW" ) == 0 ) {
+      gl_init_3dnow_shade_asm();
+   }
+#endif
+#endif
+}
+
 void gl_init_all_x86_vertex_asm( void )
 {
 #ifdef USE_X86_ASM

@@ -102,7 +102,7 @@ OSMesaCreateContext( GLenum format, OSMesaContext sharelist )
    OSMesaContext osmesa;
    GLint rshift, gshift, bshift, ashift;
    GLint rind, gind, bind;
-   GLint indexBits, alphaBits;
+   GLint indexBits, alphaBits = 0;
    GLboolean rgbmode;
    GLboolean swalpha;
    GLuint i4 = 1;

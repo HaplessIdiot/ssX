@@ -31,8 +31,6 @@
 #ifndef __KATMAI_H__
 #define __KATMAI_H__
 
-#include "xform.h"
-
 void gl_init_katmai_transform_asm( void );
 void gl_init_katmai_vertex_asm( void );
 

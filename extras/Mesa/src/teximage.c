@@ -2486,6 +2486,8 @@ read_color_image( GLcontext *ctx, GLint x, GLint y,
 
    /* XXX TODO we have to apply pixel transfer ops here! */
 
+   RENDER_START(ctx);
+
    dst = image;
    stride = width * 4 * sizeof(GLubyte);
    for (i = 0; i < height; i++) {
@@ -2493,6 +2495,8 @@ read_color_image( GLcontext *ctx, GLint x, GLint y,
                          (GLubyte (*)[4]) dst );
       dst += stride;
    }
+
+   RENDER_FINISH(ctx);
 
    /* Read from draw buffer (the default) */
    (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer,

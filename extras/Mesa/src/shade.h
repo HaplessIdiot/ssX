@@ -2,19 +2,19 @@
 /*
  * Mesa 3-D graphics library
  * Version:  3.1
- * 
+ *
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -39,7 +39,11 @@ extern void gl_update_lighting_function( GLcontext *ctx );
 
 extern void gl_init_shade( void );
 
-extern gl_shade_func gl_shade_func_tab[];
+extern gl_shade_func gl_shade_tab[0x10];
+extern gl_shade_func gl_shade_fast_tab[0x10];
+extern gl_shade_func gl_shade_fast_single_tab[0x10];
+extern gl_shade_func gl_shade_spec_tab[0x10];
+extern gl_shade_func gl_shade_ci_tab[0x10];
 
 
 void gl_shade_rastpos( GLcontext *ctx,
@@ -49,4 +53,3 @@ void gl_shade_rastpos( GLcontext *ctx,
 		       GLuint *index );
 
 #endif
-

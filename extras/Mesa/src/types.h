@@ -1037,8 +1037,51 @@ typedef void (*trans_elt_3f_func)(GLfloat (*to)[3],
 				  GLuint n );
 
 
+/*#define VAO*/
+#ifdef VAO
+struct gl_array_object {
+   GLuint Name;
+   GLuint RefCount;
+
+   struct gl_client_array Vertex;	     /* client data descriptors */
+   struct gl_client_array Normal;
+   struct gl_client_array Color;
+   struct gl_client_array Index;
+   struct gl_client_array TexCoord[MAX_TEXTURE_UNITS];
+   struct gl_client_array EdgeFlag;
+
+   trans_4f_func  VertexFunc;       /* conversion functions */
+   trans_3f_func  NormalFunc;  
+   trans_4ub_func ColorFunc;   
+   trans_1ui_func IndexFunc;
+   trans_4f_func  TexCoordFunc[MAX_TEXTURE_UNITS];
+   trans_1ub_func EdgeFlagFunc;
+
+   trans_elt_4f_func  VertexEltFunc; /* array elt conversion functions */
+   trans_elt_3f_func  NormalEltFunc;  
+   trans_elt_4ub_func ColorEltFunc;   
+   trans_elt_1ui_func IndexEltFunc;
+   trans_elt_4f_func  TexCoordEltFunc[MAX_TEXTURE_UNITS];
+   trans_elt_1ub_func EdgeFlagEltFunc;
+
+   GLint TexCoordInterleaveFactor;
+
+   GLuint LockFirst;
+   GLuint LockCount;
+	
+   GLuint Flag[VB_SIZE];	/* crock */
+   GLuint Flags;
+   GLuint Summary;		/* Like flags, but no size information */
+};
+#endif
+
 
 struct gl_array_attrib {
+#ifdef VAO
+   struct gl_array_object *Current;
+   GLint ActiveTexture;		/* Client Active Texture */
+   GLuint NewArrayState;	/* Tracks which arrays have been changed. */
+#else
    struct gl_client_array Vertex;	     /* client data descriptors */
    struct gl_client_array Normal;
    struct gl_client_array Color;
@@ -1070,6 +1113,7 @@ struct gl_array_attrib {
    GLuint Flags;
    GLuint Summary;		/* Like flags, but no size information */
    GLuint NewArrayState;	/* Tracks which arrays have been changed. */
+#endif
 };
 
 
@@ -1261,6 +1305,9 @@ struct gl_shared_state {
    GLint RefCount;			   /* Reference count */
    struct _mesa_HashTable *DisplayList;	   /* Display lists hash table */
    struct _mesa_HashTable *TexObjects;	   /* Texture objects hash table */
+#ifdef VAO
+   struct _mesa_HashTable *ArrayObjects;   /* GL_EXT_vertex_array_set */
+#endif
    struct gl_texture_object *TexObjectList;/* Linked list of texture objects */
    struct gl_texture_object *DirtyTexObjList; /* List of dirty tex objects */
 

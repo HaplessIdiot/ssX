@@ -179,7 +179,7 @@ fill_bitmap (Display *dpy, Window win, GC gc,
 static XCharStruct *isvalid(XFontStruct *fs, int which)
 {
   unsigned int  rows,pages;
-  int           byte1,byte2;
+  int           byte1 = 0,byte2 = 0;
   int           i,valid = 1;
 
   rows = fs->max_byte1 - fs->min_byte1 + 1;

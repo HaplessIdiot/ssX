@@ -93,10 +93,18 @@ void gl_update_materials( struct vertex_buffer *VB )
 void gl_clean_color( struct vertex_buffer *VB )
 {
    GLcontext *ctx = VB->ctx;
+#ifdef VAO
+   struct gl_client_array *client_data = &ctx->Array.Current->Color;
+#else
    struct gl_client_array *client_data = &ctx->Array.Color;
+#endif
    GLvector4ub *col;
 
+#ifdef VAO
+   if (!(ctx->Array.Current->Summary & VERT_RGBA))
+#else
    if (!(ctx->Array.Summary & VERT_RGBA))
+#endif
       client_data = &ctx->Fallback.Color;
 
    if (VB->Type == VB_CVA_PRECALC) {
@@ -116,10 +124,18 @@ void gl_clean_color( struct vertex_buffer *VB )
 static void clean_index( struct vertex_buffer *VB )
 {
    GLcontext *ctx = VB->ctx;
+#ifdef VAO
+   struct gl_client_array *client_data = &ctx->Array.Current->Index;
+#else
    struct gl_client_array *client_data = &ctx->Array.Index;
+#endif
    GLvector1ui *index;
 
+#ifdef VAO
+   if (!(ctx->Array.Current->Summary & VERT_INDEX))
+#else
    if (!(ctx->Array.Summary & VERT_INDEX))
+#endif
       client_data = &ctx->Fallback.Color;
 
    if (VB->Type == VB_CVA_PRECALC) {
@@ -140,10 +156,18 @@ static void clean_index( struct vertex_buffer *VB )
 static void clean_edgeflag( struct vertex_buffer *VB )
 {
    GLcontext *ctx = VB->ctx;
+#ifdef VAO
+   struct gl_client_array *client_data = &ctx->Array.Current->EdgeFlag;
+#else
    struct gl_client_array *client_data = &ctx->Array.EdgeFlag;
+#endif
    GLvector1ub *edge;
 
+#ifdef VAO
+   if (!(ctx->Array.Current->Summary & VERT_EDGE))
+#else
    if (!(ctx->Array.Summary & VERT_EDGE))
+#endif
       client_data = &ctx->Fallback.EdgeFlag;
 
    if (VB->Type == VB_CVA_PRECALC) {
@@ -164,11 +188,19 @@ static void clean_edgeflag( struct vertex_buffer *VB )
 static void clean_texcoord( struct vertex_buffer *VB, GLuint i )
 {
    GLcontext *ctx = VB->ctx;
+#ifdef VAO
+   struct gl_client_array *client_data = &ctx->Array.Current->TexCoord[i];
+#else
    struct gl_client_array *client_data = &ctx->Array.TexCoord[i];
+#endif
    GLvector4f *tc;
    GLuint flag = PIPE_TEX(i);
 
+#ifdef VAO
+   if (!(ctx->Array.Current->Summary & flag))
+#else
    if (!(ctx->Array.Summary & flag))
+#endif
       client_data = &ctx->Fallback.TexCoord[i];
 
    if (VB->Type == VB_CVA_PRECALC) {

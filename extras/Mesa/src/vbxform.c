@@ -269,8 +269,13 @@ void gl_reset_input( GLcontext *ctx )
 	   VERT_BEGIN_0,
 	   IM->Start, gl_lookup_enum_by_nr(ctx->Current.Primitive));
 
+#ifdef VAO
+   IM->ArrayAndFlags = ~ctx->Array.Current->Flags;
+   IM->ArrayIncr = ctx->Array.Current->Vertex.Enabled;
+#else
    IM->ArrayAndFlags = ~ctx->Array.Flags;
    IM->ArrayIncr = ctx->Array.Vertex.Enabled;
+#endif
    IM->ArrayEltFlush = !(ctx->CompileCVAFlag);
 }
 

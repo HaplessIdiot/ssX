@@ -38,6 +38,7 @@
 #include "pixel.h"
 #include "readpix.h"
 #include "span.h"
+#include "state.h"
 #include "stencil.h"
 #include "types.h"
 #endif
@@ -698,6 +699,10 @@ _mesa_ReadPixels( GLint x, GLint y, GLsizei width, GLsizei height,
    if (!pixels) {
       gl_error( ctx, GL_INVALID_VALUE, "glReadPixels(pixels)" );
       return;
+   }
+
+   if (ctx->NewState) {
+      gl_update_state(ctx);
    }
 
    if (ctx->Driver.ReadPixels &&

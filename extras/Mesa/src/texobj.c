@@ -69,6 +69,7 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
       obj->Priority = 1.0F;
       obj->WrapS = GL_REPEAT;
       obj->WrapT = GL_REPEAT;
+      obj->WrapR = GL_REPEAT;
       obj->MinFilter = GL_NEAREST_MIPMAP_LINEAR;
       obj->MagFilter = GL_LINEAR;
       obj->MinLod = -1000.0;
@@ -551,6 +552,8 @@ _mesa_BindTexture( GLenum target, GLuint texName )
          return;
    }
 
+   ctx->NewState |= NEW_TEXTURING;
+
    if (oldTexObj->Name == texName)
       return;
 
@@ -611,17 +614,12 @@ _mesa_BindTexture( GLenum target, GLuint texName )
         || (oldTexObj->Image[0] && newTexObj->Image[0] && 
 	   (oldTexObj->Image[0]->Format!=newTexObj->Image[0]->Format))))
    {
-      ctx->NewState |= (NEW_RASTER_OPS | NEW_TEXTURING);
+      ctx->NewState |= NEW_RASTER_OPS;
    }
-
-   if (oldTexObj->Complete != newTexObj->Complete)
-      ctx->NewState |= NEW_TEXTURING;
 
    /* Pass BindTexture call to device driver */
    if (ctx->Driver.BindTexture) {
       (*ctx->Driver.BindTexture)( ctx, target, newTexObj );
-      /* Make sure the Driver.UpdateState() function gets called! */
-      ctx->NewState |= NEW_TEXTURING;
    }
 
    if (oldTexObj->Name > 0) {

@@ -31,9 +31,8 @@
 #ifndef __3DNOW_H__
 #define __3DNOW_H__
 
-#include "xform.h"
-
 void gl_init_3dnow_transform_asm( void );
+void gl_init_3dnow_shade_asm( void );
 void gl_init_3dnow_vertex_asm( void );
 
 #endif

@@ -217,7 +217,11 @@ GLboolean fxDDBuildPrecalcPipeline( GLcontext *ctx )
    if (fxMesa->is_in_hardware &&
        fxMesa->render_index == 0 && 
        (ctx->Enabled & ILLEGAL_ENABLES) == 0 &&
+#ifdef VAO
+       (ctx->Array.Current->Flags & (VERT_OBJ_234|
+#else
        (ctx->Array.Flags & (VERT_OBJ_234|
+#endif
 			    VERT_TEX0_4|
 			    VERT_TEX1_4|
 			    VERT_ELT)) == (VERT_OBJ_23|VERT_ELT))
@@ -236,6 +240,7 @@ GLboolean fxDDBuildPrecalcPipeline( GLcontext *ctx )
 
    if (fxMesa->using_fast_path) 
    {
+#if 0
       if (MESA_VERBOSE & (VERBOSE_STATE|VERBOSE_DRIVER)) 
  	 fprintf(stderr, "fxMesa: fall back to full pipeline %x %x %x %x %x\n",
 		 fxMesa->is_in_hardware,
@@ -243,11 +248,16 @@ GLboolean fxDDBuildPrecalcPipeline( GLcontext *ctx )
 		 (ctx->Enabled & ILLEGAL_ENABLES),
 		 (ctx->Array.Summary & (VERT_OBJ_23)),
 		 (ctx->Array.Summary & (VERT_OBJ_4|VERT_TEX0_4|VERT_TEX1_4)));
+#endif
 
       fxMesa->using_fast_path = 0;
       ctx->CVA.VB->ClipOrMask = 0;
       ctx->CVA.VB->ClipAndMask = CLIP_ALL_BITS;
+#ifdef VAO
+      ctx->Array.NewArrayState |= ctx->Array.Current->Summary;
+#else
       ctx->Array.NewArrayState |= ctx->Array.Summary;
+#endif
       return 0;
    }
    
@@ -272,7 +282,11 @@ void fxDDOptimizePrecalcPipeline( GLcontext *ctx, struct gl_pipeline *pipe )
    if (fxMesa->is_in_hardware &&
        fxMesa->render_index == 0 && 
        (ctx->Enabled & ILLEGAL_ENABLES) == 0 &&
+#ifdef VAO
+       (ctx->Array.Current->Summary & VERT_ELT))
+#else
        (ctx->Array.Summary & VERT_ELT))
+#endif
    {
       pipe->stages[0] = &fx_fast_stage;
       pipe->stages[1] = 0;
