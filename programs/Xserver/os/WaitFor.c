@@ -567,7 +567,7 @@ TimerSet(OsTimerPtr timer, int flags, CARD32 millis,
     timer->expires = millis;
     timer->callback = func;
     timer->arg = arg;
-    if (millis <= now)
+    if ((int) (millis - now) <= 0)
     {
 	timer->next = NULL;
 	millis = (*timer->callback)(timer, now, timer->arg);
