@@ -1,4 +1,5 @@
 /* $XConsortium: vgaFasm.h,v 1.1 94/03/28 21:55:05 dpw Exp $ */
+/* $XFree86$ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved

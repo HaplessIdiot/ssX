@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Cursor.c,v 1.1 94/03/28 21:22:57 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
