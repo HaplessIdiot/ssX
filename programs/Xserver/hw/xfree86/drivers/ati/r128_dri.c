@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.2 2000/11/03 01:15:49 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.3 2000/11/09 03:24:35 martin Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
  *                      VA Linux Systems Inc., Fremont, California.
  *
@@ -21,7 +21,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
  * SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
@@ -36,35 +36,22 @@
  *
  */
 
+				/* Driver data structures */
+#include "r128.h"
+#include "r128_dri.h"
+#include "r128_reg.h"
+#include "r128_sarea.h"
+#include "r128_version.h"
 
 				/* X and server generic header files */
 #include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86Resources.h"
-#include "xf86RAC.h"
-#include "xf86cmap.h"
-#include "xf86fbman.h"
+#include "windowstr.h"
 
-				/* Backing store, software cursor, and
-				   colormap initialization */
-#include "mibstore.h"
-#include "mipointer.h"
-#include "micmap.h"
-
-				/* CFB support */
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
-
-				/* Driver data structures */
-#include "r128.h"
-#include "r128_reg.h"
-#include "r128_version.h"
+				/* GLX/DRI/DRM definitions */
+#define _XF86DRI_SERVER_
+#include "GL/glxtokens.h"
+#include "sarea.h"
+#include "xf86drmR128.h"
 
 #define R128_WATERMARK_L      16
 #define R128_WATERMARK_M       8

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_cursor.c,v 1.1 2000/11/02 16:55:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_cursor.c,v 1.2 2000/11/09 03:24:35 martin Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
  *                      VA Linux Systems Inc., Fremont, California.
  *
@@ -21,7 +21,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
  * SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
@@ -44,42 +44,12 @@
  *
  */
 
-				/* X and server generic header files */
-#include "Xarch.h"
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86fbman.h"
-
-				/* XAA and Cursor Support */
-#include "xaa.h"
-#include "xf86Cursor.h"
-
-#include "xf86xv.h"
-
-				/* PCI support */
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-
-				/* DDC support */
-#include "xf86DDC.h"
-
-				/* DRI support */
-#ifdef XF86DRI
-#include "GL/glxint.h"
-#include "xf86drm.h"
-#include "sarea.h"
-#define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
-#include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
-
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
+
+				/* X and server generic header files */
+#include "xf86.h"
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 #define P_SWAP32( a , b )                \

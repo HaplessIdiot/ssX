@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.5 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.6 2000/11/09 10:30:53 alanh Exp $ */
 /*
- * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
@@ -20,7 +20,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
  * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -58,25 +58,23 @@
  * Modified by Marc Aurele La France (tsi@xfree86.org) for ATI driver merge.
  */
 
-				/* X and server generic header files */
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86Resources.h"
-#include "xf86RAC.h"
-#include "xf86cmap.h"
-#include "xf86fbman.h"
-#include "xf86int10.h"
-				/* Backing store, software cursor, and
-				   colormap initialization */
-#include "mibstore.h"
-#include "mipointer.h"
-#include "micmap.h"
+				/* Driver data structures */
+#include "radeon.h"
+#include "radeon_probe.h"
+#include "radeon_reg.h"
+#include "radeon_version.h"
+
+#ifdef XF86DRI
+#define _XF86DRI_SERVER_
+#include "r128_dri.h"
+#include "r128_sarea.h"
+#endif
 
 #define USE_FB                  /* not until overlays */
 #ifdef USE_FB
 #include "fb.h"
 #else
+
 				/* CFB support */
 #define PSZ 8
 #include "cfb.h"
@@ -87,16 +85,24 @@
 #include "cfb24_32.h"
 #endif
 
-				/* Driver data structures */
-#include "radeon.h"
-#include "radeon_probe.h"
-#include "radeon_reg.h"
-#include "radeon_version.h"
+				/* colormap initialization */
+#include "micmap.h"
+
+				/* X and server generic header files */
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86PciInfo.h"
+#include "xf86RAC.h"
+#include "xf86cmap.h"
+#include "vbe.h"
+
+				/* fbdevhw * vgaHW definitions */
+#include "fbdevhw.h"
+#include "vgaHW.h"
 
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
-
 
 				/* Forward definitions for driver functions */
 static Bool RADEONCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -405,7 +411,7 @@ static Bool RADEONUnmapMem(ScrnInfoPtr pScrn)
 }
 
 /* Read PLL information */
-int RADEONINPLL(ScrnInfoPtr pScrn, int addr)
+unsigned RADEONINPLL(ScrnInfoPtr pScrn, int addr)
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;

@@ -1,4 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.7 2000/08/11 17:27:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.8 2000/10/20 14:59:01 alanh Exp $ */
+
+#ifndef _FBDEVHW_H_
+#define _FBDEVHW_H_
+
+#include "xf86str.h"
+#include "colormapst.h"
 
 #define FBDEVHW_PACKED_PIXELS		0	/* Packed Pixels	*/
 #define FBDEVHW_PLANES			1	/* Non interleaved planes */
@@ -40,3 +46,5 @@ void  fbdevHWAdjustFrame(int scrnIndex, int x, int y, int flags);
 Bool  fbdevHWEnterVT(int scrnIndex, int flags);
 void  fbdevHWLeaveVT(int scrnIndex, int flags);
 void  fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags);
+
+#endif

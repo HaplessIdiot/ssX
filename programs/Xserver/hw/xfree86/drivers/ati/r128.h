@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.1 2000/11/02 16:55:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.2 2000/11/09 03:24:35 martin Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
  *                      VA Linux Systems Inc., Fremont, California.
  *
@@ -21,7 +21,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
  * SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
@@ -38,48 +38,24 @@
 #ifndef _R128_H_
 #define _R128_H_
 
-				/* Xv support */
-#include "xf86xv.h"
-#include "Xv.h"
+#include "xf86str.h"
 
-				/* vgahw module (for VC save/restore only) */
-#include "vgaHW.h"
-
-#include "fbdevhw.h"
+				/* PCI support */
+#include "xf86Pci.h"
 
 				/* XAA and Cursor Support */
 #include "xaa.h"
-#include "xaalocal.h"
 #include "xf86Cursor.h"
 
-
-				/* PCI support */
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-
-				/* DDC support */
-#include "xf86DDC.h"
-
-				/* VESA support */
-#include "vbe.h"
+				/* Xv support */
+#include "xf86xv.h"
 
 				/* DRI support */
 #ifdef XF86DRI
-#include "GL/glxint.h"
-#include "GL/glxtokens.h"
-#include "xf86drm.h"
-#include "xf86drmR128.h"
-#include "sarea.h"
 #define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
 #include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
-
-#ifdef RENDER
-#include "picturestr.h"
+#include "dri.h"
+#include "GL/glxint.h"
 #endif
 
 #define R128_DEBUG    0         /* Turn off debugging output                */
@@ -373,7 +349,7 @@ extern void        R128WaitForIdle(ScrnInfoPtr pScrn);
 extern void        R128EngineReset(ScrnInfoPtr pScrn);
 extern void        R128EngineFlush(ScrnInfoPtr pScrn);
 
-extern int         R128INPLL(ScrnInfoPtr pScrn, int addr);
+extern unsigned    R128INPLL(ScrnInfoPtr pScrn, int addr);
 extern void        R128WaitForVerticalSync(ScrnInfoPtr pScrn);
 
 extern Bool        R128AccelInit(ScreenPtr pScreen);

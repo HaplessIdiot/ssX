@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.7 2000/10/10 14:34:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.9 2000/11/03 18:46:16 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -302,22 +302,24 @@ dump_code(xf86Int10InfoPtr pInt)
 void
 dump_registers(xf86Int10InfoPtr pInt)
 {
-    PRINT(X86_IP);
     PRINT(X86_AX);
     PRINT(X86_BX);
     PRINT(X86_CX);
     PRINT(X86_DX);
+    ErrorF("\n");
+    PRINT(X86_IP);
     PRINT(X86_SI);
     PRINT(X86_DI);
     PRINT(X86_BP);
-    ErrorF("\n");
     PRINT(X86_SP);
+    ErrorF("\n");
     PRINT(X86_CS);
     PRINT(X86_SS);
     PRINT(X86_ES);
     PRINT(X86_DS);
     PRINT(X86_FS);
     PRINT(X86_GS);
+    ErrorF("\n");
     PRINT_FLAGS(X86_EFLAGS);
     ErrorF("\n");
 }
