@@ -32,7 +32,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_accel.c,v 1.3 2002/10/30 12:52:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_accel.c,v 1.4 2002/12/10 01:27:05 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -170,6 +170,10 @@ I830Sync(ScrnInfoPtr pScrn)
 
    if (I810_DEBUG & (DEBUG_VERBOSE_ACCEL | DEBUG_VERBOSE_SYNC))
       ErrorF("I830Sync\n");
+
+   /* XXX Need to check what is calling this. */
+   if (!pScrn->vtSema)
+      return;
 
 #ifdef XF86DRI
    /* VT switching tries to do this.
