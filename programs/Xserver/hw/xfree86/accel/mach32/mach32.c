@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.50 1996/05/10 06:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.51 1996/06/10 09:12:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -27,6 +27,7 @@
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Modified for 16 bpp and VTSema-independence by Craig E. Groeschel
+ * Modified for more 16 bpp and Ramdac parsing by Bryan K. Feir
  *
  */
 /* $XConsortium: mach32.c /main/13 1996/01/13 13:13:11 kaleb $ */
@@ -137,6 +138,7 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int suspendTime */
     0,			/* int offTime */
     -1,			/* int s3BlankDelay */
+    0,			/* int textClockFreq */
 #ifdef XFreeXDGA
     0,			/* int directMode */
     mach32SetVGAPage,	/* Set Vid Page */
@@ -175,6 +177,7 @@ short mach32DisplayWidth;
 
 Bool mach32Use4MbAperture = FALSE;
 Bool mach32DAC8Bit = FALSE;
+Bool mach32DoubleClock = FALSE;
 
 Bool mach32clkprobedif4fix = FALSE;
 
@@ -241,6 +244,8 @@ typedef struct ATIInformationBlock {
 } ATIInformationBlock;
 
 int	mach32Ramdac;
+int	mach32RamdacSubType;
+
 char	*mach32ramdac_names[] = {
 	"ATI-68830",
 	"IMS-G173/SC1148[368]",
@@ -252,6 +257,49 @@ char	*mach32ramdac_names[] = {
 	"SC15021/STG1702/AT&T21C498"
 };
 
+SymTabRec mach32RamdacTable[] = {
+    { DAC_ATI68830,  "ati68830" },
+    { DAC_SC11483,   "sc11483" },
+    { DAC_SC11483,   "sc11486" },
+    { DAC_SC11483,   "sc11488" },
+    { DAC_SC11483,   "ims_g173" },
+    { DAC_SC11483,   "mu9c4870" },
+    { DAC_ATI68875,  "ati68875" },
+    { DAC_ATI68875,  "bt885" },
+    { DAC_ATI68875,  "tlc34075" },
+    { DAC_BT476,     "bt476" },
+    { DAC_BT476,     "bt478" },
+    { DAC_BT476,     "inmos176" },
+    { DAC_BT476,     "inmos178" },
+    { DAC_BT481,     "bt481" },  
+    { DAC_BT481,     "bt482" },  
+    { DAC_BT481,     "ims_g174" },  
+    { DAC_BT481,     "mu9c1880" },  
+    { DAC_BT481,     "mu9c4910" },  
+    { DAC_BT481,     "sc15025" },  
+    { DAC_BT481,     "sc15026" },  
+    { DAC_ATT20C490, "att20c490" },
+    { DAC_ATT20C490, "att20c491" },
+    { DAC_ATI68860,  "ati68860" },
+    { DAC_STG1700,   "stg1700" },
+    { DAC_ATT21C498, "sc15021" },
+    { DAC_ATT21C498, "stg1702" },
+    { DAC_ATT21C498, "att21c498" },
+    { -1, "" },
+};
+
+SymTabRec mach32RamdacNames[] = {
+    { DAC_ATI68830,  "ATI-68830" },
+    { DAC_SC11483,   "IMS-G173/SC1148[368]" },
+    { DAC_ATI68875,  "ATI68875/TLC34075/Bt885" },
+    { DAC_BT476,     "Bt47[68]/INMOS17[68]" },
+    { DAC_BT481,     "Bt48[12]/IMS-G174/MU9C{1880,4910}/SC1502[56]" },
+    { DAC_ATT20C490, "AT&T20C49[01]" },
+    { DAC_ATI68860,  "ATI-68860" },
+    { DAC_STG1700,   "STG1700 (or similar)" },
+    { DAC_ATT21C498, "SC15021/STG1702/AT&T21C498" },
+    { -1, "" },
+};
 
 int	mach32BusType;
 
@@ -423,12 +471,12 @@ mach32Probe()
     if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
 	xf86weight = mach32InfoRec.weight;
     }
+
     switch (xf86bpp) {
     case 8:
 	break;
     case 16:
-#if 0
-	if (info->DAC_Type == DAC_BT476) {
+        if (info->DAC_Type == DAC_BT476) {
 /*
  * Hate to break the news to them, but hopefully this will forestall
  * queries of, "But you said it supports 16bpp...?"
@@ -436,12 +484,12 @@ mach32Probe()
 	    ErrorF("Unsupported bpp--this ramdac supports only 8 bpp\n");
 	    return(FALSE);
 	}
-#else
-	if (info->DAC_Type != DAC_TLC34075) {
-	    ErrorF("Unsupported bpp.\n");
+        if (info->DAC_Type != DAC_TLC34075 && info->DAC_Type != DAC_BT481 &&
+            info->DAC_Type != DAC_ATT20C490) {
+	    ErrorF("Unsupported bpp in this version of code.\n");
 	    return(FALSE);
 	}
-#endif
+
 	mach32InfoRec.depth = 16;	/* if 555, set to 15, below */
 	mach32InfoRec.bitsPerPixel = 16;
 	if (mach32InfoRec.defaultVisual < 0)
@@ -456,18 +504,13 @@ mach32Probe()
 	}
 	break;
     default:
-#if 0
 	ErrorF("Invalid bpp--valid ");
-	if (info->DAC_Type == DAC_BT476)
+	if (info->DAC_Type != DAC_TLC34075 && info->DAC_Type != DAC_BT481)
 	    ErrorF("number of bpp is 8\n");
 	else
 	    ErrorF("numbers of bpp are 8 and 16\n");
-#else
-	ErrorF("Invalid bpp.\n");
-#endif
 	return(FALSE);
     }
-
 
     if (xf86bpp == 16) {
 	for (i = 0; i < 4; i++) {
@@ -482,30 +525,33 @@ mach32Probe()
 	}
 	if (i == 1)
 	    mach32InfoRec.depth = 15;
-#if 0
-	if ( (info->DAC_Type == DAC_SC11483 || info->DAC_Type == DAC_BT481)
-	    && (i > 1)) {
+        /* Of course, the SC11483 doesn't get here, but... */
+	if ( (info->DAC_Type == DAC_SC11483 || info->DAC_Type == DAC_BT481 ||
+              info->DAC_Type == DAC_ATT20C490) && (i > 1)) {
 	    ErrorF("Invalid RGB weighting--valid weights are 555 and 565.\n");
 	    return(FALSE);
 	}
-#endif
 	mach32WeightMask = mach32WeightMasks[i];
     }
 
-
-    /* no pixel multiplexing at 16bpp */
+    /* There are several considerations in working out the max clock: */
     mach32InfoRec.maxClock = mach32MaxClock;
-    switch (mach32InfoRec.bitsPerPixel) {
-    case 8:
-	switch(info->DAC_Type) {
-	case DAC_TLC34075: 
-	    mach32InfoRec.maxClock = mach32MaxTlc34075Clock;
-	    break;
-	}
-	break;
-    case 16:
-	mach32InfoRec.maxClock = mach32Max16bppClock;
-	break;
+    /* Type 2 and 5 DACs are high performance, and can handle 135MHz */
+    if (info->DAC_Type == DAC_TLC34075 || info->DAC_Type == DAC_ATI68860) {
+        mach32InfoRec.maxClock = mach32MaxTlc34075Clock;
+    }
+    if (mach32InfoRec.bitsPerPixel == 16) {
+        /* Only the ATI68860 can MUX 4 pixels at 16bpp each */
+        if (info->DAC_Type != DAC_ATI68860) {
+            mach32InfoRec.maxClock /= 2;
+        }
+        /* 8-bit data path DACs have to be double-clocked */
+        if (info->DAC_Type == DAC_ATI68830 || info->DAC_Type == DAC_SC11483 ||
+            info->DAC_Type == DAC_BT481 || info->DAC_Type == DAC_ATT20C490) {
+	    ErrorF("%s %s: Eight-bit DAC path, halving clocks\n",
+                   XCONFIG_PROBED, mach32InfoRec.name);
+            mach32DoubleClock = TRUE;
+        }
     }
 
     OFLG_ZERO(&validOptions);
@@ -546,9 +592,8 @@ mach32Probe()
 	}
     }
 
-    if (!mach32InfoRec.clocks)
-    {
-        outb(DISP_CNTL, DISPEN_DISAB /*| INTERLACE*/ | MEMCFG_4 | ODDBNKENAB);
+    if (!mach32InfoRec.clocks) {
+        outb(DISP_CNTL, DISPEN_DISAB | MEMCFG_4 | ODDBNKENAB);
         /* 13-jun-93 TCG : set up dummy video mode */
         outw(SHADOW_SET, 1);
         outw(SHADOW_CTL, 0);
@@ -586,12 +631,21 @@ mach32Probe()
 
         outb(DAC_MASK, 0xff);
 
-        for (j = 0; j < 16; j++)
-            mach32InfoRec.clock[j + 16] = mach32InfoRec.clock[j] / 2;
-
-        mach32InfoRec.clocks = 32;
+        if (mach32DoubleClock) {
+            for (j = 0; j < 16; j++)
+                mach32InfoRec.clock[j] /= 2;
+            mach32InfoRec.clocks = 16;
+        } else {
+            for (j = 0; j < 16; j++)
+                mach32InfoRec.clock[j + 16] = mach32InfoRec.clock[j] / 2;
+            mach32InfoRec.clocks = 32;
+        }
+    } else if (mach32DoubleClock) {
+        if (mach32InfoRec.clocks > 16)
+            mach32InfoRec.clocks = 16;
+        for (j = 0; j < mach32InfoRec.clocks; j++)
+            mach32InfoRec.clock[j] /= 2;
     }
-
 
     if (xf86Verbose) {
 	ErrorF("%s ",OFLG_ISSET(XCONFIG_CLOCKS,&mach32InfoRec.xconfigFlag) ?
@@ -771,7 +825,20 @@ mach32Probe()
                             info->Bus_Type == PCI)
 			   && xf86LinearVidMem();
 
-    mach32Ramdac = info->DAC_Type;
+    if (mach32InfoRec.ramdac) {
+	mach32RamdacSubType =
+	    xf86StringToToken(mach32RamdacTable, mach32InfoRec.ramdac);
+	mach32Ramdac = mach32RamdacSubType & 0x0f;
+	if (mach32RamdacSubType < 0) {
+	    ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+		   mach32InfoRec.name, mach32InfoRec.ramdac);
+	    xf86DisableIOPorts(mach32InfoRec.scrnIndex);
+	    return(FALSE);
+	}
+    } else {
+	mach32Ramdac = info->DAC_Type;
+	mach32RamdacSubType = mach32Ramdac;
+    }
 
     if (xf86Verbose) {
 	if (mach32Use4MbAperture) {
@@ -782,8 +849,21 @@ mach32Probe()
 		   OFLG_ISSET(OPTION_NOLINEAR_MODE, &mach32InfoRec.options) ?
 		   XCONFIG_GIVEN : XCONFIG_PROBED, mach32InfoRec.name);
 	}
-	ErrorF("%s %s: Ramdac is %s\n", XCONFIG_PROBED, mach32InfoRec.name,
-	       mach32ramdac_names[mach32Ramdac]);
+	for (i = 0;
+	     ((mach32RamdacNames[i].token != -1) &&
+	      (mach32RamdacNames[i].token != mach32RamdacSubType));
+	     i++);
+	if (mach32RamdacNames[i].token == -1) {
+	    ErrorF("%s %s: Ramdac is Unknown (%d)\n",
+		   (mach32InfoRec.ramdac ? XCONFIG_GIVEN : XCONFIG_PROBED),
+		   mach32InfoRec.name,
+		   mach32RamdacSubType);
+	} else {
+	    ErrorF("%s %s: Ramdac is %s\n",
+		   (mach32InfoRec.ramdac ? XCONFIG_GIVEN : XCONFIG_PROBED),
+		   mach32InfoRec.name,
+		   mach32RamdacNames[i].name);
+	}
     }
 
     /* The Type 2 RAMDACS can support 8 bits per RGB value, not just the
@@ -791,7 +871,8 @@ mach32Probe()
      * official feature of the mach32.
      */
     mach32DAC8Bit = OFLG_ISSET(OPTION_DAC_8_BIT, &mach32InfoRec.options)
-		    && info->DAC_Type == DAC_TLC34075
+		    && (info->DAC_Type == DAC_TLC34075
+                        || info->DAC_Type == DAC_ATT20C490)
 		    && mach32InfoRec.bitsPerPixel == 8;
 
     if (xf86Verbose) {

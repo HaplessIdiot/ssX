@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.10 1996/01/13 12:21:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.11 1996/02/04 09:02:34 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -46,6 +46,7 @@ static short old_DAC_in_clock;
 static short old_DAC_out_clock;
 static short old_DAC_mux_clock;
 static short old_clock_sel;
+static short old_DAC_ATT_mode;
 
 static Bool mach32Inited = FALSE;
 
@@ -384,12 +385,23 @@ void mach32SetRamdac(clock)
     switch (mach32InfoRec.bitsPerPixel) {
     case 8:
 	MaskOn = 0xff;
-	switch(mach32Ramdac) {
+	switch(mach32RamdacSubType) {
+        case DAC_ATT20C490:
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_RS1 | PIXEL_WIDTH_8);
+            outb(ATT_MODE, (mach32DAC8Bit ? 2 : 0));
+	    old_EXT_GE_CONFIG |= PIXEL_WIDTH_8 |
+		(mach32DAC8Bit ? DAC_8_BIT_EN : 0);
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG);
+        case DAC_BT481:
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_RS1 | PIXEL_WIDTH_8);
+            outb(ATT_MODE, 0);
+	    old_EXT_GE_CONFIG |= PIXEL_WIDTH_8;
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG);
         case DAC_TLC34075:
 	    /* Setup high dac address bits; set the rest of EXT_GE_CONFIG
 	     * to a safe 8 bpp mode (bits 13:12 = 10; bits 5:4 = 01).
 	     */
-	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x2000 | PIXEL_WIDTH_8);
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_RS2 | PIXEL_WIDTH_8);
 	    old_EXT_GE_CONFIG |= PIXEL_WIDTH_8 |
 		(mach32DAC8Bit ? DAC_8_BIT_EN : 0);
 
@@ -426,14 +438,38 @@ void mach32SetRamdac(clock)
 	break;
     case 16:
 	MaskOn = 0;
-	switch (mach32Ramdac) {
+	switch (mach32RamdacSubType) {
+        case DAC_ATT20C490:
+            SET_BLANK_ADJ(1);
+            outb(DAC_MASK, 0);
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_RS1 | PIXEL_WIDTH_8);
+            outb(ATT_MODE, (mach32InfoRec.depth == 15) ? 0xa2 : 0xc2);
+            /* The ATI sample code changed the clock value here; we change
+             *  the clock values before mode selection instead.
+             */
+
+	    outw(EXT_GE_CONFIG,
+		(PIXEL_WIDTH_16 | mach32WeightMask | 2));
+	    break;
+        case DAC_BT481:
+            SET_BLANK_ADJ(1);
+            outb(DAC_MASK, 0);
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_RS1 | PIXEL_WIDTH_8);
+            outb(ATT_MODE, (mach32InfoRec.depth == 15) ? 0xa8 : 0xe8);
+            /* The ATI sample code changed the clock value here; we change
+             *  the clock values before mode selection instead.
+             */
+
+	    outw(EXT_GE_CONFIG,
+		(PIXEL_WIDTH_16 | mach32WeightMask | 2));
+	    break;
 	case DAC_TLC34075:
 	    if (mach32InfoRec.clock[(*clock >> 2) & 0x1f] > 80000) {
 		ErrorF("Pixel multiplexing not supported at this depth\n");
 		break;
 	    }
 	    SET_BLANK_ADJ(1);
-	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x2000 | PIXEL_WIDTH_8);
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_RS2 | PIXEL_WIDTH_8);
 	    /* input clock is CLK3 */
 	    outb(INPUT_CLK_SEL, 1);
 
@@ -526,9 +562,20 @@ void mach32InitDisplay(screen_idx)
 
     switch(mach32Ramdac) {
 
+    case DAC_BT481:
+    case DAC_ATT20C490:
+	WaitQueue(4);
+	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3000) | DAC_RS1);
+	outw(CLOCK_SEL, 0x11);
+
+	old_DAC_ATT_mode = inb(ATT_MODE);
+
+	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3000));
+	outw(CLOCK_SEL, old_clock_sel);
+	break;
     case DAC_TLC34075:
 	WaitQueue(4);
-	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3000) | 0x2000);
+	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3000) | DAC_RS2);
 	outw(CLOCK_SEL, 0x11);
 
 	old_DAC_in_clock = inb(INPUT_CLK_SEL);
@@ -579,6 +626,14 @@ void mach32CleanUp()
     ProbeWaitIdleEmpty();
     switch(mach32Ramdac) {
 
+    case DAC_BT481:
+    case DAC_ATT20C490:
+	SET_BLANK_ADJ(0x0c);
+	outw(CLOCK_SEL, 0x11);
+	/* should call SetRamdac to set to 8 bpp */
+	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3030) | 0x1010);
+	outb(ATT_MODE, old_DAC_ATT_mode);
+	break;
     case DAC_TLC34075:
 	SET_BLANK_ADJ(0x0c);
 	outw(CLOCK_SEL, 0x11);

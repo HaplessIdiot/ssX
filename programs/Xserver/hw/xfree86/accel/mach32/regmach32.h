@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.4 1995/01/28 16:59:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.5 1996/02/04 09:02:45 dawes Exp $ */
 /* regmach32.h
  *
  * Written by Jake Richter
@@ -362,13 +362,18 @@
 #define PCI			0x000e
 
 /* Mach32 RAMDAC types */
-#define DAC_ATI68830		0
-#define DAC_SC11483		1
-#define DAC_TLC34075		2
-#define DAC_BT476		3
-#define DAC_BT481		4
-#define DAC_ATI68860		5
+#define DAC_ATI68830		0x00
+#define DAC_SC11483		0x01
+#define DAC_TLC34075		0x02
+#define DAC_BT476		0x03
+#define DAC_BT481		0x04
+#define DAC_ATI68860		0x05
 #define DAC_ATI68875		DAC_TLC34075
+/* RAMDACs not in the base docs but listed for completeness */
+#define DAC_STG1700             0x06
+#define DAC_ATT21C498           0x07
+/* RAMDACs that are distinct but aliased */
+#define DAC_ATT20C490           0x14
 
 /* Mach32 CRT Polarity */
 #define H_POLARITY_POS		0x0000
@@ -426,6 +431,10 @@
 #define RGBx24			0x0200
 #define BGR24			0x0400
 #define xBGR24			0x0600
+#define DAC_RS0                 0x0000
+#define DAC_RS1                 0x1000
+#define DAC_RS2                 0x2000
+#define DAC_RS3                 0x3000
 #define DAC_8_BIT_EN		0x4000
 #define PIX_WIDTH_16BPP		PIXEL_WIDTH_16
 #define ORDER_16BPP_565		RGB16_565
@@ -466,6 +475,9 @@
 #define	OUTPUT_CLK_SEL  0x2ea
 #define	MUX_CNTL	0x2eb
 #define	INPUT_CLK_SEL	0x2ed
+
+/* RAMDAC type 4 registers */
+#define ATT_MODE        0x2ea
 
 typedef struct {
     unsigned char r, g, b;
