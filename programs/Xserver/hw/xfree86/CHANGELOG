@@ -1,4 +1,10 @@
 XFree86 4.4.99.3 (xx March 2004)
+  67. Fix segfaults that occur in the MGA driver under options
+      XaaNoSolidFillRect and/or XaaNoMono8x8PatternFillRect
+      (Marc La France, with Frank Geissler's debugging assistance).
+  66. Fix segfault when XAA's overlay acceleration is invoked with option
+      XaaNoSolidFillRect (Marc La France, with Frank Geissler's debugging
+      assistance).
   65. Fix typo in lnxLib.rules (Bugzilla #1328, Bernhard Rosenkraenzer).
   64. Initial support for building 64-bit libraries on Solaris/SPARC
       (Mark Kandianis).
@@ -18836,7 +18842,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3215 2004/04/05 02:33:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3216 2004/04/06 14:09:13 tsi Exp $
 
 
 
