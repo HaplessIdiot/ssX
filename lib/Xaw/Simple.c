@@ -54,6 +54,17 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
 #include <X11/Xmu/Drawing.h>
+#include "Private.h"
+
+/*
+ * Translations
+ */
+static XtActionsRec actions[] = {
+  {"set-values", XawSetValuesAction},
+  {"get-values", XawGetValuesAction},
+  {"declare",    XawDeclareAction},
+  {"call-proc",  XawCallProcAction},
+};
 
 #define offset(field) XtOffsetOf(SimpleRec, simple.field)
 
@@ -70,11 +81,15 @@ static XtResource resources[] = {
      offset(cursor_name), XtRString, NULL},
   {XtNinternational, XtCInternational, XtRBoolean, sizeof(Boolean),
      offset(international), XtRImmediate, (XtPointer) FALSE},
+  {XawNdisplayList, XawCDisplayList, XawRDisplayList, sizeof(XawDisplayList*),
+   offset(display_list), XtRImmediate, NULL},
 #undef offset
 };
 
 static void ClassPartInitialize(), ClassInitialize(),Realize(),ConvertCursor();
 static Boolean SetValues(), ChangeSensitive();
+
+static void XawSimpleExpose();
 
 SimpleClassRec simpleClassRec = {
   { /* core fields */
@@ -87,8 +102,8 @@ SimpleClassRec simpleClassRec = {
     /* initialize		*/	NULL,
     /* initialize_hook		*/	NULL,
     /* realize			*/	Realize,
-    /* actions			*/	NULL,
-    /* num_actions		*/	0,
+    /* actions			*/	actions,
+    /* num_actions		*/	XtNumber(actions),
     /* resources		*/	resources,
     /* num_resources		*/	XtNumber(resources),
     /* xrm_class		*/	NULLQUARK,
@@ -98,7 +113,7 @@ SimpleClassRec simpleClassRec = {
     /* visible_interest		*/	FALSE,
     /* destroy			*/	NULL,
     /* resize			*/	NULL,
-    /* expose			*/	NULL,
+    /* expose			*/	XawSimpleExpose,
     /* set_values		*/	SetValues,
     /* set_values_hook		*/	NULL,
     /* set_values_almost	*/	XtInheritSetValuesAlmost,
@@ -263,9 +278,23 @@ static Boolean SetValues(current, request, new, args, num_args)
     if (new_cursor && XtIsRealized(new))
         XDefineCursor(XtDisplay(new), XtWindow(new), s_new->simple.cursor);
 
+    if (s_old->simple.display_list != s_new->simple.display_list)
+      return (True);
+
     return False;   
 }
 
+void
+XawSimpleExpose(w, event, region)
+     Widget w;
+     XEvent *event;
+     Region region;
+{
+  SimpleWidget xaw = (SimpleWidget)w;
+
+  if (xaw->simple.display_list)
+    XawRunDisplayList(w, xaw->simple.display_list, event, region);
+}
 
 static Boolean ChangeSensitive(w)
     Widget w;

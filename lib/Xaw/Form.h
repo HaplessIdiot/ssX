@@ -69,6 +69,7 @@ SOFTWARE.
  borderWidth	     BorderWidth	Dimension	1
  defaultDistance     Thickness		int		4
  destroyCallback     Callback		Pointer		NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  height		     Height		Dimension	computed at realize
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  sensitive	     Sensitive		Boolean		True
@@ -144,6 +145,18 @@ typedef enum {
 #define XtChainLeft XawChainLeft
 #define XtChainRight XawChainRight
 #define XtRubber XawRubber
+
+#ifndef XawNdisplayList
+#define XawNdisplayList "displayList"
+#endif
+ 
+#ifndef XawCDisplayList
+#define XawCDisplayList "DisplayList"
+#endif
+
+#ifndef XawRDisplayList
+#define XawRDisplayList "XawDisplayList"
+#endif
 
 typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;

@@ -44,6 +44,7 @@ void XawInitializeWidgetSet ()
 
     if (firsttime) {
 	firsttime = 0;
+	XawInitializeDefaultConverters();
 	XtInitializeWidgetClass (vendorShellWidgetClass);
     }
 }

@@ -92,6 +92,8 @@ unsigned long XawFmtWide = 0L;
 #define BIGNUM ((Dimension)32023)
 #define MULTI_CLICK_TIME 500L
 
+#define Superclass (&simpleClassRec)
+
 /*
  * Compute a the maximum length of a cut buffer that we can pass at any
  * time.  The 64 allows for the overhead of the Change Property request.
@@ -2600,6 +2602,8 @@ Region region;			/* Unused. */
 	expose.y = event->xexpose.y;
 	expose.width = event->xexpose.width;
 	expose.height = event->xexpose.height;
+	if (Superclass->core_class.expose)
+	  (*Superclass->core_class.expose)(w, event, region);
     }
     else if (event->type == GraphicsExpose) {
 	expose.x = event->xgraphicsexpose.x;

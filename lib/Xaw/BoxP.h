@@ -68,6 +68,11 @@ SOFTWARE.
 #include <X11/Xaw/Box.h>
 #include <X11/Xmu/Converters.h>
 
+#ifndef XAW_DL_DEFINED
+#define XAW_DL_DEFINED
+typedef struct _XawDL XawDisplayList;
+#endif
+
 /* New fields for the Box widget class record */
 typedef struct {int empty;} BoxClassPart;
 
@@ -90,6 +95,7 @@ typedef struct {
     Dimension	preferred_width, preferred_height;
     Dimension	last_query_width, last_query_height;
     XtGeometryMask last_query_mode;
+    XawDisplayList *display_list;
 } BoxPart;
 
 

@@ -138,6 +138,7 @@ static XtActionsRec actions[] = {
 	{"EndScroll",		EndScroll},
 };
 
+#define Superclass (&simpleClassRec)
 
 ScrollbarClassRec scrollbarClassRec = {
   { /* core fields */
@@ -482,6 +483,9 @@ static void Redisplay( gw, event, region )
     ScrollbarWidget w = (ScrollbarWidget) gw;
     int x, y;
     unsigned int width, height;
+
+    if (Superclass->core_class.expose)
+      (*Superclass->core_class.expose)(gw, event, region);
 
     if (w->scrollbar.orientation == XtorientHorizontal) {
 	x = w->scrollbar.topLoc;

@@ -54,6 +54,7 @@ SOFTWARE.
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/FormP.h>
+#include "Private.h"
 
 /* Private Definitions */
 
@@ -62,7 +63,9 @@ static int default_value = -99999;
 #define Offset(field) XtOffsetOf(FormRec, form.field)
 static XtResource resources[] = {
     {XtNdefaultDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(default_spacing), XtRImmediate, (XtPointer)4}
+	Offset(default_spacing), XtRImmediate, (XtPointer)4},
+    {XawNdisplayList, XawCDisplayList, XawRDisplayList,sizeof(XawDisplayList*),
+     Offset(display_list), XtRImmediate, (XtPointer)NULL},
 };
 #undef Offset
 
@@ -97,6 +100,7 @@ static Boolean SetValues(), ConstraintSetValues();
 static XtGeometryResult GeometryManager(), PreferredGeometry();
 static void ChangeManaged();
 static Boolean Layout();
+static void XawFormRedisplay();
 
 static void LayoutChild(), ResizeChildren();
 
@@ -122,7 +126,7 @@ FormClassRec formClassRec = {
     /* visible_interest   */    FALSE,
     /* destroy            */    NULL,
     /* resize             */    Resize,
-    /* expose             */    XtInheritExpose,
+    /* expose             */    XawFormRedisplay,
     /* set_values         */    SetValues,
     /* set_values_hook    */    NULL,
     /* set_values_almost  */    XtInheritSetValuesAlmost,
@@ -164,6 +168,17 @@ WidgetClass formWidgetClass = (WidgetClass)&formClassRec;
  *
  ****************************************************************/
 
+void
+XawFormRedisplay(w, event, region)
+     Widget w;
+     XEvent *event;
+     Region region;
+{
+  FormWidget xaw = (FormWidget)w;
+
+  if (xaw->form.display_list)
+    XawRunDisplayList(w, xaw->form.display_list, event, region);
+}
 
 static XrmQuark	XtQChainLeft, XtQChainRight, XtQChainTop,
 		XtQChainBottom, XtQRubber;

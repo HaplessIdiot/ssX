@@ -69,6 +69,7 @@ SOFTWARE.
  cursor		     Cursor		Cursor		None
  cursorName	     Cursor		String		NULL
  destroyCallback     Callback		Pointer		NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  height		     Height		Dimension	0
  insensitiveBorder   Insensitive	Pixmap		Gray
  mappedWhenManaged   MappedWhenManaged	Boolean		True
@@ -93,6 +94,18 @@ SOFTWARE.
 
 #ifndef XtNinternational
 #define XtNinternational "international"
+#endif
+
+#ifndef XawNdisplayList
+#define XawNdisplayList "displayList"
+#endif
+
+#ifndef XawCDisplayList
+#define XawCDisplayList "DisplayList"
+#endif
+
+#ifndef XawRDisplayList
+#define XawRDisplayList "XawDisplayList"
 #endif
 
 typedef struct _SimpleClassRec	*SimpleWidgetClass;

@@ -59,6 +59,17 @@ SOFTWARE.
 #include	<X11/Xmu/Misc.h>
 #include	<X11/Xaw/XawInit.h>
 #include	<X11/Xaw/BoxP.h>
+#include "Private.h"
+
+/*
+ * Translations
+ */
+static XtActionsRec actions[] = {
+  {"set-values", XawSetValuesAction},
+  {"get-values", XawGetValuesAction},
+  {"declare",    XawDeclareAction},
+  {"call-proc",  XawCallProcAction},
+};
 
 /****************************************************************
  *
@@ -76,6 +87,9 @@ static XtResource resources[] = {
     { XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
 		XtOffsetOf(BoxRec, box.orientation),
 		XtRImmediate, (XtPointer)XtorientVertical },
+    { XawNdisplayList,XawCDisplayList,XawRDisplayList,sizeof(XawDisplayList*),
+		XtOffsetOf(BoxRec, box.display_list),
+		XtRImmediate, (XtPointer)NULL },
 };
 
 /****************************************************************
@@ -598,8 +612,9 @@ static void Realize(w, valueMask, attributes)
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
-    attributes->bit_gravity = NorthWestGravity;
-    *valueMask |= CWBitGravity;
+/* Breaks displayList */
+/*    attributes->bit_gravity = NorthWestGravity;
+      *valueMask |= CWBitGravity;*/
 
     XtCreateWindow( w, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		    *valueMask, attributes);
