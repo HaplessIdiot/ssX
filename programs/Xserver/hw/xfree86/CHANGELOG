@@ -1,4 +1,42 @@
 XFree86 4.3.99.2 (xx March 2003)
+  86. Resetting 'bound' flag for an agp entry after undbind succeeded in
+      drm_agpsupport.h (Egbert Eich).
+  85. Ignoring hw_lock for drm device if lock was set by a different instance
+      (ie Xserver) to prevent second server to spin in driver release function
+      (currently only relevant for i8xx drm drivers) (David Dawes).
+  84. Adding extra delay before doing a slowBcopy in ia64 to prevent a MC
+      when saving/restoring VGA fonts (Egbert Eich).
+  83. Turn off needToSync in LeaveVT() in i830 driver to prevent server
+      crashes because xaa tries to sync blitter while switched away 
+      (Egbert Eich).
+  82. Added the O_SYNC flag when opening /dev/mem to work around a kernel bug
+      which causes conflits between WC settings in MTRR registers and cacheable
+      attribute in page table (Egbert Eich).
+  81. Reduced retry count for mouse configuration to 4. This should speed
+      up server start for people who use a mouse repeater like gpm
+      (Egbert Eich).
+  80. Fixed xf86cfg to duplicate font names before they get freed when
+      unloading the module (Egbert Eich).
+  79. Added missing functions to xf86cfg (Egbert Eich).
+  78. Added missing ROP_NEEDS_SOURCE to Savage driver;
+      now all 2D accel functions should use this flag (Egbert Eich).
+  77. Reduced flicker with video playback in Savage driver (Tim Roberts).
+  76. Load vgahw submodule in RENDITION driver before using it
+      (Egbert Eich).
+  75. Magically speed up video playback on Neomagic (Egbert Eich).
+  74. Added drmAgpUnbind()/drmAgpBind() functionality on Leave/Enter for i810
+      cards to allow a second Xserver to be started if the first one has
+      DRI enabled (Egbert Eich).
+  73. Set NeedRingBufferLow for i855/i865 to avoid lockups on vt switches
+      (Egbert Eich).
+  72. Check for vtSema before accessing registers in I830BIOSSaveScreen()
+      (Egbert Eich).
+  71. Some sanity fixes for atiprobe to work better with xf86cfg: Handle
+      situation gracefully if the PCI config pointer doesn't exist 
+      (Egbert Eich).
+  70. Changed behavior of fontfile: don't drop the entire directory if some
+      fonts cannot be rendered (Egbert Eich).
+  69. Fixed B&H bdf fonts: AVERAGE_WIDTH is not a string but an int (Mike Fabian).
   68. Fixed type in radeon driver which caused display to go into
       powersaving mode when Xcursor is disabled (Bugz: 90, Michel Dänzer).
   67. Fixed typo in XKB-Config.sgml (Bugz: 53, Hiroyuki Bessho).
@@ -16675,4 +16713,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2621 2003/04/07 12:56:13 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2622 2003/04/07 15:29:19 eich Exp $

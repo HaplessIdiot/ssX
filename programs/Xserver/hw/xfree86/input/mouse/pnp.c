@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.15 2003/01/26 04:08:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.16 2003/02/04 15:21:18 eich Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -638,11 +638,14 @@ ps2EnableDataReporting(InputInfoPtr pInfo)
     return ps2SendPacket(pInfo, packet, sizeof(packet));
 }
 
-static int
+int
 ps2GetDeviceID(InputInfoPtr pInfo)
 {
     unsigned char u;
     unsigned char packet[] = { 0xf2 };
+
+    usleep(30000);
+    xf86FlushInput(pInfo->fd);
     if (!ps2SendPacket(pInfo, packet, sizeof(packet))) 
 	return -1;
     while (1) {
@@ -663,7 +666,7 @@ ps2Reset(InputInfoPtr pInfo)
     unsigned char u;
     unsigned char packet[] = { 0xff };
     unsigned char reply[] = { 0xaa, 0x00 };
-    int i;
+    unsigned int i;
 #ifdef DEBUG
    xf86ErrorF("PS/2 Mouse reset\n");
 #endif
@@ -696,16 +699,16 @@ probePs2ProtocolPnP(InputInfoPtr pInfo)
     ps2DisableDataReporting(pInfo);
     
     if (ps2Reset(pInfo)) { /* Reset PS2 device */
-	unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
+  	unsigned char seq[] = { 243, 200, 243, 100, 243, 80 }; 
 	/* Try to identify Intelli Mouse */
 	if (ps2SendPacket(pInfo, seq, sizeof(seq))) {
-	    readMouse(pInfo,&u);
+	    u = ps2GetDeviceID(pInfo);
 	    if (u == 0x03) {
 		/* found IntelliMouse now try IntelliExplorer */
-		unsigned char seq[] = { 243, 200, 243, 200, 243, 80, 242 };
+		unsigned char seq[] = { 243, 200, 243, 200, 243, 80 };
 		if (ps2SendPacket(pInfo,seq,sizeof(seq))) {
-		    readMouse(pInfo,&u);
-		    if (u == 0x05)
+		    u = ps2GetDeviceID(pInfo);
+		    if (u == 0x04)
 			ret =  PROT_EXPPS2;
 		    else 
 			ret = PROT_IMPS2;

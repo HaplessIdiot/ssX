@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.9 2002/11/25 14:04:53 eich Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.10 2003/03/11 23:26:58 herrb Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -55,18 +55,15 @@ Sun Microsystems, Inc. or its licensors is granted.
 #include "XlcPublic.h"
 #include "XlcPubI.h"
 
-#ifdef _LP64
-# if defined(__sparcv9)
-#  define	_MACH64_NAME		"sparcv9"
-# elif defined(__ia64__) 
-#  undef MACH64_NAME
-# else
-#  error "Unknown architecture"
-# endif /* defined(__sparcv9) */
-# ifdef _MACH64_NAME
+#if defined(_LP64)  && defined(__sparcv9)
+# define	_MACH64_NAME		"sparcv9"
+#else
+# undef _MACH64_NAME
+#endif /* defined(_LP64)  && defined(__sparcv9) */
+
+#ifdef _MACH64_NAME
 #  define	_MACH64_NAME_LEN	(sizeof (_MACH64_NAME) - 1)
-# endif
-#endif /* _LP64 */
+#endif
 
 #define XI18N_DLREL		2
 

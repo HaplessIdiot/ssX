@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.37 2002/12/10 01:27:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.38 2003/02/26 04:19:36 dawes Exp $ */
 
 /*
  * Authors:
@@ -265,6 +265,9 @@ extern void I810DRICloseScreen(ScreenPtr pScreen);
 extern Bool I810DRIFinishScreenInit(ScreenPtr pScreen);
 extern Bool I810InitDma(ScrnInfoPtr pScrn);
 extern Bool I810CleanupDma(ScrnInfoPtr pScrn);
+extern Bool I810DRILeave(ScrnInfoPtr pScrn);
+extern Bool I810DRIEnter(ScrnInfoPtr pScrn);
+
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
 #define I810REGPTR(p) (&(I810PTR(p)->ModeReg))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.71 2003/04/03 22:18:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.72 2003/04/03 22:44:38 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -240,6 +240,8 @@ static const OptionInfoRec mouseOptions[] = {
     /* end serial options */
     { -1,			NULL,		  OPTV_NONE,	{0}, FALSE }
 };
+
+#define RETRY_COUNT 4
 
 /*
  * Microsoft (all serial models), Logitech MouseMan, First Mouse, etc,
@@ -2387,7 +2389,7 @@ SetupMouse(InputInfoPtr pInfo)
  * Do a reset wrap mode before reset.
  */
 #define do_ps2Reset(x)  { \
-    int i = 10;\
+    int i = RETRY_COUNT;\
      while (i-- > 0) { \
        xf86FlushInput(x->fd); \
        if (ps2Reset(x)) break; \
@@ -2405,7 +2407,7 @@ initMouseHW(InputInfoPtr pInfo)
     pointer options;
     unsigned char *param = NULL;
     int paramlen = 0;
-    int count = 10;
+    int count = RETRY_COUNT;
     Bool ps2Init = TRUE;
     
     switch (pMse->protocolID) {
@@ -2570,7 +2572,7 @@ initMouseHW(InputInfoPtr pInfo)
 	
 	case PROT_IMPS2:		/* IntelliMouse */
 	{
-	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80 };
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2579,7 +2581,7 @@ initMouseHW(InputInfoPtr pInfo)
 	case PROT_EXPPS2:		/* IntelliMouse Explorer */
 	{
 	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
-					   243, 200, 243, 200, 243, 80, 242 };
+					   243, 200, 243, 200, 243, 80 };
 	
 	    param = seq;
 	    paramlen = sizeof(seq);
@@ -2589,7 +2591,7 @@ initMouseHW(InputInfoPtr pInfo)
 	case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
 	case PROT_NETSCPS2:		/* NetScroll */
 	{
-	    static unsigned char seq[] = { 232, 3, 230, 230, 230, };
+	    static unsigned char seq[] = { 232, 3, 230, 230, 230 };
 	
 	    param = seq;
 	    paramlen = sizeof(seq);
@@ -2599,7 +2601,7 @@ initMouseHW(InputInfoPtr pInfo)
 	case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
 	{
 	    static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
-					   230, 232, 3, 232, 1, 232, 2, 232, 3, };
+					   230, 232, 3, 232, 1, 232, 2, 232, 3 };
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2609,7 +2611,7 @@ initMouseHW(InputInfoPtr pInfo)
 	{
 	    static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
 					   243, 40, 243, 20, 243, 20, 243, 60,
-					   243, 40, 243, 20, 243, 20, };
+					   243, 40, 243, 20, 243, 20 };
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2642,7 +2644,8 @@ initMouseHW(InputInfoPtr pInfo)
 		    if (!count--)
 			return TRUE;
 		    goto REDO;
-		} 
+		}
+		ps2GetDeviceID(pInfo);
 		usleep(30000);
 		xf86FlushInput(pInfo->fd);
 	    }

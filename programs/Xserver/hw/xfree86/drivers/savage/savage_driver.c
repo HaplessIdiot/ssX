@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.33 2003/02/07 11:21:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.34 2003/02/25 04:08:21 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -82,7 +82,7 @@ extern ScrnInfoPtr gpScrn;
 #define iabs(a)	((int)(a)>0?(a):(-(a)))
 
 #define DRIVER_NAME	"savage"
-#define DRIVER_VERSION	"1.1.26"
+#define DRIVER_VERSION	"1.1.26t"
 #define VERSION_MAJOR	1
 #define VERSION_MINOR	1
 #define PATCHLEVEL	26

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mousePriv.h,v 1.6 2001/11/30 12:12:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mousePriv.h,v 1.8 2002/09/16 18:06:08 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -70,5 +70,6 @@ int MouseGetPnpProtocol(InputInfoPtr pInfo);
 Bool ps2Reset(InputInfoPtr pInfo);
 Bool ps2EnableDataReporting(InputInfoPtr pInfo);
 Bool ps2SendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len);
+int ps2GetDeviceID(InputInfoPtr pInfo);
 
 #endif /* _X_MOUSE_H */

@@ -470,6 +470,7 @@ SavageInitAccel(ScreenPtr pScreen)
 	    | NO_TRANSPARENCY
 	    | HARDWARE_PATTERN_PROGRAMMED_BITS
 	    | HARDWARE_PATTERN_PROGRAMMED_ORIGIN
+	    | ROP_NEEDS_SOURCE
 	    ;
     }
 #endif
@@ -496,6 +497,7 @@ SavageInitAccel(ScreenPtr pScreen)
 	| SCANLINE_PAD_DWORD
 	| BIT_ORDER_IN_BYTE_MSBFIRST
 	| LEFT_EDGE_CLIPPING
+	| ROP_NEEDS_SOURCE
 	;
     xaaptr->SetupForImageWrite = SavageSetupForImageWrite;
     xaaptr->SubsequentImageWriteRect = SavageSubsequentImageWriteRect;
@@ -506,7 +508,7 @@ SavageInitAccel(ScreenPtr pScreen)
     /* WriteBitmap color expand */
 
 #if 0
-    xaaptr->WriteBitmapFlags = NO_PLANEMASK;
+    xaaptr->WriteBitmapFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
     xaaptr->WriteBitmap = SavageWriteBitmapCPUToScreenColorExpand;
 #endif
 

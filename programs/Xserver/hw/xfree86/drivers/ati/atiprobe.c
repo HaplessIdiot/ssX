@@ -1159,6 +1159,8 @@ ATIProbe
                     continue;
 
                 pPCI = pVideo->thisCard;
+		if (pPCI == NULL)
+		    continue;
 
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     &pPCI->pci_base0, pVideo->size,
@@ -1347,6 +1349,8 @@ ATIProbe
                     continue;
 
                 pPCI = pVideo->thisCard;
+		if (pPCI == NULL)
+		    continue;
                 PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
 
                 /* Possibly fix block I/O indicator */
@@ -1389,6 +1393,8 @@ ATIProbe
 
                 pPCI = pVideo->thisCard;
 
+		if (pPCI == NULL)
+		    continue;
                 /*
                  * Possibly fix block I/O indicator in PCI configuration space.
                  */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.11 2003/01/12 03:55:49 tsi Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -992,9 +992,8 @@ SavageStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 
     REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
-    SavageStreamsOff( pScrn );
-
     if(shutdown) {
+	SavageStreamsOff( pScrn );
 	if(pPriv->area) {
 	    xf86FreeOffscreenArea(pPriv->area);
 	    pPriv->area = NULL;
@@ -1283,9 +1282,11 @@ SavageDisplayVideoOld(
     ssControl |= (1 << 24);
     OUTREG(SSTREAM_CONTROL_REG, ssControl);
 
+#if 0
     /* Set color key on primary. */
 
     SavageSetColorKey( pScrn );
+#endif
 
     /* Set FIFO L2 on second stream. */
 
@@ -1383,9 +1384,11 @@ SavageDisplayVideoNew(
     OUTREG(SEC_STREAM_WINDOW_START, ((dstBox->x1+1) << 16) | (dstBox->y1+1) );
     OUTREG(SEC_STREAM_WINDOW_SZ, ((drw_w) << 16) | drw_h );
 
+#if 0
     /* Set color key on primary. */
 
     SavageSetColorKey( pScrn );
+#endif
 
     /* Set FIFO L2 on second stream. */
 
@@ -1424,6 +1427,7 @@ SavagePutImage(
     int top, left, npixels, nlines;
     BoxRec dstBox;
     CARD32 tmp;
+/*    xf86ErrorFVerb(XVTRACE,"SavagePutImage\n"); */
 
     if(drw_w > 16384) drw_w = 16384;
 
@@ -1519,6 +1523,12 @@ SavagePutImage(
 	SavageCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
 	break;
     }  
+   
+    /* We need to enable the video before we draw the chroma color.
+       Otherwise, we get blue flashes. */
+
+    SavageDisplayVideo(pScrn, id, offset, width, height, dstPitch,
+	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
     /* update cliplist */
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
@@ -1528,9 +1538,6 @@ SavagePutImage(
 					REGION_NUM_RECTS(clipBoxes),
 					REGION_RECTS(clipBoxes));
     }
-   
-    SavageDisplayVideo(pScrn, id, offset, width, height, dstPitch,
-	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
 
@@ -1692,6 +1699,7 @@ SavageStopSurface(
     XF86SurfacePtr surface
 ){
     OffscreenPrivPtr pPriv = (OffscreenPrivPtr)surface->devPrivate.ptr;
+    xf86ErrorFVerb(XVTRACE,"SavageStopSurface\n");
 
     if(pPriv->isOn) {
 	/*SavagePtr psav = SAVPTR(surface->pScrn);*/
@@ -1754,6 +1762,7 @@ SavageDisplaySurface(
     SavagePortPrivPtr portPriv = GET_PORT_PRIVATE(pScrn);
     INT32 x1, y1, x2, y2;
     BoxRec dstBox;
+    xf86ErrorFVerb(XVTRACE,"SavageDisplaySurface\n");
 
     x1 = src_x;
     x2 = src_x + src_w;
@@ -1777,13 +1786,13 @@ SavageDisplaySurface(
     dstBox.y1 -= pScrn->frameY0;
     dstBox.y2 -= pScrn->frameY0;
 
-    XAAFillSolidRects(pScrn, portPriv->colorKey, GXcopy, ~0, 
-                                        REGION_NUM_RECTS(clipBoxes),
-                                        REGION_RECTS(clipBoxes));
-
     SavageDisplayVideo(pScrn, surface->id, surface->offsets[0], 
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
+
+    XAAFillSolidRects(pScrn, portPriv->colorKey, GXcopy, ~0, 
+                                        REGION_NUM_RECTS(clipBoxes),
+                                        REGION_RECTS(clipBoxes));
 
     pPriv->isOn = TRUE;
 #if 0

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.50tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.51 2003/03/18 23:08:23 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -599,8 +599,10 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       renditionClockRange.clockIndex = -1;
     }
 
-    /***********************************************/
-    /* ensure vgahw private structure is allocated */
+    if (!xf86LoadSubModule(pScreenInfo, "vgahw")){
+        return FALSE;
+    }
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     if (!vgaHWGetHWRec(pScreenInfo))
         return FALSE;
@@ -656,11 +658,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pRendition->board.mem_size=videoRam * 1024;
 
     /* Load the needed symbols */
-
-    if (!xf86LoadSubModule(pScreenInfo, "vgahw")){
-        return FALSE;
-    }
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     pRendition->board.shadowfb=TRUE;
 
@@ -733,13 +730,13 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 #else
     /* Load DDC module if needed */
     if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NO_DDC,0)){
-      if (!xf86LoadSubModule(pScreenInfo, "vbe")) {
+      if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
 		   ("Loading of DDC library failed, skipping DDC-probe\n"));
       }
       else {
 	  xf86MonPtr mon;
-	  xf86LoaderReqSymLists(vbeSymbols, NULL);
+	  xf86LoaderReqSymLists(ddcSymbols, NULL);
 	  mon = renditionProbeDDC(pScreenInfo, pRendition->pEnt->index);
 	  xf86PrintEDID(mon);
 #if 0
@@ -1484,16 +1481,4 @@ renditionDDC1Read (ScrnInfoPtr pScreenInfo)
   return value;
 }
 
-void
-renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
-{
-  vbeInfoPtr pVbe;
-  if (xf86LoadSubModule(pScreenInfo, "vbe")) {
-    xf86LoaderReqSymLists(vbeSymbols, NULL);
-
-    pVbe = VBEInit(NULL,index);
-    ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
-    vbeFree(pVbe);
-  }
-}
 #endif
