@@ -76,6 +76,8 @@
      o  3.1.2E is based on the first publicly released form of X11R6.1
         (i.e,. X11R6.1 public patch 1).
 
+     o  Many updates have been made to the OS/2 port.
+
   3.2.  General X server changes
 
 
@@ -85,7 +87,36 @@
         server with twice as many clocks to choose from.  Add the option
         "clkdiv2" to the "Device" section of XF86Config to enable this.
 
-  3.3.  Mach64 server
+     o  Some cursor colouring bugs have been fixed for servers that use
+        hardware cursors.
+
+     o  Autorepeating modifier keys when using XKB have been fixed.
+
+  3.3.  XInput Extension
+
+
+     o  A new device supporting mouse protocols has been added.
+
+     o  The wacom device has been enhanced to support tilt valuators and
+        to have a motion history.
+
+  3.4.  PC98 Support
+
+
+     o  Bugs have been fixed in some of the PC98 servers.
+
+     o  Support has been added for the PowerWindow968, Cyber9320 and
+        TGUI9680.
+
+     o  Support has been added for the PANIX-PC98 SVR4.0 OS.
+
+  3.5.  S3 server
+
+
+     o  Support for the ELSA Winner 2000PRO/X rev G and ELSA Gloria-8
+        (except the GLint 300SX 3D chip) has been added.
+
+  3.6.  Mach64 server
 
 
      o  Screen blanking for Mach64 CT cards running at 16bpp and 32bpp
@@ -94,8 +125,45 @@
      o  The Mach64 server will detect the new VT and GT cards, but
         hasn't yet been tested with them.
 
-  3.4.  Client/Library changes
+     o  A problem that caused the server to incorrectly use block I/O
+        mode on some cards has been fixed.
 
+
+
+  3.7.  W32 server
+
+
+     o  Support has been added for the ICD2061A clock chip (which is
+        used on the Diamond Stealth 32).
+
+     o  The server's reporting of bits/RGB resolution has been fixed.
+
+  3.8.  P9000 server
+
+
+     o  DGA support has been added to the P9000 server.
+
+  3.9.  Trident driver (SVGA server)
+
+
+     o  Support for the TGUI9320 has been fixed (it was broken in
+        3.1.2D).
+
+  3.10.  ATI driver (SVGA server)
+
+
+     o  There have been a number of updates to the ati driver.
+
+  3.11.  ARK driver (SVGA server)
+
+
+     o  A problem which caused the server to crash when no Ramdac was
+        given in the XF86Config file has been fixed.
+
+  3.12.  Client/Library changes
+
+
+     o  Problems with the colour support in xterm have been fixed.
 
      o  POSIX termios support has been added for xterm on BSD systems.
         This removes the need for the BSD kernel to built with the
@@ -127,9 +195,9 @@
         type.  There is also an option to completely disable mode
         changes via this extension.
 
+
      o  A new server extension called "XFree86-Misc" has been added.
         The primary purpose of this is to allow reconfiguration of some
-
         parameters while the server is running.  Some functions
         previously in the VidMode extension (like screen save functions)
         have been moved to this new extension.
@@ -193,8 +261,8 @@
      o  Detection of Diamond S3 cards has been improved.  If you've
         needed to use the "diamond" option to avoid screen wrapping in
         previous releases, try removing it and let us know if there are
-        any problems.
 
+        any problems.
 
      o  Memory parameter calculations for 2MB Trio64 cards have been
         fixed.  If you've needed to add something like "S3MClk 170" to
@@ -257,8 +325,6 @@
 
      o  The ICS5342 clock support (required for the Diamond Stealth64
         Graphics 2001 series) has been fixed.
-
-
 
 
 
@@ -726,7 +792,111 @@
 
      o  libXt bug fix from the X Consortium's fix-13.
 
-  7.  Installing the XFree86 3.1.2D Beta Release
+  7.  Installing the XFree86 3.1.2E Beta Release
+
+  The XFree86 3.1.2E binary beta release is distributed as a upgrade to
+  3.1.2D.  If you don't already have 3.1.2D installed, first install it
+  (installation details for 3.1.2D are included below) except for the X
+  servers.
+
+  The core part of the 3.1.2E release consists of the following files:
+
+
+       BetaReport         Beta test report template form
+       X312Eupd.tgz       Files which have changed since 3.1.2D
+       X312Edoc.tgz       Documentation for 3.1.2E
+
+
+
+
+  The following X servers are for PC/AT hardware.  Choose at least one
+  which matches your hardware.
+
+
+       X312E8514.tgz      8514/A server
+       X312EAGX.tgz       AGX server
+       X312EI128.tgz      I128 server
+       X312EMa32.tgz      Mach 32 server
+       X312EMa64.tgz      Mach 64 server
+       X312EMa8.tgz       Mach 8 server
+       X312EMono.tgz      Mono server
+       X312EP9K.tgz       P9000 server
+       X312ES3.tgz        S3 server
+       X312ESVGA.tgz      SVGA server
+       X312EVG16.tgz      16 colour VGA server
+       X312EW32.tgz       ET4000/W32 server
+
+
+
+
+  The following X servers are for PC98 hardware.  If you have a PC98
+  machine, choose one which suits your hardware.  If you don't know what
+  a PC98 machine is, you don't need any of these.
+
+
+       X312E9NS3.tgz      PC98 NEC(S3) server
+       X312E9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
+       X312E9LPW.tgz      PC98 PowerWindowLB(S3) server
+       X312E9EGC.tgz      PC98 EGC(generic) server
+       X312E9GAN.tgz      PC98 GANB-WAP(cirrus) server
+       X312E9480.tgz      PC98 PEGC-480(generic) server
+       X312E9NKV.tgz      PC98 NKV-NEC(cirrus) server
+       X312E9WBS.tgz      PC98 WABS(cirrus) server
+       X312E9WEP.tgz      PC98 WAB-EP(cirrus) server
+       X312E9WSN.tgz      PC98 WSN-A2F(cirrus) server
+       X312E9TGU.tgz      PC98 TGUI server
+
+
+
+
+  The following servers are optional:
+
+
+       X312Enest.tgz     Nested X server
+       X312Evfb.tgz      Virtual framebuffer X server
+
+
+  The upgrade to version 3.1.2E will overwrite some files from the
+  3.1.2D installation.  It is recommended that you MAKE A BACKUP OF
+  /usr/X11R6 BEFORE DOING ANYTHING ELSE.
+
+  To upgrade from 3.1.2D to 3.1.2E, first extract the X312Eupd.tgz and
+  X312Edoc.tgz files as root from the /usr/X11R6 directory:
+
+
+
+               cd /usr/X11R6
+               gzip -d < X312Eupd.tgz | tar vxf -
+               gzip -d < X312Edoc.tgz | tar vxf -
+
+
+
+
+  Next, extract the server(s) you need from the same directory.  For
+  example, to extract the S3 and SVGA and Xnest servers, run:
+
+
+
+               cd /usr/X11R6
+               gzip -d < X312ES3.tgz | tar vxf -
+               gzip -d < X312ESVGA.tgz | tar vxf -
+               gzip -d < X312Enest.tgz | tar vxf -
+
+
+
+
+  Note that there is no postinst.sh script to be run for this release.
+  However, if you didn't install X312Dfnon.tgz when installing 3.1.2D
+  (or are not sure if you installed it), you should run the following:
+
+
+
+               /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
+
+
+
+
+  8.  Installing the XFree86 3.1.2D Beta Release
 
   The XFree86 3.1.2D binary beta release is distributed as a full
   release, not as an upgrade.  For most operating systems, it consists
@@ -748,46 +918,8 @@
 
 
 
-  The following X servers are for PC/AT hardware.  Choose at least one
-  which matches your hardware.
-
-
-       X312D8514.tgz      8514/A server
-       X312DAGX.tgz       AGX server
-       X312DI128.tgz      I128 server
-       X312DMa32.tgz      Mach 32 server
-       X312DMa64.tgz      Mach 64 server
-       X312DMa8.tgz       Mach 8 server
-       X312DMono.tgz      Mono server
-       X312DP9K.tgz       P9000 server
-       X312DS3.tgz        S3 server
-       X312DSVGA.tgz      SVGA server
-       X312DVG16.tgz      16 colour VGA server
-       X312DW32.tgz       ET4000/W32 server
-
-
-
-
-  The following X servers are for PC98 hardware.  If you have a PC98
-  machine, choose one which suits your hardware.  If you don't know what
-  a PC98 machine is, you don't need any of these.
-
-
-       X312D9NS3.tgz      PC98 NEC(S3) server
-       X312D9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
-       X312D9LPW.tgz      PC98 PowerWindowLB(S3) server
-       X312D9EGC.tgz      PC98 EGC(generic) server
-       X312D9GAN.tgz      PC98 GANB-WAP(cirrus) server
-       X312D9480.tgz      PC98 PEGC-480(generic) server
-       X312D9NKV.tgz      PC98 NKV-NEC(cirrus) server
-       X312D9WBS.tgz      PC98 WABS(cirrus) server
-       X312D9WEP.tgz      PC98 WAB-EP(cirrus) server
-       X312D9WSN.tgz      PC98 WSN-A2F(cirrus) server
-
-
-
-
   The following are optional.
+
 
 
   X312Df100.tgz     100dpi fonts
@@ -863,7 +995,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.25 1996/05/11 11:04:26 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.27 1996/05/12 12:36:35 dawes Exp $
 
 
 

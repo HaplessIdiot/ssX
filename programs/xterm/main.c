@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.35 1996/05/10 07:02:33 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.36 1996/05/11 11:07:50 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -185,8 +185,10 @@ static Bool IsPts = False;
 #undef CAPS_LOCK
 #endif
 
+#ifndef NO_POSIX_TERMIOS
 #ifdef CSRG_BASED
 #define USE_POSIX_TERMIOS
+#endif
 #endif
 
 #include <sys/ioctl.h>
@@ -299,9 +301,9 @@ static Bool IsPts = False;
 #ifdef MINIX /* { */
 #else /* } !MINIX { */
 #ifndef linux
-#ifndef CSRG_BASED
+#ifndef USE_POSIX_TERMIOS
 #include <sgtty.h>
-#endif /* CSRG_BASED */
+#endif /* USE_POSIX_TERMIOS */
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS

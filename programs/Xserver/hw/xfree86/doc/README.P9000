@@ -280,7 +280,7 @@
   to xres*yres*Bpp.  In this mode, there are two buffers which can be
   written to, read from, and displayed.  The XF86DGASetVidPage command
   can be used to switch between buffers 0 and 1 for I/O.  Whichever
-  buffer is selected will be available through the linear aperature with
+  buffer is selected will be available through the linear aperture with
   no offset.  If XF86DGASetViewPort is called with ypos < yres, it will
   cause buffer 0 to be displayed.  If ypos >= yres, buffer 1 will be
   displayed.  The result of this behavior is that programs which switch
@@ -499,7 +499,7 @@
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.14 1996/04/15 11:30:46 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.15 1996/05/12 12:36:34 dawes Exp $
 
 
 

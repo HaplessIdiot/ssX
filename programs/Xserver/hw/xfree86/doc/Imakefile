@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/17 1996/02/06 10:03:48 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.28 1996/02/22 05:11:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.29 1996/02/24 05:58:03 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -84,7 +84,7 @@ HWREADME =  README.ati README.trident README.tseng README.WstDig \
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
 
-OTHERDOCS = /*VideoModes.doc*/ QuickStart.doc README.clkprog
+OTHERDOCS = /*VideoModes.doc*/ QuickStart.doc README.clkprog xinput
 #endif
 
 MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM) README.DGA
