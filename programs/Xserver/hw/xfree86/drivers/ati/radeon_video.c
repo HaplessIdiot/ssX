@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.1 2000/11/02 16:55:47 tsi Exp $ */
 /*
  * Copyright 2000 Stuart R. Anderson and Metro Link, Inc.
  *
@@ -71,14 +71,14 @@
 #define OUTREG(addr, val)   { xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"OUTREG(%s,%x)\n",#addr,val) ;MMIO_OUT32(RADEONMMIO, addr, val);}
 */
 
-#define OFF_DELAY	250  /* milliseconds */
-#define FREE_DELAY	15000
+#define OFF_DELAY       250  /* milliseconds */
+#define FREE_DELAY      15000
 
-#define OFF_TIMER	0x01
-#define FREE_TIMER	0x02
+#define OFF_TIMER       0x01
+#define FREE_TIMER      0x02
 #define CLIENT_VIDEO_ON 0x04
 
-#define TIMER_MASK	(OFF_TIMER | FREE_TIMER)
+#define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
 
 #ifndef XvExtension
 void RADEONInitVideo(ScreenPtr pScreen) {}
@@ -98,28 +98,28 @@ static int RADEONQueryImageAttributes(ScrnInfoPtr,
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-#define IMAGE_MAX_WIDTH		2048
-#define IMAGE_MAX_HEIGHT	2048
-#define Y_BUF_SIZE		(IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
+#define IMAGE_MAX_WIDTH         2048
+#define IMAGE_MAX_HEIGHT        2048
+#define Y_BUF_SIZE              (IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
 
 static Atom xvColorKey;
 
 typedef struct {
-	int		videoStatus;
-	unsigned char	brightness;
-	unsigned char	contrast;
+	int             videoStatus;
+	unsigned char   brightness;
+	unsigned char   contrast;
 
-	RegionRec	clip;
-	CARD32		colorKey;
-	CARD8		overlay_pixel_size;
-	CARD8		current_buffer;
-	int		overlay_pad;
-	CARD32		overlay_id;
-	CARD32		overlay_width;
+	RegionRec       clip;
+	CARD32          colorKey;
+	CARD8           overlay_pixel_size;
+	CARD8           current_buffer;
+	int             overlay_pad;
+	CARD32          overlay_id;
+	CARD32          overlay_width;
 
-	CARD32		scale_cntl;
-	CARD32		video_format;
-	FBLinearPtr	linear;
+	CARD32          scale_cntl;
+	CARD32          video_format;
+	FBLinearPtr     linear;
 	} RADEONPortPrivRec, *RADEONPortPrivPtr;
 
 void RADEONInitVideo(ScreenPtr pScreen)
@@ -243,11 +243,11 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     OUTREG(RADEON_OV0_STEP_BY,1|(1<<8));
     OUTREG(RADEON_OV0_FILTER_CNTL,0xf); /* use hardcoded coeff's */
     OUTREG(RADEON_OV0_FILTER_CNTL,0x0); /* use programmable coeff's */
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_0	, 0x00002000);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_1	, 0x0D06200D);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_2	, 0x0D0A1C0D);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_3	, 0x0C0E1A0C);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_4	, 0x0C14140C);
+    OUTREG(RADEON_OV0_FOUR_TAP_COEF_0   , 0x00002000);
+    OUTREG(RADEON_OV0_FOUR_TAP_COEF_1   , 0x0D06200D);
+    OUTREG(RADEON_OV0_FOUR_TAP_COEF_2   , 0x0D0A1C0D);
+    OUTREG(RADEON_OV0_FOUR_TAP_COEF_3   , 0x0C0E1A0C);
+    OUTREG(RADEON_OV0_FOUR_TAP_COEF_4   , 0x0C14140C);
     OUTREG(RADEON_OV0_COLOUR_CNTL,(1<<12)|(1<<20));
     OUTREG(RADEON_OV0_TEST,0);
     OUTREG(RADEON_OV0_SCALE_CNTL,pPriv->scale_cntl|pPriv->video_format);
@@ -308,7 +308,7 @@ RADEONSetupImageVideo(ScreenPtr pScreen)
     pPriv->scale_cntl|= RADEON_SCALER_SMART_SWITCH|RADEON_SCALER_PIX_EXPAND;
     pPriv->scale_cntl|= RADEON_SCALER_SMART_SWITCH;
 
-    xvColorKey	 = MAKE_ATOM("XV_COLORKEY");
+    xvColorKey   = MAKE_ATOM("XV_COLORKEY");
 
     RADEONResetVideo(pScrn);
 
@@ -668,7 +668,7 @@ RADEONPutImage(
 
     switch(id) {
     case FOURCC_YV12:
-	 size =	 width * height * 2; /* 16bpp */
+	 size =  width * height * 2; /* 16bpp */
 	 break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:

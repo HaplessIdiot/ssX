@@ -1,28 +1,30 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.1 2000/11/02 16:55:41 tsi Exp $ */
 /*
- * Copyright 2000 ATI Technologies Inc., Markham, Ontario
- *	      and VA Linux Systems, Inc., Sunnyvale, California.
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation on
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation on the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * ATI, VA LINUX SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 /*
@@ -54,24 +56,24 @@
 #include "radeon_reg.h"
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-#define P_SWAP32( a , b )		  \
-       ((char *)a)[0] = ((char *)b)[3];	  \
-       ((char *)a)[1] = ((char *)b)[2];	  \
-       ((char *)a)[2] = ((char *)b)[1];	  \
+#define P_SWAP32( a , b )                 \
+       ((char *)a)[0] = ((char *)b)[3];   \
+       ((char *)a)[1] = ((char *)b)[2];   \
+       ((char *)a)[2] = ((char *)b)[1];   \
        ((char *)a)[3] = ((char *)b)[0]
 
-#define P_SWAP16( a , b )		  \
-	((char *)a)[0] = ((char *)b)[1];  \
-	((char *)a)[1] = ((char *)b)[0];  \
-	((char *)a)[2] = ((char *)b)[3];  \
-	((char *)a)[3] = ((char *)b)[2]
+#define P_SWAP16( a , b )                 \
+       ((char *)a)[0] = ((char *)b)[1];   \
+       ((char *)a)[1] = ((char *)b)[0];   \
+       ((char *)a)[2] = ((char *)b)[3];   \
+       ((char *)a)[3] = ((char *)b)[2]
 #endif
 
 
 /* Set cursor foreground and background colors. */
 static void RADEONSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
-    RADEONInfoPtr info	      = RADEONPTR(pScrn);
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
 
     OUTREG(RADEON_CUR_CLR0, bg);
@@ -82,17 +84,17 @@ static void RADEONSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
    (xorigin,yorigin). */
 static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    RADEONInfoPtr	  info	      = RADEONPTR(pScrn);
-    unsigned char	  *RADEONMMIO = info->MMIO;
-    xf86CursorInfoPtr	  cursor      = info->cursor;
-    int			  xorigin     = 0;
-    int			  yorigin     = 0;
-    int			  total_y     = pScrn->frameY1 - pScrn->frameY0;
+    RADEONInfoPtr         info        = RADEONPTR(pScrn);
+    unsigned char         *RADEONMMIO = info->MMIO;
+    xf86CursorInfoPtr     cursor      = info->cursor;
+    int                   xorigin     = 0;
+    int                   yorigin     = 0;
+    int                   total_y     = pScrn->frameY1 - pScrn->frameY0;
 
-    if (x < 0)			      xorigin = -x;
-    if (y < 0)			      yorigin = -y;
-    if (y > total_y)		      y	      = total_y;
-    if (info->Flags & V_DBLSCAN)      y	      *= 2;
+    if (x < 0)                        xorigin = -x;
+    if (y < 0)                        yorigin = -y;
+    if (y > total_y)                  y       = total_y;
+    if (info->Flags & V_DBLSCAN)      y       *= 2;
     if (xorigin >= cursor->MaxWidth)  xorigin = cursor->MaxWidth - 1;
     if (yorigin >= cursor->MaxHeight) yorigin = cursor->MaxHeight - 1;
 
@@ -102,19 +104,19 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
 				       | ((xorigin ? 0 : x) << 16)
 				       | (yorigin ? 0 : y)));
-    OUTREG(RADEON_CUR_OFFSET,	      info->cursor_start + yorigin * 16);
+    OUTREG(RADEON_CUR_OFFSET,         info->cursor_start + yorigin * 16);
 }
 
 /* Copy cursor image from `image' to video memory.  RADEONSetCursorPosition
    will be called after this, so we can ignore xorigin and yorigin. */
 static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 {
-    RADEONInfoPtr info	      = RADEONPTR(pScrn);
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    CARD32	  *s	      = (CARD32 *)image;
-    CARD32	  *d	      = (CARD32 *)(info->FB + info->cursor_start);
-    int		  y;
-    CARD32	  save;
+    CARD32        *s          = (CARD32 *)image;
+    CARD32        *d          = (CARD32 *)(info->FB + info->cursor_start);
+    int           y;
+    CARD32        save;
 
     save = INREG(RADEON_CRTC_GEN_CNTL);
     OUTREG(RADEON_CRTC_GEN_CNTL, save & ~RADEON_CRTC_CUR_EN);
@@ -178,7 +180,7 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 /* Hide hardware cursor. */
 static void RADEONHideCursor(ScrnInfoPtr pScrn)
 {
-    RADEONInfoPtr info	      = RADEONPTR(pScrn);
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
 
     OUTREGP(RADEON_CRTC_GEN_CNTL, 0, ~RADEON_CRTC_CUR_EN);
@@ -187,7 +189,7 @@ static void RADEONHideCursor(ScrnInfoPtr pScrn)
 /* Show hardware cursor. */
 static void RADEONShowCursor(ScrnInfoPtr pScrn)
 {
-    RADEONInfoPtr info	      = RADEONPTR(pScrn);
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
 
     OUTREGP(RADEON_CRTC_GEN_CNTL, RADEON_CRTC_CUR_EN, ~RADEON_CRTC_CUR_EN);
@@ -197,7 +199,7 @@ static void RADEONShowCursor(ScrnInfoPtr pScrn)
 static Bool RADEONUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    RADEONInfoPtr info	= RADEONPTR(pScrn);
+    RADEONInfoPtr info  = RADEONPTR(pScrn);
 
     return info->cursor_start ? TRUE : FALSE;
 }
@@ -205,20 +207,20 @@ static Bool RADEONUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 /* Initialize hardware cursor support. */
 Bool RADEONCursorInit(ScreenPtr pScreen)
 {
-    ScrnInfoPtr		  pScrn	  = xf86Screens[pScreen->myNum];
-    RADEONInfoPtr	    info    = RADEONPTR(pScrn);
-    xf86CursorInfoPtr	  cursor;
-    FBAreaPtr		  fbarea;
-    int			  width;
-    int			  height;
-    int			  size;
+    ScrnInfoPtr           pScrn   = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr           info    = RADEONPTR(pScrn);
+    xf86CursorInfoPtr     cursor;
+    FBAreaPtr             fbarea;
+    int                   width;
+    int                   height;
+    int                   size;
 
 
     if (!(cursor = info->cursor = xf86CreateCursorInfoRec())) return FALSE;
 
-    cursor->MaxWidth	      = 64;
-    cursor->MaxHeight	      = 64;
-    cursor->Flags	      = (HARDWARE_CURSOR_TRUECOLOR_AT_8BPP
+    cursor->MaxWidth          = 64;
+    cursor->MaxHeight         = 64;
+    cursor->Flags             = (HARDWARE_CURSOR_TRUECOLOR_AT_8BPP
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 				 | HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
@@ -231,14 +233,14 @@ Bool RADEONCursorInit(ScreenPtr pScreen)
     cursor->SetCursorColors   = RADEONSetCursorColors;
     cursor->SetCursorPosition = RADEONSetCursorPosition;
     cursor->LoadCursorImage   = RADEONLoadCursorImage;
-    cursor->HideCursor	      = RADEONHideCursor;
-    cursor->ShowCursor	      = RADEONShowCursor;
-    cursor->UseHWCursor	      = RADEONUseHWCursor;
+    cursor->HideCursor        = RADEONHideCursor;
+    cursor->ShowCursor        = RADEONShowCursor;
+    cursor->UseHWCursor       = RADEONUseHWCursor;
 
-    size		      = (cursor->MaxWidth/4) * cursor->MaxHeight;
-    width		      = pScrn->displayWidth;
-    height		      = (size*2 + 1023) / pScrn->displayWidth;
-    fbarea		      = xf86AllocateOffscreenArea(pScreen,
+    size                      = (cursor->MaxWidth/4) * cursor->MaxHeight;
+    width                     = pScrn->displayWidth;
+    height                    = (size*2 + 1023) / pScrn->displayWidth;
+    fbarea                    = xf86AllocateOffscreenArea(pScreen,
 							  width,
 							  height,
 							  16,

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.1 2000/11/02 16:55:39 tsi Exp $ */
 /*
  * Copyright 2000 Stuart R. Anderson and Metro Link, Inc.
  *
@@ -69,14 +69,14 @@
 #define OUTREG(addr, val)   { xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"OUTREG(%s,%x)\n",#addr,val) ;MMIO_OUT32(R128MMIO, addr, val);}
 */
 
-#define OFF_DELAY	250  /* milliseconds */
-#define FREE_DELAY	15000
+#define OFF_DELAY       250  /* milliseconds */
+#define FREE_DELAY      15000
 
-#define OFF_TIMER	0x01
-#define FREE_TIMER	0x02
+#define OFF_TIMER       0x01
+#define FREE_TIMER      0x02
 #define CLIENT_VIDEO_ON 0x04
 
-#define TIMER_MASK	(OFF_TIMER | FREE_TIMER)
+#define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
 
 #ifndef XvExtension
 void R128InitVideo(ScreenPtr pScreen) {}
@@ -96,28 +96,28 @@ static int R128QueryImageAttributes(ScrnInfoPtr,
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-#define IMAGE_MAX_WIDTH		2048
-#define IMAGE_MAX_HEIGHT	2048
-#define Y_BUF_SIZE		(IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
+#define IMAGE_MAX_WIDTH         2048
+#define IMAGE_MAX_HEIGHT        2048
+#define Y_BUF_SIZE              (IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
 
 static Atom xvColorKey;
 
 typedef struct {
-	int		videoStatus;
-	unsigned char	brightness;
-	unsigned char	contrast;
+	int             videoStatus;
+	unsigned char   brightness;
+	unsigned char   contrast;
 
-	RegionRec	clip;
-	CARD32		colorKey;
-	CARD8		overlay_pixel_size;
-	CARD8		current_buffer;
-	int		overlay_pad;
-	CARD32		overlay_id;
-	CARD32		overlay_width;
+	RegionRec       clip;
+	CARD32          colorKey;
+	CARD8           overlay_pixel_size;
+	CARD8           current_buffer;
+	int             overlay_pad;
+	CARD32          overlay_id;
+	CARD32          overlay_width;
 
-	CARD32		scale_cntl;
-	CARD32		video_format;
-	FBLinearPtr	linear;
+	CARD32          scale_cntl;
+	CARD32          video_format;
+	FBLinearPtr     linear;
 	} R128PortPrivRec, *R128PortPrivPtr;
 
 void R128InitVideo(ScreenPtr pScreen)
@@ -200,7 +200,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
 static void
 R128ResetVideo(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     R128PortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
 
@@ -306,7 +306,7 @@ R128SetupImageVideo(ScreenPtr pScreen)
     pPriv->scale_cntl|= R128_SCALER_SMART_SWITCH|R128_SCALER_PIX_EXPAND;
     pPriv->scale_cntl|= R128_SCALER_SMART_SWITCH;
 
-    xvColorKey	 = MAKE_ATOM("XV_COLORKEY");
+    xvColorKey   = MAKE_ATOM("XV_COLORKEY");
 
     R128ResetVideo(pScrn);
 
@@ -345,7 +345,7 @@ RegionsEqual(RegionPtr A, RegionPtr B)
 static void
 R128StopVideo(ScrnInfoPtr pScrn, pointer data, Bool Exit)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     R128PortPrivPtr pPriv = (R128PortPrivPtr) data;
 
@@ -376,7 +376,7 @@ R128SetPortAttribute(
   pointer data
 )
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     R128PortPrivPtr pPriv = (R128PortPrivPtr) data;
 
@@ -438,7 +438,7 @@ R128DisplayVideo(
     int fboffset
 )
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     R128PortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
     int step_by, vert_inc, horz_inc;
@@ -605,7 +605,7 @@ R128PutImage(
   RegionPtr clipBoxes, pointer data
 )
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     R128PortPrivPtr pPriv = (R128PortPrivPtr)data;
     INT32 xa, xb, ya, yb;
@@ -666,7 +666,7 @@ R128PutImage(
 
     switch(id) {
     case FOURCC_YV12:
-	 size =	 width * height * 2; /* 16bpp */
+	 size =  width * height * 2; /* 16bpp */
 	 break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
