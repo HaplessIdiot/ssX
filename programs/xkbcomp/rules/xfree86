@@ -4,62 +4,63 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.40 2001/12/26 22:28:28 dawes Exp $
+//  2002 Modifier: Ivan Pascal      The XFree86 Project
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.41 2001/12/28 16:03:30 dawes Exp $
 //
 
-! model 	=	keycodes	geometry
-  microsoft	=	xfree86		microsoft(natural)
-  dell101	=	xfree86		dell(dell101)
-  flexpro	=	xfree86		keytronic(FlexPro)
-  omnikey101	=	xfree86		northgate(omnikey101)
-  pc101		=	xfree86		pc(pc101)
-  pc102		=	xfree86		pc(pc102)
-  pc104		=	xfree86		pc(pc104)
-  pc105		=	xfree86		pc(pc105)
-  jp106		=	xfree86		pc(jp106)
-  everex	=	xfree86		everex(STEPnote)
-  winbook	=	xfree86		winbook(XP5)
-  pc98		=	xfree98(pc98)	nec(pc98)
-  abnt2		=	xfree86(abnt2)	pc
-  hp		=       xfree86         pc(pc104)
-  itouch	=       xfree86         pc(pc104)
-  logiinetnav	=       xfree86         pc(pc104)
-  logicordless  =	xfree86		pc(pc104)
-  logiinternet  =	xfree86		pc(pc104)
-  compaq	=       xfree86         pc(pc104)
-  microsoftpro	=	xfree86		microsoft(natural)
-  geniuscomfy	=       xfree86         pc(pc104)
-  btc9000	=       xfree86         pc(pc104)
-  rapidaccess	=       xfree86         pc(pc104)
-  rapidaccess2	=       xfree86         pc(pc104)
-  chicony	=       xfree86         pc(pc104)
-  dell		=	xfree86		pc(pc104)
-  macintosh	=	xfree86		macintosh(macintosh)
-  macintosh_old	=	macintosh	macintosh(macintosh)
-  powerpcps2	=	powerpcps2	pc(pc104)
+! model 	=	keycodes
+  macintosh_old	=	macintosh
+  powerpcps2	=	powerpcps2
+  pc98		=	xfree98(pc98)
+  abnt2		=	xfree86(abnt2)
+  *		=	xfree86
 
-//! model		layout	=	symbols
-//  microsoft	us	=	us(pc104)
-//  microsoft	en_US	=	en_US(pc104)
-//  microsoft	*	=	en_US(pc104)+%l%(v)
-//  pc104		us	=	us(pc104)
-//  pc104		en_US	=	en_US(pc104)
-//  pc104		*	=	en_US(pc104)+%l%(v)
-//  *		us	=	us(pc101)
-//  *		en_US	=	en_US(pc102)
-//  *		*	=	en_US(pc102)+%l%(v)
-//  *		jp	=	jp
+! layout[1]	=	keycodes
+  be		= 	+aliases(azerty)
+  fr		= 	+aliases(azerty)
+  al		= 	+aliases(qwertz)
+  cz		= 	+aliases(qwertz)
+  de		= 	+aliases(qwertz)
+  hr		= 	+aliases(qwertz)
+  pl2		= 	+aliases(qwertz)
+  si		= 	+aliases(qwertz)
+  sk		= 	+aliases(qwertz)
+  si		= 	+aliases(qwertz)
+  *		=	+aliases(qwerty)
 
-! model		variant		=	symbols
-  pc102		nodeadkeys	=	en_US(pc102%_v)+%l%(v)
-  pc104		nodeadkeys	=	en_US(pc104%_v)+%l%(v)
-  pc105		nodeadkeys	=	en_US(pc105%_v)+%l%(v)
-  microsoft	nodeadkeys	=	en_US(pc104%_v)+%l%(v)
-  macintosh	nodeadkeys	=	macintosh/us(extended)+macintosh/%l%(v)
-  powerpcps2	nodeadkeys	=	en_US(pc104%_v)+%l%(v)
-  *		nodeadkeys	=	en_US(pc101%_v)+%l%(v)
+! model 	=	geometry
+  microsoft	=	microsoft(natural)
+  microsoftpro	=	microsoft(natural)
+  dell101	=	dell(dell101)
+  flexpro	=	keytronic(FlexPro)
+  omnikey101	=	northgate(omnikey101)
+  pc101		=	pc(pc101)
+  pc102		=	pc(pc102)
+  pc104		=	pc(pc104)
+  pc105		=	pc(pc105)
+  jp106		=	pc(jp106)
+  everex	=	everex(STEPnote)
+  winbook	=	winbook(XP5)
+  pc98		=	nec(pc98)
+  abnt2		=	pc
+  macintosh	=	macintosh(macintosh)
+  macintosh_old	=	macintosh(macintosh)
+  *		=       pc(pc104)
+
+! model		variant		layout	=	symbols
+  pc102		nodeadkeys	*	=	en_US(pc102%_v)+%l%(v)
+  pc104		nodeadkeys	*	=	en_US(pc104%_v)+%l%(v)
+  pc105		nodeadkeys	*	=	en_US(pc105%_v)+%l%(v)
+  microsoft	nodeadkeys	*	=	en_US(pc104%_v)+%l%(v)
+  macintosh	nodeadkeys	*	=	macintosh/us(extended)+macintosh/%l%(v)
+  powerpcps2	nodeadkeys	*	=	en_US(pc104%_v)+%l%(v)
+  *		nodeadkeys	*	=	en_US(pc101%_v)+%l%(v)
 
 ! model		layout	=	symbols
+  pc101		us	=	us(pc101)
+  pc101		en_US	=	en_US(pc101)
+  pc101		intl	=	us(pc101compose)
+  pc101		*	=	en_US(pc101)+%l%(v)
   pc102		us	=	us(pc102)
   pc102		en_US	=	en_US(pc102)
   pc102		intl	=	us(pc102compose)
@@ -72,10 +73,6 @@
   pc105		en_US	=	en_US(pc105)
   pc105		intl	=	us(pc105compose)
   pc105		*	=	en_US(pc105)+%l%(v)
-  microsoft	us	=	us(pc104)
-  microsoft	en_US	=	en_US(pc104)
-  microsoft	intl	=	us(pc104compose)
-  microsoft	*	=	en_US(pc104)+%l%(v)
   pc104		us	=	us(pc104)
   pc104		en_US	=	en_US(pc104)
   pc104		*	=	en_US(pc104)+%l%(v)
@@ -85,63 +82,58 @@
   pc101		us_intl	=	us(pc101)+us_intl
   pc98		nec/jp	=	nec/jp(pc98)
   abnt2		br	=	us(pc101)+br
-  hp		us	=	us(pc104)+inet(hp)
-  hp		en_US	=	en_US(pc104)+inet(hp)
-  hp		*	=	en_US(pc104)+inet(hp)+%l%(v)
-  compaq	us	=	us(pc104)+inet(compaq)
-  compaq	en_US	=	en_US(pc104)+inet(compaq)
-  compaq	*	=	en_US(pc104)+inet(compaq)+%l%(v)
-  itouch	us	=	us(pc104)+inet(itouch)
-  itouch	en_US	=	en_US(pc104)+inet(itouch)
-  itouch	*	=	en_US(pc104)+inet(itouch)+%l%(v)
-  logiinetnav	us	=	us(pc104)+inet(logiinetnav)
-  logiinetnav	en_US	=	en_US(pc104)+inet(logiinetnav)
-  logiinetnav	*	=	en_US(pc104)+inet(logiinetnav)+%l%(v)
-  logicordless	us	=	us(pc104)+inet(logicordless)
-  logicordless	en_US	=	en_US(pc104)+inet(logicordless)
-  logicordless	*	=	en_US(pc104)+inet(logicordless)+%l%(v)
-  logiinternet	us	=	us(pc104)+inet(logiinternet)
-  logiinternet	en_US	=	en_US(pc104)+inet(logiinternet)
-  logiinternet	*	=	en_US(pc104)+inet(logiinternet)+%l%(v)
-  microsoftpro	us	=	us(pc104)+inet(microsoftpro)
-  microsoftpro	en_US	=	en_US(pc104)+inet(microsoftpro)
-  microsoftpro	*	=	en_US(pc104)+inet(microsoftpro)+%l%(v)
-  geniuscomfy	us	=	us(pc104)+inet(geniuscomfy)
-  geniuscomfy	en_US	=	en_US(pc104)+inet(geniuscomfy)
-  geniuscomfy	*	=	en_US(pc104)+inet(geniuscomfy)+%l%(v)
-  btc9000	us	=	us(pc104)+inet(btc9000)
-  btc9000	en_US	=	en_US(pc104)+inet(btc9000)
-  btc9000	*	=	en_US(pc104)+inet(btc9000)+%l%(v)
-  rapidaccess	us	=	us(pc104)+inet(rapidaccess)
-  rapidaccess	en_US	=	en_US(pc104)+inet(rapidaccess)
-  rapidaccess	*	=	en_US(pc104)+inet(rapidaccess)+%l%(v)
-  rapidaccess2	us	=	us(pc104)+inet(rapidaccess2)
-  rapidaccess2	en_US	=	en_US(pc104)+inet(rapidaccess2)
-  rapidaccess2	*	=	en_US(pc104)+inet(rapidaccess2)+%l%(v)
-  chicony	us	=	us(pc104)+inet(chicony)
-  chicony	en_US	=	en_US(pc104)+inet(chicony)
-  chicony	*	=	en_US(pc104)+inet(chicony)+%l%(v)
-  dell		us	=	us(pc104)+inet(dell)
-  dell		en_US	=	en_US(pc104)+inet(dell)
-  dell		*	=	en_US(pc104)+inet(dell)+%l%(v)
   macintosh	us	=	macintosh/us(extended)
   macintosh	en_US	=	macintosh/us(extended)
   macintosh	*	=	macintosh/us(extended)+macintosh/%l%(v)
   macintosh_old	us	=	macintosh/us(extended)
   macintosh_old	en_US	=	macintosh/us(extended)
   macintosh_old	*	=	macintosh/us(extended)+macintosh/%l%(v)
-  powerpcps2	us	=	us(pc104)
-  powerpcps2	en_US	=	en_US(pc104)
-  powerpcps2	*	=	en_US(pc104)+%l%(v)
-  *		us	=	us(pc101)
-  *		en_US	=	en_US(pc101)
-  *		intl	=	us(pc101compose)
-  *		*	=	en_US(pc101)+%l%(v)
   *		jp	=	jp
+  *		us	=	us(pc104)
+  *		en_US	=	en_US(pc104)
+  *		intl	=	us(pc104compose)
+  *		*	=	en_US(pc104)+%l%(v)
 
-! model		layout	=	compat		types
-  pc98		nec/jp	=	pc98(basic)	complete
-  *		*	=	complete	complete
+! model	    layout[1]	=	symbols
+  pc101		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
+  pc102		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
+  pc103		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
+  pc104		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
+  pc105		*	=	pc/pc(%m)+pc/%l[1]%(v[1])
+  *		*	=	pc/pc(104)+pc/%l[1]%(v[1])
+
+! layout[2]	=	symbols
+  *		=	+pc/%l[2]%(v[2]):2
+
+! layout[3]	=	symbols
+  *		=	+pc/%l[3]%(v[3]):3
+
+! layout[4]	=	symbols
+  *		=	+pc/%l[4]%(v[4]):4
+ 
+! model		=	symbols
+  hp		=	+inet(%m)
+  compaq	=	+inet(%m)
+  itouch	=	+inet(%m)
+  logicordless	=	+inet(%m)
+  logiinternet	=	+inet(%m)
+  microsoftpro	=	+inet(%m)
+  geniuscomfy	=	+inet(%m)
+  btc9000	=	+inet(%m)
+  rapidaccess	=	+inet(%m)
+  rapidaccess2	=	+inet(%m)
+  chicony	=	+inet(%m)
+  dell		=	+inet(%m)
+
+! model		layout	=	compat
+  pc98		nec/jp	=	pc98(basic)
+  *		*	=	complete
+
+! model	     layout[1]	=	compat
+  *		*	=	complete
+
+! model		=	types
+  *		=	complete
 
 ! option		=	symbols
   grp:switch		=	+group(switch)
