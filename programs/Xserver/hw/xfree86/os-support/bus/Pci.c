@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.27 2000/06/06 18:07:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.29 2000/06/09 07:53:24 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -208,6 +208,7 @@ pciBusFuncs_t pciNOOPFuncs = {
 		
 pciBusInfo_t  *pciBusInfo[MAX_PCI_BUSES] = { NULL, };
 int            pciNumBuses = 0;     /* Actual number of PCI buses */
+static Bool    inProbe = FALSE;
 
 static pciConfigPtr pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
 #ifdef INCLUDE_LOCKPCI
@@ -288,7 +289,7 @@ ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
   if (!pciInitialized)
     pciInit();
 
-  if (bus < pciNumBuses && pciBusInfo[bus] &&
+  if ((bus < pciNumBuses || inProbe) &&  pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciReadLong) {
     CARD32 rv = (*pciBusInfo[bus]->funcs.pciReadLong)(tag, offset);
 
@@ -710,11 +711,10 @@ ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusN
  if (!pciBusInfo[pciBusNum]) {
      pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
      *pciBusInfo[pciBusNum] = *pciBusInfo[0];
+     ErrorF("setting speculative\n");
+     
      speculativeProbe = TRUE;
- } else {
-     speculativeProbe = FALSE;
  }
- 
     
     /*
      * At this point, pciBusNum, pciDevNum, and pciFuncNum have been
@@ -725,7 +725,9 @@ ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusN
 ErrorF("pciGenFindNext: [%d, %d, %d]\n", pciBusNum, pciDevNum, pciFuncNum);
 #endif
     pciDeviceTag = PCI_MAKE_TAG(pciBusNum, pciDevNum, pciFuncNum);
+    inProbe = TRUE;
     devid = pciReadLong(pciDeviceTag, 0);
+    inProbe = FALSE;
 #ifdef DEBUGPCI
 ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, devid);
 #endif
@@ -734,6 +736,8 @@ ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, de
 
     if (speculativeProbe && (pciNumBuses <= pciBusNum))
 	pciNumBuses = pciBusNum + 1;
+    ErrorF("pciNumBuses: %i pciBusNum: %i speculative: %s \n",
+	   pciNumBuses,pciBusNum,speculativeProbe?"yes":"no");
     
     speculativeProbe = FALSE;
     
