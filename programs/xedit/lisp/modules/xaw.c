@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Xaw/AsciiSink.h>
@@ -85,7 +85,7 @@ static int xawWidgetClass_t;
 int
 xawLoadModule(LispMac *mac)
 {
-    char *fname = "internal:xaw-load-module";
+    char *fname = "INTERNAL:XAW-LOAD-MODULE";
 
     xawWidgetClass_t = LispRegisterOpaqueType(mac, "WidgetClass");
 

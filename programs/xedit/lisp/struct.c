@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include "struct.h"
 
@@ -35,7 +35,7 @@
  * Initialization
  */
 LispBuiltin LispMakeStructDef = {
-    "make-STRUCT",
+    "MAKE-STRUCT",
     Lisp_MakeStruct,
     1,
     0,

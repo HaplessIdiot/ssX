@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.2 2001/09/11 06:42:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.3 2001/09/16 22:21:28 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -176,7 +176,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 	    int argc, nargs[7], defs[7], padidx, isradix, isprinc, ise;
 	    int atsign = 0, collon = 0;
 	    int w = 0, d = 1, e = 1, k = 0, n = 1, overidx, overflowchar = 0,
-		expidx, exponentchar = 'e', colnum = 1, hash = -1;
+		expidx, exponentchar = 'E', colnum = 1, hash = -1;
 
 	    if (len) {
 		stk[len] = '\0';
@@ -413,9 +413,6 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    /* no arguments used */
 		    continue;
 		case '*':	/* ignore/jump to argument */
-
-		    /* XXX needs review when ~{ be implemented */
-
 		    len = 1;
 		    if (argc && !defs[0])
 			len = nargs[0];
@@ -968,7 +965,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    /* no arguments used */
 		    continue;
 		case '>': {	/* Justification end */
-		    int bytes, count, pos, mid, left;
+		    double left, inc;
+		    int bytes, count, pos;
 		    LispObj *charsafter, *linewidth, *pad, *otmp;
 
     		    if (argc)
@@ -991,7 +989,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else
 			collon = 0;
 
-		    /* restore paramters */
+		    /* restore parameters */
 		    obj = CAR(CAR(alist));
 		    mincol = (int)CAR(obj)->data.real;
 		    colinc = (int)CAR(CDR(obj))->data.real;
@@ -1079,14 +1077,19 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    else if (mincol < bytes)
 			mincol = bytes;
 
-		    if (argc) {
-			mid = mincol / argc;
-			left = argc > 1 ? mincol % argc : 0;
-		    }
-		    else {
-			mid = mincol;
+		    left = mincol - bytes;
+		    if (left < 0)
 			left = 0;
+		    if (argc > 1) {
+			if (collon ^ atsign)
+			    inc = left / (double)argc;
+			else if (collon)
+			    inc = left / (double)(argc + 1);
+			else
+			    inc = left / (double)(argc - 1);
 		    }
+		    else
+			inc = left;
 
 		    ilist = CDR(ilist);
 		    alist = CDR(alist);
@@ -1112,57 +1115,42 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    }
 			}
 
-			if (argc == 1 && collon) {
-			    /* only one parameter, right justified */
-			    if (atsign) {
-				/* distribute spaces */
-				left = mid - bytes;
-				count += (left >> 1) + (left & 1);
-				left = 0;
+			if (tmp + 1 == argc) {
+			    if (!atsign || collon) {
+				if (atsign) {
+				    count += (int)(left / 2.0);
+				    left -= (int)(left / 2.0);
+				}
+				else {
+				    count += (int)left;
+				    left -= (int)left;
+				}
 			    }
-			    else {
-				/* justify right */
-				count = mid;
+			    else if (!atsign) {
+				count += (int)left;
+				left -= (int)left;
 			    }
 			}
-			else if (tmp == 0 && argc > 1 && collon)
-			    /* first parameter, right justified */
-			    count = mid;
-			else if (tmp + 1 == argc && !atsign) {
-			    /* last parameter, by default right justified */
-			    count = mid;
-			    left = 0;
+			else if (tmp != 0 || collon) {
+			    double dleft = left;
+
+			    left -= inc;
+			    count += dleft - left;
+			    if ((int)(left + 0.5) != (int)left)
+				++count;
 			}
-			else if (left && ((tmp & 1) ||
-				 (tmp + 1 == argc && (tmp || !atsign))))
-			    /* distribute left, increase count so that the
-			     * while loop should be executed at least once */
-			    ++count;
-			else if (collon && tmp &&
-				 tmp + 1 == argc && count < mid) {
-			    /* last parameter, right justified */
-			    if (atsign)
-				/* distribute spaces */
-				count += (mid - count) >> 1;
-			    else
-				count = mid;
-			}
+
 			while (len < count) {
 			    mac->column += LispPrintf(mac, stream,
 						      "%c", padchar);
 			    ++len;
 			}
 			mac->column += LispPrintf(mac, stream, "%s", ptr);
-			while (len < mid) {
-			    mac->column += LispPrintf(mac, stream,
-						      "%c", padchar);
-			    ++len;
-			}
 		    }
 
-		    while (left > 0) {
+		    while (left > 0.0) {
 			mac->column += LispPrintf(mac, stream, "%c", padchar);
-			--left;
+			left -= 1.0;
 		    }
 
 		    len = 0;
@@ -1206,8 +1194,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    }
 			    else
 				++fmt;
-			    if (iteration == 0 ||
-				(hash != -1 && arg->type != LispCons_t))
+			    if ((hash != -1 && arg->type != LispCons_t))
 				iteration = 1;	/* force finalization */
 			    continue;
 			}
@@ -1216,8 +1203,6 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    if (tmp == 0 || (tmp == -1 && arg->type != LispCons_t)) {
 			if (CAR(CAR(ilist)) != NIL) {
 			    if (CAR(CAR(ilist))->data.atom[0] == '{') {
-				if (iteration == 0)
-				    iteration = 1;	/* force finalization */
 				if (collon) {
 				    /* passed the test above */
 				    ++fmt;
@@ -1229,9 +1214,14 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    else if (CAR(CAR(ilist))->data.atom[0] == '(')
 				fmt = "~)";	/* make the loop find
 						 * the end... */
-			    else if (CAR(CAR(ilist))->data.atom[0] == '<')
-				fmt = "~>";	/* make the loop find
-						 * the end... */
+			    else if (CAR(CAR(ilist))->data.atom[0] == '<') {
+				/* need to remove the last stream, to
+				 * format correctly */
+				if (CDR(CAR(alist)) != NIL)
+				    /* don't need to update stream */
+				    CDR(CAR(alist)) = CDR(CDR(CAR(alist)));
+				fmt = "~>";
+			    }
 			}
 			else
 			    goto format_done;
@@ -1304,7 +1294,7 @@ print_number_args:
 			num /= radix;
 			if (len)
 			    memmove(stk + 1, stk, len);
-			*stk = val < 10 ? val + '0' : (val - 10) + 'a';
+			*stk = val < 10 ? val + '0' : (val - 10) + 'A';
 			++len;
 		    } while (num);
 		    if (sign) {
@@ -1972,8 +1962,7 @@ format_done:
     else
 	fflush(lisp_stdout);
 
-    if (nindirection)
-	LispFree(mac, indirection);
+    LispFree(mac, indirection);
 
     if (CAR(CAR(ilist)) != NIL) {
 	char c;

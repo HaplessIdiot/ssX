@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.2 2001/09/09 23:03:47 paulo Exp $ */
 
 #include "require.h"
 
@@ -54,19 +54,19 @@ Lisp_Load(LispMac *mac, LispObj *list, char *fname)
 	if (CAR(list)->type != LispAtom_t)
 	    LispDestroy(mac, BadArgumentAt, LispStrObj(mac, CAR(list)), fname);
 	else {
-	    if (strcmp(CAR(list)->data.atom, ":verbose") == 0) {
+	    if (strcmp(CAR(list)->data.atom, ":VERBOSE") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :verbose, at %s", fname);
+		    LispDestroy(mac, "expecting :VERBOSE, at %s", fname);
 		verbose = CAR(list) != NIL;
 	    }
-	    else if (strcmp(CAR(list)->data.atom, ":print") == 0) {
+	    else if (strcmp(CAR(list)->data.atom, ":PRINT") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :print, at %s", fname);
+		    LispDestroy(mac, "expecting :PRINT, at %s", fname);
 		print = CAR(list) != NIL;
 	    }
-	    else if (strcmp(CAR(list)->data.atom, ":if-does-not-exist") == 0) {
+	    else if (strcmp(CAR(list)->data.atom, ":IF-DOES-NOT-EXIST") == 0) {
 		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :if-does-not-exist, at %s",
+		    LispDestroy(mac, "expecting :IF-DOES-NOT-EXIST, at %s",
 				fname);
 		ifdoesnotexist = CAR(list) != NIL;
 	    }
@@ -153,7 +153,7 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
 	if (module->data->load)
 	    (module->data->load)(mac);
 
-	return (Lisp_Provide(mac, CONS(feat, NIL), "provide"));
+	return (Lisp_Provide(mac, CONS(feat, NIL), "PROVIDE"));
     }
 #endif
 

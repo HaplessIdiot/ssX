@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.3 2001/09/01 18:28:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.4 2001/09/09 23:03:47 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -196,8 +196,8 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 {
     unsigned num_args;
     LispObj *name = NIL, *args, *code, *obj = NIL, *fun;
-    static char *types[3] = {"lambda", "function", "macro"};
-    static char *fnames[3] = {"lambda", "defun", "defmacro"};
+    static char *types[3] = {"LAMBDA", "FUNCTION", "MACRO"};
+    static char *fnames[3] = {"LAMBDA", "DEFUN", "DEFMACRO"};
 
     /* name */
     if (type != LispLambda) {
