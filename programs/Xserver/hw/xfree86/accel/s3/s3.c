@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.28 1994/09/14 10:40:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.29 1994/09/17 04:06:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -864,6 +864,7 @@ s3Probe()
 	    /* XXXX Is this right (??) */
 	    if (s3Bpp > 2)
 	       reason = "an ATT20C490 RAMDAC";
+	    break;
 	 case BT485_DAC:
 	 case ATT20C505_DAC:
 	    if (s3Bpp > 1)

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.15 1994/09/13 15:09:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.16 1994/09/17 04:06:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -59,6 +59,7 @@ extern char *defaultFontPath;
 extern char *rgbPath;
 
 extern Bool xf86fpFlag, xf86coFlag;
+extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
 int s3Madjust=0, s3Nadjust=0;
@@ -886,6 +887,7 @@ xf86Config (vtopen)
   /*
    * Probe all configured screens for letting them resolve their modes
    */
+  xf86ScreensOpen = TRUE;
   for ( i=0; i < xf86MaxScreens; i++ )
     if (xf86Screens[i] && xf86Screens[i]->configured &&
 	(xf86Screens[i]->configured = (xf86Screens[i]->Probe)()))
@@ -908,19 +910,6 @@ xf86Config (vtopen)
 	  xf86Screens[i] = temp;
 	}
 
-#if 0
-  /*
-   * free up mode info...
-   */
-  if (pModes)
-    for (pLast = pModes, pNew = pModes->next; pLast;)
-    {
-      Xfree(pLast->name);
-      Xfree(pLast);
-      pLast = pNew;
-      if (pNew) pNew = pNew->next;
-    }
-#endif
  }
 }
     
@@ -1939,9 +1928,9 @@ MonPtr monp;
       break;
     }
   }
-  if ( !had_dotclock ) FatalError("the dotclock is missing");
-  if ( !had_htimings ) FatalError("the horizontal timings are missing");
-  if ( !had_vtimings ) FatalError("the vertical timings are missing");
+  if ( !had_dotclock ) configError("the dotclock is missing");
+  if ( !had_htimings ) configError("the horizontal timings are missing");
+  if ( !had_vtimings ) configError("the vertical timings are missing");
 }
 
 static Bool dummy;

@@ -213,13 +213,12 @@ p9000Probe()
     int            numValidModes = 0;
     int            maxX, maxY;
     int            curvendor;
+    Bool           modeIsValid;
     OFlagSet       validOptions;
     xrgb           p9000weights[] = { { 5, 6, 5 }, { 5, 5, 5 }, /* 16bpp */
 				      { 8, 8, 8 } };            /* 32bpp */
     int            i;
     unsigned long  tmpsysconfig;  /* dummy value */
-
-    p9000InfoRec.maxClock = p9000MaxClock;
 
     if (!xf86LinearVidMem())
       {
@@ -292,6 +291,8 @@ p9000Probe()
     /* Validate the vendor specific things like MemBase */
     if (!p9000VendorPtr->Validate())
       return(FALSE);
+    /* The validate function may set p9000MaxClock.  Reflect this change. */
+    p9000InfoRec.maxClock = p9000MaxClock; 
 
     if (xf86bpp < 0) {
         xf86bpp = p9000InfoRec.depth;
@@ -303,7 +304,9 @@ p9000Probe()
       {
       case 8:
 	break;
+      case 15:
       case 16:
+	xf86bpp = 15;
 	p9000InfoRec.depth = 16;  /* if 555, set to 15 below */
 	p9000InfoRec.bitsPerPixel = 16;
 	p9000InfoRec.defaultVisual = TrueColor;
@@ -311,6 +314,7 @@ p9000Probe()
 	break;
       case 24:
       case 32:
+	xf86bpp = 32;
 	p9000InfoRec.depth = 24;
 	p9000InfoRec.bitsPerPixel = 32;     /* Use sparse 24 bpp (RGBX) */
 	p9000InfoRec.defaultVisual = TrueColor;
@@ -373,13 +377,12 @@ p9000Probe()
     do
       {
 	DisplayModePtr pModeSv;
+	modeIsValid = TRUE;
 	/* xf86LookupMode returns FALSE if it ran into an invalid
 	 * parameter */
 	if(xf86LookupMode(pMode, &p9000InfoRec) == FALSE)
 	  {
-	    pModeSv=pMode->next;
-	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv; 
+	    modeIsValid = FALSE;
 	  }
 	/* Now for a bunch of tests to see if the mode is possible and/or
 	 * safe.  It it fails, the mode is removed.
@@ -387,20 +390,16 @@ p9000Probe()
         else if (pMode->HDisplay * pMode->VDisplay * (p9000InfoRec.bitsPerPixel / 8)
 		 > memavail)
 	  {
-	    pModeSv=pMode->next;
-	    ErrorF("%s %s: Too little memory for mode %s.  Deleted...\n", XCONFIG_PROBED,
+	    ErrorF("%s %s: Too little memory for mode %s.\n", XCONFIG_PROBED,
 		   p9000InfoRec.name, pMode->name);
-	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv;
+	    modeIsValid = FALSE;
 	  }
 	else if ((pEnd) && (pEnd->VDisplay != pMode->VDisplay)
 		 && (pEnd->HDisplay != pMode->HDisplay))
 	  {
-	    pModeSv=pMode->next;
-	    ErrorF("%s %s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s).  Deleted...\n", XCONFIG_PROBED,
+	    ErrorF("%s %s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s).\n", XCONFIG_PROBED,
 		   p9000InfoRec.name, pMode->name, pEnd->name);
-	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv;
+	    modeIsValid = FALSE;
 	  }
 	/* We should do a better test than this...  *TO*DO* */
 	/* These size limits are in effect until 1600x1200 is tested *TO*DO* */
@@ -408,32 +407,26 @@ p9000Probe()
 		 || (pMode->HDisplay > 1152) && (p9000InfoRec.bitsPerPixel==16)
 		 || (pMode->HDisplay > 832) && (p9000InfoRec.bitsPerPixel==32))
 	  {
-	    pModeSv=pMode->next;
-	    ErrorF("%s %s: The width of mode %s is too large for %dbpp.  Deleted...\n",
+	    ErrorF("%s %s: The width of mode %s is too large for %dbpp.\n",
 		   XCONFIG_PROBED, p9000InfoRec.name, 
 		   pMode->name,p9000InfoRec.bitsPerPixel);
-	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv;
+	    modeIsValid = FALSE;
 	  }
         else if ((pMode->VDisplay > 1088) && (p9000InfoRec.bitsPerPixel==8)
 		 || (pMode->VDisplay > 910) && (p9000InfoRec.bitsPerPixel==16)
 		 || (pMode->VDisplay > 632) && (p9000InfoRec.bitsPerPixel==32))
 	  {
-	    pModeSv=pMode->next;
-	    ErrorF("%s %s: The height of mode %s is too large for %dbpp.  Deleted...\n",
+	    ErrorF("%s %s: The height of mode %s is too large for %dbpp.\n",
 		   XCONFIG_PROBED, 
 		   p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
-	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv;
+	    modeIsValid = FALSE;
 	  }
 	else if (p9000InfoRec.clock[pMode->Clock] > p9000MaxClock)
 	  {
-	    pModeSv=pMode->next;
-	    ErrorF("%s %s: The clock speed of mode %s is too high (max %ld MHz).  Deleted...\n",
+	    ErrorF("%s %s: The clock speed of mode %s is too high (max %ld MHz).\n",
 		   XCONFIG_PROBED, p9000InfoRec.name, 
 		   pMode->name, p9000MaxClock/1000);	  
-	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv;
+	    modeIsValid = FALSE;
 	  }
 	/* See if the horizontal resolution is valid.  This is constrained
 	 * by possible values for sysconfig */
@@ -441,11 +434,24 @@ p9000Probe()
 					 p9000InfoRec.bitsPerPixel/8,
 					 &tmpsysconfig))
 	  {
-	    pModeSv=pMode->next;
-	    ErrorF("%s %s: The width of mode %s is not valid.  Deleted...\n",
+	    ErrorF("%s %s: The width of mode %s is not valid.\n",
 		   XCONFIG_PROBED, p9000InfoRec.name, pMode->name);
+	    modeIsValid = FALSE;
+	  }
+	
+	if (!modeIsValid)
+	  {    /* The mode is not valid.  Delete it. */
+	    if (pMode->next == pMode)
+	      {  /* Then this is the last mode.  If we don't do this,
+		  * xf86DeleteMode will have a fatal error */
+		ErrorF("%s %s: Removing mode \"%s\" from list of valid modes.\n", XCONFIG_PROBED, 
+		       p9000InfoRec.name, pMode->name);
+		ErrorF("\n\t*** No valid modes found! ***\n"); 
+		return(FALSE);
+	      }
+	    pModeSv=pMode->next;
 	    xf86DeleteMode(&p9000InfoRec, pMode);
-	    pMode = pModeSv;
+	    pMode = pModeSv; 
 	  }
 	else   /* The mode has passed and is valid */
 	  {
@@ -747,21 +753,19 @@ p9000SaveScreen (pScreen, on)
   if (on) 
     {
       SetTimeSinceLastInputEvent();
-      if (p9000InfoRec.bitsPerPixel == 8)
-	{
-	  if (xf86VTSema && !p9000SWCursor)
-	    p9000BtCursorOn();
-	  p9000UnblankScreen(pScreen);
-	}
+#if 0  /* This shouldn't be needed because we turn off the RAMDAC to blank */
+      if (xf86VTSema && !p9000SWCursor)
+	p9000BtCursorOn();
+#endif
+      p9000UnblankScreen(pScreen);
     }
   else
     {
-      if (p9000InfoRec.bitsPerPixel == 8)
-	{
-	  if (xf86VTSema && !p9000SWCursor)
-	    p9000BtCursorOff();
-	  p9000BlankScreen(pScreen);
-	}
+#if 0  /* This shouldn't be needed because we turn off the RAMDAC to blank */
+      if (xf86VTSema && !p9000SWCursor)
+	p9000BtCursorOff();
+#endif
+      p9000BlankScreen(pScreen);
     }
   return(TRUE);
 }

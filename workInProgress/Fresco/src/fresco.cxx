@@ -1,6 +1,6 @@
 /*
- * $XConsortium: fresco.cxx,v 1.6 94/06/03 21:38:54 matt Exp $
- * $XFree86$
+ * $XConsortium: fresco.cxx,v 1.12 94/09/14 20:17:37 matt Exp $
+ * $XFree86: xc/workInProgress/Fresco/src/fresco.cxx,v 3.0 1994/06/28 12:40:02 dawes Exp $
  */
 
 /*
@@ -47,7 +47,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#if defined(sgi)
+#if defined(__sgi)
 #include <malloc.h>
 #endif
 
@@ -81,7 +81,7 @@ static Option standard_options[] = {
     { "-visual", "*visual", Option::value },
     { "-visual_id", "*visual_id", Option::value },
     { "-xrm", nil, Option::path_value },
-#ifdef sgi
+#ifdef __sgi
     { "-malloc", "*malloc_debug", Option::implicit, "on" },
 #endif
     { nil }
@@ -279,31 +279,53 @@ void Fresco::unref(BaseObjectRef r) {
     }
 }
 
-#if defined(sgi)
+/*
+ * We can't use either poll or select under OSF/1 because they're both
+ * broken, though in different ways.  When called with no struct pollfd's
+ * and an nfds argument of zero to do a timeout, poll returns immediately
+ * instead of waiting until the timeout period has expired.  It also sets
+ * errno to EAGAIN sometimes, but not always.  Select seems to work for
+ * timeouts in simple cases, and even in some complex cases, but in some
+ * multithreaded programs Fresco::delay calls select and select never
+ * returns.
+ *
+ * The most reliable way to do a sleep in a multithreaded program under
+ * OSF/1 seems to be using the pthread_delay_np routine, which puts the
+ * current thread to sleep.  The following code assumes that you always
+ * build multithreaded Fresco libraries on the alpha, which matches the
+ * assumption in threads.cxx; if we switch to using the X11R6 threads
+ * macros, the use of pthread_delay_np should be conditionalized on 
+ * the XTHREADS symbol being defined.
+ */
+ 
+#if defined(__alpha)
 
-extern "C" int sginap(long);
+#include <pthread.h>
 
 Boolean Fresco::delay(Float seconds) {
-    long n = long(100.0 * seconds + 0.5);
-    if (n <= 2) {
-	n = 3;
-    }
-    return sginap(n) == 0;
+    struct timespec ts;
+    ts.tv_sec = time_t(seconds);
+    ts.tv_nsec = long(1000000000.0 * (seconds - float(ts.tv_sec)) + 0.5);
+    return pthread_delay_np(&ts) == 0;
+}
+
+#else
+#if defined(USE_POLL)
+
+#include <sys/poll.h>
+
+#if defined(sun) && !defined(SVR4)
+extern "C" int poll(struct pollfds *, unsigned long, int);
+#endif
+
+Boolean Fresco::delay(Float seconds) {
+    return poll(NULL, 0, int(1000.0 * seconds + 0.5)) == 0;
 }
 
 #else
 
 #include <X11/Fresco/OS/types.h>
 #include <sys/time.h>
-
-#if defined(AIXV3) || defined(sony)
-#include <sys/select.h>
-#endif
-
-#if defined(sony) || defined(__DECCXX)
-/* Sony and DEC OSF/1 have select, but no prototype in /usr/include */
-extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-#endif
 
 Boolean Fresco::delay(Float seconds) {
     struct timeval tv;
@@ -312,7 +334,8 @@ Boolean Fresco::delay(Float seconds) {
     return select(0, nil, nil, nil, &tv) == 0;
 }
 
-#endif
+#endif	/* defined(USE_POLL) */
+#endif	/* defined(__osf__) */
 
 /* class FrescoImpl */
 
@@ -338,7 +361,7 @@ FrescoImpl::FrescoImpl(
     create_root_style(name, argc, argv, options);
 
     init_types();
-#if defined(sgi)
+#if defined(__sgi)
     if (style_->is_on(Fresco::tmp_string_ref("malloc_debug"))) {
 	mallopt(M_DEBUG, 1);
     }

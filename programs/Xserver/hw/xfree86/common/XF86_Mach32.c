@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_Mach32.c,v 1.1 94/03/28 21:21:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mach32.c,v 3.1 1994/06/28 12:29:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mach32.c,v 3.2 1994/09/07 15:51:40 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -18,9 +18,11 @@ extern ScrnInfoRec mach32InfoRec;
  */
 #define MAX_MACH32_CLOCK		80000
 #define MAX_MACH32_TLC34075_CLOCK	135000
+#define MAX_MACH32_16BPP_CLOCK		67500
 
 int mach32MaxClock = MAX_MACH32_CLOCK;
 int mach32MaxTlc34075Clock = MAX_MACH32_TLC34075_CLOCK;
+int mach32Max16bppClock = MAX_MACH32_16BPP_CLOCK;
 
 ScrnInfoPtr xf86Screens[] = 
 {

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.1 1994/09/14 10:37:41 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.2 1994/09/17 04:05:45 dawes Exp $
 .\" XF86Conf.man
 .TH XF86Config 4/5 "Version 3.1"  "XFree86"
 .SH NAME
@@ -291,12 +291,12 @@ specifies the horizontal timings for the mode.
 .B VTimings \fIvdisp vsyncstart vsyncend vtotal\fP
 specifies the vertical timings for the mode.
 .TP 4
-.B Flags \fIflag ...\fP
-specifies an optional set of mode flags.  \fBInterlace\fP indicates
-that the mode is interlaced.  \fB+HSync\fP and \fB\-HSync\fP can
-be used to select the polarity of the HSync signal.  \fB+VSync\fP
-and \fB\-VSync\fP can be used to select the polarity of the VSync
-signal.  \fBCSync\fP can be used to specify composite sync on
+.B Flags \fI"flag" ...\fP
+specifies an optional set of mode flags.  \fB"Interlace"\fP indicates
+that the mode is interlaced.  \fB"+HSync"\fP and \fB\"-HSync"\fP can
+be used to select the polarity of the HSync signal.  \fB"+VSync"\fP
+and \fB\"-VSync"\fP can be used to select the polarity of the VSync
+signal.  \fB"CSync"\fP can be used to specify composite sync on
 hardware where this is supported.
 .RE
 .TP 8

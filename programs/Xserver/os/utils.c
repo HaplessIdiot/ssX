@@ -1,5 +1,6 @@
-/* $XConsortium: utils.c,v 1.146 94/04/17 20:27:07 erik Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.1 1994/05/21 23:59:05 dawes Exp $ */
+/* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.2 1994/06/05 06:00:59 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -129,9 +130,14 @@ extern Bool defeatAccessControl;
 
 Bool CoreDump;
 Bool noTestExtensions;
+
+Bool noXkbExtension = 
 #ifdef XKB
-Bool noXkbExtension;
+    FALSE;
+#else
+    TRUE;
 #endif
+
 int auditTrailLevel = 1;
 
 void ddxUseMsg();

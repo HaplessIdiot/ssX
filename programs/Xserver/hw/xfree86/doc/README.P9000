@@ -24,6 +24,14 @@
 2.0 Change Log
 --------------
 
+1994.09.16:
+	* Added screen blanking support for 16 bpp and 32 bpp modes.
+	  Screen blanking now powers down the RAMDAC rather than
+	  just changing the planemask. (Chris Mason, Erik Nygren)
+	* Fixed more problems caused by switch to XF86Config (Erik Nygren)
+	* Possible fix to maxclock for Orchid P9000 (Harry Langenbacher,
+	  Erik Nygren)
+
 1994.09.15:
 	* Now almost always works with XF86Config changes (Erik Nygren)
 	* Cursor code looks at VTSema before writing to RAMDAC.
@@ -169,9 +177,6 @@ Example problems:
                      color requestor for the selection tool.
 		     I think later versions may have fixed this.
 
-There is not yet support for screen blanking in either 16 or 32 bpp modes/
-Please send me a patch to do this if you have a good idea...
-
 6.0 Random Notes
 ----------------
 Text restoration should now be fixed.  Color restoration should
@@ -265,7 +270,7 @@ Section "Screen"
     Device "ViperVLB"
     Monitor "NEC4FGe"
     Subsection "Display"
-	Depth 8
+	Depth 8   # This line is optional
         Modes "1024x768" "800x600"
     EndSubsection
 EndSection
@@ -280,10 +285,6 @@ with xdm, olvwm, and VT switching under Linux.
 If the cursor changes while you're in a VT, the cursor won't look
 right when you return from the VT until it is moved between windows
 (and changes color and shape).
-
-If there are no valid mode entries, the screen will switch to black
-rather than restoring text.  I don't know where this is happening.
-Switching back to your VT will save you.
 
 10.0 Credits
 ------------

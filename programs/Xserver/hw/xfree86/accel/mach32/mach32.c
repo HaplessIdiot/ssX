@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.16 1994/09/11 00:48:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.17 1994/09/11 11:13:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -62,6 +62,7 @@
 extern int defaultColorVisualClass;
 extern int mach32MaxClock;
 extern int mach32MaxTlc34075Clock;
+extern int mach32Max16bppClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
 
@@ -452,12 +453,18 @@ mach32Probe()
 
     /* no pixel multiplexing at 16bpp */
     mach32InfoRec.maxClock = mach32MaxClock;
-    if (mach32InfoRec.bitsPerPixel == 8)
+    switch (mach32InfoRec.bitsPerPixel) {
+    case 8:
 	switch(info->DAC_Type) {
 	case DAC_TLC34075: 
 	    mach32InfoRec.maxClock = mach32MaxTlc34075Clock;
 	    break;
 	}
+	break;
+    case 16:
+	mach32InfoRec.maxClock = mach32Max16bppClock;
+	break;
+    }
 
     OFLG_ZERO(&validOptions);
     OFLG_SET(OPTION_SW_CURSOR, &validOptions);

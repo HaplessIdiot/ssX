@@ -1,5 +1,5 @@
-/* $XConsortium: process.c,v 1.41 94/05/11 17:35:38 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: process.c,v 1.43 94/08/25 15:44:43 mor Exp $ */
+/* $XFree86: xc/lib/ICE/process.c,v 3.0 1994/06/28 12:19:30 dawes Exp $ */
 /******************************************************************************
 
 
@@ -153,6 +153,7 @@ Bool		 *replyReadyRet;
 	 * If we previously sent a WantToClose and now we detected
 	 * that the connection was closed, _IceRead returns status 0.
 	 * Since the connection was closed, we just want to return here.
+	 */
 
 	return (IceProcessMessagesConnectionClosed);
     }
@@ -172,6 +173,8 @@ Bool		 *replyReadyRet;
 
     header = (iceMsg *) iceConn->inbuf;
     iceConn->inbufptr = iceConn->inbuf + SIZEOF (iceMsg);
+
+    iceConn->receive_sequence++;
 
     if (iceConn->waiting_for_byteorder)
     {
@@ -219,7 +222,11 @@ Bool		 *replyReadyRet;
 
 	iceConn->dispatch_level--;
 	if (!iceConn->io_ok)
+	{
+	    iceConn->connection_status = IceConnectIOError;
 	    retStatus = IceProcessMessagesIOError;
+	}
+
 	return (retStatus);
     }
 
@@ -229,8 +236,6 @@ Bool		 *replyReadyRet;
 
 	header->length = lswapl (header->length);
     }
-
-    iceConn->receive_sequence++;
 
     if (replyWait)
     {
@@ -353,7 +358,10 @@ Bool		 *replyReadyRet;
 	retStatus = IceProcessMessagesConnectionClosed;
     }
     else if (!iceConn->io_ok)
+    {
+	iceConn->connection_status = IceConnectIOError;
 	retStatus = IceProcessMessagesIOError;
+    }
 
     return (retStatus);
 }

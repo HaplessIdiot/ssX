@@ -1,4 +1,12 @@
 XFree86 3.0Ea (17 September 1994)
+302. Update bsdi.cf so Gcc2 is default for versions 1.1 and later only
+     (Hans Nasten).
+301. Fix mfb.banked so it will compile with gcc 1.4x (Hans Nasten).
+300. Remove old Xconfig code.
+299. Fix some SEGV after FatalError() problems in xf86Config.c.
+298. Set max clock to 67.5MHz for Mach32 at 16bpp.
+297. Support for P9000 screen blanking at 16bpp and 32bpp (Erik Nygren).
+296. Merge in XC public fix-05.
 295. Trap bpp > 8 in S3 server for Bt485 and Ti RAMDACs since it doesn't work.
 294. Fixes for various xf86Config.c bugs.
 293. Fix S3 clock limits when using clock doubling RAMDACs.

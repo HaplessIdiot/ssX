@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.6 1994/09/13 15:09:37 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.7 1994/09/17 04:06:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -46,6 +46,7 @@ extern int xtest_command_key;
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86ProbeFailed = TRUE;
+Bool xf86ScreensOpen = FALSE;
 Bool xf86Verbose = TRUE;
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
@@ -377,7 +378,7 @@ AbortDDX()
   /* Need the sleep when starting X from within another X session */
   sleep(1);
 #endif
-  if (xf86VTSema)
+  if (xf86VTSema && xf86ScreensOpen)
     for ( i=0;
           i < xf86MaxScreens && xf86Screens[i] && xf86Screens[i]->configured;
           i++ )

@@ -406,8 +406,7 @@ The P9000 server may still have problems with cards other than the
 Diamond Viper VLB.  There may still be problems with VGA mode
 restoration, but these should almost never occur.  Using physical
 resolutions different from the virtual resolution is not supported and
-is not possible with the P9000.  No screen saver is yet implemented
-for 16 and 32 bpp modes.  Use at dot-clocks greater than 110 MHz is
+is not possible with the P9000.  Use at dot-clocks greater than 110 MHz is
 not recommended and not supported.  Diamond claims that 135 MHz is the
 maximum clock speed, but some of their bt485's are not rated that
 high.  If you do not have a 135 MHz bt485 on your Viper, contact
@@ -417,9 +416,7 @@ only CopyArea and MoveWindow are implemented.  Other accelerated
 features are being tested and may be available in the next release.
 There seems to be a problem with olvwm when used with xdm and VT
 switching.  The cursor will be messed up when you return to a VT
-if the cursor changed while you were in the VT.  If there are n
-valid modes, the screen will go blank when the server is started.
-If this happens, just switch back to a VT.
+if the cursor changed while you were in the VT.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to

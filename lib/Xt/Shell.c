@@ -1,5 +1,5 @@
-/* $XConsortium: Shell.c,v 1.166 94/06/01 15:33:25 converse Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Shell.c,v 1.167 94/09/02 16:16:48 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.0 1994/06/28 12:23:51 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1921,28 +1921,28 @@ static _wait_for_response(w, event, request_num)
 	q.w = (Widget) w;
 	q.request_num = request_num;
 	q.done = FALSE;
-	
-	for(;;) {
- 	    /*
- 	     * look for match event and discard all prior configures
- 	     */
-	    if (XCheckIfEvent( XtDisplay(w), event, isMine, (char*)&q)) {
-		if (q.done)
-		    return TRUE;
-		else
-		    continue;	/* flush old events */
-	    }
 
+	/*
+	 * look for match event and discard all prior configures
+	 */
+	while (XCheckIfEvent(XtDisplay(w),event,isMine,(char*)&q)) {
+	    if (q.done) return TRUE;
+	}
+	
+	while (timeout > 0) {
 	    if (_XtWaitForSomething (app, 
 				     FALSE, TRUE, TRUE, TRUE, 
 				     TRUE, 
 #ifdef XTHREADS
 				     FALSE, 
 #endif
-				     &timeout) != -1) continue;
-	    if (timeout == 0)
-		return FALSE;
+				     &timeout) != -1) {
+		while (XCheckIfEvent(XtDisplay(w),event,isMine,(char*)&q)) {
+		    if (q.done) return TRUE;
+		}
+	    }
 	}
+	return FALSE;
 }
 
 /*ARGSUSED*/

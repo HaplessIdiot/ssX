@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.9 1994/08/20 07:34:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.10 1994/09/11 00:50:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -114,6 +114,59 @@ s3Initialize(scr_index, pScreen, argc, argv)
        * one stage it meant it was OK to use high memory, but only use a 64k
        * aperture.
        */
+#if 1
+      /* This is for debugging probe problem at > 8bpp (DHD) */
+      {
+	 long *poker;
+	 unsigned long pVal = 0x12345678;
+	 unsigned char reg53tmp;
+
+	 s3InitEnvironment();
+	 s3ImageWriteNoMem(0, 0, 4, 1, (char *) &pVal, 4, 0, 0,
+			   (short) s3alu[GXcopy], ~0);	 
+
+	 if (S3_801_928_SERIES (s3ChipId)) {
+	    int j;
+
+	    if (s3Mmio928) { /* Due to S3 bugs we must disable mmio */
+	       outb(vgaCRIndex, 0x53);
+	       reg53tmp = inb(vgaCRReg);
+	       outb(vgaCRReg, reg53tmp & ~0x10); /* save parallel bit */
+	    }
+	    /* begin 801 sequence for going in to linear mode */
+	    outb (vgaCRIndex, 0x40);
+	    /* enable fast write buffer and disable 8514/a mode */
+	    j = (s3Port40 & 0xf6) | 0x0a;
+	    outb (vgaCRReg, (unsigned char) j);
+	    outb(vgaCRIndex, 0x59);
+	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRIndex, 0x5a);
+	    outb(vgaCRReg, 0x0a);
+	    s3LinApOpt = 0x14;
+	    outb (vgaCRReg, s3LinApOpt | s3SAM256);
+	    /* end  801 sequence to go into linear mode */
+	 }
+	 
+	 /* bank 0 should be selected */
+
+	 poker = (long *)vgaBase;
+	 s3TryAddress(poker, pVal, 0xa0000, 0);
+
+	 if (S3_801_928_SERIES (s3ChipId)) {
+	    /* begin 801  sequence to go into enhanced mode */
+	    outb (vgaCRIndex, 0x58);
+	    outb (vgaCRReg, s3SAM256);
+	    outb (vgaCRIndex, 0x40);
+	    outb (vgaCRReg, s3Port40);
+	    /* end 801 sequence to go into enhanced mode */
+	 }
+	 if (s3Mmio928) { /* Now re-enable mmio if required */
+	    outb(vgaCRIndex, 0x53);
+	    outb(vgaCRReg, reg53tmp | 0x10);
+	 }
+      }
+#endif
+      
       if (xf86LinearVidMem() &&
 	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)) {
 	 /* Now, see if we can map a high buffer */

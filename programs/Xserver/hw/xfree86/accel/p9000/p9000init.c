@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.2 1994/07/15 06:59:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.3 1994/08/31 04:23:10 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -98,7 +98,7 @@ Bool p9000CalcSysconfigHres(hres, bytesperpixel, sysconfigval)
 	}
   if (remhres)
     {
-      ErrorF("It is not possible to have a horiz resolution of %d at %d bytes per pixel.\n\tTry a horizontal resolution of %d instead.\n",
+      ErrorF("\tIt is not possible to have a horiz resolution\n\tof %d at %d bytes per pixel.  Try a horizontal\n\tresolution of %d instead.\n",
 	     hres, bytesperpixel, hres - remhres/bytesperpixel);
       return(FALSE);
     }
