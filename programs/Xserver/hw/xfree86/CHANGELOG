@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 503. Fix double-free at server regeneration in the screensave/DPMS timer
+      code (David Dawes).
  502. Build most libraries as shared by default. (Matthieu Herrb, 
       David Dawes).
  501. Add missing symbol definition files for libraries (Matthieu Herrb).
@@ -17944,7 +17946,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2883 2003/10/14 13:38:56 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2884 2003/10/15 21:23:38 herrb Exp $
 
 
 
