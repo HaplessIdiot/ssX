@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 239. Potential fix for DGA apps that set colourmaps the normal way rather than
+      through DGA (Mark Vojkovich, Marc La France, Pontus Lidman).
  238. Make fstobdf generate correct ATTRIBUTES fields (Ishikawa Mutsumi).
  237. Xt man page updates (Paul Vojta).
  236. Plug kernel security hole in Linux int10 (Marc La France).
@@ -12650,4 +12652,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1607 2001/03/04 00:04:25 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1608 2001/03/04 00:16:32 tsi Exp $

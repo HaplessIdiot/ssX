@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.37 2000/06/30 19:06:56 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.39 2001/02/15 20:31:50 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -228,7 +228,7 @@ DGAInstallColormap(ColormapPtr pmap)
     ScreenPtr pScreen = pmap->pScreen;
     DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
 
-    if(pScreenPriv->current) {
+    if(pScreenPriv->current && pScreenPriv->dgaColormap) {
 	if (pmap != pScreenPriv->dgaColormap) {
 	    pScreenPriv->savedColormap = pmap;
 	    pmap = pScreenPriv->dgaColormap;
