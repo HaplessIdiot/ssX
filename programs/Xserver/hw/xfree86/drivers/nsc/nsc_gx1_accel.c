@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.6 2003/11/03 05:11:20 tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_accel.c $
  * $Revision$
@@ -273,9 +273,11 @@ void OPTGX1SubsequentBresenhamLine(ScrnInfoPtr pScreenInfo, int x1, int y1,
 void OPTGX1SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo,
 				       int x0, int y0, int x1, int y1,
 				       int flags);
+#if 0 /* disabled due to bugs */
 void OPTGX1SubsequentHorVertLine(ScrnInfoPtr pScreenInfo, int x, int y,
 				 int len, int dir);
 
+#endif
 void OPTGX1SetupForScanlineImageWrite(ScrnInfoPtr pScreenInfo,
 				      int rop, unsigned int planemask,
 				      int transparency_color, int bpp,
@@ -1607,6 +1609,7 @@ OPTGX1SubsequentSolidTwoPointLine(ScrnInfoPtr pScreenInfo,
    WRITE_REG16(GP_VECTOR_MODE, (Geode_vector_mode | vec_flags));
 }
 
+#if 0 /* disabled due to bugs - can't fallback to fillrectsolid */
 /*---------------------------------------------------------------------------
  * OPTGX1SubsequentHorVertLine
  *
@@ -1633,6 +1636,7 @@ OPTGX1SubsequentHorVertLine(ScrnInfoPtr pScreenInfo,
 				 (unsigned short)((dir == DEGREES_0) ? 1 :
 						  len));
 }
+#endif
 #endif
 
 /*----------------------------------------------------------------------------
