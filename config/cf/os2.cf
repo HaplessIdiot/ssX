@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.44tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.45tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -97,7 +97,9 @@ XCOMM hv: but in future a separate system)
 #ifndef BuildModuleInSubdir
 #define BuildModuleInSubdir	YES
 #endif
-
+#ifndef XF86FBDevHw
+#define XF86FBDevHw		NO
+#endif
 
 /* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES

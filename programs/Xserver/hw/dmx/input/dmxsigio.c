@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxsigio.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxsigio.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -55,7 +55,11 @@ static Bool dmxInputEnabled = TRUE;
 #if !defined(O_ASYNC) && defined(FASYNC)
 #define O_ASYNC FASYNC
 #endif
+#if !defined(SIGIO) && defined(SIGPOLL)
+#define SIGIO SIGPOLL
+#endif
 
+#ifdef SIGIO
 static void dmxSigioHandler(int sig)
 {
     int          i, j;
@@ -76,27 +80,33 @@ static void dmxSigioHandler(int sig)
         }
     }
 }
+#endif	/* SIGIO */
 
 /** Block SIGIO handling. */
 void dmxSigioBlock(void)
 {
+#ifdef SIGIO
     sigset_t s;
 
     sigemptyset(&s);
     sigaddset(&s, SIGIO);
     sigprocmask(SIG_BLOCK, &s, 0);
+#endif /* SIGIO */
 }
 
 /** Unblock SIGIO handling. */
 void dmxSigioUnblock(void)
 {
+#ifdef SIGIO
     sigset_t s;
 
     sigemptyset(&s);
     sigaddset(&s, SIGIO);
     sigprocmask(SIG_UNBLOCK, &s, 0);
+#endif
 }
 
+#ifdef SIGIO
 static void dmxSigioHook(void)
 {
     struct sigaction a;
@@ -188,27 +198,32 @@ static void dmxSigioRemove(DMXInputInfo *dmxInput)
         }
     }
 }
+#endif /* SIGIO */
 
 /** Enable SIGIO handling.  This instantiates the handler with the OS. */
 void dmxSigioEnableInput(void)
 {
+#ifdef SIGIO
     int              i;
     DMXInputInfo     *dmxInput;
 
     dmxInputEnabled = TRUE;
     for (i = 0, dmxInput = &dmxInputs[0]; i < dmxNumInputs; i++, dmxInput++)
         dmxSigioAdd(dmxInput);
+#endif /* SIGIO */
 }
 
 /** Disable SIGIO handling.  This removes the hanlder from the OS. */
 void dmxSigioDisableInput(void)
 {
+#ifdef SIGIO
     int              i;
     DMXInputInfo     *dmxInput;
 
     dmxInputEnabled = FALSE;
     for (i = 0, dmxInput = &dmxInputs[0]; i < dmxNumInputs; i++, dmxInput++)
         dmxSigioRemove(dmxInput);
+#endif /* SIGIO */
 }
 
 /** Make a note that the input device described in \a dmxInput will be
@@ -217,6 +232,7 @@ void dmxSigioDisableInput(void)
  * #dmxSigioEnableInput(). */
 void dmxSigioRegister(DMXInputInfo *dmxInput, int fd)
 {
+#ifdef SIGIO
     dmxInput->sigioState = DMX_USESIGIO;
     if (dmxInput->sigioFdCount >= DMX_MAX_SIGIO_FDS)
         dmxLog(dmxFatal, "Too many SIGIO file descriptors (%d >= %d)\n",
@@ -224,14 +240,17 @@ void dmxSigioRegister(DMXInputInfo *dmxInput, int fd)
     
     dmxInput->sigioFd[dmxInput->sigioFdCount++] = fd;
     if (dmxInputEnabled) dmxSigioAdd(dmxInput);
+#endif /* SIGIO */
 }
 
 /** Remove the notes that \a dmxInput is using any file descriptors for
  * SIGIO signals.  Calls RemoveEnabledDevice. */
 void dmxSigioUnregister(DMXInputInfo *dmxInput)
 {
+#ifdef SIGIO
     if (dmxInput->sigioState == DMX_NOSIGIO) return;
     dmxSigioRemove(dmxInput);
     dmxInput->sigioState   = DMX_NOSIGIO;
     dmxInput->sigioFdCount = 0;
+#endif /* SIGIO */
 }
