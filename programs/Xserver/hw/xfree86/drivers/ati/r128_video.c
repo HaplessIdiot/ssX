@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.6 2000/11/30 00:49:44 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.7 2000/11/30 23:23:23 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -599,6 +599,8 @@ R128DisplayVideo(
     p1_accum_init = (start << 8) & 0x000f8000;
     p1_preshift = (start << 16) & 0xf0000000;
 
+    /* This is not quite correct. In some situations the Chroma and
+       Luma alignment is off.  I'm not even trying to fix Y yet. */
     start = ((left & 1) << 12) + 0x00002800 + (h_inc >> 2); 
     p23_accum_init = (start << 8) & 0x000f8000;
     p23_preshift = (start << 16) & 0x70000000;
@@ -613,10 +615,10 @@ R128DisplayVideo(
     OUTREG(R128_OV0_V_INC, ((src_h - 1) << 20) / (drw_h - 1));
     OUTREG(R128_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(R128_OV0_VID_BUF_PITCH0_VALUE, pitch);
-    OUTREG(R128_OV0_P1_X_START_END, (width - 1) | (left << 16));
-    left >>= 1;
-    OUTREG(R128_OV0_P2_X_START_END, ((width >> 1) - 1) | (left << 16));
-    OUTREG(R128_OV0_P3_X_START_END, ((width >> 1) - 1) | (left << 16));
+    OUTREG(R128_OV0_P1_X_START_END, (src_w - 1) | (left << 16));
+    left >>= 1; src_w >>= 1;
+    OUTREG(R128_OV0_P2_X_START_END, (src_w - 1) | (left << 16));
+    OUTREG(R128_OV0_P3_X_START_END, (src_w - 1) | (left << 16));
     OUTREG(R128_OV0_VID_BUF0_BASE_ADRS, offset & 0xfffffff0);
     OUTREG(R128_OV0_P1_V_ACCUM_INIT, (2 << 20) | 0x00000001);  /* fixme */
     OUTREG(R128_OV0_P1_H_ACCUM_INIT, p1_preshift | p1_accum_init);
