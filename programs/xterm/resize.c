@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.11 1996/03/29 22:20:47 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.12 1996/08/11 13:04:50 dawes Exp $
  */
 
 /*
@@ -70,7 +70,13 @@
 #define USE_TERMINFO
 #endif
 
-#if defined(SYSV) || defined(linux) || defined(Lynx)
+#ifdef linux
+#define USE_TERMIOS
+#define USE_TERMINFO
+#define USE_SYSV_UTMP
+#endif
+
+#if defined(SYSV) || defined(Lynx)
 #define USE_SYSV_TERMIO
 #ifndef Lynx
 #define USE_SYSV_UTMP

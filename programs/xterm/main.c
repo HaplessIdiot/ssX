@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.40 1996/08/11 13:04:46 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.41 1996/08/13 11:37:00 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -166,10 +166,7 @@ static Bool IsPts = False;
 #endif
 
 #ifdef linux
-#ifdef __alpha__
 #define USE_TERMIOS
-#endif
-#define USE_SYSV_TERMIO
 #define USE_SYSV_PGRP
 #define USE_SYSV_UTMP
 #define USE_SYSV_SIGNALS
@@ -1158,7 +1155,7 @@ char **argv;
 
 #if defined(USE_TERMIOS) || defined(USE_POSIX_TERMIOS) /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
-#if !defined(linux)||!defined(__alpha__)
+#ifdef VDSUSP
 	d_tio.c_cc[VDSUSP] = CDSUSP;
 #endif
 	d_tio.c_cc[VREPRINT] = CRPRNT;
@@ -1319,7 +1316,7 @@ char **argv;
 #endif	/* } TIOCSLTC */
 #if defined(USE_TERMIOS) || defined(USE_POSIX_TERMIOS) /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
-#if !defined(linux)||!defined(__alpha__)
+#ifdef VDSUSP
 	d_tio.c_cc[VDSUSP] = '\000';
 #endif
 	d_tio.c_cc[VREPRINT] = '\377';

@@ -1,5 +1,5 @@
 /* $XConsortium: mpgeomnn.c /main/8 1995/12/02 16:56:06 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpgeomnn.c,v 3.0 1996/02/20 14:32:36 dawes Exp $ */
 /* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
@@ -109,6 +109,7 @@ terms and conditions:
 #include <xiemd.h>
 /* #include <mpgeom.h> */
 #include <technq.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules

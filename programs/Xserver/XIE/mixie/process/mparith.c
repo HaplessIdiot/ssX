@@ -1,4 +1,5 @@
-/* $XConsortium: mparith.c,v 1.5 94/04/17 20:35:09 rws Exp $ */
+/* $XConsortium: mparith.c /main/6 1995/12/02 16:53:37 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mparith.c ****/
 /******************************************************************************
 
@@ -105,6 +106,7 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <xiemd.h>
+#include <memory.h>
 
     /*
     **  Most machines will work fine using the double precision versions
@@ -323,7 +325,7 @@ static int InitializeMath(flo,ped)
 #endif
     if (raw->domainPhototag)
 	rcp[ped->inCnt-1].band[0].replicate = msk;
-    InitReceptor(flo, ped, &rcp[SRCt1], NO_DATAMAP, 1, msk, NO_BANDS);
+    InitReceptor(flo, ped, &rcp[SRCt1], NO_DATAMAP, 1, msk, ~msk);
     InitProcDomain(flo, ped, raw->domainPhototag, raw->domainOffsetX, 
 						  raw->domainOffsetY);
     InitEmitter(flo, ped, NO_DATAMAP, SRCt1);
@@ -347,6 +349,8 @@ static int ActivateArithMROI(flo,ped,pet)
 
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
 	pointer svoid, dvoid;
+
+	if (!(pet->scheduled & 1<<band)) continue;
 
     	if (!(svoid = GetCurrentSrc(flo,pet,sband)) ||
 	    !(dvoid = GetCurrentDst(flo,pet,dband))) continue;
@@ -388,6 +392,8 @@ static int ActivateArithDROI(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
 	pointer svoid, tvoid, dvoid;
 	CARD32 w;
+
+	if (!(pet->scheduled & 1<<band)) continue;
 
 	w = sband->format->width;
 	if (w > tband->format->width) w = tband->format->width;
@@ -1062,14 +1068,6 @@ static int SetupArith(flo,ped,modify)
 	    }
 	}
 
-#if defined(USE_SIMPLE_TABLE)
-	if (raw->domainPhototag == 0) {
-	    if (raw->src2)
-		act = action_dyad[iclass][raw->operator-1];
-	    else
-		act = action_mono[iclass][raw->operator-1];
-	}
-#endif
 	/* Try to find a dyadic operator */
 	if (!act && raw->src2)
 	    act = action_dyadROI[iclass][raw->operator-1];
@@ -1136,12 +1134,6 @@ static int SetupMath(flo,ped,modify)
 	    SetDepthFromLevels(pvt->nlev,deep); pvt->nclip = 1 << deep;
 	}
 
-#if defined(xxUSE_SIMPLE_TABLE)
-	/* enable this code if you think you know a better way to do this. */
-	if (raw->domainPhototag == 0) {
-	    act = action_math[iclass][raw->operator-1];
-	}
-#endif
 	/*
 	**  NOTE:
 	**	For larger sized pixels, a lookup table my be counter

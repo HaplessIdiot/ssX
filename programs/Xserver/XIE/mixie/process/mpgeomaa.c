@@ -1,5 +1,5 @@
 /* $XConsortium: mpgeomaa.c,v 1.8 94/04/17 20:35:18 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpgeomaa.c,v 3.0 1996/02/20 14:32:34 dawes Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 
@@ -108,6 +108,7 @@ terms and conditions:
 #include <xiemd.h>
 #include <mpgeom.h>
 #include <technq.h>
+#include <memory.h>
 
 
 /*

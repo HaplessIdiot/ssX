@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/106 1996/02/02 14:27:57 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.12 1996/06/29 09:10:54 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.13 1996/08/13 11:37:04 dawes Exp $
  */
 
 /*
@@ -851,7 +851,8 @@ int dcslen;
 					cp);
 			} else if (!strcmp(cp, "\"p")) {	/* DECSCL */
 				sprintf(reply, "%d%s",
-					screen->ansi_level + 60,
+					(screen->ansi_level ?
+					 screen->ansi_level : 1) + 60,
 					cp);
 			} else if (!strcmp(cp, "r")) {		/* DECSTBM */
 				sprintf(reply, "%d;%dr",

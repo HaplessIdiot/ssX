@@ -1,5 +1,5 @@
 /* $XConsortium: schoice.c,v 1.4 94/04/17 20:34:25 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/schoice.c,v 3.0 1996/03/29 22:11:46 dawes Exp $ */
 /**** module schoice.c ****/
 /****************************************************************************
 
@@ -103,6 +103,7 @@ terms and conditions:
 #include <photomap.h>
 #include <element.h>
 #include <xiemd.h>
+#include <memory.h>
 
 static Bool		PrepSCCanonic();
 static Bool		PrepSCSmuggle();

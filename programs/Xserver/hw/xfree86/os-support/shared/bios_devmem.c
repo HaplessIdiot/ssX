@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 1.1.1.2 1996/01/03 07:20:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.0 1996/05/06 05:58:22 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -30,6 +30,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include <string.h>
 
 /*
  * Read BIOS via /dev/mem.
@@ -58,10 +59,11 @@ int Len;
    * NOTE: there prolly ought to be more validity checks and all
    *  re: boundaries and sizes and such...
    */
-#define BUS_BASE 0xfffffc0300000000UL
+	extern unsigned long _bus_base() __attribute__((const));
+#define BUS_BASE _bus_base()
 #define SIZE (64*1024)
 
-	unsigned char *base;
+	caddr_t base;
  	int fd;
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
@@ -70,19 +72,20 @@ int Len;
 		       strerror(errno));
 		return(-1);
 	}
-	/* This requirers linux-0.99.pl10 or above */
-	base = (unsigned char *)mmap((caddr_t)0, SIZE, PROT_READ,
-				     MAP_SHARED, fd, (off_t)Base | BUS_BASE);
 
-	if (base == (unsigned char *)NULL) {
+	base = mmap((caddr_t)0, SIZE, PROT_READ,
+		    MAP_SHARED, fd, (off_t)(Base + BUS_BASE));
+
+	if (base == (caddr_t)-1UL)
+	{
 		ErrorF("xf86ReadBios: Failed to mmap %s (%s)\n", DEV_MEM,
 		       strerror(errno));
 		return(-1);
 	}
 
-	memcpy(Buf, &base[Offset], Len);
+	memcpy(Buf, base+Offset, Len);
 
-	munmap((caddr_t)((off_t)Base | BUS_BASE), SIZE);
+	munmap(base, SIZE);
 	close(fd);
 	return(Len);
 

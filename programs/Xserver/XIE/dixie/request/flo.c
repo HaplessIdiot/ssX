@@ -1,5 +1,5 @@
 /* $XConsortium: flo.c,v 1.7 94/06/03 15:58:13 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/flo.c,v 3.0 1996/03/29 22:11:21 dawes Exp $ */
 /**** module flo.c ****/
 /******************************************************************************
 
@@ -104,6 +104,10 @@ terms and conditions:
 #include <macro.h>
 #include <flostr.h>
 #include <tables.h>
+/*
+ * Module specific includes
+ */
+#include <memory.h>
 
 
 /*

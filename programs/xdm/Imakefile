@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/80 1996/01/14 18:35:47 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.10 1996/01/05 13:20:56 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.11 1996/01/16 15:08:45 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -33,7 +33,7 @@ KRB5SRCS = krb5auth.c
 
 #if SharedLibXdmGreet
 GREET_DIR = greeter
-#if SystemV4
+#if SystemV4 || UseElfFormat
     DLLIB = -ldl
 #endif
 #else

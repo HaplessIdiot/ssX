@@ -105,6 +105,7 @@ terms and conditions:
 #include <lut.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules

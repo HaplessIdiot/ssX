@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/16 1996/06/11 11:31:21 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.9 1996/05/13 06:50:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.10 1996/08/13 11:32:21 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -246,9 +246,9 @@ char	buf[PATH_MAX],keymap[PATH_MAX],xkm_output_dir[PATH_MAX];
 	    return False;
 	}
 #ifdef __EMX__
-	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\'
+	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
 
-	    sprintf(buf,"%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
+	sprintf(buf,"%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		tmpbase,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		tmpbase,

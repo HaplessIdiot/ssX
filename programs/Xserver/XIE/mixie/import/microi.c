@@ -1,4 +1,5 @@
-/* $XConsortium: microi.c,v 1.6 94/04/17 20:34:50 rws Exp $ */
+/* $XConsortium: microi.c /main/7 1995/12/02 16:52:40 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module microi.c ****/
 /******************************************************************************
 
@@ -103,6 +104,7 @@ terms and conditions:
 #include <microi.h>
 #include <texstr.h>
 #include <strip.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules
@@ -309,8 +311,8 @@ peTexPtr pet;
 
 	while (1) {
        	    while (r < maxRect && y == rects[r].y1) {
-		rp->dstart = rects[r].x1 - rects[r-1].x1;
-		(rp++)->length = rects[r].x2 - rects[r-1].x1;
+		rp->dstart = rects[r].x1 - rects[r-1].x2;
+		(rp++)->length = rects[r].x2 - rects[r].x1;
 		lp->nrun++;
 		r++;
 	    }

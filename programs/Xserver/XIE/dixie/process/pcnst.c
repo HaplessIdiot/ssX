@@ -1,5 +1,5 @@
 /* $XConsortium: pcnst.c,v 1.5 94/04/17 20:33:42 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcnst.c,v 3.0 1996/03/29 22:10:50 dawes Exp $ */
 /**** module pcnst.c ****/
 /******************************************************************************
 
@@ -105,6 +105,7 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 #include <difloat.h>
+#include <memory.h>
 
 
 /*

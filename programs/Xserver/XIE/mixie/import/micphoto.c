@@ -105,6 +105,7 @@ terms and conditions:
 #include <texstr.h>
 #include <xiemd.h>
 #include <miuncomp.h>
+#include <memory.h>
 
 /*
  * Local Declarations. 

@@ -1,4 +1,5 @@
-/* $XConsortium: mpcnst.c,v 1.5 94/04/17 20:35:13 rws Exp $ */
+/* $XConsortium: mpcnst.c /main/6 1995/12/02 16:53:45 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpcnst.c ****/
 /******************************************************************************
 
@@ -104,6 +105,7 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <xiemd.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules
@@ -399,6 +401,7 @@ static void copybitline(INP,OUTP,pvt,bw)
 static void invertbitline(INP,OUTP,pvt,bw)
 	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw;
 {
+	passcopy_bit (OUTP, INP, bw, 0);
 	action_invert(OUTP, bw, 0);
 }
 

@@ -107,6 +107,7 @@ terms and conditions:
 #include <../include/fax.h>	/* XXX - ugh! 		*/
 #include <../fax/fencode.h>	/* XXX - even ugh-ier! 	*/
 #include <xiemd.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules

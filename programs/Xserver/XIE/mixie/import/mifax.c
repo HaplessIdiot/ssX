@@ -1,4 +1,5 @@
-/* $XConsortium: mifax.c,v 1.7 94/04/17 20:34:53 rws Exp $ */
+/* $XConsortium: mifax.c /main/9 1995/12/04 15:33:46 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mifax.c ****/
 /******************************************************************************
 
@@ -106,13 +107,14 @@ terms and conditions:
 #include <photomap.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 #include <fax.h>
 /* XXX - this should be cleaned up. */
 #include "../fax/faxint.h"
 
 /*
  *  routines referenced by other DDXIE modules
-/*
+ */
 int CreateICPhotoFax();
 int InitializeICPhotoFax();
 int InitializeIPhotoFax();
@@ -128,6 +130,9 @@ extern bandMsk miImportStream();
  */
 
 static int common_init();
+
+
+#define LENIENCY_LIMIT  16
 
 #define MAX_STRIPS_INC	20
 typedef struct _faxpvt {
@@ -146,6 +151,7 @@ typedef struct _faxpvt {
   unsigned char *buf;	/* in case we have to bit reverse src	*/
   int bufsize;		/* buffer size has to vary with input   */
 			/* strip size, alas and alak.  :-(	*/
+  xieTypDecodeTechnique technique;
 } faxPvtRec, *faxPvtPtr;
 
 /*------------------------------------------------------------------------
@@ -223,7 +229,7 @@ int	  pbytes;
 	/* nice thing about using receptor format is that it doesn't matter */
 	/* whether you are importing from a client or a photomap	*/
 
-  switch(technique) {
+  switch(texpvt->technique = technique) {
   case xieValDecodeG31D: 
 	{
 	xieTecDecodeG31D *tecG31D=(xieTecDecodeG31D *)    tec;
@@ -337,7 +343,7 @@ int ActivateICPhotoFax(flo,ped,pet)
   FaxState  *state = &(texpvt->state);
   BytePixel *src, *dst;
   int	    lines_found;
-  Bool ok;
+  Bool ok, aborted;
   int 	(*decodptr)() = texpvt->decodptr;
 
   
@@ -365,8 +371,7 @@ int ActivateICPhotoFax(flo,ped,pet)
    * (or if we are just starting)
    */
   if (!state->strip) {
-    src = (BytePixel*)GetSrcBytes(flo,pet,sbnd,sbnd->current,
-				MIN_BYTES_NEEDED,KEEP);
+    src = (BytePixel*)GetSrcBytes(flo,pet,sbnd,sbnd->current,1,KEEP);
 
     state->strip_state = StripStateNew;
     state->strip_size  = sbnd->maxLocal - sbnd->minLocal;
@@ -435,9 +440,6 @@ int ActivateICPhotoFax(flo,ped,pet)
     lines_found = (*decodptr)(state);
     if (lines_found < 0) {
       /* decoder hit unknown error. Pass error code to client */
-      if (lines_found > 0)
-	state->o_line += lines_found;
-      
       ValueError(flo,ped,(state->o_line + (state->decoder_done << 16)), 
 		 return(FALSE));
     } else {
@@ -460,14 +462,30 @@ int ActivateICPhotoFax(flo,ped,pet)
 	return(TRUE);
     }
     if (state->decoder_done) {
-      /* decoders sometimes return errors when they run
-	 out of data. ignore them if we got all the lines
-	 we wanted.
-	 */
-      if (state->o_line < texpvt->height &&
-	  state->decoder_done > FAX_DECODE_DONE_OK) {
-	ValueError(flo,ped,
-		   (state->o_line + (state->decoder_done<<16)),return(FALSE));
+      /* Decoders sometimes return errors near the end of an image.
+	 Don't report an error if we got almost all the lines we wanted.
+       */
+      if (state->decoder_done > FAX_DECODE_DONE_OK) {
+	  aborted = state->o_line + LENIENCY_LIMIT < texpvt->height;
+
+	  if(texpvt->notify && (texpvt->height != state->o_line ||
+				texpvt->width  != state->width)) {
+	      SendDecodeNotifyEvent(flo, ped, 0, texpvt->technique,
+				    state->width, state->o_line, aborted);
+	  }
+          if (aborted) {
+	      ValueError(flo, ped, (state->o_line + (state->decoder_done<<16)),
+			 return(FALSE));
+	  } else if(state->o_line < texpvt->height) {
+	      int bytes = (ped->outFlo.format[0].pitch + 7) >> 3;
+
+	      while(dst = ((BytePixel*)
+			   GetDst(flo,pet,dbnd,state->o_line++,KEEP))) {
+		  memset(dst, state->radiometric ? 0xff: 0, bytes);
+		  PutData(flo,pet,dbnd,state->o_line);
+	      }
+	      break;
+	  }
       }
       FreeData(flo,pet,sbnd,sbnd->maxGlobal);
       break;
@@ -481,7 +499,7 @@ int ActivateICPhotoFax(flo,ped,pet)
       FreeData(flo,pet,sbnd,sbnd->maxLocal);
       
       texpvt->state.strip_state = StripStateNone;
-      texpvt->state.strip	      = 0;
+      texpvt->state.strip	= 0;
       texpvt->state.strip_size  = 0;
       
       if (!state->final) 
@@ -499,7 +517,7 @@ int ActivateICPhotoFax(flo,ped,pet)
    *      case, we should be a good guy and return TRUE so the scheduler
    *      gives us back control again later (without going back to Core
    *	     X, which would cause our input strip to vanish).
-   *	 3:  we ran out of src.
+   *  3:  we ran out of src.
    */
   if (!dst && dbnd->final) {
     FreeData(flo,pet,sbnd,sbnd->maxGlobal);
@@ -510,7 +528,7 @@ int ActivateICPhotoFax(flo,ped,pet)
    * if here, we ran out of src.  Scheduler will wake us up again
    * when a PutClientData request comes along.
    */
-  return TRUE;	/* Hmmm. Well, I think I did my part ok... */
+  return TRUE;
 }                               /* end ActivateICPhotoFax */
 
 /*------------------------------------------------------------------------

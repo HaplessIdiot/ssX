@@ -1,5 +1,5 @@
 /* $XConsortium: pctoi.c /main/7 1995/12/02 16:48:00 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pctoi.c,v 3.0 1996/03/29 22:10:54 dawes Exp $ */
 /* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module pctoi.c ****/
 /******************************************************************************
@@ -109,6 +109,7 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 #include <difloat.h>
+#include <memory.h>
 
 
 /* routines referenced by other modules.

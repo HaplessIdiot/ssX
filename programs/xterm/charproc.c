@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.31 1996/08/11 13:04:43 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.32 1996/08/13 11:36:53 dawes Exp $
  */
 
 /*
@@ -1126,7 +1126,7 @@ static void VTparse()
 
 		 case CASE_DECID:
 			param[0] = -1;		/* Default ID parameter */
-			/* Fall through into ... */
+			/* FALLTHRU */
 		 case CASE_DA1:
 			/* DA1 */
 			if (param[0] <= 0) {	/* less than means DEFAULT */
@@ -2009,7 +2009,7 @@ in_put()
 
 	/* if there is room to write more data to the pty, go write more */
 	if (FD_ISSET (screen->respond, &write_mask)) {
-	    v_write(screen->respond, 0, 0); /* flush buffer */
+	    v_write(screen->respond, (char *)0, 0); /* flush buffer */
 	}
 
 	/* if there are X events already in our queue, it
@@ -2063,11 +2063,11 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
 				*s = '\036';	/* UK pound sign*/
 		break;
 
-	case '1':
+	case '1':	/* Alternate Character ROM standard characters */
+	case '2':	/* Alternate Character ROM special graphics */
 	case 'B':	/* ASCII set				*/
 		break;
 
-	case '2':
 	case '0':	/* special graphics (line drawing)	*/
 		for (s=buf; s<ptr; ++s)
 			if (*s>=0x5f && *s<=0x7e)
@@ -2488,7 +2488,7 @@ restoremodes(termw)
 			update_cursesemul();
 			break;
 		case 44:		/* margin bell			*/
-			if(!(screen->marginbell = screen->save_modes[12]))
+			if((screen->marginbell = screen->save_modes[12]) == 0)
 				screen->bellarmed = -1;
 			update_marginbell();
 			break;
@@ -4108,7 +4108,7 @@ HandleSetFont(w, event, params, param_count)
 	switch (*param_count) {		/* assign 'em */
 	  case 3:
 	    name2 = params[2];
-	    /* fall through */
+	    /* FALLTHRU */
 	  case 2:
 	    name1 = params[1];
 	    break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 3.1 1996/03/10 12:06:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 3.2 1996/08/10 13:07:46 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -194,6 +194,11 @@ MouseDevPtr mouse;
 	}
 	if (fcntl(mouse->mseFd, F_SETFL, FNDELAY | FASYNC) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Cannot set up mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return(-2);
+		}
 		FatalError("Cannot set up mouse (%s)\n", strerror(errno));
 	}
 
@@ -204,6 +209,11 @@ MouseDevPtr mouse;
 
 		if (ioctl (mouse->mseFd, FIONBIO, &data) < 0)
 		{
+			if (xf86AllowMouseOpenFail) {
+				ErrorF("Cannot set mouse non-blocking (%s) - Continuing...\n",
+					strerror(errno));
+				return(-2);
+			}
 			FatalError(
 				"Cannot set mouse non-blocking (%s)\n",
 				strerror(errno));
@@ -234,6 +244,11 @@ DeviceIntPtr	device;
 	{
 		if (errno != EWOULDBLOCK)
 		{
+			if (xf86AllowMouseOpenFail) {
+				ErrorF("Cannot read from mouse (%s) - Continuing...\n",
+					strerror(errno));
+				return(-2);
+			}
 			FatalError("Cannot read from mouse (%s)\n",
 				   strerror(errno));
 		}

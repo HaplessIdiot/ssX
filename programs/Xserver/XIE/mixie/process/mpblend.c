@@ -1,4 +1,5 @@
-/* $XConsortium: mpblend.c,v 1.5 94/04/17 20:35:12 rws Exp $ */
+/* $XConsortium: mpblend.c /main/6 1995/12/02 16:53:41 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpblend.c ****/
 /******************************************************************************
 
@@ -102,6 +103,7 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 
 
 typedef float BlendFloat;
@@ -498,6 +500,8 @@ static int MonoBlend(flo,ped,pet)
   for(b = 0; b < bands; b++, sb1++, bnd++, sconst++, mpvt++) {
     BlendFloat offset = *sconst * aconst1;
 
+    if (!(pet->scheduled & 1<<b)) continue;
+    
     /* get pointers to the initial src and dst scanlines */
     sr1 = GetCurrentSrc(flo,pet,sb1);
     dst = GetCurrentDst(flo,pet,bnd);
@@ -548,6 +552,8 @@ static int DualBlend(flo,ped,pet)
   
   for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++) {
 
+    if (!(pet->scheduled & 1<<b)) continue;
+    
     /* Figure out if any data from the first band passes through unchanged */
     if(sb1->format->width > sb2->format->width) 
 	w = sb2->format->width;
@@ -619,6 +625,8 @@ static int MonoAlphaBlend(flo,ped,pet)
   for(b = 0; b < bands; b++,sb1++,bnd++,sconst++, mpvt++, aband++) {
     BlendFloat scalefactor = *sconst * invaconst;
 
+    if (!(pet->scheduled & 1<<b)) continue;
+    
     /* Figure out if any data from the first band passes through unchanged */
     if(sb1->format->width > aband->format->width) 
 	w = aband->format->width;
@@ -690,6 +698,8 @@ static int DualAlphaBlend(flo,ped,pet)
 
   for(b = 0; b < bands; b++,sb1++,sb2++,bnd++,mpvt++,aband++) {
 
+    if (!(pet->scheduled & 1<<b)) continue;
+    
     /* Figure out if any data from the first band passes through unchanged */
     /* Pass through if either sb2 or alpha runs out 			   */
     if(sb1->format->width > sb2->format->width ||
