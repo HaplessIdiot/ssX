@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.77 1996/08/13 11:24:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.78 1996/08/14 14:30:39 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -62,7 +62,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.77 1996/08/13 11:24:07 dawes Exp $
 
 /*
  * If you have Tk (which is required to build XF86Setup), uncomment this
- * Note: version 4.0 is required, and XF86Setup links it statically by
+ * Note: version 4.0 or 4.1 is required, and XF86Setup links it statically by
  * default.
  *
 #define HasTk			YES
@@ -79,7 +79,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.77 1996/08/13 11:24:07 dawes Exp $
 
 /*
  * If you have Tcl (which is required to build XF86Setup), uncomment this
- * Note: version 7.4 is required, and XF86Setup links it statically by
+ * Note: version 7.4 or 7.5 is required, and XF86Setup links it statically by
  * default.
  *
 #define HasTcl			YES

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.4 1996/08/13 11:28:27 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.5 1996/08/18 09:47:35 dawes Exp $
 
 #
 #
@@ -6,7 +6,7 @@
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
 		MouseMan PS/2 MMHitTab GlidePoint Xqueue OSMouse }
 
-set msePatterns { tty?* *bm *mse* *mouse* ps*x }
+set msePatterns { tty[0-9A-Oa-o]* cua* *bm *mse* *mouse* ps*x psm* }
 set mseDevices ""
 foreach pat $msePatterns {
 	if ![catch {glob /dev/$pat}] {
