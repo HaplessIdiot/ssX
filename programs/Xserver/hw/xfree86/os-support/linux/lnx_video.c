@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.34 2000/05/31 07:15:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.35 2000/06/13 02:28:36 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -334,7 +334,11 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
   pointer base;
   int fd;
 
+#if defined(__ia64__)
+  if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
+#else
   if ((fd = open("/dev/mem", O_RDWR)) < 0) {
+#endif
       FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
 		 strerror(errno));
     }
