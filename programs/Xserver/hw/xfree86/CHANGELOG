@@ -1,4 +1,6 @@
-XFree86 3.2Ae (XX February 1997)
+XFree86 3.2Ae (16 February 1997)
+ 440. Fix some build problems when not using the new loader code
+      (on FreeBSD) (David Dawes).
  439. Stop S3 and S3V server from overwriting CR11 (#30, Harald Koenig).
  438. Fix banking code in S3/SVGA driver (#29, Thomas Mueller).
  437. Fix DPMS code for C&T (#28, David Bateman).

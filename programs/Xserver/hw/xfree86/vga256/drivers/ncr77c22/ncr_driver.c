@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.18 1996/12/28 08:18:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.20 1997/02/14 12:19:06 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -100,11 +100,7 @@ extern void  NCRSetReadWrite();
  * may I politely question the idea of calling this driver NCR77C22,
  * a name that is overwritten with a #define a few lines below...
  */
-#if XFree86LOADER
-vgaVideoChipRec NCR= {
-#else
 vgaVideoChipRec NCR77C22= {
-#endif
   NCRProbe,
   NCRIdent,
   NCREnterLeave,
@@ -147,8 +143,8 @@ vgaVideoChipRec NCR77C22= {
 
 #define new ((vgaNCRPtr)vgaNewVideoState)
 
-#define NCR77C22	0
-#define NCR77C22E	1
+#define CHIP_NCR77C22	0
+#define CHIP_NCR77C22E	1
 static unsigned char NCRchipset;
 
 /*
@@ -158,7 +154,7 @@ static unsigned char NCRchipset;
  */
 void
 ncr_drvModuleInit(data,magic)
-    vgaVideoChipPtr * data;
+    int  * data;
     int  * magic;
 {
     static int cnt = 0;
@@ -166,7 +162,7 @@ ncr_drvModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-	* data = &NCR;
+	* data = (int) &NCR77C22;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     case 1:
@@ -211,7 +207,7 @@ NCRClockSelect(no)
   {
     case CLK_REG_SAVE:
       save1 = inb(0x3CC);
-      if (NCRchipset == NCR77C22E)
+      if (NCRchipset == CHIP_NCR77C22E)
       {
         outb(0x3C4, 0x1F);
 	save2 = inb(0x3C5);
@@ -219,7 +215,7 @@ NCRClockSelect(no)
       break;
     case CLK_REG_RESTORE:
       outb(0x3C2, save1);
-      if (NCRchipset == NCR77C22E)
+      if (NCRchipset == CHIP_NCR77C22E)
       {
 	outw(0x3C4, (save2 << 8) | 0x1F);
       }
@@ -227,7 +223,7 @@ NCRClockSelect(no)
     default:
       temp = inb(0x3CC);
       outb(0x3C2, (temp & 0xF3) | ((no << 2) & 0x0C));
-      if (NCRchipset == NCR77C22E)
+      if (NCRchipset == CHIP_NCR77C22E)
       {
 	outb(0x3C4, 0x1F);
 	temp = inb(0x3C5);
@@ -266,11 +262,11 @@ NCRProbe()
 	}
         if (!StrCaseCmp(vga256InfoRec.chipset, NCRIdent(0)))
 	{
-	    NCRchipset = NCR77C22;
+	    NCRchipset = CHIP_NCR77C22;
 	}
 	else if (!StrCaseCmp(vga256InfoRec.chipset, NCRIdent(1)))
 	{
-	    NCRchipset = NCR77C22E;
+	    NCRchipset = CHIP_NCR77C22E;
 	}
 	else
 	{
@@ -297,7 +293,7 @@ NCRProbe()
 		    {
 		    case 0:
 		        flag = TRUE;
-			NCRchipset = NCR77C22;
+			NCRchipset = CHIP_NCR77C22;
 			break;
 		    case 2:
 			/*
@@ -305,7 +301,7 @@ NCRProbe()
 			 * the 22E+, ((temp & 0x0F) >= 0x08) implies 22E+.
 			 */
 			flag = TRUE;
-			NCRchipset = NCR77C22E;
+			NCRchipset = CHIP_NCR77C22E;
 			break;
 		    case 1:
 		    default:
@@ -355,7 +351,7 @@ NCRProbe()
         }
     }
 
-    numClocks = (NCRchipset == NCR77C22) ? 4 : 8;
+    numClocks = (NCRchipset == CHIP_NCR77C22) ? 4 : 8;
 
     if (!vga256InfoRec.clocks) vgaGetClocks(numClocks, NCRClockSelect);
 
@@ -462,7 +458,7 @@ NCRRestore(restore)
   outb(0x3C4, 0x1F);
   temp = inb(0x3C5);
   temp = (temp & 0xE0) | (restore->ExtClock & 0x1F);
-  if (NCRchipset == NCR77C22E)
+  if (NCRchipset == CHIP_NCR77C22E)
   {
     if (restore->std.NoClock >= 0)
     {
@@ -577,7 +573,7 @@ NCRInit(mode)
 #else
   new->ExtHTime = 0x00;
 #endif
-  if (NCRchipset == NCR77C22E)
+  if (NCRchipset == CHIP_NCR77C22E)
   {
     if (mode->Flags & V_INTERLACE)
     {
@@ -623,7 +619,7 @@ NCRInit(mode)
   new->BusWidth = 0x01;
   new->ExtDispPos = 0;
 #endif
-  if (NCRchipset == NCR77C22E)
+  if (NCRchipset == CHIP_NCR77C22E)
   {
     if (new->std.NoClock >= 0)
     {
@@ -682,7 +678,7 @@ int flag;
  * limitation in the chip/video memory. Check to see if this is a 77C22,
  * and if the resolution will exceed the bandwidth capability of these systems.
  */
-   if ( (NCRchipset == NCR77C22) &&
+   if ( (NCRchipset == CHIP_NCR77C22) &&
         ((mode->HDisplay*mode->VDisplay) > (512*1024)) )
 	return MODE_BAD;
 
