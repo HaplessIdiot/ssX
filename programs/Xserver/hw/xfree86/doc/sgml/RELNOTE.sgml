@@ -67,6 +67,39 @@ shown in the file(s).
 
 <sect> Who are the XFree86 Beta Releases Targeted At?
 <p>
+The XFree86 beta releases are intended for people who are prepared to
+test software which might be unstable and which might be buggy, and report
+the results of the testing.  If you are going to test this software, you
+should be prepared for the following:
+<itemize>
+  <item>Installation problems.  The installation procedure for beta releases
+	gets only very limited testing prior to release.  You should be
+	prepared for problems here, and you should be prepared to upgrade
+	other components of your system if it proves necessary.  You should
+	also have facilities to backup a previous installation (and
+	preferably your entire system) so that it can be restored in case
+	of serious problems.
+  <item>New bugs.  Since each beta version gets only a limited amount of
+	pre-release testing, it is likely that a new version will contain
+	new bugs.  This is unavoidable, because any code change, be it
+	fixing previous bugs or adding new features, brings with it the
+	chance that new bugs have been introduced.  You should be prepared
+	for the possibility that the new version will have problems with
+	your hardware.  In this situation, you should first check the
+	<url name="XFree86 FAQ" url="http://www.xfree86.org/FAQ"> to
+	see if it is a known problem (possibly with a workaround), and then
+	report the problem in detail.
+  <item>Expiry date.  The XFree86 beta servers have a limited lifetime.
+	Before using one, you should be aware of this and what the
+	implications of this are.  If you have objections to software
+	that has an expiry date, you shouldn't use this beta software.
+	It is possible that when one version expires you may find that
+	the replacement version has problems, or perhaps binaries of the
+	replacement are not available for your OS.  If you depend on a
+	server for your work/school/etc, you shouldn't be relying on
+	this beta software.
+</itemize>
+
 <sect> XFree86 and X11R6.1
 <p>
 XFree86 3.1.2D and subsequent releases are based on the X Consortium's
@@ -83,9 +116,81 @@ It is expected that it will reappear in some form in a future release.
 3.1.2G is primarily a bug-fix release.  It is intended to fix some serious
 problems that were discovered shortly after 3.1.2F was released.
 <p>
-<sect> New Features in 3.1.2F
+<sect1> General X server changes
 <p>
-<sect1> General
+<itemize>
+  <item>A `DefaultColorDepth' keyword has been added for the Screen section
+	in XF86Config files to allow the default bpp to be specified.
+  <item>A `-nolock' server command-line option has been added to allow
+	the server's locking mechanism to be disabled.
+</itemize>
+<sect1> XF86Setup
+<p>
+<itemize>
+  <item>Some bugs in the XF86Setup utility have been fixed.
+</itemize>
+<sect1> PC98 Support
+<p>
+<itemize>
+  <item>Some bugs in the S3-based servers have been fixed.
+</itemize>
+<sect1> S3 server
+<p>
+<itemize>
+  <item>A display problem with Trio64V+ cards when operating at 16bpp has
+	been fixed.
+  <item>The "newmmio" driver is now disabled when the OS doesn't allow
+	linear framebuffer access, or when the "nolinear" option is used.
+  <item>Some potential problems with the way the accelerator is used have
+	been fixed.
+</itemize>
+<sect1> Mach64 server
+<p>
+<itemize>
+  <item>Contrary to what is stated for 3.1.2F, the "no_block_write" option
+	is sometimes still required.
+</itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>A problem with non-linear memory access for TGUI cards has been
+	fixed.  This should fix the problems that showed up with 3.1.2F
+	with VLB cards when the "linear" option wasn't specified.
+  <item>PCI burst write is now turned off by default for PCI TGUI cards.
+	This fixes a problem that showed up with 3.1.2F when the
+	"tgui_pci_write_off" option wasn't specified.
+</itemize>
+<sect1> Ark driver (SVGA server)
+<p>
+<itemize>
+  <item>The Ark driver will now detect the ARK2000MT, but it is treated
+	as an ARK2000PV.  This hasn't been tested.
+</itemize>
+<sect1> Alliance ProMotion driver (SVGA server)
+<p>
+<itemize>
+  <item>A driver for the Alliance ProMotion 6442 has been added (from
+	Alliance Semiconductor).
+</itemize>
+<sect1> Cirrus driver (SVGA server)
+<p>
+<itemize>
+  <item>A problem with clock limits for the CL-GD754x when operating at
+	16bpp has been fixed.  However, the appears to be other problems
+	remaining for some machines using the CL-GD754x chips.
+</itemize>
+<sect1> Client/Library changes
+<p>
+<itemize>
+  <item>A bug in the xterm termcap entry distributed with 3.1.2F has been
+	fixed.
+  <item>Some problems with xterm's handling of the colorUL and colorBG
+	resources have been fixed.
+  <item>An additional buffer overrun problem in libX11 which can lead to
+	security problems has been fixed.
+</itemize>
+<p>
+<sect> New Features in 3.1.2F
 <p>
 <itemize>
   <item>3.1.2F includes a new, graphical utility for X server configuration
@@ -1104,7 +1209,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.36 1996/08/27 03:13:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.37 1996/09/01 04:16:07 dawes Exp $
 </verb>
 
 </article>
