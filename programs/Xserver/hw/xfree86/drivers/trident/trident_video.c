@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.41 2003/09/24 02:43:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.42 2003/10/22 11:00:27 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -85,6 +85,7 @@ void TRIDENTInitVideo(ScreenPtr pScreen)
      * The following has been tested on:
      *
      * 9525         : flags: None
+     * Image985     : flags: None
      * Cyber9397(DVD) : flags: VID_ZOOM_NOMINI
      * CyberBlade/i7: flags: VID_ZOOM_INV | VID_ZOOM_MINI
      * CyberBlade/i1: flags: VID_ZOOM_INV | VID_ZOOM_MINI
@@ -106,8 +107,10 @@ void TRIDENTInitVideo(ScreenPtr pScreen)
     if (pTrident->Chipset == CYBER9397 || pTrident->Chipset == CYBER9397DVD)
 	pTrident->videoFlags = VID_ZOOM_NOMINI;
 
-    if (pTrident->Chipset == CYBER9397DVD || pTrident->Chipset >= CYBER9525DVD)
-	pTrident->videoFlags |= VID_DOUBLE_LINEBUFFER_FOR_WIDE_SRC;
+    if (pTrident->Chipset == CYBER9397DVD || 
+	pTrident->Chipset == CYBER9525DVD ||
+	pTrident->Chipset >= BLADE3D)
+		pTrident->videoFlags |= VID_DOUBLE_LINEBUFFER_FOR_WIDE_SRC;
 
     newAdaptor = TRIDENTSetupImageVideo(pScreen);
     TRIDENTInitOffscreenImages(pScreen);
