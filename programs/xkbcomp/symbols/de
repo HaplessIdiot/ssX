@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/symbols/de,v 3.8 1999/07/12 05:10:47 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/de,v 3.10 2001/10/01 14:04:15 eich Exp $
 
 default partial alphanumeric_keys 
 xkb_symbols "basic" {
@@ -86,7 +86,7 @@ xkb_symbols "nodeadkeys" {
     include "de(basic)"
     key <TLDE> {	[ asciicircum,	degree		],
 			[   notsign 			]	};
-    key <AE12> {	[ acute,	grave		],
+    key <AE12> {	[ apostrophe,	grave		],
 			[ cedilla			]	};
     key <AD11> {	[ udiaeresis,	Udiaeresis	],
 			[ diaeresis 			]	};
