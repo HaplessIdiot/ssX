@@ -1,5 +1,5 @@
 /* $XConsortium: regmach64.h,v 1.2 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.2 1995/01/28 15:53:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.3 1995/03/06 14:47:16 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -281,7 +281,10 @@
 #define EnhancedVRAMx16		5
 #define EnhancedVRAMx16ssr	6
 
+#define DAC_INTERNAL		0x00
+#define DAC_IBM514		0x01
 #define DAC_ATI68875		0x02
+#define DAC_TVP3026_A		0x72
 #define DAC_BT476		0x03
 #define DAC_BT481		0x04
 #define DAC_ATT20C491		0x14
@@ -290,6 +293,7 @@
 #define DAC_IMSG174		0x44
 #define DAC_ATI68860		0x05
 #define DAC_ATI68880		0x15
+#define DAC_TVP3026_B		0x75
 #define DAC_STG1700		0x06
 #define DAC_ATT498		0x16
 #define DAC_STG1702		0x07
@@ -297,6 +301,7 @@
 #define DAC_ATT21C498		0x27
 #define DAC_STG1703		0x37
 #define DAC_CH8398		0x47
+#define DAC_ATT20C408		0x57
 
 /* CONFIG_CNTL register constants */
 #define MEM_SIZE_ALIAS		0x00000007

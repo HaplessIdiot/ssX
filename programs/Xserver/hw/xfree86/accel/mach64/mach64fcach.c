@@ -1,5 +1,5 @@
 /* $XConsortium: mach64fcach.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.3 1995/07/12 15:35:17 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -74,7 +74,7 @@ mach64FontCache8Init(x,y)
     if (!initialized) {
        ++initialized;
 
-       if (lines < 0)
+       if (lines < 0 || x < 1024)
 	     lines = 0;
     
        cache_sets = lines / 256;

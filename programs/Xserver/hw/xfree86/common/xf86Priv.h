@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.8 1995/03/18 10:59:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.9 1995/07/12 15:37:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -79,6 +79,7 @@ typedef struct {
   Bool          emulate3Buttons;
   int           emulate3Timeout;      /* Timeout for 3 button emulation */
   Bool          chordMiddle;
+  Bool          repeatedMiddle;
   int           mouseFlags;        /* Flags to Clear after opening mouse dev */
 
 #ifndef CSRG_BASED

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.6 1995/07/12 15:35:21 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -168,7 +168,7 @@ mach64CacheInit(w, h)
     int cache_sets;
 
 
-    if (lines < 0)
+    if (lines < 0 || w < 1024)
 	  lines = 0;
 				/* If cache_sets is changed, remember
 				 * to change mach64MaxY in mach64c.im.

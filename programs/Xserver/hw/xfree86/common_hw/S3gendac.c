@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.7 1995/07/01 10:49:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.8 1995/10/21 11:43:05 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -15,6 +15,7 @@
 #define PLL_S3GENDAC      1
 #define PLL_S3TRIO        2
 #define PLL_ET4000GENDAC  3
+#define PLL_ARK2000GENDAC 4
 
 
 extern int vgaIOBase;
@@ -32,6 +33,12 @@ int reg, unsigned char data1, unsigned char data2
 );
 
 static void setET4000gendacpll(
+#if NeedFunctionPrototypes
+int reg, unsigned char data1, unsigned char data2
+#endif
+);
+
+static void setARK2000gendacpll(
 #if NeedFunctionPrototypes
 int reg, unsigned char data1, unsigned char data2
 #endif
@@ -68,6 +75,14 @@ long freq;
 int clk;
 {
    return commonSetClock(freq, clk, 2, PLL_ET4000GENDAC, 100000, 270000);
+}
+
+int
+ARK2000gendacSetClock(freq, clk)
+long freq;
+int clk;
+{
+   return commonSetClock(freq, clk, 0, PLL_ARK2000GENDAC, 100000, 270000);
 }
 
 int
@@ -182,6 +197,9 @@ long freq_min, freq_max;
      case PLL_ET4000GENDAC:
          setET4000gendacpll(clk, m, n);
          break;
+     case PLL_ARK2000GENDAC:
+         setARK2000gendacpll(clk, m, n);
+         break;
      default: 
          ErrorF("Internal error: unknown pll_type in S3gendac.c");
          return -1;
@@ -238,6 +256,36 @@ unsigned char data2;
    outb(vgaCRIndex, 0x31);
    tmp = inb(vgaCRReg) & 0xBF;
    outb(vgaCRReg, tmp | 0x40);  
+   tmp1 = inb(GENDAC_INDEX);
+
+   outb(GENDAC_INDEX, reg);
+   outb(GENDAC_DATA, data1);
+   outb(GENDAC_DATA, data2);
+
+   /* Now clean up our mess */
+   outb(GENDAC_INDEX, tmp1);  
+   outb(vgaCRReg, tmp);
+}
+
+
+static void
+#if NeedFunctionPrototypes
+setARK2000gendacpll(int reg, unsigned char data1, unsigned char data2)
+#else
+setARK2000gendacpll(reg, data1, data2)
+int reg;
+unsigned char data1;
+unsigned char data2;
+#endif
+{
+   unsigned char tmp, tmp1;
+   int vgaCRIndex = vgaIOBase + 4;
+   int vgaCRReg = vgaIOBase + 5;
+		
+   /* set RS2 via CR1C, bit 0x80 */
+   outb(vgaCRIndex, 0x1C);
+   tmp = inb(vgaCRReg) & ~0x80;
+   outb(vgaCRReg, tmp | 0x80);  
    tmp1 = inb(GENDAC_INDEX);
 
    outb(GENDAC_INDEX, reg);

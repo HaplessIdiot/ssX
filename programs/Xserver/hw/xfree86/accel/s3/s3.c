@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.100 1995/09/17 06:31:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.101 1995/10/21 11:39:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -32,8 +32,6 @@
  * 
  * Id: s3.c,v 2.6 1993/08/09 06:17:57 jon Exp jon
  */
-
-#define STG1703_CLOCK_SUPPORT
 
 #include "misc.h"
 #include "cfb.h"
@@ -208,9 +206,7 @@ static Bool ti3026ClockSelect();
 static Bool IBMRGBClockSelect();
 static void s3ProgramTi3025Clock();
 static Bool ch8391ClockSelect();
-#ifdef STG1703_CLOCK_SUPPORT
 static Bool STG1703ClockSelect();
-#endif
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3VLB = FALSE;
@@ -1277,14 +1273,12 @@ s3Probe()
 	    ErrorF("%s %s: Detected an STG1703 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = STG1703_DAC;
-#ifdef STG1703_CLOCK_SUPPORT
 	    if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
 			    &s3InfoRec.clockOptions)) {
 	       OFLG_SET(CLOCK_OPTION_STG1703,    &s3InfoRec.clockOptions);
 	       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	       clockchip_probed = XCONFIG_PROBED;
 	    }
-#endif
          }
 	 xf86setdaccomm(daccomm);
       }
@@ -2188,7 +2182,6 @@ s3Probe()
 	 ErrorF("%s %s: Using Chrontel 8391 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
-#ifdef STG1703_CLOCK_SUPPORT
    } else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &s3InfoRec.clockOptions)) {
       unsigned char mi, ml, mh;
       int mclk;
@@ -2209,7 +2202,7 @@ s3Probe()
       ml = inb(0x3c9);
       mh = inb(0x3c9);
       
-#if 1  /* to be deleted before 3.1.2 */
+#ifdef DEBUG
       for (i=0; i<0x50; i++) {
 	 if (i%16 == 0) ErrorF ("\t%04x",i);
 	 if (i% 8 == 0) ErrorF (" ");
@@ -2239,7 +2232,6 @@ s3Probe()
       else
 	 s3InfoRec.s3MClk = mclk;
       
-#endif
    } else {
       s3ClockSelectFunc = s3ClockSelect;
       numClocks = 16;
@@ -2284,10 +2276,8 @@ s3Probe()
 	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
       } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
-#ifdef STG1703_CLOCK_SUPPORT
       } else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
-#endif
       } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
       } else {
@@ -3602,7 +3592,6 @@ ch8391ClockSelect(freq)
    return(result);
 }
 
-#ifdef STG1703_CLOCK_SUPPORT
 static Bool
 STG1703ClockSelect(freq)
      int   freq;
@@ -3639,7 +3628,6 @@ STG1703ClockSelect(freq)
    LOCK_SYS_REGS;
    return(result);
 }
-#endif
 
 static Bool
 s3ValidMode(mode)

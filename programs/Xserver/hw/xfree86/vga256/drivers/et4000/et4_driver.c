@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.13 1995/06/27 08:35:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.14 1995/10/21 11:45:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -467,6 +467,7 @@ ET4000Probe()
     else
     {
       ErrorF("Unsuported programmable Clock chip.\n");
+      ET4000EnterLeave(LEAVE);
       return(FALSE);
     }
   }

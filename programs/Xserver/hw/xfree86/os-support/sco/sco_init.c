@@ -1,5 +1,5 @@
 /* $XConsortium: sco_init.c,v 1.3 95/01/05 20:42:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.4 1995/01/28 17:04:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.5 1995/06/24 10:29:35 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -232,12 +232,27 @@ int i;
 		}
 		return(1);
 	}
+	if (!strcmp(argv[i], "-crt"))
+	{
+		if ((++i > argc) ||
+		    (sscanf(argv[i], "/dev/tty%2d", &VTnum) == 0))
+		{
+			UseMsg();
+			VTnum = -1;
+			return(0);
+		}
+		else
+		{
+			return(2);
+		}
+	}
 	return(0);
 }
 
 void xf86UseMsg()
 {
 	ErrorF("vtXX                   use the specified VT number\n");
+	ErrorF("-crt /dev/ttyXX        use the specified VT number\n");
 	ErrorF("-keeptty               ");
 	ErrorF("don't detach controlling tty (for debugging only)\n");
 	return;

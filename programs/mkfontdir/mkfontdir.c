@@ -47,6 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c,v 1.12 94/04/17 20:38:47 hersh Exp $ */
+/* $XFree86$ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -118,6 +119,9 @@ extern int errno;
 #include <X11/keysymdef.h>
 
 char *progName;
+#ifdef NOSCALE_HACK
+char *noscale_string = "";
+#endif
 
 static Bool
 WriteFontTable(dirName, table)
@@ -148,7 +152,13 @@ WriteFontTable(dirName, table)
     fprintf(file, "%d\n", table->used);
     for (i = 0; i < table->used; i++) {
 	entry = &table->entries[i];
+#ifndef NOSCALE_HACK
 	fprintf (file, "%s %s\n", entry->u.bitmap.fileName, entry->name.name);
+#else
+	fprintf (file, "%s %s%s\n", entry->u.bitmap.fileName, entry->name.name,
+		 noscale_string);
+#endif
+	
     }
     fclose (file);
     return TRUE;
@@ -484,6 +494,16 @@ main (argc, argv)
 
     BitmapRegisterFontFileFunctions ();
     progName = argv[0];
+#ifdef NOSCALE_HACK
+    if (argc > 1)
+    {
+	if (!strcmp(argv[1], "-noscale")) {
+	    noscale_string = "-noscale";
+	    argc--;
+	    argv++;
+	}
+    }
+#endif
     if (argc == 1)
     {
 	if (!DoDirectory("."))

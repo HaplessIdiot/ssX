@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.58 1995/09/23 01:17:17 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.59 1995/09/23 02:27:11 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -67,6 +67,7 @@ extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
 extern CARD32 defaultScreenSaverTime, ScreenSaverTime;
+extern Bool BitmapNoScaledFonts;
 
 char *xf86VisualNames[] = {
     "StaticGray",
@@ -994,6 +995,9 @@ configServerFlagsSection()
     case DONTZOOM:
       xf86Info.dontZoom = TRUE;
       break;
+    case DONTSCALEBITMAP:
+      BitmapNoScaledFonts = TRUE;
+      break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -1258,6 +1262,15 @@ configPointerSection()
         configError("ChordMiddle is only supported for Microsoft and Logiman");
       break;
 
+    case REPEATEDMIDDLE:
+     if (xf86Info.mseType + MICROSOFT == MICROSOFT) {
+        if (xf86Info.emulate3Buttons)
+          configError("Can't use RepeatedMiddle with Emulate3Buttons");
+        xf86Info.repeatedMiddle = TRUE;
+     }
+     else
+        configError("RepeatedMiddle is only supported for Microsoft");
+      break;
     case CLEARDTR:
 #ifdef CLEARDTR_SUPPORT
       if (xf86Info.mseType + MICROSOFT == MOUSESYS)
@@ -2683,6 +2696,17 @@ xf86LookupMode(target, driver)
           best_mode = p;
         }
       }
+      else if (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &(driver->options)))
+      {
+        if ((p->Clock / 1000) > (driver->maxClock / 1000))
+          clock_too_high = TRUE;
+	else
+	{
+	  target->SynthClock = p->Clock;
+	  target->Clock = 0;
+	  best_mode = p;
+        }
+      }
       else
       {
         i = xf86GetNearestClock(driver, p->Clock);
@@ -2749,8 +2773,9 @@ xf86LookupMode(target, driver)
       ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",
              XCONFIG_GIVEN, driver->name, target->name,
              best_mode->Clock / 1000.0);
-      if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)))
-        ErrorF(", clock used = %7.3f", driver->clock[target->Clock] / 1000.0);       
+      if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)) &&
+	  !OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &(driver->options)))
+        ErrorF(", clock used = %7.3f", driver->clock[target->Clock] / 1000.0);
       ErrorF("\n");
     }
   }

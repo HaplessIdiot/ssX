@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.23 1995/11/05 07:20:17 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.24 1995/11/05 07:28:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -592,6 +592,7 @@ xf86PrintConfig()
   ErrorF("\nXFree86 Version%s/ X Window System\n",XF86_VERSION);
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
+  ErrorF("Release Date: %s\n", XF86_DATE);
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
   ErrorF("Configured drivers:\n");
   for (i = 0; i < xf86MaxScreens; i++)

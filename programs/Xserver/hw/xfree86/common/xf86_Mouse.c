@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Mouse.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.0 1994/09/23 10:13:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.2 1995/01/28 17:03:40 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -339,10 +339,17 @@ xf86MouseProtocol(rBuf, nBytes)
 	buttons = (((int) pBuf[0] & 0x30) == 0x30) ? 2 :
 		  ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
-      else
-	buttons = (xf86Info.lastButtons & 2)
+      else {
+        if (xf86Info.repeatedMiddle) {
+           if (pBuf[0] == 0x40 && !(xf86Info.lastButtons|pBuf[1]|pBuf[2]))
+              buttons = 2;        /* third button on some MS compatible mice */
+           else
+              buttons= ((pBuf[0] & 0x20) >> 3) | ((pBuf[0] & 0x10) >> 4);
+	} else
+              buttons = (xf86Info.lastButtons & 2)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
+      }
       dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
       dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
       break;

@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.16 1995/07/22 09:42:09 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.17 1995/11/04 11:29:23 dawes Exp $
 .TH XFree86 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -120,6 +120,10 @@ manual page, \fIXFree86\fP accepts the following command line switches:
 \fIXFree86\fP will use.  Without this option, \fIXFree86\fP will pick the first
 available Virtual Terminal that it can locate.  This option applies only
 to SVR3, SVR4, Linux, and BSD OSs with the `syscons' or `pcvt' driver.
+.TP 8
+.B -crt /dev/tty\fIXX\fP
+SCO only.  This is the same as the \fBvt\fP option, and is provided for
+compatibility with the native SCO X server.
 .TP 8
 .B \-probeonly
 Causes the server to exit after the device probing stage.  The XF86Config file
@@ -429,7 +433,10 @@ Harm Hanemaayer,   \fIhhanemaa@cs.ruu.nl\fP
 Cirrus accelerated code, and ARK driver.
 .TP 8
 Thomas Zerucha,    \fIzerucha@shell.portal.com\fP
-Support for Cirrus CL-GD7453.
+Support for Cirrus CL-GD7543.
+.TP 8
+Leon Bottou,       \fIbottou@laforia.ibp.fr\fP
+ARK driver.
 .TP 8
 Mike Tierney,      \fIfloyd@eng.umd.edu\fP
 WD accelerated code.

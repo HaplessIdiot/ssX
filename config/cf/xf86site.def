@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.49 1995/09/22 07:06:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.50 1995/09/23 01:41:43 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -257,6 +257,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.49 1995/09/22 07:06:36 dawes Exp $
  * To not build/install the Cyrillic fonts, uncomment the following
  *
 #define BuildCyrillicFonts	NO
+ */
+
+/*
+ * Experimental hack to control scaling of bitmap fonts
+ *
+#define NoScaleHack
  */
 
 /*

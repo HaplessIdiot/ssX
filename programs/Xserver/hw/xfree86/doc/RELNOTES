@@ -1,0 +1,66 @@
+  Release Notes for XFree86[TM] 3.1.2A (beta version)
+  The XFree86 Project, Inc
+
+  12 November 1995
+
+  This document describes what is new in the XFree86 beta version 3.1.2A
+  compared with the current release version 3.1.2.
+
+  1.  General Information about Beta Releases
+
+  This is a beta release of XFree86.  XFree86 beta releases are
+  available to the public in binary form only.  Source code is available
+  only to registered members of the XFree86 beta team.  The main reason
+  for this is that XFree86 beta versions often contain source code from
+  other sources (such as the X Consortium) which is not yet available
+  for public release.  If you want to test or work on these releases at
+  the source code level, you can apply for membership of the XFree86
+  beta team by sending email to XFree86@XFree86.org.
+
+  The X servers included in beta releases have a built-in expiry date.
+  The reason for this is to try to prevent them from persisting beyond
+  the date of the next release.
+
+  The XFree86 binary beta releases may be freely redistributed providing
+  that they are not modified in any way, and providing that an
+  unmodified version of this document is included with the distribution.
+
+  The XFree86 Project encourages people to test the beta releases, and
+  to send us a report.  We need both success and failure reports, and we
+  also need people using already supported hardware to test these beta
+  releases to make sure that we haven't broken anything while adding
+  support for new hardware.  Beta test reports should be sent to
+  Report@XFree86.org.  Please do not send these reports to our usual
+  support address.
+
+  2.  New Features in 3.1.2A
+
+
+  $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.35 1995/11/04 11:30:09 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.15 1995/06/08 06:27:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.16 1995/11/04 11:29:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -908,9 +908,11 @@ xf86PostMseEvent(buttons, dx, dy)
       else
         change = buttons ^ reverseMap[xf86Info.lastButtons];
       if (change & 02)
-	ENQUEUE(&mevent,
-		2, (buttons & 02) ? ButtonPress : ButtonRelease,
-		XE_POINTER);
+	{
+	  ENQUEUE(&mevent,
+		  2, (buttons & 02) ? ButtonPress : ButtonRelease,
+		  XE_POINTER);
+	}
       
       /*
        * emulate the third button by the other two

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.21 1995/07/12 15:35:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.22 1995/07/15 15:05:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -217,14 +217,12 @@ typedef struct ATIInformationBlock {
    int  Clocks[MACH64_NUM_CLOCKS];
    mach64FreqRec Freq_Table[MACH64_NUM_FREQS];
    mach64FreqRec Freq_Table2[MACH64_NUM_FREQS];
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
    int  MinFreq;
    int  MaxFreq;
    int  RefFreq;
    int  RefDivider;
    int  NAdj;
    int  CXClk;
-#endif
 } ATIInformationBlock;
 
 typedef struct _RamdacTable {
@@ -233,7 +231,10 @@ typedef struct _RamdacTable {
 } mach64RamdacTableRec;
 
 mach64RamdacTableRec mach64RamdacTable[] = {
+    { DAC_INTERNAL, "Internal" },
+    { DAC_IBM514, "IBM514" },
     { DAC_ATI68875, "ATI-68875/TLC34075" },
+    { DAC_TVP3026_A, "TVP3026" },
     { DAC_BT476, "Bt476/Bt478/INMOS176/INMOS178" },
     { DAC_BT481, "Bt481" },  
     { DAC_ATT20C491, "AT&T20C491" },
@@ -242,6 +243,7 @@ mach64RamdacTableRec mach64RamdacTable[] = {
     { DAC_IMSG174, "IMS-G174" },
     { DAC_ATI68860, "ATI68860" },
     { DAC_ATI68880, "ATI68880" },
+    { DAC_TVP3026_B, "TVP3026" },
     { DAC_STG1700, "STG1700" },
     { DAC_ATT498, "AT&T498" },
     { DAC_STG1702, "STG1702" },
@@ -249,6 +251,7 @@ mach64RamdacTableRec mach64RamdacTable[] = {
     { DAC_ATT21C498, "AT&T21C498" },
     { DAC_STG1703, "STG1703" },
     { DAC_CH8398, "CH8398" },
+    { DAC_ATT20C408, "AT&T21C408" },
     { 0xff, "Unknown" },
 };  
 
@@ -258,6 +261,8 @@ char *mach64ClockTypeTable[] = {
     "STG1703",
     "CH8398",
     "BedRock",
+    "AT&T20C408",
+    "IBM514",
   };  
 
 #define NUM_CLOCK_TYPES (sizeof(mach64ClockTypeTable) / sizeof(char *))
@@ -270,14 +275,12 @@ int	mach64ClockType;
 int	mach64Clocks[MACH64_NUM_CLOCKS];
 mach64FreqRec mach64FreqTable[MACH64_NUM_FREQS];
 mach64FreqRec mach64FreqTable2[MACH64_NUM_FREQS];
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
 int	mach64MinFreq;
 int	mach64MaxFreq;
 int	mach64RefFreq;
 int	mach64RefDivider;
 int	mach64NAdj;
 int	mach64CXClk;
-#endif
 
 static ATIInformationBlock *GetATIInformationBlock()
 {
@@ -368,14 +371,12 @@ static ATIInformationBlock *GetATIInformationBlock()
    Freq_Table_Ptr = sbios_data[(ROM_Table_Offset >> 1) + 8];
    info.Clock_Type = bios_data[Freq_Table_Ptr];
 
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
    info.MinFreq = sbios_data[(Freq_Table_Ptr >> 1) + 1];
    info.MaxFreq = sbios_data[(Freq_Table_Ptr >> 1) + 2];
    info.RefFreq = sbios_data[(Freq_Table_Ptr >> 1) + 4];
    info.RefDivider = sbios_data[(Freq_Table_Ptr >> 1) + 5];
    info.NAdj = sbios_data[(Freq_Table_Ptr >> 1) + 6];
    info.CXClk = bios_data[Freq_Table_Ptr + 6];
-#endif
 
    CDepth_Table_Ptr = sbios_data[(Freq_Table_Ptr >> 1) - 3];
    Freq_Table_Ptr = sbios_data[(Freq_Table_Ptr >> 1) - 1];
@@ -457,6 +458,7 @@ mach64Probe()
     case DAC_CH8398:
     case DAC_STG1702:
     case DAC_STG1703:
+    case DAC_ATT20C408:
 	break;
     default:
 	if (xf86bpp != 8) {
@@ -538,6 +540,9 @@ mach64Probe()
     case DAC_STG1703:
 	mach64InfoRec.maxClock = 135000;
 	break;
+    case DAC_ATT20C408:
+	mach64InfoRec.maxClock = 135000;
+	break;
     default:
 	mach64InfoRec.maxClock = mach64MaxClock;
 	break;
@@ -554,6 +559,7 @@ mach64Probe()
     OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
     OFLG_SET(OPTION_POWER_SAVER, &validOptions);
     OFLG_SET(OPTION_NO_BIOS_CLOCKS, &validOptions);
+    OFLG_SET(OPTION_PROGRAM_CLOCKS, &validOptions);
     xf86VerifyOptions(&validOptions, &mach64InfoRec);
 
     mach64InfoRec.chipset = "mach64";
@@ -585,14 +591,12 @@ mach64Probe()
     mach64MemType = info->Mem_Type;
     mach64Ramdac = info->DAC_Type;
     mach64RamdacSubType = info->DAC_SubType;
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
     mach64MinFreq = info->MinFreq;
     mach64MaxFreq = info->MaxFreq;
     mach64RefFreq = info->RefFreq;
     mach64RefDivider = info->RefDivider;
     mach64NAdj = info->NAdj;
     mach64CXClk = info->CXClk;
-#endif
 
     mach64ClockType = info->Clock_Type;
     for (i = 0; i < MACH64_NUM_CLOCKS; i++)
@@ -602,56 +606,65 @@ mach64Probe()
     for (i = 0; i < MACH64_NUM_FREQS; i++)
 	mach64FreqTable2[i] = info->Freq_Table2[i];
 
-    /* No need to use auto probing code since the BIOS contains all of
-     * the clocks unless the "no_bios_clocks" option is set. */
-    if (!mach64InfoRec.clocks ||
-	!OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) {
+    if (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
 	if (mach64InfoRec.clocks) {
-	    ErrorF("Warning: Clocks being read from the video card's BIOS,\n");
-	    ErrorF("  and the clocks lines in XF86Config file are ignored\n");
-	    ErrorF("  (see man page or README.Mach64 for more details).\n");
-	} else if (OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) {
-	    ErrorF("Warning: \"no_bios_clocks\" option set, but no Clocks\n");
-	    ErrorF("  given in XF86Config file.  Clocks being read from\n");
-	    ErrorF("  the video card's BIOS (see man page or README.Mach64\n");
-	    ErrorF("  for more details).\n");
+	    ErrorF("Warning: Clocks being programmed from the video mode\n");
+	    ErrorF("  specifications and the clocks lines in XF86Config\n");
+	    ErrorF("  file are ignored.\n");
 	}
 	for (i = 0; i < MACH64_NUM_CLOCKS; i++) {
 	    mach64InfoRec.clock[i] = mach64Clocks[i] * 10;
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
-	    mach64InfoRec.clock[i + MACH64_NUM_CLOCKS] = mach64Clocks[i] * 5;
-#endif
 	}
-
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
-	mach64InfoRec.clocks = MACH64_NUM_CLOCKS*2;
-#else
 	mach64InfoRec.clocks = MACH64_NUM_CLOCKS;
-#endif
     } else {
-	ErrorF("Warning: BIOS Clocks overidden.\n");
+	/* No need to use auto probing code since the BIOS contains
+	 * all of the clocks unless the "no_bios_clocks" option is
+	 * set. */
+	if (!mach64InfoRec.clocks ||
+	    !OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) {
+	    if (mach64InfoRec.clocks) {
+		ErrorF("Warning: Clocks being read from the video card's BIOS,\n");
+		ErrorF("  and the clocks lines in XF86Config file are ignored\n");
+		ErrorF("  (see man page or README.Mach64 for more details).\n");
+	    } else if (OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) {
+		ErrorF("Warning: \"no_bios_clocks\" option set, but no Clocks\n");
+		ErrorF("  given in XF86Config file.  Clocks being read from\n");
+		ErrorF("  the video card's BIOS (see man page or README.Mach64\n");
+		ErrorF("  for more details).\n");
+	    }
+	    for (i = 0; i < MACH64_NUM_CLOCKS; i++) {
+		mach64InfoRec.clock[i] = mach64Clocks[i] * 10;
+		mach64InfoRec.clock[i + MACH64_NUM_CLOCKS] = mach64Clocks[i] * 5;
+	    }
+
+	    mach64InfoRec.clocks = MACH64_NUM_CLOCKS*2;
+	} else {
+	    ErrorF("Warning: BIOS Clocks overidden.\n");
+	}
     }
 
     if (xf86Verbose) {
 	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
 	       mach64ClockType < NUM_CLOCK_TYPES ?
 		mach64ClockTypeTable[mach64ClockType] : "Unknown");
-	ErrorF("%s ",(OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
-		      OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
-			XCONFIG_GIVEN : XCONFIG_PROBED);
-	ErrorF("%s: ", mach64InfoRec.name);
-	ErrorF("Number of Clocks: %d", mach64InfoRec.clocks);
+	if (!OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
+	    ErrorF("%s ",(OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
+			  OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
+		   XCONFIG_GIVEN : XCONFIG_PROBED);
+	    ErrorF("%s: ", mach64InfoRec.name);
+	    ErrorF("Number of Clocks: %d", mach64InfoRec.clocks);
 
-	for (i = 0; i < mach64InfoRec.clocks; i++) {
-	    if (i % 8 == 0) 
-               ErrorF("\n%s %s: clocks:", 
-                 (OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
-		  OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
-                 XCONFIG_GIVEN : XCONFIG_PROBED,
-                 mach64InfoRec.name);
-	    ErrorF(" %6.2f", mach64InfoRec.clock[i]/1000.0);
+	    for (i = 0; i < mach64InfoRec.clocks; i++) {
+		if (i % 8 == 0) 
+		    ErrorF("\n%s %s: clocks:", 
+			   (OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
+			    OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
+			   XCONFIG_GIVEN : XCONFIG_PROBED,
+			   mach64InfoRec.name);
+		ErrorF(" %6.2f", mach64InfoRec.clock[i]/1000.0);
+	    }
+	    ErrorF("\n");
 	}
-	ErrorF("\n");
     }
 
     tx = mach64InfoRec.virtualX;
@@ -689,7 +702,9 @@ mach64Probe()
 		    if ((mach64FreqTable2[i].h_disp << 3 >= pMode->HDisplay) &&
 			(mach64FreqTable2[i].dacmask == mach64RamdacSubType) &&
 			(mach64FreqTable2[i].max_dot_clock >=
-			 mach64InfoRec.clock[pMode->Clock] / 1000) &&
+			 ((OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) ?
+			  pMode->SynthClock / 1000:
+			  mach64InfoRec.clock[pMode->Clock] / 1000)) &&
 			(mach64CDepths[mach64FreqTable2[i].color_depth & 0x07]
 			 >= mach64InfoRec.bitsPerPixel)) {
 			found = TRUE;
@@ -701,7 +716,9 @@ mach64Probe()
 			if ((mach64FreqTable[i].h_disp << 3 >= pMode->HDisplay) &&
 			    (mach64FreqTable[i].dacmask & (1 << mach64Ramdac)) &&
 			    (mach64FreqTable[i].max_dot_clock >=
-			     mach64InfoRec.clock[pMode->Clock] / 1000) &&
+			     ((OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) ?
+			      pMode->SynthClock / 1000 :
+			      mach64InfoRec.clock[pMode->Clock] / 1000)) &&
 			    (mach64CDepths[mach64FreqTable[i].color_depth & 0x07]
 			     >= mach64InfoRec.bitsPerPixel)) {
 			    found = TRUE;

@@ -465,7 +465,7 @@ versions when your driver needs to do things differently for them.  For
 example, suppose the SDC driver supports the SDC-1a, SDC-1b, and SDC-2
 chipsets.  The -1a and -1b are essentially the same, but different from the
 -2 chipset.  Your driver should support the -1 and -2 chipsets, and not
-distinguish between the -1a and -1a.  This will simplify things for the
+distinguish between the -1a and -1b.  This will simplify things for the
 end user.
 
 In cases where you want to give the user control of driver behavior, or
@@ -904,7 +904,7 @@ Sunnyvale, CA  94086 <newline>
 
 <verb>
 $XConsortium: VGADriv.sgml,v 1.3 95/01/23 15:34:51 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.4 1995/01/21 10:44:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.5 1995/01/28 16:02:34 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 # $XConsortium: iso8859-1,v 1.5 95/06/07 18:45:50 kaleb Exp $
-# $XFree86: xc/nls/X11/locale/Compose/iso8859-1,v 3.2 1995/07/03 08:39:30 dawes Exp $
+# $XFree86: xc/nls/X11/locale/Compose/iso8859-1,v 3.3 1995/07/08 10:27:05 dawes Exp $
 #
 # ISO 8859-1 (Latin1) Compose Sequence
 #
@@ -354,7 +354,7 @@
 <dead_acute> <space>			: "'"	apostrophe
 <dead_diaeresis> <space>		: "\250"	diaeresis
 <dead_circumflex> <space>		: "^"	asciicircum
-<dead_tilde> <space>			: "~"	tilde
+<dead_tilde> <space>			: "~"	asciitilde
 <dead_grave> <space>			: "`"	grave
 <dead_acute> <space>			: "'"	apostrophe
 <dead_circumflex> <0>			: "\260"	degree

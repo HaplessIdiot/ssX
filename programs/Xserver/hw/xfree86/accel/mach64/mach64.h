@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.h,v 1.2 95/01/16 13:16:32 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.5 1995/01/28 15:53:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.6 1995/03/06 14:47:09 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -33,8 +33,6 @@
 
 #define MACH64_CURSBYTES	1024
 #define MACH64_CURSMAX		64
-
-#define IMPLEMENTED_CLOCK_PROGRAMMING
 
 #include "X.h"
 #include "input.h"
@@ -74,14 +72,12 @@ extern int mach64BusType;
 extern int mach64MemType;
 extern int mach64ClockType;
 extern int mach64Clocks[MACH64_NUM_CLOCKS];
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
 extern int mach64MinFreq;
 extern int mach64MaxFreq;
 extern int mach64RefFreq;
 extern int mach64RefDivider;
 extern int mach64NAdj;
 extern int mach64CXClk;
-#endif
 
 extern unsigned int mach64MemorySize;
 

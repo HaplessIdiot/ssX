@@ -1,5 +1,5 @@
 /* $XConsortium: bitmapfunc.c,v 1.8 94/04/17 20:17:12 gildea Exp $ */
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.0 1994/12/17 09:40:51 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.1 1994/12/18 10:55:30 dawes Exp $ */
 
 /*
 
@@ -48,6 +48,8 @@ extern int  BitmapOpenScalable ();
 int	    BitmapGetInfoBitmap ();
 extern int  BitmapGetInfoScalable ();
 
+Bool BitmapNoScaledFonts = FALSE;
+
 /*
  * these two arrays must be in the same order
  */
@@ -66,7 +68,7 @@ static BitmapFileFunctionsRec readers[] = {
 
 #define CAPABILITIES (CAP_MATRIX | CAP_CHARSUBSETTING)
 
-static FontRendererRec	renderers[] = {
+static FontRendererRec	renderers_scale[] = {
     ".pcf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
@@ -98,6 +100,41 @@ static FontRendererRec	renderers[] = {
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES,
 };
+
+static FontRendererRec	renderers_noscale[] = {
+    ".pcf", 4,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+    ".pcf.Z", 6,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+#ifdef __EMX__
+    ".pcz", 4,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+#endif
+    ".snf", 4,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+    ".snf.Z", 6,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+    ".bdf", 4,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+    ".bdf.Z", 6,
+    BitmapOpenBitmap, (int (*)())NULL,
+	BitmapGetInfoBitmap, (int (*)())NULL, 0,
+	CAPABILITIES,
+};
+
+static FontRendererPtr  renderers = renderers_scale;
 
 BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask,
 		  non_cachable_font)
@@ -176,11 +213,16 @@ BitmapGetInfoBitmap (fpe, pFontInfo, entry, fileName)
     return ret;
 }
 
-#define numRenderers	(sizeof renderers / sizeof renderers[0])
+#define numRenderers	(sizeof renderers_scale / sizeof renderers_scale[0])
 
 BitmapRegisterFontFileFunctions ()
 {
     int	    i;
+
+    if (BitmapNoScaledFonts)
+	renderers = renderers_noscale;
+    else
+	renderers = renderers_scale;
 
     for (i = 0; i < numRenderers; i++)
 	FontFileRegisterRenderer (&renderers[i]);

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.6 95/01/23 15:34:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.18 1995/07/05 12:40:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.19 1995/07/15 15:07:38 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -72,7 +72,7 @@ HWREADME =  README.ati README.trident README.tseng README.WstDig \
             README.cirrus README.Video7 README.P9000 README.agx \
             README.S3 README.W32 README.Oak README.Mach64 README.ark
 
-MAINDOCS = COPYRIGHT README README.Config INSTALL
+MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
 
 OTHERDOCS = VideoModes.doc README.clkprog
 #endif

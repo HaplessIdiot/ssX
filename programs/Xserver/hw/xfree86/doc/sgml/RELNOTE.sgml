@@ -1,0 +1,151 @@
+<!doctype linuxdoc system>
+
+ <article>
+
+ <title>Release Notes for XFree86&tm; 3.1.2A (beta version)
+ <author> The XFree86 Project, Inc
+ <date>12 November 1995
+
+
+<abstract>
+
+This document describes what is new in the XFree86 beta version 3.1.2A
+compared with the current release version 3.1.2.
+
+</abstract>
+
+<toc>
+
+<sect> General Information about Beta Releases
+<p>
+This is a beta release of XFree86.  XFree86 beta releases are available
+to the public in binary form only.  Source code is available only to
+registered members of the XFree86 beta team.  The main reason for this
+is that XFree86 beta versions often contain source code from other
+sources (such as the X Consortium) which is not yet available for public
+release.  If you want to test or work on these releases at the source
+code level, you can apply for membership of the XFree86 beta team by
+sending email to <htmlurl name="XFree86@XFree86.org"
+url="mailto:XFree86@XFree86.org">.
+
+The X servers included in beta releases have a built-in expiry date.
+The reason for this is to try to prevent them from persisting beyond the
+date of the next release.
+
+The XFree86 binary beta releases may be freely redistributed providing that
+they are not modified in any way, and providing that an unmodified version
+of this document is included with the distribution.
+
+The XFree86 Project encourages people to test the beta releases, and to
+send us a report.  We need both success and failure reports, and we also
+need people using already supported hardware to test these beta releases
+to make sure that we haven't broken anything while adding support for
+new hardware.  Beta test reports should be sent to <htmlurl
+name="Report@XFree86.org" url="mailto:Report@XFree86.org">.  Please do not
+send these reports to our usual support address.
+
+<sect> New Features in 3.1.2A
+<sect1> General X server changes
+<p>
+<itemize>
+  <item>Underscore characters are now ignored in Options and keywords in the 
+	XF86Config file.
+  <item>The built-in X server malloc is used by default.
+  <item>A new pointer keyword <tt>RepeatMiddle</tt> has been added to support
+	dual-protocol 3-button mice which repeat the previous button event
+	when the middle button is pressed in Microsoft-compatible mode.  If
+	you've had problems getting the middle button working on your mouse,
+	try this.
+</itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>Support is included for the TGUI 9440.
+</itemize>
+<sect1> Cirrus driver (SVGA server)
+<p>
+<itemize>
+  <item>Support has been added for the CL-GD7543.
+  <item>The programmable clock code has been improved to avoid unstable
+	settings.
+</itemize>
+<sect1> ARK driver (SVGA server)
+<p>
+<itemize>
+  <item>Preliminary support has been added for the ICS5342 RAMDAC/programmable
+	clock, which is used on the Stealth64 Graphics 2001 card.
+	To enable this, add the following lines to the Device section of your
+	XF86Config file:
+	<tscreen><verb>
+	Ramdac    "ics5342"
+	ClockChip "ics5342"
+	</verb></tscreen>
+	Do not include any <tt>Clocks</tt> lines in your XF86Config file.
+  <item>Panning has been fixed for ARK2000PV cards with 2MB of video memory.
+</itemize>
+<sect1> WD90C24 driver (SVGA server)
+<p>
+<itemize>
+  <item>A problem with snow at high clocks has been fixed.
+</itemize>
+<sect1> S3 server
+<p>
+<itemize>
+  <item>The default InvertVCLK settings have been changed for &num;9 Motion
+	771 cards and Hercules Terminator 64 Pro cards.  If you have
+	needed to add Invert_VCLK lines to your XF86Config file to avoid
+	screen wrapping with version 3.1.2, please remove them when
+	testing this version.  If there are problems with the new
+	defaults, please report them to us.
+</itemize>
+<sect1> Mach32 server
+<p>
+<itemize>
+  <item>Hardware cursor mask problem has been fixed.
+</itemize>
+<sect1> Mach64 server
+<p>
+<itemize>
+  <item>Hardware cursor mask problem has been fixed.
+  <item>Support for the AT&amp;T 20C408 RAMDAC/Clockchip has been added.
+  <item>Arbitrary clocks can be used on most boards with supported clock chips.
+	This is enabled with the <tt>&dquot;program_clocks&dquot;</tt> option.
+</itemize>
+<sect1> ET4000/W32 server
+<p>
+<itemize>
+  <item>Preliminary support has been added for the ICS5341 programmable clock.
+	To enable this, add the following lines to the Device section of your
+	XF86Config file:
+	<tscreen><verb>
+	Ramdac    "ics5341"
+	ClockChip "ics5341"
+	</verb></tscreen>
+</itemize>
+<sect1> VGA16 server
+<p>
+<itemize>
+  <item>A problem preventing the StaticGray visual has been fixed.
+</itemize>
+<sect1> xf86config utility
+<p>
+<itemize>
+  <item>Incorrect handling of IBM RGB Ramdacs has been fixed.
+</itemize>
+<sect1> Client/Library changes
+<p>
+<itemize>
+  <item>xconsole has been updated for Unixware 2.x.
+  <item>Colour support has been added to xterm.
+  <item>XNLS support has been added for KOI8-R.
+  <item>xrdb dynamically allocates string space to avoid overruns.
+  <item>A memory overrun problem in xterm has been fixed.
+  <item>An "AllowNullPasswd" resource has been added to xdm.
+</itemize>
+<p>
+
+<verb>
+$XFree86$
+</verb>
+
+</article>

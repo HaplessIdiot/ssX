@@ -36,6 +36,7 @@
 .\" suitability of this software for any purpose.  It is provided "as is"
 .\" without express or implied warranty.
 .\" $XConsortium: xfs.man,v 1.10 94/04/17 19:55:50 dpw Exp $
+.\" $XFree86$
 .TH XFS 1 "Release 6" "X Version 11"
 .SH NAME
 xfs \- X font server
@@ -65,6 +66,9 @@ additional connections.
 .TP 8
 .B \-port tcp_port
 Specifies the TCP port number on which the server will listen for connections.
+.TP 8
+.B \-noscale
+Disables scaling of bitmap fonts.
 .SH "SIGNALS"
 .TP 8
 .I SIGTERM

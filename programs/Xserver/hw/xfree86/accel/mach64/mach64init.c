@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.6 1995/07/12 15:35:19 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -141,49 +141,92 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
     if (OFLG_ISSET(OPTION_CSYNC, &mach64InfoRec.options))
 	crtcRegs->crtc_gen_cntl |= CRTC_CSYNC_EN;
 
-    crtcRegs->clock_cntl = mode->Clock;
-    crtcRegs->dot_clock = mach64InfoRec.clock[mode->Clock] / 10;
+    if (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
+	crtcRegs->clock_cntl = mach64CXClk;
+	crtcRegs->dot_clock = mode->SynthClock / 10;
 
-    switch (mach64RamdacSubType) {
-    case DAC_STG1702:
-    case DAC_STG1703:
-	switch (mach64InfoRec.bitsPerPixel) {
-	case 8:
-	    if (crtcRegs->dot_clock > 11000)
-		crtcRegs->clock_cntl |= CLOCK_DIV2;
+	switch (mach64RamdacSubType) {
+	case DAC_STG1702:
+	case DAC_STG1703:
+	    switch (mach64InfoRec.bitsPerPixel) {
+	    case 8:
+		if (crtcRegs->dot_clock > 11000)
+		    crtcRegs->clock_cntl |= CLOCK_DIV2;
+		break;
+	    case 32:
+		crtcRegs->dot_clock += crtcRegs->dot_clock >> 1;
+		break;
+	    default:
+		break;
+	    }
 	    break;
-	case 32:
-	    crtcRegs->dot_clock += crtcRegs->dot_clock >> 1;
-	    i = xf86GetNearestClock(&mach64InfoRec, crtcRegs->dot_clock*10);
-	    if (abs(crtcRegs->dot_clock*10 - mach64InfoRec.clock[i]) <= 2000)
-		crtcRegs->clock_cntl = i;
-	    else
-		crtcRegs->clock_cntl = mach64CXClk;
-	    break;
-	default:
-	    break;
-	}
-	break;
-    case DAC_CH8398:
-	switch (mach64InfoRec.bitsPerPixel) {
-	case 8:
-	    if (crtcRegs->dot_clock > 8000)
-		crtcRegs->clock_cntl |= CLOCK_DIV2;
-	    break;
-	case 32:
-	    crtcRegs->dot_clock += crtcRegs->dot_clock >> 1;
-	    i = xf86GetNearestClock(&mach64InfoRec, crtcRegs->dot_clock*10);
-	    if (abs(crtcRegs->dot_clock*10 - mach64InfoRec.clock[i]) <= 2000)
-		crtcRegs->clock_cntl = i;
-	    else
-		crtcRegs->clock_cntl = mach64CXClk;
+	case DAC_ATT20C408:
+	case DAC_CH8398:
+	    switch (mach64InfoRec.bitsPerPixel) {
+	    case 8:
+		if (crtcRegs->dot_clock > 8000)
+		    crtcRegs->clock_cntl |= CLOCK_DIV2;
+		break;
+	    case 32:
+		crtcRegs->dot_clock += crtcRegs->dot_clock >> 1;
+		break;
+	    default:
+		break;
+	    }
 	    break;
 	default:
 	    break;
 	}
-	break;
-    default:
-	break;
+    } else {
+	crtcRegs->clock_cntl = mode->Clock;
+	crtcRegs->dot_clock = mach64InfoRec.clock[mode->Clock] / 10;
+
+	switch (mach64RamdacSubType) {
+	case DAC_STG1702:
+	case DAC_STG1703:
+	    switch (mach64InfoRec.bitsPerPixel) {
+	    case 8:
+		if (crtcRegs->dot_clock > 11000)
+		    crtcRegs->clock_cntl |= CLOCK_DIV2;
+		break;
+	    case 32:
+		crtcRegs->dot_clock += crtcRegs->dot_clock >> 1;
+		i = xf86GetNearestClock(&mach64InfoRec,
+					crtcRegs->dot_clock*10);
+		if (abs(crtcRegs->dot_clock*10 - mach64InfoRec.clock[i])
+		    <= 2000)
+		    crtcRegs->clock_cntl = i;
+		else
+		    crtcRegs->clock_cntl = mach64CXClk;
+		break;
+	    default:
+		break;
+	    }
+	    break;
+	case DAC_ATT20C408:
+	case DAC_CH8398:
+	    switch (mach64InfoRec.bitsPerPixel) {
+	    case 8:
+		if (crtcRegs->dot_clock > 8000)
+		    crtcRegs->clock_cntl |= CLOCK_DIV2;
+		break;
+	    case 32:
+		crtcRegs->dot_clock += crtcRegs->dot_clock >> 1;
+		i = xf86GetNearestClock(&mach64InfoRec,
+					crtcRegs->dot_clock*10);
+		if (abs(crtcRegs->dot_clock*10 - mach64InfoRec.clock[i])
+		    <= 2000)
+		    crtcRegs->clock_cntl = i;
+		else
+		    crtcRegs->clock_cntl = mach64CXClk;
+		break;
+	    default:
+		break;
+	    }
+	    break;
+	default:
+	    break;
+	}
     }
 
     crtcRegs->fifo_v1 =	mach64FIFOdepth(crtcRegs->color_depth,
@@ -271,7 +314,6 @@ void mach64DACRead4()
     (void)inb(ioDAC_REGS+2);
 }
 
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
 /*
  * mach64StrobeClock --
  *
@@ -376,7 +418,7 @@ void mach64ProgramICS2595(clkCntl, MHz100)
 	}
     }
 
-   program_word |= STOP_BITS_2595;
+    program_word |= STOP_BITS_2595;
 
     /* Program the clock chip */
     outb(ioCLOCK_CNTL, 0);
@@ -422,7 +464,7 @@ void mach64ProgramClk1703(clkCntl, MHz100)
     old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
 
-#define MIN_N1		6
+#define MIN_N_1703		6
 
     /* Calculate program word */
     if (MHz100 == 0) {
@@ -438,10 +480,10 @@ void mach64ProgramClk1703(clkCntl, MHz100)
 	}
 
 	temp = (unsigned int)(mhz100);
-	temp = (unsigned int)(temp * (MIN_N1 + 2));
+	temp = (unsigned int)(temp * (MIN_N_1703 + 2));
 	temp -= (short)(mach64RefFreq << 1);
 
-	tempA = MIN_N1;
+	tempA = MIN_N_1703;
 	preRemainder = 0xffff;
 
 	do {
@@ -458,7 +500,7 @@ void mach64ProgramClk1703(clkCntl, MHz100)
 
 	    temp += mhz100;
 	    tempA++;
-	} while (tempA <= (MIN_N1 << 1));
+	} while (tempA <= (MIN_N_1703 << 1));
 
 	program_word = divider;
     }
@@ -485,88 +527,60 @@ void mach64ProgramClk8398(clkCntl, MHz100)
     int MHz100;
 {
     char old_crtc_ext_disp;
-    unsigned int program_word;
-    unsigned int temp, tempB, tempC;
+    float tempA, tempB, fOut, longMHz100, diff, preDiff;
+    unsigned int temp;
+    unsigned short program_word;
+    unsigned short m, n, k=0, save_m, save_n, twoToKth;
     unsigned short mhz100 = MHz100;
-    unsigned short tempA, remainder, divider;
 
     old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
 
 #define MIN_M		2
-#define MAX_Ma		8
-#define MAX_Mb		32
-#define M_BOUNDARY	5000
-#define MAX_N		255
-#define DOTCLK_TOLERANCE 25
+#define MAX_M		30
+#define MIN_N		35
+#define MAX_N		255-8
 
     /* Calculate program word */
-    if (MHz100 == 0) {
+    if (mhz100 == 0) {
 	program_word = 0xe0;
     } else {
 	if (mhz100 < mach64MinFreq) mhz100 = mach64MinFreq;
 	if (mhz100 > mach64MaxFreq) mhz100 = mach64MaxFreq;
 
-	divider = 0;
+	longMHz100 = (float) mhz100/100;
+
 	while (mhz100 < (mach64MinFreq << 3)) {
 	    mhz100 <<= 1;
-	    divider += 0x40;
+	    k++;
 	}
 
-	temp = (unsigned int)(mhz100);
-	temp = (unsigned int)(temp * (MIN_M + 2));
-	temp -= (short)(mach64RefFreq << 3);
+	twoToKth = 1 << k;
+	diff = 0.0;
+	preDiff = 0xffffffff;
 
-	tempA = MIN_M;
-	tempC = 0xffff;
+	for (m = MIN_M; m <= MAX_M; m++) {
+	    for (n = MIN_N; n <= MAX_N; n++) {
+		tempA = 14.31818;
+		tempA *= (float)(n+8);
+		tempB = (float)twoToKth;
+		tempB *= (m+2);
+		fOut = tempA/tempB;
 
-	do {
-	    tempB = temp;
-	    remainder = tempB % mach64RefFreq;
-	    tempB = tempB / mach64RefFreq;
-
-	    if (remainder > (mach64RefFreq >> 1)) {
-		remainder = mach64RefFreq - remainder;
-		tempB++;
-	    }
-
-	    if (tempB <= MAX_N &&
-		((tempB == 8 || tempB == 9) ||
-		 (tempB >= 16 && tempB <= 18) ||
-		 (tempB >= 24 && tempB <= 27) ||
-		 (tempB >= 32 && tempB <= 36) ||
-		 (tempB >= 40 && tempB <= 45) ||
-		 (tempB >= 48 && tempB <= 54))) {
-		unsigned int tempD;
-
-		tempD = tempB;
-		tempB += 8;
-		tempB = tempB / (MIN_M + 2);
-
-		if (tempB > mhz100)
-		    tempB = tempB - mhz100;
+		if (longMHz100 > fOut)
+		    diff = longMHz100 - fOut;
 		else
-		    tempB = mhz100 - tempB;
+		    diff = fOut - longMHz100;
 
-		if (tempB <= tempC) {
-		    tempC = tempB;
-		    divider &= 0xffc0;
-		    divider |= tempA;
-		    divider &= 0xff;
-		    divider |= ((tempD & 0xff) << 8);
+		if (diff < preDiff) {
+		    save_m = m;
+		    save_n = n;
+		    preDiff = diff;
 		}
 	    }
+	}
 
-	    temp += mhz100;
-	    tempA++;
-
-	    if (mhz100 >= M_BOUNDARY) {
-		if (tempC < (DOTCLK_TOLERANCE >> 1))
-		    break;
-	    }
-	} while (tempA <= MAX_Mb);
-
-	program_word = divider;
+	program_word = (k << 6) + (save_m) + (save_n << 8);
     }
 
     /* Program clock */
@@ -579,6 +593,108 @@ void mach64ProgramClk8398(clkCntl, MHz100)
 
     temp = inb(ioDAC_CNTL);
     outb(ioDAC_CNTL, (temp & ~DAC_EXT_SEL_RS2) | DAC_EXT_SEL_RS3);
+
+    inb(ioDAC_REGS); /* Clear DAC Counter */
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
+}
+
+/*
+ * mach64ProgramClk408 --
+ *
+ */
+void mach64ProgramClk408(clkCntl, MHz100)
+    int clkCntl;
+    int MHz100;
+{
+    char old_crtc_ext_disp;
+    unsigned char tmpA, tmpB, tmpC;
+    unsigned int temp, tempB;
+    unsigned short program_word;
+    unsigned short remainder, preRemainder;
+    unsigned short mhz100 = MHz100;
+    short divider = 0, tempA;
+
+    old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
+
+#define MIN_N_408		2
+
+    /* Calculate program word */
+    if (mhz100 == 0) {
+	program_word = 0xff;
+    } else {
+	if (mhz100 < mach64MinFreq) mhz100 = mach64MinFreq;
+	if (mhz100 > mach64MaxFreq) mhz100 = mach64MaxFreq;
+
+	while (mhz100 < (mach64MinFreq << 3)) {
+	    mhz100 <<= 1;
+	    divider += 0x40;
+	}
+
+	temp = (unsigned int)mhz100;
+	temp = (unsigned int)(temp * (MIN_N_408 + 2));
+	temp -= ((short)(mach64RefFreq << 1));
+
+	tempA = MIN_N_408;
+	preRemainder = 0xffff;
+
+	do {
+	    tempB = temp;
+	    remainder = tempB % mach64RefFreq;
+	    tempB = tempB / mach64RefFreq;
+	    if (((tempB & 0xffff) <= 255) && (remainder <= preRemainder)) {
+		preRemainder = remainder;
+		divider &= ~0x3f;
+		divider |= tempA;
+		divider = (divider & 0x00ff) + ((tempB & 0xff) << 8);
+	    }
+	    temp += mhz100;
+	    tempA++;
+	} while (tempA <= 32);
+
+	program_word = divider;
+    }
+
+    /* Program clock */
+    mach64DACRead4();
+    tmpB = inb(ioDAC_REGS+2) | 1;
+    mach64DACRead4();
+    outb(ioDAC_REGS+2, tmpB);
+
+    tmpA = tmpB;
+    tmpC = tmpA;
+    tmpA |= 8;
+    tmpB = 1;
+
+    outb(ioDAC_REGS, tmpB);
+    outb(ioDAC_REGS+2, tmpA);
+
+    usleep(400); /* delay for 400 us */
+    clkCntl = (clkCntl << 2) + 0x40;
+    tmpB = clkCntl;
+    tmpA = program_word >> 8;
+
+    outb(ioDAC_REGS, tmpB);
+    outb(ioDAC_REGS+2, tmpA);
+
+    tmpB = clkCntl+1;
+    tmpA = (unsigned char)program_word;
+
+    outb(ioDAC_REGS, tmpB);
+    outb(ioDAC_REGS+2, tmpA);
+
+    tmpB = clkCntl+2;
+    tmpA = 0x77;
+
+    outb(ioDAC_REGS, tmpB);
+    outb(ioDAC_REGS+2, tmpA);
+
+    usleep(400); /* delay for 400 us */
+    tmpA = tmpC & (~(1 | 8));
+    tmpB = 1;
+
+    outb(ioDAC_REGS, tmpB);
+    outb(ioDAC_REGS+2, tmpA);
 
     inb(ioDAC_REGS); /* Clear DAC Counter */
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
@@ -602,14 +718,15 @@ void mach64ProgramClk(clkCntl, MHz100)
     case 3: /* CH8398 */
 	mach64ProgramClk8398(clkCntl, MHz100);
 	break;
+    case 5: /* ATT20C408 */
+	mach64ProgramClk408(clkCntl, MHz100);
+	break;
     default:
 	ErrorF("mach64ProgramClk: ClockType %d not currently supported.\n",
 	       mach64ClockType);
 	break;
     }
 }
-#endif
-
 
 /*
  * mach64SetCRTCRegs --
@@ -628,15 +745,17 @@ void mach64SetCRTCRegs(crtcRegs)
     crtcGenCntl = regr(CRTC_GEN_CNTL);
     regw(CRTC_GEN_CNTL, crtcGenCntl & ~CRTC_EXT_EN);
 
-#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
     /* Check to see if we need to program the clock chip */
     if (mach64ClockType != 0 &&
 	((mach64Ramdac == DAC_ATI68860 && crtcRegs->clock_cntl & 0x30) ||
-	 (crtcRegs->clock_cntl == mach64CXClk))) {
-	mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock);
+	 (crtcRegs->clock_cntl == mach64CXClk) ||
+	 (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)))) {
+	if (crtcRegs->clock_cntl & CLOCK_DIV2)
+	    mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock >> 1);
+	else
+	    mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock);
 	crtcRegs->clock_cntl = mach64CXClk;
     }
-#endif
 
     WaitQueue(12);
     /* Horizontal CRTC registers */
@@ -1372,6 +1491,9 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
     case DAC_STG1702:
     case DAC_STG1703:
 	muxMode = mach64ProgramSTG1702(colorDepth, dotClock);
+	break;
+    case DAC_ATT20C408:
+	muxMode = mach64ProgramATT21C498(colorDepth, dotClock);
 	break;
 #ifdef NOT_YET_SUPPORTED
     case DAC_STG1700:

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.41 1995/11/04 11:30:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.42 1995/11/05 07:23:08 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -858,6 +858,8 @@ cirrusProbe()
 	       {
 	       if (cirrusChip == CLGD7543 )
 		    {
+		    outb(vgaIOBase + 4, 0x43); /* access fine dotclk delay */
+		    outb(vgaIOBase + 5, 0x2a); /* set to 2 pixels */
 		    outb(vgaIOBase + 4, 0x2d);
 		    temp = (inb(vgaIOBase + 5) | 0x00) & 0xFE;
 		    outb(vgaIOBase + 5, temp); /* this disables centering */

@@ -1,3 +1,30 @@
+XFree86 3.1.2d (12 November 1995)
+ 64. Fix a typo in the iso8859-1 Compose file.
+ 63. Add a '-noscale' flag to the Xserver and xfs to allow scaling of
+     bitmap fonts to be disabled.  The keyword DontScaleBitmapFonts
+     in the ServerFlags section of the XF86Config file has the same affect.
+ 62. Fix problem that prevents bitmap fonts from being scaled after
+     running something like 'xset fp rehash'.
+ 61. Add a Release Date to the X server startup messages.
+ 60. Add a "RELNOTES" document to describe changes in beta releases.
+ 59. Fix panning for ARK2000PV chips with 2MB of memory (Leon Bottou).
+ 58. Support for ICS5342 programmable clock in the ARK driver (Leon Bottou).
+ 57. Major updates to the Oak driver, including more accelerated functions
+     for the OTI087 (Jorge Delgado).
+ 56. Option "program_clocks" added for the Mach64 server to allow
+     arbitrary clocks to be programmed for most clock chips.  This
+     currently doesn't work with the ATI18818/ICS2595 chips (Kevin Martin).
+ 55. Mach64 server support for the AT&T 20C408 (Kevin Martin).
+ 54. Fix problem of two undisplayed pixels with the CL-GD7543
+     (Thomas Zerucha).
+ 53. Add support for three button operation with some dual protocol mice
+     when they are in Microsoft-compatible mode.  The keyword to enable
+     this is 'RepeatedMiddle' (Jon Tombs).
+ 52. Fix 3 button emulation problem introduced in item 48 (Thomas Mueller).
+ 51. Add support for '-crt /dev/ttyXX' command line option for the X
+     servers for SCO.  This is for compatibility with the native SCO X
+     servers (Didier Poirot).
+
 XFree86 3.1.2c (5 November 1995)
  50. Add expiry date and startup message for beta versions.
  49. Fix problem using a LinkKit generated with BuildLBX set to YES.
@@ -5,7 +32,7 @@ XFree86 3.1.2c (5 November 1995)
      emulation is enabled (Thomas Wu).
  47. Fix panning and some inital clock selection problems for TGUI9440
      cards (Alan Hourihane).
- 46. Support for the Cirrus CL-GD7453 (Thomas Zerucha).
+ 46. Support for the Cirrus CL-GD7543 (Thomas Zerucha).
  45. Fix for instability problems with Cirrus programmable clock
      (Koen Gadeyne).
  44. Fix memory overwrite problem in xterm which could be a security

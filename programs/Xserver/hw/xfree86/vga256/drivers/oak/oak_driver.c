@@ -1,5 +1,6 @@
 /* $XConsortium: oak_driver.c,v 1.6 95/01/23 15:35:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.15 1995/01/28 17:09:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.16 1995/05/27 03:17:11 dawes Exp $ */
+
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -12,7 +13,8 @@
  * specific, written prior permission. Jorge Delgado makes no representations
  * about the suitability of this software for any purpose.  It is provided
  * "as is" without express or implied warranty.
- *
+ */
+/*
  * JORGE DELGADO DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
  * EVENT SHALL JORGE DELGADO BE LIABLE FOR ANY SPECIAL, INDIRECT OR
@@ -21,29 +23,52 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
- /*************************************************************************/
 
-/*
- * This is a oak SVGA driver for XFree86.  
+/* 
+ * XF86_SVGA driver for Oak Technologies Inc. chipsets. 
  *
- *  Built from Xfree86 1.3 stub file.
- *  9/ 1/93 Initial version Steve Goldman  sgoldman@encore.com
- * 10/ 9/94 Revamped 067/077 version with added support for 
- *          087 chipset by Jorge Delgado  ernar@dit.upm.es  
- * 24/10/94 New version by Jorge Delgado with support for
- *          2MB of DRAM in 087 chipsets with extended bank
- *          switching, and ported to X11R6 structure, adding ALPHA linear  
- * 24/11/94 At last I managed to fix the linear mode that did not
+ * It includes support for the following chipsets:
+ *  - oti067
+ *  - oti077
+ *  - oti087  (with some accelerated features)
+ *  - oti037c (hopefully, I haven't tested it)
+ */
+
+/* Version information:
+ *
+ * 24/ 9/95 The driver was rewritten to clarify the code, facilitate 
+ *          portability and upward compatibility and to try to fix some 
+ *          little errors. Added option "undoc_clocks".
+ *
+ * 22/ 7/95 Added "fb_debug" option, to allow for register dump. This will help
+ *          to debug some ISA boards which are reported to work awfully with
+ *          high (72 & 78Mhz) dot clocks.
+ *
+ * 18/ 1/95 Found an undocumented way of setting linear addressing above
+ *          16 Mbytes for OTI087 VLB cards, activating the 64Mbyte pin.
+ *          Thanks should be given to the people that wrote the README.cirrus,
+ *          it gave me the clue.
+ *
+ * 23/12/94 Linear addressing is cleaner, and more efficient.
+ *          Membase has been set at 0xE00000 (14Mb) and
+ *          aperture is selected matching video memory.
+ *
+ * 24/11/94 Managed to fix the linear mode that did not
  *          work in the previous release, also fixed a typo which
  *          made impossible to hardcode "oti077" as chipset.
- * 23/12/94 Okay, now linear addressing is cleaner, and more
- *          efficient, Membase has been set at 0xE00000 (14Mb) and
- *          aperture is selected matching video memory.
- * 18/ 1/95 Yabadabadoo!!! I found an undocumented way of setting
- *          linear addressing above 16Mbytes for OTI087 VLB cards, activating
- *          the 64Mbyte pin of my VLB card. Thanks must be given to
- *          the people that wrote the README.cirrus, it gave me the clue.
- *          okay for all you there..voila!! >16Mb linear addressing.
+ *
+ * 24/10/94 New version by Jorge Delgado with support for
+ *          2MB of DRAM in 087 chipsets with extended bank
+ *          switching, ported to X11R6 structure.
+ *
+ * 10/ 9/94 Revamped 067/077 version with added support for 
+ *          087 chipset by Jorge Delgado  ernar@dit.upm.es  
+ *
+ *  9/ 1/93 Initial version Steve Goldman  sgoldman@encore.com
+ */
+
+/* 
+ * Other information:
  *
  * This one file can be used for both the color and monochrome servers.
  * Remember that the monochrome server is actually using a 16-color mode,
@@ -53,75 +78,58 @@
  * and VideoRam 1024 in XF86Config)
  */
 
-/*************************************************************************/
+/***********************************************************************
+ **************   Beginning of the Oak driver code     *****************
+ ***********************************************************************/
 
-/*
- * These are X and server generic header files.
+/* 
+ * Header files
  */
-#include "X.h"
+
+#include "X.h"                 /* XF86 specific headers */
 #include "input.h"
 #include "screenint.h"
 #include "dix.h"
 
-/*
- * These are XFree86-specific header files
- */
-
 #include "compiler.h"
+
 #include "xf86.h"
+#include "xf86Procs.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
+
+#include "xf86_Config.h"    /* Header for extra options */
+#include "xf86_Option.h"
 #include "vga.h"
+#include "region.h"
 
-/*
- * If the driver makes use of XF86Config 'Option' flags, the following will be
- * required
- */
-#include "xf86_Config.h"
+#ifdef XF86VGA16
+#define MONOVGA
+#endif
 
-/*
- * This header is required for drivers that implement STUBFbInit().
- *
- * #if !defined(MONOVGA) && !defined(XF86VGA16)
- * #include "vga256.h"
- * #endif
- */ 
-  
+#ifndef MONOVGA
+#include "oak_driver.h"
+#include "vga256.h"
+#endif
+
 /*
  * Driver data structures.
  */
+
 typedef struct {
-  /*
-   * This structure defines all of the register-level information
-   * that must be stored to define a video mode for this chipset.
-   * The 'vgaHWRec' member must be first, and contains all of the
-   * standard VGA register information, as well as saved text and
-   * font data.
-   */
-  vgaHWRec std;               /* good old IBM VGA */
-  /* 
-   * Any other registers or other data that the new chipset needs
-   * to be saved should be defined here.  The Init/Save/Restore
-   * functions will manipulate theses fields.  Examples of things
-   * that would go here are registers that contain bank select
-   * registers, or extended clock select bits, or extensions to 
-   * the timing registers.  Use 'unsigned char' as the type for
-   * these registers.
-   */
-  
-  /* These first are for the 067/077 boards */
-  
-  unsigned char oakMisc;    	/* Misc register */
-  unsigned char oakOverflow;    	/* overflow register */
-  unsigned char oakHsync2;    	/* Hsync/2 start register */
-  unsigned char oakOverflow2;    	/* overflow2 register */
-  unsigned char oakConfig;    	/* config 67 vs. 77 */
-  unsigned char oakBCompat;    	/* backward compatibility */
-  unsigned char oakBank;    	/* initial bank, debug only */
-  
-  /* These are for the 087 ;) */
-  unsigned char oti87RBank             ;
+
+  vgaHWRec std;                            /* Old VGA compatibility */
+
+  unsigned char oakMisc;    	           /* 67 / 77 / 37C Boards  */
+  unsigned char oakOverflow;    
+  unsigned char oakHsync2;    	
+  unsigned char oakOverflow2;   
+  unsigned char oakConfig;    	
+  unsigned char oakBCompat;    	
+  unsigned char oakBank;    	
+
+  unsigned char oti87RBank             ;   /* 87 Boards */
   unsigned char oti87WBank             ;
   unsigned char oti87VLBControl        ;
   unsigned char oti87Mapping           ;
@@ -151,14 +159,13 @@ typedef struct {
   unsigned char oti87HC10              ;
   unsigned char oti87HC11              ;
   unsigned char oti87HC12              ;
-  
-  
+
 } vgaOAKRec, *vgaOAKPtr;
 
-/*
- * Forward definitions for the functions that make up the driver.  See
- * the definitions of these functions for the real scoop.
+/* 
+ * Forward definitions for the Driver's functions.
  */
+
 static Bool     OAKProbe();
 static char *   OAKIdent();
 static Bool     OAKClockSelect();
@@ -172,14 +179,11 @@ static void     OAKAdjust();
 #if 0
 static void     OAKSaveScreen();
 static void     OAKGetMode();
-
-static void     OAKFbInit();
 #endif
 
 
-/*
- * These are the bank select functions.  There are defined in oak_bank.s
- */
+static void     OAKFbInit();
+
 
 extern void     OAKSetRead();
 extern void     OAKSetWrite();
@@ -190,14 +194,10 @@ extern void     OTI87SetWrite();
 extern void     OTI87SetReadWrite();
 
 /*
- * This data structure defines the driver itself.  The data structure is
- * initialized with the functions that make up the driver and some data 
- * that defines how the driver operates.
+ * This data structure defines the driver itself.
  */
+
 vgaVideoChipRec OAK = {
-  /* 
-   * Function pointers
-   */
   OAKProbe,
   OAKIdent,
   OAKEnterLeave,
@@ -206,110 +206,41 @@ vgaVideoChipRec OAK = {
   OAKSave,
   OAKRestore,
   OAKAdjust,
-  vgaHWSaveScreen,     /* OAKSaveScreen */
-  (void (*)())NoopDDA, /* OAKGetMode */
-  (void (*)())NoopDDA, /* OAKFbInit */
+  (void (*)())NoopDDA, /*  OAKSaveScreen,  */
+  (void (*)())NoopDDA, /* OAKGetMode, */
+  OAKFbInit,
   OAKSetRead,
   OAKSetWrite,
   OAKSetReadWrite,
-  /*
-   * This is the size of the mapped memory window, usually 64k.
-   */
-  0x10000,		
-  /*
-   * This is the size of a video memory bank for this chipset.
-   */
+  0x10000,	  
   0x10000,
-  /*
-   * This is the number of bits by which an address is shifted
-   * right to determine the bank number for that address.
-   */
   16,
-  /*
-   * This is the bitmask used to determine the address within a
-   * specific bank.
-   */
   0xFFFF,
-  /*
-   * These are the bottom and top addresses for reads inside a
-   * given bank.
-   */
   0x00000, 0x10000,
-  /*
-   * And corresponding limits for writes.
-   */
   0x00000, 0x10000,
-  /*
-   * Whether this chipset supports a single bank register or
-   * separate read and write bank registers.  Almost all chipsets
-   * support two banks, and two banks are almost always faster
-   * (Trident 8900C and 9000 are odd exceptions).
-   */
-  TRUE, /* two banks */
-  /*
-   * If the chipset requires vertical timing numbers to be divided
-   * by two for interlaced modes, set this to VGA_DIVIDE_VERT.
-   */
+  TRUE,
   VGA_NO_DIVIDE_VERT,
-  /*
-   * This is a dummy initialization for the set of vendor/option flags
-   * that this driver supports.  It gets filled in properly in the
-   * probe function, if the probe succeeds (assuming the driver
-   * supports any such flags).
-   */
   {0,},
-  /*
-   * This specifies how the virtual width is to be rounded.  The
-   * virtual width will be rounded down the nearest multiple of
-   * this value
-   */
   16,
-  /*
-   * If the driver includes support for a linear-mapped frame buffer
-   * this should be set to TRUE.  In most cases it should be FALSE.
-   */
-  FALSE,
-  /*
-   * This is the physical base address of the linear-mapped frame
-   * buffer (when used).  Set it to 0 when not in use.
-   */
+  FALSE,             /* Initially no linear support, don't know if 87 */
   0,
-  /*
-   * This is the size  of the linear-mapped frame buffer (when used).
-   * Set it to 0 when not in use.
-   */
   0,
-  /*
-   * This is TRUE if the driver has support for 16bpp
-   */
   FALSE,
-  /*
-   * This is TRUE if the driver has support for 32bpp
-   */
   FALSE,
-  /*
-   * This is a pointer to a list of builtin driver modes.
-   * This is rarely used, and in must cases, set it to NULL
-   */
   NULL,
-  /*
-   * This is a factor that can be used to scale the raw clocks
-   * to pixel clocks.  This is rarely used, and in most cases, set
-   * it to 1.
-   */
   1,
 };
 
-/*
- * This is a convenience macro, so that entries in the driver structure
- * can simply be dereferenced with 'new->xxx'.
+/* 
+ * Macro to dereference driver structure entries as  'new->xxxx'.
  */
+
 #define new ((vgaOAKPtr)vgaNewVideoState)
 
 /*
-   A bunch of defines that match Oak's register names
-   so we don't use a bunch of hardcoded constants in the code. (for 067/077)
-   */
+ * Oak Extended Register Names, 67/77/87/37c.
+ */
+
 #define OTI_INDEX 0x3DE			/* Oak extended index register */
 #define OTI_R_W 0x3DF			/* Oak extended r/w register */
 #define OTI_CRT_CNTL 0xC		/* Oak CRT COntrol Register */
@@ -321,19 +252,10 @@ vgaVideoChipRec OAK = {
 #define OTI_HSYNC2  0x15		/* Oak hsync/2 start register */
 #define OTI_OVERFLOW2  0x16		/* Oak overflow2 register */
 
-
-/* Now the ones for 087, being a much higher performance board, has more :) */
-/* These defines I put now are to avoid using magic numbers harcoded into
- * the server, as I prefer using register names, this way when a poor guy
- * wants to code something for the otixx7 (oti097 for example) he will have
- * it easy to trace my code ;). (Poor him, I even use gotos )
+/*
+ * Oak Extended Register Names, 87 only.
  */
 
-
-/* The following are the indexes to be loaded on OTI_INDEX, for the
- * write to OTI_R_W reach the selected register, an r preceding the name
- * means the register is read-only, r/w means a nice read-write thingy 
- */
 
 #define OTI87_IDENTIFY            0x0     /* r Identify register, should not be
 					   *    used to identify the board   
@@ -375,8 +297,6 @@ vgaVideoChipRec OAK = {
 #define OTI87_PATTERN            0x33
 #define OTI87_MASK               0x34
 
-/* End of color expanding feature registers */
-
 /* Latch control */
 
 #define OTI87_LATCH_INDEX        0x35
@@ -397,11 +317,18 @@ vgaVideoChipRec OAK = {
 #define OTI87_HC_FORE            0x4B
 #define OTI87_HC_CTRL            0x4C
 
+/*
+ * Board indexes to be used throughout the code .
+ */
+   
+#define OTI67  0    /* same index as ident function */
+#define OTI77  1    /* same index as ident function */
+#define OTI87  2    /* same index as ident function */
+#define OTI37C 3    /* same index as ident function */
 
-#define OTI67 0   /* same index as ident function */
-#define OTI77 1   /* same index as ident function */
-#define OTI87 2   /* same index as ident function */
-
+/*
+ * Other variables defined here.
+ */
 
 static int OTI_chipset;
 static Bool OTI_2mb_bank = FALSE;
@@ -411,24 +338,15 @@ static Bool OTI_vlb = FALSE;
 static unsigned OAK_ExtPorts[] = { OTI_INDEX, OTI_R_W };
 static int Num_OAK_ExtPorts = (sizeof(OAK_ExtPorts)/sizeof(OAK_ExtPorts[0]));
 
-/*
+/* 
  * OAKIdent --
- *
- * Returns the string name for supported chipset 'n'.  Most drivers only
- * support one chipset, but multiple version may require that the driver
- * identify them individually (e.g. the Trident driver).  The Ident function
- * should return a string if 'n' is valid, or NULL otherwise.  The
- * server will call this function when listing supported chipsets, with 'n' 
- * incrementing from 0, until the function returns NULL.  The 'Probe'
- * function should call this function to get the string name for a chipset
- * and when comparing against an Xconfig-supplied chipset value.  This
- * cuts down on the number of places errors can creep in.
  */
+
 static char *
 OAKIdent(n)
      int n;
 {
-  static char *chipsets[] = {"oti067","oti077","oti087"};
+  static char *chipsets[] = {"oti067","oti077","oti087","oti037c"};
   
   if (n + 1 > sizeof(chipsets) / sizeof(char *))
     return(NULL);
@@ -436,127 +354,87 @@ OAKIdent(n)
     return(chipsets[n]);
 }
 
-/*
+/* 
  * OAKClockSelect --
- * 
- * This function selects the dot-clock with index 'no'.  In most cases
- * this is done my setting the correct bits in various registers (generic
- * VGA uses two bits in the Miscellaneous Output Register to select from
- * 4 clocks).  Care must be taken to protect any other bits in these
- * registers by fetching their values and masking off the other bits.
  */
+
 static Bool
 OAKClockSelect(no)
      int no;
 {
   static unsigned char save1,save2;
   unsigned char temp;
-  
-  switch(no)
+
+  switch (no)
     {
-    case CLK_REG_SAVE:
-      
-      /* We only use the Extended clock register for the OTI87 */
-      
-      if (OTI_chipset == OTI87)
+    case CLK_REG_SAVE:        /* save clocks */
+
+      switch (OTI_chipset)
 	{
+	case OTI87:          /* only using Extended Clock Register */
 	  outb(OTI_INDEX, OTI87_CLOCK); 
 	  save1 = inb(OTI_R_W);
 	  break;
-	}      
-      else 
-	{
-	  /*
-	   * Here all of the registers that can be affected by
-	   * clock setting should be saved into static variables.
-	   */
-	  save1 = inb(0x3CC);
-	  /* Any extended registers would go here */
+
+	case OTI37C:        /* for all these get the info from the various */
+	case OTI67:         /* registers. */  
+	case OTI77:          
+	default:
+	  save1 = inb(0x3CC); 
 	  outb(OTI_INDEX, OTI_MISC);
 	  save2 = inb(OTI_R_W);
 	  break;
 	}
-    case CLK_REG_RESTORE:
-      /*
-       * Here all the previously saved registers are restored.
-       */
-      if (OTI_chipset==OTI87) 
+      break;
+      
+    case CLK_REG_RESTORE:     /* here we restore the previous values */
+
+      switch (OTI_chipset)
 	{
+	case OTI87:
 	  outb(OTI_INDEX, OTI87_CLOCK);
 	  outb(OTI_R_W,save1);
 	  break;
-	}
-      else 
-	{
-	  outb(0x3C2, save1);
-	  /* Any extended registers would go here */
-	  outw(OTI_INDEX, OTI_MISC | (save2 << 8));
+
+	case OTI37C:
+	case OTI67:
+	case OTI77:
+	default:
+      	  outb(0x3C2, save1);
+	  outb(OTI_INDEX, OTI_MISC | (save2 << 8));
 	  break;
 	}
+      break;
+
     default:
-      /* The new oti087 chipset has an extended register to take care
-       * of all clock bits, thats why we only modify extended registers
-       */      
-      if (OTI_chipset==OTI87) 
+
+      switch (OTI_chipset)
 	{
+	case OTI87:
 	  outb(OTI_INDEX, OTI87_CLOCK);
 	  outb(OTI_R_W,no);
-	}
-      else 
-	{
-	  /* 
-	   * These are the generic two low-order bits of the clock select 
-	   */
+	  break;
+
+	case OTI37C:
+	case OTI67:
+	case OTI77:
+	default:
 	  temp = inb(0x3CC);
 	  outb(0x3C2, ( temp & 0xF3) | ((no << 2) & 0x0C));
-	  /* 
-	   * Here is where the high order bit(s) supported by the chipset 
-	   * are set.  This is done by fetching the appropriate register,
-	   * masking off bits that will be changing, then shifting and
-	   * masking 'no' to set the bits as appropriate.
-	   */
 	  outb(OTI_INDEX, OTI_MISC);
 	  temp = inb(OTI_R_W);
 	  outw(OTI_INDEX, OTI_MISC | 
 	       ((( temp & 0xDF ) | (( no & 4) << 3)) << 8));
+	  break;
+
 	}
     }
 }
 
-
 /*
  * OAKProbe --
- *
- * This is the function that makes a yes/no decision about whether or not
- * a chipset supported by this driver is present or not.  The server will
- * call each driver's probe function in sequence, until one returns TRUE
- * or they all fail.
- *
- * Pretty much any mechanism can be used to determine the presence of the
- * chipset.  If there is a BIOS signature (e.g. ATI, GVGA), it can be read
- * via /dev/mem on most OSs, but some OSs (e.g. Mach) require special
- * handling, and others (e.g. Amoeba) don't allow reading  the BIOS at
- * all.  Hence, this mechanism is discouraged, if other mechanisms can be
- * found.  If the BIOS-reading mechanism must be used, examine the ATI and
- * GVGA drivers for the special code that is needed.  Note that the BIOS 
- * base should not be assumed to be at 0xC0000 (although most are).  Use
- * 'vga256InfoRec.BIOSbase', which will pick up any changes the user may
- * have specified in the Xconfig file.
- *
- * The preferred mechanism for doing this is via register identification.
- * It is important not only the chipset is detected, but also to
- * ensure that other chipsets will not be falsely detected by the probe
- * (this is difficult, but something that the developer should strive for).  
- * For testing registers, there are a set of utility functions in the 
- * "compiler.h" header file.  A good place to find example probing code is
- * in the SuperProbe program, which uses algorithms from the "vgadoc2.zip"
- * package (available on most PC/vga FTP mirror sites, like ftp.uu.net and
- * wuarchive.wustl.edu).
- *
- * Once the chipset has been successfully detected, then the developer needs 
- * to do some other work to find memory, and clocks, etc, and do any other
- * driver-level data-structure initialization may need to be done.
  */
+
 static Bool
 OAKProbe()
 {
@@ -566,168 +444,163 @@ OAKProbe()
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_OAK_ExtPorts, OAK_ExtPorts);
   
-  /*
-   * First we attempt to figure out if one of the supported chipsets
-   * is present.
-   */
-  if (vga256InfoRec.chipset)
-    {
-      /*
-       * This is the easy case.  The user has specified the
-       * chipset in the XF86Config file.  All we need to do here
-       * is a string comparison against each of the supported
-       * names available from the Ident() function.  If this
-       * driver supports more than one chipset, there would be
-       * nested conditionals here (see the Trident and WD drivers
-       * for examples).
-       */
+  /* See if this is one of the Oak Tech. Inc. chipsets */
 
+  if (vga256InfoRec.chipset)      /* if harcoded.... */
+    {
       if (!StrCaseCmp(vga256InfoRec.chipset, OAKIdent(0))) {
 	OTI_chipset = OTI67;
       } else if (!StrCaseCmp(vga256InfoRec.chipset, OAKIdent(1))) {
 	OTI_chipset = OTI77;
       } else if (!StrCaseCmp(vga256InfoRec.chipset, OAKIdent(2))) {
 	OTI_chipset = OTI87;
-      } 
+      } else if (!StrCaseCmp(vga256InfoRec.chipset, OAKIdent(3))) {
+	OTI_chipset = OTI37C;
+      }       
       else 
 	{
 	  return (FALSE); 
 	}
       OAKEnterLeave(ENTER);
     }
-  else
-    {
-      /*
-       * OK.  We have to actually test the hardware.  The
-       * EnterLeave() function (described below) unlocks access
-       * to registers that may be locked, and for OSs that require
-       * it, enables I/O access.  So we do this before we probe,
-       * even though we don't know for sure that this chipset
-       * is present.
-       */
-      OAKEnterLeave(ENTER);
-      
-      /*
-       * Here is where all of the probing code should be placed.  
-       * The best advice is to look at what the other drivers are 
-       * doing.  If you are lucky, the chipset reference will tell 
-       * how to do this.  Other resources include SuperProbe/vgadoc2,
-       * and the Ferraro book.
-       */
-      
-      /* First we see if the segment register is present */
 
+  else                  /* i.e. not harcoded, we have to actually test */
+    {
+      OAKEnterLeave(ENTER);
       outb(OTI_INDEX, OTI_SEGMENT);
       save = inb(OTI_R_W);
-
-      /* I assume that once I set the index I can r/w/r/w to
-	 my hearts content */
-
       outb(OTI_R_W, save ^ 0x11);
       temp1 = inb(OTI_R_W);
       outb(OTI_R_W, save);
       if (temp1 != ( save ^ 0x11 )) {
-
-	/*
-	 * Turn things back off if the probe is going to fail.
-	 * Returning FALSE implies failure, and the server
-	 * will go on to the next driver.
-	 */
-
 	OAKEnterLeave(LEAVE);
-	return(FALSE);
+	return(FALSE);         /* we got a failure, tell to go on probing */
       }
-      /* figure out which chipset */
-      
-      temp1 = inb(OTI_INDEX);
-      temp1 &= 0xE0;
-      switch (temp1) {
-      case 0xE0 : /* oti 57 don't know it */
-	ErrorF("%s %s: oak: OTI-57 unsupported.\n", XCONFIG_PROBED,
-	       vga256InfoRec.name);
-	OAKEnterLeave(LEAVE);
-	return(FALSE);
-      case 0x40 : /* oti 67 */
-	OTI_chipset = OTI67;
-	break;
-      case 0xA0 : /* oti 77 */
-	OTI_chipset = OTI77;
-	break;
-      default : /* don't know it by these bits */
-	outb(OTI_INDEX, OTI87_IDENTIFY );
-	if (inb(OTI_R_W) != 1 ) {
-	  ErrorF("%s %s: oak: unknown chipset.\n", XCONFIG_PROBED,
-		 vga256InfoRec.name);
-	  OAKEnterLeave(LEAVE);
-	  return(FALSE);
-	}
-	else 
-	  { /* oti087 */
-	    OTI_chipset = OTI87;
+
+      /* Here we know we have an Oak */
+
+      outb(OTI_INDEX, OTI87_IDENTIFY );
+      if (inb(OTI_R_W) != 1) 
+	{      
+	  temp1 = inb(OTI_INDEX) >> 5;
+	  switch (temp1) {
+	  case 0x07 : /* oti 57 don't know it */
+	    ErrorF("%s %s: oak: OTI-57 unsupported.\n", XCONFIG_PROBED,
+		   vga256InfoRec.name);
+	    OAKEnterLeave(LEAVE);
+	    return(FALSE);
+	  case 0x02 : /* oti 67 */
+	    OTI_chipset = OTI67;
+	    break;
+	  case 0x05 : /* oti 77 */
+	    OTI_chipset = OTI77;
+	    break;
+	  case 0x00 : /* oti 37c */
+	    OTI_chipset = OTI37C;
+	    break;
+	  default : /* don't know it by these bits */
+	    ErrorF("%s %s: oak: unknown chipset, perhaps a 083?.\n", 
+		   XCONFIG_PROBED,
+		   vga256InfoRec.name);
+	    OAKEnterLeave(LEAVE);
+	    return(FALSE);
 	  }
-      }
+	}
+      else 
+	{ /* oti087 */
+	  OTI_chipset = OTI87;
+	}
+    }
+
+  /* Chipset deterined, let's test the DRAM's */
+
+  if (!vga256InfoRec.videoRam) 
+    {
+
+      switch (OTI_chipset)
+	{
+	case OTI87:
+	  
+	  outb(OTI_INDEX, OTI87_STATUS);
+	  temp = ( inb(OTI_R_W) & 0x6);
+	  switch (temp) 
+	    {
+	    case 0:
+	      vga256InfoRec.videoRam = 256;
+	      break;
+	    case 2:
+	      vga256InfoRec.videoRam = 512;
+	      break;        
+	    case 4:
+	      vga256InfoRec.videoRam = 1024;
+	      break;
+	    case 6:
+	      vga256InfoRec.videoRam = 2048;
+	      break;
+	    default:
+	      ErrorF("%s %s: oti087: unknown video memory\n",
+		     XCONFIG_PROBED, vga256InfoRec.name);
+	      OAKEnterLeave(LEAVE);
+	      return(FALSE);
+	    }
+	  break;
+
+	case OTI67:
+	case OTI77:
+	case OTI37C:
+	default:
+	  outb(OTI_INDEX, OTI_MISC);
+	  temp1 = inb(OTI_R_W);
+	  temp1 &= 0xC0;
+	  if (temp1 == 0xC0 )
+	    vga256InfoRec.videoRam = 1024;
+	  else if (temp1 == 0x80 )
+	    vga256InfoRec.videoRam = 512;
+	  else if (temp1 == 0x00 )
+	    vga256InfoRec.videoRam = 256;
+	  else {
+	    ErrorF("%s %s: oak: unknown video memory.\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	    OAKEnterLeave(LEAVE);
+	    return(FALSE);
+	  }  
+	}
+    }
+
+  /* Now, see to the clocks */
+
+  if (!vga256InfoRec.clocks)
+    {
+      switch (OTI_chipset)
+	{
+	case OTI87:
+	  vgaGetClocks(16, OAKClockSelect);
+	  break;
+	case OTI67:
+	case OTI77:
+	case OTI37C:
+	default:
+	  vgaGetClocks(8, OAKClockSelect);
+	  break;
+	}
     }
   
   /*
-   * If the user has specified the amount of memory in the XF86Config
-   * file, we respect that setting.
+   * I could have used a #define to set this max speed, but the board 
+   * manual recomends a max dot clock of 80Mhz, and the usual clock
+   * generator of these boards is the OTI068, which gives a maximum clock
+   * of 78Mhz, so I suppose its not necessary to define it. Personally,
+   * I doubt any OEM will be able to use higher dot clocks with 70ns DRAM
+   * and this chipset.
    */
-  if (!vga256InfoRec.videoRam) {
-    /*
-     * Otherwise, do whatever chipset-specific things are 
-     * necessary to figure out how much memory (in kBytes) is 
-     * available.
-     */
-    
-    if (OTI_chipset == OTI87) {
-      outb(OTI_INDEX, OTI87_STATUS);
-      temp = ( inb(OTI_R_W) & 0x6);
-      switch (temp) 
-	{
-	case 0:
-	  vga256InfoRec.videoRam = 256;
-	  break;
-	case 2:
-	  vga256InfoRec.videoRam = 512;
-	  break;        
-	case 4:
-	  vga256InfoRec.videoRam = 1024;
-	  break;
-	case 6:
-	  vga256InfoRec.videoRam = 2048;
-	  break;
-	default:
-	  ErrorF("%s %s: oti087: unknown video memory\n",
-		 XCONFIG_PROBED, vga256InfoRec.name);
-	  OAKEnterLeave(LEAVE);
-	  return(FALSE);
-	}
-    }
-    else {
-      outb(OTI_INDEX, OTI_MISC);
-      temp1 = inb(OTI_R_W);
-      temp1 &= 0xC0;
-      if (temp1 == 0xC0 )
-	vga256InfoRec.videoRam = 1024;
-      else if (temp1 == 0x80 )
-	vga256InfoRec.videoRam = 512;
-      else if (temp1 == 0x00 )
-	vga256InfoRec.videoRam = 256;
-      else {
-	ErrorF("%s %s: oak: unknown video memory.\n",
-	       XCONFIG_PROBED, vga256InfoRec.name);
-	OAKEnterLeave(LEAVE);
-	return(FALSE);
-      }
-    }
-  }
 
-    if (OTI_chipset == OTI87) {
-            
-      /* Now we perform other detections, such as RAMDAC and
-       * the like.
-       */
-      
+  vga256InfoRec.maxClock = 80000 ;
+ 
+  /* We know, Oak + chipset + memory + clocks, lets find something else */
+
+  switch (OTI_chipset)
+    {
+    case OTI87:
       outb(OTI_INDEX,OTI87_CONFIG_1);
       temp2 = ( inb(OTI_R_W) & 0x06);
       switch ( temp2 )
@@ -744,7 +617,7 @@ OAKProbe()
 	case 0x02 :
 	  ErrorF("%s %s: oti087: VLB card in a 32-bit VESA slot. \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
-	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be. \n",
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
 	  ErrorF("%s %s: oti087: set at 0x4E00000 (the 78Mbyte mark). \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
@@ -753,7 +626,7 @@ OAKProbe()
 	case 0x04 :
 	  ErrorF("%s %s: oti087: ISA card integrated in MotherBoard. \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
-	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be. \n",
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
 	  ErrorF("%s %s: oti087: set at 0xE00000 (the 14Mbyte mark). \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
@@ -762,7 +635,7 @@ OAKProbe()
 	case 0x06 :
 	  ErrorF("%s %s: oti087: ISA card in a 16-bit AT-BUS slot.  \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
-	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be. \n",
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
 	  ErrorF("%s %s: oti087: set at 0xE00000 (the 14Mbyte mark). \n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
@@ -770,128 +643,94 @@ OAKProbe()
 	  break;
 	}
       
-      outb(OTI_INDEX,OTI87_CONFIG_2);
-      temp2 = ( inb(OTI_R_W) & 0x0C);
-      switch (temp2 )
-	{
-	case 0x00 :
-	  ErrorF("%s %s: oti087: BT476, SC11487, IMSG174 or equivalent RAMDAC.\n",
-		 XCONFIG_PROBED, vga256InfoRec.name);
-	  break;
-	case 0x04 :
-	  ErrorF("%s %s: oti087: MU9C1715 or equivalent RAMDAC.\n",
-		 XCONFIG_PROBED, vga256InfoRec.name);
-	  break;
-	case 0x08 :
+     outb(OTI_INDEX,OTI87_CONFIG_2);
+     temp2 = ( inb(OTI_R_W) & 0x0C);
+     switch (temp2 )
+       {
+       case 0x00 :
+	 ErrorF("%s %s: oti087: BT476,SC11487,IMSG174 or equivalent RAMDAC.\n",
+		XCONFIG_PROBED, vga256InfoRec.name);
+	 break;
+       case 0x04 :
+	 ErrorF("%s %s: oti087: MU9C1715 or equivalent RAMDAC.\n",
+		XCONFIG_PROBED, vga256InfoRec.name);
+	 break;
+       case 0x08 :
 	  ErrorF("%s %s: oti087: BT484 or equivalent RAMDAC.\n",
 		 XCONFIG_PROBED, vga256InfoRec.name);
-	  break;
-	}
+	 break;
+       }
+    default:    /* No special probes for other chipsets - yet - */
+      ;
     }
 
-  /* Here we know the chipset so we change the banking routines, and
-   * the structure, allowing for "Linear Framebuffer"
+  /*
+   * Once we know the chipset, we can modify the driver structure 
+   * to allow 87's fancy things. 
    */
-  
-  if (OTI_chipset == OTI87)
+
+  switch (OTI_chipset)
     {
-      OAK.ChipSetRead = OTI87SetRead ;
+    case OTI87:
+
+      /* set the banking routines */
+
+      OAK.ChipSetRead = OTI87SetRead ;    
       OAK.ChipSetWrite = OTI87SetWrite ;
       OAK.ChipSetReadWrite = OTI87SetReadWrite ;
       OTI_2mb_bank = TRUE;
+  
+      /* deal with linear addressing */
 
-      if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))     
+     if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))     
 	{
 	  OAK.ChipUseLinearAddressing = TRUE ;
 	  if (OTI_vlb) 
 	    {
-	      OAK.ChipLinearBase=0x4E00000 ;/* This is a hack ;), but works */
+	      OAK.ChipLinearBase=0x4E00000 ;
 	    } 
 	  else 
 	    {
-	      OAK.ChipLinearBase=0xE00000 ;/* This is a default, just in case*/
+	      OAK.ChipLinearBase=0xE00000 ;
 	    }
 	  OAK.ChipLinearSize = vga256InfoRec.videoRam * 1024 ;
-	  OTI_linear = TRUE; /* Don't take this out, it is needed */
-#if 0
-	  OAK.ChipHas16bpp = TRUE ;
-	  OAK.ChipHas32bpp = TRUE ;
-	  ErrorF("OTI87 driver: HiColor and TrueColor Enabled \n");
-#endif
+	  OTI_linear = TRUE;
 	}
+      
+    default:        /* nothing to do for other chipsets */
+      ;
     }
 
-  /*
-   * Again, if the user has specified the clock values in the XF86Config
-   * file, we respect those choices.
-   */
-  if (!vga256InfoRec.clocks)
-    {
-      /*
-       * This utility function will probe for the clock values.
-       * It is passed the number of supported clocks, and a
-       * pointer to the clock-select function.
-       */
-      if (OTI_chipset == OTI87) {
-	vgaGetClocks(16, OAKClockSelect);
-      }
-      else {
-	vgaGetClocks(8, OAKClockSelect);
-      }
-    }
-  
-  /*
-   * It is recommended that you fill in the maximum allowable dot-clock
-   * rate for your chipset.  If you don't do this, the default of
-   * 90MHz will be used; this is likely too high for many chipsets.
-   * This is specified in KHz, so 90Mhz would be 90000 for this
-   * setting.
-   *
-   * I could have used a #define to set this max speed, but the board 
-   * manual recomends a max dot clock of 80Mhz, and the usual clock
-   * generator of these boards is the OTI068, which gives a maximum clock
-   * of 78Mhz, so I suppose its not necessary to define it. Personally,
-   * I doubt any OEM will be able to use higher dot clocks with 70ns DRAM
-   * and this chipset.
-   */
-  
-  vga256InfoRec.maxClock = 80000 ;
-  
-  
-  /*
-   * Last we fill in the remaining data structures.  We specify
-   * the chipset name, using the Ident() function and an appropriate
-   * index.  We set a boolean for whether or not this driver supports
-   * banking for the Monochrome server.  And we set up a list of all
-   * the vendor flags that this driver can make use of.
-   */
   vga256InfoRec.chipset = OAKIdent(OTI_chipset);
   vga256InfoRec.bankedMono = TRUE;
-  
-  /* Okay, here go the option flags, some are used for debugging as
-   * well as testing, others should improve performance. The comments
-   * after the things describe their use.
-   */
-  
-  OFLG_SET(OPTION_LINEAR, &OAK.ChipOptionFlags);
-  OFLG_SET(OPTION_FAVOUR_BITBLT, &OAK.ChipOptionFlags);
-  OFLG_SET(OPTION_FIFO_CONSERV, &OAK.ChipOptionFlags);
-  OFLG_SET(OPTION_FIFO_AGGRESSIVE, &OAK.ChipOptionFlags);
 
-  return(TRUE);
+  /* Lastly we add the flags for the 'Option' fields of the driver */
+  
+  OFLG_SET(OPTION_LINEAR, &OAK.ChipOptionFlags);          /* set linear mode */
+  OFLG_SET(OPTION_ENABLE_BITBLT, &OAK.ChipOptionFlags);   /* bitblt engine */
+  OFLG_SET(OPTION_FIFO_CONSERV, &OAK.ChipOptionFlags);    /* FIFO = 14 */
+  OFLG_SET(OPTION_FIFO_AGGRESSIVE, &OAK.ChipOptionFlags); /* FIFO = 2  */
+  OFLG_SET(OPTION_FB_DEBUG, &OAK.ChipOptionFlags);   /* Dump registers */
+  OFLG_SET(OPTION_NOACCEL, &OAK.ChipOptionFlags);    /* Don't use accel. */
+
+  OFLG_SET(OPTION_CLOCK_66, &OAK.ChipOptionFlags);    /* 66Mhz Interface */
+  OFLG_SET(OPTION_CLOCK_50, &OAK.ChipOptionFlags);    /* 50Mhz Interface */
+  OFLG_SET(OPTION_NO_WAIT, &OAK.ChipOptionFlags);          /* 0-wait VLB */
+  OFLG_SET(OPTION_FIRST_WWAIT, &OAK.ChipOptionFlags);/* 1st write wait VLB*/
+  OFLG_SET(OPTION_ALL_WAIT, &OAK.ChipOptionFlags);   /* all wait VLB */
+  OFLG_SET(OPTION_READ_WAIT, &OAK.ChipOptionFlags);  /* read cycle wait state*/
+  OFLG_SET(OPTION_ONE_WAIT, &OAK.ChipOptionFlags);   /* min. 1 wait state, 
+							all cycles */
+  OFLG_SET(OPTION_WRITE_WAIT, &OAK.ChipOptionFlags);/* write cycle wait state*/
+
+  return(TRUE);     /* Successful completion */
   
 }
 
 /*
  * OAKEnterLeave --
- *
- * This function is called when the virtual terminal on which the server
- * is running is entered or left, as well as when the server starts up
- * and is shut down.  Its function is to obtain and relinquish I/O 
- * permissions for the SVGA device.  This includes unlocking access to
- * any registers that may be protected on the chipset, and locking those
- * registers again on exit.
  */
+
 static void 
 OAKEnterLeave(enter)
      Bool enter;
@@ -901,94 +740,74 @@ OAKEnterLeave(enter)
   
   if (enter)
     {
+      
       xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-      
-      /* 
-       * This is a global.  The CRTC base address depends on
-       * whether the VGA is functioning in color or mono mode.
-       * This is just a convenient place to initial)ze this
-       * variable.
-       */
       vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-      
-      /*
-       * Here we deal with register-level access locks.  This
-       * is a generic VGA protection; most SVGA chipsets have
-       * similar register locks for their extended registers
-       * as well.
-       */
-      
+     
       /* Unprotect CRTC[0-7] */
+      
       outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       outb(vgaIOBase + 5, temp & 0x7F);
       
+      /* There are no locks on the 087, we do it
+       * anyway 'cause we dunno if is an 87 */
+	
+      outb(OTI_INDEX, OTI_CRT_CNTL);
+      temp = inb(OTI_R_W);
+      outb(OTI_R_W, temp & 0xF0);
+      save = temp;
       
-      if (OTI_chipset != OTI87) { /* no locks on the 087*/
-	outb(OTI_INDEX, OTI_CRT_CNTL);
-	temp = inb(OTI_R_W);
-	outb(OTI_R_W, temp & 0xF0);
-	save = temp;
-      }
     }
-  else {
-    /*
-     * Here undo what was done above.
-     */
-    if (OTI_chipset != OTI87) { /* no locks on the 087 */
-      
+  else 
+    {
       outb(OTI_INDEX, OTI_CRT_CNTL);
       /* don't set the i/o write test bit even though
-	 we cleared it on entry */
+       * we cleared it on entry */
+	
       outb(OTI_R_W, (save & 0xF7) );
+      
+      /* Protect CRTC[0-7] */
+      
+      outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
+      outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
+      
+      xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
-    /* Protect CRTC[0-7] */
-    outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
-    
-    xf86DisableIOPorts(vga256InfoRec.scrnIndex);
-  }
 }
 
 
 /*
  * OAKRestore --
- *
- * This function restores a video mode.  It basically writes out all of
- * the registers that have previously been saved in the vgaOAKRec data 
- * structure.
- *
- * Note that "Restore" is a little bit incorrect.  This function is also
- * used when the server enters/changes video modes.  The mode definitions 
- * have previously been initialized by the Init() function, below.
  */
+
 extern void 
 OAKRestore(restore)
      vgaOAKPtr restore;
 {
   unsigned char temp;
-  
-  /*
-   * Whatever code is needed to get things back to bank zero should be
-   * placed here.  Things should be in the same state as when the
-   * Save/Init was done.
-   */
-  /* put the segment regs back to zero */
-  
-  if (OTI_chipset != OTI87 ) 
-    outw(OTI_INDEX, OTI_SEGMENT);
-  else
+      
+  /* Go to bank 0 */
+
+  switch (OTI_chipset)
     {
-      outw(OTI_INDEX, OTI87_XWRITE);
-      outw(OTI_INDEX, OTI87_XREAD);
+    case OTI87:
+      outb(OTI_INDEX, OTI87_XWRITE); outb (OTI_R_W, 0x00);
+      outb(OTI_INDEX, OTI87_XREAD) ; outb (OTI_R_W, 0x00);
+      break;
+
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
+      outw(OTI_INDEX, OTI_SEGMENT);
+      break;
     }
-  /* Ok. to prevent text mode to be absolutely fouled up, oti077-67 
+  
+  /* To prevent text mode to be absolutely fouled up, oti077-67 
    * chipsets needed the extended clock bit set to 0 to avoid 
    * something, as the oti087 text mode is currenlty fouled when
-   * I leave X, I will use his experience ;) that is, I will cut&paste
-   * a bit of his code. OK,OK its not a c&p, but the function is the
-   * same. :) 
+   * I leave X, I will use sgoldman's experience.
    */
-  
   /*
    *  Set the OTI-Misc register. We must be sure that we
    *  aren't in one of the extended graphics modes when
@@ -996,51 +815,113 @@ OAKRestore(restore)
    *  the last time. If we don't text mode is completely
    *  fouled up.
    */
-  
-  
-  if (OTI_chipset == OTI87)
-    outw(OTI_INDEX, OTI87_MODE   + (restore->oti87ModeSelect << 8 ));
-  else 
+
+  switch (OTI_chipset)
     {
+    case OTI87:
+      outb(OTI_INDEX, OTI87_MODE);
+      outb(OTI_R_W, restore->oti87ModeSelect );
+      break;
+      
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
       outb(OTI_INDEX, OTI_MISC);
       temp = inb(OTI_R_W) & 0x20; /* get the clock bit */
       temp |= (restore->oakMisc & 0xDF);
       outb(OTI_R_W, temp);
+      break;
     }
-  
-  /*
-   * Code to restore any SVGA registers that have been saved/modified
-   * goes here.  Note that it is allowable, and often correct, to 
-   * only modify certain bits in a register by a read/modify/write cycle.
-   *
-   * A special case - when using an external clock-setting program,
-   * this function must not change bits associated with the clock
-   * selection.  This condition can be checked by the condition:
-   *
-   *	if (restore->std.NoClock >= 0)
-   *		restore clock-select bits.
-   */
-  
-  
-  
-  
-  if (OTI_chipset != OTI87)
+
+  switch (OTI_chipset)
     {
+    case OTI87:
+      outb(OTI_INDEX, OTI87_XREAD);
+      outb(OTI_R_W , restore->oti87RBank );
+      outb(OTI_INDEX, OTI87_XWRITE);
+      outb(OTI_R_W, restore->oti87WBank );
+      outb(OTI_INDEX, OTI87_MODE );
+      outb(OTI_R_W , restore->oti87ModeSelect );
+      if (restore->std.NoClock >= 0) 
+	{
+	  outb(OTI_INDEX, OTI87_CLOCK );
+	  outb(OTI_R_W , restore->oti87Clock );
+	}
+      outb(OTI_INDEX, OTI87_FIFO_DEPTH );
+      outb(OTI_R_W, restore->oti87FIFODepth );
+      outb(OTI_INDEX, OTI87_OVERFLOW );
+      outb(OTI_R_W ,restore->oti87Overflow );
+      outb(OTI_INDEX, OTI87_HSYNC );
+      outb(OTI_R_W, restore->oti87Hsync2 );
       
+      /* Advanced feature registers */
+      
+      outb(OTI_INDEX, OTI87_VLB_CONTROL );
+      outb(OTI_R_W , restore->oti87VLBControl  );
+      outb(OTI_INDEX, OTI87_MEM_MAPPING );
+      outb(OTI_R_W , restore->oti87Mapping     );
+      outb(OTI_INDEX, OTI87_BUS_CTRL    );
+      outb(OTI_R_W , restore->oti87BusControl  );
+      outb(OTI_INDEX, OTI87_EXT_CRTC_CTRL );
+      outb(OTI_R_W , restore->oti87XCrt     );
+      outb(OTI_INDEX, OTI87_PALETTE_RANGE );
+      outb(OTI_R_W ,restore->oti87ColorPalette );
+      outb(OTI_INDEX, OTI87_FEATURE_CTRL );
+      outb(OTI_R_W , restore->oti87Feature     );
+      outb(OTI_INDEX,OTI87_COLOR_EXPANDER );
+      outb(OTI_R_W , restore->oti87ColorExpansion);
+      outb(OTI_INDEX, OTI87_FORE      );
+      outb(OTI_R_W , restore->oti87FGExpansion   );
+      outb(OTI_INDEX, OTI87_BACK       );
+      outb(OTI_R_W , restore->oti87BGExpansion  );
+      outb(OTI_INDEX, OTI87_PATTERN   );
+      outb(OTI_R_W , restore->oti87ColorPattern  );
+      outb(OTI_INDEX, OTI87_MASK       );
+      outb(OTI_R_W , restore->oti87PixMask      );
+      outb(OTI_INDEX, OTI87_HC_HORIZONTAL_H  );
+      outb(OTI_R_W , restore->oti87HC1     );
+      outb(OTI_INDEX, OTI87_HC_HORIZONTAL_L  );
+      outb(OTI_R_W , restore->oti87HC2     );
+      outb(OTI_INDEX, OTI87_HC_VERTICAL_H    );
+      outb(OTI_R_W , restore->oti87HC3     );
+      outb(OTI_INDEX, OTI87_HC_VERTICAL_L    );
+      outb(OTI_R_W , restore->oti87HC4     );
+      outb(OTI_INDEX, OTI87_HC_HOR_PRESET    );
+      outb(OTI_R_W , restore->oti87HC5     );
+      outb(OTI_INDEX, OTI87_HC_VER_PRESET    );
+      outb(OTI_R_W , restore->oti87HC6     );
+      outb(OTI_INDEX, OTI87_HC_START_HL      );
+      outb(OTI_R_W , restore->oti87HC7     );
+      outb(OTI_INDEX, OTI87_HC_START_LH      );
+      outb(OTI_R_W , restore->oti87HC8     );
+      outb(OTI_INDEX, OTI87_HC_START_LL      );
+      outb(OTI_R_W , restore->oti87HC9     );
+      outb(OTI_INDEX, OTI87_HC_BACK          );
+      outb(OTI_R_W , restore->oti87HC10    );
+      outb(OTI_INDEX, OTI87_HC_FORE          );
+      outb(OTI_R_W , restore->oti87HC11    );
+      outb(OTI_INDEX, OTI87_HC_CTRL          );
+      outb(OTI_R_W , restore->oti87HC12    );
+      break;
+
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
       outb(OTI_INDEX, OTI_SEGMENT);
       outb(OTI_R_W, restore->oakBank);
-      
-      if (restore->std.NoClock >= 0) {
-	/* restore clock-select bits. */
-	outw(OTI_INDEX, OTI_MISC + (restore->oakMisc << 8));
-      } else {
-	/* don't restore clock-select bits. */
-	outb(OTI_INDEX, OTI_MISC);
-	temp = inb(OTI_R_W) & 0x20; /* get the clock bit */
-	temp |= (restore->oakMisc & 0xDF);
-	outb(OTI_R_W, temp);
-      }
-      
+      if (restore->std.NoClock >= 0) 
+	{	/* restore clock-select bits. */
+	  outw(OTI_INDEX, OTI_MISC + (restore->oakMisc << 8));
+	} 
+      else 
+	{      /* don't restore clock-select bits. */
+	  outb(OTI_INDEX, OTI_MISC);
+	  temp = inb(OTI_R_W) & 0x20; /* get the clock bit */
+	  temp |= (restore->oakMisc & 0xDF);
+	  outb(OTI_R_W, temp);
+	}
       outb(OTI_INDEX, OTI_BCOMPAT);
       temp = inb(OTI_R_W);
       temp &= 0xF9;
@@ -1052,112 +933,63 @@ OAKRestore(restore)
       outb(OTI_R_W, temp);
       outw(OTI_INDEX, OTI_OVERFLOW + (restore->oakOverflow << 8));
       outw(OTI_INDEX, OTI_HSYNC2 + (restore->oakHsync2 << 8));
-      
-      if ( OTI_chipset != OTI67)
-	outw(OTI_INDEX, OTI_OVERFLOW2 + (restore->oakOverflow2 << 8));
-    }
-  else     /* code for 87 */
-    {
-      
-      outw(OTI_INDEX, OTI87_XREAD             + (restore->oti87RBank << 8 ));
-      outw(OTI_INDEX, OTI87_XWRITE            + (restore->oti87WBank << 8 ));
-      outw(OTI_INDEX, OTI87_MODE       + (restore->oti87ModeSelect << 8 ));
-      if (restore->std.NoClock >= 0) 
+      if ( OTI_chipset == OTI77)
 	{
-	  outw(OTI_INDEX, OTI87_CLOCK    + (restore->oti87Clock      << 8 ));
+	  outw(OTI_INDEX, OTI_OVERFLOW2 + (restore->oakOverflow2 << 8));
 	}
-      outw(OTI_INDEX, OTI87_FIFO_DEPTH  + (restore->oti87FIFODepth  << 8 ));
-      outw(OTI_INDEX, OTI87_OVERFLOW     + (restore->oti87Overflow << 8 ));
-      outw(OTI_INDEX, OTI87_HSYNC       + (restore->oti87Hsync2     << 8 ));
-      
-      /* Advanced feature registers */
-      
-      outw(OTI_INDEX, OTI87_VLB_CONTROL +(restore->oti87VLBControl << 8 ));
-      outw(OTI_INDEX, OTI87_MEM_MAPPING + (restore->oti87Mapping    << 8 ));
-      outw(OTI_INDEX, OTI87_BUS_CTRL    + (restore->oti87BusControl << 8 ));
-      outw(OTI_INDEX, OTI87_EXT_CRTC_CTRL + (restore->oti87XCrt    << 8 ));
-      outw(OTI_INDEX, OTI87_PALETTE_RANGE +(restore->oti87ColorPalette <<8));
-      outw(OTI_INDEX, OTI87_FEATURE_CTRL + (restore->oti87Feature    << 8 ));
-      outw(OTI_INDEX,OTI87_COLOR_EXPANDER + 
-	   (restore->oti87ColorExpansion<<8));
-      outw(OTI_INDEX, OTI87_FORE      + (restore->oti87FGExpansion  << 8 ));
-      outw(OTI_INDEX, OTI87_BACK       + (restore->oti87BGExpansion << 8 ));
-      outw(OTI_INDEX, OTI87_PATTERN   + (restore->oti87ColorPattern << 8 ));
-      outw(OTI_INDEX, OTI87_MASK       + (restore->oti87PixMask     << 8 ));
-      outw(OTI_INDEX, OTI87_HC_HORIZONTAL_H  + (restore->oti87HC1    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_HORIZONTAL_L  + (restore->oti87HC2    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_VERTICAL_H    + (restore->oti87HC3    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_VERTICAL_L    + (restore->oti87HC4    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_HOR_PRESET    + (restore->oti87HC5    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_VER_PRESET    + (restore->oti87HC6    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_START_HL      + (restore->oti87HC7    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_START_LH      + (restore->oti87HC8    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_START_LL      + (restore->oti87HC9    << 8 ));
-      outw(OTI_INDEX, OTI87_HC_BACK          + (restore->oti87HC10   << 8 ));
-      outw(OTI_INDEX, OTI87_HC_FORE          + (restore->oti87HC11   << 8 ));
-      outw(OTI_INDEX, OTI87_HC_CTRL          + (restore->oti87HC12   << 8 ));
+      break;
     }
 
   /*
    * This function handles restoring the generic VGA registers.
    */
+  
   vgaHWRestore((vgaHWPtr)restore);
     
+  /* now reenable the timing sequencer */
+
   outw(0x3C4, 0x0300); /* now reenable the timing sequencer */
-  
+
 }
 
 /*
  * OAKSave --
- *
- * This function saves the video state.  It reads all of the SVGA registers
- * into the vgaOAKRec data structure.  There is in general no need to
- * mask out bits here - just read the registers.
  */
 extern void *
 OAKSave(save)
      vgaOAKPtr save;
 {
   unsigned char temp, temp1;
-  /*
-   * Whatever code is needed to get back to bank zero goes here.
-   */
-  
-  
-  if (OTI_chipset != OTI87)
+
+ /* Go to bank 0 */
+
+  switch (OTI_chipset)
     {
-      outb(OTI_INDEX, OTI_SEGMENT);
-      temp = inb(OTI_R_W);
-      /* put segment register to zero */
-      outb(OTI_R_W, 0x0);
-    }
-  else
-    {
+    case OTI87:
       outb(OTI_INDEX, OTI87_XREAD);
       temp = inb(OTI_R_W);
       outb(OTI_INDEX, OTI87_XWRITE);
       temp1 = inb(OTI_R_W);
       outb(OTI_R_W, 0x0);
+      break;
+
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
+      outb(OTI_INDEX, OTI_SEGMENT);
+      temp = inb(OTI_R_W);
+      outb(OTI_R_W, 0x0);
+      break;
     }
   
-  
-  /*
-   * This function will handle creating the data structure and filling
-   * in the generic VGA portion.
-   */
   save = (vgaOAKPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaOAKRec));
-  
-  /*
-   * The port I/O code necessary to read in the extended registers 
-   * into the fields of the vgaOAKRec structure goes here.
-   */
-  
-  if (OTI_chipset == OTI87)
+
+  switch (OTI_chipset)
     {
-      
+    case OTI87:
       save->oti87RBank = temp;      
       save->oti87WBank = temp1; 
-      
       outb(OTI_INDEX, OTI87_MODE );
       save->oti87ModeSelect          = inb(OTI_R_W);
       outb(OTI_INDEX, OTI87_CLOCK);
@@ -1168,7 +1000,6 @@ OAKSave(save)
       save->oti87Overflow            = inb (OTI_R_W);
       outb(OTI_INDEX, OTI87_HSYNC );
       save->oti87Hsync2              = inb(OTI_R_W);
-      
       outb(OTI_INDEX, OTI87_VLB_CONTROL);
       save->oti87VLBControl          = inb(OTI_R_W);
       outb(OTI_INDEX, OTI87_MEM_MAPPING );
@@ -1217,13 +1048,13 @@ OAKSave(save)
       save->oti87HC11                = inb(OTI_R_W);
       outb(OTI_INDEX, OTI87_HC_CTRL);
       save->oti87HC12                = inb(OTI_R_W);
-    }
-  else 
-    {
-      save->oakBank = temp; /* this seems silly, leftover from textmode
-			     *  problems, but it works my friend, it works.
-			     */
-      
+      break;
+
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
+      save->oakBank = temp;       
       outb(OTI_INDEX, OTI_MISC);
       save->oakMisc = inb(OTI_R_W);
       outb(OTI_INDEX, OTI_CONFIG);
@@ -1234,32 +1065,24 @@ OAKSave(save)
       save->oakOverflow = inb(OTI_R_W);
       outb(OTI_INDEX, OTI_HSYNC2);
       save->oakHsync2 = inb(OTI_R_W);
-      if ( OTI_chipset != OTI67) {
-	outb(OTI_INDEX, OTI_OVERFLOW2);
-	save->oakOverflow2 = inb(OTI_R_W);
-      }
+      if ( OTI_chipset == OTI77) 
+	{
+	  outb(OTI_INDEX, OTI_OVERFLOW2);
+	  save->oakOverflow2 = inb(OTI_R_W);
+	}
+      break;
     }
   return ((void *) save);
 }
 
 /*
  * OAKInit --
- *
- * This is the most important function (after the Probe) function.  This
- * function fills in the vgaOAKRec with all of the register values needed
- * to enable either a 256-color mode (for the color server) or a 16-color
- * mode (for the monochrome server).
- *
- * The 'mode' parameter describes the video mode.  The 'mode' structure 
- * as well as the 'vga256InfoRec' structure can be dereferenced for
- * information that is needed to initialize the mode.  The 'new' macro
- * (see definition above) is used to simply fill in the structure.
  */
 static Bool
 OAKInit(mode)
      DisplayModePtr mode;
 {
-  
+  int tmp11,i;
   if (mode->Flags & V_INTERLACE ) {
     /*
        When in interlace mode cut the vertical numbers in half.
@@ -1282,106 +1105,26 @@ OAKInit(mode)
   if (!vgaHWInit(mode,sizeof(vgaOAKRec)))
     return(FALSE);
   
-  /*
-   * Here all of the other fields of 'new' get filled in, to
-   * handle the SVGA extended registers.  It is also allowable
-   * to override generic registers whenever necessary.
-   *
-   * A special case - when using an external clock-setting program,
-   * this function must not change bits associated with the clock
-   * selection.  This condition can be checked by the condition:
-   *
-   *	if (new->std.NoClock >= 0)
-   *		initialize clock-select bits.
-   */
-  
-  if (OTI_chipset != OTI87 )
+  /* Now we start with chipset-specific initializations */
+
+  switch (OTI_chipset)
     {
+    case OTI87:
       
-#ifndef MONOVGA
-      /* new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* 3 in byte mode */
-      /* much clearer as 0x01 than 0x41, seems odd though... */
       new->std.Attribute[16] = 0x01; 
-      
-      /*
-       *  We set the fifo depth to maximum since it seems to
-       *  remove screen interference at high resolution. This
-       *  could probably be set to some other value for better
-       *  performance.
-       */
-      
-      if ( new->std.NoClock >= 0 ) {
-	new->oakMisc = 0x0F | ((new->std.NoClock & 0x04) << 3);
-      } else
-	new->oakMisc = 0x0F; /*  high res mode, deep fifo */
-#else
-      if ( new->std.NoClock >= 0 ) {
-	new->oakMisc = 0x18 | ((new->std.NoClock & 0x04) << 3);
-      } else
-	new->oakMisc = 0x18; /*  16 color high res mode */
-#endif
-      new->oakBank = 0; 
-      new->oakBCompat = 0x80; /* vga mode */
-      new->oakConfig = (OTI_chipset != OTI67 ? 0x8 : 0 );
-      /* set number of ram chips! */                    /* 40 */
-      new->oakMisc |= (vga256InfoRec.videoRam == 1024 ? 0x40 : 0x00 );
-      new->oakMisc |= (vga256InfoRec.videoRam >= 512 ? 0x80 : 0x00 );
-      if (mode->Flags & V_INTERLACE ) {
-	new->oakOverflow = 0x80 |
-	  /* V-retrace-start */  (((mode->CrtcVSyncStart ) & 0x400) >> 8 ) |
-	    /* V-blank-start */  ((((mode->CrtcVDisplay-1) ) & 0x400) >> 9 ) |
-	      /* V-total */      ((((mode->CrtcVTotal-2) ) & 0x400) >> 10 ) ;
-	/* can set overflow2 no matter what here since restore will
-	   do the right thing */
-	new->oakOverflow2 = 0;
-	/* Doc. says this is when vertical retrace will start in 
-	   every odd frame in interlaced mode in characters. Hmm??? */
-	new->oakHsync2 =  (mode->CrtcVTotal-2) >> 3; 
-      } else {
-	new->oakOverflow = (mode->Flags & V_INTERLACE ? 0x80 : 0x00) |
-	  /* V-retrace-start */  ((mode->CrtcVSyncStart & 0x400) >> 8 ) |
-	    /* V-blank-start */  (((mode->CrtcVDisplay-1) & 0x400) >> 9 ) |
-	      /* V-total */      (((mode->CrtcVTotal-2) & 0x400) >> 10 ) ;
-	/* can set overflow2 no matter what here since restore will
-	   do the right thing */
-	new->oakOverflow2 = 0;
-	new->oakHsync2 = 0;
-      }
-    }
-  else       /* oti087 procedure */
-    {
-      new->std.Attribute[16] = 0x01; 
-      
-      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
-	new->oti87FIFODepth = 0xE ;
-	ErrorF ("%s %s: oti087: FIFO set to 14. \n", XCONFIG_GIVEN,
-		vga256InfoRec.name);
-      } else if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) {
-	new->oti87FIFODepth = 0x2 ;
-	ErrorF ("%s %s: oti087: FIFO set to 2. \n", XCONFIG_GIVEN,
-		vga256InfoRec.name);
-      } else {
-	new->oti87FIFODepth = 0x6 ;
-	ErrorF ("%s %s: oti087: FIFO set to 6. \n", XCONFIG_PROBED,
-		vga256InfoRec.name);
-      }
-      new->oti87ModeSelect = 0x04 ;
-      if ( new->std.NoClock >= 0 ) {
-	new->oti87Clock = new->std.NoClock ;
-      }
+      if ( new->std.NoClock >= 0 ) 
+	{
+	  new->oti87Clock = new->std.NoClock ;
+	}
       new->oti87RBank = 0;
       new->oti87WBank = 0; 
+      new->oti87ModeSelect = 0x04 ;
       if (mode->Flags & V_INTERLACE ) 
 	{
 	  new->oti87Overflow = 0x80 |
 	    /* V-retrace-start */  (((mode->CrtcVSyncStart ) & 0x400) >> 8 ) |
-	      /* V-blank-start *   ((((mode->CrtcVDisplay-1) ) & 0x400) >> 9 ) |
+	      /*V-blank-start */  ((((mode->CrtcVDisplay-1) ) & 0x400) >> 9 ) |
 		/* V-total */      ((((mode->CrtcVTotal-2) ) & 0x400) >> 10 ) ;
-	  
-	  
-	  /* Doc. says this is when vertical retrace will start in 
-	     every odd frame in interlaced mode in characters. Hmm??? */
-	  
 	  new->oti87Hsync2 =  (mode->CrtcVTotal-2) >> 3; 
 	} 
       else 
@@ -1390,187 +1133,342 @@ OAKInit(mode)
 	    /* V-retrace-start */  ((mode->CrtcVSyncStart & 0x400) >> 8 ) |
 	      /* V-blank-start */  (((mode->CrtcVDisplay-1) & 0x400) >> 9 ) |
 		/* V-total */      (((mode->CrtcVTotal-2) & 0x400) >> 10 ) ;
-	  
 	  new->oti87Hsync2 = 0;
 	}
-      
-      if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))   {
-	new-> oti87VLBControl = 0x00;
-      } else {
-	new-> oti87VLBControl = 0x10;
-      }
+
+      /* After general Init, do other chipset things */
+
+      /* FIFO data */
+
+      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) 
+	{
+	  new->oti87FIFODepth = 0x14;
+	  ErrorF ("%s %s: oti087: FIFO depth:            14. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	} 
+      else if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) 
+	{
+	  new->oti87FIFODepth = 0x00;
+	  ErrorF ("%s %s: oti087: FIFO depth:            0. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	} 
+      else 
+	{
+	  new->oti87FIFODepth = 0x06;
+	  ErrorF ("%s %s: oti087: FIFO depth:            6. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
 
       
+
+      /* Undocumented clock + wait states, do it both ways just in case */
+      if (OFLG_ISSET(OPTION_NO_WAIT, &vga256InfoRec.options))
+	{
+	  new->oti87VLBControl = 0x00;
+	  ErrorF ("%s %s: oti087: VLB interface:         0 wait states. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+      else if (OFLG_ISSET(OPTION_FIRST_WWAIT, &vga256InfoRec.options))
+	{
+	  new->oti87VLBControl = 0x01;
+       ErrorF ("%s %s: oti087: VLB interface:         First write wait state. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+      else if (OFLG_ISSET(OPTION_ONE_WAIT, &vga256InfoRec.options))
+	{
+	  new->oti87VLBControl = 0x08;
+       ErrorF ("%s %s: oti087: VLB interface:         Minimun 1 wait state. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+      else if (OFLG_ISSET(OPTION_READ_WAIT, &vga256InfoRec.options))
+	{
+	  new->oti87VLBControl = 0x04;
+       ErrorF ("%s %s: oti087: VLB interface:         Read cycle wait state. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+
+	}
+      else if (OFLG_ISSET(OPTION_WRITE_WAIT, &vga256InfoRec.options))
+	{
+	  new->oti87VLBControl = 0x02;
+       ErrorF ("%s %s: oti087: VLB interface:         Write cycle wait state. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+      else 
+	{
+	  new->oti87VLBControl = 0x0F;
+	  ErrorF ("%s %s: oti087: VLB interface:         All wait states. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+
+      if (OFLG_ISSET(OPTION_CLOCK_66, &vga256InfoRec.options))
+	{
+	  new->oti87VLBControl &= 0x1F;
+	  ErrorF ("%s %s: oti087: Chipset speed:         66 Mhz. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+      else 
+	{
+	  new->oti87VLBControl &= 0x0F;
+	  ErrorF ("%s %s: oti087: Chipset speed:         50 Mhz. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+
+      /* BitBlt transfer engine */
+      
+
+      if (OFLG_ISSET(OPTION_ENABLE_BITBLT, &vga256InfoRec.options))
+	{
+	  if (OTI_vlb)
+	    {
+	      new->oti87Feature = 0x1C;
+	  ErrorF ("%s %s: oti087: BitBlt engine status:  Enabled. \n", 
+		      XCONFIG_GIVEN,
+		      vga256InfoRec.name);
+	    }
+	  else 
+	    {
+	      new->oti87Feature = 0x14;
+	  ErrorF ("%s %s: oti087: BitBlt engine status:  Enabled. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	    }
+	}
+      else /* not bitblt */
+	{
+	      new->oti87Feature = 0x18;
+	  ErrorF ("%s %s: oti087: BitBlt engine status:  Disabled. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+      
+
+
       new-> oti87BusControl = 0xC8 ;
       new-> oti87ColorPalette = 0xf ; 
-      new-> oti87Feature = 0x8 ; 
       new-> oti87ColorExpansion = 0x0 ; 
       new-> oti87FGExpansion = 0x0;
       new-> oti87BGExpansion = 0x0; 
       new-> oti87ColorPattern = 0xff ;
       new-> oti87PixMask = 0xff ;
-      
-      /*
-	 new-> oti87  
-	 new-> oti87 
-	 new-> oti87   No HC support, I will leave the stubs here anyway 
-	 new-> oti87  
-	 new-> oti87  
-	 new-> oti87  
-	 new-> oti87  
-	 new-> oti87
-	 new-> oti87
-	 new-> oti87
-	 new-> oti87
-	 new-> oti87
-	 */
-    }
-  
-  /* Explain what it to be done to the stderr messages, just to be sure */
 
-  if (OTI_2mb_bank)
-    {
-      ErrorF ("%s %s: oti087: Using 2 MB banking routines. \n", XCONFIG_PROBED,
-	      vga256InfoRec.name);
-    }
+      /* Take care of Linear addressing */
 
-  if (OTI_linear)
-    {
-      if (OTI_vlb)
+      if (OTI_linear)
 	{
-    
-  /* This is an undocumented option of the board. Disabling DMA tranasfers
-   * the 64MB (0x4000000) address mark pin is enabled, allowing higher-than
-   * 16Mbyte-mark addressing, I must thank the people who did the
-   * README.cirrus for the clue, and the binaries of the OTI087 MS-Windoze
-   * drivers for allowing me to do some diff's :), it was a hell to find 
-   * and debug, but at last....it's here (and I will be able to buy another
-   * 4 Mbytes of RAM and be allowed linear addressing)
-   */
-   
-	  switch(vga256InfoRec.videoRam)
+	  if (OTI_vlb)
 	    {
-	    case 256:
-	      new -> oti87Mapping = 0xE3;
-	      break;
-	    case 512:
-	      new -> oti87Mapping = 0xE7;
-	      break;
-	    case 1024:
-	      new -> oti87Mapping = 0xEB; 
-	      break;
-	    case 2048:
-	      new -> oti87Mapping = 0xEF; 
-	      break;
-	    } 
+	      
+    /* This is an undocumented option of the board. Disabling DMA transfers
+     * the 64MB (0x4000000) address mark pin is enabled, allowing higher-than
+     * 16Mbyte-mark addressing, I must thank the people who did the
+     * README.cirrus for the clue, and the binaries of the OTI087 MS-Windoze
+     * drivers for allowing me to do some diff's :), it was a hell to find 
+     * and debug, but at last....it's here (and I will be able to buy another
+     * 4 Mbytes of RAM and be allowed linear addressing)
+     */
+	      
+	      switch(vga256InfoRec.videoRam)
+		{
+		case 256:
+		  new -> oti87Mapping = 0xE3;
+		  outb (OTI_INDEX, OTI87_MEM_MAPPING);
+		  outb (OTI_R_W, 0xE3);
+		  break;
+		case 512:
+		  new -> oti87Mapping = 0xE7;
+		  outb (OTI_INDEX, OTI87_MEM_MAPPING);
+		  outb (OTI_R_W, 0xE7);
+		  break;
+		case 1024:
+		  new -> oti87Mapping = 0xEB; 
+		  outb (OTI_INDEX, OTI87_MEM_MAPPING);
+		  outb (OTI_R_W, 0xEB);
+		  break;
+		case 2048:
+		  new -> oti87Mapping = 0xEF;
+		  outb (OTI_INDEX, OTI87_MEM_MAPPING);
+		  outb (OTI_R_W, 0xEF); 
+		  break;
+		} 
+	    }
+	  else
+	    {
+	      switch(vga256InfoRec.videoRam)
+		{
+		case 256:
+		  new -> oti87Mapping = 0xE1;
+		  break;
+		case 512:
+		  new -> oti87Mapping = 0xE5;
+		  break;
+		case 1024:
+		  new -> oti87Mapping = 0xE9; 
+		  break;
+		case 2048:
+		  new -> oti87Mapping = 0xED; 
+		  break;
+		} 
+	    }    
+	  ErrorF ("%s %s: oti087: Addressing Mode:       Linear. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	  ErrorF ("%s %s: oti087:         base address:  0x%X. \n",
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name, 
+		  OAK.ChipLinearBase);
+	  ErrorF ("%s %s: oti087:         aperture:      %d Kbytes. \n", 
+		  XCONFIG_PROBED,
+		  vga256InfoRec.name,
+		  (OAK.ChipLinearSize/1024));
 	}
-      else
+      else  /* Segmented addressing */
 	{
-	  switch(vga256InfoRec.videoRam)
+	  ErrorF ("%s %s: oti087: Addressing Mode:       Segmented. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	  ErrorF ("%s %s: oti087:         page size:     64 Kb. \n", 
+		  XCONFIG_GIVEN,
+		  vga256InfoRec.name);
+	}
+
+      
+      if (OFLG_ISSET(OPTION_FB_DEBUG, &vga256InfoRec.options))
+	{
+
+	  if (OTI_2mb_bank)
 	    {
-	    case 256:
-	      new -> oti87Mapping = 0xE1;
-	      break;
-	    case 512:
-	      new -> oti87Mapping = 0xE5;
-	      break;
-	    case 1024:
-	      new -> oti87Mapping = 0xE9; 
-	      break;
-	    case 2048:
-	      new -> oti87Mapping = 0xED; 
-	      break;
-	    } 
-	}    
-      ErrorF ("%s %s: oti087: linear framebuffer enabled. \n", XCONFIG_GIVEN,
-	      vga256InfoRec.name);
-      ErrorF ("%s %s: oti087: base address is set at 0x%X.\n", XCONFIG_GIVEN,
-              vga256InfoRec.name, OAK.ChipLinearBase);
-      ErrorF ("%s %s: oti087: aperture size is %d Kbytes. \n", XCONFIG_PROBED,
-              vga256InfoRec.name,(OAK.ChipLinearSize/1024));
-    }
-  if (OFLG_ISSET(OPTION_FAVOUR_BITBLT, &vga256InfoRec.options))
-    {
-      new -> oti87Feature = 0x0C;
-      ErrorF ("%s %s: oti087: BitBlt engine enabled. \n", XCONFIG_GIVEN,
-	      vga256InfoRec.name);
+	      ErrorF ("%s %s: oti087: Using 2 MB banking routines. \n", 
+		      XCONFIG_PROBED,
+		      vga256InfoRec.name);
+	    }
+
+	  outb(OTI_INDEX, OTI87_FIFO_DEPTH);
+	  tmp11 = inb(OTI_R_W);
+	  ErrorF ("%s %s: oti087: Value of the FIFO register, 0x%X. \n", 
+		  XCONFIG_PROBED,
+		  vga256InfoRec.name, tmp11);
+	  
+	  outb(OTI_INDEX, OTI87_VLB_CONTROL);
+	  tmp11 = inb(OTI_R_W);
+	  ErrorF ("%s %s: oti087: Value for the Clock register is: 0x%X.\n", 
+		  XCONFIG_PROBED, vga256InfoRec.name, tmp11 );
+	  
+	  ErrorF ("%s %s: oti087: Debug request parsed, dumping registers\n", 
+		  XCONFIG_GIVEN,vga256InfoRec.name); 
+	  for ( i = 0 ; i <= 0x4C ; i++)
+	    {
+	      outb(OTI_INDEX, i);
+	      ErrorF ("%s %s: oti087: Register %X has value: .... %X \n", 
+		      XCONFIG_GIVEN, vga256InfoRec.name, i, inb(OTI_R_W)); 
+	    }
+	}
+      
+      break;
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
+#ifndef MONOVGA
+      /* new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* 3 in byte mode */
+      /* much clearer as 0x01 than 0x41, seems odd though... */
+      new->std.Attribute[16] = 0x01; 
+      if ( new->std.NoClock >= 0 ) 
+	{
+	  new->oakMisc = 0x0F | ((new->std.NoClock & 0x04) << 3);
+	} 
+      else
+	new->oakMisc = 0x0F; /*  high res mode, deep fifo */
+#else
+      if ( new->std.NoClock >= 0 ) 
+	{
+	  new->oakMisc = 0x18 | ((new->std.NoClock & 0x04) << 3);
+	} 
+      else
+	new->oakMisc = 0x18; /*  16 color high res mode */
+#endif
+      new->oakBank = 0; 
+      new->oakBCompat = 0x80; /* vga mode */
+      new->oakConfig = (OTI_chipset == OTI77 ? 0x8 : 0 );
+      /* set number of ram chips! */                    /* 40 */
+      new->oakMisc |= (vga256InfoRec.videoRam == 1024 ? 0x40 : 0x00 );
+      new->oakMisc |= (vga256InfoRec.videoRam >= 512 ? 0x80 : 0x00 );
+      if (mode->Flags & V_INTERLACE ) 
+	{
+	  new->oakOverflow = 0x80 |
+	    /* V-retrace-start */  (((mode->CrtcVSyncStart ) & 0x400) >> 8 ) |
+	      /*V-blank-start */  ((((mode->CrtcVDisplay-1) ) & 0x400) >> 9 ) |
+		/* V-total */      ((((mode->CrtcVTotal-2) ) & 0x400) >> 10 ) ;
+	  /* can set overflow2 no matter what here since restore will
+	     do the right thing */
+	  new->oakOverflow2 = 0;
+	  /* Doc. says this is when vertical retrace will start in 
+	     every odd frame in interlaced mode in characters. Hmm??? */
+	  new->oakHsync2 =  (mode->CrtcVTotal-2) >> 3; 
+	} 
+      else 
+	{
+	  new->oakOverflow = (mode->Flags & V_INTERLACE ? 0x80 : 0x00) |
+	    /* V-retrace-start */  ((mode->CrtcVSyncStart & 0x400) >> 8 ) |
+	      /* V-blank-start */  (((mode->CrtcVDisplay-1) & 0x400) >> 9 ) |
+		/* V-total */      (((mode->CrtcVTotal-2) & 0x400) >> 10 ) ;
+	  /* can set overflow2 no matter what here since restore will
+	     do the right thing */
+	  new->oakOverflow2 = 0;
+	  new->oakHsync2 = 0;
+	}
+      break;
     }
   return(TRUE);
 }
 
 /*
  * OAKAdjust --
- *
- * This function is used to initialize the SVGA Start Address - the first
- * displayed location in the video memory.  This is used to implement the
- * virtual window.
  */
 static void 
 OAKAdjust(x, y)
      int x, y;
 {
   int temp;
-  /*
-   * The calculation for Base works as follows:
-   *
-   *	(y * virtX) + x ==> the linear starting pixel
-   *
-   * This number is divided by 8 for the monochrome server, because
-   * there are 8 pixels per byte.
-   *
-   * For the color server, it's a bit more complex.  There is 1 pixel
-   * per byte.  In general, the 256-color modes are in word-mode 
-   * (16-bit words).  Word-mode vs byte-mode is will vary based on
-   * the chipset - refer to the chipset databook.  So the pixel address 
-   * must be divided by 2 to get a word address.  In 256-color modes, 
-   * the 4 planes are interleaved (i.e. pixels 0,3,7, etc are adjacent 
-   * on plane 0). The starting address needs to be as an offset into 
-   * plane 0, so the Base address is divided by 4.
-   *
-   * So:
-   *    Monochrome: Base is divided by 8
-   *    Color:
-   *	if in word mode, Base is divided by 8
-   *	if in byte mode, Base is divided by 4
-   *
-   * The generic VGA only supports 16 bits for the Starting Address.
-   * But this is not enough for the extended memory.  SVGA chipsets
-   * will have additional bits in their extended registers, which
-   * must also be set.
-   */
-  
   int Base = (y * vga256InfoRec.virtualX + x ) >> 3;
-  
-  /*
-   * These are the generic starting address registers.
-   */
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
-  
-  /*
-   * Here the high-order bits are masked and shifted, and put into
-   * the appropriate extended registers.
-   */
-  
-  if (OTI_chipset != OTI87 ) 
+
+  switch (OTI_chipset)
     {
+    case OTI87:
+      outb (OTI_INDEX, OTI87_EXT_CRTC_CTRL);
+      outb (OTI_R_W, Base >> 16 );
+      break;
+    
+    case OTI67:
+    case OTI77:
+    case OTI37C:
+    default:
       outb(OTI_INDEX, OTI_OVERFLOW);
       temp = inb(OTI_R_W);
       temp &= 0xF7;
       temp |= ((Base & 0x10000) >> (5+8));
       outb(OTI_R_W, temp);
-      if ( OTI_chipset != OTI67) { 
-	outb(OTI_INDEX, OTI_OVERFLOW2);
-	temp = inb(OTI_R_W);
-	temp &= 0xF7;
-	temp |= ((Base & 0x20000) >> (6 + 8));
-	outb(OTI_R_W, temp);
-      }
-    }
-  else
-    {
-      outb (OTI_INDEX, OTI87_EXT_CRTC_CTRL);
-      outb (OTI_R_W, Base >> 16 );
+      if ( OTI_chipset == OTI77) 
+	{ 
+	  outb(OTI_INDEX, OTI_OVERFLOW2);
+	  temp = inb(OTI_R_W);
+	  temp &= 0xF7;
+	  temp |= ((Base & 0x20000) >> (6 + 8));
+	  outb(OTI_R_W, temp);
+	}
+      break;
     }
 }
 
@@ -1584,3 +1482,96 @@ DisplayModePtr mode;
 {
 return TRUE;
 }
+
+/*
+ *
+ * OAKFbInit --
+ */
+static void
+OAKFbInit()
+{
+#ifndef MONOVGA
+  int VLB_CONTROL_VALUE = 0x07; /* all wait states */
+
+  leftmask[0]= 0x80;
+  leftmask[1]= 0xc0;
+  leftmask[2]= 0xe0;
+  leftmask[3]= 0xf0;
+  leftmask[4]= 0xf8;
+  leftmask[5]= 0xFc;
+  leftmask[6]= 0xFe;
+  
+  rightmask[0]= 0x01;
+  rightmask[1]= 0x03;
+  rightmask[2]= 0x07;
+  rightmask[3]= 0x0f;
+  rightmask[4]= 0x1f;
+  rightmask[5]= 0x3f;
+  rightmask[6]= 0x7f;
+  
+  
+  switch (OTI_chipset)
+    {
+    case OTI87:
+      
+      ErrorF ("%s %s: oti087: \n",
+	      XCONFIG_PROBED,
+	      vga256InfoRec.name);
+      ErrorF ("%s %s: oti087: Offscreen Memory:      %d bytes.\n", 
+	      XCONFIG_PROBED,
+	      vga256InfoRec.name,
+	      (1024*vga256InfoRec.videoRam)-(vga256InfoRec.virtualX*vga256InfoRec.virtualY));
+      
+      
+      /* Framebuffer accelerations */
+      
+      if ((!OTI_linear) && 
+	  (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)))
+	{
+	  if (vga256InfoRec.virtualX == 1024)
+	    {
+      ErrorF ("%s %s: oti087: Acceleration Status:   ON.\n", 
+		      XCONFIG_PROBED,
+		      vga256InfoRec.name);
+	      vga256LowlevFuncs.fillBoxSolid = OAKFillBoxSolid;
+	      vga256LowlevFuncs.fillRectSolidCopy = OAKFillRectSolidCopy;
+#if 0	      
+	      vga256LowlevFuncs.copyPlane1to8 = OAKCopyPlane1to8;
+	      
+	      
+	      /* the code is still unworking */
+	      vga256TEOps1Rect.FillSpans = OAKFillSolidSpansGeneral;
+	      vga256TEOps.FillSpans = OAKFillSolidSpansGeneral;
+	      vga256LowlevFuncs.fillSolidSpans = OAKFillSolidSpansGeneral;
+#endif
+	    }
+	  else
+	    {
+      ErrorF ("%s %s: oti087: Acceleration Status:   Disabled (virtualX != 1024).\n", 
+		      XCONFIG_PROBED,
+		      vga256InfoRec.name);
+	    }
+	}
+      else if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))   
+	/* linear addressing */
+	{
+	  ErrorF ("%s %s: oti087: Acceleration Status:   OFF.\n", 
+		  XCONFIG_PROBED,
+		  vga256InfoRec.name);
+	}
+      else if ((OTI_linear) && 
+	       (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)))
+	{
+#if 0
+	  ErrorF("%s %s: oti087: Enabling linear acceleration.\n", 
+		 XCONFIG_PROBED,
+		 vga256InfoRec.name);
+	  vga256LowlevFuncs.fillBoxSolid = OAKLinearFillBoxSolid;
+	  vga256LowlevFuncs.fillRectSolidCopy = OAKLinearFillRectSolidCopy;
+#endif
+	}
+    }
+#endif
+}
+
+

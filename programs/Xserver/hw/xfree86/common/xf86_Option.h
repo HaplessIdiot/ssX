@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.32 1995/10/21 11:39:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.33 1995/10/22 01:57:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -120,6 +120,7 @@ typedef struct {
 #define OPTION_BLOCK_WRITE	96 /* Block write mode for Mach64 */
 #define OPTION_NO_BIOS_CLOCKS	97 /* Override BIOS clocks for Mach64 */
 #define OPTION_S3_INVERT_VCLK	98 /* invert VLCK (CR67:0) (S3) */
+#define OPTION_PROGRAM_CLOCKS	99 /* Turn on programmable clocks (Mach64) */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	100 /* Allow cache to be seen (S3) */
@@ -142,6 +143,18 @@ typedef struct {
 #define OPTION_VRAM_DELAY_RAS	123 /* Delay RAS signal              - MR7:4 */
 #define OPTION_VRAM_EXTEND_RAS  124 /* Extend the RAS signal         - MR8:6 */
 #define OPTION_ENGINE_DELAY     125 /* Wait state for some VLB's     - MR5:3 */
+
+/* Some options for oti087, debugging and fine tunning */
+#define OPTION_CLOCK_50         130
+#define OPTION_CLOCK_66         131
+#define OPTION_NO_WAIT          132
+#define OPTION_FIRST_WWAIT      133
+#define OPTION_WRITE_WAIT       134
+#define OPTION_ONE_WAIT         135
+#define OPTION_READ_WAIT        136
+#define OPTION_ALL_WAIT         137
+#define OPTION_ENABLE_BITBLT    138
+
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
@@ -240,6 +253,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "block_write",	OPTION_BLOCK_WRITE },
   { "no_bios_clocks",	OPTION_NO_BIOS_CLOCKS },
   { "s3_invert_vclk",	OPTION_S3_INVERT_VCLK },
+  { "program_clocks",	OPTION_PROGRAM_CLOCKS },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
@@ -260,6 +274,15 @@ OptFlagRec xf86_OptionTab[] = {
   { "vram_delay_ras",   OPTION_VRAM_DELAY_RAS },
   { "vram_extend_ras",  OPTION_VRAM_EXTEND_RAS },
   { "engine_delay",     OPTION_ENGINE_DELAY },
+  { "clock_50",         OPTION_CLOCK_50 },
+  { "clock_66",         OPTION_CLOCK_66 },
+  { "no_wait",          OPTION_NO_WAIT },
+  { "first_wwait",      OPTION_FIRST_WWAIT },
+  { "write_wait",       OPTION_WRITE_WAIT },
+  { "one_wait",         OPTION_ONE_WAIT },
+  { "read_wait",        OPTION_READ_WAIT },
+  { "all_wait",         OPTION_ALL_WAIT },
+  { "enable_bitblt",    OPTION_ENABLE_BITBLT },
 
   { "",			-1 },
 };

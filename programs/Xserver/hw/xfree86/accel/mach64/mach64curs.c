@@ -1,5 +1,5 @@
 /* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.4 1995/07/07 15:39:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.5 1995/09/17 06:31:24 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -352,6 +352,7 @@ mach64MoveCursor(pScr, x, y)
 	case DAC_CH8398:
 	case DAC_STG1702:
 	case DAC_STG1703:
+	case DAC_ATT20C408:
 	    if (mach64InfoRec.bitsPerPixel == 32) {
 		regw(CUR_HORZ_VERT_OFF,
 		     (((mach64CursYExtra + yoff) << 16) | (xoff & 0x1e)));

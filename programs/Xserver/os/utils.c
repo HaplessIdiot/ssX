@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.7 1995/03/11 14:19:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.8 1995/07/07 15:46:09 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -110,6 +110,7 @@ extern int defaultBackingStore;
 extern Bool disableBackingStore;
 extern Bool disableSaveUnders;
 extern Bool PartialNetwork;
+extern Bool BitmapNoScaledFonts;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
 #endif
@@ -510,6 +511,7 @@ void UseMsg()
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
     ErrorF("-pn                    accept failure to listen on all ports\n");
     ErrorF("-nopn                  reject failure to listen on all ports\n");
+    ErrorF("-noscale               don't allow scaling of bitmap fonts\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
     ErrorF("-s #                   screen-saver timeout (minutes)\n");
@@ -773,6 +775,8 @@ char	*argv[];
 	    PartialNetwork = TRUE;
 	else if ( strcmp( argv[i], "-nopn") == 0)
 	    PartialNetwork = FALSE;
+	else if ( strcmp( argv[i], "-noscale") == 0)
+	    BitmapNoScaledFonts = TRUE;
 	else if ( strcmp( argv[i], "r") == 0)
 	    defaultKeyboardControl.autoRepeat = TRUE;
 	else if ( strcmp( argv[i], "-r") == 0)

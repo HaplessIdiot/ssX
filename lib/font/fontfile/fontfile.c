@@ -1,5 +1,5 @@
 /* $XConsortium: fontfile.c,v 1.28 95/02/21 14:17:19 mor Exp $ */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.0 1995/02/12 02:33:16 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.1 1995/06/20 14:22:11 dawes Exp $ */
 
 /*
 
@@ -79,7 +79,11 @@ FontFileResetFPE (fpe)
     FontDirectoryPtr	dir;
 
     dir = (FontDirectoryPtr) fpe->private;
-    if (FontFileDirectoryChanged (dir))
+    /*
+     * The reset must fail for bitmap fonts because they get cleared when
+     * the path is set.
+     */
+    if (FontFileDirectoryChanged (dir) || dir->nonScalable.used > 0)
     {
 	/* can't do it, so tell the caller to close and re-open */
 	return FPEResetFailed;	

@@ -560,7 +560,8 @@ XFree86 support was integrated into the base X11R6 distribution by:
 </itemize>
 <tag/ARK Logic SVGA driver by:  /
 <itemize>
-       <item> Harm Hanemaayer <it>&lt;hhanemaa@cs.ruu.nl&gt;</it>, 
+       <item> Harm Hanemaayer <it>&lt;hhanemaa@cs.ruu.nl&gt;</it> 
+       <item> Leon Bottou <it>&lt;bottou@laforia.ibp.fr&gt;</it>
 </itemize>
 <tag/AL2101 SVGA driver by:  /
 <itemize>
@@ -924,7 +925,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.34 1995/10/21 11:43:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.35 1995/11/04 11:30:09 dawes Exp $
 </verb>
 
 </article>
