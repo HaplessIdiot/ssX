@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.37 1999/07/19 13:36:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.38 1999/08/28 09:00:53 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -16,6 +16,7 @@
 /* PCI Pseudo Vendor */
 #define PCI_VENDOR_GENERIC      0x00FF
 
+#define PCI_VENDOR_REAL3D	0x003D
 #define PCI_VENDOR_COMPAQ	0x0E11
 #define PCI_VENDOR_NCR_1	0x1000
 #define PCI_VENDOR_ATI		0x1002
@@ -131,6 +132,9 @@
 /* Generic */
 #define PCI_CHIP_VGA            0x0000
 #define PCI_CHIP_8514           0x0001
+
+/* Real 3D */
+#define PCI_CHIP_I740_PCI	0x00D1
 
 /* Compaq */
 #define PCI_CHIP_QV1280		0x3033
@@ -413,6 +417,7 @@
 #define PCI_CHIP_VOODOO_GRAPHICS 0x0001
 #define PCI_CHIP_VOODOO2	0x0002
 #define PCI_CHIP_BANSHEE	0x0003
+#define PCI_CHIP_VOODOO3	0x0005
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
@@ -471,7 +476,7 @@
 #define PCI_CHIP_NM2200		0x0005
 
 /* Intel */
-#define PCI_CHIP_I740		0x7800
+#define PCI_CHIP_I740_AGP	0x7800
 
 /*
  * first the VendorId - VendorName mapping
@@ -481,6 +486,7 @@ extern SymTabRec xf86PCIVendorNameInfoData[];
 
 #ifdef INIT_PCI_VENDOR_NAME_INFO
 SymTabRec xf86PCIVendorNameInfoData[] = {
+    {PCI_VENDOR_REAL3D, "Real 3D"},
     {PCI_VENDOR_COMPAQ, "Compaq"},
     {PCI_VENDOR_NCR_1,	"NCR"},
     {PCI_VENDOR_ATI,	"ATI"},
@@ -602,6 +608,10 @@ extern pciVendorDeviceInfo xf86PCIVendorInfoData[];
 
 #ifdef INIT_PCI_VENDOR_INFO
 pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
+    {PCI_VENDOR_REAL3D, {
+				{PCI_CHIP_I740_PCI, 	"i740 (PCI)" },
+				{0x0000,		NULL}}},
+
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_COMPAQ, {
 				{0x3033, 	"QVision 1280/p" },
@@ -1232,7 +1242,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x71a2, "82443GX Host (no AGP)"},
 				{0x84C4, "P6"},
 				{0x84C5, "82450GX20"},
-				{PCI_CHIP_I740,		"i740"},
+				{PCI_CHIP_I740_AGP,	"i740 (AGP)"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ADAPTEC, {
 				{0x0010, "2940U2" },

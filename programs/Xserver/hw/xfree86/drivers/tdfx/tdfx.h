@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.1 1999/08/29 12:21:02 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -30,12 +30,12 @@ typedef struct _TDFXRec *TDFXPtr;
 
 #ifdef PROP_3DFX
 #include "tdfx_priv.h"
-#else
-#define PROPDATA
 #endif
 extern Bool TDFXInitPrivate(ScreenPtr pScreen);
 extern void TDFXShutdownPrivate(ScreenPtr pScreen);
+#ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
+#endif
 
 #if 0
 /* These are not normally turned on. They are only included for debugging. */
@@ -137,7 +137,9 @@ typedef struct _TDFXRec {
   TDFXReadWordFunc readLong;
   TDFXSyncFunc sync;
   int syncDone;
+#ifdef PROPDATA
   PROPDATA;
+#endif
 #ifdef XF86DRI
   Bool directRenderingEnabled;
   DRIInfoPtr pDRIInfo;
