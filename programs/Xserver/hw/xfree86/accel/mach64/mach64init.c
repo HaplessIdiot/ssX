@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.15 1996/03/31 11:48:24 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -33,6 +33,15 @@
 #include "ativga.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+#ifdef linux
+#include <asm/page.h>
+#endif
+#ifndef PAGE_MASK
+#define PAGE_MASK 0x0fff
+#endif
+#ifndef PAGE_SIZE
+#define PAGE_SIZE 0x1000
+#endif
 
 extern int xf86Verbose;
 
@@ -467,9 +476,13 @@ void mach64StrobeClock()
 {
     char tmp;
 
+#ifdef __alpha__
+    usleep(26);
+#else
     /* Delay for 26 us */
     for (tmp = 0; tmp < 26; tmp++)
 	GlennsIODelay();
+#endif
 
     tmp = inb(ioCLOCK_CNTL);
     outb(ioCLOCK_CNTL, tmp | CLOCK_STROBE);
@@ -1435,13 +1448,13 @@ void mach64InitAperture(screen_idx)
 	break;
     }
 
-    regpage = mach64MemRegOffset & ~0x0fff;
+    regpage = mach64MemRegOffset & PAGE_MASK;
     regoffset = mach64MemRegOffset - regpage;
 
     if (!mach64MemRegMap) {
 	mach64MemRegMap = xf86MapVidMem(screen_idx, EXTENDED_REGION,
 					(pointer)(apaddr + regpage),
-					0x1000);
+					PAGE_SIZE);
 	mach64MemReg = (pointer)((unsigned long)mach64MemRegMap + regoffset);
     }
 

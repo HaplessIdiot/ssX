@@ -1,5 +1,5 @@
 /* $XConsortium: extnsionst.h,v 1.14 94/04/17 20:25:42 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/extnsionst.h,v 3.0 1996/03/29 22:19:32 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -100,7 +100,11 @@ extern void NotImplemented (	/* FIXME: this may move to another file... */
 #endif
 );
 
-typedef void (* ExtensionLookupProc)(/*args indeterminate*/);
+typedef void (* ExtensionLookupProc)(	/*args indeterminate*/
+#ifdef	EXTENSION_PROC_ARGS
+	EXTENSION_PROC_ARGS
+#endif
+);
 
 typedef struct _ProcEntry {
     char *name;

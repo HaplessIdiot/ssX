@@ -25,7 +25,8 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.21 94/04/17 20:32:55 rws Exp $ */
+/* $XConsortium: shape.c,v 5.22 94/09/22 20:58:37 dpw Exp $ */
+/* $XFree86$ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -45,10 +46,87 @@ in this Software without prior written authorization from the X Consortium.
 #include "regionstr.h"
 #include "gcstruct.h"
 
-static int ShapeFreeClient(), ShapeFreeEvents();
-static void SendShapeNotify();
-static int ProcShapeDispatch(), SProcShapeDispatch();
-static void ShapeResetProc(), SShapeNotifyEvent();
+typedef	RegionPtr (*CreateDftPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /* pWin */
+#endif
+	);
+
+static int ShapeFreeClient(
+#if NeedFunctionPrototypes
+	pointer /* data */,
+	XID /* id */
+#endif
+	);
+static int ShapeFreeEvents(
+#if NeedFunctionPrototypes
+	pointer /* data */,
+	XID /* id */
+#endif
+	);
+static void SendShapeNotify(
+#if NeedFunctionPrototypes
+	WindowPtr /* pWin */,
+	int /* which */
+#endif
+	);
+static void ShapeResetProc(
+#if NeedFunctionPrototypes
+	ExtensionEntry * /* extEntry */
+#endif
+	);
+static void SShapeNotifyEvent(
+#if NeedFunctionPrototypes
+	xShapeNotifyEvent * /* from */,
+	xShapeNotifyEvent * /* to */
+#endif
+	);
+static int
+RegionOperate (
+#if NeedFunctionPrototypes
+	ClientPtr /* client */,
+	WindowPtr /* pWin */,
+	int /* kind */,
+	RegionPtr * /* destRgnp */,
+	RegionPtr /* srcRgn */,
+	int /* op */,
+	int /* xoff */,
+	int /* yoff */,
+	CreateDftPtr /* create */
+#endif
+	);
+
+#if NeedFunctionPrototypes
+#define CREATE_PROC(func) RegionPtr func(WindowPtr /* pWin */)
+#else
+#define CREATE_PROC(func) RegionPtr func(/* WindowPtr pWin */)
+#endif
+
+static CREATE_PROC(CreateBoundingShape);
+static CREATE_PROC(CreateClipShape);
+
+#undef CREATE_PROC
+
+static DISPATCH_PROC(ProcShapeCombine);
+static DISPATCH_PROC(ProcShapeDispatch);
+static DISPATCH_PROC(ProcShapeGetRectangles);
+static DISPATCH_PROC(ProcShapeInputSelected);
+static DISPATCH_PROC(ProcShapeMask);
+static DISPATCH_PROC(ProcShapeOffset);
+static DISPATCH_PROC(ProcShapeQueryExtents);
+static DISPATCH_PROC(ProcShapeQueryVersion);
+static DISPATCH_PROC(ProcShapeRectangles);
+static DISPATCH_PROC(ProcShapeSelectInput);
+static DISPATCH_PROC(SProcShapeCombine);
+static DISPATCH_PROC(SProcShapeDispatch);
+static DISPATCH_PROC(SProcShapeGetRectangles);
+static DISPATCH_PROC(SProcShapeInputSelected);
+static DISPATCH_PROC(SProcShapeMask);
+static DISPATCH_PROC(SProcShapeOffset);
+static DISPATCH_PROC(SProcShapeQueryExtents);
+static DISPATCH_PROC(SProcShapeQueryVersion);
+static DISPATCH_PROC(SProcShapeRectangles);
+static DISPATCH_PROC(SProcShapeSelectInput);
 
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
@@ -82,7 +160,7 @@ typedef struct _ShapeEvent {
 void
 ShapeExtensionInit()
 {
-    ExtensionEntry *extEntry, *AddExtension();
+    ExtensionEntry *extEntry;
 
     ClientType = CreateNewResourceType(ShapeFreeClient);
     EventType = CreateNewResourceType(ShapeFreeEvents);
@@ -93,7 +171,7 @@ ShapeExtensionInit()
     {
 	ShapeReqCode = (unsigned char)extEntry->base;
 	ShapeEventBase = extEntry->eventBase;
-	EventSwapVector[ShapeEventBase] = SShapeNotifyEvent;
+	EventSwapVector[ShapeEventBase] = (EventSwapPtr) SShapeNotifyEvent;
     }
 }
 
@@ -104,7 +182,7 @@ ExtensionEntry	*extEntry;
 {
 }
 
-static
+static int
 RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     ClientPtr	client;
     WindowPtr	pWin;
@@ -112,7 +190,7 @@ RegionOperate (client, pWin, kind, destRgnp, srcRgn, op, xoff, yoff, create)
     RegionPtr	*destRgnp, srcRgn;
     int		op;
     int		xoff, yoff;
-    RegionPtr	(*create)();	/* creates a reasonable *destRgnp */
+    CreateDftPtr create;	/* creates a reasonable *destRgnp */
 {
     ScreenPtr	pScreen = pWin->drawable.pScreen;
 
@@ -195,7 +273,6 @@ static int
 ProcShapeQueryVersion (client)
     register ClientPtr	client;
 {
-    REQUEST(xShapeQueryVersionReq);
     xShapeQueryVersionReply	rep;
     register int		n;
 
@@ -231,7 +308,7 @@ ProcShapeRectangles (client)
     int		        nrects, ctype;
     RegionPtr		srcRgn;
     RegionPtr		*destRgn;
-    RegionPtr		(*createDefault)();
+    CreateDftPtr	createDefault;
     int			destBounding;
 
     REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
@@ -295,7 +372,7 @@ ProcShapeMask (client)
     RegionPtr		srcRgn;
     RegionPtr		*destRgn;
     PixmapPtr		pPixmap;
-    RegionPtr		(*createDefault)();
+    CreateDftPtr	createDefault;
     int			destBounding;
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
@@ -356,8 +433,8 @@ ProcShapeCombine (client)
     REQUEST(xShapeCombineReq);
     RegionPtr		srcRgn;
     RegionPtr		*destRgn;
-    RegionPtr		(*createDefault)();
-    RegionPtr		(*createSrc)();
+    CreateDftPtr	createDefault;
+    CreateDftPtr	createSrc;
     RegionPtr		tmp;
     int			destBounding;
 
@@ -469,7 +546,7 @@ ProcShapeQueryExtents (client)
     REQUEST(xShapeQueryExtentsReq);
     WindowPtr		pWin;
     xShapeQueryExtentsReply	rep;
-    BoxRec		extents;
+    BoxRec		extents, *pExtents;
     register int	n;
 
     REQUEST_SIZE_MATCH (xShapeQueryExtentsReq);
@@ -482,7 +559,9 @@ ProcShapeQueryExtents (client)
     rep.boundingShaped = (wBoundingShape(pWin) != 0);
     rep.clipShaped = (wClipShape(pWin) != 0);
     if (wBoundingShape(pWin)) {
-	extents = *REGION_EXTENTS(pWin->drawable.pScreen, wBoundingShape(pWin));
+     /* this is done in two steps because of a compiler bug on SunOS 4.1.3 */
+	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, wBoundingShape(pWin));
+	extents = *pExtents;
     } else {
 	extents.x1 = -wBorderWidth (pWin);
 	extents.y1 = -wBorderWidth (pWin);
@@ -494,7 +573,9 @@ ProcShapeQueryExtents (client)
     rep.widthBoundingShape = extents.x2 - extents.x1;
     rep.heightBoundingShape = extents.y2 - extents.y1;
     if (wClipShape(pWin)) {
-	extents = *REGION_EXTENTS(pWin->drawable.pScreen, wClipShape(pWin));
+     /* this is done in two steps because of a compiler bug on SunOS 4.1.3 */
+	pExtents = REGION_EXTENTS(pWin->drawable.pScreen, wClipShape(pWin));
+	extents = *pExtents;
     } else {
 	extents.x1 = 0;
 	extents.y1 = 0;
@@ -547,6 +628,7 @@ ShapeFreeClient (data, id)
 	}
     }
     xfree ((pointer) pShapeEvent);
+    return Success;
 }
 
 /*ARGSUSED*/
@@ -564,6 +646,7 @@ ShapeFreeEvents (data, id)
 	xfree ((pointer) pCur);
     }
     xfree ((pointer) pHead);
+    return Success;
 }
 
 static int

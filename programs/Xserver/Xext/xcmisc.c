@@ -1,5 +1,5 @@
 /* $XConsortium: xcmisc.c,v 1.4 94/04/17 20:32:59 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.0 1996/03/29 22:12:00 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -31,27 +31,41 @@ from the X Consortium.
 */
 
 #define NEED_EVENTS
+#define NEED_REPLIES
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
 #include "os.h"
 #include "dixstruct.h"
 #include "extnsionst.h"
+#include "swaprep.h"
 #include "xcmiscstr.h"
 
 static unsigned char XCMiscCode;
-static int ProcXCMiscDispatch(), SProcXCMiscDispatch();
-static void XCMiscResetProc();
-extern void Swap32Write(); /* XXX should be in header file */
+
+static void XCMiscResetProc(
+#if NeedFunctionPrototypes
+    ExtensionEntry * /* extEntry */
+#endif
+);
+
+static DISPATCH_PROC(ProcXCMiscDispatch);
+static DISPATCH_PROC(ProcXCMiscGetVersion);
+static DISPATCH_PROC(ProcXCMiscGetXIDList);
+static DISPATCH_PROC(ProcXCMiscGetXIDRange);
+static DISPATCH_PROC(SProcXCMiscDispatch);
+static DISPATCH_PROC(SProcXCMiscGetVersion);
+static DISPATCH_PROC(SProcXCMiscGetXIDList);
+static DISPATCH_PROC(SProcXCMiscGetXIDRange);
 
 void
 XCMiscExtensionInit()
 {
-    ExtensionEntry *extEntry, *AddExtension();
+    ExtensionEntry *extEntry;
 
-    if (extEntry = AddExtension(XCMiscExtensionName, 0, 0,
+    if ((extEntry = AddExtension(XCMiscExtensionName, 0, 0,
 				ProcXCMiscDispatch, SProcXCMiscDispatch,
-				XCMiscResetProc, StandardMinorOpcode))
+				XCMiscResetProc, StandardMinorOpcode)) != 0)
 	XCMiscCode = (unsigned char)extEntry->base;
 }
 
@@ -66,7 +80,6 @@ static int
 ProcXCMiscGetVersion(client)
     register ClientPtr client;
 {
-    REQUEST(xXCMiscGetVersionReq);
     xXCMiscGetVersionReply rep;
     register int n;
 
@@ -89,7 +102,6 @@ static int
 ProcXCMiscGetXIDRange(client)
     register ClientPtr client;
 {
-    REQUEST(xXCMiscGetXIDRangeReq);
     xXCMiscGetXIDRangeReply rep;
     register int n;
     XID min_id, max_id;
@@ -140,7 +152,7 @@ ProcXCMiscGetXIDList(client)
     WriteToClient(client, sizeof(xXCMiscGetXIDListReply), (char *)&rep);
     if (count)
     {
-    	client->pSwapReplyFunc = Swap32Write;
+    	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient(client, count * sizeof(XID), pids);
     }
     DEALLOCATE_LOCAL(pids);

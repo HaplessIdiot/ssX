@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.4 1995/10/21 11:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.5 1996/02/04 09:06:51 dawes Exp $ */
 
 
 /* Jon Tombs <jon@esix2.us.es>  */
@@ -45,7 +45,7 @@ int commonCalcClock(
    long freq,
    int min_n2,
    long freq_min, long freq_max,
-   unsigned char *mdiv, *ndiv
+   unsigned char *mdiv, unsigned char *ndiv
 #endif
 );
 

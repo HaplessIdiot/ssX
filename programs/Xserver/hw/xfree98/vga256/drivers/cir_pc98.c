@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.2 1996/02/18 03:44:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.3 1996/03/04 05:22:16 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -88,8 +88,10 @@ init_wabs_ganbwap(void)
     for(tmp=0;tmp<28;tmp++)       _outb(0x54e0, inidt2[tmp]);
     /* ---- step 5 ---- */
     _outb(0x54e0, 0x24);
-    if(_inb(0x55e0) & 0x80)
-    _outb(0x40e0, _inb(0x41e0));
+    if(_inb(0x55e0) & 0x80){
+	tmp = _inb(0x41e0);
+	_outb(0x40e0, tmp);
+    }
     for(tmp=0;tmp<10;tmp++)       _outb(0x40e0, inidt3[tmp]);
     _inb(0x5ae0);
     _outb(0x40e0, 0x20);
@@ -108,7 +110,8 @@ enter_ganbwap(void)
 
     /* allow VRAM mapping above 0xf00000 on EPSON machines */
     if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &vga256InfoRec.options)) {
-	_outb(0x43b, _inb(0x43b) & 0xfd);
+	temp = _inb(0x43b);
+	_outb(0x43b, temp & 0xfd);
     }
     /* Initialize GA-98NB.  X_MODE_ON -> 8colors mode.*/
     _outb(0x6A,0x00); /* Do 8 colors mode */
@@ -252,7 +255,8 @@ init_wsna(void)
     unsigned int tmp;
 
     if(_inb(0x51e3) == 0xc2){
-	_outb(0x57e3, _inb(0x57e3) & 0x7f);
+	tmp = _inb(0x57e3);
+	_outb(0x57e3, tmp & 0x7f);
     } else {
 	_outb(0x46e8, 0x18); outb(0x3c2, 0x01);
 	_outb(0x46e8, 0x08);
@@ -290,7 +294,8 @@ init_wsna(void)
     outb(0x3d4, 0x24); data.b.l = _inb(0x3d5);
 
     if((unsigned char)data.b.l != 0x80){
-	outb(0x3c0, inb(0x3c1));
+	tmp = inb(0x3c1);
+	outb(0x3c0, tmp);
     }
 
     for(data.b.l = 0; data.b.l < 0x15; data.b.l++){
@@ -313,7 +318,8 @@ enter_wsna(void)
 
     /* allow VRAM mapping above 0xf00000 on EPSON machines */
     if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &vga256InfoRec.options)){
-	_outb(0x43b, _inb(0x43b) & 0xfd);
+	temp = _inb(0x43b);
+	_outb(0x43b, temp & 0xfd);
     }
 
     /* Initialize WSN-A2F/A4F. X_MODE_ON -> 8colors mode. */
@@ -330,7 +336,8 @@ enter_wsna(void)
 	outb(0x3d4, 0x24);
 	temp = inb(0x3d5);
 	if(temp == 0x80){
-	    outb(0x3c0, inb(0x3c1));
+	    temp = inb(0x3c1);
+	    outb(0x3c0, temp);
 	}
 
 	outb(0x3c0, 0x00);
@@ -398,8 +405,10 @@ init_wabep(void)
     for(tmp=0;tmp<28;tmp++)       _outw(0x0f54, inidt2[tmp]);
     /* ---- step 5 ---- (sub_27) */
     _outb(0x0f54, 0x24);
-    if((_inb(0x0f55) & 0x80)==0x80)
-        _outb(0x0f40, _inb(0x0f41)); 
+    if((_inb(0x0f55) & 0x80)==0x80){
+	tmp = _inb(0x0f41);
+        _outb(0x0f40, tmp); 
+    }
     for(tmp=0;tmp<10;tmp++)       _outb(0x0f40, inidt3[tmp]);
     /* ---- step 6 ---- */
     for(tmp=0;tmp<13;tmp++)       outw(0x3ce, inidt4[tmp]);
@@ -412,8 +421,10 @@ init_wabep(void)
     _outb(0x0f46,0xff);
     /* ---- step 8 ---- (sub_29)*/
     _outb(0x0f54,0x24);
-    if((_inb(0x0f55) & 0x80)==0x80)
-        _outb(0x0f40, _inb(0x0f41));
+    if((_inb(0x0f55) & 0x80)==0x80){
+	tmp = _inb(0x0f41);
+        _outb(0x0f40, tmp );
+    }
 
     return;
 }

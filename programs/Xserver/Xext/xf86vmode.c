@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.20 1996/03/04 04:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.21 1996/03/10 11:53:41 dawes Exp $ */
 
 /*
 
@@ -56,18 +56,39 @@ from Kaleb S. KEITHLEY
 #include <lan/socket.h>
 #endif
 
+#include "swaprep.h"
+
 extern int xf86ScreenIndex;
 extern Bool xf86VidModeEnabled;
 extern Bool xf86VidModeAllowNonLocal;
 
 static int vidmodeErrorBase;
 
-static int ProcXF86VidModeDispatch(), SProcXF86VidModeDispatch();
-static void XF86VidModeResetProc();
+static void XF86VidModeResetProc(
+#if NeedFunctionPrototypes
+    ExtensionEntry* /* extEntry */
+#endif
+);
+
+static DISPATCH_PROC(LocalClient);
+static DISPATCH_PROC(ProcXF86VidModeDispatch);
+static DISPATCH_PROC(ProcXF86VidModeGetAllModeLines);
+static DISPATCH_PROC(ProcXF86VidModeGetModeLine);
+static DISPATCH_PROC(ProcXF86VidModeGetMonitor);
+static DISPATCH_PROC(ProcXF86VidModeLockModeSwitch);
+static DISPATCH_PROC(ProcXF86VidModeModModeLine);
+static DISPATCH_PROC(ProcXF86VidModeQueryVersion);
+static DISPATCH_PROC(ProcXF86VidModeSwitchMode);
+static DISPATCH_PROC(SProcXF86VidModeDispatch);
+static DISPATCH_PROC(SProcXF86VidModeGetAllModeLines);
+static DISPATCH_PROC(SProcXF86VidModeGetModeLine);
+static DISPATCH_PROC(SProcXF86VidModeGetMonitor);
+static DISPATCH_PROC(SProcXF86VidModeLockModeSwitch);
+static DISPATCH_PROC(SProcXF86VidModeModModeLine);
+static DISPATCH_PROC(SProcXF86VidModeQueryVersion);
+static DISPATCH_PROC(SProcXF86VidModeSwitchMode);
 
 static unsigned char XF86VidModeReqCode = 0;
-
-extern void Swap32Write();
 
 /* The XF86VIDMODE_EVENTS code is far from complete */
 
@@ -75,7 +96,11 @@ extern void Swap32Write();
 static int XF86VidModeEventBase = 0;
 
 static void SXF86VidModeNotifyEvent();
-
+#if NeedFunctionPrototypes
+    xXF86VidModeNotifyEvent * /* from */,
+    xXF86VidModeNotifyEvent * /* to */
+#endif
+);
 
 extern WindowPtr *WindowTable;
 
@@ -111,10 +136,10 @@ void
 XFree86VidModeExtensionInit()
 {
     ExtensionEntry* extEntry;
+#ifdef XF86VIDMODE_EVENTS
     int		    i;
     ScreenPtr	    pScreen;
 
-#ifdef XF86VIDMODE_EVENTS
     EventType = CreateNewResourceType(XF86VidModeFreeEvents);
     ScreenPrivateIndex = AllocateScreenPrivateIndex ();
     for (i = 0; i < screenInfo.numScreens; i++)
@@ -319,7 +344,6 @@ static int
 ProcXF86VidModeQueryVersion(client)
     register ClientPtr client;
 {
-    REQUEST(xXF86VidModeQueryVersionReq);
     xXF86VidModeQueryVersionReply rep;
     register int n;
 
@@ -394,7 +418,7 @@ ProcXF86VidModeGetModeLine(client)
     }
     WriteToClient(client, sizeof(xXF86VidModeGetModeLineReply), (char *)&rep);
     if (privsize) {
-	client->pSwapReplyFunc = Swap32Write;
+	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient(client, privsize * sizeof(INT32),
 				 mptr->Private);
     }
@@ -477,7 +501,6 @@ static int
 ProcXF86VidModeModModeLine(client)
     register ClientPtr client;
 {
-    register int n;
     REQUEST(xXF86VidModeModModeLineReq);
     ScrnInfoPtr vptr;
     DisplayModePtr mptr;
@@ -664,8 +687,8 @@ ProcXF86VidModeGetMonitor(client)
 	rep.modelLength = 0;
     rep.length = (SIZEOF(xXF86VidModeGetMonitorReply) - SIZEOF(xGenericReply) +
 		  (mptr->n_hsync + mptr->n_vrefresh) * sizeof(CARD32) +
-	          (rep.vendorLength + 3 & ~3) +
-		  (rep.modelLength + 3 & ~3)) >> 2;
+	          ((rep.vendorLength + 3) & ~3) +
+		  ((rep.modelLength + 3) & ~3)) >> 2;
     rep.sequenceNumber = client->sequence;
     rep.nhsync = mptr->n_hsync;
     rep.nvsync = mptr->n_vrefresh;
@@ -694,7 +717,7 @@ ProcXF86VidModeGetMonitor(client)
     	swapl(&rep.bandwidth, n);
     }
     WriteToClient(client, SIZEOF(xXF86VidModeGetMonitorReply), (char *)&rep);
-    client->pSwapReplyFunc = Swap32Write;
+    client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
     WriteSwappedDataToClient(client, mptr->n_hsync * sizeof(CARD32),
 			     hsyncdata);
     WriteSwappedDataToClient(client, mptr->n_vrefresh * sizeof(CARD32),
@@ -711,11 +734,11 @@ ProcXF86VidModeGetMonitor(client)
 /* 
  * lifted from xc/programs/Xserver/os/access.c.
  */
-static Bool
+static int
 LocalClient(client)
     ClientPtr client;
 {
-    int    		alen, family, notused;
+    int    		alen, notused;
     struct sockaddr	*from = NULL;
 
     if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,

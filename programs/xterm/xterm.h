@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.2 1996/02/18 03:45:53 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.3 1996/03/10 12:15:27 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -190,5 +190,6 @@ extern void Scroll PROTO((TScreen *screen, int amount));
 extern void recolor_cursor PROTO((Cursor cursor, unsigned long fg, unsigned long bg));
 extern void resetXtermGC PROTO((TScreen *screen, int flags, Bool hilite));
 extern void scrolling_copy_area PROTO((TScreen *screen, int firstline, int nlines, int amount));
+extern void useCurBackground PROTO((Bool flag));
 
 #endif	/* included_xterm_h */

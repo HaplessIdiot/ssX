@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.4 1995/12/16 08:20:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.5 1996/02/04 09:06:53 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -7,6 +7,7 @@
  */
 /* $XConsortium: STG1703clk.c /main/4 1995/12/17 08:26:46 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
@@ -146,8 +147,6 @@ unsigned int program_word;
 int clk;
 #endif
 {
-   unsigned char tmp, oldCR31;
-   int vgaCRAddr, vgaCRData;
 
    STG1703setIndex( (clk << 1) + 0x20, (program_word & 0xff) );
    outb(INDEXED_REG, (program_word & 0xff00) >> 8);

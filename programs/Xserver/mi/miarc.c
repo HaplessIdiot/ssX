@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miarc.c /main/89 1995/12/06 17:04:51 ray $ */
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.0 1995/07/07 15:45:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.1 1996/01/05 13:19:50 dawes Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -1670,8 +1670,17 @@ miGetArcPts(parc, cpt, ppPts)
 
     poly[cpt].x = (xc + x0);
     poly[cpt].y = (yc + y0);
+#if defined(linux) && defined(__alpha__)
+{
+  /* this tickles GCC into doing the right thing, I hope */
+    int dummy;
+    last.x = dummy = ROUNDTOINT( poly[cpt + 1].x = (xc + x1) );
+    last.y = dummy = ROUNDTOINT( poly[cpt + 1].y = (yc + y1) );
+}
+#else /* defined(linux) && defined(__alpha__) */
     last.x = ROUNDTOINT( poly[cpt + 1].x = (xc + x1) );
     last.y = ROUNDTOINT( poly[cpt + 1].y = (yc + y1) );
+#endif /* defined(linux) && defined(__alpha__) */
 
     for(i = 2; i < count; i++)
     {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.4 1995/07/01 10:49:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.5 1996/02/04 09:06:52 dawes Exp $ */
 
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  */
@@ -6,6 +6,7 @@
 
 /* $XConsortium: SC11412.c /main/5 1995/11/12 19:30:22 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "SC11412.h" 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES

@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.5 1996/01/10 05:42:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.6 1996/01/10 06:09:42 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -175,9 +175,13 @@ extern Bool Must_have_memory;
 #define SIZE_TAIL		(sizeof(long))
 #endif
 
+#ifdef __alpha__
+#define MAGIC			0x1404196414071968
+#define MAGIC2			0x2515207525182079
+#else
 #define MAGIC			0x14071968
 #define MAGIC2			0x25182079
-
+#endif
 
 /* To get some statistics about memory allocation */
 
@@ -288,6 +292,10 @@ Xalloc (amount)
  	LOG_ALLOC("Xalloc<0", amount, 0);
 	return (unsigned long *)NULL;
     }
+
+#ifdef __alpha__  /* alignment check */
+    amount = (amount + (sizeof(long)-1)) & ~(sizeof(long)-1);
+#endif
 
     if (amount <= MAX_SMALL) {
 	/*

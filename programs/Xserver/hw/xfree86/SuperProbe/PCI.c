@@ -7,7 +7,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.4 1996/03/17 11:28:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.5 1996/04/15 11:29:08 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -122,7 +122,7 @@ xf86scanpci()
 	    if (!((pcr._base_class == PCI_CLASS_PREHISTORIC &&
 		   pcr._sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
 		  (pcr._base_class == PCI_CLASS_DISPLAY &&
-		   pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA)))
+		   pcr._sub_class == PCI_SUBCLASS_DISPLAY_VGA)))
 		continue;
 		  
 	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
@@ -206,7 +206,7 @@ xf86scanpci()
 	    if (!((pcr._base_class == PCI_CLASS_PREHISTORIC &&
 		   pcr._sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
 		  (pcr._base_class == PCI_CLASS_DISPLAY &&
-		   pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA)))
+		   pcr._sub_class == PCI_SUBCLASS_DISPLAY_VGA)))
 		continue;
 		  
 	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: gc.c,v 5.28 95/02/27 16:42:14 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.0 1996/04/15 11:19:47 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -123,8 +123,29 @@ NOTE:
 #define NEXTVAL(_type, _var) \
     { if (fPointer) _var = (_type)*pPtr++; else _var = (_type)*pval++; }
 #else
+#ifdef __alpha__  /* alignment check */
+#define NEXTVAL(_type, _var) \
+    { if (fPointer) \
+        if (sizeof(_type)==1 || ((long)(pPtr) & (sizeof(_type)-1))==0) \
+          _var = *((_type*)pPtr++); \
+        else { \
+	  unsigned long __dummy; \
+	  memcpy(&__dummy, (_type*)pPtr++, sizeof(_type)); \
+	  _var = *((_type*)(&__dummy)); \
+	} \
+      else \
+        if (sizeof(_type)==1 || ((long)(pval) & (sizeof(_type)-1))==0) \
+          _var = *((_type*)pval++); \
+        else { \
+	  unsigned long __dummy; \
+	  memcpy(&__dummy, (_type*)pval++, sizeof(_type)); \
+	  _var = *((_type*)(&__dummy)); \
+	} \
+    }
+#else
 #define NEXTVAL(_type, _var) \
     { if (fPointer) _var = *((_type*)pPtr++); else _var = *((_type*)pval++); }
+#endif
 #endif
 
 int

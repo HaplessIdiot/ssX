@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.12 1996/02/04 09:04:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.13 1996/03/10 12:03:32 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -341,7 +341,7 @@ void  p9000ClearScreen(void)
   p9000NotBusy();         /* Wait for the P9000 to be free */
   /* Drawing a big black rectangle is probably a good way to clear things */
   if (p9000CRTCRegs.BytesPerPixel == 1)
-    p9000Store(FGROUND, CtlBase, 1); /* 8 bit */
+    p9000Store(FGROUND, CtlBase, 0); /* 8 bit */
   else
     p9000Store(FGROUND, CtlBase, 0); /* 16 and 32 bit */
   p9000Store(RASTER, CtlBase, IGM_F_MASK);

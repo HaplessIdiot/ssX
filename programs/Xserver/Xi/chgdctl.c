@@ -1,5 +1,5 @@
 /* $XConsortium: chgdctl.c,v 1.4 94/04/17 20:33:02 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/chgdctl.c,v 3.0 1996/03/29 22:12:50 dawes Exp $ */
 
 /************************************************************
 
@@ -99,7 +99,8 @@ int
 ProcXChangeDeviceControl(client)
     ClientPtr client;
     {
-    int i, len, status;
+    unsigned len;
+    int i, status;
     DeviceIntPtr dev;
     xDeviceResolutionCtl *r;
     xChangeDeviceControlReply rep;

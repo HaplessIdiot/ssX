@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.2 1995/07/07 16:04:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.3 1996/02/04 09:06:44 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -7,6 +7,7 @@
  */
 /* $XConsortium: IBMRGB.c /main/3 1995/11/12 19:30:00 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.37 1996/02/10 10:35:24 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.38 1996/02/24 04:32:50 dawes Exp $
 
 #ifndef LinuxElfDefault
 #ifdef i386Architecture
@@ -113,6 +113,8 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.37 1996/02/10 10:35:24 dawe
 #define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
 #define LdCombineFlags		-r
 #define LdPostLib		/* Never needed */
+
+#ifdef i386Architecture
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt -m486
 #define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
@@ -121,6 +123,21 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.37 1996/02/10 10:35:24 dawe
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#endif /* i386Architecture */
+
+#ifdef AlphaArchitecture
+#define OptimizedCDebugFlags	-O2
+#define StandardDefines		-Dlinux -D__alpha__ -D_POSIX_SOURCE \
+				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#define HasWChar32		YES
+#define StandardCppDefines	-traditional StandardDefines
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
+#define HasSharedLibraries	NO
+#define SharedLibXdmGreet	NO
+#endif /*  AlphaArchitecture */
+
 #if BuildDynamicLoading
 #define ServerExtraSysLibs	-rdynamic -ldl
 #else

@@ -1,4 +1,5 @@
 /* $XConsortium: DisplayQue.c,v 1.6 94/04/17 20:15:58 rws Exp $ */
+/* $XFree86$ */
 
 /*
  
@@ -32,8 +33,10 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include <stdio.h>
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include <X11/Xmu/DisplayQue.h>
 
 static int _DQCloseDisplay();

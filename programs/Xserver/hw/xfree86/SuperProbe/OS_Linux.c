@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.2 1995/01/28 15:47:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.3 1996/02/04 08:56:54 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -34,6 +34,13 @@
 #include <sys/kd.h>
 #include <sys/vt.h>
 #include <sys/mman.h>
+
+#ifdef __alpha__
+#define BUS_BASE 0xfffffc0300000000UL
+#define iopl(a) ((a)?ioperm(0, 0x10000, 1):ioperm(0,0x10000,0))
+#else /* __alpha__ */
+#define BUS_BASE 0
+#endif /* __alpha__ */
 
 static int VT_fd = -1;
 static int VT_num = -1;
@@ -159,7 +166,7 @@ Byte *MapVGA()
 		return((Byte *)0);
 	}
 	base = (Byte *)mmap((caddr_t)0, 0x10000, PROT_READ|PROT_WRITE,
-			    MAP_SHARED, fd, (off_t)0xA0000);
+			    MAP_SHARED, fd, (off_t)0xA0000 | BUS_BASE);
 	close(fd);
 	if ((long)base == -1)
 	{
@@ -177,7 +184,7 @@ Byte *MapVGA()
 void UnMapVGA(base)
 Byte *base;
 {
-	munmap((caddr_t)base, 0x10000);
+	munmap((off_t)base | BUS_BASE, 0x10000);
 	return;
 }
 
@@ -194,6 +201,9 @@ int Len;
 {
 	Word tmp;
 	Byte *Base = Bios_Base + Offset;
+	Byte *mybase;
+	off_t myoffset;
+	int mysize;
 
 	if (BIOS_fd == -1)
 	{
@@ -203,6 +213,49 @@ int Len;
 			return(-1);
 		}
 	}
+
+#ifdef __alpha__
+
+	if ((off_t)((off_t)Base & 0x7FFF) != (off_t)0)
+	{
+		myoffset = (off_t)Base & 0x7FFF;
+		Base = (Byte *)((off_t)Base & 0xF8000);
+	}
+	else
+		myoffset = 0;
+
+	mysize = myoffset + Len;
+	mybase = (unsigned char *)mmap((caddr_t)0, mysize, PROT_READ,
+				       MAP_SHARED, BIOS_fd,
+				       (off_t)Base | BUS_BASE);
+
+	if (mybase == (unsigned char *)NULL) {
+		fprintf(stderr, "%s: Failed to mmap /dev/mem (%d)\n",
+			MyName, errno);
+		return(-1);
+	}
+
+	if (myoffset != (off_t)0)
+	{
+		/*
+	 	 * Sanity check...
+	 	 */
+		tmp = *(Word *)mybase;
+		if (tmp != (Word)0xAA55)
+		{
+			fprintf(stderr, 
+				"%s: BIOS sanity check failed, addr=%lx\n",
+				MyName, (long)Base);
+			return(-1);
+		}
+	}
+
+	memcpy(Buffer, &mybase[myoffset], Len);
+
+	munmap((caddr_t)((off_t)Base | BUS_BASE), mysize);
+
+#else /* __alpha__ */
+
 	if ((off_t)((off_t)Base & 0x7FFF) != (off_t)0)
 	{
 		/*
@@ -228,6 +281,8 @@ int Len;
 		fprintf(stderr, "%s: BIOS read failed\n", MyName);
 		return(-1);
 	}
+#endif /* __alpha__ */
+
 	return(Len);
 }
 

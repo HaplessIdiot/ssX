@@ -1,4 +1,5 @@
 /* $XConsortium: Distinct.c,v 1.4 94/04/17 20:15:59 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -32,6 +33,9 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 # include   <X11/Xlib.h>
+# ifndef X_NOT_STDC_ENV
+# include   <stdlib.h>
+# endif
 
 /*
  * Distinguishable colors routine.  Determines if two colors are

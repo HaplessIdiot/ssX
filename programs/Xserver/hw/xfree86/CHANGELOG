@@ -1,3 +1,19 @@
+XFree86 3.1.2Dg (6 May 1996)
+498. Use same xlfd value rounding for alpha as for i386 (Harald Koenig).
+497. Support for Linux/Alpha (Jay Estabrook, Craig Ruff, Harald Koenig
+     and others?).
+496. Fix autorepeating modifier keys (Kaleb Keithley).
+495. Fix nonMuxMaxClock for S3 864/868 (Harald Koenig).
+494. Make sure that imake, xinit and the XFree86 servers don't inherit
+     a SIGCHLD signal handler of SIG_IGN (Marc Aurele La France).
+493. Fix default HSkew for ATI 28800 cards (Marc Aurele La France).
+492. Fix typo in SuperProbe/PCI.c (Holger Veit).
+491. Colour xterm fixes -- fixes inner border being painted with the wrong
+     colour (Thomas E. Dickey).
+490. More X server prototyping fixes -- mostly for Xserver/Xext
+     (Thomas E. Dickey).
+489. DGA support for the P9000 server (Erik Nygren).
+
 XFree86 3.1.2Df (15 April 1996)
 488. Changes to xf86Config.c in preparation for XF86Setup sharing this
      code (Joe Moss).

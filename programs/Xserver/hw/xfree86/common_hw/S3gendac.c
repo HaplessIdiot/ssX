@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.12 1996/02/04 09:06:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.13 1996/03/29 22:16:31 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -6,6 +6,7 @@
  */
 /* $XConsortium: S3gendac.c /main/9 1995/12/28 17:16:09 kaleb $ */
  
+#include "Xfuncproto.h"
 #include "S3gendac.h" 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
@@ -117,7 +118,7 @@ unsigned char *mdiv, *ndiv;
    double ffreq, ffreq_min, ffreq_max;
    double div, diff, best_diff;
    unsigned int m;
-   unsigned char n, n1, n2;
+   unsigned char n1, n2;
    unsigned char best_n1=16+2, best_n2=2, best_m=125+2;
 
    ffreq     = freq     / 1000.0 / BASE_FREQ;
@@ -309,7 +310,7 @@ settriopll(clk, m, n)
 #endif
 {
    unsigned char tmp;
-   int index;
+   int index2;
 
    /*
     * simlulate S3 GENDAC clock numbers:
@@ -336,7 +337,7 @@ settriopll(clk, m, n)
 	 outb(0x3c5, m);
       }
       else {		/* MCLK */
-	 index = 0x10;
+	 index2 = 0x10;
 	 outb(0x3c4, 0x10);
 	 outb(0x3c5, n);
 	 outb(0x3c4, 0x11);

@@ -1,5 +1,5 @@
 /* $XConsortium: bigreq.c,v 1.4 94/04/17 20:32:51 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.0 1996/03/29 22:11:58 dawes Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -40,17 +40,23 @@ from the X Consortium.
 #include "bigreqstr.h"
 
 static unsigned char XBigReqCode;
-static int ProcBigReqDispatch();
-static void BigReqResetProc();
+
+static void BigReqResetProc(
+#if NeedFunctionPrototypes
+    ExtensionEntry * /* extEntry */
+#endif
+);
+
+static DISPATCH_PROC(ProcBigReqDispatch);
 
 void
 BigReqExtensionInit()
 {
-    ExtensionEntry *extEntry, *AddExtension();
+    ExtensionEntry *extEntry;
 
-    if (extEntry = AddExtension(XBigReqExtensionName, 0, 0,
+    if ((extEntry = AddExtension(XBigReqExtensionName, 0, 0,
 				 ProcBigReqDispatch, ProcBigReqDispatch,
-				 BigReqResetProc, StandardMinorOpcode))
+				 BigReqResetProc, StandardMinorOpcode)) != 0)
 	XBigReqCode = (unsigned char)extEntry->base;
 }
 

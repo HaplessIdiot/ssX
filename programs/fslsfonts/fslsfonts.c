@@ -1,5 +1,5 @@
 /* $XConsortium: fslsfonts.c,v 1.7 94/04/17 20:38:29 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/fslsfonts/fslsfonts.c,v 3.0 1995/06/04 08:34:32 dawes Exp $ */
 /*
  
 Copyright (c) 1990  X Consortium
@@ -49,6 +49,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "FSlib.h"
 #include <stdio.h>
 #include <X11/Xos.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 
 #ifndef N_START
 #define N_START 1000		/* Maximum # of fonts to start with */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.10 1995/11/30 13:04:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.11 1996/02/04 09:06:55 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -10,6 +10,7 @@
  */
 /* $XConsortium: Ti3025clk.c /main/7 1995/12/02 08:59:20 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "Ti302X.h" 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES

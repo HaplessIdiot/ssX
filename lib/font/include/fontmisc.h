@@ -1,4 +1,5 @@
 /* $XConsortium: fontmisc.h,v 1.6 94/04/17 20:17:29 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -57,6 +58,9 @@ typedef unsigned long	XID;
 #endif
 
 extern char	    *NameForAtom ();
+
+extern unsigned long *Xalloc();
+extern unsigned long *Xrealloc();
 
 #define xalloc(n)   Xalloc ((unsigned) n)
 #define xfree(p)    Xfree ((pointer) p)

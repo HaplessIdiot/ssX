@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.125 1996/03/31 11:48:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.126 1996/04/15 11:30:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2038,12 +2038,11 @@ s3Probe()
       pixMuxPossible = TRUE;
       if (DAC_IS_ATT20C498 && !DAC_IS_ATT22C498) {
 	 if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
-	    nonMuxMaxClock = 95000; /* 864 DCLK limit */
-	    pixMuxMinClock = 67500;
+	    nonMuxMaxClock = 100000; /* 866/868 DCLK limit */
+	    pixMuxMinClock =  67500;
 	 }
 	 else if (S3_864_SERIES(s3ChipId)) {
-	    nonMuxMaxClock =  80000; /* was 100000, but that is too high for
-					some cards */
+	    nonMuxMaxClock =  95000; /* 864 DCLK limit */
 	    pixMuxMinClock =  67500;
 	 }
 	 else if (S3_805_I_SERIES(s3ChipId)) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.4 1996/02/04 09:10:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.5 1996/02/09 08:20:50 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -32,6 +32,16 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#ifdef __alpha__
+/* defined the base KSEG address for DENSE memory on (most) Alphas */
+/* this is used to trick "mmap" into mapping BUS physical memory for us */
+#define BUS_BASE 0xfffffc0300000000UL
+/* also, current LIBC (0.37) has no "iopl" but does (and needs) "ioperm" */
+#define iopl(a) ((a)?ioperm(0, 0x10000, 1):ioperm(0, 0x10000, 0))
+#else /* __alpha__ */
+#define BUS_BASE 0
+#endif /* __alpha__ */
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
@@ -86,7 +96,7 @@ unsigned long Size;
 	}
 	/* This requirers linux-0.99.pl10 or above */
 	base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd, (off_t)Base);
+			     MAP_SHARED, fd, (off_t)Base | BUS_BASE);
 #endif			     
 	close(fd);
 	if ((long)base == -1)
@@ -118,7 +128,7 @@ int Region;
 pointer Base;
 unsigned long Size;
 {
-    munmap(Base, Size);
+    munmap((off_t)Base | BUS_BASE, Size);
 #ifdef ONLY_MMAP_FIXED_WORKS
     xfree(AllocAddress[ScreenNum][Region]);
 #endif    
@@ -364,10 +374,13 @@ Bool xf86DisableInterrupts()
 	if (!ExtendedEnabled)
 		if (iopl(3))
 			return (FALSE);
+#ifdef __alpha__
+#else
 #ifdef __GNUC__
 	__asm__ __volatile__("cli");
 #else
 	asm("cli");
+#endif
 #endif
 	if (!ExtendedEnabled)
 		iopl(0);
@@ -379,10 +392,13 @@ void xf86EnableInterrupts()
 	if (!ExtendedEnabled)
 		if (iopl(3))
 			return;
+#ifdef __alpha__
+#else
 #ifdef __GNUC__
 	__asm__ __volatile__("sti");
 #else
 	asm("sti");
+#endif
 #endif
 	if (!ExtendedEnabled)
 		iopl(0);

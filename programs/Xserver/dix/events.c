@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: events.c /main/185 1996/02/02 14:25:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.7 1996/03/29 22:14:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.8 1996/04/15 11:19:44 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -76,8 +76,6 @@ SOFTWARE.
 #include "dispatch.h"
 
 extern WindowPtr *WindowTable;
-
-extern void (* ReplySwapVector[256]) ();
 
 #define EXTENSION_EVENT_BASE  64
 

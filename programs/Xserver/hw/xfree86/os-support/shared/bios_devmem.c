@@ -1,4 +1,4 @@
-/* $XConsortium: bios_devmem.c,v 1.1 94/03/28 21:31:17 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 1.1.1.2 1996/01/03 07:20:51 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: bios_devmem.c /main/2 1995/11/13 06:15:02 kaleb $ */
 
 #include "X.h"
 #include "input.h"
@@ -45,7 +45,24 @@ unsigned long Offset;
 unsigned char *Buf;
 int Len;
 {
-	int fd;
+#ifdef __alpha__
+  /*
+   * The Alpha version uses "mmap" instead of "lseek/read",
+   *  because these (currently) don't work for BUS memory.
+   * We trick "mmap" into mapping BUS memory for us via BUS_BASE,
+   *  which is the KSEG address of the start of the DENSE memory
+   *  area.
+   */
+
+  /*
+   * NOTE: there prolly ought to be more validity checks and all
+   *  re: boundaries and sizes and such...
+   */
+#define BUS_BASE 0xfffffc0300000000UL
+#define SIZE (64*1024)
+
+	unsigned char *base;
+ 	int fd;
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
 	{
@@ -53,6 +70,33 @@ int Len;
 		       strerror(errno));
 		return(-1);
 	}
+	/* This requirers linux-0.99.pl10 or above */
+	base = (unsigned char *)mmap((caddr_t)0, SIZE, PROT_READ,
+				     MAP_SHARED, fd, (off_t)Base | BUS_BASE);
+
+	if (base == (unsigned char *)NULL) {
+		ErrorF("xf86ReadBios: Failed to mmap %s (%s)\n", DEV_MEM,
+		       strerror(errno));
+		return(-1);
+	}
+
+	memcpy(Buf, &base[Offset], Len);
+
+	munmap((caddr_t)((off_t)Base | BUS_BASE), SIZE);
+	close(fd);
+	return(Len);
+
+#else /* __alpha__ */
+
+ 	int fd;
+
+	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
+	{
+		ErrorF("xf86ReadBios: Failed to open %s (%s)\n", DEV_MEM,
+		       strerror(errno));
+		return(-1);
+	}
+
 	if (lseek(fd, (Base+Offset), SEEK_SET) < 0)
 	{
 		ErrorF("xf86ReadBios: %s seek failed (%s)\n", DEV_MEM,
@@ -69,4 +113,5 @@ int Len;
 	}
 	close(fd);
 	return(Len);
+#endif /* __alpha__ */
 }

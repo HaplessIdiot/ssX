@@ -175,6 +175,13 @@ parse_value (g, cp, valp)
 	*valp = -(*valp);
 	return cp;
 
+#if defined(linux) && defined(__alpha__)
+      case '~':
+	DO (cp = parse_value (g, cp + 1, valp));
+	*valp = ~(*valp);
+	return cp;
+#endif /* defined(linux) && defined(__alpha__) */
+
       case '#':
 	DO (cp = parse_variable (g, cp + 1, &var));
 	SKIPSPACE (cp);

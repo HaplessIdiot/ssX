@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.20 94/04/17 19:56:08 gildea Exp $ */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.1 1995/11/12 10:27:24 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.2 1995/11/30 13:05:54 dawes Exp $ */
 /*
  * misc os utilities
  */
@@ -51,6 +51,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
+#ifdef linux
+#include	<stdlib.h>
+#endif
 #include	"misc.h"
 #include	"globals.h"
 #include	<signal.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.13 1996/03/10 11:53:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.14 1996/03/17 11:27:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -32,18 +32,39 @@
 #include <lan/socket.h>
 #endif
 
+#include "swaprep.h"
+
 extern int xf86ScreenIndex;
 extern Bool xf86MiscModInDevEnabled;
 extern Bool xf86MiscModInDevAllowNonLocal;
 
 static int miscErrorBase;
 
-static int ProcXF86MiscDispatch(), SProcXF86MiscDispatch();
-static void XF86MiscResetProc();
+static void XF86MiscResetProc(
+#if NeedFunctionPrototypes
+    ExtensionEntry* /* extEntry */
+#endif
+);
+
+static DISPATCH_PROC(LocalClient);
+static DISPATCH_PROC(ProcXF86MiscDispatch);
+static DISPATCH_PROC(ProcXF86MiscGetKbdSettings);
+static DISPATCH_PROC(ProcXF86MiscGetMouseSettings);
+static DISPATCH_PROC(ProcXF86MiscGetSaver);
+static DISPATCH_PROC(ProcXF86MiscQueryVersion);
+static DISPATCH_PROC(ProcXF86MiscSetKbdSettings);
+static DISPATCH_PROC(ProcXF86MiscSetMouseSettings);
+static DISPATCH_PROC(ProcXF86MiscSetSaver);
+static DISPATCH_PROC(SProcXF86MiscDispatch);
+static DISPATCH_PROC(SProcXF86MiscGetKbdSettings);
+static DISPATCH_PROC(SProcXF86MiscGetMouseSettings);
+static DISPATCH_PROC(SProcXF86MiscGetSaver);
+static DISPATCH_PROC(SProcXF86MiscQueryVersion);
+static DISPATCH_PROC(SProcXF86MiscSetKbdSettings);
+static DISPATCH_PROC(SProcXF86MiscSetMouseSettings);
+static DISPATCH_PROC(SProcXF86MiscSetSaver);
 
 static unsigned char XF86MiscReqCode = 0;
-
-extern void Swap32Write();
 
 extern InputInfo inputInfo;
 
@@ -51,9 +72,6 @@ void
 XFree86MiscExtensionInit()
 {
     ExtensionEntry* extEntry;
-    int		    i;
-    ScreenPtr	    pScreen;
-
 
     if (
 	(extEntry = AddExtension(XF86MISCNAME,
@@ -79,7 +97,6 @@ static int
 ProcXF86MiscQueryVersion(client)
     register ClientPtr client;
 {
-    REQUEST(xXF86MiscQueryVersionReq);
     xXF86MiscQueryVersionReply rep;
     register int n;
 
@@ -159,7 +176,6 @@ static int
 ProcXF86MiscGetMouseSettings(client)
     register ClientPtr client;
 {
-    REQUEST(xXF86MiscGetMouseSettingsReq);
     xXF86MiscGetMouseSettingsReply rep;
     register int n;
 
@@ -186,7 +202,7 @@ ProcXF86MiscGetMouseSettings(client)
     else
         rep.devnamelen = 0;
     rep.length = (sizeof(xXF86MiscGetMouseSettingsReply) -
-		  sizeof(xGenericReply) + (rep.devnamelen+3 & ~3)) >> 2;
+		  sizeof(xGenericReply) + ((rep.devnamelen+3) & ~3)) >> 2;
     
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
@@ -209,7 +225,6 @@ static int
 ProcXF86MiscGetKbdSettings(client)
     register ClientPtr client;
 {
-    REQUEST(xXF86MiscGetKbdSettingsReq);
     xXF86MiscGetKbdSettingsReply rep;
     register int n;
 
@@ -438,11 +453,11 @@ ProcXF86MiscSetKbdSettings(client)
 /* 
  * lifted from xc/programs/Xserver/os/access.c.
  */
-static Bool
+static int
 LocalClient(client)
     ClientPtr client;
 {
-    int                 alen, family, notused;
+    int                 alen, notused;
     struct sockaddr     *from = NULL;
 
     if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.9 1996/03/29 22:16:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.10 1996/04/15 11:30:37 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -11,7 +11,10 @@
 #include <stdio.h>
 #endif
 
+#include "Xfuncproto.h"
 #include "compiler.h"
+#define NO_OSLIB_PROTOTYPES
+#include "xf86_OSlib.h"
 
 #define SEQREG   0x03C4
 #define MISCREG  0x03C2
@@ -201,6 +204,7 @@ register long   frequency;               /* in Hz */
 int select;
 {
    unsigned long dwv;
+   unsigned char tmp;
 
    crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
 
@@ -214,7 +218,8 @@ int select;
    et4000_init_clock(((unsigned long)dwv) | (((long)select) << 21));
 
    /* select the clock */
-   outb(0x3C2,(inb(0x3CC) & 0xF3) | ((select << 2) & 0x0C));
+   tmp = inb(0x3CC);
+   outb(0x3C2, (tmp & 0xF3) | ((select << 2) & 0x0C));
 
    usleep(20000);      /* 20 ms delay... */
 }

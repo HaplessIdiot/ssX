@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.10 1996/03/31 11:49:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.11 1996/04/15 11:30:56 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -131,6 +131,17 @@ unsigned inb(unsigned port);
 
 #if defined(__GNUC__)
 
+#if defined(linux) && defined(__alpha__)
+/* link to the LIBC routines */
+#define inb _inb
+#define inw _inw
+#define inl _inl
+#define outb(p,v) _outb((v),(p))
+#define outw(p,v) _outw((v),(p))
+#define outl(p,v) _outl((v),(p))
+/* current LIBC has ioperm(), not iopl() */
+#define iopl(a) ((a)?ioperm(0x400, 0x10000 - 0x400, 1):0)
+#else /* defined(linux) && defined(__alpha__) */
 #if defined(GCCUSESGAS)
 #define OUTB_GCC "outb %0,%1"
 #define OUTL_GCC "outl %0,%1"
@@ -152,6 +163,7 @@ static unsigned char inb(unsigned short port) { unsigned char ret;
 static unsigned long inl(unsigned short port) { unsigned long ret;
      __asm__ __volatile__(INL_GCC : "=a" (ret) : "d" (port)); return ret; }
 
+#endif /* defined(linux) && defined(__alpha__) */
 #else  /* __GNUC__ */
 
 #if defined(__STDC__) && (__STDC__ == 1)

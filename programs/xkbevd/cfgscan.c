@@ -1,5 +1,5 @@
 /* $XConsortium: cfgscan.c /main/2 1995/12/07 21:27:36 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.0 1996/01/10 05:43:33 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,6 +33,7 @@
 #include <X11/extensions/XKB.h>
 
 #include "tokens.h"
+#include "utils.h"
 
 #ifndef Lynx
 FILE	*yyin = stdin;

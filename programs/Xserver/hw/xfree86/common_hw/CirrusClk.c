@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.6 1995/11/04 11:30:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.7 1996/02/04 09:06:40 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -8,6 +8,7 @@
  */
 /* $XConsortium: CirrusClk.c /main/6 1995/11/12 19:29:48 kaleb $ */
  
+#include "Xfuncproto.h"
 #include "compiler.h"
 #include "misc.h"
 #define NO_OSLIB_PROTOTYPES

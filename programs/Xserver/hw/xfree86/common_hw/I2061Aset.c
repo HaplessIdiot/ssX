@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aset.c,v 1.1.1.3 1996/01/03 07:19:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aset.c,v 3.0 1996/02/04 09:06:43 dawes Exp $ */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved. 
  *
@@ -23,6 +23,7 @@
  */
 /* $XConsortium: I2061Aset.c /main/3 1996/01/07 18:53:28 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "compiler.h"
 #include "ICD2061A.h"
 

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: property.c,v 5.16 94/04/17 20:26:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.0 1994/12/25 12:15:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.1 1996/04/15 11:19:56 dawes Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -57,11 +57,6 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "dispatch.h"
 #include "swaprep.h"
-
-extern void (*ReplySwapVector[]) ();
-#if 0
-extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
-#endif
 
 #if defined(LBX) || defined(LBX_COMPAT)
 int fWriteToClient(client, len, buf)

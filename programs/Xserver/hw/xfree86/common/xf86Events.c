@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.30 1996/03/17 11:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.31 1996/03/29 22:16:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -897,13 +897,6 @@ xf86PostKbdEvent(key)
 #endif /* not PC98 */	
 
   /*
-   * check for an autorepeat-event
-   */
-  if ((down && KeyPressed(keycode)) &&
-      (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
-    return;
-
-  /*
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
@@ -924,6 +917,13 @@ xf86PostKbdEvent(key)
 #ifdef XKB
   }
 #endif
+
+  /*
+   * check for an autorepeat-event
+   */
+  if ((down && KeyPressed(keycode)) &&
+      (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
+    return;
 
   xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
   /*

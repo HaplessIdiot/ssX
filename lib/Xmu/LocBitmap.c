@@ -1,5 +1,5 @@
 /* $XConsortium: LocBitmap.c,v 1.19 94/04/17 20:16:10 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.0 1996/03/10 11:51:51 dawes Exp $ */
 
 /*
  
@@ -33,6 +33,10 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include <X11/Xlib.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#include <string.h>
+#endif
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/CvtCache.h>

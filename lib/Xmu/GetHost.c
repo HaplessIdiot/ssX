@@ -1,4 +1,5 @@
 /* $XConsortium: GetHost.c,v 1.7 94/04/17 20:16:07 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -32,6 +33,11 @@ in this Software without prior written authorization from the X Consortium.
  *
  * _XGetHostname - similar to gethostname but allows special processing.
  */
+
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include <string.h>
+#endif
 
 #ifdef WIN32
 #include <winsock.h>

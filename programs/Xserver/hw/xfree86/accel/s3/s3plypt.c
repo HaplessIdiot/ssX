@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.4 1995/01/28 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.5 1996/02/04 09:05:21 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -69,10 +69,10 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
      int   npt;
      xPoint *pptInit;
 {
-   register long pt;
-   register long c1, c2;
-   register unsigned long ClipMask = 0x80008000;
-   register long *ppt;
+   register int pt;
+   register int c1, c2;
+   register unsigned int ClipMask = 0x80008000;
+   register int *ppt;
    RegionPtr cclip;
    int   nbox;
    register int i;
@@ -121,9 +121,9 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
 	--nbox >= 0;
 	pbox++) {
-      c1 = *((long *)&pbox->x1) - off;
-      c2 = *((long *)&pbox->x2) - off - 0x00010001;
-      for (ppt = (long *)pptInit, i = npt; --i >= 0;) {
+      c1 = *((int *)&pbox->x1) - off;
+      c2 = *((int *)&pbox->x2) - off - 0x00010001;
+      for (ppt = (int *)pptInit, i = npt; --i >= 0;) {
 	 pt = *ppt++;
 	 if (!isClipped(pt, c1, c2)) {
 	    WaitQueue(3);

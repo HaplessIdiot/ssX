@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.6 1995/07/01 10:49:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.7 1996/02/04 09:06:47 dawes Exp $ */
 
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  95/01/11 */
@@ -6,6 +6,7 @@
 
 /* $XConsortium: ICS2595.c /main/5 1995/11/12 19:30:07 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "ICS2595.h" 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES

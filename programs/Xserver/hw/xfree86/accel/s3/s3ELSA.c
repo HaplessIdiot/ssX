@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.12 1996/02/04 09:04:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.13 1996/04/15 11:30:04 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -15,7 +15,9 @@
 #include "s3.h"
 #include "s3ELSA.h"
 #include "xf86_OSlib.h"
-
+#ifdef linux
+#include <stdlib.h>
+#endif
 
 #ifdef ELSA_MAIN
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/exglobals.h,v 3.0 1996/03/29 22:13:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/exglobals.h,v 3.1 1996/04/15 11:18:35 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -70,12 +70,5 @@ extern	int	RT_INPUTCLIENT;
 
 /* FIXME: in dix */
 extern	InputInfo inputInfo;
-extern	void		(* ReplySwapVector[256]) (
-#if NeedFunctionPrototypes
-		ClientPtr ,
-		int ,
-		void *
-#endif
-	);
 
 #endif /* EXGLOBALS_H */

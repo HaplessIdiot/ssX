@@ -1,4 +1,4 @@
-/* $XConsortium: xkbout.c /main/2 1995/12/07 21:19:02 kaleb $ */
+/* $XConsortium: xkbout.c /main/4 1996/01/23 10:10:56 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,6 +26,9 @@
  ********************************************************/
 
 #include <stdio.h>
+#ifndef X_NOT_STDC_ENV
+#include <string.h>
+#endif
 #include <ctype.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -54,19 +57,19 @@
 #include "XKBsrv.h"
 
 #include <X11/extensions/XKBgeom.h>
-#if defined(MetroLink)
 #include "extensions/XKBfile.h"
-#else
-#include "XKBfile.h"
-#endif
 
 #endif
 
 static Bool
+#if NeedFunctionPrototypes
+WriteXKBVModDecl(FILE *file,Display *dpy,XkbDescPtr xkb)
+#else
 WriteXKBVModDecl(file,dpy,xkb)
     FILE *	file;
     Display *	dpy;
     XkbDescPtr	xkb;
+#endif
 {
 register int 	i,nMods;
 Atom *		vmodNames;
@@ -92,382 +95,15 @@ Atom *		vmodNames;
 
 /***====================================================================***/
 
-#ifdef NOLONGER
 static Bool
-PrintNoActionArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-    return True;
-}
-
-static Bool
-PrintModActionArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbModAction *	act;
-unsigned	tmp;
-char *		str;
-
-    act= (XkbModAction *)action;
-    tmp= XkbModActionVMods(act);
-    fprintf(file,"modifiers=");
-    if (act->flags&XkbSA_UseModMapMods)
-	  fprintf(file,"modMapMods");
-    else if (act->real_mods || tmp) {
-	 fprintf(file,"%s",
-		 XkbVModMaskText(dpy,xkb,act->real_mods,tmp,XkbXKBFile));
-    }
-    else fprintf(file,"none");
-    if (action->type==XkbSA_LockMods)
-	return True;
-    if (act->flags&XkbSA_ClearLocks)
-	fprintf(file,",clearLocks");
-    if (act->flags&XkbSA_LatchToLock)
-	fprintf(file,",latchToLock");
-    return True;
-}
-
-static Bool
-PrintGroupActionArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbGroupAction *	act;
-unsigned		tmp;
-
-    act= (XkbGroupAction *)action;
-    fprintf(file,"group=");
-    if (act->flags&XkbSA_GroupAbsolute)
-	 fprintf(file,"%d",XkbSAGroup(act)+1);
-    else if (XkbSAGroup(act)<0)
-	 fprintf(file,"%d",XkbSAGroup(act));
-    else fprintf(file,"+%d",XkbSAGroup(act));
-    if (action->type==XkbSA_LockGroup)
-	return True;
-    if (act->flags&XkbSA_ClearLocks)
-	fprintf(file,",clearLocks");
-    if (act->flags&XkbSA_LatchToLock)
-	fprintf(file,",latchToLock");
-    return True;
-}
-
-static Bool
-PrintMoveAccelPtrArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbPtrAction *	act;
-int		x,y;
-
-    act= (XkbPtrAction *)action;
-    x= XkbPtrActionX(act);
-    y= XkbPtrActionY(act);
-    fprintf(file,"x=%d,y=%d",x,y);
-    return True;
-}
-
-static Bool
-PrintPtrBtnArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbPtrBtnAction *	act;
-
-    act= (XkbPtrBtnAction *)action;
-    fprintf(file,"button=");
-    if ((act->button>0)&&(act->button<6))
-	 fprintf(file,"%d",act->button);
-    else fprintf(file,"default");
-    if (action->type==XkbSA_ClickPtrBtn) {
-	fprintf(file,",count=%d",act->count);
-    }
-    if (action->type==XkbSA_LockPtrBtn) {
-	switch (act->flags&(XkbSA_LockNoUnlock|XkbSA_LockNoLock)) {
-	    case XkbSA_LockNoLock:
-		fprintf(file,",affect=unlock"); break;
-	    case XkbSA_LockNoUnlock:
-		fprintf(file,",affect=lock"); break;
-	    case XkbSA_LockNoUnlock|XkbSA_LockNoLock:
-		fprintf(file,",affect=neither"); break;
-	    default:
-		fprintf(file,",affect=both"); break;
-	}
-    }
-    return True;
-}
-
-static Bool
-PrintSetPtrDfltArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbPtrDfltAction *	act;
-
-    act= (XkbPtrDfltAction *)action;
-    if (act->affect==XkbSA_AffectDfltBtn) {
-	fprintf(file,"affect=button,button=");
-	if ((act->flags&XkbSA_DfltBtnAbsolute)||(XkbSAPtrDfltValue(act)<0))
-	     fprintf(file,"%d",XkbSAPtrDfltValue(act));
-	else fprintf(file,"+%d",XkbSAPtrDfltValue(act));
-    }
-    return True;
-}
-
-static Bool
-PrintISOLockArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbISOAction *	act;
-
-    act= (XkbISOAction *)action;
-    if (act->flags&XkbSA_ISODfltIsGroup) {
-	fprintf(file,"group=");
-	if (act->flags&XkbSA_GroupAbsolute)
-	     fprintf(file,"%d",XkbSAGroup(act)+1);
-	else if (XkbSAGroup(act)<0)
-	     fprintf(file,"%d",XkbSAGroup(act));
-	else fprintf(file,"+%d",XkbSAGroup(act));
-    }
-    else {
-	unsigned tmp;
-	tmp= XkbModActionVMods(act);
-	fprintf(file,"modifiers=");
-	if (act->flags&XkbSA_UseModMapMods)
-	     fprintf(file,"modMapMods");
-	else if (act->real_mods || tmp) {
-	    if (act->real_mods)
-		fprintf(file,"%s%s",XkbModMaskText(act->real_mods,XkbXKBFile),
-							(tmp?"+":""));
-	    if (tmp)
-		fprintf(file,"%s",XkbVModMaskText(dpy,xkb,0,tmp,XkbXKBFile));
-	}
-	else fprintf(file,"none");
-    }
-    fprintf(file,",affect=");
-    if ((act->affect&XkbSA_ISOAffectMask)==0)
-	fprintf(file,"all");
-    else {
-	int nOut= 0;
-	if ((act->affect&XkbSA_ISONoAffectMods)==0) {
-	    fprintf(file,"mods");
-	    nOut++;
-	}
-	if ((act->affect&XkbSA_ISONoAffectGroup)==0) {
-	    fprintf(file,"%sgroups",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if ((act->affect&XkbSA_ISONoAffectPtr)==0) {
-	    fprintf(file,"%spointer",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if ((act->affect&XkbSA_ISONoAffectCtrls)==0) {
-	    fprintf(file,"%scontrols",(nOut>0?"+":""));
-	    nOut++;
-	}
-    }
-    return True;
-}
-
-static Bool
-PrintSwitchScreenArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbSwitchScreenAction *	act;
-
-    act= (XkbSwitchScreenAction *)action;
-    if ((act->flags&XkbSA_SwitchAbsolute)||(XkbSAScreen(act)<0))
-	 fprintf(file,"screen=%d",XkbSAScreen(act));
-    else fprintf(file,"screen=+%d",XkbSAScreen(act));
-    if (act->flags&XkbSA_SwitchApplication)
-	 fprintf(file,",!same");
-    else fprintf(file,",same");
-    return True;
-}
-
-static Bool
-PrintSetLockControlsArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-XkbCtrlsAction *	act;
-unsigned		tmp;
-
-    act= (XkbCtrlsAction *)action;
-    tmp= XkbActionCtrls(act);
-    fprintf(file,"controls=");
-    if (tmp==0)
-	fprintf(file,"none");
-    else if ((tmp&XkbAllAccessXMask)==XkbAllAccessXMask)
-	fprintf(file,"all");
-    else {
-	int nOut= 0;
-	if (tmp&XkbRepeatKeysMask) {
-	    fprintf(file,"%sRepeatKeys",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbSlowKeysMask) {
-	    fprintf(file,"%sSlowKeys",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbBounceKeysMask) {
-	    fprintf(file,"%sBounceKeys",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbStickyKeysMask) {
-	    fprintf(file,"%sStickyKeys",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbMouseKeysMask) {
-	    fprintf(file,"%sMouseKeys",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbMouseKeysAccelMask) {
-	    fprintf(file,"%sMouseKeysAccel",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbAccessXKeysMask) {
-	    fprintf(file,"%sAccessXKeys",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbAccessXTimeoutMask) {
-	    fprintf(file,"%sAccessXTimeout",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbAccessXFeedbackMask) {
-	    fprintf(file,"%sAccessXFeedback",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbGroupsWrapMask) {
-	    fprintf(file,"%sGroupsWrap",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbAudibleBellMask) {
-	    fprintf(file,"%sAudibleBell",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbOverlay1Mask) {
-	    fprintf(file,"%sOverlay1",(nOut>0?"+":""));
-	    nOut++;
-	}
-	if (tmp&XkbOverlay2Mask) {
-	    fprintf(file,"%sOverlay2",(nOut>0?"+":""));
-	    nOut++;
-	}
-    }
-    return True;
-}
-
-static Bool
-PrintActionMessageArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-int			nOut= 0;
-XkbMessageAction *	act;
-unsigned		all;
-
-    act= (XkbMessageAction *)action;
-    all= XkbSA_MessageOnPress|XkbSA_MessageOnRelease;
-    fprintf(file,"report=");
-    if ((act->flags&all)==0)
-	fprintf(file,"none");
-    else if ((act->flags&all)==all)
-	fprintf(file,"all");
-    else if (act->flags&XkbSA_MessageOnPress)
-	 fprintf(file,"KeyPress");
-    else fprintf(file,"KeyRelease");
-    fprintf(file,",data[0]=0x%02x",act->message[0]);
-    fprintf(file,",data[1]=0x%02x",act->message[1]);
-    fprintf(file,",data[2]=0x%02x",act->message[2]);
-    fprintf(file,",data[3]=0x%02x",act->message[3]);
-    fprintf(file,",data[4]=0x%02x",act->message[4]);
-    fprintf(file,",data[5]=0x%02x",act->message[5]);
-    return True;
-}
-
-static Bool
-PrintOtherArgs(file,dpy,indent,xkb,action)
-    FILE *		file;
-    Display *		dpy;
-    unsigned		indent;
-    XkbDescPtr		xkb;
-    XkbAnyAction *	action;
-{
-    fprintf(file,"type=0x%02x",action->type);
-    fprintf(file,",data[0]=0x%02x",action->data[0]);
-    fprintf(file,",data[1]=0x%02x",action->data[1]);
-    fprintf(file,",data[2]=0x%02x",action->data[2]);
-    fprintf(file,",data[3]=0x%02x",action->data[3]);
-    fprintf(file,",data[4]=0x%02x",action->data[4]);
-    fprintf(file,",data[5]=0x%02x",action->data[5]);
-    fprintf(file,",data[6]=0x%02x",action->data[6]);
-    return True;
-}
-
-typedef	Bool	(*actionPrint)();
-static actionPrint	printActionArgs[XkbSA_NumActions] = {
-	PrintNoActionArgs		/* NoAction	*/,
-	PrintModActionArgs		/* SetMods	*/,
-	PrintModActionArgs		/* LatchMods	*/,
-	PrintModActionArgs		/* LockMods	*/,
-	PrintGroupActionArgs		/* SetGroup	*/,
-	PrintGroupActionArgs		/* LatchGroup	*/,
-	PrintGroupActionArgs		/* LockGroup	*/,
-	PrintMoveAccelPtrArgs		/* MovePtr	*/,
-	PrintMoveAccelPtrArgs		/* AccelPtr	*/,
-	PrintPtrBtnArgs			/* PtrBtn	*/,
-	PrintPtrBtnArgs			/* ClickPtrBtn	*/,
-	PrintPtrBtnArgs			/* LockPtrBtn	*/,
-	PrintSetPtrDfltArgs		/* SetPtrDflt	*/,
-	PrintISOLockArgs		/* ISOLock	*/,
-	PrintNoActionArgs		/* Terminate	*/,
-	PrintSwitchScreenArgs		/* SwitchScreen	*/,
-	PrintSetLockControlsArgs	/* SetControls	*/,
-	PrintSetLockControlsArgs	/* LockControls	*/,
-	PrintActionMessageArgs		/* ActionMessage*/,
-};
-
-#endif /* NOLONGER */
-
-static Bool
+#if NeedFunctionPrototypes
+WriteXKBAction(FILE *file,XkbFileInfo *result,XkbAnyAction *action)
+#else
 WriteXKBAction(file,result,action)
     FILE *		file;
     XkbFileInfo *	result;
     XkbAnyAction *	action;
+#endif
 {
 XkbDescPtr	xkb;
 Display *	dpy;
@@ -481,6 +117,14 @@ Display *	dpy;
 /***====================================================================***/
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBKeycodes(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBKeycodes(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -488,6 +132,7 @@ XkbWriteXKBKeycodes(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Atom			kcName;
 register unsigned 	i;
@@ -524,7 +169,7 @@ Display *		dpy;
 	    }
 	}
     }
-    if ((xkb->names->key_aliases!=NULL)&&(xkb->geom==NULL)) {
+    if (xkb->names->key_aliases!=NULL) {
 	XkbKeyAliasPtr	pAl;
 	pAl= xkb->names->key_aliases;
 	for (i=0;i<xkb->names->num_key_aliases;i++,pAl++) {
@@ -532,7 +177,6 @@ Display *		dpy;
 			XkbKeyNameText(pAl->alias,XkbXKBFile),
 			XkbKeyNameText(pAl->real,XkbXKBFile));
 	}
-	fprintf(file,"\n");
     }
     if (addOn)
 	(*addOn)(file,result,topLevel,showImplicit,XkmKeyNamesIndex,priv);
@@ -541,6 +185,14 @@ Display *		dpy;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBKeyTypes(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBKeyTypes(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -548,6 +200,7 @@ XkbWriteXKBKeyTypes(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Display *		dpy;
 register unsigned	i,n;
@@ -611,6 +264,14 @@ XkbDescPtr		xkb;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteXKBIndicatorMap(	FILE *			file,
+			XkbFileInfo *		result,
+			Atom			name,
+			XkbIndicatorMapPtr	led,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 WriteXKBIndicatorMap(file,result,name,led,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -618,6 +279,7 @@ WriteXKBIndicatorMap(file,result,name,led,addOn,priv)
     XkbIndicatorMapPtr	led;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 XkbDescPtr	xkb;
 
@@ -655,6 +317,14 @@ XkbDescPtr	xkb;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBCompatMap(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBCompatMap(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -662,6 +332,7 @@ XkbWriteXKBCompatMap(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Display *		dpy;
 register unsigned	i;
@@ -734,6 +405,14 @@ XkbDescPtr		xkb;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBSymbols(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBSymbols(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -741,6 +420,7 @@ XkbWriteXKBSymbols(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Display *		dpy;
 register unsigned	i,tmp;
@@ -936,13 +616,12 @@ Bool			showActions;
 
 static Bool
 #if NeedFunctionPrototypes
-WriteXKBOutline(
-    FILE *		file,
-    XkbShapePtr		shape,
-    XkbOutlinePtr	outline,
-    int			lastRadius,
-    int			first,
-    int			indent)
+WriteXKBOutline(	FILE *		file,
+			XkbShapePtr	shape,
+			XkbOutlinePtr	outline,
+			int		lastRadius,
+			int		first,
+			int		indent)
 #else
 WriteXKBOutline(file,shape,outline,lastRadius,first,indent)
     FILE *		file;
@@ -1088,12 +767,11 @@ XkbColorPtr	color;
 /*ARGSUSED*/
 static Bool
 #if NeedFunctionPrototypes
-WriteXKBOverlay(
-    FILE *		file,
-    Display *		dpy,
-    unsigned		indent,
-    XkbGeometryPtr	geom,
-    XkbOverlayPtr	ol)
+WriteXKBOverlay(	FILE *		file,
+			Display *	dpy,
+			unsigned	indent,
+			XkbGeometryPtr	geom,
+			XkbOverlayPtr	ol)
 #else
 WriteXKBOverlay(file,dpy,indent,geom,ol)
     FILE *		file;
@@ -1132,11 +810,18 @@ XkbOverlayKeyPtr	key;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+WriteXKBSection(	FILE *		file,
+			Display *	dpy,
+			XkbSectionPtr 	s,
+			XkbGeometryPtr	geom)
+#else
 WriteXKBSection(file,dpy,s,geom)
     FILE *		file;
     Display *		dpy;
     XkbSectionPtr 	s;
     XkbGeometryPtr	geom;
+#endif
 {
 register int	i;
 XkbRowPtr	row;
@@ -1222,6 +907,14 @@ int		dfltKeyColor;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBGeometry(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBGeometry(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -1229,6 +922,7 @@ XkbWriteXKBGeometry(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Display *		dpy;
 register unsigned	i,n;
@@ -1251,10 +945,10 @@ XkbGeometryPtr		geom;
     fprintf(file,"    height=      %s;\n\n",
 				XkbGeomFPText(geom->height_mm,XkbXKBFile));
 
-    if ((xkb->names!=NULL)&&(xkb->names->key_aliases!=NULL)) {
+    if (geom->key_aliases!=NULL) {
 	XkbKeyAliasPtr	pAl;
-	pAl= xkb->names->key_aliases;
-	for (i=0;i<xkb->names->num_key_aliases;i++,pAl++) {
+	pAl= geom->key_aliases;
+	for (i=0;i<geom->num_key_aliases;i++,pAl++) {
 	    fprintf(file,"    alias %6s = %6s;\n",
 				XkbKeyNameText(pAl->alias,XkbXKBFile),
 				XkbKeyNameText(pAl->real,XkbXKBFile));
@@ -1331,6 +1025,14 @@ XkbGeometryPtr		geom;
 
 /*ARGSUSED*/
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBSemantics(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBSemantics(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -1338,6 +1040,7 @@ XkbWriteXKBSemantics(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Bool		ok;
 
@@ -1350,6 +1053,14 @@ Bool		ok;
 
 /*ARGSUSED*/
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBLayout(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBLayout(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -1357,6 +1068,7 @@ XkbWriteXKBLayout(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Bool		ok;
 XkbDescPtr	xkb;
@@ -1373,6 +1085,14 @@ XkbDescPtr	xkb;
 
 /*ARGSUSED*/
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBKeymap(	FILE *			file,
+			XkbFileInfo *		result,
+			Bool			topLevel,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBKeymap(file,result,topLevel,showImplicit,addOn,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -1380,6 +1100,7 @@ XkbWriteXKBKeymap(file,result,topLevel,showImplicit,addOn,priv)
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Bool		ok;
 XkbDescPtr	xkb;
@@ -1397,15 +1118,32 @@ XkbDescPtr	xkb;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBFile(	FILE *			out,
+			XkbFileInfo *		result,
+			Bool			showImplicit,
+			XkbFileAddOnFunc	addOn,
+			void *			priv)
+#else
 XkbWriteXKBFile(out,result,showImplicit,addOn,priv)
     FILE *		out;
     XkbFileInfo *	result;
     Bool		showImplicit;
     XkbFileAddOnFunc	addOn;
     void *		priv;
+#endif
 {
 Bool	 		ok;
-Bool			(*func)();
+Bool			(*func)(
+#if NeedFunctionPrototypes
+    FILE *		/* file */,
+    XkbFileInfo *	/* result */,
+    Bool		/* topLevel */,
+    Bool		/* showImplicit */,
+    XkbFileAddOnFunc	/* addOn */,
+    void *		/* priv */
+#endif
+);
 
     switch (result->type) {
 	case XkmSemanticsFile:

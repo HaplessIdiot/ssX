@@ -1,4 +1,5 @@
-/* $XConsortium: xkbatom.c /main/1 1995/11/30 19:01:12 kaleb $ */
+/* $XConsortium: xkbatom.c /main/2 1996/01/01 10:52:48 kaleb $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -74,11 +75,14 @@ SOFTWARE.
  ********************************************************/
 
 #include <stdio.h>
+#include <X11/Xlib.h>
+#ifndef X_NOT_STDC_ENV
+#include <string.h>
+#endif
 #include <ctype.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
-#include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 
 #include "XKMformat.h"
@@ -103,10 +107,14 @@ static unsigned long tableLength;
 static NodePtr *nodeTable;
 
 static Atom 
+#if NeedFunctionPrototypes
+_XkbMakeAtom(char *string,unsigned len,Bool makeit)
+#else
 _XkbMakeAtom(string, len, makeit)
     char *string;
     unsigned len;
     Bool makeit;
+#endif
 {
     register    NodePtr * np;
     unsigned i;
@@ -176,8 +184,12 @@ _XkbMakeAtom(string, len, makeit)
 }
 
 static char *
+#if NeedFunctionPrototypes
+_XkbNameForAtom(Atom atom)
+#else
 _XkbNameForAtom(atom)
     Atom atom;
+#endif
 {
     NodePtr node;
     if (atom > lastAtom) return 0;
@@ -186,7 +198,11 @@ _XkbNameForAtom(atom)
 }
 
 static void
+#if NeedFunctionPrototypes
+_XkbInitAtoms(void)
+#else
 _XkbInitAtoms()
+#endif
 {
     tableLength = InitialTableSize;
     nodeTable = (NodePtr *)malloc(InitialTableSize*sizeof(NodePtr));
@@ -196,9 +212,13 @@ _XkbInitAtoms()
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbAtomGetString(Display *dpy,Atom atm)
+#else
 XkbAtomGetString(dpy,atm)
     Display *	dpy;
     Atom 	atm;
+#endif
 {
     if (atm==None)
 	return NULL;
@@ -210,10 +230,14 @@ XkbAtomGetString(dpy,atm)
 /***====================================================================***/
 
 Atom
+#if NeedFunctionPrototypes
+XkbInternAtom(Display *dpy,char *name,Bool onlyIfExists)
+#else
 XkbInternAtom(dpy,name,onlyIfExists)
     Display *	dpy;
     char *	name;
     Bool	onlyIfExists;
+#endif
 {
     if (name==NULL)
 	return None;
@@ -226,10 +250,14 @@ XkbInternAtom(dpy,name,onlyIfExists)
 /***====================================================================***/
 
 Atom
+#if NeedFunctionPrototypes
+XkbChangeAtomDisplay(Display *oldDpy,Display *newDpy,Atom atm)
+#else
 XkbChangeAtomDisplay(oldDpy,newDpy,atm)
     Display *	oldDpy;
     Display *	newDpy;
     Atom	atm;
+#endif
 {
 char *tmp;
 
@@ -244,8 +272,12 @@ char *tmp;
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+XkbInitAtoms(Display *dpy)
+#else
 XkbInitAtoms(dpy)
     Display *dpy;
+#endif
 {
 static int been_here= 0;
     if ((dpy==NULL)&&(!been_here)) {

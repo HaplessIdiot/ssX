@@ -46,18 +46,18 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: tables.c,v 1.25 94/04/17 20:26:46 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/tables.c,v 3.0 1996/04/15 11:20:02 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xproto.h"
 #include "windowstr.h"
+#include "extnsionst.h"
+#include "dixstruct.h"
 #include "dispatch.h"
 #include "swaprep.h"
 #include "swapreq.h"
-
-extern void NotImplemented();
 
 #ifdef K5AUTH
 extern int
@@ -347,9 +347,9 @@ int (* SwappedProcVector[256]) (
     SProcNoOperation
 };
 
-void (* EventSwapVector[128]) () =
+EventSwapPtr EventSwapVector[128] =
 {
-    SErrorEvent,
+    (EventSwapPtr)SErrorEvent,
     NotImplemented,
     SKeyButtonPtrEvent,
     SKeyButtonPtrEvent,
@@ -387,137 +387,137 @@ void (* EventSwapVector[128]) () =
 };
 
 
-void (* ReplySwapVector[256]) () =
+ReplySwapPtr ReplySwapVector[256] =
 {
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    SGetWindowAttributesReply,
-    NotImplemented,
-    NotImplemented,			/* 5 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 10 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    SGetGeometryReply,
-    SQueryTreeReply,			/* 15 */
-    SInternAtomReply,
-    SGetAtomNameReply,
-    NotImplemented,
-    NotImplemented,
-    SGetPropertyReply,			/* 20 */
-    SListPropertiesReply,
-    NotImplemented,
-    SGetSelectionOwnerReply,
-    NotImplemented,
-    NotImplemented,			/* 25 */
-    SGenericReply,			/* SGrabPointerReply, */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 30 */
-    SGenericReply,			/* SGrabKeyboardReply, */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 35 */
-    NotImplemented,
-    NotImplemented,
-    SQueryPointerReply,
-    SGetMotionEventsReply,
-    STranslateCoordsReply,		/* 40 */
-    NotImplemented,
-    NotImplemented,
-    SGetInputFocusReply,
-    SQueryKeymapReply,
-    NotImplemented,			/* 45 */
-    NotImplemented,
-    SQueryFontReply,
-    SQueryTextExtentsReply,
-    SListFontsReply,
-    SListFontsWithInfoReply,		/* 50 */
-    NotImplemented,
-    SGetFontPathReply,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 55 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 60 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 65 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 70 */
-    NotImplemented,
-    NotImplemented,
-    SGetImageReply,
-    NotImplemented,
-    NotImplemented,			/* 75 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 80 */
-    NotImplemented,
-    NotImplemented,
-    SListInstalledColormapsReply,
-    SAllocColorReply,
-    SAllocNamedColorReply,		/* 85 */
-    SAllocColorCellsReply,
-    SAllocColorPlanesReply,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 90 */
-    SQueryColorsReply,
-    SLookupColorReply,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 95 */
-    NotImplemented,
-    SQueryBestSizeReply,
-    SGenericReply,			/* SQueryExtensionReply, */
-    SListExtensionsReply,
-    NotImplemented,			/* 100 */
-    SGetKeyboardMappingReply,
-    NotImplemented,
-    SGetKeyboardControlReply,
-    NotImplemented,
-    NotImplemented,			/* 105 */
-    SGetPointerControlReply,
-    NotImplemented,
-    SGetScreenSaverReply,
-    NotImplemented,
-    SListHostsReply,			/* 110 */
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,			/* 115 */
-    SGenericReply,			/* SetPointerMapping */
-    SGetPointerMappingReply,
-    SGenericReply,			/* SetModifierMapping */
-    SGetModifierMappingReply,		/* 119 */
-    NotImplemented,			/* 120 */
-    NotImplemented,			/* 121 */
-    NotImplemented,			/* 122 */
-    NotImplemented,			/* 123 */
-    NotImplemented,			/* 124 */
-    NotImplemented,			/* 125 */
-    NotImplemented,			/* 126 */
-    NotImplemented,			/* NoOperation */
-    NotImplemented
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetWindowAttributesReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 5 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 10 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetGeometryReply,
+    (ReplySwapPtr)SQueryTreeReply,		/* 15 */
+    (ReplySwapPtr)SInternAtomReply,
+    (ReplySwapPtr)SGetAtomNameReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetPropertyReply,		/* 20 */
+    (ReplySwapPtr)SListPropertiesReply,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetSelectionOwnerReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 25 */
+    (ReplySwapPtr)SGenericReply,		/* SGrabPointerReply, */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 30 */
+    (ReplySwapPtr)SGenericReply,		/* SGrabKeyboardReply, */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 35 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SQueryPointerReply,
+    (ReplySwapPtr)SGetMotionEventsReply,
+    (ReplySwapPtr)STranslateCoordsReply,	/* 40 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetInputFocusReply,
+    (ReplySwapPtr)SQueryKeymapReply,
+    ReplyNotSwappd,				/* 45 */
+    ReplyNotSwappd,
+    (ReplySwapPtr)SQueryFontReply,
+    (ReplySwapPtr)SQueryTextExtentsReply,
+    (ReplySwapPtr)SListFontsReply,
+    (ReplySwapPtr)SListFontsWithInfoReply,	/* 50 */
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetFontPathReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 55 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 60 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 65 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 70 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetImageReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 75 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 80 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SListInstalledColormapsReply,
+    (ReplySwapPtr)SAllocColorReply,
+    (ReplySwapPtr)SAllocNamedColorReply,	/* 85 */
+    (ReplySwapPtr)SAllocColorCellsReply,
+    (ReplySwapPtr)SAllocColorPlanesReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 90 */
+    (ReplySwapPtr)SQueryColorsReply,
+    (ReplySwapPtr)SLookupColorReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 95 */
+    ReplyNotSwappd,
+    (ReplySwapPtr)SQueryBestSizeReply,
+    (ReplySwapPtr)SGenericReply,		/* SQueryExtensionReply, */
+    (ReplySwapPtr)SListExtensionsReply,
+    ReplyNotSwappd,				/* 100 */
+    (ReplySwapPtr)SGetKeyboardMappingReply,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetKeyboardControlReply,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 105 */
+    (ReplySwapPtr)SGetPointerControlReply,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SGetScreenSaverReply,
+    ReplyNotSwappd,
+    (ReplySwapPtr)SListHostsReply,		/* 110 */
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,
+    ReplyNotSwappd,				/* 115 */
+    (ReplySwapPtr)SGenericReply,		/* SetPointerMapping */
+    (ReplySwapPtr)SGetPointerMappingReply,
+    (ReplySwapPtr)SGenericReply,		/* SetModifierMapping */
+    (ReplySwapPtr)SGetModifierMappingReply,	/* 119 */
+    ReplyNotSwappd,				/* 120 */
+    ReplyNotSwappd,				/* 121 */
+    ReplyNotSwappd,				/* 122 */
+    ReplyNotSwappd,				/* 123 */
+    ReplyNotSwappd,				/* 124 */
+    ReplyNotSwappd,				/* 125 */
+    ReplyNotSwappd,				/* 126 */
+    ReplyNotSwappd,				/* NoOperation */
+    ReplyNotSwappd
 };
 
 #ifdef K5AUTH

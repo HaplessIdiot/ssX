@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dix.h /main/39 1995/12/08 13:32:23 dpw $ */
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.2 1996/01/05 13:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.3 1996/02/18 03:45:07 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -238,7 +238,6 @@ typedef struct _ClientPublic {
 #endif /* LBX || LBX_COMPAT */
 
 typedef struct _WorkQueue	*WorkQueuePtr;
-
 
 extern ClientPtr requestingClient;
 extern ClientPtr *clients;

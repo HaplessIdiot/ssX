@@ -1,4 +1,5 @@
 /* $XConsortium: header.c,v 1.5 94/04/17 20:24:28 hersh Exp $ */
+/* $XFree86$ */
 /*
  
 Copyright (c) 1990  X Consortium
@@ -46,6 +47,10 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include	<stdio.h>
+#include	<X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include	<stdlib.h>
+#endif
 #include	"FSlib.h"
 
 long        pointSize;

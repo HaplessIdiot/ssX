@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.13 1996/02/04 09:04:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.14 1996/02/20 14:34:03 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -151,6 +151,18 @@ extern Bool p9000Initialize(
 extern void p9000EnterLeaveVT(
 #if NeedFunctionPrototypes
    Bool, int
+#endif
+);
+
+extern void p9000AdjustFrame(
+#if NeedFunctionPrototypes
+   int, int
+#endif
+);
+
+extern void p9000SetVidPage(
+#if NeedFunctionPrototypes
+   int
 #endif
 );
 

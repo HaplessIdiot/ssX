@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c,v 1.55 95/05/19 19:35:35 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.3 1996/02/18 03:41:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.4 1996/04/15 11:19:41 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -78,8 +78,6 @@ static Mask FontFormat =
 
 extern pointer fosNaturalParams;
 extern FontPtr defaultFont;
-
-extern void (*ReplySwapVector[256]) ();
 
 static FontPathElementPtr *font_path_elements = (FontPathElementPtr *) 0;
 static int  num_fpes = 0;

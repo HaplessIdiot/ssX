@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.30 1996/02/22 05:13:31 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.31 1996/03/29 22:18:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -234,7 +234,12 @@ unsigned char defaultDAC[768] =
  * This avoids port I/O during the copy (which causes problems with
  * some hardware.
  */
+#ifdef __alpha__
+#undef USE_ASM_SLOWBCOPY
+#else /* __alpha__ */
 #define USE_ASM_SLOWBCOPY
+#endif /* __alpha__ */
+
 #ifdef USE_ASM_SLOWBCOPY
 #define slowbcopy SlowBcopy
 #else
@@ -1106,7 +1111,10 @@ vgaHWInit(mode, size)
 #else
   new->Sequencer[0] = 0x00;
 #endif
-  new->Sequencer[1] = 0x01;
+  if (mode->Flags & V_CLKDIV2) 
+    new->Sequencer[1] = 0x09;
+  else
+    new->Sequencer[1] = 0x01;
 #ifdef MONOVGA
   new->Sequencer[2] = 1 << BIT_PLANE;
 #else

@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: devices.c /main/52 1996/01/14 16:44:49 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.6 1996/03/10 11:53:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.7 1996/04/15 11:19:36 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -75,7 +75,6 @@ extern InputInfo inputInfo;
 #ifdef XKB
 extern Bool noXkbExtension;
 #endif
-extern void (* ReplySwapVector[256]) ();
 
 DeviceIntPtr
 _AddInputDevice(deviceProc, autoStart)

@@ -1,5 +1,5 @@
 /* $XConsortium: sm_genid.c /main/17 1996/01/12 15:08:38 kaleb $ */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.2 1996/01/05 13:10:32 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.3 1996/01/13 12:19:25 dawes Exp $ */
 
 /*
 
@@ -57,6 +57,9 @@ extern Time_t time ();
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#ifdef linux
+#include <arpa/inet.h>
+#endif
 #endif
 
 #else /* WIN32 */

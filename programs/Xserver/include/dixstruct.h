@@ -21,7 +21,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dixstruct.h /main/34 1996/03/01 14:30:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.4 1996/03/04 05:22:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.5 1996/04/15 11:34:28 dawes Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -68,6 +68,16 @@ typedef void (*ReplySwapPtr) (
 		void *		/* pbuf */
 #endif
 );
+
+extern void ReplyNotSwappd (
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		int		/* size */,
+		void *		/* pbuf */
+#endif
+);
+
+extern	ReplySwapPtr ReplySwapVector[256];
 
 typedef struct _Client {
     int         index;
@@ -126,6 +136,13 @@ typedef struct _Client {
 #endif
     unsigned long replyBytesRemaining;
 }           ClientRec;
+
+/* This prototype is used pervasively in Xext, dix */
+#if NeedFunctionPrototypes
+#define DISPATCH_PROC(func) int func(ClientPtr /* client */)
+#else
+#define DISPATCH_PROC(func) int func(/* ClientPtr client */)
+#endif
 
 typedef struct _WorkQueue {
     struct _WorkQueue *next;

@@ -1,5 +1,5 @@
 /* $XConsortium: RdBitF.c,v 1.10 94/04/17 20:16:13 kaleb Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.0 1994/10/20 06:05:52 dawes Exp $ */
 
 /*
 
@@ -51,6 +51,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xlibint.h>
 #include <stdio.h>
 #include <ctype.h>
 

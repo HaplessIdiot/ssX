@@ -26,10 +26,17 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.6 1996/01/24 22:00:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.7 1996/02/04 08:56:36 dawes Exp $ */
 
 #if defined(__GNUC__)
-
+#if defined(linux) && defined(__alpha__)
+#define inb _inb
+#define inw _inw
+#define inl _inl
+#define outb(p,v) _outb((v),(p))
+#define outw(p,v) _outw((v),(p))
+#define outl(p,v) _outl((v),(p))
+#else
 #ifdef GCCUSESGAS
 static __inline__ void
 outb(port, val)
@@ -148,6 +155,7 @@ inl(port)
 }
 
 #endif /* GCCUSESGAS */
+#endif /* linux && __alpha__ */
 
 #ifdef linux
 

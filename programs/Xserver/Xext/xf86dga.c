@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.1 1995/12/17 04:59:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.2 1996/01/17 12:46:12 dawes Exp $ */
 
 /*
 
@@ -18,7 +18,7 @@ Copyright (c) 1995  XFree86 Inc
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "xf86dgastr.h"
-#include "Xfuncproto.h"
+#include "swaprep.h"
 #include "../hw/xfree86/common/xf86.h"
 
 #include <X11/Xtrans.h>
@@ -34,21 +34,35 @@ extern int xf86ScreenIndex;
 
 static int DGAErrorBase;
 
-static int ProcXF86DGADispatch(), SProcXF86DGADispatch();
-static void XF86DGAResetProc();
+static DISPATCH_PROC(LocalClient);
+static DISPATCH_PROC(ProcDGAQueryVersion);
+static DISPATCH_PROC(ProcXF86DGADirectVideo);
+static DISPATCH_PROC(ProcXF86DGADispatch);
+static DISPATCH_PROC(ProcXF86DGAGetVidPage);
+static DISPATCH_PROC(ProcXF86DGAGetVideoLL);
+static DISPATCH_PROC(ProcXF86DGAGetViewPort);
+static DISPATCH_PROC(ProcXF86DGASetVidPage);
+static DISPATCH_PROC(ProcXF86DGASetViewPort);
+static DISPATCH_PROC(SProcXF86DGADirectVideo);
+static DISPATCH_PROC(SProcXF86DGADispatch);
+static DISPATCH_PROC(SProcXF86DGAQueryVersion);
+
+static void XF86DGAResetProc(
+#if NeedFunctionPrototypes
+    ExtensionEntry* /* extEntry */
+#endif
+);
 
 static unsigned char DGAReqCode = 0;
-
-extern void Swap32Write();
 
 void
 XFree86DGAExtensionInit()
 {
     ExtensionEntry* extEntry;
+#ifdef XF86DGA_EVENTS
     int		    i;
     ScreenPtr	    pScreen;
 
-#ifdef XF86DGA_EVENTS
     EventType = CreateNewResourceType(XF86DGAFreeEvents);
     ScreenPrivateIndex = AllocateScreenPrivateIndex ();
     for (i = 0; i < screenInfo.numScreens; i++)
@@ -85,7 +99,6 @@ static int
 ProcDGAQueryVersion(client)
     register ClientPtr client;
 {
-    REQUEST(xXF86DGAQueryVersionReq);
     xXF86DGAQueryVersionReply rep;
     register int n;
 
@@ -284,11 +297,11 @@ ProcXF86DGASetVidPage(client)
 /* 
  * lifted from xc/programs/Xserver/os/access.c.
  */
-static Bool
+static int
 LocalClient(client)
     ClientPtr client;
 {
-    int    		alen, family, notused;
+    int    		alen, notused;
     struct sockaddr	*from = NULL;
 
     if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,

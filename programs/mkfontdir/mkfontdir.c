@@ -47,6 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c,v 1.12 94/04/17 20:38:47 hersh Exp $ */
+/* $XFree86$ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -54,6 +55,9 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <stdio.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE

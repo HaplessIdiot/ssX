@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.2 1995/12/16 08:20:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.3 1996/02/04 09:03:26 dawes Exp $ */
 /*
  * Copyright 1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -28,6 +28,19 @@
 #include "input.h"
 #include "regmach64.h"
 
+#ifdef __alpha__
+/*
+ * on the Alpha, there are "write buffers" that hold data to be written
+ *  to memory; the data is *not* necessarily flushed to memory immediately.
+ * so, we use a "memory barrier" instruction to force the flush of these
+ *  buffers, so that writing to the memory-mapped Mach64 registers *will*
+ *  take place immediately.
+ */
+#define barrier() __asm__ __volatile__("mb": : :"memory")
+#else /* __alpha__ */
+#define barrier()
+#endif /* __alpha__ */
+
 extern pointer mach64MemReg;
 
 __inline__ void regw(unsigned int regindex, unsigned long regdata)
@@ -38,6 +51,7 @@ __inline__ void regw(unsigned int regindex, unsigned long regdata)
     appaddr = (unsigned long)mach64MemReg + regindex;
 
     *(int *)appaddr = regdata;
+    barrier();
 }
 
 __inline__ unsigned long regr(unsigned int regindex)
@@ -58,6 +72,7 @@ __inline__ void regwb(unsigned int regindex, unsigned char regdata)
     appaddr = (unsigned long)mach64MemReg + regindex;
 
     *(char *)appaddr = regdata;
+    barrier();
 }
 
 __inline__ unsigned char regrb(unsigned int regindex)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.33 1996/03/29 22:16:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.34 1996/04/15 11:30:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -79,6 +79,7 @@ typedef struct _DispM {
 #define V_HSKEW     0x0200	/* hskew provided */
 #define V_PIXMUX    0x1000
 #define V_DBLCLK    0x2000
+#define V_CLKDIV2   0x4000
 
 /* The monitor description */
 

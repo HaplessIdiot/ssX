@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 /* $XConsortium: shm.c,v 1.25 95/04/06 16:00:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.4 1995/06/29 13:25:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.5 1996/01/05 13:17:07 dawes Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -60,11 +60,43 @@ typedef struct _ShmDesc {
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
 
-static void miShmPutImage(), fbShmPutImage();
-static PixmapPtr fbShmCreatePixmap();
-static int ProcShmDispatch(), SProcShmDispatch();
-static int ShmDetachSegment();
-static void ShmResetProc(), SShmCompletionEvent();
+static void miShmPutImage(XSHM_PUT_IMAGE_ARGS);
+static void fbShmPutImage(XSHM_PUT_IMAGE_ARGS);
+static PixmapPtr fbShmCreatePixmap(XSHM_CREATE_PIXMAP_ARGS);
+static int ShmDetachSegment(
+#if NeedFunctionPrototypes
+    pointer		/* value */,
+    XID			/* shmseg */
+#endif
+    );
+static void ShmResetProc(
+#if NeedFunctionPrototypes
+    ExtensionEntry *	/* extEntry */
+#endif
+    );
+static void SShmCompletionEvent(
+#if NeedFunctionPrototypes
+    xShmCompletionEvent * /* from */,
+    xShmCompletionEvent * /* to */
+#endif
+    );
+
+static DISPATCH_PROC(ProcShmAttach);
+static DISPATCH_PROC(ProcShmCreatePixmap);
+static DISPATCH_PROC(ProcShmDetach);
+static DISPATCH_PROC(ProcShmDispatch);
+static DISPATCH_PROC(ProcShmGetImage);
+static DISPATCH_PROC(ProcShmGetImage);
+static DISPATCH_PROC(ProcShmGetImage);
+static DISPATCH_PROC(ProcShmPutImage);
+static DISPATCH_PROC(ProcShmQueryVersion);
+static DISPATCH_PROC(SProcShmAttach);
+static DISPATCH_PROC(SProcShmCreatePixmap);
+static DISPATCH_PROC(SProcShmDetach);
+static DISPATCH_PROC(SProcShmDispatch);
+static DISPATCH_PROC(SProcShmGetImage);
+static DISPATCH_PROC(SProcShmPutImage);
+static DISPATCH_PROC(SProcShmQueryVersion);
 
 static unsigned char ShmReqCode;
 static int ShmCompletionCode;
@@ -186,7 +218,7 @@ ShmExtensionInit()
 	ShmReqCode = (unsigned char)extEntry->base;
 	ShmCompletionCode = extEntry->eventBase;
 	BadShmSegCode = extEntry->errorBase;
-	EventSwapVector[ShmCompletionCode] = SShmCompletionEvent;
+	EventSwapVector[ShmCompletionCode] = (EventSwapPtr) SShmCompletionEvent;
     }
 }
 
@@ -231,7 +263,6 @@ static int
 ProcShmQueryVersion(client)
     register ClientPtr client;
 {
-    REQUEST(xShmQueryVersionReq);
     xShmQueryVersionReply rep;
     register int n;
 

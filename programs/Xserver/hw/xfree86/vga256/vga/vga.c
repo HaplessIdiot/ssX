@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.49 1996/02/24 05:59:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.50 1996/03/29 22:18:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -601,6 +601,7 @@ vgaProbe()
 	OFLG_SET(OPTION_POWER_SAVER, &vgaOptionFlags);
 	OFLG_SET(OPTION_CLGD6225_LCD, &vgaOptionFlags);
 	OFLG_SET(OPTION_NO_PCI_PROBE, &vgaOptionFlags);
+	OFLG_SET(OPTION_CLKDIV2, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
@@ -993,10 +994,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     {
       vgaReadBottom = vgaLinearBase;
       vgaReadTop = (void *)((unsigned int)vgaLinearSize
-      			    + (unsigned int)vgaLinearBase);
+      			    + (unsigned long)vgaLinearBase);
       vgaWriteBottom = vgaLinearBase;
       vgaWriteTop = (void *)((unsigned int)vgaLinearSize
-      			    + (unsigned int)vgaLinearBase);
+      			    + (unsigned long)vgaLinearBase);
       vgaSegmentSize = vgaLinearSize;	/* override */
       vgaSegmentMask = vgaLinearSize - 1;
       vgaSetReadFunc = (void (*)())NoopDDA;
@@ -1005,14 +1006,14 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     }
     else
     {
-      vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
-			        + (unsigned int)vgaBase); 
-      vgaReadTop     = (void *)((unsigned int)vgaReadTop
-			        + (unsigned int)vgaBase); 
-      vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom
-			        + (unsigned int)vgaBase); 
-      vgaWriteTop    = (void *)((unsigned int)vgaWriteTop
-			        + (unsigned int)vgaBase); 
+      vgaReadBottom  = (void *)((unsigned long)vgaReadBottom
+			        + (unsigned long)vgaBase); 
+      vgaReadTop     = (void *)((unsigned long)vgaReadTop
+			        + (unsigned long)vgaBase); 
+      vgaWriteBottom = (void *)((unsigned long)vgaWriteBottom
+			        + (unsigned long)vgaBase); 
+      vgaWriteTop    = (void *)((unsigned long)vgaWriteTop
+			        + (unsigned long)vgaBase); 
     }
   }
 

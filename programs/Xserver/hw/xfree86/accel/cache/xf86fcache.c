@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.8 1995/07/07 15:38:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.9 1996/02/04 08:58:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -272,7 +272,7 @@ xf86loadFontBlock(fentry, block)
 					 		(c % 32) * fentry->w,
 					fentry->fblock[block]->y,
 					gWidth, gHeight,
-					pb, nbyGlyphWidth,
+					pb, nbyPadGlyph,
 					fentry->fblock[block]->id);
 	    }
 	 }

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: multibuf.h,v 1.18 94/04/17 20:11:21 dpw Exp $
+ * $XFree86$
  *
 Copyright (c) 1989  X Consortium
 
@@ -296,12 +297,55 @@ _XFUNCPROTOEND
 #else
 
 typedef Bool	(* mbInitFunc)();
-extern void	RegisterMultibufferInit();
-extern void	RegisterDoubleBufferHardware();
 
-extern int	CreateImageBuffers ();
-extern void	DestroyImageBuffers ();
-extern int	DisplayImageBuffers ();
+struct _mbufScreen;		/* declared in multibufst.h */
+
+extern void	RegisterMultibufferInit(
+#if NeedFunctionPrototypes
+    ScreenPtr			/* pScreen */,
+    Bool (* /* bufMultibufferInit */)(
+#if NeedNestedPrototypes
+	ScreenPtr		/* pScreen */,
+	struct _mbufScreen *	/* pMBScreen */
+#endif
+    )
+#endif
+);
+
+struct xMbufBufferInfo;		/* declared in multibufst.h */
+
+extern void	RegisterDoubleBufferHardware(
+#if NeedFunctionPrototypes
+    ScreenPtr			/* pScreen */,
+    int				/* nInfo */,
+    struct xMbufBufferInfo *	/* pInfo */,
+    DevUnion *			/* frameBuffer */,
+    DevUnion			/* selectPlane */,
+    void (* /* CopyBufferBitsFunc */ )(),
+    void (* /* DrawSelectPlaneFunc */ )()
+#endif
+);
+
+extern int	CreateImageBuffers (
+#if NeedFunctionPrototypes
+    WindowPtr			/* pWin */,
+    int				/* nbuf */,
+    XID *			/* ids */,
+    int				/* action */,
+    int				/* hint */
+#endif
+);
+extern void	DestroyImageBuffers (
+#if NeedFunctionPrototypes
+    WindowPtr			/* pWin */
+#endif
+);
+extern int	DisplayImageBuffers (
+#if NeedFunctionPrototypes
+    XID *			/* ids */,
+    int				/* nbuf */
+#endif
+);
 
 #endif /* _MULTIBUF_SERVER_ */
 #endif /* _MULTIBUF_H_ */

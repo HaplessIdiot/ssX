@@ -1,5 +1,5 @@
 /* $XConsortium: gtmotion.c,v 1.15 94/04/17 20:33:15 rws Exp $ */ /*ALLOC-FIX*/
-/* $XFree86: xc/programs/Xserver/Xi/gtmotion.c,v 3.0 1996/03/29 22:13:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/gtmotion.c,v 3.1 1996/04/15 11:18:55 dawes Exp $ */
 
 /************************************************************
 
@@ -100,7 +100,8 @@ ProcXGetDeviceMotionEvents(client)
 {
     INT32 *coords, *bufptr;
     xGetDeviceMotionEventsReply rep;
-    int     i, num_events, axes, size, tsize;
+    unsigned long i;
+    int     num_events, axes, size, tsize;
     unsigned long nEvents;
     DeviceIntPtr dev;
     TimeStamp start, stop;

@@ -1,5 +1,5 @@
 /* $XConsortium: fontxlfd.c,v 1.19 94/06/05 14:42:48 rws Exp $ */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.2 1995/01/10 10:19:12 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.3 1996/01/24 21:59:06 dawes Exp $ */
 
 /*
 
@@ -214,7 +214,7 @@ double x;
       significant digits.  How do you round to n significant digits on
       a binary machine?  */
 
-#if defined(i386) || defined(__i386__)
+#if defined(i386) || defined(__i386__) || defined(__alpha__)
 #if !defined(__EMX__)
 #include <float.h>
 
@@ -238,6 +238,9 @@ double x;
    } d;
    int i,j,k,d_exp;
    
+   if (x == 0) 
+      return x;
+
    /* do minor sanity check for IEEE 754 fp and correct byte order */
    d.d = 1.0;
    if (sizeof(double) == 8 && d.b[7] == 0x3f && d.b[6] == 0xf0) {

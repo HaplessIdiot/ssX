@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules,v 1.7 95/01/25 16:34:39 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.12 1996/02/12 11:10:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.13 1996/02/18 03:40:44 dawes Exp $
 
 /*
  * These rules are needed to build the Xfree86 X Servers
@@ -42,6 +42,18 @@ depend:: dst.s								@@\
 									@@\
 clean::									@@\
 	RemoveFile(dst.s)
+#endif
+
+#ifndef ObjectFromAsmSource
+#define ObjectFromAsmSource(src,flags)					@@\
+									@@\
+src.o:  src.s								@@\
+	AssembleObject(flags)						@@\
+									@@\
+src.i:  src.s								@@\
+	CPPOnlyAsm(dst,flags)						@@\
+									@@\
+depend:: src.s
 #endif
 
 #ifndef ObjectMapIncludeFromSpecialSource

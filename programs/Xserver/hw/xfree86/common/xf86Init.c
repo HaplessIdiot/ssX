@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.49 1996/03/31 11:48:50 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.50tsi Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -399,6 +399,9 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
+#ifdef SIGCHLD
+  signal(SIGCHLD, SIG_DFL);	/* Need to wait for child processes */
+#endif
 #ifdef USE_XF86_SERVERLOCK
   extern void xf86LockServer();
   static Bool been_here = FALSE;

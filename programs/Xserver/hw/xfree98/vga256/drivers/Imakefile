@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/26 10:59:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/Imakefile,v 3.4 1996/02/18 03:44:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/Imakefile,v 3.5 1996/03/29 22:19:02 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -34,19 +34,19 @@ WABSOBJS = wabs/cir_drv.o
 #if XF98WABEPServer
 WABEPDIR  = wabep
 WABEPSRCS = wabep/?*.c
-WABEPOBJS = wabep/?*_drv.o
+WABEPOBJS = wabep/cir_drv.o
 #endif
 
 #if XF98WSNAServer
 WSNADIR  = wsna
 WSNASRCS = wsna/?*.c
-WSNAOBJS = wsna/?*_drv.o
+WSNAOBJS = wsna/cir_drv.o
 #endif
 
 #if XF98TGUIServer
 TGUIDIR  = trident
 TGUISRCS = trident/?*.c
-TGUIOBJS = trident/?*_drv.o
+TGUIOBJS = trident/tvga89_drv.o
 #endif
 
 SUBDIRS = $(GANBWAPDIR) $(NEC480DIR) $(NKVNECDIR) $(WABSDIR) $(WABEPDIR) \

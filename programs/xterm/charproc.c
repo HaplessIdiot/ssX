@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.24 1996/03/10 12:15:21 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.25 1996/03/17 11:44:03 dawes Exp $
  */
 
 /*
@@ -745,9 +745,6 @@ void SGR_Background(color)
 	XSetForeground(screen->display, screen->reverseGC, bg);
 	XSetBackground(screen->display, screen->normalboldGC, bg);
 	XSetForeground(screen->display, screen->reverseboldGC, bg);
-
-	/* update the screen's background (for XClearArea) */
-	XSetWindowBackground(screen->display, TextWindow(screen), bg);
 }
 
 static void VTparse()

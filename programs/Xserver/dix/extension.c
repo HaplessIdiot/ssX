@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: extension.c,v 1.55 95/02/27 16:43:20 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.2 1996/03/29 22:14:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.3 1996/04/15 11:19:45 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -69,7 +69,6 @@ ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
 static ExtensionEntry **extensions = (ExtensionEntry **)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
-extern void (* ReplySwapVector[256]) ();
 
 int lastEvent = EXTENSION_EVENT_BASE;
 static int lastError = FirstExtensionError;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.3 1995/01/28 15:54:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.4 1996/02/04 09:04:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,6 +45,14 @@
 #include "p9000.h"
 #include "p9000reg.h"
 #include "p9000Bt485.h"
+
+#ifdef XFreeXDGA
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -147,7 +155,11 @@ p9000StoreColors(pmap, ndef, pdefs)
         currentp9000dac[pdefs[i].pixel].r = pdefs[i].red >> 8;
         currentp9000dac[pdefs[i].pixel].g = pdefs[i].green >> 8;
         currentp9000dac[pdefs[i].pixel].b = pdefs[i].blue >> 8;
-	if (xf86VTSema) {
+	if (xf86VTSema
+#ifdef XFreeXDGA
+	    || (p9000InfoRec.directMode & XF86DGADirectGraphics)
+#endif
+	    ) {
 	    outb(BT_WRITE_ADDR, pdefs[i].pixel);
 	    outb(BT_RAMDAC_DATA, pdefs[i].red >> 8);
 	    outb(BT_RAMDAC_DATA, pdefs[i].green >> 8);

@@ -1,4 +1,4 @@
-/* $XConsortium: ICD2061A.h,v 1.1 94/03/28 21:24:45 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061A.h,v 1.1.1.2 1996/01/03 07:19:41 dawes Exp $ */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved.
  *
@@ -21,11 +21,30 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: ICD2061A.h /main/2 1995/11/12 19:30:05 kaleb $ */
 
-extern long ICD2061ACalcClock();
-extern long ICD2061AGCD();
-extern void ICD2061ASetClock();
-extern long ICD2061AGetClock();
+extern long ICD2061ACalcClock(
+#if NeedFunctionPrototypes
+	long /* frequency */,
+	int /* select */
+#endif
+	);
+extern long ICD2061AGCD(
+#if NeedFunctionPrototypes
+	long /* a */,
+	long /* b */
+#endif
+	);
+extern void ICD2061ASetClock(
+#if NeedFunctionPrototypes
+	long /* clock_value */
+#endif
+	);
+extern long ICD2061AGetClock(
+#if NeedFunctionPrototypes
+	long /* clock_value */
+#endif
+	);
 
 #define CRT_INDEX               0x03D4
 #define CRT_DATA                0x03D5

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.5 1995/12/17 05:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.6 1996/02/04 09:03:09 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -142,7 +142,7 @@ mach64CacheGlyph(x, y, width, height, psrc, pwidth)
     int srcbit;
     int dstbit;
     int tmpword;
-    int *pword = (int*)psrc;
+    int pword;
 
     offset = (((y * mach64VirtX) + x) * (mach64InfoRec.bitsPerPixel / 8)) >> 3;
 
@@ -171,9 +171,10 @@ mach64CacheGlyph(x, y, width, height, psrc, pwidth)
     tmpword = 0;
     for (srcline=0; srcline < height; srcline++) 
     {
+        pword = *(int *)psrc;
         for (srcbit=0; srcbit < width; srcbit++) 
 	{
-            if (pword[srcline] & (1L << srcbit))
+            if (pword & (1L << srcbit))
                 tmpword |= (1L << dstbit);
             dstbit++;
             if (dstbit >= 32)
@@ -184,6 +185,7 @@ mach64CacheGlyph(x, y, width, height, psrc, pwidth)
                 tmpword = 0;
             }
         }
+	psrc += pwidth;
     }
     if (dstbit > 0)
     {
@@ -278,7 +280,7 @@ mach64CacheFont(font)
 			pb = pbits;
 		    }
 		    mach64CacheGlyph(mach64FC_X, (mach64FC_Y + c),
-				     gWidth, gHeight, pb, nbyGlyphWidth);
+				     gWidth, gHeight, pb, nbyPadGlyph);
 		}
 	    }
 	}

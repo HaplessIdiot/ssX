@@ -22,8 +22,9 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.7 1996/03/10 12:04:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.8 1996/03/29 22:16:22 dawes Exp $ */
 
+#include "Xmd.h"
 #include "XI.h"
 #include "XIproto.h"
 #include "xf86.h"

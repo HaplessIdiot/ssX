@@ -1,6 +1,6 @@
 /*
  * $XConsortium: showrgb.c,v 1.11 94/04/17 20:24:46 gildea Exp $
- * $XFree86: xc/programs/rgb/showrgb.c,v 3.0 1994/05/21 23:59:23 dawes Exp $
+ * $XFree86: xc/programs/rgb/showrgb.c,v 3.1 1996/02/09 08:22:35 dawes Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -51,6 +51,9 @@ in this Software without prior written authorization from the X Consortium.
 #undef NULL
 #include <stdio.h>
 #include <X11/Xos.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "rgb.h"			/* off in server/include/ */
 #include "site.h"
 #include <X11/Xfuncs.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.34 1995/12/17 05:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.35 1996/02/04 09:04:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -58,6 +58,14 @@
 #include "mi.h"
 #include "cfb.h"
 
+#ifdef XFreeXDGA
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
@@ -83,7 +91,7 @@ ScrnInfoRec p9000InfoRec = {
     p9000EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
-    (void (*)())NoopDDA,/* void (* AdjustFrame)() */
+    p9000AdjustFrame,   /* void (* AdjustFrame)() */
     p9000SwitchMode,	/* Bool (* SwitchMode)() */
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
@@ -131,8 +139,11 @@ ScrnInfoRec p9000InfoRec = {
     0,			/* int offTime */
     -1,			/* int s3BlankDelay */
 #ifdef XFreeXDGA
+    /* Note that the double buffered support is 
+     * a hack in the P9000 server.  See the README.P9000
+     * file for more details.  */
     0,			/* int directMode */
-    NULL,		/* Set Vid Page */
+    p9000SetVidPage,    /* Set Vid Page */
     0,			/* unsigned long physBase */
     0,			/* int physSize */
 #endif
@@ -711,6 +722,45 @@ p9000Initialize (scr_index, pScreen, argc, argv)
       pScreen->QueryBestSize = p9000QueryBestSize;
     }
   
+#ifdef XFreeXDGA
+  /*
+   * DGA double buffering is supported if:
+   *   1) virtualX*virtualY*bytesPerPixel < 1024K
+   *   2) memconfig is 0x2
+   * This is done by setting memconfig to 0x3 and the bank size to X*Y*BPP
+   * and the bank select changes the read and write bank.  Adjust
+   * frame then switches the bank being displayed.
+   * Double buffering is enabled iff physSize!=videoRam*1024
+   * NOTE: This is a HACK!
+   */
+  /* The standard values for single buffering */
+  p9000InfoRec.displayWidth = p9000InfoRec.virtualX;
+  p9000InfoRec.directMode = XF86DGADirectPresent;
+  p9000InfoRec.physBase = p9000InfoRec.MemBase + 0x200000L;
+  p9000InfoRec.physSize = p9000InfoRec.videoRam * 1024;
+  /* Test to see if we can do double buffering */
+  if ((p9000InfoRec.virtualX * p9000InfoRec.virtualY 
+       * (p9000InfoRec.bitsPerPixel / 8) < p9000InfoRec.videoRam * 1024 / 2)
+      && p9000MiscReg.memconfig == 0x2L)
+    {
+      p9000InfoRec.physSize = p9000InfoRec.virtualX * p9000InfoRec.virtualY 
+	* (p9000InfoRec.bitsPerPixel / 8);
+      ErrorF("%s %s: DGA double buffering enabled.\n",
+	     XCONFIG_PROBED, p9000InfoRec.name);
+    }
+  else
+    {
+      ErrorF("%s %s: DGA double buffering not supported %s.\n",
+	     XCONFIG_PROBED, p9000InfoRec.name,
+	     p9000MiscReg.memconfig == 0x2L ? "at this resolution" 
+	     : "on boards with only 1 MB");
+    }
+#ifdef DEBUG
+  ErrorF("DGA: physBase 0x%x  physSize %d  width %d\n", p9000InfoRec.physBase,
+	 p9000InfoRec.physSize, p9000InfoRec.displayWidth);
+#endif
+#endif
+
   savepScreen = pScreen;
 
   p9000savepScreen = pScreen;
@@ -737,11 +787,43 @@ p9000EnterLeaveVT(enter, screen_idx)
      int screen_idx;
 {
 #ifdef DEBUG
-  ErrorF("EnterLeave: %s with xf86Resetting=%s xf86Exiting=%s\n",
+  ErrorF("EnterLeave: %s with xf86Resetting=%s xf86Exiting=%s XF86DGADirectGraphics=%s\n",
 	 enter?"Entering":"Leaving",
 	 xf86Resetting?"TRUE":"FALSE",
-	 xf86Exiting?"TRUE":"FALSE");
+	 xf86Exiting?"TRUE":"FALSE",
+	 p9000InfoRec.directMode&XF86DGADirectGraphics?"TRUE":"FALSE");
 #endif
+
+#ifdef XFreeXDGA
+  if (!xf86Exiting && (p9000InfoRec.directMode & XF86DGADirectGraphics))
+    {
+      if (enter)		/* Exit DGA Mode */
+	{
+	  unsigned long srtctl, sysconfig;
+
+	  p9000BtCursorOn();
+	  /* Restore memconfig and double buffering registers */
+	  srtctl = p9000Fetch(SRTCTL, CtlBase);
+	  sysconfig = p9000Fetch(SYSCONFIG, CtlBase);
+	  p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
+	  p9000Store(SRTCTL, CtlBase, srtctl & ~0x8L);
+	  p9000Store(SYSCONFIG, CtlBase, sysconfig & ~0x600L);
+	}
+      else			/* Start DGA Mode */
+	{
+	  p9000BtCursorOff();
+	  if (p9000MiscReg.memconfig == 0x2L && 
+	      (p9000InfoRec.physSize != p9000InfoRec.videoRam*1024))
+	    {
+	      /* Enable double buffering */
+	      p9000Store(MEM_CONFIG, CtlBase, 0x03);
+	    }
+	}
+      /* Don't do anything else... */
+      return;
+    }
+#endif
+  
   if (enter)
     {
 #ifdef DEBUG
@@ -764,6 +846,70 @@ p9000EnterLeaveVT(enter, screen_idx)
       AlreadyInited = FALSE;
     }
 }
+
+
+/*
+ * p9000SetVidPage -- 
+ *      In DGA double buffered mode, switches which buffer is
+ *      mapped into memory (0 or 1).
+ */
+
+void
+p9000SetVidPage(bufnum)
+     int bufnum;
+{
+#ifdef XFreeXDGA
+  if ((p9000InfoRec.directMode & XF86DGADirectGraphics)
+      && (p9000MiscReg.memconfig == 0x2L)
+      && (p9000InfoRec.physSize != p9000InfoRec.videoRam*1024))
+    {
+      unsigned long sysconfig;
+      sysconfig = p9000Fetch(SYSCONFIG, CtlBase);
+#ifdef DEBUG
+      ErrorF("P9000: SetVidPage %d was 0x%x\n",bufnum,sysconfig);
+#endif
+      p9000Store(SYSCONFIG, CtlBase, (sysconfig & ~0x600L) 
+		 | ((0==bufnum) ? 0x000L : 0x600L));
+    }
+#endif /* XFreeXDGA */
+}
+
+
+/*
+ * p9000AdjustFrame -- 
+ *      Adjusts the screen frame offset.  Only works in
+ *      DGA double buffer mode and then only switches between two banks.
+ *      Displays bank 0 if yoff < virtualY else displays bank 1.
+ */
+
+void
+p9000AdjustFrame(xoff, yoff)
+     int xoff, yoff;
+{
+#ifdef XFreeXDGA
+  if ((p9000InfoRec.directMode & XF86DGADirectGraphics)
+      && (p9000MiscReg.memconfig == 0x2L)
+      && (p9000InfoRec.physSize != p9000InfoRec.videoRam*1024))
+    {
+      unsigned long srtctl;
+      srtctl = p9000Fetch(SRTCTL, CtlBase);
+#ifdef DEBUG
+      ErrorF("P9000: AdjustFrame %d,%d was 0x%x\n",xoff,yoff,srtctl);
+#endif
+      if (yoff < p9000InfoRec.virtualY)
+	{			
+	  /* Display Bank 0 */
+	  p9000Store(SRTCTL, CtlBase, (srtctl & ~0x8L));
+	}
+      else
+	{			
+	  /* Display Bank 1 */
+	  p9000Store(SRTCTL, CtlBase, (srtctl | 0x8L));
+	}
+    }
+#endif /* XFreeXDGA */
+}
+
 
 /*
  * p9000CloseScreen --

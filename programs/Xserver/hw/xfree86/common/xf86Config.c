@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.86 1996/03/29 22:16:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.87 1996/04/15 11:30:23 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3062,7 +3062,7 @@ xf86LookupMode(target, driver)
 {
   DisplayModePtr p;
   DisplayModePtr best_mode = NULL;
-  int            i, Gap;
+  int            i, j, k, Gap;
   int            Minimum_Gap = CLOCK_TOLERANCE + 1;
   Bool           found_mode = FALSE;
   Bool           clock_too_high = FALSE;
@@ -3118,17 +3118,30 @@ xf86LookupMode(target, driver)
       }
       else
       {
-        i = xf86GetNearestClock(driver, p->Clock);
-        Gap = abs(p->Clock - driver->clock[i]);
-        if (Gap < Minimum_Gap)
+        /*
+         * go look if any of the clocks in the list matches the one in
+         * the mode (j=1), or if a better match exists when the clocks
+         * in the list are divided by 2 (j=2)
+         */
+        if (OFLG_ISSET(OPTION_CLKDIV2, &(driver->options)))
+           k=2;
+        else
+           k=1;
+        for (j=1 ; j<=k ; j++)
         {
-          if ((driver->clock[i] / 1000) > (driver->maxClock / 1000))
-            clock_too_high = TRUE;
-          else
+          i = xf86GetNearestClock(driver, p->Clock*j);
+          Gap = abs( p->Clock - (driver->clock[i]/j) );
+          if (Gap < Minimum_Gap)
           {
-            target->Clock = i;
-            best_mode = p;
-            Minimum_Gap = Gap;
+            if ( ((driver->clock[i]/j) / 1000) > (driver->maxClock / 1000) )
+              clock_too_high = TRUE;
+            else
+            {
+              target->Clock = i;
+              if (j==2) p->Flags |= V_CLKDIV2;
+              best_mode = p;
+              Minimum_Gap = Gap;
+            }
           }
         }
       }
@@ -3183,8 +3196,11 @@ xf86LookupMode(target, driver)
              XCONFIG_GIVEN, driver->name, target->name,
              best_mode->Clock / 1000.0);
       if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)) ||
-	  OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &(driver->options)))
+	  OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &(driver->options))) {
         ErrorF(", clock used = %7.3f", driver->clock[target->Clock] / 1000.0);
+        if (target->Flags & V_CLKDIV2)
+          ErrorF("/2");
+      }
       ErrorF("\n");
     }
   }

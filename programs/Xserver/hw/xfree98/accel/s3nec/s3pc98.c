@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.3 1996/02/18 03:44:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.4 1996/03/29 22:18:32 dawes Exp $ */
 
 
 
@@ -343,7 +343,8 @@ int pwboardinit()
 	if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &s3InfoRec.options)) {
 		unsigned char tmp = PW_WinAdd;
 		if(tmp >= 0xf0)
-			_outb(0x43b, _inb(0x43b) & 0xfd);
+			tmp = _inb(0x43b);
+			_outb(0x43b, tmp & 0xfd);
 		}
  	if(!OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
 		_outb(0x0da|PW_PORT, 3);
@@ -408,7 +409,8 @@ int pw805iboardinit()
 	if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &s3InfoRec.options)) {
 		unsigned char tmp = PW_WinAdd;
 		if(tmp >= 0xf0)
-			_outb(0x43b, _inb(0x43b) & 0xfd);
+			tmp = _inb(0x43b);
+			_outb(0x43b, tmp & 0xfd);
 		}
  	if(!OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
 			_outb(0x0da|PW_PORT, 4);
@@ -532,7 +534,8 @@ int pw968boardinit()
 	if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &s3InfoRec.options)) {
 		unsigned char tmp = PW_WinAdd;
 		if(tmp >= 0xf0)
-			_outb(0x43b, _inb(0x43b) & 0xfd);
+			tmp = _inb(0x43b);
+			_outb(0x43b, tmp & 0xfd);
 		}
  	if(!OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
 		_outb(0x0da|PW_PORT, 4);

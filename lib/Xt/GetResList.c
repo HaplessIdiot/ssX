@@ -1,4 +1,5 @@
 /* $XConsortium: GetResList.c,v 1.7 94/04/17 20:14:08 kaleb Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -61,6 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 #include "IntrinsicI.h"
+#include "Intrinsic.h"
 
 /*
  * XtGetResourceList(), XtGetConstraintResourceList()

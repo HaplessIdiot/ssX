@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.33 1996/02/20 14:34:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.34 1996/04/15 11:30:02 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -67,7 +67,7 @@
 
 #include <X11/Xfuncproto.h>
 
-#if defined(S3_MMIO) && (defined(__STDC__) || defined(__GNUC__))
+#if defined(S3_MMIO) && (defined(__STDC__) || defined(__GNUC__)) && !defined(__alpha__)
 # define S3_OUTW(p,n) *(volatile unsigned short *)((char *)vgaBase+(p)) = \
 			(unsigned short)(n)
 # define S3_OUTL(p,n) *(volatile unsigned long *)((char *)vgaBase+(p)) = \
