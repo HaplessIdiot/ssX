@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.9 2000/02/22 01:02:35 mvojkovi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.10 2000/03/07 13:59:06 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -20,6 +20,8 @@ XCOMM Sparc (Linux) PCI driver
 
 PCIDRVRSRC = sparcPci.c
 PCIDRVROBJ = sparcPci.o
+SBUSDRVSRC = linuxSbus.c
+SBUSDRVOBJ = linuxSbus.o
 
 #elif defined(LinuxArchitecture) && defined(PpcArchitecture)
 
@@ -55,8 +57,8 @@ XCOMM PCIDRVROBJ = linuxPci.o
 XCOMM no PCI driver -- shouldn't get here
 #endif
 
-SRCS = Pci.c $(PCIDRVRSRC)
-OBJS = Pci.o $(PCIDRVROBJ)
+SRCS = Pci.c $(PCIDRVRSRC) $(SBUSDRVSRC)
+OBJS = Pci.o $(PCIDRVROBJ) $(SBUSDRVOBJ)
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)

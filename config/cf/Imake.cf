@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.52 2000/01/21 02:29:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.54 2000/04/17 16:29:44 eich Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -751,6 +751,12 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #endif
 #endif
 #endif /* QNX/Neutrino */
+
+#ifdef SparcArchitecture
+# if defined(__sparc_v9) || defined(__arch64__)
+#  define Sparc64Architecture
+# endif
+#endif
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.12 2000/02/12 23:59:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.14 2000/04/17 16:29:52 eich Exp $ */
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */
@@ -13,6 +13,9 @@
 #define _XF86_BUS_H
 
 #include "xf86pciBus.h"
+#ifdef __sparc__
+#include "xf86sbusBus.h"
+#endif
 
 typedef struct racInfo {
     xf86AccessPtr mem_new;
@@ -63,6 +66,7 @@ typedef struct _AsyncQRec {
 #define busType bus.type
 #define pciBusId bus.id.pci
 #define isaBusId bus.id.isa
+#define sbusBusId bus.id.sbus
 
 struct x_BusAccRec;
 typedef void (*BusAccProcPtr)(struct x_BusAccRec *ptr);

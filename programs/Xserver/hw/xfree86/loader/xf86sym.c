@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.139 2000/04/20 21:28:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.140 2000/04/23 19:27:02 tsi Exp $ */
 
 /*
  *
@@ -53,6 +53,7 @@
 #include "xisb.h"
 #include "xf86Priv.h"
 #include "vbe.h"
+#include "xf86sbusBus.h"
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
@@ -410,6 +411,17 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsScreenPrimary)
    SYMFUNC(xf86RegisterRootWindowProperty)
    SYMFUNC(xf86IsUnblank)
+
+#ifdef __sparc__
+   /* xf86sbusBus.c */
+   SYMFUNC(xf86MatchSbusInstances)
+   SYMFUNC(xf86GetSbusInfoForEntity)
+   SYMFUNC(xf86GetEntityForSbusInfo)
+   SYMFUNC(xf86SbusUseBuiltinMode)
+   SYMFUNC(xf86MapSbusMem)
+   SYMFUNC(xf86UnmapSbusMem)
+   SYMFUNC(xf86SbusHideOsHwCursor)
+#endif
 
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)

@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.21 1998/12/20 11:58:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.25 2000/02/22 01:03:25 mvojkovi Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -413,7 +413,7 @@ Xalloc (unsigned long amount)
 		ptr[1] = MAGIC;
 #endif /* XALLOC_DEBUG */
 #ifdef SIZE_TAIL
-		((unsigned long *)((char *)ptr + amount))[-1] = MAGIC2;
+		((unsigned long *)((char *)ptr + amount - TAIL_SIZE))[0] = MAGIC2;
 #endif /* SIZE_TAIL */
 		ptr = (unsigned long *)((char *)ptr + SIZE_HEADER);
 		LOG_ALLOC("Xalloc-L", amount, ptr);

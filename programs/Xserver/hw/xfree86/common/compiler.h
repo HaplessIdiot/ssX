@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.57 2000/03/03 01:06:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.58 2000/03/05 16:59:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -435,8 +435,6 @@ static __inline__ unsigned int inl(unsigned long port)
 }
 
 #endif	/* !Lynx */
-
-#include <string.h>
 
 static __inline__ unsigned long ldq_u(unsigned long *p)
 {

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.285 2000/04/17 16:29:44 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.286 2000/05/17 19:52:21 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -264,9 +264,14 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # ifndef XF86DDC
 #  define XF86DDC		YES
 # endif
+/* ramdac module */
+# ifndef XF86Ramdac
+#  define XF86Ramdac		YES
+# endif
 
+/* Pure SBUS and PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	fbdev XF86OSCardDrivers XF86ExtraCardDrivers
+#  define XF86CardDrivers	sunffb sunleo fbdev XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 
 #endif

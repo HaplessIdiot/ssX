@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.92 2000/02/13 03:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.93 2000/05/18 16:29:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -329,7 +329,8 @@ xf86PostKbdEvent(unsigned key)
 
 #if defined (__sparc__)
   if (kbdSun == -1) {
-    if (xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
+    if ((xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
+	|| (xf86Info.xkbrules && !strcmp(xf86Info.xkbrules, "sun")))
       kbdSun = 1;
     else
       kbdSun = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.68 2000/04/17 16:29:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.69 2000/05/11 18:14:28 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -228,7 +228,8 @@ typedef struct _DriverRec {
 typedef enum {
     BUS_NONE,
     BUS_ISA,
-    BUS_PCI
+    BUS_PCI,
+    BUS_SBUS
 } BusType;
 
 typedef struct {
@@ -241,11 +242,16 @@ typedef struct {
     unsigned int dummy;
 } IsaBusId;
 
+typedef struct {
+    int		fbNum;
+} SbusBusId;
+
 typedef struct _bus {
     BusType type;
     union {
 	IsaBusId isa;
 	PciBusId pci;
+	SbusBusId sbus;
     } id;
 } BusRec, *BusPtr;
 

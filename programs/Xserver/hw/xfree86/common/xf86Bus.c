@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.46 2000/04/17 16:29:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.47 2000/04/23 19:26:53 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -76,13 +76,16 @@ static void notifyStateChange(xf86NotifyState state);
 /*
  * Call the bus probes relevant to the architecture.
  *
- * The only one available so far is for PCI
+ * The only one available so far is for PCI and SBUS.
  */
 
 void
 xf86BusProbe(void)
 {
     xf86PciProbe();
+#ifdef __sparc__
+    xf86SbusProbe();
+#endif
 }
 
 /*
@@ -113,6 +116,8 @@ StringToBusType(const char* busID, const char **retID)
 	ret = BUS_PCI; 
     if (!xf86NameCmp(p, "isa"))
 	ret = BUS_ISA;
+    if (!xf86NameCmp(p, "sbus"))
+	ret = BUS_SBUS;
     if (ret != BUS_NONE)
 	if (retID)
 	    *retID = busID + strlen(p) + 1;

@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.119 2000/03/03 01:11:05 mvojkovi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.120 2000/03/22 23:35:46 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -467,6 +467,12 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #define PositionIndependentCFlags -fpic
 #define PositionIndependentCplusplusFlags -fpic
+#define AsVISOption		-Av9a
+#ifdef Sparc64Architecture
+#define AsOutputArchSize	64
+#else
+#define AsOutputArchSize	32
+#endif
 #endif
 
 #ifndef StandardDefines
