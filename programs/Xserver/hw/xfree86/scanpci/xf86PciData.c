@@ -1,13 +1,15 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86PciData.c,v 1.1 1999/02/13 16:47:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86PciData.c,v 1.3 2000/02/08 13:13:33 eich Exp $ */
 /*
  * the PCI data structures
  *
  * this module only includes the data that is relevant for video boards
  * the non-video data is included in the scanpci module
  *
- * Copyright 1995-1999 by The XFree86 Project, Inc.
+ * Copyright 1995-2000 by The XFree86 Project, Inc.
  *
  */
+
+/* XXX This is including a lot of stuff that modules should not include! */
 
 #include <ctype.h>
 #include <stdlib.h>

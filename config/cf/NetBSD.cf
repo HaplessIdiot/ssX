@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.77 2000/01/25 18:37:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.78 2000/01/31 19:33:19 dawes Exp $
 
 
 #ifndef OSName
@@ -270,7 +270,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #if defined(i386Architecture)
 # ifndef HasNetBSDApertureDriver
-#  define HasNetBSDApertureDriver	YES
+#  define HasNetBSDApertureDriver	NO
    /* Where the aperture driver is installed */
 #  ifndef NetBSDApertureDir
 #   define NetBSDApertureDir		/usr/local/aperture

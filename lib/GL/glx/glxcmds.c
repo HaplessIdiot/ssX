@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.5 2000/02/08 17:18:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.6 2000/02/15 07:13:26 martin Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -305,6 +305,10 @@ void glXWaitGL(void)
 
 #ifdef GLX_DIRECT_RENDERING
     if (gc->isDirect) {
+/* This bit of ugliness unwraps the glFinish function */
+#ifdef glFinish
+#undef glFinish
+#endif
 	glFinish();
 	return;
     }

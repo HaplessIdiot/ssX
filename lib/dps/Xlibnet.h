@@ -56,7 +56,7 @@ without express or implied warranty.
 #include <sys/filio.h>
 #endif
 
-#if defined(SYSV386) && defined(SYSV)
+#if defined(i386) && defined(SYSV)
 #include <net/errno.h>
 #include <sys/stropts.h>
 #define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
@@ -265,7 +265,7 @@ extern Xstream _XsStream[];
 
 #ifndef USL_COMPAT
 #if !defined(USG) || defined(MOTOROLA)
-#if !(defined(SYSV) && defined(SYSV386))
+#if !(defined(SYSV) && defined(i386))
 #define _XReadV readv
 #endif
 #define _XWriteV writev

@@ -1,13 +1,15 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.7 1999/09/27 06:30:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.9 2000/02/08 13:13:33 eich Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
  *
- * Copyright 1995-1998 by The XFree86 Project, Inc.
+ * Copyright 1995-2000 by The XFree86 Project, Inc.
  *
  * A lot of this comes from Robin Cutshaw's scanpci
  *
  */
+
+/* XXX This is including a lot of stuff that modules should not include! */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -16,6 +18,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Pci.h"
+#include "xf86_OSproc.h"
 
 #define INIT_PCI_CARD_INFO		TRUE
 #define DECLARE_CARD_DATASTRUCTURES	TRUE
