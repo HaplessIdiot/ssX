@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.134tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.135tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2190,8 +2190,8 @@ LintLibReferences(varname,libname,libsource)
  * ObjectAsm - assemble fragment for a normal object file
  */
 #ifndef ObjectAsm
-#define ObjectAsm(options) RemoveFile($@)				@@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options $*.S | \	@@\
+#define ObjectAsm(options) RemoveFiles($@ $*.i)				@@\
+	$(CPP) CPPAsmOptions AsmDefines $(DEFINES) $(INCLUDES) options $*.S | \	@@\
 		grep -v '^\#' > $*.i					@@\
 	$(AS) $(ASMOPTS) -o $*.o $*.i					@@\
 	RemoveFile($*.i)
@@ -2273,8 +2273,8 @@ LintLibReferences(varname,libname,libsource)
  * LibObjAsm - assemble fragment for unshared/profiled/debugged objects
  */
 #ifndef LibObjAsm
-#define LibObjAsm(dir,options,asmopt) RemoveFiles($@ dir/$@)		@@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options $*.S | \	@@\
+#define LibObjAsm(dir,options,asmopt) RemoveFiles($@ dir/$@ $*.i)	@@\
+	$(CPP) CPPAsmOptions AsmDefines $(DEFINES) $(INCLUDES) options $*.S | \	@@\
 		grep -v '^\#' > $*.i					@@\
 	$(AS) asmopt -o dir/$@ $*.i					@@\
 	RemoveFile($*.i)
@@ -2417,7 +2417,7 @@ clean::									@@\
 
 #ifndef CPPOnlyAsm
 #define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
+	$(CPP) CPPAsmOptions AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
 		grep -v '^\#' > basename.i
 #endif
 

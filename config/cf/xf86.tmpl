@@ -2,7 +2,7 @@ XCOMM $Xorg: xf86.tmpl,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.33 2002/12/16 23:01:43 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.34tsi Exp $
 
 #ifdef BuilderEMailAddr
 BUILDERADDR = BuilderEMailAddr
@@ -89,7 +89,7 @@ MODULE_DEFINES = -DXFree86Module
  * rules file (currently only minix.cf and os2.rules (uncritical))
  */
 #define ModCPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
-	$(MODCPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
+	$(MODCPP) CPPAsmOptions AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
 		grep -v '^\#' > basename.i
 
 #undef AssembleObject
