@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.92 2003/02/25 23:36:55 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.93 2003/03/09 23:39:14 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_176">Patch #176 - 2003/3/22 - XFree86 4.3.0</A>
 <LI><A HREF="#xterm_175">Patch #175 - 2003/3/9 - XFree86 4.3.0</A>
 <LI><A HREF="#xterm_174">Patch #174 - 2003/2/25 - XFree86 4.2.99.903</A>
 <LI><A HREF="#xterm_173">Patch #173 - 2003/2/6 - XFree86 4.2.99.902</A>
@@ -220,6 +221,51 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_176">Patch #176 - 2003/3/22 - XFree86 4.3.0</A></H1>
+<ul>
+	<li>add configure option to allow one to compile-in support for
+	    the pty handshaking logic, and resource <code>ptyHandshake</code>
+	    to enable or disable it (suggested by Ian Collier).
+
+	<li>restore <code>USE_HANDSHAKE</code> ifdef removed in
+	    <a href="#xterm_159">patch #159</a>
+	    to address Debian #39964.
+
+	<li>move ifdef's for ttysize/winsize into xterm_io.h
+
+	<li>simplify loop on <code>tgetent</code>, check if the successive
+	    entries in the lookup table are the same.  That makes xterm do
+	    one less lookup if there is no "xterm" entry in the termcap file
+	    (report by Derek Martin).
+
+	<li>correct manpage discussion of <code>$TERM</code> and
+	    <code>$TERMCAP</code> variables, which omitted the Tektronix
+	    emulation and a note of the final "dumb" fallback.
+
+	<li>broaden ifdef for <code>XRegisterIMInstantiateCallback()</code>
+	    from <a href="#xterm_175">patch #175</a> (XIM fix) to exclude
+	    non-XFree86 (report by Nelson Beebe indicates this breaks for
+	    Solaris, IRIX and OSF/1).
+
+	<li>correct resource-size for <code>iconFont</code> (this was added
+	    by X11R6.3).
+
+	<li>improve configure check for XKB bell extension, to work around
+	    inconsistent implementation of this feature (reports by Nelson
+	    Beebe, Kriston Rehberg and David Ellement).
+
+	<li>modify configure-check for <code>tty</code> group to be less
+	    strict in batch mode (report by Nelson Beebe).
+
+	<li>modify to allow building with g++, to use its compiler warnings
+	    (suggested by Nelson Beebe).
+
+	<li>modify <code>dec2ucs[]</code> table to reflect newer codes
+	    available for scanlines 1, 3, 7, 9 (report by Michael Schroeder).
+
+	<li>add configure option for XawPlus library.
+</ul>
 
 <H1><A NAME="xterm_175">Patch #175 - 2003/3/9 - XFree86 4.3.0</A></H1>
 <ul>
@@ -463,8 +509,8 @@ xc/programs/Xserver/hw/xfree86).
 	  <code>OPT_READLINE</code> in button.c (reported by Ilya Zakharevich).
 
 	<li>fix for inconsistent use of <code>struct utmp</code> versus
-	  <code>struct utmpx</code> introduced in patch #167 (patches by Paul
-	  Gilmartin, Marc La France).
+	  <code>struct utmpx</code> introduced in <a href="#xterm_167">patch #167</a>
+	  (patches by Paul Gilmartin, Marc La France).
 
 	<li>modify logic for <code>metaSendsEscape</code> to allow it to work
 	  in a setup where the Meta-key is not recognized as a modifier by
@@ -709,8 +755,8 @@ xc/programs/Xserver/hw/xfree86).
 <ul>
 	<li>correct ifdef's for <code>__QNX__</code> and
 	  <code>USE_SYSV_PGRP</code> in main.c call to <code>tcsetpgrp</code>,
-	  which broke bash behavior around patch #140 (report/patch by Frank
-	  Liu &lt;fliu@mail.vipstage.com&gt;).
+	  which broke bash behavior around <a href="#xterm_140">patch #140</a>
+	  (report/patch by Frank Liu &lt;fliu@mail.vipstage.com&gt;).
 
 	<li>modify trace.c to fix missing definition of GCC_UNUSED for
 	  compilers other than gcc when configured for trace code (report/patch
@@ -997,7 +1043,8 @@ xc/programs/Xserver/hw/xfree86).
 	  and 2001/4/18, respectively from
 		http://www.cl.cam.ac.uk/~mgk25/ucs/
 
-	<li>correction to change from patch #90, which was intended to
+	<li>correction to change from <a href="#xterm_90">patch #90</a>,
+	  which was intended to
 	  reset the saved cursor position for normal/alternate screens
 	  on a soft reset, but actually wiped out all of the saved cursor
 	  information.  Just reset the saved position for the current screen
@@ -1043,8 +1090,8 @@ xc/programs/Xserver/hw/xfree86).
 
 <H1><A NAME="xterm_155">Patch #155 - 2001/4/20 - XFree86 4.0.3</A></H1>
 <ul>
-	<li>correct return type of in_put() from patch #153 changes, which
-	  left it not wide enough for UTF-8 (patch by Bruno Haible).
+	<li>correct return type of in_put() from <a href="#xterm_155">patch #153</a>
+	  changes, which left it not wide enough for UTF-8 (patch by Bruno Haible).
 </ul>
 
 <H1><A NAME="xterm_154">Patch #154 - 2001/4/11 - XFree86 4.0.3</A></H1>
