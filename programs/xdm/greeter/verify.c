@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.20 2001/10/31 22:50:30 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.21 2001/12/14 20:01:29 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -78,7 +78,6 @@ static char *envvars[] = {
 #ifdef KERBEROS
 #include <sys/param.h>
 #include <kerberosIV/krb.h>
-#include <kerberosIV/kafs.h>
 static char krbtkfile[MAXPATHLEN];
 #endif
 
