@@ -1,6 +1,6 @@
 .\" $XConsortium: XF86_VGA16.man,v 1.5 95/01/23 15:33:31 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.11 1995/07/03 08:41:21 dawes Exp $
-.TH XF86_VGA16 1 "Version 3.1.2"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.12 1995/07/08 13:24:11 dawes Exp $
+.TH XF86_VGA16 1 "Version 3.1.2C"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
 x86 platforms

@@ -1,6 +1,6 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.23 1995/07/17 13:51:49 dawes Exp $
-.TH XF86_SVGA 1 "Version 3.1.2"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.24 1995/10/21 11:27:39 dawes Exp $
+.TH XF86_SVGA 1 "Version 3.1.2C"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
 x86 platforms

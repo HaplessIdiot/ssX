@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86conf.man,v 3.0 1994/10/20 06:12:50 dawes Exp $
-.TH xf86config 1 "Version 3.1.1" "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86conf.man,v 3.1 1995/01/15 10:35:54 dawes Exp $
+.TH xf86config 1 "Version 3.1.2C" "XFree86"
 .SH NAME
 xf86config \- generate an XF86Config file
 .SH SYNOPSIS
