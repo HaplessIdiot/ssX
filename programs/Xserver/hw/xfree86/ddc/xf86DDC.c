@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.24 2003/07/25 01:17:05 tsi Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -333,7 +333,7 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
     
     xf86LoaderReqSymLists(i2cSymbols, NULL);
 
-    if (!dev = xf86I2CFindDev(pBus, 0x00A0)) {
+    if (!(dev = xf86I2CFindDev(pBus, 0x00A0))) {
 	dev = xf86CreateI2CDevRec();
 	dev->DevName = "ddc2";
 	dev->SlaveAddr = 0xA0;
