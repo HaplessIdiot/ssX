@@ -27,10 +27,10 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 27 September 1999
+<date>Last modified 20 October 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.10 1999/09/06 11:27:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.11 1999/09/27 06:29:32 dawes Exp $
 </ident>
 
 
@@ -906,7 +906,7 @@ is what &s.code;InitOutput()&e.code; does:
     exits with an appropriate message.
 
 
-<sect1>Check of Resource Control is Needed
+<sect1>Check if Resource Control is Needed
 <p>
 
     Determine if resource access control is needed.  This is the case
@@ -1105,9 +1105,9 @@ is what &s.code;InitOutput()&e.code; does:
     <quote><p>
     &s.code;Bool ChipEnterVT(int index, int flags)&e.code;
     <quote><p>
-      This function should map memory regions, initialise the current
-      video mode and initialise the viewport, turn on the HW cursor if
-      appropriate, etc.
+      This function should initialise the current video mode and
+      initialise the viewport, turn on the HW cursor if appropriate,
+      etc.
 
       Should it re-save the video state before initialising the video
       mode?
@@ -1116,11 +1116,38 @@ is what &s.code;InitOutput()&e.code; does:
 
     &s.code;void ChipLeaveVT(int index, int flags)&e.code;
     <quote><p>
-      This function should restore the saved video state and unmap the
-      memory regions.  If appropriate it should also turn off the HW
-      cursor, and invalidate any pixmap/font caches.
+      This function should restore the saved video state.  If
+      appropriate it should also turn off the HW cursor, and invalidate
+      any pixmap/font caches.
 
     </quote>
+
+    Optionally, &s.code;ChipLeaveVT()&e.code; may also unmap memory
+    regions.  If so, &s.code;ChipEnterVT()&e.code; will need to remap
+    them.  Additionally, if an aperture used to access video memory is
+    unmapped and remapped in this fashion, &s.code;ChipEnterVT()&e.code;
+    will also need to notify the framebuffer layers of the aperture's new
+    location in virtual memory.  This is done with a call to the screen's
+    &s.code;ModifyPixmapHeader()&e.code; function, as follows
+
+    <quote><p>
+    &s.code;(*pScreen->ModifyPixmapHeader)(pScrn->ppix,
+        &f.indent;-1, -1, -1, -1, -1, <it>NewApertureAddress</it>);&e.code;
+    <quote><p>
+        where the &s.code``ppix''&e.code; field in a ScrnInfoRec
+        points to the pixmap used by the screen's
+        &s.code;SaveRestoreImage()&e.code; function to hold the screen's
+        contents while switched out.
+
+    </quote>
+    </quote>
+
+    Currently, aperture remapping, as described here, should not be
+    attempted if the driver uses the &s.code;xf8_16bpp&e.code; or
+    &s.code;xf8_32bpp&e.code; framebuffer layers.  A pending
+    restructuring of VT switching will address this restriction in
+    the near future.
+
     </quote>
 
     Other layers may wrap the &s.code;ChipEnterVT()&e.code; and
@@ -1179,6 +1206,13 @@ but their presence is optional.
 
     </quote>
     </quote>
+
+<p>
+This function may also modify the effective timings and clock of the passed
+mode.  These have been stored in the mode's &s.code;Crtc*&e.code; and
+&s.code;SynthClock&e.code; elements, and have already been adjusted for
+interlacing, doublescanning, multiscanning and clock multipliers and dividers.
+The function should not modify any other mode field.
 
 <sect1>Free screen data
 <p>
@@ -4510,8 +4544,8 @@ strongly encouraged to improve the consistency of driver behaviour.
 <p>
 
   <quote><p>
-    &s.code;Bool xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp, int fbbpp,
-			&f.indent;int depth24flags)&e.code;
+    &s.code;Bool xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp,
+                        &f.indent;int fbbpp, int depth24flags)&e.code;
     <quote><p>
       This function sets the &s.code;depth&e.code;, &s.code;pixmapBPP&e.code; and &s.code;bitsPerPixel&e.code; fields
       of the &s.code;ScrnInfoRec&e.code;.  It also determines the defaults for display-wide
@@ -4879,21 +4913,23 @@ be catered for the by the helpers.
       &s.code;ScrnInfoRec&e.code; are initialised prior to calling it:
 
         &s.code;clock[]&e.code;
-	<quote>List of discrete clocks (when non-programmable).</quote>
+	<quote>List of discrete clocks (when non-programmable)</quote>
         &s.code;numClocks&e.code;
-	<quote>Number of discrete clocks (when non-programmable).</quote>
+	<quote>Number of discrete clocks (when non-programmable)</quote>
         &s.code;progClock&e.code;
-	<quote>Whether the clock is programmable or not.</quote>
-        &s.code;formats&e.code;
-	<quote>pixmap formats for screen</quote>
-        &s.code;numFormats&e.code;
-	<quote>number of pixmap formats for screen</quote>
+	<quote>Whether the clock is programmable or not</quote>
+        &s.code;monitor&e.code;
+	<quote>Pointer to the applicable XF86Config monitor section</quote>
+        &s.code;fdFormat&e.code;
+	<quote>Format of the screen buffer</quote>
         &s.code;videoRam&e.code;
 	<quote>total video memory size (in bytes)</quote>
         &s.code;maxHValue&e.code;
 	<quote>Maximum horizontal timing value allowed</quote>
         &s.code;maxVValue&e.code;
 	<quote>Maximum vertical timing value allowed</quote>
+        &s.code;xInc&e.code;
+	<quote>Horizontal timing increment in pixels (defaults to 8)</quote>
 
       This function fills in the following &s.code;ScrnInfoRec&e.code;
       fields:
@@ -5148,7 +5184,8 @@ use of some of these secondary mode helper functions.
     </quote>
 
     &s.code;ModeStatus xf86InitialCheckModeForDriver(ScrnInfoPtr scrp,
-		&f.indent;DisplayModePtr mode, int maxPitch,
+		&f.indent;DisplayModePtr mode, ClockRangePtr clockRanges,
+		&f.indent;LookupModeFlags strategy, int maxPitch,
 		&f.indent;int virtualX, int virtualY)&e.code;
     <quote><p>
       This function checks the passed mode against some basic driver
@@ -5156,9 +5193,10 @@ use of some of these secondary mode helper functions.
       &s.code;maxHValue&e.code; and &s.code;maxVValue&e.code; fields of
       the &s.code;ScrnInfoRec&e.code; are also used.  If the
       &s.code;ValidMode&e.code; field of the &s.code;ScrnInfoRec&e.code;
-      is set, that function is also called to check the mode.
+      is set, that function is also called to check the mode.  Next, the
+      mode is checked against the monitor's constraints.
 
-      If the mode is consistent with the constraints, the return value
+      If the mode is consistent with all constraints, the return value
       is &s.code;MODE_OK&e.code;.  Otherwise the return value indicates
       which constraint wasn't met.
 

@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                       Last modified 27 September 1999
+                        Last modified 20 October 1999
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -755,7 +755,7 @@ bit order, bitmap scanline unit and image byte order are compared for each of
 the screens.  If a mismatch is found, the server exits with an appropriate
 message.
 
-5.15  Check of Resource Control is Needed
+5.15  Check if Resource Control is Needed
 
 Determine if resource access control is needed.  This is the case if more
 than one screen is used.  If necessary the RAC wrapper module is loaded.
@@ -909,19 +909,40 @@ does the following:
 
      Bool ChipEnterVT(int index, int flags)
 
-          This function should map memory regions, initialise the
-          current video mode and initialise the viewport, turn on
-          the HW cursor if appropriate, etc.
+          This function should initialise the current video mode
+          and initialise the viewport, turn on the HW cursor if
+          appropriate, etc.
 
           Should it re-save the video state before initialising the
           video mode?
 
      void ChipLeaveVT(int index, int flags)
 
-          This function should restore the saved video state and
-          unmap the memory regions.  If appropriate it should also
-          turn off the HW cursor, and invalidate any pixmap/font
-          caches.
+          This function should restore the saved video state.  If
+          appropriate it should also turn off the HW cursor, and
+          invalidate any pixmap/font caches.
+
+     Optionally, ChipLeaveVT() may also unmap memory regions.  If so,
+     ChipEnterVT() will need to remap them.  Additionally, if an aper-
+     ture used to access video memory is unmapped and remapped in this
+     fashion, ChipEnterVT() will also need to notify the framebuffer
+     layers of the aperture's new location in virtual memory.  This is
+     done with a call to the screen's ModifyPixmapHeader() function, as
+     follows
+
+          (*pScreen->ModifyPixmapHeader)(pScrn->ppix,
+
+                    -1, -1, -1, -1, -1, NewApertureAddress);
+
+               where the ``ppix'' field in a ScrnInfoRec
+               points to the pixmap used by the screen's
+               SaveRestoreImage() function to hold the
+               screen's contents while switched out.
+
+     Currently, aperture remapping, as described here, should not be
+     attempted if the driver uses the xf8_16bpp or xf8_32bpp framebuffer
+     layers.  A pending restructuring of VT switching will address this
+     restriction in the near future.
 
 Other layers may wrap the ChipEnterVT() and ChipLeaveVT() functions if they
 need to take some action when these events are received.
@@ -967,6 +988,12 @@ constraints:
 
           Check the passed mode for hw-specific constraints, and
           return the appropriate status value.
+
+This function may also modify the effective timings and clock of the passed
+mode.  These have been stored in the mode's Crtc* and SynthClock elements,
+and have already been adjusted for interlacing, doublescanning, multiscanning
+and clock multipliers and dividers.  The function should not modify any other
+mode field.
 
 6.2  Free screen data
 
@@ -3780,10 +3807,9 @@ improve the consistency of driver behaviour.
 
 18.2  Functions for setting values based on command line and config file
 
-     Bool xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp, int
-     fbbpp,
+     Bool xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp,
 
-               int depth24flags)
+               int fbbpp, int depth24flags)
 
           This function sets the depth, pixmapBPP and bitsPerPixel
           fields of the ScrnInfoRec.  It also determines the
@@ -4124,25 +4150,25 @@ the helpers.
 
           clock[]
 
-               List of discrete clocks (when non-pro-
-               grammable).
+               List of discrete clocks (when non-programmable)
 
           numClocks
 
                Number of discrete clocks (when non-pro-
-               grammable).
+               grammable)
 
           progClock
 
-               Whether the clock is programmable or not.
+               Whether the clock is programmable or not
 
-          formats
+          monitor
 
-               pixmap formats for screen
+               Pointer to the applicable XF86Config monitor
+               section
 
-          numFormats
+          fdFormat
 
-               number of pixmap formats for screen
+               Format of the screen buffer
 
           videoRam
 
@@ -4155,6 +4181,11 @@ the helpers.
           maxVValue
 
                Maximum vertical timing value allowed
+
+          xInc
+
+               Horizontal timing increment in pixels (defaults
+               to 8)
 
           This function fills in the following ScrnInfoRec fields:
 
@@ -4379,7 +4410,9 @@ helper functions.
 
      ModeStatus xf86InitialCheckModeForDriver(ScrnInfoPtr scrp,
 
-               DisplayModePtr mode, int maxPitch,
+               DisplayModePtr mode, ClockRangePtr clockRanges,
+
+               LookupModeFlags strategy, int maxPitch,
 
                int virtualX, int virtualY)
 
@@ -4388,8 +4421,10 @@ helper functions.
           itly, the maxHValue and maxVValue fields of the ScrnIn-
           foRec are also used.  If the ValidMode field of the Scrn-
           InfoRec is set, that function is also called to check the
-          mode.
-          If the mode is consistent with the constraints, the
+          mode.  Next, the mode is checked against the monitor's
+          constraints.
+
+          If the mode is consistent with all constraints, the
           return value is MODE_OK.  Otherwise the return value
           indicates which constraint wasn't met.
 
@@ -5933,4 +5968,4 @@ eScreen() function.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.11 1999/09/27 06:29:32 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.6 1999/10/14 03:31:23 dawes Exp $
