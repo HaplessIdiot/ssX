@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.38 1997/06/03 14:11:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.39 1997/07/29 12:07:38 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -364,9 +364,6 @@ mach8Probe()
     int            tx, ty;
 
     mach8InfoRec.maxClock = mach8MaxClock;
-
-    xf86ClearIOPortList(mach8InfoRec.scrnIndex);
-    xf86AddIOPorts(mach8InfoRec.scrnIndex, Num_mach8_IOPorts, mach8_IOPorts);
 
     if (mach8InfoRec.chipset) {
 	if (StrCaseCmp(mach8InfoRec.chipset, "mach8")) {

@@ -1,4 +1,40 @@
-XFree86 3.9n (15 August 1997)
+XFree86 3.9n (26 August 1997)
+1221. Lots of small fixes for xterm (#912, Thomas Dickey).
+1220. Add DirectColor visual to Matrox server (#911, Andres Aitchison).
+1219. Disable 8x8 pattern tiling on W32 (not W32i/p) cards. Fix lowend W32p
+      cards with IMA bus. Modify linear memory code (#910, Koen Gadeyne).
+1218. Fix locale in R6.3, Fix PC98 XKB, Remove xf86ClearIOPortList() and
+      xf86AddIOPorts() from PEGC driver (#908, Takaaki Nomura, Isao Ohishi).
+1217. Remove xf86ClearIOPortList() and xf86AddIOPorts() (#907,909 
+      Matthieu Herrb).
+1216. Add ET6100 support to tseng driver (#906, Koen Gadeyne).
+1215. Add wide lines to XAA (#904, Mark Vojkovich).
+1214. Add Chrontel8391CalcClock function (#903, Gyorgy Krajcsovits).
+1213. Fix output of hex numbers in chip revision (#902, Dejan Ilic).
+1212. Add accelerated Bresenham lines to tseng driver at 8bpp (#901, 
+      Koen Gadeyne).
+1211. Xlib: XIMStringConversionRetrival should be XIMStringConversionRetrieval
+      (#905, Kaleb Keithley).
+1210. Official fix for potential buffer overflow in XGetErrorDatabaseText
+      (#900, Kaleb Keithley).
+1209. Fix typo in cde.rules (#899, Kaleb Keithley).
+1208. SGI threads patch update (#898, Kaleb Keithley).
+1207. Fix UNSHARED_CXXLIB for SPARCcompiler4.0 (#897, Kaleb Keithley).
+1206. Fix SPARCcompiler CCompilerMajorVersion (#896, Kaleb Keithley).
+1205. Parse junk from export lists better (#895, Kaleb Keithley).
+1204. Removes some dead or unused code in os-support (#893,  Matthieu Herrb).
+1203. Remove xf86tmpnam() from libc_wrapper and rewrites xf86tmpfile() to 
+      use tmpfile() (#892,  Matthieu Herrb).
+1202. Add a separate README.OpenBSD for 3.9 (#890, Matthieu Herrb).
+1201. Move most common extensions into a module (#889, Matthieu Herrb).
+1200. OpenBSD multi-architecture support (#888, Matthieu Herrb).
+1199. Disable disables broken software/hardware cursor switching in s3/svga
+      (#887, Mark Voikovich).
+1198. Some fixes for PC98. XF86Setup, mga driver, VideoBoards98, Cards98
+      (#886, Takaaki Nomura, Takefumi Tsukada).
+1197. Acceleration fixes for Trident and accelerated ImageWrite (#883,884,885
+      Alan Hourihane).
+1196. Bring the 3.3.1 Trident fixes into 3.9 (#882, Alan Hourihane).
 1195. Add incomplete Rendition detection code to SuperProbe (Dirk Hohndel).
 1194. Add Rendition detection to PCI code (#881, Marc Langenbach, Dirk Hohndel).
 1193. Fix to only build *.dir file for xkbcomp on make install (#880, 
@@ -5257,4 +5293,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.521 1997/08/13 05:38:59 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.522 1997/08/15 07:19:12 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/Ti3026Curs.c,v 3.6 1996/12/23 06:41:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.1 1997/03/06 23:16:26 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -155,10 +155,8 @@ s3Ti3026RealizeCursor(pScr, pCurs)
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
 
-   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
-   }
+   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH)
+	return FALSE;
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;

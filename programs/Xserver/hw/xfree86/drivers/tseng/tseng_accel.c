@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.9 1997/07/10 06:36:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.10 1997/08/12 12:02:07 hohndel Exp $ */
 
 
 /*
@@ -170,7 +170,7 @@ void TsengAccelInit() {
      * planemask OR TRANSPARENCY, but not both (they use the same Pattern
      * map).
      */
-#if ET6K_TRANSPARENCY
+#ifdef ET6K_TRANSPARENCY
     xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
     if (!Is_ET6K)
       xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
@@ -186,8 +186,10 @@ void TsengAccelInit() {
 #endif
 
     /*
-     * 8x8 pattern tiling not possible on W32 chips in 24bpp mode.
+     * 8x8 pattern tiling not possible on W32/i/p chips in 24bpp mode.
      * Currently, 24bpp pattern tiling doesn't work at all.
+     *
+     * On W32 cards, pattern tiling doesn't work as expected.
      */
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64
        | HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
@@ -200,28 +202,35 @@ void TsengAccelInit() {
       xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
     }
 
-    if (vgaBitsPerPixel != 24)
+    if ( (vgaBitsPerPixel != 24) && (et4000_type > TYPE_ET4000W32) )
     {
       xf86AccelInfoRec.SetupForFill8x8Pattern =
           TsengSetupForFill8x8Pattern;
       xf86AccelInfoRec.SubsequentFill8x8Pattern =
           TsengSubsequentFill8x8Pattern;
     }
+    
     /*
      * Setup hardware-line-drawing code.
+     *
+     * We use Bresenham for 8bpp lines, because it supports hardware
+     * clipping (using the error term). At >8bpp, we need to be able to swap
+     * the start and end points of the line (see comments there), which is
+     * only possible with TwoPointLines. But for those, clipped lines are not
+     * accelerated (hardware clipping support is lacking)...
      */
 
     if (Is_W32p_up)
     {
-#if 0
-    /* -- currently disabled because of major bugs... */
+    if (vgaBitsPerPixel == 8) {
     xf86AccelInfoRec.SubsequentBresenhamLine =
         TsengSubsequentBresenhamLine;
-    xf86AccelInfoRec.ErrorTermBits = 11;
-#endif
-
+    xf86AccelInfoRec.ErrorTermBits = 11; /* min(errorterm_size, delta_major_size, delta_minor_size) */
+    }
+    else {
     xf86AccelInfoRec.SubsequentTwoPointLine =
         TsengSubsequentTwoPointLine;
+    }
 
     xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
          TWO_POINT_LINE_ERROR_TERM;
@@ -564,6 +573,22 @@ static __inline__ int MULBPP(int x)
 
 static int old_x = 0, old_y = 0;
 
+static __inline__ int CALC_XY(int x, int y)
+{
+  int new_x, xy;
+
+  if ( (old_y == y) && (old_x == x) )
+    return -1;
+
+  if ( Is_W32p )
+    new_x = MULBPP(x-1);
+  else
+    new_x = MULBPP(x)-1;
+  xy = ((y - 1) << 16) + new_x;
+  old_x = x; old_y = y;
+  return xy;
+}
+
 /* generic SET_XY */
 static __inline__ void SET_XY(int x, int y)
 {
@@ -572,8 +597,19 @@ static __inline__ void SET_XY(int x, int y)
     new_x = MULBPP(x-1);
   else
     new_x = MULBPP(x)-1;
-  *((LongP) ACL_X_COUNT) = ((y - 1) << 16) + new_x;
+  *ACL_XY_COUNT = ((y - 1) << 16) + new_x;
   old_x = x; old_y = y;
+}
+
+static __inline__ void SET_X_YRAW(int x, int y)
+{
+  int new_x;
+  if ( Is_W32p )
+    new_x = MULBPP(x-1);
+  else
+    new_x = MULBPP(x)-1;
+  *ACL_XY_COUNT = (y << 16) + new_x;
+  old_x = x; old_y = y-1; /* old_y is invalid (raw transfer) */
 }
 
 /*
@@ -593,7 +629,7 @@ static __inline__ void SET_XY_4(int x, int y)
     if ( (old_y != y) || (old_x != x) )
     {
       new_xy = ((y - 1) << 16) + MULBPP(x-1);
-      *((LongP) ACL_X_COUNT) = new_xy;
+      *ACL_XY_COUNT = new_xy;
       old_x = x; old_y = y;
     }
 }
@@ -605,7 +641,7 @@ static __inline__ void SET_XY_6(int x, int y)
     if ( (old_y != y) || (old_x != x) )
     {
       new_xy = ((y - 1) << 16) + MULBPP(x)-1;
-      *((LongP) ACL_X_COUNT) = new_xy;
+      *ACL_XY_COUNT = new_xy;
       old_x = x; old_y = y;
     }
 }
@@ -614,8 +650,8 @@ static __inline__ void SET_XY_6(int x, int y)
 /* generic SET_XY_RAW */
 static __inline__ void SET_XY_RAW(int x, int y)
 {
-  *((LongP) ACL_X_COUNT) = (y << 16) + x;
-  old_x = x; old_y = y;
+  *ACL_XY_COUNT = (y << 16) + x;
+  old_x = old_y = -1; /* invalidate old_x/old_y (raw transfers) */
 }
 
 #define SET_DELTA(Min, Maj) \
@@ -1224,7 +1260,19 @@ void TsengSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
  * the ET6000, including X-overhead.
  * Of course, there's the issue of hardware parallellism that makes a difference.
  *
- * TsengSetupForFillRectSolid() is used as a setup function
+ * TsengSetupForFillRectSolid() is used as a setup function.
+ *
+ * Bresenham lines can only be used at 8bpp, since we need to be able to
+ * swap start- and end-points in case it's an XDECREASING line (to avoid
+ * swapping bytes in the fg/bg colors). At 8bpp, this problem is not
+ * present, and hence we can use Bresenham (it's more optimal, since it's
+ * also used for clipped lies, as opposed to TwoPointLines). Swapping
+ * start/end for Bresenham lines is not easy, as we need to compensate for
+ * clipping and the bias (which is "built into" the error term).
+ *
+ * It would probably be a lot more straightforward to add (and implement) a
+ * LINE_ONLY_XINCREASING flag to XAA, because you can then swap start/end
+ * before going through the clipping code.
  */
 
 void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
@@ -1233,32 +1281,43 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    int err, e1, e2;
    int length;
 {
-   int algrthm=0, direction=0;
    int destaddr = FBADDR(x1,y1);
+   /*
+    * We need to compensate for the automatic biasing in the Tseng Bresenham
+    * engine. It uses either "MicroSoft" or "XGA" bias. Both are
+    * incompatible with X.
+    */
+   unsigned int tseng_bias_compensate = 0xd8;
+   int algrthm;
+   int direction;
+   int DeltaMinor = e1 >> 1;
+   int DeltaMajor = (e1 - e2) >> 1;
+   int ErrorTerm  = e1 - err;
+   int xydir;
    
    direction = W32BresTable[octant];
+   algrthm = ((tseng_bias_compensate >> octant) & 1) ^ 1;
+   xydir = 0xA0 | (algrthm<<4) | direction;
 
    if (octant & XDECREASING)
      destaddr += bytesperpixel-1;
-
-   if (!(octant & YDECREASING))
-     algrthm = 16;
 
    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
    if (need_wait_acl) WAIT_ACL;
    
    if (!(octant & YMAJOR))
    {
-       SET_XY_RAW(length * bytesperpixel - 1, 0xFFF);
+       SET_X_YRAW(length, 0xFFF);
    }
    else
    {
        SET_XY_RAW(0xFFF, length -1);
    }
 
-   SET_DELTA(e1>>1, length);
-   
-   SET_XYDIR(0x80 | algrthm | direction);
+   SET_DELTA(DeltaMinor, DeltaMajor);
+   *ACL_ERROR_TERM = ErrorTerm;
+
+   SET_XYDIR(xydir);
    
    START_ACL(destaddr);
 }

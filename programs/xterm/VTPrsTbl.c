@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.11 1997/06/29 07:54:39 dawes Exp $
+ *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.12 1997/08/12 12:02:17 hohndel Exp $
  */
 
 /*
@@ -5309,8 +5309,8 @@ CASE_IGNORE,
 CASE_IGNORE,
 /*	<		=		>		?	*/
 CASE_ANSI_LEVEL_1,
-CASE_IGNORE,
-CASE_IGNORE,
+CASE_DECKPAM,
+CASE_DECKPNM,
 CASE_IGNORE, 
 /*	@		A		B		C	*/
 CASE_IGNORE,

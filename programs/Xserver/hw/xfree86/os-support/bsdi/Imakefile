@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.1 1996/12/23 06:49:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.2 1997/02/17 09:46:46 hohndel Exp $
 
 
 
@@ -7,11 +7,11 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:23:38 rws $
 
 #include <Server.tmpl>
 
-SRCS = bsdi_init.c bsdi_video.c IO_utils.c bsdi_io.c bios_devmem.c \
+SRCS = bsdi_init.c bsdi_video.c bsdi_io.c bios_devmem.c \
        mapVT_noop.c VTsw_noop.c std_kbdEv.c posix_tty.c std_mouse.c \
        libc_wrapper.c std_mseEv.c
 
-OBJS = bsdi_init.o bsdi_video.o IO_utils.o bsdi_io.o bios_devmem.o \
+OBJS = bsdi_init.o bsdi_video.o bsdi_io.o bios_devmem.o \
        mapVT_noop.o VTsw_noop.o std_kbdEv.o posix_tty.o std_mouse.o \
        libc_wrapper.o std_mseEv.o
 
@@ -22,7 +22,6 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
 ObjectFromSpecialSource(bios_devmem,../shared/bios_devmem,/**/)
-ObjectFromSpecialSource(IO_utils,../shared/IO_utils,/**/)
 ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)
 ObjectFromSpecialSource(VTsw_noop,../shared/VTsw_noop,/**/)
 ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.33 1997/06/03 14:11:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.34 1997/07/29 12:07:32 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -270,10 +270,6 @@ Bool
 ibm8514Probe()
 {
     OFlagSet       validOptions;
-
-    xf86ClearIOPortList(ibm8514InfoRec.scrnIndex);
-    xf86AddIOPorts(ibm8514InfoRec.scrnIndex, Num_ibm8514_IOPorts,
-		   ibm8514_IOPorts);
 
     if (ibm8514InfoRec.chipset) {
 	if (StrCaseCmp(ibm8514InfoRec.chipset, "ibm8514")) {

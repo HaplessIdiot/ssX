@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.16 1997/07/29 12:08:03 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.17 1997/08/12 12:02:08 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -88,6 +88,9 @@ Bool tseng_use_PCI_Retry = 0;
 /* Do we use the XAA acceleration architecture */
 Bool tseng_use_ACL = FALSE;
 
+/* Is this a card limited to 1Mb of linear memory */
+static Bool tseng_linmem_1meg = FALSE;
+
 #include "tseng_cursor.h"
 extern vgaHWCursorRec vgaHWCursor;
 
@@ -101,6 +104,7 @@ static unsigned char    initialET6KMemBase = 0xF0;
 static unsigned char    initialET6KMclkM = 0x56, initialET6KMclkN = 0x25;
 static unsigned char    initialET6KPerfContr = 0x3a;
 static unsigned char	initialET6KRasCas = 0x15;
+static unsigned char	initialET6KDispFeat = 0x00;
 
 static unsigned char    save_VSConf1=0x03;
 
@@ -175,22 +179,12 @@ static SymTabRec chipsets[] = {
   { TYPE_ET4000W32Pc,	"ET4000W32p_rev_c" },
   { TYPE_ET4000W32Pd,	"ET4000W32p_rev_d" },
   { TYPE_ET6000,	"ET6000" },
+  { TYPE_ET6100,	"ET6100" },
+  { TYPE_ET6300,	"ET6300" },
   { -1,			"" },
 };
 
 Bool (*ClockSelect)();
-
-static unsigned ET4000_ExtPorts[] = {0x3B8, 0x3BF, 0x3CD, 0x3CB, 0x3D8,
-	0x217a, 0x217b,		/* These last two are W32 specific */
-};
-
-static int Num_ET4000_ExtPorts = 
-	(sizeof(ET4000_ExtPorts)/sizeof(ET4000_ExtPorts[0]));
-
-/* ET6000 PCI-config space ports
- */
-#define Num_ET6000_PCIPorts 0x88
-static unsigned int ET6000_PCIPorts[Num_ET6000_PCIPorts];
 
 
 #ifdef XFree86LOADER
@@ -253,7 +247,7 @@ ET4000Ident(n)
 
 
 /*
- * TsengBusType --
+ * TsengFindBusType --
  *      determine bus interface type
  *      (also determines Lin Mem address mask, because that depends on bustype)
  */
@@ -276,7 +270,7 @@ TsengFindBusType()
          *
          * We assume the driver code disables the image port (which it does)
          *
-         * ISA:      [ A23, A22, A21, A20 ] ==      [ SM1, SM0, 0, 0 ]
+         * ISA:      [ A23==SEGE, A22, A21, A20 ] ==      [ SM1, SM0, 0, 0 ]
          * MCA: [ A24, A23, A22, A21, A20 ] == [ SM2, SM1, SM0, 0, 0 ]
          * VLB: [ /A26, /A25, /A24, A23, A22, A21, A20 ] ==   ("/" means inverted!)
          *       [ SM4,  SM3,  SM2, SM1, SM0, 0  , 0   ]
@@ -313,19 +307,33 @@ TsengFindBusType()
                XCONFIG_PROBED, vga256InfoRec.name, bus);
         switch (bus) {
             case 0x1C:
-                ErrorF("Local Buffered Bus or PCI.\n");
-                Tseng_bus = BUS_PCI;
-                Tseng_MemBase_mask = 0x3FC00000; /* A29..A22 */
+                if (tseng_pcr)  /* PCI bus detected. Can we read this from some register instead? */
+                {
+                  Tseng_bus = BUS_PCI;
+                  Tseng_MemBase_mask = 0x3FC00000; /* A29..A22 */
+                  ErrorF("PCI.\n");
+                }
+                else
+                {
+                  Tseng_bus = BUS_VLB;
+                  Tseng_MemBase_mask = 0x3FC00000; /* A29..A22 */
+                  ErrorF("Local Buffered Bus\n");
+                  tseng_linmem_1meg = TRUE; /* IMA bus support allows for only 1M linear memory */
+                }
                 break;
             case 0x13:
                 ErrorF("Local Bus option 1a.\n");
                 Tseng_bus = BUS_VLB;
-                Tseng_MemBase_mask = 0x1FC00000; /* SEGI,A27..A22 */
+                if (et4000_type == TYPE_ET4000W32Pa)
+                  Tseng_MemBase_mask = 0x07C00000;
+                else
+                  Tseng_MemBase_mask = 0x1FC00000; /* SEGI,A27..A22 */
                 break;
             case 0x11:
                 ErrorF("Local Bus option 1b.\n");
                 Tseng_bus = BUS_VLB;
                 Tseng_MemBase_mask = 0x00C00000; /* SEGI,A22 */
+                tseng_linmem_1meg = TRUE; /* IMA bus support allows for only 1M linear memory */
                 break;
             case 0x08:
             case 0x0B:
@@ -339,6 +347,8 @@ TsengFindBusType()
            Tseng_MemBase_mask |= 0xC0000000; /* A31,A30 decoded from PCI config space */
         break;
     case TYPE_ET6000:
+    case TYPE_ET6100:
+    case TYPE_ET6300:
         Tseng_bus = BUS_PCI;
         Tseng_MemBase_mask = 0xFF000000;
         break;
@@ -419,13 +429,16 @@ ET4000LinMem(Bool autodetect)
           vga256InfoRec.MemBase = Tseng_MemBase_mask - 4*1024*1024; /* top of decodable memory */
         break;
       case TYPE_ET6000:
+      case TYPE_ET6100:
+      case TYPE_ET6300:
         if (tseng_pcr && autodetect) /* don't trust PCI when not autodetecting */
           vga256InfoRec.MemBase = tseng_pcr->_base0;
         else if (inb(ET6Kbase+0x13) != 0)
         {
           vga256InfoRec.MemBase = inb(ET6Kbase+0x13) << 24;
-          ErrorF("%s %s: ET6000: port-probed linear memory base = 0x%x\n",
-                  XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.MemBase);
+          ErrorF("%s %s: %s: port-probed linear memory base = 0x%x\n",
+                  XCONFIG_PROBED, vga256InfoRec.name,
+                  vga256InfoRec.chipset, vga256InfoRec.MemBase);
         }
         else vga256InfoRec.MemBase = 0xF0000000; /* map memory near top of memory by default */
         break;
@@ -484,7 +497,6 @@ ET4000LinMem(Bool autodetect)
 static Bool
 ET6000InitVars(Bool autodetect)
 {
-   int i;
 
    /* check the PCI config for ET6000 data. This assumes ET6000 cards are
     * _always_ on the PCI bus. They _can_ be on the VL-bus, but I don't
@@ -508,14 +520,10 @@ ET6000InitVars(Bool autodetect)
      outb(vgaIOBase + 4, 0x21); ET6Kbase  = (inb(vgaIOBase + 5) << 8);
      outb(vgaIOBase + 4, 0x22); ET6Kbase += (inb(vgaIOBase + 5) << 16);
      outb(vgaIOBase + 4, 0x23); ET6Kbase += (inb(vgaIOBase + 5) << 24); /* keep this split up */
-     ErrorF("%s %s: ET6000: port-probed I/O base = 0x%x\n",
-             XCONFIG_PROBED, vga256InfoRec.name, ET6Kbase);
+     ErrorF("%s %s: %s: port-probed I/O base = 0x%x\n",
+             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, ET6Kbase);
    }
 
-   /* define used IO ports... Is this really necessary for PCI config space IO? */
-   for (i=0; i<Num_ET6000_PCIPorts; i++)
-     ET6000_PCIPorts[i] = ET6Kbase+i;
-   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
    
   /*
    * clock related stuff
@@ -532,8 +540,8 @@ ET6000InitVars(Bool autodetect)
 
   outb(ET6Kbase+0x67, 0x0f); /* select CLKDAC ID register */
 
-  ErrorF("%s %s: ET6000: Using built-in programmable Clock Chip/RAMDAC (ID=0x%X)\n",
-      XCONFIG_PROBED, vga256InfoRec.name, inb(ET6Kbase+0x69));
+  ErrorF("%s %s: %s: Using built-in programmable Clock Chip/RAMDAC (ID=0x%X)\n",
+      XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, inb(ET6Kbase+0x69));
 
   return(TRUE);
 }
@@ -664,8 +672,8 @@ static int et6000_check_videoram(int ram)
   int save_vidmem;
   
   if (ram > 4096) {
-    ErrorF("%s %s: ET6000: Detected more than 4096 kb of video RAM. Clipped to 4096kb\n",
-            XCONFIG_PROBED, vga256InfoRec.name);
+    ErrorF("%s %s: %s: Detected more than 4096 kb of video RAM. Clipped to 4096kb\n",
+            XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
     ram = 4096;
   }
   
@@ -773,18 +781,18 @@ TsengDetectMem()
         /* 8*32kb MDRAM refresh control granularity in the ET6000 fails to */
         /* recognize 2.25 MB of memory (detects 2.5 instead) */
         vga256InfoRec.videoRam = et6000_check_videoram(vga256InfoRec.videoRam);
-        ErrorF("%s %s: ET6000: Detected %d kb of multi-bank DRAM\n",
-            XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam);
+        ErrorF("%s %s: %s: Detected %d kb of multi-bank DRAM\n",
+            XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, vga256InfoRec.videoRam);
         break;
       case 0x00:  /* DRAM */
         ramtype=1;
         vga256InfoRec.videoRam = 1024 << (inb(ET6Kbase+0x45) & 0x03);
-        ErrorF("%s %s: ET6000: Detected %d Mb of standard DRAM\n",
-            XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam);
+        ErrorF("%s %s: %s: Detected %d Mb of standard DRAM\n",
+            XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, vga256InfoRec.videoRam);
         break;
       default:    /* unknown RAM type */
-        ErrorF("%s %s: ET6000: Unknown video memory type %d -- assuming 1 MB (unless specified)\n",
-            XCONFIG_PROBED, vga256InfoRec.name, ramtype);
+        ErrorF("%s %s: %s: Unknown video memory type %d -- assuming 1 MB (unless specified)\n",
+            XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, ramtype);
         vga256InfoRec.videoRam = 1024;
     }
   }
@@ -827,12 +835,6 @@ ET4000Probe()
   int numClocks;
   Bool autodetect = TRUE;
 
-  /*
-   * Set up I/O ports to be used by this card
-   */
-  xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET4000_ExtPorts, ET4000_ExtPorts);
  
   /* Try to detect a Tseng video card -- first see if it is forced */
   if (vga256InfoRec.chipset)   /* no auto-detect: chipset is given */
@@ -864,7 +866,13 @@ ET4000Probe()
                   switch(tseng_pcr->_device)
                     {
                       case PCI_CHIP_ET6000:
-                        et4000_type = TYPE_ET6000;
+                        if (tseng_pcr->_rev_id < 0x70)
+                          et4000_type = TYPE_ET6000;
+                        else
+                          et4000_type = TYPE_ET6100;
+                        break;
+                      case PCI_CHIP_ET6300:
+                        et4000_type = TYPE_ET6300;
                         break;
                       case PCI_CHIP_ET4000_W32P_A:
                         et4000_type = TYPE_ET4000W32Pa;
@@ -985,11 +993,19 @@ ET4000Probe()
   }
 
  /*
-  * Acceleration is currently only supported on W32p or newer chips. W32i
-  * doesn't work yet.
+  * Acceleration is only supported on W32 or newer chips.
+  *
+  * Also, some bus configurations only allow for a 1MB linear memory
+  * aperture instead of the default 4M aperture used on all Tseng devices.
+  * If acceleration is also enabled, you only get 512k + (with some aperture
+  * tweaking) 2*128k for a total of max 768 kb of memory. This just isn't
+  * worth having a lot of conditionals in the accelerator code (the
+  * memory-mapped registers move to the top of the 1M aperture), so we
+  * simply don't allow acceleration and linear mode combined on these cards.
+  * 
   */  
 
-  if (et4000_type < TYPE_ET4000W32)
+  if ( (et4000_type < TYPE_ET4000W32) && (tseng_linmem_1meg && TSENG.ChipUseLinearAddressing) )
   {
     tseng_use_ACL = FALSE;
   }
@@ -1016,6 +1032,11 @@ ET4000Probe()
       } \
     }
 
+  if(tseng_linmem_1meg)
+  {
+      TSENG_MEMLIMIT(1024, "in linear mode on this VGA board/bus configuration");
+  }
+
   if (tseng_use_ACL && TSENG.ChipUseLinearAddressing)
   {
     if (Is_W32_any)
@@ -1034,7 +1055,7 @@ ET4000Probe()
     if (Is_ET6K)
     {
         /* upper 8kb used for externally mapped and memory mapped registers */
-        TSENG_MEMLIMIT(4096-8, "in linear + accelerated mode on ET6000");
+        TSENG_MEMLIMIT(4096-8, "in linear + accelerated mode on ET6000/6100/6300");
     }
   }
 
@@ -1203,12 +1224,13 @@ ET4000Probe()
       initialET6KMemBase   = inb(ET6Kbase+0x13);
       initialET6KPerfContr = inb(ET6Kbase+0x41);
       initialET6KRasCas    = inb(ET6Kbase+0x44);
+      initialET6KDispFeat  = inb(ET6Kbase+0x46);
       outb(ET6Kbase+0x67, 10);
       initialET6KMclkM = inb(ET6Kbase+0x69);
       initialET6KMclkN = inb(ET6Kbase+0x69);
       outb(ET6Kbase+0x67, tmp);
-      ErrorF("%s %s: ET6000: MClk: %3.2f MHz, R/C: 0x%x\n", XCONFIG_PROBED,
-             vga256InfoRec.name,
+      ErrorF("%s %s: %s: MClk: %3.2f MHz, R/C: 0x%x\n", XCONFIG_PROBED,
+             vga256InfoRec.name, vga256InfoRec.chipset,
 	     gendacMNToClock(initialET6KMclkM, initialET6KMclkN)/1000.0,
 	     initialET6KRasCas);
       OFLG_SET(OPTION_SLOW_DRAM, &TSENG.ChipOptionFlags);
@@ -1841,10 +1863,14 @@ ET4000Init(mode)
        if (vga256InfoRec.clock[new->std.NoClock] * BytesPerPix > 130000)
        {
          new->ET6KPerfContr = initialET6KPerfContr | 0x10;
+         if (et4000_type >=TYPE_ET6100)
+           new->ET6KDispFeat  = initialET6KDispFeat | 0x04;
        }
        else
        {
          new->ET6KPerfContr = initialET6KPerfContr & ~0x10;
+         if (et4000_type >=TYPE_ET6100)
+           new->ET6KDispFeat  = initialET6KDispFeat & ~0x04;
        }
 
 #ifdef ALLOW_ET6K_FAST_DRAM
@@ -1936,10 +1962,10 @@ ET4000Init(mode)
       if (TSENG.ChipUseLinearAddressing)
       {
          new->VSConf1 |= 0x10;
-         new->SegMapComp = (vga256InfoRec.MemBase >> 22) & 0xFF;
-         if ( (et4000_type < TYPE_ET4000W32P) && (Tseng_bus == BUS_VLB) ) {  /* W32i */
-           new->SegMapComp = new->SegMapComp ^ 0x1c; /* invert A26..A24 */
-         }
+         if (Is_W32p_up)
+           new->SegMapComp = (vga256InfoRec.MemBase >> 22) & 0xFF;
+         else
+           new->SegMapComp = ((vga256InfoRec.MemBase >> 22) & 0x1F) ^ 0x1c; /* invert bits 4..2 */
          new->std.Graphics[6] &= ~0x0C;
          new->IMAPortCtrl &= ~0x01; /* disable IMA port (to get >1MB lin mem) */
       }

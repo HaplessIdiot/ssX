@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3TiCursor.c,v 3.11 1996/12/23 06:41:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3TiCursor.c,v 1.1 1997/03/06 23:16:31 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -204,10 +204,8 @@ s3TiRealizeCursor(pScr, pCurs)
    int   wsrc, h;
    unsigned char *ram;
 
-   if (pCurs->bits->height > MAX_CURS_HEIGHT || pCurs->bits->width > MAX_CURS_WIDTH) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
-   }
+   if (pCurs->bits->height > MAX_CURS_HEIGHT || pCurs->bits->width > MAX_CURS_WIDTH) 
+	return FALSE;
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.7 1997/07/10 06:36:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.8 1997/08/12 12:02:07 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -43,6 +43,7 @@ ByteP ACL_PATTERN_WRAP,
 
 WordP ACL_X_COUNT,
       ACL_Y_COUNT;
+LongP ACL_XY_COUNT; /* for combined writes to X and Y count registers */
 
 ByteP ACL_ROUTING_CONTROL,
       ACL_RELOAD_CONTROL,
@@ -268,6 +269,7 @@ void tseng_init_acl()
 
     ACL_X_COUNT			= (WordP) (MMioBase + 0x98);
     ACL_Y_COUNT			= (WordP) (MMioBase + 0x9A);
+    ACL_XY_COUNT		= (LongP) (ACL_X_COUNT); /* shortcut. not a real register */
 
     ACL_ROUTING_CONTROL		= (ByteP) (MMioBase + 0x9C);
     /* for ET6000, ACL_ROUTING_CONTROL becomes ACL_MIX_CONTROL */

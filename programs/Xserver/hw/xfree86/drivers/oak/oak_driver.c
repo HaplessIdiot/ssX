@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.2 1997/05/03 09:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.3 1997/06/03 14:12:13 hohndel Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -351,9 +351,6 @@ static Bool OTI_2mb_bank = FALSE;
 static Bool OTI_linear = FALSE;
 static Bool OTI_vlb = FALSE;
 
-static unsigned OAK_ExtPorts[] = { OTI_INDEX, OTI_R_W };
-static int Num_OAK_ExtPorts = (sizeof(OAK_ExtPorts)/sizeof(OAK_ExtPorts[0]));
-
 #ifdef XFree86LOADER
 XF86ModuleVersionInfo oakVersRec =
 {
@@ -500,11 +497,7 @@ static Bool
 OAKProbe()
 {
   unsigned char save, temp1, temp, temp2;
-  
-  xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_OAK_ExtPorts, OAK_ExtPorts);
-  
+    
   /* See if this is one of the Oak Tech. Inc. chipsets */
 
   if (vga256InfoRec.chipset)      /* if harcoded.... */

@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.5 1997/06/15 23:35:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.6 1997/07/31 07:16:14 dawes Exp $ */
 
 #include <math.h>
 
@@ -419,9 +419,6 @@ static Bool NVProbe(void)
     }
   }
 
-  /* I/o ports are needed for things like pallete selection etc */
-  xf86ClearIOPortList (vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex,Num_VGA_IOPorts,VGA_IOPorts);
 
   if((base=NVMemBase())==NULL) return FALSE;
   NV.ChipLinearBase=(int)base+NV_FRAME_BUFFER;

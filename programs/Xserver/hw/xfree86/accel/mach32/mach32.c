@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.74 1997/07/10 08:17:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.75 1997/07/29 12:07:32 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -286,34 +286,6 @@ Bool mach32DoubleClock = FALSE;
 
 Bool mach32clkprobedif4fix = FALSE;
 
-static unsigned Mach32_IOPorts[] = {
-	/* VGA Registers */
-        0x3B4, 0x3B5, 0x3BA, 0x3C0, 0x3C1, 0x3C2, 0x3C4, 0x3C5, 0x3C6, 0x3C7, 
-	0x3C8, 0x3C9, 0x3CA, 0x3CB, 0x3CC, 0x3CE, 0x3CF, 0x3D4, 0x3D5, 0x3DA,
-	/* ATI VGA Registers */
-	ATIEXT, ATIEXT+1,
-	/* 8514 Registers */
-        DAC_MASK, DAC_R_INDEX, DAC_W_INDEX, DAC_DATA, DISP_STAT,
-	H_TOTAL, H_DISP, H_SYNC_STRT, H_SYNC_WID,
-	V_TOTAL, V_DISP, V_SYNC_STRT, V_SYNC_WID,
-	DISP_CNTL, ADVFUNC_CNTL, SUBSYS_CNTL, ROM_PAGE_SEL,
-	CUR_Y, CUR_X, DESTY_AXSTP, DESTX_DIASTP, 
-	ERR_TERM, MAJ_AXIS_PCNT, GP_STAT, CMD, SHORT_STROKE,
-	BKGD_COLOR, FRGD_COLOR, WRT_MASK, RD_MASK,
-	COLOR_CMP, BKGD_MIX, FRGD_MIX, MULTIFUNC_CNTL, PIX_TRANS,
-	/* Mach32 Registers */
-	GE_OFFSET_LO, GE_OFFSET_HI, CRT_OFFSET_LO, CRT_OFFSET_HI,
-	CLOCK_SEL, SHADOW_SET, SHADOW_CTL, CRT_PITCH, GE_PITCH,
-	EXT_SCISSOR_L, EXT_SCISSOR_R, EXT_SCISSOR_T, EXT_SCISSOR_B,
-	MISC_OPTIONS, CONFIG_STATUS_1, CONFIG_STATUS_2, 
-	MEM_CFG, MEM_BNDRY, ROM_ADDR_1, READ_SRC_X, CHIP_ID, EXT_FIFO_STATUS,
-	R_EXT_GE_CONFIG, EXT_GE_CONFIG, DP_CONFIG, DEST_X_START, DEST_X_END,
-	DEST_Y_END, ALU_FG_FN, MISC_CNTL, R_MISC_CNTL, HORZ_OVERSCAN,
-	VERT_OVERSCAN, EXT_GE_STATUS, LINEDRAW, LINEDRAW_OPT, LINEDRAW_INDEX,
-	EXT_CURSOR_COLOR_0, EXT_CURSOR_COLOR_1,
-};
-static int Num_Mach32_IOPorts = (sizeof(Mach32_IOPorts)/
-				 sizeof(Mach32_IOPorts[0]));
 
 /* mach32WeightMasks must match mach32weights[], below */
 static short mach32WeightMasks[] = { RGB16_565, RGB16_555,
@@ -558,9 +530,6 @@ mach32Probe()
     xrgb mach32weights[] = { { 5, 6, 5 }, { 5, 5, 5 }, { 6, 5, 5 },
 			     { 6, 6, 4 } };
 
-
-    xf86ClearIOPortList(mach32InfoRec.scrnIndex);
-    xf86AddIOPorts(mach32InfoRec.scrnIndex, Num_Mach32_IOPorts, Mach32_IOPorts);
 
     xf86EnableIOPorts(mach32InfoRec.scrnIndex);
 

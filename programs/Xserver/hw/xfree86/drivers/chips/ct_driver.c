@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.12 1997/07/19 05:43:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.13 1997/07/29 12:07:58 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -982,9 +982,6 @@ CHIPSProbe()
 #ifdef DEBUG
     ErrorF("CHIPSProbe\n");
 #endif
-    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts, CHIPS_ExtPorts);
 
     if (vga256InfoRec.chipset) {
 	if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_520))) {
@@ -1796,7 +1793,6 @@ Bool ctProbeWINGINE()
 	ErrorF("DR[%X] = %X\n",i,CHIPS_ExtPorts32[i]);
 #endif
       }
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
   }
 
   /* enter/leave */
@@ -2049,7 +2045,6 @@ Bool ctProbe()
 	ErrorF("DR[%X] = %X\n",i,CHIPS_ExtPorts32[i]);
 #endif
       }
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
   }
 
   /* enter/leave */

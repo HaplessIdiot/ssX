@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.7 1997/05/04 05:26:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.8 1997/06/03 14:12:04 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -384,11 +384,6 @@ vgaVideoChipRec CIRRUS = {
 #endif
 };
 
-/*
- * This exists only to force some OS's not to use a 386 I/O bitmap for
- * I/O protection, which is MUCH slower than full I/O permissions.
- */
-static unsigned Cirrus_IOPorts[] = { 0x400 };
 
 /*
  * Note: To be able to use 16K bank granularity, we would have to half the
@@ -958,14 +953,6 @@ cirrusProbe()
      unsigned char lockreg,IdentVal;
      unsigned char id, rev, partstatus;
      unsigned char temp;
-
-     /*
-      * Set up I/O ports to be used by this card
-      */
-     xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-     xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(Cirrus_IOPorts) /
-         sizeof(Cirrus_IOPorts[0]), Cirrus_IOPorts);
 
      if (vga256InfoRec.chipset)
 	  {

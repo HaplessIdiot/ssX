@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.7 1997/06/10 12:30:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.8 1997/06/15 07:12:35 dawes Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -152,10 +152,6 @@ Bool S3Probe()
 	if (StrCaseCmp(vga256InfoRec.chipset,S3Ident(0)))
 	   return(FALSE);
    } 
-
-   xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_S3_IOPorts, S3_IOPorts);
 
 
    S3EnterLeave(ENTER);  /* this will unlock the regs. */

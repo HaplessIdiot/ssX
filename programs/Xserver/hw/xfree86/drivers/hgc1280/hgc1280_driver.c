@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hgc1280/hgc1280_driver.c,v 1.1 1997/03/06 23:15:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hgc1280/hgc1280_driver.c,v 1.2 1997/06/03 14:12:08 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -38,17 +38,6 @@ static int HGC_Current_mode = HGC_Textmode;
 static Bool HGC_Primary = TRUE;
 
 /* #define HGC1280_DEBUG */
-
-/*
- * Define the HGC I/O Ports
- * We take the ports for both primary and secondary 
- */
-static unsigned HGC1280_IOPorts[] = {
-	HGC_PRIM_PORT_INDEX, HGC_PRIM_PORT_DATA, HGC_PRIM_PORT_CONTROL,
-	HGC_PRIM_PORT_CRT_STATUS, HGC_PRIM_PORT_CONFIG,
-	HGC_SEC_PORT_INDEX, HGC_SEC_PORT_DATA, HGC_SEC_PORT_CONTROL,
-	HGC_SEC_PORT_CRT_STATUS, HGC_SEC_PORT_CONFIG };
-static int Num_HGC1280_IOPorts = (sizeof(HGC1280_IOPorts)/sizeof(HGC1280_IOPorts[0]));
 
 Bool HGC1280Probe(
 #if NeedFunctionPrototypes
@@ -175,11 +164,6 @@ HGC1280Ident(n)
 Bool
 HGC1280Probe()
 {
-    /*
-     * Set up I/O ports to be used by this card
-     */
-    xf86ClearIOPortList(monoInfoRec.scrnIndex);
-    xf86AddIOPorts(monoInfoRec.scrnIndex, Num_HGC1280_IOPorts, HGC1280_IOPorts);
 
     if (monoInfoRec.chipset) {
 	/* Chipset preset */

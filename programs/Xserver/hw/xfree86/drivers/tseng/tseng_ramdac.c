@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.12 1997/07/19 05:43:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.13 1997/08/12 12:02:08 hohndel Exp $ */
 
 /*
  *
@@ -327,7 +327,7 @@ void Check_Tseng_Ramdac()
     }
     else    /* autoprobe for the RAMDAC */
     {
-        if (et4000_type >= TYPE_ET6000)
+        if (Is_ET6K)
         {
            TsengRamdacType = ET6000_DAC;
         }
@@ -458,7 +458,7 @@ void tseng_init_clockscale(int bytesperpixel)
 {
     /* nothing to do for 1:1 modes */
     if (bytesperpixel <= 1) return;
-    if (et4000_type >= TYPE_ET6000) return;
+    if (Is_ET6K) return;
 
     /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
      if (dac_is_16bit) {
@@ -531,10 +531,10 @@ void tseng_set_dacspeed(int bytesperpixel)
                    vga256InfoRec.dacSpeeds[0] = MAX_TSENG_CLOCK;
               break;
           case ET6000_DAC:
-              vga256InfoRec.dacSpeeds[0] = 135000;
-              break;
-          case ET6300_DAC:
-              vga256InfoRec.dacSpeeds[0] = 175000;
+              if (et4000_type == TYPE_ET6000)
+                   vga256InfoRec.dacSpeeds[0] = 135000;
+              else
+                   vga256InfoRec.dacSpeeds[0] = 175000;
               break;
           default:
               vga256InfoRec.dacSpeeds[0] = MAX_TSENG_CLOCK;
@@ -572,7 +572,7 @@ void tseng_set_dacspeed(int bytesperpixel)
      * the pixel_clock*(bytes/pixel) FIFO breakdown limit to about 275 MHz."
      */
       if (et4000_type > TYPE_ET6000)      /* ET6100/6300 */
-          mem_bw = 275000;
+          mem_bw = 280000; /* 275000 is _just_ not enough for 1152x864x24 @ 70Hz */
       else                                /* ET6000 */
           mem_bw = 225000;
       vga256InfoRec.maxClock = min(vga256InfoRec.dacSpeeds[0], mem_bw/bytesperpixel);
@@ -719,7 +719,7 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
    dac16bit = (dac_is_16bit) && ((bytesperpixel > 1) || (mode->Flags & V_PIXMUX));
 
    tseng_regs->Misc &= 0xCF; /* ATC index 0x16 -- bits-per-PCLK */
-   if (et4000_type >= TYPE_ET6000)
+   if (Is_ET6K)
        tseng_regs->Misc |= (bytesperpixel-1) << 4;
    else if (dac16bit)
        tseng_regs->Misc |= 0x20;

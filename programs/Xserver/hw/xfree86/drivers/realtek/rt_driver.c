@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.2 1997/05/03 09:18:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.3 1997/06/03 14:12:14 hohndel Exp $ */
 
 /*************************************************************************/
 
@@ -291,16 +291,6 @@ vgaVideoChipRec REALTEK = {
  */
 #define new ((vgaRTVGAPtr)vgaNewVideoState)
 
-/*
- * If your chipset uses non-standard I/O ports, you need to define an
- * array of ports, and an integer containing the array size.  The
- * generic VGA ports are defined in vgaHW.c.
- */
-static unsigned RTVGA_ExtPorts[] = { 0x3D6, 0x3D7 };
-static int Num_RTVGA_ExtPorts =
-	(sizeof(RTVGA_ExtPorts)/sizeof(RTVGA_ExtPorts[0]));
-
-
 #ifdef XFree86LOADER
 XF86ModuleVersionInfo realtekVersRec =
 {
@@ -521,16 +511,6 @@ RTVGAProbe()
 #ifdef DEBUG
    ErrorF ("RTVGAProbe\n");
 #endif   
-	/*
-	 * Set up I/O ports to be used by this card.  Only do the second
-	 * xf86AddIOPorts() if there are non-standard ports for this
-	 * chipset.
-	 */
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, 
-		       Num_RTVGA_ExtPorts, RTVGA_ExtPorts);
-
 	/*
 	 * First we attempt to figure out if one of the supported chipsets
 	 * is present.

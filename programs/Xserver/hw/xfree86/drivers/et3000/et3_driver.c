@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/et3000/et3_driver.c,v 1.2 1997/05/03 09:18:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/et3000/et3_driver.c,v 1.3 1997/06/03 14:12:06 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -117,9 +117,6 @@ vgaVideoChipRec ET3000 = {
 
 #define new ((vgaET3000Ptr)vgaNewVideoState)
 
-static unsigned ET3000_ExtPorts[] = {0x3B8, 0x3BF, 0x3CD, 0x3D8};
-static int Num_ET3000_ExtPorts = 
-	(sizeof(ET3000_ExtPorts)/sizeof(ET3000_ExtPorts[0]));
 
 #ifdef XFree86LOADER
 XF86ModuleVersionInfo et3VersRec =
@@ -221,12 +218,6 @@ ET3000Ident(n)
 static Bool
 ET3000Probe()
 {
-  /*
-   * Set up I/O ports to be used by this card
-   */
-  xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET3000_ExtPorts, ET3000_ExtPorts);
 
   if (vga256InfoRec.chipset)
     {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.8 1996/10/03 08:45:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.9 1996/12/23 06:51:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -252,35 +252,11 @@ int Region;
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
-#define ALWAYS_USE_EXTENDED
-#ifdef ALWAYS_USE_EXTENDED
 
 static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
 
-void
-xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	if (!InitDone)
-	{
-		int i;
-		for (i = 0; i < MAXSCREENS; i++)
-			ScreenEnabled[i] = FALSE;
-		InitDone = TRUE;
-	}
-	return;
-}
-
-void
-xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
 
 void
 xf86EnableIOPorts(ScreenNum)
@@ -288,6 +264,13 @@ int ScreenNum;
 {
 	int i;
 
+	if (!InitDone)
+	{
+		int i;
+		for (i = 0; i < MAXSCREENS; i++)
+			ScreenEnabled[i] = FALSE;
+		InitDone = TRUE;
+	}
 	ScreenEnabled[ScreenNum] = TRUE;
 
 	if (ExtendedEnabled)
@@ -321,220 +304,6 @@ int ScreenNum;
 	RESET_IOPL();
 	ExtendedEnabled = FALSE;
 
-	return;
-}
-
-#else /* !ALWAYS_USE_EXTENDED */
-
-#define DISABLED	0
-#define NON_EXTENDED	1
-#define EXTENDED	2
-
-static unsigned *EnabledPorts[MAXSCREENS];
-static int NumEnabledPorts[MAXSCREENS];
-static Bool ScreenEnabled[MAXSCREENS];
-static Bool ExtendedPorts[MAXSCREENS];
-static Bool ExtendedEnabled = FALSE;
-static Bool InitDone = FALSE;
-static struct kd_disparam OrigParams;
-
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	if (!InitDone)
-	{
-		xf86InitPortLists(EnabledPorts, NumEnabledPorts, ScreenEnabled,
-				  ExtendedPorts, MAXSCREENS);
-		if (ioctl(xf86Info.consoleFd, KDDISPTYPE, &OrigParams) < 0)
-		{
-			FatalError("%s: Could not get display parameters\n",
-				   "xf86ClearIOPortList");
-		}
-		InitDone = TRUE;
-		return;
-	}
-	ExtendedPorts[ScreenNum] = FALSE;
-	if (EnabledPorts[ScreenNum] != (unsigned *)NULL)
-		xfree(EnabledPorts[ScreenNum]);
-	EnabledPorts[ScreenNum] = (unsigned *)NULL;
-	NumEnabledPorts[ScreenNum] = 0;
-}
-
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	int i;
-
-	if (!InitDone)
-	{
-	    FatalError("xf86AddIOPorts: I/O control lists not initialised\n");
-	}
-	EnabledPorts[ScreenNum] = (unsigned *)xrealloc(EnabledPorts[ScreenNum], 
-			(NumEnabledPorts[ScreenNum]+NumPorts)*sizeof(unsigned));
-	for (i = 0; i < NumPorts; i++)
-	{
-		EnabledPorts[ScreenNum][NumEnabledPorts[ScreenNum] + i] =
-								Ports[i];
-		if (Ports[i] > 0x3FF)
-			ExtendedPorts[ScreenNum] = TRUE;
-	}
-	NumEnabledPorts[ScreenNum] += NumPorts;
-}
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
-{
-	struct kd_disparam param;
-	int i, j;
-
-	if (ScreenEnabled[ScreenNum])
-		return;
-
-	for (i = 0; i < MAXSCREENS; i++)
-	{
-		if (ExtendedPorts[i] && (ScreenEnabled[i] || i == ScreenNum))
-		{
-		    if (SET_IOPL() < 0)
-		    {
-			FatalError("%s: Failed to set IOPL for extended I/O\n",
-				   "xf86EnableIOPorts");
-		    }
-		    ExtendedEnabled = TRUE;
-		    break;
-		}
-	}
-	/* If extended I/O was used, but isn't any more */
-	if (ExtendedEnabled && i == MAXSCREENS)
-	{
-		RESET_IOPL();
-		ExtendedEnabled = FALSE;
-	}
-	/*
-	 * Turn on non-extended ports even when using extended I/O
-	 * so they are there if extended I/O gets turned off when it's no
-	 * longer needed.
-	 */
-	if (ioctl(xf86Info.consoleFd, KDDISPTYPE, &param) < 0)
-	{
-		FatalError("%s: Could not get display parameters\n",
-			   "xf86EnableIOPorts");
-	}
-	for (i = 0; i < NumEnabledPorts[ScreenNum]; i++)
-	{
-		unsigned port = EnabledPorts[ScreenNum][i];
-
-		if (port > 0x3FF)
-			continue;
-
-		if (!xf86CheckPorts(port, EnabledPorts, NumEnabledPorts,
-				    ScreenEnabled, MAXSCREENS))
-		{
-			continue;
-		}
-		for (j=0; j < MKDIOADDR; j++)
-		{
-			if (param.ioaddr[j] == port)
-			{
-				break;
-			}
-		}
-		if (j == MKDIOADDR)
-		{
-			if (ioctl(xf86Info.consoleFd, KDADDIO, port) < 0)
-			{
-				FatalError("%s: Failed to enable port 0x%x\n",
-					   "xf86EnableIOPorts", port);
-			}
-		}
-	}
-	if (ioctl(xf86Info.consoleFd, KDENABIO, 0) < 0)
-	{
-		FatalError("xf86EnableIOPorts: I/O port enable failed (%s)\n",
-			   strerror(errno));
-	}
-	ScreenEnabled[ScreenNum] = TRUE;
-	return;
-}
-
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
-{
-	struct kd_disparam param;
-	int i, j;
-
-	if (!ScreenEnabled[ScreenNum])
-		return;
-
-	ScreenEnabled[ScreenNum] = FALSE;
-	for (i = 0; i < MAXSCREENS; i++)
-	{
-		if (ScreenEnabled[i] && ExtendedPorts[i])
-			break;
-	}
-	if (ExtendedEnabled && i == MAXSCREENS)
-	{
-		RESET_IOPL();
-		ExtendedEnabled = FALSE;
-	}
-	/* Turn off I/O before changing the access list */
-	ioctl(xf86Info.consoleFd, KDDISABIO, 0);
-	if (ioctl(xf86Info.consoleFd, KDDISPTYPE, &param) < 0)
-	{
-		ErrorF("%s: Could not get display parameters\n",
-		       "xf86DisableIOPorts");
-		return;
-	}
-
-	for (i=0; i < MKDIOADDR; i++)
-	{
-		/* 0 indicates end of list */
-		if (param.ioaddr[i] == 0)
-		{
-			break;
-		}
-		if (!xf86CheckPorts(param.ioaddr[i], EnabledPorts,
-				    NumEnabledPorts, ScreenEnabled, MAXSCREENS))
-		{
-			continue;
-		}
-		for (j=0; j < MKDIOADDR; j++)
-		{
-			if (param.ioaddr[i] == OrigParams.ioaddr[j])
-			{
-				/*
-				 * Port was one of the original ones; don't
-				 * touch it.
-				 */
-				break;
-			}
-		}
-		if (j == MKDIOADDR)
-		{
-			/*
-			 * We added this port, so remove it.
-			 */
-			ioctl(xf86Info.consoleFd, KDDELIO, param.ioaddr[i]);
-		}
-	}
-	/* If any other screens are enabled, turn I/O back on */
-	for (i = 0; i < MAXSCREENS; i++)
-	{
-		if (ScreenEnabled[i])
-		{
-			ioctl(xf86Info.consoleFd, KDENABIO, 0);
-			break;
-		}
-	}
-	return;
-}
-#endif /* ALWAYS_USE_EXTENDED */
-
-void xf86DisableIOPrivs()
-{
-	if (ExtendedEnabled)
-		RESET_IOPL();
 	return;
 }
 

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.13 1997/07/31 07:16:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.14 1997/08/12 12:02:06 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -108,6 +108,8 @@ static void		MGAFbInit();
 static int		MGAPitchAdjust();
 static int		MGALinearOffset();
 static void		MGADisplayPowerManagementSet();
+static Bool		MGAScreenInit();
+static void		MGAInstallColormap();
 
 /*
  * This data structure defines the driver itself.
@@ -219,7 +221,7 @@ vgaVideoChipRec MGA = {
 	 * it to 1.
 	 */
 	1,     /* ClockMulFactor */
-	1      /* ClockDivFactor */
+	1     /* ClockDivFactor */
 };
 
 #ifdef XFree86LOADER
@@ -284,16 +286,6 @@ MGARamdacRec MGAdac = {
 	0
 }; 
 
-/*
- * array of ports
- */ 
-static unsigned mgaExtPorts[] =
-{
-	0x400			/* This is enough to enable all ports */
-};
-
-static int Num_mgaExtPorts =
-	(sizeof(mgaExtPorts)/sizeof(mgaExtPorts[0]));
 
 /*
  * MGAReadBios - Read the video BIOS info block.
@@ -576,27 +568,11 @@ MGAProbe()
 			vga256InfoRec.name, MGAMMIOAddr);
 	}
 	
-	/*
-	 * Set up I/O ports to be used by this card.
-	 */
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_mgaExtPorts,
-				mgaExtPorts);
 
-#ifdef PC98_MGA
-	MGAMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex,
-				MMIO_REGION,
-				(pointer)(MGAMMIOAddr), 0x4000);
-
-	if (!MGAMMIOBase)
-		FatalError("MGA: Can't map IO registers\n");
-
-	mmioBase = MGAMMIOBase + 0x1c00;
-#endif
-
+#ifndef PC98_MGA
 	/* enable IO ports, etc. */
 	MGAEnterLeave(ENTER);
+#endif
 
 	/*
 	 * Disable memory and I/O before mapping the MMIO area.
@@ -605,11 +581,12 @@ MGAProbe()
 	 * a lockup.
 	 */
 
+#if !defined (PC98) || !defined(i386) || !defined(SVR4)
 	save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
 	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
 		     save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+#endif
 
-#ifndef PC98_MGA
 	/*
 	 * Map IO registers to virtual address space
 	 */ 
@@ -623,8 +600,7 @@ MGAProbe()
 #endif /* __alpha__ */
 			    vga256InfoRec.scrnIndex, MMIO_REGION,
 			    (pointer)(MGAMMIOAddr), 0x4000);
-#endif /* PC98_MGA */
-#if defined(SVR4)
+#if defined(SVR4) && !defined(PC98)
 	/*
 	 * For some SVR4 versions, a 32-bit read is done for the first
 	 * location in each page when the page is first mapped.  If this
@@ -653,9 +629,11 @@ MGAProbe()
 			    (pointer)(MGAMMIOAddr), 0x4000);
 #endif /* __alpha__ */
 
+#if !defined (PC98) || !defined(i386) || !defined(SVR4)
 	/* Re-enable I/O and memory */
 	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
 		     save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+#endif
 
 	if (!MGAMMIOBase)
 		FatalError("MGA: Can't map IO registers\n");
@@ -669,6 +647,12 @@ MGAProbe()
 	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
 #endif
 #else /* PC98_MGA */
+	mmioBase = MGAMMIOBase + 0x1c00;
+
+	/* enable IO ports, etc. */
+	MGAEnterLeave(ENTER);
+
+	/* PC98 can't read MGABios */
 	MGABios.ClkBase = MGABios.Clk4MB = MGABios.Clk8MB = 5000;
 	MGABios.RamdacType = MGABios.FeatFlag = 0;
 #endif /* PC98_MGA */
@@ -940,6 +924,124 @@ MGALinearOffset()
 }
 
 
+static void MGAInstallColormap(ColormapPtr pmap)
+{
+    int         entries, maxEnt;
+    Pixel *     ppix;
+    xrgb *      prgb;
+    int         i;
+    int         shift;
+
+    ErrorF("MGAInstallColormap(%p)\n", pmap);
+
+    /* Use cfb code to do the server side of things */
+    cfbInstallColormap(pmap);
+
+#if DEBUG
+    ErrorF("MGAInstallColormap(%p) visual class %d\n", pmap, pmap->pVisual->class);
+    ErrorF("\tColormapEntries %d\n",  pmap->pVisual->ColormapEntries);
+    ErrorF("\tredMask 0x%x\toffsetRed %d\n",
+	   pmap->pVisual->redMask, pmap->pVisual->offsetRed);
+    ErrorF("\tgreenMask 0x%x\toffsetGreen %d\n",
+	   pmap->pVisual->greenMask, pmap->pVisual->offsetGreen);
+    ErrorF("\tblueMask 0x%x\toffsetBlue %d\n",
+	   pmap->pVisual->blueMask, pmap->pVisual->offsetBlue);
+    for (i = 0; i < pmap->pVisual->ColormapEntries; i++ ) {
+      ErrorF("\tcfbCLUT[%x] = (%x %x %x)\n",
+	     i, pmap->red[i], pmap->green[i], pmap->blue[i]);
+      if ( i > 7 && i < pmap->pVisual->ColormapEntries-8 ) i+=7;
+    }
+#endif
+
+    entries = pmap->pVisual->ColormapEntries;
+    maxEnt = entries-1;
+      
+    ppix = (Pixel*)ALLOCATE_LOCAL(entries * sizeof(Pixel));
+    prgb = (xrgb*)ALLOCATE_LOCAL(entries * sizeof(xrgb));
+
+    for (i = 0; i < entries; i++ ) {
+      /*
+	int r = (i << pmap->pVisual->offsetRed) & pmap->pVisual->redMask;
+	int g = (i << pmap->pVisual->offsetGreen) & pmap->pVisual->greenMask;
+	int b = (i << pmap->pVisual->offsetBlue) & pmap->pVisual->blueMask;
+	*/
+      int r = ( (i *  pmap->pVisual->redMask)  / maxEnt) & pmap->pVisual->redMask;
+      int g = ( (i *  pmap->pVisual->greenMask)/ maxEnt) & pmap->pVisual->greenMask;
+      int b = ( (i *  pmap->pVisual->blueMask) / maxEnt) & pmap->pVisual->blueMask;
+      ppix[i] = r | g | b ;
+#if DEBUG
+      if ( i<8 || i>entries-8 || (i%8)==0 ) { /* keep the logfile manageable */
+	ErrorF("\tppix[%x] = %x = %x %x %x\n", i, ppix[i], r, g, b );
+      }
+#endif /* DEBUG */
+    }
+
+    QueryColors( pmap, entries, ppix, prgb);
+
+#if DEBUG
+    ErrorF("After QueryColors, before shift\n");
+    for (i = 0; i < entries; i++) {
+      ErrorF("\tprgb[%x] = (%x %x %x)\n", i,
+	     prgb[i].red, prgb[i].green, prgb[i].blue );
+      if ( i > 7 && i < pmap->pVisual->ColormapEntries-8 ) i+=7;
+    }
+#endif /* DEBUG */
+      
+    switch (MGAchipset) {
+    case PCI_CHIP_MGA2064:
+      MGATi3026InstallColormap(pmap, entries, ppix, prgb);
+      break;
+    default:
+      /* No Directcolor hardware; we used the default InstallColormap
+       * therefore we shouldn't be here !
+       */
+      break;
+    }      
+
+    DEALLOCATE_LOCAL(ppix);
+    DEALLOCATE_LOCAL(prgb);
+
+    ErrorF("MGAInstallColormap done\n", pmap);
+}
+
+
+/*
+ * 
+ */
+static Bool
+MGAScreenInit(ScreenPtr pScreen, pointer pbits,
+	      int xsize, int ysize, int dpix, int dpiy, int width)
+{
+  if (vga256InfoRec.hasDirectColor) {
+    void (* privateInstallColormap)() = NULL;
+
+    if (vgaBitsPerPixel > 8) {
+      switch (MGAchipset) {
+      case PCI_CHIP_MGA2064:
+	privateInstallColormap = MGAInstallColormap;
+	break;
+      default:
+	/* No Directcolor hardware */
+	break;
+      }
+    }
+
+    if (privateInstallColormap) {
+      if (xf86Verbose) {
+	/* We don't actually config or probe for this -
+	 * is XCONFIG_PROBED correct ?
+	 */
+	ErrorF("%s %s: MGA: DirectColor colormaps enabled\n",
+	       XCONFIG_PROBED, vga256InfoRec.name);
+      }
+      pScreen->InstallColormap = privateInstallColormap;
+    }
+  }
+
+  return TRUE; /* Should I test something before saying I'm OK ? */
+}
+
+
 /*
  * MGAFbInit --
  *
@@ -949,6 +1051,18 @@ MGALinearOffset()
 static void
 MGAFbInit()
 {
+	/* DirectColor InstallColormap gets set in ScreenInit ... */
+	switch (MGAchipset) {
+	case PCI_CHIP_MGA2064:
+	  vga256InfoRec.hasDirectColor = TRUE;
+	  /* DirectColor InstallColormap gets set in ScreenInit ... */
+	  vgaSetScreenInitHook(MGAScreenInit);
+	  break;
+	default:
+	  /* No Directcolor hardware */
+	  break;
+	}
+
 	if (MGAdac.MemoryClock && xf86Verbose)
 	{
 	    ErrorF("%s %s: MCLK set to %1.3f MHz\n",
@@ -1109,7 +1223,10 @@ Bool enter;
 		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
 		outb(vgaIOBase + 5, temp & 0x7F);
 #ifdef PC98_MGA
-		_outb(0xfac, 0x01);
+		if (MGAchipset == PCI_CHIP_MGA1064)
+			_outb(0xfac, 0x02);
+		else
+			_outb(0xfac, 0x01);
 #endif
 	}
 	else

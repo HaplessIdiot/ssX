@@ -8,7 +8,7 @@
  *
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.2 1997/05/03 09:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.3 1997/06/03 14:12:07 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -388,14 +388,6 @@ GLINTProbe()
 	 */
 	MGAReadBios();
 	
-	/*
-	 * Set up I/O ports to be used by this card.
-	 */
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_mgaExtPorts,
-				mgaExtPorts);
-
 	/* enable IO ports, etc. */
 	MGAEnterLeave(ENTER);
 	

@@ -244,3 +244,33 @@ extern void miCleanupSpanData(
     SpanDataPtr /*spanData*/
 #endif
 );
+
+extern int miPolyBuildEdge (
+#if NeedFunctionPrototypes
+    double /*x0*/, 
+    double /*y0*/,
+    double /*k*/, 
+    int /*dx*/, 
+    int /*dy*/,
+    int	/*xi*/, 
+    int /*yi*/,
+    int	/*left*/,
+    PolyEdgePtr /*edge*/
+#endif
+);
+
+extern int miPolyBuildPoly (
+#if NeedFunctionPrototypes
+    PolyVertexPtr /*vertices*/,
+    PolySlopePtr  /*slopes*/,
+    int	/*count*/,
+    int	/*xi*/, 
+    int /*yi*/,
+    PolyEdgePtr	    /*left*/, 
+    PolyEdgePtr	   /*right*/,
+    int*	/*pnleft*/, 
+    int* /*pnright*/,
+    int*	/*h*/
+#endif
+);
+

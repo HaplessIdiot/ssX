@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cl64xx/cl_driver.c,v 1.2 1997/05/03 09:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cl64xx/cl_driver.c,v 1.3 1997/06/03 14:12:05 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -446,12 +446,6 @@ CL64XXProbe()
 	unsigned char	id, revision, bus, display;
 	char		*chipset;
 	int		i;
-
-	/*
-	 * Set up I/O ports to be used by this card.
-	 */
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 
 	/*
 	 * First we attempt to figure out if one of the supported chipsets

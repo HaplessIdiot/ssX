@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.21 1997/05/25 14:41:27 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.22 1997/06/11 12:24:57 dawes Exp $
  */
 
 /*
@@ -154,6 +154,10 @@ extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
 #ifndef IUCLC
 #define IUCLC	0
 #endif
+#endif
+
+#ifndef GCC_UNUSED
+#define GCC_UNUSED /* nothing */
 #endif
 
 #define	EMULATIONS	2
@@ -646,7 +650,7 @@ resize_timeout(sig)
 /* ARGSUSED */
 static SIGNAL_T
 onintr(sig)
-    int sig;
+    int sig GCC_UNUSED;
 {
 #ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tioorig);

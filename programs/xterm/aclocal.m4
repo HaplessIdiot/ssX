@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.4 1997/06/11 12:24:56 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.5 1997/07/29 13:26:01 hohndel Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -109,6 +109,21 @@ if test ".$system_name" != ".$cf_cv_system_name" ; then
 	AC_MSG_RESULT("Cached system name does not agree with actual")
 	AC_ERROR("Please remove config.cache and try again.")
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl You can always use "make -n" to see the actual options, but it's hard to
+dnl pick out/analyze warning messages when the compile-line is long.
+AC_DEFUN([CF_DISABLE_ECHO],[
+AC_MSG_CHECKING(if you want to see long compiling messages)
+CF_ARG_DISABLE(echo,
+	[  --disable-echo          test: display \"compiling\" commands],
+	[SHOW_CC='	@echo compiling [$]@'
+    ECHO_CC='@'],
+	[SHOW_CC='# compiling'
+    ECHO_CC=''])
+AC_MSG_RESULT($enableval)
+AC_SUBST(SHOW_CC)
+AC_SUBST(ECHO_CC)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for memmove, or a bcopy that can handle overlapping copy.  If neither
@@ -432,9 +447,9 @@ dnl
 AC_DEFUN([CF_X_ATHENA],
 [AC_REQUIRE([CF_X_TOOLKIT])
 AC_CHECK_HEADERS(X11/Xaw/SimpleMenu.h)
+AC_CHECK_LIB(Xext,XextCreateExtension)
 AC_CHECK_LIB(Xmu, XmuClientWindow)
-AC_CHECK_LIB(Xext,XextCreateExtension,[LIBS="-lXext $LIBS"])
-AC_CHECK_LIB(Xaw, XawSimpleMenuAddGlobalActions, [LIBS="-lXaw $LIBS"],
+AC_CHECK_LIB(Xaw, XawSimpleMenuAddGlobalActions,,
 	AC_ERROR(
 [Unable to successfully link Athena library (-lXaw)]),
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.3 1997/05/03 09:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.4 1997/06/03 14:12:12 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -257,12 +257,6 @@ NCRProbe()
     int	version;
     int numClocks;
     int flag = FALSE;
-
-    /*
-     * Set up I/O ports to be used by this card
-     */
-    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 
     if (vga256InfoRec.chipset)
     {

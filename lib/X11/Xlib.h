@@ -1,5 +1,5 @@
-/* $XConsortium: Xlib.h /main/119 1996/09/28 16:35:29 rws $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.9 1996/12/09 11:49:33 dawes Exp $ */
+/* $TOG: Xlib.h /main/120 1997/08/18 16:05:18 kaleb $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.10 1996/12/23 05:59:47 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -1304,7 +1304,7 @@ typedef	unsigned short	XIMStringConversionType;
 typedef	unsigned short	XIMStringConversionOperation;
 
 #define	XIMStringConversionSubstitution	(0x0001)
-#define	XIMStringConversionRetrival	(0x0002)
+#define	XIMStringConversionRetrieval	(0x0002)
 
 typedef enum {
     XIMForwardChar, XIMBackwardChar,

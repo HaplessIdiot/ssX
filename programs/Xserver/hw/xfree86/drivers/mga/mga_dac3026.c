@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.7 1997/07/29 12:08:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.8 1997/08/12 12:02:05 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -28,6 +28,7 @@
  */
 
 
+#include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
@@ -144,6 +145,78 @@ unsigned char reg, mask, val;
 
 	outTi3026dreg(TVP3026_INDEX, reg);
 	outTi3026dreg(TVP3026_DATA, tmp | val);
+}
+
+
+/*
+ */
+void
+MGATi3026InstallColormap(ColormapPtr pmap, int entries, Pixel *ppix, xrgb *prgb)
+{
+  int i;
+  unsigned long pixel;
+
+  ErrorF("MGATi3026InstallColormap(%p, %d, %p, %p)\n",
+       pmap, entries, ppix, prgb);
+
+  switch (pmap->pVisual->class) {
+  case StaticGray:
+  case GrayScale:
+  case StaticColor:
+  case PseudoColor:
+  case TrueColor: /* or DirectColor in TVP docs! */ 
+    ErrorF("MGATi3026InstallColormap selected TVP DirectColor\n");
+    outTi3026(TVP3026_KEY_CTL,        ~0x10, 0x00);
+    outTi3026(TVP3026_TRUE_COLOR_CTL, ~0x40, 0x00);
+    break;
+  case DirectColor: /* or TrueColor in TVP docs! */ 
+    ErrorF("MGATi3026InstallColormap selected TVP TrueColor\n");
+    outTi3026(TVP3026_KEY_CTL,        ~0x10, 0x10);
+    outTi3026(TVP3026_TRUE_COLOR_CTL, ~0x40, 0x40);
+    break;
+  }
+
+  for (i = 0; i < entries; i++ ) {
+    /* green because it is deepest color in 565 mode */
+    /* First shift to bits range 0...entries */
+    pixel = (ppix[i] & pmap->pVisual->greenMask) >> pmap->pVisual->offsetGreen;
+    /* But TVP3026 shifts data to be MS bits in each color channel,
+     *  so we must do the same with the pixel values */
+    pixel = pixel << (8 - xf86weight.green);
+    outTi3026dreg(TVP3026_WADR_PAL, (unsigned char)(pixel) );
+
+    /* X colors are 16bits, TVP3026 palette is 8bits, 16 - 8 = 8 */
+    prgb[i].red   = prgb[i].red   >> 8;
+    outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].red) );
+    prgb[i].green = prgb[i].green >> 8;
+    outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].green) );
+    prgb[i].blue  = prgb[i].blue  >> 8;
+    outTi3026dreg(TVP3026_COL_PAL, (unsigned char)(prgb[i].blue) );
+
+#if 1 /* DEBUG */
+    if ( i<8 || i>entries-8 )  /* keep the logfile manageable */
+    {
+      volatile xrgb old;
+      outTi3026dreg(TVP3026_RADR_PAL, (unsigned char)(pixel) );
+      old.red   = inTi3026dreg(TVP3026_COL_PAL);
+      old.green = inTi3026dreg(TVP3026_COL_PAL);
+      old.blue  = inTi3026dreg(TVP3026_COL_PAL);
+      ErrorF("\tTVP3026CLUT[%x=%x]=\t(%x %x %x)\tshould be (%x %x %x)",
+	     ppix[i], pixel,
+	     old.red, old.green, old.blue,
+	     prgb[i].red, prgb[i].green, prgb[i].blue );
+      if ( (old.red   != prgb[i].red)   || 
+	   (old.green != prgb[i].green) ||
+	   (old.blue  != prgb[i].blue)     )
+	{
+	  ErrorF(" but isn't");
+	}
+      ErrorF("\n");
+    }
+#endif /* DEBUG */
+  }
+
+  ErrorF("MGATi3026InstallColormap done\n");
 }
 
 /*

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.3 1997/05/03 09:18:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.4 1997/06/15 07:12:33 dawes Exp $ */
 
 
 
@@ -263,6 +263,8 @@
 #define TVP3026_PIX_CLK_DATA	0x2d
 #define TVP3026_MEM_CLK_DATA	0x2e
 #define TVP3026_LOAD_CLK_DATA	0x2f
+#define TVP3026_KEY_OVRLY_LOW	0x30
+#define TVP3026_KEY_OVRLY_HI	0x31
 #define TVP3026_KEY_RED_LOW	0x32
 #define TVP3026_KEY_RED_HI	0x33
 #define TVP3026_KEY_GREEN_LOW	0x34

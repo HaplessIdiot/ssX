@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/14 1997/08/11 12:02:08 sekhar $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.4 1997/08/12 12:02:14 hohndel Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.5 1997/08/15 07:19:27 hohndel Exp $
 #define IHaveSubdirs
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
@@ -27,6 +27,7 @@ INCLUDES = -I$(EXTINCSRC)
 
 all::
 
+ComplexProgramTarget(xkbcomp)
 SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
 YaccFile(xkbparse,$(YFLAGS))
@@ -44,7 +45,6 @@ InstallProgram(xkbcomp,$(LIBDIR)/xkb)
 clean::
 	RemoveFiles(test.h *.xkm *.xkb)
 
-ComplexProgramTarget(xkbcomp)
 
 #ifdef OS2Architecture
 all::

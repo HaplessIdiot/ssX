@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.5 1997/05/21 15:17:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.6 1997/06/20 11:30:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -166,56 +166,26 @@ int Region;
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
-static unsigned *EnabledPorts[MAXSCREENS];
-static int NumEnabledPorts[MAXSCREENS];
 static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedPorts[MAXSCREENS]; /* Not used, but leave it for now to
 					  to keep xf86InitPortLists() happy */
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
 
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	int i;
-
-	if (!InitDone)
-	{
-		xf86InitPortLists(EnabledPorts, NumEnabledPorts, ScreenEnabled,
-				  ExtendedPorts, MAXSCREENS);
-		InitDone = TRUE;
-		return;
-	}
-	if (EnabledPorts[ScreenNum] != (unsigned *)NULL)
-		xfree(EnabledPorts[ScreenNum]);
-	EnabledPorts[ScreenNum] = (unsigned *)NULL;
-	NumEnabledPorts[ScreenNum] = 0;
-}
-
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	int i;
-
-	if (!InitDone)
-	{
-	    FatalError("xf86AddIOPorts: I/O control lists not initialised\n");
-	}
-	EnabledPorts[ScreenNum] = (unsigned *)xrealloc(EnabledPorts[ScreenNum], 
-			(NumEnabledPorts[ScreenNum]+NumPorts)*sizeof(unsigned));
-	for (i = 0; i < NumPorts; i++)
-	{
-		EnabledPorts[ScreenNum][NumEnabledPorts[ScreenNum] + i] =
-								Ports[i];
-	}
-	NumEnabledPorts[ScreenNum] += NumPorts;
-}
 
 void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
 {
+	int i;
+
+	if (!InitDone) {
+	    for (i = 0; i < NumScr; i++)
+	    {
+		ScreenEnabled[i] = FALSE;
+		ExtendedPorts[i] = FALSE;
+	    }
+	    InitDone = TRUE;
+	}
 
 	if (ScreenEnabled[ScreenNum])
 		return;
@@ -258,12 +228,6 @@ int ScreenNum;
 	return;
 }
 
-void xf86DisableIOPrivs()
-{
-	if (ExtendedEnabled)
-		sysi86(SI86V86, V86SC_IOPL, 0);
-	return;
-}
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */

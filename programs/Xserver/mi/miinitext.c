@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.21 1997/05/06 09:46:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.22 1997/05/11 04:58:53 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -352,50 +352,36 @@ InitExtensions(argc, argv)
 #ifdef XTESTEXT1
     extension[1].initFunc = XTestExtension1Init;
 #endif
-#ifdef SHAPE
-    extension[2].initFunc = ShapeExtensionInit;
-#endif
+    /* 2 - SHAPE */
 #ifdef MITSHM
     extension[3].initFunc = ShmExtensionInit;
 #endif
     /* 4 - pex */
-#ifdef MULTIBUFFER
-    extension[5].initFunc = MultibufferExtensionInit;
-#endif
+    /* 5 - multibuf */
 #ifdef XINPUT
     extension[6].initFunc = XInputExtensionInit;
 #endif
 #ifdef XTEST
     extension[7].initFunc = XTestExtensionInit;
 #endif
-#ifdef BIGREQS
-    extension[8].initFunc = BigReqExtensionInit;
-#endif
-#ifdef MITMISC
-    extension[9].initFunc = MITMiscExtensionInit;
-#endif
+    /* 8 - BigReqs */
+    /* 9 - MITMisc */
 #ifdef XIDLE
     extension[10].initFunc = XIdleExtensionInit;
 #endif
 #ifdef XTRAP
     extension[11].initFunc = DEC_XTRAPIbit;
 #endif
-#ifdef SCREENSAVER
-    extension[12].initFunc = ScreenSaverExtensionInit;
-#endif
+    /* 12 - ScreenSaver */
 #ifdef XV
     extension[13].initFunc = XvExtensionInit;
 #endif
     /* 14 - XIE */
-#ifdef XSYNC
-    extension[15].initFunc = SyncExtensionInit;
-#endif
+    /* 15 - XSYNC */
 #ifdef XKB
     extension[16].initFunc = XkbExtensionInit;
 #endif
-#ifdef XCMISC
-    extension[17].initFunc = XCMiscExtensionInit;
-#endif
+    /* 17 - XCMISC */
 #ifdef RECORD
     extension[18].initFunc = RecordExtensionInit;
 #endif
@@ -412,18 +398,10 @@ InitExtensions(argc, argv)
 #ifdef XPRINT
     extension[23].initFunc = XpExtensionInit;
 #endif
-#if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
-    extension[24].initFunc = XFree86VidModeExtensionInit;
-#endif
-#if defined(XF86MISC) && !defined(PRINT_ONLY_SERVER)
-    extension[25].initFunc = XFree86MiscExtensionInit;
-#endif
-#if defined(XFree86DGA) && !defined(PRINT_ONLY_SERVER)
-    extension[26].initFunc = XFree86DGAExtensionInit;
-#endif
-#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
-    extension[27].initFunc = DPMSExtensionInit;
-#endif
+    /* 24 - XF86VidMode */
+    /* 25 - XF86Misc */
+    /* 26 - XF86DGA */
+    /* 27 - DPMS */
     /* 28 - GLX */
 
     for (i = 0; extension[i].name != NULL; i++) 

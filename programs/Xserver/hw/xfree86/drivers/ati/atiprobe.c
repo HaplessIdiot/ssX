@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.1 1997/07/29 13:25:54 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -434,9 +434,6 @@ ATIProbe(void)
         return FALSE;
 
     /* Enable the I/O ports needed for probing */
-    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ATI_IOPorts, ATI_IOPorts);
     xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
     /*
@@ -1099,9 +1096,6 @@ ATIProbe(void)
 
     /* Rebuild I/O port list.  Some of its entries might have changed */
     xf86DisableIOPorts(vga256InfoRec.scrnIndex);
-    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ATI_IOPorts, ATI_IOPorts);
 
     ATIEnterLeave(ENTER);               /* Unlock registers */
 

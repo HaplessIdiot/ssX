@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.3 1997/02/27 13:58:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.4 1997/05/06 09:46:33 dawes Exp $ */
 
 
 
@@ -28,6 +28,7 @@
 #include "sym.h"
 #include "misc.h"
 #include "mi.h"
+#include "miwideline.h"
 #include "mibstore.h"
 #include "cursor.h"
 #include "mipointer.h"
@@ -35,7 +36,6 @@
 #include "miline.h"
 #include "mizerarc.h"
 #include "mifillarc.h"
-#include "mispans.h"
 
 /* mi things */
 
@@ -106,6 +106,10 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRectsToRegion)
    SYMFUNC(miSubtract)
    SYMFUNC(miUnion)
+   SYMFUNC(miPolyBuildEdge)
+   SYMFUNC(miPolyBuildPoly)
+   SYMFUNC(miRoundJoinClip)
+   SYMFUNC(miRoundCapClip)
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
 
