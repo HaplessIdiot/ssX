@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.77 2002/11/27 11:42:59 alanh Exp $ */
+/* $XFree86: xf86Configure.c,v 3.78 2003/01/18 07:27:13 paulo Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -46,7 +46,7 @@
 #include "Configint.h"
 #include "vbe.h"
 #include "xf86DDC.h"
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__OpenBSD__)
 #include "xf86Bus.h"
 #include "xf86Sbus.h"
 #endif
@@ -55,7 +55,7 @@
 typedef struct _DevToConfig {
     GDevRec GDev;
     pciVideoPtr pVideo;
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__OpenBSD__)
     sbusDevicePtr sVideo;
 #endif
     int iDriver;
@@ -280,6 +280,8 @@ configureInputSection (void)
 	    DFLT_MOUSE_DEV = "/dev/wsmouse";
 	    DFLT_MOUSE_PROTO = "wsmouse";
 	    close(fd);
+	} else {
+	    ErrorF("cannot open /dev/wsmouse\n");
 	}
 #endif
 

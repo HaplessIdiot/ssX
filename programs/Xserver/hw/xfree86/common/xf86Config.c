@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.273 2003/08/27 02:50:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.274 2003/09/09 03:20:34 dawes Exp $ */
 
 
 /*
@@ -1178,6 +1178,11 @@ configInputKbd(IDevPtr inputp)
 #ifdef WSKBD_TYPE_SUN
      case WSKBD_TYPE_SUN:
 	     xf86Msg(X_PROBED, "Keyboard type: Sun\n");
+	     break;
+#endif
+#ifdef WSKBD_TYPE_SUN5
+     case WSKBD_TYPE_SUN5:
+	     xf86Msg(X_PROBED, "Keyboard type: Sun5\n");
 	     break;
 #endif
      default:

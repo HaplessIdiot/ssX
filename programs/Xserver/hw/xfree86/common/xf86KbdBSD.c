@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.20 2002/05/22 21:38:27 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.21 2003/08/24 17:36:53 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1084,6 +1084,8 @@ static CARD8 wsAdbMap[] = {
 	/* 223 */ KEY_NOTUSED,
 };
 
+#define WS_ADB_MAP_SIZE (sizeof(wsAdbMap)/sizeof(unsigned char))
+
 static CARD8 wsSunMap[] = {
 	/* 0x00 */ KEY_NOTUSED,
 	/* 0x01 */ KEY_NOTUSED,		/* stop */
@@ -1217,9 +1219,6 @@ static CARD8 wsSunMap[] = {
 
 #define WS_SUN_MAP_SIZE (sizeof(wsSunMap)/sizeof(unsigned char))
 
-
-#define WS_ADB_MAP_SIZE (sizeof(wsAdbMap)/sizeof(unsigned char))
-
 /*
  * Translate raw wskbd keyboard event values to XFree86 standard keycodes
  * (based on the AT keyboard scan codes using the tables above
@@ -1237,7 +1236,7 @@ WSKbdToKeycode(int keycode)
 			return KEY_UNKNOWN;
 		else 
 			return wsUsbMap[keycode];
-#ifdef WSKBD_TYPE_ADB			
+#ifdef WSKBD_TYPE_ADB
 	case WSKBD_TYPE_ADB:
 		if (keycode < 0 || keycode >= WS_ADB_MAP_SIZE) 
 			return KEY_UNKNOWN;
@@ -1246,6 +1245,9 @@ WSKbdToKeycode(int keycode)
 #endif
 #ifdef WSKBD_TYPE_SUN
 	case WSKBD_TYPE_SUN:
+#ifdef WSKBD_TYPE_SUN5
+	case WSKBD_TYPE_SUN5:
+#endif
 		if (keycode < 0 || keycode >= WS_SUN_MAP_SIZE)
 			return KEY_UNKNOWN;
 		else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.53 2003/01/15 03:29:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.54 2003/08/24 17:36:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -115,7 +115,7 @@ xf86KbdLeds ()
 {
   int leds, real_leds = 0;
 
-#if defined (__sparc__)
+#if defined (__sparc__) && defined(__linux__)
   static int kbdSun = -1;
   if (kbdSun == -1) {
   if ((xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun")) ||

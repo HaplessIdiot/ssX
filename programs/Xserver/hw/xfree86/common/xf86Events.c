@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.155 2003/09/25 13:26:26 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.156 2003/10/02 13:29:55 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -446,7 +446,7 @@ xf86PostKbdEvent(unsigned key)
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
   static Bool first_time = TRUE;
 #endif
-#if defined(__sparc__)
+#if defined(__sparc__) && defined(__linux__)
   static int  kbdSun = -1;
 #endif
   /* Disable any keyboard processing while in suspend */
@@ -462,7 +462,7 @@ xf86PostKbdEvent(unsigned key)
   }
 #endif
 
-#if defined (__sparc__)
+#if defined (__sparc__) && defined(__linux__)
   if (kbdSun == -1) {
     if ((xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
 	|| (xf86Info.xkbrules && !strcmp(xf86Info.xkbrules, "sun")))
@@ -472,7 +472,7 @@ xf86PostKbdEvent(unsigned key)
   }
   if (kbdSun)
     goto special;
-#endif /* __sparc__ */
+#endif /* __sparc__ && __linux__ */
 
 #ifdef __linux__
   if (xf86Info.kbdCustomKeycodes) {
@@ -674,7 +674,7 @@ customkeycodes:
     }
   }
 #endif
-#if defined (__sparc__)
+#if defined (__sparc__) && defined(__linux__)
 special:
   if (kbdSun) {
     switch (scanCode) {
@@ -708,7 +708,7 @@ special:
      */
     scanCode--;
   }
-#endif /* defined (__sparc__) */
+#endif /* defined (__sparc__) && defined(__linux__) */
 
 #ifdef XKB
   if ((xf86Info.ddxSpecialKeys == SKWhenNeeded &&
