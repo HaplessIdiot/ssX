@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBBind.c,v 3.16 2003/04/13 19:22:18 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBBind.c,v 3.17 2003/04/14 02:25:41 dawes Exp $ */
 
 	/* the new monsters ate the old ones */
 
@@ -776,6 +776,37 @@ XLookupString (event, buffer, nbytes, keysym, status)
 	return 0;
     new_mods= (event->state&(~new_mods));
 
+    /* find the group where a symbol can be converted to control one */
+    if (new_mods&ControlMask && *keysym > 0x7F &&
+	(dpy->xkb_info->xlib_ctrls & XkbLC_ControlFallback)) {
+	XKeyEvent tmp_ev = *event;
+	KeySym tmp_keysym;
+	unsigned int tmp_new_mods;
+	if (_XkbUnavailable(dpy)) {
+            tmp_ev.state= event->state ^ dpy->mode_switch;
+            if (XkbLookupKeySym(dpy, tmp_ev.keycode, tmp_ev.state,
+                                &tmp_new_mods, &tmp_keysym) &&
+                tmp_keysym != NoSymbol && tmp_keysym < 0x80 ) {
+                *keysym = tmp_keysym;
+            }
+        } else {
+            int n = XkbKeyNumGroups(dpy->xkb_info->desc, tmp_ev.keycode);
+            int i;
+            for (i = 0; i < n; i++) {
+                if (XkbGroupForCoreState(event->state) == i)
+                    continue;
+                tmp_ev.state= XkbBuildCoreState(tmp_ev.state, i);
+                if (XkbLookupKeySym(dpy, tmp_ev.keycode, tmp_ev.state,
+                                     &tmp_new_mods, &tmp_keysym) &&
+                    tmp_keysym != NoSymbol && tmp_keysym < 0x80 ) {
+                    *keysym = tmp_keysym;
+                    new_mods= (event->state&(~tmp_new_mods));
+                    break;
+                }
+            }
+        }
+    }                  	                                	 
+
 #ifdef USE_OWN_COMPOSE
     if ( status ) {
 	static int been_here= 0;
@@ -881,27 +912,7 @@ XLookupString (event, buffer, nbytes, keysym, status)
     if (rtrnLen>0)
 	return rtrnLen;
 
-    rtrnLen = XkbTranslateKeySym(dpy,keysym,new_mods,buffer,nbytes,NULL);
-
-    if ((event->state&ControlMask)&&(nbytes>0)&&
-			((rtrnLen==0)||
-                        ((rtrnLen==1)&&((unsigned char) buffer[0]>=' ')))&&
-			(dpy->xkb_info->xlib_ctrls&XkbLC_ControlFallback)) {
-	XKeyEvent	tmp_ev;
-	tmp_ev= *event;
-        if (_XkbUnavailable(dpy)) {
-            if (event->state & dpy->mode_switch) {
-                tmp_ev.state= event->state & ~dpy->mode_switch;
-	        return XLookupString (&tmp_ev, buffer, nbytes, keysym, status);
-	    }
-        } else {
-            if (XkbGroupForCoreState(event->state) != XkbGroup1Index) {
-                tmp_ev.state= XkbBuildCoreState(event->state,XkbGroup1Index);
-	        return XLookupString (&tmp_ev, buffer, nbytes, keysym, status);
-	    }
-        }
-    }
-    return rtrnLen;
+    return XkbTranslateKeySym(dpy,keysym,new_mods,buffer,nbytes,NULL);
 }
 
 
