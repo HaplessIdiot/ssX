@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.13 2000/10/20 14:59:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.14 2000/11/02 19:10:58 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -210,6 +210,7 @@ xf86freeConfig (XF86ConfigPtr p)
 	xf86freeModules (p->conf_modules);
 	xf86freeFlags (p->conf_flags);
 	xf86freeMonitorList (p->conf_monitor_lst);
+	xf86freeModesList (p->conf_modes_lst);
 	xf86freeVideoAdaptorList (p->conf_videoadaptor_lst);
 	xf86freeDeviceList (p->conf_device_lst);
 	xf86freeScreenList (p->conf_screen_lst);

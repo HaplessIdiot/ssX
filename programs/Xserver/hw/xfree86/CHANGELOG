@@ -20,8 +20,13 @@ XFree86 4.0.1f (xx November 2000)
  934. Initial port of the ark driver to 4.x (#4242, Ani Joshi).
  933. Wacom input driver update, including support for 38400 link speed
       and fix wrong advertisement of min/max values (#4241, Frederic Lepied).
- 932. Parser does not write Modes section and UseModes keyword (#4238, 
-      Paulo Cesar Pereira de Andrade).
+ 932. Fix some parser problems, including:
+       - parser does not write Modes section and UseModes keyword
+       - the vscan value wasn't being used
+       - make the XF86ConfModesPtr structure accessible from the
+         XF86ConfMonitorPtr structure
+       - allow xf86Parser.h to be included from in a C++ program
+      (#4238, 4243-4245, Paulo Cesar Pereira de Andrade).
  931. Fix the name of the Serbian xkb symbols file (rename from yu to sr)
       (#4237, Ivan Pascal).
  930. Fix mkcfm bug (#4236, Juliusz Chroboczek).
@@ -11561,4 +11566,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1394 2000/11/14 21:59:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1395 2000/11/14 23:58:31 dawes Exp $

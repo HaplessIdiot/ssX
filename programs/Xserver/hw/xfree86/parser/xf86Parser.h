@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.24 2000/11/02 19:10:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.25 2000/11/02 19:58:21 anderson Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -83,6 +83,7 @@ XF86ConfModuleRec, *XF86ConfModulePtr;
 #define XF86CONF_HSKEW     0x0200	/* hskew provided */
 #define XF86CONF_BCAST     0x0400
 #define XF86CONF_CUSTOM    0x0800	/* timing numbers customized by editor */
+#define XF86CONF_VSCAN     0x1000
 
 typedef struct
 {
@@ -421,7 +422,7 @@ XF86ConfVendorPtr xf86findVendor(const char *name, XF86ConfVendorPtr list);
 XF86ConfVideoAdaptorPtr xf86findVideoAdaptor(const char *ident,
 						XF86ConfVideoAdaptorPtr p);
 
-GenericListPtr xf86addListItem(GenericListPtr head, GenericListPtr new);
+GenericListPtr xf86addListItem(GenericListPtr head, GenericListPtr c_new);
 
 int xf86pathIsAbsolute(const char *path);
 int xf86pathIsSafe(const char *path);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.15 2000/10/24 22:45:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.16 2000/11/14 17:33:00 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -201,6 +201,7 @@ xf86parseModeLine (void)
 			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "Vscan");
 			ptr->ml_vscan = val.num;
+			ptr->ml_flags |= XF86CONF_VSCAN;
 			break;
 		case TT_CUSTOM:
 			ptr->ml_flags |= XF86CONF_CUSTOM;
@@ -345,6 +346,7 @@ xf86parseVerboseMode (void)
 		case VSCAN:
 			if (xf86getToken (NULL) != NUMBER)
 				Error ("Vertical scan count expected", NULL);
+			ptr->ml_flags |= XF86CONF_VSCAN;
 			ptr->ml_vscan = val.num;
 			break;
 		case EOF_TOKEN:
@@ -766,6 +768,8 @@ xf86printModesSection (FILE * cf, XF86ConfModesPtr ptr)
 				fprintf (cf, " doublescan");
 			if (mlptr->ml_flags & XF86CONF_HSKEW)
 				fprintf (cf, " hskew %d", mlptr->ml_hskew);
+			if (mlptr->ml_flags & XF86CONF_VSCAN)
+				fprintf (cf, " vscan %d", mlptr->ml_vscan);
 			if (mlptr->ml_flags & XF86CONF_BCAST)
 				fprintf (cf, " bcast");
 			fprintf (cf, "\n");
@@ -876,6 +880,7 @@ xf86validateMonitor (XF86ConfigPtr p, XF86ConfScreenPtr screen)
 					     screen->scrn_identifier);
 			return (FALSE);
 		}
+		modeslnk->ml_modes = modes;
 		modeslnk = modeslnk->list.next;
 	}
 	return (TRUE);
