@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.24 2000/09/26 15:57:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.25 2000/10/09 23:37:13 alanh Exp $ */
 
 /*
  * Authors:
@@ -359,7 +359,7 @@ I740Identify(int flags) {
 static Bool
 I740Probe(DriverPtr drv, int flags) {
   int i, numUsed, numDevSections, *usedChips;
-  GDevPtr *devSections = NULL;
+  GDevPtr *devSections;
   Bool foundScreen = FALSE;
 
   /*
@@ -439,8 +439,8 @@ I740Probe(DriverPtr drv, int flags) {
       }
   }
   
-  if (devSections)
-      xfree(devSections);
+  xfree(devSections);
+  xfree(usedChips);
   
   return foundScreen;
 }

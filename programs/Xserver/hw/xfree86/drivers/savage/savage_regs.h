@@ -1,9 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.1 2000/12/02 01:16:14 dawes Exp $ */
 
 #ifndef _SAVAGE_REGS_H
 #define _SAVAGE_REGS_H
 
-#include "compiler.h"
 #include "savage_driver.h"
 
 #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))

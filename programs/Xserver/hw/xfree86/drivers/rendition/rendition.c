@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.35 2000/09/19 12:46:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.36 2000/09/19 16:52:45 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -314,9 +314,7 @@ renditionProbe(DriverPtr drv, int flags)
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
 
-	if (devSections)
-	    xfree(devSections);
-	devSections = NULL;
+	xfree(devSections);
 	if (numUsed <= 0)
 	    return FALSE;
 

@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.17 2000/11/21 23:10:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.18 2000/11/28 17:25:13 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -374,7 +374,7 @@ GLIDEProbe(DriverPtr drv, int flags)
 {
   GrHwConfiguration hw;
   int i, sst, r;
-  GDevPtr *devList = NULL;
+  GDevPtr *devList;
   GDevPtr dev = NULL;
   int numdevList;
   Bool foundScreen = FALSE;
@@ -442,7 +442,7 @@ GLIDEProbe(DriverPtr drv, int flags)
   }
 
  cleanup:
-  if (devList) xfree(devList);
+  xfree(devList);
   return foundScreen;
 }
 	

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.4 2000/11/27 17:45:53 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.5 2000/11/28 18:49:38 dawes Exp $ */
 
 /*
 **++ 
@@ -1174,7 +1174,7 @@ XPointer	client_data;
 
     if (!IC_IscMode(ic)) InitIscMode(ic);
 
-    count = XmbLookupString(ic, &ev->xkey, buf, sizeof(buf), &symbol, NULL);
+    count = XmbLookupString((XIC)ic, &ev->xkey, buf, sizeof(buf), &symbol, NULL);
 
     if (((symbol >> 8 == 0xFF) &&
          ((XK_BackSpace <= symbol && symbol <= XK_Clear) ||

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.98 2000/10/17 09:07:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.99 2000/11/14 17:32:59 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -593,7 +593,7 @@ GLINTProbe(DriverPtr drv, int flags)
 {
     int i;
     pciVideoPtr pPci, *checkusedPci;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int numDevSections;
     int numUsed,bus,device,func;
     char *dev;
@@ -686,9 +686,7 @@ GLINTProbe(DriverPtr drv, int flags)
 	numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
 					GLINTChipsets, GLINTPciChipsets, devSections,
 					numDevSections, drv, &usedChips);
-	if (devSections)
-	    xfree(devSections);
-	devSections = NULL;
+	xfree(devSections);
 	if (numUsed <= 0)
 	    return FALSE;
 	foundScreen = TRUE;
@@ -743,7 +741,7 @@ GLINTProbe(DriverPtr drv, int flags)
 	    }
     }
 
-    if (usedChips) xfree(usedChips);
+    xfree(usedChips);
 
     TRACE_EXIT("GLINTProbe");
     return foundScreen;

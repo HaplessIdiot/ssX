@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.46 2000/11/03 18:46:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.47 2000/11/16 19:45:02 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -235,7 +235,7 @@ GenericProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int i;
 
@@ -279,8 +279,8 @@ GenericProbe(DriverPtr drv, int flags)
 			foundScreen = TRUE;
 		    }
 		}
-		xfree(usedChips);
 	    }
+	    xfree(usedChips);
 	}
     }
     
@@ -291,8 +291,8 @@ GenericProbe(DriverPtr drv, int flags)
 				     numDevSections,&usedChips);
     if(numUsed > 0) {
 	if (flags & PROBE_DETECT)
-	    return TRUE;
-	for (i = 0; i < numUsed; i++) {
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = NULL;
 	    if ((pScrn = xf86ConfigIsaEntity(pScrn,0,usedChips[i],
 						   GenericISAchipsets,NULL,
@@ -312,12 +312,11 @@ GenericProbe(DriverPtr drv, int flags)
 		pScrn->ValidMode     = GenericValidMode;
 		foundScreen = TRUE;
 	    }
-	    xfree(usedChips);
 	}
+	xfree(usedChips);
     }
 
-    if (devSections)
-	xfree(devSections);
+    xfree(devSections);
     return foundScreen;
 }
 

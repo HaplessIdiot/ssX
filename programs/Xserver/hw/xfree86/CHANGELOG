@@ -1,4 +1,11 @@
-XFree86 4.0.1h (1 December 2000)
+XFree86 4.0.1h (xx December 2000)
+1068. Clean up r128_video.c again (Marc La France).
+1067. Fix ATI clock generator recognition when an adapter BIOS cannot be
+      retrieved (Linus Torvals).
+1066. Fix int10 and ATI driver for video BIOS larger than 64kB
+      (Marc La France).
+1065. Change xf86MatchDevice() to initialise its return pointer and clean up
+      drivers accordingly (Marc La France).
 1064. Fix for bug in new imConv.c (#4318, Ivan Pascal).
 1063. Fix for FreeBSD sysmouse support (#4317, from FreeBSD ports collection).
 1062. Enable the ru_SU local entries for FreeBSD (based on patch from FreeBSD
@@ -41,54 +48,54 @@ XFree86 4.0.1h (1 December 2000)
       (#4302, Ivan Pascal).
 1046. Make sure the correct "driverName" string is used in xf86Configure.c.
 1045. Fix some i810 driver problems when too little videoRam is specified
-      (David Dawes).  1044. Fix an i810 driver bug that prevents the
-DRI from being enabled
-      after a server reset (Jeff Hartmann).  1043. Add a "dri" config
-file option to the i810 driver that can be used
+      (David Dawes).
+1044. Fix an i810 driver bug that prevents the DRI from being enabled
+      after a server reset (Jeff Hartmann).
+1043. Add a "dri" config file option to the i810 driver that can be used
       to enable/disable the DRI (no other method works for statically
-      linked servers) (David Dawes, from VA's 7.0.1).  1042. Update the
-i810 driver to check the max available GART memory
-      (Jeff Hartmann, David Dawes, from VA's 7.0.1).  1041. Resync DRI
-code/drivers with the DRI CVS (VA Linux).  1040. Fix a couple of clipping
-problems on the Trident CyberBlade/Blade3d
-      chipsets (Alan Hourihane).  1039. Fix a couple of Alpha related
-issues (Jay Estabrook).  1038. Change Xft interface (again) to use new
-XftColor datatype for
+      linked servers) (David Dawes, from VA's 7.0.1).
+1042. Update the i810 driver to check the max available GART memory
+      (Jeff Hartmann, David Dawes, from VA's 7.0.1).
+1041. Resync DRI code/drivers with the DRI CVS (VA Linux).
+1040. Fix a couple of clipping problems on the Trident CyberBlade/Blade3d
+      chipsets (Alan Hourihane).
+1039. Fix a couple of Alpha related issues (Jay Estabrook).
+1038. Change Xft interface (again) to use new XftColor datatype for
       colors instead of XRenderColor.  xterm and x11perf updated to
-      match.  (Keith Packard) 1037. Fix an i810 init problem that resulted
-in the fallback to 2D failing
+      match.  (Keith Packard)
+1037. Fix an i810 init problem that resulted in the fallback to 2D failing
       for one case where there's insufficient memory to enable the DRI
-      (David Dawes, from VA's 7.0.1).  1036. Add support for printing
-a vendor-specific version string in the
-      X server startup messages (David Dawes, from VA's 7.0.1).  1035.
-Xwd workaround for a gcc bug (Red Hat's XFree86-4.0.1-xwd-gcc-workaround
-      patch).  1034. Fixes for sparc drivers, mostly to prevent accessing
-the hardware
+      (David Dawes, from VA's 7.0.1).
+1036. Add support for printing a vendor-specific version string in the
+      X server startup messages (David Dawes, from VA's 7.0.1).
+1035. Xwd workaround for a gcc bug (Red Hat's XFree86-4.0.1-xwd-gcc-workaround
+      patch).
+1034. Fixes for sparc drivers, mostly to prevent accessing the hardware
       when the server doesn't have control of the VT (Red Hat's
-      XFree86-4.0.1-ffb patch).  1033. Use OS-provided interface for
-accessing PCI config space on Linux/ia64
-      (based on Red Hat's XFree86-4.0.1-ia64-pci patch).  1032. Use
-AsmDefines when processing the Sparc assembler code for cfb
-      (based on Red Hat's XFree86-4.0-sparc-asmflags patch).  1031. Add
-PAM authentication to the X server (based on Red Hat's
-      XFree86-4.0-Xwrapper patch).  1030. Add Slovenian and Romanian
-entries to XKB's keymap/xfree86 file
+      XFree86-4.0.1-ffb patch).
+1033. Use OS-provided interface for accessing PCI config space on Linux/ia64
+      (based on Red Hat's XFree86-4.0.1-ia64-pci patch).
+1032. Use AsmDefines when processing the Sparc assembler code for cfb
+      (based on Red Hat's XFree86-4.0-sparc-asmflags patch).
+1031. Add PAM authentication to the X server (based on Red Hat's
+      XFree86-4.0-Xwrapper patch).
+1030. Add Slovenian and Romanian entries to XKB's keymap/xfree86 file
       (Red Hat's XFree86-4.0-si_xkb patch and XFree86-4.0-ro_xkb.patch).
 1029. Fix for PAM support in xdm SessionExit() (Red Hat's
-      XFree86-4.0-pamsession patch).  1028. XlibInt.c patch to avoid
-buffer overflow (Red Hat's
-      XFree86-3.3.6-fixemacs patch).  1027. Updates to xfs from Red Hat
-and Debian, including:
+      XFree86-4.0-pamsession patch).
+1028. XlibInt.c patch to avoid buffer overflow (Red Hat's
+      XFree86-3.3.6-fixemacs patch).
+1027. Updates to xfs from Red Hat and Debian, including:
        - command line options to make xfs drop it's root privs (-droppriv
 	 and -user) - command line options to make xfs start as a daemon,
-       and a build
-	 option to make this the default.  - don't let a port option in
-       the config file override the -port
-	 command line option - cleanup/fix syslogging (based on #4253,
-      Debian, and Red Hat's XFree86-4.0-xfsredhat patch).  1026. Support
-for startx to set up the Xauth when starting an X server
-      (based on Red Hat's XFree86-4.0-startx_xauth patch).  1025. Fix
-an unaligned access on Alpha with the tdfx driver (Jay Estabrook).
+         and a build option to make this the default.
+       - don't let a port option in the config file override the -port
+	 command line option
+       - cleanup/fix syslogging
+      (based on #4253, Debian, and Red Hat's XFree86-4.0-xfsredhat patch).
+1026. Support for startx to set up the Xauth when starting an X server
+      (based on Red Hat's XFree86-4.0-startx_xauth patch).
+1025. Fix an unaligned access on Alpha with the tdfx driver (Jay Estabrook).
 1024. Add detection for CyberBlade/Ai1 Socket A chipsets (Alan Hourihane).
 
 XFree86 4.0.1g (29 November 2000)
@@ -11791,4 +11798,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1432 2000/12/01 21:31:55 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1433 2000/12/02 01:16:05 dawes Exp $

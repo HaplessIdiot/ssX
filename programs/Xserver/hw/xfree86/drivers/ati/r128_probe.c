@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.4 2000/11/28 17:25:13 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -109,7 +109,7 @@ R128Probe(DriverPtr drv, int flags)
     int           numUsed;
     int           numDevSections, nATIGDev, nR128GDev;
     int           *usedChips;
-    GDevPtr       *devSections, *ATIGDevs = NULL, *R128GDevs = NULL;
+    GDevPtr       *devSections, *ATIGDevs, *R128GDevs;
     EntityInfoPtr pEnt;
     Bool          foundScreen = FALSE;
     int           i;
@@ -193,7 +193,7 @@ R128Probe(DriverPtr drv, int flags)
 	xfree(pEnt);
     }
 
-    if (numUsed) xfree(usedChips);
+    xfree(usedChips);
     xfree(devSections);
 
     return foundScreen;

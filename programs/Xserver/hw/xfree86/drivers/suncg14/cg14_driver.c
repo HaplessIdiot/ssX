@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86:$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.1 2000/06/30 17:15:14 dawes Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -189,7 +189,7 @@ static Bool
 CG14Probe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -234,9 +234,7 @@ CG14Probe(DriverPtr drv, int flags)
 		   devSections, numDevSections,
 		   drv, &usedChips);
 				    
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
+    xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
 
@@ -272,6 +270,7 @@ CG14Probe(DriverPtr drv, int flags)
 	}
 	xfree(pEnt);
     }
+    xfree(usedChips);
     return foundScreen;
 }
 

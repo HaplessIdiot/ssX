@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.5 2000/02/12 02:54:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.6 2000/11/28 18:49:27 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -221,8 +221,8 @@ typedef void (*XCloseLCProc)(
 typedef char* (*XlcMapModifiersProc)(
 #if NeedFunctionPrototypes
     XLCd		/* lcd */,
-    char*		/* user_mods */,
-    char*		/* prog_mods */
+    _Xconst char*	/* user_mods */,
+    _Xconst char*	/* prog_mods */
 #endif
 );
 
@@ -863,8 +863,8 @@ extern Bool _XlcValidModSyntax(
 
 extern char *_XlcDefaultMapModifiers(
     XLCd		lcd,
-    const char*		user_mods,
-    const char*		prog_mods
+    _Xconst char*		user_mods,
+    _Xconst char*		prog_mods
 );
 
 extern void _XIMCompileResourceList(

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/Imakefile,v 1.16 2000/02/08 13:13:20 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/Imakefile,v 1.1 2000/12/02 01:16:11 dawes Exp $
 /*
  *
  * Copyright 1995-1998 The XFree86 Project, Inc.
@@ -34,7 +34,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/xf24_32bpp -I$(SERVERSRC)/Xext \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
-	   -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
+	   -I$(XF86SRC)/rac -I$(XF86SRC)/int10 -I$(SERVERSRC)/render \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC) \
            -I$(EXTINCSRC) -I$(XF86OSSRC)/vbe -I$(XF86SRC)/shadowfb
 #endif

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.2 2000/12/01 14:31:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.3 2000/12/01 15:28:10 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -411,7 +411,7 @@ static Bool
 SMI_Probe(DriverPtr drv, int flags)
 {
 	int i;
-	GDevPtr *devSections = NULL;
+	GDevPtr *devSections;
 	int *usedChips;
 	int numDevSections;
 	int numUsed;
@@ -439,11 +439,7 @@ SMI_Probe(DriverPtr drv, int flags)
 									numDevSections, drv, &usedChips);
 
 	/* Free it since we don't need that list after this */
-	if (devSections)
-	{
-		xfree(devSections);
-	}
-	devSections = NULL;
+	xfree(devSections);
 	if (numUsed <= 0)
 	{
 		LEAVE_PROC("SMI_Probe");

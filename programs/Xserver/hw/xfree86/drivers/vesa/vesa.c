@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.7 2000/12/01 19:56:01 paulo Exp $
  */
 
 #include "vesa.h"
@@ -220,7 +220,7 @@ VESAProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections = NULL;
+    GDevPtr *devSections;
     int *usedChips;
     int i;
 
@@ -240,7 +240,7 @@ VESAProbe(DriverPtr drv, int flags)
 					drv, &usedChips);
 	if (numUsed > 0) {
 	    if (flags & PROBE_DETECT)
-		return (TRUE);
+		foundScreen = TRUE;
 	    else {
 		for (i = 0; i < numUsed; i++) {
 		    ScrnInfoPtr pScrn = NULL;
@@ -261,9 +261,9 @@ VESAProbe(DriverPtr drv, int flags)
 			pScrn->FreeScreen    = VESAFreeScreen;
 			foundScreen = TRUE;
 		    }
-		    xfree(usedChips);
 		}
 	    }
+	    xfree(usedChips);
 	}
     }
 
@@ -274,8 +274,8 @@ VESAProbe(DriverPtr drv, int flags)
 				    numDevSections, &usedChips);
     if(numUsed > 0) {
 	if (flags & PROBE_DETECT)
-	    return (TRUE);
-	for (i = 0; i < numUsed; i++) {
+	    foundScreen = TRUE;
+	else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = NULL;
 	    if ((pScrn = xf86ConfigIsaEntity(pScrn, 0,usedChips[i],
 					     VESAISAchipsets, NULL,
@@ -294,12 +294,11 @@ VESAProbe(DriverPtr drv, int flags)
 		pScrn->FreeScreen    = VESAFreeScreen;
 		foundScreen = TRUE;
 	    }
-	    xfree(usedChips);
 	}
+	xfree(usedChips);
     }
 
-    if (devSections)
-	xfree(devSections);
+    xfree(devSections);
 
     return (foundScreen);
 }

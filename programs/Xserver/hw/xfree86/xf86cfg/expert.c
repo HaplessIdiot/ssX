@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.3 2000/12/01 18:31:07 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.4 2000/12/01 21:03:35 paulo Exp $
  */
 
 #include "config.h"
@@ -1688,7 +1688,8 @@ CreateMonitorField(TreeNode *node, Bool addnew)
 
 	XtCreateManagedWidget("hsyncL", labelWidgetClass, box, NULL, 0);
 	if (mon->mon_n_hsync > 0)
-	    parser_range_to_string(buf, &(mon->mon_hsync), mon->mon_n_hsync);
+	    parser_range_to_string(buf, &(mon->mon_hsync[0]),
+				   mon->mon_n_hsync);
 	else
 	    *buf = '\0';
 	node->data->monitor.hsync =
@@ -1699,7 +1700,7 @@ CreateMonitorField(TreeNode *node, Bool addnew)
 
 	XtCreateManagedWidget("vrefreshL", labelWidgetClass, box, NULL, 0);
 	if (mon->mon_n_vrefresh > 0)
-	    parser_range_to_string(buf, &(mon->mon_vrefresh),
+	    parser_range_to_string(buf, &(mon->mon_vrefresh[0]),
 				   mon->mon_n_vrefresh);
 	else
 	    *buf = '\0';
@@ -1878,13 +1879,15 @@ MonitorUpdate(TreeNode *node)
     /* hsync */
     XtVaGetValues(node->data->monitor.hsync, XtNstring, &str, NULL, 0);
     node->data->monitor.monitor->mon_n_hsync =
-	string_to_parser_range(str, &(node->data->monitor.monitor->mon_hsync),
+	string_to_parser_range(str,
+			       &(node->data->monitor.monitor->mon_hsync[0]),
 			       CONF_MAX_HSYNC);
 
     /* vrefresh */
     XtVaGetValues(node->data->monitor.vrefresh, XtNstring, &str, NULL, 0);
     node->data->monitor.monitor->mon_n_vrefresh =
-	string_to_parser_range(str, &(node->data->monitor.monitor->mon_vrefresh),
+	string_to_parser_range(str,
+			       &(node->data->monitor.monitor->mon_vrefresh[0]),
 			       CONF_MAX_VREFRESH);
 
     /* gammaRed */
