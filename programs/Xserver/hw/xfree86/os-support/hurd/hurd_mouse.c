@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.4 1999/05/23 04:31:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.5 1999/05/23 05:02:02 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -69,7 +69,7 @@ typedef struct {
 #define MOUSE_MOTION	4		/* mouse motion */
 #define KEYBD_EVENT	5		/* key up/down */
 
-#define EVENTS_BUFSIZE	64
+#define NUMEVENTS	64
 
 /*
  * OsMouseProc --
@@ -82,7 +82,6 @@ OsMouseProc(DeviceIntPtr pPointer, int what)
     MouseDevPtr pMse;
     unsigned char map[MSE_MAXBUTTONS + 1];
     int nbuttons;
-    int mousefd;
 
     pInfo = pPointer->public.devicePrivate;
     pMse = pInfo->private;
@@ -117,7 +116,7 @@ OsMouseProc(DeviceIntPtr pPointer, int what)
 	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
 	else {
 	    pMse->buffer = XisbNew(pInfo->fd,
-				   EVENTS_BUFSIZE * sizeof(kd_event));
+				   NUMEVENTS * sizeof(kd_event));
 	    if (!pMse->buffer) {
 		xfree(pMse);
 		xf86CloseSerial(pInfo->fd);
@@ -209,6 +208,7 @@ OsMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 
     /* This is called when the protocol is "OSMouse". */
 
+    pMse = pInfo->private;
     pMse->protocol = protocol;
     xf86Msg(X_CONFIG, "%s: Protocol: %s\n", pInfo->name, protocol);
 
@@ -224,7 +224,7 @@ OsMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 	else {
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pMse);
-	    return pInfo;
+	    return FALSE;
 	}
     }
     xf86CloseSerial(pInfo->fd);

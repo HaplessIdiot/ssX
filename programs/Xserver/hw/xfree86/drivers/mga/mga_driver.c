@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.94 1999/04/27 12:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.95 1999/05/16 10:13:00 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -685,6 +685,13 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	   if ( pBios2->Clk8MB == 0 )
 		pBios2->Clk8MB = pBios->Clk4MB;
 	   pBios->StructLen = 0; /* not in use */
+#ifdef DEBUG
+	   for (i = 0; i < 0x40; i++)
+	      ErrorF("Pins[0x%02x] is 0x%02x\n", i,
+			((unsigned char *)pBios2)[i]);
+#endif
+	   ErrorF("0x20 of Pins[0x34] is %s\n",
+		  (pBios2->VidCtrl & 0x20) ?  "set" : "cleared");
 	   return;
 	} else {
 	  /* Set default MCLK values (scaled by 10 kHz) */

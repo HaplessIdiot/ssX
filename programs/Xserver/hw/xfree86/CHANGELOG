@@ -1,3 +1,12 @@
+XFree86 3.9Pp (30 May 1999)
+2684. Fix a problems with the new mouse code looping by adding CLOCAL to
+      the standard termios flags for xf86OpenSerial() (#2819, Matthieu Herrb).
+2683. New font document (#2818, Juliusz Chroboczek).
+2682. Fix the reworked "wsmouse" code for NetBSD (#2815, Matthieu Herrb).
+2681. Fix for `resize' on OpenBSD (#2814, Matthieu Herrb).
+2680. Add the `s' flag to ArCmd and ArAddCmd for SVR4 so that empty archives
+      can be created (#2813, Nicholas Brealey).
+
 XFree86 3.9Po (23 May 1999)
 2679. Enable the new input code (NewInput) by default in xfree86.cf
       (David Dawes).
@@ -8050,4 +8059,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.756 1999/05/23 06:33:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.757 1999/05/23 14:37:57 dawes Exp $
