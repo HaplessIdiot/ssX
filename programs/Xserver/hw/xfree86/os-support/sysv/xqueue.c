@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.17 1999/05/23 04:26:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.18 1999/09/04 13:04:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993-1999 by The XFree86 Project, Inc.
@@ -224,7 +224,7 @@ XqReadInput(InputInfoPtr pInfo)
 	switch (XqueEvents[XqueHead].xq_type) {
 	case XQ_BUTTON:
 	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
-			    0, 0, 0);
+			    0, 0, 0, 0);
 #ifdef DEBUG
 	    ErrorF("xqueue: buttons: %d\n", ~(XqueEvents[XqueHead].xq_code) & 0x07);
 #endif
@@ -234,7 +234,7 @@ XqReadInput(InputInfoPtr pInfo)
 	    dx = (signed char)XqueEvents[XqueHead].xq_x;
 	    dy = (signed char)XqueEvents[XqueHead].xq_y;
 	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
-			    (int)dx, (int)dy, 0);
+			    (int)dx, (int)dy, 0, 0);
 #ifdef DEBUG
 	    ErrorF("xqueue: Motion: (%d, %d) (buttons: %d)\n", dx, dy, ~(XqueEvents[XqueHead].xq_code) & 0x07);
 #endif

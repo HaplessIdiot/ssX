@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.7 1999/09/25 14:37:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.8 1999/09/27 14:33:45 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -64,11 +64,15 @@ static symtab_t pnpprod[] = {
     { "MSH0004",  PROT_IMSERIAL },	/* MS IntelliMouse TrackBall */
     { "KYEEZ00",  PROT_MS },		/* Genius EZScroll */
     { "KYE0001",  PROT_MS },		/* Genius PnP Mouse */
+    { "KYE0002",  PROT_MS },		/* MouseSystem (Genius?) SmartScroll */
     { "KYE0003",  PROT_IMSERIAL },	/* Genius NetMouse */
     { "LGI800C",  PROT_IMSERIAL },	/* Logitech MouseMan (4 button model) */
+    { "LGI8033",  PROT_IMSERIAL },	/* Logitech Cordless MouseMan Wheel */
     { "LGI8050",  PROT_IMSERIAL },	/* Logitech MouseMan+ */
     { "LGI8051",  PROT_IMSERIAL },	/* Logitech FirstMouse+ */
     { "LGI8001",  PROT_LOGIMAN },	/* Logitech serial */
+    { "A4W0005",  PROT_IMSERIAL },	/* A4 Tech 4D/4D+ Mouse */
+    { "PEC9802",  PROT_IMSERIAL },	/* 8D Scroll Mouse */
 
     { "PNP0F00",  PROT_BM },		/* MS bus */
     { "PNP0F01",  PROT_MS },		/* MS serial */

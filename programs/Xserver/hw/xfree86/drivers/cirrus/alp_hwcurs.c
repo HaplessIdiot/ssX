@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_hwcurs.c,v 1.6 1999/04/25 10:02:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_hwcurs.c,v 1.2 2000/02/08 13:13:14 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -222,7 +222,6 @@ AlpHWCursorInit(ScreenPtr pScreen, int size)
 	    CURSORWIDTH = CURSORHEIGHT = 32;
 	
 	pAlp->HWCursorBits = pCir->FbBase + 1024*pScrn->videoRam - 2*CURSORSIZE;
-+ 
 
 	infoPtr->MaxWidth = CURSORWIDTH;
 	infoPtr->MaxHeight = CURSORHEIGHT;

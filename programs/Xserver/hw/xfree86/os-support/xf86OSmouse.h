@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.5 1999/05/23 04:26:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.7 2000/02/08 13:13:27 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -88,7 +88,7 @@ extern OSMouseInfoPtr xf86OSMouseInit(int flags);
  */
 
 typedef void (*PostMseEventProc)(InputInfoPtr pInfo, int buttons,
-			      int dx, int dy, int dz);
+			      int dx, int dy, int dz, int dw);
 typedef void (*MouseCommonOptProc)(InputInfoPtr pInfo);
 
 typedef struct _MouseDevRec {
@@ -126,6 +126,8 @@ typedef struct _MouseDevRec {
     int			resolution;
     int			negativeZ;
     int			positiveZ;
+    int			negativeW;
+    int			positiveW;
     pointer		buffer;		/* usually an XISBuffer* */
     int			protoBufTail;
     unsigned char	protoBuf[8];

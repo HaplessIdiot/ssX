@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.5 1999/05/23 05:02:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.6 1999/05/29 14:41:51 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -195,7 +195,7 @@ OsMouseReadInput(InputInfoPtr pInfo)
 	    ErrorF("Bad mouse event (%d)\n",event->type);
 	    continue;
 	}
-	pMse->PostEvent(pInfo, buttons, dx, dy, 0);
+	pMse->PostEvent(pInfo, buttons, dx, dy, 0, 0);
 	++event;
     }
     return;

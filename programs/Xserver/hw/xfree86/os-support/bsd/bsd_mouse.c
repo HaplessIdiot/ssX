@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.10 1999/11/19 13:55:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.11 1999/12/06 02:50:22 robin Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -249,7 +249,7 @@ wsconsReadInput(InputInfoPtr pInfo)
     n /= sizeof(struct wscons_event);
     while( n-- ) {
 	int buttons = pMse->lastButtons;
-	int dx = 0, dy = 0, dz = 0;
+	int dx = 0, dy = 0, dz = 0, dw = 0;
 	switch (event->type) {
 	case WSCONS_EVENT_MOUSE_UP:
 #define BUTBIT (1 << (event->value <= 2 ? 2 - event->value : event->value))
@@ -275,7 +275,7 @@ wsconsReadInput(InputInfoPtr pInfo)
 	    continue;
 	}
 
-	pMse->PostEvent(pInfo, buttons, dx, dy, dz);
+	pMse->PostEvent(pInfo, buttons, dx, dy, dz, dw);
 	++event;
     }
     return;

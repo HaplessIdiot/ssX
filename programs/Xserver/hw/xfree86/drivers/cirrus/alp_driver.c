@@ -9,7 +9,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.44 1999/12/03 19:17:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.3 2000/02/08 13:13:14 eich Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -276,11 +276,8 @@ alpSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 				  xf8_32bppSymbols, ramdacSymbols,int10Symbols,
 				  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
-		return (pointer)1;
 	}
-
-	if (errmaj) *errmaj = LDR_ONCEONLY;
-	return NULL;
+	return (pointer)1;
 }
 
 #endif /* XFree86LOADER */
