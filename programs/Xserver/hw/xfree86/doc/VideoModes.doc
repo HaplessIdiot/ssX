@@ -1123,7 +1123,7 @@ Here is a copy of modeplot:
      #
      # Do `modeplot -?' to see the control options.
      #
-     # ($Id: VideoModes.doc,v 3.19 2000/01/24 19:44:51 dawes Exp $)
+     # ($Id: VideoModes.doc,v 3.20 2000/02/21 22:44:46 dawes Exp $)
 
      # Monitor description. Bandwidth in MHz, horizontal frequencies in kHz
      # and vertical frequencies in Hz.
@@ -1162,7 +1162,7 @@ Here is a copy of modeplot:
      The modeplot tool was created by Eric S. Raymond <esr@thyrsus.com> based on
      analysis and scratch code by Martin Lottermoser <Martin.Lottermoser@mch.sni.de>
 
-     This is modeplot $Revision: 3.19 $
+     This is modeplot $Revision: 3.20 $
      EOF
                exit;;
           esac

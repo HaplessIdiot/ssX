@@ -6,7 +6,7 @@
 
 1.  Supported hardware
 
-The s3virge driver in XFree86 3.9.15 supports the S3 ViRGE, ViRGE DX, GX, MX,
+The s3virge driver in XFree86 3.9.18 supports the S3 ViRGE, ViRGE DX, GX, MX,
 MX+, and VX chipsets.  A majority of testing is done on ViRGE DX chips, mak-
 ing them the most stable to date.  This release has improved support for 24
 bit color depths and resolves all the known issues with Netscape and other

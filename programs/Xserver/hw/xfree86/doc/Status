@@ -9,7 +9,7 @@
      This document provides information about the status of the driver
      and hardware support in XFree86 3.9.18 compared with that in
      XFree86 3.3.6.  Please send updates for this document to
-     <dawes@xfree86.org>
+     <fixes@xfree86.org>
 
 1.  Introduction
 
@@ -582,7 +582,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 3.9.18.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.12 2000/02/18 16:23:21 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.13 2000/02/21 22:29:08 dawes Exp $
 
 
 $XFree86$
