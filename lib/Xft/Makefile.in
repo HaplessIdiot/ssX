@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/Xft/Makefile.in,v 1.2 2002/05/23 23:18:23 keithp Exp $
+# $XFree86: xc/lib/Xft/Makefile.in,v 1.3 2002/05/24 06:26:28 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -158,9 +158,11 @@ $(DESTDIR)$(LIBDIR)/$(LIBFILE): $(LIBFILE)
 	$(INSTALL_PROGRAM) $< $(DESTDIR)$(LIBDIR)
 
 $(DESTDIR)$(LIBDIR)/$(LIBMAJOR): $(DESTDIR)$(LIBDIR)/$(LIBFILE)
+	rm -f  $@
 	$(LN_S) $(LIBFILE) $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
 
 $(DESTDIR)$(LIBDIR)/$(LIBBASE): $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+	rm -f  $@
 	$(LN_S) $(LIBMAJOR) $(DESTDIR)$(LIBDIR)/$(LIBBASE)
 
 #
