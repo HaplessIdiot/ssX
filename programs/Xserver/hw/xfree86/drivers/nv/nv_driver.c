@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.54 2000/12/27 04:57:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.55 2001/01/21 21:19:29 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -1756,8 +1756,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
     /* Initialize colormap layer.  
 	Must follow initialization of the default colormap */
-    if(!xf86HandleColormaps(pScreen, 256, 
-		(pNv->riva.Architecture == 3) ? 6 : 8,
+    if(!xf86HandleColormaps(pScreen, 256, 8,
 		(pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), 
 		NULL, CMAP_RELOAD_ON_MODE_SWITCH))
 	return FALSE;
