@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.11 2002/10/16 14:16:25 tsi Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.12 2003/05/29 03:05:09 dawes Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -12,6 +12,7 @@ INCLUDES = -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
            -I$(SERVERSRC)/include \
 	   -I$(FT2INCDIR) \
            -I$(FT2SOURCEDIR)/base \
+           -I$(FT2SOURCEDIR)/gzip \
            -I$(FT2SOURCEDIR)/raster \
            -I$(FT2SOURCEDIR)/sfnt \
            -I$(FT2SOURCEDIR)/truetype \
@@ -24,10 +25,10 @@ INCLUDES = -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
            -I$(INCLUDESRC)
 
 FT2SRCS = ftbase.c ftinit.c ftglyph.c ftsystem.c fttype1.c ftxf86.c \
-          raster.c sfnt.c truetype.c cff.c type1.c \
+          ftgzip.c raster.c sfnt.c truetype.c cff.c type1.c \
           psaux.c psnames.c pshinter.c  autohint.c
 FT2OBJS = ftbase.o ftinit.o ftglyph.o ftsystem.o fttype1.o ftxf86.o \
-          raster.o sfnt.o truetype.o cff.o type1.o \
+          ftgzip.o raster.o sfnt.o truetype.o cff.o type1.o \
           psaux.o psnames.o pshinter.o autohint.o
 
 SRCS = ftfuncs.c ftenc.c fttools.c $(FT2SRCS) ftmodule.c
@@ -44,6 +45,7 @@ LinkSourceFile(ftsystem.c,..)
 LinkSourceFile(ftutil.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(fttype1.c,$(FT2SOURCEDIR)/base)
 LinkSourceFile(ftxf86.c,$(FT2SOURCEDIR)/base)
+LinkSourceFile(ftgzip.c,$(FT2SOURCEDIR)/gzip)
 LinkSourceFile(raster.c,$(FT2SOURCEDIR)/raster)
 LinkSourceFile(sfnt.c,$(FT2SOURCEDIR)/sfnt)
 LinkSourceFile(truetype.c,$(FT2SOURCEDIR)/truetype)

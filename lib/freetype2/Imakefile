@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.12 2003/05/25 03:12:24 dawes Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.13 2003/05/29 03:05:09 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -45,6 +45,7 @@ INCLUDES = -I. $(FREETYPE2INCLUDES)\
 	-I$(FREETYPESRC)/bdf\
 	-I$(FREETYPESRC)/cff\
 	-I$(FREETYPESRC)/cid\
+	-I$(FREETYPESRC)/gzip\
 	-I$(FREETYPESRC)/pcf\
 	-I$(FREETYPESRC)/pfr\
 	-I$(FREETYPESRC)/psaux\
@@ -109,6 +110,9 @@ OBJS_CFF      = cff.o
 SRCS_CID      = type1cid.c
 OBJS_CID      = type1cid.o
 
+SRCS_GZIP     = ftgzip.c
+OBJS_GZIP     = ftgzip.o
+
 SRCS_PCF      = pcf.c
 OBJS_PCF      = pcf.o
 
@@ -151,6 +155,7 @@ SRCS = $(SRCS_BASE)\
        $(SRCS_BDF)\
        $(SRCS_CFF)\
        $(SRCS_CID)\
+       $(SRCS_GZIP)\
        $(SRCS_PCF)\
        $(SRCS_PFR)\
        $(SRCS_PSAUX)\
@@ -170,6 +175,7 @@ OBJS = $(OBJS_BASE)\
        $(OBJS_BDF)\
        $(OBJS_CFF)\
        $(OBJS_CID)\
+       $(OBJS_GZIP)\
        $(OBJS_PCF)\
        $(OBJS_PFR)\
        $(OBJS_PSAUX)\
@@ -222,6 +228,7 @@ LinkSourceFile(ftmac.c,$(FREETYPESRC)/base)
 LinkSourceFile(autohint.c,$(FREETYPESRC)/autohint)
 LinkSourceFile(bdf.c,$(FREETYPESRC)/bdf)
 LinkSourceFile(cff.c,$(FREETYPESRC)/cff)
+LinkSourceFile(ftgzip.c,$(FREETYPESRC)/gzip)
 LinkSourceFile(type1cid.c,$(FREETYPESRC)/cid)
 LinkSourceFile(pcf.c,$(FREETYPESRC)/pcf)
 LinkSourceFile(pfr.c,$(FREETYPESRC)/pfr)

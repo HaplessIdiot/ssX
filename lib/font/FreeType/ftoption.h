@@ -16,7 +16,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.4 2003/05/29 03:05:08 dawes Exp $ */
 
 #ifndef __FTOPTION_H__
 #define __FTOPTION_H__
@@ -205,6 +205,43 @@ FT_BEGIN_HEADER
   /*         on platforms that support it.                                 */
   /*                                                                       */
 #define FT_CONFIG_OPTION_FORCE_INT64
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Gzip-compressed file support.                                         */
+  /*                                                                       */
+  /*   FreeType now handles font files that have been compressed with the  */
+  /*   'gzip' program. This is mostly used to parse many of the PCF files  */
+  /*   that come with XFree86. The implementation uses 'zlib' to           */
+  /*   partially uncompress the file on the fly (see src/base/ftgzip.c).   */
+  /*                                                                       */
+  /*   Define this macro if you want to enable this "feature". Note that   */
+  /*   this will however force you to link the zlib to any program that    */
+  /*   also uses FreeType.                                                 */
+  /*                                                                       */
+#define FT_CONFIG_OPTION_USE_ZLIB
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* ZLib library selection                                                */
+  /*                                                                       */
+  /*   This macro is only used when FT_CONFIG_OPTION_USE_ZLIB is defined.  */
+  /*   It allows FreeType's "ftgzip" component to link to the system's     */
+  /*   installation of the ZLib library. This is useful on systems like    */
+  /*   Unix or VMS where it generally is already available.                */
+  /*                                                                       */
+  /*   If you let it undefined, the component will use its own copy        */
+  /*   of the zlib sources instead. These have been modified to be         */
+  /*   included directly within the component and *not* export external    */
+  /*   function names. This allows you to link any program with FreeType   */
+  /*   _and_ ZLib without linking conflicts.                               */
+  /*                                                                       */
+  /*   do not #undef this macro here, since the build system might         */
+  /*   define for certain configurations                                   */
+  /*                                                                       */
+/* #define  FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
 
   /*************************************************************************/

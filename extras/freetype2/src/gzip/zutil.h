@@ -10,11 +10,14 @@
 
 /* @(#) $Id$ */
 
+/* $XFree86$ */
+
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H
 
 #include "zlib.h"
 
+#if 0
 #ifdef STDC
 #  include <stddef.h>
 #  include <string.h>
@@ -24,6 +27,7 @@
     extern int errno;
 #else
 #   include <errno.h>
+#endif
 #endif
 
 #ifndef local

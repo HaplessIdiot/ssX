@@ -18,12 +18,15 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
+/* $XFree86$ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_MEMORY_H
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_DEBUG_H
+#if 0
 #include <string.h>
+#endif
 
 #ifdef FT_CONFIG_OPTION_USE_ZLIB
 
