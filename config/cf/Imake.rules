@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.133 2004/04/04 17:53:17 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.134tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2431,10 +2431,7 @@ clean::									@@\
 #ifndef NormalAsmObjectRule
 #define NormalAsmObjectRule()						@@\
 .S.o:									@@\
-	AssembleObject($(_NOOP_))					@@\
-									@@\
-.S.i:									@@\
-	CPPOnlyAsm($*,$(_NOOP_))
+	AssembleObject($(_NOOP_))
 #endif
 
 #ifndef ObjectFromSpecialAsmSource
