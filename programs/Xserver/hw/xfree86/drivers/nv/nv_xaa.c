@@ -581,6 +581,41 @@ NVSubsequentSolidBresenhamLine(
 
 #endif
 
+void
+NVValidatePolyArc(
+   GCPtr        pGC,
+   unsigned long changes,
+   DrawablePtr pDraw
+){
+   ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
+   NVPtr pNv = NVPTR(pScrn);
+
+   if(pGC->planemask != ~0) return;
+
+   if(!pGC->lineWidth && 
+	((pGC->alu != GXcopy) || (pGC->lineStyle != LineSolid)))
+   {
+        pGC->ops->PolyArc = miZeroPolyArc;
+   }
+}
+
+void
+NVValidatePolyPoint(
+   GCPtr        pGC,
+   unsigned long changes,
+   DrawablePtr pDraw
+){
+   ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
+   NVPtr pNv = NVPTR(pScrn);
+
+   pGC->ops->PolyPoint = XAAFallbackOps.PolyPoint;
+
+   if(pGC->planemask != ~0) return;
+
+   if(pGC->alu != GXcopy)
+        pGC->ops->PolyPoint = miPolyPoint;
+}
+
 /* Initialize XAA acceleration info */
 Bool
 NVAccelInit(ScreenPtr pScreen) 
@@ -699,6 +734,11 @@ NVAccelInit(ScreenPtr pScreen)
     infoPtr->PolylinesThinSolid = 
 		NVPolylinesThinSolidWrapper;
 #endif    
+
+    infoPtr->ValidatePolyArc = NVValidatePolyArc;
+    infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask;
+    infoPtr->ValidatePolyPoint = NVValidatePolyPoint;
+    infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
 
     NVSetClippingRectangle(pScrn, 0, 0, 0x7fff, 0x7fff);
     return(XAAInit(pScreen, infoPtr));
