@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.29 2000/11/26 10:08:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.30 2000/11/30 10:19:48 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -247,7 +247,7 @@ typedef enum {
     CYBERBLADEI7,
     CYBERBLADEI7D,
     CYBERBLADEI1,
-    CYBERBLADEI1D
+    CYBERBLADEI1D,
     CYBERBLADEAI1,
     CYBERBLADEAI1D
 } TRIDENTType;
