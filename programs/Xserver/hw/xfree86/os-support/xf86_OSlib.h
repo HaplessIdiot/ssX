@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.89 2001/12/24 23:21:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.91 2003/07/07 15:34:27 eich Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -10,7 +10,7 @@
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  * Copyright 1994, 1996 by Holger Veit <Holger.Veit@gmd.de>
  * Copyright 1997 by Takis Psarogiannakopoulos <takis@dpmms.cam.ac.uk>
- * Copyright 1994-1998 by The XFree86 Project, Inc
+ * Copyright 1994-2003 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
