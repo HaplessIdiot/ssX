@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.20 1997/02/28 08:21:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.1 1997/03/06 23:17:18 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -144,7 +144,7 @@ static DisplayModeRec Mode320x200 = {
  * the defaults in here are for the 8bpp driver. For 1/4bpp we have to 
  * change the ChipRounding
  */
-vgaVideoChipRec GENERIC = {
+vgaVideoChipRec VGA = {
 	/* 
 	 * Function pointers
 	 */
@@ -231,7 +231,7 @@ ModuleInit(data,magic)
 	* magic= MAGIC_VERSION;
 	break;
     case 1:
-	* data = (pointer)&GENERIC;
+	* data = (pointer)&VGA;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     default:
@@ -334,8 +334,8 @@ GenericProbe()
 	 * if this is not running at 8bpp
 	 */
 	if( xf86bpp < 8 ) {
-		GENERIC.ChipRounding = 32;
-		GENERIC.ChipBuiltinModes = NULL;
+		VGA.ChipRounding = 32;
+		VGA.ChipBuiltinModes = NULL;
 	}
 
   	if (!vga256InfoRec.clocks)

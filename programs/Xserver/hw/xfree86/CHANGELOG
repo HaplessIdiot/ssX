@@ -1,4 +1,4 @@
-XFree86 3.2Am (10 March 1997)
+XFree86 3.2Am (11 March 1997)
  561. Add hardware cursor to MGA driver (#149, Xavier Ducoin).
  560. Make tseng driver handle 1/4/8bpp at runtime (#145, Koen Gadeyne).
  559. Make apm driver loadable (#146, Joe Moss).
@@ -4153,4 +4153,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.425 1997/03/07 07:44:38 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.426 1997/03/10 10:11:21 hohndel Exp $

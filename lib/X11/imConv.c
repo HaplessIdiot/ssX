@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.5 1997/01/22 10:57:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.6 1997/03/10 10:10:10 hohndel Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -155,11 +155,6 @@ static struct CodesetRec codeset[] = {
 };
 
 static int codeset_size = sizeof(codeset) / sizeof(codeset[0]);
-
-#define sCyrillic 6
-static struct CodesetRec koi8codeset = {
-    0x06l, "\033%/1\200\210koi8-r\002", get_koi8  /* KIO8-R (Cyrillic) */
-};
 
 #define sCyrillic 6
 static struct CodesetRec koi8codeset = {

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.98 1997/02/25 14:18:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.99 1997/02/28 08:17:46 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -611,9 +611,12 @@ XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o \
                $(XF86SRC)/xaa/xaavga256/xaavga256.o \
                $(XF86SRC)/xaa/xaa16/xaa16.o $(XF86SRC)/xaa/xaa24/xaa24.o \
                $(XF86SRC)/xaa/xaa32/xaa32.o
-XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) \
+XF86SVGALIBS = $(XF86DRIVERSRC)/LibraryTargetName(driver) \
                $(XF86SRC)/xaa/LibraryTargetName(xaa) \
                $(XF86SRC)/vga256/LibraryTargetName(vga256) \
+               $(XF86SRC)/vga16/LibraryTargetName(vga16) \
+               $(XF86SRC)/vga2/LibraryTargetName(vga2) \
+               $(XF86SRC)/mono/LibraryTargetName(mono) \
                $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 #if HasParallelMake
@@ -641,13 +644,13 @@ XCOMM
 DDXDIR1 = hw/xfree86
 #if XF86VGA16DualServer
 XF86VGA16MONOOBJS = $(XF86SRC)/mono/monoConf.o
-XF86VGA16MONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) \
+XF86VGA16MONOLIBS = $(XF86DRIVERSRC)/LibraryTargetName(driver) \
                     $(XF86SRC)/mono/LibraryTargetName(mono)
 #endif
 XF86VGA16SUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS)
 XF86VGA16OBJS = $(XF86COMSRC)/XF86_VGA16.o $(XF86SRC)/vga16/vga16Conf.o \
                 $(XF86SRC)/vga16/misc/vga16misc.o $(XF86VGA16MONOOBJS)
-XF86VGA16LIBS = $(VGA16DRIVERSRC)/LibraryTargetName(driver16) \
+XF86VGA16LIBS = $(XF86DRIVERSRC)/LibraryTargetName(driver) \
                 $(XF86SRC)/vga16/LibraryTargetName(vga16) \
                 $(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86VGA16SYSLIBS = $(SYSLIBS)
@@ -709,13 +712,13 @@ XCOMM
 DDXDIR1 = hw/xfree86
 #if XF86MonoDualServer
 XF86MONOMONOOBJS = $(XF86SRC)/mono/monoConf.o
-XF86MONOMONOLIBS = $(MONODRIVERSRC)/LibraryTargetName(monodrv) \
+XF86MONOMONOLIBS = $(XF86DRIVERSRC)/LibraryTargetName(driver) \
                    $(XF86SRC)/mono/LibraryTargetName(mono)
 #endif
 XF86MONOSUBDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86MONOOBJS = $(XF86COMSRC)/XF86_Mono.o $(XF86SRC)/vga2/vga2Conf.o \
                $(XF86SRC)/vga2/misc/vga2misc.o $(XF86MONOMONOOBJS)
-XF86MONOLIBS = $(VGA2DRIVERSRC)/LibraryTargetName(driver2) \
+XF86MONOLIBS = $(XF86DRIVERSRC)/LibraryTargetName(driver) \
                $(XF86SRC)/vga2/LibraryTargetName(vga2) \
 	       $(XF86MONOMONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86MONOSYSLIBS = $(SYSLIBS)

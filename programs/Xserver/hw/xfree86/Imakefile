@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.32 1997/03/04 10:38:12 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.33 1997/03/07 00:28:46 hohndel Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -38,8 +38,8 @@ XF86SETUPDIR = XF86Setup
 
 #if XF86LoaderServer
 LOADERDIR = loader
-DRIVERS = drivers
 #endif
+DRIVERS = drivers
 
 SCREENS = $(VGA2SCREEN) $(MONOSCREEN) $(VGA16SCREEN) $(VGA256SCREEN) $(ACCELDIRS) $(DRIVERS)
 

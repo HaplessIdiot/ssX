@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.24 1997/02/28 08:21:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.1 1997/03/06 23:16:09 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -99,7 +99,7 @@ extern void  NCRSetReadWrite();
  * may I politely question the idea of calling this driver NCR77C22,
  * a name that is overwritten with a #define a few lines below...
  */
-vgaVideoChipRec NCR77C22= {
+vgaVideoChipRec NCR= {
   NCRProbe,
   NCRIdent,
   NCREnterLeave,
@@ -175,7 +175,7 @@ ModuleInit(data,magic)
 	* magic= MAGIC_VERSION;
 	break;
     case 1:
-	* data = (pointer) &NCR77C22;
+	* data = (pointer) &NCR;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     default:
@@ -362,9 +362,9 @@ NCRProbe()
         }
     }
     if (xf86bpp < 8) {
-        NCR77C22.ChipSetRead = (void (*)())NoopDDA;
-        NCR77C22.ChipSetWrite = (void (*)())NoopDDA;
-        NCR77C22.ChipSetReadWrite = (void (*)())NoopDDA;
+        NCR.ChipSetRead = (void (*)())NoopDDA;
+        NCR.ChipSetWrite = (void (*)())NoopDDA;
+        NCR.ChipSetReadWrite = (void (*)())NoopDDA;
     }
 
     numClocks = (NCRchipset == CHIP_NCR77C22) ? 4 : 8;

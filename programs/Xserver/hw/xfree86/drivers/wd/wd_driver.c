@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.36 1997/02/28 08:22:09 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.1 1997/03/06 23:17:28 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -119,7 +119,7 @@ extern void  WD90C33SetRead();
 extern void  WD90C33SetWrite();
 extern void  WD90C33SetReadWrite();
 
-vgaVideoChipRec PVGA1 = {
+vgaVideoChipRec WD = {
   PVGA1Probe,
   PVGA1Ident,
   PVGA1EnterLeave,
@@ -381,7 +381,7 @@ ModuleInit(data,magic)
         * magic= MAGIC_VERSION;
         break;
     case 1:
-        * data = (pointer)&PVGA1;
+        * data = (pointer)&WD;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
     default:
@@ -730,9 +730,9 @@ PVGA1Probe()
       }
     }
     if (WDchipset == WD90C33 && vga256InfoRec.videoRam > 1024) {
-      PVGA1.ChipSetWrite = WD90C33SetWrite;
-      PVGA1.ChipSetRead = WD90C33SetRead;
-      PVGA1.ChipSetReadWrite = WD90C33SetReadWrite;
+      WD.ChipSetWrite = WD90C33SetWrite;
+      WD.ChipSetRead = WD90C33SetRead;
+      WD.ChipSetReadWrite = WD90C33SetReadWrite;
     }
 
     /*
@@ -794,19 +794,19 @@ PVGA1Probe()
     vga256InfoRec.bankedMono = TRUE;
 
     /* Initialize allowed option flags based on chipset */
-    OFLG_SET(OPTION_SWAP_HIBIT, &PVGA1.ChipOptionFlags);
+    OFLG_SET(OPTION_SWAP_HIBIT, &WD.ChipOptionFlags);
     if (WDchipset == C_PVGA1)
-	OFLG_SET(OPTION_8CLKS, &PVGA1.ChipOptionFlags);
+	OFLG_SET(OPTION_8CLKS, &WD.ChipOptionFlags);
     if (WDchipset == WD90C20) {
-	OFLG_SET(OPTION_INTERN_DISP, &PVGA1.ChipOptionFlags);
-	OFLG_SET(OPTION_EXTERN_DISP, &PVGA1.ChipOptionFlags);
+	OFLG_SET(OPTION_INTERN_DISP, &WD.ChipOptionFlags);
+	OFLG_SET(OPTION_EXTERN_DISP, &WD.ChipOptionFlags);
     }
     if (WDchipset == WD90C31 || WDchipset == WD90C33 || WDchipset == WD90C24)
-	OFLG_SET(OPTION_NOACCEL, &PVGA1.ChipOptionFlags);
+	OFLG_SET(OPTION_NOACCEL, &WD.ChipOptionFlags);
     if (WDchipset == WD90C24) {
-	OFLG_SET(OPTION_SLOW_DRAM, &PVGA1.ChipOptionFlags);
-	OFLG_SET(OPTION_MED_DRAM, &PVGA1.ChipOptionFlags);
-	OFLG_SET(OPTION_FAST_DRAM, &PVGA1.ChipOptionFlags);
+	OFLG_SET(OPTION_SLOW_DRAM, &WD.ChipOptionFlags);
+	OFLG_SET(OPTION_MED_DRAM, &WD.ChipOptionFlags);
+	OFLG_SET(OPTION_FAST_DRAM, &WD.ChipOptionFlags);
     }
     
     if (vgaBitsPerPixel >= 8) {

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.1 1997/03/06 23:17:14 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.2 1997/03/10 10:12:16 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -126,7 +126,7 @@ unsigned long ET6Kbase;  /* PCI config space base address for ET6000 */
 static pciConfigPtr tseng_pcr = NULL;
 
 
-vgaVideoChipRec ET4000 = {
+vgaVideoChipRec TSENG = {
   ET4000Probe,
   ET4000Ident,
   ET4000EnterLeave,
@@ -233,7 +233,7 @@ ModuleInit(data,magic)
 	* magic= MAGIC_VERSION;
 	break;
     case 1:
-	* data = (pointer) &ET4000;
+	* data = (pointer) &TSENG;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     default:
@@ -376,16 +376,16 @@ ET4000LinMem(Bool autodetect)
    * address space.
    */
 
-  ET4000.ChipLinearSize = 4096 * 1024;
+  TSENG.ChipLinearSize = 4096 * 1024;
 
-  ET4000.ChipLinearBase = vga256InfoRec.MemBase;
+  TSENG.ChipLinearBase = vga256InfoRec.MemBase;
 
-  ET4000.ChipUseLinearAddressing = TRUE;
-  if (ET4000.ChipLinearBase==0L)
+  TSENG.ChipUseLinearAddressing = TRUE;
+  if (TSENG.ChipLinearBase==0L)
   {
     ErrorF("%s %s: Linear memory address == 0x0. KABOOM! Going back to banked mode.\n",
             XCONFIG_PROBED, vga256InfoRec.name);
-    ET4000.ChipUseLinearAddressing = FALSE;
+    TSENG.ChipUseLinearAddressing = FALSE;
     return(FALSE);
   }
   return(TRUE);
@@ -554,7 +554,7 @@ Bool ET4000AutoDetect()
  *
  */
 #define VIDMEM ((volatile unsigned int*)check_vgabase)
-#define SEGSIZE (ET4000.ChipSegmentSize / 1024)
+#define SEGSIZE (TSENG.ChipSegmentSize / 1024)
 
 /* vgaSetVidPage() doesn't seem to work -- dunno why */
 static void Tseng_set_segment(int seg)
@@ -825,9 +825,9 @@ ET4000Probe()
    * W32-specific banking function that can address 4MB.
    */ 
   if (et4000_type > TYPE_ET4000 && vga256InfoRec.videoRam > 1024) {
-      ET4000.ChipSetRead = ET4000W32SetRead;
-      ET4000.ChipSetWrite= ET4000W32SetWrite;
-      ET4000.ChipSetReadWrite = ET4000W32SetReadWrite;
+      TSENG.ChipSetRead = ET4000W32SetRead;
+      TSENG.ChipSetWrite= ET4000W32SetWrite;
+      TSENG.ChipSetReadWrite = ET4000W32SetReadWrite;
   }
 #endif
 
@@ -846,7 +846,7 @@ ET4000Probe()
 
   if (et4000_type >= TYPE_ET4000W32Pc)
   {
-    OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_LINEAR, &TSENG.ChipOptionFlags);
   }
 
   /* currently only W32p rev C and up support linear memory */
@@ -870,22 +870,22 @@ ET4000Probe()
 
   if (et4000_type >= TYPE_ET6000)
   {
-    ET4000.ChipHas16bpp = TRUE;
-    ET4000.ChipHas24bpp = TRUE;
-    ET4000.ChipHas32bpp = TRUE;
+    TSENG.ChipHas16bpp = TRUE;
+    TSENG.ChipHas24bpp = TRUE;
+    TSENG.ChipHas32bpp = TRUE;
   }
   
   if (TsengRamdacType == ICS5341_DAC)
   {
-    ET4000.ChipHas16bpp = TRUE;
-    ET4000.ChipHas24bpp = TRUE;
-    ET4000.ChipHas32bpp = TRUE;
+    TSENG.ChipHas16bpp = TRUE;
+    TSENG.ChipHas24bpp = TRUE;
+    TSENG.ChipHas32bpp = TRUE;
   }
 
   if ( (TsengRamdacType == CH8398_DAC) || (TsengRamdacType == STG1703_DAC) )
   {
-    ET4000.ChipHas16bpp = TRUE;
-    ET4000.ChipHas24bpp = TRUE;
+    TSENG.ChipHas16bpp = TRUE;
+    TSENG.ChipHas24bpp = TRUE;
   }
 
   /*
@@ -955,7 +955,7 @@ ET4000Probe()
   if (et4000_type == TYPE_ET6000)
   {
           /* Set HW Cursor option valid */
-      OFLG_SET(OPTION_HW_CURSOR, &ET4000.ChipOptionFlags);
+      OFLG_SET(OPTION_HW_CURSOR, &TSENG.ChipOptionFlags);
   }
 
   if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
@@ -970,7 +970,7 @@ ET4000Probe()
           OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
   }
         
-  OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
+  OFLG_SET(OPTION_NOACCEL, &TSENG.ChipOptionFlags);
   
   } /* if (vgaBitsPerPixel >= 8) */
   else {
@@ -984,17 +984,17 @@ ET4000Probe()
   if (et4000_type < TYPE_ET6000)
   {
     /* Initialize option flags allowed for this driver */
-    OFLG_SET(OPTION_LEGEND, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_HIBIT_HIGH, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_HIBIT_LOW, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_LEGEND, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_HIBIT_HIGH, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_HIBIT_LOW, &TSENG.ChipOptionFlags);
 #ifndef MONOVGA
     if (vgaBitsPerPixel >= 8) {
-    OFLG_SET(OPTION_PCI_BURST_ON, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_PCI_BURST_OFF, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_W32_INTERLEAVE_ON, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_SLOW_DRAM, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_PCI_BURST_ON, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_PCI_BURST_OFF, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_W32_INTERLEAVE_ON, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_SLOW_DRAM, &TSENG.ChipOptionFlags);
+    OFLG_SET(OPTION_FAST_DRAM, &TSENG.ChipOptionFlags);
     }
 #endif
 
@@ -1146,10 +1146,10 @@ ET4000FbInit()
 
   if (vgaBitsPerPixel < 8) return;
   
-  if (xf86Verbose && ET4000.ChipUseLinearAddressing)
+  if (xf86Verbose && TSENG.ChipUseLinearAddressing)
           ErrorF("%s %s: %s: Using linear framebuffer at 0x%08X.\n",
                   XCONFIG_PROBED, vga256InfoRec.name,
-                  vga256InfoRec.chipset, ET4000.ChipLinearBase);
+                  vga256InfoRec.chipset, TSENG.ChipLinearBase);
 
   if (vga256InfoRec.videoRam > 1024)
     useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYCHIPSET;
@@ -1817,7 +1817,7 @@ ET4000Init(mode)
 
    if (et4000_type==TYPE_ET6000)
    {
-      if (ET4000.ChipUseLinearAddressing)
+      if (TSENG.ChipUseLinearAddressing)
       {
          new->ET6KMemBase = vga256InfoRec.MemBase >> 24;
          new->ET6KMMAPCtrl |= 0x09;
@@ -1830,7 +1830,7 @@ ET4000Init(mode)
    }
    else  /* et4000 style linear memory */
    {
-      if (ET4000.ChipUseLinearAddressing)
+      if (TSENG.ChipUseLinearAddressing)
       {
          new->VSConf1 |= 0x10;
          new->SegMapComp = (vga256InfoRec.MemBase >> 22) & 0xFF;
