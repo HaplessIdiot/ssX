@@ -1,4 +1,9 @@
 
+3526. Massive Xinerama rewrite (Mark Vojkovich).
+      - Change the way it deals with resources.
+      - Remove broken Xinerama code from the multibuf extension.
+      - Add support for shared memory pixmaps.
+      - Less Xinerama's impact on DIX.
 3525. Point and arc acceleration improvements for the NVIDIA driver 
       (Mark Vojkovich).
 3524. MGA acceleration modifications to prevent pci retries during
