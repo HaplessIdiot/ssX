@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.53 2003/12/12 03:22:02 dawes Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.54tsi Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -214,7 +214,11 @@ InstallProgramWithFlags(xterm,$(BINDIR),NullParameter)
 
 InstallNamedProg(uxterm,uxterm,$(BINDIR))
 
+#ifdef SGIArchitecture
+NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2),NullParameter,NullParameter)
+#else
 NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2),NullParameter,$(TERMCAPLIB))
+#endif
 InstallProgramWithFlags(resize,$(BINDIR),NullParameter)
 
 /*
