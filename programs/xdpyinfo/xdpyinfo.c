@@ -25,14 +25,16 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.21 2001/02/07 18:48:51 dawes Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.22 2001/02/08 23:36:27 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #ifdef MULTIBUFFER
 #include <X11/extensions/multibuf.h>
 #endif
+#ifdef XIE
 #include <X11/extensions/XIElib.h>
+#endif
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/sync.h>
 #include <X11/Xproto.h>
@@ -500,6 +502,7 @@ print_multibuf_info(Display *dpy, char *extname)
 #endif
 
 
+#ifdef XIE
 /* XIE stuff */
 
 char *subset_names[] = { NULL, "FULL", "DIS" };
@@ -563,6 +566,7 @@ print_xie_info(Display *dpy, char *extname)
     }
     return 1;
 } /* end print_xie_info */
+#endif
 
 static int
 print_xtest_info(Display *dpy, char *extname)
@@ -954,7 +958,9 @@ ExtensionPrintInfo known_extensions[] =
 #ifdef XF86MISC
     {XF86MISCNAME, print_XF86Misc_info, False},
 #endif /* XF86MISC */
+#ifdef XIE
     {xieExtName, print_xie_info, False},
+#endif
     {XTestExtensionName, print_xtest_info, False},
     {"DOUBLE-BUFFER", print_dbe_info, False},
     {"RECORD", print_record_info, False},
