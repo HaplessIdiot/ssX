@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/460gxPCI.c,v 1.1tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -206,6 +206,7 @@ xf86PreScan460GX(void)
 {
     pciBusInfo_t *pBusInfo;
     PCITAG tag;
+    CARD32 tmp;
     int i, devno;
 
     /* Bus zero should already be set up */
@@ -269,7 +270,8 @@ xf86PreScan460GX(void)
 	has_err_460gx[i] = err_460gx[i] = 0;	/* Insurance */
 
 	tag = PCI_MAKE_TAG(cbn_460gx, devno, 1);
-	switch (pciReadLong(tag, PCI_ID_REG)) {
+	tmp = pciReadLong(tag, PCI_ID_REG);
+	switch (tmp) {
 	case DEVID(INTEL, 460GX_PXB):
 	case DEVID(INTEL, 460GX_WXB):
 	    if (cbdevs_460gx & (1 << devno)) {
@@ -301,16 +303,10 @@ xf86PreScan460GX(void)
 	     */
 	    break;
 
-	case 0x00000000u:
-	case 0x0000ffffu:
-	case 0xffff0000u:
-	case 0xffffffffu:
-	    /* This device had better not exist */
-	    if (cbdevs_460gx & (1 << devno))
-		break;
-	    /* Fall through */
-
 	default:
+	    if (((CARD16)(tmp + 1U) <= (CARD16)1U) &&
+		(cbdevs_460gx & (1U << devno)))
+		break;
 	    /* Sanity check failed */
 	    cbn_460gx = -1;
 	    return TRUE;

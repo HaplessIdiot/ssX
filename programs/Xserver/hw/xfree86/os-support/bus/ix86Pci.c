@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.13 2002/08/27 22:07:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.14tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -199,10 +199,7 @@ ix86PciBusCheck(void)
 	tag = PCI_MAKE_TAG(0, device, 0);
 	id = (*ix86Pci0.funcs->pciReadLong)(tag, PCI_ID_REG);
 
-	if ((id == 0x00000000) ||
-	    (id == 0xffffffff) ||
-	    (id == 0x0000ffff) ||
-	    (id == 0xffff0000))
+	if ((CARD16)(id + 1U) <= (CARD16)1UL)
 		continue;
 
 	/* The rest of this is inspired by the Linux kernel */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.68tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.69tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -719,8 +719,7 @@ pciGenFindNext(void)
 #ifdef DEBUGPCI
 	ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, devid);
 #endif
-	if ((devid == 0xffffffff) || (devid == 0x00000000) ||
-	    (devid == 0xffff0000) || (devid == 0x0000ffff))
+	if ((CARD16)(devid + 1U) <= (CARD16)1UL)
 	    continue; /* Nobody home.  Next device please */
 
 	if (pciNumBuses <= pciBusNum)
