@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.7 2001/05/06 00:49:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.8 2003/08/24 17:36:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -37,25 +37,12 @@
 #define CMAP_RELOAD_ON_MODE_SWITCH	0x0000002
 #define CMAP_LOAD_EVEN_IF_OFFSCREEN	0x0000004
 
-typedef void (*LoadPaletteFuncPtr)(
-    ScrnInfoPtr pScrn, 
-    int numColors, 
-    int *indicies,
-    LOCO *colors,
-    VisualPtr pVisual
-);
-
-typedef void (*SetOverscanFuncPtr)(
-    ScrnInfoPtr pScrn,
-    int Index
-);
-
 Bool xf86HandleColormaps(
     ScreenPtr pScreen,
     int maxCol,
     int sigRGBbits,
-    LoadPaletteFuncPtr loadPalette,
-    SetOverscanFuncPtr setOverscan,
+    xf86LoadPaletteProc *loadPalette,
+    xf86SetOverscanProc *setOverscan,
     unsigned int flags
 );
 

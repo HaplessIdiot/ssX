@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.94 2003/08/24 19:58:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.95 2003/09/09 03:20:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -39,6 +39,7 @@
 #include "input.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "colormapst.h"
 #include "xf86Module.h"
 #include "xf86Opt.h"
 #include "xf86Pci.h"
@@ -475,7 +476,7 @@ typedef struct _confdrirec {
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
 #define NUM_RESERVED_POINTERS		15
-#define NUM_RESERVED_FUNCS		15
+#define NUM_RESERVED_FUNCS		12
 
 typedef pointer (*funcPointer)(void);
 
@@ -763,6 +764,9 @@ typedef int  xf86ChangeGammaProc          (int, Gamma);
 typedef void xf86PointerMovedProc         (int, int, int);
 typedef Bool xf86PMEventProc              (int, pmEvent, Bool);
 typedef int  xf86HandleMessageProc     (int, const char*, const char*, char**);
+typedef void xf86DPMSSetProc		  (ScrnInfoPtr, int, int);
+typedef void xf86LoadPaletteProc   (ScrnInfoPtr, int, int *, LOCO *, VisualPtr);
+typedef void xf86SetOverscanProc          (ScrnInfoPtr, int);
 
 /*
  * ScrnInfoRec
@@ -914,6 +918,9 @@ typedef struct _ScrnInfoRec {
     xf86PointerMovedProc		*PointerMoved;
     xf86PMEventProc			*PMEvent;
     xf86HandleMessageProc		*HandleMessage;
+    xf86DPMSSetProc			*DPMSSet;
+    xf86LoadPaletteProc			*LoadPalette;
+    xf86SetOverscanProc			*SetOverscan;
     
     /*
      * This can be used when the minor ABI version is incremented.

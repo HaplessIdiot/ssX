@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.207 2003/09/24 03:16:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.208 2003/10/08 14:58:28 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -408,6 +408,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if (xf86DoConfigure)
 	DoConfigure();
 
+#if 0
     if (autoconfig) {
 	if (!xf86AutoConfig()) {
 	    xf86Msg(X_ERROR, "Auto configuration failed\n");
@@ -415,6 +416,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	}
 	PostConfigInit();
     }
+#endif
 
     /* Initialise the resource broker */
     xf86ResourceBrokerInit();
@@ -883,6 +885,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	 */
 	xf86Screens[i]->EnableDisableFBAccess = xf86EnableDisableFBAccess;
 	xf86Screens[i]->SetDGAMode = xf86SetDGAMode;
+	xf86Screens[i]->DPMSSet = NULL;
+	xf86Screens[i]->LoadPalette = NULL; 
+	xf86Screens[i]->SetOverscan = NULL;
 	scr_index = AddScreen(xf86Screens[i]->ScreenInit, argc, argv);
       if (scr_index == i) {
 	/*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.38 2003/08/24 17:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.39 2003/09/09 03:20:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -182,7 +182,6 @@ typedef struct {
 #ifdef DPMSExtension
 /* Private info for DPMS */
 typedef struct {
-    DPMSSetProcPtr	Set;
     CloseScreenProcPtr	CloseScreen;
     Bool		Enabled;
     int			Flags;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.8 2003/02/13 02:41:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.9 2003/08/24 17:36:52 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -53,6 +53,7 @@ Bool
 xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags)
 {
 #ifdef DPMSExtension
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     DPMSPtr pDPMS;
     pointer DPMSOpt;
 
@@ -68,13 +69,12 @@ xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags)
 	return FALSE;
 
     pDPMS = (DPMSPtr)pScreen->devPrivates[DPMSIndex].ptr;
-    pDPMS->Set = set;
+    pScrn->DPMSSet = set;
     pDPMS->Flags = flags;
-    DPMSOpt = xf86FindOption(xf86Screens[pScreen->myNum]->options, "dpms");
+    DPMSOpt = xf86FindOption(pScrn->options, "dpms");
     if (DPMSOpt) {
 	if ((pDPMS->Enabled
-	    = xf86SetBoolOption(xf86Screens[pScreen->myNum]->options,
-				"dpms",FALSE))
+	    = xf86SetBoolOption(pScrn->options, "dpms", FALSE))
 	    && !DPMSDisabledSwitch)
 	    DPMSEnabled = TRUE;
 	xf86MarkOptionUsed(DPMSOpt);
@@ -134,6 +134,7 @@ DPMSSet(int level)
 {
     int i;
     DPMSPtr pDPMS;
+    ScrnInfoPtr pScrn;
 
     DPMSPowerLevel = level;
 
@@ -142,10 +143,11 @@ DPMSSet(int level)
 
     /* For each screen, set the DPMS level */
     for (i = 0; i < xf86NumScreens; i++) {
+    	pScrn = xf86Screens[i];
 	pDPMS = (DPMSPtr)screenInfo.screens[i]->devPrivates[DPMSIndex].ptr;
-	if (pDPMS && pDPMS->Set && pDPMS->Enabled && xf86Screens[i]->vtSema) {
-	    xf86EnableAccess(xf86Screens[i]);
-	    pDPMS->Set(xf86Screens[i], level, 0);
+	if (pDPMS && pScrn->DPMSSet && pDPMS->Enabled && pScrn->vtSema) { 
+	    xf86EnableAccess(pScrn);
+	    pScrn->DPMSSet(pScrn, level, 0);
 	}
     }
 }
@@ -160,6 +162,7 @@ DPMSSupported(void)
 {
     int i;
     DPMSPtr pDPMS;
+    ScrnInfoPtr pScrn;
 
     if (DPMSIndex < 0) {
 	return FALSE;
@@ -167,8 +170,9 @@ DPMSSupported(void)
 
     /* For each screen, check if DPMS is supported */
     for (i = 0; i < xf86NumScreens; i++) {
+    	pScrn = xf86Screens[i];
 	pDPMS = (DPMSPtr)screenInfo.screens[i]->devPrivates[DPMSIndex].ptr;
-	if (pDPMS && pDPMS->Set)
+	if (pDPMS && pScrn->DPMSSet)
 	    return TRUE;
     }
     return FALSE;
