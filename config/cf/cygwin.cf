@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.5 2001/04/18 16:13:17 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.6 2001/04/18 17:13:58 dawes Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -35,6 +35,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.5 2001/04/18 16:13:17 dawe
 #define HasPutenv               YES
 #define HasPoll			NO
 #define HasShm                  NO
+#define HasSnprintf		YES
 
 /*
  * Cygwin has Tcl/Tk, but you need to keep the version numbers
