@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.96 2001/06/25 08:12:30 alanh Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.97 2001/08/02 18:18:11 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1639,7 +1639,7 @@ install::								@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	if [ -d Concat($(DESTDIR),opath/cdir) ]; then \			@@\
 	  RELPATH=`echo opath/cdir | \					@@\
-		sed -e 's:^/::' -e 's:[^/.][^/]*:..:'g -e 's:/\.$::'	@@\
+		sed -e 's:^/::' -e 's:[^/.][^/]*:..:'g -e 's:/\.$::'`; \ @@\
 	  cd Concat($(DESTDIR),opath/cdir); \				@@\
 	  if [ -d rdir -a ! -h rdir ]; then \ 				@@\
 	    (cd rdir; tar cf - . | \					@@\
