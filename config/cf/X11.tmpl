@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.175 2002/10/21 18:36:43 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.176 2002/11/08 11:50:25 alanh Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -247,7 +247,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXAServer		(HasXAServer & HasCplusplus)
 #endif
 #ifndef BuildX11Lib
-#define BuildX11Lib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
+#define BuildX11Lib		BuildLibraries
 #endif
 
 #ifndef BuildLoadableXlibI18n
@@ -266,7 +266,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildLoadableXlibXcursor (HasDlopen && SharedLibX11)
 #endif
 #ifndef BuildXextLib
-#define BuildXextLib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
+#define BuildXextLib		BuildLibraries
 #endif
 #ifndef BuildXauLib
 #define BuildXauLib		(BuildLibraries || BuildLibrariesForXServers)
