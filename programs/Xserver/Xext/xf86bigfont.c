@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.10 2000/08/10 17:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.11 2001/04/06 02:16:22 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -164,7 +164,7 @@ XFree86BigfontExtensionInit()
 
 	FontShmdescIndex = AllocateFontPrivateIndex();
 
-#if !defined(CSRG_BASED)
+#if !defined(CSRG_BASED) && !defined(__CYGWIN__)
 	pagesize = SHMLBA;
 #else
 # ifdef _SC_PAGESIZE
