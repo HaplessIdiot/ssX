@@ -27,7 +27,7 @@
  *
  * Authors: Paulo CÅÈsar Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.9 2001/01/11 03:36:59 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.11 2001/02/15 20:00:09 eich Exp $
  */
 
 #include "vesa.h"
@@ -190,7 +190,7 @@ static XF86ModuleVersionInfo vesaVersionRec =
 
 /*
  * This data is accessed by the loader.  The name must be the module name
- * followed by "ModuleInit".
+ * followed by "ModuleData".
  */
 XF86ModuleData vesaModuleData = { &vesaVersionRec, vesaSetup, NULL };
 
