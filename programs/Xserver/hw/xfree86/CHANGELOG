@@ -1,4 +1,6 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 181. Simplify internal interfaces in the PCI code and remove the Xserver's
+      interference with normal PCMCIA operation (Marc La France).
  180. i810/815 depth buffer needs to be a multiple of the tile size.  This
       fixes 3D corruption near the bottom of the screen at 800x600@16bpp
       (Bugzilla #283, Dave Airlie).
@@ -16999,7 +17001,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2700 2003/05/21 15:14:53 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2701 2003/05/22 17:56:11 dawes Exp $
 
 
 

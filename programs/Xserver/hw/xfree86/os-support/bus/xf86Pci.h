@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.37tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -638,12 +638,6 @@ typedef struct pci_device {
 } pciDevice, *pciConfigPtr;
 
 typedef enum {
-    WRITE,
-    READ,
-    SET_BITS
-} pciFunc;
-
-typedef enum {
     PCI_MEM,
     PCI_MEM_SIZE,
     PCI_MEM_SPARSE_BASE,
@@ -744,7 +738,6 @@ void	      pciWriteWord(PCITAG tag, int offset, CARD16 val);
 void	      pciWriteByte(PCITAG tag, int offset, CARD8 val);
 void	      pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 void	      pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
-pointer	      pciLongFunc(PCITAG tag, pciFunc func);
 ADDRESS	      pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
 ADDRESS	      pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
 PCITAG	      pciTag(int busnum, int devnum, int funcnum);
