@@ -1,4 +1,8 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 611. Add 'defined(VT_ACTIVATE)' to the test for platforms that support VT
+      switching (based on Bugzilla #894, Robert Millan).
+ 610. Make several tests for glibc features glibc-specific rather than
+      specific to the underlying OS (Bugzila #890, 891, Robert Millan).
 
 XFree86 4.3.99.16 (20 November 2003)
  609. Fix 'constype' for modern framebuffers on Solaris (Bugzilla #890,
@@ -18230,7 +18234,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2981 2003/11/21 05:17:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2982 2003/11/21 06:01:42 dawes Exp $
 
 
 
