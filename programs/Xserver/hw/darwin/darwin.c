@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.31 2001/08/06 04:14:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.32 2001/08/12 00:10:01 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -57,6 +57,7 @@ int                     quartzRootless = -1;
 int                     quartzUseSysBeep = 0;
 int                     quartzMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
+int                     aquaMenuBarHeight = 0;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
@@ -1165,15 +1166,19 @@ void AbortDDX( void )
     ddxGiveUp();
 }
 
+#ifdef DPMSExtension
+/*
+ * DPMS extension stubs
+ */
 Bool DPMSSupported(void)
 {
-    return 0;
+    return FALSE;
 }
 
-void DPMSSet(void)
+void DPMSSet(CARD16 level)
 {
-    return;
 }
+#endif
 
 
 #include "mivalidate.h" // for union _Validate used by windowstr.h
