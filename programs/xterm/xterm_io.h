@@ -1,9 +1,9 @@
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.12 2003/12/25 22:04:05 dickey Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.13 2004/01/07 04:28:07 dawes Exp $
  */
 
 /*
- * Copyright 2000-2002,2003 by Thomas E. Dickey
+ * Copyright 2000-2003,2004 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

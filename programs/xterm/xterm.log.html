@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
  *****************************************************************************
- * Copyright 1996-2002,2003 by Thomas E. Dickey                              *
+ * Copyright 1996-2003,2004 by Thomas E. Dickey                              *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -30,7 +30,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997-2002,2003 by <A
+Copyright 1997-2003,2004 by <A
 HREF="mailto:dickey@invisible-island.net">Thomas E. Dickey</A>
 <HR>
 <H1>Contents</H1>
@@ -43,7 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_dev">Development - 2004/1/31 - XFree86 4.3.99.903</A>
+<LI><A HREF="#xterm_185">Patch #185 - 2004/3/3 - XFree86 4.4</A>
 <LI><A HREF="#xterm_184">Patch #184 - 2003/12/31 - XFree86 4.3.99.903</A>
 <LI><A HREF="#xterm_183">Patch #183 - 2003/12/26 - XFree86 4.3.99.903</A>
 <LI><A HREF="#xterm_182">Patch #182 - 2003/12/2 - XFree86 4.3.99.901</A>
@@ -231,8 +231,59 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_dev">Development - 2004/1/31 - XFree86 4.3.99.903</A></H1>
+<H1><A NAME="xterm_185">Patch #185 - 2004/3/3 - XFree86 4.4</A></H1>
 <ul>
+	<li>fix tcap-query logic for the backspace key (XFree86 Bugzilla #1233,
+	    report/patch by Anton Kovalenko).
+
+	<li>add test-scripts resize.pl and tcapquery.pl
+
+	<li>add translation to ASCII of commonly-used characters that groff
+	    translates to Unicode, when the font in use does not provide the
+	    corresponding glyphs (Debian #219551).
+
+	<li>modify RequestMaximize(), which performs maximize/restore via
+	    control sequences, to account for window-frame (patch by
+	    Jess Thrysoee).
+
+	<li>improve pattern used in <code>uxterm</code> to check for UTF-8
+	    locale, e.g., for HPUX (patch by H Merijn Brand).
+
+	<li>add <code>-fd</code> option and resource
+	    <code>faceNameDoublesize</code> to specify double-wide fonts with
+	    Xft (adapted from patch by Zarick Lau).
+
+	<li>change a couple of resource classes from "Boolean" to specific
+	    values: <code>freeBoldBox</code>, <code>forceBoxChars</code>.
+
+	<li>add resource <code>showMissingGlyphs</code> to outline places on
+	    the screen where a font lacks the corresponding glyph.
+
+	<li>add resource <code>showBlinkAsBold</code> to control whether
+	    blinking text should be shown as bold or actual blinking text.
+
+	<li>improve logic in ShowCursor() to avoid repainting the cursor when
+	    it is already visible, e.g., in response to the DECTCEM escape
+	    sequence.  This also addresses XFree86 Bugzilla #1158.
+
+	<li>implement blinking text, using the timer for blinking cursor.
+
+	<li>modify FreeType support to allow resizing the font, in the same
+	    ways the window can be resized if fixed fonts are used.  The
+	    relative font sizes are derived from the fixed font sizes.
+
+	<li>add menu items and corresponding actions for switching on/off 
+	    the UTF-8 mode and Xft (TrueType) support.
+
+	<li>add logic to handle switching UTF-8 mode on/off.  It worked if
+	    the escape sequences were flushed, but if data was mixed in with
+	    the same write, some were not handled properly (report by
+	    Nicolas George).
+
+	<li>modify to allow turning UTF-8 mode via escape sequence even if
+	    <code>-wc</code> option was not given at startup (patch by Peter
+	    Berg Larsen).
+
 	<li>amend fix for XFree86 Bugzilla #981, adjusting for savedlines value
 	    (report by Tim Adye).
 
