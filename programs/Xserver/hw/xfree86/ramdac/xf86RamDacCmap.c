@@ -60,6 +60,13 @@ Bool
 RamDacHandleColormaps(ScreenPtr pScreen, int maxColors, int sigRGBbits,
 		      unsigned int flags)
 {
-  return xf86HandleColormaps(pScreen, maxColors, sigRGBbits,
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    RamDacRecPtr hwp = RAMDACSCRPTR(pScrn);
+
+    if (hwp->LoadPalette == NULL)
+   	return xf86HandleColormaps(pScreen, maxColors, sigRGBbits,
 			     RamDacLoadPalette, NULL, flags);
+    else
+    	return xf86HandleColormaps(pScreen, maxColors, sigRGBbits,
+			     hwp->LoadPalette, NULL, flags);
 }

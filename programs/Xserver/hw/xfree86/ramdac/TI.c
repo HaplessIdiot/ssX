@@ -71,7 +71,7 @@ TIramdacCalculateMNPForClock(
      * we don't have to bother checking for this maximum limit.
      */
     VCO = (double)ReqClock;
-    for ( p = *rP; p < 3 && VCO < TI_MIN_VCO_FREQ; ( p )++ )
+    for ( p = 0; p < 3 && VCO < TI_MIN_VCO_FREQ; ( p )++ )
 	 VCO *= 2.0;
 
     /*
@@ -157,56 +157,52 @@ TIramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 
     /* only restore clocks if they were valid to begin with */
 
-    if (ramdacReg->DacRegs[TIDAC_PIXEL_VALID]) {
-	/* Reset pixel clock */
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0, 0x3c);
+    /* Reset pixel clock */
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0, 0x3c);
 
-	/* Restore N, M & P values for pixel clocks */
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0,
+    /* Restore N, M & P values for pixel clocks */
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0,
 					ramdacReg->DacRegs[TIDAC_PIXEL_N]);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0,
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0,
 					ramdacReg->DacRegs[TIDAC_PIXEL_M]);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0,
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0,
 					ramdacReg->DacRegs[TIDAC_PIXEL_P]);
 
-	/* wait for pixel clock to lock */
-	i = 1000000;
-	do {
-	    status = (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
-	} while ((!(status & 0x40)) && (--i));
-	if (!(status & 0x40)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+    /* wait for pixel clock to lock */
+    i = 1000000;
+    do {
+	status = (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
+    } while ((!(status & 0x40)) && (--i));
+    if (!(status & 0x40)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			"Pixel clock setup timed out\n");
-	    return;
-	}
+	return;
     }
 
-    if (ramdacReg->DacRegs[TIDAC_LOOP_VALID]) {
-	/* Reset loop clock */
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0, 0x70);
+    /* Reset loop clock */
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0, 0x70);
 
-	/* Restore N, M & P values for pixel clocks */
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0,
+    /* Restore N, M & P values for pixel clocks */
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0,
 					ramdacReg->DacRegs[TIDAC_LOOP_N]);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0,
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0,
 					ramdacReg->DacRegs[TIDAC_LOOP_M]);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0,
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0,
 					ramdacReg->DacRegs[TIDAC_LOOP_P]);
 
-	/* wait for loop clock to lock */
-	i = 1000000;
-	do {
-	    status = (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_loop_data);
-	} while ((!(status & 0x40)) && (--i));
-	if (!(status & 0x40)) {
+    /* wait for loop clock to lock */
+    i = 1000000;
+    do {
+        status = (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_loop_data);
+    } while ((!(status & 0x40)) && (--i));
+    if (!(status & 0x40)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			"Loop clock setup timed out\n");
 	    return;
-	}
     }
 
     /* restore palette */
@@ -228,38 +224,32 @@ TIramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 				RamDacRegRecPtr ramdacReg)
 {
     int i;
-    unsigned long status;
 
     (*ramdacPtr->ReadAddress)(pScrn, 0);
     for (i=0;i<768;i++)
 	ramdacReg->DAC[i] = (*ramdacPtr->ReadData)(pScrn);
 
-    if (ramdacReg->DacRegs[TIDAC_PIXEL_VALID]) {
-	/* Read back N,M and P values for pixel clock */
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
-	ramdacReg->DacRegs[TIDAC_PIXEL_N] = 
+    /* Read back N,M and P values for pixel clock */
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
+    ramdacReg->DacRegs[TIDAC_PIXEL_N] = 
+			(*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x11);
+    ramdacReg->DacRegs[TIDAC_PIXEL_M] = 
+		    	(*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
+    ramdacReg->DacRegs[TIDAC_PIXEL_P] = 
 		    (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x11);
-	ramdacReg->DacRegs[TIDAC_PIXEL_M] = 
-		    (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
-	ramdacReg->DacRegs[TIDAC_PIXEL_P] = 
-		    (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_pixel_data);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x33);
-    }
-    if (ramdacReg->DacRegs[TIDAC_LOOP_VALID]) {
-	/* Read back N,M and P values for loop clock */
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
-	ramdacReg->DacRegs[TIDAC_LOOP_N] = 
+
+    /* Read back N,M and P values for loop clock */
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0);
+    ramdacReg->DacRegs[TIDAC_LOOP_N] = 
 		    (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_loop_data);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x11);
-	ramdacReg->DacRegs[TIDAC_LOOP_M] = 
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x11);
+    ramdacReg->DacRegs[TIDAC_LOOP_M] = 
 		    (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_loop_data);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
-	ramdacReg->DacRegs[TIDAC_LOOP_P] = 
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
+    ramdacReg->DacRegs[TIDAC_LOOP_P] = 
 		    (*ramdacPtr->ReadDAC)(pScrn, TIDAC_pll_loop_data);
-	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x33);
-    }
 
     /* Order is important */
     TISAVE(TIDAC_latch_ctrl);
@@ -309,6 +299,10 @@ TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
 		if (id == id2 && rev == rev2)  /* check for READ ONLY */
 		    TIramdac_ID = TI3030_RAMDAC;
 		break;
+	case TIDAC_TVP_3026_ID:
+		if (id == id2 && rev == rev2)  /* check for READ ONLY */
+		    TIramdac_ID = TI3026_RAMDAC;
+		break;
     }
 
     (*ramdacPtr->WriteDAC)(pScrn, rev, 0, TIDAC_rev);
@@ -337,6 +331,10 @@ TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     ramdacHelperPtr = RamDacHelperCreateInfoRec();
     switch (TIramdac_ID) {
 	case TI3030_RAMDAC:
+ 	    ramdacHelperPtr->SetBpp = TIramdac3026SetBpp;
+    	    ramdacHelperPtr->HWCursorInit = TIramdac3030HWCursorInit;
+	    break;
+	case TI3026_RAMDAC:
  	    ramdacHelperPtr->SetBpp = TIramdac3030SetBpp;
     	    ramdacHelperPtr->HWCursorInit = TIramdac3030HWCursorInit;
 	    break;
@@ -347,6 +345,123 @@ TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     ramdacHelperPtr->Restore = TIramdacRestore;
 
     return ramdacHelperPtr;
+}
+
+void
+TIramdac3026SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
+{
+    switch (pScrn->bitsPerPixel) {
+    case 32:
+	/* order is important */
+	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x06;
+	ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x46;
+	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x5c;
+	ramdacReg->DacRegs[TIDAC_clock_select] = 0x05;
+	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
+	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x10;
+	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x3C;
+	/* 0x2A & 0x2B are reserved */
+	ramdacReg->DacRegs[TIDAC_key_over_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_over_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
+	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x10;
+	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
+	if (ramdacReg->Overlay) {
+	    ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x06;
+	    ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x3C;
+	    ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x01;
+	}
+	ramdacReg->DacRegs[TIDAC_ind_curs_ctrl] = 0x00;
+	break;
+    case 24:
+	/* order is important */
+	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x06;
+	ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x56;
+	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x58;
+	ramdacReg->DacRegs[TIDAC_clock_select] = 0x25;
+	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
+	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x00;
+	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x2C;
+	/* 0x2A & 0x2B are reserved */
+	ramdacReg->DacRegs[TIDAC_key_over_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_over_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
+	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x10;
+	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
+	ramdacReg->DacRegs[TIDAC_ind_curs_ctrl] = 0x00;
+	break;
+    case 16:
+	/* order is important */
+#if 0
+	/* Matrox driver uses this */
+	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x07;
+#else
+	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x06;
+#endif
+	if (pScrn->depth == 16) {
+	    ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x45;
+	} else {
+	    ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x44;
+	}
+#if 0
+	/* Matrox driver uses this */
+	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x50;
+	ramdacReg->DacRegs[TIDAC_clock_select] = 0x15;
+	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
+	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x00;
+#else
+	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x54;
+	ramdacReg->DacRegs[TIDAC_clock_select] = 0x05;
+	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
+	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x10;
+#endif
+	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x2C;
+	/* 0x2A & 0x2B are reserved */
+	ramdacReg->DacRegs[TIDAC_key_over_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_over_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
+	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x10;
+	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
+	ramdacReg->DacRegs[TIDAC_ind_curs_ctrl] = 0x00;
+	break;
+    case 8:
+	/* order is important */
+	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x06;
+	ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x80;
+	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x4c;
+	ramdacReg->DacRegs[TIDAC_clock_select] = 0x05;
+	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
+	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x10;
+	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x1C;
+	/* 0x2A & 0x2B are reserved */
+	ramdacReg->DacRegs[TIDAC_key_over_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_over_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_red_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_green_high] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_low] = 0x00;
+	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
+	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x00;
+	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
+	ramdacReg->DacRegs[TIDAC_ind_curs_ctrl] = 0x00;
+	break;
+    }
 }
 
 void
@@ -404,7 +519,7 @@ TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	break;
     case 16:
 	/* order is important */
-#ifdef NOT_DONE
+#if 0
 	/* Matrox driver uses this */
 	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x07;
 #else
@@ -415,20 +530,19 @@ TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	} else {
 	    ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x44;
 	}
-#ifdef NOT_DONE
+#if 0
 	/* Matrox driver uses this */
 	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x50;
 	ramdacReg->DacRegs[TIDAC_clock_select] = 0x15;
 	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
 	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x00;
-	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x2C;
 #else
 	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x55;
-	ramdacReg->DacRegs[TIDAC_clock_select] = 0x05;
+	ramdacReg->DacRegs[TIDAC_clock_select] = 0x85;
 	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
 	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x10;
-	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x2C;
 #endif
+	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x2C;
 	/* 0x2A & 0x2B are reserved */
 	ramdacReg->DacRegs[TIDAC_key_over_low] = 0xFF;
 	ramdacReg->DacRegs[TIDAC_key_over_high] = 0xFF;
@@ -446,21 +560,11 @@ TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	/* order is important */
 	ramdacReg->DacRegs[TIDAC_latch_ctrl] = 0x06;
 	ramdacReg->DacRegs[TIDAC_true_color_ctrl] = 0x80;
-#ifdef NOT_DONE
-	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x48;
-	ramdacReg->DacRegs[TIDAC_clock_select] = 0x25;
-#else
 	ramdacReg->DacRegs[TIDAC_multiplex_ctrl] = 0x4d;
 	ramdacReg->DacRegs[TIDAC_clock_select] = 0x05;
-#endif
 	ramdacReg->DacRegs[TIDAC_palette_page] = 0x00;
-#ifdef NOT_DONE
-	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x00;
-	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x0C;
-#else
 	ramdacReg->DacRegs[TIDAC_general_ctrl] = 0x10;
 	ramdacReg->DacRegs[TIDAC_misc_ctrl] = 0x1C;
-#endif
 	/* 0x2A & 0x2B are reserved */
 	ramdacReg->DacRegs[TIDAC_key_over_low] = 0xFF;
 	ramdacReg->DacRegs[TIDAC_key_over_high] = 0xFF;
@@ -468,7 +572,7 @@ TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	ramdacReg->DacRegs[TIDAC_key_red_high] = 0xFF;
 	ramdacReg->DacRegs[TIDAC_key_green_low] = 0xFF;
 	ramdacReg->DacRegs[TIDAC_key_green_high] = 0xFF;
-	ramdacReg->DacRegs[TIDAC_key_blue_low] = 0xFF;
+	ramdacReg->DacRegs[TIDAC_key_blue_low] = 0x00;
 	ramdacReg->DacRegs[TIDAC_key_blue_high] = 0x00;
 	ramdacReg->DacRegs[TIDAC_key_ctrl] = 0x00;
 	ramdacReg->DacRegs[TIDAC_sense_test] = 0x00;
@@ -483,7 +587,7 @@ TIramdac3030ShowCursor(ScrnInfoPtr pScrn)
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
     /* Enable cursor - X11 mode */
-    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_ind_curs_ctrl, 0x6c, 0x13);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_ind_curs_ctrl, 0, 0x03);
 }
 
 void
@@ -492,7 +596,7 @@ TIramdac3030HideCursor(ScrnInfoPtr pScrn)
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
     /* Disable cursor - X11 mode */
-    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_ind_curs_ctrl, 0xfc, 0x00);
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_ind_curs_ctrl, 0, 0x00);
 }
 
 void
@@ -532,13 +636,12 @@ TIramdac3030LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
     int i = 1024;
-int j = 16;
 
     /* reset A9,A8 */
-    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_ind_curs_ctrl, 0xf3, 0x00); 
+    (*ramdacPtr->WriteDAC)(pScrn, TIDAC_ind_curs_ctrl, 0, 0x00); 
     /* reset cursor RAM load address A7..A0 */
     (*ramdacPtr->WriteDAC)(pScrn, TIDAC_INDEX, 0x00, 0x00); 
-
+ 
     while(i--) {
 	/* NOT_DONE: might need a delay here */
 	(*ramdacPtr->WriteDAC)(pScrn, TIDAC_CURS_RAM_DATA, 0, *(src++));
@@ -565,4 +668,42 @@ TIramdac3030HWCursorInit(xf86CursorInfoPtr infoPtr)
     infoPtr->HideCursor = TIramdac3030HideCursor;
     infoPtr->ShowCursor = TIramdac3030ShowCursor;
     infoPtr->UseHWCursor = TIramdac3030UseHWCursor;
+}
+
+void TIramdacLoadPalette(
+    ScrnInfoPtr pScrn, 
+    int numColors, 
+    int *indices,
+    LOCO *colors,
+    VisualPtr pVisual
+){
+    RamDacRecPtr hwp = RAMDACSCRPTR(pScrn);
+    int i, index, shift;
+
+    if (pScrn->depth == 16) {
+    for(i = 0; i < numColors; i++) {
+	index = indices[i];
+    	(*hwp->WriteAddress)(pScrn, index << 2);
+	(*hwp->WriteData)(pScrn, colors[index >> 1].red);
+	(*hwp->WriteData)(pScrn, colors[index].green);
+	(*hwp->WriteData)(pScrn, colors[index >> 1].blue);
+
+	if(index <= 31) {
+	    (*hwp->WriteAddress)(pScrn, index << 3);
+	    (*hwp->WriteData)(pScrn, colors[index].red);
+	    (*hwp->WriteData)(pScrn, colors[(index << 1) + 1].green);
+	    (*hwp->WriteData)(pScrn, colors[index].blue);
+	}
+    }
+} else {
+    shift = (pScrn->depth == 15) ? 3 : 0;
+
+    for(i = 0; i < numColors; i++) {
+	index = indices[i];
+    	(*hwp->WriteAddress)(pScrn, index << shift);
+	(*hwp->WriteData)(pScrn, colors[index].red);
+	(*hwp->WriteData)(pScrn, colors[index].green);
+	(*hwp->WriteData)(pScrn, colors[index].blue);
+    }
+}
 }

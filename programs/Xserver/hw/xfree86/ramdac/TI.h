@@ -9,6 +9,7 @@ unsigned long TIramdacCalculateMNPForClock(unsigned long RefClock,
 RamDacHelperRecPtr TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs);
 void TIramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
 void TIramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
+void TIramdac3026SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);
 void TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);
 unsigned long TIramdac3030CalculateMNPForClock(unsigned long RefClock,
     unsigned long ReqClock, char IsPixClock, unsigned long MinClock,
@@ -17,6 +18,7 @@ unsigned long TIramdac3030CalculateMNPForClock(unsigned long RefClock,
 void TIramdac3030HWCursorInit(xf86CursorInfoPtr infoPtr);
 
 #define TI3030_RAMDAC		(VENDOR_TI << 16) | 0x00
+#define TI3026_RAMDAC		(VENDOR_TI << 16) | 0x01
 
 /*
  * TI Ramdac registers
@@ -84,4 +86,5 @@ void TIramdac3030HWCursorInit(xf86CursorInfoPtr infoPtr);
 #define TIDAC_sw_reset		0xff
 
 /* Constants */  
+#define TIDAC_TVP_3026_ID       0x26
 #define TIDAC_TVP_3030_ID       0x30
