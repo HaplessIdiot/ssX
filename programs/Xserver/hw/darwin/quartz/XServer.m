@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.21 2004/04/01 00:17:04 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.22 2004/05/12 22:06:11 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -82,11 +82,11 @@ typedef struct {
 } shellList_t;
 
 static shellList_t const shellList[] = {
-    { "csh",    shell_C },		// standard C shell
-    { "tcsh",   shell_C },		// ... needs no introduction
-    { "sh",     shell_Bourne },		// standard Bourne shell
-    { "zsh",    shell_Bourne },		// Z shell
-    { "bash",   shell_Bourne },		// GNU Bourne again shell
+    { "csh",    shell_C },          // standard C shell
+    { "tcsh",   shell_C },          // ... needs no introduction
+    { "sh",     shell_Bourne },     // standard Bourne shell
+    { "zsh",    shell_Bourne },     // Z shell
+    { "bash",   shell_Bourne },     // GNU Bourne again shell
     { NULL,     shell_Unknown }
 };
 
@@ -266,6 +266,7 @@ static io_connect_t root_port;
             xe.u.u.type = ButtonRelease;
             xe.u.u.detail = 1;
             break;
+
         case NSLeftMouseDown:
             [self getMousePosition:&xe fromEvent:anEvent];
             if (quartzRootless) {
@@ -285,6 +286,7 @@ static io_connect_t root_port;
             xe.u.u.type = ButtonPress;
             xe.u.u.detail = 1;
             break;
+
         case NSMouseMoved:
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
@@ -292,6 +294,7 @@ static io_connect_t root_port;
             [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = MotionNotify;
             break;
+
         case NSSystemDefined:
         {
             long hwButtons = [anEvent data2];
@@ -308,37 +311,56 @@ static io_connect_t root_port;
             xe.u.clientMessage.u.l.longs1 =[anEvent data2];
             break;
         }
+
         case NSScrollWheel:
             [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = kXDarwinScrollWheel;
             xe.u.clientMessage.u.s.shorts0 = [anEvent deltaX] +
                                              [anEvent deltaY];
             break;
+
         case NSKeyDown:
         case NSKeyUp:
-            if (!x11Active)
+            if (!x11Active) {
+                swallowedKey = 0;
                 return NO;
-            // If the mouse is not on the valid X display area,
-            // we don't send the X server key events.
-            if (![self getMousePosition:&xe fromEvent:nil])
-                return NO;
-            if (type == NSKeyDown)
-                xe.u.u.type = KeyPress;
-            else
-                xe.u.u.type = KeyRelease;
+            }
+
+            if (type == NSKeyDown) {
+                // If the mouse is not on the valid X display area,
+                // don't send the X server key events.
+                if (![self getMousePosition:&xe fromEvent:nil]) {
+                    swallowedKey = [anEvent keyCode];
+                    return NO;
+                }
+
+                // See if there are any global shortcuts for this key combo.
+                if (quartzEnableKeyEquivalents
+                    && [[NSApp mainMenu] performKeyEquivalent:anEvent])
+                {
+                    swallowedKey = [anEvent keyCode];
+                    return YES;
+                }
+            } else {
+                // If the down key event was a valid key combo,
+                // don't pass the up event to X11.
+                if (swallowedKey != 0 && [anEvent keyCode] == swallowedKey) {
+                    swallowedKey = 0;
+                    return NO;
+                }
+            }
+
+            xe.u.u.type = (type == NSKeyDown) ? KeyPress : KeyRelease;
             xe.u.u.detail = [anEvent keyCode];
             break;
+
         case NSFlagsChanged:
             if (!x11Active)
                 return NO;
-            [self getMousePosition:&xe fromEvent:nil];
             xe.u.u.type = kXDarwinUpdateModifiers;
             xe.u.clientMessage.u.l.longs0 = flags;
             break;
-        case NSOtherMouseDown:          // undocumented MouseDown
-        case NSOtherMouseUp:            // undocumented MouseUp
-            // Hide these from AppKit to avoid its log messages
-            return YES;
+
         default:
             return NO;
     }
@@ -663,11 +685,11 @@ static io_connect_t root_port;
 
         // Inside the new process:
         if (fd[0] != STDIN_FILENO) {
-            dup2(fd[0], STDIN_FILENO);	// Take stdin from pipe
+            dup2(fd[0], STDIN_FILENO);      // Take stdin from pipe
             close(fd[0]);
         }
-        close(fd[1]);			// Close write end of pipe
-        if (outFD == STDOUT_FILENO) {	// Setup stdout and stderr
+        close(fd[1]);                       // Close write end of pipe
+        if (outFD == STDOUT_FILENO) {       // Setup stdout and stderr
             dup2(outFD, STDERR_FILENO);
         } else if (outFD == STDERR_FILENO) {
             dup2(outFD, STDOUT_FILENO);
@@ -1181,10 +1203,10 @@ static io_connect_t root_port;
 - (void)activateX11:(BOOL)state
 {
     if (state) {
-	QuartzMessageServerThread(kXDarwinActivate, 0);
+        QuartzMessageServerThread(kXDarwinActivate, 0);
     }
     else {
-	QuartzMessageServerThread(kXDarwinDeactivate, 0);
+        QuartzMessageServerThread(kXDarwinDeactivate, 0);
     }
 
     x11Active = state;
