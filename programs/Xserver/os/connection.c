@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.40 2000/06/26 23:00:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.41 2000/08/10 17:40:39 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -73,9 +73,10 @@ extern int errno;
 #include <signal.h>
 #include <stdio.h>
 
+#ifndef WIN32
 #if defined(__CYGWIN__)
 #include <cygwin/socket.h>
-#elif defined(WIN32) || defined(MINIX) || defined(Lynx)
+#elif defined(MINIX) || defined(Lynx)
 #include <socket.h>
 #else
 #include <sys/socket.h>
