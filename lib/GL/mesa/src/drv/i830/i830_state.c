@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.c,v 1.4 2002/09/11 00:29:26 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.c,v 1.5 2002/12/10 01:26:53 dawes Exp $ */
 
 /*
  * Author:
@@ -1294,6 +1294,19 @@ static void i830Enable(GLcontext *ctx, GLenum cap, GLboolean state)
       break;
 
    case GL_POLYGON_STIPPLE:
+#if 0
+      /* The stipple command worked on my 855GM box, but not my 845G.
+       * I'll do more testing later to find out exactly which hardware
+       * supports it.  Disabled for now.
+       */
+      if (imesa->hw_stipple && imesa->reduced_primitive == GL_TRIANGLES)
+      {
+	 I830_STATECHANGE(imesa, I830_UPLOAD_STIPPLE);
+	 imesa->StippleSetup[I830_STPREG_ST1] &= ~ST1_ENABLE;
+	 if (state)
+	    imesa->StippleSetup[I830_STPREG_ST1] |= ST1_ENABLE;
+      }
+#endif
       break;
 
    default:

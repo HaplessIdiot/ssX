@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.10 2002/11/25 14:04:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.11 2002/12/10 01:27:05 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -794,6 +794,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I830_RDRAM_ND(x)			(((x) & 0x20) >> 5)
 #define I830_RDRAM_DDT(x)			(((x) & 0x18) >> 3)
 
+#define I855_GMCH_GMS_MASK			(0x7 << 4)
+#define I855_GMCH_GMS_DISABLED			0x00
+#define I855_GMCH_GMS_STOLEN_1M			(0x1 << 4)
+#define I855_GMCH_GMS_STOLEN_4M			(0x2 << 4)
+#define I855_GMCH_GMS_STOLEN_8M			(0x3 << 4)
+#define I855_GMCH_GMS_STOLEN_16M		(0x4 << 4)
+#define I855_GMCH_GMS_STOLEN_32M		(0x5 << 4)
+
+#define I85X_CAPID			0x44
+#define I85X_VARIANT_MASK			0x7
+#define I85X_VARIANT_SHIFT			5
+#define I855_GME				0x0
+#define I855_GM					0x4
+#define I852_GME				0x2
+#define I852_GM					0x5
 
 /* BLT commands */
 #define COLOR_BLT_CMD		((2<<29)|(0x40<<22)|(0x3))
@@ -928,6 +943,28 @@ typedef enum {
 #define SWF5			0x71424
 #define SWF6			0x71428
 
+/*
+ * 855 scratch registers.
+ */
+#define SWF00			0x70410
+#define SWF01			0x70414
+#define SWF02			0x70418
+#define SWF03			0x7041c
+#define SWF04			0x70420
+#define SWF05			0x70424
+#define SWF06			0x70428
+
+#define SWF10			SWF0
+#define SWF11			SWF1
+#define SWF12			SWF2
+#define SWF13			SWF3
+#define SWF14			SWF4
+#define SWF15			SWF5
+#define SWF16			SWF6
+
+#define SWF30			0x72414
+#define SWF31			0x72418
+#define SWF32			0x7241c
 
 /*
  * Overlay registers.  These are overlay registers accessed via MMIO.

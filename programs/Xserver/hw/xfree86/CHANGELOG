@@ -1,4 +1,7 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 794. Update the i810 2D driver and i830 3D drivers to recognise and handle
+      the Intel 852GM/855GM integrated graphics chipsets (David Dawes,
+      Keith Whitwell).
  793. Force extension-generated mode switches always occur (Marc La France).
  792. Fix OS/2 library build problem (Frank Giessler).
  791. Fix bug that at times prevented recognition of resources decoded on PCI
@@ -7,6 +10,7 @@ XFree86 4.2.99.5 (XX January 2003)
       (Torrey T. Lyons).
  789. Fix bug in recognition of certain ix86 Host-to-PCI bridges
       (Marc La France).
+ 788. Fix for breakage in reading the serial PnP mouse ID string (David Dawes).
  787. Add "core" theme to Xcursor to force old behaviour (Keith Packard).
  786. Increase the default font cache size so that it works better for
       iso10646 (#A.1541, Hidetoshi Yamanouchi, Chisato Yamauchi).
@@ -16131,4 +16135,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2500 2003/01/27 21:46:07 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2501 2003/01/28 20:52:26 tsi Exp $

@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.3 2002/12/12 17:55:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.4 2002/12/16 19:38:26 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -550,6 +550,8 @@ I830ResetVideo(ScrnInfoPtr pScrn)
  */
 #define I830_OVERLAY_RATE	 79	/* 1024x768@85, 1280x1024@60 */
 #define I845_OVERLAY_RATE	120	/* 1280x1024@85, 1600x1200@60 */
+#define I852_OVERLAY_RATE	 79	/* 1024x768@85, 1280x1024@60 */
+#define I855_OVERLAY_RATE	120	/* 1280x1024@85, 1600x1200@60 */
 #define DEFAULT_OVERLAY_RATE	120
 
 static XF86VideoAdaptorPtr
@@ -568,7 +570,7 @@ I830SetupImageVideo(ScreenPtr pScreen)
 
    adapt->type = XvWindowMask | XvInputMask | XvImageMask;
    adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
-   adapt->name = "I830/I845G Video Overlay";
+   adapt->name = "Intel(R) 830M/845G/852GM/855GM Video Overlay";
    adapt->nEncodings = 1;
    adapt->pEncodings = DummyEncoding;
    adapt->nFormats = NUM_FORMATS;
@@ -607,6 +609,17 @@ I830SetupImageVideo(ScreenPtr pScreen)
       break;
    case PCI_CHIP_845_G:
       pPriv->maxRate = I845_OVERLAY_RATE;
+      break;
+   case PCI_CHIP_I855_GM:
+      switch (pI830->variant) {
+      case I852_GM:
+      case I852_GME:
+	 pPriv->maxRate = I852_OVERLAY_RATE;
+	 break;
+      default:
+	 pPriv->maxRate = I855_OVERLAY_RATE;
+	 break;
+      }
       break;
    default:
       pPriv->maxRate = DEFAULT_OVERLAY_RATE;
@@ -1173,6 +1186,10 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
       }
 
       /* Recalculate coefficients if the scaling changed. */
+	
+      /*
+       * Only Horizontal coefficients so far.
+       */
       if (scaleChanged) {
 	 double fCutoffY;
 	 double fCutoffUV;

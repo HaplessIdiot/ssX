@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.3 2002/12/10 01:27:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.4 2002/12/11 17:01:45 dawes Exp $ */
 
 /*
  * Authors:
@@ -282,6 +282,10 @@ extern int I810_DEBUG;
 #define PCI_CHIP_I815_BRIDGE       0x1130
 #endif
 
+#ifndef PCI_CHIP_I855_GM
+#define PCI_CHIP_I855_GM	   0x3582
+#define PCI_CHIP_I855_GM_BRIDGE	   0x3580
+#endif
 
 
 #define IS_I810(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I810 ||	\
@@ -290,8 +294,9 @@ extern int I810_DEBUG;
 #define IS_I815(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I815)
 #define IS_I830(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I830_M)
 #define IS_845G(pI810) (pI810->PciInfo->chipType == PCI_CHIP_845_G)
+#define IS_I85X(pI810)  (pI810->PciInfo->chipType == PCI_CHIP_I855_GM)
 
-#define IS_MOBILE(pI810) IS_I830(pI810)
+#define IS_MOBILE(pI810) (IS_I830(pI810) || IS_I85X(pI810))
 
 #define GTT_PAGE_SIZE			KB(4)
 #define ROUND_TO(x, y)			(((x) + (y) - 1) / (y) * (y))
