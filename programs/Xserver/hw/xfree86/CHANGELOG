@@ -1,8 +1,8 @@
 XFree86 4.0.1h (xx December 2000)
 1068. Clean up r128_video.c again (Marc La France).
 1067. Fix ATI clock generator recognition when an adapter BIOS cannot be
-      retrieved (Linus Torvals).
-1066. Fix int10 and ATI driver for video BIOS larger than 64kB
+      retrieved (Linus Torvalds).
+1066. Fix int10 and ATI driver for video BIOSes larger than 64kB
       (Marc La France).
 1065. Change xf86MatchDevice() to initialise its return pointer and clean up
       drivers accordingly (Marc La France).
@@ -11798,4 +11798,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1433 2000/12/02 01:16:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1434 2000/12/02 15:30:23 tsi Exp $
