@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.2 2001/12/12 00:43:50 dawes Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.3tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -111,9 +111,9 @@ typedef void sigRetType;
 #endif
 static sigRetType SetGlobalDone (int sig);
 static void print_req_callback (XETC *tc , XETrapDatum *data , 
-    char *my_buf );
+    BYTE *my_buf );
 static void print_evt_callback (XETC *tc , XETrapDatum *data , 
-    char *my_buf );
+    BYTE *my_buf );
 
 
 FILE *ofp;
@@ -136,7 +136,7 @@ static sigRetType SetGlobalDone(int sig)
 #endif
 }
 
-static void print_req_callback(XETC *tc, XETrapDatum *data, char *my_buf)
+static void print_req_callback(XETC *tc, XETrapDatum *data, BYTE *my_buf)
 {
     char *req_type;
     req_type = (data->u.req.reqType == XETrapGetExtOpcode(tc) ? "XTrap" :
@@ -146,7 +146,7 @@ static void print_req_callback(XETC *tc, XETrapDatum *data, char *my_buf)
         (long)data->u.req.id);
 }
 
-static void print_evt_callback(XETC *tc, XETrapDatum *data, char *my_buf)
+static void print_evt_callback(XETC *tc, XETrapDatum *data, BYTE *my_buf)
 {
     static Time last_time = 0;
     int delta;

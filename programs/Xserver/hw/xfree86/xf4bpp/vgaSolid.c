@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.6 2003/11/03 05:11:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.7tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -155,8 +155,9 @@ switch ( bytewidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 
 
 void
-xf4bppFillSolid(WindowPtr pWin, unsigned long color, const int alu,
-		unsigned long planes, int x0, int y0, int lx, const int ly)
+xf4bppFillSolid(WindowPtr pWin, unsigned long int color, const int alu,
+		unsigned long int planes, int x0, const int y0,
+		int lx, const int ly)
 {
 IOADDRESS REGBASE;
 volatile unsigned char *dst ;

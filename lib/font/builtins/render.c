@@ -22,23 +22,24 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/render.c,v 1.3 1999/12/30 02:29:51 robin Exp $ */
+/* $XFree86: xc/lib/font/builtins/render.c,v 1.4tsi Exp $ */
 
 #include    "fntfilst.h"
 #include    "builtin.h"
 
-BuiltinOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
-    FontPathElementPtr	fpe;
-    FontPtr		*ppFont;
-    int			flags;
-    FontEntryPtr	entry;
-    char		*fileName;
-    fsBitmapFormat	format;
-    fsBitmapFormatMask	fmask;
+int
+BuiltinOpenBitmap (
+    FontPathElementPtr	fpe,
+    FontPtr		*ppFont,
+    int			flags,
+    FontEntryPtr	entry,
+    char		*fileName,
+    fsBitmapFormat	format,
+    fsBitmapFormatMask	fmask,
+    FontPtr		unused)
 {
     FontFilePtr	file;
     FontPtr     pFont;
-    int         i;
     int         ret;
     int         bit,
                 byte,
@@ -81,9 +82,7 @@ BuiltinGetInfoBitmap (fpe, pFontInfo, entry, fileName)
     char		*fileName;
 {
     FontFilePtr file;
-    int		i;
     int		ret;
-    FontRendererPtr renderer;
 
     file = BuiltinFileOpen (fileName);
     if (!file)
@@ -100,6 +99,7 @@ static FontRendererRec renderers[] = {
 
 #define numRenderers	(sizeof renderers / sizeof renderers[0])
 
+void
 BuiltinRegisterFontFileFunctions()
 {
     int	i;

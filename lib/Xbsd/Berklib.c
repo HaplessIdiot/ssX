@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.9 2001/12/14 19:54:54 dawes Exp $ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.10tsi Exp $ */
 
 
 /*
@@ -52,7 +52,7 @@ from The Open Group.
 #define WANT_RANDOM
 #endif
 
-#if defined(SVR4) && !defined(__SCO__)
+#if defined(SVR4) && !defined(__SCO__) && !defined(sgi)
 #define WANT_BFUNCS
 #define WANT_FFS
 #define WANT_RANDOM
@@ -194,7 +194,7 @@ int
 ffs(mask)
 unsigned int	mask;
 {
-    register i;
+    register int i;
 
     if ( ! mask ) return 0;
     i = 1;

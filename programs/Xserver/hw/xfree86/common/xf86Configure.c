@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.84 2005/01/07 23:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.85tsi Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -89,7 +89,6 @@
 #define IN_XSERVER
 #include "xf86Parser.h"
 #include "xf86tokens.h"
-#include "vbe.h"
 #include "xf86DDC.h"
 #if defined(__sparc__) && !defined(__OpenBSD__)
 #include "xf86Bus.h"
@@ -111,7 +110,7 @@ static int nDevToConfig = 0, CurrentDriver;
 
 xf86MonPtr ConfiguredMonitor;
 Bool xf86DoConfigurePass1 = TRUE;
-Bool foundMouse = FALSE;
+static Bool foundMouse = FALSE;
 
 #if defined(__UNIXOS2__)
 #define DFLT_MOUSE_DEV "mouse$"
@@ -410,7 +409,7 @@ configureScreenSection (int screennum)
 }
 
 static const char* 
-optionTypeToSting(OptionValueType type)
+optionTypeToString(OptionValueType type)
 {
     switch (type) {
     case OPTV_NONE:
@@ -485,7 +484,7 @@ configureDeviceSection (int screennum)
 		const char *prefix = "        #Option     ";
 		const char *middle = " \t# ";
 		const char *suffix = "\n";
-		const char *opttype = optionTypeToSting(p->type);
+		const char *opttype = optionTypeToString(p->type);
 		char *optname;
 		int len = strlen(ptr->dev_comment) + strlen(prefix) +
 			  strlen(middle) + strlen(suffix) + 1;

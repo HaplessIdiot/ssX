@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/XThrStub/Imakefile,v 3.3 2004/04/05 02:33:11 dawes Exp $
+XCOMM $XFree86: xc/lib/XThrStub/Imakefile,v 3.4tsi Exp $
 #define DoNormalLib NormalLibXThrStub
 #define DoSharedLib SharedLibXThrStub
 #define DoExtraLib ExtraLibXThrStub
@@ -14,10 +14,8 @@ XCOMM $XFree86: xc/lib/XThrStub/Imakefile,v 3.3 2004/04/05 02:33:11 dawes Exp $
 REQUIREDLIBS = SharedXThrStubReqs
 #endif
 
-#if NeedUIThrStubs || (defined(ThrStubsForCompat) && ThrStubsForCompat)
 STUBSRCS = UIThrStubs.c
 STUBOBJS = UIThrStubs.o
-#endif
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL

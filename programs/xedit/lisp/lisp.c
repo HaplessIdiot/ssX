@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.89 2003/10/02 13:30:13 eich Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.90tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -4861,9 +4861,10 @@ LispApply3(LispObj *function, LispObj *arg1, LispObj *arg2, LispObj *arg3)
 }
 
 static LispObj *
-LispRunFunMac(LispObj *name, LispObj * volatile code, int macro, int base)
+LispRunFunMac(LispObj *name, LispObj * c, int macro, int base)
 {
     LispObj * volatile result = NIL;
+    LispObj * volatile code = c;
 
     if (!macro) {
 	int lex = lisp__data.env.lex;

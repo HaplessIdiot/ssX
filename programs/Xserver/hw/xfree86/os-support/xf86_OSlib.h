@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.97tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.98tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -679,6 +679,7 @@ extern char* __XOS2RedirRoot(char*);
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <termios.h>
 
 #endif
 

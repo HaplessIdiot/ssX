@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.29 2004/11/26 11:27:20 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.30tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -96,9 +96,6 @@ AllTarget(ProgramTargetName($(PROG)))
 #if DoLoadableServer
 LOADERLIB      = -L../loader -lxloader -L../dummylib -ldummy
 MODULEDEFINES  = -DUSE_MODULES
-INCLUDES       = -I../common -I../scanpci -I../loader -I$(XF86OSSRC) \
-		 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-		 -I$(FONTLIBSRC)/include
 #if !HasStrlcat
 STRLCAT_DEFS = -DNEED_STRLCAT
 #endif
@@ -126,6 +123,9 @@ DEFINES        = -DXF86CONFIG=\"$(XF86CONFIGFILE)\" $(MODULEDEFINES) \
 DLLIB = DlLibrary
 #endif
 
+INCLUDES       = -I../common -I../scanpci -I../loader -I$(XF86OSSRC) \
+		 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+		 -I$(FONTLIBSRC)/include
 LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \
 		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) $(CURSESLIB) \
@@ -149,8 +149,6 @@ SpecialCObjectRule(libc_wrapper,NullParameter,$(WRAPPERDEFINES) $(EXT_DEFINES))
 #if !HasStrlcat
 LinkSourceFile(strlcat.c,$(LIBSRC)/misc)
 LinkSourceFile(strlcpy.c,$(LIBSRC)/misc)
-SpecialCObjectRule(strlcat,NullParameter,-I$(LIBSRC)/misc)
-SpecialCObjectRule(strlcpy,NullParameter,-I$(LIBSRC)/misc)
 #endif
 
 #if !HasSnprintf

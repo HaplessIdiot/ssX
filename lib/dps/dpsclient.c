@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/dpsclient.c,v 1.3 2000/09/26 15:56:59 tsi Exp $ */
+/* $XFree86: xc/lib/dps/dpsclient.c,v 1.4tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -420,10 +420,12 @@ boolean DPSKnownSpace(DPSSpace space)
 
 void DPSclientPrintProc (
   DPSContext ctxt,
-  char	     *volatile buf,
-  volatile unsigned    nch)
+  char	     *buffer,
+  unsigned   nchar)
 {
   volatile DPSPrivContext cc = (DPSPrivContext) ctxt;
+  char * volatile buf = buffer;
+  volatile unsigned nch = nchar;
 
 #define DPS_SEQ_MIN 2
 
@@ -2051,9 +2053,11 @@ static void textDestroyContext(DPSContext ctxt)
 }
 
 static void textInnerWritePostScript(
-  DPSContext ctxt, char * volatile buf, volatile unsigned int nch)
+  DPSContext ctxt, char * buffer, unsigned int nchar)
 {
   DPSPrivContext cc = (DPSPrivContext)ctxt;
+  char * volatile buf = buffer;
+  volatile unsigned int nch = nchar;
   while (nch > 0) {
     char * volatile oldBuf = NIL;
     volatile integer oldNch = 0;
