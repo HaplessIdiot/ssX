@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.14 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.15 2001/04/28 20:42:19 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -105,7 +105,7 @@ extern void ShowMenuBar(void);
             break;
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
-        case 27:			// undocumented high button MouseDragged event
+        case 27:        // undocumented high button MouseDragged event
             ev.type=NSMouseMoved;
             break;
         case NSSystemDefined:
@@ -128,6 +128,10 @@ extern void ShowMenuBar(void);
         case NSFlagsChanged:
             ev.data.key.keyCode = [anEvent keyCode];
             break;
+        case 25:        // undocumented MouseDown
+        case 26:        // undocumented MouseUp
+            // Hide these from AppKit to avoid its log messages
+            return YES;
         default:
             return NO;
     }
