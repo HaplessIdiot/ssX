@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.3 2001/11/19 15:33:38 tsi Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -124,6 +124,16 @@ int argsize;
     return argc;
 }
 
+/* Maybe this should go somewhere more centrally located. */
+#ifndef NEED_UNDERSCORE_PREFIX
+#if defined(__QNX__) || defined(Lynx) || defined(SYSV) || defined(SVR4) || \
+    defined(__ELF__) || defined(__GNU__)
+#define NEED_UNDERSCORE_PREFIX 0
+#else
+#define NEED_UNDERSCORE_PREFIX 1
+#endif
+#endif
+
 static char *
 strdup_and_prefix(char *symbol)
 {
@@ -131,19 +141,20 @@ strdup_and_prefix(char *symbol)
 	char *result;
 
 	n = strlen(symbol) + 1;
-#ifndef __ELF__
+#if NEED_UNDERSCORE_PREFIX
 	n++;			/* add space for _ */
 #endif
 	if ((result = malloc(n)) == NULL) 
 		return NULL;
-#ifndef __ELF__
+#if NEED_UNDERSCORE_PREFIX
 	result[0] = '_';
 #endif
-	memcpy(result
-#ifndef __ELF__
-		+1
+
+#if NEED_UNDERSCORE_PREFIX
+	memcpy(result + 1, symbol, n);
+#else
+	memcpy(result, symbol, n);
 #endif
-		, symbol, n);
 	return result;
 }
 
