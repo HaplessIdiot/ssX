@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.17 2000/08/04 16:13:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.18 2000/08/04 21:07:11 tsi Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -190,7 +190,7 @@ xf86SetBoolOption(pointer optlist, const char *name, int deflt)
 pointer
 xf86ReplaceIntOption(pointer optlist, char *name, int val)
 {
-    char tmp[16];
+    char *tmp = xnfalloc(16);
     sprintf(tmp,"%i",val);
     return xf86AddNewOption(optlist,name,tmp);
 }
