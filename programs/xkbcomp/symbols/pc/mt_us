@@ -1,6 +1,4 @@
-
-// based on
-// Maltese keyboard map (for US-based keyboards)
+// Maltese keyboard map (based on MSA Standard DMS100, annex A)
 // by Ramon Casha (ramon.casha@linux.org.mt)
 //
 // $XFree86$
@@ -8,25 +6,17 @@
 partial default alphanumeric_keys
 xkb_symbols "basic" {
 
-    include "pc/latin"
+    include "pc/mt"
 
-    name[Group1]="Maltese";
+    // Describes the differences between the mt
+    // keyboard and a US-based physical keyboard
 
-    key <AE06>	{ [         6, dead_circumflex, asciicircum, fiveeighths ] };
-    key <AE12>	{ [ cabovedot,  Cabovedot,        equal,         plus ]	};
-
-    key <AD03>	{ [         e,          E,     EuroSign,     EuroSign ]	};
-    key <AD11>	{ [ gabovedot,  Gabovedot,  bracketleft,    braceleft ]	};
-    key <AD12>	{ [   hstroke,    Hstroke, bracketright,   braceright ]	};
-
-    key <AC05>	{ [         g,          G,    gabovedot,    Gabovedot ]	};
-    key <TLDE>	{ [dead_grave, asciitilde,        grave,        grave ]	};
+    name[Group1]="Maltese (US layout)";
 
     key <BKSL>	{ [ zabovedot,  Zabovedot,    backslash,          bar ]	};
-    key <AB01>	{ [         z,          Z,    zabovedot,    Zabovedot ]	};
-    key <AB03>	{ [         c,          C,    cabovedot,    Cabovedot ]	};
 
-    key <RALT>  { type[Group1]="TWO_LEVEL",
-                  [ ISO_Level3_Shift, Multi_key ]   };
-    modifier_map Mod5   { <RALT> };
+    key <TLDE>	{ [ cabovedot,  Cabovedot,        grave,   asciitilde ]	};
+
+    key <AE03>	{ [         3,   EuroSign,   numbersign               ]	};,
+
 };

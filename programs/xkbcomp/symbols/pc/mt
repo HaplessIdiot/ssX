@@ -1,6 +1,4 @@
-
-// based on
-// Maltese keyboard map (for UK-based keyboards)
+// Maltese keyboard map (based on MSA Standard DMS100)
 // by Ramon Casha (ramon.casha@linux.org.mt)
 //
 // $XFree86$
@@ -10,27 +8,27 @@ xkb_symbols "basic" {
 
     include "pc/latin"
 
-    name[Group1]="Maltese (UK layout)";
+    name[Group1]="Maltese";
 
-    key <AE02>	{ [         2,   quotedbl,  twosuperior,    oneeighth ]	};
-    key <AE03>	{ [         3,   sterling, threesuperior,    sterling ]	};
-    key <AE06>	{ [         6, dead_circumflex, asciicircum, fiveeighths ] };
-    key <AE12>	{ [ cabovedot,  Cabovedot,        equal,         plus ]	};
-
-    key <AD03>	{ [         e,          E,     EuroSign,     EuroSign ]	};
+    // The following four sets are the four additional letters, with the UK
+    // equivalents
+    key <TLDE>	{ [ cabovedot,  Cabovedot,        grave,      notsign ]	};
     key <AD11>	{ [ gabovedot,  Gabovedot,  bracketleft,    braceleft ]	};
     key <AD12>	{ [   hstroke,    Hstroke, bracketright,   braceright ]	};
+    key <LSGT>	{ [ zabovedot,  Zabovedot,    backslash,          bar ]	};
 
-    key <AC05>	{ [         g,          G,    gabovedot,    Gabovedot ]	};
-    key <AC11>	{ [apostrophe,         at, dead_circumflex, dead_caron]	};
-    key <TLDE>	{ [dead_grave,    notsign,        grave,          bar ]	};
+    // Euro symbol
+    key <AE03>	{ [         3,   EuroSign,     sterling               ]	};
 
-    key <BKSL>	{ [numbersign, asciitilde,   dead_grave,   dead_breve ]	};
-    key <AB01>	{ [         z,          Z,    zabovedot,    Zabovedot ]	};
-    key <AB03>	{ [         c,          C,    cabovedot,    Cabovedot ]	};
+    // Long accent
+    key <AE06>	{ [         6, asciicircum, dead_circumflex, dead_circumflex ]	};
 
-    key <LSGT>	{ type[Group1] = "FOUR_LEVEL",
-                  [ zabovedot,  Zabovedot,    backslash,          bar ]	};
+    // Normal accented vowels
+    key <AD03>	{ [         e,          E,       egrave,       Egrave ]	};
+    key <AD07>	{ [         u,          U,       ugrave,       Ugrave ]	};
+    key <AD08>	{ [         i,          I,       igrave,       Igrave ]	};
+    key <AD09>	{ [         o,          O,       ograve,       Ograve ]	};
+    key <AC01>	{ [         a,          A,       agrave,       Agrave ]	};
 
     key <RALT>  { type[Group1]="TWO_LEVEL",
                   [ ISO_Level3_Shift, Multi_key ]   };
