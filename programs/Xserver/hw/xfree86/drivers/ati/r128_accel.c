@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.14 2002/02/14 23:10:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.15 2002/10/30 12:52:11 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1047,16 +1047,21 @@ void R128EngineInit(ScrnInfoPtr pScrn)
     OUTREG(R128_DP_WRITE_MASK,     0xffffffff);
 
     R128WaitForFifo(pScrn, 1);
+
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     /* FIXME: this is a kludge for texture uploads in the 3D driver. Look at
      * how the radeon driver handles HOST_DATA_SWAP if you want to implement
      * CCE ImageWrite acceleration or anything needing this bit */
-    if (!info->directRenderingEnabled)
-	OUTREGP(R128_DP_DATATYPE,
-		R128_HOST_BIG_ENDIAN_EN, ~R128_HOST_BIG_ENDIAN_EN);
+#ifdef XF86DRI
+    if (info->directRenderingEnabled)
+	OUTREGP(R128_DP_DATATYPE, 0, ~R128_HOST_BIG_ENDIAN_EN);
     else
 #endif
-	OUTREGP(R128_DP_DATATYPE, 0, ~R128_HOST_BIG_ENDIAN_EN);
+	OUTREGP(R128_DP_DATATYPE,
+		R128_HOST_BIG_ENDIAN_EN, ~R128_HOST_BIG_ENDIAN_EN);
+#else /* X_LITTLE_ENDIAN */
+    OUTREGP(R128_DP_DATATYPE, 0, ~R128_HOST_BIG_ENDIAN_EN);
+#endif
 
 #ifdef XF86DRI
     info->sc_left         = 0x00000000;
