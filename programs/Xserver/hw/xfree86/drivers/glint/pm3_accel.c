@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.17 2001/02/02 14:23:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.18 2001/02/02 16:17:16 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -864,28 +864,29 @@ static void
 Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    int dwords = pGlint->dwords;
 
     if (pGlint->ScanlineDirect) {
     	if (pGlint->cpucount--)
-    	    GLINT_WAIT(pGlint->dwords);
+    	    GLINT_WAIT(dwords);
 	return;
     } else {
-	while(pGlint->dwords >= pGlint->FIFOSize) {
+	while(dwords >= pGlint->FIFOSize) {
 	    GLINT_WAIT(pGlint->FIFOSize);
             GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | 0x0D, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
 			pGlint->FIFOSize - 1);
-	    pGlint->dwords -= pGlint->FIFOSize - 1;
+	    dwords -= pGlint->FIFOSize - 1;
 	}
-	if(pGlint->dwords) {
-	    GLINT_WAIT(pGlint->dwords + 1);
-            GLINT_WRITE_REG(((pGlint->dwords - 1) << 16) | 0x0D, OutputFIFO);
+	if(dwords) {
+	    GLINT_WAIT(dwords + 1);
+            GLINT_WRITE_REG(((dwords - 1) << 16) | 0x0D, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
-			pGlint->dwords);
+			dwords);
 	}
     }
 }
@@ -954,13 +955,14 @@ static void
 Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    int dwords = pGlint->dwords;
 
     if (pGlint->ScanlineDirect) {
     	if (pGlint->cpucount--)
-    	    GLINT_WAIT(pGlint->dwords);
+    	    GLINT_WAIT(dwords);
 	return;
     } else {
-	while(pGlint->dwords >= pGlint->FIFOSize) {
+	while(dwords >= pGlint->FIFOSize) {
 	    GLINT_WAIT(pGlint->FIFOSize);
             GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) |
 							0x05, OutputFIFO);
@@ -968,16 +970,16 @@ Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
 			pGlint->FIFOSize - 1);
-	    pGlint->dwords -= pGlint->FIFOSize - 1;
+	    dwords -= pGlint->FIFOSize - 1;
 	}
-	if(pGlint->dwords) {
-	    GLINT_WAIT(pGlint->dwords + 1);
-            GLINT_WRITE_REG(((pGlint->dwords - 1) << 16) | (0x15 << 4) | 
+	if(dwords) {
+	    GLINT_WAIT(dwords + 1);
+            GLINT_WRITE_REG(((dwords - 1) << 16) | (0x15 << 4) | 
 							0x05, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
-			pGlint->dwords);
+			dwords);
 	}
     }
 }
