@@ -1,3 +1,4 @@
+/* $Id: xmesa1.c,v 1.11 2001/01/17 12:50:09 alanh Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -2396,7 +2397,7 @@ void XMesaCopySubBuffer( XMesaBuffer b, int x, int y, int width, int height )
       _mesa_swapbuffers(ctx);
 
    if (b->db_state) {
-      int yTop = b->bottom - y - height;
+      int yTop = b->height - y - height;
 #ifdef FX
       if (b->FXctx) {
          fxMesaSwapBuffers();
