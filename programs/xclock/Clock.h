@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.h,v 1.5 2001/01/17 23:45:18 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.h,v 1.7 2002/05/17 22:37:47 keithp Exp $ */
 
 #ifndef _XawClock_h
 #define _XawClock_h
@@ -112,6 +112,7 @@ SOFTWARE.
 		/* Boolean: use Render extension if TRUE */
 #define XtNrender "render"
 
+		/* RenderColor: colors for various clock elements */
 #define XtNhourColor "hourColor"
 #define XtNminuteColor "minuteColor"
 #define XtNsecondColor "secondColor"
@@ -119,6 +120,10 @@ SOFTWARE.
 #define XtNminorColor "minorColor"
 
 #define XtRRenderColor "RenderColor"
+
+		/* Boolean: use sharp rendering for Render polygons */
+#define XtNsharp "sharp"
+#define XtCSharp "Sharp"
 
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */
