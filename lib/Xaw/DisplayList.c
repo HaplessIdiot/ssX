@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.16 2000/09/26 15:56:54 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.17 2003/03/25 04:18:10 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -612,7 +612,7 @@ Dl1Point(Widget w, XtPointer args, XtPointer data, int id)
       xpad = XtX(w) + XtBorderWidth(w);
       ypad = XtY(w) + XtBorderWidth(w);
       x += xpad;
-      x += xpad;
+      x += ypad;
       display = XtDisplayOfObject(w);
       window = XtWindowOfObject(w);
     }
@@ -1192,7 +1192,7 @@ DlString(Widget w, XtPointer args, XtPointer data, Bool image)
       xpad = XtX(w) + XtBorderWidth(w);
       ypad = XtY(w) + XtBorderWidth(w);
       x += xpad;
-      x += xpad;
+      x += ypad;
       display = XtDisplayOfObject(w);
       window = XtWindowOfObject(w);
     }
