@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.71 2002/11/29 15:33:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.72 2002/12/16 16:19:11 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -288,6 +288,7 @@ static const char *drmSymbols[] = {
     "drmCommandRead",
     "drmCommandWrite",
     "drmCommandWriteRead",
+    "drmFreeBufs",
     "drmFreeVersion",
     "drmGetLibVersion",
     "drmGetVersion",
