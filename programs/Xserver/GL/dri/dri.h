@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.14 2000/11/18 19:37:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.15 2000/12/07 20:26:14 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -85,12 +85,11 @@ typedef void (*AdjustFramePtr)(int scrnIndex, int x, int y, int flags);
 typedef struct {
     ScreenWakeupHandlerProcPtr   WakeupHandler;
     ScreenBlockHandlerProcPtr    BlockHandler;
-    PaintWindowBackgroundProcPtr PaintWindowBackground;
-    PaintWindowBorderProcPtr     PaintWindowBorder;
+    WindowExposuresProcPtr       WindowExposures;
     CopyWindowProcPtr            CopyWindow;
     ValidateTreeProcPtr          ValidateTree;
     PostValidateTreeProcPtr      PostValidateTree;
-    ClipNotifyPtr                ClipNotify;
+    ClipNotifyProcPtr            ClipNotify;
     AdjustFramePtr               AdjustFrame;
 } DRIWrappedFuncsRec, *DRIWrappedFuncsPtr;
 
@@ -251,9 +250,9 @@ extern void DRISwapContext(int drmFD,
 
 extern void *DRIGetContextStore(DRIContextPrivPtr context);
 
-extern void DRIPaintWindow(WindowPtr pWin,
-                           RegionPtr prgn,
-                           int what);
+extern void DRIWindowExposures(WindowPtr pWin,
+                              RegionPtr prgn,
+                              RegionPtr bsreg);
 
 extern void DRICopyWindow(WindowPtr pWin,
                           DDXPointRec ptOldOrg,
