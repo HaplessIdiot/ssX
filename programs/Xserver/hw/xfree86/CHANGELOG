@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 138. Fix blank display problem in trident driver for older TGUI series
+      chips, and a few Xv cleanups too (Alan Hourihane).
  137. Enable MIT-SHM extension in Xnest server (#A.795, Steve Schwarz).
  136. Fix typo in Rage128 DGA driver (#5187. Charles M. Hannum).
  135. Fix enabling of DRI when XvMC is disabled (#5208, Matthew Sottek, Intel).
@@ -14797,4 +14799,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2216 2002/05/14 20:31:39 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2217 2002/05/14 21:59:36 alanh Exp $

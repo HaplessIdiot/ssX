@@ -1,4 +1,3 @@
- 
 /*
  * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
  *
@@ -22,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.66 2002/04/04 14:05:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.67 2002/04/04 14:27:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -185,7 +184,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int vgaIOBase;
     int offset = 0;
     int clock = pTrident->currentClock;
-    CARD8 protect;
+    CARD8 protect = 0;
     Bool fullSize = FALSE;
     Bool isShadow = FALSE;
 
@@ -193,11 +192,13 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr regp = &hwp->ModeReg;
     vgaRegPtr vgaReg = &hwp->ModeReg;
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    
+
     /* Unprotect */
-    OUTB(0x3C4, 0x11);
-    protect = INB(0x3C5);
-    OUTB(0x3C5, 0x92);
+    if (pTrident->Chipset > PROVIDIA9685) {
+    	OUTB(0x3C4, Protection);
+    	protect = INB(0x3C5);
+    	OUTB(0x3C5, 0x92);
+    }
 
     OUTB(0x3C4, 0x0B); INB(0x3C5); /* Ensure we are in New Mode */
 
@@ -252,6 +253,9 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3CE[CyberEnhance] = INB(0x3CF);
 #else
 	pReg->tridentRegs3CE[CyberEnhance] = INB(0x3CF) & 0x8F;
+ 	if (mode->CrtcVDisplay > 1024)
+	    pReg->tridentRegs3CE[CyberEnhance] |= 0x50;
+	else
 	if (mode->CrtcVDisplay > 768)
 	    pReg->tridentRegs3CE[CyberEnhance] |= 0x30;
 	else
@@ -495,7 +499,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    }	
     }
 
-
     /* Defaults for all trident chipsets follows */
     switch (pScrn->bitsPerPixel) {
 	case 1:
@@ -651,8 +654,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    (pReg->tridentRegs3C4[Threshold] & 0xf0) | 0x2;
     
      /* restore */
-    OUTB(0x3C4, 0x11);
-    OUTB(0x3C5, protect);
+    if (pTrident->Chipset > PROVIDIA9685) {
+    	OUTB(0x3C4, Protection);
+    	OUTB(0x3C5, protect);
+    }
    
     return(TRUE);
 }
@@ -706,12 +711,14 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3CE(MiscIntContReg);
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
-    OUTW_3C4(Threshold);
-    OUTW_3C4(SSetup);
-    OUTW_3C4(SKey);
-    OUTW_3C4(SPKey);
-    OUTW_3x4(PreEndControl);
-    OUTW_3x4(PreEndFetch);
+    if (pTrident->Chipset >= CYBER9388) {
+    	OUTW_3C4(Threshold);
+    	OUTW_3C4(SSetup);
+    	OUTW_3C4(SKey);
+    	OUTW_3C4(SPKey);
+    	OUTW_3x4(PreEndControl);
+    	OUTW_3x4(PreEndFetch);
+    }
     if (pTrident->Chipset >= CYBER9385)    OUTW_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      OUTW_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) OUTW_3x4(New32);
@@ -809,7 +816,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     
     /* Unprotect registers */
     OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
-    OUTW(0x3C4, (0x92 << 8) | Protection);
+    if (pTrident->Chipset > PROVIDIA9685)
+    	OUTW(0x3C4, (0x92 << 8) | Protection);
 
     INB_3x4(Offset);
     INB_3x4(LinearAddReg);
@@ -824,12 +832,14 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(GraphEngReg);
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
-    INB_3C4(Threshold);
-    INB_3C4(SSetup);
-    INB_3C4(SKey);
-    INB_3C4(SPKey);
-    INB_3x4(PreEndControl);
-    INB_3x4(PreEndFetch);
+    if (pTrident->Chipset >= CYBER9388) {
+    	INB_3C4(Threshold);
+    	INB_3C4(SSetup);
+    	INB_3C4(SKey);
+    	INB_3C4(SPKey);
+    	INB_3x4(PreEndControl);
+    	INB_3x4(PreEndFetch);
+    }
     if (pTrident->Chipset >= CYBER9385)    INB_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      INB_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
