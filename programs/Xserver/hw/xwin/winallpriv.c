@@ -28,7 +28,7 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.7 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.8 2001/10/29 21:10:23 alanh Exp $ */
 
 #include "win.h"
 
@@ -77,7 +77,6 @@ winAllocatePrivates (ScreenPtr pScreen)
 
   /* Intialize private structure members */
   pScreenPriv->fActive = TRUE;
-  pScreenPriv->fCursor = TRUE;
 
   /* Save the screen private pointer */
   winSetScreenPriv (pScreen, pScreenPriv);
@@ -135,20 +134,20 @@ Bool
 winAllocateCmapPrivates (ColormapPtr pCmap)
 {
   winPrivCmapPtr		pCmapPriv;
-  static unsigned long		ulPrivateGeneration = 0;
+  static unsigned long		s_ulPrivateGeneration = 0;
 
 #if CYGDEBUG
   ErrorF ("winAllocateCmapPrivates ()\n");
 #endif
 
   /* Get a new privates index when the server generation changes */
-  if (ulPrivateGeneration != serverGeneration)
+  if (s_ulPrivateGeneration != serverGeneration)
     {
       /* Get an index that we can store our privates at */
       g_iCmapPrivateIndex = AllocateColormapPrivateIndex (winInitCmapPrivates);
       
       /* Save the new server generation */
-      ulPrivateGeneration = serverGeneration;
+      s_ulPrivateGeneration = serverGeneration;
     }
 
   /* Allocate memory for our private structure */

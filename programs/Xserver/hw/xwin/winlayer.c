@@ -27,11 +27,11 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.5 2001/07/31 19:59:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.6 2001/08/16 08:23:36 alanh Exp $ */
 
 #include "win.h"
 
-
+#if WIN_LAYER_SUPPORT
 /*
  * Create initial layer.  Cygwin only needs one initial layer.
  */
@@ -61,7 +61,6 @@ winLayerCreate (ScreenPtr pScreen)
 		      0);
 }
 
-#ifdef RANDR
 /*
  * Used as a function parameter to WalkTree.
  */
@@ -99,6 +98,7 @@ winLayerRemove (WindowPtr pWindow, pointer value)
 }
 
 
+#ifdef RANDR
 /*
  * Answer queries about the RandR features supported.
  */
@@ -233,4 +233,5 @@ winRandRInit (ScreenPtr pScreen)
 
   return TRUE;
 }
+#endif
 #endif

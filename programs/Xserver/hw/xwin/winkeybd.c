@@ -30,12 +30,16 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.8 2001/11/12 08:47:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.9 2002/04/04 11:30:10 alanh Exp $ */
 
 
 #include "win.h"
 
 #include "winkeybd.h"
+
+
+static Bool winKeyState[NUM_KEYCODES];
+
 
 /* 
  * Translate a Windows WM_[SYS]KEY(UP/DOWN) message
@@ -72,6 +76,12 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
   int			i;
   KeySym		*pKeySym = map;
+
+  /*
+   * Initialize all key states to up... which may not be true
+   * but it is close enough.
+   */
+  ZeroMemory (winKeyState, sizeof (winKeyState[0]) * NUM_KEYCODES);
 
   /* MAP_LENGTH is defined in Xserver/include/input.h to be 256 */
   for (i = 0; i < MAP_LENGTH; i++)
@@ -398,18 +408,19 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam)
  */
 
 void
-winKeybdReleaseModifierKeys ()
+winKeybdReleaseKeys ()
 {
+  int				i;
+
   /* Verify that the mi input system has been initialized */
   if (g_fdMessageQueue == WIN_FD_INVALID)
     return;
 
-  winSendKeyEvent (KEY_Alt, FALSE);
-  winSendKeyEvent (KEY_AltLang, FALSE);
-  winSendKeyEvent (KEY_LCtrl, FALSE);
-  winSendKeyEvent (KEY_RCtrl, FALSE);
-  winSendKeyEvent (KEY_ShiftL, FALSE);
-  winSendKeyEvent (KEY_ShiftR, FALSE);
+  /* Pop any pressed keys */
+  for (i = 0; i < NUM_KEYCODES; ++i)
+    {
+      if (winKeyState[i]) winSendKeyEvent (i, FALSE);
+    }
 }
 
 
@@ -424,6 +435,15 @@ winSendKeyEvent (DWORD dwKey, Bool fDown)
 {
   xEvent			xCurrentEvent;
   
+  /*
+   * When alt-tabing between screens we can get phantom key up messages
+   * Here we only pass them through it we think we should!
+   */
+  if (winKeyState[dwKey] == FALSE && fDown == FALSE) return;
+
+  /* Update the keyState map */
+  winKeyState[dwKey] = fDown;
+
   ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
 
   xCurrentEvent.u.u.type = fDown ? KeyPress : KeyRelease;

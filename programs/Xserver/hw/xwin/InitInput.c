@@ -26,7 +26,7 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.8 2001/11/21 08:51:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.9 2001/12/14 19:59:52 dawes Exp $ */
 
 #include "win.h"
 
@@ -109,7 +109,8 @@ InitInput (int argc, char *argv[])
       
       if (g_fdMessageQueue == -1)
 	{
-	  FatalError ("InitInput () - Failed opening /dev/windows\n");
+	  FatalError ("InitInput () - Failed opening %s\n",
+		      WIN_MSG_QUEUE_FNAME);
 	}
 
       /* Add the message queue as a device to wait for in WaitForSomething */
