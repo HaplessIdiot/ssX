@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.25 2003/10/21 17:41:44 tsi Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.26 2003/10/26 18:14:22 herrb Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -7,11 +7,11 @@ XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.25 2003/10/21 17:41:44 tsi Exp $
 #define HasSharedLibraries	YES
 #define NeedLibInsideFlag	NO
 #define ForceNormalLib		NO
-#define SharedLibXaw		NO /* For these we need new binutils */
-#define SharedLibXmu		NO
-#define SharedLibXt		NO
+#define SharedLibXaw		YES
+#define SharedLibXmu		YES
+#define SharedLibXt		YES
 #define SharedLibFont		NO
-#define SharedLibXaw6		NO
+#define SharedLibXaw6		YES
 #define SharedLibSM		YES
 #define SharedLibICE		YES
 #define SharedLibXext		YES
