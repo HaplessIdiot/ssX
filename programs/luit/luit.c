@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.2 2001/11/08 04:00:14 tsi Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.3 2001/11/22 16:16:35 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -389,8 +389,14 @@ main(int argc, char **argv)
 static int
 convert(ifd, ofd)
 {
-    int i;
+    int rc, i;
     unsigned char buf[BUFFER_SIZE];
+
+    rc = droppriv();
+    if(rc < 0) {
+        perror("Couldn't drop priviledges");
+        exit(1);
+    }
 
     while(1) {
         i = read(ifd, buf, BUFFER_SIZE);
