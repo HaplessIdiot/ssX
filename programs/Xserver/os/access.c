@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Id: access.c,v 3.43 2003/04/20 18:35:12 herrb Exp $ */
+/* $Id: access.c,v 3.44 2003/05/25 10:38:47 herrb Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -745,6 +745,7 @@ DefineSelf (int fd)
 	if (ifr->ifa_addr.sa_family == AF_DECnet) 
 	    continue;
 #endif /* DNETCONN */
+	len = sizeof(*(ifr->ifa_addr));
 	family = ConvertAddr(ifr->ifa_addr, &len, (pointer *)&addr);
 	if (family == -1 || family == FamilyLocal) 
 	    continue;
