@@ -1,7 +1,7 @@
 
 // based on a keyboard map from an 'xkb/symbols/dk' file
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/pc/dvorak,v 1.1 2002/11/26 01:43:25 dawes Exp $
 
 partial default alphanumeric_keys
 xkb_symbols "basic" {
@@ -9,7 +9,6 @@ xkb_symbols "basic" {
     name[Group1]= "Dvorak";
 
     // Alphanumeric section
-    key.type[Group1] = "FOUR_LEVEL_ALPHABETIC";
 
     key <TLDE> { [       grave,	asciitilde, dead_grave, dead_tilde	] };
 
@@ -62,10 +61,7 @@ xkb_symbols "basic" {
     key <AB09> { [	    v,	V		]	};
     key <AB10> { [	    z,	Z		]	};
 
-    key <RALT>  { type[Group1]="TWO_LEVEL",
-                  [ ISO_Level3_Shift, Multi_key ]   };
-
-    modifier_map Mod5   { <RALT> };
+    include "level3(ralt_switch_multikey)"
 };
 
 // Norwegian Dvorak
