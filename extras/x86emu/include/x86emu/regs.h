@@ -35,14 +35,12 @@
 * Description:  Header file for x86 register definitions.
 *
 ****************************************************************************/
-/* $XFree86: xc/extras/x86emu/include/x86emu/regs.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/extras/x86emu/include/x86emu/regs.h,v 1.5 2003/10/22 20:03:05 tsi Exp $ */
 
 #ifndef __X86EMU_REGS_H
 #define __X86EMU_REGS_H
 
 /*---------------------- Macros and type definitions ----------------------*/
-
-#pragma pack(1)
 
 /*
  * General EAX, EBX, ECX, EDX type registers.  Note that for
@@ -88,8 +86,6 @@ typedef struct {
 	} I8_reg_t;
 
 #endif /* BIG_ENDIAN */
-
-#pragma pack(0)
 
 typedef union {
 	I32_reg_t   I32_reg;
