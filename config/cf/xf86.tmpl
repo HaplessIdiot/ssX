@@ -4,6 +4,13 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.25 1999/08/14 10:48:59 dawes Exp $
 
+#ifdef BuilderEMailAddr
+BUILDERADDR = BuilderEMailAddr
+#else 
+BUILDERADDR = "xfree86@xfree86.org"
+#endif
+BUGMSG = -DBUILDERADDR='$(BUILDERADDR)'
+
 #if XF86DriverSDK
     BUILDMODULEDIR = $(DRIVERSDKMODULEDIR)
     BUILDMODULETOP = ..

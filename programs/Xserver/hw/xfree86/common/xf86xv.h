@@ -87,6 +87,12 @@ typedef int (*QueryImageAttributesFuncPtr)(ScrnInfoPtr pScrn,
 	int image, unsigned short *width, unsigned short *height, 
 	int *pitches, int *offsets);
 
+typedef enum {
+    XV_OFF,
+    XV_PENDING,
+    XV_ON
+} XvStatus;
+
 /*** this is what the driver needs to fill out ***/
 
 typedef struct {
@@ -235,7 +241,7 @@ typedef struct {
    RegionPtr pCompositeClip;
    Bool FreeCompositeClip;
    XvAdaptorRecPrivatePtr AdaptorRec;
-   Bool isOn;
+   XvStatus isOn;
    Bool moved;
    int vid_x, vid_y, vid_w, vid_h;
    int drw_x, drw_y, drw_w, drw_h;

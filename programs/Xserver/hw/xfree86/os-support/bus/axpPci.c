@@ -101,8 +101,14 @@ axpPciCfgRead(PCITAG tag, int off)
 	CARD32 val = 0xffffffff;
 
 	bus = PCI_BUS_FROM_TAG(tag);
+	/*
+	 * Workaround for kernel bug
+	 * triggered when probing for PCI devices
+	 */
+	if (bus >= pciNumBuses)
+	    return (val);
 	dfn = PCI_DFN_FROM_TAG(tag);
-	
+
 	syscall(__NR_pciconfig_read, bus, dfn, off, 4, &val);
 	return(val);
 }

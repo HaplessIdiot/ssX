@@ -193,11 +193,29 @@ FindPCIVideoInfo(void)
 		info->type[j] = 0;
 	    }
 
+	    if (!(pcrp->pci_base0) && info->size[0]
+		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
+		pcrp->pci_base0 = pciCheckForBrokenBase(pcrp->tag,0);
+	    if (!(pcrp->pci_base1) && info->size[1]
+		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
+		pcrp->pci_base1 = pciCheckForBrokenBase(pcrp->tag,1);
+	    if (!(pcrp->pci_base2) && info->size[2]
+		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
+		pcrp->pci_base2 = pciCheckForBrokenBase(pcrp->tag,2);
+	    if (!(pcrp->pci_base3) && info->size[3]
+		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
+		pcrp->pci_base3 = pciCheckForBrokenBase(pcrp->tag,3);
+	    if (!(pcrp->pci_base4) && info->size[4]
+		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
+		pcrp->pci_base4 = pciCheckForBrokenBase(pcrp->tag,4);
+	    if (!(pcrp->pci_base5) && info->size[5]
+		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
+		pcrp->pci_base5 = pciCheckForBrokenBase(pcrp->tag,5);
+	    
 	    /*
 	     * 64-bit base addresses are checked for and avoided.
 	     * XXX Should deal with them on platforms that support them.
 	     */
-
 	    if (pcrp->pci_base0) {
 		if (pcrp->pci_base0 & PCI_MAP_IO) {
 		    info->ioBase[0] = (memType)PCIGETIO(pcrp->pci_base0);

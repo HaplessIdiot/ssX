@@ -100,10 +100,14 @@ typedef struct {
     int			MinClock;
     int			MaxClock;
     int			MUXThreshold;
+    int                 currentClock;
     int			MCLK;
     int			dwords;
     int			height;
     int                 lcdMode;
+#ifdef READOUT
+    Bool                DontSetClock;
+#endif
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
     I2CBusPtr		DDC;
@@ -137,7 +141,10 @@ typedef struct {
     int shadow_10;
     int shadow_11;
     int shadow_16;
+    int shadow_HiOrd;
 } tridentLCD;
+
+extern tridentLCD LCD[];
 
 typedef struct {
     int x_res;
@@ -163,6 +170,7 @@ Bool TridentAccelInit(ScreenPtr pScreen);
 Bool ImageAccelInit(ScreenPtr pScreen);
 Bool BladeAccelInit(ScreenPtr pScreen);
 Bool TridentHWCursorInit(ScreenPtr pScreen);
+int TridentFindMode(int xres, int yres, int depth);
 void TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b);
 void TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b);
 void TridentOutIndReg(ScrnInfoPtr pScrn,
@@ -180,7 +188,7 @@ int TGUISetReadWrite(ScreenPtr pScreen, int bank);
 int TVGA8900SetRead(ScreenPtr pScreen, int bank);
 int TVGA8900SetWrite(ScreenPtr pScreen, int bank);
 int TVGA8900SetReadWrite(ScreenPtr pScreen, int bank);
-
+void TridentFindClock(ScrnInfoPtr pScrn, int clock);
 float CalculateMCLK(ScrnInfoPtr pScrn);
 
 /*

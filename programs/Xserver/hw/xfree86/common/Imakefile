@@ -161,6 +161,12 @@ OFILES = \
      OSNAME = OSName
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='" $(OSNAME)"' -DOSVENDOR='" $(OSVENDOR)"'
+#if defined(BuilderString)
+  BUILDERSTRING = BuilderString
+  BUILDERMSG = -DBUILDERSTRING='$(BUILDERSTRING)'
+#else
+  BUILDERMSG =
+#endif
 CONSDEFINES = XFree86ConsoleDefines
 EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 PROJECTROOT = ProjectRoot
@@ -178,8 +184,8 @@ XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"' \
 
 AllTarget($(OFILES))
 
-SpecialCObjectRule(xf86Bus,NullParameter,$(VGAINCLUDES))
-SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
+SpecialCObjectRule(xf86Bus,NullParameter,$(BUGMSG) $(VGAINCLUDES))
+SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES) $(MODPATHDEFINES) $(LOGDEFINES))
 SpecialCObjectRule(xf86Config,$(ICONFIGFILES),$(XCONFIGDEFINES))

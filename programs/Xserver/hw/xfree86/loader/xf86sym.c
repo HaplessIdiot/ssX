@@ -249,7 +249,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SerialModemClearBits)
    SYMFUNC(xf86LoadKernelModule)
    SYMFUNC(xf86OSMouseInit)
-
+   SYMFUNC(xf86uDelay)
+   
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */
    SYMFUNC(XisbNew)

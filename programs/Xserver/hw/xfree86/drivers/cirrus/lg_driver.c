@@ -1727,14 +1727,15 @@ LgCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	CirPtr pCir = CIRPTR(pScrn);
 
+	if(pScrn->vtSema) {
 	LgRestore(pScrn);
-
 	if (pCir->HWCursor)
-		LgHideCursor(pScrn);
+	    LgHideCursor(pScrn);
 
 	vgaHWLock(hwp);
-
+	
 	CirUnmapMem(pCir, pScrn->scrnIndex);
+	}
 
 	if (pCir->AccelInfoRec)
 		XAADestroyInfoRec(pCir->AccelInfoRec);
@@ -1801,17 +1802,23 @@ static Bool
 LgSaveScreen(ScreenPtr pScreen, int mode)
 {
 	CirPtr pCir = CIRPTR(xf86Screens[pScreen->myNum]);
+	ScrnInfoPtr pScrn = NULL;
 	Bool unblank;
 
 	unblank = xf86IsUnblank(mode);
-	
-	if (unblank)
+
+	if (pScreen != NULL)
+	    pScrn = xf86Screens[pScreen->myNum];
+
+	if (pScrn != NULL && pScrn->vtSema) {
+	    if (unblank)
 		/* Power up the palette DAC */
 		memwb(0xB0,memrb(0xB0) & 0x7F);
-	else
+	    else
 		/* Power down the palette DAC */
 		memwb(0xB0,memrb(0xB0) | 0x80);
-
+	}
+	
 	return vgaHWSaveScreen(pScreen, mode);
 }
 

@@ -694,14 +694,14 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
 			&ClipRegion, portPriv->DevPriv.ptr);
 
   if(ret == Success)
-	portPriv->isOn = TRUE;
+	portPriv->isOn = XV_ON;
 
 CLIP_VIDEO_BAILOUT:
 
-  if((clippedAway || (ret != Success)) && portPriv->isOn) {
+  if((clippedAway || (ret != Success)) && portPriv->isOn == XV_ON) {
 	(*portPriv->AdaptorRec->StopVideo)(
 		portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
-	portPriv->isOn = FALSE;
+	portPriv->isOn = XV_PENDING;
   }
 
   /* This clip was copied and only good for one shot */
@@ -782,14 +782,14 @@ xf86XVReputVideo(XvPortRecPrivatePtr portPriv)
 			portPriv->drw_w, portPriv->drw_h, 
 			&ClipRegion, portPriv->DevPriv.ptr);
 
-  if(ret == Success) portPriv->isOn = TRUE;
+  if(ret == Success) portPriv->isOn = XV_ON;
 
 CLIP_VIDEO_BAILOUT:
 
-  if((clippedAway || (ret != Success)) && portPriv->isOn) {
+  if((clippedAway || (ret != Success)) && (portPriv->isOn == XV_ON)) {
 	(*portPriv->AdaptorRec->StopVideo)(
 		portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
-	portPriv->isOn = FALSE;
+	portPriv->isOn = XV_PENDING;
   }
 
   /* This clip was copied and only good for one shot */
@@ -866,14 +866,14 @@ xf86XVReputImage(XvPortRecPrivatePtr portPriv)
 			WinBox.x1, WinBox.y1,
 			&ClipRegion, portPriv->DevPriv.ptr);
 
-  portPriv->isOn = (ret == Success);
+  portPriv->isOn = (ret == Success) ? XV_ON : XV_OFF;
 
 CLIP_VIDEO_BAILOUT:
 
-  if((clippedAway || (ret != Success)) && portPriv->isOn) {
+  if((clippedAway || (ret != Success)) && (portPriv->isOn == XV_ON)) {
 	(*portPriv->AdaptorRec->StopVideo)(
 		portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
-	portPriv->isOn = FALSE;
+	portPriv->isOn = XV_PENDING;
   }
 
   /* This clip was copied and only good for one shot */
@@ -982,10 +982,10 @@ xf86XVDestroyWindow(WindowPtr pWin)
   while(WinPriv) {
      XvPortRecPrivatePtr pPriv = WinPriv->PortRec;
 
-     if(pPriv->isOn) {
+     if(pPriv->isOn > XV_OFF) {
 	(*pPriv->AdaptorRec->StopVideo)(
 			pPriv->pScrn, pPriv->DevPriv.ptr, TRUE);
-	pPriv->isOn = FALSE;
+	pPriv->isOn = XV_OFF;
      }
 
      pPriv->pDraw = NULL;
@@ -1043,9 +1043,11 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
 	else if(AreasExposed) {
 	    XF86XVWindowPtr tmp;
 
-	    (*pPriv->AdaptorRec->StopVideo)(
-			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	    pPriv->isOn = FALSE;
+	    if (pPriv->isOn == XV_ON) {
+		(*pPriv->AdaptorRec->StopVideo)(
+		    pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
+		pPriv->isOn = XV_PENDING;
+	    }
 	    pPriv->pDraw = NULL;
 
 	    if(!pPrev) 
@@ -1088,10 +1090,10 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
      /* Stop everything except images, but stop them too if the 
 	window isn't visible.  But we only remove the images. */
 
-     if(pPriv->type || !visible) {
+     if((pPriv->type || !visible) && (pPriv->isOn == XV_ON)) {
 	(*pPriv->AdaptorRec->StopVideo)(
 			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	pPriv->isOn = FALSE;
+	pPriv->isOn = XV_PENDING;
 
 	if(!pPriv->type) {  /* overlaid still/image */
 	    pPriv->pDraw = NULL;
@@ -1204,10 +1206,11 @@ xf86XVLeaveVT(int index, int flags)
 	for(j = 0; j < pAdaptor->nPorts; j++) {
 	    pPort = &pAdaptor->pPorts[j];
 	    pPriv = (XvPortRecPrivatePtr)pPort->devPriv.ptr;
-	    if(pPriv->isOn) {
+	    if(pPriv->isOn > XV_OFF) {
+
 		(*pPriv->AdaptorRec->StopVideo)(
 			pPriv->pScrn, pPriv->DevPriv.ptr, TRUE);
-		pPriv->isOn = FALSE;
+		pPriv->isOn = XV_OFF;
 
 		if(pPriv->pCompositeClip && pPriv->FreeCompositeClip)
 		    REGION_DESTROY(pScreen, pPriv->pCompositeClip);
@@ -1248,7 +1251,7 @@ xf86XVAdjustFrame(int index, int x, int y, int flags)
       for(i = pa->nPorts; i > 0; i--, pPort++) {
 	pPriv = (XvPortRecPrivatePtr)pPort->devPriv.ptr;
 
-	if(!pPriv->type && pPriv->isOn) { /* overlaid still/image */
+	if(!pPriv->type && (pPriv->isOn == XV_ON)) { /* overlaid still/image */
 
 	  if(pPriv->pCompositeClip && pPriv->FreeCompositeClip)
 	     REGION_DESTROY(pScreen, pPriv->pCompositeClip);
@@ -1266,7 +1269,7 @@ xf86XVAdjustFrame(int index, int x, int y, int flags)
 	     (*pPriv->AdaptorRec->StopVideo)(
 				 pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
 	     xf86XVRemovePortFromWindow(pWin, pPriv);
-	     pPriv->isOn = FALSE;
+	     pPriv->isOn = XV_PENDING;
 	     continue;
 	  }
 	}
@@ -1424,7 +1427,7 @@ xf86XVPutStill(
 	(portPriv->AdaptorRec->flags & VIDEO_OVERLAID_STILLS)) {
 
      xf86XVEnlistPortInWindow((WindowPtr)pDraw, portPriv);
-     portPriv->isOn = TRUE;
+     portPriv->isOn = XV_ON;
      portPriv->pDraw = pDraw;
      portPriv->drw_x = drw_x;  portPriv->drw_y = drw_y;
      portPriv->drw_w = drw_w;  portPriv->drw_h = drw_h;
@@ -1435,10 +1438,10 @@ xf86XVPutStill(
 
 PUT_STILL_BAILOUT:
 
-  if((clippedAway || (ret != Success)) && portPriv->isOn) {
+  if((clippedAway || (ret != Success)) && (portPriv->isOn == XV_ON)) {
         (*portPriv->AdaptorRec->StopVideo)(
                 portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
-        portPriv->isOn = FALSE;
+        portPriv->isOn = XV_PENDING;
   }
 
   REGION_UNINIT(pScreen, &WinRegion);
@@ -1548,10 +1551,10 @@ xf86XVGetStill(
 
 GET_STILL_BAILOUT:
 
-  if((clippedAway || (ret != Success)) && portPriv->isOn) {
+  if((clippedAway || (ret != Success)) && (portPriv->isOn == XV_ON)) {
         (*portPriv->AdaptorRec->StopVideo)(
                 portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
-        portPriv->isOn = FALSE;
+        portPriv->isOn = XV_PENDING;
   }
 
   REGION_UNINIT(pScreen, &WinRegion);
@@ -1579,10 +1582,10 @@ xf86XVStopVideo(
 
   /* Must free resources. */
 
-  if(portPriv->isOn) {
+  if(portPriv->isOn > XV_OFF) {
 	(*portPriv->AdaptorRec->StopVideo)(
 		portPriv->pScrn, portPriv->DevPriv.ptr, TRUE);
-	portPriv->isOn = FALSE;
+	portPriv->isOn = XV_OFF;
   }
 
   return Success;
@@ -1720,7 +1723,7 @@ xf86XVPutImage(
 	(portPriv->AdaptorRec->flags & VIDEO_OVERLAID_IMAGES)) {
 
      xf86XVEnlistPortInWindow((WindowPtr)pDraw, portPriv);
-     portPriv->isOn = TRUE;
+     portPriv->isOn = XV_ON;
      portPriv->pDraw = pDraw;
      portPriv->drw_x = drw_x;  portPriv->drw_y = drw_y;
      portPriv->drw_w = drw_w;  portPriv->drw_h = drw_h;
@@ -1731,10 +1734,10 @@ xf86XVPutImage(
 
 PUT_IMAGE_BAILOUT:
 
-  if((clippedAway || (ret != Success)) && portPriv->isOn) {
+  if((clippedAway || (ret != Success)) && (portPriv->isOn == XV_ON)) {
         (*portPriv->AdaptorRec->StopVideo)(
                 portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
-        portPriv->isOn = FALSE;
+        portPriv->isOn = XV_PENDING;
   }
 
   REGION_UNINIT(pScreen, &WinRegion);

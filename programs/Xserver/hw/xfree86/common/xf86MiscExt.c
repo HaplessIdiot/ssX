@@ -34,7 +34,7 @@
 
 #include "xf86OSmouse.h"
 #include "../input/mouse/mouse.h"
-#define DEBUG
+
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #else
@@ -53,7 +53,8 @@ typedef struct {
 	int	em3timeout;
 	Bool	chordmiddle;
 	int	flags;
-	pointer	private;
+        char*   device;
+        pointer	private;
 } mseParamsRec, *mseParamsPtr;
 
 typedef struct {
@@ -201,6 +202,15 @@ MiscExtSetMouseValue(pointer mouse, MiscExtMseValType valtype, int value)
     return FALSE;
 }
 
+Bool
+MiscExtSetMouseDevice(pointer mouse, char* device)
+{
+    mseParamsPtr mse = mouse;
+
+    mse->device = device;
+    return TRUE;
+}
+                                                                               
 Bool
 MiscExtGetKbdSettings(pointer *kbd)
 {
@@ -411,6 +421,9 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	if (reopen)
 	    (pMse->device->deviceProc)(pMse->device, DEVICE_ON);
 	/* Set pInfo->options too */
+	
+       if (mse->device)
+           xf86ReplaceStrOption(pInfo->options, "Device", mse->device);        
 
     }
     if (mse_or_kbd == MISC_KEYBOARD) {

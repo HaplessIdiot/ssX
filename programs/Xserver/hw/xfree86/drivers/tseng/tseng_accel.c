@@ -1,10 +1,5 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.29 1999/06/12 07:18:57 dawes Exp $ */
 
-
-
-
-
-
 /*
  * ET4/6K acceleration interface.
  *
@@ -160,7 +155,7 @@ TsengXAAInit(ScreenPtr pScreen)
 #endif
 #endif
 
-#if 1
+#if 0 /*1*/
     /*
      * SceenToScreenCopy (BitBLT).
      * 
@@ -253,7 +248,7 @@ TsengXAAInit(ScreenPtr pScreen)
     }
 #endif
 
-#if 1
+#if 0 /*1*/
     /*
      * SolidLine.
      *
@@ -482,7 +477,7 @@ TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
      * here without calling the SetupFor... code again, and the
      * ACL_SOURCE_ADDRESS will be wrong.
      */
-    *ACL_SOURCE_ADDRESS = tsengFg;
+    ACL_SOURCE_ADDRESS(tsengFg);
 
     SET_XYDIR(0);   /* FIXME: not needed with separate setupforsolidline */
 
@@ -515,7 +510,7 @@ Tseng6KSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     wait_acl_queue(pTseng);
 
     /* see comment in TsengW32pSubsequentFillRectSolid */
-    *ACL_SOURCE_ADDRESS = tsengFg;
+    ACL_SOURCE_ADDRESS(tsengFg);
 
     /* if XYDIR is not reset here, drawing a hardware line in between
      * blitting, with the same ROP, color, etc will not cause a call to
@@ -589,8 +584,8 @@ TsengSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
     Tseng_setup_screencopy(pTseng, rop, planemask, trans_color, blit_dir);
 
-    *ACL_SOURCE_WRAP = 0x77;	       /* no wrap */
-    *ACL_SOURCE_Y_OFFSET = pTseng->line_width - 1;
+    ACL_SOURCE_WRAP(0x77);	       /* no wrap */
+    ACL_SOURCE_Y_OFFSET(pTseng->line_width - 1);
 }
 
 /*
@@ -655,7 +650,7 @@ TsengSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     wait_acl_queue(pTseng);
 
     SET_XY(pTseng, w, h);
-    *ACL_SOURCE_ADDRESS = srcaddr;
+    ACL_SOURCE_ADDRESS(srcaddr);
     START_ACL(pTseng, destaddr);
 }
 
@@ -675,20 +670,20 @@ TsengSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 
     switch (pTseng->Bytesperpixel) {
     case 1:
-	*ACL_SOURCE_WRAP = 0x33;       /* 8x8 wrap */
-	*ACL_SOURCE_Y_OFFSET = 8 - 1;
+	ACL_SOURCE_WRAP(0x33);       /* 8x8 wrap */
+	ACL_SOURCE_Y_OFFSET(8 - 1);
 	break;
     case 2:
-	*ACL_SOURCE_WRAP = 0x34;       /* 16x8 wrap */
-	*ACL_SOURCE_Y_OFFSET = 16 - 1;
+	ACL_SOURCE_WRAP(0x34);       /* 16x8 wrap */
+	ACL_SOURCE_Y_OFFSET(16 - 1);
 	break;
     case 3:
-	*ACL_SOURCE_WRAP = 0x3D;       /* 24x8 wrap --- only for ET6000 !!! */
-	*ACL_SOURCE_Y_OFFSET = 32 - 1; /* this is no error -- see databook */
+	ACL_SOURCE_WRAP(0x3D);       /* 24x8 wrap --- only for ET6000 !!! */
+	ACL_SOURCE_Y_OFFSET(32 - 1); /* this is no error -- see databook */
 	break;
     case 4:
-	*ACL_SOURCE_WRAP = 0x35;       /* 32x8 wrap */
-	*ACL_SOURCE_Y_OFFSET = 32 - 1;
+	ACL_SOURCE_WRAP(0x35);       /* 32x8 wrap */
+	ACL_SOURCE_Y_OFFSET(32 - 1);
     }
 }
 
@@ -702,7 +697,7 @@ TsengSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
 
     wait_acl_queue(pTseng);
 
-    *ACL_SOURCE_ADDRESS = srcaddr;
+    ACL_SOURCE_ADDRESS(srcaddr);
 
     SET_XY(pTseng, w, h);
     START_ACL(pTseng, destaddr);
@@ -722,8 +717,8 @@ TsengSetupForScanlineImageWrite(ScrnInfoPtr pScrn,
 
     Tseng_setup_screencopy(pTseng, rop, planemask, trans_color, 0);
 
-    *ACL_SOURCE_WRAP = 0x77;	       /* no wrap */
-    *ACL_SOURCE_Y_OFFSET = pTseng->line_width - 1;
+    ACL_SOURCE_WRAP(0x77);	       /* no wrap */
+    ACL_SOURCE_Y_OFFSET(pTseng->line_width - 1);
 }
 
 static CARD32 iw_dest, iw_skipleft;
@@ -753,7 +748,7 @@ TsengSubsequentImageWriteScanline(ScrnInfoPtr pScrn,
 
     wait_acl_queue(pTseng);
 
-    *ACL_SOURCE_ADDRESS = pTseng->AccelImageWriteBufferOffsets[bufno] + iw_skipleft;
+    ACL_SOURCE_ADDRESS(pTseng->AccelImageWriteBufferOffsets[bufno] + iw_skipleft);
     START_ACL(pTseng, iw_dest);
     iw_dest += pTseng->line_width;
 }
@@ -800,18 +795,18 @@ TsengSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
     if (!(octant & YMAJOR)) {
 	SET_X_YRAW(pTseng, len, 0xFFF);
     } else {
-	SET_XY_RAW(0xFFF, len - 1);
+	SET_XY_RAW(pTseng,0xFFF, len - 1);
     }
 
     SET_DELTA(minor, major);
-    *ACL_ERROR_TERM = -err;  /* error term from XAA is NEGATIVE */
+    ACL_ERROR_TERM(-err);  /* error term from XAA is NEGATIVE */
 
     /* make sure colors are rendered correctly if >8bpp */
     if (octant & XDECREASING) {
 	destaddr += pTseng->Bytesperpixel - 1;
-	*ACL_SOURCE_ADDRESS = tsengFg + pTseng->neg_x_pixel_offset;
+	ACL_SOURCE_ADDRESS(tsengFg + pTseng->neg_x_pixel_offset);
     } else
-	*ACL_SOURCE_ADDRESS = tsengFg;
+	ACL_SOURCE_ADDRESS(tsengFg);
 
     SET_XYDIR(xydir);
 
@@ -900,7 +895,7 @@ TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, dxR, 
 	SetYMajorOctant(octant);
 	SET_DELTA(dxL, dyL);
     }
-    *ACL_ERROR_TERM = eL;
+    ACL_ERROR_TERM(eL);
 
     /* select "linedraw algorithm" (=bias) and load direction register */
     /* ErrorF(" o=%d ", octant); */
@@ -924,7 +919,7 @@ TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, dxR, 
     } else {			       /* Y is major axis */
 	SET_SECONDARY_DELTA(dxR, dyR);
     }
-    *ACL_SECONDARY_ERROR_TERM = eR;
+    ACL_SECONDARY_ERROR_TERM(eR);
 
     /* ErrorF("%02x", sec_dir_reg); */
     SET_SECONDARY_XYDIR(sec_dir_reg);

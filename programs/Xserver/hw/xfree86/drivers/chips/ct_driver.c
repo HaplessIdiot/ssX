@@ -3382,10 +3382,13 @@ CHIPSEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    ErrorF("CHIPSEnterVT");
+
     /* Should we re-save the text mode on each VT enter? */
     if(!chipsModeInit(pScrn, pScrn->currentMode))
       return FALSE;
+    if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
+		(cPtr->Flags & ChipsVideoSupport)) 
+      CHIPSResetVideo(pScrn); 
     chipsHWCursorOn(cPtr);
     /* cursor settle delay */
     usleep(50000);
@@ -3418,7 +3421,7 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     int i, index, shift ;
-
+    
     shift = ((pScrn->depth == 15) && 
 	     (!(cPtr->Flags & ChipsOverlay8plus16))) ? 3 : 0;
 
@@ -3954,11 +3957,11 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86SetSilkenMouse(pScreen);
 #endif
 
-    if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
-		(cPtr->Flags & ChipsVideoSupport)) {
-	CHIPSInitVideo(pScreen);
+	if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
+	    (cPtr->Flags & ChipsVideoSupport)) {
+	    CHIPSInitVideo(pScreen);
     }
-    
+
     pScreen->SaveScreen = CHIPSSaveScreen;
 
 #ifdef DPMSExtension

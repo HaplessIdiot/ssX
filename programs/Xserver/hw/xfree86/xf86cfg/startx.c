@@ -54,8 +54,24 @@ startx(void)
 
     if (XF86Config_path == NULL) {
 	char *home, filename[PATH_MAX];
-
-	if (system("XFree86 :8 -configure") != 0) {
+	char commandline[PATH_MAX * 4];
+	int c_pos;
+	int len;
+	
+	c_pos = XmuSnprintf(commandline, sizeof(commandline),
+			    "XFree86 :8 -configure ");
+	
+	if (XF86Module_path && ((len = sizeof(commandline) - c_pos) > 0))
+	    c_pos += XmuSnprintf(commandline + c_pos,len,
+				 " -modulepath %s",XF86Module_path);
+	if (XF86Font_path && ((len = sizeof(commandline) - c_pos) > 0))
+	    c_pos += XmuSnprintf(commandline + c_pos,len,
+				 " -fontpath %s",XF86Font_path);
+	if (XF86RGB_path && ((len = sizeof(commandline) - c_pos) > 0))
+	    c_pos += XmuSnprintf(commandline + c_pos,len,
+				 " -rgbpath %s",XF86RGB_path);
+	
+	if (system(commandline) != 0) {
 	    fprintf(stderr, "Failed to run \"XFree86 -configure\".\n");
 	    exit(1);
 	}

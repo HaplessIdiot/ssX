@@ -260,8 +260,8 @@ SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
     int 	isTransparent = ( bg == -1 );
 
     dstpitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8 ;
-    sisSETBGCOLOR(bg);
     sisSETFGCOLOR(fg);
+    sisSETBGCOLOR(bg);
     sisSETROPFG(rop);
     if (!isTransparent) {
     sisSETROPBG(0xcc);  /* copy */

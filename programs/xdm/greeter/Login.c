@@ -1294,7 +1294,7 @@ char defaultLoginTranslations [] =
 "<KeyPress>:	insert-char()"
 #else
 "<Key>Tab:	tab-field() \n"
-"<KeyPress>:	insert-char()\n"
+"<KeyPress>:	insert-char()"
 #endif /* XPM */
 ;
 

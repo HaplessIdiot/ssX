@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.7 1999/04/25 11:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.12 2000/06/06 18:07:37 eich Exp $ */
 
 #define DEBUG 1
 
@@ -98,7 +98,7 @@
 #define MiscIntContReg 0x2F
 #define CyberControl 0x30
 #define CyberEnhance 0x31
-#define FPConfig     0x34
+#define FPConfig     0x33
 #define VertStretch  0x52
 #define HorStretch   0x53
 #define BiosMode     0x5c

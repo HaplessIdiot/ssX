@@ -879,9 +879,14 @@ checkConflictBlock(resRange *range, resPtr pRes)
     switch (pRes->res_type & ResExtMask) {
     case ResBlock:
 	if (range->rBegin < pRes->block_end &&
-	    range->rEnd > pRes->block_begin)
+	    range->rEnd > pRes->block_begin) {
+#ifdef DEBUG
+	    ErrorF("b-b conflict w: %lx %lx\n",
+		   pRes->block_begin,pRes->block_end);
+#endif
 	    return pRes->block_end < range->rEnd ?
-					pRes->block_end : range->rEnd;
+		pRes->block_end : range->rEnd;
+	}
 	return 0;
     case ResSparse:
 	if (pRes->sparse_base > range->rEnd) return 0;
@@ -906,6 +911,8 @@ checkConflictBlock(resRange *range, resPtr pRes)
 	if (tmp >= range->rBegin) {
 #ifdef DEBUG
 	    ErrorF("conflict found at: 0x%lx\n",tmp);
+	    ErrorF("b-d conflict w: %lx %lx\n",
+		   pRes->sparse_base,pRes->sparse_mask);
 #endif
 	    return tmp;
 	}
@@ -930,8 +937,13 @@ checkConflictSparse(resRange *range, resPtr pRes)
     switch (pRes->res_type & ResExtMask) {
     case ResSparse:
 	tmp = pRes->sparse_mask & range->rMask;
-	if ((tmp & pRes->sparse_base) == (tmp & range->rBase))
+	if ((tmp & pRes->sparse_base) == (tmp & range->rBase)) {
+#ifdef DEBUG
+	    ErrorF("s-b conflict w: %lx %lx\n",
+		   pRes->sparse_base,pRes->sparse_mask);
+#endif
 	    return pRes->sparse_mask;
+	}
 	return 0;
 
     case ResBlock:
@@ -973,6 +985,8 @@ checkConflictSparse(resRange *range, resPtr pRes)
 	    }
 #ifdef DEBUG
 	    ErrorF("conflict found at: 0x%lx\n",tmp);
+	    ErrorF("b-b conflict w: %lx %lx\n",
+		   pRes->block_begin,pRes->block_end);
 #endif
 	    return ~m_mask; 
 	}
@@ -1277,13 +1291,13 @@ xf86PrintResList(int verb, resPtr list)
 		xf86ErrorFVerb(verb, "%s", s);
 		switch (list->res_type & ResExtMask) {
 		case ResBlock:
-		    s = "B";
+		    s = "[B]";
 		    break;
 		case ResSparse:
-		    s = "S";
+		    s = "[S]";
 		    break;
 		default:
-		    s = "?";
+		    s = "[?]";
 		}
 		xf86ErrorFVerb(verb, "%s", s);
 		if (list->res_type & ResEstimated)
@@ -2206,12 +2220,12 @@ resError(resList list)
 {
     FatalError("A driver tried to allocate the %s %sresource at \n"
 	       "0x%x:0x%x which conflicted with another resource. Send the\n"
-	       "output of the server to xfree86@xfree86.org. Please \n"
+	       "output of the server to %s. Please \n"
 	       "specify your computer hardware as closely as possible.\n",
 	       ResIsBlock(list)?"Block":"Sparse",
 	       ResIsMem(list)?"Mem":"Io",
 	       ResIsBlock(list)?list->rBegin:list->rBase,
-	       ResIsBlock(list)?list->rEnd:list->rMask);
+	       ResIsBlock(list)?list->rEnd:list->rMask,BUILDERADDR);
 }
 
 /*
@@ -2914,6 +2928,33 @@ xf86FindPrimaryDevice()
     /* if no VGA device is found check for primary PCI device */
     if (primaryBus.type == BUS_NONE)
         CheckGenericGA();
+    if (primaryBus.type != BUS_NONE) {
+	char *bus;
+	char *loc = xnfcalloc(1,8);
+	
+	switch (primaryBus.type) {
+	case BUS_PCI:
+	    bus = "PCI";
+	    sprintf(loc,"%2.2x:%2.2x:%1.1x",primaryBus.id.pci.bus,
+	    primaryBus.id.pci.device,primaryBus.id.pci.func);
+	    break;
+	case BUS_ISA:
+	    bus = "ISA";
+	    loc = "";
+	    break;
+	case BUS_SBUS:
+	    bus = "SBUS";
+	    sprintf(loc,"%2.2",primaryBus.id.sbus.fbNum);
+	    break;
+	default:
+	    bus = "";
+	    loc = "";
+	}
+	
+	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s %s\n",bus,loc);
+	xfree(loc);
+    }
+    
 }
 
 #include "vgaHW.h"

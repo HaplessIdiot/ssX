@@ -183,10 +183,35 @@ xf86SetBoolOption(pointer optlist, const char *name, int deflt)
     return deflt;
 }
 
+/*
+ * addNewOption() has the required property of replacing the option value
+ * it the option is alread present.
+ */
+pointer
+xf86ReplaceIntOption(pointer optlist, char *name, int val)
+{
+    char tmp[16];
+    sprintf(tmp,"%i",val);
+    return xf86AddNewOption(optlist,name,tmp);
+}
+
+pointer
+xf86ReplaceBoolOption(pointer optlist, char *name, Bool val)
+{
+    return xf86AddNewOption(optlist,name,(Bool)val?"True":"False");
+}
+
+pointer
+xf86ReplaceStrOption(pointer optlist, char *name, char* val)
+{
+      return xf86AddNewOption(optlist,name,val);
+}
 
 pointer
 xf86AddNewOption(pointer head, char *name, char *val)
 {
+    char *tmp = xf86strdup(val);
+                                                                               
     return addNewOption(head, name, val);
 }
 

@@ -903,7 +903,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		      OPTION_PROG_LCD_MODE_REGS,&nPtr->progLcdRegs);
     if (xf86GetOptValBool(nPtr->Options,
 		      OPTION_PROG_LCD_MODE_STRETCH,&nPtr->progLcdStretch))
-	nPtr->progLcdStrechOpt = TRUE;
+	nPtr->progLcdStretchOpt = TRUE;
     xf86GetOptValBool(nPtr->Options,
 		      OPTION_OVERRIDE_VALIDATE_MODE, &nPtr->overrideValidate);
     nPtr->rotate = 0;
@@ -957,7 +957,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		       "Internal LCD only display mode\n");
 	}
     }
-	
+
     if (nPtr->noLcdStretch)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
 		   "Low resolution video modes are not stretched\n");
@@ -1526,9 +1526,9 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			   "Hardware cursor initialization failed\n");
 		return FALSE;
 	    }
-	    nAcl->UseHWCursor = TRUE;
 	    nPtr->NeoHWCursorInitialized = TRUE;
-	}
+	} else
+	    nAcl->UseHWCursor = FALSE;
     }
 
     if (nPtr->shadowFB) {
@@ -1940,7 +1940,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 	if (restore->PanelDispCntlReg2 & 0x84) {
 	    /* Don't program by default if in stretch mode */
 	    noProgramShadowRegs = TRUE;
-	    if (nPtr->progLcdStretch)
+	    if (nPtr->progLcdStretch)  
 		noProgramShadowRegs = FALSE;
 	}
 	break;
@@ -1959,7 +1959,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 
 	if (restore->PanelDispCntlReg2 & 0x84) {
 	    /* Only change the behavior if an option is set */
-	    if (nPtr->progLcdStrechOpt)
+	    if (nPtr->progLcdStretchOpt)
 		noProgramShadowRegs = !nPtr->progLcdStretch;
 	}
 	break;
@@ -2088,7 +2088,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     int i;
 
     vgaHWProtect(pScrn,TRUE);		/* Blank the screen */
-
+    
     VGAwGR(0x09,0x26);
     
     /* Init the shadow registers if necessary */
@@ -2136,7 +2136,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
      * Sleep for 200ms to make sure that the two operations above have
      * had time to take effect.
      */
-    usleep(200000);
+    xf86UDelay(200000);
 
     /*
      * This function handles restoring the generic VGA registers.  */
@@ -2271,6 +2271,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * This will allocate the datastructure and initialize all of the
      * generic VGA registers.
      */
+
     if (!vgaHWInit(pScrn, mode))
 	return(FALSE);
 
@@ -2361,6 +2362,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (nPtr->externDisp) {
 	NeoNew->PanelDispCntlReg1 |= 0x01;
     }
+
 #if 0
     /*
      * This was replaced: if no devices are specified take the
@@ -2412,6 +2414,8 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     NeoNew->PanelDispCntlReg2 = 0x00;
     NeoNew->PanelDispCntlReg3 = 0x00;
+    nAcl->UseHWCursor = TRUE;
+
     if ((!nPtr->noLcdStretch) &&
 	(NeoNew->PanelDispCntlReg1 & 0x02)) {
 	if (mode->HDisplay == nPtr->NeoPanelWidth) {
@@ -2419,8 +2423,10 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     * No stretching required when the requested display width
 	     * equals the panel width.
 	     */
-	    if (nPtr->NeoHWCursorInitialized) nAcl->UseHWCursor = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Stretching disabled\n");
+	    nPtr->noLcdStretch = TRUE;
 	} else {
+
 	    switch (mode->HDisplay) {
 	    case  320 : /* Needs testing.  KEM -- 24 May 98 */
 	    case  400 : /* Needs testing.  KEM -- 24 May 98 */
@@ -2428,18 +2434,18 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    case  800 :
 	    case 1024 :
 		NeoNew->PanelDispCntlReg2 |= 0xC6;
-		if (nPtr->NeoHWCursorInitialized) nAcl->UseHWCursor = FALSE;
+		nAcl->UseHWCursor = FALSE;
 		break;
 	    default   :
 		/* No stretching in these modes. */
-		if (nPtr->NeoHWCursorInitialized) nAcl->UseHWCursor = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex,X_INFO,
+			   "Stretching disabled not supported in this mode\n");
+		nPtr->noLcdStretch = TRUE;
 		break;
 	    }
 	}
     } else if (mode->Flags & V_DBLSCAN) {
-	if (nPtr->NeoHWCursorInitialized) nAcl->UseHWCursor = FALSE;
-    } else {
-	if (nPtr->NeoHWCursorInitialized) nAcl->UseHWCursor = TRUE;
+	nAcl->UseHWCursor = FALSE;
     }
 
     /*

@@ -286,9 +286,12 @@ static int ClockLimit[] = {
 	135000,
 	170000,
 	170000,
+<<<<<<< trident_driver.c
+=======
 	170000,
 	230000,
 	230000,
+>>>>>>> 1.102
 	230000,
 	230000,
 	230000,
@@ -400,8 +403,12 @@ static int ClockLimit32bpp[] = {
 	70000,
 	85000,
 	85000,
+<<<<<<< trident_driver.c
+	115000,
+=======
 	85000,
 	115000,
+>>>>>>> 1.102
 	115000,
 	115000,
 	115000,
@@ -409,25 +416,42 @@ static int ClockLimit32bpp[] = {
 	115000,
 	115000,
 	115000,
+<<<<<<< trident_driver.c
+=======
 	115000,
 	115000,
+>>>>>>> 1.102
 };
 
 /*
  * These are fixed modelines for all physical display dimensions the
  *  chipsets supports on FPs. Most of them are not tested yet.
  */
+#if 0
 tridentLCD LCD[] = { 
-    { 0,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb},
-    { 1,"800x600",40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72},
-    { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96},
-    { 3,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96},
-    { 4,"1280x1024",108000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96},
-    { 5,"1024x600",50500 ,0xa3,0x6,0x8f,0xa0,0xb,0x3e,0xea,0x8c,0xb},
+    { 0,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
+    { 1,"800x600",40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72,0x08},
+    { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08},
+    { 3,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08},
+    { 4,"1280x1024",108000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08},
+    { 5,"1024x600",50500 ,0xa3,0x6,0x8f,0xa0,0xb,0x3e,0xea,0x8c,0xb,0x08},
     { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
+<<<<<<< trident_driver.c
+#else
+tridentLCD LCD[] = { 
+    { 1,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
+    { 3,"800x600",40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72,0x08},
+    { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x24,0x96,0x08},
+    { 0,"1280x1024",108000,0xce,0x81,0xa6,0x9a,0x27,0x50,0x00,0x03,0x26,0xa8},
+    { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+};
+#endif
+    static const char *xaaSymbols[] = {
+=======
 
 static const char *xaaSymbols[] = {
+>>>>>>> 1.102
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAHelpPatternROP",
@@ -1744,10 +1768,20 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	unsigned char tmp;
 	
 	pTrident->lcdMode = 0xff;
+#if 0
 	OUTB(0x3CE,0x41);
+#else
+	OUTB(0x3CE,0x52);
+#endif
 	tmp = INB(0x3CF);
 	for (i = 0; LCD[i].mode != 0xff; i++) {
-	    if (LCD[i].mode == (tmp & 0x7)) {
+	    if (LCD[i].mode == (
+#if 0
+		tmp & 0x7
+#else
+		(tmp >> 4) & 3
+#endif
+		)) {
 		pTrident->lcdMode = i;
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,"%s Panel %s found\n",
 			   (tmp & 0x8) ? "DSTN" : "TFT", LCD[i].display);
@@ -2139,9 +2173,11 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr vgaReg;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     TRIDENTRegPtr tridentReg;
+    int clock;
 
-    if (mode->Clock > pTrident->MUXThreshold) pTrident->MUX = TRUE;
-    else				      pTrident->MUX = FALSE;
+    TridentFindClock(pScrn,mode->Clock);
+
+    clock = pTrident->currentClock;
 
     switch (pTrident->Chipset) {
 	case TGUI9660:
@@ -2215,6 +2251,18 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     return TRUE;
 }
+
+#if 0
+Bool
+TridentCyberBIOSModeInit(ScrnInfoPtr pScrn)
+{
+    int mode = TridentFindMode(pScrn->currentMode->HDisplay,
+			pScrn->currentMode->VDisplay,
+			pScrn->depth);
+    TridentUnstretch();
+    
+}
+#endif
 
 /*
  * Restore the initial (text) mode.

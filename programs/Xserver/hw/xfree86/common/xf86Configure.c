@@ -725,17 +725,22 @@ DoConfigure()
     }
 
     xf86DoConfigurePass1 = FALSE;
+    
+    {
+	Bool *driverProbed = xnfcalloc(1,xf86NumDrivers*sizeof(Bool));
+	for (screennum = 0;  screennum < nDevToConfig;  screennum++) {
+	    i = DevToConfig[screennum].iDriver;
+	    
+	    if (driverProbed[i]) continue;
+	    driverProbed[i] = TRUE;
 
-    i = -1;
-    for (screennum = 0;  screennum < nDevToConfig;  screennum++) {
-        if (i == DevToConfig[screennum].iDriver) continue;
+	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], 0);
 
-	i = DevToConfig[screennum].iDriver;
-
-	(*xf86DriverList[i]->Probe)(xf86DriverList[i], 0);
-
-	xf86SetPciVideo(NULL,NONE);
+	    xf86SetPciVideo(NULL,NONE);
+	}
+	xfree(driverProbed);
     }
+    
 
     if (nDevToConfig != xf86NumScreens) {
 	ErrorF("Number of created screens does not match number of detected"

@@ -725,7 +725,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * serverGeneration != 1; some OSs have to do things here, too.
      */
     xf86OpenConsole();
-    xf86OSPMClose = xf86OSPMOpen();
+
+    if ((xf86OSPMClose = xf86OSPMOpen()) != NULL)
+	xf86MsgVerb(3,X_INFO,"APM registered successfully\n");
     
     /* Make sure full I/O access is enabled */
     xf86EnableIO();
@@ -1101,6 +1103,7 @@ OsVendorFatalError()
 	 "the full server output, not just the last messages.\n");
   if (xf86LogFile)
     ErrorF("This can be found in the log file \"%s\".\n", xf86LogFile);
+  ErrorF("Please reports problems to %s.\n",BUILDERADDR);
   ErrorF("\n");
 }
 
@@ -1536,6 +1539,9 @@ xf86PrintBanner()
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
+#if defined(BUILDERSTRING)
+  ErrorF("%s \n",BUILDERSTRING);
+#endif
 #ifdef XFree86LOADER
   ErrorF("Module Loader present\n");
 #endif

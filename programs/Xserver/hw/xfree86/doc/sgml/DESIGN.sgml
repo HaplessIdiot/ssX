@@ -5352,6 +5352,7 @@ be catered for the by the helpers.
       allowed by the driver.  If a mode doesn't fit in any of the defined
       &s.code;clockRanges&e.code;, it is rejected.  The first
       &s.code;clockRange&e.code; that matches all requirements is used.
+      This structure needs to be initialized to NULL when allocated.
 
       &s.code;clockRanges&e.code; contains the following fields:
 
@@ -6493,6 +6494,13 @@ zzzSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     initialisation has already been done.  After allocating it, initialise
     the fields.  By using &s.code;xnfcalloc()&e.code; to do the allocation
     it is zeroed, and if the allocation fails the server exits.
+<p>
+    NOTE:
+    When allocating structures from inside the driver which are defined 
+    on the common level it is importand to initialize the structure to 
+    zero. 
+    Only this guarantees that the server remains source compatible to 
+    future changes in common level structures.
 
     <code>
 static Bool
@@ -7292,8 +7300,10 @@ static Bool
 ZZZCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    ZZZRestore(pScrn);
-    ZZZUnmapMem(pScrn);
+    if (pScrn->vtSema) {
+        ZZZRestore(pScrn); 
+        ZZZUnmapMem(pScrn);
+    }
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = ZZZPTR(pScrn)->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -7307,7 +7317,10 @@ ZZZCloseScreen(int scrnIndex, ScreenPtr pScreen)
     blanking function).  When using the vgahw module, this will typically
     be:
 
-This function is mandatory.
+This function is mandatory. Before modifying any hardware register directly
+this function needs to make sure that the Xserver is active by checking
+if <code>pScrn</code> is non-NULL and for <code>pScrn->vtSema == TRUE</code>.
+
 
     <code>
 static Bool

@@ -1112,7 +1112,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE; 
 
     if (!(*pSiS->ModeInit)(pScrn, mode))
-        return FALSE;   
+	return FALSE;
 
     PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                 "HDisplay: %d, VDisplay: %d  \n",
@@ -1170,8 +1170,8 @@ SISRestore(ScrnInfoPtr pScrn)
 
     vgaHWProtect(pScrn, TRUE);
 
-    (*pSiS->SiSRestore)(pScrn, sisReg); 
- 
+    (*pSiS->SiSRestore)(pScrn, sisReg);
+
     vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
     vgaHWProtect(pScrn, FALSE);
@@ -1624,13 +1624,12 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     }
 #endif
 
-    if (pCursorInfo)
-        pCursorInfo->HideCursor(pScrn);
-
     if (pScrn->vtSema) {
-        SISRestore(pScrn); 
-        vgaHWLock(hwp);
-        SISUnmapMem(pScrn);
+	if (pCursorInfo)
+	    pCursorInfo->HideCursor(pScrn);
+    	SISRestore(pScrn);
+    	vgaHWLock(hwp);
+    	SISUnmapMem(pScrn);
     }
     if(pSiS->AccelInfoPtr)
         XAADestroyInfoRec(pSiS->AccelInfoPtr);

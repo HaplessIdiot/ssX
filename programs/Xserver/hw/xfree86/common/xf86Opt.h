@@ -75,5 +75,7 @@ Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value);
 Bool xf86ReturnOptValBool(OptionInfoPtr table, int token, Bool def);
 int xf86NameCmp(const char *s1, const char *s2);
 char *xf86NormalizeName(const char *s);
-
+pointer xf86ReplaceIntOption(pointer optlist,  char *name, int val);
+pointer xf86ReplaceBoolOption(pointer optlist, char *name, Bool val);
+pointer xf86ReplaceStrOption(pointer optlist,  char *name, char* val);        
 #endif

@@ -1822,13 +1822,16 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
     if (!xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE)) {
 	if (R128AccelInit(pScreen)) {
 	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
+	    info->accelOn = TRUE;
 	} else {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
 		       "Acceleration initialization failed\n");
 	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
+	    info->accelOn = FALSE;
 	}
     } else {
 	xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
+	info->accelOn = FALSE;
     }
 
 				/* Cursor setup */
@@ -1864,7 +1867,10 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 			     R128LoadPalette), NULL,
 			     CMAP_PALETTED_TRUECOLOR
 			     | CMAP_RELOAD_ON_MODE_SWITCH
-			     | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
+#if 0 /* This option messes up text mode! (eich@suse.de) */
+			     | CMAP_LOAD_EVEN_IF_OFFSCREEN
+#endif
+			     )) return FALSE;
 
 				/* DPMS setup */
 #ifdef DPMSExtension
@@ -2665,6 +2671,7 @@ static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     if (!R128Init(pScrn, mode, &info->ModeReg)) return FALSE;
 				/* FIXME?  DRILock/DRIUnlock here? */
+    pScrn->vtSema = TRUE;
     R128Blank(pScrn);
     R128RestoreMode(pScrn, &info->ModeReg);
     R128Unblank(pScrn);
@@ -2745,6 +2752,9 @@ static Bool R128EnterVT(int scrnIndex, int flags)
     }
 #endif
     if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
+    if (info->accelOn)
+	R128EngineInit(pScrn);
+
     info->PaletteSavedOnVT = FALSE;
     R128AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 

@@ -248,12 +248,12 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
 
 #define SET_FUNCTION_COLOREXPAND \
     if (Is_ET6K) \
-      *ACL_MIX_CONTROL     = 0x32; \
+      ACL_MIX_CONTROL(0x32); \
     else \
-      *ACL_ROUTING_CONTROL = 0x08;
+      ACL_ROUTING_CONTROL(0x08);
 
 #define SET_FUNCTION_COLOREXPAND_CPU \
-    *ACL_ROUTING_CONTROL = 0x02;
+    ACL_ROUTING_CONTROL(0x02);
 
 static CARD32 ColorExpandDst;
 static int ce_skipleft;
@@ -282,7 +282,7 @@ TsengSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     wait_acl_queue(pTseng);
 
 #if 0
-    *ACL_MIX_Y_OFFSET = w - 1;
+    ACL_MIX_Y_OFFSET(w - 1);
 
     ErrorF(" W=%d", w);
 #endif
@@ -297,7 +297,7 @@ TsengSubsequentColorExpandScanline(ScrnInfoPtr pScrn,
 
     wait_acl_queue(pTseng);
 
-    *ACL_MIX_ADDRESS = (pTseng->AccelColorExpandBufferOffsets[bufno] << 3) + ce_skipleft;
+    ACL_MIX_ADDRESS((pTseng->AccelColorExpandBufferOffsets[bufno] << 3) + ce_skipleft);
     START_ACL(pTseng, ColorExpandDst);
 
     /* move to next scanline */
@@ -471,7 +471,7 @@ void TsengSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     SET_FUNCTION_COLOREXPAND_CPU;
 
     /* assure correct alignment of MIX address (ACL needs same alignment here as in MMU aperture) */
-    *ACL_MIX_ADDRESS = 0;
+    ACL_MIX_ADDRESS(0);
 }
 
 /*
@@ -498,7 +498,7 @@ void TsengSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     ErrorF("=========WAIT     FIXME!\n");
     WAIT_INTERFACE;
 
-    *ACL_MIX_Y_OFFSET = w - 1;
+    ACL_MIX_Y_OFFSET(w - 1);
     SET_XY(pTseng, w, h);
     START_ACL(pTseng, destaddr);
 }
@@ -538,10 +538,10 @@ TsengSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
     wait_acl_queue(pTseng);
 
     SET_XY(pTseng, w, h);
-    *ACL_MIX_ADDRESS =		       /* MIX address is in BITS */
-	(((srcy * pScrn->displayWidth) + srcx) * pScrn->bitsPerPixel) + skipleft;
+    ACL_MIX_ADDRESS(		       /* MIX address is in BITS */
+	(((srcy * pScrn->displayWidth) + srcx) * pScrn->bitsPerPixel) + skipleft);
 
-    *ACL_MIX_Y_OFFSET = pTseng->line_width << 3;
+    ACL_MIX_Y_OFFSET(pTseng->line_width << 3);
 
     START_ACL(pTseng, destaddr);
 }

@@ -269,11 +269,11 @@ neoUseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
     NEOACLPtr nAcl = NEOACLPTR(xf86Screens[pScr->myNum]);
     NEOPtr nPtr = NEOPTR(xf86Screens[pScr->myNum]);
-   
+
     if(!nPtr->noLinear) {
        return(nAcl->UseHWCursor);
     }
-   
+
     return (FALSE);
 }
 

@@ -181,7 +181,7 @@ OsSignal(sig, handler)
     return oact.sa_handler;
 #endif
 }
-
+	
 #ifdef SERVER_LOCK
 /*
  * Explicit support for a server lock file like the ones used for UUCP.

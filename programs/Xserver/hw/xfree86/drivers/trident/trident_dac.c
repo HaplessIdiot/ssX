@@ -35,8 +35,6 @@
 #include "trident.h"
 #include "trident_regs.h"
 
-extern tridentLCD LCD[];
-
 biosMode bios1[] = { 
     { 640, 480, 0x11 }
 };
@@ -54,9 +52,10 @@ biosMode bios4[] = {
 
 biosMode bios8[] = {	
     { 320, 200, 0x13 },
-    { 640, 400, 0x52 },
+    { 640, 400, 0x5c },
     { 640, 480, 0x5d },
     { 720, 480, 0x60 },
+    { 800, 600, 0x5e },
     { 1024, 768, 0x62 },
     { 1280, 1024, 0x64 },
     { 1600, 1200, 0x66 }
@@ -67,7 +66,9 @@ biosMode bios15[] = {
     { 640, 480, 0x74 },
     { 720, 480, 0x70 },
     { 800, 600, 0x76 },
-    { 1024, 768, 0x78 }
+    { 1024, 768, 0x78 },
+    { 1280, 1024, 0x7a },
+    { 1600, 1200, 0x7c }
 };
 
 biosMode bios16[] = {
@@ -75,7 +76,9 @@ biosMode bios16[] = {
     { 640, 480, 0x75 },
     { 720, 480, 0x71 },
     { 800, 600, 0x77 },
-    { 1024, 768, 0x79 }
+    { 1024, 768, 0x79 },
+    { 1280, 1024, 0x7b },
+    { 1600, 1200, 0x7d }
 };
 
 biosMode bios24[] = {
@@ -87,8 +90,8 @@ biosMode bios24[] = {
 };
 
 
-static int
-findMode(int xres, int yres, int depth)
+int
+TridentFindMode(int xres, int yres, int depth)
 {
     int xres_s;
     int i, size;
@@ -145,14 +148,13 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     TRIDENTRegPtr pReg = &pTrident->ModeReg;
     int vgaIOBase;
     int offset = 0;
-    int clock = mode->Clock;
+    int clock = pTrident->currentClock;
     CARD8 protect;
 
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     vgaRegPtr vgaReg = &hwp->ModeReg;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    
     
     /* Unprotect */
     OUTB(0x3C4, 0x11);
@@ -168,6 +170,143 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3CE[MiscExtFunc] = INB(0x3CF) & 0xF0;
     pReg->tridentRegs3x4[GraphEngReg] = 0x00; 
 
+    pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankEnd-1) & 0x400)>>4) |
+ 				     (((mode->CrtcVTotal - 2) & 0x400) >> 3) |
+ 				     ((mode->CrtcVSyncStart & 0x400) >> 5) |
+ 				     (((mode->CrtcVDisplay - 1) & 0x400) >> 6)|
+ 				     0x08;
+
+    if (pTrident->IsCyber) {
+	Bool LCDActive;
+#ifdef READOUT
+	Bool ShadowModeActive;
+#endif
+	int i = pTrident->lcdMode;
+#ifdef READOUT
+	OUTB(0x3CE, CyberControl);
+	ShadowModeActive = ((INB(0x3CF) & 0x81) == 0x81);
+#endif
+	OUTB(0x3CE, FPConfig);
+	LCDActive = (INB(0x3CF) & 0x10);
+	
+	OUTB(0x3CE, CyberEnhance); 
+	pReg->tridentRegs3CE[CyberEnhance] = INB(0x3CF) & 0x8F;
+	if (mode->CrtcVDisplay > 768)
+	    pReg->tridentRegs3CE[CyberEnhance] |= 0x30;
+	else
+	if (mode->CrtcVDisplay > 600)
+	    pReg->tridentRegs3CE[CyberEnhance] |= 0x20;
+	else
+	if (mode->CrtcVDisplay > 480)
+	    pReg->tridentRegs3CE[CyberEnhance] |= 0x10;
+
+	OUTB(0x3CE, CyberControl);
+	pReg->tridentRegs3CE[CyberControl] = INB(0x3CF);
+
+	OUTB(0x3CE,HorStretch);
+	pReg->tridentRegs3CE[HorStretch] = INB(0x3CF);
+	OUTB(0x3CE,VertStretch);
+	pReg->tridentRegs3CE[VertStretch] = INB(0x3CF);
+	
+#ifdef READOUT
+	if ((!((pReg->tridentRegs3CE[VertStretch] & 1) ||
+	    (pReg->tridentRegs3CE[HorStretch] & 1)))
+	    && (!LCDActive || ShadowModeActive)) {
+	    unsigned char tmp;
+	    
+	    SHADOW_ENABLE(tmp);
+	    OUTB(vgaIOBase + 4,0);
+	    pReg->tridentRegs3x4[0x0] = INB(vgaIOBase + 5);
+	    OUTB(vgaIOBase + 4,3);
+	    pReg->tridentRegs3x4[0x3] = INB(vgaIOBase + 5);
+	    OUTB(vgaIOBase + 4,4);
+	    pReg->tridentRegs3x4[0x4] = INB(vgaIOBase + 5);
+	    OUTB(vgaIOBase + 4,5);
+  	    pReg->tridentRegs3x4[0x5] = INB(vgaIOBase + 5);
+  	    OUTB(vgaIOBase + 4,0x6);
+  	    pReg->tridentRegs3x4[0x6] = INB(vgaIOBase + 5);
+  	    SHADOW_RESTORE(tmp);
+ 	} else
+#endif
+ 	{
+ 	    if (i != 0xff) {
+  		pReg->tridentRegs3x4[0x0] = LCD[i].shadow_0;
+  		pReg->tridentRegs3x4[0x3] = LCD[i].shadow_3;
+  		pReg->tridentRegs3x4[0x4] = LCD[i].shadow_4;
+  		pReg->tridentRegs3x4[0x5] = LCD[i].shadow_5;
+  		pReg->tridentRegs3x4[0x6] = LCD[i].shadow_6;
+ 		xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,
+ 			       "Overriding Horizontal timings.");
+  	    }
+  	}
+ 
+ 	if (i != 0xff) {
+ 	    pReg->tridentRegs3x4[0x7] = LCD[i].shadow_7;
+ 	    pReg->tridentRegs3x4[0x10] = LCD[i].shadow_10;
+ 	    pReg->tridentRegs3x4[0x11] = LCD[i].shadow_11;
+ 	    pReg->tridentRegs3x4[0x16] = LCD[i].shadow_16;
+ 	    if (LCDActive) 
+ 		pReg->tridentRegs3x4[CRTHiOrd] = LCD[i].shadow_HiOrd;
+ 	}
+ 	
+ 	xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Timing shadow registers:"
+ 		       "0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x "
+ 		       "0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x\n",
+ 		       pReg->tridentRegs3x4[0], pReg->tridentRegs3x4[3],
+ 		       pReg->tridentRegs3x4[4], pReg->tridentRegs3x4[5],
+ 		       pReg->tridentRegs3x4[6], pReg->tridentRegs3x4[7],
+ 		       pReg->tridentRegs3x4[0x10],pReg->tridentRegs3x4[0x11],
+ 		       pReg->tridentRegs3x4[0x16],
+ 		       pReg->tridentRegs3x4[CRTHiOrd]);
+ 	
+  	/* copy over common bits from normal VGA */
+  	
+  	pReg->tridentRegs3x4[0x7] &= ~0x52;
+	pReg->tridentRegs3x4[0x7] |= (vgaReg->CRTC[0x7] & 0x52);
+	
+	/* disable stretching, enable centering */
+	pReg->tridentRegs3CE[VertStretch] &= 0xFE;
+	pReg->tridentRegs3CE[VertStretch] |= 0x80;
+	pReg->tridentRegs3CE[HorStretch] &= 0xFE;
+	pReg->tridentRegs3CE[HorStretch] |= 0x80;
+	
+	{
+	    int mul = pScrn->bitsPerPixel >> 3;
+	    int val;
+	    
+	    if (!mul) mul = 1;
+	    
+	    /* this is what my BIOS does */ 
+	    val = (pScrn->currentMode->HDisplay * mul / 8) + 16;
+	    
+	    pReg->tridentRegs3x4[PreEndControl] = 2 | ((val >> 8) & 1);
+	    pReg->tridentRegs3x4[PreEndFetch] = val & 0xff;
+	}
+#if 0
+	OUTB(vgaIOBase + 4,PreEndControl);
+	pReg->tridentRegs3x4[PreEndControl] = INB(vgaIOBase + 5);
+	OUTB(vgaIOBase + 4,PreEndFetch);
+	pReg->tridentRegs3x4[PreEndFetch] = INB(vgaIOBase + 5);
+#endif
+	/* set mode */
+	pReg->tridentRegs3CE[BiosMode] = TridentFindMode(
+	    pScrn->currentMode->HDisplay,
+	    pScrn->currentMode->VDisplay,
+	    pScrn->depth);
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1, "Setting BIOS Mode: %x\n",
+		       pReg->tridentRegs3CE[BiosMode]);
+	
+	/* no stretch */
+	pReg->tridentRegs3CE[BiosReg] = 0;
+	
+	if (LCDActive) {
+	    pReg->tridentRegs3CE[CyberControl] |= 0x81;
+	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow on\n");
+	} else {
+	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
+	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Shadow off\n");
+	}
+    }
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
 	case CYBERBLADEI7:
@@ -214,132 +353,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    }	
     }
 
-    if (pTrident->IsCyber) {
-	Bool LCDActive;
-	Bool ShadowModeActive;
-	int i;
-	
-	OUTB(0x3CE, CyberControl);
-	ShadowModeActive = ((INB(0x3CF) & 0x81) == 0x81);
-	OUTB(0x3CE, FPConfig);
-	LCDActive = (INB(0x3CF) & 0x10);
-	
-	OUTB(0x3CE, CyberEnhance); 
-	pReg->tridentRegs3CE[CyberEnhance] = INB(0x3CF) & 0x8F;
-	if (mode->CrtcVDisplay > 768)
-	    pReg->tridentRegs3CE[CyberEnhance] |= 0x30;
-	else
-	if (mode->CrtcVDisplay > 600)
-	    pReg->tridentRegs3CE[CyberEnhance] |= 0x20;
-	else
-	if (mode->CrtcVDisplay > 480)
-	    pReg->tridentRegs3CE[CyberEnhance] |= 0x10;
-
-	OUTB(0x3CE, CyberControl);
-	pReg->tridentRegs3CE[CyberControl] = INB(0x3CF);
-
-	OUTB(0x3CE,HorStretch);
-	pReg->tridentRegs3CE[HorStretch] = INB(0x3CF);
-	OUTB(0x3CE,VertStretch);
-	pReg->tridentRegs3CE[VertStretch] = INB(0x3CF);
-	
-	if ((!((pReg->tridentRegs3CE[VertStretch] & 1) ||
-	    (pReg->tridentRegs3CE[HorStretch] & 1)))
-	    && (!LCDActive || ShadowModeActive)) {
-	    unsigned char tmp;
-	    
-	    SHADOW_ENABLE(tmp);
-	    OUTB(vgaIOBase + 4,0);
-	    pReg->tridentRegs3x4[0x0] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,3);
-	    pReg->tridentRegs3x4[0x3] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,4);
-	    pReg->tridentRegs3x4[0x4] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,5);
-	    pReg->tridentRegs3x4[0x5] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,0x6);
-	    pReg->tridentRegs3x4[0x6] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,0x7);
-	    pReg->tridentRegs3x4[0x7] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,0x10);
-	    pReg->tridentRegs3x4[0x10] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,0x11);
-	    pReg->tridentRegs3x4[0x11] = INB(vgaIOBase + 5);
-	    OUTB(vgaIOBase + 4,0x16);
-	    pReg->tridentRegs3x4[0x16] = INB(vgaIOBase + 5);
-	    SHADOW_RESTORE(tmp);
-	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Timing shadow registers:"
-			   "0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x 0x%2.2x "
-			   "0x%2.2x 0x%2.2x 0x%2.2x\n",pReg->tridentRegs3x4[0],
-			   pReg->tridentRegs3x4[3], pReg->tridentRegs3x4[4],
-			   pReg->tridentRegs3x4[5], pReg->tridentRegs3x4[6],
-			   pReg->tridentRegs3x4[7], pReg->tridentRegs3x4[0x10],
-			   pReg->tridentRegs3x4[0x11],
-			   pReg->tridentRegs3x4[0x16]);
-	} else {
-	    if ((i = pTrident->lcdMode)) {
-		pReg->tridentRegs3x4[0x0] = LCD[i].shadow_0;
-		pReg->tridentRegs3x4[0x3] = LCD[i].shadow_3;
-		pReg->tridentRegs3x4[0x4] = LCD[i].shadow_4;
-		pReg->tridentRegs3x4[0x5] = LCD[i].shadow_5;
-		pReg->tridentRegs3x4[0x6] = LCD[i].shadow_6;
-		pReg->tridentRegs3x4[0x7] = LCD[i].shadow_7;
-		pReg->tridentRegs3x4[0x10] = LCD[i].shadow_10;
-		pReg->tridentRegs3x4[0x11] = LCD[i].shadow_11;
-		pReg->tridentRegs3x4[0x16] = LCD[i].shadow_16;
-		/* Not yet implemented */
-		clock = LCD[i].clock;
-	    }
-	}
-	/* copy over common bits from normal VGA */
-	
-	pReg->tridentRegs3x4[0x7] &= ~0x52;
-	pReg->tridentRegs3x4[0x7] |= (vgaReg->CRTC[0x7] & 0x52);
-	
-	/* disable stretching, enable centering */
-	pReg->tridentRegs3CE[VertStretch] &= 0xFE;
-	pReg->tridentRegs3CE[VertStretch] |= 0x80;
-	pReg->tridentRegs3CE[HorStretch] &= 0xFE;
-	pReg->tridentRegs3CE[HorStretch] |= 0x80;
-	
-	{
-	    int mul = pScrn->bitsPerPixel >> 3;
-	    int val;
-	    
-	    if (!mul) mul = 1;
-	    
-	    /* this is what my BIOS does */ 
-	    val = (pScrn->currentMode->HDisplay * mul / 8) + 16;
-	    
-	    pReg->tridentRegs3x4[PreEndControl] = 2 | ((val >> 8) & 1);
-	    pReg->tridentRegs3x4[PreEndFetch] = val & 0xff;
-	}
-#if 0
-	OUTB(vgaIOBase + 4,PreEndControl);
-	pReg->tridentRegs3x4[PreEndControl] = INB(vgaIOBase + 5);
-	OUTB(vgaIOBase + 4,PreEndFetch);
-	pReg->tridentRegs3x4[PreEndFetch] = INB(vgaIOBase + 5);
-#endif
-	/* set mode */
-	pReg->tridentRegs3CE[BiosMode] = findMode(pScrn->currentMode->HDisplay,
-						  pScrn->currentMode->VDisplay,
-						  pScrn->depth);
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1, "Setting BIOS Mode: %x\n",
-		       pReg->tridentRegs3CE[BiosMode]);
-	
-	/* no stretch */
-	pReg->tridentRegs3CE[BiosReg] = 0;
-	
-#if 0
-	/* obsolete */
-	if (pTrident->CyberShadowSet) {
-	    if (pTrident->CyberShadow) {
-		pReg->tridentRegs3CE[CyberControl] |= 0x81;
-	    } else
-		pReg->tridentRegs3CE[CyberControl] &= 0x7E;
-	}
-#endif
-    }
 
     /* Defaults for all trident chipsets follows */
     switch (pScrn->bitsPerPixel) {
@@ -386,7 +399,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     {
 	CARD8 a, b;
-
 	TGUISetClock(pScrn, clock, &a, &b);
 	pReg->tridentRegsClock[0x00] = (INB(0x3CC) & 0xF3) | 0x08;
 	pReg->tridentRegsClock[0x01] = a;
@@ -409,12 +421,6 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
     	pReg->tridentRegs3x4[LinearAddReg] = 0;
     }
-
-    pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankEnd-1) & 0x400)>>4) |
- 				     (((mode->CrtcVTotal - 2) & 0x400) >> 3) |
- 				     ((mode->CrtcVSyncStart & 0x400) >> 5) |
- 				     (((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
- 				     0x08;
 
     pReg->tridentRegs3x4[CRTCModuleTest] = 
 				(mode->Flags & V_INTERLACE ? 0x84 : 0x80);
@@ -539,22 +545,37 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     }
  
     if (Is3Dchip) {
-	OUTW(0x3C4, (tridentReg->tridentRegsClock[0x01])<<8 | ClockLow);
-	OUTW(0x3C4, (tridentReg->tridentRegsClock[0x02])<<8 | ClockHigh);
+#ifdef READOUT
+	if (!pTrident->DontSetClock)
+#endif
+	{
+	    OUTW(0x3C4, (tridentReg->tridentRegsClock[0x01])<<8 | ClockLow);
+	    OUTW(0x3C4, (tridentReg->tridentRegsClock[0x02])<<8 | ClockHigh);
+	}
 	if (pTrident->MCLK > 0) {
 	    OUTW(0x3C4,(tridentReg->tridentRegsClock[0x03])<<8 | MCLKLow);
 	    OUTW(0x3C4,(tridentReg->tridentRegsClock[0x04])<<8 | MCLKHigh);
 	}
     } else {
-	OUTB(0x43C8, tridentReg->tridentRegsClock[0x01]);
-	OUTB(0x43C9, tridentReg->tridentRegsClock[0x02]);
+#ifdef READOUT
+	if (!pTrident->DontSetClock)
+#endif
+	{
+	    OUTB(0x43C8, tridentReg->tridentRegsClock[0x01]);
+	    OUTB(0x43C9, tridentReg->tridentRegsClock[0x02]);
+	}
 	if (pTrident->MCLK > 0) {
 	    OUTB(0x43C6, tridentReg->tridentRegsClock[0x03]);
 	    OUTB(0x43C7, tridentReg->tridentRegsClock[0x04]);
 	}
     }
-    OUTB(0x3C2, tridentReg->tridentRegsClock[0x00]);
-
+#ifdef READOUT
+    if (!pTrident->DontSetClock)
+#endif
+    {
+	OUTB(0x3C2, tridentReg->tridentRegsClock[0x00]);
+    }
+    
     OUTB(0x3C4, Protection);
     OUTB(0x3C5, tridentReg->tridentRegs3C4[Protection]);
     OUTW(0x3C4, ((tridentReg->tridentRegs3C4[NewMode1] ^ 0x02) << 8)| NewMode1);
@@ -815,7 +836,6 @@ void TridentSetOverscan(
     ScrnInfoPtr pScrn, 
     int overscan
 ){
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     if (overscan < 0 || overscan > 255)

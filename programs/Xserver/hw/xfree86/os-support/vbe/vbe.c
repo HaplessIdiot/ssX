@@ -285,3 +285,20 @@ vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
         xf86UnloadSubModule(pModule);
     return pMonitor;
 }
+
+
+Bool
+vbeModeInit(vbeInfoPtr pVbe, int mode)
+{
+    pVbe->pInt10->ax = 0x4F02;
+    pVbe->pInt10->bx = mode | (1 << 14);
+    xf86ExecX86int10(pVbe->pInt10);
+
+    if ((pVbe->pInt10->ax & 0xff) != 0x4f)
+	return FALSE;
+
+    return TRUE;
+    
+}
+
+
