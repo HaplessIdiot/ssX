@@ -22,6 +22,7 @@
 /*  
  *	PanoramiX definitions
  */
+/* $XFree86$ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 

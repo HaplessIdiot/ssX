@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _Xinerama_h
 #define _Xinerama_h
 
