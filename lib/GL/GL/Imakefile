@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.28tsi Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.29 2004/08/05 20:37:42 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -72,7 +72,6 @@ BASEREQUIREDLIBS = SharedGLReqs
 #include "../mesa/swrast/Imakefile.inc"
 #include "../mesa/swrast_setup/Imakefile.inc"
 #include "../mesa/tnl/Imakefile.inc"
-#include "../mesa/tnl_dd/Imakefile.inc"
 #include "../mesa/Imakefile.inc"
 #ifdef i386Architecture
 #include "../mesa/x86/Imakefile.inc"
