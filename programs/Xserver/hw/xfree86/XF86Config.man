@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.3 2001/02/13 21:15:17 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.4 2001/04/05 19:29:41 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -1214,6 +1214,82 @@ flags may be specified in the
 section.  Some are driver-specific and are described in the driver
 documentation.  Others are driver-independent, and will eventually be
 described here.
+.TP 7
+.BI "Option \*qAccel\*q"
+Enables XAA (X Acceleration Architecture), a mechanism that makes video
+cards' 2D hardware acceleration available to the X server.  This option is
+on by default, but it may be necessary to turn it off if there are bugs in
+the driver.  There are many options to disable specific acclerated
+operations, listed below.  Note that disabling an operation will have no
+effect if the operation is not accelerated (whether due to lack of support
+in the hardware or in the driver).
+.TP 7
+.BI "Option \*qXaaNoCPUToScreenColorExpandFill\*q"
+Disables accelerated rectangular expansion blits from source patterns
+stored in system memory (using a memory-mapped aperture).
+.TP 7
+.BI "Option \*qXaaNoColor8x8PatternFillRect\*q"
+Disables accelerated fills of a rectangular region with a full-color
+pattern.
+.TP 7
+.BI "Option \*qXaaNoColor8x8PatternFillTrap\*q"
+Disables accelerated fills of a trapezoidal region with a full-color
+pattern.
+.TP 7
+.BI "Option \*qXaaNoDashedBresenhamLine\*q"
+Disables accelerated dashed Bresenham line draws.
+.TP 7
+.BI "Option \*qXaaNoDashedTwoPointLine\*q"
+Disables accelerated dashed line draws between two arbitrary points.
+.TP 7
+.BI "Option \*qXaaNoImageWriteRect\*q"
+Disables acclerated transfers of full-color rectangular patterns from
+system memory to video memory (using a memory-mapped aperture).
+.TP 7
+.BI "Option \*qXaaNoMono8x8PatternFillRect\*q"
+Disables accelerated fills of a rectangular region with a monochrome
+pattern.
+.TP 7
+.BI "Option \*qXaaNoMono8x8PatternFillTrap\*q"
+Disables accelerated fills of a trapezoidal region with a monochrome
+pattern.
+.TP 7
+.BI "Option \*qXaaNoOffscreenPixmaps\*q"
+Disables accelerated draws into pixmaps stored in offscreen video memory.
+.TP 7
+.BI "Option \*qXaaNoPixmapCache\*q"
+Disables caching of patterns in offscreen video memory.
+.TP 7
+.BI "Option \*qXaaNoScanlineCPUToScreenColorExpandFill\*q"
+Disables accelerated rectangular expansion blits from source patterns
+stored in system memory (one scan line at a time).
+.TP 7
+.BI "Option \*qXaaNoScanlineImageWriteRect\*q"
+Disables acclerated transfers of full-color rectangular patterns from
+system memory to video memory (one scan line at a time).
+.TP 7
+.BI "Option \*qXaaNoScreenToScreenColorExpandFill\*q"
+Disables accelerated rectangular expansion blits from source patterns
+stored in offscreen video memory.
+.TP 7
+.BI "Option \*qXaaNoScreenToScreenCopy\*q"
+Disables accelerated copies of rectangular regions from one part of video
+memory to another part of video memory.
+.TP 7
+.BI "Option \*qXaaNoSolidBresenhamLine\*q"
+Disables accelerated solid Bresenham line draws.
+.TP 7
+.BI "Option \*qXaaNoSolidFillRect\*q"
+Disables accelerated solid-color fills of rectangles.
+.TP 7
+.BI "Option \*qXaaNoSolidFillTrap\*q"
+Disables accelerated solid-color fills of Bresenham trapezoids.
+.TP 7
+.BI "Option \*qXaaNoSolidHorVertLine\*q"
+Disables accelerated solid horizontal and vertical line draws.
+.TP 7
+.BI "Option \*qXaaNoSolidTwoPointLine\*q"
+Disables accelerated solid line draws between two arbitrary points.
 .PP
 Each
 .B Screen
