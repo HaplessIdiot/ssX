@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.2 2003/04/24 21:19:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.3 2003/04/25 14:37:35 tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -785,7 +785,7 @@ ATIMach64ClipVideo
     pDstBox->x1 -= pScreenInfo->frameX0;
     pDstBox->x2 -= pScreenInfo->frameX0 + 1;
     pDstBox->y1 -= pScreenInfo->frameY0;
-    pDstBox->y2 -= pScreenInfo->frameY1 + 1;
+    pDstBox->y2 -= pScreenInfo->frameY0 + 1;
 
     *SrcLeft = *SrcTop = 0;
 
