@@ -602,7 +602,7 @@ sis550Setup(ScrnInfoPtr pScrn)
     if(!alldone) {
 
        if(pSiS->Chipset == PCI_CHIP_SIS660) {
-          inSISIDXREG(SISSR, 0x79, config);
+          inSISIDXREG(SISCR, 0x79, config);
 	  pScrn->videoRam = (1 << ((config & 0xf0) >> 4)) * 1024;
 	  pSiS->BusWidth = (config & 0x04) ? 128 : 64;
           ramtype = (config & 0x01) ? 8 : 4;
