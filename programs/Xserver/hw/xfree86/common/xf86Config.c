@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.257 2002/05/05 18:54:00 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.258 2002/05/31 18:45:57 dawes Exp $ */
 
 
 /*
@@ -614,7 +614,7 @@ configFiles(XF86ConfFilesPtr fileconf)
   /* If defaultFontPath is still empty, exit here */
 
   if (! *defaultFontPath)
-    FatalError("No valid FontPath could be found\n");
+    FatalError("No valid FontPath could be found.");
 
   xf86Msg(pathFrom, "FontPath set to \"%s\"\n", defaultFontPath);
 
