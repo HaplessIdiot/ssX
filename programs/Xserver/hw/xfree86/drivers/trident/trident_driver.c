@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.154 2001/12/13 18:01:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.155 2001/12/19 21:12:50 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1002,15 +1002,8 @@ TRIDENTProbe(DriverPtr drv, int flags)
 static int *
 GetAccelPitchValues(ScrnInfoPtr pScrn)
 {
-#if 0
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-#endif
     int *linePitches = NULL;
     int lines[4] = { 512, 1024, 2048, 4096 }; /* 9440AGi */
-#if 0
-    int lines[sizeof(AvailablePitches[pTrident->Chipset])] =
-		AvailablePitches[pTrident->Chipset];
-#endif
     int i, n = 0;
 	
     for (i = 0; i < 4; i++) {
