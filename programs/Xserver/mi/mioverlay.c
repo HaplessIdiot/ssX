@@ -391,7 +391,9 @@ miOverlayMarkOverlappedWindows(
 	}
 	if(overMarked)
 	    MARK_OVERLAY(pWin->parent);
-    } else if(doUnderlay) {
+    } 
+
+    if(doUnderlay && !pTree) {
 	if(!(pTree = MIOVERLAY_GET_WINDOW_TREE(pWin))) {
  	    pChild = pWin->lastChild;
 	    while(1) {
