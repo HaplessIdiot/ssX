@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.5 1999/09/27 06:29:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.8 1999/11/12 02:12:41 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -119,6 +119,7 @@ void NVPointerMoved(int index, int x, int y);
 #define NV_CHIP_TNT2       ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT2)
 #define NV_CHIP_UTNT2      ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_UTNT2)
 #define NV_CHIP_VTNT2      ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_VTNT2)
+#define NV_CHIP_UVTNT2     ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_UVTNT2)
 #define NV_CHIP_ITNT2      ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_ITNT2)
 #define NV_CHIP_GEFORCE256 ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_GEFORCE256)
 #define NV_CHIP_GEFORCEDDR ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_GEFORCEDDR)

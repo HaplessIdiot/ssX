@@ -1,4 +1,5 @@
 XFree86 3.9.16f (xx December 1999)
+3365. Add Riva TNT2 M64 to nv_driver (#3436, Jarno Paananen).
 3364. Add prototypes for Xserver/Xprint and fix various problems with
       Xprint (#3432, Thomas Dickey).
 3363. Add proper clock checking for VidMode extension, add SDK fixes for
@@ -9137,4 +9138,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.860 1999/12/13 01:39:42 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.861 1999/12/13 02:13:09 robin Exp $

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.21 1999/11/12 02:12:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.23 1999/11/26 21:46:59 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -92,6 +92,7 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_TNT2,       "RIVATNT2" },
     { NV_CHIP_UTNT2,      "RIVATNT2 (Ultra)" },
     { NV_CHIP_VTNT2,      "RIVATNT2 (Vanta)" },
+    { NV_CHIP_UVTNT2,     "RIVATNT2 M64" },
     { NV_CHIP_ITNT2,      "RIVATNT2 (Integrated)" },
     { NV_CHIP_GEFORCE256, "GeForce 256" },
     { NV_CHIP_GEFORCEDDR, "GeForce DDR" },
@@ -105,6 +106,7 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_TNT2,             NV_CHIP_TNT2,           RES_SHARED_VGA },
     { NV_CHIP_UTNT2,            NV_CHIP_UTNT2,          RES_SHARED_VGA },
     { NV_CHIP_VTNT2,            NV_CHIP_VTNT2,          RES_SHARED_VGA },
+    { NV_CHIP_UVTNT2,           NV_CHIP_UVTNT2,         RES_SHARED_VGA },
     { NV_CHIP_ITNT2,            NV_CHIP_ITNT2,          RES_SHARED_VGA },
     { NV_CHIP_GEFORCE256,       NV_CHIP_GEFORCE256,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCEDDR,       NV_CHIP_GEFORCEDDR,     RES_SHARED_VGA },
@@ -933,6 +935,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_CHIP_TNT2:
         case NV_CHIP_UTNT2:
         case NV_CHIP_VTNT2:
+        case NV_CHIP_UVTNT2:
         case NV_CHIP_ITNT2:
             NV4Setup(pScrn);
             break;
