@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.12 2000/02/12 23:53:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.13 2000/02/13 03:06:44 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -13,6 +13,10 @@
 #include "xf86Priv.h"
 #include "xf86_OSproc.h"
 #include "xf86Pci.h"
+
+#ifdef __CYGWIN__
+#include <getopt.h>
+#endif
 
 #include <stdarg.h>
 #include <stdlib.h>

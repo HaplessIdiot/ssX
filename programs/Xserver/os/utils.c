@@ -45,9 +45,9 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.60 2000/08/01 20:05:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.62 2000/08/04 16:13:45 eich Exp $ */
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>
 #endif
 #include "Xos.h"
@@ -844,7 +844,7 @@ char	*argv[];
 #ifdef SERVER_LOCK
 	else if ( strcmp ( argv[i], "-nolock") == 0)
 	{
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__EMX__) && !defined(__CYGWIN__)
 	  if (getuid() != 0)
 	    ErrorF("Warning: the -nolock option can only be used by root\n");
 	  else
@@ -1121,7 +1121,7 @@ ExpandCommandLine(pargc, pargv)
 {
     int i;
 
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__EMX__) && !defined(__CYGWIN__)
     if (getuid() != geteuid())
 	return;
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.93 2000/05/18 16:29:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.94 2000/05/18 23:21:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -296,7 +296,7 @@ ProcessInputEvents ()
 extern u_char SpecialServerMap[];
 #endif /* ASSUME_CUSTOM_KEYCODES */
 
-#if !defined(__EMX__) && !defined(SOL8)
+#if !defined(__EMX__) && !defined(SOL8) && !defined(__CYGWIN__)
 void
 xf86PostKbdEvent(unsigned key)
 {
@@ -851,7 +851,7 @@ special:
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__) && !defined(__GNU__)
+#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__) && !defined(__GNU__) && !defined(__CYGWIN__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
@@ -918,7 +918,7 @@ special:
 void
 xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 {
-#if !defined(__EMX__) && !defined(__QNX__)
+#if !defined(__EMX__) && !defined(__QNX__) && !defined(__CYGWIN__)
 #ifdef	__OSF__
     fd_set kbdDevices;
     fd_set mseDevices;
@@ -1110,7 +1110,7 @@ xf86VTSwitch()
     for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->LeaveVT(i, 0);
     }
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(__CYGWIN__)
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {
@@ -1146,7 +1146,7 @@ xf86VTSwitch()
       }
       SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(__CYGWIN__)
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
       pInfo = xf86InputDevs;
       while (pInfo) {
@@ -1196,7 +1196,7 @@ xf86VTSwitch()
     /* Turn screen saver off when switching back */
     SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
 
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(__CYGWIN__)
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.h,v 1.3 2000/02/23 04:46:57 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.h,v 1.4 2000/03/02 16:07:39 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -34,6 +34,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef _XF86GLX_UTIL_H_
 #define _XF86GLX_UTIL_H_
+
+#ifdef __CYGWIN__
+#undef WIN32
+#undef _WIN32
+#endif
 
 #include <screenint.h>
 #include <pixmap.h>

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.14 1998/08/29 05:42:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.15 1998/10/04 09:35:23 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -65,20 +65,12 @@ SOFTWARE.
 
 #ifndef XFree86LOADER
 
-#ifndef X_NOT_POSIX
-#include <dirent.h>
-#else
-#ifdef SYSV
-#include <dirent.h>
-#else
-#ifdef USG
+#if !defined(X_NOT_POSIX) || defined(SYSV) || defined(__CYGWIN__) || defined(USG)
 #include <dirent.h>
 #else
 #include <sys/dir.h>
 #ifndef dirent
 #define dirent direct
-#endif
-#endif
 #endif
 #endif
 typedef struct dirent	 ENTRY;

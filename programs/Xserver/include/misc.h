@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.21 1999/06/12 07:19:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.22 1999/08/21 13:48:44 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -140,6 +140,9 @@ typedef struct _xReq *xReqPtr;
 /* byte swap a short literal */
 #define lswaps(x) ((((x) & 0xff) << 8) | (((x) >> 8) & 0xff))
 
+#undef min
+#undef max
+
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #ifndef IN_MODULE
@@ -178,6 +181,12 @@ typedef struct _xReq *xReqPtr;
  * Some implementations #define these through <math.h>, so preclude
  * #include'ing it later.
  */
+
+#ifdef __CYGWIN__
+/* needed to avoid INFINITY redeclarations from CYGWIN math.h */
+#define __STRICT_ANSI__
+#endif
+
 #include <math.h>
 #endif
 #undef MAXSHORT

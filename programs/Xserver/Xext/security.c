@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.3 1997/12/14 02:55:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.4 1998/10/04 09:36:47 dawes Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -47,7 +47,7 @@ extern unsigned char LbxReqCode;
 #ifndef DEFAULTPOLICYFILE
 # define DEFAULTPOLICYFILE NULL
 #endif
-#ifdef WIN32
+#if defined(WIN32) || defined(__CYGWIN__)
 #include <X11/Xos.h>
 #undef index
 #endif

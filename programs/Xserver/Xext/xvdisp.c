@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.14 2000/05/31 19:25:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.15 2000/06/10 22:00:26 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -61,8 +61,10 @@ SOFTWARE.
 #include "Xv.h"
 #include "Xvproto.h"
 #include "xvdix.h"
+#ifdef MITSHM
 #define _XSHM_SERVER_
 #include "shmstr.h"
+#endif
 
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
@@ -73,7 +75,9 @@ SOFTWARE.
 #include "panoramiXsrv.h"
 
 XvAdaptorPtr XineramaAdaptors[MAXSCREENS];
+#ifdef MITSHM
 static int XineramaXvShmPutImage(ClientPtr);
+#endif
 static int XineramaXvPutImage(ClientPtr);
 static int XineramaXvSetPortAttribute(ClientPtr);
 static int XineramaXvStopVideo(ClientPtr);
@@ -98,7 +102,9 @@ static int ProcXvGetPortAttribute(ClientPtr);
 static int ProcXvQueryBestSize(ClientPtr);
 static int ProcXvQueryPortAttributes(ClientPtr);
 static int ProcXvPutImage(ClientPtr);
+#ifdef MITSHM
 static int ProcXvShmPutImage(ClientPtr);
+#endif
 static int ProcXvQueryImageAttributes(ClientPtr);
 static int ProcXvListImageFormats(ClientPtr);
 
@@ -119,7 +125,9 @@ static int SProcXvGetPortAttribute(ClientPtr);
 static int SProcXvQueryBestSize(ClientPtr);
 static int SProcXvQueryPortAttributes(ClientPtr);
 static int SProcXvPutImage(ClientPtr);
+#ifdef MITSHM
 static int SProcXvShmPutImage(ClientPtr);
+#endif
 static int SProcXvQueryImageAttributes(ClientPtr);
 static int SProcXvListImageFormats(ClientPtr);
 
@@ -250,6 +258,7 @@ ProcXvDispatch(ClientPtr client)
 	else
 #endif
 	    return(ProcXvPutImage(client));
+#ifdef MITSHM
     case xv_ShmPutImage: 
 #ifdef PANORAMIX
         if(!noPanoramiXExtension)
@@ -257,6 +266,7 @@ ProcXvDispatch(ClientPtr client)
 	else
 #endif
 	    return(ProcXvShmPutImage(client));
+#endif
     case xv_QueryImageAttributes: return(ProcXvQueryImageAttributes(client));
     case xv_ListImageFormats: return(ProcXvListImageFormats(client));
     default:
@@ -300,7 +310,9 @@ SProcXvDispatch(ClientPtr client)
     case xv_QueryBestSize: return(SProcXvQueryBestSize(client));
     case xv_QueryPortAttributes: return(SProcXvQueryPortAttributes(client));
     case xv_PutImage: return(SProcXvPutImage(client));
+#ifdef MITSHM
     case xv_ShmPutImage: return(SProcXvShmPutImage(client));
+#endif
     case xv_QueryImageAttributes: return(SProcXvQueryImageAttributes(client));
     case xv_ListImageFormats: return(SProcXvListImageFormats(client));
     default:
@@ -1069,6 +1081,7 @@ ProcXvPutImage(ClientPtr client)
 			    stuff->width, stuff->height);
 }
 
+#ifdef MITSHM
 /* redefined here since it's not in any header file */
 typedef struct _ShmDesc {
     struct _ShmDesc *next;
@@ -1170,6 +1183,7 @@ ProcXvShmPutImage(ClientPtr client)
 
   return status;
 }
+#endif
 
 
 static int 
@@ -1446,6 +1460,7 @@ SProcXvPutImage(ClientPtr client)
   return ProcXvPutImage(client);
 }
 
+#ifdef MITSHM
 static int
 SProcXvShmPutImage(ClientPtr client)
 {
@@ -1470,6 +1485,7 @@ SProcXvShmPutImage(ClientPtr client)
   swaps(&stuff->height, n);
   return ProcXvShmPutImage(client);
 }
+#endif
 
 
 static int
@@ -1864,6 +1880,7 @@ XineramaXvSetPortAttribute(ClientPtr client)
 }
 
 
+#ifdef MITSHM
 static int 
 XineramaXvShmPutImage(ClientPtr client)
 {
@@ -1910,6 +1927,7 @@ XineramaXvShmPutImage(ClientPtr client)
     }
     return result;
 }
+#endif
 
 static int 
 XineramaXvPutImage(ClientPtr client)

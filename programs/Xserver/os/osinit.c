@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.18 1999/11/19 13:55:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.19 1999/12/27 00:39:58 robin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -131,7 +131,7 @@ OsInit()
 		dup2 (fileno (err), 2);
 		fclose (err);
 	    }
-#if defined(SYSV) || defined(SVR4) || defined(MINIX) || defined(__EMX__) || defined(WIN32)
+#if defined(SYSV) || defined(SVR4) || defined(MINIX) || defined(__EMX__) || defined(WIN32) || defined(__CYGWIN__)
 	    {
 	    static char buf[BUFSIZ];
 	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);

@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.28 2000/04/05 18:13:15 dawes Exp $ */
+/* $XFree86: xc/include/Xos.h,v 3.29 2000/08/09 23:40:11 dawes Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.
@@ -291,7 +291,7 @@ typedef unsigned long fd_mask;
 #define NGROUPS 16
 #endif
 
-#if defined(ISC) || (defined(__QNX__) && !defined(UNIXCONN))
+#if defined(ISC) || (defined(__QNX__) && !defined(UNIXCONN)) || defined(__CYGWIN__)
 /*
  *	Some OS's may not have this
  */

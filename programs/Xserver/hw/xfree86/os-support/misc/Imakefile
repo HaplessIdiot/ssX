@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.6 1999/07/10 07:24:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.8 2000/08/04 16:13:41 eich Exp $
 
 
 
@@ -8,7 +8,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:24:12 rws $
 #include <Server.tmpl>
 
 
-#if defined(i386Architecture)
+#if defined(i386Architecture) && !defined(cygwinArchitecture)
 XSRCS = BUSmemcpy.S IODelay.S SlowBcopy.S
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #elif defined(SparcArchitecture)
@@ -34,7 +34,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-#if defined(i386Architecture)
+#if defined(i386Architecture) && !defined(cygwinArchitecture)
 ObjectFromAsmSource(BUSmemcpy,NullParameter)
 ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)

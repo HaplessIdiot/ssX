@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.8 2000/06/15 01:26:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.9 2000/06/22 16:59:25 tsi Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -46,7 +46,7 @@
 #ifdef SVR4
 #include <sys/sysmacros.h>
 #endif
-#ifdef ISC
+#if defined(ISC) || defined(__CYGWIN__)
 #include <sys/param.h>
 #include <sys/sysmacros.h>
 #endif
@@ -98,7 +98,7 @@ static int FontShmdescIndex;
 
 static unsigned int pagesize;
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__CYGWIN__)
 
 #include <sys/signal.h>
 

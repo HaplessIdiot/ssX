@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.4 2000/01/02 00:24:53 mvojkovi Exp $ */
 
 /* $TOG: resource.h /main/24 1998/02/09 14:29:47 kaleb $ */
 /***********************************************************
@@ -72,6 +72,8 @@ typedef unsigned long RESTYPE;
 #define RT_WINDOW	((RESTYPE)1|RC_CACHED|RC_DRAWABLE)
 #define RT_PIXMAP	((RESTYPE)2|RC_CACHED|RC_DRAWABLE)
 #define RT_GC		((RESTYPE)3|RC_CACHED)
+#undef RT_FONT
+#undef RT_CURSOR
 #define RT_FONT		((RESTYPE)4)
 #define RT_CURSOR	((RESTYPE)5)
 #define RT_COLORMAP	((RESTYPE)6)

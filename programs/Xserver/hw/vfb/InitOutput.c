@@ -22,9 +22,9 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.10 1999/04/28 05:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.11 1999/05/14 14:11:09 dawes Exp $ */
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>
 #endif
 #include <stdio.h>
@@ -55,11 +55,28 @@ from The Open Group.
 #endif
 #include <X11/XWDFile.h>
 #ifdef HAS_SHM
+#ifndef __CYGWIN__
 #include <sys/ipc.h>
+#else
+#include <sys/cygipc.h>
+#endif
 #include <sys/shm.h>
 #endif /* HAS_SHM */
 #include "dix.h"
 #include "miline.h"
+
+#ifdef __CYGWIN__
+/*
+ * NT UX defines/includes
+ */
+#include <sys/mman.h>
+
+#define HAS_MMAP 1
+
+extern char *get_surf( unsigned long size );
+extern char *get_framebuf( unsigned long size );
+extern int     enable_ntux_xf( );
+#endif /* __CYGWIN__ */
 
 extern char *display;
 
@@ -106,6 +123,10 @@ typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
 static fbMemType fbmemtype = NORMAL_MEMORY_FB;
 static char needswap = 0;
 static int lastScreen = -1;
+
+#ifdef __CYGWIN__
+static int b_video_memory = 0;
+#endif
 
 #define swapcopy16(_dst, _src) \
     if (needswap) { CARD16 _s = _src; cpswaps(_s, _dst); } \
@@ -193,6 +214,9 @@ ddxGiveUp()
     case NORMAL_MEMORY_FB:
 	for (i = 0; i < vfbNumScreens; i++)
 	{
+#ifdef __CYGWIN__
+          if (!b_video_memory)
+#endif
 	    Xfree(vfbScreens[i].pXWDHeader);
 	}
 	break;
@@ -752,7 +776,17 @@ vfbAllocateFramebufferMemory(pvfb)
     {
 	pvfb->pXWDCmap = (XWDColor *)((char *)pvfb->pXWDHeader
 				+ SIZEOF(XWDheader) + XWD_WINDOW_NAME_LEN);
+#ifndef __CYGWIN__
 	pvfb->pfbMemory = (char *)(pvfb->pXWDCmap + pvfb->ncolors);
+#else
+	pvfb->pfbMemory =
+		(char *)get_framebuf((unsigned long)
+			pvfb->paddedWidth * pvfb->height);
+	if (pvfb->pfbMemory)
+	    b_video_memory = 1;
+	else
+	    pvfb->pfbMemory = (char *)(pvfb->pXWDCmap + pvfb->ncolors);
+#endif
 	return pvfb->pfbMemory;
     }
     else
@@ -942,6 +976,11 @@ InitOutput(screenInfo, argc, argv)
     int i;
     int NumFormats = 0;
     FILE *pf = stderr;
+
+
+#ifdef __CYGWIN__
+    enable_ntux_xf();
+#endif
 
     /* initialize pixmap formats */
 
