@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.117 2000/08/25 21:51:11 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.119 2000/10/05 18:06:35 keithp Exp $ */
 
 
 /* main.c */
@@ -906,7 +906,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-fi",		"*iconFont",	XrmoptionSepArg,	(caddr_t) NULL},
 #endif /* NO_ACTIVE_ICON */
 #ifdef XRENDERFONT
-{"-fn",		"*faceName",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-fa",		"*faceName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fs",		"*faceSize",	XrmoptionSepArg,	(caddr_t) NULL},
 #endif
 #if OPT_WIDE_CHARS
