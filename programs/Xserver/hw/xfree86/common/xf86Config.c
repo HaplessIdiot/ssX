@@ -1,5 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
+ * $XFree86$
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1153,13 +1154,13 @@ xf86Config (vtopen)
   {
     int real_uid = getuid();
 
-#ifndef SVR4
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
     setruid(0);
 #endif
     seteuid(real_uid);
     findConfigFile(configPath, &configFile);
     seteuid(0);
-#ifndef SVR4
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
     setruid(real_uid);
 #endif
   }
@@ -1341,8 +1342,7 @@ xf86Config (vtopen)
       
     case VGA256:
     case VGA2:
-    case HGA2:
-    case BDM2:
+    case MONO:
     case VGA16:
     case ACCEL:
       scr_index = getScreenIndex(token);

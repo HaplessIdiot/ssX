@@ -74,10 +74,10 @@ typedef struct {
 
 #define VGA256     40
 #define VGA2       41
-#define HGA2       42
-#define BDM2       43
-#define VGA16      44
-#define ACCEL      45
+#undef MONO /* used on Linux in /usr/include/linux/kd.h */
+#define MONO       42
+#define VGA16      43
+#define ACCEL      44
 
 #define MODEDB     60
 
@@ -103,8 +103,7 @@ static SymTabRec SymTab[] = {
 
   { VGA256,     "vga256" },
   { VGA2,       "vga2" },
-  { HGA2,       "hga2" },
-  { BDM2,       "bdm2" },
+  { MONO,       "mono" },
   { VGA16,      "vga16" },
   { ACCEL,      "accel" },
 
