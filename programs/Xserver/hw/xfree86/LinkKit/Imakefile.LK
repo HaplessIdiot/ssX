@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.21 1995/03/18 10:58:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.22 1995/05/27 03:01:21 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -333,7 +333,7 @@ XCOMM
 XCOMM XFree86 AGX Server
 XCOMM
 XF86AGXOBJS = XF86_AGX.o
-XF86AGXLIBS = $(DRIVERSRC)/libagx.a $(XF86LIBS) CFB8Libs
+XF86AGXLIBS = $(DRIVERSRC)/libagx.a $(XF86LIBS) CFBLibs
 XF86AGXSYSLIBS = $(SYSLIBS)
 XF86_AGX.o: XF86_AGX.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF86AGXSYSLIBS))
