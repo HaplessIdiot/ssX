@@ -9,7 +9,7 @@
 <date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.26 2000/02/12 23:07:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.27 2000/02/13 03:06:35 dawes Exp $
 </ident>
 
 <abstract>
@@ -60,6 +60,9 @@ that are new to the pre-4.0 snapshot series.
 	for the AT24 has been added in this release, and acceleration has
 	been improved.  Further details can be found in the
 	<ref id="apm" name="APM section"> below.
+
+  <item>Preliminary support has been added to the X server for the extended
+	keys on some "Internet" keyboards.
 
 </itemize>
 
