@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.11 2000/10/20 12:57:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.12 2001/03/19 11:00:54 alanh Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -152,7 +152,7 @@ DEC21030AccelInit(ScreenPtr pScreen)
     BIT_ORDER_IN_BYTE_LSBFIRST;
 
   TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
-  pTga->buffers[0] = (CARD32 *)malloc(CE_BUFSIZE);
+  pTga->buffers[0] = (CARD32 *)xf86malloc(CE_BUFSIZE);
   TGA_AccelInfoRec->ScanlineColorExpandBuffers =
     (unsigned char **)pTga->buffers;
   TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =
@@ -595,7 +595,7 @@ TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
   */
 
   int i = 0;
-  void (*copy_func)();
+  void (*copy_func)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2, int w);
 #ifdef PROFILE
   unsigned int stop, start;
 #endif
