@@ -9,7 +9,7 @@
 <date>23 November 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.86 2003/11/29 18:01:30 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.87 2003/12/03 02:12:19 dawes Exp $
 </ident>
 
 <abstract>
@@ -413,14 +413,20 @@ scroll-back(1, page-2)
 
 <p>
 <itemize>
-<item>[OLD] Updates for Darwin/Mac OS X, including:
+<item>On Mac OS X, the appropriate backend drawing code is now dynamically
+	loaded at runtime. This reduces the X server's memory footprint.
+	In rootless mode, Apple's Xplugin library is used where available.
+	(Xplugin is included as part of Mac OS X on Panther.) With Xplugin,
+	XDarwin provides identical performance to Apple's X11, including
+	the following improvements over 4.3:
 	<itemize>
-	<item>Indirect GLX acceleration added.
-	<item>Smaller memory footprint and faster 2-D drawing in rootless
-		mode.
-	<item>Full screen mode now uses shadowfb for much faster 2-D drawing.
-	<item>Native fonts can be used on MacOS X.
+	<item>Added direct GLX rendering with thread support.
+	<item>Faster 2-D drawing.
+	<item>Added support for the Apple-WM extension so XDarwin interoperates
+		with quartz-wm.
 	</itemize>
+
+<item>On Darwin, IOKit mode now uses shadowfb for much faster drawing.
 
 <item>Various GNU/Hurd support updates.
 
