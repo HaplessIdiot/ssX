@@ -1,4 +1,4 @@
-/* $TOG: omGeneric.c /main/21 1997/06/21 20:56:05 kaleb $ */
+/* $TOG: omGeneric.c /main/22 1997/07/17 21:49:06 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.5 1996/12/26 01:37:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.6 1997/06/22 10:16:52 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"

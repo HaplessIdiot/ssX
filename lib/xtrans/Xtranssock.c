@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.28 1997/07/06 09:02:36 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.29 1997/07/06 11:56:44 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1683,7 +1683,7 @@ BytesReadable_t *pend;
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (!defined(SCO325) && defined(i386) && defined(SYSV)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
 #if defined(__EMX__)

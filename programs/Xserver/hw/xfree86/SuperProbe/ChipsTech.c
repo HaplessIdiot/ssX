@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.10 1996/12/23 06:31:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.11 1997/06/06 06:07:10 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -146,6 +146,9 @@ int *Chipset;
 					break;
 				}
 			}
+			if (vers == 0xf4) {
+			  *Chipset = CHIP_CTF68554;
+			}
 		}
 	}
 	DisableIOPorts(NUMPORTS, Ports);
@@ -231,6 +234,7 @@ int Chipset;
 	case CHIP_CTF65550:
 	case CHIP_CTF65554:
 	case CHIP_CTF65555:
+	case CHIP_CTF68554:
 		switch ((rdinx(0x3D6, 0x43) & 0x06) >> 1)
 		{
 		case 0x00:

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c /main/27 1996/09/28 16:50:14 rws $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.21 1996/12/23 06:04:16 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.22 1997/07/06 05:30:38 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -2344,7 +2344,7 @@ BytesReadable_t *pend;
 {
     PRMSG(2,"LocalBytesReadable(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
 
-#if defined(ISC)
+#if defined(ISC) || defined(SCO)
     return ioctl(ciptr->fd, I_NREAD, (char *)pend);
 #else
     return ioctl(ciptr->fd, FIONREAD, (char *)pend);

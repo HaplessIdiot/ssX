@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.5 1997/06/03 14:11:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.6 1997/06/15 07:12:19 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -410,7 +410,7 @@ i128AccelInit()
 
 	xf86AccelInfoRec.PixmapCacheMemoryEnd =
 		i128InfoRec.videoRam * 1024-1024;
-	
+
 	i128InfoRec.displayWidth = i128DisplayWidth;
 
 	eng_a = i128mem.rbase_a;

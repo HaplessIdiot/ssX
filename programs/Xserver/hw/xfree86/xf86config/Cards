@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.57 1997/05/31 13:51:36 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.59 1997/06/03 14:12:34 hohndel Exp $
 
 #Chips & Technologies
 
@@ -88,11 +88,20 @@ LINE # Option "sw_cursor"
 LINE # Option "sync_on_green"
 LINE # Option "fast_dram"
 LINE # Option "use_vclk1"
+LINE # Set_MemClk 38.000
 LINE # Textclockfreq 25.175
 SEE Chips & Technologies CT65530
 
 NAME Chips & Technologies CT65554
 CHIPSET ct65554
+SEE Chips & Technologies CT65550
+
+NAME Chips & Technologies CT65555
+CHIPSET ct65555
+SEE Chips & Technologies CT65550
+
+NAME Chips & Technologies CT68554
+CHIPSET ct68554
 SEE Chips & Technologies CT65550
 
 NAME Chips & Technologies CT64200

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.13 1997/06/29 11:40:34 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.14 1997/07/06 05:30:56 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -945,12 +945,12 @@ ET4000Probe()
   switch(TsengRamdacType) {
     case ET6000_DAC:
     case ICS5341_DAC:
+    case STG1703_DAC:
+    case STG1702_DAC:
        TSENG.ChipHas16bpp = TRUE;
        TSENG.ChipHas24bpp = TRUE;
        TSENG.ChipHas32bpp = TRUE;
        break;
-    case STG1703_DAC:
-    case STG1702_DAC:
     case ATT20C490_DAC:
     case ATT20C491_DAC:
     case ATT20C492_DAC:
@@ -959,8 +959,11 @@ ET4000Probe()
        TSENG.ChipHas24bpp = TRUE;
        break;
     case CH8398_DAC:  /* CH8398 seems to have trouble with "hibit" (MCLK/2) clocks at 24bpp */
+       TSENG.ChipHas16bpp = TRUE;
+       break;
     case STG1700_DAC: /* STG1700 can't do packed 24bpp over a 16-bit bus */
        TSENG.ChipHas16bpp = TRUE;
+       TSENG.ChipHas32bpp = TRUE;
        break;
   }
 

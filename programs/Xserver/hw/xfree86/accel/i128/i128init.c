@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.8 1997/06/25 08:24:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.9 1997/07/10 06:36:12 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -60,7 +60,6 @@ saveI128state()
 {
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
 	if ((i128io.id&0x7) > 1) {
-		int i;
         	unsigned PCI_DevIOPorts[1];
 
       		PCI_DevIOPorts[0] = iR.iobase + 0x30;
@@ -192,7 +191,7 @@ saveI128state()
 		iR.Ti3025[8] = i128mem.rbase_g_b[DATA_TI];
 	} else if ((i128RamdacType == IBM526_DAC) ||
 		   (i128RamdacType == IBM528_DAC)) {
-		short i;
+		CARD32 i;
 
 		for (i=0; i<0x100; i++) {
 			i128mem.rbase_g_b[IDXL_I] = i;
@@ -211,6 +210,7 @@ void
 restoreI128state()
 #endif
 {
+	int i;
         unsigned PCI_DevIOPorts[3];
 
 	if (i128RamdacType == TI3025_DAC) {
@@ -291,7 +291,7 @@ restoreI128state()
 		i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_COLOR_KEY_CONTROL];
 	} else if ((i128RamdacType == IBM526_DAC) ||
 		   (i128RamdacType == IBM528_DAC)) {
-		short i;
+		CARD32 i;
 
 		for (i=0; i<0x100; i++) {
 			if ((i == IBMRGB_sysclk_vco_div) ||
@@ -325,21 +325,18 @@ restoreI128state()
 		for (i=0; i<VGA_SAVE_COUNT; i++)
 			vidmem[i] = vgamem[i];
 		outl(iR.iobase + 0x30, iR.vga_ctl);
-
-		i128mem.rbase_g_b[PEL_MASK] = 0xff;
-
-		i128mem.rbase_g_b[WR_ADR] = 0x00;
-		for (i=0; i<256; i++) {
-		   i128mem.rbase_g_b[PAL_DAT] = oldlut[i].r;
-		   i128mem.rbase_g_b[PAL_DAT] = oldlut[i].g;
-		   i128mem.rbase_g_b[PAL_DAT] = oldlut[i].b;
-		}
 	}
 
-	outl(iR.iobase + 0x20, iR.config2);
-	outl(iR.iobase + 0x1C, iR.config1);
+	/* restore the LUT */
 
-	xf86DisableIOPorts(i128InfoRec.scrnIndex);
+	i128mem.rbase_g_b[PEL_MASK] = 0xff;
+	i128mem.rbase_g_b[WR_ADR] = 0x00;
+
+	for (i=0; i<256; i++) {
+	   i128mem.rbase_g_b[PAL_DAT] = oldlut[i].r;
+	   i128mem.rbase_g_b[PAL_DAT] = oldlut[i].g;
+	   i128mem.rbase_g_b[PAL_DAT] = oldlut[i].b;
+	}
 
 	i128mem.rbase_w[MW0_CTRL] = iR.i128_base_w[MW0_CTRL]; /*  0x0000  */
 	i128mem.rbase_w[MW0_SZ]   = iR.i128_base_w[MW0_SZ];   /*  0x0008  */
@@ -384,6 +381,10 @@ restoreI128state()
 	i128mem.rbase_g[CRT_1CON] = iR.i128_base_g[CRT_1CON]; /*  0x0058  */
 	i128mem.rbase_g[CRT_2CON] = iR.i128_base_g[CRT_2CON]; /*  0x005C  */
 
+	outl(iR.iobase + 0x20, iR.config2);
+	outl(iR.iobase + 0x1C, iR.config1);
+
+	xf86DisableIOPorts(i128InfoRec.scrnIndex);
 }
 
 

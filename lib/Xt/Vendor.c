@@ -64,6 +64,24 @@ SOFTWARE.
  *
  ***************************************************************************/
 
+#ifdef __EMX__
+/* to fix the EditRes problem because of wrong linker semantics */
+extern WidgetClass vendorShellWidgetClass;
+unsigned long _DLL_InitTerm(unsigned long mod,unsigned long flag)
+{
+        switch (flag) {
+        case 0: /*called on init*/
+                _CRT_init();
+                vendorShellWidgetClass = (WidgetClass)(&vendorShellClassRec);
+                return 1;
+        case 1: /*called on exit*/
+                return 1;
+        default:
+                return 0;
+        }
+}
+#endif
+
 externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
   {
     /* superclass         */    (WidgetClass) &wmShellClassRec,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.10 1997/06/06 06:07:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.11 1997/06/10 12:30:27 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -459,16 +459,17 @@ static int Num_CHIPS_ExtPorts32 =
 #define CT_550   8
 #define CT_554   9
 #define CT_555   10
-#define CT_4200  11
-#define CT_4300  12
+#define CT_8554  11
+#define CT_4200  12
+#define CT_4300  13
 #ifdef CT45X_SUPPORT
 /* CT_451 - CT457 are not supported */
-#define CT_451   13
-#define CT_452   14
-#define CT_453   15
-#define CT_455   16
-#define CT_456   17
-#define CT_457   18
+#define CT_451   14
+#define CT_452   15
+#define CT_453   16
+#define CT_455   17
+#define CT_456   18
+#define CT_457   19
 #endif
 
 static unsigned char CHIPSchipset;
@@ -525,7 +526,7 @@ CHIPSIdent(n)
     {
 	"ct65520", "ct65525", "ct65530", "ct65535", "ct65540", 
 	"ct65545", "ct65546", "ct65548", "ct65550", "ct65554",
-	"ct65555", "ct64200", "ct64300",
+	"ct65555", "ct68554", "ct64200", "ct64300",
 #ifdef CT45X_SUPPORT
 	"ct451", "ct452", "ct453", "ct455",
 	"ct456", "ct457",
@@ -1060,6 +1061,18 @@ CHIPSProbe()
 	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
 	    ctDPMSSupport = TRUE;
 	    ctTMED = TRUE;           /* Flag the new STN dithering scheme */
+	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_8554))) {
+	    CHIPSchipset = CT_8554;
+	    ctLinearSupport = TRUE;
+	    ctAccelSupport = TRUE;
+	    ctSupportMMIO = TRUE;
+	    ctUseMMIO = TRUE;	     /* MMIO seems to be usuable on all Buses
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
+	    ctHDepth = TRUE;
+	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
+	    ctDPMSSupport = TRUE;
+	    ctTMED = TRUE;           /* Flag the new STN dithering scheme */
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_4200))) {
 	  CHIPSchipset = CT_4200;
 	  ctisWINGINE = TRUE;
@@ -1110,6 +1123,11 @@ CHIPSProbe()
 	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
 	} else if (tmp == 0xE5) {
 	    CHIPSchipset = CT_555;
+	    ctUseMMIO = TRUE;	
+	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
+	    ctTMED = TRUE;         /* Flag the new STN dithering scheme */
+	} else if (tmp == 0xF4) {
+	    CHIPSchipset = CT_8554;
 	    ctUseMMIO = TRUE;	
 	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
 	    ctTMED = TRUE;         /* Flag the new STN dithering scheme */
@@ -1222,6 +1240,19 @@ CHIPSProbe()
 	    }
 	    if (temp == 0xE5) {
 		CHIPSchipset = CT_555;
+		ctLinearSupport = TRUE;
+		ctAccelSupport = TRUE;
+		ctSupportMMIO = TRUE;
+		ctUseMMIO = TRUE;    /* MMIO seems to be usuable on all Buses.
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
+		ctHDepth = TRUE;
+		ctisHiQV32 = TRUE;
+		ctDPMSSupport = TRUE;
+		ctTMED = TRUE;       /* Flag the new STN dithering scheme */
+	    }
+	    if (temp == 0xF4) {
+		CHIPSchipset = CT_8554;
 		ctLinearSupport = TRUE;
 		ctAccelSupport = TRUE;
 		ctSupportMMIO = TRUE;
@@ -1599,13 +1630,14 @@ Bool ctProbeHiQV()
     switch (CHIPSchipset) {
       case CT_550:
 	outb(0x3D6, 0x04);
-	if ((inb(0x3D7) & 0xF0) == 0x80)
+	if ((inb(0x3D7) & 0xF) < 6)
 	  ctMemClk->Max = 38000; /* Revision A chips */
 	else
 	  ctMemClk->Max = 50000; /* Revision B chips */
 	break;
       case CT_554:
       case CT_555:
+      case CT_8554:
 	ctMemClk->Max = 55000;
 	break;
     }
@@ -1664,6 +1696,7 @@ Bool ctProbeHiQV()
     
     /* maximal clock */
     switch (CHIPSchipset) {
+      case CT_8554:
       case CT_555:
 	vga256InfoRec.maxClock = 110000;
 	break;
