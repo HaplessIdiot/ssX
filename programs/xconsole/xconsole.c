@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.23 1999/03/21 07:35:37 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.24 2001/01/17 23:45:19 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -478,6 +478,13 @@ inputReady(XtPointer w, int *source, XtInputId *id)
 #endif
 	fclose (input);
 	XtRemoveInput (*id);
+
+	/* try to reopen if pipe; this can be caused by syslog restart */
+	if (app_resources.file && !regularFile && n == 0)
+	{
+	    OpenConsole();
+	}
+
     }
     Notify ();
     buffer[n] = '\0';

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/handle.c,v 3.3 1999/03/07 11:41:15 dawes Exp $ */
+/* $XFree86: xc/programs/xmodmap/handle.c,v 3.4 2001/01/17 23:46:20 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -357,9 +357,13 @@ do_keycode(char *line, int len)
 	return;
     }
 
+    /*
+     * We need not bother to advance line/len past the
+     * number (or the string 'any') as finish_keycodes() will
+     * first advance past the '='.
+     */
     if (!strncmp("any", line, 3)) {
 	keycode = 0;
-	len += 3;
     } else {
 	if (*line == '0') line++, len--, fmt = "%o";
 	if (*line == 'x' || *line == 'X') line++, len--, fmt = "%x";

@@ -1,4 +1,12 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 430. Ensure that the X-TT module isn't built if the Xserver isn't being
+      built (#4594, Chu-yeon Park).
+ 429. Make xconsole try to reopen the /dev/xconsole pipe when it gets an EOF
+      (#4593, Jeff King).
+ 428. Prevent an infinite loop (or unpredictable behaviour) in xmodmap (#4592,
+      Peter Maydell).
+ 427. Add a font substitute for the zh locale (#4590, submitted by Branden
+      Robinson).
  426. Make the backspace key definitions for the xkb macintosh/us and
       dvorak layouts consistent with the default 'us' layout (#4588, 4589,
       Branden Robinson).
@@ -13054,4 +13062,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1711 2001/04/23 17:15:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1712 2001/04/23 20:31:06 dawes Exp $
