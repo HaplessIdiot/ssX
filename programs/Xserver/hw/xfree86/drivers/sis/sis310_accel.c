@@ -189,10 +189,10 @@ extern void SiSSubsequentCPUToScreenTexture(ScrnInfoPtr	pScrn,
 				int srcx, int srcy,
 				int width, int height);
 
-extern CARD32 SiSAlphaTextureFormats[2];
-extern CARD32 SiSTextureFormats[2];		
-CARD32 SiSAlphaTextureFormats[2] = { PICT_a8,       0 };
-CARD32 SiSTextureFormats[2]      = { PICT_a8r8g8b8, 0 };		
+extern CARD32 SiSAlphaTextureFormats[3];
+extern CARD32 SiSTextureFormats[2];
+CARD32 SiSAlphaTextureFormats[3] = { PICT_a8,       PICT_a8r8g8b8, 0 };
+CARD32 SiSTextureFormats[2]      = { PICT_a8r8g8b8, 0 };
 #endif
 #endif
 
@@ -417,8 +417,7 @@ SiS315AccelInit(ScreenPtr pScreen)
 	      infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
 	      infoPtr->SubsequentCPUToScreenAlphaTexture = SiSSubsequentCPUToScreenTexture;
 	      infoPtr->CPUToScreenAlphaTextureFormats = SiSAlphaTextureFormats;
-	      infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
-	      					      XAA_RENDER_NO_SRC_ALPHA;
+	      infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE;
 
               infoPtr->SetupForCPUToScreenTexture = SiSSetupForCPUToScreenTexture;
               infoPtr->SubsequentCPUToScreenTexture = SiSSubsequentCPUToScreenTexture;
@@ -1697,14 +1696,14 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
    			int height, int	flags)
 {
     	SISPtr pSiS = SISPTR(pScrn);
-    	int x, pitch, sizeNeeded, offset;
+    	int x, y, pitch, sizeNeeded, offset;
 	CARD8  myalpha;
 	CARD32 *dstPtr;
 	unsigned char *renderaccelarray;
 
 #ifdef ACCELDEBUG
-	xf86DrvMsg(0, X_INFO, "AT: op %d RGB %x %x %x, w %d h %d A-pitch %d\n",
-		op, red, green, blue, width, height, alphaPitch);
+	xf86DrvMsg(0, X_INFO, "AT: op %d ARGB %x %x %x %x, w %d h %d A-pitch %d\n",
+		op, alpha, red, green, blue, width, height, alphaPitch);
 #endif
 
     	if(op != PictOpOver) return FALSE;
@@ -1715,15 +1714,15 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
     	sizeNeeded = pitch * height;
     	if(pScrn->bitsPerPixel == 16) sizeNeeded <<= 1;
 
-	red &= 0xff00;
-	green &= 0xff00;
-	blue &= 0xff00;
-
 	if(!((renderaccelarray = pSiS->RenderAccelArray)))
 	   return FALSE;
 
 	if(!SiSAllocateLinear(pScrn, sizeNeeded))
 	   return FALSE;
+
+	red &= 0xff00;
+	green &= 0xff00;
+	blue &= 0xff00;
 
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
@@ -1748,17 +1747,77 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	   SiSIdle
 	}
 
-        while(height--) {
-	   for(x = 0; x < width; x++) {
-	      myalpha = alphaPtr[x];
-	      dstPtr[x] = (renderaccelarray[red + myalpha] << 16)  |
-	   		  (renderaccelarray[green + myalpha] << 8) |
-			  renderaccelarray[blue + myalpha]         |
-			  myalpha << 24;
+	if(alphaType == PICT_a8) {
+
+	   if(alpha == 0xffff) {
+
+              while(height--) {
+	         for(x = 0; x < width; x++) {
+	            myalpha = alphaPtr[x];
+	            dstPtr[x] = (renderaccelarray[red + myalpha] << 16)  |
+	   	   	        (renderaccelarray[green + myalpha] << 8) |
+			        renderaccelarray[blue + myalpha]         |
+			        myalpha << 24;
+	         }
+	         dstPtr += pitch;
+	         alphaPtr += alphaPitch;
+              }
+
+	   } else {
+
+	      alpha &= 0xff00;
+
+	      while(height--) {
+	         for(x = 0; x < width; x++) {
+	            myalpha = alphaPtr[x];
+	            dstPtr[x] = (renderaccelarray[alpha + myalpha] << 24) |
+		    	 	(renderaccelarray[red + myalpha] << 16)   |
+	   	    	        (renderaccelarray[green + myalpha] << 8)  |
+			        renderaccelarray[blue + myalpha];
+	         }
+	         dstPtr += pitch;
+	         alphaPtr += alphaPitch;
+              }
+
 	   }
-	   dstPtr += pitch;
-	   alphaPtr += alphaPitch;
-        }
+
+	} else {
+
+	   width <<= 2;
+
+	   if(alpha == 0xffff) {
+
+	      while(height--) {
+	         for(x = 0, y = 0; x < width; x+=4, y++) {
+	            myalpha = alphaPtr[x];
+	            dstPtr[y] = (renderaccelarray[red + myalpha] << 16)  |
+	   	    	        (renderaccelarray[green + myalpha] << 8) |
+			        renderaccelarray[blue + myalpha]         |
+			        myalpha << 24;
+	         }
+	         dstPtr += pitch;
+	         alphaPtr += alphaPitch;
+              }
+
+	   } else {
+
+	      alpha &= 0xff00;
+
+	      while(height--) {
+	         for(x = 0, y = 0; x < width; x+=4, y++) {
+	            myalpha = alphaPtr[x];
+	            dstPtr[y] = (renderaccelarray[alpha + myalpha] << 24) |
+		    		(renderaccelarray[red + myalpha] << 16)   |
+	   	    	        (renderaccelarray[green + myalpha] << 8)  |
+			        renderaccelarray[blue + myalpha];
+	         }
+	         dstPtr += pitch;
+	         alphaPtr += alphaPitch;
+              }
+
+	   }
+
+	}
 
     	return TRUE;
 }
@@ -1835,8 +1894,7 @@ SiSSubsequentCPUToScreenTexture(ScrnInfoPtr pScrn,
 	long srcbase, dstbase;
 
 	srcbase = pSiS->AccelLinearScratch->offset << 1;
-	if(pScrn->bitsPerPixel == 32)
-	   srcbase <<= 1;
+	if(pScrn->bitsPerPixel == 32) srcbase <<= 1;
 
 #ifdef ACCELDEBUG
 	xf86DrvMsg(0, X_INFO, "FIRE: scrbase %x dx %d dy %d w %d h %d\n",
