@@ -14,6 +14,7 @@ lib/libXi.so.6.0
 lib/libXmu.so.6.2
 lib/libXp.so.6.2
 lib/libXpm.so.4.11
+lib/libXrender.so.1.0
 lib/libXt.so.6.0
 lib/libXtst.so.6.1
 lib/libdps.so.1.0
