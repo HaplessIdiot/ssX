@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.53 2000/05/02 17:22:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.54 2000/05/23 04:47:41 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -707,6 +707,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_RAGE128RK,	"Rage 128 RK",0},
 				{PCI_CHIP_RAGE128RL,	"Rage 128 RL",0},
 				{PCI_CHIP_RAGE128PF,    "Rage 128 Pro PF",0},
+				{PCI_CHIP_RAGE128PR,    "Rage 128 Pro PR",0},
+				{PCI_CHIP_RAGE128LE,    "Rage 128 LE",0},
+				{PCI_CHIP_RAGE128LF,    "Rage 128 LF",0},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT",0},
 				{PCI_CHIP_MACH64VU,	"Mach64 VU",0},
 				{PCI_CHIP_MACH64VV,	"Mach64 VV",0},
