@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.2 1994/09/17 04:07:31 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.3 1994/09/19 13:45:47 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -23,7 +23,7 @@
  *
  * Author:  Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  *
- * cir_cursor.c,v 1.5 1994/09/14 13:58:36 scooper Exp
+ * cir_cursor.c,v 1.7 1994/09/21 09:43:01 scooper Exp
  */
 
 #define CIRRUS_DEBUG_CURSOR
@@ -44,6 +44,7 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 #include "cir_driver.h"
+#include "cir_blitter.h"
 
 static Bool cirrusRealizeCursor();
 static Bool cirrusUnrealizeCursor();
@@ -187,7 +188,7 @@ cirrusUnrealizeCursor(pScr, pCurs)
    return TRUE;
 }
 
-cirrusLoadCursorSkewed (pScr, pCurs, x, y)
+cirrusLoadCursorToCard (pScr, pCurs, x, y)
      ScreenPtr pScr;
      CursorPtr pCurs;
      int x, y;
@@ -197,6 +198,13 @@ cirrusLoadCursorSkewed (pScr, pCurs, x, y)
   unsigned long *pDstM, *pSrcM;
   unsigned long dAddr;
 
+  /* check for blitter operation: must not meddle with ram when blitter is
+     running...
+   */
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED ();
+      
   /* Calculate the number of words to transfer to the board */
   count = ((cirrusCur.cur_size == 0) ? 256 : 1024) >> 2;
 
@@ -321,41 +329,23 @@ cirrusLoadCursor(pScr, pCurs, x, y)
    if (!pCurs)
       return;
 
+   /* Remember the cursor currently loaded into this cursor slot */
+   cirrusCur.pCurs = pCurs;
+
    cirrusHideCursor ();
 
    /* Select the cursor index */
    outw (0x3C4, (cirrusCur.cur_select << 8) | 0x13);
 
-   /* check for blitter operation: must not meddle with ram when blitter is
-    * running ...
-    */
-
-   /* Onboard address to write the cursor to */
-   dAddr = cirrusCur.cur_addr;
-
-   CIRRUSSETSINGLE(dAddr);
-   pDst = (unsigned long *)(CIRRUSSINGLEBASE() + dAddr);
-
-   pSrc = (unsigned long *)pCurs->bits->devPriv[index];
-
-   /* Calculate the number of words to transfer to the board */
-   count = ((cirrusCur.cur_size == 0) ? 256 : 1024) >> 2;
-
-   for (i=count;i;i--)
-     {
-       *pDst++ = *pSrc++;
-     }
+   cirrusLoadCursorToCard (pScr, pCurs, x, y);
 
    cirrusRecolorCursor (pScr, pCurs, 1);
 
    /* position cursor */
-   cirrusMoveCursor (0, x, y);
+   cirrusMoveCursor (pScr, x, y);
 
    /* Turn it on */
    cirrusShowCursor ();
-
-   /* Save which cursor we currently have loaded (for cirrusRestoreCursor) */
-   cirrusCur.pCurs = pCurs;
 }
 
 static void
@@ -395,18 +385,16 @@ cirrusMoveCursor(pScr, x, y)
   x -= vga256InfoRec.frameX0 + cirrusCur.hotX;
   y -= vga256InfoRec.frameY0 + cirrusCur.hotY;
 
-#if 0	/* Has problems with cursor changes. */
   if (x < 0 || y < 0)
     {
-      cirrusLoadCursorSkewed (pScr, cirrusCur.pCurs, x, y);
+      cirrusLoadCursorToCard (pScr, cirrusCur.pCurs, x, y);
       cirrusCur.skewed = 1;
     }
   else if (cirrusCur.skewed)
     {
-      cirrusLoadCursorSkewed (pScr, cirrusCur.pCurs, 0, 0);
+      cirrusLoadCursorToCard (pScr, cirrusCur.pCurs, 0, 0);
       cirrusCur.skewed = 0;
     }
-#endif
   
   if (x < 0) x = 0;
   if (y < 0) y = 0;

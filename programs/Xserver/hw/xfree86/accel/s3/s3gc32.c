@@ -1,5 +1,5 @@
 /* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.0 1994/08/03 13:28:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.1 1994/08/20 07:34:05 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -814,7 +814,9 @@ s3ValidateGC(pGC, changes, pDrawable)
 	      FatalError("s3ValidateGC: illegal fillStyle\n");
 	 }
       }
-   } else {
+   }
+#if 0
+else {
       switch (pGC->fillStyle) {
       case FillSolid:
 	 pGC->ops->FillSpans = cfb32SolidSpansGeneral;
@@ -828,6 +830,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	 break;
       }
    }  /* end of new_fillspans */
+#endif
 
    if (new_fillarea) {
       if (pWin) {
