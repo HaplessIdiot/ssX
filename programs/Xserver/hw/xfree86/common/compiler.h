@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.86 2001/11/01 23:35:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.87 2002/01/07 18:46:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1474,17 +1474,6 @@ extern unsigned  inl(unsigned port);
 extern void outb(unsigned port, unsigned val);
 extern void outw(unsigned port, unsigned val);
 extern void outl(unsigned port, unsigned val);
-#define ldq_u(p)        (*((unsigned long  *)(p)))
-#define ldl_u(p)        (*((unsigned int   *)(p)))
-#define ldw_u(p)        (*((unsigned short *)(p)))
-#undef stq_u
-#define stq_u(v,p)      ((unsigned long  *)(p)) = (v)
-#undef stl_u
-#define stl_u(v,p)      ((unsigned int   *)(p)) = (v)
-#undef stw_u
-#define stw_u(v,p)      ((unsigned short *)(p)) = (v)
-#define mem_barrier()   /* NOP */
-#define write_mem_barrier()   /* NOP */
 #endif /* QNX4 */
 
 #if defined(IODEBUG) && defined(__GNUC__)

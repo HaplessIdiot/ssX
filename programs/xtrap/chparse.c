@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xtrap/chparse.c,v 1.1 2001/11/02 23:29:34 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 
@@ -61,6 +61,10 @@ SOFTWARE.
 #endif
 #include	<unistd.h>
 #include	"chparse.h"
+
+#ifdef __QNX__
+#include <sys/select.h>
+#endif
 
 #ifndef	VERBOSE
 #define	VERBOSE	0

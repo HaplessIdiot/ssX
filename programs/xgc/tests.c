@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.6 2001/07/23 13:15:53 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.7 2001/07/25 15:05:23 dawes Exp $
 **
 */
 
@@ -15,7 +15,7 @@
 #ifdef SVR4
 #define SYSV
 #endif
-#if !defined(SYSV)
+#if !defined(SYSV) && !defined(QNX4)
 #include <sys/timeb.h>
 #include <sys/resource.h>
 #endif
@@ -52,7 +52,7 @@ timer(flag)
 #if !defined(SYSV)
   static struct timeval starttime;  /* starting time for gettimeofday() */
   struct timeval endtime;           /* ending time for gettimeofday() */
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(QNX4)
   static struct rusage startusage;  /* starting time for getrusage() */
   struct rusage endusage;           /* ending time for getrusage() */
 #endif
@@ -63,13 +63,13 @@ timer(flag)
   switch (flag) {
     case StartTimer:                       /* store initial values */
       gettimeofday(&starttime,&tz);       
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(QNX4)
       getrusage(RUSAGE_SELF,&startusage);
 #endif
       return((long) NULL);
     case EndTimer:
       gettimeofday(&endtime,&tz);          /* store final values */
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(QNX4)
       getrusage(RUSAGE_SELF,&endusage);
 #endif
 

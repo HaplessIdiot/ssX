@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.65 2001/11/03 21:59:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.66 2001/11/19 15:44:17 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -873,7 +873,12 @@ DoConfigure()
 
       	if (home[0] == '/' && home[1] == '\0')
             home[0] = '\0';
-      	sprintf(filename, "%s/%s", home,configfile);
+#ifndef QNX4
+	sprintf(filename, "%s/%s", home,configfile);
+#else
+	sprintf(filename, "//%d%s/%s", getnid(),home,configfile);
+#endif
+	
     }
 
     xf86writeConfigFile(filename, xf86config);

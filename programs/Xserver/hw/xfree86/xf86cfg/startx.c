@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/startx.c,v 1.1 2000/04/04 22:37:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/startx.c,v 1.6 2000/12/06 15:35:34 eich Exp $
  */
 
 #include "config.h"
@@ -86,7 +86,12 @@ startx(void)
 	if ((home = getenv("HOME")) == NULL)
 	    home = "/";
 
+#ifndef QNX4
 	XmuSnprintf(filename, sizeof(filename), "%s/XF86Config.new", home);
+#else
+	XmuSnprintf(filename, sizeof(filename), "//%d%s/XF86Config.new",
+		    getnid(), home);
+#endif
 
 	/* this memory is never released, even if the value of XF86Config_path is
 	 * changed.
