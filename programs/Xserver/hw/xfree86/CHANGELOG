@@ -1,4 +1,10 @@
-XFree86 4.0.1Zb (?? December 2000)
+XFree86 4.0.1Zb (14 December 2000)
+1183. Fix xf86cfg build problem on systems that don't come with snprintf
+      and/or regex (based on #4361, Thomas Mueller).
+1182. Fix siliconmotion driver screen restoration when a graphics vesafb mode
+      is selected during boot up (#4377, Frido Garritsen).
+1181. Install and RELNOTES updates for Darwin (#4375, 4376, Torrey T. Lyons).
+1180. s3virge patch to get Xft/Xrender working (#4374, Kevin Brosius).
 1179. Improve aperture driver related error messages on OpenBSD 
       (Matthieu Herrb).
 1178. Workaround for IA-64 loader bug (Marc La France).
@@ -12055,4 +12061,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1472 2000/12/13 02:44:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1473 2000/12/13 07:02:33 herrb Exp $
