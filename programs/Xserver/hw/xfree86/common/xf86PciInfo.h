@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.49 2000/02/11 22:35:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.50 2000/02/12 20:45:18 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -933,7 +933,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x0001,		"PT86C52x Vesuvius",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_MYLEX, {
-                                {0x0010,		"AccelRAID 250",0 },
+                                {0x0010,		"RAID Controller",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_APPLE, {
                                 {0x0001,		"Bandit",0 },
@@ -1270,7 +1270,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x1223, "SAA7116",0},
 				{0x1226, "82596",0},
 				{0x1227, "82865",0},
-				{0x1229, "82557/8 10/100MBit network controller",0 },
+				{0x1229, "82557/8/9 10/100MBit network controller",0 },
 				{0x122D, "82437 Triton",0},
 				{0x122E, "82471 Triton",0},
 				{0x1230, "82371 bus-master IDE controller",0},
