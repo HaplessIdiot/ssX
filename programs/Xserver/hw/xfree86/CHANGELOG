@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 720. Build fix for the Chips driver on Linux/arm (#6011, Michel Dänzer and
+      Othmar Pasteka).
  719. Change v4l "norm" names to the bttv versions (#5993,
       Marco Antonio Alvarez).
  718. Fix for symbols/hr map (#5991, Vlatko Kosturjak).
@@ -18457,7 +18459,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3067 2003/12/31 06:06:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3068 2003/12/31 06:08:51 dawes Exp $
 
 
 
