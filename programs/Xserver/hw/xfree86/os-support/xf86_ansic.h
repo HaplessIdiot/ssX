@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.30 1999/09/25 14:37:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.31 1999/12/14 01:33:53 robin Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -287,8 +287,9 @@ int xf86getpagesize(void);
 
 extern void xf86usleep(unsigned long);
 #ifndef DONT_DEFINE_WRAPPERS
+#undef getpagesize
+#define getpagesize()		xf86getpagesize()
 #undef usleep
 #define usleep(ul)		xf86usleep(ul)
 #endif
-
 #endif /* _XF86_ANSIC_H */

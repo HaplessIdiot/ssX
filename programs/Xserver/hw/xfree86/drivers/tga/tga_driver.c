@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.31 1999/12/13 23:48:21 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.32 1999/12/14 02:55:37 robin Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -273,7 +273,7 @@ TGAFreeRec(ScrnInfoPtr pScrn)
 
     pTga = TGAPTR(pScrn);
 
-    if(pTga->buffers)
+    if(pTga->buffers[0])
       free(pTga->buffers[0]);
 
     xfree(pScrn->driverPrivate);
