@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Manage.c,v 3.7 2001/08/22 22:52:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Manage.c,v 3.8 2001/12/14 19:56:26 dawes Exp $ */
 
 /*
 
@@ -342,16 +342,9 @@ void XtManageChild(child)
 } /* XtManageChild */
 
 
-#if NeedFunctionPrototypes
 void XtSetMappedWhenManaged(
     Widget widget,
-    _XtBoolean mapped_when_managed
-    )
-#else
-void XtSetMappedWhenManaged(widget, mapped_when_managed)
-    Widget widget;
-    Boolean mapped_when_managed;
-#endif
+    _XtBoolean mapped_when_managed)
 {
     Widget hookobj;
     WIDGET_TO_APPCON(widget);
@@ -391,25 +384,13 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
 } /* XtSetMappedWhenManaged */
 
 
-#if NeedFunctionPrototypes
 void XtChangeManagedSet(
     WidgetList unmanage_children,
     Cardinal num_unmanage,
     XtDoChangeProc do_change_proc,
     XtPointer client_data,
     WidgetList manage_children,
-    Cardinal num_manage
-)
-#else
-void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
-			client_data, manage_children, num_manage)
-    WidgetList unmanage_children;
-    Cardinal num_unmanage;
-    XtDoChangeProc do_change_proc;
-    XtPointer client_data;
-    WidgetList manage_children;
-    Cardinal num_manage;
-#endif
+    Cardinal num_manage)
 {
     WidgetList childp;
     Widget parent;

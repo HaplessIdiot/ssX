@@ -53,59 +53,45 @@ SOFTWARE.
 typedef struct _CompositeClassRec *CompositeWidgetClass;
 
 typedef Cardinal (*XtOrderProc)(
-#if NeedFunctionPrototypes
     Widget 	/* child */
-#endif
 );
 
 _XFUNCPROTOBEGIN
 
 extern void XtManageChildren(
-#if NeedFunctionPrototypes
     WidgetList 		/* children */,
     Cardinal 		/* num_children */
-#endif
 );
 
 extern void XtManageChild(
-#if NeedFunctionPrototypes
     Widget 		/* child */
-#endif
 );
 
 extern void XtUnmanageChildren(
-#if NeedFunctionPrototypes
     WidgetList 		/* children */,
     Cardinal 		/* num_children */
-#endif
 );
 
 extern void XtUnmanageChild(
-#if NeedFunctionPrototypes
     Widget 		/* child */
-#endif
 );
 
 typedef void (*XtDoChangeProc)(
-#if NeedFunctionPrototypes
     Widget		/* composite_parent */,
     WidgetList		/* unmanage_children */,
     Cardinal *		/* num_unmanage_children */,
     WidgetList		/* manage_children */,
     Cardinal *		/* num_manage_children */,
     XtPointer		/* client_data */
-#endif
 );
 
 extern void XtChangeManagedSet(
-#if NeedFunctionPrototypes
     WidgetList		/* unmanage_children */,
     Cardinal		/* num_unmanage_children */,
     XtDoChangeProc	/* do_change_proc */,
     XtPointer		/* client_data */,
     WidgetList		/* manage_children */,
     Cardinal		/* num_manage_children */
-#endif
 );
 
 _XFUNCPROTOEND

@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.20 2002/04/10 16:20:07 tsi Exp $ */
 
 /*
 
@@ -404,18 +404,10 @@ static String _XtDefaultLanguageProc(
     return setlocale(LC_ALL, NULL); /* re-query in case overwritten */
 }
 
-#if NeedFunctionPrototypes
 XtLanguageProc XtSetLanguageProc(
     XtAppContext      app,
     XtLanguageProc    proc,
-    XtPointer         closure
-    )
-#else
-XtLanguageProc XtSetLanguageProc(app, proc, closure)
-    XtAppContext      app;
-    XtLanguageProc    proc;
-    XtPointer         closure;
-#endif
+    XtPointer         closure)
 {
     XtLanguageProc    old;
 
@@ -788,7 +780,6 @@ static void ConnectionWatch (
     }
 }
 
-#if NeedFunctionPrototypes
 void _XtDisplayInitialize(
 	Display *dpy,
         XtPerDisplay pd,
@@ -797,16 +788,6 @@ void _XtDisplayInitialize(
 	Cardinal num_urs,
 	int *argc,
 	char **argv)
-#else
-void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
-	Display *dpy;
-        XtPerDisplay pd;
-	String name;
-	XrmOptionDescRec *urlist;
-	Cardinal num_urs;
-	int *argc;
-	char **argv;
-#endif
 {
 	Boolean tmp_bool;
 	XrmValue value;
@@ -901,18 +882,10 @@ void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
  *	Returns: none.
  */
 
-#if NeedFunctionPrototypes
 void
 XtAppSetFallbackResources(
-XtAppContext app_context,
-String *specification_list
-)
-#else
-void
-XtAppSetFallbackResources(app_context, specification_list)
-XtAppContext app_context;
-String *specification_list;
-#endif
+    XtAppContext app_context,
+    String *specification_list)
 {
     LOCK_APP(app_context);
     app_context->fallback_resources = specification_list;
@@ -920,27 +893,12 @@ String *specification_list;
 }
 
 	
-#if NeedFunctionPrototypes
 Widget XtOpenApplication(XtAppContext *app_context_return,
 			 _Xconst char *application_class,
 			 XrmOptionDescRec *options, Cardinal num_options,
 			 int *argc_in_out, String *argv_in_out,
 			 String *fallback_resources, WidgetClass widget_class,
 			 ArgList args_in, Cardinal num_args_in)
-#else
-Widget XtOpenApplication(app_context_return, application_class,
-			 options, num_options, argc_in_out, argv_in_out,
-			 fallback_resources, widget_class,
-			 args_in, num_args_in)
-    XtAppContext *app_context_return;
-    String application_class;
-    XrmOptionDescRec *options;
-    Cardinal num_options, num_args_in;
-    int *argc_in_out;
-    String *argv_in_out, *fallback_resources;
-    WidgetClass widget_class;
-    ArgList args_in;
-#endif
 {
     XtAppContext app_con;
     Display * dpy;
@@ -975,32 +933,17 @@ Widget XtOpenApplication(app_context_return, application_class,
 }
 
 	
-#if NeedFunctionPrototypes
 Widget
 XtAppInitialize(
-XtAppContext * app_context_return,
-_Xconst char* application_class,
-XrmOptionDescRec *options,
-Cardinal num_options,
-int *argc_in_out,
-String *argv_in_out,
-String *fallback_resources,
-ArgList args_in,
-Cardinal num_args_in
-)
-#else
-Widget
-XtAppInitialize(app_context_return, application_class, options, num_options,
-		argc_in_out, argv_in_out, fallback_resources, 
-		args_in, num_args_in)
-XtAppContext * app_context_return;
-String application_class;
-XrmOptionDescRec *options;
-Cardinal num_options, num_args_in;
-int *argc_in_out;
-String *argv_in_out, * fallback_resources;     
-ArgList args_in;
-#endif
+    XtAppContext * app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescRec *options,
+    Cardinal num_options,
+    int *argc_in_out,
+    String *argv_in_out,
+    String *fallback_resources,
+    ArgList args_in,
+    Cardinal num_args_in)
 {
     return XtOpenApplication(app_context_return, application_class,
 			     options, num_options, 
@@ -1011,25 +954,14 @@ ArgList args_in;
 
 
 /*ARGSUSED*/
-#if NeedFunctionPrototypes
 Widget 
 XtInitialize(
-_Xconst char* name,
-_Xconst char* classname,
-XrmOptionDescRec *options,
-Cardinal num_options,
-int *argc,
-String *argv
-)
-#else
-Widget 
-XtInitialize(name, classname, options, num_options, argc, argv)
-String name, classname;
-XrmOptionDescRec *options;
-Cardinal num_options;
-String *argv;
-int *argc;
-#endif
+    _Xconst char* name,
+    _Xconst char* classname,
+    XrmOptionDescRec *options,
+    Cardinal num_options,
+    int *argc,
+    String *argv)
 {
     Widget root;
     XtAppContext app_con;
