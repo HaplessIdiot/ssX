@@ -1,3 +1,38 @@
+XFree86 3.2c (24 November 1996)
+  54. Fix some potential buffer overflows in SuperProbe, and don't
+      install it setuid root (Marc Slemko).
+  53. Add support for driver-specific parsing of the XF86Config file's
+      Device section (Egbert Eich).
+  52. Fix S3 virtual resolution handling problem introduced in 3.2a
+      (Mark Vojkovich).
+  51. Add a '-nolisten' flag to the X server to allow disabling of
+      a transport type (Nathaniel D. Daw).
+  50. Update Imake.rules to do better error recovery for missing
+      directory or Makefiles (Thomas E. Dickey).
+  49. Add REP (repeat) control for xterm (Thomas E. Dickey).
+  48. XAA updates (Harm Hanemaayer).
+  47. Add required changes for the PC98 servers to build using XAA
+      (Takaaki Nomura).
+  46. Fix an unaligned access in cfb (Harald Koenig).
+  45. Add support for Alpha Jensen (EISA) using sparse memory MMIO
+      (Martin Ostermann).
+  44. Add working "newmmio" support for AXP (Harald Koenig).
+  43. Add some memory barriers to the ViRGE server for AXP (Harald Koenig).
+  42. Reset the ViRGE (but not ViRGE/VX) GE while reading the BIOS to avoid
+      text font corruption (Harald Koenig).
+  41. Change the S3 ViRGE default base address when PCI config registers
+      can't be accessed (mainly for AXP) (Harald Koenig).
+  40. S3 ViRGE/VX fix (Harald Koenig).
+  39. Patch for mk68 servers (Geert Uytterhoven).
+  38. Add detection for the S3 Aurora64V+ and Trio64UV+ (Harald Koenig).
+  37. Replace the truncated files in xterm/tektests with full versions
+      (from color_xterm) (Thomas E. Dickey).
+  36. Add some more MGA line code (Andrew Vanderstock).
+  35. Add some MGA macros, especially for access type setting
+      (Radoslaw Kapitan).
+  34. Add MGA screen-to-screen color expansion (not used yet)
+      (Radoslaw Kapitan).
+
 XFree86 3.2b (20 November 1996)
   33. Fix some compilation problems with 3.2a.
   32. Fix DGA fb mapping for SVR4 (Richard Coley).

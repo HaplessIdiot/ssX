@@ -741,7 +741,7 @@ extern int cfbHorzS(
 #endif
 );
 
-extern int cfbVertS(
+extern void cfbVertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
     unsigned long /*and*/,

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/141 1995/12/08 14:09:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.20 1996/04/15 11:34:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.21 1996/05/10 07:02:12 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -175,6 +175,7 @@ Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
 Bool RunFromSmartParent;	/* send SIGUSR1 to parent process */
 Bool PartialNetwork;		/* continue even if unable to bind all addrs */
+char *protNoListen;             /* don't listen on this protocol */
 static Pid_t ParentProcess;
 
 static Bool debug_conns = FALSE;
@@ -297,6 +298,12 @@ CreateWellKnownSockets()
 
     sprintf (port, "%d", atoi (display));
 
+    if (protNoListen)
+        if (_XSERVTransNoListen(protNoListen))
+        {
+	    FatalError ("Failed to disable listen for %s", protNoListen);
+	}
+    
     if ((_XSERVTransMakeAllCOTSServerListeners (port, &partial,
 	&ListenTransCount, &ListenTransConns) >= 0) &&
 	(ListenTransCount >= 1))

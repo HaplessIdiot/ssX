@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.31 95/03/28 19:49:02 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.12 1996/09/01 04:14:11 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.13 1996/10/03 08:29:46 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -785,6 +785,23 @@ char		*port;
     return ciptr->transptr->CreateListener (ciptr, port);
 }
 
+int
+TRANS(NoListen) (char * protocol)
+	
+{
+   Xtransport *trans;
+   
+   if ((trans = TRANS(SelectTransport)(protocol)) == NULL) 
+   {
+	PRMSG (1,"TRANS(TransNoListen): unable to find transport: %s\n", 
+	       protocol, 0, 0);
+
+	return -1;
+   }
+   
+   trans->flags |= TRANS_NOLISTEN;
+   return 0;
+}
 
 int
 TRANS(ResetListener) (ciptr)
@@ -1050,7 +1067,8 @@ complete_network_count ()
 
     for (i = 0; i < NUMTRANS; i++)
     {
-	if (Xtransports[i].transport->flags & TRANS_ALIAS)
+	if (Xtransports[i].transport->flags & TRANS_ALIAS
+   	 || Xtransports[i].transport->flags & TRANS_NOLISTEN)
 	    continue;
 
 	if (Xtransports[i].transport->flags & TRANS_LOCAL)
@@ -1087,7 +1105,7 @@ XtransConnInfo 	**ciptrs_ret;
     {
 	Xtransport *trans = Xtransports[i].transport;
 
-	if (trans->flags&TRANS_ALIAS)
+	if (trans->flags&TRANS_ALIAS || trans->flags&TRANS_NOLISTEN)
 	    continue;
 
 	sprintf(buffer,"%s/:%s", trans->TransName, port ? port : "");
@@ -1193,7 +1211,7 @@ XtransConnInfo 	**ciptrs_ret;
     {
 	Xtransport *trans = Xtransports[i].transport;
 
-	if (trans->flags&TRANS_ALIAS)
+	if (trans->flags&TRANS_ALIAS || trans->flags&TRANS_NOLISTEN)
 	    continue;
 
 	sprintf(buffer,"%s/:%s", trans->TransName, port ? port : "");

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.44 1996/10/13 11:19:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.45 1996/10/16 14:40:41 dawes Exp $
 
 
 
@@ -117,6 +117,7 @@ SERVERSRCS = \
 SRCS =	\
 	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
+	xf86DCConf.c \
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
@@ -140,6 +141,7 @@ SRCS =	\
 OBJS = \
 	$(XF86DL_OBJ) \
 	$(XCONFIGSRC).o \
+	xf86DCConf.o \
 	xf86Cursor.o \
 	xf86Events.o \
 	xf86Io.o \
@@ -217,6 +219,7 @@ InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
+SpecialObjectRule(xf86DCConf.o,xf86DCConf.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF86SVGAServer
@@ -299,6 +302,7 @@ InstallLinkKitNonExecFile(xf86Procs.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(xf86_Config.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86DCConf.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_SVGA.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_VGA16.c,$(LINKKITDIR))

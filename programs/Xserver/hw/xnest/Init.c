@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/5 1996/01/15 21:05:07 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.6 1996/03/10 12:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.7 1996/06/10 09:17:20 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -122,3 +122,7 @@ void OsVendorInit()
     return;
 }
 
+void OsVendorFatalError()
+{
+    return;
+}
