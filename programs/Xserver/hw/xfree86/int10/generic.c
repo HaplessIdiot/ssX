@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.16 2001/02/16 14:43:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.17 2001/02/16 23:42:19 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -52,10 +52,22 @@ static void UnmapVRam(xf86Int10InfoPtr pInt);
 
 static void *sysMem = NULL;
 
+typedef enum {
+    INT10OPT_NOINT10
+} INT10Opts;
+
+static OptionInfoRec INT10Options[] = {
+    { INT10OPT_NOINT10,	"NoInt10",	OPTV_BOOLEAN,	{0},	FALSE },
+    { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
+};
+
+#define nINT10Options (sizeof(INT10Options) / sizeof(INT10Options[0]))
+
 xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
 {
     xf86Int10InfoPtr pInt;
+    ScrnInfoPtr pScrn;
     int screen;
     void* base = 0;
     void* vbiosMem = 0;
@@ -63,6 +75,19 @@ xf86InitInt10(int entityIndex)
 #ifdef _PC
     CARD32 cs;
 #endif
+    /* Default Int10 enabled. */
+    Bool noint10 = FALSE;
+    OptionInfoRec options[nINT10Options];
+
+    pScrn = (xf86FindScreenForEntity(entityIndex));
+
+    (void)memcpy(options, INT10Options, sizeof(INT10Options));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
+
+    xf86GetOptValBool(options, INT10OPT_NOINT10, &noint10);
+    
+    if (noint10)
+	return NULL;
 
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
 

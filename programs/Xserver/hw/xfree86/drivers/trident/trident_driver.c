@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.128 2001/03/09 09:56:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.129 2001/04/04 12:46:35 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -97,6 +97,12 @@ static void	TRIDENTDisableMMIO(ScrnInfoPtr pScrn);
 static void	PC98TRIDENTInit(ScrnInfoPtr pScrn);
 static void	PC98TRIDENTEnable(ScrnInfoPtr pScrn);
 static void	PC98TRIDENTDisable(ScrnInfoPtr pScrn);
+static void	PC98TRIDENT96xxInit(ScrnInfoPtr pScrn);
+static void	PC98TRIDENT96xxEnable(ScrnInfoPtr pScrn);
+static void	PC98TRIDENT96xxDisable(ScrnInfoPtr pScrn);
+static void	PC98TRIDENT9385Init(ScrnInfoPtr pScrn);
+static void	PC98TRIDENT9385Enable(ScrnInfoPtr pScrn);
+static void	PC98TRIDENT9385Disable(ScrnInfoPtr pScrn);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -2911,9 +2917,89 @@ TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
     outb(0x3C4, NewMode1);
     outb(0x3C5, temp);
 }
-/* Initialize VGA Block on Trident(PC-98x1 Only) */
+/* Initialize VGA Block for Trident Chip on PC-98x1 */
 static void
 PC98TRIDENTInit(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    switch (pTrident->Chipset) {
+    case TGUI9660:
+    case TGUI9680:
+    case PROVIDIA9682:
+	PC98TRIDENT96xxInit(pScrn);
+	break;
+    case CYBER9320:
+    case CYBER9385:
+	PC98TRIDENT9385Init(pScrn);
+	break;
+    default: /* Run 96xx code as default */
+	PC98TRIDENT96xxInit(pScrn);
+	break;
+    }
+}
+
+static void
+PC98TRIDENTEnable(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    switch (pTrident->Chipset) {
+    case TGUI9660:
+    case TGUI9680:
+    case PROVIDIA9682:
+	PC98TRIDENT96xxEnable(pScrn);
+	break;
+    case CYBER9320:
+    case CYBER9385:
+	PC98TRIDENT9385Enable(pScrn);
+	break;
+    default: /* Run 96xx code as default */
+	PC98TRIDENT96xxEnable(pScrn);
+	break;
+    }
+}
+
+static void
+PC98TRIDENTDisable(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    switch (pTrident->Chipset) {
+    case TGUI9660:
+    case TGUI9680:
+    case PROVIDIA9682:
+	PC98TRIDENT96xxDisable(pScrn);
+	break;
+    case CYBER9320:
+    case CYBER9385:
+	PC98TRIDENT9385Disable(pScrn);
+	break;
+    default: /* Run 96xx code as default */
+	PC98TRIDENT96xxDisable(pScrn);
+	break;
+    }
+}
+
+/* Initialize VGA Block for Cyber9385 on PC-98x1 */
+static void
+PC98TRIDENT9385Init(ScrnInfoPtr pScrn)
+{
+/* Nothing to initialize */
+}
+
+static void
+PC98TRIDENT9385Enable(ScrnInfoPtr pScrn)
+{
+    outb(0xFAC, 0x02);
+}
+
+static void
+PC98TRIDENT9385Disable(ScrnInfoPtr pScrn)
+{
+    outb(0xFAC, 0x00);
+}
+
+/* Initialize VGA Block for Trident96xx on PC-98x1 */
+static void
+PC98TRIDENT96xxInit(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -2991,7 +3077,7 @@ PC98TRIDENTInit(ScrnInfoPtr pScrn)
 }
 
 static void
-PC98TRIDENTEnable(ScrnInfoPtr pScrn)
+PC98TRIDENT96xxEnable(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     CARD8 temp = 0;
@@ -3030,7 +3116,8 @@ PC98TRIDENTEnable(ScrnInfoPtr pScrn)
 }
 
 static void
-PC98TRIDENTDisable(ScrnInfoPtr pScrn){
+PC98TRIDENT96xxDisable(ScrnInfoPtr pScrn)
+{
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     CARD8 temp = 0;
 
