@@ -2518,35 +2518,19 @@ DEFUN_LOCAL_VOID (ActiveStencilFaceEXT,
     (void *rend, GLenum face),
     (face))
 
-DEFUN_LOCAL_VOID (DeleteFencesNV,
-    (void *rend, GLsizei n, const GLuint * fences),
-    (n, fences))
-
-DEFUN_ALIAS_VOID (DeleteFencesNV, DeleteFencesAPPLE,
+DEFUN_EXTERN_VOID (DeleteFencesNV,
     (GLsizei n, const GLuint * fences),
     (n, fences))
 
-DEFUN_LOCAL_VOID (GenFencesNV,
-    (void *rend, GLsizei n, GLuint * fences),
-    (n, fences))
-
-DEFUN_ALIAS_VOID (GenFencesNV, GenFencesAPPLE,
+DEFUN_EXTERN_VOID (GenFencesNV,
     (GLsizei n, GLuint * fences),
     (n, fences))
 
-DEFUN_LOCAL (GLboolean, IsFenceNV,
-    (void *rend, GLuint fence),
-    (fence))
-
-DEFUN_ALIAS (GLboolean, IsFenceNV, IsFenceAPPLE,
+DEFUN_EXTERN (GLboolean, IsFenceNV,
     (GLuint fence),
     (fence))
 
-DEFUN_LOCAL (GLboolean, TestFenceNV,
-    (void *rend, GLuint fence),
-    (fence))
-
-DEFUN_ALIAS (GLboolean, TestFenceNV, TestFenceAPPLE,
+DEFUN_EXTERN (GLboolean, TestFenceNV,
     (GLuint fence),
     (fence))
 
@@ -2554,11 +2538,7 @@ DEFUN_EXTERN_VOID (GetFenceivNV,
     (GLuint fence, GLenum pname, GLint * params),
     (fence, pname, params))
 
-DEFUN_LOCAL_VOID (FinishFenceNV,
-    (void *rend, GLuint fence),
-    (fence))
-
-DEFUN_ALIAS_VOID (FinishFenceNV, FinishFenceAPPLE,
+DEFUN_EXTERN_VOID (FinishFenceNV,
     (GLuint fence),
     (fence))
 
@@ -3165,11 +3145,6 @@ do { \
     (d)[452] = (void *) &p ## GetFinalCombinerInputParameterfvNV; \
     (d)[453] = (void *) &p ## GetFinalCombinerInputParameterivNV; \
     (d)[459] = (void *) &p ## SampleCoverageARB; \
-    (d)[463] = (void *) &p ## GenFencesNV; \
-    (d)[464] = (void *) &p ## DeleteFencesNV; \
-    (d)[466] = (void *) &p ## IsFenceNV; \
-    (d)[467] = (void *) &p ## TestFenceNV; \
-    (d)[468] = (void *) &p ## FinishFenceNV; \
     (d)[540] = (void *) &p ## PointParameterfEXT; \
     (d)[541] = (void *) &p ## PointParameterfvEXT; \
     (d)[542] = (void *) &p ## PointParameteriNV; \
