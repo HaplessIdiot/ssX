@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/include/DPS/Imakefile,v 1.1 2000/02/13 00:12:40 dawes Exp $
+XCOMM $XFree86: xc/include/DPS/Imakefile,v 1.2 2000/02/14 18:11:46 dawes Exp $
 
 HEADERS = \
 	XDPS.h\
@@ -9,11 +9,13 @@ HEADERS = \
 	dpsXclient.h\
 	dpsconfig.h\
 	dpsfriends.h\
+	dpsops.h\
 	dpsNXargs.h\
 	dpsXshare.h\
 	dpsXuserpath.h\
 	dpsXpreview.h\
 	dpsXcommon.h\
+	psops.h\
 	FontSB.h\
 	FontSBP.h\
 	FontSample.h\
