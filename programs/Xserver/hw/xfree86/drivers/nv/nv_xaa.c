@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.30 2003/03/08 23:45:14 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.31 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -274,6 +274,8 @@ void NVSync(ScrnInfoPtr pScrn)
 
     if(pNv->DMAKickoffCallback)
        (*pNv->DMAKickoffCallback)(pScrn);
+
+    while(READ_GET(pNv) != pNv->dmaPut);
 
     while(pNv->PGRAPH[0x0700/4]);
 }

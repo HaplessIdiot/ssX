@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.109 2003/06/23 21:38:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.111 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -162,20 +162,32 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE031F, "0x031F" },
   { 0x10DE0321, "GeForce FX 5200 Ultra" },
   { 0x10DE0322, "GeForce FX 5200" },
-  { 0x10DE0323, "0x0323" },
+  { 0x10DE0323, "GeForce FX 5200SE" },
   { 0x10DE0324, "GeForce FX Go5200" },
   { 0x10DE0325, "GeForce FX Go5250" },
-  { 0x10DE0323, "0x0323" },
-  { 0x10DE0328, "0x0328" },
+  { 0x10DE0328, "GeForce FX Go5200 32M/64M" },
   { 0x10DE0329, "0x0329" },
   { 0x10DE032A, "0x032A" },
   { 0x10DE032B, "Quadro FX 500" },
-  { 0x10DE032C, "0x032C" },
+  { 0x10DE032C, "GeForce FX Go5300" },
   { 0x10DE032D, "GeForce FX Go5100" },
   { 0x10DE032F, "0x032F" },
   { 0x10DE0330, "GeForce FX 5900 Ultra" },
   { 0x10DE0331, "GeForce FX 5900" },
+  { 0x10DE0332, "0x0332" },
+  { 0x10DE0333, "GeForce FX 5950 Ultra" },
+  { 0x10DE0334, "0x0334" },
   { 0x10DE0338, "Quadro FX 3000" },
+  { 0x10DE0341, "0x0341" },
+  { 0x10DE0342, "0x0342" },
+  { 0x10DE0343, "0x0343" },
+  { 0x10DE0347, "0x0347" },
+  { 0x10DE0348, "0x0348" },
+  { 0x10DE0349, "0x0349" },
+  { 0x10DE034B, "0x034B" },
+  { 0x10DE034C, "0x034C" },
+  { 0x10DE034E, "0x034E" },
+  { 0x10DE034F, "0x034F" },
   {-1, NULL}
 };
 
@@ -315,7 +327,6 @@ typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_NOACCEL,
-    OPTION_SHOWCACHE,
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
     OPTION_ROTATE,
