@@ -1,30 +1,43 @@
-/* $XConsortium: nv_driver.c /main/3 1996/10/28 05:13:37 kaleb $ */
-/*
- * Copyright 1996-1997  David J. McKay
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * DAVID J. MCKAY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
- * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+ /***************************************************************************\
+|*                                                                           *|
+|*       Copyright 2003 NVIDIA, Corporation.  All rights reserved.           *|
+|*                                                                           *|
+|*     NOTICE TO USER:   The source code  is copyrighted under  U.S. and     *|
+|*     international laws.  Users and possessors of this source code are     *|
+|*     hereby granted a nonexclusive,  royalty-free copyright license to     *|
+|*     use this code in individual and commercial software.                  *|
+|*                                                                           *|
+|*     Any use of this source code must include,  in the user documenta-     *|
+|*     tion and  internal comments to the code,  notices to the end user     *|
+|*     as follows:                                                           *|
+|*                                                                           *|
+|*       Copyright 2003 NVIDIA, Corporation.  All rights reserved.           *|
+|*                                                                           *|
+|*     NVIDIA, CORPORATION MAKES NO REPRESENTATION ABOUT THE SUITABILITY     *|
+|*     OF  THIS SOURCE  CODE  FOR ANY PURPOSE.  IT IS  PROVIDED  "AS IS"     *|
+|*     WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY KIND.  NVIDIA, CORPOR-     *|
+|*     ATION DISCLAIMS ALL WARRANTIES  WITH REGARD  TO THIS SOURCE CODE,     *|
+|*     INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY, NONINFRINGE-     *|
+|*     MENT,  AND FITNESS  FOR A PARTICULAR PURPOSE.   IN NO EVENT SHALL     *|
+|*     NVIDIA, CORPORATION  BE LIABLE FOR ANY SPECIAL,  INDIRECT,  INCI-     *|
+|*     DENTAL, OR CONSEQUENTIAL DAMAGES,  OR ANY DAMAGES  WHATSOEVER RE-     *|
+|*     SULTING FROM LOSS OF USE,  DATA OR PROFITS,  WHETHER IN AN ACTION     *|
+|*     OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,  ARISING OUT OF     *|
+|*     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOURCE CODE.     *|
+|*                                                                           *|
+|*     U.S. Government  End  Users.   This source code  is a "commercial     *|
+|*     item,"  as that  term is  defined at  48 C.F.R. 2.101 (OCT 1995),     *|
+|*     consisting  of "commercial  computer  software"  and  "commercial     *|
+|*     computer  software  documentation,"  as such  terms  are  used in     *|
+|*     48 C.F.R. 12.212 (SEPT 1995)  and is provided to the U.S. Govern-     *|
+|*     ment only as  a commercial end item.   Consistent with  48 C.F.R.     *|
+|*     12.212 and  48 C.F.R. 227.7202-1 through  227.7202-4 (JUNE 1995),     *|
+|*     all U.S. Government End Users  acquire the source code  with only     *|
+|*     those rights set forth herein.                                        *|
+|*                                                                           *|
+ \***************************************************************************/
 
-/* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
-   <jpaana@s2.org> */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.33 2003/05/05 22:19:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.34 2003/06/23 21:38:42 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -34,82 +47,82 @@
 static void NVWriteCrtc(vgaHWPtr pVga, CARD8 index, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_INDEX_OFFSET, index);
-    VGA_WR08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_DATA_OFFSET,  value);
+    VGA_WR08(pNv->PCIO, pVga->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    VGA_WR08(pNv->PCIO, pVga->IOBase + VGA_CRTC_DATA_OFFSET,  value);
 }
 static CARD8 NVReadCrtc(vgaHWPtr pVga, CARD8 index)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_INDEX_OFFSET, index);
-    return (VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_CRTC_DATA_OFFSET));
+    VGA_WR08(pNv->PCIO, pVga->IOBase + VGA_CRTC_INDEX_OFFSET, index);
+    return (VGA_RD08(pNv->PCIO, pVga->IOBase + VGA_CRTC_DATA_OFFSET));
 }
 static void NVWriteGr(vgaHWPtr pVga, CARD8 index, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PVIO, VGA_GRAPH_INDEX, index);
-    VGA_WR08(pNv->riva.PVIO, VGA_GRAPH_DATA,  value);
+    VGA_WR08(pNv->PVIO, VGA_GRAPH_INDEX, index);
+    VGA_WR08(pNv->PVIO, VGA_GRAPH_DATA,  value);
 }
 static CARD8 NVReadGr(vgaHWPtr pVga, CARD8 index)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PVIO, VGA_GRAPH_INDEX, index);
-    return (VGA_RD08(pNv->riva.PVIO, VGA_GRAPH_DATA));
+    VGA_WR08(pNv->PVIO, VGA_GRAPH_INDEX, index);
+    return (VGA_RD08(pNv->PVIO, VGA_GRAPH_DATA));
 }
 static void NVWriteSeq(vgaHWPtr pVga, CARD8 index, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PVIO, VGA_SEQ_INDEX, index);
-    VGA_WR08(pNv->riva.PVIO, VGA_SEQ_DATA,  value);
+    VGA_WR08(pNv->PVIO, VGA_SEQ_INDEX, index);
+    VGA_WR08(pNv->PVIO, VGA_SEQ_DATA,  value);
 }
 static CARD8 NVReadSeq(vgaHWPtr pVga, CARD8 index)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PVIO, VGA_SEQ_INDEX, index);
-    return (VGA_RD08(pNv->riva.PVIO, VGA_SEQ_DATA));
+    VGA_WR08(pNv->PVIO, VGA_SEQ_INDEX, index);
+    return (VGA_RD08(pNv->PVIO, VGA_SEQ_DATA));
 }
 static void NVWriteAttr(vgaHWPtr pVga, CARD8 index, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp;
 
-    tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    tmp = VGA_RD08(pNv->PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
     if (pVga->paletteEnabled)
         index &= ~0x20;
     else
         index |= 0x20;
-    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX,  index);
-    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_DATA_W, value);
+    VGA_WR08(pNv->PCIO, VGA_ATTR_INDEX,  index);
+    VGA_WR08(pNv->PCIO, VGA_ATTR_DATA_W, value);
 }
 static CARD8 NVReadAttr(vgaHWPtr pVga, CARD8 index)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp;
 
-    tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    tmp = VGA_RD08(pNv->PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
     if (pVga->paletteEnabled)
         index &= ~0x20;
     else
         index |= 0x20;
-    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, index);
-    return (VGA_RD08(pNv->riva.PCIO, VGA_ATTR_DATA_R));
+    VGA_WR08(pNv->PCIO, VGA_ATTR_INDEX, index);
+    return (VGA_RD08(pNv->PCIO, VGA_ATTR_DATA_R));
 }
 static void NVWriteMiscOut(vgaHWPtr pVga, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PVIO, VGA_MISC_OUT_W, value);
+    VGA_WR08(pNv->PVIO, VGA_MISC_OUT_W, value);
 }
 static CARD8 NVReadMiscOut(vgaHWPtr pVga)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    return (VGA_RD08(pNv->riva.PVIO, VGA_MISC_OUT_R));
+    return (VGA_RD08(pNv->PVIO, VGA_MISC_OUT_R));
 }
 static void NVEnablePalette(vgaHWPtr pVga)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp;
 
-    tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
-    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, 0x00);
+    tmp = VGA_RD08(pNv->PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    VGA_WR08(pNv->PCIO, VGA_ATTR_INDEX, 0x00);
     pVga->paletteEnabled = TRUE;
 }
 static void NVDisablePalette(vgaHWPtr pVga)
@@ -117,46 +130,46 @@ static void NVDisablePalette(vgaHWPtr pVga)
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
     volatile CARD8 tmp;
 
-    tmp = VGA_RD08(pNv->riva.PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
-    VGA_WR08(pNv->riva.PCIO, VGA_ATTR_INDEX, 0x20);
+    tmp = VGA_RD08(pNv->PCIO, pVga->IOBase + VGA_IN_STAT_1_OFFSET);
+    VGA_WR08(pNv->PCIO, VGA_ATTR_INDEX, 0x20);
     pVga->paletteEnabled = FALSE;
 }
 static void NVWriteDacMask(vgaHWPtr pVga, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PDIO, VGA_DAC_MASK, value);
+    VGA_WR08(pNv->PDIO, VGA_DAC_MASK, value);
 }
 static CARD8 NVReadDacMask(vgaHWPtr pVga)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    return (VGA_RD08(pNv->riva.PDIO, VGA_DAC_MASK));
+    return (VGA_RD08(pNv->PDIO, VGA_DAC_MASK));
 }
 static void NVWriteDacReadAddr(vgaHWPtr pVga, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PDIO, VGA_DAC_READ_ADDR, value);
+    VGA_WR08(pNv->PDIO, VGA_DAC_READ_ADDR, value);
 }
 static void NVWriteDacWriteAddr(vgaHWPtr pVga, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PDIO, VGA_DAC_WRITE_ADDR, value);
+    VGA_WR08(pNv->PDIO, VGA_DAC_WRITE_ADDR, value);
 }
 static void NVWriteDacData(vgaHWPtr pVga, CARD8 value)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    VGA_WR08(pNv->riva.PDIO, VGA_DAC_DATA, value);
+    VGA_WR08(pNv->PDIO, VGA_DAC_DATA, value);
 }
 static CARD8 NVReadDacData(vgaHWPtr pVga)
 {
     NVPtr pNv = (NVPtr)pVga->MMIOBase;
-    return (VGA_RD08(pNv->riva.PDIO, VGA_DAC_DATA));
+    return (VGA_RD08(pNv->PDIO, VGA_DAC_DATA));
 }
 
 static Bool 
 NVIsConnected (ScrnInfoPtr pScrn, int output)
 {
     NVPtr pNv = NVPTR(pScrn);
-    volatile U032 *PRAMDAC = pNv->riva.PRAMDAC0;
+    volatile U032 *PRAMDAC = pNv->PRAMDAC0;
     CARD32 reg52C, reg608;
     Bool present;
 
@@ -175,8 +188,8 @@ NVIsConnected (ScrnInfoPtr pScrn, int output)
     usleep(1000);
     PRAMDAC[0x052C/4] |= 1;
 
-    pNv->riva.PRAMDAC0[0x0610/4] = 0x94050140;
-    pNv->riva.PRAMDAC0[0x0608/4] |= 0x00001000;
+    pNv->PRAMDAC0[0x0610/4] = 0x94050140;
+    pNv->PRAMDAC0[0x0608/4] |= 0x00001000;
 
     usleep(1000);
 
@@ -187,7 +200,7 @@ NVIsConnected (ScrnInfoPtr pScrn, int output)
     else
        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  ...can't find one\n");
 
-    pNv->riva.PRAMDAC0[0x0608/4] &= 0x0000EFFF;
+    pNv->PRAMDAC0[0x0608/4] &= 0x0000EFFF;
 
     PRAMDAC[0x052C/4] = reg52C;
     PRAMDAC[0x0608/4] = reg608;
@@ -201,19 +214,17 @@ NVSelectHeadRegisters(ScrnInfoPtr pScrn, int head)
     NVPtr pNv = NVPTR(pScrn);
 
     if(head) {
-       pNv->riva.PCIO = pNv->riva.PCIO0 + 0x2000;
-       pNv->riva.PCRTC = pNv->riva.PCRTC0 + 0x800;
-       pNv->riva.PRAMDAC = pNv->riva.PRAMDAC0 + 0x800;
-       pNv->riva.PDIO = pNv->riva.PDIO0 + 0x2000;
+       pNv->PCIO = pNv->PCIO0 + 0x2000;
+       pNv->PCRTC = pNv->PCRTC0 + 0x800;
+       pNv->PRAMDAC = pNv->PRAMDAC0 + 0x800;
+       pNv->PDIO = pNv->PDIO0 + 0x2000;
     } else {
-       pNv->riva.PCIO = pNv->riva.PCIO0;
-       pNv->riva.PCRTC = pNv->riva.PCRTC0;
-       pNv->riva.PRAMDAC = pNv->riva.PRAMDAC0;
-       pNv->riva.PDIO = pNv->riva.PDIO0;
+       pNv->PCIO = pNv->PCIO0;
+       pNv->PCRTC = pNv->PCRTC0;
+       pNv->PRAMDAC = pNv->PRAMDAC0;
+       pNv->PDIO = pNv->PDIO0;
     }
 }
-
-
 
 static xf86MonPtr 
 NVProbeDDC (ScrnInfoPtr pScrn, int bus)
@@ -241,12 +252,79 @@ NVProbeDDC (ScrnInfoPtr pScrn, int bus)
     return MonInfo;
 }
 
-static void
+static void nv4GetConfig (NVPtr pNv)
+{
+    if (pNv->PFB[0x0000/4] & 0x00000100) {
+        pNv->RamAmountKBytes = ((pNv->PFB[0x0000/4] >> 12) & 0x0F) * 1024 * 2
+                              + 1024 * 2;
+    } else {
+        switch (pNv->PFB[0x0000/4] & 0x00000003) {
+        case 0:
+            pNv->RamAmountKBytes = 1024 * 32;
+            break;
+        case 1:
+            pNv->RamAmountKBytes = 1024 * 4;
+            break;
+        case 2:
+            pNv->RamAmountKBytes = 1024 * 8;
+            break;
+        case 3:
+        default:
+            pNv->RamAmountKBytes = 1024 * 16;
+            break;
+        }
+    }
+    pNv->CrystalFreqKHz = (pNv->PEXTDEV[0x0000/4] & 0x00000040) ? 14318 : 13500;
+    pNv->CURSOR         = &(pNv->PRAMIN[0x1E00]);
+    pNv->MinVClockFreqKHz = 12000;
+    pNv->MaxVClockFreqKHz = 350000;
+}
+
+static void nv10GetConfig (NVPtr pNv)
+{
+    CARD32 implementation = pNv->Chipset & 0x0ff0;
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* turn on big endian register access */
+    if(!(pNv->PMC[0x0004/4] & 0x01000001)) {
+       pNv->PMC[0x0004/4] = 0x01000001;
+       mem_barrier();
+    }
+#endif
+
+    if((pNv->Chipset && 0xffff) == 0x01a0) {
+        int amt = pciReadLong(pciTag(0, 0, 1), 0x7C);
+        pNv->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
+    } else if((pNv->Chipset & 0xffff) == 0x01f0) {
+        int amt = pciReadLong(pciTag(0, 0, 1), 0x84);
+        pNv->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
+    } else {
+        pNv->RamAmountKBytes = (pNv->PFB[0x020C/4] & 0xFFF00000) >> 10;
+    }
+
+    pNv->CrystalFreqKHz = (pNv->PEXTDEV[0x0000/4] & (1 << 6)) ? 14318 : 13500;
+    
+    if((implementation == 0x0170) ||
+       (implementation == 0x0180) ||
+       (implementation == 0x01F0) ||
+       (implementation >= 0x0250))
+    {
+       if(pNv->PEXTDEV[0x0000/4] & (1 << 22))
+           pNv->CrystalFreqKHz = 27000;
+    }
+
+    pNv->CursorStart      = (pNv->RamAmountKBytes - 96) * 1024;
+    pNv->CURSOR           = NULL;  /* can't set this here */
+    pNv->MinVClockFreqKHz = 12000;
+    pNv->MaxVClockFreqKHz = 350000;
+}
+
+
+void
 NVCommonSetup(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
     vgaHWPtr pVga = VGAHWPTR(pScrn);
-    CARD32 regBase = pNv->IOAddress;
     CARD16 implementation = pNv->Chipset & 0x0ff0;
     xf86MonPtr monitorA, monitorB;
     Bool mobile = FALSE;
@@ -254,18 +332,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     Bool tvB = FALSE;
     int FlatPanel = -1;   /* really means the CRTC is slaved */
     Bool Television = FALSE;
-    int mmioFlags;
     
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVCommonSetup\n"));
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Regbase %x\n", regBase));
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- riva %x\n", &pNv->riva));
-
-    pNv->Save = NVDACSave;
-    pNv->Restore = NVDACRestore;
-    pNv->ModeInit = NVDACInit;
-
-    pNv->Dac.LoadPalette = NVDACLoadPalette;
-
     /*
      * Override VGA I/O routines.
      */
@@ -294,47 +361,25 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pVga->MMIOBase   = (CARD8 *)pNv;
     pVga->MMIOOffset = 0;
     
-    /*
-     * No IRQ in use.
-     */
-    pNv->riva.EnableIRQ = 0;
-    pNv->riva.IO      = VGA_IOBASE_COLOR;
+    pNv->REGS = xf86MapPciMem(pScrn->scrnIndex, 
+                              VIDMEM_MMIO | VIDMEM_READSIDEEFFECT, 
+                              pNv->PciTag, pNv->IOAddress, 0x01000000);
 
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
+    pNv->PRAMIN   = pNv->REGS + (0x00710000/4);
+    pNv->PCRTC0   = pNv->REGS + (0x00600000/4);
+    pNv->PRAMDAC0 = pNv->REGS + (0x00680000/4);
+    pNv->PFB      = pNv->REGS + (0x00100000/4);
+    pNv->PFIFO    = pNv->REGS + (0x00002000/4);
+    pNv->PGRAPH   = pNv->REGS + (0x00400000/4);
+    pNv->PEXTDEV  = pNv->REGS + (0x00101000/4);
+    pNv->PTIMER   = pNv->REGS + (0x00009000/4);
+    pNv->PMC      = pNv->REGS + (0x00000000/4);
+    pNv->FIFO     = pNv->REGS + (0x00800000/4);
 
-    pNv->riva.PRAMDAC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00680000, 0x00003000);
-    pNv->riva.PFB     = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00100000, 0x00001000);
-    pNv->riva.PFIFO   = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00002000, 0x00002000);
-    pNv->riva.PGRAPH  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00400000, 0x00002000);
-    pNv->riva.PEXTDEV = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00101000, 0x00001000);
-    pNv->riva.PTIMER  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00009000, 0x00001000);
-    pNv->riva.PMC     = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00000000, 0x00009000);
-    pNv->riva.FIFO    = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                      regBase+0x00800000, 0x00010000);
-
-    /*
-     * These registers are read/write as 8 bit values.  Probably have to map
-     * sparse on alpha.
-     */
-    pNv->riva.PCIO0 = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
-                                           pNv->PciTag, regBase+0x00601000,
-                                           0x00003000);
-    pNv->riva.PDIO0 = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
-                                           pNv->PciTag, regBase+0x00681000,
-                                           0x00003000);
-    pNv->riva.PVIO = (U008 *)xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
-                                           pNv->PciTag, regBase+0x000C0000,
-                                           0x00001000);
-
-    if(pNv->riva.Architecture == 3)
-       pNv->riva.PCRTC0 = pNv->riva.PGRAPH;
+    /* 8 bit registers */
+    pNv->PCIO0    = (U008*)pNv->REGS + 0x00601000;
+    pNv->PDIO0    = (U008*)pNv->REGS + 0x00681000;
+    pNv->PVIO     = (U008*)pNv->REGS + 0x000C0000;
 
     pNv->twoHeads =  (implementation >= 0x0110) &&
                      (implementation != 0x0150) &&
@@ -374,12 +419,15 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     default:
         break;
     }
- 
-    RivaGetConfig(pNv);
+
+    if(pNv->Architecture == NV_ARCH_04)
+        nv4GetConfig(pNv);
+    else
+        nv10GetConfig(pNv);
 
     NVSelectHeadRegisters(pScrn, 0);
 
-    pNv->riva.LockUnlock(&pNv->riva, 0);
+    NVLockUnlock(pNv, 0);
 
     NVI2CInit(pScrn);
 
@@ -390,14 +438,14 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        if((monitorA = NVProbeDDC(pScrn, 0))) {
            FlatPanel = monitorA->features.input_type ? 1 : 0;
 
-           /* NV3 and NV4 don't support FlatPanels */
+           /* NV4 doesn't support FlatPanels */
            if((pNv->Chipset & 0x0fff) <= 0x0020)
               FlatPanel = 0;
        } else {
-           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
-           if(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80) {
-              VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x33);
-              if(!(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x01)) 
+           VGA_WR08(pNv->PCIO, 0x03D4, 0x28);
+           if(VGA_RD08(pNv->PCIO, 0x03D5) & 0x80) {
+              VGA_WR08(pNv->PCIO, 0x03D4, 0x33);
+              if(!(VGA_RD08(pNv->PCIO, 0x03D5) & 0x01)) 
                  Television = TRUE;
               FlatPanel = 1;
            } else {
@@ -425,11 +473,11 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        CARD8 cr44;
       
        if(implementation != 0x0110) {
-           if(pNv->riva.PRAMDAC0[0x0000052C/4] & 0x100)
+           if(pNv->PRAMDAC0[0x0000052C/4] & 0x100)
                outputAfromCRTC = 1;
            else            
                outputAfromCRTC = 0;
-           if(pNv->riva.PRAMDAC0[0x0000252C/4] & 0x100)
+           if(pNv->PRAMDAC0[0x0000252C/4] & 0x100)
                outputBfromCRTC = 1;
            else
                outputBfromCRTC = 0;
@@ -442,35 +490,34 @@ NVCommonSetup(ScrnInfoPtr pScrn)
           analog_on_B = FALSE;
        }
 
+       VGA_WR08(pNv->PCIO, 0x03D4, 0x44);
+       cr44 = VGA_RD08(pNv->PCIO, 0x03D5);
 
-       VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
-       cr44 = VGA_RD08(pNv->riva.PCIO, 0x03D5);
-
-       VGA_WR08(pNv->riva.PCIO, 0x03D5, 3);
+       VGA_WR08(pNv->PCIO, 0x03D5, 3);
        NVSelectHeadRegisters(pScrn, 1);
-       pNv->riva.LockUnlock(&pNv->riva, 0);
+       NVLockUnlock(pNv, 0);
 
-       VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
-       slaved_on_B = VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80;
+       VGA_WR08(pNv->PCIO, 0x03D4, 0x28);
+       slaved_on_B = VGA_RD08(pNv->PCIO, 0x03D5) & 0x80;
        if(slaved_on_B) {
-           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x33);
-           tvB = !(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x01);
+           VGA_WR08(pNv->PCIO, 0x03D4, 0x33);
+           tvB = !(VGA_RD08(pNv->PCIO, 0x03D5) & 0x01);
        }
 
-       VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
-       VGA_WR08(pNv->riva.PCIO, 0x03D5, 0);
+       VGA_WR08(pNv->PCIO, 0x03D4, 0x44);
+       VGA_WR08(pNv->PCIO, 0x03D5, 0);
        NVSelectHeadRegisters(pScrn, 0);
-       pNv->riva.LockUnlock(&pNv->riva, 0);
+       NVLockUnlock(pNv, 0);
 
-       VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
-       slaved_on_A = VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80; 
+       VGA_WR08(pNv->PCIO, 0x03D4, 0x28);
+       slaved_on_A = VGA_RD08(pNv->PCIO, 0x03D5) & 0x80; 
        if(slaved_on_A) {
-           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x33);
-           tvA = !(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x01);
+           VGA_WR08(pNv->PCIO, 0x03D4, 0x33);
+           tvA = !(VGA_RD08(pNv->PCIO, 0x03D5) & 0x01);
        }
 
-       oldhead = pNv->riva.PCRTC0[0x00000860/4];
-       pNv->riva.PCRTC0[0x00000860/4] = oldhead | 0x00000010;
+       oldhead = pNv->PCRTC0[0x00000860/4];
+       pNv->PCRTC0[0x00000860/4] = oldhead | 0x00000010;
 
        monitorA = NVProbeDDC(pScrn, 0);
        monitorB = NVProbeDDC(pScrn, 1);
@@ -574,10 +621,10 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        if(implementation == 0x0110)
            cr44 = pNv->CRTCnumber * 0x3;
 
-       pNv->riva.PCRTC0[0x00000860/4] = oldhead;
+       pNv->PCRTC0[0x00000860/4] = oldhead;
 
-       VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
-       VGA_WR08(pNv->riva.PCIO, 0x03D5, cr44);
+       VGA_WR08(pNv->PCIO, 0x03D4, 0x44);
+       VGA_WR08(pNv->PCIO, 0x03D5, cr44);
        NVSelectHeadRegisters(pScrn, pNv->CRTCnumber);
     }
 
@@ -589,84 +636,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     if(monitorA)
       xf86SetDDCproperties(pScrn, monitorA);
 
-    pNv->Dac.maxPixelClock = pNv->riva.MaxVClockFreqKHz;
-
-    pNv->riva.flatPanel = pNv->FlatPanel ? FP_ENABLE : 0;
-    if(pNv->riva.flatPanel && pNv->FPDither && (pScrn->depth == 24))
-       pNv->riva.flatPanel |= FP_DITHER;
-}
-
-void
-NV3Setup(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    CARD32 frameBase = pNv->FbAddress;
-    int mmioFlags;
-
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV3Setup\n"));
-
-    pNv->riva.Architecture = 3;
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-    pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     frameBase+0x00C00000, 0x00008000);
-            
-    NVCommonSetup(pScrn);
-}
-
-void
-NV4Setup(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    CARD32 regBase = pNv->IOAddress;
-    int mmioFlags;
-
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV4Setup\n"));
-
-    pNv->riva.Architecture = 4;
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-    pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00710000, 0x00010000);
-    pNv->riva.PCRTC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00600000, 0x00001000);
-
-    NVCommonSetup(pScrn);
-}
-
-void
-NV10Setup(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    CARD32 regBase = pNv->IOAddress;
-    int mmioFlags;
-
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV10Setup\n"));
-
-    pNv->riva.Architecture = 0x10;
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-    pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00710000, 0x00010000);
-    pNv->riva.PCRTC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00600000, 0x00003000);
-
-    NVCommonSetup(pScrn);
-}
-
-void
-NV20Setup(ScrnInfoPtr pScrn)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    CARD32 regBase = pNv->IOAddress;
-    int mmioFlags;
-
-    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV20Setup\n"));
-
-    pNv->riva.Architecture = 0x20;
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-    pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00710000, 0x00010000);
-    pNv->riva.PCRTC0 = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-                                     regBase+0x00600000, 0x00003000);
-
-    NVCommonSetup(pScrn);
+    if(!pNv->FlatPanel || (pScrn->depth != 24))
+        pNv->FPDither = FALSE;
 }
 
