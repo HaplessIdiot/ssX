@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c,v 1.68 94/04/17 20:26:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.0 1994/04/28 12:42:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.1 1994/05/08 05:25:23 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -404,18 +404,33 @@ WaitForSomething(pClientsReady)
 	    ProcessWorkQueue();
 
 	if (ANYSET(ClientsWithInput)) {
+	    FdSet clientsReadable;
+	    int highest_priority;
+
+	    COPYBITS(ClientsWithInput, clientsReadable);
 	    dbprintf(("WaitFor: "));
 	    nready = 0;
 	    for (i=0; i < mskcnt; i++) {
-		while (ClientsWithInput[i]) {
-		    int curclient, client_index;
+		while (clientsReadable[i]) {
+		    int client_priority, curclient, client_index;
 
-		    curclient = ffs (ClientsWithInput[i]) - 1;
+		    curclient = ffs (clientsReadable[i]) - 1;
 		    client_index = ConnectionTranslation[curclient + (i << 5)];
 		    dbprintf(("%d has input\n", curclient));
-		    /* TODO: XSYNC priorities */
-		    pClientsReady[nready++] = client_index;
-		    ClientsWithInput[i] &= ~(((FdMask)1) << curclient);
+#ifdef XSYNC
+		    client_priority = clients[client_index]->priority;
+		    if (nready == 0 || client_priority > highest_priority)
+		    {
+		        pClientsReady[0] = client_index;
+		        highest_priority = client_priority;
+		        nready = 1;
+		    }
+		    else if (client_priority == highest_priority)
+#endif
+		    {
+		        pClientsReady[nready++] = client_index;
+		    }
+		    clientsReadable[i] &= ~(((FdMask)1) << curclient);
 		}
 	    }
 	    break;

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: Amoeba.cf,v 1.4 94/04/04 13:20:04 dpw Exp $
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/Amoeba.cf,v 3.0 1994/05/29 02:01:37 dawes Exp $
 
 /*  The presence of this configuration file in the X distribution
  *  does not imply full support for the system it describes.
@@ -193,6 +193,8 @@ SPARCLIBDIR     = AmoebaBin/gnu/sparc
 ALDFLAGS        = -mam_sparc -n -Ttext 40000 -Bstatic -e start -L$(SPARCLIBDIR)
 #endif
 
+#define BootstrapCFlags		-DAMOEBA -D$(ARCH) -DCROSS_COMPILE
+
 /*
  * The rest of this files consists of rules to allow cross-compilation
  * and installation of binaries and data files from the Unix host to
@@ -209,15 +211,12 @@ $(LD) $(ALDFLAGS) $(HEAD) -o program options objects libraries $(EXTRA_LOAD_FLAG
 
 /* ComplexHostProgramTarget - Compile a program such that we can run
  * it on this host, i.e., don't use the default cross compiler.
- * Note: this has no 'clean' target because that would cause the
- * build to remove imake as well.  That will then be rebuilt without
- * the proper BOOTSTRAPCFLAGS.
  */
 #ifndef ComplexHostProgramTarget
 #define	ComplexHostProgramTarget(program)				@@\
               CC=cc							@@\
     STD_INCLUDES=							@@\
-          CFLAGS=$(TOP_INCLUDES) $(INCLUDES)				@@\
+          CFLAGS=$(TOP_INCLUDES) $(INCLUDES) $(BOOTSTRAPCFLAGS)		@@\
 EXTRA_LOAD_FLAGS=							@@\
         PROGRAM = program						@@\
 									@@\
@@ -228,7 +227,10 @@ program: $(OBJS) $(DEPLIBS)						@@\
 	HostLinkRule($@,$(_NOOP_),$(OBJS),$(DEPLIBS) $(LOCAL_LIBRARIES)) @@\
 									@@\
 DependTarget()								@@\
-LintTarget()
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexHostProgramTarget */
 
 #ifndef SimpleHostProgramTarget
