@@ -1,3 +1,6 @@
+XFree86 3.2Au (xx April 1997)
+ 686. Add a Hungarian XKB symbols file (Peter Soos).
+
 XFree86 3.2At (14 April 1997)
  685. Fix ImageText fallback (#287, David Bateman).
  684. Some fixes for NonTE text. Add FixedBase support. Add TRIPLE_BITS24BPP
@@ -4366,4 +4369,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.448 1997/04/14 07:05:03 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.449 1997/04/14 07:55:44 hohndel Exp $
