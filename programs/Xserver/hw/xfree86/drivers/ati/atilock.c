@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.3 1999/09/27 06:29:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.4 2000/02/18 12:19:24 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -113,13 +113,13 @@ ATIUnlock
         outl(pATI->CPIO_GEN_TEST_CNTL, tmp | GEN_GUI_EN);
         pATI->LockData.crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
             ~(CRTC_EN | CRTC_LOCK_REGS);
-        tmp = pATI->LockData.crtc_gen_cntl & ~CRTC_EXT_DISP_EN;
+        tmp = pATI->LockData.crtc_gen_cntl & ~CRTC_EN;
         if (pATI->Chip >= ATI_CHIP_264XL)
             tmp = (tmp & ~CRTC_INT_ENS_X) | CRTC_INT_ACKS_X;
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp | CRTC_EN);
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp);
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp | CRTC_EN);
-        if (pATI->LCDPanelID >= 0)
+        if ((pATI->LCDPanelID >= 0) && (pATI->Chip != ATI_CHIP_264LT))
         {
             pATI->LockData.lcd_index = inl(pATI->CPIO_LCD_INDEX);
             if (pATI->Chip >= ATI_CHIP_264XL)
@@ -476,7 +476,7 @@ ATILock
         outl(pATI->CPIO_DAC_CNTL, pATI->LockData.dac_cntl);
         if (pATI->Chip < ATI_CHIP_264CT)
             outl(pATI->CPIO_MEM_INFO, pATI->LockData.mem_info);
-        else if (pATI->LCDPanelID >= 0)
+        else if ((pATI->LCDPanelID >= 0) && (pATI->Chip != ATI_CHIP_264LT))
             outl(pATI->CPIO_LCD_INDEX, pATI->LockData.lcd_index);
     }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.17 2000/02/18 12:19:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.18 2000/03/01 16:01:00 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -714,7 +714,9 @@ ATIAssignVGA
         {
             /*
              * Some adapters are reputed to append ATI extended VGA registers
-             * to the VGA Graphics controller registers.
+             * to the VGA Graphics controller registers.  In particular, 0x01CE
+             * cannot, in general, be used in a PCI environment due to routing
+             * of I/O through the bus tree.
              */
             pATI->CPIO_VGAWonder = GRAX;
             ATIVGAWonderProbe(pATI, p8514, ProbeFlags);
