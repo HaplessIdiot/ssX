@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.44 2000/02/08 17:19:46 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.45 2000/02/10 18:57:44 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_127">Patch #127 - 2000/2/12 - XFree86 3.9.17e</A>
 <LI><A HREF="#xterm_126">Patch #126 - 2000/2/8 - XFree86 3.9.17c</A>
 <LI><A HREF="#xterm_125">Patch #125 - 2000/1/31 - XFree86 3.9.17c</A>
 <LI><A HREF="#xterm_124">Patch #124 - 2000/1/27 - XFree86 3.9.17b</A>
@@ -169,6 +170,21 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_127">Patch #127 - 2000/2/12 - XFree86 3.9.17e</A></H1>
+<ul>
+	<li>add resource, popup menu entry and control sequence to allow
+	  changing the Delete key to send either DEL or the VT220-style
+	  Remove escape sequence.
+
+	<li>remove logic for metaSendsEscape that would allow xterm to send
+	  <code>&lt;esc&gt;[3~</code> before a function key that would begin
+	  with <code>&lt;esc&gt;[3~</code> (request by Christian Weisgerber).
+
+	<li>add missing action and documentation for meta-sends-escape.
+
+	<li>correct a few typos in ctlseqs.ms (incorrect code for Cyan color)
+</ul>
 
 <H1><A NAME="xterm_126">Patch #126 - 2000/2/8 - XFree86 3.9.17c</A></H1>
 <ul>

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.264 2000/02/12 20:45:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.265 2000/02/13 00:12:23 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -150,7 +150,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
-				ati r128 AgpGartDrivers \
+				ati r128 AgpGartDrivers cyrix \
 				vga XF86ExtraCardDrivers
 #endif
 #endif
