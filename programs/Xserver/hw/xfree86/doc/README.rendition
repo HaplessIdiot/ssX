@@ -8,8 +8,8 @@
 
 All cards based on the V1000 or the V2x00 should be supported. The server was
 tested on a miroCRYSTAL VRX (V1000), Intergraph Intense-100 3D (V1000), Dia-
-mond Stealth II S220 (V2100), Hercules Thriller3D (V2200) and Innovision War-
-rior3D (V2200).
+mond Stealth II S220 (V2100), Hercules Thriller3D (V2200), Innovision War-
+rior3D (V2200) and Genoa V-Raptor (v2200).
 
 2.  Limitations
 
@@ -81,15 +81,41 @@ revert back to software cursor.
             poses. This might change before final XFree86 4.0 release. Safe
             to disable if you experience problems during startup of X-server.
 
+      Option "ShadowFB"
+            If this option is enabled, the driver will cause the CPU to do
+            each drawing operation first into a shadow frame buffer in system
+            virtual memory and then copy the result into video memory.  If
+            this option is not active, the CPU will draw directly into video
+            memory.  Enabling this option is beneficial for those systems
+            where reading from video memory is, on average, slower than the
+            corresponding read/modify/write operation in system virtual mem-
+            ory.  This is normally the case for PCI or AGP adapters, and, so,
+            this option is enabled by default unless acceleration is enabled.
+
+      Rotate
+            The option expect a value "CW" for clockwise or "CCW" for coun-
+            terclockwise rotation of the screen. This is useful when you need
+            more height then width on the screen. Desktop publishing is one
+            example where a monitor could display the whole page at once on a
+            monitor laying on the side.  Notice that this option requires
+            "ShadowFB" and automatically enable it. It also disables the
+            acceleration.  The option is not activated by default.
+
 6.  News in this release
 
    o Acceleration! Disabled for the moment.
 
-7.  Major fixes in this release
+7.  Major changes in this release
+
+   o ShadowFB support added
 
    o To be determined before final release.
 
-8.  Known problems in current driver
+8.  Bugfixes
+
+   o 8bpp finally works correctly again
+
+9.  Known problems in current driver
 
    o The acceleration code hangs the computer during X-server startup.
 
@@ -103,13 +129,13 @@ revert back to software cursor.
      around. V2x00 does not exhibit this problem. Probably a bug in the
      driver rather than a limitation of the chip.
 
-9.  Work in progress (not finished in time for release)
+10.  Work in progress (not finished in time for release)
 
    o Acceleration is disabled for the moment. If you want to play with it
      enable the "USE_ACCEL" define in rendition.c file! Beware as it has sev-
      eral bugs left to clear out before if is stable for general use.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.6 2000/01/24 19:38:30 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.7 2000/03/01 00:25:23 dawes Exp $
 
 
 $XFree86$

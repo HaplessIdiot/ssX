@@ -1,4 +1,4 @@
-                    README for XFree86 3.9.18 on OpenBSD
+                      README for XFree86 4.0 on OpenBSD
 
                                Matthieu Herrb
 
@@ -13,13 +13,13 @@ ments as well as many bug fixes.
 
 See the Copyright Notice.
 
-The sources for XFree86 3.9.18 are available by anonymous ftp from:
+The sources for XFree86 4.0 are available by anonymous ftp from:
 
-ftp://ftp.XFree86.org/pub/XFree86/snapshots/3.9.18
+ftp://ftp.XFree86.org/pub/XFree86/snapshots/4.0
 
 Binaries for OpenBSD/i386 2.6 and later are available from:
 
-ftp://ftp.XFree86.org/pub/XFree86/snapshots/3.9.18/binaries/OpenBSD
+ftp://ftp.XFree86.org/pub/XFree86/snapshots/4.0/binaries/OpenBSD
 
 A list of mirror sites is provided by ftp://ftp.XFree86.org/pub/XFree86/MIR-
 RORS
@@ -32,18 +32,25 @@ other architectures (section 8.2, page 1) for details.
 Send email to herrb@xfree86.org (Matthieu Herrb) or XFree86@XFree86.org if
 you have comments or suggestions about this file and we'll revise it.
 
-3.  New OS dependant features
+3.  New OS dependent features
 
-See the Release Notes for non-OS dependent new features in XFree86 3.9.18.
+See the Release Notes for non-OS dependent new features in XFree86 4.0.
 
-3.1  New OS dependent features in 3.9.18
+3.1  New OS dependent features in 4.0
+
+   o Multi-thread safe libraries are built by default on OpenBSD 2.6 and
+     later,
+
+   o Preliminary APM support.
+
+3.2  New OS dependent features in 3.9.18
 
    o Support for USB mices has been added on OpenBSD.
 
    o Soft-booting secondary cards through the int10 BIOS interface is now
      possible using the x86emu real mode emulator.
 
-3.2  New OS dependent features in 3.9.17
+3.3  New OS dependent features in 3.9.17
 
    o Silken mouse is supported for serial mices, and, under post 2.6 OpenBSD-
      current for PS/2 mices.
@@ -226,7 +233,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.7 2000/02/21 18:05:47 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.8 2000/02/29 03:09:15 dawes Exp $
 
 
 $XFree86$

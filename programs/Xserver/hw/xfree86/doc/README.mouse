@@ -6,7 +6,7 @@
 
 1.  Introduction
 
-This document describes mouse support in XFree86 3.9.18.
+This document describes mouse support in XFree86 4.0.
 
 Mouse configuration has often been mysterious task for novice users.  How-
 ever, once you learn several basics, it is straightforward to write the mouse
@@ -406,8 +406,7 @@ too.
 
 5.2  ZAxisMappping
 
-This option maps the Z axis (wheel) motion to a pair of buttons or to another
-axis.
+This option maps the Z axis (wheel) motion to buttons or to another axis.
 
           Option    "ZAxisMapping" "X"
           Option    "ZAxisMapping" "Y"
@@ -423,10 +422,21 @@ used and the buttons N1 or N2 actually exists in the mouse, their actions
 won't be detected by the X server.
 
 The last example is useful for the mouse with two wheels of which the second
-wheel is used to generate horizontal scroll action.  The motion of the second
-wheel will be mapped to the buttons N3, for the negative direction, and N4,
-for the positive direction.  If the buttons N3 and N4 actually exist in this
-mouse, their actions won't be detected by the X server.
+wheel is used to generate horizontal scroll action, and the mouse which has a
+knob or a stick which can detect the horizontal force applied by the user.
+The motion of the second wheel will be mapped to the buttons N3, for the neg-
+ative direction, and N4, for the positive direction.  If the buttons N3 and
+N4 actually exist in this mouse, their actions won't be detected by the X
+server.
+
+NOTE #1: horizontal movement may not always be detected by the current ver-
+sion of the XFree86 X servers, because there appears to be no accepted stan-
+dard as to how the horizontal direction is encoded in mouse data.
+
+NOTE #2: Some mice think left is the negative horizontal direction, others
+may think otherwise.  Moreover, there are some mice whose two wheels are both
+mounted vertically, and the direction of the second vertical wheel does not
+match the first one's.
 
 Currently this option can not be set in the XF86Setup program.  You need to
 edit the XF86Config file by hand to add this option.
@@ -843,7 +853,7 @@ This can be done by the following command:
 
           xmodmap -e "pointer = 1 6 3 2 4 5"
 
-After this command is run, the correspondance between the buttons and button
+After this command is run, the correspondence between the buttons and button
 numbers will be as shown in the following table.
 
      Physical Buttons    Reported as:
@@ -869,7 +879,7 @@ the following InputDevice section.
 
 The IntelliMouse Explorer has 5 buttons, thus, you should give "7" to the
 Buttons option if you want to map the wheel movement to buttons (6 and 7).
-With this configuration, the correspondance between the buttons and button
+With this configuration, the correspondence between the buttons and button
 numbers will be as follows:
 
      Physical Buttons    Reported as:
@@ -915,7 +925,7 @@ have the following InputDevice section.
 The movement of the first wheel is mapped to the button 4 and 5.  The second
 wheel's movement will be reported as the buttons 6 and 7.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.9 2000/02/12 20:45:20 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.11 2000/03/01 00:25:23 dawes Exp $
 
 
 $XFree86$
