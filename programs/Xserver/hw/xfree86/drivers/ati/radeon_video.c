@@ -1,56 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.4 2000/11/18 19:37:12 tsi Exp $ */
-/*
- * Copyright 2000 Stuart R. Anderson and Metro Link, Inc.
- *
- * All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation on
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
- * ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/*
- * Authors:
- *   Stuart R. Anderson <anderson@metrolink.com>
- *
- * Credits:
- *
- *   This code is derived primarily from the GATOS Project run by Stea Greene.
- *   The initial version of this code was done by Vladimir Dergacheb.
- *
- *   This code was simplified from the GATOS code primarily because I didn't
- *   have the right hardware handy to test anything beyond simple overlays,
- *   and because I wanted to complete it in a short time frame that I had
- *   available.
- *
- *   My apologies to Vladimir as there is more good work in his code that
- *   should be brought forward.
- *
- *   RADEON ALERT !
- *   Alan Hourihane <ahourihane@valinux.com>
- *   This is an extremely quick port to the Radeon, it hasn't been tested
- *   thoroughly, although it appears to work.
- */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.5 2000/11/21 23:10:35 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
 
 #include "xf86.h"
+#include "dixstruct.h"
 
 #include "Xv.h"
 #include "fourcc.h"
@@ -67,59 +21,54 @@
 #ifndef XvExtension
 void RADEONInitVideo(ScreenPtr pScreen) {}
 #else
-static XF86VideoAdaptorPtr RADEONSetupImageVideo(ScreenPtr);
-static int RADEONSetPortAttribute(ScrnInfoPtr, Atom, INT32, pointer);
-static int RADEONGetPortAttribute(ScrnInfoPtr, Atom ,INT32 *, pointer);
 
+static XF86VideoAdaptorPtr RADEONSetupImageVideo(ScreenPtr);
+static int  RADEONSetPortAttribute(ScrnInfoPtr, Atom, INT32, pointer);
+static int  RADEONGetPortAttribute(ScrnInfoPtr, Atom ,INT32 *, pointer);
 static void RADEONStopVideo(ScrnInfoPtr, pointer, Bool);
-static void RADEONQueryBestSize(ScrnInfoPtr, Bool,
-	short, short, short, short, unsigned int *, unsigned int *, pointer);
-static int RADEONPutImage( ScrnInfoPtr,
-	short, short, short, short, short, short, short, short,
-	int, unsigned char*, short, short, Bool, RegionPtr, pointer);
-static int RADEONQueryImageAttributes(ScrnInfoPtr,
-	int, unsigned short *, unsigned short *,  int *, int *);
+static void RADEONQueryBestSize(ScrnInfoPtr, Bool, short, short, short, short,
+			unsigned int *, unsigned int *, pointer);
+static int  RADEONPutImage(ScrnInfoPtr, short, short, short, short, short,
+			short, short, short, int, unsigned char*, short,
+			short, Bool, RegionPtr, pointer);
+static int  RADEONQueryImageAttributes(ScrnInfoPtr, int, unsigned short *,
+			unsigned short *,  int *, int *);
+
+
+static void RADEONResetVideo(ScrnInfoPtr);
+
+static void RADEONVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
+
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-#define IMAGE_MAX_WIDTH         2048
-#define IMAGE_MAX_HEIGHT        2048
-#define Y_BUF_SIZE              (IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
+static Atom xvBrightness, xvColorKey, xvSaturation, xvDoubleBuffer;
 
-static Atom xvColorKey;
 
 typedef struct {
-	int             videoStatus;
-	unsigned char   brightness;
-	unsigned char   contrast;
+   int           brightness;
+   int           saturation;
+   Bool          doubleBuffer;
+   unsigned char currentBuffer;
+   FBLinearPtr   linear;
+   RegionRec     clip;
+   CARD32        colorKey;
+   CARD32        videoStatus;
+   Time          offTime;
+   Time          freeTime;
+} RADEONPortPrivRec, *RADEONPortPrivPtr;
 
-	RegionRec       clip;
-	CARD32          colorKey;
-	CARD8           overlay_pixel_size;
-	CARD8           current_buffer;
-	int             overlay_pad;
-	CARD32          overlay_id;
-	CARD32          overlay_width;
-
-	CARD32          scale_cntl;
-	CARD32          video_format;
-	FBLinearPtr     linear;
-	} RADEONPortPrivRec, *RADEONPortPrivPtr;
 
 void RADEONInitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr info  = RADEONPTR(pScrn);
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
 
-    RADEONTRACE(("RADEONInitVideo called\n"));
-
-    /* Determine if the card supports this */
-    if (pScrn->bitsPerPixel != 8)
-    {
+    if(info->accel && info->accel->FillSolidRects)
 	newAdaptor = RADEONSetupImageVideo(pScreen);
-    }
 
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 
@@ -148,39 +97,43 @@ void RADEONInitVideo(ScreenPtr pScreen)
 }
 
 /* client libraries expect an encoding */
-static XF86VideoEncodingRec DummyEncoding[1] =
+static XF86VideoEncodingRec DummyEncoding =
 {
- {
    0,
    "XV_IMAGE",
-   IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT,
+   2048, 2048,
    {1, 1}
- }
 };
 
-#define NUM_FORMATS 3
+#define NUM_FORMATS 12
 
 static XF86VideoFormatRec Formats[NUM_FORMATS] =
 {
-  {15, TrueColor},
-  {16, TrueColor},
-  {32, TrueColor}
+   {8, TrueColor}, {8, DirectColor}, {8, PseudoColor},
+   {8, GrayScale}, {8, StaticGray}, {8, StaticColor},
+   {15, TrueColor}, {16, TrueColor}, {24, TrueColor},
+   {15, DirectColor}, {16, DirectColor}, {24, DirectColor}
 };
 
-#define NUM_ATTRIBUTES 1
+
+#define NUM_ATTRIBUTES 4
 
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 {
-   {XvSettable | XvGettable, 0, (1<<24)-1, "XV_COLORKEY"},
+   {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
+   {XvSettable | XvGettable, -64, 63, "XV_BRIGHTNESS"},
+   {XvSettable | XvGettable, 0, 31, "XV_SATURATION"},
+   {XvSettable | XvGettable, 0, 1, "XV_DOUBLE_BUFFER"}
 };
 
-#define NUM_IMAGES 3
+#define NUM_IMAGES 4
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
 	XVIMAGE_YUY2,
+	XVIMAGE_UYVY,
 	XVIMAGE_YV12,
-	XVIMAGE_UYVY
+	XVIMAGE_I420
 };
 
 static void
@@ -190,52 +143,53 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     unsigned char *RADEONMMIO = info->MMIO;
     RADEONPortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
 
-    RADEONTRACE(("RADEONResetVideo called\n"));
 
-    /* Initialize some of the HW here */
-    OUTREG(RADEON_OV0_EXCLUSIVE_HORZ,0); /* disable exclusive mode */
-    OUTREG(RADEON_OV0_VIDEO_KEY_MSK,0xffff);
+    OUTREG(RADEON_OV0_SCALE_CNTL, 0x80000000);
+    OUTREG(RADEON_OV0_EXCLUSIVE_HORZ, 0);
+    OUTREG(RADEON_OV0_AUTO_FLIP_CNTL, 0);   /* maybe */
+    OUTREG(RADEON_OV0_FILTER_CNTL, 0x0000000f);
+    OUTREG(RADEON_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
+				 (pPriv->saturation << 8) |
+				 (pPriv->saturation << 16));
+    OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK, (1 << pScrn->depth) - 1);
+    OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR, pPriv->colorKey);
     OUTREG(RADEON_OV0_KEY_CNTL, RADEON_GRAPHIC_KEY_FN_NE);
-    OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR,pPriv->colorKey);
-    /* Only using one buffer for now
-    OUTREG(RADEON_OV0_AUTO_FLIP_CNTL,pAPriv->Port[0].auto_flip_cntl);
-    */
-    switch(pScrn->depth){
-    case 8:
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK,0xff);
-	break;
-    case 15:
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK,0x7fff);
-	break;
-    case 16:
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK,0xffff);
-	break;
-    case 24:
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK,0xffffff);
-	break;
-    case 32:
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_MSK,0xffffffff);
-	break;
+    OUTREG(RADEON_OV0_TEST, 0);
+}
+
+
+static XF86VideoAdaptorPtr
+RADEONAllocAdaptor(ScrnInfoPtr pScrn)
+{
+    XF86VideoAdaptorPtr adapt;
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    RADEONPortPrivPtr pPriv;
+
+    if(!(adapt = xf86XVAllocateVideoAdaptorRec(pScrn)))
+	return NULL;
+
+    if(!(pPriv = xcalloc(1, sizeof(RADEONPortPrivRec) + sizeof(DevUnion))))
+    {
+	xfree(adapt);
+	return NULL;
     }
 
-    OUTREG(RADEON_OV0_REG_LOAD_CNTL,0x0);
-    OUTREG(RADEON_OV0_DEINTERLACE_PATTERN,0xAAAAA);
-    OUTREG(RADEON_OV0_P1_V_ACCUM_INIT,(2<<20)|1);
-    OUTREG(RADEON_OV0_P23_V_ACCUM_INIT,(2<<20)|1);
-    OUTREG(RADEON_OV0_P1_H_ACCUM_INIT,(3<<28));
-    OUTREG(RADEON_OV0_P23_H_ACCUM_INIT,(2<<28));
-    OUTREG(RADEON_OV0_STEP_BY,1|(1<<8));
-    OUTREG(RADEON_OV0_FILTER_CNTL,0xf); /* use hardcoded coeff's */
-    OUTREG(RADEON_OV0_FILTER_CNTL,0x0); /* use programmable coeff's */
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_0   , 0x00002000);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_1   , 0x0D06200D);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_2   , 0x0D0A1C0D);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_3   , 0x0C0E1A0C);
-    OUTREG(RADEON_OV0_FOUR_TAP_COEF_4   , 0x0C14140C);
-    OUTREG(RADEON_OV0_COLOUR_CNTL,(1<<12)|(1<<20));
-    OUTREG(RADEON_OV0_TEST,0);
-    OUTREG(RADEON_OV0_SCALE_CNTL,pPriv->scale_cntl|pPriv->video_format);
-    OUTREG(RADEON_CAP0_TRIG_CNTL,0);
+    adapt->pPortPrivates = (DevUnion*)(&pPriv[1]);
+    adapt->pPortPrivates[0].ptr = (pointer)pPriv;
+
+    xvBrightness   = MAKE_ATOM("XV_BRIGHTNESS");
+    xvSaturation   = MAKE_ATOM("XV_SATURATION");
+    xvColorKey     = MAKE_ATOM("XV_COLORKEY");
+    xvDoubleBuffer = MAKE_ATOM("XV_DOUBLE_BUFFER");
+
+    pPriv->colorKey = info->videoKey;
+    pPriv->doubleBuffer = TRUE;
+    pPriv->videoStatus = 0;
+    pPriv->brightness = 0;
+    pPriv->saturation = 16;
+    pPriv->currentBuffer = 0;
+
+    return adapt;
 }
 
 static XF86VideoAdaptorPtr
@@ -243,32 +197,23 @@ RADEONSetupImageVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     RADEONInfoPtr info = RADEONPTR(pScrn);
-    XF86VideoAdaptorPtr adapt;
     RADEONPortPrivPtr pPriv;
+    XF86VideoAdaptorPtr adapt;
 
-    RADEONTRACE(("RADEONSetupImageVideo called\n"));
-
-    if(!(adapt = xcalloc(1, sizeof(XF86VideoAdaptorRec) +
-			    sizeof(RADEONPortPrivRec) +
-			    sizeof(DevUnion))))
+    if(!(adapt = RADEONAllocAdaptor(pScrn)))
 	return NULL;
 
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
     adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
-    adapt->name = "RADEON Video Overlay";
+    adapt->name = "ATI Rage128 Video Overlay";
     adapt->nEncodings = 1;
-    adapt->pEncodings = DummyEncoding;
+    adapt->pEncodings = &DummyEncoding;
     adapt->nFormats = NUM_FORMATS;
     adapt->pFormats = Formats;
     adapt->nPorts = 1;
-    adapt->pPortPrivates = (DevUnion*)(&adapt[1]);
-
-    pPriv = (RADEONPortPrivPtr)(&adapt->pPortPrivates[1]);
-
-    adapt->pPortPrivates[0].ptr = (pointer)(pPriv);
+    adapt->nAttributes = NUM_ATTRIBUTES;
     adapt->pAttributes = Attributes;
     adapt->nImages = NUM_IMAGES;
-    adapt->nAttributes = NUM_ATTRIBUTES;
     adapt->pImages = Images;
     adapt->PutVideo = NULL;
     adapt->PutStill = NULL;
@@ -281,24 +226,17 @@ RADEONSetupImageVideo(ScreenPtr pScreen)
     adapt->PutImage = RADEONPutImage;
     adapt->QueryImageAttributes = RADEONQueryImageAttributes;
 
-    /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
-
     info->adaptor = adapt;
 
-    pPriv->colorKey = 0x01; /* a touch of blue */
-    pPriv->video_format = RADEON_SCALER_SOURCE_VYUY422;
-    pPriv->scale_cntl = RADEON_SCALER_PRG_LOAD_START|RADEON_SCALER_DOUBLE_BUFFER;
-    pPriv->scale_cntl|= RADEON_SCALER_SMART_SWITCH|RADEON_SCALER_PIX_EXPAND;
-    pPriv->scale_cntl|= RADEON_SCALER_SMART_SWITCH;
-
-    xvColorKey   = MAKE_ATOM("XV_COLORKEY");
+    pPriv = (RADEONPortPrivPtr)(adapt->pPortPrivates[0].ptr);
+    REGION_INIT(pScreen, &(pPriv->clip), NullBox, 0);
 
     RADEONResetVideo(pScrn);
 
     return adapt;
 }
 
+/* I really should stick this in miregion */
 static Bool
 RegionsEqual(RegionPtr A, RegionPtr B)
 {
@@ -328,28 +266,119 @@ RegionsEqual(RegionPtr A, RegionPtr B)
     return TRUE;
 }
 
+
+/* RADEONClipVideo -
+
+   Takes the dst box in standard X BoxRec form (top and left
+   edges inclusive, bottom and right exclusive).  The new dst
+   box is returned.  The source boundaries are given (xa, ya
+   inclusive, xb, yb exclusive) and returned are the new source
+   boundaries in 16.16 fixed point.
+*/
+
+#define DummyScreen screenInfo.screens[0]
+
+static Bool
+RADEONClipVideo(
+  BoxPtr dst,
+  INT32 *xa,
+  INT32 *xb,
+  INT32 *ya,
+  INT32 *yb,
+  RegionPtr reg,
+  INT32 width,
+  INT32 height
+){
+    INT32 vscale, hscale, delta;
+    BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
+    int diff;
+
+    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
+    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
+
+    *xa <<= 16; *xb <<= 16;
+    *ya <<= 16; *yb <<= 16;
+
+    diff = extents->x1 - dst->x1;
+    if(diff > 0) {
+	dst->x1 = extents->x1;
+	*xa += diff * hscale;
+    }
+    diff = dst->x2 - extents->x2;
+    if(diff > 0) {
+	dst->x2 = extents->x2;
+	*xb -= diff * hscale;
+    }
+    diff = extents->y1 - dst->y1;
+    if(diff > 0) {
+	dst->y1 = extents->y1;
+	*ya += diff * vscale;
+    }
+    diff = dst->y2 - extents->y2;
+    if(diff > 0) {
+	dst->y2 = extents->y2;
+	*yb -= diff * vscale;
+    }
+
+    if(*xa < 0) {
+	diff =  (- *xa + hscale - 1)/ hscale;
+	dst->x1 += diff;
+	*xa += diff * hscale;
+    }
+    delta = *xb - (width << 16);
+    if(delta > 0) {
+	diff = (delta + hscale - 1)/ hscale;
+	dst->x2 -= diff;
+	*xb -= diff * hscale;
+    }
+    if(*xa >= *xb) return FALSE;
+
+    if(*ya < 0) {
+	diff =  (- *ya + vscale - 1)/ vscale;
+	dst->y1 += diff;
+	*ya += diff * vscale;
+    }
+    delta = *yb - (height << 16);
+    if(delta > 0) {
+	diff = (delta + vscale - 1)/ vscale;
+	dst->y2 -= diff;
+	*yb -= diff * vscale;
+    }
+    if(*ya >= *yb) return FALSE;
+
+    if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
+       (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
+    {
+	RegionRec clipReg;
+	REGION_INIT(DummyScreen, &clipReg, dst, 1);
+	REGION_INTERSECT(DummyScreen, reg, reg, &clipReg);
+	REGION_UNINIT(DummyScreen, &clipReg);
+    }
+    return TRUE;
+}
+
 static void
-RADEONStopVideo(ScrnInfoPtr pScrn, pointer data, Bool Exit)
+RADEONStopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 {
-    RADEONInfoPtr   info      = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO = info->MMIO;
-    RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr) data;
+  RADEONInfoPtr info = RADEONPTR(pScrn);
+  unsigned char *RADEONMMIO = info->MMIO;
+  RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
 
-    RADEONTRACE(("RADEONStopVideo called\n"));
+  REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
 
-    REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
-
-    if (Exit) {
-	if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-	    OUTREG(RADEON_OV0_SCALE_CNTL,pPriv->scale_cntl|pPriv->video_format);
-	}
-	if(pPriv->linear) {
-	    xf86FreeOffscreenLinear(pPriv->linear);
-	    pPriv->linear = NULL;
-	 }
+  if(cleanup) {
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	OUTREG(RADEON_OV0_SCALE_CNTL, 0);
+     }
+     if(pPriv->linear) {
+	xf86FreeOffscreenLinear(pPriv->linear);
+	pPriv->linear = NULL;
+     }
      pPriv->videoStatus = 0;
   } else {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	pPriv->videoStatus |= OFF_TIMER;
+	pPriv->offTime = currentTime.milliseconds + OFF_DELAY;
      }
   }
 }
@@ -360,22 +389,40 @@ RADEONSetPortAttribute(
   Atom attribute,
   INT32 value,
   pointer data
-)
-{
-    RADEONInfoPtr   info      = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO = info->MMIO;
-    RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr) data;
+){
+  RADEONInfoPtr info = RADEONPTR(pScrn);
+  unsigned char *RADEONMMIO = info->MMIO;
+  RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
 
-    RADEONTRACE(("RADEONSetPortAttribute called\n"));
-
-    if (attribute == xvColorKey) {
+  if(attribute == xvBrightness) {
+	if((value < -64) || (value > 63))
+	   return BadValue;
+	pPriv->brightness = value;
+	OUTREG(RADEON_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
+				     (pPriv->saturation << 8) |
+				     (pPriv->saturation << 16));
+  } else
+  if(attribute == xvSaturation) {
+	if((value < 0) || (value > 31))
+	   return BadValue;
+	pPriv->saturation = value;
+	OUTREG(RADEON_OV0_COLOUR_CNTL, (pPriv->brightness & 0x7f) |
+				     (pPriv->saturation << 8) |
+				     (pPriv->saturation << 16));
+  } else
+  if(attribute == xvDoubleBuffer) {
+	if((value < 0) || (value > 1))
+	   return BadValue;
+	pPriv->doubleBuffer = value;
+  } else
+  if(attribute == xvColorKey) {
 	pPriv->colorKey = value;
-	OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR,pPriv->colorKey);
-	RADEONTRACE(("Setting ColorKey to %d\n", pPriv->colorKey));
-	return Success;
-    }
+	OUTREG(RADEON_OV0_GRAPHICS_KEY_CLR, pPriv->colorKey);
 
-    return Success;
+	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
+  } else return BadMatch;
+
+  return Success;
 }
 
 static int
@@ -384,20 +431,25 @@ RADEONGetPortAttribute(
   Atom attribute,
   INT32 *value,
   pointer data
-)
-{
-    RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr) data;
+){
+  RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
 
-    RADEONTRACE(("RADEONGetPortAttribute called\n"));
-
-    if (attribute == xvColorKey) {
-	RADEONTRACE(("Getting ColorKey %d\n", pPriv->colorKey));
+  if(attribute == xvBrightness) {
+	*value = pPriv->brightness;
+  } else
+  if(attribute == xvSaturation) {
+	*value = pPriv->saturation;
+  } else
+  if(attribute == xvDoubleBuffer) {
+	*value = pPriv->doubleBuffer ? 1 : 0;
+  } else
+  if(attribute == xvColorKey) {
 	*value = pPriv->colorKey;
-	return Success;
-    }
+  } else return BadMatch;
 
-    return Success;
+  return Success;
 }
+
 
 static void
 RADEONQueryBestSize(
@@ -407,80 +459,11 @@ RADEONQueryBestSize(
   short drw_w, short drw_h,
   unsigned int *p_w, unsigned int *p_h,
   pointer data
-)
-{
-   RADEONTRACE(("RADEONQueryBestSize called\n"));
+){
   *p_w = drw_w;
   *p_h = drw_h;
 }
 
-static void
-RADEONDisplayVideo(
-    ScrnInfoPtr pScrn,
-    short width, short height,
-    int xa, int ya, int xb, int yb,
-    short src_w, short src_h,
-    short drw_w, short drw_h,
-    int fboffset
-)
-{
-    RADEONInfoPtr   info      = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO = info->MMIO;
-    RADEONPortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
-    int step_by, vert_inc, horz_inc;
-
-    RADEONTRACE(("RADEONDisplayVideo called\n"));
-
-    /* calculate step_by factor */
-    step_by=src_w/(drw_w*2);
-    switch(step_by){
-	case 0:
-	    OUTREG(RADEON_OV0_STEP_BY,0x101);
-	    step_by=1;
-	    break;
-	case 1:
-	    OUTREG(RADEON_OV0_STEP_BY,0x202);
-	    step_by=2;
-	    break;
-	case 2:
-	case 3:
-	    OUTREG(RADEON_OV0_STEP_BY,0x303);
-	    step_by=4;
-	    break;
-	default:
-	    OUTREG(RADEON_OV0_STEP_BY,0x404);
-	    step_by=8;
-	    break;
-    }
-
-    vert_inc=(src_h<<12)/(drw_h);
-    horz_inc=(src_w<<12)/(drw_w*step_by);
-
-    OUTREG(RADEON_OV0_Y_X_START,((xa))|(ya<<16)|(1<<31));
-    OUTREG(RADEON_OV0_Y_X_END,((xb))|((yb)<<16));
-    OUTREG(RADEON_OV0_H_INC,(horz_inc)|((horz_inc<<15)));
-    OUTREG(RADEON_OV0_V_INC,(vert_inc<<8));
-    OUTREG(RADEON_OV0_P1_BLANK_LINES_AT_TOP,0xfff|((src_h-1)<<16));
-    OUTREG(RADEON_OV0_P23_BLANK_LINES_AT_TOP,0xfff|((src_h-1)<<16));
-    OUTREG(RADEON_OV0_VID_BUF_PITCH0_VALUE,width<<1);
-    OUTREG(RADEON_OV0_VID_BUF_PITCH1_VALUE,width<<1);
-    OUTREG(RADEON_OV0_P1_X_START_END,(src_w-1)|((xa&0xf)<<16));
-    OUTREG(RADEON_OV0_P2_X_START_END,(src_w-1)|((xa&0xf)<<16));
-    OUTREG(RADEON_OV0_P3_X_START_END,(src_w-1)|((xa&0xf)<<16));
-
-    OUTREG(RADEON_OV0_VID_BUF0_BASE_ADRS,(fboffset)&(~0xf));
-    OUTREG(RADEON_OV0_VID_BUF1_BASE_ADRS,(fboffset)&(~0xf));
-    OUTREG(RADEON_OV0_VID_BUF2_BASE_ADRS,(fboffset)&(~0xf));
-
-#if 0
-    /* Enable this when double buffering is implemented */
-    OUTREG(RADEON_OV0_VID_BUF3_BASE_ADRS,(fboffset2)&(~0xf));
-    OUTREG(RADEON_OV0_VID_BUF4_BASE_ADRS,(fboffset2)&(~0xf));
-    OUTREG(RADEON_OV0_VID_BUF5_BASE_ADRS,(fboffset2)&(~0xf));
-#endif
-
-    OUTREG(RADEON_OV0_SCALE_CNTL,pPriv->scale_cntl|RADEON_SCALER_ENABLE|pPriv->video_format);
-}
 
 static void
 RADEONCopyData(
@@ -490,8 +473,7 @@ RADEONCopyData(
   int dstPitch,
   int h,
   int w
-  )
-{
+){
     w <<= 1;
     while(h--) {
 	memcpy(dst, src, w);
@@ -511,20 +493,32 @@ RADEONCopyMungedData(
    int dstPitch,
    int h,
    int w
-   )
-{
-   CARD32 *dst = (CARD32*)dst1;
+){
+   CARD32 *dst;
+   CARD8 *s1, *s2, *s3;
    int i, j;
 
-   dstPitch >>= 2;
    w >>= 1;
 
    for(j = 0; j < h; j++) {
-	for(i = 0; i < w; i++) {
-	    dst[i] = src1[i << 1] | (src1[(i << 1) + 1] << 16) |
-		     (src3[i] << 8) | (src2[i] << 24);
+	dst = (CARD32*)dst1;
+	s1 = src1;  s2 = src2;  s3 = src3;
+	i = w;
+	while(i > 4) {
+	   dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+	   dst[1] = s1[2] | (s1[3] << 16) | (s3[1] << 8) | (s2[1] << 24);
+	   dst[2] = s1[4] | (s1[5] << 16) | (s3[2] << 8) | (s2[2] << 24);
+	   dst[3] = s1[6] | (s1[7] << 16) | (s3[3] << 8) | (s2[3] << 24);
+	   dst += 4; s2 += 4; s3 += 4; s1 += 8;
+	   i -= 4;
 	}
-	dst += dstPitch;
+	while(i--) {
+	   dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+	   dst++; s2++; s3++;
+	   s1 += 2;
+	}
+
+	dst1 += dstPitch;
 	src1 += srcPitch;
 	if(j & 1) {
 	    src2 += srcPitch2;
@@ -533,17 +527,15 @@ RADEONCopyMungedData(
    }
 }
 
+
 static FBLinearPtr
 RADEONAllocateMemory(
-  ScrnInfoPtr pScrn,
-  FBLinearPtr linear,
-  int size
-)
-{
+   ScrnInfoPtr pScrn,
+   FBLinearPtr linear,
+   int size
+){
    ScreenPtr pScreen;
    FBLinearPtr new_linear;
-
-   RADEONTRACE(("RADEONAllocateMemory(%x,%d) called\n",linear,size));
 
    if(linear) {
 	if(linear->size >= size)
@@ -557,26 +549,98 @@ RADEONAllocateMemory(
 
    pScreen = screenInfo.screens[pScrn->scrnIndex];
 
-   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 4,
-					    NULL, NULL, NULL);
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16,
+						NULL, NULL, NULL);
 
    if(!new_linear) {
 	int max_size;
 
-	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 4,
-				       PRIORITY_EXTREME);
+	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 16,
+						PRIORITY_EXTREME);
 
-	if(max_size < size) return NULL;
+	if(max_size < size)
+	   return NULL;
 
 	xf86PurgeUnlockedOffscreenAreas(pScreen);
-	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 4,
-						 NULL, NULL, NULL);
+	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16,
+						NULL, NULL, NULL);
    }
-
-   RADEONTRACE(("returning %x(%x)\n",new_linear,new_linear->offset));
 
    return new_linear;
 }
+
+static void
+RADEONDisplayVideo(
+    ScrnInfoPtr pScrn,
+    int id,
+    int offset,
+    short width, short height,
+    int pitch,
+    int left, int right, int top,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+){
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    int v_inc, h_inc, step_by, tmp;
+    int p1_h_accum_init, p23_h_accum_init;
+    int p1_v_accum_init;
+
+    v_inc = (src_h << 20) / drw_h;
+    h_inc = (src_w << 12) / drw_w;
+    step_by = 1;
+
+    while(h_inc >= (2 << 12)) {
+	step_by++;
+	h_inc >>= 1;
+    }
+
+    /* keep everything in 16.16 */
+
+    offset += ((left >> 16) & ~7) << 1;
+
+    tmp = (left & 0x0003ffff) + 0x00028000 + (h_inc << 3);
+    p1_h_accum_init = ((tmp <<  4) & 0x000f8000) |
+		      ((tmp << 12) & 0xf0000000);
+
+    tmp = ((left >> 1) & 0x0001ffff) + 0x00028000 + (h_inc << 2);
+    p23_h_accum_init = ((tmp <<  4) & 0x000f8000) |
+		       ((tmp << 12) & 0x70000000);
+
+    tmp = (top & 0x0000ffff) + 0x00018000;
+    p1_v_accum_init = ((tmp << 4) & 0x03ff8000) | 0x00000001;
+
+    left = (left >> 16) & 7;
+
+
+    OUTREG(RADEON_OV0_REG_LOAD_CNTL, 1);
+    while(!(INREG(RADEON_OV0_REG_LOAD_CNTL) & (1 << 3)));
+
+    OUTREG(RADEON_OV0_H_INC, h_inc | ((h_inc >> 1) << 16));
+    OUTREG(RADEON_OV0_STEP_BY, step_by | (step_by << 8));
+    OUTREG(RADEON_OV0_Y_X_START, dstBox->x1 | (dstBox->y1 << 16));
+    OUTREG(RADEON_OV0_Y_X_END,   dstBox->x2 | (dstBox->y2 << 16));
+    OUTREG(RADEON_OV0_V_INC, v_inc);
+    OUTREG(RADEON_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
+    OUTREG(RADEON_OV0_VID_BUF_PITCH0_VALUE, pitch);
+    OUTREG(RADEON_OV0_P1_X_START_END, (src_w + left - 1) | (left << 16));
+    left >>= 1; src_w >>= 1;
+    OUTREG(RADEON_OV0_P2_X_START_END, (src_w + left - 1) | (left << 16));
+    OUTREG(RADEON_OV0_P3_X_START_END, (src_w + left - 1) | (left << 16));
+    OUTREG(RADEON_OV0_VID_BUF0_BASE_ADRS, offset & 0xfffffff0);
+    OUTREG(RADEON_OV0_P1_V_ACCUM_INIT, p1_v_accum_init);
+    OUTREG(RADEON_OV0_P1_H_ACCUM_INIT, p1_h_accum_init);
+    OUTREG(RADEON_OV0_P23_H_ACCUM_INIT, p23_h_accum_init);
+
+    if(id == FOURCC_UYVY)
+       OUTREG(RADEON_OV0_SCALE_CNTL, 0x41008C03);
+    else
+       OUTREG(RADEON_OV0_SCALE_CNTL, 0x41008B03);
+
+    OUTREG(RADEON_OV0_REG_LOAD_CNTL, 0);
+}
+
 
 static int
 RADEONPutImage(
@@ -589,174 +653,163 @@ RADEONPutImage(
   short width, short height,
   Bool Sync,
   RegionPtr clipBoxes, pointer data
-)
-{
-    RADEONInfoPtr   info      = RADEONPTR(pScrn);
-    unsigned char *RADEONMMIO = info->MMIO;
-    RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
-    INT32 xa, xb, ya, yb;
-    INT32 d_x,d_y,d_width,d_height;
-    int srcPitch = 0, srcPitch2 = 0;
-    int dstPitch = 0;
-    int offset,offset2 = 0,offset3 = 0,fboffset;
-    int top, left, npixels, nlines, size;
-    CARD32 video_format;
+){
+   RADEONInfoPtr info = RADEONPTR(pScrn);
+   RADEONPortPrivPtr pPriv = (RADEONPortPrivPtr)data;
+   INT32 xa, xb, ya, yb;
+   unsigned char *dst_start;
+   int pitch, new_size, offset, s2offset, s3offset;
+   int srcPitch, srcPitch2, dstPitch;
+   int top, left, npixels, nlines, bpp;
+   BoxRec dstBox;
+   CARD32 tmp;
 
-    RADEONTRACE(("RADEONPutImage called\n"));
+   /*
+    * s2offset, s3offset - byte offsets into U and V plane of the
+    *                      source where copying starts.  Y plane is
+    *                      done by editing "buf".
+    *
+    * offset - byte offset to the first line of the destination.
+    *
+    * dst_start - byte address to the first displayed pel.
+    *
+    */
 
-    switch(id) {
-    case FOURCC_YV12:
-    case FOURCC_UYVY:
-	video_format=RADEON_SCALER_SOURCE_VYUY422;
-	break;
-    case FOURCC_YUY2:
-	video_format=RADEON_SCALER_SOURCE_YVYU422;
-	break;
-    default:
-	return BadValue;
-    }
+   /* make the compiler happy */
+   s2offset = s3offset = srcPitch2 = 0;
+
+   if(src_w > (drw_w << 4))
+	drw_w = src_w >> 4;
+   if(src_h > (drw_h << 4))
+	drw_h = src_h >> 4;
 
    /* Clip */
-    d_x=drw_x;
-    d_y=drw_y;
-    d_width=drw_w;
-    d_height=drw_h;
-    if(drw_x<0){
-	    drw_w+=drw_x;
-	    drw_x=0;
-	    }
-    if(drw_y<0){
-	    drw_h+=drw_y;
-	    drw_y=0;
-	    }
-    if(drw_x+drw_w>pScrn->pScreen->width){
-	    drw_w=pScrn->pScreen->width-drw_x;
-	    }
-    if(drw_y+drw_h>pScrn->pScreen->height){
-	    drw_h=pScrn->pScreen->height-drw_y;
-	    }
-    if((drw_w<=0)||(drw_h<=0)){
-	    /* this should not happen,
-		    since we are outside of visible screen,
-		     but just in case */
-	    return Success;
-	    }
+   xa = src_x;
+   xb = src_x + src_w;
+   ya = src_y;
+   yb = src_y + src_h;
 
-    xa = src_x;
-    xb = src_x + src_w;
-    ya = src_y;
-    yb = src_y + src_h;
+   dstBox.x1 = drw_x;
+   dstBox.x2 = drw_x + drw_w;
+   dstBox.y1 = drw_y;
+   dstBox.y2 = drw_y + drw_h;
 
-    dstPitch = width*info->CurrentLayout.pixel_bytes;
-    srcPitch=width;
+   if(!RADEONClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, width, height))
+	return Success;
 
-    switch(id) {
-    case FOURCC_YV12:
-	 size =  width * height * 2; /* 16bpp */
-	 break;
-    case FOURCC_UYVY:
-    case FOURCC_YUY2:
-    default:
-	 size = width * height * 1.5;
-	 break;
-    }
+   dstBox.x1 -= pScrn->frameX0;
+   dstBox.x2 -= pScrn->frameX0;
+   dstBox.y1 -= pScrn->frameY0;
+   dstBox.y2 -= pScrn->frameY0;
 
-    if(!(pPriv->linear = RADEONAllocateMemory(pScrn, pPriv->linear,size)))
-	return BadAlloc;
+   bpp = pScrn->bitsPerPixel >> 3;
+   pitch = bpp * pScrn->displayWidth;
 
-    /* copy data */
-    top = ya >> 16;
-    left = (xa >> 16) & ~1;
-    npixels = ((((xb + 0xffff) >> 16) + 1) & ~1) - left;
-
-    switch(id) {
-    case FOURCC_YV12:
+   switch(id) {
+   case FOURCC_YV12:
+   case FOURCC_I420:
+	dstPitch = ((width << 1) + 15) & ~15;
+	new_size = ((dstPitch * height) + bpp - 1) / bpp;
 	srcPitch = (width + 3) & ~3;
-	offset2 = srcPitch * height;
+	s2offset = srcPitch * height;
 	srcPitch2 = ((width >> 1) + 3) & ~3;
-	offset3 = (srcPitch2 * (height >> 1)) + offset2;
-	nlines = ((((yb + 0xffff) >> 16) + 1) & ~1) - top;
+	s3offset = (srcPitch2 * (height >> 1)) + s2offset;
 	break;
-    case FOURCC_UYVY:
-    case FOURCC_YUY2:
-    default:
-	buf += (top * srcPitch) + left;
-	nlines = ((yb + 0xffff) >> 16) - top;
+   case FOURCC_UYVY:
+   case FOURCC_YUY2:
+   default:
+	dstPitch = ((width << 1) + 15) & ~15;
+	new_size = ((dstPitch * height) + bpp - 1) / bpp;
 	srcPitch = (width << 1);
 	break;
-    }
-    nlines=src_h;
-    npixels=src_w;
-    if(npixels>width) npixels=width;
-    if(nlines>height) nlines=height;
+   }
 
-    /* adjust source rectangle */
-    src_x+=((drw_x-d_x)*src_w)/d_width;
-    src_y+=((drw_y-d_y)*src_h)/d_height;
+   if(!(pPriv->linear = RADEONAllocateMemory(pScrn, pPriv->linear,
+		pPriv->doubleBuffer ? (new_size << 1) : new_size)))
+   {
+	return BadAlloc;
+   }
 
-    src_w=(src_w * drw_w)/d_width;
-    src_h=(src_h * drw_h)/d_height;
+   pPriv->currentBuffer ^= 1;
 
-    offset=(src_x+src_y*width)*info->CurrentLayout.pixel_bytes;
-    fboffset=pPriv->linear->offset*info->CurrentLayout.pixel_bytes;
+    /* copy data */
+   top = ya >> 16;
+   left = (xa >> 16) & ~1;
+   npixels = ((((xb + 0xffff) >> 16) + 1) & ~1) - left;
 
-    if(!(INREG(RADEON_CRTC_STATUS)&2)){
-	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"too fast");
-	return Success;
+   offset = (pPriv->linear->offset * bpp) + (top * dstPitch);
+   if(pPriv->doubleBuffer)
+	offset += pPriv->currentBuffer * new_size * bpp;
+   dst_start = info->FB + offset;
+
+   switch(id) {
+    case FOURCC_YV12:
+    case FOURCC_I420:
+	top &= ~1;
+	dst_start += left << 1;
+	tmp = ((top >> 1) * srcPitch2) + (left >> 1);
+	s2offset += tmp;
+	s3offset += tmp;
+	if(id == FOURCC_I420) {
+	   tmp = s2offset;
+	   s2offset = s3offset;
+	   s3offset = tmp;
 	}
+	nlines = ((((yb + 0xffff) >> 16) + 1) & ~1) - top;
+	RADEONCopyMungedData(buf + (top * srcPitch) + left, buf + s2offset,
+			   buf + s3offset, dst_start, srcPitch, srcPitch2,
+			   dstPitch, nlines, npixels);
+	break;
+    case FOURCC_UYVY:
+    case FOURCC_YUY2:
+    default:
+	left <<= 1;
+	buf += (top * srcPitch) + left;
+	nlines = ((yb + 0xffff) >> 16) - top;
+	dst_start += left;
+	RADEONCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
+	break;
+    }
 
-    RADEONDisplayVideo(pScrn, width, height,
-	    drw_x, drw_y, drw_x+drw_w, drw_y+drw_h,
-	    src_w, src_h, drw_w, drw_h, fboffset);
 
     /* update cliplist */
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
 	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
-	(*info->accel->FillSolidRects)(pScrn, pPriv->colorKey,
-					GXcopy, (CARD32)(~0),
+	(*info->accel->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy, ~0,
 					REGION_NUM_RECTS(clipBoxes),
 					REGION_RECTS(clipBoxes));
     }
 
-
-    switch(id) {
-    case FOURCC_YV12:
-	RADEONCopyMungedData(buf + (top * srcPitch) + (left >> 1),
-	    buf + offset2, buf + offset3, info->FB+fboffset,
-	    srcPitch, srcPitch2, dstPitch, nlines, npixels);
-	break;
-    case FOURCC_UYVY:
-    case FOURCC_YUY2:
-    default:
-	RADEONCopyData(buf,info->FB+fboffset,srcPitch,dstPitch,
-	    nlines,npixels);
-	 break;
-    }
+    RADEONDisplayVideo(pScrn, id, offset, width, height, dstPitch,
+		     xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
+
+    info->VideoTimerCallback = RADEONVideoTimerCallback;
+
     return Success;
 }
 
+
 static int
 RADEONQueryImageAttributes(
-  ScrnInfoPtr pScrn,
-  int id,
-  unsigned short *w, unsigned short *h,
-  int *pitches, int *offsets
-)
-{
+    ScrnInfoPtr pScrn,
+    int id,
+    unsigned short *w, unsigned short *h,
+    int *pitches, int *offsets
+){
     int size, tmp;
-    RADEONTRACE(("RADEONQueryImageAtrributes called\n"));
 
-    if(*w > IMAGE_MAX_WIDTH) *w = IMAGE_MAX_WIDTH;
-    if(*h > IMAGE_MAX_HEIGHT) *h = IMAGE_MAX_HEIGHT;
+    if(*w > 2048) *w = 2048;
+    if(*h > 2048) *h = 2048;
 
     *w = (*w + 1) & ~1;
     if(offsets) offsets[0] = 0;
 
     switch(id) {
     case FOURCC_YV12:
+    case FOURCC_I420:
 	*h = (*h + 1) & ~1;
 	size = (*w + 3) & ~3;
 	if(pitches) pitches[0] = size;
@@ -780,4 +833,34 @@ RADEONQueryImageAttributes(
 
     return size;
 }
-#endif
+
+static void
+RADEONVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
+{
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+    RADEONPortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
+
+    if(pPriv->videoStatus & TIMER_MASK) {
+	if(pPriv->videoStatus & OFF_TIMER) {
+	    if(pPriv->offTime < time) {
+		unsigned char *RADEONMMIO = info->MMIO;
+		OUTREG(RADEON_OV0_SCALE_CNTL, 0);
+		pPriv->videoStatus = FREE_TIMER;
+		pPriv->freeTime = time + FREE_DELAY;
+	    }
+	} else {  /* FREE_TIMER */
+	    if(pPriv->freeTime < time) {
+		if(pPriv->linear) {
+		   xf86FreeOffscreenLinear(pPriv->linear);
+		   pPriv->linear = NULL;
+		}
+		pPriv->videoStatus = 0;
+		info->VideoTimerCallback = NULL;
+	    }
+	}
+    } else  /* shouldn't get here */
+	info->VideoTimerCallback = NULL;
+}
+
+
+#endif  /* !XvExtension */
