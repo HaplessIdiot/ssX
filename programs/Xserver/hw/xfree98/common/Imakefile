@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.19 1996/07/08 10:33:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.20 1996/08/14 14:36:22 dawes Exp $
 
 
 
@@ -170,7 +170,7 @@ XF86SCREENFLAGS = $(VGA16BUILD) $(VGA16MONOBUILD)
 
 all:: $(OFILES)
 
-#ifdef BuildXInputExt
+#if BuildXInputExt
 SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
 # if BuildDynamicLoading
 #  if JoystickSupport
@@ -225,8 +225,8 @@ SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 #endif
 
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
-ObjectFromSpecialSource(xf86IniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES))
-ObjectFromSpecialSource(xf86MIniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -UPEXEXT -UXIE)
+SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES))
+SpecialObjectRule(xf86MIniExt.o,xf86MIniExt.c $(ICONFIGFILES),$(EXT_DEFINES) -UPEXEXT -UXIE)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))
@@ -234,6 +234,8 @@ NormalLibraryTarget(xf86,$(OBJS))
 LinkFile(XF86_Mach8.c,$(XF86SRC)/common/Mach8.c)
 LinkFile(XF86_Mach32.c,$(XF86SRC)/common/Mach32.c)
 LinkFile(XF86_Mach64.c,$(XF86SRC)/common/Mach64.c)
+LinkFile(xf86IniExt.c,$(SERVERSRC)/mi/miinitext.c)
+LinkFile(xf86MIniExt.c,$(SERVERSRC)/mi/miinitext.c)
 LinkSourceFile(XF86_8514.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_AGX.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_Mono.c,$(XF86SRC)/common)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.9 1996/09/15 11:22:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.10 1996/09/22 08:48:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,6 +58,18 @@ vgaListInstalledColormaps(pScreen, pmaps)
   return(1);
 }
 
+int
+vgaGetInstalledColormaps(pScreen, pmaps)
+     ScreenPtr		pScreen;
+     ColormapPtr	*pmaps;
+{
+  /* By the time we are processing requests, we can guarantee that there
+   * is always a colormap installed */
+  
+  *pmaps = InstalledMaps[pScreen->myNum];
+  return(1);
+}
+
 
 void
 vgaStoreColors(pmap, ndef, pdefs)
@@ -93,9 +105,16 @@ vgaStoreColors(pmap, ndef, pdefs)
         cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
 #ifndef PC98_EGC
 #ifndef PC98_NEC480
-        cmap[0] = pdefs[i].red   >> 10;
-        cmap[1] = pdefs[i].green >> 10;
-        cmap[2] = pdefs[i].blue  >> 10;
+	if (vgaDAC8BitComponents) {
+            cmap[0] = pdefs[i].red   >> 8;
+            cmap[1] = pdefs[i].green >> 8;
+            cmap[2] = pdefs[i].blue  >> 8;
+        }
+        else {
+            cmap[0] = pdefs[i].red   >> 10;
+            cmap[1] = pdefs[i].green >> 10;
+            cmap[2] = pdefs[i].blue  >> 10;
+        }
 #else /* PC98_NEC480 */
         cmap[0] = pdefs[i].red   >> 8;
         cmap[1] = pdefs[i].green >> 8;
