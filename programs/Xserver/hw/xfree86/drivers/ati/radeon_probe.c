@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.17 2002/07/11 20:11:51 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.18 2002/07/15 14:22:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -267,7 +267,6 @@ RADEONProbe(DriverPtr drv, int flags)
 		}
 		instance++;
 		if (instance == 2) {
-		    DevUnion     *pPriv;
 		    RADEONEntPtr  pRADEONEnt;
 
 		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
