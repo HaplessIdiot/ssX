@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.15 2000/06/17 00:03:11 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.16 2000/06/21 21:26:42 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1396,7 +1396,7 @@ static void
 DRIGetSecs(long *secs, long *usecs)
 {
 #if XFree86LOADER
-    xf86getsecs(secs,usecs);
+    getsecs(secs,usecs);
 #else
     struct timeval tv;
 
