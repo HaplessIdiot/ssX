@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.51 2002/04/05 21:23:25 tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.52 2002/04/14 22:01:27 herrb Exp $ */
 
 /*
  * 
@@ -1131,7 +1131,7 @@ get_binary_format(FILE *inFile)
   FILE *objprog = NULL;
   int iself = 0;
   char buf[10];
-  char cmd[MAX_PATH];
+  char cmd[PATH_MAX];
 
   mib[0] = CTL_KERN;
   mib[1] = KERN_OSRELDATE;
