@@ -1,4 +1,4 @@
-/* $XFree83: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.3 1999/07/10 12:17:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.3 1999/07/10 12:17:28 dawes Exp $ */
 
 #undef DEBUG
 #define FASTER
