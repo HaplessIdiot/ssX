@@ -24,7 +24,7 @@
 !! dealings in this Software without prior written authorization from the
 !! XFree86 Project.
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.1 2001/05/15 18:22:21 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.2 2001/05/25 21:43:16 paulo Exp $
 
 !! XAA options
 xaa.XaaNoCPUToScreenColorExpandFill:\
@@ -91,6 +91,16 @@ xaa.XaaNoSolidTwoPointLine:\
 Disables accelerated solid line draws between two arbitrary points.
 
 
+!! FBDev options
+fbdev.fbdev:\
+The framebuffer device to use. \
+Default: /dev/fb0.
+
+fbdev.ShadowFB:\
+Enable or disable use of the shadow framebuffer layer. \
+Default: on.
+
+
 !! MGA options
 mga.ColorKey:\
 Set the colormap index used for the transparency key for the depth 8 plane \
@@ -147,6 +157,48 @@ mga.TexturedVideo:\
 This has XvImage support use the texture engine rather than the video \
 overlay. This option is only supported by the G200 and G400, and only in \
 16 and 32 bits per pixel. Default: off.
+
+
+!! R128 options
+
+r128.SWcursor: \
+Selects software cursor. \
+Default: off.
+
+r128.NoAccel:\
+Enables or disables all hardware acceleration. \
+Default: on.
+
+r128.Dac6Bit:\
+Enables or disables the use of 6 bits per color component when in 8 bpp \
+mode (emulates VGA mode). \
+Default: off.
+
+r128.VideoKey:\
+This overrides the default pixel value for the YUV video overlay key. \
+Default: undefined.
+
+r128.Display:\
+Select display mode for devices which support flat panels. Supported\
+modes are "FP", "CRT", "Mirror", "BIOS". \
+Default: "FP".
+
+r128.ProgramFPRegs:\
+Enable or disable programming of the flat panel registers.\
+Beware that this may damage your panel, so use at your own risk. \
+Default: device dependant.
+
+r128.PanelWidth:\
+Override flat panel width in pixels. \
+Default: determined using BIOS.
+
+r128.PanelHeight:\
+Override flat panel height in pixels. \
+Default: determined using BIOS.
+
+r128.UseFBDev:\
+Enable or disable use of on OS-specific fb interface (and is not supported \
+on all OSs). See fbdevhw(4) for further information. Default: off.
 
 
 !! Vesa options

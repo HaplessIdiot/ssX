@@ -1,4 +1,14 @@
 XFree86 4.1.99.1 (xx June 2001)
+  68. Restore backwards compatibility from 4.0.[2,3] to 4.1.0 for
+      the i810, r128 and radeon DRI drivers (Gareth Hughes).
+  67. Fix a problem when using patterns of horizontal lines with the mga
+      video overlay (#A.442, Ewald Snel).
+  66. Remove duplicate XineramaLibrary section in X11.tmpl (#4731,
+      Mike Harris).
+  65. Enable building DRI for Linux/ppc, and fix a drm-related bug
+      for Linux/ppc (#4728, 4730, Michel Dänzer).
+  64. Document Options for the r128 and fbdev drivers (#4727, 4729,
+      Michel Dänzer).
   63. Add a BuildBindist switch which causes a file containing the XFree86
       version number to be installed in ProjectRoot, include this in
       the Xbin bindist tarballs, and turn on this switch in the bindist
@@ -13424,4 +13434,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1818 2001/05/31 16:35:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1819 2001/05/31 18:47:04 dawes Exp $

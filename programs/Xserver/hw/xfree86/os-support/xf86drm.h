@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.13 2001/03/21 18:08:53 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.14 2001/04/10 16:08:03 dawes Exp $
  *
  */
 
@@ -341,7 +341,7 @@ do {	register unsigned int __old __asm("o0");		\
 #define DRM_CAS(lock,old,new,ret) do { ret=1; } while (0) /* FAST LOCK FAILS */
 #endif
 
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__powerpc__)
 #define DRM_CAS_RESULT(_result)		int _result
 #else
 #define DRM_CAS_RESULT(_result)		char _result
