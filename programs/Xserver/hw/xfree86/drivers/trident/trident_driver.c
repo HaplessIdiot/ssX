@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.166 2002/04/17 22:35:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.167 2002/04/20 12:27:35 robin Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2481,7 +2481,8 @@ TRIDENTSave(ScrnInfoPtr pScrn)
     vgaReg = &VGAHWPTR(pScrn)->SavedReg;
     tridentReg = &pTrident->SavedReg;
 
-    vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | (IsPrimaryCard ? VGA_SR_FONTS : 0));
+    vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP |
+			     (IsPrimaryCard ? VGA_SR_FONTS : 0));
 
     if (pScrn->progClock)
     	TridentSave(pScrn, tridentReg);
@@ -2634,7 +2635,8 @@ TRIDENTRestore(ScrnInfoPtr pScrn)
     else
 	TVGARestore(pScrn, tridentReg);
 
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE|(IsPrimaryCard ? VGA_SR_FONTS : 0));
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP |
+				(IsPrimaryCard ? VGA_SR_FONTS : 0));
 
     vgaHWProtect(pScrn, FALSE);
 }
