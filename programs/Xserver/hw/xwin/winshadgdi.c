@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.16 2001/09/07 08:41:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.17 2001/10/22 15:21:12 alanh Exp $ */
 
 #include "win.h"
 
@@ -888,6 +888,7 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsShadowGDI;
   pScreenPriv->pwinCreateColormap = winCreateColormapShadowGDI;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowGDI;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
 
   return TRUE;
 }

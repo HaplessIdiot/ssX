@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.23 2001/10/23 08:32:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.24 2001/10/29 21:10:23 alanh Exp $ */
 
 #include "win.h"
 
@@ -424,6 +424,32 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	{
 	  /* Parameter is for a single screen */
 	  g_ScreenInfo[g_iLastScreen].fFullScreen = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-ignoreinput' argument
+   */
+  if (strcmp(argv[i], "-ignoreinput") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fIgnoreInput = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fIgnoreInput = TRUE;
 	}
 
       /* Indicate that we have processed this argument */

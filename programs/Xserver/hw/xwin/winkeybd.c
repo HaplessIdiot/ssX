@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.5 2001/06/15 08:09:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.6 2001/09/26 13:00:34 alanh Exp $ */
 
 
 #include "win.h"
@@ -55,15 +55,15 @@ winTranslateKey (WPARAM wParam, LPARAM lParam, int *piScanCode)
   /* Branch on special extended, special non-extended, or normal key */
   if ((HIWORD (lParam) & KF_EXTENDED) && iKeyFixupEx)
     {
-      *piScanCode = iKeyFixupEx + MIN_KEYCODE;
+      *piScanCode = iKeyFixupEx;
     }
   else if (iKeyFixup)
     {
-      *piScanCode = iKeyFixup + MIN_KEYCODE;
+      *piScanCode = iKeyFixup;
     }
   else
     {
-      *piScanCode = LOBYTE (HIWORD (lParam)) + MIN_KEYCODE;
+      *piScanCode = LOBYTE (HIWORD (lParam));
     }
 }
 
@@ -207,70 +207,32 @@ winKeybdProc (DeviceIntPtr pDeviceInt, int iState)
 void
 winInitializeModeKeyStates (void)
 {
-  xEvent	xCurrentEvent;
-
   /* Restore NumLock */
   if (GetKeyState (VK_NUMLOCK) & 0x0001)
     {
-      xCurrentEvent.u.u.detail = KEY_NumLock + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_NumLock, TRUE);
+      winSendKeyEvent (KEY_NumLock, FALSE);
     }
 
   /* Restore CapsLock */
   if (GetKeyState (VK_CAPITAL) & 0x0001)
     {
-      xCurrentEvent.u.u.detail = KEY_CapsLock + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_CapsLock, TRUE);
+      winSendKeyEvent (KEY_CapsLock, FALSE);
     }
 
   /* Restore ScrollLock */
   if (GetKeyState (VK_SCROLL) & 0x0001)
     {
-      xCurrentEvent.u.u.detail = KEY_ScrollLock + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_ScrollLock, TRUE);
+      winSendKeyEvent (KEY_ScrollLock, FALSE);
     }
 
   /* Restore KanaLock */
   if (GetKeyState (VK_KANA) & 0x0001)
     {
-      xCurrentEvent.u.u.detail = KEY_HKTG + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_HKTG, TRUE);
+      winSendKeyEvent (KEY_HKTG, FALSE);
     }
 }
 
@@ -312,77 +274,37 @@ void
 winRestoreModeKeyStates (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
-  xEvent		xCurrentEvent;
-
-  /* Zero the event memory */
-  ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
 
   /* Has the key state changed? */
   if ((pScreenPriv->dwModeKeyStates & NumLockMask) 
       ^ (GetKeyState (VK_NUMLOCK) & 0x0001))
     {
-      xCurrentEvent.u.u.detail = KEY_NumLock + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_NumLock, TRUE);
+      winSendKeyEvent (KEY_NumLock, FALSE);
     }
     
   /* Has the key state changed? */
   if ((pScreenPriv->dwModeKeyStates & LockMask)
       ^ (GetKeyState (VK_CAPITAL) & 0x0001))
     {
-      xCurrentEvent.u.u.detail = KEY_CapsLock + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_CapsLock, TRUE);
+      winSendKeyEvent (KEY_CapsLock, FALSE);
     }
 
   /* Has the key state changed? */
   if ((pScreenPriv->dwModeKeyStates & ScrollLockMask)
       ^ (GetKeyState (VK_SCROLL) & 0x0001))
     {
-      xCurrentEvent.u.u.detail = KEY_ScrollLock + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_ScrollLock, TRUE);
+      winSendKeyEvent (KEY_ScrollLock, FALSE);
     }
 
   /* Has the key state changed? */
   if ((pScreenPriv->dwModeKeyStates & KanaMask)
       ^ (GetKeyState (VK_KANA) & 0x0001))
     {
-      xCurrentEvent.u.u.detail = KEY_HKTG + MIN_KEYCODE;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      winSendKeyEvent (KEY_HKTG, TRUE);
+      winSendKeyEvent (KEY_HKTG, FALSE);
     }
 }
 
@@ -478,77 +400,35 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam)
 void
 winKeybdReleaseModifierKeys ()
 {
-  xEvent			xCurrentEvent;
-  BYTE				bKeys[256];
-  
-  /*
-   * FIXME: This isn't 100% correct, but it gets the job done
-   * for now.  Might be a better idea to add some sort of flag...
-   */
   /* Verify that the mi input system has been initialized */
   if (g_fdMessageQueue == WIN_FD_INVALID)
     return;
 
-  /* Initialize the xEvent structure */
+  winSendKeyEvent (KEY_Alt, FALSE);
+  winSendKeyEvent (KEY_AltLang, FALSE);
+  winSendKeyEvent (KEY_LCtrl, FALSE);
+  winSendKeyEvent (KEY_RCtrl, FALSE);
+  winSendKeyEvent (KEY_ShiftL, FALSE);
+  winSendKeyEvent (KEY_ShiftR, FALSE);
+}
+
+
+/*
+ * Take a raw X key code and send an up or down event for it.
+ *
+ * Thanks to VNC for inspiration, though it is a simple function.
+ */
+
+void
+winSendKeyEvent (DWORD dwKey, Bool fDown)
+{
+  xEvent			xCurrentEvent;
+  
   ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
-  xCurrentEvent.u.u.type = KeyRelease;
+
+  xCurrentEvent.u.u.type = fDown ? KeyPress : KeyRelease;
   xCurrentEvent.u.keyButtonPointer.time =
     g_c32LastInputEventTime = GetTickCount ();
-
-  /* Get the keyboard state, freak out on failure */
-  if (!GetKeyboardState (bKeys))
-    {
-      /* Huh, GetKeyboardState failed */
-      ErrorF ("winKeybdReleaseModifierKeys - GetKeyboardState () "
-	      "failed\n");
-      return;
-    }
-
-  /* Pop VK_LMENU */
-  if (bKeys[VK_LMENU] & 128)
-    {
-      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_LMENU\n");
-      xCurrentEvent.u.u.detail = KEY_Alt + MIN_KEYCODE;
-      mieqEnqueue (&xCurrentEvent);
-    }
-
-  /* Pop VK_RMENU */
-  if (bKeys[VK_RMENU] & 128)
-    {
-      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_RMENU\n");
-      xCurrentEvent.u.u.detail = KEY_AltLang + MIN_KEYCODE;
-      mieqEnqueue (&xCurrentEvent);
-    }
-
-  /* Pop VK_LCONTROL */
-  if (bKeys[VK_LCONTROL] & 128)
-    {
-      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_LCONTROL\n");
-      xCurrentEvent.u.u.detail = KEY_LCtrl + MIN_KEYCODE;
-      mieqEnqueue (&xCurrentEvent);
-    }
-
-  /* Pop VK_RCONTROL */
-  if (bKeys[VK_RCONTROL] & 128)
-    {
-      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_RCONTROL\n");
-      xCurrentEvent.u.u.detail = KEY_RCtrl + MIN_KEYCODE;
-      mieqEnqueue (&xCurrentEvent);
-    }
-  
-  /* Pop VK_LSHIFT */
-  if (bKeys[VK_LSHIFT] & 128)
-    {
-      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_LSHIFT\n");
-      xCurrentEvent.u.u.detail = KEY_ShiftL + MIN_KEYCODE;
-      mieqEnqueue (&xCurrentEvent);
-    }
-
-  /* Pop VK_RSHIFT */
-  if (bKeys[VK_RSHIFT] & 128)
-    {
-      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_RSHIFT\n");
-      xCurrentEvent.u.u.detail = KEY_ShiftR + MIN_KEYCODE;
-      mieqEnqueue (&xCurrentEvent);
-    }
+  xCurrentEvent.u.u.detail = dwKey + MIN_KEYCODE;
+  mieqEnqueue (&xCurrentEvent);
 }

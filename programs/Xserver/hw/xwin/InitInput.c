@@ -22,11 +22,12 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.5 2001/05/31 09:11:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.6 2001/06/25 08:12:32 alanh Exp $ */
 
 #include "win.h"
 
 CARD32		g_c32LastInputEventTime = 0;
+
 
 /* Called from dix/devices.c */
 /*
@@ -36,11 +37,13 @@ CARD32		g_c32LastInputEventTime = 0;
  * An example of a modifier is mapping the A key to the Control key.
  * A has to be a legal modifier.  I think.
  */
+
 Bool
 LegalModifier (unsigned int uiKey, DevicePtr pDevice)
 {
   return TRUE;
 }
+
 
 /* Called from dix/dispatch.c */
 /* We tell mi to dequeue the events that we have sent it */
@@ -60,6 +63,7 @@ ProcessInputEvents (void)
 #endif
 }
 
+
 int
 TimeSinceLastInputEvent ()
 {
@@ -67,6 +71,7 @@ TimeSinceLastInputEvent ()
         g_c32LastInputEventTime = GetTickCount ();
     return GetTickCount () - g_c32LastInputEventTime;
 }
+
 
 /* See Porting Layer Definition - p. 17 */
 void
@@ -110,6 +115,7 @@ InitInput (int argc, char *argv[])
 #endif
 }
 
+
 #ifdef XTESTEXT1
 void
 XTestGenerateEvent (int dev_type, int keycode, int keystate,
@@ -118,11 +124,13 @@ XTestGenerateEvent (int dev_type, int keycode, int keystate,
   ErrorF ("XTestGenerateEvent ()\n");
 }
 
+
 void
 XTestGetPointerPos (short *fmousex, short *fmousey)
 {
   ErrorF ("XTestGetPointerPos ()\n");
 }
+
 
 void
 XTestJumpPointer (int jx, int jy, int dev_type)

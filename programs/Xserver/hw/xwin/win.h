@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.23 2001/10/23 22:22:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.24 2001/10/29 21:10:23 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -257,6 +257,8 @@ typedef Bool (*winCreateColormapProcPtr)(ColormapPtr pColormap);
 
 typedef Bool (*winDestroyColormapProcPtr)(ColormapPtr pColormap);
 
+typedef Bool (*winHotKeyAltTabPtr)(ScreenPtr); 
+
 /*
  * Privates structures
  */
@@ -314,6 +316,7 @@ typedef struct
   /* Windows (Alt+F4) and Unix (Ctrl+Alt+Backspace) Killkey */
   Bool                  fUseWinKillKey;
   Bool                  fUseUnixKillKey;
+  Bool			fIgnoreInput;
 } winScreenInfo, *winScreenInfoPtr;
 
 typedef struct
@@ -324,7 +327,7 @@ typedef struct
   Bool			fClosed;
   Bool			fActive;
   Bool			fCursor;
-  
+    
   int			iDeltaZ;
 
   CloseScreenProcPtr	CloseScreen;
@@ -400,6 +403,7 @@ typedef struct
   winStoreColorsProcPtr			pwinStoreColors;
   winCreateColormapProcPtr		pwinCreateColormap;
   winDestroyColormapProcPtr		pwinDestroyColormap;
+  winHotKeyAltTabPtr			pwinHotKeyAltTab;
 } winPrivScreenRec, *winPrivScreenPtr;
 
 extern winScreenInfo		g_ScreenInfo[];
@@ -413,9 +417,11 @@ extern int			g_iPixmapPrivateIndex;
 extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
 
+
 /*
  * Screen privates macros
  */
+
 #define winGetScreenPriv(pScreen) \
 	((winPrivScreenPtr) (pScreen)->devPrivates[g_iScreenPrivateIndex].ptr)
 
@@ -425,9 +431,11 @@ extern CARD32			g_c32LastInputEventTime;
 #define winScreenPriv(pScreen) \
 	winPrivScreenPtr pScreenPriv = winGetScreenPriv(pScreen)
 
+
 /*
  * Colormap privates macros
  */
+
 #define winGetCmapPriv(pCmap) \
 	((winPrivCmapPtr) (pCmap)->devPrivates[g_iCmapPrivateIndex].ptr)
 
@@ -437,9 +445,11 @@ extern CARD32			g_c32LastInputEventTime;
 #define winCmapPriv(pCmap) \
 	winPrivCmapPtr pCmapPriv = winGetCmapPriv(pCmap)
 
+
 /*
  * GC privates macros
  */
+
 #define winGetGCPriv(pGC) \
 	((winPrivGCPtr) (pGC)->devPrivates[g_iGCPrivateIndex].ptr)
 
@@ -449,9 +459,11 @@ extern CARD32			g_c32LastInputEventTime;
 #define winGCPriv(pGC) \
 	winPrivGCPtr pGCPriv = winGetGCPriv(pGC)
 
+
 /*
  * Pixmap privates macros
  */
+
 #define winGetPixmapPriv(pPixmap) \
 	((winPrivPixmapPtr) (pPixmap)->devPrivates[g_iPixmapPrivateIndex].ptr)
 
@@ -461,20 +473,37 @@ extern CARD32			g_c32LastInputEventTime;
 #define winPixmapPriv(pPixmap) \
 	winPrivPixmapPtr pPixmapPriv = winGetPixmapPriv(pPixmap)
 
+
 /*
  * Window privates macros
  */
+
 #define winGetWindowPrivate(_pWin) ((winPrivWin *)\
 	(_pWin)->devPrivates[winWindowPrivateIndex].ptr)
+
 
 /*
  * FIXME: Windows mouse wheel macro; should be in Cygwin w32api headers.
  * Has been fixed after May 05, 2001.  Remove this section after the
  * fixed headers are in distribution.
  */
+
 #ifndef GET_WHEEL_DELTA_WPARAM
 #define GET_WHEEL_DELTA_WPARAM(wparam)		((short)HIWORD (wparam))
 #endif /* GET_WHEEL_DELTA_WPARAM */
+
+
+/*
+ * FIXME: Windows shell API defines.  Should be in w32api shellapi.h
+ */
+
+#ifndef ABS_AUTOHIDE
+#define	ABS_AUTOHIDE		0x00000001
+#endif
+#ifndef ABS_ALWAYSONTOP
+#define	ABS_ALWAYSONTOP		0x00000002
+#endif
+
 
 /*
  * BEGIN DDX and DIX Function Prototypes
@@ -564,6 +593,17 @@ winClearVisualTypes (void);
 
 
 /*
+ * wincreatewnd.c
+ */
+
+Bool
+winCreateBoundingWindowFullScreen (ScreenPtr pScreen);
+
+Bool
+winCreateBoundingWindowWindowed (ScreenPtr pScreen);
+
+
+/*
  * wincursor.c
  */
 
@@ -572,6 +612,17 @@ winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y);
 
 void
 winCrossScreen (ScreenPtr pScreen, Bool fEntering);
+
+
+/*
+ * winengine.c
+ */
+
+Bool
+winDetectSupportedEngines (ScreenPtr pScreen);
+
+Bool
+winSetEngine (ScreenPtr pScreen);
 
 
 /*
@@ -688,6 +739,9 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam);
 void
 winKeybdReleaseModifierKeys ();
 
+void
+winSendKeyEvent (DWORD dwKey, Bool fDown);
+
 
 /*
  * winlayer.c
@@ -728,6 +782,9 @@ winCountBits (DWORD dw);
 
 Bool
 winUpdateFBPointer (ScreenPtr pScreen, void *pbits);
+
+BOOL
+winPaintBackground (HWND hwnd, COLORREF colorref);
 
 
 /*
@@ -829,6 +886,9 @@ winActivateAppPrimaryDD (ScreenPtr pScreen);
 Bool
 winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen);
 
+Bool
+winHotKeyAltTabPrimaryDD (ScreenPtr pScreen);
+
 
 /*
  * winpixmap.c
@@ -906,18 +966,6 @@ winGetWindowPixmap (WindowPtr pWin);
 
 void
 winSetWindowPixmap (WindowPtr pWin, PixmapPtr pPix);
-
-Bool
-winDetectSupportedEngines (ScreenPtr pScreen);
-
-Bool
-winSetEngine (ScreenPtr pScreen);
-
-Bool
-winCreateBoundingWindowFullScreen (ScreenPtr pScreen);
-
-Bool
-winCreateBoundingWindowWindowed (ScreenPtr pScreen);
 
 
 /*
@@ -1127,8 +1175,6 @@ LRESULT CALLBACK
 winWindowProc (HWND hWnd, UINT message, 
 	       WPARAM wParam, LPARAM lParam);
 
-void
-winRestoreModeKeyStates (ScreenPtr pScreen);
 
 /*
  * END DDX and DIX Function Prototypes
