@@ -24,12 +24,14 @@
  *		fixed some problems with PCI probing and mapping
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.3 1996/10/10 14:04:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.4 1996/10/16 14:43:04 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "xf86.h"
+
 #include "mgareg.h"
 #include "mga.h"
 
@@ -151,7 +153,8 @@ unsigned long   planemask;
   int ydir;			/* 1 = top down, -1 = bottom up */
   int careful;
 
-  if(!(pSrc->type == DRAWABLE_WINDOW && pDst->type == DRAWABLE_WINDOW))
+  if(!xf86VTSema ||
+  	!(pSrc->type == DRAWABLE_WINDOW && pDst->type == DRAWABLE_WINDOW))
   {
       (*stdDoBitbltCopy)(pSrc, pDst, alu, prgnDst, pptSrc, planemask);
       return;

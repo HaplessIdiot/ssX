@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.6 1996/10/13 11:21:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.7 1996/10/16 14:43:05 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -890,7 +890,7 @@ TestAndSetRounding(pitch)
 		else
                 {
 			MGA.ChipRounding = 128;
-			MGABppShft = 2;
+			MGABppShft = 0;
 			MGADAClong = 0x5F2C1100;    /* interleave */
 			MGAInitDAC[2] = 0x5C;       /* 64 bits */
 		}
@@ -1149,10 +1149,6 @@ MGAFbInit()
 			cfb32TEOps1Rect.PolyFillRect = mgaPolyFillRect;
 			cfb32NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
 			
-			MGABlitterInit(vgaBitsPerPixel,
-					vga256InfoRec.displayWidth);
-			if (!MGAWaitForBlitter())
-				FatalError("MGA: BitBlt Engine timeout\n");
 	
 			vgaSetScreenInitHook(MGAScrnInit);
 
@@ -1354,6 +1350,10 @@ vgaMGAPtr restore;
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 
 	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong);
+
+	MGABlitterInit(vgaBitsPerPixel,	vga256InfoRec.displayWidth);
+	if (!MGAWaitForBlitter())
+				FatalError("MGA: BitBlt Engine timeout\n");
 }
 
 /*
@@ -1422,27 +1422,36 @@ Bool enter;
 	unsigned char temp;
 
 	if (enter)
-		{
+	{
 		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 		if (MGAMMIOBase)
+		{
 			xf86MapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
-		
-			vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-
-			/* Unprotect CRTC[0-7] */
-			outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-			outb(vgaIOBase + 5, temp & 0x7F);
+			if (!MGAWaitForBlitter())
+				ErrorF("MGA: BitBlt Engine timeout\n");
 		}
+		
+		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+
+		/* Unprotect CRTC[0-7] */
+		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
+		outb(vgaIOBase + 5, temp & 0x7F);
+	}
 	else
-		{
+	{
 		/* Protect CRTC[0-7] */
 		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
 		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
 		
 		if (MGAMMIOBase)
+		{
+ 			if (!MGAWaitForBlitter())
+				ErrorF("MGA: BitBlt Engine timeout\n");
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
+		}
+		
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 	}
 }

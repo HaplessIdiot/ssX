@@ -14,6 +14,7 @@ the very first one, are supported by both the color and monochrome servers.
 8800CS 8200LX
 8900B 8900C 8900CL/D 9000 9000i 9100B
 9200CXr 9320LCD 9400CXi 9420 9420DGi 9430DGi 9440AGi 9660XGi 9680
+Cyber9382 Cyber9385
 </bf></quote>
 It must be noted that the 9000i chipset is treated as a 9000 by the server.
 Additionally the 9100B is treated 
@@ -25,6 +26,10 @@ but should work in this way according to the chipset documentation.
 
 <bf> NOTES: </bf>
 <itemize>
+<item>The Cyber 9382/5 chips that have started to appear, have preliminary
+support in XFree86 3.2 and appear to work at 800x600 on the LCD.
+The server cannot yet detect the Cyber chips and therefore it is necessary
+to specify "Chipset 'cyber938x'" in your XF86Config file to support them.
 <item>The TGUI9440/9660/9680 are now fully supported by the SVGA server.
 <item>16 bits per pixel is now supported for the 8900D, 9200CXr, 9400CXi,
 9420DGi, 9430DGi, 9440AGi, 9660XGi and 9680, but only the 9440AGi and 9400CXi
@@ -53,22 +58,17 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	70ns DRAM
 <tag>Option &dquot;slow_dram&dquot;</tag>
 	80ns DRAM.  This is the default for TGUIs.
+	NOTE: The above settings allow for higher dot clocks. Choose
+	the one that matches your DRAM speed.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
 	Turn on hardware cursor (NOTE: it is off by default)
-<tag>Option &dquot;tgui_pci_read_on&dquot;</tag>
-	Turn on PCI burst read mode.
 <tag>Option &dquot;tgui_pci_read_off&dquot;</tag>
 	Turn off PCI burst read mode.
-<tag>Option &dquot;tgui_pci_write_on&dquot;</tag>
-	Turn on PCI burst write mode.
 <tag>Option &dquot;tgui_pci_write_off&dquot;</tag>
 	Turn off PCI burst write mode.
-	NOTE: PCI modes. By default the read burst and write burst
-	are independent of each other. By not specifying one of the
-	above - the PCI registers are untouched. If you suffer from
-	screen corruption then try turning them off. By turning them on
-	explicitly may benefit from improved performance, but it
-	may also give screen corruption. USE WITH CAUTION.
+	NOTE: PCI Burst modes are now on by default.
+	If you suffer from screen corruption, you might like to try
+	and specify one or both of the PCI options above.
 <tag>ClockChip &dquot;tgui&dquot;</tag>
 	Turn on programmable clocks.  This is the default for TGUIs.
 <tag>Option &dquot;no_program_clocks&dquot;</tag>
@@ -142,7 +142,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.12 1996/06/29 09:07:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.13 1996/08/26 14:08:49 dawes Exp $
 
 
 

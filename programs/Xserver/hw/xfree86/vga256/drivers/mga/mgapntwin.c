@@ -1,9 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgapntwin.c,v 3.1 1996/10/16 14:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgapntwin.c,v 3.2 1996/10/18 15:03:51 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "xf86.h"
 
 #include "mga.h"
 #include "mgareg.h"
@@ -27,6 +28,24 @@ mgaFillBoxSolid (pDrawable, nBox, pBox, pixel)
     BoxPtr	    pBox;
     unsigned long   pixel;
 {
+	if(!xf86VTSema) 
+		switch(vgaBitsPerPixel)
+		{
+		case 32:
+			cfb32FillBoxSolid(pDrawable, nBox, pBox, pixel);
+			break;
+		case 24:
+			cfb24FillBoxSolid(pDrawable, nBox, pBox, pixel);
+			break;
+		case 16:
+			cfb16FillBoxSolid(pDrawable, nBox, pBox, pixel);
+			break;
+		case 8:
+			vga256FillBoxSolid(pDrawable, nBox, pBox, pixel,
+						0, GXcopy);
+			break;
+		}
+	
 	switch(vgaBitsPerPixel)
 	{
 	case 16:

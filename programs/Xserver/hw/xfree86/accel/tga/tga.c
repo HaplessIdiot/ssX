@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.7 1996/10/17 15:18:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.8 1996/10/18 15:02:08 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -40,7 +40,6 @@
 #include "xf86_HWlib.h"
 #include "tga.h"
 #include "tga_presets.h"
-#include "tga_clocks.h"
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"

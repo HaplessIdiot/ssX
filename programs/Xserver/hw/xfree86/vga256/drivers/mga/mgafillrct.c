@@ -1,9 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgafillrct.c,v 3.0 1996/10/10 14:04:48 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "xf86.h"
 
 #include "mga.h"
 
@@ -46,28 +47,28 @@ mgaFillRectSolidCopy(pDrawable, pGC, nBox, pBox)
 	switch(vgaBitsPerPixel)
 	{
 	case 8:
-		if(pDrawable->type == DRAWABLE_WINDOW)
+		if(xf86VTSema && pDrawable->type == DRAWABLE_WINDOW)
 			mgaFillBoxSolid(pDrawable, nBox, pBox,
 					pGC->fgPixel & 0xFF);
 		else
 			vga256FillRectSolidCopy(pDrawable, pGC, nBox, pBox);
 		break;
 	case 16:
-		if(pDrawable->type == DRAWABLE_WINDOW)
+		if(xf86VTSema && pDrawable->type == DRAWABLE_WINDOW)
 			mgaFillBoxSolid(pDrawable, nBox, pBox,
 					pGC->fgPixel & 0xFFFF);
 		else
 			cfb16FillRectSolidCopy(pDrawable, pGC, nBox, pBox);
 		break;
 	case 24:
-		if(pDrawable->type == DRAWABLE_WINDOW)
+		if(xf86VTSema && pDrawable->type == DRAWABLE_WINDOW)
 			mgaFillBoxSolid(pDrawable, nBox, pBox, 
 					pGC->fgPixel & 0xFFFFFF);
 		else
 			cfb24FillRectSolidCopy(pDrawable, pGC, nBox, pBox);
 		break;
 	case 32:
-		if(pDrawable->type == DRAWABLE_WINDOW)
+		if(xf86VTSema && pDrawable->type == DRAWABLE_WINDOW)
 			mgaFillBoxSolid(pDrawable, nBox, pBox,
 					pGC->fgPixel);
 		else

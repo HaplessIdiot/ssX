@@ -1,5 +1,5 @@
 /* $XConsortium: mx_driver.c /main/6 1996/01/12 12:18:24 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.14 1996/09/29 14:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.15 1996/10/16 14:43:10 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -371,6 +371,7 @@ MXProbe()
     	}
   	else
 	{
+		unsigned char save;
 		/*
 		 * OK.  We have to actually test the hardware.  The
 		 * EnterLeave() function (described below) unlocks access
@@ -389,6 +390,7 @@ MXProbe()
 		 * and the Ferraro book.
 		 */
 		failed = FALSE;
+		save = rdinx(0x3C4,0xA7);
 		wrinx(0x3C4,0xA7,0);
 		if (testinx(0x3C4,0xC5)) {failed = TRUE;}
 		if (!failed) 
@@ -403,6 +405,7 @@ MXProbe()
 			 * Returning FALSE implies failure, and the server
 			 * will go on to the next driver.
 			 */
+			wrinx(0x3C4,0xA7,save);
 	  		MXEnterLeave(LEAVE);
 	  		return(FALSE);
 		}

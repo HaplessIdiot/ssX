@@ -1,5 +1,5 @@
 XCOMM $XConsortium: site.def.LK /main/7 1995/12/17 08:46:10 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.21 1996/10/03 08:32:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.22 1996/10/13 11:18:51 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -157,8 +157,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.21 1996/1
  */
 
 #define XF86SvgaDrivers		nv et4000 et3000 pvga1 gvga ati sis tvga8900 \
-				cirrus ncr77c22 mga oak mx al2101 ali cl64xx \
-				video7 chips ark realtek apm generic
+				cirrus ncr77c22 mga oak al2101 ali cl64xx \
+				video7 chips ark mx realtek apm generic
 
 #define XF86Vga16Drivers	et4000 et3000 ncr77c22 ati sis tvga8900 oak \
 				cl64xx generic 

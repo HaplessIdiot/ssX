@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.47 1996/10/03 08:28:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.48 1996/10/06 13:09:41 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -170,9 +170,15 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.47 1996/10/03 08:28:09 dawe
 
 #ifdef AlphaArchitecture
 #define OptimizedCDebugFlags	-O2
+#if UseElfFormat
+#define StandardDefines		-Dlinux -D__alpha__ -D_POSIX_SOURCE \
+				-D_BSD_SOURCE -D_SVID_SOURCE
+#define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
+#else
 #define StandardDefines		-Dlinux -D__alpha__ -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_SVID_SOURCE -DX_LOCALE
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#endif
 #define HasWChar32		YES
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET

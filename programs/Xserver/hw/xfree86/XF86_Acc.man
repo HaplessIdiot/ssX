@@ -1,11 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.54 1996/09/25 14:14:58 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.55 1996/10/16 14:38:48 dawes Exp $ 
 .TH XF86_Accel 1 "Version 3.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
-UNIX on x86 platforms with an S3, Mach8, Mach32, Mach64, P9000, AGX,
-ET4000/W32, ET6000, I128* or 8514/A accelerator board  (* not currently accelerated)
+UNIX on x86 and Alpha platforms with an S3, Mach8, Mach32, Mach64, P9000, AGX,
+ET4000/W32, ET6000, I128*, TGA*, or 8514/A accelerator board
+(* not currently accelerated)
 .SH SYNOPSIS
 .B XF86_S3
+[:displaynumber] [ option ] ...
+.LP
+.B XF86_S3V
 [:displaynumber] [ option ] ...
 .LP
 .B XF86_Mach8
@@ -29,14 +33,21 @@ ET4000/W32, ET6000, I128* or 8514/A accelerator board  (* not currently accelera
 .B XF86_I128
 [:displaynumber] [ option ] ...
 .LP
+.B XF86_TGA
+[:displaynumber] [ option ] ...
+.LP
 .B XF86_8514
 [:displaynumber] [ option ] ...
 .SH DESCRIPTION
 .I XF86_S3
-is an 8-bit PseudoColor, 16-bit TrueColor and 24-bit TrueColor server for
-S3 graphic accelerator boards.  Note, 16-bit and 24-bit operation is not
+is an 8-bit PseudoColor, 16-bit TrueColor and 32-bit TrueColor server for
+S3 graphic accelerator boards.  Note, 16-bit and 32-bit operation is not
 supported on all S3 accelerator boards.  Refer to \fIREADME.S3\fP for
 details of which boards are supported at which depths.
+.PP
+.I XF86_S3V
+is an 8-bit PseudoColor and 16-bit TrueColor server for
+S3 ViRGE and ViRGE/VX graphic accelerator boards.
 .PP
 .I XF86_Mach8
 is an 8-bit PseudoColor server for ATI Mach8 graphic accelerator boards. 
@@ -48,18 +59,19 @@ all Mach32 accelerator boards.  Refer to \fIREADME.Mach32\fP for details
 of which RAMDACs are supported at which depths.
 .PP
 .I XF86_Mach64
-is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor server
-for ATI Mach64 graphic accelerator boards.  Note, 16-bit and 24-bit
+is an 8-bit PseudoColor, 16-bit TrueColor, and 32-bit TrueColor server
+for ATI Mach64 graphic accelerator boards.  Note, 16-bit and 32-bit
 operation is not supported for all RAMDACs.  Refer to
 \fIREADME.Mach64\fP for details of which RAMDACs are supported at
 which depths.
 .PP
 .I XF86_P9000
-is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor
+is an 8-bit PseudoColor, 16-bit TrueColor, and 32-bit TrueColor
 server for Weitek Power 9000 (P9000) graphic accelerator boards. 
 .PP
 .I XF86_AGX
-is an 8-bit PseudoColor and 16-bit TrueColor server for AGX/XGA graphic accelerator boards.
+is an 8-bit PseudoColor and 16-bit TrueColor server for AGX/XGA graphic
+accelerator boards.
 .PP
 .I XF86_W32
 is an 8-bit PseudoColor server for ET4000/W32, ET4000/W32i, ET4000/W32p and
@@ -71,6 +83,10 @@ is an server for Number Nine Imagine 128
 graphic accelerator boards.
 .B Note: this server currently does not use any of the accelerated features
 .B of this board.
+.PP
+.I XF86_TGA
+is an server for Digital's 21030 (TGA) chipset.  This server is available only
+for Alpha platforms.
 .PP
 .I XF86_8514
 is an 8-bit PseudoColor server for 8514/A graphic accelerator boards.  
@@ -90,6 +106,9 @@ XF86_S3:
 86C732 (Trio32), 86C764 (Trio64), 86C765 (Trio64V+), 86C864, 86C868,
 86C964, 86C968
 .TP 13
+XF86_S3V:
+86C325 (ViRGE), 86C988 (ViRGE/VX)
+.TP 13
 XF86_Mach8:
 ATI Mach8, ATI Mach32
 .TP 13
@@ -97,7 +116,7 @@ XF86_Mach32:
 ATI Mach32
 .TP 13
 XF86_Mach64:
-ATI Mach64
+ATI Mach64 (GX, CT, ET, VT, GT)
 .TP 13
 XF86_P9000:
 Diamond Viper VLB, Diamond Viper PCI, Orchid P9000, and some clones
@@ -109,14 +128,20 @@ AGX-010, AGX-014, AGX-015, AGX-016, XGA-1, XGA-2
 XF86_W32:
 ET4000/W32, ET4000/W32i, ET3000/W32p, ET6000
 .TP 13
+XF86_I128:
+Number Nine Imagine 128 series 1 and 2
+.TP 13
+XF86_TGA:
+DEC 21030
+.TP 13
 XF86_8514:
 IBM 8514/A and true clones
 .RE
 .PP
 For S3 virtual resolutions up to (approximately)
 1152x800 are supported, using  (up to) 1Mb of display memory
-(the S3 uses an internal width of 1280 except for new revisions of some of
-the chips, hence 1Mb can't support 1152x900).
+(the S3 uses an internal width of 1280 for some older chips,
+hence 1Mb can't support 1152x900).
 Physical resolutions up to 1280x1024 (1600x1280 on some cards) are
 possible using 2Mb or more of display memory (virtual resolution is
 dependent solely on the amount of memory installed, with the maximum
@@ -140,7 +165,7 @@ Refer to \fIREADME.agx\fP for configuration details.
 For the P9000, the virtual and physical resolutions must be the
 same.  With sufficient memory, resolutions up to 1280x1024 are supported.
 .PP
-All the servers which support 24 bit visuals do so using a 32 bit
+All the servers which support 24 bit visuals currently do so using a 32 bit
 per pixel configuration where 8 bits in every 32 bits is unused.  This needs
 to be taken into account when calculating the maximum virtual display size
 that can be supported at this depth.
@@ -151,9 +176,10 @@ as described in the
 .I XFree86(1) 
 manpage.
 .sp
-The Mach64, Mach32, S3, P9000 and AGX servers now support more than 8 bit color.
-The Mach32 and AGX servers support 16 bit TrueColor and the Mach64, S3, 
-and P9000 servers support 16 and 32 bit TrueColor.  
+The Mach64, Mach32, S3, S3V, P9000 and AGX servers support more than 8 bit
+color.
+The Mach32, S3V and AGX servers support 16 bit TrueColor and the Mach64, S3, 
+I128, and P9000 servers support 16 and 32 bit TrueColor.  
 The 32 bit TrueColor mode only uses
 24 bits per pixel for color information (giving you 16 million
 colors).  These modes may be used by specifying the \fB\-bpp\fP
@@ -167,8 +193,8 @@ See the
 .I XF86Config(4/5)
 manpage for general details. Here only the
 parts specific to the
-.I XF86_S3, XF86_Mach8, XF86_Mach32, XF86_Mach64, XF86_P9000, XF86_AGX,
-.I XF86_W32
+.I XF86_S3, XF86_S3V, XF86_Mach8, XF86_Mach32, XF86_Mach64, XF86_P9000,
+.I XF86_AGX, XF86_W32, XF86_TGA, XF86_I128,
 and 
 .I XF86_8514
 servers are explained.
@@ -189,6 +215,17 @@ s3_generic
 .TP 12
 mmio_928
 (for a memory mapped IO driven server on 86C928, 86C732, 86C764, 86C864, 86C868, 86C964 and 86C968 boards)
+.TP 12
+newmmio
+(for a newer memory mapped IO driven server on 86C765, 86C868, and 86C968 boards)
+.RE
+.RS 8
+.PP
+XF86_S3V:
+.RE
+.RS 1.5i
+.TP 12
+s3_virge
 .RE
 .RS 8
 .PP
@@ -276,6 +313,22 @@ et6000
 .RE
 .RS 8
 .PP
+XF86_I128:
+.RE
+.RS 1.5i
+.PP
+i128
+.RE
+.RS 8
+.PP
+XF86_TGA:
+.RE
+.RS 1.5i
+.PP
+tga
+.RE
+.RS 8
+.PP
 XF86_8514:
 .RE
 .RS 1.5i
@@ -285,29 +338,30 @@ ibm8514
 .TP 8
 .B Clocks \fIclock ...\fP
 For boards with non-programmable clock chips, the clocks can be specified
-here (see \fIXF86Config(4/5)\fP).  The P9000 server now no longer requires
-a \fBClocks\fP line.  It will now work the same way as other servers with
+here (see \fIXF86Config(4/5)\fP).  The P9000 server no longer requires
+a \fBClocks\fP line.  It will work the same way as other servers with
 a programmable clock chip (i.e., use the clocks as specified in the
 Modes).  Note, clocks over 110\ Mhz are not recommended or supported
 by the P9000 server.  The Mach64 server also does not require a
 \fBClocks\fP line since the clocks are normally read directly from the
-video card's BIOS.  For the Mach64 server, the clocks given in the
-XF86Config file are ignored unless the "no_bios_clocks" option is given
-(see below).
+video card's BIOS or programmed as required.  For the Mach64 server,
+the clocks given in the XF86Config file are ignored unless the
+"no_bios_clocks" option is given (see below).
 .TP 8
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the 
 P9000 and AGX servers), the name of the clock chip is given.  
 The only supported values for the W32 server
-are \fB"ics5341"\fP and \fB"stg1703"\fP.
+are \fB"icd2061a"\fP, \fB"dcs2834"\fP, \fB"ics5341"\fP and \fB"stg1703"\fP.
 Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ti3026"\fP,
-\fB"ics2595"\fP,
+\fB"ti3030"\fP, \fB"ics2595"\fP,
 \fB"ics5300"\fP, \fB"ics5342"\fP, \fB"ch8391"\fP,
-\fB"stg1703"\fP and \fB"ibm_rgb5xx"\fP.
+\fB"stg1703"\fP, \fB"att20c408"\fP, \fB"att20c409"\fP, \fB"att20c499"\fP,
+and \fB"ibm_rgb5xx"\fP.
 Possible values for the Mach64 server include \fB"ati18818"\fP,
-\fB"ics2595"\fP, \fB"stg1703"\fP, \fB"ch8398"\fP, and
+\fB"ics2595"\fP, \fB"stg1703"\fP, \fB"ch8398"\fP, \fB"ibm_rgb514"\fP and
 \fB"att20c408"\fP.
 The only possible clockchip value for the ET6000 is \fB"et6000"\fP.
 .TP 8
@@ -371,6 +425,9 @@ This must be specified if the server fails to detect it.
 \fBibm_rgb525\fP - (S3) Card has an IBM RGB525 RAMDAC.
 This must be specified if the server fails to detect it.
 .sp
+\fBibm_rgb526\fP - (S3) Card has an IBM RGB526 RAMDAC.
+This must be specified if the server fails to detect it.
+.sp
 \fBibm_rgb528\fP - (S3) Card has an IBM RGB528 RAMDAC.
 This must be specified if the server fails to detect it.
 .sp
@@ -416,6 +473,9 @@ be specified if the server fails to detect the Ti3025.
 \fBti3026\fP - (S3) Card has a TI ViewPoint Ti3026 RAMDAC.  This must
 be specified if the server fails to detect the Ti3026.
 .sp
+\fBti3030\fP - (S3) Card has a TI ViewPoint Ti3030 RAMDAC.  This must
+be specified if the server fails to detect the Ti3030.
+.sp
 \fBbt481\fP - (AGX, Mach32) Card has a BrookTree Bt481 RAMDAC.
 .sp
 \fBbt482\fP - (AGX) Card has a BrookTree Bt482 RAMDAC.
@@ -455,11 +515,13 @@ For details of how to use it, refer to \fIREADME.agx\fP and
 .TP 8
 .B MemBase \fImemaddress\fP
 specifies the hard-wired part of the linear framebuffer base address.  This
-option is only used by the P9000, S3, Mach64, and Mach32 servers (and only when using a
+option is only used by the P9000, S3, Mach64, Mach32, and TGA servers
+(and only when using a
 linear framebuffer).  For the S3 server, the hard-wired part is the high
 10 bits of the 32-bit address (ie \fImemaddress\fP is masked with
-\fI0xFFC00000\fP).  Note: this should not be required for the 864 and 964
-chips where the entire framebuffer address is software-selectable.  Also, note
+\fI0xFFC00000\fP).  Note: this should not be required for the 864 and later
+chips where the entire framebuffer address is software-selectable, or for
+PCI cards.  Also, note
 that the in versions prior to 3.1.1, the S3 server used only the top 6 bits
 of \fImemaddress\fP, and ored it with 0x3C00000.  To get the same behaviour,
 or 0x3C00000 with the value given previously.
@@ -699,7 +761,10 @@ be specified in the XF86Config file.\fP
 .SH FILES
 .TP 30
 <XRoot>/bin/XF86_S3
-The 8, 16, and 24-bit color X server for S3
+The 8, 16, and 32-bit color X server for S3
+.TP 30
+<XRoot>/bin/XF86_S3V
+The 8, and 16-bit color X server for S3 ViRGE
 .TP 30
 <XRoot>/bin/XF86_Mach8
 The 8-bit color X server for Mach8
@@ -708,16 +773,22 @@ The 8-bit color X server for Mach8
 The 8, and 16-bit color X server for Mach32
 .TP 30
 <XRoot>/bin/XF86_Mach64
-The 8, 16, and 24-bit color X server for Mach64
+The 8, 16, and 32-bit color X server for Mach64
 .TP 30
 <XRoot>/bin/XF86_P9000
-The 8, 16, and 24-bit color X server for the P9000
+The 8, 16, and 32-bit color X server for the P9000
 .TP 30
 <XRoot>/bin/XF86_AGX
 The 8, and 16-bit color X server for AGX and XGA
 .TP 30
 <XRoot>/bin/XF86_W32
 The 8-bit color X server for ET4000/W32 and ET6000
+.TP 30
+<XRoot>/bin/XF86_I128
+The 8, 16 and 32-bit color X server for Imagine 128
+.TP 30
+<XRoot>/bin/XF86_TGA
+The 8-bit color X server for DEC TGA
 .TP 30
 <XRoot>/bin/XF86_8514
 The 8-bit color X server for IBM 8514 and true compatibles

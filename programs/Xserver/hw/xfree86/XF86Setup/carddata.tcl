@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.7 1996/09/29 12:51:08 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.8 1996/10/16 14:39:23 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -202,7 +202,7 @@ set CardClockChips(Mach32) {}
 set CardClockChips(Mach64) { ati18818 att20c408 ch8398 ibm_rgb514 \
 			     ics2595 stg1703 }
 set CardClockChips(P9000)  { icd2061a }
-set CardClockChips(S3)	   { ati18818 att20c409 att20c499 att20c408 \
+set CardClockChips(S3)	   { att20c409 att20c499 att20c408 \
 			     ch8391 dcs2824 \
 			     ibm_rgb514 ibm_rgb51x ibm_rgb524 ibm_rgb525 \
 				ibm_rgb528 ibm_rgb52x ibm_rgb5xx \

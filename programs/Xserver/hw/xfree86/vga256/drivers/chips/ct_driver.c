@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.24 1996/10/16 14:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.25 1996/10/17 15:20:45 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -113,8 +113,6 @@ unsigned int ctCRvalue;
 unsigned int ctST01reg;
 
 /* Dummies used to temporarily store values */
-unsigned char ctHorizontalStretch ;
-unsigned char ctVerticalStretch ;
 unsigned char ctSWTmp;
 
 /* HW cursor related */
@@ -269,6 +267,8 @@ static unsigned CHIPS_ExtPorts[] =
     0x102,
     0x103,
     0x3C3,
+    0x3C4,
+    0x3C5,
     0x3C6,
     0x3C7,
     0x3D0,
@@ -1122,7 +1122,6 @@ CHIPSProbe()
 	}
     }
 
-    
     /* Frame Buffer */
     if (IS_STN(ctPanelType)) {
 	if (ctisHiQV32) {
@@ -1314,7 +1313,7 @@ CHIPSProbe()
 	}
     }
 
-    if (ctClockType = TYPE_PROGRAMMABLE) {
+    if (ctClockType == TYPE_PROGRAMMABLE) {
       if(!vga256InfoRec.clockprog)
 	vga256InfoRec.clocks = 0;
       if(vga256InfoRec.textClockFreq > 0) {
@@ -1557,9 +1556,6 @@ CHIPSRestore(restore)
     ErrorF("CHIPSRestore\n");
 #endif
 
-    /* reset hcounter -- just in case... */
-    outw(0x3C4,0x07);
-
     /* set registers so that we can program the controller */
     if (ctisHiQV32) {
 	outw(0x3D6, 0x0E);
@@ -1575,6 +1571,11 @@ CHIPSRestore(restore)
     tmp = inb(ctCRvalue);
     outb(ctCRvalue, (tmp & 0x7F)); /*group 0 protection off */
 
+    /* wait for vsync if sequencer is running - stop sequencer */
+	while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
+        while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
+    outw(0x3C4,0x07);              /* reset hsync - just in case...*/
+
     /* set the clock */
 #ifdef IO_DEBUG
     ErrorF("1: 0x3CC: %X ", (unsigned char)inb(0x3CC));
@@ -1588,19 +1589,11 @@ CHIPSRestore(restore)
     /* set extended regs */
     ctRestore(restore);
 
-    /* set generic registers */
-    if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
-      ctScaleClock(ENTER, &vga256InfoRec.textclock);
-    vgaHWRestore((vgaHWPtr) restore);
-    if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
-      ctScaleClock(LEAVE, &vga256InfoRec.textclock);
+    /* set CRTC registers - do it before sequencer restarts */
+    for (i=0; i<25; i++) 
+      outw(ctCRindex,(restore->std.CRTC[i] << 8) | i);
 
     /* set stretching registers */
-    if(!(inb(ctST01reg) & 0x08)) { /* if sequencer is running .... */
-	while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
-        while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
-    }
-    outw(0x3C4,0x07);              /* reset hsync - just in case...*/
     if (ctisHiQV32) {
       ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
       /* why twice ? :
@@ -1612,6 +1605,13 @@ CHIPSRestore(restore)
     else {
       ctRestoreStretching(restore->Port_3D6[0x55],restore->Port_3D6[0x57]);
     }
+
+    /* set generic registers */
+    if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
+      ctScaleClock(ENTER, &vga256InfoRec.textclock);
+    vgaHWRestore((vgaHWPtr) restore);
+    if (!ctisHiQV32&&(vga256InfoRec.textclock>=0)&&(vga256InfoRec.textclock<=MAXCLOCKS)) 
+      ctScaleClock(LEAVE, &vga256InfoRec.textclock);
 
     /* Flag valid start address, if using CRT extensions */
     if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
@@ -1692,20 +1692,6 @@ CHIPSSave(save)
     outb(ctCRindex, 0x11);
     tmp = inb(ctCRvalue);
     outb(ctCRvalue, (tmp & 0x7F));
-
-    /* Disable horizontal/vertical stretching   */
-    if (ctisHiQV32) {
-      /* must reset Stretching, because graphic mode must not be change
-       * with stretching enable.
-       * vgaHWSave changes to Graphic mode to save FONT etc. 
-       */
-      read_fr(0x40, ctHorizontalStretch);
-      read_fr(0x48, ctVerticalStretch);
-    }
-    else {
-      read_xr(0x55, ctHorizontalStretch);
-      read_xr(0x57, ctVerticalStretch);
-    }      
 
     /* get generic registers */
     save = (vgaCHIPSPtr) vgaHWSave((vgaHWPtr) save, sizeof(vgaCHIPSRec));
@@ -2033,10 +2019,10 @@ CHIPSInit655xx(mode)
 	new->Port_3D6[0x55] |= 0x01;   /* enable horizontal-compensation  */
 
     /* set stretching/centering */	
-    if(OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
-      new->Port_3D6[0x55] =  ctHorizontalStretch ;
-      new->Port_3D6[0x57] =  ctVerticalStretch ; 
-    } else {
+    if(!OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
+	new->Port_3D6[0x51] |= 0x40;   /* enable FP compensation          */
+	new->Port_3D6[0x55] |= 0x01;   /* enable horiz. compensation      */
+	new->Port_3D6[0x57] |= 0x01;   /* enable horiz. compensation      */
 	if (OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options)){
 	    if (mode->CrtcHDisplay < 1489)      /* HWBug                  */ 
 		new->Port_3D6[0x55] |= 0x02;	/* enable h-centering     */
@@ -2364,10 +2350,7 @@ CHIPSInitHiQV32(mode)
     new->Port_3D4[0x40] |= 0x80;
 
     /* centering/stretching */
-    if(OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
-	new->Port_3D0[0x40] = ctHorizontalStretch ;
-	new->Port_3D0[0x48] = ctVerticalStretch ; 
-      } else {
+    if(!OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
     if (OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options)) {
 	new->Port_3D0[0x40] = 0x01;    /* Disable Horizontal stretching */
 	new->Port_3D0[0x48] = 0x01;    /* Disable vertical stretching */
@@ -2525,9 +2508,9 @@ CHIPSAdjust(x, y)
     }
 #ifdef XFreeXDGA
     if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
-      /* Wait until vertical retrace is in progress. */
-      while (inb(vgaIOBase + 0xA) & 0x08);
-      while (!(inb(vgaIOBase + 0xA) & 0x08));
+	/* Wait until vertical retrace is in progress. */
+	while (inb(vgaIOBase + 0xA) & 0x08);
+	while (!(inb(vgaIOBase + 0xA) & 0x08));
     }
 #endif
 }
@@ -3039,14 +3022,19 @@ CHIPSFbInit()
 ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
     unsigned char ctHorizontalStretch, ctVerticalStretch;
 {
+  unsigned char tmp;
     /* write to regs. */
     if (ctisHiQV32) {
-        write_fr(0x40, ctHorizontalStretch);
-        write_fr(0x48, ctVerticalStretch);
+        read_fr(0x40, tmp);
+        write_fr(0x40, (tmp & 0xFE) | (ctHorizontalStretch & 0x01));
+        read_fr(0x48, tmp);
+        write_fr(0x48, (tmp & 0xFE) | (ctVerticalStretch & 0x01));
     }
     else {
-        write_xr(0x55, ctHorizontalStretch);
-        write_xr(0x57, ctVerticalStretch);
+        read_xr(0x55, tmp);
+        write_xr(0x55, (tmp & 0xFE) | (ctHorizontalStretch & 0x01));
+        read_xr(0x57, tmp);
+        write_xr(0x57, (tmp & 0xFE) | (ctVerticalStretch & 0x01));
     }
 
     usleep(20000);			/* to be active */
@@ -3153,15 +3141,17 @@ ctRestore(restore)
 	      outb(0x3D7, restore->Port_3D6[i]);
 	}
 	outb(0x3D6, 0x54);
-	tmp = inb(0x3D7);	       /* restore the non clock bits */
-	outb(0x3D6, 0x54);
+	tmp = inb(0x3D7);	/*  restore the non clock bits             */
+	outb(0x3D6, 0x54); 	/* Don't touch alternate clock select reg. */
 	outb(0x3D7, ((restore->Port_3D6[0x54] & 0xF3) | (tmp & ~0xF3)));
-
-	/* Don't touch alternate clock select reg. */
-	for (i=0x56; i < 0x80; i++) {
-	    if (i==0x57) 
-	        continue ;             /* there is restoreStretching */
-	    outb(0x3D6, i);
+	outb(0x3D6, 0x55);      /* output with h-comp off                  */
+	outb(0x3D7, (restore->Port_3D6[0x55] & 0xFE));
+	outb(0x3D6, 0x56);
+	outb(0x3D7, restore->Port_3D6[0x56]);
+	outb(0x3D6, 0x57);      /* output with v-comp off                  */
+	outb(0x3D7, (restore->Port_3D6[0x57] & 0xFE));
+	for (i=0x58; i < 0x80; i++) {
+	  outb(0x3D6, i);
 	    if (inb(0x3D7) != restore->Port_3D6[i])/* only modify if changed */
 	        outb(0x3D7, restore->Port_3D6[i]);
 	}
@@ -3277,91 +3267,38 @@ void
 CHIPSSaveScreen(start)
      Bool start;
 { 
-    /*
-     * this function makes sure that the vertical counters are 0 before 
-     * resetting the sequencer and resetting/stopping the horizontal 
-     * character counters. Assuming that any SS_START has a corresponding 
-     * SS_FINISH it implements a counter to make sure that the sequencer 
-     * doesn't get restarted until the last SS_FINISH is called. Doing 
-     * this we hope to avoid problems during mode changes with temporarily 
-     * messed up counters.
-     * NOTE: This is assumption is not correct! During a syncronous reset
-     * the sequencer is still running!!! Therefore we do a "reset/stop 
-     * hcounter after the sequencer reset and any time SS_START is called.
-     * Also we have to take care in CHIPSRestore to reset/stop the hcounters
-     * there again since they are restarted any time something get written
-     * to the sequencer regs. This happens in vgaProtect() after this function
-     * was called and also in vgaHWRestore(). If this proves to be a problem
-     * we might have to replace vgaHWRestore() by our own routine. We certainly
-     * have to wait for vsync to become active again and turn of the hcounter
-     * again before we fiddle with the stretching stuff.
-     * For the moment I'd like to leave this function as it is but we might
-     * be able to remove it.
-     */
-    static char counter = 0;
-    unsigned char tmp;
+  /* Differences to original: reset h-counter of sequencer */
 
+  static char counter = 0;
+  unsigned char tmp;
+  
 #ifdef DEBUG
-    ErrorF("CHIPSSaveScreen\n");
+  ErrorF("CHIPSSaveScreen\n");
 #endif
+  
+  /* fix things that could be messed up by suspend/resume */
+  if(!ctisHiQV32)
+    outb(0x3D6,0x15);
 
-    /* fix things that could be messed up by suspend/resume */
-    if(!ctisHiQV32)
-        outb(0x3D6,0x15);
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
-    outb(ctCRindex, 0x11);
-    tmp = inb(ctCRvalue);
-    outb(ctCRvalue, (tmp & 0x7F));
-
-    if (start == SS_START) {
-	if(!counter){
+  if (start == SS_START) {
+    
+    /* reset horizontal counter */
+    outw(0x3C4,0x07);
+    
+    /* synchronous reset - stop counters */
+    outw(0x3C4, 0x0100);        
 #ifdef DEBUG
-	    outb(0x3C4,00);
-	    if (((tmp=inb(0x3C5)) & 0x03) == 0x03){
-#endif 
-		/* wait for vertical counter to be 0 */
-		while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off*/
-		/* to be sure we work at start Vsync */
-		while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
-#ifdef DEBUG
-	    } else { 
-		ErrorF("Oops: SR00 = %X\n",tmp);
-	    }
+    ErrorF("Seq. reset on\n");
 #endif
-	
-	    /* synchronous reset - stop counters */
-	    outw(0x3C4, 0x0100);        
+  } else {
+    /* reset hcounter again !don't fiddle with this! */
+    outw(0x3C4,0x07);
+    
+    /* end reset - start counters */
+    outw(0x3C4, 0x0300); 
 #ifdef DEBUG
-	    ErrorF("Seq. reset on\n");
+    ErrorF("Seq. reset off\n");
 #endif
-	}
-	/* reset horizontal counter */
-	outb(0x3C4,0x07);
-	outb(0x3C5,0x00);
-
-	counter++;
-#ifdef DEBUG
-	ErrorF("Counter: %i\n",counter);
-#endif
-    } else {
-	counter--;
-	if(!counter){
-	    /* reset hcounter again !don't fiddle with this! */
-	    outw(0x3C4,0x07);
-
-	    /* end reset - start counters */
-	    outw(0x3C4, 0x0300); 
-#ifdef DEBUG
-	    ErrorF("Seq. reset off\n");
-#endif
-	}
-#ifdef DEBUG
-	ErrorF("Counter: %i\n",counter);
-#endif
-	if (counter<0){
-	    counter=0;
-	};
-    }
+  }
 }
 

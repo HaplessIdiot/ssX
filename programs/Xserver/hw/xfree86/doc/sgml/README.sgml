@@ -583,6 +583,15 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Alan Hourihane <it>&lt;alanh@fairlite.demon.co.uk&gt;</it>
 </itemize>
+<tag/SiS SVGA driver by:  /
+<itemize>
+       <item> Alan Hourihane <it>&lt;alanh@fairlite.demon.co.uk&gt;</it>
+</itemize>
+<tag/DEC 21030 (TGA) server by:  /
+<itemize>
+       <item> Alan Hourihane <it>&lt;alanh@fairlite.demon.co.uk&gt;</it>
+       <item> Harald Koenig <it>&lt;koenig@tat.physik.uni-tuebingen.de&gt;</it>
+</itemize>
 <tag/NCR SVGA driver by:  /
 <itemize>
        <item> Stuart Anderson <it>&lt;anderson@metrolink.com&gt;</it>
@@ -999,7 +1008,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.58 1996/10/06 13:16:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.59 1996/10/13 11:19:46 dawes Exp $
 
 
 

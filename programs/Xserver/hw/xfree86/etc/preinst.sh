@@ -1,10 +1,10 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.3 1996/08/25 14:12:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.4 1996/09/01 04:46:22 dawes Exp $
 #
-# preinst.sh  (for XFree86 3.1.2F)
+# preinst.sh  (for XFree86 3.2)
 #
-# This script should be run before installing a beta version.
+# This script should be run before installing a new version.
 #
 # It removes parts of an existing installation that can cause problems
 # when extracting the new version.  This includes symbolic links to old
@@ -53,15 +53,7 @@ if [ "`uname`" = Linux ]; then
 	if file -L /bin/sh | grep ELF >/dev/null 2>&1; then
 		echo ""
 		echo "You appear to have an ELF system."
-		# Check libncurses
-		LIBNCURSES="`ls /lib/libncurses.so.[34].* 2>/dev/null`"
-		if [ X"$LIBNCURSES" = X ]; then
-			echo ""
-			echo "Before continuing, you will need to get a current version of the ncurses"
-			echo "library.  Versions newer than 1.9.9 (which are installed with a major number"
-			echo "of 3) will do."
-			NEEDSOMETHING=YES
-		fi
+		echo "Make sure you are installing the ELF binary dist"
 		# Check ldconfig
 		LDSO=`/sbin/ldconfig -v -n | awk '{ print $3 }'`
 		LDSOMIN=`echo $LDSO | awk -F. '{ print $3 }'`
@@ -88,6 +80,7 @@ if [ "`uname`" = Linux ]; then
 		i*86)
 			echo ""
 			echo "You appear to have an a.out system."
+			echo "Make sure you are installing the aout binary dist"
 			;;
 		esac
 	fi

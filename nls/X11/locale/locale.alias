@@ -1,5 +1,5 @@
 #	$XConsortium: locale.alias /main/16 1996/01/06 11:30:13 kaleb $
-#	$XFree86: xc/nls/X11/locale/locale.alias,v 3.3 1996/01/07 03:46:34 dawes Exp $
+#	$XFree86: xc/nls/X11/locale/locale.alias,v 3.4 1996/05/13 06:38:12 dawes Exp $
 #
 #	This file contains alias name of locale.
 #	Each alias name is described within one line.
@@ -253,13 +253,13 @@ c-french.iso88591	fr_CA.ISO8859-1
 chinese-s		zh_CN.eucCN
 chinese-t		zh_TW.eucTW
 croatian		hr_HR.ISO8859-2
-czech			cs_CS.ISO8859-2
+czech			cs_CZ.ISO8859-2
 danish.iso88591		da_DK.ISO8859-1
-dutch.iso88591		nl_BE.ISO8859-1
+dutch.iso88591		nl_NL.ISO8859-1
 english.iso88591	en_EN.ISO8859-1
 finnish.iso88591	fi_FI.ISO8859-1
-french.iso88591		fr_CH.ISO8859-1
-german.iso88591		de_CH.ISO8859-1
+french.iso88591		fr_FR.ISO8859-1
+german.iso88591		de_DE.ISO8859-1
 greek.iso88597		el_GR.ISO8859-7
 hebrew.iso88598		iw_IL.ISO8859-8
 hungarian		hu_HU.ISO8859-2
