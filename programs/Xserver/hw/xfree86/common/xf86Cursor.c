@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.35 2003/02/13 10:49:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.36 2003/08/24 17:36:51 dawes Exp $ */
 /*
  * Copyright (c) 1994-2003 by The XFree86 Project, Inc.
  *
@@ -104,11 +104,16 @@ xf86InitViewport(ScrnInfoPtr pScr)
   /*
    * Compute the initial Viewport if necessary
    */
-  if (pScr->frameX0 < 0)
-    {
+  if (pScr->display) {
+    if (pScr->display->frameX0 < 0) {
       pScr->frameX0 = (pScr->virtualX - pScr->modes->HDisplay) / 2;
       pScr->frameY0 = (pScr->virtualY - pScr->modes->VDisplay) / 2;
+    } else {
+      pScr->frameX0 = pScr->display->frameX0;
+      pScr->frameY0 = pScr->display->frameY0;
     }
+  }
+
   pScr->frameX1 = pScr->frameX0 + pScr->modes->HDisplay - 1;
   pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
 
