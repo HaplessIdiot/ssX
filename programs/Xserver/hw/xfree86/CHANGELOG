@@ -1,4 +1,24 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 657. Fix small documentation error in config/imake/imakemdep.h (#A.1052,
+      Linus Almstrom).
+ 656. Small change to find_mesa_visual() in xf86glx.c to avoid
+      branch misprediction on x86 (#A.1057, lompik at voila.fr).
+ 655. Clear memory allocated in xtWidgetAlloc() to avoid garbage from
+      malloc() being referenced later (#A.1114, Adam J. Richter).
+ 656. Make SysRq generate the same keycode as PrtScrn, and Break the same
+      keycode as Pause (#A.1160, Owen Taylor).
+ 655. Add "Inet" key definitions for some HP and Toshiba laptops (#A.1213,
+      Peter Soos).
+ 654. "Inet" key definitions for the Brother Internet keyboard (#A.1242,
+      Diego Iastrubni).
+ 653. "Inet" key definitions for the Ennyah model DKB-1008 keyboard (#A.1256,
+      Lionel Landwerlin).
+ 652. Apply i830 DRM driver cleanups to the i810 driver (#A.1438,
+      David Airlie).
+ 651. Add XI18NOBJS files for the ko_KR.UTF-8 and ja_JP.UTF-8 locales
+      (#5538, 5539, Jungshik Shin).
+ 650. Add FIRSTINDEX to the gb2312.1980-0.enc, gbk-0.enc and jis0212.1990-0.enc
+      encoding files (#5537, Jungshik Shin).
  649. Increment shared libraries major revisions on OpenBSD if gcc with 
       stack protector is used (Matthieu Herrb, Todd Fries). 
  648. Resync with DRI (mesa-4-0-4-branch).
@@ -15822,4 +15842,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2450 2002/12/16 16:19:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2451 2002/12/16 22:48:27 herrb Exp $
