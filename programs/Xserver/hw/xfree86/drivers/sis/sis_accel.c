@@ -1,4 +1,5 @@
 /* $XFree86$ */
+/* $XdotOrg$ */
 /*
  * 2D acceleration for SiS5597/5598 and 6326
  *

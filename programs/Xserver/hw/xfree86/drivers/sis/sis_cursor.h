@@ -1,4 +1,5 @@
 /* $XFree86$ */
+/* $XdotOrg$ */
 /*
  * SiS hardware cursor handling
  * Definitions

@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis6326_video.c,v 1.19tsi Exp $ */
+/* $XFree86$ */
+/* $XdotOrg$ */
 /*
  * Xv driver for SiS 5597/5598, 6236 and 530/620.
  *
@@ -1274,17 +1275,17 @@ SIS6326StopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 
   if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-       close_overlay(pSiS, pPriv);
-       pPriv->mustwait = 1;
+        close_overlay(pSiS, pPriv);
+        pPriv->mustwait = 1;
      }
      SIS6326FreeOverlayMemory(pScrn);
      pPriv->videoStatus = 0;
      pSiS->VideoTimerCallback = NULL;
   } else {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-       pPriv->videoStatus = OFF_TIMER | CLIENT_VIDEO_ON;
-       pPriv->offTime = currentTime.milliseconds + OFF_DELAY;
-       pSiS->VideoTimerCallback = SIS6326VideoTimerCallback;
+        pPriv->videoStatus = OFF_TIMER | CLIENT_VIDEO_ON;
+        pPriv->offTime = currentTime.milliseconds + OFF_DELAY;
+        pSiS->VideoTimerCallback = SIS6326VideoTimerCallback;
      }
   }
 }
@@ -1323,7 +1324,7 @@ SIS6326PutImage(
    pPriv->height = height;
    pPriv->width = width;
 
-   /* TW: Pixel formats:
+   /* Pixel formats:
       1. YU12:  3 planes:       H    V
                Y sample period  1    1   (8 bit per pixel)
 	       V sample period  2    2	 (8 bit per pixel, subsampled)
@@ -1496,33 +1497,32 @@ SIS6326VideoTimerCallback (ScrnInfoPtr pScrn, Time now)
 
     if(pSiS->adaptor) {
     	pPriv = GET_PORT_PRIVATE(pScrn);
-	if(!pPriv->videoStatus)
-	   pPriv = NULL;
+	if(!pPriv->videoStatus) pPriv = NULL;
     }
 
     if(pPriv) {
-      if(pPriv->videoStatus & TIMER_MASK) {
-        UpdateCurrentTime();
-	if(pPriv->offTime < currentTime.milliseconds) {
+       if(pPriv->videoStatus & TIMER_MASK) {
           if(pPriv->videoStatus & OFF_TIMER) {
-              /* Turn off the overlay */
-	      sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
-              close_overlay(pSiS, pPriv);
-	      outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
-	      pPriv->mustwait = 1;
-              pPriv->videoStatus = FREE_TIMER;
-              pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
-	      pSiS->VideoTimerCallback = SIS6326VideoTimerCallback;
+	     if(pPriv->offTime < now) {
+                /* Turn off the overlay */
+	        sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
+                close_overlay(pSiS, pPriv);
+	        outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
+	        pPriv->mustwait = 1;
+                pPriv->videoStatus = FREE_TIMER;
+                pPriv->freeTime = now + FREE_DELAY;
+	        pSiS->VideoTimerCallback = SIS6326VideoTimerCallback;
+	     }
+          } else if(pPriv->videoStatus & FREE_TIMER) {  
+             if(pPriv->freeTime < now) {
+                SIS6326FreeOverlayMemory(pScrn);
+	        pPriv->mustwait = 1;
+                pPriv->videoStatus = 0;
+             }
           } else
-	  if(pPriv->videoStatus & FREE_TIMER) {  
-              SIS6326FreeOverlayMemory(pScrn);
-	      pPriv->mustwait = 1;
-              pPriv->videoStatus = 0;
-          }
-        } else
-	  pSiS->VideoTimerCallback = SIS6326VideoTimerCallback;
-      }
-   }
+	     pSiS->VideoTimerCallback = SIS6326VideoTimerCallback;
+       }
+    }
 }
 
 /* Offscreen surface stuff for v4l */

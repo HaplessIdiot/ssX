@@ -1,4 +1,5 @@
 /* $XFree86$ */
+/* $XdotOrg$ */
 /*
  * OS depending defines
  *
@@ -52,7 +53,7 @@
 
 /* The choices are: */
 /* #define LINUX_KERNEL	 */  	/* Kernel framebuffer */
-#define LINUX_XF86    		/* XFree86 */
+#define LINUX_XF86    		/* XFree86/X.org */
 
 #ifdef OutPortByte
 #undef OutPortByte
@@ -108,7 +109,7 @@
 #endif
 
 /**********************************************************************/
-/*  XFree86                                                           */
+/*  XFree86/X.org                                                     */
 /**********************************************************************/
 
 #ifdef LINUX_XF86
