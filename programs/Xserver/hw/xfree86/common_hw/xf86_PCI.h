@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.8 1996/09/14 13:10:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.9 1996/09/25 14:16:58 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -373,6 +373,29 @@ void xf86writepci(
 void xf86cleanpci(
 #if NeedFunctionPrototypes
 	void
+#endif
+);
+
+pciTagRec pcibusTag(
+#if NeedFunctionPrototypes
+	CARD8,
+	CARD8,
+	CARD8
+#endif
+);
+
+CARD32 pcibusRead(
+#if NeedFunctionPrototypes
+	pciTagRec,
+	CARD32
+#endif
+);
+
+void pcibusWrite(
+#if NeedFunctionPrototypes
+	pciTagRec,
+	CARD32,
+	CARD32
 #endif
 );
 

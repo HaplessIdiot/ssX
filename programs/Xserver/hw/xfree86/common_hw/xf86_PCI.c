@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.10 1996/09/14 13:10:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.11 1996/09/15 11:18:41 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -469,10 +469,6 @@ xf86cleanpci()
 static int pciConfigType = 0;
 static int pciMaxDevice = 0;
 
-static pciTagRec pcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func);
-static CARD32 pcibusRead(pciTagRec tag, CARD32 reg);
-static void pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data);
-
 static Bool
 pcibusCheck()
 {
@@ -564,7 +560,7 @@ pcibusSetup()
     }
 }
 
-static pciTagRec
+pciTagRec
 pcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
 {
     pciTagRec tag;
@@ -613,7 +609,7 @@ pcibusFTag(pciTagRec tag, CARD8 func)
     return tag;
 }
 
-static CARD32
+CARD32
 pcibusRead(pciTagRec tag, CARD32 reg)
 {
     CARD32 addr, data = 0;
@@ -641,7 +637,7 @@ pcibusRead(pciTagRec tag, CARD32 reg)
     return data;
 }
 
-static void
+void
 pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 {
     CARD32 addr;
