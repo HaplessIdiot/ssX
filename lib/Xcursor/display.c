@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/display.c,v 1.1 2002/08/29 04:40:34 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/display.c,v 1.2 2002/09/05 07:29:55 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -124,10 +124,12 @@ _XcursorGetDisplayInfo (Display *dpy)
 	XRenderQueryVersion (dpy, &major, &minor) &&
 	(major > 0 || minor >= 5))
     {
-	if (getenv ("XCURSOR_CORE"))
+	info->has_render_cursor = XcursorTrue;
+	v = getenv ("XCURSOR_CORE");
+	if (!v)
+	    v = XGetDefault (dpy, "Xcursor", "core");
+	if (v && _XcursorDefaultParseBool (v) == 1)
 	    info->has_render_cursor = XcursorFalse;
-	else
-	    info->has_render_cursor = XcursorTrue;
     }
     else
 	info->has_render_cursor = XcursorFalse;
