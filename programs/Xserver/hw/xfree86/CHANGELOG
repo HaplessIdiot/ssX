@@ -1,16 +1,14 @@
 XFree86 4.0b (23 May 2000)
- 212. Add support to the sunffb driver for multiple visuals on the same screen,
+ 211. Add support to the sunffb driver for multiple visuals on the same screen,
       overlays, double buffering and some other niceties (#3938,
       David S. Miller, Jakub Jelinek).
- 211. Make the modifier setting on Sun keyboards match what XFree86 expects
+ 210. Make the modifier setting on Sun keyboards match what XFree86 expects
       (#3937, Jakub Jelinek).
- 210. Add unaccelerated support for the Sun CG6 (#3935, Jakub Jelinek).
- 209. Make the -configure option work with SBUS/UPA drivers, fix some
+ 209. Add unaccelerated support for the Sun CG6 (#3935, Jakub Jelinek).
+ 208. Make the -configure option work with SBUS/UPA drivers, fix some
       bugs in the sbus layer, add support for ioctl based colormap setting,
       and fix leds on Sun keyboards (#3934, Jakub Jelinek).
- 208. Fix a parallel build problem in lib/dps (#3932, H. J. Lu).
- 207. Update the r128 driver to recosnise both variants of the Rage Mobility
-      and the PCI variant of the Rage128 Pro (#3931, Michel Danzer).
+ 207. Fix a parallel build problem in lib/dps (#3932, H. J. Lu).
  206. Fix some build problems that show up  with LynxOS x86 and PowerPC (#3929,
       Thomas Mueller).
  205. Fix documentation files for the mutouch and elographics drivers,
@@ -10404,4 +10402,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1160 2000/05/21 01:09:00 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1161 2000/05/23 04:47:37 dawes Exp $

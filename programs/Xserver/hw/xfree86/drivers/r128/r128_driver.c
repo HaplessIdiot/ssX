@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.31 2000/05/17 19:52:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.32 2000/05/23 04:47:42 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -157,10 +157,7 @@ static SymTabRec R128Chipsets[] = {
     { PCI_CHIP_RAGE128RF, "ATI Rage 128 RF (AGP)" },
     { PCI_CHIP_RAGE128RK, "ATI Rage 128 RK (PCI)" },
     { PCI_CHIP_RAGE128RL, "ATI Rage 128 RL (AGP)" },
-    { PCI_CHIP_RAGE128PR, "ATI Rage 128 Pro PR (PCI)" },
     { PCI_CHIP_RAGE128PF, "ATI Rage 128 Pro PF (AGP)" },
-    { PCI_CHIP_RAGE128LE, "ATI Rage Mobility M3 (PCI)" },
-    { PCI_CHIP_RAGE128LF, "ATI Rage Mobility M3 (AGP)" },
     { -1,                 NULL }
 };
 
@@ -169,10 +166,7 @@ static PciChipsets R128PciChipsets[] = {
     { PCI_CHIP_RAGE128RF, PCI_CHIP_RAGE128RF, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128RK, PCI_CHIP_RAGE128RK, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128RL, PCI_CHIP_RAGE128RL, RES_SHARED_VGA },
-    { PCI_CHIP_RAGE128PR, PCI_CHIP_RAGE128PR, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128PF, PCI_CHIP_RAGE128PF, RES_SHARED_VGA },
-    { PCI_CHIP_RAGE128LE, PCI_CHIP_RAGE128LE, RES_SHARED_VGA },
-    { PCI_CHIP_RAGE128LF, PCI_CHIP_RAGE128LF, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 
