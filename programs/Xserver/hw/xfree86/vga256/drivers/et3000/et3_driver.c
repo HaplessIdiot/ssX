@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.13 1996/06/10 09:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.14 1996/06/29 09:08:39 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -70,7 +70,7 @@ static char *   ET3000Ident();
 static Bool     ET3000ClockSelect();
 static void     ET3000EnterLeave();
 static Bool     ET3000Init();
-static Bool     ET3000ValidMode();
+static int      ET3000ValidMode();
 static void *   ET3000Save();
 static void     ET3000Restore();
 static void     ET3000Adjust();
@@ -468,9 +468,10 @@ ET3000Adjust(x, y)
  * ET3000ValidMode --
  *
  */
-static Bool
-ET3000ValidMode(mode)
+static int
+ET3000ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

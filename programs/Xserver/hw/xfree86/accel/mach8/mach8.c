@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.29 1996/08/11 12:54:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.30 1996/08/18 01:49:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -62,9 +62,10 @@
 extern int mach8MaxClock;
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 
-static Bool mach8ValidMode(
+static int mach8ValidMode(
 #if NeedFunctionPrototypes 
-    DisplayModePtr 
+    DisplayModePtr,
+    Bool
 #endif
 );
 
@@ -74,7 +75,7 @@ ScrnInfoRec mach8InfoRec = {
     -1,			/* int scrnIndex */
     mach8Probe,      	/* Bool (* Probe)() */
     mach8Initialize,	/* Bool (* Init)() */
-    mach8ValidMode,	/* Bool (* ValidMode)() */
+    mach8ValidMode,	/* int (* ValidMode)() */
     mach8EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -830,10 +831,11 @@ mach8ClockSelect(no)
  * mach8ValidMode --
  *
  */
-static Bool
-mach8ValidMode(mode)
+static int
+mach8ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

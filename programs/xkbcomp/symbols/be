@@ -1,4 +1,5 @@
 // $XConsortium: be /main/2 1995/12/07 21:40:55 kaleb $
+// $XFree86$
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -70,6 +71,15 @@ xkb_symbols "iso-alternate" {
 			[         lstroke,         Lstroke      ]	};
     replace key <AB07> {[           comma,        question 	],
 			[      dead_acute, dead_doubleacute	]	};
+};
+
+partial alphanumeric_keys 
+xkb_symbols "Sundeadkeys" {
+
+    // Use the Sun dead keys
+    include "be(basic)"
+    key <AD11> {	[    SunFA_Circum,       diaeresis 	],
+			[     bracketleft			]	};
 };
 
 partial alphanumeric_keys 

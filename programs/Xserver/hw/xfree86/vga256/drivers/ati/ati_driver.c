@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.34 1996/08/24 12:53:59 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -314,7 +314,7 @@ static Bool     FunctionPrototype(ATIProbe, (void));
 static char *   FunctionPrototype(ATIIdent, (const unsigned int));
 static void     FunctionPrototype(ATIEnterLeave, (const Bool));
 static Bool     FunctionPrototype(ATIInit, (DisplayModePtr));
-static Bool     FunctionPrototype(ATIValidMode, (DisplayModePtr));
+static int      FunctionPrototype(ATIValidMode, (DisplayModePtr, Bool));
 static void *   FunctionPrototype(ATISave, (vgaATIPtr));
 static void     FunctionPrototype(ATIRestore, (vgaATIPtr));
 static void     FunctionPrototype(ATIAdjust,
@@ -2218,7 +2218,8 @@ ATIProbe(void)
                 /* Lastly, check PCI configuration space */
                 Index = 0;
                 while ((ATIAdapter == ATI_ADAPTER_NONE) &&
-                       (PCIDevice = pci_devp[Index++]))
+                       vgaPCIInfo && vgaPCIInfo->AllCards &&
+		       (PCIDevice = vgaPCIInfo->AllCards[Index++]))
                 {
                         if (PCIDevice->_vendor != PCI_VENDOR_ATI)
                                 continue;
@@ -4548,8 +4549,8 @@ ATISaveScreen(const Bool start)
  *
  * This is only a dummy place-holder for now.
  */
-static Bool
-ATIValidMode(DisplayModePtr mode)
+static int
+ATIValidMode(DisplayModePtr mode, Bool verbose)
 {
-        return (TRUE);
+        return (MODE_OK);
 }
