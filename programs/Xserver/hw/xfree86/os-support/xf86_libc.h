@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.25 1998/07/26 13:14:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.26 1998/08/02 05:17:04 dawes Exp $ */
 
 
 
@@ -66,6 +66,11 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_O_WRONLY	0x0001
 #define XF86_O_RDWR	0x0002
 #define XF86_O_CREAT	0x0200
+
+/* for fseek */
+#define XF86_SEEK_SET	0
+#define XF86_SEEK_CUR	1
+#define XF86_SEEK_END	2
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
@@ -193,6 +198,8 @@ typedef struct _xf86dirent XF86DIRENT;
 #define vfprintf		xf86vfprintf
 #define vsprintf		xf86vsprintf
 /* XXX Disable assert as if NDEBUG was defined */
+/* Some X headers defined this away too */
+#undef assert
 #define assert(a)		((void)0)
 
 #define hypot(x,y)		xf86hypot(x,y)
@@ -216,6 +223,11 @@ typedef struct _xf86dirent XF86DIRENT;
 #define DIR			XF86DIR
 #define DIRENT			XF86DIRENT
 
+/*
+ * XXX There should be no need to #undef any of these.  If they are already
+ * defined it is because some illegal header has been included.
+ */
+
 /* some vars */
 #ifdef stdin
 #undef stdin
@@ -229,6 +241,10 @@ typedef struct _xf86dirent XF86DIRENT;
 #undef stderr
 #endif
 #define stderr			xf86stderr
+
+#define SEEK_SET		XF86_SEEK_SET
+#define SEEK_CUR		XF86_SEEK_CUR
+#define SEEK_END		XF86_SEEK_END
 
 /*
  * XXX Basic I/O functions BAD,BAD,BAD!

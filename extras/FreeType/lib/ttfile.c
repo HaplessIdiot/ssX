@@ -38,14 +38,18 @@
  *    new "Load_TrueType_Any" function in the tables loader.
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #include "ttconfig.h"
 
+/* Removed for XFree86 Module support */
+#if 0
 #include <stdio.h>
 #include <string.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #endif
 
 #include "freetype.h"

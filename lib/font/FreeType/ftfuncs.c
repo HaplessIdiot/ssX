@@ -21,23 +21,14 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.3 1998/09/06 04:30:56 dawes Exp $ */
-
-#include <stdio.h>
-#include <string.h>
-#ifdef _XOPEN_SOURCE
-#include <math.h>
-#else
-#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
-#include <math.h>
-#undef _XOPEN_SOURCE
-#endif
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.4 1998/09/06 05:05:31 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "FSproto.h"
 #include "freetype.h"
 #include "ftxcmap.h"
 
+#include "ttconfig.h"
 #include "ft.h"
 #include "ftfuncs.h"
 

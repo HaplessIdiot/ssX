@@ -25,13 +25,17 @@
  *    'legacy' applications (all four test programs have been updated).
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTMEMORY_H
 #define TTMEMORY_H
 
 #include "ttconfig.h"
 #include "tttypes.h"
+/* Removed for XFree86 module support */
+#if 0
 #include <string.h>
+#endif
 
 
 #ifdef __cplusplus

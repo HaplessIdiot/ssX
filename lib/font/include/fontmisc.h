@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.1.2.1 1998/07/05 14:36:06 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.2 1998/07/25 06:57:09 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -71,12 +71,13 @@ extern char	    *NameForAtom ();
 
 extern unsigned long *Xalloc();
 extern unsigned long *Xrealloc();
+extern void Xfree(pointer);
 
 #define xalloc(n)   Xalloc ((unsigned) n)
 #define xfree(p)    Xfree ((pointer) p)
 #define xrealloc(p,n)	Xrealloc ((pointer)p,n)
 #define lowbit(x) ((x) & (~(x) + 1))
 
-#define assert(x)
+#define assert(x)	((void)0)
 
 #endif /* _FONTMISC_H_ */

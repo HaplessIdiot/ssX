@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.23.2.11 1998/07/18 17:53:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.29 1998/07/25 16:57:00 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -609,6 +609,17 @@ xf86fseek(XF86FILE* f, long pos, int loc)
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
 	_xf86checkhndl(fp,"xf86fseek");
+	switch (pos) {
+	case XF86_SEEK_SET:
+		pos = SEEK_SET;
+		break;
+	case XF86_SEEK_CUR:
+		pos = SEEK_CUR;
+		break;
+	case XF86_SEEK_END:
+		pos = SEEK_END;
+		break;
+	}
 	return fseek(fp->filehnd,pos,loc);
 }
 

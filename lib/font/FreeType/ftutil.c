@@ -21,9 +21,10 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.4 1998/06/28 03:52:36 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.5 1998/09/06 04:30:56 dawes Exp $ */
 
 #include "font.h"
+#include "ttconfig.h"
 #include "freetype.h"
 #include "ft.h"
 
