@@ -21,7 +21,7 @@
  *
  * Authors:  Patrick LERDA
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_dga.c,v 1.3tsi Exp $ */
 
 
 #include "xf86.h"
@@ -36,7 +36,9 @@
 #include "dgaproc.h"
 #include "i740_dga.h"
 
-static Bool I740_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, int *, int *, int *);
+static Bool I740_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *,
+				 unsigned int *, unsigned int *,
+				 unsigned int *);
 static Bool I740_SetMode(ScrnInfoPtr, DGAModePtr);
 static void I740_Sync(ScrnInfoPtr);
 static int  I740_GetViewport(ScrnInfoPtr);
@@ -44,7 +46,8 @@ static void I740_SetViewport(ScrnInfoPtr, int, int, int);
 static void I740_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void I740_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 #if 0
-static void I740_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, unsigned long);
+static void I740_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int,
+			       unsigned long);
 #endif
 
 static DGAFunctionRec I740DGAFuncs = {
@@ -234,18 +237,18 @@ static void I740_BlitTransRect(ScrnInfoPtr pScrn,
 static Bool I740_OpenFramebuffer(
 				 ScrnInfoPtr pScrn, 
 				 char **name,
-				 unsigned char **mem,
-				 int *size,
-				 int *offset,
-				 int *flags
+				 unsigned int *mem,
+				 unsigned int *size,
+				 unsigned int *offset,
+				 unsigned int *flags
 				 ){
     I740Ptr pI740 = I740PTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)pI740->LinearAddr;
+    *mem = pI740->LinearAddr;
     *size = pI740->FbMapSize;
     *offset = 0;
-    *flags = DGA_NEED_ROOT;
+    *flags = 0;
 
     return TRUE;
 }

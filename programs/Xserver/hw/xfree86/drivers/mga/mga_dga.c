@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.18tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -12,15 +12,15 @@
 #include "dgaproc.h"
 
 
-static Bool MGA_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
-					int *, int *, int *);
+static Bool MGA_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *, 
+				unsigned int *, unsigned int *, unsigned int *);
 static Bool MGA_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  MGA_GetViewport(ScrnInfoPtr);
 static void MGA_SetViewport(ScrnInfoPtr, int, int, int);
 static void MGA_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void MGA_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 static void MGA_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-					unsigned long);
+			      unsigned long);
 
 static
 DGAFunctionRec MGA_DGAFuncs = {
@@ -467,18 +467,18 @@ static Bool
 MGA_OpenFramebuffer(
    ScrnInfoPtr pScrn, 
    char **name,
-   unsigned char **mem,
-   int *size,
-   int *offset,
-   int *flags
+   unsigned int *mem,
+   unsigned int *size,
+   unsigned int *offset,
+   unsigned int *flags
 ){
     MGAPtr pMga = MGAPTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)pMga->FbAddress;
+    *mem = pMga->FbAddress;
     *size = pMga->FbMapSize;
     *offset = 0;
-    *flags = DGA_NEED_ROOT;
+    *flags = 0;
 
     return TRUE;
 }

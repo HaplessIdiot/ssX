@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_dga.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_dga.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2000 by Egbert Eich
  *
@@ -34,8 +34,8 @@
 #include "cir.h"
 #include "dgaproc.h"
 
-static Bool Cir_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
-				  int *, int *, int *);
+static Bool Cir_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *, 
+				unsigned int *, unsigned int *, unsigned int *);
 static Bool Cir_SetMode(ScrnInfoPtr, DGAModePtr);
 static void Cir_Sync(ScrnInfoPtr);
 static int  Cir_GetViewport(ScrnInfoPtr);
@@ -44,7 +44,7 @@ static void Cir_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void Cir_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 /*
 static void Cir_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-                                unsigned long);
+			      unsigned long);
 */
 
 static
@@ -133,15 +133,15 @@ static Bool
 Cir_OpenFramebuffer(
    ScrnInfoPtr pScrn, 
    char **name,
-   unsigned char **mem,
-   int *size,
-   int *offset,
-   int *flags
+   unsigned int *mem,
+   unsigned int *size,
+   unsigned int *offset,
+   unsigned int *flags
 ){
     CirPtr pCir = CIRPTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)(long)pCir->FbAddress;
+    *mem = pCir->FbAddress;
     *size = pCir->FbMapSize;
     *offset = 0;                /* Always */
     *flags = 0;                 /* Root permissions OS-dependent */

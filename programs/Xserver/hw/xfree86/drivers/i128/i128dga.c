@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128dga.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128dga.c,v 1.5tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -10,8 +10,9 @@
 #include "dgaproc.h"
 
 
-static Bool I128_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
-					int *, int *, int *);
+static Bool I128_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *, 
+				 unsigned int *, unsigned int *,
+				 unsigned int *);
 static Bool I128_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  I128_GetViewport(ScrnInfoPtr);
 static void I128_SetViewport(ScrnInfoPtr, int, int, int);
@@ -19,7 +20,7 @@ static void I128_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void I128_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 #if 0
 static void I128_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-					unsigned long);
+			       unsigned long);
 #endif
 
 static
@@ -255,19 +256,19 @@ static Bool
 I128_OpenFramebuffer(
    ScrnInfoPtr pScrn, 
    char **name,
-   unsigned char **mem,
-   int *size,
-   int *offset,
-   int *flags
+   unsigned int *mem,
+   unsigned int *size,
+   unsigned int *offset,
+   unsigned int *flags
 ){
     I128Ptr pI128 = I128PTR(pScrn);
     unsigned long FbAddress = pI128->PciInfo->memBase[0] & 0xFFC00000;
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)FbAddress;
+    *mem = FbAddress;
     *size = pI128->MemorySize*1024;
     *offset = 0;
-    *flags = DGA_NEED_ROOT;
+    *flags = 0;
 
     return TRUE;
 }

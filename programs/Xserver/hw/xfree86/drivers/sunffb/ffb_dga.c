@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dga.c,v 1.3tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -36,8 +36,10 @@
 #include "ffb_loops.h"
 #include "ffb_gc.h"
 
-static Bool FFB_OpenFramebuffer(ScrnInfoPtr pScrn, char **name, unsigned char **mem,
-				int *size, int *offset, int *extra);
+static Bool FFB_OpenFramebuffer(ScrnInfoPtr pScrn, char **name,
+				unsigned int *mem,
+				unsigned int *size, unsigned int *offset,
+				unsigned int *extra);
 static Bool FFB_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode);
 static void FFB_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags);
 static int FFB_GetViewport(ScrnInfoPtr pScrn);
@@ -127,15 +129,17 @@ void FFB_InitDGA(ScreenPtr pScreen)
 	}
 }
 
-static Bool FFB_OpenFramebuffer(ScrnInfoPtr pScrn, char **name, unsigned char **mem,
-				int *size, int *offset, int *extra)
+static Bool FFB_OpenFramebuffer(ScrnInfoPtr pScrn, char **name,
+				unsigned int *mem,
+				unsigned int *size, unsigned int *offset,
+				unsigned int *extra)
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
 
 	*name = pFfb->psdp->device;
 
 	/* We give the user the dumb frame buffer. */
-	*mem = (unsigned char *)FFB_DFB24_VOFF;
+	*mem = FFB_DFB24_VOFF;
 	*size = 0x1000000;
 	*offset = 0;
 	*extra = 0;
