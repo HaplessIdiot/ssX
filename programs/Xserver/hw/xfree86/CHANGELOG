@@ -1,4 +1,7 @@
 XFree86 4.0.1Zb (14 December 2000)
+1185. Rework and document the various MatroxHal imake parameters, and
+      build in support for the mga_hal module by default for loadable server
+      builds (David Dawes).
 1184. Fix sis driver corrupt display with more than 8MB of video memory (#4378,
       Can-Ru Yeou).
 1183. Fix xf86cfg build problem on systems that don't come with snprintf
@@ -12063,4 +12066,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1474 2000/12/14 01:39:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1475 2000/12/14 02:51:36 dawes Exp $

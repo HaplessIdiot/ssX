@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/Imakefile,v 1.36 2000/09/24 13:51:27 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/Imakefile,v 1.38 2000/12/06 15:35:19 eich Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -19,26 +19,39 @@ DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri \
 DRIDEFINES = $(GLX_DEFINES)
 #endif
 
-#if DoLoadableServer
+#if DoLoadableServer && (HaveMatroxHal || BuildMatroxHal)
+#define BuildHalModule YES
+#else
+#define BuildHalModule NO
+#endif
+
+#if !DoLoadableServer && UseMatroxHal && (HaveMatroxHal || BuildMatroxHal)
+#define BuildHalStatic YES
+#else
+#define BuildHalStatic NO
+#endif
+
+#if BuildHalModule
 MGAHALMODSRC = mga_halmod.c
 MGAHALMODOBJ = mga_halmod.o
 #endif
 
-#if UseMatroxHal || HaveMatroxHal || BuildMatroxHal
+#if UseMatroxHal
 MGAHALDEFINES = -DUSEMGAHAL
 #if BuildMatroxHal
 MGAHALINCLUDES = -Ihallib
 #else
 MGAHALINCLUDES = -IHALlib
 #endif
-#if BuildMatroxHal || HaveMatroxHal
+#endif
+
+#if BuildHalModule || BuildHalStatic
 MGAHALSRCS = $(MGAHALMODSRC) clientlx.c
 #if !BuildMatroxHal
 MGAHALOBJS = $(MGAHALMODOBJ) clientlx.o HALlib/mgaHALlib.a
 #else
 MGAHALOBJS = $(MGAHALMODOBJ) clientlx.o hallib/libmga_hal.a
 hallib/libmga_hal.a: $(SUBDIRS)
-#endif
 #endif
 #endif
 
@@ -76,8 +89,12 @@ SubdirLibraryRule($(OBJS))
 
 ModuleObjectRule()
 
+#if BuildHalStatic
+ObjectModuleTarget(mga,$(OBJS))
+#else
 ObjectModuleTarget(mga,$(MGAOBJS))
-#if BuildMatroxHal || HaveMatroxHal
+#endif
+#if BuildHalModule
 ObjectModuleTarget(mga_hal,$(MGAHALOBJS))
 #endif
 
@@ -87,7 +104,7 @@ ObjectFromSpecialSource(mga_storm24, mga_storm, -DPSZ=24)
 ObjectFromSpecialSource(mga_storm32, mga_storm, -DPSZ=32)
   
 InstallObjectModule(mga,$(MODULEDIR),drivers)
-#if BuildMatroxHal || HaveMatroxHal
+#if BuildHalModule
 InstallObjectModule(mga_hal,$(MODULEDIR),drivers)
 #endif
 

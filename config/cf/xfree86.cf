@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.335 2000/12/12 17:04:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.336 2000/12/12 23:24:26 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -78,13 +78,43 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define GlideDriver /**/
 #endif
 
-/* Use the binary-only library from Matrox? */
-#ifndef UseMatroxHal 
-#define UseMatroxHal NO
+/*
+ * There are three parameters that determine where and how the Matrox HAL
+ * library is used:
+ *
+ *   HaveMatroxHal  -- You have the HALlib.a binary library installed
+ *                     in xfree86/drivers/mga/HALlib, and you want it to
+ *                     be used.
+ *                     Default: NO
+ *
+ *   BuildMatroxHal -- You have the source for the HALlib library (installed
+ *                     in xfree86/drivers/mga/hallib), and want to build and
+ *                     use it.
+ *                     Default: NO
+ *
+ *   UseMatroxHal   -- You want to build support for loading/using the HAL
+ *                     library into the mga driver.  For module server builds
+ *                     you don't need to have the HALlib library to do this.
+ *                     but you want to build support for loading it and using
+ *                     it into the mga driver module.
+ *                     Default: YES for loadable server build
+ *                              (HaveMatroxHal || BuildMatroxHal) for static
+ */
+
+#ifndef HaveMatroxHal
+#define HaveMatroxHal NO
 #endif
 
 #ifndef BuildMatroxHal
 #define BuildMatroxHal NO
+#endif
+
+#ifndef UseMatroxHal 
+#if DoLoadableServer
+#define UseMatroxHal YES
+#else
+#define UseMatroxHal (HaveMatroxHal || BuildMatroxHal)
+#endif
 #endif
 
 /*
