@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/single2.c,v 1.4 2002/02/22 21:32:54 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/single2.c,v 1.12 2004/04/08 10:07:33 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -904,8 +904,8 @@ const GLubyte *glGetString(GLenum name)
 	    gc->renderer = s;
 	    break;
 	  case GL_VERSION: {
-	     float server_version = strtof(s, NULL);
-	     float client_version = strtof(__glXGLClientVersion, NULL);
+	     double server_version = strtod(s, NULL);
+	     double client_version = strtod(__glXGLClientVersion, NULL);
 
 	     if ( server_version <= client_version ) {
 		gc->version = s;
