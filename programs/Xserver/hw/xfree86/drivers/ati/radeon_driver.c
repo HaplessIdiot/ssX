@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.58 2002/07/11 20:11:51 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.59 2002/07/15 14:22:39 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1241,7 +1241,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
      * It needs some special handlings for it's 2nd head to work.
      */
     info->IsDell = FALSE;
-    if (info->PciInfo->subsysCard & (1 << 12)) { /* DELL's signature */
+    if (info->PciInfo->subsysVendor == PCI_VENDOR_DELL && 
+	info->PciInfo->subsysCard & (1 << 12)) { /* DELL's signature */
 	if (info->PciInfo->subsysCard & 0xb00) {
 	    info->IsDell = TRUE;
 	    info->DellType = 2;	/* DVI+DVI config, this seems to be the
