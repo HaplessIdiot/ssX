@@ -30,7 +30,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.28 2001/02/15 11:03:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.29 2001/02/27 23:04:59 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -336,12 +336,14 @@ Permedia2AccelInit(ScreenPtr pScreen)
 
     infoPtr->WriteBitmap = Permedia2WriteBitmap;
 
-    if (pScrn->bitsPerPixel == 8)
+    if (pScrn->bitsPerPixel == 8) {
   	infoPtr->WritePixmap = Permedia2WritePixmap8bpp;
-    else
-    if (pScrn->bitsPerPixel == 16)
+	infoPtr->WritePixmapFlags = NO_GXCOPY;
+    } else
+    if (pScrn->bitsPerPixel == 16) {
   	infoPtr->WritePixmap = Permedia2WritePixmap16bpp;
-    else
+	infoPtr->WritePixmapFlags = NO_GXCOPY;
+    } else
     if (pScrn->bitsPerPixel == 32)
   	infoPtr->WritePixmap = Permedia2WritePixmap32bpp;
 
