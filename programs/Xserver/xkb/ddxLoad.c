@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.17 1996/12/30 14:01:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.18 1997/01/05 12:00:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -128,12 +128,15 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 /*  (void) strcpy (xkm_output_dir, XKM_OUTPUT_DIR); */
     if (xkm_output_dir[strlen(xkm_output_dir)] != '/') /* hi IBM, Digital */
 	(void) strcat (xkm_output_dir, "/");
+
     if (XkbBaseDirectory!=NULL) {
 #ifdef __EMX__
         char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
         int i;
-#endif
+	if (strlen(tmpbase)*2+(xkbDebugFlags>9?2:1)
+#else
 	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
+#endif
 		+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)
 		+strlen(ERROR_PREFIX)+strlen(POST_ERROR_MSG1)
 		+strlen(file)+strlen(xkm_output_dir)
@@ -157,7 +160,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	sprintf(cmd,"%s\\xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		tmpbase,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
-		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
+		tmpbase,(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
 		xkm_output_dir,outFile);
 	ErrorF("Command line for XKB is %s\n",cmd);

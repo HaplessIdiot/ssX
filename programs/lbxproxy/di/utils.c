@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.4 1997/01/18 07:18:53 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -885,6 +885,41 @@ ClientIsAsleep (client)
     return FALSE;
 }
 
+#ifdef __EMX__
+/* This code is duplicated from XLibInt.c, because the same problems with
+ * the drive letter as in clients also exist in the server
+ * Unfortunately the standalone servers don't link against libX11
+ */
+
+char *__XOS2RedirRoot(char *fname)
+{
+    /* This adds a further redirection by allowing the ProjectRoot
+     * to be prepended by the content of the envvar X11ROOT.
+     * This is for the purpose to move the whole X11 stuff to a different
+     * disk drive.
+     * The feature was added despite various environment variables
+     * because not all file opens respect them.
+     */
+    static char redirname[300]; /* enough for long filenames */
+    char *root;
+
+    /* if name does not start with /, assume it is not root-based */
+    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
+	return fname;
+
+    root = (char*)getenv("X11ROOT");
+    if (root==0 || 
+	(fname[1]==':' && isalpha(fname[0]) ||
+        (strlen(fname)+strlen(root)+2) > 300))
+	return fname;
+    sprintf(redirname,"%s%s",root,fname);
+    return redirname;
+}
+#endif
+
+
+
+
 
 void
 LBXReadAtomsFile ()
@@ -902,6 +937,9 @@ LBXReadAtomsFile ()
     atom_control = NULL;
     min_keep_prop_size = DEF_KEEP_PROP_SIZE;
 
+#ifdef __EMX__
+    atomsFile = (char*)__XOS2RedirRoot(atomsFile);
+#endif
     if (!(f = fopen (atomsFile, "r"))) {
 	ErrorF ("Could not load atom control file: %s\n", atomsFile);
 	return;

@@ -50,6 +50,7 @@ from the X Consortium.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #include	<stdio.h>
 #include	"misc.h"
@@ -253,6 +254,9 @@ InitColors()
       return TRUE;
   if (!have_rgb_db)
     {
+#ifdef __EMX__
+      rgbPath = (char*)__XOS2RedirRoot(rgbPath);
+#endif
       path = (char*)ALLOCATE_LOCAL(strlen(rgbPath) +5);
       strcpy(path, rgbPath);
       strcat(path, ".txt");
