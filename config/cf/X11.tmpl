@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.266 2004/09/20 15:24:57 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.267 2004/11/23 02:25:41 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -950,6 +950,9 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define GlxDefines /**/
 #endif
 #endif
+#ifndef DRMSrcDir
+#define DRMSrcDir $(TOP)/extras/drm
+#endif
 #ifndef MesaSrcDir
 #define MesaSrcDir $(TOP)/extras/Mesa
 #endif
@@ -1721,6 +1724,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
         EXTINCSRC = $(XTOP)/include/extensions
       FTSOURCEDIR = FreeTypeSrcDir
      XTTSOURCEDIR = XTrueTypeSrcDir
+        DRMSRCDIR = DRMSrcDir
        MESASRCDIR = MesaSrcDir
   OGLSAMPLESRCDIR = OglSampleSrcDir
         PSWRAPSRC = $(XTOP)/config/pswrap

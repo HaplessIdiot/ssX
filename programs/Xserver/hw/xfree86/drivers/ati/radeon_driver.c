@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.125 2004/08/04 21:03:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.126 2004/10/08 17:29:29 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -317,6 +317,7 @@ static const char *driSymbols[] = {
     "DRIScreenInit",
     "DRIUnlock",
     "GlxSetVisualConfigs",
+    "DRICreatePCIBusID",
     NULL
 };
 

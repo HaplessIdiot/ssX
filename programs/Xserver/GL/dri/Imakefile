@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.9 2004/04/08 10:08:00 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.10 2004/06/01 00:16:58 dawes Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -61,11 +61,12 @@ MOBJ = drimodule.o
 		-I$(EXTINCSRC) -I$(MESASRCDIR)/include \
 		-I$(XF86OSSRC) -I$(XF86COMSRC) \
 		-I../include -I../glx -I$(LIBSRC)/GL/include \
-		-I$(SERVERSRC)/mi -I$(FONTINCSRC)
+		-I$(SERVERSRC)/mi -I$(FONTINCSRC) \
+		-I$(DRMSRCDIR)/shared
       DEFINES = $(GLX_DEFINES)
 
-LinkSourceFile(xf86dri.h,$(LIBSRC)/GL/dri)
-LinkSourceFile(xf86dristr.h,$(LIBSRC)/GL/dri)
+LinkSourceFile(xf86dri.h,$(LIBSRC)/GL/glx)
+LinkSourceFile(xf86dristr.h,$(LIBSRC)/GL/glx)
 
 ModuleObjectRule()
 LibraryModuleTarget(dri,$(OBJS),extensions)

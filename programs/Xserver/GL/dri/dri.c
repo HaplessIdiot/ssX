@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.40 2004/01/30 14:31:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.41 2004/06/30 20:33:14 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -34,8 +34,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#ifdef XFree86LOADER
 #include "xf86.h"
+#ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #else
 #include <sys/time.h>
@@ -57,6 +57,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _XF86DRI_SERVER_
 #include "xf86dristr.h"
 #include "swaprep.h"
+#include "xf86str.h"
 #include "dri.h"
 #include "sarea.h"
 #include "dristruct.h"
@@ -113,7 +114,7 @@ Bool
 DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 {
     DRIScreenPrivPtr    pDRIPriv;
-    drmContextPtr       reserved;
+    drm_context_t *       reserved;
     int                 reserved_count;
     int                 i, fd, drmWasAvailable;
     Bool                xineramaInCore = FALSE;
@@ -294,7 +295,7 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	      pDRIPriv->hSAREA, pDRIPriv->pSAREA);
 
     if (drmAddMap( pDRIPriv->drmFD,
-		   (drmHandle)pDRIPriv->pDriverInfo->frameBufferPhysicalAddress,
+		   (drm_handle_t)pDRIPriv->pDriverInfo->frameBufferPhysicalAddress,
 		   pDRIPriv->pDriverInfo->frameBufferSize,
 		   DRM_FRAME_BUFFER,
 		   0,
@@ -483,7 +484,7 @@ DRICloseScreen(ScreenPtr pScreen)
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIInfoPtr       pDRIInfo;
-    drmContextPtr    reserved;
+    drm_context_t *    reserved;
     int              reserved_count;
 
     if (pDRIPriv && pDRIPriv->directRenderingSupport) {
@@ -634,7 +635,7 @@ DRIQueryDirectRenderingCapable(ScreenPtr pScreen, Bool* isCapable)
 }
 
 Bool
-DRIOpenConnection(ScreenPtr pScreen, drmHandlePtr hSAREA, char **busIdString)
+DRIOpenConnection(ScreenPtr pScreen, drm_handle_t * hSAREA, char **busIdString)
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
@@ -645,7 +646,7 @@ DRIOpenConnection(ScreenPtr pScreen, drmHandlePtr hSAREA, char **busIdString)
 }
 
 Bool
-DRIAuthConnection(ScreenPtr pScreen, drmMagic magic)
+DRIAuthConnection(ScreenPtr pScreen, drm_magic_t magic)
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
@@ -679,18 +680,18 @@ DRIGetClientDriverName(ScreenPtr pScreen,
 /* DRICreateContextPriv and DRICreateContextPrivFromHandle are helper
    functions that layer on drmCreateContext and drmAddContextTag.
 
-   DRICreateContextPriv always creates a kernel drmContext and then calls
+   DRICreateContextPriv always creates a kernel drm_context_t and then calls
    DRICreateContextPrivFromHandle to create a DRIContextPriv structure for
-   DRI tracking.  For the SIGIO handler, the drmContext is associated with
+   DRI tracking.  For the SIGIO handler, the drm_context_t is associated with
    DRIContextPrivPtr.  Any special flags are stored in the DRIContextPriv
    area and are passed to the kernel (if necessary).
 
    DRICreateContextPriv returns a pointer to newly allocated
-   DRIContextPriv, and returns the kernel drmContext in pHWContext. */
+   DRIContextPriv, and returns the kernel drm_context_t in pHWContext. */
 
 DRIContextPrivPtr
 DRICreateContextPriv(ScreenPtr pScreen,
-		     drmContextPtr pHWContext,
+		     drm_context_t * pHWContext,
 		     DRIContextFlags flags)
 {
     DRIScreenPrivPtr  pDRIPriv = DRI_SCREEN_PRIV(pScreen);
@@ -704,7 +705,7 @@ DRICreateContextPriv(ScreenPtr pScreen,
 
 DRIContextPrivPtr
 DRICreateContextPrivFromHandle(ScreenPtr pScreen,
-			       drmContext hHWContext,
+			       drm_context_t hHWContext,
 			       DRIContextFlags flags)
 {
     DRIScreenPrivPtr  pDRIPriv = DRI_SCREEN_PRIV(pScreen);
@@ -779,8 +780,8 @@ static Bool
 DRICreateDummyContext(ScreenPtr pScreen, Bool needCtxPriv)
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-    __GLXscreenInfo *pGLXScreen = &__glXActiveScreens[pScreen->myNum];
-    __GLXvisualConfig *pGLXVis = pGLXScreen->pGlxVisual;
+    __GLXscreenInfo *pGLXScreen = __glXgetActiveScreen(pScreen->myNum);
+    __GLcontextModes *modes = pGLXScreen->modes;
     void **pVisualConfigPriv = pGLXScreen->pVisualPriv;
     DRIContextPrivPtr pDRIContextPriv;
     void *contextStore;
@@ -793,7 +794,7 @@ DRICreateDummyContext(ScreenPtr pScreen, Bool needCtxPriv)
     for (visNum = 0;
 	 visNum < pScreen->numVisuals;
 	 visNum++, visual++) {
-	if (pGLXVis->vid == visual->vid)
+	if (modes->visualID == visual->vid)
 	    break;
     }
     if (visNum == pScreen->numVisuals) return FALSE;
@@ -840,15 +841,14 @@ DRIDestroyDummyContext(ScreenPtr pScreen, Bool hasCtxPriv)
 
 Bool
 DRICreateContext(ScreenPtr pScreen, VisualPtr visual,
-                 XID context, drmContextPtr pHWContext)
+                 XID context, drm_context_t * pHWContext)
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-    __GLXscreenInfo *pGLXScreen = &__glXActiveScreens[pScreen->myNum];
-    __GLXvisualConfig *pGLXVis = pGLXScreen->pGlxVisual;
+    __GLXscreenInfo *pGLXScreen = __glXgetActiveScreen(pScreen->myNum);
+    __GLcontextModes *modes = pGLXScreen->modes;
     void **pVisualConfigPriv = pGLXScreen->pVisualPriv;
     DRIContextPrivPtr pDRIContextPriv;
     void *contextStore;
-    int visNum;
 
     if (pDRIPriv->createDummyCtx && !pDRIPriv->dummyCtxPriv) {
         if (!DRICreateDummyContext(pScreen, pDRIPriv->createDummyCtxPriv)) {
@@ -859,12 +859,13 @@ DRICreateContext(ScreenPtr pScreen, VisualPtr visual,
     }
 
     /* Find the GLX visual associated with the one requested */
-    for (visNum = 0;
-	 visNum < pGLXScreen->numVisuals;
-	 visNum++, pGLXVis++, pVisualConfigPriv++)
-	if (pGLXVis->vid == visual->vid)
+    for (modes = pGLXScreen->modes; modes != NULL; modes = modes->next) {
+	if (modes->visualID == visual->vid)
 	    break;
-    if (visNum == pGLXScreen->numVisuals) {
+	pVisualConfigPriv++;
+    }
+
+    if (modes == NULL) {
 	/* No matching GLX visual found */
 	return FALSE;
     }
@@ -987,7 +988,7 @@ DRITransitionTo2d(ScreenPtr pScreen)
 
 Bool
 DRICreateDrawable(ScreenPtr pScreen, Drawable id,
-                  DrawablePtr pDrawable, drmDrawablePtr hHWDrawable)
+                  DrawablePtr pDrawable, drm_drawable_t * hHWDrawable)
 {
     DRIScreenPrivPtr	pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIDrawablePrivPtr	pDRIDrawablePriv;
@@ -1004,7 +1005,7 @@ DRICreateDrawable(ScreenPtr pScreen, Drawable id,
 		return FALSE;
 	    }
 
-	    /* Only create a drmDrawable once */
+	    /* Only create a drm_drawable_t once */
 	    if (drmCreateDrawable(pDRIPriv->drmFD, hHWDrawable)) {
 		xfree(pDRIDrawablePriv);
 		return FALSE;
@@ -1124,11 +1125,11 @@ DRIGetDrawableInfo(ScreenPtr pScreen,
                    int* W,
                    int* H,
                    int* numClipRects,
-                   XF86DRIClipRectPtr* pClipRects,
+                   drm_clip_rect_t ** pClipRects,
                    int* backX,
                    int* backY,
                    int* numBackClipRects,
-                   XF86DRIClipRectPtr* pBackClipRects)
+                   drm_clip_rect_t ** pBackClipRects)
 {
     DRIScreenPrivPtr    pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIDrawablePrivPtr	pDRIDrawablePriv, pOldDrawPriv;
@@ -1224,7 +1225,7 @@ DRIGetDrawableInfo(ScreenPtr pScreen,
 	    *W = (int)(pWin->drawable.width);
 	    *H = (int)(pWin->drawable.height);
 	    *numClipRects = REGION_NUM_RECTS(&pWin->clipList);
-	    *pClipRects = (XF86DRIClipRectPtr)REGION_RECTS(&pWin->clipList);
+	    *pClipRects = (drm_clip_rect_t *)REGION_RECTS(&pWin->clipList);
 
 	    if (!*numClipRects && pDRIPriv->fullscreen) {
 				/* use fake full-screen clip rect */
@@ -1281,7 +1282,7 @@ DRIGetDrawableInfo(ScreenPtr pScreen,
 
 Bool
 DRIGetDeviceInfo(ScreenPtr pScreen,
-                 drmHandlePtr hFrameBuffer,
+                 drm_handle_t * hFrameBuffer,
                  int* fbOrigin,
                  int* fbSize,
                  int* fbStride,
@@ -1929,7 +1930,7 @@ DRIGetSAREAPrivate(ScreenPtr pScreen)
     return (void *)(((char*)pDRIPriv->pSAREA)+sizeof(XF86DRISAREARec));
 }
 
-drmContext
+drm_context_t
 DRIGetContext(ScreenPtr pScreen)
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
@@ -2026,7 +2027,7 @@ DRIOpenFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable)
     DRIScreenPrivPtr   pDRIPriv    = DRI_SCREEN_PRIV(pScreen);
     ScrnInfoPtr        pScrn       = xf86Screens[pScreen->myNum];
     WindowPtr	       pWin        = (WindowPtr)pDrawable;
-    XF86DRIClipRectPtr pClipRects  = (void *)REGION_RECTS(&pWin->clipList);
+    drm_clip_rect_t * pClipRects  = (void *)REGION_RECTS(&pWin->clipList);
 
     _DRIAdjustFrame(pScrn, pDRIPriv, pScrn->frameX0, pScrn->frameY0);
 

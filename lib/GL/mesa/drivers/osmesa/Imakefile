@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.5 2004/06/20 10:25:12 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.6 2004/10/19 04:27:50 dawes Exp $
 
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -82,6 +82,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/glapi \
 		-I$(MESASRCDIR)/src/mesa/main \
+		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/include 
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)

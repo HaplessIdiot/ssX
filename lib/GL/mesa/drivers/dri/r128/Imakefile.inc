@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile.inc,v 1.2 2004/04/22 13:58:40 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -24,7 +24,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(SERVERSRC)/GL/dri \
 		-I$(XF86OSSRC) \
 		-I$(XF86COMSRC) \
-		-I$(XF86OSSRC)/shared/drm/kernel \
+		-I$(DRMSRCDIR)/shared \
 		-I$(XF86DRIVERSRC)/ati \
 		-I$(GLXLIBSRC)/dri/drm
 #endif
@@ -32,6 +32,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/main \
 		-I$(MESASRCDIR)/src/mesa/glapi \
+		-I$(MESASRCDIR)/src/mesa/shader \
 		-I$(MESASRCDIR)/include \
 		-I$(MESADRVSRCDIR)/common \
 		-I$(MESADRVSRCDIR)/r128
@@ -47,8 +48,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVR128BUILDDIR)r128_tex.c \
 		$(MESADRVR128BUILDDIR)r128_texmem.c \
 		$(MESADRVR128BUILDDIR)r128_texstate.c \
-		$(MESADRVR128BUILDDIR)r128_tris.c \
-		$(MESADRVR128BUILDDIR)r128_vb.c
+		$(MESADRVR128BUILDDIR)r128_tris.c
 
      R128OBJS = $(MESADRVR128BUILDDIR)r128_context.o \
 		$(MESADRVR128BUILDDIR)r128_dd.o \
@@ -60,8 +60,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVR128BUILDDIR)r128_tex.o \
 		$(MESADRVR128BUILDDIR)r128_texmem.o \
 		$(MESADRVR128BUILDDIR)r128_texstate.o \
-		$(MESADRVR128BUILDDIR)r128_tris.o \
-		$(MESADRVR128BUILDDIR)r128_vb.o
+		$(MESADRVR128BUILDDIR)r128_tris.o
 
      R128EOBJS = $(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_context.o \
 		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_dd.o \
@@ -73,8 +72,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_tex.o \
 		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_texmem.o \
 		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_texstate.o \
-		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_tris.o \
-		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_vb.o
+		$(MESADRVR128BUILDDIR)$(EXTRASUBDIR)/r128_tris.o
 
      R128UOBJS = $(MESADRVR128BUILDDIR)unshared/r128_context.o \
 		$(MESADRVR128BUILDDIR)unshared/r128_dd.o \
@@ -86,8 +84,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVR128BUILDDIR)unshared/r128_tex.o \
 		$(MESADRVR128BUILDDIR)unshared/r128_texmem.o \
 		$(MESADRVR128BUILDDIR)unshared/r128_texstate.o \
-		$(MESADRVR128BUILDDIR)unshared/r128_tris.o \
-		$(MESADRVR128BUILDDIR)unshared/r128_vb.o
+		$(MESADRVR128BUILDDIR)unshared/r128_tris.o
 
      R128DOBJS = $(MESADRVR128BUILDDIR)debugger/r128_context.o \
 		$(MESADRVR128BUILDDIR)debugger/r128_dd.o \
@@ -99,8 +96,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVR128BUILDDIR)debugger/r128_tex.o \
 		$(MESADRVR128BUILDDIR)debugger/r128_texmem.o \
 		$(MESADRVR128BUILDDIR)debugger/r128_texstate.o \
-		$(MESADRVR128BUILDDIR)debugger/r128_tris.o \
-		$(MESADRVR128BUILDDIR)debugger/r128_vb.o
+		$(MESADRVR128BUILDDIR)debugger/r128_tris.o
 
      R128POBJS = $(MESADRVR128BUILDDIR)profiled/r128_context.o \
 		$(MESADRVR128BUILDDIR)profiled/r128_dd.o \
@@ -112,8 +108,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVR128BUILDDIR)profiled/r128_tex.o \
 		$(MESADRVR128BUILDDIR)profiled/r128_texmem.o \
 		$(MESADRVR128BUILDDIR)profiled/r128_texstate.o \
-		$(MESADRVR128BUILDDIR)profiled/r128_tris.o \
-		$(MESADRVR128BUILDDIR)profiled/r128_vb.o
+		$(MESADRVR128BUILDDIR)profiled/r128_tris.o
 
 #ifdef NeedToLinkMesaSrc
 LinkSourceFile(r128_context.c, $(MESADRVSRCDIR)/r128)
@@ -137,6 +132,5 @@ LinkSourceFile(r128_texobj.h, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_texstate.c, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_tris.c, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_tris.h, $(MESADRVSRCDIR)/r128)
-LinkSourceFile(r128_vb.c, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_vb.h, $(MESADRVSRCDIR)/r128)
 #endif

@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.247tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.248 2004/11/26 11:48:47 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -326,6 +326,7 @@ static const char *driSymbols[] = {
     "DRIScreenInit",
     "DRIUnlock",
     "GlxSetVisualConfigs",
+    "DRICreatePCIBusID",
     NULL
 };
 #endif

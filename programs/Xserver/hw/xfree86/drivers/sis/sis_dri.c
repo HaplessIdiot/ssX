@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.46 2004/06/29 10:17:46 twini Exp $ */
 /* $XdotOrg$ */
 /*
  * DRI wrapper for 300 and 315 series
@@ -113,8 +113,6 @@ static void SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
                    RegionPtr prgnSrc, CARD32 index);
 
-extern char *DRICreatePCIBusID(pciVideoPtr PciInfo);		   
-		   
 static Bool
 SISInitVisualConfigs(ScreenPtr pScreen)
 {

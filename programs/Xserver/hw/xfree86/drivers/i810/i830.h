@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.14 2004/03/30 10:34:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.15 2004/06/10 13:08:28 alanh Exp $ */
 
 /*
  * Authors:
@@ -293,8 +293,8 @@ typedef struct _I830Rec {
    int numVisualConfigs;
    __GLXvisualConfig *pVisualConfigs;
    I830ConfigPrivPtr pVisualConfigsPriv;
-   drmHandle buffer_map;
-   drmHandle ring_map;
+   drm_handle_t buffer_map;
+   drm_handle_t ring_map;
 #endif
 
    OptionInfoPtr Options;

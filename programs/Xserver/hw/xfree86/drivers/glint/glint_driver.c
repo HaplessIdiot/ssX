@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.162 2003/11/03 05:11:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.163 2003/11/03 22:17:21 tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -374,6 +374,7 @@ static const char *driSymbols[] = {
     "DRIQueryVersion",
     "DRIScreenInit",
     "GlxSetVisualConfigs",
+    "DRICreatePCIBusID",
     NULL
 };
 #endif

@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.23tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.24 2004/04/22 13:58:38 tsi Exp $ */
 
 /**
  * \file glxclient.h
@@ -48,9 +48,13 @@
 #include <X11/Xlibint.h>
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
+#include <GL/glxext.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef WIN32
+#include <stdint.h>
+#endif
 #include "GL/glxint.h"
 #include "GL/glxproto.h"
 #include "GL/internal/glcore.h"
@@ -66,7 +70,7 @@
 #endif
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */
-#define GLX_MINOR_VERSION	2
+#define GLX_MINOR_VERSION	4
 
 #define __GLX_MAX_TEXTURE_UNITS 32
 
@@ -78,21 +82,17 @@ typedef struct _glapi_table __GLapi;
 
 #ifdef GLX_DIRECT_RENDERING
 
-/**
- * \name DRI interface structures
- *
- * The following structures define the interface between the GLX client
- * side library and the DRI (direct rendering infrastructure).
- */
-/*@{*/
-typedef struct __DRIdisplayRec  __DRIdisplay;
-typedef struct __DRIscreenRec   __DRIscreen;
-typedef struct __DRIcontextRec  __DRIcontext;
-typedef struct __DRIdrawableRec __DRIdrawable;
-typedef struct __DRIdriverRec   __DRIdriver;
-/*@}*/
+#include <GL/internal/dri_interface.h>
 
-extern __DRIscreen *__glXFindDRIScreen(Display *dpy, int scrn);
+typedef void *(*CreateScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
+                                  int numConfigs, __GLXvisualConfig *config);
+
+typedef void *(*CreateNewScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
+    const __GLcontextModes * modes, const __DRIversion * ddx_version,
+    const __DRIversion * dri_version, const __DRIversion * drm_version,
+    const __DRIframebuffer * frame_buffer, void * pSAREA,
+    int fd, int internal_api_version, __GLcontextModes ** driver_modes);
+
 
 /**
  * Display dependent methods.  This structure is initialized during the
@@ -108,228 +108,28 @@ struct __DRIdisplayRec {
      * Methods to create the private DRI screen data and initialize the
      * screen dependent methods.
      * This is an array [indexed by screen number] of function pointers.
+     * 
+     * \deprecated  This array of function pointers has been replaced by
+     *              \c __DRIdisplayRec::createNewScreen.
+     * \sa __DRIdisplayRec::createNewScreen
      */
-    void *(**createScreen)(Display *dpy, int scrn, __DRIscreen *psc,
-			  int numConfigs, __GLXvisualConfig *config);
+    CreateScreenFunc * createScreen;
 
     /**
      * Opaque pointer to private per display direct rendering data.
-     * \c NULL if direct rendering is not supported on this display.  Never
-     * dereferenced in libGL.
+     * \c NULL if direct rendering is not supported on this display.
      */
-    void *private;
+    struct __DRIdisplayPrivateRec *private;
+
+    /**
+     * Array of pointers to methods to create and initialize the private DRI
+     * screen data.
+     *
+     * \sa __DRIdisplayRec::createScreen
+     */
+    CreateNewScreenFunc * createNewScreen;
 };
 
-/**
- * Screen dependent methods.  This structure is initialized during the
- * \c __DRIdisplayRec::createScreen call.
- */
-struct __DRIscreenRec {
-    /**
-     * Method to destroy the private DRI screen data.
-     */
-    void (*destroyScreen)(Display *dpy, int scrn, void *screenPrivate);
-
-    /**
-     * Method to create the private DRI context data and initialize the
-     * context dependent methods.
-     */
-    void *(*createContext)(Display *dpy, XVisualInfo *vis, void *sharedPrivate,
-			   __DRIcontext *pctx);
-
-    /**
-     * Method to create the private DRI drawable data and initialize the
-     * drawable dependent methods.
-     */
-    void *(*createDrawable)(Display *dpy, int scrn, GLXDrawable draw,
-			    VisualID vid, __DRIdrawable *pdraw);
-
-    /**
-     * Method to return a pointer to the DRI drawable data.
-     */
-    __DRIdrawable *(*getDrawable)(Display *dpy, GLXDrawable draw,
-				  void *drawablePrivate);
-
-    /**
-     * Opaque pointer to private per screen direct rendering data.  \c NULL
-     * if direct rendering is not supported on this screen.  Never
-     * dereferenced in libGL.
-     */
-    void *private;
-
-    /**
-     * Get the number of vertical refreshes since some point in time before
-     * this function was first called (i.e., system start up).
-     * 
-     * \since Internal API version 20030317.
-     */
-    int (*getMSC)( void *screenPrivate, int64_t *msc );
-
-    /**
-     * Opaque pointer that points back to the containing 
-     * \c __GLXscreenConfigs.  This data structure is shared with DRI drivers
-     * but \c __GLXscreenConfigs is not. However, they are needed by some GLX
-     * functions called by DRI drivers.
-     *
-     * \since Internal API version 20030813.
-     */
-    void *screenConfigs;
-
-    /**
-     * Functions associated with MESA_allocate_memory.
-     *
-     * \since Internal API version 20030815.
-     */
-    /*@{*/
-    void *(*allocateMemory)(Display *dpy, int scrn, GLsizei size,
-			    GLfloat readfreq, GLfloat writefreq,
-			    GLfloat priority);
-   
-    void (*freeMemory)(Display *dpy, int scrn, GLvoid *pointer);
-   
-    GLuint (*memoryOffset)(Display *dpy, int scrn, const GLvoid *pointer);
-    /*@}*/
-};
-
-/**
- * Context dependent methods.  This structure is initialized during the
- * \c __DRIscreenRec::createContext call.
- */
-struct __DRIcontextRec {
-    /**
-     * Method to destroy the private DRI context data.
-     */
-    void (*destroyContext)(Display *dpy, int scrn, void *contextPrivate);
-
-    /**
-     * Method to bind a DRI drawable to a DRI graphics context.
-     */
-    Bool (*bindContext)(Display *dpy, int scrn, GLXDrawable draw,
-			GLXContext gc);
-
-    /**
-     * Method to unbind a DRI drawable to a DRI graphics context.
-     */
-    Bool (*unbindContext)(Display *dpy, int scrn, GLXDrawable draw,
-			  GLXContext gc, int will_rebind);
-
-    /**
-     * Opaque pointer to private per context direct rendering data.
-     * \c NULL if direct rendering is not supported on the display or
-     * screen used to create this context.  Never dereferenced in libGL.
-     */
-    void *private;
-
-    /**
-     * Method to bind a DRI drawable to a DRI graphics context.
-     *
-     * \since Internal API version 20030606.
-     */
-    Bool (*bindContext2)(Display *dpy, int scrn, GLXDrawable draw,
-			 GLXDrawable read, GLXContext gc);
-
-    /**
-     * Method to unbind a DRI drawable to a DRI graphics context.
-     *
-     * \since Internal API version 20030606.
-     */
-    Bool (*unbindContext2)(Display *dpy, int scrn, GLXDrawable draw,
-			   GLXDrawable read, GLXContext gc);
-};
-
-/**
- * Drawable dependent methods.  This structure is initialized during the
- * \c __DRIscreenRec::createDrawable call.  \c createDrawable is not called
- * by libGL at this time.  It's currently used via the dri_util.c utility code
- * instead.
- */
-struct __DRIdrawableRec {
-    /**
-     * Method to destroy the private DRI drawable data.
-     */
-    void (*destroyDrawable)(Display *dpy, void *drawablePrivate);
-
-    /**
-     * Method to swap the front and back buffers.
-     */
-    void (*swapBuffers)(Display *dpy, void *drawablePrivate);
-
-    /**
-     * Opaque pointer to private per drawable direct rendering data.
-     * \c NULL if direct rendering is not supported on the display or
-     * screen used to create this drawable.  Never dereferenced in libGL.
-     */
-    void *private;
-
-    /**
-     * Get the number of completed swap buffers for this drawable.
-     *
-     * \since Internal API version 20030317.
-     */
-    int (*getSBC)(Display *dpy, void *drawablePrivate, int64_t *sbc );
-
-    /**
-     * Wait for the SBC to be greater than or equal target_sbc.
-     *
-     * \since Internal API version 20030317.
-     */
-    int (*waitForSBC)( Display * dpy, void *drawablePriv,
-		       int64_t target_sbc,
-		       int64_t * msc, int64_t * sbc );
-
-    /**
-     * Wait for the MSC to equal target_msc, or, if that has already passed,
-     * the next time (MSC % divisor) is equal to remainder.  If divisor is
-     * zero, the function will return as soon as MSC is greater than or equal
-     * to target_msc.
-     * 
-     * \since Internal API version 20030317.
-     */
-    int (*waitForMSC)( Display * dpy, void *drawablePriv,
-		       int64_t target_msc, int64_t divisor, int64_t remainder,
-		       int64_t * msc, int64_t * sbc );
-
-    /**
-     * Like \c swapBuffers, but does NOT have an implicit \c glFlush.  Once
-     * rendering is complete, waits until MSC is equal to target_msc, or
-     * if that has already passed, waits until (MSC % divisor) is equal
-     * to remainder.  If divisor is zero, the swap will happen as soon as
-     * MSC is greater than or equal to target_msc.
-     * 
-     * \since Internal API version 20030317.
-     */
-    int64_t (*swapBuffersMSC)(Display *dpy, void *drawablePrivate,
-			      int64_t target_msc,
-			      int64_t divisor, int64_t remainder);
-
-    /**
-     * Enable or disable frame usage tracking.
-     * 
-     * \since Internal API version 20030317.
-     */
-    int (*frameTracking)(Display *dpy, void *drawablePrivate, Bool enable);
-
-    /**
-     * Retrieve frame usage information.
-     * 
-     * \since Internal API version 20030317.
-     */
-    int (*queryFrameTracking)(Display *dpy, void *drawablePrivate,
-			      int64_t * sbc, int64_t * missedFrames,
-			      float * lastMissedUsage, float * usage );
-
-    /**
-     * Used by drivers that implement the GLX_SGI_swap_control or
-     * GLX_MESA_swap_control extension.
-     *
-     * \since Internal API version 20030317.
-     */
-    unsigned swap_interval;
-};
-
-
-typedef void *(*CreateScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
-                                  int numConfigs, __GLXvisualConfig *config);
 
 /*
 ** We keep a linked list of these structures, one per DRI device driver.
@@ -338,6 +138,7 @@ struct __DRIdriverRec {
    const char *name;
    void *handle;
    CreateScreenFunc createScreenFunc;
+   CreateNewScreenFunc createNewScreenFunc;
    struct __DRIdriverRec *next;
 };
 
@@ -577,6 +378,10 @@ struct __GLXcontextRec {
 
     /**
      * Visual id.
+     * 
+     * \deprecated
+     * This filed has been largely been replaced by the \c mode field, but
+     * the work is not quite done.
      */
     VisualID vid;
 
@@ -700,9 +505,14 @@ struct __GLXcontextRec {
 #endif
     
     /**
-     * \c GLXFBConfigID used to create this context.  May be \c None.
+     * \c GLXFBConfigID used to create this context.  May be \c None.  This
+     * field has been replaced by the \c mode field.
      *
      * \since Internal API version 20030317.
+     *
+     * \deprecated
+     * This filed has been largely been replaced by the \c mode field, but
+     * the work is not quite done.
      */
     GLXFBConfigID  fbconfigID;
 
@@ -722,6 +532,23 @@ struct __GLXcontextRec {
     * drivers should NEVER use this data or even care that it exists.
     */
    void * client_state_private;
+   
+   /**
+    * Stored value for \c glXQueryContext attribute \c GLX_RENDER_TYPE.
+    */
+   int renderType;
+    
+   /**
+    * \name Raw server GL version
+    *
+    * True core GL version supported by the server.  This is the raw value
+    * returned by the server, and it may not reflect what is actually
+    * supported (or reported) by the client-side library.
+    */
+    /*@{*/
+   int server_major;        /**< Major version number. */
+   int server_minor;        /**< Minor version number. */
+    /*@}*/
 };
 
 #define __glXSetError(gc,code) \
@@ -841,8 +668,8 @@ struct __GLXdisplayPrivateRec {
      * be filled in on demand.
      */
     /*@{*/
-    char *serverGLXvendor;
-    char *serverGLXversion;
+    const char *serverGLXvendor;
+    const char *serverGLXversion;
     /*@}*/
 
     /**
@@ -991,44 +818,19 @@ extern void _XSend(Display*, const void*, long);
 extern void __glXInitializeVisualConfigFromTags( __GLcontextModes *config,
     int count, const INT32 *bp, Bool tagged_only, Bool fbconfig_style_tags );
 
-extern char *__glXInternalQueryServerString( Display *dpy, int opcode,
-    int screen, int name );
+extern char * __glXGetStringFromServer( Display * dpy, int opcode,
+    CARD32 glxCode, CARD32 for_whom, CARD32 name );
 
 extern char *__glXstrdup(const char *str);
 
 
 extern const char __glXGLClientVersion[];
 extern const char __glXGLClientExtensions[];
-extern char *__glXCombineExtensionStrings( const char *cext_string,
-    const char *sext_string );
 
 /* Determine the internal API version */
 extern int __glXGetInternalVersion(void);
 
-/**
- * Type of a pointer to \c __glXGetInternalVersion, as returned by
- * \c glXGetProcAddress.
- *
- * \sa __glXGetInternalVersion, glXGetProcAddress
- */
-typedef int (* PFNGLXGETINTERNALVERSIONPROC) ( void );
-
-/**
- * Type of a pointer to \c __glXWindowExists, as returned by
- * \c glXGetProcAddress.
- *
- * \sa __glXWindowExists, glXGetProcAddress
- */
-typedef Bool (* PFNGLXWINDOWEXISTSPROC) (Display *dpy, GLXDrawable draw);
-
 /* Get the unadjusted system time */
 extern int __glXGetUST( int64_t * ust );
-
-/**
- * Type of a pointer to \c __glXGetUST, as returned by \c glXGetProcAddress.
- * 
- * \sa __glXGetUST, glXGetProcAddress
- */
-typedef int (* PFNGLXGETUSTPROC) ( int64_t * ust );
 
 #endif /* !__GLX_client_h__ */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.29 2004/08/05 20:37:42 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.30 2004/10/19 04:27:49 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -102,12 +102,6 @@ NormalLintTarget($(PROFSRC))
      GLXPOBJS = $(GLXLIBSRC)/glx/profiled/?*.o $(GLAPI_OBJ)
 
 #if BuildXF86DRI
-      DRIOBJS = $(GLXLIBSRC)/dri/XF86dri.o $(GLXLIBSRC)/dri/dri_glx.o
-     DRIEOBJS = $(GLXLIBSRC)/dri/$(EXTRASUBDIR)/XF86dri.o $(GLXLIBSRC)/dri/$(EXTRASUBDIR)/dri_glx.o
-     DRIUOBJS = $(GLXLIBSRC)/dri/unshared/XF86dri.o $(GLXLIBSRC)/dri/unshared/dri_glx.o
-     DRIDOBJS = $(GLXLIBSRC)/dri/debugger/XF86dri.o $(GLXLIBSRC)/dri/debugger/dri_glx.o
-     DRIPOBJS = $(GLXLIBSRC)/dri/profiled/XF86dri.o $(GLXLIBSRC)/dri/profiled/dri_glx.o
-
       DRMOBJS = $(GLXLIBSRC)/dri/drm/?*.o
      DRMEOBJS = $(GLXLIBSRC)/dri/drm/$(EXTRASUBDIR)/?*.o
      DRMUOBJS = $(GLXLIBSRC)/dri/drm/unshared/?*.o

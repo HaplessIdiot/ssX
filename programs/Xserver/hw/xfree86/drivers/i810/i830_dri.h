@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.7 2003/10/21 02:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.6 2003/09/28 20:15:59 alanh Exp $ */
 
 #ifndef _I830_DRI_H
 #define _I830_DRI_H
 
+#include "xf86dri.h"
 #include "xf86drm.h"
 #include "i830_common.h"
 
@@ -15,20 +16,20 @@
 #define I830_REG_SIZE 0x80000
 
 typedef struct _I830DRIRec {
-   drmHandle regs;
+   drm_handle_t regs;
    drmSize regsSize;
    drmAddress regsMap;
 
    drmSize backbufferSize;
-   drmHandle backbuffer;
+   drm_handle_t backbuffer;
 
    drmSize depthbufferSize;
-   drmHandle depthbuffer;
+   drm_handle_t depthbuffer;
 
-   drmHandle textures;
+   drm_handle_t textures;
    int textureSize;
 
-   drmHandle agp_buffers;
+   drm_handle_t agp_buffers;
    drmSize agp_buf_size;
 
    int deviceID;

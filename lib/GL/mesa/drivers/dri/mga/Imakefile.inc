@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/mga/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/mga/Imakefile.inc,v 1.2 2004/04/22 13:58:40 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/src/drv
@@ -23,7 +23,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(GLXLIBSRC)/include \
 		-I$(SERVERSRC)/GL/dri \
 		-I$(XF86OSSRC) \
-		-I$(XF86OSSRC)/shared/drm/kernel \
+		-I$(DRMSRCDIR)/shared \
 		-I$(XF86DRIVERSRC)/mga \
 		-I$(GLXLIBSRC)/dri/drm
 #endif
