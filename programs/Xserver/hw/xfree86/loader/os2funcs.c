@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
  * (c) Copyright 1997 by Sebastien Marineau
  *                      <marineau@genie.uottawa.ca>
