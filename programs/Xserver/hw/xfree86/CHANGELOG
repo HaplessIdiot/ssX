@@ -1,4 +1,4 @@
-XFree86 3.9.18Zb (8 March 2000)
+XFree86 4.0 (8 March 2000)
 3972. Possible fix for a cirrus driver crash when using -configure
       (David Dawes).
 3971. R128 driver doc update (#3813, Ove Kaaven).
@@ -10035,4 +10035,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1077 2000/03/08 05:38:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1078 2000/03/08 15:14:39 dawes Exp $
