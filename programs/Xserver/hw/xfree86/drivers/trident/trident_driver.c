@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.42 1999/01/26 05:54:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.43 1999/01/26 10:40:32 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -779,7 +779,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
     if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb |
-				SupportConvert32to24 | PreferConvert32to24)) {
+			    SupportConvert32to24 /*| PreferConvert32to24*/)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
