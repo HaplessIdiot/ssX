@@ -292,7 +292,7 @@ LIBNAME = i810_dri.so
 ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
-InstallDynamicModule($(LIBNAME),$(MODULEDIR)/dri,.)
+InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 #endif
 
 DependTarget()

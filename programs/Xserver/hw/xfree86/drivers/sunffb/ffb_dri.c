@@ -1,4 +1,4 @@
-/* $XFree86$
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.1 2000/06/20 05:08:47 dawes Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -198,17 +198,15 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	DRIInfoPtr pDRIInfo;
 	FFBDRIPtr pFfbDRI;
 
-#if XFree86LOADER
 	/* Check that the GLX, DRI, and DRM modules have been loaded by testing
 	 * for canonical symbols in each module.
 	 */
-	if (!LoaderSymbol("GlxSetVisualConfigs"))
+	if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs"))
 		return FALSE;
-	if (!LoaderSymbol("DRIScreenInit"))
+	if (!xf86LoaderCheckSymbol("DRIScreenInit"))
 		return FALSE;
-	if (!LoaderSymbol("drmAvailable"))
+	if (!xf86LoaderCheckSymbol("drmAvailable"))
 		return FALSE;
-#endif
 
 	pDRIInfo = DRICreateInfoRec();
 	if (pDRIInfo == NULL)

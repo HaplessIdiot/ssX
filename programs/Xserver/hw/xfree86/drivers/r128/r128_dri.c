@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.1 2000/06/17 00:03:22 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -977,13 +977,11 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     int           major, minor, patch;
     drmVersionPtr version;
     
-#if XFree86LOADER
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing
      * for known symbols in each module. */
-    if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
-    if (!LoaderSymbol("DRIScreenInit"))       return FALSE;
-    if (!LoaderSymbol("drmAvailable"))        return FALSE;
-#endif     
+    if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
+    if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
+    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
    
     /* Check the DRI version */
     DRIQueryVersion(&major, &minor, &patch);
