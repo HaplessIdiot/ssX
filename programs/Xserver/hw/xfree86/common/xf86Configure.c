@@ -116,6 +116,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 {
     int i, j;
     pciVideoPtr pVideo = NULL;
+    Bool isPrimary = FALSE;
 
     if (xf86DoProbe || !xf86DoConfigure || !xf86DoConfigurePass1)
 	return NULL;
@@ -130,6 +131,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 		(DevToConfig[i].pVideo->device == pVideo->device) &&
 		(DevToConfig[i].pVideo->func == pVideo->func))
 		return NULL;
+	isPrimary = xf86IsPrimaryPci(pVideo);
 	break;
     case BUS_ISA:
 	/*
@@ -138,6 +140,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 	 */
 	if (!xf86IsPrimaryIsa())
 	    return NULL;
+	isPrimary = TRUE;
 	for (i = 0;  i < nDevToConfig;  i++)
 	    if (!DevToConfig[i].pVideo)
 		return NULL;
@@ -158,6 +161,13 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
     i = nDevToConfig++;
     DevToConfig =
 	xnfrealloc(DevToConfig, nDevToConfig * sizeof(DevToConfigRec));
+#if 1
+    if (i > 0 && isPrimary) {
+        memmove(DevToConfig + 1,DevToConfig,
+	       (nDevToConfig - 1) * sizeof(DevToConfigRec));
+	i = 0;
+    } 
+#endif
     memset(DevToConfig + i, 0, sizeof(DevToConfigRec));
 
 #   define NewDevice DevToConfig[i]
@@ -700,19 +710,20 @@ DoConfigure()
 #ifdef __EMX__
 #define PATH_MAX 2048
 #endif
+        const char* configfile = XF86CONFIGFILE".new";
     	char homebuf[PATH_MAX];
     	/* getenv might return R/O memory, as with OS/2 */
     	strncpy(homebuf,home,PATH_MAX-1);
     	homebuf[PATH_MAX-1] = '\0';
     	home = homebuf;
-
+	ErrorF("CONFIGFILE %s\n",configfile);
     	if (!(filename =
 	     (char *)ALLOCATE_LOCAL(strlen(home) + 
-	  			 strlen("XF86Config.new") + 3)))
+	  			 strlen(configfile) + 3)))
 
       	if (home[0] == '/' && home[1] == '\0')
             home[0] = '\0';
-      	sprintf(filename, "%s/XF86Config.new", home);
+      	sprintf(filename, "%s/%s", home,configfile);
     }
 
     xf86writeConfigFile(filename, xf86config);

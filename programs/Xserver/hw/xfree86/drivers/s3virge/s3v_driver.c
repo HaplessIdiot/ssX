@@ -103,6 +103,8 @@ static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int flags);
 #endif
 static Bool S3Vddc1(int scrnIndex);
+static Bool S3Vddc2(int scrnIndex);
+
 static unsigned int S3Vddc1Read(ScrnInfoPtr pScrn);
 static void S3VProbeDDC(ScrnInfoPtr pScrn, int index);
 
@@ -985,16 +987,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	   && ((pMon = xf86PrintEDID(vbeDoEDID(ps3v->pVbe, NULL))) != NULL))
 	   xf86SetDDCproperties(pScrn,pMon);
        else if (!S3Vddc1(pScrn->scrnIndex)) {
-	   if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	       xf86LoaderReqSymLists(i2cSymbols,NULL);
-	       if (S3V_I2CInit(pScrn)) {
-		   CARD32 tmp = (INREG(DDC_REG));
-		   OUTREG(DDC_REG,(tmp | 0x13));
-		   xf86SetDDCproperties(pScrn,xf86PrintEDID(
-		       xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C)));
-		   OUTREG(DDC_REG,tmp);
-	       }
-	   }
+	   S3Vddc2(pScrn->scrnIndex);
        }
    }
    if (ps3v->pVbe)
@@ -3759,6 +3752,25 @@ S3Vddc1(int scrnIndex)
     return success;
 }
 
+static Bool
+S3Vddc2(int scrnIndex)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    S3VPtr ps3v = S3VPTR(pScrn);
+    
+    if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	xf86LoaderReqSymLists(i2cSymbols,NULL);
+	if (S3V_I2CInit(pScrn)) {
+	    CARD32 tmp = (INREG(DDC_REG));
+	    OUTREG(DDC_REG,(tmp | 0x13));
+	    xf86SetDDCproperties(pScrn,xf86PrintEDID(
+		xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C)));
+	    OUTREG(DDC_REG,tmp);
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
 
 static void
 S3VProbeDDC(ScrnInfoPtr pScrn, int index)

@@ -315,6 +315,10 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
     dev->SlaveAddr = 0xA0;
     dev->ByteTimeout = 2200; /* VESA DDC spec 3 p. 43 (+10 %) */
     dev->StartTimeout = 550;
+    dev->BitTimeout = 40;
+    dev->ByteTimeout = 40;
+    dev->AcknTimeout = 40;
+
     dev->pI2CBus = pBus;
     if (! xf86I2CDevInit(dev)) {
 	xf86DrvMsg(X_PROBED,scrnIndex,"No DDC2 device\n");

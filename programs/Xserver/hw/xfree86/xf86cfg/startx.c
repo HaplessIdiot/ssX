@@ -58,9 +58,12 @@ startx(void)
 	int c_pos;
 	int len;
 	
-	c_pos = XmuSnprintf(commandline, sizeof(commandline),
-			    "XFree86 :8 -configure ");
-	
+	if (XFree86_path)
+	    c_pos = XmuSnprintf(commandline, sizeof(commandline),
+				"%s/XFree86 :8 -configure ",XFree86_path);
+	else
+	    c_pos = XmuSnprintf(commandline, sizeof(commandline), 
+				"%s/bin/XFree86 :8 -configure ", XFree86Dir);
 	if (XF86Module_path && ((len = sizeof(commandline) - c_pos) > 0))
 	    c_pos += XmuSnprintf(commandline + c_pos,len,
 				 " -modulepath %s",XF86Module_path);
@@ -92,8 +95,10 @@ startx(void)
     switch (xpid = fork()) {
 	case 0: {
 	    char path[PATH_MAX];
-
-	    XmuSnprintf(path, sizeof(path), "%s/bin/XFree86", XFree86Dir);
+	    if (XFree86_path)
+	        XmuSnprintf(path, sizeof(path), "%s/XFree86", XFree86_path);
+	    else
+	        XmuSnprintf(path, sizeof(path), "%s/bin/XFree86", XFree86Dir);
 	    execl(path, "X", ":8", /*"+xinerama",*/ "+accessx","-allowMouseOpenFail",
 		  "-xf86config", XF86Config_path, NULL);
 	    exit(-127);

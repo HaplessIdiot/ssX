@@ -48,6 +48,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
 #include "xf86Cursor.h"
 
+#include "shadowfb.h"
+
 #include "vbe.h"
 
 /* Drivers that need to access the PCI config space directly need this */
@@ -105,6 +107,7 @@ int NEOSetRead(ScreenPtr pScreen, int bank);
 extern Bool neo_I2CInit(ScrnInfoPtr pScrn);
 
 /* in neo_shadow.c */
+void neoShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, RegionPtr damage);
 void neoPointerMoved(int index, int x, int y);
 void neoRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
@@ -239,6 +242,7 @@ typedef struct neoRec
     vbeInfoPtr          pVbe;
     unsigned char * ShadowPtr;
     int ShadowPitch;
+    RefreshAreaFuncPtr refreshArea;
     void	(*PointerMoved)(int index, int x, int y);
     int rotate;
 } NEORec, *NEOPtr;

@@ -109,6 +109,7 @@ XtAppContext appcon;
 
 char *XF86Config_path = NULL;
 char *XF86Module_path = NULL;
+char *XFree86_path = NULL;
 char *XF86Font_path = NULL;
 char *XF86RGB_path = NULL;
 char *XkbConfig_path = NULL;
@@ -200,26 +201,31 @@ main(int argc, char *argv[])
 	XFree86Dir = DefaultXFree86Dir;
 
     chdir(XFree86Dir);
-
-    for (i = 1; i < argc; i++)
+    
+    for (i = 1; i < argc; i++) {
 	if (strcmp(argv[i], "-xf86config") == 0) {
 	    if (i + 1 < argc)
-		XF86Config_path = argv[i + 1];
-	    break;
+		XF86Config_path = argv[++i];
+	    continue;
 	} else if (strcmp(argv[i], "-modulepath") == 0) {
 	    if (i + 1 < argc)
-		XF86Module_path = argv[i + 1];
-	    break;
+		XF86Module_path = argv[++i];
+	    continue;
+	} else if (strcmp(argv[i], "-serverpath") == 0) {
+	    if (i + 1 < argc)
+		XFree86_path = argv[++i];
+	    continue;
 	} else if (strcmp(argv[i], "-fontpath") == 0) {
 	    if (i + 1 < argc)
-		XF86Font_path = argv[i + 1];
-	    break;
+		XF86Font_path = argv[++i];
+	    continue;
 	} else if (strcmp(argv[i], "-rgbpath") == 0) {
 	    if (i + 1 < argc)
-		XF86RGB_path = argv[i + 1];
-	    break;
+		XF86RGB_path = argv[++i];
+	    continue;
 	}
-    
+    }
+
     startedx = startx();
 /*    if (XF86Config_path == NULL)
 	XF86Config_path = "/etc/X11/XF86Config-4";*/

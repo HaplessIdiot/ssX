@@ -1026,8 +1026,8 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_MACCESS, maccess);
     pMga->MAccess = maccess;
     pMga->PlaneMask = ~0;
-    if((pMga->Chipset != PCI_CHIP_MGAG100) 
-       && (pMga->Chipset != PCI_CHIP_MGAG100_PCI))
+    /* looks like this doesn't apply to mga g100 pci */
+    if (pMga->Chipset != PCI_CHIP_MGAG100) 
 	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
     pMga->FgColor = 0;
     OUTREG(MGAREG_FCOL, pMga->FgColor);

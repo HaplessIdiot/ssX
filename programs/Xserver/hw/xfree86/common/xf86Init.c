@@ -733,9 +733,16 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
     xf86OpenConsole();
 
+    /*
+      should we reopen it here? We need to deal with an already opened
+      device. We could leave this to the OS layer. For now we simply
+      close it here
+    */
+    if (xf86OSPMClose)
+        xf86OSPMClose();
     if ((xf86OSPMClose = xf86OSPMOpen()) != NULL)
 	xf86MsgVerb(3,X_INFO,"APM registered successfully\n");
-    
+
     /* Make sure full I/O access is enabled */
     xf86EnableIO();
   }
@@ -1049,7 +1056,8 @@ ddxGiveUp()
     xf86CloseConsole();
     if (xf86OSPMClose)
 	xf86OSPMClose();
-    
+    xf86OSPMClose = NULL;
+
     xf86CloseLog();
 
     /* If an unexpected signal was caught, dump a core for debugging */

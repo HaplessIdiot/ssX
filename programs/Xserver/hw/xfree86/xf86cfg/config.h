@@ -188,6 +188,7 @@ extern char *ident_string;
 extern XF86ConfigPtr XF86Config;
 extern char *XF86Config_path;
 extern char *XF86Module_path;
+extern char *XFree86_path;
 extern char *XF86Font_path;
 extern char *XF86RGB_path;
 extern char *XFree86Dir;

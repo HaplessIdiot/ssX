@@ -1168,9 +1168,10 @@ xf86VTSwitch()
       xf86EnableInputHandler(ih);
 
     } else {
-	if (xf86OSPMClose)
-	    xf86OSPMClose();
-    
+	  if (xf86OSPMClose)
+	      xf86OSPMClose();
+	  xf86OSPMClose = NULL;
+
 	for (i = 0; i < xf86NumScreens; i++) {
  	    /*
  	     * zero all access functions to

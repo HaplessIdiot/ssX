@@ -105,17 +105,7 @@
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
 
-/* Using fb so this is needed */
 #include "fb.h"
-
-/* If using cfb, cfb.h is required. */
-#define PSZ 8
-#include "cfb.h"  
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
 #include "cfb8_16.h"
 
 
@@ -135,6 +125,10 @@
 
 /* Needed for replacement LoadPalette function for Gamma Correction */
 #include "xf86cmap.h"
+
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 
 /* Driver specific headers */
 #include "ct_driver.h"
@@ -565,7 +559,6 @@ typedef enum {
     OPTION_SET_MCLK,
     OPTION_ROTATE,
     OPTION_NO_TMED,
-    OPTION_USE_FB
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
@@ -592,7 +585,6 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_FP_CLOCK_8,        "FPClock8",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
-    { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -608,7 +600,6 @@ static OptionInfoRec ChipsWingineOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_ROTATE,  	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
-    { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -638,7 +629,6 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_NO_TMED,		"NoTMED",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -667,13 +657,8 @@ static const char *vgahwSymbols[] = {
 static const char *fbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
-    "cfbScreenInit",
-    "cfb16ScreenInit",
     "cfb8_16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb24_32ScreenInit",
-    "cfb32ScreenInit",
-    "fbScreenInit",
+    "fb_ScreenInit",
     NULL
 };
 
@@ -1118,13 +1103,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     else 
 	res = chipsPreInit655xx(pScrn, flags);
 
-    /* See whether the user wants to use the new framebuffer code */
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_FB, FALSE)) {
-	cPtr->Flags |= ChipsUseNewFB;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-			   "Using \"New Framebuffer\"\n");
-    }
-	
     if (cPtr->UseFullMMIO)
 	chipsUnmapMem(pScrn);
 
@@ -1205,69 +1183,40 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
-	mod = "xf1bpp";
-	reqSym = "xf1bppScreenInit";
+	if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
+	    CHIPSFreeRec(pScrn);
+	    return FALSE;
+	}	
+	xf86LoaderReqSymbols("xf1bppScreenInit", NULL);
 	break;
     case 4:
-	mod = "xf4bpp";
-	reqSym = "xf4bppScreenInit";
+	if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
+	    CHIPSFreeRec(pScrn);
+	    return FALSE;
+	}	
+	xf86LoaderReqSymbols("xf4bppScreenInit", NULL);
 	break;
+    case 16:
+	if (cPtr->Flags & ChipsOverlay8plus16) {
+	    if (xf86LoadSubModule(pScrn, "xf8_16bpp") == NULL) {
+	        CHIPSFreeRec(pScrn);
+		return FALSE;
+	    }	
+	    xf86LoaderReqSymbols("cfb8_16bppScreenInit", NULL);
+	    break;
+	}
     default:
-	if (cPtr->Flags & ChipsUseNewFB)
-	    switch (pScrn->bitsPerPixel) {
-	    case 16:
-		reqSym = "xf4bppScreenInit";
-		if (cPtr->Flags & ChipsOverlay8plus16) {
-		    mod = "xf8_16bpp";
-		    reqSym = "cfb8_16ScreenInit";
-		    break;
-		} else
-		    reqSym = "fbScreenInit";
-		/* fall through */
-	    case 8:
-	    case 24:
-	    case 32:
-		mod = "fb";
-		break;
-	    }
-	else
-	    switch (pScrn->bitsPerPixel) {
-	    case 8:
-		mod = "cfb";
-		reqSym = "cfbScreenInit";
-		break;
-	    case 16:
-		if (cPtr->Flags & ChipsOverlay8plus16) {
-		    mod = "xf8_16bpp";
-		    reqSym = "cfb8_16ScreenInit";
-		} else {
-		    mod = "cfb16";
-		    reqSym = "cfb16ScreenInit";
-		}
-		break;
-	    case 24:
-		if (pix24bpp == 24) {
-		    mod = "cfb24";
-		    reqSym = "cfb24ScreenInit";
-		} else {
-		    mod = "xf24_32bpp";
-		    reqSym = "cfb24_32ScreenInit";
-		}
-		break;
-	    case 32:
-		mod = "cfb32";
-		reqSym = "cfb32ScreenInit";
-		break;
-	    }
+	if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	    CHIPSFreeRec(pScrn);
+	    return FALSE;
+	}	
+	xf86LoaderReqSymbols("fbScreenInit", NULL);
+#ifdef RENDER
+	xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
+	break;
     }
-
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	CHIPSFreeRec(pScrn);
-	return FALSE;
-    }
-
-    xf86LoaderReqSymbols(reqSym, NULL);
-
+    
     if (cPtr->Flags & ChipsAccelSupport) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    CHIPSFreeRec(pScrn);
@@ -1378,17 +1327,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1)) 
 	return FALSE;
-    } else {
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported at depth %d\n",
-		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
 
     /* The gamma fields must be initialised when using the new cmap code */
     if (pScrn->depth > 1) {
@@ -2226,17 +2166,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1)) 
 	return FALSE;
-    } else {
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported at depth %d\n",
-		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
 
     /* The gamma fields must be initialised when using the new cmap code */
     if (pScrn->depth > 1) {
@@ -2700,17 +2631,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1))
 	return FALSE;
-    } else {
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported at depth %d\n",
-		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
 
     /* The gamma fields must be initialised when using the new cmap code */
     if (pScrn->depth > 1) {
@@ -3588,24 +3510,14 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
 			      pScrn->rgbBits, PseudoColor))
 		return FALSE;
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			      TrueColor))
-		return FALSE;
-    } else if ((pScrn->depth > 8) && (!(cPtr->Flags & ChipsGammaSupport))) {
-	/*
-	 * For bpp > 8, the default visuals are not acceptable because we only
-	 * support TrueColor and not DirectColor.  To deal with this, call
-	 * miSetVisualTypes for each visual supported.
-	 */
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			      pScrn->defaultVisual))
-	    return FALSE;
     } else {
-	if (!miSetVisualTypes(pScrn->depth,
-			      miGetDefaultVisualMask(pScrn->depth),
-			      pScrn->rgbBits, pScrn->defaultVisual))
-	    return FALSE;
+      if (!miSetVisualTypes(pScrn->depth,
+			    miGetDefaultVisualMask(pScrn->depth),
+			    pScrn->rgbBits, pScrn->defaultVisual))
+	return FALSE;
     }
+    ErrorF("bla\n");
+    miSetPixmapDepths ();
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -3643,77 +3555,24 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
 	break;
+    case 16:
+      if (cPtr->Flags & ChipsOverlay8plus16) {
+	  ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart + 
+				  cPtr->FbOffset16, FBStart, width, 
+				  height, pScrn->xDpi, pScrn->yDpi,
+				  displayWidth, displayWidth);
+	  break;
+      }
     default:
-	if (cPtr->Flags & ChipsUseNewFB)
-	    switch (pScrn->bitsPerPixel) {
-	    case 16:
-		if (cPtr->Flags & ChipsOverlay8plus16) {
-		    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart
-		        + cPtr->FbOffset16, FBStart, width, 
-			height, pScrn->xDpi, pScrn->yDpi,
-			displayWidth, displayWidth);
-		    break;
-		}
-	    case 8:
-	    case 24:
-	    case 32:
-		ret = fbScreenInit(pScreen, FBStart,
+	ret = fbScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth,pScrn->bitsPerPixel);
-		break;
-	    default:
-		xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in CHIPSScreenInit\n",
-		   pScrn->bitsPerPixel);
-		ret = FALSE;
-		break;
-	    }
-	else
-	    switch (pScrn->bitsPerPixel) {
-	    case 8:
-		ret = cfbScreenInit(pScreen, FBStart,
- 		        width,height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-		break;
-	    case 16:
-	        if (cPtr->Flags & ChipsOverlay8plus16)
-		    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart
-		        + cPtr->FbOffset16, FBStart, width, 
-			height, pScrn->xDpi, pScrn->yDpi,
-			displayWidth, displayWidth);
-		else
-		    ret = cfb16ScreenInit(pScreen, FBStart,
-		        width, height,			  
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-		break;
-	    case 24:
-	        if (pix24bpp == 24)
-		    ret = cfb24ScreenInit(pScreen, FBStart,
- 		        width,height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-		else
-		    ret = cfb24_32ScreenInit(pScreen, FBStart,
- 		        width,height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-		break;
-	    case 32:
-		ret = cfb32ScreenInit(pScreen, FBStart,
- 		        width,height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-		break;
-	    default:
-		xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in CHIPSScreenInit\n",
-		   pScrn->bitsPerPixel);
-		ret = FALSE;
-		break;
-	    }
+#ifdef RENDER
+	if (ret) 
+	    fbPictureInit (pScreen, 0, 0);
+#endif
+	break;
     }
 
     if (!ret)
@@ -4187,6 +4046,9 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char dpmsreg, seqreg, lcdoff, tmp;
     
+    if (!pScrn->vtSema)
+	return;
+
     xf86EnableAccess(pScrn);
     switch (PowerManagementMode) {
     case DPMSModeOn:
@@ -6271,7 +6133,7 @@ chipsRestoreExtendedRegs(ScrnInfoPtr pScrn, CHIPSRegPtr Regs)
 	    if ((i == 0x03) && (cPtr->Chipset != CHIPS_CT69030)) {
 	    	/* restore the non clock bits */
 		tmp = cPtr->readFR(cPtr, 0x03);
-		cPtr->writeFR(cPtr, 0x01, ((Regs->FR[0x03] & 0xC3) |
+		cPtr->writeFR(cPtr, 0x03, ((Regs->FR[0x03] & 0xC3) |
 				(tmp & ~0xC3)));
 		continue;
 	    }

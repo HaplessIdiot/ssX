@@ -52,11 +52,21 @@ int
 checksum(unsigned char *block, int len)
 {
     int i, result = 0;
-    for (i=0;i<len;i++)
+    int not_null = 0;
+    
+    for (i=0;i<len;i++) {
+	not_null |= block[i];
 	result += block[i];
+    }
+    
 #ifdef DEBUG
     if (result & 0xFF) ErrorF("DDC checksum not correct\n");
+    if (!not_null) ErrorF("DDC read all Null\n");
 #endif
+
+    /* catch the trivial case where all bytes are 0 */
+    if (!not_null) return 1;
+
     return (result&0xFF);
 }
 

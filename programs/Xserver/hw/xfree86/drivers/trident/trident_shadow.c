@@ -13,22 +13,12 @@
 #include "xf86Pci.h"
 #include "shadowfb.h"
 #include "servermd.h"
-#include "neo.h"
+#include "trident.h"
 
 void
-neoShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, RegionPtr damage)
+TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-    ScrnInfoPtr pScrn;
-    pScrn = xf86Screens[pScreen->myNum];
-    
-    (NEOPTR(pScrn))->refreshArea (pScrn, REGION_NUM_RECTS(damage), 
-				      REGION_RECTS(damage));
-}
-
-void
-neoRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
-{
-    NEOPtr nPtr = NEOPTR(pScrn);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int width, height, Bpp, FBPitch;
     unsigned char *src, *dst;
    
@@ -38,14 +28,14 @@ neoRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     while(num--) {
 	width = (pbox->x2 - pbox->x1) * Bpp;
 	height = pbox->y2 - pbox->y1;
-	src = nPtr->ShadowPtr + (pbox->y1 * nPtr->ShadowPitch) + 
+	src = pTrident->ShadowPtr + (pbox->y1 * pTrident->ShadowPitch) + 
 						(pbox->x1 * Bpp);
-	dst = nPtr->NeoFbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
+	dst = pTrident->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
 
 	while(height--) {
 	    memcpy(dst, src, width);
 	    dst += FBPitch;
-	    src += nPtr->ShadowPitch;
+	    src += pTrident->ShadowPitch;
 	}
 	
 	pbox++;
@@ -53,13 +43,23 @@ neoRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 } 
 
 void
-neoPointerMoved(int index, int x, int y)
+TRIDENTShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, RegionPtr damage)
+{
+    ScrnInfoPtr pScrn;
+    pScrn = xf86Screens[pScreen->myNum];
+    
+    (TRIDENTPTR(pScrn))->RefreshArea (pScrn, REGION_NUM_RECTS(damage), 
+				      REGION_RECTS(damage));
+}
+
+void
+TRIDENTPointerMoved(int index, int x, int y)
 {
     ScrnInfoPtr pScrn = xf86Screens[index];
-    NEOPtr nPtr = NEOPTR(pScrn);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int newX, newY;
 
-    if(nPtr->rotate == 1) {
+    if(pTrident->Rotate == 1) {
 	newX = pScrn->pScreen->height - y - 1;
 	newY = x;
     } else {
@@ -67,19 +67,19 @@ neoPointerMoved(int index, int x, int y)
 	newY = pScrn->pScreen->width - x - 1;
     }
 
-    (*nPtr->PointerMoved)(index, newX, newY);
+    (*pTrident->PointerMoved)(index, newX, newY);
 }
 
 void
-neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+TRIDENTRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-    NEOPtr nPtr = NEOPTR(pScrn);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int count, width, height, y1, y2, dstPitch, srcPitch;
     CARD8 *dstPtr, *srcPtr, *src;
     CARD32 *dst;
 
     dstPitch = pScrn->displayWidth;
-    srcPitch = -nPtr->rotate * nPtr->ShadowPitch;
+    srcPitch = -pTrident->Rotate * pTrident->ShadowPitch;
 
     while(num--) {
 	width = pbox->x2 - pbox->x1;
@@ -87,14 +87,14 @@ neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	y2 = (pbox->y2 + 3) & ~3;
 	height = (y2 - y1) >> 2;  /* in dwords */
 
-	if(nPtr->rotate == 1) {
-	    dstPtr = nPtr->NeoFbBase + 
+	if(pTrident->Rotate == 1) {
+	    dstPtr = pTrident->FbBase + 
 			(pbox->x1 * dstPitch) + pScrn->virtualX - y2;
-	    srcPtr = nPtr->ShadowPtr + ((1 - y2) * srcPitch) + pbox->x1;
+	    srcPtr = pTrident->ShadowPtr + ((1 - y2) * srcPitch) + pbox->x1;
 	} else {
-	    dstPtr = nPtr->NeoFbBase + 
+	    dstPtr = pTrident->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + y1;
-	    srcPtr = nPtr->ShadowPtr + (y1 * srcPitch) + pbox->x2 - 1;
+	    srcPtr = pTrident->ShadowPtr + (y1 * srcPitch) + pbox->x2 - 1;
 	}
 
 	while(width--) {
@@ -107,7 +107,7 @@ neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 					(src[srcPitch * 3] << 24);
 		src += srcPitch * 4;
 	    }
-	    srcPtr += nPtr->rotate;
+	    srcPtr += pTrident->Rotate;
 	    dstPtr += dstPitch;
 	}
 
@@ -117,15 +117,15 @@ neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 
 void
-neoRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+TRIDENTRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-    NEOPtr nPtr = NEOPTR(pScrn);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int count, width, height, y1, y2, dstPitch, srcPitch;
     CARD16 *dstPtr, *srcPtr, *src;
     CARD32 *dst;
 
     dstPitch = pScrn->displayWidth;
-    srcPitch = -nPtr->rotate * nPtr->ShadowPitch >> 1;
+    srcPitch = -pTrident->Rotate * pTrident->ShadowPitch >> 1;
 
     while(num--) {
 	width = pbox->x2 - pbox->x1;
@@ -133,15 +133,15 @@ neoRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	y2 = (pbox->y2 + 1) & ~1;
 	height = (y2 - y1) >> 1;  /* in dwords */
 
-	if(nPtr->rotate == 1) {
-	    dstPtr = (CARD16*)nPtr->NeoFbBase + 
+	if(pTrident->Rotate == 1) {
+	    dstPtr = (CARD16*)pTrident->FbBase + 
 			(pbox->x1 * dstPitch) + pScrn->virtualX - y2;
-	    srcPtr = (CARD16*)nPtr->ShadowPtr + 
+	    srcPtr = (CARD16*)pTrident->ShadowPtr + 
 			((1 - y2) * srcPitch) + pbox->x1;
 	} else {
-	    dstPtr = (CARD16*)nPtr->NeoFbBase + 
+	    dstPtr = (CARD16*)pTrident->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + y1;
-	    srcPtr = (CARD16*)nPtr->ShadowPtr + 
+	    srcPtr = (CARD16*)pTrident->ShadowPtr + 
 			(y1 * srcPitch) + pbox->x2 - 1;
 	}
 
@@ -153,7 +153,7 @@ neoRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		*(dst++) = src[0] | (src[srcPitch] << 16);
 		src += srcPitch * 2;
 	    }
-	    srcPtr += nPtr->rotate;
+	    srcPtr += pTrident->Rotate;
 	    dstPtr += dstPitch;
 	}
 
@@ -164,15 +164,15 @@ neoRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 /* this one could be faster */
 void
-neoRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+TRIDENTRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-    NEOPtr nPtr = NEOPTR(pScrn);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int count, width, height, y1, y2, dstPitch, srcPitch;
     CARD8 *dstPtr, *srcPtr, *src;
     CARD32 *dst;
 
     dstPitch = BitmapBytePad(pScrn->displayWidth * 24);
-    srcPitch = -nPtr->rotate * nPtr->ShadowPitch;
+    srcPitch = -pTrident->Rotate * pTrident->ShadowPitch;
 
     while(num--) {
         width = pbox->x2 - pbox->x1;
@@ -180,14 +180,14 @@ neoRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
         y2 = (pbox->y2 + 3) & ~3;
         height = (y2 - y1) >> 2;  /* blocks of 3 dwords */
 
-	if(nPtr->rotate == 1) {
-	    dstPtr = nPtr->NeoFbBase + 
+	if(pTrident->Rotate == 1) {
+	    dstPtr = pTrident->FbBase + 
 			(pbox->x1 * dstPitch) + ((pScrn->virtualX - y2) * 3);
-	    srcPtr = nPtr->ShadowPtr + ((1 - y2) * srcPitch) + (pbox->x1 * 3);
+	    srcPtr = pTrident->ShadowPtr + ((1 - y2) * srcPitch) + (pbox->x1 * 3);
 	} else {
-	    dstPtr = nPtr->NeoFbBase + 
+	    dstPtr = pTrident->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + (y1 * 3);
-	    srcPtr = nPtr->ShadowPtr + (y1 * srcPitch) + (pbox->x2 * 3) - 3;
+	    srcPtr = pTrident->ShadowPtr + (y1 * srcPitch) + (pbox->x2 * 3) - 3;
 	}
 
 	while(width--) {
@@ -206,7 +206,7 @@ neoRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		dst += 3;
 		src += srcPitch * 4;
 	    }
-	    srcPtr += nPtr->rotate * 3;
+	    srcPtr += pTrident->Rotate * 3;
 	    dstPtr += dstPitch; 
 	}
 
@@ -215,28 +215,28 @@ neoRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 }
 
 void
-neoRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+TRIDENTRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-    NEOPtr nPtr = NEOPTR(pScrn);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int count, width, height, dstPitch, srcPitch;
     CARD32 *dstPtr, *srcPtr, *src, *dst;
 
     dstPitch = pScrn->displayWidth;
-    srcPitch = -nPtr->rotate * nPtr->ShadowPitch >> 2;
+    srcPitch = -pTrident->Rotate * pTrident->ShadowPitch >> 2;
 
     while(num--) {
 	width = pbox->x2 - pbox->x1;
 	height = pbox->y2 - pbox->y1;
 
-	if(nPtr->rotate == 1) {
-	    dstPtr = (CARD32*)nPtr->NeoFbBase + 
+	if(pTrident->Rotate == 1) {
+	    dstPtr = (CARD32*)pTrident->FbBase + 
 			(pbox->x1 * dstPitch) + pScrn->virtualX - pbox->y2;
-	    srcPtr = (CARD32*)nPtr->ShadowPtr + 
+	    srcPtr = (CARD32*)pTrident->ShadowPtr + 
 			((1 - pbox->y2) * srcPitch) + pbox->x1;
 	} else {
-	    dstPtr = (CARD32*)nPtr->NeoFbBase + 
+	    dstPtr = (CARD32*)pTrident->FbBase + 
 			((pScrn->virtualY - pbox->x2) * dstPitch) + pbox->y1;
-	    srcPtr = (CARD32*)nPtr->ShadowPtr + 
+	    srcPtr = (CARD32*)pTrident->ShadowPtr + 
 			(pbox->y1 * srcPitch) + pbox->x2 - 1;
 	}
 
@@ -248,13 +248,11 @@ neoRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 		*(dst++) = *src;
 		src += srcPitch;
 	    }
-	    srcPtr += nPtr->rotate;
+	    srcPtr += pTrident->Rotate;
 	    dstPtr += dstPitch;
 	}
 
 	pbox++;
     }
 }
-
-
 

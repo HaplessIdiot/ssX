@@ -1,6 +1,5 @@
 /* $XFree86: Exp $ */
 
-#define NOT_YET
 
 #include "X.h"
 #include "xf86.h"
@@ -34,9 +33,10 @@ eventName(pmEvent event)
 static void
 DoApmEvent(pmEvent event)
 {
-    /* we leave that as a global for now. I don't know if this might
-     * cause problems in the future. It is a global server variable
-     * therefore it needs to be in a server info structure
+    /* 
+     * we leave that as a global function for now. I don't know if 
+     * this might cause problems in the future. It is a global server 
+     * variable therefore it needs to be in a server info structure
      */
     static Bool suspended;
     int i;
@@ -49,7 +49,6 @@ DoApmEvent(pmEvent event)
     case XF86_APM_USER_SUSPEND:
 	/* should we do this ? */
 	if (!suspended) {
-#ifdef NOT_YET
 	    for (i = 0; i < xf86NumScreens; i++) {
 		xf86EnableAccess(xf86Screens[i]);
 		if (xf86Screens[i]->EnableDisableFBAccess)
@@ -65,7 +64,6 @@ DoApmEvent(pmEvent event)
 	    }
 	    xf86AccessLeave();      
 	    xf86AccessLeaveState(); 
-#endif
 	    suspended = TRUE;
 	}
 	break;
@@ -75,7 +73,6 @@ DoApmEvent(pmEvent event)
     case XF86_APM_STANDBY_FAILED:
     case XF86_APM_SUSPEND_FAILED:
 	if (suspended) {
-#ifdef NOT_YET
 	    xf86AccessEnter();
 	    xf86EnterServerState(SETUP);
 	    for (i = 0; i < xf86NumScreens; i++) {
@@ -92,7 +89,6 @@ DoApmEvent(pmEvent event)
 		    (*xf86Screens[i]->EnableDisableFBAccess) (i, TRUE);
 	    }
 	    SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
-#endif
 	    suspended = FALSE;
 	}
 	break;

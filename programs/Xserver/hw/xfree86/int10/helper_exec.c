@@ -255,7 +255,7 @@ run_bios_int(int num, xf86Int10InfoPtr pInt)
     CARD32 eflags;
 #ifndef _PC
     /* check if bios vector is initialized */
-    if (MEM_RW(pInt,(num<<2)+2) == 0xF000) { /* SYS_BIOS_SEG ?*/
+    if (MEM_RW(pInt,(num<<2)+2) == (SYS_BIOS >> 4)) { /* SYS_BIOS_SEG ?*/
 #ifdef PRINT_INT
         ErrorF("card BIOS not loaded\n");
 #endif

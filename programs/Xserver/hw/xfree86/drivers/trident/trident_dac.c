@@ -237,7 +237,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
   		pReg->tridentRegs3x4[0x5] = LCD[i].shadow_5;
   		pReg->tridentRegs3x4[0x6] = LCD[i].shadow_6;
  		xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,
- 			       "Overriding Horizontal timings.");
+ 			       "Overriding Horizontal timings.\n");
   	    }
   	}
  
@@ -526,7 +526,7 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     if (pTrident->Chipset >= BLADE3D) OUTW_3x4(RAMDACTiming);
     if (pTrident->IsCyber) {
 	CARD8 tmp;
-	
+
 	OUTW_3CE(VertStretch);
 	OUTW_3CE(HorStretch);
 	OUTW_3CE(BiosMode);
@@ -542,7 +542,7 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	OUTW_3x4(0x7);	
 	OUTW_3x4(0x10);
 	OUTW_3x4(0x11); 
-	OUTW_3x4(0x96);
+	OUTW_3x4(0x16);
 	SHADOW_RESTORE(tmp);
 	OUTW_3x4(PreEndControl);
 	OUTW_3x4(PreEndFetch);

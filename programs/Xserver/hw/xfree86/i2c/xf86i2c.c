@@ -35,8 +35,8 @@ typedef void *Pointer;
 
 #include "xf86i2c.h"
 
-#define I2C_TIMEOUT(x)	/* (x) */ /* Report timeouts */
-#define I2C_TRACE(x)	/* (x) */ /* Report progress */
+#define I2C_TIMEOUT(x)	/*(x)*/  /* Report timeouts */
+#define I2C_TRACE(x)    /*(x)*/  /* Report progress */
 
 /* Set which OSs have bad gettimeofday resolution. */
 #if defined(SVR4) && !defined(sun)
@@ -87,7 +87,7 @@ I2CUDelay(I2CBusPtr b, int usec)
       d_secs  = (a_secs - b_secs);
       d_usecs = (a_usecs - b_usecs);
       diff = d_secs*1000000 + d_usecs;
-    } while (diff>0 && diff<usec);
+    } while (diff>0 && diff< (usec + 1));
   }
 }
 #endif
@@ -101,7 +101,7 @@ I2CUDelay(I2CBusPtr b, int usec)
  * there is no explicit test for conflits.
  */
 
-#define RISEFALLTIME 1 /* usec, actually 300 to 1000 ns according to the i2c specs */
+#define RISEFALLTIME 2 /* usec, actually 300 to 1000 ns according to the i2c specs */
 
 /* Some devices will hold SCL low to slow down the bus or until 
  * ready for transmission.
@@ -117,12 +117,12 @@ I2CRaiseSCL(I2CBusPtr b, int sda, int timeout)
     int i, scl;
 
     b->I2CPutBits(b, 1, sda);
-    b->I2CUDelay(b, RISEFALLTIME);
+    b->I2CUDelay(b, b->RiseFallTime);
 
-    for (i = timeout; i > 0; i -= RISEFALLTIME) {
+    for (i = timeout; i > 0; i -= b->RiseFallTime) {
 	b->I2CGetBits(b, &scl, &sda);
 	if (scl) break;
-	b->I2CUDelay(b, RISEFALLTIME);
+	b->I2CUDelay(b, b->RiseFallTime);
     }
 
     if (i <= 0) {
@@ -158,12 +158,12 @@ I2CStart(I2CBusPtr b, int timeout)
     int i, scl, sda;
 
     b->I2CPutBits(b, 1, 1);
-    b->I2CUDelay(b, RISEFALLTIME);
+    b->I2CUDelay(b, b->RiseFallTime);
 
-    for (i = timeout; i > 0; i -= RISEFALLTIME) {
+    for (i = timeout; i > 0; i -= b->RiseFallTime) {
 	b->I2CGetBits(b, &scl, &sda);
 	if (scl) break;
-	b->I2CUDelay(b, RISEFALLTIME);
+	b->I2CUDelay(b, b->RiseFallTime);
     }
 
     if (i <= 0) { 
@@ -194,7 +194,7 @@ I2CStop(I2CDevPtr d)
     I2CBusPtr b = d->pI2CBus;
 
     b->I2CPutBits(b, 0, 0);
-    b->I2CUDelay(b, RISEFALLTIME);
+    b->I2CUDelay(b, b->RiseFallTime);
 
     b->I2CPutBits(b, 1, 0);
     b->I2CUDelay(b, b->HoldTime);
@@ -214,7 +214,7 @@ I2CWriteBit(I2CBusPtr b, int sda, int timeout)
     Bool r;
 
     b->I2CPutBits(b, 0, sda);
-    b->I2CUDelay(b, RISEFALLTIME);
+    b->I2CUDelay(b, b->RiseFallTime);
 
     r = I2CRaiseSCL(b, sda, timeout);
     b->I2CUDelay(b, b->HoldTime);
@@ -273,7 +273,7 @@ I2CPutByte(I2CDevPtr d, I2CByte data)
 	    return FALSE;
 
     b->I2CPutBits(b, 0, 1);
-    b->I2CUDelay(b, RISEFALLTIME);
+    b->I2CUDelay(b, b->RiseFallTime);
 
     r = I2CRaiseSCL(b, 1, b->HoldTime);
 
@@ -324,7 +324,7 @@ I2CGetByte(I2CDevPtr d, I2CByte *data, Bool last)
     I2CBusPtr b = d->pI2CBus;
 
     b->I2CPutBits(b, 0, 1);
-    b->I2CUDelay(b, RISEFALLTIME);
+    b->I2CUDelay(b, b->RiseFallTime);
 
     if (!I2CReadBit(b, &sda, d->ByteTimeout))
 	return FALSE;
@@ -741,6 +741,7 @@ xf86CreateI2CBusRec(void)
 	b->ByteTimeout = 5;
 	b->AcknTimeout = 5;
 	b->StartTimeout = 5;
+	b->RiseFallTime = RISEFALLTIME;
     }
 
     return b;

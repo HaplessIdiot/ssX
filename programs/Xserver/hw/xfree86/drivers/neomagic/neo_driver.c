@@ -78,7 +78,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86RAC.h"
 
 /* Needed by the Shadow Framebuffer */
-#include "shadowfb.h"
+#include "shadow.h"
 
 /* int10 */
 #include "xf86int10.h"
@@ -86,6 +86,10 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /* Needed for Device Data Channel (DDC) support */
 #include "xf86DDC.h"
+
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 
 /*
  * Driver data structures.
@@ -131,7 +135,11 @@ static Bool	neoUnmapMem(ScrnInfoPtr pScrn);
 static void     neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg,
 				     NeoRegPtr restore);
 static void     neoCalcVCLK(ScrnInfoPtr pScrn, long freq);
-static void     neo_ddc1(int scrnIndex);
+static xf86MonPtr  neo_ddc1(int scrnIndex);
+static Bool     neoDoDDC1(ScrnInfoPtr pScrn);
+static Bool     neoDoDDC2(ScrnInfoPtr pScrn);
+static Bool     neoDoDDCVBE(ScrnInfoPtr pScrn);
+static void     neoProbeDDC(ScrnInfoPtr pScrn, int index);
 static void     NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 				int PowerManagementMode, int flags);
 static int      neoFindMode(int xres, int yres, int depth);
@@ -342,7 +350,10 @@ static const char *ramdacSymbols[] = {
 };
 
 static const char *shadowSymbols[] = {
+    "shadowInit",
+#if 0
     "ShadowFBInit",
+#endif
     NULL
 };
 
@@ -453,7 +464,6 @@ static
 OptionInfoPtr
 NEOAvailableOptions(int chipid, int busid)
 {
-    int vendor = ((chipid & 0xffff0000) >> 16);
     int chip = (chipid & 0x0000ffff);
 
     if (chip == PCI_CHIP_NM2070)
@@ -607,9 +617,11 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     int w;
     int apertureSize;
     char *s;
-    Bool ddc_done = FALSE;
     
-    if (flags & PROBE_DETECT) return FALSE;
+    if (flags & PROBE_DETECT)  {
+	neoProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
+	return TRUE;
+    }
     
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -623,7 +635,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
     hwp = VGAHWPTR(pScrn);
-    
+
     /* Allocate the NeoRec driverPrivate */
     if (!NEOGetRec(pScrn)) {
 	return FALSE;
@@ -689,14 +701,10 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86ErrorF("\n");
 
-    if (xf86LoadSubModule(pScrn, "vbe")) {
-	nPtr->pVbe =  VBEInit(NULL,nPtr->pEnt->index);
-    }
-    
     vgaHWGetIOBase(hwp);
     nPtr->vgaIOBase = hwp->IOBase;
     vgaHWSetStdFuncs(hwp);
-    
+
     /* Determine the panel type */
     VGAwGR(0x09,0x26);
     type = VGArGR(0x21);
@@ -767,7 +775,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case NM2097:
 	bppSupport = Support24bppFb | Support32bppFb |
-	    SupportConvert32to24 | PreferConvert32to24;
+	  SupportConvert32to24 | PreferConvert32to24;
 	videoRam   = 1152;
 	maxClock   = 80000;
 	CursorMem  = 1024;
@@ -835,34 +843,14 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 
     pScrn->monitor = pScrn->confScreen->monitor;
 
-    if (!xf86LoadSubModule(pScrn, "ddc"))
-	return FALSE;
-    xf86LoaderReqSymLists(ddcSymbols, NULL);
-#if 0
-    VGAwGR(0x09,0x26);
-    neo_ddc1(pScrn->scrnIndex);
-    VGAwGR(0x09,0x00);
+    if (xf86LoadSubModule(pScrn, "ddc")) {
+        xf86LoaderReqSymLists(ddcSymbols, NULL);
+#if 1
+	if (!neoDoDDCVBE(pScrn))
+	  if (!neoDoDDC2(pScrn))
+	      neoDoDDC1(pScrn);
 #endif
-    if (!xf86LoadSubModule(pScrn, "i2c"))
-	return FALSE;
-    xf86LoaderReqSymLists(i2cSymbols, NULL);
-    if (!neo_I2CInit(pScrn))
-	return FALSE;
-
-    VGAwGR(0x09,0x26);
-
-    if (nPtr->pVbe) {
-	xf86MonPtr pMon;
-	if ((pMon = xf86PrintEDID(vbeDoEDID(nPtr->pVbe,NULL))) != NULL)
-	    ddc_done = TRUE;
-	xf86SetDDCproperties(pScrn,pMon);
     }
-
-    if (ddc_done)
-	xf86SetDDCproperties(
-	    pScrn,xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,nPtr->I2C)));
-    
-    VGAwGR(0x09,0x00);
 
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, bppSupport ))
 	return FALSE;
@@ -1040,7 +1028,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->NeoLinearAddr = 0;
     }
 
-    if (nPtr->pEnt->device->IOBase) {
+    if (nPtr->pEnt->device->IOBase && !nPtr->noMMIO) {
 	/* XXX Check this matches a PCI base address */
 	nPtr->NeoMMIOAddr = nPtr->pEnt->device->IOBase;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -1199,6 +1187,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86LoaderReqSymbols("fbScreenInit", NULL);
+#ifdef RENDER
+    xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
 
     if (!nPtr->noLinear) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) 
@@ -1207,7 +1198,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (nPtr->shadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!xf86LoadSubModule(pScrn, "shadow")) {
 	    RETURN;
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
@@ -1281,9 +1272,13 @@ NEOLoadPalette(
    for(i = 0; i < numColors; i++) {
         index = indices[i];
         hwp->writeDacWriteAddr(hwp, index);
+	DACDelay(hwp);
         hwp->writeDacData(hwp, colors[index].red << shift);
+	DACDelay(hwp);
         hwp->writeDacData(hwp, colors[index].green << Gshift);
+	DACDelay(hwp);
         hwp->writeDacData(hwp, colors[index].blue << shift);
+	DACDelay(hwp);
    } 
 }
 
@@ -1329,18 +1324,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
     vgaHWSaveScreen(pScreen,SCREEN_SAVER_ON);
     NEOAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-    
-    /*
-     * The next step is to setup the screen's visuals, and initialise the
-     * framebuffer code.  In cases where the framebuffer's default
-     * choices for things like visual layouts and bits per RGB are OK,
-     * this may be as simple as calling the framebuffer's ScreenInit()
-     * function.  If not, the visuals will need to be setup before calling
-     * a fb ScreenInit() function and fixed up after.
-     *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
-     * are not appropriate.  In this driver, we fixup the visuals after.
-     */
 
     /*
      * Reset visual list.
@@ -1354,14 +1337,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		      pScrn->rgbBits, pScrn->defaultVisual))
          return FALSE;
 
-    /*
-     * Temporarily set the global defaultColorVisualClass to make
-     * cfbInitVisuals do what we want.
-     */
-#if 0
-    savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
-    xf86SetDefaultColorVisualClass(pScrn->defaultVisual);
-#endif
+    miSetPixmapDepths ();
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1390,7 +1366,10 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			    width, height,
 			    pScrn->xDpi, pScrn->yDpi,
 			    displayWidth, pScrn->bitsPerPixel);
-
+#ifdef RENDER
+	if (ret) 
+	    fbPictureInit (pScreen, 0, 0);
+#endif
     if (!ret)
 	return FALSE;
 
@@ -1417,6 +1396,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     nPtr->NeoHWCursorShown = FALSE;
     nPtr->NeoHWCursorInitialized = FALSE;
     nAcl->UseHWCursor = FALSE;
+    nAcl->CursorAddress = -1;
     
     if (nPtr->noLinear) {
 	miBankInfoPtr pBankInfo;
@@ -1427,7 +1407,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
 	
 	pBankInfo->pBankA = hwp->Base;
-	pBankInfo->pBankB = (unsigned char *)hwp->Base + 0x10000;
+	pBankInfo->pBankB = (unsigned char *)hwp->Base;
 	pBankInfo->BankSize = 0x10000;
 	pBankInfo->nBankDepth = pScrn->depth;
 	
@@ -1443,8 +1423,8 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
 	}
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Using nonlinear mode\n");
-	xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Using software cursor\n");
-
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO, "Using software cursor in "
+		   "nonlinear mode\n");
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
         xf86SetSilkenMouse(pScreen);
@@ -1453,7 +1433,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
     } else {
-	nAcl->CursorAddress = -1;
 	nAcl->cacheStart = -1;
 	nAcl->cacheEnd = -1;
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,
@@ -1482,8 +1461,11 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	} else xf86DrvMsg(scrnIndex, X_ERROR,
 			  "Too little space for H/W cursor.\n");
 	
+	  xf86DrvMsg(pScrn->scrnIndex,X_INFO,
+		     "Acceleration disabled when not using MMIO\n");
+
 	/* Setup the acceleration primitives */
-	if (!nPtr->noAccel) {
+	if (!nPtr->noAccel || nPtr->noMMIO) {
 	    nAcl->cacheStart = currentaddr - freespace;
 	    nAcl->cacheEnd = currentaddr;
 	    freespace = 0;
@@ -1512,7 +1494,8 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Acceleration Initialized\n");
 	} 
-    
+	if (!nPtr->noAccel && nPtr->noMMIO)
+
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
         xf86SetSilkenMouse(pScreen);
@@ -1520,21 +1503,22 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
-	if (nAcl->CursorAddress != -1) {
-	    /* HW cursor functions */
-	    if (!NeoCursorInit(pScreen)) {
-		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Hardware cursor initialization failed\n");
-		return FALSE;
-	    }
-	    nAcl->UseHWCursor = TRUE;
-	    nPtr->NeoHWCursorInitialized = TRUE;
-	} else
-	    nAcl->UseHWCursor = FALSE;
     }
 
+    if (nAcl->CursorAddress != -1) {
+      /* HW cursor functions */
+      if (!NeoCursorInit(pScreen)) {
+	xf86DrvMsg(scrnIndex, X_ERROR,
+		   "Hardware cursor initialization failed\n");
+	return FALSE;
+      }
+      nAcl->UseHWCursor = TRUE;
+      nPtr->NeoHWCursorInitialized = TRUE;
+    } else
+      nAcl->UseHWCursor = FALSE;
+    
     if (nPtr->shadowFB) {
-	RefreshAreaFuncPtr refreshArea = neoRefreshArea;
+        nPtr->refreshArea = neoRefreshArea;
 
 	if(nPtr->rotate) {
 	    if (!nPtr->PointerMoved) {
@@ -1543,14 +1527,17 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	    
 	   switch(pScrn->bitsPerPixel) {
-	   case 8:	refreshArea = neoRefreshArea8;	break;
-	   case 16:	refreshArea = neoRefreshArea16;	break;
-	   case 24:	refreshArea = neoRefreshArea24;	break;
-	   case 32:	refreshArea = neoRefreshArea32;	break;
+	   case 8:	nPtr->refreshArea = neoRefreshArea8;	break;
+	   case 16:	nPtr->refreshArea = neoRefreshArea16;	break;
+	   case 24:	nPtr->refreshArea = neoRefreshArea24;	break;
+	   case 32:	nPtr->refreshArea = neoRefreshArea32;	break;
 	   }
 	}
-
-	ShadowFBInit(pScreen, refreshArea);
+#if 0
+	ShadowFBInit(pScreen, nPtr->refreshArea);
+#else
+	shadowInit (pScreen, neoShadowUpdate, 0);
+#endif
     }
     
     /* Initialise default colourmap */
@@ -1562,8 +1549,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                          CMAP_PALETTED_TRUECOLOR | CMAP_RELOAD_ON_MODE_SWITCH))
 	return FALSE;
 
-    if (pScrn->bitsPerPixel == 8)
-        racflag |= RAC_COLORMAP;
+    racflag |= RAC_COLORMAP;
     if (nPtr->NeoHWCursorInitialized)
         racflag |= RAC_CURSOR;
 
@@ -1784,9 +1770,9 @@ neoMapMem(ScrnInfoPtr pScrn)
 		    xf86MapVidMem(pScrn->scrnIndex,
 				  VIDMEM_MMIO, nPtr->NeoMMIOAddr,
 				  0x200000L);
+	    if (nPtr->NeoMMIOBase == NULL)
+	        return FALSE;
 	}
-	if (nPtr->NeoMMIOBase == NULL)
-	    return FALSE;
 
 	if (nPtr->pEnt->location.type == BUS_PCI)
 	    nPtr->NeoFbBase =
@@ -1890,7 +1876,8 @@ neoSave(ScrnInfoPtr pScrn)
 	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380)
 	save->VCLK3NumeratorHigh = VGArGR(0x8F);
     save->VCLK3Denominator = VGArGR(0x9F);
-
+    save->ProgramVCLK = TRUE;
+    
     if (save->reg == NULL)
         save->reg = (regSavePtr)xnfcalloc(sizeof(regSaveRec), 1);
     else
@@ -2093,7 +2080,8 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     unsigned char temp;
     int i;
-
+    Bool clock_hi = FALSE;
+    
     vgaHWProtect(pScrn,TRUE);		/* Blank the screen */
     
     VGAwGR(0x09,0x26);
@@ -2216,12 +2204,18 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
         VGAwGR(0x37, restore->PanelVertCenterReg5);
         VGAwGR(0x38, restore->PanelHorizCenterReg5);
     }
-
+    if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
+	|| nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380)
+	clock_hi = TRUE;
+    
     /* Program VCLK3 if needed. */
-    if (restore->ProgramVCLK) {
+    if (restore->ProgramVCLK
+	 && ((VGArGR(0x9B) != restore->VCLK3NumeratorLow)
+	    || (VGArGR(0x9F) !=  restore->VCLK3Denominator)
+	    || (clock_hi && ((VGArGR(0x8F) & ~0x0f)
+			     != (restore->VCLK3NumeratorHigh & ~0x0F))))) {
 	VGAwGR(0x9B, restore->VCLK3NumeratorLow);
-	if (nPtr->NeoChipset == NM2200 || nPtr->NeoChipset == NM2230
-	    || nPtr->NeoChipset == NM2360 || nPtr->NeoChipset == NM2380) {
+	if (clock_hi) {
 	    temp = VGArGR(0x8F);
 	    temp &= 0x0F; /* Save bits 3:0 */
 	    temp |= (restore->VCLK3NumeratorHigh & ~0x0F);
@@ -2537,7 +2531,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #define MAX_N 127
 #define MAX_D 31
 #define MAX_F 1
-
+#define DEBUG
 static void
 neoCalcVCLK(ScrnInfoPtr pScrn, long freq)
 {
@@ -2574,6 +2568,14 @@ neoCalcVCLK(ScrnInfoPtr pScrn, long freq)
 	nPtr->NeoModeReg.VCLK3NumeratorLow  = n_best | (f_best << 7);
     }
     nPtr->NeoModeReg.VCLK3Denominator = d_best;
+#ifdef DEBUG
+    ErrorF("neoVCLK: f:%f NumLow=%i NumHi=%i Den=%i Df=%f\n",
+	   f_target,
+	   nPtr->NeoModeReg.VCLK3NumeratorLow,
+	   nPtr->NeoModeReg.VCLK3NumeratorHigh,
+	   nPtr->NeoModeReg.VCLK3Denominator,
+	   f_best_diff);
+#endif
 }
 
 /*
@@ -2663,11 +2665,12 @@ neo_ddc1Read(ScrnInfoPtr pScrn)
     return (tmp);
 }
 
-static void
+static xf86MonPtr
 neo_ddc1(int scrnIndex)
 {
     vgaHWPtr hwp = VGAHWPTR(xf86Screens[scrnIndex]);
     unsigned int reg1, reg2, reg3;
+    xf86MonPtr ret;
 
     /* initialize chipset */
     reg1 = VGArCR(0x21);
@@ -2676,11 +2679,65 @@ neo_ddc1(int scrnIndex)
     VGAwCR(0x21,0x00);
     VGAwCR(0x1D,0x01);  /* some Voodoo */ 
     VGAwGR(0xA1,0x2F);
-    xf86SetDDCproperties(xf86Screens[scrnIndex],xf86PrintEDID(
-	xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,neo_ddc1Read)));
+    ret =  xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,neo_ddc1Read);
     /* undo initialization */
     VGAwCR(0x21,reg1);
     VGAwCR(0x1D,reg2);
+    return ret;
+}
+
+static Bool
+neoDoDDC1(ScrnInfoPtr pScrn)
+{
+    Bool ret = FALSE;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+    VGAwGR(0x09,0x26);
+    ret = xf86SetDDCproperties(pScrn,
+				xf86PrintEDID(neo_ddc1(pScrn->scrnIndex)));
+    VGAwGR(0x09,0x00);
+
+    return ret;
+}
+
+static Bool
+neoDoDDC2(ScrnInfoPtr pScrn)
+{
+    NEOPtr nPtr = NEOPTR(pScrn);    
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    Bool ret = FALSE;
+
+    VGAwGR(0x09,0x26);
+    if (xf86LoadSubModule(pScrn, "i2c")) {
+        xf86LoaderReqSymLists(i2cSymbols, NULL);
+	if (neo_I2CInit(pScrn)) {
+	    ret = xf86SetDDCproperties(pScrn,xf86PrintEDID(xf86DoEDID_DDC2(
+					      pScrn->scrnIndex,nPtr->I2C)));
+	}
+    }
+    VGAwGR(0x09,0x00);
+
+    return ret;
+}
+
+static Bool
+neoDoDDCVBE(ScrnInfoPtr pScrn)
+{
+    NEOPtr nPtr = NEOPTR(pScrn);    
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    vbeInfoPtr pVbe;
+    Bool ret = FALSE;
+
+    VGAwGR(0x09,0x26);
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        if ((pVbe = VBEInit(NULL,nPtr->pEnt->index))) {
+	  ret = xf86SetDDCproperties(
+				     pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
+	  vbeFree(pVbe);
+	}
+    }
+    VGAwGR(0x09,0x00);
+    return ret;
 }
 
 static int
@@ -2724,4 +2781,15 @@ neoFindMode(int xres, int yres, int depth)
     }
     return mode[size - 1].mode;
     
+}
+
+static void
+neoProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        pVbe = VBEInit(NULL,index);
+        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+    }
 }

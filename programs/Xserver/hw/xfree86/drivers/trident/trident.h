@@ -33,6 +33,7 @@
 #include "vgaHW.h"
 #include "xf86i2c.h"
 #include "xf86int10.h"
+#include "shadowfb.h"
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -91,6 +92,9 @@ typedef struct {
     int			DGAViewportStatus;
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
+    RefreshAreaFuncPtr  RefreshArea;
+    void	        (*PointerMoved)(int index, int x, int y);
+    int                 Rotate;
     float		frequency;
     unsigned char	REGPCIReg;
     unsigned char	REGNewMode1;
@@ -129,6 +133,7 @@ typedef struct {
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     CARD8*		XAAScanlineColorExpandBuffers[2];
     CARD8*		XAAImageScanlineBuffer[1];
+    void                (*InitializeAccelerator)(ScrnInfoPtr);
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {
@@ -193,6 +198,14 @@ int TVGA8900SetWrite(ScreenPtr pScreen, int bank);
 int TVGA8900SetReadWrite(ScreenPtr pScreen, int bank);
 void TridentFindClock(ScrnInfoPtr pScrn, int clock);
 float CalculateMCLK(ScrnInfoPtr pScrn);
+void TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void TRIDENTShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, 
+			  RegionPtr damage);
+void TRIDENTPointerMoved(int index, int x, int y);
+void TRIDENTRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void TRIDENTRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void TRIDENTRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void TRIDENTRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 /*
  * Trident Chipset Definitions

@@ -768,10 +768,12 @@ xf86SetDefaultVisual(ScrnInfoPtr scrp, int visual)
 	/* Check if the visual is valid for the depth */
 	if (scrp->depth == 1 && scrp->defaultVisual != StaticGray)
 	   bad = TRUE;
+#if 0
         else if (scrp->depth == 4 &&
                  (scrp->defaultVisual == TrueColor ||
                   scrp->defaultVisual == DirectColor))
            bad = TRUE;
+#endif
         else if (scrp->depth > MAX_PSEUDO_DEPTH &&
 		 scrp->defaultVisual != TrueColor &&
 		 scrp->defaultVisual != DirectColor)

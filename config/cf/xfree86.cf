@@ -363,7 +363,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	mga tdfx glint s3virge rendition tga \
-				DevelDrivers vga \
+				r128 nv DevelDrivers vga \
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif

@@ -200,52 +200,27 @@ _neoLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src, int xoff, int yoff)
     unsigned char *_dest, *_src;
     int _width, _fill;
     
-    if (!nPtr->noLinear) {
-	for (i = 0; i< nPtr->CursorInfo->MaxHeight - yoff; i++) {
-	    _dest = ((unsigned char *)nPtr->NeoFbBase
-		     + nAcl->CursorAddress
-		     + ((nPtr->CursorInfo->MaxWidth >> 2) * i));
-	    _width = (nPtr->CursorInfo->MaxWidth
-		      - (xoff & 0x38)) >> 3;
-	    _src = (src + ((nPtr->CursorInfo->MaxWidth >> 2) * i));
-	    _fill = (xoff & 0x38) >> 3;
-
-	    memcpy(_dest,_src,_width);
-	    memset(_dest + _width, 0, _fill);
-
-	    _dest += (nPtr->CursorInfo->MaxWidth >> 3);
-	    _src += (nPtr->CursorInfo->MaxWidth >> 3);
-	    memcpy(_dest,_src,_width);
-	    memset(_dest + _width, 0, _fill);
-	}
-	memset(nPtr->NeoFbBase + nAcl->CursorAddress 
-	       + ((nPtr->CursorInfo->MaxWidth >> 2) * i),
-	       0, (nPtr->CursorInfo->MaxHeight - i)
-	       * (nPtr->CursorInfo->MaxWidth >> 2));
-    } else {
-	/*
-	 * The cursor can only be in the last 16K of video memory,
-	 * which fits in the last banking window.
-	 */
-	for (i = 0; i<nPtr->CursorInfo->MaxHeight; i++) {
-	    _dest = ((unsigned char *)nPtr->NeoFbBase
-		     + (nAcl->CursorAddress & 0xFFFF)
-		     + ((nPtr->CursorInfo->MaxWidth >> 2) * i));
-	    _width = (nPtr->CursorInfo->MaxWidth
-		      - ((xoff & 0x38) >> 3));
-	    _src = (src + ((nPtr->CursorInfo->MaxWidth >> 2) * i));
-	    _fill = (xoff & 0x38) >> 3;
-
-	    NEOSetWrite(pScrn->pScreen, (int)(nAcl->CursorAddress >> 16));
-	    memcpy(_dest,_src,_width);
-	    memset(_dest + _width, 0, _fill);
-
-	    _dest += (nPtr->CursorInfo->MaxWidth >> 3);
-	    _src += (nPtr->CursorInfo->MaxWidth >> 3);
-	    memcpy(_dest,_src,_width);
-	    memset(_dest + _width, 0, _fill);
-	}
+    for (i = 0; i< nPtr->CursorInfo->MaxHeight - yoff; i++) {
+      _dest = ((unsigned char *)nPtr->NeoFbBase
+	       + nAcl->CursorAddress
+	       + ((nPtr->CursorInfo->MaxWidth >> 2) * i));
+      _width = (nPtr->CursorInfo->MaxWidth
+		- (xoff & 0x38)) >> 3;
+      _src = (src + ((nPtr->CursorInfo->MaxWidth >> 2) * i));
+      _fill = (xoff & 0x38) >> 3;
+      
+      memcpy(_dest,_src,_width);
+      memset(_dest + _width, 0, _fill);
+      
+      _dest += (nPtr->CursorInfo->MaxWidth >> 3);
+      _src += (nPtr->CursorInfo->MaxWidth >> 3);
+      memcpy(_dest,_src,_width);
+      memset(_dest + _width, 0, _fill);
     }
+    memset(nPtr->NeoFbBase + nAcl->CursorAddress 
+	   + ((nPtr->CursorInfo->MaxWidth >> 2) * i),
+	   0, (nPtr->CursorInfo->MaxHeight - i)
+	   * (nPtr->CursorInfo->MaxWidth >> 2));
     /* set cursor address here or we loose the cursor on video mode change */
     /* Load storage location.  */
     OUTREG(NEOREG_CURSMEMPOS, ((0x000f & (nAcl->CursorAddress >> 10)) << 8)  | 
@@ -270,11 +245,7 @@ neoUseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
     NEOACLPtr nAcl = NEOACLPTR(xf86Screens[pScr->myNum]);
     NEOPtr nPtr = NEOPTR(xf86Screens[pScr->myNum]);
 
-    if(!nPtr->noLinear) {
-       return(nAcl->UseHWCursor && !nAcl->NoCursorMode);
-    }
-
-    return (FALSE);
+    return(nAcl->UseHWCursor && !nAcl->NoCursorMode);
 }
 
 static unsigned char*
@@ -323,7 +294,6 @@ NeoCursorInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     NEOPtr nPtr = NEOPTR(pScrn);
     xf86CursorInfoPtr infoPtr;
-
     infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
 

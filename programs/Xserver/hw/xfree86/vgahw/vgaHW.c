@@ -1697,6 +1697,9 @@ vgaHWMapMem(ScrnInfoPtr scrp)
      * XXX This is not correct but we do it
      * for now.
      */
+#ifdef DEBUG
+    ErrorF("Mapping VGAMem\n");
+#endif
     hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO_32BIT,
 			      hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
@@ -1711,7 +1714,10 @@ vgaHWUnmapMem(ScrnInfoPtr scrp)
 
     if (hwp->Base == NULL)
 	return;
-
+    
+#ifdef DEBUG
+    ErrorF("Unmapping VGAMem\n");
+#endif
     xf86UnMapVidMem(scr_index, hwp->Base, hwp->MapSize);
     hwp->Base = NULL;
 }

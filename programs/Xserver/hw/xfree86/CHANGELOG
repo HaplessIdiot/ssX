@@ -1,3 +1,47 @@
+ 897. Added render extension support to tseng driver (Egbert Eich).
+ 896. Fixed clock code in neomagic driver (Egbert Eich).
+ 899. xf86Configure now uses the imake variable xf86ConfigFile (Egbert Eich).
+ 898. xf86cfg has a new option for a server path (Egbert Eich).
+ 897. xf86cfg can now handle more than one command line argument (Egbert Eich).
+ 895. Added a delay to dac code in neomagic driver (Egbert Eich).
+ 894. Changed shadowfb to use delayed updates in neomagic 
+       driver (Egbert Eich).
+ 893. Rewrote ddc code in nv driver (Egbert Eich).
+ 892. Rewrote ddc code in neomagic driver (Egbert Eich).
+ 891. Fixed problems with enter/leave/closeScreen in nv 
+       driver (Egbert Eich).
+ 890. Fixed a bug in the fixed modelines in trident driver (Egbert Eich).
+ 889. Added reinitialization of blitter on enterVT in trident 
+       driver (Egbert Eich).
+ 888. Fixed a typo which caused wrong register to be set in trident 
+       driver (Egbert Eich).
+ 887. Added loader symbol handling to tseng driver (Egbert Eich).
+ 886. Changed tseng driver to use fb instead of cfb (Egbert Eich).
+ 885. Changed chips driver to use fb instead of cfb (Egbert Eich).
+ 884. Added render extension support to chips driver (Egbert Eich).
+ 883. Added render extension support to neomagic driver (Egbert Eich).
+ 882. Added render extension support to nv driver (Egbert Eich).
+ 881. Modified helper_mem.c to map everything between video bios and
+       system bios on PC-like platforms (Egbert Eich).
+ 880. Modified Linux mapVidMem() to map memory on page boundaries 
+       (Egbert Eich).
+ 879. Changed BIOS_SIZE (Sys BIOS) from 0x10000 to 0xffff to make
+       int10 work un DGUX (Takis Psarogiannakopoulos).
+ 878. Fixed a bug in the argument list of the call to xf86ReadPciBIOS()
+       from int10/pci.c (Egbert Eich).
+ 877. Added simple sanity check to catch situation where DDC reads
+       all 0 and therefore trivially has the correct checksum (Egbert Eich).
+ 876. Changed i2c code to allow for longer rise/fall times on longer
+       cables (Egbert Eich).
+ 875. Removed limit on default visual for 4bpp (Egbert Eich).
+ 874. Added macros to build nv driver on AXP (Jay Estabrook).
+ 873. Changed -configure to use primary card as first card (Egbert Eich).
+ 872. Changed generic vga driver to not unmap memory when switched away.
+ 871. Fixed problem that caused APM support to be disabled on server
+       reset (Egbert Eich).
+ 870. Added support for newer sparse AXP systems (Egbert Eich).
+ 869. Added support for MGA G100 PCI (Egbert Eich).
+ 
 XFree86 4.0.1e (3 November 2000)
  868. Add missing exported libXext Shm functions to loader (Alan Hourihane).
  867. Change Rage 128 DRM driver name to what the r128 kernel module

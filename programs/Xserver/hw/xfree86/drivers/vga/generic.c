@@ -776,10 +776,6 @@ GenericEnterGraphics(ScreenPtr pScreen, ScrnInfoPtr pScreenInfo)
 {
     vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
 
-    /* Map VGA aperture */
-    if (!vgaHWMapMem(pScreenInfo))
-        return FALSE;
-
     /* Unlock VGA registers */
     vgaHWUnlock(pvgaHW);
 
@@ -804,7 +800,6 @@ GenericLeaveGraphics(ScrnInfoPtr pScreenInfo)
 {
     GenericRestore(pScreenInfo);
     vgaHWLock(VGAHWPTR(pScreenInfo));
-    vgaHWUnmapMem(pScreenInfo);
 }
 
 
@@ -829,6 +824,7 @@ GenericCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	GenericLeaveGraphics(pScreenInfo);
 	pScreenInfo->vtSema = FALSE;
     }
+    vgaHWUnmapMem(pScreenInfo);
 
     return Closed;
 }
@@ -1066,6 +1062,9 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Get driver private */
     pGenericPriv = GenericGetRec(pScreenInfo);
 
+    /* Map VGA aperture */
+    if (!vgaHWMapMem(pScreenInfo))
+        return FALSE;
 
     /* Initialise graphics mode */
     if (!GenericEnterGraphics(pScreen, pScreenInfo))

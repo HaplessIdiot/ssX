@@ -59,7 +59,7 @@ dprint(unsigned long start, unsigned long size)
 void
 setup_int_vect(xf86Int10InfoPtr pInt)
 {
-    const CARD16 cs = 0xF000;
+    const CARD16 cs = (SYS_BIOS >> 4);
     const CARD16 ip = 0x0;
     int i;
     
@@ -127,11 +127,11 @@ void
 reset_int_vect(xf86Int10InfoPtr pInt)
 {
     MEM_WW(pInt,(0x10<<2),0xf065);    
-    MEM_WW(pInt,((0x10<<2)+2),0xf000);
+    MEM_WW(pInt,((0x10<<2)+2),(SYS_BIOS >> 4));
     MEM_WW(pInt,(0x42<<2),0xf065);
-    MEM_WW(pInt,((0x42<<2)+2),0xf000);
+    MEM_WW(pInt,((0x42<<2)+2),(SYS_BIOS >> 4));
     MEM_WW(pInt,(0x6D<<2),0xf065);
-    MEM_WW(pInt,((0x6D<<2)+2),0xf000);
+    MEM_WW(pInt,((0x6D<<2)+2),(SYS_BIOS >> 4));
  }
 
 void
@@ -194,9 +194,17 @@ int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
     if ((size + (codeSeg << 4)) > SYS_SIZE)
 	return FALSE;
 
+#ifdef _PC
+    /* 
+     * Read everything between V_BIOS start and SYS_BIOS:
+     * Some systems with built in graphics might jump here.
+     */
+    size = SYS_BIOS - (codeSeg << 4);
+#else
     /* We might already have the tail end */
     if ((size + (codeSeg << 4)) > SYS_BIOS)
 	size = SYS_BIOS - (codeSeg << 4);
+#endif
 
     if (xf86ReadBIOS(codeSeg << 4,0,vbiosMem, size) < 0) {
 	xf86DrvMsg(scrnIndex,X_ERROR,"Cannot read V_BIOS (2)\n");

@@ -33,7 +33,7 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
     tag = pciTag(pvp->bus,pvp->device,pvp->func);
     
     mem = ptr = xnfcalloc(0x10000, 1);
-    if (! xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF) < 0) {
+    if (! xf86ReadPciBIOS(offset,tag,-1,mem,0xFFFF) < 0) {
 	xfree(mem);
 #ifdef DEBUG
  	ErrorF("mapPciRom: cannot read BIOS\n");
@@ -64,7 +64,7 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 		     image_length,indicator);
 #endif
 	     offset = offset + image_length;
-	     if (xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF) < 0) {
+	     if (xf86ReadPciBIOS(offset,tag,-1,mem,0xFFFF) < 0) {
 		 xfree(mem);
 #ifdef DEBUG
 	ErrorF("mapPciRom: cannot read BIOS\n");
@@ -80,7 +80,7 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 #endif
 	 scratch = (unsigned char *)xnfalloc(length);
 
-	 if (xf86ReadPciBIOS(0,tag,offset,scratch,length) < 0) {
+	 if (xf86ReadPciBIOS(offset,tag,-1,scratch,length) < 0) {
 	     xfree(mem);
 	     xfree(scratch);
 #ifdef DEBUG

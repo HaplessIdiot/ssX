@@ -202,12 +202,12 @@ NV_ddc1Read(ScrnInfoPtr pScrn)
     unsigned char val;
 
     /* wait for Vsync */
-    while(pNv->riva.PCIO[0x3da] & 0x08);
-    while(!(pNv->riva.PCIO[0x3da] & 0x08));
+    while(VGA_RD08(pNv->riva.PCIO, 0x3da) & 0x08);
+    while(!(VGA_RD08(pNv->riva.PCIO, 0x3da) & 0x08));
 
     /* Get the result */
-    pNv->riva.PCIO[0x3d4] = 0x3e;
-    val = pNv->riva.PCIO[0x3d5];
+    VGA_WR08(pNv->riva.PCIO, 0x3d4, 0x3e);
+    val = VGA_RD08(pNv->riva.PCIO, 0x3d5);
     DEBUG(ErrorF("NV_ddc1Read(%p,...) returns %d\n",
                  pScrn, val));
     return (val & DDC_SDA_READ_MASK) != 0;
@@ -220,8 +220,8 @@ NV_I2CGetBits(I2CBusPtr b, int *clock, int *data)
     unsigned char val;
 
     /* Get the result. */
-    pNv->riva.PCIO[0x3d4] = 0x3e;
-    val = pNv->riva.PCIO[0x3d5];
+    VGA_WR08(pNv->riva.PCIO, 0x3d4, 0x3e);
+    val = VGA_RD08(pNv->riva.PCIO, 0x3d5);
 
     *clock = (val & DDC_SCL_READ_MASK) != 0;
     *data  = (val & DDC_SDA_READ_MASK) != 0;
@@ -235,8 +235,8 @@ NV_I2CPutBits(I2CBusPtr b, int clock, int data)
     NVPtr pNv = NVPTR(xf86Screens[b->scrnIndex]);
     unsigned char val;
 
-    pNv->riva.PCIO[0x3d4] = 0x3f;
-    val = pNv->riva.PCIO[0x3d5] & 0xf0;
+    VGA_WR08(pNv->riva.PCIO, 0x3d4, 0x3f);
+    val = VGA_RD08(pNv->riva.PCIO, 0x3d5) & 0xf0;
     if (clock)
         val |= DDC_SCL_WRITE_MASK;
     else
@@ -247,8 +247,8 @@ NV_I2CPutBits(I2CBusPtr b, int clock, int data)
     else
         val &= ~DDC_SDA_WRITE_MASK;
 
-    pNv->riva.PCIO[0x3d4] = 0x3f;
-    pNv->riva.PCIO[0x3d5] = val | 0x1;
+    VGA_WR08(pNv->riva.PCIO, 0x3d4, 0x3f);
+    VGA_WR08(pNv->riva.PCIO, 0x3d5, val | 0x1);
     
     DEBUG(ErrorF("NV_I2CPutBits(%p, %d, %d) val=0x%x\n", b, clock, data, val));
 }

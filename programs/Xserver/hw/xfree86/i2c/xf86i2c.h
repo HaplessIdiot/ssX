@@ -40,6 +40,7 @@ typedef struct _I2CBusRec {
     int 		ByteTimeout;	/* usec */
     int			AcknTimeout;    /* usec */
     int 		StartTimeout;	/* usec */
+    int                 RiseFallTime;   /* usec */
 
     I2CDevPtr		FirstDev;
     I2CBusPtr		NextBus;
