@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.22 2001/06/13 23:34:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.23 2001/06/15 21:22:51 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1976,8 +1976,7 @@ I128DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 
     if (pI128->RamdacType == TI3025_DAC) return;
 
-    pI128->mem.rbase_g[IDXL_I] = IBMRGB_sync;				MB;
-    snc = pI128->mem.rbase_g[DATA_I];
+    snc = pI128->mem.rbase_g[CRT_1CON];
 
     switch (PowerManagementMode)
     {
@@ -1998,8 +1997,7 @@ I128DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	snc &= ~0x30;
 	break;
     }
-    pI128->mem.rbase_g[IDXL_I] = IBMRGB_sync;				MB;
-    pI128->mem.rbase_g[DATA_I] = snc;					MB;
+    pI128->mem.rbase_g[CRT_1CON] = snc;					MB;
 }
 
 void
