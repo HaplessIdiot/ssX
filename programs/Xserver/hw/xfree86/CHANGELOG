@@ -1,4 +1,6 @@
 XFree86 4.0b (?? April 2000)
+  99. Update glint driver for fb24_32 and ensure memset used in fb is
+      xf86memset when using loader (Alan Hourihane).
   98. By default, limit ATI 3DRage LTPro's to 200 MHz, instead of 230 MHz
       (Marc La France).
   97. Remove some leftover INTERNAL_VS_EXTERNAL_PADDING stuff from the

@@ -29,9 +29,9 @@
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.73 2000/03/22 16:02:22 tsi Exp $ */
 
-#include "cfb24_32.h"
-#include "cfb8_32.h"
 #include "fb.h"
+#include "fb24_32.h"
+#include "cfb8_32.h"
 #include "micmap.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -258,7 +258,7 @@ static const char *xaaSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
-    "cfb24_32ScreenInit",
+    "fb24_32ScreenInit",
     "cfb8_32ScreenInit",
     "fbScreenInit",
     "fbBres",
@@ -1748,13 +1748,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pScrn->bitsPerPixel) {
     case 8:
     case 16:
-	mod = "fb";
-	break;
     case 24:
-	if (pix24bpp == 24)
-	    mod = "fb";
-	else
-	    mod = "xf24_32bpp";
+	mod = "fb";
 	break;
     case 32:
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
@@ -2418,10 +2413,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
 	else
-	    ret = cfb24_32ScreenInit(pScreen, FBStart,
+	    ret = fb24_32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
+			displayWidth, pScrn->bitsPerPixel);
 	break;
     case 32:
 	if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
