@@ -200,21 +200,21 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     if(pSiS->CRT1off == -1) {
        if(!CRT1Detected) {
 
-          /* BIOS detected no CRT1. */
+          /* No CRT1 detected. */
 	  /* If other devices exist, switch it off */
 	  if(OtherDevices) pSiS->CRT1off = 1;
 	  else             pSiS->CRT1off = 0;
 
        } else {
 
-          /* BIOS detected CRT1, leave/switch it on */
+          /* CRT1 detected, leave/switch it on */
 	  pSiS->CRT1off = 0;
 
        }
     }
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-    		"%sCRT1 connection detected\n",
+    		"%sCRT1 connection detected (VGA)\n",
 		CRT1Detected ? "" : "No ");
 }
 
