@@ -69,6 +69,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    /* Fall Through */
 	case CYBER9520:
 	case CYBER9525DVD:
+	case CYBER9540:
 	case CYBER9397DVD:
 	case CYBER9397:
 	case CYBER9388:
