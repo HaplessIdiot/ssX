@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.197 94/12/05 19:30:41 gildea Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.13 1995/04/24 07:12:45 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.14 1995/05/27 01:56:41 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2008,18 +2008,20 @@ target::								@@\
 		   imakeprefix=$$newtop/ ;; \				@@\
 		esac; \							@@\
 		cd $$i; \						@@\
-		RemoveFile(Makefile.bak); \				@@\
-		if [ -f Makefile ]; then \				@@\
+		if [ $$? = 0 ]; then \					@@\
+		    RemoveFile(Makefile.bak); \				@@\
+		    if [ -f Makefile ]; then \				@@\
 			echo "	$(MV) Makefile Makefile.bak"; \		@@\
 			if [ "$$executeit" != "no" ]; then \		@@\
 				$(MV) Makefile Makefile.bak; \		@@\
 			fi; \						@@\
-		fi; \							@@\
-		if [ "$$executeit" != "no" ]; then \			@@\
+		    fi; \						@@\
+		    if [ "$$executeit" != "no" ]; then \		@@\
 			ImakeSubCmdHelper -DTOPDIR=$$imaketop -DCURDIR=$$curdir$$i; \ @@\
+		    fi; \						@@\
+		    $(MAKE) $(MFLAGS) Makefiles; \			@@\
+		    cd $$newtop; \					@@\
 		fi; \							@@\
-		$(MAKE) $(MFLAGS) Makefiles; \				@@\
-		cd $$newtop; \						@@\
 	done
 
 #ifdef UseInstalled

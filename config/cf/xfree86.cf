@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.57 1995/06/02 09:59:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.58 1995/06/08 06:18:45 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -273,6 +273,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.57 1995/06/02 09:59:55 dawes Exp $
 #define XF86LinkKit	NO
 #endif
 
+#if XF86LinkKit && !defined(AlternateIncRoot) && !defined(IncRoot)
+#define AlternateIncRoot	NO
+#endif
+
 #ifndef LinkKitDefines
 #if XF86LinkKit
 #define LinkKitDefines	-DLINKKIT
@@ -353,7 +357,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3112
+#define XFree86Version	3113
 #endif
 
 #ifndef XVendorString

@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.139 95/01/12 15:30:26 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.16 1995/01/23 01:26:17 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.143 95/06/09 20:57:00 gildea Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.17 1995/01/28 15:40:31 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -155,8 +155,10 @@ XCOMM operating system:  OSName
 #endif
 #ifdef i386Architecture
 #define StandardDefines	  -Dsun -Di386 -DSVR4 -D__i386
+#define ToolkitStringsABIOptions	-intelabi -earlyR6bc
 #else
 #define StandardDefines	  -Dsun -Dsparc -DSVR4
+#define ToolkitStringsABIOptions	-sparcabi
 #endif
 #define ExtraLibraries    -lsocket -lnsl
 #if OSMinorVersion > 1
@@ -270,7 +272,7 @@ XCOMM operating system:  OSName
 #endif
 #else	/* OSMajorVersion >= 5*/
 #ifndef DefaultCCOptions
-#define DefaultCCOptions -Xc
+#define DefaultCCOptions -Xa
 #endif
 #ifdef i386Architecture
 #ifndef ServerCCOptions

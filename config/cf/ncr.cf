@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.19 95/01/25 16:28:38 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.10 1995/01/28 15:40:29 dawes Exp $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.21 95/06/09 20:57:00 gildea Exp $
+XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.11 1995/05/07 11:34:20 dawes Exp $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -15,11 +15,12 @@ XCOMM These flags build correctly on SVR4/MP-RAS 3.0. If building on
 XCOMM SVR4/MP-RAS 2.X, you must add -DWINTCP to StandardDefines
 XCOMM
 #define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
-#define DefaultCCOptions	-Xc -Hnocopyr -W0,-asm
+#define DefaultCCOptions	-Xa -Hnocopyr -W0,-asm
 #define DefaultCDebugFlags	-O3
 #define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
 #define ServerExtraDefines      -DNO_SECONDARY AllocateLocalDefines XFree86ServerDefines
 #define ServerOSDefines         -DDDXTIME XFree86ServerOSDefines
+#define ToolkitStringsABIOptions -intelabi -earlyR6abi
 
 XCOMM This has not been tested, don't turn it on yet.
 XCOMM #define ExtensionOSDefines	-DXTESTEXT1

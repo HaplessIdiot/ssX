@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: usl.cf,v 1.35 95/01/12 15:37:24 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.5 1995/01/28 15:40:34 dawes Exp $
+XCOMM platform:  $XConsortium: usl.cf,v 1.36 95/05/05 17:42:07 kaleb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.6 1995/03/08 04:47:53 dawes Exp $
 
 #define OSName			UNIX System V/386 Release 4.2 Version 2.0
 XCOMM operating system:  OSName
@@ -11,5 +11,6 @@ XCOMM operating system:  OSName
 #define NeedWidePrototypes	NO	/* experimental */
 #define ServerExtraDefines	-D__USLC__ XFree86ServerDefines
 #define ServerOSDefines		-DDDXTIME XFree86ServerOSDefines
+#define ToolkitStringsABIOptions -intelabi -earlyR6bc
 #define ExtraLibraries		-lsocket -lnsl -lgen
 #include <svr4.cf>

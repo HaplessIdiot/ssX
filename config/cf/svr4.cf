@@ -1,5 +1,5 @@
-XCOMM $XConsortium: svr4.cf,v 1.11 95/01/25 16:32:39 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.9 1995/03/08 04:47:50 dawes Exp $
+XCOMM $XConsortium: svr4.cf,v 1.13 95/06/09 20:57:00 gildea Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.10 1995/05/27 01:56:52 dawes Exp $
 /*
  * A default OS name
  */
@@ -42,17 +42,18 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.9 1995/03/08 04:47:50 dawes Exp $
 
 /* Some stuff that all SVR4s should have */
 
-#define SystemV4	YES
+#define SystemV4		YES
 #ifndef HasLdRunPath
-#define HasLdRunPath	YES
+#define HasLdRunPath		YES
 #endif
-#define HasPoll		YES
+#define HasPoll			YES
 #ifndef SVR4Architecture
 #define SVR4Architecture
 #endif
 #ifndef PatheticCpp
-#define PatheticCpp	YES
+#define PatheticCpp		YES
 #endif
+#define Malloc0ReturnsNull	YES		/* in case -lmalloc used */
 
 /*
  * Here are the default paths to use to pick up tools for building.
@@ -93,9 +94,10 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.9 1995/03/08 04:47:50 dawes Exp $
 #endif
 
 #ifdef i386Architecture
-#ifndef StandardDefines
 #if (OSMinorVersion > 2) || ((OSMinorVersion == 2) && (OSTeenyVersion >= 2))
+#ifndef StandardDefines
 #define StandardDefines		-DSVR4 -DSVR42MP -Di386
+#endif
 #ifndef HasParallelMake
 #define HasParallelMake		YES
 #endif
@@ -103,13 +105,17 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.9 1995/03/08 04:47:50 dawes Exp $
 #define ParallelDefines		-P -B
 #define MutexDirective		.MUTEX
 #endif
-#else
+#else /* SVR4 < 4.2.2 */
+#ifndef StandardDefines
 #define StandardDefines		-DSVR4 -Di386
 #endif
 #endif
+#ifndef ToolkitStringsABIOptions
+#define ToolkitStringsABIOptions -intelabi -earlyR6abi
+#endif
 #ifndef DefaultCCOptions
 #if !HasGcc
-#define DefaultCCOptions -Xc -Dasm=__asm
+#define DefaultCCOptions -Xa -Dasm=__asm
 #endif
 #endif
 #ifndef DefaultCDebugFlags
