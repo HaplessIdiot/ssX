@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.h,v 1.1 1998/12/05 14:40:19 dawes Exp $ */
 
 #ifndef	_microtouch_H_
 #define _microtouch_H_
@@ -120,7 +120,6 @@ MuTPrivateRec, *MuTPrivatePtr;
 /******************************************************************************
  *		Declarations
  *****************************************************************************/
-extern MODULEINITPROTO( microtouchModuleInit );
 static MODULESETUPPROTO( SetupProc );
 static void TearDownProc( pointer p );
 /*int DumpOpts (XF86OptionPtr opts);	*/

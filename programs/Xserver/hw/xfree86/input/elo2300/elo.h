@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.h,v 1.1 1998/12/05 14:40:16 dawes Exp $ */
 
 #ifndef	_elo_H_
 #define _elo_H_
@@ -119,7 +119,6 @@ EloPrivateRec, *EloPrivatePtr;
  *											of globals.
  *											put locals in the .c file.
  *****************************************************************************/
-extern MODULEINITPROTO( elo2300ModuleInit );
 static MODULESETUPPROTO( SetupProc );
 static void TearDownProc (pointer p);
 static Bool DeviceControl (DeviceIntPtr dev, int mode);
