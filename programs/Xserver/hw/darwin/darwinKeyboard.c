@@ -2,7 +2,8 @@
 //
 // Keyboard support for the Darwin X Server
 //
-// Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
+// Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
+// Copyright (c) 2003 Apple Computer, Inc. All Rights Reserved.
 //
 // The code to parse the Darwin keymap is derived from dumpkeymap.c
 // by Eric Sunshine, which includes the following copyright:
@@ -36,7 +37,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.17 2002/12/10 00:00:38 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.18 2003/05/14 05:27:55 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -59,6 +60,9 @@
 // in determining how the X server is interpreting the Darwin keymap.
 #undef DUMP_DARWIN_KEYMAP
 
+/* Define this to use Alt for Mode_switch. */
+#define ALT_IS_MODE_SWITCH 1
+
 #include <drivers/event_status_driver.h>
 #include <IOKit/hidsystem/ev_keymap.h>
 #include <stdio.h>
@@ -67,16 +71,7 @@
 #include <sys/stat.h>
 #include <architecture/byte_order.h>  // For the NXSwap*
 #include "darwin.h"
-
-#define XK_TECHNICAL		// needed to get XK_Escape
-#define XK_PUBLISHING
-#include "keysym.h"
-
-// Each key can generate 4 glyphs. They are, in order:
-// unshifted, shifted, modeswitch unshifted, modeswitch shifted
-#define GLYPHS_PER_KEY  4
-#define NUM_KEYCODES    248	// NX_NUMKEYCODES might be better
-#define MAX_KEYCODE     NUM_KEYCODES + MIN_KEYCODE - 1
+#include "darwinKeyboard.h"
 
 #define AltMask         Mod1Mask
 #define MetaMask        Mod2Mask
@@ -222,11 +217,9 @@ static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl )
     // keyclick, bell volume / pitch, autorepead, LED's
 }
 
-static  CARD8 modMap[MAP_LENGTH];
-static  KeySym map[MAP_LENGTH * GLYPHS_PER_KEY];
-static  unsigned char modifierKeycodes[NX_NUMMODIFIERS][2];
-static  FILE *fref = NULL;
-static  char *inBuffer = NULL;
+static darwinKeyboardInfo keyInfo;
+static FILE *fref = NULL;
+static char *inBuffer = NULL;
 
 //-----------------------------------------------------------------------------
 // Data Stream Object
@@ -447,33 +440,18 @@ Bool DarwinReadKeymapFile(
 
 
 /*
- * DarwinKeyboardInit
- *      Get the Darwin keyboard map and compute an equivalent
- *      X keyboard map and modifier map. Set the new keyboard
- *      device structure.
+ * DarwinParseNXKeyMapping
  */
-void DarwinKeyboardInit(
-    DeviceIntPtr        pDev )
+Bool DarwinParseNXKeyMapping(
+    darwinKeyboardInfo  *info)
 {
     KeySym              *k;
     int                 i;
     short               numMods, numKeys, numPadKeys = 0;
-    KeySymsRec          keySyms;
+    Bool                haveKeymap = FALSE;
     NXKeyMapping        keyMap;
     DataStream          *keyMapStream;
     unsigned char const *numPadStart = 0;
-    Bool                haveKeymap = FALSE;
-
-    memset( modMap, NoSymbol, sizeof( modMap ) );
-    memset( map, 0, sizeof( map ) );
-    for (i = 0; i < NX_NUMMODIFIERS; i++) {
-        modifierKeycodes[i][0] = modifierKeycodes[i][1] = 0;
-    }
-
-    // Open a shared connection to the HID System.
-    // Note that the Event Status Driver is really just a wrapper
-    // for a kIOHIDParamConnectType connection.
-    assert( darwinParamConnect = NXOpenEventStatus() );
 
     if (darwinKeymapFile) {
         haveKeymap = DarwinReadKeymapFile(&keyMap);
@@ -491,7 +469,7 @@ void DarwinKeyboardInit(
         keyMap.size = NXKeyMappingLength( darwinParamConnect );
         keyMap.mapping = (char*) xalloc( keyMap.size );
         if (!NXGetKeyMapping( darwinParamConnect, &keyMap )) {
-            FatalError("Could not get kernel keymapping! Load keymapping from file instead.\n");
+            return FALSE;
         }
     }
 
@@ -504,9 +482,7 @@ void DarwinKeyboardInit(
         ErrorF("Current 16-bit keymapping may not be interpreted correctly.\n");
     }
 
-    // Compute the modifier map and
-    // insert X modifier KeySyms into keyboard map.
-    // Store modifier keycodes in modifierKeycodes.
+    // Insert X modifier KeySyms into the keyboard map.
     numMods = get_number(keyMapStream);
     while (numMods-- > 0) {
         int             left = 1;               // first keycode is left
@@ -523,40 +499,33 @@ void DarwinKeyboardInit(
         while (numKeyCodes-- > 0) {
             const short keyCode = get_number(keyMapStream);
             if (charCode != NX_MODIFIERKEY_NUMERICPAD) {
-                modifierKeycodes[charCode][1-left] = keyCode;
                 switch (charCode) {
                     case NX_MODIFIERKEY_ALPHALOCK:
-                        modMap[keyCode + MIN_KEYCODE] = LockMask;
-                        map[keyCode * GLYPHS_PER_KEY] = XK_Caps_Lock;
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] = XK_Caps_Lock;
                         break;
                     case NX_MODIFIERKEY_SHIFT:
-                        modMap[keyCode + MIN_KEYCODE] = ShiftMask;
-                        map[keyCode * GLYPHS_PER_KEY] =
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] =
                                 (left ? XK_Shift_L : XK_Shift_R);
                         break;
                     case NX_MODIFIERKEY_CONTROL:
-                        modMap[keyCode + MIN_KEYCODE] = ControlMask;
-                        map[keyCode * GLYPHS_PER_KEY] =
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] =
                                 (left ? XK_Control_L : XK_Control_R);
                         break;
                     case NX_MODIFIERKEY_ALTERNATE:
-                        modMap[keyCode + MIN_KEYCODE] = AltMask;
-                        map[keyCode * GLYPHS_PER_KEY] =
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] =
                                 (left ? XK_Mode_switch : XK_Alt_R);
                         break;
                     case NX_MODIFIERKEY_COMMAND:
-                        modMap[keyCode + MIN_KEYCODE] = MetaMask;
-                        map[keyCode * GLYPHS_PER_KEY] =
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] =
                                 (left ? XK_Meta_L : XK_Meta_R);
                         break;
                     case NX_MODIFIERKEY_SECONDARYFN:
-                        modMap[keyCode + MIN_KEYCODE] = FunctionMask;
-                        map[keyCode * GLYPHS_PER_KEY] =
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] =
                                 (left ? XK_Control_L : XK_Control_R);
                         break;
                     case NX_MODIFIERKEY_HELP:
                         // Help is not an X11 modifier; treat as normal key
-                        map[keyCode * GLYPHS_PER_KEY] = XK_Help;
+                        info->keyMap[keyCode * GLYPHS_PER_KEY] = XK_Help;
                         break;
                 }
             }
@@ -564,12 +533,12 @@ void DarwinKeyboardInit(
         }
     }
 
-    // Convert the Darwin keyboard map to an X keyboard map.
+    // Convert the Darwin keyboard mapping to an X keyboard map.
     // A key can have a different character code for each combination of
     // modifiers. We currently ignore all modifier combinations except
     // those with Shift, AlphaLock, and Alt.
     numKeys = get_number(keyMapStream);
-    for (i = 0, k = map; i < numKeys; i++, k += GLYPHS_PER_KEY) {
+    for (i = 0, k = info->keyMap; i < numKeys; i++, k += GLYPHS_PER_KEY) {
         short const     charGenMask = get_number(keyMapStream);
         if (charGenMask != 0xFF) {              // is key bound?
             short       numKeyCodes = 1 << bits_set(charGenMask);
@@ -653,7 +622,7 @@ void DarwinKeyboardInit(
     keyMapStream->data = numPadStart;
     while(numPadKeys-- > 0) {
         const short keyCode = get_number(keyMapStream);
-        k = &map[keyCode * GLYPHS_PER_KEY];
+        k = &info->keyMap[keyCode * GLYPHS_PER_KEY];
         for (i = 0; i < NUM_KEYPAD; i++) {
             if (*k == normal_to_keypad[i].normalSym) {
                 k[0] = normal_to_keypad[i].keypadSym;
@@ -668,7 +637,9 @@ void DarwinKeyboardInit(
 
 #ifdef DUMP_DARWIN_KEYMAP
     ErrorF("Darwin -> X converted keyboard map\n");
-    for (i = 0, k = map; i < NX_NUMKEYCODES; i++, k += GLYPHS_PER_KEY) {
+    for (i = 0, k = info->keyMap; i < NX_NUMKEYCODES;
+         i++, k += GLYPHS_PER_KEY)
+    {
         int j;
         ErrorF("0x%02x:", i);
         for (j = 0; j < GLYPHS_PER_KEY; j++) {
@@ -682,13 +653,145 @@ void DarwinKeyboardInit(
     }
 #endif
 
-    keySyms.map        = map;
+    return TRUE;
+}
+
+
+/*
+ * DarwinBuildModifierMaps
+ *      Use the keyMap field of keyboard info structure to populate
+ *      the modMap and modifierKeycodes fields.
+ */
+static void
+DarwinBuildModifierMaps(
+    darwinKeyboardInfo *info)
+{
+    int i;
+    KeySym *k;
+    int darwinSwapAltMeta = 0;
+
+    memset(info->modMap, NoSymbol, sizeof(info->modMap));
+    memset(info->modifierKeycodes, 0, sizeof(info->modifierKeycodes));
+
+    for (i = 0; i < NUM_KEYCODES; i++)
+    {
+	k = info->keyMap + i * GLYPHS_PER_KEY;
+
+        switch (k[0]) {
+            case XK_Shift_L:
+                info->modifierKeycodes[NX_MODIFIERKEY_SHIFT][0] = i;
+                info->modMap[MIN_KEYCODE + i] = ShiftMask;
+                break;
+
+            case XK_Shift_R:
+                info->modifierKeycodes[NX_MODIFIERKEY_SHIFT][1] = i;
+                info->modMap[MIN_KEYCODE + i] = ShiftMask;
+                break;
+
+            case XK_Control_L:
+                info->modifierKeycodes[NX_MODIFIERKEY_CONTROL][0] = i;
+                info->modMap[MIN_KEYCODE + i] = ControlMask;
+                break;
+
+            case XK_Control_R:
+                info->modifierKeycodes[NX_MODIFIERKEY_CONTROL][1] = i;
+                info->modMap[MIN_KEYCODE + i] = ControlMask;
+                break;
+
+            case XK_Caps_Lock:
+                info->modifierKeycodes[NX_MODIFIERKEY_ALPHALOCK][0] = i;
+                info->modMap[MIN_KEYCODE + i] = LockMask;
+                break;
+
+            case XK_Alt_L:
+                info->modifierKeycodes[NX_MODIFIERKEY_ALTERNATE][0] = i;
+                info->modMap[MIN_KEYCODE + i] = Mod1Mask;
+                break;
+
+            case XK_Alt_R:
+                info->modifierKeycodes[NX_MODIFIERKEY_ALTERNATE][1] = i;
+                info->modMap[MIN_KEYCODE + i] = Mod1Mask;
+                break;
+
+            case XK_Mode_switch:
+                info->modMap[MIN_KEYCODE + i] = Mod1Mask;
+                break;
+
+            case XK_Meta_L:
+                info->modifierKeycodes[NX_MODIFIERKEY_COMMAND][0] = i;
+                info->modMap[MIN_KEYCODE + i] = Mod2Mask;
+                break;
+
+            case XK_Meta_R:
+                info->modifierKeycodes[NX_MODIFIERKEY_COMMAND][1] = i;
+                info->modMap[MIN_KEYCODE + i] = Mod2Mask;
+                break;
+
+            case XK_Num_Lock:
+                info->modMap[MIN_KEYCODE + i] = Mod3Mask;
+                break;
+            }
+
+        if (darwinSwapAltMeta)
+        {
+	    switch (k[0])
+	    {
+	    case XK_Alt_L:
+		k[0] = XK_Meta_L;
+                break;
+	    case XK_Alt_R:
+		k[0] = XK_Meta_R;
+                break;
+	    case XK_Meta_L:
+		k[0] = XK_Alt_L;
+                break;
+	    case XK_Meta_R:
+		k[0] = XK_Alt_R;
+                break;
+	    }
+        }
+
+#if ALT_IS_MODE_SWITCH
+        if (k[0] == XK_Alt_L || k[0] == XK_Alt_R)
+	    k[0] = XK_Mode_switch;
+#endif
+    }
+}
+
+
+/*
+ * DarwinKeyboardInit
+ *      Get the Darwin keyboard map and compute an equivalent
+ *      X keyboard map and modifier map. Set the new keyboard
+ *      device structure.
+ */
+void DarwinKeyboardInit(
+    DeviceIntPtr        pDev )
+{
+    KeySymsRec          keySyms;
+
+    memset( keyInfo.keyMap, 0, sizeof( keyInfo.keyMap ) );
+
+    // Open a shared connection to the HID System.
+    // Note that the Event Status Driver is really just a wrapper
+    // for a kIOHIDParamConnectType connection.
+    assert( darwinParamConnect = NXOpenEventStatus() );
+
+    if (!DarwinParseNXKeyMapping(&keyInfo)) {
+        if (!DarwinModeReadSystemKeymap(&keyInfo)) {
+            FatalError("Could not build a valid keymap.");
+        }
+    }
+
+    DarwinBuildModifierMaps(&keyInfo);
+
+    keySyms.map        = keyInfo.keyMap;
     keySyms.mapWidth   = GLYPHS_PER_KEY;
     keySyms.minKeyCode = MIN_KEYCODE;
     keySyms.maxKeyCode = MAX_KEYCODE;
 
-    assert( InitKeyboardDeviceStruct( (DevicePtr)pDev, &keySyms, modMap,
-                                      DarwinModeBell,
+    assert( InitKeyboardDeviceStruct( (DevicePtr)pDev, &keySyms,
+                                      keyInfo.modMap, DarwinModeBell,
                                       DarwinChangeKeyboardControl ));
 }
 
@@ -710,7 +813,7 @@ void DarwinKeyboardInit(
  */
 int DarwinModifierNXKeyToNXKeycode(int key, int side)
 {
-    return modifierKeycodes[key][side];
+    return keyInfo.modifierKeycodes[key][side];
 }
 
 /*
@@ -726,7 +829,7 @@ int DarwinModifierNXKeycodeToNXKey(unsigned char keycode, int *outSide)
     // search modifierKeycodes for this keycode+side
     for (key = 0; key < NX_NUMMODIFIERS; key++) {
         for (side = 0; side <= 1; side++) {
-            if (modifierKeycodes[key][side] == keycode) break;
+            if (keyInfo.modifierKeycodes[key][side] == keycode) break;
         }
     }
     if (key == NX_NUMMODIFIERS) return -1;

@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 546. Add support on Mac OS X for building keymap using Carbon Keyboard
+      Layout API (John Harper).
  545. Map holes in kdrive VESA driver (#5436, Juliusz Chroboczek).
  544. Add option to Radeon driver to allow minimum dot clock to be
       overridden (Bugzilla #831, Nils Philippsen).
@@ -18078,7 +18080,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2923 2003/10/31 23:03:13 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2924 2003/11/01 04:49:15 dawes Exp $
 
 
 

@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,9 +28,10 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.12 2003/01/15 02:34:04 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/iokit/xfIOKitStartup.c,v 1.1 2003/05/14 05:27:56 torrey Exp $ */
 
 #include "darwin.h"
+#include "darwinKeyboard.h"
 #include "micmap.h"
 
 void GlxExtensionInit(void);
@@ -100,4 +101,15 @@ int DarwinModeProcessArgument(
 #endif
 
     return 0;
+}
+
+
+/*
+ * DarwinModeReadSystemKeymap
+ *  IOKit has no alternative to NXKeyMapping API.
+ */
+Bool DarwinModeReadSystemKeymap(
+    darwinKeyboardInfo *info)
+{
+    return FALSE;
 }
