@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.7 2001/04/02 05:18:50 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.8 2001/04/16 06:51:48 torrey Exp $
 
 #include <Server.tmpl>
 
@@ -28,7 +28,7 @@ CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
-DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(DESTDIR)$(BINDIR)
+DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(DESTDIR)$(BINDIR) -DXINITDIR=$(XINITDIR)
 #if NothingOutsideProjectRoot
 XDARWINROOT = $(DESTDIR)$(BINDIR)
 #else

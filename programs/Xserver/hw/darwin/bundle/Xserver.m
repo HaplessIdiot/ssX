@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.10 2001/04/09 03:32:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.11 2001/04/13 07:21:36 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -159,8 +159,13 @@ extern int main(int argc, char *argv[], char *envp[]);
     // Start the X clients if started from GUI
     if (quartzStartClients) {
         char *home;
-        NSString *path = [NSString stringWithCString:XPATH(startx)];
-        NSArray *args = [NSArray arrayWithObjects:@"--", @"-idle", nil];
+        char xinitrcbuf[PATH_MAX+1];
+        size_t buflen;
+        NSString *path = [NSString stringWithCString:XPATH(xinit)];
+        NSString *server = [NSString stringWithCString:XPATH(XDarwinStartup)];
+        NSString *client;
+        BOOL hasClient = YES;
+        NSArray *args;
 
         // Register to receive notification when the client task finishes
         [[NSNotificationCenter defaultCenter] addObserver:self 
@@ -170,11 +175,34 @@ extern int main(int argc, char *argv[], char *envp[]);
 
         // Change to user's home directory (so xterms etc. start there)
         home = getenv("HOME");
-        if (home) chdir(home);
+        if (home)
+            chdir(home);
+        else
+            home = "";
 
         // Add X binary directory to path
         [Xserver append:@":" toEnv:@"PATH"];
         [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
+
+        // Find the client init file to use
+        strncpy(xinitrcbuf, home, PATH_MAX);
+        buflen = strlen(xinitrcbuf);
+        strncat(xinitrcbuf, "/.xinitrc", PATH_MAX-buflen);
+        xinitrcbuf[PATH_MAX] = '\0';
+        if (access(xinitrcbuf, F_OK)) {
+            strncpy(xinitrcbuf, XSTRPATH(XINITDIR), PATH_MAX);
+            buflen = strlen(xinitrcbuf);
+            strncat(xinitrcbuf, "/xinitrc", PATH_MAX-buflen);
+            if (access(xinitrcbuf, F_OK)) {
+                hasClient = NO;
+            }
+        }
+        if (hasClient) {
+            client = [NSString stringWithCString:xinitrcbuf];
+            args = [NSArray arrayWithObjects:client, @"--", server, @"-idle", nil];
+        } else {
+            args = [NSArray arrayWithObjects:@"--", server, @"-idle", nil];
+        }
 
         // Launch a new task to run start X clients
         clientTask = [NSTask launchedTaskWithLaunchPath:path arguments:args];
