@@ -1,4 +1,9 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 615. Add command line options to mkfontscale to enable/disable generation
+      of iso10646-1 lines (Bugzilla #885, Roland Mainz).
+ 614. Add a more complete set of the encodings we support to mkfontscale
+      (Bugzilla #884, Roland Mainz).
+ 613. Add ansi-1251 encoding file (Bugzilla #884, Roland Mainz).
  612. Update XDMCP to use the IPv6 multicast address that has been assigned
       by IANA.  Draft XDMCP 1.1 specs updated accordingly (Bugzilla #895,
       Alan Coopersmith).
@@ -18237,7 +18242,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2983 2003/11/22 04:45:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2984 2003/11/22 04:51:00 dawes Exp $
 
 
 
