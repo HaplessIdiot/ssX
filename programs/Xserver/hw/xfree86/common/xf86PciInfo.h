@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.3 1998/08/19 07:49:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.4 1998/09/05 06:36:41 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -109,6 +109,7 @@
 #define PCI_CHIP_MGA1064	0x051a
 #define PCI_CHIP_MGA2164	0x051b
 #define PCI_CHIP_MGA2164_AGP	0x051f
+#define PCI_CHIP_MGAG200_PCI	0x0520
 #define PCI_CHIP_MGAG200	0x0521
 #define PCI_CHIP_MGAG100	0x1001
 
@@ -295,8 +296,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_MGA1064,	"MGA 1064SG"},
 				{PCI_CHIP_MGA2164,	"MGA 2164W"},
 				{PCI_CHIP_MGA2164_AGP,	"MGA 2164W AGP"},
-				{PCI_CHIP_MGAG200,	"MGA G200"},
-				{PCI_CHIP_MGAG100,	"MGA G100"},
+				{PCI_CHIP_MGAG200_PCI,	"MGA G200 PCI"},
+				{PCI_CHIP_MGAG200,	"MGA G200 AGP"},
+				{PCI_CHIP_MGAG100,	"MGA G100 AGP"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CHIPSTECH, "C&T", {
 				{PCI_CHIP_65545,	"65545"},
