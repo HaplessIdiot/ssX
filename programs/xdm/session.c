@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.28 2001/05/25 18:41:02 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.29 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -59,14 +59,6 @@ from The Open Group.
 #include <dlfcn.h>
 #ifndef RTLD_NOW
 #define RTLD_NOW 1
-#endif
-#endif
-
-#ifdef CSRG_BASED
-#include <sys/param.h>
-#ifdef HAS_SETUSERCONTEXT
-#include <login_cap.h>
-#include <pwd.h>
 #endif
 #endif
 
@@ -279,7 +271,11 @@ ManageSession (struct display *d)
     Debug ("ManageSession %s\n", d->name);
     (void)XSetIOErrorHandler(IOErrorHandler);
     (void)XSetErrorHandler(ErrorHandler);
+#ifndef HAS_SETPROCTITLE
     SetTitle(d->name, (char *) 0);
+#else
+    setproctitle("%s", d->name);
+#endif
     /*
      * Load system default Resources
      */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.54 2001/04/22 16:28:18 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.55 2001/08/15 19:01:03 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -50,6 +50,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasShm          	YES
 #define HasWChar32		YES
 #define HasMkstemp		YES
+#define HasSetProcTitle		YES
 #define HasZlib			YES
 #ifndef HasKrbIV
 #define HasKrbIV		YES
@@ -84,6 +85,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # else
 #  define HasMktemp		NO
 # endif
+#endif
+
+/* OpenBSD >= 2.8 has setusercontext() */
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 7)
+#define HasSetUserContext	YES
+#endif
+
+/* OpenBSD after 2.9 has BSD authentication */
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 9)
+# define HasBSDAuth		YES
 #endif
 
 /*

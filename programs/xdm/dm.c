@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.13 2001/07/23 13:15:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.14 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -833,6 +833,7 @@ UnlockPidFile (void)
 }
 #endif
 
+#ifndef HAS_SETPROCTITLE
 void SetTitle (char *name, ...)
 {
 #ifndef NOXDMTITLE
@@ -862,3 +863,4 @@ void SetTitle (char *name, ...)
     va_end(args);
 #endif	
 }
+#endif
