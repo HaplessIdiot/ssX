@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.7 1999/04/11 13:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.9 2000/06/10 16:10:03 mvojkovi Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -68,6 +68,7 @@ typedef struct {
 		ScreenPtr pScreen,  
 		FreeBoxCallbackProcPtr FreeBoxCallback,
 		pointer devPriv);
+    Bool      (*PurgeOffscreenAreas) (ScreenPtr);
 } FBManagerFuncs, *FBManagerFuncsPtr;
 
 

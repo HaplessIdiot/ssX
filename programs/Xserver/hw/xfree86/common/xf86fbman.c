@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.11 1999/06/20 05:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.14 2000/06/10 16:10:03 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -135,6 +135,19 @@ xf86QueryLargestOffscreenArea(
 		pScreen, w, h, gran, preferences, severity);
 }
 
+
+Bool
+xf86PurgeUnlockedOffscreenAreas(ScreenPtr pScreen)
+{
+   FBManagerFuncsPtr funcs;
+
+   if(xf86FBMangerIndex < 0) 
+	return FALSE;
+   if(!(funcs = (FBManagerFuncsPtr)pScreen->devPrivates[xf86FBMangerIndex].ptr))
+	return FALSE;
+
+   return (*funcs->PurgeOffscreenAreas)(pScreen);
+}
 
 /************************************************************\ 
 
@@ -579,12 +592,58 @@ localQueryLargestOffscreenArea(
     return TRUE;
 }
 
+static Bool
+localPurgeUnlockedOffscreenAreas(ScreenPtr pScreen)
+{
+   FBManagerPtr offman;
+   FBLinkPtr pLink, tmp, pPrev = NULL;
+   RegionRec FreedRegion;
+   Bool anyUsed = FALSE;
+
+   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+       
+   pLink = offman->UsedAreas;
+   if(!pLink) return TRUE;  
+ 
+   while(pLink) {
+	if(pLink->area.RemoveAreaCallback) {
+	    (*pLink->area.RemoveAreaCallback)(&pLink->area);
+
+	    REGION_INIT(pScreen, &FreedRegion, &(pLink->area.box), 1); 
+	    REGION_APPEND(pScreen, offman->FreeBoxes, &FreedRegion);
+	    REGION_UNINIT(pScreen, &FreedRegion); 
+
+	    if(pPrev)
+	      pPrev->next = pLink->next;
+	    else offman->UsedAreas = pLink->next;
+
+	    tmp = pLink;
+	    pLink = pLink->next;
+  	    xfree(tmp); 
+	    offman->NumUsedAreas--;
+	    anyUsed = TRUE;
+	} else {
+	    pPrev = pLink;
+	    pLink = pLink->next;
+	}
+   }
+
+   if(anyUsed) {
+	REGION_VALIDATE(pScreen, offman->FreeBoxes, &anyUsed);
+	SendCallFreeBoxCallbacks(offman);
+   }
+
+   return TRUE;
+}
+
+
 static FBManagerFuncs xf86FBManFuncs = {
    localAllocateOffscreenArea,
    localFreeOffscreenArea,
    localResizeOffscreenArea,
    localQueryLargestOffscreenArea,
-   localRegisterFreeBoxCallback
+   localRegisterFreeBoxCallback,
+   localPurgeUnlockedOffscreenAreas
  };
 
 
@@ -770,49 +829,3 @@ xf86AllocateLinearOffscreenArea(
     return area;
 }
 
-Bool
-xf86PurgeUnlockedOffscreenAreas(ScreenPtr pScreen)
-{
-   FBManagerPtr offman;
-   FBLinkPtr pLink, tmp, pPrev = NULL;
-   RegionRec FreedRegion;
-   Bool anyUsed = FALSE;
-
-   if(xf86FBScreenIndex < 0) 
-	return FALSE;
-   if(!(offman = pScreen->devPrivates[xf86FBScreenIndex].ptr)) 
-	return FALSE;
-       
-   pLink = offman->UsedAreas;
-   if(!pLink) return TRUE;  
- 
-   while(pLink) {
-	if(pLink->area.RemoveAreaCallback) {
-	    (*pLink->area.RemoveAreaCallback)(&pLink->area);
-
-	    REGION_INIT(pScreen, &FreedRegion, &(pLink->area.box), 1); 
-	    REGION_APPEND(pScreen, offman->FreeBoxes, &FreedRegion);
-	    REGION_UNINIT(pScreen, &FreedRegion); 
-
-	    if(pPrev)
-	      pPrev->next = pLink->next;
-	    else offman->UsedAreas = pLink->next;
-
-	    tmp = pLink;
-	    pLink = pLink->next;
-  	    xfree(tmp); 
-	    offman->NumUsedAreas--;
-	    anyUsed = TRUE;
-	} else {
-	    pPrev = pLink;
-	    pLink = pLink->next;
-	}
-   }
-
-   if(anyUsed) {
-	REGION_VALIDATE(pScreen, offman->FreeBoxes, &anyUsed);
-	SendCallFreeBoxCallbacks(offman);
-   }
-
-   return TRUE;
-}
