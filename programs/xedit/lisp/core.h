@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.33 2002/11/26 04:06:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.34 2002/12/04 05:27:57 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -216,5 +216,6 @@ LispObj *Lisp_XeditEltStore(LispBuiltin*);
 LispObj *Lisp_XeditPut(LispBuiltin*);
 LispObj *Lisp_XeditSetSymbolPlist(LispBuiltin*);
 LispObj *Lisp_XeditVectorStore(LispBuiltin*);
+LispObj *Lisp_XeditDocumentationStore(LispBuiltin*);
 
 #endif
