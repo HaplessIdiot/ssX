@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.21 1996/02/12 11:16:40 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.22 1996/02/18 03:45:49 dawes Exp $
  */
 
 /*
@@ -2910,7 +2910,7 @@ static void VTInitI18N()
 	}
     }
 
-    if (xim == NULL && (p = XSetLocaleModifiers("")) != NULL && *p)
+    if (xim == NULL && (p = XSetLocaleModifiers("@im=none")) != NULL && *p)
 	xim = XOpenIM(XtDisplay(term), NULL, NULL, NULL);
     
     if (!xim) {
