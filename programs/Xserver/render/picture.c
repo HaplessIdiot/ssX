@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.25 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.26 2002/09/29 23:39:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -44,6 +44,7 @@ int		PictureGeneration;
 RESTYPE		PictureType;
 RESTYPE		PictFormatType;
 RESTYPE		GlyphSetType;
+int		PictureCmapPolicy = PictureCmapPolicyDefault;
 
 Bool
 PictureDestroyWindow (WindowPtr pWindow)
@@ -513,6 +514,21 @@ PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 f)
 	format++;
     }
     return 0;
+}
+
+int
+PictureParseCmapPolicy (const char *name)
+{
+    if ( strcmp (name, "default" ) == 0)
+	return PictureCmapPolicyDefault;
+    else if ( strcmp (name, "mono" ) == 0)
+	return PictureCmapPolicyMono;
+    else if ( strcmp (name, "gray" ) == 0)
+	return PictureCmapPolicyGray;
+    else if ( strcmp (name, "color" ) == 0)
+	return PictureCmapPolicyColor;
+    else
+	return PictureCmapPolicyInvalid;
 }
 
 Bool
