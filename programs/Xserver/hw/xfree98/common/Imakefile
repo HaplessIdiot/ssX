@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.34 1997/04/10 11:35:07 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.35 1997/04/17 08:17:39 hohndel Exp $
 
 
 
@@ -33,8 +33,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.34 1997/04/1
  XCONFIGFILE = XF86Config
 
 #if BuildXInputExt
- XF86_XINPUT_SRC = xf86Xinput.c
- XF86_XINPUT_OBJ = xf86Xinput.o
+ XF86_XINPUT_SRC = xf86Xinput.c xf86Switch.c
+ XF86_XINPUT_OBJ = xf86Xinput.o xf86Switch.o
 # if JoystickSupport
       JOYSTICK_SRC = xf86Jstk.c
 # endif
@@ -199,6 +199,7 @@ all:: $(OFILES)
 
 #if BuildXInputExt
 SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
+SpecialObjectRule(xf86Switch.o,xf86Switch.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
 # if BuildDynamicLoading
 SpecialObjectRule(xf86Dl.o,xf86Dl.c,$(MODULEDEFINES))
 #  if JoystickSupport
@@ -300,6 +301,7 @@ LinkSourceFile(xf86ExtInit.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Init.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Jstk.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Summa.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Switch.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Wacom.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.h,$(XF86SRC)/common)
