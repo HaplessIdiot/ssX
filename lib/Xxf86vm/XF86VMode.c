@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.26 1999/04/11 13:10:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.28 2000/08/04 16:13:16 eich Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -278,7 +278,7 @@ XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
 	    Xfree(modeline->private);
 	    return False;
 	}
-	_XRead32(dpy, modeline->private, modeline->privsize * sizeof(INT32));
+	_XRead(dpy, (char*)modeline->private, modeline->privsize * sizeof(INT32));
     } else {
 	modeline->private = NULL;
     }
@@ -354,7 +354,7 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     for (i = 0; i < rep.modecount; i++) {
         modelines[i] = mdinfptr++;
 	if (majorVersion < 2) {
-            _XRead32(dpy, &oldxmdline, sizeof(xXF86OldVidModeModeInfo));
+            _XRead(dpy, (char*)&oldxmdline, sizeof(xXF86OldVidModeModeInfo));
 	    modelines[i]->dotclock   = oldxmdline.dotclock;
 	    modelines[i]->hdisplay   = oldxmdline.hdisplay;
 	    modelines[i]->hsyncstart = oldxmdline.hsyncstart;
@@ -377,7 +377,7 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
 			_XEatData(dpy, (oldxmdline.privsize) * sizeof(INT32));
 			Xfree(modelines[i]->private);
 		    } else {
-			_XRead32(dpy, modelines[i]->private,
+			_XRead(dpy, (char*)modelines[i]->private,
 			     oldxmdline.privsize * sizeof(INT32));
 		    }
 		} else {
@@ -385,7 +385,7 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
 		}
 	    }
 	} else {
-            _XRead32(dpy, &xmdline, sizeof(xXF86VidModeModeInfo));
+            _XRead(dpy, (char*)&xmdline, sizeof(xXF86VidModeModeInfo));
 	    modelines[i]->dotclock   = xmdline.dotclock;
 	    modelines[i]->hdisplay   = xmdline.hdisplay;
 	    modelines[i]->hsyncstart = xmdline.hsyncstart;
@@ -408,7 +408,7 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
 			_XEatData(dpy, (xmdline.privsize) * sizeof(INT32));
 			Xfree(modelines[i]->private);
 		    } else {
-			_XRead32(dpy, modelines[i]->private,
+			_XRead(dpy, (char*)modelines[i]->private,
 			     xmdline.privsize * sizeof(INT32));
 		    }
 		} else {
@@ -962,12 +962,12 @@ XF86VidModeGetMonitor(dpy, screen, monitor)
 	return False;
     }
     for (i = 0; i < rep.nhsync; i++) {
-	_XRead32(dpy, (long *)&syncrange, 4);
+	_XRead(dpy, (char *)&syncrange, 4);
 	monitor->hsync[i].lo = (float)(syncrange & 0xFFFF) / 100.0;
 	monitor->hsync[i].hi = (float)(syncrange >> 16) / 100.0;
     }
     for (i = 0; i < rep.nvsync; i++) {
-	_XRead32(dpy, (long *)&syncrange, 4);
+	_XRead(dpy, (char *)&syncrange, 4);
 	monitor->vsync[i].lo = (float)(syncrange & 0xFFFF) / 100.0;
 	monitor->vsync[i].hi = (float)(syncrange >> 16) / 100.0;
     }
@@ -1100,7 +1100,7 @@ XF86VidModeGetDotClocks(dpy, screen,
     }
 
     for (i = 0; i < rep.clocks; i++) {
-        _XRead32(dpy, &dotclk, 4);
+        _XRead(dpy, (char*)&dotclk, 4);
 	dotclocks[i] = dotclk;
     }
     *clocksPtr = dotclocks;
