@@ -6827,7 +6827,7 @@ SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags)
 }
 
 Bool
-SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index)
+SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index, Bool quiet)
 {
     SISPtr pSiS = SISPTR(pScrn);
     BOOLEAN hcm;
@@ -6882,14 +6882,16 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
 
     /* For RandR */
     if((mode->HDisplay > pScrn->virtualX) || (mode->VDisplay > pScrn->virtualY)) {
-       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+       if(!quiet) {
+          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Desired mode too large for current screen size\n");
+       }
        return FALSE;
     }
 
     /* Check if the desired mode is suitable for current output device */
     if(!SiS_CheckCalcModeIndex(pScrn, mode, vbflags, hcm)) {
-        if(!cond) {
+        if((!cond) && (!quiet)) {
            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Desired mode not suitable for current CRT2 output device\n");
  	}

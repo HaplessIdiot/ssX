@@ -961,6 +961,30 @@ typedef struct _SiSXineramaData {
 #endif
 #endif
 
+#if 0
+/* SiS Direct access for config utility */
+
+#define SDC_ID 0x53495321
+
+#define SDC_VERSION 1
+
+#define SDC_NUM_PARM 20
+typedef struct _sisdirectcommand {
+    unsigned long sdc_id;
+    unsigned long sdc_chksum;
+    unsigned long sdc_header;
+    unsigned long sdc_command;
+    unsigned long sdc_parm[SDC_NUM_PARM];
+} sisdirectcommand;
+
+#define SDC_RESULT_OK  		0x66670000
+#define SDC_RESULT_UNDEFCMD	0x66670001
+
+#define SDC_CMD_GETVERSION 		0x98980001
+#define SDC_CMD_CHECKMODEFORCRT2 	0x98980002
+/* more to come */
+#endif
+
 extern void  sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *reg2);
 extern void  sisRestoreExtRegisterLock(SISPtr pSiS, unsigned char reg1, unsigned char reg2);
 extern void  SiSOptions(ScrnInfoPtr pScrn);
@@ -998,7 +1022,7 @@ extern void  SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVxscale(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVyscale(ScrnInfoPtr pScrn, int val);
 extern Bool  SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags);
-extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index);
+extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index, Bool quiet);
 extern Bool  SISSwitchCRT1Status(ScrnInfoPtr pScrn, int onoff);
 extern int   SiS_GetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn);
 extern int   SiS_GetCHTVlumabandwidthsvideo(ScrnInfoPtr pScrn);
