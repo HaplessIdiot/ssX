@@ -1,4 +1,6 @@
 XFree86 4.0.1a (1 August 2000)
+ 455. Fix incorrect use of xf86{En,Dis}ableInterrupts() for ppc
+      (Marc La France).
  454. Add man pages for pcitweak and scanpci (David Dawes).
  453. Fix problems with xkb "Internet" keyboard mapping support (David Dawes).
  452. A few corrections to PIO and MMIO definitions affecting mips, arm32,
@@ -10874,4 +10876,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1247 2000/07/27 21:20:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1248 2000/07/30 17:12:15 dawes Exp $

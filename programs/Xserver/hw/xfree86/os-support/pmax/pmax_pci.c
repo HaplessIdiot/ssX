@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.3 1998/07/25 16:56:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.4 1999/01/14 13:05:08 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -538,14 +538,11 @@ nh6400PciReadLong(PCITAG tag, int offset)
 	      "nh6400PciReadLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
 	      cfgaddr, base, infop->cfgPhysBase); 
 
+  /* There may not be any OS interaction while interrupts are disabled */
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
-  
-  xf86MsgVerb(X_INFO, 3,
-	      "nh6400PciReadLong: About to read from 0x%x (phys=0x%x)\n",
-	       base + data_reg_offset, infop->cfgPhysBase + data_reg_offset);
   
   if (!badaddr(base + data_reg_offset, 4, 0)) {
 	tmp = *((unsigned long *)(base + data_reg_offset));
@@ -554,8 +551,8 @@ nh6400PciReadLong(PCITAG tag, int offset)
 
   xf86EnableInterrupts();
   
-  xf86MsgVerb(X_INFO, 3, "nh6400PciReadLong: Read value=0x%x\n",
-	      pciByteSwap(tmp));
+  xf86MsgVerb(X_INFO, 3, "nh6400PciReadLong: Read value=0x%x from 0x%x (phys=0x%x)\n",
+	      pciByteSwap(tmp), base + data_reg_offset, infop->cfgPhysBase + data_reg_offset);
   
   return(pciByteSwap(tmp));
 }
@@ -645,20 +642,21 @@ nh6400PciWriteLong(PCITAG tag, int offset, unsigned long val)
 	      "nh6400PciWriteLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
 	      cfgaddr, base, infop->cfgPhysBase); 
 
+  /* There may not be any OS interaction while interrupts are disabled */
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  xf86MsgVerb(X_INFO, 3,
-	      "nh6400PciWriteLong: Writing value=0x%x to 0x%x (phys=0x%x)\n",
-	      val, base + data_reg_offset,
-	      infop->cfgPhysBase + data_reg_offset);
-  
   *((unsigned long *)(base + data_reg_offset)) = pciByteSwap(val);
   eieio();
   
   xf86EnableInterrupts();
+  
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6400PciWriteLong: Wrote value=0x%x to 0x%x (phys=0x%x)\n",
+	      val, base + data_reg_offset,
+	      infop->cfgPhysBase + data_reg_offset);
 }
 
 /*
@@ -844,16 +842,12 @@ nh6408PciReadLong(PCITAG tag, int offset)
 	      "nh6408PciReadLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
 	      cfgaddr, base, infop->cfgPhysBase); 
 
+  /* There may not be any OS interaction while interrupts are disabled */
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  xf86MsgVerb(X_INFO, 3,
-	      "nh6408PciReadLong: About to read from 0x%x (phys=0x%x)\n",
-	      base + NH6408_PCI_CFG_DATA_REG_OFF,
-	      infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
-
   if (!badaddr(base + NH6408_PCI_CFG_DATA_REG_OFF, 4, 0)) {
     tmp = *((unsigned long *)(base + NH6408_PCI_CFG_DATA_REG_OFF));
     eieio();
@@ -861,8 +855,10 @@ nh6408PciReadLong(PCITAG tag, int offset)
 
   xf86EnableInterrupts();
   
-  xf86MsgVerb(X_INFO, 3, "nh6408PciReadLong: Read value=0x%x\n",
-	      pciByteSwap(tmp));
+  xf86MsgVerb(X_INFO, 3, "nh6408PciReadLong: Read value=0x%x from 0x%x (phys=0x%x)\n",
+	      pciByteSwap(tmp),
+	      base + NH6408_PCI_CFG_DATA_REG_OFF,
+	      infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
   
   return(pciByteSwap(tmp));
 }
@@ -951,21 +947,21 @@ nh6408PciWriteLong(PCITAG tag, int offset, unsigned long val)
 	      "nh6408PciWriteLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
 	      cfgaddr, base, infop->cfgPhysBase); 
 
+  /* There may not be any OS interaction while interrupts are disabled */
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  xf86MsgVerb(X_INFO, 3,
-	      "nh6408PciWriteLong: Writing value=0x%x to 0x%x (phys=0x%x)\n",
-	      val, base + NH6408_PCI_CFG_DATA_REG_OFF,
-	      infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
-
-  
   *((unsigned long *)(base + NH6408_PCI_CFG_DATA_REG_OFF)) = pciByteSwap(val);
   eieio();
   
   xf86EnableInterrupts();
+  
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6408PciWriteLong: Wrote value=0x%x to 0x%x (phys=0x%x)\n",
+	      val, base + NH6408_PCI_CFG_DATA_REG_OFF,
+	      infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
 }
 
 
