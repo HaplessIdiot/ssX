@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.8 1999/07/04 06:38:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.9 1999/07/10 12:17:13 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -312,6 +312,7 @@ XDGAMode* XDGAQueryModes(
 		modes[i].red_mask = info.red_mask;
 		modes[i].green_mask = info.green_mask;
 		modes[i].blue_mask = info.blue_mask;
+		modes[i].visualClass = info.visual_class;
 		modes[i].viewportWidth = info.viewport_width;
 		modes[i].viewportHeight = info.viewport_height;
 		modes[i].xViewportStep = info.viewport_xstep;
@@ -389,6 +390,7 @@ XDGASetMode(
 		dev->mode.red_mask = info.red_mask;
 		dev->mode.green_mask = info.green_mask;
 		dev->mode.blue_mask = info.blue_mask;
+		dev->mode.visualClass = info.visual_class;
 		dev->mode.viewportWidth = info.viewport_width;
 		dev->mode.viewportHeight = info.viewport_height;
 		dev->mode.xViewportStep = info.viewport_xstep;
@@ -645,6 +647,32 @@ void XDGAChangePixmapMode(
     *y = rep.y;
     UnlockDisplay(dpy);
     SyncHandle();
+}
+
+Colormap XDGACreateColormap(
+    Display *dpy,
+    int screen,
+    XDGADevice *dev,
+    int	alloc
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGACreateColormapReq *req;
+    Colormap cid;
+
+    XDGACheckExtension (dpy, info, -1);
+
+    LockDisplay(dpy);
+    GetReq(XDGACreateColormap, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGACreateColormap;
+    req->screen = screen;
+    req->mode = dev->mode.num;
+    req->alloc = alloc;
+    cid = req->id = XAllocID(dpy);
+    UnlockDisplay(dpy);
+    SyncHandle();
+
+    return cid;
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.50 1999/07/10 07:24:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.51 1999/07/10 14:42:55 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -140,6 +140,23 @@ typedef struct dirent DIRENTRY;
 #define S_IFIFO S_IFFIFO
 #endif
 #endif
+
+/* For xf86getpagesize() */
+#if defined(linux)
+#include <asm/page.h>
+#define HAS_SC_PAGESIZE
+#define HAS_GETPAGESIZE
+#elif defined(CSRG_BASED)
+#define HAS_GETPAGESIZE
+#elif defined(DGUX)
+#define HAS_GETPAGESIZE
+#elif defined(sun) && !defined(SVR4)
+#define HAS_GETPAGESIZE
+#endif
+#ifdef XNO_SYSCONF
+#undef _SC_PAGESIZE
+#endif
+
 
 #if 0
 #define SETBUF_RETURNS_INT
@@ -1649,6 +1666,39 @@ xf86realloc(void* p, xf86size_t n)
 {
 	return xrealloc(p,n);
 }
+
+/*
+ * XXX This probably doesn't belong here.
+ */
+int
+xf86getpagesize()
+{
+	static int pagesize = -1;
+
+	if (pagesize != -1)
+		return pagesize;
+
+#if defined(_SC_PAGESIZE) || defined(HAS_SC_PAGESIZE)
+	pagesize = sysconf(_SC_PAGESIZE);
+#endif
+#ifdef _SC_PAGE_SIZE
+	if (pagesize == -1)
+		pagesize = sysconf(_SC_PAGE_SIZE);
+#endif
+#ifdef HAS_GETPAGESIZE
+	if (pagesize == -1)
+		pagesize = getpagesize();
+#endif
+#ifdef PAGE_SIZE
+	if (pagesize == -1)
+		pagesize = PAGE_SIZE;
+#endif
+	if (pagesize == -1)
+		FatalError("xf86getpagesize: Cannot determine page size\n");
+
+	return pagesize;
+}
+
 
 #define mapnum(e) case (e): return (xf86_##e)
 

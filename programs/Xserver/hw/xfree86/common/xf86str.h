@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.43 1999/07/04 06:38:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.44 1999/07/06 11:38:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -561,6 +561,7 @@ typedef struct {
    unsigned long red_mask;
    unsigned long green_mask;
    unsigned long blue_mask;
+   short visualClass;
    int viewportWidth;
    int viewportHeight;
    int xViewportStep;	/* viewport position granularity */

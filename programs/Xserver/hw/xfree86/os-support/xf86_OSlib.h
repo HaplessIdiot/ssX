@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.66 1999/07/10 07:24:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.67 1999/07/10 12:17:38 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -88,6 +88,7 @@
 #undef usleep
 #define usleep(a) xf86usleep(a)
 extern void xf86usleep(unsigned long);
+extern int xf86getpagesize(void);
 extern int xf86GetErrno(void);  
 typedef unsigned long xf86size_t;
 typedef signed long xf86ssize_t;

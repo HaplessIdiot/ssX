@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.27 1999/06/27 14:08:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.28 1999/07/06 11:38:50 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -266,6 +266,7 @@ extern int xf86chown(const char *, xf86uid_t, xf86gid_t);
 extern xf86uid_t xf86geteuid(void);
 extern int xf86mknod(const char *, xf86mode_t, xf86dev_t);
 unsigned int xf86sleep(unsigned int seconds);
+int xf86getpagesize(void);
 
 #else /* XFree86LOADER || NEED_XF86_TYPES */
 #include <unistd.h>

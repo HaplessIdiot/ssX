@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.12 1999/04/29 12:24:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.13 1999/06/10 12:37:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -236,6 +236,8 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	int fd;
 	unsigned char *ptr;
 	char	solx86_vtname[20];
+	int psize;
+	int mlen;
 
 	/*
      	 * Solaris 2.1 x86 SVR4 (10/27/93)
@@ -260,7 +262,10 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 			solx86_vtname, strerror(errno));
         	return(-1);
 	}	
-	ptr = mmap((caddr_t)0, 0x8000, PROT_READ, MAP_SHARED, fd, (off_t)Base);
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	/* Base is assumed to be page-aligned. */
+	ptr = mmap((caddr_t)0, mlen, PROT_READ, MAP_SHARED, fd, (off_t)Base);
 	if ((int)ptr == MAP_FAILED)
 	{
 		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed\n",
@@ -269,7 +274,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		return(-1);
 	}
 	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
-	(void)munmap((caddr_t)ptr, 0x8000);
+	(void)munmap((caddr_t)ptr, mlen);
 	(void)close(fd);
 	return(Len);
 }

@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.15 1999/07/04 06:38:24 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.16 1999/07/10 12:17:12 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -29,6 +29,7 @@
 #define X_XDGACloseFramebuffer		23
 #define X_XDGASetClientVersion		24
 #define X_XDGAChangePixmapMode		25
+#define X_XDGACreateColormap		26
 
 
 #define XDGAConcurrentAcces	0x00000001
@@ -74,6 +75,7 @@ typedef struct {
    unsigned long red_mask;
    unsigned long green_mask;
    unsigned long blue_mask;
+   short visualClass;
    int viewportWidth;
    int viewportHeight;
    int xViewportStep;	/* viewport position granularity */
@@ -181,6 +183,13 @@ void XDGAInstallColormap(
     Display	*dpy,
     int		screen,
     Colormap	cmap
+);
+
+Colormap XDGACreateColormap(
+    Display	*dpy,
+    int 	screen,
+    XDGADevice  *device,
+    int 	alloc
 );
 
 void XDGASelectInput(

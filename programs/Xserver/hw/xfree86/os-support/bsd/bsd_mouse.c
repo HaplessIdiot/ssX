@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.7 1999/05/23 05:02:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.8 1999/05/29 14:41:51 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -6,9 +6,9 @@
 
 #include "X.h"
 #include "xf86.h"
+#include "xf86_OSlib.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"
-#include "xf86_OSlib.h"
 #include "xisb.h"
 #include "mipointer.h"
 #ifdef WSCONS_SUPPORT

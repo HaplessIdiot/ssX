@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.20 1999/07/04 06:38:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.21 1999/07/10 12:17:22 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -45,6 +45,12 @@ int *XDGAEventBase = &DGAEventBase;
 	((DGAScreenPtr)((pScreen)->devPrivates[DGAScreenIndex].ptr))
 
 
+typedef struct _FakedVisualList{
+   VisualPtr pVisual;
+   struct _FakedVisualList *next;
+} FakedVisualList;
+
+
 typedef struct {
    ScrnInfoPtr 		pScrn;
    int			numModes;
@@ -55,6 +61,7 @@ typedef struct {
    int			input;
    ClientPtr		client;
    int			pixmapMode;
+   FakedVisualList	*fakedVisuals;
 } DGAScreenRec, *DGAScreenPtr;
 
 
@@ -92,6 +99,7 @@ DGAInit(
     pScreenPriv->funcs = funcs;
     pScreenPriv->input = 0;
     pScreenPriv->client = NULL;
+    pScreenPriv->fakedVisuals = NULL;
     
     for(i = 0; i < num; i++)
 	modes[i].num = i + 1;
@@ -157,6 +165,18 @@ DGASetDGAMode(
 	    pScrn->vtSema = TRUE;
 	    (*pScreenPriv->funcs->SetMode)(pScreenPriv->pScrn, NULL);
 	    (*pScrn->SaveRestoreImage)(index, RestoreImage);
+
+	   if(pScreenPriv->fakedVisuals) {
+		FakedVisualList *tmp, *vis = pScreenPriv->fakedVisuals;
+		while(vis) {
+		   tmp = vis;
+		   vis = vis->next;
+		   xfree(tmp->pVisual);
+		   xfree(vis);
+		}
+		pScreenPriv->fakedVisuals = NULL;
+	    }
+
 	}
 	return Success;
    }
@@ -212,6 +232,17 @@ DGASetDGAMode(
    devRet->pPix = device->pPix = pPix;
    pScreenPriv->current = device;
    pScreenPriv->pixmapMode = FALSE;
+
+   if(pScreenPriv->fakedVisuals) {
+	FakedVisualList *tmp, *vis = pScreenPriv->fakedVisuals;
+	while(vis) {
+	   tmp = vis;
+	   vis = vis->next;
+	   xfree(tmp->pVisual);
+	   xfree(vis);
+	}
+	pScreenPriv->fakedVisuals = NULL;
+   }
 
    return Success;
 }
@@ -393,6 +424,84 @@ DGASetViewport(
    return Success;
 }
 
+
+static int
+BitsClear(CARD32 data)
+{
+   int bits = 0;
+   CARD32 mask;
+
+   for(mask = 1; mask; mask <<= 1) {
+	if(!(data & mask)) bits++;
+	else break;
+   }
+
+   return bits;
+}
+
+int
+DGACreateColormap(int index, ClientPtr client, int id, int mode, int alloc)
+{
+   ScreenPtr pScreen = screenInfo.screens[index];
+   DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+   FakedVisualList *fvlp;
+   VisualPtr pVisual;
+   DGAModePtr pMode;
+   ColormapPtr pmap;
+
+   if(!mode || (mode > pScreenPriv->numModes))
+	return BadValue;
+
+   pMode = &(pScreenPriv->modes[mode - 1]);
+
+   if(!(pVisual = xalloc(sizeof(VisualRec))))
+	return BadAlloc;
+
+   pVisual->vid = FakeClientID(0);
+   pVisual->class = pMode->visualClass;
+   pVisual->nplanes = pMode->depth;
+
+   switch (pVisual->class) {
+   case PseudoColor:
+   case GrayScale:
+   case StaticGray:
+	pVisual->bitsPerRGBValue = 8; /* not quite */
+	pVisual->ColormapEntries = 1 << pMode->depth;
+	pVisual->redMask     = 0;
+	pVisual->greenMask   = 0;
+	pVisual->blueMask    = 0;
+	pVisual->offsetRed   = 0;
+	pVisual->offsetGreen = 0;
+	pVisual->offsetBlue  = 0;
+	break;
+   case DirectColor:
+   case TrueColor:
+	pVisual->ColormapEntries = 1 << pVisual->bitsPerRGBValue;
+                /* fall through */
+   case StaticColor:
+	pVisual->bitsPerRGBValue = (pMode->depth + 2) / 3;
+	pVisual->redMask = pMode->red_mask;
+	pVisual->greenMask = pMode->green_mask;
+	pVisual->blueMask = pMode->blue_mask;
+	pVisual->offsetRed   = BitsClear(pVisual->redMask);
+	pVisual->offsetGreen = BitsClear(pVisual->greenMask);
+	pVisual->offsetBlue  = BitsClear(pVisual->blueMask);
+   }
+
+   if(!(fvlp = xalloc(sizeof(FakedVisualList)))) {
+	xfree(pVisual);
+	return BadAlloc;
+   }
+
+   fvlp->pVisual = pVisual;
+   fvlp->next = pScreenPriv->fakedVisuals;
+   pScreenPriv->fakedVisuals = fvlp;
+
+   LEGAL_NEW_RESOURCE(id, client);
+
+   return CreateColormap(id, pScreen, pVisual, &pmap, alloc, client->index);
+}
+
 /*  Called by the extension to install a colormap on DGA active screens */
 
 void
@@ -534,6 +643,7 @@ DGACopyModeInfo(
    xmode->red_mask = mode->red_mask;
    xmode->green_mask = mode->green_mask;
    xmode->blue_mask = mode->blue_mask;
+   xmode->visualClass = mode->visualClass;
    xmode->viewportWidth = mode->viewportWidth;
    xmode->viewportHeight = mode->viewportHeight;
    xmode->xViewportStep = mode->xViewportStep;

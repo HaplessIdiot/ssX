@@ -1,4 +1,10 @@
 XFree86 3.9Py (18 July 1999)
+2904. Add a visualClass to the XDGAMode request and a XDGACreateColormap
+      request to DGA 2.0 so Colormaps can be created for XDGADevices
+      without needing a corresponding visual (#3032, Mark Vojkovich).
+2903. Update the mmap versions of xf86ReadBIOS() to use a map size that
+      fits the requested BIOS offset and length rather than using a fixed
+      map size (David Dawes).
 2902. Xterm patch #112 (#3031, Thomas Dickey).
 2901. Change the colormap layer's LoadPalette function to take a Visual as
       an argument rather than just the Visual class (#3030, Mark Vojkovich).
@@ -8467,4 +8473,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.804 1999/07/17 09:06:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.805 1999/07/18 03:26:43 dawes Exp $

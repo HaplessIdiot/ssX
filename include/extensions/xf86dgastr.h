@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.9 1999/07/04 06:38:24 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.10 1999/07/10 12:17:12 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -103,6 +103,8 @@ typedef struct {
    CARD32	red_mask B32;
    CARD32	green_mask B32;
    CARD32	blue_mask B32;
+   CARD16	visual_class B16;
+   CARD16	pad1 B16;
    CARD16	viewport_width B16;
    CARD16	viewport_height B16;
    CARD16	viewport_xstep B16;
@@ -113,7 +115,7 @@ typedef struct {
    CARD32	reserved1 B32;
    CARD32	reserved2 B32;
 } xXDGAModeInfo;
-#define sz_xXDGAModeInfo 68
+#define sz_xXDGAModeInfo 72
 
 typedef struct _XDGAOpenFramebuffer {
     CARD8	reqType;
@@ -301,6 +303,18 @@ typedef struct {
 } xXDGAChangePixmapModeReply;
 #define sz_xXDGAChangePixmapModeReply	32
 
+typedef struct _XDGACreateColormap {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+    Colormap	id B32;
+    CARD32	mode B32;
+    CARD8	alloc;
+    CARD8	pad1;
+    CARD16	pad2;
+} xXDGACreateColormapReq;
+#define sz_xXDGACreateColormapReq	20
 
 
 typedef struct {

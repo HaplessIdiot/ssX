@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.7 1999/05/03 04:35:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.8 1999/07/06 14:51:29 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -407,5 +407,12 @@ memType
 getValidBIOSBase(PCITAG tag, int num)
 {
     return 0;
+}
+
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+	     int Len)
+{
+    return -1;
 }
 

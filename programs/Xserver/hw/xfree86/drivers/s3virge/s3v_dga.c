@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dga.c,v 1.2 1999/06/27 16:17:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dga.c,v 1.3 1999/07/10 12:17:33 dawes Exp $ */
 
 /*
  * file: s3v_dga.c
@@ -105,6 +105,7 @@ SECOND_PASS:
 	currentMode->red_mask = pScrn->mask.red;
 	currentMode->green_mask = pScrn->mask.green;
 	currentMode->blue_mask = pScrn->mask.blue;
+	currentMode->visualClass = (Bpp == 1) ? PseudoColor : TrueColor;
 	currentMode->viewportWidth = pMode->HDisplay;
 	currentMode->viewportHeight = pMode->VDisplay;
 	/* currentMode->xViewportStep = (3 - ps3v->BppShift); */

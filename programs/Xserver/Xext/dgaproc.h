@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.14 1999/07/04 06:38:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.15 1999/07/10 12:17:14 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -38,6 +38,7 @@ typedef struct {
    unsigned long red_mask;
    unsigned long green_mask;
    unsigned long blue_mask;
+   short visualClass;
    int viewportWidth;
    int viewportHeight;
    int xViewportStep;	/* viewport position granularity */
@@ -121,6 +122,8 @@ Bool DGAOpenFramebuffer(int index, char **name, unsigned char **mem,
 			int *size, int *offset, int *flags);
 void DGACloseFramebuffer(int index);
 Bool DGAChangePixmapMode(int index, int *x, int *y, int mode);
+int DGACreateColormap(int index, ClientPtr client, int id, int mode, 
+			int alloc);
 
 extern unsigned char DGAReqCode;
 extern int DGAErrorBase;

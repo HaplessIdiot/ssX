@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.9 1999/07/04 06:38:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.10 1999/07/10 12:17:14 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -48,6 +48,7 @@ static DISPATCH_PROC(ProcXDGAGetViewportStatus);
 static DISPATCH_PROC(ProcXDGAFlush);
 static DISPATCH_PROC(ProcXDGASetClientVersion);
 static DISPATCH_PROC(ProcXDGAChangePixmapMode);
+static DISPATCH_PROC(ProcXDGACreateColormap);
 
 
 extern DISPATCH_PROC(ProcXF86DGADispatch);
@@ -252,6 +253,7 @@ ProcXDGAQueryModes(ClientPtr client)
 	info.red_mask = mode[i].red_mask;
 	info.green_mask = mode[i].green_mask;
 	info.blue_mask = mode[i].blue_mask;
+	info.visual_class = mode[i].visualClass;
 	info.viewport_width = mode[i].viewportWidth;
 	info.viewport_height = mode[i].viewportHeight;
 	info.viewport_xstep = mode[i].xViewportStep;
@@ -337,6 +339,7 @@ ProcXDGASetMode(ClientPtr client)
     info.red_mask = mode.red_mask;
     info.green_mask = mode.green_mask;
     info.blue_mask = mode.blue_mask;
+    info.visual_class = mode.visualClass;
     info.viewport_width = mode.viewportWidth;
     info.viewport_height = mode.viewportHeight;
     info.viewport_xstep = mode.xViewportStep;
@@ -583,6 +586,32 @@ ProcXDGAChangePixmapMode(ClientPtr client)
 
 
 static int
+ProcXDGACreateColormap(ClientPtr client)
+{
+    REQUEST(xXDGACreateColormapReq);
+    int result;
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGACreateColormapReq);
+
+    if(!stuff->mode)
+	return BadValue;
+   
+    result = DGACreateColormap(stuff->screen, client, stuff->id, 
+				stuff->mode, stuff->alloc);
+    if(result != Success)
+	return result;
+
+    return (client->noClientException);
+}
+
+
+static int
 SProcXDGADispatch (ClientPtr client)
 {
    return DGAErrorBase + XF86DGAClientNotLocal;
@@ -634,6 +663,8 @@ ProcXDGADispatch (ClientPtr client)
 	return ProcXDGASetClientVersion(client);
     case X_XDGAChangePixmapMode:
 	return ProcXDGAChangePixmapMode(client);
+    case X_XDGACreateColormap:
+	return ProcXDGACreateColormap(client);
     default:
 	return BadRequest;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.2 1998/09/19 12:15:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.3 1998/09/27 04:43:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -29,8 +29,6 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-#define BIOS_SIZE (64 * 1024)
-
 /*
  * Read BIOS via mmap()ing DEV_MEM
  */
@@ -42,6 +40,8 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 {
 	int fd;
 	unsigned char *ptr;
+	int psize;
+	int mlen;
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
 	{
@@ -49,7 +49,10 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 			DEV_MEM, strerror(errno));
 		return(-1);
 	}
-	ptr = (unsigned char *)mmap((caddr_t)0, BIOS_SIZE, PROT_READ,
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	/* Base is assumed to be page-aligned. */
+	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
 					MAP_SHARED, fd, (off_t)Base);
 	if ((int)ptr == -1)
 	{
@@ -63,7 +66,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		Base, ptr[0] | (ptr[1] << 8));
 #endif
 	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
-	(void)munmap((caddr_t)ptr, BIOS_SIZE);
+	(void)munmap((caddr_t)ptr, mlen);
 	(void)close(fd);
 	return(Len);
 }
@@ -107,6 +110,8 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 {
 	caddr_t base;
  	int fd;
+	int psize;
+	int mlen;
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
 	{
@@ -115,7 +120,10 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		return(-1);
 	}
 
-	base = mmap((caddr_t)0, JENSEN_SHIFT(BIOS_SIZE), PROT_READ,
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	/* Base is assumed to be page-aligned. */
+	base = mmap((caddr_t)0, JENSEN_SHIFT(mlen), PROT_READ,
 		    MAP_SHARED, fd, (off_t)(JENSEN_SHIFT(Base) + BUS_BASE));
 
 	if (base == (caddr_t)-1UL)
@@ -127,7 +135,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 
 	xf86SlowBCopyFromBus(base+JENSEN_SHIFT(Offset), Buf, Len);
 
-	munmap((caddr_t)JENSEN_SHIFT(base), JENSEN_SHIFT(BIOS_SIZE));
+	munmap((caddr_t)JENSEN_SHIFT(base), JENSEN_SHIFT(mlen));
 	close(fd);
 	return(Len);
 }

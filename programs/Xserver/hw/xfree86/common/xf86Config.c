@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.189 1999/07/17 06:30:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.190 1999/07/18 03:26:48 dawes Exp $ */
 
 
 /*
@@ -561,7 +561,7 @@ detectPC98()
 #ifdef SUPPORT_PC98
     unsigned char buf[2];
 
-    if (xf86ReadBIOS(0xf0000, 0x8e80, buf, 2) != 2)
+    if (xf86ReadBIOS(0xf8000, 0xe80, buf, 2) != 2)
 	return FALSE;
     if ((buf[0] == 0x98) && (buf[1] == 0x21))
 	return TRUE;
