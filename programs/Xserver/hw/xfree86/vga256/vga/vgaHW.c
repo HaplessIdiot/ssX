@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.66 1998/06/27 12:54:58 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.67 1998/06/28 03:53:16 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -60,9 +60,7 @@
  * if this is built as a module, it shouldn't call libc functions.
  * The following macros should wrap all calls 
  */
-#if defined(XFree86LOADER) && !defined(NOXF86DEFS)
 #include "xf86_ansic.h"
-#endif
 #include "vga.h"
 
 #ifdef PC98_EGC
