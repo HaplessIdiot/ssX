@@ -1,5 +1,5 @@
 // -*- indent-tabs-mode: nil -*-
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/geometry/chicony,v 1.1 2003/05/29 12:41:57 pascal Exp $
 
 // Created by Alexander Pohoyda <alexander.pohoyda@gmx.net>
 // Geometry specification for Chicony KB-9820 keyboard.
@@ -47,6 +47,7 @@ default xkb_geometry "us" {
         shape = "MOUS2";
         left = 318;
         top = 33;
+        color = "black";
     };
     
     solid "Button1" {
@@ -67,6 +68,7 @@ default xkb_geometry "us" {
         shape = "MOUS";
         left = 8;
         top = 30;
+        color = "black";
     };
 
     shape.cornerRadius = 1;

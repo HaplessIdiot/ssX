@@ -5,5 +5,5 @@
 
 default partial
 xkb_symbols "default" {
-    include "hu(uni_101_qwerty_comma)"
+    include "hu(101_qwerty_comma)"
 };

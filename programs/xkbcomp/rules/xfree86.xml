@@ -1355,73 +1355,9 @@
         <variant>
           <configItem>
             <name>Sundeadkeys</name>
-            <description>hu(Sundeadkeys) -  No decription</description>
-            <description xml:lang="bg">hu(Sundeadkeys) - без описание</description>
-            <description xml:lang="ru">Sundeadkeys</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_101_qwerty_comma</name>
-            <description>hu(l2_101_qwerty_comma) -  No decription</description>
-            <description xml:lang="bg">hu(l2_101_qwerty_comma) - без описание</description>
-            <description xml:lang="ru">Latin2 pc101, qwerty, запятая</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_101_qwerty_dot</name>
-            <description>hu(l2_101_qwerty_dot) -  No decription</description>
-            <description xml:lang="bg">hu(l2_101_qwerty_dot) - без описание</description>
-            <description xml:lang="ru">Latin2 pc101, qwerty, точка</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_101_qwertz_comma</name>
-            <description>hu(l2_101_qwertz_comma) -  No decription</description>
-            <description xml:lang="bg">hu(l2_101_qwertz_comma) - без описание</description>
-            <description xml:lang="ru">Latin2 pc101, qwertz, запятая</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_101_qwertz_dot</name>
-            <description>hu(l2_101_qwertz_dot) -  No decription</description>
-            <description xml:lang="bg">hu(l2_101_qwertz_dot) - без описание</description>
-            <description xml:lang="ru">Latin2 pc101, qwertz, точка</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_102_qwerty_comma</name>
-            <description>hu(l2_102_qwerty_comma) -  No decription</description>
-            <description xml:lang="bg">hu(l2_102_qwerty_comma) - без описание</description>
-            <description xml:lang="ru">Latin2 pc102, qwerty, запятая</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_102_qwerty_dot</name>
-            <description>hu(l2_102_qwerty_dot) -  No decription</description>
-            <description xml:lang="bg">hu(l2_102_qwerty_dot) - без описание</description>
-            <description xml:lang="ru">Latin2 pc102, qwerty, точка</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_102_qwertz_comma</name>
-            <description>hu(l2_102_qwertz_comma) -  No decription</description>
-            <description xml:lang="bg">hu(l2_102_qwertz_comma) - без описание</description>
-            <description xml:lang="ru">Latin2 pc102, qwertz, запятая</description>
-          </configItem>
-        </variant>
-        <variant>
-          <configItem>
-            <name>l2_102_qwertz_dot</name>
-            <description>hu(l2_102_qwertz_dot) -  No decription</description>
-            <description xml:lang="bg">hu(l2_102_qwertz_dot) - без описание</description>
-            <description xml:lang="ru">Latin2 pc102, qwertz, точка</description>
+            <description>Sun deadkeys</description>
+            <description xml:lang="bg">Sun deadkeys</description>
+            <description xml:lang="ru">Sun deadkeys</description>
           </configItem>
         </variant>
         <variant>
@@ -1435,73 +1371,64 @@
         <variant>
           <configItem>
             <name>standard</name>
-            <description>hu(standard) -  No decription</description>
-            <description xml:lang="bg">hu(standard) - без описание</description>
+            <description>Official standard (QWERTZ, 102 keys)</description>
             <description xml:lang="ru">стандартная</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_101_qwerty_comma</name>
-            <description>hu(uni_101_qwerty_comma) -  No decription</description>
-            <description xml:lang="bg">hu(uni_101_qwerty_comma) - без описание</description>
-            <description xml:lang="ru">Unicode pc101, qwerty, запятая</description>
+            <name>101_qwerty_comma</name>
+            <description>QWERTY, 101 keys, comma on numpad</description>
+            <description xml:lang="ru">pc101, qwerty, запятая</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_101_qwerty_dot</name>
-            <description>hu(uni_101_qwerty_dot) -  No decription</description>
-            <description xml:lang="bg">hu(uni_101_qwerty_dot) - без описание</description>
-            <description xml:lang="ru">Unicode pc101, qwerty, точка</description>
+            <name>101_qwerty_dot</name>
+            <description>QWERTY, 101 keys, dot on numpad</description>
+            <description xml:lang="ru">pc101, qwerty, точка</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_101_qwertz_comma</name>
-            <description>hu(uni_101_qwertz_comma) -  No decription</description>
-            <description xml:lang="bg">hu(uni_101_qwertz_comma) - без описание</description>
-            <description xml:lang="ru">Unicode pc101, qwertz, запятая</description>
+            <name>101_qwertz_comma</name>
+            <description>QWERTZ, 101 keys, comma on numpad</description>
+            <description xml:lang="ru">pc101, qwertz, запятая</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_101_qwertz_dot</name>
-            <description>hu(uni_101_qwertz_dot) -  No decription</description>
-            <description xml:lang="bg">hu(uni_101_qwertz_dot) - без описание</description>
-            <description xml:lang="ru">Unicode pc101, qwertz, точка</description>
+            <name>101_qwertz_dot</name>
+            <description>QWERTZ, 101 keys, dot on numpad</description>
+            <description xml:lang="ru">pc101, qwertz, точка</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_102_qwerty_comma</name>
-            <description>hu(uni_102_qwerty_comma) -  No decription</description>
-            <description xml:lang="bg">hu(uni_102_qwerty_comma) - без описание</description>
-            <description xml:lang="ru">Unicode pc102, qwerty, запятая</description>
+            <name>102_qwerty_comma</name>
+            <description>QWERTY, 102 keys, comma on numpad</description>
+            <description xml:lang="ru">pc102, qwerty, запятая</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_102_qwerty_dot</name>
-            <description>hu(uni_102_qwerty_dot) -  No decription</description>
-            <description xml:lang="bg">hu(uni_102_qwerty_dot) - без описание</description>
-            <description xml:lang="ru">Unicode pc102, qwerty, точка</description>
+            <name>102_qwerty_dot</name>
+            <description>QWERTY, 102 keys, dot on numpad</description>
+            <description xml:lang="ru">pc102, qwerty, точка</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_102_qwertz_comma</name>
-            <description>hu(uni_102_qwertz_comma) -  No decription</description>
-            <description xml:lang="bg">hu(uni_102_qwertz_comma) - без описание</description>
-            <description xml:lang="ru">Unicode pc102, qwertz, запятая</description>
+            <name>102_qwertz_comma</name>
+            <description>QWERTZ, 102 keys, comma on numpad</description>
+            <description xml:lang="ru">pc102, qwertz, запятая</description>
           </configItem>
         </variant>
         <variant>
           <configItem>
-            <name>uni_102_qwertz_dot</name>
-            <description>hu(uni_102_qwertz_dot) -  No decription</description>
-            <description xml:lang="bg">hu(uni_102_qwertz_dot) - без описание</description>
-            <description xml:lang="ru">Unicode pc102, qwertz, точка</description>
+            <name>102_qwertz_dot</name>
+            <description>QWERTZ, 102 keys, dot on numpad</description>
+            <description xml:lang="ru">pc102, qwertz, точка</description>
           </configItem>
         </variant>
       </variantList>
