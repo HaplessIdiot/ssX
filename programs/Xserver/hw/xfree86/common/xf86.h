@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.175tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.176 2004/12/29 21:22:54 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
@@ -390,7 +390,7 @@ void xf86DeleteModuleInfo(int idx);
 #endif
 
 #undef _printf_attribute
-#ifdef printf_is_xf86printf
+#if defined(printf_is_xf86printf) && !defined(printf)
 #define printf xf86printf
 #endif
 

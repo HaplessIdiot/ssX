@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.59 2004/12/29 21:22:55 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -598,7 +598,7 @@ extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif
 
 #undef _printf_attribute
-#ifdef printf_is_xf86printf
+#if defined(printf_is_xf86printf) && !defined(printf)
 #define printf xf86printf
 #endif
 
