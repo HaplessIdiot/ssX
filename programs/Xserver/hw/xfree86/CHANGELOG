@@ -1,4 +1,6 @@
 XFree86 4.0b (?? April 2000)
+ 133. Fix bug where the cursor is not put back after a failed DGA mode
+      initialization attempt (Mark Vojkovich).
  132. Add a missing symbol "AllocateColormapPrivateIndex" (Mark Vojkovich). 
  131. Remove Intel 440BX-specific resources from os-support layer
       (Marc La France).
