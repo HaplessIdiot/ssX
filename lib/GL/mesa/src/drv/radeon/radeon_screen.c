@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.5 2002/10/30 12:51:55 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.6tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -128,7 +128,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
       drmRadeonGetParam gp;
 
       gp.param = RADEON_PARAM_AGP_BUFFER_OFFSET;
-      gp.value = &radeonScreen->agp_buffer_offset;
+      gp.value = (int *) &radeonScreen->agp_buffer_offset;
 
       ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				 &gp, sizeof(gp));
@@ -140,7 +140,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 
       if (sPriv->drmMinor >= 6) {
 	 gp.param = RADEON_PARAM_IRQ_NR;
-	 gp.value = &radeonScreen->irq;
+	 gp.value = (int *) &radeonScreen->irq;
 
 	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				    &gp, sizeof(gp));

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.6 2001/04/01 14:00:23 tsi Exp $ */
+/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.7tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -340,5 +340,8 @@ main(int argc, char *argv[])
     }
 
     Exit (status < 0 ? 1 : 0);
+
+    /* Muffle gcc */
+    return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.7 2002/10/30 12:51:38 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.8tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -80,7 +80,7 @@ r128CreateScreen( __DRIscreenPrivate *sPriv )
       int ret;
 
       gp.param = R128_PARAM_IRQ_NR;
-      gp.value = &r128Screen->irq;
+      gp.value = (int *) &r128Screen->irq;
 
       ret = drmCommandWriteRead( sPriv->fd, DRM_R128_GETPARAM,
 				    &gp, sizeof(gp));

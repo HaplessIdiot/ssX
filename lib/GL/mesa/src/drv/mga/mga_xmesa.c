@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.17 2002/10/30 12:51:35 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.18tsi Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -126,7 +126,7 @@ mgaInitDriver(__DRIscreenPrivate *sPriv)
       drmMGAGetParam gp;
 
       gp.param = MGA_PARAM_IRQ_NR;
-      gp.value = &mgaScreen->irq;
+      gp.value = (int *) &mgaScreen->irq;
 
       ret = drmCommandWriteRead( sPriv->fd, DRM_MGA_GETPARAM,
 				    &gp, sizeof(gp));

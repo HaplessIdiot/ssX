@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.16 2001/12/14 19:55:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.17tsi Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -997,7 +997,7 @@ HandleToolkitErrors(String name, String type, String class, String msg,
 	XmuSnprintf(buf, sizeof(buf), msg, params[0]);
     else if (streq(name, "conversionFailed") || streq(name, "conversionError"))
     {
-	if (streq(info->event->value, XtRString))
+	if (streq((String)info->event->value, XtRString))
 	    XmuSnprintf(buf, sizeof(buf),
 			"Could not convert the string '%s' for the `%s' "
 			"resource.", info->event->value, info->event->name);

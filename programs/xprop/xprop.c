@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.12tsi Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -1384,8 +1384,8 @@ Set_Property (Display *dpy, Window w, const char *propname, const char *value)
 	static unsigned short data16[MAXELEMENTS];
 	static unsigned long data32[MAXELEMENTS];
 	unsigned long intvalue;
-	unsigned char * value2 = strdup(value);
-	unsigned char * tmp = strtok(value2,",");
+	char * value2 = strdup(value);
+	char * tmp = strtok(value2,",");
 	nelements = 1;
 	intvalue = strtoul(tmp, NULL, 0);
 	switch(size) {
@@ -1424,8 +1424,8 @@ Set_Property (Display *dpy, Window w, const char *propname, const char *value)
 	static unsigned short data16[MAXELEMENTS];
 	static unsigned long data32[MAXELEMENTS];
 	unsigned long intvalue;
-	unsigned char * value2 = strdup(value);
-	unsigned char * tmp = strtok(value2,",");
+	char * value2 = strdup(value);
+	char * tmp = strtok(value2,",");
 	nelements = 1;
 	intvalue = strtoul(tmp, NULL, 0);
 	switch(size) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_vb.c,v 1.2 2002/02/26 23:37:34 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_vb.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -84,7 +84,7 @@ static struct {
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() GAMMA_CONTEXT(ctx)->vertex_format
-#define GET_VERTEX_STORE() GAMMA_CONTEXT(ctx)->verts
+#define GET_VERTEX_STORE() ((GLubyte *)GAMMA_CONTEXT(ctx)->verts)
 #define GET_VERTEX_STRIDE_SHIFT() GAMMA_CONTEXT(ctx)->vertex_stride_shift
 #define INVALIDATE_STORED_VERTICES()
 #define GET_UBYTE_COLOR_STORE() &GAMMA_CONTEXT(ctx)->UbyteColor

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.16 2001/08/13 21:46:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.19tsi Exp $ */
 
 #ifndef _FT_H_
 #define _FT_H_
@@ -79,7 +79,6 @@ unsigned FTRemap(FT_Face face, FTMappingPtr, unsigned code);
 
 /* fttools.c */
 
-int FTu2a(int, char*, char*, int, int);
 int FTtoXReturnCode(int);
 int FTGetEnglishName(FT_Face, int, char *, int);
 int FTcheckForTTCName(char*, char**, int*);
