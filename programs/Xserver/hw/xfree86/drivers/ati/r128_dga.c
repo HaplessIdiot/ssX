@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.5 2001/05/25 02:44:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.6 2001/11/06 15:53:10 alanh Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
@@ -87,7 +87,7 @@ SECOND_PASS:
 	  if(currentMode->flags &
 	     (DGA_PIXMAP_AVAILABLE | DGA_FILL_RECT |
 	      DGA_BLIT_RECT | DGA_BLIT_RECT_TRANS))
-	     currentMode->flags &= -DGA_CONCURRENT_ACCESS;
+	     currentMode->flags &= ~DGA_CONCURRENT_ACCESS;
 	}
 
 	if(pMode->Flags & V_DBLSCAN)

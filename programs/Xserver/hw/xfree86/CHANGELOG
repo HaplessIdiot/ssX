@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 136. Fix typo in Rage128 DGA driver (#5187. Charles M. Hannum).
  135. Fix enabling of DRI when XvMC is disabled (#5208, Matthew Sottek, Intel).
  134. Fix HW Cursor handling in vmware driver (#5193, Jeremy, VMWare).
  133. YUV handling updates for v4l module. Can now handle multiple formats
@@ -14795,4 +14796,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2214 2002/05/14 20:24:00 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2215 2002/05/14 20:28:14 alanh Exp $
