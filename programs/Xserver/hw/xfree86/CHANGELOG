@@ -1,314 +1,339 @@
 XFree86 3.9Pn (16 May 1999)
-2833. Xterm patch #102 (#2778, Thomas Dickey).
-2832. Fix some spelling errors in Xlib.h (#2775, Itai Nahshon).
-2831. Add auto-detection of Debian to imake (#2774, Sven Luther).
-2830. SiS driver updates, including turning on solid line acceleration,
+2647. CID updates (third submission) (#2769, Ivan Bach, SGI).
+2646. Kludge to allow a server with the glint driver to link without XInput
+      (#2788, Marc La France).
+2645. Remove unused dacSpeeds field from the ScrnInfoRec (#2788,
+      Marc La France).
+2644. Add an option to the colourmap code to allow a driver's LoadPalette()
+      to be called even when switched out (#2788, Marc La France).
+2643. Add more reasons for rejecting a mode (#2788, Marc La France).
+2642. Factor in the log verbosity when reporting the verbosity to a driver
+      (#2788, Marc La France).
+2641. Allow xf86GetClocks() to be called with NULL ProtectRegs() and
+      BlankScreen() functions (#2788, Marc La France).
+2640. When deleting a screen, also free its mode lists and options (#2788,
+      Marc La France).
+2639. Allow a driver to determine if -probeonly was specified (#2788,
+      Marc La France).
+2638. Fix a large jump in changelog numbering that happened a little while
+      ago (#2788, Marc La France).
+2637. Various warning and include fixes (#2788, Marc La France).
+2636. Xterm patch #103 (#2786, Thomas Dickey).
+2635. SiS driver updates, including fixing the SetMClk option, change solid
+      lines from bresenham to two-point, correct a clippling bug, and change
+      the verbose level of some messages (#2784, 2785, Juanjo Santamarta).
+2634. Fix a server loop that can happen when VT switching while a grab is
+      in progress (#2782, Edward Wang).
+2633. Xterm patch #102 (#2778, Thomas Dickey).
+2632. Fix some spelling errors in Xlib.h (#2775, Itai Nahshon).
+2631. Add auto-detection of Debian to imake (#2774, Sven Luther).
+2630. SiS driver updates, including turning on solid line acceleration,
       remove GXCOPY_ONLY for Mono8x8 patterns, change mmio pointers to
       volatile to avoid optimization problems, use xaarop.h, fix offscreen
       memory init to avoid exceeding the accelerator's address range
       (#2772, Alan Hourihane).
-2829. Fix build problems with the v4l driver on some systems (based on #2771,
+2629. Fix build problems with the v4l driver on some systems (based on #2771,
       Gerd Knorr, and a suggestion from David Woodhouse).
-2828. Xterm patch #101 (#2770, Thomas Dickey).
-2827. Fix some more Xinerarma bugs (#2766, 2768, Mark Vojkovich).
-2830. Fix the use of va_lists in the logging code (David Dawes).
+2628. Xterm patch #101 (#2770, Thomas Dickey).
+2627. Fix some more Xinerarma bugs (#2766, 2768, Mark Vojkovich).
+2630. Fix the use of va_lists in the logging code (David Dawes).
 
 XFree86 3.9Pm (9 May 1999)
-2829. Clean up the handling of Alphas in the s3virge driver (#2767,
+2629. Clean up the handling of Alphas in the s3virge driver (#2767,
       Matt Grossman).
-2828. Fix a problem that can show up when a module is unloaded while another
+2628. Fix a problem that can show up when a module is unloaded while another
       module has unaccounted for references to its symbols (Egbert Eich).
-2827. -
-2826. Finish DGA event support (#2765, Mark Vojkovich).
-2825. Xaw updates (including compatibility updates and a man page), xedit
+2627. -
+2626. Finish DGA event support (#2765, Mark Vojkovich).
+2625. Xaw updates (including compatibility updates and a man page), xedit
       and editres updates (#2764, Paulo Cesar Pereira de Andrade).
-2824. Disable MIT-SHM in Xnest since it doesn't work (#2763, Wolfram Gloger).
-2823. Add hw clipping for the SiS 6326, and solid lines (disabled) (#2760,
+2624. Disable MIT-SHM in Xnest since it doesn't work (#2763, Wolfram Gloger).
+2623. Add hw clipping for the SiS 6326, and solid lines (disabled) (#2760,
       Juanjo Santamarta).
-2822. Cirrus driver updates (#2759, Itai Nahshon).
-2821. Fix complier warnings in lib/X11 (#2758, Matt Grossman).
-2820. Fix complier warnings in lib/Xau (#2757, Matt Grossman).
-2819. Update some of the font encoding translation files (#2756,
+2622. Cirrus driver updates (#2759, Itai Nahshon).
+2621. Fix complier warnings in lib/X11 (#2758, Matt Grossman).
+2620. Fix complier warnings in lib/Xau (#2757, Matt Grossman).
+2619. Update some of the font encoding translation files (#2756,
       Juliusz Chroboczek).
-2818. Fix some bugs in the font encoding support (#2756, Juliusz Chroboczek).
-2817. Update the Arabic24 BDF font to version 1.3 (#2754, Mark Leisher).
-2816. Xterm patch #100 (#2753, Thomas Dickey).
-2815. A start at the unification of input devices (David Dawes).
-2814. Change the MGA ImageWrite code to not use the image transfer window
+2618. Fix some bugs in the font encoding support (#2756, Juliusz Chroboczek).
+2617. Update the Arabic24 BDF font to version 1.3 (#2754, Mark Leisher).
+2616. Xterm patch #100 (#2753, Thomas Dickey).
+2615. A start at the unification of input devices (David Dawes).
+2614. Change the MGA ImageWrite code to not use the image transfer window
       for simple cpu->framebuffer copies (#2738, Mark Vojkovich).
-2813. Add lseek and bsearch to the libc wrappers (and fix fseek), as needed
+2613. Add lseek and bsearch to the libc wrappers (and fix fseek), as needed
       by the CID font code.
-2812. Add missing file for CID fonts support, and fix a few module-related
+2612. Add missing file for CID fonts support, and fix a few module-related
       thing with it.
 
 XFree86 3.9Pl (3 May 1999)
-2811. Fix Xinerama bugs in GetImage and PolyRectangle (#2751, Mark Vojkovich).
-2810. Xterm patch #99 (#2750, Thomas Dickey).
-2809. Disable unneccessary C&T message (#2748, Nozomi Ytow).
-2808. Add some DGA event support (not working yet) (#2747, Mark Vojkovich).
-2807. Xaw and xedit updates including some compatibility updates and
+2611. Fix Xinerama bugs in GetImage and PolyRectangle (#2751, Mark Vojkovich).
+2610. Xterm patch #99 (#2750, Thomas Dickey).
+2609. Disable unneccessary C&T message (#2748, Nozomi Ytow).
+2608. Add some DGA event support (not working yet) (#2747, Mark Vojkovich).
+2607. Xaw and xedit updates including some compatibility updates and
       performance improvements (#2746, Paulo Cesar Pereira de Andrade).
-2806. Modify mkfontdir to create "encodings.dir" files (#2745,
+2606. Modify mkfontdir to create "encodings.dir" files (#2745,
       Juliusz Chroboczek).
-2805. Update the DESIGN doc for the new DGA driver interface (#2744,
+2605. Update the DESIGN doc for the new DGA driver interface (#2744,
       Mark Vojkovich).
-2804. Update the LynxOS vidmem code to use the new shared vidmem.c (#2743,
+2604. Update the LynxOS vidmem code to use the new shared vidmem.c (#2743,
       Thomas Mueller).
-2803. -
-2802. Update TGA docs (#2737, Matt Grossman).
-2801. Fix a zero width problem that shows up in xaaSpans.c when hardware
+2603. -
+2602. Update TGA docs (#2737, Matt Grossman).
+2601. Fix a zero width problem that shows up in xaaSpans.c when hardware
       clipping is enabled (#2736, Alan Hourihane).
-2800. Add support for Adobe CID fonts (#2728, Ivan Bach, SGI).
-2799. Quick fix for cirrus driver problem introduced in 3.9Pk.
-2798. Fix a problem with pcitweak that was preventing it from working with
+2600. Add support for Adobe CID fonts (#2728, Ivan Bach, SGI).
+2599. Quick fix for cirrus driver problem introduced in 3.9Pk.
+2598. Fix a problem with pcitweak that was preventing it from working with
       buses other than bus 0 (David Dawes).
-2797. Update xfontsel to display appropriate glyphs for ISO10646 fonts
+2597. Update xfontsel to display appropriate glyphs for ISO10646 fonts
       (Mark Leisher).
-2796. Add support for building XF86Setup with ncurses on NetBSD and OpenBSD
+2596. Add support for building XF86Setup with ncurses on NetBSD and OpenBSD
       (#2734, Matthieu Herrb).
-2795. Fix vidmem map/unmap mismatch in the TGA driver (#2733, Matt Grossman).
-2794. A minor interlace improvement for the PM2 Xv driver (#2731,
+2595. Fix vidmem map/unmap mismatch in the TGA driver (#2733, Matt Grossman).
+2594. A minor interlace improvement for the PM2 Xv driver (#2731,
       Michael Schimek).
-2793. Fix color expansion bug in the SiS driver (#2729, Juanjo Santamarta).
-2792. Major resync for OS/2 (#2727, 2732, 2735, Holger Veit).
-2791. Xterm patch #98 (#2726, 2730, Thomas Dickey).
-2790. Fix a build V4L driver build problem (#2725, David Woodhouse).
-2789. Xterm patch #97 (#2724, Thomas Dickey).
-2788. Move the VTInit and VTSysReq keywords from the Keyboard section to
+2593. Fix color expansion bug in the SiS driver (#2729, Juanjo Santamarta).
+2592. Major resync for OS/2 (#2727, 2732, 2735, Holger Veit).
+2591. Xterm patch #98 (#2726, 2730, Thomas Dickey).
+2590. Fix a build V4L driver build problem (#2725, David Woodhouse).
+2589. Xterm patch #97 (#2724, Thomas Dickey).
+2588. Move the VTInit and VTSysReq keywords from the Keyboard section to
       the ServerFlags section (as options) (David Dawes).
-2787. Remove the legacy ServerNumLock and "RightAlt", etc special key mapping
+2587. Remove the legacy ServerNumLock and "RightAlt", etc special key mapping
       support (David Dawes).
-2786. Add a new, more complete version of snprintf, vsnprintf for OSs that
+2586. Add a new, more complete version of snprintf, vsnprintf for OSs that
       don't have it.  This one is based on the "SIO" stdio-like package
       (David Dawes).
-2785. Add log file support, including separate log and stderr streams, and
+2585. Add log file support, including separate log and stderr streams, and
       separate verbosity levels for each stream.  Changed the -verbose option
       to accept an optional integer argument that specifies the verbosity
       level, add a -logverbose option and a root-only -logfile option
       (David Dawes).
-2784. Unify the "Overlay" options and "SetMclk" options, and remove the
+2584. Unify the "Overlay" options and "SetMclk" options, and remove the
       SetMClk Device section keyword (David Dawes).
-2783. Add a "frequency" option value type for use with options processed
+2583. Add a "frequency" option value type for use with options processed
       by xf86ProcessOptions().  This value type consists of a floating point
       number optionally followed by "Hz", "kHz" or "MHz" (David Dawes).
 
 XFree86 3.9Pk (25 April 1999)
-2782. Move the SVR4-specific handling of mapping memory areas which have
+2582. Move the SVR4-specific handling of mapping memory areas which have
       read side-effects out of the drivers and into the os-support layer
       (David Dawes).
-2781. Fix unmap parameters for the SiS driver (David Dawes).
-2780. Fix unmap parameters for the glint driver (#2722, Alan Hourihane).
-2779. Fix the depth 24 visual initialisation (mask, offset) in the
+2581. Fix unmap parameters for the SiS driver (David Dawes).
+2580. Fix unmap parameters for the glint driver (#2722, Alan Hourihane).
+2579. Fix the depth 24 visual initialisation (mask, offset) in the
       Rendition driver (#2720, Martin Cerveny).
-2778. Rework the use of inb/outb in the trident driver, replacing it with
+2578. Rework the use of inb/outb in the trident driver, replacing it with
       MMIO.  Also, don't use the 0xBF000 range for the accelerator registers
       (#2719, Alan Hourihane).
-2777. Add a -screen option to the xgamma utility so that the gamma of each
+2577. Add a -screen option to the xgamma utility so that the gamma of each
       screen can be changed in Xinerama mode (#2717, Mark Vojkovich).
-2776. Fix all the known problems with the ispell support in xedit (#2716,
+2576. Fix all the known problems with the ispell support in xedit (#2716,
       Paulo Cesar Pereira de Andrade).
-2775. Xaw updates, including improved speed for FindPiece in AsciiSrc.c,
+2575. Xaw updates, including improved speed for FindPiece in AsciiSrc.c,
       add submenu support to the SimpleMenuWidget, add support for text
       justification to the TextWidget, add an overwrite mode to the
       TextWidget, make the TextWidget understand negative "multiply" values,
       add an indent action to the TextWidget, fix a bug in the undo code
       (#2716, 2721, Paulo Cesar Pereira de Andrade).
-2774. Pcitweak fix for LynxOS, and define NO_MMAP for pre 2.5.0 LynxOS
+2574. Pcitweak fix for LynxOS, and define NO_MMAP for pre 2.5.0 LynxOS
       releases (#2715, Thomas Mueller).
-2773. Fix for cirrus hardware cursor on (big endian) PowerPC platform
+2573. Fix for cirrus hardware cursor on (big endian) PowerPC platform
       (#2715, Thomas Mueller).
-2772. Experimental DDC support for the Matrox "G" series cards (#2713,
+2572. Experimental DDC support for the Matrox "G" series cards (#2713,
       Andrew Aitchison).
-2771. Fix a crash in the XAA fill code that happens when
+2571. Fix a crash in the XAA fill code that happens when
       Mono8x8PatternFillFlags is set only to HARDWARE_PATTERN_PROGRAMMED_BITS,
       which affects the TGA driver (#2712, Matt Grossman).
-2770. Replace the default "fixed" (6x13) font with Markus Kuhn's ISO 10646-1
+2570. Replace the default "fixed" (6x13) font with Markus Kuhn's ISO 10646-1
       version (#2711, Markus Kuhn).
-2769. Import Mark Leisher's ClearlyU BDF fonts (#2707, Mark Leisher).
-2768. Import Mark Leisher's Arabic24 BDF font (#2706, Mark Leisher).
-2767. Initial acceleration for the 24-plane TGA (#2710, Tim Rowley).
-2766. Fix clip bugs in the MGA driver (#2709, Mark Vojkovich).
-2765. Update the `xfsft' TrueType backend to version beta1.1.4.  This includes
+2569. Import Mark Leisher's ClearlyU BDF fonts (#2707, Mark Leisher).
+2568. Import Mark Leisher's Arabic24 BDF font (#2706, Mark Leisher).
+2567. Initial acceleration for the 24-plane TGA (#2710, Tim Rowley).
+2566. Fix clip bugs in the MGA driver (#2709, Mark Vojkovich).
+2565. Update the `xfsft' TrueType backend to version beta1.1.4.  This includes
       updates to the `fontenc' interfaces (#2708, Juliusz Chroboczek).
-2764. Fix some #include problems with the rendition driver (#2704, Dejan Ilic).
-2763. Fix a syntax error in the `ru' symbols file (#2703, Peter Novodvorsky).
-2762. Update the xf86SetGamma and xf86SetDpi helpers to use DDC information
+2564. Fix some #include problems with the rendition driver (#2704, Dejan Ilic).
+2563. Fix a syntax error in the `ru' symbols file (#2703, Peter Novodvorsky).
+2562. Update the xf86SetGamma and xf86SetDpi helpers to use DDC information
       when it is available, and update the MGA driver to make the DDC
       information available earlier in the PreInit phase (#2702,
       Andrew Aitchison).
-2761. Flesh out XF86Setup's config file read and write routines (#2701,
+2561. Flesh out XF86Setup's config file read and write routines (#2701,
       Joe Moss).
-2760. Parser fixes (#2700, Joe Moss).
-2759. Remove the out of date references to the sparse map mem functions from
+2560. Parser fixes (#2700, Joe Moss).
+2559. Remove the out of date references to the sparse map mem functions from
       the loader (#2699, Matt Grossman).
-2758. Color expansion for the SiS driver, and change the "NoTurboQueue" option
+2558. Color expansion for the SiS driver, and change the "NoTurboQueue" option
       to "TurboQueue" (#2696, Juanjo Santamarta).
-2757. Xterm patch #96, including improved logic for bold fonts, improved
+2557. Xterm patch #96, including improved logic for bold fonts, improved
       Unix98 PTY support, and modify initial-erase logic to ensure that the
       ttyModes resource overrides it (#2695, Thomas Dickey).
-2756. Some #include and warning fixes (#2693, Marc La France).
-2755. On an error, tell user to re-run the server >without< -quiet.  This is
+2556. Some #include and warning fixes (#2693, Marc La France).
+2555. On an error, tell user to re-run the server >without< -quiet.  This is
       generalized to allow the production of error messages to specify the
       minimum verbosity to be used before reporting a problem (#2693,
       Marc La France).
-2754. Make -depth 24 produce a more appropriate message when the driver
+2554. Make -depth 24 produce a more appropriate message when the driver
       doesn't support it (#2693, Marc La France).
-2753. Reinstate black & white colour options for 1bpp (#2693, Marc La France).
-2752. Fix a typo in XF86Conf.man (#2691, Itai Nahshon).
-2751. Fix the initialisation of some global flags when the config file has
+2553. Reinstate black & white colour options for 1bpp (#2693, Marc La France).
+2552. Fix a typo in XF86Conf.man (#2691, Itai Nahshon).
+2551. Fix the initialisation of some global flags when the config file has
       no ServerFlags section (David Dawes).
 
 XFree86 3.9Pj (18 April 1999)
-2750. Update SiS docs (#2690, Juanjo Santamarta).
-2749. Glide driver and documentation updates.  Fix the "EXTERN_MODULE"
+2550. Update SiS docs (#2690, Juanjo Santamarta).
+2549. Glide driver and documentation updates.  Fix the "EXTERN_MODULE"
       usage, force the virtual size to be the display size, and add a
       GlideDevice Option to specify one of multiple cards (#2689,
       Henrik Harmsen).
-2748. Resync DPMS timeout code with the 3.3.x code, which fixes some problems
+2548. Resync DPMS timeout code with the 3.3.x code, which fixes some problems
       (#2688, David Wragg).
-2747. Preliminary MTRR support for FreeBSD (3.2 and later) (David Dawes).
-2746. Separate the OS-independent and OS-dependent parts of the MapVidMem
+2547. Preliminary MTRR support for FreeBSD (3.2 and later) (David Dawes).
+2546. Separate the OS-independent and OS-dependent parts of the MapVidMem
       functions, and handle sparse mapping with a flag to MapVidMem instead
       of using a separate function (David Dawes).
-2745. Remove most LinkKit references.
-2744. Disable WC for the framebuffer for the Rendition V1K by default,
+2545. Remove most LinkKit references.
+2544. Disable WC for the framebuffer for the Rendition V1K by default,
       because it appears to be causing lockups (Dejan Ilic).
-2743. Some fixes for the Rendition driver (Dejan Ilic).
-2742. Add HW cursor using the Bt485 ramdac to the DEC TGA driver (#2687,
+2543. Some fixes for the Rendition driver (Dejan Ilic).
+2542. Add HW cursor using the Bt485 ramdac to the DEC TGA driver (#2687,
       Matt Grossman).
-2741. More of the DGA 2.0 extension.  Most of it is there now except for
+2541. More of the DGA 2.0 extension.  Most of it is there now except for
       the events (#2686, Mark Vojkovich).
-2740. Imlement attributes for Audio (mute, volume) and implement
+2540. Imlement attributes for Audio (mute, volume) and implement
       QueryBestSize for the v4l driver (#2685, Gerd Knorr).
-2739. Fix hardware cursor code so that it works with the internal 64 bit
+2539. Fix hardware cursor code so that it works with the internal 64 bit
       scanlines used on Alpha platforms (#2679, Matt Grossman).
-2738. Export new DGA symbols from the loader (#2678, Alan Hourihane).
-2737. Update C&T driver to use independent clocks for FP/dual and CRT modes
+2538. Export new DGA symbols from the loader (#2678, Alan Hourihane).
+2537. Update C&T driver to use independent clocks for FP/dual and CRT modes
       with HiQV chipsets (#2677, Egbert Eich).
-2736. Port of Precision Insight's NeoMagic driver to the new design
+2536. Port of Precision Insight's NeoMagic driver to the new design
       (#2677, Egbert Eich).
-2735. Add a Linux kernel backbone to the Permedia 2 Xv driver (#2661+revisions,
+2535. Add a Linux kernel backbone to the Permedia 2 Xv driver (#2661+revisions,
       Michael Schimek).
-2734. Port of the rendition driver to the new design (#2674, Marc Langenbach).
-2733. Fix for the parser's printDeviceSection() function (#2673, Joe Moss).
-2732. Fix a bug in the handling of ZAxisMapping in the parser (#2672,
+2534. Port of the rendition driver to the new design (#2674, Marc Langenbach).
+2533. Fix for the parser's printDeviceSection() function (#2673, Joe Moss).
+2532. Fix a bug in the handling of ZAxisMapping in the parser (#2672,
       Nicholas Brealey).
-2731. Enable mono 8x8 pattern fills for the SiS driver (#2670,
+2531. Enable mono 8x8 pattern fills for the SiS driver (#2670,
       Juanjo Santamarta).
-2730. Remove references to ru_SU in locale.alias (#2669, Aleksey Nowodworsky).
-2729. Fix a bug in xf86CollectOptions() that could cause a server crash.
-2728. Fix the problem causing the mouse acceleration to be done twice
+2530. Remove references to ru_SU in locale.alias (#2669, Aleksey Nowodworsky).
+2529. Fix a bug in xf86CollectOptions() that could cause a server crash.
+2528. Fix the problem causing the mouse acceleration to be done twice
       (#2671, Frederic Lepied).
-2727. Disable clipping in the trident driver for FillRectSolid because the
+2527. Disable clipping in the trident driver for FillRectSolid because the
       driver gets passed zero values (#2681, Alan Hourihane).
-2726. Add Trident Blade3D support (#2681, Alan Hourihane).
-2725. Add Mono8x8 pattern for the Trident Image series (#2681, Alan Hourihane).
-2724. Fix trident screen glitches when mode switching (#2681, Alan Hourihane).
-2723. Some minor documentation-related cleanups.  Doctools version 1.0.2 is
+2526. Add Trident Blade3D support (#2681, Alan Hourihane).
+2525. Add Mono8x8 pattern for the Trident Image series (#2681, Alan Hourihane).
+2524. Fix trident screen glitches when mode switching (#2681, Alan Hourihane).
+2523. Some minor documentation-related cleanups.  Doctools version 1.0.2 is
       now required to format the XFree86 docs.
 
 XFree86 3.9Pi (11 April 1999)
-2722. Fix a Linux/PPC loader relocation bug, and reenable building the
+2522. Fix a Linux/PPC loader relocation bug, and reenable building the
       loadable server by default for Linux/PPC (#2668, Gerd Knorr).
-2721. Fix a problem with non-terminated strings in the Xv library (#2665,
+2521. Fix a problem with non-terminated strings in the Xv library (#2665,
       Gerd Knorr).
-2720. Update the v4l driver -- fix open/close handling and add support for
+2520. Update the v4l driver -- fix open/close handling and add support for
       the XV_ENCODING attribute (#2665, Gerd Knorr).
-2719. Implement FBDevSaveScreen() (#2664, Gerd Knorr).
-2718. Enable shadowfb by default for the fbdev driver (#2664, Gerd Knorr).
-2717. Fix fbdev option handling (#2664, Gerd Knorr).
-2716. Fbdev documentation updates (#2664, Gerd Knorr).
-2715. Some more progress on the DGA 2.0 API/protocol (#2663, Mark Vojkovich).
-2714. Add ispell support to xedit (#2662, Paulo Cesar Pereira de Andrade).
-2713. Fix -DUSE_XPM handling in Xaw (#2662, Paulo Cesar Pereira de Andrade).
-2712. Some updates to the offscreen memory allocator and the i2c code
+2519. Implement FBDevSaveScreen() (#2664, Gerd Knorr).
+2518. Enable shadowfb by default for the fbdev driver (#2664, Gerd Knorr).
+2517. Fix fbdev option handling (#2664, Gerd Knorr).
+2516. Fbdev documentation updates (#2664, Gerd Knorr).
+2515. Some more progress on the DGA 2.0 API/protocol (#2663, Mark Vojkovich).
+2514. Add ispell support to xedit (#2662, Paulo Cesar Pereira de Andrade).
+2513. Fix -DUSE_XPM handling in Xaw (#2662, Paulo Cesar Pereira de Andrade).
+2512. Some updates to the offscreen memory allocator and the i2c code
       (#2661, Michael Schimek).
 2711. Use the correct version of xf86Xinput.c (the wrong version was
       included in 3.9Ph) (Frederic Lepied).
 2710. Fix a pcitweak build problem on NetBSD (#2659, Isao Ohishi).
-2709. Add acceleration for the 8+16 mode of the C&T driver (#2658,
+2509. Add acceleration for the 8+16 mode of the C&T driver (#2658,
       David Bateman).
-2708. Add compatibility to the client-side of the VidMode extension so that
+2508. Add compatibility to the client-side of the VidMode extension so that
       it will work with 3.3.x servers (#2657, David Bateman).
-2707. Update 'ru' xkb symbols file (#2656, Aleksey Nowodworsky).
-2706. Add Trident 9525 ID to PCI info and trident driver (#2655,
+2507. Update 'ru' xkb symbols file (#2656, Aleksey Nowodworsky).
+2506. Add Trident 9525 ID to PCI info and trident driver (#2655,
       Alan Hourihane).
-2705. Cleanup some compiler warnings in mfb and mi (#2654, Alan Hourihane).
-2704. Added a glide driver.  It currently only works with the loadable
+2505. Cleanup some compiler warnings in mfb and mi (#2654, Alan Hourihane).
+2504. Added a glide driver.  It currently only works with the loadable
       server (read the manpage before trying it) (#2653, Henrik Harmsen).
-2703. Update the Type1/latin2 fonts.* files to disable reencoding of the
+2503. Update the Type1/latin2 fonts.* files to disable reencoding of the
       fonts while keeping the same XLFD names (#2652, Juliusz Chroboczek).
-2702. Fix some pcitweak build problems on Interactive UNIX (#2651,
+2502. Fix some pcitweak build problems on Interactive UNIX (#2651,
       Michael Rohleder).
-2701. Xterm patch #95 (see xterm.log.html for details) (#2649, Thomas Dickey).
-2700. Fix typos in the VidMode extension that causes a protocol problem
+2501. Xterm patch #95 (see xterm.log.html for details) (#2649, Thomas Dickey).
+2500. Fix typos in the VidMode extension that causes a protocol problem
       (#2648, 2657, David Bateman).
-2699. Reorder the visuals to put TrueColor before DirectColor so that broken
+2499. Reorder the visuals to put TrueColor before DirectColor so that broken
       clients (like Wabi) that assume the default visual is the first visual
       will work (2647, David Woodhouse).
-2698. Fix a problem with the ThinkingMousePS/2 protocol handling of left
+2498. Fix a problem with the ThinkingMousePS/2 protocol handling of left
       movement (#2392, Ian Remmler).
-2697. Fix an ISO8859-5 support bug in Xlib (Nikolai Saoukh).
-2696. Rework the GlxInitVisuals hooks with a more general wrapper-based
+2497. Fix an ISO8859-5 support bug in Xlib (Nikolai Saoukh).
+2496. Rework the GlxInitVisuals hooks with a more general wrapper-based
       mechanism (David Dawes).
-2695. Fix a XINERAMA bug in dix/events.c (Dirk Hohndel).
+2495. Fix a XINERAMA bug in dix/events.c (Dirk Hohndel).
 
 XFree86 3.9Ph (5 April 1999)
-2694. Add code to XF86Setup for mode adjustment (like xvidtune), addition,
+2494. Add code to XF86Setup for mode adjustment (like xvidtune), addition,
       and removal (#2646, Joe Moss).
-2693. Remove the use of the `dialog' program from XF86Setup, and add
+2493. Remove the use of the `dialog' program from XF86Setup, and add
       various curses routines and the start of a text mode user-interface
       (both curses & plain text).  Also remove some obsolete Tk 4.0-specific
       code (#2645, Joe Moss).
-2692. Add code to XF86Setup to convert all of the config file sections
+2492. Add code to XF86Setup to convert all of the config file sections
       to/from Tcl variables (#2644, Joe Moss).
-2691. Allow fbdev to handle non-page-aligned framebuffers correctly (#2643,
+2491. Allow fbdev to handle non-page-aligned framebuffers correctly (#2643,
       Gerd Knorr).
-2690. Add RAC code to the fbdev driver (if there is a PCI BusID specified
+2490. Add RAC code to the fbdev driver (if there is a PCI BusID specified
       in the config file it will "check in" this into access control)
       (#2643, Gerd Knorr).
-2689. Cleanup in sysv_video.c (#2642, Michael Rohleder).
-2688. Update xedit's realpath.c for IUS (#2642, Michael Rohleder).
-2687. Add support for InputDevice sections to the parser (not used yet)
+2489. Cleanup in sysv_video.c (#2642, Michael Rohleder).
+2488. Update xedit's realpath.c for IUS (#2642, Michael Rohleder).
+2487. Add support for InputDevice sections to the parser (not used yet)
       (David Dawes).
-2686. A first cut at cleaning up the handling of memory mapping and client
+2486. A first cut at cleaning up the handling of memory mapping and client
       exit/crash in the DGA library (David Dawes).
-2685. Shadowfb support for the generic VGA driver at depths 4 and 1
+2485. Shadowfb support for the generic VGA driver at depths 4 and 1
       (Dirk Hohndel and Mark Vojkovich).
-2684. Fix the printMonitorSection and printDeviceSection functions in
+2484. Fix the printMonitorSection and printDeviceSection functions in
       the parser (#2641, Joe Moss).
-2683. Change the s3virge chipset names, removing the slashes (#2640,
+2483. Change the s3virge chipset names, removing the slashes (#2640,
       Kevin Brosius).
-2682. Preliminary s3virge man page (#2640, Kevin Brosius).
-2681. Fix s3virge HW cursor (#2640, Kevin Brosius, Mark Vojkovich).
-2680. Remove some multiply defined variables in the cfb modules to avoid
+2482. Preliminary s3virge man page (#2640, Kevin Brosius).
+2481. Fix s3virge HW cursor (#2640, Kevin Brosius, Mark Vojkovich).
+2480. Remove some multiply defined variables in the cfb modules to avoid
       a problem on LynxOS PowerPC (#2639, Thomas Mueller).
-2679. Fix a crash in the new xedit code for listing files and directories
+2479. Fix a crash in the new xedit code for listing files and directories
       (#2638, Paulo Cesar Pereira de Andrade).
-2678. Change the kill_ring code in TextAction.c to always end in a text block
+2478. Change the kill_ring code in TextAction.c to always end in a text block
       of zero length (#2638, Paulo Cesar Pereira de Andrade).
-2677. Add xpm pixmap support to Xaw (needs to be built with -DUSE_XPM
+2477. Add xpm pixmap support to Xaw (needs to be built with -DUSE_XPM
       for this), and if the xpm image has a mask, the widget will be
       automatically reshaped to the pixmap mask (#2638,
       Paulo Cesar Pereira de Andrade).
-2676. Add some PCI IDs for Creative Labs 3D Blaster Banshee PCI (#2637,
+2476. Add some PCI IDs for Creative Labs 3D Blaster Banshee PCI (#2637,
       Nicholas Brealey).
-2675. XAA pixmap->window and window->pixmap copy optimization (#2636,
+2475. XAA pixmap->window and window->pixmap copy optimization (#2636,
       Mark Vojkovich).
-2674. Implement some attributes for the v4l module, and fix the clipping
+2474. Implement some attributes for the v4l module, and fix the clipping
       code (#2635, Gerd Knorr).
-2673. Incorporate 3.3.1 FIFO settings for the SiS driver based on memory
+2473. Incorporate 3.3.1 FIFO settings for the SiS driver based on memory
       bandwidth and pixel clock (#2632, Juanjo Santamarta).
-2672. SetMclk and FastVram options for the SiS driver (#2632,
+2472. SetMclk and FastVram options for the SiS driver (#2632,
       Juanjo Santamarta).
-2671. Fix some SiS mode switch problems (#2632, Juanjo Santamarta).
-2670. Imakefile fix for building the X server with BuildGlxExt=NO (#2631,
+2471. Fix some SiS mode switch problems (#2632, Juanjo Santamarta).
+2470. Imakefile fix for building the X server with BuildGlxExt=NO (#2631,
       Thomas Mueller).
-2669. Imakefile fixes for cxpm and sxpm (#2631, Thomas Mueller).
-2668. LynxOS resync, including removing the CrossCompile rule from lynx.cf,
+2469. Imakefile fixes for cxpm and sxpm (#2631, Thomas Mueller).
+2468. LynxOS resync, including removing the CrossCompile rule from lynx.cf,
       LynxOS sparc resync, remove SMEM warning for default verbose level,
       LynxOS support for chips driver util programs (#2631, Thomas Mueller).
-2667. Add man pages for the fbdevhw and fbdev modules (#2630, Gerd Knorr).
+2467. Add man pages for the fbdevhw and fbdev modules (#2630, Gerd Knorr).
 2466. Add fb.h so that fbdevhw can be built on pre-2.2 Linux (#2630,
       Gerd Knorr).
 2465. Add support for generic Xv adaptors to the fbdev driver (#2629,
@@ -7975,4 +8000,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.746 1999/05/14 14:11:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.747 1999/05/15 06:24:52 dawes Exp $

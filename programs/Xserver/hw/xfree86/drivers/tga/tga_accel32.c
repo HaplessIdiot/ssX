@@ -24,7 +24,7 @@
  * DEC TGA accelerated options.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel32.c,v 1.1 1999/04/25 10:02:25 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -67,7 +67,7 @@ static void TGACopyLineForwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			 int y2, int w);
 static void TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			  int y2, int w);
-static void TGASync(void);
+static void TGASync(ScrnInfoPtr pScrn);
 static void TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 			  unsigned int planemask);
 static void TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h);
@@ -159,7 +159,7 @@ fb_offset(ScrnInfoPtr pScrn, int x, int y)
  * This is the implementation of the Sync() function.
  */
 void
-TGASync(void)
+TGASync(ScrnInfoPtr pScrn)
 {
 #if 0
 	mb();

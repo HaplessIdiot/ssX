@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.6 1999/03/06 13:12:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.7 1999/04/04 07:03:26 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -91,7 +91,7 @@ static XF86ModuleVersionInfo VersionRec =
 								 * a tool */
 };
 
-static char *default_options[] =
+static const char *default_options[] =
 {
 	"BaudRate", "9600",
 	"StopBits", "1",
@@ -101,7 +101,7 @@ static char *default_options[] =
 	"Vtime", "1",
 	"FlowControl", "None"
 };
-static char *fallback_options[] =
+static const char *fallback_options[] =
 {
 	"BaudRate", "9600",
 	"StopBits", "2",

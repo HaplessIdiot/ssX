@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.9 1999/05/09 10:51:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.10 1999/05/15 06:24:56 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -17,6 +17,7 @@ static void SiSSync(ScrnInfoPtr pScrn);
 
 static void SiSSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
+
 static void SiSSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
 				int y, int w, int h);
 
@@ -24,6 +25,7 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 				int xdir, int ydir, int rop, 
                                 unsigned int planemask,
 				int transparency_color);
+
 static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 				int x1, int y1, int x2,
 				int y2, int w, int h);
@@ -31,6 +33,7 @@ static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 static void SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int fg, int bg, 
 				int rop, unsigned int planemask);
+
 static void SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
@@ -45,14 +48,18 @@ static void SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
 
 static void SiSSetClippingRectangle ( ScrnInfoPtr pScrn,
         			int left, int top, int right, int bottom);
+
 static void SiSDisableClipping (ScrnInfoPtr pScrn);
 
 static void SiSSetupForSolidLine(ScrnInfoPtr pScrn, 
 				int color, int rop, unsigned int planemask);
 
-static void SiSSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
-    				int x, int y, int major, 
-				int minor, int err, int len, int octant);
+static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
+        int x1, int y1, int x2, int y2, int flags);
+
+static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
+        int x, int y, int len, int dir);
+
 
 static void SiSInitializeAccelerator(ScrnInfoPtr pScrn)
 {
@@ -80,9 +87,9 @@ Bool SiSAccelInit(ScreenPtr pScreen)
     /* Clipping and lines only works on 5597 and 6326 
        for 1024, 2048, 4096 logical width */
     if  (pSiS->ValidWidth) { 
-	  infoPtr->SetClippingRectangle = SiSSetClippingRectangle;
-	  infoPtr->DisableClipping = SiSDisableClipping;
-  	  infoPtr->ClippingFlags =  
+	infoPtr->SetClippingRectangle = SiSSetClippingRectangle;
+	infoPtr->DisableClipping = SiSDisableClipping;
+  	infoPtr->ClippingFlags =  
 					HARDWARE_CLIP_SOLID_LINE | 
 					HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
 					HARDWARE_CLIP_MONO_8x8_FILL |
@@ -93,8 +100,8 @@ Bool SiSAccelInit(ScreenPtr pScreen)
 					BIT_ORDER_IN_BYTE_MSBFIRST;
 
 	infoPtr->SetupForSolidLine = SiSSetupForSolidLine;
-	infoPtr->SubsequentSolidBresenhamLine = SiSSubsequentSolidBresenhamLine;
-	infoPtr->SolidBresenhamLineErrorTermBits = 12;
+	infoPtr->SubsequentSolidTwoPointLine = SiSSubsequentSolidTwoPointLine;
+	infoPtr->SubsequentSolidHorVertLine = SiSSubsequentSolidHorVertLine;
     }
 
     infoPtr->SolidFillFlags = NO_PLANEMASK;
@@ -117,7 +124,7 @@ Bool SiSAccelInit(ScreenPtr pScreen)
 				SiSSetupForMono8x8PatternFill;
         infoPtr->SubsequentMono8x8PatternFillRect = 
 				SiSSubsequentMono8x8PatternFillRect;
-    };
+    }
 
 #if 0 /* Don't work until we implement skipleft */
     if (pScrn->bitsPerPixel != 24) {
@@ -133,7 +140,7 @@ Bool SiSAccelInit(ScreenPtr pScreen)
 				SiSSetupForScreenToScreenColorExpandFill;
     infoPtr->SubsequentScreenToScreenColorExpandFill = 
 				SiSSubsequentScreenToScreenColorExpandFill;
-    };
+    }
 #endif
 
     AvailFBArea.x1 = 0;
@@ -411,27 +418,68 @@ static void SiSSetupForSolidLine(ScrnInfoPtr pScrn,
     SISPtr pSiS = SISPTR(pScrn);
 
     sisSETFGCOLOR(color);
+    sisSETBGCOLOR(0);
     sisSETROP(XAACopyROP[rop]); 	/* dst */
 }
 
-static void SiSSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
-    				int x, int y, int major, 
-				int minor, int err, int len, int octant)
+
+static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
+        	int x1, int y1, int x2, int y2, int flags)
+
 {
     SISPtr pSiS = SISPTR(pScrn);
     int	op ;
-	op = sisCMDLINE  | sisLASTPIX | sisSRCFG;
+    int major, minor, err,K1,K2, tmp;
+	op = sisCMDLINE  | sisSRCFG;
+    if ((flags & OMIT_LAST)) op |= sisLASTPIX ;
     if (pSiS->ClipEnabled) op |= sisCLIPINTRN | sisCLIPENABL;
+    if ((major = x2 - x1) < 0) {
+       major = -major;
+    } else op |= sisXINCREASE;;		   
+    if ((minor = y2 - y1) < 0) {
+       minor = -minor;
+    } else op |= sisYINCREASE;
+    if(minor >= major){
+       tmp = minor; minor = major; major = tmp;
+    }
+    else op |= sisXMAJOR;
 
-    if(!(octant & YMAJOR)) op |= sisXMAJOR;
-    if(!(octant & XDECREASING)) op |= sisXINCREASE;
-    if(!(octant & YDECREASING)) op |= sisYINCREASE;
+    K1 = (minor-major)<<1;
+    K2 = minor<<1;
+    err = (minor<<1) - major;
 
-    sisSETXStart(x);
-    sisSETYStart(y);
-    sisSETLineSteps((short)major, (short)minor);
+    sisSETXStart(x1);
+    sisSETYStart(y1);
+    sisSETLineSteps((short)K1,(short)K2); 
     sisSETLineErrorTerm((short)err);
-    sisSETLineMajorCount((short)len);
+    sisSETLineMajorCount((short)major);
     sisSETCMD(op);
+/*    SiSSync(pScrn);*/
+}
+
+
+static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
+                                int x, int y, int len, int dir)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    int destaddr, op;
+
+    destaddr = y * pScrn->displayWidth + x;
+    op = sisCMDBLT | sisSRCFG | sisTOP2BOTTOM | sisLEFT2RIGHT;
+    if (pSiS->ClipEnabled) op |= sisCLIPINTRN | sisCLIPENABL;
+    destaddr *= (pScrn->bitsPerPixel / 8);
+
+    sisSETPITCH(pScrn->displayWidth * pScrn->bitsPerPixel / 8, 
+		pScrn->displayWidth * pScrn->bitsPerPixel / 8);
+
+    if(dir == DEGREES_0) 
+        sisSETHEIGHTWIDTH(0, len * (pScrn->bitsPerPixel>>3)-1);
+    else
+        sisSETHEIGHTWIDTH(len-1, (pScrn->bitsPerPixel>>3)-1 );
+
+
+    sisSETDSTADDR(destaddr);
+   	sisSETCMD(op);
     SiSSync(pScrn);
 }
+

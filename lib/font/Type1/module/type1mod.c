@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/Type1/module/type1mod.c,v 1.6 1999/01/23 09:55:36 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/module/type1mod.c,v 1.7 1999/01/26 05:53:46 dawes Exp $ */
 
 #include "misc.h"
 
@@ -54,6 +54,9 @@ static XF86ModuleVersionInfo VersRec =
 XF86ModuleData type1ModuleData = { &VersRec, type1Setup, NULL };
 
 extern void Type1RegisterFontFileFunctions(void);
+#ifdef BUILDCID
+extern void CIDRegisterFontFileFunctions(void);
+#endif
 
 FontModule type1Module = {
     Type1RegisterFontFileFunctions,
@@ -61,11 +64,23 @@ FontModule type1Module = {
     NULL
 };
 
+#ifdef BUILDCID
+FontModule CIDModule = {
+    CIDRegisterFontFileFunctions,
+    "CID",
+    NULL
+};
+#endif
+
 static pointer
 type1Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     type1Module.module = module;
     LoadFont(&type1Module);
+#ifdef BUILDCID
+    CIDModule.module = module;
+    LoadFont(&CIDModule);
+#endif
 
     /* Need a non-NULL return */
     return (pointer)1;

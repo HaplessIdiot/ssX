@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.6 1999/04/18 04:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.7 1999/04/29 09:13:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1749,6 +1749,7 @@ AdaptorPrivUninit(AdaptorPrivPtr pAPriv)
 static Bool
 xvipcOpen(char *name, ScrnInfoPtr pScrn)
 {
+#ifdef XINPUT			/* XXX FIX ME! */
     const char *osname;
 
     if (xvipc_fd >= 0)
@@ -1810,7 +1811,7 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
 	       "Cannot connect to Permedia 2 kernel driver. "
 	       "Note that using both drivers at the same time "
 	       "will cause problems.\n");
-
+#endif /* XINPUT */
     return FALSE;
 }
 

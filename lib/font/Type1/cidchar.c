@@ -15,7 +15,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/cidchar.c,v 1.4 1999/05/09 12:31:08 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/cidchar.c,v 1.5 1999/05/09 14:59:27 dawes Exp $ */
 
 #ifdef BUILDCID
 #ifndef FONTMODULE
@@ -101,11 +101,11 @@ CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
            *rc = BadFontName;
            return(cp);
        }
-       cid->CIDsize = (int *)lseek(fd, 0, SEEK_END);
+       cid->CIDsize = lseek(fd, 0, SEEK_END);
        cid->CIDdata = (unsigned char *)
            mmap(0, (size_t)cid->CIDsize, PROT_READ, MAP_SHARED, fd, 0);
        close(fd);
-       if (cid->CIDdata == MAP_FAILED) {
+       if (cid->CIDdata == (unsigned char *)MAP_FAILED) {
            *rc = AllocError;
            cid->CIDdata = NULL;
            return (cp);
@@ -122,9 +122,7 @@ CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
     if (cid->dataoffset == 0) {
        if ((p1 = (unsigned char *)strstr((char *)cid->CIDdata, (char *)sd)) 
            != NULL) {
-           cid->dataoffset =
-               (unsigned char *)(p1 -cid->CIDdata + 
-               (unsigned char *)strlen((char *)sd));
+           cid->dataoffset = (p1 - cid->CIDdata) + strlen((char *)sd);
        }
        else {
            *rc = BadFontFormat;
@@ -185,7 +183,7 @@ CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
     /* if "StartData" not found, or "Binary" data and the next character */
     /* is not the space character (0x20)                                 */
 
-    if (count == 0 || CIDFontP->binarydata && *p1 != ' ') {
+    if (count == 0 || (CIDFontP->binarydata && (*p1 != ' '))) {
         *rc = BadFontFormat;
         fclose(fp);
         return(cp);
@@ -449,7 +447,6 @@ CIDGetGlyphInfo(FontPtr pFont, unsigned int cidcode, CharInfoPtr pci, int *rc)
     return(cp);
 }
 
-#ifndef CID_ALL_CHARS
 static int node_compare(node1, node2)
 Metrics *node1, *node2;
 {
@@ -622,6 +619,4 @@ int CIDGetAFM(FontPtr pFont, unsigned long count, unsigned char *chars, FontEnco
     return Successful;
 
 }
-#endif
-
 #endif

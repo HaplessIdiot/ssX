@@ -6,7 +6,7 @@
    are subject to change without notice.
 
 
-Last modified: 3 May 1999.
+Last modified: 15 May 1999.
 
 
 Preface
@@ -802,6 +802,7 @@ Some of them are:
     xf86Weight                -weight from the command line
     xf86Gamma                 -{r,g,b,}gamma from the command line
     xf86FlipPixels            -flippixels from the command line
+    xf86ProbeOnly             -probeonly from the command line
     defaultColorVisualClass   -cc from the command line
 
 If we ever do allow for screen-specific command line options, we may
@@ -922,6 +923,16 @@ functions is as follows:
 
       Returns TRUE if the server is at the end of a generation and is in
       the process of resetting, and FALSE otherwise.
+
+
+    Bool xf86ServerIsInitialising()
+      Returns TRUE if the server is at the beginning of a generation and
+      is in the process of initialising, and FALSE otherwise.
+
+
+    Bool xf86ServerIsOnlyProbing()
+      Returns TRUE if the -probeonly command line flag was specified, and
+      FALSE otherwise.
 
 
     Bool xf86CaughtSignal()
@@ -4825,4 +4836,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.30 1999/04/27 12:05:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.31 1999/05/03 12:16:00 dawes Exp $

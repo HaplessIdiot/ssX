@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.h,v 1.1 1998/12/05 14:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.h,v 1.2 1999/02/01 12:12:59 dawes Exp $ */
 
 #ifndef	_MAGELLAN_H_
 #define _MAGELLAN_H_
@@ -98,7 +98,7 @@ static Bool ConvertProc (LocalDevicePtr, int, int, int, int, int, int, int, int,
 static Bool QueryHardware (MagellanPrivatePtr, int *, int *);
 static void NewPacket (MagellanPrivatePtr priv);
 static Bool MagellanGetPacket (MagellanPrivatePtr priv);
-#if BELL_FEEDBACK_SUPPORT
+#ifdef BELL_FEEDBACK_SUPPORT
 static void MagellanBellCtrl( DeviceIntPtr, BellCtrl *);
 static void MagellanBellSound(int percent, DeviceIntPtr dev, pointer ctrl, int
 unknown);

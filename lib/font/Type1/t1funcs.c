@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.14 1999/05/04 09:35:23 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.15 1999/05/09 10:51:47 dawes Exp $ */
 
 /*
 
@@ -100,6 +100,7 @@ from The Open Group.
 #ifndef FONTMODULE
 #include <string.h>
 #ifdef BUILDCID
+#include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
 #endif
@@ -127,6 +128,7 @@ from The Open Group.
 #ifdef BUILDCID
 #include "range.h"
 #endif
+
 #include "objects.h"
 #include "spaces.h"
 #include "regions.h"
@@ -134,24 +136,18 @@ from The Open Group.
 #include "util.h"
 #include "fontfcn.h"
 
-#ifdef BUILDCID
-#define CMapDir "/CMap/"
-#define CFMDir "/CFM/"
-#define CIDFontDir "/CIDFont/"
-#endif
- 
-#ifndef CID_ALL_CHARS
 int         Type1OpenScalable ();
 static int  Type1GetGlyphs();
 void        Type1CloseFont();
 extern int  Type1GetInfoScalable ();
  
 #ifdef BUILDCID
-int  Type1GetMetrics ();
-#else
+#define CMapDir "/CMap/"
+#define CFMDir "/CFM/"
+#define CIDFontDir "/CIDFont/"
+#endif
+
 static int  Type1GetMetrics ();
-#endif
-#endif
  
 #define minchar(p) ((p).min_char_low + ((p).min_char_high << 8))
 #define maxchar(p) ((p).max_char_low + ((p).max_char_high << 8))
@@ -176,16 +172,18 @@ CharInfoPtr CIDRenderGlyph(FontPtr, psobj *, psobj *, struct blues_struct *, Cha
 
 extern int  CIDGetInfoScalable ();
 extern void T1FillFontInfo();
-extern void CIDFillFontInfo();
-/* extern char *getenv(const char *); */
-extern CharInfoPtr CIDGetGlyphInfo();
+
 #ifndef CID_ALL_CHARS
-extern int CIDGetAFM(FontPtr, unsigned long, unsigned char *, FontEncoding, unsigned long *, CharInfoPtr *, char *);
+extern void CIDFillFontInfo();
 #endif
 
+extern CharInfoPtr CIDGetGlyphInfo();
+extern int CIDGetAFM(FontPtr, unsigned long, unsigned char *, FontEncoding, unsigned long *, CharInfoPtr *, char *);
+
 #ifdef CID_ALL_CHARS
-extern void ComputeBoundsAll(FontPtr, char *, double);
+extern void ComputeBoundsAllChars(FontPtr, char *, double);
 #endif
+
 int  CIDGetMetrics ();
 unsigned int getCID(FontPtr, unsigned int);
 
@@ -245,8 +243,8 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
     char cmappath[CID_PATH_MAX];
 #if defined(HAVE_CFM) || defined(CID_ALL_CHARS)
     char cfmdir[CID_PATH_MAX];
-    char *cf;
     char cfmfilename[CID_NAME_MAX];
+    char *cf;
 #endif
     DIR *dir;
     struct dirent *dp;
@@ -298,9 +296,8 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
             if ((len = strlen(CMapName)) <= 0)
                 return BadFontName;
         }
-    } else {
+    } else
         return BadFontName;
-    }
 
     /* The CMap files whose names end with -V are not yet supported */
     len = strlen(CMapName);
@@ -493,7 +490,7 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 
     if (strncmp(entry->name.name, "-bogus", 6)) {
 #ifdef CID_ALL_CHARS
-      ComputeBoundsAll(pFont, cfmfilename, sxmult);
+      ComputeBoundsAllChars(pFont, cfmfilename, sxmult);
 #else
 #ifdef HAVE_CFM
       CIDFillFontInfo(pFont, vals, cidfontname, entry->name.name, cmapname,
@@ -511,7 +508,6 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 }
 #endif
  
-#ifndef CID_ALL_CHARS
 /*ARGSUSED*/
 int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 		       fmask, non_cachable_font)
@@ -865,7 +861,6 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        *ppFont = pFont;
        return Successful;
 }
-#endif
 
 #ifdef BUILDCID
 unsigned int getCID(FontPtr pFont, unsigned int charcode)
@@ -1139,7 +1134,6 @@ int CIDGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 }
 #endif
  
-#ifndef CID_ALL_CHARS
 static int
 Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
@@ -1218,7 +1212,6 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
 #undef EXIST
 }
-#endif
 
 #ifdef BUILDCID
 static CharInfoRec nonExistantChar;
@@ -1232,7 +1225,6 @@ CIDGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     unsigned long *glyphCount;  /* RETURN */
     xCharInfo **glyphs;         /* RETURN */
 {
-#ifndef CID_ALL_CHARS
     int         ret;
     cidglyphs *cid;
     CharInfoPtr oldDefault;
@@ -1272,11 +1264,9 @@ CIDGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     *ptr = 0;
     cid->pDefault = oldDefault;
     return ret;
-#endif
 }
 #endif
 
-#ifndef CID_ALL_CHARS
 static int
 Type1GetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
@@ -1299,7 +1289,6 @@ Type1GetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     type1Font->pDefault = oldDefault;
     return ret;
 }
-#endif
 
 #ifdef BUILDCID
 void CIDCloseFont(pFont)
@@ -1341,10 +1330,8 @@ void CIDCloseFont(pFont)
             if (cid->glyphs)
                 xfree(cid->glyphs);
 
-#ifndef CID_ALL_CHARS
             if (cid->AFMinfo)
                 xfree(cid->AFMinfo);
-#endif
 #ifdef USE_MMAP
             if (cid->CIDdata)
                munmap(cid->CIDdata, cid->CIDsize);
@@ -1366,7 +1353,6 @@ void CIDCloseFont(pFont)
 }
 #endif
 
-#ifndef CID_ALL_CHARS
 void Type1CloseFont(pFont)
        FontPtr pFont;
 {
@@ -1390,7 +1376,6 @@ void Type1CloseFont(pFont)
 
        xfree(pFont);
 }
-#endif
 
 static void fill(dest, h, w, area, byte, bit, wordsize)
        register char *dest;  /* destination bitmap                           */
@@ -1512,7 +1497,6 @@ FontRendererRec CIDRendererInfo[] = {
 };
 #endif
  
-#ifndef CID_ALL_CHARS
 #ifdef BUILDCID
 FontRendererRec Type1RendererInfo[] = {
 #else
@@ -1523,7 +1507,6 @@ static FontRendererRec renderers[] = {
   { ".pfb", 4, (int (*)()) 0, Type1OpenScalable,
         (int (*)()) 0, Type1GetInfoScalable, 0, CAPABILITIES }
 };
-#endif
 
 #ifdef BUILDCID
 void CIDRegisterFontFileFunctions(void)
@@ -1536,13 +1519,8 @@ void CIDRegisterFontFileFunctions(void)
 }
 #endif
  
-#ifndef CID_ALL_CHARS
-#ifdef BUILDCID
-void Type1RegisterFontFileFunctions(void)
-#else
 void
 Type1RegisterFontFileFunctions()
-#endif
 {
     int i;
  
@@ -1556,7 +1534,6 @@ Type1RegisterFontFileFunctions()
             FontFileRegisterRenderer(&renderers[i]);
 #endif
 }
-#endif
 
 int Type1ReturnCodeToXReturnCode(rc)
     int rc;

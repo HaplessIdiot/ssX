@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.7 1999/04/04 08:46:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.8 1999/05/09 10:51:58 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -113,7 +113,7 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
  	    } else {
  		M = Fvco / Fref * N + 0.5;
  		VLD = 1;
- 	    };
+ 	    }
  
  	    Fout = (double)Fref * (M * VLD)/(N * P);
  
@@ -218,7 +218,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int gap, safetymargin, MemBand;
     int vgaIOBase;
     unsigned char temp;
-#if 0
+#if 1
     int Base,mclk;
 #endif 
     int offset;
@@ -283,7 +283,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	} else {
 	    pReg->sisRegs3C4[XR2B] |= ((vclk[Pidx] / 2) -1 ) << 5 ;  /* postscale 6,8 */
     	    pReg->sisRegs3C4[ClockBase] |= 0x40;
- 	};
+ 	}
  	pReg->sisRegs3C4[XR2B] |= 0x80 ;   /* gain for high frequency */
  
 	if (clock > 135000) pReg->sisRegs3C4[ClockReg] |= 0x02;
@@ -299,13 +299,14 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->sisRegs3C4[GraphEng] |=  0x40;
     pSiS->ValidWidth = TRUE;
     pReg->sisRegs3C4[GraphEng] &= 0xCF; /* Clear logical width bits */
-    if ((pScrn->depth != 8) | (pScrn->depth != 16) ) {
+
+    if  (pScrn->bitsPerPixel == 24)  {
 	pReg->sisRegs3C4[GraphEng] |= 0x30; /* Invalid logical width */
 	pSiS->ValidWidth = FALSE;
     }
     else
     {
-	switch (pScrn->virtualX * (pScrn->depth >> 3) ) {
+	switch ( pScrn->virtualX * (pScrn->bitsPerPixel >> 3) ) {
  	case 1024:
  		pReg->sisRegs3C4[GraphEng] |= 0x00; /* | 00 = No change */
  	    break;
@@ -319,12 +320,12 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  		pReg->sisRegs3C4[GraphEng] =  0x30; /* Invalid logical width */
 	    pSiS->ValidWidth = FALSE;
 	    break;
-    }
+	}
     }
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
              "virtualX = %d depth = %d Logical width = %d\n", 
-             pScrn->virtualX, pScrn->depth, pScrn->virtualX * (pScrn->depth >> 3)); 
+             pScrn->virtualX, pScrn->depth, pScrn->virtualX * (pScrn->bitsPerPixel >> 3)); 
 
     if (!pSiS->NoAccel) {
 	pReg->sisRegs3C4[GraphEng] |= 0x40;
@@ -354,9 +355,9 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	  } else {
             pReg->sisRegs3C4[MemClock1] |= ((vclk[Pidx] / 2) -1 ) << 5 ;  /* postscale 6,8 */
  	    pReg->sisRegs3C4[ClockBase] |= 0x80;
- 	  };
+ 	  }
 
-#if 0  /* Check programmed memory clock. Enable only to check the above code */
+#if 1  /* Check programmed memory clock. Enable only to check the above code */
           mclk=14318*((pReg->sisRegs3C4[MemClock0] & 0x7f)+1);
           mclk=mclk/((pReg->sisRegs3C4[MemClock1] & 0x0f)+1);
           Base = pReg->sisRegs3C4[ClockBase];
@@ -371,7 +372,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       	  mclk/1000.0);
 #endif
       }
-    };
+    }
 
     MemBand = sisMemBandWidth(pScrn) / 10 ;
     safetymargin = 1; 
@@ -426,11 +427,11 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
     for (i = 0x06; i <= max; i++) {
 	outb(VGA_SEQ_INDEX,i);
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,4,
     		    "XR%X Contents - %02X ", i, inb(VGA_SEQ_DATA));
 	    outb(VGA_SEQ_DATA,sisReg->sisRegs3C4[i]);
 	    
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,4,
 		    "Restore to - %02X Read after - %02X\n",sisReg->sisRegs3C4[i], inb(VGA_SEQ_DATA));
     }
     outw(vgaIOBase + 4, (sisReg->sisRegs3x4[Offset] << 8) | Offset);
@@ -478,7 +479,7 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
     for (i = 0x06; i <= max; i++) {
         outb(VGA_SEQ_INDEX, i);
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,4,
     		    "XR%02X Contents - %02X \n", i, inb(VGA_SEQ_DATA));
 	sisReg->sisRegs3C4[i] = inb(VGA_SEQ_DATA);
 

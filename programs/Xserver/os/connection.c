@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.36 1998/12/20 11:58:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.37 1999/03/21 07:35:36 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -1141,6 +1141,8 @@ AddEnabledDevice(fd)
 {
     FD_SET(fd, &EnabledDevices);
     FD_SET(fd, &AllSockets);
+    if (GrabInProgress)
+	FD_SET(fd, &SavedAllSockets);
 }
 
 
@@ -1149,6 +1151,8 @@ RemoveEnabledDevice(fd)
 {
     FD_CLR(fd, &EnabledDevices);
     FD_CLR(fd, &AllSockets);
+    if (GrabInProgress)
+	FD_CLR(fd, &SavedAllSockets);
 }
 
 /*****************
