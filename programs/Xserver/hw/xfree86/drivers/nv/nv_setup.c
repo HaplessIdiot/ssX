@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.37 2003/09/01 20:54:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.38 2003/09/08 20:00:27 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -403,6 +403,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     case 0x017D:
     case 0x0186:
     case 0x0187:
+    case 0x0189:
     case 0x0286:
     case 0x028C:
     case 0x0316:
