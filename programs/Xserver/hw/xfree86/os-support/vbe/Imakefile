@@ -1,10 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.7 2000/04/20 21:28:49 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.8 2000/05/23 04:47:49 dawes Exp $
 
-#if DoLoadableServer
-#define IHaveSubdirs
-SUBDIRS = module
-#endif
-
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = vbe.c vbe_module.c
@@ -16,19 +12,15 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/int10 -I$(XF86SRC)/ddc \
 	   -I$(XF86SRC)/i2c
 
-#if DoLoadableServer
-#define IHaveSubdirs
-SUBDIRS = module
-#endif
+ModuleObjectRule()
 
-SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
+LibraryModuleTarget(vbe, $(OBJS))
 
-#if DoLoadableServer
-ForceSubdirs($(SUBDIRS))
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
+InstallLibraryModule(vbe,$(MODULEDIR),.)
 
 DependTarget()
+
+InstallDriverSDKLibraryModule(vbe,$(DRIVERSDKMODULEDIR),.)
+
+InstallDriverSDKNonExecFile(vbe.h,$(DRIVERSDKINCLUDEDIR))
 

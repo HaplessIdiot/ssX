@@ -1,5 +1,5 @@
 /* $XConsortium: xload.c,v 1.37 94/04/17 20:43:44 converse Exp $ */
-/* $XFree86: xc/programs/xload/xload.c,v 1.3 2001/07/23 13:15:54 dawes Exp $ */
+/* $XFree86: xc/programs/xload/xload.c,v 1.4 2001/08/01 00:45:05 tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -34,6 +34,7 @@ from the X Consortium.
  * xload - display system load average in a window
  */
 
+
 #include <stdio.h> 
 #include <unistd.h>
 #include <X11/Intrinsic.h>
@@ -51,7 +52,7 @@ from the X Consortium.
 
 char *ProgramName;
 
-extern void exit(), InitLoadPoint(void), GetLoadPoint();
+extern void InitLoadPoint(void), GetLoadPoint(), GetRLoadPoint();
 static void quit();
 static void ClearLights();
 static void SetLights();
@@ -63,6 +64,7 @@ static void SetLights();
 typedef struct _XLoadResources {
   Boolean show_label;
   Boolean use_lights;
+  String remote;
 } XLoadResources;
 
 /*
@@ -79,6 +81,7 @@ static XrmOptionDescRec options[] = {
  {"-nolabel",		"*showLabel",	        XrmoptionNoArg,       "False"},
  {"-lights",		"*useLights",		XrmoptionNoArg,	      "True"},
  {"-jumpscroll",	"*load.jumpScroll",	XrmoptionSepArg,	NULL},
+ {"-remote",            "*remote",              XrmoptionSepArg,        NULL},
 };
 
 /*
@@ -93,11 +96,14 @@ static XtResource my_resources[] = {
      Offset(show_label), XtRImmediate, (XtPointer) TRUE},
   {"useLights", XtCBoolean, XtRBoolean, sizeof(Boolean),
     Offset(use_lights), XtRImmediate, (XtPointer) FALSE},
+  {"remote", XtCString, XtRString, sizeof(XtRString),
+    Offset(remote), XtRImmediate, (XtPointer) FALSE},
+
 };
 
 #undef Offset
 
-static XLoadResources resources;
+XLoadResources resources;
 
 static XtActionsRec xload_actions[] = {
     { "quit",	quit },
@@ -135,6 +141,8 @@ void usage()
       "    -nolabel                removes the label from above the chart.\n");
     fprintf (stderr, 
       "    -jumpscroll value       number of pixels to scroll on overflow\n");
+    fprintf (stderr,
+      "    -remote host            remote host to monitor\n");
     fprintf (stderr, "\n");
     exit(1);
 }
@@ -235,8 +243,11 @@ main(argc, argv)
     	load = XtCreateManagedWidget ("load", stripChartWidgetClass,
 				      load_parent, NULL, ZERO);    
     
-    	XtAddCallback(load, XtNgetValue, GetLoadPoint, NULL);
-    
+    	if (resources.remote)
+	  XtAddCallback(load, XtNgetValue, GetRLoadPoint, NULL);
+	else 
+	  XtAddCallback(load, XtNgetValue, GetLoadPoint, NULL);
+	
     	XtRealizeWidget (toplevel);
     	wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				    	False);
@@ -275,7 +286,10 @@ SetLights (data, timer)
 
     toplevel = (Widget) data;
     dpy = XtDisplay (toplevel);
-    GetLoadPoint (toplevel, (XtPointer) 0, (XtPointer) &value);
+    if (resources.remote) 
+      GetRLoadPoint (toplevel, (XtPointer) 0, (XtPointer) &value);
+    else
+      GetLoadPoint (toplevel, (XtPointer) 0, (XtPointer) &value);
     new_leds = (1 << (int) (value + 0.1)) - 1;
     change = new_leds ^ current_leds;
     i = 1;
@@ -312,3 +326,9 @@ static void quit (w, event, params, num_params)
     XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
     exit (0);
 }
+
+
+
+
+
+

@@ -1,4 +1,25 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 208. Add support to xload for displaying the load of remote hosts by using
+      information in rwhod(1)'s database (#4833, Anders Eriksson).
+ 207. Rename the XVisibilityNotifyEvent man page to XVisibilityEvent,
+      which matches the naming convention for the other X Event man pages
+      (#4830, Ernie Coskrey, from X11R6.6).
+ 206. Update the registry to match X.Org's X11R6.6 version (#4829,
+      Ernie Coskrey, from X11R6.6).
+ 205. Fix for the SlowKeys feature of the AccessX portion of XKB not working
+      when the delay is longer than the amount of time between the delivery
+      of key press events to the extension (#4828, Ernie Coskrey,
+      from X11R6.6).
+ 204. Add a locale alias for "th_TH.TIS-620" (#4827,
+      Theppitak Karoonboonyanan).
+ 203. Some linux.cf updates (#4825, Branden Robinson).
+ 202. Make the vbe module build like the other modules.
+ 201. Enable libGLw to be built even when GLX is not (#4823,
+      Carlos A. M. dos Santos).
+ 200. Add a command line options (-show) to xvidtune to print out the current
+      video mode (#4809, Markus Kuhn).
+ 199. A new driver for the "Acecad Flair" tablet (not enabled by default yet)
+      (#4800, Edouard TISSERANT).
  198. Fix some typos in the iso8859-2 Compose file (#4799, Kamil Toman).
  197. Add some XKB options to allow the CapsLock behaviour to be easily
       selected (#4794, Ivan Pascal).
@@ -13660,4 +13681,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1908 2001/08/12 22:48:41 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1909 2001/08/13 17:46:02 dawes Exp $
