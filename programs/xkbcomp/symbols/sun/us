@@ -217,8 +217,8 @@ xkb_symbols "sun5" {
     modifier_map Mod1	{ Alt_L };
     modifier_map Mod2	{ Num_Lock };
     modifier_map Mod3	{ Mode_switch };
-    modifier_map Mod4	{ Meta_L };
-    modifier_map Mod5	{ Meta_R };
+    modifier_map Mod4	{ Meta_L, Meta_R};
+    modifier_map Mod5	{ Scroll_Lock };
 };
 
 // US/ASCII layout for a Type 5 Sun keyboard w/ broken OpenLook keymap
