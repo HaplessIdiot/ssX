@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.67 2000/06/20 05:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.68 2000/06/20 20:34:37 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -140,9 +140,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     XAAInfoRecPtr infoPtr;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     MGAPtr pMga = MGAPTR(pScrn);
-    int maxFastBlitMem;
+    int maxFastBlitMem, maxlines;
     BoxRec AvailFBArea;
-    RegionRec MemRegion;
 
     pMga->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
@@ -378,39 +377,31 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	pMga->MaxFastBlitY = maxFastBlitMem / (pScrn->displayWidth * PSZ / 8);
     }
 
+    maxlines = (min(pMga->FbUsableSize, 16*1024*1024)) / 
+	               (pScrn->displayWidth * PSZ / 8);
+
+#ifdef XF86DRI
+    if (pMga->directRenderingEnabled) {
+	if(maxlines > (pMga->numXAALines + pScrn->virtualY)) 
+	     maxlines = pMga->numXAALines + pScrn->virtualY;
+   	 
+	if(maxlines < (pMga->numXAALines + pScrn->virtualY)) 
+	     pMga->numXAALines = maxlines - pScrn->virtualY;
+	
+	/* not like the 3D will even work when there's not
+           even enough memory for a tiny pixmap cache */
+    }
+   
+#endif
 
     AvailFBArea.x1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-
-    /* DRI module is not enabled, so do a normal Fb init */
-#ifdef XF86DRI
-    if (pMga->directRenderingEnabled != TRUE)
-#endif
-    {
-        AvailFBArea.x1 = 0;
-        AvailFBArea.x2 = pScrn->displayWidth;
-        AvailFBArea.y1 = 0;
-        AvailFBArea.y2 = (min(pMga->FbUsableSize, 16*1024*1024)) / 
-	  (pScrn->displayWidth * PSZ / 8);
-        xf86InitFBManager(pScreen, &AvailFBArea); 
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using All available"
-		   " offscreen memory.\n");
-    }
-#ifdef XF86DRI
-    else {
-        /* The dri module is loaded and in use at this time */
-        AvailFBArea.x1 = 0;
-        AvailFBArea.x2 = pScrn->displayWidth;
-        AvailFBArea.y1 = pScrn->virtualY;
-        AvailFBArea.y2 = pScrn->virtualY + pMga->numXAALines;
-        REGION_INIT(pScreen, &MemRegion, &AvailFBArea, 1);
-        xf86InitFBManagerRegion(pScreen, &MemRegion);
-        REGION_UNINIT(pScreen, &MemRegion);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %d lines for offscreen "
+    AvailFBArea.y1 = 0;
+    AvailFBArea.y2 = maxlines;
+    xf86InitFBManager(pScreen, &AvailFBArea); 
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %d lines for offscreen "
 		   "memory.\n",
-		   pMga->numXAALines);
-    }
-#endif
+		   maxlines - pScrn->virtualY);
 
     return(XAAInit(pScreen, infoPtr));
 }
