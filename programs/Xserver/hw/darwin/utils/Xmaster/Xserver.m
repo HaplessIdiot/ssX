@@ -59,7 +59,9 @@
     if(!mVisible)
         return NO;
     
-    if(([anEvent type]==NSKeyDown)&&(![anEvent isARepeat])&&([anEvent keyCode]==[Preferences keyCode])&&([anEvent modifierFlags]==[Preferences modifiers])) {
+    if(([anEvent type]==NSKeyDown) && (![anEvent isARepeat]) &&
+       ([anEvent keyCode]==[Preferences keyCode]) &&
+       ([anEvent modifierFlags]==[Preferences modifiers])) {
         [self toggle];
         return YES;
     }
@@ -76,7 +78,7 @@
         ev.type=NSMouseMoved;
         break;
     case NSSystemDefined:
-        if(([anEvent subtype]==7)&&([anEvent data1] & 1 == 1))
+        if(([anEvent subtype]==7) && ([anEvent data1] & 1))
             return YES; // skip mouse button 1 events
         if(mouseState==[anEvent data2])
             return YES; // ignore double events
@@ -227,19 +229,26 @@
 - (void)sendShowHide:(BOOL)show {
     NXEvent ev;
     if (! mRunning) return;
-    
+
     [self getNXMouse:&ev];
-    
+    ev.type = NX_APPDEFINED;
+
     if (show) {
         ev.data.compound.subType = kShow;
         HideMenuBar();
+        [self sendEvent:&ev];
+
+        // inform the X server of the current modifier state
+        ev.flags = [[NSApp currentEvent] modifierFlags];
+        ev.data.compound.subType = kUpdateModifiers;
+        [self sendEvent:&ev];
+
     } else {
         ev.data.compound.subType = kHide;
         ShowMenuBar();
+        [self sendEvent:&ev];
     }
 
-    ev.type = NX_APPDEFINED;    
-    [self sendEvent:&ev];
     mVisible = show;
 }
 

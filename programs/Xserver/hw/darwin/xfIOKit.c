@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.2 2000/12/01 19:47:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.1 2001/01/14 16:44:55 herrb Exp $ */
 
 #define NDEBUG 1
 
@@ -45,17 +45,19 @@
 #include "darwin.h"
 #include "xfIOKit.h"
 
-EvGlobals *             evg;
-mach_port_t             masterPort;
-mach_port_t             notificationPort;
-IONotificationPortRef   NotificationPortRef;
+static EvGlobals *              evg;
+static mach_port_t              masterPort;
+static mach_port_t              notificationPort;
+static IONotificationPortRef    NotificationPortRef;
+static mach_port_t              pmNotificationPort;
+
 
 /*
  * XFIOKitStoreColors
  * This is a callback from X to change the hardware colormap
  * when using PsuedoColor.
  */
-void XFIOKitStoreColors(
+static void XFIOKitStoreColors(
     ColormapPtr     pmap,
     int             numEntries,
     xColorItem      *pdefs)
@@ -121,17 +123,14 @@ static void *XFIOKitHIDThread(void *arg)
     int iokitEventWriteFD = (int)arg;
 
     for (;;) {
-        IOReturn kr;
-        NXEvent ev;
-        NXEQElement *oldHead;
-        struct {
-            mach_msg_header_t	header;
-            mach_msg_trailer_t	trailer;
-        } msg;
+        NXEvent                 ev;
+        NXEQElement             *oldHead;
+        mach_msg_return_t       kr;
+        mach_msg_empty_rcv_t    msg;
 
         kr = mach_msg((mach_msg_header_t*) &msg, MACH_RCV_MSG, 0,
                       sizeof(msg), notificationPort, 0, MACH_PORT_NULL);
-        assert(KERN_SUCCESS == kr);
+        kern_assert(kr);
 
         while (evg->LLEHead != evg->LLETail) {
             oldHead = (NXEQElement*)&evg->lleq[evg->LLEHead];
@@ -142,6 +141,35 @@ static void *XFIOKitHIDThread(void *arg)
             ev_unlock(&oldHead->sema);
 
             write(iokitEventWriteFD, &ev, sizeof(ev));
+        }
+    }
+    return NULL;
+}
+
+/*
+ * XFIOKitPMThread
+ * Handle power state notifications
+ */
+static void *XFIOKitPMThread(void *arg)
+{
+    ScreenPtr pScreen = (ScreenPtr)arg;
+
+    for (;;) {
+        mach_msg_return_t       kr;
+        mach_msg_empty_rcv_t    msg;
+
+        kr = mach_msg((mach_msg_header_t*) &msg, MACH_RCV_MSG, 0,
+                      sizeof(msg), pmNotificationPort, 0, MACH_PORT_NULL);
+        kern_assert(kr);
+
+        // display is powering down
+        if (msg.header.msgh_id == 0) {
+            IOFBAcknowledgePM( dfb.fbService );
+            xf86SetRootClip(pScreen, FALSE);
+        }
+        // display just woke up
+        else if (msg.header.msgh_id == 1) {
+            xf86SetRootClip(pScreen, TRUE);
         }
     }
     return NULL;
@@ -186,6 +214,15 @@ static void SetupFBandHID(void)
     kr = IOFBCreateSharedCursor( dfb.fbService, kIOFBCurrentShmemVersion,
                                	 32, 32 );
     kern_assert( kr );
+
+    // Register for power management events for the framebuffer's device
+    kr = IOCreateReceivePort(kOSNotificationMessageID, &pmNotificationPort);
+    kern_assert(kr);
+    kr = IOConnectSetNotificationPort( dfb.fbService, 0,
+                                       pmNotificationPort, 0 );
+    if (kr != KERN_SUCCESS) {
+        ErrorF("Power management registration failed.\n");
+    }
 
     // SET THE SCREEN PARAMETERS
     // get the current screen resolution, refresh rate and depth
@@ -341,6 +378,31 @@ static void SetupFBandHID(void)
     kern_assert( kr );
 
     evg->movedMask |= NX_MOUSEMOVEDMASK;
+}
+
+/* 
+ * XFIOKitAddScreen
+ *  IOKit specific initialization for each screen.
+ */
+Bool XFIOKitAddScreen(ScreenPtr pScreen) 
+{
+    pthread_t pmThread;
+
+    // setup cursor support, use hardware cursor if possible
+    if (! XFIOKitInitCursor(pScreen)) {
+        return FALSE;
+    }
+
+    // initialize colormap handling as needed
+    if (dfb.pixelInfo.pixelType == kIOCLUTPixels) {
+        pScreen->StoreColors = XFIOKitStoreColors;
+    }
+
+    // initialize power manager handling
+    pthread_create( &pmThread, NULL, XFIOKitPMThread,
+                    (void *) pScreen );
+
+    return TRUE;
 }
 
 /*

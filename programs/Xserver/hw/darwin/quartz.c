@@ -8,36 +8,35 @@
 
 #ifdef DARWIN_WITH_QUARTZ
 
+// X headers
 #include "mi.h"
 #include "mipointer.h"
+#include "scrnintstr.h"
+#include "opaque.h"     // for display variable
 
+// System headers
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-// CoreGraphics and IOKit include conflicting type definitions. 
-// Include MacTypes first to pre-empt them.
-#include <CarbonCore/MacTypes.h>
 #include <CoreGraphics/CGDirectDisplay.h>
+#include <IOKit/pwr_mgt/IOPMLib.h>
 
 #include "darwin.h"
 #include "quartz.h"
-
-#include "opaque.h" // for display variable
 
 #define kDarwinMaxScreens 100
 static ScreenPtr darwinScreens[kDarwinMaxScreens];
 static int darwinNumScreens = 0;
 static char darwinEventFifoName[PATH_MAX] = "";
 static BOOL xhidden = false;
+static mach_port_t pmNotificationPort;
 
-static void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
 
 /*
  * QuartzStoreColors
  *  FIXME: need to implement if Quartz supports PsuedoColor
  */
-void QuartzStoreColors(
+static void QuartzStoreColors(
     ColormapPtr     pmap,
     int             numEntries,
     xColorItem      *pdefs)
@@ -91,16 +90,18 @@ QuartzWarpCursor(
     miPointerWarpCursor(pScreen, x, y);
 }
 
+
 static miPointerScreenFuncRec quartzScreenFuncsRec = {
   QuartzCursorOffScreen,
   QuartzCrossScreen,
   QuartzWarpCursor,
 };
 
+
 /* 
  * QuartzInitCursor
  */
-Bool QuartzInitCursor(ScreenPtr pScreen) 
+static Bool QuartzInitCursor(ScreenPtr pScreen) 
 {
     // initialize software cursor handling
     if (!miDCInitialize(pScreen, &quartzScreenFuncsRec)) {
@@ -119,17 +120,59 @@ Bool QuartzInitCursor(ScreenPtr pScreen)
 ===========================================================================
 */
 
+/*
+ * QuartzPMThread
+ * Handle power state notifications
+ */
+static void *QuartzPMThread(void *arg)
+{
+    for (;;) {
+        mach_msg_return_t       kr;
+        mach_msg_empty_rcv_t    msg;
+
+        kr = mach_msg((mach_msg_header_t*) &msg, MACH_RCV_MSG, 0,
+                      sizeof(msg), pmNotificationPort, 0, MACH_PORT_NULL);
+        kern_assert(kr);
+
+        // computer just woke up
+        if (msg.header.msgh_id == 1) {
+            if (!xhidden) {
+                int i;
+
+                for (i = 0; i < darwinNumScreens; i++) {
+                    if (darwinScreens[i]) 
+                        xf86SetRootClip(darwinScreens[i], true);
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+
 /* 
  * QuartzAddScreen
  *  Quartz keeps a list of all screens for QuartzShow and QuartzHide.
+ *  FIXME: So does ddx, use that instead.
  */
-Bool QuartzAddScreen(ScreenPtr screen) 
+Bool QuartzAddScreen(ScreenPtr pScreen) 
 {
     if (darwinNumScreens == kDarwinMaxScreens) {
         return FALSE;
     }
 
-    darwinScreens[darwinNumScreens++] = screen;
+    darwinScreens[darwinNumScreens++] = pScreen;
+
+    // setup cursor support
+    if (! QuartzInitCursor(pScreen)) {
+        return FALSE;
+    }
+
+    // initialize colormap handling as needed
+    if (dfb.pixelInfo.pixelType == kIOCLUTPixels) {
+        pScreen->StoreColors = QuartzStoreColors;
+    }
+
     return TRUE;
 }
 
@@ -142,8 +185,8 @@ static void QuartzCapture(void)
 {
     if (! CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayCapture(kCGDirectMainDisplay);
+        CGDisplayHideCursor(kCGDirectMainDisplay);
     }
-    CGDisplayHideCursor(kCGDirectMainDisplay);
 }
 
 
@@ -153,8 +196,8 @@ static void QuartzCapture(void)
  */
 static void QuartzRelease(void)
 {
-    CGDisplayShowCursor(kCGDirectMainDisplay);
     if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
+        CGDisplayShowCursor(kCGDirectMainDisplay);
         CGDisplayRelease(kCGDirectMainDisplay);
     }
 }
@@ -236,12 +279,27 @@ static void QuartzFifoInit(void)
 
 /*
  * QuartzOsVendorInit
- * One-time quartz initialization.
+ * One-time Quartz initialization.
  */
 void QuartzOsVendorInit(void)
 {
+    kern_return_t       kr;
+    io_connect_t        pwrService;
+    pthread_t           pmThread;
+
     QuartzDisplayInit();
     QuartzFifoInit();
+
+    // Register for power management events from the Root Power Domain
+    kr = IOCreateReceivePort(kOSNotificationMessageID, &pmNotificationPort);
+    kern_assert(kr);
+    pwrService = IORegisterForSystemPower(pmNotificationPort, 0);
+    if (pwrService) {
+        // initialize power manager handling
+        pthread_create(&pmThread, NULL, QuartzPMThread, NULL);
+    } else {
+        ErrorF("Power management registration failed.\n");
+    }
 }
 
 
@@ -299,181 +357,27 @@ void QuartzGiveUp(void)
 }
 
 
-#include "mivalidate.h" // for union _Validate used by windowstr.h
-#include "windowstr.h"  // for struct _Window
-#include "scrnintstr.h" // for struct _Screen
-
-// This is copied from Xserver/hw/xfree86/common/xf86Helper.c.
-// Quartz mode uses this when switching in and out of Quartz. 
-// Copyright (c) 1997-1998 by The XFree86 Project, Inc.
-
-/*
- * xf86SetRootClip --
- *	Enable or disable rendering to the screen by
- *	setting the root clip list and revalidating
- *	all of the windows
- */
-
-static void
-xf86SetRootClip (ScreenPtr pScreen, BOOL enable)
-{
-    WindowPtr	pWin = WindowTable[pScreen->myNum];
-    WindowPtr	pChild;
-    Bool	WasViewable = (Bool)(pWin->viewable);
-    Bool	anyMarked;
-    RegionPtr	pOldClip, bsExposed;
-#ifdef DO_SAVE_UNDERS
-    Bool	dosave = FALSE;
-#endif
-    WindowPtr   pLayerWin;
-    BoxRec	box;
-
-    if (WasViewable)
-    {
-	for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
-	{
-	    (void) (*pScreen->MarkOverlappedWindows)(pChild,
-						     pChild,
-						     &pLayerWin);
-	}
-	(*pScreen->MarkWindow) (pWin);
-	anyMarked = TRUE;
-	if (pWin->valdata)
-	{
-	    if (HasBorder (pWin))
-	    {
-		RegionPtr	borderVisible;
-
-		borderVisible = REGION_CREATE(pScreen, NullBox, 1);
-		REGION_SUBTRACT(pScreen, borderVisible,
-				&pWin->borderClip, &pWin->winSize);
-		pWin->valdata->before.borderVisible = borderVisible;
-	    }
-	    pWin->valdata->before.resized = TRUE;
-	}
-    }
-    
-    /*
-     * Use REGION_BREAK to avoid optimizations in ValidateTree
-     * that assume the root borderClip can't change well, normally
-     * it doesn't...)
-     */
-    if (enable)
-    {
-	box.x1 = 0;
-	box.y1 = 0;
-	box.x2 = pScreen->width;
-	box.y2 = pScreen->height;
-	REGION_RESET(pScreen, &pWin->borderClip, &box);
-	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
-    }
-    else
-    {
-	REGION_EMPTY(pScreen, &pWin->borderClip);
-	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
-    }
-    
-    ResizeChildrenWinSize (pWin, 0, 0, 0, 0);
-    
-    if (WasViewable)
-    {
-	if (pWin->backStorage)
-	{
-	    pOldClip = REGION_CREATE(pScreen, NullBox, 1);
-	    REGION_COPY(pScreen, pOldClip, &pWin->clipList);
-	}
-
-	if (pWin->firstChild)
-	{
-	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin->firstChild,
-							   pWin->firstChild,
-							   (WindowPtr *)NULL);
-	}
-	else
-	{
-	    (*pScreen->MarkWindow) (pWin);
-	    anyMarked = TRUE;
-	}
-
-#ifdef DO_SAVE_UNDERS
-	if (DO_SAVE_UNDERS(pWin))
-	{
-	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin);
-	}
-#endif /* DO_SAVE_UNDERS */
-
-	if (anyMarked)
-	    (*pScreen->ValidateTree)(pWin, NullWindow, VTOther);
-    }
-
-    if (pWin->backStorage &&
-	((pWin->backingStore == Always) || WasViewable))
-    {
-	if (!WasViewable)
-	    pOldClip = &pWin->clipList; /* a convenient empty region */
-	bsExposed = (*pScreen->TranslateBackingStore)
-			     (pWin, 0, 0, pOldClip,
-			      pWin->drawable.x, pWin->drawable.y);
-	if (WasViewable)
-	    REGION_DESTROY(pScreen, pOldClip);
-	if (bsExposed)
-	{
-	    RegionPtr	valExposed = NullRegion;
-    
-	    if (pWin->valdata)
-		valExposed = &pWin->valdata->after.exposed;
-	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
-	    if (valExposed)
-		REGION_EMPTY(pScreen, valExposed);
-	    REGION_DESTROY(pScreen, bsExposed);
-	}
-    }
-    if (WasViewable)
-    {
-	if (anyMarked)
-	    (*pScreen->HandleExposures)(pWin);
-#ifdef DO_SAVE_UNDERS
-	if (dosave)
-	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pLayerWin);
-#endif /* DO_SAVE_UNDERS */
-	if (anyMarked && pScreen->PostValidateTree)
-	    (*pScreen->PostValidateTree)(pWin, NullWindow, VTOther);
-    }
-    if (pWin->realized)
-	WindowsRestructured ();
-    FlushAllOutput ();
-}
-
-
 #else // not DARWIN_WITH_QUARTZ
 
 // No Quartz support. All Quartz functions are no-ops
 
-BOOL QuartzAddScreen(ScreenPtr screen) {
-    FatalError("QuartzAddScreen called without Quartz support compiled.");
-}
-
-void QuartzStoreColors(ColormapPtr pmap, int numEntries, xColorItem *pdefs) {
-    FatalError("QuartzStoreColors called without Quartz support compiled.");
-}
-
-void QuartzInitCursor(ScreenPtr screen) {
-    FatalError("QuartzInitCursor called without Quartz support compiled.");
+BOOL QuartzAddScreen(ScreenPtr pScreen) {
+    FatalError("QuartzAddScreen called without Quartz support compiled.\n");
 }
 
 void QuartzOsVendorInit(void) {
-    FatalError("QuartzOsVendorInit called without Quartz support compiled.");
+    FatalError("QuartzOsVendorInit called without Quartz support compiled.\n");
 }
 
 void QuartzGiveUp(void) {
-    FatalError("QuartzGiveUp called without Quartz support compiled.");
+    FatalError("QuartzGiveUp called without Quartz support compiled.\n");
 }
 
 void QuartzHide(void) {
-    FatalError("QuartzHide called without Quartz support compiled.");
+    FatalError("QuartzHide called without Quartz support compiled.\n");
 }
 void QuartzShow(void); {
-    FatalError("QuartzShow called without Quartz support compiled.");
+    FatalError("QuartzShow called without Quartz support compiled.\n");
 }
 
 #endif

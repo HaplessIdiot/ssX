@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.3 2001/01/14 16:44:55 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.4 2001/01/16 23:42:49 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -21,18 +21,11 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
-//#include <unistd.h>
-//#include <fcntl.h>
-//#include <pthread.h>
-
-//#include <mach/mach_interface.h>
 
 #define NO_CFPLUGIN
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hidsystem/IOHIDLib.h>
-//#include <IOKit/hidsystem/IOHIDShared.h>
-//#include <IOKit/graphics/IOGraphicsLib.h>
-//#include <drivers/event_status_driver.h>
+#include <IOKit/hidsystem/ev_keymap.h>
 
 #include "darwin.h"
 #include "quartz.h"
@@ -40,7 +33,6 @@
 
 // Shared global variables
 DarwinFramebufferRec    dfb;
-unsigned char           darwinKeyCommandL = 0, darwinKeyOptionL = 0;
 int                     darwinEventFD;
 Bool                    quartz = FALSE;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
@@ -55,9 +47,10 @@ SInt32                  darwinDesiredRefresh = -1;
 #define	SCROLLWHEELUPFAKE	4
 #define	SCROLLWHEELDOWNFAKE	5
 
-static	DeviceIntPtr    darwinPointer;
-static	DeviceIntPtr    darwinKeyboard;
-static	Bool            fake3Buttons = FALSE;
+static DeviceIntPtr     darwinPointer;
+static DeviceIntPtr     darwinKeyboard;
+static Bool             fake3Buttons = FALSE;
+static unsigned char    darwinKeyCommandL = 0, darwinKeyOptionL = 0;
 
 // Common pixmap formats
 static PixmapFormatRec formats[] = {
@@ -137,12 +130,6 @@ static Bool DarwinAddScreen(
 {
     int         bitsPerRGB, i;
     VisualPtr   visual;
-
-    if (quartz) {
-        if (! QuartzAddScreen(pScreen)) {
-            return FALSE;
-        }
-    }
 
     /* Communicate the information about our initialized screen back to X. */
     bitsPerRGB = dfb.pixelInfo.bitsPerComponent;
@@ -227,26 +214,17 @@ static Bool DarwinAddScreen(
     ShmRegisterFbFuncs(pScreen);
 #endif
 
-    // setup cursor support, use hardware cursor if possible
-    if (quartz) {
-        if (!QuartzInitCursor(pScreen)) {
-            return FALSE;
-        }
-    } else {
-        if (!XFIOKitInitCursor(pScreen)) {
-            return FALSE;
-        }
-    }
-
     // this must be initialized (why doesn't X have a default?)
     pScreen->SaveScreen = DarwinSaveScreen;
 
-    // initialize colormap handling as needed
-    if (dfb.pixelInfo.pixelType == kIOCLUTPixels) {
-        if (quartz) {
-            pScreen->StoreColors = QuartzStoreColors;
-        } else {
-            pScreen->StoreColors = XFIOKitStoreColors;
+    // Perform operations specific to the screen interface
+    if (quartz) {
+        if (! QuartzAddScreen(pScreen)) {
+            return FALSE;
+        }
+    } else {
+        if (! XFIOKitAddScreen(pScreen)) {
+            return FALSE;
         }
     }
 
@@ -255,7 +233,7 @@ static Bool DarwinAddScreen(
     if (!miCreateDefColormap( pScreen )) {
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -283,17 +261,6 @@ static void DarwinChangePointerControl(
     kr = IOHIDSetMouseAcceleration( dfb.hidParam, acceleration );
     if (kr != KERN_SUCCESS)
         ErrorF( "Could not set mouse acceleration with kernel return = 0x%x.\n", kr );
-}
-
-
-/*
- * Motion history between events is not required to be supported.
- * FIXME: This routine is obsolete?
- */
-static int DarwinGetMotionEvents( DeviceIntPtr pDevice, xTimecoord *buff,
-                           unsigned long start, unsigned long stop, ScreenPtr pScr)
-{
-	return 0;
 }
 
 
@@ -350,6 +317,8 @@ static int DarwinKeybdProc( DeviceIntPtr pDev, int onoff )
     switch ( onoff ) {
         case DEVICE_INIT:
             DarwinKeyboardInit( pDev );
+            darwinKeyCommandL = DarwinModifierKeycode(NX_MODIFIERKEY_COMMAND, 0);
+            darwinKeyOptionL = DarwinModifierKeycode(NX_MODIFIERKEY_ALTERNATE, 0);
             break;
         case DEVICE_ON:
             pDev->public.on = TRUE;
@@ -411,6 +380,42 @@ void DarwinSimulateMouseClick(
 }
 
 /*
+ * DarwinUpdateModifiers
+ *  Send events to update the modifier state.
+ */
+void DarwinUpdateModifiers(
+    xEvent xe,          // event template with time, mouse position,
+                        // and KeyPress or KeyRelease filled in
+    int flags )			// modifier flags that have changed
+{
+    if (flags & NX_ALPHASHIFTMASK) {
+        xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_ALPHALOCK, 0);
+        (darwinKeyboard->public.processInputProc)
+        (&xe, darwinKeyboard, 1);		
+    }
+    if (flags & NX_COMMANDMASK) {
+        xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_COMMAND, 0);
+        (darwinKeyboard->public.processInputProc)
+        (&xe, darwinKeyboard, 1);		
+    }
+    if (flags & NX_CONTROLMASK) {
+        xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_CONTROL, 0);
+        (darwinKeyboard->public.processInputProc)
+        (&xe, darwinKeyboard, 1);		
+    }
+    if (flags & NX_ALTERNATEMASK) {
+        xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_ALTERNATE, 0);
+        (darwinKeyboard->public.processInputProc)
+        (&xe, darwinKeyboard, 1);		
+    }
+    if (flags & NX_SHIFTMASK) {
+        xe.u.u.detail = DarwinModifierKeycode(NX_MODIFIERKEY_SHIFT, 0);
+        (darwinKeyboard->public.processInputProc)
+        (&xe, darwinKeyboard, 1);		
+    }
+}
+
+/*
 ===========================================================================
 
  Functions needed to link against device independent X
@@ -442,7 +447,7 @@ void ProcessInputEvents(void)
         if (startsec == 0) startsec = tv.tv_sec;
         if (startsec + QUARTZ_SAFETY_DELAY< tv.tv_sec) {
             QuartzGiveUp();
-            FatalError("%d second safety quit", QUARTZ_SAFETY_DELAY);
+            FatalError("%d second safety quit\n", QUARTZ_SAFETY_DELAY);
         }
     }
 #endif
@@ -456,7 +461,7 @@ void ProcessInputEvents(void)
     } else if ((r == -1) && (errno == EAGAIN)) {
         return;
     } else if ( r != sizeof( ev ) ) {
-        ErrorF( "Only read %i bytes from darwinPipe!", r );
+        ErrorF( "Only read %i bytes from darwinPipe!\n", r );
         return;
     }
 
@@ -633,68 +638,38 @@ void ProcessInputEvents(void)
         case NX_APPDEFINED:
           if (quartz) {
             switch (ev.data.compound.subType) {
-              case kXServerClearModifiers:
-// FIXME: We don't have ModifierKeycode(), but we probably don't need it.
-// There may be better ways to do this with the XKB extension, or we may
-// be able to do without this event by being smarter elsewhere.
-#if 0
-                xe.u.u.type = KeyRelease;
-                if (old_state & NX_ALPHASHIFTMASK) {
-                    xe.u.u.detail = 
-                        ModifierKeycode(NX_MODIFIERKEY_ALPHALOCK, 0)
-                        + MIN_KEYCODE;
-                    (darwinKeyboard->public.processInputProc)
-                        (&xe, darwinKeyboard, 1);		
-                }
-                if (old_state & NX_COMMANDMASK) {
-                    xe.u.u.detail = 
-                        ModifierKeycode(NX_MODIFIERKEY_COMMAND, 0)
-                        + MIN_KEYCODE;
-                    (darwinKeyboard->public.processInputProc)
-                        (&xe, darwinKeyboard, 1);		
-                }
-                if (old_state & NX_CONTROLMASK) {
-                    xe.u.u.detail = 
-                        ModifierKeycode(NX_MODIFIERKEY_CONTROL, 0)
-                        + MIN_KEYCODE;
-                    (darwinKeyboard->public.processInputProc)
-                        (&xe, darwinKeyboard, 1);		
-                }
-                if (old_state & NX_ALTERNATEMASK) {
-                    xe.u.u.detail = 
-                        ModifierKeycode(NX_MODIFIERKEY_ALTERNATE, 0)
-                        + MIN_KEYCODE;
-                    (darwinKeyboard->public.processInputProc)
-                        (&xe, darwinKeyboard, 1);		
-                }
-                if (old_state & NX_SHIFTMASK) {
-                    xe.u.u.detail = 
-                        ModifierKeycode(NX_MODIFIERKEY_SHIFT, 0)
-                        + MIN_KEYCODE;
-                    (darwinKeyboard->public.processInputProc)
-                        (&xe, darwinKeyboard, 1);		
-                }
-#endif
-                old_state = 0;
-	        break;
 
-            case kXServerShow:
+              // Update modifier state. As opposed to NX_FLAGSCHANGED,
+              // in this case any amount of modifiers may have changed.
+              case kXServerUpdateModifiers:
+                xe.u.u.type = KeyRelease;
+                DarwinUpdateModifiers(xe, old_state & ~ev.flags);
+                xe.u.u.type = KeyPress;
+                DarwinUpdateModifiers(xe, ~old_state & ev.flags);
+                old_state = ev.flags;
+	            break;
+
+              case kXServerShow:
                 QuartzShow();
                 break;
 	      
-            case kXServerHide:
+              case kXServerHide:
                 QuartzHide();
                 break;
 	      
-            case kXServerQuit:
+              case kXServerQuit:
                 // FIXME: is there a better way to quit?
                 FatalError("Terminated by Xmaster.\n");
+                break;
+
+              default:
+                ErrorF("Unknown event from Xmaster.\n");
             } // switch (ev.data.compound.subType)
           } // if (quartz)
           break;
 
         default:
-            ErrorF("unknown event caught: %d\n", ev.type);
+            ErrorF("Unknown event caught: %d\n", ev.type);
             ErrorF("\tev.type = %d\n", ev.type);
             ErrorF("\tev.location.x,y = %d,%d\n", ev.location.x, ev.location.y);
             ErrorF("\tev.time = %ld\n", ev.time);
@@ -787,7 +762,7 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 #if 0
     if ( !strcmp( argv[i], "-screen" ) ) {
     	if ( i == argc-1 ) {
-            FatalError( "-screen must be followed by a number" );
+            FatalError( "-screen must be followed by a number\n" );
         }
     	darwinScreenNumber = atoi( argv[i+1] );
         ErrorF( "Attempting to use screen number %i\n", darwinScreenNumber );
@@ -821,10 +796,10 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 
     if ( !strcmp( argv[i], "-size" ) ) {
     	if ( i >= argc-2 ) {
-            FatalError( "-size must be followed by two numbers" );
+            FatalError( "-size must be followed by two numbers\n" );
         }
 #ifdef OLD_POWERBOOK_G3
-        ErrorF( "Ignoring unsupported -size option on old PowerBook G3\n");
+        ErrorF( "Ignoring unsupported -size option on old PowerBook G3\n" );
 #else
     	darwinDesiredWidth = atoi( argv[i+1] );
         darwinDesiredHeight = atoi( argv[i+2] );
@@ -837,7 +812,7 @@ int ddxProcessArgument( int argc, char *argv[], int i )
     if ( !strcmp( argv[i], "-depth" ) ) {
         int     bitDepth;
     	if ( i == argc-1 ) {
-            FatalError( "-depth must be followed by a number" );
+            FatalError( "-depth must be followed by a number\n" );
         }
 #ifdef OLD_POWERBOOK_G3
         ErrorF( "Ignoring unsupported -depth option on old PowerBook G3\n");
@@ -850,7 +825,7 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         else if (bitDepth == 24)
             darwinDesiredDepth = 2;
         else
-            FatalError( "Unsupported pixel depth. Use 8, 15, or 24 bits" );
+            FatalError( "Unsupported pixel depth. Use 8, 15, or 24 bits\n" );
         ErrorF( "Attempting to use pixel depth of %i\n", bitDepth );
 #endif
         return 2;
@@ -858,7 +833,7 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 
     if ( !strcmp( argv[i], "-refresh" ) ) {
     	if ( i == argc-1 ) {
-            FatalError( "-refresh must be followed by a number" );
+            FatalError( "-refresh must be followed by a number\n" );
         }
 #ifdef OLD_POWERBOOK_G3
         ErrorF( "Ignoring unsupported -refresh option on old PowerBook G3\n");
@@ -942,4 +917,151 @@ Bool DPMSSupported(void)
 
 void DPMSSet(void)
 {	return;
+}
+
+
+#include "mivalidate.h" // for union _Validate used by windowstr.h
+#include "windowstr.h"  // for struct _Window
+#include "scrnintstr.h" // for struct _Screen
+
+// This is copied from Xserver/hw/xfree86/common/xf86Helper.c.
+// Quartz mode uses this when switching in and out of Quartz.
+// Quartz or IOKit can use this when waking from sleep.
+// Copyright (c) 1997-1998 by The XFree86 Project, Inc.
+
+/*
+ * xf86SetRootClip --
+ *	Enable or disable rendering to the screen by
+ *	setting the root clip list and revalidating
+ *	all of the windows
+ */
+
+void
+xf86SetRootClip (ScreenPtr pScreen, BOOL enable)
+{
+    WindowPtr	pWin = WindowTable[pScreen->myNum];
+    WindowPtr	pChild;
+    Bool	WasViewable = (Bool)(pWin->viewable);
+    Bool	anyMarked;
+    RegionPtr	pOldClip, bsExposed;
+#ifdef DO_SAVE_UNDERS
+    Bool	dosave = FALSE;
+#endif
+    WindowPtr   pLayerWin;
+    BoxRec	box;
+
+    if (WasViewable)
+    {
+	for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
+	{
+	    (void) (*pScreen->MarkOverlappedWindows)(pChild,
+						     pChild,
+						     &pLayerWin);
+	}
+	(*pScreen->MarkWindow) (pWin);
+	anyMarked = TRUE;
+	if (pWin->valdata)
+	{
+	    if (HasBorder (pWin))
+	    {
+		RegionPtr	borderVisible;
+
+		borderVisible = REGION_CREATE(pScreen, NullBox, 1);
+		REGION_SUBTRACT(pScreen, borderVisible,
+				&pWin->borderClip, &pWin->winSize);
+		pWin->valdata->before.borderVisible = borderVisible;
+	    }
+	    pWin->valdata->before.resized = TRUE;
+	}
+    }
+    
+    /*
+     * Use REGION_BREAK to avoid optimizations in ValidateTree
+     * that assume the root borderClip can't change well, normally
+     * it doesn't...)
+     */
+    if (enable)
+    {
+	box.x1 = 0;
+	box.y1 = 0;
+	box.x2 = pScreen->width;
+	box.y2 = pScreen->height;
+	REGION_RESET(pScreen, &pWin->borderClip, &box);
+	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
+    }
+    else
+    {
+	REGION_EMPTY(pScreen, &pWin->borderClip);
+	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
+    }
+    
+    ResizeChildrenWinSize (pWin, 0, 0, 0, 0);
+    
+    if (WasViewable)
+    {
+	if (pWin->backStorage)
+	{
+	    pOldClip = REGION_CREATE(pScreen, NullBox, 1);
+	    REGION_COPY(pScreen, pOldClip, &pWin->clipList);
+	}
+
+	if (pWin->firstChild)
+	{
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin->firstChild,
+							   pWin->firstChild,
+							   (WindowPtr *)NULL);
+	}
+	else
+	{
+	    (*pScreen->MarkWindow) (pWin);
+	    anyMarked = TRUE;
+	}
+
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin);
+	}
+#endif /* DO_SAVE_UNDERS */
+
+	if (anyMarked)
+	    (*pScreen->ValidateTree)(pWin, NullWindow, VTOther);
+    }
+
+    if (pWin->backStorage &&
+	((pWin->backingStore == Always) || WasViewable))
+    {
+	if (!WasViewable)
+	    pOldClip = &pWin->clipList; /* a convenient empty region */
+	bsExposed = (*pScreen->TranslateBackingStore)
+			     (pWin, 0, 0, pOldClip,
+			      pWin->drawable.x, pWin->drawable.y);
+	if (WasViewable)
+	    REGION_DESTROY(pScreen, pOldClip);
+	if (bsExposed)
+	{
+	    RegionPtr	valExposed = NullRegion;
+    
+	    if (pWin->valdata)
+		valExposed = &pWin->valdata->after.exposed;
+	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
+	    if (valExposed)
+		REGION_EMPTY(pScreen, valExposed);
+	    REGION_DESTROY(pScreen, bsExposed);
+	}
+    }
+    if (WasViewable)
+    {
+	if (anyMarked)
+	    (*pScreen->HandleExposures)(pWin);
+#ifdef DO_SAVE_UNDERS
+	if (dosave)
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pLayerWin);
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pWin, NullWindow, VTOther);
+    }
+    if (pWin->realized)
+	WindowsRestructured ();
+    FlushAllOutput ();
 }

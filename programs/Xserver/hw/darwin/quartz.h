@@ -12,15 +12,13 @@
 
 // NX_APPDEFINED event subtypes for special commands
 enum {
-  kXServerClearModifiers,
+  kXServerUpdateModifiers,
   kXServerShow,
   kXServerHide,
   kXServerQuit
 };
 
 Bool QuartzAddScreen(ScreenPtr screen);
-void QuartzStoreColors(ColormapPtr pmap, int numEntries, xColorItem *pdefs);
-Bool QuartzInitCursor(ScreenPtr pScreen);
 void QuartzOsVendorInit(void);
 void QuartzGiveUp(void);
 void QuartzHide(void);
