@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.49 1999/06/14 06:06:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.50 1999/06/20 05:23:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1045,6 +1045,10 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     return ret;
 }
 
+/* Buffer to hold log data written before the log file is opened */
+static char *saveBuffer = NULL;
+static int size = 0, unused = 0, pos = 0;
+
 /* These functions do the actual writes. */
 static void
 VWrite(int verb, const char *f, va_list args)
@@ -1063,8 +1067,21 @@ VWrite(int verb, const char *f, va_list args)
     }
     if ((verb < 0 || xf86Verbose >= verb) && len > 0)
 	fwrite(buffer, len, 1, stderr);
-    if (logfile && (verb < 0 || xf86LogVerbose >= verb) && len > 0)
-	fwrite(buffer, len, 1, logfile);
+    if ((verb < 0 || xf86LogVerbose >= verb) && len > 0) {
+	if (logfile)
+	    fwrite(buffer, len, 1, logfile);
+	else {
+	    /* XXX This isn't effective yet */
+	    if (len > unused) {
+		size += 1024;
+		saveBuffer = xnfrealloc(saveBuffer, size);
+		unused += 1024;
+	    }
+	    unused -= len;
+	    memcpy(saveBuffer + pos, buffer, len);
+	    pos += len;
+	}
+    }
 }
 
 static void
@@ -1230,6 +1247,14 @@ xf86LogInit()
 	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
     setvbuf(logfile, NULL, _IONBF, 0);
     OsVendorVErrorFProc = OsVendorVErrorF;
+
+    /* Flush saved log information */
+    if (saveBuffer && size > 0) {
+	fwrite(saveBuffer, size, 1, logfile);
+	xfree(saveBuffer);
+	saveBuffer = 0;
+	size = 0;
+    }
 
 #undef LOGSUFFIX
 #else /* __EMX__ */
