@@ -1,4 +1,4 @@
-.\" $TOG: twm.man /main/66 1997/11/04 20:55:52 kaleb $
+.\" $XConsortium: twm.man /main/65 1996/12/09 17:07:44 kaleb $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" Portions copyright 1988 Evans & Sutherland Computer Corporation.
 .\" Portions copyright 1989 Hewlett-Packard Company
@@ -40,7 +40,7 @@
 .if t .sp .5
 ..
 .ta .3i .6i .9i 1.2i 1.5i 1.8i
-.TH TWM 1 "Release 6.4" "X Version 11"
+.TH TWM 1 "Release 6.3" "X Version 11"
 .SH NAME
 twm \- Tab Window Manager for the X Window System
 .SH SYNTAX

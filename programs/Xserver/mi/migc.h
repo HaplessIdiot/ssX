@@ -1,4 +1,4 @@
-/* $TOG: migc.h /main/4 1997/11/04 10:36:00 kaleb $ */
+/* $XConsortium: migc.h,v 1.3 94/04/17 20:27:37 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -29,7 +29,7 @@ from the X Consortium.
 
 */
 
-/* $XFree86: xc/programs/Xserver/mi/migc.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/migc.h,v 1.3 1998/03/20 21:08:22 hohndel Exp $ */
 
 extern void miChangeGC(
 #if NeedFunctionPrototypes

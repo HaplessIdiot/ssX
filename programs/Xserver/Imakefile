@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.129 1998/03/20 21:04:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.130 1998/03/22 05:09:25 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -20,11 +20,7 @@ INSTPGMFLAGS =
 #define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 #define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
-#ifndef BuildXinerama
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
-#else
-#define NoMfbPostFbLibs $(EXTENSIONS) NoMfbBarePostFbLibs $(EXTENSIONS)
-#endif
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
 #define NoMFBBareLibs PreFbLibs NoMfbBarePostFbLibs
@@ -136,11 +132,7 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
       XPDDXDIR = Xprint
 #endif
 #if !BuildXprint || PrintOnlyServer
-#if BuildXinerama
-XPFBLIBS = pandix/LibraryTargetName(xpstubs)
-#else
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
-#endif
 #endif
 
 #if DoLoadableServer
@@ -182,14 +174,9 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
           CFB24 = cfb/LibraryTargetName(cfb) cfb24/LibraryTargetName(cfb)
           CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
 #endif
-#if BuildXinerama
-             MI = panmi/LibraryTargetName(mi)
-            DIX = pandix/LibraryTargetName(dix)
-#else
              MI = mi/LibraryTargetName(mi)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
-#endif
            FONT = $(DEPFONTLIB)
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
@@ -199,13 +186,8 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #else
         SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
-#if BuildXinerama
-           CBRT = panmi/LibraryTargetName(cbrt)
-        STDDIRS = include pandix os panmi $(XPDDXDIR) $(EXTDIRS)
-#else
            CBRT = mi/LibraryTargetName(cbrt)
         STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
-#endif
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -1739,13 +1721,10 @@ CFB8DIR = cfb
 CFB32DIR = cfb32
 XPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DEPDIRS)
 #if PrintOnlyServer
-#if BuildXinerama
-XPPANSTUBOBJS = Xprint/panoramiXstubs.o
-#endif
 #if BuildDPMS
 XPDPMSSTUBOBJS = Xprint/dpmsstubs.o
 #endif
-XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o $(XPPANSTUBOBJS) $(XPDPMSSTUBOBJS)
+XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o $(XPDPMSSTUBOBJS)
 XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) PostFbLibs
 #else
 XPOBJS = Xprint/ddxInit.o
@@ -1847,13 +1826,10 @@ XVFBDDXDIR = hw
 #endif
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
 #if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
-#if BuildXinerama
-XVFBPANSTUBOBJS = hw/vfb/panoramiXstubs.o
-#endif
 #if BuildDPMS
 XVFBDPMSSTUBOBJS = hw/vfb/dpmsstubs.o
 #endif
-XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBPANSTUBOBJS) $(XVFBDPMSSTUBOBJS)
+XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBDPMSSTUBOBJS)
 #else
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif

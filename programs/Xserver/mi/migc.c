@@ -1,4 +1,4 @@
-/* $TOG: migc.c /main/5 1997/11/04 10:35:56 kaleb $ */
+/* $XConsortium: migc.c,v 1.4 94/04/17 20:27:36 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -29,7 +29,7 @@ from the X Consortium.
 
 */
 
-/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.3 1998/03/20 21:08:22 hohndel Exp $ */
 
 #include "scrnintstr.h"
 #include "gcstruct.h"

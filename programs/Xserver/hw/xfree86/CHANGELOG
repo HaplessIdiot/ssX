@@ -1,4 +1,10 @@
 XFree86 3.9Ag (05 April 1998)
+1646. Back out the following R6.4-related changes:
+         #1169, 1170, 1342 -- version numbering changes,
+         #1167 -- CUP extension,
+         #1225, 1282, 1341 -- EVI extension,
+         #1171-1178, 1198, 1246, 1305 -- Xinerama extension,
+         #1165 -- Xt Resource Configuration Management.
 1645. XAA fixes for xf86bpp (#1633, Alan Hourihane).
 1644. More 3.3.2 syncs, PC98 sync, usleep problem with FreeBSD,
       SVR4.0 build problem fixes (#1631, Takaaki Nomura).
@@ -6077,4 +6083,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.578 1998/03/28 06:35:54 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.579 1998/04/05 00:45:45 robin Exp $

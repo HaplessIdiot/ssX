@@ -1,4 +1,4 @@
-.\" $TOG: proxymngr.man /main/4 1997/11/04 20:55:30 kaleb $
+.\" $XConsortium: proxymngr.man /main/3 1996/12/20 14:20:39 swick $
 .\" Copyright (c) 1996  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\" 
-.TH PROXYMNGR 1 "Release 6.4" "X Version 11"
+.TH PROXYMNGR 1 "Release 6.3" "X Version 11"
 .SH NAME
 proxymngr - proxy manager service
 .SH SYNOPSIS
@@ -75,7 +75,7 @@ requests are received and proxies are started.
 .PP
 The proxy manager maintains a local configuration file describing the proxy
 services available.  This configuration file is installed
-in /usr/X11R6.4/lib/X11/proxymngr/pmconfig during the installation
+in /usr/X11R6.3/lib/X11/proxymngr/pmconfig during the installation
 of proxymngr.  The location of the configuration file can be overwritten using
 the \fB\-config\fP command line option.
 .PP
@@ -127,7 +127,7 @@ Here is a sample configuration file:
 !        or
 !    <serviceName> unmanaged <proxyAddress>
 !
-lbx managed /usr/X11R6.4/bin/lbxproxy
+lbx managed /usr/X11R6.3/bin/lbxproxy
 !
 ! substitute site-specific info
 xfwp unmanaged firewall:4444

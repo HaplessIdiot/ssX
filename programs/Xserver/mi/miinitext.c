@@ -45,17 +45,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: miinitext.c /main/46 1997/11/24 16:48:50 kaleb $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.28 1997/11/22 08:17:36 dawes Exp $ */
+/* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.29 1997/12/14 02:55:39 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
 
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
 #undef PEXEXT
-#endif
-#ifdef PANORAMIX
-extern Bool noPanoramiXExtension;
 #endif
 extern Bool noTestExtensions;
 #ifdef XKB
@@ -83,9 +80,6 @@ extern void XTestExtension1Init(INITARGS);
 #ifdef SHAPE
 extern void ShapeExtensionInit(INITARGS);
 #endif
-#ifdef EVI
-extern void EVIExtensionInit(INITARGS);
-#endif
 #ifdef MITSHM
 extern void ShmExtensionInit(INITARGS);
 #endif
@@ -99,9 +93,6 @@ InitExtension PexExtensionInitPtr = NULL;
 #endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
-#endif
-#ifdef PANORAMIX
-extern void PanoramiXExtensionInit(INITARGS);
 #endif
 #ifdef XINPUT
 extern void XInputExtensionInit(INITARGS);
@@ -162,9 +153,6 @@ extern void SecurityExtensionInit(INITARGS);
 #ifdef XPRINT
 extern void XpExtensionInit(INITARGS);
 #endif
-#ifdef TOGCUP
-extern void XcupExtensionInit(INITARGS);
-#endif
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #endif
@@ -193,11 +181,6 @@ InitExtensions(argc, argv)
     int		argc;
     char	*argv[];
 {
-#ifdef PANORAMIX
-#if !defined(PRINT_ONLY_SERVER) && !defined(NO_PANORAMIX)
-  if (!noPanoramiXExtension) PanoramiXExtensionInit();
-#endif
-#endif
 #ifdef BEZIER
     BezierExtensionInit();
 #endif
@@ -209,9 +192,6 @@ InitExtensions(argc, argv)
 #endif
 #ifdef MITSHM
     ShmExtensionInit();
-#endif
-#ifdef EVI
-    EVIExtensionInit();
 #endif
 #if defined(PEXEXT) && !(defined(PEX_MODULE) && defined(NO_MODULES_EXTS))
 #ifndef PEX_MODULE
@@ -290,9 +270,6 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XPRINT
     XpExtensionInit();
-#endif
-#ifdef TOGCUP
-    XcupExtensionInit();
 #endif
 #if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
     DPMSExtensionInit();

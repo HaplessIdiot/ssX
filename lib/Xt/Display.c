@@ -1,4 +1,4 @@
-/* $TOG: Display.c /main/115 1997/10/13 12:25:32 barstow $ */
+/* $TOG: Display.c /main/114 1997/05/15 17:28:57 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Display.c,v 3.5 1997/05/17 12:52:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Display.c,v 3.6 1997/11/16 06:17:42 dawes Exp $ */
 
 /*
 
@@ -62,9 +62,6 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 #include "IntrinsicI.h"
-#ifndef X_NO_RESOURCE_CONFIGURATION_MANAGEMENT
-#include "ResConfigP.h"
-#endif
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -224,12 +221,6 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
 	(ArgList)NULL, 0, (XtTypedArgList)NULL, 0, 
 	(ConstraintWidgetClass)NULL);
 #endif
-
-#ifndef X_NO_RESOURCE_CONFIGURATION_MANAGEMENT
-    pd->rcm_init = XInternAtom (dpy, RCM_INIT, 0);
-    pd->rcm_data = XInternAtom (dpy, RCM_DATA, 0);
-#endif
-
     return pd;
 }
 

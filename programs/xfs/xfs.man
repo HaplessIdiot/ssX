@@ -36,8 +36,8 @@
 .\" suitability of this software for any purpose.  It is provided "as is"
 .\" without express or implied warranty.
 .\" $TOG: xfs.man /main/15 1997/11/04 20:56:51 kaleb $
-.\" $XFree86: xc/programs/xfs/xfs.man,v 3.5 1997/11/16 06:42:50 dawes Exp $
-.TH XFS 1 "Release 6.4" "X Version 11"
+.\" $XFree86: xc/programs/xfs/xfs.man,v 3.6 1998/03/20 19:08:15 hohndel Exp $
+.TH XFS 1 "Release 6.3" "X Version 11"
 .SH NAME
 xfs \- X font server
 .SH SYNOPSIS

@@ -1,5 +1,5 @@
 .\" $TOG: Xserver.man /main/67 1997/11/08 19:26:20 barstow $
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.8 1997/11/16 06:17:49 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.9 1997/12/06 09:37:41 dawes Exp $
 .\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +25,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XSERVER 1 "Release 6.4"  "X Version 11"
+.TH XSERVER 1 "Release 6.3"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
 .SH SYNOPSIS
@@ -220,9 +220,6 @@ the client that it is doing so.
 .B \-x \fIextension\fP
 loads the specified extension at init.
 This is a no-op for most implementations.
-.TP 8
-.B [+-]xinerama
-enable(+) or disable(-) XINERAMA extension. Default is disabled.
 .SH SERVER DEPENDENT OPTIONS
 Some X servers accept the following options:
 .TP 8

@@ -1,5 +1,4 @@
-.\" $TOG: xinit.man /main/25 1997/11/04 20:57:10 kaleb $
-.\" $XFree86: xc/programs/xinit/xinit.man,v 3.2 1996/12/23 07:11:25 dawes Exp $
+.\" $XConsortium: xinit.man /main/24 1996/12/09 17:09:20 kaleb $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +24,8 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XINIT 1 "Release 6.4" "X Version 11"
+.\" $XFree86: xc/programs/xinit/xinit.man,v 3.3 1997/11/16 06:42:55 dawes Exp $
+.TH XINIT 1 "Release 6.3" "X Version 11"
 .SH NAME
 xinit \- X Window System initializer
 .SH SYNOPSIS
