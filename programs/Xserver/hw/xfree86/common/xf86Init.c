@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.90 1999/01/14 13:04:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.91 1999/01/17 10:53:57 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -1147,4 +1147,32 @@ xf86LoadModules(char **list, pointer *optlist)
     return TRUE;
 }
 #endif
+
+PixmapFormatPtr
+xf86GetPixFormat(int depth)
+{
+    int i;
+
+    for (i = 0; i < numFormats; i++)
+	if (formats[i].depth == depth)
+	   break;
+
+    if (i != numFormats)
+	return &formats[i];
+    else
+	return NULL;
+}
+
+int
+xf86GetBppFromDepth(int depth)
+{
+    PixmapFormatPtr format;
+
+   
+    format = xf86GetPixFormat(depth);
+    if (format)
+	return format->bitsPerPixel;
+    else
+	return 0;
+}
 

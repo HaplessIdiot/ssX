@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.9 1998/11/15 04:30:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.10 1999/01/14 13:04:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -564,8 +564,6 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
  *    virtualY     (optional) virtual height requested
  *
  * In addition, the following fields from the ScrnInfoRec are used:
- *    formats      pixel formats for screen
- *    numFormats   number of pixel formats
  *    fbFormat     pixel format for the framebuffer
  *    videoRam     video memory size (in kB)
  *    maxHValue    maximum horizontal timing value
@@ -667,8 +665,6 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
  *    clocks       a list of discrete clocks
  *    numClocks    number of discrete clocks
  *    progClock    clock is programmable
- *    formats      pixmap formats
- *    numFormats   number of pixmap formats
  *    fbFormat     format of the framebuffer
  *    videoRam     video memory size
  *    maxHValue    maximum horizontal timing value
@@ -734,7 +730,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if (scrp->depth > 4)
 	BankFormat = &scrp->fbFormat;
     else
-	BankFormat = &scrp->formats[0];
+	BankFormat = xf86GetPixFormat(scrp->depth);
 
     bitsPerPixel = scrp->fbFormat.bitsPerPixel;
     pixmapPad = scrp->fbFormat.scanlinePad;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.85 1999/01/13 03:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.86 1999/01/14 01:44:15 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -168,6 +168,11 @@ void xf86Break1(void);
 void xf86Break2(void);
 void xf86Break3(void);
 void xf86SetBackingStore(ScreenPtr pScreen);
+
+/* xf86Init.c */
+
+PixmapFormatPtr xf86GetPixFormat(int depth);
+int xf86GetBppFromDepth(int depth);
 
 /* xf86Mode.c */
 
