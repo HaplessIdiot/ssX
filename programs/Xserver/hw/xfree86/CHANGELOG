@@ -1,4 +1,6 @@
 XFree86 3.1.2Bc (7 January 1996)
+185. Update lnxLib.rules for new GNU elf tools which look for libname.so
+     rather than libname.so.rev at link time (Helmut Geyer).
 184. Set default ProjectRoot back to /usr/X11R6.
 183. Include fix-trackers to seq-4024 (includes more a more recent XKB snap,
      some record updates, and some config and Xlib updates).
