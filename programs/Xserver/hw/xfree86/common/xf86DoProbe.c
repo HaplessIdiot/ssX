@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.3 1999/10/15 15:45:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.6 2000/02/03 20:31:47 alanh Exp $ */
 /*
  * finish setting up the server
  * Load the driver modules and call their probe functions.
@@ -28,7 +28,7 @@ void
 DoProbe()
 {
     int i;
-    Bool probeResult;
+    Bool probeResultISA, probeResultPCI, probeResultFBDEV;
 
 #ifdef XFree86LOADER
     /* Find the list of video driver modules. */
@@ -61,30 +61,30 @@ DoProbe()
 
     /* Call all of the probe functions, reporting the results. */
     for (i = 0; i < xf86NumDrivers; i++) {
-	probeResult = FALSE;
+	probeResultISA = probeResultPCI = probeResultFBDEV = FALSE;
 	if (xf86DriverList[i]->Probe != NULL) {
-	    probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
-						   PROBE_DETECTISA);
+	    probeResultISA =
+		xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DETECTISA);
 	    ErrorF("Probe ISA capabilities in driver `%s' returns %s\n",
-	       xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+		xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultISA));
 	}
 	if (xf86DriverList[i]->Probe != NULL) {
-	    probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
-						   PROBE_DETECTPCI);
+	    probeResultPCI =
+		xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DETECTPCI);
 	    ErrorF("Probe PCI capabilities in driver `%s' returns %s\n",
-	       	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+		xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultPCI));
 	}
 	if (xf86DriverList[i]->Probe != NULL) {
-	    probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
-						   PROBE_DETECTFBDEV);
+	    probeResultFBDEV =
+		xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DETECTFBDEV);
 	    ErrorF("Probe FBDEV capabilities in driver `%s' returns %s\n",
-	       	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+		xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultFBDEV));
 	}
 
-	/* If we have a result, then call XXXIdentify function in driver */
-	if (probeResult) {
+	/* If we have a result, then call driver's Identify function */
+	if (probeResultISA || probeResultPCI || probeResultFBDEV) {
 	    if (xf86DriverList[i]->Identify != NULL) {
-	    	xf86DriverList[i]->Identify(0);
+		xf86DriverList[i]->Identify(0);
 	    }
 	}
     }
