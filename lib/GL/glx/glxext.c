@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.21 2003/10/23 15:30:08 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.22 2003/12/08 17:35:28 dawes Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -500,7 +500,7 @@ __glXInitializeVisualConfigFromTags( __GLcontextModes *config, int count,
     ** of the reply.  They are in pairs of property type
     ** and property value.
     */
-    config->visualRating = GLX_NONE;
+    config->visualRating = GLX_DONT_CARE;
     config->visualSelectGroup = 0;
     config->transparentPixel = GLX_NONE;
     config->transparentRed = GLX_DONT_CARE;
