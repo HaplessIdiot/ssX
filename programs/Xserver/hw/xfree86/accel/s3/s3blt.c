@@ -1,4 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1998  X Consortium
