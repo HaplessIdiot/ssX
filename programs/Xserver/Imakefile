@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.58 1996/08/18 01:45:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.59 1996/08/18 03:54:16 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -621,9 +621,11 @@ DDXDIR1 = hw/xfree86
 XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
 		$(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o \
+             $(S3DRIVERSRC)/newmmio/newmmio.o \
              $(S3DRIVERSRC)/mmio_928/mmio_928.o \
              $(S3DRIVERSRC)/s3_generic/s3_generic.o
 XF86S3LIBS = $(XF86ACCELSRC)/s3/LibraryTargetName(s3) \
+             $(XF86ACCELSRC)/s3/s3newmmio/LibraryTargetName(s3newmmio) \
              $(XF86ACCELSRC)/s3/s3mmio/LibraryTargetName(s3mmio) $(XF86LIBS) \
              CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache) \
              $(XF86OSLIB)
@@ -1038,9 +1040,11 @@ DDXDIR2 = hw/xfree98
 XF98NECS3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
                    $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o \
+                $(XF98NECDRIVERSRC)/newmmio/newmmio.o \
                 $(XF98NECDRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98NECDRIVERSRC)/s3_generic/s3_generic.o
 XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3) \
+                $(XF98ACCELSRC)/s3nec/s3newmmio/LibraryTargetName(s3newmmio) \
                 $(XF98ACCELSRC)/s3nec/s3mmio/LibraryTargetName(s3mmio) \
                 $(XF98LIBSNEC) CFBLibs \
                 $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
@@ -1070,9 +1074,11 @@ DDXDIR2 = hw/xfree98
 XF98PWSKBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
                    $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o \
+                $(XF98PWSKBDRIVERSRC)/newmmio/newmmio.o \
                 $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
 XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3) \
+                $(XF98ACCELSRC)/s3pwskb/s3newmmio/LibraryTargetName(s3newmmio) \
                 $(XF98ACCELSRC)/s3pwskb/s3mmio/LibraryTargetName(s3mmio) \
                 $(XF98LIBSPWSKB) CFBLibs \
                 $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
@@ -1102,9 +1108,11 @@ DDXDIR2 = hw/xfree98
 XF98PWLBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
                   $(DDXDIR2) $(DEPDIRS)
 XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o \
+               $(XF98PWLBDRIVERSRC)/newmmio/newmmio.o \
                $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o \
                $(XF98PWLBDRIVERSRC)/s3_generic/s3_generic.o
 XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3) \
+               $(XF98ACCELSRC)/s3pwlb/s3newmmio/LibraryTargetName(s3newmmio) \
                $(XF98ACCELSRC)/s3pwlb/s3mmio/LibraryTargetName(s3mmio) \
                $(XF98LIBSPWLB) CFBLibs \
                $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)
@@ -1134,9 +1142,11 @@ DDXDIR2 = hw/xfree98
 XF98GA968SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
                    $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98GA968OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3ga968/s3Conf.o \
+                $(XF98GA968DRIVERSRC)/newmmio/newmmio.o \
                 $(XF98GA968DRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98GA968DRIVERSRC)/s3_generic/s3_generic.o
 XF98GA968LIBS = $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3) \
+                $(XF98ACCELSRC)/s3ga968/s3newmmio/LibraryTargetName(s3newmmio) \
                 $(XF98ACCELSRC)/s3ga968/s3mmio/LibraryTargetName(s3mmio) \
                 $(XF98LIBSGA968) CFBLibs \
                 $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache) $(XF98OSLIB)

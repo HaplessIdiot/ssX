@@ -1,5 +1,5 @@
 /* $XConsortium: ecphoto.c /main/6 1995/12/02 16:44:11 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ecphoto.c,v 3.0 1996/03/29 22:10:10 dawes Exp $ */
 /* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module ecphoto.c ****/
 /******************************************************************************
@@ -105,6 +105,7 @@ terms and conditions:
 #include <photomap.h>
 #include <element.h>
 #include <technq.h>
+#include <memory.h>
 
 
 /*

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: ifparser.c /main/9 1995/08/09 14:10:57 kaleb $
- * $XFree86$
+ * $XFree86: xc/config/makedepend/ifparser.c,v 3.3 1996/05/06 06:42:44 dawes Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -176,12 +176,10 @@ parse_value (g, cp, valp)
 	*valp = -(*valp);
 	return cp;
 
-#if defined(linux) && defined(__alpha__)
       case '~':
 	DO (cp = parse_value (g, cp + 1, valp));
 	*valp = ~(*valp);
 	return cp;
-#endif /* defined(linux) && defined(__alpha__) */
 
       case '#':
 	DO (cp = parse_variable (g, cp + 1, &var));

@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.7 1996/04/15 11:14:15 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.8 1996/05/10 06:54:26 dawes Exp $
  */
 '@echo off'
 ADDRESS CMD
@@ -104,8 +104,9 @@ SELECT
       rec = WORD(all,2)
       fp = 2
       IF rec = '-r' THEN fp = 3 
+      ELSE rec = '-n'
       DO i=fp TO WORDS(all)
-	 CALL discard rec TRANSLATE(WORD(all,i),'\','/')
+	 CALL discard rec,TRANSLATE(WORD(all,i),'\','/')
       END	
    END
    WHEN code=5 THEN DO
@@ -187,8 +188,9 @@ IF rc = 0 THEN return 1
 RETURN 0
 
 discard: PROCEDURE
-arg rec files
-IF rec = '-R' THEN DO
+rec=ARG(1)
+files=ARG(2)
+IF rec = '-r' THEN DO
    old = DIRECTORY()
    nd = DIRECTORY
    CALL SysFileTree files, 'deld', 'DO'

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/xtrans/Xtransos2.c,v 3.2 1996/05/10 12:27:50 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransos2.c,v 3.3 1996/05/13 06:38:04 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau and Holger Veit
@@ -368,7 +368,7 @@ char *port;
 /* Attach the pipe sem to the pipe. Use handle index as key */
     rc = DosSetNPipeSem(ciptr->fd, (HSEM)hPipeSem, ciptr->fd);
     if (rc){
-        PRMSG(1, "TRANS(Os2OpenCOTSServer) Could not attach sem %d to pipe %d, rc=%d\n",
+        PRMSG(1, "Os2OpenCOTSServer: Could not attach sem %d to pipe %d, rc=%d\n",
                  hPipeSem,ciptr->fd,rc);
         DosClose(ciptr->fd);
         xfree(ciptr->addr);
@@ -683,7 +683,7 @@ int	       *status;
 /* Attach the pipe sem to the pipe. Use handle index as key */
     rc = DosSetNPipeSem(newciptr->fd, (HSEM)hPipeSem, newciptr->fd);
     if (rc){
-        PRMSG(1, "TRANS(Os2OpenCOTSServer) Could not attach sem %d to pipe %d, rc=%d\n",
+        PRMSG(1, "Os2OpenCOTSServer: Could not attach sem %d to pipe %d, rc=%d\n",
                  hPipeSem,newciptr->fd,rc);
         DosClose(newciptr->fd);
         xfree(newciptr->addr);
@@ -924,7 +924,7 @@ BOOL init_server_pipes()
    if(first_time){
         rc = DosCreateEventSem(NULL, &hPipeSem,DC_SEM_SHARED,FALSE);
         if (rc){
-           PRMSG(1,"TRANS(Os2OpenListener)Could not create pipe semaphore, rc=%d\n",
+           PRMSG(1,"Os2OpenListener (init_server_pipes): Could not create pipe semaphore, rc=%d\n",
                 rc,0,0);
            return(FALSE);
            }
