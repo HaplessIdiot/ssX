@@ -51,7 +51,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.7 1998/03/21 04:19:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.8 1998/03/21 14:14:20 hohndel Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -1278,7 +1278,6 @@ than a switch on the rop per item (span or rectangle.)
  */
 #if defined(XFree86LOADER) && !defined(NOXF86DEFS)
 #include "xf86_ansic.h"
-#include "xf86_libc.h"
 #endif
 
 #endif /* __MFB_H__ */
