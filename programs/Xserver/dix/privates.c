@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.4 1998/08/13 14:45:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.5 1998/10/04 09:38:11 dawes Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -347,15 +347,18 @@ InitCmapPrivFunc initPrivFunc;
 	pColormap = (ColormapPtr) LookupIDByType (
 	    pScreen->defColormap, RT_COLORMAP);
 
-	privs = (DevUnion *) xrealloc (pColormap->devPrivates,
-	    colormapPrivateCount * sizeof(DevUnion));
-
-	pColormap->devPrivates = privs;
-
-	if (!privs || !(*initPrivFunc)(pColormap))
+	if (pColormap)
 	{
-	    colormapPrivateCount--;
-	    return -1;
+	    privs = (DevUnion *) xrealloc (pColormap->devPrivates,
+		colormapPrivateCount * sizeof(DevUnion));
+    
+	    pColormap->devPrivates = privs;
+    
+	    if (!privs || !(*initPrivFunc)(pColormap))
+	    {
+		colormapPrivateCount--;
+		return -1;
+	    }
 	}
     }
 
