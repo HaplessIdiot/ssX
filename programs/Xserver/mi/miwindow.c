@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.7 2001/12/14 20:00:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.8tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1076,7 +1076,6 @@ miChangeBorderWidth(pWin, width)
     register WindowPtr pWin;
     unsigned int width;
 {
-    WindowPtr pParent;
     int oldwidth;
     Bool anyMarked = FALSE;
     register ScreenPtr pScreen;
@@ -1092,7 +1091,6 @@ miChangeBorderWidth(pWin, width)
 	return;
     HadBorder = HasBorder(pWin);
     pScreen = pWin->drawable.pScreen;
-    pParent = pWin->parent;
     if (WasViewable && width < oldwidth)
 	anyMarked = (*pScreen->MarkOverlappedWindows)(pWin, pWin, &pLayerWin);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/micoord.h,v 1.2 2001/07/24 08:32:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micoord.h,v 1.6tsi Exp $ */
 /*
  * Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -44,7 +44,7 @@
  * forcing as to use div instead of shift.  Let's be explicit.
  */
 
-#if defined(mips) || \
+#if defined(mips) || defined(sgi) || \
     defined(sparc) || defined(__sparc64__) || \
     defined(__alpha) || defined(__alpha__) || \
     defined(__i386__) || defined(i386) || \

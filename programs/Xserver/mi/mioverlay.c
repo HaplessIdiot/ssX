@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.13 2002/09/10 23:53:19 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.14tsi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -1667,7 +1667,6 @@ miOverlayChangeBorderWidth(
     WindowPtr pWin,
     unsigned int width
 ){
-    WindowPtr pParent;
     int oldwidth;
     register ScreenPtr pScreen;
     Bool WasViewable = (Bool)(pWin->viewable);
@@ -1681,7 +1680,6 @@ miOverlayChangeBorderWidth(
 	return;
     HadBorder = HasBorder(pWin);
     pScreen = pWin->drawable.pScreen;
-    pParent = pWin->parent;
     if (WasViewable && (width < oldwidth))
 	(*pScreen->MarkOverlappedWindows)(pWin, pWin, NULL);
 
