@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/7 1996/01/31 09:59:52 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.2 1996/01/31 11:53:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.3 1996/02/04 09:17:35 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -184,7 +184,7 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
 
     XkbEnsureSafeMapName(keymap);
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkmi\"",
+	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,
