@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.7 2002/09/23 01:25:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.8 2002/09/29 02:55:01 paulo Exp $ */
 
 #include "rep.h"
 
@@ -53,13 +53,21 @@ typedef struct _orec_inf {
 static int orec_alt(orec_inf*, rec_alt*);
 static int orec_pat(orec_inf*, rec_pat*);
 static int orec_grp(orec_inf*, rec_grp*);
-static int orec_rng(orec_inf*, rec_rng*);
 static int orec_pat_bad_rpt(orec_inf*, rec_pat*);
 static int orec_pat_bad_forward_rpt(orec_inf*, rec_pat*);
 static int orec_pat_rng(orec_inf*, rec_pat*);
 static int orec_pat_cse(orec_inf*, rec_pat*);
 static int orec_pat_cse_can(orec_inf*, rec_pat*);
 static int orec_str_list(orec_inf*, rec_alt*, int, int);
+
+/*
+ * Initialization
+ */
+extern unsigned char re__alnum[256];
+extern unsigned char re__odigit[256];
+extern unsigned char re__ddigit[256];
+extern unsigned char re__xdigit[256];
+extern unsigned char re__control[256];
 
 /*
  * Implementation
@@ -288,9 +296,6 @@ orec_pat(orec_inf *inf, rec_pat *pat)
 		break;
 	    case Rep_Range:
 	    case Rep_RangeNot:
-		/* First check if can join some characters */
-		orec_rng(inf, pat->data.rng);
-		/* If there are too many gaps */
 		orec_pat_rng(inf, pat);
 		break;
 	    case Rep_Group:
@@ -393,105 +398,53 @@ orec_grp(orec_inf *inf, rec_grp *grp)
 }
 
 static int
-orec_rng(orec_inf *inf, rec_rng *rng)
-{
-    rec_rng *ptr, *tmp, *next;
-
-    /*  Data is already sorted, but single characters that could
-     * be made a list are not joined.
-     *  XXX This does not optimize, scanning a longer list is normally
-     * slightly faster than selecting the list type and comparing ranges,
-     * but makes the code smaller. */
-    while (rng) {
-	ptr = rng;
-	if (ptr->type == Reb_Single) {
-	    while (ptr->next && ptr->next->value.chr == ptr->value.chr + 1)
-		ptr = ptr->next;
-	    if (ptr->value.chr >= rng->value.chr + 8) {
-		rec_rng *nxt;
-
-		rng->type = Reb_Range;
-		rng->range.chr = ptr->value.chr;
-		nxt = ptr->next;
-		for (tmp = rng->next; tmp != nxt;) {
-		    next = tmp->next;
-		    free(tmp);
-		    tmp = next;
-		}
-		rng->next = nxt;
-	    }
-	}
-	rng = rng->next;
-    }
-
-    return (inf->ecode);
-}
-
-static int
 orec_pat_rng(orec_inf *inf, rec_pat *pat)
 {
-    int cost;
-    rec_rng *rng = pat->data.rng;
+    int i, j[2], count;
+    rec_pat_t type = pat->type;
+    unsigned char *range = pat->data.rng->range;
 
-    /* Calculate the "cost" of the comparisons */
-    for (cost = 0; rng; rng = rng->next) {
-	switch (rng->type) {
-	    case Reb_CaseSingle:
-		cost += 2;
-	    case Reb_Single:
-		cost += 2;
+    for (i = count = j[0] = j[1] = 0; i < 256; i++) {
+	if (range[i]) {
+	    if (count == 2) {
+		++count;
 		break;
-	    case Reb_CaseRange:
-		cost += 4;
-	    case Reb_Range:
-		cost += 4;
-		break;
+	    }
+	    j[count++] = i;
 	}
     }
 
-    if (cost >= LARGE_RNG_COST) {
-	rec_rng *next;
-	int chf, cht;
-	rec_rbm *rbm = calloc(1, sizeof(rec_rbm));
-
-	if (rbm == NULL)
-	    return (inf->ecode = RE_ESPACE);
-
-	for (rng = pat->data.rng; rng;) {
-	    next = rng->next;
-	    switch (rng->type) {
-		case Reb_Single:
-		    chf = rng->value.chr;
-		    rbm->map[chf >> 3] |= (1 << (chf & 7));
-		    break;
-		case Reb_CaseSingle:
-		    chf = rng->value.cse.lower;
-		    cht = rng->value.cse.upper;
-		    rbm->map[chf >> 3] |= (1 << (chf & 7));
-		    rbm->map[cht >> 3] |= (1 << (cht & 7));
-		    break;
-		case Reb_Range:
-		    chf = rng->value.chr;
-		    cht = rng->range.chr;
-		    for (; chf <= cht; chf++)
-			rbm->map[chf >> 3] |= (1 << (chf & 7));
-		    break;
-		case Reb_CaseRange:
-		    chf = rng->value.cse.lower;
-		    cht = rng->range.cse.lower;
-		    for (; chf <= cht; chf++)
-			rbm->map[chf >> 3] |= (1 << (chf & 7));
-		    chf = rng->value.cse.upper;
-		    cht = rng->range.cse.upper;
-		    for (; chf <= cht; chf++)
-			rbm->map[chf >> 3] |= (1 << (chf & 7));
-		    break;
-	    }
-	    free(rng);
-	    rng = next;
+    if (count == 1 ||
+	(count == 2 &&
+	 ((islower(j[0]) && toupper(j[0]) == j[1]) ||
+	  (isupper(j[0]) && tolower(j[0]) == j[1])))) {
+	free(pat->data.rng);
+	if (count == 1) {
+	    pat->data.chr = j[0];
+	    pat->type = type == Rep_Range ? Rep_Literal : Rep_LiteralNot;
 	}
-	pat->type = pat->type == Rep_Range ? Rep_BitRange : Rep_BitRangeNot;
-	pat->data.rbm = rbm;
+	else {
+	    pat->data.cse.upper = j[0];
+	    pat->data.cse.lower = j[1];
+	    pat->type = type == Rep_Range ? Rep_CaseLiteral : Rep_CaseLiteralNot;
+	}
+    }
+    else {
+	if (memcmp(re__alnum, range, 256) == 0)
+	    type = type == Rep_Range ? Rep_Alnum : Rep_AlnumNot;
+	else if (memcmp(re__odigit, range, 256) == 0)
+	    type = type == Rep_Range ? Rep_Odigit : Rep_OdigitNot;
+	else if (memcmp(re__ddigit, range, 256) == 0)
+	    type = type == Rep_Range ? Rep_Digit : Rep_DigitNot;
+	else if (memcmp(re__xdigit, range, 256) == 0)
+	    type = type == Rep_Range ? Rep_Xdigit : Rep_XdigitNot;
+	else if (memcmp(re__control, range, 256) == 0)
+	    type = type == Rep_Range ? Rep_Control : Rep_ControlNot;
+
+	if (type != pat->type) {
+	    free(pat->data.rng);
+	    pat->type = type;
+	}
     }
 
     return (inf->ecode);

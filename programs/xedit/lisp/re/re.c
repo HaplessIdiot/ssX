@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.5 2002/09/23 01:25:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.6 2002/11/02 22:58:11 paulo Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -107,7 +107,6 @@ static int rec_code_byte_byte(re_inf*, ReCode, int, int);
 static int rec_build_alt(re_inf*, rec_alt*);
 static int rec_build_pat(re_inf*, rec_pat*);
 static int rec_build_rng(re_inf*, rec_rng*);
-static int rec_build_bit_rng(re_inf*, rec_rbm*);
 static int rec_build_grp(re_inf*, rec_grp*);
 static int rec_build_stl(re_inf*, rec_stl*);
 static int rec_build_rep(re_inf*, rec_rep*);
@@ -124,9 +123,11 @@ static void redump(re_cod*);
 /*
  * Initialization
  */
-static unsigned char re__alnum[256];
-static unsigned char re__xdigit[256];
-static unsigned char re__control[256];
+unsigned char re__alnum[256];
+unsigned char re__odigit[256];
+unsigned char re__ddigit[256];
+unsigned char re__xdigit[256];
+unsigned char re__control[256];
 
 /*
  * Implementation
@@ -268,27 +269,33 @@ reset:
 	    case Re_Odigit:
 		if (eng.str >= eng.end)
 		    goto fail;
-		if (eng.str[0] >= '0' && eng.str[0] <= '7')
+		if (re__odigit[eng.str[0]])
 		    goto match;
 		goto fail;
+	    case Re_OdigitNot:
+		if (eng.str >= eng.end || re__odigit[eng.str[0]])
+		    goto fail;
+		goto match;
 	    case Re_Digit:
 		if (eng.str >= eng.end)
 		    goto fail;
-		if (eng.str[0] >= '0' && eng.str[0] <= '9')
+		if (re__ddigit[eng.str[0]])
 		    goto match;
 		goto fail;
 	    case Re_DigitNot:
-		if (eng.str >= eng.end)
+		if (eng.str >= eng.end || re__ddigit[eng.str[0]])
 		    goto fail;
-		if (eng.str[0] < '0' || eng.str[0] > '9')
-		    goto match;
-		goto fail;
+		goto match;
 	    case Re_Xdigit:
 		if (eng.str >= eng.end)
 		    goto fail;
 		if (re__xdigit[eng.str[0]])
 		    goto match;
 		goto fail;
+	    case Re_XdigitNot:
+		if (eng.str >= eng.end || re__xdigit[eng.str[0]])
+		    goto fail;
+		goto match;
 	    case Re_Space:
 		if (eng.str >= eng.end)
 		    goto fail;
@@ -343,6 +350,10 @@ reset:
 		if (re__control[eng.str[0]])
 		    goto match;
 		goto fail;
+	    case Re_ControlNot:
+		if (eng.str >= eng.end || re__control[eng.str[0]])
+		    goto fail;
+		goto match;
 
 	    /****************************************************
 	     * One byte codes, match special emtpy strings	*
@@ -682,102 +693,15 @@ next_lcstl:;
 	     * Character range matching				*
 	     ****************************************************/
 	    case Re_Range:
-		if (eng.str >= eng.end)
-		    goto fail;
-		len = eng.cod[1];
-		ptr = eng.cod + 2;
-		str = ptr + len;
-		for (; ptr < str;) {
-		    switch (*ptr++) {
-			case Re_RangeSingle:
-			    if (*ptr++ == eng.str[0])
-				goto range_match;
-			    break;
-			case Re_RangeSingleList:
-			    k = *ptr++;
-			    for (j = 0; j < k; j++) {
-				if (*ptr++ == eng.str[0])
-				    goto range_match;
-			    }
-			    break;
-			case Re_RangePair:
-			    if (ptr[0] <= eng.str[0] &&
-				ptr[1] >= eng.str[0])
-				goto range_match;
-			    ptr += 2;
-			    break;
-			case Re_RangePairList:
-			    k = *ptr++;
-			    for (j = 0; j < k; j++, ptr += 2) {
-				if (ptr[0] <= eng.str[0] &&
-				    ptr[1] >= eng.str[0])
-				    goto range_match;
-			    }
-			    break;
-		    }
-		}
-		goto fail;
-range_match:
-		ci = str - eng.cod;
-		goto match;
-
-	    case Re_RangeNot:
-		if (eng.str >= eng.end)
-		    goto fail;
-		len = eng.cod[1];
-		ptr = eng.cod + 2;
-		str = ptr + len;
-		for (; ptr < str;) {
-		    switch (*ptr++) {
-			case Re_RangeSingle:
-			    if (*ptr++ == eng.str[0])
-				goto rangenot_match;
-			    break;
-			case Re_RangeSingleList:
-			    k = *ptr++;
-			    for (j = 0; j < k; j++) {
-				if (*ptr++ == eng.str[0])
-				    goto rangenot_match;
-			    }
-			    break;
-			case Re_RangePair:
-			    if (ptr[0] <= eng.str[0] &&
-				ptr[1] >= eng.str[0])
-				goto rangenot_match;
-			    ptr += 2;
-			    break;
-			case Re_RangePairList:
-			    k = *ptr++;
-			    for (j = 0; j < k; j++, ptr += 2) {
-				if (ptr[0] <= eng.str[0] &&
-				    ptr[1] >= eng.str[0])
-				    goto rangenot_match;
-			    }
-			    break;
-		    }
-		}
-		ci = str - eng.cod;
-		goto match;
-rangenot_match:
-		goto fail;
-
-	    /****************************************************
-	     * Character bit range matching			*
-	     ****************************************************/
-	    case Re_BitRange:
-		if (eng.str < eng.end &&
-		    (eng.cod[(eng.str[0] >> 3) + 1] &
-		     (1 << (eng.str[0] & 7)))) {
-		    ci = 33;
+		if (eng.str < eng.end && eng.cod[eng.str[0] + 1]) {
+		    ci = 257;
 		    goto match;
 		}
 		goto fail;
-	    case Re_BitRangeNot:
-		if (eng.str >= eng.end ||
-		    (eng.cod[(eng.str[0] >> 3) + 1] &
-		     (1 << (eng.str[0] & 7))))
+	    case Re_RangeNot:
+		if (eng.str >= eng.end || eng.cod[eng.str[0] + 1])
 		    goto fail;
-		ci = 33;
+		ci = 257;
 		goto match;
 
 	    /****************************************************
@@ -1786,20 +1710,23 @@ reinit(void)
 	return;
     first = 0;
 
-    for (i = 'a'; i <= 'z'; i++)
-	re__alnum[i] = 1;
-    for (i = 'A'; i <= 'Z'; i++)
-	re__alnum[i] = 1;
-    for (i = '0'; i <= '9'; i++)
-	re__alnum[i] = 1;
     re__alnum['_'] = 1;
 
+    for (i = '0'; i <= '7'; i++)
+	re__alnum[i] = re__odigit[i] = re__ddigit[i] = re__xdigit[i] = 1;
+
+    for (; i <= '9'; i++)
+	re__alnum[i] = re__ddigit[i] = re__xdigit[i] = 1;
+
     for (i = 'a'; i <= 'f'; i++)
-	re__xdigit[i] = 1;
+	re__alnum[i] = re__xdigit[i] = 1;
+    for (; i <= 'z'; i++)
+	re__alnum[i] = 1;
+
     for (i = 'A'; i <= 'F'; i++)
-	re__xdigit[i] = 1;
-    for (i = '0'; i <= '9'; i++)
-	re__xdigit[i] = 1;
+	re__alnum[i] = re__xdigit[i] = 1;
+    for (; i <= 'Z'; i++)
+	re__alnum[i] = 1;
 
     for (i = 1; i < 32; i++)
 	re__control[i] = 1;
@@ -2019,11 +1946,6 @@ rec_build_pat(re_inf *inf, rec_pat *pat)
 		if (rec_code(inf, (ReCode)pat->type) == 0)
 		    rec_build_rng(inf, pat->data.rng);
 		break;
-	    case Rep_BitRange:
-	    case Rep_BitRangeNot:
-		if (rec_code(inf, (ReCode)pat->type) == 0)
-		    rec_build_bit_rng(inf, pat->data.rbm);
-		break;
 	    case Rep_String:
 	    case Rep_SearchString:
 	    case Rep_CaseString:
@@ -2040,9 +1962,11 @@ rec_build_pat(re_inf *inf, rec_pat *pat)
 	    case Rep_AnyEatMaybe:
 	    case Rep_AnyEatAtLeast:
 	    case Rep_Odigit:
+	    case Rep_OdigitNot:
 	    case Rep_Digit:
 	    case Rep_DigitNot:
 	    case Rep_Xdigit:
+	    case Rep_XdigitNot:
 	    case Rep_Space:
 	    case Rep_SpaceNot:
 	    case Rep_Tab:
@@ -2052,6 +1976,7 @@ rec_build_pat(re_inf *inf, rec_pat *pat)
 	    case Rep_Alnum:
 	    case Rep_AlnumNot:
 	    case Rep_Control:
+	    case Rep_ControlNot:
 	    case Rep_Bol:
 	    case Rep_Eol:
 	    case Rep_Bow:
@@ -2099,145 +2024,11 @@ rec_build_pat(re_inf *inf, rec_pat *pat)
 }
 
 static int
-rec_build_bit_rng(re_inf *inf, rec_rbm *rbm)
-{
-    if (rec_check(inf, sizeof(rbm->map)) == 0) {
-	memcpy(inf->cod + inf->len, rbm->map, sizeof(rbm->map));
-	inf->len += sizeof(rbm->map);
-    }
-
-    return (inf->ecode);
-}
-
-static int
 rec_build_rng(re_inf *inf, rec_rng *rng)
 {
-    rec_rng *ptr, *prv;
-    int length, base;
-
-    length = base = 0;
-    for (ptr = rng, prv = NULL; ptr; prv = ptr, ptr = ptr->next) {
-
-	switch (ptr->type) {
-	    case Reb_CaseSingle:
-	    case Reb_Single:
-		if (prv == NULL ||
-		    prv->type == Reb_Range ||
-		    prv->type == Reb_CaseRange) {
-		    length += 1 + (base > 1);
-		    base = 0;
-		}
-		break;
-	    case Reb_CaseRange:
-	    case Reb_Range:
-		if (prv == NULL ||
-		    prv->type == Reb_Single ||
-		    prv->type == Reb_CaseSingle) {
-		    length += 1 + (base > 1);
-		    base = 0;
-		}
-		break;
-	}
-
-	switch (ptr->type) {
-	    case Reb_CaseSingle:
-		base++;
-		length++;
-	    case Reb_Single:
-		base++;
-		length++;
-		break;
-	    case Reb_CaseRange:
-		base++;
-		length += 2;
-	    case Reb_Range:
-		base++;
-		length += 2;
-		break;
-	}
-    }
-    length += base > 1;
-
-    if (length > 255)
-	return (inf->ecode = RE_ASSERT);
-
-    if (rec_byte(inf, length) == 0 || rec_check(inf, length) != 0) {
-	/* There is enough space, just add the data */
-	int done;
-
-	for (;rng ;) {
-	    ptr = prv = rng;
-	    if (ptr->type == Reb_Single || ptr->type == Reb_CaseSingle) {
-		base = (ptr->type == Reb_CaseSingle) + 1;
-		for (done = 0, ptr = ptr->next; ptr; ptr = ptr->next) {
-		    switch (ptr->type) {
-			case Reb_CaseSingle:
-			    ++base;
-			case Reb_Single:
-			    ++base;
-			    break;
-			default:
-			    done = 1;
-			    break;
-		    }
-		    if (done)
-			break;
-		}
-
-		if (base > 1) {
-		    rec_code(inf, Re_RangeSingleList);
-		    rec_byte(inf, base);
-		}
-		else
-		    rec_code(inf, Re_RangeSingle);
-
-		prv = done ? ptr : NULL;
-		for (; rng != prv; rng = rng->next) {
-		    inf->cod[inf->len++] = rng->value.chr;
-		    if (rng->type == Reb_CaseSingle)
-			inf->cod[inf->len++] = rng->value.cse.upper;
-		}
-	    }
-
-	    else {
-		base = ptr->type == Reb_CaseRange;
-		for (done = 0, ptr = ptr->next; ptr; ptr = ptr->next) {
-		    switch (ptr->type) {
-			case Reb_CaseRange:
-			    ++base;
-			case Reb_Range:
-			    ++base;
-			    break;
-			default:
-			    done = 1;
-			    break;
-		    }
-		    if (done)
-			break;
-		}
-
-		if (base) {
-		    rec_code(inf, Re_RangePairList);
-		    rec_byte(inf, base + 1);
-		}
-		else
-		    rec_code(inf, Re_RangePair);
-
-		prv = done ? ptr : NULL;
-		for (; rng != prv; rng = rng->next) {
-		    if (rng->type == Reb_Range) {
-			inf->cod[inf->len++] = rng->value.chr;
-			inf->cod[inf->len++] = rng->range.chr;
-		    }
-		    else {
-			inf->cod[inf->len++] = rng->value.cse.lower;
-			inf->cod[inf->len++] = rng->range.cse.lower;
-			inf->cod[inf->len++] = rng->value.cse.upper;
-			inf->cod[inf->len++] = rng->range.cse.upper;
-		    }
-		}
-	    }
-	}
+    if (rec_check(inf, sizeof(rng->range)) == 0) {
+	memcpy(inf->cod + inf->len, rng->range, sizeof(rng->range));
+	inf->len += sizeof(rng->range);
     }
 
     return (inf->ecode);
@@ -2550,7 +2341,7 @@ static void
 redump(re_cod *code)
 {
     int i, j, k;
-    unsigned char *cod = code->cod, *rng, *stl;
+    unsigned char *cod = code->cod, *stl;
 
     if (cod[0] & RE_NOSUB)
 	printf("Nosub\n");
@@ -2688,6 +2479,9 @@ redump(re_cod *code)
 	    case Re_Odigit:
 		printf("Odigit");
 		break;
+	    case Re_OdigitNot:
+		printf("Odigit-not");
+		break;
 	    case Re_Digit:
 		printf("Digit");
 		break;
@@ -2696,6 +2490,9 @@ redump(re_cod *code)
 		break;
 	    case Re_Xdigit:
 		printf("Xdigit");
+		break;
+	    case Re_XdigitNot:
+		printf("Xdigit-not");
 		break;
 	    case Re_Space:
 		printf("Space");
@@ -2724,6 +2521,9 @@ redump(re_cod *code)
 	    case Re_Control:
 		printf("Control");
 		break;
+	    case Re_ControlNot:
+		printf("Control-not");
+		break;
 	    case Re_Bol:
 		printf("Bol");
 		break;
@@ -2737,48 +2537,16 @@ redump(re_cod *code)
 		printf("Eow");
 		break;
 	    case Re_Range:
-		printf("Range");
+		printf("Range\n");
 		goto range;
 	    case Re_RangeNot:
-		printf("Range-not");
+		printf("Range-not\n");
 range:
-		i = *cod++;
-		printf(" %d", i);
-		rng = cod + i;
-		for (; cod < rng;) {
-		    switch (*cod++) {
-			case Re_RangeSingle:
-			    printf(" Single:%c", *cod++);
-			    break;
-			case Re_RangeSingleList:
-			    i = *cod++;
-			    printf(" Single-list(%d):", i);
-			    for (j = 0; j < i; j++)
-				putchar(*cod++);
-			    break;
-			case Re_RangePair:
-			    printf(" Pair:%c-", *cod++);
-			    putchar(*cod++);
-			    break;
-			case Re_RangePairList:
-			    i = *cod++;
-			    printf(" Pair-list(%d):", i);
-			    for (j = 0; j < i; j++) {
-				printf("%c-", *cod++);
-				putchar(*cod++);
-			    }
-			    break;
-		    }
+		for (i = 0; i < 256; i += 4) {
+		    for (j = k = 0; j < 4; j++)
+			k = (k << 8) | *cod++;
+		    printf("%04x ", k);
 		}
-		break;
-	    case Re_BitRange:
-		printf("Bitrange ");
-		goto bit_range;
-	    case Re_BitRangeNot:
-		printf("Bitrange-not ");
-bit_range:
-		for (i = 0; i < 32; i++)
-		    printf("%o ", *cod++);
 		break;
 	    case Re_Literal:
 		printf("Literal %c", *cod++);

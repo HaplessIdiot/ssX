@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/re/rep.h,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
 
 #include "re.h"
 
@@ -68,16 +68,6 @@
  * with a given initial byte. */
 #define LARGE_STL_COUNT	16
 
-/*  This is a flag to decide when it should build a bitmap for character
- * ranges, every single char has cost 2, every range of characters has
- * cost 4, and when it needs to build a case insensitive range, the
- * cost is duplicated.
- *  This value cannot be larger than 32, as this is the number of bytes
- * used by the bitmap (and cost is actually roughly the number of bytes
- * used by a character comparing range test).
- */
-#define LARGE_RNG_COST	16
-
 /*
  * Local types
  */
@@ -104,9 +94,6 @@ typedef struct _rec_alt rec_alt;
 /* Optimization types */
 	/* (r)egular (e)xpression (c)ompile (st)ring (l)ist */
 typedef struct _rec_stl rec_stl;
-
-	/* (r)egular (e)xpression (r)ange (b)it(m)ap */
-typedef struct _rec_rbm rec_rbm;
 
 /* Final compilation and execution types */
 	/* (re)gular expression (inf)ormation */
@@ -157,9 +144,11 @@ typedef enum {
     /* Matching */
     Re_Any,			/* . */
     Re_Odigit,			/* \o */
+    Re_OdigitNot,		/* \o */
     Re_Digit,			/* \d */
     Re_DigitNot,		/* \D */
     Re_Xdigit,			/* \x */
+    Re_XdigitNot,		/* \x */
     Re_Space,			/* \s */
     Re_SpaceNot,		/* \S */
     Re_Tab,			/* \t */
@@ -169,21 +158,15 @@ typedef enum {
     Re_Alnum,			/* \w */
     Re_AlnumNot,		/* \W */
     Re_Control,			/* \c */
+    Re_ControlNot,		/* \C */
     Re_Bol,			/* ^ */
     Re_Eol,			/* $ */
     Re_Bow,			/* \< */
     Re_Eow,			/* \> */
 
     /* Range matching information */
-    Re_Range,			/* + list length + [...] */
-    Re_RangeNot,		/* + list length + [...] */
-	Re_RangeSingle,		/* + character */
-	Re_RangeSingleList,	/* + length + character list */
-	Re_RangePair,		/* + from + to */
-	Re_RangePairList,	/* + length + from-to list */
-
-    Re_BitRange,
-    Re_BitRangeNot,
+    Re_Range,			/* + 256 bytes */
+    Re_RangeNot,		/* + 256 bytes */
 
     /* Matching with arguments */
     Re_Literal,			/* + character */
@@ -215,16 +198,6 @@ typedef enum {
 } ReCode;
 
 
-/* Intermediate compilation types definition */
-	/* (r)egular (e)xpresssion (r)a(ng)e (t)ype */
-typedef enum _rec_rng_t {
-    Reb_Single,			/* Match single character */
-    Reb_CaseSingle,		/* Match single case sensitive character */
-    Reb_Range,			/* Match range of characters */
-    Reb_CaseRange		/* Match case sensitive range of characters */
-} rec_rng_t;
-
-
 /* (r)egular (e)xpresssion (pat)rern (t)ype */
 typedef enum _rec_pat_t {
     Rep_Literal			= Re_Literal,
@@ -233,8 +206,6 @@ typedef enum _rec_pat_t {
     Rep_CaseLiteralNot		= Re_CaseLiteralNot,
     Rep_Range			= Re_Range,
     Rep_RangeNot		= Re_RangeNot,
-    Rep_BitRange		= Re_BitRange,
-    Rep_BitRangeNot		= Re_BitRangeNot,
     Rep_String			= Re_String,
     Rep_CaseString		= Re_CaseString,
     Rep_SearchLiteral		= Re_SearchLiteral,
@@ -249,9 +220,11 @@ typedef enum _rec_pat_t {
     Rep_AnyAtLeast		= Re_AnyAtLeast,
     Rep_AnyEatAtLeast		= Re_AnyEatAtLeast,
     Rep_Odigit			= Re_Odigit,
+    Rep_OdigitNot		= Re_OdigitNot,
     Rep_Digit			= Re_Digit,
     Rep_DigitNot		= Re_DigitNot,
     Rep_Xdigit			= Re_Xdigit,
+    Rep_XdigitNot		= Re_XdigitNot,
     Rep_Space			= Re_Space,
     Rep_SpaceNot		= Re_SpaceNot,
     Rep_Tab			= Re_Tab,
@@ -261,6 +234,7 @@ typedef enum _rec_pat_t {
     Rep_Alnum			= Re_Alnum,
     Rep_AlnumNot		= Re_AlnumNot,
     Rep_Control			= Re_Control,
+    Rep_ControlNot		= Re_ControlNot,
     Rep_Bol			= Re_Bol,
     Rep_Eol			= Re_Eol,
     Rep_Bow			= Re_Bow,
@@ -290,27 +264,9 @@ struct _rec_cse {
 };
 
 
-/*  A rec_rng is used only during compilation, and can be viewed as
- * a regular expression character range specification as:
- *
- *	[<ch>]  or [<ch-from>-<ch-to>]
- *
- * where <ch> and <ch-from> is the value element and <ch-to> is the
- * range element. If the range element is equal to the value element,
- * this is a match to a single character. Used by the rec_rep structure
- * if the type field is Rep_Range.
- */
+/*  A rec_rng is used only during compilation, just a character map */
 struct _rec_rng {
-    rec_rng_t type;
-    rec_rng *next;		/* Linked list information */
-    union {
-	unsigned char chr;
-	rec_cse cse;
-    } value;			/* Value of single character match */
-    union {
-	unsigned char chr;
-	rec_cse cse;
-    } range;			/* End value of range of characters */
+    unsigned char range[256];
 };
 
 
@@ -321,7 +277,7 @@ struct _rec_rng {
  *  The data field can contain:
  *	chr:	the value of a single character to match.
  *	cse:	the upper and lower case value of a character to match.
- *	rng:	a list of ranges to match or match not.
+ *	rng:	a character map to match or not match.
  *	str:	a simple string or a string where every two bytes
  *		represents the character to match, in lower/upper
  *		case sequence.
@@ -339,7 +295,6 @@ struct _rec_pat {
 	rec_grp *grp;
 	unsigned char *str;
 	rec_stl *stl;
-	rec_rbm *rbm;
     } data;
     rec_rep *rep;		/* Pattern repetition information */
 };
@@ -397,10 +352,6 @@ struct _rec_stl {
     int tlen;			/* Total length of all strings */
     unsigned char *lens;	/* Vector of string lengths */
     unsigned char **strs;	/* The strings */
-};
-
-struct _rec_rbm {
-    unsigned char map[32];	/* Every bit means a character */
 };
 
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.19 2002/11/12 06:16:21 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.20 2002/11/13 04:35:47 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -44,6 +44,11 @@
 #define UPCASE		0
 #define DOWNCASE	1
 #define CAPITALIZE	2
+
+#define INCDEPTH()							\
+    if (++info->depth > MAX_PRINT_DEPTH)				\
+	LispDestroy("stack overflow")
+#define DECDEPTH()	--info->depth
 
 /*
  * Types
@@ -65,8 +70,8 @@ typedef struct _write_info {
 
     long circle_count;
     /* used while building circle info */
-    LispObj **conses;
-    long num_conses;
+    LispObj **objects;
+    long num_objects;
     /* the circular lists */
     circle_info *circles;
     long num_circles;
@@ -93,6 +98,7 @@ static int LispDoWriteObject(LispObj*, LispObj*, write_info*, int);
 static void LispBuildCircle(LispObj*, write_info*);
 static void LispDoBuildCircle(LispObj*, write_info*);
 static long LispCheckCircle(LispObj*, write_info*);
+static int LispPrintCircle(LispObj*, LispObj*, long, int*, write_info*);
 
 /*
  * Initialization
@@ -116,7 +122,7 @@ LispWriteInit(void)
     LispExportSymbol(Oprint_length);
 
     Oprint_circle	= STATIC_ATOM("*PRINT-CIRCLE*");
-    LispProclaimSpecial(Oprint_circle, NIL, NIL);
+    LispProclaimSpecial(Oprint_circle, T, NIL);
     LispExportSymbol(Oprint_circle);
 
     Oprint_escape	= STATIC_ATOM("*PRINT-ESCAPE*");
@@ -153,16 +159,17 @@ Lisp_Princ(LispBuiltin *builtin)
  princ object &optional output-stream
  */
 {
-    int escape;
+    int head;
     LispObj *object, *output_stream;
 
     output_stream = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    escape = LispGetEscape(output_stream);
-    LispSetEscape(output_stream, 1);
+    head = lisp__data.env.length;
+    LispAddVar(Oprint_escape, NIL);
+    ++lisp__data.env.head;
     LispPrint(object, output_stream, 0);
-    LispSetEscape(output_stream, escape);
+    lisp__data.env.head = lisp__data.env.length = head;
 
     return (object);
 }
@@ -268,16 +275,16 @@ LispWriteObject(LispObj *stream, LispObj *object)
     /* detect circular/shared objects? */
     circle = LispGetVar(Oprint_circle);
     info.circle_count = 0;
-    info.conses = NULL;
-    info.num_conses = 0;
+    info.objects = NULL;
+    info.num_objects = 0;
     info.circles = NULL;
     info.num_circles = 0;
     if (circle && circle != NIL) {
 	LispBuildCircle(object, &info);
 	/* free this data now */
-	if (info.num_conses) {
-	    LispFree(info.conses);
-	    info.num_conses = 0;
+	if (info.num_objects) {
+	    LispFree(info.objects);
+	    info.num_objects = 0;
 	}
     }
 
@@ -311,6 +318,8 @@ LispWriteObject(LispObj *stream, LispObj *object)
 static void
 LispBuildCircle(LispObj *object, write_info *info)
 {
+    LispObj *list;
+
     switch (OBJECT_TYPE(object)) {
 	case LispCons_t:
 	    LispDoBuildCircle(object, info);
@@ -318,26 +327,37 @@ LispBuildCircle(LispObj *object, write_info *info)
 	case LispArray_t:
 	    /* Currently arrays are implemented as lists, but only
 	     * the elements could/should be circular */
-	    for (object = object->data.array.list;
-		 CONSP(object); object = CDR(object))
-		LispBuildCircle(CAR(object), info);
+	    if (LispCheckCircle(object, info) >= 0)
+		return;
+	    LispDoBuildCircle(object, info);
+	    for (list = object->data.array.list;
+		 CONSP(list); list = CDR(list))
+		LispBuildCircle(CAR(list), info);
 	    break;
 	case LispStruct_t:
 	    /* Like arrays, structs are currently implemented as lists,
 	     * but only the elements could/should be circular */
-	    for (object = object->data.struc.fields;
-		 CONSP(object); object = CDR(object))
-		LispBuildCircle(CAR(object), info);
+	    if (LispCheckCircle(object, info) >= 0)
+		return;
+	    LispDoBuildCircle(object, info);
+	    for (list = object->data.struc.fields;
+		 CONSP(list); list = CDR(list))
+		LispBuildCircle(CAR(list), info);
 	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
+	    LispDoBuildCircle(object, info);
 	    LispBuildCircle(object->data.quote, info);
 	    break;
 	case LispComma_t:
+	    LispDoBuildCircle(object, info);
 	    LispBuildCircle(object->data.comma.eval, info);
 	    break;
 	case LispLambda_t:
 	    /* Circularity in a function body should fail elsewhere... */
+	    if (LispCheckCircle(object, info) >= 0)
+		return;
+	    LispDoBuildCircle(object, info);
 	    LispBuildCircle(object->data.lambda.code, info);
 	    break;
 	default:
@@ -353,8 +373,8 @@ LispDoBuildCircle(LispObj *object, write_info *info)
     if (LispCheckCircle(object, info) >= 0)
 	return;
 
-    for (i = 0; i < info->num_conses; i++)
-	if (info->conses[i] == object) {
+    for (i = 0; i < info->num_objects; i++)
+	if (info->objects[i] == object) {
 	    /* circularity found */
 	    info->circles = LispRealloc(info->circles, sizeof(circle_info) *
 					(info->num_circles + 1));
@@ -366,18 +386,20 @@ LispDoBuildCircle(LispObj *object, write_info *info)
 
     /* object pointer not yet recorded */
     if ((i % 16) == 0)
-	info->conses = LispRealloc(info->conses, sizeof(LispObj*) *
-				   (info->num_conses + 16));
-    info->conses[info->num_conses++] = object;
+	info->objects = LispRealloc(info->objects, sizeof(LispObj*) *
+				    (info->num_objects + 16));
+    info->objects[info->num_objects++] = object;
 
-    if (CONSP(CAR(object)))
-	LispDoBuildCircle(CAR(object), info);
-    else
-	LispBuildCircle(CAR(object), info);
-    if (CONSP(CDR(object)))
-	LispDoBuildCircle(CDR(object), info);
-    else
-	LispBuildCircle(CDR(object), info);
+    if (CONSP(object)) {
+	if (CONSP(CAR(object)))
+	    LispDoBuildCircle(CAR(object), info);
+	else
+	    LispBuildCircle(CAR(object), info);
+	if (CONSP(CDR(object)))
+	    LispDoBuildCircle(CDR(object), info);
+	else
+	    LispBuildCircle(CDR(object), info);
+    }
 }
 
 static long
@@ -390,6 +412,25 @@ LispCheckCircle(LispObj *object, write_info *info)
 	    return (i);
 
     return (-1);
+}
+
+static int
+LispPrintCircle(LispObj *stream, LispObj *object, long circle,
+		int *length, write_info *info)
+{
+    char stk[32];
+
+    if (!info->circles[circle].circle_nth) {
+	sprintf(stk, "#%ld=", ++info->circle_count);
+	*length += LispWriteStr(stream, stk, strlen(stk));
+	info->circles[circle].circle_nth = info->circle_count;
+
+	return (1);
+    }
+    sprintf(stk, "#%ld#", info->circles[circle].circle_nth);
+    *length += LispWriteStr(stream, stk, strlen(stk));
+
+    return (0);
 }
 
 static void
@@ -549,30 +590,14 @@ LispWriteList(LispObj *stream, LispObj *object, write_info *info, int paren)
     int length = 0;
     long circle = 0;
 
-    /* This function is recursive */
-    if (++info->depth > MAX_PRINT_DEPTH)
-	LispDestroy("stack overflow");
+    INCDEPTH();
     if (info->print_level < 0 || info->level <= info->print_level) {
 	LispObj *car, *cdr;
 	long print_length = info->length;
 
 	if (info->circles && (circle = LispCheckCircle(object, info)) >= 0) {
-	    char stk[32];
-
-	    if (!paren) {
-		paren = 1;
-		length += LispWriteStr(stream, ". ", 2);
-	    }
-
-	    if (!info->circles[circle].circle_nth) {
-		sprintf(stk, "#%ld=", ++info->circle_count);
-		length += LispWriteStr(stream, stk, strlen(stk));
-		info->circles[circle].circle_nth = info->circle_count;
-	    }
-	    else {
-		sprintf(stk, "#%ld#", info->circles[circle].circle_nth);
-		length += LispWriteStr(stream, stk, strlen(stk));
-		--info->depth;
+	    if (LispPrintCircle(stream, object, circle, &length, info) == 0) {
+		DECDEPTH();
 
 		return (length);
 	    }
@@ -624,7 +649,7 @@ LispWriteList(LispObj *stream, LispObj *object, write_info *info, int paren)
     }
     else
 	length += LispWriteChar(stream, '#');
-    --info->depth;
+    DECDEPTH();
 
     return (length);
 }
@@ -634,21 +659,23 @@ LispDoWriteObject(LispObj *stream, LispObj *object, write_info *info, int paren)
 {
     long print_level;
     int length = 0;
-    char stk[64];
+    char stk[64], *string = NULL;
 
 write_again:
     switch (OBJECT_TYPE(object)) {
 	case LispNil_t:
 	    if (object == NIL)
-		length += LispWriteStr(stream, Snil, 3);
+		string = Snil;
 	    else if (object == T)
-		length += LispWriteChar(stream, 'T');
+		string = St;
 	    else if (object == DOT)
-		length += LispWriteStr(stream, "#<DOT>", 6);
+		string = "#<DOT>";
 	    else if (object == UNBOUND)
-		length += LispWriteStr(stream, "#<UNBOUND>", 10);
+		string = "#<UNBOUND>";
 	    else
-		length += LispWriteStr(stream, "#<ERROR>", 8);
+		string = "#<ERROR>";
+	    length += LispDoWriteAtom(stream, string, strlen(string),
+				      info->print_case);
 	    break;
 	case LispOpaque_t: {
 	    char *desc = LispIntToOpaqueType(object->data.opaque.type);
@@ -740,22 +767,22 @@ write_again:
 	case LispLambda_t:
 	    switch (object->funtype) {
 		case LispLambda:
-		    length += LispWriteStr(stream, "#<LAMBDA ", 9);
+		    string = "#<LAMBDA ";
 		    break;
 		case LispFunction:
-		    length += LispWriteStr(stream, "#<FUNCTION ", 11);
+		    string = "#<FUNCTION ";
 		    break;
 		case LispMacro:
-		    length += LispWriteStr(stream, "#<MACRO ", 8);
+		    string = "#<MACRO ";
 		    break;
 		case LispSetf:
-		    length += LispWriteStr(stream, "#<SETF ", 7);
+		    string = "#<SETF ";
 		    break;
 	    }
+	    length += LispDoWriteAtom(stream, string, strlen(string),
+				      info->print_case);
 	    if (object->funtype != LispLambda) {
-		char *desc = ATOMID(object->data.lambda.name);
-
-		length += LispWriteStr(stream, desc, strlen(desc));
+		length += LispWriteAtom(stream, object->data.lambda.name, info);
 		length += LispWriteChar(stream, ' ');
 	    }
 	    length += LispDoWriteObject(stream,
@@ -765,23 +792,28 @@ write_again:
 	case LispStream_t:
 	    length += LispWriteStr(stream, "#<", 2);
 	    if (object->data.stream.type == LispStreamFile)
-		length += LispWriteStr(stream, "FILE-STREAM ", 12);
+		string = "FILE-STREAM ";
 	    else if (object->data.stream.type == LispStreamString)
-		length += LispWriteStr(stream, "STRING-STREAM ", 14);
+		string = "STRING-STREAM ";
 	    else if (object->data.stream.type == LispStreamStandard)
-		length += LispWriteStr(stream, "STANDARD-STREAM ", 16);
+		string = "STANDARD-STREAM ";
 	    else if (object->data.stream.type == LispStreamPipe)
-		length += LispWriteStr(stream, "PIPE-STREAM ", 12);
+		string = "PIPE-STREAM ";
+	    length += LispDoWriteAtom(stream, string, strlen(string),
+				      info->print_case);
 
 	    if (!object->data.stream.readable && !object->data.stream.writable)
-		length += LispWriteStr(stream, "CLOSED", 6);
+		length += LispDoWriteAtom(stream, "CLOSED",
+					  6, info->print_case);
 	    else {
 		if (object->data.stream.readable)
-		    length += LispWriteStr(stream, "READ", 4);
+		    length += LispDoWriteAtom(stream, "READ",
+					      4, info->print_case);
 		if (object->data.stream.writable) {
 		    if (object->data.stream.readable)
 			length += LispWriteChar(stream, '-');
-		    length += LispWriteStr(stream, "WRITE", 5);
+		    length += LispDoWriteAtom(stream, "WRITE",
+					      5, info->print_case);
 		}
 	    }
 	    length += LispWriteChar(stream, ' ');
@@ -808,36 +840,43 @@ write_again:
 	    object = CAR(object->data.quote);
 	    goto write_again;
 	case LispPackage_t:
-	    length += LispWriteStr(stream, "#<PACKAGE ", 10);
+	    length += LispDoWriteAtom(stream, "#<PACKAGE ",
+				      10, info->print_case);
 	    length += LispWriteStr(stream,
 				   THESTR(object->data.package.name),
 				   STRLEN(object->data.package.name));
 	    length += LispWriteChar(stream, '>');
 	    break;
 	case LispRegex_t:
-	    length += LispWriteStr(stream, "#<REGEX ", 8);
+	    length += LispDoWriteAtom(stream, "#<REGEX ",
+				      8, info->print_case);
 	    length += LispDoWriteObject(stream,
 					object->data.regex.pattern, info, 1);
 	    if (object->data.regex.options & RE_NOSPEC)
-		length += LispWriteStr(stream, " :NOSPEC", 8);
+		length += LispDoWriteAtom(stream, " :NOSPEC",
+					  8, info->print_case);
 	    if (object->data.regex.options & RE_ICASE)
-		length += LispWriteStr(stream, " :ICASE", 7);
+		length += LispDoWriteAtom(stream, " :ICASE",
+					  7, info->print_case);
 	    if (object->data.regex.options & RE_NOSUB)
-		length += LispWriteStr(stream, " :NOSUB", 7);
+		length += LispDoWriteAtom(stream, " :NOSUB",
+					  7, info->print_case);
 	    if (object->data.regex.options & RE_NEWLINE)
-		length += LispWriteStr(stream, " :NEWLINE", 9);
+		length += LispDoWriteAtom(stream, " :NEWLINE",
+					  9, info->print_case);
 	    length += LispWriteChar(stream, '>');
 	    break;
 	case LispBytecode_t:
-	    length += LispWriteStr(stream, "#<BYTECODE ", 11);
+	    length += LispDoWriteAtom(stream, "#<BYTECODE ",
+				      11, info->print_case);
 	    length += LispWriteCPointer(stream,
 					object->data.bytecode.bytecode);
 	    length += LispWriteChar(stream, '>');
 	    break;
 	case LispHashTable_t:
-	    length += LispWriteStr(stream, "#<HASH-TABLE ", 13);
-	    length += LispWriteStr(stream, ATOMID(object->data.hash.test),
-				   strlen(ATOMID(object->data.hash.test)));
+	    length += LispDoWriteAtom(stream, "#<HASH-TABLE ",
+				      13, info->print_case);
+	    length += LispWriteAtom(stream, object->data.hash.test, info);
 	    snprintf(stk, sizeof(stk), " %g %g",
 		     object->data.hash.table->rehash_size,
 		     object->data.hash.table->rehash_threshold);
@@ -1088,7 +1127,11 @@ static int
 LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
 {
     int length = 0;
-    long print_level = info->level;
+    long print_level = info->level, circle;
+
+    if (info->circles && (circle = LispCheckCircle(object, info)) >= 0 &&
+	LispPrintCircle(stream, object, circle, &length, info) == 0)
+	return (length);
 
     if (object->data.array.rank == 0) {
 	length += LispWriteStr(stream, "#0A", 3);
@@ -1096,6 +1139,7 @@ LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
 	return (length);
     }
 
+    INCDEPTH();
     ++info->level;
     if (info->print_level < 0 || info->level <= info->print_level) {
 	if (object->data.array.rank == 1)
@@ -1208,6 +1252,7 @@ LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
     else
 	length += LispWriteChar(stream, '#');
     info->level = print_level;
+    DECDEPTH();
 
     return (length);
 }
@@ -1215,23 +1260,30 @@ LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
 static int
 LispWriteStruct(LispObj *stream, LispObj *object, write_info *info)
 {
-    Atom_id id;
     int length;
+    long circle;
+    LispObj *symbol;
     LispObj *def = object->data.struc.def;
     LispObj *field = object->data.struc.fields;
 
-    length = LispWriteStr(stream, "S#(", 3);
-    id = ATOMID(CAR(def));
-    length += LispWriteStr(stream, id, strlen(id));
+    if (info->circles && (circle = LispCheckCircle(object, info)) >= 0 &&
+	LispPrintCircle(stream, object, circle, &length, info) == 0)
+	return (length);
+
+    INCDEPTH();
+    length = LispWriteStr(stream, "#S(", 3);
+    symbol = SYMBOLP(CAR(def)) ? CAR(def) : CAAR(def);
+    length += LispWriteAtom(stream, symbol, info);
     def = CDR(def);
     for (; def != NIL; def = CDR(def), field = CDR(field)) {
 	length += LispWriteStr(stream, " :", 2);
-	id = SYMBOLP(CAR(def)) ? ATOMID(CAR(def)) : ATOMID(CAAR(def));
-	length += LispWriteStr(stream, id, strlen(id));
+	symbol = SYMBOLP(CAR(def)) ? CAR(def) : CAAR(def);
+	length += LispWriteAtom(stream, symbol, info);
 	length += LispWriteChar(stream, ' ');
 	length += LispDoWriteObject(stream, CAR(field), info, 1);
     }
     length += LispWriteChar(stream, ')');
+    DECDEPTH();
 
     return (length);
 }
@@ -1246,7 +1298,7 @@ LispFormatInteger(LispObj *stream, LispObj *object, int radix,
 
     if (LONGINTP(object))
 	format_integer(stk, LONGINT_VALUE(object), radix);
-    else {		/* BIGINT_P */
+    else {
 	if (mpi_getsize(object->data.mp.integer, radix) >= sizeof(stk))
 	    str = mpi_getstr(NULL, object->data.mp.integer, radix);
 	else

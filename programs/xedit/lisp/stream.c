@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.14 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.15 2002/11/10 16:29:06 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -473,70 +473,6 @@ Lisp_Listen(LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Read(LispBuiltin *builtin)
-/*
- read &optional input-stream (eof-error-p t) eof-value recursive-p
- */
-{
-    LispObj *result;
-
-    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
-
-    recursive_p = ARGUMENT(3);
-    eof_value = ARGUMENT(2);
-    eof_error_p = ARGUMENT(1);
-    input_stream = ARGUMENT(0);
-
-    if (input_stream != NIL) {
-	CHECK_STREAM(input_stream);
-	else if (!input_stream->data.stream.readable)
-	    LispDestroy("%s: stream %s is not readable",
-			STRFUN(builtin), STROBJ(input_stream));
-	LispPushInput(input_stream);
-    }
-    else if (CONSP(lisp__data.input_list)) {
-	input_stream = STANDARD_INPUT;
-	LispPushInput(input_stream);
-    }
-
-    result = LispRead();
-    if (result == EOLIST)
-	LispDestroy("%s: object cannot start with #\\)", STRFUN(builtin));
-    else if (result == DOT)
-	LispDestroy("dot allowed only on lists");
-    if (input_stream != NIL)
-	LispPopInput(input_stream);
-
-    if (result == NULL) {
-	if (eof_error_p != NIL)
-	    LispDestroy("%s: EOF reading stream %s",
-			STRFUN(builtin), STROBJ(input_stream));
-	else
-	    result = eof_value;
-    }
-
-    return (result);
-}
-
-LispObj *
-Lisp_ReadChar(LispBuiltin *builtin)
-/*
- read-char &optional input-stream (eof-error-p t) eof-value recursive-p
- */
-{
-    return (LispReadChar(builtin, 0));
-}
-
-LispObj *
-Lisp_ReadCharNoHang(LispBuiltin *builtin)
-/*
- read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
- */
-{
-    return (LispReadChar(builtin, 1));
-}
-
-LispObj *
 Lisp_WriteChar(LispBuiltin *builtin)
 /*
  write-char character &optional output-stream
@@ -555,124 +491,6 @@ Lisp_WriteChar(LispBuiltin *builtin)
     LispWriteChar(output_stream, ch);
 
     return (character);
-}
-
-LispObj *
-Lisp_ReadLine(LispBuiltin *builtin)
-/*
- read-line &optional input-stream (eof-error-p t) eof-value recursive-p
- */
-{
-    char *string;
-    int ch, length;
-    LispObj *result, *status = NIL;
-
-    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
-
-    recursive_p = ARGUMENT(3);
-    eof_value = ARGUMENT(2);
-    eof_error_p = ARGUMENT(1);
-    input_stream = ARGUMENT(0);
-
-    if (input_stream == NIL)
-	input_stream = STANDARD_INPUT;
-    else {
-	CHECK_STREAM(input_stream);
-    }
-
-    result = eof_value;
-    string = NULL;
-    length = 0;
-
-    if (!input_stream->data.stream.readable)
-	LispDestroy("%s: stream %s is unreadable",
-		    STRFUN(builtin), STROBJ(input_stream));
-    if (input_stream->data.stream.type == LispStreamString) {
-	char *start, *end, *ptr;
-
-	if (SSTREAMP(input_stream)->input >=
-	    SSTREAMP(input_stream)->length) {
-	    if (eof_error_p != NIL)
-		LispDestroy("%s: EOS found reading %s",
-			    STRFUN(builtin), STROBJ(input_stream));
-
-	    status = T;
-	    result = eof_value;
-	    goto read_line_done;
-	}
-
-	start = SSTREAMP(input_stream)->string +
-		SSTREAMP(input_stream)->input;
-	end = SSTREAMP(input_stream)->string +
-	      SSTREAMP(input_stream)->length;
-	/* Search for a newline */
-	for (ptr = start; *ptr != '\n' && ptr < end; ptr++)
-	    ;
-	if (ptr == end)
-	    status = T;
-	length = ptr - start;
-	string = LispMalloc(length + 1);
-	memcpy(string, start, length);
-	string[length] = '\0';
-	result = LSTRING2(string, length);
-	/* macro LSTRING2 does not make a copy of it's arguments, and
-	 * calls LispMused on it. */
-	SSTREAMP(input_stream)->input += length + (status == NIL);
-    }
-    else /*if (input_stream->data.stream.type == LispStreamFile ||
-	     input_stream->data.stream.type == LispStreamStandard ||
-	     input_stream->data.stream.type == LispStreamPipe)*/ {
-	LispFile *file;
-
-	if (input_stream->data.stream.type == LispStreamPipe)
-	    file = IPSTREAMP(input_stream);
-	else
-	    file = FSTREAMP(input_stream);
-
-	if (file->nonblock) {
-	    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
-		LispDestroy("%s: fcntl: %s",
-			    STRFUN(builtin), strerror(errno));
-	    file->nonblock = 0;
-	}
-
-	while (1) {
-	    ch = LispFgetc(file);
-	    if (ch == EOF) {
-		if (length)
-		    /* XXX must return flag in the second return value */
-		    break;
-		if (eof_error_p != NIL)
-		    LispDestroy("%s: EOF found reading %s",
-				STRFUN(builtin), STROBJ(input_stream));
-		if (string)
-		    LispFree(string);
-
-		status = T;
-		result = eof_value;
-		goto read_line_done;
-	    }
-	    else if (ch == '\n')
-		break;
-	    else if ((length % 64) == 0)
-		string = LispRealloc(string, length + 64);
-	    string[length++] = ch;
-	}
-	if (string) {
-	    if ((length % 64) == 0)
-		string = LispRealloc(string, length + 1);
-	    string[length] = '\0';
-	    result = LSTRING2(string, length);
-	}
-	else
-	    result = STRING("");
-    }
-
-read_line_done:
-    RETURN(0) = status;
-    RETURN_COUNT = 1;
-
-    return (result);
 }
 
 LispObj *

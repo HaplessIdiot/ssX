@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.16 2002/11/10 23:21:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.17 2002/11/12 06:05:07 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -191,11 +191,16 @@ XeditDoLispEval(Widget output)
 	    --level;
 	    last = position;
 	} while (level);
-	/* check for quoted expression */
-	if (position) {
+	/* check for extra characters */
+	while (position > 0) {
 	    (void)XawTextSourceRead(src, position - 1, &block, 1);
-	    if (block.ptr[0] == '\'' || block.ptr[0] == '`')
-		--position;
+	    if (block.length != 1 ||
+		isspace(block.ptr[0]) ||
+		block.ptr[0] == ')' ||
+		block.ptr[0] == '"' ||
+		block.ptr[0] == '|')
+		break;
+	    --position;
 	}
     }
 
@@ -258,8 +263,12 @@ EditModeCallback(Widget w, XtPointer client_data, XtPointer call_data)
     EditModeInfo *info = (EditModeInfo*)client_data;
     xedit_flist_item *item = FindTextSource(source, NULL);
 
-    if ((info == NULL && item->xldata == NULL) ||
-	(info && item && item->xldata && info->syntax == item->xldata->syntax))
+    /* If no edit mode selected and selecting the plain/none mode */
+    if ((info == NULL &&
+	 (item->xldata == NULL || item->xldata->syntax == NULL)) ||
+	/* if selecting the current mode */
+	(info && item && item->xldata && info->syntax &&
+	 info->syntax == item->xldata->syntax))
 	return;
 
     XawTextSourceClearEntities(source,

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.17 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.18 2002/11/10 16:29:06 paulo Exp $ */
 
 #include "struct.h"
 
@@ -195,10 +195,7 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
 
     /* check for errors in argument list */
     for (list = init, nfld = 0; CONSP(list); list = CDR(list)) {
-	if (!KEYWORDP(CAR(list)))
-	    LispDestroy("%s: %s is an invalid field for %s",
-			ATOMID(struc), STROBJ(field),
-			ATOMID(CAR(definition)));
+	CHECK_KEYWORD(CAR(list));
 	if (!CONSP(CDR(list)))
 	    LispDestroy("%s: values must be provided as pairs",
 			ATOMID(struc));

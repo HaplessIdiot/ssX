@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.40 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.41 2002/11/10 16:29:04 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -824,7 +824,8 @@ LispLoadFile(LispObj *filename, int verbose, int print, int ifdoesnotexist)
 	    if (print) {
 		int i;
 
-		LispPrint(result, NIL, 1);
+		if (RETURN_COUNT >= 0)
+		    LispPrint(result, NIL, 1);
 		for (i = 0; i < RETURN_COUNT; i++)
 		    LispPrint(RETURN(i), NIL, 1);
 	    }
@@ -1115,97 +1116,6 @@ bad_pathname:
     LispDestroy("%s: bad pathname %s", STRFUN(builtin), STROBJ(pathname));
     /*NOTREACHED*/
     return (NIL);
-}
-
-LispObj *
-LispReadChar(LispBuiltin *builtin, int nohang)
-/*
- read-char &optional input-stream (eof-error-p t) eof-value recursive-p
- read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
- */
-{
-    int character;
-    LispObj *result;
-
-    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
-
-    recursive_p = ARGUMENT(3);
-    eof_value = ARGUMENT(2);
-    eof_error_p = ARGUMENT(1);
-    input_stream = ARGUMENT(0);
-
-    if (input_stream != NIL) {
-	CHECK_STREAM(input_stream);
-    }
-    else
-	input_stream = lisp__data.input;
-
-    result = eof_value;
-    character = EOF;
-
-    if (input_stream->data.stream.readable) {
-	LispFile *file = NULL;
-
-	switch (input_stream->data.stream.type) {
-	    case LispStreamStandard:
-	    case LispStreamFile:
-		file = FSTREAMP(input_stream);
-		break;
-	    case LispStreamPipe:
-		file = IPSTREAMP(input_stream);
-		break;
-	    case LispStreamString:
-		character = LispSgetc(SSTREAMP(input_stream));
-		break;
-	    default:
-		break;
-	}
-	if (file != NULL) {
-	    if (file->available || file->offset < file->length)
-		character = LispFgetc(file);
-	    else {
-		if (nohang && !file->nonblock) {
-		    if (fcntl(file->descriptor, F_SETFL, O_NONBLOCK) < 0)
-			LispDestroy("%s: fcntl(%d): %s",
-				    STRFUN(builtin), file->descriptor,
-				    strerror(errno));
-		    file->nonblock = 1;
-		}
-		else if (!nohang && file->nonblock) {
-		    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
-			LispDestroy("%s: fcntl(%d): %s",
-				    STRFUN(builtin), file->descriptor,
-				    strerror(errno));
-		    file->nonblock = 0;
-		}
-		if (nohang) {
-		    unsigned char ch;
-
-		    if (read(file->descriptor, &ch, 1) == 1)
-			character = ch;
-		    else if (errno == EAGAIN)
-			return (NIL);	/* XXX no character available */
-		    else
-			character = EOF;
-		}
-		else
-		    character = LispFgetc(file);
-	    }
-	}
-    }
-    else
-	LispDestroy("%s: stream %s is unreadable",
-		    STRFUN(builtin), STROBJ(input_stream));
-
-    if (character == EOF) {
-	if (eof_error_p != NIL)
-	    LispDestroy("%s: EOF reading stream %s",
-			STRFUN(builtin), STROBJ(input_stream));
-
-	return (eof_value);
-    }
-
-    return (SCHAR(character));
 }
 
 LispObj *

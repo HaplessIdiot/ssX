@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.13 2002/11/02 22:58:10 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.16 2002/11/03 20:10:27 paulo Exp $
 ;;
 
 (require "syntax")
@@ -315,8 +315,16 @@
     (indtoken "//.*$"		nil)
 
     (indtoken "#"		:hash		:nospec t)
+
+    ;; if in the same line, reduce now, this must be done because the
+    ;; delimiters are identical
+    (indtoken "'([^\\]'|\\\\.)*'"	:expression)
+    (indtoken "\"([^\\\"]|\\\\.)*\""	:expression)
+
     (indtoken "\""		:cstring	:nospec t	:begin :string)
+
     (indtoken "'"		:cconstant	:nospec t	:begin :constant)
+
     (indtoken "*/"		:ccomment	:nospec t	:begin :comment)
     ;; this must be the last token
     (indtoken "$"		:end-of-line)
@@ -800,8 +808,13 @@
 		    )
 		)
 	    )
-	    (and c-case-flag (= (decf c-cases) 0)
-		(decf *indent* *base-indent*)
+	    (if c-case-flag
+		(and (= (decf c-cases) 0)
+		    (decf *indent* *base-indent*)
+		)
+		(or *case-indent*
+		    (decf *indent* *base-indent*)
+		)
 	    )
 	)
 	(setq c-case-flag t)
