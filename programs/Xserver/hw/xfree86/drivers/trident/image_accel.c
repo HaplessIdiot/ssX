@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.1 1998/11/15 04:30:32 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -348,7 +348,7 @@ ImageSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     TGUI_DIM_XY(dmin+e,len);
     TGUI_COMMAND(GE_BRESLINE);
     if (!pTrident->UsePCIRetry)
-    	TridentSync(pScrn);
+    	ImageSync(pScrn);
     CHECKCLIPPING;
 }
 
@@ -404,7 +404,7 @@ ImageSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
     if (!pTrident->UsePCIRetry)
-    	TridentSync(pScrn);
+    	ImageSync(pScrn);
     CHECKCLIPPING;
 }
 
@@ -435,7 +435,7 @@ ImageSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    TridentSetClippingRectangle(pScrn,x,y,((w+x)*(pScrn->bitsPerPixel>>3))-1,y+h-1);
+    ImageSetClippingRectangle(pScrn,x,y,((w+x)*(pScrn->bitsPerPixel>>3))-1,y+h-1);
 
 #if 0
 ErrorF("%d %d %d %d\n",x,y,w,h);
@@ -615,7 +615,7 @@ ImageSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
     if (!pTrident->UsePCIRetry)
-    	TridentSync(pScrn);
+    	ImageSync(pScrn);
     CHECKCLIPPING;
 }
 
