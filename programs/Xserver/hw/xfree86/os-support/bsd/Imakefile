@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.53 2002/10/11 01:40:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.54 2002/10/29 23:19:13 herrb Exp $
 
 #include <Server.tmpl>
 
@@ -26,26 +26,33 @@ SHARED_CFLAGS = PositionIndependentCFlags
 #if defined(NetBSDArchitecture) \
     && ((OSMajorVersion == 1 && OSMinorVersion >= 1) || OSMajorVersion >= 2)
 # if defined(AlphaArchitecture)
- IOPERMDEFINES = -DUSE_ALPHA_PIO
+  IOPERMDEFINES = -DUSE_ALPHA_PIO
 # elif defined(ArcArchitecture)
- IOPERMDEFINES = -DUSE_ARC_MMAP
+  IOPERMDEFINES = -DUSE_ARC_MMAP
 # elif defined(Arm32Architecture)
- IOPERMDEFINES = -DUSE_ARM32_MMAP
+  IOPERMDEFINES = -DUSE_ARM32_MMAP
 # elif defined(PpcArchitecture) || \
 	defined(Sparc64Architecture)
   IOPERM_SRC = ioperm_noop.c
   IOPERM_OBJ = ioperm_noop.o
 # else
- IOPERMDEFINES = -DUSE_I386_IOPL
+  IOPERMDEFINES = -DUSE_I386_IOPL
+# endif
+#elif defined(OpenBSDArchitecture) 
+# if defined(i386Architecture) 
+  IOPERMDEFINES = -DUSE_I386_IOPL
+# elif defined(PpcArchitecture) || defined(Sparc64Architecture) 
+  IOPERM_SRC = ioperm_noop.c
+  IOPERM_OBJ = ioperm_noop.o
 # endif
 #elif defined(FreeBSDArchitecture) && !defined(AlphaBsdArchitecture)
- IOPERMDEFINES = -DUSE_DEV_IO
+  IOPERMDEFINES = -DUSE_DEV_IO
 #else
 # if defined(AlphaBsdArchitecture)
- IOPERMDEFINES = -DUSE_ALPHA_PORTS
+  IOPERMDEFINES = -DUSE_ALPHA_PORTS
 # else
-IOPERM_SRC = ioperm_noop.c
-IOPERM_OBJ = ioperm_noop.o
+  IOPERM_SRC = ioperm_noop.c
+  IOPERM_OBJ = ioperm_noop.o
 # endif
 #endif
 
