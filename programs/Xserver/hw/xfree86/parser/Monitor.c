@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.10 1999/05/30 14:04:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.12 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -549,7 +549,7 @@ parseMonitorSection (void)
 
 				/* add to the end of the list of modes sections 
 				   referenced here */
-				mptr = xf86confmalloc (sizeof (XF86ConfModesLinkRec));
+				mptr = xf86confcalloc (1, sizeof (XF86ConfModesLinkRec));
 				mptr->list.next = NULL;
 				mptr->ml_modes_str = val.str;
 				mptr->ml_modes = NULL;

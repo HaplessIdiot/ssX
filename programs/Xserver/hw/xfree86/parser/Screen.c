@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.10 2000/01/26 02:00:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.11 2000/02/25 19:07:53 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -138,7 +138,7 @@ parseDisplaySubSection (void)
 
 				while ((token = xf86GetToken (DisplayTab)) == STRING)
 				{
-					mptr = xf86confmalloc (sizeof (XF86ModeRec));
+					mptr = xf86confcalloc (1, sizeof (XF86ModeRec));
 					mptr->mode_name = val.str;
 					mptr->list.next = NULL;
 					ptr->disp_mode_lst = (XF86ModePtr)
@@ -280,7 +280,7 @@ parseScreenSection (void)
 
 				if (aptr == NULL)
 				{
-					aptr = xf86confmalloc (sizeof (XF86ConfAdaptorLinkRec));
+					aptr = xf86confcalloc (1, sizeof (XF86ConfAdaptorLinkRec));
 					aptr->list.next = NULL;
 					aptr->al_adaptor_str = val.str;
 					ptr->scrn_adaptor_lst = (XF86ConfAdaptorLinkPtr)
