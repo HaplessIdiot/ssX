@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.477 2004/06/11 17:00:20 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.478 2004/06/14 21:21:57 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2063,7 +2063,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #define XipaqServer 		HaveTinyXSupport
 #endif
 #ifndef XItsyServer
-#define XItsyServer		HaveTinyXSupport
+#define XItsyServer		NO
 #endif
 #ifndef Xmach64Server
 #define Xmach64Server		HaveTinyXVBESupport
