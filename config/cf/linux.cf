@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.126 2000/06/20 05:08:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.127 2000/06/21 00:53:43 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -345,7 +345,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define AsCmd                 as
 #define LdCmd                 ld
 #define AsmDefines            -DUSE_GAS -U__ELF__
-#define HasSharedLibraries    NO
 #endif /* ia64Architecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linuxaout
@@ -377,7 +376,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define AsCmd                 as
 #define LdCmd                 ld
 #define AsmDefines            -D__ELF__
-#define HasSharedLibraries    NO
 #endif /* ia64Architecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linux
@@ -452,6 +450,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LinuxMachineDefines   -D__ia64__
 #define ServerOSDefines       XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines    -DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
+#define DoLoadableServer      NO
 #endif /* ia64Architecture */
 
 #ifdef Mc68020Architecture
