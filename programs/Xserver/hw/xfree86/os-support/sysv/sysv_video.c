@@ -34,6 +34,14 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
+#ifndef SI86IOPL
+#define SET_IOPL() sysi86(SI86V86,V86SC_IOPL,PS_IOPL)
+#define RESET_IOPL() sysi86(SI86V86,V86SC_IOPL,0)
+#else
+#define SET_IOPL() sysi86(SI86IOPL,3)
+#define RESET_IOPL() sysi86(SI86IOPL,0)
+#endif
+
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
@@ -282,7 +290,7 @@ int ScreenNum;
 	{
 		if (ExtendedPorts[i] && (ScreenEnabled[i] || i == ScreenNum))
 		{
-		    if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) < 0)
+		    if (SET_IOPL() < 0)
 		    {
 			FatalError("%s: Failed to set IOPL for extended I/O\n",
 				   "xf86EnableIOPorts");
@@ -294,7 +302,7 @@ int ScreenNum;
 	/* If extended I/O was used, but isn't any more */
 	if (ExtendedEnabled && i == MAXSCREENS)
 	{
-		sysi86(SI86V86, V86SC_IOPL, 0);
+		RESET_IOPL();
 		ExtendedEnabled = FALSE;
 	}
 	/*
@@ -361,7 +369,7 @@ int ScreenNum;
 	}
 	if (ExtendedEnabled && i == MAXSCREENS)
 	{
-		sysi86(SI86V86, V86SC_IOPL, 0);
+		RESET_IOPL();
 		ExtendedEnabled = FALSE;
 	}
 	/* Turn off I/O before changing the access list */
@@ -419,7 +427,7 @@ int ScreenNum;
 void xf86DisableIOPrivs()
 {
 	if (ExtendedEnabled)
-		sysi86(SI86V86, V86SC_IOPL, 0);
+		RESET_IOPL();
 	return;
 }
 
@@ -431,7 +439,7 @@ Bool xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
 	{
-		if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) < 0)
+		if (SET_IOPL() < 0)
 		{
 			return(FALSE);
 		}
@@ -445,7 +453,7 @@ Bool xf86DisableInterrupts()
 
 	if (!ExtendedEnabled)
 	{
-		sysi86(SI86V86, V86SC_IOPL, 0);
+		RESET_IOPL();
 	}
 	return(TRUE);
 }
@@ -454,7 +462,7 @@ void xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
 	{
-		if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) < 0)
+		if (SET_IOPL() < 0)
 		{
 			return;
 		}
@@ -468,7 +476,7 @@ void xf86EnableInterrupts()
 
 	if (!ExtendedEnabled)
 	{
-		sysi86(SI86V86, V86SC_IOPL, 0);
+		RESET_IOPL();
 	}
 	return;
 }

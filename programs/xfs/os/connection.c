@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.1 1994/06/28 12:33:01 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.2 1994/10/20 06:15:32 dawes Exp $ */
 /*
  * handles connections
  */
@@ -202,11 +202,15 @@ OldListenRec *old_listen;
     for (i = 0; i < MAXSOCKS; i++)
 	ConnectionTranslation[i] = 0;
 
-#if defined(hpux) || defined(SVR4) || defined(__EMX__)
+#ifdef _SC_OPEN_MAX
+    lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
+#else
+#if defined(hpux) || defined(__EMX__)
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;
 #endif				/* hpux */
+#endif
 
     if (lastfdesc > MAXSOCKS) {
 	lastfdesc = MAXSOCKS;

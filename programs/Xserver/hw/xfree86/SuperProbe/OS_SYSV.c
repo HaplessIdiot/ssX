@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: OS_SYSV.c,v 1.5 95/01/16 13:16:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.5 1995/01/07 04:02:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.6 1995/01/28 15:47:20 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -101,6 +101,14 @@ int munmap();
 # define DEV_MEM	"/dev/mem"
 #endif
 
+#ifndef SI86IOPL
+#define SET_IOPL() sysi86(SI86V6,V86SC_IOPL,PS_IOPL)
+#define RESET_IOPL() sysi86(SI86V6,V86SC_IOPL,0)
+#else
+#define SET_IOPL() sysi86(SI86IOPL,3)
+#define RESET_IOPL() sysi86(SI86IOPL,0)
+#endif
+
 static int VT_fd = -1;
 static int VT_num = -1;
 static int BIOS_fd = -1;
@@ -167,7 +175,7 @@ int OpenVideo()
 		 */
 		sleep(1);
 	}
-	(void)sysi86(SI86V86, V86SC_IOPL, PS_IOPL);
+	(void)SET_IOPL();
 	return(VT_fd);
 }
 
@@ -181,7 +189,7 @@ void CloseVideo()
 {
 	if (VT_fd != -1)
 	{
-		(void)sysi86(SI86V86, V86SC_IOPL, 0);
+		(void)RESET_IOPL();
 	}
 	if (VT_fd > 0)
 	{

@@ -1,4 +1,5 @@
-XFree86 3.1.1b (7 March 1995)
+XFree86 3.1.1b (8 March 1995)
+ 27. Support for Unixware 2.0 (Robin Cutshaw and Kaleb Keithley).
  26. Fix FIFO detection problem and bug reading BIOS video max modes in
      Mach64 server (Kevin Martin).
  25. Support for Chrontel 8398 and STG1703 clock programming in the Mach64
