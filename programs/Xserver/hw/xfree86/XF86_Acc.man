@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.32 1995/07/15 15:01:45 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.33 1995/07/16 09:13:13 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -309,13 +309,26 @@ as a generic VGA RAMDAC.
 \fBatt20c490\fP - (S3, AGX) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
 When the \fBdac_8_bit\fP option is specified, these
 RAMDACs may be operated in 8 bit per RGB mode.  It also allows 16bpp
-operation with 801/805 boards.  There is currently no
-auto-detection for these RAMDACs.  Note that 8 bit per RGB mode does not
+operation with 801/805/928 boards.  True AT&T 20C490 ramdacs should be
+auto-detected by the S3 server.  This RAMDAC must be specified explicitly
+in other cases.
+Note that 8 bit per RGB mode does not
 appear to work with the Winbond 82C490 RAMDACs (which SuperProbe identifies
 as AT&T 20C492).  16bpp works fine with the Winbond 82C490.
+The Diamond SS2410 RAMDAC is reported to be compatible when operating in
+15bpp mode (not 16bpp).  The Chrontel 8391 appears to be compatible in
+all modes.
 .sp
 \fBsc15025\fP - (S3, AGX) Card has a Sierra SC15025 or SC15026 RAMDAC.
 The S3 server has code to auto-detect this RAMDAC.
+.sp
+\fBsc11482\fP - (S3) Card has a Sierra SC11482, SC11483 or SC11484 RAMDAC.
+The S3 server has code to auto-detect this RAMDAC.
+.sp
+\fBsc11485\fP - (S3) Card has a Sierra SC11485, SC11487 or SC11489 RAMDAC.
+The S3 server will detect these RAMDACs as a \fBsc11482\fP, so this option
+must be specified to take advantage of extra features (they support
+16bpp, 15bpp and 8bpp while the others only support 15bpp and 8bpp).
 .sp
 \fBbt485\fP - (S3) Card has a BrookTree Bt485 or Bt9485 RAMDAC.  This must
 be specified if the server fails to detect it.
@@ -340,6 +353,9 @@ This must be specified if the server fails to detect it.
 This must be specified if the server fails to detect it.
 .sp
 \fBstg1700\fP - (S3) Card has an STG1700 RAMDAC.  This must be specified
+if the server fails to detect it.
+.sp
+\fBstg1703\fP - (S3) Card has an STG1703 RAMDAC.  This must be specified
 if the server fails to detect it.
 .sp
 \fBs3gendac\fP - (S3) Card has an S3 86C708 GENDAC.

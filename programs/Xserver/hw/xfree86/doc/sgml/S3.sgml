@@ -28,8 +28,9 @@ chances are good it might work for you, too.
 
         8 and 15/16 bpp
 
-        Note: the AT&amp;T20C490 RAMDAC is not automatically detected by
-        the server.  You need to provide a `<tt/Ramdac "att20c490"/'
+        Note: Real AT&amp;T20C490 RAMDACs should be automatically detected by
+        the server.  For others which are compatible, you need to provide
+        a `<tt/Ramdac "att20c490"/'
         entry in your <tt/XF86Config/.
 
 	Real AT&amp;T 20C490 or 20C491 RAMDACs work with the
@@ -58,8 +59,9 @@ chances are good it might work for you, too.
 
 	8 and 15/16 bpp
 
-        Note: the AT&amp;T20C490 RAMDAC is not automatically detected by
-        the server.  You need to provide a `<tt/Ramdac "att20c490"/'
+        Note: Real AT&amp;T20C490 RAMDACs should be automatically detected by
+        the server.  For others which are compatible, you need to provide
+        a `<tt/Ramdac "att20c490"/'
         entry in your <tt/XF86Config/.
 
  <tscreen><verb>
@@ -74,9 +76,14 @@ chances are good it might work for you, too.
         <item> Diamond Stealth 24 VLB
 	</itemize> 
 
-	8 bpp only.
+	8 and 15bpp(*) only.
 
 	requires `<tt/Option "nolinear"/'
+
+	(*) The SS2410 RAMDAC is reportedly compatible with the AT&amp;T20C490
+	in 15bpp mode.  To make the server treat it as an AT&amp;T20C490,
+	you need to provide a `<tt/Ramdac "att20c490"/' entry in your
+	<tt/XF86Config/.
 
 
 <tag>S3 801/805, Chrontel 8391 Clockchip/Ramdac</tag>
@@ -103,8 +110,9 @@ chances are good it might work for you, too.
 
  	8 and 15/16 bpp
 
- 	Note: the AT&amp;T20C490 RAMDAC is not automatically detected by
-	the server.  You need to provide a `<tt/Ramdac "att20c490"/'
+        Note: Real AT&amp;T20C490 RAMDACs should be automatically detected by
+        the server.  For others which are compatible, you need to provide
+        a `<tt/Ramdac "att20c490"/'
 	entry in your <tt/XF86Config/.  Also, the server's RAMDAC probe
 	reportedly causes problems with some of these boards, and a
 	RamDac entry should be used to avoid the probe.
@@ -555,7 +563,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.21 1995/07/08 01:36:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.22 1995/07/13 14:14:57 dawes Exp $
 </verb>
 
 </article>

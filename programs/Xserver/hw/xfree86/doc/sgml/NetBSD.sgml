@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.1 on NetBSD
+<title> README for XFree86 3.1.2 on NetBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>19 January 1995
+<Date>17 July 1995
 
 <toc>
 
@@ -33,11 +33,11 @@ Binaries for NetBSD 1.0 are available from:
 <url name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 <p>
-<url name="ftp.laas.fr:/pub/ii/NetBSD/XFree86-3.1.1"
-url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.1">
+<url name="ftp.laas.fr:/pub/ii/NetBSD/XFree86-3.1.2"
+url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2">
 <p>
-<url name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1"
-url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1">
+<url name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2"
+url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2">
 <p>
 <url name="ftp.eecs.umich.edu:/BSD/XFree86"
 url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
@@ -80,38 +80,38 @@ XFree86 binary distribution.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/X311doc/ READMEs and XFree86 specific man pages.
-    <tag/X311bin/ all of the executable X client applications and shared libs
-    <tag/X311font/ the misc and 75dpi fonts
-    <tag/X311lib/ data files needed at runtime
-    <tag/X311cfg/ customizable xinit, xdm, and fs runtime configuration files.
+    <tag/X312doc/ READMEs and XFree86 specific man pages.
+    <tag/X312bin/ all of the executable X client applications and shared libs
+    <tag/X312font/ the misc and 75dpi fonts
+    <tag/X312lib/ data files needed at runtime
+    <tag/X312cfg/ customizable xinit, xdm, and fs runtime configuration files.
     </descrip>
 
     Choose at least one of the following to match your hardware:
 
     <descrip>
-    <tag/X311svga/  the 8-bit pseudo-color X server for Super VGA cards
-    <tag/X311vg16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X311mono/  the Monochrome X Server
-    <tag/X3118514/  the X server for IBM 8514/A and compatible boards
-    <tag/X311agx/   the X server for AGX boards
-    <tag/X311mc8/ the X server for ATI Mach8 graphics boards
-    <tag/X311mc32/ the X server for ATI Mach32 graphics boards
-    <tag/X311mc64/ the X server for ATI Mach64 graphics boards
-    <tag/X311p9k/	the X server for P9000 based boards
-    <tag/X311s3/ 	the X server for S3 based boards
-    <tag/X311w32/	the X server for et4000w32 based boards
+    <tag/X312svga/  the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X312vg16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
+    <tag/X312mono/  the Monochrome X Server
+    <tag/X3128514/  the X server for IBM 8514/A and compatible boards
+    <tag/X312agx/   the X server for AGX boards
+    <tag/X312mc8/ the X server for ATI Mach8 graphics boards
+    <tag/X312mc32/ the X server for ATI Mach32 graphics boards
+    <tag/X312mc64/ the X server for ATI Mach64 graphics boards
+    <tag/X312p9k/	the X server for P9000 based boards
+    <tag/X312s3/ 	the X server for S3 based boards
+    <tag/X312w32/	the X server for et4000w32 based boards
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/X311fs/ the font server with man pages.
-    <tag/X311prog/ the X11 header files and static libraries needed only 
+    <tag/X312fs/ the font server with man pages.
+    <tag/X312prog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
-    <tag/X311man/ man pages except XFree86 specific ones in the doc archive
-    <tag/X311xfnt/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
-    <tag/X311link/ X server reconfiguration kit
+    <tag/X312man/ man pages except XFree86 specific ones in the doc archive
+    <tag/X312xfnt/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
+    <tag/X312link/ X server reconfiguration kit
     </descrip>
 </descrip>
 
@@ -158,33 +158,33 @@ below.
 <item> You must be logged in as root to unpack the archives and use a
 	``umask'' value of 022.  Typing ``<tt/umask 022/'' sets it.
 	<em/Caution:/ If you do not extract the files as user ``root''
-	with the correct umask you may not be able to run XFree86 3.1.1.
+	with the correct umask you may not be able to run XFree86 3.1.2.
 	The X server needs special permissions that are only granted
 	to the root user.
 
-	Assuming that the destination directory for XFree86 3.1.1 is
+	Assuming that the destination directory for XFree86 3.1.2 is
 	<tt>/usr/X11R6</tt>, run the following from wherever all the archive
 	files are (replace <tt>/usr/X11R6</tt> with wherever you wish them to
 	go if that isn't the place):
 <tscreen><verb>
  cd /usr/X11R6
 
- tar xzf X311doc.tgz
- tar xzf X311bin.tgz
- tar xzf X311lib.tgz 
- tar xzf X311font.tgz
- tar xzf X311man.tgz
+ tar xzf X312doc.tgz
+ tar xzf X312bin.tgz
+ tar xzf X312lib.tgz 
+ tar xzf X312font.tgz
+ tar xzf X312man.tgz
 
- tar xzf X311link.tgz
- tar xzf X311prog.tgz
- tar xzf X311xfnt.tgz
- tar xzf X311fs.tgz
- tar xzf X311cfg.tgz
+ tar xzf X312link.tgz
+ tar xzf X312prog.tgz
+ tar xzf X312xfnt.tgz
+ tar xzf X312fs.tgz
+ tar xzf X312cfg.tgz
 
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
- tar xzf X311<server>.tgz
+ tar xzf X312<server>.tgz
 </verb></tscreen>
 
 <item> <label id="install-cont"> Set the <tt/XWINHOME/ environment
@@ -352,7 +352,7 @@ available by anonymous FTP from a number of sites.
 If using pccons you get the message:
 
 <tscreen><verb>
-> XFree86 Version 3.1.1 / X Window System
+> XFree86 Version 3.1.2 / X Window System
 > (protocol Version 11, revision 0, vendor release 6000)
 > Operating System: NetBSD
 > Configured drivers:
@@ -431,7 +431,7 @@ There are two ways to allow XFree86 to access linear memory:
 
 <sect1>MIT-SHM
 <p>
-NetBSD 1.0 supports System V shared memory. If XFree86 3.1.1 detects
+NetBSD 1.0 supports System V shared memory. If XFree86 3.1.2 detects
 this support in your kernel, it will support the MIT-SHM extension.
 
     Under NetBSD 1.0, use the following to add shared memory
@@ -534,7 +534,7 @@ files should be taken from your installed version of the driver.
 <sect1> Support for shared libs under NetBSD 1.0
 
 <p>
-    By default XFree86 3.1.1 builds for NetBSD 1.0 with shared libraries 
+    By default XFree86 3.1.2 builds for NetBSD 1.0 with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
@@ -545,7 +545,7 @@ files should be taken from your installed version of the driver.
 <sect1>Building on NetBSD/sparc<label id="sparc">
 
 <p>
-XFree86 3.1.1 now also compiles on NetBSD/sparc. The Sun server
+XFree86 3.1.2 also compiles on NetBSD/sparc. The Sun server
 patches from Dennis Ferguson and Matthew Green have been integrated in
 <tt>xc/programs/Xserver/hw/sun</tt>.  Small
 modifications to <tt/xf86site.def/ are needed:
@@ -628,7 +628,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.12 1995/04/24 05:21:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.13 1995/05/27 03:11:43 dawes Exp $
 </verb>
 
 </article>

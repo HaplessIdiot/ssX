@@ -1,9 +1,9 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.1 on FreeBSD 2.0
+<title> README for XFree86 3.1.2 on FreeBSD 2.0.5
 <author>Rich Murphey, David Dawes
-<date>20 January 1995
+<date>17 July 1995
 
 <toc>
  
@@ -27,11 +27,11 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for XFree86 on FreeBSD are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0">
+<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0.5"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0.5">
 <p>
-<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0"
-url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0">
+<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0.5"
+url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0.5">
 
 Send email to <em/Rich-Murphey@Rice.edu/ or <em/XFree86@XFree86.org/
 if you have comments or suggestions about this file and we'll revise
@@ -44,7 +44,7 @@ If you want to save space, first select which archives you want to
 unpack.  If you can't decide what to pick and you have 52Mb of disk
 space, it's safe to unpack everything.
 
-At a minimum you need to unpack the 'required' <tt/X311*.tgz/
+At a minimum you need to unpack the 'required' <tt/X312*.tgz/
 archives plus at least one server that matches your vga card.  You'll
 need 9Mb for the minimum required run-time binaries only.
 
@@ -52,60 +52,63 @@ need 9Mb for the minimum required run-time binaries only.
 <tag/Required (6.7Mb):/
 
 <descrip>
-<tag/X311bin.tgz/
+<tag/X312bin.tgz/
      all the executable X client applications and shared libs
 
-<tag/X311fnts.tgz/
+<tag/X312fnts.tgz/
      the misc and 75 dpi fonts
 
-<tag/X311lib.tgz/
+<tag/X312lib.tgz/
      data files needed at runtime
 </descrip>
 
 <tag/Required unless you have already customized your configuration files:
 
 <descrip>
-<tag/X311xicf.tgz/
+<tag/X312xicf.tgz/
      customizable xinit runtime configuration file
 
-<tag/X311xdcf.tgz/
+<tag/X312xdcf.tgz/
      customizable xdm runtime configuration file
 </descrip>
 
 <tag/Choose at least one server (~2.3Mb):/
 
 <descrip>
-<tag/X3118514.tgz/
+<tag/X3128514.tgz/
      8-bit color for IBM 8514 and true compatibles.
 
-<tag/X311AGX.tgz/
-     8-bit color for AGX boards.
+<tag/X312AGX.tgz/
+     8 and 16-bit color for AGX and XGA boards.
 
-<tag/X311Mch3.tgz/
+<tag/X312Ma32.tgz/
      8 and 16-bit color for ATI Mach32 boards.
 
-<tag/X311Mch8.tgz/
+<tag/X312Ma64.tgz/
+     8, 16 and 24-bit color for ATI Mach64 boards.
+
+<tag/X312Ma8.tgz/
      8-bit color for ATI Mach8 boards.
 
-<tag/X311Mono.tgz/
+<tag/X312Mono.tgz/
      1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
-<tag/X311P9K.tgz/
+<tag/X312P9K.tgz/
      8, 16, and 24-bit color for Weitek P9000 boards (Diamond Viper).
 
-<tag/X311S3.tgz/
+<tag/X312S3.tgz/
      8, 16 and 24-bit color for S3 boards (&num;9 GXE, Actix GE32, SPEA Mercury, STB Pegasus)
 
-<tag/X311SVGA.tgz/
+<tag/X312SVGA.tgz/
      8-bit color for Super-VGA cards.
 
-<tag/X311VG16.tgz/
+<tag/X312VG16.tgz/
      4-bit color for VGA and Super-VGA cards
 
-<tag/X311W32.tgz/
+<tag/X312W32.tgz/
      8-bit Color for ET4000/W32, /W32i and /W32p cards.
 
-<tag/X311nest.tgz/
+<tag/X312nest.tgz/
      A nested server running as a client window on another display.
 </descrip>
 
@@ -113,39 +116,39 @@ need 9Mb for the minimum required run-time binaries only.
 
 <descrip>
 
-<tag/X311doc.tgz/
+<tag/X312doc.tgz/
      (.5Mb) READMEs and XFree86 specific man pages
 
-<tag/X311man.tgz/
+<tag/X312man.tgz/
      (1.7Mb) man pages except XFree86 specific ones in etc archive
 
-<tag/X311f100.tgz/
+<tag/X312f100.tgz/
      (1.8Mb) 100dpi fonts
 
-<tag/X311fscl.tgz/
+<tag/X312fscl.tgz/
      (1.6Mb) Speedo and Type1 fonts
 
-<tag/X311fnon.tgz/
+<tag/X312fnon.tgz/
      (3.3Mb) Japanese, Chinese and other non-english fonts
 
-<tag/X311fsrv.tgz/
+<tag/X312fsrv.tgz/
      (.3Mb) the font server and it's man page
 
-<tag/X311prog.tgz/
+<tag/X312prog.tgz/
      (3.9Mb) config, lib*.a and *.h files needed only for compiling
 
-<tag/X311link.tgz/
+<tag/X312link.tgz/
      (7.8Mb) X server reconfiguration kit
 
-<tag/X311pex.tgz/
+<tag/X312pex.tgz/
      (.5Mb) PEX fonts and shared libs needed by PEX applications.
 
-<tag/X311lbx.tgz/
+<tag/X312lbx.tgz/
      (.2Mb) low bandwidth X proxy server and libraries.
 </descrip>
 </descrip>
 
-Note that there is no longer a separate xdm archive.  FreeBSD 2.0
+Note that there is no longer a separate xdm archive.  FreeBSD 2.0 and later
 handles this in shared libraries now, so that the xdm binary does not
 itself contain des and there is no more need for us to provide
 separate tar balls.
@@ -180,14 +183,14 @@ separate tar balls.
      If you are using sh (as root usually does):
 
 <tscreen><verb>
- # for i in X311*.tgz; do
+ # for i in X312*.tgz; do
  #   tar -xzf $i
  # done
 </verb></tscreen>
 
      Else, if you are using csh:
 <tscreen><verb>
- % foreach i (X311*.tgz)
+ % foreach i (X312*.tgz)
  %   tar -xzf $i
  % end
 </verb></tscreen>
@@ -208,7 +211,7 @@ First do numbers 1 and 2 above. Then unpack the required archives:
 
 <tscreen><verb>
  # for i in bin fnts lib xicf; do
- #   tar -xzf  X311$i.tgz
+ #   tar -xzf  X312$i.tgz
  # done
 </verb></tscreen>
 
@@ -218,7 +221,7 @@ sets supported by each server.  For example, if you have an ET4000
 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # tar -xzf X311SVGA.tgz
+ # tar -xzf X312SVGA.tgz
  # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 </verb></tscreen>
 
@@ -324,15 +327,18 @@ XFree86 3.1 uses a new configuration file format. Consult the
 <em/XF86Config/ man page and the general <url url=INSTALL.html
 name=INSTALL> file for instructions.
 
-If you have a <tt/Xconfig/ file for XFree86 2.x, use reconfig to
+It is strongly recommended that you use the `xf86config' utility to
+generate an XF86Config file.
+
+If you have a <tt/Xconfig/ file for XFree86 2.x, you can use reconfig to
 translate part of it into the new format:
 
 <tscreen><verb>
  # reconfig <Xconfig >XF86Config
 </verb></tscreen>
 
-and complete the rest according to the <em/XF86Config/ man page and
-the <tt/XF86Config.sample/ file as a template.
+and complete the rest manually according to the <em/XF86Config(4)/ man page and
+the <tt/XF86Config.eg/ file as a template.
 
 In order to protect your hardware from damage, the server no longer
 will read <tt/XF86Config/ files from a user's home directory, but
@@ -403,7 +409,7 @@ and <em/startx/ man pages.
 <sect>Rebuilding Kernels for X
 <p>
 
-The GENERIC FreeBSD 2.0 kernel supports XFree86 without any
+The GENERIC FreeBSD 2.0 and 2.0.5 kernels support XFree86 without any
 modifications required.  You do not need to make any changes to the
 GENERIC kernel or any kernel configuration which is a superset.
 
@@ -422,7 +428,7 @@ are both required for X support:
  options		UCONSOLE		#X Console support
 </verb></tscreen>
 
-The generic FreeBSD 2.0 kernel is configured by default with the
+The generic FreeBSD 2.0 and 2.0.5 kernels are configured by default with the
 syscons driver.  To configure your kernel similarly it should have a
 line like this in <tt>/usr/src/sys/i386/conf/GENERIC</tt>:
 
@@ -480,7 +486,7 @@ system because the I/O port addresses overlap.
 
 The server link kit allows you to build an X server using a minimum
 amount of disk space.  Just unpack it, make the appropriate changes to
-<tt/site.def/, type ``<tt>./mkmf</tt>' and ``<tt/make/'' to link the
+<tt/xf86site.def/, type ``<tt>./mkmf</tt>' and ``<tt/make/'' to link the
 server.  See <url name=README.LinkKit url=LinkKit.html> for more info.
 
 The source tree takes about 114Mb before compiling and an additional
@@ -504,7 +510,9 @@ should disable the MIT-SHM extension by adding the following line to
  #define HasShm				NO
 </verb></tscreen>
 
-To compile the sources on FreeBSD 1.1 and later, type:
+To compile the sources on FreeBSD 1.1 and later, edit
+<tt>xc/config/cf/FreeBSD.cf</tt> to set the OS version parameters
+correctly, and then type:
 
 <tscreen><verb>
  make World
@@ -571,7 +579,7 @@ Many thanks to:
 
 <verb>
 $XConsortium: FreeBSD.sgml,v 1.3 95/01/23 15:34:41 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.9 1995/01/28 00:50:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.10 1995/01/28 16:01:28 dawes Exp $
 </verb>
 
 </article>

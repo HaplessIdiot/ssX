@@ -14,9 +14,9 @@
 	url="README.html">
 <item> <url name="Copyright"
 	url="COPYRIGHT.html">
-<item> <url name="README for XFree86 3.1.2 on BSD/386 1.1"
+<item> <url name="README for XFree86 3.1.2 on BSD/OS 2.0"
 	url="Bsdi.html">
-<item> <url name="README for XFree86 3.1.2 on FreeBSD 2.0"
+<item> <url name="README for XFree86 3.1.2 on FreeBSD 2.0.5"
 	url="FreeBSD.html">
 <item> <url name="Information for ISC Users"
 	url="isc.html">
@@ -58,7 +58,7 @@
 	url="Mach64.html">
 <item> <url name="Information for Oak Technologies Inc. Chipset Users"
 	url="Oak.html">
-<item> <url name="XFree86 3.1.1 P9000 Server Release Notes"
+<item> <url name="XFree86 3.1.2 P9000 Server Release Notes"
 	url="P9000.html">
 <item> <url name="Information for S3 Chipset Users"
 	url="S3.html">
@@ -75,7 +75,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.4 1995/07/05 12:40:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.5 1995/07/16 09:14:59 dawes Exp $
 $XConsortium: DocIndex.sgml,v 1.2 95/01/27 16:14:23 kaleb Exp $
 </verb>
 

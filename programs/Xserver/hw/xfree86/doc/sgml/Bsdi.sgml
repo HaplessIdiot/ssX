@@ -4,7 +4,7 @@
  
 <title> README for XFree86 3.1.2 on BSD/OS 2.0
 <author> Hans Nasten
-<date> 30 May 1996
+<date> 30 May 1995
 <toc>
 
 <sect> What and Where is XFree86? <p>
@@ -312,7 +312,7 @@ BSD/OS 2.0.
 
 <verb>
 $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.10 1995/06/01 08:25:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.11 1995/06/17 12:16:26 dawes Exp $
 </verb>
 
 </article>

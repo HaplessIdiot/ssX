@@ -3,7 +3,7 @@
 
 <title> Information for Trident Chipset Users
 <author> The XFree86 Project, Inc.
-<date> 12 December 1994
+<date> 17 July 1995
 <toc>
 
 <sect> Supported chipsets <p>
@@ -25,8 +25,12 @@ as a Trident 8900CL. Therefore it is equivalent to putting
 note that the 9000i, 9100B, and 9320 have not been tested with the server, 
 but should work in this way according to the chipset documentation.
 
-<bf> NOTE: </bf>
-No acceleration features of the newer chipsets have been taken advantage
+<bf> NOTES: </bf>
+<itemize>
+<item>The TGUI9440 and TGUI9660 (and later) chipsets are <bf>NOT</bf>
+supported by this release of the SVGA server.  We are working on this,
+and they should be supported in the next release.
+<item>No acceleration features of the newer chipsets have been taken advantage
 of.
 
 The original Trident chipset, 8800BR, cannot be supported as an SVGA chipset 
@@ -88,7 +92,7 @@ documentation handy.
 
 <verb>
 $XConsortium: trident.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.0 1994/12/20 11:33:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.1 1995/01/28 16:03:14 dawes Exp $
 </verb>
 
 </article>

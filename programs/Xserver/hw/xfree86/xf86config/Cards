@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.9 1995/07/13 14:16:12 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.10 1995/07/15 15:11:30 dawes Exp $
 
 # Cirrus Logic
 
@@ -208,6 +208,7 @@ CHIPSET S3-801/805
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     #Option    "nolinear"
+LINE     #Ramdac "att20c490" # The Diamond RAMDAC is reportedly compatible for 15bpp
 
 NAME Miro Crystal 8S
 SEE S3-801/805 (generic)
@@ -247,6 +248,12 @@ NAME S3-864 with ATT 20C498 or 21C498
 CHIPSET S3-864
 SERVER S3
 RAMDAC att20c498
+
+NAME S3-864 with STG1703
+CHIPSET S3-864
+SERVER S3
+RAMDAC stg1703
+NOCLOCKPROBE
 
 NAME S3-868 (generic)
 CHIPSET S3-868
@@ -297,7 +304,7 @@ SEE S3-864 (generic)
 NAME Elsa Winner 1000 PRO with S3-SDAC
 SEE S3-864 with SDAC (86C716)
 
-NAME Elsa Winner 1000 PRO with STG or AT&T RAMDAC
+NAME Elsa Winner 1000 PRO with STG1700 or AT&T RAMDAC
 CHIPSET S3-864
 SERVER S3
 CLOCKCHIP icd2061a
@@ -414,8 +421,7 @@ NAME Diamond Stealth Pro
 CHIPSET S3-928
 SERVER S3
 CLOCKCHIP icd2061a
-RAMDAC normal
-LINE     # 16/32bpp not supported? (SS2410 DAC?)
+LINE     #Ramdac "att20c490" # The Diamond RAMDAC is reportedly compatible for 15bpp
 
 NAME Elsa Winner 1000 VL
 CHIPSET S3-928
@@ -707,15 +713,27 @@ NAME Diamond SpeedStar 24X
 CHIPSET WD90C31
 SERVER SVGA
 
-#NAME WD 90C24 (laptop) (wd90c30 compatible)
-#CHIPSET WD90C24
-#SERVER SVGA
-#LINE     Chipset "wd90c30"
-#
-#NAME WD 90C24A (laptop) (wd90c31 compatible)
-#CHIPSET WD90C24A
-#SERVER SVGA
-#LINE     Chipset "wd90c31"
+NAME WD 90C24 (laptop)
+CHIPSET WD90C24
+SERVER SVGA
+LINE     #Chipset "wd90c24"
+LINE     #Option "noaccel" # Use this if acceleration is causing problems
+LINE     #Clocks 25.175 28.322 65     36     # These are not programmable
+LINE     #Clocks 29.979 77.408 62.195 59.957 # These are programmable
+LINE     #Clocks 31.5   35.501 75.166 50.114 # These are not programmable
+LINE     #Clocks 39.822 72.038 44.744 80.092 # These are programmable
+LINE     #Clocks 44.297                      # Must match Mclk
+
+
+#NAME WD 90C24A or 90C24A2 (laptop)
+CHIPSET WD90C24A
+SERVER SVGA
+LINE     #Chipset "wd90c24"
+LINE     #Clocks 25.175 28.322 65     36     # These are not programmable
+LINE     #Clocks 29.979 77.408 62.195 59.957 # These are programmable
+LINE     #Clocks 31.5   35.501 75.166 50.114 # These are not programmable
+LINE     #Clocks 39.822 72.038 44.744 80.092 # These are programmable
+LINE     #Clocks 44.297                      # Must match Mclk
 
 # Avance Logic
 
@@ -735,13 +753,11 @@ SERVER SVGA
 
 NAME Hercules Stingray Pro
 CHIPSET ARK1000PV
-SERVER VGA16
-UNSUPPORTED
+SERVER SVGA
 
 NAME Hercules Stingray 64
 CHIPSET ARK2000PV
-SERVER VGA16
-UNSUPPORTED
+SERVER SVGA
 
 # Oak
 
@@ -759,14 +775,27 @@ NAME Diamond Viper VLB 2Mb
 CHIPSET Weitek 9000
 SERVER P9000
 LINE     #Clocks must match the mode clocks (XFree86 3.1 P9000 server)
+LINE     #Versions later than 3.1 do not require a clocks line
+LINE     Chipset "vipervlb" # Required for some cards which autodetect as PCI
 LINE     Videoram 2048      # Required
 LINE     Membase 0x80000000 # Optional (0x80000000 is default)
+NOCLOCKPROBE
+
+NAME Diamond Viper PCI 2Mb
+CHIPSET Weitek 9000
+SERVER P9000
+LINE     #Clocks must match the mode clocks (XFree86 3.1 P9000 server)
+LINE     #Versions later than 3.1 do not require a clocks line
+LINE     Videoram 2048      # Required
+LINE     #Membase 0x80000000 # Use scanpci to get the correct Membase
+NOCLOCKPROBE
 
 NAME Orchid P9000 VLB
 CHIPSET Weitek 9000
 SERVER P9000
 LINE     Chipset "orchid_p9000"
 LINE     Membase 0xE0000000
+NOCLOCKPROBE
 
 # Trident
 
