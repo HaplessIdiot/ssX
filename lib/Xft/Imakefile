@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.22tsi Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.23 2002/11/14 21:01:18 tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -33,7 +33,7 @@ SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),SOFONTCONFIGREV,Sh
 #endif
 
 /* make sure we're building the right major version */
-SOXFTREV=2.0
+SOXFTREV=2.1
 
 #endif
 
