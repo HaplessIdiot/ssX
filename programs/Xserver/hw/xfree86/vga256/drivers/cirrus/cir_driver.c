@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.4 1994/06/22 04:38:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.5 1994/07/24 11:56:22 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -665,6 +665,8 @@ cirrusProbe()
 		    break;
 		  default:
 		    ErrorF("CIRRUS: Monochrome LCD detected\n");
+		    ErrorF("CIRRUS: enabling option clgd6225_lcd\n");
+		    OFLG_SET(OPTION_CLGD6225_LCD, &vga256InfoRec.options);
 		    }
 	       }
 

@@ -1,17 +1,17 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Imakefile,v 3.1 1994/06/26 13:04:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Imakefile,v 3.2 1994/07/24 11:42:47 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	agx.c agxCmap.c agxCursor.c  agxInit.c vgaHW.c agxIm.c \
         agxScrIn.c agxGC.c agxBlt.c agxLine.c agxSeg.c agxMap.c \
         agxBCach.c agxFCach.c agxFont.c agxText.c agxFRect.c \
-        agxFS.c agxGS.c agxSS.c \
+        agxFS.c agxGS.c agxSS.c agxWin.c agxBStor.c agxPntWin.c \
 	xf86RamDac.c xf86Bt481.c xf86Bt485.c xf861502x.c \
 	hercRamDac.c agxBank.s 
 
 OBJS =  agx.o agxCmap.o agxCursor.o  agxInit.o vgaHW.o agxIm.o \
         agxScrIn.o agxGC.o agxBlt.o agxLine.o agxSeg.o agxMap.o \
         agxBCach.o agxFCach.o agxFont.o agxText.o agxFRect.o \
-        agxFS.o agxGS.o agxSS.o \
+        agxFS.o agxGS.o agxSS.o agxWin.o agxBStor.o agxPntWin.o \
 	xf86RamDac.o xf86Bt481.o xf86Bt485.o xf861502x.o \
 	hercRamDac.o agxBank.o 
 
@@ -20,6 +20,7 @@ DEFINES = -DPSZ=8 -DAGX_SERVER
 INCLUDES = -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) -I. \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
 	   -I$(XF86SRC)/vga256/vga \
+	   -I$(XF86SRC)/vga256/enhanced \
            -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTINCSRC) 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.1 1994.06.23 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.2 1994/07/24 11:51:02 dawes Exp $ */
 /* ati.test.c -- Gather information about ATI VGA WONDER cards
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -567,10 +567,9 @@ static const char *ChipNames[] =
 #define ATI_BOARD_V5      5
 #define ATI_BOARD_PLUS    6
 #define ATI_BOARD_XL      7
-#define ATI_BOARD_XL24    8
-#define ATI_BOARD_MACH8   9
-#define ATI_BOARD_MACH32 10
-#define ATI_BOARD_MACH64 11
+#define ATI_BOARD_MACH8   8
+#define ATI_BOARD_MACH32  9
+#define ATI_BOARD_MACH64 10
 static const char *BoardNames[] =
 {
 	"Unknown",

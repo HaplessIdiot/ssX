@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.3 1994/07/15 07:02:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.4 1994/07/19 11:52:11 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -63,10 +63,11 @@
 #include "xf86.h"
 #include "regionstr.h"
 #include "xf86_OSlib.h"
+#include "xf86bcache.h"
+#include "xf86fcache.h"
 #include "xf86Procs.h"
 
 #include "s3Cursor.h"
-#include "s3bcach.h"
 #include "regs3.h"
 
 #include "vga.h"
@@ -110,6 +111,7 @@ extern void (*s3ImageReadFunc)();
 extern void (*s3ImageWriteFunc)();
 extern void (*s3ImageFillFunc)();
 
+extern short s3ChipId;
 extern int s3DisplayWidth;
 extern int s3ScissB;
 extern short s3alu[];
@@ -385,7 +387,7 @@ void s3ImageOpStipple(
     int,
     int,
     int,
-    char *,
+    unsigned char *,
     int,
     int,
     int,
@@ -393,8 +395,8 @@ void s3ImageOpStipple(
     int,
     int,
     int,
-    int,
-    int 
+    short,
+    short 
 #endif
 );
 /* s3bstor.c */
@@ -470,7 +472,6 @@ RegionPtr s3CopyPlane(
     unsigned long 
 #endif
 );
-/* s3pcach.c */
 /* s3plypt.c */
 void s3PolyPoint(
 #if NeedFunctionPrototypes
@@ -517,46 +518,6 @@ void s3InitFrect(
 #endif
 );
 /* s3text.c */
-int s3PolyText8(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    char *
-#endif
-);
-int s3PolyText16(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    unsigned short *
-#endif
-);
-void s3ImageText8(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    char *
-#endif
-);
-void s3ImageText16(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    int,
-    unsigned short *
-#endif
-);
 int s3NoCPolyText(
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -593,36 +554,33 @@ Bool s3UnrealizeFont(
 #endif
 );
 /* s3fcach.c */
-void s3UnCacheFont8(
+void s3FontCache8Init(
 #if NeedFunctionPrototypes
-    FontPtr 
+    void
 #endif
 );
-CacheFont8Ptr s3CacheFont8(
+void s3GlyphWrite(
 #if NeedFunctionPrototypes
-    FontPtr 
-#endif
-);
-int s3CPolyText8(
-#if NeedFunctionPrototypes
-    DrawablePtr ,
-    GCPtr ,
-    int ,
-    int ,
-    int ,
+    int,
+    int,
+    int,
     unsigned char *,
-    CacheFont8Ptr 
+    CacheFont8Ptr,
+    GCPtr,
+    BoxPtr,
+    int
 #endif
 );
-int s3CImageText8(
+/* s3bcach.c */
+void s3CacheMoveBlock(
 #if NeedFunctionPrototypes
-    DrawablePtr ,
-    GCPtr ,
-    int ,
-    int ,
-    int ,
-    char *,
-    CacheFont8Ptr 
+    int,
+    int,
+    int,
+    int,
+    int,
+    int,
+    unsigned int
 #endif
 );
 /* s3Cursor.c */
@@ -755,24 +713,6 @@ void s3Dsegment(
     GCPtr,
     int,
     xSegment *
-#endif
-);
-/* s3bcach.c */
-void s3BitCache8Init(
-#if NeedFunctionPrototypes
-    int,
-    int 
-#endif
-);
-bitMapBlockPtr s3CGetBlock(
-#if NeedFunctionPrototypes
-    int,
-    int 
-#endif
-);
-void s3CReturnBlock(
-#if NeedFunctionPrototypes
-    bitMapBlockPtr 
 #endif
 );
 /* s3gtimg.c */

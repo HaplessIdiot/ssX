@@ -44,7 +44,7 @@ s3RealizeFont(pScreen, font)
      FontPtr font;
 {
  /* We _should_ probably be caching things here */
- /* (void)s3CacheFont8(font); */
+ /* (void)xf86CacheFont8(font); */
    return mfbRealizeFont(pScreen, font);
 }
 
@@ -53,6 +53,6 @@ s3UnrealizeFont(pScreen, font)
      ScreenPtr pScreen;
      FontPtr font;
 {
-   s3UnCacheFont8(font);
+   xf86UnCacheFont8(font);
    return mfbUnrealizeFont(pScreen, font);
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.0 1994/06/15 15:35:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.1 1994/07/15 06:57:05 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -257,32 +257,13 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#if 0 /* def PIXPRIV */
-    if (agxCacheTile(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		(agxImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height, xrot, yrot,
-				pGC->alu, pGC->planemask);
-	    else
-		agxCImageFill(pPix->slot,
-				 ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				 pGC->alu, pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    (agxImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-			     pPix->devPrivate.ptr, pixWidth,
-			     width, height, xrot, yrot,
-			     pGC->alu, pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	(agxImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
+			   pPix->devPrivate.ptr, pixWidth,
+			   width, height, xrot, yrot,
+			   pGC->alu, pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);
@@ -351,34 +332,13 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#if 0 /* def PIXPRIV */
-    if (agxCacheStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		agxImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				   pPix->devPrivate.ptr, pixWidth,
-				   width, height,
-				   xrot, yrot, pGC->fgPixel,
-				   pGC->alu, pGC->planemask);
-	    else
-		agxCImageStipple(pPix->slot,
-				    ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				    pGC->fgPixel,
-				    pGC->alu, pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    agxImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth, width, height,
-				xrot, yrot, pGC->fgPixel,
-				pGC->alu, pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	agxImageStipple(ppt->x, ppt->y, *pwidth, 1,
+			pPix->devPrivate.ptr, pixWidth, width, height,
+			xrot, yrot, pGC->fgPixel,
+			pGC->alu, pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);
@@ -446,35 +406,14 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#if 0 /* def PIXPRIV */
-    if (agxCacheOpStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		agxImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-				     pPix->devPrivate.ptr, pixWidth,
-				     width, height,
-				     xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				     pGC->alu, pGC->planemask);
-	    else
-		agxCImageOpStipple(pPix->slot,
-				      ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				      pGC->fgPixel, pGC->bgPixel,
-				      pGC->alu, pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    agxImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-				  pPix->devPrivate.ptr, pixWidth,
-				  width, height,
-				  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				  pGC->alu, pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	agxImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
+			  pPix->devPrivate.ptr, pixWidth,
+			  width, height,
+			  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+			  pGC->alu, pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);

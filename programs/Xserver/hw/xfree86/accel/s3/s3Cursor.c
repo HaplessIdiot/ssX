@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.0 1994/06/14 14:12:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.1 1994/06/26 13:06:22 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -71,8 +71,6 @@ extern void s3TiCursorOn();
 extern void s3TiCursorOff();
 extern void s3TiLoadCursor();
 extern void s3TiMoveCursor();
-
-extern short s3ChipId;
 
 static miPointerSpriteFuncRec s3PointerSpriteFuncs =
 {

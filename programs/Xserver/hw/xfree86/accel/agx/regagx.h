@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.1 1994/06/22 04:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.2 1994/07/15 06:57:12 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -709,9 +709,14 @@ typedef struct {
 
 #define GE_START_CMD( cmd )    GE_OUT_D(0x7C, (cmd))
 #define GE_START_CMDW( cmd )   GE_OUT_W(0x7E, (cmd))
-#define GE_RESET()             { GE_OUT_B(0x11,0x20); \
-                                 GE_WAIT_IDLE(); \
-                                 GE_OUT_B(0x11,0x00); }
+
+#define GE_RESET()             { int i = 5000000; \
+                                 GE_OUT_B(0x11,0x20); \
+                                 while(GE_BUSY()&&i--) ; \
+                                 if(GE_BUSY()) \
+                                   ErrorF("GE_RESET Timed Out.\n"); \
+                                 GE_OUT_B(0x11,0x00); \
+                               }
                                      
 
 #define GE_DEF_MEM_BASE		0x0C1C00

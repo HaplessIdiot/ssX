@@ -1,5 +1,5 @@
 /* $XConsortium: mach32frect.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.0 1994/05/08 05:19:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.1 1994/07/15 06:58:10 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -255,38 +255,14 @@ mach32PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	    pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	    if (mach32CacheTile(pPix)) {
-		int w, h;
-		while (n--) {
-		    w = pboxClipped->x2 - pboxClipped->x1;
-		    h = pboxClipped->y2 - pboxClipped->y1;
-		    if ((w > 9) || (h > 9))
-			mach32CImageFill(pPix->slot,
-					 pboxClipped->x1, pboxClipped->y1,
-					 w, h,
-					 xrot, yrot,
-					 mach32alu[pGC->alu], pGC->planemask);
-		    else
-			(mach32ImageFillFunc)(pboxClipped->x1, pboxClipped->y1,
-					w, h,
-					pPix->devPrivate.ptr, pixWidth,
-					width, height, xrot, yrot,
-					mach32alu[pGC->alu], pGC->planemask);
-		    pboxClipped++;
-		}
-	    } else
-#endif
-	    {
-		while (n--) {
-		    (mach32ImageFillFunc)(pboxClipped->x1, pboxClipped->y1,
-				     pboxClipped->x2 - pboxClipped->x1,
-				     pboxClipped->y2 - pboxClipped->y1,
-				     pPix->devPrivate.ptr, pixWidth,
-				     width, height, xrot, yrot,
-				     mach32alu[pGC->alu], pGC->planemask);
-		    pboxClipped++;
-		}
+	    while (n--) {
+		(mach32ImageFillFunc)(pboxClipped->x1, pboxClipped->y1,
+				      pboxClipped->x2 - pboxClipped->x1,
+				      pboxClipped->y2 - pboxClipped->y1,
+				      pPix->devPrivate.ptr, pixWidth,
+				      width, height, xrot, yrot,
+				       mach32alu[pGC->alu], pGC->planemask);
+		pboxClipped++;
 	    }
 	    break;
 	  case FillStippled:
@@ -299,42 +275,15 @@ mach32PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	    pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	    if (mach32CacheStipple(pPix)) {
-		int w, h;
-		while (n--) {
-		    w = pboxClipped->x2 - pboxClipped->x1;
-		    h = pboxClipped->y2 - pboxClipped->y1;
-		    if ((w > 9) || (h > 9))
-			mach32CImageStipple(pPix->slot,
-					    pboxClipped->x1, pboxClipped->y1,
-					    w, h,
-					    xrot, yrot, pGC->fgPixel,
-					    mach32alu[pGC->alu],
-					    pGC->planemask);
-		    else
-			mach32ImageStipple(pboxClipped->x1, pboxClipped->y1,
-					   w, h,
-					   pPix->devPrivate.ptr, pixWidth,
-					   width, height, xrot, yrot,
-					   pGC->fgPixel,
-					   mach32alu[pGC->alu],
-					   pGC->planemask);
-		    pboxClipped++;
-		}
-	    } else
-#endif
-	    {
-		while (n--) {
-		    mach32ImageStipple(pboxClipped->x1, pboxClipped->y1,
-					pboxClipped->x2 - pboxClipped->x1,
-					pboxClipped->y2 - pboxClipped->y1,
-					pPix->devPrivate.ptr, pixWidth,
-					width, height, xrot, yrot,
-					pGC->fgPixel,
-					mach32alu[pGC->alu], pGC->planemask);
-		    pboxClipped++;
-		}
+	    while (n--) {
+	    	mach32ImageStipple(pboxClipped->x1, pboxClipped->y1,
+				   pboxClipped->x2 - pboxClipped->x1,
+				   pboxClipped->y2 - pboxClipped->y1,
+				   pPix->devPrivate.ptr, pixWidth,
+				   width, height, xrot, yrot,
+				   pGC->fgPixel,
+				   mach32alu[pGC->alu], pGC->planemask);
+		pboxClipped++;
 	    }
 	    break;
 	  case FillOpaqueStippled:
@@ -347,45 +296,16 @@ mach32PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	    pboxClipped = pboxClippedBase;
-#ifdef PIXPRIV
-	    if (mach32CacheOpStipple(pPix)) {
-		int w, h;
-		while (n--) {
-		    w = pboxClipped->x2 - pboxClipped->x1;
-		    h = pboxClipped->y2 - pboxClipped->y1;
-		    if ((w > 9) || (h > 9))
-			mach32CImageOpStipple(pPix->slot,
-					      pboxClipped->x1, pboxClipped->y1,
-					      w, h,
-					      xrot, yrot,
-					      pGC->fgPixel, pGC->bgPixel,
-					      mach32alu[pGC->alu],
-					      pGC->planemask);
-		    else
-			mach32ImageOpStipple(pboxClipped->x1, pboxClipped->y1,
-					     w, h,
-					     pPix->devPrivate.ptr, pixWidth,
-					     width, height,
-					     xrot, yrot,
-					     pGC->fgPixel, pGC->bgPixel,
-					     mach32alu[pGC->alu],
-					     pGC->planemask);
-		    pboxClipped++;
-		}
-	    } else
-#endif
-	    {
-		while (n--) {
-		    mach32ImageOpStipple(pboxClipped->x1, pboxClipped->y1,
-					  pboxClipped->x2 - pboxClipped->x1,
-					  pboxClipped->y2 - pboxClipped->y1,
-					  pPix->devPrivate.ptr, pixWidth,
-					  width, height, xrot, yrot,
-					  pGC->fgPixel, pGC->bgPixel,
-					  mach32alu[pGC->alu],
-					  pGC->planemask);
-		    pboxClipped++;
-		}
+	    while (n--) {
+	        mach32ImageOpStipple(pboxClipped->x1, pboxClipped->y1,
+				     pboxClipped->x2 - pboxClipped->x1,
+				     pboxClipped->y2 - pboxClipped->y1,
+				     pPix->devPrivate.ptr, pixWidth,
+				     width, height, xrot, yrot,
+				     pGC->fgPixel, pGC->bgPixel,
+				     mach32alu[pGC->alu],
+				     pGC->planemask);
+		pboxClipped++;
 	    }
 	    break;
 	}

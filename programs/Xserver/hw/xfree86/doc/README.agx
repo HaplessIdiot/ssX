@@ -36,14 +36,14 @@
 
 3) Known Problems
 
-     a) The accelerated line routines don't match lines written
+     a) When switching in and out of the server VC, sometimes it
+        hangs. This seems to primarily happen if switching 
+        rapidily many times.
+
+     b) The accelerated line routines don't match lines written
         by the mi/cfb routines. This is noticable when switching between
         virtual consoles while running routines that draw and erase 
         lines. 
-
-     b) Dashed zero-width lines are not yet accelerated, the cfb.banked 
-        routines used for these (and for all zero-width lines with the
-        AGX-014) occasionally write random bits. 
 
      c) The AGX-016 adds support for additional virtual width's,
         the current server does not support these.
@@ -66,22 +66,24 @@
         setup code and then finding a lot of time to debug and test
         the numerous permutations.
 
-     b) The current server is still heavily dependent on cfb.banked
+     d) The current server is still heavily dependent on cfb.banked
         routines. Cleaning this up is necessary not only for better
         performance, but to support other than 8bpp. 
 
-     c) Support 16bpp, 4bpp, and 1bpp (and possibly 24bpp).
+     e) Support 16bpp, 4bpp, and 1bpp (and possibly 24bpp).
 
-     c) General performance improvements taking advantage of AGX/XGA
+     f) General performance improvements taking advantage of AGX/XGA
         features like mask-based fills for polygon and arc fills.  
+        General macro-optimizations, many routines are Q&D adaptions
+        of existing routines from other servers. 
 
-     e) Implement more HW probing, this will be difficult as it
+     g) Implement more HW probing, this will be difficult as it
         appears some (all?) vendors don't implement the VESA VXE
         POS registers, although the AGX chip does support it. 
         There are a few rev/vendor registers in the AGX chip
         but they are not documented.
 
-     d) Micro-optimizations, in particularly reducing overhead for
+     h) Micro-optimizations, in particularly reducing overhead for
         common, simple, cases that don't require full generality. 
         Improving concurrency between the cpu and graphics engine,
         which is currently limited by the use of the cfb.banked 
@@ -101,7 +103,8 @@
            damage them.
 
 
-(tested)    "normal_dac"      -  normal vga style RAMDAC (6-bit DAC)
+(tested)    "normal_dac"      -  normal vga style RAMDAC (6-bit DAC),
+                                 default if none specified.
 (tested)    "bt481"           -  bt481 RAMDAC  (supports 8-bit DAC)
 (tested)    "bt482"           -  bt482 RAMDAC  (supports 8-bit DAC)
                                  The Hercules Graphite HG210 uses 
@@ -124,8 +127,11 @@
 (tested)    "herc_small_dac"  -  Herc. Graphite Pro RAMDAC probe,
                                  forces use of only the samll RAMDAC
                                  Not supported by the HG210 Graphite.
-(tested)    "dac_8_bit"       -  Sets supported RAMDAC's to 8-bit DAC mode.
-            "sync_on_green"   -  Composite sync on green for supported DAC's.
+(tested)    "dac_8_bit"       -  Sets supported RAMDAC's to 8-bit DAC mode
+                                 (all but normal_dac).
+            "sync_on_green"   -  Composite sync on green for DAC's that 
+                                 support this feature (currently bt481
+                                 & bt482).
 
 
       Chipset:
@@ -161,6 +167,10 @@
                                MS-Windows driver default. Required by some
                                VLB systems with aggresive timing. The default
                                for this server is to enable the buffer.
+                               A good test for whether this is required 
+                               is the xbench or x11perf dashed lines tests,
+                               if random dots are drawn, fifo_conserv is
+                               required.
            "fifo_aggressive: - Enable the AGX-016's extra-large buffer.
                                May result in garbage being left about the
                                screen, disabled by default.
@@ -208,7 +218,7 @@
                AGX-016 : adds adjusts of 128 and 288 to those of the -015,
                          but those are not yet supported, and initial attempts
                          indicate they may only be for 640 and 800 (docs are
-                         vague, but only mention there use for 640 and 800).
+                         vague, but only mention their use for 640 and 800).
 
            When panning I ocassionally get streaks if the virtual 
            resolution >> physical resolution, moving the mouse a 
@@ -234,21 +244,18 @@
           will be quicker to startup. For the clock probe it is 
           recommended that the X server be run with the -probeonly option. 
 
-          Documents indicate that clocks 8-11 for the AGX-015 should 
-          be 80, 50, 45, and 65 and warning messages will be displayed 
-          if they aren't close (actually the first is 90 on the Hercules
-          Graphite PRO, and the Sierra-based cards are different for 
-          all of these). For XGA compatibility the first two clocks 
-          should be about 25 and 28, and the fourth 90 (the two 
-          Sierra-based boards have 110 for the fourth). The first
-          clock is used by the probe to derive the others and is 
-          assumed to be 25.175Mhz. If the second clock is not around
-          28-29Mhz, the clock probe results should be viewed as very
-          suspect, and the board vendor contacted. The mapping of 
-          the clock probe array to the control register bits is not 
-          obvious, and is documented in the server sources in 
-          agxInit.c (will be condensed and added here soon).
-        
+          Clock probing assumes that the first clock is 25.175Mhz and
+          uses that to derive the rest. A warning is displayed  if the
+          second is not about 28.322Mhz.
+
+          In the case of the AGX-014 an later, only the external 
+          clock select lines are used, this means the clock values
+          correspond to the values of the video board's clock chip.
+
+          For the AGX-010, the first 8 clocks use the standard XGA 
+          internal clock selects and the second 8 are bases on some 
+          AGX extensions. For the XGA-1 only 8 clocks are available.
+
           The maximum pixel clock generally allowed is 85Mhz, but
           some RAMDAC's support higher values. In any case you should
           check your RAMDAC, some RAMDAC's used on AGX based boards are 
@@ -276,10 +283,9 @@
             Option        "herc_dual_dac"
             Option        "dac_8_bit"
             Option        "no_wait_state"
-          
-            Clocks        25 29 25 90 45 29 25 90
-                          90 50 45 65 90 50 45 65
-                          25 29 32 36 40 45 50 65
+            Option        "fifo_conserv"
+         
+            Clocks        25 29 32 36 40 45 50 65
                           70 75 80 85 90 95 100 110
           
             Modes         "1152x900" "1024x768" "800x600" "640x480"
@@ -335,4 +341,4 @@
            
           
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.2 1994/06/22 05:42:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.3 1994/07/15 07:03:30 dawes Exp $

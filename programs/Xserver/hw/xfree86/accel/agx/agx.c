@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.5 1994/07/21 13:46:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.6 1994/07/24 11:42:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -416,6 +416,7 @@ agxProbe()
       agxInfoRec.chipset = "UNKNOWN";
       ErrorF("%s :Valid AGX/XGA Chip type must be specified.\n",
              agxInfoRec.name);
+      return FALSE;
    }
 
    for( i= 0; i <= POS_LAST_IO_REG; i++ )
@@ -663,7 +664,8 @@ memory size in your Xconfig file.\n",
    pMode = pEnd = agxInfoRec.modes;
    if( pMode != NULL )
       do {
-         xf86LookupMode(pMode, &agxInfoRec);
+         if( !xf86LookupMode(pMode, &agxInfoRec) )
+            xf86ProbeFailed = TRUE; 
          agxInfoRec.virtualX = max(agxInfoRec.virtualX, pMode->HDisplay);
          agxInfoRec.virtualY = max(agxInfoRec.virtualY, pMode->VDisplay);
          pMode = pMode->next;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.3 1994/07/19 06:57:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.4 1994/07/24 11:48:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -39,8 +39,6 @@
 #include "fontstruct.h"
 #include "s3.h"
 #include "regs3.h"
-#include "s3bcach.h"
-#include "s3pcach.h"
 #include "xf86_HWlib.h"
 #include "ICD2061A.h"
 #define XCONFIG_FLAGS_ONLY
@@ -48,7 +46,6 @@
 #include "s3linear.h"
 
 extern char s3Mbanks;
-extern short s3ChipId;
 extern Bool s3Mmio928;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -314,10 +311,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
    AlreadyInited = TRUE;
 
    s3ImageInit();
-#ifdef PIXPRIV
-   s3CacheInit(s3InfoRec.virtualX, s3CursorStartY + s3CursorLines);
-#endif
-   s3BitCache8Init(s3InfoRec.virtualX, s3CursorStartY + s3CursorLines);
+   xf86InitCache(s3CacheMoveBlock);
+   s3FontCache8Init();
 
    /*
     * Take display resolution from the -dpi flag if specified
@@ -383,10 +378,7 @@ s3EnterLeaveVT(enter, screen_idx)
          AlreadyInited = TRUE;
 	 s3RestoreDACvalues();
 	 s3ImageInit();
-#ifdef PIXPRIV
-   	 s3CacheInit(s3InfoRec.virtualX, s3CursorStartY + s3CursorLines);
-#endif
-   	 s3BitCache8Init(s3InfoRec.virtualX, s3CursorStartY + s3CursorLines);
+   	 s3FontCache8Init();
 	 s3RestoreColor0(pScreen);
 	 (void)s3CursorInit(0, pScreen); 
 	 s3RestoreCursor(pScreen);
@@ -470,36 +462,33 @@ s3SaveScreen(pScreen, on)
      ScreenPtr pScreen;
      Bool  on;
 {
+   unsigned char scrn, sync;
 
    if (on)
       SetTimeSinceLastInputEvent();
-   if (xf86VTSema) {
-      if (on) {
-	 s3RestoreColor0(pScreen);
-	 s3ShowCursor();
-	 outw(DAC_MASK, 0xff);
-	 if (s3PowerSaver) {
-	    unsigned char tmp;
-	    /* Re-enable sync */ 
-	    outb(vgaCRIndex, 0x17);
-	    tmp = inb(vgaCRReg);
-	    outb(vgaCRReg, tmp | 0x80);
-	 }
-      } else {
-	 s3HideCursor();
-	 outb(DAC_W_INDEX, 0);
-	 outb(DAC_DATA, 0);
-	 outb(DAC_DATA, 0);
-	 outb(DAC_DATA, 0);
 
-	 outw(DAC_MASK, 0x00);
-	 if (s3PowerSaver) {
-	    unsigned char tmp;
-	    /* disable sync */ 
-	    outb(vgaCRIndex, 0x17);
-	    tmp = inb(vgaCRReg);
-	    outb(vgaCRReg, tmp & ~0x80);
-	 }
+   if (xf86VTSema) {
+      /* the server is running on the current vt */
+      /* so just go for it */
+
+      outb(0x3C4,1);
+      scrn = inb(0x3C5);
+      outb(vgaIOBase + 4, 0x17);
+      sync = inb(vgaIOBase + 5);
+
+      if (on) {
+	 scrn &= 0xDF;			/* enable screen */
+	 sync |= 0x80;			/* enable sync   */
+      } else {
+	 scrn |= 0x20;			/* blank screen */
+	 sync &= ~0x80;			/* disable sync */
+      }
+
+      outw(0x3C4, 0x0100);              /* syncronous reset */
+      outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+
+      if (s3PowerSaver) {
+         outb(vgaCRReg, sync);
       }
    }
    return (TRUE);

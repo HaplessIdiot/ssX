@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.2 1994/06/18 16:28:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.3 1994/07/24 11:56:28 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -92,11 +92,15 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	/* We only accelerate fonts 16 or less pixels wide. */
 	/* Let cfb handle writing into offscreen pixmap. */
-	if (glyphWidthBytes != 4 || glyphWidth > 16 || !CHECKSCREEN(pdstBase)
-	|| !xf86VTSema) {
+	if (!CHECKSCREEN(pdstBase) || !xf86VTSema) {
 	        cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,
 	        	pglyphBase);
 		return;	        
+	}
+	if (glyphWidthBytes != 4 || glyphWidth > 16) {
+	        vga256TEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+	        	pglyphBase);
+	        return;
 	}
 
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
@@ -114,7 +118,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
                 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnPART:
-	cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	vga256TEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
       case rgnOUT:
 	return;
     }

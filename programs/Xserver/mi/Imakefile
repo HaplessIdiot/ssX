@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 5.21 93/12/13 17:28:23 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.0 1994/05/30 08:28:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.1 1994/06/18 16:30:09 dawes Exp $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
@@ -39,6 +39,8 @@ SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
 InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
 InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(mi.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mibstore.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mistruct.h,$(LINKKITDIR)/include)
 
 DependTarget()

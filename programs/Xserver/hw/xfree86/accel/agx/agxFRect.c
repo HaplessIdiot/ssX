@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.0 1994/06/15 15:35:23 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -70,7 +70,7 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    int   numRects;
    int   n;
    int   xorg, yorg;
-   int   width, height;
+   unsigned int   width, height;
    PixmapPtr pPix;
    int   pixWidth;
    int   xrot, yrot;
@@ -201,7 +201,7 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
            GE_WAIT_IDLE();
 
-           MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+           MAP_SET_DST( GE_MS_MAP_A );
 
            GE_OUT_B(GE_FRGD_MIX, pGC->alu);
            GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
@@ -231,7 +231,6 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 #endif
               GE_START_CMDW( GE_OPW_BITBLT
                              | GE_OPW_FRGD_SRC_CLR
-                             | GE_OPW_SRC_MAP_A
                              | GE_OPW_DEST_MAP_A   );
 
 	      pboxClipped++;

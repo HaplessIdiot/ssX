@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.12 1994/07/19 11:52:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.13 1994/07/21 13:56:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -40,7 +40,6 @@
 #include "fontstruct.h"
 #include "s3.h"
 #include "regs3.h"
-#include "s3pcach.h"
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -184,9 +183,6 @@ unsigned char s3Port31 = 0x8d;
 void (*s3ImageReadFunc)();
 void (*s3ImageWriteFunc)();
 void (*s3ImageFillFunc)();
-int s3MAX_SLOTS;
-int s3FC_MAX_HEIGHT = 32;
-CacheFont8Ptr s3HeadFont, s3FontCache;
 int s3hotX, s3hotY;
 Bool s3BlockCursor, s3ReloadCursor;
 int s3CursorStartX, s3CursorStartY, s3CursorLines;

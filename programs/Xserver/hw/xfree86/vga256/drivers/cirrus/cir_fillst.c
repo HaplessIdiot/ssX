@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fillst.c,v 1.1 94/03/28 21:49:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.2 1994/06/05 06:00:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.3 1994/07/24 11:56:26 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -233,7 +233,7 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 	if (width == 32 && height <= 32)
 		goto tile32;
 
-	cfbFillRectTileOdd(pDrawable, pGC, nBox, pBox);
+	vga256FillRectTileOdd(pDrawable, pGC, nBox, pBox);
 	return;
 
 tile8x8:
@@ -248,7 +248,7 @@ tile8x8:
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
 		if (w * h < 500)
-			cfbFillRectTileOdd(pDrawable, pGC, 1, pBox);
+			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
 			CirrusBLT8x8PatternFill(pBox->y1 * destPitch +
 				pBox->x1, w, h,	pattern, destPitch,
@@ -268,7 +268,7 @@ tile16x16:
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
 		if (w * h < 250)
-			cfbFillRectTileOdd(pDrawable, pGC, 1, pBox);
+			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
 			/* Low level function uses vertical interleaving. */
 			CirrusBLT16x16PatternFill(pBox->y1 * destPitch +
@@ -289,7 +289,7 @@ tile32x32:
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
 		if (w * h < 500)
-			cfbFillRectTileOdd(pDrawable, pGC, 1, pBox);
+			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
 			/* Low level function uses vertical interleaving. */
 			CirrusBLT32x32PatternFill(pBox->y1 * destPitch +
@@ -313,7 +313,7 @@ tileblit:
 		h = pBox->y2 - y;
 		/* Don't use the blitter for small tile fills. */
 		if (w * h < 250) {
-			cfbFillRectTileOdd(pDrawable, pGC, 1, pBox);
+			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 			continue;
 		}
 		box.x1 = x;
@@ -321,7 +321,7 @@ tileblit:
 		box.x2 = x + min(width, w);
 		box.y2 = y + height;
 		/* Draw first tile. */
-		cfbFillRectTileOdd(pDrawable, pGC, 1, &box);
+		vga256FillRectTileOdd(pDrawable, pGC, 1, &box);
 		/* Repeat tile horizontally. */
 		blitx = x + width;	/* Will skip if width > w. */
 		blith = height;
@@ -362,7 +362,7 @@ tile32:
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
 		if (w < 32 || w * h < 80000)
-			cfbFillRectTileOdd(pDrawable, pGC, 1, pBox);
+			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
 			int nx, nw;
 			int left, right;
@@ -378,7 +378,7 @@ tile32:
 			nw = (w - left) & ~31;
 			right = w - left - nw;
 			if (nw == 0)
-				cfbFillRectTileOdd(pDrawable, pGC, 1, pBox);
+				vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 			else {
 				BoxRec box[2];
 				/* Do main part. */
@@ -392,14 +392,14 @@ tile32:
 				box[0].y2 = y + h;
 				/* Right edge. */
 				if (right == 0)
-					cfbFillRectTileOdd(pDrawable, pGC,
+					vga256FillRectTileOdd(pDrawable, pGC,
 						1, (BoxPtr)&box);
 				else {
 					box[1].x1 = x + left + nw;
 					box[1].y1 = y;
 					box[1].x2 = box[1].x1 + right;
 					box[1].y2 = y + h;
-					cfbFillRectTileOdd(pDrawable, pGC, 2,
+					vga256FillRectTileOdd(pDrawable, pGC, 2,
 						(BoxPtr)&box);
 				}
 			}

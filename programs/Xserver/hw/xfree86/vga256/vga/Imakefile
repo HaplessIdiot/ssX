@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:43:27 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.0 1994/07/24 11:58:35 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -128,9 +128,11 @@ ObjectFromSpecialAsmSource(fFillCopy,fFill,-DRROP=GXCopy)
 ObjectFromSpecialAsmSource(fFillOr,fFill,-DRROP=GXOr)
 ObjectFromSpecialAsmSource(fFillXor,fFill,-DRROP=GXXor)
 
-InstallLinkKitNonExecFile(vga.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vga.h,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(vgaBank.h,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(vga.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(vga256.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(vgaFasm.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vgaHW.c,$(LINKKITDIR)/VGADriverDoc)
 
 DependTarget()

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.6 1994/06/22 04:19:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.7 1994/07/15 07:03:06 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -58,6 +58,9 @@ typedef struct {
 /* Laptop display options */
 #define OPTION_INTERN_DISP	8  /* Laptops - enable internal display (WD)*/
 #define OPTION_EXTERN_DISP	9  /* Laptops - enable external display (WD)*/
+#define OPTION_CLGD6225_LCD    10  /* Option to avoid setting the DAC to */
+				   /* white on a clgd6225 with the LCD */
+				   /* enabled */
 
 /* Memory options */
 #define OPTION_FAST_DRAM	12 /* fast DRAM (for ET4000, S3, AGX) */
@@ -160,6 +163,7 @@ OptFlagRec xf86_OptionTab[] = {
 
   { "intern_disp",	OPTION_INTERN_DISP },
   { "extern_disp",	OPTION_EXTERN_DISP },
+  { "clgd6225_lcd",	OPTION_CLGD6225_LCD },
 
   { "fast_dram",	OPTION_FAST_DRAM },
   { "med_dram",		OPTION_MED_DRAM },

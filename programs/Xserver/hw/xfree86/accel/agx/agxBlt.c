@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.2 1994/07/15 06:57:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.3 1994/07/24 11:42:51 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -294,7 +294,6 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
             
             GE_OUT_B(GE_FRGD_MIX, pGC->alu);
 	    GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-            GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
 
             if ( dx > 0 && dy > 0 ) {
                GE_OUT_W( GE_PIXEL_OP, GE_OP_PAT_FRGD
@@ -866,7 +865,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
 
          GE_WAIT_IDLE();
 
-         MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+         MAP_SET_DST( GE_MS_MAP_A );
 
 #ifndef NO_MULTI_IO
          GE_OUT_W(GE_FRGD_MIX, pGC->alu << 16 | pGC->alu);
@@ -905,7 +904,6 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                GE_START_CMDW( GE_OPW_BITBLT
                               | GE_OPW_FRGD_SRC_CLR 
                               | GE_OPW_BKGD_SRC_CLR 
-                              | GE_OPW_SRC_MAP_A
                               | GE_OPW_DEST_MAP_A   );
             }
          } 

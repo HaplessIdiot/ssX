@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514fs.c,v 1.2 94/04/17 20:30:33 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514fs.c,v 3.0 1994/04/29 14:06:42 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -251,26 +251,13 @@ ibm8514TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (ibm8514CacheTile(pPix)) {
-	while (n--) {
-	    ibm8514CImageFill(pPix->slot,
-			      ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-			      ibm8514alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    ibm8514ImageFill(ppt->x, ppt->y, *pwidth, 1,
-			     pPix->devPrivate.ptr, pixWidth,
-			     width, height, xrot, yrot,
-			     ibm8514alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	ibm8514ImageFill(ppt->x, ppt->y, *pwidth, 1,
+			 pPix->devPrivate.ptr, pixWidth,
+			 width, height, xrot, yrot,
+			 ibm8514alu[pGC->alu], pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);
@@ -345,27 +332,13 @@ ibm8514StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (ibm8514CacheStipple(pPix)) {
-	while (n--) {
-	    ibm8514CImageStipple(pPix->slot,
-				   ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				   pGC->fgPixel,
-				   ibm8514alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    ibm8514ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth, width, height,
-				xrot, yrot, pGC->fgPixel, 0,
-				ibm8514alu[pGC->alu], pGC->planemask, 0);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	ibm8514ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+			    pPix->devPrivate.ptr, pixWidth, width, height,
+			    xrot, yrot, pGC->fgPixel, 0,
+			    ibm8514alu[pGC->alu], pGC->planemask, 0);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);
@@ -440,28 +413,14 @@ ibm8514OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (ibm8514CacheOpStipple(pPix)) {
-	while (n--) {
-	    ibm8514CImageOpStipple(pPix->slot,
-				   ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				   pGC->fgPixel, pGC->bgPixel,
-				   ibm8514alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    ibm8514ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height,
-				xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				ibm8514alu[pGC->alu], pGC->planemask, 1);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	ibm8514ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+			    pPix->devPrivate.ptr, pixWidth,
+			    width, height,
+			    xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+			    ibm8514alu[pGC->alu], pGC->planemask, 1);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);

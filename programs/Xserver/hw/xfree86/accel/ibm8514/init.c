@@ -99,6 +99,7 @@ void ibm8514Init(short res)
     /* Get board status information */
     i = inw(SUBSYS_STAT);
 
+#if 0
     /* Check if monitor capable of 1024x768 is attached.
      * If not, print error message and abort.
      * In this case, we want an IBM 8514 compatible monitor.
@@ -107,6 +108,7 @@ void ibm8514Init(short res)
 	ibm8514CleanUp();
 	FatalError("Attached monitor not capable of displaying 8514!\n");
     }
+#endif
 
     old_DAC_MASK = inb(DAC_MASK);
     outb(DAC_MASK, 0x00);

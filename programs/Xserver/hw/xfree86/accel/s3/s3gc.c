@@ -76,6 +76,10 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
+#include "xf86bcache.h"
+#include "xf86fcache.h"
+#include "xf86text.h"
+
 #include "s3.h"
 
 static void s3ValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
@@ -108,10 +112,10 @@ static GCOps s3Ops =
    miFillPolygon,
    s3PolyFillRect,
    miPolyFillArc,
-   s3PolyText8,
-   s3PolyText16,
-   s3ImageText8,
-   s3ImageText16,
+   xf86PolyText8,
+   xf86PolyText16,
+   xf86ImageText8,
+   xf86ImageText16,
    miImageGlyphBlt,
    miPolyGlyphBlt,
    miPushPixels,
@@ -385,11 +389,6 @@ s3ValidateGC(pGC, changes, pDrawable)
  /* flags for changing the proc vector */
    cfbPrivGCPtr devPriv;
    int   oneRect;
-
-#ifdef PIXPRIV
-   if (pDrawable->type == DRAWABLE_PIXMAP)
-      s3CacheFreeSlot(pDrawable);
-#endif
 
    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
       pGC->lastWinOrg.y != pDrawable->y;

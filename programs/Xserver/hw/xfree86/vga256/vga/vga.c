@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.7 1994/07/21 13:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.8 1994/07/24 11:58:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -197,6 +197,7 @@ Bool vgaUse2Banks;
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
 extern Bool vgaPowerSaver;
+extern Bool clgd6225Lcd;
 
 #ifdef MONOVGA
 int vgaReadseg=0;
@@ -399,11 +400,14 @@ vgaProbe()
 	vgaInterlaceType = Drivers[i]->ChipInterlaceType;
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
 	OFLG_SET(OPTION_POWER_SAVER, &vgaOptionFlags);
+	OFLG_SET(OPTION_CLGD6225_LCD, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
 	if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
 	    vgaPowerSaver = TRUE;
+	if (OFLG_ISSET(OPTION_CLGD6225_LCD, &vga256InfoRec.options))
+	    clgd6225Lcd = TRUE;
 
 	/* if Virtual given: is the virtual size too big? */
 #ifdef BANKEDMONOVGA

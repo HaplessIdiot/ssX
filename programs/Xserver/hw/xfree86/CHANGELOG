@@ -1,3 +1,30 @@
+XFree86 3.0D (1 August 1994)
+164. Change S3 screensaver code to do the same thing as the vga256 code
+     (Bernhard Bender).
+163. Update Cirrus driver for vga256 changes (Harm Hannemaayer).
+162. Fixes for font scaling problems on SVR4 (David Wexelblat).
+161. Remove all of the old unused pixmap cache code (David Wexelblat).
+160. Use generic font cache code for S3 server (David Wexelblat).
+159. Native AGX code for Save/RestoreAreas, CopyWindow and PaintWindow
+     (Henry Worth).
+158. Change AGX clock mappings -- see README.agx for details (Henry Worth).
+157. Update AGX server for vga256 changes (Henry Worth).
+156. Xtest fix for Linux (Erik Nygren).
+155. Speedup for cached text output in Mach8 and 8514 servers (Hans Nasten).
+154. Workaround for 6225 with LCD where full on white pixels cause display
+     problems (Philip Homburg).
+153. Fix memory handling for Mach8 boards with the SVGA vgawonder driver
+     (Marc Aurele La France).
+152. Fix some build problems on NCR SVR4 (Stuart Anderson).
+151. Fix problem which caused xjewel to lock up the S3 server when running
+     in linear mode (Harald Koenig).
+150. xman support for gzip'd man pages.
+149. Fix LinkKit problems.
+148. Omit monitor ID check in 8514 server.
+147. Fix card ident problem with ati driver.
+146. Fix asm problem in new pvga1/bank.s.
+145. Fix programs/Imakefile error.
+
 XFree86 3.0Ce (24 July 1994)
 144. Alternate "SlowBcopy()" which avoids I/O (which causes problems on
      some cards) (Glenn Lai).

@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.0 1994/04/29 14:07:52 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -43,100 +43,8 @@
 #include	"mi.h"
 #include	"s3.h"
 #include	"regs3.h"
-#include	"s3bcach.h"
 
-int s3NoCPolyText();
-int s3NoCImageText();
-extern CacheFont8Ptr s3CacheFont8();
 extern unsigned char s3SwapBits[256];
-
-int
-s3PolyText8(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     char *chars;
-{
-   CacheFont8Ptr ret;
-
-   if (!xf86VTSema)
-   {
-      return(miPolyText8(pDraw, pGC, x, y, count, chars));
-   }
-
-   /*
-    * The S3 graphics engine apparently can't handle these ROPs for the
-    * BLT operations used to render text.  The 8514 and ATI don't have a
-    * problem using the same code that S3 uses.  The common feature of these
-    * ROPs is that they don't reference the source pixel.
-    */
-   if ((pGC->fillStyle != FillSolid) || 
-       (pGC->alu == GXclear || pGC->alu == GXinvert || pGC->alu == GXset)) {
-      return miPolyText8(pDraw, pGC, x, y, count, chars);       
-   } else {
-      if ((ret = s3CacheFont8(pGC->font)) == NULL)
-	 return s3NoCPolyText(pDraw, pGC, x, y, count, chars, TRUE);
-      else
-	 return s3CPolyText8(pDraw, pGC, x, y, count, (unsigned char *)chars,
-			     ret);
-   }
-}
-
-int
-s3PolyText16(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     unsigned short *chars;
-{
-
-   if (!xf86VTSema || 
-       (pGC->fillStyle != FillSolid) || 
-       (pGC->alu == GXclear || pGC->alu == GXinvert ||	pGC->alu == GXset)) {
-      return miPolyText16(pDraw, pGC, x, y, count, chars);
-  }
-   return s3NoCPolyText(pDraw, pGC, x, y, count, (char *)chars, FALSE);
-}
-
-void
-s3ImageText8(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     char *chars;
-{
-   CacheFont8Ptr ret;
-
-   if (!xf86VTSema)
-   {
-      miImageText8(pDraw, pGC, x, y, count, chars);
-      return;
-   } 
-
-   /* Don't need to check fill style here - it isn't used in image text */
-   if ((ret = s3CacheFont8(pGC->font)) == NULL)
-     s3NoCImageText(pDraw, pGC, x, y, count, chars, TRUE);
-   else
-      s3CImageText8(pDraw, pGC, x, y, count, chars, ret);
-}
-
-void
-s3ImageText16(pDraw, pGC, x, y, count, chars)
-     DrawablePtr pDraw;
-     GCPtr pGC;
-     int   x, y;
-     int   count;
-     unsigned short *chars;
-{
-   if (!xf86VTSema) 
-	miImageText16(pDraw, pGC, x, y, count, chars);
-   else
-        s3NoCImageText(pDraw, pGC, x, y, count, (char *)chars, FALSE);
-}
-
 
 /*
  * The guts of this should possibly be tidied up and put in s3im.c.

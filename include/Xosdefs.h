@@ -2,7 +2,7 @@
  * O/S-dependent (mis)feature macro definitions
  *
  * $XConsortium: Xosdefs.h,v 1.13 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xosdefs.h,v 3.0 1994/05/08 05:14:27 dawes Exp $
+ * $XFree86: xc/include/Xosdefs.h,v 3.1 1994/05/21 23:44:32 dawes Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -80,13 +80,11 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif
 
-#ifdef SYSV386
-#ifdef SYSV
+#if defined(SYSV) && defined(i386)
 #ifndef SCO
 #define X_NOT_POSIX
 #endif
 #define X_NOT_STDC_ENV
-#endif
 #endif
 
 #ifdef MOTOROLA

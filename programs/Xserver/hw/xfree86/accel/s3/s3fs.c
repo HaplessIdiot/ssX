@@ -232,32 +232,13 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    height = pPix->drawable.height;
    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-   if (s3MAX_SLOTS && s3CacheTile(pPix, pwidth - width)) {
-      while (n--) {
-	 if (*pwidth > 50)
-	    s3CImageFill(pPix->slot,
-		      ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-		      s3alu[pGC->alu], pGC->planemask);
-	 else
-	    (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
-		      pPix->devPrivate.ptr, pixWidth,
-		      width, height, xrot, yrot,
-		      s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
-   } else
-#endif
-   {
-      while (n--) {
-	 (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
-			    pPix->devPrivate.ptr, pixWidth,
-			    width, height, xrot, yrot,
-			    s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
+   while (n--) {
+      (s3ImageFillFunc) (ppt->x, ppt->y, *pwidth, 1,
+			 pPix->devPrivate.ptr, pixWidth,
+			 width, height, xrot, yrot,
+			 s3alu[pGC->alu], pGC->planemask);
+       ppt++;
+       pwidth++;
    }
 
    DEALLOCATE_LOCAL(initPpt);
@@ -331,34 +312,13 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    height = pPix->drawable.height;
    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PRIXPRIV
-   if (s3MAX_SLOTS && s3CacheStipple(pPix, pwidth - width)) {
-      while (n--) {
-	 if (*pwidth > 50)
-	   s3CImageStipple(pPix->slot,
-			 ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-			 pGC->fgPixel,
-			 s3alu[pGC->alu], pGC->planemask);
-	  else
-	    s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-			pPix->devPrivate.ptr, pixWidth, width, height,
-			xrot, yrot, pGC->fgPixel,
-			s3alu[pGC->alu], pGC->planemask);
-	    
-	 ppt++;
-	 pwidth++;
-      }
-   } else
-#endif
-   {
-      while (n--) {
-	 s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-			pPix->devPrivate.ptr, pixWidth, width, height,
-			xrot, yrot, pGC->fgPixel,
-			s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
+   while (n--) {
+      s3ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+		     pPix->devPrivate.ptr, pixWidth, width, height,
+		     xrot, yrot, pGC->fgPixel,
+		     s3alu[pGC->alu], pGC->planemask);
+      ppt++;
+      pwidth++;
    }
 
    DEALLOCATE_LOCAL(initPpt);
@@ -432,36 +392,14 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    height = pPix->drawable.height;
    pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-   if (s3MAX_SLOTS && s3CacheOpStipple(pPix, pwidth - width)) {
-      while (n--) {
-	 if (*pwidth > 50)
-	    s3CImageOpStipple(pPix->slot,
-			   ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-			   pGC->fgPixel, pGC->bgPixel,
-			   s3alu[pGC->alu], pGC->planemask);
-	 else
-	    s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-			  pPix->devPrivate.ptr, pixWidth,
-			  width, height,
-			  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-			  s3alu[pGC->alu], pGC->planemask);
-	 
-	 ppt++;
-	 pwidth++;
-      }
-   } else
-#endif
-   {
-      while (n--) {
-	 s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-			  pPix->devPrivate.ptr, pixWidth,
-			  width, height,
-			  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-			  s3alu[pGC->alu], pGC->planemask);
-	 ppt++;
-	 pwidth++;
-      }
+   while (n--) {
+      s3ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
+		       pPix->devPrivate.ptr, pixWidth,
+		       width, height,
+		       xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+		       s3alu[pGC->alu], pGC->planemask);
+      ppt++;
+      pwidth++;
    }
 
    DEALLOCATE_LOCAL(initPpt);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.0 1994/06/15 15:35:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.1 1994/06/18 16:22:59 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -343,6 +343,25 @@ void agxImageOpStipple(
     unsigned int 
 #endif
 );
+/* agxBStor.c */
+void agxSaveAreas(
+#if NeedFunctionPrototypes
+    PixmapPtr,
+    RegionPtr,
+    int,
+    int,
+    WindowPtr
+#endif
+);
+void agxRestoreAreas(
+#if NeedFunctionPrototypes
+    PixmapPtr,
+    RegionPtr,
+    int,
+    int,
+    WindowPtr
+#endif
+);
 /* agxScrIn.c */
 Bool agxScreenInit(
 #if NeedFunctionPrototypes
@@ -556,6 +575,52 @@ void agxSetSpans(
     int *,
     int ,
     int 
+#endif
+);
+/* vgapntwin.c */
+void agxPaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr ,
+    RegionPtr ,
+    int
+#endif
+);
+void agxFillBoxSolid(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    int ,
+    BoxPtr ,
+    unsigned long 
+# endif
+);
+#if 0
+/* ??? */
+void agxFillBoxTile32(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    int ,
+    BoxPtr ,
+    PixmapPtr
+#endif
+);
+/* ??? */
+void agxFillBoxTileOdd(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    int ,
+    BoxPtr ,
+    PixmapPtr ,
+    int ,
+    int
+#endif
+);
+#endif
+/* agxWin.c */
+void agxCopyWindow(
+#if NeedFunctionPrototypes
+    WindowPtr,
+    DDXPointRec,
+    RegionPtr
 #endif
 );
 /* xf86RamDac.c */

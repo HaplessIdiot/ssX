@@ -1,5 +1,5 @@
 /* $XConsortium: mach32gc.c,v 1.2 94/04/17 20:30:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.0 1994/05/08 05:19:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.1 1994/07/15 06:58:13 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -686,11 +686,6 @@ mach32ValidateGC(pGC, changes, pDrawable)
     cfbPrivGCPtr devPriv;
     int		oneRect;
 
-#ifdef PIXPRIV
-    if (pDrawable->type == DRAWABLE_PIXMAP)
-	mach32CacheFreeSlot(pDrawable);
-#endif
-
     new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
 		 pGC->lastWinOrg.y != pDrawable->y;
 
@@ -1141,13 +1136,6 @@ mach32ValidateGC(pGC, changes, pDrawable)
 	      pGC->ops->FillSpans = mach32SolidFSpans;
 	      break;
 	  case FillTiled:
-#ifdef PIXPRIV
-#ifdef UsePixmapCacheForFillSpans
-	      if (mach32CachableTile(pGC->tile))
-		  pGC->ops->FillSpans = mach32TiledFSpans;
-	      else
-#endif
-#endif
 	      if (devPriv->pRotatedPixmap)
 	      {
 		  if (pGC->alu == GXcopy && (pGC->planemask & PMask) == PMask)
@@ -1159,26 +1147,12 @@ mach32ValidateGC(pGC, changes, pDrawable)
 		  pGC->ops->FillSpans = pcfbUnnaturalTileFS;
 	      break;
 	  case FillStippled:
-#ifdef PIXPRIV
-#ifdef UsePixmapCacheForFillSpans
-	      if (mach32CachableStipple(pGC->stipple))
-		  pGC->ops->FillSpans = mach32StipFSpans;
-	      else
-#endif
-#endif
 	      if (devPriv->pRotatedPixmap && mach32InfoRec.bitsPerPixel == 8)
 		  pGC->ops->FillSpans = cfb8Stipple32FS;
 	      else
 		  pGC->ops->FillSpans = pcfbUnnaturalStippleFS;
 	      break;
 	  case FillOpaqueStippled:
-#ifdef PIXPRIV
-#ifdef UsePixmapCacheForFillSpans
-	      if (mach32CachableOpStipple(pGC->stipple))
-		  pGC->ops->FillSpans = mach32OStipFSpans;
-	      else
-#endif
-#endif
 	      if (devPriv->pRotatedPixmap && mach32InfoRec.bitsPerPixel == 8)
 		  pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	      else
@@ -1321,22 +1295,13 @@ mach32ValidateGC(pGC, changes, pDrawable)
 		case FillSolid:
 		    break;
 		case FillTiled:
-#ifdef PIXPRIV
-		    if (!mach32CachableTile(pGC->tile))
-#endif
-			pGC->ops->PolyFillRect = pcfbPolyFillRect;
+		    pGC->ops->PolyFillRect = pcfbPolyFillRect;
 		    break;
 		case FillStippled:
-#ifdef PIXPRIV
-		    if (!mach32CachableStipple(pGC->stipple))
-#endif
-			pGC->ops->PolyFillRect = pPolyFillRectStip;
+		    pGC->ops->PolyFillRect = pPolyFillRectStip;
 		    break;
 		case FillOpaqueStippled:
-#ifdef PIXPRIV
-		    if (!mach32CachableOpStipple(pGC->stipple))
-#endif
-			pGC->ops->PolyFillRect = pPolyFillRectOpStip;
+		    pGC->ops->PolyFillRect = pPolyFillRectOpStip;
 		    break;
 		default:
 		    FatalError("mach32ValidateGC: illegal fillStyle\n");

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.0 1994/05/29 02:05:36 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -44,7 +44,6 @@
 #include "p9000curs.h"
 
 static unsigned char p9000BtYPosMask = 0xFF;
-static int p9000DAC8Bit = TRUE;
 
 
 /*

@@ -32,6 +32,8 @@
 
 #define NOMAPYET        (ColormapPtr) 0
 
+extern Bool clgd6225Lcd;
+
 static ColormapPtr InstalledMaps[MAXSCREENS];
 				/* current colormap for each screen */
 
@@ -83,6 +85,14 @@ vgaStoreColors(pmap, ndef, pdefs)
         cmap[0] = pdefs[i].red   >> 10;
         cmap[1] = pdefs[i].green >> 10;
         cmap[2] = pdefs[i].blue  >> 10;
+	if (clgd6225Lcd)
+	{
+		/* The LCD doesn't like white */
+		if (cmap[0] == 63) cmap[0]= 62;
+		if (cmap[1] == 63) cmap[1]= 62;
+		if (cmap[2] == 63) cmap[2]= 62;
+	}
+
         if (xf86VTSema)
 	{
 	    outb(0x3C8, pdefs[i].pixel);

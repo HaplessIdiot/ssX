@@ -1,0 +1,301 @@
+/* $XFree86$ */
+/*
+ * Copyright 1994, Erik Nygren (nygren@mit.edu)
+ *
+ * This code may be freely incorporated in any program without royalty, as
+ * long as the copyright notice stays intact.
+ *
+ * Additions by Harry Langenbacher (harry@brain.jpl.nasa.gov)
+ *
+ * ERIK NYGREN AND HARRY LANGENBACHER
+ * DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ERIK NYGREN
+ * OR HARRY LANGENBACHER BE LIABLE
+ * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+/* NOTE:  This may work with other similar boards */
+
+#include "X.h"
+#include "input.h"
+
+#include "xf86_OSlib.h"
+#include "xf86.h"
+#include "xf86_Config.h"
+
+#include "p9000.h"
+#include "p9000reg.h"
+#include "p9000Bt485.h"
+#include "ICD2061A.h"
+#include "p9000orchid.h"
+#include "p9000viper.h"
+
+#include <string.h>
+
+static unsigned p9000OrchidSaveMisc;      /* Stored value of misc register  */
+static unsigned p9000OrchidInited = FALSE;/* Has the Orchid been initialized */
+
+extern Bool xf86Verbose;
+extern int p9000MaxClock;
+
+/* Prototypes */
+Bool p9000OrchidProbe(
+#if NeedFunctionPrototypes
+   void
+#endif
+);
+
+void p9000OrchidEnable(
+#if NeedFunctionPrototypes
+   p9000CRTCRegPtr
+#endif
+);
+
+void p9000OrchidDisable(
+#if NeedFunctionPrototypes
+   void
+#endif
+);
+
+Bool p9000OrchidValidate(
+#if NeedFunctionPrototypes
+   void
+#endif
+);
+
+void p9000OrchidInitialize(
+#if NeedFunctionPrototypes
+   int,         /* The index of pScreen in the ScreenInfo */
+   ScreenPtr,   /* The Screen to initialize */
+   int,         /* The number of the Server's arguments. */
+   char **      /* The arguments themselves. Don't change! */
+#endif
+);
+
+void p9000OrchidSetClock(
+#if NeedFunctionPrototypes
+    long, long
+#endif
+);
+
+p9000VendorRec p9000OrchidVendor = {
+  "Orchid P9000",       /* char *Desc */
+  "orchid_p9000",       /* char *Vendor */
+  p9000OrchidProbe,     /* Bool (* Probe)() */
+  p9000OrchidSetClock,     /* void (* SetClock)() */
+  p9000OrchidEnable,    /* void (* Enable)() */
+  p9000OrchidDisable,   /* void (* Disable)() */
+  p9000OrchidValidate,  /* Bool (* Validate)() */
+  p9000OrchidInitialize,/* void (* Initialize)() */
+  P9000_VENDOR_ORCHID,  /* int Label */
+};
+
+/*************************************************/
+/***************** ORCHID P9000 ******************/
+/*************************************************/
+
+/*
+ * p9000OrchidProbe --
+ *    Determines whether a Dimaond Viper is available.
+ */
+Bool
+p9000OrchidProbe()
+{
+  char bios_sig[100];
+  
+  if (-1 == xf86ReadBIOS(BIOS_BASE, VPR_VLB_BIOS_OFFSET,
+			 bios_sig, VPR_VLB_BIOS_LENGTH))
+    return FALSE; /* This OS can't probe the BIOS */
+  bios_sig[ORCHID_BIOS_LENGTH] = '\0';
+  if (0 == strncmp(bios_sig, VPR_VLB_BIOS_SIGNATURE,
+		   strlen(VPR_VLB_BIOS_SIGNATURE)))
+    {
+      if (xf86Verbose)
+	ErrorF("%s BIOS signature for Orchid P9000 found:\n\t<%s>\n",
+	       XCONFIG_PROBED, bios_sig);
+      return TRUE;
+    }
+  else
+    return FALSE;
+}
+
+/*
+ * p9000OrchidValidate --
+ *    Determines whether parameters are valid for the Orchid P9000.
+ */
+Bool
+p9000OrchidValidate()
+{
+  /* Lets be safe... */
+  p9000MaxClock = P9000_MAX_ORCHID_CLOCK;
+
+  if ((p9000InfoRec.MemBase != 0xC0000000) &&
+      (p9000InfoRec.MemBase != 0xD0000000) &&
+      (p9000InfoRec.MemBase != 0xE0000000))
+    {
+      ErrorF("%s: MemBase must be specified with Orchid P9000!\n",
+	     p9000InfoRec.name);
+      ErrorF("\tCheck your dip switches 6 and 7.\n");
+      ErrorF("\tValid values are 0xC0000000, 0xD0000000, and 0xE0000000.\n");
+      return(FALSE);
+    }
+  return(TRUE);
+}
+
+/*
+ * p9000OrchidInitialize --
+ *    Does one-time initialization for the Orchid P9000.
+ */
+void
+p9000OrchidInitialize(scr_index, pScreen, argc, argv)
+    int            scr_index;    /* The index of pScreen in the ScreenInfo */
+    ScreenPtr      pScreen;      /* The Screen to initialize */
+    int            argc;         /* The number of the Server's arguments. */
+    char           **argv;       /* The arguments themselves. Don't change! */
+{
+}
+
+/*
+ * p9000OrchidEnable --
+ *    Initializes a Orchid P9000 for use. 
+ */
+void
+p9000OrchidEnable(crtcRegs)
+     p9000CRTCRegPtr crtcRegs;
+{
+  unsigned char OutputCtlBits;  /* Bits to output to output control register */
+  extern unsigned MemBaseFlags;
+
+  p9000OrchidSaveMisc = inb(MISC_IN_REG);       /* Save VGA Clocks */
+
+  p9000BtEnable(crtcRegs);
+
+  /* The Orchid P9000 uses the w5[12]86's Output Control Register to select
+   * which device is enabled, etc.  It is located at 3c5 index 12.
+   */
+
+  p9000UnlockVGAExtRegs();
+
+  outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
+  OutputCtlBits = (
+		   (((crtcRegs->hp == SP_POSITIVE)
+		     && (crtcRegs->vp == SP_POSITIVE))
+		    ? ORCHID_OCR_SYNC_POSITIVE : ORCHID_OCR_SYNC_NEGATIVE)
+		   | ORCHID_OCR_ENABLE_P9000
+		   /* These bits are reserved.  Lets not change them. */
+		   | (inb(SEQ_PORT) & ORCHID_OCR_RESERVED_MASK)
+		   );
+
+  outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
+  outb(SEQ_PORT, OutputCtlBits);
+
+  p9000LockVGAExtRegs();
+
+  outb(BT_PIXEL_MASK, 0xff);
+  if (!p9000SWCursor)
+    p9000BtCursorOn();
+  p9000OrchidInited = TRUE;
+}
+
+
+/*
+ * p9000OrchidDisable --
+ *    Turns off the P9000 and reenables VGA
+ */
+void p9000OrchidDisable()
+{
+  unsigned char OutputCtlBits;  /* Bits to output to output control register */
+  unsigned char tmp;
+
+  p9000BtCursorOff();
+
+  /* Enable the Orchid's video clock but disable the cursor */
+  p9000OutBtReg(BT_COMMAND_REG_2, 0x0, BT_CR2_PORTSEL_NONMASK |
+		BT_CR2_PCLK1 | BT_CR2_CURSOR_DISABLE);
+
+  /* Turn video screen off so we don't see noise and trash */
+  outb(SEQ_INDEX_REG, SEQ_CLKMODE_INDEX);
+  tmp = inb(SEQ_PORT);
+  outb(SEQ_PORT, tmp | 0x20);
+
+  p9000UnlockVGAExtRegs();
+
+  /* Disable the P9000 and enable VGA.  I assume that we're not running
+     at 640x480 or 640x350 so the sync polarity doesn't matter here?
+     this should be fixed for 640x480 or 640x350.
+   */
+
+  outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
+
+  OutputCtlBits = (
+		   ORCHID_OCR_ENABLE_W5186
+		   /* These bits are reserved.  Lets not change them. */
+		   | (inb(SEQ_PORT) & ORCHID_OCR_RESERVED_MASK)
+		   );
+
+  outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
+  outb(SEQ_PORT, OutputCtlBits);
+
+  p9000LockVGAExtRegs();
+
+  outb(MISC_OUT_REG, p9000OrchidSaveMisc);	/* Restore VGA Clocks */
+  
+  usleep(30000);      /* Wait at least 10 msecs (ICD2061 timeout) for the clock to change */
+
+  p9000BtRestore();
+
+  /* Turn video screen back on */
+  outb(SEQ_INDEX_REG, SEQ_CLKMODE_INDEX);
+  tmp = inb(SEQ_PORT);
+  outb(SEQ_PORT, tmp & ~0x20);
+}
+
+
+/* 
+ * p9000OrchidSetClock --
+ *    Sets the clock to the specified dot
+ *    and memory clocks
+ */
+void p9000OrchidSetClock(dotclock, memclock)
+     long dotclock, memclock;  /* In HZ */
+{
+  unsigned int clock_ctrl_word , ActualHertz;
+
+  if ((labs(dotclock - memclock) <= CLK_JITTER_TOL)
+      || (labs(dotclock - 2*memclock) <= CLK_JITTER_TOL)
+      || (labs(2*dotclock - memclock) <= CLK_JITTER_TOL))
+    {
+      /* If dotclock and memclock are integer multiples, we'll have jitter
+       * This method of fixing the problem is just temporary */
+      if (memclock == MEMSPEED)	memclock = MEMSPEED_ALT;
+      else                      memclock = MEMSPEED;
+    }
+
+  /* The register used (0) should be different than the register
+   * used for (vga) text mode */
+  clock_ctrl_word = ICD2061ACalcClock (dotclock, 0);  
+  ICD2061ASetClock (clock_ctrl_word);
+  ActualHertz = ICD2061AGetClock (clock_ctrl_word);
+  
+#ifdef DEBUG
+  ErrorF("Dot-clock actually set to %d Hz.  Wanted %ld\n",ActualHertz,
+	 dotclock);
+#endif
+  
+  clock_ctrl_word = ICD2061ACalcClock (memclock, 3); /* memclock uses reg 3 */
+  ICD2061ASetClock (clock_ctrl_word);
+  ActualHertz = ICD2061AGetClock (clock_ctrl_word);
+  /* Wait at least 10 msecs (ICD2061 timeout) for the clock to change */
+  usleep(30000); 
+  
+#ifdef DEBUG
+  ErrorF("Mem clock actually set to %d Hz.  Wanted %ld\n",ActualHertz,
+	   memclock);
+#endif
+}
+
+

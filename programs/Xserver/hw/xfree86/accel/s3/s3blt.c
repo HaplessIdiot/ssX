@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.1 1994/06/06 07:28:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.2 1994/06/18 16:24:44 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -510,6 +510,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
                       srcx, srcy, width, height, dstx, dsty, bitPlane);
    }
 
+#if 0
+   /* This can cause server lockups */
    /*
     * If we are using a linear mapped framebuffer, using direct memory
     * access is faster than using the graphics engine to do stipple
@@ -533,7 +535,9 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 UNBLOCK_CURSOR;
          return retVal;
       }
-   } else {
+   } else
+#endif
+   {
       if ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	  (pDstDrawable->type == DRAWABLE_WINDOW) &&
 	  (pSrcDrawable->bitsPerPixel == 8)) {
@@ -866,26 +870,13 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
 	 psrc = pix->devPrivate.ptr;
 	 
-#ifdef PIXPRIV
-	 if (s3MAX_SLOTS && s3CacheOpStipple(pix, (pbox->x2 - pbox->x1) -
-						  pix->drawable.width)) {
-	    for (i = numRects; --i >= 0; pbox++) {
-	       s3CImageOpStipple(pix->slot, pbox->x1, pbox->y1,
-				 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				 -dx, -dy, pGC->fgPixel, pGC->bgPixel, 
-				 s3alu[pGC->alu], (short)pGC->planemask);
-	    }
-	 } else
-#endif
-	 {
-	    for (i = numRects; --i >= 0; pbox++) {
-	       s3ImageOpStipple(pbox->x1, pbox->y1,
-				pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				psrc, pixWidth,
-				pix->drawable.width, pix->drawable.height,
-				-dx, -dy, pGC->fgPixel, pGC->bgPixel, 
-				s3alu[pGC->alu], (short)pGC->planemask);
-	    }
+	 for (i = numRects; --i >= 0; pbox++) {
+	    s3ImageOpStipple(pbox->x1, pbox->y1,
+			     pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+			     psrc, pixWidth,
+			     pix->drawable.width, pix->drawable.height,
+			     -dx, -dy, pGC->fgPixel, pGC->bgPixel, 
+			     s3alu[pGC->alu], (short)pGC->planemask);
 	 }
       } else {
          /* Pixmap --> Pixmap */

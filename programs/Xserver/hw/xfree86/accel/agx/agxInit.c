@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.2 1994/06/22 04:18:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.3 1994/07/15 06:57:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -909,14 +909,15 @@ agxResetCRTC( reset )
  *
  *  Clock Number Bit Assignments
  *
+ *
+ *  XGA and AGX-010
+ *
  *          XGA Internal Clocks   REG       BIT(s)  Description
  *
- *          ------------------- 0x6F Mode5      6    Ext/XGA Clock
- *          |  ---------------- 0x77 Mode1     5-4   ClkSel3 (Ext MC:1-0) 
- *          |  |  ------------- 0x70 ClkSel2    7    XGA&VGA CLock Select
- *          |  |  |  ---------- 0x54 ClkSel1   3-2   XGA&VGA CLock Select
- *          |  |  |  |
- *  0-7     0 0 0 n n n
+ *          ------------- 0x70 ClkSel2    7    XGA&VGA CLock Select
+ *          |  ---------- 0x54 ClkSel1   3-2   XGA&VGA CLock Select
+ *          |  |
+ *  0-7     n n n
  *
  *          Notable XGA clock conventions (hopefully useful for probing)
  *
@@ -924,9 +925,11 @@ agxResetCRTC( reset )
  *                            and 640x480 graphics (25.175MHz)
  *     1    0 0 0 0 0 1    -  VGA 9-pixel text mode (28.322MHz?)
  *     2    0 X X 0 1 0    -  Clock from feature connector
- *     3    0 0 0 0 1 1    -  XGA 1024x768 Interlaced (~44.9MHz when scaled 
- *                                by 2, probing indicates 90MHz unscaled)
+ *     3    0 0 0 0 1 1    -  XGA 1024x768 Interlaced (~44.9MHz * 2)
  *     4    0 0 0 1 0 0    -  132 Column Text Mode                
+ *
+ *
+ *  AGX-010 only - AGX extended clocks 
  *
  *          AGX Extended XGA Clocks    REG       BIT(s)  Description
  *
@@ -942,13 +945,21 @@ agxResetCRTC( reset )
  *    10    0 1 0 0 1 1    -  44.90MHz 
  *    11    0 1 1 0 1 1    -  65.00Mhz 
  *
- *          AGX External Clocks    REG       BIT(s)  Description
+ *  12-15   8-11 repeated     
  *
- *          ------------------- 0x6F Mode5      6    Ext/XGA Clock
- *          |    -------------- 0x6F Mode5     5-4   ClkSel4 (Ext MC:3-2)
- *          |    |   ---------- 0x77 Mode1     5-4   ClkSel3 (Ext MC:1-0) 
- *          |    |   |
- *  16-31   1 1 n n n n 
+ *
+ *
+ *  AGX-014 and later - Only the External Clocks are used.      
+ *                      First two clocks should match XGA internal for
+ *                      probing to work (i.e 25.175 and 28.322).
+ *
+ *          AGX External Clocks    REG     BIT(s)  Description
+ *
+ *          ----------------- 0x6F Mode5      6    Ext/XGA Clock
+ *          |  -------------- 0x6F Mode5     5-4   ClkSel4 (Ext MC:3-2)
+ *          |  |   ---------- 0x77 Mode1     5-4   ClkSel3 (Ext MC:1-0) 
+ *          |  |   |
+ *  00-16   1 n n n n 
  *
  */
 Bool
@@ -966,36 +977,23 @@ agxClockSelect(no,scale)
        break;
      default:
 
-	if (no < 8) {  /* Internal XGA/VGA clocks */
+        if (XGA_SERIES(agxChipId)) {
+	   if (no < 8) {  /* Internal XGA/VGA clocks */
 
-           if (AGX_SERIES(agxChipId)) { 
-   	      outb(agxIdxReg, IR_M5_MODE_REG_5);
-   	      byteData = inb(agxByteData) & IR_M5_WRITE_MASK 
-                            & ~IR_M5_CS4_MASK & ~IR_M5_EXT_CLOCK;
+   	      outb(agxIdxReg, IR_CLOCK_SEL_1);
+   	      byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
+              byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
+              byteData |= ((no << IR_CS1_CLOCK_SHIFT) & IR_CS1_CLOCK_MASK);
+              byteData |= (scale & IR_CS1_SCALE_MASK);
    	      outb(agxByteData, byteData);
-
-	      outb(agxIdxReg, IR_M1_MODE_REG_1);
-	      byteData = inb(agxByteData) 
-                            & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
-              outb(agxByteData, byteData);
+    
+   	      outb(agxIdxReg, IR_CLOCK_SEL_2);
+              byteData = (no << (IR_CS2_CLOCK_SHIFT - 2)) & IR_CS2_CLOCK_MASK;
+   	      outb(agxByteData, byteData);
            }
+           else if (AGX_10_ONLY(agxChipId) && no < 16) { 
+               /* AGX-10(?) Extended clocks */
 
-	   outb(agxIdxReg, IR_CLOCK_SEL_1);
-	   byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
-           byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
-           byteData |= ((no << IR_CS1_CLOCK_SHIFT) & IR_CS1_CLOCK_MASK);
-           byteData |= (scale & IR_CS1_SCALE_MASK);
-	   outb(agxByteData, byteData);
- 
-	   outb(agxIdxReg, IR_CLOCK_SEL_2);
-           byteData = ((no << (IR_CS2_CLOCK_SHIFT - 2))
-                         & IR_CS2_CLOCK_MASK);
-	   outb(agxByteData, byteData);
- 
-        }
-        else if (AGX_SERIES(agxChipId)) {   /* AGX Extended clocks */
-
-           if (no < 16) {
    	      outb(agxIdxReg, IR_M5_MODE_REG_5);
    	      byteData = inb(agxByteData) & IR_M5_WRITE_MASK 
                             & ~IR_M5_CS4_MASK & ~IR_M5_EXT_CLOCK;
@@ -1018,31 +1016,30 @@ agxClockSelect(no,scale)
               byteData = 0;
               outb(agxByteData, byteData);
            }
-           else {
-              outb(agxIdxReg, IR_M5_MODE_REG_5);
-	      byteData = inb(agxByteData) & IR_M5_WRITE_MASK & ~IR_M5_CS4_MASK;
-              byteData |= IR_M5_EXT_CLOCK;
-              byteData |= ((no << (IR_M5_CS4_SHIFT - 2)) & IR_M5_CS4_MASK);
-	      outb(agxByteData, byteData);
-
-	      outb(agxIdxReg, IR_M1_MODE_REG_1);
-	      byteData = inb(agxByteData)
-                            & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
-              byteData |= ((no << IR_M1_CS3_SHIFT) & IR_M1_CS3_MASK);
-	      outb(agxByteData, byteData);
-
-              outb(agxIdxReg, IR_CLOCK_SEL_1);
-              byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
-              byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
-              byteData |= scale & IR_CS1_SCALE_MASK; 
-              outb(agxByteData, byteData);
-
-              outb(agxIdxReg, IR_CLOCK_SEL_2);
-              byteData = 0;
-              outb(agxByteData, byteData);
-           }
- 
         }
+        else {     /* AGX-14 and later - external clocks */
+           outb(agxIdxReg, IR_M5_MODE_REG_5);
+	   byteData = inb(agxByteData) & IR_M5_WRITE_MASK & ~IR_M5_CS4_MASK;
+           byteData |= IR_M5_EXT_CLOCK;
+           byteData |= ((no << (IR_M5_CS4_SHIFT - 2)) & IR_M5_CS4_MASK);
+	   outb(agxByteData, byteData);
+
+	   outb(agxIdxReg, IR_M1_MODE_REG_1);
+	   byteData = inb(agxByteData)
+                         & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
+           byteData |= ((no << IR_M1_CS3_SHIFT) & IR_M1_CS3_MASK);
+	   outb(agxByteData, byteData);
+
+           outb(agxIdxReg, IR_CLOCK_SEL_1);
+           byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
+           byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
+           byteData |= scale & IR_CS1_SCALE_MASK; 
+           outb(agxByteData, byteData);
+
+           outb(agxIdxReg, IR_CLOCK_SEL_2);
+           byteData = 0;
+           outb(agxByteData, byteData);
+      }
   }
   return(TRUE);
 }
@@ -1135,15 +1132,6 @@ struct clockValidate {
 struct clockValidate xgaKnownClocks[] = {
    { 0x00, 25175 },
    { 0x01, 28322 },
-   { 0x03, 89800 },
-   { 0x00,     0 } 
-};
-
-struct clockValidate agxKnownClocks[] = {
-   { 0x08, 80000 },
-   { 0x09, 50350 },
-   { 0x0A, 44900 },
-   { 0x0B, 65000 }, 
    { 0x00,     0 } 
 };
 
@@ -1176,30 +1164,8 @@ expected %02.3f+/-%d%%.\n",
       }
       i++;
    }
-
-   if (AGX_SERIES(agxChipId)) {
-      i = 0;
-      clk = agxKnownClocks;
-      while( known = clk[i].freq ) {
-         no    = clk[i].clkNo;
-         freq  = agxInfoRec.clock[no];
-         error = freq - known;
-         if ( error < 0 ) error = -error;
-         error = (error*100)/known;
-         if ( error > tol ) {
-            result = FALSE;
-            ErrorF("%s %s: dot clock %02d (%02.3f) %d%% out of tolerance, \
-expected %02.3f+/-%d%%.\n",
-                XCONFIG_PROBED, agxInfoRec.name,
-                no, freq/1000.0, error, known/1000.0, tol);
-         }
-         i++;
-      }
-   }
-
    return result;
 }
-
 
 /*
  * agxSetUpProbeCRTC - Setup the CRTC values for clock probe
@@ -1267,10 +1233,18 @@ agxProbeClocks(scale)
    unsigned short  wordData;
    int test = 0;
 
-   agxGetClocks( 32, 			/* num of clocks */ 
-                 scale-1,		/* clock scaling factor */
-                 0, 25175/scale,        /* known clock num & KHz value */ 
-                 &agxInfoRec );
+   if (AGX_SERIES(agxChipId) || AGX_10_ONLY(agxChipId)) {
+      agxGetClocks( 16, 		     /* num of clocks */ 
+                    scale-1,	             /* clock scaling factor */
+                    0, 25175/scale,          /* known clock num & KHz value */ 
+                    &agxInfoRec );
+   }
+   else { /* XGA */ 
+      agxGetClocks( 8,   		     /* num of clocks */ 
+                    scale-1,	             /* clock scaling factor */
+                    0, 25175/scale,          /* known clock num & KHz value */ 
+                    &agxInfoRec );
+   }
 
    agxResetCRTC(CRTC_PRERESET);
    agxResetCRTC(CRTC_RESET);

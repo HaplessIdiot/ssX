@@ -1,5 +1,5 @@
 /* $XConsortium: bank.s,v 1.2 94/03/29 11:04:18 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/bank.s,v 3.1 1994/07/24 12:23:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -119,7 +119,7 @@ newpr34:
 	ALIGNTEXT4
 	GLOBL	GLNAME(WD90C33SetReadWrite)
 GLNAME(WD90C33SetReadWrite):
-	SHL_W	(CONST(11),EAX)            /* combined %al*8 & movb %al,%ah */
+	SHL_W	(CONST(11),AX)            /* combined %al*8 & movb %al,%ah */
 	JC	(LA0) 
 	/* Carry is not set */
 	AND_W	(CONST(0X7FFF),CONTENT(newpr34))
@@ -135,13 +135,13 @@ LA1:
 	OUT_W
 
 	/* Write extra bit if necessary */
-	MOV_W	(CONTENT(newpr34),EAX)
-	CMP_W	(CONTENT(oldpr34),EAX)
+	MOV_W	(CONTENT(newpr34),AX)
+	CMP_W	(CONTENT(oldpr34),AX)
 	JZ	(LA2)
 	MOV_L	(CONST(0x3C4),EDX)
 	OUT_W
         /* Remember old value */
-	MOV_W	(EAX,CONTENT(oldpr34))
+	MOV_W	(AX,CONTENT(oldpr34))
 LA2:
 	RET
 
@@ -152,7 +152,7 @@ LA2:
 	ALIGNTEXT4
 	GLOBL	GLNAME(WD90C33SetWrite)
 GLNAME(WD90C33SetWrite):
-	SHL_W	(CONST(11),EAX)
+	SHL_W	(CONST(11),AX)
 	JC	(LB0) 
 	/* Carry is not set */
 	AND_W	(CONST(0X7FFF),CONTENT(newpr34))
@@ -168,14 +168,14 @@ LB1:
 	OUT_W
 
 	/* Write extra bit if necessary */
-	MOV_W	(CONTENT(newpr34),EAX)
-	CMP_W	(CONTENT(oldpr34),EAX)
+	MOV_W	(CONTENT(newpr34),AX)
+	CMP_W	(CONTENT(oldpr34),AX)
 	JZ	(LB2)
 	MOV_B	(CONST(0x14),AL)
 	MOV_L	(CONST(0x3C4),EDX)
 	OUT_W
         /* Remember old value */
-	MOV_W	(EAX,CONTENT(oldpr34))
+	MOV_W	(AX,CONTENT(oldpr34))
 LB2:
 	RET
 
@@ -187,7 +187,7 @@ LB2:
 	GLOBL	GLNAME(WD90C33SetRead)
 GLNAME(WD90C33SetRead):
 	DEC_L	(EAX)			/* segment wrap ... */
-	SHL_W	(CONST(11),EAX)
+	SHL_W	(CONST(11),AX)
 	JC	(L0) 
 	/* Carry is not set */
 	AND_W	(CONST(0XBFFF),CONTENT(newpr34))
@@ -203,14 +203,14 @@ L1:
 	OUT_W
 
 	/* Write extra bit if necessary */
-	MOV_W	(CONTENT(newpr34),EAX)
-	CMP_W	(CONTENT(oldpr34),EAX)
+	MOV_W	(CONTENT(newpr34),AX)
+	CMP_W	(CONTENT(oldpr34),AX)
 	JZ	(L2)
 	MOV_B	(CONST(0x14),AL)
 	MOV_L	(CONST(0x3C4),EDX)
 	OUT_W
 
         /* Remember old value */
-	MOV_W	(EAX,CONTENT(oldpr34))
+	MOV_W	(AX,CONTENT(oldpr34))
 L2:
 	RET

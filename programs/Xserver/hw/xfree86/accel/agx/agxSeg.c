@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.0 1994/06/15 15:35:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.1 1994/07/15 06:57:11 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -334,7 +334,7 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 			len++;
                     GE_WAIT_IDLE();
 #ifndef NO_MULTI_IO
-                    GE_OUT_D( GE_DEST_MAP_X, y1 | x1 );
+                    GE_OUT_D( GE_DEST_MAP_X, y1 << 16 | x1 );
 #else
                     GE_OUT_W( GE_DEST_MAP_X,      (short) x1 );
                     GE_OUT_W( GE_DEST_MAP_Y,      (short) y1 );
@@ -406,7 +406,7 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 
                         GE_WAIT_IDLE();
 #ifndef NO_MULTI_IO
-                        GE_OUT_D( GE_DEST_MAP_X, new_y1 | new_x1 );
+                        GE_OUT_D( GE_DEST_MAP_X, new_y1 << 16 | new_x1 );
 #else
                         GE_OUT_W( GE_DEST_MAP_X,      (short) new_x1 );
                         GE_OUT_W( GE_DEST_MAP_Y,      (short) new_y1 );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.0 1994/06/15 15:35:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.1 1994/06/18 16:23:06 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -1168,7 +1168,7 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, alu, planem
 
     GE_WAIT_IDLE();
 
-    MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+    MAP_SET_DST( GE_MS_MAP_A );
 
 #ifdef MAP_MNG
     GE_SET_MAP( GE_MS_MAP_B );
@@ -1300,8 +1300,6 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, alu, planem
             GE_OUT_W( GE_OP_DIM_WIDTH, dstWidth );
             GE_START_CMDW( GE_OPW_BITBLT
                            | GE_OPW_FRGD_SRC_CLR
-                           | GE_OPW_BKGD_SRC_MAP
-                           | GE_OPW_SRC_MAP_A
                            | GE_OPW_DEST_MAP_A   );
             dstX += dstWidth + 1;    
           }

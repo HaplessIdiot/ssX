@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:09:50 dpw Exp $
 
 SRCS = 	mach8.c mach8cmap.c mach8gc.c mach8fs.c mach8ss.c \
 	mach8gs.c mach8win.c mach8init.c mach8im.c mach8bstor.c \
-	mach8scrin.c mach8blt.c mach8pcach.c mach8plypt.c \
+	mach8scrin.c mach8blt.c mach8plypt.c \
 	mach8line.c mach8seg.c mach8frect.c mach8text.c \
 	mach8font.c mach8fcach.c \
 	mach8dsln.c mach8dssg.c mach8ddln.c mach8ddsg.c \
@@ -13,7 +13,7 @@ SRCS = 	mach8.c mach8cmap.c mach8gc.c mach8fs.c mach8ss.c \
 
 OBJS = 	mach8.o mach8cmap.o mach8gc.o mach8fs.o mach8ss.o \
 	mach8gs.o mach8win.o mach8init.o mach8im.o mach8bstor.o \
-	mach8scrin.o mach8blt.o mach8pcach.o mach8plypt.o \
+	mach8scrin.o mach8blt.o mach8plypt.o \
 	mach8line.o mach8seg.o mach8frect.o mach8text.o \
 	mach8font.o mach8fcach.o \
 	mach8dsln.o mach8dssg.o mach8ddln.o mach8ddsg.o \

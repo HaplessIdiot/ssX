@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514fc.c,v 1.1 94/03/28 21:03:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514fc.c,v 3.0 1994/07/15 06:57:47 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -62,7 +62,7 @@ unsigned char ibm8514cachemaskswapped[ 8 ] = { 0x02, 0x04, 0x08, 0x10,
 /*
  * Move the glyphs to the screen using the GE.
  */
-__inline__ static void
+static void
 Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
      int   x, y, count;
      unsigned char *chars;
@@ -82,12 +82,9 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       short xoff;
 
       pci = fentry->pci[*chars];
-
       if (pci != NULL) {
-
 	 gHeight = GLYPHHEIGHTPIXELS(pci);
 	 if (gHeight) {
-
 	    if (*chars / 32 != blocki) {
 	       bitMapBlockPtr block;
 
@@ -129,7 +126,7 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	       /*
 		* Is the readmask altered ?
 		*/
-	       if( !pmsk || ibm8514cachemaskswapped[block->id] != pmsk ) {
+	       if( ibm8514cachemaskswapped[block->id] != pmsk ) {
 		 pmsk = ibm8514cachemaskswapped[block->id];
 		 outw(RD_MASK, pmsk);
 	       }
@@ -145,16 +142,16 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	    /*
 	     * Need to update width register ?
 	     */
-	    if( !width || (short)(GLYPHWIDTHPIXELS(pci) - 1) != width) {
-	      width = (short)(GLYPHWIDTHPIXELS(pci) - 1);
-	      outw(MAJ_AXIS_PCNT, width);
+	    if( (short)(GLYPHWIDTHPIXELS(pci)) != width) {
+	      width = (short)(GLYPHWIDTHPIXELS(pci));
+	      outw(MAJ_AXIS_PCNT, width - 1);
 	    }
 	    /*
 	     * How about the height register ?
 	     */
-	    if( !height || (short)(gHeight - 1) != height ) {
-	      height = (short)(gHeight - 1);
-	      outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height);
+	    if( (short)(gHeight) != height ) {
+	      height = (short)(gHeight);
+	      outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height - 1);
 	    }
 	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 	 }
@@ -162,7 +159,6 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       }
    }
 
-   return;
 }
 
 /*

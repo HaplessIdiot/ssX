@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.2 1994/06/28 13:11:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.3 1994/07/15 06:57:04 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -419,7 +419,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry)
       GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
       GE_OUT_D( GE_MASK_MAP_X, (long) pBox->x1 );
       GE_OUT_D( GE_MASK_MAP_Y, (long) pBox->y1 );
-#ifndef NO_MULTI_IO
+#ifndef NO_MULTI_IO 
       GE_OUT_D( GE_PIXEL_MAP_WIDTH, (pBox->y2 - pBox->y1)-1 << 16
                                      | (pBox->x2 - pBox->x1)-1    );
 #else
@@ -518,8 +518,8 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
    unsigned int   oldBlockBase = 0;
 
    GE_WAIT_IDLE();
-   MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-#if 1 /* ndef NO_MULTI_IO */
+   MAP_SET_DST( GE_MS_MAP_A );
+#ifndef NO_MULTI_IO
    GE_OUT_W(GE_FRGD_MIX, MIX_DST << 8 | pGC->alu );
 #else
    GE_OUT_B(GE_FRGD_MIX, pGC->alu );
@@ -547,12 +547,12 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
 		  block = fentry->fblock[blocki];
                   if( geBlockMove ) {
                      GE_WAIT_IDLE();
-                     MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-#if 1 /* ndef NO_MULTI_IO */
+                     MAP_SET_DST( GE_MS_MAP_A );
+#ifndef NO_MULTI_IO
                      GE_OUT_W(GE_FRGD_MIX, MIX_DST << 8 | pGC->alu );
 #else
                      GE_OUT_B(GE_FRGD_MIX, pGC->alu );
-                     GE_OUT_B(GE_BKGD_MIX, MIX_DST );
+                     GE_OUT_B(GE_BKGD_MIX, MIX_SRC );
 #endif
                      GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
                      GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
@@ -565,14 +565,14 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
                   GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
   
                   GE_OUT_D( GE_PIXEL_MAP_BASE, blockBase );
-#if 1 /* ndef NO_MULTI_IO */
+#ifndef NO_MULTI_IO 
                   GE_OUT_D( GE_PIXEL_MAP_WIDTH,  ROW_NUM_LINES-1 << 16
                                                  | CACHE_LINE_WIDTH_PIXELS-1 );
 #else
                   GE_OUT_W( GE_PIXEL_MAP_WIDTH,  CACHE_LINE_WIDTH_PIXELS-1 );
                   GE_OUT_W( GE_PIXEL_MAP_HEIGHT, ROW_NUM_LINES-1 );
 #endif
-                  GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP|GE_MF_MOTO_FORMAT );
+                  GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP );
                   oldBlockBase = blockBase;
                }
    	    }
@@ -586,7 +586,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
 
             GE_WAIT_IDLE_SHORT();
 
-#if 1  /* ndef NO_MULTI_IO */
+#ifndef NO_MULTI_IO
             GE_OUT_D( GE_DEST_MAP_X, yStart << 16 | xStart );
             GE_OUT_D( GE_PAT_MAP_X,  line << 16 | linePos ); 
             GE_OUT_D( GE_OP_DIM_WIDTH,  gHeight << 16 | gWidth );
@@ -600,8 +600,6 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
 #endif
             GE_START_CMD( GE_OP_BITBLT
                           | GE_OP_FRGD_SRC_CLR 
-                          | GE_OP_BKGD_SRC_MAP
-                          | GE_OP_SRC_MAP_A
                           | GE_OP_DEST_MAP_A
                           | GE_OP_PAT_MAP_C
                           | GE_OP_MASK_BOUNDARY

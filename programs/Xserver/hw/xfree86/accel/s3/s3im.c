@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.0 1994/05/21 23:55:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.1 1994/06/18 16:24:46 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -967,6 +967,12 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw,
       DEALLOCATE_LOCAL (newsrc);
 }
 
+#if NeedFunctionPrototypes
+void
+s3ImageOpStipple (int x, int y, int w, int h, unsigned char *psrc, int pwidth,
+		  int pw, int ph, int pox, int poy, int fgPixel, int bgPixel,
+		  short alu, short planemask)
+#else
 void
 s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 		  bgPixel, alu, planemask)
@@ -974,13 +980,14 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
      int   y;
      int   w;
      int   h;
-     char  *psrc;
+     unsigned char  *psrc;
      int   pwidth;
      int   pw, ph, pox, poy;
      int   fgPixel;
      int   bgPixel;
      short alu;
      short planemask;
+#endif
 {
    int   x1, x2, y1, y2, width;
    unsigned char *newsrc = NULL;
@@ -1008,7 +1015,7 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	 unsigned char *newline, *pline;
 	 int   i;
 
-	 pline = (unsigned char *)psrc;
+	 pline = psrc;
 	 newline = newsrc;
 	 for (i = 0; i < ph; i++) {
 	    newline[0] = (pline[0] & (0xff >> (8 - pw))) | pline[0] << pw;
@@ -1020,10 +1027,18 @@ s3ImageOpStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel,
 	 }
 	 pw *= 2;
 	 pwidth = 2;
-	 psrc = (char *)newsrc;
+	 psrc = newsrc;
       }
    }
    BLOCK_CURSOR;
+
+#if 0
+WaitQueue(4);
+S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | y);
+S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | x);
+S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (x+w)-1);
+S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (y+h)-1);
+#endif
 
    WaitQueue (7);
    S3_OUTW (WRT_MASK, planemask);   

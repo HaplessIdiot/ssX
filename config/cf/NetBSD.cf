@@ -1,13 +1,13 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.6 1994/06/28 12:14:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.7 1994/07/15 06:52:20 dawes Exp $
 
-#define OSName		NetBSD
+#define OSName		NetBSD 1.0_BETA
 #define	OSVendor	/**/
 XCOMM operating system:  OSName
-#define OSMajorVersion    0
-#define OSMinorVersion    9
+#define OSMajorVersion    1
+#define OSMinorVersion    0
 /* 1 = A, 2 = B, 3 = C */
-#define OSTeenyVersion	  3
+#define OSTeenyVersion	  0
 
 /*
  * C library features
@@ -22,7 +22,7 @@ XCOMM operating system:  OSName
 # define HasLibCrypt		YES
 #endif
 #ifndef HasShm
-# if OSTeenyVersion == 2
+# if OSMajorVersion == 0 && OSMinorVersion == 9 && OSTeenyVersion == 2
 /*
  * Shm memory was removed in 0.9B because it was encumbered.
  * A free version was added in 0.9C

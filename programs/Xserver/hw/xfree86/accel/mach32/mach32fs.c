@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.1 1994/05/08 05:19:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.2 1994/07/15 06:58:11 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -242,32 +242,13 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach32CacheTile(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		(mach32ImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height, xrot, yrot,
-				mach32alu[pGC->alu], pGC->planemask);
-	    else
-		mach32CImageFill(pPix->slot,
-				 ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				 mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    (mach32ImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-			     pPix->devPrivate.ptr, pixWidth,
-			     width, height, xrot, yrot,
-			     mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	(mach32ImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
+			      pPix->devPrivate.ptr, pixWidth,
+			      width, height, xrot, yrot,
+			      mach32alu[pGC->alu], pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);
@@ -337,34 +318,13 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach32CacheStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				   pPix->devPrivate.ptr, pixWidth,
-				   width, height,
-				   xrot, yrot, pGC->fgPixel,
-				   mach32alu[pGC->alu], pGC->planemask);
-	    else
-		mach32CImageStipple(pPix->slot,
-				    ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				    pGC->fgPixel,
-				    mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth, width, height,
-				xrot, yrot, pGC->fgPixel,
-				mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+			   pPix->devPrivate.ptr, pixWidth, width, height,
+			   xrot, yrot, pGC->fgPixel,
+			   mach32alu[pGC->alu], pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);
@@ -434,35 +394,14 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach32CacheOpStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		mach32ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-				     pPix->devPrivate.ptr, pixWidth,
-				     width, height,
-				     xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				     mach32alu[pGC->alu], pGC->planemask);
-	    else
-		mach32CImageOpStipple(pPix->slot,
-				      ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				      pGC->fgPixel, pGC->bgPixel,
-				      mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    mach32ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-				  pPix->devPrivate.ptr, pixWidth,
-				  width, height,
-				  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				  mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	mach32ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
+			     pPix->devPrivate.ptr, pixWidth,
+			     width, height,
+			     xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+			     mach32alu[pGC->alu], pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
     DEALLOCATE_LOCAL(initPpt);

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.6 1994/06/26 13:11:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.7 1994/07/24 11:58:43 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -103,6 +103,11 @@
 #endif
 
 extern void SetTimeSinceLastInputEvent();
+
+/* This the only where the definition seems to work (out of
+ * vga.c/vgaHW.c/vgaCmap.c).
+ */
+Bool clgd6225Lcd= FALSE;
 
 #ifdef MONOVGA
 /* DAC indices for white and black */
@@ -522,6 +527,14 @@ vgaHWRestore(restore)
     outb(0x3C0,i); outb(0x3C0, restore->Attribute[i]);
   }
   
+  if (clgd6225Lcd)
+  {
+    for (i= 0; i<768; i++)
+    {
+      /* The LCD doesn't like white */
+      if (restore->DAC[i] == 63) restore->DAC[i]= 62;
+    }
+  }
   outb(0x3C6,0xFF);
   outb(0x3C8,0x00);
   for (i=0; i<768; i++)

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.8 1994/07/15 06:58:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.9 1994/07/21 13:46:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -788,9 +788,6 @@ mach32Initialize (scr_index, pScreen, argc, argv)
     outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | mach32MaxY);
     outw(CMD, CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
 
-#ifdef PIXPRIV
-    mach32CacheInit(mach32VirtX, mach32VirtY);
-#endif
     mach32FontCache8Init(mach32VirtX, mach32VirtY);
 
     mach32ImageInit();
@@ -908,9 +905,6 @@ mach32EnterLeaveVT(enter, screen_idx)
 	    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | mach32MaxY);
 	    outw(CMD, CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
 
-#ifdef PIXPRIV
-	    mach32CacheInit(mach32VirtX, mach32VirtY);
-#endif
 	    mach32FontCache8Init(mach32VirtX, mach32VirtY);
 	    mach32RestoreCursor(pScreen);
 	    mach32AdjustFrame(pScr->frameX0, pScr->frameY0);

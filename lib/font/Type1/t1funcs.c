@@ -1,4 +1,5 @@
 /* $XConsortium: t1funcs.c,v 1.19 94/04/17 20:17:22 dpw Exp $ */
+/* $XFree86$ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -99,6 +100,10 @@ from the X Consortium.
 #include "util.h"
 #include "fontfcn.h"
  
+#if defined(SVR4) && __STDC__
+extern double hypot(double, double);
+#endif
+
 int         Type1OpenScalable ();
 static int  Type1GetGlyphs();
 void        Type1CloseFont();

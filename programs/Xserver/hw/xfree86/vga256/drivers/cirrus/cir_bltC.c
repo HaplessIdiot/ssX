@@ -1,5 +1,5 @@
 /* $XConsortium: cir_bltC.c,v 1.2 94/04/17 20:32:32 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.0 1994/06/05 06:00:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.1 1994/06/22 04:38:18 dawes Exp $ */
 /*
  
 
@@ -55,11 +55,8 @@ Author: Keith Packard
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
-#include	"cfbmskbits.h"
-#include	"cfb8bit.h"
-#include	"fastblt.h"
 #include        "vgaBank.h"
+#include	"vga256.h"
 
 #include "cir_driver.h"
 
@@ -314,7 +311,7 @@ planemask, bitplane)
     cfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
     if (!CHECKSCREEN(pdstBase) || cfb8StippleRRop != GXcopy) {
-    	cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+    	vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     		planemask, 1);
     	return;
     }
@@ -349,7 +346,7 @@ planemask, bitplane)
 		/* Create singular region. */
 		RegionRec reg;
 		(*pDstDrawable->pScreen->RegionInit)(&reg, pbox - 1, 1);
-		cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop,
+		vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, rop,
 			&reg, pptSrc - 1, planemask, 1);
 		(*pDstDrawable->pScreen->RegionUninit)(&reg);
 	}

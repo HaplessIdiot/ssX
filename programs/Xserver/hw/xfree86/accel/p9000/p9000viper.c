@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.2 1994/07/15 06:59:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.3 1994/07/24 11:47:53 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -151,7 +151,7 @@ p9000ViperVlbProbe()
   char bios_sig[100];
   
   if (-1 == xf86ReadBIOS(BIOS_BASE, VPR_VLB_BIOS_OFFSET,
-			 bios_sig, VPR_VLB_BIOS_LENGTH))
+			 (unsigned char *)bios_sig, VPR_VLB_BIOS_LENGTH))
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[VPR_VLB_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_VLB_BIOS_SIGNATURE,
@@ -322,7 +322,7 @@ p9000ViperPciProbe()
   char bios_sig[100];
   
   if (-1 == xf86ReadBIOS(BIOS_BASE, VPR_PCI_BIOS_OFFSET,
-			 bios_sig, VPR_PCI_BIOS_LENGTH))
+			 (unsigned char *)bios_sig, VPR_PCI_BIOS_LENGTH))
     return FALSE; /* This OS can't probe the BIOS */
   bios_sig[VPR_PCI_BIOS_LENGTH] = '\0';
   if (0 == strncmp(bios_sig, VPR_PCI_BIOS_SIGNATURE,

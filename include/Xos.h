@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.1 1994/05/29 02:02:45 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.2 1994/07/24 11:39:50 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -79,22 +79,22 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <string.h>
 #ifndef index
-#define index strchr
+#define index(s,c) (strchr((s),(c)))
 #endif
 #ifndef rindex
-#define rindex strrchr
+#define rindex(s,c) (strrchr((s),(c)))
 #endif
 
 #else
 
 #ifdef SYSV
 #include <string.h>
-#define index strchr
-#define rindex strrchr
+#define index(s,c) (strchr((s),(c)))
+#define rindex(s,c) (strrchr((s),(c)))
 #else
 #include <strings.h>
-#define strchr index
-#define strrchr rindex
+#define strchr(s,c) (index((s),(c)))
+#define strrchr(s,c) (rindex((s),(c)))
 #endif
 
 #endif /* X_NOT_STDC_ENV */
@@ -116,7 +116,7 @@ extern int sys_nerr;
  */
 #ifdef X_NOT_POSIX
 #include <fcntl.h>
-#if defined(USL) || defined(CRAY) || defined(MOTOROLA) || defined(SYSV386) || defined(__sxg__)
+#if defined(USL) || defined(CRAY) || defined(MOTOROLA) || (defined(i386) && (defined(SYSV) || defined(SVR4))) || defined(__sxg__)
 #include <unistd.h>
 #endif
 #ifdef WIN32
