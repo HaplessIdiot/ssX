@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.23 1998/06/04 16:43:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.24 1999/03/21 07:34:57 dawes Exp $ */
 /*
  * Copyright 1996,1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -972,7 +972,7 @@ get_path_elem(pnt)
   char *p1;
 
   p1 = *pnt;
-  *pnt = index(*pnt, ',');
+  *pnt = strchr(*pnt, ',');
   if (*pnt != NULL) {
     **pnt = '\0';
     *pnt += 1;
