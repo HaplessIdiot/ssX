@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.tmpl,v 1.1 94/03/29 15:34:47 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.2 1994/10/21 11:20:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.3 1994/12/02 05:38:34 dawes Exp $
 
 /*
  * Linux shared library template
@@ -15,7 +15,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
-#endif
+#else
 #ifndef FixupLibReferences
 #define FixupLibReferences()						@@\
 XMULIB = -L$(XMUSRC) -lXmu $(XLIB)
