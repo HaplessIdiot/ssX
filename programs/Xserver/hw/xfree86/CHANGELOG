@@ -1,4 +1,14 @@
 
+ 206. Fix bug in XkbSetNamedDeviceIndicator (XkbSetNamedIndicator). This
+      function can be used both for change state of specified indicator
+      (on/off) and for change description (and so behavior) of indicator.
+      Fix bug (in XkbGetPerClientControls). Typo where subroutine apply bit
+      mask (that consist of bitwise OR of three separate masks) to value
+      that have to be returned (#4474, Ivan Pascal).
+ 205. Setxkbmap can crash X server if one specify some illegal string as
+      'xkb variant' name (#4471, Ivan Pascal).
+ 204. In Grab mode XKB sends 'state' in key events without 'group info'
+      (keyboard map layout) (#4469-4470, Ivan Pascal).
  203. Rewrite the X-Video extension's Xineramification (Mark Vojkovich).
 
 XFree86 4.0.99.1 (19 February 2001)
@@ -12562,4 +12572,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1587 2001/02/19 23:42:25 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1588 2001/02/20 05:30:46 mvojkovi Exp $

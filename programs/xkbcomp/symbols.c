@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.9 2000/11/06 18:21:57 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.10 2001/01/17 23:45:44 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -1871,6 +1871,8 @@ XkbDescPtr	xkb;
     info.dflt.defs.merge= merge;
     HandleSymbolsFile(file,xkb,merge,&info);
 
+    if (info.nKeys == 0)
+        return True;
     if (info.errorCount==0) {
 	KeyInfo *key;
 	if (XkbAllocNames(xkb,XkbSymbolsNameMask|XkbGroupNamesMask,0,0)
