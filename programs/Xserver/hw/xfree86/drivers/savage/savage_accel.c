@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.6 2001/03/03 22:26:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.7 2001/04/18 15:29:19 dawes Exp $ */
 
 /*
  *
@@ -15,7 +15,6 @@
  *
  */
 
-#include <math.h>
 #include "Xarch.h"
 #include "xaalocal.h"
 #include "xaarop.h"
