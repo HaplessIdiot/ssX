@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 377. Xterm patches #161, #162 (Thomas Dickey): mostly bug fixes.
  376. Add new CyberBladeXP Aladdin based chip ID's (#4994, Hubert Feyrer).
  375. fix a potential issue where POSIX allows the string returned
       from getenv to be overwritten (from X11R6.6, Chris Bare).
@@ -14005,4 +14006,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1997 2001/10/23 21:12:35 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1998 2001/10/24 09:28:42 alanh Exp $
