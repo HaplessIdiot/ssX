@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_rop.h,v 1.3 1997/04/17 08:17:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_rop.h,v 1.4 1997/06/29 07:54:35 dawes Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.

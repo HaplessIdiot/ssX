@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.7 1997/07/29 12:08:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.8 1998/01/24 16:58:19 hohndel Exp $ */
 
 /* Header file for ViRGE server */
 

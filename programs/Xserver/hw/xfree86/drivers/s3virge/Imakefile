@@ -1,0 +1,39 @@
+XCOMM $XFree86$
+/*
+ *
+ * Copyright 1995-1998 The XFree86 Project, Inc.
+ *
+ */
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = s3v_driver.c s3v_accel.c s3v_pio.c s3v_dac.c
+
+OBJS = s3v_driver.o s3v_accel.o s3v_pio.o s3v_dac.o
+
+DEFINES = -DPSZ=8
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../.. -I../../../xaa
+#else
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
+           -I$(XF86SRC)/xf1bpp -I$(XF86SRC)/xf4bpp \
+           -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+NormalAsmObjectRule()
+
+ModuleObjectRule()
+ObjectModuleTarget(s3virge, $(OBJS))
+
+InstallObjectModule(s3virge,$(MODULEDIR))
+
+DependTarget()

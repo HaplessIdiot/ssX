@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.3 1998/09/05 06:36:43 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.4 1998/10/06 04:39:34 dawes Exp $ */ 
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -164,6 +164,17 @@ CirrusSetClock(ScrnInfoPtr pScrn, int freq)
 	 * This function is only called during start-up if the
 	 * "probe_clocks" option is specified.
 	 */
+
+	if (PCI_CHIP_GD5462 == pCir->Chipset || 
+	    PCI_CHIP_GD5464 == pCir->Chipset ||
+	    PCI_CHIP_GD5464BD == pCir->Chipset || 
+	    PCI_CHIP_GD5465 == pCir->Chipset) {
+	  /* The numerator and denominator registers are switched 
+	     around in the Laguna chips. */
+	  int t = den;
+	  den = num;
+	  num = t;
+	}
 
 	/* Set VLCK3. */
 	outb(0x3c4, 0x0e);

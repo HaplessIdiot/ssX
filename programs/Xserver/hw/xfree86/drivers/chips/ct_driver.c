@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.36 1998/10/05 13:23:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.37 1998/10/11 10:20:27 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -835,7 +835,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 	xf86ClaimIsaSlot(Resource,&CHIPS,usedChip,pScrn->scrnIndex);
 	pScrn->driverVersion = VERSION;
 	pScrn->driverName    = CHIPS_DRIVER_NAME;
-	pScrn->name          = "CHIPS";
+	pScrn->name          = CHIPS_NAME;
 	pScrn->Probe         = CHIPSProbe;
 	pScrn->PreInit       = CHIPSPreInit;
 	pScrn->ScreenInit    = CHIPSScreenInit;
@@ -2949,6 +2949,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    cPtr->HWCursorShown = FALSE;
+
     if (!(cPtr->Flags & ChipsLinearSupport)) {
 	miBankInfoPtr pBankInfo;
 
@@ -3024,10 +3026,13 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    pBankInfo = NULL;
 	    return FALSE;
 	}
-    }
+	miInitializeBackingStore(pScreen);
 
+	/* Initialise cursor functions */
+	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+
+    } else {
     /* !!! Only support linear addressing for now. This might change */
-    if (cPtr->Flags & ChipsLinearSupport) {
 	/* Setup pointers to free space in video ram */
 #define CHIPSALIGN(size, align) (currentaddr - ((currentaddr - size) & ~align))
 	allocatebase = (pScrn->videoRam<<10) - cPtr->FrameBufferSize;
@@ -3155,14 +3160,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		return FALSE;
 	    }
 	}
-    } else {
-	miInitializeBackingStore(pScreen);
-
-	/* Initialise cursor functions */
-	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
-
     }
-    
+
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
@@ -3961,7 +3960,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* init clock */
     if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
-	ErrorF("bomb 1\n");
+	ErrorF("bomb 2\n");
 	return (FALSE);
     }
    
@@ -4237,6 +4236,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /*vgaHWProtect(pScrn, TRUE);*/
     chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
     /*vgaHWProtect(pScrn, FALSE);*/
+    usleep(100000);  /* prevents cursor corruption seen on a TECRA 510 */
     
     return(TRUE);
 }
@@ -4292,14 +4292,14 @@ chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* generic init */
     if (!vgaHWInit(pScrn, mode)) {
-	ErrorF("bomb 1\n");
+	ErrorF("bomb 3\n");
 	return (FALSE);
     }
     pScrn->vtSema = TRUE;
     
     /* init clock */
     if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
-	ErrorF("bomb 1\n");
+	ErrorF("bomb 4\n");
 	return (FALSE);
     }
 
@@ -4535,14 +4535,14 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     /* generic init */
     if (!vgaHWInit(pScrn, mode)) {
-	ErrorF("bomb 1\n");
+	ErrorF("bomb 5\n");
 	return (FALSE);
     }
     pScrn->vtSema = TRUE;
     
     /* init clock */
     if (!chipsClockFind(pScrn, mode->ClockIndex, &ChipsNew->Clock)) {
-	ErrorF("bomb 1\n");
+	ErrorF("bomb 6\n");
 	return (FALSE);
     }
 
@@ -5302,9 +5302,12 @@ chipsUnmapMem(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x4000);
+    if (IS_HiQV(cPtr)) 
+      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x20000);
+    else
+      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x10000);
     cPtr->MMIOBase = NULL;
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase, pScrn->videoRam);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase, cPtr->FbMapSize);
     cPtr->FbBase = NULL;
     
     return TRUE;

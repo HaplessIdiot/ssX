@@ -1,0 +1,104 @@
+S3 ViRGE 4.0 devel notes
+
+rev: 
+10/31/98 KJB
+10/16/98 KJB
+
+
+Function		Implemented
+--------		-----------
+-required-
+S3VProbe;      		X
+S3VPreInit;    		X - fairly complete
+S3VScreenInit; 		X - fairly complete
+S3VSwitchMode; 
+S3VAdjustFrame;
+S3VEnterVT;    		X
+S3VLeaveVT;    		X
+S3VFreeScreen; 		X
+S3VValidMode;
+-private-
+S3VSave			X
+S3VRestore		X
+
+
+Status
+------
+10/31/98 KJB
+Working depth 8, discolored dep 16 but runs, dep 24 screen goes black, 
+C-A-Bkspc restores text console.  At 3.9Nk tree level, module would not
+load in Loader server.  why?  Static server tested.
+
+10/29/98 KJB
+ModeInit() needs work, options are heavily #if'd to try and get 8bpp
+working.
+
+10/16/98 KJB
+General 4.0 architecture is setup.  Presently at 3.9Nc level, if moved
+to a newer tree you will need to add the resource handling functions from
+Egbert (I haven't tackled that yet).
+
+At the moment the ScreenInit() function is coded to return FALSE.  On my
+ViRGE DX card this version does not lock up, but it does destroy the
+video mode.  Make sure you have an external terminal or network connection
+if you run it (or blindly do a restart from your main terminal).  I make
+no guarantees that it won't hard lock other versions of ViRGE.
+
+I've left out the Alpha memory mapping, along with all option processing.
+Those will need to be done once the driver is minimally working.
+
+Note that everything in s3v_driver.c is MMIO only.  There are a pair of
+PIO functions in s3v_pio.c, but that is the only place.  See notes below
+about my ViRGE DX BIOS and why I needed to do this on my hardware.
+
+Other stuff...
+Some test stuff is assuming 8bpp, so 16 & 24 are broken.
+On my hardware, I am presently trying to get the Save/Restore sequence to
+recover the video mode.  At the moment, when I run this driver, I get:
+ScreenInit() runs to completion.
+It returns FALSE, so the Server aborts.
+LeaveVT() is called, and runs to completion.
+The Server exits gracefully, but my monitor goes powersaver and the video
+mode is not recovered.
+
+
+
+TODO items
+----------
+Put vgaHWUnlockmmio in S3VModeInit (see MGAModeInit for example)?
+
+
+ViRGE MX code appears to be in 3.3.2 tree only, port to 4.0.  I have
+started to added the chipset info in the main driver code. (KJB)
+
+modes notes: move mode Private S3V settings to mode init function?
+
+Check CR65 usage, bit 2 set based on S3_EARLY_SC?  In my manual bit 2 is
+enable MMIO to RAMDAC registers.
+
+Notes:
+----------
+
+/config/cf/xfree86.cf
+
+have to add s3v to XF86CardDrivers for imake to make the 
+drivers/s3v Makefile.
+
+To remake makefiles, after editing Imakefile, go to dir above drivers/s3v
+and do a 'make Makefiles'.
+
+For debug, make CDEBUGFLAGS='-g -DDEBUG', adding -DMetroLink enables
+timeout for VerticalRetraceWait().
+
+
+
+S3 ViRGE DX stuff:
+
+Card seems to power up (or BIOS forces) with MMIO disabled.  All flavors are
+disabled, because CR53 comes up as 0.  This may preclude using this card
+as the second device in a multi-head situation although David D. says that
+the new config. management stuff may help here.
+
+
+
+$XFree86$

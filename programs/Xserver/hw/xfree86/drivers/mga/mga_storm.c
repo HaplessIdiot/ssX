@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.31 1998/10/11 10:20:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.32 1998/10/25 07:12:10 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -157,6 +157,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     /* fill out infoPtr here */
     infoPtr->Flags = 	PIXMAP_CACHE | 
 			MICROSOFT_ZERO_LINE_BIAS;
+
+    if(pMga->Overlay8Plus24)
+	infoPtr->FullPlanemask = ~0;
 
     /* sync */
     infoPtr->Sync = MGAStormSync;
