@@ -1,4 +1,5 @@
-XFree86 3.0Bb (13 June 1994)
+XFree86 3.0Bb (14 June 1994)
+ 89. Fix problems with SPEA Mercury for clocks > 120MHz (Norbert Distler).
  88. Code to program S3 GENDAC clock (Clocks "s3gendac") (Jon Tombs).
  87. Fix some build problems with lbx.
  86. Build servers with -DAVOID_GLYPHBLT.
