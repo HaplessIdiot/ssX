@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.19 2001/07/25 15:04:49 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.20tsi Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -866,7 +866,7 @@ DoSearch(struct SearchAndReplace *search)
 #endif /* OLDXAW */
     }
   
-    dir = (XawTextScanDirection)
+    dir = (XawTextScanDirection)(unsigned long)
       ((XPointer)XawToggleGetCurrent(search->left_toggle) - R_OFFSET);
 
     pos = XawTextSearch(tw, dir, &text);
@@ -1021,8 +1021,8 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
     else
 	replace.length = strlen(replace.ptr);
     
-    dir = (XawTextScanDirection)
-      XawToggleGetCurrent(search->left_toggle) - R_OFFSET;
+    dir = (XawTextScanDirection)(unsigned long)
+      ((XPointer)XawToggleGetCurrent(search->left_toggle) - R_OFFSET);
 
     redisplay = !once_only || (once_only && !show_current);
     ipos = XawTextGetInsertionPoint(tw);
