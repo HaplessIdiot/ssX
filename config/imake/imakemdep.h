@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/100 1996/10/31 14:32:02 kaleb $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.19 1996/12/23 05:50:59 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.20 1996/12/29 13:37:26 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -459,6 +459,9 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef __alpha
 	"-D__alpha",
 # endif
+# ifdef __alpha__
+	"-D__alpha__",
+# endif
 # ifdef __i386__
 	"-D__i386__",
 # endif
@@ -548,6 +551,10 @@ char *cpp_argv[ARGUMENTS] = {
  *	Supported uname arguments are "snrvm", and if you specify multiple
  *	arguments they will be separated by spaces.  No more than 5 arguments
  *	may be given.  Unlike uname() order of arguments matters.
+ *
+ *	DEFAULT_OS_MAJOR_REV_FROB, DEFAULT_OS_MINOR_REV_FROB,
+ *	DEFAULT_OS_TEENY_REV_FROB, and DEFAULT_OS_NAME_FROB can be used to
+ *	modify the results of the use of the various strings.
  */
 #if defined(aix)
 /* uname -v returns "x" (e.g. "4"), and uname -r returns "y" (e.g. "1") */
@@ -590,12 +597,42 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_TEENY_REV	"r %*d.%*d.%[0-9]"
 # define DEFAULT_OS_NAME	"srm %[^\n]"
 #elif defined(__FreeBSD__)
-/* NetBSD, OpenBSD, 386BSD, and BSD/OS too? */
+/* OpenBSD, 386BSD, and BSD/OS too? */
 /* uname -r returns "x.y[.z]-mumble", e.g. "2.1.5-RELEASE" or "2.2-0801SNAP" */
 # define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
 # define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
 # define DEFAULT_OS_TEENY_REV   "r %*d.%*d.%[0-9]" 
 # define DEFAULT_OS_NAME        "srm %[^\n]"
+#elif defined(__NetBSD__)
+/*
+ * uname -r returns "x.y([ABCD...]|_mumble)", e.g.:
+ *	1.2	1.2_BETA	1.2A	1.2B
+ *
+ * That means that we have to do something special to turn the
+ * TEENY revision into a form that we can use (i.e., a string of
+ * decimal digits).
+ *
+ * We also frob the name DEFAULT_OS_NAME so that it looks like the
+ * 'standard' NetBSD name for the version, e.g. "NetBSD/i386 1.2B" for
+ * NetBSD 1.2B on an i386.
+ */
+# define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
+# define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
+# define DEFAULT_OS_TEENY_REV   "r %*d.%*d%[A-Z]" 
+# define DEFAULT_OS_TEENY_REV_FROB(buf, size)				\
+    do {								\
+	if (*(buf) >= 'A' && *(buf) <= 'Z') /* sanity check */		\
+		snprintf((buf), (size), "%d", *(buf) - 'A' + 1);	\
+	else								\
+	    *(buf) = '\0';						\
+    } while (0)
+# define DEFAULT_OS_NAME        "smr %[^\n]"
+# define DEFAULT_OS_NAME_FROB(buf, size)				\
+    do {								\
+	char *__sp;							\
+	if ((__sp = strchr((buf), ' ')) != NULL)			\
+		*__sp = '/';						\
+    } while (0)
 #endif
 
 #else /* else MAKEDEPEND */
@@ -758,6 +795,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __alpha
 	{"__alpha", "1"},
+#endif
+#ifdef __alpha__
+	{"__alpha__", "1"},
 #endif
 #ifdef __DECC
 	{"__DECC",  "1"},

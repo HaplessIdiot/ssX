@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.h,v 5.4 94/04/17 20:36:47 hersh Exp $ */
+/* $XConsortium: miStruct.h,v 5.5 94/07/11 11:17:31 hersh Exp $ */
 
 
 /***********************************************************
@@ -47,6 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef MISTRUCT_H
 #define MISTRUCT_H
@@ -62,6 +63,12 @@ typedef struct {
 	ddUSHORT		pexOClength;
 	/* concatenate imp. dep. data definitions here */
 	/* sample server definitions are listed later in this file */
+	
+	/* do the following to pad to 64 bit alignment for alpha */
+#if defined(__alpha) || defined(__alpha__)
+	ddUSHORT		unused0;
+	ddUSHORT		unused1;
+#endif
 } miGenericStr;
 	
 typedef struct _miCSSElement {

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.30 1996/12/27 06:50:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.31 1996/12/30 13:57:33 dawes Exp $
 XCOMM
 
 /*
@@ -360,6 +360,15 @@ TCLIBDIR = TclLibDir
 #else
 #define TclLibrary
 #endif
+#endif
+#ifndef HasGzipLibrary
+#define HasGzipLibrary	NO
+#endif
+#if !HasGzipLibrary	/* if OS doesn't have it, we'll build it */
+#undef GzipLibrary	/* GzipLibrary was valid only if HasGzipLibrary */
+#endif
+#ifndef GzipLibrary	/* if OS config didn't define it, assume it's -lz */
+#define GzipLibrary -lz
 #endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes	NO

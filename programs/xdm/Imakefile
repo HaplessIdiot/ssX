@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/81 1996/10/22 18:32:26 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.16 1996/10/16 14:45:03 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.17 1996/12/23 07:10:56 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -7,8 +7,23 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.16 1996/10/16 14:45:03 dawes Exp $
 #define BuildChooser !SystemV
 #endif
 
+/*
+ * We define ShareLibXdmGreet true if:
+ *	SystemV4 is true
+ *	AlphaArchitecture is set and NetBSDArchitecture is not
+ *	AlphaArchitecture and NetBSDArchitecture are set, and
+ *	    HasSharedLibraries is true.
+ *
+ * We'd like ShareLibXdmGreet true of SystemV4 or AlphaArchitecture,
+ * but not all NetBSD/Alpha systems have shared libraries, and
+ * it can't be shared on those which do not.
+ */
 #ifndef SharedLibXdmGreet
-#define SharedLibXdmGreet (defined(AlphaArchitecture) || SystemV4)
+#define SharedLibXdmGreet						\
+    ((defined(AlphaArchitecture) &&					\
+      (!defined(NetBSDArchitecture) ||					\
+       (defined(NetBSDArchitecture) && HasSharedLibraries))) ||		\
+     SystemV4)
 #endif
 
 #ifndef BuildBoth
