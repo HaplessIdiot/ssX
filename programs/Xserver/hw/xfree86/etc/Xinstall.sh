@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.30 2001/12/28 23:39:38 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.31 2002/01/07 18:16:12 torrey Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -476,6 +476,9 @@ FindDistName()
 			4.*)
 				DistName="FreeBSD-4.x"
 				;;
+			5.*)
+				DistName="FreeBSD-5.x"
+				;;
 			*)
 				Message="FreeBSD/i386 binaries are not available for this version"
 				;;
@@ -488,6 +491,9 @@ FindDistName()
 				;;
 			4.*)
 				DistName="FreeBSD-alpha-4.x"
+				;;
+			5.*)
+				DistName="FreeBSD-alpha-5.x"
 				;;
 			*)
 				Message="FreeBSD/alpha binaries are not available for this version"
@@ -665,10 +671,13 @@ FindDistName()
 	if [ X"$DistName" != X ]; then
 		echo "Binary distribution name is '$DistName'"
 		echo ""
+		echo "If you don't find a binary distribution with this name, then"
+		echo "binaries for your platform are not available from XFree86.org."
+		echo ""
 	else
 		if [ X"$Message" = X ]; then
 			echo "Can't find which binary distribution you should use."
-			echo "Please send the output of this script to XFree86@XFree86.org"
+			echo "Please send the output of this script to XFree86@XFree86.org."
 			echo ""
 		else
 			echo "$Message"
