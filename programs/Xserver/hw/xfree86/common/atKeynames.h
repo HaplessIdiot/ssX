@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.17 2001/05/18 16:03:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.18 2001/09/29 20:40:30 herrb Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -198,6 +198,55 @@
 #define KEY_XFER         /* Kanji Transfer        0x79  */  121
 #define KEY_NFER         /* No Kanji Transfer     0x7b  */  123
 #define KEY_Yen          /* Yen                   0x7d  */  125
+
+/*
+ * Fake 'scancodes' in the following ranges are generated for 2-byte
+ * codes not handled elsewhere.  These correspond to most extended keys
+ * on so-called "Internet" keyboards:
+ *
+ *	0x79-0x93
+ *	0x96-0xa1
+ *	0xa3-0xac
+ *	0xb1-0xb4
+ *	0xba-0xbd
+ *	0xc2
+ *	0xcc-0xd2
+ *	0xd6-0xf7
+ */
+
+/*
+ * Remapped 'scancodes' are generated for single-byte codes in the range
+ * 0x59-0x5f,0x62-0x76.  These are used for some extra keys on some keyboards.
+ */
+
+#define KEY_0x59		0x95
+#define KEY_0x5A		0xA2
+#define KEY_0x5B		0xAD
+#define KEY_0x5C		KEY_KP_EQUAL
+#define KEY_0x5D		0xAE
+#define KEY_0x5E		0xAF
+#define KEY_0x5F		0xB0
+#define KEY_0x62		0xB5
+#define KEY_0x63		0xB6
+#define KEY_0x64		0xB7
+#define KEY_0x65		0xB8
+#define KEY_0x66		0xB9
+#define KEY_0x67		0xBE
+#define KEY_0x68		0xBF
+#define KEY_0x69		0xC0
+#define KEY_0x6A		0xC1
+#define KEY_0x6B		0xC3
+#define KEY_0x6C		0xC4
+#define KEY_0x6D		0xC5
+#define KEY_0x6E		0xC6
+#define KEY_0x6F		0xC7
+#define KEY_0x70		0xC8
+#define KEY_0x71		0xC9
+#define KEY_0x72		0xCA
+#define KEY_0x73		0xCB
+#define KEY_0x74		0xD3
+#define KEY_0x75		0xD4
+#define KEY_0x76		0xD5
 
 /* These are for "notused" and "unknown" entries in translation maps. */
 #define KEY_NOTUSED	  0

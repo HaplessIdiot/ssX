@@ -1,4 +1,6 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 218. Recode single-byte keyboard scancodes that clash with recoded
+      double-byte scancodes (David Dawes).
  217. Fixes and updates for XKB keyboard maps:
       - add more EuroSign to "us_intl" keyboard map (Paul Bolle)
       - update geometry files (Alexander Pohoyda)
@@ -17088,7 +17090,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2738 2003/06/15 16:53:11 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2739 2003/06/17 12:46:59 pascal Exp $
 
 
 
