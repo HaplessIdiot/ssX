@@ -617,13 +617,10 @@ NVAccelInit(ScreenPtr pScreen)
 
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN |
 				       HARDWARE_PATTERN_PROGRAMMED_BITS |
-				       NO_PLANEMASK;
+				       NO_PLANEMASK | GXCOPY_ONLY;
     infoPtr->SetupForMono8x8PatternFill = NVSetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect =
         NVSubsequentMono8x8PatternFillRect;
-
-    if(pScrn->depth == 16)
-	infoPtr->Mono8x8PatternFillFlags |= GXCOPY_ONLY;
 
     /* Color expansion */
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
