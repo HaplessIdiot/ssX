@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.8 2000/08/03 02:14:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.9 2000/08/03 02:30:25 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -7,13 +7,8 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
 
-#include "miline.h"
+#include "windowstr.h"
 
 #include "GL/glxtokens.h"
 
@@ -226,7 +221,8 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    int i;
    
    /* Hardware 3D rendering only implemented for 16bpp */
-   if (pScrn->bitsPerPixel != 16)
+   /* And it only works for 5:6:5 (Mark) */
+   if (pScrn->depth != 16)
       return FALSE;
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing

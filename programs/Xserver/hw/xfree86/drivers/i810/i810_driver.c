@@ -1705,8 +1705,16 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    miInitializeBackingStore(pScreen);
    xf86SetBackingStore(pScreen);
+   xf86SetSilkenMouse(pScreen);
 
    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+   if (!xf86ReturnOptValBool(I810Options, OPTION_SW_CURSOR, FALSE)) {
+      if (!I810CursorInit(pScreen)) {
+         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                    "Hardware cursor initialization failed\n");
+      }
+   }
 
    if (!miCreateDefColormap(pScreen)) return FALSE;
 
@@ -1730,13 +1738,6 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #ifdef DPMSExtension
    xf86DPMSInit(pScreen, I810DisplayPowerManagementSet, 0);
 #endif
-
-   if (!xf86ReturnOptValBool(I810Options, OPTION_SW_CURSOR, FALSE)) {
-      if (!I810CursorInit(pScreen)) {
-	 xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		    "Hardware cursor initialization failed\n");
-      }
-   }
 
    I810InitVideo(pScreen);
 
