@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.8 1996/03/04 05:14:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.9 1996/12/23 06:43:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -185,7 +185,7 @@
 #define KEY_RCtrl        /* Ctrl(right)           0x65  */  101
 #define KEY_Pause        /* Pause                 0x66  */  102
 #define KEY_Print        /* Print                 0x67  */  103
-#define KEY_KP_Divide    /* Didive                0x68  */  104
+#define KEY_KP_Divide    /* Divide                0x68  */  104
 #define KEY_AltLang      /* AtlLang(right)        0x69  */  105
 #define KEY_Break        /* Break                 0x6a  */  106
 #define KEY_LMeta        /* Left Meta             0x6b  */  107
