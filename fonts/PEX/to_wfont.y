@@ -1,5 +1,6 @@
 %{
 /* $XConsortium: to_wfont.y,v 5.7 94/04/17 20:10:08 rws Exp $ */
+/* $XFree86$ */
 
 /*****************************************************************
 
@@ -351,7 +352,7 @@ check_num_ch()
 
 yyerror()
 {
-#ifndef __bsdi__
+#if !(defined(__bsdi__) || defined(__NetBSD__)) || defined(__FreeBSD__) || defined(__386BSD__)
 	extern int      yylineno;
 #endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
@@ -374,7 +375,7 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
-#ifdef __bsdi__
+#if defined(__bsdi__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__386BSD__)
 		fprintf(stderr, "%s.\n", str);
 #else
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);
@@ -640,10 +641,10 @@ freeall()
 				free((char *) spath->pts.pt2df);
 		if (path->subpaths != NULL)
 			free((char *) path->subpaths);
+	}
 	free(Table);
 	free(sp_table);
 	free(strokes);
-	}
 	for (i=0; i < head.num_props; i++, head.properties++) {
 	  if (head.properties != NULL)
 	    free((char *) head.properties);

@@ -1,4 +1,5 @@
 /* $XConsortium: Xlibnet.h,v 1.39 94/04/17 20:21:51 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -33,6 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #ifndef WIN32
+#ifndef AMOEBA
 
 /*
  * If your BytesReadable correctly detects broken connections, then
@@ -198,6 +200,7 @@ typedef unsigned long FdSet[MSKCNT];
  */
 #endif
 #endif
+#endif /* not AMOEBA */
 
 #else /* not WIN32 */
 

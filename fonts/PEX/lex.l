@@ -1,5 +1,6 @@
 %{
 /* $XConsortium: lex.l,v 5.6 94/04/17 20:10:07 rws Exp $ */
+/* $XFree86$ */
 
 /*****************************************************************
 
@@ -52,10 +53,17 @@ SOFTWARE.
 
 #include <ctype.h>
 #include <math.h>
+#if defined(__bsdi__) || defined(__FreeBSD__) || defined(__386BSD__) || defined(__NetBSD__)
+#include <stdlib.h>
+#endif
 #include "to_wfont.h"
 
 #if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
 extern double atof(char *);
+#endif
+
+#ifdef linux
+int yywrap() { return 1; }
 #endif
 
 %}
@@ -139,9 +147,10 @@ int	n;
 		str++;
 		n -= 2;	/* one for EOL, one for end quote */
 	}
-	if ((yylval.cval = (char *)malloc(n)) != NULL)
+	if ((yylval.cval = (char *)malloc(n+1)) != NULL)
 	{
 		strncpy(yylval.cval, str, n);
+		yylval.cval[n] = '\0';
 		return STRING;
 	}
 	else

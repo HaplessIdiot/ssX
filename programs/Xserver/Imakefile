@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.182 94/04/08 17:50:40 rws Exp $
+XCOMM $XFree86$
 /*
  * Server Master Makefile
  */
@@ -494,7 +495,7 @@ SetUIDServerTarget(XF86_S3,$(XF86S3SUBDIRS),$(XF86S3OBJS),$(XF86S3LIBS),$(XF86S3
 #ifndef ServerToInstall
 #define ServerToInstall XF86_S3
 #endif
-#endif	/* XF86SVGAServer */
+#endif	/* XF86S3Server */
 
 
 #if XF86I8514Server
@@ -512,7 +513,7 @@ SetUIDServerTarget(XF86_8514,$(XF868514SUBDIRS),$(XF868514OBJS),$(XF868514LIBS),
 #ifndef ServerToInstall
 #define ServerToInstall XF86_8514
 #endif
-#endif	/* XF86SVGAServer */
+#endif	/* XF86I8514Server */
 
 
 #if XF86Mach8Server
@@ -530,7 +531,7 @@ SetUIDServerTarget(XF86_Mach8,$(XF86MACH8SUBDIRS),$(XF86MACH8OBJS),$(XF86MACH8LI
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mach8
 #endif
-#endif	/* XF86SVGAServer */
+#endif	/* XF86Mach8Server */
 
 
 #if XF86Mach32Server
@@ -548,7 +549,7 @@ SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH
 #ifndef ServerToInstall
 #define ServerToInstall XF86_Mach32
 #endif
-#endif	/* XF86SVGAServer */
+#endif	/* XF86Mach32Server */
 
 
 #if XnestServer

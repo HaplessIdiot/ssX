@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.68 94/04/07 15:10:02 rws Exp $
+XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -18,6 +19,7 @@ XFSDIR = xfs
 XKBCOMP = xkbcomp
 #endif
 
+#ifndef AmoebaArchitecture
 SUBDIRS = \
 	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf iceauth \
 	mkfontdir oclock $(RGBDIR) rstart twm x11perf xauth xclipboard xclock \
@@ -26,8 +28,17 @@ SUBDIRS = \
 	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
 	xwd xwininfo xwud $(XSDIR) scripts
 
-#else
+#else /* AmoebaArchitecture */
+SUBDIRS = \
+	appres bdftopcf bitmap editres iceauth \
+	mkfontdir oclock $(RGBDIR) rstart twm x11perf xauth xclipboard xclock \
+	xcmsdb xconsole xdpyinfo xfd xhost \
+	xieperf $(XINIDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
+	xmag xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
+	xwd xwininfo xwud $(XSDIR) scripts
+#endif
 
+#else /* Win32Architecture */
 SUBDIRS = \
 	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf iceauth \
 	mkfontdir oclock x11perf xauth xclipboard xclock \
