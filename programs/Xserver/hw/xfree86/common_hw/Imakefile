@@ -1,11 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:10 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = ICD2061Acal.c ICD2061Aset.c ICD2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
-       SC11412.c ATTDac.c
+       SC11412.c ATTDac.c S3gendac.c
 
 OBJS = ICD2061Acal.o ICD2061Aset.o ICD2061Aalt.o xf86_ClkPr.o BUSmemcpy.o \
-       SC11412.o ATTDac.o
+       SC11412.o ATTDac.o S3gendac.o
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I../../vga \
 	   -I$(SERVERSRC)/include -I$(INCLUDESRC)

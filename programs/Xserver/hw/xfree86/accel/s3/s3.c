@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.2 1994/05/31 08:09:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.3 1994/06/11 06:11:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -47,6 +47,7 @@
 #include "s3linear.h"
 #include "s3Bt485.h"
 #include "s3Ti3020.h"
+
 
 extern int s3MaxClock;
 extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
@@ -134,6 +135,7 @@ Bool  (*s3ClockSelectFunc) ();
 static Bool LegendClockSelect();
 static Bool s3ClockSelect();
 static Bool icd2061ClockSelect();
+static Bool s3GendacClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3LinearAperture = FALSE;
@@ -779,6 +781,12 @@ s3Probe()
 	 ErrorF("%s %s: Using Sierra SC11412 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
 	 numClocks = 3;
+   } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
+      s3ClockSelectFunc = s3GendacClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using S3 Gendac programmable clock\n",
+		XCONFIG_GIVEN, s3InfoRec.name);
+	 numClocks = 3;
    } else {
       s3ClockSelectFunc = s3ClockSelect;
       numClocks = 16;
@@ -1119,6 +1127,7 @@ s3ClockSelect(no)
    return(TRUE);
 }
 
+
 static Bool
 LegendClockSelect(no)
      int   no;
@@ -1258,6 +1267,51 @@ icd2061ClockSelect(no)
          outb(vgaCRReg, 0x02);
 	 usleep(150000);
 	 /* Do the clock doubler selection in s3Init() */
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+
+
+static Bool
+s3GendacClockSelect(no)
+     int   no;
+
+{
+   Bool result = TRUE;
+   int freq;
+#define MAX_GENDAC_FREQ 110000   
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(no)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(no);
+      break;
+   default:
+      if (no < 2) {
+         result = s3ClockSelect(no);
+      } else {
+	 if (no >= s3InfoRec.clocks) {
+	    ErrorF("%s: Clock number too high (%d)\n", s3InfoRec.name, no);
+	    result = FALSE;
+	    break;
+	 }
+	 /* Start with freq in kHz */
+	 freq = s3InfoRec.clock[no];
+	 /* Check if clock frequency is within range */
+	 if (freq > MAX_GENDAC_FREQ) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) too high for S3 Gendac",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    freq = MAX_GENDAC_FREQ;
+	 }
+	 (void) S3gendacSetClock(freq, 2); /* can't fail */
+	 outb(vgaCRIndex, 0x42);/* select the clock */
+	 outb(vgaCRReg, 0x02);
+	 usleep(150000);
       }
    }
    LOCK_SYS_REGS;
