@@ -17,7 +17,7 @@
  * License along with this library; if not, write to the Free
  * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_dlist.h,v 1.2 2001/02/07 13:29:56 alanh Exp $ */
 
 
 #ifndef DLIST_H
@@ -319,9 +319,9 @@ extern void gl_save_StencilOp(
 
 extern void gl_save_TexCoord2f(  GLfloat s, GLfloat t );
 
-extern void gl_save_TexCoord2fv(  GLfloat *v );
+extern void gl_save_TexCoord2fv( const GLfloat *v );
 
-extern void gl_save_TexCoord3fv(  GLfloat *v );
+extern void gl_save_TexCoord3fv( const GLfloat *v );
 
 extern void gl_save_TexCoord4f(  GLfloat s, GLfloat t,
                                 GLfloat r, GLfloat q );

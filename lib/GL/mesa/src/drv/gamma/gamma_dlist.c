@@ -24,7 +24,7 @@
  * Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_dlist.c,v 1.2 2001/02/07 13:29:55 alanh Exp $*/
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -2245,7 +2245,7 @@ void gl_save_TexCoord2f( GLfloat s, GLfloat t )
    }
 }
 
-void gl_save_TexCoord2fv( GLfloat *v )
+void gl_save_TexCoord2fv( const GLfloat *v )
 {
    Node *n = alloc_instruction( OPCODE_TEXCOORD2, 2 );
    if (n) {
@@ -2257,7 +2257,7 @@ void gl_save_TexCoord2fv( GLfloat *v )
    }
 }
 
-void gl_save_TexCoord3fv( GLfloat *v )
+void gl_save_TexCoord3fv( const GLfloat *v )
 {
    Node *n = alloc_instruction( OPCODE_TEXCOORD4, 4 );
    if (n) {
