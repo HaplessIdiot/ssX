@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.10 2001/05/01 07:53:46 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.11 2001/05/01 15:05:39 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -36,8 +36,10 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.10 2001/05/01 07:53:46 ala
 #define HasPoll			NO
 #if UseCygIPC
 # define HasShm			YES
+# define ServerExtraSysLibs	-lcygipc
 #else
 # define HasShm                 NO
+# define ServerExtraSysLibs	/**/
 #endif
 #define HasSnprintf		YES
 #define HasZlib			YES
