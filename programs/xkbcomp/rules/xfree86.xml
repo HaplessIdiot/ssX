@@ -2775,7 +2775,7 @@
       <option>
         <configItem>
           <name>srvrkeys:none</name>
-          <description>Special keys (Ctrl+Alt+<key>) handled in a server.</description>
+          <description>Special keys (Ctrl+Alt+key) handled in a server.</description>
         </configItem>
       </option>
     </group>
