@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkbout.c,v 3.7 2001/01/17 19:43:42 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkbout.c,v 3.8 2001/07/25 15:04:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -848,7 +848,7 @@ WriteXKBSection(file,dpy,s,geom)
 {
 register int	i;
 XkbRowPtr	row;
-int		dfltKeyColor;
+int		dfltKeyColor = 0;
 
     fprintf(file,"    section \"%s\" {\n",
 				XkbAtomText(dpy,s->name,XkbXKBFile));
@@ -1157,7 +1157,7 @@ XkbWriteXKBFile(out,result,showImplicit,addOn,priv)
     void *		priv;
 #endif
 {
-Bool	 		ok;
+Bool	 		ok = False;
 Bool			(*func)(
 #if NeedFunctionPrototypes
     FILE *		/* file */,
@@ -1167,7 +1167,7 @@ Bool			(*func)(
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
 #endif
-);
+) = NULL;
 
     switch (result->type) {
 	case XkmSemanticsFile:
@@ -1205,12 +1205,8 @@ Bool			(*func)(
 	_XkbLibError(_XkbErrFileCannotOpen,"XkbWriteXkbFile",0);
 	ok= False;
     }
-    else {
+    else if (func) {
 	ok= (*func)(out,result,True,showImplicit,addOn,priv);
     }
-    if (!ok) {
-	return False;
-    }
-    return True;
+    return ok;
 }
-

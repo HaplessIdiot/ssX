@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.17 2001/08/01 00:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.18 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -87,9 +87,9 @@ typedef enum
     ATI_CHIP_RAGE128MOBILITY4,  /* Rage128 */
     ATI_CHIP_Rage128,           /* Rage128 */
     ATI_CHIP_RADEON,            /* Radeon */
-    ATI_CHIP_RADEONVE,          /* Radeon VE*/
-    ATI_CHIP_RADEONMOBILITY6,   /* Radeon M6*/
-    ATI_CHIP_RADEONMOBILITY7,   /* Radeon M7*/
+    ATI_CHIP_RADEONVE,          /* Radeon VE */
+    ATI_CHIP_RADEONMOBILITY6,   /* Radeon M6 */
+    ATI_CHIP_RADEONMOBILITY7,   /* Radeon M7 */
     ATI_CHIP_R200,              /* R200 */
     ATI_CHIP_RV200,             /* RV200 */    
     ATI_CHIP_HDTV               /* HDTV */

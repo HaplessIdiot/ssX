@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.14 2001/07/25 15:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.15 2001/08/26 16:21:29 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -801,7 +801,7 @@ StorePid (void)
 #endif
 #endif
 	}
-	fprintf (pidFilePtr, "%5d\n", getpid ());
+	fprintf (pidFilePtr, "%5ld\n", (long)getpid ());
 	(void) fflush (pidFilePtr);
 	RegisterCloseOnFork (pidFd);
     }

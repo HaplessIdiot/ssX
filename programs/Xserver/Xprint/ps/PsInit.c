@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.9 2001/01/17 22:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.10 2001/08/01 00:44:46 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -88,6 +88,7 @@ in this Software without prior written authorization from The Open Group.
 
 static void AllocatePsPrivates(ScreenPtr pScreen);
 static int PsInitContext(XpContextPtr pCon);
+static int PsDestroyContext(XpContextPtr pCon);
 
 extern Bool cfbCreateDefColormap(ScreenPtr pScreen);
 
@@ -103,11 +104,7 @@ InitializePsDriver(ndx, pScreen, argc, argv)
   int         argc;
   char      **argv;
 {
-  int               maxXres, maxYres, maxWidth, maxHeight;
-  int               maxRes, maxDim, numBytes;
   PsScreenPrivPtr   pPriv;
-  char            **printerNames;
-  int               numPrinters;
   int               nVisuals;
   int               nDepths;
   VisualPtr         visuals;

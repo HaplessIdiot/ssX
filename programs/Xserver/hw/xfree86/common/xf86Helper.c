@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.115 2001/08/13 17:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.116 2001/08/21 19:23:27 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1969,6 +1969,10 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     int *retEntities = NULL;
 
     *foundEntities = NULL;
+
+#if defined(__sparc__) || defined(__powerpc__)
+    FindIsaDevice = NULL;	/* Temporary */
+#endif
 
     if (xf86DoProbe || (xf86DoConfigure && xf86DoConfigurePass1)) {
 	if (FindIsaDevice &&

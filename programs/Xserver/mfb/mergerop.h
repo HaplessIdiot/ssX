@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.11 2001/01/17 22:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.12 2001/07/25 15:05:10 dawes Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -37,7 +37,7 @@ typedef struct _mergeRopBits {
 extern mergeRopRec	mergeRopBits[16];
 
 #if defined(PPW) && defined(PGSZ) && (PPW != PGSZ)	/* cfb */
-#define DeclareMergeRop() MfbBits   _ca1, _cx1, _ca2, _cx2;
+#define DeclareMergeRop() MfbBits   _ca1 = 0, _cx1 = 0, _ca2 = 0, _cx2 = 0;
 #define DeclarePrebuiltMergeRop()	MfbBits	_cca, _ccx;
 #if PSZ == 24  /* both for PGSZ == 32 and 64 */
 #define DeclareMergeRop24() \
@@ -46,7 +46,7 @@ extern mergeRopRec	mergeRopBits[16];
 #define DeclarePrebuiltMergeRop24()	MfbBits	_ccau[4], _ccxu[4];
 #endif /* PSZ == 24 */
 #else /* mfb */
-#define DeclareMergeRop() MfbBits   _ca1, _cx1, _ca2, _cx2;
+#define DeclareMergeRop() MfbBits   _ca1 = 0, _cx1 = 0, _ca2 = 0, _cx2 = 0;
 #define DeclarePrebuiltMergeRop()	MfbBits	_cca, _ccx;
 #endif
 
@@ -320,7 +320,7 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == (Mcopy|Mxor|MandReverse|Mor)
-#define MROP_DECLARE()	MfbBits _ca1, _cx1;
+#define MROP_DECLARE()	MfbBits _ca1 = 0, _cx1 = 0;
 #define MROP_DECLARE_REG()	register MROP_DECLARE()
 #define MROP_INITIALIZE(alu,pm)	{ \
     mergeRopPtr  _bits; \

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.7 2001/01/17 23:44:59 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.8 2001/07/25 15:05:14 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -878,7 +878,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 	    }
 	    if (oc->output) {
 		if (extraCount) {
-		    int len = obuf->count + (extraCount + 3) & ~3;
+		    int len = (obuf->count + extraCount + 3) & ~3;
 		    if (ExpandOutputBuffer(obuf, len) < 0) {
 			if (oc->trans_conn) {
 			    _LBXPROXYTransDisconnect(oc->trans_conn);

@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.39 2001/10/14 03:02:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.40 2001/10/23 06:10:30 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -1240,8 +1240,13 @@ Bool DPMSSupported(void)
     return FALSE;
 }
 
-void DPMSSet(CARD16 level)
+void DPMSSet(int level)
 {
+}
+
+int DPMSGet(int *level)
+{
+    return -1;
 }
 #endif
 

@@ -46,7 +46,7 @@ from The Open Group.
  * 
  *		 M. Collins		OSF  
  */				
-/* $XFree86: xc/lib/X11/mbWrap.c,v 1.3 2000/11/29 17:40:25 dawes Exp $ */
+/* $XFree86: xc/lib/X11/mbWrap.c,v 1.4 2001/01/17 19:41:56 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -72,7 +72,7 @@ XmbDrawText(dpy, d, gc, x, y, text_items, nitems)
     int                 nitems;
 #endif
 {
-    register XFontSet fs;
+    register XFontSet fs = NULL;
     register XmbTextItem *p = text_items;
     register int i = nitems;
     register int esc;

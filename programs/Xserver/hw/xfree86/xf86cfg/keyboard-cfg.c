@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.13 2001/03/24 01:17:20 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.14 2001/03/29 16:54:30 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -1160,7 +1160,7 @@ UpdateRulesPopups(void)
 {
     int i;
     char *optname;
-    Widget sme, optpopup, optparent;
+    Widget sme, optpopup = NULL, optparent;
 
     /* MODEL */
     if (modelp)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.14 2001/10/18 03:15:21 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.15 2001/10/20 00:19:33 paulo Exp $ */
 
 #include "core.h"
 #include "format.h"
@@ -1606,7 +1606,7 @@ Lisp_Progn(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Progv(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *old_frm, *old_env, *res, *cons, *valist = NIL;
+    LispObj *old_frm, *old_env, *res, *cons = NIL, *valist = NIL;
     LispObj *syms, *values, *body;
 
     old_frm = FRM;
@@ -1948,7 +1948,7 @@ LispObj *
 Lisp_Set(LispMac *mac, LispObj *list, char *fname)
 {
     int count;
-    LispObj *var, *val, *res;
+    LispObj *var, *val, *res = NIL;
 			/* res always set, is minimum args is 2 */
 
     for (count = 0, var = list; var != NIL; count++, var = CDR(var))
@@ -1967,7 +1967,7 @@ LispObj *
 Lisp_SetQ(LispMac *mac, LispObj *list, char *fname)
 {
     int count;
-    LispObj *var, *val, *res;
+    LispObj *var, *val, *res = NIL;
 			/* res always set, is minimum args is 2 */
 
     for (count = 0, var = list; var != NIL; count++, var = CDR(var))
@@ -2191,7 +2191,8 @@ LispObj *
 Lisp_Tagbody(LispMac *mac, LispObj *list, char *fname)
 {
     int did_jump, *pdid_jump = &did_jump, body_jump, *pbody_jump = &body_jump;
-    LispObj *body, *res, **pres = &res;
+    volatile LispObj *body;
+    LispObj *res, **pres = &res;
     LispBlock *block, *body_block;
 
     for (body = list; body != NIL; body = CDR(body))
@@ -2285,7 +2286,7 @@ Lisp_Tagbody(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Terpri(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *stream;
+    LispObj *stream = NIL;
 
     if (list == NIL || CAR(list) == NIL)
 	stream = NIL;

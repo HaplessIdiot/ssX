@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.19 2001/08/27 23:35:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.20 2001/09/04 14:03:27 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -266,11 +266,11 @@ SOFTWARE.
 	ValidateGC(pDraw, pGC);
 
 
-#define WriteReplyToClient(pClient, size, pReply) \
+#define WriteReplyToClient(pClient, size, pReply) { \
    if ((pClient)->swapped) \
       (*ReplySwapVector[((xReq *)(pClient)->requestBuffer)->reqType]) \
            (pClient, (int)(size), pReply); \
-      else (void) WriteToClient(pClient, (int)(size), (char *)(pReply));
+      else (void) WriteToClient(pClient, (int)(size), (char *)(pReply)); }
 
 #define WriteSwappedDataToClient(pClient, size, pbuf) \
    if ((pClient)->swapped) \

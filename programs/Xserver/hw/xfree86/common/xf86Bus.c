@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.64 2001/06/03 05:24:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.66 2001/10/01 13:44:01 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -387,7 +387,7 @@ xf86ClearEntityListForScreen(int scrnIndex)
 }
 
 void
-xf86DeallocateResourcesForEntity(int entityIndex, long type)
+xf86DeallocateResourcesForEntity(int entityIndex, unsigned long type)
 {
     resPtr *pprev_next = &Acc;
     resPtr res = Acc;
@@ -1020,7 +1020,7 @@ checkConflictSparse(resRange *range, resPtr pRes)
  * depending on the types of the resource ranges and their locations
  */
 static Bool
-needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
+needCheck(resPtr pRes, unsigned long type, int entityIndex, xf86State state)
 {
     /* the same entity shouldn't conflict with itself */
     ScrnInfoPtr pScrn;
@@ -1028,7 +1028,7 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
     BusType loc = BUS_NONE;
     BusType r_loc = BUS_NONE;
     
-    if (!(pRes->res_type & type & ResPhysMask)) 
+    if ((pRes->res_type & ResTypeMask) != (type & ResTypeMask))
         return FALSE;
 
     /*
@@ -1264,7 +1264,7 @@ xf86PrintResList(int verb, resPtr list)
     int i = 0;
     const char *s, *r;
     resPtr tmp = list;
-    long type;
+    unsigned long type;
     
     if (!list)
 	return;
@@ -1406,8 +1406,8 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment, Bool useEstimated
 
     for (pRes = list; pRes; pRes = pRes->next) {
 	if (pRes != target
-	    && ((pRes->res_type & ResPhysMask) ==
-		(target->res_type & ResPhysMask))
+	    && ((pRes->res_type & ResTypeMask) ==
+		(target->res_type & ResTypeMask))
 	    && pRes->block_begin <= target->block_end
 	    && pRes->block_end >= target->block_begin) {
 	    /* Possibly ignore estimated resources */
@@ -1460,7 +1460,7 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment, Bool useEstimated
 #define ALIGN(x,a) ((x) + a) &~(a)
 
 resRange 
-xf86GetBlock(long type, memType size,
+xf86GetBlock(unsigned long type, memType size,
 	 memType window_start, memType window_end,
 	 memType align_mask, resPtr avoid)
 {
@@ -1478,7 +1478,7 @@ xf86GetBlock(long type, memType size,
     type = (type & ~(ResExtMask | ResBios | ResEstimated)) | ResBlock;
     
     while (res_range) {
-	if (type & res_range->res_type & ResPhysMask) {
+	if ((type & ResTypeMask) == (res_range->res_type & ResTypeMask)) {
 	    if (res_range->block_begin > window_start)
 		min = res_range->block_begin;
 	    else
@@ -1557,7 +1557,7 @@ fix_counter(memType val, memType old_mask, memType mask)
 }
 
 resRange
-xf86GetSparse(long type,  memType fixed_bits,
+xf86GetSparse(unsigned long type,  memType fixed_bits,
 	  memType decode_mask, memType address_mask, resPtr avoid)
 {
     resRange r = {ResEnd,0,0};
@@ -1688,8 +1688,6 @@ static void
 convertRange2Host(int entityIndex, resRange *pRange)
 {
     if (pRange->type & ResBus) {
-	pRange->type &= ~ResBus;
-	
 	switch (xf86Entities[entityIndex]->busType) {
 	case BUS_PCI:
 	    pciConvertRange2Host(entityIndex,pRange);
@@ -1700,6 +1698,8 @@ convertRange2Host(int entityIndex, resRange *pRange)
 	default:
 	    break;
 	}
+
+	pRange->type &= ~ResBus;
     }
 }
 
@@ -1726,9 +1726,8 @@ xf86RegisterResources(int entityIndex, resList list, int access)
     while(list->type != ResEnd) {
 	range = *list;
 
-	if (range.type & ResBus)
-	    convertRange2Host(entityIndex,&range);
-	
+	convertRange2Host(entityIndex,&range);
+
 	if ((access != ResNone) && (access & ResAccMask)) {
 	    range.type = (range.type & ~ResAccMask) | (access & ResAccMask);
 	}
@@ -2205,7 +2204,7 @@ xf86EnterServerState(xf86State state)
  * xf86SetOperatingState() -- Set ResOperMask for resources listed.
  */
 resPtr
-xf86SetOperatingState(const resList list, int entityIndex, int mask)
+xf86SetOperatingState(resList list, int entityIndex, int mask)
 {
     resPtr acc;
     resPtr r_fail = NULL;
@@ -2213,12 +2212,11 @@ xf86SetOperatingState(const resList list, int entityIndex, int mask)
     
     while (list->type != ResEnd) {
 	range = *list;
-	if (range.type & ResBus)
-	    convertRange2Host(entityIndex,&range);
+	convertRange2Host(entityIndex,&range);
 
 	acc = Acc;
 	while (acc) {
-#define MASK (ResPhysMask | ResExtMask)
+#define MASK (ResTypeMask | ResExtMask)
 	    if ((acc->entityIndex == entityIndex) 
 		&& (acc->val.a == range.a) && (acc->val.b == range.b)
 		&& ((acc->val.type & MASK) == (range.type & MASK)))
@@ -2295,8 +2293,7 @@ xf86ClaimFixedResources(resList list, int entityIndex)
     while (list->type !=ResEnd) {
  	range = *list;
 
-	if (range.type & ResBus)
-	    convertRange2Host(entityIndex,&range);
+	convertRange2Host(entityIndex,&range);
 
  	range.type &= ~ResEstimated;	/* Not allowed for drivers */
  	switch (range.type & ResAccMask) {
@@ -2384,8 +2381,8 @@ checkRoutingForScreens(xf86State state)
 	    xf86ConvertListToHost(entityIndex,pResVGAHost);
 	    while (pAcc) {
 		if (pAcc->entityIndex == entityIndex)
-		    if (checkConflict(&pAcc->val,pResVGA,
-				      entityIndex,state,FALSE)) {
+		    if (checkConflict(&pAcc->val, pResVGAHost,
+				      entityIndex, state, FALSE)) {
 			if (vga && vga != pEnt->busAcc) {
 			    xf86Msg(X_ERROR, "Screen %i needs vga routed to"
 				    "different buses - deleting\n",i);
@@ -2728,7 +2725,7 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
     
     if (list1) {
 	list = list1;
-	if (range.type & list->res_type & ResPhysMask) {
+	if ((range.type & ResTypeMask) == (list->res_type & ResTypeMask)) {
 	    switch (range.type & ResExtMask) {
 	    case ResBlock:
 		if ((list->res_type & ResExtMask) == ResBlock) {
@@ -2887,7 +2884,7 @@ findIntersect(resRange Range, resPtr list)
     resPtr new = NULL;
     
     while (list) {
-	    if (Range.type & list->res_type & ResPhysMask) {
+	    if ((Range.type & ResTypeMask) == (list->res_type & ResTypeMask)) {
 		switch (Range.type & ResExtMask) {
 		case ResBlock:
 		    switch (list->res_type & ResExtMask) {
@@ -2947,6 +2944,7 @@ xf86FindIntersectOfLists(resPtr l1, resPtr l2)
     return ret;
 }
 
+#if 0	/* Not used */
 static resPtr
 xf86FindComplement(resRange Range)
 {
@@ -2980,6 +2978,7 @@ xf86FindComplement(resRange Range)
     }
     return new;
 }
+#endif
 
 resPtr
 xf86ExtractTypeFromList(resPtr list, unsigned long type)
@@ -2987,7 +2986,7 @@ xf86ExtractTypeFromList(resPtr list, unsigned long type)
     resPtr ret = NULL;
     
     while (list) {
-	if ((list->res_type & type) == type)
+	if ((list->res_type & ResTypeMask) == type)
 	    ret = xf86AddResToList(ret,&(list->val),list->entityIndex);
 	list = list->next;
     }

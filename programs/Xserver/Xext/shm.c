@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.30 2001/08/17 22:08:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.31 2001/08/23 13:01:36 alanh Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -655,8 +655,8 @@ static int
 ProcPanoramiXShmCreatePixmap(client)
     register ClientPtr client;
 {
-    ScreenPtr pScreen;
-    PixmapPtr pMap;
+    ScreenPtr pScreen = NULL;
+    PixmapPtr pMap = NULL;
     DrawablePtr pDraw;
     DepthPtr pDepth;
     int i, j, result;

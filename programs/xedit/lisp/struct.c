@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.3 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.4 2001/10/18 03:15:22 paulo Exp $ */
 
 #include "struct.h"
 
@@ -117,7 +117,7 @@ LispObj *
 Lisp_XeditMakeStruct(LispMac *mac, LispObj *list, char *fname)
 {
     int count;
-    LispAtom *atom;
+    LispAtom *atom = NULL;
     LispObj *obj, *str = CAR(list), *fld, *nam, *val, *frm;
 
     if (!SYMBOL_P(str) ||
@@ -196,8 +196,8 @@ Lisp_XeditMakeStruct(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_XeditStructAccess(LispMac *mac, LispObj *list, char *fname)
 {
-    int len;
-    LispAtom *atom;
+    int len = 0;
+    LispAtom *atom = NULL;
     LispObj *str = CAR(list), *obj = CAR(CDR(list));
 
     if (!SYMBOL_P(str) ||
@@ -221,8 +221,8 @@ Lisp_XeditStructAccess(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_XeditStructStore(LispMac *mac, LispObj *list, char *fname)
 {
-    int len;
-    LispAtom *atom;
+    int len = 0;
+    LispAtom *atom = NULL;
     LispObj *strdef, *str, *value;
 
     strdef = CAR(list);
@@ -253,7 +253,7 @@ Lisp_XeditStructStore(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_XeditStructType(LispMac *mac, LispObj *list, char *fname)
 {
-    LispAtom *atom;
+    LispAtom *atom = NULL;
     LispObj *str = CAR(list), *obj = CAR(CDR(list));
 
     if (!SYMBOL_P(str) ||

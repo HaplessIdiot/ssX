@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.47 2001/07/25 08:04:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.48 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -110,9 +110,9 @@ typedef struct _ATIGDev
 #define DoProbe        (1 << 4)
 typedef struct
 {
-    CARD16 Base;
-    CARD8  Size;
-    CARD8  Flag;
+    IOADDRESS Base;
+    CARD8     Size;
+    CARD8     Flag;
 } PortRec, *PortPtr;
 
 /*
@@ -131,8 +131,8 @@ ATIScanPCIBases
     const CARD8  ProbeFlag
 )
 {
-    int i, j;
-    CARD16 Base;
+    IOADDRESS Base;
+    int       i, j;
 
     for (i = 6;  --i >= 0;  pBase++, pSize++)
     {
@@ -177,11 +177,11 @@ ATIScanPCIBases
 static CARD8
 ATICheckSparseIOBases
 (
-    pciVideoPtr  pVideo,
-    CARD8        *ProbeFlags,
-    const CARD16 IOBase,
-    const int    Count,
-    const Bool   Override
+    pciVideoPtr     pVideo,
+    CARD8           *ProbeFlags,
+    const IOADDRESS IOBase,
+    const int       Count,
+    const Bool      Override
 )
 {
     CARD32 FirstPort, LastPort;
@@ -223,10 +223,10 @@ ATICheckSparseIOBases
 static void
 ATIClaimSparseIOBases
 (
-    CARD8 *ProbeFlags,
-    const CARD16 IOBase,
-    const int    Count,
-    const CARD8  ProbeFlag
+    CARD8           *ProbeFlags,
+    const IOADDRESS IOBase,
+    const int       Count,
+    const CARD8     ProbeFlag
 )
 {
     CARD32 FirstPort = LongPort(IOBase),
@@ -625,7 +625,7 @@ static ATIPtr
 ATIMach64Probe
 (
     pciVideoPtr       pVideo,
-    const CARD16      IOBase,
+    const IOADDRESS   IOBase,
     const CARD8       IODecoding,
     const ATIChipType Chip
 )
@@ -698,7 +698,7 @@ static ATIPtr
 ATIMach64Probe
 (
     pciVideoPtr       pVideo,
-    const CARD16      IOBase,
+    const IOADDRESS   IOBase,
     const CARD8       IODecoding,
     const ATIChipType Chip
 )
@@ -1004,42 +1004,42 @@ ATIProbe
     int       flags
 )
 {
-    ATIPtr              pATI, *ATIPtrs = NULL;
-    GDevPtr             *GDevs, pGDev;
-    pciVideoPtr         pVideo, *xf86PciVideoInfo = xf86GetPciVideoInfo();
-    pciConfigPtr        pPCI;
-    ATIGDev             *ATIGDevs = NULL, *pATIGDev;
-    ScrnInfoPtr         pScreenInfo;
-    CARD32              PciReg;
-    Bool                ProbeSuccess = FALSE;
-    Bool                DoRage128 = FALSE, DoRadeon = FALSE;
-    int                 i, j, k;
-    int                 nGDev, nATIGDev = -1, nATIPtr = 0;
-    int                 Chipset;
-    ATIChipType         Chip;
+    ATIPtr                 pATI, *ATIPtrs = NULL;
+    GDevPtr                *GDevs, pGDev;
+    pciVideoPtr            pVideo, *xf86PciVideoInfo = xf86GetPciVideoInfo();
+    pciConfigPtr           pPCI;
+    ATIGDev                *ATIGDevs = NULL, *pATIGDev;
+    ScrnInfoPtr            pScreenInfo;
+    CARD32                 PciReg;
+    Bool                   ProbeSuccess = FALSE;
+    Bool                   DoRage128 = FALSE, DoRadeon = FALSE;
+    int                    i, j, k;
+    int                    nGDev, nATIGDev = -1, nATIPtr = 0;
+    int                    Chipset;
+    ATIChipType            Chip;
 
 #ifndef AVOID_CPIO
 
-    ATIPtr              pVGA = NULL, p8514 = NULL;
-    ATIPtr              pMach64[3] = {NULL, NULL, NULL};
-    pciConfigPtr        *xf86PciInfo = xf86GetPciConfigInfo();
-    PortPtr             PCIPorts = NULL;
-    int                 nPCIPort = 0;
-    CARD8               fChipsets[ATI_CHIPSET_MAX];
-    static const CARD16 Mach64SparseIOBases[] = {0x02ECU, 0x01CCU, 0x01C8U};
-    CARD8               ProbeFlags[LongPort(SPARSE_IO_BASE) + 1];
+    ATIPtr                 pVGA = NULL, p8514 = NULL;
+    ATIPtr                 pMach64[3] = {NULL, NULL, NULL};
+    pciConfigPtr           *xf86PciInfo = xf86GetPciConfigInfo();
+    PortPtr                PCIPorts = NULL;
+    int                    nPCIPort = 0;
+    CARD8                  fChipsets[ATI_CHIPSET_MAX];
+    static const IOADDRESS Mach64SparseIOBases[] = {0x02ECU, 0x01CCU, 0x01C8U};
+    CARD8                  ProbeFlags[LongPort(SPARSE_IO_BASE) + 1];
 
-    unsigned long       BIOSBase;
-    static const CARD8  ATISignature[] = " 761295520";
-#   define              SignatureSize 10
-#   define              PrefixSize    0x50U
-#   define              BIOSSignature 0x30U
-    CARD8               BIOS[PrefixSize];
-#   define              BIOSWord(_n)  (BIOS[_n] | (BIOS[(_n) + 1] << 8))
+    unsigned long          BIOSBase;
+    static const CARD8     ATISignature[] = " 761295520";
+#   define                 SignatureSize 10
+#   define                 PrefixSize    0x50U
+#   define                 BIOSSignature 0x30U
+    CARD8                  BIOS[PrefixSize];
+#   define                 BIOSWord(_n)  (BIOS[_n] | (BIOS[(_n) + 1] << 8))
 
 #endif /* AVOID_CPIO */
 
-#   define              AddAdapter(_p)                                     \
+#   define                 AddAdapter(_p)                                  \
     do                                                                     \
     {                                                                      \
         nATIPtr++;                                                         \

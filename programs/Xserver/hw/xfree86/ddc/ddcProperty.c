@@ -3,7 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.7 2001/04/05 17:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.8 2001/07/14 19:38:29 paulo Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -24,7 +24,6 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
     Atom EDID1Atom=-1, EDID2Atom=-1, VDIFAtom=-1;
     CARD8 *EDID1rawdata = NULL;
     CARD8 *EDID2rawdata = NULL;
-    CARD8 *VDIFrawdata = NULL;
     int  i, ret;
     Bool  makeEDID1prop = FALSE;
     Bool  makeEDID2prop = FALSE;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.8 2001/07/25 15:05:29 dawes Exp $ */
+/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.9 2001/08/01 00:45:07 tsi Exp $ */
 
 #include "RxI.h"
 #include "XUrls.h"
@@ -63,11 +63,7 @@ MyBestHostname (
   char* display_name, 
   char* dest_url)
 {
-  struct sockaddr_in local, remote;
-  struct hostent* hp;
   struct utsname host;
-  int s, rv, namelen;
-  char dest_hostname[MAXHOSTNAMELEN + 1];
 
   *myname = '\0';
 
@@ -76,6 +72,11 @@ MyBestHostname (
 
 /* for some reason this doesn't work on Solaris 2.x */
 #if !(defined(sun) && defined(SVR4))
+    struct sockaddr_in local, remote;
+    struct hostent* hp;
+    int s, rv, namelen;
+    char dest_hostname[MAXHOSTNAMELEN + 1];
+
     ParseHostname (dest_url, dest_hostname, sizeof dest_hostname);
 
     hp = gethostbyname (dest_hostname);
@@ -161,7 +162,7 @@ MyBestHostname (
 char *
 GetXUrl(char *display_name, char *auth, char* dest_url)
 {
-    char *dpy_name, *proto;
+    char *dpy_name, *proto = NULL;
     char *url, *ptr;
     char *name;
     struct hostent *host;
@@ -236,7 +237,7 @@ GetXUrl(char *display_name, char *auth, char* dest_url)
 char *
 GetXPrintUrl(char *display_name, char *printer, char *auth, char* dest_url)
 {
-    char *dpy_name, *proto;
+    char *dpy_name, *proto = NULL;
     char *url, *ptr;
     char *name;
     struct hostent *host;

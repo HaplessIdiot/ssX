@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.7 2001/08/01 00:44:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.8 2001/08/23 13:01:36 alanh Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -148,7 +148,7 @@ static
 int ProcQueryVersion (client)
     register ClientPtr client;
 {
-    REQUEST (xXcupQueryVersionReq);
+    /* REQUEST (xXcupQueryVersionReq); */
     xXcupQueryVersionReply rep;
     register int n;
 

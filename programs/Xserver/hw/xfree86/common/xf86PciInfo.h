@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.109 2001/10/04 18:28:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.110 2001/10/24 09:28:44 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -484,6 +484,15 @@
 #define PCI_CHIP_I128_2		0x2339
 #define PCI_CHIP_I128_T2R	0x493D
 #define PCI_CHIP_I128_T2R4	0x5348
+
+/* Sun */
+#define PCI_CHIP_EBUS		0x1000
+#define PCI_CHIP_HAPPY_MEAL	0x1001
+#define PCI_CHIP_SIMBA		0x5000
+#define PCI_CHIP_PSYCHO		0x8000
+#define PCI_CHIP_SCHIZO		0x8001
+#define PCI_CHIP_SABRE		0xA000
+#define PCI_CHIP_HUMMINGBIRD	0xA001
 
 /* BrookTree */
 #define PCI_CHIP_BT848		0x0350
@@ -1168,10 +1177,13 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0021,		"OC-6151",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_SUN, {
-                                {0x1000,		"EBUS",0 },
-				{0x1001,		"Happy Meal",0 },
-				{0x5000,		"Advanced PCI bridge",0 },
-				{0x8000,		"PCI Bus Module",0 },
+				{PCI_CHIP_EBUS,		"EBUS",0 },
+				{PCI_CHIP_HAPPY_MEAL,	"Happy Meal",0 },
+				{PCI_CHIP_SIMBA,	"Simba Advanced PCI bridge",0 },
+				{PCI_CHIP_PSYCHO,	"U2P PCI host bridge (Psycho)",0 },
+				{PCI_CHIP_SCHIZO,	"PCI host bridge (Schizo)",0 },
+				{PCI_CHIP_SABRE,	"UltraSPARC IIi host bridge (Sabre)",0 },
+				{PCI_CHIP_HUMMINGBIRD,	"UltraSPARC IIi host bridge (Hummingbird)",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_CMD, {
                                 {0x0640,		"640A",0 },

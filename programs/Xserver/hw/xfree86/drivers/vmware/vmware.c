@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.6 2001/08/07 07:04:54 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.7 2001/09/13 08:36:24 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1084,11 +1084,13 @@ VMWAREProbe(DriverPtr drv, int flags)
 	char buildString[sizeof(VMWAREBuildStr)];
 
 	RewriteTagString(VMWAREBuildStr, buildString, sizeof(VMWAREBuildStr));
-	xf86DrvMsg(0, X_PROBED, "%s", buildString);
+	xf86MsgVerb(X_PROBED, 4, "%s", buildString);
 
 	numDevSections = xf86MatchDevice(VMWARE_DRIVER_NAME, &devSections);
 	if (numDevSections <= 0) {
-		xf86DrvMsg(0, X_ERROR, "No vmware driver section\n");
+#ifdef DEBUG
+		xf86MsgVerb(X_ERROR, 0, "No vmware driver section\n");
+#endif
 		return FALSE;
 	}
 	if (xf86GetPciVideoInfo()) {

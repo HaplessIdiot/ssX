@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.2 2000/02/12 03:39:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbsetsp.c,v 3.3 2001/01/17 22:36:37 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -81,13 +81,15 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
     register int	tmpSrc;		/* scratch buffer to collect bits in */
     int			dstBit;		/* offset in bits from beginning of 
 					 * word */
-    register int	nstart; 	/* number of bits from first partial */
-    register int	nend; 		/* " " last partial word */
     int			offSrc;
-    int		startmask, endmask, nlMiddle, nl;
+    int			nl;
 #if PSZ == 24
     register char *psrcb, *pdstb;
     register int	xIndex;
+#else
+    register int	nstart; 	/* number of bits from first partial */
+    register int	nend; 		/* " " last partial word */
+    int			startmask, endmask, nlMiddle;
 #endif
     DeclareMergeRop()
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_init.c,v 1.2 2001/08/17 22:08:15 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -39,8 +39,8 @@ static char fb_dev[PATH_MAX] = "/dev/console";
 void
 xf86OpenConsole(void)
 {
-    int fd, i;
 #ifdef HAS_USL_VTS
+    int fd, i;
     struct vt_mode VT;
     struct vt_stat vtinfo;
     int FreeVTslot;

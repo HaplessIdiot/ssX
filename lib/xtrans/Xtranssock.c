@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.49 2001/01/19 06:41:02 keithp Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.50 2001/07/25 15:04:59 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -941,7 +941,7 @@ TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port)
 	    return TRANS_CREATE_LISTENER_FAILED;
 	}
     } else {
-	sprintf (sockname.sun_path, "%s%d", UNIX_PATH, getpid());
+	sprintf (sockname.sun_path, "%s%ld", UNIX_PATH, (long)getpid());
     }
 
 #if defined(BSD44SOCKETS) && !defined(Lynx)

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XListDev.c,v 3.1 1998/10/03 09:06:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XListDev.c,v 3.2 2001/01/17 19:42:50 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -67,8 +67,8 @@ XDeviceInfo
     int				size;
     xListInputDevicesReq 	*req;
     xListInputDevicesReply	rep;
-    xDeviceInfo 		*list, *slist;
-    XDeviceInfo 		*sclist;
+    xDeviceInfo 		*list, *slist = NULL;
+    XDeviceInfo 		*sclist = NULL;
     XDeviceInfo 		*clist = NULL;
     xAnyClassPtr 		any, sav_any;
     XAnyClassPtr 		Any;

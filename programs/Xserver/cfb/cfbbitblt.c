@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.11 2000/09/26 15:57:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.12 2001/01/17 22:36:34 dawes Exp $ */
 
 /*
 
@@ -76,7 +76,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     void (*doBitBlt)();
     unsigned long bitPlane;
 {
-    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    RegionPtr prgnSrcClip = NULL; /* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
 
     RegionPtr prgnExposed;
@@ -413,8 +413,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     CfbBits endmask;		/* right edge pixel mask */
     register int nlMiddle;   /* number of words in middle of the row to draw */
     register int nl;
-    int firstoff;
-    int secondoff;
+    int firstoff = 0;
+    int secondoff = 0;
     CfbBits src;
     int nbox;		/* number of boxes in region to copy */
     BoxPtr  pbox;	/* steps thru boxes in region */
@@ -757,7 +757,9 @@ cfbCopyPlane1to32 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     register unsigned int  bits, tmp;
     register unsigned int  fgpixel, bgpixel;
     register unsigned int  src;
+#if PSZ == 24
     register unsigned int  dst;
+#endif
     register int  leftShift, rightShift;
     register int  i, nl;
     int nbox;
@@ -1069,10 +1071,10 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     unsigned long	bitPlane;
 {
     RegionPtr	ret;
-    extern RegionPtr    miHandleExposures();
-    void		(*doBitBlt)();
 
 #if IMAGE_BYTE_ORDER == LSBFirst
+
+    void		(*doBitBlt)();
 
     if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == PSZ)
     {

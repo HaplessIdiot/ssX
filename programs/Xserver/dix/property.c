@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.8 2001/01/17 22:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.9 2001/08/01 00:44:48 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -651,7 +651,7 @@ int
 ProcListProperties(client)
     ClientPtr client;
 {
-    Atom *pAtoms, *temppAtoms;
+    Atom *pAtoms = NULL, *temppAtoms;
     xListPropertiesReply xlpr;
     int	numProps = 0;
     WindowPtr pWin;

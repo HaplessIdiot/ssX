@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.6 2000/07/15 00:27:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.7 2001/08/01 00:44:47 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -58,6 +58,7 @@ SOFTWARE.
 #include "colormap.h"
 #include "miscstruct.h"
 #include "mibstore.h"
+#include "mfb.h"
 
 extern int afbInverseAlu[];
 extern int afbScreenPrivateIndex;
@@ -1257,6 +1258,7 @@ typedef struct _afbpos{
 			case GXandInverted: \
 				result = fnANDINVERTED (src, dst); \
 				break; \
+			default: \
 			case GXnoop: \
 				result = fnNOOP (src, dst); \
 				break; \

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.6 2000/02/12 03:39:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgetsp.c,v 3.7 2001/01/17 22:36:35 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -79,15 +79,17 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     int			widthSrc;	/* width of pixmap in bytes */
     register DDXPointPtr pptLast;	/* one past last point to get */
     int         	xEnd;		/* last pixel to copy from */
-    register int	nstart; 
-    int	 		nend; 
-    PixelGroup		startmask, endmask;
-    int			nlMiddle, nl, srcBit;
+    int			nl, srcBit;
     int			w;
     PixelGroup		*pdstNext;
 #if PSZ == 24
     register char *psrcb, *pdstb;
     register int xIndex = 0;
+#else
+    register int	nstart; 
+    int	 		nend; 
+    PixelGroup		startmask, endmask;
+    int			nlMiddle;
 #endif
 
     switch (pDrawable->bitsPerPixel) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.4 2000/02/12 03:39:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillsp.c,v 3.5 2001/01/17 22:36:35 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -416,7 +416,7 @@ int fSorted;
     CfbBits	    tmpSrc, tmpDst1, tmpDst2;
     int			    stwidth, stippleWidth;
     CfbBits	    *psrcS;
-    int			    rop, stiprop;
+    int			    rop, stiprop = 0;
     int			    stippleHeight;
     int			    *pwidthFree;    /* copies of the pointers to free */
     DDXPointPtr		    pptFree;
@@ -837,7 +837,6 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     CfbBits   *pbits;		/* pointer to start of pixmap */
     register CfbBits  xor;
-    register CfbBits  mask;
     register CfbBits  bits;	/* bits from stipple */
     int		    wEnd;
 
@@ -898,8 +897,8 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    {
 		if (startmask)
 		{
-		    *dst = *dst & ~startmask |
-			   GetPixelGroup (bits) & startmask;
+		    *dst = (*dst & ~startmask) |
+			   (GetPixelGroup (bits) & startmask);
 		    dst++;
 		    RotBitsLeft (bits, PGSZB);
 		}
@@ -910,8 +909,8 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		}
 		if (endmask)
 		{
-		    *dst = *dst & ~endmask |
-			   GetPixelGroup (bits) & endmask;
+		    *dst = (*dst & ~endmask) |
+			   (GetPixelGroup (bits) & endmask);
 		}
 	    }
 	    else
@@ -922,8 +921,8 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		nlwTmp = nlw;
 		if (startmask)
 		{
-		    *dstTmp = *dstTmp & ~startmask |
-			   GetPixelGroup (bits) & startmask;
+		    *dstTmp = (*dstTmp & ~startmask) |
+			      (GetPixelGroup (bits) & startmask);
 		    dstTmp++;
 		    RotBitsLeft (bits, PGSZB);
 		}
@@ -947,7 +946,7 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		{
 		    dst = dstTmp + (nlwTmp << 3);
 		    *dst = (*dst & ~endmask) |
-			   GetPixelGroup (bits) & endmask;
+			   (GetPixelGroup (bits) & endmask);
 		}
 		while (w--)
 		{

@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.8 2001/06/25 20:40:17 paulo Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.9 2001/08/01 00:45:04 tsi Exp $ */
 
 #include	<stdlib.h>
 #include	<sys/types.h>
@@ -83,7 +83,6 @@ int
 main(int argc, char *argv[])
 {
     int         i, oldumask;
-    struct passwd *pwent;
 
     argcGlobal = argc;
     argvGlobal = argv;

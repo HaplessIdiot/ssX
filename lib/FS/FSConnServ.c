@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.8 2001/07/23 13:15:41 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.9 2001/07/25 15:04:42 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"FSlibint.h"
@@ -75,7 +75,7 @@ XtransConnInfo
 _FSConnectServer(server_name)
     char       *server_name;
 {
-    XtransConnInfo trans_conn;		/* transport connection object */
+    XtransConnInfo trans_conn = NULL;	/* transport connection object */
     int retry, connect_stat;
     int  madeConnection = 0;
 

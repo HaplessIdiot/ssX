@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.52 2001/06/15 21:22:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.54 2001/10/01 13:44:03 eich Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -1425,10 +1425,7 @@ comp_lmn(ApmPtr pApm, long clock)
           f = (int)(k * fvco/1000.0 + c + 0.5);
           if (f > 7) f = 7;
           if (f < 0) f = 0;
-        }
-
-        if (pApm->Chipset < AT24) /* i.e AP6422 */
-        {
+        } else { /* i.e AP6422 */
           c = (211.0*6.0-169.0*4.5)/(211.0-169.0);
           k = (4.5-c)/211.0;
           f = (int)(k * fvco/1000.0 + c + 0.5);

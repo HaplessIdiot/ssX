@@ -66,7 +66,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.21 2000/02/21 01:16:28 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.22 2001/01/17 22:36:44 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -84,9 +84,8 @@ SOFTWARE.
 #ifdef PANORAMIX
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
-#else
-#include "dixevents.h"
 #endif
+#include "dixevents.h"
 #include "globals.h"
 
 #ifdef XAPPGROUP
@@ -2255,7 +2254,7 @@ ConfigureWindow(pWin, mask, vlist, client)
 #define REBORDER_WIN   3
     register WindowPtr pSib = NullWindow;
     register WindowPtr pParent = pWin->parent;
-    Window sibwid;
+    Window sibwid = 0;
     Mask index2, tmask;
     register XID *pVlist;
     short x,   y, beforeX, beforeY;
@@ -3135,7 +3134,7 @@ UnmapSubwindows(pWin)
     Bool wasViewable = (Bool)pWin->viewable;
     Bool anyMarked = FALSE;
     Mask parentNotify;
-    WindowPtr pLayerWin;
+    WindowPtr pLayerWin = NULL;
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
     if (!pWin->firstChild)
@@ -3500,7 +3499,7 @@ TileScreenSaver(i, kind)
     CursorMetricRec cm;
     unsigned char *srcbits, *mskbits;
     CursorPtr cursor;
-    XID	    cursorID;
+    XID	cursorID = 0;
     int	attri;
 
     mask = 0;

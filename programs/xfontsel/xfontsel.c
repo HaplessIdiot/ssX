@@ -31,7 +31,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.5 2001/08/01 00:45:03 tsi Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.6 2001/08/17 13:27:57 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,7 +84,7 @@ void SetCurrentFont();
 void QuitAction();
 
 XtActionsRec xfontsel_actions[] = {
-    "Quit",	    QuitAction
+    {"Quit",	    QuitAction}
 };
 
 Atom wm_delete_window;
@@ -1110,7 +1110,7 @@ void SetCurrentFont(closure)
 	    currentFontNameString[pos++] = DELIM;
 	    if ((i = currentFont.value_index[f]) != -1) {
 		FieldValue *val = &fieldValues[f]->value[i];
-		if (str = val->string)
+		if ((str = val->string))
 		    len = strlen(str);
 		else {
 		    str = "";
@@ -1291,7 +1291,6 @@ void DisableScaled(f, f1, f2)
     int i, j;
     FieldValue *v;
     int *font;
-    char *str;
 
     for (i = fieldValues[f]->count, v = fieldValues[f]->value; --i >= 0; v++) {
 	if (!v->enable || !v->string || !strcmp(v->string, "0"))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.92 2001/09/14 19:15:35 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.94 2001/10/01 13:44:07 eich Exp $ */
 
 
 /* All drivers should typically include these */
@@ -102,12 +102,14 @@ static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 static void MGANAME(SetupForDashedLine)(ScrnInfoPtr pScrn, int fg, int bg,
 				int rop, unsigned int planemask, int length,
     				unsigned char *pattern);
 static void MGANAME(SubsequentDashedTwoPointLine)(ScrnInfoPtr pScrn,
 				int x1, int y1, int x2, int y2,
 				int flags, int phase);
+#endif
 void MGANAME(RestoreAccelState)(ScrnInfoPtr pScrn);
 #if PSZ == 8
 void Mga16RestoreAccelState(ScrnInfoPtr pScrn);
@@ -794,7 +796,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->ScanlineCPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
 	infoPtr->SolidFillFlags |= NO_PLANEMASK;
 	infoPtr->SolidLineFlags |= NO_PLANEMASK;
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 	infoPtr->DashedLineFlags |= NO_PLANEMASK;
+#endif
 	infoPtr->Mono8x8PatternFillFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
 	infoPtr->FillSolidRectsFlags |= NO_PLANEMASK;
@@ -1862,6 +1866,7 @@ static void MGANAME(SubsequentImageWriteScanline)(
     }
 }
 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 
 	/***************************\
 	|      Dashed  Lines        |
@@ -1972,6 +1977,7 @@ MGANAME(SubsequentDashedTwoPointLine)(
     }
 }
 
+#endif /* X_BYTE_ORDER == X_LITTLE_ENDIAN */
 
 #if PSZ != 24
 

@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.4 2001/01/17 22:36:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.5 2001/08/01 00:44:46 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -166,13 +166,9 @@ InitializeRasterDriver(
      int argc,
      char **argv)
 {
-    char specifier[MAX_TOKEN_LEN];
-    int xRes, yRes, maxWidth, maxHeight;
+    int xRes, yRes;
     int maxRes, maxDim, numBytes;
     RasterScreenPrivPtr pPriv;
-    XpDriverFuncsPtr pFuncs;
-    char **printerNames, *printDescFile;
-    int numPrinters;
     
     /*
      * Register this driver's InitContext function with the print extension.
@@ -265,7 +261,6 @@ StartJob(
 {
     RasterContextPrivPtr pConPriv = (RasterContextPrivPtr)
 			 pCon->devPrivates[RasterContextPrivateIndex].ptr;
-    char *jobHeader;
 
     /*
      * Check for existing page file, and delete it if it exists.
@@ -334,7 +329,6 @@ BuildArgVector(
     int argCount)
 {
     char *curArg, *lastChar, *endArg;
-    int optionLen;
 
     curArg = optionList;
     lastChar = optionList + strlen(optionList); /* includes final NULL */
@@ -436,11 +430,8 @@ StartPage(
      XpContextPtr pCon,
      WindowPtr pWin)
 {
-    register WindowPtr pChild;
     RasterContextPrivPtr pConPriv = (RasterContextPrivPtr)
 			 pCon->devPrivates[RasterContextPrivateIndex].ptr;
-    unsigned short width, height;
-    xEvent event;
 
     if(pConPriv->pPageFile != (FILE *)NULL)
     {
@@ -765,8 +756,7 @@ EndPage(
     RasterContextPrivPtr pConPriv = (RasterContextPrivPtr)
 			 pCon->devPrivates[RasterContextPrivateIndex].ptr;
     struct stat statBuf;
-    char *rasterFileName = (char *)NULL, *pCommand = (char *)NULL, 
-	 *pHeader = (char *)NULL, *pTrailer = (char *)NULL;
+    char *rasterFileName = (char *)NULL, *pCommand = (char *)NULL;
     FILE *pRasterFile = (FILE *)NULL;
 
     if(pConPriv->pageFileName == (char *)NULL)
@@ -1077,8 +1067,7 @@ RasterChangeWindowAttributes(
         status = pScreen->ChangeWindowAttributes(pWin, mask);
         pScreen->ChangeWindowAttributes = RasterChangeWindowAttributes;
     }
-    if(status != TRUE)
-	return status;
+    return status;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shrotpack.h,v 1.2 2000/09/13 23:20:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shrotpack.h,v 1.3 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -60,7 +60,7 @@
 #define SCRWIDTH(x,y,w,h)   (h)
 #define FIRSTSHA(x,y,w,h)   ((y) * shaStride + (x + w - 1))
 #define STEPDOWN(x,y,w,h)   ((w)--)
-#define NEXTY(x,y,w,h)	    (x)
+#define NEXTY(x,y,w,h)	    ((void)(x))
 #define SHASTEPX(stride)    (stride)
 #define SHASTEPY(stride)    (-1)
 
@@ -71,7 +71,7 @@
 #define SCRWIDTH(x,y,w,h)   (w)
 #define FIRSTSHA(x,y,w,h)   ((y + h - 1) * shaStride + (x + w - 1))
 #define STEPDOWN(x,y,w,h)   ((h)--)
-#define NEXTY(x,y,w,h)	    (y)
+#define NEXTY(x,y,w,h)	    ((void)(y))
 #define SHASTEPX(stride)    (-1)
 #define SHASTEPY(stride)    -(stride)
 
@@ -104,9 +104,8 @@ FUNC (ScreenPtr	    pScreen,
     int		shaXoff, shaYoff;   /* XXX assumed to be zero */
     int		x, y, w, h, width;
     int         i;
-    Data	*winBase, *winLine, *win;
+    Data	*winBase = NULL, *win;
     CARD32	winSize;
-    int		plane;
 
     fbGetDrawable (&pShadow->drawable, shaBits, shaStride, shaBpp, shaXoff, shaYoff);
     shaBase = (Data *) shaBits;

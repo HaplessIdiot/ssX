@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.12 2001/08/18 02:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.13 2001/08/22 22:52:19 dawes Exp $ */
 
 /*
 
@@ -3003,7 +3003,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	user_name = _XtGetUserName(nam_buf, sizeof nam_buf);
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
-	sprintf(pid, "%d", getpid());
+	sprintf(pid, "%ld", (long)getpid());
 	props[num_props++] = ArrayPack(SmProcessID, &pidp);
 
 	if (num_props) {

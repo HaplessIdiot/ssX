@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.13 2001/08/01 00:44:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.14 2001/08/17 22:08:11 tsi Exp $ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -303,7 +303,7 @@ BuildPrinterAttrs(
 
     if(systemAttributes.printers != (XrmDatabase)NULL)
     {
-        char *dirName, *fileName;
+        char *fileName;
         XrmDatabase modelDB = (XrmDatabase)NULL;
         XrmName xrm_name[5], xrm_class[2];
         XrmRepresentation rep_type;
@@ -603,7 +603,6 @@ XpGetOneAttribute(
 {
     ContextAttrPtr pCtxtAttrs;
     XrmDatabase db = (XrmDatabase)NULL;
-    char *retVal;
     XrmName xrm_name[3];
     XrmRepresentation rep_type;
     XrmValue value;
@@ -854,7 +853,6 @@ XpGetAttributes(
 {
     ContextAttrPtr pCtxtAttrs;
     XrmDatabase db = (XrmDatabase)NULL;
-    char *retVal;
     StringDbStruct enumStruct;
     XrmQuark empty = NULLQUARK;
 
@@ -1137,8 +1135,6 @@ SendFileToCommand(
     }
     else
     {
-	int res;
-
 	(void) close(pipefd[0]);
 
  	outPipe = fdopen(pipefd[1], "w");
@@ -1370,8 +1366,8 @@ VectorizeCommand(
     char ***pVector,
     XpContextPtr pContext)
 {
-    char *cmdName, *curTok;
-    int i, numChars;
+    char *cmdName;
+    int numChars;
 
     if(command == (char *)NULL)
 	return (char *)NULL;
@@ -1397,7 +1393,7 @@ XpSubmitJob(
      char *fileName,
      XpContextPtr pContext)
 {
-    char **vector, *cmdNam, *cmdOpt, *command, *userName;
+    char **vector, *cmdNam, *command, *userName;
     int i;
 
     command = XpGetOneAttribute(pContext, XPPrinterAttr, "xp-spooler-command");
@@ -1508,7 +1504,6 @@ XpGetTrayMediumFromContext(XpContextPtr pCon,
 {
     char *defMedium, *defTray;
     char *t, *m;
-    char *pS, *pE, *pLast;
     
     defMedium = XpGetOneAttribute( pCon, XPPageAttr, 
 				  "default-medium" );

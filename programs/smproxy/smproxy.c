@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/smproxy/smproxy.c,v 3.6 2001/01/17 23:45:05 dawes Exp $ */
+/* $XFree86: xc/programs/smproxy/smproxy.c,v 3.7 2001/08/01 00:45:02 tsi Exp $ */
 
 #include "smproxy.h"
 #include <unistd.h>
@@ -269,7 +269,7 @@ Bool has_WM_SAVEYOURSELF;
 	prop1val.value = (SmPointer) winInfo->wm_command[0];
 	prop1val.length = strlen (winInfo->wm_command[0]);
     
-	sprintf (userId, "%d", getuid());
+	sprintf (userId, "%ld", (long)getuid());
 	prop2.name = SmUserID;
 	prop2.type = SmARRAY8;
 	prop2.num_vals = 1;
@@ -978,7 +978,7 @@ SmPointer clientData;
 	prop1val.value = Argv[0];
 	prop1val.length = strlen (Argv[0]);
 
-	sprintf (userId, "%d", getuid());
+	sprintf (userId, "%ld", (long)getuid());
 	prop2.name = SmUserID;
 	prop2.type = SmARRAY8;
 	prop2.num_vals = 1;

@@ -14,11 +14,12 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
+/* $XFree86$ */
 
-
-#include <freetype/internal/ftobjs.h>
-#include <freetype/ftoutln.h>
-#include <freetype/ftsynth.h>
+#include <ft2build.h>
+#include FT_INTERNAL_OBJECTS_H
+#include FT_OUTLINE_H
+#include FT_SYNTHESIS_H
 
 
 #define FT_BOLD_THRESHOLD  0x0100
@@ -70,9 +71,9 @@
 
   /* Compute the norm of a vector */
 
-#ifdef FT_CONFIG_OPTION_OLD_CALCS
-
 #include <freetype/internal/ftcalc.h>
+
+#ifdef FT_CONFIG_OPTION_OLD_CALCS
 
   static
   FT_Pos  ft_norm( FT_Vector*  vec )

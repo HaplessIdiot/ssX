@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.26 2001/01/17 19:42:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.27 2001/01/30 15:03:34 paulo Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -983,7 +983,7 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	 * or similar function, to speed up */
 	if ((anchor = XawTextSourceFindAnchor(w, left))) {
 	    XawTextEntity *eprev, *entity, *enext;
-	    XawTextPosition offset, diff = block->length - (right - left);
+	    XawTextPosition offset = 0, diff = block->length - (right - left);
 
 	    for (i = 0; i < src->textSrc.num_anchors; i++)
 		if (src->textSrc.anchors[i] == anchor)

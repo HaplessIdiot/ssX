@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.10 2001/07/19 04:41:12 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.12 2001/09/07 15:15:31 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -761,14 +761,13 @@ fbCombineSaturateU (FbCompositeOperand   *src,
 		    FbCompositeOperand   *msk,
 		    FbCompositeOperand   *dst)
 {
-    CARD32  s, d;
+    CARD32  s = fbCombineMaskU (src, msk), d;
+#if 0
     CARD16  sa, da;
     CARD16  ad, as;
     CARD16  t;
     CARD32  m,n,o,p;
     
-    s = fbCombineMaskU (src, msk);
-#if 0
     d = (*dst->fetch) (dst);
     sa = s >> 24;
     da = ~d >> 24;
@@ -927,7 +926,7 @@ fbCombineDisjointGeneralU (FbCompositeOperand   *src,
     da = d >> 24;
     
     switch (combine & CombineA) {
-    case 0:
+    default:
 	Fa = 0;
 	break;
     case CombineAOut:
@@ -942,7 +941,7 @@ fbCombineDisjointGeneralU (FbCompositeOperand   *src,
     }
     
     switch (combine & CombineB) {
-    case 0:
+    default:
 	Fb = 0;
 	break;
     case CombineBOut:
@@ -985,7 +984,7 @@ fbCombineDisjointGeneralC (FbCompositeOperand   *src,
     da = d >> 24;
     
     switch (combine & CombineA) {
-    case 0:
+    default:
 	Fa = 0;
 	break;
     case CombineAOut:
@@ -1008,7 +1007,7 @@ fbCombineDisjointGeneralC (FbCompositeOperand   *src,
     }
     
     switch (combine & CombineB) {
-    case 0:
+    default:
 	Fb = 0;
 	break;
     case CombineBOut:
@@ -1228,7 +1227,6 @@ fbCombineConjointGeneralU (FbCompositeOperand   *src,
     CARD32  m,n,o,p;
     CARD16  Fa, Fb, t, u, v;
     CARD8   sa, da;
-    CARD32  rp;
 
     s = fbCombineMaskU (src, msk);
     sa = s >> 24;
@@ -1237,7 +1235,7 @@ fbCombineConjointGeneralU (FbCompositeOperand   *src,
     da = d >> 24;
     
     switch (combine & CombineA) {
-    case 0:
+    default:
 	Fa = 0;
 	break;
     case CombineAOut:
@@ -1252,7 +1250,7 @@ fbCombineConjointGeneralU (FbCompositeOperand   *src,
     }
     
     switch (combine & CombineB) {
-    case 0:
+    default:
 	Fb = 0;
 	break;
     case CombineBOut:
@@ -1295,7 +1293,7 @@ fbCombineConjointGeneralC (FbCompositeOperand   *src,
     da = d >> 24;
     
     switch (combine & CombineA) {
-    case 0:
+    default:
 	Fa = 0;
 	break;
     case CombineAOut:
@@ -1318,7 +1316,7 @@ fbCombineConjointGeneralC (FbCompositeOperand   *src,
     }
     
     switch (combine & CombineB) {
-    case 0:
+    default:
 	Fb = 0;
 	break;
     case CombineBOut:
@@ -1948,7 +1946,7 @@ fbFetcha_a1 (FbCompositeOperand *op)
     CARD32  pixel = ((CARD32 *)line)[offset >> 5];
     CARD32  a;
 #if BITMAP_BIT_ORDER == MSBFirst
-    a = pixel >> (0x1f - offset & 0x1f);
+    a = pixel >> (0x1f - (offset & 0x1f));
 #else
     a = pixel >> (offset & 0x1f);
 #endif
@@ -1968,7 +1966,7 @@ fbFetch_a1 (FbCompositeOperand *op)
     CARD32  pixel = ((CARD32 *)line)[offset >> 5];
     CARD32  a;
 #if BITMAP_BIT_ORDER == MSBFirst
-    a = pixel >> (0x1f - offset & 0x1f);
+    a = pixel >> (0x1f - (offset & 0x1f));
 #else
     a = pixel >> (offset & 0x1f);
 #endif
@@ -1986,7 +1984,7 @@ fbFetch_g1 (FbCompositeOperand *op)
     CARD32  pixel = ((CARD32 *)line)[offset >> 5];
     CARD32  a;
 #if BITMAP_BIT_ORDER == MSBFirst
-    a = pixel >> (0x1f - offset & 0x1f);
+    a = pixel >> (0x1f - (offset & 0x1f));
 #else
     a = pixel >> (offset & 0x1f);
 #endif

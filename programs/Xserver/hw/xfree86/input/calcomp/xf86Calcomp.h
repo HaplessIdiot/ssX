@@ -26,7 +26,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.h,v 1.2 1999/02/01 12:13:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.h,v 1.1 2001/08/12 22:48:43 alanh Exp $ */
 
 #ifndef	_CALCOMP_H_
 #define _CALCOMP_H_
@@ -121,7 +121,9 @@ CALCOMPPrivateRec, *CALCOMPPrivatePtr;
 /******************************************************************************
  *		Declarations
  *****************************************************************************/
+#ifdef XFree86LOADER
 static MODULESETUPPROTO( CalcompSetupProc );
+#endif
 /*static void TearDownProc (pointer p);*/
 static Bool DeviceControl (DeviceIntPtr, int);
 static Bool DeviceOn (DeviceIntPtr);

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.84 2001/08/07 07:04:52 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.85 2001/08/18 02:51:13 dawes Exp $ */
 
 /*
  * Authors:
@@ -2018,7 +2018,9 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   TDFXPtr pTDFX;
   VisualPtr visual;
   BoxRec MemBox;
+#ifdef XF86DRI
   MessageType driFrom = X_DEFAULT;
+#endif
   int scanlines;
 
   TDFXTRACE("TDFXScreenInit start\n");

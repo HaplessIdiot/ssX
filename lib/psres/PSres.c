@@ -35,9 +35,10 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/psres/PSres.c,v 1.2 2001/08/01 00:44:43 tsi Exp $ */
+/* $XFree86: xc/lib/psres/PSres.c,v 1.3tsi Exp $ */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef XENVIRONMENT
 #include <X11/Xos.h>

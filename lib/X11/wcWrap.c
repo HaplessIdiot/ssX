@@ -47,7 +47,7 @@ from The Open Group.
  * 
  *		 M. Collins		OSF  
  */				
-/* $XFree86: xc/lib/X11/wcWrap.c,v 1.3 2000/11/29 17:40:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/wcWrap.c,v 1.4 2001/01/17 19:41:57 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -73,7 +73,7 @@ XwcDrawText(dpy, d, gc, x, y, text_items, nitems)
     int                 nitems;
 #endif
 {
-    register XFontSet fs;
+    register XFontSet fs = NULL;
     register XwcTextItem *p = text_items;
     register int i = nitems;
     register int esc;

@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.2 2001/09/27 08:34:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.3 2001/09/28 07:45:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -148,7 +148,7 @@ void S3Trio64DAC_Restore(ScrnInfoPtr pScrn)
 	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
 		int i;
 
-		for (0x1a; i <= 0x6f; i++) {
+		for (i = 0x1a; i <= 0x6f; i++) {
 			outb(0x3c4, i);
 			outb(0x3c5, restore->dacregs[i]);
 		}
@@ -159,9 +159,10 @@ void S3Trio64DAC_Restore(ScrnInfoPtr pScrn)
 }
 
 
-int S3TrioCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2,
-		    int max_n2, long freq_min, long freq_max,
-		    unsigned char *mdiv, unsigned char *ndiv)
+static void
+S3TrioCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2,
+		int max_n2, long freq_min, long freq_max,
+		unsigned char *mdiv, unsigned char *ndiv)
 {
 	double ffreq, ffreq_min, ffreq_max;
 	double div, diff, best_diff;
@@ -269,7 +270,6 @@ void S3TrioSetClock(ScrnInfoPtr pScrn, long freq, int clk, int min_m,
 		    int min_n1, int max_n1, int min_n2, int max_n2,
 		    int pll_type, long freq_min, long freq_max)
 {
-	S3Ptr pS3 = S3PTR(pScrn);
 	unsigned char m, n;
 
 	S3TrioCalcClock(freq, min_m, min_n1, max_n1, min_n2, max_n2,
@@ -318,7 +318,6 @@ void S3Trio64DAC_PreInit(ScrnInfoPtr pScrn)
 void S3Trio64DAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
-	S3RegPtr new = &pS3->ModeRegs;
 	int pixmux=0, invert_vclk=0, sr8, sr15, sr18, cr33;
 	unsigned char blank, tmp;
 

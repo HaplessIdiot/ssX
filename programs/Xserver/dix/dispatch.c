@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.23 2001/01/17 22:36:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.24 2001/08/01 00:44:47 tsi Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -279,9 +279,8 @@ SmartScheduleClient (int *clientReady, int nready)
     ClientPtr	pClient;
     int		i;
     int		client;
-    int		bestPrio, best;
+    int		bestPrio, best = 0;
     int		bestRobin, robin;
-    int		prio;
     long	now = SmartScheduleTime;
     long	idle;
 
@@ -2121,7 +2120,7 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
     int			nlines, linesPerBuf;
     register int	linesDone;
     long		widthBytesLine, length;
-    Mask		plane;
+    Mask		plane = 0;
     char		*pBuf;
     xGetImageReply	xgi;
     RegionPtr pVisibleRegion = NULL;
@@ -3360,7 +3359,7 @@ extern int GetHosts();
     xListHostsReply reply;
     int	len, nHosts, result;
     pointer	pdata;
-    REQUEST(xListHostsReq);
+    /* REQUEST(xListHostsReq); */
 
     REQUEST_SIZE_MATCH(xListHostsReq);
 #ifdef XCSECURITY
@@ -3485,7 +3484,7 @@ ProcGetFontPath(client)
     xGetFontPathReply reply;
     int stringLens, numpaths;
     unsigned char *bufferStart;
-    REQUEST (xReq);
+    /* REQUEST (xReq); */
 
     REQUEST_SIZE_MATCH(xReq);
     bufferStart = GetFontPath(&numpaths, &stringLens);
@@ -3911,7 +3910,6 @@ SendConnSetup(client, reason)
     if (reason)
     {
 	xConnSetupPrefix csp;
-	char pad[3];
 
 	csp.success = xFalse;
 	csp.lengthReason = strlen(reason);

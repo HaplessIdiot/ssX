@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
@@ -411,7 +412,7 @@ XdmCheckCookie (cookie_length, cookie, xclient, reason)
 }
 
 int
-XdmResetCookie ()
+XdmResetCookie (void)
 {
     XdmAuthorizationPtr	auth, next_auth;
     XdmClientAuthPtr	client, next_client;

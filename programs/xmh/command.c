@@ -1,5 +1,5 @@
 /* $XConsortium: command.c,v 2.49 95/04/05 19:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/command.c,v 3.5 1998/12/13 07:37:52 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/command.c,v 3.6 2001/08/01 00:45:05 tsi Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -138,7 +138,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 {
     XtAppContext appCtx = XtWidgetToApplicationContext(toplevel);
     int return_status;
-    int old_stdin, old_stdout, old_stderr;
+    int old_stdin = 0, old_stdout = 0, old_stderr = 0;
     int pid;
     fd_set readfds, fds;
     Boolean output_to_pipe = False;

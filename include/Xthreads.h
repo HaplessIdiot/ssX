@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * *
  */
-/* $XFree86: xc/include/Xthreads.h,v 3.7 2000/06/25 16:03:43 tsi Exp $ */
+/* $XFree86: xc/include/Xthreads.h,v 3.8 2001/01/17 17:53:12 dawes Exp $ */
 
 #ifndef _XTHREADS_H_
 #define _XTHREADS_H_
@@ -78,7 +78,6 @@ typedef mutex_t xmutex_rec;
 #endif
 #define xthread_set_specific(k,v) thr_setspecific(k,v)
 #define xthread_get_specific(k,vp) thr_getspecific(k,vp)
-#define XMUTEX_INITIALIZER {0}
 #define xmutex_init(m) mutex_init(m,USYNC_THREAD,0)
 #define xmutex_clear(m) mutex_destroy(m)
 #define xmutex_lock(m) mutex_lock(m)

@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/include/extensions/lbxopts.h,v 1.4 2000/05/18 23:46:11 dawes Exp $ */
+/* $XFree86: xc/include/extensions/lbxopts.h,v 1.5 2001/01/17 17:53:21 dawes Exp $ */
 
 #ifndef _LBX_OPTS_H_
 #define _LBX_OPTS_H_
@@ -52,7 +52,7 @@
 	(size) = LBX_OPT_SMALLLEN_SIZE; \
     } \
     else { \
-	(len) = LBX_OPT_BIGLEN_MIN + (p)[1] << 8 | (p)[2]; \
+	(len) = ((LBX_OPT_BIGLEN_MIN + (p)[1]) << 8) | (p)[2]; \
 	(size) = LBX_OPT_BIGLEN_SIZE; \
     }
 

@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.11 2001/08/18 02:45:19 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.12 2001/08/22 22:52:15 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -823,7 +823,8 @@ typedef struct {
 #elif !defined(XTHREADS) && !defined(X_FORCE_USE_MTSAFE_API)
 /* Use regular, unsafe API. */
 typedef int _Xstrtokparams;	/* dummy */
-# define _XStrtok(s1,s2,p)	strtok((s1),(s2))
+# define _XStrtok(s1,s2,p) \
+ ( (void)(p), strtok((s1),(s2)) )
 
 #elif !defined(XOS_USE_MTSAFE_STRINGAPI) || defined(XNO_MTSAFE_STRINGAPI)
 /* Systems with thread support but no _r API. */

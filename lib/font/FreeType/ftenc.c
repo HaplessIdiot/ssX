@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.16 2000/04/06 15:27:23 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.17 2001/08/13 21:46:46 dawes Exp $ */
 
 /* 
 Copyright (c) 1998 by Juliusz Chroboczek
@@ -59,7 +59,7 @@ ttf_pick_cmap(char *xlfd, int length, char *filename, TT_Face face,
     tm->mapping=0;
     return 0;
   } else {
-    if(encoding=FontEncFind(encoding_name, filename)) {
+    if((encoding=FontEncFind(encoding_name, filename))) {
       for(mapping=encoding->mappings; mapping; mapping=mapping->next) {
         if(!find_cmap(mapping->type, mapping->pid, mapping->eid, face, 
                       &cmap)) {

@@ -1,4 +1,6 @@
+#ifdef UNDEF
 static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 1999/08/10 00:41:55 phelps Exp phelps $";
+#endif
 
 /*
    PolyglotMan by Thomas A. Phelps (phelps@ACM.org)
@@ -16,7 +18,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.12 2000/12/01 18:48:08 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.13 2000/12/21 18:55:27 dawes Exp $ */
 
 
 /* TO DO ****

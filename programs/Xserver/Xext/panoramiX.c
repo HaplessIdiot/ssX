@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.29 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.30 2001/10/14 23:16:59 alanh Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -889,7 +889,7 @@ static void PanoramiXResetProc(ExtensionEntry* extEntry)
 int
 ProcPanoramiXQueryVersion (ClientPtr client)
 {
-    REQUEST(xPanoramiXQueryVersionReq);
+    /* REQUEST(xPanoramiXQueryVersionReq); */
     xPanoramiXQueryVersionReply		rep;
     register 	int			n;
 
@@ -992,7 +992,7 @@ ProcPanoramiXGetScreenSize(ClientPtr client)
 int
 ProcXineramaIsActive(ClientPtr client)
 {
-    REQUEST(xXineramaIsActiveReq);
+    /* REQUEST(xXineramaIsActiveReq); */
     xXineramaIsActiveReply	rep;
 
     REQUEST_SIZE_MATCH(xXineramaIsActiveReq);
@@ -1015,7 +1015,7 @@ ProcXineramaIsActive(ClientPtr client)
 int
 ProcXineramaQueryScreens(ClientPtr client)
 {
-    REQUEST(xXineramaQueryScreensReq);
+    /* REQUEST(xXineramaQueryScreensReq); */
     xXineramaQueryScreensReply	rep;
 
     REQUEST_SIZE_MATCH(xXineramaQueryScreensReq);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.9 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.10 2001/10/20 00:19:34 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -369,7 +369,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 {
     LispObj *obj, *frm, *curframe,
 	    *old_frm = FRM, *old_env = ENV, *old_lex = LEX;
-    int i, frame, matches, action = -1, subaction;
+    int i = 0, frame, matches, action = -1, subaction = 0;
     char *cmd, *arg, *ptr, line[256];
 
     frame = mac->debug_level;

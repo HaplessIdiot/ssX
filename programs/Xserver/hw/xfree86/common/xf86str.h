@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.79 2001/05/18 23:35:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.80 2001/10/01 13:44:02 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -537,6 +537,9 @@ typedef struct _CurrAccRec {
 
 #define ResMem		0x0001
 #define ResIo		0x0002
+#define ResIrq		0x0003
+#define ResDma		0x0004
+#define ResPciCfg	0x000e	/* PCI Configuration space */
 #define ResPhysMask	0x000F
 
 #define ResExclusive	0x0010
@@ -559,6 +562,9 @@ typedef struct _CurrAccRec {
 #define ResMiscMask	0xF000
 
 #define ResBus          0x10000
+
+#define ResDomain	0xff000000ul
+#define ResTypeMask	(ResPhysMask | ResDomain)	/* For conflict check */
 
 #define ResEnd		ResNone
 
@@ -592,7 +598,7 @@ typedef struct _CurrAccRec {
 #define ResIsEstimated(r)	(((r)->type & ResMiscMask) == ResEstimated)
 
 typedef struct {
-    long type;     /* shared, exclusive, unused etc. */
+    unsigned long type;     /* shared, exclusive, unused etc. */
     memType a;
     memType b;
 } resRange, *resList;
@@ -600,7 +606,7 @@ typedef struct {
 #define RANGE(r,u,v,t) {\
                        (r).a = (u);\
                        (r).b = (v);\
-                       (r).type = t;\
+                       (r).type = (t);\
                        }
 
 #define rBase a
@@ -624,13 +630,13 @@ typedef struct _resRec {
 
 typedef struct {
     int numChipset;
-    const resRange *resList;
+    resRange *resList;
 } IsaChipsets;
 
 typedef struct { 
     int numChipset;
     int PCIid;
-    const resRange *resList;
+    resRange *resList;
 } PciChipsets;
 
 /* Entity properties */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.16 2000/03/31 20:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.21 2001/10/01 13:44:09 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -29,12 +29,14 @@ static void SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 static void SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
                 int patternx, int patterny, int x, int y, 
                 int w, int h);
+#if 0
 static void SiSSetupForScreenToScreenColorExpandFill (ScrnInfoPtr pScrn,
                 int fg, int bg, 
                 int rop, unsigned int planemask);
 static void SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
                 int x, int y, int w, int h,
                 int srcx, int srcy, int offset );
+#endif
 static void SiSSetClippingRectangle ( ScrnInfoPtr pScrn,
                     int left, int top, int right, int bottom);
 static void SiSDisableClipping (ScrnInfoPtr pScrn);
@@ -248,16 +250,16 @@ SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
 {
     SISPtr pSiS = SISPTR(pScrn);
     unsigned int  *patternRegPtr;
-    int  i ;
+    int  i;
     int  dstpitch;
-    int  mix = XAAHelpPatternROP(pScrn, &fg, &bg, planemask, &rop);
-    int  isTransparent = (bg == -1);
+
+    (void)XAAHelpPatternROP(pScrn, &fg, &bg, planemask, &rop);
 
     dstpitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8 ;
     sisBLTSync;
     sisSETBGCOLOR(bg);
     sisSETFGCOLOR(fg);
-    if (!isTransparent) {
+    if (bg != -1) {
         sisSETROPBG(0xcc);  /* copy */
     } else {
         sisSETROPBG(0xAA);  /* dst */
@@ -311,6 +313,8 @@ SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx,
     sisSETHEIGHTWIDTH(h-1, w*(pScrn->bitsPerPixel/8)-1);
     sisSETCMD(op);
 }
+
+#if 0
 /*
  * setup for screen-to-screen color expansion
  */
@@ -387,6 +391,7 @@ SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
         widthTodo -= ww ;
     } while ( widthTodo > 0 ) ;
 }
+#endif
 
 static void SiSSetClippingRectangle ( ScrnInfoPtr pScrn,
                 int left, int top, int right, int bottom)

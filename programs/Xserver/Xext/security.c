@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.7 2001/08/06 20:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.8 2001/08/23 13:01:36 alanh Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -312,7 +312,7 @@ static int
 ProcSecurityQueryVersion(client)
     ClientPtr client;
 {
-    REQUEST(xSecurityQueryVersionReq);
+    /* REQUEST(xSecurityQueryVersionReq); */
     xSecurityQueryVersionReply 	rep;
 
     /* paranoia: this "can't happen" because this extension is hidden

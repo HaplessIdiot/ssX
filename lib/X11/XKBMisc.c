@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.3 2001/01/17 19:41:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.4 2001/08/01 00:44:38 tsi Exp $ */
 
 #ifndef XKB_IN_SERVER
 
@@ -969,7 +969,7 @@ XkbApplyVirtualModChanges(xkb,changed,changes)
 #endif
 {
 register int	i;
-unsigned	checkState;
+unsigned int	checkState = 0;
 
     if ((!xkb) || (!xkb->map) || (changed==0))
 	return False;
@@ -1036,8 +1036,7 @@ unsigned	checkState;
 	}
     }
     if (xkb->map && xkb->server) {
-	int	highChange,lowChange;
-	lowChange= -1;
+	int highChange = 0, lowChange = -1;
 	for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
 	    if (XkbKeyHasActions(xkb,i)) {
 		register XkbAction *pAct;

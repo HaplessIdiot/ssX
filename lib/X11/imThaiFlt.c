@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.7 2001/01/17 19:41:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.8 2001/03/01 00:56:52 dawes Exp $ */
 
 /*
 **++ 
@@ -408,6 +408,7 @@ THAI_isaccepted (follow_ch, lead_ch, mode)
     return iskeyvalid;
 }
 
+#if 0
 Private void 
 #if NeedFunctionPrototypes
 THAI_apply_write_rules(
@@ -461,6 +462,7 @@ Output parameters:
         *out_ch = '\0';
     }
 }
+#endif
 
 Private int 
 #if NeedFunctionPrototypes
@@ -541,15 +543,19 @@ THAI_apply_scm(instr, outstr, spec_ch, num_sp, insert_ch)
 
 /* The following functions are copied from XKeyBind.c */
 
+#if 0
 Private void ComputeMaskFromKeytrans();
+#endif
 Private int IsCancelComposeKey();
 Private void SetLed();
 Private CARD8 FindKeyCode();
 
 /* The following functions are specific to this module */ 
 
+#if 0
 Private int XThaiTranslateKey();
 Private int XThaiTranslateKeySym();
+#endif
 
 Private KeySym HexIMNormalKey();
 Private KeySym HexIMFirstComposeKey();
@@ -680,6 +686,7 @@ typedef KeySym (*StateProc)();
 	   !IsShift((event)->state))	\
 	 ? True : False)
 
+#if 0
 /*
  *  State handler to implement the Thai hex input method.
  */
@@ -690,6 +697,7 @@ Private StateProc state_handler[] = {
 	HexIMFirstComposeKey,
 	HexIMSecondComposeKey
 };
+#endif
 
 /*
  *  Table for 'Thai Compose' character input.
@@ -743,6 +751,7 @@ ThaiComposeConvert(dpy, insym, outsym ,lower, upper)
     return False;
 }
 
+#if 0
 Private int
 XThaiTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return,
 	      lsym_return, usym_return)
@@ -835,7 +844,7 @@ XThaiTranslateKeySym(dpy, symbol, lsym, usym, modifiers, buffer, nbytes)
     unsigned char *buffer;
     int nbytes;
 {
-    KeySym ckey;
+    KeySym ckey = 0;
     register struct _XKeytrans *p; 
     int length;
     unsigned long hiBytes;
@@ -930,6 +939,7 @@ XThaiTranslateKeySym(dpy, symbol, lsym, usym, modifiers, buffer, nbytes)
         return 1;
     }
 }
+#endif
 
 /*
  * given a KeySym, returns the first keycode containing it, if any.
@@ -952,7 +962,7 @@ FindKeyCode(dpy, code)
     return 0;
 }
 
-	
+#if 0
 /*
  * given a list of modifiers, computes the mask necessary for later matching.
  * This routine must lookup the key in the Keymap and then search to see
@@ -986,7 +996,7 @@ ComputeMaskFromKeytrans(dpy, p)
     }
     p->state &= AllMods;
 }
-
+#endif
 
 /************************************************************************
  *
@@ -1207,14 +1217,16 @@ XEvent		*ev;
 XPointer	client_data;
 {
     Xic		    ic = (Xic)client_data;
-    unsigned int    modifiers;
     KeySym 	    symbol;
-    KeySym	    lsym,usym;
     int 	    count;
     int 	    isc_mode; /* Thai Input Sequence Check mode */
     unsigned char   previous_char; /* Last inputted Thai char */
+#if 0
+    unsigned int    modifiers;
+    KeySym	    lsym,usym;
     int		    state;
     XicThaiPart     *thai_part;
+#endif
     char	    buf[10];
     int	            i;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.4 2001/01/17 22:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.5 2001/08/23 13:01:36 alanh Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -244,7 +244,7 @@ static
 int ProcXagQueryVersion (client)
     register ClientPtr client;
 {
-    REQUEST (xXagQueryVersionReq);
+    /* REQUEST (xXagQueryVersionReq); */
     xXagQueryVersionReply rep;
     register int n;
 
@@ -571,7 +571,7 @@ static
 int ProcXagDestroyAssoc (client)
     register ClientPtr client;
 {
-    REQUEST (xXagDestroyAssocReq);
+    /* REQUEST (xXagDestroyAssocReq); */
 
     REQUEST_SIZE_MATCH (xXagDestroyAssocReq);
 /* Macintosh, OS/2, and MS-Windows servers have some work to do here */

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.4 2001/01/30 22:06:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.5 2001/08/17 22:08:15 tsi Exp $ */
 
 /*
  * SUN-DES-1 authentication mechanism
@@ -174,12 +174,14 @@ XID	id;
     if (data_length)
 	AddHost ((pointer) 0, FamilyNetname, data_length, data);
     rpc_id = id;
+    return 1;
 }
 
 int
-SecureRPCReset ()
+SecureRPCReset (void)
 {
     rpc_id = (XID) ~0L;
+    return 1;
 }
 
 XID

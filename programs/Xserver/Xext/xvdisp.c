@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.21 2001/07/10 07:49:33 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.23 2001/10/02 18:23:53 eich Exp $ */
 
 /*
 ** File: 
@@ -349,7 +349,7 @@ static int
 ProcXvQueryExtension(ClientPtr client)
 {
   xvQueryExtensionReply rep;
-  REQUEST(xvQueryExtensionReq);
+  /* REQUEST(xvQueryExtensionReq); */
   REQUEST_SIZE_MATCH(xvQueryExtensionReq);
 
   rep.type = X_Reply;

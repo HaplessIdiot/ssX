@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCursor.c,v 3.2 2001/01/17 22:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCursor.c,v 3.3 2001/08/17 22:08:11 tsi Exp $ */
 
 /*-
  * sunCursor.c --
@@ -76,7 +76,6 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     DDXPointPtr	    ptSrc;
     int		    w, h;
 {
-    SetupCursor(pScreen);
     PixmapPtr	src, dst;
     BoxRec	box;
     RegionRec	rgnDst;
@@ -184,7 +183,6 @@ sunMoveCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
 {
-    SetupCursor(pScreen);
     struct fbcurpos pos;
 
     pos.x = x;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/micoord.h,v 1.1 2000/10/23 21:16:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micoord.h,v 1.2 2001/07/24 08:32:58 alanh Exp $ */
 /*
  * Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -28,6 +28,8 @@
 
 #ifndef _MICOORD_H_
 #define _MICOORD_H_ 1
+
+#include "servermd.h"
 
 /* Macros which handle a coordinate in a single register */
 

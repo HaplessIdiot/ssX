@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcPrTxt.c,v 1.5 2000/12/15 22:48:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcPrTxt.c,v 1.6 2001/01/17 19:41:55 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -114,7 +114,7 @@ _XTextPropertyToTextList(
     XPointer **list_ret,
     int *count_ret)
 {
-    XlcConv conv;
+    XlcConv conv = NULL;
     const char *from_type;
     XPointer from, to, buf;
     char *str_ptr, *last_ptr;

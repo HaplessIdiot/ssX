@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.55 2001/06/15 21:22:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.57 2001/10/01 13:44:07 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1141,7 +1141,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    
     } else if (nPtr->pEnt->location.type == BUS_ISA) {
 	unsigned int addr;
-	resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
+	resRange linearRes[] = { {ResExcMemBlock|ResBios|ResBus,0,0},_END };
 	
 	if (!nPtr->NeoLinearAddr) {
 	    VGAwGR(0x09,0x26);

@@ -30,7 +30,7 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.3 2001/04/01 14:00:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.4 2001/05/15 18:22:22 paulo Exp $ */
 
 #include "xf86Version.h"
 
@@ -510,8 +510,6 @@ xf86SumConvert(LocalDevicePtr local,
 	       int v0,
 	       int v1, int v2, int v3, int v4, int v5, int *x, int *y)
 {
-    DigitalEdgeDevicePtr priv = (DigitalEdgeDevicePtr) local->private;
-
     if (first != 0 || num == 1)
 	return FALSE;
 

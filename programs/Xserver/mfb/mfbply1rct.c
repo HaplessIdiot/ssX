@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.4 1999/03/06 13:12:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbply1rct.c,v 1.5 2001/01/17 22:37:03 dawes Exp $ */
 
 #include "X.h"
 
@@ -70,14 +70,14 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     BoxPtr	    extents;
     int		    clip;
     int		    y;
-    int		    *vertex1p, *vertex2p;
+    int		    *vertex1p = NULL, *vertex2p;
     int		    *endp;
-    int		    x1, x2;
-    int		    dx1, dx2;
-    int		    dy1, dy2;
-    int		    e1, e2;
-    int		    step1, step2;
-    int		    sign1, sign2;
+    int		    x1 = 0, x2 = 0;
+    int		    dx1 = 0, dx2 = 0;
+    int		    dy1 = 0, dy2 = 0;
+    int		    e1 = 0, e2 = 0;
+    int		    step1 = 0, step2 = 0;
+    int		    sign1 = 0, sign2 = 0;
     int		    h;
     int		    l, r;
     PixelType	    mask, bits = ~((PixelType)0);
@@ -131,7 +131,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	vertex2p = (int *) ptsIn;
 #define Setup(c,x,vertex,dx,dy,e,sign,step) {\
     x = intToX(vertex); \
-    if (dy = intToY(c) - y) { \
+    if ((dy = intToY(c) - y)) { \
     	dx = intToX(c) - x; \
 	step = 0; \
     	if (dx >= 0) \
@@ -235,7 +235,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	}
 	    	nmiddle >>= PWSH;
 		Duff (nmiddle, *addr++ EQWHOLEWORD)
-	    	if (mask = ~SCRRIGHT(bits, r & PIM))
+	    	if ((mask = ~SCRRIGHT(bits, r & PIM)))
 	    	    *addr OPEQ mask;
 	    }
 	    if (!--h)

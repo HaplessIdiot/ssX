@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.7 1999/10/31 23:52:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.8 2001/10/17 04:52:07 mvojkovi Exp $ */
 
 /*
 
@@ -149,14 +149,19 @@ XAAFillPolyHelper (
     BoxPtr extents = infoRec->ClipBox;
     int left_x, left_e, left_stepx, left_signdx, left_dy, left_dx;
     int right_x, right_e, right_stepx, right_signdx, right_dy, right_dx;
-    int	height;
-    int	left_height = 0;
-    int right_height = 0;
-    int	xorg = 0;
+    int	height, left_height, right_height;
+    int	xorg;
     Bool hardClip;
 
     if((y >= extents->y2) || ((y + overall_height) <= extents->y1))
 	return;
+
+    /* Muffle compiler */
+    left_x = left_e = left_stepx = left_signdx = left_dy = left_dx = 0;
+    right_x = right_e = right_stepx = right_signdx = right_dy = right_dx = 0;
+
+    left_height = right_height = 0;
+    xorg = 0;
 
     hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
     
@@ -258,7 +263,7 @@ XAAWideSegment (
     Bool	hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
 
     /* draw top-to-bottom always */
-    if (y2 < y1 || y2 == y1 && x2 < x1) {
+    if ((y2 < y1) || ((y2 == y1) && (x2 < x1))) {
 	x = x1;
 	x1 = x2;
 	x2 = x;
@@ -291,7 +296,6 @@ XAAWideSegment (
     rightFace->y = y2;
     rightFace->dx = -dx;
     rightFace->dy = -dy;
-
 
     if (!dy) {
 	rightFace->xa = 0;
@@ -346,10 +350,8 @@ XAAWideSegment (
 	ya = -r * dx;
 	xa = r * dy;
 
-	if (projectLeft | projectRight) {
-	    projectXoff = -ya;
-	    projectYoff = xa;
-	}
+	projectXoff = -ya;
+	projectYoff = xa;
 
     	/* xa * dy - ya * dx */
 	k = l * L;
@@ -614,6 +616,8 @@ XAALineArc (
     if (isInt) {
 	xorgi = leftFace ? leftFace->x : rightFace->x;
 	yorgi = leftFace ? leftFace->y : rightFace->y;
+    } else {	/* Muffle compiler */
+        xorgi = yorgi = 0;
     }
     edgey1 = 65536;
     edgey2 = 65536;
@@ -625,8 +629,8 @@ XAALineArc (
     edgeleft2 = FALSE;
 
     if ((pGC->lineWidth > 2) &&
-	(pGC->capStyle == CapRound && pGC->joinStyle != JoinRound ||
-	 pGC->joinStyle == JoinRound && pGC->capStyle == CapButt)) {
+	((pGC->capStyle == CapRound && pGC->joinStyle != JoinRound) ||
+	 (pGC->joinStyle == JoinRound && pGC->capStyle == CapButt))) {
 	if (isInt) {
 	    xorg = (double) xorgi;
 	    yorg = (double) yorgi;
@@ -663,8 +667,8 @@ XAALineJoin (
     LineFacePtr     pLeft,
     LineFacePtr     pRight )
 {
-    double	    mx, my;
-    double	    denom;
+    double	    mx = 0, my = 0;
+    double	    denom = 0;
     PolyVertexRec   vertices[4];
     PolySlopeRec    slopes[4];
     int		    edgecount;

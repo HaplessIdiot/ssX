@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/WaitFor.c,v 1.6 2001/01/17 23:44:59 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/WaitFor.c,v 1.7 2001/07/25 15:05:14 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -146,7 +146,7 @@ WaitForSomething(pClientsReady, poll)
 	    if (dispatchException)
 		return 0;
 	    FD_ZERO(&clientsWritable);
-	    if (i < 0) 
+	    if (i < 0) {
 		if (selecterr == EBADF)    /* Some client disconnected */
 		{
 		    CheckConnections ();
@@ -156,6 +156,7 @@ WaitForSomething(pClientsReady, poll)
 		else if (selecterr != EINTR)
 		    ErrorF("WaitForSomething(): select: errno=%d\n",
 			selecterr);
+	    }
 	}
 	else
 	{

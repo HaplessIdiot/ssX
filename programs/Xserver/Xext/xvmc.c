@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.3 2001/04/01 14:00:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.4 2001/04/07 11:04:21 alanh Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -97,7 +97,7 @@ static int
 ProcXvMCQueryVersion(ClientPtr client)
 {
     xvmcQueryVersionReply rep;
-    REQUEST(xvmcQueryVersionReq);
+    /* REQUEST(xvmcQueryVersionReq); */
     REQUEST_SIZE_MATCH(xvmcQueryVersionReq);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;

@@ -3,7 +3,7 @@
  * 8 bit displays, in Copy mode with no clipping.
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbteblt8.c,v 1.3 2000/02/12 05:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbteblt8.c,v 1.4 2001/01/17 22:36:37 dawes Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -350,7 +350,10 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     glyphPointer	oldRightChar;
     CfbBits	*pdstBase;
     glyphPointer	leftChar;
-    int			widthDst, widthLeft;
+    int			widthDst;
+#ifndef FAST_CONSTANT_OFFSET_MODE
+    int			widthLeft;
+#endif
     int			widthGlyph;
     int			h;
     int			ew;
@@ -451,8 +454,8 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    leftMask = cfbendtab[xoff1];
 		    rightMask = cfbstarttab[xoff1];
 
-#define StoreBits0	StorePixels (0,dst[0] & leftMask | \
-				       GetPixelGroup(c) & rightMask);
+#define StoreBits0	StorePixels (0, (dst[0] & leftMask) | \
+					(GetPixelGroup(c) & rightMask));
 #define GetBits GetBitsNS
 
 		    SwitchEm
@@ -517,7 +520,8 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		leftMask = cfbendtab[xoff1];
 		rightMask = cfbstarttab[xoff1];
 
-#define StoreBits0	StorePixels (0,dst[0] & leftMask | GetPixelGroup(c) & rightMask);
+#define StoreBits0	StorePixels (0, (dst[0] & leftMask) | \
+					(GetPixelGroup(c) & rightMask));
 #define GetBits	WGetBits1S
 
 		SwitchEm

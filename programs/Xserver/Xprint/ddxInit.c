@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.12 2001/03/04 17:40:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.13 2001/06/11 16:59:02 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -74,8 +74,6 @@ InitOutput(
     int     	  argc,
     char    	  **argv)
 {
-    int i;
-
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
     pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
     pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;

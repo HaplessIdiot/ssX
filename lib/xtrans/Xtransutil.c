@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.17 2001/01/17 19:43:49 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.18 2001/07/23 13:15:43 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -324,7 +324,7 @@ TRANS(GetPeerNetworkId) (XtransConnInfo ciptr)
 #ifdef XTHREADS
 	_Xgethostbynameparams hparams;
 #endif
-	struct hostent * hostp = NULL;
+	struct hostent * volatile hostp = NULL;
 
 #ifdef SIGALRM
 	/*

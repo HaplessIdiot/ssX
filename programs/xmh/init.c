@@ -25,7 +25,7 @@
  * without specific, written prior permission.
  *
  */
-/* $XFree86: xc/programs/xmh/init.c,v 1.2 2001/05/25 18:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/init.c,v 1.3 2001/08/01 00:45:06 tsi Exp $ */
 
 /* Init.c - Handle start-up initialization. */
 
@@ -222,6 +222,7 @@ static int _IOErrorHandler(dpy, err)
     }
 
     Punt("Cannot continue from server error.");
+    return 0;
 }
 
 /*ARGSUSED*/
@@ -416,7 +417,7 @@ char **argv;
     }
     fid = myfopen(ptr, "r");
     if (fid) {
-	while (ptr = ReadLine(fid)) {
+	while ((ptr = ReadLine(fid))) {
 	    char *cp;
 
 	    (void) strncpy(str2, ptr, 5);
@@ -432,7 +433,7 @@ char **argv;
 		(void) strcpy(str, ptr);
 	    }
 	}
-	(void) myfclose(fid);
+	myfclose(fid);
     } else {
 	(void) strcpy(str, "Mail");
     }

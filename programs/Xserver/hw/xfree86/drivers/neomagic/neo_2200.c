@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.12 2000/10/17 21:36:15 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.14 2001/10/01 13:44:07 eich Exp $ */
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
@@ -54,12 +54,15 @@ static void Neo2200SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 					      int ydir, int rop,
 					      unsigned int planemask,
 					      int trans_color);
+#ifdef NOT_BROKEN
 static void Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX,
 						int srcY, int dstX, int dstY,
 						int w, int h);
+#else
 static void Neo2200SubsequentScreenToScreenCopyBroken(ScrnInfoPtr pScrn, int srcX,
 						int srcY, int dstX, int dstY,
 						int w, int h);
+#endif
 static void Neo2200SetupForSolidFillRect(ScrnInfoPtr pScrn, int color, int rop,
 				  unsigned int planemask);
 static void Neo2200SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
@@ -139,7 +142,11 @@ Neo2200AccelInit(ScreenPtr pScreen)
     infoPtr->SetupForScreenToScreenCopy = 
 	Neo2200SetupForScreenToScreenCopy;
     infoPtr->SubsequentScreenToScreenCopy
+#ifdef NOT_BROKEN
+	= Neo2200SubsequentScreenToScreenCopy;
+#else
 	= Neo2200SubsequentScreenToScreenCopyBroken;
+#endif
 
     /* solid filled rectangles */
     infoPtr->SolidFillFlags = NO_PLANEMASK;
@@ -288,6 +295,7 @@ Neo2200SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 	   | (nAcl->Pitch & 0xffff));
 }
 
+#ifdef NOT_BROKEN
 static void
 Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 				    int srcX, int srcY,
@@ -327,6 +335,8 @@ Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 	OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
     }
 }
+
+#else /* NOT_BROKEN */
 
 static void
 Neo2200SubsequentScreenToScreenCopyBroken(ScrnInfoPtr pScrn,
@@ -442,6 +452,7 @@ Neo2200SubsequentScreenToScreenCopyBroken(ScrnInfoPtr pScrn,
     }
 }
 
+#endif /* NOT_BROKEN */
 
 static void
 Neo2200SetupForSolidFillRect(ScrnInfoPtr pScrn, int color, int rop,

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.20 2001/07/25 15:04:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.21 2001/08/17 22:08:09 tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -110,7 +110,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     char *pdpynum = NULL;		/* start of dpynum of display */
     char *pscrnum = NULL;		/* start of screen of display */
     Bool dnet = False;			/* if true, then DECnet format */
-    int idisplay;			/* required display number */
+    int idisplay = 0;			/* required display number */
     int iscreen = 0;			/* optional screen number */
     /*  int (*connfunc)(); */		/* method to create connection */
     int len, hostlen;			/* length tmp variable */

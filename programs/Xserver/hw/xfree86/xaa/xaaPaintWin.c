@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.7 1999/05/15 06:24:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.9 2000/03/28 01:21:05 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -33,7 +33,7 @@ XAAPaintWindow(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_DRAWABLE((&pWin->drawable));
     int nBox = REGION_NUM_RECTS(prgn);
     BoxPtr pBox = REGION_RECTS(prgn);
-    int fg;
+    int fg = -1;
     PixmapPtr pPix = NULL;
 
     if(!infoRec->pScrn->vtSema) goto BAILOUT;	

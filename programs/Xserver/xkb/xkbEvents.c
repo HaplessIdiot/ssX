@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.8 2001/02/20 16:43:14 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.9 2001/08/23 14:33:26 alanh Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -310,10 +310,10 @@ XkbSendControlsNotify(kbd,pCN)
 #endif
 {
 int			initialized;
-CARD32 		 	changedControls,enabledControls,enabledChanges;
+CARD32 		 	changedControls, enabledControls, enabledChanges = 0;
 XkbSrvInfoPtr		xkbi;
 XkbInterestPtr		interest;
-Time 		 	time;
+Time 		 	time = 0;
 
     interest = kbd->xkb_interest;
     if (!interest)
@@ -369,7 +369,7 @@ XkbSendIndicatorNotify(kbd,xkbType,pEv)
 {
 int		initialized;
 XkbInterestPtr	interest;
-Time 		time;
+Time 		time = 0;
 CARD32		state,changed;
 
     interest = kbd->xkb_interest;
@@ -443,8 +443,8 @@ XkbSrvInfoPtr	xkbi;
 XkbInterestPtr	interest;
 CARD8		id;
 CARD16		pitch,duration;
-Time 		time;
-XID		winID;
+Time 		time = 0;
+XID		winID = 0;
 
     xkbi = kbd->key->xkbInfo;
 
@@ -521,7 +521,7 @@ XkbSendAccessXNotify(kbd,pEv)
 {
 int		initialized;
 XkbInterestPtr	interest;
-Time 		time;
+Time 		time = 0;
 CARD16		sk_delay,db_delay;
 
     interest = kbd->xkb_interest;
@@ -572,7 +572,7 @@ XkbSendNamesNotify(kbd,pEv)
 {
 int		initialized;
 XkbInterestPtr	interest;
-Time 		time;
+Time 		time = 0;
 CARD16		changed,changedVirtualMods;
 CARD32		changedIndicators;
 
@@ -627,8 +627,8 @@ XkbSendCompatMapNotify(kbd,pEv)
 {
 int		initialized;
 XkbInterestPtr	interest;
-Time 		time;
-CARD16		firstSI,nSI,nTotalSI;
+Time 		time = 0;
+CARD16		firstSI = 0, nSI = 0, nTotalSI = 0;
 
     interest = kbd->xkb_interest;
     if (!interest)
@@ -682,7 +682,7 @@ XkbSendActionMessage(kbd,pEv)
 int		 initialized;
 XkbSrvInfoPtr	 xkbi;
 XkbInterestPtr	 interest;
-Time 		 time;
+Time 		 time = 0;
 
     xkbi = kbd->key->xkbInfo;
     interest = kbd->xkb_interest;
@@ -733,9 +733,9 @@ XkbSendExtensionDeviceNotify(dev,client,pEv)
 {
 int		 initialized;
 XkbInterestPtr	 interest;
-Time 		 time;
-CARD32		 defined,state;
-CARD16		 reason,supported;
+Time 		 time = 0;
+CARD32		 defined, state;
+CARD16		 reason, supported = 0;
 
     interest = dev->xkb_interest;
     if (!interest)
@@ -1137,7 +1137,7 @@ DeviceIntPtr	dev = (DeviceIntPtr)inDev;
 XkbInterestPtr	interest;
 Bool		found;
 unsigned long	autoCtrls,autoValues;
-ClientPtr	client;
+ClientPtr	client = NULL;
 
     found= False;
     autoCtrls= autoValues= 0;
@@ -1173,6 +1173,3 @@ ClientPtr	client;
     }
     return found;
 }
-
-
-

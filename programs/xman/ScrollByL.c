@@ -28,9 +28,9 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.4 2000/09/26 15:57:26 tsi Exp $ */
+/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.5tsi Exp $ */
 
-#if ( !defined(lint) && !defined(SABER))
+#if !defined(lint) && !defined(SABER) && 0
   static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
 #endif
 

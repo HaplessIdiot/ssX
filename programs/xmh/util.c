@@ -1,6 +1,6 @@
 /*
  * $XConsortium: util.c /main/42 1996/01/14 16:51:55 kaleb $
- * $XFree86: xc/programs/xmh/util.c,v 3.3 1996/01/16 15:09:28 dawes Exp $
+ * $XFree86: xc/programs/xmh/util.c,v 3.4 2001/08/01 00:45:06 tsi Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -89,14 +89,14 @@ char *path, *mode;
 
 
 
-int myclose(fid)
+void myclose(fid)
 {
     if (close(fid) < 0) Punt("Error in myclose!");
     DEBUG1( "# %d : <Closed>\n", fid)
 }
 
 
-int myfclose(file)
+void myfclose(file)
 FILE *file;
 {
     int fid = fileno(file);
@@ -236,8 +236,8 @@ void CopyFileAndCheck(from, to)
 	n = read(fromfid, buf, 512);
 	if (n) (void) write(tofid, buf, n);
     } while (n);
-    (void) myclose(fromfid);
-    (void) myclose(tofid);
+    myclose(fromfid);
+    myclose(tofid);
 }
 
 
@@ -324,7 +324,7 @@ void ChangeLabel(widget, str)
 Widget widget;
 char *str;
 {
-    static Arg arglist[] = {XtNlabel, (XtArgVal)NULL};
+    static Arg arglist[] = {{XtNlabel, (XtArgVal)NULL}};
     arglist[0].value = (XtArgVal) str;
     XtSetValues(widget, arglist, XtNumber(arglist));
 }

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/msg.c,v 1.2 2001/08/01 00:45:06 tsi Exp $ */
 
 /* msgs.c -- handle operations on messages. */
 
@@ -682,7 +682,7 @@ Msg msg;
     sendwidth = app_resources.send_line_width;
     sendbreakwidth = app_resources.break_send_line_width;
     inheader = TRUE;
-    while (ptr = ReadLine(from)) {
+    while ((ptr = ReadLine(from))) {
 	if (inheader) {
 	    if (strncmpIgnoringCase(ptr, "sendwidth:", 10) == 0) {
 		if (atoi(ptr+10) > 0) sendwidth = atoi(ptr+10);
@@ -734,8 +734,8 @@ Msg msg;
 		}
 	} while (*ptr);
     }
-    (void) myfclose(from);
-    (void) myfclose(to);
+    myfclose(from);
+    myfclose(to);
     argv = MakeArgv(3);
     argv[0] = "send";
     argv[1] = "-push";
@@ -773,7 +773,7 @@ Msg msg;
 	    fid = myopen(file, O_RDONLY, 0666);
 	    if (compsize != read(fid, blankcomp, compsize))
 		Punt("Error reading in MsgLoadComposition!");
-	    (void) myclose(fid);
+	    myclose(fid);
 	    DeleteFileAndCheck(file);
 	} else {
  	    blankcomp = "To: \n--------\n";
@@ -784,7 +784,7 @@ Msg msg;
     fid = myopen(MsgFileName(msg), O_WRONLY | O_TRUNC | O_CREAT, 0666);
     if (compsize != write(fid, blankcomp, compsize))
 	Punt("Error writing in MsgLoadComposition!");
-    (void) myclose(fid);
+    myclose(fid);
     TocSetCacheValid(msg->toc);
     msg->startPos = startPos;
 }

@@ -1,7 +1,7 @@
 /*
  * mfb copy area
  */
-/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.1 1998/10/04 09:39:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbblt.c,v 3.2 2001/01/17 22:37:02 dawes Exp $ */
 
 /*
 
@@ -79,14 +79,7 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
     register PixelType bits;
     register PixelType bits1;
     register int nl;		/* temp copy of nlMiddle */
-
-				/* place to store full source word */
-    int nstart;			/* number of ragged bits at start of dst */
-    int nend;			/* number of ragged bits at end of dst */
-    int srcStartOver;		/* pulling nstart bits from src
-				   overflows into the next word? */
     int careful;
-    int tmpSrc;
 
     MROP_INITIALIZE(alu,0);
 

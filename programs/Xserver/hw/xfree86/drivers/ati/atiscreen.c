@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.24 2001/08/07 07:04:43 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.25 2001/08/15 11:54:26 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -228,8 +228,12 @@ ATIScreenInit
     if (!ATIInitializeAcceleration(pScreen, pScreenInfo, pATI))
         return FALSE;
 
+#ifndef AVOID_DGA
+
     /* Initialise DGA support */
     (void)ATIDGAInit(pScreenInfo, pScreen, pATI);
+
+#endif /* AVOID_DGA */
 
     /* Initialise backing store */
     miInitializeBackingStore(pScreen);

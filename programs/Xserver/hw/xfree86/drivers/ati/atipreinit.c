@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.48 2001/05/22 15:55:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.49 2001/08/15 11:54:26 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2005,7 +2005,7 @@ ATIPreInit
 #ifndef AVOID_CPIO
 
             /* Except for PCI & AGP, allow for user override */
-            if (!pATI->PCIInfo)
+            if (!pVideo)
             {
                 if (pATI->Chip == ATI_CHIP_88800CX)
                     IOValue = ~((CARD32)((1 << 23) - 1));
@@ -2034,7 +2034,7 @@ ATIPreInit
                             pATI->LinearSize = 8 * 1024 * 1024;
                     }
 
-                    Resources[0].type = ResExcMemBlock;
+                    Resources[0].type = ResExcMemBlock | ResBus;
                     Resources[0].rBegin = pATI->LinearBase;
                     Resources[0].rEnd =
                         pATI->LinearBase + pATI->LinearSize - 1;

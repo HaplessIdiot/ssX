@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.15 2001/02/15 17:59:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.16 2001/09/24 11:19:10 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -41,6 +41,7 @@
 #include "xaalocal.h"
 
 static void BladeSync(ScrnInfoPtr pScrn);
+#if 0
 static void BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void BladeSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
@@ -54,6 +55,7 @@ static void BladeSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg,
 static void BladeSubsequentDashedTwoPointLine( ScrnInfoPtr pScrn,
         			int x1, int y1, int x2, int y2, int flags,
 				int phase); 
+#endif
 static void BladeSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void BladeSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
@@ -342,6 +344,7 @@ BladeDisableClipping(ScrnInfoPtr pScrn)
     pTrident->Clipping = FALSE;
 }
     
+#if 0
 static void
 BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 					 int rop, unsigned int planemask)
@@ -397,7 +400,6 @@ BladeSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     BLADE_OUT(0x2144, D<<30 | (((dmaj-dmin)&0xfff) << 16) | (-dmin&0xfff));
     BLADE_OUT(0x2148, ((-(dmin+e)&0xfff) << 16));
 }
-
 
 static void 
 BladeSubsequentSolidTwoPointLine( ScrnInfoPtr pScrn,
@@ -467,6 +469,7 @@ BladeSubsequentDashedTwoPointLine( ScrnInfoPtr pScrn,
     if (flags & OMIT_LAST)
 	BladeDisableClipping(pScrn);
 }
+#endif
 
 static void
 BladeSetupForFillRectSolid(ScrnInfoPtr pScrn, int color, 

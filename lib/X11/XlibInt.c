@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.26 2001/04/26 16:23:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.27 2001/07/23 13:15:41 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -416,8 +416,8 @@ _XWaitForReadable(dpy)
     int result;
     int fd = dpy->fd;
     struct _XConnectionInfo *ilist;  
-    register int saved_event_serial;
-    int in_read_events;
+    register int saved_event_serial = 0;
+    int in_read_events = 0;
     register Bool did_proc_conni = False;
 #ifdef USE_POLL
     struct pollfd *filedes;
@@ -566,7 +566,6 @@ static void _XFlushInt (dpy, cv)
 	register Display *dpy;
         register xcondition_t cv;
 {
-	char *nextindex;
 #endif /* XTHREADS*/
 	register long size, todo;
 	register int write_stat;

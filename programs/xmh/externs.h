@@ -25,7 +25,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/externs.h,v 1.3 2001/08/01 00:45:06 tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <errno.h>
@@ -142,8 +142,8 @@ extern void	DoDeleteSeq		(Widget, XtPointer, XtPointer);
 extern void	Punt			(char *);
 extern int	myopen			(char *, int, int);
 extern FILE *	myfopen			(char *, char *);
-extern int	myclose			(int);
-extern int	myfclose		(FILE *);
+extern void	myclose			(int);
+extern void	myfclose		(FILE *);
 extern char *	MakeNewTempFileName	(void);
 extern char **	MakeArgv		(int);
 extern char **	ResizeArgv		(char **, int);

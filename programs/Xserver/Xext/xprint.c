@@ -64,7 +64,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.10 2001/08/01 00:44:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.11 2001/08/23 13:01:36 alanh Exp $ */
 
 #define _XP_PRINT_SERVER_
 #include "X.h"
@@ -565,7 +565,7 @@ ProcXpSwappedDispatch(ClientPtr client)
 static int
 ProcXpQueryVersion(ClientPtr client)
 {
-    REQUEST(xPrintQueryVersionReq);
+    /* REQUEST(xPrintQueryVersionReq); */
     xPrintQueryVersionReply rep;
     register int n;
     long l;
@@ -682,7 +682,7 @@ ProcXpGetPrinterList(ClientPtr client)
 static int
 ProcXpQueryScreens(ClientPtr client)
 {
-    REQUEST(xPrintQueryScreensReq);
+    /* REQUEST(xPrintQueryScreensReq); */
     int i, numPrintScreens, totalSize;
     WINDOW *pWinId;
     xPrintQueryScreensReply *rep;
@@ -889,7 +889,7 @@ ProcXpGetImageResolution(ClientPtr client)
 static int
 ProcXpRehashPrinterList(ClientPtr client)
 {
-    REQUEST(xPrintRehashPrinterListReq);
+    /* REQUEST(xPrintRehashPrinterListReq); */
 
     REQUEST_SIZE_MATCH(xPrintRehashPrinterListReq);
 
@@ -1090,7 +1090,7 @@ XpGetPrintContext(ClientPtr client)
 static int
 ProcXpGetContext(ClientPtr client)
 {
-    REQUEST(xPrintGetContextReq);
+    /* REQUEST(xPrintGetContextReq); */
     xPrintGetContextReply rep;
 
     XpContextPtr pContext;

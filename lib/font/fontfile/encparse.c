@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.15 2001/08/13 21:46:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.16 2001/08/16 14:33:46 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -490,9 +490,11 @@ parseEncodingFile(FontFilePtr f, int headerOnly)
     char *aliases[MAXALIASES];
     int numaliases=0;
 
+#if 0
     /* GCC complains about unused labels.  Please fix GCC rather than
        obfuscating my code. */
   no_encoding:
+#endif
     line = getnextline(f);
     switch(line) {
     case EOF_LINE:

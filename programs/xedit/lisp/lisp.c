@@ -27,10 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.23 2001/10/20 00:19:34 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.24 2001/10/24 07:57:24 alanh Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
+#ifdef sun	/* Don't ask.... */
+#include <strings.h>
+#endif
 #include <ctype.h>
 #include <stdarg.h>
 #include <signal.h>
@@ -915,7 +918,7 @@ LispGetPermString(LispMac *mac, char *str)
 static LispObj *
 LispDoGetAtomProperty(LispMac *mac, LispAtom *atom, LispObj *key, int add)
 {
-    LispObj *obj, *res;
+    LispObj *obj, *res = NULL;
     LispProperty *prop = atom->property;
 
     if (prop == NULL && add)
@@ -1593,7 +1596,7 @@ LispBlock *
 LispBeginBlock(LispMac *mac, LispObj *tag, LispBlockType type)
 {
     unsigned blevel = mac->block.block_level + 1;
-    LispBlock *block;
+    LispBlock *block = NULL;
 
     if (blevel > mac->block.block_size) {
 	LispBlock **blk = realloc(mac->block.block,
@@ -1941,7 +1944,7 @@ string_label:
 		    res = REAL(value);
 	    }
 	    else if (hash) {
-		long c;
+		long c = 0;
 
 		if (len == 1)
 		    LispDestroy(mac, "syntax error at #");
@@ -2021,7 +2024,7 @@ endofinput:
 LispObj *
 LispEvalBackquote(LispMac *mac, LispObj *arg)
 {
-    LispObj *res, *frm = FRM;
+    LispObj *res = NIL, *frm = FRM;
 
     if (arg->type == LispComma_t) {
 	if (arg->data.comma.atlist)
@@ -2033,7 +2036,7 @@ LispEvalBackquote(LispMac *mac, LispObj *arg)
 	    res = EVAL(arg->data.comma.eval);
     }
     else if (arg->type == LispCons_t) {
-	LispObj *obj, *cdr, *ptr;
+	LispObj *obj, *cdr = NIL, *ptr;
 	/* create new form, evaluating any commas inside */
 
 	res = NIL;
@@ -2153,7 +2156,7 @@ LispBuildArguments(LispMac *mac, LispObj *desc, LispObj *values,
 		   char *fname, int macro)
 {
     int rest, optional, key;
-    LispObj *args = NIL, *list = desc, *res, *cdr, *arg, *keyword = NIL;
+    LispObj *args = NIL, *list = desc, *res, *cdr = NIL, *arg, *keyword = NIL;
 
     /* build argument list */
     while (list != NIL) {
@@ -2326,8 +2329,8 @@ LispBuildSimpleArguments(LispMac *mac, LispObj *values, char *fname,
 LispObj *
 LispEval(LispMac *mac, LispObj *obj)
 {
-    char *strname;
-    LispObj *name, *fun, *cons = NIL, *frm, *res, *car;
+    char *strname = NULL;
+    LispObj *name = NIL, *fun, *cons = NIL, *frm, *res, *car;
     LispBuiltin *fn;
 
     if (!obj)
@@ -2484,7 +2487,7 @@ LispEval(LispMac *mac, LispObj *obj)
 LispObj *
 LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list)
 {
-    LispFunType type = fun->data.lambda.type;
+    volatile LispFunType type = fun->data.lambda.type;
     LispObj *old_env, *old_lex, *args, *code, *res, *frm;
 
     old_env = ENV;

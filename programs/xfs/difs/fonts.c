@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.10 2001/06/25 20:40:17 paulo Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.11 2001/08/01 00:45:04 tsi Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -633,15 +633,12 @@ set_font_path_elements(
     char       *paths,
     int        *bad)
 {
-    int		i,
-		validpaths,
-		err;
+    int		i, validpaths, err = 0;
     int		len;
     int		type;
     char       *cp = paths;
     char       *name;
-    FontPathElementPtr fpe,
-               *fplist;
+    FontPathElementPtr fpe, *fplist;
 
     fplist = (FontPathElementPtr *)
 	fsalloc(sizeof(FontPathElementPtr) * npaths);

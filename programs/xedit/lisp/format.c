@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.9 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.10 2001/10/18 03:15:22 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -49,7 +49,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 {
     int len, princ = mac->princ, newline = mac->newline, tmp, nindirection = 0;
     int num_args, cur_arg, iteration = -1;
-    char *fmt, stk[1024], **indirection = NULL, *ptr, *str;
+    char *fmt, stk[1024], **indirection = NULL, *ptr, *str = NULL;
     LispObj *stream, *format, *arguments, *arg, *plural, *obj, *ilist, *sargs,
 	    *alist;
     unsigned char *uptr;
@@ -623,7 +623,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    continue;
 		case '[': {	/* Conditional-expression start */
 		    char *end, **fields;
-		    int field, nfields, obrack, oless, def, done = 0, scollon;
+		    int field, nfields, obrack, oless, def;
+		    int done = 0, scollon = 0;
 
 		    if (argc > 1)
 			LispDestroy(mac, BadArgument, fname);
@@ -760,7 +761,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		case ']':	/* Conditional-expression end */
 		    LispDestroy(mac, "mismatched ~], at %s", fname);
 		case '{': {	/* Iteration start */
-		    int op = 1, scollon, done = 0;
+		    int op = 1, scollon = 0, done = 0;
 		    char *end;
 
 		    if (argc > 1)

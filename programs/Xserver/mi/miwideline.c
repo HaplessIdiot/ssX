@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.8 2001/01/17 22:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.9 2001/08/06 20:51:20 dawes Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
@@ -466,7 +466,7 @@ miLineJoin (
     register LineFacePtr pLeft,
     register LineFacePtr pRight)
 {
-    double	    mx, my;
+    double	    mx = 0, my = 0;
     double	    denom = 0.0;
     PolyVertexRec   vertices[4];
     PolySlopeRec    slopes[4];

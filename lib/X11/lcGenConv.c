@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.21 2001/08/09 19:14:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.22 2001/08/15 11:54:21 tsi Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -328,7 +328,7 @@ byteM_parse_codeset(
     ByteInfoListRec byteM_rec;
     ByteInfo byteinfo;
     ByteInfoRec byteinfo_rec;
-    Bool hit;
+    Bool hit = False;
     int i, j, k;
 
     int codeset_num               = XLC_GENERIC(lcd, codeset_num);
@@ -377,7 +377,7 @@ gi_parse_charset(
     XlcCharSet *charset_list = codeset->charset_list;
     int num_charsets = codeset->num_charsets;
     ExtdSegment ctextseg = codeset->ctextseg;
-    XlcCharSet charset;
+    XlcCharSet charset = NULL;
     int area_num;
     FontScope area;
 
@@ -624,7 +624,7 @@ _XlcGetCodeSetFromCharSet(
     XlcCharSet *charset_list;
     int codeset_num, num_charsets;
     Conversion ctconv;
-    unsigned long glyph_index_tmp;
+    unsigned long glyph_index_tmp = 0;
     ExtdSegment ctextseg;
 
     codeset_num = XLC_GENERIC(lcd, codeset_num);
@@ -1770,7 +1770,7 @@ mbtocs(
     XlcSide side;
 
     CodeSet codeset = NULL;
-    XlcCharSet charset;
+    XlcCharSet charset = NULL;
 
     const char *inbufptr = *from;
     char *outbufptr = *to;
@@ -2110,7 +2110,7 @@ wctocs(
     XlcSide side;
 
     CodeSet codeset;
-    XlcCharSet charset;
+    XlcCharSet charset = NULL;
 
     const wchar_t *inbufptr = (const wchar_t *) *from;
     char *outbufptr = *to;

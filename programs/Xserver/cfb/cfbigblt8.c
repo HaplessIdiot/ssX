@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbigblt8.c,v 1.3 1998/10/04 09:37:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbigblt8.c,v 1.4 2001/01/17 22:36:35 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -50,14 +50,8 @@ cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     ExtentInfoRec info;		/* used by QueryGlyphExtents() */
     xRectangle backrect;
-    int		fillStyle;
-    int		alu;
     int		fgPixel;
-    int		rop;
-    int		xor;
-    int		and;
-    int		pm;
-    cfbPrivGC	    *priv;
+    cfbPrivGC	*priv;
 
     /*
      * We can't avoid GC validations if calling mi functions.

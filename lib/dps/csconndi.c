@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/csconndi.c,v 1.8 2001/07/25 15:04:54 dawes Exp $ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.9 2001/08/01 00:44:42 tsi Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -161,7 +161,6 @@ DPSCAPConnect(
     char *pscrnum = NULL;		/* start of screen of display */
     Bool dnet = False;			/* if true, then DECnet format */
     int iagent;				/* required display number */
-    int iscreen = 0;			/* optional screen number */
     int (*connfunc)(CONN_PARAMS);	/* method to create connection */
     int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */

@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.7 2000/05/18 23:46:10 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.8 2000/09/26 15:56:41 tsi Exp $ */
 
 #include "xttversion.h"
 
@@ -162,7 +162,6 @@ FreeType_OpenFace(FreeTypeOpenFaceHints const *refHints)
     TT_Glyph glyph;
     TT_SBit_Image* sbit;
     FreeTypeFaceInfoPtr ptr;
-    SPropRecValContainer contRecValue;
 
     dprintf((stderr,
              "FreeType_OpenFace: %s %s %s\n",
@@ -367,7 +366,7 @@ FreeType_OpenFont(FreeTypeFont *ft,
     FreeTypeFaceInfo *fi;
     TT_Instance instance;
     double base_size;
-    int num_faces, linesize;
+    int num_faces = 0, linesize;
 
     base_size = hypot(vals->point_matrix[2], vals->point_matrix[3]);
 
@@ -897,7 +896,7 @@ FreeTypeGetGlyphs (FontPtr pFont,
     FreeTypeFont *ft = (FreeTypeFont*) pFont->fontPrivate;
     CharInfoPtr *glyphsBase = glyphs;
 
-    int spacing;
+    int spacing = 0;
 
     dprintf((stderr, "FreeTypeGetGlyphs: %p %d\n", pFont, count));
 
@@ -1070,7 +1069,7 @@ freetype_compute_bounds(FreeTypeFont *ft,
 {
     int row, col;
     short c;
-    xCharInfo minchar, maxchar, *tmpchar;
+    xCharInfo minchar, maxchar, *tmpchar = NULL;
     int overlap, maxOverlap;
     long swidth      = 0;
     long total_width = 0;
@@ -1330,7 +1329,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     char *dynStrTTFileName = NULL;
     char *dynStrRealFileName = NULL;
     SPropRecValContainer contRecValue;
-    int setwidth_value;
+    int setwidth_value = 0;
 
     double base_width, base_height;
 
@@ -1868,11 +1867,11 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                     char* registry;
                     unsigned index;
                 } em_indexarray[] = {
-                    "ascii", 0x4d,
-                    "iso8859", 0x4d,
-                    "iso646", 0x4d,
-                    "jisx0201", 0x4d,
-                    "koi8", 0x4d
+                    {"ascii", 0x4d},
+                    {"iso8859", 0x4d},
+                    {"iso646", 0x4d},
+                    {"jisx0201", 0x4d},
+                    {"koi8", 0x4d}
                 };
                 unsigned i=0;
 

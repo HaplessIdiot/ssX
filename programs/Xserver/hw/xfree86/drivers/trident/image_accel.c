@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.22 2001/05/24 09:35:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.23 2001/09/24 11:19:10 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -42,11 +42,13 @@
 
 static void ImageSync(ScrnInfoPtr pScrn);
 static void ImageSyncClip(ScrnInfoPtr pScrn);
+#if 0
 static void ImageSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void ImageSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
         			int x, int y, int dmaj, int dmin, int e, 
 				int len, int octant);
+#endif
 static void ImageSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void ImageSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
@@ -353,6 +355,7 @@ ImageDisableClipping(ScrnInfoPtr pScrn)
     pTrident->Clipping = FALSE;
 }
     
+#if 0
 static void
 ImageSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 					 int rop, unsigned int planemask)
@@ -403,6 +406,7 @@ ImageSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     if (!pTrident->UsePCIRetry)
     	ImageSyncClip(pScrn);
 }
+#endif
 
 static void
 ImageSetupForFillRectSolid(ScrnInfoPtr pScrn, int color, 

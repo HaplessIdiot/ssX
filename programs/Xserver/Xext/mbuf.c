@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.11 2001/07/23 13:15:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.12 2001/08/01 00:44:44 tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -1215,7 +1215,6 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 	    	if (pExposed)
 	    	{
 		    RegionPtr	pWinSize;
-		    ScreenPtr pScreen = pWin->drawable.pScreen;
 
 		    pWinSize = CreateUnclippedWinSize (pWin);
 		    /* pExposed is window-relative, but at this point
@@ -1223,13 +1222,13 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 		     * window-relative so that region ops involving
 		     * pExposed and pWinSize behave sensibly.
 		     */
-		    REGION_TRANSLATE(pScreen, pWinSize,
-				     -pWin->drawable.x,
-				     -pWin->drawable.y);
-		    REGION_INTERSECT(pScreen, pExposed, pExposed, pWinSize);
-		    REGION_DESTROY(pScreen, pWinSize);
+		    REGION_TRANSLATE(pWin->drawable.pScreen, pWinSize,
+				     -pWin->drawable.x, -pWin->drawable.y);
+		    REGION_INTERSECT(pWin->drawable.pScreen, pExposed,
+				     pExposed, pWinSize);
+		    REGION_DESTROY(pWin->drawable.pScreen, pWinSize);
 	    	    MultibufferExpose (pPrevMultibuffer, pExposed);
-	    	    REGION_DESTROY(pScreen, pExposed);
+	    	    REGION_DESTROY(pWin->drawable.pScreen, pExposed);
 	    	}
 	    	graphicsExpose = FALSE;
 	    	DoChangeGC (pGC, GCGraphicsExposures, &graphicsExpose, FALSE);

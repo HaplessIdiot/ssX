@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.7 1998/06/28 03:52:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.8 2001/08/15 16:25:20 paulo Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -104,7 +104,6 @@ Bool XF86MiscGetMouseSettings(dpy, mouseinfo)
     XExtDisplayInfo *info = find_display (dpy);
     xXF86MiscGetMouseSettingsReply rep;
     xXF86MiscGetMouseSettingsReq *req;
-    int i;
 
     XF86MiscCheckExtension (dpy, info, False);
 
@@ -151,7 +150,6 @@ Bool XF86MiscGetKbdSettings(dpy, kbdinfo)
     XExtDisplayInfo *info = find_display (dpy);
     xXF86MiscGetKbdSettingsReply rep;
     xXF86MiscGetKbdSettingsReq *req;
-    int i;
 
     XF86MiscCheckExtension (dpy, info, False);
 
@@ -181,7 +179,6 @@ Bool XF86MiscSetMouseSettings(dpy, mouseinfo)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86MiscSetMouseSettingsReq *req;
-    int i;
 
     XF86MiscCheckExtension (dpy, info, False);
 
@@ -210,7 +207,6 @@ Bool XF86MiscSetKbdSettings(dpy, kbdinfo)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86MiscSetKbdSettingsReq *req;
-    int i;
 
     XF86MiscCheckExtension (dpy, info, False);
 

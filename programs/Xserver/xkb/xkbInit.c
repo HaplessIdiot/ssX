@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.19 2001/08/23 14:33:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.20 2001/10/16 11:27:19 alanh Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -302,6 +302,9 @@ XkbSetRulesDflts(rulesFile,model,layout,variant,options)
 #endif
 
 #include "xkbDflts.h"
+
+/* A dummy to keep the compiler quiet */
+pointer xkbBogus = &indicators;
 
 static Bool
 #if NeedFunctionPrototypes

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmh/tocfuncs.c,v 1.2 2001/08/01 00:45:06 tsi Exp $ */
 
 /* tocfuncs.c -- action procedures concerning things in the toc widget. */
 
@@ -72,7 +72,7 @@ static void NextAndPreviousView(scrn, next)
 {
     Toc		toc = scrn->toc;
     MsgList	mlist;
-    FateType	fate;
+    FateType	fate = Fignore;
     Msg		msg;
 
     if (toc == NULL) return;
@@ -890,7 +890,7 @@ void XmhOpenSequence(w, event, params, num_params)
     /* In case the action was given the name of a sequence to open. */
     if (*num_params) {
 	Toc	toc = scrn->toc;
-	if (selected_sequence = TocGetSeqNamed(toc, params[0])) {
+	if ((selected_sequence = TocGetSeqNamed(toc, params[0]))) {
 	    TocSetSelectedSequence(toc, selected_sequence);
 	    TocChangeViewedSeq(toc, selected_sequence);
 	}

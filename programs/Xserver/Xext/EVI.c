@@ -21,7 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/EVI.c,v 3.8 2001/08/23 21:49:51 tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -36,7 +36,7 @@ static EviPrivPtr eviPriv;
 static int
 ProcEVIQueryVersion(ClientPtr client)
 {
-    REQUEST(xEVIQueryVersionReq);
+    /* REQUEST(xEVIQueryVersionReq); */
     xEVIQueryVersionReply rep;
     register int n;
     REQUEST_SIZE_MATCH (xEVIQueryVersionReq);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.3 1998/10/04 09:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.4 2001/01/17 22:13:25 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -99,7 +99,7 @@ ProcXGetSelectedExtensionEvents(client)
     int					total_length = 0;
     xGetSelectedExtensionEventsReply	rep;
     WindowPtr				pWin;
-    XEventClass				*buf;
+    XEventClass				*buf = NULL;
     XEventClass				*tclient;
     XEventClass				*aclient;
     OtherInputMasks			*pOthers;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shplanar.c,v 1.1 2000/09/07 23:12:16 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shplanar.c,v 1.3 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -96,7 +96,7 @@ shadowUpdatePlanar4 (ScreenPtr	    pScreen,
     int		shaXoff, shaYoff;   /* XXX assumed to be zero */
     int		x, y, w, h, width;
     int         i;
-    CARD32	*winBase, *winLine, *win;
+    CARD32	*winBase = NULL, *win;
     CARD32	winSize;
     int		plane;
     CARD32	m,m5,m6;

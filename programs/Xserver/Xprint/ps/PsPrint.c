@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.6 1999/12/13 02:13:02 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.7 2001/01/17 22:36:32 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -286,13 +286,10 @@ PsStartPage(
 {
   int                iorient, iplex, icount, ires;
   unsigned short     iwd, iht;
-  register WindowPtr pChild;
   PsContextPrivPtr   pConPriv =
      (PsContextPrivPtr)pCon->devPrivates[PsContextPrivateIndex].ptr;
   PsWindowPrivPtr    pWinPriv =
      (PsWindowPrivPtr)pWin->devPrivates[PsWindowPrivateIndex].ptr;
-  char               s[80];
-  xEvent event;
 
 /*
  * Put a pointer to the context in the window private structure

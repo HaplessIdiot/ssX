@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.13 2001/05/16 10:32:54 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.14 2001/09/21 19:54:53 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -323,7 +323,9 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     FT_Matrix	    matrix;
     XftMatrix	    *font_matrix;
 
+#if 0
     int		    extra;
+#endif
     int		    height, ascent, descent;
     XRenderPictFormat	pf, *format;
     

@@ -51,7 +51,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.13 2001/01/17 19:41:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.14 2001/07/25 15:04:44 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -208,7 +208,7 @@ _XlcMapOSLocaleName(osname, siname)
 # elif defined (STARTSTR)
 	start += strlen(STARTSTR);
 # endif
-	if (end = strchr (start, ENDCHAR)) {
+	if ((end = strchr (start, ENDCHAR))) {
 	    len = end - start;
 	    if (len >= MAXLOCALE)
 		len = MAXLOCALE - 1;

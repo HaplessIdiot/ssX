@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.21 2001/05/28 02:42:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.22 2001/07/23 13:15:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -256,11 +256,12 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 #ifdef HAS_GETKEYMAP
   keymap_t      keymap;
 #endif
-  char          type;
   int           i;
   KeySym        *pMap;
-  
+
 #ifdef HAS_GETKBTYPE
+  char          type;
+  
   xf86Info.kbdType =
     ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
   if (xf86Info.kbdType == KB_84)

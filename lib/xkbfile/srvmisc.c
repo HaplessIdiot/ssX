@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/srvmisc.c,v 3.3 2001/07/29 05:01:13 tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -99,7 +99,7 @@ XkbReadFromServer(dpy,need,want,result)
 #endif
 {
 unsigned which= need|want;
-unsigned tmp;
+unsigned tmp = 0;
 
     if ((result==NULL)||(dpy==NULL))
 	return which;

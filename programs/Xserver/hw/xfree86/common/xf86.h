@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.153 2001/05/25 02:44:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.155 2001/10/01 13:44:01 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -110,21 +110,21 @@ pciVideoPtr xf86GetPciInfoForEntity(int entityIndex);
 int xf86GetPciEntity(int bus, int dev, int func);
 Bool xf86SetEntityFuncs(int entityIndex, EntityProc init,
 			EntityProc enter, EntityProc leave, pointer);
-void xf86DeallocateResourcesForEntity(int entityIndex, long type);
+void xf86DeallocateResourcesForEntity(int entityIndex, unsigned long type);
 resPtr xf86RegisterResources(int entityIndex, resList list, int Access);
 Bool xf86CheckPciMemBase(pciVideoPtr pPci, memType base);
 void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86SetAccessFuncPtr funcs,
 			xf86SetAccessFuncPtr oldFuncs);
 Bool xf86IsEntityPrimary(int entityIndex);
 Bool xf86FixPciResource(int entityIndex, int prt, memType alignment,
-			 long type);
+			unsigned long type);
 resPtr xf86ReallocatePciResources(int entityIndex, resPtr pRes);
-resPtr xf86SetOperatingState(const resList list, int entityIndex, int mask);
+resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);
 void xf86EnterServerState(xf86State state);
-resRange xf86GetBlock(long type, memType size,
+resRange xf86GetBlock(unsigned long type, memType size,
 		      memType window_start, memType window_end,
 		      memType align_mask, resPtr avoid);
-resRange xf86GetSparse(long type,  memType fixed_bits,
+resRange xf86GetSparse(unsigned long type, memType fixed_bits,
 		       memType decode_mask, memType address_mask,
 		       resPtr avoid);
 memType xf86ChkConflict(resRange *rgp, int entityIndex);

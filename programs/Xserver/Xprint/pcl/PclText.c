@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.7 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclText.c,v 1.8 2001/01/19 17:10:50 dawes Exp $ */
 
 #ifdef DO_TWO_BYTE_PCL
 #include "iconv.h"
@@ -182,8 +182,6 @@ char font_type;
 	MACRO_END( outFile );
 
     } else {
-	char *internalFont;
-	int pixel_size;
 	int fid = 0;
 
 	pin = makeInternalFont(pGC->font, pSoftFontInfo);
@@ -270,7 +268,6 @@ CharInfoPtr charinfo[255], *chinfo;
 FILE *outFile;
 PclSoftFontInfoPtr pSoftFontInfo;
 PclFontHead16Ptr pfh16 = (PclFontHead16Ptr)NULL;
-PclInternalFontPtr pin = (PclInternalFontPtr)NULL;
 PclCharDataRec cd;
 FontInfoPtr pfi;
 unsigned char row, col;
@@ -379,8 +376,7 @@ char font_type;
 
     } else {
 #ifdef DO_TWO_BYTE_PCL
-	char *internalFont;
-	int pixel_size;
+	PclInternalFontPtr pin;
 	int fid = 0;
 
 	pin = makeInternalFont(pGC->font, pSoftFontInfo);
@@ -506,7 +502,7 @@ PclFontHead8Ptr prev = (PclFontHead8Ptr)NULL;
 FontInfoPtr pfi;
 char *fontname;
 unsigned char nindex;
-int i, j;
+int i;
 unsigned long n;
 CharInfoPtr charinfo[1];
 unsigned int space_width;

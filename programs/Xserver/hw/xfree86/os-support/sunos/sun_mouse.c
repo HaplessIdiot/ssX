@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.2 2001/08/17 22:08:15 tsi Exp $ */
 /*
  * Copyright 1999-2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -57,7 +57,6 @@ vuidPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 {
     MouseDevPtr pMse = pInfo->private;
     VuidMsePtr pVuidMse;
-    int i;
 
     pVuidMse = xalloc(sizeof(VuidMseRec));
     if (pVuidMse == NULL) {

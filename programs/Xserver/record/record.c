@@ -28,7 +28,7 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
-/* $XFree86: xc/programs/Xserver/record/record.c,v 1.6 1998/10/04 09:39:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.7 2001/01/17 22:37:14 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "dixstruct.h"
@@ -288,7 +288,7 @@ RecordAProtocolElement(pContext, pClient, category, data, datalen, futurelen)
     int numElemHeaders = 0;
     Bool recordingClientSwapped = pContext->pRecordingClient->swapped;
     int n;
-    CARD32 serverTime;
+    CARD32 serverTime = 0;
     Bool gotServerTime = FALSE;
     int replylen;
 
@@ -981,8 +981,8 @@ RecordInstallHooks(pRCAP, oneclient)
 			(pointer)pClientPriv;
 		    pClient->requestVector = pClientPriv->recordVector;
 		}
-		while (pIter = RecordIterateSet(pRCAP->pRequestMajorOpSet,
-						pIter, &interval))
+		while ((pIter = RecordIterateSet(pRCAP->pRequestMajorOpSet,
+						pIter, &interval)))
 		{
 		    unsigned int j;
 		    for (j = interval.first; j <= interval.last; j++)
@@ -1080,9 +1080,9 @@ RecordUninstallHooks(pRCAP, oneclient)
 			RecordSetInterval interval;
 
 			otherRCAPwantsProcVector = TRUE;
-			while (pIter = RecordIterateSet(
+			while ((pIter = RecordIterateSet(
 						pOtherRCAP->pRequestMajorOpSet,
-						pIter, &interval))
+						pIter, &interval)))
 			{
 			    unsigned int j;
 			    for (j = interval.first; j <= interval.last; j++)
@@ -1243,7 +1243,7 @@ RecordDeleteClientFromContext(pContext, clientspec)
     RecordClientsAndProtocolPtr pRCAP;
     int position;
 
-    if (pRCAP = RecordFindClientOnContext(pContext, clientspec, &position))
+    if ((pRCAP = RecordFindClientOnContext(pContext, clientspec, &position)))
 	RecordDeleteClientFromRCAP(pRCAP, position);
 } /* RecordDeleteClientFromContext */
 
@@ -1698,8 +1698,8 @@ RecordRegisterClients(pContext, client, stuff)
     int maxSets;
     int nExtReqSets = 0;
     int nExtRepSets = 0;
-    int extReqSetsOffset;
-    int extRepSetsOffset;
+    int extReqSetsOffset = 0;
+    int extRepSetsOffset = 0;
     SetInfoPtr pExtReqSets, pExtRepSets;
     int clientListOffset;
     XID *pCanonClients;
@@ -1966,7 +1966,7 @@ static int
 ProcRecordQueryVersion(client)
     ClientPtr client;
 {
-    REQUEST(xRecordQueryVersionReq);
+    /* REQUEST(xRecordQueryVersionReq); */
     xRecordQueryVersionReply 	rep;
     int 		n;
 
@@ -2188,7 +2188,7 @@ RecordConvertSetToRanges(pSet, pri, byteoffset, card8, imax, pStartIndex)
 	return Success;
 
     nRanges = pStartIndex ? *pStartIndex : 0;
-    while (pIter = RecordIterateSet(pSet, pIter, &interval))
+    while ((pIter = RecordIterateSet(pSet, pIter, &interval)))
     {
 	if (interval.first > imax) break;
 	if (interval.last  > imax) interval.last = imax;
@@ -2604,7 +2604,7 @@ RecordDeleteContext(value, id)
      *  As a result, the RCAPs will be freed.
      */
 
-    while (pRCAP = pContext->pListOfRCAP)
+    while ((pRCAP = pContext->pListOfRCAP))
     {
 	int numClients = pRCAP->numClients;
 	/* when the last client is deleted, the RCAP will go away. */
@@ -2928,8 +2928,8 @@ RecordAClientStateChange(pcbl, nulldata, calldata)
 	    RecordClientsAndProtocolPtr pRCAP;
 	    RecordContextPtr pContext = ppAllContexts[i];
 
-	    if (pRCAP = RecordFindClientOnContext(pContext,
-					    XRecordFutureClients, NULL))
+	    if ((pRCAP = RecordFindClientOnContext(pContext,
+					    XRecordFutureClients, NULL)))
 	    {
 		RecordAddClientToRCAP(pRCAP, pClient->clientAsMask);
 		if (pContext->pRecordingClient && pRCAP->clientStarted)
@@ -2948,8 +2948,8 @@ RecordAClientStateChange(pcbl, nulldata, calldata)
 
 	    if (pContext->pRecordingClient == pClient)
 		RecordDisableContext(pContext);
-	    if (pRCAP = RecordFindClientOnContext(pContext,
-				    pClient->clientAsMask, &pos))
+	    if ((pRCAP = RecordFindClientOnContext(pContext,
+				    pClient->clientAsMask, &pos)))
 	    {
 		if (pContext->pRecordingClient && pRCAP->clientDied)
 		    RecordAProtocolElement(pContext, pClient,
@@ -2959,6 +2959,8 @@ RecordAClientStateChange(pcbl, nulldata, calldata)
 	}
     break;
 
+    default:
+    break;
     } /* end switch on client state */
 } /* RecordAClientStateChange */
 

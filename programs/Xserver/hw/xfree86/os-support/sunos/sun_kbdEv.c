@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbdEv.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbdEv.c,v 1.2 2001/08/17 22:08:15 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -255,8 +255,6 @@ sunPostKbdEvent(Firm_event *event)
     Bool        down;
     KeyClassRec *keyc = ((DeviceIntPtr)xf86Info.pKeyboard)->key;
     Bool        updateLeds = FALSE;
-    Bool        UsePrefix = FALSE;
-    Bool        Direction = FALSE;
     xEvent      kevent;
     KeySym      *keysym;
     int         keycode;

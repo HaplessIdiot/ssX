@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.8 1998/12/20 11:57:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.9 2001/01/17 22:36:32 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -85,6 +85,7 @@ in this Software without prior written authorization from The Open Group.
 
 extern WindowPtr *WindowTable;
 
+#if 0
 /*
  * The following list of strings defines the properties which will be
  * placed on the screen's root window if the property was defined in
@@ -101,7 +102,7 @@ static char *propStrings[] = {
 	DT_PRINT_PAGE_COMMAND,
 	(char *)NULL
 };
-
+#endif
 
 /*
  * PsCreateWindow - watch for the creation of the root window.
@@ -216,7 +217,6 @@ PsPaintWindow(
   RegionPtr pRegion,
   int       what)
 {
-  int       status;
   WindowPtr pRoot;
 
 #define FUNCTION        0

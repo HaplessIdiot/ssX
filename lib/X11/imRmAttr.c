@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRmAttr.c,v 1.4 2000/09/26 15:56:52 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imRmAttr.c,v 1.5 2001/01/17 19:41:52 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -704,7 +704,7 @@ _XimValueToAttribute(res, buf, buf_size, value, len, mode, param)
 	    XFontSet	 font = (XFontSet)value;
 	    Xic		 ic = (Xic)param;
 	    char	*base_name = NULL;
-	    int		 length;
+	    int		 length = 0;
 	    CARD16	*buf_s = (CARD16 *)buf;
 
 	    if (!font) {

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.3 2000/01/29 18:58:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.4 2000/02/12 03:39:23 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -108,8 +108,8 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     register CfbBits  bits;
     register PixelType	    *pdst;
     PixelType		    startmask, endmask;
-    int			    niStart, niEnd;
-    int			    bitStart, bitEnd;
+    int			    niStart = 0, niEnd = 0;
+    int			    bitStart = 0, bitEnd = 0;
     int			    nl, nlMiddle;
     int			    nbox;
     BoxPtr		    pbox;
@@ -176,7 +176,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    i = niStart;
 		    curBit = bitStart;
 		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = *pdst & ~startmask | bits;
+		    *pdst = (*pdst & ~startmask) | bits;
 		    pdst++;
 	    	}
 	    	nl = nlMiddle;
@@ -192,7 +192,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    i = niEnd;
 		    curBit = bitEnd;
 		    GetBits (psrc, i, curBit, bitPos, bits);
-		    *pdst = *pdst & ~endmask | bits;
+		    *pdst = (*pdst & ~endmask) | bits;
 	    	}
 	    }
 	}
@@ -329,8 +329,8 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     register int	    bitPos;
     register unsigned int   bits;
     unsigned int	    startmask, endmask;
-    int			    niStart, niEnd;
-    int			    bitStart, bitEnd;
+    int			    niStart = 0, niEnd = 0;
+    int			    bitStart = 0, bitEnd = 0;
     int			    nl, nlMiddle;
     int			    nbox;
     BoxPtr		    pbox;

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.3 2000/02/12 03:39:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.4 2001/01/17 22:36:37 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -106,9 +106,6 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register int wtmp,xtemp,width;
     CfbBits bgfill,fgfill,*ptemp,tmpDst1,tmpDst2,*pdtmp;
     int tmpx;
-#if PSZ == 24
-    int xIndex;
-#endif
 
     xpos += pDrawable->x;
     ypos += pDrawable->y;

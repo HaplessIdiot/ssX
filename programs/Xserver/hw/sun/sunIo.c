@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.6 2001/05/25 18:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.7 2001/08/17 22:08:11 tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -106,8 +106,10 @@ void sunEnqueueEvents (
 	return;
 
     numPtrEvents = 0;
+    ptrEvents = NULL;
     PtrAgain = TRUE;
     numKbdEvents = 0;
+    kbdEvents = NULL;
     KbdAgain = TRUE;
 
     /*

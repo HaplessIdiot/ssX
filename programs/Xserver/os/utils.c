@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.73 2001/08/17 16:58:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.74 2001/08/23 15:26:05 alanh Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -285,7 +285,7 @@ LockServer()
   }
   if (lfd < 0)
     FatalError("Could not create lock file in %s\n", tmp);
-  (void) sprintf(pid_str, "%10d\n", getpid());
+  (void) sprintf(pid_str, "%10ld\n", (long)getpid());
   (void) write(lfd, pid_str, 11);
 #ifndef __EMX__
 #ifndef USE_CHMOD

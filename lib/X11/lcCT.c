@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.24 2001/02/09 00:02:53 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.25 2001/08/09 19:14:06 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -861,7 +861,7 @@ cstoct(
 {
     State state = (State) conv->state;
     XlcSide side;
-    unsigned char min_ch, max_ch;
+    unsigned char min_ch = 0, max_ch = 0;
     int length, unconv_num;
     CTInfo ct_info;
     XlcCharSet charset;

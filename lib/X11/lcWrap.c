@@ -49,7 +49,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86: xc/lib/X11/lcWrap.c,v 3.10 2001/01/17 19:41:55 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.11 2001/07/25 15:04:45 dawes Exp $ */
 
 #include <stdlib.h>
 #include "Xlibint.h"
@@ -542,7 +542,7 @@ _XlcCountVaList(
     int count;
 
     for (count = 0; va_arg(var, char *); count++)
-	va_arg(var, XPointer);
+	(void)va_arg(var, XPointer);
     
     *count_ret = count;
 }

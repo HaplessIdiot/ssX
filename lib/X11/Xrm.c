@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.16 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.17 2001/08/01 00:44:38 tsi Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -2315,7 +2315,7 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 {
     register LTable *list;
     register LTable table;
-    register VEntry entry;
+    register VEntry entry = NULL;
     int flags;
 
 /* find tight or loose entry */

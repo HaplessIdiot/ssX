@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dh.c,v 1.1 2001/04/05 17:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dh.c,v 1.2 2001/09/26 12:59:17 alanh Exp $ */
 /*********************************************************************
 *  	G450: This is for Dual Head. 
 *       Matrox Graphics
@@ -421,6 +421,9 @@ void CRTC2GetPitch (ScrnInfoPtr pScrn, xMODEINFO *pModeInfo)
         case 32:
             ulOffset = pModeInfo->ulFBPitch * 4;
             break;
+	default:	/* Muffle compiler */
+            ulOffset = pModeInfo->ulFBPitch;
+	    break;
     }
 
     pReg->crtc2[MGAREG2_C2OFFSET] = ulOffset;

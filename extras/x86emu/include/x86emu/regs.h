@@ -35,6 +35,7 @@
 * Description:  Header file for x86 register definitions.
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #ifndef __X86EMU_REGS_H
 #define __X86EMU_REGS_H

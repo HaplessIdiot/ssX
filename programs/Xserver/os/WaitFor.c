@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.33 2001/08/23 15:26:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.34 2001/09/17 16:07:48 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -68,6 +68,9 @@ SOFTWARE.
 #include <X11/Xpoll.h>
 #include "dixstruct.h"
 #include "opaque.h"
+#ifdef DPMSExtension
+#include "dpmsproc.h"
+#endif
 
 /* modifications by raphael */
 int

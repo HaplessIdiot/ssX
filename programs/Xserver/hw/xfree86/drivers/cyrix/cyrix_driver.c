@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.20 2001/06/13 23:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.21 2001/08/07 07:04:45 keithp Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -315,7 +315,9 @@ CYRIXProbe(DriverPtr drv, int flags)
      */
     if ((numDevSections = xf86MatchDevice(CYRIX_DRIVER_NAME,
 						&devSections)) <= 0) {
+#ifdef DEBUG
    	xf86ErrorFVerb(3,"%s: No Device section found.\n",CYRIX_NAME);
+#endif
 	/*
 	 * There's no matching device section in the config file, so quit
 	 * now.

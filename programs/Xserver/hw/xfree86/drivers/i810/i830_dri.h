@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #ifndef _I830_DRI_H
 #define _I830_DRI_H

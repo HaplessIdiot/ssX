@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.14 2001/08/23 15:26:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.15 2001/09/17 16:07:47 keithp Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -263,9 +263,5 @@ extern int ProcBadRequest(
     ClientPtr /*client*/
 #endif
 );
-
-#ifdef DPMSExtension
-extern void DPMSSet (CARD16);
-#endif
 
 #endif				/* DIXSTRUCT_H */
