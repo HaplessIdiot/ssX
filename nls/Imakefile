@@ -1,4 +1,9 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/11/13 14:45:33 lehors $
+
+
+
+
+XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags
 
