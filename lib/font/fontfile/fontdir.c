@@ -1,5 +1,5 @@
 /* $XConsortium: fontdir.c,v 1.23 95/02/21 14:25:17 mor Exp $ */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.3 1995/11/12 09:49:18 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.4 1995/11/16 11:02:54 dawes Exp $ */
 
 /*
 
@@ -627,31 +627,12 @@ FontFileAddFontFile (dir, fontName, fileName)
      * a scalable version of the name... this can lead to confusion and
      * ambiguity between the font name and the field enhancements.
      */
-#ifndef NEW_BITMAP_BEHAVIOUR
     isscale = entry.name.ndashes == 14 &&
 	      FontParseXLFDName(entry.name.name,
 				&vals, FONT_XLFD_REPLACE_NONE) &&
 	      (vals.values_supplied & PIXELSIZE_MASK) != PIXELSIZE_ARRAY &&
 	      (vals.values_supplied & POINTSIZE_MASK) != POINTSIZE_ARRAY &&
 	      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
-#else
-    isscale = entry.name.ndashes == 14 &&
-	      FontParseXLFDName(entry.name.name,
-				&vals, FONT_XLFD_REPLACE_NONE) &&
-	      !(vals.values_supplied & PIXELSIZE_MASK) &&
-	      !(vals.values_supplied & POINTSIZE_MASK) &&
-	      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
-#endif
-#ifdef NOSCALE_HACK
-    if (!isscale && entry.name.ndashes == 15 &&
-	!strcmp(entry.name.name + entry.name.length - 8, "-noscale"))
-    {
-      entry.name.length -= 8;
-      entry.name.name[entry.name.length] = '\0';
-      entry.name.ndashes = 14;
-      FontParseXLFDName(entry.name.name, &vals, FONT_XLFD_REPLACE_NONE);
-    }      
-#endif
 #ifdef FONTDIRATTRIB
 #define UNSCALED_ATTRIB "unscaled"
     /* For scalable fonts, check if the "unscaled" attribute is present */
