@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.5 2002/01/23 16:26:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.6 2002/06/03 21:50:32 dawes Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -238,6 +238,12 @@ const char *lc_dir;
     char *path;
     size_t len;
 
+    /*
+     * reject this for possible security issue
+     */
+    if (strstr (dl_name, "../"))
+	return NULL;
+
 #ifdef _LP64
     len = (lc_dir ? strlen(lc_dir) : 0 ) +
 	(dl_name ? strlen(dl_name) : 0) + _MACH64_NAME_LEN + 10;
@@ -302,6 +308,8 @@ open_object (object, lc_dir)
   
   if (object->refcount == 0) {
       path = __lc_path(object->dl_name, lc_dir);
+      if (!path)
+	  return False;
 #if defined(hpux)
       object->dl_module = shl_load(path, BIND_DEFERRED, 0L);
 #else
