@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.23 2003/06/27 14:53:11 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.24 2003/07/09 01:45:23 dawes Exp $
  *
  */
 
@@ -51,7 +51,7 @@
 #define DRM_ERR_INVALID    (-1004)
 #define DRM_ERR_NO_FD      (-1005)
 
-#define DRM_AGP_NO_HANDLE ((unsigned long)~0UL)
+#define DRM_AGP_NO_HANDLE  0
 
 typedef unsigned long drmHandle,   *drmHandlePtr;   /* To mapped regions    */
 typedef unsigned int  drmSize,     *drmSizePtr;	    /* For mapped regions   */
