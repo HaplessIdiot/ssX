@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.44 2001/02/27 23:05:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.45 2001/03/25 05:32:13 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1077,7 +1077,7 @@ RetryWithBase:
 	      if (!savebase)
 	          savebase = pciReadLong(Tag, PCI_MAP_REG_START+(basereg<<2));
 	      if (PCIGETROM(savebase) == romaddr) {
-	          xf86MsgVerb(X_INFO,5,"xf86ReadPciBios: modifying membase[%i]"
+	          xf86MsgVerb(X_INFO,5,"xf86ReadPciBIOS: modifying membase[%i]"
 			    " for device %i:%i:%i\n", basereg,
 			    PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
 			    PCI_FUNC_FROM_TAG(Tag));
@@ -1099,9 +1099,7 @@ RetryWithBase:
 	newbase);
 
     hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM, PCIGETROM(romaddr));
-#ifdef DEBUG
-    ErrorF("ReadPciBIOS: base = 0x%x\n",romaddr);
-#endif
+    xf86MsgVerb(X_INFO, 5, "ReadPciBIOS: base = 0x%x\n",romaddr);
     /* Enable ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
 
