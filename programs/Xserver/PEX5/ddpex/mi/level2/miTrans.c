@@ -1,5 +1,5 @@
 /* $XConsortium: miTrans.c,v 5.3 94/04/17 20:37:21 hersh Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miTrans.c,v 1.4.2.1 1998/05/20 15:51:16 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -57,10 +57,10 @@ SOFTWARE.
 #include "miRender.h"
 #include "miLight.h"
 
-#include <stdio.h>
-
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
 #endif
 
 #define IRINT(x) ( ((x) >= 0.0) ? ((int)((x) + 0.5)) : ((int)((x) - 0.5)) )

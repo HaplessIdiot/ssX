@@ -1,5 +1,5 @@
 /* $XConsortium: miPolyLine.c,v 5.5 94/04/17 20:37:16 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miPolyLine.c,v 3.1 1997/02/18 17:48:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miPolyLine.c,v 3.2.2.1 1998/05/20 15:51:14 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -62,10 +62,10 @@ SOFTWARE.
 #include "ddpex2.h"
 #include "miClip.h"
 
-#include <stdio.h>
-
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
 #endif
 
 

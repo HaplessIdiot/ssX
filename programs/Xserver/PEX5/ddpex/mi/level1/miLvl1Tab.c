@@ -1,5 +1,5 @@
 /* $XConsortium: miLvl1Tab.c,v 5.2 94/04/17 20:36:53 rws Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miLvl1Tab.c,v 1.4.2.1 1998/05/20 15:51:04 dawes Exp $ */
 
 /***********************************************************
 
@@ -55,7 +55,7 @@ SOFTWARE.
 #include "miRender.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /* Rendering procedures for ExecuteOCTable */

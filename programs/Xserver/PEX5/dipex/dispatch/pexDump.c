@@ -1,5 +1,5 @@
 /* $XConsortium: pexDump.c,v 5.3 94/04/17 20:36:05 dpw Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/pexDump.c,v 1.4.2.1 1998/05/20 15:51:37 dawes Exp $ */
 
 /***********************************************************
 
@@ -79,7 +79,7 @@ static int foo;
 #include "pexStruct.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 PEXDumpBlock( block )

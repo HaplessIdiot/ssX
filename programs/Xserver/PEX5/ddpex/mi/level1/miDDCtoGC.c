@@ -1,5 +1,5 @@
 /* $XConsortium: miDDCtoGC.c,v 5.6 94/04/17 20:36:51 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miDDCtoGC.c,v 3.2 1997/02/18 17:48:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miDDCtoGC.c,v 3.3.2.1 1998/05/20 15:51:03 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -51,7 +51,6 @@ SOFTWARE.
 
 */
 
-#include <stdio.h>
 #include "miLUT.h"
 #include "misc.h"
 #include "miscstruct.h"
@@ -61,7 +60,9 @@ SOFTWARE.
 #include "miLineDash.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
 #endif
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: uOCprim.c,v 5.10 94/04/17 20:36:33 hersh Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/uOCprim.c,v 1.4.2.1 1998/05/20 15:51:47 dawes Exp $ */
 
 /***********************************************************
 
@@ -73,7 +73,7 @@ SOFTWARE.
 #include "convertStr.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #define LOCAL_FLAG extern

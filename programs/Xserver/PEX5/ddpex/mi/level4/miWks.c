@@ -1,5 +1,5 @@
 /* $XConsortium: miWks.c /main/16 1996/09/28 16:54:30 rws $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miWks.c,v 1.4.2.1 1998/05/20 15:51:27 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -63,7 +63,7 @@ SOFTWARE.
 #include "resource.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #ifdef MULTIBUFFER

@@ -1,5 +1,5 @@
 /* $XConsortium: pexNs.c,v 5.3 94/04/17 20:36:09 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexNs.c,v 3.1 1997/02/18 17:50:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexNs.c,v 3.2.2.1 1998/05/20 15:51:39 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,7 +60,7 @@ SOFTWARE.
 #include "pexLookup.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #ifdef min

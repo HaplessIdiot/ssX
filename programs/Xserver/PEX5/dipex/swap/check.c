@@ -1,5 +1,5 @@
 /* $XConsortium: check.c,v 5.6 94/04/17 20:36:28 hersh Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/check.c,v 1.4.2.2 1998/07/03 13:43:23 dawes Exp $ */
 
 /***********************************************************
 
@@ -59,7 +59,7 @@ SOFTWARE.
 #include "pexError.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /*
@@ -138,7 +138,7 @@ pexContext *cntxtPtr;
 checkStdHeader *strmPtr;
 {
 /* HACK ALERT ON */
-extern INT16 lastfp[];
+extern INT16 lastfp[MAXCLIENTS];
 /* HACK ALERT OFF */
 
     pexEnumTypeIndex fp;
@@ -198,7 +198,7 @@ HackFloat( cntxtPtr, strmPtr )
 pexContext *cntxtPtr;
 checkStdHeader *strmPtr;
 {
-extern INT16 lastfp[];
+extern INT16 lastfp[MAXCLIENTS];
 
     pexEnumTypeIndex fp;
 

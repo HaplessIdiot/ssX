@@ -1,5 +1,5 @@
 /* $XConsortium: miSOFAS.c,v 5.4 94/04/17 20:37:17 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miSOFAS.c,v 3.2 1997/02/18 17:48:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miSOFAS.c,v 3.3.2.1 1998/05/20 15:51:15 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -62,10 +62,10 @@ SOFTWARE.
 #include "ddpex2.h"
 #include "miLight.h"
 
-#include <stdio.h>
-
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
 #endif
 
 /*++

@@ -1,5 +1,5 @@
 /* $XConsortium: pexPc.c,v 5.10 94/04/17 20:36:10 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexPc.c,v 3.1 1997/02/18 17:50:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexPc.c,v 3.2.2.1 1998/05/20 15:51:40 dawes Exp $ */
 
 /***********************************************************
 
@@ -67,7 +67,7 @@ SOFTWARE.
 #include "pexUtils.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 #ifdef min

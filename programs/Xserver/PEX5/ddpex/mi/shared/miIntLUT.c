@@ -1,5 +1,5 @@
 /* $XConsortium: miIntLUT.c,v 5.2 94/04/17 20:37:41 rws Exp $ */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miIntLUT.c,v 1.4.2.1 1998/05/20 15:51:30 dawes Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium
@@ -57,7 +57,7 @@ SOFTWARE.
 #include "PEXprotost.h"
 
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 
 /* useful definition when testing */
