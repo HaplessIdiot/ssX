@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.14 2000/12/29 20:09:51 paulo Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.15 2001/01/24 00:06:39 dawes Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -95,8 +95,10 @@ CURSESLIB = NCursesLibName
 CURSESDEFINES  = -DHAS_NCURSES
 #endif
 
-DEFINES        = -DXF86CONFIG=\"XConfigFile\" $(MODULEDEFINES) \
-		 $(CURSESDEFINES) -DPROJECT_ROOT=\"ProjectRoot\"
+XF86CONFIGFILE = XConfigFile
+
+DEFINES        = -DXF86CONFIG=\"$(XF86CONFIGFILE)\" $(MODULEDEFINES) \
+		 $(CURSESDEFINES) -DPROJECT_ROOT=\"$(PROJECTROOT)\"
 
 #if HasDlopen
 DLLIB = DlLibrary
