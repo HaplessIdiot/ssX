@@ -1,5 +1,5 @@
 /* $XConsortium: osdep.h,v 1.9 94/04/17 19:56:07 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/osdep.h,v 3.1 1995/03/11 14:55:24 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -75,7 +75,11 @@ in this Software without prior written authorization from the X Consortium.
 #define OPEN_MAX 256
 #else
 #ifdef SVR4
+#ifdef SCO324
+#define OPEN_MAX sysconf(_SC_OPEN_MAX)
+#else
 #define OPEN_MAX 128
+#endif
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX

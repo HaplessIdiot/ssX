@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c /main/27 1996/01/25 18:45:41 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.10 1996/01/26 09:20:39 dawes Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.11 1996/08/24 12:55:26 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -70,7 +70,7 @@ in this Software without prior written authorization from the X Consortium.
 #include    <stdio.h>
 #include    <ctype.h>
 
-#ifdef SVR4
+#if defined(SVR4) && !defined(SCO325)
 #include    <sys/sockio.h>
 #endif
 #if defined(SYSV) && defined(i386)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/32 1996/01/26 18:20:58 gildea $
-XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.4 1995/07/22 04:19:32 dawes Exp $
+XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.5 1996/02/10 10:43:11 dawes Exp $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT
@@ -36,7 +36,7 @@ XCOMM $XFree86: xc/programs/rgb/Imakefile,v 3.4 1995/07/22 04:19:32 dawes Exp $
     CCOPTIONS = /**/
     EXTRA_LOAD_FLAGS = /**/
 #endif
-#if defined(i386Architecture) && defined(SVR4Architecture)
+#if defined(i386Architecture) && defined(SVR4Architecture) && !defined(SCOArchitecture)
        DBMLIB = DBMLibrary -lucb
 #endif
 #endif /*!UseRgbTxt */

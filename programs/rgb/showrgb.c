@@ -1,6 +1,6 @@
 /*
  * $XConsortium: showrgb.c,v 1.11 94/04/17 20:24:46 gildea Exp $
- * $XFree86: xc/programs/rgb/showrgb.c,v 3.1 1996/02/09 08:22:35 dawes Exp $
+ * $XFree86: xc/programs/rgb/showrgb.c,v 3.2 1996/05/06 06:00:47 dawes Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -32,7 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef NDBM
 #include <ndbm.h>
 #else
-#ifdef SVR4
+#if defined(SVR4) && !defined(SCO325)
 #include <rpcsvc/dbm.h>
 #else
 #include <dbm.h>
@@ -40,11 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 #define dbm_open(name,flags,mode) (!dbminit(name))
 #define dbm_firstkey(db) (firstkey())
 #define dbm_fetch(db,key) (fetch(key))
-#ifdef SCO
-#define dbm_close(db) /* */
-#else
 #define dbm_close(db) dbmclose()
-#endif
 #endif
 #endif /* USE_RGB_TXT */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: rgb.c,v 11.20 94/11/28 23:39:21 gildea Exp $ */
-/* $XFree86: xc/programs/rgb/rgb.c,v 3.1 1994/05/21 23:59:21 dawes Exp $ */
+/* $XFree86: xc/programs/rgb/rgb.c,v 3.2 1996/01/05 13:20:29 dawes Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium
@@ -39,18 +39,14 @@ from the X Consortium.
 #ifdef NDBM
 #include <ndbm.h>
 #else
-#ifdef SVR4
+#if defined(SVR4) && !defined(SCO325)
 #include <rpcsvc/dbm.h>
 #else
 #include <dbm.h>
 #endif
 #define dbm_open(name,flags,mode) (!dbminit(name))
 #define dbm_store(db,key,content,flags) (store(key,content))
-#ifdef SCO
-#define dbm_close(db) /* */
-#else
 #define dbm_close(db) dbmclose()
-#endif
 #endif
 
 #undef NULL

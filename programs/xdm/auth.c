@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xdm/auth.c,v 3.13 1996/01/06 05:25:47 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.14 1996/01/24 22:04:36 dawes Exp $ */
 /* $XConsortium: auth.c /main/62 1995/12/19 16:44:07 mor $ */
 /*
 
@@ -66,7 +66,7 @@ extern int errno;
 # include <netdnet/dnetdb.h>
 #endif
 
-#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386) && !defined(SCO))
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
 #define NEED_UTSNAME
 #include <sys/utsname.h>
 #endif
@@ -84,7 +84,9 @@ extern int errno;
 
 #ifdef SVR4
 # include <netdb.h>
+# ifndef SCO325
 # include <sys/sockio.h>
+# endif
 # include <sys/stropts.h>
 #endif
 #ifdef __convex__
