@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.26 2003/09/10 01:04:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.27 2003/10/02 13:30:12 eich Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -66,6 +66,11 @@
 
 #ifdef XDMCP
 #undef REQUEST
+
+#ifdef XDMCP_NO_IPV6
+#undef IPv6
+#endif
+
 #include <X11/Xdmcp.h>
 
 #define X_INCLUDE_NETDB_H

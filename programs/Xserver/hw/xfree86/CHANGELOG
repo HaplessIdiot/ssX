@@ -1,4 +1,7 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 574. A workaround for platforms (like *BSD) where IPv6 sockets don't accept
+      IPv4 connections: disable IPv6 XDMCP code by default.  This allows IPv4
+      XDMCP to work on such platforms (David Dawes).
  573. Rework REGION_* macros to eliminate NEED_SCREEN_REGIONS build failures
       (Marc La France).
  572. Fix an old bug in the X server and xfs related to usage of
@@ -18147,7 +18150,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2948 2003/11/08 02:02:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2949 2003/11/10 18:22:09 tsi Exp $
 
 
 
