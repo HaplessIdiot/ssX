@@ -6,7 +6,7 @@
  * February 2001  Created
  * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessScreen.c,v 1.1 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessScreen.c,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
 
 
 #include "mi.h"
@@ -77,12 +77,8 @@ RootlessComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
 {
     ScreenPtr pScreen = pDst->pDrawable->pScreen;
     PictureScreenPtr ps = GetPictureScreen(pScreen);
-    WindowPtr srcWin, maskWin, dstWin;
+    WindowPtr dstWin;
 
-    srcWin  = (pSrc->pDrawable->type  == DRAWABLE_WINDOW) ?
-        (WindowPtr)pSrc->pDrawable  :  NULL;
-    maskWin = (pMask->pDrawable->type == DRAWABLE_WINDOW) ?
-        (WindowPtr)pMask->pDrawable :  NULL;
     dstWin  = (pDst->pDrawable->type  == DRAWABLE_WINDOW) ?
         (WindowPtr)pDst->pDrawable  :  NULL;
 
@@ -112,10 +108,8 @@ RootlessGlyphs(CARD8 op, PicturePtr pSrc, PicturePtr pDst,
     int x, y;
     int n;
     GlyphPtr glyph;
-    WindowPtr srcWin, dstWin;
+    WindowPtr dstWin;
 
-    srcWin = (pSrc->pDrawable->type == DRAWABLE_WINDOW) ?
-        (WindowPtr)pSrc->pDrawable  :  NULL;
     dstWin = (pDst->pDrawable->type == DRAWABLE_WINDOW) ?
         (WindowPtr)pDst->pDrawable  :  NULL;
 
