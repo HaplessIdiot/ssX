@@ -1,4 +1,4 @@
-/* $XConsortium: ConvName.h,v 5.3 94/04/17 20:36:15 rws Exp $ */
+/* $XConsortium: ConvName.h,v 5.4 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define SWAP_FUNC_PREFIX(nm)	c##nm
 #define SWAP_FUNC_PEX_PFX(nm)	cPEX##nm
 #else

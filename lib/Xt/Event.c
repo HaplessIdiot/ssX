@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.168 94/04/17 20:14:01 converse Exp $ */
+/* $XConsortium: Event.c,v 1.172 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -64,7 +64,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "Shell.h"
 #include "StringDefs.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
@@ -1409,8 +1409,14 @@ Boolean _XtDefaultDispatcher(event)
 	else was_dispatched = XFilterEvent(event, None);
     }
     else if (grabType == pass) {
-	was_dispatched = (XFilterEvent(event, XtWindow(widget))
-			  || XtDispatchEventToWidget(widget, event));
+	if (event->type == LeaveNotify || 
+	    event->type == FocusIn ||
+	    event->type == FocusOut) {
+		if (XtIsSensitive (widget))
+		    was_dispatched = (XFilterEvent(event, XtWindow(widget)) || 
+				      XtDispatchEventToWidget(widget, event));
+	    } else was_dispatched = (XFilterEvent(event, XtWindow(widget)) || 
+				     XtDispatchEventToWidget(widget, event));
     } 
     else if (grabType == ignore) {
 	if ((grabList == NULL || _XtOnGrabList(widget, grabList))

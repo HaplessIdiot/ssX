@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.110 94/04/04 21:54:23 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.111 95/05/05 17:44:08 kaleb Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.0 1994/06/28 12:23:47 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -61,6 +61,8 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
+
+STRINGSABIOPTIONS = ToolkitStringsABIOptions
 
        LINTLIBS = $(LINTXLIB)
 
@@ -211,8 +213,11 @@ SpecialCLibObjectRule(TMaction,$(_NOOP_),$(RCONST_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
+
 #ifdef MinixArchitecture
 SpecialCLibObjectRule(Shell,$(ICONFIGFILES),-DXT_NO_SM)
 #endif
+
+ToolkitMakeStringsRule($(STRINGSABIOPTIONS),StringDefs.c StringDefs.h Shell.h,util/string.list,StringDefs.c)
 
 DependTarget()

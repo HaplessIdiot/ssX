@@ -1,5 +1,5 @@
-/* $XConsortium: Xlibint.h,v 11.143 94/04/17 20:21:50 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Xlibint.h,v 11.146 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.0 1994/10/20 06:03:24 dawes Exp $ */
 
 /*
 
@@ -304,9 +304,9 @@ extern LockInfoPtr _Xglobal_lock;
  */
 #ifdef MALLOC_0_RETURNS_NULL
 
-# define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))
-# define Xrealloc(ptr, size) realloc((ptr), ((size) > 0 ? (size) : 1))
-# define Xcalloc(nelem, elsize) calloc(((nelem) > 0 ? (nelem) : 1), (elsize))
+# define Xmalloc(size) malloc(((size) == 0 ? 1 : (size)))
+# define Xrealloc(ptr, size) realloc((ptr), ((size) == 0 ? 1 : (size)))
+# define Xcalloc(nelem, elsize) calloc(((nelem) == 0 ? 1 : (nelem)), (elsize))
 
 #else
 
@@ -400,7 +400,7 @@ extern int errno;			/* Internal system error number. */
  *
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
@@ -426,7 +426,7 @@ extern int errno;			/* Internal system error number. */
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req) + n) > dpy->bufmax)\
@@ -455,7 +455,7 @@ extern int errno;			/* Internal system error number. */
  * "rid" is the name of the resource. 
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
@@ -483,7 +483,7 @@ extern int errno;			/* Internal system error number. */
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\

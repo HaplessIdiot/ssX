@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.17 94/04/17 20:22:24 rws Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.18 95/06/08 23:20:39 gildea Exp $ */
 
 /******************************************************************************
 
@@ -270,7 +270,7 @@ typedef struct pexOCRequestHeader
  * Request names and opcodes.
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define REQNAME(_name_) pex##_name_##Req
 #define REQOPCODE(_name_) PEXRC##_name_
 #define REQSIZE(_name_) sz_pex##_name_##Req

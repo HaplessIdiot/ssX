@@ -1,5 +1,5 @@
-/* $XConsortium: cmsColNm.c,v 1.28 94/03/31 21:50:05 rws Exp $" */
-/* $XFree86$ */
+/* $XConsortium: cmsColNm.c,v 1.30 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.0 1994/10/20 06:03:32 dawes Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -252,7 +252,7 @@ _XcmsParseColorString(ccc, color_string, pColor)
  */
 static int
 FirstCmp(p1, p2)
-#if __STDC__
+#ifdef __STDC__
     const void *p1, *p2;
 #else
     XcmsPair *p1, *p2;

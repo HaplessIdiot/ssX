@@ -1,4 +1,4 @@
-/* $XConsortium: evtomask.c,v 1.9 94/04/17 20:22:01 rws Exp $ */
+/* $XConsortium: evtomask.c,v 1.10 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/X.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

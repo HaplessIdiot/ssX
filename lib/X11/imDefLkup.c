@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.9 94/03/29 22:51:29 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.13 95/02/24 22:53:53 kaleb Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -492,14 +492,10 @@ _XimRegisterTriggerKeysCallback(xim, len, data, call_data)
 #endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
-    XIMID        imid = buf_s[0];
     Xim		 im = (Xim)call_data;
 
-    if (imid == im->private.proto.imid) {
-	(void )_XimRegisterTriggerkey(im, (XPointer)&buf_s[2]);
-	return True;
-    }
-    return False;
+    (void )_XimRegisterTriggerkey(im, (XPointer)&buf_s[2]);
+    return True;
 }
 
 Public EVENTMASK
@@ -633,9 +629,10 @@ _XimRegCommitInfo(ic, string, string_len, keysym, keysym_len)
     info->string	= string;
     info->string_len	= string_len;
     info->keysym	= keysym;
-    info->keysym_len	= string_len;
+    info->keysym_len	= keysym_len;
     info->next = ic->private.proto.commit_info;
     ic->private.proto.commit_info = info;
+    return True;
 }
 
 Private void
@@ -669,31 +666,22 @@ _XimFreeCommitInfo(ic)
 }
 
 Private Bool
-_XimProcKeySym(ic, buf, len, xim_keysym, xim_keysym_len)
+_XimProcKeySym(ic, sym, xim_keysym, xim_keysym_len)
     Xic			  ic;
-    CARD32		 *buf;
-    int			  len;
+    CARD32		  sym;
     KeySym		**xim_keysym;
     int			 *xim_keysym_len;
 {
     Xim			 im = (Xim)ic->core.im;
-    int			 num = len / sizeof(CARD32);
-    int			 alloc_len;
-    KeySym		*keysym;
-    register int	 i;
 
-    alloc_len = sizeof(KeySym) * num;
-    if (!(keysym = (KeySym *)Xmalloc(alloc_len))) {
+    if (!(*xim_keysym = (KeySym *)Xmalloc(sizeof(KeySym)))) {
 	_XimError(im, ic, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
     }
 
-    for (i = 0; i < num; i++) {
-	keysym[i] = (KeySym)buf[i];
-    }
+    **xim_keysym = (KeySym)sym;
+    *xim_keysym_len = 1;
 
-    *xim_keysym = keysym;
-    *xim_keysym_len = alloc_len;
     return True;
 }
 
@@ -729,32 +717,27 @@ _XimCommitRecv(im, ic, buf)
 {
     CARD16	*buf_s = (CARD16 *)buf;
     BITMASK16	 flag = buf_s[0];
-    int		 len;
     XKeyEvent	 ev;
-    char	*string;
-    int		 string_len;
-    KeySym	*keysym;
-    int		 keysym_len;
+    char	*string = NULL;
+    int		 string_len = 0;
+    KeySym	*keysym = NULL;
+    int		 keysym_len = 0;
 
-    if (flag & XimLookupChars) {
+    if ((flag & XimLookupBoth) == XimLookupChars) {
 	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[2],
 			 		(int)buf_s[1], &string, &string_len)))
 	    return False;
 
-    } else if (flag & XimLookupKeySym) {
-	if (!(_XimProcKeySym(ic, (CARD32 *)&buf_s[2],
-			 		(int)buf_s[1], &keysym, &keysym_len)))
+    } else if ((flag & XimLookupBoth) == XimLookupKeySym) {
+	if (!(_XimProcKeySym(ic, *(CARD32 *)&buf_s[2], &keysym, &keysym_len)))
 	    return False;
 
-    } else if (flag & XimLookupBoth) {
-	len = (int)buf_s[1];
-	if (!(_XimProcKeySym(ic, (CARD32 *)&buf_s[2],
-			 		len, &keysym, &keysym_len)))
+    } else if ((flag & XimLookupBoth) == XimLookupBoth) {
+	if (!(_XimProcKeySym(ic, *(CARD32 *)&buf_s[2], &keysym, &keysym_len)))
 	    return False;
 
-	buf_s = (CARD16 *)((char *)&buf_s[2] + len);
-	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[1],
-			 		(int)buf_s[0], &string, &string_len)))
+	if (!(_XimProcCommit(ic, (BYTE *)&buf_s[5],
+			 		(int)buf_s[4], &string, &string_len)))
 	    return False;
     }
 
@@ -905,14 +888,15 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 #endif /* !MAXINT */
 
 Public int
-_Ximctstombs(im, from, from_len, to, to_len, state)
-    Xim		 im;
+_Ximctstombs(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
     char	*from;
     int		 from_len;
     char	*to;
     int		 to_len;
     Status	*state;
 {
+    Xim		 im = (Xim)xim;
     XlcConv	 conv = im->private.proto.ctom_conv;
     int		 from_left;
     int		 to_left;
@@ -990,14 +974,15 @@ _Ximctstombs(im, from, from_len, to, to_len, state)
 }
 
 Public int
-_Ximctstowcs(im, from, from_len, to, to_len, state)
-    Xim		 im;
+_Ximctstowcs(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
     char	*from;
     int		 from_len;
     wchar_t	*to;
     int		 to_len;
     Status	*state;
 {
+    Xim		 im = (Xim)xim;
     XlcConv	 conv = im->private.proto.ctow_conv;
     int		 from_left;
     int		 to_left;
@@ -1102,7 +1087,7 @@ _XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
 	    return 0;
 	}
 
-	ret = _Ximctstombs(im, info->string,
+	ret = im->methods->ctstombs((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
 	    return 0;
@@ -1165,7 +1150,7 @@ _XimProtoWcLookupString(xic, ev, buffer, bytes, keysym, state)
 	    return 0;
 	}
 
-	ret = _Ximctstowcs(im, info->string,
+	ret = im->methods->ctstowcs((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
 	    return 0;

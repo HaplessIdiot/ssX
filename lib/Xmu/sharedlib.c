@@ -1,4 +1,4 @@
-/* $XConsortium: sharedlib.c,v 1.8 94/04/17 20:16:27 rws Exp $ */
+/* $XConsortium: sharedlib.c,v 1.9 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 
@@ -36,7 +36,7 @@ struct _AtomRec {
     struct _DisplayRec* head;
 };
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define DeclareAtom(atom) \
 extern struct _AtomRec __##atom; \
 AtomPtr _##atom = &__##atom;

@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.99 94/04/17 20:13:50 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.101 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -76,7 +76,7 @@ in this Software without prior written authorization from the X Consortium.
 extern int errno;	
 #endif
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

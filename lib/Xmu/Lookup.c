@@ -1,4 +1,4 @@
-/* $XConsortium: Lookup.c,v 1.14 94/04/17 20:16:10 rws Exp $ */
+/* $XConsortium: Lookup.c,v 1.15 95/06/08 23:20:39 gildea Exp $ */
 
 /* 
  
@@ -33,7 +33,7 @@ in this Software without prior written authorization from the X Consortium.
 #define XK_PUBLISHING
 #include <X11/keysymdef.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,5 +1,5 @@
-/* $XConsortium: cmsTrig.c,v 1.6 94/02/10 20:10:00 rws Exp $" */
-/* $XFree86$ */
+/* $XConsortium: cmsTrig.c,v 1.7 95/06/08 23:20:39 gildea Exp $" */
+/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.0 1995/02/12 02:32:30 dawes Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -64,7 +64,7 @@ double _XcmsArcTangent();
  *	DEFINES
  */
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

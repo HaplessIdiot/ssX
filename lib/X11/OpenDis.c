@@ -1,5 +1,5 @@
-/* $XConsortium: OpenDis.c,v 11.152 94/04/17 20:20:21 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: OpenDis.c,v 11.153 95/06/05 19:02:01 gildea Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.0 1994/10/20 06:03:07 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986  X Consortium
@@ -72,7 +72,7 @@ static xReq _dummy_request = {
 	0, 0, 0
 };
 
-static OutOfMemory();
+static void OutOfMemory();
 static Bool _XBigReqHandler();
 
 extern Bool _XWireToEvent();
@@ -305,6 +305,16 @@ Display *XOpenDisplay (display)
 
 	if (prefixread == 0)
 	    _XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
+
+	/* an Authenticate reply we weren't expecting? */
+	if (prefix.success != xTrue && prefix.success != xFalse) {
+	    fprintf (stderr,
+      "Xlib: unexpected connection setup reply from server, type %d.\r\n",
+		     prefix.success);
+	    _XDisconnectDisplay (dpy->trans_conn);
+	    Xfree ((char *)dpy);
+	    return(NULL);
+	}
 
 	if (prefix.majorVersion != X_PROTOCOL) {
 	    /* XXX - printing messages marks a bad programming interface */
@@ -617,18 +627,6 @@ _XBigReqHandler(dpy, rep, buf, len, data)
     return True;
 }
 
-/* OutOfMemory is called if malloc fails.  XOpenDisplay returns NULL
-   after this returns. */
-
-static OutOfMemory (dpy, setup)
-    Display *dpy;
-    char *setup;
-{
-    _XDisconnectDisplay (dpy->trans_conn);
-    _XFreeDisplayStructure (dpy);
-    if (setup) Xfree (setup);
-}
-
 
 /* XFreeDisplayStructure frees all the storage associated with a 
  * Display.  It is used by XOpenDisplay if it runs out of memory,
@@ -639,7 +637,7 @@ static OutOfMemory (dpy, setup)
  * before the first possible call on this.
  */
 
-_XFreeDisplayStructure(dpy)
+void _XFreeDisplayStructure(dpy)
 	register Display *dpy;
 {
 	while (dpy->ext_procs) {
@@ -752,4 +750,16 @@ _XFreeDisplayStructure(dpy)
 	    Xfree (dpy->filedes);
 
 	Xfree ((char *)dpy);
+}
+
+/* OutOfMemory is called if malloc fails.  XOpenDisplay returns NULL
+   after this returns. */
+
+static void OutOfMemory (dpy, setup)
+    Display *dpy;
+    char *setup;
+{
+    _XDisconnectDisplay (dpy->trans_conn);
+    _XFreeDisplayStructure (dpy);
+    if (setup) Xfree (setup);
 }

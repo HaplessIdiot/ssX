@@ -1,4 +1,4 @@
-/* $XConsortium: miReplace.c,v 5.4 94/04/17 20:37:17 rws Exp $ */
+/* $XConsortium: miReplace.c,v 5.5 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 
@@ -77,7 +77,7 @@ extern void ParseVertexData();
 extern int  CountFacetOptData();
 extern int  CountVertexData();
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b

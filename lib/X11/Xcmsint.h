@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.18 92/06/05 16:47:53 converse Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.19 95/06/08 23:20:39 gildea Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -194,7 +194,7 @@ typedef struct {
 #define XCMS_SQRT(x)		_XcmsSquareRoot(x)
 #define XCMS_TAN(x)		(XCMS_SIN(x) / XCMS_COS(x))
 
-#if __STDC__
+#ifdef __STDC__
 double _XcmsArcTangent(double a);
 double _XcmsCosine(double a);
 double _XcmsCubeRoot(double a);

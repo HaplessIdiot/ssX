@@ -1,4 +1,4 @@
-/* $XConsortium: XIElibint.h,v 1.7 94/04/17 20:18:17 rws Exp $ */
+/* $XConsortium: XIElibint.h,v 1.8 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -158,7 +158,7 @@ typedef struct _XieExtInfo
  * Request names and opcodes.
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define REQNAME(_name_) xie##_name_##Req
 #define REQOPCODE(_name_) X_ie##_name_
 #define REQSIZE(_name_) sz_xie##_name_##Req
