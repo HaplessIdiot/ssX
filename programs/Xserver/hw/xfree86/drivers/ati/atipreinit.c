@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.22 2000/04/12 14:44:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.23 2000/04/20 21:28:29 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -38,7 +38,6 @@
 #include "atividmem.h"
 #include "vbe.h"
 #include "xf86RAC.h"
-#include "xf86Resources.h"
 
 typedef CARD16 Colour;          /* The correct spelling should be OK :-) */
 
@@ -1196,7 +1195,38 @@ ATIPreInit
     if ((pATI->Chip >= ATI_CHIP_88800GXC) &&
         (pScreenInfo->depth >= 8) &&
         (pATI->Chipset == ATI_CHIPSET_ATI))
+    {
         pATI->NewHW.crtc = ATI_CRTC_MACH64;
+
+        if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
+        {
+            /*
+             * No need for VGA I/O resources during operating state (but they
+             * are still decoded).
+             */
+            pResources =
+                xf86SetOperatingState(resVgaIo, pATI->iEntity, ResUnusedOpr);
+            if (pResources)
+            {
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Logic error setting operating state for VGA I/O.\n");
+                xf86FreeResList(pResources);
+            }
+
+            if (pATI->CPIO_VGAWonder)
+            {
+                pResources = xf86SetOperatingState(pATI->VGAWonderResources,
+                    pATI->iEntity, ResUnusedOpr);
+                if (pResources)
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                        "Logic error setting operating state for"
+                        " VGAWonder I/O.\n");
+                    xf86FreeResList(pResources);
+                }
+            }
+        }
+    }
     else
         pATI->NewHW.crtc = ATI_CRTC_VGA;
 
@@ -1548,11 +1578,33 @@ ATIPreInit
         }
     }
 
-    if (pATI->OptionLinear && !pATI->LinearBase)
+    if (pATI->OptionLinear)
     {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-            "Linear aperture not supported in this configuration.\n");
-        pATI->OptionLinear = FALSE;
+        if (!pATI->LinearBase)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Linear aperture not supported in this configuration.\n");
+            pATI->OptionLinear = FALSE;
+        }
+        else
+        {
+            if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
+            {
+                /*
+                 * Free VGA memory aperture during operating state (but it is
+                 * still decoded).
+                 */
+                pResources = xf86SetOperatingState(resVgaMem,
+                    pATI->iEntity, ResUnusedOpr);
+                if (pResources)
+                {
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                        "Logic error setting operating state for VGA memory"
+                        " aperture.\n");
+                    xf86FreeResList(pResources);
+                }
+            }
+        }
     }
 
     if (pATI->OptionAccel)

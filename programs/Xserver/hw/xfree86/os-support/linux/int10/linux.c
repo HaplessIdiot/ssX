@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.7 2000/02/08 17:19:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.9 2000/04/17 16:30:13 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -169,7 +169,7 @@ xf86InitInt10(int entityIndex)
 		}
 	    }
 	}
-	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
+	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segment is: 0x%x\n",cs);
 
 	pInt->BIOSseg = cs;
 	set_return_trap(pInt);
