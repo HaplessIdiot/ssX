@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 653. Fix an x86emu crash for a BIOS that references the FS (or GS) register
+      (Sergey Babkin).
  652. Install the DRM kernel module source under ProjectRoot/src (David Dawes).
  651. Update XKB registry file rules/xfree86.xml (Sergey Oudaltsov).
  650. Fix '-nolisten tcp' when building with IPv6 disabled (Bugzilla #651,
@@ -18339,7 +18341,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3020 2003/12/05 13:14:43 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3021 2003/12/05 18:43:02 dawes Exp $
 
 
 
