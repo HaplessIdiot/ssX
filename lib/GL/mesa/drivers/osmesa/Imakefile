@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.1 2004/04/08 10:07:36 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.2 2004/04/08 10:56:18 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -69,7 +69,11 @@ SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
 LIBNAME = OSMesa
+#ifndef OS2Architecture
 SOREV = 4.0
+#else
+SOREV =
+#endif
 
 
 #if DoNormalLib
