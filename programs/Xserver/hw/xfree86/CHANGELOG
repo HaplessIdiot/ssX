@@ -1,3 +1,4 @@
+XFree86 4.2.0 (18 January 2002)
  690. Workaround for hardware bug that prevents older ATI 3D Rage adapters from
       being assigned to XF86Config device sections (Marc La France).
 
@@ -14554,4 +14555,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2142 2002/01/17 23:27:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2143 2002/01/18 16:56:13 tsi Exp $
