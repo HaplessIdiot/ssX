@@ -1,0 +1,50 @@
+XCOMM $XFree86$
+
+#define NormalLibXrender YES
+#define SharedLibXrender YES
+
+#define SharedXrenderRev 1.0
+   XRENDERLIBSRC = $(LIBSRC)/Xrender
+SharedLibReferences(XRENDER,Xrender,$(RENDERLIBSRC),SOXRENDERREV,SharedXrenderRev)
+
+#define DoNormalLib NormalLibXrender
+#define DoSharedLib SharedLibXrender
+#define DoDebugLib DebugLibXrender
+#define DoProfileLib ProfileLibXrender
+#define LibName Xrender
+#define SoRev SOXRENDERREV
+#define IncSubdir X11
+#define IncSubSubdir extensions
+
+#include <Threads.tmpl>
+
+#ifdef SharedXrenderReqs
+REQUIREDLIBS = SharedXrenderReqs
+#endif
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+      DEFINES = $(ALLOC_DEFINES)
+#ifdef UseInstalled
+      XSRCDIR = /x11
+     INCLUDES = -I$(XSRCDIR)/include/extensions -I..
+#else
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I..
+#endif
+         SRCS = Xrender.c \
+	 	Composite.c \
+		Glyph.c \
+		Picture.c
+         OBJS = Xrender.o \
+	 	Composite.o \
+		Glyph.o \
+		Picture.o
+     LINTLIBS = $(LINTXLIB)
+
+HEADERS = Xrender.h
+
+#include <Library.tmpl>
+
+DependTarget()
