@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.2 1994/06/19 11:04:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.3 1994/07/21 13:47:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -462,7 +462,7 @@ mach8Probe()
 
     if (mach8InfoRec.virtualX > 1024)
     {
-        ErrorF("%s: Virtual width must be no greater than 1024\n");
+        ErrorF("%s: Virtual width must be no greater than 1024\n",mach8InfoRec.name);
         return(FALSE);
     }
     if ( mach8InfoRec.virtualX * mach8InfoRec.virtualY > memavail)

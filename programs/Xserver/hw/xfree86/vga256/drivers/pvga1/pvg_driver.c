@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.4 1994/07/24 11:57:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.5 1994/08/01 12:18:12 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -329,11 +329,13 @@ PVGA1Probe()
 	tmp = rdinx(0x3CE, 0x0F);
 	wrinx(0x3CE, 0x0F, 0x17 | tmp);	/* Lock registers */
 	if (testinx2(0x3CE, 0x09, 0x7F)) {
+	    wrinx(0x3CE, 0x0F, tmp);
 	    PVGA1EnterLeave(LEAVE);
 	    return(FALSE);
 	}
 	wrinx(0x3CE, 0x0F, 0x05);	/* Unlock them again */
 	if (!testinx2(0x3CE, 0x09, 0x7F)) {
+	    wrinx(0x3CE, 0x0F, tmp);
 	    PVGA1EnterLeave(LEAVE);
 	    return(FALSE);
 	}
