@@ -1,7 +1,7 @@
 /* 
  * Id: newport.h,v 1.4 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.6 2001/12/17 20:52:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.7 2001/12/19 15:59:36 tsi Exp $ */
 
 #ifndef __NEWPORT_H__
 #define __NEWPORT_H__
@@ -69,9 +69,10 @@ typedef struct {
 	npireg_t txt_clipmode;		/* Rex3 clip mode register */
 
 	unsigned short txt_vc2ctrl;	/* VC2 control register */
-	CARD8 txt_xmap9_cfg0;		/* 0. Xmap9's control register */
-	CARD8 txt_xmap9_cfg1;		/* 1. Xmap9's control register */
-	CARD8 txt_xmap9_mi;		/* Xmap9's mode index register */
+	CARD8  txt_xmap9_cfg0;		/* 0. Xmap9's control register */
+	CARD8  txt_xmap9_cfg1;		/* 1. Xmap9's control register */
+	CARD8  txt_xmap9_mi;		/* Xmap9s' mode index register */
+	CARD32 txt_xmap9_mod0;		/* Xmap9s' mode 0 register */
 	LOCO txt_colormap[256];
 	OptionInfoPtr Options;
 } NewportRec, *NewportPtr;
@@ -85,6 +86,7 @@ void NewportVc2Set(NewportRegsPtr pNewportRegs, unsigned char vc2Ireg, unsigned 
 void NewportWait(NewportRegsPtr pNewportRegs);
 void NewportBfwait(NewportRegsPtr pNewportRegs);
 void NewportXmap9SetModeRegister(NewportRegsPtr pNewportRegs, CARD8 address, CARD32 mode);
+CARD32 NewportXmap9GetModeRegister(NewportRegsPtr pNewportRegs, unsigned chip, CARD8 address);
 void NewportBackupRex3( ScrnInfoPtr pScrn);
 void NewportRestoreRex3( ScrnInfoPtr pScrn);
 void NewportBackupXmap9s( ScrnInfoPtr pScrn);
