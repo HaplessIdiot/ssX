@@ -1,4 +1,6 @@
-XFree86 4.3.99.1 (xx March 2003)
+XFree86 4.3.99.2 (xx March 2003)
+
+XFree86 4.3.99.1 (23 March 2003)
   25. Xterm patch #176 (Thomas Dickey).
   24. Another int10 fix.  This time for adapters found at PCI:0:0:0.  This
       fix is particularly important for ZX1-based systems (Marc La France).
@@ -16578,4 +16580,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2601 2003/03/21 22:26:05 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2602 2003/03/23 02:07:27 dickey Exp $
