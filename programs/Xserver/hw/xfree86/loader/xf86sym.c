@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.210 2002/07/15 20:46:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.211 2002/07/22 17:53:36 tsi Exp $ */
 
 /*
  *
@@ -94,35 +94,25 @@ extern void* __remq(long, long);
 extern void* __remqu(long, long);
 #endif
 
-#if defined(__ia64__)
+#if defined(__GNUC__)
 extern long __divdf3(long, long);
 extern long __divdi3(long, long);
 extern long __divsf3(long, long);
-extern long __moddi3(long, long);
-extern long __udivdi3(long, long);
-extern long __umoddi3(long, long);
-#endif
-
-#if defined(__sparc__)
-# if defined(__GNUC__)		/* XXX: Other compilers? */
-extern long __divdi3(long, long);
-extern long __muldi3(long, long);
-# endif
-#endif
-
-#if defined(__i386__) || defined(__ix86) || defined(i386)
-extern long __divdi3(long, long);
-#endif
-
-#if defined(__arm__)
-#if defined(__linux__)
-#include <sys/io.h>
-#endif
-
 extern long __divsi3(long, long);
+extern long __moddi3(long, long);
 extern long __modsi3(long, long);
+extern long __muldf3(long, long);
+extern long __muldi3(long, long);
+extern long __mulsf3(long, long);
+extern long __mulsi3(long, long);
+extern long __udivdi3(long, long);
 extern long __udivsi3(long, long);
+extern long __umoddi3(long, long);
 extern long __umodsi3(long, long);
+#endif
+
+#if defined(__arm__) && defined(__linux__)
+#include <sys/io.h>
 #endif
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))
@@ -983,13 +973,23 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(debug_outl)
 # endif
 #endif
-#if defined(__ia64__)
+#if defined(__GNUC__)
    SYMFUNC(__divdf3)
    SYMFUNC(__divdi3)
    SYMFUNC(__divsf3)
+   SYMFUNC(__divsi3)
    SYMFUNC(__moddi3)
+   SYMFUNC(__modsi3)
+   SYMFUNC(__muldf3)
+   SYMFUNC(__muldi3)
+   SYMFUNC(__mulsf3)
+   SYMFUNC(__mulsi3)
    SYMFUNC(__udivdi3)
+   SYMFUNC(__udivsi3)
    SYMFUNC(__umoddi3)
+   SYMFUNC(__umodsi3)
+#endif
+#if defined(__ia64__)
    SYMFUNC(_outw)
    SYMFUNC(_outb)
    SYMFUNC(_outl)
@@ -997,20 +997,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_inw)
    SYMFUNC(_inl)
 #endif
-#if defined(__sparc__)
-# if defined(__GNUC__)		/* XXX: Other compilers? */
-   SYMFUNC(__divdi3)
-   SYMFUNC(__muldi3)
-# endif
-#endif
-#if defined(__i386__) || defined(__ix86) || defined(i386)
-   SYMFUNC(__divdi3)
-#endif
 #if defined(__arm__)
-   SYMFUNC(__divsi3)
-   SYMFUNC(__udivsi3)
-   SYMFUNC(__modsi3)
-   SYMFUNC(__umodsi3)
    SYMFUNC(outw)
    SYMFUNC(outb)
    SYMFUNC(outl)
