@@ -23,7 +23,7 @@
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.h,v 1.1 2001/08/13 19:35:00 dawes Exp $ */
 
 #ifndef	_ACECAD_H_
 #define _ACECAD_H_
@@ -96,16 +96,18 @@ static Bool DeviceOff (DeviceIntPtr);
 static Bool DeviceClose (DeviceIntPtr);
 static Bool DeviceInit (DeviceIntPtr);
 static void ReadInput (LocalDevicePtr);
-static void USBReadInput (LocalDevicePtr);
 static void CloseProc (LocalDevicePtr);
 static Bool ConvertProc (LocalDevicePtr, int, int, int, int, int, int, int, int, int *, int *);
 static Bool ReverseConvertProc(LocalDevicePtr , int , int , int*);
 static Bool QueryHardware (AceCadPrivatePtr);
-static Bool USBQueryHardware (LocalDevicePtr);
 static void NewPacket (AceCadPrivatePtr priv);
 static Bool AceCadGetPacket (AceCadPrivatePtr);
 static InputInfoPtr AceCadPreInit(InputDriverPtr, IDevPtr , int);
+#ifdef LINUX_INPUT
+static void USBReadInput (LocalDevicePtr);
+static Bool USBQueryHardware (LocalDevicePtr);
 static int IsUSBLine(int);
+#endif
 
 
 #endif
