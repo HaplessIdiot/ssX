@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.1 1996/09/23 13:26:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.2tsi Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -38,8 +38,7 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
@@ -281,7 +280,10 @@ s3Init(mode)
 
       oldS3 = vgaHWSave((vgaHWPtr)oldS3, sizeof(vgaS3Rec));
 
-      s3SAM256 = 0x00;
+      if (S3_ViRGE_VX_SERIES(s3ChipId))
+	 s3SAM256 = 0x40;
+      else
+	 s3SAM256 = 0x00;
 
       /* Save S3 Trio32/64 ext. sequenzer (PLL) registers */
       if (DAC_IS_TRIO) {
@@ -590,20 +592,27 @@ s3Init(mode)
    outb(vgaCRIndex, 0x35);
    outb(vgaCRReg, 0x00);
    cebank();
-   outb(vgaCRIndex, 0x3a);
 #if 0  /* x64: set to 1 if PCI read bursts should be enabled
         * NOTE: there are known problems with PCI burst mode in SATURN
         * chipset rev. 2 so this is commented out, maybe a new XF86Config
         * option should be used
         */
-   if (S3_ViRGE_SERIES(s3ChipId))
+   if (S3_ViRGE_SERIES(s3ChipId)) {
+      outb(vgaCRIndex, 0x3a);
       outb(vgaCRReg, 0xb5 & 0x7f);
-   else
+   } else
 #endif
-   if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &s3InfoRec.options))
-      outb(vgaCRReg, 0xb7);		/* was 95 */
-   else
-      outb(vgaCRReg, 0xb5);		/* was 95 */
+      {
+	 outb(vgaCRIndex, 0x66);  /* set CR66_7 before CR3A_7 */
+	 tmp = inb(vgaCRReg);
+	 outb(vgaCRReg, tmp | 0x80);
+	 
+	 outb(vgaCRIndex, 0x3a);
+	 if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &s3InfoRec.options))
+	    outb(vgaCRReg, 0xb7);
+	 else
+	    outb(vgaCRReg, 0xb5);
+      }
 
    outb(vgaCRIndex, 0x3b);
    outb(vgaCRReg, (new->CRTC[0] + new->CRTC[4] + 1) / 2);
@@ -745,7 +754,10 @@ s3Init(mode)
    outb(vgaCRReg, n);
 
    /* enable enhanced functions */
-   outb(vgaCRIndex, 0x66);
+   if (S3_ViRGE_VX_SERIES(s3ChipId))
+      outb(vgaCRIndex, 0x63);
+   else
+      outb(vgaCRIndex, 0x66);
    tmp = inb(vgaCRReg);
    outb(vgaCRReg, tmp | 1);
 
@@ -1016,13 +1028,21 @@ DBGOUT(0x0c);
       SETB_CMD_SET(CMD_NOP);
 DBGOUT(0x0d);
 
-      WaitQueue(12);
+      WaitQueue(10);
       SETB_SRC_BASE(0);
       SETB_DEST_BASE(0);
+      SETL_SRC_BASE(0);
+      SETL_DEST_BASE(0);
 
       /* Clipping rectangle to full drawable space */
-      SETB_CLIP(0,0, s3DisplayWidth-1,s3ScissB);
+      SETB_CLIP_L_R(0, s3DisplayWidth-1);
+      SETB_CLIP_T_B(0, s3ScissB);
       SETB_DEST_SRC_STR(s3BppDisplayWidth, s3BppDisplayWidth);
+      SETL_CLIP_L_R(0, s3DisplayWidth-1);
+      SETL_CLIP_T_B(0, s3ScissB);
+      SETL_DEST_SRC_STR(s3BppDisplayWidth, s3BppDisplayWidth);
+
+      WaitQueue(7);
       /* Enable writes to all planes and reset color compare */
       ;SET_WRT_MASK(~0);
 

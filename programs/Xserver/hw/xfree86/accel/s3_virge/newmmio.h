@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/newmmio.h,v 3.0 1996/09/22 13:25:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/newmmio.h,v 3.1 1996/09/23 13:26:31 dawes Exp $ */
 /***************************************************************************
  *
  * typedefs and macros for MMIO mode, S3 ViRGE
@@ -420,7 +420,6 @@ typedef struct {
 #define SETL_DEST_SRC_STR(d,s)	((mmtr)s3MmioMem)->line_regs.regs.dest_src_str = ((d)<<16 | (s))
 #define SETL_PAT_FG_CLR(val)	((mmtr)s3MmioMem)->line_regs.regs.pat_fg_clr = (val)
 #define SETL_CMD_SET(val)	((mmtr)s3MmioMem)->line_regs.regs.cmd_set = (val)
-#define SETL_RWIDTH_HEIGHT(w,h)	((mmtr)s3MmioMem)->line_regs.regs.rwidth_height = ((w)<<16 | (h))
 #define SETL_LXEND0_END1(e0,e1)	((mmtr)s3MmioMem)->line_regs.regs.lxend0_end1 = ((e0)<<16 | (e1))
 #define SETL_LDX(val)	((mmtr)s3MmioMem)->line_regs.regs.ldx = (val)
 #define SETL_LXSTART(val)	((mmtr)s3MmioMem)->line_regs.regs.lxstart = (val)
@@ -514,12 +513,6 @@ typedef struct {
 #define SETT3_XSTART02(val)	((mmtr)s3MmioMem)->triangle3d_regs.regs.xstart02 = (val)
 #define SETT3_YSTART(val)	((mmtr)s3MmioMem)->triangle3d_regs.regs.ystart = (val)
 #define SETT3_Y01_Y12(y01,y12)	((mmtr)s3MmioMem)->triangle3d_regs.regs.y01_y12 = ((y01)<<16 | (y12))
-
-#define SETB_CLIP(x1,y1,x2,y2)  { SETB_CLIP_L_R(x1,x2);  SETB_CLIP_T_B(y1,y2); }
-#define SETL_CLIP(x1,y1,x2,y2)  { SETL_CLIP_L_R(x1,x2);  SETL_CLIP_T_B(y1,y2); }
-#define SETP_CLIP(x1,y1,x2,y2)  { SETP_CLIP_L_R(x1,x2);  SETP_CLIP_T_B(y1,y2); }
-#define SETL3_CLIP(x1,y1,x2,y2) { SETL3_CLIP_L_R(x1,x2); SETL3_CLIP_T_B(y1,y2); }
-#define SETT3_CLIP(x1,y1,x2,y2) { SETT3_CLIP_L_R(x1,x2); SETT3_CLIP_T_B(y1,y2); }
 
 
 

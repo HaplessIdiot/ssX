@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.11 1996/09/01 04:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3dline.c,v 3.0tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,8 +71,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 #define NextDash {\
     dashIndexTmp++; \
@@ -151,8 +150,9 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    cfbPrivGCPtr devPriv;
    short fix;
 
-   if (!xf86VTSema)
+   if (1 || !xf86VTSema)
    {
+      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
@@ -167,6 +167,7 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
 	 cfb32LineSD(pDrawable, pGC, mode, npt, pptInit);
          break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 

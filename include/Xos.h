@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.16 1996/02/24 05:57:18 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.17 1996/06/10 08:42:53 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -288,7 +288,7 @@ typedef unsigned long fd_mask;
 #define NGROUPS 16
 #endif
 
-#if defined(SCO) || defined(ISC) || defined(__EMX__)
+#if defined(ISC) || defined(__EMX__)
 /*
  *	Some OS's may not have this
  */

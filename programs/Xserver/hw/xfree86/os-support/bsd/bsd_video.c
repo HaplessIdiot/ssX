@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.10 1996/03/29 22:17:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.11 1996/06/10 09:15:31 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -32,6 +32,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
 
 #if defined(__NetBSD__) && !defined(MAP_FILE)
 #define MAP_FILE 0
@@ -97,15 +98,15 @@ Bool warn;
 	    } else {
 		if (warn)
 		{
-		     ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
-			    DEV_MEM, strerror(errno));
+		     ErrorF("%s checkDevMem: warning: failed to mmap %s (%s)\n",
+			    XCONFIG_PROBED, DEV_MEM, strerror(errno));
 		}
 	    }
 	} else {
 	    if (warn)
 	    { 
-		ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
-		       DEV_MEM, strerror(errno));
+		ErrorF("%s checkDevMem: warning: failed to open %s (%s)\n",
+		       XCONFIG_PROBED, DEV_MEM, strerror(errno));
 	    }
 	}
 #ifndef HAS_APERTURE_DRV
@@ -138,15 +139,15 @@ Bool warn;
 
 		if (warn)
 		{
-		    ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
-			   DEV_APERTURE, strerror(errno));
+		    ErrorF("%s checkDevMem: warning: failed to mmap %s (%s)\n",
+			   XCONFIG_PROBED, DEV_APERTURE, strerror(errno));
 		}
 	    }
 	} else {
 	    if (warn)
 	    {
-		ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
-		   DEV_APERTURE, strerror(errno));
+		ErrorF("%s checkDevMem: warning: failed to open %s (%s)\n",
+		   XCONFIG_PROBED, DEV_APERTURE, strerror(errno));
 	    }
 	}
 	

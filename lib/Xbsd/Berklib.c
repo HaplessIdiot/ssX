@@ -1,5 +1,5 @@
 /* $XConsortium: Berklib.c,v 1.25 94/11/30 16:21:19 kaleb Exp $ */
-/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.2 1994/12/02 05:42:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.3 1995/01/28 15:43:38 dawes Exp $ */
 /*
 
 Copyright (c) 1987 X Consortium
@@ -54,7 +54,7 @@ from the X Consortium.
 #define WANT_RANDOM
 #endif
 
-#ifdef SVR4
+#if defined(SVR4) && !defined(SCO325)
 #define WANT_BFUNCS
 #define WANT_FFS
 #define WANT_RANDOM
@@ -66,11 +66,10 @@ from the X Consortium.
 
 #ifdef SYSV
 #ifdef i386
+#ifndef SCO
 #define WANT_FFS
 #define WANT_MEMMOVE
-#ifdef SCO
-/* silly bcopy in SCO does not handle overlaps */
-#define WANT_BFUNCS
+#endif
 #endif
 #endif
 #endif

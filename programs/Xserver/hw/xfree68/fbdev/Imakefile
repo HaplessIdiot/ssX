@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/Imakefile,v 3.0 1996/08/18 01:46:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/Imakefile,v 3.1tsi Exp $
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:40 dpw Exp $
 #include <Server.tmpl>
 
@@ -41,5 +41,7 @@ NormalLibraryTarget(fbdev,$(OBJS))
 LintLibraryTarget(fbdev,$(SRCS))
 NormalLintTarget($(SRCS))
 SpecialCObjectRule(fbdev,NullParameter,$(FB_DEFINES))
+
+InstallLinkKitLibrary(fbdev,$(LINKKITDIR)/drivers)
 
 DependTarget()

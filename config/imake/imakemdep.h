@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/91 1995/12/05 16:44:18 mor $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.15 1996/08/10 13:02:16 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.16 1996/08/11 12:32:31 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -366,9 +366,6 @@ char *cpp_argv[ARGUMENTS] = {
 #if defined(M_UNIX) || defined(sco)
 	"-Dsco",
 	"-DSYSV",
-# if defined(sco324)
-	"-Dsco324",
-# endif
 #endif
 #ifdef i386
 	"-Di386",
@@ -395,11 +392,8 @@ char *cpp_argv[ARGUMENTS] = {
 #  endif
 #  ifdef SCO
 	"-DSCO",
-#   ifdef SCO324
-	"-DSCO324",
-#   endif
-#   ifdef SCO325
-    "-DSCO325",
+#   ifdef _SCO_DS
+    "-DSCO325 -DSVR4",
 #   endif
 #  endif
 # endif
@@ -436,11 +430,8 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef SCO
 	"-DSCO",
-#  ifdef SCO324
-	"-DSCO324",
-#  endif
-#  ifdef SCO325
-	"-DSCO325",
+#  ifdef _SCO_DS
+	"-DSCO325 -DSVR4",
 #  endif
 # endif
 # ifdef ESIX

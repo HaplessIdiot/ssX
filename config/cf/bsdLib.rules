@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/2 1996/01/24 06:38:15 kaleb $
 
 
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.1 1996/02/04 08:53:40 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -63,6 +63,21 @@ clean::									@@\
 	$(RM) Concat(lib,libname.so.rev)
 
 #endif /* SharedLibraryTarget */
+
+#ifndef SharedDepModuleTarget
+#define SharedDepModuleTarget(name,deps,solist)				@@\
+AllTarget(name)								@@\
+									@@\
+name: deps								@@\
+	$(RM) $@~							@@\
+	$(LD) -o $@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)		@@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) name
+
+#endif /* SharedDepModuleTarget */
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.1 1996/09/23 13:26:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.2tsi Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -40,8 +40,7 @@
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"mi.h"
-#include	"s3.h"
-#include	"regs3.h"
+#include	"s3v.h"
 
 extern unsigned char s3SwapBits[256];
 
@@ -347,8 +346,8 @@ DBGOUT(0x5a);
       ErrorF("CLIP1 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
                 (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
 #endif
-      SETB_CLIP((short)pBox->x1, (short)pBox->y1,
-		(short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
+      SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
+      SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
 DBGOUT(0x5b);
       s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
 		     FONTGLYPHS(pGC->font), pBox);
@@ -357,7 +356,8 @@ DBGOUT(0x5c);
 
    WaitQueue(2);
 DBGOUT(0x5d);
-   SETB_CLIP(0,0,s3DisplayWidth - 1, s3ScissB);
+   SETB_CLIP_L_R(0, s3DisplayWidth - 1);
+   SETB_CLIP_T_B(0, s3ScissB);
 DBGOUT(0x5e);
    UNBLOCK_CURSOR;
    DEALLOCATE_LOCAL(charinfo);
@@ -481,15 +481,16 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
       ErrorF("CLIP2 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
                 (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
 #endif
-      SETB_CLIP((short)pBox->x1, (short)pBox->y1,
-      		(short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
+      SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
+      SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
       s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
 		     FONTGLYPHS(pGC->font), pBox);
 
    }
 
    WaitQueue(2);
-   SETB_CLIP(0,0,s3DisplayWidth - 1, s3ScissB);
+   SETB_CLIP_L_R(0, s3DisplayWidth - 1);
+   SETB_CLIP_T_B(0, s3ScissB);
    ;SET_MIX(FSS_FRGDCOL | ROP_S, BSS_BKGDCOL | ROP_S);
    ;SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;

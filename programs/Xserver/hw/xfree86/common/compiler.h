@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.16 1996/09/24 13:54:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.17 1996/09/25 14:16:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -882,7 +882,11 @@ unsigned short int port;
 #  endif
 # endif
 # ifndef PC98
-#  include <sys/inline.h>
+#  ifndef SCO325
+#   include <sys/inline.h>
+#  else
+#   include "scoasm.h"
+#  endif
 # else
 #if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB) || defined(PC98_GA968)
 #define PW_PORT 0x600
@@ -1159,7 +1163,7 @@ static int inb(port)
 
 
 # endif /* PC98 */
-# ifndef __HIGHC__
+# if !defined(__HIGHC__) && !defined(SCO325)
 #  pragma asm partial_optimization outl
 #  pragma asm partial_optimization outw
 #  pragma asm partial_optimization outb

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.5 1996/06/10 09:14:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.6 1996/09/29 13:35:47 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -105,7 +105,7 @@ xf86LoadModule(const char *	file,
 	Error((char *)file);
     } else {
 #ifdef PREPEND_UNDERSCORE
-#ifndef __NetBSD__
+#ifndef DLSYM_BUG
 	InitModule init_module = (InitModule)dlsym(module, "_init_module");
 #else
 	/* Work around a bug (?) in dlsym() which finds the symbols
@@ -136,7 +136,7 @@ xf86LoadModule(const char *	file,
 
 	init_module = (InitModule)dlsym(module, init_module_name);
 	xfree(init_module_name);
-#endif /* __NetBSD__ */
+#endif /* DLSYM_BUG */
 #else
 	InitModule init_module = (InitModule)dlsym(module, "init_module");
 #endif

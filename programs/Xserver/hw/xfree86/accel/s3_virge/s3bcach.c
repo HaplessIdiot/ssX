@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.10 1996/09/01 04:15:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3bcach.c,v 3.0tsi Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  *
@@ -34,8 +34,7 @@
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"xf86bcache.h"
-#include	"s3.h"
-#include	"regs3.h"
+#include	"s3v.h"
 
 void
 s3CacheMoveBlock(srcx, srcy, dstx, dsty, h, w, id)

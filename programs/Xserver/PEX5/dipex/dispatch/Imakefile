@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.8 94/11/21 18:31:20 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.0 1994/05/30 08:21:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.1 1995/01/28 15:44:56 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,9 +32,17 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
 RDR_STUBS = -DRENDER_CMDS
 ST_STUBS = -DSTORE_CMDS
+DIPEXDEFINES = PexDipexDefines
+#if PexDynamicModule
+#if HasDlsymBug
+MODULEDEFINES =  -DDLSYM_BUG
+#endif
+#define SharedServerLibraryDef -DDYNAMIC_MODULE
+#endif
+
 
  CDEBUGFLAGS = PexDipexCDebugFlags
-     DEFINES = PexDipexDefines
+     DEFINES = $(DIPEXDEFINES) $(MODULEDEFINES)
 
     LINTLIBS = ../../../dix/llib-ldix.ln \
 		../../../os/llib-los.ln \
@@ -53,8 +61,14 @@ OBJS = dipexParse.o dipexExt.o pexDump.o pexError.o dipexBuf.o pexUtils.o
 
 PEX_DI_LIBNAME = libdidipex.a
 
-NormalLibraryObjectRule()
+#define DoSharedLib	PexDynamicModule
+#include <ServerLib.tmpl>
+#if DoSharedLib
+SubdirLibraryRule($(OBJS))
+UnsharedLibraryTarget(didipex,$(OBJS),unshared,..)
+#else
 NormalLibraryTarget(didipex,$(OBJS))
+#endif
 LintLibraryTarget(dsp,$(SRCS))
 NormalLintTarget($(SRCS))
 

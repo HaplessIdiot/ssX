@@ -1,13 +1,13 @@
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.1 1996/03/17 12:58:52 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.2 1996/08/16 12:30:01 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
-.TH XF86VIDMODE 3X11 "3.1.2F" "XFree86" "X FUNCTIONS"
+.TH XF86VIDMODE 3X11 "3.2" "XFree86" "X FUNCTIONS"
 .SH NAME
-XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeModModeLine, XF86VidModeSwitchMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor \- XFree86-VidMode extension interface functions
+XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeAddModeLine, XF86VidModeDeleteModeLine, XF86VidModeModModeLine, XF86VidModeValidateModeLine, XF86VidModeSwitchMode, XF86VidModeSwitchToMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor, XF86VidModeGetViewPort, XF86VidModeSetViewPort \- XFree86-VidMode extension interface functions
 .SH SYNTAX
 .nf
 .LP
@@ -23,37 +23,70 @@ Bool XF86VidModeQueryVersion(
     int *\fImajor_version_return\fP\^,
     int *\fIminor_version_return\fP\^);
 .LP
-Status XF86VidModeGetModeLine(
+Bool XF86VidModeGetModeLine(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     int *\fIdotclock_return\fP\^,
     XF86VidModeModeLine *\fImodeline\fP\^);
 .LP
-Status XF86VidModeGetAllModeLines(
+Bool XF86VidModeGetAllModeLines(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     int *\fImodecount_return\fP\^,
     XF86VidModeModeInfo **\fImodesinfo\fP\^);
 .LP
-Status XF86VidModeModModeLine(
+Bool XF86VidModeAddModeLine(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    XF86VidModeModeInfo *\fImodeline\fP\,
+    XF86VidModeModeInfo *\fIaftermode\fP\^);
+.LP
+Bool XF86VidModeDeleteModeLine(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    XF86VidModeModeInfo *\fImodeline\fP\^);
+.LP
+Bool XF86VidModeModModeLine(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     XF86VidModeModeLine *\fImodeline\fP\^);
 .LP
-Status XF86VidModeSwitchMode(
+Status XF86VidModeValidateModeLine(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    XF86VidModeModeLine *\fImodeline\fP\^);
+.LP
+Bool XF86VidModeSwitchMode(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     int \fIzoom\fP\^);
 .LP
-Status XF86VidModeLockModeSwitch(
+Bool XF86VidModeSwitchToMode(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    XF86VidModeModeInfo *\fImodeline\fP\^);
+.LP
+Bool XF86VidModeLockModeSwitch(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     int \fIlock\fP\^);
 .LP
-Status XF86VidModeGetMonitor(
+Bool XF86VidModeGetMonitor(
     Display *\fIdisplay\fP\^,
     int \fIscreen\fP\^,
     XF86VidModeMonitor *\fImonitor\fP\^);
+.LP
+Bool XF86VidModeGetViewPort(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    int *\fIx_return\fP\^,
+    int *\fIy_return\fP\^);
+.LP
+Bool XF86VidModeSetViewPort(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    int \fIx\fP\^,
+    int \fIy\fP\^);
 .fi
 .SH ARGUMENTS
 .IP \fIdisplay\fP 2i
@@ -78,12 +111,23 @@ the next mode, otherwise switch to the previous mode.
 .IP \fIlock\fP 2i
 Indicates that mode switching should be locked, if non-zero.
 .IP \fImodeline\fP 2i
-Specifies or returns the timing values for the current video mode.
+Specifies or returns the timing values for a video mode.
+.IP \fIaftermode\fP 2i
+Specifies the timing values for the video mode after which the
+new mode will added.
 .IP \fImodesinfo\fP 2i
 Returns the timing values and dotclocks for all of the available
 video modes.
 .IP \fImonitor\fP 2i
 Returns information about the monitor.
+.IP \fIx\fP 2i
+Specifies the desired X location for the viewport.
+.IP \fIx_return\fP 2i
+Returns the current X location of the viewport.
+.IP \fIy\fP 2i
+Specifies the desired Y location for the viewport.
+.IP \fIy_return\fP 2i
+Returns the current Y location of the viewport.
 .SH STRUCTURES
 .nf
 .ta 2.25i 3.5i
@@ -154,7 +198,7 @@ the S3 server) the function will allocate storage for them.
 Therefore, if the
 .ZN privsize
 field is non-zero, the calling program should call
-.ZN free(private)
+.ZN Xfree(private)
 to free the storage.
 .PP
 .ZN XF86VidModeGetAllModeLines
@@ -170,20 +214,66 @@ The first element of the array corresponds to the current video mode.
 .PP
 The
 .ZN XF86VidModeModModeLine
-can be used to change the settings of the current video mode provided
-the requested settings are valid (e.g. they don't exceed the
+function can be used to change the settings of the current video mode
+provided the requested settings are valid (e.g. they don't exceed the
 capabilities of the monitor).
+.PP
+To add a mode to the list of available modes, the
+.ZN XF86VidModeAddModeLine
+function can be used.
+Assuming the settings are valid, the video mode will be added after
+the existing mode which matches the timings specified by the
+.ZN aftermode
+parameter.
+To be considered a match, all of the fields of the given
+.ZN XF86VidModeModeInfo
+structure must match, except the
+.ZN privsize
+and
+.ZN private
+fields.
+If the
+.ZN aftermode
+parameter is zero, the mode will be added
+after the current mode.
+.PP
+Modes can be deleted with the
+.ZN XF86VidModeDeleteModeLine
+function.  The specified mode must match an existing mode in the same
+manner used by the
+.ZN XF86VidModeAddModeLine
+function.
+If the mode to be deleted is the current mode, a mode switch
+to the next mode will occur first.  The last remaining mode can not
+be deleted.
+.PP
+The validity of a mode can be checked with the
+.ZN XF86VidModeValidateModeLine
+function.
+If the specified mode can be used by the server (i.e. meets all the
+constraints placed upon a mode by the combination of the server, card,
+and monitor) the function returns
+.ZN MODE_OK ,
+otherwise it returns a value indicating the reason why the mode is
+invalid (as defined in \fIxf86.h\fP)
 .SS "MODE SWITCH FUNCTIONS"
 When the function
 .ZN XF86VidModeSwitchMode
 is called, the server will change the video mode to next (or previous)
-video mode.
+video mode. The
+.ZN XF86VidModeSwitchToMode
+function can be used to switch directly to the specified mode.
+Matching is as specified in the description of the
+.ZN XF86VidModeAddModeLine
+function above.
 The
 .ZN XF86VidModeLockModeSwitch
 function can be used to allow or disallow mode switching whether
 the request to switch modes comes from a call to the
 .ZN XF86VidModeSwitchMode
-function or from one of the mode switch key sequences.
+or
+.ZN XF86VidModeSwitchToMode
+functions or from one of the mode switch key sequences.
 .SS "MONITOR FUNCTIONS"
 Information known to the server about the monitor is returned by the
 .ZN XF86VidModeGetMonitor
@@ -214,6 +304,13 @@ and
 .ZN vsync
 fields point to dynamically allocated storage that should be freed
 by the caller.
+.SS "VIEWPORT FUNCTIONS"
+The
+.ZN XF86VidModeGetViewPort
+and
+.ZN XF86VidModeSetViewPort
+functions can be used to, respectively, query and change the location
+of the upper left corner of the viewport into the virtual screen.
 .SS "OTHER FUNCTIONS"
 The
 .ZN XF86VidModeQueryVersion

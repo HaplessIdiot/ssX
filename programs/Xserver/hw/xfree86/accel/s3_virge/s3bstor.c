@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.9 1996/06/29 09:07:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3bstor.c,v 3.0tsi Exp $ */
 /*-
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -41,7 +41,7 @@
 #include    "scrnintstr.h"
 #include    "pixmapstr.h"
 #include    "windowstr.h"
-#include    "s3.h"
+#include    "s3v.h"
 
 void
 s3SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)

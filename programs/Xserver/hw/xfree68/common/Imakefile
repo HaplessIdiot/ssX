@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.0 1996/08/18 03:54:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.1tsi Exp $
 
 
 
@@ -224,5 +224,18 @@ LinkSourceFile(xf86Xinput.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Option.h,$(XF86SRC)/common)
+
+InstallLinkKitLibrary(xf86,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86Init.o,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86Init_m.o,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86ExtInit.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86Priv.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86Procs.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_Option.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_Option.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(xf86_Config.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(XF68_FBDev.c,$(LINKKITDIR))
 
 DependTarget()

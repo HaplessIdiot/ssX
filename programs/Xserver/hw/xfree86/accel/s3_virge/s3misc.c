@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.2 1996/09/24 13:54:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.3tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,8 +39,7 @@
 #include "cfb32.h"
 #include "pixmapstr.h"
 #include "fontstruct.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 #include "xf86_HWlib.h"
 #include "ICD2061A.h"
 #define XCONFIG_FLAGS_ONLY

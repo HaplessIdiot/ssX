@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.15 1996/01/20 02:04:24 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.16 1996/02/04 08:54:03 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -44,6 +44,12 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeGetMonitor		4
 #define X_XF86VidModeLockModeSwitch	5
 #define X_XF86VidModeGetAllModeLines	6
+#define X_XF86VidModeAddModeLine	7
+#define X_XF86VidModeDeleteModeLine	8
+#define X_XF86VidModeValidateModeLine	9
+#define X_XF86VidModeSwitchToMode	10
+#define X_XF86VidModeGetViewPort	11
+#define X_XF86VidModeSetViewPort	12
 
 #ifdef XF86VIDMODE_EVENTS
 #define XF86VidModeNotify		0
@@ -147,7 +153,7 @@ Bool XF86VidModeQueryExtension(
 #endif
 );
 
-Status XF86VidModeGetModeLine(
+Bool XF86VidModeGetModeLine(
 #if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
@@ -156,7 +162,7 @@ Status XF86VidModeGetModeLine(
 #endif
 );
 
-Status XF86VidModeGetAllModeLines(
+Bool XF86VidModeGetAllModeLines(
 #if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
@@ -165,7 +171,24 @@ Status XF86VidModeGetAllModeLines(
 #endif
 );
 
-Status XF86VidModeModModeLine(
+Bool XF86VidModeAddModeLine(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeModeInfo*	/* new modeline */,
+    XF86VidModeModeInfo*	/* after modeline */
+#endif
+);
+
+Bool XF86VidModeDeleteModeLine(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeModeInfo*	/* modeline */
+#endif
+);
+
+Bool XF86VidModeModModeLine(
 #if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
@@ -173,7 +196,15 @@ Status XF86VidModeModModeLine(
 #endif
 );
 
-Status XF86VidModeSwitchMode(
+Status XF86VidModeValidateModeLine(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeModeInfo*	/* modeline */
+#endif
+);
+
+Bool XF86VidModeSwitchMode(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
@@ -181,7 +212,15 @@ Status XF86VidModeSwitchMode(
 #endif
 );
 
-Status XF86VidModeLockModeSwitch(
+Bool XF86VidModeSwitchToMode(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeModeInfo*	/* modeline */
+#endif
+);
+
+Bool XF86VidModeLockModeSwitch(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
@@ -189,11 +228,29 @@ Status XF86VidModeLockModeSwitch(
 #endif
 );
 
-Status XF86VidModeGetMonitor(
+Bool XF86VidModeGetMonitor(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     XF86VidModeMonitor*	/* monitor */
+#endif
+);
+
+Bool XF86VidModeGetViewPort(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    int*		/* x return */,
+    int*		/* y return */
+#endif
+);
+
+Bool XF86VidModeSetViewPort(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    int			/* x */,
+    int			/* y */
 #endif
 );
 

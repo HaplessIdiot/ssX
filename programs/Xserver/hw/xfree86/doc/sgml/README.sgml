@@ -134,7 +134,8 @@ source distribution for full details.
 	<ITEM>Linux
 	<ITEM>Amoeba
 	<ITEM>Minix-386
-	<ITEM>LynxOS AT 2.2.1, 2.3
+	<ITEM>LynxOS AT 2.2.1, 2.3.0, 2.4.0
+	<ITEM>LynxOS microSPARC 2.4.0
 	</itemize>	
 
     <tag/PC98:/
@@ -438,7 +439,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Michael Rohleder <it>&lt;michael.rohleder@stadt-frankfurt.de&gt</it>
 </itemize>
-<tag/LynxOS AT support by:  /
+<tag/LynxOS support by:  /
 <itemize>
        <item> Thomas Mueller <it>&lt;tm@systrix.de&gt</it>
 </itemize>
@@ -996,7 +997,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.55 1996/09/25 14:17:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.56 1996/09/29 13:36:40 dawes Exp $
 
 
 

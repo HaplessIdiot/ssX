@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/etc/et4000clock.c,v 3.2 1994/11/26 12:46:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/etc/et4000clock.c,v 3.3 1996/02/04 09:08:53 dawes Exp $
  *
  * This is a sample clock setting program.  It will not work with all
  * ET4000 cards.  To work correctly the clocks line in XF86Config must
@@ -95,7 +95,11 @@ inb(port)
 #endif
 #endif
 
-#include <sys/inline.h>
+#ifndef SCO325
+# include <sys/inline.h>
+#else
+# include "../common/scoasm.h"
+#endif
 #endif /* __GNUC__ */
 
 

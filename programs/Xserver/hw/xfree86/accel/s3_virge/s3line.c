@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.0 1996/09/22 13:25:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.1tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -75,8 +75,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 void
 s3Line(pDrawable, pGC, mode, npt, pptInit)
@@ -101,16 +100,12 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    int   ady;
    int   signdx;		/* sign of dx and dy */
    int   signdy;
-   int   e, e1, e2;		/* bresenham error and increments */
    int   len;			/* length of segment */
    int   axis;			/* major axis */
    int   octant;
    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
-   int cmd = CMD_LINE | DRAW | PLANAR | WRTDATA | LASTPIX;
-   short cmd2;
-   short fix;
 
- /* a bunch of temporaries */
+   /* a bunch of temporaries */
    int   tmp;
    register int y1, y2;
    register int x1, x2;
@@ -118,22 +113,36 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    cfbPrivGCPtr devPriv;
 
    if (!xf86VTSema)
-   {
-      switch (s3InfoRec.bitsPerPixel) {
-      case 8:
-	 cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
-         break;
-      case 16:
-	 cfb16LineSS(pDrawable, pGC, mode, npt, pptInit);
-         break;
-      case 24:
-	 cfb24LineSS(pDrawable, pGC, mode, npt, pptInit);
-         break;
-      case 32:
-	 cfb32LineSS(pDrawable, pGC, mode, npt, pptInit);
-	 break;
+      {
+	 if (xf86VTSema) WaitIdleEmpty();
+	 switch (s3InfoRec.bitsPerPixel) {
+	 case 8:
+	    cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+	    break;
+	 case 16:
+	    cfb16LineSS(pDrawable, pGC, mode, npt, pptInit);
+	    break;
+	 case 24:
+	    cfb24LineSS(pDrawable, pGC, mode, npt, pptInit);
+	    break;
+	 case 32:
+	    cfb32LineSS(pDrawable, pGC, mode, npt, pptInit);
+	    break;
+	 }
+	 if (xf86VTSema) WaitIdleEmpty();
+	 return;
       }
-      return;
+
+   if (0) {
+      int tmp1 = pGC->fgPixel;
+      int tmp2 = pGC->alu;
+      pGC->fgPixel = 0x1a;
+      pGC->alu = 3;
+      WaitIdleEmpty();
+      cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+      WaitIdleEmpty();
+      pGC->fgPixel = tmp1;
+      pGC->alu = tmp2;
    }
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
@@ -142,12 +151,19 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    nboxInit = REGION_NUM_RECTS(cclip);
 
    BLOCK_CURSOR;
-   WaitQueue16_32(3,5);
-   SET_WRT_MASK(pGC->planemask);
-   SETL_PAT_FG_CLR(pGC->fgPixel);
+   ;SET_WRT_MASK(pGC->planemask);
+
+#if 0
    /* Fix problem writing to the cursor storage area */
+   WaitQueue(4);
+   SETL_CLIP_L_R(0, pDrawable->pScreen->width-1);
+   SETL_CLIP_T_B(0, pDrawable->pScreen->height-1);
+#else
    WaitQueue(2);
-   SET_SCISSORS_RB(pDrawable->pScreen->width-1,pDrawable->pScreen->height-1);
+#endif
+   SETL_PAT_FG_CLR(pGC->fgPixel);
+   SETL_CMD_SET(s3_gcmd | CMD_LINE | MIX_MONO_PATT | CMD_AUTOEXEC | s3alu_sp[pGC->alu]);
+
    xorg = pDrawable->x;
    yorg = pDrawable->y;
    ppt = pptInit;
@@ -169,12 +185,50 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
       x2 = ppt->x + xorg;
       y2 = ppt->y + yorg;
 
+      if (0) ErrorF("\ns3line %4d %4d    %4d %4d  %d %d\n", x1,y1, x2,y2,
+	     (mode == CoordModePrevious), (pGC->capStyle != CapNotLast));
+
+#if 0				/* only allow 0/45/90 degree lines */
+      if (!(   (x2-x1)==0 || (y2-y1)==0
+	    || (x2-x1)==(y2-y1) || -(x2-x1)==(y2-y1) )) {
+	 struct _xPoint pts[2];
+	 if (mode == CoordModePrevious)
+	    pts[0] = *(ppt-1);
+	 else
+	    pts[0] = *pptInit;
+	 pts[1] = *ppt;
+
+	 WaitQueue(1);
+	 SETL_CMD_SET(CMD_NOP);
+	 WaitIdleEmpty();/**/
+
+	 switch (s3InfoRec.bitsPerPixel) {
+	 case 8:
+	    cfbLineSS(pDrawable, pGC, mode, 2, pts);
+	    break;
+	 case 16:
+	    cfb16LineSS(pDrawable, pGC, mode, 2, pts);
+	    break;
+	 case 24:
+	    cfb24LineSS(pDrawable, pGC, mode, 2, pts);
+	    break;
+	 case 32:
+	    cfb32LineSS(pDrawable, pGC, mode, 2, pts);
+	    break;
+	 }
+
+	 WaitQueue(1);
+	 SETL_CMD_SET(s3_gcmd | CMD_LINE | CMD_AUTOEXEC | s3alu[pGC->alu]);
+	 continue;		/* next line */
+      }
+#endif
+
       if (x1 == x2) {
 
-       /*
-        * make the line go top to bottom of screen, keeping endpoint
-        * semantics
-        */
+	 /*
+	  * make the line go top to bottom of screen, keeping endpoint
+	  * semantics
+	  */
 	 if (y1 > y2) {
 	    register int tmp;
 
@@ -182,31 +236,31 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    y2 = y1 + 1;
 	    y1 = tmp + 1;
 	 }
-       /* get to first band that might contain part of line */
+
+	 /* get to first band that might contain part of line */
 	 while ((nbox) && (pbox->y2 <= y1)) {
 	    pbox++;
 	    nbox--;
 	 }
 
 	 if (nbox) {
-	  /* stop when lower edge of box is beyond end of line */
+	    /* stop when lower edge of box is beyond end of line */
 	    while ((nbox) && (y2 >= pbox->y1)) {
 	       if ((x1 >= pbox->x1) && (x1 < pbox->x2)) {
 		  int   y1t, y2t;
 
-		/* this box has part of the line in it */
+		  /* this box has part of the line in it */
 		  y1t = max(y1, pbox->y1);
 		  y2t = min(y2, pbox->y2);
 		  if (y1t != y2t) {
                      /* Since the ViRGE draws from bottom to top, I draw
                         from x2,y2 to x1,y1, where x2,y2 is skipped. */
- 		     WaitQueue(8);
-                     SETL_LXEND0_END1((short)x1, (short)x1);
-                     SETL_LDX(0);
-                     SETL_LXSTART(x1 << 20);
-                     SETL_LYSTART(y2t-1);
-                     SETL_LYCNT(y2t-y1t);
-                     SETL_CMD_SET(s3_gcmd | CMD_LINE | s3alu[pGC->alu]);
+		     WaitQueue(5);
+		     SETL_LXEND0_END1(x1, x1);
+		     SETL_LDX(0); /* dX == 0 */
+		     SETL_LXSTART(x1 << 20);
+		     SETL_LYSTART(y2t - 1);
+		     SETL_LYCNT(y2t - y1t);
 		  }
 	       }
 	       nbox--;
@@ -216,9 +270,9 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	 y2 = ppt->y + yorg;
       } else if (y1 == y2) {
 
-       /*
-        * force line from left to right, keeping endpoint semantics
-        */
+	 /*
+	  * force line from left to right, keeping endpoint semantics
+	  */
 	 if (x1 > x2) {
 	    register int tmp;
 
@@ -226,26 +280,26 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    x2 = x1 + 1;
 	    x1 = tmp + 1;
 	 }
-       /* find the correct band */
+	 /* find the correct band */
 	 while ((nbox) && (pbox->y2 <= y1)) {
 	    pbox++;
 	    nbox--;
 	 }
 
-       /* try to draw the line, if we haven't gone beyond it */
+	 /* try to draw the line, if we haven't gone beyond it */
 	 if ((nbox) && (pbox->y1 <= y1)) {
-	  /* when we leave this band, we're done */
+	    /* when we leave this band, we're done */
 	    tmp = pbox->y1;
 	    while ((nbox) && (pbox->y1 == tmp)) {
 	       int   x1t, x2t;
 
 	       if (pbox->x2 <= x1) {
-		/* skip boxes until one might contain start point */
+		  /* skip boxes until one might contain start point */
 		  nbox--;
 		  pbox++;
 		  continue;
 	       }
-	     /* stop if left of box is beyond right of line */
+	       /* stop if left of box is beyond right of line */
 	       if (pbox->x1 >= x2) {
 		  nbox = 0;
 		  break;
@@ -253,14 +307,13 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	       x1t = max(x1, pbox->x1);
 	       x2t = min(x2, pbox->x2);
 	       if (x1t != x2t) {
-                  WaitQueue(8);
                   /* Skip x2,y2 */
-                  SETL_LXEND0_END1((short)x2t-1, (short)x1t);
-                  SETL_LDX(0);
-                  SETL_LXSTART(x1t << 20);
-                  SETL_LYSTART(y1);
-                  SETL_LYCNT(0x1);
-                  SETL_CMD_SET(s3_gcmd | CMD_LINE | s3alu[pGC->alu]);
+		  WaitQueue(5);
+		  SETL_LXEND0_END1(x1t, x2t-1);
+		  SETL_LDX(0);	/* dY == 0 */
+		  SETL_LXSTART(x1t << 20);
+		  SETL_LYSTART(y1);
+		  SETL_LYCNT(1 | 0x80000000);
 	       }
 	       nbox--;
 	       pbox++;
@@ -268,39 +321,49 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	 }
 	 x2 = ppt->x + xorg;
       } else {			/* sloped line */
-	 cmd2 = cmd;
-	 if ((adx = x2 - x1) < 0) {
-	    fix = 0;
-	 } else {
-	    cmd2 |= INC_X;
-	    fix = -1;
-	 }
-	 if ((ady = y2 - y1) >= 0) {
-	    cmd2 |= INC_Y;
-	 }
+	 int xdelta, xfixup, xdir;
+
+	 adx = x2 - x1;
+	 ady = y2 - y1;
 	 CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
 			1, 1, octant);
 
 	 if (adx > ady) {
 	    axis = X_AXIS;
-	    e1 = ady << 1;
-	    e2 = e1 - (adx << 1);
-	    e = e1 - adx;
 	 } else {
 	    axis = Y_AXIS;
-	    e1 = adx << 1;
-	    e2 = e1 - (ady << 1);
-	    e = e1 - ady;
-	    cmd2 |= YMAJAXIS;
 	    SetYMajorOctant(octant);
 	 }
 
-	 FIXUP_ERROR(e, octant, bias);
+	 xdelta = -((x2-x1) << 20) / (y2-y1);
+	 if (axis == Y_AXIS)
+	    if (xdelta >= 0)
+	       xfixup = 0x80000;
+	    else
+	       xfixup = 0x7ffff;
+	 else
+	    if (xdelta > 0)
+	       xfixup = xdelta >> 1;
+	    else
+	       xfixup = (xdelta >> 1) + ((1<<20) - 1);
+	 if ((x1 < x2) ^ (y1 < y2))
+	    xdir = 0x80000000;
+	 else
+	    xdir = 0;
 
-       /*
-        * we have bresenham parameters and two points. all we have to do now
-        * is clip and draw.
-        */
+if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3d %02x\n"
+	    ,x1,y1, x2,y2, x2-x1, y2-y1
+	    ,xdir>>28
+	    ,xdelta ,xfixup
+	    ,xdelta/(double)(1<<20),xfixup/(double)(1<<20)
+	    ,pGC->alu, s3alu_sp[pGC->alu]
+	    ,pGC->fgPixel, pGC->fgPixel
+       );
+
+	 /*
+	  * we have bresenham parameters and two points. all we have to do now
+	  * is clip and draw.
+	  */
 
 	 while (nbox--) {
 	    oc1 = 0;
@@ -308,125 +371,155 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    OUTCODES(oc1, x1, y1, pbox);
 	    OUTCODES(oc2, x2, y2, pbox);
 	    if ((oc1 | oc2) == 0) {
-	       if (axis == X_AXIS)
-		  len = adx;
-	       else
-		  len = ady;
+	       len = ady;
 
-	     /*
-	      * NOTE:  The 8514/A hardware routines for generating lines do
-	      * not match the software generated lines of mi, cfb, and mfb.
-	      * This is a problem, and if I ever get time, I'll figure out
-	      * the 8514/A algorithm and implement it in software for mi,
-	      * cfb, and mfb.
-	      * 14-sep-93 TCG: apparently only change needed is
-	      * addition of 'fix' stuff in cfbline.c
-	      */
-	       WaitQueue(7);
-	       SET_CURPT((short)x1, (short)y1);
-	       SET_ERR_TERM((short)(e + fix));
-	       SET_DESTSTP((short)e2, (short)e1);
-	       SET_MAJ_AXIS_PCNT((short)len);
-	       SET_CMD(cmd2);
+	       /*
+		* NOTE:  The ViRGE hardware routines for generating lines may
+		* not match the software generated lines of mi, cfb, and mfb
+		* because it's using simple DDA instead of bresenham.
+		*/
+	       ;SET_CURPT((short)x1, (short)y1);
+	       ;SET_ERR_TERM((short)(e + fix));
+	       ;SET_DESTSTP((short)e2, (short)e1);
+	       ;SET_MAJ_AXIS_PCNT((short)len);
+	       ;SET_CMD(cmd2);
+
+#if 0
+	       if (y1 > y2) {
+		  if (xdir)
+		     ErrorF("LXEND0_END1 %8x\n",x1<<16|(x2-1),x1, x2-1);
+		  else
+		     ErrorF("LXEND0_END1 %8x\n",x1<<16|(x2+1),x1, x2+1);
+		  ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
+		  ErrorF("LXSTART %8x %8f\n",(x1 << 20) + xfixup,((x1 << 20) + xfixup)/(double)(1<<20));
+		  ErrorF("LYSTART %8x %d\n",y1,y1);
+		  ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+	       } else {
+		  if (pGC->capStyle != CapNotLast)
+		     ErrorF("LXEND0_END1 %8x\n",x2<<16|x1,x2, x1);
+		  else if (xdir)
+		     ErrorF("LXEND0_END1 %8x\n",(x2+1)<<16|x1,x2+1, x1);
+		  else
+		     ErrorF("LXEND0_END1 %8x\n",(x2-1)<<16|x1,x2-1, x1);
+		  ErrorF("LDX %8x\n",xdelta);
+		  ErrorF("LXSTART %8x %8f\n",(x2 << 20) + xfixup,((x2 << 20) + xfixup)/(double)(1<<20));
+		  ErrorF("LYSTART %8x %d\n",y2,y2);
+		  ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+	       }
+#endif
+	       WaitQueue(5);
+	       if (y1 > y2) {
+		  if (xdir)
+		     SETL_LXEND0_END1(x1, x2-1);
+		  else
+		     SETL_LXEND0_END1(x1, x2+1);
+		  SETL_LDX(xdelta);
+		  SETL_LXSTART((x1 << 20) + xfixup);
+		  SETL_LYSTART(y1);
+		  SETL_LYCNT((len+1) | xdir);
+	       } else {
+		  if (xdir)
+		     SETL_LXEND0_END1(x2+1, x1);
+		  else
+		     SETL_LXEND0_END1(x2-1, x1);
+		  SETL_LDX(xdelta);
+		  SETL_LXSTART((x2 << 20) + xfixup);
+		  SETL_LYSTART(y2);
+		  SETL_LYCNT((len+1) | xdir);
+	       }
+
 	       break;
 	    } else if (oc1 & oc2) {
 	       pbox++;
 	    } else {
 
-	     /*
-	      * let the mi helper routine do our work; better than
-	      * duplicating code...
-	      */
-	       int   err;		/* modified bresenham error term */
-	       int   clip1=0, clip2=0;	/* clippedness of the endpoints */
+	       /*
+		* let the mi helper routine do our work; better than
+		* duplicating code...
+		*/
+	       int   clip1=0, clip2=0; /* clippedness of the endpoints */
 
-	       int   clipdx, clipdy;	/* difference between clipped and
-					 * unclipped start point */
 	       int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
 
                if (miZeroClipLine(pbox->x1, pbox->y1,
-					pbox->x2-1, pbox->y2-1,
-					&new_x1, &new_y1,
-					&new_x2, &new_y2,
-					adx, ady,
-					&clip1, &clip2,
-					octant, bias,
-					oc1, oc2) == -1)
-		{
+				  pbox->x2-1, pbox->y2-1,
+				  &new_x1, &new_y1,
+				  &new_x2, &new_y2,
+				  adx, ady,
+				  &clip1, &clip2,
+				  octant, bias,
+				  oc1, oc2) == -1)
+		  {
 		     pbox++;
 		     continue;
-		}
-		  if (axis == X_AXIS)
-		     len = abs(new_x2 - new_x1);
-		  else
-		     len = abs(new_y2 - new_y1);
-
-		  len += (clip2 != 0);
-		  if (len) {
-		   /* unwind bresenham error term to first point */
-		     if (clip1) {
-			clipdx = abs(new_x1 - x1);
-			clipdy = abs(new_y1 - y1);
-			if (axis == X_AXIS)
-			   err = e + ((clipdy * e2) + ((clipdx - clipdy) * e1));
-			else
-			   err = e + ((clipdx * e2) + ((clipdy - clipdx) * e1));
-		     } else
-			err = e;
-		     /*
-		      * Here is a problem, the unwound error terms could be
-		      * upto 16bit now. The poor S3 is only 12 or 13 bit.
-		      * The rounding error is probably small I favor scaling
-		      * the error terms, although re-evaluation is also an
-		      * option I think it might give visable errors
-		      * - Jon 12/9/93.
-		      */
-
-		     if (abs(err) > 4096  || abs(e1) > 4096 || abs(e2) > 4096) {
-#if 1
-			int div;
-
-			if (abs(err) > abs(e1))
-			    div = (abs(err) > abs(e2)) ?
-			    (abs(err) + 4095)/ 4096 : (abs(e2) + 4095)/ 4096;
-			else
-			    div = (abs(e1) > abs(e2)) ?
-			    (abs(e1) + 4095)/ 4096 : (abs(e2) + 4095)/ 4096;
-
-			err /= div;
-			e1 /= div;
-			e2 /= div;
-#else
-			int minor;
-			if (axis == X_AXIS) {
-			   minor = abs(new_y2 - new_y1);
-			   err = 2 * minor - len;
-			} else {
-			   minor = abs(new_x2 - new_x1);
-			   err = 2 * minor - len - 1;
-			}
-			e1 = minor << 1;
-			e2 = e1 - (len << 1);
-#endif
-		     }
-		     WaitQueue(7);
-		     SET_CURPT((short)new_x1, (short)new_y1);
-		     SET_ERR_TERM((short)(err + fix));
-		     SET_DESTSTP((short)e2, (short)e1);
-		     SET_MAJ_AXIS_PCNT((short)len);
-		     SET_CMD(cmd2);
 		  }
+	       if (axis == X_AXIS)
+		  len = abs(new_x2 - new_x1);
+	       else
+		  len = abs(new_y2 - new_y1);
+
+	       len += (clip2 != 0);
+	       if (len) {
+		  len = abs(new_y2 - new_y1);
+
+		  ;SET_CURPT((short)new_x1, (short)new_y1);
+		  ;SET_ERR_TERM((short)(err + fix));
+		  ;SET_DESTSTP((short)e2, (short)e1);
+		  ;SET_MAJ_AXIS_PCNT((short)len);
+		  ;SET_CMD(cmd2);
+#if 0
+		  if (y1 > y2) {
+		     if (xdir)
+			ErrorF("LXEND0_END1 %8x\n",new_x1<<16|(new_x2-1),new_x1, new_x2-1);
+		     else
+			ErrorF("LXEND0_END1 %8x\n",new_x1<<16|(new_x2+1),new_x1, new_x2+1);
+		     ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
+		     ErrorF("LXSTART %8x %8f\n",(new_x1 << 20) + xfixup,((new_x1 << 20) + xfixup)/(double)(1<<20));
+		     ErrorF("LYSTART %8x %d\n",new_y1,new_y1);
+		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+		  } else {
+		     if (xdir)
+			ErrorF("LXEND0_END1 %8x\n",(new_x2+1)<<16|new_x1,new_x2+1, new_x1);
+		     else
+			ErrorF("LXEND0_END1 %8x\n",(new_x2-1)<<16|new_x1,new_x2-1, new_x1);
+		     ErrorF("LDX %8x\n",xdelta);
+		     ErrorF("LXSTART %8x %8f\n",(new_x2 << 20) + xfixup,((new_x2 << 20) + xfixup)/(double)(1<<20));
+		     ErrorF("LYSTART %8x %d\n",new_y2,new_y2);
+		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+		  }
+#endif
+		  WaitQueue(5);
+		  if (y1 > y2) {
+		     if (xdir)
+			SETL_LXEND0_END1(new_x1, new_x2-1);
+		     else
+			SETL_LXEND0_END1(new_x1, new_x2+1);
+		     SETL_LDX(xdelta);
+		     SETL_LXSTART((new_x1 << 20) + xfixup);
+		     SETL_LYSTART(new_y1);
+		     SETL_LYCNT((len+1) | xdir);
+		  } else {
+		     if (xdir)
+			SETL_LXEND0_END1(new_x2+1, new_x1);
+		     else
+			SETL_LXEND0_END1(new_x2-1, new_x1);
+		     SETL_LDX(xdelta);
+		     SETL_LXSTART((new_x2 << 20) + xfixup);
+		     SETL_LYSTART(new_y2);
+		     SETL_LYCNT((len+1) | xdir);
+		  }
+	       }
 	       pbox++;
 	    }
-	 }			/* while (nbox--) */
-      }				/* sloped line */
-   }				/* while (nline--) */
+	 } /* while (nbox--) */
+      }	/* sloped line */
+   } /* while (nline--) */
 
- /*
-  * paint the last point if the end style isn't CapNotLast. (Assume that a
-  * projecting, butt, or round cap that is one pixel wide is the same as the
-  * single pixel of the endpoint.)
-  */
+   /*
+    * paint the last point if the end style isn't CapNotLast. (Assume that a
+    * projecting, butt, or round cap that is one pixel wide is the same as the
+    * single pixel of the endpoint.)
+    */
 
    if ((pGC->capStyle != CapNotLast) &&
        ((ppt->x + xorg != pptInit->x + pDrawable->x) ||
@@ -439,20 +532,33 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	     (y2 >= pbox->y1) &&
 	     (x2 < pbox->x2) &&
 	     (y2 < pbox->y2)) {
-            WaitQueue(8);
-            SETL_LXEND0_END1((short)x2, (short)x2);
-            SETL_LDX(0);
-            SETL_LXSTART(x2 << 20);
-            SETL_LYSTART(y2);
-            SETL_LYCNT(1);
-            SETL_CMD_SET(s3_gcmd | CMD_LINE | s3alu[pGC->alu]);
+	    WaitQueue(5);
+	    SETL_LXEND0_END1(x2, x2);
+	    SETL_LDX(0);
+	    SETL_LXSTART(x2 << 20);
+	    SETL_LYSTART(y2);
+	    SETL_LYCNT(1);
+
 	    break;
 	 } else
 	    pbox++;
       }
    }
-   WaitQueue(4);
-   SET_MIX(FSS_FRGDCOL | ROP_S, BSS_BKGDCOL | ROP_S);
-   SET_SCISSORS_RB(s3ScissR,s3ScissB);
+
+#if 0
+   WaitQueue(7);
+   SETL_CLIP_L_R(0, s3ScissR);
+   SETL_CLIP_T_B(0, s3ScissB);
+#else
+   WaitQueue(5);
+#endif
+   SETL_CMD_SET(CMD_NOP);
+
+   /* avoid system hangs again :-( */
+   SETB_PAT_FG_CLR(0);
+   SETB_RDEST_XY(0,0);
+   SETB_RWIDTH_HEIGHT(0,1);
+   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | MIX_MONO_PATT | MIX_MONO_SRC | ROP_DPo);
+
    UNBLOCK_CURSOR;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.9 1996/08/10 13:06:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3cmap.c,v 3.0tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,8 +38,7 @@
 #include "compiler.h"
 #include "cfb.h"
 
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 #ifdef XFreeXDGA
 #include "scrnintstr.h"

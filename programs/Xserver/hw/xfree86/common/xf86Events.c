@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.36 1996/08/13 11:30:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.37 1996/08/18 01:51:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -471,6 +471,35 @@ xf86PostKbdEvent(key)
 	    || (xf86Info.consType == PCVT);
   }
 #endif
+
+#if defined (i386) && defined (SVR4) && !defined (PC98)
+    /* 
+     * PANIX returns DICOP standards based keycodes in using 106jp 
+     * keyboard. We need to remap some keys. 
+     */
+#define KEY_P_UP	0x5A
+#define KEY_P_PGUP	0x5B
+#define KEY_P_LEFT	0x5C
+#define KEY_P_BKSL	0x73
+#define KEY_P_YEN	0x7D
+#define KEY_P_NFER	0x7B
+#define KEY_P_XFER	0x79
+
+  if(xf86Info.panix106 == TRUE){
+    switch (scanCode) {
+    /* case 0x78:        scanCode = KEY_P_UP;     break;   not needed*/
+    case 0x56:        scanCode = KEY_P_BKSL;   break;  /* Backslash */
+    case 0x5A:        scanCode = KEY_P_NFER;   break;  /* No Kanji Transfer*/
+    case 0x5B:        scanCode = KEY_P_XFER;   break;  /* Kanji Tranfer */
+    case 0x5C:        scanCode = KEY_P_YEN;    break;  /* Yen curs pgup */
+    case 0x6B:        scanCode = KEY_P_LEFT;   break;  /* Cur Left */
+    case 0x6F:        scanCode = KEY_P_PGUP;   break;  /* Cur PageUp */
+    case 0x72:        scanCode = KEY_AltLang;  break;  /* AltLang(right) */
+    case 0x73:        scanCode = KEY_RCtrl;    break;  /* not needed */
+    }
+  }
+#endif  /* i386 && SVR4 */
+
 #ifndef ASSUME_CUSTOM_KEYCODES
   /*
    * First do some special scancode remapping ...
@@ -632,7 +661,7 @@ xf86PostKbdEvent(key)
 	}
 	break;
 
-#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
+#if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT))) || defined(SCO)
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.53 1996/08/18 01:47:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.54 1996/09/14 13:08:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1085,7 +1085,7 @@ mach32EnterLeaveVT(enter, screen_idx)
 		pspix->devPrivate.ptr = mach32VideoMem;
 		(mach32ImageWriteFunc)(0, 0, pScreen->width, pScreen->height,
 				 ppix->devPrivate.ptr,
-				 PixmapBytePad(pScreen->width,
+				 PixmapBytePad(mach32DisplayWidth,
 					       pScreen->rootDepth),
 				 0, 0, MIX_SRC, ~0);
 	    }
@@ -1107,13 +1107,13 @@ mach32EnterLeaveVT(enter, screen_idx)
 	    xf86MapDisplay(screen_idx, LINEAR_REGION);
 	if (!xf86Exiting) {
 	    ppix = (pScreen->CreatePixmap)(pScreen,
-					   pScreen->width, pScreen->height,
+					   mach32DisplayWidth, pScreen->height,
 					   pScreen->rootDepth);
 
 	    if (ppix) {
 		(mach32ImageReadFunc)(0, 0, pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,
-				PixmapBytePad(pScreen->width,
+				PixmapBytePad(mach32DisplayWidth,
 					      pScreen->rootDepth),
 				0, 0, ~0);
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
@@ -1300,10 +1300,21 @@ mach32ClockSelect(no)
  *
  */
 static int
-mach32ValidMode(mode, verbose)
-DisplayModePtr mode;
+mach32ValidMode(pMode, verbose)
+DisplayModePtr pMode;
 Bool verbose;
 {
-return MODE_OK;
+    if (pMode->HDisplay > mach32VirtX ||
+        pMode->VDisplay > mach32VirtY)
+    {
+	if (verbose)
+	{
+	    ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+		   XCONFIG_PROBED, mach32InfoRec.name,
+		   pMode->HDisplay, pMode->VDisplay, mach32VirtX, mach32VirtY);
+	}
+	return MODE_BAD;
+    }
+    return MODE_OK;
 }
 

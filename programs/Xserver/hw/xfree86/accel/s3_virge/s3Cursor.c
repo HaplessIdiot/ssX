@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.27 1996/08/20 12:26:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.0tsi Exp $
  *
  * Copyright 1991 MIPS Computer Systems, Inc.
  *
@@ -51,8 +51,7 @@
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "vga.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 static Bool s3RealizeCursor();
 static Bool s3UnrealizeCursor();

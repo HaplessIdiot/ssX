@@ -8,11 +8,18 @@ OBJS1 = difloat.o error.o event.o flo.o lut.o memory.o \
         photomap.o protoflo.o session.o tables.o technq.o
 
 #if BuildDIS
-DEFINES = -DXIE_DIS
+DIS_DEFINES = -DXIE_DIS
 #else
 SRCS2 = colorlst.c roi.c
 OBJS2 = colorlst.o roi.o
 #endif
+#if XieDynamicModule
+#if HasDlsymBug
+MODULE_DEFINES =  -DDLSYM_BUG
+#endif
+#define SharedServerLibraryDef -DDYNAMIC_MODULE
+#endif
+DEFINES = $(DIS_DEFINES) $(MODULE_DEFINES)
 
        SRCS = $(SRCS1) $(SRCS2)
 
@@ -22,8 +29,9 @@ OBJS2 = colorlst.o roi.o
    LINTLIBS = ../export/llib-lexp.ln ../import/llib-limp.ln \
               ../process/llib-lproc.ln ../request/llib-lreq.ln
 
+#define DoSharedLib	XieDynamicModule
+#include <ServerLib.tmpl>
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 LintLibraryTarget(req,$(SRCS))
 NormalLintTarget($(SRCS))
 

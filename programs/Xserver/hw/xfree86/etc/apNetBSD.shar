@@ -1,5 +1,5 @@
-#!/bin/sh
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.5 1995/05/27 04:41:17 dawes Exp $
+# $XFree86$
+#
 # This is a shell archive.  Save it in a file, remove anything before
 # this line, and then unpack it by entering "sh file".  Note, it may
 # create directories; files and directories will be owned by you and
@@ -15,8 +15,6 @@
 #	lkm.c
 #	version.c
 #	version.h
-#
-# $XConsortium: apNetBSD.shar /main/6 1995/11/12 20:16:41 kaleb $
 #
 echo x - README
 sed 's/^X//' >README << 'END-of-README'
@@ -116,7 +114,7 @@ X# Change KERNDIR to the directory into which you want to install kernel modules
 XKERNDIR = /usr/X11R6/lib/X11/kernel
 X
 X# You can add -DAP_DEBUG to CFLAGS to add debugging prints
-XCFLAGS = -O -D_KERNEL -I/sys
+XCFLAGS = -O -D_KERNEL -I/sys $(PC98)
 X
 XMODULE = ap
 XPOSTINSTALL = apinstall
@@ -171,7 +169,13 @@ X#include <sys/proc.h>
 X#include <sys/errno.h>
 X
 X#define VGA_START 0xA0000
+X#ifdef PC98 
+X#define VGA_END   0xFFFFF
+X#define HOLE16M_START	0xF00000
+X#define HOLE16M_END	0xFFFFFF
+X#else 
 X#define VGA_END   0xBFFFF
+X#endif 
 X
 X/* open counter */
 Xstatic int ap_open_count = 0;
@@ -182,7 +186,6 @@ X */
 Xint
 Xapopen(dev_t dev, int oflags, int devtype, struct proc *p)
 X{
-X    struct pcred *pc = p->p_cred;
 X
 X    if (suser(p->p_ucred, &p->p_acflag) != 0) {
 X	return(EPERM);
@@ -221,8 +224,13 @@ X#ifdef AP_DEBUG
 X    printf("apmmap: addr 0x%x\n", offset);
 X#endif
 X    if  ((minor(dev) == 0) 
-X	  && (offset >= VGA_START && offset <= VGA_END 
-X	     || (unsigned)offset > (unsigned)ctob(physmem))) {
+X	 && ((offset >= VGA_START && offset <= VGA_END )
+X	     || (unsigned)offset > (unsigned)ctob(physmem)
+X#ifdef PC98
+X	     || ((unsigned)offset >=HOLE16M_START
+X                   && (unsigned)offset <= HOLE16M_END)
+X#endif
+X	     )) {
 X	return i386_btop(offset);
 X    } else {
 X	return(-1);
@@ -387,7 +395,7 @@ X#include <sys/lkm.h>
 X#include <errno.h>
 X#include "version.h"
 X
-X#if NetBSD <= 1994100
+X#if NetBSD <= 1994100 && NetBSD >= 1990000
 X/* cdevsw-specific types */
 X#define dev_type_read(n)        int n __P((dev_t, struct uio *, int))
 X#define dev_type_write(n)       int n __P((dev_t, struct uio *, int))
@@ -408,7 +416,7 @@ X    apopen, apclose,
 X    (dev_type_read((*))) enodev, (dev_type_write((*))) enodev,
 X    (dev_type_ioctl((*))) enodev, 
 X    (dev_type_stop((*))) enodev,
-X#if NetBSD <= 1994100
+X#if NetBSD <= 1994100 && NetBSD >= 1990000
 X    (dev_type_reset((*))) nullop, (struct tty **) 0,
 X#else
 X    0,
@@ -427,7 +435,7 @@ X    }
 X    return(0);
 X}
 X
-X#if NetBSD <= 1994100
+X#if NetBSD <= 1994100 && NetBSD >= 1990000
 Xint
 Xap(struct lkm_table *lkmtp, int cmd, int ver)
 X{
@@ -440,18 +448,16 @@ X{
 X    DISPATCH(lkmtp, cmd, ver, ap_load, lkm_nofunc, lkm_nofunc)
 X}
 X#endif
-X
-X    
 END-of-lkm.c
 echo x - version.c
 sed 's/^X//' >version.c << 'END-of-version.c'
 X/*
 X * Loadable Kernel Module for XFree86 Aperture driver
 X *
-X * Copyright (c) 1994 The XFree86 Project Inc.
+X * Copyright (c) 1994,1996 The XFree86 Project Inc.
 X */
 Xchar *ap_major_version = "1";
-Xchar *ap_minor_version = "4";
+Xchar *ap_minor_version = "6";
 END-of-version.c
 echo x - version.h
 sed 's/^X//' >version.h << 'END-of-version.h'

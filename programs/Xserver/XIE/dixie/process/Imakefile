@@ -4,7 +4,7 @@ XCOMM build device independent processing element objects
 
 SRCS1 = pgeom.c ppoint.c
 OBJS1 = pgeom.o ppoint.o
-		
+
 #if BuildDIS
 DEFINES = -DXIE_DIS
 #else
@@ -25,8 +25,9 @@ OBJS2 = parith.o pbandc.o pbande.o pbands.o pblend.o pcfrgb.o pcfromi.o \
    LINTLIBS = ../export/llib-lexp.ln ../import/llib-limp.ln \
               ../process/llib-lproc.ln ../request/llib-lreq.ln
 
+#define DoSharedLib	XieDynamicModule
+#include <ServerLib.tmpl>
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 LintLibraryTarget(proc,$(SRCS))
 NormalLintTarget($(SRCS))
 

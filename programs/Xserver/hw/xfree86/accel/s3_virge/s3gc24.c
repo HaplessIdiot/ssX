@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.2 1996/09/01 04:15:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gc24.c,v 3.0tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -83,7 +83,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "xf86fcache.h"
 #include "xf86text.h"
 
-#include "s3.h"
+#include "s3v.h"
 
 static void s3ValidateGC();
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.22 1996/09/01 04:15:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.0tsi Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -39,8 +39,7 @@
 #include	"gcstruct.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
-#include	"s3.h"
-#include	"regs3.h"
+#include	"s3v.h"
 #include        "xf86bcache.h"
 #include	"xf86fcache.h"
 #include	"xf86text.h"

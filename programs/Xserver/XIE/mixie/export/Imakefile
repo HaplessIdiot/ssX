@@ -25,8 +25,9 @@ OBJS2 = mechist.o mecroi.o meroi.o mejpeg.o
               ../control/llib-lctrl.ln ../export/llib-lmexp.ln ../fax/llib-lfax.ln \
               ../import/llib-lmimp.ln ../jpeg/llib-ljpeg.ln ../process/llib-lmproc.ln
 
+#define DoSharedLib	XieDynamicModule
+#include <ServerLib.tmpl>
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 LintLibraryTarget(mexp,$(SRCS))
 NormalLintTarget($(SRCS))
 

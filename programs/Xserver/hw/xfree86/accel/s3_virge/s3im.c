@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.1 1996/09/24 13:54:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.2tsi Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -31,8 +31,7 @@
 
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 #include "s3im.h"
 #include "scrnintstr.h"
 #include "cfbmskbits.h"
@@ -396,7 +395,6 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       WaitQueue(4);
    }
 
-   WaitQueue(5);
    SETB_RWIDTH_HEIGHT(w - 1, h);
    SETB_RDEST_XY(x, y);
    WaitIdle();
@@ -450,7 +448,7 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
      unsigned long planemask;
 #endif
 {
-   if (1) ErrorF("s3ImageReadNoMem called\n");
+   if (1) ErrorF("s3ImageReadNoMem called, please report\n");
 #ifdef very_old_S3
    int   i, j;
 
@@ -537,7 +535,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    if (w == 0 || h == 0)
       return;
 
-   if (1) ErrorF("s3ImageFillNoMem called\n");
+   if (1) ErrorF("s3ImageFillNoMem called, please report!\n");
 
    BLOCK_CURSOR;
    ;outw (FRGD_MIX, FSS_PCDATA | alu);
@@ -553,7 +551,6 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       WaitQueue(4);
    }
 
-   WaitQueue(5);
    SETB_RWIDTH_HEIGHT(w - 1, h);
    SETB_RDEST_XY(x, y);
    WaitIdle();

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.1 1996/08/26 10:49:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.2 1996/09/29 13:35:51 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -983,7 +983,7 @@ DeviceAssocRec summasketch_assoc =
 ** Entry point for dynamic module.
 */
 int
-#ifndef __NetBSD__
+#ifndef DLSYM_BUG
 init_module(unsigned long server_version)
 #else
 init_xf86Summa(unsigned long server_version)

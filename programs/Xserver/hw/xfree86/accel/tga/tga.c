@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.2 1996/09/25 14:16:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.3 1996/09/29 13:35:35 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -140,6 +140,7 @@ static PixmapPtr ppix = NULL;
 int tga_type;
 int tgaDisplayWidth;
 pointer tgaVideoMem = NULL;
+extern unsigned char *tgaVideoMemSave;
 static tgaCRTCRegRec tgaCRTCRegs;
 volatile unsigned long *VidBase;
 
@@ -543,70 +544,47 @@ tgaEnterLeaveVT(enter, screen_idx)
 		LUTissaved = FALSE;
 		tgaRestoreColor0(pScreen);
 	    }
+#endif
 
 	    if (pspix->devPrivate.ptr != tgaVideoMem && ppix) {
 		pspix->devPrivate.ptr = tgaVideoMem;
+#if 1
+		ppix->devPrivate.ptr = (pointer)tgaVideoMem;
+#else
 		(tgaImageWriteFunc)(0, 0, pScreen->width, pScreen->height,
 				 ppix->devPrivate.ptr,
 				 PixmapBytePad(pScreen->width,
 					       pScreen->rootDepth),
 				 0, 0, MIX_SRC, ~0);
-	    }
-
-            if (pScreen) {
-                pScreen->CopyWindow = tgaCopyWindow;
-                pScreen->PaintWindowBackground = tgaPaintWindow;
-                pScreen->PaintWindowBorder = tgaPaintWindow;
-                switch (tgaInfoRec.bitsPerPixel) {
-                case 8:
-                    pScreen->GetSpans = cfbGetSpans;
-		    break;
-                case 32:
-                    pScreen->GetSpans = cfb32GetSpans;
-		    break;
-		}
-            }
 #endif
+	    }
 	}
-#ifdef NOTYET
 	if (ppix) {
 	    (pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
 	}
-#endif
     } else {
 	xf86MapDisplay(screen_idx, LINEAR_REGION);
-#ifdef NOTYET
 	if (!xf86Exiting) {
 	    ppix = (pScreen->CreatePixmap)(pScreen,
 					   pScreen->width, pScreen->height,
 					   pScreen->rootDepth);
 
 	    if (ppix) {
+#if 1
+		ppix->devPrivate.ptr = (pointer)tgaVideoMemSave;
+#else
 		(tgaImageReadFunc)(0, 0, pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,
 				PixmapBytePad(pScreen->width,
 					      pScreen->rootDepth),
 				0, 0, ~0);
+#endif
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
-
-            switch (tgaInfoRec.bitsPerPixel) {
-            case 8:
-                pScreen->CopyWindow = cfbCopyWindow;
-                pScreen->GetSpans = cfbGetSpans;
-                pScreen->PaintWindowBackground = cfbPaintWindow;
-                pScreen->PaintWindowBorder = cfbPaintWindow;
-                break;
-            case 32:
-                pScreen->CopyWindow = cfb32CopyWindow;
-                pScreen->GetSpans = cfb32GetSpans;
-                pScreen->PaintWindowBackground = cfb32PaintWindow;
-                pScreen->PaintWindowBorder = cfb32PaintWindow;
-                break;
-            }
 	}
 
+#ifdef NOTYET
 	tgaCursorOff();
 	tgaSaveLUT(tgasavedLUT);
 	LUTissaved = TRUE;

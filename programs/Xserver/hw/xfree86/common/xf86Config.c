@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.100 1996/09/14 13:10:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.101 1996/09/29 13:35:46 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1303,6 +1303,9 @@ configKeyboardSection()
   xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = KM_META;
   xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = KM_COMPOSE;
   xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = KM_CONTROL;
+#if defined(SVR4) && defined(i386) && !defined(PC98)
+  xf86Info.panix106      = FALSE;
+#endif
 #ifdef XKB
   xf86Info.xkbkeymap   = NULL;
   xf86Info.xkbtypes    = "default";
@@ -1494,6 +1497,13 @@ configKeyboardSection()
       xf86Info.xkboptions = val.str;
       if (xf86Verbose && !XkbInitialMap)
         ErrorF("%s XKB: options: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+#endif
+#if defined(SVR4) && defined(i386) && !defined(PC98)
+    case PANIX106:
+      xf86Info.panix106      = TRUE;
+      if (xf86Verbose)
+        ErrorF("%s PANIX106: enabled\n", XCONFIG_GIVEN);
       break;
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/s3_virge.c,v 3.0 1996/09/22 13:26:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/s3_virge.c,v 3.0tsi Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -24,7 +24,7 @@
  */
 /* $XConsortium: s3_virge.c /main/4 1995/11/12 18:23:53 kaleb $ */
 
-#include "s3.h"
+#include "s3v.h"
 
 static Bool S3_VIRGEProbe();
 static char *S3_VIRGEIdent();

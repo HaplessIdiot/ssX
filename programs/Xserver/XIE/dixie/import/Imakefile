@@ -4,7 +4,7 @@ XCOMM build device independent import element objects
 
 SRCS1 = iclut.c icphoto.c idraw.c idrawp.c ilut.c iphoto.c
 OBJS1 = iclut.o icphoto.o idraw.o idrawp.o ilut.o iphoto.o
-		
+
 #if BuildDIS
 DEFINES = -DXIE_DIS
 #else
@@ -20,8 +20,9 @@ OBJS2 = icroi.o iroi.o
    LINTLIBS = ../export/llib-lexp.ln ../import/llib-limp.ln \
               ../process/llib-lproc.ln ../request/llib-lreq.ln
 
+#define DoSharedLib	XieDynamicModule
+#include <ServerLib.tmpl>
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 LintLibraryTarget(imp,$(SRCS))
 NormalLintTarget($(SRCS))
 

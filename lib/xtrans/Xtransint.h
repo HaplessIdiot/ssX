@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.13 1996/05/10 12:07:11 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.14 1996/09/01 04:14:12 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -141,8 +141,12 @@ extern int  errno;		/* Internal system error number. */
 #endif
 #endif
 
+#if !defined(SCO325)
 #if OPEN_MAX > 256
 #define TRANS_OPEN_MAX 256
+#else
+#define TRANS_OPEN_MAX OPEN_MAX
+#endif
 #else
 #define TRANS_OPEN_MAX OPEN_MAX
 #endif
@@ -393,7 +397,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || ((defined(SCO) || defined(sco324)) && !defined(SCO325)) || defined(__EMX__)
+#if defined(CRAY) || (defined(SYSV) && defined(i386) && !defined(SCO)) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
@@ -409,10 +413,10 @@ static	int TRANS(ReadV)(
 
 #define READV(ciptr, iov, iovcnt)	readv(ciptr->fd, iov, iovcnt)
 
-#endif /* CRAY || (SYSV && i386) || WIN32 || __sxg__ || SCO || sco324 */
+#endif /* CRAY || (SYSV && i386) || WIN32 || __sxg__ || */
 
 
-#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || ((defined(SCO) || defined(sco324)) && !defined(SCO325)) || defined(__EMX__)
+#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
 
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 
@@ -428,7 +432,7 @@ static int TRANS(WriteV)(
 
 #define WRITEV(ciptr, iov, iovcnt)	writev(ciptr->fd, iov, iovcnt)
 
-#endif /* CRAY || WIN32 || __sxg__ || sco324 */
+#endif /* CRAY || WIN32 || __sxg__ */
 
 
 static int is_numeric (

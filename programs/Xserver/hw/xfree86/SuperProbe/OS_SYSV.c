@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.11 1996/03/03 03:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.12 1996/08/11 12:37:16 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -50,7 +50,7 @@
 #ifdef SCO
 # include <sys/vtkd.h>
 # include <sys/console.h>
-#ifdef SCO325
+#ifdef SCO
 #undef _status
 #endif
 #else
@@ -86,11 +86,15 @@
 #ifdef __STDC__
 int sysi86(int, ...);
 int syscall(int, ...);
+#ifndef SCO
 int munmap(caddr_t, size_t);
+#endif
 #else
 int sysi86();
 int syscall();
+#ifndef SCO
 int munmap();
+#endif
 #endif
 
 #ifdef SVR4
@@ -98,7 +102,11 @@ int munmap();
 # if defined(sun)
 #  define DEV_MEM	"/dev/fb"
 # else
-#  define DEV_MEM 	"/dev/pmem"
+#  ifdef SCO325
+#   define DEV_MEM	"/dev/mem"
+#  else
+#   define DEV_MEM 	"/dev/pmem"
+#  endif
 # endif
 #else
 # define DEV_MEM	"/dev/mem"
@@ -225,7 +233,7 @@ Byte *MapVGA()
 		fprintf(stderr, "%s: Failed to mmap framebuffer\n", MyName);
 		return((Byte *)0);
 	}
-#elif defined(SCO)
+#elif defined(OLDSCO)
 	static Byte *base = (Byte *)0;
 	ioctl(VT_fd, KDSETMODE, KD_GRAPHICS);
 	if (base == (Byte *) 0)

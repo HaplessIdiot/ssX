@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.45 1996/08/26 14:51:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.46 1996/09/01 04:12:52 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -72,6 +72,10 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.45 1996/08/26 14:51:28 dawe
 #define NeedWidePrototypes	NO
 #define SetTtyGroup		YES
 
+#ifndef UseStaticTermcapLib
+#define UseStaticTermcapLib	NO
+#endif
+
 #define MkdirHierCmd		mkdir -p
 #if LinuxElfDefault
 #if UseElfFormat
@@ -80,6 +84,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.45 1996/08/26 14:51:28 dawe
 #define LdCmd			ld
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++
+#if UseStaticTermcapLib
+#define TermcapLibrary		StaticLibrary(/usr/lib/termcap,termcap)
+#endif
 #else
 #ifdef AlphaArchitecture
 #define CcCmd			gcc -b alpha-linuxecoff

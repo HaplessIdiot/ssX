@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.54 1996/09/01 04:16:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.55 1996/09/29 13:35:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -444,6 +444,7 @@ static SymTabRec DeviceTab[] = {
 #define XKBGEOMETRY	44
 #define XKBSYMBOLS	45
 #define XKBDISABLE	46
+#define PANIX106	47
 #define XKBRULES	110
 #define XKBMODEL	111
 #define XKBLAYOUT	112
@@ -464,6 +465,7 @@ static SymTabRec KeyboardTab[] = {
   { SCROLLLOCK,	"scrolllock" },
   { RIGHTCTL,	"rightctl" },
   { VTSYSREQ,	"vtsysreq" },
+  { PANIX106,	"panix106" },
   { XKBKEYMAP,	"xkbkeymap" },
   { XKBCOMPAT,	"xkbcompat" },
   { XKBTYPES,	"xkbtypes" },

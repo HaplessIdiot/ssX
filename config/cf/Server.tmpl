@@ -4,7 +4,7 @@
  */
 
 XCOMM $XConsortium: Server.tmpl,v 1.13 94/04/08 16:59:46 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.0 1994/12/25 12:12:21 dawes Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
@@ -38,6 +38,20 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #define	SetUIDServerTarget ServerTarget
 #endif
 #endif /* SetUIDServerTarget */
+
+/*
+ * ExtensionsDynamicModules - compile server extensions as dynamic modules
+ */
+#ifndef ExtensionsDynamicModules
+#define ExtensionsDynamicModules	NO
+#endif
+
+#ifndef PexDynamicModule
+#define PexDynamicModule	ExtensionsDynamicModules
+#endif
+#ifndef XieDynamicModule
+#define XieDynamicModule	ExtensionsDynamicModules
+#endif
 
          CC = ServerCcCmd
   CCOPTIONS = ServerCCOptions

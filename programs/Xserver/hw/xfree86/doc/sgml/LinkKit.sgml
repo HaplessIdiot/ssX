@@ -66,10 +66,16 @@
 	set <tt>BuildPexExt</tt> to <tt>YES</tt>.
     <item>To include the X Image Extension:
 	set <tt>BuildXIE</tt> to <tt>YES</tt>.
-    <item>To include the Low Bandwidth X extension:
-	set <tt>BuildLBX</tt> to <tt>YES</tt>.
+    <item>To exclude the Double Buffer Extension:
+	set <tt>BuildDBE</tt> to <tt>NO</tt>.
+    <item>To exclude the Record Extension:
+	set <tt>BuildRECORD</tt> to <tt>NO</tt>.
     <item>To include the Screen Saver extension:
 	set <tt>BuildScreenSaverExt</tt> to <tt>YES</tt>.
+    <item>Although it is possible to disable other extensions through this
+	mechanism, doing so is not recommended because savings in server size
+	are not appreciable, or the resulting server might even be crippled in
+	some way.
 
     <item>If you are building more than one Xserver, uncomment the
         <tt>ServerToInstall</tt> line and set it to the name of the
@@ -110,12 +116,7 @@
 </enum>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.7 1995/07/12 13:20:41 dawes Exp $
-
-
-
-
-
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.8tsi Exp $
 $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
 </verb>
 

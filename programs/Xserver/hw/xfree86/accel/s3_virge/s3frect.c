@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.0 1996/09/22 13:25:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.1tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -66,8 +66,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "mergerop.h"
 
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 #define NUM_STACK_RECTS	1024
 extern int s3MAX_SLOTS;
@@ -529,6 +528,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
    if (!xf86VTSema)
    {
+      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
@@ -543,6 +543,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	 cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
 	 break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 
@@ -664,16 +665,24 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
       switch (pGC->fillStyle) {
 	case FillSolid:
 	   BLOCK_CURSOR;
+DBGOUT(0); outb(0x3bc,(IN_SUBSYS_STAT() & 0x3f00) >> 8);
+	   WaitIdle();
+#if 0  /* CMD_RECT broken :-( */
+	   WaitQueue(2);
+DBGOUT(0x4f);
+	   SETB_PAT_FG_CLR(pGC->fgPixel);
+	   ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+	   ;SET_WRT_MASK(pGC->planemask);
+DBGOUT(0x50);
+	   SETB_CMD_SET(s3_gcmd | CMD_RECT | CMD_AUTOEXEC |
+			INC_Y | INC_X | s3alu[pGC->alu] );
+#else
 	   WaitQueue(4);
 DBGOUT(0x4f);
 	   SETB_PAT_FG_CLR(pGC->fgPixel);
 	   ;SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
 	   ;SET_WRT_MASK(pGC->planemask);
 DBGOUT(0x50);
-#if 0  /* CMD_RECT broken :-( */
-	   SETB_CMD_SET(s3_gcmd | CMD_RECT | CMD_AUTOEXEC |
-			INC_Y | INC_X | s3alu[pGC->alu] );
-#else
 	   SETB_MONO_PAT0(~0);
 	   SETB_MONO_PAT1(~0);
 	   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC |
@@ -681,9 +690,6 @@ DBGOUT(0x50);
 			INC_Y | INC_X | s3alu_sp[pGC->alu] );
 #endif
 DBGOUT(0x51);
-#if 0
-ErrorF("CMD_RECT alu %2d\n",pGC->alu);
-#endif
 	   pboxClipped = pboxClippedBase;
 	   while (n--) {
 DBGOUT(0x52);

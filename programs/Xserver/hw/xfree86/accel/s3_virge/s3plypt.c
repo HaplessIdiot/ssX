@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.8 1996/08/20 12:27:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.0tsi Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -57,8 +57,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
 
@@ -83,8 +82,9 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    xPoint *pptPrev;
 
 
-   if (!xf86VTSema)
+   if (1 || !xf86VTSema)
    {
+      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit);
@@ -99,6 +99,7 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	 cfb32PolyPoint(pDrawable, pGC, mode, npt, pptInit);
 	 break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 

@@ -1,11 +1,11 @@
 .\" Copyright (c) 1996  The XFree86 Project
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.0 1996/08/16 12:29:59 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
-.TH XF86DGA 3X11 "3.1.2F" "XFree86" "X FUNCTIONS"
+.TH XF86DGA 3X11 "3.2" "XFree86" "X FUNCTIONS"
 .SH NAME
 XF86DGAQueryExtension, XF86DGAQueryVersion, XF86DGAGetVideo, XF86DGADirectVideo, XF86DGASetVidPage, XF86DGASetViewPort, XF86DGAInstallColormap, XF86DGAForkApp \- XFree86-DGA extension interface functions
 .SH SYNTAX

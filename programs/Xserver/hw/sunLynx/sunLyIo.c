@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.0 1996/09/29 12:47:25 dawes Exp $ */
 
 /*-
  * This is sunIo.c modified for LynxOS
@@ -281,7 +281,7 @@ void AbortDDX()
     DevicePtr	devPtr;
 
     (void) OsSignal (SIGIO, SIG_IGN);
-    if (sunKbdPriv.ds != -1) {
+    if (sunKbdPriv.fd != -1) {
         if (devPtr = LookupKeyboardDevice())
 	    (void) sunChangeKbdTranslation (((sunKbdPrivPtr)(devPtr->devicePrivate))->fd, FALSE);
     }

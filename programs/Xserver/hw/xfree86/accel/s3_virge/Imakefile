@@ -1,9 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.16 1996/06/29 09:06:52 dawes Exp $
-
-
-
-
-
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.0tsi Exp $
 XCOMM $XConsortium: Imakefile /main/6 1995/11/12 19:05:21 kaleb $
 
 #include <Server.tmpl>
@@ -40,22 +35,22 @@ S3DRIVERS = XF86S3VDrivers
 MakeMutex($(SUBDIRS))
 #endif
 
-ConfigTarget(s3Conf,$(ICONFIGFILES),confS3.SHsuf,$(S3DRIVERS))
+ConfigTarget(s3vConf,$(ICONFIGFILES),confS3V.SHsuf,$(S3DRIVERS))
 
 NormalLibraryObjectRule()
 
 NormalAsmObjectRule()
 
-NormalLibraryTarget(s3,$(OBJS))
+NormalLibraryTarget(s3v,$(OBJS))
 
 MakeSubdirs($(SUBDIRS))
 
 LinkSourceFile(vgaHW.c,../../vga256/vga)
 
-InstallLinkKitLibrary(s3,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(confS3.SHsuf,$(LINKKITDIR))
-InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(regs3.h,$(LINKKITDIR)/drivers)
+InstallLinkKitLibrary(s3v,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confS3V.SHsuf,$(LINKKITDIR))
+InstallLinkKitNonExecFile(s3v.h,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(regs3v.h,$(LINKKITDIR)/drivers)
 
 #ifndef OS2Architecture
 DependTarget()

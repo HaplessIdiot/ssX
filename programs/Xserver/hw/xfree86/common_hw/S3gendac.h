@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.6 1996/05/06 05:58:00 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.7 1996/08/13 11:30:23 dawes Exp $ */ 
 
 
 /* Jon Tombs <jon@esix2.us.es>  */
@@ -49,7 +49,7 @@ int S3TrioSetClock(
 int commonCalcClock(
 #if NeedFunctionPrototypes
    long freq,
-   int min_n2,
+   int min_m, int min_n, int min_n2, int max_n2,
    long freq_min, long freq_max,
    unsigned char *mdiv, unsigned char *ndiv
 #endif

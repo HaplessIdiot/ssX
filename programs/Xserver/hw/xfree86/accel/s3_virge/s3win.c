@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.9 1996/08/20 12:27:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3win.c,v 3.0tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,8 +71,7 @@ Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 void
 s3CopyWindow(pWin, ptOldOrg, prgnSrc)

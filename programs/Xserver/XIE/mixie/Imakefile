@@ -1,8 +1,6 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:34 gildea $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.4 1995/05/27 03:00:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.5 1996/01/05 13:17:01 dawes Exp $
 #include <Server.tmpl>
-
-#define	IHaveSubdirs
 
 #if BuildDIS
 SUBDIRS = control fax import process export
@@ -14,8 +12,13 @@ OBJS = control/?*.o fax/?*.o import/?*.o jpeg/?*.o process/?*.o export/?*.o
 DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE 
 #endif
 
+#if !XieDynamicModule
+#define	IHaveSubdirs
+
+
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
 #endif
 
 #ifdef OS2Architecture
@@ -27,12 +30,14 @@ NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),?*.o)
 NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),$(OBJS))
 #endif
 
+#if !XieDynamicModule
 ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 
 MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
+#endif
 
 InstallLinkKitLibrary(mixie,$(LINKKITDIR)/lib)
 

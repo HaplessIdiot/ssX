@@ -1,20 +1,20 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.2G on NetBSD and OpenBSD
+<title> README for XFree86 3.2 on NetBSD and OpenBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 1 September 1996
+<Date>Last modified on: 29 September 1996
 
 <toc>
 
 <p>
 <bf>Important Notice</bf>
 <p>
-Since the XFree86 3.1.2G beta is only distributed in binary form, all
+Since the XFree86 3.1.2H beta is only distributed in binary form, all
 comments about rebuilding the distribution from source in this
 document are worthless. They are left there  for reference purpose
 only. 
@@ -51,7 +51,7 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 url="ftp://ftp.laas.fr/pub/ii/NetBSD">
 
 <p>
-As of version 3.1.2G, there is a separate binary distribution for OpenBSD.
+As of version 3.2, there is a separate binary distribution for OpenBSD.
 Binaries for OpenBSD are available from:
 
 <htmlurl name="ftp.XFree86.org:/pub/XFree86/current/binaries/OpenBSD"
@@ -71,13 +71,13 @@ you're still running NetBSD 0.9 or 1.0, you should think about
 upgrading to a newer version of NetBSD first.
 
 If you don't upgrade, you'll have to build XFree86 from the sources.
-XFree86 3.1.2G should compile cleanly under earlier versions of
+XFree86 3.2 should compile cleanly under earlier versions of
 NetBSD, although this has not been tested.
 
-XFree86 3.1.2G also builds on NetBSD/sparc. See section <ref id="sparc"
+XFree86 3.2 also builds on NetBSD/sparc. See section <ref id="sparc"
 name="Building on NetBSD/sparc"> for details.
 
-XFree86 3.1.2G supports NetBSD on PC98 machines. Servers for these
+XFree86 3.2 supports NetBSD on PC98 machines. Servers for these
 machines are available in the <tt/NetBSD-PC98/ directory on the above
 FTP servers. 
 
@@ -108,60 +108,60 @@ using <tt/pkg_add/.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/X312Gdoc/ READMEs.
-    <tag/X312Gbin/ all of the executable X client applications and shared libs
-    <tag/X312Gfnts/ the misc and 75dpi fonts
-    <tag/X312Glib/ data files needed at runtime
-    <tag/X312Gcfg/ customizable xinit and xdm runtime configuration files.
+    <tag/X32doc/ READMEs.
+    <tag/X32bin/ all of the executable X client applications and shared libs
+    <tag/X32fnts/ the misc and 75dpi fonts
+    <tag/X32lib/ data files needed at runtime
+    <tag/X32cfg/ customizable xinit and xdm runtime configuration files.
     </descrip>
 
     Choose at least one of the following server to match your hardware:
 
     <descrip>
-    <tag/X312GSVGA/  the 8-bit pseudo-color X server for Super VGA cards
-    <tag/X312GVG16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X312GMono/  the Monochrome X Server
-    <tag/X312G8514/  the X server for IBM 8514/A and compatible boards
-    <tag/X312GAGX/   the X server for AGX boards
-    <tag/X312GMa8/ the X server for ATI Mach8 graphics boards
-    <tag/X312GMa32/ the X server for ATI Mach32 graphics boards
-    <tag/X312GMa64/ the X server for ATI Mach64 graphics boards
-    <tag/X312GP9K/	the X server for P9000 based boards
-    <tag/X312GS3/ 	the X server for S3 based boards
-    <tag/X312GW32/	the X server for et4000w32 and et6000 based boards
+    <tag/X32SVGA/  the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X32VG16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
+    <tag/X32Mono/  the Monochrome X Server
+    <tag/X328514/  the X server for IBM 8514/A and compatible boards
+    <tag/X32AGX/   the X server for AGX boards
+    <tag/X32Ma8/ the X server for ATI Mach8 graphics boards
+    <tag/X32Ma32/ the X server for ATI Mach32 graphics boards
+    <tag/X32Ma64/ the X server for ATI Mach64 graphics boards
+    <tag/X32P9K/	the X server for P9000 based boards
+    <tag/X32S3/ 	the X server for S3 based boards
+    <tag/X32W32/	the X server for et4000w32 and et6000 based boards
     </descrip>
 
     The following servers are available for PC98 hardware from the
-    directory XFree98-3.1.2G
+    directory XFree98-3.2
 
     <descrip>
-    <tag/X312G9EGC/	EGC 
-    <tag/X312G9GAN/	GANB-WAP(cirrus)
-    <tag/X312G9480/	PEGC-480 
-    <tag/X312G9NS3/	NEC(S3) 
-    <tag/X312G9NKV/	NEC(cirrus)
-    <tag/X312G9LPW/	PowerWindowLB(S3)
-    <tag/X312G9SPW/	SKB-PowerWindow(S3)
-    <tag/X312G9WEP/	WABEP(cirrus)
-    <tag/X312G9WBS/	WABS(cirrus)
-    <tag/X312G9WSN/	WSN-A2F(cirrus)
-    <tag/X312G9GA9/	GA-968V4/PCI(S3 968)
+    <tag/X329EGC/	EGC 
+    <tag/X329GAN/	GANB-WAP(cirrus)
+    <tag/X329480/	PEGC-480 
+    <tag/X329NS3/	NEC(S3) 
+    <tag/X329NKV/	NEC(cirrus)
+    <tag/X329LPW/	PowerWindowLB(S3)
+    <tag/X329SPW/	SKB-PowerWindow(S3)
+    <tag/X329WEP/	WABEP(cirrus)
+    <tag/X329WBS/	WABS(cirrus)
+    <tag/X329WSN/	WSN-A2F(cirrus)
+    <tag/X329GA9/	GA-968V4/PCI(S3 968)
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/X312Gfsrv/ the font server with man pages.
-    <tag/X312Gprog/ the X11 header files and static libraries needed only 
+    <tag/X32fsrv/ the font server with man pages.
+    <tag/X32prog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
-    <tag/X312Gman/ man pages
-    <tag/X312Gf100/ 100dpi fonts
-    <tag/X312Gfcyr/ Cyrillic fonts
-    <tag/X312Gfscl/ Scalable fonts
-    <tag/X312Gfnon/ Other fonts (Japanese, Chinese, etc)
-    <tag/X312Gset/  XF86Setup configuration utility, needs X312GVG16
-    <tag/X312Gnest/ Nested X server
-    <tag/X312Gvfb/ Virtual framebuffer X server
+    <tag/X32man/ man pages
+    <tag/X32f100/ 100dpi fonts
+    <tag/X32fcyr/ Cyrillic fonts
+    <tag/X32fscl/ Scalable fonts
+    <tag/X32fnon/ Other fonts (Japanese, Chinese, etc)
+    <tag/X32set/  XF86Setup configuration utility, needs X32VG16
+    <tag/X32nest/ Nested X server
+    <tag/X32vfb/ Virtual framebuffer X server
     </descrip>
 </descrip>
 
@@ -212,27 +212,27 @@ below.
 	The X server needs special permissions that are only granted
 	to the root user.
 
-	Assuming that the destination directory for XFree86 3.1.2G is
+	Assuming that the destination directory for XFree86 3.2 is
 	<tt>/usr/X11R6</tt>, run the following from wherever all the archive
 	files are (replace <tt>/usr/X11R6</tt> with wherever you wish them to
 	go if that isn't the place):
 <tscreen><verb>
  cd /usr/X11R6
 
- tar xzf X312Gdoc.tgz
- tar xzf X312Gbin.tgz
- tar xzf X312Glib.tgz 
- tar xzf X312Gfnts.tgz
- tar xzf X312Gman.tgz
+ tar xzf X32doc.tgz
+ tar xzf X32bin.tgz
+ tar xzf X32lib.tgz 
+ tar xzf X32fnts.tgz
+ tar xzf X32man.tgz
 
- tar xzf X312Gprog.tgz
- tar xzf X312Gfsrv.tgz
- tar xzf X312Gcfg.tgz
+ tar xzf X32prog.tgz
+ tar xzf X32fsrv.tgz
+ tar xzf X32cfg.tgz
 
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
- tar xzf X312G<server>.tgz
+ tar xzf X32<server>.tgz
 </verb></tscreen>
 </enum>
 
@@ -340,7 +340,7 @@ The <tt/XF86Config/ file tells the X server what kind of monitor,
 video card and mouse you have.  You <em/must/ create it to tell the
 server what specific hardware you have.
 <p>
-XFree86 3.1.2G introduces a new, user-friendly configuration utility
+XFree86 3.2 introduces a new, user-friendly configuration utility
 called <bf/XF86Setup/. It has to be run as root. Refer to its
 documentation for details about its use.
 <p>
@@ -408,7 +408,15 @@ devices are:
 For joystick support, you'll need to install the joystick device
 driver in the kernel. It is included in NetBSD 1.2 and OpenBSD. See
 <em/joy(4)/ for details.
-
+<p>
+The PEX and XIE extensions are also supported as external modules
+now. If you want to have access to these exensions, add the following
+lines to the <bf/Module/ section of <tt/XF86Config/:
+<tscreen><verb>
+   load    "pex5.so"
+   load    "xie.so"
+</verb></tscreen>
+<p>
 Refer to the <em>XF86Config(5)</em> man page for detailed
 configuration instructions.
 
@@ -603,7 +611,7 @@ sources, invoke ``<tt/make World/'' in the xc directory.
 <sect1>Console drivers<label id="console-drivers">
 
 <p>
-XFree86 3.1.2G has a configuration option to select the console
+XFree86 3.2 has a configuration option to select the console
 drivers to use in <tt/xf86site.def/:
 <itemize>
 <item> if you're using pccons put:
@@ -647,7 +655,7 @@ anymore. You should get it from the syscons distribution.
 <sect1> Support for shared libs under NetBSD 1.0 and later
 
 <p>
-    By default XFree86 3.1.2G builds for NetBSD with shared libraries 
+    By default XFree86 3.2 builds for NetBSD with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
@@ -658,7 +666,7 @@ anymore. You should get it from the syscons distribution.
 <sect1>Building on NetBSD/sparc<label id="sparc">
 
 <p>
-XFree86 3.1.2G also compiles on NetBSD/sparc. The Sun server
+XFree86 3.2 also compiles on NetBSD/sparc. The Sun server
 patches from Dennis Ferguson and Matthew Green have been integrated in
 <tt>xc/programs/Xserver/hw/sun</tt>.  Small
 modifications to <tt/xf86site.def/ are needed:
@@ -741,7 +749,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.32 1996/09/03 15:12:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.33 1996/09/14 13:10:25 dawes Exp $
 
 
 

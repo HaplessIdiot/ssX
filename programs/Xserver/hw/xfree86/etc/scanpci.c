@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.24 1996/09/24 13:54:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.25 1996/09/29 13:38:25 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -170,7 +170,7 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 # endif
 #endif
 
-#if defined(__SUNPRO_C) || defined(_SCO_DS)
+#if defined(__SUNPRO_C)
 /*
  * This section is a gross hack in if you tell anyone that I wrote it,
  * I'll deny it.  :-)
@@ -224,7 +224,11 @@ static unsigned long inl(unsigned short port) { unsigned long ret;
 # endif
 #endif
 
-#include <sys/inline.h>
+#ifndef SCO325
+# include <sys/inline.h>
+#else
+# include "scoasm.h"
+#endif
 
 #endif /* SUNPRO_C */
 

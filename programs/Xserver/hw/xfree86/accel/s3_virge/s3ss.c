@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ss.c,v 3.7 1996/06/29 09:07:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.0tsi Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -75,7 +75,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfb32.h"
 #include "cfbmskbits.h"
 
-#include "s3.h"
+#include "s3v.h"
 
 /*
  * SetSpans -- for each span copy pwidth[i] bits from psrc to pDrawable at
@@ -105,8 +105,9 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
   * *pwidth);
   */
 
-   if (!xf86VTSema)
+   if (1 || !xf86VTSema)
    {
+      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
@@ -121,6 +122,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	 cfb32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	 break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 

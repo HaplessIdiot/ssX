@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.13 1996/01/20 02:04:25 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.14 1996/02/04 08:54:04 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -40,9 +40,9 @@ from Kaleb S. KEITHLEY
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
 #define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	6
+#define XF86VIDMODE_MINOR_VERSION	7
 /*
- * major version 0 == uses parameter-to-wire functions in XFree86 libXExExt.
+ * major version 0 == uses parameter-to-wire functions in XFree86 libXxf86vm.
  * major version 1 == uses parameter-to-wire functions hard-coded in xvidtune
  *                    client.
  */
@@ -71,16 +71,18 @@ typedef struct {
 
 typedef struct _XF86VidModeGetModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
-    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeGetModeLine */
+    CARD8	xf86vidmodeReqType;
     CARD16	length B16;
     CARD16	screen B16;
     CARD16	pad B16;
 } xXF86VidModeGetModeLineReq,
   xXF86VidModeGetAllModeLinesReq,
-  xXF86VidModeGetMonitorReq;
+  xXF86VidModeGetMonitorReq,
+  xXF86VidModeGetViewPortReq;
 #define sz_xXF86VidModeGetModeLineReq		8
 #define sz_xXF86VidModeGetAllModeLinesReq	8
 #define sz_xXF86VidModeGetMonitorReq		8
+#define sz_xXF86VidModeGetViewPortReq		8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -129,6 +131,35 @@ typedef struct {
 } xXF86VidModeGetAllModeLinesReply;
 #define sz_xXF86VidModeGetAllModeLinesReply	32
 
+typedef struct _XF86VidModeAddModeLine {
+    CARD8	reqType;		/* always XF86VidModeReqCode */
+    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeAddMode */
+    CARD16	length B16;
+    CARD32	screen B32;		/* could be CARD16 but need the pad */
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+    CARD32	after_dotclock B32;
+    CARD16	after_hdisplay B16;
+    CARD16	after_hsyncstart B16;
+    CARD16	after_hsyncend B16;
+    CARD16	after_htotal B16;
+    CARD16	after_vdisplay B16;
+    CARD16	after_vsyncstart B16;
+    CARD16	after_vsyncend B16;
+    CARD16	after_vtotal B16;
+    CARD32	after_flags B32;
+} xXF86VidModeAddModeLineReq;
+#define sz_xXF86VidModeAddModeLineReq	60
+
 typedef struct _XF86VidModeModModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
     CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeModModeLine */
@@ -146,6 +177,29 @@ typedef struct _XF86VidModeModModeLine {
     CARD32	privsize B32;
 } xXF86VidModeModModeLineReq;
 #define sz_xXF86VidModeModModeLineReq	32
+
+typedef struct _XF86VidModeValidateModeLine {
+    CARD8	reqType;		/* always XF86VidModeReqCode */
+    CARD8	xf86vidmodeReqType;
+    CARD16	length B16;
+    CARD32	screen B32;		/* could be CARD16 but need the pad */
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+} xXF86VidModeDeleteModeLineReq,
+  xXF86VidModeValidateModeLineReq,
+  xXF86VidModeSwitchToModeReq;
+#define sz_xXF86VidModeDeleteModeLineReq	36
+#define sz_xXF86VidModeValidateModeLineReq	36
+#define sz_xXF86VidModeSwitchToModeReq		36
 
 typedef struct _XF86VidModeSwitchMode {
     CARD8	reqType;		/* always XF86VidModeReqCode */
@@ -181,5 +235,30 @@ typedef struct {
     CARD32	pad5 B32;
 } xXF86VidModeGetMonitorReply;
 #define sz_xXF86VidModeGetMonitorReply	32
+
+typedef struct {
+    BYTE	type;
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	x B32;
+    CARD32	y B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+} xXF86VidModeGetViewPortReply;
+#define sz_xXF86VidModeGetViewPortReply	32
+
+typedef struct _XF86VidModeSetViewPort {
+    CARD8	reqType;		/* always VidModeReqCode */
+    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeSetViewPort */
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	pad B16;
+    CARD32      x B32;
+    CARD32	y B32;
+} xXF86VidModeSetViewPortReq;
+#define sz_xXF86VidModeSetViewPortReq	16
 
 #endif /* _XF86VIDMODESTR_H_ */

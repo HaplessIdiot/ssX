@@ -1,7 +1,5 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/Imakefile,v 3.0tsi Exp $
 #include <Server.tmpl>
-
-#define IHaveSubdirs
 
 SRCS = 	tga.c tgainit.c tgacmap.c tgacurs.c tgaBtCurs.c tgafcache.c \
 	tgascrin.c tgabcache.c tgaim.c
@@ -17,20 +15,14 @@ INCLUDES = -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 
 DEFINES = -DPSZ=8
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS))
-#endif
-
 NormalLibraryObjectRule()
 
 NormalAsmObjectRule()
 
 NormalLibraryTarget(tga,$(OBJS))
 
-MakeSubdirs($(SUBDIRS))
+InstallLinkKitLibrary(tga,$(LINKKITDIR)/drivers)
 
 #ifndef OS2Architecture
 DependTarget()
 #endif
-
-DependSubdirs($(SUBDIRS))

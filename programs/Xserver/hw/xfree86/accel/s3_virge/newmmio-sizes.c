@@ -2,7 +2,7 @@
    cc -I../../common -I../../../../../../X11 newmmio-sizes.c
    */
 
-#include "regs3.h"
+#include "regs3v.h"
 
 #define PS(set)  printf(#set "_regs \t\t = %04x\n", &((mmtr)0)->set ## _regs)
 #define P(set,reg)  printf(#set "_regs.regs." #reg " \t = %04x\n", &((mmtr)0)->set ## _regs.regs.reg)

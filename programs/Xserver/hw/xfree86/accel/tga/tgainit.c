@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.1 1996/09/25 14:16:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.2 1996/09/29 13:35:37 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -32,7 +32,7 @@ typedef struct {
 } tgaRegisters;
 static tgaRegisters SR;
 
-static unsigned char *tgaVideoMemSave;
+unsigned char *tgaVideoMemSave;
 
 static int tgaInitialized = 0;
 static Bool LUTInited = FALSE;

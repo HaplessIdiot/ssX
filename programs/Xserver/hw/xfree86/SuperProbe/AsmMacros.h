@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.7 1996/02/04 08:56:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.8 1996/05/06 05:56:44 dawes Exp $ */
 
 #if defined(__GNUC__)
 #if defined(linux) && defined(__alpha__)
@@ -205,7 +205,11 @@ void outl(U16_t, U32_t);
 #   define __USLC__
 #  endif
 # endif
-#include <sys/inline.h>
+#ifndef SCO325
+# include <sys/inline.h>
+#else
+# include "../common/scoasm.h"
+#endif
 #define intr_disable() asm("cli")
 #define intr_enable()  asm("sti")
 

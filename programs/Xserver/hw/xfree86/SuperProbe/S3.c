@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.11 1996/09/22 05:01:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.12 1996/09/29 12:50:48 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -325,8 +325,8 @@ int *Chipset;
 static int MemProbe_S3(Chipset)
 int Chipset;
 {
-	Byte config, old;
-	int Mem = 0;
+	Byte config, old, config2;
+	int Mem = 0, MemOffScreen = 0;
 
 	EnableIOPorts(NUMPORTS, Ports);
 
@@ -338,6 +338,7 @@ int Chipset;
 		if (testinx2(CRTC_IDX, 0x35, 0x0F))
 		{
 			config = rdinx(CRTC_IDX, 0x36);
+			config2 = rdinx(CRTC_IDX, 0x37);
 			if ((Chipset == CHIP_S3_911) || 
 			    (Chipset == CHIP_S3_924))
 			{
@@ -346,27 +347,67 @@ int Chipset;
 			   else
 			      Mem = 1024;
 			}
-			else
+			else if (Chipset == CHIP_S3_ViRGE)
+			{
+			   switch((config & 0xE0) >> 5)
+			   {
+			   case 0:
+			      Mem = 4 * 1024;
+			      break;
+			   case 4:
+			      Mem = 2 * 1024;
+			      break;
+			   }
+			}
+			else if (Chipset == CHIP_S3_ViRGE_VX)
+			{
+			   switch((config2 & 0x60) >> 5)
+			   {
+			   case 1:
+			      MemOffScreen = 4 * 1024;
+			      break;
+			   case 2:
+			      MemOffScreen = 2 * 1024;
+			      break;
+			   }
+			   switch((config & 0x60) >> 5)
+			   {
+			   case 0:
+			      Mem = 2 * 1024;
+			      break;
+			   case 1:
+			      Mem = 4 * 1024;
+			      break;
+			   case 2:
+			      Mem = 6 * 1024;
+			      break;
+			   case 3:
+			      Mem = 8 * 1024;
+			      break;
+			   }
+			   Mem -= MemOffScreen;
+			}
+			else 
 			{
 				switch((config & 0xE0) >> 5)
 				{
 				case 0:
-					Mem = 4096;
+					Mem = 4 * 1024;
 					break;
 				case 2:
-					Mem = 3072;
+					Mem = 3 * 1024;
 					break;
 				case 3:
-					Mem = 8192;
+					Mem = 8 * 1024;
 					break;
 				case 4:
-					Mem = 2048;
+					Mem = 2 * 1024;
 					break;
 				case 5:
-					Mem = 6144;
+					Mem = 6 * 1024;
 					break;
 				case 6:
-					Mem = 1024;
+					Mem = 1 * 1024;
 					break;
 				}
 			}
@@ -375,5 +416,5 @@ int Chipset;
 	wrinx(CRTC_IDX, 0x38, old);
 
 	DisableIOPorts(NUMPORTS, Ports);
-	return(Mem);
+	return((MemOffScreen << 16) | Mem);
 }

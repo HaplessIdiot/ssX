@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.108 1996/09/24 13:48:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.109tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -7,6 +7,17 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.108 1996/09/24 13:48:49 dawes Exp $
  * BeforeVendor part of the site.def file.
  */
 XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
+
+/*
+ * The LinkKit needs to inherit some settings (from the xc build that
+ * generated it) before we go too much further...
+ */
+#ifndef XF86LinkKit
+#define XF86LinkKit	NO
+#endif
+#if XF86LinkKit
+#include <LinkKit.tmpl>
+#endif
 
 /*
  * Default settings for which X Servers to build.
@@ -224,10 +235,15 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 
 #undef XF86AccelServerDirs
-#define XF86AccelServerDirs   XF86S3Dir XF86S3VDir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir XF86P9000Dir XF86AGXDir XF86W32Dir XF86I128Dir XF86TGADir
+#define XF86AccelServerDirs	XF86S3Dir XF86S3VDir XF86I8514Dir \
+				XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir \
+				XF86P9000Dir XF86AGXDir XF86W32Dir \
+				XF86I128Dir XF86TGADir
 
 #undef XF86AccelServer
-#if XF86S3Server || XF86S3VServer || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || XF86Mach64Server || XF86P9000Server || XF86AGXServer || XF86W32Server || XF86I128Server || XF86TGAServer
+#if XF86S3Server || XF86S3VServer || XF86I8514Server || XF86Mach8Server || \
+    XF86Mach32Server || XF86Mach64Server || XF86P9000Server || \
+    XF86AGXServer || XF86W32Server || XF86I128Server || XF86TGAServer
 # define XF86AccelServer	YES
 #else
 # define XF86AccelServer	NO
@@ -360,15 +376,41 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 /*
  * PEX doesn't work for 1-bit and 4-bit servers
  */
-#ifndef BuildPexExt
-#define BuildPexExt		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
+#if !defined(BuildPexExt) || BuildPexExt
+#undef BuildPexExt
+#if XF86AccelServer || XF86SVGAServer || XF98AccelServer || \
+    XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
+    XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
+#define BuildPexExt		YES
+#else
+#define BuildPexExt		NO
+#endif
 #endif
 
 /*
  * XIE doesn't work for our 1-bit and 4-bit servers
  */
-#ifndef BuildXIE
-#define BuildXIE		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
+#if !defined(BuildXIE) || BuildXIE
+#undef BuildXIE
+#if XF86AccelServer || XF86SVGAServer || XF98AccelServer || \
+    XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
+    XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
+#define BuildXIE		YES
+#else
+#define BuildXIE		NO
+#endif
+#endif
+
+#ifndef BuildXIElib
+#define BuildXIElib	YES
+#endif
+
+#ifndef BuildDBElib
+#define BuildDBElib	YES
+#endif
+
+#ifndef BuildRECORDlib
+#define BuildRECORDlib	YES
 #endif
 
 #ifndef BuildXKBlib
@@ -441,6 +483,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 #ifndef BuildDynamicLoading
 #define BuildDynamicLoading	NO
+#endif
+
+#ifndef HasDlsymBug
+#define HasDlsymBug		NO
 #endif
 
 /*
@@ -532,10 +578,6 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 #ifndef UseServerLock
 #define UseServerLock	YES
-#endif
-
-#ifndef XF86LinkKit
-#define XF86LinkKit	NO
 #endif
 
 #if XF86LinkKit

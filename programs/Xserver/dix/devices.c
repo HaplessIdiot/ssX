@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: devices.c /main/52 1996/01/14 16:44:49 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.7 1996/04/15 11:19:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.8 1996/05/06 05:56:11 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -295,6 +295,8 @@ CloseDownDevices()
 	next = dev->next;
 	CloseDevice(dev);
     }
+    inputInfo.keyboard = NULL;
+    inputInfo.pointer = NULL;
 }
 
 void
@@ -313,6 +315,10 @@ RemoveDevice(dev)
 	    else
 		prev->next = next;
 	    inputInfo.numDevices--;
+	    if (inputInfo.keyboard == tmp)
+	        inputInfo.keyboard = NULL;
+	    else if (inputInfo.pointer == tmp)
+	        inputInfo.pointer = NULL;
 	    return;
 	}
     }
@@ -327,6 +333,10 @@ RemoveDevice(dev)
 	    else
 		prev->next = next;
 	    inputInfo.numDevices--;
+	    if (inputInfo.keyboard == tmp)
+	        inputInfo.keyboard = NULL;
+	    else if (inputInfo.pointer == tmp)
+	        inputInfo.pointer = NULL;
 	    return;
 	}
     }
@@ -385,13 +395,13 @@ _RegisterKeyboardDevice(device)
 DevicePtr
 LookupKeyboardDevice()
 {
-    return &inputInfo.keyboard->public;
+    return inputInfo.keyboard ? &inputInfo.keyboard->public : NULL;
 }
 
 DevicePtr
 LookupPointerDevice()
 {
-    return &inputInfo.pointer->public;
+    return inputInfo.pointer ? &inputInfo.pointer->public : NULL;
 }
 
 DevicePtr

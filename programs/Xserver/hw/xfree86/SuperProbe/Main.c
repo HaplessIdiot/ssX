@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.11 1996/08/10 13:04:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.12 1996/09/24 13:52:43 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -850,7 +850,13 @@ char *argv[];
     	    Print_SVGA_Name(Primary);
 	    if (MemVGA > -1)
 	    {
-		printf("\tMemory:  %d Kbytes\n", MemVGA);
+	       if (MemVGA >> 16)
+	       {
+		  printf("\tMemory:  %d Kbytes (plus %d Kbytes off-screen)\n", 
+			 MemVGA & 0xffff, MemVGA >> 16);
+	       }
+	       else 
+		  printf("\tMemory:  %d Kbytes\n", MemVGA);
 	    }
 	    if (Probe_DAC)
 	    {

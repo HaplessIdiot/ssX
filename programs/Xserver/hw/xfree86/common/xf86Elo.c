@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.13 1996/08/26 10:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.14 1996/09/29 13:35:49 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1257,7 +1257,7 @@ DeviceAssocRec elographics_assoc =
  ***************************************************************************
  */
 int
-#ifndef __NetBSD__
+#ifndef DLSYM_BUG
 init_module(unsigned long	server_version)
 #else
 init_xf86Elo(unsigned long      server_version)

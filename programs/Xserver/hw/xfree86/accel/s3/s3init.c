@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.100 1996/09/22 05:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.101 1996/09/24 13:53:00 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2579,20 +2579,27 @@ s3Init(mode)
    outb(vgaCRIndex, 0x35);
    outb(vgaCRReg, 0x00);
    cebank();
-   outb(vgaCRIndex, 0x3a);
 #if 0  /* x64: set to 1 if PCI read bursts should be enabled
         * NOTE: there are known problems with PCI burst mode in SATURN
         * chipset rev. 2 so this is commented out, maybe a new XF86Config
         * option should be used
         */
-   if (S3_x64_SERIES(s3ChipId))
+   if (S3_x64_SERIES(s3ChipId)) {
+      outb(vgaCRIndex, 0x3a);
       outb(vgaCRReg, 0xb5 & 0x7f);
-   else
+   } else
 #endif
-   if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &s3InfoRec.options))
-      outb(vgaCRReg, 0xb7);		/* was 95 */
-   else
-      outb(vgaCRReg, 0xb5);		/* was 95 */
+      {
+	 outb(vgaCRIndex, 0x66);  /* set CR66_7 before CR3A_7 */
+	 tmp = inb(vgaCRReg);
+	 outb(vgaCRReg, tmp | 0x80);
+	 
+	 outb(vgaCRIndex, 0x3a);
+	 if (OFLG_ISSET(OPTION_SLOW_DRAM_REFRESH, &s3InfoRec.options))
+	    outb(vgaCRReg, 0xb7);
+	 else
+	    outb(vgaCRReg, 0xb5);
+      }
 
    outb(vgaCRIndex, 0x3b);
    outb(vgaCRReg, (new->CRTC[0] + new->CRTC[4] + 1) / 2);
@@ -3211,9 +3218,10 @@ s3InitEnvironment()
    outw(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
 
  /* Enable writes to all planes and reset color compare */
-   WaitQueue16_32(2,3);
+   WaitQueue16_32(3,5);
 
    outw32(WRT_MASK, ~0);
+   outw32(RD_MASK, 0);
    outw(MULTIFUNC_CNTL, PIX_CNTL | 0x0000);
 
  /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.0 1996/09/22 13:25:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.1tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -65,8 +65,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include	"misc.h"
 #include	"xf86.h"
-#include	"s3.h"
-#include	"regs3.h"
+#include	"s3v.h"
 
 extern int s3MAX_SLOTS;
 void  s3FindOrdering();
@@ -572,6 +571,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    return(NULL);
 	 }
 	 ValidateGC((DrawablePtr)pBitmap, pGC1);
+	 WaitIdleEmpty();
 	 (void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
 			  width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
          FreeScratchGC(pGC1);
@@ -600,6 +600,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 ValidateGC((DrawablePtr)pPixmap, pGC1);
 	 s3CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
 			width, height, 0, 0);
+	 WaitIdleEmpty();
 	 retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                              0, 0, width, height, dstx, dsty, bitPlane);
          FreeScratchGC(pGC1);

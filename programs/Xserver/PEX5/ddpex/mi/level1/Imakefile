@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.9 94/11/21 18:31:59 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/Imakefile,v 3.1 1995/01/28 15:44:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/Imakefile,v 3.2 1996/01/05 13:16:33 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -67,10 +67,14 @@ OBJS = miDDCtoGC.o \
 	miPck1Prim.o \
 	mi52stubs.o
 
-NormalLibraryObjectRule()
-
+#define DoSharedLib	PexDynamicModule
+#include <ServerLib.tmpl>
+#if DoSharedLib
+SubdirLibraryRule($(OBJS))
+UnsharedLibraryTarget(ddpex1,$(OBJS),unshared,..)
+#else
 NormalLibraryTarget(ddpex1,$(OBJS))
-
+#endif
 LintLibraryTarget(dp1, $(SRCS))
 NormalLintTarget($(SRCS))
 

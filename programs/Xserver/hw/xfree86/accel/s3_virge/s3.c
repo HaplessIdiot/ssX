@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.1 1996/09/24 13:54:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.2tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -36,8 +36,7 @@
 #include "cfb.h"
 #include "pixmapstr.h"
 #include "fontstruct.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
@@ -473,13 +472,14 @@ Bool
 s3Probe()
 {
    DisplayModePtr pMode, pEnd;
-   unsigned char config;
+   unsigned char config, config2;
    int i, j, numClocks;
    int tx, ty;
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
    int lookupFlags;
+   int MemOffScreen = 0;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -593,6 +593,9 @@ s3Probe()
    outb(vgaCRIndex, 0x36);		/* for register CR36 (CONFG_REG1), */
    config = inb(vgaCRReg);		/* get amount of vram installed */
 
+   outb(vgaCRIndex, 0x37);		/* for register CR37 (CONFG_REG2), */
+   config2 = inb(vgaCRReg);		/* get amount of off-screen ram  */
+
    outb(vgaCRIndex, 0x30);
    s3ChipId = inb(vgaCRReg);         /* get chip id */
 
@@ -680,7 +683,10 @@ s3Probe()
 
 
    /* LocalBus or EISA or PCI */
-   s3Localbus = ((config & 0x03) <= 2);
+   if (S3_ViRGE_VX_SERIES(s3ChipId))
+      s3Localbus = TRUE;
+   else
+      s3Localbus = ((config & 0x03) <= 2);
 
    if (xf86Verbose) {
       switch (config & 0x03) {
@@ -750,29 +756,50 @@ s3Probe()
    }
 
    if (!s3InfoRec.videoRam) {
-      switch ((config & 0xE0) >> 5) {	/* look at bits 7-5 */
-      case 0:
-	 s3InfoRec.videoRam = 4096;
-	 break;
-      case 2:
-	 s3InfoRec.videoRam = 3072;
-	 break;
-      case 3:
-	 s3InfoRec.videoRam = 8192;
-	 break;
-      case 4:
-	 s3InfoRec.videoRam = 2048;
-	 break;
-      case 5:
-	 s3InfoRec.videoRam = 6144;
-	 break;
-      case 6:
-	 s3InfoRec.videoRam = 1024;
-	 break;
+      if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+	 switch((config2 & 0x60) >> 5) {
+	 case 1:
+	    MemOffScreen = 4 * 1024;
+	    break;
+	 case 2:
+	    MemOffScreen = 2 * 1024;
+	    break;
+	 }
+	 switch ((config & 0x60) >> 5) {
+	 case 0:
+	    s3InfoRec.videoRam = 2 * 1024;
+	    break;
+	 case 1:
+	    s3InfoRec.videoRam = 4 * 1024;
+	    break;
+	 case 2:
+	    s3InfoRec.videoRam = 6 * 1024;
+	    break;
+	 case 3:
+	    s3InfoRec.videoRam = 8 * 1024;
+	    break;
+	 }
+	 s3InfoRec.videoRam -= MemOffScreen;
       }
+      else {
+	 switch((config & 0xE0) >> 5) {
+	 case 0:
+	    s3InfoRec.videoRam = 4 * 1024;
+	    break;
+	 case 4:
+	    s3InfoRec.videoRam = 2 * 1024;
+	    break;
+	 }
+      }
+
       if (xf86Verbose) {
-         ErrorF("%s %s: videoram:  %dk\n",
-              XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam);
+	 if (MemOffScreen)
+	    ErrorF("%s %s: videoram:  %dk (plus %dk off-screen)\n",
+		   XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam,
+		   MemOffScreen);
+	 else
+	    ErrorF("%s %s: videoram:  %dk\n",
+		   XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam);
       }
    } else {
       if (xf86Verbose) {

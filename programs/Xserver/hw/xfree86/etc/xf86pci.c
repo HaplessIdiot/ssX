@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.6 1996/02/22 05:12:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.7 1996/03/29 22:17:10 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -133,7 +133,11 @@ unsigned long inl(short port) { unsigned long ret;
 # endif
 #endif
 
-#include <sys/inline.h>
+#ifndef SCO325
+# include <sys/inline.h>
+#else
+# include "../common/scoasm.h"
+#endif
 
 #endif /* __GNUC__ */
 #endif /* __WATCOMC__ */
