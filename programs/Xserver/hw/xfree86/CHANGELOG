@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx April 2001)
+ 365. Fix xload so it is functional on Darwin (Rob Braun).
  364. Mac OS X specific fixes:
        - Fix typo in XDarwin startup program that could cause crash with
          many command line options.
@@ -12912,4 +12913,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1674 2001/04/07 19:41:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1675 2001/04/07 22:06:03 torrey Exp $
