@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.14 2000/06/09 22:43:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.15 2000/06/17 00:03:20 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -30,7 +30,7 @@
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
 
-#define MGA_MAX_PORTS	16
+#define MGA_MAX_PORTS	32
 
 #ifndef XvExtension
 void MGAInitVideo(ScreenPtr pScreen) {}
@@ -55,9 +55,10 @@ static int  MGAPutImage(ScrnInfoPtr, short, short, short, short, short,
 static int  MGAQueryImageAttributes(ScrnInfoPtr, int, unsigned short *, 
 			unsigned short *,  int *, int *);
 
-static void MGABlockHandler(int, pointer, pointer, pointer);
 
 static void MGAResetVideoOverlay(ScrnInfoPtr);
+
+static void MGAVideoTimerCallback(ScrnInfoPtr pScrn, Time time);
 
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
@@ -93,8 +94,6 @@ void MGAInitVideo(ScreenPtr pScreen)
 	if(!pMga->Overlay8Plus24 /* && !dualhead */)
 	    MGAInitOffscreenImages(pScreen);
 
-	pMga->BlockHandler = pScreen->BlockHandler;
-	pScreen->BlockHandler = MGABlockHandler;
     }
     
 
@@ -940,7 +939,8 @@ MGAPutImage(
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
 	pPriv->videoStatus = CLIENT_VIDEO_ON;
-    } 
+    }
+    pMga->VideoTimerCallback = MGAVideoTimerCallback;
 
     return Success;
 }
@@ -995,41 +995,30 @@ MGAQueryImageAttributes(
 }
 
 static void
-MGABlockHandler (
-    int i,
-    pointer     blockData,
-    pointer     pTimeout,
-    pointer     pReadmask
-){
-    ScreenPtr      pScreen = screenInfo.screens[i];
-    ScrnInfoPtr    pScrn = xf86Screens[i];
-    MGAPtr         pMga = MGAPTR(pScrn);
+MGAVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
     MGAPortPrivPtr pPriv = pMga->portPrivate;
 
-    pScreen->BlockHandler = pMga->BlockHandler;
-    
-    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
-
-    pScreen->BlockHandler = MGABlockHandler;
-
     if(pPriv->videoStatus & TIMER_MASK) {
-	UpdateCurrentTime();
 	if(pPriv->videoStatus & OFF_TIMER) {
-	    if(pPriv->offTime < currentTime.milliseconds) {
+	    if(pPriv->offTime < time) {
 		OUTREG(MGAREG_BESCTL, 0);
 		pPriv->videoStatus = FREE_TIMER;
-		pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+		pPriv->freeTime = time + FREE_DELAY;
 	    }
 	} else {  /* FREE_TIMER */
-	    if(pPriv->freeTime < currentTime.milliseconds) {
+	    if(pPriv->freeTime < time) {
 		if(pPriv->area) {
 		   xf86FreeOffscreenArea(pPriv->area);
 		   pPriv->area = NULL;
 		}
 		pPriv->videoStatus = 0;
+	        pMga->VideoTimerCallback = NULL;
 	    }
         }
-    }
+    } else  /* shouldn't get here */
+	pMga->VideoTimerCallback = NULL;
 }
 
 
@@ -1199,6 +1188,7 @@ MGADisplaySurface(
 	UpdateCurrentTime();
 	portPriv->videoStatus = FREE_TIMER;
 	portPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+	pMga->VideoTimerCallback = MGAVideoTimerCallback;
     }
 
     return Success;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.59 2000/06/17 00:03:19 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.60 2000/07/08 22:09:10 mvojkovi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -119,6 +119,13 @@ typedef struct {
 } MGAFBLayout;
 
 /* Card-specific driver information */
+
+typedef struct {
+    Bool update;
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+} MGAPaletteInfo;
 
 #define MGAPTR(p) ((MGAPtr)((p)->driverPrivate))
 
@@ -242,6 +249,9 @@ typedef struct {
     MGADRIServerPrivatePtr  DRIServerInfo;
 #endif
     XF86VideoAdaptorPtr adaptor;
+    void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
+    void		(*PaletteLoadCallback)(ScrnInfoPtr);
+    MGAPaletteInfo	palinfo[256];  /* G400 hardware bug workaround */
 } MGARec, *MGAPtr;
 
 #ifdef XF86DRI
@@ -263,6 +273,7 @@ extern CARD32 MGAAtypeNoBLK[16];
 #define	MGA_NO_PLANEMASK	0x00000080
 #define USE_LINEAR_EXPANSION	0x00000100
 #define LARGE_ADDRESSES		0x00000200
+
 #define MGAIOMAPSIZE		0x00004000
 #define MGAILOADMAPSIZE		0x00400000
 

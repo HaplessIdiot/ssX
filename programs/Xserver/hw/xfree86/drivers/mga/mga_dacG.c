@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.35 2000/05/11 18:58:35 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.36 2000/06/17 00:03:19 martin Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -530,6 +530,29 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  * MGAGLoadPalette
  */
 
+static void
+MGAPaletteLoadCallback(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    MGAPaletteInfo *pal = pMga->palinfo;
+    int i;
+
+    while (!(INREG8(0x1FDA) & 0x08)); 
+
+    for(i = 0; i < 256; i++) {
+	if(pal->update) {
+	    outMGAdreg(MGA1064_WADR_PAL, i);
+            outMGAdreg(MGA1064_COL_PAL, pal->red);
+            outMGAdreg(MGA1064_COL_PAL, pal->green);
+            outMGAdreg(MGA1064_COL_PAL, pal->blue);
+	    pal->update = FALSE;
+	}
+	pal++;
+    }
+    
+    pMga->PaletteLoadCallback = NULL;
+}
+
 void MGAGLoadPalette(
     ScrnInfoPtr pScrn, 
     int numColors, 
@@ -538,17 +561,30 @@ void MGAGLoadPalette(
     VisualPtr pVisual
 ){
     MGAPtr pMga = MGAPTR(pScrn);
-    int i, index;
 
-    if(pMga->CurrentLayout.Overlay8Plus24 && (pVisual->nplanes != 8))
+    if((pMga->CurrentLayout.Overlay8Plus24) && (pVisual->nplanes != 8)) 
 	return;
 
-    for(i = 0; i < numColors; i++) {
-	index = indices[i];
-        outMGAdreg(MGA1064_WADR_PAL, index);
-        outMGAdreg(MGA1064_COL_PAL, colors[index].red);
-        outMGAdreg(MGA1064_COL_PAL, colors[index].green);
-        outMGAdreg(MGA1064_COL_PAL, colors[index].blue);
+     if(pMga->Chipset == PCI_CHIP_MGAG400){ 
+	 /* load them at the retrace in the block handler instead to 
+	    work around some problems with static on the screen */
+	while(numColors--) {
+	    pMga->palinfo[*indices].update = TRUE;
+	    pMga->palinfo[*indices].red   = colors[*indices].red;
+	    pMga->palinfo[*indices].green = colors[*indices].green;
+	    pMga->palinfo[*indices].blue  = colors[*indices].blue;
+	    indices++;
+	}
+	pMga->PaletteLoadCallback = MGAPaletteLoadCallback;
+	return;
+    } else {
+	while(numColors--) {
+            outMGAdreg(MGA1064_WADR_PAL, *indices);
+            outMGAdreg(MGA1064_COL_PAL, colors[*indices].red);
+            outMGAdreg(MGA1064_COL_PAL, colors[*indices].green);
+            outMGAdreg(MGA1064_COL_PAL, colors[*indices].blue);
+	    indices++;
+	}
     }
 }
 
