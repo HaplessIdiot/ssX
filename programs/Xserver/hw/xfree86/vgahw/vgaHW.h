@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.3 1998/08/19 07:49:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.4 1998/08/29 05:44:03 dawes Exp $ */
 
 
 /*
@@ -14,10 +14,6 @@
 #ifndef _VGAHW_H
 #define _VGAHW_H
 
-#define VGA2_PATCHLEVEL "0"
-#define VGA16_PATCHLEVEL "0"
-#define SVGA_PATCHLEVEL "0"
-
 #include "X.h"
 #include "misc.h"
 #include "input.h"
@@ -31,15 +27,44 @@
 #include "extensions/dpms.h"
 #endif
 
+extern int vgaHWGetIndex(void);
+
 /*
  * access macro
  */
-
-extern unsigned char defaultDAC[768];
-extern int vgaRamdacMask;
-extern int vgaHWPrivateIndex;
-extern int vgaHWGetIndex(void);
 #define VGAHWPTR(p) ((vgaHWPtr)((p)->privates[vgaHWGetIndex()].ptr))
+
+/* Standard VGA registers */
+#define VGA_ATTR_INDEX		0x3C0
+#define VGA_ATTR_DATA_W		0x3C0
+#define VGA_ATTR_DATA_R		0x3C1
+#define VGA_IN_STAT_0		0x3C2		/* read */
+#define VGA_MISC_OUT_W		0x3C2		/* write */
+#define VGA_ENABLE		0x3C3
+#define VGA_SEQ_INDEX		0x3C4
+#define VGA_SEQ_DATA		0x3C5
+#define VGA_DAC_MASK		0x3C6
+#define VGA_DAC_READ_ADDR	0x3C7
+#define VGA_DAC_WRITE_ADDR	0x3C8
+#define VGA_DAC_DATA		0x3C9
+#define VGA_FEATURE_R		0x3CA		/* read */
+#define VGA_MISC_OUT_R		0x3CC		/* read */
+#define VGA_GRAPH_INDEX		0x3CE
+#define VGA_GRAPH_DATA		0x3CF
+
+#define VGA_IOBASE_MONO		0x3B0
+#define VGA_IOBASE_COLOR	0x3D0
+
+#define VGA_CRTC_INDEX_OFFSET	0x04
+#define VGA_CRTC_DATA_OFFSET	0x05
+#define VGA_IN_STAT_1_OFFSET	0x0A		/* read */
+#define VGA_FEATURE_W_OFFSET	0x0A		/* write */
+
+/* Flags for vgaHWSave() and vgaHWRestore() */
+#define VGA_SR_MODE		0x01
+#define VGA_SR_FONTS		0x02
+#define VGA_SR_CMAP		0x04
+#define VGA_SR_ALL		(VGA_SR_MODE | VGA_SR_FONTS | VGA_SR_CMAP)
 
 /*
  * vgaRegRec contains settings of standard VGA registers.
@@ -53,44 +78,74 @@ typedef struct {
     unsigned char DAC[768];       /* Internal Colorlookuptable */
 } vgaRegRec, *vgaRegPtr;
 
+typedef struct _vgaHWRec *vgaHWPtr;
+
+typedef void (*vgaHWWriteIndexProcPtr)(vgaHWPtr hwp, CARD8 index, CARD8 value);
+typedef CARD8 (*vgaHWReadIndexProcPtr)(vgaHWPtr hwp, CARD8 index);
+typedef void (*vgaHWWriteProcPtr)(vgaHWPtr hwp, CARD8 value);
+typedef CARD8 (*vgaHWReadProcPtr)(vgaHWPtr hwp);
+typedef void (*vgaHWMiscProcPtr)(vgaHWPtr hwp);
+
+
 /*
  * vgaHWRec contains per-screen information required by the vgahw module.
  */
-typedef struct {
-    pointer   Base;              /* Address of "VGA" memory */
-    int       MapSize;           /* Size of "VGA" memory */
-    int       IOBase;            /* I/O Base address */
-    int	      MemBase;           /* MemBase + port addr = register addr */
-    pointer   FontInfo1;         /* save area for fonts in plane 2 */ 
-    pointer   FontInfo2;         /* save area for fonts in plane 3 */ 
-    pointer   TextInfo;          /* save area for text */ 
-    vgaRegRec SavedReg;          /* saved registers */
-    vgaRegRec ModeReg;           /* register settings for current mode */
-    Bool      ShowOverscan;
-} vgaHWRec, *vgaHWPtr;
+typedef struct _vgaHWRec {
+    pointer			Base;		/* Address of "VGA" memory */
+    int				MapSize;	/* Size of "VGA" memory */
+    int				IOBase;		/* I/O Base address */
+    unsigned long 		MemBase;	/* MemBase + port addr =
+							register addr */
+    pointer			FontInfo1;	/* save area for fonts in
+							plane 2 */ 
+    pointer			FontInfo2;	/* save area for fonts in	
+							plane 3 */ 
+    pointer			TextInfo;	/* save area for text */ 
+    vgaRegRec			SavedReg;	/* saved registers */
+    vgaRegRec			ModeReg;	/* register settings for
+							current mode */
+    Bool			ShowOverscan;
+    Bool			paletteEnabled;
+    Bool			cmapSaved;
+    ScrnInfoPtr			pScrn;
+    vgaHWWriteIndexProcPtr	writeCrtc;
+    vgaHWReadIndexProcPtr	readCrtc;
+    vgaHWWriteIndexProcPtr	writeGr;
+    vgaHWReadIndexProcPtr	readGr;
+    vgaHWWriteIndexProcPtr	writeAttr;
+    vgaHWReadIndexProcPtr	readAttr;
+    vgaHWWriteIndexProcPtr	writeSeq;
+    vgaHWReadIndexProcPtr	readSeq;
+    vgaHWWriteProcPtr		writeMiscOut;
+    vgaHWReadProcPtr		readMiscOut;
+    vgaHWMiscProcPtr		enablePalette;
+    vgaHWMiscProcPtr		disablePalette;
+    vgaHWWriteProcPtr		writeDacMask;
+    vgaHWReadProcPtr		readDacMask;
+    vgaHWWriteProcPtr		writeDacWriteAddr;
+    vgaHWWriteProcPtr		writeDacReadAddr;
+    vgaHWWriteProcPtr		writeDacData;
+    vgaHWReadProcPtr		readDacData;
+} vgaHWRec;
 
 /* Some macros that VGA drivers can use in their ChipProbe() function */
-#define VGAHW_GET_IOBASE()	((inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0)
-#define VGAHW_UNLOCK(base)	do {					    \
-				    unsigned char tmp;			    \
-				    outb((base) + 4, 0x11);		    \
-				    tmp = inb((base) + 5);		    \
-				    outb((base) + 5, (tmp & ~0x80) | 0x80); \
-				} while (0)
-#define VGAHW_LOCK(base)	do {					\
-				    unsigned char tmp;			\
-				    outb((base) + 4, 0x11);		\
-				    tmp = inb((base) + 5);		\
-				    outb((base) + 5, tmp & ~0x80);	\
-				} while (0)
+#define VGAHW_GET_IOBASE()	((inb(VGA_MISC_OUT_R) & 0x01) ?		      \
+					 VGA_IOBASE_COLOR : VGA_IOBASE_MONO)
 
-typedef struct {
-  Bool Initialized;
-  Bool (*Init)(char *, ScreenPtr);
-  void (*Restore)(ScreenPtr);
-  void (*Warp)(ScreenPtr, int, int);
-  QueryBestSizeProcPtr QueryBestSize;
-} vgaHWCursorRec, *vgaHWCursorPtr;
+#define VGAHW_UNLOCK(base)	do {					      \
+				  unsigned char tmp;			      \
+				  outb((base) + VGA_CRTC_INDEX_OFFSET, 0x11); \
+				  tmp = inb((base) + VGA_CRTC_DATA_OFFSET);   \
+				  outb((base) + VGA_CRTC_DATA_OFFSET,	      \
+					tmp | 0x80);			      \
+				} while (0)
+#define VGAHW_LOCK(base)	do {					      \
+				  unsigned char tmp;			      \
+				  outb((base) + VGA_CRTC_INDEX_OFFSET, 0x11); \
+				  tmp = inb((base) + VGA_CRTC_DATA_OFFSET);   \
+				  outb((base) + VGA_CRTC_DATA_OFFSET,	      \
+					tmp & ~0x80);			      \
+				} while (0)
 
 #define OVERSCAN 0x11		/* Index of OverScan register */
 
@@ -98,35 +153,30 @@ typedef struct {
 #define BITS_PER_GUN 6
 #define COLORMAP_SIZE 256
 
-#define DACDelay(hw) \
-	{ \
-		unsigned char temp = inb((hw)->IOBase + 0x0A); \
-		temp = inb((hw)->IOBase + 0x0A); \
-	}
-
-#if 0
-/* Values for vgaInterlaceType */
-#define VGA_NO_DIVIDE_VERT     0
-#define VGA_DIVIDE_VERT        1
-#endif
-
-/*
- * This are used to tell the ChipSaveScreen() functions to save/restore
- * anything that must be retained across a synchronous reset of the SVGA
- */
-#define SS_START		0
-#define SS_FINISH		1
+#define DACDelay(hw)							     \
+	do {								     \
+	    unsigned char temp = inb((hw)->IOBase + VGA_IN_STAT_1_OFFSET);   \
+	    temp = inb((hw)->IOBase + VGA_IN_STAT_1_OFFSET);		     \
+	} while (0)
 
 /* Function Prototypes */
 
 /* vgaHW.c */
 
+void vgaHWSetStdFuncs(vgaHWPtr hwp);
+void vgaHWSetMmioFuncs(vgaHWPtr hwp, unsigned long memBase);
 void vgaHWProtect(ScrnInfoPtr pScrn, Bool on);
 Bool vgaHWSaveScreen(ScreenPtr pScreen, Bool on);
 void vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on);
 void vgaHWSeqReset(vgaHWPtr hwp, Bool start);
-void vgaHWRestore(ScrnInfoPtr scrnp, vgaRegPtr restore, Bool restoreFonts);
-void vgaHWSave(ScrnInfoPtr scrnp, vgaRegPtr save, Bool saveFonts);
+void vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore);
+void vgaHWRestoreMode(ScrnInfoPtr scrninfp, vgaRegPtr restore);
+void vgaHWRestoreColormap(ScrnInfoPtr scrninfp, vgaRegPtr restore);
+void vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore, int flags);
+void vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save);
+void vgaHWSaveMode(ScrnInfoPtr scrninfp, vgaRegPtr save);
+void vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save);
+void vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, int flags);
 Bool vgaHWInit(ScrnInfoPtr scrnp, DisplayModePtr mode);
 Bool vgaHWGetHWRec(ScrnInfoPtr scrp);
 void vgaHWFreeHWRec(ScrnInfoPtr scrp);

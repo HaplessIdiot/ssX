@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.8 1998/09/05 06:36:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.9 1998/09/13 09:10:20 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1479,7 +1479,7 @@ GLINTSave(ScrnInfoPtr pScrn)
     RAMDACreg = &pRAMDAC->SavedReg;
 
     if (pGlint->VGAcore) 
-	vgaHWSave(pScrn, vgaReg, TRUE);
+	vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
 
     switch (pGlint->Chipset)
     {
@@ -1560,7 +1560,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     RAMDACreg = &pRAMDAC->ModeReg;
 
     if (pGlint->VGAcore)
-	vgaHWRestore(pScrn, vgaReg, FALSE);
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
 
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
@@ -1630,7 +1630,7 @@ GLINTRestore(ScrnInfoPtr pScrn)
     }
 
     if (pGlint->VGAcore)
-	vgaHWRestore(pScrn, vgaReg, TRUE);
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
     vgaHWProtect(pScrn, FALSE);
 }

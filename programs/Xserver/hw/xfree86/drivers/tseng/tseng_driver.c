@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.37 1998/09/13 05:23:44 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.38 1998/09/13 09:10:24 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2702,7 +2702,7 @@ TsengSave(ScrnInfoPtr pScrn)
      * This function will handle creating the data structure and filling
      * in the generic VGA portion.
      */
-    vgaHWSave(pScrn, vgaReg, TRUE);
+    vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
 
     /*
      * we need this here , cause we MUST disable the ROM SYNC feature
@@ -3003,7 +3003,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
     outw(iobase + 4, (tsengReg->ExtCRTC[0x30] << 8) | 0x30);
     outw(iobase + 4, (tsengReg->ExtCRTC[0x31] << 8) | 0x31);
 
-    vgaHWRestore(pScrn, vgaReg, TRUE); /* TODO: does this belong HERE, in the middle? */
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL); /* TODO: does this belong HERE, in the middle? */
 
     outw(0x3C4, (tsengReg->ExtTS[6] << 8) | 0x06);
     outw(0x3C4, (tsengReg->ExtTS[7] << 8) | 0x07);

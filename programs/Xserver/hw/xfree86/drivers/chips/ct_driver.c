@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.32 1998/09/13 09:10:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.33 1998/09/19 12:14:52 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -3787,7 +3787,7 @@ chipsSave(ScrnInfoPtr pScrn)
     outb(0x3D7,tmp & ~0x18);
 
     /* get generic registers */
-    vgaHWSave(pScrn, VgaSave, TRUE);
+    vgaHWSave(pScrn, VgaSave, VGA_SR_ALL);
 
     /* save clock */
     chipsClockSave(pScrn, &ChipsSave->Clock);
@@ -4898,7 +4898,8 @@ chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
 	outw(cPtr->IOBase + 4, (VgaReg->CRTC[i] << 8) | i);
 #endif
     /* set generic registers */
-    vgaHWRestore(pScrn, VgaReg, restoreFonts);
+    vgaHWRestore(pScrn, VgaReg,
+		 VGA_SR_MODE | VGA_SR_CMAP | (restoreFonts ? VGA_SR_FONTS : 0));
 
     /* set stretching registers */
     if (IS_HiQV(cPtr)) {

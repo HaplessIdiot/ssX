@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.18 1998/09/05 06:36:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.19 1998/09/13 09:10:20 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -1057,7 +1057,7 @@ CIRSave(ScrnInfoPtr pScrn)
     hwp = VGAHWPTR(pScrn);
     pCir = CIRPTR(pScrn);
 
-    vgaHWSave(pScrn, &VGAHWPTR(pScrn)->SavedReg, TRUE);
+    vgaHWSave(pScrn, &VGAHWPTR(pScrn)->SavedReg, VGA_SR_ALL);
 
     outb(hwp->IOBase+4, 0x1B); pCir->ModeReg.ExtVga[CR1B] = pCir->SavedReg.ExtVga[CR1B] = inb(hwp->IOBase + 5);
     outb(hwp->IOBase+4, 0x1D); pCir->ModeReg.ExtVga[CR1D] = pCir->SavedReg.ExtVga[CR1D] = inb(hwp->IOBase + 5);
@@ -1261,7 +1261,7 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     outw(hwp->IOBase + 4, (pCir->ModeReg.ExtVga[CR1B] << 8) | 0x1B);
 
     /* Programme the registers */
-    vgaHWRestore(pScrn, &hwp->ModeReg, FALSE);
+    vgaHWRestore(pScrn, &hwp->ModeReg, VGA_SR_MODE | VGA_SR_CMAP);
 
     /* XXX */
     if(pScrn->bitsPerPixel == 1)
@@ -1308,7 +1308,7 @@ CIRRestore(ScrnInfoPtr pScrn)
     inb(0x3C6); inb(0x3C6); inb(0x3C6); inb(0x3C6);
     outb(0x3C6, pCir->SavedReg.ExtVga[HDR ]);
 
-    vgaHWRestore(pScrn, vgaReg, TRUE);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
     vgaHWProtect(pScrn, FALSE);
 }
 

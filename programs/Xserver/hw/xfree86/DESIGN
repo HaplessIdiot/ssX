@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 13 September 1998.
+Last modified: 20 September 1998.
 
 
 
@@ -2571,52 +2571,66 @@ with PCI chipsets that remap the VGA registers and memory window
 
 B.1  Data Structures:
 
-    The following public data structures are used by the vgahw module
-    (defined in vgaHW.h):
-
-        typedef struct {
-            unsigned char MiscOutReg;     /* */
-            unsigned char CRTC[25];       /* Crtc Controller */
-            unsigned char Sequencer[5];   /* Video Sequencer */
-            unsigned char Graphics[9];    /* Video Graphics */
-            unsigned char Attribute[21];  /* Video Attribute */
-            unsigned char DAC[768];       /* Internal Colorlookuptable */
-        } vgaRegRec, *vgaRegPtr;
-
-
-        typedef struct {
-            pointer   Base;            /* Address of "VGA" memory */
-            int       MapSize;         /* Size of "VGA" memory */
-            int       IOBase;          /* I/O Base address */
-            pointer   FontInfo1;       /* save area for fonts in plane 2 */
-            pointer   FontInfo2;       /* save area for fonts in plane 3 */
-            pointer   TextInfo;        /* save area for text */
-            vgaRegRec SavedReg;        /* saved registers */
-            vgaRegRec ModeReg;         /* register settings for current mode */
-        } vgaHWRec, *vgaHWPtr;
+    The public data structures used by the vgahw module are vgaRegRec/Ptr
+    and vgaHWRec/Ptr.  They are defined in vgaHW.h.
 
 
 B.2  General vgahw Functions:
 
-    Bool vgaHWGetHWRec(ScrnInfoPtr scrp)
+    Bool vgaHWGetHWRec(ScrnInfoPtr pScrn)
 
       This function allocates a vgaHWRec structure, and hooks it into
       the ScrnInfoRec's 'privates'.  Like all information hooked into
       the 'privates', it is persistent, and only needs to be allocated
       once per screen.  This function should normally be called from
-      the driver's ChipPreInit function.
+      the driver's ChipPreInit function.  The vgaHWRec is zero-allocated,
+      and the following fields are explicitly initialised:
+
+        ModeReg.DAC[]             initialised with a default colourmap
+        ModeReg.Attribute[0x11]   initialised with the default overscan index
+        ShowOverscan              initialised according to the "ShowOverscan"
+                                  option
+        paletteEnabled            initialised to FALSE
+        cmapSaved                 initialised to FALSE
+        pScrn                     initialised to pScrn
+
+      In addition to the above, vgaHWSetStdFuncs() is called to initialise
+      the register access function fields with the standard VGA set of
+      functions.
 
       Once allocated, a pointer to the vgaHWRec can be obtained from
-      the ScrnInfoPtr with the VGAHWPTR(scrp) macro.
+      the ScrnInfoPtr with the VGAHWPTR(pScrn) macro.
 
 
-    void vgaHWFreeHWRec(ScrnInfoPtr scrp)
+    void vgaHWFreeHWRec(ScrnInfoPtr pScrn)
 
       This function frees a vgaHWRec structure.  It should be called
       from a driver's ChipFreeScreen() function.
 
 
-    Bool vgaHWMapMem(ScrnInfoPtr scrp)
+    void vgaHWSetStdFuncs(vgaHWPtr hwp)
+
+      This function initialises the register access function fields of
+      hwp with the standard VGA set of functions.  This is called by
+      vgaHWGetHWRec(), so there is usually no need to call this explicitly.
+      The register access functions are described below.
+
+
+    void vgaHWSetMmioFuncs(vgaHWPtr hwp, unsigned long memBase)
+
+      This function initialised the register access function fields of
+      hwp with a generic MMIO set of functions.  hwp->MemBase is
+      initialised with memBase, which must be the the virtual address
+      of the MMIO area, calculated in such a way that when the standard
+      VGA I/O port value is added to it the correct access address
+      results.  That means that these functions are only suitable when
+      the VGA I/O ports are made available in a direct mapping to the
+      MMIO space.  If that is not the case, the driver will need to
+      provide its own register access functions. The register access
+      functions are described below.
+
+
+    Bool vgaHWMapMem(ScrnInfoPtr pScrn)
 
       This function maps the VGA memory window.  It requires that the
       vgaHWRec be initialised, and that the vgaHWRec's MapSize field be
@@ -2624,7 +2638,7 @@ B.2  General vgahw Functions:
       save or restore the VGA state.
 
 
-    void vgaHWUnmapMem(ScrnInfoPtr scrp)
+    void vgaHWUnmapMem(ScrnInfoPtr pScrn)
 
       This function unmaps the VGA memory window.  It must only be called
       after the memory has been mapped.
@@ -2660,27 +2674,102 @@ B.2  General vgahw Functions:
       loaded (for example, in the ChipProbe() function).
 
 
-    void vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, Bool saveFonts)
+    void vgaHWSave(ScrnInfoPtr pScrn, vgaRegPtr save, int flags)
 
       This function saves the VGA state.  The state is written to the
-      vgaRegRec pointed to by 'save'.  If saveFonts is TRUE, the fonts
-      and text memory is saved also.  The vgaHWRec and its IOBase fields
-      must be initialised first.  If saveFonts is TRUE, the VGA memory
-      window must be mapped.
+      vgaRegRec pointed to by `save'.  `flags' is set to one or more
+      of the following flags ORed together:
+
+        VGA_SR_MODE         the mode setting registers are saved
+        VGA_SR_FONTS        the text mode font/text data is saved
+        VGA_SR_CMAP         the colourmap (LUT) is saved
+        VGA_SR_ALL          all of the above are saved
+
+      The vgaHWRec and its IOBase fields must be initialised before
+      this function is called.  If VGA_SR_FONTS is set in flags, the
+      VGA memory window must be mapped too.  vgaHWSave() uses the three
+      functions below in the order vgaHWSaveColormap, vgaHWSaveMode,
+      vgaHWSaveFonts to carry out the different save phases.  It is
+      undecided at this stage whether they will be part of the vgahw
+      module's public interface or not.
 
 
-    void vgaHWRestore(ScrnInfoPtr scrninfp, vgaRegPtr restore,
-                      Bool restoreFonts)
+    void vgaHWSaveMode(ScrnInfoPtr pScrn, vgaRegPtr save)
+
+      This functions saves the VGA mode registers.  They are saved to the
+      vgaRegRec pointed to by 'save'.  The registers saved are:
+
+        MiscOut
+        CRTC[0-0x18]
+        Attribute[0-0x14]
+        Graphics[0-8]
+        Sequencer[0-4]
+
+
+    void vgaHWSaveFonts(ScrnInfoPtr pScrn, vgaRegPtr save)
+
+      This functions saves the text mode font and text data held in the
+      video memory.  If called while in a graphics mode, no save is done.
+      The VGA memory window must be mapped with vgaHWMapMem() before to
+      calling this function.
+
+      On some platforms, one or more of the font/text plane saves may be
+      no-ops.  This is the case when the platform's VC driver already
+      takes care of this.
+
+
+    void vgaHWSaveColormap(ScrnInfoPtr pScrn, vgaRegPtr save)
+
+      This function saves the VGA colourmap (LUT).  Before saving it, it
+      attempts to verify that the colourmap is readable.  In rare cases
+      where it isn't readable, a default colourmap is saved instead.
+
+
+    void vgaHWRestore(ScrnInfoPtr pScrn, vgaRegPtr restore, int flags)
 
       This function programs the VGA state.  The state programmed is
-      that contained in the vgaRegRec pointed to by 'restore'.  If
-      restoreFonts is TRUE, the fonts and text memory is programmed
-      also.  The vgaHWRec and its IOBase fields must be initialised
-      first.  The registers must be unlocked, and if restoreFonts is
-      TRUE, the VGA memory window must be mapped.
+      that contained in the vgaRegRec pointed to by `restore'.  `flags'
+      is the same as described above for the vgaHWSave function.
+
+      The vgaHWRec and its IOBase fields must be initialised before this
+      function is called.  If VGA_SR_FONTS is set in flags, the VGA
+      memory window must be mapped too.  vgaHWRestore() uses the three
+      functions below in the order vgaHWRestoreFonts, vgaHWRestoreMode,
+      vgaHWRestoreColormap to carry out the different restore phases.
+      It is undecided at this stage whether they will be part of the
+      vgahw module's public interface or not.
 
 
-    void vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
+    void vgaHWRestoreMode(ScrnInfoPtr pScrn, vgaRegPtr restore)
+
+      This functions restores the VGA mode registers.  They are restore
+      from the data in the vgaRegRec pointed to by 'restore'.  The
+      registers restored are:
+
+        MiscOut
+        CRTC[0-0x18]
+        Attribute[0-0x14]
+        Graphics[0-8]
+        Sequencer[0-4]
+
+
+    void vgaHWRestoreFonts(ScrnInfoPtr pScrn, vgaRegPtr restore)
+
+      This functions restores the text mode font and text data to the
+      video memory.  The VGA memory window must be mapped with
+      vgaHWMapMem() before to calling this function.
+
+      On some platforms, one or more of the font/text plane restores
+      may be no-ops.  This is the case when the platform's VC driver
+      already takes care of this.
+
+
+    void vgaHWRestoreColormap(ScrnInfoPtr pScrn, vgaRegPtr restore)
+
+      This function restores the VGA colourmap (LUT).
+
+
+    void vgaHWInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
       This function fills in the vgaHWRec's ModeReg field with the values
       appropriate for programming the given video mode.  It requires
@@ -2724,12 +2813,123 @@ B.3  VGA Colourmap Functions:
       void vgaInstallColormap(ColormapPtr pmap)
       void vgaUninstallColormap(ColormapPtr pmap)
 
-    NOTE: vgaStoreColors calls cfbExpandDirectColors.
-
 
     The following function hooks these into the ScreenRec:
 
       Bool vgaHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr scrnp)
+
+
+B.4  VGA Register Access Functions:
+
+    The vgahw module abstracts access to the standard VGA registers by
+    using a set of functions held in the vgaHWRec.  When the vgaHWRec
+    is created these function pointers are initialised with the set of
+    standard VGA I/O register access functions.  In addition to these,
+    the vgahw module includes a basic set of MMIO register access
+    functions, and the vgaHWRec function pointers can be initialised to
+    these by calling the vgaHWSetMmioFuncs() function described above.
+    Some drivers/platforms may require a different set of functions for
+    VGA access.  The access functions are described here.
+
+
+    void writeCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
+
+      Write `value' to CRTC regsister `index'.
+
+
+    CARD8 readCrtc(vgaHWPtr hwp, CARD8 index)
+
+      Return the value read from CRTC register `index'.
+
+
+    void writeGr(vgaHWPtr hwp, CARD8 index, CARD8 value)
+
+      Write `value' to Graphics Controller register `index'.
+
+
+    CARD8 readGR(vgaHWPtr hwp, CARD8 index)
+
+      Return the value read from Graphics Controller register `index'.
+
+
+    void writeSeq(vgaHWPtr hwp, CARD8 index, CARD8, value)
+
+      Write `value' to Sequencer register `index'.
+
+
+    CARD8 readSeq(vgaHWPtr hwp, CARD8 index)
+
+      Return the value read from Sequencer register `index'.
+
+
+    void writeAttr(vgaHWPtr hwp, CARD8 index, CARD8, value)
+
+      Write `value' to Attribute Controller register `index'.  When
+      writing out the index value this function should set bit 5 (0x20)
+      according to the setting of hwp->paletteEnabled in order to preserve
+      the palette access state.  It should be cleared when
+      hwp->paletteEnabled is TRUE and set when it is FALSE.
+
+
+    CARD8 readAttr(vgaHWPtr hwp, CARD8 index)
+
+      Return the value read from Attribute Controller register `index'.
+      When writing out the index value this function should set bit 5
+      (0x20) according to the setting of hwp->paletteEnabled in order
+      to preserve the palette access state.  It should be cleared when
+      hwp->paletteEnabled is TRUE and set when it is FALSE.
+
+
+    void writeMiscOut(vgaHWPtr hwp, CARD8 value)
+
+      Write `value' to the Miscellaneous Output register.
+
+
+    CARD8 readMiscOut(vgwHWPtr hwp)
+
+      Return the value read from the Miscellaneous Output register.
+
+
+    void enablePalette(vgaHWPtr hwp)
+
+      Clear the palette address source bit in the Attribute Controller
+      index register and set hwp->paletteEnabled to TRUE.
+
+
+    void disablePalette(vgaHWPtr hwp)
+
+      Set the palette address source bit in the Attribute Controller
+      index register and set hwp->paletteEnabled to TRUE.
+
+
+    void writeDacMask(vgaHWPtr hwp, CARD8 value)
+
+      Write `value' to the DAC Mask register.
+
+
+    CARD8 readDacMask(vgaHWptr hwp)
+
+      Return the value read from the DAC Mask register.
+
+
+    void writeDacReadAddress(vgaHWPtr hwp, CARD8 value)
+
+      Write `value' to the DAC Read Address register.
+
+
+    void writeDacWriteAddress(vgaHWPtr hwp, CARD8 value)
+
+      Write `value' to the DAC Write Address register.
+
+
+    void writeDacData(vgaHWPtr hwp, CARD8 value)
+
+      Write `value' to the DAC Data register.
+
+
+    CARD8 readDacData(vgaHWptr hwp)
+
+      Return the value read from the DAC Data register.
 
 
 
@@ -3726,4 +3926,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.11 1998/09/06 12:56:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.12 1998/09/13 05:23:26 dawes Exp $

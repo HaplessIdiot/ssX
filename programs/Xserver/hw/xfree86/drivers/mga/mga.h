@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.19 1998/09/13 05:23:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.20 1998/09/19 12:14:55 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -16,6 +16,7 @@
 
 #include "xaa.h"
 #include "xf86Cursor.h"
+#include "vgaHW.h"
 
 #if defined(__alpha__)
 #define mb() __asm__ __volatile__("mb": : :"memory")

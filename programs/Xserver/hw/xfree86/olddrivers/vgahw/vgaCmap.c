@@ -81,7 +81,7 @@ vgaStoreColors(pmap, ndef, pdefs)
      xColorItem	        *pdefs;
 {
     int		i;
-    unsigned char *cmap, *tmp = NULL;
+    unsigned char *cmap, *tmp;
     xColorItem	directDefs[256];
     Bool          new_overscan = FALSE;
     Bool	writeColormap;
@@ -93,7 +93,7 @@ vgaStoreColors(pmap, ndef, pdefs)
     vgaHWPtr hwp = VGAHWPTR(scrninfp);
     
     unsigned char overscan = hwp->ModeReg.Attribute[OVERSCAN];
-    unsigned char tmp_overscan = 0;
+    unsigned char tmp_overscan;
 
     if (vgaCheckColorMap(pmap))
         return;
@@ -115,9 +115,6 @@ vgaStoreColors(pmap, ndef, pdefs)
     }
 #endif
 
-    if (writeColormap)
-	hwp->enablePalette(hwp);
-
     for(i = 0; i < ndef; i++)
     {
         if (pdefs[i].pixel == overscan)
@@ -125,6 +122,8 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    new_overscan = TRUE;
 	}
         cmap = &(hwp->ModeReg.DAC[pdefs[i].pixel*3]);
+#ifndef PC98_EGC
+#ifndef PC98_PEGC
 	if (scrninfp->rgbBits == 8) {
             cmap[0] = pdefs[i].red   >> 8;
             cmap[1] = pdefs[i].green >> 8;
@@ -135,6 +134,16 @@ vgaStoreColors(pmap, ndef, pdefs)
             cmap[1] = pdefs[i].green >> 10;
             cmap[2] = pdefs[i].blue  >> 10;
         }
+#else /* PC98_PEGC */
+        cmap[0] = pdefs[i].red   >> 8;
+        cmap[1] = pdefs[i].green >> 8;
+        cmap[2] = pdefs[i].blue  >> 8;
+#endif /* PC98_PEGC */
+#else
+        cmap[0] = pdefs[i].red   >> 12;
+        cmap[1] = pdefs[i].green >> 12;
+        cmap[2] = pdefs[i].blue  >> 12;
+#endif /* PC98_EGC */
 #if 0
 	if (clgd6225Lcd)
 	{
@@ -149,14 +158,22 @@ vgaStoreColors(pmap, ndef, pdefs)
 	{
 	    if (hwp->ShowOverscan && i == 255)
 		continue;
-	    hwp->writeDacWriteAddr(hwp, pdefs[i].pixel);
+#if !defined(PC98_EGC) && !defined(PC98_PEGC)
+	    outb(0x3C8, pdefs[i].pixel);
 	    DACDelay(hwp);
-	    hwp->writeDacData(hwp, cmap[0]);
+	    outb(0x3C9, cmap[0]);
 	    DACDelay(hwp);
-	    hwp->writeDacData(hwp, cmap[1]);
+	    outb(0x3C9, cmap[1]);
 	    DACDelay(hwp);
-	    hwp->writeDacData(hwp, cmap[2]);
+	    outb(0x3C9, cmap[2]);
 	    DACDelay(hwp);
+#else
+	    /* also, PC9821Ne */
+	    outb(0xa8, pdefs[i].pixel);
+	    outb(0xac, cmap[0]);
+	    outb(0xaa, cmap[1]);
+	    outb(0xae, cmap[2]);
+#endif /* PC98_EGC */
 	}
     }
     if (new_overscan && !hwp->ShowOverscan)
@@ -207,13 +224,16 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    hwp->ModeReg.Attribute[OVERSCAN] = overscan;
             if (writeColormap)
 	    {
-	      hwp->writeAttr(hwp, OVERSCAN, overscan);
+#ifndef PC98_EGC
+	      (void)inb(hwp->IOBase + 0x0A);
+	      outb(0x3C0, OVERSCAN);
+	      outb(0x3C0, overscan);
+	      (void)inb(hwp->IOBase + 0x0A);
+	      outb(0x3C0, 0x20);
+#endif
 	    }
         }
     }
-
-    if (writeColormap)
-	hwp->disablePalette(hwp);
 }
 
 
@@ -261,7 +281,7 @@ vgaInstallColormap(pmap)
       defs[i].flags =  DoRed|DoGreen|DoBlue;
     }
 
-  pmap->pScreen->StoreColors(pmap, entries, defs);
+  pmap->pScreen->StoreColors( pmap, entries, defs);
 
   WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);
   

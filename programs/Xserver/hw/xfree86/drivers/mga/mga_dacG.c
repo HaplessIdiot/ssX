@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.2 1998/09/05 06:49:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.3 1998/09/13 05:23:38 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -19,11 +19,6 @@
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
-
-/* We use the mmio version of vgaHW */
-#include "vgaHWmmio.h"
-
-#include "xf86Cursor.h"
 
 #include "mga_bios.h"
 #include "mga_reg.h"
@@ -557,7 +552,8 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
-	vgaHWRestoreMMIO(pScrn, vgaReg, restoreFonts);
+	vgaHWRestore(pScrn, vgaReg,
+			VGA_SR_MODE | (restoreFonts ? VGA_SR_FONTS : 0));
 	MGAGRestorePalette(pScrn, vgaReg->DAC);
 
 	/*
@@ -608,7 +604,7 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	 * This function will handle creating the data structure and filling
 	 * in the generic VGA portion.
 	 */
-	vgaHWSaveMMIO(pScrn, vgaReg, saveFonts);
+	vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | (saveFonts ? VGA_SR_FONTS : 0));
 	MGAGSavePalette(pScrn, vgaReg->DAC);
 
 	/*

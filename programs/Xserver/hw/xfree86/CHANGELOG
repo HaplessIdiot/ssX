@@ -1,4 +1,8 @@
-XFree86 3.9Nf (19 September 1998)
+XFree86 3.9Nf (20 September 1998)
+1849. Update the mga driver for use with the resource management code.
+1848. Fix some bugs and typos in the resource management code.
+1847. Rework the vgahw module, abstracting the register accesses and splitting
+      the save/restore parts up.
 1846. Add '\n' to some of the messages in PEXExtensionInit().
 1845. Fix the mga driver's handling of the option register in mga_dac3026.c.
 1844. Trap reentrancy to the FatalError() function and call abort() when
@@ -6525,4 +6529,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.624 1998/09/13 05:45:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.625 1998/09/19 12:14:44 dawes Exp $
