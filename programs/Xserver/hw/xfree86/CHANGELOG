@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  48. Fix Glint 300SX+Delta support. Add faster 500TX text acceleration
+      based on other code (Alan Hourihane).
   47. Remove SPARC-specific byte-swapping code that would not work on older
       SPARC CPUs (part of #4653, David S. Miller).
   46. NULLify mapVidMem() and remove DEV_MEM define for Linux/SPARC
@@ -13393,4 +13395,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1808 2001/05/28 18:14:47 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1809 2001/05/28 18:20:46 tsi Exp $

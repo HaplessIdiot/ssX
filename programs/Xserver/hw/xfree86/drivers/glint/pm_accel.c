@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.21 2001/01/31 16:15:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.22 2001/05/25 12:25:59 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -101,8 +101,6 @@ static void PermediaPolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
    				int mode, int npt, DDXPointPtr pPts);
 static void PermediaPolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
  				int nseg, xSegment *pSeg);
-
-#define MAX_FIFO_ENTRIES 15
 
 void
 PermediaInitializeEngine(ScrnInfoPtr pScrn)
@@ -255,7 +253,7 @@ PermediaAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentColorExpandScanline = 
 			PermediaSubsequentColorExpandScanline;
 
-    infoPtr->ColorExpandRange = MAX_FIFO_ENTRIES;
+    infoPtr->ColorExpandRange = pGlint->FIFOSize;
 
     infoPtr->WriteBitmap = PermediaWriteBitmap;
 
@@ -676,7 +674,7 @@ PermediaSubsequentScanlineCPUToScreenColorExpandFill(
 
     pGlint->cpucount = h;
 
-    GLINT_WAIT(6);
+    GLINT_WAIT(8);
     PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
     GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | SyncOnBitMask,
 							Render);
@@ -686,7 +684,7 @@ PermediaSubsequentScanlineCPUToScreenColorExpandFill(
     if ((pGlint->dwords*h) < pGlint->FIFOSize)
 #endif
     {
-	/* Turn on direct for less than 120 dword colour expansion */
+	/* Turn on direct for less than FIFOSize dword colour expansion */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
 	pGlint->ScanlineDirect = 1;
     	GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.127 2001/05/25 10:08:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.128 2001/05/25 12:01:55 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -229,6 +229,7 @@ static const char *xaaSymbols[] = {
     "XAAScreenIndex",
     "XAAPolyLines",
     "XAAPolySegment",
+    "XAAFillSolidRects",
     NULL
 };
 
@@ -471,6 +472,12 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     if((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) ||
        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+       ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) && 
+        (pGlint->MultiChip == PCI_CHIP_300SX)) ||
+       ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) && 
+        (pGlint->MultiChip == PCI_CHIP_500TX)) ||
+       ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) && 
+        (pGlint->MultiChip == PCI_CHIP_MX)) ||
        ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) && 
         (pGlint->MultiChip == PCI_CHIP_MX)) ) {
 	vtgpolarity = GLINT_READ_REG(VTGPolarity) & 0xFFFFFFF0;
@@ -506,6 +513,12 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     if((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) ||
        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+       ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) && 
+        (pGlint->MultiChip == PCI_CHIP_300SX)) ||
+       ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) && 
+        (pGlint->MultiChip == PCI_CHIP_500TX)) ||
+       ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) && 
+        (pGlint->MultiChip == PCI_CHIP_MX)) ||
        ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) && 
         (pGlint->MultiChip == PCI_CHIP_MX)) ) {
     	GLINT_SLOW_WRITE_REG(vtgpolarity, VTGPolarity);
@@ -839,6 +852,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     	switch (pGlint->MultiChip) {
 	case PCI_CHIP_MX:
 	case PCI_CHIP_500TX:
+	case PCI_CHIP_300SX:
 	    linep = &partprod500TX[0];
 	    break;
 	case PCI_CHIP_PERMEDIA:
@@ -1488,6 +1502,12 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    	        pScrn->videoRam = (((GLINT_READ_REG(PMMemConfig)>>29) &
 							0x03) + 1) * 2048;
 		 	break;
+		    case PCI_CHIP_300SX:
+	    	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+				     "Attached Rasterizer is GLINT 300SX\n");
+	    	    	pScrn->videoRam = (1 << ((GLINT_READ_REG(FBMemoryCtl) & 
+						0xE0000000)>>29)) * 1024;
+		    	break;
 		    case PCI_CHIP_500TX:
 	    	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 				     "Attached Rasterizer is GLINT 500TX\n");
@@ -1684,6 +1704,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    	    pGlint->RefClock = 14318;
 		    break;
 		case PCI_CHIP_500TX:
+		case PCI_CHIP_300SX:
 		case PCI_CHIP_MX:
 	    	    if (pScrn->bitsPerPixel == 24) {
 			xf86DrvMsg(pScrn->scrnIndex, from, 
@@ -1857,6 +1878,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	   (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) ||
 	   (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
 	   ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) &&
+	    (pGlint->MultiChip == PCI_CHIP_300SX)) ||
+	   ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) &&
 	    (pGlint->MultiChip == PCI_CHIP_500TX)) ||
 	   ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) &&
 	    (pGlint->MultiChip == PCI_CHIP_MX)) ||
@@ -2018,6 +2041,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) ||
         (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
         ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) &&
+	 (pGlint->MultiChip == PCI_CHIP_300SX)) ||
+        ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) &&
 	 (pGlint->MultiChip == PCI_CHIP_500TX)) ||
         ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) &&
 	 (pGlint->MultiChip == PCI_CHIP_MX)) ||
@@ -2073,6 +2098,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	switch (pGlint->MultiChip) {
 	case PCI_CHIP_MX:
 	case PCI_CHIP_500TX:
+	case PCI_CHIP_300SX:
 	    pGlint->pprod = partprod500TX[pScrn->displayWidth >> 5];
 	    pGlint->bppalign = 0;
 	    break;
@@ -2398,6 +2424,7 @@ GLINTSave(ScrnInfoPtr pScrn)
     case PCI_VENDOR_3DLABS_CHIP_DELTA:
 	switch (pGlint->MultiChip) {
 	case PCI_CHIP_500TX:
+	case PCI_CHIP_300SX:
 	case PCI_CHIP_MX:
 	    if (pGlint->numMultiDevices == 2) {
 		ACCESSCHIP2()
@@ -2472,6 +2499,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	switch (pGlint->MultiChip) {
 	case PCI_CHIP_MX:
 	case PCI_CHIP_500TX:
+	case PCI_CHIP_300SX:
 	    if (pGlint->numMultiDevices == 2) {
 		ACCESSCHIP2();
 	    	ret = TXInit(pScrn, mode, glintReg2);
@@ -2529,6 +2557,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case PCI_VENDOR_3DLABS_CHIP_DELTA:
 	switch (pGlint->MultiChip) {
 	case PCI_CHIP_500TX:
+	case PCI_CHIP_300SX:
 	case PCI_CHIP_MX:
 	    if (pGlint->numMultiDevices == 2) {
 		ACCESSCHIP2();
@@ -2616,6 +2645,7 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	switch (pGlint->MultiChip) {
 	case PCI_CHIP_MX:
 	case PCI_CHIP_500TX:
+	case PCI_CHIP_300SX:
 	    if (pGlint->numMultiDevices == 2) {
 	    	ACCESSCHIP2();
 	    	TXRestore(pScrn, glintReg2);
@@ -2861,6 +2891,9 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    case PCI_CHIP_MX:
 		TXAccelInit(pScreen);
 		break;
+	    case PCI_CHIP_300SX:
+		SXAccelInit(pScreen);
+		break;
 	    case PCI_CHIP_PERMEDIA:
 	        PermediaAccelInit(pScreen);
 	        break;
@@ -3054,6 +3087,9 @@ GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 			case PCI_CHIP_MX:
 	    		    TXInitializeEngine(pScrn);
 			    break;
+			case PCI_CHIP_300SX:
+	    		    SXInitializeEngine(pScrn);
+			    break;
 			case PCI_CHIP_PERMEDIA:
 	    		    PermediaInitializeEngine(pScrn);
 			    break;
@@ -3199,6 +3235,9 @@ GLINTEnterVT(int scrnIndex, int flags)
 		case PCI_CHIP_500TX:
 		case PCI_CHIP_MX:
 	    	    TXInitializeEngine(pScrn);
+		    break;
+		case PCI_CHIP_300SX:
+	    	    SXInitializeEngine(pScrn);
 		    break;
 		case PCI_CHIP_PERMEDIA:
 	    	    PermediaInitializeEngine(pScrn);
@@ -3627,6 +3666,7 @@ Shiftbpp(ScrnInfoPtr pScrn, int value)
 	case PCI_VENDOR_3DLABS_CHIP_DELTA:
 	    switch (pGlint->MultiChip) {
 		case PCI_CHIP_500TX:
+		case PCI_CHIP_300SX:
 		case PCI_CHIP_MX:
     	    	if ( (pGlint->RamDac->RamDacType == (IBM640_RAMDAC)) ||
                      (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) )

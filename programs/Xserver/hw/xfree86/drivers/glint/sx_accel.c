@@ -28,7 +28,7 @@
  * 
  * GLINT 300SX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/sx_accel.c,v 1.5 2001/02/02 11:45:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/sx_accel.c,v 1.6 2001/04/19 09:28:32 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -215,14 +215,14 @@ SXAccelInit(ScreenPtr pScreen)
 					       TRANSPARENCY_ONLY |
 					       BIT_ORDER_IN_BYTE_LSBFIRST;
 
-    pGlint->XAAScanlineColorExpandBuffers[0] =
-	    xnfalloc(((pScrn->virtualX + 63)/32) *4* (pScrn->bitsPerPixel / 8));
-    pGlint->XAAScanlineColorExpandBuffers[1] =
-	    xnfalloc(((pScrn->virtualX + 63)/32) *4* (pScrn->bitsPerPixel / 8));
-
-    infoPtr->NumScanlineColorExpandBuffers = 2;
+    infoPtr->NumScanlineColorExpandBuffers = 1;
+    pGlint->ScratchBuffer                 = xalloc(((pScrn->virtualX+62)/32*4)
+					    + (pScrn->virtualX
+					    * pScrn->bitsPerPixel / 8));
     infoPtr->ScanlineColorExpandBuffers = 
 					pGlint->XAAScanlineColorExpandBuffers;
+    pGlint->XAAScanlineColorExpandBuffers[0] = 
+					pGlint->IOBase + OutputFIFO + 4;
 
     infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
 				SXSetupForScanlineCPUToScreenColorExpandFill;
@@ -243,6 +243,8 @@ SXAccelInit(ScreenPtr pScreen)
     if (memory > (16383*1024)) memory = 16383*1024;
     AvailFBArea.y2 = memory / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
+
+    if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -457,43 +459,57 @@ SXSubsequentScanlineCPUToScreenColorExpandFill(
 
     pGlint->dwords = ((w + 31) >> 5); /* dwords per scanline */
 
-    pGlint->cpucount = y;
-    pGlint->cpuheight = h;
-    GLINT_WAIT(6);
-    SXLoadCoord(pScrn, x, pGlint->cpucount, x+w, 1, 0, 1);
+    pGlint->cpucount = h;
+
+    GLINT_WAIT(8);
+    SXLoadCoord(pScrn, x, y, x+w, 1, 0, 1);
+    GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | SyncOnBitMask,
+							Render);
+#if defined(__alpha__)
+    if (0) /* force Alpha to use indirect always */
+#else
+    if ((pGlint->dwords*h) < pGlint->FIFOSize)
+#endif
+    {
+	/* Turn on direct for less than FIFOSize dword colour expansion */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
+	pGlint->ScanlineDirect = 1;
+    	GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);
+    	GLINT_WAIT(pGlint->dwords*h);
+    } else {
+	/* Use indirect for anything else */
+    	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->ScratchBuffer;
+	pGlint->ScanlineDirect   = 0;
+    }
+
+    pGlint->cpucount--;
 }
 
 static void
 SXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    CARD32 *src;
+    CARD32 *srcp = (CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno];
     int dwords = pGlint->dwords;
 
-    GLINT_WAIT(7);
-    SXLoadCoord(pScrn, pGlint->startxdom, pGlint->cpucount, pGlint->startxsub, 1, 0, 1);
-
-    GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | SyncOnBitMask,
-							Render);
-
-    src = (CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno];
-    while (dwords >= infoRec->ColorExpandRange) {
-    	GLINT_WAIT(infoRec->ColorExpandRange);
-    	GLINT_WRITE_REG((infoRec->ColorExpandRange - 2)<<16 | 0x0D, OutputFIFO);
-    	GLINT_MoveDWORDS(
-		(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4), src,
-		infoRec->ColorExpandRange - 1);
-    	dwords -= (infoRec->ColorExpandRange - 1);
-	src += (infoRec->ColorExpandRange - 1);
+    if (!pGlint->ScanlineDirect) {
+	while(dwords >= pGlint->FIFOSize) {
+	    GLINT_WAIT(pGlint->FIFOSize);
+            GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+	    dwords -= pGlint->FIFOSize - 1;
+	    srcp += pGlint->FIFOSize - 1;
+	}
+	if(dwords) {
+	    GLINT_WAIT(dwords + 1);
+            GLINT_WRITE_REG(((dwords - 1) << 16) | 0x0D, OutputFIFO);
+	    GLINT_MoveDWORDS(
+			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
+	 		(CARD32*)srcp, dwords);
+	}
     }
-    if (dwords) {
-    	GLINT_WAIT(dwords);
-    	GLINT_WRITE_REG((dwords - 1)<<16 | 0x0D, OutputFIFO);
-    	GLINT_MoveDWORDS(
-		(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4), src,dwords);
-    }
-    pGlint->cpucount += 1;
 }
 
 void SXSetupForMono8x8PatternFill(
