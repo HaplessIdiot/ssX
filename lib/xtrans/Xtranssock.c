@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.60 2003/07/24 13:50:19 eich Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.61tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -683,8 +683,8 @@ TRANS(SocketReopenCOTSServer) (Xtransport *thistrans, int fd, char *port)
     SocketInitOnce();
 
     while ((i = TRANS(SocketSelectFamily) (i, thistrans->TransName)) >= 0) {
-	if ((ciptr = TRANS(SocketOpen) (
-		 i, Sockettrans2devtab[i].devcotsname)) != NULL)
+	if ((ciptr = TRANS(SocketReopen) (
+		 i, Sockettrans2devtab[i].devcotsname, fd, port)) != NULL)
 	    break;
     }
     if (i < 0) {
@@ -717,8 +717,8 @@ TRANS(SocketReopenCLTSServer) (Xtransport *thistrans, int fd, char *port)
     SocketInitOnce();
 
     while ((i = TRANS(SocketSelectFamily) (i, thistrans->TransName)) >= 0) {
-	if ((ciptr = TRANS(SocketOpen) (
-		 i, Sockettrans2devtab[i].devcotsname)) != NULL)
+	if ((ciptr = TRANS(SocketReopen) (
+		 i, Sockettrans2devtab[i].devcotsname, fd, port)) != NULL)
 	    break;
     }
     if (i < 0) {
