@@ -1,4 +1,5 @@
 /* $XConsortium: fFillSet.s,v 1.2 94/03/29 11:19:11 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
