@@ -67,9 +67,22 @@ LookupFontSizeBySize (dw, f, size)
 	fontNameAttributes |= FontNamePointSize;
 	fontName.ResolutionX = dw->dvi.screen_resolution;
 	fontName.ResolutionY = dw->dvi.screen_resolution;
-	fontName.PointSize = size * 10;
+	fontName.PointSize = size * 10 / dw->dvi.size_scale;
 	XFormatFontName (&fontName, fontNameAttributes, fontNameString);
 	best->x_name = savestr (fontNameString);
+#ifdef USE_XFT
+	/*
+	 * Force a match of a core font for adobe-fontspecific
+	 * encodings; we dont have a scalable font in
+	 * the right encoding
+	 */
+	best->core = False;
+	if (!strcmp (fontName.CharSetRegistry, "adobe") &&
+	    !strcmp (fontName.CharSetEncoding, "fontspecific"))
+	{
+	    best->core = True;
+	}
+#endif
 	best->doesnt_exist = 0;
 	best->font = 0;
 	f->sizes = best;
@@ -145,8 +158,12 @@ DisposeFontSizes (dw, fs)
 		XtFree (fs->x_name);
 	if (fs->font)
 	{
+#ifdef USE_XFT
+	    XftFontClose (XtDisplay (dw), fs->font);
+#else
 	    XUnloadFont (XtDisplay (dw), fs->font->fid);
 	    XFree ((char *)fs->font);
+#endif
 	}
 	XtFree ((char *) fs);
     }
@@ -191,9 +208,14 @@ InstallFontSizes (dw, x_name, scalablep)
     XFontName	    fontName;
     unsigned int    fontNameAttributes;
 
+    sizes = 0;
+#ifdef USE_XFT
+    *scalablep = TRUE;
+#else
     *scalablep = FALSE;
     if (!XParseFontName (x_name, &fontName, &fontNameAttributes))
 	return 0;
+    
     fontNameAttributes &= ~(FontNamePixelSize|FontNamePointSize);
     fontNameAttributes |= FontNameResolutionX;
     fontNameAttributes |= FontNameResolutionY;
@@ -201,7 +223,6 @@ InstallFontSizes (dw, x_name, scalablep)
     fontName.ResolutionY = dw->dvi.screen_resolution;
     XFormatFontName (&fontName, fontNameAttributes, fontNameString);
     fonts = XListFonts (XtDisplay (dw), fontNameString, 10000000, &count);
-    sizes = 0;
     for (i = 0; i < count; i++) {
 	size = ConvertFontNameToSize (fonts[i]);
 	if (size == 0)
@@ -222,6 +243,7 @@ InstallFontSizes (dw, x_name, scalablep)
 	}
     }
     XFreeFontNames (fonts);
+#endif
     return sizes;
 }
 
@@ -284,6 +306,7 @@ MapDviNameToXName (dw, dvi_name)
     for (fm = dw->dvi.font_map; fm; fm=fm->next)
 	if (!strcmp (fm->dvi_name, dvi_name))
 	    return fm->x_name;
+    ++dvi_name;
     for (fm = dw->dvi.font_map; fm; fm=fm->next)
 	if (!strcmp (fm->dvi_name, "R"))
 	    return fm->x_name;
@@ -370,7 +393,11 @@ SetFontPosition (dw, position, dvi_name, extra)
     (void) InstallFont (dw, position, dvi_name, x_name);
 }
 
+#ifdef USE_XFT
+XftFont *
+#else
 XFontStruct *
+#endif
 QueryFont (dw, position, size)
     DviWidget	dw;
     int		position;
@@ -391,7 +418,27 @@ QueryFont (dw, position, size)
 	return dw->dvi.default_font;
     if (!fs->font) {
 	if (fs->x_name)
+	{
+#ifdef USE_XFT
+	    XftPattern	*pat;
+	    XftPattern	*match;
+	    XftResult	result;
+
+	    pat = XftXlfdParse (fs->x_name, False, False);
+	    XftPatternAddBool (pat, XFT_CORE, fs->core);
+	    match = XftFontMatch (XtDisplay (dw),
+				  XScreenNumberOfScreen(dw->core.screen),
+				  pat, &result);
+	    XftPatternDestroy (pat);
+	    if (match)
+		fs->font = XftFontOpenPattern (XtDisplay (dw),
+					       match);
+	    else
+		fs->font = 0;
+#else
 	    fs->font = XLoadQueryFont (XtDisplay (dw), fs->x_name);
+#endif
+	}
 	if (!fs->font)
 	    fs->font = dw->dvi.default_font;
     }
@@ -428,6 +475,7 @@ DviCharIsLigature (map, name)
     return 0;
 }
 
+#if 0
 LoadFont (dw, position, size)
 	DviWidget	dw;
 	int		position;
@@ -442,3 +490,4 @@ LoadFont (dw, position, size)
 	XSetFont (XtDisplay (dw), dw->dvi.normal_GC, font->fid);
 	return;
 }
+#endif

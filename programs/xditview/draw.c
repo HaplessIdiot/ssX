@@ -105,6 +105,27 @@ VerticalGoto(dw, NewPosition)
     dw->dvi.state->y = NewPosition;
 }
 
+#ifdef USE_XFT
+DrawText (DviWidget dw)
+{
+    int	    i;
+    XftFont *font;
+
+    font = dw->dvi.cache.font;
+    for (i = 0; i <= dw->dvi.cache.index; i++)
+    {
+	if (dw->dvi.cache.cache[i].font)
+	    font = dw->dvi.cache.cache[i].font;
+	XftDrawString8 (dw->dvi.draw, &dw->dvi.black,
+			font,
+			dw->dvi.cache.cache[i].x,
+			dw->dvi.cache.start_y,
+			(unsigned char *) dw->dvi.cache.cache[i].chars,
+			dw->dvi.cache.cache[i].nchars);
+    }
+}
+#endif
+
 FlushCharCache (dw)
 	DviWidget	dw;
 {
@@ -113,9 +134,15 @@ FlushCharCache (dw)
     xx = ToX(dw, dw->dvi.state->x);
     yx = ToX(dw, dw->dvi.state->y);
     if (dw->dvi.cache.char_index != 0)
+    {
+#ifdef USE_XFT
+	DrawText (dw);
+#else
 	XDrawText (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
 		    dw->dvi.cache.start_x, dw->dvi.cache.start_y,
 		    dw->dvi.cache.cache, dw->dvi.cache.index + 1);
+#endif
+    }
     dw->dvi.cache.index = 0;
     dw->dvi.cache.max = DVI_TEXT_CACHE_SIZE;
     if (dw->dvi.noPolyText)

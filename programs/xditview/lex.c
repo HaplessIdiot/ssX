@@ -33,11 +33,13 @@ GetLine(dw, Buffer, Length)
 	
 	Length--;			    /* Save room for final NULL */
 	
-	while (i < Length && DviGetC (dw, &c) != EOF && c != '\n')
+	while ((!p || i < Length) && DviGetC (dw, &c) != EOF && c != '\n')
 		if (p)
 			*p++ = c;
+#if 0
 	if (c == '\n' && p)		    /* Retain the newline like fgets */
 		*p++ = c;
+#endif
 	if (c == '\n')
 		DviUngetC(dw, c);
 	if (p)	

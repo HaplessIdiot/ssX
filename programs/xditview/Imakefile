@@ -7,12 +7,18 @@ XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.1 2000/02/23 20:35:28 dawes E
 
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-#if HasMkstemp
-        DEFINES = -DHAS_MKSTEMP
+#if BuildXftLibrary
+    DEPFONTLIBS = XftClientDepLibs
+       FONTLIBS = XftClientLibs
+       FONTDEFS = -DUSE_XFT
 #endif
-        DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs
+#if HasMkstemp
+       TEMPDEFS = -DHAS_MKSTEMP
+#endif
+        DEPLIBS = XawClientDepLibs $(DEPFONTLIBS)
+LOCAL_LIBRARIES = XawClientLibs $(FONTLIBS)
   SYS_LIBRARIES = MathLibrary
+        DEFINES = $(TEMPDEFS) $(FONTDEFS)
         BITMAPS = ldblarrow rdblarrow
            SRCS = xditview.c Dvi.c draw.c font.c lex.c page.c parse.c\
 	   	  XFontName.c DviChar.c

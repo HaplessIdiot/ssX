@@ -64,6 +64,10 @@ R	-*-times-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 I	-*-times-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
 B	-*-times-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
 F	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
+TR	-*-times-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
+TI	-*-times-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
+TB	-*-times-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
+TF	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
 BI	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
 C	-*-courier-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 CO	-*-courier-medium-o-normal--*-*-*-*-*-*-iso8859-1\n\
@@ -114,6 +118,8 @@ static XtResource resources[] = {
 	 offset(dvi.page_width), XtRString, "8.5"},
 	{XtNpageHeight, XtCPageHeight, XtRFloat, sizeof (float),
 	 offset(dvi.page_height), XtRString, "11"},
+	{XtNsizeScale, XtCSizeScale, XtRInt, sizeof (int),
+	 offset(dvi.size_scale_set), XtRImmediate, (XtPointer) 0},
 };
 
 #undef offset
@@ -144,7 +150,7 @@ DviClassRec dviClassRec = {
 	XtNumber(resources),		/* resource_count	  */
 	NULLQUARK,			/* xrm_class		  */
 	FALSE,				/* compress_motion	  */
-	TRUE,				/* compress_exposure	  */
+	XtExposeCompressMaximal,    	/* compress_exposure	  */
 	TRUE,				/* compress_enterleave    */
 	FALSE,				/* visible_interest	  */
 	Destroy,			/* destroy		  */
@@ -219,6 +225,8 @@ static void Initialize(request, new, args, num_args)
     dw->dvi.state = 0;
     dw->dvi.cache.index = 0;
     dw->dvi.cache.font = 0; 
+    dw->dvi.size_scale = 0;
+    dw->dvi.size_scale_set = 0;
     RequestDesiredSize (dw);
 }
 
@@ -240,6 +248,28 @@ Realize (w, valueMask, attrs)
     values.foreground = dw->dvi.foreground;
     dw->dvi.normal_GC = XCreateGC (XtDisplay (w), XtWindow (w),
 				    GCForeground, &values);
+#ifdef USE_XFT
+    {
+	int		scr;
+	Visual		*visual;
+	Colormap	cmap;
+	XRenderColor	black;
+
+	scr = XScreenNumberOfScreen (dw->core.screen);
+	visual = DefaultVisual (XtDisplay (w), scr);
+	cmap = DefaultColormap (XtDisplay (w), scr);
+	dw->dvi.draw = XftDrawCreate (XtDisplay (w), XtWindow (w), 
+				      visual, cmap);
+
+	black.red = black.green = black.blue = 0;
+	black.alpha = 0xffff;
+	XftColorAllocValue (XtDisplay (w), visual, cmap,
+			    &black, &dw->dvi.black);
+	dw->dvi.default_font = XftFontOpenName (XtDisplay (w),
+						scr,
+						"serif-12");
+    }
+#endif
     if (dw->dvi.file)
 	OpenFile (dw);
     ParseFontMap (dw);
@@ -270,11 +300,21 @@ Redisplay(w, event, region)
 	DviWidget	dw = (DviWidget) w;
 	XRectangle	extents;
 	
+#ifdef USE_XFT
+	XClearArea (XtDisplay (dw),
+		    XtWindow (dw),
+		    0, 0, 0, 0, False);
+	dw->dvi.extents.x1 = 0;
+	dw->dvi.extents.y1 = 0;
+	dw->dvi.extents.x2 = dw->core.width;
+	dw->dvi.extents.y2 = dw->core.height;
+#else
 	XClipBox (region, &extents);
 	dw->dvi.extents.x1 = extents.x;
 	dw->dvi.extents.y1 = extents.y;
 	dw->dvi.extents.x2 = extents.x + extents.width;
 	dw->dvi.extents.y2 = extents.y + extents.height;
+#endif
 	ShowDvi (dw);
 }
 
@@ -439,9 +479,6 @@ SetDeviceResolution (dw, resolution)
 	dw->dvi.device_resolution = resolution;
 	dw->dvi.scale = ((double)  dw->dvi.screen_resolution) /
 			((double) resolution);
-	if (dw->dvi.state)
-	    dw->dvi.state->line_width =
-		FontSizeInDevice(dw, dw->dvi.state->line_width/10.0);
     }
 }
 

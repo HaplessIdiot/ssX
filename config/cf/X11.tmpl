@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.83 2000/11/30 01:02:23 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.84 2000/11/30 23:29:54 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2209,10 +2209,10 @@ FREETYPE2DEFINES = -DFREETYPE2
 #endif
 
 #ifndef XftClientDepLibs
-#define XftClientDepLibs $(DEPXFTLIB)
+#define XftClientDepLibs $(DEPXFTLIB) $(DEPXRENDERLIB)
 #endif
 #ifndef XftClientLibs
-#define XftClientLibs $(XFTLIB) $(FREETYPE2LIB)
+#define XftClientLibs $(XFTLIB) $(FREETYPE2LIB) $(XRENDERLIB)
 #endif
 
 #ifndef LdLibraryPath
