@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.6 2001/06/07 15:33:44 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.7 2001/06/07 17:54:02 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -269,7 +269,6 @@ TellChanged (WindowPtr pWin, pointer value)
 
     se.type = RRScreenChangeNotify + RREventBase;
     se.rotation = (CARD8) pScrPriv->rotation;
-    se.sequenceNumber = client->sequence;
     se.timestamp = pScrPriv->lastSetTime.milliseconds;
     se.configTimestamp = pScrPriv->lastConfigTime.milliseconds;
     se.root = pRoot->drawable.id;
@@ -302,6 +301,7 @@ TellChanged (WindowPtr pWin, pointer value)
 	client = pRREvent->client;
 	if (client == serverClient || client->clientGone)
 	    continue;
+	se.sequenceNumber = client->sequence;
 	WriteEventsToClient (client, 1, (xEvent *) &se);
     }
 }
