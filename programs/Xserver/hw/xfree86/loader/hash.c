@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.15 2001/02/16 01:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.16 2001/02/16 02:13:30 dawes Exp $ */
 
 /*
  *
@@ -167,6 +167,7 @@ LOOKUP	*list ;
 #endif
 		    break;
 		}
+		l++;
 	    }
 	}
     }
@@ -176,6 +177,7 @@ LOOKUP	*list ;
      * and add it to the given namespace if appropriate based on the
      * presence and content of an export list.
      */
+    l = list;
     while ( l->symName ) {
 	/* XXX This might be slow if lots of symbols are exported. */
 	if (exports) {
