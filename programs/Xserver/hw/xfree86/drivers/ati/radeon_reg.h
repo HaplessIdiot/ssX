@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.17 2002/06/27 22:39:29 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.18 2002/07/11 20:11:51 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1001,6 +1001,11 @@ do {									\
 #       define RADEON_PPLL_ATOMIC_UPDATE_W  (1 << 15) /* same as _R */
 #define RADEON_PWR_MNGMT_CNTL_STATUS        0x0f60 /* PCI */
 
+#define RADEON_RBBM_GUICNTL                 0x172c
+#       define RADEON_HOST_DATA_SWAP_NONE   (0 << 0)
+#       define RADEON_HOST_DATA_SWAP_16BIT  (1 << 0)
+#       define RADEON_HOST_DATA_SWAP_32BIT  (2 << 0)
+#       define RADEON_HOST_DATA_SWAP_HDW    (3 << 0)
 #define RADEON_RBBM_SOFT_RESET              0x00f0
 #       define RADEON_SOFT_RESET_CP         (1 <<  0)
 #       define RADEON_SOFT_RESET_HI         (1 <<  1)
