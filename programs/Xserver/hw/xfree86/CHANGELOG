@@ -1,4 +1,5 @@
 XFree86 3.9.16c (13 October 1999)
+3258. DGA workaround for recent VTSwitch changes (#3325, Mark Vojkovich).
 3257. Out of memory fixes for the mi region code (#3323, 3324, Keith Packard).
 3256. "Silken Mouse" support (#3323, Keith Packard).
 3255. Modify the ati driver to temporarily ignore Rage 128s (#3322,
@@ -8942,4 +8943,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.835 1999/10/13 20:32:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.836 1999/10/13 22:32:50 dawes Exp $
