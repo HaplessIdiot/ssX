@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.5 2000/11/01 22:50:04 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.6 2001/11/17 16:05:59 dawes Exp $ */
 
 /*
  *
@@ -42,6 +42,7 @@ extern RESTYPE ShmSegType, ShmPixType;
 extern Bool noPanoramiXExtension;
 extern int PanoramiXNumScreens;
 extern PanoramiXData *panoramiXdataPtr;
+extern XID *PanoramiXVisualTable;
 extern unsigned long XRT_WINDOW;
 extern unsigned long XRT_PIXMAP;
 extern unsigned long XRT_GC;
@@ -67,6 +68,7 @@ LOOKUP extLookupTab[] = {
  SYMVAR(noPanoramiXExtension)
  SYMVAR(PanoramiXNumScreens)
  SYMVAR(panoramiXdataPtr)
+ SYMVAR(PanoramiXVisualTable)
  SYMVAR(XRT_WINDOW)
  SYMVAR(XRT_PIXMAP)
  SYMVAR(XRT_GC)
