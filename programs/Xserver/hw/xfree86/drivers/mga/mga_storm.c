@@ -1,10 +1,13 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.24 1998/09/05 06:36:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.25 1998/09/05 06:49:20 dawes Exp $ */
 
 
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+/* For correct __inline__ usage */
+#include "compiler.h"
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
