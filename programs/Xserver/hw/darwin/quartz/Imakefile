@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.11 2003/11/01 08:13:08 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.12 2003/11/11 01:29:47 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -46,6 +46,12 @@ DEBUGDEFINES = -DROOTLESSDEBUG
 BUILDSTYLE = -buildstyle Deployment
 #endif
 
+#if OSMajorVersion >= 7
+PROJ_TARGET = -project XDarwin.pbproj -target XDarwin
+#else
+PROJ_TARGET = -target XDarwin
+#endif
+
 #if (OSMajorVersion == 1 && OSMinorVersion >= 4) || OSMajorVersion >= 5
 QUARTZDEFINES = -DHAS_CG_MACH_PORT
 #endif
@@ -86,16 +92,16 @@ install::
 
 AllTarget(XDarwin)
 XDarwin:
-	$(PROJ_BUILD) -target XDarwin $(BUILDSTYLE)
+	$(PROJ_BUILD) $(PROJ_TARGET) $(BUILDSTYLE)
 
 install::
-	$(PROJ_BUILD) install -target XDarwin $(BUILDSTYLE) \
+	$(PROJ_BUILD) install $(PROJ_TARGET) $(BUILDSTYLE) \
 		DSTROOT=$(DESTDIR)$(XDARWINROOT)
 
 InstallManPage(XDarwinStartup,$(MANDIR))
 
 clean::
-	$(PROJ_BUILD) "clean" -target XDarwin $(BUILDSTYLE)
+	$(PROJ_BUILD) "clean" $(PROJ_TARGET) $(BUILDSTYLE)
 
 DependTarget()
 
