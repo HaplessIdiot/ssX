@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:40 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.37tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.38 2002/11/14 21:01:21 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -86,11 +86,11 @@ GETPEEREID_DEFINES = -DHAS_GETPEEREID
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c $(COLOR_SRCS) \
                   osinit.c utils.c auth.c mitauth.c secauth.c $(XDMAUTHSRCS) \
-                  $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources \
+                  $(RPCSRCS) $(KRB5SRCS) xdmcp.c OtherSources \
                   transport.c $(MALLOC_SRCS) $(LBX_SRCS)
            OBJS = WaitFor.o access.o connection.o io.o $(COLOR_OBJS) \
                   osinit.o utils.o auth.o mitauth.o secauth.o $(XDMAUTHOBJS) \
-                  $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects \
+                  $(RPCOBJS) $(KRB5OBJS) xdmcp.o OtherObjects \
                   transport.o $(MALLOC_OBJS) $(LBX_OBJS)
 
 #if SpecialMalloc
