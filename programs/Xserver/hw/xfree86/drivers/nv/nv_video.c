@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.16 2003/07/31 21:41:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.17 2003/08/05 20:58:24 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -879,7 +879,7 @@ static void NVMoveDWORDSSwapped(
    int dwords )
 {
      while(dwords--) {
-        *dest++ = (src[0] << 24) | (src[1] << 16) | (src[2] << 8) | src[3];
+        *dest++ = (src[3] << 24) | (src[2] << 16) | (src[1] << 8) | src[0];
         src += 4;
      }
 }
