@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.138 1999/10/13 16:49:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.139 1999/10/13 22:32:59 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -120,10 +120,12 @@ xf86CreateRootWindow(WindowPtr pWin)
 ErrorF("xf86CreateRootWindow(%p)\n", pWin);
 
   if (pWin->parent == NULL) {
-    for (pRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
-	 pRegProp != NULL && err==Success;
-	 pRegProp = pRegProp->next )
-      {
+    if (xf86RegisteredPropertiesTable == NULL)
+      err = Success;
+    else
+      for (pRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
+	   pRegProp != NULL && err==Success;
+	   pRegProp = pRegProp->next ) {
 	ErrorF("about to call ChangeWindowProperty(%p,%d,%d,%d,PropModeReplace,%d,%p,FALSE)\n",
 	       pWin,
 	       pRegProp->propertyName, pRegProp->type,
