@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.69 2001/04/19 19:54:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.70 2001/04/23 15:39:34 dawes Exp $ */
 
 /*
  * Authors:
@@ -1968,11 +1968,11 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   if (!miCreateDefColormap(pScreen)) return FALSE;
 
   if (pScrn->bitsPerPixel==16) {
-    if (!xf86HandleColormaps(pScreen, 256, 8, (LoadPaletteFuncPtr)TDFXLoadPalette16, 0,
+    if (!xf86HandleColormaps(pScreen, 256, 8, TDFXLoadPalette16, 0,
 			     CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
       return FALSE;
   } else {
-    if (!xf86HandleColormaps(pScreen, 256, 8, (LoadPaletteFuncPtr)TDFXLoadPalette24, 0,
+    if (!xf86HandleColormaps(pScreen, 256, 8, TDFXLoadPalette24, 0,
 			     CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
       return FALSE;
   }
