@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.154 2004/03/17 00:44:56 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.155 2004/04/05 00:39:18 dickey Exp $ */
 
 /*
 
@@ -2799,10 +2799,20 @@ in_put(void)
     register int i, time_select;
     static struct timeval select_timeout;
 #if OPT_BLINK_CURS
+
+#undef MAX
+#undef MIN
+#undef TICK
+
 #define	TICK	(1000/8)
 #define	MIN(a,b)	(((a)<(b))?(a):(b))
 #define	MAX(a,b)	(((a)>(b))?(a):(b))
     int tick = MAX(1, MIN(screen->blink_on, screen->blink_off)) * TICK;
+
+#undef MAX
+#undef MIN
+#undef TICK
+
 #endif
 
     for (;;) {
