@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.25 2002/10/17 02:22:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.26 2004/03/31 18:07:06 tsi Exp $
 
 
 
@@ -32,11 +32,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 
 RESDEFINES = -DUSESTDRES
 
-#if !HasStrlcat
-STRLCAT_DEFS = -DNEED_STRLCAT
-#endif
-
-DEFINES = $(RESDEFINES) $(STRLCAT_DEFS)
+DEFINES = $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

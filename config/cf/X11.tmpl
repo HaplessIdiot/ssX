@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.265 2004/09/15 15:01:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.266 2004/09/20 15:24:57 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1288,8 +1288,15 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define ServerSnprintfDefines /**/
 #endif
 #endif
+#ifndef ServerStrlcatDefines
+#if !HasStrlcat
+#define ServerStrlcatDefines -DNEED_STRLCAT
+#else
+#define ServerStrlcatDefines /**/
+#endif
+#endif
 #ifndef ServerDefines
-#define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines ServerAssertDefines ServerSnprintfDefines
+#define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines ServerAssertDefines ServerSnprintfDefines ServerStrlcatDefines
 #endif
 
 #ifndef MesaUseX86Asm

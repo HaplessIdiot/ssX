@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.106 2004/10/23 15:29:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.107 2004/11/10 04:28:38 dawes Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -198,11 +198,6 @@ typedef struct dirent DIRENTRY;
 
 #if 0
 #define SETBUF_RETURNS_INT
-#endif
-
-#ifdef NEED_STRLCAT
-extern size_t strlcat(char *dst, const char *src, size_t siz);
-extern size_t strlcpy(char *dst, const char *src, size_t siz);
 #endif
 
 double xf86HUGE_VAL;
