@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.82 2002/01/03 02:18:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.83 2002/01/14 18:34:34 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1876,10 +1876,16 @@ char *
 xf86shmat(int id, char *addr, int xf86shmflg)
 {
     int shmflg = 0;
-    
+
+#ifdef SHM_RDONLY
     if (xf86shmflg & XF86SHM_RDONLY) shmflg |= SHM_RDONLY;
-    if (xf86shmflg & XF86SHM_RND) shmflg    |= SHM_RND;
-    if (xf86shmflg & XF86SHM_REMAP) shmflg  |= SHM_REMAP;
+#endif
+#ifdef SHM_RND
+    if (xf86shmflg & XF86SHM_RND)    shmflg |= SHM_RND;
+#endif
+#ifdef SHM_REMAP
+    if (xf86shmflg & XF86SHM_REMAP)  shmflg |= SHM_REMAP;
+#endif
 
     return shmat(id,addr,shmflg);
 }
