@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.6 2003/11/03 05:11:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.7 2003/12/07 22:40:38 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_accel.c $
  * $Revision$
@@ -1742,8 +1742,10 @@ GX1AccelInit(ScreenPtr pScreen)
    localRecPtr->SetupForSolidLine = OPTACCEL(GX1SetupForSolidLine);
    localRecPtr->SubsequentSolidBresenhamLine =
 	 OPTACCEL(GX1SubsequentBresenhamLine);
+#if !defined(OPT_ACCEL)
    localRecPtr->SubsequentSolidHorVertLine =
 	 OPTACCEL(GX1SubsequentHorVertLine);
+#endif
    localRecPtr->SubsequentSolidTwoPointLine =
 	 OPTACCEL(GX1SubsequentSolidTwoPointLine);
    localRecPtr->SolidBresenhamLineErrorTermBits = 15;
