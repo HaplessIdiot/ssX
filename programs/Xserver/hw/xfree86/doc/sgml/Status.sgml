@@ -9,7 +9,7 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.22 2000/12/12 17:01:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.23 2000/12/13 02:01:02 robin Exp $
 </ident>
 
 <abstract>
@@ -549,17 +549,20 @@ dependencies/limitations, other architectures known to work on
 	Trio3D/2X is provided by the XF86_SVGA server with the s3v
 	driver.  Support (accelerated) for the Savage3D, Savage3D/MV,
 	Savage4, Savage2000, is provided by the XF86_SVGA server with
- the s3_savage
-	driver (CHECK: is this support Linux-only?).
+ 	the s3_savage driver on some OSes (Linux, *BSD). 
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX,
 	ViRGE/GX2, ViRGE/MX, ViRGE/MX+, Trio3D and Trio3D/2X is provided
-	by the "s3virge" driver.  Support for the other S3 chipsets has
+	by the "s3virge" driver.  
+	Support (accelerated) for the Savage3D, Savage3D/MV,
+	Savage4, Savage2000, is provided by the XF86_SVGA server with
+ 	the savage driver.
+Support for the other S3 chipsets has
 	not yet been ported.
 
 <tag>Summary:</tag>
-	Only the ViRGE and Trio3D chipsets are supported in &relvers;.
+	Only the ViRGE, Trio3D and savage chipsets are supported in &relvers;.
 	All of the other chipsets are only supported in &legacyvers;.
 
 </descrip>
