@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omText.c,v 1.6 2002/09/16 18:05:23 eich Exp $ */
+/* $XFree86: xc/lib/X11/omText.c,v 1.7 2003/04/13 19:22:22 dawes Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -181,7 +181,7 @@ DrawStringWithFontSet(
 
     while (length > 0) {
         fd = _XomGetFontDataFromFontSet(fs,
-			(char *)ptr,length,&ptr_len,is_xchar2b,FONTSCOPE);
+			ptr,length,&ptr_len,is_xchar2b,FONTSCOPE);
 	if(ptr_len <= 0)
 	    break;
 
@@ -220,7 +220,7 @@ DrawStringWithFontSet(
 	  case XOMOrientation_TTB_LTR:
 	    if(fs->font == font) {
 		fd = _XomGetFontDataFromFontSet(fs,
-			(char *)ptr,length,&ptr_len,is_xchar2b,VMAP);
+			ptr,length,&ptr_len,is_xchar2b,VMAP);
 		if(ptr_len <= 0)
 		    break;
 		if(fd == (FontData) NULL ||
@@ -229,7 +229,7 @@ DrawStringWithFontSet(
 
 		if(is_codemap(oc, fd->font) == False) {
 		    fd = _XomGetFontDataFromFontSet(fs,
-			     (char *)ptr,length,&ptr_len,is_xchar2b,VROTATE);
+			     ptr,length,&ptr_len,is_xchar2b,VROTATE);
 		    if(ptr_len <= 0)
 			break;
 		    if(fd == (FontData) NULL ||
