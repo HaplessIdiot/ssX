@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.118 1996/02/05 11:21:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.119 1996/02/18 03:42:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -958,6 +958,17 @@ s3Probe()
 
       do {
 	 switch (card_id) {
+	 case ELSA_WINNER_1000:
+	 case ELSA_WINNER_1000VL:
+	 case ELSA_WINNER_1000PCI:
+	 case ELSA_WINNER_1000ISA:
+	    if (s3ProbeSDAC(TRUE)) 
+	       continue;  /* SDAC detected, don't set ICD2061A clock */
+	    S3ProbeATT4xx(TRUE);
+	    /* if ATT20C498/09/99 is detected, the clockchip is 
+	     * already set apropriately 
+	     */
+	    break;
 	 case ELSA_WINNER_1000AVI:
 	 case ELSA_WINNER_1000PRO:
 	    /* This option isn't required at the moment */
@@ -972,10 +983,6 @@ s3Probe()
 	 case ELSA_WINNER_2000PRO:
 	    OFLG_SET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options);
 	    break;
-	 case ELSA_WINNER_1000:
-	 case ELSA_WINNER_1000VL:
-	 case ELSA_WINNER_1000PCI:
-	 case ELSA_WINNER_1000ISA:
 	 case ELSA_WINNER_2000:
 	 case ELSA_WINNER_2000VL:
 	 case ELSA_WINNER_2000PCI:
