@@ -12,6 +12,7 @@ SRCS	=\
 	card-cfg.c\
 	cards.c\
 	config.c\
+	expert.c\
 	help.c\
 	interface.c\
 	keyboard-cfg.c\
@@ -31,6 +32,7 @@ OBJS	=\
 	cards.o\
 	config.o\
 	card-cfg.o\
+	expert.o\
 	help.o\
 	interface.o\
 	keyboard-cfg.o\
@@ -72,11 +74,13 @@ AllTarget(ProgramTargetName($(PROG)))
 
 #if DoLoadableServer
 LOADERLIB      = -L../loader -lxloader -L../dummylib -ldummy
-DEFINES        = -DUSE_MODULES
+MODULEDEFINES  = -DUSE_MODULES
 INCLUDES       = -I../common -I../loader -I$(XF86OSSRC) \
 		 -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER
 #endif
+
+DEFINES        = -DXF86CONFIG=\"XConfigFile\" $(MODULEDEFINES)
 
 #if HasDlopen
 DLLIB = DlLibrary

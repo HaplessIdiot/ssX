@@ -176,6 +176,10 @@ Bool startx(void);
 void endx(void);
 void startaccessx(void);
 void ConfigCancelAction(Widget, XEvent*, String*, Cardinal*);
+void ExpertConfigureStart(void);
+void ExpertConfigureEnd(void);
+void ExpertCloseAction(Widget, XEvent*, String*, Cardinal*);
+void ExpertCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Initialization

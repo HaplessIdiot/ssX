@@ -60,10 +60,10 @@ startx(void)
 	
 	if (XFree86_path)
 	    c_pos = XmuSnprintf(commandline, sizeof(commandline),
-				"%s/XFree86 :8 -configure ",XFree86_path);
+				"%s/X :8 -configure ",XFree86_path);
 	else
 	    c_pos = XmuSnprintf(commandline, sizeof(commandline), 
-				"%s/bin/XFree86 :8 -configure ", XFree86Dir);
+				"%s/bin/X :8 -configure ", XFree86Dir);
 	if (XF86Module_path && ((len = sizeof(commandline) - c_pos) > 0))
 	    c_pos += XmuSnprintf(commandline + c_pos,len,
 				 " -modulepath %s",XF86Module_path);
@@ -75,7 +75,7 @@ startx(void)
 				 " -rgbpath %s",XF86RGB_path);
 	
 	if (system(commandline) != 0) {
-	    fprintf(stderr, "Failed to run \"XFree86 -configure\".\n");
+	    fprintf(stderr, "Failed to run \"X -configure\".\n");
 	    exit(1);
 	}
 
@@ -96,9 +96,9 @@ startx(void)
 	case 0: {
 	    char path[PATH_MAX];
 	    if (XFree86_path)
-	        XmuSnprintf(path, sizeof(path), "%s/XFree86", XFree86_path);
+	        XmuSnprintf(path, sizeof(path), "%s/X", XFree86_path);
 	    else
-	        XmuSnprintf(path, sizeof(path), "%s/bin/XFree86", XFree86Dir);
+	        XmuSnprintf(path, sizeof(path), "%s/bin/X", XFree86Dir);
 	    execl(path, "X", ":8", /*"+xinerama",*/ "+accessx","-allowMouseOpenFail",
 		  "-xf86config", XF86Config_path, NULL);
 	    exit(-127);
