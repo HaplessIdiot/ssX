@@ -211,7 +211,6 @@ NV_SetMode(
       pNv->CurrentLayout.weight.green = BitsSet(pMode->green_mask);
       pNv->CurrentLayout.weight.blue = BitsSet(pMode->blue_mask);
       /* NVModeInit() will set the mode field */
-
       NVSwitchMode(index, pMode->mode, 0);
    }
    

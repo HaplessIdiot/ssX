@@ -114,13 +114,14 @@ void NVRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void NVRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void NVPointerMoved(int index, int x, int y);
 
-#define NV_CHIP_RIVA128 ((PCI_VENDOR_NVIDIA_SGS << 16)| PCI_CHIP_RIVA128)
-#define NV_CHIP_TNT     ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT)
-#define NV_CHIP_TNT2    ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT2)
-#define NV_CHIP_UTNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_UTNT2)
-#define NV_CHIP_VTNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_VTNT2)
-#define NV_CHIP_ITNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_ITNT2)
-
-
+#define NV_CHIP_RIVA128    ((PCI_VENDOR_NVIDIA_SGS << 16)| PCI_CHIP_RIVA128)
+#define NV_CHIP_TNT        ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT)
+#define NV_CHIP_TNT2       ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT2)
+#define NV_CHIP_UTNT2      ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_UTNT2)
+#define NV_CHIP_VTNT2      ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_VTNT2)
+#define NV_CHIP_ITNT2      ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_ITNT2)
+#define NV_CHIP_GEFORCE256 ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_GEFORCE256)
+#define NV_CHIP_GEFORCEDDR ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_GEFORCEDDR)
+#define NV_CHIP_QUADRO     ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_QUADRO)
 
 #endif /* __NV_STRUCT_H__ */
