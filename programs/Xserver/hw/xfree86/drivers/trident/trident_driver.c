@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.61 1999/06/20 07:14:36 dawes Exp $ */
+/* $XFree86: /X11R6/x-cvs/xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.69 1999/10/24 18:01:47 alanh Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -672,11 +672,39 @@ static int
 TridentFindIsaDevice(GDevPtr dev)
 {
     int found = -1;
-    unsigned char tmp;
+    unsigned char temp, origVal, newVal;
+
+    /* 
+     * Check first that we have a Trident card.
+     */
+    outb(0x3C4, 0x0B);
+    temp = inb(0x3C5);	/* Save old value */
+    outb(0x3C4, 0x0B);	/* Switch to Old Mode */
+    outb(0x3C5, 0x00);
+    inb(0x3C5);		/* Now to New Mode */
+    outb(0x3C4, 0x0E);
+    origVal = inb(0x3C5);
+    outb(0x3C5, 0x00);
+    newVal = inb(0x3C5) & 0x0F;
+    outb(0x3C5, (origVal ^ 0x02));
+
+    /* 
+     * Is it a Trident card ?? 
+     */
+    if (newVal != 2) {
+	/*
+	 * Nope, so quit
+	 */
+	outb(0x3C4, 0x0B);	/* Restore value of 0x0B */
+	outb(0x3C5, temp);
+	outb(0x3C4, 0x0E);
+	outb(0x3C5, origVal);
+	return found;
+    }
 
     outb(0x3C4, 0x0B);
-    tmp = inb(0x3C5);
-    switch (tmp) {
+    temp = inb(0x3C5);
+    switch (temp) {
 	case 0x01:
 	    found = TVGA8800BR;
 	    break;
@@ -1671,11 +1699,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (i == -1) {
-	TRIDENTFreeRec(pScrn);
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
 	}
+	TRIDENTFreeRec(pScrn);
 	return FALSE;
     }
 
@@ -1684,11 +1712,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
-	TRIDENTFreeRec(pScrn);
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
 	}
+	TRIDENTFreeRec(pScrn);
 	return FALSE;
     }
 
@@ -1744,22 +1772,22 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	TRIDENTFreeRec(pScrn);
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
 	}
+	TRIDENTFreeRec(pScrn);
 	return FALSE;
     }
 
     xf86LoaderReqSymbols(Sym, NULL);
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
-	TRIDENTFreeRec(pScrn);
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
 	}
+	TRIDENTFreeRec(pScrn);
 	return FALSE;
     }
 
@@ -1777,11 +1805,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load XAA if needed */
     if (!pTrident->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
-	    TRIDENTFreeRec(pScrn);
 	    if (IsPciCard && UseMMIO) {
     	    	TRIDENTDisableMMIO(pScrn);
  	    	TRIDENTUnmapMem(pScrn);
 	    }
+	    TRIDENTFreeRec(pScrn);
 	    return FALSE;
 	}
 
@@ -1806,11 +1834,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load DDC if needed */
     /* This gives us DDC1 - we should be able to get DDC2B using i2c */
     if (!xf86LoadSubModule(pScrn, "ddc")) {
-	TRIDENTFreeRec(pScrn);
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);
  	    TRIDENTUnmapMem(pScrn);
 	}
+	TRIDENTFreeRec(pScrn);
 	return FALSE;
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
