@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.72 2003/04/25 15:28:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.73tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -970,6 +970,12 @@ xf86scanpci(int flags)
 	for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
 	    devp->cfgspc.dwords[i] = pciReadLong(tag, i * sizeof(CARD32));
 
+#ifdef ARCH_PCI_HOST_BRIDGE
+	if ((devp->pci_base_class == PCI_CLASS_BRIDGE) &&
+	    (devp->pci_sub_class == PCI_SUBCLASS_BRIDGE_HOST))
+	    ARCH_PCI_HOST_BRIDGE(devp);
+#endif
+
 	/* Some broken devices don't implement this field... */
 	if (devp->pci_header_type == 0xff)
 	    devp->pci_header_type = 0;
@@ -1030,9 +1036,6 @@ xf86scanpci(int flags)
 		break;
 	    pciBusInfo[devp->busnum]->bridge = devp;
 	    pciBusInfo[devp->busnum]->primary_bus = devp->busnum;
-#ifdef ARCH_PCI_HOST_BRIDGE
-	    ARCH_PCI_HOST_BRIDGE(devp);
-#endif
 	    break;
 
 	case 1:
