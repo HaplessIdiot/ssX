@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.49tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.50 2003/05/27 16:34:31 tsi Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -17,8 +17,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.49tsi Exp $
 #endif
 
 #define ProjectRoot 		/usr/X11R6
-
-#define BuildServer		YES
 
 #ifndef UnixCpp
 #define UnixCpp
@@ -211,6 +209,11 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.49tsi Exp $
 #define UseRgbTxt               YES
 #define ExtraFilesToClean	*.obj *.orig *.rej junk.c *.exe *.dll *.lib *~
 
+/* IPv6 not yet supported */
+#ifndef BuildIPv6
+#define BuildIPv6		NO
+#endif
+
 /*
  * You'll probably want BuildDebug to be YES if you are debugging :)
  */
@@ -325,6 +328,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.49tsi Exp $
 #define XF86AFB			NO
 
 #define XF86CardDrivers		/**/
+
+/* We always want to enable server building */
+#define BuildServer			YES
 
 /* Server build rules */
 #ifndef XnestServer
