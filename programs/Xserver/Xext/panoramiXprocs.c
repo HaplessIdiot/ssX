@@ -545,33 +545,104 @@ int PanoramiXGetGeometry(ClientPtr client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.root = WindowTable[pDraw->pScreen->myNum]->drawable.id;
+    rep.root = WindowTable[0]->drawable.id;
     rep.depth = pDraw->depth;
+    rep.width = pDraw->width;
+    rep.height = pDraw->height;
+    rep.x = rep.y = rep.borderWidth = 0;
 
-    if (stuff->id == WindowTable[0]->drawable.id) {
+    if (stuff->id == rep.root) {
 	xWindowRoot *root  = (xWindowRoot *)
 				    (ConnectionInfo + connBlockScreenStart);
 
 	rep.width = root->pixWidth;
 	rep.height = root->pixHeight;
-    } else {
-	rep.width = pDraw->width;
-	rep.height = pDraw->height;
-    }
-
-    if ((pDraw->type == UNDRAWABLE_WINDOW) ||
-        ((pDraw->type == DRAWABLE_WINDOW) && (stuff->id == pDraw->id))) {
+    } else 
+    if ((pDraw->type == UNDRAWABLE_WINDOW) || (pDraw->type == DRAWABLE_WINDOW))
+    {
         WindowPtr pWin = (WindowPtr)pDraw;
 	rep.x = pWin->origin.x - wBorderWidth (pWin);
 	rep.y = pWin->origin.y - wBorderWidth (pWin);
+	if(pWin->parent == WindowTable[0]) {
+	   rep.x += panoramiXdataPtr[0].x;
+	   rep.y += panoramiXdataPtr[0].y;
+	}
 	rep.borderWidth = pWin->borderWidth;
-    } else { 			/* DRAWABLE_PIXMAP or DRAWABLE_BUFFER */
-	rep.x = rep.y = rep.borderWidth = 0;
     }
+
     WriteReplyToClient(client, sizeof(xGetGeometryReply), &rep);
     return (client->noClientException);
 }
 
+int PanoramiXTranslateCoords(ClientPtr client)
+{
+    INT16 x, y;
+    REQUEST(xTranslateCoordsReq);
+
+    register WindowPtr pWin, pDst;
+    xTranslateCoordsReply rep;
+
+    REQUEST_SIZE_MATCH(xTranslateCoordsReq);
+    pWin = (WindowPtr)SecurityLookupWindow(stuff->srcWid, client,
+					   SecurityReadAccess);
+    if (!pWin)
+        return(BadWindow);
+    pDst = (WindowPtr)SecurityLookupWindow(stuff->dstWid, client,
+					   SecurityReadAccess);
+    if (!pDst)
+        return(BadWindow);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.sameScreen = xTrue;
+    rep.child = None;
+
+    if(pWin == WindowTable[0]) {
+	x = stuff->srcX - panoramiXdataPtr[0].x;
+	y = stuff->srcY - panoramiXdataPtr[0].y;
+    } else {
+	x = pWin->drawable.x + stuff->srcX;
+	y = pWin->drawable.y + stuff->srcY;
+    }
+    pWin = pDst->firstChild;
+    while (pWin) {
+#ifdef SHAPE
+	    BoxRec  box;
+#endif
+	    if ((pWin->mapped) &&
+		(x >= pWin->drawable.x - wBorderWidth (pWin)) &&
+		(x < pWin->drawable.x + (int)pWin->drawable.width +
+		 wBorderWidth (pWin)) &&
+		(y >= pWin->drawable.y - wBorderWidth (pWin)) &&
+		(y < pWin->drawable.y + (int)pWin->drawable.height +
+		 wBorderWidth (pWin))
+#ifdef SHAPE
+		/* When a window is shaped, a further check
+		 * is made to see if the point is inside
+		 * borderSize
+		 */
+		&& (!wBoundingShape(pWin) ||
+		    POINT_IN_REGION(pWin->drawable.pScreen, 
+					&pWin->borderSize, x, y, &box))
+#endif
+		)
+            {
+		rep.child = pWin->drawable.id;
+		pWin = (WindowPtr) NULL;
+	    }
+	    else
+		pWin = pWin->nextSib;
+    }
+    rep.dstX = x - pDst->drawable.x;
+    rep.dstY = y - pDst->drawable.y;
+    if(pDst == WindowTable[0]) {
+	rep.dstX += panoramiXdataPtr[0].x;
+	rep.dstY += panoramiXdataPtr[0].y;
+    }
+
+    WriteReplyToClient(client, sizeof(xTranslateCoordsReply), &rep);
+    return(client->noClientException);
+}
 
 int PanoramiXCreatePixmap(ClientPtr client)
 {

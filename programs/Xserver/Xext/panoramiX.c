@@ -102,7 +102,7 @@ int PanoramiXChangeSaveSet(), 	PanoramiXReparentWindow();
 int PanoramiXMapWindow(), 	PanoramiXMapSubwindows();
 int PanoramiXUnmapWindow(), 	PanoramiXUnmapSubwindows();
 int PanoramiXConfigureWindow(), PanoramiXCirculateWindow();
-int PanoramiXGetGeometry();	
+int PanoramiXGetGeometry(),	PanoramiXTranslateCoords();	
 int PanoramiXCreatePixmap(), 	PanoramiXFreePixmap();
 int PanoramiXCreateGC(), 	PanoramiXChangeGC();
 int PanoramiXCopyGC(),		PanoramiXCopyColormapAndFree();
@@ -571,6 +571,7 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     ProcVector[X_ConfigureWindow] = PanoramiXConfigureWindow;
     ProcVector[X_CirculateWindow] = PanoramiXCirculateWindow;
     ProcVector[X_GetGeometry] = PanoramiXGetGeometry;
+    ProcVector[X_TranslateCoords] = PanoramiXTranslateCoords;
     ProcVector[X_CreatePixmap] = PanoramiXCreatePixmap;
     ProcVector[X_FreePixmap] = PanoramiXFreePixmap;
     ProcVector[X_CreateGC] = PanoramiXCreateGC;
