@@ -172,8 +172,9 @@ RRSetScreenConfig
 	drawable: DRAWABLE
 	timestamp: TIMESTAMP
 	config-timestamp: TIMESTAMP
-	sizeID SIZEID
-	rotation ROTATION
+	sizeID: SIZEID
+	rotation: ROTATION
+	rate: CARD16
 
 	->
 
@@ -196,8 +197,10 @@ RRSetScreenConfig
 	executed based on stale data, the server will ignore the
 	request.
 
+	If rate is zero, the server selects an appropriate rate.
+
 	If the request succeeds, this request sets the screen to the
-	specified size, rotation and reflection. If the requests
+	specified size, rate, rotation and reflection. If the requests
 	succeeds, the new-time-stamp is returned containing the time
 	when the screen configuration was changed and config-timestamp
 	is returned to indicate when the possible screen
@@ -224,13 +227,19 @@ RRGetScreenInfo
 	nSizes: CARD16
 	sizeID: SIZEID
 	rotation: ROTATION
-	sizes: LISTofSCREENSIZES
+	rate: CARD16
+	sizes: LISTofSCREENSIZE
+	refresh: LISTofREFRESH
 
 	where:
 
-	SCREENSIZES {    
+	SCREENSIZE {    
 		 widthInPixels, heightInPixels: CARD16
 		  widthInMillimeters, heightInMillimeters: CARD16 }
+
+	REFRESH {
+		rates: LISTofCARD16
+	}
 
 	Errors: BadWindow
 
@@ -256,9 +265,17 @@ RRGetScreenInfo
 	when the configuration was last set, and must both must be up
 	to date in a call to RRSetScreenConfig for it to succeed.
 	
-	SCREENSIZES is the list of possible frame buffer sizes (at the
+	Rate is the current refresh rate.  This is zero when the refresh
+	rate is unknown or on devices for which refresh is not relevant.
+
+	Sizes is the list of possible frame buffer sizes (at the
 	normal orientation, each provide both the linear physical size
 	of the screen and the pixel size.
+
+	Refresh is the list of refresh rates for each size, each element
+	of sizes has a cooresponding element in refresh.  An empty list
+	indicates no known rates, or a device for which refresh is not
+	relevant.
 
 	The default size of the screen (the size that would become the
 	current size when the server resets) is the first size in the
@@ -290,8 +307,7 @@ RRScreenChangeNotify
 	root: WINDOW			root window of screen
 	window: WINDOW			window requesting notification
 	sizeID: SIZEID			new ID of size
-	subpixelOrder: 
-	SUBPIXELORDER			order of subpixels
+	subpixelOrder: SUBPIXELORDER	order of subpixels
 	widthInPixels: INT16
 	heightInPixels: INT16
 	widthInMillimeters: INT16
@@ -342,17 +358,19 @@ list of what each version before 1.0 implemented:
 	0.1: Added subpixel order, added an event for subpixel order.
 	     This version was never checked in to XFree86 CVS.
 
-	1.0: The current version, implements resize, rotation, and
-	     reflection.  Implemented both in the XFree86 main server
-	     (size change only at this date), and fully (size change,
-	     rotation, and reflection) in XFree86's TinyX server.
+	1.0: Implements resize, rotation, and reflection.  Implemented
+	     both in the XFree86 main server (size change only at this
+	     date), and fully (size change, rotation, and reflection)
+	     in XFree86's TinyX server.
+
+	1.1: Added refresh rates
 
 Compatibility between 0.0 and 1.0 was *NOT* preserved, and 0.0 clients
 will fail against 1.0 servers.  The wire encoding op-codes were
 changed for GetScreenInfo to ensure this failure in a relatively
-graceful way.  Version 1.0 is considered, however, to be stable and we
-intend upward compatibility from this point.
-
+graceful way.  Version 1.1 servers and clients are cross compatible with
+1.0.  Version 1.1 is considered to be stable and we intend upward
+compatibility from this point.
 
 
 Appendix A. Protocol Encoding
@@ -410,6 +428,8 @@ errors if used in version 1.0.
 	4	TIMESTAMP		timestamp
 	2	SIZEID			size id
 	2	ROTATION		rotation/reflection
+	2	CARD16			refresh rate (1.1 only)
+	2	CARD16			pad
 	->
 	1	1			Reply
 	1	CARD8			status
@@ -455,8 +475,9 @@ errors if used in version 1.0.
 	2	CARD16			number of SIZE following
 	2	SIZEID			sizeID
 	2	ROTATION		current rotation and reflection
-	2	CARD16			pad1
-	4	CARD32			pad2
+	2	CARD16			rate (1.1)
+	2	CARD16			length of rate info (number of CARD16s)
+	2	CARD16			pad
 
 	SIZE
 	2	CARD16			width in pixels
@@ -464,6 +485,9 @@ errors if used in version 1.0.
 	2	CARD16			width in millimeters
 	2	CARD16			height in millimeters
 
+	REFRESH
+	2	CARD16			number of rates (n)
+	2n	CARD16			rates
 
 A.2 Protocol Event
 

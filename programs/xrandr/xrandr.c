@@ -65,6 +65,7 @@ usage(void)
   fprintf(stderr, "            or --orientation <normal,inverted,left,right,0,1,2,3>\n");
   fprintf(stderr, "  -q        or --query\n");
   fprintf(stderr, "  -s <size> or --size <size>\n");
+  fprintf(stderr, "  -r <rate> or --rate <rate>\n");
   fprintf(stderr, "  -v        or --version\n");
   fprintf(stderr, "  -x        (reflect in x)\n");
   fprintf(stderr, "  -y        (reflect in y)\n");
@@ -82,6 +83,8 @@ main (int argc, char **argv)
   XRRScreenSize *sizes;
   XRRScreenConfiguration *sc;
   int		nsize;
+  int		nrate;
+  short		*rates;
   Window	root;
   Status	status = RRSetConfigFailed;
   int		rot = -1;
@@ -90,8 +93,10 @@ main (int argc, char **argv)
   XEvent	event;
   XRRScreenChangeNotifyEvent *sce;    
   char          *display_name = NULL;
-  int 		i;
+  int 		i, j;
   SizeID	current_size;
+  short		current_rate;
+  int		rate = -1;
   int		size = -1;
   int		dirind = 0;
   int		setit = 0;
@@ -110,6 +115,7 @@ main (int argc, char **argv)
     }
     if (!strcmp("-help", argv[i])) {
       usage();
+      continue;
     }
     if (!strcmp ("--verbose", argv[i])) {
       verbose = 1;
@@ -120,6 +126,14 @@ main (int argc, char **argv)
       if (++i>=argc) usage ();
       size = atoi (argv[i]);
       if (size < 0) usage();
+      setit = 1;
+      continue;
+    }
+
+    if (!strcmp ("-r", argv[i]) || !strcmp ("--rate", argv[i])) {
+      if (++i>=argc) usage ();
+      rate = atoi (argv[i]);
+      if (rate < 0) usage();
       setit = 1;
       continue;
     }
@@ -199,6 +213,18 @@ main (int argc, char **argv)
 	    break;
   }
 
+  current_rate = XRRConfigCurrentRate (sc);
+
+  if (size >= nsize) usage();
+
+  if (rate < 0)
+  {
+    if (size == current_size)
+	rate = current_rate;
+    else
+	rate = 0;
+  }
+
   if (version) {
     int major_version, minor_version;
     XRRQueryVersion (dpy, &major_version, &minor_version);
@@ -209,15 +235,21 @@ main (int argc, char **argv)
   sizes = XRRConfigSizes(sc, &nsize);
 
   if (query) {
-    printf("SZ:    Pixels          Physical\n");
+    printf(" SZ:    Pixels          Physical       Refresh\n");
     for (i = 0; i < nsize; i++) {
-      printf ("%-2d %5d x %-5d  (%4dmm x%4dmm )\n",
+      printf ("%c%-2d %5d x %-5d  (%4dmm x%4dmm )",
+	   i == current_size ? '*' : ' ',
 	   i, sizes[i].width, sizes[i].height,
 	   sizes[i].mwidth, sizes[i].mheight);
+      rates = XRRConfigRates (sc, i, &nrate);
+      if (nrate) printf ("  ");
+      for (j = 0; j < nrate; j++)
+	printf ("%c%-4d",
+		i == current_size && rates[j] == current_rate ? '*' : ' ',
+		rates[j]);
+      printf ("\n");
     }
   }
-
-  if (size >= nsize) usage();
 
   rotations = XRRConfigRotations(sc, &current_rotation);
 
@@ -279,8 +311,10 @@ main (int argc, char **argv)
 
   if (setit) XRRSelectInput (dpy, root,
 			RRScreenChangeNotifyMask);
-  if (setit) status = XRRSetScreenConfig (dpy, sc, DefaultRootWindow (dpy), 
-	       (SizeID) size, (Rotation) (rotation | reflection), CurrentTime);
+  if (setit) status = XRRSetScreenConfigAndRate (dpy, sc,
+						 DefaultRootWindow (dpy), 
+	       (SizeID) size, (Rotation) (rotation | reflection), rate, CurrentTime);
+  
   XRRQueryExtension(dpy, &event_base, &error_base);
   if (verbose && setit) {
     if (status == RRSetConfigSuccess)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.14tsi Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.15 2002/10/10 01:18:32 tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -70,6 +70,18 @@ static CARD8	RRReqCode;
 static int	RRErrBase;
 static int	RREventBase;
 static RESTYPE ClientType, EventType; /* resource types for event masks */
+static int	RRClientPrivateIndex;
+
+typedef struct _RRTimes {
+    TimeStamp	setTime;
+    TimeStamp	configTime;
+} RRTimesRec, *RRTimesPtr;
+
+typedef struct _RRClient {
+    int		major_version;
+    int		minor_version;
+/*  RRTimesRec	times[0]; */
+} RRClientRec, *RRClientPtr;
 
 /*
  * each window has a list of clients requesting
@@ -91,11 +103,48 @@ typedef struct _RREvent {
 
 int	rrPrivIndex = -1;
 
+#define GetRRClient(pClient)    ((RRClientPtr) (pClient)->devPrivates[RRClientPrivateIndex].ptr)
+#define rrClientPriv(pClient)	RRClientPtr pRRClient = GetRRClient(pClient)
+
+static Bool
+RRClientKnowsRates (ClientPtr	pClient)
+{
+    rrClientPriv(pClient);
+
+    return (pRRClient->major_version > 1 ||
+	    (pRRClient->major_version == 1 && pRRClient->minor_version >= 1));
+}
+
+static void
+RRClientCallback (CallbackListPtr	*list,
+		  pointer		closure,
+		  pointer		data)
+{
+    NewClientInfoRec	*clientinfo = (NewClientInfoRec *) data;
+    ClientPtr		pClient = clientinfo->client;
+    rrClientPriv(pClient);
+    RRTimesPtr		pTimes = (RRTimesPtr) (pRRClient + 1);
+    int			i;
+
+    pRRClient->major_version = 0;
+    pRRClient->minor_version = 0;
+    for (i = 0; i < screenInfo.numScreens; i++)
+    {
+	ScreenPtr   pScreen = screenInfo.screens[i];
+	rrScrPriv(pScreen);
+
+	if (pScrPriv)
+	{
+	    pTimes[i].setTime = pScrPriv->lastSetTime;
+	    pTimes[i].configTime = pScrPriv->lastConfigTime;
+	}
+    }
+}
+
 static void
 RRResetProc (ExtensionEntry *extEntry)
 {
 }
-
     
 static Bool
 RRCloseScreen (int i, ScreenPtr pScreen)
@@ -168,7 +217,7 @@ Bool RRScreenInit(ScreenPtr pScreen)
     pScrPriv->pSizes = 0;
     
     pScrPriv->rotation = RR_Rotate_0;
-    pScrPriv->pSize = 0;
+    pScrPriv->size = -1;
     
     RRNScreens += 1;	/* keep count of screens that implement randr */
     return TRUE;
@@ -224,6 +273,14 @@ RRExtensionInit (void)
 
     if (RRNScreens == 0) return;
 
+    RRClientPrivateIndex = AllocateClientPrivateIndex ();
+    if (!AllocateClientPrivate (RRClientPrivateIndex,
+				sizeof (RRClientRec) +
+				screenInfo.numScreens * sizeof (RRTimesRec)))
+	return;
+    if (!AddCallback (&ClientStateCallback, RRClientCallback, 0))
+	return;
+
     ClientType = CreateNewResourceType(RRFreeClient);
     if (!ClientType)
 	return;
@@ -252,7 +309,7 @@ TellChanged (WindowPtr pWin, pointer value)
     xRRScreenChangeNotifyEvent	se;
     ScreenPtr			pScreen = pWin->drawable.pScreen;
     rrScrPriv(pScreen);
-    RRScreenSizePtr		pSize = pScrPriv->pSize;
+    RRScreenSizePtr		pSize;
     WindowPtr			pRoot = WindowTable[pScreen->myNum];
 
     pHead = (RREventPtr *) LookupIDByType (pWin->drawable.id, EventType);
@@ -266,8 +323,9 @@ TellChanged (WindowPtr pWin, pointer value)
     se.root =  pRoot->drawable.id;
     se.window = pWin->drawable.id;
     se.subpixelOrder = PictureGetSubpixelOrder (pScreen);
-    if (pSize)
+    if (pScrPriv->size >= 0)
     {
+	pSize = &pScrPriv->pSizes[pScrPriv->size];
 	se.sizeID = pSize->id;
 	se.widthInPixels = pSize->width;
 	se.heightInPixels = pSize->height;
@@ -305,14 +363,23 @@ static Bool
 RRGetInfo (ScreenPtr pScreen)
 {
     rrScrPriv (pScreen);
-    int		    i, j;
+    int		    i, j, k, l;
     Bool	    changed;
     Rotation	    rotations;
+    RRScreenSizePtr pSize;
+    RRScreenRatePtr pRate;
 
     for (i = 0; i < pScrPriv->nSizes; i++)
     {
-	pScrPriv->pSizes[i].oldReferenced = pScrPriv->pSizes[i].referenced;
-	pScrPriv->pSizes[i].referenced = FALSE;
+	pSize = &pScrPriv->pSizes[i];
+	pSize->oldReferenced = pSize->referenced;
+	pSize->referenced = FALSE;
+	for (k = 0; k < pSize->nRates; k++)
+	{
+	    pRate = &pSize->pRates[k];
+	    pRate->oldReferenced = pRate->referenced;
+	    pRate->referenced = FALSE;
+	}
     }
     if (!(*pScrPriv->rrGetInfo) (pScreen, &rotations))
 	return FALSE;
@@ -332,10 +399,21 @@ RRGetInfo (ScreenPtr pScreen)
     j = 0;
     for (i = 0; i < pScrPriv->nSizes; i++)
     {
-	if (pScrPriv->pSizes[i].oldReferenced != pScrPriv->pSizes[i].referenced)
+	pSize = &pScrPriv->pSizes[i];
+	if (pSize->oldReferenced != pSize->referenced)
 	    changed = TRUE;
-	if (pScrPriv->pSizes[i].referenced)
-	    pScrPriv->pSizes[i].id = j++;
+	if (pSize->referenced)
+	    pSize->id = j++;
+	l = 0;
+	for (k = 0; k < pSize->nRates; k++)
+	{
+	    pRate = &pSize->pRates[k];
+	    if (pRate->oldReferenced != pRate->referenced)
+		changed = TRUE;
+	    if (pRate->referenced)
+		l++;
+	}
+	pSize->nRatesInUse = l;
     }
     pScrPriv->nSizesInUse = j;
     if (changed)
@@ -374,10 +452,11 @@ ProcRRQueryVersion (ClientPtr client)
     xRRQueryVersionReply rep;
     register int n;
     REQUEST(xRRQueryVersionReq);
+    rrClientPriv(client);
 
     REQUEST_SIZE_MATCH(xRRQueryVersionReq);
-    (void) stuff->majorVersion;
-    (void) stuff->minorVersion;
+    pRRClient->major_version = stuff->majorVersion;
+    pRRClient->minor_version = stuff->minorVersion;
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
@@ -458,7 +537,7 @@ ProcRRGetScreenInfo (ClientPtr client)
 
     pScreen = pWin->drawable.pScreen;
     pScrPriv = rrGetScrPriv(pScreen);
-    rep.pad1 = rep.pad2 = 0;
+    rep.pad = 0;
     if (!pScrPriv)
     {
 	rep.type = X_Reply;
@@ -471,14 +550,18 @@ ProcRRGetScreenInfo (ClientPtr client)
 	rep.nSizes = 0;
 	rep.sizeID = 0;
 	rep.rotation = RR_Rotate_0;
+	rep.rate = 0;
+	rep.nrateEnts = 0;
 	extra = 0;
 	extraLen = 0;
     }
     else
     {
-	int			i;
+	int			i, j;
 	xScreenSizes		*size;
-	CARD32			*data32;
+	CARD16			*rates;
+	CARD8			*data8;
+	Bool			has_rate = RRClientKnowsRates (client);
     
 	RRGetInfo (pScreen);
 
@@ -489,15 +572,29 @@ ProcRRGetScreenInfo (ClientPtr client)
 	rep.root = WindowTable[pWin->drawable.pScreen->myNum]->drawable.id;
 	rep.timestamp = pScrPriv->lastSetTime.milliseconds;
 	rep.configTimestamp = pScrPriv->lastConfigTime.milliseconds;
-	
 	rep.rotation = pScrPriv->rotation;
 	rep.nSizes = pScrPriv->nSizesInUse;
-	if (pScrPriv->pSize)
-	    rep.sizeID = pScrPriv->pSize->id;
+	rep.rate = pScrPriv->rate;
+        rep.nrateEnts = 0;
+	if (has_rate)
+	{
+	    for (i = 0; i < pScrPriv->nSizes; i++)
+	    {
+		RRScreenSizePtr pSize = &pScrPriv->pSizes[i];
+		if (pSize->referenced)
+		{
+		    rep.nrateEnts += (1 + pSize->nRatesInUse);
+		}
+	    }
+	}
+
+	if (pScrPriv->size >= 0)
+	    rep.sizeID = pScrPriv->pSizes[pScrPriv->size].id;
 	else
 	    return BadImplementation;
 
-	extraLen = rep.nSizes * sizeof (xScreenSizes) ;
+	extraLen = (rep.nSizes * sizeof (xScreenSizes) +
+		    rep.nrateEnts * sizeof (CARD16));
 
 	extra = (CARD8 *) xalloc (extraLen);
 	if (!extra)
@@ -506,14 +603,16 @@ ProcRRGetScreenInfo (ClientPtr client)
 	 * First comes the size information
 	 */
 	size = (xScreenSizes *) extra;
+	rates = (CARD16 *) (size + rep.nSizes);
 	for (i = 0; i < pScrPriv->nSizes; i++)
 	{
-	    if (pScrPriv->pSizes[i].referenced)
+	    RRScreenSizePtr pSize = &pScrPriv->pSizes[i];
+	    if (pSize->referenced)
 	    {
-		size->widthInPixels = pScrPriv->pSizes[i].width;
-		size->heightInPixels = pScrPriv->pSizes[i].height;
-		size->widthInMillimeters = pScrPriv->pSizes[i].mmWidth;
-		size->heightInMillimeters = pScrPriv->pSizes[i].mmHeight;
+		size->widthInPixels = pSize->width;
+		size->heightInPixels = pSize->height;
+		size->widthInMillimeters = pSize->mmWidth;
+		size->heightInMillimeters = pSize->mmHeight;
 		if (client->swapped)
 		{
 		    swaps (&size->widthInPixels, n);
@@ -522,13 +621,35 @@ ProcRRGetScreenInfo (ClientPtr client)
 		    swaps (&size->heightInMillimeters, n);
 		}
 		size++;
+		if (has_rate)
+		{
+		    *rates = pSize->nRatesInUse;
+		    if (client->swapped)
+		    {
+			swaps (rates, n);
+		    }
+		    rates++;
+		    for (j = 0; j < pSize->nRates; j++)
+		    {
+			RRScreenRatePtr	pRate = &pSize->pRates[j];
+			if (pRate->referenced)
+			{
+			    *rates = pRate->rate;
+			    if (client->swapped)
+			    {
+				swaps (rates, n);
+			    }
+			    rates++;
+			}
+		    }
+		}
 	    }
 	}
-	data32 = (CARD32 *) size;
+	data8 = (CARD8 *) rates;
 
-	if ((CARD8 *) data32 - (CARD8 *) extra != extraLen)
+	if (data8 - (CARD8 *) extra != extraLen)
 	    FatalError ("RRGetScreenInfo bad extra len %d != %d\n",
-			(CARD8 *) data32 - (CARD8 *) extra, extraLen);
+			data8 - (CARD8 *) extra, extraLen);
 	rep.length =  (extraLen + 3) >> 2;
     }
     if (client->swapped) {
@@ -538,6 +659,8 @@ ProcRRGetScreenInfo (ClientPtr client)
 	swaps(&rep.rotation, n);
 	swaps(&rep.nSizes, n);
 	swaps(&rep.sizeID, n);
+	swaps(&rep.rate, n);
+	swaps(&rep.nrateEnts, n);
     }
     WriteToClient(client, sizeof(xRRGetScreenInfoReply), (char *)&rep);
     if (extraLen)
@@ -562,10 +685,23 @@ ProcRRSetScreenConfig (ClientPtr client)
     RRScreenSizePtr	    pSize;
     int			    i;
     Rotation		    rotation;
+    int			    rate;
     short		    oldWidth, oldHeight;
+    Bool		    has_rate;
 
     UpdateCurrentTime ();
 
+    if (RRClientKnowsRates (client))
+    {
+	REQUEST_SIZE_MATCH (xRRSetScreenConfigReq);
+	has_rate = TRUE;
+    }
+    else
+    {
+	REQUEST_SIZE_MATCH (xRR1_0SetScreenConfigReq);
+	has_rate = FALSE;
+    }
+    
     REQUEST_SIZE_MATCH(xRRSetScreenConfigReq);
     SECURITY_VERIFY_DRAWABLE(pDraw, stuff->drawable, client,
 			     SecurityWriteAccess);
@@ -600,6 +736,7 @@ ProcRRSetScreenConfig (ClientPtr client)
 	goto sendReply;
     }
     
+    ErrorF ("Requested SizeID %d\n", stuff->sizeID);
     /*
      * Search for the requested size
      */
@@ -608,7 +745,11 @@ ProcRRSetScreenConfig (ClientPtr client)
     {
 	pSize = &pScrPriv->pSizes[i];
 	if (pSize->referenced && pSize->id == stuff->sizeID)
+	{
+	    ErrorF ("Found requested id at %d - %dx%d\n",
+		    i, pSize->width, pSize->height);
 	    break;
+	}
     }
     if (i == pScrPriv->nSizes)
     {
@@ -616,6 +757,7 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 * Invalid size ID
 	 */
 	client->errorValue = stuff->sizeID;
+	ErrorF ("Bad sizeID %d\n", stuff->sizeID);
 	return BadValue;
     }
     
@@ -636,6 +778,7 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 * Invalid rotation
 	 */
 	client->errorValue = stuff->rotation;
+	ErrorF ("Bad rotation %d\n", stuff->rotation);
 	return BadValue;
     }
 
@@ -645,9 +788,37 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 * requested rotation or reflection not supported by screen
 	 */
 	client->errorValue = stuff->rotation;
+	ErrorF ("Unsupported rotation %d\n", stuff->rotation);
 	return BadMatch;
     }
 
+    /*
+     * Validate requested refresh
+     */
+    if (has_rate)
+	rate = (int) stuff->rate;
+    else
+	rate = 0;
+
+    if (rate)
+    {
+	for (i = 0; i < pSize->nRates; i++)
+	{
+	    RRScreenRatePtr pRate = &pSize->pRates[i];
+	    if (pRate->referenced && pRate->rate == rate)
+		break;
+	}
+	if (i == pSize->nRates)
+	{
+	    /*
+	     * Invalid rate
+	     */
+	    client->errorValue = rate;
+	    ErrorF ("Unsupported rate %d\n", stuff->rate);
+	    return BadValue;
+	}
+    }
+    
     /*
      * Make sure the requested set-time is not older than
      * the last set-time
@@ -661,7 +832,7 @@ ProcRRSetScreenConfig (ClientPtr client)
     /*
      * call out to ddx routine to effect the change
      */
-    if (!(*pScrPriv->rrSetConfig) (pScreen, rotation, 
+    if (!(*pScrPriv->rrSetConfig) (pScreen, rotation, rate,
 				   pSize))
     {
 	/*
@@ -674,7 +845,7 @@ ProcRRSetScreenConfig (ClientPtr client)
     /*
      * set current extension configuration pointers
      */
-    RRSetCurrentConfig (pScreen, rotation, pSize);
+    RRSetCurrentConfig (pScreen, rotation, rate, pSize);
     
     /*
      * Deliver ScreenChangeNotify events whenever
@@ -729,6 +900,8 @@ static int
 ProcRRSelectInput (ClientPtr client)
 {
     REQUEST(xRRSelectInputReq);
+    rrClientPriv(client);
+    RRTimesPtr	pTimes;
     WindowPtr	pWin;
     RREventPtr	pRREvent, pNewRREvent, *pHead;
     XID		clientResource;
@@ -738,62 +911,74 @@ ProcRRSelectInput (ClientPtr client)
     if (!pWin)
 	return BadWindow;
     pHead = (RREventPtr *)SecurityLookupIDByType(client,
-			pWin->drawable.id, EventType, SecurityWriteAccess);
-    
+						 pWin->drawable.id, EventType,
+						 SecurityWriteAccess);
 
-      if (stuff->enable & 
-	  (RRScreenChangeNotifyMask)) {
+    if (stuff->enable & (RRScreenChangeNotifyMask)) 
+    {
+	ScreenPtr	pScreen = pWin->drawable.pScreen;
+	rrScrPriv	(pScreen);
 
-	if (pHead) {
-
+	if (pHead) 
+	{
 	    /* check for existing entry. */
-	    for (pRREvent = *pHead;
-		 pRREvent;
- 		 pRREvent = pRREvent->next)
-	    {
+	    for (pRREvent = *pHead; pRREvent; pRREvent = pRREvent->next)
 		if (pRREvent->client == client)
 		    return Success;
-	    }
 	}
 
 	/* build the entry */
-    	pNewRREvent = (RREventPtr)
-			    xalloc (sizeof (RREventRec));
-    	if (!pNewRREvent)
+	pNewRREvent = (RREventPtr) xalloc (sizeof (RREventRec));
+	if (!pNewRREvent)
 	    return BadAlloc;
-    	pNewRREvent->next = 0;
-    	pNewRREvent->client = client;
-    	pNewRREvent->window = pWin;
+	pNewRREvent->next = 0;
+	pNewRREvent->client = client;
+	pNewRREvent->window = pWin;
 	pNewRREvent->mask = stuff->enable;
-    	/*
- 	 * add a resource that will be deleted when
-     	 * the client goes away
-     	 */
-   	clientResource = FakeClientID (client->index);
-    	pNewRREvent->clientResource = clientResource;
-    	if (!AddResource (clientResource, ClientType, (pointer)pNewRREvent))
+	/*
+	 * add a resource that will be deleted when
+	 * the client goes away
+	 */
+	clientResource = FakeClientID (client->index);
+	pNewRREvent->clientResource = clientResource;
+	if (!AddResource (clientResource, ClientType, (pointer)pNewRREvent))
 	    return BadAlloc;
-    	/*
-     	 * create a resource to contain a pointer to the list
-     	 * of clients selecting input.  This must be indirect as
-     	 * the list may be arbitrarily rearranged which cannot be
-     	 * done through the resource database.
-     	 */
-    	if (!pHead)
-    	{
+	/*
+	 * create a resource to contain a pointer to the list
+	 * of clients selecting input.  This must be indirect as
+	 * the list may be arbitrarily rearranged which cannot be
+	 * done through the resource database.
+	 */
+	if (!pHead)
+	{
 	    pHead = (RREventPtr *) xalloc (sizeof (RREventPtr));
 	    if (!pHead ||
-	    	!AddResource (pWin->drawable.id, EventType, (pointer)pHead))
+		!AddResource (pWin->drawable.id, EventType, (pointer)pHead))
 	    {
-	    	FreeResource (clientResource, RT_NONE);
-	    	return BadAlloc;
+		FreeResource (clientResource, RT_NONE);
+		return BadAlloc;
 	    }
 	    *pHead = 0;
-    	}
-    	pNewRREvent->next = *pHead;
-    	*pHead = pNewRREvent;
-      }
-      else if (stuff->enable == xFalse) {
+	}
+	pNewRREvent->next = *pHead;
+	*pHead = pNewRREvent;
+	/*
+	 * Now see if the client needs an event
+	 */
+	if (pScrPriv)
+	{
+	    pTimes = &((RRTimesPtr) (pRRClient + 1))[pScreen->myNum];
+	    if (CompareTimeStamps (pTimes->setTime, 
+				   pScrPriv->lastSetTime) != 0 ||
+		CompareTimeStamps (pTimes->configTime, 
+				   pScrPriv->lastConfigTime) != 0)
+	    {
+		TellChanged (pWin, (pointer) pScreen);
+	    }
+	}
+    }
+    else if (stuff->enable == xFalse) 
+    {
 	/* delete the interest */
 	if (pHead) {
 	    pNewRREvent = 0;
@@ -811,11 +996,12 @@ ProcRRSelectInput (ClientPtr client)
 		xfree (pRREvent);
 	    }
 	}
-      }
-      else {
+    }
+    else 
+    {
 	client->errorValue = stuff->enable;
 	return BadValue;
-      }
+    }
     return Success;
 }
 
@@ -932,8 +1118,8 @@ RRRegisterSize (ScreenPtr	    pScreen,
 {
     rrScrPriv (pScreen);
     int		    i;
-    RRScreenSize	    tmp;
-    RRScreenSizePtr   pNew;
+    RRScreenSize    tmp;
+    RRScreenSizePtr pNew;
 
     if (!pScrPriv)
 	return 0;
@@ -942,6 +1128,9 @@ RRRegisterSize (ScreenPtr	    pScreen,
     tmp.height= height;
     tmp.mmWidth = mmWidth;
     tmp.mmHeight = mmHeight;
+    tmp.pRates = 0;
+    tmp.nRates = 0;
+    tmp.nRatesInUse = 0;
     tmp.referenced = TRUE;
     tmp.oldReferenced = FALSE;
     for (i = 0; i < pScrPriv->nSizes; i++)
@@ -959,9 +1148,43 @@ RRRegisterSize (ScreenPtr	    pScreen,
     return &pNew[pScrPriv->nSizes-1];
 }
 
+Bool RRRegisterRate (ScreenPtr		pScreen,
+		     RRScreenSizePtr	pSize,
+		     int		rate)
+{
+    rrScrPriv(pScreen);
+    int		    i;
+    RRScreenRatePtr pNew, pRate;
+
+    if (!pScrPriv)
+	return FALSE;
+    
+    for (i = 0; i < pSize->nRates; i++)
+    {
+	pRate = &pSize->pRates[i];
+	if (pRate->rate == rate)
+	{
+	    pRate->referenced = TRUE;
+	    return TRUE;
+	}
+    }
+
+    pNew = xrealloc (pSize->pRates,
+		     (pSize->nRates + 1) * sizeof (RRScreenRate));
+    if (!pNew)
+	return FALSE;
+    pRate = &pNew[pSize->nRates++];
+    pRate->rate = rate;
+    pRate->referenced = TRUE;
+    pRate->oldReferenced = FALSE;
+    pSize->pRates = pNew;
+    return TRUE;
+}
+
 void
 RRSetCurrentConfig (ScreenPtr		pScreen,
 		    Rotation		rotation,
+		    int			rate,
 		    RRScreenSizePtr	pSize)
 {
     rrScrPriv (pScreen);
@@ -970,5 +1193,6 @@ RRSetCurrentConfig (ScreenPtr		pScreen,
 	return;
 
     pScrPriv->rotation = rotation;
-    pScrPriv->pSize = pSize;
+    pScrPriv->size = pSize - pScrPriv->pSizes;
+    pScrPriv->rate = rate;
 }

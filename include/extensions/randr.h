@@ -33,7 +33,7 @@ typedef unsigned short	SubpixelOrder;
 
 #define RANDR_NAME		"RANDR"
 #define RANDR_MAJOR		1
-#define RANDR_MINOR		0
+#define RANDR_MINOR		1
 
 #define RRNumberErrors		0
 #define RRNumberEvents		1
@@ -41,6 +41,8 @@ typedef unsigned short	SubpixelOrder;
 #define X_RRQueryVersion	0
 /* we skip 1 to make old clients fail pretty immediately */
 #define X_RROldGetScreenInfo	1
+#define X_RR1_0SetScreenConfig	2
+/* V1.0 apps share the same set screen config request id */
 #define X_RRSetScreenConfig	2
 #define X_RROldScreenChangeSelectInput	3
 /* 3 used to be ScreenChangeSelectInput; deprecated */

@@ -58,9 +58,12 @@ struct _XRRScreenConfiguration {
   Rotation current_rotation;
   int nsizes;
   int current_size;
+  short current_rate;
   Time timestamp;
   Time config_timestamp;
   int subpixel_order;	/* introduced in randr v0.1 */
+  short *rates;		/* introduced in randr v1.1 */
+  int nrates;
 };
 
 /*
@@ -78,6 +81,7 @@ struct _XRRScreenConfiguration {
 typedef struct _XRandRInfo {
   XRRScreenConfiguration **config;
   int major_version, minor_version;	/* major_version = -1 means we don't know */
+  Bool has_rates;			/* Server supports refresh rates */
 } XRandRInfo;
 
 #endif /* _XRANDRINT_H_ */

@@ -32,6 +32,15 @@
 #include "mipointer.h"
 #include <randrstr.h>
 
+static int
+xf86RandRModeRefresh (DisplayModePtr mode)
+{
+    if (mode->VRefresh)
+	return (int) mode->VRefresh;
+    else
+	return (int) (mode->Clock * 1000.0 / mode->HTotal / mode->VTotal);
+}
+
 static Bool
 xf86RandRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 {
@@ -43,13 +52,15 @@ xf86RandRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 
     for (mode = scrp->modes; ; mode = mode->next)
     {
+	int refresh = xf86RandRModeRefresh (mode);
 	pSize = RRRegisterSize (pScreen,
 				mode->HDisplay, mode->VDisplay,
 				pScreen->mmWidth, pScreen->mmHeight);
 	if (!pSize)
 	    return FALSE;
+	RRRegisterRate (pScreen, pSize, refresh);
 	if (mode == scrp->currentMode)
-	    RRSetCurrentConfig (pScreen, RR_Rotate_0, pSize);
+	    RRSetCurrentConfig (pScreen, RR_Rotate_0, refresh, pSize);
 	if (mode->next == scrp->modes)
 	    break;
     }
@@ -88,6 +99,7 @@ xf86RandRSetMode (ScreenPtr	    pScreen,
 static Bool
 xf86RandRSetConfig (ScreenPtr		pScreen,
 		    Rotation		rotation,
+		    int			rate,
 		    RRScreenSizePtr	pSize)
 {
     ScrnInfoPtr		    scrp = XF86SCRNINFO(pScreen);
@@ -97,7 +109,9 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
     miPointerPosition (&px, &py);
     for (mode = scrp->modes; ; mode = mode->next)
     {
-	if (mode->HDisplay == pSize->width && mode->VDisplay == pSize->height)
+	if (mode->HDisplay == pSize->width && 
+	    mode->VDisplay == pSize->height &&
+	    (rate == 0 || xf86RandRModeRefresh (mode) == rate))
 	    break;
 	if (mode->next == scrp->modes)
 	    return FALSE;

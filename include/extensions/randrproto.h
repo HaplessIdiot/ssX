@@ -112,8 +112,9 @@ typedef struct {
     CARD16  nSizes B16;
     SizeID  sizeID B16;
     Rotation  rotation B16;
-    CARD16  pad1 B16;
-    CARD32  pad2 B32;
+    CARD16  rate B16;
+    CARD16  nrateEnts B16;
+    CARD16  pad B16;
 } xRRGetScreenInfoReply;
 #define sz_xRRGetScreenInfoReply	32
 
@@ -126,8 +127,22 @@ typedef struct {
     Time     configTimestamp B32;
     SizeID   sizeID B16;
     Rotation rotation B16;
+} xRR1_0SetScreenConfigReq;
+#define sz_xRR1_0SetScreenConfigReq   20
+
+typedef struct {
+    CARD8    reqType;
+    CARD8    randrReqType;
+    CARD16   length B16;
+    Drawable drawable B32;
+    Time     timestamp B32;
+    Time     configTimestamp B32;
+    SizeID   sizeID B16;
+    Rotation rotation B16;
+    CARD16   rate B16;
+    CARD16   pad B16;
 } xRRSetScreenConfigReq;
-#define sz_xRRSetScreenConfigReq   20
+#define sz_xRRSetScreenConfigReq   24
 
 typedef struct {
     BYTE    type;   /* X_Reply */
