@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.33 2002/02/12 16:07:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.34 2002/02/14 04:48:09 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -2878,6 +2878,7 @@ LispBeginBlock(LispMac *mac, LispObj *tag, LispBlockType type)
 	LispBlock **blk = realloc(mac->block.block,
 				  sizeof(LispBlock*) * (blevel + 1));
 
+	block = NULL;
 	if (blk == NULL || (block = malloc(sizeof(LispBlock))) == NULL)
 	    LispDestroy(mac, "out of memory");
 	mac->block.block = blk;
@@ -2927,7 +2928,7 @@ LispBlockUnwind(LispMac *mac, LispBlock *block)
     while (blevel > 0) {
 	unwind = mac->block.block[--blevel];
 	if (unwind->type == LispBlockProtect)
-	    longjmp(unwind->jmp, 1);
+	    BLOCKJUMP(unwind);
 	if (unwind == block)
 	    /* jump above unwind block */
 	    break;
@@ -3030,7 +3031,10 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
 	    insert = 0;
 
 	/* evaluate object, if required */
-	object = LispEvalBackquoteObject(mac, object, insert, quote);
+	if (CONS_P(object))
+	    object = LispEvalBackquote(mac, object, quote);
+	else
+	    object = LispEvalBackquoteObject(mac, object, insert, quote);
 
 	if (result == NIL) {
 	    /* if starting result list */
@@ -3399,7 +3403,7 @@ if (NCONSTANT_P(var)) {						\
 	    LispDoAddVar(mac, CAR(restp), arg);
 	else {
 	    for (list = arg; CONS_P(list); list = CDR(list))
-		if (!CONSTANT_P(CAR(list)))
+		if (NCONSTANT_P(CAR(list)))
 		    break;
 
 	    if (CONS_P(list)) {
@@ -3546,16 +3550,6 @@ LispEval(LispMac *mac, LispObj *obj)
 	    if (debug)
 		LispDebugger(mac, LispDebugCallBegin, NIL, cons);
 	    goto eval_lambda;
-#ifndef COMPILE_LAMBDA
-	/* I am not exactly sure if it should be correct to "compile"
-	 * the lambda list at read time. It would only break things like:
-	 *	(car '(lambda ..))
-	 * Anyway, "compiling" the lambda expression would only make
-	 * loops like (loop ((lambda ...))) faster, but yet slower than
-	 * if a function were defined, because functions aren't traversed
-	 * at gc time (unless fmakunbound was called or the function redefined,
-	 * but even in this case, the function is traversed only once).
-	 */
 	case LispCons_t:
 	    if (SYMBOL_P(CAR(name)) &&
 		ATOMID(CAR(name)) == Slambda) {
@@ -3577,10 +3571,8 @@ LispEval(LispMac *mac, LispObj *obj)
 		    return (res);
 		}
 	    }
-#endif
 	default:
 	    LispDestroy(mac, "EVAL: %s is invalid as a function", STROBJ(name));
-	    /*NOTREACHED*/
     }
 
     if (debug)
@@ -3772,20 +3764,20 @@ LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *args, char *strname)
     code = CDR(fun->data.lambda.code);
 
     if (type != LispMacro) {
-	int did_jump = 1, *pdid_jump = &did_jump;
-	LispObj **pres = &result;
+	int did_jump = 1, *pdid_jump;
+	LispObj **pcode, **presult;
 	LispBlock *block =
 	    LispBeginBlock(mac, fun->data.lambda.name, LispBlockClosure);
 
 	if (setjmp(block->jmp) == 0) {
-	    for (; CONS_P(code); code = CDR(code))
-		if (NCONSTANT_P(result = CAR(code)))
-		    result = EVAL(result);
-	    *pdid_jump = 0;
+	    for (pcode = &code, presult = &result, pdid_jump = &did_jump;
+		 CONS_P(code); code = CDR(code))
+		result = EVAL(CAR(code));
+	    did_jump = 0;
 	}
 	LispEndBlock(mac, block);
-	if (*pdid_jump)
-	    *pres = mac->block.block_ret;
+	if (did_jump)
+	    result = mac->block.block_ret;
     }
     else {
 	for (; CONS_P(code); code = CDR(code))
