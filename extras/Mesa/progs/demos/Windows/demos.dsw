@@ -1,0 +1,644 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "all"=".\all.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name bounce
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name clearspd
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name cubemap
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name drawpix
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name fire
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name gears
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name geartrain
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name glinfo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name gloss
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name gltestperf
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name glutfx
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ipers
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name isosurf
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name lodbias
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name morph3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name multiarb
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name occlude
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name osdemo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name paltex
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name pixeltex
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name pointblast
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name rain
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ray
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name readpix
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name reflect
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name renormal
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name shadowtex
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name spectex
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name stex3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name teapot
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name terrain
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tessdemo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name texcyl
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name texdown
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name texenv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name texobj
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name trispd
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tunnel
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tunnel2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name winpos
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name spriteblast
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "bounce"=".\bounce.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "clearspd"=".\clearspd.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "cubemap"=".\cubemap.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "drawpix"=".\drawpix.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "fire"=".\fire.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "gears"=".\gears.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "geartrain"=".\geartrain.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "glinfo"=".\glinfo.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "gloss"=".\gloss.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "gltestperf"=".\gltestperf.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "glutfx"=".\glutfx.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ipers"=".\ipers.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "isosurf"=".\isosurf.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "lodbias"=".\loadbias.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "morph3d"=".\morph3d.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "multiarb"=".\multiarb.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "occlude"=".\occlude.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "osdemo"=".\osdemo.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "paltex"=".\paltex.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "pixeltex"=".\pixeltex.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "pointblast"=".\pointblast.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "rain"=".\rain.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ray"=".\ray.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "readpix"=".\readpix.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "reflect"=".\reflect.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "renormal"=".\renormal.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "shadowtex"=".\shadowtex.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "spectex"=".\spectex.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "spriteblast"=".\spriteblast.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "stex3d"=".\stex3d.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "teapot"=".\teapot.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "terrain"=".\terrain.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tessdemo"=".\tessdemo.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "texcyl"=".\texcyl.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "texdown"=".\texdown.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "texenv"=".\texenv.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "texobj"=".\texobj.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "trispd"=".\trispd.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tunnel"=".\tunnel.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tunnel2"=".\tunnel2.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "winpos"=".\winpos.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
