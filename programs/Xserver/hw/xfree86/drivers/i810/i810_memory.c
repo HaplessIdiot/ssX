@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.16 2000/09/24 13:51:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.17 2000/12/01 14:28:57 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -338,13 +338,13 @@ I810CheckAvailableMemory(ScrnInfoPtr pScrn)
    if (!xf86AcquireGART(pScrn->scrnIndex))
       return -1;
 
-   if ((agpinfo = xf86GetAgpInfo(pScrn->scrnIndex)) == NULL)
+   if ((agpinf = xf86GetAGPInfo(pScrn->scrnIndex)) == NULL)
       return -1;
 
    if (!xf86ReleaseGART(pScrn->scrnIndex))
       return -1;
 
-   maxPages = agpinf.totalPages - agpinf.usedPages;
+   maxPages = agpinf->totalPages - agpinf->usedPages;
    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 		  "I810CheckAvailableMemory: %dk available\n", maxPages * 4);
 
