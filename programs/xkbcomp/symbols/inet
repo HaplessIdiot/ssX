@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.34 2003/10/14 13:36:31 pascal Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.35 2003/10/14 13:41:19 pascal Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -1411,6 +1411,49 @@ xkb_symbols "microsoftoffice" {
     key <I70>	{	[ Redo			]	};
 };
 
+partial alphanumeric_keys 
+xkb_symbols "microsoftmult" { 
+    name[Group1]= "Microsoft Wireless Multimedia Keyboard 1.0A"; 
+ 
+//   My Computer Section -- Left Side 
+    key <I80>   {       [ XF86Documents ]       }; 
+    key <I64>   {       [ XF86Pictures  ]       }; 
+    key <I3C>   {       [ XF86Music     ]       }; 
+
+//   Multimedia Section -- Centre 
+    key <I20>   {       [ XF86AudioMute         ]       }; 
+    key <I22>   {       [ XF86AudioPlay, XF86AudioPause ] }; 
+    key <I24>   {       [ XF86AudioStop         ]       }; 
+    key <I30>   {       [ XF86AudioRaiseVolume  ]       }; 
+    key <I2E>   {       [ XF86AudioLowerVolume  ]       }; 
+    key <I10>   {       [ XF86AudioPrev         ]       }; 
+    key <I19>   {       [ XF86AudioNext         ]       }; 
+    key <I6D>   {       [ XF86AudioMedia        ]       }; 
+
+//   Internet Section -- Right Side 
+    key <I6C>   {       [ XF86Mail              ]       }; 
+    key <I32>   {       [ XF86HomePage          ]       }; 
+    key <AE13>  {       [ XF86Messenger         ]       }; 
+
+//   Control Section -- Far Right 
+    key <I21>   {       [ XF86Calculator        ]       }; 
+    key <I16>   {       [ XF86LogOff            ]       }; 
+    key <I5F>   {       [ XF86Sleep             ]       }; 
+
+//   F-Locked Function keys 
+    key <I3B>	{	[ Help			]	}; 
+    key <I08>	{	[ Undo			]	}; 
+    key <I07>	{	[ Redo			]	}; 
+    key <FK14>	{	[ XF86New		]	}; 
+    key <FK15>	{	[ XF86Open		]	}; 
+    key <FK16>	{	[ XF86Close		]	}; 
+    key <FK17>	{	[ XF86Reply		]	}; 
+    key <I42>	{	[ XF86Forward		]	}; 
+    key <I43>	{	[ XF86Send		]	}; 
+    key <I23>	{	[ XF86Spell		]	}; 
+    key <I57>	{	[ XF86Save		]	}; 
+    key <I58>	{	[ Print			]	}; 
+}; 
 
 // Oretec
 

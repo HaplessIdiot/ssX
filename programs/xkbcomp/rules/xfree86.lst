@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.76 2003/12/18 14:14:38 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.77 2003/12/30 13:26:25 pascal Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -80,6 +80,7 @@
   microsoftprooem Microsoft Natural Keyboard Pro OEM
   microsoftprose Microsoft Internet Keyboard Pro, Swedish
   microsoftoffice Microsoft Office Keyboard
+  microsoftmult Microsoft Wireless Multimedia Keyboard
   oretec	Oretec MCK-800 MM/Internet keyboard
   propeller	Propeller Voyager (KTEZ-1000)
   qtronix	QTronix Scorpius 98N+
