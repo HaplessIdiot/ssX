@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.11 2000/07/01 01:40:46 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.12 2000/08/25 13:42:38 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -536,6 +536,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R128_FP_GEN_CNTL                  0x0284
 #       define R128_FP_FPON                  (1 << 0)
 #       define R128_FP_TDMS_EN               (1 <<  2)
+#       define R128_FP_DETECT_SENSE          (1 <<  8)
 #       define R128_FP_SEL_CRTC2             (1 << 13)
 #       define R128_FP_CRTC_DONT_SHADOW_VPAR (1 << 16)
 #       define R128_FP_CRTC_USE_SHADOW_VEND  (1 << 18)
@@ -553,7 +554,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #       define R128_HORZ_STRETCH_BLEND       (1      << 25)
 #       define R128_HORZ_STRETCH_ENABLE      (1      << 26)
 #       define R128_HORZ_FP_LOOP_STRETCH     (0x7    << 27)
-#       define R128_HORZ_STRETCH_RESERVED    0xc0000000
+#       define R128_HORZ_STRETCH_RESERVED    (1      << 30)
+#       define R128_HORZ_AUTO_RATIO_FIX_EN   (1      << 31)
 
 #define R128_FP_PANEL_CNTL                0x0288
 #       define R128_FP_DIGON              (1 << 0)
@@ -568,6 +570,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #       define R128_VERT_STRETCH_ENABLE      (1     << 24)
 #       define R128_VERT_STRETCH_LINEREP     (0     << 25)
 #       define R128_VERT_STRETCH_BLEND       (1     << 25)
+#       define R128_VERT_AUTO_RATIO_EN       (1     << 26)
 #       define R128_VERT_STRETCH_RESERVED    0xf8e00000
 
 #define R128_GEN_INT_CNTL                 0x0040
@@ -652,8 +655,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R128_LEAD_BRES_LNTH               0x161c
 #define R128_LEAD_BRES_LNTH_SUB           0x1624
 #define R128_LVDS_GEN_CNTL                0x02d0
-#       define R128_LVDS_ON               (1 <<  0)
-#       define R128_LVDS_SEL_CRTC2        (1 << 23)
+#       define R128_LVDS_ON               (1   <<  0)
+#       define R128_LVDS_BLON             (1   << 19)
+#       define R128_LVDS_SEL_CRTC2        (1   << 23)
+#       define R128_HSYNC_DELAY_SHIFT     28
+#       define R128_HSYNC_DELAY_MASK      (0xf << 28)
 
 #define R128_MAX_LATENCY                  0x0f3f /* PCI */
 #define R128_MCLK_CNTL                    0x000f /* PLL */
