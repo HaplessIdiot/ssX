@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.42 2001/03/08 17:12:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.44 2001/05/15 10:19:41 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -399,7 +399,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 	pTrident->hsync = (HTotal - HSyncStart) + 23 + h_off;
 	pTrident->vsync = (VTotal - VSyncStart) - 2 + v_off;
-    
+	/* a little more skew for the Blade series */
+	if (pTrident->Chipset >= BLADE3D) pTrident->hsync -= 6;
     }
     
     /* Enable Chipset specific options */
@@ -583,6 +584,12 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->tridentRegs3x4[PCIReg] &= 0xF9;
 	}
     }
+
+    /* Video */
+    pReg->tridentRegs3C4[SSetup] = 0x00;
+    pReg->tridentRegs3C4[SKey] = 0x00;
+    pReg->tridentRegs3C4[SPKey] = 0x00;
+
      /* restore */
     OUTB(0x3C4, 0x11);
     OUTB(0x3C5, protect);
@@ -639,6 +646,9 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3CE(MiscIntContReg);
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
+    OUTW_3C4(SSetup);
+    OUTW_3C4(SKey);
+    OUTW_3C4(SPKey);
     OUTW_3x4(PreEndControl);
     OUTW_3x4(PreEndFetch);
     if (pTrident->Chipset >= PROVIDIA9685) OUTW_3x4(Enhancement0);
@@ -739,6 +749,9 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(GraphEngReg);
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
+    INB_3C4(SSetup);
+    INB_3C4(SKey);
+    INB_3C4(SPKey);
     INB_3x4(PreEndControl);
     INB_3x4(PreEndFetch);
     if (pTrident->Chipset >= PROVIDIA9685) INB_3x4(Enhancement0);
