@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.27 2002/07/24 01:47:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.28 2002/10/02 20:39:55 alanh Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -193,7 +193,6 @@ typedef enum {
     ,OPTION_ROTATE
     ,OPTION_USEBIOS
     ,OPTION_SHADOW_STATUS
-    ,OPTION_VIDEORAM
     ,OPTION_CRT_ONLY
     ,OPTION_TV_ON
     ,OPTION_TV_PAL
@@ -211,7 +210,6 @@ static const OptionInfoRec SavageOptions[] =
     { OPTION_USEBIOS,	"UseBIOS",	OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_LCDCLOCK,	"LCDClock",	OPTV_FREQ,    {0}, FALSE },
     { OPTION_SHADOW_STATUS, "ShadowStatus", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_VIDEORAM,  "VideoRAM",     OPTV_INTEGER, {0}, FALSE },
     { OPTION_CRT_ONLY,  "CrtOnly",      OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_TV_ON,     "TvOn",         OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_TV_PAL,    "PAL",          OPTV_BOOLEAN, {0}, FALSE },
@@ -891,13 +889,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "%ssing video BIOS to set modes\n",
         psav->UseBIOS ? "U" : "Not u" );
 
-    pScrn->videoRam = 0;
-    if( xf86GetOptValInteger(psav->Options, OPTION_VIDEORAM, &pScrn->videoRam ) )
-    {
-	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
-	            "Option: VideoRAM %dkB\n", pScrn->videoRam );
-    }
-
     psav->LCDClock = 0.0;
     if( xf86GetOptValFreq( psav->Options, OPTION_LCDCLOCK, OPTUNITS_MHZ, &psav->LCDClock ) )
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG, 
@@ -994,6 +985,9 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 		   psav->ChipRev);
     } else
 	psav->ChipRev = psav->PciInfo->chipRev;
+
+    if (pEnt->device->videoRam != 0)
+    	pScrn->videoRam = pEnt->device->videoRam;
 
     xfree(pEnt);
 
