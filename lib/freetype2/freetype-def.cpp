@@ -138,5 +138,6 @@ FT_Activate_Size
 FT_Get_X11_Font_Format
 FT_Get_BDF_Charset_ID
 FT_Get_Postscript_Name
+FT_Stream_Seek
 
-/* $XFree86: xc/lib/freetype2/freetype-def.cpp,v 1.7 2004/02/20 21:41:45 dawes Exp $ */
+/* $XFree86: xc/lib/freetype2/freetype-def.cpp,v 1.8 2004/05/06 01:17:30 dawes Exp $ */
