@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.45 2000/04/17 16:30:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.46 2000/06/21 17:28:14 dawes Exp $ */
 
 
 #define PSZ 8
@@ -78,11 +78,6 @@ static Bool	SISEnterVT(int scrnIndex, int flags);
 static void	SISLeaveVT(int scrnIndex, int flags);
 static Bool	SISCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	SISSaveScreen(ScreenPtr pScreen, int mode);
-
-/* Required if the driver supports mode switching */
-static Bool	SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-/* Required if the driver supports moving the viewport */
-static void	SISAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 static void	SISFreeScreen(int scrnIndex, int flags);
@@ -1270,6 +1265,8 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    SISDGAInit(pScreen);
+
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
@@ -1340,7 +1337,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 
 /* Usually mandatory */
-static Bool
+Bool
 SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return SISModeInit(xf86Screens[scrnIndex], mode);
@@ -1352,7 +1349,7 @@ SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+void 
 SISAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

@@ -1,4 +1,7 @@
 XFree86 4.0g (xx June 2000)
+ 385. Add generic DGA support to SiS driver (Alan Hourihane).
+ 386. Add more support structure for Alpha/DRI (not enabled yet though)
+      (Alan Hourihane).
  383. Fix glXDestroyContext bug that caused Q3A to use old clip rect info
       when opening a new window (Kevin Martin).
  382. Fix R128 3D driver clear problem which caused R128Pro cards to lock
@@ -10748,4 +10751,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1213 2000/06/25 20:17:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1214 2000/06/26 05:41:30 martin Exp $
