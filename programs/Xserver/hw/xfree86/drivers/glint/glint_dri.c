@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.7 2000/01/18 18:40:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.8 2000/02/12 05:47:39 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -507,7 +507,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	    if ((bufs = drmAddBufs(pGlint->drmSubFD,
 				   xf86ConfigDRI.bufs[i].count,
 				   xf86ConfigDRI.bufs[i].size,
-				   0 /* flags */, 0)) <= 0) {
+				   0 /* flags */)) <= 0) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			   "[drm] failure adding %d %d byte DMA buffers\n",
 			   xf86ConfigDRI.bufs[i].count,
