@@ -34,10 +34,10 @@ DependSubdirs($(SUBDIRS))
     GLXDONES = glx/DONE
 
 #if BuildXF86DRI
-     DRIOBJS = dri/dri_glx.o dri/XF86dri.o
-    DRIUOBJS = dri/unshared/dri_glx.o dri/unshared/XF86dri.o
-    DRIDOBJS = dri/debugger/dri_glx.o dri/debugger/XF86dri.o
-    DRIPOBJS = dri/profiled/dri_glx.o dri/profiled/XF86dri.o
+     DRIOBJS = dri/XF86dri.o dri/dri_glx.o
+    DRIUOBJS = dri/unshared/XF86dri.o dri/unshared/dri_glx.o
+    DRIDOBJS = dri/debugger/XF86dri.o dri/debugger/dri_glx.o
+    DRIPOBJS = dri/profiled/XF86dri.o dri/profiled/dri_glx.o
     DRIDONES = dri/DONE
 
 #if !GlxUseSGISI
