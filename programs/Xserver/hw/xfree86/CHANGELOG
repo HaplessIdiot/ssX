@@ -1,4 +1,7 @@
-XFree86 4.0.2a (?? January 2001)
+XFree86 4.X.Ya (?? January 2001)
+1257. Experiment with setting the server's "vendor release" value from
+      the information in xf86Version.h, and modify xdpyinfo to show the
+      server version in an easily readable format (David Dawes).
 1256. Fix 1bpp colour map in vgaHW (Marc La France).
 1255. More IA64 loader fixes and make xf86sym.c compile again
       (Michael Madore, Marc La France).
@@ -12205,4 +12208,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1514 2001/01/09 21:12:18 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1515 2001/01/11 03:36:55 tsi Exp $

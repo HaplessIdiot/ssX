@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.100 2000/11/30 23:29:52 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.101 2000/12/04 18:49:09 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -36,7 +36,7 @@ XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.100 2000/11/30 23:29:52 d
 #define OSRelVersion __FreeBSD_version
 #endif
 
-XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion) (OsRelVersion)
+XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion) (OSRelVersion)
 
 
 #define HasCplusplus		YES
@@ -87,10 +87,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define PreProcessCmd		CppCmd
 #define StandardCppOptions	-traditional
 #define StandardCppDefines	/**/
+#ifndef DefaultCCOptions
 #if defined(UseInstalled)
 #define DefaultCCOptions	/**/
 #else
 #define DefaultCCOptions	-ansi -pedantic -Dasm=__asm GccWarningOptions
+#endif
 #endif
 #ifndef ExtraLibraries
 /* support for multi-byte locales is in libxpg4 rather than libc */
