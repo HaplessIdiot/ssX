@@ -1,5 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.8 94/04/17 20:36:07 rws Exp $
+XCOMM $XFree86$
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -59,5 +60,7 @@ NormalLintTarget($(SRCS))
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
+
+InstallLinkKitLibrary(diobpex,$(LINKKITDIR)/lib)
 
 DependTarget()

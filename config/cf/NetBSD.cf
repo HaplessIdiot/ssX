@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.1 1994/05/22 01:45:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.2 1994/05/29 02:01:41 dawes Exp $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -51,7 +51,11 @@ XCOMM operating system:  OSName
 #define OptimizedCDebugFlags -O2
 #define ServerOSDefines /**/
 #endif
+#ifdef i386Architecture
+#define ServerExtraDefines GccGasOption LinkKitDefines
+#else
 #define ServerExtraDefines GccGasOption
+#endif
 
 #define TroffCmd        groff -Tps
 #define SetTtyGroup     YES

@@ -1,6 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.193 94/04/10 17:39:55 rws Exp $
+XCOMM rules:  $XFree86$
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1714,6 +1715,31 @@ NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR=$(DESTDIR),in
 
 
 /*
+ * InstallLinkKitLibrary - rule for installing link kit libraries (XFree86 only)
+ */
+#ifndef InstallLinkKitLibrary
+#define InstallLinkKitLibrary(lib,dir)
+#endif /* InstallLinkKitLibrary */
+
+
+/*
+ * InstallLinkKitNonExecFile - rule for installing link kit files (XFree86 only)
+ */
+#ifndef InstallLinkKitNonExecFile
+#define InstallLinkKitNonExecFile(file,dir)
+#endif /* InstallLinkKitNonExecFile */
+
+
+/*
+ * InstallLinkKitSubdirs - generate rules to recursively install server Link
+ *                         Kit (only used for XFree86)
+ */
+#ifndef InstallLinkKitSubdirs
+#define InstallLinkKitSubdirs(dirs)
+#endif /* InstallLinkKitSubdirs */
+
+
+/*
  * IncludesSubdirs - generate rules to recursively put include files in build
  */
 #ifndef IncludesSubdirs
@@ -1797,6 +1823,10 @@ target::								@@\
 		esac; \							@@\
 		echo "making Makefiles in $$curdir$$i..."; \		@@\
 		case "$$i" in \						@@\
+		./?*/?*/?*/?*)	newtop=../../../..;; \			@@\
+		./?*/?*/?*)	newtop=../../..;; \			@@\
+		./?*/?*)	newtop=../..;; \			@@\
+		./?*)		newtop=..;; \				@@\
 		*/?*/?*/?*)	newtop=../../../..;; \			@@\
 		*/?*/?*)	newtop=../../..;; \			@@\
 		*/?*)		newtop=../..;; \			@@\

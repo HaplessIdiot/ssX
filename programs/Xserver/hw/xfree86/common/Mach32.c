@@ -1,4 +1,5 @@
 /* $XConsortium: XF86_Mach32.c,v 1.1 94/03/28 21:21:46 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "os.h"
 
@@ -56,8 +57,14 @@ int mach32ValidTokens[] =
   -1
 };
 
-/* Dummy function for PEX in LinkKit and mono server */
+/* Dummy function for PEX in LinkKit */
 
 #if defined(LINKKIT) && !defined(PEXEXT)
 PexExtensionInit() {}
+#endif
+
+/* Dummy function for XIE in LinkKit */
+
+#if defined(LINKKIT) && !defined(XIE)
+XieInit() {}
 #endif

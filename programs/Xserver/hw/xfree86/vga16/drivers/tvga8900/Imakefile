@@ -1,27 +1,26 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:34:10 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
-SRCS = driverT.c bankT.s
+SRCS = t89_driver.c t89_bank.s
 
-OBJS = driverT.o bankT.o
+OBJS = t89_driver.o t89_bank.o
 
 #if XF86LinkKit
-VGA256DIR = $(XF86SRC)/vga256
-INCLUDES = -I. -I$(SERVERSRC)/include -I$(XF86SRC)
+INCLUDES = -I. -I../../../include -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
-VGA256DIR = $(XF86SRC)/vga256/drivers
 #endif
 
 DEFINES = -DXF86VGA16
 
 NormalLibraryObjectRule()
 
-NormalRelocatableTarget(t89_drv, $(OBJS))
+NormalRelocatableTarget(t89_drv,$(OBJS))
 
-ObjectFromSpecialSource(driverT,$(VGA256DIR)/tvga8900/t89_driver,/**/)
-ObjectFromSpecialAsmSource(bankT,$(VGA256DIR)/tvga8900/bank,/**/)
+LinkSourceFile(t89_driver.c,$(VGADRIVERSRC)/tvga8900)
+ObjectFromSpecialAsmSource(t89_bank,$(VGADRIVERSRC)/tvga8900/bank,NullParameter)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/tvga8900)
 

@@ -1,3 +1,11 @@
+XFree86 3.0Ac (30 May 1994)
+ 68. Font cache changes for the Mach8 and 8514 servers.  This allows them
+     to work without a font cache, and should allow their use with 512k
+     Mach8 cards.  (Hans Nasten)
+ 67. Don't include XIE in the Mono and VGA16 servers (it doesn't handle
+     bit-order != byte_order).
+ 66. Add LinkKit and updated VGADriverDoc.
+
 XFree86 3.0Ab (28 May 1994)
  65. Add support for gzip'd man pages on FreeBSD.
  64. P9000 server (Erik Nygren).

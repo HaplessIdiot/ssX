@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/cl6420/Imakefile,v 3.0 1994/05/29 02:07:10 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cl_driver.c cl_bank.s
@@ -6,12 +6,10 @@ SRCS = cl_driver.c cl_bank.s
 OBJS = cl_driver.o cl_bank.o
 
 #if XF86LinkKit
-VGA256DIR = ../../vga256
 INCLUDES = -I. -I../../../include -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
-VGA256DIR = ../../../vga256/drivers
 #endif
 
 DEFINES = -DXF86VGA16
@@ -19,9 +17,11 @@ DEFINES = -DXF86VGA16
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-NormalRelocatableTarget(cl6420_drv, $(OBJS))
+NormalRelocatableTarget(cl6420_drv,$(OBJS))
 
-LinkSourceFile(cl_driver.c,$(VGA256DIR)/cl6420)
-LinkSourceFile(cl_bank.s,$(VGA256DIR)/cl6420)
+LinkSourceFile(cl_driver.c,$(VGADRIVERSRC)/cl6420)
+LinkSourceFile(cl_bank.s,$(VGADRIVERSRC)/cl6420)
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/cl6420)
 
 DependTarget()

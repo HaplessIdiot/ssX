@@ -1,11 +1,8 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:51:31 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
-#if i386Mach
-SRCS = ncr_driver.c
-#else
 SRCS = ncr_driver.c ncr_bank.s
-#endif
 
 OBJS = ncr_driver.o ncr_bank.o
 
@@ -21,9 +18,9 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(ncr_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(ncr_driver.c,$(LINKKITDIR)/drivers/vga256/ncr)
-InstallLinkKitNonExecFile(ncr_bank.s,$(LINKKITDIR)/drivers/vga256/ncr)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/ncr)
+InstallLinkKitNonExecFile(ncr_driver.c,$(LINKKITDIR)/drivers/vga256/ncr77c22)
+InstallLinkKitNonExecFile(ncr_bank.s,$(LINKKITDIR)/drivers/vga256/ncr77c22)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/ncr77c22)
 
 DependTarget()
 

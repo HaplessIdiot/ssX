@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.4 1994/05/23 09:42:51 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.5 1994/05/29 02:01:40 dawes Exp $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -53,7 +53,7 @@ XCOMM operating system:  OSName
 #else
 # define GccGasOption /**/
 #endif
-#define ServerExtraDefines GccGasOption
+#define ServerExtraDefines GccGasOption LinkKitDefines
 
 #ifdef i386Architecture
 # define OptimizedCDebugFlags -m486 -O2

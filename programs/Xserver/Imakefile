@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.4 1994/05/22 06:46:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.5 1994/05/29 02:04:12 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -82,7 +82,7 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.4 1994/05/22 06:46:09 dawes Ex
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
            CBRT = mi/cbrt.o
-        STDDIRS = dix os mi $(EXTDIRS)
+        STDDIRS = include dix os mi $(EXTDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -434,7 +434,6 @@ SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),
 XCOMM
 XCOMM XFree86 VGA 16 color Server
 XCOMM
-/* MFBDIR  = mfb */
 CFB8DIR = cfb
 DDXDIR1 = hw/xfree86
 #if XF86VGA16DualServer
@@ -458,7 +457,6 @@ SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LI
 XCOMM
 XCOMM XFree86 Monochrome VGA Server
 XCOMM
-/* MFBDIR  = mfb */
 DDXDIR1 = hw/xfree86
 #if XF86MonoDualServer
 XF86MONOMONOOBJS = $(XF86SRC)/mono/monoConf.o
@@ -597,7 +595,7 @@ Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
 
 #if XVirtualFramebufferServer
 XCOMM
-XCOMM server with Virtual (malloc'ed) framebuffer
+XCOMM server with Virtual (malloced) framebuffer
 XCOMM
 MFBDIR   = mfb
 CFB8DIR  = cfb
