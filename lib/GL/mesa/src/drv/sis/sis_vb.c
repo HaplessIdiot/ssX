@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_vb.c,v 1.1 2003/09/28 20:15:35 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2003 Eric Anholt
@@ -435,7 +435,7 @@ void sisInitVB( GLcontext *ctx )
   GLuint size = TNL_CONTEXT(ctx)->vb.Size;
   static int firsttime = 1;
 
-  smesa->verts = (char *)ALIGN_MALLOC(size * 4 * 16, 32);
+  smesa->verts = (GLubyte *)ALIGN_MALLOC(size * 4 * 16, 32);
 
   if (firsttime) {
     init_setup_tab();

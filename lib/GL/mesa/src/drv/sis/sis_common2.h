@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_common.h,v 1.5 2000/09/26 15:56:48 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_common2.h,v 1.1 2003/09/28 20:15:33 alanh Exp $ */
 
 /*
  * Authors:
@@ -91,10 +91,10 @@ _POS;
 
 typedef struct
 {
-  GLbyte cCmd0;
-  GLbyte cRop;
-  GLbyte cCmd1;
-  GLbyte cReserved;
+  GLubyte cCmd0;
+  GLubyte cRop;
+  GLubyte cCmd1;
+  GLubyte cReserved;
 }
 _CMD;
 
