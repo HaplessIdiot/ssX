@@ -28,7 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: cfbmskbits.h,v 4.25 94/04/17 20:28:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.2 1996/11/24 09:51:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.3 1996/12/28 08:11:25 dawes Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
@@ -106,6 +106,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *  PSZ needs to be defined before we get here.  Usually it comes from a
  *  -DPSZ=foo on the compilation command line.
  */
+
+#ifndef PSZ
+#define PSZ 8
+#endif
 
 /*
  *  PixelGroup is the data type used to operate on groups of pixels.

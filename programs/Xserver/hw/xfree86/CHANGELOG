@@ -1,4 +1,11 @@
 XFree86 3.9c (xx May 1997)
+ 854. Cards db updates (#548, Koen Gadeyne, #552, Matthieu Herrb,
+      #555, Harald Koenig).
+ 853. Make the TGA server us the same black/white pixel defaults as the
+      others, and make it honour the flippixels flag (#551, Alan Hourihane).
+ 852. Updates for the VGADriverDoc sample stub driver (#546, Harald Koenig).
+ 851. Fix uninitialised variables in xeyes which can cause it to crash
+      on Alpha platforms (#546, Harald Koenig).
  850. Fix a problem where XAA calls accel text functions with a ROP that
       has no source by rechecking the text function when the ROP is changed
       in the gc (#543, David Bateman).
@@ -4669,4 +4676,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.478 1997/05/25 14:41:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.479 1997/05/26 15:34:58 dawes Exp $
