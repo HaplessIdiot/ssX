@@ -368,7 +368,7 @@ Lisp_Char(LispBuiltin *builtin)
  schar simple-string index
  */
 {
-    char *string;
+    unsigned char *string;
     long offset, length;
 
     LispObj *ostring, *oindex;
@@ -379,7 +379,7 @@ Lisp_Char(LispBuiltin *builtin)
     CHECK_STRING(ostring);
     CHECK_INDEX(oindex);
     offset = FIXNUM_VALUE(oindex);
-    string = THESTR(ostring);
+    string = (unsigned char*)THESTR(ostring);
     length = STRLEN(ostring);
 
     if (offset >= length)
