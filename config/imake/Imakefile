@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.6 94/03/29 16:21:51 matt Exp $
+XCOMM $XFree86$
 
 DEPLIBS = 
 
@@ -7,7 +8,7 @@ CPP_PROGRAM = CppCmd
 CPP_DEFINES = -DCPP_PROGRAM="\"$(CPP_PROGRAM)\""
 DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES)
 
-#if defined(MacIIArchitecture) || defined(SequentArchitecture)
+#if defined(MacIIArchitecture) || defined(SequentArchitecture) || defined(i386ScoArchitecture)
 XBSDLIB = /**/
 #endif
 
