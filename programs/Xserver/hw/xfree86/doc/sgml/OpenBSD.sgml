@@ -6,10 +6,10 @@
 <title>README for XFree86 &relvers; on OpenBSD
 <author>
 Matthieu Herrb
-<Date>Last modified on: 15 August 2001
+<Date>Last modified on: 2 December 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.19 2001/08/15 19:35:53 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.20 2001/09/29 20:32:30 herrb Exp $
 </ident>
 
 <toc>
@@ -74,7 +74,7 @@ Power Macintosh.
 <p>
 <itemize>
 <item>Support for the OpenBSD ports tree, 
-<item>Preliminary support for the powerpc architecture (clients build
+<item>Preliminary support for the macppc architecture (clients build
 and work, the server doesn't work yet),
 <item>xdm now writes an utmp entry,
 <item>startx now creates an Xauthority magic cookie for the display. 
@@ -232,8 +232,8 @@ support.
 <sect1>Aperture Driver
 <p>
 By default OpenBSD includes the BSD 4.4 kernel security
-feature that disable access to the <tt>/dev/mem</tt> device when in
-multi-users mode. But the XFree86 server require
+feature that disables access to the <tt>/dev/mem</tt> device when in
+multi-user mode. But the XFree86 server requires
 linear access to the display memory in most cases.
 
 OpenBSD now requires the aperture driver to be enabled for all X
@@ -244,7 +244,8 @@ To enable the aperture driver, once included in the kernel, set
 <tscreen><verb>
 machdep.allowaperture=2     
 </verb></tscreen>
-in <tt>/etc/sysctl.conf</tt>.  See the xf86(4)
+in <tt>/etc/sysctl.conf</tt>.  See the
+<htmlurl name="xf86(4)" url="http://www.openbsd.org/cgi-bin/man.cgi?query=xf86&apropos=0&sektion=4&manpath=OpenBSD+Current&arch=i386&format=html"
 manual page for details. 
 <p>
 Another (less recommended) way to enable linear memory and I/O ports
@@ -256,9 +257,9 @@ initializing <tt/securelevel/ to 1 in <tt>/etc/rc.securelevel</tt>.
 <quote>
 <bf/Caveat:/ the aperture driver only allows one access at a time
 (so that the system is in the same security state once X is
-launched). This means that if you run multiple servers on multiples
-VT, only the first one will have linear memory access.  Use 'option
-INSECURE' if you need more that one X server at a time.
+launched). This means that if you run multiple servers on multiple
+virtual terminals, only the first one will have linear memory access.
+Use 'option INSECURE' if you need more that one X server at a time.
 </quote>
 
 
@@ -313,13 +314,12 @@ pccons and pcvt drivers will be supported by default.
 
 <p>
 Native support for the wscons console driver found on
-OpenBSD/powerpc and on OpenBSD/i386 2.9  is built
+OpenBSD/macppc and on OpenBSD/i386 2.9 and later is built
 by adding:
 <tscreen><verb>
  #define XFree86ConsoleDefines -DWSCONS_SUPPORT
 </verb></tscreen>
 to <tt>xc/config/host.def</tt> before rebuilding the server. 
-This has not been thoroughly tested, except on the macppc. 
 
 For the i386, you should include both pcvt and wscons support in order
 to use the pcvt compatibility mode of wscons:
@@ -334,7 +334,7 @@ to use the pcvt compatibility mode of wscons:
 XFree86  also compiles on other OpenBSD architectures. 
 
 <p> 
-Note that OpenBSD project has now its own source tree, based on
+Note that OpenBSD project now has its own source tree, based on
 the XFree86 source tree, with some local modifications. You may want
 to start with this tree to rebuild from sources.  The OpenBSD XF4
 source tree is available by anoncvs from all OpenBSD anoncvs
