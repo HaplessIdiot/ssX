@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.9 2000/05/06 21:09:32 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.10 2000/09/22 05:58:01 keithp Exp $ */
 
 #include "fb.h"
 
@@ -151,7 +151,7 @@ fbBltOne (FbStip    *src,
     int		    unitsPerSrc;		/* src patterns per FbStip */
     int		    leftShift, rightShift;	/* align source with dest */
     FbBits	    startmask, endmask;		/* dest scanline masks */
-    FbStip	    bits, bitsLeft, bitsRight;	/* source bits */
+    FbStip	    bits=0, bitsLeft, bitsRight;/* source bits */
     FbStip	    left;
     FbBits	    mask;
     int		    nDst;			/* dest longwords (w.o. end) */
@@ -161,7 +161,7 @@ fbBltOne (FbStip    *src,
     Bool	    copy;			/* accelerate dest-invariant */
     Bool	    transparent;		/* accelerate 0 nop */
     int		    srcinc;			/* source units consumed */
-    Bool	    endNeedsLoad;		/* need load for endmask */
+    Bool	    endNeedsLoad = FALSE;	/* need load for endmask */
 #ifndef FBNOPIXADDR
     CARD8	    *fbLane;
 #endif
@@ -753,7 +753,7 @@ fbBltPlane (FbBits	    *src,
     FbBits	pm;
     FbBits	srcMask;
     FbBits	srcMaskFirst;
-    FbBits	srcMask0;
+    FbBits	srcMask0 = 0;
     FbBits	srcBits;
     
     FbStip	dstBits;
