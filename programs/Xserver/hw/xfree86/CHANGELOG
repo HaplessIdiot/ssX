@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 304. XvImage support for GeForce chips in the nv driver (Mark Vojkovich).
  303. XvMC build fix (Marc La France).
  302. Fix recently introduced bug in xf86cfg (Marc La France).
  301. Re-instate warning fixes clobbered by DRI merge (Marc La France).
