@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.6 2000/02/10 15:48:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.7 2000/02/15 07:13:26 martin Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -38,6 +38,7 @@ LinkSourceFile(glapinoop.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapioffsets.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapitable.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapitemp.h, ../../../extras/Mesa/src)
+LinkSourceFile(glheader.h, ../../../extras/Mesa/src)
 LinkSourceFile(glthread.c, ../../../extras/Mesa/src)
 LinkSourceFile(glthread.h, ../../../extras/Mesa/src)
 LinkSourceFile(glapi_x86.S, ../../../extras/Mesa/src/X86)
@@ -92,12 +93,11 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 #if BuildXF86DRI
      GLX_DEFS = GlxDefines
      DRI_INCS = -I../dri
-#endif
-
-#ifdef i386Architecture
+#if defined(i386Architecture)
      ASM_SRCS = glapi_x86.S
      ASM_OBJS = glapi_x86.o
      ASM_DEFS = -DUSE_X86_ASM
+#endif
 #endif
 
          SRCS = $(GLX_SRCS) $(ASM_SRCS)

@@ -31,13 +31,17 @@
 
 #define NEED_REPLIES
 #define NEED_EVENTS
+#include <string.h>
+#include <stdlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xlibint.h>
+#include <GL/gl.h>
 #include <GL/glx.h>
 #include "glxint.h"
 #include "glxproto.h"
-#include <X11/Xproto.h>
-#include <X11/Xlibint.h>
-#include <string.h>
-#include <stdlib.h>
+#include "glapitable.h"
+#include "indirect.h"
+
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */
 #define GLX_MINOR_VERSION	2
@@ -46,19 +50,11 @@
 
 typedef struct __GLXcontextRec __GLXcontext;
 typedef struct __GLXdisplayPrivateRec __GLXdisplayPrivate;
+typedef struct _glapi_table __GLapi;
 
 /************************************************************************/
 
 #ifdef GLX_DIRECT_RENDERING
-
-/*
-** Since glxclient.h is included by all source files that call or define
-** OpenGL functions, it is possible to wrap all of these functions by
-** including indirect.h here.  Note: To turn on wrapping, you must
-** #define NEED_WRAP_GL_FUNCS in the appropriate source files.
-*/
-#include "indirect.h"
-#include "dri_glapi.h"
 
 /*
 ** The following structures define the interface between the GLX client

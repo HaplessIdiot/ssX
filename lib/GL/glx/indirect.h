@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/indirect.h,v 1.1 1999/06/14 07:23:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,13 +30,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/glx/indirect.h,v 1.1 1999/03/23 06:20:14 martin Exp $
  */
 
 #ifndef _INDIRECT_H_
 #define _INDIRECT_H_
-
-#ifdef GLX_DIRECT_RENDERING
 
 #include "indirect_wrap.h"
 
@@ -379,5 +376,4 @@ void __indirect_glVertex4sv(const GLshort *v);
 void __indirect_glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void __indirect_glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
-#endif
 #endif /* _INDIRECT_H_ */
