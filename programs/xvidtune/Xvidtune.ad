@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/vgahelp/Vgahelp.ad,v 3.4 1995/06/06 13:35:59 dawes Exp $
+! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.5 1995/06/08 06:56:03 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -13,6 +13,7 @@
 *VTotal-form.fromVert: VSyncEnd-form
 *Flags-form.fromVert: HTotal-form
 *Buttons-form.fromVert: Flags-form
+*Buttons2-form.fromVert: Buttons-form
 *Left-button.fromVert: HTotal-scrollbar
 *Right-button.fromVert: HTotal-scrollbar
 *Narrower-button.fromVert: HTotal-scrollbar
@@ -49,11 +50,11 @@
 *VTotal-text.fromHoriz: VTotal-label
 *VTotal-scrollbar.fromVert: VTotal-label
 *VTotal-scrollbar.orientation: horizontal
-*PixelClock-form.fromHoriz: Buttons-form
+*PixelClock-form.fromHoriz: HTotal-form
 *PixelClock-form.fromVert: VTotal-form
-*HSyncRate-form.fromHoriz: Buttons-form
+*HSyncRate-form.fromHoriz: HTotal-form
 *HSyncRate-form.fromVert: PixelClock-form
-*VSyncRate-form.fromHoriz: Buttons-form
+*VSyncRate-form.fromHoriz: HTotal-form
 *VSyncRate-form.fromVert: HSyncRate-form
 *PixelClock-text.fromHoriz: PixelClock-label
 *HSyncRate-text.fromHoriz: HSyncRate-label
@@ -78,17 +79,20 @@
 *Flags-text*editType: edit
 !Removed Edit capability -- Jon
 *Flags-text*sensitive: False
-*Fetch-button.fromHoriz: Quit-button
-*Apply-button.fromHoriz: Fetch-button
+*Apply-button.fromHoriz: Quit-button
 *Test-button.fromHoriz: Apply-button
 *Restore-button.fromHoriz: Test-button
-*Show-button.fromHoriz: Restore-button
+*Show-button.fromHoriz: Fetch-button
+*Next-button.fromHoriz: Show-button
+*Prev-button.fromHoriz: Next-button
 *Quit-button.label: Quit
 *Fetch-button.label: Fetch
 *Show-button.label: Show
 *Restore-button.label: Restore
 *Test-button.label: Test
 *Apply-button.label: Apply
+*Next-button.label: Next
+*Prev-button.label: Prev
 *Left-button.label: Left
 *Right-button.label: Right
 *Wider-button.label: Wider

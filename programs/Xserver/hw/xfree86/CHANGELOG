@@ -1,4 +1,11 @@
 XFree86 3.1.1Ba (14 June 1995)
+135. New "VGAbase" keyword for XF86Config -- currently used only by the
+     AGX server (Henry Worth).
+134. Fixes for XGA autoconfig code in the AGX server (Henry Worth).
+133. Documentation updates (Dirk Hohndel).
+132. Change default FreeBSD version in FreeBSD.cf to 2.0.5.
+131. Add a LockModeSwitch function to the VidMode extension, and modify
+     xvidtune to use it.
 130. Force VTotal to be odd for interlaced modes.
 129. Fix default Vsync/Hsync polarity setting (Marc Aurele La France).
 128. Trap a failed 'cd' in 'make Makefiles'.  This prevents the Makefile
