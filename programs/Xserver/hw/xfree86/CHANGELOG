@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 474. Fix Radeon LCD Panel detection and Power Delay (ATI Technologies).
  473. Ignore XDarwin full screen switch key combination when in rootless mode
       (Torrey T. Lyons).
  472. Xterm patches #163, #164 (Thomas Dickey): mostly bug fixes.
@@ -14147,4 +14148,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2038 2001/11/14 01:56:54 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2039 2001/11/14 07:18:54 torrey Exp $
