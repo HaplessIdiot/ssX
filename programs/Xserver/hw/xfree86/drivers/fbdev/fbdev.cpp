@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.8 2000/06/14 02:13:09 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.9 2000/12/11 20:18:11 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH FBDEV __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -45,6 +45,9 @@ The following driver
 .B Options
 are supported:
 .TP
+.BI "Option \*qfbdev\*q \*q" string \*q
+The framebuffer device to use. Default: /dev/fb0.
+.TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: on.
@@ -52,4 +55,4 @@ shadowfb(__drivermansuffix__) for further information.  Default: on.
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1),
 X(__miscmansuffix__), fbdevhw(__drivermansuffix__)
 .SH AUTHORS
-Authors include: Gerd Knorr
+Authors include: Gerd Knorr, Michel Dänzer, Geert Uytterhoeven
