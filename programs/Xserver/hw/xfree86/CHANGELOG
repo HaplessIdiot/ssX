@@ -1,4 +1,5 @@
 XFree86 3.9.18c (2 March 2000)
+3911. IA-64 fixes (Mark Vojkovich).
 3910. Add skeleton man pages for the video and input drivers that don't
       already have one (David Dawes).
 3909. Add man pages for the mouse, keyboard and void input drivers
