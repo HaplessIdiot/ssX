@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.6 2001/06/04 13:04:40 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.7 2001/06/05 08:18:04 alanh Exp $
 
 #define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
 	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options  basename.S | grep -v '^\#' > basename.i
@@ -72,7 +72,7 @@ XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.6 2001/06/04 13:04:40 alanh Exp $
 #endif
 
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
-SharedLibraryTarget(libname,rev,solist,down,up)
+SharedLibraryTarget(libname,rev,deplist,down,up)
 #endif /* SharedDepLibraryTarget */
 
 #ifndef SharedDepModuleTarget

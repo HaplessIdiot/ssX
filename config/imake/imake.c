@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.40 2000/11/27 05:06:43 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.41 2001/01/17 16:38:55 dawes Exp $ */
 
 /*
  * 
@@ -294,7 +294,7 @@ extern int sys_nerr;
 #include <sys/utsname.h>
 #endif
 
-#if !(defined(Lynx) || defined(__Lynx__) || (defined(SVR4) && !defined(sun)))
+#if !(defined(Lynx) || defined(__Lynx__) || (defined(SVR4) && !defined(sun))) && !defined(__CYGWIN__)
 #define HAS_MKSTEMP
 #endif
 
@@ -399,7 +399,7 @@ boolean	show = TRUE;
 int
 main(int argc, char *argv[])
 {
-	FILE	*tmpfd;
+	FILE	*tmpfd = NULL;
 	char	makeMacro[ BUFSIZ ];
 	char	makefileMacro[ BUFSIZ ];
 
@@ -414,7 +414,9 @@ main(int argc, char *argv[])
                 if ((tmpfd = fopen(tmpMakefile, "w+")) == NULL)
                    LogFatal("Cannot create temporary file %s.", tmpMakefile);
 	} else {
+#ifdef HAS_MKSTEMP
 	        int fd;
+#endif
 		tmpMakefile = Strdup(tmpMakefile);
 #ifndef HAS_MKSTEMP
 		if (mktemp(tmpMakefile) == NULL ||
@@ -1383,7 +1385,9 @@ CleanCppInput(char *imakefile)
 		    strcmp(ptoken, "pragma") &&
 		    strcmp(ptoken, "undef")) {
 		    if (outFile == NULL) {
+#ifdef HAS_MKSTEMP
 		        int fd;
+#endif
 			tmpImakefile = Strdup(tmpImakefile);
 #ifndef HAS_MKSTEMP
 			if (mktemp(tmpImakefile) == NULL ||

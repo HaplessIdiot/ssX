@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.19 2001/04/25 16:44:55 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.20 2001/04/29 23:25:02 tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -118,7 +118,7 @@ catch (int sig)
 	fatalerr ("got signal %d\n", sig);
 }
 
-#if defined(USG) || (defined(i386) && defined(SYSV)) || defined(WIN32) || defined(__EMX__) || defined(Lynx_22)
+#if defined(USG) || (defined(i386) && defined(SYSV)) || defined(WIN32) || defined(__EMX__) || defined(Lynx_22) || defined(__CYGWIN__)
 #define USGISH
 #endif
 
@@ -367,6 +367,12 @@ main(int argc, char *argv[])
 	    if (incp >= includedirs + MAXDIRS)
 		fatalerr("Too many -I flags.\n");
 	    *incp++ = INCLUDEDIR;
+#endif
+
+#ifdef EXTRAINCDIR
+	    if (incp >= includedirs + MAXDIRS)
+		fatalerr("Too many -I flags.\n");
+	    *incp++ = EXTRAINCDIR;
 #endif
 
 #ifdef POSTINCDIR
@@ -670,12 +676,12 @@ redirect(char *line, char *makefile)
 		fatalerr("cannot open \"%s\"\n", makefile);
 	sprintf(backup, "%s.bak", makefile);
 	unlink(backup);
-#if defined(WIN32) || defined(__EMX__)
+#if defined(WIN32) || defined(__EMX__) || defined(__CYGWIN__)
 	fclose(fdin);
 #endif
 	if (rename(makefile, backup) < 0)
 		fatalerr("cannot rename %s to %s\n", makefile, backup);
-#if defined(WIN32) || defined(__EMX__)
+#if defined(WIN32) || defined(__EMX__) || defined(__CYGWIN__)
 	if ((fdin = fopen(backup, "r")) == NULL)
 		fatalerr("cannot open \"%s\"\n", backup);
 #endif

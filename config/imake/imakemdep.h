@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.49 2001/04/12 20:09:53 torrey Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.50 2001/04/25 16:44:54 tsi Exp $ */
 
 
 /* 
@@ -292,8 +292,8 @@ in this Software without prior written authorization from The Open Group.
 #define DEFAULT_CPP "cpp"
 #endif
 #ifdef __CYGWIN__
-#define USE_CC_E
 #define DEFAULT_CC "gcc"
+#define DEFAULT_CPP "/usr/bin/cpp"
 #endif
 #if defined (__QNX__)
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
