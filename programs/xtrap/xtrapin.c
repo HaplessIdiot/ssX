@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xtrap/xtrapin.c,v 1.1 2001/11/02 23:29:34 dawes Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -89,6 +89,7 @@ SOFTWARE.
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #ifndef vaxc
 #define globalref extern
