@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.15 2002/09/19 13:22:05 tsi Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.17 2002/11/25 14:05:05 eich Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -807,16 +807,20 @@ write_auth_file(char *tmp_nam)
      */
     for (list = xauth_head; list; list = list->next) {
 	if (list->auth->name_length == 18
-	    && strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) == 0)
-	{
-	    XauWriteAuth (fp, list->auth);
+	    && strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) == 0) {
+	    if (!XauWriteAuth(fp, list->auth)) {
+		(void) fclose(fp);
+		return -1;
+	    }
 	}
     }
     for (list = xauth_head; list; list = list->next) {
 	if (list->auth->name_length != 18
-	    || strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) != 0)
-	{
-	    XauWriteAuth (fp, list->auth);
+	    || strncmp(list->auth->name, "MIT-MAGIC-COOKIE-1", 18) != 0) {
+	    if (!XauWriteAuth(fp, list->auth)) {
+		(void) fclose(fp);
+		return -1;
+	    }
 	}
     }
 
