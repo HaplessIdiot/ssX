@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.39 2001/09/14 13:54:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.41 2001/10/01 13:44:03 eich Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -133,7 +133,6 @@ typedef enum {
   OPTION_AGP_SIZE,
   OPTION_RING_SIZE,
   OPTION_BUFFER_SIZE,
-  OPTION_USE_CCE_2D,
 #endif
 #if USE_CRT_ONLY
   /* FIXME: Disable CRTOnly until it is tested */
@@ -162,7 +161,6 @@ const OptionInfoRec R128Options[] = {
   { OPTION_AGP_SIZE,     "AGPSize",          OPTV_INTEGER, {0}, FALSE },
   { OPTION_RING_SIZE,    "RingSize",         OPTV_INTEGER, {0}, FALSE },
   { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
-  { OPTION_USE_CCE_2D,   "UseCCEfor2D",      OPTV_BOOLEAN, {0}, FALSE },
 #endif
   { OPTION_DISPLAY,      "Display",          OPTV_STRING,  {0}, FALSE },
   { OPTION_PANEL_WIDTH,  "PanelWidth",       OPTV_INTEGER, {0}, FALSE },
@@ -285,12 +283,14 @@ static const char *drmSymbols[] = {
     "drmGetVersion",
     "drmMap",
     "drmMapBufs",
+    "drmDMA",
     "drmR128CleanupCCE",
     "drmR128InitCCE",
     "drmR128ResetCCE",
     "drmR128StartCCE",
     "drmR128StopCCE",
     "drmR128WaitForIdleCCE",
+    "drmR128FlushIndirectBuffer",
     "drmScatterGatherAlloc",
     "drmScatterGatherFree",
     "drmUnmap",
@@ -1630,13 +1630,6 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 	info->CCEMode = R128_DEFAULT_CCE_BM_MODE;
     }
 
-    if (xf86ReturnOptValBool(info->Options, OPTION_USE_CCE_2D, FALSE)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using CCE for 2D\n");
-	info->CCE2D = TRUE;
-    } else {
-	info->CCE2D = FALSE;
-    }
-
     if (xf86ReturnOptValBool(info->Options, OPTION_NO_SECURITY, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "WARNING!!!  CCE Security checks disabled!!! **********\n");
@@ -1960,6 +1953,11 @@ R128BlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
     ScreenPtr   pScreen = screenInfo.screens[i];
     ScrnInfoPtr pScrn   = xf86Screens[i];
     R128InfoPtr info    = R128PTR(pScrn);
+
+#ifdef XF86DRI
+    if (info->directRenderingEnabled)
+        FLUSH_RING();
+#endif
 
     pScreen->BlockHandler = info->BlockHandler;
     (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);

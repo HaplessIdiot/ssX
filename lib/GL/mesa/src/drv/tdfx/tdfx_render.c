@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_render.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_render.c,v 1.2 2001/08/18 02:51:07 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -48,9 +48,8 @@ static GLbitfield tdfxDDClear( GLcontext *ctx,
 			       GLint x, GLint y, GLint width, GLint height )
 {
    tdfxContextPtr fxMesa = (tdfxContextPtr) ctx->DriverCtx;
-   GLbitfield softwareMask = mask & (DD_ACCUM_BIT);
-   const GLuint stencil_size =
-      fxMesa->haveHwStencil ? fxMesa->glVis->StencilBits : 0;
+   const GLuint stencil_size = fxMesa->haveHwStencil ? fxMesa->glVis->StencilBits : 0;
+   GLbitfield softwareMask = 0;
 
 #if 0
    GLuint flags;
@@ -134,7 +133,10 @@ static GLbitfield tdfxDDClear( GLcontext *ctx,
    }
 
    /* we can't clear accum buffers */
-   mask &= ~(DD_ACCUM_BIT);
+   if (mask & DD_ACCUM_BIT) {
+      mask &= ~(DD_ACCUM_BIT);
+      softwareMask |= DD_ACCUM_BIT;
+   }
 
    if (mask & DD_STENCIL_BIT) {
       if (!fxMesa->haveHwStencil || ctx->Stencil.WriteMask != 0xff) {
@@ -147,8 +149,8 @@ static GLbitfield tdfxDDClear( GLcontext *ctx,
 
    if (fxMesa->glVis->RedBits != 8) {
       /* can only do color masking if running in 24/32bpp on Napalm */
-      if (ctx->Color.ColorMask[RCOMP] != ctx->Color.ColorMask[GCOMP] ||
-          ctx->Color.ColorMask[GCOMP] != ctx->Color.ColorMask[BCOMP]) {
+      if ((ctx->Color.ColorMask[RCOMP] != ctx->Color.ColorMask[GCOMP]) ||
+          (ctx->Color.ColorMask[GCOMP] != ctx->Color.ColorMask[BCOMP])) {
          softwareMask |= (mask & (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT));
          mask &= ~(DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT);
       }
@@ -275,7 +277,8 @@ static GLbitfield tdfxDDClear( GLcontext *ctx,
       case DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT:
 	 /* front and back */
 	 fxMesa->Glide.grDepthMask(FXFALSE);
-	 fxMesa->Glide.grRenderBuffer(GR_BUFFER_BACKBUFFER);
+	 fxMesa->Glide.grRenderBuffer(GR_BUFFER_FRONTBUFFER);
+         FX_grColorMaskv_NoLock(ctx, true4);
 	 if (stencil_size > 0)
             fxMesa->Glide.grBufferClearExt(fxMesa->Color.ClearColor,
                                            fxMesa->Color.ClearAlpha,
@@ -285,7 +288,7 @@ static GLbitfield tdfxDDClear( GLcontext *ctx,
             fxMesa->Glide.grBufferClear(fxMesa->Color.ClearColor,
                                         fxMesa->Color.ClearAlpha,
                                         fxMesa->Depth.Clear);
-	 fxMesa->Glide.grRenderBuffer(GR_BUFFER_FRONTBUFFER);
+	 fxMesa->Glide.grRenderBuffer(GR_BUFFER_BACKBUFFER);
 	 if (stencil_size > 0)
             fxMesa->Glide.grBufferClearExt(fxMesa->Color.ClearColor,
                                            fxMesa->Color.ClearAlpha,
@@ -303,6 +306,7 @@ static GLbitfield tdfxDDClear( GLcontext *ctx,
 	 /* clear front */
 	 fxMesa->Glide.grDepthMask(FXFALSE);
 	 fxMesa->Glide.grRenderBuffer(GR_BUFFER_FRONTBUFFER);
+         FX_grColorMaskv_NoLock(ctx, true4);
 	 if (stencil_size > 0)
             fxMesa->Glide.grBufferClearExt(fxMesa->Color.ClearColor,
                                            fxMesa->Color.ClearAlpha,
@@ -695,11 +699,13 @@ void tdfxEmitHwStateLocked( tdfxContextPtr fxMesa )
       fxMesa->dirty &= ~TDFX_UPLOAD_RENDER_BUFFER;
    }
 
+#if defined(__linux__) || defined(__FreeBSD__)
    if ( fxMesa->dirty & TDFX_UPLOAD_STIPPLE) {
       fxMesa->Glide.grStipplePattern( fxMesa->Stipple.Pattern );
       fxMesa->Glide.grStippleMode( fxMesa->Stipple.Mode );
       fxMesa->dirty &= ~TDFX_UPLOAD_STIPPLE;
    }
+#endif /* __linux__ || __FreeBSD__ */
 
    if ( fxMesa->dirty & TDFX_UPLOAD_ALPHA_TEST ) {
       fxMesa->Glide.grAlphaTestFunction( fxMesa->Color.AlphaFunc );

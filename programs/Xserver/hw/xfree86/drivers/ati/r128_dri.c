@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.16 2001/08/18 02:51:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.18 2001/10/01 13:44:03 eich Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -259,7 +259,10 @@ static Bool R128CreateContext(ScreenPtr pScreen, VisualPtr visual,
 			      drmContext hwContext, void *pVisualConfigPriv,
 			      DRIContextType contextStore)
 {
-    /* Nothing yet */
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    R128InfoPtr info = R128PTR(pScrn);
+
+    info->drmCtx = hwContext;
     return TRUE;
 }
 
@@ -296,7 +299,7 @@ static void R128LeaveServer(ScreenPtr pScreen)
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
-    if (!info->CCE2D) {
+    if (!info->directRenderingEnabled) {
 	if (!info->CCEInUse) {
 	    /* Save all hardware scissors */
 	    info->sc_left     = INREG(R128_SC_LEFT);
@@ -305,8 +308,6 @@ static void R128LeaveServer(ScreenPtr pScreen)
 	    info->sc_bottom   = INREG(R128_SC_BOTTOM);
 	    info->aux_sc_cntl = INREG(R128_SC_BOTTOM);
 	}
-
-	R128MMIO_TO_CCE(pScrn, info);
     }
 }
 
@@ -340,7 +341,8 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     int         depth;
 
     /* FIXME: Use accel when CCE 2D code is written */
-    if (info->CCE2D) return;
+    if (info->directRenderingEnabled)
+	return;
 
     /* FIXME: This should be based on the __GLXvisualConfig info */
     switch (pScrn->bitsPerPixel) {
@@ -401,7 +403,8 @@ static void R128DRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg,
        that request them */
 
     /* FIXME: Use accel when CCE 2D code is written */
-    if (info->CCE2D) return;
+    if (info->directRenderingEnabled)
+	return;
 }
 
 /* Initialize the AGP state.  Request memory for use in AGP space, and
@@ -854,7 +857,7 @@ static void R128DRICCEInit(ScrnInfoPtr pScrn)
     case R128_PM4_64PIO_64VCPIO_64INDPIO: info->CCEFifoSize = 64;  break;
     }
 
-    if (info->CCE2D) {
+    if (info->directRenderingEnabled) {
 				/* Make sure the CCE is on for the X server */
 	R128CCE_START(pScrn, info);
     } else {
@@ -991,12 +994,12 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     /* Check the r128 DRM version */
     version = drmGetVersion(info->drmFD);
     if (version) {
-	if (version->version_major != 2 ||
-	    version->version_minor < 1) {
+	if (version->version_major != 3 ||
+	    version->version_minor < 0) {
 	    /* incompatible drm version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		"[dri] R128DRIScreenInit failed because of a version mismatch.\n"
-		"[dri] r128.o kernel module version is %d.%d.%d but version 2.1 or greater is needed.\n"
+		"[dri] r128.o kernel module version is %d.%d.%d but version 3.0 or greater is needed.\n"
 		"[dri] Disabling the DRI.\n",
 		version->version_major,
 		version->version_minor,
@@ -1124,7 +1127,7 @@ void R128DRICloseScreen(ScreenPtr pScreen)
     R128InfoPtr info = R128PTR(pScrn);
 
 				/* Stop the CCE if it is still in use */
-    if (info->CCE2D) {
+    if (info->directRenderingEnabled) {
 	R128CCE_STOP(pScrn, info);
     }
 
