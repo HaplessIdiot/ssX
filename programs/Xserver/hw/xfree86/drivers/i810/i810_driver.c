@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.67 2002/04/04 14:05:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.68 2002/05/10 12:50:05 alanh Exp $ */
 
 /*
  * Authors:
@@ -2017,7 +2017,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       pI810->directRenderingEnabled = I810DRIFinishScreenInit(pScreen);
    }
 #ifdef XvMCExtension
-   if (pI810->directRenderingEnabled) {
+   if ((pI810->directRenderingEnabled) && (pI810->numSurfaces)) {
       /* Initialize the hardware motion compensation code */
       I810InitMC(pScreen);
    }
