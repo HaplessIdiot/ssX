@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.46 2001/02/15 18:31:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.47 2001/05/02 14:53:23 dawes Exp $ */
 
 /*
  *
@@ -1421,7 +1421,7 @@ CARD32
 vgaHWHBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits, 
 	       unsigned int Flags)
 {
-    int nExtBits = (nBits > 6) ? 0 : nBits - 6;
+    int nExtBits = (nBits < 6) ? 0 : nBits - 6;
     CARD32 ExtBits;
     CARD32 ExtBitMask = ((1 << nExtBits) - 1) << 6;
 
@@ -1461,7 +1461,7 @@ vgaHWVBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits,
 	       unsigned int Flags)
 {
     CARD32 ExtBits;
-    CARD32 nExtBits = (nBits > 8) ? 0 : (nBits - 8);
+    CARD32 nExtBits = (nBits < 8) ? 0 : (nBits - 8);
     CARD32 ExtBitMask = ((1 << nExtBits) - 1) << 8;
     /* If width is not known nBits should be 0. In this 
      * case BitMask is set to 0 so we can check for it. */
