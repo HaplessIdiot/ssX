@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.49 2004/12/31 03:30:40 tsi Exp $ */
 /*
  * Copyright (c) 1998-2002 by The XFree86 Project, Inc.
  *
@@ -974,7 +974,10 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
 	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	*kptr |= bit;
 	keyc->prev_state = keyc->state;
-	if (noXkbExtension) {
+#ifdef XKB
+	if (noXkbExtension)
+#endif
+	{
 	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 		if (mask & modifiers)
@@ -991,7 +994,10 @@ DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
 	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	*kptr &= ~bit;
 	keyc->prev_state = keyc->state;
-	if (noXkbExtension) {
+#ifdef XKB
+	if (noXkbExtension)
+#endif
+	{
 	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 		if (mask & modifiers) {

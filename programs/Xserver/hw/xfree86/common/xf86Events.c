@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.164 2004/09/22 01:55:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.165 2005/01/16 02:42:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -111,7 +111,7 @@
 #endif
 
 #ifdef XKB
-extern Bool noXkbExtension;
+#include "XKBsrv.h"
 #endif
 
 #define XE_POINTER  1
