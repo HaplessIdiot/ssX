@@ -1,4 +1,9 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 963. Add missing raise/lower volume key descriptions for the "hpxe3gc"
+      XKB map (#A.1651, Paul Pacheco).
+ 962. Fix some typos in the Syriac XKB map (#5654, Emil Soleyman-Zomalan).
+ 961. Add documentation about using XKB for the XFree86 server's special
+      key sequences and the HandleSpecialKeys config option (#5653, Joe Moss).
  960. Move the XF86_DATE definition to a separate file so that bumping it
       doesn't trigger almost everything to be rebuilt (David Dawes).
  959. Xterm patch #174 (Thomas Dickey).
@@ -16529,4 +16534,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2584 2003/02/25 23:39:53 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2585 2003/02/26 09:21:34 dawes Exp $
