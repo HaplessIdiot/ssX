@@ -1,4 +1,7 @@
 XFree86 4.0.99.x (xx May 2001)
+ 480. V4L documentation fix (Marc La France).
+ 479. Fix bug in generic hardware cursor RealizeCursor entry
+      (Marc La France).
  478. Extend the XFree86-VidModeExtension to accept gamma ramps from the
       client rather than just rgb gamma values (Mark Vojkovich).
  477. More Xv updates for the Permedia3 (#4625, Sven Luther).
@@ -13151,4 +13154,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1745 2001/05/06 18:07:42 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1746 2001/05/06 22:03:34 mvojkovi Exp $

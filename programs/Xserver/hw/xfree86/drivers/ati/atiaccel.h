@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.h,v 1.1 2001/03/25 05:33:06 tsi Exp $ */
 /*
  * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -21,16 +21,16 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIMODE_H___
-#define ___ATIMODE_H___ 1
+#ifndef ___ATIACCEL_H___
+#define ___ATIACCEL_H___ 1
 
 #include "atipriv.h"
 #include "atiproto.h"
 
 #include "xf86str.h"
 
-extern Bool ATIInitializeAcceleration FunctionPrototype((ScrnInfoPtr,
-                                                         ScreenPtr,
+extern Bool ATIInitializeAcceleration FunctionPrototype((ScreenPtr,
+                                                         ScrnInfoPtr,
                                                          ATIPtr));
 
 #endif /* ___ATIACCEL_H___ */

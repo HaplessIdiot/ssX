@@ -25,7 +25,7 @@
  *       Mitani Hiroshi <hmitani@drl.mei.co.jp>
  *       David Thomas <davtom@dream.org.uk>.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.2 2000/02/14 19:20:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.4 2001/04/19 12:40:33 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -248,53 +248,6 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
     }
     return TRUE;
 }
-
-#ifdef  IMP_REALIZE_CURSOR
-static unsigned char *
-SiSRealizeCursor(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
-{
-    unsigned char   *mem;
-    int     size = (infoPtr->MaxWidth * infoPtr->MaxHeight) >> 2;
-    int     w, h;
-    int     i, j;
-    unsigned char   *srcM, *srcS, *dst, s, m;
-
-    if (!(mem=xcalloc(1,size)))
-        return NULL;
-    dst = mem;
-
-    srcS = pCurs->bits->source;
-    srcM = pCurs->bits->mask;
-    h = pCurs->bits->height;
-    if (h > infoPtr->MaxHeight)
-        h = infoPtr->MaxHeight;
-    w = (pCurs->bits->width + 31)/32*4;
-    for (i=0; i<infoPtr->MaxHeight; i++, dst+=16)  {
-        for (j=0; j<infoPtr->MaxWidth/8; j++)  {
-            if (i<h && j<w)  {
-                s = *srcS++;
-                m = *srcM++;
-                s = s&m;
-                m = ~m;
-                dst[j*2] = ((m&0x01) << 7) | ((s&0x01) << 6) |
-                    ((m&0x02) << 4) | ((s&0x02) << 3) |
-                    ((m&0x04) << 1) |  (s&0x04)   |
-                    ((m&0x08) >> 2) | ((s&0x08) >> 3) ;
-                dst[j*2+1] = ((m&0x10) << 3) | ((s&0x10)<<2) |
-                     (m&0x20)   | ((s&0x20) >> 1) |
-                    ((m&0x40) >> 3) | ((s&0x40) >> 4) |
-                    ((m&0x80) >> 6) | ((s&0x80) >> 7) ;
-            }
-            else  {
-                dst[j*2] = 0xAA;
-                dst[j*2+1] = 0xAA;
-            }
-        }
-    }
-
-    return mem;
-}
-#endif
 
 Bool
 SiSHWCursorInit(ScreenPtr pScreen)
