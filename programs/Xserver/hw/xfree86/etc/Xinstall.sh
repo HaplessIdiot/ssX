@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.57 2003/10/19 02:59:49 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.58 2003/10/19 03:02:19 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -45,11 +45,11 @@
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
 
-SNAPSHOT=n
+SNAPSHOT=y
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.3.99.15
+	VERSION=4.3.99.901
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
