@@ -1,5 +1,4 @@
-/* $XConsortium: Bt485.h,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.h,v 3.2 1995/01/28 15:48:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.h,v 3.3 1995/05/27 03:02:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -26,6 +25,7 @@
  * Modified for the AGX by Henry A. Worth
  *
  */
+/* $XConsortium: Bt485.h /main/3 1995/11/13 10:05:57 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>

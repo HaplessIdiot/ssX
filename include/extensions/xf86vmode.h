@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.14 1996/01/17 12:44:40 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.15 1996/01/20 02:04:24 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -28,7 +28,7 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $XConsortium: xf86vmode.h /main/5 1996/01/01 09:22:25 kaleb $ */
+/* $XConsortium: xf86vmode.h /main/8 1996/01/21 14:28:30 kaleb $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 

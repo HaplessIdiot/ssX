@@ -1,5 +1,4 @@
-/* $XConsortium: agxWin.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.3 1995/05/27 03:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.4 1995/06/21 11:51:56 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -52,11 +51,11 @@ Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Rewritten for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
 
 */
+/* $XConsortium: agxWin.c /main/4 1995/11/13 10:07:34 kaleb $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3win.c,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
 
 

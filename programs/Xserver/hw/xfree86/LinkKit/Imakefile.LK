@@ -1,4 +1,5 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.25 1995/07/12 15:33:08 dawes Exp $
+XCOMM $XConsortium: Imakefile.LK /main/5 1995/09/04 19:49:48 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.26 1995/07/15 15:02:11 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */

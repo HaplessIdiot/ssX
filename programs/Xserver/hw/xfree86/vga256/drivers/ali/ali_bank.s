@@ -1,5 +1,10 @@
-/* $XConsortium: ali_bank.s,v 1.1 94/12/15 21:06:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_bank.s,v 3.0 1994/10/30 04:21:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_bank.s,v 3.1 1995/01/28 16:11:02 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: ali_bank.s /main/2 1995/11/13 07:21:14 kaleb $ */
 
 /*
  * These are here the very lowlevel VGA bankswitching routines.

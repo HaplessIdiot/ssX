@@ -1,9 +1,8 @@
-XCOMM $XConsortium: Imakefile /main/4 1996/01/19 16:49:28 kaleb $
+XCOMM $XConsortium: Imakefile /main/7 1996/02/02 16:37:02 kaleb $
+#define IHaveSubdirs
 
-#ifdef DebugXKB
-      TESTDATA = test_ovl test_pc test_sun5
-#endif
-     DATAFILES = STEPnote xfree86 xfree98 sgi sun digital_us $(TESTDATA)
+     DATAFILES = xfree86 xfree98 sony $(TESTDATA)
+       SUBDIRS = digital sgi sun
 
 all::
 

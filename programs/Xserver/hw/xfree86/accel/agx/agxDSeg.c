@@ -1,5 +1,4 @@
-/* $XConsortium: agxDSeg.c,v 1.2 95/01/06 20:56:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.4 1995/06/21 11:51:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.5 1996/01/11 10:35:18 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -51,6 +50,7 @@ PERFORMANCE OF THIS SOFTWARE.
 Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 */
+/* $XConsortium: agxDSeg.c /main/5 1996/01/11 12:27:59 kaleb $ */
 
 /*s3 dline.c from s3line.c with help from cfbresd.c and cfbline.c - Jon */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h /main/17 1996/01/17 16:48:06 kaleb $ */
+/* $XConsortium: XKBsrv.h /main/19 1996/02/02 14:37:30 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -37,6 +37,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbFreeClientMap		SrvXkbFreeClientMap
 #define XkbFreeServerMap		SrvXkbFreeServerMap
 #define XkbInitCanonicalKeyTypes	SrvXkbInitCanonicalKeyTypes
+#define	XkbKeyTypesForCoreSymbols	SrvXkbKeyTypesForCoreSymbols
+#define	XkbApplyCompatMapToKey		SrvXkbApplyCompatMapToKey
+#define	XkbUpdateMapFromCore		SrvXkbUpdateMapFromCore
 #define XkbResizeKeyActions		SrvXkbResizeKeyActions
 #define XkbResizeKeySyms		SrvXkbResizeKeySyms
 #define XkbResizeKeyType		SrvXkbResizeKeyType
@@ -57,7 +60,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbLatchModifiers		SrvXkbLatchModifiers
 #define XkbLatchGroup			SrvXkbLatchGroup
 #define XkbVirtualModsToReal		SrvXkbVirtualModsToReal
-#define XkbAddKeyType			SrvXkbAddKeyType
 #endif
 
 #include <X11/extensions/XKBstr.h>
@@ -245,7 +247,8 @@ extern Bool	noXkbExtension;
 
 extern pointer	XkbLastRepeatEvent;
 
-extern CARD16	xkbDebugFlags;
+extern CARD32	xkbDebugFlags;
+extern CARD32	xkbDebugCtrls;
 
 #define	_XkbAlloc(s)		xalloc((s))
 #define	_XkbCalloc(n,s)		Xcalloc((n)*(s))
@@ -278,6 +281,9 @@ extern	int	DeviceButtonPress,DeviceButtonRelease;
 					 ((k)<=(c)->curKeySyms.maxKeyCode))
 #define	_XkbCoreNumKeys(c)	((c)->curKeySyms.maxKeyCode-\
 				 (c)->curKeySyms.minKeyCode+1)
+
+#define	XConvertCase(s,l,u)	XkbConvertCase(s,l,u)
+#define	IsKeypadKey(s)		XkbKSIsKeypad(s)
 
 #define	Status		int
 #define	XPointer	pointer

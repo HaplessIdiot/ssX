@@ -1,5 +1,4 @@
-/* $XConsortium: ATTDac.c,v 1.1 94/03/28 21:24:32 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.1 1995/11/16 11:18:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.2 1995/11/18 02:31:04 dawes Exp $ */
 /*
  * Copyright 1994 by David Wexelblat <dwex@goblin.org>
  *
@@ -22,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: ATTDac.c /main/7 1995/11/19 14:43:21 kaleb $ */
 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
@@ -305,7 +304,6 @@ long freq;
 
 	return;
 }
-
 
 int
 Att409SetClock(freq, clk)

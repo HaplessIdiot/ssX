@@ -1,5 +1,5 @@
-/* $XConsortium: ncr_driver.c,v 1.4 95/01/16 13:18:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.8 1995/05/27 03:17:05 dawes Exp $ */
+/* $XConsortium: ncr_driver.c /main/6 1996/01/12 12:18:28 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.9 1996/01/12 14:38:24 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 

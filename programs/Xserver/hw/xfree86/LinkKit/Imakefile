@@ -1,4 +1,5 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile,v 3.3 1994/12/26 01:07:19 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/4 1995/09/04 19:49:45 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile,v 3.4 1995/05/27 03:01:19 dawes Exp $
 
 all:: mkmf
 

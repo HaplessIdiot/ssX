@@ -252,6 +252,7 @@
 
 
 
+  $XConsortium: READ.Mach64 /main/6 1996/01/07 18:54:21 kaleb $
 
 
 
@@ -263,4 +264,4 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Mach64,v 3.10 1995/12/28 03:52:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.Mach64,v 3.0 1996/01/05 06:29:05 dawes Exp $

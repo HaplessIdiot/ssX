@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.5 1995/06/10 12:53:42 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: Trident.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.4 1995/05/07 11:48:55 dawes Exp $ */
+/* $XConsortium: Trident.c /main/4 1995/11/13 11:13:23 kaleb $ */
 
 #include "Probe.h"
 

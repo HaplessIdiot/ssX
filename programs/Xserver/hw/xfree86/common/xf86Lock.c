@@ -1,5 +1,4 @@
-/* $XConsortium: xf86Lock.c,v 1.3 95/01/06 21:01:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.4 1996/01/30 15:25:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.5 1996/01/31 11:47:09 dawes Exp $ */
 
 /*
  * Explicit support for a server lock file like the ones used for UUCP.
@@ -7,6 +6,8 @@
  * server at a time.  This keeps the servers from stomping on each other
  * if the user forgets to give them different display numbers.
  */
+/* $XConsortium: xf86Lock.c /main/7 1996/01/31 10:06:37 kaleb $ */
+
 #define LOCK_PATH "/tmp/.X"
 #define LOCK_TMPPATH "/tmp/.tX"
 #define LOCK_SUFFIX "-lock"

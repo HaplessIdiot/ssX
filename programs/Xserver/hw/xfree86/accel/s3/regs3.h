@@ -1,5 +1,4 @@
-/* $XConsortium: regs3.h,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.16 1995/12/23 09:38:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.17 1996/01/31 11:46:52 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -20,7 +19,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-
+/* $XConsortium: regs3.h /main/8 1996/01/31 10:04:28 kaleb $ */
 
 #ifndef _REGS3_H
 #define _REGS3_H

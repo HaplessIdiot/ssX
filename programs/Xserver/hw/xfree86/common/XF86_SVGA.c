@@ -1,5 +1,11 @@
-/* $XConsortium: XF86_SVGA.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.4 1994/09/07 15:51:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.6 1995/01/28 17:03:11 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: XF86_SVGA.c /main/3 1995/11/12 19:20:51 kaleb $ */
+
 #include "X.h"
 #include "os.h"
 

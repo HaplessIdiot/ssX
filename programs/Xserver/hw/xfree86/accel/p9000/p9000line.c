@@ -1,5 +1,4 @@
-/* $XConsortium: p9000line.c,v 1.1 95/01/16 12:28:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000line.c,v 3.0 1995/01/15 10:32:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000line.c,v 3.1 1995/01/28 15:55:00 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -60,7 +59,7 @@ mach32Line1Rect by Craig E. Groeschel (craig@adikia.sccsi.com),
 Modfied for the p9000 by Chris Mason (mason@mail.csh.rit.edu)
 
 */
-
+/* $XConsortium: p9000line.c /main/2 1995/11/12 18:19:18 kaleb $ */
 
 #include "X.h"
 

@@ -1,6 +1,5 @@
-/* $XConsortium: fLineBres.s,v 1.3 94/10/13 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.3 1994/09/21 10:59:42 dawes Exp $ */
-/* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.5 1995/01/28 17:09:36 dawes Exp $ */
+/* Copyright 1992 by James Tsillas, Arlington, Massachusetts.
 
 		All Rights Reserved
 
@@ -18,6 +17,7 @@ USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 */
+/* $XConsortium: fLineBres.s /main/4 1995/11/13 08:46:01 kaleb $ */
 
 #include "assyntax.h"
 #include "vgaAsm.h"

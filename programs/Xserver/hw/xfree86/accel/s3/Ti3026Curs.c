@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3026Cu.c,v 3.1 1995/04/10 12:00:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.2 1995/12/02 05:04:59 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -24,7 +24,7 @@
  * Modified for TVP3026 by Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  *
  */
-
+/* $XConsortium: Ti3026Curs.c /main/3 1995/12/02 08:23:10 kaleb $ */
 
 
 #define NEED_EVENTS
@@ -68,10 +68,11 @@ unsigned char mask;
 unsigned char data;
 #endif
 {
-   unsigned char tmp, tmp1, tmp2 = 0x00;
+   unsigned char tmp, tmp0, tmp1, tmp2 = 0x00;
 
    outb(vgaCRIndex, 0x55);
-   tmp = inb(vgaCRReg) & 0xFC;
+   tmp0 = inb(vgaCRReg);
+   tmp  = tmp0 & 0xFC;
    outb(vgaCRReg, tmp | 0x00);
    tmp1 = inb(0x3c8);
    outb(0x3c8, reg);
@@ -83,7 +84,11 @@ unsigned char data;
    
    outb(vgaCRReg, tmp | 0x00);
    outb(0x3c8, tmp1);  /* just in case anyone relies on this */
-   outb(vgaCRReg, tmp);
+   outb(vgaCRReg, tmp0);
+
+#ifdef EXTENDED_DEBUG
+   ErrorF("Set Ti Ind 0x%x to 0x%x\n",reg,tmp2|data);
+#endif
 }
 
 #ifdef __STDC__
@@ -93,10 +98,11 @@ unsigned char s3InTi3026IndReg(reg)
 unsigned char reg;
 #endif
 {
-   unsigned char tmp, tmp1, ret;
+   unsigned char tmp, tmp0, tmp1, ret;
 
    outb(vgaCRIndex, 0x55);
-   tmp = inb(vgaCRReg) & 0xFC;
+   tmp0 = inb(vgaCRReg);
+   tmp  = tmp0 & 0xFC;
    outb(vgaCRReg, tmp | 0x00);
    tmp1 = inb(0x3c8);
    outb(0x3c8, reg);
@@ -106,7 +112,7 @@ unsigned char reg;
 
    outb(vgaCRReg, tmp | 0x00);
    outb(0x3c8, tmp1);  /* just in case anyone relies on this */
-   outb(vgaCRReg, tmp);
+   outb(vgaCRReg, tmp0);
 
    return(ret);
 }
@@ -215,7 +221,7 @@ s3Ti3026CursorOn()
    outb(vgaCRReg, tmp & ~0x20);
    
    /* Enable cursor - X11 mode */
-   s3OutTi3026IndReg(TI_CURS_CONTROL, 0x7c, 0x03);
+   s3OutTi3026IndReg(TI_CURS_CONTROL, 0x6c, 0x13);
 
    LOCK_SYS_REGS;
    return;
@@ -335,7 +341,7 @@ s3Ti3026LoadCursor(pScr, pCurs, x, y)
       return;
 
    /* turn the cursor off */
-   if ((tmpcurs = s3InTiIndReg(TI_CURS_CONTROL)) & 0x03)
+   if ((tmpcurs = s3InTi3026IndReg(TI_CURS_CONTROL)) & 0x03)
       s3Ti3026CursorOff();
 
    /* load colormap */

@@ -1,5 +1,4 @@
-/* $XConsortium: xf861502x.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.h,v 3.2 1995/05/27 03:03:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.h,v 3.3 1995/06/14 09:42:18 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
  *
@@ -22,6 +21,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf861502x.h /main/4 1995/11/13 10:07:51 kaleb $ */
 
 #ifndef XF86_SC1502X_H
 #define XF86_SC1502X_H

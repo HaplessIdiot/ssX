@@ -1,6 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.3 1995/01/20 04:21:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.4 1995/10/21 11:43:06 dawes Exp $ */
+
+
 /* Jon Tombs <jon@esix2.us.es>  */
 
+
+/* $XConsortium: S3gendac.h /main/5 1995/11/12 19:30:20 kaleb $ */
 
 #define GENDAC_INDEX	     0x3C8
 #define GENDAC_DATA	     0x3C9

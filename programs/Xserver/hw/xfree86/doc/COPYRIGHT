@@ -31,8 +31,9 @@
   the sale, use or other dealings in this Software without prior
   written authorization from the XFree86 Project.
 
-  $XConsortium: CPYRIGHT.sgml,v 1.2 95/01/16 13:17:39 kaleb Exp $
+
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/CPYRIGHT.sgml,v 3.3 1995/01/28 16:01:20 dawes Exp $
+  $XConsortium: COPYRIGHT /main/7 1995/11/12 19:47:34 kaleb $
 
 
 
@@ -65,4 +66,5 @@
 
 
 
-$XFree86$
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/COPYRIGHT,v 3.8 1995/07/24 06:52:11 dawes Exp $

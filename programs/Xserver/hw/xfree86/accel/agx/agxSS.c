@@ -1,5 +1,4 @@
-/* $XConsortium: agxSS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.2 1995/05/27 03:03:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.3 1995/06/21 11:51:49 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -58,7 +57,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
 
 */
-
+/* $XConsortium: agxSS.c /main/3 1995/11/13 10:07:23 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

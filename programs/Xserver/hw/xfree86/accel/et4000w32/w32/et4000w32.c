@@ -1,6 +1,5 @@
-/* $XConsortium: et4000w32.c,v 1.4 95/01/16 13:16:26 kaleb Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.14 1995/12/09 11:07:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.15 1995/12/16 08:19:45 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,6 +23,7 @@
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  */
+/* $XConsortium: et4000w32.c /main/9 1995/12/17 08:10:12 kaleb $ */
 
  /*
   *  Modified by Glenn G. Lai for the et4000/w32 series accelerators

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/UMC.c,v 3.2 1995/01/28 15:47:39 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: UMC.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/UMC.c,v 3.1 1994/08/31 04:20:10 dawes Exp $ */
+/* $XConsortium: UMC.c /main/4 1995/11/13 11:13:27 kaleb $ */
 
 #include "Probe.h"
 

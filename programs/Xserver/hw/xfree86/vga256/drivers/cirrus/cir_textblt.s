@@ -1,5 +1,4 @@
-/* $XConsortium: cir_textblt.s,v 1.4 95/01/05 20:47:57 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.4 1994/10/23 13:01:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.6 1995/01/28 17:08:23 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -25,7 +24,7 @@
  * Author:  H. Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
  */
-
+/* $XConsortium: cir_textblt.s /main/5 1995/11/13 08:21:33 kaleb $ */
 
 /*
  * This low-level routine writes a text string bitmap video memory for the

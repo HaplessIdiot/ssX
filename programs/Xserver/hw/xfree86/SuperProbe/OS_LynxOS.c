@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.1 1995/12/09 11:06:37 dawes Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -20,8 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-/* $XFree86: $ */
+/* $XConsortium: OS_LynxOS.c /main/4 1995/12/09 16:05:12 kaleb $ */
 
 #include "Probe.h"
 
@@ -83,7 +83,7 @@ Byte *MapVGA()
 #define SMEM_NAME	"SuperProbe-VGA"
 	Byte *base;
 
-	base = smem_create(SMEM_NAME, (char *)0xA0000,
+	base = (Byte *) smem_create(SMEM_NAME, (char *)0xA0000,
 		 0x10000, SM_READ|SM_WRITE);
 	if ((long)base == -1)
 	{
@@ -101,7 +101,7 @@ Byte *MapVGA()
 void UnMapVGA(base)
 Byte *base;
 {
-	smem_create(NULL, base, 0, SM_DETACH);
+	smem_create(NULL, (char *)base, 0, SM_DETACH);
 	smem_remove(SMEM_NAME);
 	return;
 }

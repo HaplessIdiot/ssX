@@ -1,5 +1,5 @@
 #if 1
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.8 1996/01/05 13:06:41 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.9 1996/01/07 03:45:13 dawes Exp $
 
 /*
  * This is the XFree86 version of sco.cf.  The new one from R6.1beta is
@@ -113,7 +113,7 @@ install.man::                                                           @@\
 
 /* This is the new sco.cf from R6.1beta */
 
-XCOMM platform:  $XConsortium: sco.cf /main/2 1995/12/18 11:27:15 mor $
+XCOMM platform:  $XConsortium: sco.cf /main/3 1996/01/31 17:49:29 mor $
 
 #ifndef OSName
 #define OSName			SCO OpenServer Release 5
@@ -163,7 +163,6 @@ XCOMM #define ForceNormalLib		YES
 #define SystemV			YES
 #define LdCombineFlags		-r 
 
-#define AlternateUsrLibDir 	NO
 #define HasLdRunPath		YES
 #define HasPoll			YES
 #define PatheticCpp		YES

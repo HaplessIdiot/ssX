@@ -1,5 +1,9 @@
-#  $XConsortium: modeDB.txt,v 1.4 95/01/16 13:17:36 kaleb Exp $
-#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.4 1995/01/10 10:26:11 dawes Exp $
+#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.5 1995/01/28 16:00:12 dawes Exp $
+#
+#
+#
+#
+#  $XConsortium: modeDB.txt /main/5 1995/11/12 19:49:18 kaleb $
 #
 # XFree86/X386 Mode database
 # Compiled by David Wexelblat [dwex@xfree86.org]

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.4 1996/01/05 06:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.5 1996/01/14 13:41:12 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: vgaline.c /main/5 1995/11/13 09:26:47 kaleb $ */
+/* $XConsortium: vgaline.c /main/6 1996/01/14 19:03:24 kaleb $ */
 
 #include "vga256.h"
 #include "miline.h"

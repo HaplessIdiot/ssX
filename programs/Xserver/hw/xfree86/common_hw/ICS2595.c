@@ -1,6 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.5 1995/01/12 12:03:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.6 1995/07/01 10:49:00 dawes Exp $ */
+
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  95/01/11 */
+
+
+/* $XConsortium: ICS2595.c /main/5 1995/11/12 19:30:07 kaleb $ */
 
 #include "ICS2595.h" 
 #include "compiler.h"

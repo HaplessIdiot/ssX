@@ -1,5 +1,4 @@
-/* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.25 1996/01/16 15:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.26 1996/01/26 09:09:58 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -49,6 +48,7 @@
  * 			    speedups. Linear access, hw cursor etc... v4.0
  *			    Needs more work yet though !
  */
+/* $XConsortium: t89_driver.c /main/19 1996/01/26 14:29:55 kaleb $ */
 
 #include "X.h"
 #include "input.h"

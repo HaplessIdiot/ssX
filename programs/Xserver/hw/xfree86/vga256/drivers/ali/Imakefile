@@ -1,5 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/12/15 21:06:48 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/Imakefile,v 3.2 1995/06/02 10:23:39 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:57:51 kaleb $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/Imakefile,v 3.3 1996/01/24 22:02:59 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ali_driver.c ali_bank.s

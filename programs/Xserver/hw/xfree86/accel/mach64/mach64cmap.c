@@ -1,5 +1,4 @@
-/* $XConsortium: mach64cmap.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.1 1995/01/28 15:53:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.2 1995/12/17 05:03:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -31,6 +30,7 @@
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  *
  */
+/* $XConsortium: mach64cmap.c /main/3 1995/12/17 08:18:02 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

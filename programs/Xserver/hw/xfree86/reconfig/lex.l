@@ -1,5 +1,9 @@
-/* $XConsortium: lex.l,v 1.2 94/11/21 21:55:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.3 1994/09/08 14:28:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.4 1995/01/28 16:07:31 dawes Exp $ */
+
+
+
+
+/* $XConsortium: lex.l /main/3 1995/11/13 06:28:54 kaleb $ */
 
 %{
 #include "os.h"

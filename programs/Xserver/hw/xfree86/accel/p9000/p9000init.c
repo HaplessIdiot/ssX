@@ -1,5 +1,4 @@
-/* $XConsortium: p9000init.c,v 1.6 95/01/16 13:16:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.10 1995/05/24 12:21:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.11 1995/05/27 03:04:38 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -17,6 +16,7 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: p9000init.c /main/8 1995/11/12 18:19:15 kaleb $ */
 
 #include "X.h"
 #include "input.h"

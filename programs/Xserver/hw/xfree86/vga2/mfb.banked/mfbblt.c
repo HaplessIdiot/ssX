@@ -1,7 +1,4 @@
-/*
- * mfb copy area
- */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbblt.c,v 3.3 1995/06/24 10:30:08 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -30,8 +27,11 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.1 94/10/12 21:20:46 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbblt.c,v 3.2 1995/01/28 16:10:37 dawes Exp $ */
+/* $XConsortium: mfbblt.c /main/3 1995/11/13 07:15:06 kaleb $ */
+
+/*
+ * mfb copy area
+ */
 
 #include	"X.h"
 #include	"Xmd.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: ppcGetSp.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGetSp.c,v 3.0 1994/05/04 15:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGetSp.c,v 3.2 1995/01/28 17:06:05 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,8 +70,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* Header: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcGetSp.c,v 9.2 89/05/07 15:27:55 paul Exp */
-/* Source: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcGetSp.c,v */
+/* $XConsortium: ppcGetSp.c /main/4 1995/11/13 07:05:13 kaleb $ */
 
 #include "X.h"
 #include "servermd.h"

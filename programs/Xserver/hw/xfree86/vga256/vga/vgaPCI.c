@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.1 1996/01/13 12:22:27 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -7,6 +7,7 @@
  * A lot of this comes from Robin Cutshaw's scanpci
  *
  */
+/* $XConsortium: vgaPCI.c /main/2 1996/01/13 13:15:11 kaleb $ */
 
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -71,6 +72,22 @@ vgaGetPCIInfo()
 		} else
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base3 & 0xFFFFFFF0;
+	    }
+	    if (pcrp->_base4) {
+		if (pcrp->_base4 & 1) {
+		    if (!info->IOBase)
+			info->IOBase = pcrp->_base4 & 0xFFFFFFFC;
+		} else
+		    if (!info->MemBase)
+			info->MemBase = pcrp->_base4 & 0xFFFFFFF0;
+	    }
+	    if (pcrp->_base5) {
+		if (pcrp->_base5 & 1) {
+		    if (!info->IOBase)
+			info->IOBase = pcrp->_base5 & 0xFFFFFFFC;
+		} else
+		    if (!info->MemBase)
+			info->MemBase = pcrp->_base5 & 0xFFFFFFF0;
 	    }
 	    break;
 	}

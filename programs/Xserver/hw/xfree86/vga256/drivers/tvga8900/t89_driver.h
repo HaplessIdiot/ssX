@@ -1,3 +1,4 @@
+/* $XConsortium: t89_driver.h /main/2 1996/01/10 10:21:26 kaleb $ */
 /*
  * Copyright 1995 by Alan Hourihane, Wigan, England.
  *
@@ -21,8 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.1 1995/12/17 05:04:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.2 1996/01/08 08:56:40 dawes Exp $ */
 
 /*
  * Trident Chipset Definitions

@@ -1,8 +1,8 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/etc/et4000clock.c,v 3.2 1994/11/26 12:46:15 dawes Exp $
  *
  * This is a sample clock setting program.  It will not work with all
- * ET4000 cards.  To work correctly the clocks line in Xconfig must
+ * ET4000 cards.  To work correctly the clocks line in XF86Config must
  * have the values in the correct order.
  *
  * usage: et4000clock freq index
@@ -12,12 +12,13 @@
  * David Dawes  <dawes@physics.su.oz.au>
  * 19 December 1992
  */
+/* $XConsortium: et4000clock.c /main/5 1995/11/12 20:16:56 kaleb $ */
 
 #include <stdio.h>
 
 /* The following inlines are from compiler.h in the XFree86 source dist */
 
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__bsdi__) || defined(MACH) || defined(MACH386) || defined(linux)
+#if defined(CSRG_BASED) || defined(MACH) || defined(MACH386) || defined(linux)
 #define GCCUSESGAS
 #endif
 

@@ -23,4 +23,5 @@ membase "xxxx"		Frame buffer base address (to be set by the driver).
 			and are reasonable only on primary displays.
 			Default is 0xE0000.
 
-$XFree86$
+$XConsortium: USING,v 1.2 95/06/19 18:07:56 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/mono/USING,v 3.0 1994/05/04 15:00:38 dawes Exp $

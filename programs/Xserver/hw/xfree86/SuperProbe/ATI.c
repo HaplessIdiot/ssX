@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.5 1995/05/27 03:01:43 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: ATI.c,v 1.4 95/01/06 20:56:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.4 1995/01/28 15:46:48 dawes Exp $ */
+/* $XConsortium: ATI.c /main/6 1995/11/13 11:11:41 kaleb $ */
 
 #include "Probe.h"
 

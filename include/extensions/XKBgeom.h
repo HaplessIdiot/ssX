@@ -1,4 +1,4 @@
-/* $XConsortium: XKBgeom.h /main/5 1996/01/17 16:47:59 kaleb $ */
+/* $XConsortium: XKBgeom.h /main/6 1996/02/02 14:05:18 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -35,7 +35,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbAddGeomKey			SrvXkbAddGeomKey
 #define XkbAddGeomOutline		SrvXkbAddGeomOutline
 #define XkbAddGeomOverlay		SrvXkbAddGeomOverlay
-#define XkbAddGeomOverlayKey		SrvXkbAddGeomOverlayKey
 #define XkbAddGeomOverlayRow		SrvXkbAddGeomOverlayRow
 #define XkbAddGeomProperty		SrvXkbAddGeomProperty
 #define XkbAddGeomRow			SrvXkbAddGeomRow
@@ -52,7 +51,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbAllocGeomSectionDoodads	SrvXkbAllocGeomSectionDoodads
 #define XkbAllocGeomSections		SrvXkbAllocGeomSections
 #define	XkbAllocGeomOverlays		SrvXkbAllocGeomOverlays
-#define	XkbAllocGeomOverlayKeys		SrvXkbAllocGeomOverlayKeys
 #define	XkbAllocGeomOverlayRows		SrvXkbAllocGeomOverlayRows
 #define XkbAllocGeomShapes		SrvXkbAllocGeomShapes
 #define XkbAllocGeometry		SrvXkbAllocGeometry
@@ -60,7 +58,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbFreeGeomColors		SrvXkbFreeGeomColors
 #define XkbFreeGeomDoodads		SrvXkbFreeGeomDoodads
 #define XkbFreeGeomProperties		SrvXkbFreeGeomProperties
+#define	XkbFreeGeomOverlayKeys		SrvXkbFreeGeomOverlayKeys
+#define	XkbFreeGeomOverlayRows		SrvXkbFreeGeomOverlayRows
+#define	XkbFreeGeomOverlays		SrvXkbFreeGeomOverlays
+#define	XkbFreeGeomKeys			SrvXKbFreeGeomKeys
+#define	XkbFreeGeomRows			SrvXKbFreeGeomRows
 #define XkbFreeGeomSections		SrvXkbFreeGeomSections
+#define	XkbFreeGeomPoints		SrvXkbFreeGeomPoints
+#define	XkbFreeGeomOutlines		SrvXkbFreeGeomOutlines
 #define XkbFreeGeomShapes		SrvXkbFreeGeomShapes
 #define XkbFreeGeometry			SrvXkbFreeGeometry
 #endif
@@ -414,15 +419,6 @@ XkbAddGeomDoodad(
 #endif
 );
 
-extern void
-XkbFreeGeomProperties(
-#if NeedFunctionPrototypes
-    XkbGeometryPtr	/* geom */,
-    int			/* first */,
-    int			/* count */,
-    Bool		/* freeAll */
-#endif
-);
 
 extern void
 XkbFreeGeomKeyAliases(
@@ -445,9 +441,69 @@ XkbFreeGeomColors(
 );
 
 extern void
-XkbFreeGeomShapes(
+XkbFreeGeomDoodads(
+#if NeedFunctionPrototypes
+    XkbDoodadPtr	/* doodads */,
+    int			/* nDoodads */,
+    Bool		/* freeAll */
+#endif
+);
+
+
+extern void
+XkbFreeGeomProperties(
 #if NeedFunctionPrototypes
     XkbGeometryPtr	/* geom */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomOverlayKeys(
+#if NeedFunctionPrototypes
+    XkbOverlayRowPtr	/* row */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomOverlayRows(
+#if NeedFunctionPrototypes
+    XkbOverlayPtr	/* overlay */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomOverlays(
+#if NeedFunctionPrototypes
+    XkbSectionPtr	/* section */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomKeys(
+#if NeedFunctionPrototypes
+    XkbRowPtr		/* row */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomRows(
+#if NeedFunctionPrototypes
+    XkbSectionPtr	/* section */,
     int			/* first */,
     int			/* count */,
     Bool		/* freeAll */
@@ -464,11 +520,33 @@ XkbFreeGeomSections(
 #endif
 );
 
+
 extern void
-XkbFreeGeomDoodads(
+XkbFreeGeomPoints(
 #if NeedFunctionPrototypes
-    XkbDoodadPtr	/* doodads */,
-    int			/* nDoodads */,
+    XkbOutlinePtr	/* outline */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomOutlines(
+#if NeedFunctionPrototypes
+    XkbShapePtr		/* shape */,
+    int			/* first */,
+    int			/* count */,
+    Bool		/* freeAll */
+#endif
+);
+
+extern void
+XkbFreeGeomShapes(
+#if NeedFunctionPrototypes
+    XkbGeometryPtr	/* geom */,
+    int			/* first */,
+    int			/* count */,
     Bool		/* freeAll */
 #endif
 );

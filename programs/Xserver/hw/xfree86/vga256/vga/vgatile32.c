@@ -1,8 +1,4 @@
-/*
- * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
- * no depth dependencies.
- */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.1 1995/01/28 16:14:55 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -29,8 +25,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: vgatile32.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.0 1994/07/24 11:59:22 dawes Exp $ */
+/* $XConsortium: vgatile32.c /main/2 1995/11/13 09:27:20 kaleb $ */
+/*
+ * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
+ * no depth dependencies.
+ */
 
 #include "vga256.h"
 #include "mergerop.h"

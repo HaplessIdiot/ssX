@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbhrzvert.c,v 3.1 1995/01/28 16:08:26 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,8 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbhrzvert.c,v 1.1 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbhrzvert.c,v 3.0 1994/05/04 15:03:12 dawes Exp $ */
+/* $XConsortium: mfbhrzvert.c /main/2 1995/11/13 07:04:25 kaleb $ */
 #include "X.h"
 
 #include "gc.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.41 1996/01/28 07:30:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.42 1996/01/30 15:25:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86_Config.h /main/12 1996/01/27 14:20:13 kaleb $ */
+/* $XConsortium: xf86_Config.h /main/14 1996/01/29 18:51:32 kaleb $ */
 
 #ifndef _xf86_config_h
 #define _xf86_config_h

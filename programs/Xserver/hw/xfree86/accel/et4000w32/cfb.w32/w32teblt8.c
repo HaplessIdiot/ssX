@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.2 1994/09/25 12:27:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.3 1995/01/28 15:50:40 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -29,8 +29,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-
-/* $XConsortium: w32teblt8.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XConsortium: w32teblt8.c /main/2 1995/11/12 16:18:22 kaleb $ */
 
 #if PSZ == 8
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.y /main/7 1996/01/14 16:48:48 kaleb $ */
+/* $XConsortium: xkbparse.y /main/8 1996/02/02 14:17:49 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -87,7 +87,7 @@
 #define	YYDEBUG 1
 #endif
 #define	DEBUG_VAR parseDebug
-#include "xkbparse.h"
+#include "parseutils.h"
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeom.h>
 

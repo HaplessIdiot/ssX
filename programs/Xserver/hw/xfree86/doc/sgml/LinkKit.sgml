@@ -110,8 +110,13 @@
 </enum>
 
 <verb>
-$XConsortium: LinkKit.sgml,v 1.2 95/01/16 13:17:43 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.6 1995/07/07 15:40:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.7 1995/07/12 13:20:41 dawes Exp $
+
+
+
+
+
+$XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
 </verb>
 
 </article>

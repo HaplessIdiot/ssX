@@ -717,7 +717,7 @@
         machines in preparing the FreeBSD binary release.
 
 
-  $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
+  $XConsortium: README.NetBSD /main/14 1996/01/31 11:28:16 kaleb $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.18 1996/01/28 07:30:36 dawes Exp $
 
 
@@ -725,4 +725,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.27 1996/01/28 07:39:23 dawes Exp $

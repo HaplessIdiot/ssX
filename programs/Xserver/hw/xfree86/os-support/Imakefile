@@ -1,5 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:43:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.7 1995/05/27 03:12:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.8 1995/06/02 10:17:28 dawes Exp $
+
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:39 gildea $
+
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -55,7 +61,6 @@ OS_SUBDIR = os2
 SUBDIRS = $(OS_SUBDIR) misc
 
 SRCS = $(OS_SUBDIR)/?*.c misc/?*.c
-
 OBJS = $(OS_SUBDIR)/?*.o misc/?*.o
 
 DONES = $(OS_SUBDIR)/DONE misc/DONE

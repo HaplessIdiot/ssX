@@ -1,5 +1,4 @@
-/* $XConsortium: mach32line.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.4 1995/02/12 02:37:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.5 1996/01/11 10:36:53 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -58,6 +57,7 @@ mach32Line1Rect by Craig E. Groeschel (craig@adikia.sccsi.com),
   based on an ATI preclipping code example
 
 */
+/* $XConsortium: mach32line.c /main/6 1996/01/11 12:27:25 kaleb $ */
 
 
 #include "X.h"

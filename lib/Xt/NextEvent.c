@@ -1,5 +1,5 @@
-/* $XConsortium: NextEvent.c /main/134 1995/12/05 16:47:38 mor $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.10 1995/07/08 10:24:35 dawes Exp $ */
+/* $XConsortium: NextEvent.c /main/135 1996/01/31 16:47:11 kaleb $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.11 1996/01/05 13:12:52 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -269,7 +269,7 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 #define XPOLL_WRITE POLLOUT
 #endif
 #ifdef POLLRDBAND
-#define XPOLL_EXCEPT POLLPRI|POLLRDBAND|POLLWRBAND
+#define XPOLL_EXCEPT POLLPRI|POLLRDBAND
 #else
 #define XPOLL_EXCEPT POLLPRI
 #endif

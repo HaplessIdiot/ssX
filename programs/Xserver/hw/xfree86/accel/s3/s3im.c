@@ -1,5 +1,4 @@
-/* $XConsortium: s3im.c,v 1.6 95/01/06 20:57:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.16 1995/12/21 11:44:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.17 1995/12/28 01:32:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -26,8 +25,8 @@
 /*
  * Modified by Amancio Hasty and extensively by Jon Tombs & Phil Richards.
  * 
- * Id: s3im.c,v 2.7 1993/08/10 15:20:03 jon Exp jon
  */
+/* $XConsortium: s3im.c /main/10 1995/12/29 15:55:19 kaleb $ */
 
 
 #include "misc.h"

@@ -1,6 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.1 94/10/05 13:29:50 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8cppl.c,v 3.0 1994/09/11 00:41:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8cppl.c,v 3.1 1995/01/28 15:50:05 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -25,6 +24,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  *
+ * $XConsortium: cfb8cppl.c /main/2 1995/11/12 16:17:14 kaleb $
  * Author:  Keith Packard, MIT X Consortium
  */
 

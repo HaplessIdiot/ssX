@@ -1,5 +1,5 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.10 1995/04/09 13:53:36 dawes Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.9 1995/01/26 02:20:57 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -23,8 +23,7 @@
  *
  * Author:  Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  *
- * cir_cursor.c,v 1.7 1994/09/21 09:43:01 scooper Exp
- */
+/* $XConsortium: cir_cursor.c /main/8 1995/11/13 08:20:54 kaleb $ */
 
 #define CIRRUS_DEBUG_CURSOR
 

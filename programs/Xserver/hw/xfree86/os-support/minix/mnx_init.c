@@ -1,5 +1,4 @@
-/* $XConsortium: mnx_init.c,v 1.2 94/10/12 20:47:58 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.3 1995/01/28 17:04:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.4 1995/07/07 15:41:42 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -25,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: mnx_init.c /main/4 1995/11/13 06:04:18 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

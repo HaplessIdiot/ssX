@@ -1,3 +1,4 @@
+/* $XConsortium: nec480_dr.c /main/2 1995/12/29 11:49:25 kaleb $ */
 /*
  * Id: nec480_driver.c,v 1.6 1995/06/25 00:28:39 ueno Exp
  *
@@ -5,7 +6,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.0 1995/12/17 10:06:41 dawes Exp $ */
 
 /*
  * These are X and server generic header files.

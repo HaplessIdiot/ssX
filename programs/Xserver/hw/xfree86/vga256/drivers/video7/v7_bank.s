@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: v7_bank.s,v 1.2 95/06/19 19:21:25 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_bank.s,v 3.1 1994/06/06 06:48:26 dawes Exp $ */
 /*
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -90,9 +91,9 @@ Segment:			/* Storage for efficiency */
 GLNAME(VIDEO7SetReadWrite):
 GLNAME(VIDEO7SetWrite):
 GLNAME(VIDEO7SetRead):
-	AND_W	(CONST(15),EAX)
+	AND_W	(CONST(15),AX)
 	MOV_B	(AL,CONTENT(Segment))
-	MOV_W	(CONST(0x03C4),EDX)
+	MOV_W	(CONST(0x03C4),DX)
 	MOV_B	(CONTENT(Segment),AH)
 	AND_B	(CONST(1),AH)
 	MOV_B	(CONST(0xF9),AL)
@@ -105,9 +106,9 @@ GLNAME(VIDEO7SetRead):
 	OR_B	(AL,AH)
 	MOV_B	(CONST(0xF6),AL)
 	OUT_B
-	INC_W	(EDX)
+	INC_W	(DX)
 	IN_B
-	DEC_W	(EDX)
+	DEC_W	(DX)
 	AND_B	(CONST(0xF0),AL)
 	OR_B	(AL,AH)
 	MOV_B	(CONST(0xF6),AL)

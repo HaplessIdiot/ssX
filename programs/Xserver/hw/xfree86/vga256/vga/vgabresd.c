@@ -1,5 +1,4 @@
-/* $XConsortium: vgabresd.c,v 1.2 95/01/13 20:15:15 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabresd.c,v 3.0 1994/07/24 11:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabresd.c,v 3.1 1995/01/28 16:14:23 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XConsortium: vgabresd.c /main/3 1995/11/13 09:26:21 kaleb $ */
 
 #include "vga256.h"
 #include "miline.h"

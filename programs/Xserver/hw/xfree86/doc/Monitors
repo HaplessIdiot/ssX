@@ -1071,5 +1071,10 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.11 1995/11/02 00:28:33 dawes Exp $
-# $XConsortium: Monitors,v 1.7 95/01/27 15:58:08 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.12 1995/12/16 08:20:28 dawes Exp $
+
+
+
+
+
+# $XConsortium: Monitors /main/11 1995/12/17 08:27:42 kaleb $

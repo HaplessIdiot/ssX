@@ -1,5 +1,4 @@
-/* $XConsortium: mach32mem.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32mem.c,v 3.1 1994/09/07 16:19:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32mem.c,v 3.3 1995/01/28 16:59:19 dawes Exp $ */
 /*
  * Copyright 1993 ATI
  *
@@ -7,6 +6,7 @@
  *
  * Modified heavily by Mark_Weaver@brown.edu for XFree86
  */
+/* $XConsortium: mach32mem.c /main/3 1995/11/12 17:25:16 kaleb $ */
 
 
 

@@ -1,5 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 95/01/06 20:34:08 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/Imakefile,v 3.2 1995/06/02 10:24:19 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:58:18 kaleb $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/Imakefile,v 3.3 1996/01/24 22:03:05 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cl_driver.c cl_bank.s

@@ -1,5 +1,4 @@
-/* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.8 1995/12/16 08:20:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.9 1996/01/28 07:29:27 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -30,6 +29,7 @@
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  *
  */
+/* $XConsortium: mach64curs.c /main/9 1996/01/28 07:59:02 kaleb $ */
 
 #include <signal.h>
 
@@ -194,7 +194,7 @@ mach64RealizeCursor(pScr, pCurs)
   if (pCurs->bits->refcnt > 1)
 	return TRUE;
 
-  cursPriv = (Mach64CursPriv *)xcalloc(1,sizeof(Mach64CursPriv));
+  cursPriv = (Mach64CursPriv *)Xcalloc(sizeof(Mach64CursPriv));
   *pPriv = (pointer)cursPriv;
   if (!cursPriv) 
      return (FALSE);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/dsline.c,v 1.1.1.3 1996/01/03 07:12:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/dsline.c,v 3.0 1996/01/11 10:36:02 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -52,7 +52,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 */
-/* $XConsortium: dsline.c /main/2 1995/11/12 16:54:00 kaleb $ */
+/* $XConsortium: dsline.c /main/3 1996/01/11 12:28:21 kaleb $ */
 
 /* 14-sep-93 TCG: ibm8514dsln.c based on ibm8514line.c */
 

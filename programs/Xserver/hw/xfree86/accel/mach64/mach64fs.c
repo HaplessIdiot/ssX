@@ -1,5 +1,4 @@
-/* $XConsortium: mach64fs.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fs.c,v 3.0 1994/11/26 12:42:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fs.c,v 3.1 1995/01/28 15:53:24 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -66,7 +65,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
 
 ******************************************************************/
-
+/* $XConsortium: mach64fs.c /main/2 1995/11/12 17:39:01 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: p9000blt.c,v 1.6 95/01/16 13:16:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.7 1995/01/28 15:54:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.8 1995/05/24 12:21:47 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -44,7 +43,7 @@ Modified for P9000 by Erik Nygren (nygren@mit.edu)
 Further modifications by Chris Mason (mason@mail.csh.rit.edu)
 Further modifications by Henrik Harmsen (harmsen@eritel.se)
 */
-
+/* $XConsortium: p9000blt.c /main/8 1995/11/12 18:18:43 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: sco_init.c,v 1.3 95/01/05 20:42:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.5 1995/06/24 10:29:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.6 1995/11/12 09:52:44 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -24,7 +23,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sco_init.c /main/5 1995/11/13 06:08:39 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

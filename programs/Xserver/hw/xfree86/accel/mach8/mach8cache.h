@@ -1,5 +1,12 @@
-/* $XConsortium: mach8cache.h,v 1.2 94/10/12 20:01:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cache.h,v 3.2 1994/09/07 15:50:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cache.h,v 3.4 1995/01/28 17:00:27 dawes Exp $ */
+
+
+
+
+
+
+/* $XConsortium: mach8cache.h /main/3 1995/11/12 18:00:05 kaleb $ */
+
 void mach8GlyphWrite(
 #if NeedFunctionPrototypes
     int /*x*/,

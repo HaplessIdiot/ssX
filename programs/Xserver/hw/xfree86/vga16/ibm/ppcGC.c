@@ -1,5 +1,4 @@
-/* $XConsortium: ppcGC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.3 1995/05/07 11:53:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.4 1995/07/07 15:43:06 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -90,8 +89,7 @@ SOFTWARE.
 
 */
 
-/* Header: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcGC.c,v 9.7 89/06/16 16:37:21 jeff Exp */
-/* Source: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcGC.c,v */
+/* $XConsortium: ppcGC.c /main/5 1995/11/13 07:05:08 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

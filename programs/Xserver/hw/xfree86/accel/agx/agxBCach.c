@@ -1,5 +1,4 @@
-/* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.14 1995/07/12 15:34:20 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -23,6 +22,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+/* $XConsortium: agxBCach.c /main/6 1995/11/13 10:06:10 kaleb $ */
 
 /*
  * Id: s3bcach.c,v 2.3 1993/07/24 13:16:56 jon Exp

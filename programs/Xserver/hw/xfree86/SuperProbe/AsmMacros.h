@@ -1,3 +1,4 @@
+/* $XConsortium: AsmMacros.h /main/10 1996/01/26 13:30:00 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: AsmMacros.h,v 1.7 95/01/25 23:14:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.5 1995/01/28 15:46:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.6 1996/01/24 22:00:28 dawes Exp $ */
 
 #if defined(__GNUC__)
 

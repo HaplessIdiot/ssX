@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.h,v 3.0 1995/05/24 12:21:56 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -25,9 +25,8 @@
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: p9000im.h,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
-
+/* $XConsortium: p9000im.h /main/3 1995/11/12 18:19:12 kaleb $ */
 
 #ifndef modulus
 #define	modulus(a,b,d)	if (((d) = (a) % (b)) < 0) (d) += (b)

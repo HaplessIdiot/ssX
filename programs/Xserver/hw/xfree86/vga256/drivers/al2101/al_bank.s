@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: al_bank.s,v 1.2 95/06/19 18:57:10 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_bank.s,v 3.0 1994/05/14 07:01:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

@@ -1,5 +1,5 @@
-/* $XConsortium: cpq_driver.c,v 1.4 95/01/16 13:18:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.8 1995/05/27 03:16:18 dawes Exp $ */
+/* $XConsortium: cpq_driver.c /main/6 1996/01/12 12:16:57 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.9 1996/01/12 14:38:02 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *

@@ -1,3 +1,5 @@
+#!/bin/sh
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.5 1995/05/27 04:41:17 dawes Exp $
 # This is a shell archive.  Save it in a file, remove anything before
 # this line, and then unpack it by entering "sh file".  Note, it may
 # create directories; files and directories will be owned by you and
@@ -14,7 +16,7 @@
 #	version.c
 #	version.h
 #
-# $XFree86$
+# $XConsortium: apNetBSD.shar /main/6 1995/11/12 20:16:41 kaleb $
 #
 echo x - README
 sed 's/^X//' >README << 'END-of-README'

@@ -1,5 +1,10 @@
-/* $XConsortium: XF86_8514.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_8514.c,v 3.2 1994/09/07 15:51:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_8514.c,v 3.4 1995/01/28 17:03:08 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: XF86_8514.c /main/3 1995/11/12 19:20:39 kaleb $ */
 #include "X.h"
 #include "os.h"
 

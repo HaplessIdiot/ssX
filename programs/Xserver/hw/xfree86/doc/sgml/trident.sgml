@@ -121,12 +121,18 @@ clock speed.  So be prepared for this phenomenon to occur, and have the board
 documentation handy.
 
 NOTE: VLBus cards are also subject to the above. By specifying the Clocks
-n the <tt>XF86Config</tt> file, these lockups are overcome. But it may
+in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XConsortium: trident.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.6 1996/01/14 13:38:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.7 1996/01/16 15:04:29 dawes Exp $
+
+
+
+
+
+
+$XConsortium: trident.sgml /main/7 1996/01/16 15:36:48 kaleb $
 </verb>
 
 </article>

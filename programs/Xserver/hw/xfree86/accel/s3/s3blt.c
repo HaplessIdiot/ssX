@@ -1,5 +1,4 @@
-/* $XConsortium: s3blt.c,v 1.5 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.10 1995/01/28 17:01:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.11 1995/12/09 11:07:34 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -43,9 +42,8 @@ PERFORMANCE OF THIS SOFTWARE.
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
- * 
- * Id: s3blt.c,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
+/* $XConsortium: s3blt.c /main/7 1995/12/09 15:56:08 kaleb $ */
 
 
 #include	"X.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: ppcBitmap.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBitmap.c,v 3.0 1994/05/04 15:03:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBitmap.c,v 3.2 1995/01/28 17:06:01 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,8 +22,7 @@
  *
 */
 
-/* Header: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcBitmap.c,v 9.1 88/10/24 03:59:32 paul Exp */
-/* Source: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcBitmap.c,v */
+/* $XConsortium: ppcBitmap.c /main/3 1995/11/13 07:04:49 kaleb $ */
 
 #include "X.h"
 #include "pixmap.h"

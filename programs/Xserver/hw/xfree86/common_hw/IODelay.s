@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IODelay.s,v 3.0 1994/09/08 14:27:40 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -26,6 +26,7 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 7/21/94
 *******************************************************************************/
+/* $XConsortium: IODelay.s /main/3 1995/11/12 19:30:12 kaleb $ */
  
 /* 
  *   All we really need is a delay of about 40ns for I/O recovery for just

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: sigmadriv.c,v 1.2 95/06/19 18:14:25 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.1 1994/09/23 10:21:05 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -226,7 +227,7 @@ SIGMAProbe()
 /* The following is done for both probed and preset chipset */
 
   if (!monoInfoRec.videoRam) {
-	/* videoram not given in Xconfig */
+	/* videoram not given in XF86Config */
 	monoInfoRec.videoRam=256;
   }
   if (monoInfoRec.MemBase!=0) {
@@ -276,7 +277,7 @@ SIGMAProbe()
    * SIGMA_MAX_VIRTUAL_X and ..._Y
    */
    if (!(monoInfoRec.virtualX < 0)) {
-	/* virtual set in Xconfig */
+	/* virtual set in XF86Config */
 	ErrorF("%s %s: %s: Virtual not allowed for this chipset\n",
 		XCONFIG_PROBED, monoInfoRec.name, monoInfoRec.chipset);
    }

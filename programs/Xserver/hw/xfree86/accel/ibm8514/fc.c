@@ -1,5 +1,4 @@
-/* $XConsortium: fc.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fc.c,v 3.1 1994/08/01 12:09:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fc.c,v 3.2 1995/01/28 15:51:32 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+/* $XConsortium: fc.c /main/3 1995/11/12 17:02:45 kaleb $ */
 
 /*
  * Extract from s3fcach.c

@@ -1,5 +1,4 @@
-/* $XConsortium: oak_driver.c,v 1.6 95/01/23 15:35:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.17 1995/11/12 09:53:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.18 1996/01/12 14:38:28 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -23,6 +22,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: oak_driver.c /main/9 1996/01/12 12:18:32 kaleb $ */
 
 /* 
  * XF86_SVGA driver for Oak Technologies Inc. chipsets. 

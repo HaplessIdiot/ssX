@@ -1,5 +1,4 @@
-/* $XConsortium: ibm8514.c,v 1.6 95/01/26 15:34:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.22 1995/12/09 11:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.23 1995/12/17 05:02:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,8 +25,8 @@
  * Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
  * Modified by Tiago Gons (tiago@comosjn.hobby.nl)
  *
- * Header: /proj/X11/mit/server/ddx/xf86/vga/RCS/vga.c,v 1.2 1991/06/27 00:02:49 root Exp
  */
+/* $XConsortium: ibm8514.c /main/14 1995/12/17 08:13:57 kaleb $ */
 
 
 #include "X.h"

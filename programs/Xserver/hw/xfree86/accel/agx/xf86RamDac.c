@@ -1,5 +1,4 @@
-/* $XConsortium: xf86RamDac.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.6 1995/06/14 07:33:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.7 1995/06/21 11:52:03 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -24,6 +23,7 @@
  * Author: Henry A. Worth  (haw30@eng.amdahl.com)
  * 
  */
+/* $XConsortium: xf86RamDac.c /main/6 1995/11/13 10:07:54 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

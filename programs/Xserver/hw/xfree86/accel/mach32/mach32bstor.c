@@ -1,5 +1,4 @@
-/* $XConsortium: mach32bstor.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bstor.c,v 3.1 1994/07/15 06:58:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bstor.c,v 3.3 1995/01/28 16:58:35 dawes Exp $ */
 /*-
  * mach32bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -28,6 +27,7 @@
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  */
+/* $XConsortium: mach32bstor.c /main/3 1995/11/12 17:24:33 kaleb $ */
 
 
 #include    "cfb.h"

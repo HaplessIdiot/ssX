@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c /main/13 1995/10/27 09:05:49 swick $ */
+/* $XConsortium: omGeneric.c /main/14 1996/02/01 06:31:46 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -374,6 +374,12 @@ parse_fontname(oc)
     Bool is_found;
     int count, num_fields;
     char *base_name, *font_name, **name_list, **cur_name_list;
+    char *charset_p;
+    Bool append_charset;
+    /*
+       append_charset flag should be set to True when the XLFD fontname
+       doesn't contain a chaset part.
+     */
 
     name_list = _XParseBaseFontNameList(oc->core.base_name_list, &count);
     if (name_list == NULL)
@@ -386,6 +392,7 @@ parse_fontname(oc)
 	    continue;
 
  	is_found = False;
+	append_charset = False;
 
 	if (strchr(pattern, '*') == NULL &&
 	    (font_name = get_font_name(oc, pattern))) {
@@ -397,6 +404,23 @@ parse_fontname(oc)
  		if (font_set->font_name)
  		    continue;
 		font_data = check_charset(font_set, font_name);
+		if (font_data == NULL) {
+		    Display *dpy = oc->core.om->core.display;
+		    char **fn_list = NULL, *prop_fname = NULL;
+		    int list_num;
+		    XFontStruct *fs_list;
+		    if ((fn_list = XListFontsWithInfo(dpy, font_name,
+						      MAXFONTS,
+						      &list_num, &fs_list))
+			&& (prop_fname = get_prop_name(dpy, fs_list))
+			&& (font_data = check_charset(font_set, prop_fname))) {
+			if (fn_list) {
+			    XFreeFontInfo(fn_list, fs_list, list_num);
+			    fn_list = NULL;
+			}
+			font_name = prop_fname;
+		    }
+		}
 		if (font_data == NULL)
  		    continue;
 
@@ -408,8 +432,8 @@ parse_fontname(oc)
 		}
 		strcpy(font_set->font_name, font_name);
 
- 		found_num++;
- 		is_found = True;
+		found_num++;
+		is_found = True;
 	    }
 
 	    Xfree(font_name);
@@ -424,68 +448,79 @@ parse_fontname(oc)
  * locale database) in conjunction with the BaseFontName. See Section 13.3 
  * of the Xlib specification.
  */
- 	strcpy(buf, pattern);
- 	length = strlen(buf);
+	strcpy(buf, pattern);
+	length = strlen(buf);
 	last = buf + length - 1;
 	for (num_fields = 0, base_name = buf; *base_name != '\0'; base_name++)
 	    if (*base_name == '-') num_fields++;
-	if (num_fields == 13 || num_fields == 14) {
+	if (strchr(pattern, '*') == NULL) {
+	    if (num_fields == 12) {
+		append_charset = True;
+		*++last = '-';
+		last++;
+	    } else
+		continue;
+	} else {
+	    if (num_fields == 13 || num_fields == 14) {
 	    /* 
 	     * There are 14 fields in an XLFD name -- make certain the
 	     * charset (& encoding) is placed in the correct field.
 	     */
-	    last = strrchr (buf, '-');
-	    if (num_fields == 14) {
-		*last = '\0';
+		append_charset = True;
 		last = strrchr (buf, '-');
+		if (num_fields == 14) {
+		    *last = '\0';
+		    last = strrchr (buf, '-');
+		}
+		last++;
+	    } else if (*last == '*') {
+		append_charset = True;
+		*++last = '-';
+		last++;
+	    } else {
+		last = strrchr (buf, '-');
+		charset_p = last;
+		charset_p = strrchr (buf, '-');
+		while (*(--charset_p) != '-');
+		charset_p++;
 	    }
-	} else {
-/*
- * Keep in mind that the server will provide a scaled font in response to 
- * a ListFonts Request only if all 14 dashes ('-') appear in the XLFD name. 
- * That means that "-*-*-*-r-*-*-*-120-*-*" as a BaseFontSet name won't work 
- * e.g. for JISX0208.1983-0 unless there is a 120 point font available to 
- * the server.
- */
-	    *++last = '-';
 	}
-	last++;
-
 	font_set = gen->font_set;
 	font_set_num = gen->font_set_num;
 
 	for ( ; font_set_num-- > 0; font_set++) {
- 	    if (font_set->font_name)
- 		continue;
+	    if (font_set->font_name)
+		continue;
 	    
 	    font_data = font_set->font_data;
 	    font_data_count = font_set->font_data_count;
 
 	    for ( ; font_data_count-- > 0; font_data++) {
-		strcpy(last, font_data->name);
-		if ((font_set->font_name = get_font_name(oc, buf)))
-		    break;
-
-		*last = '*';
-		*(last + 1) = '-';
-		strcpy(last + 2, font_data->name);
+		if (append_charset)
+		    strcpy(last, font_data->name);
+		else {
+		    if (_XlcCompareISOLatin1(charset_p,
+					     font_data->name)) {
+			continue;
+		    }
+		}
 		if ((font_set->font_name = get_font_name(oc, buf)))
 		    break;
 	    }
 
 	    if (font_set->font_name == NULL)
- 		continue;
+		continue;
 
 	    font_set->side = font_data->side;
  
- 	    found_num++;
- 	    is_found = True;
- 	}
+	    found_num++;
+	    is_found = True;
+	}
 
- 	if (found_num == gen->font_set_num)
- 	    break;
- 	if (is_found == True)
- 	    continue;
+	if (found_num == gen->font_set_num)
+	    break;
+	if (is_found == True)
+	    continue;
  
 	found_num = check_fontname(oc, pattern, found_num);
 	if (found_num == gen->font_set_num)

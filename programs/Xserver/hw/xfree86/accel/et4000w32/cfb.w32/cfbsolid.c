@@ -1,6 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.2 95/01/05 20:31:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbsolid.c,v 3.1 1994/11/19 07:50:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbsolid.c,v 3.2 1995/01/28 15:50:23 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -25,6 +24,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  *
+ * $XConsortium: cfbsolid.c /main/3 1995/11/12 16:17:51 kaleb $
  * Author:  Keith Packard, MIT X Consortium
  */
 

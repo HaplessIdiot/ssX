@@ -1,6 +1,5 @@
 /*
- * $XConsortium: s3Cursor.c,v 1.5 95/01/23 15:33:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.20 1995/12/02 05:05:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.21 1995/12/07 07:24:32 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -21,13 +20,12 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* Header: /home/src/xfree86/server/ddx/xf86/accel/s3/RCS/s3Cursor.c,v 2.4 1993/07/06 10:23:47 jon Exp jon */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3Cursor.c,v 2.5 1993/08/09 06:17:57 jon Exp jon
  */
+/* $XConsortium: s3Cursor.c /main/8 1995/12/09 15:56:04 kaleb $ */
 
 /*
  * Device independent (?) part of HW cursor support

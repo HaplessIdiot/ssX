@@ -1,5 +1,4 @@
-/* $XConsortium: I2061Acal.c,v 1.1 95/01/26 15:27:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/I2061Acal.c,v 3.1 1994/09/07 15:50:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/I2061Acal.c,v 3.2 1995/01/28 15:54:34 dawes Exp $ */
 /* Id: ICD2061Acal.c,v 4.0 1994/05/28 01:24:17 nygren Exp */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved.
@@ -38,6 +37,7 @@
  * makes no representations about the suitability of this software for any 
  * purpose.  It is provided "as is" without express or implied warranty.
  */
+/* $XConsortium: I2061Acal.c /main/2 1995/11/12 18:18:17 kaleb $ */
 
 #include        "X.h"
 #include        "input.h"

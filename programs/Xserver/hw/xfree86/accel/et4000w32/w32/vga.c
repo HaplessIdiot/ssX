@@ -1,5 +1,4 @@
-/* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.23 1995/12/16 08:19:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.24 1995/12/17 05:02:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,7 +23,7 @@
  * Author:  Thomas Roell, roell@@informatik.tu-muenchen.de
  *
  */
-
+/* $XConsortium: vga.c /main/14 1995/12/17 08:10:23 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

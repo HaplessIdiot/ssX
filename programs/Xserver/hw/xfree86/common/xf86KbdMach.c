@@ -1,5 +1,4 @@
-/* $XConsortium: xf86KbdMach.c,v 1.6 95/01/13 19:20:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.4 1995/01/28 17:03:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.5 1995/06/08 06:27:17 dawes Exp $ */
 /*
  *****************************************************************************
  * HISTORY
@@ -35,8 +34,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Header: xf86KbdMach.c,v 2.1.2.1 92/06/25 10:32:08 moore Exp
  */
+/* $XConsortium: xf86KbdMach.c /main/8 1995/11/12 19:21:43 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

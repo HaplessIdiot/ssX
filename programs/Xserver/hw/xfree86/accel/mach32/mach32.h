@@ -1,5 +1,4 @@
-/* $XConsortium: mach32.h,v 1.5 95/01/16 13:16:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.9 1995/01/15 10:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.11 1995/01/28 16:58:27 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -24,6 +23,7 @@
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  */
+/* $XConsortium: mach32.h /main/6 1995/11/12 17:24:24 kaleb $ */
 
 
 #ifndef MACH32_H

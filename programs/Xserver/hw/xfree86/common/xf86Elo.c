@@ -1,3 +1,4 @@
+/* $XConsortium: xf86Elo.c /main/4 1996/01/26 13:36:41 kaleb $ */
 /*
  * Copyright 1995 by Patrick Lecoanet, France. <lecoanet@cenaath.cena.dgac.fr>       
  *                                                                            
@@ -21,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.3 1996/01/24 22:01:36 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -60,8 +61,6 @@
  *******************************************************************************
  */
 
-static const char rcs_id[] = "Id: xf86Elo.c,v 1.1 1995/12/20 13:52:27 lecoanet Exp";
-
 #include "Xos.h"
 #include <signal.h>
 
@@ -74,6 +73,11 @@ static const char rcs_id[] = "Id: xf86Elo.c,v 1.1 1995/12/20 13:52:27 lecoanet E
 #include "XIproto.h"
 
 #if defined(sun) && !defined(i386)
+#include <errno.h>
+#include <termio.h>
+#include <fcntl.h>
+#include <ctype.h>
+
 #include "extio.h"
 #else
 #include "compiler.h"
@@ -85,20 +89,6 @@ static const char rcs_id[] = "Id: xf86Elo.c,v 1.1 1995/12/20 13:52:27 lecoanet E
 
 #include "os.h"
 #include "osdep.h"
-
-/*
- ***************************************************************************
- *
- * Externs.
- *
- ***************************************************************************
- */
-
-extern int		DeviceValuator;
-extern int              DeviceButtonPress;
-extern int              DeviceButtonRelease;
-extern int              DeviceMotionNotify;
-
 
 #if !defined(sun) || defined(i386)
 /*
@@ -117,6 +107,7 @@ extern int              DeviceMotionNotify;
 #define MAXY		7
 #define MINX		8
 #define MINY		9
+#define DEBUG_LEVEL     10
 
 static SymTabRec EloTab[] = {
   { ENDSUBSECTION,     "endsubsection" },
@@ -126,9 +117,10 @@ static SymTabRec EloTab[] = {
   { MAXY,              "maximumyposition" },
   { MINX,              "minimumxposition" },
   { MINY,              "minimumyposition" },
-  { SCREEN,	       "screen" },
+  { SCREENNO,	       "screenno" },
   { UNTOUCHDELAY,      "untouchdelay" },
   { REPORTDELAY,       "reportdelay"},
+  { DEBUG_LEVEL,       "debuglevel" },
   { -1,                "" },
 };
 #endif
@@ -203,8 +195,13 @@ static SymTabRec EloTab[] = {
 #ifdef DBG
 #undef DBG
 #endif
-#if 0
-static int      debug_level = 2;
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+static int      debug_level = 0;
+#define DEBUG 1
+#if DEBUG
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
@@ -218,8 +215,6 @@ static int      debug_level = 2;
  *
  ***************************************************************************
  */
-LocalDeviceRec	elographics_device;
-
 typedef struct _EloPrivateRec {
   char		*input_dev;		/* The touchscreen input tty			*/
   int		min_x;			/* Minimum x reported by calibration		*/
@@ -250,11 +245,14 @@ typedef struct _EloPrivateRec {
  ***************************************************************************
  */
 static Bool
-xf86EloConfig(LocalDevicePtr     local,
-	      LexPtr             val)
+xf86EloConfig(LocalDevicePtr    *array,
+              int               index,
+              int               max,
+	      LexPtr            val)
 {
-  EloPrivatePtr	priv = (EloPrivatePtr)(local->private);
-  int		token;
+  LocalDevicePtr        local = array[index];
+  EloPrivatePtr         priv = (EloPrivatePtr)(local->private);
+  int                   token;
 
   while ((token = xf86GetToken(EloTab)) != ENDSUBSECTION) {
     switch(token) {
@@ -277,7 +275,7 @@ xf86EloConfig(LocalDevicePtr     local,
 	       XCONFIG_GIVEN, local->name);      
       break;
 
-    case SCREEN:
+    case SCREENNO:
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Elographics screen number expected");
       priv->screen = val->num;
@@ -340,6 +338,21 @@ xf86EloConfig(LocalDevicePtr     local,
 	       XCONFIG_GIVEN, priv->min_y);      
      break;
       
+    case DEBUG_LEVEL:
+	if (xf86GetToken(NULL) != NUMBER)
+	    xf86ConfigError("Option number expected");
+	debug_level = val->num;
+	if (xf86Verbose) {
+#if DEBUG
+	    ErrorF("%s Elographics debug level sets to %d\n", XCONFIG_GIVEN,
+		   debug_level);      
+#else
+	    ErrorF("%s Elographics debug level not sets to %d because debugging is not compiled\n",
+		   XCONFIG_GIVEN, debug_level);      
+#endif
+	}
+        break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break;
@@ -880,7 +893,7 @@ xf86EloControl(DeviceIntPtr	dev,
      * Device reports button press for up to 1 button.
      */
     if (InitButtonClassDeviceStruct(dev, 1, map) == FALSE) {
-      ErrorF("Unable to allocate touchscreen ButtonClassDeviceStruct\n");
+      ErrorF("Unable to allocate Elographics touchscreen ButtonClassDeviceStruct\n");
       return !Success;
     }
     
@@ -892,7 +905,7 @@ xf86EloControl(DeviceIntPtr	dev,
      * screen to fit one meter.
      */
     if (InitValuatorClassDeviceStruct(dev, 2, xf86EloMotion, 0, Absolute) == FALSE) {
-      ErrorF("Unable to allocate touchscreen ValuatorClassDeviceStruct\n");
+      ErrorF("Unable to allocate Elographics touchscreen ValuatorClassDeviceStruct\n");
       return !Success;
     }
     else {
@@ -905,7 +918,7 @@ xf86EloControl(DeviceIntPtr	dev,
     }
 
     if (InitPtrFeedbackClassDeviceStruct(dev, xf86EloPtrControl) == FALSE) {
-      ErrorF("Unable to allocate touchscreen PtrFeedbackClassDeviceStruct\n");
+      ErrorF("Unable to allocate Elographics touchscreen PtrFeedbackClassDeviceStruct\n");
       return !Success;
     }
 
@@ -920,7 +933,7 @@ xf86EloControl(DeviceIntPtr	dev,
   case DEVICE_ON:
     DBG(2, ErrorF("Elographics touchscreen on...\n"));
 
-    if (local->fd == -1) {
+    if (local->fd < 0) {
       struct termios termios_tty;
 #if defined(sun) && !defined(i386)
       char           *name = getenv("ELO_DEV");
@@ -961,7 +974,7 @@ xf86EloControl(DeviceIntPtr	dev,
 		    priv->input_dev));
       SYSCALL(local->fd = open(priv->input_dev, O_RDWR));
       if (local->fd < 0) {
-	Error("Unable to open touchscreen device");
+	Error("Unable to open Elographics touchscreen device");
 	return !Success;
       }
 
@@ -973,8 +986,8 @@ xf86EloControl(DeviceIntPtr	dev,
       memset(&termios_tty, 0, sizeof(struct termios));
       termios_tty.c_cflag = B19200|CS8|CREAD|CLOCAL;
       if (tcsetattr(local->fd, TCSANOW, &termios_tty) < 0) {
-	Error("Unable to configure port");
-	return !Success;
+	Error("Unable to configure Elographics touchscreen port");
+	goto not_success;
       }
       DBG(3, ErrorF("Try to see if the link is already at high speed\n"));
       if (xf86EloSendQuery(req, reply, local->fd) != Success) {
@@ -984,8 +997,8 @@ xf86EloControl(DeviceIntPtr	dev,
 	DBG(3, ErrorF("Hem, not exactly, try default rate\n"));
 	termios_tty.c_cflag = B9600|CS8|CREAD|CLOCAL;
 	if (tcsetattr(local->fd, TCSANOW, &termios_tty) < 0) {
-	  Error("Unable to configure port");
-	  return !Success;
+	  Error("Unable to configure Elographics touchscreen port");
+	  goto not_success;
 	}
 	if (xf86EloSendQuery(req, reply, local->fd) == Success) {
 	  /*
@@ -1001,81 +1014,87 @@ xf86EloControl(DeviceIntPtr	dev,
 	    struct timeval	timeout;
 	    /*
 	     * Wait until the bytes are all out and switch the local
-	     * port to high speed. Need to find a better way to wait.
+	     * port to high speed. Should use TCSADRAIN but it doesn't
+	     * seem to work under Linux. So I use a trick, wait until
+	     * a correctly ;-) tuned delay expire.
 	     */
 	    timeout.tv_sec = 0;
 	    timeout.tv_usec = 30;
 	    SYSCALL(select(0, NULL, NULL, NULL, &timeout));
 	    termios_tty.c_cflag = B19200|CS8|CREAD|CLOCAL;
 	    if (tcsetattr(local->fd, TCSANOW, &termios_tty) < 0) {
-	      Error("Unable to configure port");
-	      return !Success;
+	      Error("Unable to configure Elographics touchscreen port");
+	      goto not_success;
 	    }
+
 	    /* Well this should work but something go wrong when switching
 	     * local speed.
 	     * if (xf86EloWaitAck(local->fd) != Success) {
 	     *   DBG(3, ErrorF("Not able to switch to high speed rate\n"));
-	     *   return !Success;
+	     *   goto not_success;
 	     * }
 	     * else*/
 	    DBG(3, ErrorF("Ok, link is now at high speed\n"));
 	  }
 	  else {
-	    ErrorF("Not able to switch to high speed\n");
-	    return !Success;
+	    ErrorF("Not able to switch Elographics touchscreen link to high speed\n");
+	    goto not_success;
 	  }
 	}
 	else {
-	  ErrorF("Can't figure current link speed, giving up\n");
-	  return !Success;	  
+	  ErrorF("Can't figure Elographics touchscreen link speed, giving up\n");
+	  goto not_success; 
 	}
       }
       else
 	DBG(3, ErrorF("Link already at high speed\n"));
-    }
 
-    /*
-     * Ask the controller to report various infos.
-     */
-    if (xf86Verbose) {
-      memset(req, 0, ELO_PACKET_SIZE);
-      req[1] = tolower(ELO_ID);
-      if (xf86EloSendQuery(req, reply, local->fd) == Success) {
-	xf86EloPrintIdent(reply);
+      /*
+       * Ask the controller to report various infos.
+       */
+      if (xf86Verbose) {
+	memset(req, 0, ELO_PACKET_SIZE);
+	req[1] = tolower(ELO_ID);
+	if (xf86EloSendQuery(req, reply, local->fd) == Success) {
+	  xf86EloPrintIdent(reply);
+	}
+	else {
+	  ErrorF("Unable to ask Elographics touchscreen identification\n");
+	  goto not_success;
+	}
       }
-      else {
-	ErrorF("Unable to ask touchscreen identification\n");
+      
+      /*
+       * Set the operating mode: Stream, no scaling, no calibration,
+       * no range checking, no trim, tracking enabled.
+       */
+      memset(req, 0, ELO_PACKET_SIZE);
+      req[1] = ELO_MODE;
+      req[3] = ELO_TOUCH_MODE | ELO_STREAM_MODE | ELO_UNTOUCH_MODE;
+      req[4] = ELO_TRACKING_MODE;
+      if (xf86EloSendControl(req, local->fd) != Success) {
+	ErrorF("Unable to change Elographics touchscreen operating mode\n");
+	goto not_success;
+      }
+      
+      /*
+       * Set the touch reports timings from configuration data.
+       */
+      memset(req, 0, ELO_PACKET_SIZE);
+      req[1] = ELO_REPORT;
+      req[2] = priv->untouch_delay;
+      req[3] = priv->report_delay;
+      if (xf86EloSendControl(req, local->fd) != Success) {
+	ErrorF("Unable to change Elographics touchscreen reports timings\n");
+not_success:
+	close(local->fd);
+	local->fd = -1;
 	return !Success;
       }
+      
+      AddEnabledDevice(local->fd);
+      dev->public.on = TRUE;  
     }
-
-    /*
-     * Set the operating mode: Stream, no scaling, no calibration,
-     * no range checking, no trim, tracking enabled.
-     */
-    memset(req, 0, ELO_PACKET_SIZE);
-    req[1] = ELO_MODE;
-    req[3] = ELO_TOUCH_MODE | ELO_STREAM_MODE | ELO_UNTOUCH_MODE;
-    req[4] = ELO_TRACKING_MODE;
-    if (xf86EloSendControl(req, local->fd) != Success) {
-      ErrorF("Unable to change touchscreen operating mode\n");
-      return !Success;
-    }
-
-    /*
-     * Set the touch reports timings from configuration data.
-     */
-    memset(req, 0, ELO_PACKET_SIZE);
-    req[1] = ELO_REPORT;
-    req[2] = priv->untouch_delay;
-    req[3] = priv->report_delay;
-    if (xf86EloSendControl(req, local->fd) != Success) {
-      ErrorF("Unable to change touchscreen reports timings\n");
-      return !Success;
-    }
-    
-    AddEnabledDevice(local->fd);
-    dev->public.on = TRUE;
     
     DBG(2, ErrorF("Done\n"));
     return Success;
@@ -1109,51 +1128,62 @@ xf86EloControl(DeviceIntPtr	dev,
   }
 }
 
+/*
+ ***************************************************************************
+ *
+ * xf86EloAllocate --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86EloAllocate()
+{
+  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+  EloPrivatePtr         priv = (EloPrivatePtr) xalloc(sizeof(EloPrivateRec));
+  
+  priv->input_dev = ELO_PORT;
+  priv->min_x = 0;
+  priv->max_x = 0;
+  priv->min_y = 0;
+  priv->max_y = 0;
+  priv->untouch_delay = ELO_UNTOUCH_DELAY;
+  priv->report_delay = ELO_REPORT_DELAY;
+  priv->screen = 0;
+  priv->screen_width = -1;
+  priv->screen_height = -1;
+  priv->inited = 0;
+  priv->cur_x = 0;
+  priv->cur_y = 0;
+  priv->checksum = ELO_INIT_CHECKSUM;
+  priv->packet_buf_p = 0;
+
+  local->name = XI_TOUCHSCREEN;
+  local->flags = XI86_NO_OPEN_ON_INIT;
+#if !defined(sun) || defined(i386)
+  local->device_config = xf86EloConfig;
+#endif
+  local->device_control = xf86EloControl;
+  local->read_input = xf86EloReadInput;
+  local->control_proc = NULL;
+  local->close_proc = NULL;
+  local->switch_mode = NULL;
+  local->fd = -1;
+  local->atom = 0;
+  local->dev = NULL;
+  local->private = priv;
+
+  return local;
+}
 
 /*
- *****************************************************
+ ***************************************************************************
  *
- * Fill in the local device descriptor.
- * It should be noted that doing this statically, it
- * is not possible to have several of these devices
- * hooked in the system. This need be fixed later.
+ * Elographics device association --
  *
- *****************************************************
+ ***************************************************************************
  */
-static
-EloPrivateRec	elo_private = {
-  ELO_PORT,		/* input_dev		*/
-  0,			/* min_x		*/
-  0,			/* max_x		*/
-  0,			/* min_y		*/
-  0,			/* max_y		*/
-  ELO_UNTOUCH_DELAY,	/* untouch_delay	*/
-  ELO_REPORT_DELAY,	/* report_delay		*/
-  0,			/* screen		*/
-  -1,			/* screen_width		*/
-  -1,			/* screen_heigth	*/
-  0,			/* inited		*/
-  0,			/* cur_x		*/
-  0,			/* cur_y		*/
-  ELO_INIT_CHECKSUM,	/* checksum		*/
-  0			/* packet_buf_p		*/
+DeviceAssocRec elographics_assoc =
+{
+  "elographics",                /* config_section_name */
+  xf86EloAllocate               /* device_allocate */
 };
-
-LocalDeviceRec	elographics_device = {
-  XI_TOUCHSCREEN,		/* name			*/
-  "elographics",		/* config_section_name	*/
-  XI86_NO_OPEN_ON_INIT,		/* flags		*/
-#if !defined(sun) || defined(i386)
-  xf86EloConfig,		/* device_config	*/
-#endif
-  xf86EloControl,		/* device_control	*/
-  xf86EloReadInput,		/* read_input		*/
-  NULL,				/* control_proc		*/
-  NULL,				/* close_proc		*/
-  NULL,				/* switch_mode		*/
-  -1,				/* fd			*/
-  0,				/* atom			*/
-  NULL,				/* dev			*/
-  &elo_private			/* private		*/
-};
-

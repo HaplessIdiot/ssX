@@ -1,3 +1,4 @@
+/* $XConsortium: OS_Os2.c /main/4 1996/01/26 13:30:17 kaleb $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -26,8 +27,7 @@
  *
  */
 
-/* $XConsortium: OS_Os2.c,v 1.1 95/01/06 20:47:15 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.1 1995/01/28 15:47:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.2 1996/01/24 22:00:31 dawes Exp $ */
 
 
 #include "Probe.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: xf861502x.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.5 1995/06/14 09:42:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.6 1995/06/21 11:52:01 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -22,6 +21,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf861502x.c /main/5 1995/11/13 10:07:45 kaleb $ */
 
 #define NEED_EVENTS
 #include <X.h>

@@ -1,6 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.2 1995/01/19 05:23:20 dawes Exp $ */
+
 
 /* Keyboard mode control program for 386BSD */
+
+
+/* $XConsortium: kbd_mode.c /main/5 1995/11/12 20:17:07 kaleb $ */
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -30,21 +34,27 @@ msg (char* s)
 int
 main(int argc, char** argv)
 {
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
     vtmode_t vtmode;
+#endif
     Bool syscons = FALSE;
 
     if ((fd = open("/dev/vga",O_RDONLY,0)) <0)
       msg ("Cannot open /dev/vga");
 
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
     /* Check if syscons */
     if (ioctl(fd, VT_GETMODE, &vtmode) >= 0)
       syscons = TRUE;
+#endif
     
     if (0 == strcmp (argv[1], "-u"))
       {
 	if (syscons)
 	  {
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 	    ioctl (fd, KDSKBMODE, K_RAW);
+#endif
 	  }
 	else
 	  {
@@ -59,7 +69,9 @@ main(int argc, char** argv)
       {
 	if (syscons)
 	  {
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 	    ioctl (fd, KDSKBMODE, K_XLATE);
+#endif
 	  }
 	else
 	  {

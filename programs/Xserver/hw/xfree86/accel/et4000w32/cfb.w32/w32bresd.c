@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32bresd.c,v 3.0 1994/09/11 00:41:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32bresd.c,v 3.1 1995/01/28 15:50:31 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,7 +46,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: w32bresd.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XConsortium: w32bresd.c /main/2 1995/11/12 16:18:07 kaleb $ */
+
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"

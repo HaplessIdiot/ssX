@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# $XConsortium: confvga256.sh,v 1.1 94/03/28 21:43:21 dpw Exp $
-# $XFree86$
+# $XConsortium: cvga256.sh /main/1 1995/09/04 19:45:10 kaleb $
+# $XFree86: xc/programs/Xserver/hw/xfree86/vga256/cvga256.sh,v 3.0 1995/03/11 14:50:00 dawes Exp $
 #
 # This script generates vga256Conf.c
 #

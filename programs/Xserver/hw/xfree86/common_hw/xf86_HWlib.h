@@ -1,5 +1,4 @@
-/* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.16 1995/12/02 05:05:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.17 1995/12/16 08:20:24 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -29,7 +28,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: xf86_HWlib.h /main/10 1995/12/17 08:26:57 kaleb $ */
 
 #ifndef _XF86_HWLIB_H
 #define _XF86_HWLIB_H

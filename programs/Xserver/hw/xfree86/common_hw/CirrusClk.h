@@ -1,5 +1,10 @@
-/* $XConsortium: CirrusClk.h,v 1.2 95/01/27 14:46:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.h,v 3.0 1994/10/20 06:09:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.h,v 3.1 1995/01/28 15:58:09 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: CirrusClk.h /main/3 1995/11/12 19:29:50 kaleb $ */
 
 int CirrusFindClock( 
 #if NeedFunctionPrototypes

@@ -1,3 +1,4 @@
+/* $XConsortium: Print.c /main/13 1996/01/26 13:30:26 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.24 1995/11/30 13:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.25 1996/01/26 09:09:20 dawes Exp $ */
 
 #include "Probe.h"
 

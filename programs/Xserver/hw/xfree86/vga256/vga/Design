@@ -1,3 +1,4 @@
+$XFree86: $
 
 This new frame buffer code is designed to rely on the cfb code more than
 the previous cfb.banked code. This frame buffer eliminates the need to
@@ -384,3 +385,6 @@ vgaBank.h
 
 vgaFasm.h
 	Some inline assembler to speed up some operations.
+
+
+$XConsortium: Design /main/3 1995/11/13 09:25:41 kaleb $

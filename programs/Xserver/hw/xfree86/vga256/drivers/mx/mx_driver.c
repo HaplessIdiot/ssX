@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.8 1995/05/27 03:16:58 dawes Exp $ */
+/* $XConsortium: mx_driver.c /main/6 1996/01/12 12:18:24 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.9 1996/01/12 14:38:21 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>

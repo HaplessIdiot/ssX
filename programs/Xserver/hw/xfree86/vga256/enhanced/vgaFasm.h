@@ -1,6 +1,5 @@
-/* $XConsortium: vgaFasm.h,v 1.4 95/06/09 20:57:00 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.4 1995/01/28 17:09:43 dawes Exp $ */
-/* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.5 1995/06/14 07:48:18 dawes Exp $ */
+/* Copyright 1992 by James Tsillas, Arlington, Massachusetts.
 
 		All Rights Reserved
 
@@ -18,6 +17,7 @@ USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 */
+/* $XConsortium: vgaFasm.h /main/5 1995/11/13 08:46:28 kaleb $ */
 
 #include "fastblt.h"
 

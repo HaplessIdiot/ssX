@@ -65,5 +65,10 @@ For some OSs you need to set BOOTSTRAPCFLAGS.  Refer to the appropriate
 OS-specific README for information about this.
 
 
-$XConsortium: ServersOnly,v 1.2 94/11/21 21:48:41 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.2 1995/02/12 09:54:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.3 1995/06/25 08:47:11 dawes Exp $
+
+
+
+
+
+$XConsortium: ServersOnly /main/4 1995/11/12 19:49:12 kaleb $

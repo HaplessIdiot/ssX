@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: s3_bank.s,v 1.2 95/06/19 19:19:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_bank.s,v 3.0 1994/04/29 14:10:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

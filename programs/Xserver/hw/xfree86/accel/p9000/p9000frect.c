@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000frect.c,v 3.0 1995/05/24 12:21:50 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -32,6 +32,7 @@
  * Rewritten for the P9000 by Henrik Harmsen (harmsen@eritel.se)
  *    (with help from Chris Mason)
  */
+/* $XConsortium: p9000frect.c /main/3 1995/11/12 18:18:55 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

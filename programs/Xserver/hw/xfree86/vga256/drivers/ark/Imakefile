@@ -1,5 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.2 1995/06/02 10:23:51 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:58:43 kaleb $
 
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.3 1996/01/24 22:03:00 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ark_driver.c ark_bank.s ark_cursor.c

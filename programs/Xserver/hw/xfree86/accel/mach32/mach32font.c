@@ -1,5 +1,4 @@
-/* $XConsortium: mach32font.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32font.c,v 3.1 1994/08/31 06:19:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32font.c,v 3.3 1995/01/28 16:58:52 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -26,7 +25,7 @@
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Modified for the new cache by Mike Bernson (mike@mbsun.mlb.org)
  */
-
+/* $XConsortium: mach32font.c /main/3 1995/11/12 17:24:50 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

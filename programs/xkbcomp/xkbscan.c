@@ -1,5 +1,5 @@
-/* $XConsortium: xkbscan.c /main/6 1996/01/14 16:48:58 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.0 1996/01/10 05:43:00 dawes Exp $ */
+/* $XConsortium: xkbscan.c /main/7 1996/02/02 14:17:53 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.1 1996/01/16 15:09:07 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,6 +33,7 @@
 #include <X11/XKBlib.h>
 
 #include "tokens.h"
+#define	DEBUG_VAR	scanDebug
 #include "utils.h"
 
 #ifndef Lynx

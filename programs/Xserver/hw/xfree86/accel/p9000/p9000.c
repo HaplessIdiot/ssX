@@ -1,5 +1,4 @@
-/* $XConsortium: p9000.c,v 1.6 95/01/16 13:16:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.33 1995/12/09 11:07:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.34 1995/12/17 05:03:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -33,8 +32,8 @@
  * Modified for the P9000 by Erik Nygren (nygren@mit.edu)
  * Bank switching code for P9000 by David Moews (dmoews@xraysgi.ims.uconn.edu)
  *
- * Header: /x/xc/programs/Xserver/hw/xfree86/accel/p9000/RCS/p9000.c,v 4.0 1994/05/28 01:24:17 nygren Exp
  */
+/* $XConsortium: p9000.c /main/12 1995/12/17 08:20:39 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

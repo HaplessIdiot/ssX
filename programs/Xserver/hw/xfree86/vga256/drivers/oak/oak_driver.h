@@ -1,4 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.h,v 3.0 1995/11/12 09:53:35 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: oak_driver.h /main/1 1995/11/13 08:31:30 kaleb $ */
 
 #include <X11/Xfuncproto.h>
 

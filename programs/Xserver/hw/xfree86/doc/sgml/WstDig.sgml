@@ -204,8 +204,13 @@ the WD90C24 specific code.  You can reach me (Brad Bosch) at
 
 
 <verb>
-$XConsortium: WstDig.sgml,v 1.2 95/01/16 13:17:51 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.2 1995/01/28 16:02:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.3 1995/07/15 04:26:15 dawes Exp $
+
+
+
+
+
+$XConsortium: WstDig.sgml /main/4 1995/11/12 20:00:25 kaleb $
 </verb>
 
 </article>

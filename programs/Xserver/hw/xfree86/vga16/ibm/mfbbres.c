@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbres.c,v 3.2 1995/01/28 16:08:23 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,8 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbbres.c,v 1.3 95/01/13 19:55:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbres.c,v 3.1 1994/11/26 12:47:04 dawes Exp $ */
+/* $XConsortium: mfbbres.c /main/4 1995/11/13 07:04:17 kaleb $ */
 #include "X.h"
 #include "misc.h"
 #include "maskbits.h"

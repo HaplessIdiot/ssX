@@ -1,5 +1,4 @@
-/* $XConsortium: mach8scrin.c,v 1.4 95/01/16 20:07:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.3 1995/01/28 17:00:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.4 1995/12/23 09:38:20 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -40,7 +39,7 @@ PERFORMANCE OF THIS SOFTWARE.
 Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 
 ********************************************************/
-
+/* $XConsortium: mach8scrin.c /main/6 1995/12/29 10:09:44 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

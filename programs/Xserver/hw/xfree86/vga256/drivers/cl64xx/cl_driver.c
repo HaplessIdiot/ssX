@@ -1,5 +1,4 @@
-/* $XConsortium: cl_driver.c,v 1.2 95/01/16 13:18:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.5 1995/05/27 03:16:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.6 1996/01/12 14:37:58 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -32,6 +31,7 @@
  * Copyright 1994 by Randy Hendry <randy@sgi.com>
  * Copyright 1994 by Jeff Kirk <jeff@bambam.dsd.ES.COM>
  */
+/* $XConsortium: cl_driver.c /main/5 1996/01/12 12:16:53 kaleb $ */
 
 /*************************************************************************/
 

@@ -1,5 +1,4 @@
-/* $XConsortium: vgaBank.h,v 1.4 95/01/05 20:51:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.3 1995/01/28 17:10:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.4 1996/01/12 14:38:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,6 +23,7 @@
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
  */
+/* $XConsortium: vgaBank.h /main/6 1996/01/12 13:10:30 kaleb $ */
 
 #ifndef VGA_BANK_H
 #define VGA_BANK_H

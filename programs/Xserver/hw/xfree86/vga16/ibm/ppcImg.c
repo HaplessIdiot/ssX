@@ -1,5 +1,4 @@
-/* $XConsortium: ppcImg.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.1 1994/05/31 08:12:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.3 1995/01/28 17:06:08 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,8 +22,7 @@
  *
 */
 
-/* Header: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcImg.c,v 9.2 89/05/07 15:27:33 paul Exp */
-/* Source: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcImg.c,v */
+/* $XConsortium: ppcImg.c /main/3 1995/11/13 07:05:18 kaleb $ */
 
 #include "X.h"
 #include "misc.h"

@@ -358,8 +358,13 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.6 1995/06/25 09:53:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.7 1995/07/07 15:40:21 dawes Exp $
+
+
+
+
+
+$XConsortium: isc.sgml /main/4 1995/11/12 20:00:42 kaleb $
 </verb>
 
 </article>

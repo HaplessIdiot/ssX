@@ -1,5 +1,4 @@
-/* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.23 1995/07/12 15:34:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.24 1995/11/18 02:29:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -31,8 +30,8 @@
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Rewritten for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  *
- * Header: /proj/X11/mit/server/ddx/x386/vga/RCS/vga.c,v 1.2 1991/06/27 00:02:49 root Exp
  */
+/* $XConsortium: agxInit.c /main/10 1995/11/19 14:39:47 kaleb $ */
 
 
 #include "X.h"

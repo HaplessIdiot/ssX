@@ -1,4 +1,4 @@
-// $XConsortium: de /main/2 1995/12/07 21:41:25 kaleb $
+// $XConsortium: de /main/3 1996/01/30 20:30:09 kaleb $
 default partial xkb_symbols "basic" {
 
     // Describes the differences between a very simple US/ASCII

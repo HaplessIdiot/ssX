@@ -1,6 +1,9 @@
-/* $XConsortium: vgaBitBlt.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.1 1995/01/28 16:09:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.2 1996/01/10 05:39:59 dawes Exp $ */
 /* GJA -- span move routines */
+
+
+
+/* $XConsortium: vgaBitBlt.c /main/4 1996/01/10 11:12:15 kaleb $ */
 
 #include "X.h"
 #include "OScompiler.h"

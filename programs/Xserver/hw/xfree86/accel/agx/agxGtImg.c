@@ -1,5 +1,4 @@
-/* $XConsortium: agxGtImg.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.2 1995/05/27 03:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.3 1995/06/21 11:51:41 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -23,7 +22,7 @@
  *
  * adapted to the AGX server by Henry A. Worth (haw30@eng.amdahl.com)
  */
-
+/* $XConsortium: agxGtImg.c /main/4 1995/11/13 10:07:01 kaleb $ */
 
 #include "X.h"
 #include "windowstr.h"

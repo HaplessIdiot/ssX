@@ -1,5 +1,4 @@
-/* $XConsortium: mach8fcach.c,v 1.2 94/10/12 20:01:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.5 1995/07/12 15:35:43 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -22,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: mach8fcach.c /main/4 1995/11/12 18:00:19 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"

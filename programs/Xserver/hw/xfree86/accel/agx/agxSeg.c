@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.7 1995/06/21 11:51:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.8 1996/01/11 10:35:20 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,11 +27,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
 
-$XConsortium: agxSeg.c,v 1.2 95/01/05 20:29:54 kaleb Exp $ 
-
 ******************************************************************/
-
-
+/* $XConsortium: agxSeg.c /main/5 1996/01/11 12:28:08 kaleb $ */
 
 #include "X.h"
 

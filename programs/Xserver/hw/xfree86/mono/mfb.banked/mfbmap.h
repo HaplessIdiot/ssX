@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mfbmap.h,v 1.2 95/06/19 18:16:26 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.h,v 3.0 1994/05/04 15:01:30 dawes Exp $ */
 /* mfbmap.h */
 
 #ifndef _MFBMAP_H

@@ -1,3 +1,4 @@
+/* $XConsortium: PatchLevel.h /main/8 1996/01/26 13:30:22 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: PatchLevel.h,v 1.4 95/01/12 19:16:57 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.6 1995/08/05 11:52:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.7 1996/01/26 09:09:19 dawes Exp $ */
 
 #define VERSION 	2
 #define PATCHLEV 	7

@@ -1,4 +1,5 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/cirrus/Imakefile,v 3.2 1995/06/02 10:21:12 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/4 1996/01/26 14:29:06 kaleb $ 
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/cirrus/Imakefile,v 3.3 1996/01/24 22:02:38 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_bank.s

@@ -965,8 +965,13 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.42 1996/01/16 15:04:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.43 1996/01/30 15:26:07 dawes Exp $
+
+
+
+
+
+$XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
 </verb>
 
 </article>

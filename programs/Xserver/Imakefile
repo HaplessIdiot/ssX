@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/202 1995/12/11 15:15:14 dpw $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.45 1996/01/13 12:21:21 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/r61_main/4 1996/01/13 13:05:30 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.46 1996/01/24 21:59:40 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1026,6 +1026,7 @@ SetUIDServerTarget(XF86_I128,$(XF86I128SUBDIRS),$(XF86I128OBJS),$(XF86I128LIBS),
 LinkFile(XF86_I128.def,I128.def)
 #endif
 #endif        /* XF86I128Server */
+
 
 #if XnestServer
 XCOMM

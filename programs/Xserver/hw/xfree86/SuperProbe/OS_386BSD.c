@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.4 1995/01/28 15:47:13 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: OS_386BSD.c,v 1.4 95/01/23 15:33:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.3 1995/01/19 05:20:38 dawes Exp $ */
+/* $XConsortium: OS_386BSD.c /main/6 1995/11/13 11:12:40 kaleb $ */
 
 #include "Probe.h"
 

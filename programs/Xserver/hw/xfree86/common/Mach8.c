@@ -1,5 +1,10 @@
-/* $XConsortium: Mach8.c,v 1.1 95/01/26 15:26:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/Mach8.c,v 3.2 1994/09/07 15:51:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/Mach8.c,v 3.3 1995/01/28 15:57:15 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: Mach8.c /main/2 1995/11/12 19:20:37 kaleb $ */
 #include "X.h"
 #include "os.h"
 

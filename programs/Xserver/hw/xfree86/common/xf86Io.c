@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.12 1996/01/28 07:30:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.13 1996/01/30 15:25:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86Io.c /main/15 1996/01/27 15:24:13 kaleb $ */
+/* $XConsortium: xf86Io.c /main/18 1996/02/02 15:34:12 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -82,6 +82,15 @@ void
 xf86KbdLeds ()
 {
   int leds = 0;
+#ifdef XKB
+  if (!noXkbExtension) {
+    XkbEventCauseRec cause;
+    XkbSetCauseUnknown(&cause);
+    XkbUpdateIndicators(xf86Info.pKeyboard,XkbAllIndicatorsMask,False,NULL,
+			&cause);
+    return;
+  }
+#endif
 #ifdef LED_CAP
   if (xf86Info.capsLock && !(xf86Info.xleds & XLED1))
     leds |= LED_CAP;

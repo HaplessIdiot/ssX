@@ -1,12 +1,12 @@
-/* $XConsortium: CirrusClk.c,v 1.4 95/01/27 14:46:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.5 1995/01/28 15:58:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.6 1995/11/04 11:30:03 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
  * Harm Hanemaayer <hhanemaa@cs.ruu.nl>
- * 
+ *
  * VCO stability criterion code added by Koen Gadeyne (kmg@barco.be)
  */
+/* $XConsortium: CirrusClk.c /main/6 1995/11/12 19:29:48 kaleb $ */
  
 #include "compiler.h"
 #include "misc.h"

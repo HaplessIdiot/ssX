@@ -1,8 +1,11 @@
-/* $XConsortium: xf86Keymap.h,v 1.8 95/01/23 15:34:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.6 1995/12/21 11:44:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.7 1996/01/31 11:47:08 dawes Exp $ */
 /*
+ *
  * For Scancodes see notes in atKeynames.h  !!!!
+ *
  */
+/* $XConsortium: xf86Keymap.h /main/13 1996/01/31 10:06:32 kaleb $ */
+
 static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = { 
 #ifndef PC98
     /* 0x00 */  NoSymbol,       NoSymbol,	NoSymbol,	NoSymbol,

@@ -1,5 +1,4 @@
-/* $XConsortium: mach32frect.c,v 1.5 95/01/05 20:27:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.6 1994/11/26 12:41:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.8 1995/01/28 16:58:55 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -48,6 +47,7 @@ Simple expansion of tiles added by incorporating parts of the code from
 mach8pcach.c 94-07-12, Hans Nasten ( nasten@everyware.se ).
 
 */
+/* $XConsortium: mach32frect.c /main/6 1995/11/12 17:24:52 kaleb $ */
 
 
 /*

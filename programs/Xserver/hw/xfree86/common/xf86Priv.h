@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.13 1996/01/17 12:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.14 1996/01/28 07:30:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86Priv.h /main/12 1996/01/27 14:54:41 kaleb $ */
+/* $XConsortium: xf86Priv.h /main/13 1996/01/28 07:57:16 kaleb $ */
 
 #ifndef _XF86PRIV_H
 #define _XF86PRIV_H

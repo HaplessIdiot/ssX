@@ -1,5 +1,4 @@
-/* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.14 1995/06/24 10:27:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.15 1995/07/05 12:38:54 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -25,6 +24,7 @@
  * THIS SOFTWARE.
  *
  */
+/* $XConsortium: regagx.h /main/6 1995/11/13 10:07:42 kaleb $ */
 
 #ifndef _AGXregs_H
 #define _AGXregs_H

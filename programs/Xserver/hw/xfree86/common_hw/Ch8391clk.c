@@ -1,5 +1,4 @@
-/* $XConsortium: Ch8391clk.c,v 1.1 95/01/23 15:03:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ch8391clk.c,v 3.2 1995/01/28 15:58:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ch8391clk.c,v 3.3 1995/07/01 10:48:55 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -7,6 +6,7 @@
  * chrontel8391 program from Richard Burdick <burdir@fionn.cuug.ab.ca>
  * Harald Koenig  <koenig@tat.physik.uni-tuebingen.de>
  */
+/* $XConsortium: Ch8391clk.c /main/3 1995/11/12 19:29:45 kaleb $ */
 
 /*
  *

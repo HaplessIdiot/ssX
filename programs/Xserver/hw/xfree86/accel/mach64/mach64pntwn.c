@@ -1,5 +1,4 @@
-/* $XConsortium: mach64pntwn.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.0 1994/11/26 12:42:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.1 1995/01/28 15:53:36 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,6 +26,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XConsortium: mach64pntwn.c /main/2 1995/11/12 17:39:24 kaleb $ */
 
 #include "X.h"
 

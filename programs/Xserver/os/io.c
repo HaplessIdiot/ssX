@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c /main/65 1995/12/08 14:09:08 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.9 1995/03/11 15:08:55 dawes Exp $ */
+/* $XConsortium: io.c /main/r61_main/1 1996/01/31 19:26:44 dpw $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.10 1996/01/05 13:20:04 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -1018,11 +1018,12 @@ FlushAllOutput()
     register int index, base, mask;
     OsCommPtr oc;
     register ClientPtr client;
+    Bool newoutput = NewOutputPending;
 
     if (FlushCallback)
 	CallCallbacks(&FlushCallback, NULL);
 
-    if (! NewOutputPending)
+    if (!newoutput)
 	return;
 
     /*

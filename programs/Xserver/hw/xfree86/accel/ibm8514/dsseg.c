@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/dsseg.c,v 1.1.1.3 1996/01/03 07:12:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/dsseg.c,v 3.0 1996/01/11 10:36:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -52,7 +52,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 */
-/* $XConsortium: dsseg.c /main/2 1995/11/12 16:54:03 kaleb $ */
+/* $XConsortium: dsseg.c /main/3 1996/01/11 12:28:27 kaleb $ */
 
 /* 16-sep-93 TCG: ibm8514dssg.c from ibm8514dsln.c */
 

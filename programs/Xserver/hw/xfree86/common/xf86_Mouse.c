@@ -1,5 +1,4 @@
-/* $XConsortium: xf86_Mouse.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.6 1996/01/28 07:30:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.7 1996/01/30 15:25:59 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -25,6 +24,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86_Mouse.c /main/10 1996/01/30 15:16:12 kaleb $ */
 
 /*
  * [JCH-96/01/21] Added fourth button support for P_GLIDEPOINT mouse protocol.

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oti87_sol.c,v 3.0 1995/11/12 09:53:38 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -26,7 +26,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from the X Consortium.
 */
-
+/* $XConsortium: oti87_sol.c /main/1 1995/11/13 08:31:37 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

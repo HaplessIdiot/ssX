@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mx_bank.s,v 1.2 95/06/19 19:16:47 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_bank.s,v 3.0 1994/05/14 07:02:49 dawes Exp $ */
 /*
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

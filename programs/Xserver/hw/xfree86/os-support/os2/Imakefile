@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:29:39 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.1 1996/01/24 22:02:06 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/3 1996/01/30 15:17:11 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/Imakefile,v 3.2 1996/01/30 15:26:26 dawes Exp $
 #include <Server.tmpl>
 
 BIOS_MOD = os2_bios

@@ -1,5 +1,4 @@
-/* $XConsortium: xf86_ClkPr.c,v 1.3 95/01/05 20:41:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.3 1994/11/26 12:45:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.5 1995/01/28 17:03:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,7 +29,7 @@
  * and Tiago Gons (tiago@comosjn.hobby.nl)
  *
  */
-
+/* $XConsortium: xf86_ClkPr.c /main/4 1995/11/12 19:30:38 kaleb $ */
 
 #include "X.h"
 #include "input.h"

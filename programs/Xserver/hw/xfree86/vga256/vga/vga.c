@@ -1,5 +1,4 @@
-/* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.43 1996/01/11 10:37:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.44 1996/01/12 14:38:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,7 +23,7 @@
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
  */
-
+/* $XConsortium: vga.c /main/18 1996/01/12 13:10:23 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1276,7 +1275,6 @@ vgaEnterLeaveVT(enter, screen_idx)
       {
         vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
       }
-
       vgaRestore(vgaNewVideoState);
 #ifdef SCO
       /*

@@ -1,4 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_P9000.c,v 3.4 1994/09/07 15:51:43 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: XF86_P9000.c /main/3 1995/11/12 19:20:46 kaleb $ */
 /* Id: XF86_P9000.c,v 4.0 1994/05/28 01:26:10 nygren Exp */
 
 #include "X.h"
@@ -44,7 +50,6 @@ int p9000ValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,
@@ -53,12 +58,9 @@ int p9000ValidTokens[] =
   CLOCKPROG,
   BIOSBASE,
   MEMBASE,
+  IOBASE,
   -1
 };
 
-/* Dummy function for PEX in LinkKit and mono server */
-
-#if defined(LINKKIT) && !defined(PEXEXT)
-PexExtensionInit() {}
-#endif
+#include "xf86ExtInit.h"
 

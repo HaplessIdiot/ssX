@@ -1,5 +1,4 @@
-/* $XConsortium: vgabstore.c,v 1.2 95/01/13 20:16:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabstore.c,v 3.0 1994/07/24 11:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabstore.c,v 3.2 1995/01/28 16:14:25 dawes Exp $ */
 /*
  * This file was derived from cfbbstore.c.
  */
@@ -19,6 +18,7 @@
  *
  *
  */
+/* $XConsortium: vgabstore.c /main/3 1995/11/13 09:26:24 kaleb $ */
 
 #include    "vga256.h"
 

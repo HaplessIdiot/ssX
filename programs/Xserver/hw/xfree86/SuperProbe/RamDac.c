@@ -1,3 +1,4 @@
+/* $XConsortium: RamDac.c /main/9 1996/01/26 13:30:37 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -29,8 +30,7 @@
  * 
  */
 
-/* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.13 1995/12/09 11:06:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.14 1996/01/26 09:09:22 dawes Exp $ */
 
 #include "Probe.h"
 

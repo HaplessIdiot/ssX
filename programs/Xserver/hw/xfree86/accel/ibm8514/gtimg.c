@@ -1,5 +1,4 @@
-/* $XConsortium: gtimg.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/gtimg.c,v 3.0 1994/07/24 11:43:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/gtimg.c,v 3.1 1995/01/28 15:51:40 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -26,7 +25,7 @@
  * Stolen from the S3 server and adapted to the 8514 server.
  * Hans Nasten. (nasten@everyware.se).
  */
-
+/* $XConsortium: gtimg.c /main/3 1995/11/12 17:03:02 kaleb $ */
 
 #include "X.h"
 #include "windowstr.h"

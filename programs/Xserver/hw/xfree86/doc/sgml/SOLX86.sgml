@@ -309,7 +309,12 @@ Xserver.
 
 
 <verb>
-$XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.5 1995/07/17 13:52:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.6 1995/07/19 12:43:28 dawes Exp $
+
+
+
+
+
+$XConsortium: SOLX86.sgml /main/4 1995/11/12 20:00:07 kaleb $
 </verb>
 </article>

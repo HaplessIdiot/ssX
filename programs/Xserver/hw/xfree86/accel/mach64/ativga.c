@@ -1,5 +1,4 @@
-/* $XConsortium: ativga.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.3 1995/12/07 07:24:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.4 1995/12/16 08:19:57 dawes Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -41,7 +40,7 @@
  *
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  */
-
+/* $XConsortium: ativga.c /main/5 1995/12/17 08:17:30 kaleb $ */
 
 #include "X.h"
 #include "misc.h"

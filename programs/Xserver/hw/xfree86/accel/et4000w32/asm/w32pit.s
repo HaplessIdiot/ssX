@@ -1,5 +1,5 @@
-/* $XConsortium: w32pit.s,v 1.2 94/11/21 22:10:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32pit.s,v 3.1 1994/09/25 12:27:35 dawes Exp $ */
+/* $XConsortium: w32pit.s /main/3 1995/11/12 15:49:44 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32pit.s,v 3.2 1995/01/28 15:49:57 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 

@@ -1,9 +1,9 @@
-/* $XConsortium: I2061Aalt.c,v 1.1 95/01/26 15:25:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.6 1995/12/02 05:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.7 1995/12/21 11:44:50 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
  */
+/* $XConsortium: I2061Aalt.c /main/5 1995/12/28 17:15:59 kaleb $ */
 
 #include "compiler.h"
 

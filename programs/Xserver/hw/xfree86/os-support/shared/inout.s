@@ -1,5 +1,10 @@
-/* $XConsortium: inout.s,v 1.3 94/10/12 20:50:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/inout.s,v 3.2 1995/01/28 17:05:02 dawes Exp $ */
+/* $XConsortium: inout.s /main/5 1996/01/26 13:38:38 kaleb $ */
+
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/inout.s,v 3.3 1996/01/24 22:02:15 dawes Exp $ */
 
 #include "assyntax.h"
 

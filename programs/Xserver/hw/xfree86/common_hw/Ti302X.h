@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.4 1995/12/02 05:05:32 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: Ti302X.h /main/4 1995/12/02 08:59:27 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>
@@ -79,6 +79,12 @@
 #define   TI_MUX1_3025T_888	0x4E     /* 3025 only */
 #define   TI_MUX1_3025T_565	0x4D     /* 3025 only */
 #define   TI_MUX1_3025T_555	0x4C     /* 3025 only */
+#define   TI_MUX1_3026D_888	0x06     /* 3026 only */
+#define   TI_MUX1_3026D_565	0x05     /* 3026 only */
+#define   TI_MUX1_3026D_555	0x04     /* 3026 only */
+#define   TI_MUX1_3026T_888	0x46     /* 3026 only */
+#define   TI_MUX1_3026T_565	0x45     /* 3026 only */
+#define   TI_MUX1_3026T_555	0x44     /* 3026 only */
 #define TI_MUX_CONTROL_2	0x19
 #define   TI_MUX2_BUS_VGA	0x98
 #define   TI_MUX2_BUS_PC_D8P64	0x1C
@@ -88,6 +94,13 @@
 #define   TI_MUX2_BUS_TC_D24P64	0x04
 #define   TI_MUX2_BUS_TC_D16P64	0x04
 #define   TI_MUX2_BUS_TC_D15P64	0x04
+#define   TI_MUX2_BUS_3026PC_D8P64	0x4C
+#define   TI_MUX2_BUS_3026DC_D24P64	0x5C
+#define   TI_MUX2_BUS_3026DC_D16P64	0x54
+#define   TI_MUX2_BUS_3026DC_D15P64	0x54
+#define   TI_MUX2_BUS_3026TC_D24P64	0x5c  /* 0x54 ? */
+#define   TI_MUX2_BUS_3026TC_D16P64	0x54
+#define   TI_MUX2_BUS_3026TC_D15P64	0x54
 #define TI_INPUT_CLOCK_SELECT	0x1A
 #define   TI_ICLK_CLK0		0x00
 #define   TI_ICLK_CLK0_DOUBLE	0x10
@@ -142,7 +155,7 @@
 #define TI_CURSOR_COLOR_1_RED	0x26
 #define TI_CURSOR_COLOR_1_GREEN	0x27
 #define TI_CURSOR_COLOR_1_BLUE	0x28
-#define TI_AUXILLARY_CONTROL	0x29
+#define TI_AUXILIARY_CONTROL	0x29
 #define   TI_AUX_SELF_CLOCK	0x08
 #define   TI_AUX_W_CMPL		0x01
 #define TI_GENERAL_IO_CONTROL	0x2A
@@ -150,6 +163,7 @@
 #define TI_GENERAL_IO_DATA	0x2B
 #define   TI_GID_W2000_6BIT     0x00
 #define   TI_GID_N9_964		0x01
+#define   TI_GID_ELSA_SOG	0x04
 #define   TI_GID_W2000_8BIT     0x08
 #define   TI_GID_S3_DAC_6BIT	0x1C
 #define   TI_GID_S3_DAC_8BIT	0x1E
@@ -169,7 +183,9 @@
 #define TI_COLOR_KEY_BLUE_LOW	0x36
 #define TI_COLOR_KEY_BLUE_HIGH	0x37
 #define TI_COLOR_KEY_CONTROL	0x38
+#define   TI_COLOR_KEY_CMPL	0x10
 #define TI_MCLK_DCLK_CONTROL	0x39    /* 3025 only */
+#define TI_MCLK_LCLK_CONTROL	0x39    /* 3026 only */
 #define TI_SENSE_TEST		0x3A
 #define TI_TEST_DATA		0x3B
 #define TI_CRC_LOW		0x3C
@@ -180,5 +196,10 @@
 #define   TI_VIEWPOINT25_ID	0x25
 #define TI_MODE_85_CONTROL	0xD5    /* 3025 only */
 
-#define TI_REF_FREQ		14.318  /* 3025 only */
+#define TI_REF_FREQ		14.31818  /* 3025 only */
 
+/*
+ * which clocks should be set (just flags...)
+ */
+#define TI_BOTH_CLOCKS	1
+#define TI_LOOP_CLOCK	2

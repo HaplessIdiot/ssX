@@ -1,5 +1,4 @@
-/* $XConsortium: s3scrin.c,v 1.4 95/01/16 20:07:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.8 1995/05/07 11:49:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.9 1995/12/23 09:38:39 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -43,6 +42,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
 */
+/* $XConsortium: s3scrin.c /main/7 1995/12/29 10:11:52 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -719,8 +719,13 @@ Changes since XFree86 3.1.1:
 </itemize>
 
 <verb>
-$XConsortium: cirrus.sgml,v 1.4 95/01/27 16:14:36 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.9 1995/01/28 16:03:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57 dawes Exp $
+
+
+
+
+
+$XConsortium: cirrus.sgml /main/6 1995/11/12 20:00:36 kaleb $
 </verb>
 
 </article>

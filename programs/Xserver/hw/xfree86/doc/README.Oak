@@ -101,9 +101,13 @@
 
   GOOD LUCK!!!!
 
-
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.5 1995/12/28 03:49:31 dawes Exp $
-  $XConsortium: Oak.sgml,v 1.1 95/01/23 15:05:36 kaleb Exp $
+
+
+
+
+
+  $XConsortium: README.Oak /main/4 1995/12/29 15:56:59 kaleb $
 
 
 
@@ -131,4 +135,7 @@
 
 
 
-$XFree86$
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Oak,v 3.7 1995/12/28 03:52:23 dawes Exp $

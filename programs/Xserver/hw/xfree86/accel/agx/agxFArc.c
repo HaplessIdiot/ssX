@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.2 1995/01/28 15:48:43 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -27,8 +28,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: agxFArc.c,v 1.2 95/01/12 19:38:51 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.1 1994/11/22 02:37:19 dawes Exp $ */
+/* $XConsortium: agxFArc.c /main/4 1995/11/13 10:06:34 kaleb $ */
 
 #include <math.h>
 #include "X.h"

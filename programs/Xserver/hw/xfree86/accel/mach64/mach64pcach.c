@@ -1,5 +1,4 @@
-/* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.8 1995/12/02 01:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.9 1995/12/17 05:03:07 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -27,6 +26,7 @@
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  *
  */
+/* $XConsortium: mach64pcach.c /main/7 1995/12/17 08:18:46 kaleb $ */
 
 
 /*       Offscreen memory organization for one 256-line cache set:
@@ -219,7 +219,7 @@ mach64CacheInit(w, h)
        }
 
        if (cache_sets > 0)
-          mach64CacheInfo = (CacheInfoPtr)xcalloc(MaxSlots, sizeof(CacheInfo));
+          mach64CacheInfo = (CacheInfoPtr)Xcalloc(sizeof(CacheInfo));
 
        switch (cache_sets) {
        case 0:

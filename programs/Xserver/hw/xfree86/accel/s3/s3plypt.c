@@ -1,5 +1,4 @@
-/* $XConsortium: s3plypt.c,v 1.4 95/01/13 19:09:26 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.2 1994/08/20 07:34:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.4 1995/01/28 17:02:22 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -41,8 +40,8 @@ PERFORMANCE OF THIS SOFTWARE.
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3plypt.c,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
+/* $XConsortium: s3plypt.c /main/5 1995/11/12 19:07:05 kaleb $ */
 
 
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.10 1995/01/22 03:06:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.11 1995/05/27 03:12:08 dawes Exp $ */
 /* ati.test.c -- Gather information about ATI video adapters.
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -12,6 +12,7 @@
  *
  * Please see main driver (ati_driver.c) for acknowledgements.
  */
+/* $XConsortium: ati.test.c /main/7 1995/11/12 20:16:47 kaleb $ */
 
 #include <stdio.h>
 #include <unistd.h>

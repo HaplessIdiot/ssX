@@ -1,5 +1,5 @@
-/* $XConsortium: ddxLoad.c /main/4 1996/01/14 16:45:59 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.1 1996/01/30 15:27:42 dawes Exp $ */
+/* $XConsortium: ddxLoad.c /main/7 1996/01/31 09:59:52 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.2 1996/01/31 11:53:35 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -41,7 +41,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-#ifdef CSRG_BASED
+#if defined(CSRG_BASED) || defined(linux) || defined(__sgi) || defined(AIXV3) || defined(__osf__)
 #include <paths.h>
 #endif
 
@@ -63,13 +63,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	 */
 #ifndef XKM_OUTPUT_DIR
 #ifdef NOTYET
-#define	XKM_OUTPUT_DIR	"compiled"
+#define	XKM_OUTPUT_DIR	"compiled/"
 #else
 #ifdef _PATH_VARTMP
 #define XKM_OUTPUT_DIR	_PATH_VARTMP
 #else
 #ifndef __EMX__
-#define	XKM_OUTPUT_DIR	"/usr/tmp"
+#define	XKM_OUTPUT_DIR	"/usr/tmp/"
 #else
 #define	XKM_OUTPUT_DIR	"."
 #endif
@@ -116,7 +116,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
     else outFile= _XkbDupString(file);
     XkbEnsureSafeMapName(outFile);
     if (XkbBaseDirectory!=NULL) {
-	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s/%s.xkm",
+	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
@@ -124,7 +124,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
 		XKM_OUTPUT_DIR,outFile);
     }
     else {
-	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s/%s.xkm",
+	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
@@ -184,14 +184,14 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
 
     XkbEnsureSafeMapName(keymap);
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s/%s.xkm\"",
+	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkmi\"",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }
     else {
-	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s/%s.xkm\"",
+	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }
@@ -241,8 +241,8 @@ FILE *	file;
     buf[0]= '\0';
     if (mapName!=NULL) {
 	if ((XkbBaseDirectory!=NULL)&&(XKM_OUTPUT_DIR[0]!='/'))
-	     sprintf(buf,"%s/%s/%s.xkm",XkbBaseDirectory,XKM_OUTPUT_DIR,mapName);
-	else sprintf(buf,"%s/%s.xkm",XKM_OUTPUT_DIR,mapName);
+	     sprintf(buf,"%s/%s%s.xkm",XkbBaseDirectory,XKM_OUTPUT_DIR,mapName);
+	else sprintf(buf,"%s%s.xkm",XKM_OUTPUT_DIR,mapName);
 	file= fopen(buf,"r");
     }
     else file= NULL;

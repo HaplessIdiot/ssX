@@ -816,14 +816,13 @@
   an ftp site for the binary distribution.
 
 
-
-  $XConsortium: SCO.sgml,v 1.4 95/01/27 16:14:31 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.8 1995/09/17 06:31:59 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.SCO /main/12 1995/12/29 15:57:23 kaleb $
 
 
 
@@ -832,28 +831,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.14 1995/09/23 01:42:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.15 1995/12/28 03:52:25 dawes Exp $

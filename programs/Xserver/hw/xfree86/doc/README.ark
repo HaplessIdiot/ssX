@@ -4,13 +4,12 @@
 
   1.  Supported chipsets
 
-
   The "ark" driver in the SVGA server is for ARK Logic graphics
   chipsets.  The following chipsets are supported:
 
      ARK1000PV (ark1000pv)
         Chipset with 32-bit DRAM interface, supports fast DRAM timing,
-        for VESA and PCI bus. Has powerful "coprocesor" for graphics
+        for VESA and PCI bus. Has powerful "coprocessor" for graphics
         acceleration which is not yet used in the current driver.  The
         max supported resolution/refresh depends on the RAMDAC used on
         the card; expect 256 colors up to 80 or 110 MHz dot clock.
@@ -28,10 +27,7 @@
   The chipset may not be detected automatically. In this case use a line
   like Chipset "ark1000pv" in the Device section of the XF86Config file.
 
-
-
   2.  Supported RAMDACs
-
 
   If no RAMDAC is specified, a standard RAMDAC supporting 256 colors up
   to 80 MHz dot clock frequency is assumed. The following RAMDAC types
@@ -63,15 +59,12 @@
   RAMDAC, but it must be used with care.
 
   To run XF86_SVGA at 16 bpp, pass options to the X server as follows:
-
   startx -- -bpp 16               5-6-5 RGB ('64K color', XGA)
   startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor')
 
 
 
-
   3.  Basic configuration
-
 
   It is recommended that you generate an XF86Config file using the
   `xf86config' program, which should produce a working high-resolution
@@ -98,7 +91,12 @@
   maintainer can be reached at hhanemaa@cs.ruu.nl), or post in the
   Usenet newsgroup "comp.windows.x.i386unix".
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.0 1995/07/03 08:50:55 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.1 1995/07/07 15:40:20 dawes Exp $
+
+
+
+
+  $XConsortium: README.ark /main/2 1995/11/12 19:48:53 kaleb $
 
 
 
@@ -131,4 +129,7 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ark,v 3.1 1995/07/03 10:18:46 dawes Exp $
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ark,v 3.3 1995/07/24 06:52:51 dawes Exp $

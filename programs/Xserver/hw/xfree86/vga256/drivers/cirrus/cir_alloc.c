@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.2 1994/09/11 11:15:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.3 1996/01/13 12:22:00 dawes Exp $ */
 /*
  * cir_alloc.c,v 1.2 1994/09/11 05:52:49 scooper Exp
  * 
@@ -26,6 +26,7 @@
  * Modified: Simon P. Cooper <scooper@vizlab.rutgers.edu>
  *
  */
+/* $XConsortium: cir_alloc.c /main/5 1996/01/13 13:13:26 kaleb $f */
 
 /*
  * This file implements functions a simple allocator of video memory for

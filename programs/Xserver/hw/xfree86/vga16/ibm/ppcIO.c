@@ -1,5 +1,4 @@
-/* $XConsortium: ppcIO.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.4 1995/12/23 09:39:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.5 1996/01/10 05:39:58 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -49,7 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-
+/* $XConsortium: ppcIO.c /main/7 1996/01/10 11:12:11 kaleb $ */
 
 #include "X.h"
 #include "resource.h"

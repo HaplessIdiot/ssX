@@ -1,5 +1,4 @@
-/* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.11 1995/12/17 05:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.12 1996/01/28 07:29:28 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -23,6 +22,7 @@
  * Rewritten for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  *
  */
+/* $XConsortium: mach64init.c /main/9 1996/01/28 07:59:08 kaleb $ */
 
 #include "X.h"
 #include "input.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: vgaLBank.s,v 1.1 94/10/12 21:23:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/vgaLBank.s,v 3.0 1994/05/31 08:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/vgaLBank.s,v 3.1 1995/01/28 16:10:46 dawes Exp $ */
 /* The original file was: */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -28,6 +27,7 @@
 
 /* This version is from Pascal Haible, haible@IZFM.Uni-Stuttgart.DE
  * The same permissions and disclaimer apply to this version. */
+/* $XConsortium: vgaLBank.s /main/2 1995/11/13 07:16:57 kaleb $ */
 
 #include "assyntax.h"
 

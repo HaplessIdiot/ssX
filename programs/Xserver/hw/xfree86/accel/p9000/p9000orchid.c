@@ -1,5 +1,4 @@
-/* $XConsortium: p9000orchid.c,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.4 1995/07/12 15:35:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.5 1995/12/26 06:07:57 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -17,6 +16,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  * */
+/* $XConsortium: p9000orchid.c /main/5 1995/12/29 15:28:21 kaleb $ */
 
 /* NOTE: This is actually based mostly on information contained in
  * Weitek's Power 9000 VL Bus Combination Board Application Note and

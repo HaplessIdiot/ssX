@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32hrzvert.c,v 3.0 1994/09/11 00:41:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32hrzvert.c,v 3.1 1995/01/28 15:50:34 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,9 +46,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: w32hrzvert.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
-#include "X.h"
+/* $XConsortium: w32hrzvert.c /main/2 1995/11/12 16:18:12 kaleb $ */
 
+#include "X.h"
 #include "gc.h"
 #include "window.h"
 #include "pixmap.h"

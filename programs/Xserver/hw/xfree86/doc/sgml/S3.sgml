@@ -789,8 +789,13 @@ exit
 </code>
 
 <verb>
-$XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.31 1995/12/28 03:49:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.32 1996/01/16 15:04:28 dawes Exp $
+
+
+
+
+
+$XConsortium: S3.sgml /main/13 1996/01/16 15:36:43 kaleb $
 </verb>
 
 </article>

@@ -1,8 +1,9 @@
-/* $XConsortium: cirBlitMM.h,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.4 1995/01/28 16:11:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.5 1995/04/09 14:14:16 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
+
+/* $XConsortium: cirBlitMM.h /main/3 1995/11/13 08:20:23 kaleb $ */
 
 #if !defined(__STDC__) && !defined(__GNUC__)
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc32.c,v 3.1 1995/06/08 06:26:35 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,6 +51,7 @@ Additional P9000 work by Chris Mason <mason@mail.csh.rit.edu>
 Modified for P9000 32 bit GC by Henrik Harmsen <harmsen@eritel.se>
 
 ******************************************************************/
+/* $XConsortium: p9000gc32.c /main/3 1995/11/12 18:19:04 kaleb $ */
 
 #define PSZ 32
 
@@ -240,7 +241,7 @@ static GCOps	p9000NonTEOps = {
 };
 
 
-#ifdef 0
+#if 0
 /*
  * p9000InitGC --
  *    Performs initialization of private structures.

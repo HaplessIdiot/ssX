@@ -1,5 +1,4 @@
-/* $XConsortium: w32funcs.h,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32funcs.h,v 3.0 1994/09/11 00:42:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32funcs.h,v 3.1 1995/01/28 15:51:10 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -28,6 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XConsortium: w32funcs.h /main/3 1995/11/12 16:37:46 kaleb $ */
 
 #include "w32map.h"
 

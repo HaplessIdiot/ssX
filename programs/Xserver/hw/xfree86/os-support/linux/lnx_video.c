@@ -1,5 +1,4 @@
-/* $XConsortium: lnx_video.c,v 1.1 94/03/28 21:29:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.2 1995/12/02 05:06:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.3 1995/12/17 05:03:43 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -24,7 +23,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: lnx_video.c /main/5 1995/12/17 08:30:27 kaleb $ */
 
 #include "X.h"
 #include "input.h"

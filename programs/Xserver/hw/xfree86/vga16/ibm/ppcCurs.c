@@ -1,5 +1,4 @@
-/* $XConsortium: ppcCurs.c,v 1.1 94/03/28 21:36:22 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCurs.c,v 3.1 1995/07/08 02:39:15 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,8 +22,7 @@
  *
 */
 
-/* Header: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcCurs.c,v 9.1 88/10/24 03:59:54 paul Exp */
-/* Source: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcCurs.c,v */
+/* $XConsortium: ppcCurs.c /main/3 1995/11/13 07:05:00 kaleb $ */
 
 /*
  * Realize and Unrealize cursor

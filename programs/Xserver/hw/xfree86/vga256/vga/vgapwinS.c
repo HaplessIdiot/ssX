@@ -1,5 +1,4 @@
-/* $XConsortium: vgapwinS.c,v 1.1 95/01/26 15:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapwinS.c,v 3.0 1994/07/24 11:59:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapwinS.c,v 3.1 1995/01/28 16:14:45 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XConsortium: vgapwinS.c /main/2 1995/11/13 09:27:02 kaleb $ */
 
 #include "vga256.h"
 

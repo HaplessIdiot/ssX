@@ -1,9 +1,8 @@
-/* $XConsortium: vgatileodd.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatileodd.c,v 3.0 1994/07/24 11:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatileodd.c,v 3.1 1995/01/28 16:14:57 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
-Copyright 1992 by James Tsillas, Arlignton, Massachusetts
+Copyright 1992 by James Tsillas, Arlington, Massachusetts
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,6 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XConsortium: vgatileodd.c /main/2 1995/11/13 09:27:22 kaleb $ */
 
 /*
  * Fill odd tiled rectangles and spans.

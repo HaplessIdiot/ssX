@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c /main/184 1996/01/24 15:55:47 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.4 1996/01/24 22:00:12 dawes Exp $ */
+/* $XConsortium: events.c /main/185 1996/02/02 14:25:31 kaleb $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.5 1996/01/26 09:01:43 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3643,7 +3643,7 @@ WriteEventsToClient(pClient, count, events)
 
 #ifdef XKB
     if ((!noXkbExtension)&&(!XkbFilterEvents(pClient, count, events)))
-      return;
+	return;
 #endif
 
     if (EventCallback)

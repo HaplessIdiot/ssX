@@ -1,4 +1,5 @@
 #!/bin/bash
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/BM-Lynx.shar,v 3.0 1995/07/15 15:09:42 dawes Exp $
 # This is a shell archive (produced by GNU sharutils 4.1).
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/bash' line above, then type `bash FILE'.
@@ -8,7 +9,7 @@
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
 #
-# $XFree86$
+# $XConsortium: BM-Lynx.shar /main/3 1995/11/12 20:16:31 kaleb $
 #
 # This shar contains:
 # length mode       name

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.20 1995/11/19 01:25:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.21 1996/01/24 22:03:28 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -71,7 +71,7 @@
  * - The card database.
  *
  */
-
+/* $XConsortium: xf86config.c /main/11 1996/01/26 14:04:59 kaleb $ */
 
 #include <stdlib.h>
 #include <stdio.h>

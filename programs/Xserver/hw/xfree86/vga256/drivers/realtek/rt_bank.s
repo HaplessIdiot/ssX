@@ -20,7 +20,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XConsortium: rt_bank.s /main/2 1995/09/05 19:37:16 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_bank.s,v 3.0 1995/06/02 10:27:15 dawes Exp $ */
 
 /*
  * These are here the very lowlevel VGA bankswitching routines.

@@ -1,5 +1,4 @@
-/* $XConsortium: sysv_tty.c,v 1.3 95/01/05 22:40:58 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.2 1994/10/23 13:00:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.4 1995/01/28 17:05:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -24,8 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-
+/* $XConsortium: sysv_tty.c /main/4 1995/11/13 06:15:23 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: compiler.h,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.5 1995/11/30 13:04:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.6 1995/12/21 11:44:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: compiler.h /main/7 1995/12/28 17:14:10 kaleb $ */
 
 #ifndef _COMPILER_H
 #define _COMPILER_H

@@ -1,5 +1,4 @@
-/* $XConsortium: ppcSetSp.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.1 1994/06/18 16:26:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.3 1995/01/28 17:06:15 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -70,7 +69,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
+/* $XConsortium: ppcSetSp.c /main/4 1995/11/13 07:05:47 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

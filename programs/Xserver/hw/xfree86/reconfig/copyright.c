@@ -1,7 +1,10 @@
-/* $XConsortium: copyright.c,v 1.2 94/11/21 21:55:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/copyright.c,v 3.0 1994/09/21 10:55:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/copyright.c,v 3.1 1995/01/28 16:07:28 dawes Exp $ */
+
 
 /* Print the copyright to stdout */
+
+
+/* $XConsortium: copyright.c /main/3 1995/11/13 06:28:49 kaleb $ */
 
 copyright()
 {

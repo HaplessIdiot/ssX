@@ -1,8 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.h,v 3.2 1995/01/04 04:42:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.h,v 3.4 1995/01/28 16:11:30 dawes Exp $ */
 
 /*
  * Definitions for video memory allocator in cir_alloc.c.
  */
+
+/* $XConsortium: cir_alloc.h /main/5 1995/11/13 08:20:35 kaleb $ */
 
 #include <X11/Xfuncproto.h>
 

@@ -1,5 +1,4 @@
-/* $XConsortium: dummy.c,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/dummy.c,v 3.1 1994/09/22 15:48:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/dummy.c,v 3.2 1995/01/28 15:50:56 dawes Exp $ */
 /*
  * cfbfuncs.c
  *
@@ -7,6 +6,7 @@
  * 
  * To coax et4_driver.c into cooperation--GGL 
  */
+/* $XConsortium: dummy.c /main/3 1995/11/12 16:37:19 kaleb $ */
 
 #include "vga256.h"
 

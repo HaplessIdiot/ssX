@@ -1,5 +1,4 @@
-/* $XConsortium: vgaSolid.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaSolid.c,v 3.2 1995/01/28 17:06:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaSolid.c,v 3.3 1996/01/10 05:40:02 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -45,8 +44,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/vga/RCS/vgaSolid.c,v 6.2 89/04/29 21:46:50 jeff Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/vga/RCS/vgaSolid.c,v */
+/* $XConsortium: vgaSolid.c /main/4 1996/01/10 11:12:26 kaleb $ */
 
 #include "X.h"
 #include "OScompiler.h"

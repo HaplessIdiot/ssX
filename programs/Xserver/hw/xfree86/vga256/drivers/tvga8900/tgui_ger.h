@@ -1,3 +1,4 @@
+/* $XConsortium: tgui_ger.h /main/2 1996/01/10 10:21:38 kaleb $ */
 /*
  * Copyright 1995 by Alan Hourihane, Wigan, England.
  *
@@ -21,8 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.0 1995/12/17 05:04:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.1 1996/01/08 08:56:42 dawes Exp $ */
 
 /* Graphics Engine for 9420/9430 */
 

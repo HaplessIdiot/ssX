@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Utils.c,v 3.3 1995/01/28 15:47:40 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: Utils.c,v 1.4 95/01/12 19:32:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Utils.c,v 3.2 1994/11/30 20:36:19 dawes Exp $ */
+/* $XConsortium: Utils.c /main/6 1995/11/13 11:13:30 kaleb $ */
 
 #include "Probe.h"
 #include "AsmMacros.h"

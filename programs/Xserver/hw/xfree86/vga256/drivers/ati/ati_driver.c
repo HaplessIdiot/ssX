@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.22 1995/05/28 11:52:30 dawes Exp $ */
+/* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.23 1996/01/12 14:37:46 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *

@@ -1,14 +1,15 @@
 #!/bin/sh
 ######################################################################
 #
-# $XConsortium: svr3_rem_pch,v 1.1 95/01/26 15:22:00 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/svr3_rem_pch,v 3.0 1994/06/05 05:57:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/svr3_rem_pch,v 3.1 1995/01/28 16:04:10 dawes Exp $
 #
 # Back out the patch to kernel that prevents losing IOPL on signals.
 #
 # Version 1.0 - 10/08/93
 #	adapted for svr3 by Steve Forsythe (forsse@meaddata.com) from initial
 #	svr4 version by David Wexelblat (dwex@goblin.org, dwex@aib.com)
+#
+# $XConsortium: svr3_rem_pch /main/2 1995/11/12 20:17:44 kaleb $
 #
 
 N=`basename $0`

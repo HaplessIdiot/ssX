@@ -1,4 +1,4 @@
-/* Id: xf86Xinput.h,v 1.1 1995/12/20 14:01:23 lepied Exp */
+/* $XConsortium: xf86Xinput.h /main/3 1996/01/14 19:01:46 kaleb $ */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.2 1996/01/14 13:35:11 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -35,16 +35,20 @@
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
 
+#ifdef PRIVATE
+#undef PRIVATE
+#endif
 #define PRIVATE(dev) (((LocalDevicePtr)((dev)->public.devicePrivate))->private)
 
 typedef struct _LocalDeviceRec {  
   char		*name;
-  char		*config_section_name;
   int           flags;
   Bool		(*device_config)(
 #if NeedNestedFunctionPrototypes
-    struct _LocalDeviceRec* /*device*/,
-    void* /*LexPtr*/ /*val*/
+    LocalDevicePtr* /*array*/,
+    int /*index*/,
+    int /*max*/,
+    void * /*LexPtr val*/
 #endif
     );
   Bool		(*device_control)(
@@ -81,6 +85,16 @@ typedef struct _LocalDeviceRec {
   pointer	private;
   int		private_flags;
 } LocalDeviceRec, *LocalDevicePtr;
+
+typedef struct _DeviceAssocRec 
+{
+  char                  *config_section_name;
+  LocalDevicePtr        (*device_allocate)(
+#if NeedNestedFunctionPrototypes
+    void
+#endif
+);
+} DeviceAssocRec, *DeviceAssocPtr;
 
 extern	int		DeviceButtonPress;
 extern	int		DeviceButtonRelease;

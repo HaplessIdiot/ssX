@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/bios_devmem.c,v 3.0 1994/05/08 05:23:45 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: bios_devmem.c /main/3 1995/11/13 06:04:13 kaleb $ */
 
 #include "X.h"
 #include "input.h"

@@ -1,6 +1,7 @@
 XCOMM!/bin/sh
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/mkmf.cpp,v 3.0tsi Exp $
+XCOMM $XConsortium: mkmf.cpp /main/3 1995/09/04 19:49:53 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/mkmf.cpp,v 3.1 1995/07/12 15:33:11 dawes Exp $
 
 XCOMM
 XCOMM Build Makefile for LinkKit

@@ -1,5 +1,4 @@
-/* $XConsortium: p9000.h,v 1.5 95/01/16 13:16:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.11 1995/01/28 15:54:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.12 1995/05/24 12:21:46 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -27,6 +26,7 @@
  * Additional changes by Chris Mason <mason@mail.csh.rit.edu>
  * 
  */
+/* $XConsortium: p9000.h /main/7 1995/11/12 18:18:31 kaleb $ */
 
 #ifndef P9000_H
 #define P9000_H

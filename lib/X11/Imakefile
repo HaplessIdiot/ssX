@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/190 1996/01/16 19:51:54 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.9 1996/01/21 01:48:04 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/192 1996/02/02 16:15:49 kaleb $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.10 1996/01/24 21:57:26 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -32,14 +32,16 @@ EXTRA_LIBRARIES = /**/
         XDMAUTHSRCS = Wrap.c Wraphelp.c
 #endif
 #if BuildXKBlib
-    XKB_DEFINES = -DXKB
+    XKB_DEFINES = -DXKB 
         XKBSRCS = XKB.c XKBBind.c XKBCompat.c XKBCtrls.c XKBCvt.c XKBGetMap.c \
 	          XKBGetByName.c XKBNames.c XKBRdBuf.c XKBSetMap.c XKBUse.c \
-		  XKBleds.c XKBBell.c XKBGeom.c XKBExtDev.c XKBList.c \
+		  XKBleds.c XKBBell.c XKBGeom.c XKBSetGeom.c XKBExtDev.c \
+		  XKBList.c XKBMisc.c \
 		  XKBMAlloc.c XKBGAlloc.c XKBAlloc.c
         XKBOBJS = XKB.o XKBBind.o XKBCompat.o XKBCtrls.o XKBCvt.o XKBGetMap.o \
 		  XKBGetByName.o XKBNames.o XKBRdBuf.o XKBSetMap.o XKBUse.o \
-		  XKBleds.o XKBBell.o XKBGeom.o XKBExtDev.o XKBList.o \
+		  XKBleds.o XKBBell.o XKBGeom.o XKBSetGeom.o XKBExtDev.o \
+		  XKBList.o XKBMisc.o \
 		  XKBMAlloc.o XKBGAlloc.o XKBAlloc.o
 #endif
 #if HasSecureRPC
@@ -822,7 +824,7 @@ LCSRCS = \
 	omTextEsc.c \
 	omTextExt.c \
 	omTextPer.c \
-	omXChar.c 
+	omXChar.c
 
 /*
 #if defined(SunArchitecture) && defined(HasSharedLibraries)

@@ -1,6 +1,5 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga8cppl.c,v 3.1 1995/01/28 16:14:11 dawes Exp $ */
 /*
- * $XConsortium: vga8cppl.c,v 1.1 94/10/13 13:04:50 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga8cppl.c,v 3.0 1994/07/24 11:58:40 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -27,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XConsortium: vga8cppl.c /main/2 1995/11/13 09:25:57 kaleb $ */
 
 #define NO_CFBMSKBITS
 #include "vga256.h"

@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.7 1995/05/27 03:16:43 dawes Exp $ */
+/* $XConsortium: gen_driver.c /main/6 1996/01/12 12:17:12 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.8 1996/01/12 14:38:15 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

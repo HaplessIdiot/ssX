@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.4 1995/11/16 11:04:26 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: Tseng.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.3 1995/01/28 15:47:37 dawes Exp $ */
+/* $XConsortium: Tseng.c /main/5 1995/11/16 10:10:46 kaleb $ */
 
 #include "Probe.h"
 

@@ -1,5 +1,4 @@
-/* $XConsortium: vgarctstp8.c,v 1.2 95/01/13 20:23:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.0 1994/07/24 11:59:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.1 1995/01/28 16:14:46 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -31,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard, MIT X Consortium
 
 */
-
+/* $XConsortium: vgarctstp8.c /main/3 1995/11/13 09:27:04 kaleb $ */
 
 #include "vga256.h"
 

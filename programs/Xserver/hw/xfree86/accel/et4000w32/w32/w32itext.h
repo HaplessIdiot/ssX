@@ -1,5 +1,4 @@
-/* $XConsortium: w32itext.h,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32itext.h,v 3.3 1994/09/25 12:28:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32itext.h,v 3.4 1995/01/28 15:51:12 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -27,6 +26,8 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 4/6/94
 *******************************************************************************/
+/* $XConsortium: w32itext.h /main/3 1995/11/12 16:37:49 kaleb $ */
+
 #ifndef W32_ITEXT_H
 #define W32_ITEXT_H
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.9 1995/03/04 06:20:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.10 1995/05/27 03:17:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -22,6 +22,7 @@
  * 
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  */
+/* $XConsortium: s3_driver.c /main/6 1995/12/03 09:42:56 kaleb $ */
 
 #include "X.h"
 #include "input.h"

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbresd.c,v 3.2 1995/01/28 16:08:24 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,8 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbbresd.c,v 1.3 95/01/13 19:56:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbresd.c,v 3.1 1994/11/26 12:47:05 dawes Exp $ */
+/* $XConsortium: mfbbresd.c /main/4 1995/11/13 07:04:20 kaleb $ */
 #include "X.h"
 #include "misc.h"
 #include "maskbits.h"

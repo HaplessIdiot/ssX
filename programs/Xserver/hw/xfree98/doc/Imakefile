@@ -1,8 +1,15 @@
-XCOMM $XConsortium: Imakefile,v 1.6 95/01/23 15:34:15 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile /main/6 1996/01/21 14:32:46 kaleb $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/Imakefile,v 3.4 1996/01/20 02:48:46 dawes Exp $
 
 #include <Server.tmpl>
+#if 0
 #include <lnxdoc.rules>
+#endif
 
 #if HasLinuxDoc || InstallJapaneseDocs
 #define IHaveSubdirs
@@ -22,6 +29,9 @@ SUBDIRS = $(SGMLDIR) $(JAPANESEDIR)
 /* FreeBSD's README is handled separately because of name length limits */
 #ifdef BSD386Architecture
 OSREADME = README.Bsdi
+#endif
+#ifdef FreeBSDArchitecture
+OSREADME = README.FreeBSD
 #endif
 #ifdef NetBSDArchitecture
 OSREADME = README.NetBSD
@@ -78,36 +88,37 @@ HWREADME =  README.ati README.trident README.tseng README.WstDig \
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
 
-OTHERDOCS = VideoModes.doc README.clkprog
+OTHERDOCS = /*VideoModes.doc*/ QuickStart.doc README.clkprog
 #endif
 
-MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM)
+MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM) README.DGA
 
-DATABASE = modeDB.txt AccelCards Monitors Devices
+DATABASE = /*modeDB.txt*/ AccelCards Monitors Devices
 
 FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
+#ifndef DontInstallPC98Version
 InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
-
-#if defined(FreeBSDArchitecture) && !BuildLinuxDocText
-InstallNamedNonExec(READ.FreeBSD,README.FreeBSD,$(XFREE86DOCDIR))
 #endif
 
 LinkSourceFile(AccelCards,$(XF86SRC)/doc)
+LinkSourceFile(BetaReport,$(XF86SRC)/doc)
 LinkSourceFile(COPYRIGHT,$(XF86SRC)/doc)
 LinkSourceFile(Devices,$(XF86SRC)/doc)
 LinkSourceFile(INSTALL,$(XF86SRC)/doc)
 LinkSourceFile(LbxproxyOnly,$(XF86SRC)/doc)
 LinkSourceFile(Monitors,$(XF86SRC)/doc)
 LinkSourceFile(OS2.Notes,$(XF86SRC)/doc)
-LinkSourceFile(READ.FreeBSD,$(XF86SRC)/doc)
+LinkSourceFile(QuickStart.doc,$(XF86SRC)/doc)
+LinkFile(README.FreeBSD,$(XF86SRC)/doc/READ.FreeBSD)
 LinkSourceFile(README,$(XF86SRC)/doc)
 LinkSourceFile(README.Bsdi,$(XF86SRC)/doc)
 LinkSourceFile(README.Config,$(XF86SRC)/doc)
+LinkSourceFile(README.DGA,$(XF86SRC)/doc)
 LinkSourceFile(README.Linux,$(XF86SRC)/doc)
 LinkSourceFile(README.LynxOS,$(XF86SRC)/doc)
 LinkSourceFile(README.Mach,$(XF86SRC)/doc)
-LinkSourceFile(README.Mach64,$(XF86SRC)/doc)
+LinkFile(README.Mach64,$(XF86SRC)/doc/READ.Mach64)
 LinkSourceFile(README.NetBSD,$(XF86SRC)/doc)
 LinkSourceFile(README.OS2,$(XF86SRC)/doc)
 LinkSourceFile(README.Oak,$(XF86SRC)/doc)
@@ -127,6 +138,7 @@ LinkSourceFile(README.clkprog,$(XF86SRC)/doc)
 LinkSourceFile(README.isc,$(XF86SRC)/doc)
 LinkSourceFile(README.trident,$(XF86SRC)/doc)
 LinkSourceFile(README.tseng,$(XF86SRC)/doc)
+LinkSourceFile(RELNOTES,$(XF86SRC)/doc)
 LinkSourceFile(ServersOnly,$(XF86SRC)/doc)
 LinkSourceFile(VideoModes.doc,$(XF86SRC)/doc)
 LinkSourceFile(modeDB.txt,$(XF86SRC)/doc)

@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# $XConsortium: confw32.sh,v 1.2 94/11/21 22:08:46 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/confw32.sh,v 3.0 1994/09/11 00:39:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/confw32.sh,v 3.1 1995/01/28 15:49:52 dawes Exp $
 #
 # This script generates w32Conf.c
 #
 # usage: confw32.sh driver1 driver2 ...
 #
+# $XConsortium: confw32.sh /main/3 1995/11/12 16:20:44 kaleb $
 
 VGACONF=./w32Conf.c
 

@@ -1,3 +1,4 @@
+/* $XConsortium: vgapolypnt.c /main/3 1996/01/13 13:15:40 kaleb $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -25,8 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: vgapolypnt.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.1 1995/01/28 16:14:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.2 1996/01/13 12:22:30 dawes Exp $ */
 
 #include "vga256.h"
 

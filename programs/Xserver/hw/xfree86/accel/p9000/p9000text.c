@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000text.c,v 3.1 1995/05/27 03:07:24 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -25,7 +25,7 @@
  * Modified for Mach32 By Mike Bernson (mike@mbsun.mlb.org) from mach8 version
  * Modified for the p9000 by chris mason (clmtch@osfmail.isc.rit.edu)
  */
-
+/* $XConsortium: p9000text.c /main/3 1995/11/12 18:19:37 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -456,3 +456,5 @@ p9000ImageText16(pDraw, pGC, x, y, count, chars)
      unsigned short *chars;
 {
     return p9000NoCImageText(pDraw, pGC, x, y, count, chars, 0) ;
+}
+

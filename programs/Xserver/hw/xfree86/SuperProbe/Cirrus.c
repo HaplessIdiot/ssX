@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.9 1995/11/30 13:03:13 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: Cirrus.c,v 1.4 95/01/12 19:11:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.8 1995/11/04 12:00:05 dawes Exp $ */
+/* $XConsortium: Cirrus.c /main/9 1995/12/02 08:10:11 kaleb $ */
 
 #include "Probe.h"
 

@@ -1,5 +1,4 @@
-/* $XConsortium: cir_orect.c,v 1.3 95/01/26 15:38:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.4 1995/01/28 16:11:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.5 1995/04/09 14:14:36 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,6 +27,7 @@ Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
 Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
 
 ******************************************************************/
+/* $XConsortium: cir_orect.c /main/5 1995/11/13 08:21:18 kaleb $ */
 
 #include "xf86.h"
 #include "vga256.h"

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.1 1995/01/28 15:48:47 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -45,9 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: agxFPoly.c,v 1.2 95/01/12 19:39:46 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.0 1994/11/19 07:50:04 dawes Exp $ */
-
+/* $XConsortium: agxFPoly.c /main/4 1995/11/13 10:06:40 kaleb $ */
 
 #include "gcstruct.h"
 #include "pixmap.h"

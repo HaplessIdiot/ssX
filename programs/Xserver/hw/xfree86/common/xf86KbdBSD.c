@@ -1,5 +1,4 @@
-/* $XConsortium: xf86KbdBSD.c,v 1.1 95/01/26 15:26:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.6 1995/06/08 06:27:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.7 1995/12/21 11:44:35 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -23,6 +22,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: xf86KbdBSD.c /main/4 1995/12/28 17:14:43 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

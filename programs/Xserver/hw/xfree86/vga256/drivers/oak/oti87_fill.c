@@ -1,4 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oti87_fill.c,v 3.0 1995/11/12 09:53:37 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: oti87_fill.c /main/1 1995/11/13 08:31:35 kaleb $ */
 
 #include "cfbrrop.h"
 #include "stdio.h"

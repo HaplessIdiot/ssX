@@ -1,5 +1,4 @@
-/* $XConsortium: blt.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/blt.c,v 3.0 1994/06/06 06:44:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/blt.c,v 3.1 1995/01/28 15:51:30 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -40,9 +39,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Modified by Tiago Gons (tiago@comosjn.hobby.nl)
 
 */
-
-
-/* $XConsortium: blt.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
+/* $XConsortium: blt.c /main/4 1995/11/12 17:02:33 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"

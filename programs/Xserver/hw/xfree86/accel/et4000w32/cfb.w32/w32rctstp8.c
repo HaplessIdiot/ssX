@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.5 1994/12/25 12:19:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.6 1995/01/28 15:50:38 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -30,8 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard, MIT X Consortium
 
 */
-
-/* $XConsortium: w32rctstp8.c,v 1.3 95/01/06 20:56:53 kaleb Exp $ */
+/* $XConsortium: w32rctstp8.c /main/5 1995/11/13 10:59:53 kaleb $ */
 
 #if PSZ == 8
 

@@ -346,6 +346,7 @@
 
 
 
+
   4.  Reconfiguring the server (binary distribution)
 
   If you have installed the server Binary LinkKit, it is possible to
@@ -353,8 +354,8 @@
   For details of how to do this, please refer to the README.LinkKit
   <LinkKit.html> file.
 
-  $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.12 1995/07/22 09:42:53 dawes Exp $
+  $XConsortium: INSTALL /main/10 1995/12/03 09:31:31 kaleb $
 
 
 
@@ -372,27 +373,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.18 1995/07/24 06:52:14 dawes Exp $

@@ -1,5 +1,4 @@
-/* $XConsortium: w32stip.h,v 1.4 95/01/27 15:36:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.3 1995/01/27 02:32:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.4 1995/01/28 15:51:14 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -27,6 +26,8 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 10/1/94
 *******************************************************************************/
+/* $XConsortium: w32stip.h /main/5 1995/11/12 16:37:54 kaleb $ */
+
 #ifndef W32_STIP_H
 #define W32_STIP_H
 

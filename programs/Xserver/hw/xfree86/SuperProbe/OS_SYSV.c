@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.9 1995/07/08 10:28:14 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -24,9 +25,7 @@
  * in this Software without prior written authorization from David Wexelblat.
  *
  */
-
-/* $XConsortium: OS_SYSV.c,v 1.7 95/03/20 15:48:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.8 1995/03/08 11:24:31 dawes Exp $ */
+/* $XConsortium: OS_SYSV.c /main/9 1995/11/13 11:12:55 kaleb $ */
 
 #include "Probe.h"
 

@@ -1,5 +1,4 @@
-/* $XConsortium: xf86Cursor.c,v 1.3 95/01/06 20:57:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.7 1995/12/23 09:38:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.8 1996/01/28 07:30:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86Cursor.c /main/7 1996/01/28 07:57:03 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

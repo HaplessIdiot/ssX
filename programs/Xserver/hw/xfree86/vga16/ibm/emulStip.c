@@ -1,5 +1,4 @@
-/* $XConsortium: emulStip.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulStip.c,v 3.0 1994/05/04 15:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulStip.c,v 3.2 1995/01/28 17:05:53 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,7 +21,7 @@
  * SOFTWARE.
  *
 */
-
+/* $XConsortium: emulStip.c /main/3 1995/11/13 07:04:09 kaleb $ */
 
 /* ppc Stipple
  *

@@ -1,5 +1,5 @@
-/* $XConsortium: stub_driver.c,v 1.4 95/01/16 13:16:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.12 1995/01/28 15:48:10 dawes Exp $ */
+/* $XConsortium: stub_driver.c /main/5 1995/09/04 19:45:46 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.13 1995/05/27 03:02:07 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *

@@ -1,4 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/Imakefile,v 3.2 1995/12/26 07:18:10 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/2 1995/12/29 11:22:52 kaleb $
+
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -23,9 +29,9 @@ OBJS = 	s3.o s3misc.o s3cmap.o s3gc.o s3gc16.o s3gc32.o s3fs.o s3ss.o \
 
 INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(INCLUDESRC) \
-	   -I$(FONTSRC)/include -I$(XF98SRC)/vga256/vga -I$(XF98COMSRC) \
+	   -I$(FONTSRC)/include -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) \
 	   -I$(XF98HWNECSRC) -I$(FONTINCSRC) -I$(XF98OSSRC) \
-	   -I$(XF98SRC)/accel/cache
+	   -I$(XF86SRC)/accel/cache
 
 DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_NEC
 
@@ -45,7 +51,7 @@ NormalLibraryTarget(s3,$(OBJS))
 
 MakeSubdirs($(SUBDIRS))
 
-LinkSourceFile(vgaHW.c,../../vga256/vga)
+LinkSourceFile(vgaHW.c,$(XF86SRC)/vga256/vga)
 
 LinkSourceFile(IBMRGBCurs.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(Ti3026Curs.c,$(XF86SRC)/accel/s3)
@@ -60,7 +66,6 @@ LinkSourceFile(s3Cursor.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3Cursor.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3ELSA.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3ELSA.h,$(XF86SRC)/accel/s3)
-LinkSourceFile(s3Ti3020.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3TiCursor.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3bcach.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3blt.c,$(XF86SRC)/accel/s3)
@@ -91,10 +96,10 @@ LinkSourceFile(s3ss.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3text.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3win.c,$(XF86SRC)/accel/s3)
 
-InstallLinkKitLibrary(s3,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(confS3.SHsuf,$(LINKKITDIR))
-InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(regs3.h,$(LINKKITDIR)/drivers)
+InstallLinkKitLibrary(s3,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confS3.SHsuf,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(s3.h,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(regs3.h,$(XF98LINKKITDIR)/drivers)
 
 #ifndef OS2Architecture
 DependTarget()

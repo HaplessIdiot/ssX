@@ -1,4 +1,4 @@
-// $XConsortium $
+// $XConsortium: xfree86 /main/8 1996/02/02 16:46:12 kaleb $
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -31,49 +31,34 @@ xkb_keymap "de"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ 
-	include "en_US(pc101)"
-	override "de"
-    };
+    xkb_symbols		{ include "en_US(pc101)+de"	};
     xkb_geometry 	{ include "pc"			};
 };
 xkb_keymap "fr"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ 
-	include "en_US(pc101)"
-	override "fr"
-    };
+    xkb_symbols		{ include "en_US(pc101)+fr"	};
     xkb_geometry 	{ include "pc"			};
 };
 xkb_keymap "th"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{
-	include "en_US(pc101)"
-	override "th"
-    };
+    xkb_symbols		{ include "en_US(pc101)+th"	};
     xkb_geometry 	{ include "pc"			};
 };
 xkb_keymap "de_CH"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{
-	include "en_US(pc101)"
-	override "de_CH"
-    };
+    xkb_symbols		{ include "en_US(pc101)+de_CH"	};
     xkb_geometry 	{ include "pc"			};
 };
 xkb_keymap "fr_CH"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ 
-	include "en_US(pc101)"	
-	override "fr_CH"	
-    };
+    xkb_symbols		{ include "en_US(pc101)+fr_CH"	};
     xkb_geometry 	{ include "pc"			};
 };

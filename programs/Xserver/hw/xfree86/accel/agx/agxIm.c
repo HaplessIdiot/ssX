@@ -1,5 +1,4 @@
-/* $XConsortium: agxIm.c,v 1.7 95/01/27 14:50:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.15 1995/07/01 10:47:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.16 1995/07/07 15:38:12 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -32,6 +31,7 @@
  * Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  *
  */
+/* $XConsortium: agxIm.c /main/9 1995/11/13 10:07:04 kaleb $ */
 
 #include "X.h"
 #include "misc.h"

@@ -1,3 +1,10 @@
+# $XFree86:$
+
+
+
+
+# $XConsortium: egc_asm.s /main/2 1995/12/29 11:49:16 kaleb $
+
 	.text
 
 #

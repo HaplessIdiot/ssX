@@ -1,5 +1,5 @@
-/* $XConsortium: et3_driver.c,v 1.4 95/01/16 13:18:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.8 1995/05/27 03:16:28 dawes Exp $ */
+/* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.9 1996/01/12 14:38:07 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

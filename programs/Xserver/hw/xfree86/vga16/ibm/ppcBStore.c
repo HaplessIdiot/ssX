@@ -1,5 +1,4 @@
-/* $XConsortium: ppcBStore.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.1 1994/06/18 16:26:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.3 1995/01/28 17:05:59 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -81,8 +80,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcBStore.c,v 30.0 89/01/23 19:29:01 paul Exp */
+/* $XConsortium: ppcBStore.c /main/4 1995/11/13 07:04:44 kaleb $ */
 
 #include "X.h"
 #include "servermd.h"

@@ -1,9 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/4 1996/01/23 07:00:42 kaleb $
+XCOMM $XConsortium: Imakefile /main/7 1996/02/02 14:22:24 kaleb $
 #define	IHaveSubdirs
 
+      TESTDATA =
      DATAFILES = be bg ca cs de de_CH dk dvorak en_US es fi fr fr_CH gb \
 		 iso9995-3 it no pl pt ru se th us
-       SUBDIRS = digital sun nec
+       SUBDIRS = digital nec sun sony
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols)
 DependTarget()

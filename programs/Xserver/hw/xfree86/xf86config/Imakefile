@@ -1,5 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.2 95/01/06 20:59:07 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Imakefile,v 3.3 1995/04/24 07:21:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Imakefile,v 3.4 1995/05/07 12:25:07 dawes Exp $
+
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/4 1995/11/13 09:49:57 kaleb $
 
             SRCS = xf86config.c cards.c
             OBJS = xf86config.o cards.o

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/MemProbe.c,v 3.2 1995/01/28 15:47:11 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: MemProbe.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/MemProbe.c,v 3.1 1994/08/31 04:19:42 dawes Exp $ */
+/* $XConsortium: MemProbe.c /main/4 1995/11/13 11:12:34 kaleb $ */
 
 #include "Probe.h"
 

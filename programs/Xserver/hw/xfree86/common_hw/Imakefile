@@ -1,5 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.6 95/01/26 15:36:36 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.13 1995/06/29 13:32:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.14 1995/07/01 10:49:01 dawes Exp $
+
+
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/8 1995/11/12 19:30:15 kaleb $
+
 #include <Server.tmpl>
 
 SRCS = I2061Acal.c I2061Aset.c I2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \

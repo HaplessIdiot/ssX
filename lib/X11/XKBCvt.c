@@ -1,5 +1,5 @@
-/* $XConsortium: XKBCvt.c /main/20 1996/01/14 16:43:06 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.4 1996/01/07 03:46:04 dawes Exp $ */
+/* $XConsortium: XKBCvt.c /main/21 1996/02/02 14:09:26 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.5 1996/01/16 15:01:06 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -170,11 +170,13 @@ static unsigned long	WantHebrew = sHebrew;
 
 static int 
 #if NeedFunctionPrototypes
-_XkbHandleSpecialSym(KeySym keysym, char *buffer)
+_XkbHandleSpecialSym(KeySym keysym, char *buffer, int nbytes, int *extra_rtrn)
 #else
-_XkbHandleSpecialSym(keysym, buffer)
+_XkbHandleSpecialSym(keysym, buffer, nbytes, extra_rtrn)
     KeySym	 keysym;
     char	*buffer;
+    int		 nbytes;
+    int *	 extra_rtrn;
 #endif
 {
 
@@ -188,6 +190,11 @@ _XkbHandleSpecialSym(keysym, buffer)
 	   (keysym == XK_Delete)))
 	return 0;
 
+    if (nbytes<1) {
+	if (extra_rtrn) 
+	    *extra_rtrn= 1;
+	return 0;
+    }
     /* if X keysym, convert to ascii by grabbing low 7 bits */
     if (keysym == XK_KP_Space)
 	 buffer[0] = XK_space & 0x7F; /* patch encoding botch */
@@ -204,18 +211,22 @@ _XkbKSToKnownSet (	XPointer 	priv,
 			KeySym 		keysym,
 			char *		buffer,
 			int 		nbytes,
-			Status *	status)
+			int *		extra_rtrn)
 #else
-_XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
+_XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
     XPointer priv;
     KeySym keysym;
     char *buffer;
     int nbytes;
-    Status *status;
+    int *extra_rtrn;
 #endif
 {
     unsigned long kset,keysymSet;
     int	count,isLatin1;
+    char tbuf[8],*buf;
+
+    if (extra_rtrn)
+	*extra_rtrn= 0;
 
     keysymSet = *((unsigned long *)priv);
     kset = keysymSet&0xffffff;
@@ -247,8 +258,11 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
     isLatin1 = ((keysym&0xffffff00)==0);
     count = 0;
 
+    if (nbytes<1)	buf= tbuf;
+    else		buf= buffer;
+
     if ((keysym&0xffffff00)==0xff00) {
-	return _XkbHandleSpecialSym(keysym, buffer);
+	return _XkbHandleSpecialSym(keysym, buf, nbytes, extra_rtrn);
     }
     else if ( keysym == NoSymbol )
 	return 0;
@@ -256,20 +270,20 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
         count = 1;
         switch (keysymSet) {
         case sKana:
-            buffer[0] = (char)(keysym & 0xff);
-            if (buffer[0] == 0x7e)
+            buf[0] = (char)(keysym & 0xff);
+            if (buf[0] == 0x7e)
                 count = 0;
             break;
         case sCyrillic:
-            buffer[0] = cyrillic[keysym & 0x7f];
+            buf[0] = cyrillic[keysym & 0x7f];
             break;
         case sGreek:
-            buffer[0] = greek[keysym & 0x7f];
-            if (!buffer[0])
+            buf[0] = greek[keysym & 0x7f];
+            if (!buf[0])
                 count = 0;
             break;
         default:
-            buffer[0] = (char)(keysym & 0xff);
+            buf[0] = (char)(keysym & 0xff);
             break;
         }
     } else if ((keysymSet != 0) && (isLatin1) && (keysym & 0x80)) {
@@ -277,18 +291,18 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
             /* Most non-latin1 locales use some latin-1 upper half
                keysyms as defined by bitpatterns in array latin1.
                Enforce it. */
-            buffer[0] = (char)(keysym & 0xff);
+            buf[0] = (char)(keysym & 0xff);
             count = 1;
         } else {
 	    count= 1;
 	    if ((keysymSet == sHebrew) && (keysym == XK_multiply))
-		 buffer[0] = (char)0xaa;
+		 buf[0] = (char)0xaa;
             else if ((keysymSet == sHebrew) && (keysym == XK_division))
-		 buffer[0] = (char)0xba;
+		 buf[0] = (char)0xba;
             else if ((keysymSet == sCyrillic) && (keysym == XK_section))
-		 buffer[0] = (char)0xfd;
+		 buf[0] = (char)0xfd;
             else if ((keysymSet == sX0201) && (keysym == XK_yen))
-		 buffer[0] = (char)0x5c;
+		 buf[0] = (char)0x5c;
             else count = 0;
 	}
     } else if (isLatin1) {
@@ -296,21 +310,26 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
             ((keysym == XK_backslash) || (keysym == XK_asciitilde)))
             count = 0;
 	if ( (keysym&0x80)==0 ) {
-	    buffer[0] = (char)(keysym&0x7f);
+	    buf[0] = (char)(keysym&0x7f);
 	    count = 1;
 	}
     } else if (((keysym >> 8) == sLatin2) &&
                (keysym & 0x80) && (latin2[keysym & 0x7f] & (1 << kset))) {
-        buffer[0] = (char)(keysym & 0xff);
+        buf[0] = (char)(keysym & 0xff);
         count = 1;
     } else if ((keysymSet == sGreek) &&
                ((keysym == XK_leftsinglequotemark) ||
                 (keysym == XK_rightsinglequotemark))) {
-        buffer[0] = (char)(keysym - (XK_leftsinglequotemark - 0xa1));
+        buf[0] = (char)(keysym - (XK_leftsinglequotemark - 0xa1));
         count = 1;
     }
+    if (count>nbytes) {
+	if (*extra_rtrn)
+	    *extra_rtrn= count-nbytes;
+	return nbytes;
+    }
     if (count<nbytes)
-	buffer[count]= '\0';
+	buf[count]= '\0';
     return count;
 }
 
@@ -353,19 +372,19 @@ _XkbKSToThai (	XPointer 	priv,
 		KeySym 		keysym,
 		char *		buffer,
 		int 		nbytes,
-		Status *	status)
+		int *		extra_rtrn)
 #else
-_XkbKSToThai (priv, keysym, buffer, nbytes, status)
+_XkbKSToThai (priv, keysym, buffer, nbytes, extra_rtrn)
     XPointer priv;
     KeySym keysym;
     char *buffer;
     int nbytes;
-    Status *status;
+    int *extra_rtrn;
 #endif
 {
 
     if ((keysym&0xffffff00)==0xff00) {
-        return _XkbHandleSpecialSym(keysym, buffer);
+        return _XkbHandleSpecialSym(keysym, buffer, nbytes, extra_rtrn);
     }
     else if (((keysym&0xffffff80)==0xd80)||((keysym&0xffffff80)==0)) {
         if (nbytes>0) {
@@ -374,6 +393,8 @@ _XkbKSToThai (priv, keysym, buffer, nbytes, status)
                 buffer[1]= '\0';
             return 1;
         }
+	if (extra_rtrn)
+	    *extra_rtrn= 1;
     }
     return 0;
 }

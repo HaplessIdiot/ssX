@@ -1,5 +1,4 @@
-/* $XConsortium: w32vars.c,v 1.4 95/01/27 15:36:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.4 1995/01/27 02:32:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.5 1995/01/28 15:51:15 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -27,6 +26,8 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 4/6/94
 *******************************************************************************/
+/* $XConsortium: w32vars.c /main/5 1995/11/12 16:37:57 kaleb $ */
+
 #include "w32.h"
 
 ByteP W32Buffer;

@@ -1,4 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.3 1995/06/14 09:44:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.4 1995/06/14 10:41:41 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: XF86_AGX.c /main/4 1995/11/12 19:20:41 kaleb $ */
 
 #include "X.h"
 #include "os.h"

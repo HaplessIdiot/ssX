@@ -1,5 +1,4 @@
-/* $XConsortium: ppcPixFS.c,v 1.1 95/01/26 15:21:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixFS.c,v 3.0 1994/05/04 15:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixFS.c,v 3.1 1995/01/28 16:08:45 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -45,9 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcPixmapFS.c,v 1.2 89/04/29 22:13:30 jeff Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcPixmapFS.c,v */
+/* $XConsortium: ppcPixFS.c /main/2 1995/11/13 07:05:21 kaleb $ */
 
 #include "X.h"
 #include "misc.h"

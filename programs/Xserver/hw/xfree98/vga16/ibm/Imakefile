@@ -1,4 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/Imakefile,v 3.1 1996/01/10 05:42:19 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/3 1996/01/10 11:05:55 kaleb $
+
 #include <Server.tmpl>
 
 SRCS =	ppcArea.c ppcBitmap.c ppcBStore.c \
@@ -31,17 +37,19 @@ OBJS =	ppcArea.o ppcBitmap.o ppcBStore.o \
 
 XCOMM This one is for an unbanked server.
 XCOMM *** DON'T forget to update the needmem calculation in vga.c! ***
-XCOMM DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16 -DUNBANKED_VGA16
+DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16 -DUNBANKED_VGA16 \
+	-DPC98 -DPC98_EGC
 XCOMM This one is for the banked server:
-DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16 -DPC98 -DPC98_EGC
+XCOMM DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16
 
-INCLUDES = -I. -I$(SERVERSRC)/mi -I$(XF98SRC)/vga2/mfb.banked \
-		-I$(XF98SRC)/vga256/vga \
+INCLUDES = -I. -I$(SERVERSRC)/mi -I$(XF86SRC)/vga2/mfb.banked \
+		-I$(XF86SRC)/vga256/vga \
 		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/cfb -I$(FONTINCSRC) -I$(INCLUDESRC) \
 		-I$(XF98COMSRC)
 
 NormalLibraryObjectRule()
+NormalAsmObjectRule()
 SubdirLibraryRule($(OBJS))
 
 LinkSourceFile(OScompiler.h,$(XF86SRC)/vga16/ibm)
@@ -87,20 +95,14 @@ LinkSourceFile(ppcRot.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcRslvC.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcScrn.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcSetSp.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(ppcSinTab.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcSpMcro.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcWinFS.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcWindow.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vga16.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaBitBlt.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(vgaData.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaGC.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(vgaIO.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaImages.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(vgaOSD.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(vgaProcs.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaReg.h,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(vgaSave.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaSolid.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaStipple.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaVideo.h,$(XF86SRC)/vga16/ibm)

@@ -1,5 +1,4 @@
-/* $XConsortium: mach32scrin.c,v 1.4 95/01/06 20:57:04 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.7 1995/01/28 16:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.8 1995/12/23 09:38:13 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -41,6 +40,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 
 ********************************************************/
+/* $XConsortium: mach32scrin.c /main/7 1995/12/29 10:09:07 kaleb $ */
 
 
 #include "X.h"

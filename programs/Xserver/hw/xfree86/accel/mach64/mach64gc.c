@@ -1,5 +1,4 @@
-/* $XConsortium: mach64gc.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64gc.c,v 3.1 1994/12/05 03:45:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64gc.c,v 3.2 1995/01/28 15:53:26 dawes Exp $ */
 /***********************************************************
 Copyright (c) 1987  X Consortium
 
@@ -58,6 +57,7 @@ Modified for 16 bpp and VTSema-dependent validation by
 Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
 
 ****************************************************************************/
+/* $XConsortium: mach64gc.c /main/2 1995/11/12 17:39:05 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

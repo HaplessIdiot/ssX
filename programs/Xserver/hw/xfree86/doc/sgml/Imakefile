@@ -1,5 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.10 1995/12/23 11:16:29 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/6 1996/01/16 15:35:18 kaleb $
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.11 1996/01/16 15:04:22 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>

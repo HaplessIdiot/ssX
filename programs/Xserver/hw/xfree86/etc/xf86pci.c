@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.4 1995/07/15 15:09:47 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -22,15 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86pci.c /main/3 1995/11/12 20:17:58 kaleb $ */
 
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4)
+#ifdef sun
+#define __EXTENSIONS__
+#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
+#ifdef NCR
+#define __STDC
 #include <sys/sysi86.h>
+#undef __STDC
+#else
+#include <sys/sysi86.h>
+#endif
+#ifndef sun
 #include <sys/seg.h>
+#endif
 #include <sys/v86.h>
+#ifdef sun
+#include <sys/psw.h>
+#endif
 #endif
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
 #include <sys/file.h>
@@ -44,7 +59,17 @@
 #define GCCUSESGAS
 #endif
 #if defined(SCO)
-#include <sys/console.h>
+#  include <sys/console.h>
+#  include <sys/param.h>
+#  include <sys/immu.h>
+#  include <sys/region.h>
+#  include <sys/proc.h>
+#  include <sys/tss.h>
+#  include <sys/sysi86.h>
+#  include <sys/v86.h>
+#endif
+#if defined(Lynx_22)
+#  define GCCUSESGAS
 #endif
 
 
@@ -457,4 +482,19 @@ xf86DisableIOPorts(int dummy)
 #if defined(MACH386)
     close(io_fd);
 #endif
+}
+
+/* These are to allow libxf86_hw.a use Xalloc(), Xfree() */
+
+unsigned long *
+Xalloc(unsigned long amount)
+{
+	return (unsigned long *)malloc(amount);
+}
+
+void
+Xfree(void *ptr)
+{
+	free(ptr);
+	return;
 }

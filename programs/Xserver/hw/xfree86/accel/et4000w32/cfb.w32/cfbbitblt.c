@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-
+/* $XConsortium: cfbbitblt.c /main/2 1995/11/12 16:17:20 kaleb $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -30,8 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbbitblt.c,v 3.0 1994/09/11 00:41:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbbitblt.c,v 3.1 1995/01/28 15:50:08 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

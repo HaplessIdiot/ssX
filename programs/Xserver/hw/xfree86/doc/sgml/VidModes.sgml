@@ -1146,8 +1146,13 @@ Finally, remember that increasing either frame length will decrease your
 refresh rate, and vice-versa.
 
 <verb>
-$XConsortium: VidModes.sgml,v 1.3 95/01/27 16:14:33 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.6 1995/07/21 14:40:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.7 1995/08/13 09:45:11 dawes Exp $
+
+
+
+
+
+$XConsortium: VidModes.sgml /main/6 1995/11/12 20:00:16 kaleb $
 </verb>
 
 </article>

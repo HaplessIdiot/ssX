@@ -1,5 +1,4 @@
-/* $XConsortium: p9000Bt485.h,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.h,v 3.1 1994/09/17 13:46:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.h,v 3.2 1995/01/28 15:54:46 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: p9000Bt485.h /main/3 1995/11/12 18:18:37 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>

@@ -1,5 +1,4 @@
-/* $XConsortium: mach8fs.c,v 1.4 95/01/05 20:28:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fs.c,v 3.1 1994/11/26 12:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fs.c,v 3.3 1995/01/28 17:00:38 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -90,7 +89,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 ******************************************************************/
-
+/* $XConsortium: mach8fs.c /main/5 1995/11/12 18:00:26 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -207,13 +207,13 @@
   darin@castle.net or dernst@pppl.gov.  I only provided the WD90C24
   specific code.  You can reach me (Brad Bosch) at brad@Lachman.com.
 
-  $XConsortium: WstDig.sgml,v 1.2 95/01/16 13:17:51 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.3 1995/07/15 04:26:15 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.WstDig /main/7 1995/11/12 19:48:47 kaleb $
 
 
 
@@ -263,4 +263,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.WstDig,v 3.10 1995/07/24 06:52:47 dawes Exp $

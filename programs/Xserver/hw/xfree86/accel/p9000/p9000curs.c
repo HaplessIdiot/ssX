@@ -1,5 +1,4 @@
-/* $XConsortium: p9000curs.c,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.0 1994/05/29 02:05:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.1 1995/01/28 15:54:53 dawes Exp $ */
 /*
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -24,8 +23,8 @@
 /*
  * Modified by Amancio Hasty and Jon Tombs and Erik Nygren
  * 
- * Id: p9000Cursor.c,v 2.5 1993/08/09 06:17:57 jon Exp jon
  */
+/* $XConsortium: p9000curs.c /main/4 1995/11/13 11:25:10 kaleb $ */
 
 /*
  * Device independent (?) part of HW cursor support

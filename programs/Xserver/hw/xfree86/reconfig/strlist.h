@@ -1,5 +1,10 @@
-/* $XConsortium: strlist.h,v 1.2 94/11/21 21:55:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/strlist.h,v 3.0 1994/09/03 02:52:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/strlist.h,v 3.1 1995/01/28 16:07:37 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: strlist.h /main/3 1995/11/13 06:29:04 kaleb $ */
 
 /* Used in the %union, therefore to be included in the scanner. */
 typedef struct {

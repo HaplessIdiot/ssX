@@ -1,5 +1,4 @@
-/* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.16 1995/07/03 08:42:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.17 1995/07/07 15:38:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -25,8 +24,8 @@
  * Modified by Amancio Hasty and Jon Tombs
  * Rewritten for the AGX by Henry A. Worth (haw30@eng.amdahl.com
  * 
- * Id: s3fcach.c,v 2.5 1993/08/09 06:17:57 jon Exp jon
  */
+/* $XConsortium: agxFCach.c /main/8 1995/11/13 10:06:37 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"

@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.3 1995/07/07 15:40:50 dawes Exp $ */
+/* $XConsortium: hercules.c /main/5 1995/10/25 12:06:02 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.4 1995/10/21 11:43:58 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE

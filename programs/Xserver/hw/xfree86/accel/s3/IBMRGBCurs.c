@@ -1,8 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.1 1995/12/17 05:03:18 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.2 1996/01/05 06:28:46 dawes Exp $ */
 /*
- * Copyright 1995 The XFree86 Project, Inc.
+ *
+ * Copyright XFree86 Project, Inc.
+ *
  */
+/* $XConsortium: IBMRGBCurs.c /main/4 1995/12/17 08:23:17 kaleb $ */
 
 #define NEED_EVENTS
 #include <X.h>

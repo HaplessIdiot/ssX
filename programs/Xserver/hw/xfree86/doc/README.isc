@@ -351,13 +351,13 @@
   great work and the X Consortium for their Public Release of X11R6, as
   to all who contribute to this excellent piece of free software.
 
-  $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.7 1995/07/07 15:40:21 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.isc /main/7 1995/11/12 19:49:04 kaleb $
 
 
 
@@ -395,4 +395,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.isc,v 3.14 1995/07/24 06:53:00 dawes Exp $

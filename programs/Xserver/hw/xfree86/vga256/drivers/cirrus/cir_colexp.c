@@ -1,5 +1,4 @@
-/* $XConsortium: cir_colexp.c,v 1.3 95/01/05 20:47:57 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.8 1995/04/09 14:14:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.9 1996/01/13 12:22:04 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -25,7 +24,7 @@
  * Author:  H. Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
  */
-
+/* $XConsortium: cir_colexp.c /main/6 1996/01/13 13:14:44 kaleb $ */
 
 /*
  * This file contains the low level accelerated functions that use color

@@ -1,5 +1,4 @@
-/* $XConsortium: agxMap.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxMap.c,v 3.0 1994/06/15 15:35:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxMap.c,v 3.1 1995/01/28 15:49:06 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -24,7 +23,7 @@
  * Author: Henry A. Worth (haw30@eng.amdahl.com)
  *
  */
-
+/* $XConsortium: agxMap.c /main/4 1995/11/13 10:07:18 kaleb $ */
 
 #include "agx.h"
 #include "regagx.h"

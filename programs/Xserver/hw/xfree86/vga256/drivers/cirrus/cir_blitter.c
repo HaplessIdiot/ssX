@@ -1,5 +1,4 @@
-/* $XConsortium: cir_blitter.c,v 1.4 95/01/26 15:38:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.9 1995/01/28 17:08:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.10 1996/01/13 12:22:02 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -25,6 +24,7 @@
  * Author:  H. Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
  */
+/* $XConsortium: cir_blitter.c /main/6 1996/01/13 13:13:32 kaleb $ */
 
 
 /*

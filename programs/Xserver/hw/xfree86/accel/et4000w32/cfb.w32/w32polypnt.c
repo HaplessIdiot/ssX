@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32polypnt.c,v 3.1 1994/11/22 02:38:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32polypnt.c,v 3.2 1995/01/28 15:50:37 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -25,8 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
-
-/* $XConsortium: w32polypnt.c,v 1.2 95/01/12 20:04:59 kaleb Exp $ */
+/* $XConsortium: w32polypnt.c /main/3 1995/11/12 16:18:17 kaleb $ */
 
 #include "X.h"
 #include "gcstruct.h"

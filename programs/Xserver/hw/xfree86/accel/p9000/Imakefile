@@ -1,6 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.4 95/01/26 15:34:53 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.10 1995/05/27 03:04:36 dawes Exp $
-XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
+XCOMM $XConsortium: Imakefile /main/7 1996/01/26 13:32:28 kaleb $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.11 1996/01/24 22:01:18 dawes Exp $
 
 #include <Server.tmpl>
 

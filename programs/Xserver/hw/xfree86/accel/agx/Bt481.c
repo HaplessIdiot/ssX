@@ -1,5 +1,4 @@
-/* $XConsortium: Bt481.c,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.c,v 3.3 1995/01/28 15:48:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.c,v 3.4 1995/05/27 03:02:21 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -26,6 +25,7 @@
  * Rewritten for the AGX and BT481/2 by Henry A. Worth <haw30@eng.amdahl.com> 
  *
  */
+/* $XConsortium: Bt481.c /main/3 1995/11/13 10:05:49 kaleb $ */
 
 #define NEED_EVENTS
 #include <X.h>

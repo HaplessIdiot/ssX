@@ -1,5 +1,4 @@
-/* $XConsortium: s3cmap.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.5 1995/12/02 05:05:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.6 1995/12/09 11:07:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -23,15 +22,12 @@
  * 
  * Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
  * 
- * Header: /home/src/xfree86/mit/server/ddx/xf86/accel/s3/RCS/s3cmap.c,v 2.0
- * 1993/02/22 05:58:13 jon Exp
  */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
- * 
- * Id: s3cmap.c,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
+/* $XConsortium: s3cmap.c /main/7 1995/12/09 15:56:12 kaleb $ */
 
 
 #include "X.h"

@@ -650,8 +650,13 @@ and many others.
 </itemize>
 
 <verb>
-$XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.17 1995/12/31 12:02:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.18 1996/01/28 07:30:36 dawes Exp $
+
+
+
+
+
+$XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: linux.cf /main/14 1995/12/04 17:38:41 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.33 1996/01/24 21:51:51 dawes Exp $
+XCOMM platform:  $XConsortium: linux.cf /main/17 1996/01/22 17:36:52 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.34 1996/01/28 07:27:36 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		NO

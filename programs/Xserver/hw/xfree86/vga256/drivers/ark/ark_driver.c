@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.5 1996/01/05 12:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.6 1996/01/12 14:37:41 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -24,6 +24,7 @@
  * Modified for Diamond Stealth64 Graphics 2001 by Leon Bottou
  *   (bottou@laforia.ibp.fr).
  */
+/* $XConsortium: ark_driver.c /main/6 1996/01/12 12:16:25 kaleb $ */
 
 
 /*

@@ -1,5 +1,4 @@
-/* $XConsortium: gBanks.c,v 1.2 94/10/13 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/gBanks.c,v 3.0 1994/07/24 11:58:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/gBanks.c,v 3.2 1995/01/28 17:09:40 dawes Exp $ */
 /*******************************************************************************
 			Copyright 1992 by Glenn G. Lai 
 
@@ -27,6 +26,8 @@ Austin, Tx 78765
 (glenn@cs.utexas.edu)
 6/3/92
 *******************************************************************************/
+/* $XConsortium: gBanks.c /main/3 1995/11/13 08:46:09 kaleb $ */
+
 #include "misc.h"
 #include "vgaBank.h"
 unsigned SpeedUpRowsNext[17];

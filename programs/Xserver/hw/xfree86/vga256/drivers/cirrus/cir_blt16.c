@@ -1,10 +1,4 @@
-/*
- * Hooks for cfb16/32 CopyArea and CopyWindow
- */
-
-/* $XConsortium: cir_blt16.c,v 1.2 95/01/27 14:47:22 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.0 1994/10/30 04:22:33 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.1 1995/01/28 16:11:35 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -33,6 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
+/* $XConsortium: cir_blt16.c /main/3 1995/11/13 08:20:46 kaleb $ */
 
 /*
  * Harm Hanemaayer <hhanemaa@cs.ruu.nl>:
@@ -41,6 +36,10 @@ Author: Keith Packard
  *     modes on Cirrus chipsets.
  */
  
+/*
+ * Hooks for cfb16/32 CopyArea and CopyWindow
+ */
+
 
 #include	"X.h"
 #include	"Xmd.h"

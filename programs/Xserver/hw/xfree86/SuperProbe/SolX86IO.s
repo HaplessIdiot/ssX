@@ -15,8 +15,12 @@
 /          extern void outw(int port, unsigned short value);
 /          extern void outl(int port, unsigned long value);
 /
-/ $XConsortium: SolX86IO.s,v 1.2 94/11/21 21:29:50 kaleb Exp $ 
-/ $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SolX86IO.s,v 3.0 1994/05/14 06:51:16 dawes Exp $
+/ $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SolX86IO.s,v 3.1 1995/01/28 15:47:33 dawes Exp $
+/
+/
+/
+/
+/ $XConsortium: SolX86IO.s /main/4 1995/11/13 11:13:18 kaleb $ 
 
 .file "SolX86IO.s"
 .text

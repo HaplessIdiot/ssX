@@ -1,5 +1,4 @@
-/* $XConsortium: hercRamDac.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.h,v 3.1 1995/01/28 15:49:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.h,v 3.2 1995/05/27 03:03:18 dawes Exp $ */
 /*
  * Copyright 1994 by Henry Worth <haw30@eng.amdahl.com>
  *
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: hercRamDac.h /main/4 1995/11/13 10:07:39 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>

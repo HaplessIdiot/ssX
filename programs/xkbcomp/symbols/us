@@ -1,4 +1,4 @@
-// $XConsortium: us /main/8 1996/01/23 06:59:14 kaleb CHECKEDOUT $
+// $XConsortium: us /main/10 1996/01/29 19:54:54 kaleb $
 
 // symbols definition for a very simple US/ASCII layout.
 // It has basically the alphanumeric keys, punctuation, 
@@ -178,8 +178,8 @@ xkb_symbols "pc102" {
 // definition of Euro-style, Alt_R == [Mode_switch, Multi_key]
 xkb_symbols "pc101euro" {
     include "us(generic101)"
-    key <LALT> {      [       Alt_L,  Meta_L          ]       };
-    key <RALT> {      [ Mode_switch,  Multi_key       ]       };
+    key <LALT> {	[ 	Alt_L,	Meta_L 		]	};
+    key <RALT> {	[ Mode_switch,	Multi_key	]	};
 
     // begin modifier mappings
     modifier_map Mod1   { Alt_L, Meta_L };
@@ -187,7 +187,7 @@ xkb_symbols "pc101euro" {
 
 xkb_symbols "pc102euro" {
     include "us(pc101euro)"
-    key <LSGT> {      [      less,    greater         ]       };
+    key <LSGT> {	[      less,    greater		]	};
 };
 
 // definition for the extra keys on Microsoft-style keyboards

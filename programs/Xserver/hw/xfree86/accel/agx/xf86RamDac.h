@@ -1,5 +1,4 @@
-/* $XConsortium: xf86RamDac.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.h,v 3.3 1995/01/28 15:49:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.h,v 3.4 1995/05/27 03:03:26 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth,  Sunnyvale, California.
@@ -26,8 +25,8 @@
  * Modified by Amancio Hasty and Jon Tombs
  * Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  *
- * Id: s3.h,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
+/* $XConsortium: xf86RamDac.h /main/5 1995/11/13 10:07:56 kaleb $ */
 
 #ifndef XF86_RAMDAC_H
 #define XF86_RAMDAC_H

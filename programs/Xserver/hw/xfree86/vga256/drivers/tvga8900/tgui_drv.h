@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_drv.h,v 3.1 1995/12/17 05:04:07 dawes Exp $ */
 /*
  * Copyright 1995 by Alan Hourihane, Wigan, England.
  *
@@ -21,6 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
+/* $XConsortium: tgui_drv.h /main/1 1995/12/17 08:40:22 kaleb $ */
 
 /* Variables defined in tgui_cursor.c. */
 

@@ -27,6 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
+/* $XConsortium: cfbfillsp.c /main/2 1995/11/12 16:17:29 kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -75,8 +76,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbfillsp.c,v 3.0 1994/09/11 00:41:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbfillsp.c,v 3.1 1995/01/28 15:50:12 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

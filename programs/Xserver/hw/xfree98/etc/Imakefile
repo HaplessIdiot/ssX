@@ -1,4 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.4 1996/01/11 10:38:01 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/5 1996/01/11 12:23:36 kaleb $
+
 #include <Server.tmpl>
 
 #if SystemV
@@ -67,8 +73,10 @@ all:: kbd_mode
 
 SingleProgramTarget(kbd_mode,kbd_mode.o,NullParameter,NullParameter)
 
+#ifndef DontInstallPC98Version
 InstallProgram(kbd_mode,$(BINDIR))
 InstallManPage(kbd_mode,$(MANDIR))
+#endif
 #endif
 
 #if BuildScanpci
@@ -77,11 +85,23 @@ InstallManPage(kbd_mode,$(MANDIR))
 AllTarget(ProgramTargetName(scanpci))
 
 NormalProgramTarget(scanpci,scanpci.o,NullParameter,NullParameter,NullParameter)
+#ifndef DontInstallPC98Version
 InstallProgram(scanpci,$(BINDIR))
 #endif
+#endif
 
-        SRCS = $(SRCS1) $(SRCS2)
+#if JoystickSupport || Joystick2Support
+       SRCS3 = joycal.c
 
+AllTarget(ProgramTargetName(joycal))
+
+NormalProgramTarget(joycal,joycal.o,NullParameter,NullParameter,NullParameter)
+InstallProgram(joycal,$(BINDIR))
+#endif
+
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3)
+
+#ifndef DontInstallPC98Version
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
 #endif
@@ -107,18 +127,19 @@ LinkFile(xterm.termcap,$(PROGRAMSRC)/xterm/termcap)
 LinkFile(xterm.terminfo,$(PROGRAMSRC)/xterm/terminfo)
 #endif
 #endif
+#endif
 
 LinkSourceFile(2key.c,$(XF86SRC)/etc)
 LinkSourceFile(BM-Lynx.shar,$(XF86SRC)/etc)
 LinkSourceFile(XdmConf.svr4,$(XF86SRC)/etc)
 LinkSourceFile(apSolx86.shar,$(XF86SRC)/etc)
 LinkSourceFile(ati.test.c,$(XF86SRC)/etc)
-LinkSourceFile(console.h,$(XF86SRC)/etc)
 LinkSourceFile(dmmap.shar,$(XF86SRC)/etc)
 LinkSourceFile(et4000clock.c,$(XF86SRC)/etc)
 LinkSourceFile(install.sv3,$(XF86SRC)/etc)
 LinkSourceFile(install.sv4,$(XF86SRC)/etc)
 LinkSourceFile(ioctl_pc.h,$(XF86SRC)/etc)
+LinkSourceFile(joycal.c,$(XF86SRC)/etc)
 LinkSourceFile(kbd_mode.c,$(XF86SRC)/etc)
 LinkSourceFile(kbd_mode.man,$(XF86SRC)/etc)
 LinkSourceFile(ld-wrapper.c,$(XF86SRC)/etc)

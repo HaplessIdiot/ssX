@@ -1,5 +1,4 @@
-/* $XConsortium: cir_im.c,v 1.4 95/01/26 15:38:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.9 1995/01/28 17:08:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.10 1995/04/09 14:14:33 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -27,8 +26,8 @@
  * Reworked by: Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  * Modifications: Harm Hanemaayer <hhanemaa@cs.ruu.nl>
  *
- * Id: cir_im.c,v 0.7 1993/09/16 01:07:25 scooper Exp
  */
+/* $XConsortium: cir_im.c /main/6 1995/11/13 08:21:07 kaleb $ */
 
 
 /*

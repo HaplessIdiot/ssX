@@ -1,7 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Att490.c,v 3.0 1995/05/23 08:49:34 dawes Exp $ */
 /*
  *
  */
+
+/* $XConsortium: Att490.c /main/2 1995/11/13 10:05:41 kaleb $ */
 
 #define NEED_EVENTS
 #include <X.h>

@@ -1,5 +1,4 @@
-/* $XConsortium: agxText.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.4 1995/06/21 11:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.5 1995/06/24 10:27:31 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -25,8 +24,8 @@
  * Modified by Amancio Hasty and Jon Tombs
  * Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  * 
- * Id: s3text.c,v 2.3 1993/08/09 06:17:57 jon Exp jon
  */
+/* $XConsortium: agxText.c /main/5 1995/11/13 10:07:31 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"

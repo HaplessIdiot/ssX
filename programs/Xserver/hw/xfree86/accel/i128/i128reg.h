@@ -1,4 +1,4 @@
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.1 1995/12/16 08:19:52 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -21,8 +21,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: i128reg.h /main/2 1995/12/17 08:13:20 kaleb $ */
 
-/* $XFree86$ */
 
 struct i128pci {
     unsigned long devicevendor;
@@ -107,6 +107,18 @@ struct i128mem {
 #define CRT_1CON 0x0058/4
 #define CRT_2CON 0x005C/4
 
+
+/* RBASE_W register offsets  (divided by four for double word indexing */
+
+#define MW0_CTRL 0x0000/4
+#define MW0_AD   0x0004/4
+#define MW0_SZ   0x0008/4   /* 2MB = 0x9, 4MB = 0xA, 8MB = 0xB */
+#define MW0_PGE  0x000C/4
+#define MW0_ORG  0x0010/4
+#define MW0_MSRC 0x0018/4
+#define MW0_WKEY 0x001C/4
+#define MW0_KDAT 0x0020/4
+#define MW0_MASK 0x0024/4
 
 /* raster operations */
 

@@ -1,5 +1,4 @@
-/* $XConsortium: xf86Kbd.c,v 1.6 95/01/23 15:34:04 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.10 1995/06/08 06:27:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.11 1996/01/24 22:01:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86Kbd.c /main/9 1996/01/26 13:36:58 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

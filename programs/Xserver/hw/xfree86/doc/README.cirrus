@@ -715,14 +715,14 @@
 
      o  Default VLB base address for 5429 is 0x03e00000.
 
-  $XConsortium: cirrus.sgml,v 1.4 95/01/27 16:14:36 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.10 1995/07/03 08:50:57 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.cirrus /main/10 1995/11/12 19:48:58 kaleb $
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.19 1995/07/24 06:52:56 dawes Exp $

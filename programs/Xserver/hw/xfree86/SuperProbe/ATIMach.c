@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.5 1995/01/28 15:46:49 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -25,8 +26,7 @@
  *
  */
 
-/* $XConsortium: ATIMach.c,v 1.5 95/01/23 15:33:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.4 1995/01/22 03:04:46 dawes Exp $ */
+/* $XConsortium: ATIMach.c /main/7 1995/11/13 11:11:44 kaleb $ */
 
 #include "Probe.h"
 

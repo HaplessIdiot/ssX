@@ -114,7 +114,6 @@
         by running it with the `-showconfig' flag.  To check which
         extensions are included, start the Xserver and run `xdpyinfo'.
 
-  $XConsortium: LinkKit.sgml,v 1.2 95/01/16 13:17:43 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.7 1995/07/12 13:20:41 dawes Exp $
 
 
@@ -129,6 +128,5 @@
 
 
 
-
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/README,v 3.11 1995/07/24 11:17:53 dawes Exp $
+$XConsortium: README /main/5 1995/09/04 19:49:50 kaleb $

@@ -1,5 +1,4 @@
-/* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.47 1996/01/12 14:37:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.48 1996/01/13 12:22:06 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -31,6 +30,7 @@
  * Modifications: Harm Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
  */
+/* $XConsortium: cir_driver.c /main/14 1996/01/13 13:14:49 kaleb $ */
 
 /* 
  * Modifications to this file for the Cirrus 62x5 chips and color LCD

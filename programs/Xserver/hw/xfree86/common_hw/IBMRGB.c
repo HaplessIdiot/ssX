@@ -1,18 +1,17 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.2 1995/07/07 16:04:03 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
  * programming the on-chip clock on the IBM RGB52x
  * Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  */
-
-/* $XFree86$ */
+/* $XConsortium: IBMRGB.c /main/3 1995/11/12 19:30:00 kaleb $ */
 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
 
 
-#define DEBUG
 #define S3_SERVER
 #include "IBMRGB.h" 
 
@@ -25,7 +24,7 @@ extern int vgaCRReg;
  * RGB52x registers only.
  */
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 void s3OutIBMRGBIndReg(unsigned char reg, unsigned char mask, unsigned char data)
 #else
 void s3OutIBMRGBIndReg(reg, mask, data)
@@ -50,7 +49,7 @@ unsigned char data;
    outb(vgaCRReg, tmp);
 }
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 unsigned char s3InIBMRGBIndReg(unsigned char reg)
 #else
 unsigned char s3InIBMRGBIndReg(reg)
@@ -72,7 +71,7 @@ volatile   unsigned char tmp, ret;
    return(ret);
 }
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 static void
 s3ProgramIBMRGBClock(int clk, unsigned char m, unsigned char n, 
 		     unsigned char df)
@@ -96,7 +95,7 @@ unsigned char df;
    s3OutIBMRGBIndReg(IBMRGB_pll_ctrl1, 0xf8, 3);
 }
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 void IBMRGBSetClock(long freq, int clk, long dacspeed, long fref)
 #else
 void

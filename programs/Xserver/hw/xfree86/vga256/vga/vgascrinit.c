@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.2 1995/01/28 16:14:48 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -26,8 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: vgascrinit.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.1 1994/09/11 07:43:40 dawes Exp $ */
+/* $XConsortium: vgascrinit.c /main/2 1995/11/13 09:27:07 kaleb $ */
 
 #include "vga256.h"
 #include "mibstore.h"

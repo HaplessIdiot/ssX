@@ -280,13 +280,13 @@
   Solaris support, or the Solaris distribution need to be made to
   davidh@use.com, or danson@lgc.com.
 
-  $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.6 1995/07/19 12:43:28 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.SOLX86 /main/7 1995/11/12 19:48:36 kaleb $
 
 
 
@@ -329,4 +329,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SOLX86,v 3.11 1995/07/24 06:52:40 dawes Exp $

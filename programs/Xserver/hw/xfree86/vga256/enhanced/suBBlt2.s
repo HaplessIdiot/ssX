@@ -1,5 +1,4 @@
-/* $XConsortium: suBBlt2.s,v 1.1 95/01/26 15:07:11 kaleb Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/suBBlt2.s,v 3.0 1995/03/11 14:17:29 dawes Exp $ */
 /*******************************************************************************
 			Copyright 1992 by Glenn G. Lai 
 
@@ -27,6 +26,7 @@ Austin, Tx 78765
 (glenn@cs.utexas.edu)
 7/27/92
 *******************************************************************************/
+/* $XConsortium: suBBlt2.s /main/3 1995/11/13 08:46:11 kaleb $ */
 
 #include "assyntax.h"
 

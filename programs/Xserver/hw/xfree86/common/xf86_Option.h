@@ -1,5 +1,4 @@
-/* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.43 1995/12/26 06:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.44 1996/01/12 14:33:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -22,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: xf86_Option.h /main/17 1996/01/12 12:02:03 kaleb $ */
 
 #ifndef _XF86_OPTION_H
 #define _XF86_OPTION_H

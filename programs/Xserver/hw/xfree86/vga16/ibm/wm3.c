@@ -1,5 +1,11 @@
-/* $XConsortium: wm3.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.2 1995/01/28 17:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.3 1996/01/10 05:40:06 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: wm3.c /main/4 1996/01/10 11:13:15 kaleb $ */
+
 #include <sys/types.h>
 #include "compiler.h"
 #include "vgaReg.h"

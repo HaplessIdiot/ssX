@@ -1,8 +1,4 @@
-/*
- * Poly glyph blt for 8 bit displays.  Accepts
- * an arbitrary font <= 32 bits wide, in Copy mode only.
- */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaglblt8.c,v 3.0 1994/07/24 11:58:59 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -28,8 +24,12 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XConsortium: vgaglblt8.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaglblt8.c,v 3.0 1994/07/24 11:58:59 dawes Exp $ */
+/* $XConsortium: vgaglblt8.c /main/2 1995/11/13 09:26:42 kaleb $ */
+
+/*
+ * Poly glyph blt for 8 bit displays.  Accepts
+ * an arbitrary font <= 32 bits wide, in Copy mode only.
+ */
 
 #include	"vga256.h"
 

@@ -1,5 +1,4 @@
-/* $XConsortium: sysv_init.c,v 1.2 94/10/12 20:51:15 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_init.c,v 3.0 1994/09/23 10:25:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_init.c,v 3.2 1995/01/28 17:05:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -24,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sysv_init.c /main/3 1995/11/13 06:21:47 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

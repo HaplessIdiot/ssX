@@ -140,8 +140,13 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.8 1995/12/09 11:07:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.9 1995/12/16 08:20:34 dawes Exp $
+
+
+
+
+
+$XConsortium: W32.sgml /main/9 1996/01/07 18:54:35 kaleb $
 </verb>
 
 </article>

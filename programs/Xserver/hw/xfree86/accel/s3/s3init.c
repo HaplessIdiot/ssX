@@ -1,5 +1,4 @@
-/* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.82 1995/12/23 09:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.83 1996/01/31 11:46:58 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -22,8 +21,8 @@
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3init.c,v 2.5 1993/08/09 06:17:57 jon Exp jon
  */
+/* $XConsortium: s3init.c /main/15 1996/01/31 10:04:46 kaleb $ */
 
 
 #define USE_VGAHWINIT

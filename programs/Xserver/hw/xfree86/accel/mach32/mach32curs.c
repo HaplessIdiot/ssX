@@ -1,6 +1,5 @@
 /*
- * $XConsortium: mach32curs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.5 1995/07/07 15:38:46 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.6 1995/09/17 06:31:19 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -28,8 +27,7 @@
  * Modified for VTs and oversized cursors by Mark_Weaver@brown.edu
  *
  */
-/* Header: /home/src/xfree86/server/ddx/xf86/accel/s3/RCS/s3Cursor.c,v 2.4 1993/07/06 10:23:47 jon Exp jon */
-
+/* $XConsortium: mach32curs.c /main/6 1995/11/12 17:24:38 kaleb $ */
 
 #include <signal.h>
 
@@ -197,7 +195,7 @@ mach32RealizeCursor(pScr, pCurs)
   if (pCurs->bits->refcnt > 1)
 	return TRUE;
 
-  cursPriv = (Mach32CursPriv *)xcalloc(1,sizeof(Mach32CursPriv));
+  cursPriv = (Mach32CursPriv *)Xcalloc(sizeof(Mach32CursPriv));
   *pPriv = (pointer)cursPriv;
   if (!cursPriv) 
      return (FALSE);

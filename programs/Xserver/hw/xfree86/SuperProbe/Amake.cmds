@@ -1,6 +1,11 @@
 # Amakefile for X11R5/mit/server/ddx/x386/SuperProbe.
-# $XConsortium: Amake.cmds,v 1.2 94/11/21 21:29:50 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Amake.cmds,v 3.0 1994/05/14 06:50:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Amake.cmds,v 3.1 1995/01/28 15:46:52 dawes Exp $
+
+
+
+
+
+# $XConsortium: Amake.cmds /main/4 1995/11/13 11:11:50 kaleb $
 
 INCLUDES=
 {

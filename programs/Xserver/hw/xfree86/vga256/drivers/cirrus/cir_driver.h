@@ -1,5 +1,4 @@
-/* $XConsortium: cir_driver.h,v 1.5 95/01/23 15:35:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.19 1995/11/30 13:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.20 1996/01/13 12:22:08 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -27,6 +26,7 @@
  *
  * cir_driver.h,v 1.8 1994/09/14 13:58:59 scooper Exp
  */
+/* $XConsortium: cir_driver.h /main/10 1996/01/13 13:14:55 kaleb $ */
 
 #define CIRRUS_INCLUDE_COPYPLANE1TO8
 

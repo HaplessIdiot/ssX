@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.39 1996/01/24 22:01:37 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.40 1996/01/30 15:25:55 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XConsortium: xf86Init.c /main/14 1995/12/09 16:00:09 kaleb $ */
+/* $XConsortium: xf86Init.c /main/19 1996/01/30 15:14:54 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"

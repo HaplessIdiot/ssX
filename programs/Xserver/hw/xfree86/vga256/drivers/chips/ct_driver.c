@@ -1,5 +1,5 @@
-/* $XConsortium: ct_driver.c,v 1.4 95/01/23 15:35:08 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.9 1995/05/27 03:15:28 dawes Exp $ */
+/* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.10 1996/01/12 14:37:50 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>

@@ -1,5 +1,4 @@
-/* $XConsortium: agx.h,v 1.6 95/01/23 15:33:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.15 1995/06/24 10:27:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.16 1995/07/01 10:47:52 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -23,6 +22,7 @@
  * THIS SOFTWARE.
  *
  */
+/* $XConsortium: agx.h /main/8 1995/11/13 10:06:07 kaleb $ */
 
 #ifndef AGX_H
 #define AGX_H

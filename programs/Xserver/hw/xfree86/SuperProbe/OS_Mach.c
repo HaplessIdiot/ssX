@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Mach.c,v 3.2 1995/01/28 15:47:16 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Robert V. Baron 
  *			<Robert.Baron@ernst.mach.cs.cmu.edu>
@@ -25,9 +26,7 @@
  * in this Software without prior written authorization from Robert V. Baron.
  *
  */
-
-/* $XConsortium: OS_Mach.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Mach.c,v 3.1 1994/08/31 04:19:48 dawes Exp $ */
+/* $XConsortium: OS_Mach.c /main/4 1995/11/13 11:12:47 kaleb $ */
 
 #include "Probe.h"
 

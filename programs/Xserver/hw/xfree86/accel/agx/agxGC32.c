@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC32.c,v 3.1 1995/06/21 11:51:39 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -50,11 +50,11 @@ PERFORMANCE OF THIS SOFTWARE.
 Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 */
+/* $XConsortium: agxGC32.c /main/2 1995/11/13 10:06:56 kaleb $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3gc.c,v 2.3 1993/08/09 06:17:57 jon Exp jon
  */
 
 
@@ -113,9 +113,9 @@ static GCOps agxOps =
    agxPolyFillRect,
    agxPolyFillArc,
    agxPolyText8,
-   miPolyText16,
+   agxPolyText16,
    agxImageText8,
-   miImageText16,
+   agxImageText16,
    miImageGlyphBlt,
    miPolyGlyphBlt,
    miPushPixels,

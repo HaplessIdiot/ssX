@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.4 1994/11/30 20:44:00 dawes Exp $ */
+/* $XConsortium: regati.h /main/4 1995/09/04 19:41:42 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.5 1995/05/27 03:15:22 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *

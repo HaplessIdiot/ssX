@@ -1,5 +1,4 @@
-/* $XConsortium: emulRepAre.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulRepAre.c,v 3.0 1994/05/04 15:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulRepAre.c,v 3.2 1995/01/28 17:05:51 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,9 +21,7 @@
  * SOFTWARE.
  *
 */
-
-/* Header: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcRepArea.c,v 9.1 88/10/24 04:01:09 paul Exp */
-/* Source: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcRepArea.c,v */
+/* $XConsortium: emulRepAre.c /main/4 1995/11/13 11:34:22 kaleb $ */
 
 /* ppc Replicate Area -- A Divide & Conquer Algorithm
  * a "ppc" Helper Function For Stipples And Tiling

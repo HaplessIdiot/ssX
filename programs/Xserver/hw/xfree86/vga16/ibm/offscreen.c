@@ -1,5 +1,4 @@
-/* $XConsortium: offscreen.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.1 1994/06/18 16:26:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.3 1995/01/28 17:05:57 dawes Exp $ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -42,6 +41,7 @@
  * SOFTWARE.
  *
 */
+/* $XConsortium: offscreen.c /main/3 1995/11/13 07:04:36 kaleb $ */
 
 #include "X.h"
 #include "compiler.h"

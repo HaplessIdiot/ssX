@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# $XFree86$
+# $XConsortium: mfbmap.sh,v 1.2 95/06/19 18:16:41 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.sh,v 3.0 1994/05/04 15:01:31 dawes Exp $
 #
 # This skript recreates the mapping list that maps the mfb external
 #  symbols * to mono_*

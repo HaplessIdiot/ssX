@@ -1,5 +1,4 @@
-/* $XConsortium: ppcCpArea.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.4 1995/05/07 11:52:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.5 1995/05/27 03:13:22 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,8 +22,7 @@
  *
 */
 
-/* Header: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcCpArea.c,v 9.4 89/05/07 15:30:29 paul Exp */
-/* Source: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcCpArea.c,v */
+/* $XConsortium: ppcCpArea.c /main/5 1995/11/13 07:04:57 kaleb $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

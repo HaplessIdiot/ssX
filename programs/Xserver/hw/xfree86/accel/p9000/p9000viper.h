@@ -1,5 +1,4 @@
-/* $XConsortium: p9000viper.h,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.4 1994/09/11 00:50:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.5 1995/01/28 15:55:12 dawes Exp $ */
 /*
  * Written by Erik Nygren
  *
@@ -15,6 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: p9000viper.h /main/3 1995/11/12 18:19:45 kaleb $ */
 
 /* Bits for the Output Control Register */
 

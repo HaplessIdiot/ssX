@@ -172,14 +172,13 @@
       FreeBSD:
         ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
 
-
-  $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.9 1995/12/16 08:20:34 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.W32 /main/14 1995/12/29 15:57:36 kaleb $
 
 
 
@@ -196,4 +195,14 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.W32,v 3.16 1995/12/17 05:57:07 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.W32,v 3.17 1995/12/28 03:52:27 dawes Exp $

@@ -394,13 +394,13 @@
   information.
 
 
-  $XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.6 1995/07/21 14:40:56 dawes Exp $
 
 
 
 
 
+  $XConsortium: README.SVR4 /main/8 1995/11/12 19:48:39 kaleb $
 
 
 
@@ -461,4 +461,4 @@
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SVR4,v 3.12 1995/07/24 06:52:43 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.24 1996/01/28 07:30:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.25 1996/01/30 15:25:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: xf86Events.c /main/22 1995/12/19 18:01:27 kaleb $ */
+/* $XConsortium: xf86Events.c /main/30 1996/01/30 15:14:46 kaleb $ */
 
 /* [JCH-96/01/21] Extended std reverse map to four buttons. */
 

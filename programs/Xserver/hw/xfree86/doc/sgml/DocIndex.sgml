@@ -79,8 +79,13 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.7 1995/12/28 03:49:27 dawes Exp $
-$XConsortium: DocIndex.sgml,v 1.2 95/01/27 16:14:23 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.8 1996/01/16 15:04:20 dawes Exp $
+
+
+
+
+
+$XConsortium: DocIndex.sgml /main/6 1996/01/16 15:35:15 kaleb $
 </verb>
 
 </article>

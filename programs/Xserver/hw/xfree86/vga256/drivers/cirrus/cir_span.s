@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_span.s,v 3.1 1994/10/20 06:11:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_span.s,v 3.2 1995/04/09 14:14:40 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -24,6 +24,7 @@
  * Author:  H. Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
  */
+/* $XConsortium: cir_span.s /main/5 1995/11/13 08:21:26 kaleb $ */
 
 #include "assyntax.h"
 

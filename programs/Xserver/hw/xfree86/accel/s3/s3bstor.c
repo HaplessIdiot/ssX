@@ -1,5 +1,4 @@
-/* $XConsortium: s3bstor.c,v 1.3 95/01/16 13:16:51 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.5 1995/01/14 10:47:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.7 1995/01/28 17:01:49 dawes Exp $ */
 /*-
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -28,8 +27,8 @@
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3bstor.c,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
+/* $XConsortium: s3bstor.c /main/4 1995/11/12 19:06:08 kaleb $ */
 
 
 #include    "cfb.h"

@@ -1,5 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/12/14 15:04:34 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/Imakefile,v 3.1 1994/11/27 07:04:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/Imakefile,v 3.2 1995/01/28 15:53:06 dawes Exp $
+
+
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/2 1995/11/12 17:38:24 kaleb $
+
 #include <Server.tmpl>
 
 SRCS = ativga.c mach64.c mach64blt.c mach64bstor.c mach64cmap.c mach64curs.c \

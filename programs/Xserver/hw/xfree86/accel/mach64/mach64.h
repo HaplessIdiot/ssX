@@ -1,5 +1,4 @@
-/* $XConsortium: mach64.h,v 1.2 95/01/16 13:16:32 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.8 1995/12/07 07:24:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.9 1995/12/16 08:19:59 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -25,6 +24,7 @@
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Modified for the Mach64 by Kevin E. Martin (martin@cs.unc.edu)
  */
+/* $XConsortium: mach64.h /main/6 1995/12/17 08:17:52 kaleb $ */
 
 #ifndef MACH64
 #define MACH64_H

@@ -1,6 +1,5 @@
 /*
- * $XConsortium: vgaply1rct.c,v 1.1 94/10/13 13:04:50 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.1 1995/01/28 16:14:39 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.2 1996/01/13 12:22:29 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -27,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XConsortium: vgaply1rct.c /main/3 1996/01/13 13:15:36 kaleb $ */
 
 #include "vga256.h"
 #include "cfbrrop.h"

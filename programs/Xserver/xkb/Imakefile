@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/5 1996/01/14 16:45:37 kaleb $
+XCOMM $XConsortium: Imakefile /main/6 1996/02/02 14:14:14 kaleb $
 #define SGIHyperOpt
 #include <Server.tmpl>
 
@@ -32,12 +32,12 @@ XKB_DDXDEFS = XkbServerDefines
      SRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbSwap.c \
             xkbLEDs.c xkbInit.c xkbActions.c xkbPrKeyEv.c \
 	    xkmread.c xkbtext.c xkbmisc.c xkberrs.c xkbout.c \
-	    XKBMAlloc.c XKBAlloc.c XKBGAlloc.c \
+	    XKBMisc.c XKBMAlloc.c XKBAlloc.c XKBGAlloc.c \
 	    $(XKBXI_SRCS) $(DDX_SRCS)
      OBJS = xkb.o xkbUtils.o xkbEvents.o xkbAccessX.o xkbSwap.o \
-            xkbLEDs.o xkbInit.o xkbActions.o xkbPrKeyEv.o xkbPrOtherEv.o \
+            xkbLEDs.o xkbInit.o xkbActions.o xkbPrKeyEv.o \
 	    xkmread.o xkbtext.o xkbmisc.o xkberrs.o xkbout.o \
-	    XKBMAlloc.o XKBAlloc.o XKBGAlloc.o \
+	    XKBMisc.o XKBMAlloc.o XKBAlloc.o XKBGAlloc.o \
 	    $(XKBXI_OBJS) $(DDX_OBJS)
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
@@ -58,6 +58,7 @@ LinkSourceFile(xkbmisc.c,$(XKBFILELIBSRC))
 LinkSourceFile(xkberrs.c,$(XKBFILELIBSRC))
 LinkSourceFile(xkbconfig.c,$(XKBFILELIBSRC))
 LinkSourceFile(xkbout.c,$(XKBFILELIBSRC))
+LinkSourceFile(XKBMisc.c,$(XLIBSRC))
 LinkSourceFile(XKBMAlloc.c,$(XLIBSRC))
 LinkSourceFile(XKBAlloc.c,$(XLIBSRC))
 LinkSourceFile(XKBGAlloc.c,$(XLIBSRC))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.3 1995/12/02 05:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.4 1996/01/08 08:55:34 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -6,6 +6,7 @@
  * S3 gendac code by Jon Tombs
  * Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  */
+/* $XConsortium: Ti3026clk.c /main/5 1996/01/10 10:21:09 kaleb $ */
 
 #include "Ti302X.h" 
 #include "compiler.h"

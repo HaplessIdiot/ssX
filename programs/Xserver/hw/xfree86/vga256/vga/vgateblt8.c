@@ -1,8 +1,4 @@
-/*
- * TEGblt - ImageText expanded glyph fonts only.  For
- * 8 bit displays, in Copy mode with no clipping.
- */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgateblt8.c,v 3.1 1995/01/28 16:14:52 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -29,8 +25,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: vgateblt8.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgateblt8.c,v 3.0 1994/07/24 11:59:19 dawes Exp $ */
+/* $XConsortium: vgateblt8.c /main/2 1995/11/13 09:27:15 kaleb $ */
+/*
+ * TEGblt - ImageText expanded glyph fonts only.  For
+ * 8 bit displays, in Copy mode with no clipping.
+ */
+
 
 #include	"vga256.h"
 

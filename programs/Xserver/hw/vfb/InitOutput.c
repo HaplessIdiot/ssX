@@ -1,4 +1,4 @@
-/* $XConsortium: InitOutput.c,v 1.14 94/12/05 17:55:50 ray Exp $ */
+/* $XConsortium: InitOutput.c /main/15 1996/01/20 18:43:04 kaleb $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -584,6 +584,7 @@ vfbBlockHandler(blockData, pTimeout, pReadmask)
 	if (-1 == msync((caddr_t)vfbScreens[i].pXWDHeader,
 			(size_t)vfbScreens[i].sizeInBytes, MS_ASYNC))
 #else
+	/* silly NetBSD and who else? */
 	if (-1 == msync((caddr_t)vfbScreens[i].pXWDHeader,
 			(size_t)vfbScreens[i].sizeInBytes))
 #endif

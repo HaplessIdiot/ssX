@@ -1,5 +1,4 @@
-/* $XConsortium: ggldraw.h,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ggldraw.h,v 3.0 1994/09/11 00:42:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ggldraw.h,v 3.1 1995/01/28 15:51:00 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -27,6 +26,7 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 7/20/94
 *******************************************************************************/
+/* $XConsortium: ggldraw.h /main/3 1995/11/12 16:37:27 kaleb $ */
 
 if (FrameBuffer)
 #include "gglbox.h"

@@ -1,6 +1,4 @@
-/* $XConsortium: ICD2061A.h,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/ICD2061A.h,v 3.1 1994/09/07 15:50:40 dawes Exp $ */
-/* Id: ICD2061A.h,v 4.0 1994/05/28 01:24:17 nygren Exp */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/ICD2061A.h,v 3.2 1995/01/28 15:54:38 dawes Exp $ */
 #ifndef DEBUG
 /* #define DEBUG */
 #endif
@@ -42,6 +40,7 @@
  * makes no representations about the suitability of this software for any 
  * purpose.  It is provided "as is" without express or implied warranty.
  */
+/* $XConsortium: ICD2061A.h /main/3 1995/11/12 18:18:23 kaleb $ */
 
 extern unsigned long ICD2061ACalcClock (
 #if NeedFunctionPrototypes

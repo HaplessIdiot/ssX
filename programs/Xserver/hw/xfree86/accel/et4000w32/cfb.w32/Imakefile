@@ -1,5 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 95/01/06 20:56:53 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.4 1994/12/17 09:59:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.5 1995/01/28 15:50:03 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -234,3 +233,4 @@ InstallLinkKitNamedLibrary(cfb,w32cfb,$(LINKKITDIR)/drivers)
 #ifndef OS2Architecture
 DependTarget()
 #endif
+XCOMM $XConsortium: Imakefile /main/5 1995/11/12 16:17:10 kaleb $

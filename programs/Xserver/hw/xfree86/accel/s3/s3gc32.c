@@ -1,5 +1,4 @@
-/* $XConsortium: s3gc32.c,v 1.2 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.3 1994/11/26 12:44:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.4 1995/01/28 15:56:09 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,8 +54,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3gc.c,v 2.3 1993/08/09 06:17:57 jon Exp jon
  */
+/* $XConsortium: s3gc32.c /main/3 1995/11/12 19:06:35 kaleb $ */
 
 
 #include "X.h"

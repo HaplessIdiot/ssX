@@ -402,7 +402,12 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.5 1995/07/07 15:40:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.6 1995/07/21 14:40:56 dawes Exp $
+
+
+
+
+
+$XConsortium: SVR4.sgml /main/4 1995/11/12 20:00:10 kaleb $
 </verb>
 </article>

@@ -1,5 +1,4 @@
-/* $XConsortium: vgaGC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.2 1995/01/28 17:06:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.3 1995/05/07 11:53:12 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -90,8 +89,7 @@ SOFTWARE.
 
 */
 
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/vga/RCS/vgaGC.c,v 6.7 89/04/29 21:47:41 jeff Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/vga/RCS/vgaGC.c,v */
+/* $XConsortium: vgaGC.c /main/5 1995/11/13 07:06:04 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

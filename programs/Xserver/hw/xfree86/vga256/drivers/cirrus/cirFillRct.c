@@ -1,7 +1,4 @@
-/*
- * Fill rectangles.
- */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.7 1995/04/09 14:14:21 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -27,12 +24,12 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-
-/* $XConsortium: cirFillRct.c,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.6 1995/01/28 16:11:27 dawes Exp $ */
-
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
+/* $XConsortium: cirFillRct.c /main/3 1995/11/13 08:20:28 kaleb $ */
 
+/*
+ * Fill rectangles.
+ */
 
 /*
  * This file contains the high level PolyFillRect function.

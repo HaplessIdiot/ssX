@@ -1,5 +1,4 @@
-/* $XConsortium: mach32fs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.5 1994/09/11 00:48:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.7 1995/01/28 16:58:58 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -90,7 +89,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 
 */
-
+/* $XConsortium: mach32fs.c /main/4 1995/11/12 17:24:55 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"
