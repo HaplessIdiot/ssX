@@ -1,3 +1,19 @@
+XFree86 4.0.1Zc (15 December 2000)
+1204. Fix an Xlib memory overrun when the Xutf8TextPropertyToTextList function
+      is used in a unibyte locale (#4394, Bruno Haible).
+1203. Fix the yen/backslash keys for Solaris 8/x86 with Japanese 106 keyboards
+      (based on #4393, Takaaki Nomura).
+1202. Fix type mismatches in the r128 DRI driver on Alpha platforms (#4392,
+      Gareth Hughes).
+1201. Fix build on Japanized version of Solaris 8 for x86 (#4390,
+      Takaaki Nomura).
+1200. Remove some old XtOffset magic for the arm that affects building
+      with gcc (#4388, Keith Packard).
+1199. Release notes updates (David Dawes, Egbert Eich, Mark Vojkovich,
+      Robin Cutshaw, Keith Packard, Alan Hourihane, #4391, Kevin Brosius).
+1198. Revert the tdfx driver to something functionally close to the
+      last known working version (4.0.1g) (David Dawes).
+
 XFree86 4.0.1Zb (14 December 2000)
 1197. New fonts document (#4386, 4387, Juliusz Chroboczek).
 1196. Status doc update for Trident (Alan Hourihane).
@@ -12086,4 +12102,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1481 2000/12/14 21:18:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1482 2000/12/14 23:10:45 dawes Exp $

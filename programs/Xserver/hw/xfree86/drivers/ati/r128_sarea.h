@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_sarea.h,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_sarea.h,v 1.4 2000/12/04 19:21:53 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -107,47 +107,47 @@
 
 typedef struct {
     /* Context state - can be written in one large chunk */
-    unsigned long dst_pitch_offset_c;
-    unsigned long dp_gui_master_cntl_c;
-    unsigned long sc_top_left_c;
-    unsigned long sc_bottom_right_c;
-    unsigned long z_offset_c;
-    unsigned long z_pitch_c;
-    unsigned long z_sten_cntl_c;
-    unsigned long tex_cntl_c;
-    unsigned long misc_3d_state_cntl_reg;
-    unsigned long texture_clr_cmp_clr_c;
-    unsigned long texture_clr_cmp_msk_c;
-    unsigned long fog_color_c;
+    unsigned int dst_pitch_offset_c;
+    unsigned int dp_gui_master_cntl_c;
+    unsigned int sc_top_left_c;
+    unsigned int sc_bottom_right_c;
+    unsigned int z_offset_c;
+    unsigned int z_pitch_c;
+    unsigned int z_sten_cntl_c;
+    unsigned int tex_cntl_c;
+    unsigned int misc_3d_state_cntl_reg;
+    unsigned int texture_clr_cmp_clr_c;
+    unsigned int texture_clr_cmp_msk_c;
+    unsigned int fog_color_c;
 
     /* Texture state */
-    unsigned long tex_size_pitch_c;
-    unsigned long constant_color_c;
+    unsigned int tex_size_pitch_c;
+    unsigned int constant_color_c;
 
     /* Setup state */
-    unsigned long pm4_vc_fpu_setup;
-    unsigned long setup_cntl;
+    unsigned int pm4_vc_fpu_setup;
+    unsigned int setup_cntl;
 
     /* Mask state */
-    unsigned long dp_write_mask;
-    unsigned long sten_ref_mask_c;
-    unsigned long plane_3d_mask_c;
+    unsigned int dp_write_mask;
+    unsigned int sten_ref_mask_c;
+    unsigned int plane_3d_mask_c;
 
     /* Window state */
-    unsigned long window_xy_offset;
+    unsigned int window_xy_offset;
 
     /* Core state */
-    unsigned long scale_3d_cntl;
+    unsigned int scale_3d_cntl;
 } r128_context_regs_t;
 
 /* Setup registers for each texture unit
  */
 typedef struct {
-    unsigned long tex_cntl;
-    unsigned long tex_combine_cntl;
-    unsigned long tex_size_pitch;
-    unsigned long tex_offset[R128_TEX_MAXLEVELS];
-    unsigned long tex_border_color;
+    unsigned int tex_cntl;
+    unsigned int tex_combine_cntl;
+    unsigned int tex_size_pitch;
+    unsigned int tex_offset[R128_TEX_MAXLEVELS];
+    unsigned int tex_border_color;
 } r128_texture_regs_t;
 
 typedef struct {
