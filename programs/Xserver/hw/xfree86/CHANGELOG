@@ -1,4 +1,16 @@
-XFree86 4.3.99.14 (xx September 2003)
+XFree86 4.3.99.14 (xx October 2003)
+ 478. Radeon driver fixes (Hui Yu@ATI)
+      - 9200 DVI fix and TMDS_PLL initialization for all chips
+      - New chips support (9800XT/SE, 9600XT/SE, M11, T2/X2 etc.)
+      - Cleanup unused/secondary chip ids
+      - Autodetect PCI cards
+      - Add BusType to override PCI card autodetect
+      - Add display bandwidth calculation routine to fix flickering/tearing
+        display problem
+      - Workaround for corrupted BIOS image causing incorrect panel size
+      - Fix the LCD table reading loop
+      - Various small changes (including improving DDC reliability and
+        CRTC_MORE_CNTL initialization)
  477. Fix XAA Color8x8 cache bug:
       Pattern was expanded from source instead of destination
       (Thomas Winischhofer)
@@ -17844,7 +17856,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2870 2003/10/04 10:26:00 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2871 2003/10/06 18:22:16 twini Exp $
 
 
 
