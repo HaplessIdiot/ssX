@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  77. Add two missing symbols to loader reference for the glint driver
+      (#4740, Mike Harris).
   76. Make Cygwin/XFree86 work at 8bpp, and re-arrange some command line
       flags. (#4743, Harold Hunt).
   75. Fix some build issues on Cygwin/XFree86 (#4736, #4737, Suhaib Siddiqi).
@@ -13447,4 +13449,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1826 2001/06/04 13:04:39 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1827 2001/06/05 10:10:20 alanh Exp $
