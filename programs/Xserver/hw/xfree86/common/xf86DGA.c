@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.41 2001/05/25 02:44:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.44 2002/09/16 18:05:45 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -28,6 +28,7 @@ static int DGAScreenIndex = -1;
 static Bool DGACloseScreen(int i, ScreenPtr pScreen);
 static void DGADestroyColormap(ColormapPtr pmap);
 static void DGAInstallColormap(ColormapPtr pmap);
+static void DGAUninstallColormap(ColormapPtr pmap);
 
 static void
 DGACopyModeInfo(
@@ -59,6 +60,7 @@ typedef struct {
    CloseScreenProcPtr	CloseScreen;
    DestroyColormapProcPtr DestroyColormap;
    InstallColormapProcPtr InstallColormap;
+   UninstallColormapProcPtr UninstallColormap;
    DGADevicePtr		current;
    DGAFunctionPtr	funcs;
    int			input;
@@ -129,6 +131,8 @@ DGAInit(
     pScreen->DestroyColormap = DGADestroyColormap;
     pScreenPriv->InstallColormap = pScreen->InstallColormap;
     pScreen->InstallColormap = DGAInstallColormap;
+    pScreenPriv->UninstallColormap = pScreen->UninstallColormap;
+    pScreen->UninstallColormap = DGAUninstallColormap;
 
     /*
      * This is now set in InitOutput().
@@ -180,6 +184,7 @@ DGACloseScreen(int i, ScreenPtr pScreen)
    pScreen->CloseScreen = pScreenPriv->CloseScreen;
    pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
    pScreen->InstallColormap = pScreenPriv->InstallColormap;
+   pScreen->UninstallColormap = pScreenPriv->UninstallColormap;
 
    /* DGAShutdown() should have ensured that no DGA
 	screen were active by here */
@@ -235,6 +240,23 @@ DGAInstallColormap(ColormapPtr pmap)
     pScreen->InstallColormap = pScreenPriv->InstallColormap;
     (*pScreen->InstallColormap)(pmap);
     pScreen->InstallColormap = DGAInstallColormap;
+}
+
+static void 
+DGAUninstallColormap(ColormapPtr pmap)
+{
+    ScreenPtr pScreen = pmap->pScreen;
+    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+
+    if(pScreenPriv->current && pScreenPriv->dgaColormap) {
+	if (pmap == pScreenPriv->dgaColormap) {
+	    pScreenPriv->dgaColormap = NULL;
+	}
+    }
+
+    pScreen->UninstallColormap = pScreenPriv->UninstallColormap;
+    (*pScreen->UninstallColormap)(pmap);
+    pScreen->UninstallColormap = DGAUninstallColormap;
 }
 
 int
