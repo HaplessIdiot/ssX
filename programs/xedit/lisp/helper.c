@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.12 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.13 2001/10/18 03:15:22 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -541,7 +541,7 @@ _LispDo(LispMac *mac, LispObj *list, char *fname, int refs)
 
     *pres = NIL;
     *pdid_jump = 1;
-    block = LispBeginBlock(mac, NIL, 0);
+    block = LispBeginBlock(mac, NIL, LispBlockTag);
     if (setjmp(block->jmp) == 0) {
 	*pres = _LispReallyDo(mac, list, fname, refs);
 	*pdid_jump = 0;
@@ -653,7 +653,7 @@ _LispDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 
     *pres = NIL;
     *pdid_jump = 1;
-    block = LispBeginBlock(mac, NIL, 0);
+    block = LispBeginBlock(mac, NIL, LispBlockTag);
     if (setjmp(block->jmp) == 0) {
 	*pres = _LispReallyDoListTimes(mac, list, fname, times);
 	*pdid_jump = 0;

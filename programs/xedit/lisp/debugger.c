@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.8 2001/10/15 07:05:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.9 2001/10/18 03:15:22 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -210,7 +210,6 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 	    break;
 	case LispDebugCallFatal:
 	    LispDebuggerCommand(mac, NIL);
-	    mac->debug = LispDebugUnspec;
 	    return;
 	case LispDebugCallBegini:
 	case LispDebugCallEndi:

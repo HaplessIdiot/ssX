@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.5 2001/10/15 07:05:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.6 2001/10/18 03:15:22 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -71,12 +71,14 @@ LispObj *Lisp_DoList(LispMac*, LispObj*, char*);	/* dolist */
 LispObj *Lisp_DoTimes(LispMac*, LispObj*, char*);	/* dotimes */
 LispObj *Lisp_Elt(LispMac*, LispObj*, char*);		/* elt */
 LispObj *Lisp_Equal(LispMac*, LispObj*, char*);		/* equal */
+LispObj *Lisp_Error(LispMac*, LispObj*, char*);		/* error */
 LispObj *Lisp_Eval(LispMac*, LispObj*, char*);		/* eval */
 LispObj *Lisp_Evenp(LispMac*, LispObj*, char*);		/* evenp */
 LispObj *Lisp_FMakunbound(LispMac*, LispObj*, char*);	/* fmakunbound */
 LispObj *Lisp_Funcall(LispMac*, LispObj*, char*);	/* funcall */
 LispObj *Lisp_Gc(LispMac*, LispObj*, char*);		/* gc */
 LispObj *Lisp_Get(LispMac*, LispObj*, char*);		/* get */
+LispObj *Lisp_Go(LispMac*, LispObj*, char*);		/* go */
 LispObj *Lisp_If(LispMac*, LispObj*, char*);		/* if */
 LispObj *Lisp_Incf(LispMac*, LispObj*, char*);		/* incf */
 LispObj *Lisp_Integerp(LispMac*, LispObj*, char*);	/* integerp */
@@ -110,6 +112,7 @@ LispObj *Lisp_Print(LispMac*, LispObj*, char*);		/* print */
 LispObj *Lisp_Prog1(LispMac*, LispObj*, char*);		/* prog1 */
 LispObj *Lisp_Prog2(LispMac*, LispObj*, char*);		/* prog2 */
 LispObj *Lisp_Progn(LispMac*, LispObj*, char*);		/* progn */
+LispObj *Lisp_Progv(LispMac*, LispObj*, char*);		/* progv */
 LispObj *Lisp_Provide(LispMac*, LispObj*, char*);	/* provide */
 LispObj *Lisp_Quit(LispMac*, LispObj*, char*);		/* quit */
 LispObj *Lisp_Quote(LispMac*, LispObj*, char*);		/* quote */
@@ -127,11 +130,13 @@ LispObj *Lisp_Stringp(LispMac*, LispObj*, char*);	/* stringp */
 LispObj *Lisp_Subseq(LispMac*, LispObj*, char*);	/* subseq */
 LispObj *Lisp_Symbolp(LispMac*, LispObj*, char*);	/* symbolp */
 LispObj *Lisp_SymbolPlist(LispMac*, LispObj*, char*);	/* symbol-plist */
+LispObj *Lisp_Tagbody(LispMac*, LispObj*, char*);	/* tagbody */
 LispObj *Lisp_Terpri(LispMac*, LispObj*, char*);	/* terpri */
 LispObj *Lisp_Throw(LispMac*, LispObj*, char*);		/* throw */
 LispObj *Lisp_Typep(LispMac*, LispObj*, char*);		/* typep */
 LispObj *Lisp_Unless(LispMac*, LispObj*, char*);	/* unless */
 LispObj *Lisp_Until(LispMac*, LispObj*, char*);		/* until */
+LispObj *Lisp_UnwindProtect(LispMac*, LispObj*, char*);	/* unwind-protect */
 LispObj *Lisp_Vector(LispMac*, LispObj*, char*);	/* vector */
 LispObj *Lisp_When(LispMac*, LispObj*, char*);		/* when */
 LispObj *Lisp_While(LispMac*, LispObj*, char*);		/* while */

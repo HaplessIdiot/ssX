@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.3 2001/10/15 07:05:53 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.4 2001/10/18 03:15:25 paulo Exp $
 ;;
 (provide "fun")
 
@@ -77,6 +77,12 @@
 
 (defmacro pop (place)
     (list 'prog1 (list 'car place) (list 'setf place (list 'cdr place))))
+
+(defmacro prog (init &rest body)
+    `(block nil (let ,init (tagbody ,@body))))
+
+(defmacro prog* (init &rest body)
+    `(block nil (let* ,init (tagbody ,@body))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; setf
