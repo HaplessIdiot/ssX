@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/ScrollbarP.h,v 1.4 1998/10/03 08:42:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/ScrollbarP.h,v 1.5 1999/06/06 08:48:08 dawes Exp $ */
 
 #ifndef _ScrollbarP_h
 #define _ScrollbarP_h
@@ -80,7 +80,7 @@ typedef struct {
     Position	   topLoc;	/* Pixel that corresponds to top */
     Dimension	   shownLength;	/* Num pixels corresponding to shown */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } ScrollbarPart;
 

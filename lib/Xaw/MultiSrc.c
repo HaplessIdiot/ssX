@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.16 1999/05/03 12:15:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.17 1999/06/06 08:48:01 dawes Exp $ */
 
 /*
 
@@ -368,7 +368,7 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
      * `u_text' was MB, I knock it up to WIDE
      */
     if (u_text_p->length == 0)	/* if so, the block contents never ref'd */
-	length = 0;
+	text.length = 0;
 
     else if (u_text_p->format == XawFmtWide) {
 	local_artificial_block = False; /* don't have to free it ourselves */
@@ -425,18 +425,18 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
     else {		    /* We are fully in one piece */
 	if ((start_piece->used -= endPos - startPos) == 0) {
 	    if (!(start_piece->next == NULL && start_piece->prev == NULL))
-	RemovePiece(src, start_piece);
-    }
-    else {
-	memmove(start_piece->text + (startPos - start_first),
-		start_piece->text + (endPos - start_first),
-		(start_piece->used - (startPos - start_first)) *
-		sizeof(wchar_t));
-	if (src->multi_src.use_string_in_place &&
-	    ((src->multi_src.length - (endPos - startPos))
-	    < src->multi_src.piece_size - 1))
-	    start_piece->text[src->multi_src.length - (endPos - startPos)] =
-	      (wchar_t)0;
+		RemovePiece(src, start_piece);
+	}
+	else {
+	    memmove(start_piece->text + (startPos - start_first),
+		    start_piece->text + (endPos - start_first),
+		    (start_piece->used - (startPos - start_first)) *
+		    sizeof(wchar_t));
+	    if (src->multi_src.use_string_in_place &&
+		((src->multi_src.length - (endPos - startPos))
+		< src->multi_src.piece_size - 1))
+		start_piece->text[src->multi_src.length - (endPos - startPos)] =
+		  (wchar_t)0;
 	}
     }
 
@@ -462,8 +462,8 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 		    start_piece->used = src->multi_src.length =
 			src->multi_src.piece_size - 1;
 
-		     start_piece->text[src->multi_src.length] = (wchar_t)0;
-			    return (XawEditError);
+		    start_piece->text[src->multi_src.length] = (wchar_t)0;
+		    return (XawEditError);
 		}
 	    }
 
@@ -475,8 +475,8 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 	    fill = Min((int)(src->multi_src.piece_size - start_piece->used), length);
       
 	    ptr = start_piece->text + (startPos - start_first);
-	    memmove(ptr + fill, ptr, start_piece->used -
-		    (startPos - start_first) * sizeof(wchar_t));
+	    memmove(ptr + fill, ptr, (start_piece->used -
+		    (startPos - start_first)) * sizeof(wchar_t));
 	    wptr =(wchar_t *)text.ptr;
 	    (void)wcsncpy(ptr, wptr + firstPos, fill);
       

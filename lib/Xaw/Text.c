@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.29 1999/06/06 08:48:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.30 1999/06/13 13:47:21 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -173,7 +173,7 @@ static void DoCopyArea(TextWidget, int, int, unsigned int, unsigned int,
 static void DoSelection(TextWidget, XawTextPosition, Time, Bool);
 static void ExtendSelection(TextWidget, XawTextPosition, Bool);
 static XawTextPosition FindGoodPosition(TextWidget, XawTextPosition);
-static void FlushUpdate(TextWidget ctx);
+static void FlushUpdate(TextWidget);
 static int GetCutBufferNumber(Atom);
 static int GetMaxTextWidth(TextWidget);
 static unsigned int GetWidestLine(TextWidget);
@@ -1262,9 +1262,9 @@ _XawTextBuildLineTable(TextWidget ctx, XawTextPosition position,
     if (force_rebuild) {
 	(void)bzero((char *)ctx->text.lt.info, size);
 	/* force a text update in the first text line if it is visible */
-	ctx->text.lt.info[0].position = ctx->text.lt.top = (XawTextPosition)-1;
+	ctx->text.lt.info[0].position = (XawTextPosition)-1;
     }
-    if (position != ctx->text.lt.top)
+    if (position != ctx->text.lt.info[0].position)
 	(void)_BuildLineTable(ctx, position, 0);
 }
 
@@ -1527,10 +1527,9 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
      */
     if (hpixels < 0 && ctx->text.left_margin - hpixels > ctx->text.r_margin.left)
 	hpixels = ctx->text.left_margin - ctx->text.r_margin.left;
-    if (hpixels > 0)
-	ctx->text.clear_to_eol = True;
     ctx->text.left_margin -= hpixels;
 
+    update_from = lt->top;	/* remember the old value */
     /*
      *	 Checks the requested number of lines and calculates the top
      * of the line table
@@ -1603,6 +1602,12 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 	return;
     }
 
+    /* Flushes any pending updates. Normally, there may be a call to
+     * XawTextUnsetSelection not yet updated.
+     */
+    if (!hpixels && scroll)
+	FlushUpdate(ctx);
+
     /*
      * Rebuild the line table, doing the vertical scroll
      */
@@ -1618,6 +1623,8 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
      * It is not required here.
      */
     (void)XmuScanlineXor(ctx->text.update, ctx->text.update);
+    if (vlines < 0 && IsPositionVisible(ctx, 0))
+	vlines = -LineForPosition(ctx, update_from);
 
     y0 = ctx->text.r_margin.top;
     if (vlines < 0) {

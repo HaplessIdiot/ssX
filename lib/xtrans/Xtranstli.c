@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.6 1997/08/12 12:01:54 hohndel Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.7 1998/10/03 09:07:36 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -118,9 +118,7 @@ static TLItrans2dev TLItrans2devtab[] = {
  */
 
 static int
-TRANS(TLISelectFamily)(family)
-
-char	*family;
+TRANS(TLISelectFamily)(char *family)
 
 {
     int     i;
@@ -142,9 +140,7 @@ char	*family;
  */
 
 static int
-TRANS(TLIGetAddr)(ciptr)
-
-XtransConnInfo	ciptr;
+TRANS(TLIGetAddr)(XtransConnInfo ciptr)
 
 {
     Xtransaddr		sockname;
@@ -194,9 +190,7 @@ XtransConnInfo	ciptr;
  */
 
 static int
-TRANS(TLIGetPeerAddr)(ciptr)
-
-XtransConnInfo	ciptr;
+TRANS(TLIGetPeerAddr)(XtransConnInfo ciptr)
 
 {
     Xtransaddr		sockname;
@@ -251,11 +245,7 @@ XtransConnInfo	ciptr;
  */
 
 static int
-TRANS(TLITLIBindLocal)(fd,family,port)
-
-int	fd;
-int	family;
-char	*port;
+TRANS(TLITLIBindLocal)(int fd, int family, char *port)
 
 {
     struct sockaddr_un	*sunaddr=NULL;
@@ -319,9 +309,7 @@ char	*port;
 }
 
 static XtransConnInfo
-TRANS(TLIOpen)(device)
-
-char	*device;
+TRANS(TLIOpen)(char *device)
 
 {
     XtransConnInfo	ciptr;
@@ -348,11 +336,7 @@ char	*device;
 #ifdef TRANS_REOPEN
 
 static XtransConnInfo
-TRANS(TLIReopen)(device, fd, port)
-
-char	*device;
-int	fd;
-char	*port;
+TRANS(TLIReopen)(char *device, int fd, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -380,12 +364,8 @@ char	*port;
 
 
 static	int
-TRANS(TLIAddrToNetbuf)(tlifamily, host, port, netbufp)
-
-int		tlifamily;
-char		*host;
-char		*port;
-struct netbuf	*netbufp;
+TRANS(TLIAddrToNetbuf)(int tlifamily, char *host, char *port, 
+		       struct netbuf *netbufp)
 
 {
     struct netconfig *netconfigp;
@@ -444,12 +424,8 @@ struct netbuf	*netbufp;
 #ifdef TRANS_CLIENT
 
 static XtransConnInfo
-TRANS(TLIOpenCOTSClient)(thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(TLIOpenCOTSClient)(Xtransport *thistrans, char *protocol, 
+			 char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -503,12 +479,8 @@ char		*port;
 #ifdef TRANS_SERVER
 
 static XtransConnInfo
-TRANS(TLIOpenCOTSServer)(thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(TLIOpenCOTSServer)(Xtransport *thistrans, char *protocol, 
+			 char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -550,12 +522,8 @@ char		*port;
 #ifdef TRANS_CLIENT
 
 static XtransConnInfo
-TRANS(TLIOpenCLTSClient)(thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(TLIOpenCLTSClient)(Xtransport *thistrans, char *protocol, 
+			 char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -608,12 +576,8 @@ char		*port;
 #ifdef TRANS_SERVER
 
 static XtransConnInfo
-TRANS(TLIOpenCLTSServer)(thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(TLIOpenCLTSServer)(Xtransport *thistrans, char *protocol, 
+			 char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -646,11 +610,7 @@ char		*port;
 #ifdef TRANS_REOPEN
 
 static XtransConnInfo
-TRANS(TLIReopenCOTSServer)(thistrans, fd, port)
-
-Xtransport	*thistrans;
-int	   	fd;
-char		*port;
+TRANS(TLIReopenCOTSServer)(Xtransport *thistrans, int fd, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -684,11 +644,7 @@ char		*port;
 
 
 static XtransConnInfo
-TRANS(TLIReopenCLTSServer)(thistrans, fd, port)
-
-Xtransport	*thistrans;
-int	   	fd;
-char		*port;
+TRANS(TLIReopenCLTSServer)(Xtransport *thistrans, int fd, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -721,12 +677,8 @@ char		*port;
 #endif /* TRANS_REOPEN */
 
 
-static
-TRANS(TLISetOption)(ciptr, option, arg)
-
-XtransConnInfo	ciptr;
-int		option;
-int		arg;
+static int
+TRANS(TLISetOption)(XtransConnInfo ciptr, int option, int arg)
 
 {
     PRMSG(2,"TLISetOption(%d,%d,%d)\n", ciptr->fd, option, arg );
@@ -737,11 +689,8 @@ int		arg;
 
 #ifdef TRANS_SERVER
 
-static
-TRANS(TLICreateListener)(ciptr, req)
-
-XtransConnInfo	ciptr;
-struct t_bind	*req;
+static int
+TRANS(TLICreateListener)(XtransConnInfo ciptr, struct t_bind *req)
 
 {
     struct t_bind	*ret;
@@ -797,11 +746,8 @@ struct t_bind	*req;
 }
 
 
-static
-TRANS(TLIINETCreateListener)(ciptr, port)
-
-XtransConnInfo	ciptr;
-char		*port;
+static int
+TRANS(TLIINETCreateListener)(XtransConnInfo ciptr, char *port)
 
 {
     char    portbuf[PORTBUFSIZE];
@@ -862,11 +808,8 @@ char		*port;
 }
 
 
-static
-TRANS(TLITLICreateListener)(ciptr, port)
-
-XtransConnInfo	ciptr;
-char		*port;
+static int
+TRANS(TLITLICreateListener)(XtransConnInfo ciptr, char *port)
 
 {
     struct t_bind	*req;
@@ -922,10 +865,7 @@ char		*port;
 
 
 static XtransConnInfo
-TRANS(TLIAccept)(ciptr, status)
-
-XtransConnInfo	ciptr;
-int		*status;
+TRANS(TLIAccept)(XtransConnInfo ciptr, int *status)
 
 {
     struct t_call	*call;
@@ -1049,11 +989,8 @@ int		*status;
 
 #ifdef TRANS_CLIENT
 
-static
-TRANS(TLIConnect)(ciptr, sndcall )
-
-XtransConnInfo	ciptr;
-struct t_call	*sndcall;
+static int
+TRANS(TLIConnect)(XtransConnInfo ciptr, struct t_call *sndcall )
 
 {
     PRMSG(2, "TLIConnect(%x->%d,%x)\n", ciptr, ciptr->fd, sndcall);
@@ -1114,12 +1051,8 @@ struct t_call	*sndcall;
 }
 
 
-static
-TRANS(TLIINETConnect)(ciptr, host, port)
-
-XtransConnInfo	ciptr;
-char		*host;
-char		*port;
+static int
+TRANS(TLIINETConnect)(XtransConnInfo ciptr, char *host, char *port)
 
 {
     char	portbuf[PORTBUFSIZE];	
@@ -1164,12 +1097,8 @@ char		*port;
 }
 
 
-static
-TRANS(TLITLIConnect)(ciptr, host, port)
-
-XtransConnInfo	ciptr;
-char		*host;
-char		*port;
+static int
+TRANS(TLITLIConnect)(XtransConnInfo ciptr, char *host, char *port)
 
 {
     struct t_call	*sndcall;
@@ -1217,11 +1146,8 @@ char		*port;
 #endif /* TRANS_CLIENT */
 
 
-static
-TRANS(TLIBytesReadable)(ciptr, pend)
-
-XtransConnInfo	ciptr;
-BytesReadable_t	*pend;
+static int
+TRANS(TLIBytesReadable)(XtransConnInfo ciptr, BytesReadable_t *pend)
 
 {
     int ret;
@@ -1265,12 +1191,8 @@ BytesReadable_t	*pend;
 }
 
 
-static
-TRANS(TLIRead)(ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-char		*buf;
-int		size;
+static int
+TRANS(TLIRead)(XtransConnInfo ciptr, char *buf, int size)
 
 {
     PRMSG(2, "TLIRead(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1279,12 +1201,8 @@ int		size;
 }
 
 
-static
-TRANS(TLIWrite)(ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-char		*buf;
-int		size;
+static int
+TRANS(TLIWrite)(XtransConnInfo ciptr, char *buf, int size)
 
 {
     PRMSG(2, "TLIWrite(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1293,12 +1211,8 @@ int		size;
 }
 
 
-static
-TRANS(TLIReadv)(ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-struct iovec	*buf;
-int		size;
+static int
+TRANS(TLIReadv)(XtransConnInfo ciptr, struct iovec *buf, int size)
 
 {
     PRMSG(2, "TLIReadv(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1307,12 +1221,8 @@ int		size;
 }
 
 
-static
-TRANS(TLIWritev)(ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-struct iovec	*buf;
-int		size;
+static int
+TRANS(TLIWritev)(XtransConnInfo ciptr, struct iovec *buf, int size)
 
 {
     PRMSG(2, "TLIWritev(%d,%x,%d)\n", ciptr->fd, buf, size );
@@ -1321,10 +1231,8 @@ int		size;
 }
 
 
-static
-TRANS(TLIDisconnect)(ciptr)
-
-XtransConnInfo	ciptr;
+static int
+TRANS(TLIDisconnect)(XtransConnInfo ciptr)
 
 {
     PRMSG(2, "TLIDisconnect(%x->%d)\n", ciptr, ciptr->fd, 0 );
@@ -1343,10 +1251,8 @@ XtransConnInfo	ciptr;
 }
 
 
-static
-TRANS(TLIClose)(ciptr)
-
-XtransConnInfo	ciptr;
+static int
+TRANS(TLIClose)(XtransConnInfo ciptr)
 
 {
     PRMSG(2, "TLIClose(%x->%d)\n", ciptr, ciptr->fd, 0 );
@@ -1357,10 +1263,8 @@ XtransConnInfo	ciptr;
 }
 
 
-static
-TRANS(TLICloseForCloning)(ciptr)
-
-XtransConnInfo	ciptr;
+static int
+TRANS(TLICloseForCloning)(XtransConnInfo ciptr)
 
 {
     /*

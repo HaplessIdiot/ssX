@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.7 1998/11/15 04:30:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.8 1999/06/06 08:48:10 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
@@ -53,6 +53,9 @@ SOFTWARE.
 
 typedef struct {
     Bool (*change_sensitive)(Widget);
+#ifndef OLDXAW
+    XtPointer extension;
+#endif
 } SimpleClassPart;
 
 #define XtInheritChangeSensitive	((Bool (*)(Widget))_XtInherit)
@@ -75,7 +78,7 @@ typedef struct {
     /* private */
 #ifndef OLDXAW
     XawDisplayList *display_list;
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } SimplePart;
 

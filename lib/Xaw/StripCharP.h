@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/StripCharP.h,v 1.4 1998/10/03 08:42:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/StripCharP.h,v 1.5 1999/06/06 08:48:12 dawes Exp $ */
 
 #ifndef _XawStripChartP_h
 #define _XawStripChartP_h
@@ -78,7 +78,7 @@ typedef struct {
     XtCallbackList get_value;	/* proc to call to fetch load pt */
     int jump_val;		/* Amount to jump on each scroll */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } StripChartPart;
 

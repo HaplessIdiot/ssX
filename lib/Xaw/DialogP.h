@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/DialogP.h,v 1.5 1999/05/09 10:51:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DialogP.h,v 1.6 1999/06/06 08:47:55 dawes Exp $ */
 
 #ifndef _DialogP_h
 #define _DialogP_h
@@ -76,7 +76,7 @@ typedef struct _DialogPart {
     Widget	labelW;		/* widget to display description */
     Widget	valueW;		/* user response TextWidget	 */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } DialogPart;
 

@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.11 1999/04/11 13:10:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.12 1999/06/06 08:48:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -61,7 +61,7 @@ static Bool ChangeSensitive(Widget);
 static void XawSimpleClassInitialize(void);
 static void XawSimpleClassPartInitialize(WidgetClass);
 #ifndef OLDXAW
-void XawSimpleExpose(Widget, XEvent*, Region);
+static void XawSimpleExpose(Widget, XEvent*, Region);
 #endif
 static void XawSimpleRealize(Widget, Mask*, XSetWindowAttributes*);
 static Boolean XawSimpleSetValues(Widget, Widget, Widget, ArgList, Cardinal*);
@@ -401,7 +401,7 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 }
 
 #ifndef OLDXAW
-void
+static void
 XawSimpleExpose(Widget w, XEvent *event, Region region)
 {
     SimpleWidget xaw = (SimpleWidget)w;

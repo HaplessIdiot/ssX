@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.30 1999/04/11 13:11:32 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.31 1999/06/12 15:37:17 dawes Exp $
  */
 
 /*
@@ -322,7 +322,9 @@ Input (
 		if (nbytes == 1) {
 		/* Take ISO 8859-1 character delivered by XLookupString() */
 			ucs = (unsigned char) strbuf[0];
-		} else if (!nbytes && keysym >= 0x100 && keysym <= 0xf000)
+		} else if (!nbytes && 
+			   ((keysym >= 0x100 && keysym <= 0xf000) ||
+			    (keysym & 0xff000000) == 0x01000000))
 			ucs = keysym2ucs(keysym);
 		else
 			ucs = -2;

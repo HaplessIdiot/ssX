@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.18 1999/05/16 10:12:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.19 1999/06/06 08:47:51 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -95,6 +95,7 @@ static void RemoveOldStringOrFile(AsciiSrcObject, Bool);
 static void RemovePiece(AsciiSrcObject, Piece*);
 static String StorePiecesInString(AsciiSrcObject);
 static Bool WriteToFile(String, String, unsigned);
+static Bool WritePiecesToFile(AsciiSrcObject, String);
 static void GetDefaultPieceSize(Widget, int, XrmValue*);
 
 /*
@@ -524,28 +525,12 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 {
     AsciiSrcObject src = (AsciiSrcObject)w;
     Piece *piece;
-    XawTextPosition first, first_eol_position = position;
+    XawTextPosition first, first_eol_position = 0;
     register char *ptr, *lim;
     register int cnt = count;
     register unsigned char c;
 
-    if (count < 0) {
-	dir = dir == XawsdLeft ? XawsdRight : XawsdLeft;
-	count = -count;
-	cnt = -cnt;
-    }
-    position = position > 0 ? (position < src->ascii_src.length ?
-	position : src->ascii_src.length) : 0;
-
-    if (type == XawstAll)
-	return (dir == XawsdLeft ? 0 : src->ascii_src.length);
-    else if (type == XawstPositions) {
-	position += dir == XawsdRight ? count : -count;
-
-	return (position > 0 ? (position < src->ascii_src.length ?
-		position : src->ascii_src.length) : 0);
-    }
-    else if (dir == XawsdLeft) {
+    if (dir == XawsdLeft) {
 	if (position <= 0)
 	    return (0);
 	--position;
@@ -616,15 +601,21 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 			}
 		    }
 		}
-
-		if (!include) {
-		    if (type == XawstParagraph)
-			position = first_eol_position;
-		    if (count)
-			--position;
-		}
+		break;
+	    case XawstPositions:
+		position += count;
+		return (position < src->ascii_src.length ?
+			position : src->ascii_src.length);
+	    case XawstAll:
+		return (src->ascii_src.length);
 	    default:
 		break;
+	}
+	if (!include) {
+	    if (type == XawstParagraph)
+		position = first_eol_position;
+	    if (count)
+		--position;
 	}
     }
     else {
@@ -684,17 +675,21 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 			}
 		    }
 		}
-
-		if (!include) {
-		    if (type == XawstParagraph)
-			position = first_eol_position;
-		    if (count)
-			++position;
-		}
+		break;
+	    case XawstPositions:
+		position -= count - 1;
+		return (position > 0 ? position : 0);
+	    case XawstAll:
+		return (0);
 	    default:
 		break;
 	}
-
+	if (!include) {
+	    if (type == XawstParagraph)
+		position = first_eol_position;
+	    if (count)
+		++position;
+	}
 	position++;
     }
 
@@ -1033,23 +1028,15 @@ XawAsciiSave(Widget w)
 	return (True);
 
     if (src->ascii_src.type == XawAsciiFile) {
-	char *string;
-
 #ifdef OLDXAW
-	 if (!src->ascii_src.changes)
+	if (!src->ascii_src.changes)
 #else
 	if (!src->text_src.changed) 		/* No changes to save */
 #endif
 	    return (True);
 
-	string = StorePiecesInString(src);
-
-	if (WriteToFile(string, src->ascii_src.string, src->ascii_src.length)
-	    == False) {
-	    XtFree(string);
+	if (WritePiecesToFile(src, src->ascii_src.string) == False)
 	    return (False);
-	}
-	XtFree(string);
     }
     else  {
 	if (src->ascii_src.allocated_string == True)
@@ -1086,7 +1073,6 @@ Bool
 XawAsciiSaveAsFile(Widget w, _Xconst char *name)
 {
     AsciiSrcObject src = (AsciiSrcObject)w;
-    String string;
     Bool ret;
 
     /* If the src is really a multi, call the multi save */
@@ -1100,10 +1086,14 @@ XawAsciiSaveAsFile(Widget w, _Xconst char *name)
 		   "asciiSrc or multiSrc.",
 		   NULL, NULL);
 
-    string = StorePiecesInString(src); 
+    if (src->ascii_src.type == XawAsciiFile)
+	ret = WritePiecesToFile(src, (String)name);
+    else {
+	String string = StorePiecesInString(src); 
 
-    ret = WriteToFile(string, (String)name, src->ascii_src.length);
-    XtFree(string);
+	ret = WriteToFile(string, (String)name, src->ascii_src.length);
+	XtFree(string);
+    }
 
     return (ret);
 }
@@ -1163,7 +1153,7 @@ RemoveOldStringOrFile(AsciiSrcObject src, Bool checkString)
  *
  * Parameters:
  *	string - string to write
- *	name   - the name of the fil
+ *	name   - the name of the file
  *
  * Description:
  *	Write the string specified to the begining of the file specified.
@@ -1179,6 +1169,62 @@ WriteToFile(String string, String name, unsigned length)
     if ((fd = creat(name, 0666)) == -1
 	|| write(fd, string, length) == -1)
 	return (False);
+
+    if (close(fd) == -1)
+	return (False);
+
+    return (True);
+}
+
+/*
+ * Function:
+ *	WritePiecesToFile
+ *
+ * Parameters:
+ *	src  - ascii source object
+ *	name - name of the file
+ *
+ * Description:
+ *	  Almost identical to WriteToFile, but only works for ascii src objects
+ *	of type XawAsciiFile. This function avoids allocating temporary memory,
+ *	what can be useful when editing very large files.
+ *
+ * Returns:
+ *	returns True if sucessful, False otherwise
+ */
+static Bool
+WritePiecesToFile(AsciiSrcObject src, String name)
+{
+    Piece *piece;
+    int fd;
+
+    if (src->ascii_src.data_compression) {
+	Piece *tmp;
+
+	piece = src->ascii_src.first_piece;
+	while (piece) {
+	    int bytes = src->ascii_src.piece_size - piece->used;
+
+	    if (bytes > 0 && (tmp = piece->next) != NULL) {
+		bytes = XawMin(bytes, tmp->used);
+		memcpy(piece->text + piece->used, tmp->text, bytes);
+		memmove(tmp->text, tmp->text + bytes, tmp->used - bytes);
+		piece->used += bytes;
+		if ((tmp->used -= bytes) == 0) {
+		    RemovePiece(src, tmp);
+		    continue;
+		}
+	    }
+	    piece = piece->next;
+	}
+    }
+
+    if ((fd = creat(name, 0666)) == -1)
+	return (False);
+
+    for (piece = src->ascii_src.first_piece; piece; piece = piece->next)
+	if (write(fd, piece->text, piece->used) == -1)
+	    return (False);
 
     if (close(fd) == -1)
 	return (False);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.10 1999/03/14 03:21:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.11 1999/06/14 07:31:54 dawes Exp $ */
 
 /*
  * glint register file 
@@ -1165,6 +1165,7 @@ do{								\
 do{								\
 	while(GLINT_READ_REG(InFIFOSpace)<1);			\
         GLINT_WRITE_REG(v,r);					\
+	while(GLINT_READ_REG(InFIFOSpace)<1);			\
 }while(0)
 
 #define GLINT_SECONDARY_WRITE_REG(v,r)                          	\

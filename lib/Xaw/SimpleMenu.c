@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.16 1999/06/06 08:48:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.17 1999/06/13 13:47:20 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -1561,13 +1561,17 @@ GetEventEntry(Widget w, XEvent *event)
 		warp = -(int)XtWidth(entry) >> 1;
 		move = x_loc - XtWidth(entry) - XtX(entry) + XtBorderWidth(w);
 	    }
-	    else
+	    else {
+		warp = 0;
 		move = WidthOfScreen(XtScreen(w)) -
 		       (XtX(w) + XtWidth(w) + (XtBorderWidth(w) << 1));
+	    }
 	}
-	else
+	else {
+	    warp = 0;
 	    move = WidthOfScreen(XtScreen(w)) -
 		   (XtX(w) + XtWidth(w) + (XtBorderWidth(w) << 1));
+	}
     }
     else if (x_root == 0 && XtX(w) < 0) {
 	warp = 8;

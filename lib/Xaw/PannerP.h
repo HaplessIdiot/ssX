@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/PannerP.h,v 1.4 1998/10/03 08:42:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/PannerP.h,v 1.5 1999/06/06 08:48:06 dawes Exp $ */
 
 #ifndef _XawPannerP_h
 #define _XawPannerP_h
@@ -80,7 +80,7 @@ typedef struct {
     XRectangle shadow_rects[2];		/* location of shadows */
     Position last_x, last_y;		/* previous location of knob */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } PannerPart;
 

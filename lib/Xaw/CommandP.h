@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/CommandP.h,v 1.4 1998/10/03 08:42:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/CommandP.h,v 1.5 1999/06/06 08:47:54 dawes Exp $ */
 
 #ifndef _XawCommandP_h
 #define _XawCommandP_h
@@ -98,7 +98,7 @@ typedef struct {
     Dimension		corner_round;
 
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } CommandPart;
 

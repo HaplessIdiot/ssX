@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.27 1999/06/06 08:48:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.28 1999/06/13 13:47:22 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2070,7 +2070,7 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 
     position = XawTextSourceRead(ctx->text.source, left, &block, right - left);
 #ifndef iswalnum
-#define iswalnum(c)	(isascii(c) && isalnum(toascii(c)))
+#define iswalnum(c)	isalnum(c & 0xff)
 #endif
     if (block.length == 0 || left >= right ||
 	(level == 1 && ((XawTextFormat(ctx, XawFmt8Bit) &&
@@ -3082,6 +3082,9 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	} while (level);
 
 	StartAction(ctx, NULL);
+#ifndef OLDXAW
+	_XawSourceSetUndoMerge((TextSrcObject)ctx->text.source, True);
+#endif
 	ctx->text.insertPos = pos;
 	EndAction(ctx);
 
@@ -3093,6 +3096,9 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	(void)select(FD_SETSIZE, &fds, NULL, NULL, &tmval);
 
 	StartAction(ctx, NULL);
+#ifndef OLDXAW
+	_XawSourceSetUndoMerge((TextSrcObject)ctx->text.source, True);
+#endif
 	ctx->text.insertPos = insertPos;
 	EndAction(ctx);
     }
@@ -4120,8 +4126,8 @@ CaseProc(Widget w, XEvent *event, int cmd)
     XawTextPosition left, right;
     XawTextBlock block;
     Bool changed = False;
-    char mb[sizeof(wchar_t)];
-    int ch, i, count;
+    unsigned char ch, mb[sizeof(wchar_t)];
+    int i, count;
 
     if (mul > 0)
 	right = SrcScan(ctx->text.source, left = ctx->text.insertPos,
@@ -4173,14 +4179,11 @@ CaseProc(Widget w, XEvent *event, int cmd)
 	    }
 	}
 
-    if (changed) {
-	StartAction(ctx, event);
-	if (_XawTextReplace(ctx, left, right, &block) == XawEditDone)
-	    ctx->text.insertPos = right;
-	else
-	    XBell(XtDisplay(ctx), 0);
-	EndAction(ctx);
-    }
+    StartAction(ctx, event);
+    if (changed && _XawTextReplace(ctx, left, right, &block) != XawEditDone)
+	XBell(XtDisplay(ctx), 0);
+    ctx->text.insertPos = right;
+    EndAction(ctx);
 
     XtFree(block.ptr);
 }

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.22 1999/06/12 07:18:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.23 1999/06/12 14:15:35 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -286,33 +286,49 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	switch(pMga->Chipset)
 	{
 	case PCI_CHIP_MGA1064:
-#if 0  /* fails in 1600x1200x32 */
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x0A;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x72;
-		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
-#else
 		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
 		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x44;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
-#endif
-		pReg->Option  = 0x5F094F21; /* or 0x5f094e21 ? */
+		pReg->Option  = 0x5F094F21;
 		pReg->Option2 = 0x00000000;
 		break;
 	case PCI_CHIP_MGAG100:
 	case PCI_CHIP_MGAG100_PCI:
 		pReg->DacRegs[ MGAGDAC_XVREFCTRL ] = 0x03;
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x02;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x15;
-		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
-		pReg->Option2 = 0x0000007;
-		if(pMga->HasSDRAM)
+		if(pMga->HasSDRAM) {
+		    if(pMga->OverclockMem) {
+                        /* 220 Mhz */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x38;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+		    } else {
+                        /* 203 Mhz */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x01;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x0E;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+		    }
 		    pReg->Option = 0x404991a9;
-		else
+		} else {
+		    if(pMga->OverclockMem) {
+                        /* 143 Mhz */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		    } else {
+		        /* 124 Mhz */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x16;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x08;
+		    }
 		    pReg->Option = 0x4049d121;
+		}
+		pReg->Option2 = 0x0000007;
 		break;
 	case PCI_CHIP_MGAG400:
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
+		/* we don't have a good overclock value yet */
+		/* 165 Mhz */
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x09;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x3C;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
 		pReg->Option2 = 0x01003000;
 		pReg->Option3 = 0x0190a419;
@@ -324,20 +340,18 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
-#if 0           
-                /* 124 Mhz */
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x2D;
-		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x19;
-		pReg->Option  = 0x4007CC21;
-		pReg->Option2 = 0x00008000;
-#else           
-                /* 143 Mhz */
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
-		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
-		pReg->Option2 = 0x00008000;
-#endif
+		if(pMga->OverclockMem) {
+                     /* 143 Mhz */
+		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		} else {
+		    /* 124 Mhz */
+		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x2D;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x19;
+		}
+	        pReg->Option2 = 0x00008000;
 		if(pMga->HasSDRAM)
 		    pReg->Option = 0x40499121;
 		else

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.7 1999/06/06 08:48:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.8 1999/06/13 13:47:24 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -93,6 +93,9 @@ typedef struct _TextSrcClassPart {
     _XawSrcSearchProc Search;
     _XawSrcSetSelectionProc SetSelection;
     _XawSrcConvertSelectionProc ConvertSelection;
+#ifndef OLDXAW
+    XtPointer extension;
+#endif
 } TextSrcClassPart;
 
 /* Full class record */
@@ -124,7 +127,7 @@ typedef struct {
     XawTextUndo *undo;
     WidgetList text;			/* TextWidget's using this source */
     Cardinal num_text;
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } TextSrcPart;
 

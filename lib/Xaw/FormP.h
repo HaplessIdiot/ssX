@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.9 1999/06/06 08:47:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.10 1999/06/13 13:47:19 dawes Exp $ */
 
 /* Form widget private definitions */
 
@@ -65,6 +65,9 @@ typedef enum {
 
 typedef struct {
     Boolean(*layout)(FormWidget, unsigned int, unsigned int, Bool);
+#ifndef OLDXAW
+    XtPointer extension;
+#endif
 } FormClassPart;
 
 typedef struct _FormClassRec {
@@ -89,7 +92,7 @@ typedef struct _FormPart {
     Boolean	resize_is_no_op;    /* Causes resize to take not action  */
 #ifndef OLDXAW
     XawDisplayList *display_list;
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } FormPart;
 
@@ -116,7 +119,7 @@ typedef struct _FormConstraintsPart {
     Boolean	deferred_resize;/* was resized while no_refigure is set */
 #ifndef OLDXAW
     short	virtual_x, virtual_y;
-    char	pad[8];		/* leave some space for further optimizations
+    XtPointer	pad[2];		/* leave some space for further optimizations
 				 * in the form widget geometry
 				 */
 #endif

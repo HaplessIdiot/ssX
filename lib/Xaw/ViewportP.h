@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/ViewportP.h,v 1.4 1998/10/03 08:42:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/ViewportP.h,v 1.5 1999/06/06 08:48:21 dawes Exp $ */
 
 #ifndef _ViewportP_h
 #define _ViewportP_h
@@ -81,7 +81,7 @@ typedef struct _ViewportPart {
     Widget clip, child;		/* The clipping and (scrolled) child widgets */
     Widget horiz_bar, vert_bar;	/* What scrollbars we currently have */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } ViewportPart;
 

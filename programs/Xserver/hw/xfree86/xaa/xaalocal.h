@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.17 1999/03/14 11:18:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.18 1999/05/16 10:13:04 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -50,6 +50,7 @@ typedef struct _XAAScreen {
    BSFuncRec 			BackingStoreFuncs;
    CreatePixmapProcPtr 		CreatePixmap;
    DestroyPixmapProcPtr 	DestroyPixmap;
+   ChangeWindowAttributesProcPtr ChangeWindowAttributes;
    XAAInfoRecPtr 		AccelInfoRec;
    Bool                		(*EnterVT)(int, int);
    void                		(*LeaveVT)(int, int);
@@ -76,6 +77,8 @@ typedef struct _XAAGC {
 #define DIRTY			0x00010000
 #define OFFSCREEN		0x00020000
 #define DGA_PIXMAP		0x00040000
+#define SHARED_PIXMAP		0x00080000
+#define LOCKED_PIXMAP		0x00100000
 
 #define REDUCIBILITY_MASK \
  (REDUCIBILITY_CHECKED | REDUCIBLE_TO_8x8 | REDUCIBLE_TO_2_COLOR)
@@ -1465,6 +1468,12 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 
 #define IS_OFFSCREEN_PIXMAP(pPix)\
         ((XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pPix)))->offscreenArea)	
+
+#define PIXMAP_IS_SHARED(pPix)\
+        ((XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pPix)))->flags & SHARED_PIXMAP)
+
+#define OFFSCREEN_PIXMAP_LOCKED(pPix)\
+        ((XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pPix)))->flags & LOCKED_PIXMAP)
 
 #define DELIST_OFFSCREEN_PIXMAP(pPix) { \
 	PixmapLinkPtr _pLink, _prev; \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.14 1999/03/21 07:34:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.15 1999/05/15 06:24:49 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -462,7 +462,7 @@ ProcPanoramiXShmPutImage(register ClientPtr client)
     PanoramiXGC 	 *pPanoramiXGC = PanoramiXGCRoot;
     int			 orig_x, orig_y;
     int			 result;
-
+    Bool		 sendEvent;
 
     REQUEST(xShmPutImageReq);
     REQUEST_SIZE_MATCH(xShmPutImageReq);
@@ -479,7 +479,10 @@ ProcPanoramiXShmPutImage(register ClientPtr client)
     IF_RETURN(!pPanoramiXGC, BadGC);
     orig_x = stuff->dstX;
     orig_y = stuff->dstY;
+    sendEvent = stuff->sendEvent;
+    stuff->sendEvent = 0;
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
+	if(!j) stuff->sendEvent = sendEvent;
 	stuff->drawable = pPanoramiXWin->info[j].id;
 	stuff->gc = pPanoramiXGC->info[j].id;
 	if (pPanoramiXWin == pPanoramiXRoot) {

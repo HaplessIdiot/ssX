@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.12 1999/03/29 03:13:27 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.13 1999/06/12 07:18:29 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -82,10 +82,8 @@ from The Open Group.
  */
 
 int
-TRANS(ConvertAddress)(familyp,addrlenp,addrp)
-int	*familyp;
-int	*addrlenp;
-Xtransaddr	**addrp;
+TRANS(ConvertAddress)(int *familyp, int *addrlenp, Xtransaddr **addrp)
+
 {
 
     PRMSG(2,"ConvertAddress(%d,%d,%x)\n",*familyp,*addrlenp,*addrp);
@@ -219,13 +217,10 @@ Xtransaddr	**addrp;
 #include <signal.h>
 
 char *
-TRANS(GetMyNetworkId) (ciptr)
-
-XtransConnInfo  ciptr;
+TRANS(GetMyNetworkId) (XtransConnInfo ciptr)
 
 {
     int		family = ciptr->family;
-    int		addrlen = ciptr->addrlen;
     char 	*addr = ciptr->addr;
     char	hostnamebuf[256];
     char 	*networkId = NULL;
@@ -297,7 +292,7 @@ int
 #else
 void
 #endif
-nameserver_lost(sig)
+nameserver_lost(int sig)
 {
   nameserver_timedout = 1;
   longjmp (env, -1);
@@ -310,16 +305,12 @@ nameserver_lost(sig)
 
 
 char *
-TRANS(GetPeerNetworkId) (ciptr)
-
-XtransConnInfo  ciptr;
+TRANS(GetPeerNetworkId) (XtransConnInfo ciptr)
 
 {
     int		family = ciptr->family;
-    int		peer_addrlen = ciptr->peeraddrlen;
     char	*peer_addr = ciptr->peeraddr;
     char	*hostname;
-    char	*networkId = NULL;
     char	addrbuf[256];
     char	*addr = NULL;
 
@@ -340,12 +331,10 @@ XtransConnInfo  ciptr;
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
+#ifdef XTHREADS
 	_Xgethostbynameparams hparams;
-	struct hostent * hostp;
-
-#ifndef WIN32
- 	char *inet_ntoa();
 #endif
+	struct hostent * hostp = NULL;
 
 #ifdef SIGALRM
 	/*
@@ -432,7 +421,7 @@ XtransConnInfo  ciptr;
 
 #if defined(WIN32) && (defined(TCPCONN) || defined(DNETCONN))
 int
-TRANS(WSAStartup) ()
+TRANS(WSAStartup) (void)
 {
     static WSADATA wsadata;
 
@@ -446,9 +435,7 @@ TRANS(WSAStartup) ()
 
 
 static int
-is_numeric (str)
-
-char *str;
+is_numeric (char *str)
 
 {
     int i;
@@ -460,6 +447,7 @@ char *str;
     return (1);
 }
 
+#ifdef TRANS_SERVER
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -553,3 +541,5 @@ trans_mkdir(char *path, int mode)
     /* In all other cases, fail */
     return -1;
 }
+
+#endif /* TRANS_SERVER */

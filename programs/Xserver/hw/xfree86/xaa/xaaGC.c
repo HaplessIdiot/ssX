@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.13 1999/03/14 11:18:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.14 1999/05/16 10:13:03 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -81,7 +81,8 @@ XAAValidateGC(
 	   onto system memory drawables */
 
 	if((pGC->fillStyle == FillTiled) && 
-	    IS_OFFSCREEN_PIXMAP(pGC->tile.pixmap)) {
+	    IS_OFFSCREEN_PIXMAP(pGC->tile.pixmap) &&
+	    !OFFSCREEN_PIXMAP_LOCKED(pGC->tile.pixmap)) {
 
 	    XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
 	    FBAreaPtr area = pPriv->offscreenArea;
@@ -101,6 +102,7 @@ XAAValidateGC(
 	}
 	pGCPriv->flags = OPS_ARE_ACCEL;
 
+#if 1
 	/* Ugh.  If we can't use the blitter on offscreen pixmaps used
 	   as tiles, then we need to move them out as cfb can't handle
 	   tiles with non-zero origins */
@@ -115,6 +117,7 @@ XAAValidateGC(
 	    XAARemoveAreaCallback(area); /* clobbers pPriv->offscreenArea */
 	    xf86FreeOffscreenArea(area);
 	}
+#endif
     }
 
     XAA_GC_FUNC_EPILOGUE(pGC);
@@ -241,6 +244,21 @@ XAAChangeGC (
     XAA_GC_FUNC_PROLOGUE (pGC);
     (*pGC->funcs->ChangeGC) (pGC, mask);
     XAA_GC_FUNC_EPILOGUE (pGC);
+
+   /* we have to assume that shared memory pixmaps are dirty 
+      because we can't wrap all operations on them */
+
+    if((mask & GCTile) && !pGC->tileIsPixel &&
+	PIXMAP_IS_SHARED(pGC->tile.pixmap))
+    {
+	XAAPixmapPtr pPixPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+	pPixPriv->flags |= DIRTY;
+    }
+
+    if((mask & GCStipple) && PIXMAP_IS_SHARED(pGC->stipple)){
+	XAAPixmapPtr pPixPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+	pPixPriv->flags |= DIRTY;
+    }
 }
 
 static void

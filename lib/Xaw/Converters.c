@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.12 1999/05/09 10:51:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.13 1999/06/06 08:47:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -136,10 +136,11 @@ static XtConvertArgRec DLArgs[] = {
 #endif /* OLDXAW */
 
 static String XtCToolkitError = "ToolkitError";
-static String XtNwrongParameters = "wrongParameters";
 static String XtNconversionError = "conversionError";
 
 #ifndef OLDXAW
+static String XtNwrongParameters = "wrongParameters";
+
 /*
  * Implementation
  */

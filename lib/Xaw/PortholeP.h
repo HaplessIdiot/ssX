@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/PortholeP.h,v 1.4 1998/10/03 08:42:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/PortholeP.h,v 1.5 1999/06/06 08:48:07 dawes Exp $ */
 
 #ifndef _XawPortholeP_h
 #define _XawPortholeP_h
@@ -45,7 +45,7 @@ typedef struct {
     /* resources */
     XtCallbackList report_callbacks;	/* callback/Callback */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } PortholePart;
 

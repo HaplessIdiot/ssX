@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiTextP.h,v 1.5 1999/06/06 08:47:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiTextP.h,v 1.6 1999/06/13 13:47:15 dawes Exp $ */
 
 /*
  * AsciiText.c - Private header file for AsciiText Widget.
@@ -83,7 +83,7 @@ extern AsciiTextClassRec asciiTextClassRec;
 typedef struct {
     int resource;
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } AsciiPart;
 
@@ -115,7 +115,7 @@ extern AsciiStringClassRec asciiStringClassRec;
 typedef struct {
     int resource;
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } AsciiStringPart;
 
@@ -149,7 +149,7 @@ extern AsciiDiskClassRec asciiDiskClassRec;
 typedef struct {
     char resource;
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } AsciiDiskPart;
 

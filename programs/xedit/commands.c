@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.15 1999/05/09 10:52:02 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.16 1999/05/16 10:13:07 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -910,7 +910,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    XtSetValues(dirwindow, args, 2);
 		    if (n_list > 0
 			&& (n_list != 1 || list[0] != XtName(dirwindow))) {
-			while (--n_list)
+			while (--n_list > -1)
 			    XtFree(list[n_list]);
 			XtFree((char*)list);
 		    }
@@ -923,7 +923,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		}
 	    }
 	    if (free_matches && matches) {
-		while (--n_matches)
+		while (--n_matches > -1)
 		    XtFree(matches[n_matches]);
 		XtFree((char*)matches);
 	    }
@@ -1007,7 +1007,7 @@ DirWindowCB(Widget w, XtPointer user_data, XtPointer call_data)
 	    XtSetValues(dirwindow, args, 2);
 	    if (n_list > 0
 		&& (n_list != 1 || list[0] != XtName(dirwindow))) {
-		while (--n_list)
+		while (--n_list > -1)
 		    XtFree(list[n_list]);
 		XtFree((char*)list);
 	    }

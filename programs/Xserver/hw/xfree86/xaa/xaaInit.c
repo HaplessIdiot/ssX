@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.18 1999/03/21 07:35:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.19 1999/05/16 10:13:03 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -38,7 +38,7 @@ static Bool XAAEnterVT (int index, int flags);
 static void XAALeaveVT (int index, int flags);
 static int  XAASetDGAMode(int index, int num, DGADevicePtr devRet);
 static Bool XAASaveRestoreImage (int index, SaveRestoreFlags what);
-
+static Bool XAAChangeWindowAttributes (WindowPtr pWin, unsigned long mask);
 
 int XAAScreenIndex = -1;
 int XAAGCIndex = -1;
@@ -175,6 +175,8 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScreenPriv->BackingStoreFuncs.SaveAreas = 
 			pScreen->BackingStoreFuncs.SaveAreas;
     pScreen->BackingStoreFuncs.SaveAreas = infoRec->SaveAreas;
+    pScreenPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
+    pScreen->ChangeWindowAttributes = XAAChangeWindowAttributes;
 
     pScreenPriv->EnterVT = pScrn->EnterVT;
     pScrn->EnterVT = XAAEnterVT; 
@@ -235,6 +237,7 @@ XAACloseScreen (int i, ScreenPtr pScreen)
 			pScreenPriv->BackingStoreFuncs.RestoreAreas;
     pScreen->BackingStoreFuncs.SaveAreas = 
 			pScreenPriv->BackingStoreFuncs.SaveAreas;
+    pScreen->ChangeWindowAttributes = pScreenPriv->ChangeWindowAttributes;
 
     /* We leave it up to the client to free the XAAInfoRec */
 
@@ -482,6 +485,8 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 	   pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
 	   pPriv->flags = 0;
 	   pPriv->offscreenArea = NULL;
+	   if(!w || !h) /* either scratch or shared memory */
+		pPriv->flags |= SHARED_PIXMAP;
 	}
     }
 
@@ -515,6 +520,35 @@ XAADestroyPixmap(PixmapPtr pPix)
     return ret;
 }
 
+static Bool
+XAAChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
+{
+   ScreenPtr pScreen = pWin->drawable.pScreen;
+   Bool ret;
+
+   XAA_SCREEN_PROLOGUE (pScreen, ChangeWindowAttributes);
+   ret = (*pScreen->ChangeWindowAttributes) (pWin, mask);
+   XAA_SCREEN_EPILOGUE (pScreen, ChangeWindowAttributes, XAAChangeWindowAttributes);
+
+   /* we have to assume that shared memory pixmaps are dirty
+      because we can't wrap operations on them */
+
+   if((mask & CWBackPixmap) && (pWin->backgroundState == BackgroundPixmap) &&
+      PIXMAP_IS_SHARED(pWin->background.pixmap))
+   {
+        XAAPixmapPtr pPixPriv = XAA_GET_PIXMAP_PRIVATE(pWin->background.pixmap);        pPixPriv->flags |= DIRTY;
+   }
+   if((mask & CWBorderPixmap) && !(pWin->borderIsPixel) &&
+      PIXMAP_IS_SHARED(pWin->border.pixmap))
+   {
+        XAAPixmapPtr pPixPriv = XAA_GET_PIXMAP_PRIVATE(pWin->border.pixmap);
+        pPixPriv->flags |= DIRTY;
+   }
+
+   return ret;
+}
+
+
 
 /*  These two aren't really needed for anything */
 
@@ -534,6 +568,12 @@ XAALeaveVT(int index, int flags)
     ScreenPtr pScreen = screenInfo.screens[index];
     XAAScreenPtr pScreenPriv = 
 	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
+    XAAInfoRecPtr infoRec = pScreenPriv->AccelInfoRec;
+
+    if(infoRec->NeedToSync) {
+        (*infoRec->Sync)(infoRec->pScrn);
+        infoRec->NeedToSync = FALSE;
+    }
 
     (*pScreenPriv->LeaveVT)(index, flags);
 }

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransdnet.c,v 3.2 1996/05/10 06:55:47 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransdnet.c,v 3.3 1998/10/03 09:07:34 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -97,9 +97,7 @@ from The Open Group.
  */
 
 static int
-TRANS(DNETGetAddr) (ciptr)
-
-XtransConnInfo ciptr;
+TRANS(DNETGetAddr) (XtransConnInfo ciptr)
 
 {
     struct sockaddr_dn	sockname;
@@ -140,9 +138,7 @@ XtransConnInfo ciptr;
  */
 
 static int
-TRANS(DNETGetPeerAddr) (ciptr)
-
-XtransConnInfo ciptr;
+TRANS(DNETGetPeerAddr) (XtransConnInfo ciptr)
 
 {
     struct sockaddr_dn	sockname;
@@ -179,12 +175,8 @@ XtransConnInfo ciptr;
 #ifdef TRANS_CLIENT
 
 static XtransConnInfo
-TRANS(DNETOpenCOTSClient) (thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(DNETOpenCOTSClient) (Xtransport *thistrans, char *protocol, 
+			   char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -211,12 +203,8 @@ char		*port;
 #ifdef TRANS_SERVER
 
 static XtransConnInfo
-TRANS(DNETOpenCOTSServer) (thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(DNETOpenCOTSServer) (Xtransport *thistrans, char *protocol, 
+			   char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -247,12 +235,8 @@ char		*port;
 #ifdef TRANS_CLIENT
 
 static XtransConnInfo
-TRANS(DNETOpenCLTSClient) (thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(DNETOpenCLTSClient) (Xtransport *thistrans, char *protocol, 
+			   char *host, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -279,12 +263,8 @@ char		*port;
 #ifdef TRANS_SERVER
 
 static XtransConnInfo
-TRANS(DNETOpenCLTSServer) (thistrans, protocol, host, port)
-
-Xtransport	*thistrans;
-char		*protocol;
-char		*host;
-char		*port;
+TRANS(DNETOpenCLTSServer) (Xtransport *thistrans, char *protocol, 
+			   char *host, char *port)
 
 {
     /* NEED TO IMPLEMENT */
@@ -299,11 +279,7 @@ char		*port;
 #ifdef TRANS_REOPEN
 
 static XtransConnInfo
-TRANS(DNETReopenCOTSServer) (thistrans, fd, port)
-
-Xtransport	*thistrans;
-int		fd;
-char		*port;
+TRANS(DNETReopenCOTSServer) (Xtransport *thistrans, int fd, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -324,11 +300,7 @@ char		*port;
 }
 
 static XtransConnInfo
-TRANS(DNETReopenCLTSServer) (thistrans, fd, port)
-
-Xtransport	*thistrans;
-int		fd;
-char		*port;
+TRANS(DNETReopenCLTSServer) (Xtransport *thistrans, int fd, char *port)
 
 {
     XtransConnInfo	ciptr;
@@ -352,11 +324,7 @@ char		*port;
 
 
 static int
-TRANS(DNETSetOption) (ciptr, option, arg)
-
-XtransConnInfo	ciptr;
-int		option;
-int		arg;
+TRANS(DNETSetOption) (XtransConnInfo ciptr, int option, int arg)
 
 {
     PRMSG (2,"DNETSetOption(%d,%d,%d)\n", ciptr->fd, option, arg);
@@ -368,10 +336,7 @@ int		arg;
 #ifdef TRANS_SERVER
 
 static int
-TRANS(DNETCreateListener) (ciptr, port)
-
-XtransConnInfo	ciptr;
-char		*port;
+TRANS(DNETCreateListener) (XtransConnInfo ciptr, char *port)
 
 {
     struct sockaddr_dn  dnsock;
@@ -415,10 +380,7 @@ char		*port;
 
 
 static XtransConnInfo
-TRANS(DNETAccept) (ciptr, status)
-
-XtransConnInfo	ciptr;
-int		*status;
+TRANS(DNETAccept) (XtransConnInfo ciptr, int *status)
 
 {
     XtransConnInfo	newciptr;
@@ -485,11 +447,7 @@ int		*status;
 #define OBJBUFSIZE 64
 
 static int
-TRANS(DNETConnect) (ciptr, host, port)
-
-XtransConnInfo	ciptr;
-char		*host;
-char		*port;
+TRANS(DNETConnect) (XtransConnInfo ciptr, char *host, char *port)
 
 {
     char objname[OBJBUFSIZE];
@@ -557,10 +515,7 @@ char		*port;
 
 
 static int
-TRANS(DNETBytesReadable) (ciptr, pend)
-
-XtransConnInfo	ciptr;
-BytesReadable_t	*pend;
+TRANS(DNETBytesReadable) (XtransConnInfo ciptr, BytesReadable_t *pend)
 
 {
     PRMSG (2,"DNETBytesReadable(%x,%d,%x)\n", ciptr, ciptr->fd, pend);
@@ -574,11 +529,7 @@ BytesReadable_t	*pend;
 
 
 static int
-TRANS(DNETRead) (ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-char		*buf;
-int		size;
+TRANS(DNETRead) (XtransConnInfo ciptr, char *buf, int size)
 
 {
     PRMSG (2,"DNETRead(%d,%x,%d)\n", ciptr->fd, buf, size);
@@ -592,11 +543,7 @@ int		size;
 
 
 static int
-TRANS(DNETWrite) (ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-char		*buf;
-int		size;
+TRANS(DNETWrite) (XtransConnInfo ciptr, char *buf, int size)
 
 {
     PRMSG (2,"DNETWrite(%d,%x,%d)\n", ciptr->fd, buf, size);
@@ -610,11 +557,7 @@ int		size;
 
 
 static int
-TRANS(DNETReadv) (ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-struct iovec	*buf;
-int		size;
+TRANS(DNETReadv) (XtransConnInfo ciptr, struct iovec *buf, int size)
 
 {
     PRMSG (2,"DNETReadv(%d,%x,%d)\n", ciptr->fd, buf, size);
@@ -624,11 +567,7 @@ int		size;
 
 
 static int
-TRANS(DNETWritev) (ciptr, buf, size)
-
-XtransConnInfo	ciptr;
-struct iovec	*buf;
-int		size;
+TRANS(DNETWritev) (XtransConnInfo ciptr, struct iovec *buf, int size)
 
 {
     PRMSG (2,"DNETWritev(%d,%x,%d)\n", ciptr->fd, buf, size);
@@ -638,9 +577,7 @@ int		size;
 
 
 static int
-TRANS(DNETDisconnect) (ciptr)
-
-XtransConnInfo	ciptr;
+TRANS(DNETDisconnect) (XtransConnInfo ciptr)
 
 {
     PRMSG (2,"DNETDisconnect(%x,%d)\n", ciptr, ciptr->fd, 0);
@@ -650,9 +587,7 @@ XtransConnInfo	ciptr;
 
 
 static int
-TRANS(DNETClose) (ciptr)
-
-XtransConnInfo	ciptr;
+TRANS(DNETClose) (XtransConnInfo ciptr)
 
 {
     PRMSG (2,"DNETClose(%x,%d)\n", ciptr, ciptr->fd, 0);

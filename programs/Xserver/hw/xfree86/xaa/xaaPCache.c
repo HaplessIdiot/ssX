@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.17 1999/03/28 15:33:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.18 1999/04/11 13:11:08 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -2141,13 +2141,13 @@ XAAStippledFillChooser(GCPtr pGC)
     }
 
     if(infoRec->FillColorExpandSpans && 
-	!(infoRec->FillCacheExpandSpansFlags & NO_TRANSPARENCY) && 
-	((pGC->alu == GXcopy) || !(infoRec->FillCacheExpandSpansFlags & 
+	!(infoRec->FillColorExpandSpansFlags & NO_TRANSPARENCY) && 
+	((pGC->alu == GXcopy) || !(infoRec->FillColorExpandSpansFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
-	CHECK_ROP(pGC,infoRec->FillCacheExpandSpansFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillCacheExpandSpansFlags) &&
-	CHECK_FG(pGC,infoRec->FillCacheExpandSpansFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillCacheExpandSpansFlags)) {
+	CHECK_ROP(pGC,infoRec->FillColorExpandSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillColorExpandSpansFlags) &&
+	CHECK_FG(pGC,infoRec->FillColorExpandSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillColorExpandSpansFlags)) {
 
 	      return DO_COLOR_EXPAND;
     }

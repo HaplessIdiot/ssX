@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/RepeaterP.h,v 1.4 1998/10/03 08:42:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/RepeaterP.h,v 1.5 1999/06/06 08:48:08 dawes Exp $ */
 
 #ifndef _XawRepeaterP_h
 #define _XawRepeaterP_h
@@ -57,7 +57,7 @@ typedef struct {
     int next_delay;			/* next amount for timer */
     XtIntervalId timer;			/* timer that will fire */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } RepeaterPart;
 

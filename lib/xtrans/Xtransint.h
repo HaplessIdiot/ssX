@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.24 1998/10/03 09:07:35 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.25 1999/03/28 15:32:07 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -218,12 +218,10 @@ typedef struct _Xtransport {
 #ifdef TRANS_CLIENT
 
     XtransConnInfo (*OpenCOTSClient)(
-#if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
 	char *,			/* protocol */
 	char *,			/* host */
 	char *			/* port */
-#endif
     );
 
 #endif /* TRANS_CLIENT */
@@ -231,12 +229,10 @@ typedef struct _Xtransport {
 #ifdef TRANS_SERVER
 
     XtransConnInfo (*OpenCOTSServer)(
-#if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
 	char *,			/* protocol */
 	char *,			/* host */
 	char *			/* port */
-#endif
     );
 
 #endif /* TRANS_SERVER */
@@ -244,12 +240,10 @@ typedef struct _Xtransport {
 #ifdef TRANS_CLIENT
 
     XtransConnInfo (*OpenCLTSClient)(
-#if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
 	char *,			/* protocol */
 	char *,			/* host */
 	char *			/* port */
-#endif
     );
 
 #endif /* TRANS_CLIENT */
@@ -257,12 +251,10 @@ typedef struct _Xtransport {
 #ifdef TRANS_SERVER
 
     XtransConnInfo (*OpenCLTSServer)(
-#if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
 	char *,			/* protocol */
 	char *,			/* host */
 	char *			/* port */
-#endif
     );
 
 #endif /* TRANS_SERVER */
@@ -271,52 +263,40 @@ typedef struct _Xtransport {
 #ifdef TRANS_REOPEN
 
     XtransConnInfo (*ReopenCOTSServer)(
-#if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
         int,			/* fd */
         char *			/* port */
-#endif
     );
 
     XtransConnInfo (*ReopenCLTSServer)(
-#if NeedNestedPrototypes
 	struct _Xtransport *,	/* transport */
         int,			/* fd */
         char *			/* port */
-#endif
     );
 
 #endif /* TRANS_REOPEN */
 
 
     int	(*SetOption)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	int,			/* option */
 	int			/* arg */
-#endif
     );
 
 #ifdef TRANS_SERVER
 
     int	(*CreateListener)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	char *			/* port */
-#endif
     );
 
     int	(*ResetListener)(
-#if NeedNestedPrototypes
 	XtransConnInfo		/* connection */
-#endif
     );
 
     XtransConnInfo (*Accept)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
         int *			/* status */
-#endif
     );
 
 #endif /* TRANS_SERVER */
@@ -324,70 +304,52 @@ typedef struct _Xtransport {
 #ifdef TRANS_CLIENT
 
     int	(*Connect)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	char *,			/* host */
 	char *			/* port */
-#endif
     );
 
 #endif /* TRANS_CLIENT */
 
     int	(*BytesReadable)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	BytesReadable_t *	/* pend */
-#endif
     );
 
     int	(*Read)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	char *,			/* buf */
 	int			/* size */
-#endif
     );
 
     int	(*Write)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	char *,			/* buf */
 	int			/* size */
-#endif
     );
 
     int	(*Readv)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	struct iovec *,		/* buf */
 	int			/* size */
-#endif
     );
 
     int	(*Writev)(
-#if NeedNestedPrototypes
 	XtransConnInfo,		/* connection */
 	struct iovec *,		/* buf */
 	int			/* size */
-#endif
     );
 
     int	(*Disconnect)(
-#if NeedNestedPrototypes
 	XtransConnInfo		/* connection */
-#endif
     );
 
     int	(*Close)(
-#if NeedNestedPrototypes
 	XtransConnInfo		/* connection */
-#endif
     );
 
     int	(*CloseForCloning)(
-#if NeedNestedPrototypes
 	XtransConnInfo		/* connection */
-#endif
     );
 
 } Xtransport;
@@ -419,11 +381,9 @@ typedef struct _Xtransport_table {
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
 static	int TRANS(ReadV)(
-#if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     struct iovec *,	/* iov */
     int			/* iovcnt */
-#endif
 );
 
 #else
@@ -438,11 +398,9 @@ static	int TRANS(ReadV)(
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 
 static int TRANS(WriteV)(
-#if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     struct iovec *,	/* iov */
     int 		/* iovcnt */
-#endif
 );
 
 #else
@@ -453,17 +411,15 @@ static int TRANS(WriteV)(
 
 
 static int is_numeric (
-#if NeedFunctionPrototypes
     char *		/* str */
-#endif
 );
 
+#ifdef TRANS_SERVER
 static int trans_mkdir (
-#if NeedFunctionPrototypes
     char *,		/* path */
     int			/* mode */
-#endif
 );
+#endif
 
 /*
  * Some XTRANSDEBUG stuff

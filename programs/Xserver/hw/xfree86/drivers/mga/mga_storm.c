@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.51 1999/05/23 06:33:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.52 1999/06/06 08:48:51 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -148,8 +148,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     case PCI_CHIP_MGAG200_PCI:
     case PCI_CHIP_MGAG400:
         pMga->AccelFlags = TRANSC_SOLID_FILL |
-			   TWO_PASS_COLOR_EXPAND |
-			   LARGE_ADDRESSES;
+			   TWO_PASS_COLOR_EXPAND;
+
+	if(pMga->FbMapSize > 16*1024*1024)
+	   pMga->AccelFlags |= LARGE_ADDRESSES;
         break;
     case PCI_CHIP_MGA1064:
 	pMga->AccelFlags = 0;
@@ -422,12 +424,12 @@ MGAStormSync(ScrnInfoPtr pScrn)
 {
     MGAPtr pMga = MGAPTR(pScrn);
     
-    if(pMga->AccelFlags & CLIPPER_ON) {
-	DISABLE_CLIP();
-    } else {
-	while(MGAISBUSY());
+    while(MGAISBUSY());
     /* flush cache before a read (mga-1064g 5.1.6) */
-	OUTREG8(MGAREG_CRTC_INDEX, 0); 
+    OUTREG8(MGAREG_CRTC_INDEX, 0); 
+    if(pMga->AccelFlags & CLIPPER_ON) {
+        pMga->AccelFlags &= ~CLIPPER_ON;
+        OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);
     }
 }
 
@@ -475,6 +477,8 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     pMga->AccelFlags &= ~CLIPPER_ON;
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
+	pMga->SrcOrg = 0;
+	pMga->DstOrg = 0;
 	OUTREG(MGAREG_SRCORG, 0);
 	OUTREG(MGAREG_DSTORG, 0);
     }
@@ -546,20 +550,19 @@ MGANAME(SetupForScreenToScreenCopy)(
     OUTREG(MGAREG_AR5, ydir * pScrn->displayWidth);
 }
 
+
 static void 
 MGANAME(SubsequentScreenToScreenCopy)(
     ScrnInfoPtr pScrn,
     int srcX, int srcY, int dstX, int dstY, int w, int h
-)
-{
-    int start, end, srcAddr, dstAddr;
+){
+    int start, end, SrcOrg, DstOrg;
     MGAPtr pMga = MGAPTR(pScrn);
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
-	srcAddr = (srcY * pScrn->displayWidth * PSZ) >> 9;
-	dstAddr = (dstY * pScrn->displayWidth * PSZ) >> 9;
-
-	srcY = dstY = 0;
+	SrcOrg = ((srcY & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+	DstOrg = ((dstY & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+        dstY &= 1023;
     }
 
     if(pMga->BltScanDirection & BLIT_UP) {
@@ -574,15 +577,24 @@ MGANAME(SubsequentScreenToScreenCopy)(
     else end += w; 
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
-	WAITFIFO(8); 
-	OUTREG(MGAREG_DSTORG, dstAddr << 6);
-	OUTREG(MGAREG_SRCORG, srcAddr << 6);
+	WAITFIFO(7); 
+	if(DstOrg)
+	    OUTREG(MGAREG_DSTORG, DstOrg << 6);
+	if(SrcOrg != pMga->SrcOrg) {
+	    pMga->SrcOrg = SrcOrg;
+	    OUTREG(MGAREG_SRCORG, SrcOrg << 6);
+ 	}
+	if(SrcOrg) {
+	    SrcOrg = (SrcOrg << 9) / PSZ;
+	    end -= SrcOrg;
+	    start -= SrcOrg;
+	}
 	OUTREG(MGAREG_AR0, end);
 	OUTREG(MGAREG_AR3, start);
 	OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
-	OUTREG(MGAREG_SRCORG, 0);
-	OUTREG(MGAREG_DSTORG, 0);
+	if(DstOrg)
+	   OUTREG(MGAREG_DSTORG, 0);
     } else {
 	WAITFIFO(4); 
 	OUTREG(MGAREG_AR0, end);
@@ -1270,19 +1282,21 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
     MGAPtr pMga = MGAPTR(pScrn);
     int pitch = pScrn->displayWidth * PSZ;
     int start, end, next, num;
+    int SrcOrg = 0, DstOrg = 0;
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
-	int srcAddr, dstAddr;
-
-	/* this is not quite right yet since we're 
-	   messing up our 2 Meg boundary checks below */
-        dstAddr = (y * pScrn->displayWidth * PSZ) >> 9;
-        srcAddr = (srcy * pScrn->displayWidth * PSZ) >> 9;
-	srcy = y = 0;
+        DstOrg = ((y & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+        SrcOrg = ((srcy & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+	y &= 1023;
 
 	WAITFIFO(2);
-	OUTREG(MGAREG_SRCORG, srcAddr << 6);
-	OUTREG(MGAREG_DSTORG, dstAddr << 6);
+	if(DstOrg)
+            OUTREG(MGAREG_DSTORG, DstOrg << 6);
+        if(SrcOrg != pMga->SrcOrg) {
+            pMga->SrcOrg = SrcOrg;
+            OUTREG(MGAREG_SRCORG, SrcOrg << 6);
+        }
+	SrcOrg <<= 9;
     }
 
     w--;
@@ -1292,8 +1306,8 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
     /* src cannot split a 2 Meg boundary */
     if(!((start ^ end) & 0xff000000)) {
 	WAITFIFO(4);
-	OUTREG(MGAREG_AR3, start);
-	OUTREG(MGAREG_AR0, start + w);
+	OUTREG(MGAREG_AR3, start - SrcOrg);
+	OUTREG(MGAREG_AR0, start + w - SrcOrg);
 	OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
     } else {
@@ -1303,13 +1317,13 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		num = next - start - 1;
 
 		WAITFIFO(7);
-		OUTREG(MGAREG_AR3, start);
-		OUTREG(MGAREG_AR0, start + num);
+		OUTREG(MGAREG_AR3, start - SrcOrg);
+		OUTREG(MGAREG_AR0, start + num - SrcOrg);
 		OUTREG(MGAREG_FXBNDRY, ((x + num) << 16) | (x & 0xffff));
 		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 		
-		OUTREG(MGAREG_AR3, next);
-		OUTREG(MGAREG_AR0, start + w);
+		OUTREG(MGAREG_AR3, next - SrcOrg);
+		OUTREG(MGAREG_AR0, start + w - SrcOrg);
 		OUTREG(MGAREG_FXBNDRY + MGAREG_EXEC, ((x + w) << 16) | 
                                                      ((x + num + 1) & 0xffff));
 		start += pitch;
@@ -1319,8 +1333,8 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		if(num > h) num = h;
 
 		WAITFIFO(4);
-		OUTREG(MGAREG_AR3, start);
-		OUTREG(MGAREG_AR0, start + w);
+		OUTREG(MGAREG_AR3, start - SrcOrg);
+		OUTREG(MGAREG_AR0, start + w - SrcOrg);
 		OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
 		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | num);
 
@@ -1330,9 +1344,8 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 	}
     }
 
-    if (pMga->AccelFlags & LARGE_ADDRESSES) {
-	WAITFIFO(2);
-	OUTREG(MGAREG_SRCORG, 0);
+    if(DstOrg) {
+	WAITFIFO(1);
 	OUTREG(MGAREG_DSTORG, 0);
     }
 }
@@ -1419,8 +1432,8 @@ MGAWriteBitmapColorExpand(
 	if(destptr > maxptr) 
 		destptr = (CARD32*)infoRec->ColorExpandBase;
     }
-    DISABLE_CLIP();
-    SET_SYNC_FLAG(infoRec);
+    MGAStormSync(infoRec->pScrn);
+    infoRec->NeedToSync = FALSE;
 }
 
 
@@ -1509,8 +1522,8 @@ MGAFillColorExpandRects(
 
 	pBox++;
     }
-    DISABLE_CLIP();
-    SET_SYNC_FLAG(infoRec);
+    MGAStormSync(infoRec->pScrn);
+    infoRec->NeedToSync = FALSE;
 }
 
 
@@ -1678,6 +1691,7 @@ void MGANonTEGlyphRenderer(
 					pScrn, fg, -1, rop, planemask);
     WAITFIFO(1);
     OUTREG(MGAREG_CXBNDRY, ((pbox->x2 - 1) << 16) | pbox->x1);      
+    pMga->AccelFlags |= CLIPPER_ON;
 
     for(i = 0; i < n; i++, glyphs++) {
 	if(!glyphs->srcwidth) continue;
@@ -1725,8 +1739,8 @@ void MGANonTEGlyphRenderer(
 	MoveDWORDS((CARD32*)infoRec->ColorExpandBase, (CARD32*)src, dwords);
     }  
 
-    DISABLE_CLIP();
-    SET_SYNC_FLAG(infoRec);
+    MGAStormSync(infoRec->pScrn);
+    infoRec->NeedToSync = FALSE;
 }
 
 void

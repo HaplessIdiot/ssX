@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.5 1999/05/09 10:51:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.6 1999/05/16 13:24:50 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -616,6 +616,24 @@ void XDGAFlush(
     _XReply(dpy, (xReply *)&rep, 0, xFalse);
     UnlockDisplay(dpy);
     SyncHandle();
+}
+
+void XDGAKeyEventToXKeyEvent(
+    XDGAKeyEvent* dk, 
+    XKeyEvent* xk
+){
+    xk->type = dk->type;
+    xk->serial = dk->serial;
+    xk->send_event = False;
+    xk->display = dk->display;
+    xk->window = RootWindow(dk->display, dk->screen);
+    xk->root = xk->window;
+    xk->subwindow = None;
+    xk->time = dk->time;
+    xk->x = xk->y = xk->x_root = xk->y_root = 0;
+    xk->state = dk->state;
+    xk->keycode = dk->keycode;
+    xk->same_screen = True;
 }
 
 #include <X11/Xmd.h>

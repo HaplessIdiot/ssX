@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/ToggleP.h,v 1.4 1998/10/03 08:42:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/ToggleP.h,v 1.5 1999/06/06 08:48:19 dawes Exp $ */
 
 /* 
  * Author: Chris D. Peterson
@@ -75,7 +75,7 @@ typedef struct {
     /* private */
     RadioGroup *radio_group;
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } TogglePart;
 
