@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.89 2001/05/10 21:14:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.90 2001/05/10 21:43:56 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1007,7 +1007,11 @@ MGANAME(RestoreAccelState)(ScrnInfoPtr pScrn)
    SET_FOREGROUND(tmp);
    OUTREG(MGAREG_SRCORG, pMga->realSrcOrg);
    OUTREG(MGAREG_DSTORG, pMga->DstOrg);
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+   OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT );
+#else
    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT | 0x10000);
+#endif
    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); /* (maxX << 16) | minX */
    OUTREG(MGAREG_YTOP, 0x00000000);    /* minPixelPointer */
    OUTREG(MGAREG_YBOT, 0x007FFFFF);    /* maxPixelPointer */
@@ -1104,21 +1108,24 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
 	   maccess |= (1 << 31);
 	Mga16InitSolidFillRectFuncs(pMga);
 	pMga->RestoreAccelState = Mga16RestoreAccelState;
-	opmode |= 10000;
+	opmode |= 0x10000;
         break;
     case 24:
         maccess |= 3;
 	Mga24InitSolidFillRectFuncs(pMga);
 	pMga->RestoreAccelState = Mga24RestoreAccelState;
+	opmode |= 0x20000;
         break;
-	opmode |= 20000;
     case 32:
         maccess |= 2;
 	Mga32InitSolidFillRectFuncs(pMga);
 	pMga->RestoreAccelState = Mga32RestoreAccelState;
-	opmode |= 20000;
+	opmode |= 0x20000;
         break;
     }
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+    opmode &= ~0x30000;
+#endif
 
     pMga->fifoCount = 0;
 

@@ -1,4 +1,9 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 501. Fix mga font corruption problems introduced with the recent addition
+      of big-endian support (#4629, Andrew C. Aitchison).
+ 500. Update for the mga driver's man page (#4628, Andy Isaacson).
+ 499. Add more drivers to the default build on Linux/mips (#4623,
+      Guido Guenther).
  498. Move the vgahw module load/init after the PROBD_DETECT handling
       in the i810 driver's PreInit(), which fixes a segv when using
       the X server's -configure option (#A.378, Leandro Martelli).
@@ -13193,4 +13198,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1759 2001/05/10 21:14:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1760 2001/05/10 21:43:52 dawes Exp $
