@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.82 2002/01/30 01:35:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.83 2002/02/05 05:24:18 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1544,9 +1544,7 @@ NVUnmapMem(ScrnInfoPtr pScrn)
 
 
 /*
- * Initialise a new mode.  This is currently still using the old
- * "initialise struct, restore/write struct to HW" model.  That could
- * be changed.
+ * Initialise a new mode. 
  */
 
 static Bool
@@ -1564,18 +1562,15 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
 
-    if ( pNv->ModeInit ) {
-        if (!(*pNv->ModeInit)(pScrn, mode))
-            return FALSE;
-    }
+    if(!(*pNv->ModeInit)(pScrn, mode))
+        return FALSE;
 
     /* Program the registers */
     vgaHWProtect(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
     nvReg = &pNv->ModeReg;
 
-    if ( pNv->Restore )
-        (*pNv->Restore)(pScrn, vgaReg, nvReg, FALSE);
+    (*pNv->Restore)(pScrn, vgaReg, nvReg, FALSE);
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     /* turn on LFB swapping */
@@ -1612,10 +1607,7 @@ NVRestore(ScrnInfoPtr pScrn)
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVRestore\n"));
     /* Only restore text mode fonts/text for the primary card */
     vgaHWProtect(pScrn, TRUE);
-    if (pNv->Primary)
-        (*pNv->Restore)(pScrn, vgaReg, nvReg, TRUE);
-    else
-        vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
+    (*pNv->Restore)(pScrn, vgaReg, nvReg, pNv->Primary);
     vgaHWProtect(pScrn, FALSE);
 }
 
@@ -1902,12 +1894,6 @@ NVSave(ScrnInfoPtr pScrn)
     vgaRegPtr vgaReg = &pVga->SavedReg;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVSave\n"));
-#if defined(__powerpc__)
-    /* The console driver will have to save the fonts, we can't */
-    vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE);
-#else
-    vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE | VGA_SR_FONTS);
-#endif
-    pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
+    (*pNv->Save)(pScrn, vgaReg, nvReg, pNv->Primary);
 }
 
