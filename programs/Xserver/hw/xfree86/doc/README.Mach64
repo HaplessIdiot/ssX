@@ -1,6 +1,6 @@
   Notes for Mach64 X Server
   Kevin E. Martin (martin@cs.unc.edu)
-  5 March 1995
+  6 June 1995
 
   1.  Supported Cards, RAMDACs, and Bits Per Pixel
 
@@ -124,27 +124,27 @@
         the screen that captured via xmag, then it is probably a problem
         with block write mode.
 
+     Option "block_write"
+        This option allows you to turn on block write mode.  Block write
+        mode only works on certain types of VRAM cards, and this option
+        has no effect on DRAM based cards.  If you want to override the
+        probed default, you can use this option.
+
+     Option "power_saver"
+        This option allows the server to use the power saving features
+        of certain "green" monitors instead of blanking when the screen
+        saver is activated.  This option is still experimental.
+
      MemBase baseaddress
         This entry specifies the video memory aperture address.
         Normally the aperture address is automatically determined, but
         on some VESA Local Bus systems the address chosen will not work.
         If the Mach64 X server is dying with a seg. fault, then try
         setting the aperture address to another location.
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.0 1995/03/06 13:54:32 dawes Exp $
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.1 1995/06/08 06:27:40 dawes Exp $
 
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.12 1995/04/24 05:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.13 1995/06/08 06:26:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -254,6 +254,8 @@ char *mach64ClockTypeTable[] = {
     "CH8398",
     "BedRock",
   };  
+
+#define NUM_CLOCK_TYPES (sizeof(mach64ClockTypeTable) / sizeof(char *))
 
 int	mach64Ramdac;
 int	mach64RamdacSubType;
@@ -612,8 +614,10 @@ mach64Probe()
     }
 
     if (xf86Verbose) {
-	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
 	       mach64ClockTypeTable[mach64ClockType]);
+	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
+	       mach64ClockType < NUM_CLOCK_TYPES ?
+		mach64ClockTypeTable[mach64ClockType] : "Unknown");
 	ErrorF("%s ",OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) ?
 			XCONFIG_GIVEN : XCONFIG_PROBED);
 	ErrorF("%s: ", mach64InfoRec.name);

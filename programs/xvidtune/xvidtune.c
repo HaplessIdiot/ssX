@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.7 1995/06/08 06:56:04 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.8 1995/06/08 12:56:31 dawes Exp $ */
 
 /*
 
@@ -182,7 +182,7 @@ static int vidmodeError(dis, err)
 Display *dis;
 XErrorEvent *err;
 {
-  if (0 && err->error_code >= ErrorBase &&
+  if (err->error_code >= ErrorBase &&
       err->error_code < ErrorBase + XF86VidModeNumberErrors) {
      hitError=1;
   } else {
