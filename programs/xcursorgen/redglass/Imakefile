@@ -5,21 +5,32 @@ ICONDIR=$(LIBDIR)/icons
 THEME=redglass
 THEMEDIR=$(ICONDIR)/$(THEME)/cursors
 
-#define CursorShareTarget(name,orig)					@@\
+#define CursorTarget(name)						@@\
 all:: name								@@\
 									@@\
-name: orig.cfg CursorSources(orig)					@@\
-	$(XCURSORGEN) orig.cfg name					@@\
+name: name.cfg CursorSources(name)					@@\
+	$(XCURSORGEN) name.cfg name					@@\
 									@@\
 clean::									@@\
 	$(RM) name							@@\
 									@@\
 InstallTarget(install,name,$(INSTDATAFLAGS),$(THEMEDIR))
 
-#define CursorTarget(name) CursorShareTarget(name,name)
+
+#define CursorLinkTarget(dst,src)					@@\
+all:: dst								@@\
+									@@\
+LinkFile(dst,src)							@@\
+									@@\
+clean::									@@\
+	$(RM) dst							@@\
+									@@\
+install.link:: $(THEMEDIR)/dst						@@\
+									@@\
+LinkFile($(THEMEDIR)/dst,$(THEMEDIR)/src)
 
 CursorTarget(X_cursor)
-CursorShareTarget(arrow,right_ptr)
+CursorLinkTarget(arrow,right_ptr)
 CursorTarget(base_arrow_down)
 CursorTarget(base_arrow_up)
 /* CursorTarget(boat) */
@@ -34,13 +45,13 @@ CursorTarget(circle)
 /* CursorTarget(clock) */
 /* CursorTarget(coffee_mug) */
 CursorTarget(cross)
-CursorShareTarget(cross_reverse,cross)
-CursorShareTarget(crosshair,cross)
+CursorLinkTarget(cross_reverse,cross)
+CursorLinkTarget(crosshair,cross)
 CursorTarget(dot)
 CursorTarget(dot_box_mask)
 CursorTarget(double_arrow)
-CursorShareTarget(draft_large,right_ptr)
-CursorShareTarget(draft_small,right_ptr)
+CursorLinkTarget(draft_large,right_ptr)
+CursorLinkTarget(draft_small,right_ptr)
 CursorTarget(draped_box)
 /* CursorTarget(exchange) */
 CursorTarget(fleur)
@@ -52,6 +63,7 @@ CursorTarget(hand2)
 /* CursorTarget(icon) */
 /* CursorTarget(iron_cross) */
 CursorTarget(left_ptr)
+CursorTarget(left_ptr_watch)
 CursorTarget(left_side)
 CursorTarget(left_tee)
 /* CursorTarget(left_button) */
@@ -62,7 +74,7 @@ CursorTarget(ll_angle)
 /* CursorTarget(mouse) */
 CursorTarget(pencil)
 /* CursorTarget(pirate) */
-CursorShareTarget(plus,cross)
+CursorLinkTarget(plus,cross)
 /* CursorTarget(question_arrow) */
 CursorTarget(right_ptr)
 CursorTarget(right_side)
@@ -82,8 +94,8 @@ CursorTarget(shuttle)
 /* CursorTarget(spraycan) */
 /* CursorTarget(star) */
 /* CursorTarget(target) */		/* need */
-CursorShareTarget(tcross,cross)
-CursorShareTarget(top_left_arrow,left_ptr)
+CursorLinkTarget(tcross,cross)
+CursorLinkTarget(top_left_arrow,left_ptr)
 CursorTarget(top_left_corner)
 CursorTarget(top_right_corner)
 CursorTarget(top_side)
@@ -94,3 +106,17 @@ CursorTarget(top_tee)
 /* CursorTarget(ur_angle) */		/* need */
 CursorTarget(watch)
 CursorTarget(xterm)
+
+/*
+ * Application specific cursors for Mozilla
+ */
+/* moz_alias 0876e1c15ff2fc01f906f1c363074c0f (left_ptr with small arrow) */
+/* moz_copy 08ffe1cb5fe6fc01f906f1c063814ccf (left_ptr with plus) */
+/* moz_hand_grabbing 208530c400c041818281048008011002 (closed hand) */
+/* moz_hand_grab 5aca4d189052212118709018842178c0 (open hand) */
+/* moz_menu 08ffe1e65f80fcfdf9fff11263e74c48 (left_ptr with menu) */
+/* moz_question_arrow 5c6cd98b3f3ebcb1f9c7f1c204630408 (left_ptr with ?) */
+/* moz_spinning (left_ptr with watch) */
+CursorLinkTarget(08e8e1c95fe2fc01f976f1e063a24ccd,left_ptr_watch)
+
+install:: install.link
