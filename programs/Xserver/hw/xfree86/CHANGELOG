@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 525. Fix -probe and -configure to not clear the screen on exit on SunOS SPARC.
+      (Marc La France).
  524. Fix support for ATI Graphics Pro Turbo 1600 adapters (Marc La France).
  523. Newport driver updates, including 24-bit support (#5062, Guido Guenther).
  522. Fix pixel info not being returned from the APPGROUP extension (#5061,
@@ -14234,4 +14236,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2059 2001/11/23 19:50:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2060 2001/11/25 13:42:28 tsi Exp $
