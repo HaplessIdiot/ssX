@@ -1,4 +1,11 @@
 XFree86 4.1.99.7 (16 January 2002)
+ 688. Disable the pipe check for stdout/stderr that was added in the previous
+      snapshot because it looks like it might cause too many problems
+      (David Dawes).
+ 687. Update the Arabic (ar) XKB keyboard map (#5145, Arabeyes team).
+ 686. Update the Russian (ru) XKB keyboard map, adding two new variants
+      ("typewriter" and "phonetic") (#5143, Ivan Pascal).
+ 685. Remove the lt_a and lt_p XKB keyboard maps (#5139, Nerijus Baliunas).
  684. Disable the DRI and print a warning message for Radeon 8500 cards
       until they are supported (Kevin Martin).
  683. Properly detect when no BIOS is present on Radeon cards (#4978,
@@ -10,7 +17,7 @@ XFree86 4.1.99.7 (16 January 2002)
       shared freetype libraries when needed (David Dawes).
  679. Update Freetype2 shared library versions to match the versions libtool
       generates (Keith Packard).
- 678. Doc updates.
+ 678. Doc updates (lots of people, includes #5142, 5144)
 
 XFree86 4.1.99.6 (14 January 2002)
  677. Change the default verbosity level for stderr from 1 to 0 (David Dawes).
@@ -14542,4 +14549,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2137 2002/01/15 23:00:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2138 2002/01/16 02:00:39 martin Exp $
