@@ -15,10 +15,12 @@
 #ifndef LG_H
 #define LG_H
 
+
 #define LG_DEBUG
 
 /* Saved registers that are not part of the core VGA */
 /* CRTC >= 0x19; Sequencer >= 0x05; Graphics >= 0x09; Attribute >= 0x15 */
+	/* CR regs */
 enum {
 	/* CR regs */
 	CR1A,
@@ -46,30 +48,6 @@ typedef struct {
 	CARD32 VSC;
 } LgRegRec, *LgRegPtr;
 
-/* Card-specific driver information */
-#define LGPTR(p) ((LgPtr)((p)->driverPrivate))
-
-typedef struct {
-	CirRec		CirRec;
-
-	CARD32		HWCursorAddr;
-	int			HWCursorImageX;
-	int			HWCursorImageY;
-	int			HWCursorTileWidth;
-	int			HWCursorTileHeight;
-
-	int			lineDataIndex;
-
-	int			memInterleave;
-
-	LgRegRec	SavedReg;
-	LgRegRec	ModeReg;
-
-	CARD32		oldBitmask;
-	Bool		blitTransparent;
-	int			blitYDir;
-} LgRec, *LgPtr;
-
 typedef struct {
 	int tilesPerLine;	/* Number of tiles per line */
 	int pitch;			/* Display pitch, in bytes */
@@ -91,4 +69,38 @@ extern void LgShowCursor(ScrnInfoPtr pScrn);
 /* lg_i2c.c */
 extern Bool LgI2CInit(ScrnInfoPtr pScrn);
 
+#define memrb(off) MMIO_IN8(pCir->IOBase,off)
+#define memrw(off) MMIO_IN16(pCir->IOBase,off)
+#define memrl(off) MMIO_IN32(pCir->IOBase,off)
+#define memwb(off,val) MMIO_OUT8(pCir->IOBase,off,val)
+#define memww(off,val) MMIO_OUT16(pCir->IOBase,off,val)
+#define memwl(off,val) MMIO_OUT32(pCir->IOBase,off,val)
+
+/* Card-specific driver information */
+#define LGPTR(p) ((LgPtr)((p)->chip.lg))
+
+typedef struct lgRec {
+	CARD32		HWCursorAddr;
+	int			HWCursorImageX;
+	int			HWCursorImageY;
+	int			HWCursorTileWidth;
+	int			HWCursorTileHeight;
+
+	int			lineDataIndex;
+
+	int			memInterleave;
+
+	LgRegRec	SavedReg;
+	LgRegRec	ModeReg;
+
+	CARD32		oldBitmask;
+	Bool		blitTransparent;
+	int			blitYDir;
+} LgRec, *LgPtr;
+
 #endif /* LG_H */
+
+
+
+
+

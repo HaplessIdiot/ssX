@@ -9,10 +9,9 @@
 #include "compiler.h"
 #include "xf86Pci.h"
 #define _INT10_PRIVATE
-#include "xf86int10.h"
 #include "int10Defines.h"
+#include "xf86int10.h"
 #include "xf86_ansic.h"
-#include "xf86_libc.h"
 
 #define REG pInt
 

@@ -23,6 +23,7 @@
 #define INIT_PCI_VENDOR_NAME_INFO	TRUE
 #define VENDOR_INCLUDE_NONVIDEO		TRUE
 #include "xf86PciInfo.h"
+#include "xf86ScanPci.h"
 
 /*
  * PCI classes that have messages printed always.  The others are only
@@ -32,9 +33,6 @@
     (((b) == PCI_CLASS_PREHISTORIC && (s) == PCI_SUBCLASS_PREHISTORIC_VGA) || \
      ((b) == PCI_CLASS_DISPLAY) ||					      \
      ((b) == PCI_CLASS_MULTIMEDIA && (s) == PCI_SUBCLASS_MULTIMEDIA_VIDEO))
-
-
-void xf86DisplayPCICardInfo(int);
 
 
 #ifdef XFree86LOADER
@@ -58,18 +56,17 @@ XF86ModuleData scanpciModuleData = { &scanPciVersRec, NULL, NULL };
 
 #else
 
-/*
- * setup the pci data structures for the static server
- */
-void
-xf86InitPciData(void)
-{
-    xf86PCIVendorNameInfo = xf86PCIVendorNameInfoData;
-    xf86PCIVendorInfo = xf86PCIVendorInfoData;
-    xf86PCICardInfo = xf86PCICardInfoData;
-}
-
 #endif /* XFree86LOADER */
+
+void
+xf86SetupScanPci(SymTabPtr *NameInfo,
+		 pciVendorDeviceInfo **DeviceInfo,
+		 pciVendorCardInfo **CardInfo)
+{
+    *CardInfo = xf86PCICardInfoData;
+    *DeviceInfo = xf86PCIVendorInfoData;
+    *NameInfo = xf86PCIVendorNameInfoData;
+}
 
 
 void
@@ -77,8 +74,6 @@ xf86DisplayPCICardInfo(int verbosity)
 {
     pciConfigPtr pcrp, *pcrpp;
     int i = 0, j, k;
-    pciVendorCardInfo *info;
-    Bool noCard = FALSE;
 
     xf86EnableIO();
     pcrpp = xf86scanpci(0);
@@ -102,20 +97,20 @@ xf86DisplayPCICardInfo(int verbosity)
 	 */
 	if ( pcrp->pci_subsys_vendor || pcrp->pci_subsys_card ) {
 	    k = 0;
-	    while (xf86PCIVendorNameInfo[k].token) {
-	      if (xf86PCIVendorNameInfo[k].token == pcrp->pci_subsys_vendor) 
-		vendorname = (char*)xf86PCIVendorNameInfo[k].name;
+	    while (xf86PCIVendorNameInfoData[k].token) {
+	      if (xf86PCIVendorNameInfoData[k].token == pcrp->pci_subsys_vendor) 
+		vendorname = (char*)xf86PCIVendorNameInfoData[k].name;
 	      k++;
 	    }
 	    k = 0; j = -1;
-	    while(xf86PCICardInfo[k].VendorID) {
-		if (xf86PCICardInfo[k].VendorID == pcrp->pci_subsys_vendor) {
+	    while(xf86PCICardInfoData[k].VendorID) {
+		if (xf86PCICardInfoData[k].VendorID == pcrp->pci_subsys_vendor) {
 		    j = 0;
-		    while (xf86PCICardInfo[k].Device[j].CardName) {
-			if (xf86PCICardInfo[k].Device[j].SubsystemID ==
+		    while (xf86PCICardInfoData[k].Device[j].CardName) {
+			if (xf86PCICardInfoData[k].Device[j].SubsystemID ==
 			    pcrp->pci_subsys_card) {
 			    cardname =
-			      xf86PCICardInfo[k].Device[j].CardName;
+			      xf86PCICardInfoData[k].Device[j].CardName;
 			    break;
 			}
 			j++;
@@ -128,13 +123,14 @@ xf86DisplayPCICardInfo(int verbosity)
 		xf86MsgVerb(X_NONE,-verbosity,"%s ", vendorname);
 	    if (cardname)
 		xf86MsgVerb(X_NONE,-verbosity,"%s ", cardname);
-	    if (vendorname && !cardname)
+	    if (vendorname && !cardname) {
 	        if (pcrp->pci_subsys_card && (j >= 0))
 		    xf86MsgVerb(X_NONE,-verbosity,"unknown card (0x%04x) ",
 				pcrp->pci_subsys_card);
 		else
 		    xf86MsgVerb(X_NONE,-verbosity,"card ",
 				pcrp->pci_subsys_card);
+	    }
 	}
 	if (!(cardname || vendorname)) {
 	    /*
@@ -165,20 +161,20 @@ xf86DisplayPCICardInfo(int verbosity)
 	}
 	/* now check for the chipset used */
 	k = 0;
-	while (xf86PCIVendorNameInfo[k].token) {
-	  if (xf86PCIVendorNameInfo[k].token == pcrp->pci_vendor) 
-	    chipvendorname = (char *)xf86PCIVendorNameInfo[k].name;
+	while (xf86PCIVendorNameInfoData[k].token) {
+	  if (xf86PCIVendorNameInfoData[k].token == pcrp->pci_vendor) 
+	    chipvendorname = (char *)xf86PCIVendorNameInfoData[k].name;
 	  k++;
 	}
 	k = 0;
-	while(xf86PCIVendorInfo[k].VendorID) {
-	    if (xf86PCIVendorInfo[k].VendorID == pcrp->pci_vendor) {
+	while(xf86PCIVendorInfoData[k].VendorID) {
+	    if (xf86PCIVendorInfoData[k].VendorID == pcrp->pci_vendor) {
 		j = 0;
-		while (xf86PCIVendorInfo[k].Device[j].DeviceName) {
-		    if (xf86PCIVendorInfo[k].Device[j].DeviceID ==
+		while (xf86PCIVendorInfoData[k].Device[j].DeviceName) {
+		    if (xf86PCIVendorInfoData[k].Device[j].DeviceID ==
 			pcrp->pci_device) {
 			chipname =
-			  xf86PCIVendorInfo[k].Device[j].DeviceName;
+			  xf86PCIVendorInfoData[k].Device[j].DeviceName;
 			break;
 		    }
 		    j++;
@@ -220,4 +216,39 @@ xf86DisplayPCICardInfo(int verbosity)
     }
 }
 
+CARD32
+xf86FindPCIClassInCardList(unsigned short vendorID, unsigned short subsystemID)
+{
+    pciVendorCardInfo   *cardInfo = xf86PCICardInfoData;
+    int i,j;
+    
+    for(i = 0; cardInfo[i].VendorID != 0;i++) {
+	if (cardInfo[i].VendorID == vendorID) {
+	    for (j = 0; cardInfo[i].Device[j].SubsystemID != 0; j++) {
+		if (cardInfo[i].Device[j].SubsystemID == subsystemID) 
+		    return cardInfo[i].Device[j].class;
+	    }
+	    break;
+	}
+    }
+    return 0;
+}
+
+CARD32
+xf86FindPCIClassInDeviceList(unsigned short vendorID, unsigned short deviceID)
+{
+    pciVendorDeviceInfo *vendorInfo = xf86PCIVendorInfoData;
+     int i,j;
+
+    for(i = 0; vendorInfo[i].VendorID != 0;i++) {
+	if (vendorInfo[i].VendorID == vendorID) {
+	    for (j = 0; vendorInfo[i].Device[j].DeviceID != 0; j++) {
+		if (vendorInfo[i].Device[j].DeviceID == deviceID) 
+		    return vendorInfo[i].Device[j].class;
+	    }
+	    break;
+	}
+    }
+    return 0;
+}
 

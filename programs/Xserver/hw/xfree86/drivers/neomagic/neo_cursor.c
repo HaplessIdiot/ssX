@@ -93,7 +93,7 @@ neoSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
     int i;
-    unsigned long bits, bits2;
+    CARD32 bits, bits2;
     unsigned char *_dest = ((unsigned char *)nPtr->NeoFbBase +
 			    nAcl->CursorAddress);
     unsigned char *src = nPtr->NeoCursorImage;
@@ -131,8 +131,8 @@ neoSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	    {
 	       if (xoff < 32) { /* offset 1-31 */
 		  for (i=0; i<256; i+=2) {
-		     bits = ((unsigned long *)src)[i];
-		     bits2 = ((unsigned long *)src)[i+1];
+		     bits = ((CARD32 *)src)[i];
+		     bits2 = ((CARD32 *)src)[i+1];
 		     
 		     REVBITS_32(bits);
 		     REVBITS_32(bits2);
@@ -143,14 +143,14 @@ neoSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 		     REVBITS_32(bits);
 		     REVBITS_32(bits2);
 		     
-		     ((unsigned long *) nAcl->CursTemp)[i] = bits;
-		     ((unsigned long *) nAcl->CursTemp)[i+1] = bits2;
+		     ((CARD32 *) nAcl->CursTemp)[i] = bits;
+		     ((CARD32 *) nAcl->CursTemp)[i+1] = bits2;
 		  }
 	       }
 	       else { /* offset 32-63 */
 		  for (i=0; i<256; i+=2) {
-		     bits = ((unsigned long *)src)[i];
-		     bits2 = ((unsigned long *)src)[i+1];
+		     bits = ((CARD32 *)src)[i];
+		     bits2 = ((CARD32 *)src)[i+1];
 
 		     REVBITS_32(bits2);
 		     
@@ -159,8 +159,8 @@ neoSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 		     
 		     REVBITS_32(bits);
 		     
-		     ((unsigned long *)nAcl->CursTemp)[i] = bits;
-		     ((unsigned long *)nAcl->CursTemp)[i+1] = bits2;
+		     ((CARD32 *)nAcl->CursTemp)[i] = bits;
+		     ((CARD32 *)nAcl->CursTemp)[i+1] = bits2;
 		  }
 	       }
 	       src = nAcl->CursTemp;

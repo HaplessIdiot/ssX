@@ -344,7 +344,20 @@ MouseCommonOptions(InputInfoPtr pInfo)
     pMse->chordMiddle = xf86SetBoolOption(pInfo->options, "ChordMiddle", FALSE);
     if (pMse->chordMiddle)
 	xf86Msg(X_CONFIG, "%s: ChordMiddle\n", pInfo->name);
-
+    pMse->flipXY = xf86SetBoolOption(pInfo->options,"FlipXY",FALSE);
+    if (pMse->flipXY)
+	xf86Msg(X_CONFIG, "%s: FlipXY\n",pInfo->name);
+    if (xf86SetBoolOption(pInfo->options,"InvX",FALSE)) {
+	pMse->invX = -1;
+	xf86Msg(X_CONFIG, "%s: InfX\n",pInfo->name);
+    }    else
+	pMse->invX = 1;
+    if (xf86SetBoolOption(pInfo->options,"InvY",FALSE)) {
+	pMse->invY = -1;
+	xf86Msg(X_CONFIG, "%s: InfY\n",pInfo->name);
+    }    else
+	pMse->invY = 1;
+    
     s = xf86SetStrOption(pInfo->options, "ZAxisMapping", NULL);
     if (s) {
 	int b1 = 0, b2 = 0;
@@ -1701,7 +1714,13 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz)
 	dz = 0;
 	break;
     }
-
+    dx = pMse->invX * dx;
+    dy = pMse->invY * dy;
+    if (pMse->flipXY) {
+	int tmp = dx;
+	dx = dy;
+	dy = tmp;
+    }
     MouseDoPostEvent(pInfo, buttons, dx, dy);
 
     /*

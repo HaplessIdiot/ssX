@@ -23,21 +23,22 @@
 static Bool
 AlpI2CSwitchToBus(I2CBusPtr b)
 {
-	AlpPtr pAlp = ((AlpPtr)b->DriverPrivate.ptr);
-	vgaHWPtr hwp = VGAHWPTR(pAlp->CirRec.pScrn);
-	if (b == pAlp->CirRec.I2CPtr1) {
-		if ((pAlp->ModeReg.ExtVga[GR17] & 0x60) == 0)
-			return TRUE;
-		pAlp->ModeReg.ExtVga[GR17] &= ~0x60;
-	} else if (b == pAlp->CirRec.I2CPtr2) {
-		if ((pAlp->ModeReg.ExtVga[GR17] & 0x60) != 0)
-			return TRUE;
-		pAlp->ModeReg.ExtVga[GR17] |= 0x60;
-	} else
-		return FALSE;
+	CirPtr pCir = ((CirPtr)b->DriverPrivate.ptr);
+	vgaHWPtr hwp = VGAHWPTR(pCir->pScrn);
+	CARD8 reg = hwp->readGr(hwp, 0x17);
+	if (b == pCir->I2CPtr1) {
+	    if ((reg & 0x60) == 0)
+  		return TRUE;
+	    reg &= ~0x60;
+	}
+	else if(b == pCir->I2CPtr2) {
+	    if ((reg & 0x60) != 0)
+  		return TRUE;
+	    reg |= 0x60;
+	} else 	return FALSE;
 
 	/* ErrorF("AlpI2CSwitchToBus: \"%s\"\n", b->BusName); */
-	hwp->writeGr(hwp, 0x17, pAlp->ModeReg.ExtVga[GR17]);
+	hwp->writeGr(hwp, 0x17, reg);
 	return TRUE;
 }
 
@@ -45,8 +46,8 @@ static void
 AlpI2CPutBits(I2CBusPtr b, int clock,  int data)
 {
 	unsigned int reg = 0xfc;
-	AlpPtr pAlp = ((AlpPtr)b->DriverPrivate.ptr);
-	vgaHWPtr hwp = VGAHWPTR(pAlp->CirRec.pScrn);
+	CirPtr pCir = ((CirPtr)b->DriverPrivate.ptr);
+	vgaHWPtr hwp = VGAHWPTR(pCir->pScrn);
 
 	if (!AlpI2CSwitchToBus(b))
 		return;
@@ -61,8 +62,8 @@ static void
 AlpI2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
 	unsigned int reg;
-	AlpPtr pAlp = ((AlpPtr)b->DriverPrivate.ptr);
-	vgaHWPtr hwp = VGAHWPTR(pAlp->CirRec.pScrn);
+	CirPtr pCir = ((CirPtr)b->DriverPrivate.ptr);
+	vgaHWPtr hwp = VGAHWPTR(pCir->pScrn);
 
 	if (!AlpI2CSwitchToBus(b))
 		return;
@@ -76,14 +77,14 @@ AlpI2CGetBits(I2CBusPtr b, int *clock, int *data)
 Bool
 AlpI2CInit(ScrnInfoPtr pScrn)
 {
-	AlpPtr pAlp = ALPPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 	I2CBusPtr I2CPtr;
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpI2CInit\n");
 #endif
 
-	switch(pAlp->CirRec.Chipset) {
+	switch(pCir->Chipset) {
 	case PCI_CHIP_GD5446:
 	case PCI_CHIP_GD5480:
 		break;
@@ -95,13 +96,13 @@ AlpI2CInit(ScrnInfoPtr pScrn)
 	I2CPtr = xf86CreateI2CBusRec();
 	if (!I2CPtr) return FALSE;
 
-	pAlp->CirRec.I2CPtr1 = I2CPtr;
+	pCir->I2CPtr1 = I2CPtr;
 
 	I2CPtr->BusName    = "I2C bus 1";
 	I2CPtr->scrnIndex  = pScrn->scrnIndex;
 	I2CPtr->I2CPutBits = AlpI2CPutBits;
 	I2CPtr->I2CGetBits = AlpI2CGetBits;
-	I2CPtr->DriverPrivate.ptr = pAlp;
+	I2CPtr->DriverPrivate.ptr = pCir;
 
 	if (!xf86I2CBusInit(I2CPtr))
 		return FALSE;
@@ -109,13 +110,13 @@ AlpI2CInit(ScrnInfoPtr pScrn)
 	I2CPtr = xf86CreateI2CBusRec();
 	if (!I2CPtr) return FALSE;
 
-	pAlp->CirRec.I2CPtr2 = I2CPtr;
+	pCir->I2CPtr2 = I2CPtr;
 
 	I2CPtr->BusName    = "I2C bus 2";
 	I2CPtr->scrnIndex  = pScrn->scrnIndex;
 	I2CPtr->I2CPutBits = AlpI2CPutBits;
 	I2CPtr->I2CGetBits = AlpI2CGetBits;
-	I2CPtr->DriverPrivate.ptr = pAlp;
+	I2CPtr->DriverPrivate.ptr = pCir;
 
 	if (!xf86I2CBusInit(I2CPtr))
 		return FALSE;

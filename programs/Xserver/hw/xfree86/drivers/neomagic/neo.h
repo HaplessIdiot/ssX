@@ -96,6 +96,14 @@ int NEOSetRead(ScreenPtr pScreen, int bank);
 /* in neo_i2c.c */
 extern Bool neo_I2CInit(ScrnInfoPtr pScrn);
 
+/* in neo_shadow.c */
+void neoPointerMoved(int index, int x, int y);
+void neoRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void neoRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void neoRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void neoRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void neoRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
 /* shadow regs */
 
 #define NEO_EXT_CR_MAX 0x85
@@ -208,6 +216,8 @@ typedef struct neoRec
     I2CBusPtr I2C;
     unsigned char * ShadowPtr;
     int ShadowPitch;
+    void	(*PointerMoved)(int index, int x, int y);
+    int rotate;
 } NEORec, *NEOPtr;
 
 /* The privates of the NEO driver */

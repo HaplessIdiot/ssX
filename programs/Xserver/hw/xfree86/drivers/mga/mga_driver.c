@@ -2260,7 +2260,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if(pMga->ShadowFB) {
  	pMga->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
-        pMga->ShadowPtr = xalloc(pMga->ShadowPitch * height);
+	pMga->ShadowPtr = xalloc(pMga->ShadowPitch * height);
 	displayWidth = pMga->ShadowPitch / (pScrn->bitsPerPixel >> 3);
         FBStart = pMga->ShadowPtr;
     } else {
@@ -2375,9 +2375,11 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	RefreshAreaFuncPtr refreshArea = MGARefreshArea;
 
 	if(pMga->Rotate) {
-   	   pMga->PointerMoved = pScrn->PointerMoved;
-	   pScrn->PointerMoved = MGAPointerMoved;
-
+	    if (!pMga->PointerMoved) {
+	    pMga->PointerMoved = pScrn->PointerMoved;
+	    pScrn->PointerMoved = MGAPointerMoved;
+	    }
+	    
 	   switch(pScrn->bitsPerPixel) {
 	   case 8:	refreshArea = MGARefreshArea8;	break;
 	   case 16:	refreshArea = MGARefreshArea16;	break;

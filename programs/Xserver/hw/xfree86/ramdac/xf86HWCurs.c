@@ -19,7 +19,17 @@
 #include "servermd.h"
 
 #if BITMAP_SCANLINE_PAD == 64
+
+#if 1
+/* Cursors might be only 32 wide. Give'em a chance */
+#define SCANLINE CARD32
+#define CUR_BITMAP_SCANLINE_PAD 32
+#define CUR_LOG2_BITMAP_PAD 5
+#define REVERSE_BIT_ORDER(w) xf86ReverseBitOrder(w)
+#else
 #define SCANLINE CARD64
+#define CUR_BITMAP_SCANLINE_PAD BITMAP_SCANLINE_PAD
+#define CUR_LOG2_BITMAP_PAD LOG2_BITMAP_PAD
 #define REVERSE_BIT_ORDER(w) xf86CARD64ReverseBits(w)
 static CARD64 xf86CARD64ReverseBits(CARD64 w);
 
@@ -39,10 +49,15 @@ xf86CARD64ReverseBits(CARD64 w)
 
   return(w);
 }
+#endif
 
 #else
+
 #define SCANLINE CARD32
+#define CUR_BITMAP_SCANLINE_PAD BITMAP_SCANLINE_PAD
+#define CUR_LOG2_BITMAP_PAD LOG2_BITMAP_PAD
 #define REVERSE_BIT_ORDER(w) xf86ReverseBitOrder(w)
+
 #endif /* BITMAP_SCANLINE_PAD == 64 */
 
 
@@ -183,7 +198,6 @@ xf86RecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed)
 }
 
 /* These functions assume that MaxWidth is a multiple of 32 */
-
 static unsigned char* 
 RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
@@ -192,9 +206,9 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     SCANLINE *pSrc, *pMsk;
     unsigned char *mem;
     int size = (infoPtr->MaxWidth * infoPtr->MaxHeight) >> 2;
-    int SrcPitch, DstPitch, y, x;
+    int SrcPitch, DstPitch, Pitch, y, x;
     /* how many words are in the source or mask */
-    int words = size / (BITMAP_SCANLINE_PAD / 4);
+    int words = size / (CUR_BITMAP_SCANLINE_PAD / 4);
 
 
     if(!(mem = xcalloc(1, size)))
@@ -202,13 +216,11 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 
     /* SrcPitch == the number of scanlines wide the cursor image is */
     SrcPitch = (pCurs->bits->width + (BITMAP_SCANLINE_PAD - 1)) >>
-      LOG2_BITMAP_PAD;
+      CUR_LOG2_BITMAP_PAD;
 
     /* DstPitch is the width of the hw cursor in scanlines */
-    DstPitch = infoPtr->MaxWidth >> LOG2_BITMAP_PAD;
-    
-/*      SrcPitch = (pCurs->bits->width + 31) >> 5; */
-/*      DstPitch = infoPtr->MaxWidth >> 5; */
+    DstPitch = infoPtr->MaxWidth >> CUR_LOG2_BITMAP_PAD;
+    Pitch = SrcPitch < DstPitch ? SrcPitch : DstPitch;
 
     SrcS = (SCANLINE*)pCurs->bits->source;
     SrcM = (SCANLINE*)pCurs->bits->mask;
@@ -223,7 +235,7 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     for(y = pCurs->bits->height, pSrc = DstS, pMsk = DstM; 
 	y--; 
 	pSrc+=DstPitch, pMsk+=DstPitch, SrcS+=SrcPitch, SrcM+=SrcPitch) {
-	for(x = 0; x < SrcPitch; x++) {
+	for(x = 0; x < Pitch; x++) {
 	    pSrc[x] = SrcS[x];
 	    pMsk[x] = SrcM[x];
 	}
@@ -272,7 +284,7 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 	for(y = pCurs->bits->height, pSrc = DstS, pMsk = DstM; 
 	    y--; 
 	    pSrc+=DstPitch, pMsk+=DstPitch) {
-	    for(x = 0; x < SrcPitch; x++) {
+	    for(x = 0; x < Pitch; x++) {
 		pSrc[x] = REVERSE_BIT_ORDER(pSrc[x]);
 		pMsk[x] = REVERSE_BIT_ORDER(pMsk[x]);
 	    }

@@ -22,6 +22,7 @@
 #define INIT_PCI_VENDOR_INFO		TRUE
 #define INIT_PCI_VENDOR_NAME_INFO	TRUE
 #include "xf86PciInfo.h"
+#include "xf86PciData.h"
 
 #ifdef XFree86LOADER
 
@@ -43,4 +44,14 @@ static XF86ModuleVersionInfo pciDataVersRec = {
 XF86ModuleData pcidataModuleData = { &pciDataVersRec, NULL, NULL };
 
 #endif /* XFree86LOADER */
+
+void
+xf86SetupPciData(SymTabPtr *NameInfo,
+		 pciVendorDeviceInfo **DeviceInfo,
+		 pciVendorCardInfo **CardInfo)
+{
+    *CardInfo = xf86PCICardInfoData;
+    *DeviceInfo = xf86PCIVendorInfoData;
+    *NameInfo = xf86PCIVendorNameInfoData;
+}
 

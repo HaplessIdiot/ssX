@@ -163,8 +163,8 @@ typedef struct pci_bus_funcs {
 	CARD32  (*pciReadLong)(PCITAG, int);
 	void    (*pciWriteLong)(PCITAG, int, CARD32);
         void    (*pciSetBitsLong)(PCITAG, int, CARD32, CARD32);
-	ADDRESS (*pciAddrHostToBus)(PCITAG, ADDRESS);
-	ADDRESS (*pciAddrBusToHost)(PCITAG, ADDRESS);
+	ADDRESS (*pciAddrHostToBus)(PCITAG, PciAddrType, ADDRESS);
+	ADDRESS (*pciAddrBusToHost)(PCITAG, PciAddrType, ADDRESS);
 } pciBusFuncs_t;
 
 /*
@@ -200,7 +200,7 @@ CARD32        pciReadLongNULL(PCITAG tag, int offset);
 void          pciWriteLongNULL(PCITAG tag, int offset, CARD32 val);
 void          pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask,
 				 CARD32 val);
-ADDRESS       pciAddrNOOP(PCITAG tag, ADDRESS);
+ADDRESS       pciAddrNOOP(PCITAG tag, PciAddrType type, ADDRESS);
 
 extern PCITAG (*pciFindFirstFP)(void);
 extern PCITAG (*pciFindNextFP)(void);

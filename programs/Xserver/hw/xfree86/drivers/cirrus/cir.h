@@ -12,12 +12,20 @@
 #define CIR_DEBUG
 
 /* Card-specific driver information */
+#define CIRPTR(p) ((CirPtr)((p)->driverPrivate))
+struct lgRec;
+struct alpRec;
 
 typedef struct {
 	ScrnInfoPtr			pScrn;
-	pciVideoPtr			PciInfo;
+        CARD32              properties;
+        pciVideoPtr			PciInfo;
 	PCITAG				PciTag;
-	EntityInfoPtr		pEnt;
+    union {
+	struct lgRec *lg;
+	struct alpRec *alp;
+    } chip;
+        EntityInfoPtr		pEnt;
 	int					Chipset;
 	int					ChipRev;
 	int					Rounding;
@@ -44,6 +52,12 @@ typedef struct {
 	CloseScreenProcPtr	CloseScreen;
 
 	Bool				CursorIsSkewed;
+        Bool                    shadowFB;
+        int                     rotate;
+        int                     ShadowPitch;
+        unsigned char *         ShadowPtr;
+        void	                (*PointerMoved)(int index, int x, int y);
+        int                     pitch;
 } CirRec, *CirPtr;
 
 /* CirrusClk.c */
@@ -56,5 +70,17 @@ extern PciChipsets CIRPciChipsets[];
 
 extern Bool CirMapMem(CirPtr pCir, int scrnIndex);
 extern Bool CirUnmapMem(CirPtr pCir, int scrnIndex);
+
+/* in cir_shadow.c */
+void cirPointerMoved(int index, int x, int y);
+void cirRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void cirRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void cirRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void cirRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void cirRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
+/* properties */
+#define HWCUR64 0x1
+#define ACCEL_AUTOSTART 0x2
 
 #endif /* CIR_H */

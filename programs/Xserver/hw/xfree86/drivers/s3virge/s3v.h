@@ -74,6 +74,8 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "xf86cmap.h"
 #include "xf86i2c.h"
 
+#include "vbe.h"
+
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
 
@@ -263,8 +265,14 @@ typedef struct {
   Bool			DGAactive;
   int			DGAViewportStatus;
   I2CBusPtr             I2C;
-    
-  /* Used by ViRGE driver, but generic -end- */
+    vbeInfoPtr          pVbe;
+    Bool         shadowFB;
+    int rotate;
+    unsigned char * ShadowPtr;
+    int ShadowPitch;
+    void	(*PointerMoved)(int index, int x, int y);
+
+    /* Used by ViRGE driver, but generic -end- */
   
   
 } S3VRec, *S3VPtr;
@@ -354,6 +362,15 @@ Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 
 /* s3v_dga.c */
 Bool S3VDGAInit(ScreenPtr pScreen);
+
+/* in s3v_shadow.c */
+void s3vPointerMoved(int index, int x, int y);
+void s3vRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void s3vRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void s3vRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void s3vRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void s3vRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
 
 #endif  /*_S3V_H*/
 

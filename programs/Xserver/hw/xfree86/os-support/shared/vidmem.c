@@ -25,8 +25,8 @@
  */
 
 typedef struct {
-	unsigned long	physBase;
-	unsigned long	size;
+	unsigned long 	physBase;
+	unsigned long 	size;
 	pointer		virtBase;
 	pointer 	mtrrInfo;
 	int		flags;

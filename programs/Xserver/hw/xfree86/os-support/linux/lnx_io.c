@@ -192,7 +192,6 @@ char rad;
       break;
     }
 
-
   while ((inb(0x64) & 2) == 2); /* wait */
   outb(0x60, 0xf3);             /* set typematic rate */
   while ((inb(0x64) & 2) == 2); /* wait */

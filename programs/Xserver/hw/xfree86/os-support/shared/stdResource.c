@@ -9,14 +9,51 @@
 #include "xf86Pci.h"
 #define NEED_OS_RAC_PROTOS
 #include "xf86_OSlib.h"
+#include "xf86Resources.h"
 
 #ifdef USESTDRES
-#define xf86StdAccWindowsFromOS xf86AccWindowsFromOS
+#define xf86StdBusAccWindowsFromOS xf86BusAccWindowsFromOS
 #define xf86StdAccResFromOS xf86AccResFromOS
+#define xf86StdPciBusAccWindowsFromOS xf86PciBusAccWindowsFromOS
+#define xf86StdIsaBusAccWindowsFromOS xf86IsaBusAccWindowsFromOS
+
+resRange PciAvoid[] = {_PCI_AVOID_PC_STYLE, _END};
 #endif
 
 resPtr
-xf86StdAccWindowsFromOS(void)
+xf86StdBusAccWindowsFromOS(void)
+{
+    /* Fallback is to allow addressing of all memory space */
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range,0,0xffffffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    /* Fallback is to allow addressing of all I/O space */
+    RANGE(range,0,0xffff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86StdPciBusAccWindowsFromOS(void)
+{
+    /* Fallback is to allow addressing of all memory space */
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range,0,0xffffffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    /* Fallback is to allow addressing of all I/O space */
+    RANGE(range,0,0xffff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86StdIsaBusAccWindowsFromOS(void)
 {
     /* Fallback is to allow addressing of all memory space */
     resPtr ret = NULL;

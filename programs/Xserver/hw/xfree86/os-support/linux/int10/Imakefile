@@ -17,7 +17,10 @@ LinkSourceFile(generic.c,$(XF86SRC)/int10)
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/int10 \
            -I$(XF86OSSRC) \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC) 
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+
+DEFINES=-DHAVE_SYSV_IPC
+
 #if 0
 /* debugging stuff */
 #DEFINES =-D_PC
@@ -38,7 +41,7 @@ SRCS = $(SRCS1) xf86x86emu.c generic.c
 OBJS = $(OBJS1) xf86x86emu.o generic.o x86emu.o
 SpecialObjectRule(pci.o, pci.c, -D_X86EMU)
 SpecialObjectRule(helper_exec.o, helper_exec.c, -D_X86EMU)
-SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU)
+SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU -DSHOW_ALL_DEVICES)
 SpecialObjectRule(generic.o, generic.c, -D_X86EMU)
 SpecialObjectRule(xf86x86emu.o, xf86x86emu.c, -D_X86EMU)
 BuildObjectFromLibraryWithPath(X86EMU_LIBPATH,x86emu,x86emu)
@@ -51,8 +54,8 @@ SRCS = $(SRCS1) linux.c
 OBJS = $(OBJS1) linux.o
 SpecialObjectRule(pci.o, pci.c, -D_VM86_LINUX)
 SpecialObjectRule(helper_exec.o, helper_exec.c, -D_VM86_LINUX)
-SpecialObjectRule(xf86int10.o, xf86int10.c, -D_VM86_LINUX)
-SpecialObjectRule(linux.o, linux.c, -D_VM86_LINUX)
+SpecialObjectRule(xf86int10.o, xf86int10.c, -D_VM86_LINUX -DSHOW_ALL_DEVICES)
+SpecialObjectRule(linux.o, linux.c, -D_VM86_LINUX -DHAVE_SYSV_IPC)
 
 #elif defined(X86EMU_LIBPATH) && (XF86INT10_BUILD == X86EMU_OS)
 
@@ -60,8 +63,8 @@ SRCS = $(SRCS1) xf86x86emu.c linux.c
 OBJS = $(OBJS1) xf86x86emu.o linux.o x86emu.o
 SpecialObjectRule(pci.o, pci.c, -D_X86EMU)
 SpecialObjectRule(helper_exec.o, helper_exec.c, -D_X86EMU)
-SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU)
-SpecialObjectRule(linux.o, linux.c, -D_X86EMU)
+SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU -DSHOW_ALL_DEVICES)
+SpecialObjectRule(linux.o, linux.c, -D_X86EMU -DHAVE_SYSV_IPC)
 BuildObjectFromLibraryWithPath(X86EMU_LIBPATH,x86emu,x86emu)
 
 #endif

@@ -15,19 +15,19 @@
 #include "cir.h"
 #include "alp.h"
 
-#define CURSORWIDTH	32
-#define CURSORHEIGHT	32
+#define CURSORWIDTH	pAlp->CursorWidth
+#define CURSORHEIGHT	pAlp->CursorHeight
 #define CURSORSIZE      (CURSORWIDTH*CURSORHEIGHT/8)
+#define MAXCURSORSIZE   (64*64>>3)
 
 static void
 AlpSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
-	AlpPtr pAlp = ALPPTR(pScrn);
+    const AlpPtr pAlp = ALPPTR(CIRPTR(pScrn));
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 #ifdef ALP_DEBUG
 	ErrorF("AlpSetCursorColors\n");
 #endif
-#if 1
 	hwp->writeSeq(hwp, 0x12, pAlp->ModeReg.ExtVga[SR12]|0x02);
 	hwp->writeDacWriteAddr(hwp, 0x00);
 	hwp->writeDacData(hwp, 0x3f & (bg >> 18));
@@ -38,32 +38,33 @@ AlpSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 	hwp->writeDacData(hwp, 0x3F & (fg >> 10));
 	hwp->writeDacData(hwp, 0x3F & (fg >>  2));
 	hwp->writeSeq(hwp, 0x12, pAlp->ModeReg.ExtVga[SR12]);
-#else
-	outw(0x3C4, ((pAlp->ModeReg.ExtVga[SR12] | 0x02) << 8) | 0x12);
-	outb(0x3c8, 0x00); outb(0x3c9, 0x3f & (bg >> 18)); outb(0x3c9, 0x3f & (bg >> 10)); outb(0x3c9, 0x3f & (bg >> 2));
-	outb(0x3c8, 0x0f); outb(0x3c9, 0x3f & (fg >> 18)); outb(0x3c9, 0x3f & (fg >> 10)); outb(0x3c9, 0x3f & (fg >> 2));
-	outw(0x3C4, (pAlp->ModeReg.ExtVga[SR12] << 8) | 0x12);
-#endif
 }
 
 static void
-AlpLoadSkewedCursor(unsigned char *memx, unsigned char *CursorBits,
-					int x, int y)
-{
-	unsigned char mem[2*CURSORSIZE];
+AlpLoadSkewedCursor(CirPtr pCir, int x, int y) {
+     
+    const AlpPtr pAlp = ALPPTR(pCir);
+
+    unsigned char *memx = pAlp->HWCursorBits;
+        unsigned char *CursorBits = pAlp->CursorBits;
+ 
+        unsigned char mem[2*MAXCURSORSIZE];
 	unsigned char *p1, *p2;
 	int i, j, m, a, b;
+	Bool cur64 = (CURSORWIDTH == 64);
+	int shift = (cur64? 1 : 0);
 
 	if (x > 0) x = 0; else x = -x;
 	if (y > 0) y = 0; else y = -y;
 
-	a = (x+y*CURSORWIDTH)>>3;
+
+	a = ((y*CURSORWIDTH<<shift)+x)>>3;
 	b = x & 7;
 
 	/* Copy the skewed mask bits */
 	p1 = mem;
-	p2 = CursorBits+a;
-	for (i = 0; i < CURSORSIZE-a-1; i++) {
+	p2 = CursorBits + a;
+	for (i = 0; i < (CURSORSIZE << shift)-a-1; i++) {
 		*p1++ = (p2[0] << b) | (p2[1] >> (8-b));
 		p2++;
 	}
@@ -71,19 +72,21 @@ AlpLoadSkewedCursor(unsigned char *memx, unsigned char *CursorBits,
 	*p1++ = (p2[0] << b);
 
 	/* Clear to end (bottom) of mask. */
-	for (i = i+1; i < CURSORSIZE; i++)
+	for (i = i+1; i < (CURSORSIZE << shift); i++)
 		*p1++ = 0;
 
-	/* Now copy the cursor bits */
-	/* p1 is already right */
-	p2 = CursorBits+CURSORSIZE+a;
-	for (i = 0; i < CURSORSIZE-a-1; i++) {
+	if (!cur64) {
+	    /* Now copy the cursor bits */
+	    /* p1 is already right */
+	    p2 = CursorBits+CURSORSIZE+a;
+	    for (i = 0; i < CURSORSIZE-a-1; i++) {
 		*p1++ = (p2[0] << b) | (p2[1] >> (8-b));
 		p2++;
+	    }
+	    /* last cursor  byte */
+	    *p1++ = (p2[0] << b);
 	}
-	/* last cursor  byte */
-	*p1++ = (p2[0] << b);
-
+	
 	/* Clear to end (bottom) of cursor. */
 	for (i = i+1; i < CURSORSIZE; i++)
 		*p1++ = 0;
@@ -108,7 +111,8 @@ AlpLoadSkewedCursor(unsigned char *memx, unsigned char *CursorBits,
 static void
 AlpSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-	AlpPtr pAlp = ALPPTR(pScrn);
+	const CirPtr pCir = CIRPTR(pScrn);
+	const AlpPtr pAlp = ALPPTR(pCir);
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #if 0
@@ -119,36 +123,26 @@ AlpSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 
 	if (x < 0 || y < 0) {
 		if (x+CURSORWIDTH <= 0 || y+CURSORHEIGHT <= 0) {
-#if 1
 			hwp->writeSeq(hwp, 0x12, pAlp->ModeReg.ExtVga[SR12] & ~0x01);
-#else
-			outw(0x3C4, ((pAlp->ModeReg.ExtVga[SR12] & ~0x01) << 8) | 0x12);
-#endif
 			return;
 		}
-		AlpLoadSkewedCursor(pAlp->HWCursorBits, pAlp->CursorBits, x, y);
-		pAlp->CirRec.CursorIsSkewed = TRUE;
+		AlpLoadSkewedCursor(pCir, x, y);
+		pCir->CursorIsSkewed = TRUE;
 		if (x < 0) x = 0;
 		if (y < 0) y = 0;
-	} else if (pAlp->CirRec.CursorIsSkewed) {
+	} else if (pCir->CursorIsSkewed) {
 		memcpy(pAlp->HWCursorBits, pAlp->CursorBits, 2*CURSORSIZE);
-		pAlp->CirRec.CursorIsSkewed = FALSE;
+		pCir->CursorIsSkewed = FALSE;
 	}
-#if 1
 	hwp->writeSeq(hwp, 0x12, pAlp->ModeReg.ExtVga[SR12]);
 	hwp->writeSeq(hwp, ((x << 5)|0x10)&0xff, x >> 3);
 	hwp->writeSeq(hwp, ((y << 5)|0x11)&0xff, y >> 3);
-#else
-	outw(0x3C4, (pAlp->ModeReg.ExtVga[SR12] << 8) | 0x12);
-	outw(0x3C4, (x << 5) | 0x10);
-	outw(0x3C4, (y << 5) | 0x11);
-#endif
 }
 
 static void
 AlpLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
 {
-	AlpPtr pAlp = ALPPTR(pScrn);
+	const AlpPtr pAlp = ALPPTR(CIRPTR(pScrn));
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef ALP_DEBUG
@@ -157,46 +151,35 @@ AlpLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
 
 	pAlp->CursorBits = bits;
 	memcpy(pAlp->HWCursorBits, bits, 2*CURSORSIZE);
+	/* this should work for both 64 and 32 bit cursors */
 	pAlp->ModeReg.ExtVga[SR13] = 0x3f;
-#if 1
-	hwp->writeSeq(hwp, 0x13, 0x3f);
-#else
-	outw(0x3C4, 0x3f13);
-#endif
+	hwp->writeSeq(hwp, 0x13, pAlp->ModeReg.ExtVga[SR13]);
 }
 
 static void
 AlpHideCursor(ScrnInfoPtr pScrn)
 {
-	AlpPtr pAlp = ALPPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(CIRPTR(pScrn));
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpHideCursor\n");
 #endif
 	pAlp->ModeReg.ExtVga[SR12] &= ~0x01;
-#if 1
 	hwp->writeSeq(hwp, 0x12, pAlp->ModeReg.ExtVga[SR12]);
-#else
-	outw(0x3C4, (pAlp->ModeReg.ExtVga[SR12] << 8) | 0x12);
-#endif
 }
 
 static void
 AlpShowCursor(ScrnInfoPtr pScrn)
 {
-	AlpPtr pAlp = ALPPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(CIRPTR(pScrn));
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpShowCursor\n");
 #endif
 	pAlp->ModeReg.ExtVga[SR12] |= 0x01;
-#if 1
 	hwp->writeSeq(hwp, 0x12, pAlp->ModeReg.ExtVga[SR12]);
-#else
-	outw(0x3C4, (pAlp->ModeReg.ExtVga[SR12] << 8) | 0x12);
-#endif
 }
 
 static Bool
@@ -213,32 +196,50 @@ AlpUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 }
 
 Bool
-AlpHWCursorInit(ScreenPtr pScreen)
+AlpHWCursorInit(ScreenPtr pScreen, int size)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-	AlpPtr pAlp = ALPPTR(pScrn);
+	const CirPtr pCir = CIRPTR(pScrn);
+	const AlpPtr pAlp = ALPPTR(pCir);
+	
 	xf86CursorInfoPtr infoPtr;
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpHWCursorInit\n");
 #endif
+	if (!size) return FALSE;
 
 	infoPtr = xf86CreateCursorInfoRec();
 	if (!infoPtr) return FALSE;
 
-	pAlp->CirRec.CursorInfoRec = infoPtr;
-	pAlp->HWCursorBits = pAlp->CirRec.FbBase + 1024*pScrn->videoRam - 2*CURSORSIZE;
-	pAlp->CirRec.CursorIsSkewed = FALSE;
+	pCir->CursorInfoRec = infoPtr;
+	pCir->CursorIsSkewed = FALSE;
 	pAlp->CursorBits = NULL;
+
+	if (size == 64)
+	    CURSORWIDTH = CURSORHEIGHT = 64;
+	else
+	    CURSORWIDTH = CURSORHEIGHT = 32;
+	
+	pAlp->HWCursorBits = pCir->FbBase + 1024*pScrn->videoRam - 2*CURSORSIZE;
++ 
 
 	infoPtr->MaxWidth = CURSORWIDTH;
 	infoPtr->MaxHeight = CURSORHEIGHT;
-	infoPtr->Flags =
+	if (CURSORWIDTH == 64)
+	    infoPtr->Flags = 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-						HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+		    HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 #endif
-						HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
-						HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
+		    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64 |
+		    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
+	else
+		infoPtr->Flags = 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+		    HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+#endif
+		    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
+
 	infoPtr->SetCursorColors = AlpSetCursorColors;
 	infoPtr->SetCursorPosition = AlpSetCursorPosition;
 	infoPtr->LoadCursorImage = AlpLoadCursorImage;
@@ -250,6 +251,9 @@ AlpHWCursorInit(ScreenPtr pScreen)
 #ifdef ALP_DEBUG
 	ErrorF("AlpHWCursorInit before xf86InitCursor\n");
 #endif
-
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Hardware cursor: %ix%i\n",
+		   CURSORWIDTH,CURSORHEIGHT);
 	return(xf86InitCursor(pScreen, infoPtr));
 }
+
+

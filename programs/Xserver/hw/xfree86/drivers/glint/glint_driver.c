@@ -2506,7 +2506,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!pMon)
 	    /* Try DDC1 */;
 	    
-	xf86PrintEDID(pMon);
+	xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
     }
     /* Initialise the first mode */
     if ( (!pGlint->FBDev) && !(GLINTModeInit(pScrn, pScrn->currentMode))) {

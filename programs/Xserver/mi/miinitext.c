@@ -453,14 +453,26 @@ InitExtensions(argc, argv)
 {
     int i, j, k, numExts, ii;
     ExtensionModule *ext, *newList;
-
+    
     /* Add built-in extensions to the list. */
-    for (i = 0; staticExtensions[i].name; i++)
-	LoadExtension(&staticExtensions[i], TRUE);
-
+	
+    for (i = 0; staticExtensions[i].name; i++) {
+	Bool noLoad = FALSE;
+	for (j = 0; ExtensionModuleList[j].name != NULL; j++) {
+	    if (!strcmp(staticExtensions[i].name,
+			 ExtensionModuleList[j].name)){
+		noLoad = TRUE;
+		break;
+	    }
+	}
+	if (!noLoad) 
+	    LoadExtension(&staticExtensions[i], TRUE);
+    }
+    
+    
     /* Sort the extensions according the init dependencies. */
     LoaderSortExtensions();
-
+    
     for (i = 0; ExtensionModuleList[i].name != NULL; i++) {
 	ext = &ExtensionModuleList[i];
 	if (ext->initFunc != NULL && 

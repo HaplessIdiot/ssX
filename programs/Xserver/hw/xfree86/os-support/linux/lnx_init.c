@@ -33,6 +33,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "lnx.h"
 
 #ifdef USE_DEV_FB
 extern char *getenv(const char *);
@@ -45,7 +46,7 @@ static int VTnum = -1;
 static int activeVT = -1;
 
 void
-xf86OpenConsole()
+xf86OpenConsole(void)
 {
     int i, fd;
     struct vt_mode VT;
@@ -68,22 +69,17 @@ xf86OpenConsole()
 	/*
 	 * setup the virtual terminal manager
 	 */
-	if (VTnum != -1)
-	{
+	if (VTnum != -1) {
 	    xf86Info.vtno = VTnum;
 	    from = X_CMDLINE;
-	}
-	else 
-	{
-	    if ((fd = open("/dev/tty0",O_WRONLY,0)) < 0) 
-	    {
+	} else {
+	    if ((fd = open("/dev/tty0",O_WRONLY,0)) < 0) {
 		FatalError(
 		    "xf86OpenConsole: Cannot open /dev/tty0 (%s)\n",
 		    strerror(errno));
 	    }
 	    if ((ioctl(fd, VT_OPENQRY, &xf86Info.vtno) < 0) ||
-		(xf86Info.vtno == -1))
-	    {
+		(xf86Info.vtno == -1)) {
 		FatalError("xf86OpenConsole: Cannot find a free VT\n");
 	    }
 	    close(fd);
@@ -103,13 +99,11 @@ xf86OpenConsole()
 
 	sprintf(vtname,"/dev/tty%d",xf86Info.vtno); /* /dev/tty1-64 */
 
-	if (!KeepTty)
-	{
+	if (!KeepTty) {
 	    setpgrp();
 	}
 
-	if ((xf86Info.consoleFd = open(vtname, O_RDWR|O_NDELAY, 0)) < 0)
-	{
+	if ((xf86Info.consoleFd = open(vtname, O_RDWR|O_NDELAY, 0)) < 0) {
 	    FatalError("xf86OpenConsole: Cannot open %s (%s)\n",
 		       vtname, strerror(errno));
 	}
@@ -175,6 +169,10 @@ xf86OpenConsole()
 	{
 	    FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
 	}
+
+	/* we really should have a InitOSInputDevices() function instead
+	 * of Init?$#*&Device(). So I just place it here */
+	
 #ifdef USE_DEV_FB
 	/* copy info to new console */
 	var.yoffset=0;

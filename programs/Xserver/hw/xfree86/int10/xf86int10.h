@@ -15,6 +15,7 @@
 /* int10 info structure */
 typedef  struct  {
     int entityIndex;
+    int scrnIndex;
     pointer cpuRegs;
     CARD16  BIOSseg;
     pointer private;
@@ -39,6 +40,13 @@ typedef struct _int10Mem {
     void(*wl)(xf86Int10InfoPtr,int,CARD32);
 } int10MemRec, *int10MemPtr;
 
+typedef struct {
+    CARD8 save_msr;
+    CARD8 save_pos102;
+    CARD8 save_vse;
+    CARD8 save_46e8;
+} legacyVGARec, *legacyVGAPtr;
+
 /* OS dependent functions */
 xf86Int10InfoPtr xf86InitInt10(int entityIndex);
 void xf86FreeInt10(xf86Int10InfoPtr pInt);
@@ -60,6 +68,8 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define VRAM_SIZE 0x20000
 #define V_BIOS_SIZE 0x10000
 #define V_BIOS 0xC0000
+#define HIGH_MEM V_BIOS
+#define HIGH_MEM_SIZE (SYS_BIOS - HIGH_MEM)
 
 #define X86_TF_MASK		0x00000100
 #define X86_IF_MASK		0x00000200
@@ -77,13 +87,6 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define MEM_WB(name,addr,val) name->mem->wb(name,addr,val)
 #define MEM_WW(name,addr,val) name->mem->ww(name,addr,val)
 #define MEM_WL(name,addr,val) name->mem->wl(name,addr,val)
-
-typedef struct {
-    CARD8 save_msr;
-    CARD8 save_pos102;
-    CARD8 save_vse;
-    CARD8 save_46e8;
-} legacyVGARec, *legacyVGAPtr;
 
 /* OS dependent functions */
 void MapCurrentInt10(xf86Int10InfoPtr pInt);
@@ -105,7 +108,7 @@ void dump_code(xf86Int10InfoPtr pInt);
 void dump_registers(xf86Int10InfoPtr pInt);
 void stack_trace(xf86Int10InfoPtr pInt);
 xf86Int10InfoPtr getInt10Rec(int entityIndex);
-void LockLegacyVGA(int screenIndex, legacyVGAPtr vga);
+void LockLegacyVGA(int screenIndex,legacyVGAPtr vga);
 void UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga);
 int port_rep_inb(xf86Int10InfoPtr pInt,
 		 CARD16 port, CARD32 base, int d_f, CARD32 count);

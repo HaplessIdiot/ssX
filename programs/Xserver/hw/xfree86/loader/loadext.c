@@ -122,9 +122,9 @@ struct node_str {
 	const char *n_name;		/* name of this node */
 };
 
-static NODE *graph = NULL, **cycle_buf, **longest_cycle;
+static NODE *graph = NULL, **cycle_buf = NULL, **longest_cycle = NULL;
 static int longest = 0;
-static NODE *sorted = NULL, *last;
+static NODE *sorted = NULL, *last = NULL;
 
 /* Find a node in the graph (insert if not found) and return a pointer to it. */
 static NODE *
@@ -371,6 +371,13 @@ LoaderSortExtensions()
 	ExtensionModule *ext, *newList;
 	NODE *node;
 
+	graph = NULL;
+	longest = 0;
+	sorted = NULL;
+	last = NULL;
+	cycle_buf = NULL;
+	longest_cycle = NULL;
+	
 	/*
 	 * Parse list and build the graph.  Enter them in reverse order
 	 * because tsort() will reverse those that have no depedencies.
@@ -383,7 +390,7 @@ LoaderSortExtensions()
 #endif
 		if (ext->initDependencies)
 			for (j = 0; ext->initDependencies[j]; j++) {
-				add_arc(ext->initDependencies[j], ext->name);
+			    add_arc(ext->initDependencies[j], ext->name);
 #ifdef DEBUG
 				ErrorF("\t%s\n", ext->initDependencies[j]);
 #endif
@@ -393,7 +400,7 @@ LoaderSortExtensions()
 	newList = xnfalloc((numExtensionModules + 1) * sizeof(ExtensionModule));
 	i = 0;
 	for (node = sorted; node; node = node->n_next) {
-		for (j = 0; j < numExtensionModules; j++)
+	    for (j = 0; j < numExtensionModules; j++)
 			if (!strcmp(node->n_name, ExtensionModuleList[j].name))
 				break;
 		if (j != numExtensionModules)

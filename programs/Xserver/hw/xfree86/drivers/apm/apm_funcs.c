@@ -484,7 +484,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	    int i, j;
 
 	    if (pApm->ScratchMemPtr + nc * wrd * 4 < pApm->ScratchMemEnd) {
-#define		d	((CARD32)dstPtr - (CARD32)pApm->FbBase)
+#define		d	((memType)dstPtr - (memType)pApm->FbBase)
 		A(WaitForFifo)(pApm, 1);
 		dstPtr = (CARD32 *)pApm->ScratchMemPtr;
 		switch(pApm->CurrentLayout.bitsPerPixel) {
@@ -508,7 +508,8 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
-	    pApm->ScratchMemPtr = ((int)(dstPtr + wrd * nc) + 4) & ~7;
+	    pApm->ScratchMemPtr = ((memType)(dstPtr + wrd * nc) + 4) 
+	      & ~(memType)7;
 	    for (i = nc; i-- > 0; ) {
 		for (j = wrd; j-- > 0; ) {
 		    *dstPtr++ = XAAReverseBitOrder(*(CARD32 *)src);
@@ -533,7 +534,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	    int i, j;
 
 	    if (pApm->ScratchMemPtr + nc * wrd * 4 < pApm->ScratchMemEnd) {
-#define		d	((CARD32)dstPtr - (CARD32)pApm->FbBase)
+#define		d	((memType)dstPtr - (memType)pApm->FbBase)
 		A(WaitForFifo)(pApm, 1);
 		dstPtr = (CARD32 *)pApm->ScratchMemPtr;
 		switch(pApm->CurrentLayout.bitsPerPixel) {
@@ -557,7 +558,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
-	    pApm->ScratchMemPtr = ((int)(dstPtr + wrd * nc * 4) + 4) & ~7;
+	    pApm->ScratchMemPtr = ((memType)(dstPtr + wrd * nc * 4) + 4) & ~7;
 	    for (i = nc; i-- > 0; ) {
 		for (j = wrd; j-- > 0; ) {
 		    if (i || j || n)
@@ -603,7 +604,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	    SETWIDTHHEIGHT(wr, h);
 #endif
 	    if (pApm->ScratchMemPtr + h * wrd * 4 < pApm->ScratchMemEnd) {
-#define		d	((CARD32)dstPtr - (CARD32)pApm->FbBase)
+#define		d	((memType)dstPtr - (memType)pApm->FbBase)
 		A(WaitForFifo)(pApm, 1);
 		dstPtr = (CARD32 *)pApm->ScratchMemPtr;
 		switch(pApm->CurrentLayout.bitsPerPixel) {
@@ -627,7 +628,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
-	    pApm->ScratchMemPtr = ((int)(dstPtr + wrd * h) + 4) & ~7;
+	    pApm->ScratchMemPtr = ((memType)(dstPtr + wrd * h) + 4) & ~7;
 	    for (i = h; i-- > 0; ) {
 		for (j = wrd; j-- > 0; ) {
 		    *dstPtr++ = XAAReverseBitOrder(*(CARD32 *)src);
@@ -649,7 +650,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	    SETWIDTHHEIGHT(w, h);
 #endif
 	    if (pApm->ScratchMemPtr + h * wrd * 4 < pApm->ScratchMemEnd) {
-#define		d	((CARD32)dstPtr - (CARD32)pApm->FbBase)
+#define		d	((memType)dstPtr - (memType)pApm->FbBase)
 		A(WaitForFifo)(pApm, 1);
 		dstPtr = (CARD32 *)pApm->ScratchMemPtr;
 		switch(pApm->CurrentLayout.bitsPerPixel) {
@@ -673,7 +674,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
-	    pApm->ScratchMemPtr = ((int)(dstPtr + wrd * h) + 4) & ~7;
+	    pApm->ScratchMemPtr = ((memType)(dstPtr + wrd * h) + 4) & ~7;
 	    for (i = h; i-- > 0; ) {
 		for (j = wrd; j-- > 0; ) {
 		    if (i || j)

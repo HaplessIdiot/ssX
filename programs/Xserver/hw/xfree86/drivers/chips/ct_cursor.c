@@ -134,7 +134,7 @@ CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	cPtr->writeXR(cPtr, 0xA6, y & 0xFF);
 	cPtr->writeXR(cPtr, 0xA7, (y >> 8) & 0x87);
     } else {
-	unsigned long xy;
+	CARD32 xy;
 
 	xy = y;
 	xy = (xy << 16) | x;
@@ -153,7 +153,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    unsigned long packedcolfg, packedcolbg;
+    CARD32 packedcolfg, packedcolbg;
     
     CURSOR_SYNC(pScrn);
 
@@ -217,11 +217,11 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 
     if (IS_Wingine(cPtr)) {
 	int i;
-	unsigned long *tmp = (unsigned long *)src;
+	CARD32 *tmp = (CARD32 *)src;
 	
 	outl(DR(0x8),0x20);
 	for (i=0; i<64; i++) {
-	    outl(DR(0xC),*(unsigned long *)tmp);
+	    outl(DR(0xC),*(CARD32 *)tmp);
 	    tmp++;
 	}
     } else {

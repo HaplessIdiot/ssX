@@ -27,10 +27,10 @@ static void write_l(xf86Int10InfoPtr pInt,int addr, CARD32 val);
  */
 
 typedef struct {
-    int screen;
     int shift;
     int pagesize_1;
     int entries;
+    void* vRam;
     memType *alloc_rec;
 } genericInt10Priv;
 
@@ -65,6 +65,7 @@ xf86InitInt10(int entityIndex)
     legacyVGARec vga;
     
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
+    
     if (int10skip(xf86Screens[screen],entityIndex))
 	return NULL;
 
@@ -77,7 +78,7 @@ xf86InitInt10(int entityIndex)
     pInt->private = (pointer)xnfcalloc(1,sizeof(genericInt10Priv));
     entries = SYS_SIZE / pagesize;
 
-    INTPriv(pInt)->screen = screen;
+    pInt->scrnIndex = screen;
     INTPriv(pInt)->pagesize_1 = pagesize - 1;
     INTPriv(pInt)->entries = entries;
     INTPriv(pInt)->alloc_rec =
@@ -101,31 +102,31 @@ xf86InitInt10(int entityIndex)
 	sysMem = xf86MapVidMem(screen,VIDMEM_FRAMEBUFFER,SYS_BIOS,BIOS_SIZE);
     setupTable(pInt,(memType)sysMem,SYS_BIOS,BIOS_SIZE);
     if (xf86ReadBIOS(0,0,(unsigned char *)intMem,LOW_PAGE_SIZE) < 0) {
-	xf86Msg(X_ERROR,"Cannot read int vect\n");
+	xf86DrvMsg(screen,X_ERROR,"Cannot read int vect\n");
 	goto error1;
     }
     if (xf86IsEntityPrimary(entityIndex)) {
 	int size;
 	int cs = MEM_RW(pInt,((0x10<<2)+2));
-	xf86Msg(X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
+	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
 	if (xf86ReadBIOS(cs << 4,0,(unsigned char *)vbiosMem,
 			 0x10) < 0) {
-	    xf86Msg(X_ERROR,"Cannot read V_BIOS (1)\n");
+	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (1)\n");
 	    goto error1;
 	}
 	if (!((*(CARD8*)vbiosMem == 0x55)
 	      && (*((CARD8*)vbiosMem + 1) == 0xAA))) {
-	    xf86Msg(X_ERROR,"No V_BIOS found\n");
+	    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
 	    goto error1;
 	}
 	
 	size = *((CARD8*)vbiosMem + 2) * 512;
 	if (xf86ReadBIOS(cs << 4,0,vbiosMem, size) < 0) {
-	    xf86Msg(X_ERROR,"Cannot read V_BIOS (2)\n");
+	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (2)\n");
 	    goto error1;
 	}
 	if (bios_checksum(vbiosMem,size)) {
-	    xf86Msg(X_ERROR,"Bad checksum of V_BIOS \n");
+	    xf86DrvMsg(screen,X_ERROR,"Bad checksum of V_BIOS \n");
 	    goto error1;
 	}
 
@@ -136,7 +137,7 @@ xf86InitInt10(int entityIndex)
 	reset_int_vect(pInt);
 	set_return_trap(pInt);
 	if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
-	    xf86Msg(X_ERROR,"Cannot read V_BIOS (3)\n");
+	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (3)\n");
 	    goto error1;
 	}
 	setupTable(pInt,(memType)vbiosMem,V_BIOS,V_BIOS_SIZE);
@@ -155,7 +156,7 @@ xf86InitInt10(int entityIndex)
     setup_int_vect(pInt);
     set_return_trap(pInt);
     if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
-	xf86Msg(X_ERROR,"Cannot read V_BIOS (4)\n");
+	xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
 	goto error1;
     }
     setupTable(pInt,(memType)vbiosMem,V_BIOS,V_BIOS_SIZE);
@@ -182,39 +183,27 @@ xf86InitInt10(int entityIndex)
 static void
 MapVRam(xf86Int10InfoPtr pInt)
 {
-    int screen = INTPriv(pInt)->screen;
+    int screen = pInt->scrnIndex;
     int pagesize = INTPriv(pInt)->pagesize_1 + 1;
-    int pages = (VRAM_SIZE + pagesize - 1)/pagesize;
-    void *vidMem;
-    int i;
+    int size = ((VRAM_SIZE + pagesize - 1)/pagesize) * pagesize;
 
-    for (i = 0; i < pages; i++) {
-        int addr = V_RAM + i * pagesize;
-        vidMem = xf86MapVidMem(screen,VIDMEM_MMIO,addr,pagesize);
-        setupTable(pInt,(memType)vidMem,addr,pagesize);
-    }
+    INTPriv(pInt)->vRam = xf86MapVidMem(screen,VIDMEM_MMIO,V_RAM,size);
 }
 
 static void 
 UnmapVRam(xf86Int10InfoPtr pInt)
 {
-    int screen = INTPriv(pInt)->screen;
+    int screen = pInt->scrnIndex;
     int pagesize = INTPriv(pInt)->pagesize_1 + 1;
-    int pages = (VRAM_SIZE + pagesize - 1)/pagesize;
-    int page = (V_RAM + pagesize - 1)/pagesize;
-    int i;
+    int size = ((VRAM_SIZE + pagesize - 1)/pagesize) * pagesize;
 
-    for (i = 0; i < pages; i++) {
-	xf86UnMapVidMem(screen,
-			(pointer)INTPriv(pInt)->
-			alloc_rec[page],pagesize);
-	page++;
-    }
+    xf86UnMapVidMem(screen,INTPriv(pInt)->vRam,size);
 }
 
 void
 MapCurrentInt10(xf86Int10InfoPtr pInt)
 {
+  /* nothing to do here */
 }
 
 void
@@ -303,39 +292,40 @@ setupTable(xf86Int10InfoPtr pInt, memType address,int loc,int size)
           (INTPriv(pInt)->alloc_rec[addr >> shift])
 #define V_ADDR(addr,shift,off) \
           (BASE(addr,shift) + (off))
+#define VRAM_ADDR(addr) (addr - 0xA0000)
+#define VRAM_BASE (INTPriv(pInt)->vRam)
 
 #define VRAM(addr) ((addr >= 0xA0000) && (addr <= 0xBFFFF))
 #define V_ADDR_RB(addr,shift,off) \
-        (VRAM(addr)) ? MMIO_IN8((CARD8*)BASE(addr,shift),off) \
+        (VRAM(addr)) ? MMIO_IN8((CARD8*)VRAM_BASE,VRAM_ADDR(addr)) \
            : *(CARD8*) V_ADDR(addr,shift,off)
 #define V_ADDR_RW(addr,shift,off) \
-        (VRAM(addr)) ? MMIO_IN16((CARD16*)BASE(addr,shift),off) \
+        (VRAM(addr)) ? MMIO_IN16((CARD16*)VRAM_BASE,VRAM_ADDR(addr)) \
            : ldw_u((pointer)V_ADDR(addr,shift,off))
 #define V_ADDR_RL(addr,shift,off) \
-        (VRAM(addr)) ? MMIO_IN32((CARD32*)BASE(addr,shift),off) \
+        (VRAM(addr)) ? MMIO_IN32((CARD32*)VRAM_BASE,VRAM_ADDR(addr)) \
            : ldl_u((pointer)V_ADDR(addr,shift,off))
 
 #define V_ADDR_WB(addr,shift,off,val) \
         if(VRAM(addr)) \
-            MMIO_OUT8((CARD8*)BASE(addr,shift),off,val); \
+            MMIO_OUT8((CARD8*)VRAM_BASE,VRAM_ADDR(addr),val); \
         else \
-            *(CARD8*) V_ADDR(addr,SHIFT,off) = val;
+            *(CARD8*) V_ADDR(addr,shift,off) = val;
 #define V_ADDR_WW(addr,shift,off,val) \
         if(VRAM(addr)) \
-            MMIO_OUT16((CARD16*)BASE(addr,shift),off,val); \
+            MMIO_OUT16((CARD16*)VRAM_BASE,VRAM_ADDR(addr),val); \
         else \
-            stw_u((val),(pointer)(V_ADDR(addr,SHIFT,off)));
+            stw_u((val),(pointer)(V_ADDR(addr,shift,off)));
 
 #define V_ADDR_WL(addr,shift,off,val) \
         if (VRAM(addr)) \
-            MMIO_OUT32((CARD32*)BASE(addr,shift),off,val); \
+            MMIO_OUT32((CARD32*)VRAM_BASE,VRAM_ADDR(addr),val); \
         else \
-            stl_u(val,(pointer)(V_ADDR(addr,SHIFT,off)));
+            stl_u(val,(pointer)(V_ADDR(addr,shift,off)));
 
 static CARD8
 read_b(xf86Int10InfoPtr pInt, int addr)
 {
-    ErrorF("add: 0x%X\n",addr);
     return V_ADDR_RB(addr,SHIFT,OFF(addr));
 }
 
@@ -345,8 +335,6 @@ read_w(xf86Int10InfoPtr pInt, int addr)
     int shift = SHIFT;
     int off = OFF(addr);
 
-/*      ErrorF("add: 0x%X 0x%X\n",addr,V_ADDR(BASE(addr,shift),shift,off)); */
-    ErrorF("add: 0x%X\n",addr);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     return ((V_ADDR_RB(addr,shift,off))
 	    || ((V_ADDR_RB(addr,shift,off + 1)) << 8));
@@ -399,7 +387,7 @@ write_w(xf86Int10InfoPtr pInt, int addr, CARD16 val)
     (V_ADDR_WB(addr,shift,off + 1),val >> 8);
 #else
     if (OFF(addr + 1) > 0) {
-	V_ADDR_WW(addr,SHIFT,OFF(addr),val);
+	V_ADDR_WW(addr,shift,OFF(addr),val);
     } else {
 	V_ADDR_WB(addr,shift,off + 1,val);
 	V_ADDR_WB(addr,shift,off,val >> 8);
@@ -419,7 +407,7 @@ write_l(xf86Int10InfoPtr pInt, int addr, CARD32 val)
     V_ADDR_WB(addr,shift,off + 3, val >> 24);
 #else
     if (OFF(addr + 3) > 2) {
-	V_ADDR_WL(addr,SHIFT,OFF(addr),val);
+	V_ADDR_WL(addr,shift,OFF(addr),val);
     } else {
 	V_ADDR_WB(addr,shift,off + 3, val);
 	V_ADDR_WB(addr,shift,off + 2, val >> 8);

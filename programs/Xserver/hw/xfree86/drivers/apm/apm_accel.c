@@ -220,8 +220,8 @@ ApmAccelInit(ScreenPtr pScreen)
 			pApm->CurrentLayout.bytesPerScanline;
     pApm->ScratchMemSize= mem - ScratchMemOffset - pApm->OffscreenReserved;
     pApm->ScratchMemPtr	= pApm->ScratchMemOffset
-			= (int)pApm->FbBase + ScratchMemOffset;
-    pApm->ScratchMemEnd	= (int)pApm->FbBase + mem - pApm->OffscreenReserved;
+			= (memType)pApm->FbBase + ScratchMemOffset;
+    pApm->ScratchMemEnd	= (memType)pApm->FbBase + mem - pApm->OffscreenReserved;
     switch (pApm->CurrentLayout.bitsPerPixel) {
     case 8:
     case 24:

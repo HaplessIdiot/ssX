@@ -102,6 +102,15 @@ static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo);
  * global data
  */
 
+OptionInfoRec renditionOptions[]={
+    { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },    
+    { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
+};
+
 DriverRec RENDITION={
     RENDITION_VERSION_CURRENT,
     "rendition driver",
@@ -111,6 +120,8 @@ DriverRec RENDITION={
     NULL,
     0
 };
+
+#ifdef XFree86LOADER
 
 static const char *vgahwSymbols[]={
     "vgaHWGetHWRec",
@@ -129,15 +140,6 @@ static const char *vgahwSymbols[]={
     "vgaHWDPMSSet",
     "vgaHWBlankScreen",
     "vgaHWHandleColormaps",
-    NULL
-};
-
-static const char *fbSymbols[]={
-    "xf1bppScreenInit",
-    "xf4bppScreenInit",
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb32ScreenInit",
     NULL
 };
 
@@ -176,7 +178,14 @@ static const char *int10Symbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
+static const char *fbSymbols[]={
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb32ScreenInit",
+    NULL
+};
 
 /* Module loader interface */
 
@@ -221,15 +230,6 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
 
 #endif
 
-
-OptionInfoRec renditionOptions[]={
-    { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_OVERCLOCK_MEM,"Overclock_Mem",  OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_NO_DDC,    "NoDDC",    OPTV_BOOLEAN, {0}, FALSE },    
-    { -1,                NULL,      OPTV_NONE,    {0}, FALSE }
-};
 
 enum renditionTypes {
     CHIP_RENDITION_V1000,
