@@ -1,16 +1,27 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.19 2002/02/22 21:45:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.20 2002/02/25 00:45:42 dawes Exp $
 
+#if !BuildModuleInSubdir
 #define IHaveModules
+#elif !defined(IHaveModules) && DoLoadableServer
+    MODSUBDIR = module
+#endif
+
+#if !BuildModuleInSubdir || !defined(IHaveModules)
+#define IHaveSubdirs
+      SUBDIRS = math array_cache swrast swrast_setup tnl X $(MODSUBDIR)
+#endif
+
 #include <Server.tmpl>
 
-#define IHaveSubdirs
-
-      SUBDIRS = math array_cache swrast swrast_setup tnl X
 
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
 #define MesaBuildDir /**/
+#if !BuildModuleInSubdir || !defined(IHaveModules)
 #include "../../../../../lib/GL/mesa/src/Imakefile.inc"
+#else
+#include "../../../../../../lib/GL/mesa/src/Imakefile.inc"
+#endif
 
          SRCS = $(COREMESABASESRCS)
          OBJS = $(COREMESABASEOBJS)
@@ -22,15 +33,18 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.19 2002/02/22 21:4
 
       DEFINES = $(GLX_DEFINES)
 
-#if DoLoadableServer
+#ifdef IHaveModules
 ModuleObjectRule()
 #else
 NormalLibraryObjectRule()
 #endif
 
+#ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
-SubdirLibraryRule($(OBJS))
 DependSubdirs($(SUBDIRS))
+#endif
+
+SubdirLibraryRule($(OBJS))
 
 DependTarget()
 
