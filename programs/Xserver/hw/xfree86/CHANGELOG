@@ -1,4 +1,4 @@
-XFree86 3.9.16b (26 September 1999)
+XFree86 3.9.16b (27 September 1999)
 3217. Xterm patch #116 (#3280, Thomas Dickey).
 3216. Add new flags to the Xv adaptor type to indicate that it can be used
       to render into window or pixmaps and do video or stills (#3279,
@@ -126,7 +126,8 @@ XFree86 3.9.16b (26 September 1999)
       Marc La France).
 3155. During broker initialisation, use both system and non-system PCI
       resources to "trim" OS resources.  Among other things, this allows the
-      maximum memory limit to be bumped back up to 2G (#3220, Marc La France).
+      maximum memory limit to be bumped back up to 2G (#3220, 3282,
+      Marc La France).
 3154. Temporarily allow a driver to register resources that only conflict with
       resources whose size the common layer has only estimated (#3220,
       Marc La France).
@@ -8876,4 +8877,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.830 1999/09/25 14:36:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.831 1999/09/27 06:29:19 dawes Exp $

@@ -7,6 +7,12 @@
 #include "xf86int10.h"
 #include "defines.h"
 #define DEV_MEM "/dev/mem"
+#ifndef XFree86LOADER
+#include <sys/mman.h>
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+#endif
 static int base_addr = 0x100000;
 #define ALLOC_ENTRIES(x) ((V_RAM / x) - 1)
 #define REG pInt
@@ -53,7 +59,7 @@ xf86InitInt10(int entityIndex)
     if (!xf86Int10ExecSetup(pInt))
 	goto error0;
     pInt->mem = &linuxMem;
-    pagesize = xf86getpagesize();
+    pagesize = getpagesize();
     alloc_entries = ALLOC_ENTRIES(pagesize);
     pInt->private = (pointer)xnfcalloc(1,sizeof(linuxInt10Priv));
     ((linuxInt10Priv*)pInt->private)->base = base_addr;
@@ -65,7 +71,7 @@ xf86InitInt10(int entityIndex)
 #ifdef DEBUG
     ErrorF("Mapping 1 M area\n");
 #endif
-    if ((fd = open("/dev/zero",XF86_O_RDWR,0)) < 0
+    if ((fd = open("/dev/zero",O_RDWR,0)) < 0
 	|| mmap((void *)base_addr, SYS_SIZE, PROT_READ | PROT_WRITE
 		| PROT_EXEC, MAP_PRIVATE | MAP_FIXED, fd, 0)
 	== MAP_FAILED) {
@@ -77,7 +83,7 @@ xf86InitInt10(int entityIndex)
 #ifdef DEBUG
     ErrorF("Mapping sys bios area\n");
 #endif
-    if ((fd = open(DEV_MEM,XF86_O_RDWR,0)) < 0
+    if ((fd = open(DEV_MEM,O_RDWR,0)) < 0
 	|| mmap((void *)(base_addr + SYS_BIOS),BIOS_SIZE,PROT_READ
 		| PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_FIXED,
 		fd, SYS_BIOS) == MAP_FAILED) {
@@ -96,7 +102,7 @@ xf86InitInt10(int entityIndex)
 #ifdef DEBUG
     ErrorF("Mapping VRAM area\n");
 #endif
-    if ((fd = open("/proc/self/mem",XF86_O_RDWR,0)) < 0
+    if ((fd = open("/proc/self/mem",O_RDWR,0)) < 0
 	|| mmap((void *)(base_addr + V_RAM),VRAM_SIZE,PROT_READ
 		| PROT_WRITE, MAP_SHARED | MAP_FIXED,
 		fd, (size_t)vidMem) == MAP_FAILED) {
@@ -165,7 +171,7 @@ MapCurrentInt10(xf86Int10InfoPtr pInt)
     if (Int10Current)
 	munmap((void*)((linuxInt10Priv *)Int10Current->private)->base,
 	       SYS_SIZE);
-    if ((fd = open("/proc/self/mem",XF86_O_RDWR,0)) < 0)
+    if ((fd = open("/proc/self/mem",O_RDWR,0)) < 0)
 	return;
     mmap(0,SYS_SIZE,PROT_READ | PROT_WRITE,
 	 MAP_SHARED | MAP_FIXED, fd,
@@ -196,7 +202,7 @@ xf86FreeInt10(xf86Int10InfoPtr pInt)
 void *
 xf86Int10AllocPages(xf86Int10InfoPtr pInt,int num, int *off)
 {
-    int pagesize = xf86getpagesize();
+    int pagesize = getpagesize();
     int num_pages = ALLOC_ENTRIES(pagesize);
     int i,j;
 
@@ -226,7 +232,7 @@ xf86Int10AllocPages(xf86Int10InfoPtr pInt,int num, int *off)
 void
 xf86Int10FreePages(xf86Int10InfoPtr pInt, void *pbase, int num)
 {
-    int pagesize = xf86getpagesize();
+    int pagesize = getpagesize();
     int base = ((linuxInt10Priv*)pInt->private)->base;
     int first = ((CARD32)pbase - base) / pagesize - 1;
     int i;

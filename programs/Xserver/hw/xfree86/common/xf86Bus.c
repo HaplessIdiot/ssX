@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.38 1999/09/25 14:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.39 1999/09/27 06:29:27 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2230,21 +2230,25 @@ xf86GetPciRes(resPtr *sysRes, resPtr *nonsysRes)
     if (xf86PciVideoInfo)
 	for (pvpp = xf86PciVideoInfo, pvp = *pvpp; pvp; pvp = *(++pvpp)) {
 	    resPtr *res;
+	    long resMisc;
 
-	    if (PCIINFOCLASSES(pvp->class, pvp->subclass))
+	    if (PCINONSYSTEMCLASSES(pvp->class, pvp->subclass)) {
 		res = nonsysRes;
-	    else
+		resMisc = 0;
+	    } else {
 		res = sysRes;
+		resMisc = ResEstimated;
+	    }
 	    for (i = 0; i < 6; i++) {
 		if (pvp->ioBase[i]) {
 		    RANGE(range, pvp->ioBase[i],
 			  pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
-			  ResExcIoBlock | ResBios);
+			  ResExcIoBlock | ResBios | resMisc);
 		    *res = xf86AddResToList(*res, &range, -1);
 		} else if (pvp->memBase[i]) {
 		    RANGE(range, pvp->memBase[i],
 			  pvp->memBase[i] + (1 << pvp->size[i]) - 1,
-			  ResExcMemBlock | ResBios);
+			  ResExcMemBlock | ResBios | resMisc);
 		    *res = xf86AddResToList(*res, &range, -1);
 		}
 	    }

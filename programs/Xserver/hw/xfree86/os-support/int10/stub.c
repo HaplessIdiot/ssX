@@ -1,7 +1,6 @@
 #include "xf86.h"
 #include "xf86str.h"
 #include "xf86_OSproc.h"
-#include "xf86_ansic.h"
 #define _INT10_PRIVATE
 #include "xf86int10.h"
 

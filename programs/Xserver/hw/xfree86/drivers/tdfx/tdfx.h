@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.3 1999/08/30 01:25:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.4 1999/09/27 06:29:57 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -30,8 +30,6 @@ typedef struct _TDFXRec *TDFXPtr;
 
 #ifdef PROP_3DFX
 #include "tdfx_priv.h"
-#else
-#define PROPDATA
 #endif
 extern Bool TDFXInitPrivate(ScreenPtr pScreen);
 extern void TDFXShutdownPrivate(ScreenPtr pScreen);
@@ -146,7 +144,9 @@ typedef struct _TDFXRec {
   int syncDone;
   int scanlineWidth;
   int *scanlineColorExpandBuffers[2];
+#ifdef PROP_3DFX
   PROPDATA;
+#endif
 #ifdef XF86DRI
   Bool directRenderingEnabled;
   DRIInfoPtr pDRIInfo;

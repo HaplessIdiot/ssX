@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.34 1999/08/22 05:35:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.35 1999/09/25 14:37:30 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -277,6 +277,12 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
 
 #ifdef XFree86LOADER
 
@@ -286,12 +292,6 @@ static const char *cfbSymbols[] = {
     "cfb24ScreenInit",
     "cfb24_32ScreenInit",
     "cfb32ScreenInit",
-    NULL
-};
-
-static const char *i2cSymbols[] = {
-    "xf86CreateI2CBusRec",
-    "xf86I2CBusInit",
     NULL
 };
 
