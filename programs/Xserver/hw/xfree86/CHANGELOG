@@ -1,4 +1,4 @@
-XFree86 3.1.1Bc (19 June 1995)
+XFree86 3.1.1Bc (21 June 1995)
 153. Fix for ET4000/W32p cards -- don't change the PCI burst setting.
      This should fix mouse droppings and missing characters in text mode
      for some cards (Glenn Lai).
