@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.89 2002/10/03 21:32:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.90tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -432,17 +432,48 @@ print_bridge_pci_class(pciConfigPtr pcr)
 {
     printf("  HEADER    0x%02x  LATENCY 0x%02x\n",
 	   pcr->pci_header_type, pcr->pci_latency_timer);
-    printf("  PRIBUS    0x%02x  SECBUS 0x%02x  SUBBUS 0x%02x  SECLT 0x%02x\n",
+    printf("  PRIBUS    0x%02x  SECBUS 0x%02x  SUBBUS 0x%02x\n",
 	   pcr->pci_primary_bus_number, pcr->pci_secondary_bus_number,
-	   pcr->pci_subordinate_bus_number, pcr->pci_secondary_latency_timer);
-    printf("  IOBASE    0x%02x  IOLIM 0x%02x  SECSTATUS 0x%04x\n",
-	   pcr->pci_io_base << 8, (pcr->pci_io_limit << 8) | 0xfff,
-	   pcr->pci_secondary_status);
-    printf("  NOPREFETCH_MEMBASE 0x%08x  MEMLIM 0x%08x\n",
-	   pcr->pci_mem_base << 16, (pcr->pci_mem_limit << 16) | 0xfffff);
-    printf("  PREFETCH_MEMBASE   0x%08x  MEMLIM 0x%08x\n",
-	   pcr->pci_prefetch_mem_base << 16,
-	   (pcr->pci_prefetch_mem_limit << 16) | 0xfffff);
+	   pcr->pci_subordinate_bus_number);
+    printf("  SECLT     0x%02x  SECSTATUS 0x%04x\n",
+	   pcr->pci_secondary_latency_timer, pcr->pci_secondary_status);
+
+    if (pcr->pci_io_base || pcr->pci_io_limit ||
+	pcr->pci_upper_io_base || pcr->pci_upper_io_limit) {
+	if (((pcr->pci_io_base & 0x0f) == 0x01) ||
+	    ((pcr->pci_io_limit & 0x0f) == 0x01)) {
+	    printf("  IOBASE    0x%04x%04x  IOLIM 0x%04x%04x\n",
+		   pcr->pci_upper_io_base, (pcr->pci_io_base & 0x00f0) << 8,
+		   pcr->pci_upper_io_limit, (pcr->pci_io_limit << 8) | 0x0fff);
+	} else {
+	    printf("  IOBASE    0x%04x  IOLIM 0x%04x\n",
+		   (pcr->pci_io_base & 0x00f0) << 8,
+		   (pcr->pci_io_limit << 8) | 0x0fff);
+	}
+    }
+
+    if (pcr->pci_mem_base || pcr->pci_mem_limit)
+	printf("  NOPREFETCH_MEMBASE 0x%08x  MEMLIM 0x%08x\n",
+	       (pcr->pci_mem_base & 0x00fff0) << 16,
+	       (pcr->pci_mem_limit << 16) | 0x0fffff);
+
+    if (pcr->pci_prefetch_mem_base || pcr->pci_prefetch_mem_limit ||
+	pcr->pci_prefetch_upper_mem_base ||
+	pcr->pci_prefetch_upper_mem_limit) {
+	if (((pcr->pci_prefetch_mem_base & 0x0f) == 0x01) ||
+	    ((pcr->pci_prefetch_mem_limit & 0x0f) == 0x01)) {
+	    printf("  PREFETCH_MEMBASE   0x%08x%08x  MEMLIM 0x%08x%08x\n",
+		   pcr->pci_prefetch_upper_mem_base,
+		   (pcr->pci_prefetch_mem_base & 0x00fff0) << 16,
+		   pcr->pci_prefetch_upper_mem_limit,
+		   (pcr->pci_prefetch_mem_limit << 16) | 0x0fffff);
+	} else {
+	    printf("  PREFETCH_MEMBASE   0x%08x  MEMLIM 0x%08x\n",
+		   (pcr->pci_prefetch_mem_base & 0x00fff0) << 16,
+		   (pcr->pci_prefetch_mem_limit << 16) | 0x0fffff);
+	}
+    }
+
     printf("  %sFAST_B2B %sSEC_BUS_RST %sM_ABRT %sVGA_EN %sISA_EN"
 	   " %sSERR_EN %sPERR_EN\n",
 	   (pcr->pci_bridge_control & PCI_B_FAST_B_B) ? "" : "NO_",
