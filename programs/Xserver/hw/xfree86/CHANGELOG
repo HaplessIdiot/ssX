@@ -1,4 +1,16 @@
-XFree86 3.1.1b (19 February 1995)
+XFree86 3.1.1b (5 March 1995)
+ 19. Post events for initial lock key state differently to avoid calling
+     ProcessKeyboardEvents() before all the data it uses is initialised.
+ 18. Fix and extend ISO8859-1 Compose file (Peter Dalgaard).
+ 17. Update S3 SVGA driver so that it works with 3.1.1.
+ 16. Fix 90C33 problem with 2MB cards when memory is not auto-probed.
+ 15. Fix some ISC LOCALCONN problems (Michael Rohleder).
+ 14. Put back some #9 GXE64Pro specific bits in S3 server.
+ 13. Remove 1024 min virtual width restriction from Mach64 server
+     (Kevin Martin).
+ 12. Fix dashed line server hang problem for Mach32.
+ 11. Add UseGnuMalloc to xf86site.def (only implemented for ISC so far).
+ 10. Fix POSIX_SAVED_IDS typo in xterm (Christos Zoulas).
   9. Fix problem of attempting to include the VGAHELP extension in Xnest.
 
 XFree86 3.1.1a (12 February 1995)
