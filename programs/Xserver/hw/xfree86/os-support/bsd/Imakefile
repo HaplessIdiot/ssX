@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.37 2000/02/11 18:06:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.38 2000/02/12 20:45:40 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -62,11 +62,11 @@ SUBDIRS = libusb
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       stdResource.c stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c
+       stdResource.c stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c pm_noop.c
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       stdResource.o stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o
+       stdResource.o stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o pm_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi -I$(APINCLUDES) \
@@ -106,6 +106,7 @@ LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
+LinkSourceFile(pm_noop.c,../shared)
 
 DependTarget()
 

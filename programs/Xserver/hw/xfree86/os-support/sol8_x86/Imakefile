@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/Imakefile,v 1.1 1999/09/25 14:38:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/Imakefile,v 1.3 1999/12/03 19:17:46 eich Exp $
 
 
 
@@ -19,12 +19,12 @@ MOUSEOBJ = sol8_mouse.o
 SRCS = sol8_init.c sol8_vid.c sol8_bios.c sol8_kbd.c sol8_io.c \
 	VTsw_noop.c sol8_kbd.c sol8_kbdEv.c posix_tty.c $(MOUSESRC) \
 	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c stdPci.c \
-        sol8_kbdgetmapping.c sol8_postkbdevents.c sigiostubs.c
+        sol8_kbdgetmapping.c sol8_postkbdevents.c sigiostubs.c pm_noop.c
 
 OBJS = sol8_init.o sol8_vid.o sol8_bios.o sol8_kbd.o sol8_io.o \
 	VTsw_noop.o sol8_kbd.o sol8_kbdEv.o posix_tty.o $(MOUSEOBJ) \
 	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o stdPci.o \
-        sol8_kbdgetmapping.o sol8_postkbdevents.o sigiostubs.o
+        sol8_kbdgetmapping.o sol8_postkbdevents.o sigiostubs.o pm_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -43,5 +43,6 @@ LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
+LinkSourceFile(pm_noop.c,../shared)
 
 DependTarget()
