@@ -1,3 +1,6 @@
+ 217. Fix ordering of calling DDC probe in VBE to respect NoDDC options
+      (Alan Hourihane).
+ 216. Fix VBE initialization in trident driver for DDC (Alan Hourihane).
  215. Fix a typo in the glint driver (#3943, Michael Schimek).
  214. Fix multithread bug in Xlib big font support (Mark Vojkovich).
  213. Fix a window class initialization problem in Xinerama (Mark Vojkovich).
@@ -10408,4 +10411,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1165 2000/05/25 22:10:56 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1166 2000/05/28 17:12:13 alanh Exp $
