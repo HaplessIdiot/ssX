@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.63 2001/12/14 20:00:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.64 2002/03/06 21:14:39 mvojkovi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -76,26 +76,30 @@ typedef void (*InitExtension)(INITARGS);
 #include "loaderProcs.h"
 #endif
 
-#include <X11/Xlib.h>
 #ifdef MITSHM
+#define _XSHM_SERVER_
 #include "shmstr.h"
 #endif
 #ifdef XTEST
+#define _XTEST_SERVER_
 #include "XTest.h"
 #endif
 #ifdef XKB
 #include "XKB.h"
 #endif
 #ifdef LBX
+#define _XLBX_SERVER_
 #include "lbxstr.h"
 #endif
 #ifdef XPRINT
 #include "Print.h"
 #endif
 #ifdef XAPPGROUP
+#define _XAG_SERVER_
 #include "Xagstr.h"
 #endif
 #ifdef XCSECURITY
+#define _SECURITY_SERVER
 #include "securstr.h"
 #endif
 #ifdef PANORAMIX

@@ -26,7 +26,7 @@
  *
  *	Id: fontcache.h,v 1.12 1999/01/09 06:24:30 akiyama Exp $
  */
-/* $XFree86: xc/lib/font/fontcache/fontcache.h,v 1.4 2001/04/06 17:44:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontcache/fontcache.h,v 1.5 2001/08/01 00:44:43 tsi Exp $ */
 
 #ifndef _FONTCACHE_H_
 #define _FONTCACHE_H_
@@ -34,6 +34,7 @@
 #include "fontmisc.h"
 #include "fontstruct.h"
 #include "fcqueue.h"
+#define _FONTCACHE_SERVER_
 #include <X11/extensions/fontcacheP.h>
 
 /* constant declarations */
