@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.26 1996/02/09 08:20:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.27tsi Exp $ */
 
 /*
  * Includes
@@ -272,12 +272,6 @@ extern Chip_Descriptor I128_Descriptor;
 #define READ_SRC_X	0xDAEE
 #define GP_STAT		0x9AE8
 #define GPBUSY		0x0200
-/* Mach64 */
-#define SCRATCH_REG0	0x42EC
-#define SCRATCH_REG1	0x46EC
-#define MEM_INFO	0x52EC
-#define DAC_CNTL	0x62EC
-#define CONFIG_CHIP_ID	0x6EEC
 
 /*
  * RAMDAC Types
@@ -539,6 +533,8 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_TVGA9682	SVGA_TYPE(V_TRIDENT,18) /* Trident GUI9682	*/
 #define CHIP_SIS_UNK	SVGA_TYPE(V_SIS,0)	/* SiS unknown		*/
 #define CHIP_SIS86C201	SVGA_TYPE(V_SIS,1)	/* SiS SG86C201		*/
+#define CHIP_SIS86C202	SVGA_TYPE(V_SIS,2)	/* SiS SG86C202		*/
+#define CHIP_SIS86C205	SVGA_TYPE(V_SIS,3)	/* SiS SG86C205		*/
 #define CHIP_TSENG_UNK	SVGA_TYPE(V_TSENG,0)	/* Tseng unknown	*/
 #define CHIP_ET3000	SVGA_TYPE(V_TSENG,1)	/* Tseng ET3000		*/
 #define CHIP_ET4000	SVGA_TYPE(V_TSENG,2)	/* Tseng ET4000		*/

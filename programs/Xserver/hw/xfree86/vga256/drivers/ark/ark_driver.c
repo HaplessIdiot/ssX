@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.6 1996/01/12 14:37:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.7 1996/02/04 09:12:38 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -1281,6 +1281,7 @@ DisplayModePtr mode;
 			mode->CrtcHSyncStart <<= 1;
 			mode->CrtcHSyncEnd <<= 1;
 			mode->CrtcHTotal <<= 1;
+			mode->CrtcHSkew <<= 1;
 			mode->CrtcHAdjusted = TRUE;
 		}
 	if (ARK.ChipClockScaleFactor == 4)
@@ -1289,6 +1290,7 @@ DisplayModePtr mode;
 			mode->CrtcHSyncStart <<= 2;
 			mode->CrtcHSyncEnd <<= 2;
 			mode->CrtcHTotal <<= 2;
+			mode->CrtcHSkew <<= 2;
 			mode->CrtcHAdjusted = TRUE;
 		}
 	if (multiplexing)
@@ -1301,6 +1303,7 @@ DisplayModePtr mode;
 			mode->CrtcHSyncStart >>= 1;
 			mode->CrtcHSyncEnd >>= 1;
 			mode->CrtcHTotal >>= 1;
+			mode->CrtcHSkew >>= 1;
 			mode->CrtcHAdjusted = TRUE;
 		}
 

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.33 1996/02/19 09:50:15 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.34 1996/02/20 14:33:18 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2D"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -112,12 +112,21 @@ switch between video modes.
 Setting \fBDontZoom\fP allows these key sequences to be passed to clients.
 .TP 8
 .B AllowNonLocalXvidtune
-This Allow the xvidtune client to connect from another host.  By default
+This allows the xvidtune client to connect from another host.  By default
 non-local connections are not allowed.
 .TP 8
 .B DisableVidMode
-This Disable the the parts of the VidMode extension used by the xvidtune client
+This disables the parts of the VidMode extension used by the xvidtune client
 that can be used to change the video modes.
+.TP 8
+.B AllowNonLocalModInDev
+This allows a client to connect from another host and change keyboard
+and mouse settings in the running server.  By default
+non-local connections are not allowed.
+.TP 8
+.B DisableVidMode
+This disables the parts of the Misc extension that can be used to
+modify the input device settings dynamically.
 .PP
 The \fBKeyboard\fP section is used to specify the keyboard input
 device, parameters and some default keyboard mapping options.  The
@@ -369,6 +378,14 @@ signal.  \fB"Composite"\fP, can be used to specify composite sync on
 hardware where this is supported.  Additionally, on some hardware,
 \fB"+CSync"\fP and \fB"-CSync"\fP may be used to select the composite
 sync polarity.
+.TP
+.B HSkew \fIhskew\fP
+specifies the number of pixels (towards the right edge of the screen) by which
+the display enable signal is to be skewed.  Not all servers use this
+information.  This option might become necessary to override the default
+value supplied by the server (if any).  "Roving" horizontal lines indicate this
+value needs to be increased.  If the last few pixels on a scan line appear on
+the left of the screen, this value should be decreased.
 .RE
 .TP 8
 .B Modeline \fI"name" mode-description\fP
@@ -383,14 +400,14 @@ numbers specifying the vertical timings.  These numbers are
 \fIvdisp\fP, \fIvsyncstart\fP, \fIvsyncend\fP, \fIvtotal\fP.  The
 final section is a list of flags specifying other characteristics
 of the mode.  \fBInterlace\fP indicates that the mode is interlaced.
-\fB"DoubleScan"\fP indicates a mode where each scanline is doubled.  
+\fBDoubleScan\fP indicates a mode where each scanline is doubled.  
 \fB+HSync\fP and \fB\-HSync\fP can be used to select the polarity
 of the HSync signal.  \fB+VSync\fP and \fB\-VSync\fP can be used
 to select the polarity of the VSync signal.  \fBComposite\fP can be
 used to specify composite sync on hardware where this is supported.
 Additionally, on some hardware,
-\fB"+CSync"\fP and \fB"-CSync"\fP may be used to select the composite
-sync polarity.
+\fB+CSync\fP and \fB-CSync\fP may be used to select the composite
+sync polarity.  The HSkew option mentionned above can also be used here.
 .PP
 The \fBDevice\fP sections are used to define a graphics device
 (video board).  More than one \fBDevice\fP section may be present

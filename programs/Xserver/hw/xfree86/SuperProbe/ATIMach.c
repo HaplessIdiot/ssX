@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.5 1995/01/28 15:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.6tsi Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -30,9 +30,8 @@
 
 #include "Probe.h"
 
-static Word Ports[] = {ROM_ADDR_1,DESTX_DIASTP,READ_SRC_X,
-		       CONFIG_STATUS_1,MISC_OPTIONS,GP_STAT,
-		       SCRATCH_REG0, MEM_INFO};
+static Word Ports[] = {ROM_ADDR_1, DESTX_DIASTP, READ_SRC_X,
+		       CONFIG_STATUS_1, MISC_OPTIONS, GP_STAT};
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_ATIMach __STDCARGS((int));
@@ -54,12 +53,82 @@ Chip_Descriptor ATIMach_Descriptor = {
 					break; \
 			}
 
+/* ATI Mach64 I/O port addresses */
+Word ATIMach64MEM_INFO,
+     ATIMach64SCRATCH_REG1,
+     ATIMach64DAC_CNTL,
+     ATIMach64CONFIG_CHIP_ID;
+
+#ifdef __STDC__
+static void Probe_ATIMach64(int *Chipset,
+			    unsigned short int IOBase,
+			    Bool SparseIO)
+#else
+static void Probe_ATIMach64(Chipset, IOBase, SparseIO)
+int *Chipset;
+unsigned short int IOBase;
+Bool SparseIO;
+#endif
+{
+	Long tmp;
+	Word IOPort;
+
+	if ((*Chipset != -1) || (IOBase == 0))
+		return;
+
+	/* Determine if a Mach64 answers the call */
+	IOPort = (SparseIO ? 0x4000 : 0x0080) + IOBase;
+	EnableIOPorts(1, &IOPort);
+	tmp = inpl(IOPort);
+	outpl(IOPort, 0x55555555);		/* Test odd bits */
+	if (inpl(IOPort) == 0x55555555)
+	{
+		outpl(IOPort, 0xAAAAAAAA);	/* Test even bits */
+		if (inpl(IOPort) == 0xAAAAAAAA)
+		{
+			/* A mach64 detected */
+			*Chipset = CHIP_MACH64;
+
+			/*
+			 * Fix I/O ports.  I know, I know:  hard-wired
+			 * constants are *EVIL*, but this'll do for now.
+			 */
+			if (SparseIO)
+			{
+				ATIMach64SCRATCH_REG1 = 0x4400;
+				ATIMach64MEM_INFO = 0x5000;
+				ATIMach64DAC_CNTL = 0x6000;
+				ATIMach64CONFIG_CHIP_ID = 0x6C00;
+			}
+			else
+			{
+				ATIMach64SCRATCH_REG1 = 0x0084;
+				ATIMach64MEM_INFO = 0x00B0;
+				ATIMach64DAC_CNTL = 0x00C4;
+				ATIMach64CONFIG_CHIP_ID = 0x00E0;
+			}
+			ATIMach64SCRATCH_REG1 += IOBase;
+			ATIMach64MEM_INFO += IOBase;
+			ATIMach64DAC_CNTL += IOBase;
+			ATIMach64CONFIG_CHIP_ID += IOBase;
+		}
+	}
+	outpl(IOPort, tmp);
+	DisableIOPorts(1, &IOPort);
+}
+
+#ifdef __STDC__
+Bool Probe_ATIMach(int *Chipset)
+#else
 Bool Probe_ATIMach(Chipset)
 int *Chipset;
+#endif
 {
 	Long tmp;
 	static int chip = -1;
 	static Bool Already_Called = FALSE;
+	struct pci_config_reg *PCIDevice;
+	int Index;
 
 	if (Already_Called)
 	{
@@ -119,20 +188,28 @@ int *Chipset;
 		}
 	}
 
+	DisableIOPorts(NUMPORTS, Ports);
+
 	if (chip == -1)
 	{
 		/* 
-		 * Check for a Mach64.
+		 * Check for a Mach64.  Start with sparse I/O base addresses,
+		 * then move on to PCI information.
 		 */
-		tmp = inpl(SCRATCH_REG0);
-		outpl(SCRATCH_REG0, 0x55555555);	 /* Test odd bits */
-		if (inpl(SCRATCH_REG0) == 0x55555555)
+		Probe_ATIMach64(&chip, 0x02EC, TRUE);
+		Probe_ATIMach64(&chip, 0x01CC, TRUE);
+		Probe_ATIMach64(&chip, 0x01C8, TRUE);
+
+		Index = 0;
+		while ((chip == -1) && (PCIDevice = pci_devp[Index++]))
 		{
-			outpl(SCRATCH_REG0, 0xAAAAAAAA); /* Test even bits */
-			if (inpl(SCRATCH_REG0) == 0xAAAAAAAA)
-				chip = CHIP_MACH64;
+			if (PCIDevice->_vendor != PCI_VENDOR_ATI)
+				continue;
+			if (PCIDevice->_device == PCI_CHIP_MACH32)
+				continue;
+			Probe_ATIMach64(&chip, PCIDevice->_base1 & 0xFF00,
+				FALSE);
 		}
-		outpl(SCRATCH_REG0, tmp);
 	}
 
 	if (chip != -1)
@@ -140,12 +217,15 @@ int *Chipset;
 		*Chipset = chip;
 	}
 
-	DisableIOPorts(NUMPORTS, Ports);
 	return(chip != -1);
 }
 
+#ifdef __STDC__
+static int MemProbe_ATIMach(int Chipset)
+#else
 static int MemProbe_ATIMach(Chipset)
 int Chipset;
+#endif
 {
 	static int Mem = 0;
 	static Bool Already_Called = FALSE;
@@ -186,7 +266,8 @@ int Chipset;
 	}
 	else if (Chipset == CHIP_MACH64)
 	{
-		switch (inpl(MEM_INFO) & 0x00000007)
+		EnableIOPorts(1, &ATIMach64MEM_INFO);
+		switch (inpl(ATIMach64MEM_INFO) & 0x00000007)
 		{
 		case 0x00:
 			Mem = 512;
@@ -213,6 +294,7 @@ int Chipset;
 			Mem = 8192;
 			break;
 		}
+		DisableIOPorts(1, &ATIMach64MEM_INFO);
 	}
 	DisableIOPorts(NUMPORTS, Ports);
 	return(Mem);

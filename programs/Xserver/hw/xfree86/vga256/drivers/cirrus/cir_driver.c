@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.50 1996/02/09 08:21:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.51 1996/02/18 03:43:38 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1953,7 +1953,7 @@ cirrusSave(save)
   unsigned char             temp1, temp2;
 
   
-#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)|| \
+#if defined(PC98_WAB) || defined(PC98_WABEP) || defined(PC98_GANB_WAP) || \
     defined(PC98_WSNA)
   vgaIOBase = 0x3D0;
 #else
@@ -2138,6 +2138,7 @@ cirrusInit(mode)
             mode->CrtcHSyncStart >>= 1;
             mode->CrtcHTotal >>= 1;
             mode->CrtcHSyncEnd >>= 1;
+            mode->CrtcHSkew >>= 1;
             mode->CrtcHAdjusted = TRUE;
          }
      }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.5 1996/02/19 12:18:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.6 1996/02/20 14:36:05 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -90,6 +90,16 @@ XCOMM	DisableVidModeExtension
 XCOMM Uncomment this to enable the use of a non-local xvidtune client.
 
 XCOMM	AllowNonLocalXvidtune
+
+XCOMM Uncomment this to disable dynamically modifying the input device
+XCOMM (mouse and keyboard) settings.
+
+XCOMM DisableModInDev
+
+XCOMM Uncomment this to enable the use of a non-local client to
+XCOMM change the keyboard or mouse settings (currently only xset).
+
+XCOMM AllowNonLocalModInDev 
 
 EndSection
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.3 1996/02/09 08:20:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.4 1996/02/19 09:50:56 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -41,6 +41,7 @@
 #define INCL_VIO
 #define INCL_DOSMISC
 #define INCL_DOSPROCESS
+#define INCL_DOSSEMAPHORES
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -48,6 +49,9 @@
 VIOMODEINFO OriginalVideoMode;
 void os2VideoNotify();
 void os2HardErrorNotify();
+void os2KbdMonitorThread();
+void os2KbdBitBucketThread();
+HEV hevPopupPending;
 
 void xf86OpenConsole()
 {
@@ -84,6 +88,15 @@ void xf86OpenConsole()
 	if (rc != 0)
 		FatalError("xf86OpenConsole: cannot set local kbd focus, rc=%d\n",rc);
 
+/* Create popup semaphore */
+
+	rc=DosCreateEventSem("\\SEM32\\XF86PUP",&hevPopupPending,DC_SEM_SHARED,1);
+	if(rc) FatalError("xf86-OS/2: Could not create popup semaphore! RC=%d\n",rc);
+	/* rc=VioRegister("xf86vio","XF86POPUP_SUBCLASS",0x20002004L,0L);
+	if(rc){ 
+		FatalError("xf86-OS2: Could not register XF86VIO.DLL module. Please install in LIBPATH! RC=%d\n",rc);
+	}  */
+
 /* Start up the VIO monitor thread */
 	VioTid=_beginthread(os2VideoNotify,NULL,0x4000,(void *)NULL);
 	ErrorF("xf86-OS/2: Started Vio thread, Tid=%d\n",VioTid);
@@ -92,6 +105,11 @@ void xf86OpenConsole()
 /* Start up the hard-error VIO monitor thread */
 	VioTid=_beginthread(os2HardErrorNotify,NULL,0x4000,(void *)NULL);
 	ErrorF("xf86-OS/2: Started hard error Vio mode monitor thread, Tid=%d\n",VioTid);
+	rc=DosSetPriority(2,3,0,VioTid);
+
+/* Start up the kbd monitor thread */
+	VioTid=_beginthread(os2KbdMonitorThread,NULL,0x4000,(void *)NULL);
+	ErrorF("xf86-OS/2: Started Kbd monitor thread, Tid=%d\n",VioTid);
 	rc=DosSetPriority(2,3,0,VioTid);
 
 /* Disable hard-errors through DosError */
@@ -116,6 +134,10 @@ void xf86OpenConsole()
 	} else
 		xf86Info.kbdType = KB_84; /*defensive*/
 
+/* Start up the Kbd bit-bucket thread. We don't want to leave the kbd events in the driver queue */
+	VioTid=_beginthread(os2KbdBitBucketThread,NULL,0x2000,(void *)NULL);
+	ErrorF("xf86-OS/2: Started Kbd bit-bucket thread, Tid=%d\n",VioTid);
+
 	xf86Config(FALSE); /* Read XF86Config */
     }
     return;
@@ -130,6 +152,8 @@ void xf86CloseConsole()
 	}
 	VioSetMode(&OriginalVideoMode,(HVIO)0);
 	rc = DosSuppressPopUps(0x0000L,'c');    /* Reenable popups */
+	rc=DosCloseEventSem(hevPopupPending);
+	rc=VioDeRegister();
 	return;
 }
 

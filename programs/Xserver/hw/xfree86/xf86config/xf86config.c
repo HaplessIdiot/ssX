@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.24 1996/02/19 09:51:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.25 1996/02/20 14:35:56 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1902,6 +1902,27 @@ static char *XF86Config_firstchunk_text =
 "# sequences.  This allows clients to receive these key events.\n"
 "\n"
 "#    DontZoom\n"
+"\n"
+"# Uncomment this to disable tuning with the xvidtune client. With\n"
+"# it the client can still run and fetch card and monitor attributes,\n"
+"# but it will not be allowed to change them. If it tries it will\n"
+"# receive a protocol error.\n"
+"\n"
+"#       DisableVidModeExtension\n"
+"\n"
+"# Uncomment this to enable the use of a non-local xvidtune client. \n"
+"\n"
+"#       AllowNonLocalXvidtune\n"
+"\n"
+"# Uncomment this to disable dynamically modifying the input device\n"
+"# (mouse and keyboard) settings. \n"
+"\n"
+"#       DisableModInDev\n"
+"\n"
+"# Uncomment this to enable the use of a non-local client to\n"
+"# change the keyboard or mouse settings (currently only xset).\n"
+"\n"
+"#       AllowNonLocalModInDev\n"
 "\n"
 "EndSection\n"
 "\n"

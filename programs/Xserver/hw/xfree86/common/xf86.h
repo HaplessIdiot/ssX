@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.29 1996/02/04 09:06:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.30 1996/02/18 03:42:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,6 +44,7 @@ typedef struct _DispM {
   int           HSyncStart;
   int           HSyncEnd;
   int           HTotal;
+  int           HSkew;
   int           VDisplay;           /* vertical timing */
   int           VSyncStart;
   int           VSyncEnd;
@@ -55,6 +56,7 @@ typedef struct _DispM {
   int		CrtcHSyncStart;
   int		CrtcHSyncEnd;
   int		CrtcHTotal;
+  int		CrtcHSkew;
   int		CrtcVDisplay;
   int		CrtcVSyncStart;
   int		CrtcVSyncEnd;
@@ -74,6 +76,7 @@ typedef struct _DispM {
 #define V_CSYNC     0x0040
 #define V_PCSYNC    0x0080
 #define V_NCSYNC    0x0100
+#define V_HSKEW     0x0200	/* hskew provided */
 #define V_PIXMUX    0x1000
 #define V_DBLCLK    0x2000
 

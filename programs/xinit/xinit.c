@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.8 1996/02/19 12:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.9 1996/02/20 14:37:08 dawes Exp $ */
 
 /*
 
@@ -118,6 +118,7 @@ char *server_names[] = {
     "XF86_P9000  Weitek P9000 color display on i386 PC",
     "XF86_AGX    IIT AGX color display on i386 PC",
     "XF86_W32    Tseng ET4000/W32 color display on i386 PC",
+    "XF86_I128   #9 I128 color display on i386 PC",
 #endif
     NULL};
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.4 1996/02/09 08:20:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.5 1996/02/19 09:50:57 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -44,6 +44,7 @@
 int os2MouseQueueQuery();
 int os2KbdQueueQuery();
 void os2RecoverFromPopup();
+void os2CheckPopupPending();
 extern BOOL os2PopupErrorPending;
 
 /***************************************************************************/
@@ -228,6 +229,7 @@ dummy_timeout.tv_usec=0;
 	if(exceptfds!=NULL) {XFD_COPYSET(exceptfds,&except_copy);}
         j=0;
 	do {
+	     os2CheckPopupPending();
 	     dummy_timeout.tv_sec=0;
 	     dummy_timeout.tv_usec=0;
              i=select(nfds,(readfds!=NULL)?(int *)&read_copy:NULL,

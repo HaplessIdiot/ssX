@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.120 1996/02/19 13:06:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.121 1996/02/20 14:34:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -612,7 +612,7 @@ s3GetPCIInfo()
    Bool found = FALSE;
    int i = 0;
 
-   xf86scanpci();
+   xf86scanpci(s3InfoRec.scrnIndex);
    while (pcrp = pci_devp[i]) {
       if (pcrp->_vendor == PCI_S3_VENDOR_ID) {
 	 found = TRUE;
@@ -647,6 +647,10 @@ s3GetPCIInfo()
       }
       i++;
    }
+
+   /* Free PCI information */
+   xf86cleanpci();
+
    if (found && xf86Verbose) {
       if (info.ChipType != S3_UNKNOWN) {
 	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08x\n", XCONFIG_PROBED,

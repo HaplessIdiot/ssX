@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.2 1996/01/24 21:56:49 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.3 1996/01/28 07:28:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -21,7 +21,14 @@
 
 #define XF86MiscNumberEvents		0
 
-#define XF86MiscNumberErrors		0
+#define XF86MiscBadMouseProtocol	0
+#define XF86MiscBadMouseBaudRate	1
+#define XF86MiscBadMouseFlags		2
+#define XF86MiscBadMouseCombo		3
+#define XF86MiscBadKbdType		4
+#define XF86MiscModInDevDisabled	5
+#define XF86MiscModInDevClientNotLocal	6
+#define XF86MiscNumberErrors		(XF86MiscModInDevClientNotLocal + 1)
 
 #define MTYPE_MICROSOFT		0
 #define MTYPE_MOUSESYS		1
@@ -42,6 +49,7 @@
 
 #define MF_CLEAR_DTR		1
 #define MF_CLEAR_CTS		2
+#define MF_REOPEN		128
 
 #ifndef _XF86MISC_SERVER_
 

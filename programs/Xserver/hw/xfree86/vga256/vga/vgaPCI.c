@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.1 1996/01/13 12:22:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.2 1996/02/04 09:14:59 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -27,7 +27,7 @@ vgaGetPCIInfo()
     Bool found = FALSE;
     int i = 0;
 
-    xf86scanpci();
+    xf86scanpci(vga256InfoRec.scrnIndex);
     while (pcrp = pci_devp[i]) {
 	if ((pcrp->_base_class == PCI_CLASS_PREHISTORIC &&
 	     pcrp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||

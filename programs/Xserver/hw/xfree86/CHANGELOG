@@ -1,3 +1,32 @@
+XFree86 3.1.2Ch (22 February 1996)
+391. Fix xset linking for Linux a.out (Harald Koenig).
+390. Disallow interlaced modes with the SiS driver (Alan Hourihane).
+389. Change SCO interface to allow for a 128K VGA aperture
+     (Marc Aurele La France).
+388. Add support to the ati driver for Mach64 cards with a base address
+     other than 0x2EC (Marc Aurele La France).
+387. Introduce a new XF86Config mode option called HSkew which sets bits
+     0x60 of CRTC[3] (Marc Aurele La France).
+386. Fix colour map problem on VGA Wonder V3 boards (Randall Hopper,
+     Marc Aurele La France).
+385. Allow multiple "-verbose" command line flags to increase the verbosity
+     level (Marc Aurele La France).
+384. Modify xf86scanpci() so that it will be able to deal with multi-headed
+     servers in the future, add an xf86cleanpci() function to allow
+     the PCI data to be freed after use, allow xf86scanpci() to be called
+     more than once, and fix a problem with it not always returning with I/O
+     permissions disabled (Marc Aurele La France).
+383. SuperProbe updates for Mach64 and PCI (Marc Aurele La France).
+382. OS/2 updates (Holger Veit).
+381. Keyboard/mouse paramter changes with XFree86-Misc can now be disabled,
+     and these are only allowable by default for local client connections
+     (Joe Moss).
+380. Only check/change relevant paramaters with XFree86-Misc (Joe Moss).
+379. Add new/better protocol error messages for XFree86-Misc (Joe Moss).
+378. Man page for the XFree86-Misc library functions (Joe Moss).
+377. Add detection of the SiS 86C202 and 86C205 to SuperProbe and the SiS
+     driver (Alan Hourihane).
+
 XFree86 3.1.2Cg (20 February 1996)
 376. Modify the handling of the XF86Config xkb options to allow the
      -xkbmap server flag to work (it overrides what is in the XF86Config).

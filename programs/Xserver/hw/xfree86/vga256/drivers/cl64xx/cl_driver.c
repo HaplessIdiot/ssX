@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.6 1996/01/12 14:37:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.7 1996/02/04 09:13:26 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -937,6 +937,7 @@ DisplayModePtr mode;
 		mode->CrtcHDisplay <<= 1;
 		mode->CrtcHSyncStart <<= 1;
 		mode->CrtcHSyncEnd <<= 1;
+		mode->CrtcHSkew <<= 1;
 		mode->CrtcHAdjusted = TRUE;
 	}
 #endif

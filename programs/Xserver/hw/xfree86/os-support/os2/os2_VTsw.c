@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.1 1996/02/09 08:20:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.2 1996/02/19 09:50:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -47,6 +47,7 @@ void os2PostKbdEvent();
 HEV hevServerHasFocus;
 HEV hevSwitchRequested;
 HEV hevErrorPopupDetected;
+extern HEV hevPopupPending;
 BOOL os2PopupErrorPending=FALSE;
 
 /*
@@ -54,10 +55,10 @@ BOOL os2PopupErrorPending=FALSE;
  */
 
 typedef struct {
-	USHORT state;
-	UCHAR makeCode;
-	UCHAR breakCode;
-	USHORT keyID;
+    USHORT state;
+    UCHAR makeCode;
+    UCHAR breakCode;
+    USHORT keyID;
 } HOTKEYPARAM;
 
 Bool xf86VTSwitchPending()
@@ -68,7 +69,6 @@ Bool xf86VTSwitchPending()
 Bool xf86VTSwitchAway()
 {
         APIRET rc;
-ErrorF("xf86os2: vtswitchaway\n");
 
         xf86Info.vtRequestsPending=FALSE;
         SwitchedToWPS=TRUE;
@@ -81,7 +81,6 @@ ErrorF("xf86os2: vtswitchaway\n");
 Bool xf86VTSwitchTo()
 {
 	APIRET rc;
-ErrorF("xf86os2: vtswitchto\n");
 
         xf86Info.vtRequestsPending=FALSE;
         SwitchedToWPS=FALSE;
@@ -92,6 +91,7 @@ ErrorF("xf86os2: vtswitchto\n");
 	os2PostKbdEvent(KEY_LCtrl,0);
 	return(TRUE);
 }
+
 
 /* This function is run as a thread and will notify of switch-to/switch-away events */
 void os2VideoNotify(arg)
@@ -118,10 +118,10 @@ void * arg;
 /* Here we handle the semaphore used to indicate wether we have screen access */
 	  if(NotifyType==0) rc=DosResetEventSem(hevServerHasFocus,&postCount);
 	  if(NotifyType==1) rc=DosPostEventSem(hevServerHasFocus);
-	  if(FirstTime){
-		FirstTime=FALSE;
-		if(NotifyType==1) NotifyType=65535; /* In case a redraw is requested on first call */
-	  }
+          if(FirstTime){
+                   FirstTime=FALSE;
+                   if(NotifyType==1) NotifyType=65535; /* In case a redraw is requested on first call */
+                }
   
 /* Sanity check */
 	  if(NotifyType==1){
@@ -132,22 +132,22 @@ void * arg;
 
 /* Here we set the semaphore used to indicate switching request */
 
-	  if(NotifyType!=65535) {
-		rc=DosResetEventSem(hevSwitchRequested,&postCount);
-		xf86Info.vtRequestsPending=TRUE;
-		/* freopen("xf86log","w",stderr); */
-/* Then wait for semaphore to be posted once switch is complete. Wait 20 secs, then kill server */
-		rc=DosSetPriority(2,3,0,1);
-		rc=DosWaitEventSem(hevSwitchRequested,20000L);
-		if(rc==ERROR_TIMEOUT){
-			ErrorF("xf86-OS/2: Server timeout on VTswitch request. Server was killed\n");
-			GiveUp(0);
-		}
-		rc=DosSetPriority(2,2,0,1);
-	  }
+        if(NotifyType!=65535) {
+                rc=DosResetEventSem(hevSwitchRequested,&postCount);
+                xf86Info.vtRequestsPending=TRUE;
+                /* freopen("xf86log","w",stderr); */
+ /* Then wait for semaphore to be posted once switch is complete. Wait 20 secs, then kill server */
+                rc=DosSetPriority(2,3,0,1);
+                rc=DosWaitEventSem(hevSwitchRequested,5000L);
+                               if(rc==ERROR_TIMEOUT){
+                        ErrorF("xf86-OS/2: Server timeout on VTswitch request. Server was killed\n");
+                        AutoResetServer(0);
+                        }
+                rc=DosSetPriority(2,2,0,1);
+                }
 
-	  if((NotifyType==0)&&(!SwitchedToWPS))
-		ErrorF("xf86-OS/2: abnormal switching away from server!\n");
+          if((NotifyType==0)&&(!SwitchedToWPS))
+                ErrorF("xf86-OS/2: abnormal switching away from server!\n");
 	} /* endwhile */
 
 /* End of thread */
@@ -165,17 +165,15 @@ void * arg;
 	rc=DosCreateEventSem(NULL,&hevErrorPopupDetected,0L,FALSE);
 	ErrorF("xf86-OS/2: Error popup semaphore created. RC=%d\n",rc);
 	rc=DosPostEventSem(hevErrorPopupDetected);
-	os2PopupErrorPending=FALSE;
+        os2PopupErrorPending=FALSE;
 
 	while(1) {
 	   Indic=0;
 	   rc=VioModeWait(Indic,&NotifyType,(HVIO)0);
 	   if(NotifyType==0){
-		/* Normally we should never get to the above. Call server reset */
-		/* AutoResetServer(0); */
                 os2PopupErrorPending=TRUE;
                 rc=DosResetEventSem(hevErrorPopupDetected,&postCount);
-                rc=DosWaitEventSem(hevErrorPopupDetected,20000L);
+                rc=DosWaitEventSem(hevErrorPopupDetected,5000L);
                 if(rc==ERROR_TIMEOUT) GiveUp(0);  /* Shutdown on timeout of semaphore */
 	   }
 	} /* endwhile */
@@ -193,41 +191,56 @@ void os2ServerVideoAccess()
 
 /* Wait for screen access. This is called at server reset or at server startup */
 /* Here we do some waiting until this session comes in the foreground before *
- * going any further. This is because we may have been started in the bg      
- */
-ErrorF("xf86os2: servervideoaccess\n");
-   if(serverGeneration==1){
-	hSwitch=WinQuerySwitchHandle(0,getpid());
-	rc=WinQuerySwitchEntry(hSwitch,&sw);
-	rc=DosQuerySysInfo(24,24,&fgSession,length);
-	while((0xff & fgSession)!=sw.idSession){
-		rc=DosQuerySysInfo(24,24,&fgSession,length);
-		ErrorF("Session ID %d fg Session id %d\n",sw.idSession,fgSession);
-		DosSleep(1000);
-	}
-	return;
-   }
-   rc=DosWaitEventSem(hevServerHasFocus,SEM_INDEFINITE_WAIT);
-   SwitchedToWPS=FALSE;  /* In case server has reset while we were switched to WPS */
+ * going any further. This is because we may have been started in the bg      */
+        if(serverGeneration==1){
+                hSwitch=WinQuerySwitchHandle(0,getpid());
+                rc=WinQuerySwitchEntry(hSwitch,&sw);
+                rc=DosQuerySysInfo(24,24,&fgSession,length);
+                while((0xff & fgSession)!=sw.idSession){
+                        rc=DosQuerySysInfo(24,24,&fgSession,length);
+                        ErrorF("Session ID %d fg Session id %d\n",sw.idSession,fgSession);
+                        DosSleep(1000);
+                        }
+                return;
+                }
+        rc=DosWaitEventSem(hevServerHasFocus,SEM_INDEFINITE_WAIT);
+        SwitchedToWPS=FALSE;  /* In case server has reset while we were switched to WPS */
 }
 
 /* This next function will attempt to recover from a hard error popup
- * with an EnterLeave pair of calls 
+ * with an EnterLeave call
  */
 
 void os2RecoverFromPopup()
 {
    int j;
-ErrorF("xf86os2: recoverpopup\n");
        if(os2PopupErrorPending){
           for (j = 0; j < screenInfo.numScreens; j++)
           (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
           for (j = 0; j < screenInfo.numScreens; j++)
           (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
           /* Turn screen saver off when switching back */
-          os2PopupErrorPending=FALSE;
           SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
+          os2PopupErrorPending=FALSE;
           DosPostEventSem(hevErrorPopupDetected);
       }
+}
+
+/* This checks wether a popup event is waiting. The semaphore would be reset
+ * by the XF86VIO.DLL function
+ */
+
+void os2CheckPopupPending()
+{
+   int j;
+   ULONG postCount;
+
+   DosQueryEventSem(hevPopupPending,&postCount);
+   if(postCount==0) {               /* We have a popup pending */
+          for (j = 0; j < screenInfo.numScreens; j++)
+          (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
+          DosPostEventSem(hevPopupPending);
+        }
+
 }
 

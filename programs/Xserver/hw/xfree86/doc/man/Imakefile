@@ -1,0 +1,11 @@
+XCOMM $XFree86$
+
+MANDIR = $(LIBMANDIR)
+MANSUFFIX = $(LIBMANSUFFIX)
+
+all::
+
+InstallManPage(XF86Misc,$(MANDIR))
+#if ExpandManNames
+InstallManPageAliases(XF86Misc,$(MANDIR),XF86MiscQueryExtension XF86MiscQueryVersion XF86MiscGetSaver XF86MiscSetSaver XF86MiscGetMouseSettings XF86MiscSetMouseSettings XF86MiscGetKbdSettings XF86MiscSetKbdSettings)
+#endif

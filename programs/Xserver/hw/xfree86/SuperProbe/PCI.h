@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.0 1996/02/12 11:25:45 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -251,6 +251,8 @@ void xf86writepci(
 
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
+#define PCI_CHIP_SG86C202	0x0002
+#define PCI_CHIP_SG86C205	0x0005
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309

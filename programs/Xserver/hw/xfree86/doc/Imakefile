@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/17 1996/02/06 10:03:48 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.26 1996/02/04 09:07:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.27 1996/02/10 10:41:59 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -21,7 +21,7 @@ SGMLDIR = sgml
 JAPANESEDIR = Japanese
 #endif
 
-SUBDIRS = $(SGMLDIR) $(JAPANESEDIR)
+SUBDIRS = $(SGMLDIR) $(JAPANESEDIR) man
 
 #if !BuildLinuxDocText
 /* FreeBSD's README is handled separately because of name length limits */

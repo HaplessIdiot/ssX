@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.31 1996/02/19 09:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.32 1996/02/20 14:35:47 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1483,6 +1483,7 @@ TVGA8900Init(mode)
 			mode->CrtcHDisplay <<= 1;
 			mode->CrtcHSyncStart <<= 1;
 			mode->CrtcHSyncEnd <<= 1;
+			mode->CrtcHSkew <<= 1;
 			mode->CrtcHAdjusted = TRUE;
 		}
 		/*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.28 1996/02/04 09:14:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.29 1996/02/05 11:26:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1011,7 +1011,7 @@ vgaHWInit(mode, size)
      DisplayModePtr      mode;
      int             size;
 {
-  int                i;
+  unsigned int       i;
 
   /*
    * If we're using an external clock program, the first thing we do is
@@ -1129,6 +1129,9 @@ vgaHWInit(mode, size)
   new->CRTC[1]  = (mode->CrtcHDisplay >> 3) - 1;
   new->CRTC[2]  = (mode->CrtcHSyncStart >> 3) -1;
   new->CRTC[3]  = ((mode->CrtcHSyncEnd >> 3) & 0x1F) | 0x80;
+  i = (((mode->CrtcHSkew << 2) + 0x10) & ~0x1F);
+  if (i < 0x80)
+    new->CRTC[3] |= i;
   new->CRTC[4]  = (mode->CrtcHSyncStart >> 3);
   new->CRTC[5]  = (((mode->CrtcHSyncEnd >> 3) & 0x20 ) << 2 )
     | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.7 1996/02/04 09:01:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.8tsi Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -210,7 +210,7 @@ i128Probe()
    float mclk;
    struct pci_config_reg *pcrp;
 
-   xf86scanpci();
+   xf86scanpci(i128InfoRec.scrnIndex);
    i = 0;
    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
       if ((pcrp->_device_vendor == I128_DEVICE_ID1) ||
@@ -612,6 +612,9 @@ i128Probe()
 
    if (OFLG_ISSET(OPTION_POWER_SAVER, &i128InfoRec.options))
       i128PowerSaver = TRUE;
+
+   /* Free PCI information */
+   xf86cleanpci();
 
    return TRUE;  /* End of i128Probe() */
 }

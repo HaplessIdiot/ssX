@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.79 1996/02/19 09:50:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.80 1996/02/20 14:34:25 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1135,6 +1135,10 @@ configServerFlagsSection()
   extern Bool	 xf86VidModeEnabled;
   extern Bool	 xf86VidModeAllowNonLocal;
 #endif
+#ifdef XF86MISC
+  extern Bool	 xf86MiscModInDevEnabled;
+  extern Bool	 xf86VMiscModInDevAllowNonLocal;
+#endif
       
   xf86Info.dontZap       = FALSE;
   xf86Info.dontZoom      = FALSE;
@@ -1156,6 +1160,14 @@ configServerFlagsSection()
       break;
     case ALLOWNONLOCAL:
       xf86VidModeAllowNonLocal = TRUE;
+      break;
+#endif
+#ifdef XF86MISC
+    case DISABLEMODINDEV:
+      xf86MiscModInDevEnabled = FALSE;
+      break;
+    case MODINDEVALLOWNONLOCAL:
+      xf86MiscModInDevAllowNonLocal = TRUE;
       break;
 #endif
     case EOF:
@@ -1962,6 +1974,7 @@ configMonitorSection()
       pNew->Clock = (int)(val.realnum * 1000.0 + 0.5);
       pNew->CrtcHAdjusted = FALSE;
       pNew->CrtcVAdjusted = FALSE;
+      pNew->CrtcHSkew = pNew->HSkew = 0;
       
       if (xf86GetToken(NULL) == NUMBER)
 	pNew->CrtcHDisplay = pNew->HDisplay = val.num;
@@ -2001,7 +2014,7 @@ configMonitorSection()
               (token == TT_NHSYNC) || (token == TT_PVSYNC) ||
               (token == TT_NVSYNC) || (token == TT_CSYNC) ||
               (token == TT_PCSYNC) || (token == TT_NCSYNC) ||
-              (token == TT_DBLSCAN) )
+              (token == TT_DBLSCAN) || (token == TT_HSKEW) )
       {
         switch(token) {
               
@@ -2014,6 +2027,12 @@ configMonitorSection()
         case TT_PCSYNC:    pNew->Flags |= V_PCSYNC;     break;
         case TT_NCSYNC:    pNew->Flags |= V_NCSYNC;     break;
         case TT_DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
+	case TT_HSKEW:
+	  if (xf86GetToken(NULL) != NUMBER)
+	    xf86ConfigError("Horizontal skew expected");
+	  pNew->CrtcHSkew = pNew->HSkew = val.num;
+	  pNew->Flags |= V_HSKEW;
+	  break;
         default:
           xf86ConfigError("bug found in config reader"); break;
         }
@@ -2218,6 +2237,7 @@ MonPtr monp;
   pNew->Flags = 0;
   pNew->HDisplay = pNew->VDisplay = 0; /* Uninitialized */
   pNew->CrtcHAdjusted = pNew->CrtcVAdjusted = FALSE;
+  pNew->CrtcHSkew = pNew->HSkew = 0;
 
   if (monp->Last) 
     monp->Last->next = pNew;
@@ -2296,6 +2316,12 @@ MonPtr monp;
         token = xf86GetToken(NULL);
       }
       pushToken = token;
+      break;
+    case HSKEW:
+      if (xf86GetToken(NULL) != NUMBER)
+	xf86ConfigError("Horizontal skew expected");
+      pNew->Flags |= V_HSKEW;
+      pNew->CrtcHSkew = pNew->HSkew = val.num;
       break;
     }
   }

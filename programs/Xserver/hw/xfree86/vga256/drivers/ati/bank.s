@@ -1,5 +1,5 @@
 /* $XConsortium: bank.s,v 1.5 95/06/19 18:59:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.4 1996/02/09 08:21:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.5 1996/02/18 03:43:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -68,7 +68,6 @@
  */
 
 #include "assyntax.h"
-#include "regati.h"
 
 	FILE("ati_bank.s")
 	AS_BEGIN
@@ -81,10 +80,10 @@
 
 /*
  * We have a mirror for the segment register because an I/O read costs so much
- * more time, that is better to keep the value of it in memory.  However, this
- * won't do for a V3 adapter because there are other bits in the segment select
- * register to worry about.  Also, the driver needs to reset this mirror during
- * mode save and restore functions.
+ * more time, that it is better to keep the value of it in memory.  However,
+ * this won't do for a V3 adapter because there are other bits in the segment
+ * select register to worry about.  Also, the driver needs to reset this mirror
+ * during mode save and restore functions.
  */
 	GLOBL	GLNAME(ATIB2Reg)
 GLNAME(ATIB2Reg):
@@ -112,7 +111,7 @@ GLNAME(ATISetRead):
 	ROR_B	(CONST(3),AL)
 	OR_B	(AL,AH)
 	MOV_B	(AH,CONTENT(Segment))
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	SHR_L	(CONST(6),EAX)
@@ -138,7 +137,7 @@ GLNAME(ATISetWrite):
 	SHL_B	(CONST(1),AL)
 	OR_B	(AL,AH)
 	MOV_B	(AH,CONTENT(Segment))
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	SHR_L	(CONST(8),EAX)
@@ -164,7 +163,7 @@ GLNAME(ATISetReadWrite):
 	ROR_B	(CONST(3),AL)
 	OR_B	(AL,AH)
 	MOV_B   (AH,CONTENT(Segment))
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	SHR_L	(CONST(8),EAX)
@@ -196,7 +195,7 @@ GLNAME(ATIV4V5SetRead):
 	ROR_B	(CONST(3),AL)
 	OR_B	(AL,AH)
 	MOV_B	(AH,CONTENT(Segment))
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	RET
@@ -210,7 +209,7 @@ GLNAME(ATIV4V5SetWrite):
 	SHL_B	(CONST(1),AL)
 	OR_B	(AL,AH)
 	MOV_B	(AH,CONTENT(Segment))
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	RET
@@ -224,7 +223,7 @@ GLNAME(ATIV4V5SetReadWrite):
 	ROR_B	(CONST(3),AL)
 	OR_B	(AL,AH)
 	MOV_B   (AH,CONTENT(Segment))
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	RET
@@ -244,7 +243,7 @@ GLNAME(ATIV3SetReadWrite):
 	SHL_B	(CONST(1),AL)
 	MOV_B	(AL,AH)
 	MOV_B	(CONST(0xB2),AL)
-	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_W	(CONTENT(GLNAME(ATIVGAPort)),DX)
 	OUT_B
 	INC_W	(DX)
 	IN_B
@@ -262,60 +261,61 @@ GLNAME(ATIV3SetReadWrite):
 	ALIGNTEXT4
 	GLOBL	GLNAME(ATIMach64SetRead)
 GLNAME(ATIMach64SetRead):
-	SHL_B	(CONST(1),AL)
-	MOV_B	(AL,AH)
-	INC_B	(AH)
 #	if defined(MONOVGA) || defined(XF86VGA16)
-		AND_B	(CONST(0x3F),AL)
-		SHL_W	(CONST(2),AX)
+		AND_W	(CONST(0x1F),AX)
+#	else
+		AND_W	(CONST(0x7F),AX)
 #	endif
-	MOV_W	(CONST(0x5aec),DX)	/* For now */
-	OUT_B
-	INC_W	(DX)
-	INC_W	(DX)
-	MOV_B	(AH,AL)
-	OUT_B
+	SHL_W	(CONST(1),AX)
+	PUSH_W	(AX)
+	INC_W	(AX)
+	SHL_L	(CONST(16),EAX)
+	POP_W	(AX)
+#	if defined(MONOVGA) || defined(XF86VGA16)
+		SHL_L	(CONST(2),EAX)
+#	endif
+	MOV_W	(CONTENT(GLNAME(ATIMach64RPPort)),DX)
+	OUT_L
 	RET
 
 	ALIGNTEXT4
 	GLOBL	GLNAME(ATIMach64SetWrite)
 GLNAME(ATIMach64SetWrite):
-	SHL_B	(CONST(1),AL)
-	MOV_B	(AL,AH)
-	INC_B	(AH)
 #	if defined(MONOVGA) || defined(XF86VGA16)
-		AND_B	(CONST(0x3F),AL)
-		SHL_W	(CONST(2),AX)
+		AND_W	(CONST(0x1F),AX)
+#	else
+		AND_W	(CONST(0x7F),AX)
 #	endif
-	MOV_W	(CONST(0x56ec),DX)	/* For now */
-	OUT_B
-	INC_W	(DX)
-	INC_W	(DX)
-	MOV_B	(AH,AL)
-	OUT_B
+	SHL_W	(CONST(1),AX)
+	PUSH_W	(AX)
+	INC_W	(AX)
+	SHL_L	(CONST(16),EAX)
+	POP_W	(AX)
+#	if defined(MONOVGA) || defined(XF86VGA16)
+		SHL_L	(CONST(2),EAX)
+#	endif
+	MOV_W	(CONTENT(GLNAME(ATIMach64WPPort)),DX)
+	OUT_L
 	RET
 
 	ALIGNTEXT4
 	GLOBL	GLNAME(ATIMach64SetReadWrite)
 GLNAME(ATIMach64SetReadWrite):
-	SHL_B	(CONST(1),AL)
-	MOV_B	(AL,AH)
-	INC_B	(AH)
 #	if defined(MONOVGA) || defined(XF86VGA16)
-		AND_B	(CONST(0x3F),AL)
-		SHL_W	(CONST(2),AX)
+		AND_W	(CONST(0x1F),AX)
+#	else
+		AND_W	(CONST(0x7F),AX)
 #	endif
-	MOV_W	(CONST(0x5aec),DX)	/* For now */
-	OUT_B
-	INC_W	(DX)
-	INC_W	(DX)
-	XCHG_B	(AH,AL)
-	OUT_B
-	XCHG_B	(AH,AL)
-	MOV_W	(CONST(0x56ec),DX)	/* For now */
-	OUT_B
-	INC_W	(DX)
-	INC_W	(DX)
-	MOV_B	(AH,AL)
-	OUT_B
+	SHL_W	(CONST(1),AX)
+	PUSH_W	(AX)
+	INC_W	(AX)
+	SHL_L	(CONST(16),EAX)
+	POP_W	(AX)
+#	if defined(MONOVGA) || defined(XF86VGA16)
+		SHL_L	(CONST(2),EAX)
+#	endif
+	MOV_W	(CONTENT(GLNAME(ATIMach64RPPort)),DX)
+	OUT_L
+	MOV_W	(CONTENT(GLNAME(ATIMach64WPPort)),DX)
+	OUT_L
 	RET

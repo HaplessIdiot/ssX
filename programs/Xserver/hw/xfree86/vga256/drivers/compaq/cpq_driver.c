@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c /main/6 1996/01/12 12:16:57 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.9 1996/01/12 14:38:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.10 1996/02/04 09:13:29 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -355,6 +355,7 @@ DisplayModePtr mode;
 		mode->CrtcHDisplay <<= 1;
 		mode->CrtcHSyncStart <<= 1;
 		mode->CrtcHSyncEnd <<= 1;
+		mode->CrtcHSkew <<= 1;
 		mode->CrtcHAdjusted = TRUE;
 	}
 #endif

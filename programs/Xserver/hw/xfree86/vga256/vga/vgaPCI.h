@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.1 1996/01/13 12:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.2 1996/02/04 09:15:00 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -71,6 +71,8 @@
 
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
+#define PCI_CHIP_SG86C202	0x0002
+#define PCI_CHIP_SG86C205	0x0005
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
@@ -169,6 +171,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SIS,	"SiS",	{
 				{PCI_CHIP_SG86C201,	"SG86C201"},
+				{PCI_CHIP_SG86C202,	"SG86C202"},
+				{PCI_CHIP_SG86C205,	"SG86C205"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NUMNINE, "Number Nine", {
 				{PCI_CHIP_I128,		"Imagine 128"},

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.27 1996/02/09 08:20:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.28 1996/02/12 11:12:12 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -41,7 +41,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ATI 68800-3", "ATI 68800-6", "ATI 68800LX", "ATI 68800AX",
 		  "ATI 88800GX-C", "ATI 88800GX-D", "ATI 88800GX-E",
 		  "ATI 88800GX-F",
-		  "ATI 88800CX", "ATI 88800CT", "ATI 88800ET" },
+		  "ATI 88800CX", "ATI Mach64 CT", "ATI Mach64 ET" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -147,7 +147,9 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Weitek 5086", "Weitek 5186", "Weitek 5286" },
 /* Yamaha */	{ "Yamaha 6388 VPDC" },
 /* SiS */	{ "Silicon Integrated Systems (chipset unknown)",
-                  "Silicon Integrated Systems SG86C201" },
+                  "Silicon Integrated Systems SG86C201",
+		  "Silicon Integrated Systems SG86C202",
+		  "Silicon Integrated Systems SG86C205" },
 };
 
 static CONST char *Herc_Names[] = 

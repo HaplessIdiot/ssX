@@ -29,7 +29,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.3 1996/02/04 09:14:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.4 1996/02/19 12:18:10 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -117,6 +117,8 @@ vgaVideoChipRec SIS = {
 #define new ((vgaSISPtr)vgaNewVideoState)
 
 #define SIS86C201 0
+#define SIS86C202 1
+#define SIS86C205 2
 
 int SISchipset;
 Bool sisUseLinear = FALSE;
@@ -128,7 +130,7 @@ static char *
 SISIdent(n)
 	int n;
 {
-	static char *chipsets[] = {"sis86c201", };
+	static char *chipsets[] = {"sis86c201", "sis86c202", "sis86c205", };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
 		return(NULL);
@@ -213,6 +215,12 @@ SISProbe()
 			{
 			case PCI_CHIP_SG86C201: 	/* 86C201 */
 				SISchipset = SIS86C201;
+				break;
+			case PCI_CHIP_SG86C202:		/* 86C202 */
+				SISchipset = SIS86C202;
+				break;
+			case PCI_CHIP_SG86C205:		/* 86C205 */
+				SISchipset = SIS86C205;
 				break;
 			}
 		}
@@ -457,5 +465,11 @@ static Bool
 SISValidMode(mode)
 DisplayModePtr mode;
 {
-return TRUE;
+	if (mode->Flags & V_INTERLACE)
+	{
+		ErrorF("%s %s: Chipset does not yet support Interlaced "
+		       "modes.\n", XCONFIG_PROBED, vga256InfoRec.name);
+		return(FALSE);
+	}
+	return TRUE;
 }

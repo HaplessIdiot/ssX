@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.84 1996/02/04 09:05:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.85tsi Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -842,6 +842,7 @@ s3Init(mode)
 	 mode->CrtcHDisplay   >>= pixMuxShift;
 	 mode->CrtcHSyncStart >>= pixMuxShift;
 	 mode->CrtcHSyncEnd   >>= pixMuxShift;
+	 mode->CrtcHSkew      >>= pixMuxShift;
       }
       else if (pixMuxShift < 0) {
 	 /* now multiply the horizontal timing parameters as required */
@@ -849,6 +850,7 @@ s3Init(mode)
 	 mode->CrtcHDisplay   <<= -pixMuxShift;
 	 mode->CrtcHSyncStart <<= -pixMuxShift;
 	 mode->CrtcHSyncEnd   <<= -pixMuxShift;
+	 mode->CrtcHSkew      <<= -pixMuxShift;
       }
       mode->CrtcHAdjusted = TRUE;
    }

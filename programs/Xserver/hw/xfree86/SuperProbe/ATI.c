@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.6 1996/02/04 08:56:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.7tsi Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -30,8 +30,7 @@
 
 #include "Probe.h"
 
-static Word Ports[] = {0x01CE, 0x01CF,
-		       CHIP_ID, CONFIG_CHIP_ID };
+static Word Ports[] = {0x01CE, 0x01CF, CHIP_ID };
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_ATI __STDCARGS((int));
@@ -61,7 +60,10 @@ int chip, *Chipset;
 {
 	if (chip == CHIP_MACH64)
 	{
-		chip = inpl(CONFIG_CHIP_ID);
+		extern Word ATIMach64CONFIG_CHIP_ID;
+
+		EnableIOPorts(1, &ATIMach64CONFIG_CHIP_ID);
+		chip = inpl(ATIMach64CONFIG_CHIP_ID);
 		switch (chip & 0xFFFF)
 		{
 		case 0x00D7:
@@ -103,6 +105,7 @@ int chip, *Chipset;
 			*Chipset = CHIP_ATI_UNK;
 			break;
 		}
+		DisableIOPorts(1, &ATIMach64CONFIG_CHIP_ID);
 	}
 	else /* if (chip == CHIP_MACH32) */
 	{

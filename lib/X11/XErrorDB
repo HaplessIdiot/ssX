@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/37 1996/02/02 16:08:31 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.8 1996/01/21 08:42:28 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.9 1996/02/04 08:54:23 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -587,6 +587,17 @@ XProtoError.XFree86-VidModeExtension.6: XF86VidModeZoomLocked
 XRequest.XFree86-Misc.0: XF86MiscQueryVersion
 XRequest.XFree86-Misc.1: XF86MiscGetSaver
 XRequest.XFree86-Misc.2: XF86MiscSetSaver
+XRequest.XFree86-Misc.3: XF86MiscGetMouseSettings
+XRequest.XFree86-Misc.4: XF86MiscGetKbdSettings
+XRequest.XFree86-Misc.5: XF86MiscSetMouseSettings
+XRequest.XFree86-Misc.6: XF86MiscSetKbdSettings
+XProtoError.XFree86-Misc.0: XF86MiscBadMouseProtocol
+XProtoError.XFree86-Misc.1: XF86MiscBadMouseBaudRate
+XProtoError.XFree86-Misc.2: XF86MiscBadMouseFlags
+XProtoError.XFree86-Misc.3: XF86MiscBadMouseCombo
+XProtoError.XFree86-Misc.4: XF86MiscBadKbdType
+XProtoError.XFree86-Misc.5: XF86MiscModInDevDisabled
+XProtoError.XFree86-Misc.6: XF86MiscModInDevClientNotLocal
 ! XFree86-DGA  -- not an X Consortium standard
 XRequest.XFree86-DGA.0: XF86DGAQueryVersion
 XRequest.XFree86-DGA.1: XF86DGAGetVideoLL

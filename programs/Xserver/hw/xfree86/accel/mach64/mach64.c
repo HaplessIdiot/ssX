@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.37 1996/01/28 07:29:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.38tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -550,7 +550,7 @@ GetATIPCIInformation()
     Bool found = FALSE;
     int i = 0;
 
-    xf86scanpci();
+    xf86scanpci(mach64InfoRec.scrnIndex);
     while (pcrp = pci_devp[i]) {
 	if (pcrp->_vendor == PCI_ATI_VENDOR_ID) {
 	    found = TRUE;
@@ -591,8 +591,8 @@ GetATIPCIInformation()
 		    ErrorF("Setting bit 0x04 in PCI userconfig for card %d\n",
 			   pcrp->_cardnum);
 #endif
-		    xf86writepci(pcrp->_cardnum, PCI_REG_USERCONFIG,
-				 0x04, 0x04);
+		    xf86writepci(mach64InfoRec.scrnIndex, pcrp->_cardnum,
+			PCI_REG_USERCONFIG, 0x04, 0x04);
 		}
 	    } else {
 		info.BlockIO = FALSE;
@@ -615,6 +615,10 @@ GetATIPCIInformation()
 	}
 	i++;
     }
+
+    /* Free PCI information */
+    xf86cleanpci();
+
     if (found && xf86Verbose) {
 	ErrorF("%s %s: PCI: %s rev %d, Aperture @ 0x%08x,"
 		" %s I/O @ 0x%04x\n", XCONFIG_PROBED, mach64InfoRec.name,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.46 1996/02/09 08:21:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.47 1996/02/18 03:43:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -889,7 +889,7 @@ vgaProbe()
 	} else {
 	    vga256InfoRec.physBase = 0xA0000 + Drivers[i]->ChipWriteBottom;
 	    vga256InfoRec.physSize = Drivers[i]->ChipSegmentSize;
-	    vga256InfoRec.setBank = vgaSetVidPage;;
+	    vga256InfoRec.setBank = vgaSetVidPage;
 	}
 #endif
 
@@ -921,11 +921,21 @@ vgaProbe()
 #endif /* !MONOVGA */
 #endif /* !XF86VGA16 */
 
+#if 0	/* Trident driver uses it after the Probe */
+	/* Free PCI information */
+	xf86cleanpci();
+#endif
+
 	return TRUE;
       }
   }
 
   vgaSaveScreenFunc = vgaHWSaveScreen;
+
+#if 0	/* Trident driver use it after the Probe */
+  /* Free PCI information */
+  xf86cleanpci();
+#endif
   
   if (vga256InfoRec.chipset)
     ErrorF("%s: '%s' is an invalid chipset", vga256InfoRec.name,

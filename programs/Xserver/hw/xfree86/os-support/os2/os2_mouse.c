@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.3 1996/02/09 08:20:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.4 1996/02/19 09:51:00 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -28,9 +28,11 @@
  *
  */
 
+#define NEED_EVENTS
 #include "X.h"
-#include "Xmd.h"
-#include "input.h"
+#include "Xproto.h"
+#include "misc.h"
+#include "inputstr.h"
 #include "scrnintstr.h"
 
 #include "compiler.h"
@@ -38,6 +40,7 @@
 #define I_NEED_OS2_H
 #define INCL_DOSFILEMGR
 #define INCL_MOU
+#undef RT_FONT
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"

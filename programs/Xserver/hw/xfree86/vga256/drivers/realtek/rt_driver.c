@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.1 1996/01/12 14:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.2 1996/02/04 09:14:09 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -981,6 +981,7 @@ DisplayModePtr mode;
 	   mode->CrtcHSyncStart <<= 1;
 	   mode->CrtcHSyncEnd <<= 1;
 	   mode->CrtcHTotal <<= 1;
+	   mode->CrtcHSkew <<= 1;
 	   isSlowMode = 1;
 	}
         if (vgaBitsPerPixel == 16) {
@@ -988,6 +989,7 @@ DisplayModePtr mode;
 	   mode->CrtcHSyncStart <<= 1;
 	   mode->CrtcHSyncEnd <<= 1;
 	   mode->CrtcHTotal <<= 1;
+	   mode->CrtcHSkew <<= 1;
 	   hiColorMode = 1;
 	}
 	if (!vgaHWInit(mode,sizeof(vgaRTVGARec)))
@@ -997,12 +999,14 @@ DisplayModePtr mode;
 	   mode->CrtcHSyncStart >>= 1;
 	   mode->CrtcHSyncEnd >>= 1;
 	   mode->CrtcHTotal >>= 1;
+	   mode->CrtcHSkew >>= 1;
 	}
 	if (hiColorMode) {
 	   mode->CrtcHDisplay >>= 1;
 	   mode->CrtcHSyncStart >>= 1;
 	   mode->CrtcHSyncEnd >>= 1;
 	   mode->CrtcHTotal >>= 1;
+	   mode->CrtcHSkew >>= 1;
 #ifdef USE_LINEAR_16BPP_MODE
 	   new->std.Graphics [6] &= ~0x0c; /* Reset bit 2-3: Map 128k Mode */
 #endif	   

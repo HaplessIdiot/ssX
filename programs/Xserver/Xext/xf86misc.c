@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.9 1996/02/18 03:41:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.10 1996/02/19 09:50:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -23,7 +23,18 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 
+#include <X11/Xtrans.h>
+#include "../os/osdep.h"
+#include <X11/Xauth.h>
+#ifndef ESIX
+#include <sys/socket.h>
+#else
+#include <lan/socket.h>
+#endif
+
 extern int xf86ScreenIndex;
+extern Bool xf86MiscModInDevEnabled;
+extern Bool xf86MiscModInDevAllowNonLocal;
 
 static int miscErrorBase;
 
@@ -229,66 +240,115 @@ static int
 ProcXF86MiscSetMouseSettings(client)
     register ClientPtr client;
 {
+    int reopen, msetype, flags, baudrate, samplerate;
+
     REQUEST(xXF86MiscSetMouseSettingsReq);
 
     REQUEST_SIZE_MATCH(xXF86MiscSetMouseSettingsReq);
 
-    if (stuff->baudrate < 1200)
-	return BadValue;
-    if (stuff->samplerate < 0)
-	return BadValue;
-    if (stuff->emulate3timeout < 0)
-	return BadValue;
-    if (stuff->chordmiddle && stuff->emulate3buttons)
-	return BadValue;
-    if (stuff->chordmiddle
-            && !(stuff->mousetype == MTYPE_MICROSOFT
-                 || stuff->mousetype == MTYPE_LOGIMAN) )
-	return BadValue;
-    if (stuff->flags & (MF_CLEAR_DTR|MF_CLEAR_RTS)
-            && stuff->mousetype != MTYPE_MOUSESYS)
-	return BadValue;
-    if (stuff->baudrate % 1200 != 0
-            || stuff->baudrate < 1200 || stuff->baudrate > 9600)
-	return BadValue;
-    if (stuff->mousetype == MTYPE_LOGIMAN
-            && !(stuff->baudrate == 1200 || stuff->baudrate == 9600) )
-	return BadValue;
-    if (stuff->mousetype == MTYPE_LOGIMAN && stuff->samplerate)
-	return BadValue;
+    if (stuff->mousetype > MTYPE_OSMOUSE
+            || stuff->mousetype < MTYPE_MICROSOFT)
+	return miscErrorBase + XF86MiscBadMouseProtocol;
 #ifdef OSMOUSE_ONLY
     if (stuff->mousetype != MTYPE_OSMOUSE)
-	return BadValue;
+	return miscErrorBase + XF86MiscBadMouseProtocol;
 #else
 #ifndef XQUEUE
     if (stuff->mousetype == MTYPE_XQUEUE)
-	return BadValue;
+	return miscErrorBase + XF86MiscBadMouseProtocol;
 #endif
 #ifndef USE_OSMOUSE
     if (stuff->mousetype == MTYPE_OSMOUSE)
-	return BadValue;
+	return miscErrorBase + XF86MiscBadMouseProtocol;
 #endif
 #endif /* OSMOUSE_ONLY */
-    if (stuff->mousetype > MTYPE_OSMOUSE
-            || stuff->mousetype < MTYPE_MICROSOFT)
+
+    if (stuff->emulate3timeout < 0)
 	return BadValue;
 
-    /* I think all three of these can just be changed on the fly */
+    if (stuff->mousetype == MTYPE_LOGIMAN
+            && !(stuff->baudrate == 1200 || stuff->baudrate == 9600) )
+	return miscErrorBase + XF86MiscBadMouseBaudRate;
+    if (stuff->mousetype == MTYPE_LOGIMAN && stuff->samplerate)
+	return miscErrorBase + XF86MiscBadMouseCombo;
+
+    samplerate = xf86Info.sampleRate;
+    baudrate   = xf86Info.baudRate;
+    flags      = xf86Info.mouseFlags;
+    msetype    = xf86Info.mseType;
+#ifdef XQUEUE
+    if (xf86Info.mseProc == xf86XqueMseProc)
+        msetype = MTYPE_XQUEUE;
+#endif
+#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
+    if (xf86Info.mseProc == xf86OsMouseProc)
+        msetype = MTYPE_OSMOUSE;
+#endif
+
+    reopen     = 0;
+
+    if (stuff->mousetype != msetype)
+	if (stuff->mousetype == MTYPE_XQUEUE
+		|| stuff->mousetype == MTYPE_OSMOUSE
+		|| msetype == MTYPE_XQUEUE
+		|| msetype == MTYPE_OSMOUSE)
+	    return miscErrorBase + XF86MiscBadMouseProtocol;
+	else {
+	    reopen++;
+	    msetype = stuff->mousetype;
+	}
+
+    if (stuff->flags & MF_REOPEN) {
+	reopen++;
+	stuff->flags &= ~MF_REOPEN;
+    }
+    if (stuff->mousetype != MTYPE_OSMOUSE
+	    && stuff->mousetype != MTYPE_XQUEUE
+	    && stuff->mousetype != MTYPE_PS_2
+	    && stuff->mousetype != MTYPE_BUSMOUSE)
+    {
+        if (stuff->baudrate < 1200)
+	    return miscErrorBase + XF86MiscBadMouseBaudRate;
+        if (stuff->baudrate % 1200 != 0
+                || stuff->baudrate < 1200 || stuff->baudrate > 9600)
+	    return miscErrorBase + XF86MiscBadMouseBaudRate;
+        if (stuff->samplerate < 0)
+	    return BadValue;
+	
+	if (xf86Info.baudRate != stuff->baudrate) {
+		reopen++;
+		baudrate = stuff->baudrate;
+	}
+	if (xf86Info.sampleRate != stuff->samplerate) {
+		reopen++;
+		samplerate = stuff->samplerate;
+	}
+    }
+    if (stuff->flags & (MF_CLEAR_DTR|MF_CLEAR_RTS))
+	if (stuff->mousetype != MTYPE_MOUSESYS)
+	    return miscErrorBase + XF86MiscBadMouseFlags;
+	else if (xf86Info.mouseFlags != stuff->flags) {
+	    reopen++;
+            flags = stuff->flags;
+	}
+
+    if (stuff->chordmiddle) {
+        if (stuff->emulate3buttons)
+	    return miscErrorBase + XF86MiscBadMouseCombo;
+        if ( !(stuff->mousetype == MTYPE_MICROSOFT
+                 || stuff->mousetype == MTYPE_LOGIMAN) )
+	    return miscErrorBase + XF86MiscBadMouseCombo;
+	
+        xf86Info.chordMiddle = stuff->chordmiddle!=0;
+    }
+
     xf86Info.emulate3Buttons = stuff->emulate3buttons!=0;
     xf86Info.emulate3Timeout = stuff->emulate3timeout;
-    xf86Info.chordMiddle = stuff->chordmiddle!=0;
 
-    /* Change other settings at your own risk - do not expect the
-       following to work! */
-    if (xf86Info.mseType != stuff->mousetype
-            || xf86Info.baudRate != stuff->baudrate 
-            || xf86Info.sampleRate != stuff->samplerate 
-            || xf86Info.mouseFlags != stuff->flags ) {
-	
+    if (reopen && msetype != MTYPE_OSMOUSE && msetype != MTYPE_XQUEUE) {
 	ButtonClassPtr butc = inputInfo.pointer->button;
 
-	if (xf86Info.pPointer)
-            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_CLOSE);
+        (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_CLOSE);
 
 	/* Dynamically changing the number of buttons could
 	   confuse some clients, but we'll do it anyway */
@@ -307,40 +367,14 @@ ProcXF86MiscSetMouseSettings(client)
 	    }
 	}
 
-        xf86Info.mseType = stuff->mousetype;
-#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
-	xf86Info.mseProc = xf86OsMouseProc;
-	xf86Info.mseEvents = xf86OsMouseEvents;
-#else
-	xf86Info.mseProc = xf86MseProc;
-	xf86Info.mseEvents = xf86MseEvents;
-#endif
-
-#ifdef XQUEUE
-	if (xf86Info.mseType == MTYPE_XQUEUE) {
-            xf86Info.mseProc = xf86XqueMseProc;
-            xf86Info.mseEvents = xf86XqueEvents;
-            xf86Info.xqueSema = 0;
-	}
-#endif
-#ifdef USE_OSMOUSE
-	if (xf86Info.mseType == MTYPE_OSMOUSE) {
-            xf86Info.mseProc = xf86OsMouseProc;
-            xf86Info.mseEvents = xf86OsMouseEvents;
-	}
-#endif
-        xf86Info.baudRate = stuff->baudrate;
-        xf86Info.sampleRate = stuff->samplerate;
-        xf86Info.mouseFlags = stuff->flags;
+        xf86Info.mseType    = msetype;
+        xf86Info.mouseFlags = flags;
+        xf86Info.baudRate   = baudrate;
+        xf86Info.sampleRate = samplerate;
 
 	xf86Info.pPointer->public.on = FALSE;
-#ifdef XQUEUE
-	if (xf86Info.mseType != MTYPE_XQUEUE)
-#endif
 	xf86MouseInit();
-	if (xf86Info.pPointer)
-            (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_ON);
-
+        (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_ON);
     }
 
     return (client->noClientException);
@@ -359,7 +393,7 @@ ProcXF86MiscSetKbdSettings(client)
     if (stuff->delay < 0)
 	return BadValue;
     if (stuff->kbdtype < KTYPE_84KEY || stuff->kbdtype > KTYPE_XQUEUE)
-	return BadValue;
+	return miscErrorBase + XF86MiscBadKbdType;
 
     if (xf86Info.kbdRate!=stuff->rate || xf86Info.kbdDelay!=stuff->delay) {
 	char rad;
@@ -377,12 +411,34 @@ ProcXF86MiscSetKbdSettings(client)
     
         xf86SetKbdRepeat(rad);
     }
-    /* Change other settings at your own risk - do not expect the
-       following to work! */
+#if 0	/* Not done yet */
     xf86Info.kbdType = stuff->kbdtype;
     xf86Info.serverNumLock = stuff->servnumlock!=0;
+#endif
 
     return (client->noClientException);
+}
+
+/* 
+ * lifted from xc/programs/Xserver/os/access.c.
+ */
+static Bool
+LocalClient(client)
+    ClientPtr client;
+{
+    int                 alen, family, notused;
+    struct sockaddr     *from = NULL;
+
+    if (!_XSERVTransGetPeerAddr (((OsCommPtr)client->osPrivate)->trans_conn,
+        &notused, &alen, (Xtransaddr*)&from)) {
+        if (alen == 0 || 
+            from->sa_family == AF_UNSPEC || from->sa_family == AF_UNIX) {
+            xfree ((char *) from);
+            return TRUE;
+        }
+        xfree ((char *) from);
+    }
+    return FALSE;
 }
 
 static int
@@ -402,12 +458,20 @@ ProcXF86MiscDispatch (client)
 	return ProcXF86MiscGetMouseSettings(client);
     case X_XF86MiscGetKbdSettings:
 	return ProcXF86MiscGetKbdSettings(client);
-    case X_XF86MiscSetMouseSettings:
-	return ProcXF86MiscSetMouseSettings(client);
-    case X_XF86MiscSetKbdSettings:
-	return ProcXF86MiscSetKbdSettings(client);
     default:
-	return BadRequest;
+	if (!xf86MiscModInDevEnabled)
+	    return miscErrorBase + XF86MiscModInDevDisabled;
+	if (xf86MiscModInDevAllowNonLocal || LocalClient (client)) {
+	    switch (stuff->data) {
+	        case X_XF86MiscSetMouseSettings:
+		    return ProcXF86MiscSetMouseSettings(client);
+	        case X_XF86MiscSetKbdSettings:
+		    return ProcXF86MiscSetKbdSettings(client);
+	        default:
+		    return BadRequest;
+	    }
+	} else
+	    return miscErrorBase + XF86MiscModInDevClientNotLocal;
     }
 }
 
@@ -516,11 +580,20 @@ SProcXF86MiscDispatch (client)
 	return SProcXF86MiscGetMouseSettings(client);
     case X_XF86MiscGetKbdSettings:
 	return SProcXF86MiscGetKbdSettings(client);
-    case X_XF86MiscSetMouseSettings:
-	return SProcXF86MiscSetMouseSettings(client);
-    case X_XF86MiscSetKbdSettings:
-	return SProcXF86MiscSetKbdSettings(client);
     default:
-	return BadRequest;
+	if (!xf86MiscModInDevEnabled)
+	    return miscErrorBase + XF86MiscModInDevDisabled;
+	if (xf86MiscModInDevAllowNonLocal || LocalClient (client)) {
+	    switch (stuff->data) {
+	        case X_XF86MiscSetMouseSettings:
+		    return SProcXF86MiscSetMouseSettings(client);
+	        case X_XF86MiscSetKbdSettings:
+		    return SProcXF86MiscSetKbdSettings(client);
+	        default:
+		    return BadRequest;
+	    }
+	} else
+	    return miscErrorBase + XF86MiscModInDevClientNotLocal;
     }
 }
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.4 1995/07/15 15:09:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.5tsi Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -243,7 +243,7 @@ main(int argc, unsigned char *argv[])
     }
 #endif
 
-    xf86scanpci();
+    xf86scanpci(0);
 
     while ((idx < MAX_PCI_DEVICES) && pci_devp[idx])
         identify_card(pci_devp[idx++]);

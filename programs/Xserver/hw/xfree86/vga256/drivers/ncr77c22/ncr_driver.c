@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c /main/6 1996/01/12 12:18:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.9 1996/01/12 14:38:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.10 1996/02/04 09:13:45 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -507,6 +507,7 @@ static Bool
 NCRInit(mode)
      DisplayModePtr mode;
 {
+  unsigned int tmp;
 #if 0
   vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
 #endif
@@ -525,6 +526,9 @@ NCRInit(mode)
   new->std.CRTC[1]  = (mode->CrtcHDisplay >> 2) - 1;
   new->std.CRTC[2]  = (mode->CrtcHSyncStart >> 2) -1;
   new->std.CRTC[3]  = ((mode->CrtcHSyncEnd >> 2) & 0x1F) | 0x80;
+  tmp = (((mode->CrtcHSkew << 3) + 0x10) & ~0x1F);
+  if (tmp < 0x80)
+    new->std.CRTC[3] |= tmp;
   new->std.CRTC[4]  = (mode->CrtcHSyncStart >> 2);
   new->std.CRTC[5]  = (((mode->CrtcHSyncEnd >> 2) & 0x20 ) << 2 )
     | (((mode->CrtcHSyncEnd >> 2)) & 0x1F);

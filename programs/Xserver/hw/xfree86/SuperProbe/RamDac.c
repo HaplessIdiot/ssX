@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.16 1996/02/09 08:20:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.17tsi Exp $ */
 
 #include "Probe.h"
 
@@ -760,11 +760,13 @@ static void CheckMach64(ChipSet, RamDac)
 int ChipSet;
 int *RamDac;
 {
-	Word Port[2] = {DAC_CNTL, SCRATCH_REG1};
-	EnableIOPorts(2, Port);
+	extern Word ATIMach64DAC_CNTL, ATIMach64SCRATCH_REG1;
 
-	switch (((inpl(DAC_CNTL) & 0x00070000) |
-		 (inpl(SCRATCH_REG1) & 0x0000F000)) >> 12)
+	EnableIOPorts(1, &ATIMach64DAC_CNTL);
+	EnableIOPorts(1, &ATIMach64SCRATCH_REG1);
+
+	switch (((inpl(ATIMach64DAC_CNTL) & 0x00070000) |
+		 (inpl(ATIMach64SCRATCH_REG1) & 0x0000F000)) >> 12)
 	{
 	case 0x00:  case 0x01:  case 0x02:  case 0x03:
 	case 0x04:  case 0x05:  case 0x06:  case 0x07:
@@ -848,7 +850,8 @@ int *RamDac;
 		*RamDac |= DAC_8BIT;
 	}
 
-	DisableIOPorts(2, Port);
+	DisableIOPorts(1, ATIMach64DAC_CNTL);
+	DisableIOPorts(1, ATIMach64SCRATCH_REG1);
 	return;
 }
 

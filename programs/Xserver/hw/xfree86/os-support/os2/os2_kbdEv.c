@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.4 1996/02/19 09:50:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.5 1996/02/20 14:35:04 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -37,19 +37,22 @@
 
 #define I_NEED_OS2_H
 #define INCL_KBD
+#define INCL_DOSMONITORS
+#define INCL_WINSWITCHLIST
+#define INCL_DOSQUEUES
 #undef RT_FONT	/* must discard this */
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
 
-#ifdef XKB
-extern Bool noXkbExtension;
-#endif
-
 /* Attention! these lines copied from ../../common/xf86Events.c */
 #define XE_POINTER 1
 #define XE_KEYBOARD 2
+
+#ifdef XKB
+extern Bool noXkbExtension;
+#endif
 
 #ifdef XTESTEXT1
 
@@ -103,7 +106,11 @@ extern void  XTestStealMotionData();
 #endif
 /* end of include */
 
-int lastScan = 0;
+HMONITOR hKbdMonitor;
+MONIN in;
+MONOUT out;
+HQUEUE hKbdQueue;
+int last_status;
 int lastStatus;
 int lastShiftState;
 extern BOOL SwitchedToWPS;
@@ -112,18 +119,12 @@ void os2PostKbdEvent();
 
 int os2KbdQueueQuery()
 {
-    KBDKEYINFO keybuf;
     APIRET rc;
+    ULONG numElements;
     
-	keybuf.chScan=0;
-	keybuf.fsState=0;
-	keybuf.fbStatus=0;
-	rc = KbdPeek(&keybuf,xf86Info.consoleFd);
-	if(rc!=0){
-	     ErrorF("Kbd returned bad rc=%d\n",rc);
-	     return (-1);        /* We may have lost focus? */
-	}
-	if((keybuf.fbStatus!=0)) return(0); /* We have something in queue */
+	rc=DosQueryQueue(hKbdQueue,&numElements);
+	/* ErrorF("xf86-OS/2: query kbd queue rc=%d, num elements=%d\n",rc,numElements);  */
+	if((numElements!=0)) return(0); /* We have something in queue */
 	   
 return (1);
 
@@ -134,91 +135,61 @@ void xf86KbdEvents()
 {
     KBDKEYINFO keybuf;
     APIRET rc;
+    ULONG numElements;
+    REQUESTDATA requestData;
+    ULONG dataLength;
+    PVOID junkPointer;
+    BYTE elemPriority;
     int scan,down;
     static int last;
     USHORT ModState;
+    int i;
 
-    while(1) {
-		/* Let's init the key struct */
-	keybuf.chScan=0;
-	keybuf.fsState=0;
-	keybuf.fbStatus=0;
-
-	rc = KbdCharIn(&keybuf, 1, xf86Info.consoleFd);
-	if (rc != 0){
-		ErrorF("xf86-OS/2: Bad keyboard driver rc=%d\n",rc);
-	    return;
-	}
-	if ((keybuf.fbStatus == 0)) {
-		return;
-	}
-	ModState=(0xFF83 &
-		(lastShiftState ^ keybuf.fsState));
-
-
-        /* Check to see if we need to reenable the server */
+    rc=DosQueryQueue(hKbdQueue,&numElements);
+    for(i=0;i<numElements;i++){
+        rc=DosReadQueue(hKbdQueue,&requestData,&dataLength,&junkPointer,
+                0L,0L,&elemPriority,0);
+        ErrorF("Got queue element. rc=%d, data=%d, scancode =%d,up=%d, ddflag %d\n",rc,requestData.ulData,
+                (requestData.ulData&0x7F00)>>8,requestData.ulData&0x8000,requestData.ulData>>16);
+        scan=(requestData.ulData&0x7F00)>>8;
 
 	/* the separate cursor keys return 0xe0/scan */
-	if (keybuf.fbStatus & 0x02) {
-	    switch (scan) {
+	if ((requestData.ulData & 0x3F0000)==0x20000) scan=0;
+        if (requestData.ulData & 0x800000) {
+           switch (scan) {
+
+
 
 /* BUG ALERT: IBM has in its keyboard driver a 122 key keyboard, which
  * uses the "server generated scancodes" from atKeynames.h as real scan codes.
  * We wait until some poor guy with such a keyboard will break the whole
  * card house though...
  */
-	    case KEY_KP_7: scan = KEY_Home; break;	/* curs home */
-	    case KEY_KP_8: scan = KEY_Up;  break;	/* curs up */
-	    case KEY_KP_9: scan = KEY_PgUp; break;	/* curs pgup */
-	    case KEY_KP_4: scan = KEY_Left; break;	/* curs left */
-	    case KEY_KP_5: scan = KEY_Begin; break;	/* curs begin */
-	    case KEY_KP_6: scan = KEY_Right; break;	/* curs right */
-	    case KEY_KP_1: scan = KEY_End; break;	/* curs end */
-	    case KEY_KP_2: scan = KEY_Down; break;	/* curs down */
-	    case KEY_KP_3: scan = KEY_PgDown; break;	/* curs pgdown */
-	    case KEY_KP_0: scan = KEY_Insert; break;	/* curs insert */
-	    case KEY_KP_Decimal: scan = KEY_Delete; break; /* curs delete */
-	    case KEY_Enter: scan = KEY_KP_Enter; break;	/* keypad enter */
-	    case KEY_LCtrl: scan = KEY_RCtrl; break;	/* right ctrl */
-	    case KEY_KP_Multiply: scan = KEY_Print; break; /* print */
-	    case KEY_Slash: scan = KEY_KP_Divide; break;   /* keyp divide */
-	    case KEY_Alt: scan = KEY_AltLang; break;	/* right alt */
-	    case KEY_ScrollLock: scan = KEY_Break; break;  /* curs break */
+	    case KEY_KP_7: scan = KEY_Home; break;	
+	    case KEY_KP_8: scan = KEY_Up;  break;	
+	    case KEY_KP_9: scan = KEY_PgUp; break;	
+	    case KEY_KP_4: scan = KEY_Left; break;	
+	    case KEY_KP_5: scan = KEY_Begin; break;	
+	    case KEY_KP_6: scan = KEY_Right; break;	
+	    case KEY_KP_1: scan = KEY_End; break;	
+	    case KEY_KP_2: scan = KEY_Down; break;	
+	    case KEY_KP_3: scan = KEY_PgDown; break;	
+	    case KEY_KP_0: scan = KEY_Insert; break;	
+	    case KEY_KP_Decimal: scan = KEY_Delete; break; 
+	    case KEY_Enter: scan = KEY_KP_Enter; break;	
+	    case KEY_LCtrl: scan = KEY_RCtrl; break;	
+	    case KEY_KP_Multiply: scan = KEY_Print; break; 
+	    case KEY_Slash: scan = KEY_KP_Divide; break;  
+	    case KEY_Alt: scan = KEY_AltLang; break;	
+	    case KEY_ScrollLock: scan = KEY_Break; break;  
 	    case 0x5b: scan = KEY_LMeta; break;
 	    case 0x5c: scan = KEY_RMeta; break;
 	    case 0x5d: scan = KEY_Menu; break;
 	    }
 	}
-
-	/* Check to see if the shift key status has changed. If so, then
-	   send the keycodes. The default handling does not send the
-	   scancodes for these.....Damn those smart keyboard drivers     */
-
-
-	if(ModState){
-		down=ModState & keybuf.fsState;
-		switch (ModState){
-		    case 0x01:os2PostKbdEvent(KEY_ShiftR,down);break;
-		    case 0x02:os2PostKbdEvent(KEY_ShiftL,down);break;
-		    case 0x10:os2PostKbdEvent(KEY_ScrollLock,down);break;
-		    case 0x20:os2PostKbdEvent(KEY_NumLock,down);break;
-		    case 0x40:os2PostKbdEvent(KEY_CapsLock,down);break;
-		    case 0x80:os2PostKbdEvent(KEY_Insert,down);break;
-		    case 0x100:os2PostKbdEvent(KEY_LCtrl,down);break;
-		    case 0x200:os2PostKbdEvent(KEY_Alt,down);break;
-		    case 0x400:os2PostKbdEvent(KEY_RCtrl,down);break;
-		    case 0x800:os2PostKbdEvent(KEY_AltLang,down);break;
-		    case 0x1000:os2PostKbdEvent(KEY_ScrollLock,down);break;
-		    case 0x2000:os2PostKbdEvent(KEY_NumLock,down);break;
-		    case 0x4000:os2PostKbdEvent(KEY_CapsLock,down);break;
-		}
-	}
-
-	down = (keybuf.fbStatus & 0x40) ? TRUE : FALSE;
+	
+	down = (requestData.ulData&0x8000) ? FALSE : TRUE;
 	if(scan!=0) os2PostKbdEvent(scan, down);
-	lastScan = scan;
-	lastStatus = keybuf.fbStatus;
-	lastShiftState = keybuf.fsState;
     }
 }
 
@@ -276,7 +247,7 @@ void os2PostKbdEvent(scanCode, down)
 	switch (scanCode) {
 	case KEY_BackSpace:
 	    if (!xf86Info.dontZap) GiveUp(0);
-	    return;
+	return;
         }
     }
 
@@ -392,12 +363,6 @@ void os2PostKbdEvent(scanCode, down)
       (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
     return;
 
-#ifdef XKB
-  }
-#endif
-
-  xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
-
   /*
    * normal, non-keypad keys
    */
@@ -412,7 +377,11 @@ void os2PostKbdEvent(scanCode, down)
 	UsePrefix = TRUE;
 	Direction = TRUE;
       }
-  }
+    }
+#ifdef XKB /* Warning: got position wrong first time */
+   }
+#endif
+   xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
 
   /*
    * And now send these prefixes ...
@@ -437,12 +406,79 @@ void os2PostKbdEvent(scanCode, down)
           XF86DirectVideoKeyEvent(&kevent, keycode, (down ? KeyPress : KeyRelease));
       } else
 #endif
-      {
-         ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
-      }
+    {
+      ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
     }
+  }
 
   if (updateLeds) xf86KbdLeds();
 }
 
 
+
+struct KeyPacket
+  {
+    unsigned short mnflags;
+    KBDKEYINFO cp;
+    unsigned short ddflags;
+  };
+
+/* The next function runs as a thread. It registers a monitor on the kbd
+ * driver, and uses that to get keystrokes. This is because the standart
+ * OS/2 keyboard driver does not send keyboard release events. A queue
+ * is used to communicate with the main thread to send keystrokes */
+
+void os2KbdMonitorThread(arg)
+void *arg;
+{
+        struct KeyPacket packet;
+        HSWITCH hSwitch;
+  	SWCNTRL sw;
+        APIRET rc;
+        USHORT length;
+        ULONG queueParam;
+
+        in.cb=sizeof(in);
+        out.cb=sizeof(out);
+
+        hSwitch=WinQuerySwitchHandle(0,getpid());
+        rc=WinQuerySwitchEntry(hSwitch,&sw);
+	rc=DosMonOpen("KBD$",&hKbdMonitor);
+        ErrorF("xf86-OS/2: Opened kbd monitor, rc=%d\n",rc);
+ 	rc=DosMonReg(hKbdMonitor,(PBYTE)&in,(PBYTE)&out,(USHORT)2,(USHORT)sw.idSession);
+        ErrorF("xf86-OS/2: Kbd monitor registered, rc=%d\n",rc);
+
+        rc=DosCreateQueue(&hKbdQueue,0L,"\\QUEUES\\XF86KBD");
+        ErrorF("xf86-OS/2: Kbd Queue created, rc=%d\n",rc);
+        rc=DosPurgeQueue(hKbdQueue);
+
+        while(1){
+           length=sizeof(packet);
+		rc=DosMonRead((PBYTE)&in,0,(PBYTE)&packet,&length);
+                if(rc) ErrorF("DosMonRead returned bad RC! rc=%d\n",rc);
+                queueParam=packet.mnflags+(packet.ddflags<<16);
+                if(packet.mnflags&0x7F00) rc=DosWriteQueue(hKbdQueue,queueParam,0L,NULL,0L);
+                ErrorF("xf86-OS/2: wrote a char to queue, rc=%d\n",rc);
+                ErrorF("Kbd Monitor: Key press %d, scan code %d, ddflags %d\n",
+                        packet.mnflags&0x8000,(packet.mnflags&0x7F00)>>8,packet.ddflags);
+                rc=DosMonWrite((PBYTE)&out,(PBYTE)&packet,length);
+                if(rc) ErrorF("DosMonWrite returned bad RC! rc=%d\n",rc);
+                }
+        rc=DosCloseQueue(hKbdQueue);
+        rc=DosMonClose(hKbdMonitor);
+}
+
+void os2KbdBitBucketThread(arg)
+void *arg;
+{
+   KBDKEYINFO key;
+        while(1){
+        if(xf86Info.consoleFd!=-1){
+                KbdCharIn(&key,1,xf86Info.consoleFd);
+                usleep(100000);
+                }
+        else {
+                usleep(500000);
+                }
+        }
+}

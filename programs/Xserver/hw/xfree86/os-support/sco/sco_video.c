@@ -1,4 +1,4 @@
-/* $XConsortium: sco_video.c,v 1.1 94/03/28 21:30:50 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_video.c,v 1.1.1.2tsi Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sco_video.c /main/2 1995/11/13 06:08:46 kaleb $ */
 
 #include "X.h"
 #include "input.h"
@@ -55,7 +55,8 @@ struct {
 	unsigned long base, size;
 	char *class;
 } SCO_Mapping[] = {
-	{0xA0000, 0x10000, "SVGA"},
+	{0xA0000, 0x10000, "VGA"},
+	{0xA0000, 0x20000, "SVGA"},
 	{0xB0000, 0x08000, "HGA"},
 	{0x0,     0x0,     ""},
 };

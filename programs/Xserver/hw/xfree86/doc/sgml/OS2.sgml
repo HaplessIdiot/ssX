@@ -1,14 +1,19 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.2D on OS/2
+<title>README for XFree86 3.1.2D on OS/2
 <author>Holger Veit
-<Date>Last modified on: 17 Feb 1996
+<Date>Last modified on: 20 Feb 1996
 
 <toc>
 
 <sect>Introductory Note about the ALPHA release 3.1.2D
 <p>
+Before looking into this file, please check for any LATEST.OS2 files
+that may come with the binary distribution. Some statements made here
+refer to the official public version of XFree86/OS2, and may not be
+fully functional in the alpha release.
+
 This version of the code is called XFree86/OS2 3.1.2D. The letter ``D'',
 according to the naming rules of XFree86, usually denotes a (public)
 beta version of the code. Since this is the first public version of
@@ -71,7 +76,6 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current">
 -->
 
 Binaries for OS/2 2.11 and OS/2 Warp are available from:
-
 <url name="ftp.XFree86.org:/pub/XFree86/beta/binaries/OS2"
 url="ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/OS2">
 <p>
@@ -140,8 +144,7 @@ this file and we'll revise it.
        Other versions of TCP/IP, such as FTP's, DEC's, or Hummingbird's 
        TCP/IP versions, as well as IBM TCP/IP 1.X are not supported. Nor does
        any networking support from DOS (packet drivers, winsock), Netware,
-       or NetBIOS work, and it is not intended in the future to provide
-       support for that.
+       or NetBIOS work, and I won't to provide support for that in the future.
 <item> If you want to write or port applications for XFree86, you are
        encouraged to do so. You will need a complete installation of
        EMX/gcc 0.9B fix 1 or later for doing so. Neither the second (obsolete)
@@ -226,6 +229,7 @@ incompatible hardware, it makes no sense to obtain the other packages in
 the hope that they would magically work.
 
 <sect> Checking Compatibility of Video Hardware
+
 <p>
 In the following, we assume that you want to install Xfree86/OS2 on a disk
 drive with the letter Y: (which you probably don't have). Change the letter
@@ -242,7 +246,7 @@ in all commands accordingly.
 
 <item> Edit your CONFIG.SYS file to contain the following line somewhere:
 <tscreen><verb>
-DEVICE=Y:\XFree86\dll\xf86sup.sys
+DEVICE=Y:\XFree86\lib\xf86sup.sys
 </verb></tscreen>
        Of course replace ``Y:'' with the correct drive letter.
 
@@ -280,6 +284,7 @@ DEVICE=Y:\XFree86\dll\xf86sup.sys
 </enum>
 
 <sect> Installing the packages
+
 <p>
 XFree86/OS2 assumes a directory hierarchy starting from <tt>drive:&bsol;XFree86</tt>.
 This can be changed, but is strictly discouraged.
@@ -460,9 +465,13 @@ DEVICE=D:\OS2\BOOT\PCLOGIC.SYS SERIAL=COM1
 DEVICE=D:\OS2\BOOT\MOUSE.SYS TYPE=PCLOGIC$
 </verb></tscreen>
        for a Mousesystems compatible mouse, for instance.
-<item> You have no options to choose whether you want to use the XKEYBOARD
-       extension or not; you must use it, i.e. you may not enable <tt/XkbDisable/
-       and therefore must choose an appropriate keyboard setting.
+<item> Currently, the X server does not read the native OS/2 keyboard map,
+       so you need a xmodmap file for a non-us keyboard. Fortunately, it
+       is the same you use for Linux. The server is compiled with the 
+       XEYBOARD option, so this might be an alternative. At the time of this
+       documentation, unfortunately, some subtle bug in the OS/2 implementation
+       is still waiting for a fix, so this might not yet work. Read the 
+       LATEST.OS2 file with the binary distribution.
 <item> There is no support for the Wacom and Elographics input devices yet.
 </itemize>
 
@@ -525,7 +534,8 @@ necessary and type ``<tt/xmake/''. ``<tt/xmake/'' is a wrapper for the
 GNU make program which defeats the improper SHELL setting typically found
 in a Makefile generated from an Imakefile.
 
-<sect> Thanks
+<sect> Acknowledgements
+
 <p>
 Many thanks to:
 <itemize>
@@ -537,7 +547,7 @@ port heavily relies on
 </itemize>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.0 1996/02/19 09:50:43 dawes Exp $
 
 
 

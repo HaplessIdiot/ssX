@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.1 1996/01/17 12:44:39 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.2 1996/01/24 21:56:50 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -14,7 +14,7 @@
 #define XF86MISCNAME		"XFree86-Misc"
 
 #define XF86MISC_MAJOR_VERSION	0	/* current version numbers */
-#define XF86MISC_MINOR_VERSION	1
+#define XF86MISC_MINOR_VERSION	2
 
 typedef struct _XF86MiscQueryVersion {
     CARD8	reqType;		/* always XF86MiscReqCode */

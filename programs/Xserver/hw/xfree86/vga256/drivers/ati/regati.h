@@ -1,5 +1,5 @@
 /* $XConsortium: regati.h /main/4 1995/09/04 19:41:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.7 1996/02/09 08:21:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.8 1996/02/20 14:35:23 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -35,6 +35,28 @@
 
 #ifndef _REGATI_H_
 #define _REGATI_H_
+
+/* I/O decoding definitions */
+#define SPARSE_IO_BASE		0x03fc
+#define SPARSE_IO_SELECT	0xfc00
+
+#define BLOCK_IO_BASE		0xff00
+#define BLOCK_IO_SELECT		0x00fc
+
+#define IO_BYTE_SELECT		0x0003
+
+/*
+ * Macros to get/set a contiguous bit field.  'Mask' should not be
+ * self-modifying.
+ */
+#define GetBits(Value, Mask)	\
+	(((Value) & (Mask)) / ((((Mask) ^ ((Mask) - 1)) + 1) >> 1))
+#define SetBits(Value, Mask)	\
+	(((Value) * ((((Mask) ^ ((Mask) - 1)) + 1) >> 1)) & (Mask))
+
+#define IOPortTag(SparseIOSelect, BlockIOSelect)	\
+	(SetBits((SparseIOSelect), SPARSE_IO_SELECT) | \
+	 SetBits((BlockIOSelect), BLOCK_IO_SELECT))
 
 /* MDA/CGA/EGA/VGA I/O ports */
 #define GENVS			0x0102		/* Write (and Read on uC only) */
@@ -506,17 +528,17 @@
 #define LINEDRAW		0xfeee		/* Write */
 
 /* ATI Mach64 register definitions */
-#define CRTC_H_TOTAL_DISP	0x02ec
-#define CRTC_H_SYNC_STRT_WID	0x06ec
-#define CRTC_V_TOTAL_DISP	0x0aec
-#define CRCT_V_SYNC_STRT_WID	0x0eec
-#define CRTC_VLINE_CRNT_VLINE	0x12ec
-#define CRTC_OFF_PITCH		0x16ec
+#define CRTC_H_TOTAL_DISP	IOPortTag(0x00, 0x00)
+#define CRTC_H_SYNC_STRT_WID	IOPortTag(0x01, 0x01)
+#define CRTC_V_TOTAL_DISP	IOPortTag(0x02, 0x02)
+#define CRCT_V_SYNC_STRT_WID	IOPortTag(0x03, 0x03)
+#define CRTC_VLINE_CRNT_VLINE	IOPortTag(0x04, 0x04)
+#define CRTC_OFF_PITCH		IOPortTag(0x05, 0x05)
 #define CRTC_OFFSET			0x000fffff
 /*	?				0x00300000 */
 #define CRTC_PITCH			0xffc00000
-#define CRTC_INT_CNTL		0x1aec
-#define CRTC_GEN_CNTL		0x1eec
+#define CRTC_INT_CNTL		IOPortTag(0x06, 0x06)
+#define CRTC_GEN_CNTL		IOPortTag(0x07, 0x07)
 #define CRTC_DBL_SCAN_EN		0x00000001
 #define CRTC_INTERLACE_EN		0x00000002
 #define CRTC_HSYNC_DIS			0x00000004
@@ -538,21 +560,21 @@
 #define CRTC_VGA_TEXT_132		0x20000000
 #define CRTC_CNT_EN			0x40000000
 #define CRTC_CUR_B_TEST			0x80000000
-#define OVR_CLR			0x22ec
-#define OVR_WID_LEFT_RIGHT	0x26ec
-#define OVR_WID_TOP_BOTTOM	0x2aec
-#define CUR_CLR0		0x2eec
-#define CUR_CLR1		0x32ec
-#define CUR_OFFSET		0x36ec
-#define CUR_HORZ_VERT_POSN	0x3aec
-#define CUR_HORZ_VERT_OFF	0x3eec
-#define SCRATCH_REG0		0x42ec
-#define SCRATCH_REG1		0x46ec
+#define OVR_CLR			IOPortTag(0x08, 0x10)
+#define OVR_WID_LEFT_RIGHT	IOPortTag(0x09, 0x11)
+#define OVR_WID_TOP_BOTTOM	IOPortTag(0x0a, 0x12)
+#define CUR_CLR0		IOPortTag(0x0b, 0x18)
+#define CUR_CLR1		IOPortTag(0x0c, 0x19)
+#define CUR_OFFSET		IOPortTag(0x0d, 0x1a)
+#define CUR_HORZ_VERT_POSN	IOPortTag(0x0e, 0x1b)
+#define CUR_HORZ_VERT_OFF	IOPortTag(0x0f, 0x1c)
+#define SCRATCH_REG0		IOPortTag(0x10, 0x20)
+#define SCRATCH_REG1		IOPortTag(0x11, 0x21)
 /*	BIOS_BASE_SEGMENT		0x0000007f */	/* As above */
 /*	?				0x00000f80 */
 #define BIOS_INIT_DAC_SUBTYPE		0x0000f000
 /*	?				0xffff0000 */
-#define CLOCK_CNTL		0x4aec
+#define CLOCK_CNTL		IOPortTag(0x12, 0x24)
 #define CLOCK_BIT			0x00000004	/* For ICS2595 */
 #define CLOCK_PULSE			0x00000008	/* For ICS2595 */
 #define CLOCK_SELECT			0x0000000f
@@ -565,7 +587,7 @@
 /*	?				0x0000c000 */
 #define PLL_DATA			0x00ff0000	/* For internal PLL */
 /*	?				0xff000000 */
-#define BUS_CNTL		0x4eec
+#define BUS_CNTL		IOPortTag(0x13, 0x28)
 #define BUS_WS				0x0000000f
 #define BUS_ROM_WS			0x000000f0
 #define BUS_ROM_PAGE			0x00000f00
@@ -583,7 +605,7 @@
 #define BUS_PCI_MEMW_WS			0x10000000
 #define BUS_PCI_BURST_DEC		0x20000000
 #define BUS_RDY_READ_DLY		0xc0000000
-#define MEM_INFO		0x52ec		/* Changed from MEM_CNTL */
+#define MEM_INFO		IOPortTag(0x14, 0x2c)
 #define CTL_MEM_SIZE			0x00000007
 /*	?				0x00000008 */
 #define CTL_MEM_RD_LATCH_EN		0x00000010
@@ -605,10 +627,10 @@
 /*	?				0x00f80000 */
 #define CTL_MEM_PIX_WIDTH		0x07000000
 /*	?				0xf8000000 */
-#define MEM_VGA_WP_SEL		0x56ec
-#define MEM_VGA_RP_SEL		0x5aec
-#define DAC_REGS		0x5eec		/* Actually 4 separate bytes */
-#define DAC_CNTL		0x62ec
+#define MEM_VGA_WP_SEL		IOPortTag(0x15, 0x2d)
+#define MEM_VGA_RP_SEL		IOPortTag(0x16, 0x2e)
+#define DAC_REGS		IOPortTag(0x17, 0x30)	/* 4 separate bytes */
+#define DAC_CNTL		IOPortTag(0x18, 0x31)
 #define DAC_EXT_SEL			0x00000003
 #define DAC_EXT_SEL_RS2				0x000000001
 #define DAC_EXT_SEL_RS3				0x000000002
@@ -638,7 +660,7 @@
 #define DAC_GIO_DIR_4			0x20000000	/* Mach64CT/ET */
 #define DAC_MAN_CMP_STATE		0x40000000	/* Mach64GX-E+ */
 /*	?				0x80000000 */
-#define GEN_TEST_CNTL		0x66ec
+#define GEN_TEST_CNTL		IOPortTag(0x19, 0x34)
 #define GEN_EE_DATA_OUT			0x00000001	/* Mach64GX/CX */
 #define GEN_GIO2_DATA_OUT		0x00000001	/* Mach64CT/ET */
 #define GEN_EE_CLOCK			0x00000002	/* Mach64GX/CX */
@@ -680,7 +702,7 @@
 #define GEN_TEST_CC_EN			0x40000000	/* Mach64GX/CX */
 #define GEN_TEST_CC_STROBE		0x80000000	/* Mach64GX/CX */
 /*	?				0xc0000000 */	/* Mach64CT/ET */
-#define CONFIG_CNTL		0x6aec
+#define CONFIG_CNTL		IOPortTag(0x1a, 0x37)
 #define CFG_MEM_AP_SIZE			0x00000003
 #define CFG_MEM_VGA_AP_EN		0x00000004
 /*	?				0x00000008 */
@@ -689,13 +711,13 @@
 #define CFG_CARD_ID			0x00070000
 #define CFG_VGA_DIS			0x00080000
 /*	?				0xfff00000 */
-#define CONFIG_CHIP_ID		0x6eec		/* Read */
+#define CONFIG_CHIP_ID		IOPortTag(0x1b, 0x38) /* Read */
 #define CFG_CHIP_TYPE0			0x000000ff
 #define CFG_CHIP_TYPE1			0x0000ff00
 #define CFG_CHIP_TYPE			0x0000ffff
 #define CFG_CHIP_CLASS			0x00ff0000
 #define CFG_CHIP_REV			0xff000000
-#define CONFIG_STATUS_0		0x72ec		/* Read (and Write (CT/ET)) */
+#define CONFIG_STATUS64_0	IOPortTag(0x1c, 0x39) /* Read (R/W (CT/ET)) */
 #define CFG_BUS_TYPE			0x00000007	/* Mach64GX/CX */
 #define CFG_MEM_TYPE_T			0x00000007	/* Mach64CT/ET */
 #define CFG_MEM_TYPE			0x00000038	/* Mach64GX/CX */
@@ -723,14 +745,14 @@
 #define CFG_VLB_RDY_DIS			0x40000000	/* Mach64GX/CX */
 #define CFG_AP_4GBYTE_DIS		0x80000000	/* Mach64GX/CX */
 /*	?				0xffffffc0 */	/* Mach64CT/ET */
-/*	CONFIG_STATUS_1		0x76ec */	/* Read */	/* Duplicate */
+#define	CONFIG_STATUS64_1	IOPortTag(0x1d, 0x3a) /* Read */
 #define CFG_PCI_DAC_CFG			0x00000001	/* Mach64GX/CX */
 /*	?				0x0000001e */	/* Mach64GX/CX */
 #define CFG_1C8_IO_SEL			0x00000020	/* Mach64GX/CX */
 /*	?				0xffffffc0 */	/* Mach64GX/CX */
 #define CRC_SIG				0xffffffff	/* Mach64CT/ET */
-/*	?			0x7aec */
-/*	?			0x7eec */
+/*	?			IOPortTag(0x1e, ?) */
+/*	CRTC_H_TOTAL_DISP	IOPortTag(0x1f, 0x00) */	/* Duplicate */
 
 /* Definitions for internal PLL registers on a Mach64CT/ET */
 /*	?			0x00 */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.23 1996/01/12 14:38:12 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.24 1996/02/04 09:13:35 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -983,6 +983,7 @@ ET4000Init(mode)
         mode->CrtcHDisplay   >>= pixMuxShift;
         mode->CrtcHSyncStart >>= pixMuxShift;
         mode->CrtcHSyncEnd   >>= pixMuxShift;
+	mode->CrtcHSkew      >>= pixMuxShift;
      }
      else if (pixMuxShift < 0) {
         /* now multiply the horizontal timing parameters as required */
@@ -990,6 +991,7 @@ ET4000Init(mode)
         mode->CrtcHDisplay   <<= -pixMuxShift;
         mode->CrtcHSyncStart <<= -pixMuxShift;
         mode->CrtcHSyncEnd   <<= -pixMuxShift;
+	mode->CrtcHSkew      <<= -pixMuxShift;
      }
      mode->CrtcHAdjusted = TRUE;
   }

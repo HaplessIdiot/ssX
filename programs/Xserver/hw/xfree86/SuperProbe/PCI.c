@@ -7,11 +7,11 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.1tsi Exp $ */
 
 #include "Probe.h"
 
-struct pci_config_reg *pci_devp[];
+struct pci_config_reg *pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
 
 void
 xf86scanpci()
@@ -22,15 +22,12 @@ xf86scanpci()
     struct pci_config_reg pcr;
     unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
     int Num_PCI_CtrlIOPorts = 3;
-    unsigned PCI_DevIOPorts[16];
-    int Num_PCI_DevIOPorts = 16;
     unsigned PCI_DevIOAddrPorts[16*16];
     int Num_PCI_DevIOAddrPorts = 16*16;
 
     for (i=0; i<16; i++) {
-        PCI_DevIOPorts[i] = 0xC000 + (i*0x0100);
         for (j=0; j<16; j++)
-            PCI_DevIOAddrPorts[(i*16)+j] = PCI_DevIOPorts[i] + (j*4);
+            PCI_DevIOAddrPorts[(i*16)+j] = 0xC000 + (i*0x0100) + (j*4);
     }
 
     /* Enable I/O access */
@@ -133,12 +130,16 @@ xf86scanpci()
 	    }
 
 	    memcpy(pci_devp[idx++], &pcr, sizeof(struct pci_config_reg));
+	    pci_devp[idx] = NULL;
         }
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 
 #ifndef DEBUGPCI
     if (pcr._configtype == 1) {
         outpl(0xCF8, 0x00);
+#if 0
+	xf86DisableIOPorts(0);
+#endif
 	return;
     }
 #endif
@@ -207,6 +208,7 @@ xf86scanpci()
 	    }
 
 	    memcpy(pci_devp[idx++], &pcr, sizeof(struct pci_config_reg));
+	    pci_devp[idx] = NULL;
 	}
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 

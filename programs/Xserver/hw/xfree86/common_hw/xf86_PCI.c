@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.5 1996/02/04 09:06:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.6 1996/02/18 03:43:01 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include "os.h"
 #include "compiler.h"
+#include "input.h"
+#include "xf86_OSlib.h"
 #include "xf86_PCI.h"
 
 #ifdef PC98
@@ -38,16 +40,11 @@
 #define inl(port) _inl(port)
 #endif
 
-extern void xf86ClearIOPortList(int);
-extern void xf86AddIOPorts(int, int, unsigned *);
-extern void xf86EnableIOPorts(int);
-extern void xf86DisableIOPorts(int);
-
-struct pci_config_reg *pci_devp[MAX_PCI_DEVICES];
-
+struct pci_config_reg *pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
 
 void
-xf86scanpci()
+xf86scanpci(scrnIndex)
+int scrnIndex;
 {
     unsigned long tmplong1, tmplong2, config_cmd;
     unsigned char tmp1, tmp2;
@@ -55,24 +52,22 @@ xf86scanpci()
     struct pci_config_reg pcr;
     unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
     int Num_PCI_CtrlIOPorts = 3;
-    unsigned PCI_DevIOPorts[16];
-    int Num_PCI_DevIOPorts = 16;
     unsigned PCI_DevIOAddrPorts[16*16];
     int Num_PCI_DevIOAddrPorts = 16*16;
 
-    for (i=0; i<16; i++) {
-        PCI_DevIOPorts[i] = 0xC000 + (i*0x0100);
-        for (j=0; j<16; j++)
-            PCI_DevIOAddrPorts[(i*16)+j] = PCI_DevIOPorts[i] + (j*4);
-    }
+    if (pci_devp[0])
+	return;
 
-    xf86ClearIOPortList(0);
-    xf86AddIOPorts(0, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
-    xf86AddIOPorts(0, Num_PCI_DevIOPorts, PCI_DevIOPorts);
-    xf86AddIOPorts(0, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
+    for (i=0; i<16; i++)
+        for (j=0; j<16; j++)
+            PCI_DevIOAddrPorts[(i*16)+j] = 0xC000 + (i*0x0100) + (j*4);
+
+    xf86ClearIOPortList(scrnIndex);
+    xf86AddIOPorts(scrnIndex, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
+    xf86AddIOPorts(scrnIndex, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
 
     /* Enable I/O access */
-    xf86EnableIOPorts(0);
+    xf86EnableIOPorts(scrnIndex);
 
     outb(0xCF8, 0x00);
     outb(0xCFA, 0x00);
@@ -98,8 +93,8 @@ xf86scanpci()
 #ifdef DEBUGPCI
             printf("No PCI !\n");
 #endif
-            xf86DisableIOPorts(0);
-            xf86ClearIOPortList(0);
+            xf86DisableIOPorts(scrnIndex);
+            xf86ClearIOPortList(scrnIndex);
 	    return;
 	}
     }
@@ -160,18 +155,21 @@ xf86scanpci()
 	    if ((pci_devp[idx] = (struct pci_config_reg *)xalloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outl(0xCF8, 0x00);
-                xf86DisableIOPorts(0);
-                xf86ClearIOPortList(0);
+                xf86DisableIOPorts(scrnIndex);
+                xf86ClearIOPortList(scrnIndex);
 		return;
 	    }
 
 	    memcpy(pci_devp[idx++], &pcr, sizeof(struct pci_config_reg));
+	    pci_devp[idx] = NULL;
         }
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 
 #ifndef DEBUGPCI
     if (pcr._configtype == 1) {
         outl(0xCF8, 0x00);
+	xf86DisableIOPorts(scrnIndex);
+	xf86ClearIOPortList(scrnIndex);
 	return;
     }
 #endif
@@ -233,24 +231,26 @@ xf86scanpci()
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outb(0xCF8, 0x00);
                 outb(0xCFA, 0x00);
-                xf86DisableIOPorts(0);
-                xf86ClearIOPortList(0);
+                xf86DisableIOPorts(scrnIndex);
+                xf86ClearIOPortList(scrnIndex);
 		return;
 	    }
 
 	    memcpy(pci_devp[idx++], &pcr, sizeof(struct pci_config_reg));
+	    pci_devp[idx] = NULL;
 	}
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 
     outb(0xCF8, 0x00);
     outb(0xCFA, 0x00);
 
-    xf86DisableIOPorts(0);
-    xf86ClearIOPortList(0);
+    xf86DisableIOPorts(scrnIndex);
+    xf86ClearIOPortList(scrnIndex);
 }
 
 void
-xf86writepci(cardnum, reg, mask, value)
+xf86writepci(scrnIndex, cardnum, reg, mask, value)
+    int scrnIndex;
     int cardnum;
     int reg;
     unsigned long mask;
@@ -262,24 +262,19 @@ xf86writepci(cardnum, reg, mask, value)
     unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
     int configtype;
     int Num_PCI_CtrlIOPorts = 3;
-    unsigned PCI_DevIOPorts[16];
-    int Num_PCI_DevIOPorts = 16;
     unsigned PCI_DevIOAddrPorts[16*16];
     int Num_PCI_DevIOAddrPorts = 16*16;
 
-    for (i=0; i<16; i++) {
-        PCI_DevIOPorts[i] = 0xC000 + (i*0x0100);
+    for (i=0; i<16; i++)
         for (j=0; j<16; j++)
-            PCI_DevIOAddrPorts[(i*16)+j] = PCI_DevIOPorts[i] + (j*4);
-    }
+            PCI_DevIOAddrPorts[(i*16)+j] = 0xC000 + (i*0x0100) + (j*4);
 
-    xf86ClearIOPortList(0);
-    xf86AddIOPorts(0, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
-    xf86AddIOPorts(0, Num_PCI_DevIOPorts, PCI_DevIOPorts);
-    xf86AddIOPorts(0, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
+    xf86ClearIOPortList(scrnIndex);
+    xf86AddIOPorts(scrnIndex, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
+    xf86AddIOPorts(scrnIndex, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
 
     /* Enable I/O access */
-    xf86EnableIOPorts(0);
+    xf86EnableIOPorts(scrnIndex);
 
     outb(0xCF8, 0x00);
     outb(0xCFA, 0x00);
@@ -305,8 +300,8 @@ xf86writepci(cardnum, reg, mask, value)
 #ifdef DEBUGPCI
             printf("No PCI !\n");
 #endif
-            xf86DisableIOPorts(0);
-            xf86ClearIOPortList(0);
+            xf86DisableIOPorts(scrnIndex);
+            xf86ClearIOPortList(scrnIndex);
 	    return;
 	}
     }
@@ -330,6 +325,8 @@ xf86writepci(cardnum, reg, mask, value)
 #ifndef DEBUGPCI
     if (configtype == 1) {
         outl(0xCF8, 0x00);
+	xf86DisableIOPorts(scrnIndex);
+	xf86ClearIOPortList(scrnIndex);
 	return;
     }
 #endif
@@ -356,7 +353,18 @@ xf86writepci(cardnum, reg, mask, value)
     outb(0xCF8, 0x00);
     outb(0xCFA, 0x00);
 
-    xf86DisableIOPorts(0);
-    xf86ClearIOPortList(0);
+    xf86DisableIOPorts(scrnIndex);
+    xf86ClearIOPortList(scrnIndex);
     return;
+}
+
+void
+xf86cleanpci()
+{
+    int idx = 0;
+
+    while (pci_devp[idx])
+	xfree(pci_devp[idx++]);
+
+    pci_devp[0] = NULL;
 }

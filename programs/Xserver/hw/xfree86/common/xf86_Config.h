@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.44 1996/02/09 08:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.45 1996/02/18 03:42:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -203,13 +203,13 @@ static SymTabRec FilesTab[] = {
 };
 #endif /* INIT_CONFIG */
 
-#define NOTRAPSIGNALS	1050
-#define DONTZAP		1051
-#define DONTZOOM	1052
-/* This should be removed soon */
-#define DONTSCALEBITMAP	1053
-#define DISABLEVIDMODE	1054
-#define ALLOWNONLOCAL	1055
+#define NOTRAPSIGNALS		1050
+#define DONTZAP			1051
+#define DONTZOOM		1052
+#define DISABLEVIDMODE		1054
+#define ALLOWNONLOCAL		1055
+#define DISABLEMODINDEV		1056
+#define MODINDEVALLOWNONLOCAL	1057
 
 #ifdef INIT_CONFIG
 static SymTabRec ServerFlagsTab[] = {
@@ -217,9 +217,10 @@ static SymTabRec ServerFlagsTab[] = {
   { NOTRAPSIGNALS, "notrapsignals" },
   { DONTZAP,	"dontzap" },
   { DONTZOOM,	"dontzoom" },
-  { DONTSCALEBITMAP, "dontscalebitmapfonts" },
   { DISABLEVIDMODE, "disablevidmodeextension" },
   { ALLOWNONLOCAL, "allownonlocalxvidtune" },
+  { DISABLEMODINDEV, "disablemodindev" },
+  { MODINDEVALLOWNONLOCAL, "allownonlocalmodindev" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
@@ -254,7 +255,8 @@ static SymTabRec MonitorTab[] = {
 #define HTIMINGS	1071
 #define VTIMINGS	1072
 #define FLAGS		1073
-#define ENDMODE		1074
+#define HSKEW		1074
+#define ENDMODE		1075
 
 #ifdef INIT_CONFIG
 static SymTabRec ModeTab[] = {
@@ -262,6 +264,7 @@ static SymTabRec ModeTab[] = {
   { HTIMINGS,	"htimings"}, 
   { VTIMINGS,	"vtimings"},
   { FLAGS,	"flags"}, 
+  { HSKEW,	"hskew"},
   { ENDMODE,	"endmode"},
   { -1,		"" },
 };
@@ -300,6 +303,7 @@ static SymTabRec ScreenTab[] = {
 #define TT_PCSYNC	1096
 #define TT_NCSYNC	1097
 #define TT_DBLSCAN	1098
+#define TT_HSKEW	1099
 
 #ifdef INIT_CONFIG
 SymTabRec TimingTab[] = {
@@ -312,6 +316,7 @@ SymTabRec TimingTab[] = {
   { TT_PCSYNC,		"+csync"},
   { TT_NCSYNC,		"-csync"},
   { TT_DBLSCAN,		"doublescan"},
+  { TT_HSKEW,		"hskew"},
   { -1,			"" },
 };
 #else  /* defined(INIT_CONFIG) */

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.24 1996/02/04 08:56:12 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.25 1996/02/12 11:11:54 dawes Exp $
 .TH XFree86 1 "Version 3.1.2D"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -177,7 +177,8 @@ Print out the server version, patchlevel, and a list of screen drivers
 configured in the server.
 .TP 8
 .B \-verbose
-Maximise information printed at startup (more than the default).
+Multiple occurrences of this flag increase the amount of information printed on
+stderr (more than the default).
 .TP 8
 .B \-version
 Same as \fB\-showconfig\fP.

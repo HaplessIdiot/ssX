@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.3 1996/01/12 14:33:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.4 1996/02/04 09:07:00 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -177,12 +177,25 @@ struct pci_config_reg {
 
 extern struct pci_config_reg *pci_devp[];
 
+void xf86scanpci(
+#if NeedFunctionPrototypes
+	int
+#endif
+);
+
 void xf86writepci(
 #if NeedFunctionPrototypes
 	int,
 	int,
+	int,
 	unsigned long,
 	unsigned long
+#endif
+);
+
+void xf86cleanpci(
+#if NeedFunctionPrototypes
+	void
 #endif
 );
 

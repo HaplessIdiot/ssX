@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.42 1996/02/09 08:20:27 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.43 1996/02/18 03:42:49 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -68,6 +68,10 @@ Bool xf86FlipPixels = FALSE;
 #ifdef XF86VIDMODE
 Bool xf86VidModeEnabled = TRUE;
 Bool xf86VidModeAllowNonLocal = FALSE;
+#endif
+#ifdef XF86MISC
+Bool xf86MiscModInDevEnabled = TRUE;
+Bool xf86MiscModInDevAllowNonLocal = FALSE;
 #endif
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
@@ -511,9 +515,22 @@ ddxProcessArgument (argc, argv, i)
     return 1;
   }
 #endif
+#ifdef XF86MISC
+  if (!strcmp(argv[i],"-disableModInDev"))
+  {
+    xf86MiscModInDevEnabled = FALSE;
+    return 1;
+  }
+  if (!strcmp(argv[i],"-allowNonLocalModInDev"))
+  {
+    xf86MiscModInDevAllowNonLocal = TRUE;
+    return 1;
+  }
+#endif
   if (!strcmp(argv[i],"-verbose"))
   {
-    xf86Verbose = 2;
+    if (!xf86Verbose++)
+      xf86Verbose = 2;
     return 1;
   }
   if (!strcmp(argv[i],"-quiet"))
@@ -632,6 +649,11 @@ ddxUseMsg()
 #ifdef XF86VIDMODE
   ErrorF("-disableVidMode        disable mode adjustments with xvidtune\n");
   ErrorF("-allowNonLocalXvidtune allow xvidtune to be run as a non-local client\n");
+#endif
+#ifdef XF86MISC
+  ErrorF("-disableModInDev        disable dynamic modification of input device settings\n");
+  ErrorF("-allowNonLocalModInDev  allow changes to keyboard and mouse settings\n");
+  ErrorF("                        from non-local clients\n");
 #endif
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
