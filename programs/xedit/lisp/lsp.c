@@ -27,9 +27,23 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include "lisp.h"
+
+#ifdef NEED_STRCASECMP
+int strcasecmp(const char *s1, const char *s2);
+int strncasecmp(const char *s1, const char *s2, size_t n);
+#endif
+#ifdef NEED_REALPATH
+#include <sys/param.h>
+#if defined(ISC)
+#ifndef MAXPATHLEN
+#define MAXPATHLEN      1024
+#endif
+#endif
+char *realpath(const char *pathname, char resolvedname[MAXPATHLEN]);
+#endif
 
 int
 main(int argc, char *argv[])

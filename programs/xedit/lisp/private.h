@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.14 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.15 2001/10/20 00:19:35 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -51,10 +51,8 @@
  */
 #define	STRTBLSZ	23
 
+#define FEAT	mac->featlist
 #define MOD	mac->modlist
-#define GLB	mac->glblist
-#define ENV	mac->envlist
-#define LEX	mac->lexlist
 #define COD	mac->codlist
 #define FRM	mac->frmlist
 #define RUN	mac->runlist
@@ -62,8 +60,14 @@
 #define DBG	mac->dbglist
 #define BRK	mac->brklist
 #define PRO	mac->prolist
+#define DOC	mac->doclist
 
 #define	EOLIST	(LispObj*)1	/* end-of-list ")" found in LispRun */
+
+#define SINPUT	mac->standard_input
+#define SOUTPUT	mac->standard_output
+#define STANDARDSTREAM(file, desc, flags)	\
+	LispNewStandardStream(mac, file, desc, flags)
 
 /*
  * Types
@@ -73,13 +77,6 @@ typedef struct _LispBlock LispBlock;
 typedef struct _LispOpaque LispOpaque;
 typedef struct _LispModule LispModule;
 typedef struct _LispProperty LispProperty;
-
-struct _LispStream {
-    FILE *fp;
-    char *st;
-    char *cp;
-    int tok;
-};
 
 /* Possible values to attach to a LispAtom include:
  *	a generic LispObject for global variable value
@@ -106,6 +103,7 @@ struct _LispProperty {
     LispObj *setf;
     struct {
 	LispObj *definition;
+#define STRUCT_NAME		-3
 #define STRUCT_CHECK		-2
 #define STRUCT_CONSTRUCTOR	-1
 	int function;		/* if >= 0, it is a structure field index */
@@ -114,10 +112,12 @@ struct _LispProperty {
 
 struct _LispAtom {
     unsigned int mark : 1;	/* gc protected */
-    unsigned int dirty : 1;
     unsigned int prot : 1;	/* never released */
+    unsigned int dyn : 1;	/* hint: dynamically binded variable */
+    unsigned int prop : 1;	/* property field has useful data */
     char *string;
-    LispProperty *property;
+    LispObj *object;		/* backpointer to object ATOM */
+    LispProperty property;
     struct _LispAtom *next;
 };
 
@@ -139,7 +139,6 @@ struct _LispBlock {
     LispBlockType type;
     LispObj tag;
     jmp_buf jmp;
-    int level;
     int block_level;
     int debug_level;
     int debug_step;
@@ -151,12 +150,31 @@ struct _LispModule {
     LispModuleData *data;
 };
 
+typedef struct _LispUngetInfo {
+    unsigned char buffer[16];
+    int offset;
+} LispUngetInfo;
+
 struct _LispMac {
-    FILE *fp;
-    char *st;
-    char *cp;
-    int tok;
-    int level;
+    LispObj *standard_input, *input;
+    LispObj *standard_output, *output;
+    LispObj *error_stream;
+    LispUngetInfo **unget;
+    int iunget, nunget;
+    int eof;
+
+    struct {
+	unsigned int fullbits : 8;	/* how many calls to to do a full gc
+					 * including freeing unused strings */
+	unsigned int expandbits : 3;	/* code doesn't look like reusing cells
+					 * so try to have a larger number of
+					 * free cells */
+	unsigned int immutablebits : 1;	/* need to reset immutable bits */
+	unsigned int timebits : 1;	/* update gctime counter */
+	long gctime;
+	int average;			/* of cells freed after gc calls */
+    } gc;
+
     int princ;		/* don't quote strings? */
     int justsize;	/* just calculate size of output,
 			 * needed to calculate formatted output */
@@ -169,11 +187,6 @@ struct _LispMac {
     int opaque;
     sigjmp_buf jmp;
     struct {
-	unsigned stream_level;
-	unsigned stream_size;
-	LispStream *stream;	
-    } stream;
-    struct {
 	unsigned block_level;
 	unsigned block_size;
 	LispObj *block_ret;
@@ -185,12 +198,98 @@ struct _LispMac {
 	void **mem;
     } mem;		/* memory from Lisp*Alloc, to be release in error */
     LispModule *module;
+    LispObj *modules;
     char *prompt;
 
+    LispObj *features;
+
+    /* ENVIRONMENT */
+    struct {
+	LispObj **pairs;	/* value0 name0 ... valueN nameN */
+	int lex;		/* until where variables are visible */
+	int head;		/* top of environment */
+	int base;		/* base of arguments to function */
+	int length;		/* number of used pairs */
+	int space;		/* number of objects in pairs */
+    } env;
+
+    /* GLOBAL VARIABLES */
+    struct {
+	LispObj **pairs;	/* name0 ... nameN */
+	int length;		/* number of globals */
+	int space;		/* number of objects in pairs */
+    } glb;
+
+    /* SPECIAL VARIABLES */
+    struct {
+	LispObj **pairs;	/* name0 ... nameN */
+	int length;		/* number of specias */
+	int space;		/* number of objects in pairs */
+    } spc;
+
+    /* DYNAMIC VARIABLES */
+    struct {
+	LispObj **pairs;	/* value0 name0 ... valueN nameN */
+	int length;		/* number of dynamics * 2 */
+	int space;		/* number of objects in pairs */
+    } dyn;
+
+    /* Unfortunately, evaluation of backquotes and macros sometimes uses a
+     * lot of object cells.
+     * This structure, to be used like the ones above allows minimizing
+     * the need of temporary cells to protect data being evaluated. */
+    struct {
+	LispObj **objects;
+	int length;
+	int space;
+    } protect;
+
+    /* NIL, T */
+    LispAtom *nil_atom, *t_atom;
+
+    LispAtom *atom_atom, *symbol_atom, *real_atom, *integer_atom, *cons_atom,
+	     *list_atom, *string_atom, *character_atom, *vector_atom,
+	     *array_atom, *struct_atom, *keyword_atom, *function_atom,
+	     *pathname_atom, *opaque_atom, *rational_atom, *float_atom,
+	     *complex_atom;
+
+    /* VARIABLE, STRUCTURE */
+    LispAtom *variable_atom, *structure_atom, *type_atom;
+
+    /* &KEY, &OPTIONAL, &REST, &AUX */
+    LispAtom *key_atom, *optional_atom, *rest_atom, *aux_atom;
+
+    /* OTHERWISE */
+    LispAtom *otherwise_atom;
+
+    /* XEDIT::MAKE-STRUCT, XEDIT::STRUCT-ACCESS, XEDIT::STRUCT-STORE,
+       XEDIT::STRUCT-TYPE */
+    LispAtom *make_struct_atom, *struct_access_atom, *struct_store_atom,
+	     *struct_type_atom;
+
+    /* CLOSE, FORMAT, LAMBDA, OPEN, SETF */
+    LispAtom *close_atom, *format_atom, *lambda_atom, *open_atom,
+	     *parse_namestring_atom, *setf_atom;
+
+    /* :ERROR, IF-DOES-NOT-EXIST */
+    LispAtom *error_atom, *if_does_not_exist_atom;
+
+    /* :ABSOLUTE, :RELATIVE */
+    LispAtom *absolute_atom, *relative_atom, *unspecific_atom;
+
+    /* :PROBE, :INPUT, :OUTPUT, :IO, :NEW-VERSION, :RENAME,
+       :RENAME-AND-DELETE, :OVERWRITE, :APPEND, :SUPERSEDE, CREATE */
+    LispAtom *probe_atom, *input_atom, *output_atom, *io_atom,
+	     *new_version_atom, *rename_atom, *rename_and_delete_atom,
+	     *overwrite_atom, *append_atom, *supersede_atom, *create_atom;
+
+    LispAtom *default_atom;
+
+    LispAtom *make_array_atom;
+    LispAtom *initial_contents_atom;
+
     LispObj *modlist;		/* module list */
-    LispObj *glblist;		/* global variables */
-    LispObj *envlist;		/* alive variables */
-    LispObj *lexlist;		/* lexical instead of dynamic scope */
+    LispObj *featlist;		/* features list */
     LispObj *codlist;		/* current code */
     LispObj *frmlist;		/* input data */
     LispObj *runlist[3];	/* +, ++, and +++ */
@@ -198,6 +297,7 @@ struct _LispMac {
     LispObj *dbglist;		/* debug information */
     LispObj *brklist;		/* breakpoints information */
     LispObj *prolist;		/* protect objects list */
+    LispObj *doclist;		/* variables documentation */
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);
@@ -206,6 +306,8 @@ struct _LispMac {
     void (*sigint)(int);
     void (*sigfpe)(int);
 #endif
+
+    int discard;		/* just discard #.EXP */
 
     int destroyed;		/* reached LispDestroy, used by unwind-protect */
     int running;		/* there is somewhere to siglongjmp */
@@ -220,12 +322,16 @@ struct _LispMac {
 /*
  * Prototypes
  */
-LispObj *LispEnvRun(LispMac*, LispObj*, LispFunPtr, char*, int);
+void LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
+
+LispObj *LispGetDoc(LispMac*, LispObj*);
 LispObj *LispGetVar(LispMac*, LispObj*);
-LispObj *LispGetVarCons(LispMac*, LispObj*);	/* used by debugger */
+void *LispGetVarAddr(LispMac*, LispObj*);	/* used by debugger */
 LispObj *LispAddVar(LispMac*, LispObj*, LispObj*);
 LispObj *LispSetVar(LispMac*, LispObj*, LispObj*);
 void LispUnsetVar(LispMac*, LispObj*);
+
+LispObj *LispNewStandardStream(LispMac*, LispFile*, LispObj*, int);
 
 /* destructive fast reverse, note that don't receive a LispMac* argument */
 LispObj *LispReverse(LispObj *list);
@@ -233,18 +339,13 @@ LispObj *LispReverse(LispObj *list);
 /* reads an expression from the selected stream */
 LispObj *LispRun(LispMac*);
 
-#if 0
-/* generated by gperf */
-extern struct _LispBuiltin *LispFindBuiltin(const char*, unsigned int);
-#endif
-
 /* (print) */
 void LispPrint(LispMac*, LispObj*, LispObj*, int);
 
 LispBlock *LispBeginBlock(LispMac*, LispObj*, LispBlockType);
 void LispEndBlock(LispMac*, LispBlock*);
 	/* if unwind-protect active, jump to cleanup code, else do nothing */
-void LispBlockUnwind(LispMac*);
+void LispBlockUnwind(LispMac*, LispBlock*);
 
 void LispUpdateResults(LispMac*, LispObj*, LispObj*);
 void LispTopLevel(LispMac*);
@@ -275,5 +376,22 @@ void LispRemAtomSetfProperty(LispMac*, LispAtom*);
 void LispSetAtomStructProperty(LispMac*, LispAtom*, LispObj*, int);
 	/* remove structure property */
 void LispRemAtomStructProperty(LispMac*, LispAtom*);
+
+void LispProclaimSpecial(LispMac*, LispObj*, LispObj*, LispObj*);
+
+typedef enum _LispDocType_t {
+    LispDocVariable,
+    LispDocFunction,
+    LispDocStructure,
+    LispDocType,
+    LispDocSetf
+} LispDocType_t;
+
+void LispAddDocumentation(LispMac*, LispObj*, LispObj*, LispDocType_t);
+void LispRemDocumentation(LispMac*, LispObj*, LispDocType_t);
+LispObj *LispGetDocumentation(LispMac*, LispObj*, LispDocType_t);
+
+/* increases storage size for temporarily protected data */
+void LispMoreProtects(LispMac*);
 
 #endif /* Lisp_private_h */

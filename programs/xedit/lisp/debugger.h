@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.h,v 1.3 2001/10/06 01:02:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.h,v 1.4 2001/10/10 07:02:51 paulo Exp $ */
 
 #ifndef Lisp_debugger_h
 #define Lisp_debugger_h
@@ -45,16 +45,12 @@ typedef enum _LispDebugState {
     LispDebugRun,	/* just run, until breakpoint or error */
     LispDebugFinish,	/* evaluates until selected form is finished */
     LispDebugNext,	/* evaluate form */
-    LispDebugStep,	/* evaluate form, and step on subforms */
-    LispDebugNexti,	/* Like next, but includes variables evaluation */
-    LispDebugStepi	/* Like step, but includes variables evaluation */
+    LispDebugStep	/* evaluate form, and step on subforms */
 } LispDebugState;
 
 typedef enum _LispDebugCall {
     LispDebugCallBegin,
     LispDebugCallEnd,
-    LispDebugCallBegini,
-    LispDebugCallEndi,
     LispDebugCallFatal,
     LispDebugCallWatch	/* just remove watched variables that lost context */
 } LispDebugCall;

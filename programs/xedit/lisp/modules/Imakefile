@@ -1,20 +1,16 @@
-XCOMM $XFree86$
-
 #include "../lisp.cf"
 #include "../lisp.rules"
 
-INCLUDES	= -I..  -I$(XINCLUDESRC)
+INCLUDES	= -I..  -I../mp -I$(XINCLUDESRC) -I-
 
 #if BuildSharedLispModules
-LispModuleTarget(x11, $(XLIB),)
-LispModuleTarget(xt, $(XTOOLLIB) $(XLIB),)
-LispModuleTarget(xaw, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),)
-LispModuleTarget(psql, -lpq, -I/usr/include/pgsql)
+LispModuleTarget(x11, $(XLIB) $(LOCAL_LIBRARIES),)
+LispModuleTarget(xt, $(XTOOLLIB) $(XLIB) $(LOCAL_LIBRARIES),)
+LispModuleTarget(xaw, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(LOCAL_LIBRARIES),)
 
 InstallMultipleFlags(x11.so,$(LISPDIR),$(INSTINCFLAGS))
 InstallMultipleFlags(xt.so,$(LISPDIR),$(INSTINCFLAGS))
 InstallMultipleFlags(xaw.so,$(LISPDIR),$(INSTINCFLAGS))
-InstallMultipleFlags(psql.so,$(LISPDIR),$(INSTINCFLAGS))
 #endif
 
 InstallMultipleFlags(fun.lsp,$(LISPDIR),$(INSTINCFLAGS))

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.4 2001/10/18 03:15:25 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.5 2001/10/20 00:19:36 paulo Exp $
 ;;
 (provide "fun")
 
@@ -70,7 +70,35 @@
 (defun ninth (a)	(nth 8 a))
 (defun tenth (a)	(nth 9 a))
 
-(defun copy-seq (sequence)	(subseq sequence 0))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pathnames
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun pathname (filename)
+    (parse-namestring filename))
+
+(defun merge-pathnames (pathname &optional defaults default-version)
+    (if (null default-version)
+	(parse-namestring pathname nil defaults)
+	(parse-namestring pathname nil
+	    (make-pathname :defaults defaults :version default-version))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; math
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun logtest (integer1 integer2)
+    (not (zerop (logand integer1 integer2))))
+
+(defun signum (number)
+    (if (zerop number) number (/ number (abs number))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; misc functions/macros
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun alphanumericp (char)
+    (or (alpha-char-p char) (not (null (digit-char-p char)))))
+
+(defun copy-seq (sequence)
+    (subseq sequence 0))
 
 (defmacro push (object place)
     (list 'setf place (list 'cons object place)))
@@ -83,6 +111,12 @@
 
 (defmacro prog* (init &rest body)
     `(block nil (let* ,init (tagbody ,@body))))
+
+(defmacro with-open-file (file &rest body)
+    `(let ((,(car file) (open ,@(cdr file))))
+	(unwind-protect
+	    (progn ,@body)
+	    (if ,(car file) (close ,(car file))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; setf
@@ -137,7 +171,7 @@
 (defsetf nth xedit::nth-store)
 
 (defsetf aref (array &rest indices) (value)
-    `(xedit::vector-store ,array ,@indices ,value))
+    `(xedit::vector-store ,array ',indices ,value))
 
 (defsetf get (symbol key &optional default) (value)
     `(xedit::put ,symbol ,key ,value))
@@ -145,6 +179,7 @@
 (defsetf char xedit::char-store)
 (defsetf schar xedit::char-store)
 (defsetf elt xedit::elt-store)
+(defsetf svref xedit::elt-store)
 
 (defsetf subseq (sequence start &optional end) (value)
     `(progn (replace ,sequence ,value :start1 ,start :end1 ,end) ,value))

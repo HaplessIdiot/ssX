@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.10 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.11 2001/10/20 00:19:34 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -35,9 +35,14 @@
 #include <stdio.h>
 #include "lisp.h"
 
+#include "mp.h"
+
 /*
  * Defines
  */
+#define STREAM_READ		1
+#define STREAM_WRITE		2
+
 #define	CAR(list)		((list)->data.cons.car)
 #define	CAAR(list)		((list)->data.cons.car->data.cons.car)
 #define	CADR(list)		((list)->data.cons.cdr->data.cons.car)
@@ -45,6 +50,9 @@
 #define CDAR(list)		((list)->data.cons.car->data.cons.cdr)
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
 #define EVAL(list)		LispEval(mac, list)
+#define APPLY(fun, args)	LispApply(mac, fun, args)
+#define EXECUTE(string)		LispExecute(mac, string)
+#define SYMBOL(atom)		LispNewSymbol(mac, atom)
 #define ATOM(atom)		LispNewAtom(mac, atom)
 #define ATOM2(atom)		LispNewAtom(mac, LispGetString(mac, atom))
 #define QUOTE(quote)		LispNewQuote(mac, quote)
@@ -54,10 +62,24 @@
 #define STRING(str)		LispNewString(mac, str)
 #define CHAR(c)			LispNewCharacter(mac, c)
 #define INTEGER(i)		LispNewInteger(mac, i)
+#define RATIO(n, d)		LispNewRatio(mac, n, d)
+#define VECTOR(objects)		LispNewVector(mac, objects)
+#define COMPLEX(r, i)		LispNewComplex(mac, r, i)
 #define OPAQUE(data, type)	LispNewOpaque(mac, (void*)((long)data), type)
+#define KEYWORD(key)		LispNewKeyword(mac, key)
+#define PATHNAME(p)		LispNewPathname(mac, p)
+#define STRINGSTREAM(str, flag)	LispNewStringStream(mac, str, flag)
+#define FILESTREAM(file, path, flag)	\
+	LispNewFileStream(mac, file, path, flag)
+#define PIPESTREAM(file, path, flag)	\
+	LispNewPipeStream(mac, file, path, flag)
+
+#define BIGINTEGER(i)		LispNewBigInteger(mac, i)
+#define BIGRATIO(r)		LispNewBigRational(mac, r)
+
 #define CHECKO(obj, typ)						\
-	(obj)->type == LispOpaque_t && 					\
-	 ((obj)->data.opaque.type == typ || (obj)->data.opaque.type == 0)
+	((obj)->type == LispOpaque_t && 				\
+	 ((obj)->data.opaque.type == typ || (obj)->data.opaque.type == 0))
 #define PROTECT(key, list)	LispProtect(mac, key, list)
 #define UPROTECT(key, list)	LispUProtect(mac, key, list)
 
@@ -66,22 +88,110 @@
 
 #define	STRPTR(obj)		(obj)->data.atom->string
 
-#define NUMBER_P(obj)			\
-	((obj)->type == LispReal_t || (obj)->type == LispInteger_t)
+#define INT_P(obj)		((obj)->type == LispInteger_t)
+#define FLOAT_P(obj)		((obj)->type == LispReal_t)
+#define RATIO_P(obj)		((obj)->type == LispRatio_t)
 
-/* assumes NUMBER_P is true */
-#define NUMBER_VALUE(obj)		\
-	(obj->type == LispReal_t ? obj->data.real : obj->data.integer)
+#define BIGINT_P(obj)		((obj)->type == LispBigInteger_t)
+#define BIGRATIO_P(obj)		((obj)->type == LispBigRatio_t)
 
-#define INTEGER_P(obj)			\
-	((obj)->type == LispInteger_t ||	\
-	 ((obj)->type == LispReal_t && (long)(obj)->data.real == (obj)->data.real))
+#define FIXNUM_P(obj)							\
+	(INT_P(obj) || RATIO_P(obj) || FLOAT_P(obj))
+
+/* assumes FIXNUM_P is true */
+#define FIXNUM_VALUE(obj)						\
+	(INT_P(obj) ? (obj)->data.integer :				\
+	 FLOAT_P(obj) ? (obj)->data.real :				\
+	 (double)((obj)->data.ratio.numerator) / 			\
+	 (double)((obj)->data.ratio.denominator))
+
+#define INTEGER_P(obj)					\
+	(INT_P(obj) || BIGINT_P(obj))
+
+#define RATIONAL_P(obj)					\
+	(INT_P(obj) || RATIO_P(obj) ||			\
+	 BIGINT_P(obj) || BIGRATIO_P(obj))
+#define REAL_P(obj)					\
+	(FIXNUM_P(obj) || BIGINT_P(obj) ||		\
+	 BIGRATIO_P(obj))
+#define NUMBER_P(obj)					\
+	(FIXNUM_P(obj) || BIGINT_P(obj) ||		\
+	 BIGRATIO_P(obj) || COMPLEX_P(obj))
+
+#define INTEGRAL_P(obj)					\
+	(INT_P(obj) || (FLOAT_P(obj) &&			\
+	 (long)(obj)->data.real == (obj)->data.real))
 
 /* positive integer */
-#define INDEX_P(obj)		(INTEGER_P(obj) && NUMBER_VALUE(obj) >= 0)
+#define INDEX_P(obj)		(INT_P(obj) && obj->data.integer >= 0)
 
 #define SYMBOL_P(obj)		((obj)->type == LispAtom_t)
 #define STRING_P(obj)		((obj)->type == LispString_t)
+#define CHAR_P(obj)		((obj)->type == LispCharacter_t)
+#define COMPLEX_P(obj)		((obj)->type == LispComplex_t)
+#define CONS_P(obj)		((obj)->type == LispCons_t)
+#define KEYWORD_P(obj)		((obj)->type == LispKeyword_t)
+#define PATHNAME_P(obj)		((obj)->type == LispPathname_t)
+
+#define STREAM_P(obj)		((obj)->type == LispStream_t)
+
+#define SSTREAMP(str)		((str)->data.stream.source.string)
+
+#define FSTREAMP(str)		((str)->data.stream.source.file)
+
+#define PSTREAMP(str)		((str)->data.stream.source.program)
+#define PIDPSTREAMP(str)	((str)->data.stream.source.program->pid)
+#define IPSTREAMP(str)		((str)->data.stream.source.program->input)
+#define OPSTREAMP(str)		((str)->data.stream.source.program->output)
+#define EPSTREAMP(str)		\
+	FSTREAMP((str)->data.stream.source.program->errorp)
+
+#define LispFileno(file)	((file)->descriptor)
+
+#define STRFUN(builtin)		STRPTR(CAR(builtin->description))
+#define STROBJ(obj)		LispStrObj(mac, obj)
+
+#define CONSTANT_P(obj)					\
+    ((obj)->type < LispAtom_t || KEYWORD_P(obj))
+
+/* slightly faster test, since keywords are very uncommon as eval arguments */
+#define NCONSTANT_P(obj)				\
+    ((obj)->type >= LispAtom_t)
+
+/* fetch builtin function/macro argument value
+ */
+#define ARGUMENT(index)					\
+	mac->env.pairs[mac->env.base + ((index) << 1)]
+
+/* fetch argument name for builtin functions
+ */
+#define ARGUMENT_NAME(index)				\
+	mac->env.pairs[mac->env.base + ((index) << 1) + 1]
+
+/* unbound builtin macro arguments, but keep objects gc protected,
+ * avoid name clashes
+*/
+#define MACRO_ARGUMENT1()				\
+	mac->env.pairs[mac->env.base + 1] = NIL
+#define MACRO_ARGUMENT2()				\
+	mac->env.pairs[mac->env.base + 1] =		\
+	    mac->env.pairs[mac->env.base + 3] = NIL
+#define MACRO_ARGUMENT3()				\
+	mac->env.pairs[mac->env.base + 1] =		\
+	  mac->env.pairs[mac->env.base + 3] =		\
+	    mac->env.pairs[mac->env.base + 5] = NIL
+#define MACRO_ARGUMENT4()				\
+	mac->env.pairs[mac->env.base + 1] =		\
+	  mac->env.pairs[mac->env.base + 3] =		\
+	    mac->env.pairs[mac->env.base + 5] =		\
+		mac->env.pairs[mac->env.base + 7] = NIL
+#define MACRO_ARGUMENTS(count)				\
+    {							\
+	int i = (count << 1) + mac->env.base + 1;	\
+	for (; i > mac->env.base; i -= 2)		\
+	    mac->env.pairs[i] = NIL;			\
+    }
+
 
 /*
  * Types
@@ -90,24 +200,43 @@ typedef struct _LispObj LispObj;
 typedef struct _LispAtom LispAtom;
 typedef struct _LispBuiltin LispBuiltin;
 typedef struct _LispModuleData LispModuleData;
+typedef struct _LispFile LispFile;
 
 typedef enum _LispType {
+	/* simple types, self contained objects first */
     LispNil_t,
     LispTrue_t,
-    LispAtom_t,
     LispInteger_t,
     LispReal_t,
-    LispCons_t,
-    LispQuote_t,
     LispCharacter_t,
     LispString_t,
+    LispRatio_t,
+    LispOpaque_t,
+
+	/* non simple types, like streams, need special cleanup in gc,
+	 * but simple access for marking */
+    LispBigInteger_t,
+    LispBigRatio_t,
+
+	/* self contained for GC, but not for eval */
+    LispAtom_t,
+
+	/* almost a simple object, holds a pointer to an atom */
+    LispKeyword_t,
+
+	/* not a simple object, but name field is either nil or an atom */
     LispLambda_t,
+
+	/* a cons of two numbers */
+    LispComplex_t,
+    LispCons_t,
+    LispQuote_t,
     LispArray_t,
     LispStruct_t,
     LispStream_t,
-    LispOpaque_t,
     LispBackquote_t,
-    LispComma_t
+    LispComma_t,
+    LispPathname_t
 } LispType;
 
 typedef enum _LispFunType {
@@ -117,10 +246,31 @@ typedef enum _LispFunType {
     LispSetf
 } LispFunType;
 
+typedef enum _LispStreamType {
+    LispStreamString,
+    LispStreamFile,
+    LispStreamStandard,
+    LispStreamPipe
+} LispStreamType;
+
+typedef struct {
+    unsigned char *string;
+    int space;			/* number of bytes alocated */
+    int length;			/* number of bytes used */
+    int input;			/* input offset, for read operations */
+    int output;			/* output offset, for write operations */
+} LispString;
+
+typedef struct {
+    int pid;			/* process id of program */
+    LispFile *input;		/* if READABLE: stdout of program */
+    LispFile *output;		/* if WRITABLE: stdin of program */
+    LispObj *errorp;		/* ALWAYS (ONLY) READABLE: stderr of program */
+} LispPipe;
+
 struct _LispObj {
     LispType type : 6;
     unsigned int mark : 1;	/* gc protected */
-    unsigned int dirty : 1;
     unsigned int prot: 1;	/* protection for constant/unamed variables */
     union {
 	LispAtom *atom;
@@ -128,17 +278,25 @@ struct _LispObj {
 	double real;
 	LispObj *quote;
 	struct {
+	    long numerator;
+	    long denominator;
+	} ratio;
+	union {
+	    mpi *integer;
+	    mpr *ratio;
+	} mp;
+	struct {
+	    LispObj *real;
+	    LispObj *imag;
+	} complex;
+	struct {
 	    LispObj *car;
 	    LispObj *cdr;
 	} cons;
 	struct {
 	    LispObj *name;
 	    LispObj *code;
-	    unsigned int num_args : 12;
-	    LispFunType type : 4;
-	    unsigned int key : 1;
-	    unsigned int optional : 1;
-	    unsigned int rest : 1;
+	    LispFunType type;
 	} lambda;
 	struct {
 	    LispObj *list;		/* stored as a linear list */
@@ -156,11 +314,14 @@ struct _LispObj {
 	} struc;
 	struct {
 	    union {
-		FILE *fp;
-		unsigned char *str;
+		LispFile *file;
+		LispPipe *program;
+		LispString *string;
 	    } source;
-	    int size;		/* if smaller than zero, use source.fp */
-	    int idx;		/* index in string */
+	    LispObj *pathname;
+	    LispStreamType type : 6;
+	    int readable : 1;
+	    int writable : 1;
 	} stream;
 	struct {
 	    void *data;
@@ -173,15 +334,18 @@ struct _LispObj {
     } data;
 };
 
+typedef	LispObj *(*LispFunPtr)(LispMac*, LispBuiltin*);
+
+/* values for LispBuiltin.type */
 struct _LispBuiltin {
-    char *name;
-    LispObj *(*fn)(LispMac*, LispObj*, char*);
-    int eval : 1;
-    int min_args : 15;
-    int max_args : 15;
+    /* these fields must be set */
+    LispFunType type;
+    LispFunPtr function;
+    char *declaration;
+    /* this field is set at runtime */
+    LispObj *description;
 };
 
-typedef	LispObj *(*LispFunPtr)(LispMac*, LispObj*, char*);
 typedef int (*LispLoadModule)(LispMac*);
 typedef int (*LispUnloadModule)(LispMac*);
 
@@ -196,22 +360,32 @@ struct _LispModuleData {
  * Prototypes
  */
 LispObj *LispEval(LispMac*, LispObj*);
+LispObj *LispApply(LispMac*, LispObj*, LispObj*);
 
 LispObj *LispNew(LispMac*, LispObj*, LispObj*);
+LispObj *LispNewSymbol(LispMac*, LispAtom*);
 LispObj *LispNewAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
 LispObj *LispNewString(LispMac*, char*);
 LispObj *LispNewCharacter(LispMac*, long);
 LispObj *LispNewInteger(LispMac*, long);
+LispObj *LispNewRatio(LispMac*, long, long);
+LispObj *LispNewVector(LispMac*, LispObj*);
 LispObj *LispNewQuote(LispMac*, LispObj*);
 LispObj *LispNewBackquote(LispMac*, LispObj*);
 LispObj *LispNewComma(LispMac*, LispObj*, int);
 LispObj *LispNewCons(LispMac*, LispObj*, LispObj*);
-LispObj *LispNewSymbol(LispMac*, char*, LispObj*);
-LispObj *LispNewLambda(LispMac*, LispObj*, LispObj*, LispObj*,
-		       int, LispFunType, int, int, int);
+LispObj *LispNewLambda(LispMac*, LispObj*, LispObj*, LispObj*, LispFunType);
 LispObj *LispNewStruct(LispMac*, LispObj*, LispObj*);
+LispObj *LispNewComplex(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewOpaque(LispMac*, void*, int);
+LispObj *LispNewKeyword(LispMac*, LispObj*);
+LispObj *LispNewPathname(LispMac*, LispObj*);
+LispObj *LispNewStringStream(LispMac*, unsigned char*, int);
+LispObj *LispNewFileStream(LispMac*, LispFile*, LispObj*, int);
+LispObj *LispNewPipeStream(LispMac*, LispPipe*, LispObj*, int);
+LispObj *LispNewBigInteger(LispMac*, mpi*);
+LispObj *LispNewBigRational(LispMac*, mpr*);
 
 char *LispGetString(LispMac*, char*);
 
@@ -233,6 +407,8 @@ void LispGC(LispMac*, LispObj*, LispObj*);
 char *LispStrObj(LispMac*, LispObj*);
 
 void LispDestroy(LispMac *mac, char *fmt, ...);
+void LispMessage(LispMac *mac, char *fmt, ...);
+void LispWarning(LispMac *mac, char *fmt, ...);
 
 LispObj *LispSetVariable(LispMac*, LispObj*, LispObj*, char*, int);
 
@@ -245,14 +421,6 @@ int LispPrintObj(LispMac*, LispObj*, LispObj*, int);
 void LispProtect(LispMac*, LispObj*, LispObj*);
 void LispUProtect(LispMac*, LispObj*, LispObj*);
 
-/* search argument list for the specified keys.
- * example: LispGetKeys(mac, fname, "START:END", list, &start, &end);
- * note that the separator for key names is the ':' character.
- * values not present in the argument list get the default value of NIL,
- * values specified more than once get only the first specification,
- * and if an unknown is on the argument list, a fatal error happens. */
-void LispGetKeys(LispMac*, char*, char*, LispObj*, ...);
-
 /* this function should be called when a module is loaded, and is called
  * when loading the interpreter */
 void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
@@ -262,6 +430,7 @@ void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
  */
 extern LispObj *NIL, *T;
 extern int gcpro;
-extern FILE *lisp_stdin, *lisp_stdout, *lisp_stderr;
+
+extern LispFile *Stdout, *Stdin, *Stderr;
 
 #endif /* Lisp_internal_h */

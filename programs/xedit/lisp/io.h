@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 by The XFree86 Project, Inc.
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,25 +27,59 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.h,v 1.2 2001/10/18 03:15:23 paulo Exp $ */
+/* $XFree86$ */
 
-#ifndef Lisp_struct_h
-#define Lisp_struct_h
+#ifndef Lisp_io_h
+#define Lisp_io_h
 
 #include "private.h"
 
+#define	FILE_READ	0x01
+#define FILE_WRITE	0x02
+#define FILE_IO		0x03
+#define FILE_APPEND	0x06	/* append mode, write bit also set */
+#define FILE_BUFFERED	0x08	/* force buffered mode */
+#define FILE_UNBUFFERED	0x10	/* force unbuffered mode */
+
 /*
- * Defines
+ * Types
  */
-#define STRUCT(fields, def)	LispNewStruct(mac, fields, def)
+struct _LispFile {
+    unsigned char *buffer;
+    int descriptor;
+    int length;			/* number of bytes used */
+    int offset;			/* read/write offset */
+    int unget : 8;		/* unread char */
+    int readable : 1;
+    int writable : 1;
+    int regular : 1;		/* regular file */
+    int buffered : 1;
+    int available : 1;		/* unget field holds a char */
+    int nonblock : 1;		/* in nonblock mode */
+};
 
 /*
  * Prototypes
  */
-LispObj *Lisp_Defstruct(LispMac*, LispBuiltin*);	/* defstruct */
-LispObj *Lisp_XeditMakeStruct(LispMac*, LispBuiltin*);	/* xedit::make-struct */
-LispObj *Lisp_XeditStructAccess(LispMac*, LispBuiltin*);/* xedit::struct-access */
-LispObj *Lisp_XeditStructStore(LispMac*, LispBuiltin*);	/* xedit::struct-store */
-LispObj *Lisp_XeditStructType(LispMac*, LispBuiltin*);	/* xedit::struct-type */
+	/* higher level functions */
+int LispGet(LispMac*);
+int LispUnget(LispMac*, int);
+void LispPushInput(LispMac*, LispObj*);
+void LispPopInput(LispMac*, LispObj*);
 
-#endif /* Lisp_struct_h */
+	/* functions that read/write using the LispFile structure */
+LispFile *LispFdopen(int, int);
+LispFile *LispFopen(char*, int);
+void LispFclose(LispFile*);
+int LispFflush(LispFile*);
+int LispFungetc(LispFile*, int);
+int LispFgetc(LispFile*);
+int LispFputc(LispFile*, int);
+char *LispFgets(LispFile*, char*, int);
+int LispFputs(LispFile*, char*);
+int LispFread(LispFile*, void*, int);
+int LispFwrite(LispFile*, void*, int);
+
+int LispFprintf(LispFile*, char*, ...);
+
+#endif /* Lisp_io_h */
