@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.10 2000/06/21 21:40:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.11 2000/12/01 14:29:00 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -117,7 +117,7 @@ void TDFXResetFifo(ScrnInfoPtr pScrn)
 static void TDFXSyncFifo(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
-  int i, cnt;
+  int i, cnt, resets=0;
   int stat;
   long start_sec, end_sec, dummy, readptr;
 
@@ -127,8 +127,8 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
   i=0;
   cnt=0;
   start_sec=0;
+  readptr=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
   do {
-    readptr=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
     stat=TDFXReadLongMMIO(pTDFX, 0);
     if (stat&SST_BUSY) i=0; else i++;
     cnt++;
@@ -139,8 +139,16 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
 	getsecs(&end_sec, &dummy);
 	if (end_sec-start_sec>3) {
 	  dummy=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
-	  if (dummy=readptr)
+	  if (dummy==readptr) {
 	    TDFXResetFifo(pScrn);
+	    readptr=dummy;
+	    resets++;
+	    if (resets==3) {
+	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			 "Board is not responding.\n");
+	      return;
+	    }
+	  }
 	  start_sec=0;
         }
       }

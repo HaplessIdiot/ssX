@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.14 2000/12/06 15:35:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.15 2000/12/08 17:14:26 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -36,7 +36,7 @@ struct _TDFXRec;
 typedef struct _TDFXRec *TDFXPtr;
 
 #define PIXMAP_CACHE_LINES 750
-#define PIXMAP_CACHE_LINES_NODRI 750
+#define PIXMAP_CACHE_LINES_NODRI 2048
 
 #include "tdfx_priv.h"
 
