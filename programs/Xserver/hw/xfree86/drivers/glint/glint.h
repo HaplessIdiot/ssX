@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.54 2001/12/08 16:01:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.55 2002/02/22 21:45:15 dawes Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -140,7 +140,6 @@ typedef struct {
     CARD32		BltScanDirection;
     CARD32		TexMapFormat;
     CARD32		PixelWidth;
-    CARD32		FIFOSize;
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
@@ -162,6 +161,7 @@ typedef struct {
     CARD32		PM3_Render2D;
     CARD32		PM3_AreaStippleMode;
     CARD32		PM3_VideoControl;
+    int			FIFOSize;
     int			InFifoSpace;
 #ifdef XvExtension
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
