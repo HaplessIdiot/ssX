@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2B (beta version)
   The XFree86 Project, Inc
 
-  26 December 1995
+  28 December 1995
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2B and 3.1.2A
@@ -26,7 +26,8 @@
 
   The XFree86 binary beta releases may be freely redistributed providing
   that they are not modified in any way, and providing that an
-  unmodified version of this document is included with the distribution.
+  unmodified version of this document and the BetaReport document is
+  included with the distribution.
 
   The reasons for making this beta release publicly available are to
   give it the widest possible testing, and also to make support for new
@@ -61,8 +62,9 @@
 
         +  Wacom tablet (Wacom IV protocol only)
 
-        +  Elographics touchscreen
 
+
+        +  Elographics touchscreen
 
         Refer to the XF86Config(4/5) manual page for configuration
         details.
@@ -104,9 +106,10 @@
   2.4.  ARK driver (SVGA server)
 
 
-     o  No changes since 3.1.2A.  The ICS5342 clock support (required
-        for the Diamond Stealth64 Graphics 2001 series) reportedly
-        doesn't work.
+     o  The ICS5342 clock support (required for the Diamond Stealth64
+        Graphics 2001 series) reportedly didn't work in the 3.1.2A
+        version.  A problem with it has been found and fixed in 3.1.2B,
+        but it hasn't been tested.
 
   2.5.  S3 server
 
@@ -128,7 +131,6 @@
         doublescan modes (the cursor shape still isn't correct).
 
      o  Fixed detection of Trio64V+ cards.
-
 
      o  Improved linear fb detection for PCI cards.  In particular this
         should allow most Trio64V+ cards to use the linear fb, which
@@ -153,8 +155,22 @@
      o  The IBM RGB514 RAMDAC is now supported (as used on the ATI
         Graphics Turbo Pro 1600).
 
+     o  The "program_clocks" option added in the 3.1.2A version has been
+        removed, so if you have been using it in your XF86Config you
+        will need to remove it.  The use of programmed clocks is now the
+        default when a programmable clock chip is present.  This can be
+        disabled if necessary by adding the following line to the Device
+        section of the XF86Config:
+
+
+                  Option "no_program_clocks"
+
+
+
+
+
      o  The memory base should now be correctly detected for VLB cards.
-        If you've needed to add a `MemBase' line to your XF86Config for
+        If you've needed to add a `MemBase' line to the XF86Config for
         previous versions, please try removing it, and let us know if
         there are any problems.
 
@@ -179,6 +195,7 @@
            and T&T20C409 RAMDACs is blue instead of black in 16bpp and
            32bpp modes.
 
+
         +  When using the software cursor, after switching to the
            console and back, it leaves ``droppings'' when entering and
            exiting windows (this bug is also present in 3.1.2).
@@ -186,7 +203,28 @@
   2.7.  ET4000/W32 server
 
 
-     o  ADD SOMETHING HERE
+     o  Support for the STG1703 RAMDAC/clock has been added.  To use the
+        programmable clock add the following line to the Device section
+        of the XF86Config:
+
+
+                  ClockChip "stg1703"
+
+
+
+
+
+     o  Options have been added to allow PCI burst mode and W32
+        interleaving to be turned off.  The XF86Config Device section
+        entries for these are:
+
+
+                  Option "pci_burst_off"
+                  Option "w32_interleave_off"
+
+
+
+
 
   2.8.  SiS 86C201 support
 
@@ -194,7 +232,6 @@
      o  Support is included in 3.1.2B for the SiS 86C201 PCI graphics
         card.  It is currently only supported by the VGA16 and Mono
         servers.  Support for 256 colour operation is being worked on.
-
 
   2.9.  Client/Library changes
 
@@ -261,7 +298,6 @@
 
      Do not include any Clocks lines in your XF86Config file.
 
-
      o  Panning has been fixed for ARK2000PV cards with 2MB of video
         memory.
 
@@ -290,7 +326,9 @@
         file:
 
 
-                  Ramdac "ibm_rgb526"
+
+
+             Ramdac "ibm_rgb526"
 
 
 
@@ -326,8 +364,6 @@
 
 
 
-
-
      o  Problems that could cause the W32 server to crash at startup or
         get stuck in a loop at exit have been fixed.
 
@@ -356,6 +392,8 @@
   3.14.  Client/Library changes
 
 
+
+
      o  The xdm security fix from the X Consortium's fix-13 is included.
 
      o  xconsole has been updated for Unixware 2.x.
@@ -378,38 +416,22 @@
   3.1.2.  It consists of the following files:
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  BetaReport         Beta test report template form
-  X312B8514.tgz      8514/A server
-  X312BAGX.tgz       AGX server
-  X312BMa32.tgz      Mach 32 server
-  X312BMa64.tgz      Mach 64 server
-  X312BMa8.tgz       Mach 8 server
-  X312BMono.tgz      Mono server
-  X312BP9K.tgz       P9000 server
-  X312BSVGA.tgz      SVGA server
-  X312BVG16.tgz      16 colour VGA server
-  X312BW32.tgz       ET4000/W32 server
-  X312B9NS3.tgz      PC98 NEC(S3) server (*)
-  X312B9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server (*)
-  X312B9LPW.tgz      PC98 PowerWindowLB(S3) server (*)
-  X312Bupd.tgz       clients/libraries that have changed since 3.1.2
-  postinst.sh        script to run after installing the 3.1.2B binaries
+       BetaReport         Beta test report template form
+       X312B8514.tgz      8514/A server
+       X312BAGX.tgz       AGX server
+       X312BMa32.tgz      Mach 32 server
+       X312BMa64.tgz      Mach 64 server
+       X312BMa8.tgz       Mach 8 server
+       X312BMono.tgz      Mono server
+       X312BP9K.tgz       P9000 server
+       X312BSVGA.tgz      SVGA server
+       X312BVG16.tgz      16 colour VGA server
+       X312BW32.tgz       ET4000/W32 server
+       X312B9NS3.tgz      PC98 NEC(S3) server (*)
+       X312B9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server (*)
+       X312B9LPW.tgz      PC98 PowerWindowLB(S3) server (*)
+       X312Bupd.tgz       clients/libraries that have changed since 3.1.2
+       postinst.sh        script to run after installing the 3.1.2B binaries
 
 
 
@@ -431,12 +453,19 @@
 
 
 
-               mkdir /usr/XFree86-3.1.2B
-               cd /usr/XFree86-3.1.2B
-               gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
-               gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
-               gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
-               sh /var/tmp/postinst.sh
+
+
+
+
+
+
+
+          mkdir /usr/XFree86-3.1.2B
+          cd /usr/XFree86-3.1.2B
+          gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
+          gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
+          gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
+          sh /var/tmp/postinst.sh
 
 
 
@@ -449,7 +478,44 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.10 1995/12/26 10:41:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.12 1995/12/28 01:59:22 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
