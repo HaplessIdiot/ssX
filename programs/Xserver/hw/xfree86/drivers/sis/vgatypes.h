@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _VGATYPES_
 #define _VGATYPES_
 

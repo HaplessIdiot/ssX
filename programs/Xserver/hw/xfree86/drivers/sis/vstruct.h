@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifdef _INIT_
 #define EXTERN
 #else
