@@ -1,4 +1,5 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 654. Add sun.unicode.india-0.enc (Bugzilla #939, JungShik Shin, Roland Mainz).
  653. Fix an x86emu crash for a BIOS that references the FS (or GS) register
       (Sergey Babkin).
  652. Install the DRM kernel module source under ProjectRoot/src (David Dawes).
@@ -18341,7 +18342,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3021 2003/12/05 18:43:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3022 2003/12/05 19:23:24 dawes Exp $
 
 
 
