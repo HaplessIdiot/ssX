@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.151 2003/08/29 20:49:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.152 2003/09/05 21:59:43 alanh Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -263,6 +263,7 @@
 #define PCI_CHIP_RV280_5961		0x5961
 #define PCI_CHIP_RV280_5962		0x5962
 #define PCI_CHIP_RV280_5963		0x5963
+#define PCI_CHIP_RV280_5964		0x5964
 #define PCI_CHIP_RV280_5968		0x5968
 #define PCI_CHIP_RV280_5969		0x5969
 #define PCI_CHIP_RV280_596A		0x596A

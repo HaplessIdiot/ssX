@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.26 2003/04/06 20:07:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.27 2003/07/02 17:31:30 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -123,6 +123,7 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RV280_5961, "ATI Radeon 9200 5961 (AGP)" },
     { PCI_CHIP_RV280_5962, "ATI Radeon 9200 5962 (AGP)" },
     { PCI_CHIP_RV280_5963, "ATI Radeon 9200 5963 (AGP)" },
+    { PCI_CHIP_RV280_5964, "ATI Radeon 9200 5964 (AGP)" },
     { PCI_CHIP_RV280_5968, "ATI Radeon M9+ 5968 (AGP)" },
     { PCI_CHIP_RV280_5969, "ATI Radeon M9+ 5969 (AGP)" },
     { PCI_CHIP_RV280_596A, "ATI Radeon M9+ 596A (AGP)" },
@@ -191,6 +192,7 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RV280_5961, PCI_CHIP_RV280_5961, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5962, PCI_CHIP_RV280_5962, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5963, PCI_CHIP_RV280_5963, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5964, PCI_CHIP_RV280_5964, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5968, PCI_CHIP_RV280_5968, RES_SHARED_VGA },
     { PCI_CHIP_RV280_5969, PCI_CHIP_RV280_5969, RES_SHARED_VGA },
     { PCI_CHIP_RV280_596A, PCI_CHIP_RV280_596A, RES_SHARED_VGA },

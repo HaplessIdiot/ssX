@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.104 2003/08/23 15:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.105 2003/09/24 02:43:19 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1922,6 +1922,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     case PCI_CHIP_RV280_5961:
     case PCI_CHIP_RV280_5962:
     case PCI_CHIP_RV280_5963:
+    case PCI_CHIP_RV280_5964:
 	info->ChipFamily = CHIP_FAMILY_RV280;
 	break;
 
