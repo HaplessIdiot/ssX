@@ -1,4 +1,7 @@
-XFree86 4.2.99.902 (XX February 2003)
+XFree86 4.2.99.902 (17 February 2003)
+ 908. Move the vbe module from xfree86/os-support/ to xfree86/ (David Dawes).
+ 907. Some changes to the os-support kbd driver layer's calling conventions
+      to provide more flexibility (#A.1615, Zephaniah E. Hull).
  906. Fix a crash in the "xtt" font module caused by a NULL dereference
       when the font cache becomes full (#A.1611, Chisato Yamauchi and
       tokeijikakenoringo).
@@ -16403,4 +16406,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2557 2003/02/15 22:33:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2558 2003/02/17 04:06:29 dawes Exp $
