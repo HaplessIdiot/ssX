@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.7 1999/06/14 07:23:30 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.8 1999/06/27 14:07:20 dawes Exp $
 XCOMM $PI: xc/lib/GL/Imakefile,v 1.11 1999/06/14 21:10:34 faith Exp $
 
 #define IHaveSubdirs
@@ -76,6 +76,9 @@ DependSubdirs($(SUBDIRS))
        DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES) $(DRVDONES)
 
 #include <Library.tmpl>
+
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
 #if NormalLibGlx
 NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(UOBJS))

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.25 1999/06/08 11:31:04 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.26 1999/06/13 13:47:28 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -103,6 +103,9 @@ $(DONES): $(SUBDIRS)
 #endif
 
 #include <Library.tmpl>
+
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
 #if NormalLibFont
 NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(STATIC_OBJS))

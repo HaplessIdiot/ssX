@@ -21,7 +21,7 @@
  * 
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyphBlt.s,v 1.2 1998/07/25 16:58:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyphBlt.s,v 1.3 1999/01/26 10:40:47 dawes Exp $ */
 
 
 /*

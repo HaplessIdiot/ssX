@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.s,v 1.1.2.1 1998/06/04 17:35:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/BUSmemcpy.s,v 1.2 1998/07/25 16:56:49 dawes Exp $ */
 /******************************************************************************
                         Copyright 1993 by Glenn G. Lai
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.6 1999/07/04 06:38:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.7 1999/07/06 11:38:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -112,10 +112,5 @@ typedef struct x_BusAccRec {
     } busdep;
 } BusAccRec, *BusAccPtr;
 
+static resPtr addRangesToList(resPtr list, resRange *pRange,int entityIndex);
 #endif /* _XF86_BUS_H */
-
-
-
-
-
-

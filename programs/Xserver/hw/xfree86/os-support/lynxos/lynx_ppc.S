@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_ppc.s,v 3.2.2.1 1998/06/09 14:41:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_ppc.s,v 3.3 1998/07/25 16:56:46 dawes Exp $ */
 /*
  * Copyright 1998 by Metro Link Incorporated
  *

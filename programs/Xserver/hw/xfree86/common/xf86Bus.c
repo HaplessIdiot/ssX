@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.31 1999/07/04 06:38:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.32 1999/07/06 11:38:13 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2632,7 +2632,6 @@ xf86PostProbe(void)
     int i,j;
     resPtr resp, acc, tmp, resp_x, *pprev_next;
 
-    ValidatePci();
     /* don't compare against ResInit - remove it from clone.*/
     acc = tmp = xf86DupResList(Acc);
     pprev_next = &acc;
@@ -2667,6 +2666,8 @@ xf86PostProbe(void)
 	xf86JoinResLists(Acc,resp_x);
     }
     xf86FreeResList(acc);
+
+    ValidatePci();
     
     xf86MsgVerb(X_INFO, 3, "resource ranges after probing:\n");
     xf86PrintResList(3, Acc);
@@ -3623,11 +3624,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     }
 
     /* setup avoid */
-    while(p_avoid && p_avoid->type != ResEnd) {
-	avoid = xf86AddResToList(avoid,p_avoid,-1);
-	p_avoid++;
-    }
-    
+    avoid = addRangesToList(avoid,p_avoid,-1);
+
     while (pbp) {
 	if (pbp->secondary == pvp->bus) {
 	    if (type & ResMem) {
@@ -3674,8 +3672,13 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     if (!alignment)
 	alignment = (1 << (*p_size)) - 1;
 #ifdef DEBUG
-    ErrorF("base: 0x%lx alignment: 0x%lx size: 0x%lx\n",
+    ErrorF("base: 0x%lx alignment: 0x%lx size[bit]: 0x%x\n",
 	   (*p_base),alignment,(*p_size));
+    ErrorF("start_w: 0x%lx end_w: 0x%lx\n",start_w,end_w);
+    if (start_w_2nd)
+	ErrorF("start_w: 0x%lx end_w: 0x%lx\n",start_w_2nd,end_w_2nd);
+    xf86ErrorFVerb(3,"avoid:\n");
+    xf86PrintResList(3,avoid);
 #endif
     range = xf86GetBlock(type,alignment + 1, start_w, end_w,
 		     alignment,avoid);
@@ -3873,9 +3876,18 @@ getValidBIOSBase(PCITAG tag, int num)
 	}
     }
 
-    range = xf86GetBlock(ResExcMemBlock, pvp->biosSize,start_m,end_m,
+    range = xf86GetBlock(ResExcMemBlock, (1 << pvp->biosSize),start_m,end_m,
 			 (1 << pvp->biosSize) -1, avoid);
     xf86FreeResList(avoid);
     return range.rBase;
 }
 
+static resPtr
+addRangesToList(resPtr list, resRange *pRange, int entityIndex)
+{
+    while(pRange && pRange->type != ResEnd) {
+	list = xf86AddResToList(list,pRange,entityIndex);
+	pRange++;
+    }
+    return list;
+}

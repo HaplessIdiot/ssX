@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.64 1999/03/07 14:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.65 1999/05/14 14:11:19 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -383,6 +383,7 @@ extern int errno;
 
 # include <termios.h>
 # define POSIX_TTY
+# define CLEARDTR_SUPPORT
 
 /* LynxOS 2.5.1 has these */
 # ifdef LED_NUMLOCK

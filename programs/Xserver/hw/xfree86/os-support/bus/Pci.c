@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.18 1999/07/06 11:38:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.19 1999/07/06 14:51:30 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -588,7 +588,7 @@ pciMfDev(int busnum, int devnum)
      */
     tag1 = PCI_MAKE_TAG(busnum, devnum, 1);
     id1  = pciReadLong(tag1, PCI_ID_REG);
-    if (id1 == 0xffffffff)
+    if (id1 == 0xffffffff || id1 == 0x00000000)
 	return FALSE;
  
     if ((id0 != id1) || 
@@ -1019,18 +1019,21 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
      * a basereg was supplied, temporarily map the rom at that base
      * address.
      */
-    romaddr = romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
-    if ((newbase = getValidBIOSBase(Tag,basereg)) != PCIGETROM(romaddr)) {
-	if (PCIGETMEMORY(newbase) != 0 &&
-	    PCIGETMEMORY(newbase) == PCIGETROM(newbase)) {
-	    romaddr = PCIGETROM(newbase);
-#if 0 /*EE*/
-	    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
-#endif
+    romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
+    romaddr = PCIGETROM(romsave);
+    if ((newbase = getValidBIOSBase(Tag,basereg)) != romaddr) {
+	romaddr = PCIGETROM(newbase);
+	if (romaddr != 0 && romaddr == newbase) {
+	    savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
+	    if (PCIGETROM(savebase) == romaddr)
+		pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
+	    else
+		savebase = 0;
 	    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
-	}
+	} else
+	    romaddr = 0;
     }
-    if (PCIGETROM(romaddr) == 0) {
+    if (romaddr == 0) {
 	xf86Msg(X_WARNING, "xf86ReadPciBIOS: cannot locate a BIOS address\n");
 	return -1;
     }
@@ -1044,11 +1047,9 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
     /* Restore ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
 
-#if 0
     /* Restore the base register if it was changed. */
     if (savebase)
 	pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), savebase);
-#endif
 
     return ret;
 }

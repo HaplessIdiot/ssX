@@ -10,12 +10,12 @@
 <date>4 July 1999 (this document needs work!)
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.90 1999/07/04 12:49:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.91 1999/07/07 12:05:51 dawes Exp $
 </ident>
 
 <abstract>
 
-XFree86 is a port of X11R6.4 that supports several Unix and Unix-like
+XFree86 is a port of X11R6.4 that supports several UNIX(R) and UNIX-like
 operating systems on Intel and other platforms.
 
 </abstract>
@@ -62,7 +62,7 @@ and not XFree86.
 <p>
 
 If you would like to work on the development on XFree86 4.0, then it is
-recommended that you <htmlurl name="join the XFree86 development team"
+recommended that you <url name="join the XFree86 development team"
 url="http://www.xfree86.org:/developer.html">.  That way you will have access
 to the latest source and to other developers.
 

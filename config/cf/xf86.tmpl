@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.22 1999/04/17 09:08:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.23 1999/06/13 13:46:45 dawes Exp $
 
 #if 0
 #if XF86LinkKit
@@ -54,7 +54,7 @@ MODULE_DEFINES = -DIN_MODULE
  * rules file (currently only minix.cf and os2.rules (uncritical))
  */
 #define ModCPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
-	$(MODCPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.s | \	@@\
+	$(MODCPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
 		grep -v '^\#' > basename.i
 
 #undef AssembleObject

@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.rules /main/1 1996/10/31 14:47:27 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.18 1998/12/20 11:56:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.19 1999/04/29 09:13:20 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -249,12 +249,12 @@ Makefile:: 								@@\
 	ImakeSubCmdHelper -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
 
 #define AssembleObject(flags) $(RM) $@                                  @@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.s | grep -v '^\#' > _tmp_.s @@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.S | grep -v '^\#' > _tmp_.s @@\
 	$(CC) $(CFLAGS) -o $*.Osuf -c _tmp_.s                           @@\
 	$(RM) _tmp_.s
 
 #define NormalAsmObjectRule()                                           @@\
-.s.Osuf:                                                                @@\
+.S.Osuf:                                                                @@\
 	AssembleObject($(_NOOP_))
 
 #define ObjectMapIncludeFromSpecialSource(dst,src,flags)		@@\

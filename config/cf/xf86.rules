@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules /main/9 1996/10/31 14:54:26 kaleb $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.23 1999/05/17 13:17:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.24 1999/05/18 02:41:28 dawes Exp $
 
 /*
  * These rules are needed to build the XFree86 X Servers
@@ -7,7 +7,7 @@ XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.23 1999/05/17 13:17:02 dawes Exp $
 
 #ifndef CPPOnlyAsm
 #define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.s | \	@@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.S | \	@@\
 		grep -v '^\#' > basename.i
 #endif
 
@@ -20,41 +20,41 @@ XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.23 1999/05/17 13:17:02 dawes Exp $
 
 #ifndef NormalAsmObjectRule
 #define NormalAsmObjectRule()						@@\
-.s.o:									@@\
+.S.o:									@@\
 	AssembleObject($(_NOOP_))					@@\
 									@@\
-.s.i:									@@\
+.S.i:									@@\
 	CPPOnlyAsm($*,$(_NOOP_))
 #endif
 
 #ifndef ObjectFromSpecialAsmSource
 #define ObjectFromSpecialAsmSource(dst,src,flags)			@@\
-dst.s:  src.s								@@\
+dst.S:  src.S								@@\
 	RemoveFile($@)							@@\
 	$(LN) $? $@							@@\
 									@@\
-dst.o:  dst.s								@@\
+dst.o:  dst.S								@@\
 	AssembleObject(flags)						@@\
 									@@\
-dst.i:  dst.s								@@\
+dst.i:  dst.S								@@\
 	CPPOnlyAsm(dst,flags)						@@\
 									@@\
-depend:: dst.s								@@\
+depend:: dst.S								@@\
 									@@\
 clean::									@@\
-	RemoveFile(dst.s)
+	RemoveFile(dst.S)
 #endif
 
 #ifndef ObjectFromAsmSource
 #define ObjectFromAsmSource(src,flags)					@@\
 									@@\
-src.o:  src.s								@@\
+src.o:  src.S								@@\
 	AssembleObject(flags)						@@\
 									@@\
-src.i:  src.s								@@\
+src.i:  src.S								@@\
 	CPPOnlyAsm(dst,flags)						@@\
 									@@\
-depend:: src.s
+depend:: src.S
 #endif
 
 #ifndef ObjectMapIncludeFromSpecialSource

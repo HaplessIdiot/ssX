@@ -1,3 +1,17 @@
+XFree86 3.9Px (11 July 1999)
+2842. Rename the assembler files that need preprocessing from .s to .S,
+      and adjust the imake rules accordingly.
+2841. A fix for xf86PciReadBios() (#2979, Egbert Eich).
+2840. Fix a problem with false detection of multi-function PCI devices (#2978,
+      Loic Grenie).
+2839. Fix a problem with libXfont.a not being linked into exports/lib during
+      the build phase (#2977, Thomas Mueller).
+2838. Deal with OSes which don't have TIOCM ioctls in posix_tty.c (#2976,
+      Thomas Mueller).
+2837. Fix the use of TIOCM_ in some calls to xf86SerialModem..() in mouse/pnp.c
+      (#2976, Thomas Mueller).
+2836. Enable NEW_INPUT on LynxOS (#2976, Thomas Mueller).
+
 XFree86 3.9Pw (6 July 1999)
 2835. Fix for GetBlock() (#2974, Egbert Eich).
 2834. Remove the test for SHAREDIOCLASS when creating a pciAccessInfoRec for
@@ -8340,4 +8354,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.791 1999/07/05 12:12:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.792 1999/07/06 11:38:06 dawes Exp $
