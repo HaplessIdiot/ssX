@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.8 2001/03/03 22:26:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.9 2001/04/10 16:07:58 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -552,7 +552,7 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 					? R128_DST_Y_TOP_TO_BOTTOM
 					: 0)));
 
-    if (trans_color != -1) {
+    if ((trans_color != -1) || (info->XAAForceTransBlit == TRUE)) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
 	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);

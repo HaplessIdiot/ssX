@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.151 2001/05/15 18:22:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.152 2001/05/16 20:08:35 paulo Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -179,6 +179,7 @@ Bool xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags);
 
 Bool DGAInit(ScreenPtr pScreen, DGAFunctionPtr funcs, DGAModePtr modes, 
 			int num);
+xf86SetDGAModeProc xf86SetDGAMode;
 
 /* xf86Events.c */
 

@@ -1,4 +1,15 @@
 XFree86 4.1.99.1 (xx June 2001)
+  29. ATI DGA changes (Patrick Chase and Marc La France):
+      - Add accelerated DGA primitives for Mach64 variants;
+      - Add accelerated DGA transparent blits for Rage128 and Radeon;
+      - Fix setting of DGA_CONCURRENT_ACCESS;
+      - Take XaaNo* options into consideration.
+  28. Simplify DGAShutdown() (Marc La France).
+  27. Fix colourmap bug when switching out of a DGA mode (Marc La France).
+  26. Make it possible, but not required, for a driver to initialise DGA after
+      XAA so that it may factor in any XaaNo* options in determining what DGA
+      drawing primitives to support (Marc La France).
+  25. Prevent mode switches while DGA modes are set (Marc La France).
   24. Remove all VGA'isms from the glint driver, it doesn't need them
       (Alan Hourihane).
   23. Support the Delta in the glint driver, needed for boards that have
@@ -13348,4 +13359,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1800 2001/05/24 19:43:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1801 2001/05/24 19:55:03 alanh Exp $

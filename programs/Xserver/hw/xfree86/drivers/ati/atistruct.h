@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.24 2001/01/21 21:19:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.25 2001/03/25 05:32:09 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -266,6 +266,13 @@ typedef struct _ATIRec
     int ExpansionBitmapWidth;
 
     /*
+     * XAAForceTransBlit alters the behavior of 'SetupForScreenToScreenCopy',
+     * such that ~0 is interpreted as a legitimate transparency key.  This
+     * is used by DGA.
+     */
+    Bool XAAForceTransBlit;
+
+    /*
      * Cursor-related definitions.
      */
     xf86CursorInfoPtr pCursorInfo;
@@ -321,9 +328,10 @@ typedef struct _ATIRec
     rgb weight;
 
     /*
-     * Video mode data for DGA.
+     * DGA-related data.
      */
     DGAModePtr pDGAMode;
+    DGAFunctionRec ATIDGAFunctions;
     int nDGAMode;
 
     /*

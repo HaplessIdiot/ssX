@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.30 2001/05/24 19:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.31 2001/05/25 02:32:09 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -53,7 +53,6 @@
  *   DDC1 & DDC2
  *   shadowfb
  *   overlay planes
- *   DGA
  *
  * Modified by Marc Aurele La France <tsi@xfree86.org> for ATI driver merge.
  */
@@ -1696,8 +1695,6 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
-    R128DGAInit(pScreen);
-
 				/* Memory manager setup */
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
@@ -1932,6 +1929,9 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
 	info->accelOn = FALSE;
     }
+
+				/* DGA setup */
+    R128DGAInit(pScreen);
 
 				/* Cursor setup */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());

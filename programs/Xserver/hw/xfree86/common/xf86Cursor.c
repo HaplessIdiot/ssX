@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.28 2000/06/24 00:33:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.29 2001/05/09 03:12:01 tsi Exp $ */
 /* $XConsortium: xf86Cursor.c /main/10 1996/10/19 17:58:23 kaleb $ */
 
 #define NEED_EVENTS
@@ -188,6 +188,11 @@ xf86ZoomViewport (ScreenPtr pScreen, int zoom)
   
   if (pScr->zoomLocked)
     return;
+
+#ifdef XFreeXDGA
+  if (DGAActive(pScr->scrnIndex))
+    return;
+#endif
 
   if (pScr->SwitchMode != NULL &&
       pScr->currentMode != pScr->currentMode->next) {

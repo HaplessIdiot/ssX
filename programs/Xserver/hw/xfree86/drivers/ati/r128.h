@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.11 2001/04/10 16:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.13 2001/05/15 10:19:36 eich Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -229,6 +229,12 @@ typedef struct {
     unsigned long     cursor_start;
     unsigned long     cursor_end;
 
+    /*
+     * XAAForceTransBlit is used to change the behavior of the XAA
+     * SetupForScreenToScreenCopy function, to make it DGA-friendly.
+     */
+    Bool              XAAForceTransBlit;
+
     int               fifo_slots;   /* Free slots in the FIFO (64 max)       */
     int               pix24bpp;     /* Depth of pixmap for 24bpp framebuffer */
     Bool              dac6bits;     /* Use 6 bit DAC?                        */
@@ -257,6 +263,7 @@ typedef struct {
     int               numDGAModes;
     Bool              DGAactive;
     int               DGAViewportStatus;
+    DGAFunctionRec    DGAFuncs;
 
     R128FBLayout      CurrentLayout;
 #ifdef XF86DRI
