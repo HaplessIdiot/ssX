@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.2 1998/06/28 08:41:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.3 1998/06/28 11:02:12 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -132,7 +132,6 @@ static void Highlight(), Unhighlight(), Notify(), PositionMenuAction();
 
 static void MakeSetValuesRequest(), CreateLabel(), Layout();
 static void AddPositionAction(), PositionMenu(), ChangeCursorOnGrab();
-static Dimension GetMenuWidth(), GetMenuHeight();
 static Widget FindMenu();
 static SmeObject GetEventEntry();
 static void MoveMenu();
@@ -1269,49 +1268,6 @@ Dimension width, height;
 	    Redisplay((Widget) smw, (XEvent *) NULL, (Region) NULL);
     }
     smw->simple_menu.recursive_set_values = FALSE;
-}
-
-/*      Function Name: GetMenuWidth
- *      Description: Sets the length of the widest entry in pixels.
- *      Arguments: w - the simple menu widget.
- *      Returns: width of menu.
- */
-
-/* ARGSUSED */
-static Dimension
-GetMenuWidth(w, w_ent)
-Widget w, w_ent;
-{
-    SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    Dimension width, height;
-    
-    if ( smw->simple_menu.menu_width ) 
-	return(smw->core.width);
-
-    CalculateNewSize(w, &width, &height);
-
-    return (width);
-}
-
-/*      Function Name: GetMenuHeight
- *      Description: Sets the length of the widest entry in pixels.
- *      Arguments: w - the simple menu widget.
- *      Returns: width of menu.
- */
-
-static Dimension
-GetMenuHeight(w)
-Widget w;
-{
-    SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    Dimension width, height;
-    
-    if (smw->simple_menu.menu_height)
-	return(smw->core.height);
-
-    CalculateNewSize(w, &width, &height);
-
-    return (height);
 }
 
 /*      Function Name: GetEventEntry

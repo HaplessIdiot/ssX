@@ -39,6 +39,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xfuncs.h>
 #include "XawI18n.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 #define SrcScan                XawTextSourceScan
@@ -309,7 +310,7 @@ Cardinal num_params;
 	int fmt8 = 8;
 	Atom type = XA_STRING;
 	char *line = XFetchBuffer(XtDisplay(w), &nbytes, buffer);
-	if (length = nbytes)
+	if ((length = nbytes) != 0L)
 	    _SelectionReceived(w, (XtPointer) NULL, &selection, &type, (XPointer)line,
 			       &length, &fmt8);
 	else if (num_params > 1)

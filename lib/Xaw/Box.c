@@ -106,6 +106,7 @@ static Boolean SetValues();
 static XtGeometryResult GeometryManager();
 static void ChangeManaged();
 static XtGeometryResult PreferredSize();
+static void BoxExpose();
 
 BoxClassRec boxClassRec = {
   {
@@ -119,8 +120,8 @@ BoxClassRec boxClassRec = {
     /* initialize         */    Initialize,
     /* initialize_hook    */	NULL,
     /* realize            */    Realize,
-    /* actions            */    NULL,
-    /* num_actions	  */	0,
+    /* actions            */    actions,
+    /* num_actions	  */	XtNumber(actions),
     /* resources          */    resources,
     /* num_resources      */    XtNumber(resources),
     /* xrm_class          */    NULLQUARK,
@@ -130,7 +131,7 @@ BoxClassRec boxClassRec = {
     /* visible_interest   */    FALSE,
     /* destroy            */    NULL,
     /* resize             */    Resize,
-    /* expose             */    NULL,
+    /* expose             */    BoxExpose,
     /* set_values         */    SetValues,
     /* set_values_hook    */	NULL,
     /* set_values_almost  */    XtInheritSetValuesAlmost,
@@ -254,7 +255,7 @@ static void DoLayout(bbw, width, height, reply_width, reply_height, position)
     if (!vbox && width && lw > width && lh < height) {
 	/* reduce width if too wide and height not filled */
 	Dimension sw = lw, sh = lh;
-	Dimension width_needed;
+	Dimension width_needed = width;
 	XtOrientation orientation = bbw->box.orientation;
 	bbw->box.orientation = XtorientVertical;
 	while (sh < height && sw > width) {
@@ -493,6 +494,8 @@ static Boolean TryNewLayout(bbw)
 		    (void)PreferredSize((Widget)bbw, &constraints, &reply);
 		    proposed_width = preferred_width;
 		}
+	default:
+	  break;
 	}
 	iterations++;
     } while (iterations < 10);
@@ -630,4 +633,15 @@ static Boolean SetValues(current, request, new, args, num_args)
    /* need to relayout if h_space or v_space change */
 
     return False;
+}
+
+static void BoxExpose(w, event, region)
+     Widget w;
+     XEvent *event;
+     Region region;
+{
+  BoxWidget xaw = (BoxWidget)w;
+
+  if (xaw->box.display_list)
+    XawRunDisplayList(w, xaw->box.display_list, event, region);
 }

@@ -1,0 +1,146 @@
+Patch 1 (#1655) 15 April 1998
+
+  Description of the actions system:
+--------------------------------------------------------------------
+  All the actions have the syntax:
+
+action-name(boolean-expression, args)
+
+  Where:
+action-name:
+	Any string with a translation binding in the binary for the widget.
+
+boolean-expression:
+	[{~}]variable-name|resource-name|constant-name[{&|^}[[{~}]variable-name|resource-name|constant-name]]...
+
+variable-name:
+	Any string starting with a '$' character (actually it's not possible
+	to mask this character; I'll fix it). Variables are actually created
+	with the translations 'declare' and 'get-values'. Example:
+	get-values(1, $x, x)
+	declare(1, $armed, true)
+
+resource-name:
+	Any resource name of the widget. Note that it requires a <TYPE> to
+	string converter in the code (I added some on the patches), since
+	all variables values are stored in a 'String' format. Example:
+	borderWidth
+	height
+	font
+	background
+
+constant-name:
+	Especial values. They aren't normally contants, but a special state
+	not triggered with resources or variables (They have the highest
+	precedence, so, to allow these strings as resource names I'll need
+	to allow some sort of escape sequences). Examples:
+	mine	# event->xany.window == XtWindow(widget)
+	faked	# event->xany.send_event != 0
+	true	# you know
+	false	# "   "
+
+args:
+	Special strings values interpreted by the translation binding.
+
+The operators (currently) understood are:
+	~ - NOT
+	& - AND
+	| - OR
+	^ - XOR
+	( - RP
+	) - LP
+	The final result value is and'ed with 1.
+
+Sample translation to make a label widget behave like a button:
+<Map>:\
+	get-values(1, $fg, foreground, $bg, background)\n\
+<Btn1Down>:\
+	set-values(1, foreground, yellow, background, gray30)\n\
+<Btn1Up>:\
+	set-values(1, foreground, $fg, background, $bg)\n
+
+
+  Description of the displayList system:
+--------------------------------------------------------------------
+  The display list has the syntax:
+
+[class-name:]function-name	args[{;|\n}]...
+
+  Where:
+class-name:
+	Any registered set of functions. The code registers the class 'xlib',
+	and if the class name is not specified, this class is assumed.
+
+function-name:
+	A string binding to the correct function to be called.
+
+args:
+	A set of converted and shareable arguments, to the function. The
+	positioning/sizing arguments currently implemented have the syntax:
+{+-}<integer> or <integer>/<integer>. Examples:
+	+0,+0  top, left
+	-0,-0  bottom, right
+	-+10,-+10  bottom+10, right+10
+	+0,1/2    left, vcenter
+
+  All displayLists are shared by:
+	widget->core.screen
+	widget->core.colormap
+	widget->core.depth
+  I have added only partial code for handling non-windowed widgets (gadgets).
+I'll fix it.
+
+  Example for drawing two lines crossing the widget:
+foreground	black;\
+line		+0,+0,-0,-0;\
+line		+0,-0,-0,+0
+
+
+
+Patch 2 (#1660) 19 April 1998
+
+  + More functions for displayList's
+  + Fixes for simpleMenuWidget, xfontsel should work very better now. Try
+    this with the newer patches to verify the changes:
+    xfontsel -xrm '*XFontSel*SimpleMenu*font:
+-*-helvetica-medium-r-*-*-16-*-*-*-*-*-*-1'
+  + Small bug fix to boxWidget, viewres should work better now. Try this
+    to verify the changes:
+    viewres -xrm '*Viewres*Box.borderWidth: 1'
+  + Small bug fix to panedWidget, when pressing in a gripWidget but not
+    moving the pointer, or releasing at the same coordinates.
+
+Patch 3 (#1673) 25 April 1998
+
+ + Changes in layout code for the Form widget. To see the changes, run xcalc
+   and resize it several times (try giving it a very small size and the
+   restore the size). The new code uses a 'known' reference size/position
+   to avoid integer rounding problems.
+ + A optimization for the Form widget. Now it unmaps itself before resizing
+   the child widgets. This way the layout process is very faster.
+ + The List widget will try to fit in a 32767x32767 window size. It checks
+   if the width or height will become bigger than 32767 and if will, changes
+   the number of columns. This fixes xman (at least for me, that have several
+   entries in the section 3 of the manpages).
+ + New functions to displayList's and fixes to some bad bugs (I'm yet working
+   on that file).
+ + Change in the Scrollbar functionality. It was redrawing the thumb when
+   triggering the MoveThumb action. This is bad because several programs
+   choose to recalculate the thumb position with XawScrollbarSetThumb, causing
+   screen flickering. Now it redraws the thumb when triggering the NotifyThumb
+   action. To verify the changes, run xfm or xman and try to scroll past the
+   end of a window; it will keep erasing and redrawing the thumb.
+ + Other change in the Scrollbar is that it will only draw in the rectangle:
+   1, 1, core.width - 1, core.height - 1. It is better when creatting a 3d
+   effect with displayList's.
+
+
+Patch 4 (#1678) 3 May 1998
+
++ Included the patches for the recent problems with libXaw.
++ Several 'gratuitous' small changes, to compile cleanly with gcc -Wall.
++ Some bug fixes for DisplayList.c.
++ Colored pixmaps support. I'm building a abstraction layer for the colored
+  pixmaps, so that it should be easy to support more pixmap formats
+  (actually, only X bitmaps).
+

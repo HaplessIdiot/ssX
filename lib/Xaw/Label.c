@@ -481,9 +481,7 @@ static void Redisplay(gw, event, region)
     XEvent *event;
     Region region;
 {
-    extern WidgetClass commandWidgetClass;
     LabelWidget w = (LabelWidget) gw;
-    LabelWidgetClass lwclass = (LabelWidgetClass) XtClass (gw);
     GC gc;
 
     if (*Superclass->core_class.expose != NULL)

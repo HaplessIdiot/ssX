@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  */
 
-/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.1 1998/06/28 08:41:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.2 1998/06/28 11:02:10 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -164,7 +164,7 @@ String * params;
 Cardinal * num_params;
 {
   MenuButtonWidget mbw = (MenuButtonWidget) w;
-  Widget menu, temp;
+  Widget menu = NULL, temp;
   Arg arglist[2];
   Cardinal num_args;
   int menu_x, menu_y, menu_width, menu_height, button_height;

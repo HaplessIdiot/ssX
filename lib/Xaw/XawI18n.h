@@ -1,5 +1,4 @@
 /* $XConsortium: XawI18n.h,v 1.12 95/01/25 00:48:44 kaleb Exp $ */
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.2 1995/01/28 15:43:29 dawes Exp $ */
 
 /************************************************************
 
@@ -27,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.3 1996/10/19 15:13:22 dawes Exp $ */
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
@@ -58,10 +58,35 @@ extern int _Xaw_iswspace(wchar_t);
 #endif
 #endif
 
+#ifdef __FreeBSD__
+#include <stdlib.h>
+#endif
+
 #ifdef USE_XWCHAR_STRING
+extern int _Xwcslen(
+#if NeedFunctionPrototypes
+    wchar_t*    /* wstr */
+#endif
+);
 #define wcslen(c) _Xwcslen(c)
+
+extern wchar_t *_Xwcscpy(
+#if NeedFunctionPrototypes
+    wchar_t*    /* wstr1 */,
+    wchar_t*    /* wstr2 */
+#endif
+);
 #define wcscpy(d,s) _Xwcscpy(d,s)
+
+extern wchar_t *_Xwcsncpy(
+#if NeedFunctionPrototypes
+    wchar_t*    /* wstr1 */,
+    wchar_t*    /* wstr2 */,
+    int         /* len */
+#endif
+);
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
+
 #ifdef USE_XMBTOWC
 #define mbtowc(wc,s,l) _Xmbtowc(wc,s,l)
 #endif

@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.2 1998/04/28 13:33:32 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.3 1998/06/28 11:02:08 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -292,6 +292,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
       proc->num_params = 0;
       proc->proc = info->proc;
       proc->args = NULL;
+      proc->data = NULL;
 
       if (!dlist->procs)
 	{
@@ -396,24 +397,27 @@ _XawDestroyDisplayList(XawDisplayList *dlist)
       proc = dlist->procs[i];
       data = proc->data;
 
-      if (data->dlclass->args_destructor)
-	data->dlclass->args_destructor(DisplayOfScreen(dlist->screen),
-				       XrmQuarkToString(proc->qname),
-				       proc->args,
-				       proc->params, &proc->num_params);
-      if (data->data)
+      if (data)
 	{
-	  if (data->dlclass->data_destructor)
+	  if (data->dlclass->args_destructor)
+	    data->dlclass->args_destructor(DisplayOfScreen(dlist->screen),
+					   XrmQuarkToString(proc->qname),
+					   proc->args,
+					   proc->params, &proc->num_params);
+	  if (data->data)
 	    {
-	      data->dlclass->data_destructor(DisplayOfScreen(dlist->screen),
-					     XrmQuarkToString(proc->qname),
-					     data->data);
-	      data->data = NULL;
+	      if (data->dlclass->data_destructor)
+		{
+		  data->dlclass
+		    ->data_destructor(DisplayOfScreen(dlist->screen),
+				      data->dlclass->name,  data->data);
+		  data->data = NULL;
+		}
 	    }
 	}
 
       for (j = 0; j < proc->num_params; j++)
-	XtFree(proc->params[i]);
+	XtFree(proc->params[j]);
       XtFree((char *)proc->params);
       XtFree((char *)proc);
     }
@@ -991,13 +995,15 @@ _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
 	args = (XawDLArcArgs *)XtMalloc(sizeof(XawDLArcArgs));
 	bzero(&args->pos[0], sizeof(XawDLPosition) * 4);
 	args->angle1 = 0;
-	args->angle2 = 64 * 360;
+	args->angle2 = 360;
 	for (i = 0; i < 4 && i < *num_params; i++)
 	  read_position(params[i], &args->pos[i]);
 	if (*num_params > 4)
 	  args->angle1 = read_int(params[4], NULL);
 	if (*num_params > 5)
 	  args->angle2 = read_int(params[5], NULL);
+	args->angle1 *= 64;
+	args->angle2 *= 64;
 	retval = (void *)args;
       } break;
     case GCFG:
@@ -1066,6 +1072,7 @@ _Xaw_Xlib_ArgsDestructor(Display *display, String proc_name, XtPointer args,
     case DARC:
     case FARC:
       XtFree(args);
+      break;
     case DLINES:
     case FPOLY:
       {
@@ -1088,7 +1095,7 @@ _Xaw_Xlib_DataDestructor(Display *display, String class_name, XtPointer data)
 {
   if (data)
     {
-      XFreeGC(display, (*(XawXlibData **)data)->gc);
+      XFreeGC(display, ((XawXlibData *)data)->gc);
       XtFree((char *)data);
     }
 }

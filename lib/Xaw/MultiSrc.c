@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.3 1997/04/12 15:34:24 hohndel Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.4 1998/06/28 08:41:45 dawes Exp $ */
 
 /*
 
@@ -473,7 +473,7 @@ Scan( w, position, type, dir, count, include )
   MultiSrcObject src = (MultiSrcObject) w;
   int inc;
   MultiPiece * piece;
-  XawTextPosition first, first_eol_position;
+  XawTextPosition first, first_eol_position = 0;
   wchar_t * ptr;
 
   if (type == XawstAll) {	/* Optimize this common case. */
@@ -569,7 +569,8 @@ Scan( w, position, type, dir, count, include )
   case XawstPositions: 
     position += count * inc;
     break;
-/*  case XawstAll:		---- handled in special code above */
+  case XawstAll:		/* ---- handled in special code above */
+    break;
   }
 
   if ( dir == XawsdLeft )
@@ -1075,7 +1076,7 @@ InitStringOrFile(src, newString)
     MultiSrcObject src;
     Boolean newString;
 {
-    char * open_mode;
+    char * open_mode = NULL;
     FILE * file;
     char fileName[TMPSIZ];
     Display *d = XtDisplayOfObject((Widget)src);
@@ -1382,7 +1383,7 @@ FindPiece(src, position, first)
     MultiSrcObject src;
     XawTextPosition position, *first;
 {
-  MultiPiece * old_piece, * piece = src->multi_src.first_piece;
+  MultiPiece * old_piece = NULL, * piece = src->multi_src.first_piece;
   XawTextPosition temp;
 
   for ( temp = 0 ; piece != NULL ; temp += piece->used, piece = piece->next ) {

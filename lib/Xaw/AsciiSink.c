@@ -425,8 +425,8 @@ int *resHeight;			/* Height required. */
     AsciiSinkObject sink = (AsciiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
 
-    XawTextPosition lastPos, index, whiteSpacePosition;
-    int     lastWidth, whiteSpaceWidth;
+    XawTextPosition lastPos, index, whiteSpacePosition = 0;
+    int     lastWidth = 0, whiteSpaceWidth = 0;
     Boolean whiteSpaceSeen;
     unsigned char c;
     XawTextBlock blk;

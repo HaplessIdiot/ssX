@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSink.c,v 1.5 94/04/17 20:12:22 kaleb Exp $ */
+/* $XConsortium: MultiSink.c,v 1.6 95/01/23 18:34:46 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -320,7 +320,7 @@ DisplayText(w, x, y, pos1, pos2, highlight)
                 x += width;
                 j = -1;
             }
-            else if (XwcTextEscapement (sink->multi_sink.fontset, &buf[j], 1 == 0)) {
+            else if (XwcTextEscapement (sink->multi_sink.fontset, &buf[j], 1) == 0) {
                 if (sink->multi_sink.display_nonprinting)
                     buf[j] = _Xaw_atowc('@');
                 else
@@ -448,8 +448,8 @@ FindPosition(w, fromPos, fromx, width, stopAtWordBreak, resPos, resWidth, resHei
     MultiSinkObject sink = (MultiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
 
-    XawTextPosition lastPos, index, whiteSpacePosition;
-    int     lastWidth, whiteSpaceWidth;
+    XawTextPosition lastPos, index, whiteSpacePosition = 0;
+    int     lastWidth = 0, whiteSpaceWidth = 0;
     Boolean whiteSpaceSeen;
     wchar_t c;
     XFontSetExtents *ext = XExtentsOfFontSet(sink->multi_sink.fontset);

@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.2 1998/06/28 08:41:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.3 1998/06/28 11:02:12 dawes Exp $ */
 
 /*
  * SmeBSB.c - Source code file for BSB Menu Entry object.
@@ -245,6 +245,7 @@ Region region;
     int	fontset_ascent, fontset_descent;
     XFontSetExtents *ext = XExtentsOfFontSet(entry->sme_bsb.fontset);
 
+    font_ascent = font_descent = fontset_ascent = fontset_descent = 0;
     entry->sme_bsb.set_values_area_cleared = FALSE;    
     if ( entry->sme.international == True ) {
         fontset_ascent = abs(ext->max_ink_extent.y);
@@ -455,7 +456,6 @@ FlipColors(w)
 Widget w;
 {
     SmeBSBObject entry = (SmeBSBObject) w;
-    SmeBSBObjectClass oclass = (SmeBSBObjectClass) XtClass (w);
 
     if (entry->sme_bsb.set_values_area_cleared) {
 	return;

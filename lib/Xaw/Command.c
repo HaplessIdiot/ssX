@@ -430,7 +430,6 @@ Region region;
 Boolean change;
 {
   CommandWidget cbw = (CommandWidget) w;
-  CommandWidgetClass cwclass = (CommandWidgetClass) XtClass (w);
   Boolean very_thick;
   GC norm_gc, rev_gc;
    
@@ -455,8 +454,6 @@ Boolean change;
     rev_gc = cbw->command.inverse_GC;
   }
 
-  (*SuperClass->core_class.expose) (w, event, region);
-
   if ( !( (!change && (cbw->command.highlighted == HighlightNone)) ||
 	  ((cbw->command.highlighted == HighlightWhenUnset) &&
 	   (cbw->command.set))) ) {
@@ -466,12 +463,38 @@ Boolean change;
     }
     else {
       /* wide lines are centered on the path, so indent it */
-      int offset = cbw->command.highlight_thickness/2;
-      XDrawRectangle(XtDisplay(w),XtWindow(w), rev_gc, offset, offset, 
+      if (cbw->core.background_pixmap != XtUnspecifiedPixmap &&
+          rev_gc == cbw->command.inverse_GC)
+	{
+	  XClearArea(XtDisplay(w), XtWindow(w),
+		     0, 0, cbw->core.width, cbw->command.highlight_thickness,
+		     False);
+	  XClearArea(XtDisplay(w), XtWindow(w),
+		     0, cbw->command.highlight_thickness,
+		     cbw->command.highlight_thickness,
+		     cbw->core.height - (cbw->command.highlight_thickness<<1),
+		     False);
+	  XClearArea(XtDisplay(w), XtWindow(w),
 		     cbw->core.width - cbw->command.highlight_thickness,
-		     cbw->core.height - cbw->command.highlight_thickness);
+		     cbw->command.highlight_thickness,
+		     cbw->command.highlight_thickness,
+		     cbw->core.height - (cbw->command.highlight_thickness<<1),
+		     False);
+	  XClearArea(XtDisplay(w), XtWindow(w),
+		     0, cbw->core.height - cbw->command.highlight_thickness,
+		     cbw->core.width, cbw->command.highlight_thickness,
+		     False);
+	}
+      else {
+	int offset = cbw->command.highlight_thickness/2;
+	XDrawRectangle(XtDisplay(w),XtWindow(w), rev_gc, offset, offset, 
+		       cbw->core.width - cbw->command.highlight_thickness,
+		       cbw->core.height - cbw->command.highlight_thickness);
+      }
     }
   }
+
+  (*SuperClass->core_class.expose) (w, event, region);
 }
 
 static void 
@@ -547,7 +570,7 @@ ShapeButton(cbw, checkRectangular)
 CommandWidget cbw;
 Boolean checkRectangular;
 {
-    Dimension corner_size;
+    Dimension corner_size = 0;
 
     if ( (cbw->command.shape_style == XawShapeRoundedRectangle) ) {
 	corner_size = (cbw->core.width < cbw->core.height) ? cbw->core.width 
