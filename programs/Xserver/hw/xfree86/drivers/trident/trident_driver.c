@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.137 2001/06/15 21:23:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.138 2001/08/07 07:04:52 keithp Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -168,6 +168,7 @@ static SymTabRec TRIDENTChipsets[] = {
 
 static IsaChipsets TRIDENTISAchipsets[] = {
     { TVGA8900D,		RES_EXCLUSIVE_VGA },
+    { CYBER9320,		RES_EXCLUSIVE_VGA },
     { -1,			RES_UNDEFINED }
 };
 
