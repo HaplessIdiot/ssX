@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrender/Poly.c,v 1.1 2002/05/13 05:21:46 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -102,13 +102,13 @@ XRenderComputeTrapezoids (Edge		*edges,
     active->prev = 0;
     active->next = 0;
     y = active->edge.p1.y;
-    active_bottom = active->edge.p2.y;
     inactive = 1;
     for (;;)
     {
 	/* delete inactive edges from list */
-	for (e = active; e; e = e->next)
+	for (e = active; e; e = next)
 	{
+	    next = e->next;
 	    if (e->edge.p2.y <= y)
 	    {
 		if (e->prev)
@@ -119,19 +119,22 @@ XRenderComputeTrapezoids (Edge		*edges,
 		    e->next->prev = e->prev;
 	    }
 	}
+	if (!active)
+	    break;
+	active_bottom = active->edge.p2.y;
 	/* add new edges to active list */
 	while (inactive < nedges)
 	{
-	    e = &edges[inactive++];
-	    if (e->edge.p1.y < active_bottom)
-	    {
-		if (e->edge.p2.y > active_bottom)
-		    active_bottom = e->edge.p2.y;
-		e->next = active;
-		e->prev = 0;
-		active->prev = e;
-		active = e;
-	    }
+	    e = &edges[inactive];
+	    if (e->edge.p1.y >= active_bottom)
+		break;
+	    inactive++;
+	    if (e->edge.p2.y < active_bottom)
+		active_bottom = e->edge.p2.y;
+	    e->next = active;
+	    e->prev = 0;
+	    active->prev = e;
+	    active = e;
 	}
 	/* compute x coordinates along this group */
 	for (e = active; e; e = e->next)
@@ -143,7 +146,9 @@ XRenderComputeTrapezoids (Edge		*edges,
 	    prev = 0;
 	    for (en = next; en; en = en->next)
 	    {
-		if (e->current_x < en->current_x)
+		if (e->current_x < en->current_x ||
+		    (e->current_x == en->current_x && 
+		     e->edge.p2.x <= en->edge.p2.x))
 		    break;
 		prev = en;
 	    }
@@ -186,20 +191,30 @@ XRenderComputeTrapezoids (Edge		*edges,
 	}
 	
 	/* walk the list generating trapezoids */
-	for (e = active; e && e->next; e = e->next)
+	for (e = active; e; e = en)
 	{
-	    if (e->edge.p1.y < next_y && y < e->edge.p2.y)
+	    en = e->next;
+	    if (e->edge.p1.y <= y)
 	    {
-		traps->top = y;
-		traps->bottom = next_y;
-		traps->left = e->edge;
-		traps->right = e->next->edge;
-		traps++;
-		ntraps++;
+		for (; en; en = en->next)
+		{
+		    if (en->edge.p1.y <= y)
+		    {
+			traps->top = y;
+			traps->bottom = next_y;
+			traps->left = e->edge;
+			traps->right = en->edge;
+			traps++;
+			ntraps++;
+			en = en->next;
+			break;
+		    }
+		}
 	    }
 	}
 	y = next_y;
     }
+    return ntraps;
 }
 
 void
@@ -219,7 +234,7 @@ XRenderCompositeDoublePoly (Display		    *dpy,
     Edge	    *edges;
     XTrapezoid	    *traps;
     int		    i, nedges, ntraps;
-    XFixed	    x, y, prevx, prevy, firstx, firsty;
+    XFixed	    x, y, prevx = 0, prevy = 0, firstx = 0, firsty = 0;
     XFixed	    top, bottom;
 
     edges = (Edge *) Xmalloc (npoints * sizeof (Edge) +
