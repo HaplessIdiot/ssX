@@ -1,4 +1,7 @@
 XFree86 3.0B (6 June 1994)
+ 82. bitblt fixes (including big memory leak) for 8514, Mach8, Mach32 and
+     S3 servers (Tiago Gons).
+ 81. line/seg fixes for 8514 and Mach8 servers (Tiago Gons).
  80. Remove separate cfb libs for Mach32 (only compile-tested so far).
  79. Restore hw/xfree86/etc directory.
  78. Update bsdinst.sh for SVR4 (use /usr/ucb/install, and run 'mcs -d'
