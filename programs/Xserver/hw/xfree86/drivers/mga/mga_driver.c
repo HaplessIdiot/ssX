@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.43 1998/09/13 00:51:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.44 1998/09/13 05:23:39 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -175,28 +175,15 @@ static SymTabRec MGAChipsets[] = {
     {-1,			NULL }
 };
 
-/* List of PCI chipset names */
-static char *MGAPciNames[] = {
-    "mga2064w",
-    "mga1064sg",
-    "mga2164w",
-    "mga2164w AGP",
-    "mgag100",
-    "mgag200",
-    "mgag200 PCI",
-    NULL
-};
-
-/* List of PCI IDs */
-static unsigned int MGAPciIds[] = {
-    PCI_CHIP_MGA2064,
-    PCI_CHIP_MGA1064,
-    PCI_CHIP_MGA2164,
-    PCI_CHIP_MGA2164_AGP,
-    PCI_CHIP_MGAG100,
-    PCI_CHIP_MGAG200,
-    PCI_CHIP_MGAG200_PCI,
-    ~0
+static PciChipsets MGAPciChipsets[] = {
+    { PCI_CHIP_MGA2064,		PCI_CHIP_MGA2064,		RES_NONE },
+    { PCI_CHIP_MGA1064,		PCI_CHIP_MGA1064,		RES_NONE },
+    { PCI_CHIP_MGA2164,		PCI_CHIP_MGA2164,		RES_NONE },
+    { PCI_CHIP_MGA2164_AGP,	PCI_CHIP_MGA2164_AGP,		RES_NONE },
+    { PCI_CHIP_MGAG100,		PCI_CHIP_MGAG100,		RES_NONE },
+    { PCI_CHIP_MGAG200,		PCI_CHIP_MGAG200,		RES_NONE },
+    { PCI_CHIP_MGAG200_PCI,	PCI_CHIP_MGAG200_PCI,		RES_NONE },
+    { -1,			-1,				-1}
 };
 
 typedef enum {
@@ -337,9 +324,11 @@ MGAProbe(DriverPtr drv, int flags)
     pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
     GDevPtr *usedDevs;
+    int *usedChips;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
+    BusResource resource;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -351,21 +340,10 @@ MGAProbe(DriverPtr drv, int flags)
      * assume that it will be used.  Don't do any initialisations other than
      * the required ScrnInfoRec initialisations.  Don't allocate any new
      * data structures.
-     *
-     * Since this test version still uses vgaHW, we'll only actually claim
-     * one for now, and just print a message about the others.
      */
 
     /*
-     * This bit is only here because we're still using vgaHW.  When we're
-     * not it will disappear.
-     */
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
-	return FALSE;
-    }
-
-    /*
-     * Next we check, if there has been a chipset override in the config file.
+     * Check if there has been a chipset override in the config file.
      * For this we must find out if there is an active device section which
      * is relevant, i.e., which has no driver specified or has THIS driver
      * specified.
@@ -379,11 +357,6 @@ MGAProbe(DriverPtr drv, int flags)
 	 */
 	return FALSE;
     }
-
-    /*
-     * While we're VGA-dependent, can really only have one such instance, but
-     * we'll ignore that.
-     */
 
     /*
      * We need to probe the hardware first.  We then need to see how this
@@ -404,8 +377,8 @@ MGAProbe(DriverPtr drv, int flags)
     }
 
     numUsed = xf86MatchPciInstances(MGA_NAME, PCI_VENDOR_MATROX,
-			MGAPciIds, MGAPciNames, devSections, numDevSections,
-			&usedDevs, &usedPci);
+			MGAChipsets, MGAPciChipsets, devSections,
+			numDevSections, &usedDevs, &usedPci, &usedChips);
     /* Free it since we don't need that list after this */
     xfree(devSections);
     devSections = NULL;
@@ -414,24 +387,20 @@ MGAProbe(DriverPtr drv, int flags)
 
     for (i = 0; i < numUsed; i++) {
 	pPci = usedPci[i];
-
+	/* XXX Is this really needed since we already know what it is? */
+	resource = xf86FindPciResource(usedChips[i], MGAPciChipsets);
 	/*
 	 * Check that nothing else has claimed the slots.
-	 * For now we're checking for PCI_VGA, but that will change
-	 * to PCI_ONLY when we remove the vgaHW dependence.
 	 */
 	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_VGA)) {
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, resource)) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
-	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_VGA, pScrn->scrnIndex)) {
-		/* This can't happen */
-		FatalError("someone claimed the free slot!\n");
-	    }
+	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, resource,
+			     &MGA, usedChips[i], pScrn->scrnIndex);
+
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
 	    pScrn->driverName	 = MGA_DRIVER_NAME;
