@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.67 2000/03/01 16:01:27 tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.70 2000/08/08 08:58:07 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2305,7 +2305,7 @@ TsengMapMem(ScrnInfoPtr pScrn)
 					   pTseng->PciTag,
 					   (unsigned long)pTseng->LinFbAddress,
 					   pTseng->FbMapSize);
-	  if (pTseng->MMioBase == NULL) {
+	  if (!pTseng->MMioBase) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Could not mmap mmio memory.\n");
 	    return FALSE;
@@ -2321,7 +2321,7 @@ TsengMapMem(ScrnInfoPtr pScrn)
 					     pTseng->PciTag,
 					     (unsigned long)hwp->MapPhys,
 					     hwp->MapSize);
-	    if (pTseng->MMioBase == NULL) {
+	    if (!pTseng->MMioBase) {
 	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			 "Could not mmap mmio memory.\n");
 	      return FALSE;
