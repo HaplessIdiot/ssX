@@ -1,4 +1,6 @@
 XFree86 3.9.18Z (3 March 2000)
+3923. Fix a thread related problem in the Xv client library (Mark Vojkovich).
+3922. Fix a Xinerama problem with XShapeMask (Mark Vojkovich).
 3921. LynxOS documentation and bindist updates, and an os-support fix (#3779,
       Thomas Mueller).
 3920. Update the wacom input driver to suppor the PL400 model and the
