@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.3 1996/01/24 21:58:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.4 1996/08/10 13:03:42 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -295,6 +295,7 @@ Colormap cmap;
 
 /* Helper functions */
 
+#if 0
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
@@ -307,6 +308,7 @@ Colormap cmap;
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xmu/StdSel.h>
+#endif
 #include <X11/Xmd.h>
 #include <X11/extensions/xf86dga.h>
 #include <stdlib.h>
