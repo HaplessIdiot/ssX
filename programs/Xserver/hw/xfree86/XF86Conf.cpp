@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.39 1999/05/30 07:50:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.41 1999/07/05 12:01:49 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -343,10 +343,6 @@ XCOMM The identifier line must be present.
 
     Identifier	"Generic Monitor"
 
-XCOMM The VendorName and ModelName lines are optional.
-    VendorName	"Unknown"
-    ModelName	"Unknown"
-
 XCOMM HorizSync is in kHz unless units are specified.
 XCOMM HorizSync may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
@@ -421,11 +417,6 @@ XCOMM The Identifier must be present.
 
     Identifier	"Generic VGA"
 
-XCOMM The VendorName and BoardName lines are optional.
-
-    VendorName	"Unknown"
-    BoardName	"Unknown"
-
 XCOMM The Driver line must be present.  When using run-time loadable driver
 XCOMM modules, this line instructs the server to load the specified driver
 XCOMM module.  Even when not using loadable driver modules, this line
@@ -464,7 +455,6 @@ EndSection
 Section "Device"
     Identifier	"any supported Trident chip"
     Driver	"trident"
-    VendorName	"Trident"
 EndSection
 
 Section "Device"

@@ -7,10 +7,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>4 July 1999 (this document needs work!)
+<date>18 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.91 1999/07/07 12:05:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.92 1999/07/10 07:24:44 dawes Exp $
 </ident>
 
 <abstract>
@@ -69,11 +69,21 @@ to the latest source and to other developers.
 <sect>How to get XFree86 &relvers;
 <p>
 
+XFree86 &relvers; can be found at the <url name="XFree86 ftp server"
+url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers;/">, and at
+mirrors of this server.  This snapshot is available primarily in source
+form.  Binaries for some platforms may be made available at a later time.
+
 <sect>Reporting Bugs
 <p>
 
-
-
+Bugs should be reported to <email>XFree86@XFree86.org</email>.  Before
+reporting bugs, please check the X server log file, which can be found
+at <tt>/var/log/XFree86.0.log</tt> on most platforms.  If you can't resolve
+the problem yourself, send the entire log file with your bug report.  Please
+don't edit out what you think might not be important.  The information
+contained in the log file is there to make it easier for the developers
+to determine what is going wrong when there are problems.
 
 
 
