@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.15 2000/12/22 05:27:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.16 2001/01/03 23:46:33 mvojkovi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -462,6 +462,11 @@ R128QueryBestSize(
   unsigned int *p_w, unsigned int *p_h,
   pointer data
 ){
+   if(vid_w > (drw_w << 4))
+	drw_w = vid_w >> 4;
+   if(vid_h > (drw_h << 4))
+	drw_h = vid_h >> 4;
+
   *p_w = drw_w;
   *p_h = drw_h;
 }
