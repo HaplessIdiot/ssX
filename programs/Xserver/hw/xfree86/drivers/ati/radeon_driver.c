@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.74 2002/12/11 03:43:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.75 2002/12/16 16:19:13 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -3510,12 +3510,11 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       (pScrn->displayWidth * pScrn->virtualY *
 			info->CurrentLayout.pixel_bytes * 3 + 1023) / 1024);
 	    info->directRenderingEnabled = FALSE;
-	} else if (info->ChipFamily >= CHIP_FAMILY_RV250) {
-	    /* Is this correct or do RV250's and M9's work? */
+	} else if (info->ChipFamily >= CHIP_FAMILY_R300) {
 	    info->directRenderingEnabled = FALSE;
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Direct rendering not yet supported on "
-		       "Radeon 9000 and newer cards\n");
+		       "Radeon 9700 and newer cards\n");
 	} else {
 	    if (info->IsSecondary)
 		info->directRenderingEnabled = FALSE;
@@ -3614,6 +3613,9 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	int        bufferSize  = ((pScrn->virtualY * width_bytes
 				   + RADEON_BUFFER_ALIGN)
 				  & ~RADEON_BUFFER_ALIGN);
+	int        depthSize   = ((((pScrn->virtualY+15) & ~15) * width_bytes
+				   + RADEON_BUFFER_ALIGN)
+				  & ~RADEON_BUFFER_ALIGN);
 	int        l;
 	int        scanlines;
 
@@ -3645,7 +3647,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * pixmap cache.  Should be enough for a fullscreen background
 	 * image plus some leftovers.
 	 */
-	info->textureSize = info->FbMapSize - 6 * bufferSize;
+	info->textureSize = info->FbMapSize - 5 * bufferSize - depthSize;
 
 	/* If that gives us less than half the available memory, let's
 	 * be greedy and grab some more.  Sorry, I care more about 3D
@@ -3653,22 +3655,23 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * framebuffer's worth of pixmap cache anyway.
 	 */
 	if (info->textureSize < (int)info->FbMapSize / 2) {
-	    info->textureSize = info->FbMapSize - 5 * bufferSize;
+	    info->textureSize = info->FbMapSize - 4 * bufferSize - depthSize;
 	}
 	if (info->textureSize < (int)info->FbMapSize / 2) {
- 	    info->textureSize = info->FbMapSize - 4 * bufferSize;
+ 	    info->textureSize = info->FbMapSize - 3 * bufferSize - depthSize;
 	}
 	/* If there's still no space for textures, try without pixmap cache */
 	if (info->textureSize < 0) {
-	    info->textureSize = info->FbMapSize - 3 * bufferSize - 64/4*64;
+	    info->textureSize = info->FbMapSize - 2 * bufferSize - depthSize
+				- 64/4*64;
 	}
 
 	/* Check to see if there is more room available after the 8192nd
 	   scanline for textures */
-	if ((int)info->FbMapSize - 8192*width_bytes - bufferSize*2
+	if ((int)info->FbMapSize - 8192*width_bytes - bufferSize - depthSize
 	    > info->textureSize) {
 	    info->textureSize =
-		info->FbMapSize - 8192*width_bytes - bufferSize*2;
+		info->FbMapSize - 8192*width_bytes - bufferSize - depthSize;
 	}
 
 	/* If backbuffer is disabled, don't allocate memory for it */
@@ -3706,7 +3709,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				/* Reserve space for the shared depth
                                  * buffer.
 				 */
-	info->depthOffset = ((info->textureOffset - bufferSize +
+	info->depthOffset = ((info->textureOffset - depthSize +
 			      RADEON_BUFFER_ALIGN) &
 			     ~(CARD32)RADEON_BUFFER_ALIGN);
 	info->depthPitch = pScrn->displayWidth;
@@ -3993,6 +3996,31 @@ static void RADEONRestoreCommonRegisters(ScrnInfoPtr pScrn,
 	    usleep(100000);
 	}
     }
+}
+
+/* Write miscellaneous registers which might have been destroyed by an fbdevHW
+ * call
+ */
+static void RADEONRestoreFBDevRegisters(ScrnInfoPtr pScrn,
+					 RADEONSavePtr restore)
+{
+#ifdef XF86DRI
+    RADEONInfoPtr  info       = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+
+    /* Restore register for vertical blank interrupts */
+    if (info->irq) {
+	OUTREG(RADEON_GEN_INT_CNTL, restore->gen_int_cntl);
+    }
+
+    /* Restore registers for page flipping */
+    if (info->allowPageFlip) {
+	OUTREG(RADEON_CRTC_OFFSET_CNTL, restore->crtc_offset_cntl);
+	if (info->HasCRTC2) {
+	    OUTREG(RADEON_CRTC2_OFFSET_CNTL, restore->crtc2_offset_cntl);
+	}
+    }
+#endif
 }
 
 /* Write CRTC registers */
@@ -4420,6 +4448,28 @@ static void RADEONSaveCommonRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save)
     save->surface_cntl	     = INREG(RADEON_SURFACE_CNTL);
 }
 
+/* Read miscellaneous registers which might be destroyed by an fbdevHW call */
+static void RADEONSaveFBDevRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save)
+{
+#ifdef XF86DRI
+    RADEONInfoPtr  info       = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+
+    /* Save register for vertical blank interrupts */
+    if (info->irq) {
+	save->gen_int_cntl = INREG(RADEON_GEN_INT_CNTL);
+    }
+
+    /* Save registers for page flipping */
+    if (info->allowPageFlip) {
+	save->crtc_offset_cntl = INREG(RADEON_CRTC_OFFSET_CNTL);
+	if (info->HasCRTC2) {
+	    save->crtc2_offset_cntl = INREG(RADEON_CRTC2_OFFSET_CNTL);
+	}
+    }
+#endif
+}
+
 /* Read CRTC registers */
 static void RADEONSaveCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save)
 {
@@ -4697,7 +4747,6 @@ static void RADEONInitCommonRegisters(RADEONSavePtr save, RADEONInfoPtr info)
     save->cap0_trig_cntl     = 0;
     save->cap1_trig_cntl     = 0;
     save->bus_cntl           = info->BusCntl;
-    save->gen_int_cntl       = info->gen_int_cntl;
     /*
      * If bursts are enabled, turn on discards
      * Radeon doesn't have write bursts
@@ -5397,7 +5446,11 @@ Bool RADEONSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     if (info->accelOn) info->accel->Sync(pScrn);
 
     if (info->FBDev) {
+	RADEONSaveFBDevRegisters(pScrn, &info->ModeReg);
+
 	ret = fbdevHWSwitchMode(scrnIndex, mode, flags);
+
+	RADEONRestoreFBDevRegisters(pScrn, &info->ModeReg);
     } else {
 	info->IsSwitching = TRUE;
 	if (info->Clone && info->CloneModes) {
@@ -5571,6 +5624,8 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 	if (!fbdevHWEnterVT(scrnIndex,flags)) return FALSE;
 	info->PaletteSavedOnVT = FALSE;
 	info->ModeReg.surface_cntl = INREG(RADEON_SURFACE_CNTL);
+
+	RADEONRestoreFBDevRegisters(pScrn, &info->ModeReg);
     } else
 	if (!RADEONModeInit(pScrn, pScrn->currentMode)) return FALSE;
 
@@ -5579,12 +5634,6 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
-	if (info->irq) {
-	    /* Need to make sure interrupts are enabled */
-	    unsigned char *RADEONMMIO = info->MMIO;
-	    OUTREG(RADEON_GEN_INT_CNTL, info->gen_int_cntl);
-	}
-
 	RADEONCP_START(pScrn, info);
 	DRIUnlock(pScrn->pScreen);
     }
@@ -5618,6 +5667,9 @@ void RADEONLeaveVT(int scrnIndex, int flags)
     if (info->FBDev) {
 	RADEONSavePalette(pScrn, save);
 	info->PaletteSavedOnVT = TRUE;
+
+	RADEONSaveFBDevRegisters(pScrn, &info->ModeReg);
+
 	fbdevHWLeaveVT(scrnIndex,flags);
     }
 
