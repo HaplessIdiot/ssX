@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.10 1999/05/09 10:51:38 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.11 1999/06/06 08:47:58 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -92,7 +92,7 @@ static char defaultTranslations[] =
 "<Btn1Up>:"	"Notify()\n"
 ;
 
-#define offset(field) XtOffset(ListWidget, field)
+#define offset(field) XtOffsetOf(ListRec, field)
 static XtResource resources[] = {
   {
     XtNforeground,
