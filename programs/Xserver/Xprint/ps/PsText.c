@@ -69,12 +69,11 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.8 1999/12/30 13:09:37 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.9 2001/01/17 22:36:32 dawes Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"
 #include "windowstr.h"
-#include "fntfil.h"
 #include "fntfilst.h"
 #include <sys/stat.h>
 
