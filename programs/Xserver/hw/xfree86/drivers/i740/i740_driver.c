@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.37 2002/07/24 01:47:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.38tsi Exp $ */
 
 /*
  * Authors:
@@ -647,7 +647,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
   xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
-	     (unsigned long)pI740->LinearAddr);
+	     pI740->LinearAddr);
 
   if (pI740->pEnt->device->IOBase != 0) {
     pI740->MMIOAddr = pI740->pEnt->device->IOBase;
@@ -664,7 +664,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
   xf86DrvMsg(pScrn->scrnIndex, from, "IO registers at addr 0x%lX\n",
-	     (unsigned long)pI740->MMIOAddr);
+	     pI740->MMIOAddr);
 
   /* Calculate memory */
   if (pI740->pEnt->device->videoRam) {
@@ -1582,7 +1582,7 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   hwp = VGAHWPTR(pScrn);
 
   if (!I740MapMem(pScrn)) return FALSE;
-  pScrn->memPhysBase = (unsigned long)pI740->LinearAddr;
+  pScrn->memPhysBase = pI740->LinearAddr;
   pScrn->fbOffset = 0;
 
   if (!pI740->usePIO)
