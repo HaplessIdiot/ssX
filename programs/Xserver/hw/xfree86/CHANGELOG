@@ -1,4 +1,5 @@
- 594. Enlarge the I810 pixmap cache and have the YUV overlay use that memory 
+ 595. Fix DGA support in the i810 driver (Mark Vojkovich).
+ 594. Enlarge the i810 pixmap cache and have the YUV overlay use that memory 
       rather than allocate dedicated memory for overlay data (Mark Vojkovich).
  593. Add/fix support for the Rage 128 Mobility chips (M3/M4) (Kevin Martin).
 
@@ -9,27 +10,27 @@ XFree86 4.0.1d (8 September 2000)
       the same (Alan Hourihane).
  590. Fix glint driver to use colorKey rather than fixed value (Alan Hourihane).
  589. Add ScreenToScreenCopies for Permedia3 (Alan Hourihane).
- 588. Add SilkenMouse support to the I810 driver (Mark Vojkovich).
- 587. Disable DRI acceleration in depth 15 on the I810 because it doesn't 
+ 588. Add SilkenMouse support to the i810 driver (Mark Vojkovich).
+ 587. Disable DRI acceleration in depth 15 on the i810 because it doesn't 
       work (Mark Vojkovich).
  586. Fix some ordering problems in the I810ScreenInit that broke the 
       software cursor and backing store (Mark Vojkovich).
- 585. Convert the I810 driver from cfb to fb (Mark Vojkovich).
- 584. Fix some depth/bpp confusion in the I810 driver.  Depth 15 works now
+ 585. Convert the i810 driver from cfb to fb (Mark Vojkovich).
+ 584. Fix some depth/bpp confusion in the i810 driver.  Depth 15 works now
       (Mark Vojkovich).
  583. Turn off visual ID matching in Xv (Mark Vojkovich).
  582. Add the IA-64 ELF loader (Jakub Jelinek).
- 581. Add I420 and UYVY image formats to the I810 driver (#4135, Jonathan Bian).
+ 581. Add I420 and UYVY image formats to the i810 driver (#4135, Jonathan Bian).
  580. Fix an Xaw problem with illegal aliases (Jakub Jelinek).
  579. Set $(SHELL) to '/bin/sh -e' on Linux to allow builds/installs stop
       immediately on errors as on other platforms (Brandon Robinson).
  578. Update i810 driver for -configure to work (Alan Hourihane).
  577. Have Xv silently ignore client requests with zero sized primitives 
       (Mark Vojkovich).
- 576. Disable gamma correction and DirectColor visuals on the I810 because
+ 576. Disable gamma correction and DirectColor visuals on the i810 because
       they don't work (Mark Vojkovich).
  575. Fix a bug in XAA's MSBFIRST color expansion support (Mark Vojkovich).
- 574. Allow the default I810 video overlay key to be changed from the
+ 574. Allow the default i810 video overlay key to be changed from the
       XF86Config file (Mark Vojkovich).
  573. Don't build DRM modules with a non-module Linux kernel (Marc La France).
  572. Reinstate non-MMIO-only version of ATI driver for Alpha architecture
@@ -11128,4 +11129,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1310 2000/09/15 23:26:09 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1311 2000/09/17 01:39:28 mvojkovi Exp $
