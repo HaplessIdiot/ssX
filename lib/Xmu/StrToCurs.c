@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.11 2002/09/19 13:21:58 tsi Exp $ */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
@@ -169,8 +169,8 @@ XmuCvtStringToCursor(XrmValuePtr args, Cardinal *num_args,
 
 	strspec = XtMalloc(strlen("FONT %s %d %s %d") + 21);
 	sprintf(strspec, "FONT %%%lds %%d %%%lds %%d",
-		(ulong)sizeof(source_name) - 1,
-		(ulong)sizeof(mask_name) - 1);
+		(unsigned long)sizeof(source_name) - 1,
+		(unsigned long)sizeof(mask_name) - 1);
 	fields = sscanf(name, strspec,
 			source_name, &source_char,
 			mask_name, &mask_char);
