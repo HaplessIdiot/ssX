@@ -27,10 +27,10 @@ DoProbeArgs(int argc, char **argv, int i)
 void
 DoProbe()
 {
-#if XFree86LOADER
-    int i, skip, globalVerbose, probeVerbose;
+    int i;
     Bool probeResult;
 
+#if XFree86LOADER
     /* Find the list of video driver modules. */
     char **list, **l;
     const char *subdirs[] = {
@@ -54,6 +54,10 @@ DoProbe()
 
     /* Load all the drivers that were found. */
     xf86LoadModules(list, NULL);
+#endif /* XFree86LOADER */
+
+    /* Disable PCI devices */
+    xf86AccessInit();
 
     /* Call all of the probe functions, reporting the results. */
     for (i = 0; i < xf86NumDrivers; i++) {
@@ -65,8 +69,9 @@ DoProbe()
 	       xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
     }
 
+#if XFree86LOADER
     LoaderFreeDirList(list);
-#endif
+#endif /* XFree86LOADER */
 
     OsCleanup();
     AbortDDX();

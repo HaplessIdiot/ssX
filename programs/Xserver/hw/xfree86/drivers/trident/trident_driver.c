@@ -591,7 +591,7 @@ TRIDENTProbe(DriverPtr drv, int flags)
 {
     int i;
     GDevPtr *devSections = NULL;
-    int *usedChips;
+    int *usedChips = NULL;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;

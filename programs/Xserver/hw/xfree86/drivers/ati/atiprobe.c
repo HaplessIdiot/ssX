@@ -800,16 +800,16 @@ ATIProbe
 {
     ATIPtr              pATI, *ATIPtrs = NULL, pVGA = NULL, p8514 = NULL;
     ATIPtr              pMach64[3] = {NULL, NULL, NULL};
-    GDevPtr             *GDevs = NULL, pGDev;
+    GDevPtr             *GDevs, pGDev;
     pciVideoPtr         pVideo, *xf86PciVideoInfo = xf86GetPciVideoInfo();
     pciConfigPtr        pPCI,   *xf86PciInfo      = xf86GetPciConfigInfo();
-    ATIGDev             *ATIGDevs, *pATIGDev;
+    ATIGDev             *ATIGDevs = NULL, *pATIGDev;
     ScrnInfoPtr         pScreenInfo;
     PortPtr             PCIPorts = NULL;
     CARD32              PciReg;
     int                 i, j, k;
     int                 nGDev, nATIGDev = 0, nATIPtr = 0, nPCIPort = 0;
-    int                 nScreen = 0;
+    int                 nAdapter = 0;
     int                 Chipset;
     CARD8               fChipsets[ATI_CHIPSET_MAX];
     ATIChipType         Chip;
@@ -833,59 +833,58 @@ ATIProbe
         (_p)->iEntity = -2;                                                \
     } while(0)
 
-    /*
-     * Get a list of XF86Config device sections whose "Driver" is either not
-     * specified, or specified as this driver.  From this list, eliminate those
-     * device sections that specify a "Chipset" or a "ChipID" not recognized by
-     * the driver.  Those device sections that specify a "ChipRev" without a
-     * "ChipID" are also weeded out.
-     */
-    if ((nGDev = xf86MatchDevice(ATI_NAME, &GDevs)) <= 0)
-        return FALSE;
-
-    ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
-    memset(fChipsets, FALSE, SizeOf(fChipsets));
-
-    if (nGDev > 0 && (flags & PROBE_DETECT))
-	return TRUE;
-
-    for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
+    if (!(flags & PROBE_DETECT))
     {
-        pGDev = GDevs[i];
-        Chipset = ATIIdentProbe(pGDev->chipset);
-        if (Chipset == -1)
-            continue;
+        /*
+         * Get a list of XF86Config device sections whose "Driver" is either
+         * not specified, or specified as this driver.  From this list,
+         * eliminate those device sections that specify a "Chipset" or a
+         * "ChipID" not recognized by the driver.  Those device sections that
+         * specify a "ChipRev" without a "ChipID" are also weeded out.
+         */
+        if ((nGDev = xf86MatchDevice(ATI_NAME, &GDevs)) <= 0)
+            return FALSE;
 
-        if ((pGDev->chipID > (int)((CARD16)(-1))) ||
-            (pGDev->chipRev > (int)((CARD8)(-1))))
-            continue;
+        ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
+        memset(fChipsets, FALSE, SizeOf(fChipsets));
 
-        if (pGDev->chipID >= 0)
+        for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
         {
-            if (ATIChipID(pGDev->chipID, 0) == ATI_CHIP_Mach64)
+            pGDev = GDevs[i];
+            Chipset = ATIIdentProbe(pGDev->chipset);
+            if (Chipset == -1)
                 continue;
+
+            if ((pGDev->chipID > (int)((CARD16)(-1))) ||
+                (pGDev->chipRev > (int)((CARD8)(-1))))
+                continue;
+
+            if (pGDev->chipID >= 0)
+            {
+                if (ATIChipID(pGDev->chipID, 0) == ATI_CHIP_Mach64)
+                    continue;
+            }
+            else
+            {
+                if (pGDev->chipRev >= 0)
+                    continue;
+            }
+
+            pATIGDev->pGDev = pGDev;
+            pATIGDev->Chipset = Chipset;
+            nATIGDev++;
+            pATIGDev++;
+            fChipsets[Chipset] = TRUE;
         }
-        else
+
+        xfree(GDevs);
+
+        /* If no device sections remain, return now */
+        if (!nATIGDev)
         {
-            if (pGDev->chipRev >= 0)
-                continue;
+            xfree(ATIGDevs);
+            return FALSE;
         }
-
-        pATIGDev->pGDev = pGDev;
-        pATIGDev->Chipset = Chipset;
-        nATIGDev++;
-        pATIGDev++;
-        fChipsets[Chipset] = TRUE;
-    }
-
-    if (GDevs)
-	xfree(GDevs);
-
-    /* If no device sections remain, return now */
-    if (!nATIGDev)
-    {
-        xfree(ATIGDevs);
-        return FALSE;
     }
 
     /*
@@ -1348,10 +1347,24 @@ ATIProbe
         if (pVGA->Coprocessor == ATI_CHIP_NONE)
             AddAdapter(pVGA);
 
+        /*
+         * Non-ix86's should never get here.  Any VGA should have installed its
+         * int 10 vector.  Use that to find the VGA BIOS.  If this fails, scan
+         * all legacy BIOS segments, in 512-byte increments.
+         */
+        if (xf86ReadBIOS(0U, 0x42U, BIOS, 2) != 2)
+            goto NoVGAWonder;
+
+        pATI = NULL;
+        BIOSBase = ((BIOS[1] << 8) | BIOS[0]) << 4;
+
         /* Look for its BIOS */
-        for (BIOSBase = 0x000C0000U;  ;  BIOSBase += 0x00000200U)
+        for(;  ;  BIOSBase += 0x00000200U)
         {
-            if (BIOSBase >= 0x000F0000U)
+            if (!BIOSBase)
+                goto SkipBiosSegment;
+
+            if (BIOSBase >= 0x000F8000U)
                 goto NoVGAWonder;
 
             /* Skip over those that are already known */
@@ -1365,7 +1378,7 @@ ATIProbe
                 goto NoVGAWonder;
 
             if ((BIOS[0x00U] != 0x55U) || (BIOS[0x01U] != 0xAAU))
-                continue;
+                goto SkipBiosSegment;
 
             if ((BIOS[0x1EU] == 'I') &&
                 (BIOS[0x1FU] == 'B') &&
@@ -1378,7 +1391,12 @@ ATIProbe
                 (BIOS[0x22U] == 'I'))
                 break;
 
-    SkipBiosSegment:  ;
+    SkipBiosSegment:
+            if (pATI)
+                continue;
+
+            pATI = pVGA;
+            BIOSBase = 0x000C0000U - 0x00000200U;
         }
 
         pVGA->BIOSBase = BIOSBase;
@@ -1485,6 +1503,29 @@ NoVGAWonder:;
     {
         xfree(ATIGDevs);
         return FALSE;
+    }
+
+    if (flags & PROBE_DETECT)
+    {
+        /*
+         * No XF86Config information available, so use the default Chipset of
+         * "ati", and as many device sections as there are adapters.
+         */
+        for (i = 0;  i < nATIPtr;  i++)
+        {
+            pATI = ATIPtrs[i];
+
+            if ((pATI->Adapter != ATI_ADAPTER_VGA) &&
+                ((pATI->Adapter != ATI_ADAPTER_8514A) ||
+                 ((pATI->VGAAdapter != ATI_ADAPTER_VGA) &&
+                  (pATI->VGAAdapter != ATI_ADAPTER_NONE))))
+                nAdapter++;
+
+            xfree(pATI);
+        }
+
+        xfree(ATIPtrs);
+        return (nAdapter != 0);
     }
 
     /*
@@ -1703,7 +1744,7 @@ NoVGAWonder:;
 
         pATI->Chipset = pATIGDev->Chipset;
 
-        nScreen++;
+        nAdapter++;
     }
 
     /* Deal with unassigned adapters */
@@ -1719,5 +1760,5 @@ NoVGAWonder:;
     xfree(ATIPtrs);
     xfree(ATIGDevs);
 
-    return (nScreen != 0);
+    return (nAdapter != 0);
 }

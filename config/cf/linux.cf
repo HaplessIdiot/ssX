@@ -122,7 +122,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #define HasPoll			YES
 #else
-#define LinuxSourceDefines	-D_POSIX_SOURCE \
+#define LinuxSourceDefines	-D_POSIX_SOURCE -D_POSIX_C_SOURCE=2 \
 				-D_BSD_SOURCE -D_SVID_SOURCE \
 				LinuxGnuSourceDefines LinuxLocaleDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC

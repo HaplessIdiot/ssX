@@ -633,8 +633,7 @@ Xfree(pointer ptr)
 	    sleep(5);
 	    XfreeTrap();
 #endif
-	    LOG_REALLOC("Xalloc error: ranged already freed in Xrealloc() :-(",
-			ptr, amount, 0);
+	    LOG_FREE("Xalloc error: ranged already freed in Xrealloc() :-(", ptr);
 	    return;
 	}
 #ifdef FATALERRORS
