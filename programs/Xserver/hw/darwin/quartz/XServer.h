@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.8 2003/01/23 00:34:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.9 2003/04/30 23:15:39 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -44,6 +44,7 @@
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
     BOOL queueShowServer;
+    BOOL quitWithoutQuery;
     UInt32 mouseState;
 
     // server event queue
@@ -58,6 +59,13 @@
     IBOutlet NSWindow *helpWindow;
     IBOutlet NSButton *startupHelpButton;
     IBOutlet NSPanel *switchWindow;
+
+    // Menu elements setable by Apple-WM extension
+    NSMenu *windowMenu;
+    NSMenuItem *windowSeparator;
+    NSMenu *dockMenu;
+    NSMenuItem *dockSeparator;
+    int checkedWindowItem;
 }
 
 - (id)init;
@@ -81,6 +89,8 @@
 - (void)sendXEvent:(xEvent *)xe;
 - (void)sendShowHide:(BOOL)show;
 - (void)clientProcessDone:(int)clientStatus;
+- (void)setWindowMenu:(NSArray *)list;
+- (void)setWindowMenuCheck:(NSNumber *)nn;
 
 // Aqua interface actions
 - (IBAction)startFullScreen:(id)sender;
@@ -108,4 +118,3 @@ enum {
     server_Quitting,
     server_Done
 };
-

@@ -23,7 +23,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.16 2003/04/30 23:15:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.17 2003/05/14 05:27:55 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -127,7 +127,8 @@ enum {
   kXDarwinSetRootClip,      // enable or disable drawing to the X screen
   kXDarwinQuit,             // kill the X server and release the display
   kXDarwinReadPasteboard,   // copy Mac OS X pasteboard into X cut buffer
-  kXDarwinWritePasteboard   // copy X cut buffer onto Mac OS X pasteboard
+  kXDarwinWritePasteboard,  // copy X cut buffer onto Mac OS X pasteboard
+  kXDarwinControllerNotify  // send an AppleWMControllerNotify event
 };
 
 #endif	/* _DARWIN_H */

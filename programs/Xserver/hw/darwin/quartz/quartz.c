@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.8 2003/04/30 23:15:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.9 2003/05/14 05:27:56 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -39,6 +39,8 @@
 #include "fullscreen.h"
 #include "rootlessAqua.h"
 #include "pseudoramiX.h"
+#define _APPLEWM_SERVER_
+#include "applewmstr.h"
 
 // X headers
 #include "scrnintstr.h"
@@ -278,6 +280,13 @@ void DarwinModeProcessEvent(
 
         case kXDarwinWritePasteboard:
             QuartzWritePasteboard();
+            break;
+
+        case kXDarwinControllerNotify:
+            AppleWMSendEvent(AppleWMControllerNotify,
+                             AppleWMControllerNotifyMask,
+			     xe->u.clientMessage.u.l.longs0,
+			     xe->u.clientMessage.u.l.longs1);
             break;
 
         default:
