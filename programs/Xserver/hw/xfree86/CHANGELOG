@@ -1,4 +1,10 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 434. Add the DEC-XTRAP extension and sample clients (#4904, 4918,
+      Paul Stewart).
+ 433. Update the us_intl XKB symbols map to include all diacritics used
+      in latin script (#4917, Pablo Saratxaga).
+ 432. Add a Compose file for utf-8 (#4917, 5019, Pablo Saratxaga).
+ 431. Fix radeon and sis GL module Imakefiles (#4916, Bill Nottingham).
  430. Bug fixes and updates for Savage driver (#5001, Tim Roberts).
  429. Add luit (#4914, Juliusz Chroboczek).
  428. Fix a typo in fontenc that prevents building with no dependency on
@@ -14077,4 +14083,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2013 2001/11/02 03:06:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2014 2001/11/02 16:24:49 alanh Exp $
