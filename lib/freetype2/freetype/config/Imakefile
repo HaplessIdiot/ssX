@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/freetype/config/Imakefile,v 1.10 2003/05/05 16:12:29 dawes Exp $
+XCOMM $XFree86: xc/lib/freetype2/freetype/config/Imakefile,v 1.11tsi Exp $
 
 FREETYPETOP = $(TOP)/extras/freetype2
 FREETYPESRC = $(FREETYPETOP)/src
@@ -14,7 +14,11 @@ HEADERS= \
 BuildIncludes($(HEADERS),freetype2/freetype/config,../../..)
 InstallMultipleFlags($(HEADERS),$(INCDIR)/freetype2/freetype/config,$(INSTINCFLAGS))
 
+#if 0
 LinkSourceFile(ftconfig.h,$(FREETYPEINC)/config)
+#else
+LinkSourceFile(ftconfig.h,$(FONTLIBSRC)/FreeType)
+#endif
 LinkSourceFile(ftheader.h,$(FREETYPEINC)/config)
 LinkSourceFile(ftmodule.h,$(FREETYPEINC)/config)
 LinkSourceFile(ftoption.h,$(FREETYPEINC)/config)

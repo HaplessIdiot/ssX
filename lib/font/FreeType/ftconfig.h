@@ -17,7 +17,7 @@
 /*                                                                         */
 /***************************************************************************/
 
-/* $XFree86: xc/lib/font/FreeType/ftconfig.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftconfig.h,v 1.5tsi Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -71,18 +71,6 @@ FT_BEGIN_HEADER
 #else
 #define FT_SIZEOF_LONG 4
 #endif
-
-#if 0	/* ?!?!?!?! */
-  /* The number of bytes in a `long' type.  */
-#if FT_ULONG_MAX == 0x0FFFFFFFFUL
-#define FT_SIZEOF_LONG  4
-#elif FT_ULONG_MAX > 0x0FFFFFFFFU && FT_ULONG_MAX == 0x0FFFFFFFFFFFFFFFFU
-#define FT_SIZEOF_LONG  8
-#else
-#error "Unsupported number of bytes in `long' type!"
-#endif
-#endif
-
 
   /* Preferred alignment of data */
 #define FT_ALIGNMENT  8

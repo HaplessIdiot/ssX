@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.24 2003/02/25 22:18:03 dawes Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.25tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -43,7 +43,7 @@ TYPE1DIR=XftType1Dir
 #if HasGcc2 || HasGcc3
 WARNINGS=-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs
 #endif
-INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) $(WARNINGS)
+INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) -I$(XBUILDINCDIR) $(WARNINGS)
 DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
 
 XFT_REVISION=0
@@ -102,7 +102,7 @@ HEADERS = Xft.h XftCompat.h
           xftinit.c xftlist.c \
           xftname.c xftstr.c xftswap.c xftxlfd.c \
 	  xftfreetype.c xftglyphs.c xftrender.c xftcore.c
-  
+
    OBJS = xftcolor.o xftdbg.o xftdpy.o \
           xftdraw.o xftextent.o xftfont.o \
           xftinit.o xftlist.o \

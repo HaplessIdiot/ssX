@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.13 2003/05/29 03:05:09 dawes Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.14tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -57,7 +57,8 @@ INCLUDES = -I. $(FREETYPE2INCLUDES)\
 	-I$(FREETYPESRC)/truetype\
 	-I$(FREETYPESRC)/type1\
 	-I$(FREETYPESRC)/type42\
-	-I$(FREETYPESRC)/winfonts
+	-I$(FREETYPESRC)/winfonts\
+	-I$(XBUILDINCDIR)
 
 SUBDIRS=freetype
 

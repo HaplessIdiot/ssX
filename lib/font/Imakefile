@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:24 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.35 2002/10/21 18:03:39 keithp Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.36tsi Exp $
 
 #include <Server.tmpl>
 
@@ -61,7 +61,7 @@ REQUIREDLIBS = SharedXfontReqs
    TYPE1PROFILEOBJS = Type1/profiled/?*.o
          TYPE1DONES = Type1/DONE
 #endif
-#if BuildFreeType
+#if BuildFreeType || BuildFreetype2Library
        FREETYPEDIRS = FreeType
  FREETYPESHAREDOBJS = FreeType/?*.o
  FREETYPESTATICOBJS = FreeType/$(STATIC_OBJSDIR)?*.o
