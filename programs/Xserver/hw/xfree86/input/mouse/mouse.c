@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.50 2001/12/19 16:05:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.52 2002/04/04 14:05:51 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -498,6 +498,9 @@ MouseHWOptions(InputInfoPtr pInfo)
     MouseDevPtr  pMse = pInfo->private;
     mousePrivPtr mPriv = (mousePrivPtr)pMse->mousePriv;
     
+    if (mPriv == NULL) 
+	    return;
+
     if ((mPriv->soft
 	 = xf86SetBoolOption(pInfo->options, "AutoSoft", FALSE))) {
 	xf86Msg(X_CONFIG, "Don't initialize mouse when auto-probing\n");
@@ -1380,16 +1383,18 @@ MouseProc(DeviceIntPtr device, int what)
 		    pMse->buffer = NULL;
 		} else {
 		    mousePrivPtr mPriv = (mousePrivPtr)pMse->mousePriv;
-		    if (pMse->protocolID != PROT_AUTO) {
-			if (mPriv->soft)
-			    mPriv->autoState = AUTOPROBE_GOOD;
-			else
-			    mPriv->autoState = AUTOPROBE_H_GOOD;
-		    } else {
-			if (mPriv->soft)
-			    mPriv->autoState = AUTOPROBE_NOPROTO;
-			else
-			    mPriv->autoState = AUTOPROBE_H_NOPROTO;
+		    if (mPriv != NULL) {
+			if (pMse->protocolID != PROT_AUTO) {
+			    if (mPriv->soft)
+				mPriv->autoState = AUTOPROBE_GOOD;
+			    else
+				mPriv->autoState = AUTOPROBE_H_GOOD;
+			} else {
+			    if (mPriv->soft)
+				mPriv->autoState = AUTOPROBE_NOPROTO;
+			    else
+				mPriv->autoState = AUTOPROBE_H_NOPROTO;
+			}
 		    }
 		    xf86FlushInput(pInfo->fd);
 		    if (pMse->protocolID == PROT_PS2)
