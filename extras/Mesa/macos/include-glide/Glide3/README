@@ -1,8 +1,0 @@
-Glide Headers:
----------------
-You should put Glide3 headers to include-glide/Glide3
-and Glide2 headers to include-glide/Glide2.
-
-Glide2 headers are available from http://www.3dfx.com/ in the Glide2.x MacOS SDK.
-Glide3 headers are available from http://www.3dfx.com/ only in Win95 SDK. 
-To compile you should remove the __stdcall parameter. (The compiler will show you it :) )
