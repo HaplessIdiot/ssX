@@ -1673,8 +1673,11 @@ static void RADEONSortModes(DisplayModePtr *new, DisplayModePtr *first,
 
     p = *last;
     while (p) {
-	if (((*new)->HDisplay < p->HDisplay) && 
-	    ((*new)->VDisplay < p->VDisplay)) {
+	if ((((*new)->HDisplay < p->HDisplay) && 
+	     ((*new)->VDisplay < p->VDisplay)) ||
+	    (((*new)->HDisplay == p->HDisplay) &&
+	     ((*new)->VDisplay == p->VDisplay) &&
+	     ((*new)->Clock < p->Clock))) {
 
 	    if (p->next) p->next->prev = *new;
 	    (*new)->prev = p;
@@ -1704,8 +1707,9 @@ static void RADEONSortModes(DisplayModePtr *new, DisplayModePtr *first,
 /* When no mode provided in config file, this will add all modes supported in 
  * DDC date the pScrn->modes list
  */
-static int RADEONAddAllDDCModes(ScrnInfoPtr pScrn)
+static DisplayModePtr RADEONDDCModes(ScrnInfoPtr pScrn)
 {
+    RADEONInfoPtr   info = RADEONPTR(pScrn);
     DisplayModePtr  p;
     DisplayModePtr  last  = NULL;
     DisplayModePtr  new   = NULL;
@@ -1714,6 +1718,30 @@ static int RADEONAddAllDDCModes(ScrnInfoPtr pScrn)
     int             j, tmp;
     char            stmp[32];
     xf86MonPtr      ddc   = pScrn->monitor->DDC;
+
+    /* Add native panel size */
+    if (info->PanelXRes != 0 && info->DisplayType != MT_CRT &&
+	info->PanelYRes != 0 && info->DotClock != 0) {
+
+	new             = xnfcalloc (1, sizeof (DisplayModeRec));
+	new->prev       = last;
+	new->name       = xnfalloc (12);
+	sprintf (new->name, "%dx%d", info->PanelXRes, info->PanelYRes);
+	new->HDisplay   = info->PanelXRes;
+	new->VDisplay   = info->PanelYRes;
+	    
+	new->HTotal     = new->HDisplay + info->HBlank;
+	new->HSyncStart = new->HDisplay + info->HOverPlus;
+	new->HSyncEnd   = new->HSyncStart + info->HSyncWidth;
+	new->VTotal     = new->VDisplay + info->VBlank;
+	new->VSyncStart = new->VDisplay + info->VOverPlus;
+	new->VSyncEnd   = new->VSyncStart + info->VSyncWidth;	
+	    
+	new->Clock      = info->DotClock;
+	new->Flags      = 0;
+
+	RADEONSortModes (&new, &first, &last);
+    }
 
     /* Go thru detailed timing table first */
     for (j = 0; j < 4; j++) {
@@ -1843,25 +1871,6 @@ static int RADEONAddAllDDCModes(ScrnInfoPtr pScrn)
 	       first, last, new);
 #endif
 
-    if (last) {
-	last->next = first;
-	first->prev = last;
-	pScrn->modes = first;
-
-	/* FIXME: May need to validate line pitch here */
-	{
-	    int  dummy = pScrn->virtualX;
-	    switch (pScrn->depth / 8) {
-	    case 1: dummy = (pScrn->virtualX + 127) & ~127; break;
-	    case 2: dummy = (pScrn->virtualX + 31) & ~31;   break;
-	    case 3:
-	    case 4: dummy = (pScrn->virtualX + 15) & ~15;   break;
-	    }
-
-	    pScrn->displayWidth = dummy;
-	}
-    }
-
 #if 0
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "$$$$$1 %p %p %p\n",
 	       first, first->next, first->next->next);
@@ -1873,7 +1882,7 @@ static int RADEONAddAllDDCModes(ScrnInfoPtr pScrn)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	       "Total of %d mode(s) found.\n", count);
 
-    return count;
+    return first;
 }
 
 /* XFree86's xf86ValidateModes routine deosn't work well with DFPs here
@@ -1883,14 +1892,14 @@ static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName,
 				 Bool IsClone)
 {
     RADEONInfoPtr   info       = RADEONPTR(pScrn);
-    DisplayModePtr  p;
+    DisplayModePtr  p, *prev;
     DisplayModePtr  last       = NULL;
     DisplayModePtr  new        = NULL;
     DisplayModePtr  first      = NULL;
+    DisplayModePtr  ddcModes   = NULL;
     xf86MonPtr      ddc        = pScrn->monitor->DDC;
-    Bool            mode_found = FALSE;
     int             count      = 0;
-    int             i, j, width, height, tmp;
+    int             i, width, height;
 
     /* The panel size we collected from BIOS may not be the maximum size
      * supported by the panel.  If not, we update it now.  These will be
@@ -1914,195 +1923,48 @@ static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName,
     pScrn->virtualX = pScrn->display->virtualX;
     pScrn->virtualY = pScrn->display->virtualY;
 
-    /* If no mode specified in config, we use native resolution for DFP 
-     * and add default modes for VESA CRT.
-     */
-    if (!ppModeName[0]) {	
-	count = RADEONAddAllDDCModes(pScrn);
+    ddcModes = RADEONDDCModes (pScrn);
+    
+    /* Primary head panel, use RMX by default */
+    if (!info->ddc_mode &&
+	!info->IsSecondary &&
+	!IsClone &&
+	info->DisplayType != MT_CRT) {
+	for (p = ddcModes; p; p = p->next)
+	{
+	    /* These values are effective values after expansion.
+	     * They are not really used to set CRTC registers.
+	     */
+	    p->HTotal     = info->PanelXRes + info->HBlank;
+	    p->HSyncStart = info->PanelXRes + info->HOverPlus;
+	    p->HSyncEnd   = p->HSyncStart + info->HSyncWidth;
+	    p->VTotal     = info->PanelYRes + info->VBlank;
+	    p->VSyncStart = info->PanelYRes + info->VOverPlus;
+	    p->VSyncEnd   = p->VSyncStart + info->VSyncWidth;	
+	    p->Clock      = info->DotClock;
 
-	/* Primary head panel, use RMX by default */
-	if (!info->ddc_mode &&
-	    !info->IsSecondary &&
-	    !IsClone &&
-	    info->DisplayType != MT_CRT) {
-	    p = pScrn->modes;
-	    for (i = 0; i < count; i++) {
-		/* These values are effective values after expansion.
-		 * They are not really used to set CRTC registers.
-		 */
-		p->HTotal     = info->PanelXRes + info->HBlank;
-		p->HSyncStart = info->PanelXRes + info->HOverPlus;
-		p->HSyncEnd   = p->HSyncStart + info->HSyncWidth;
-		p->VTotal     = info->PanelYRes + info->VBlank;
-		p->VSyncStart = info->PanelYRes + info->VOverPlus;
-		p->VSyncEnd   = p->VSyncStart + info->VSyncWidth;	
-		p->Clock      = info->DotClock;
-
-		p->Flags |= RADEON_USE_RMX; 
-		p = p->next;
-	    }
+	    p->Flags |= RADEON_USE_RMX; 
 	}
-	return count;
     }
 
     for (i = 0; ppModeName[i] != NULL; i++) {
-	mode_found = FALSE;
 	if (sscanf(ppModeName[i], "%dx%d", &width, &height) != 2) continue;
 
-	if (ddc) {
-	    for (j = 0; j < 4; j++) {
-		/* Go thru detailed timing table first */
-		if (ddc->det_mon[j].type == 0) {
-		    struct detailed_timings *d_timings =
-			&ddc->det_mon[j].section.d_timings;
-
-		    if ((width == d_timings->h_active) && 
-			height == d_timings->v_active) {
-			new = xnfcalloc(1, sizeof(DisplayModeRec));
-			memset(new, 0, sizeof (DisplayModeRec));
-			new->prev = last;
-
-			new->name       = xnfalloc(strlen(ppModeName[i]) + 1);
-			strcpy(new->name, ppModeName[i]);
-
-			new->HDisplay   = width;
-			new->VDisplay   = height;
-			new->HTotal     = new->HDisplay + d_timings->h_blanking;
-			new->HSyncStart = new->HDisplay + d_timings->h_sync_off;
-			new->HSyncEnd   = new->HSyncStart + d_timings->h_sync_width;
-			new->VTotal     = new->VDisplay + d_timings->v_blanking;
-			new->VSyncStart = new->VDisplay + d_timings->v_sync_off;
-			new->VSyncEnd   = new->VSyncStart + d_timings->v_sync_width;
-			new->Clock      = d_timings->clock / 1000;
-
-			if (new->prev) new->prev->next = new;
-			last = new;
-			if (!first) first = new;
-
-			pScrn->display->virtualX =
-			    pScrn->virtualX = MAX(pScrn->virtualX, width);
-			pScrn->display->virtualY =
-			    pScrn->virtualY = MAX(pScrn->virtualY, height);
-			count++;
-			mode_found = TRUE;
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-				   "Valid Mode from Detailed timing table: "
-				   "%s\n", new->name);
-			break;
-		    }
-		}
+	/*
+	 * Match a DDC mode and use that if available
+	 */
+	for (prev = &ddcModes; (new = *prev); prev = &new->next)
+	{
+	    if (width == new->HDisplay && height == new->VDisplay)
+	    {
+		/* unhook from ddcMode list */
+		*prev = new->next;
+		break;
 	    }
-
-	    if (mode_found) continue;
-
-	    if (info->ddc_mode || info->IsSecondary || IsClone) {
-		/* Search thru standard VESA modes from EDID */
-		for (j = 0; j < 8; j++) {
-		    if ((width  == ddc->timings2[j].hsize) && 
-			(height == ddc->timings2[j].vsize)) {
-			for (p = pScrn->monitor->Modes;
-			     p && p->next;
-			     p = p->next->next) {
-			    if (width == p->HDisplay &&
-				height == p->VDisplay) {
-				float  refresh =
-				    (float)(p->Clock * 1000.0 / p->HTotal /
-					    p->VTotal);
-				if (abs((float)ddc->timings2[j].refresh -
-					refresh) < 1.0) {
-				    /* Is this good enough? */
-				    new = xnfcalloc(1, sizeof (DisplayModeRec));
-				    memcpy(new, p, sizeof(DisplayModeRec));
-				    new->prev = last;
-				    new->name = xnfalloc(strlen (p->name) + 1);
-				    strcpy(new->name, p->name);
-				    new->status = MODE_OK;
-
-				    if (new->prev)
-					new->prev->next = new;
-				    last = new;
-				    if (!first)
-					first = new;
-				    pScrn->display->virtualX =
-					pScrn->virtualX =
-					MAX(pScrn->virtualX, width);
-				    pScrn->display->virtualY =
-					pScrn->virtualY =
-					MAX(pScrn->virtualY, height);
-				    count++;
-				    mode_found = TRUE;
-				    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-					       "Valid Mode from standard "
-					       "timing table: %s\n",
-					       new->name);
-				    break;
-								
-				}
-			    }
-			}
-			if (mode_found) break;
-		    }
-		}
-
-		if (mode_found) continue;
-
-		/* search thru established modes from EDID */
-		tmp = (ddc->timings1.t1 << 8) | ddc->timings1.t2;
-		for (j = 0; j < 16; j++) {
-		    if (tmp & (1<<j)) {
-			if ((width == EDIDtimings[j].hsize) &&
-			    (height == EDIDtimings[j].vsize)) {
-			    for (p = pScrn->monitor->Modes;
-				 p && p->next;
-				 p = p->next->next) {
-				if (width == p->HDisplay &&
-				    height == p->VDisplay) {
-				    float refresh =
-					(float)(p->Clock * 1000.0 / p->HTotal /
-						p->VTotal);
-				    if (abs((float)EDIDtimings[j].refresh -
-					    refresh) < 1.0) {
-					/* Is this good enough? */
-					new = xnfcalloc(1, sizeof(DisplayModeRec));
-					memcpy(new, p, sizeof(DisplayModeRec));
-					new->prev = last;
-					new->name = xnfalloc(strlen (p->name) + 1);
-					strcpy(new->name, p->name);
-					new->status = MODE_OK;
-
-					if (new->prev)
-					    new->prev->next = new;
-					last = new;
-					if (!first)
-					    first = new;
-					pScrn->display->virtualX =
-					    pScrn->virtualX =
-					    MAX(pScrn->virtualX, width);
-					pScrn->display->virtualY =
-					    pScrn->virtualY =
-					    MAX(pScrn->virtualY, height);
-					count++;
-					mode_found = TRUE;
-					xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-						   "Valid Mode from "
-						   "established timing "
-						   "table: %s\n",
-						   new->name);
-					break;
-				    }
-				}
-			    }
-			    if (mode_found) break;
-			}
-		    }
-		}
-
-		if (mode_found) continue;
-
-	    }
-	} /* if (ddc) */
-
-	if (!info->IsSecondary && !IsClone && info->DisplayType != MT_CRT) {
+	}
+	
+	/* Add non standard mode */
+	if (!new && !info->IsSecondary && !IsClone && info->DisplayType != MT_CRT) {
 	    /* Note: We allow all non-standard modes as long as they do
 	     * not exceed the native resolution of the panel.  Since it
 	     * needs internal RMX unit in the video chips (only got
@@ -2120,7 +1982,6 @@ static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName,
 	    }
 
 	    new             = xnfcalloc(1, sizeof(DisplayModeRec));
-	    new->prev       = last;
 	    new->name       = xnfalloc(strlen (ppModeName[i]) + 1);
 	    strcpy (new->name, ppModeName[i]);
 	    new->HDisplay   = width;
@@ -2138,57 +1999,55 @@ static int RADEONValidateFPModes(ScrnInfoPtr pScrn, char **ppModeName,
 	    new->Clock      = info->DotClock;
 
 	    new->Flags |= RADEON_USE_RMX;
+	}
 
-	    if (new->prev)
-		new->prev->next = new;
+	new->type |= M_T_USERDEF;
+
+	new->next = 0;
+	new->prev = last;
+	if (last)
+	    last->next = new;
+	last = new;
+	if (!first)
+	    first = new;
+	pScrn->display->virtualX =
+	pScrn->virtualX = MAX(pScrn->virtualX, width);
+	pScrn->display->virtualY =
+	pScrn->virtualY = MAX(pScrn->virtualY, height);
+	count++;
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "Valid Mode by using on-chip RMX: %s\n", new->name);
+    }
+
+    /*
+     * Append remaining DDC modes to end of list
+     */
+    while (ddcModes)
+    {
+	new = ddcModes;
+	ddcModes = new->next;
+	for (p = first; p; p = p->next)
+	    if (p->HDisplay == new->HDisplay && p->VDisplay == new->VDisplay)
+		break;
+	if (p)
+	    xfree (new);
+	else
+	{
+	    new->next = 0;
+	    new->prev = last;
+	    if (last)
+		last->next = new;
 	    last = new;
 	    if (!first)
 		first = new;
 	    pScrn->display->virtualX =
-		pScrn->virtualX = MAX(pScrn->virtualX, width);
+	    pScrn->virtualX = MAX(pScrn->virtualX, width);
 	    pScrn->display->virtualY =
-		pScrn->virtualY = MAX(pScrn->virtualY, height);
+	    pScrn->virtualY = MAX(pScrn->virtualY, height);
 	    count++;
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Valid Mode by using on-chip RMX: %s\n", new->name);
+		       "Valid Mode from DDC: %s\n", new->name);
 	}
-    }
-
-    /* if no panel mode matches, bring it up in native mode */	
-    if (count == 0 && info->PanelXRes != 0 && info->DisplayType != MT_CRT &&
-	info->PanelYRes != 0 && info->DotClock != 0) {
-
-	new             = xnfcalloc (1, sizeof (DisplayModeRec));
-	new->prev       = last;
-	new->name       = xnfalloc (12);
-	sprintf (new->name, "%dx%d", info->PanelXRes, info->PanelYRes);
-	new->HDisplay   = info->PanelXRes;
-	new->VDisplay   = info->PanelYRes;
-	    
-	new->HTotal     = new->HDisplay + info->HBlank;
-	new->HSyncStart = new->HDisplay + info->HOverPlus;
-	new->HSyncEnd   = new->HSyncStart + info->HSyncWidth;
-	new->VTotal     = new->VDisplay + info->VBlank;
-	new->VSyncStart = new->VDisplay + info->VOverPlus;
-	new->VSyncEnd   = new->VSyncStart + info->VSyncWidth;	
-	    
-	new->Clock      = info->DotClock;
-	new->Flags      = 0;
-
-	if (new->prev)
-	    new->prev->next = new;
-	last = new;
-	if (!first)
-	    first = new;
-
-	pScrn->display->virtualX =
-	    pScrn->virtualX = MAX(pScrn->virtualX, width);
-	pScrn->display->virtualY =
-	    pScrn->virtualY = MAX(pScrn->virtualY, height);
-	count++;
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "No valid mode specified by config file, "
-		   "force to native mdoe\n");
     }
 
     if (last) {
