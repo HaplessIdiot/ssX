@@ -1,5 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
+ * $XFree86$
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -230,7 +231,6 @@ vgaProtect(on)
       outb(0x3C4, 0x01);
       tmp = inb(0x3C5);
 
-      (*vgaSaveScreenFunc)(SS_START);
       outw(0x3C4, 0x0100);			/* start synchronous reset */
       outw(0x3C4, ((tmp | 0x20) << 8) | 0x01);	/* disable the display */
 
@@ -246,7 +246,6 @@ vgaProtect(on)
 
       outw(0x3C4, ((tmp & 0xDF) << 8) | 0x01);	/* reenable display */
       outw(0x3C4, 0x0300);			/* clear synchronousreset */
-      (*vgaSaveScreenFunc)(SS_FINISH);
 
       tmp = inb(vgaIOBase + 0x0A);
       outb(0x3C0, 0x20);			/* disable pallete access */
