@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#ifdef UseMMAP
+#if defined(UseMMAP) || defined(linux) && defined(__ia64__)
 #include <sys/mman.h>
 #endif
 #include <unistd.h>
@@ -385,6 +385,16 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 #else
     if( (ptr=os2ldcalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
+#endif
+#if defined(linux) && defined(__ia64__)
+    {
+	unsigned long page_size = getpagesize();
+	unsigned long round;
+
+	round = (unsigned long)ptr & (page_size-1);
+	mprotect(ptr - round, (size+round+page_size-1) & ~(page_size-1),
+		 PROT_READ|PROT_WRITE|PROT_EXEC);
+    }
 #endif
 
     if(lseek(fd,offset+offsetbias,SEEK_SET)<0)

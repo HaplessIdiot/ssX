@@ -1176,17 +1176,26 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info = R128PTR(pScrn);
     vbeInfoPtr pVbe;
-  
-    if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
+
+    if (!xf86LoadSubModule(pScrn, "ddc")) goto RETURN;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
+
     if (xf86LoadSubModule(pScrn, "vbe")) {
+ 	pVbe = VBEInit(info->pInt,info->pEnt->index);
+ 	if (!pVbe) 
+	  goto RETURN;
  	pVbe = VBEInit(NULL,info->pEnt->index);
  	if (!pVbe) return FALSE;
   	
  	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
-  	return TRUE;
-    } else
- 	return FALSE;
+	vbeFree(pVbe);
+	info->pInt = NULL;
+    } 
+ RETURN:
+    if (info->pInt)
+        xf86FreeInt10(info->pInt);
+    info->pInt = NULL;
+    return TRUE;
 }
 
 /* This is called by R128PreInit to initialize gamma correction. */
@@ -1311,13 +1320,16 @@ static Bool R128PreInitInt10(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info = R128PTR(pScrn);
 #if 1
-    if (xf86LoadSubModule(pScrn, "int10")) {
- 	xf86Int10InfoPtr pInt;
-	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
-	pInt = xf86InitInt10(info->pEnt->index);
-	xf86FreeInt10(pInt);
+    if (!xf86IsPrimaryPci(info->PciInfo)) {
+	if (xf86LoadSubModule(pScrn, "int10")) {
+	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
+	    info->pInt = xf86InitInt10(info->pEnt->index);
+	}
+	if (!info->pInt) return FALSE;
     }
+    
 #endif
+    
     return TRUE;
 }
 
@@ -1446,10 +1458,13 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 static void
 R128ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
-    vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
+	vbeInfoPtr pVbe;
 	pVbe = VBEInit(NULL,index);
-	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	if (pVbe) {	    
+	    ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	    vbeFree(pVbe);
+	} 
     }
 }
 

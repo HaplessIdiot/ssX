@@ -38,7 +38,7 @@
 #include "xf86Parser.h"
 #include "xf86Config.h"
 #ifdef XINPUT
-#include "xf86Xinput.h"
+# include "xf86Xinput.h"
 #endif
 #include "xf86OSmouse.h"
 #include "xf86xv.h"
@@ -63,12 +63,12 @@ int sysctlbyname(const char*, void *, size_t *, void *, size_t);
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
-#undef inb
-#undef inw
-#undef inl
-#undef outb
-#undef outw
-#undef outl
+# undef inb
+# undef inw
+# undef inl
+# undef outb
+# undef outw
+# undef outl
 
 extern void outb(unsigned int a, unsigned char b);
 extern void outw(unsigned int a, unsigned short w);
@@ -79,7 +79,7 @@ extern unsigned long  inl(unsigned int a);
 #endif
 
 #if defined(__alpha__)
-#ifdef linux
+# ifdef linux
 extern unsigned long _bus_base(void);
 extern void _outb(char val, unsigned short port);
 extern void _outw(short val, unsigned short port);
@@ -87,17 +87,17 @@ extern void _outl(int val, unsigned short port);
 extern unsigned int _inb(unsigned short port);
 extern unsigned int _inw(unsigned short port);
 extern unsigned int _inl(unsigned short port);
-#endif
+# endif
 
-#ifdef __FreeBSD__ 
-#include <sys/types.h>
+# ifdef __FreeBSD__ 
+#  include <sys/types.h>
 extern void outb(u_int32_t port, u_int8_t val);
 extern void outw(u_int32_t port, u_int16_t val);
 extern void outl(u_int32_t port, u_int32_t val);
 extern u_int8_t inb(u_int32_t port);
 extern u_int16_t inw(u_int32_t port);
 extern u_int32_t inl(u_int32_t port);
-#endif
+# endif
 
 extern void* __divl(long, long);
 extern void* __reml(long, long);
@@ -125,9 +125,9 @@ extern unsigned int _inl(unsigned short port);
 #endif
 
 #if defined(__sparc__) && defined(__GNUC__)
-#define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
-#define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
-#define DEFFUNCDOT(func) 					\
+# define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
+# define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
+# define DEFFUNCDOT(func) 					\
 extern void __sparc_dot_ ## func (void) __asm__ ("." #func);	\
 extern void func ## _sparcv89 (void);
 DEFFUNCDOT(rem)
@@ -902,9 +902,9 @@ LOOKUP xfree86LookupTab[] = {
                                    of the X server) easier. */
    SYMFUNC(xf86InstallSIGIOHandler)
    SYMFUNC(xf86RemoveSIGIOHandler)
-#ifdef __alpha__
+# ifdef __alpha__
    SYMFUNC(_bus_base)
-#endif
+# endif
 #endif
    SYMFUNC(xf86BlockSIGIO)
    SYMFUNC(xf86UnblockSIGIO)
@@ -919,21 +919,21 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(__remq)
    SYMFUNC(__remqu)
 
-#ifdef linux
+# ifdef linux
    SYMFUNC(_outw)
    SYMFUNC(_outb)
    SYMFUNC(_outl)
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
-#else
+# else
    SYMFUNC(outw)
    SYMFUNC(outb)
    SYMFUNC(outl)
    SYMFUNC(inb)
    SYMFUNC(inw)
    SYMFUNC(inl)
-#endif
+# endif
    SYMFUNC(xf86ReadMmio32)
    SYMFUNC(xf86ReadMmio16)
    SYMFUNC(xf86ReadMmio8)
@@ -952,7 +952,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(outb)
    SYMFUNC(outw)
    SYMFUNC(outl)
-#if defined(NO_INLINE) || defined(Lynx)
+# if defined(NO_INLINE) || defined(Lynx)
    SYMFUNC(mem_barrier)
    SYMFUNC(ldl_u)
    SYMFUNC(eieio)
@@ -966,14 +966,14 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(stq_u)
    SYMFUNC(stw_u)
    SYMFUNC(write_mem_barrier)
-#endif
+# endif
    SYMFUNC(rdinx)
    SYMFUNC(wrinx)
    SYMFUNC(modinx)
    SYMFUNC(testrg)
    SYMFUNC(testinx2)
    SYMFUNC(testinx)
-#if defined(Lynx)
+# if defined(Lynx)
    SYMFUNC(_restf14)
    SYMFUNC(_restf17)
    SYMFUNC(_restf18)
@@ -1000,15 +1000,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_savef27)
    SYMFUNC(_savef28)
    SYMFUNC(_savef29)
-#endif
-#if PPCIO_DEBUG
+# endif
+# if PPCIO_DEBUG
    SYMFUNC(debug_inb)
    SYMFUNC(debug_inw)
    SYMFUNC(debug_inl)
    SYMFUNC(debug_outb)
    SYMFUNC(debug_outw)
    SYMFUNC(debug_outl)
-#endif
+# endif
 #endif
 #if defined(__ia64__)
    SYMFUNC(__divdf3)

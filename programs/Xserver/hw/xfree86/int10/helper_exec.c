@@ -23,7 +23,7 @@
 #include "int10Defines.h"
 #include "xf86int10.h"
 
-#ifndef _PC
+#if !defined (_PC) && !defined (_PC_PCI)
 static int pciCfg1in(CARD16 addr, CARD32 *val);
 static int pciCfg1out(CARD16 addr, CARD32 val);
 #endif
@@ -435,7 +435,7 @@ port_rep_outl(xf86Int10InfoPtr pInt,
     return (dst-base);
 }
 
-#if defined(PRINT_PORT) || !defined(_PC)
+#if defined(PRINT_PORT) || (!defined(_PC) && !defined(_PC_IO))
 CARD8
 x_inb(CARD16 port)
 {
@@ -483,7 +483,7 @@ x_inl(CARD16 port)
 {
     CARD32 val;
 
-#ifndef _PC
+#if !defined  (_PC) && !defined (_PC_PCI)
     if (!pciCfg1in(port,&val))
 #endif
     val = inl(port);
@@ -500,7 +500,7 @@ x_outl(CARD16 port, CARD32 val)
 #ifdef PRINT_PORT
     ErrorF(" outl(%#x, %8.8x)\n",port,val);
 #endif
-#ifndef _PC
+#if !defined  (_PC) && !defined (_PC_PCI)
             if (!pciCfg1out(port,val))
 #endif
 	    outl(port,val);
@@ -543,7 +543,7 @@ Mem_wl(int addr,CARD32 val)
     Int10Current->mem->wl(Int10Current,addr,val);
 }
 
-#ifndef _PC
+#if !defined  (_PC) && !defined (_PC_PCI)
 static CARD32 PciCfg1Addr = 0;
 
 #define TAG(Cfg1Addr) (Cfg1Addr & 0xffff00)

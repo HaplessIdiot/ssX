@@ -2030,8 +2030,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Check if maxClock is limited by the MemClk. Only 70% to allow for */
     /* RAS/CAS. Extra byte per memory clock needed if framebuffer used   */
     /* Extra byte if the overlay plane is avtivated                      */
-    if (cPtr->FrameBufferSize)
-	if (cPtr->Flags & ChipsOverlay8plus16)
+    if (cPtr->FrameBufferSize && (cPtr->PanelType & ChipsLCD))
+	if (cPtr->Flags & ChipsOverlay8plus16 )
 	    cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 4 * 0.7 / 4);
 	else
 	    cPtr->MaxClock = min(cPtr->MaxClock,
@@ -2076,7 +2076,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
     /* 
      * Prepare the FPclock: 
-     *    if FPclock >= MaxClock : don't modify the FP clock.
+     *    if FPclock <= MaxClock : don't modify the FP clock.
      *    else set FPclock to 90% of MaxClock.
      */
     real = 0.;
@@ -5107,8 +5107,9 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    if (xf86ReturnOptValBool(cPtr->Options, OPTION_HW_CURSOR, FALSE))
 		cPtr->Accel.UseHWCursor = TRUE;      /* H/W  cursor forced */
 	    else {
-		if ((cPtr->PanelSize.HDisplay != mode->CrtcHDisplay) && 
-			(cPtr->PanelSize.VDisplay != mode->CrtcVDisplay)) {
+		if ((cPtr->PanelSize.HDisplay && cPtr->PanelSize.VDisplay)
+		    && (cPtr->PanelSize.HDisplay != mode->CrtcHDisplay)
+		    && (cPtr->PanelSize.VDisplay != mode->CrtcVDisplay)) {
 		    if(cPtr->Accel.UseHWCursor)
 			xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			    "Disabling HW Cursor on stretched LCD\n");
@@ -5891,7 +5892,9 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 					     FALSE))
 			cPtr->Accel.UseHWCursor = TRUE; /* H/W cursor forced */
 		    else {
-			if ((cPtr->PanelSize.HDisplay != mode->CrtcHDisplay)
+			if (cPtr->PanelSize.HDisplay
+			    && cPtr->PanelSize.VDisplay
+			    && (cPtr->PanelSize.HDisplay != mode->CrtcHDisplay)
 			 && (cPtr->PanelSize.VDisplay != mode->CrtcVDisplay)) {
 			    /* Possible H/W bug? */
 			    if(cPtr->Accel.UseHWCursor)

@@ -90,7 +90,7 @@ OBJS =	$(XFMODOBJ) \
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mi/llib-lmi.ln
 
-NormalLibraryObjectRule()
+ModuleObjectRule()
 LibraryModuleTarget(fb,$(OBJS))
 LintLibraryTarget(fb,$(SRCS))
 

@@ -297,7 +297,9 @@ Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     if ((dstY < srcY) || ((dstY == srcY) && (dstX < srcX))) {
 	/* start with upper left corner */
 	WAIT_ENGINE_IDLE();
+#if 0
 	OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
+#endif
 	OUTREG(NEOREG_SRCSTARTOFF,
             (srcY * nAcl->Pitch) + (srcX * nAcl->PixelWidth));
 	OUTREG(NEOREG_DSTSTARTOFF,
@@ -307,10 +309,12 @@ Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     else {
 	/* start with lower right corner */
 	WAIT_ENGINE_IDLE();
+#if 0
 	OUTREG(NEOREG_BLTCNTL, (nAcl->tmpBltCntlFlags 
 				| NEO_BC0_X_DEC
 				| NEO_BC0_DST_Y_DEC 
 				| NEO_BC0_SRC_Y_DEC));
+#endif
 	OUTREG(NEOREG_SRCSTARTOFF,
             ((srcY+h-1) * nAcl->Pitch) + ((srcX+w-1) 
 						 * nAcl->PixelWidth));

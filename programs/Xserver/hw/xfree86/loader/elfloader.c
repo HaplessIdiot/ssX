@@ -1012,7 +1012,7 @@ ELFModulePtr	elffile;
     ELFDEBUG( "ELFCreatePLT: %x entries in the PLT\n", elffile->pltsize/8 );
 #endif
 
-    if( elffile->pltsize == 0 ) elffile->pltsize=32;
+    if( elffile->pltsize == 0 ) return;
 
     if ((elffile->plt = ELFLoaderSectCalloc(elffile,32,elffile->pltsize)) == NULL) {
 	ErrorF( "ELFCreatePLT() Unable to allocate memory!!!!\n" );
