@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.11 2004/10/15 20:32:21 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.12 2004/11/30 23:50:26 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1401,23 +1401,7 @@ void NVLoadStateExt (
        }
     } else {
        pNv->PRAMDAC[0x0848/4] = state->scale;
-
-       /* begin flat panel hacks */
-       /* This is unfortunate, but some chips need this register
-          tweaked or else you get artifacts where adjacent pixels are
-          swapped.  There are no hard rules for what to set here so all
-          we can do is experiment and apply hacks. */
-
-       if(((pNv->Chipset & 0xffff) == 0x0328) && (state->bpp == 32)) {
-          /* At least one NV34 laptop needs this workaround. */
-          pNv->PRAMDAC[0x0828/4] &= ~1;
-       }
-
-       if((pNv->Chipset & 0xfff0) == 0x0310) {
-          pNv->PRAMDAC[0x0828/4] |= 1;
-       }
-
-       /* end flat panel hacks */
+       pNv->PRAMDAC[0x0828/4] = state->crtcSync;
     }
     pNv->PRAMDAC[0x0600/4] = state->general;
 
@@ -1497,6 +1481,10 @@ void NVUnloadStateExt
            VGA_WR08(pNv->PCIO, 0x03D4, 0x54);
            state->timingV = VGA_RD08(pNv->PCIO, 0x03D5);
         }
+    }
+
+    if(pNv->FlatPanel) {
+       state->crtcSync = pNv->PRAMDAC[0x0828/4];
     }
 }
 
