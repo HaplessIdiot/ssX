@@ -11,7 +11,7 @@ XCOMM and pop a clock and serveral xterms.
 XCOMM
 XCOMM Site administrators are STRONGLY urged to write nicer versions.
 XCOMM
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.13 2002/01/28 12:48:41 tsi Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.14 2002/01/28 18:19:50 tsi Exp $
 
 #ifdef SCO
 
@@ -149,7 +149,7 @@ removelist=
 XCOMM set up default Xauth info for this machine
 case `uname` in
 Linux*)
-	if [ -z "`hostname --version | grep GNU`" ]; then
+	if [ -z "`hostname --version 2>&1 | grep GNU`" ]; then
 		hostname=`hostname -f`
 	else
 		hostname=`hostname`
