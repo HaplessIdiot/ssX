@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 458. Fix the cyrix driver support for the 5510, 5520 and 5530. This driver
+      only works with VSA1 based chips (#A.1260, Alan Cox).
  457. When building with gcc >= 2.8, generate Makefiles with `imake -Wundef`
       (Marc La France).
  456. Re-instate changes clobbered by DRI merge (Marc La France).
@@ -15458,4 +15460,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2371 2002/11/05 17:19:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2372 2002/11/05 17:46:10 tsi Exp $
