@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.7 1998/11/28 10:43:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.8 1999/02/07 06:18:39 dawes Exp $ */
 
 /*
  * glint register file 
@@ -278,7 +278,7 @@
 #define PM2VDACIndexRegLow						0x4020
 #define PM2VDACIndexRegHigh						0x4028
 #define PM2VDACIndexData						0x4030
-#define PM2VDACIndexControl						0x4038
+#define PM2VDACRDIndexControl						0x4038
 
 /* Permedia 2 Video Streams Unit Registers */
 #define   VSBIntFlag            					(1<<8)
@@ -1024,18 +1024,21 @@ do{								\
 }
 
 	
-
 #define CHECKCLIPPING						\
 {								\
 	if (pGlint->ClippingOn) {				\
 		pGlint->ClippingOn = FALSE;			\
+		GLINT_WAIT(1);					\
 		GLINT_WRITE_REG(0, ScissorMode);		\
 	}							\
 }
 
 #define DO_PLANEMASK(planemask)					\
 { 								\
-	REPLICATE(planemask); 					\
-	GLINT_WRITE_REG(planemask, FBHardwareWriteMask);	\
+	if (planemask != pGlint->planemask) {			\
+		pGlint->planemask = planemask;			\
+		REPLICATE(planemask); 				\
+		GLINT_WRITE_REG(planemask, FBHardwareWriteMask);\
+	}							\
 } 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.2 1999/01/13 08:31:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.3 1999/01/26 10:40:48 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1988, 1989, 1998  The Open Group
@@ -84,6 +84,7 @@ SOFTWARE.
 
 extern Bool Must_have_memory;
 
+#undef assert
 #ifdef DEBUG
 #define assert(expr) {if (!(expr)) \
 		FatalError("Assertion failed file %s, line %d: expr\n", \

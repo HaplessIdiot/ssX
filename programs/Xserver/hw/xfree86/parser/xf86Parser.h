@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.3 1998/07/26 09:56:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.4 1999/01/12 06:24:25 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -211,9 +211,9 @@ typedef struct
 	int dev_videoram;
 	int dev_textclockfreq;
 	int dev_memclk;
-	int dev_bios_base;
-	int dev_mem_base;
-	int dev_io_base;
+	unsigned long dev_bios_base;
+	unsigned long dev_mem_base;
+	unsigned long dev_io_base;
 	char *dev_clockchip;
 	int dev_clocks;
 	int dev_clock[CONF_MAXCLOCKS];

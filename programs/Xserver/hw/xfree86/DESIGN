@@ -847,23 +847,6 @@ functions:
       Returns the name of the X server from the command line.
 
 
-    int xf86GetDefaultColorVisualClass()
-
-      Returns the value of defaultColorVisualClass as set from the command
-      line.
-
-
-In addition to these, the defaultColorVisualClass value can be set.  This
-is allowed so that the behaviour of cfb's visual initialisation code can
-be controlled.  This is almost redundant and it will likely be removed soon.
-
-
-    void xf86SetDefaultColorVisualClass(int class)
-
-      Set the value of defaultColorVisualClass to "class".
-
-
-
 6.2  Data handling
 
 Config file data contains parts that are global, and parts that are
@@ -920,7 +903,7 @@ visible to video drivers, and it is an error for a driver to include those
 files.
 
 
-6.4  Accessing global data
+6.3  Accessing global data
 
 Some other global state information that the drivers may access via
 functions is as follows:
@@ -943,7 +926,7 @@ functions is as follows:
       Returns TRUE if the server has caught a signal, and FALSE otherwise.
 
 
-6.5  Allocating private data
+6.4  Allocating private data
 
 A driver and any module it uses may allocate per-screen private storage
 in either the ScreenRec (DIX level) or ScrnInfoRec (XFree86 common layer
@@ -1515,7 +1498,7 @@ Next, the higher level functions that most drivers would use.
     Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value)
 
       This function is used to check tri-state options (OPTV_TRI).  If
-      the function return value is FALSE, it means the options wasn't set.
+      the function return value is FALSE, it means the option wasn't set.
       Otherwise *value is set to the boolean value indicated by the option's
       value.  No option value is interpreted as TRUE.  Option values
       meaning TRUE are "1", "yes", "on", "true", and option values meaning
@@ -2900,7 +2883,7 @@ A.2  Functions for setting values based on command line and config file:
     void xf86SetDpi(ScrnInfoPtr pScrn, int x, int y)
 
       This function sets the xDpi and yDpi fields of the ScrnInfoRec.
-      The driver can specified preferred defaults by setting x and y
+      The driver can specify preferred defaults by setting x and y
       to non-zero values.  The -dpi command line option overrides all
       other settings.  Otherwise, if the DisplaySize entry is present
       in the screen's Monitor config file section, it is used together
@@ -4657,4 +4640,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.22 1999/01/24 13:32:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.23 1999/01/26 05:53:53 dawes Exp $

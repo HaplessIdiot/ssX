@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.21 1999/01/17 10:54:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.22 1999/01/26 05:54:09 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -523,7 +523,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         pScreenInfo->videoRam >>= 2;
     xf86DrvMsg(pScreenInfo->scrnIndex, From, "videoRam: %d kBytes", videoRam);
     if (videoRam != pScreenInfo->videoRam)
-        xf86ErrorF(" (using %d)", pScreenInfo->videoRam);
+        xf86ErrorF(" (using %d kBytes)", pScreenInfo->videoRam);
     xf86ErrorF(".\n");
 
     /* Ensure vgahw entry points are available for the clock probe */

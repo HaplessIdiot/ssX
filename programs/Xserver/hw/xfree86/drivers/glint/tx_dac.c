@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.5 1998/08/29 05:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.6 1999/02/07 06:18:42 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -141,6 +141,8 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->glintRegs[VTGModeCtl >> 3] = 0x44;
     }
 
+    ramdacReg->Overlay = FALSE;
+
     switch (pGlint->RamDac->RamDacType) {
     case IBM526DB_RAMDAC:
     case IBM526_RAMDAC:
@@ -197,11 +199,11 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ramdacReg->DacRegs[RGB640_AUX_PLL_CTL] = 0; /* Disable AUX PLL */
     }
     ramdacReg->DacRegs[RGB640_PIXEL_INTERLEAVE] = 0x00;
-    ramdacReg->DacRegs[RGB640_VGA_CONTROL] = IBM640_RDBK | IBM640_PSIZE8 | 
-								IBM640_VRAM;
-    ramdacReg->DacRegs[RGB640_DAC_CONTROL] = IBM640_SHUNT | IBM640_DACENBL;
-    ramdacReg->DacRegs[RGB640_OUTPUT_CONTROL] = IBM640_RDAI | IBM640_WDAI |
-								IBM640_WATCTL;
+    ramdacReg->DacRegs[RGB640_VGA_CONTROL] = IBM640_RDBK | IBM640_VRAM;
+    if (pScrn->rgbBits == 8) 
+    	ramdacReg->DacRegs[RGB640_VGA_CONTROL] |= IBM640_PSIZE8;
+    ramdacReg->DacRegs[RGB640_DAC_CONTROL] = IBM640_DACENBL | IBM640_SHUNT;
+    ramdacReg->DacRegs[RGB640_OUTPUT_CONTROL] = IBM640_WATCTL;
     ramdacReg->DacRegs[RGB640_SYNC_CONTROL] = 0x00;
     ramdacReg->DacRegs[RGB640_VRAM_MASK0] = 0xFF;
     ramdacReg->DacRegs[RGB640_VRAM_MASK1] = 0xFF; 
@@ -209,6 +211,9 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     pReg->glintRegs[VTGModeCtl >> 3] = 0x04;
     }
+
+    /* Tell the ramdac layer we've turned on Overlays */
+    if (pGlint->Overlay) ramdacReg->Overlay = TRUE;
 
     /* Now use helper routines to setup bpp for this driver */
     (*pGlint->RamDac->SetBpp)(pScrn, ramdacReg);
@@ -251,7 +256,7 @@ TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-#if 0
+#if 1
     GLINT_SLOW_WRITE_REG(0, ResetStatus);
     while(GLINT_READ_REG(ResetStatus) != 0) {
 	xf86MsgVerb(X_INFO, 2, "Resetting Engine - Please Wait.\n");

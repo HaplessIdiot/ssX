@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.13 1998/12/06 06:08:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.14 1999/02/07 06:18:38 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -46,9 +46,9 @@ typedef struct {
 
 typedef struct {
     pciVideoPtr		PciInfo;
-    pciVideoPtr		PciInfoDelta;
+    pciVideoPtr		PciInfoGeometry;
     PCITAG		PciTag;
-    PCITAG		PciTagDelta;
+    PCITAG		PciTagGeometry;
     RamDacHelperRecPtr	RamDac;
     int			MemClock;
     int			Chipset;
@@ -69,6 +69,10 @@ typedef struct {
     int			w;
     int			h;
     int			dxdom;
+    int			dwords;
+    int			cpuheight;
+    int			cpucount;
+    int			planemask;
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned char *     IOBase;
@@ -83,6 +87,7 @@ typedef struct {
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
     Bool		VGAcore;
+    Bool		Overlay;
     int			MinClock;
     int			MaxClock;
     int			RefClock;
@@ -101,6 +106,7 @@ typedef struct {
     GCPtr		CurrentGC;
     I2CBusPtr		DDCBus, VSBus;
     Bool		VideoIO;
+    unsigned char *	XAAScanlineColorExpandBuffers[1];
 } GLINTRec, *GLINTPtr;
 
 /* Defines for PCI data */

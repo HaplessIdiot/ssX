@@ -1,0 +1,20 @@
+
+XCOMM $XFree86: $
+
+#include <Server.tmpl>
+
+MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
+   INCLUDES =	-I$(XF86SRC)/common -I$(XF86OSSRC) -I$(XF86OSSRC)/bus \
+		-I$(SERVERSRC)/include -I$(SERVERSRC)/os \
+		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
+		-I$(SERVERSRC)/Xi \
+		-I$(FONTLIBSRC)/include -I$(XF86PARSERSRC) \
+		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac
+
+ModuleObjectRule()
+
+LibraryModuleTarget(scanpci,xf86ScanPci.o)
+
+InstallLibraryModule(scanpci,$(MODULEDIR),.)
+
+DependTarget()

@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.11 1998/12/13 05:32:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.12 1999/02/07 06:18:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -234,15 +234,18 @@ Permedia2AccelInit(ScreenPtr pScreen)
     infoPtr->Flags = PIXMAP_CACHE |
 		     OFFSCREEN_PIXMAPS |
 		     LINEAR_FRAMEBUFFER;
+
+    if (pGlint->Overlay) {
+	infoPtr->FullPlanemask = ~0;
+	infoPtr->Flags |= OVERLAY_8_32;
+	infoPtr->OverlayKey = 0xFF;
+    }
  
     infoPtr->Sync = Permedia2Sync;
 
     infoPtr->SetClippingRectangle = Permedia2SetClippingRectangle;
     infoPtr->DisableClipping = Permedia2DisableClipping;
-    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE |
-				HARDWARE_CLIP_SOLID_FILL |
-				HARDWARE_CLIP_MONO_8x8_FILL |
-				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
+    infoPtr->ClippingFlags = HARDWARE_CLIP_MONO_8x8_FILL;
 
     infoPtr->SolidFillFlags = 0;
     infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY; 
@@ -304,11 +307,11 @@ Permedia2AccelInit(ScreenPtr pScreen)
 				Permedia2SubsequentMono8x8PatternFillRect;
     }
 
-    infoPtr->CPUToScreenColorExpandFillFlags = /* TRANSPARENCY_ONLY | */
-      					       CPU_TRANSFER_PAD_DWORD |
+    infoPtr->CPUToScreenColorExpandFillFlags = SYNC_AFTER_COLOR_EXPAND |
       					       BIT_ORDER_IN_BYTE_LSBFIRST |
 					       LEFT_EDGE_CLIPPING |
-					       LEFT_EDGE_CLIPPING_NEGATIVE_X;
+					       LEFT_EDGE_CLIPPING_NEGATIVE_X |
+      					       CPU_TRANSFER_PAD_DWORD;
 
     infoPtr->ColorExpandRange = MAX_FIFO_ENTRIES;
     infoPtr->ColorExpandBase = pGlint->IOBase + OutputFIFO + 4;
@@ -381,6 +384,8 @@ Permedia2Sync(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
+    CHECKCLIPPING;
+
     while (GLINT_READ_REG(DMACount) != 0);
     GLINT_WAIT(1);
     GLINT_WRITE_REG(0, GlintSync);
@@ -405,9 +410,7 @@ static void
 Permedia2DisableClipping(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    GLINT_WAIT(1);
-    GLINT_WRITE_REG(0, ScissorMode);
-    pGlint->ClippingOn = FALSE;
+    CHECKCLIPPING;
 }
 
 static void
@@ -428,7 +431,6 @@ Permedia2SetupForScreenToScreenCopy2432bpp(ScrnInfoPtr pScrn,
         DO_PLANEMASK(planemask);
     }
 
-    CHECKCLIPPING;
     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
     if ((rop == GXset) || (rop == GXclear)) {
 	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
@@ -467,7 +469,6 @@ Permedia2SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     if (ydir == 1) pGlint->BltScanDirection |= YPositive;
   
     GLINT_WAIT(4);
-    CHECKCLIPPING;
     DO_PLANEMASK(planemask);
 
     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
@@ -547,7 +548,6 @@ Permedia2SetupForSolidLine(ScrnInfoPtr pScrn, int color,
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
     GLINT_WAIT(6);
-    CHECKCLIPPING;
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
     GLINT_WRITE_REG(color, GLINTColor);
@@ -702,7 +702,6 @@ Permedia2SetupForFillRectSolid24bpp(ScrnInfoPtr pScrn, int color,
     pGlint->ForeGroundColor = color;
 
     GLINT_WAIT(5);
-    CHECKCLIPPING;
     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
     GLINT_WRITE_REG(color, ConstantColor);
     if (rop == GXcopy) {
@@ -722,7 +721,6 @@ Permedia2SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     REPLICATE(color);
 
     GLINT_WAIT(6);
-    CHECKCLIPPING;
     DO_PLANEMASK(planemask);
     if (rop == GXcopy) {
 	GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
@@ -839,7 +837,6 @@ Permedia2SetupForMono8x8PatternFill24bpp(ScrnInfoPtr pScrn,
     REPLICATE(pGlint->BackGroundColor);
   
     GLINT_WAIT(12);
-    CHECKCLIPPING;
     GLINT_WRITE_REG((patternx & 0xFF), AreaStipplePattern0);
     GLINT_WRITE_REG((patternx & 0xFF00) >> 8, AreaStipplePattern1);
     GLINT_WRITE_REG((patternx & 0xFF0000) >> 16, AreaStipplePattern2);
@@ -875,7 +872,6 @@ Permedia2SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     REPLICATE(pGlint->BackGroundColor);
   
     GLINT_WAIT(13);
-    CHECKCLIPPING;
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG((patternx & 0xFF), AreaStipplePattern0);
     GLINT_WRITE_REG((patternx & 0xFF00) >> 8, AreaStipplePattern1);
@@ -1243,7 +1239,6 @@ Permedia2WritePixmap8bpp(
 		
 
 	   if (rop == GXcopy) {
-	     CHECKCLIPPING;
 	     GLINT_WAIT(6);
              Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
@@ -1400,7 +1395,6 @@ Permedia2WritePixmap16bpp(
 		
 
 	   if (rop == GXcopy) {
-	     CHECKCLIPPING;
 	     GLINT_WAIT(6);
              Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);

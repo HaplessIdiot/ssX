@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.86 1999/01/24 03:13:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.87 1999/01/31 12:21:48 dawes Exp $
 
 
 
@@ -78,6 +78,7 @@ SRCS =	\
 	xf86Cursor.c \
 	xf86DGA.c \
 	xf86DPMS.c \
+	xf86DoScanPci.c \
 	xf86Events.c \
 	xf86Globals.c \
 	xf86Helper.c \
@@ -103,6 +104,7 @@ OBJS = \
 	xf86Cursor.o \
 	xf86DGA.o \
 	xf86DPMS.o \
+	xf86DoScanPci.o \
 	xf86Events.o \
 	xf86Globals.o \
 	xf86Helper.o \

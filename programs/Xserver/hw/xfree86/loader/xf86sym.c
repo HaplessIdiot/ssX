@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.62 1999/01/31 12:22:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.63 1999/02/07 06:18:47 dawes Exp $ */
 
 /*
  *
@@ -282,8 +282,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetGamma)
    SYMFUNC(xf86GetFlipPixels)
    SYMFUNC(xf86GetServerName)
-   SYMFUNC(xf86SetDefaultColorVisualClass)
-   SYMFUNC(xf86GetDefaultColorVisualClass)
    SYMFUNC(xf86ServerIsExiting)
    SYMFUNC(xf86ServerIsResetting)
    SYMFUNC(xf86CaughtSignal)
@@ -300,6 +298,7 @@ LOOKUP xfree86LookupTab[] = {
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)
    SYMFUNC(xf86GetBppFromDepth)
+   SYMFUNC(xf86ScanPciRegister)
 
    /* xf86Mode.c */
    SYMFUNC(xf86GetNearestClock)
@@ -446,6 +445,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(pciBusAddrToHostAddr)
    SYMFUNC(pciHostAddrToBusAddr)
    SYMFUNC(xf86MapPciMem)
+   SYMFUNC(xf86scanpci)
 #ifdef __alpha__
    SYMFUNC(xf86MapPciMemSparse)
 #endif
