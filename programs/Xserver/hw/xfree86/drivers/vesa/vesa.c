@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.5 2000/10/29 14:24:12 tsi Exp $
+ * $XFree86$
  */
 
 #include "vesa.h"
@@ -40,7 +40,7 @@
 /* Colormap handling */
 #include "micmap.h"
 #include "xf86cmap.h"
-#define DEBUG
+
 /* Mandatory functions */
 static OptionInfoPtr VESAAvailableOptions(int chipid, int busid);
 static void VESAIdentify(int flags);
@@ -1165,7 +1165,8 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pVesa->bank.nBankDepth = pScrn->depth;
 	if (!miInitializeBanking(pScreen, pScrn->virtualX, pScrn->virtualY,
 				 pScrn->virtualX, &pVesa->bank)) {
-	    ErrorF("Bank switch initialization failed!\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Bank switch initialization failed!\n");
 	    return (FALSE);
 	}
     }
@@ -1266,7 +1267,7 @@ VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
 	    data->mode &= ~(1 << 11);
 	}
 	else {
-	    ErrorF("Set VBE Mode failed!\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Set VBE Mode failed!\n");
 	    return (FALSE);
 	}
     }
@@ -1313,13 +1314,16 @@ VESAMapVidMem(ScrnInfoPtr pScrn)
 
     pVesa->base = xf86MapVidMem(pScrn->scrnIndex, 0,
 				pScrn->memPhysBase, pVesa->mapSize);
+    if (pVesa->base) {
+	if (pVesa->mapPhys != 0xa0000)
+	    pVesa->VGAbase = xf86MapVidMem(pScrn->scrnIndex, 0,
+				0xa0000, 0x10000);
+	else
+	    pVesa->VGAbase = pVesa->base;
+    }
 #ifdef DEBUG
     ErrorF("virtual address = %p  -  physical address = %p  -  size = %d\n",
 	    pVesa->base, pScrn->memPhysBase, pVesa->mapSize);
-#endif
-
-#if 0
-    pVesa->base = xf86int10Addr(pVesa->pInt, 0xa0000);
 #endif
 
     return (pVesa->base != NULL);
@@ -1334,6 +1338,8 @@ VESAUnmapVidMem(ScrnInfoPtr pScrn)
 	return;
 
     xf86UnMapVidMem(pScrn->scrnIndex, pVesa->base, pVesa->mapSize);
+    if (pVesa->mapPhys != 0xa0000)
+	xf86UnMapVidMem(pScrn->scrnIndex, pVesa->VGAbase, 0x10000);
     pVesa->base = NULL;
 }
 
@@ -1506,17 +1512,17 @@ static void
 SaveFonts(ScrnInfoPtr pScrn)
 {
     VESAPtr pVesa = VESAGetRec(pScrn);
-    unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4;
+    unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4, scrn;
 
     if (pVesa->fonts != NULL)
 	return;
-
-    pVesa->fonts = xalloc(16384);
 
     /* If in graphics mode, don't save anything */
     attr10 = ReadAttr(0x10);
     if (attr10 & 0x01)
 	return;
+
+    pVesa->fonts = xalloc(16384);
 
     /* save the registers that are needed here */
     miscOut = ReadMiscOut();
@@ -1529,6 +1535,11 @@ SaveFonts(ScrnInfoPtr pScrn)
     /* Force into colour mode */
     WriteMiscOut(miscOut | 0x01);
 
+    scrn = ReadSeq(0x01) | 0x20;
+    SeqReset(TRUE);
+    WriteSeq(0x01, scrn);
+    SeqReset(FALSE);
+
     WriteAttr(0x10, 0x01);	/* graphics mode */
 
     /*font1 */
@@ -1537,7 +1548,7 @@ SaveFonts(ScrnInfoPtr pScrn)
     WriteGr(0x04, 0x02);	/* read plane 2 */
     WriteGr(0x05, 0x00);	/* write mode 0, read mode 0 */
     WriteGr(0x06, 0x05);	/* set graphics */
-    slowbcopy_frombus(pVesa->base, pVesa->fonts, 8192);
+    slowbcopy_frombus(pVesa->VGAbase, pVesa->fonts, 8192);
 
     /* font2 */
     WriteSeq(0x02, 0x08);	/* write to plane 3 */
@@ -1545,7 +1556,12 @@ SaveFonts(ScrnInfoPtr pScrn)
     WriteGr(0x04, 0x03);	/* read plane 3 */
     WriteGr(0x05, 0x00);	/* write mode 0, read mode 0 */
     WriteGr(0x06, 0x05);	/* set graphics */
-    slowbcopy_frombus(pVesa->base, pVesa->fonts + 8192, 8192);
+    slowbcopy_frombus(pVesa->VGAbase, pVesa->fonts + 8192, 8192);
+
+    scrn = ReadSeq(0x01) & ~0x20;
+    SeqReset(TRUE);
+    WriteSeq(0x01, scrn);
+    SeqReset(FALSE);
 
     /* Restore clobbered registers */
     WriteAttr(0x10, attr10);
@@ -1561,10 +1577,13 @@ static void
 RestoreFonts(ScrnInfoPtr pScrn)
 {
     VESAPtr pVesa = VESAGetRec(pScrn);
-    unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4;
+    unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4, scrn;
 
     if (pVesa->fonts == NULL)
 	return;
+
+    if (pVesa->mapPhys == 0xa0000 && pVesa->curBank != 0)
+	VESABankSwitch(pScrn->pScreen, 0);
 
     /* save the registers that are needed here */
     miscOut = ReadMiscOut();
@@ -1581,6 +1600,11 @@ RestoreFonts(ScrnInfoPtr pScrn)
     /* Force into colour mode */
     WriteMiscOut(miscOut | 0x01);
 
+    scrn = ReadSeq(0x01) | 0x20;
+    SeqReset(TRUE);
+    WriteSeq(0x01, scrn);
+    SeqReset(FALSE);
+
     WriteAttr(0x10, 0x01);	/* graphics mode */
     if (pScrn->depth == 4) {
 	/* GJA */
@@ -1594,14 +1618,19 @@ RestoreFonts(ScrnInfoPtr pScrn)
     WriteGr(0x04, 0x02);    /* read plane 2 */
     WriteGr(0x05, 0x00);    /* write mode 0, read mode 0 */
     WriteGr(0x06, 0x05);    /* set graphics */
-    slowbcopy_tobus(pVesa->fonts, pVesa->base, 8192);
+    slowbcopy_tobus(pVesa->fonts, pVesa->VGAbase, 8192);
 
     WriteSeq(0x02, 0x08);   /* write to plane 3 */
     WriteSeq(0x04, 0x06);   /* enable plane graphics */
     WriteGr(0x04, 0x03);    /* read plane 3 */
     WriteGr(0x05, 0x00);    /* write mode 0, read mode 0 */
     WriteGr(0x06, 0x05);    /* set graphics */
-    slowbcopy_tobus(pVesa->fonts + 8192, pVesa->base, 8192);
+    slowbcopy_tobus(pVesa->fonts + 8192, pVesa->VGAbase, 8192);
+
+    scrn = ReadSeq(0x01) & ~0x20;
+    SeqReset(TRUE);
+    WriteSeq(0x01, scrn);
+    SeqReset(FALSE);
 
     /* restore the registers that were changed */
     WriteMiscOut(miscOut);
@@ -1973,53 +2002,59 @@ VESASaveRestore(ScrnInfoPtr pScrn, int function)
 	(void)VESAGetVBEMode(pScrn, &pVesa->stateMode);
 	SaveFonts(pScrn);
 
-	pVesa->pInt->num = 0x10;
-	pVesa->pInt->ax = 0x4f04;
-	pVesa->pInt->dx = 0;
-	pVesa->pInt->cx = 0x000f;
-	xf86ExecX86int10(pVesa->pInt);
-	if (pVesa->pInt->ax != 0x4f)
-	    return (FALSE);
+	if (pVesa->major > 1) {
+	    pVesa->pInt->num = 0x10;
+	    pVesa->pInt->ax = 0x4f04;
+	    pVesa->pInt->dx = 0;
+	    pVesa->pInt->cx = 0x000f;
+	    xf86ExecX86int10(pVesa->pInt);
+	    if (pVesa->pInt->ax != 0x4f)
+		return (FALSE);
 
-	npages = (pVesa->pInt->bx * 64) / 4096 + 1;
-	if ((pVesa->state = xf86Int10AllocPages(pVesa->pInt, npages,
-						&pVesa->statePage)) == NULL) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Cannot allocate memory to save SVGA state.\n");
-	    return (FALSE);
+	    npages = (pVesa->pInt->bx * 64) / 4096 + 1;
+	    if ((pVesa->state = xf86Int10AllocPages(pVesa->pInt, npages,
+						    &pVesa->statePage)) == NULL) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Cannot allocate memory to save SVGA state.\n");
+		return (FALSE);
+	    }
 	}
     }
 
     /* Save/Restore Super VGA state */
     if (function != MODE_QUERY) {
-	int ax_reg;
+	int ax_reg = 0;
 
-	pVesa->pInt->num = 0x10;
-	pVesa->pInt->ax = 0x4f04;
-	pVesa->pInt->dx = function;
-	pVesa->pInt->cx = 0x000f;
+	if (pVesa->major > 1) {
+	    pVesa->pInt->num = 0x10;
+	    pVesa->pInt->ax = 0x4f04;
+	    pVesa->pInt->dx = function;
+	    pVesa->pInt->cx = 0x000f;
 
-	if (function == MODE_RESTORE)
-	    memcpy(pVesa->state, pVesa->pstate, pVesa->stateSize);
+	    if (function == MODE_RESTORE)
+		memcpy(pVesa->state, pVesa->pstate, pVesa->stateSize);
 
-	pVesa->pInt->es = SEG_ADDR(pVesa->statePage);
-	pVesa->pInt->bx = SEG_OFF(pVesa->statePage);
-	xf86ExecX86int10(pVesa->pInt);
-	ax_reg = pVesa->pInt->ax;
+	    pVesa->pInt->es = SEG_ADDR(pVesa->statePage);
+	    pVesa->pInt->bx = SEG_OFF(pVesa->statePage);
+	    xf86ExecX86int10(pVesa->pInt);
+	    ax_reg = pVesa->pInt->ax;
+	}
 
 	if (function == MODE_RESTORE) {
 	    VESASetVBEMode(pScrn, pVesa->stateMode, NULL);
 	    RestoreFonts(pScrn);
 	}
 
-	if (ax_reg != 0x4f)
-	    return (FALSE);
+	if (pVesa->major > 1) {
+	    if (ax_reg != 0x4f)
+		return (FALSE);
 
-	if (function == MODE_SAVE && pVesa->pstate == NULL) {
-	    /* don't rely on the memory not being touched */
-	    pVesa->stateSize = pVesa->pInt->bx * 64;
-	    pVesa->pstate = xalloc(pVesa->stateSize);
-	    memcpy(pVesa->pstate, pVesa->state, pVesa->stateSize);
+	    if (function == MODE_SAVE && pVesa->pstate == NULL) {
+		/* don't rely on the memory not being touched */
+		pVesa->stateSize = pVesa->pInt->bx * 64;
+		pVesa->pstate = xalloc(pVesa->stateSize);
+		memcpy(pVesa->pstate, pVesa->state, pVesa->stateSize);
+	    }
 	}
     }
 
