@@ -5,7 +5,7 @@ XFree86@XFree86.org.  Replace the comments in [] with your own text.
 
 VERSION:
 
-4.0.1a
+XF86_VERSION
 
 VIDEO DRIVER:
 
@@ -54,4 +54,4 @@ REPORT:
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/BugReport,v 1.3 2000/08/03 12:24:02 dawes Exp $
