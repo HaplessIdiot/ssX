@@ -71,7 +71,7 @@ VGA Wonder V5 boards also use a 18800-1, but have a 18810 clock generator.
 VGA Wonder+ boards use a 28800-2 and a 18810.
 Other than these, ATI's board naming convention (if it can be said that one
 exists) starts to fall apart.<p>
-The VGA Wonder series was also availble through ATI's OEM channel under the
+The VGA Wonder series was also available through ATI's OEM channel under the
 name VGA1024.
 Thus, the ATI VGA driver also supports VGA1024, VGA1024D, VGA1024XL,
 VGA1024DXL and VGA1024VLB boards, among others.<p>
@@ -201,6 +201,6 @@ Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
 $XConsortium: ati.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.3 1995/01/28 16:02:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.4 1995/05/27 03:11:53 dawes Exp $
 </verb>
 </article>

@@ -89,10 +89,12 @@ and other sites archiving GNU source.)
     <item> It is possible to configure a cut-down source tree for building only
       the XFree86 servers.  Building from a cut-down source tree requires
       about 40-45MB of disk space.  The files/directories required to do
-      this are listed in the ServersOnly file (which can be found in
-      <tt>xc/programs/Xserver/hw/XFree86/doc/</tt>).
+      this are listed in the <tt/ServersOnly/ file (which can be found in
+      <tt>xc/programs/Xserver/hw/XFree86/doc/</tt>).  The <tt/LbxproxyOnly/
+      file in the same directory lists the files/directories required for
+      building only the lbxproxy server.
 
-    <item> The <tt/XFree86-3.1.1-contrib.diff.gz/ patch provides patches
+    <item> The <tt/XFree86-3.1.2-contrib.diff.gz/ patch provides patches
     to a small part of the X Consortium's contrib distribution.  It
     mostly covers those clients which were in the core distribution of
     X11R5 but were moved to the contrib distribution for X11R6.  To
@@ -240,21 +242,32 @@ and other sites archiving GNU source.)
    <tt/README/ file in <tt>xc/programs/Xserver/hw/xfree86/doc</tt> that is
    relevant to you.  Once those OS-specific details have been taken
    care of, go the <tt/xc/ directory and run ``<tt/make World/'' with the
-   <bf/BOOTSTRAPCFLAGS/ set as described in the OS-specific README.
-   If you are using one of the cut-down source distributions,
+   <bf/BOOTSTRAPCFLAGS/ set as described in the OS-specific README.  It
+   is advisable to redirect stdout and stderr to <tt/World.Log/ so that you
+   can track down problems that might occur during the build.
+   If you are using one of the cut-down source distributions, you should
+   run ``<tt/make -f Makefile.ini World/'' because they will usually not
+   include the top level Makefile.
 
 <item> If all goes well, that will finish successfully in anything
    from two to twelve hours depending on your system.
    You should check <tt/World.Log/ to see
-   if there were any problems.  If there weren't any then you can do a
-   ``<tt/make install/'' and a ``<tt/make install.man/''.  Make sure
-   you have enough space in <tt>/usr/X11R6</tt> for the install to
-   succeed.  If you want to install on a filesystem other than
-   <tt>/usr</tt>, make a symbolic link to <tt>/usr/X11R6</tt> before
-   installing.
+   if there were any problems.  If there weren't any then you can install
+   the binaries.  When using the full source distribution, the installation
+   should be done from the <tt/xc/ directory.  When using the ServersOnly
+   distribution, the install should be done from the
+   <tt>xc/programs/Xserver</tt> directory, and when using the LBXProxyOnly
+   distribution it should be done from the
+   <tt>xc/workInProgress/lbx/programs/lbxproxy</tt> directory.  To do
+   the install, run ``<tt/make
+   install/'' and ``<tt/make install.man/''.  Make sure you have enough
+   space in <tt>/usr/X11R6</tt> for the install to succeed.  If you want
+   to install on a filesystem other than <tt>/usr</tt>, make a symbolic
+   link to <tt>/usr/X11R6</tt> before installing.
 
    To install the binary Link Kit (in <tt>/usr/X11R6/lib/Server</tt>),
-   run:
+   run the following from the <tt/xc/ directory (when using either the
+   full source distribution or the ServersOnly distribution):
 <tscreen><verb>
      make install.linkkit
 </verb></tscreen>
@@ -266,7 +279,7 @@ and other sites archiving GNU source.)
    ``<tt/make install/'' and a ``<tt/make install.man/''.
 </enum>
 
-<sect> Using and configuring XFree86
+<sect> Using and Configuring XFree86
 <p>
 <enum>
 <item> Add <tt>/usr/X11R6/bin</tt> to your <bf/PATH/ and
@@ -275,10 +288,11 @@ and other sites archiving GNU source.)
 <item> Set up an <tt/XF86Config/ file.  The default locations for this
    file are: <tt>/etc/XF86Config</tt>,
    <tt>/usr/X11R6/lib/X11/XF86Config.</tt><em/hostname/, and
-   <tt>/usr/X11R6/lib/X11/XF86Config</tt>.  There is a sample file
-   installed as <tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>, and this
-   can be used as a starting point.  The <tt/xf86config/ utility can also
-   be used to generate an <tt/XF86Config/ file.
+   <tt>/usr/X11R6/lib/X11/XF86Config</tt>.  The recommended way to generate
+   an <tt/XF86Config/ file is to use the <tt/xf86config/ utility.  Also,
+   there is a sample file
+   installed as <tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>, which
+   can be used as a starting point.
 
    For details about the <tt/XF86Config/ file format, refer to the
    <em>XF86Config(4/5)</em> manual page.
@@ -287,7 +301,7 @@ and other sites archiving GNU source.)
    sure that the script exec's the server (e.g ``<tt>exec
    /usr/X11R6/bin/XF86_SVGA</tt>'' rather than just
    ``<tt>/usr/X11R6/bin/XF86_SVGA</tt>'').  If you don't do this, the
-   server may not exit when your last client finishes.
+   server may be slow to start, and may not exit when your last client finishes.
 </enum>
 
 <sect> Reconfiguring the server (source distribution)
@@ -296,7 +310,7 @@ To build a different set of servers or servers with a different set of
 drivers installed:
 <enum>
 <item>Make sure the source for any new drivers is in the correct place (e.g.,
-   driver source for the SVGA server should be in a subdir of
+   driver source for the SVGA server should be in a subdirectory of
    <tt>xc/programs/Xserver/hw/xfree86/vga256/drivers</tt>).
 
 <item> Change the settings of the server defines (eg <bf/XF86SVGAServer/ as

@@ -337,7 +337,7 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
 	      has changed to <tt>/dev/X/ISCCONN</tt>. For compatibility 
 	      reasons on ISC, the pipes in the new directory will be
 	      linked to a file inside the old. 
-	      This will normaly be a hard link, so it can't go across
+	      This will normally be a hard link, so it can't go across
 	      filesystems. On ISC Version 4.x this is now allowed. But
 	      you should use the new S5L on both filesystems.
 	      ISC30 systems should take care that the two directories
@@ -356,7 +356,7 @@ as to all who contribute to this excellent piece of free software.
 
 <verb>
 $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.4 1995/01/28 16:03:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.5 1995/03/04 06:16:01 dawes Exp $
 </verb>
 
 </article>
