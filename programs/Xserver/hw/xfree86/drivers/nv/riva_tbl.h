@@ -61,7 +61,9 @@ static unsigned RivaTableFIFO[][2] =
     {0x00001800, 0x80000010},
     {0x00002000, 0x80000011},
     {0x00002800, 0x80000012},
-    {0x00003000, 0x80000014},
+#if 0
+    {0x00003000, 0x80000014},   /* Riva128 doesn't like this */
+#endif
     {0x00003800, 0x80000013}
 };
 static unsigned nv3TablePFIFO[][2] =

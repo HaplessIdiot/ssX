@@ -92,6 +92,33 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pVga->CRTC[0x16] = Set8Bits(vertTotal + 1);
     
     /*
+     * Initialize DAC palette.
+     */
+    if(pLayout->bitsPerPixel != 8 )
+    {
+        if (pNv->riva.Architecture == 3)
+            for (i = 0; i < 256; i++)
+            {
+#if 0
+                pVga->DAC[i*3]     = i >> 2;
+                pVga->DAC[(i*3)+1] = i >> 2;
+                pVga->DAC[(i*3)+2] = i >> 2;
+#endif
+                pVga->DAC[i*3]     = 0;
+                pVga->DAC[(i*3)+1] = 0;
+                pVga->DAC[(i*3)+2] = 0;
+
+            }
+        else
+            for (i = 0; i < 256; i++)
+            {
+                pVga->DAC[i*3]     = i;
+                pVga->DAC[(i*3)+1] = i;
+                pVga->DAC[(i*3)+2] = i;
+            }
+    }
+
+    /*
      * Calculate the extended registers.
      */
 

@@ -54,7 +54,7 @@ NVSetupDGAMode(
    DisplayModePtr firstMode, pMode;
    NVPtr pNv = NVPTR(pScrn);
    DGAModePtr mode, newmodes;
-   int size, pitch, tmp, Bpp = bitsPerPixel >> 3;
+   int size, pitch, Bpp = bitsPerPixel >> 3;
 
 SECOND_PASS:
 
@@ -109,10 +109,6 @@ SECOND_PASS:
 	    mode->pixmapHeight = mode->imageHeight;
 	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
 	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
-            tmp = (8*1024*1024 / mode->bytesPerScanline) - mode->viewportHeight;
-	    if(tmp < 0) tmp = 0;
-            if(tmp < mode->maxViewportY)
-                mode->maxViewportY = tmp;
 	    (*num)++;
 	}
 
@@ -151,7 +147,8 @@ NVDGAInit(ScreenPtr pScreen)
 		0x7c00, 0x03e0, 0x001f, TrueColor);
 
    /* 16 */
-   modes = NVSetupDGAMode (pScrn, modes, &num, 16, 16, 
+   if(pNv->riva.Architecture != 3)
+       modes = NVSetupDGAMode (pScrn, modes, &num, 16, 16, 
 		(pScrn->bitsPerPixel == 16),
 		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
 		0xf800, 0x07e0, 0x001f, TrueColor);
@@ -241,8 +238,13 @@ NV_SetViewport(
    NVPtr pNv = NVPTR(pScrn);
 
    NVAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-   while(pNv->riva.PCRTC[0x202] & 0x00010000); 
-   while(!(pNv->riva.PCRTC[0x202] & 0x00010000));
+
+   if(pNv->riva.Architecture == 3) {
+	/* ???????? */
+   } else {
+	while(pNv->riva.PCRTC[0x202] & 0x00010000); 
+	while(!(pNv->riva.PCRTC[0x202] & 0x00010000));
+   }
 
    pNv->DGAViewportStatus = 0;  
 }
