@@ -9,7 +9,7 @@
 <date>14 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.111 2004/02/17 04:31:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.112 2004/02/17 18:37:14 dawes Exp $
 </ident>
 
 <abstract>
@@ -1236,6 +1236,7 @@ Mario Klebsch,
 Egmont Koblinger,
 Vlatko Kosturjak,
 Kusanagi Kouichi,
+Mel Kravitz,
 Peter Kunzmann,
 Nick Kurshev,
 Mashrab Kuvatov,
