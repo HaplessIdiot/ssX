@@ -1,5 +1,5 @@
 /* $XConsortium: resource.c,v 1.47 94/04/17 20:03:43 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/resource.c,v 3.0 1994/10/20 06:15:12 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -244,7 +244,7 @@ struct displayResource serverResources[] = {
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
 				"5",
 "openTimeout",	"OpenTimeout",	DM_INT,		boffset(openTimeout),
-				"30",
+				"120",
 "startAttempts","StartAttempts",DM_INT,		boffset(startAttempts),
 				"4",
 "pingInterval",	"PingInterval",	DM_INT,		boffset(pingInterval),
