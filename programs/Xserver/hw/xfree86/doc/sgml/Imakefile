@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.38 1999/07/04 08:31:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.39 1999/07/04 12:49:09 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -16,9 +16,6 @@ LinuxDocReadmeTarget(Bsdi)
 LinuxDocReadmeTarget(FreeBSD)
 LinuxDocReadmeTarget(NetBSD)
 LinuxDocReadmeTarget(OpenBSD)
-#if 0
-LinuxDocReadmeTarget(Mach)
-#endif
 LinuxDocReadmeTarget(Linux)
 LinuxDocReadmeTarget(LynxOS)
 #if 0
@@ -74,9 +71,6 @@ LinuxDocTargetLong(QStart.sgml,QuickStart.doc,QuickStart)
 LinuxDocTarget(DocIndex)
 
 /* Other docs */
-#if 0
-LinuxDocReadmeTarget(clkprog)
-#endif
 LinuxDocTarget(xinput)
 LinuxDocReadmeTarget(mouse)
 LinuxDocReadmeTarget(fonts)

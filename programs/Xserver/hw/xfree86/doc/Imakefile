@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.56 1999/07/19 13:36:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.57 1999/08/14 10:49:35 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -29,21 +29,17 @@ REPORTFORM = BetaReport
 
 #if !BuildLinuxDocText
 OSREADMES = \
-	/*ReadmeFile(Amoeba)*/	\
 	/*ReadmeFile(Bsdi)*/	\
 	ReadmeFile(FreeBSD)	\
 	ReadmeFile(isc)		\
 	ReadmeFile(Linux)	\
 	ReadmeFile(LynxOS)	\
-	/*ReadmeFile(Mach)*/	\
-	/*ReadmeFile(Minix)*/	\
 	ReadmeFile(NetBSD)	\
 	ReadmeFile(OpenBSD)	\
 	ReadmeFile(OS2)		\
 	OS2.Notes		\
 	ReadmeFile(SCO)		\
 	ReadmeFile(SOLX86)	\
-	/*ReadmeFile(SVR3)*/	\
 	ReadmeFile(SVR4)	\
 	$(_NULLENTRY_)
 
@@ -72,7 +68,7 @@ HWREADME = \
 
 MAINDOCS = LICENSE README /*ReadmeFile(Config)*/ /*BUILD*/ RELNOTES DESIGN
 
-OTHERDOCS = VideoModes.doc /*QuickStart.doc*/ /*ReadmeFile(clkprog)*/ xinput \
+OTHERDOCS = VideoModes.doc /*QuickStart.doc*/ xinput \
 	    ReadmeFile(fonts) ReadmeFile(mouse)
 #endif
 
