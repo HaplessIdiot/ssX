@@ -1,8 +1,34 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_image.c,v 1.2 2000/12/04 18:50:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_image.c,v 1.3 2001/04/18 15:29:19 dawes Exp $ */
 
 #include "savage_driver.h"
 #include "xaarop.h"
 #include "savage_bci.h"
+
+void SavageSubsequentImageWriteRect (
+    ScrnInfoPtr pScrn,
+    int x,
+    int y,
+    int w,
+    int h,
+    int skipleft);
+
+void SavageSetupForImageWrite (
+    ScrnInfoPtr pScrn,
+    int rop,
+    unsigned planemask,
+    int transparency_color,
+    int bpp,
+    int depth);
+
+void SavageWriteBitmapCPUToScreenColorExpand (
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char * src,
+    int srcwidth,
+    int skipleft,
+    int fg, int bg,
+    int rop,
+    unsigned int planemask);
 
 #if 0
 void SavageWriteBitmapScreenToScreenColorExpand(

@@ -1,4 +1,20 @@
-XFree86 4.0.99.4 (xx May 2001)
+XFree86 4.0.99.900 (18 May 2001)
+ 559. Savage driver updates, including compiler warning fixes, document
+      the "ShadowStatus" option in the man page, and fix an argument
+      mismatch between ShadowWait and SavageWaitQueue (#4661, Tim Roberts).
+ 558. Update the wacom driver to add a "ScreenNo" option to allow a tablet
+      to be attached to a screen in a multi-head setup, and to add auto-
+      detection of USB line and max parameters of USB tablets (#4640,
+      Frederic Lepied).
+ 557. Add a README file that has information about enabling the extra buttons
+      on the IBM Rapid Access keyboard (#4639, Dennis Bjorklund).
+ 556. Fix some Slovene/Slovak confusion in locale.dir/locale.alias files
+      (#4638, Kamil Toman).
+ 555. New XKB keymaps for cz and sk (#4634, 4637, Kamil Toman).
+ 554. Updates for the iso8859-2 Compose file (#4634, Kamil Toman).
+ 553. Check V_CSYNC in the r128 driver, and fix building with R128_DEBUG
+      enabled (#4631, Michel Dänzer).
+ 552. Mesa 3.4.2 (and later) import.
  551. More build & warning fixes (Marc La France).
  550. Fix bug that caused hardware cursors to be temporarily moved during mode
       switches (Marc La France).
@@ -13286,4 +13302,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1780 2001/05/18 17:48:25 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1781 2001/05/18 20:22:25 tsi Exp $

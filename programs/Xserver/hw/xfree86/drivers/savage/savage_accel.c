@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.7 2001/04/18 15:29:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.9 2001/05/15 10:19:39 eich Exp $ */
 
 /*
  *
@@ -198,8 +198,12 @@ void SavageWriteBitmapCPUToScreenColorExpand (
     unsigned int planemask
 );
 
+unsigned long writedw( unsigned long addr, unsigned long value );
+unsigned long readdw( unsigned long addr );
+unsigned long readfb( unsigned long addr );
+unsigned long writefb( unsigned long addr, unsigned long value );
+void writescan( unsigned long scan, unsigned long color );
 
-void SavageSetGBD( ScrnInfoPtr );
 
 /*
  * This is used to cache the last known value for routines we want to
@@ -429,7 +433,6 @@ SavageInitAccel(ScreenPtr pScreen)
     xaaptr->SubsequentMono8x8PatternFillRect 
     	= SavageSubsequentMono8x8PatternFillRect;
     xaaptr->Mono8x8PatternFillFlags = 0
-	| NO_TRANSPARENCY 
 	| HARDWARE_PATTERN_PROGRAMMED_BITS 
 	| HARDWARE_PATTERN_SCREEN_ORIGIN
 	| BIT_ORDER_IN_BYTE_LSBFIRST
@@ -500,7 +503,6 @@ SavageInitAccel(ScreenPtr pScreen)
     /* CPU to Screen color expansion */
 
     xaaptr->ScanlineCPUToScreenColorExpandFillFlags = 0
-	| ROP_NEEDS_SOURCE
 	| NO_PLANEMASK
 	| CPU_TRANSFER_PAD_DWORD
 	| SCANLINE_PAD_DWORD
@@ -535,6 +537,7 @@ SavageInitAccel(ScreenPtr pScreen)
      * to the end of the command overflow buffer can be used. If you haven't
      * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
      */
+
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
@@ -544,10 +547,6 @@ SavageInitAccel(ScreenPtr pScreen)
     		"Using %d lines for offscreen memory.\n",
 		psav->ScissB - pScrn->virtualY );
 
-     if (psav->Chipset == S3_SAVAGE4) {
-         xaaptr->Mono8x8PatternFillFlags |= NO_TRANSPARENCY ;
-         xaaptr->ScanlineCPUToScreenColorExpandFillFlags |= ROP_NEEDS_SOURCE;
-     }
     return XAAInit(pScreen, xaaptr);
 }
 
