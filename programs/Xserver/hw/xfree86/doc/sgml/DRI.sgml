@@ -13,7 +13,7 @@
     <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.17 2001/03/21 16:56:18 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.18 2001/03/27 23:15:48 dawes Exp $
     </ident>
 
     <toc>
@@ -205,7 +205,7 @@
       exists. 
 
       <sect>XF86Config file
-      <p>
+<p>
         The XFree86 configuration file is usually found in
         <tt>/etc/X11/XF86Config</tt>.
         This section describes the parts which must be specially set for
