@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.13 2001/08/07 01:52:24 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.14 2001/08/12 00:10:01 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -34,6 +34,8 @@ BOOL serverVisible = TRUE;
 // Full screen specific per screen storage structure
 typedef struct {
     CGDirectDisplayID   displayID;
+    CFDictionaryRef     xDisplayMode;
+    CFDictionaryRef     aquaDisplayMode;
     CGDirectPaletteRef  xPalette;
     CGDirectPaletteRef  aquaPalette;
 } QuartzFSScreenRec, *QuartzFSScreenPtr;
@@ -117,6 +119,72 @@ static void *QuartzPMThread(void *arg)
 
 
 /* 
+ * QuartzFSFindDisplayMode
+ *  Find the appropriate display mode to use in full screen mode.
+ *  If display mode is not the same as the current Aqua mode, switch
+ *  to the new mode.
+ */
+static Bool QuartzFSFindDisplayMode(
+    QuartzFSScreenPtr fsDisplayInfo)
+{
+    CGDirectDisplayID cgID = fsDisplayInfo->displayID;
+    size_t height, width, bpp;
+    boolean_t exactMatch;
+
+    fsDisplayInfo->aquaDisplayMode = CGDisplayCurrentMode(cgID);
+
+    // If no user options, use current display mode
+    if (darwinDesiredWidth == 0 && darwinDesiredDepth == -1 &&
+        darwinDesiredRefresh == -1)
+    {
+        fsDisplayInfo->xDisplayMode = fsDisplayInfo->aquaDisplayMode;
+        return TRUE;
+    }
+
+    // If the user has no choice for size, use current
+    if (darwinDesiredWidth == 0) {
+        width = CGDisplayPixelsWide(cgID);
+        height = CGDisplayPixelsHigh(cgID);
+    } else {
+        width = darwinDesiredWidth;
+        height = darwinDesiredHeight;
+    }
+
+    switch (darwinDesiredDepth) {
+        case 0:
+            bpp = 8;
+            break;
+        case 1:
+            bpp = 16;
+            break;
+        case 2:
+            bpp = 32;
+            break;
+        default:
+            bpp = CGDisplayBitsPerPixel(cgID);
+    }
+
+    if (darwinDesiredRefresh == -1) {
+        fsDisplayInfo->xDisplayMode =
+                CGDisplayBestModeForParameters(cgID, bpp, width, height,
+                        &exactMatch);
+    } else {
+        fsDisplayInfo->xDisplayMode =
+                CGDisplayBestModeForParametersAndRefreshRate(cgID, bpp,
+                        width, height, darwinDesiredRefresh, &exactMatch);
+    }
+    if (!exactMatch) {
+        fsDisplayInfo->xDisplayMode = fsDisplayInfo->aquaDisplayMode;
+        return FALSE;
+    }
+
+    // Switch to the new display mode
+    CGDisplaySwitchToMode(cgID, fsDisplayInfo->xDisplayMode);
+    return TRUE;
+}
+
+
+/* 
  * QuartzFSAddScreen
  *  Do initialization of each screen for Quartz in full screen mode.
  */
@@ -129,22 +197,29 @@ static Bool QuartzFSAddScreen(
     CGRect bounds;
     QuartzFSScreenPtr fsDisplayInfo;
 
-    // allocate space for private per screen fullscreen specific storage
+    // Allocate space for private per screen fullscreen specific storage.
     fsDisplayInfo = xalloc(sizeof(QuartzFSScreenRec));
     FULLSCREEN_PRIV(pScreen) = fsDisplayInfo;
 
     fsDisplayInfo->displayID = cgID;
+    fsDisplayInfo->xDisplayMode = 0;
+    fsDisplayInfo->aquaDisplayMode = 0;
     fsDisplayInfo->xPalette = 0;
     fsDisplayInfo->aquaPalette = 0;
 
+    // Capture full screen because X doesn't like read-only framebuffer.
+    // We need to do this before we (potentially) switch the display mode.
+    CGDisplayCapture(cgID);
+
+    if (! QuartzFSFindDisplayMode(fsDisplayInfo)) {
+        ErrorF("Could not support specified display mode on screen %i.\n",
+               index);
+        xfree(fsDisplayInfo);
+        return FALSE;
+    }
+
     dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
     dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
-#if FALSE
-    // FIXME: endian and 24 bit color specific
-    dfb->pixelInfo.componentMasks[0] = 0x00ff0000;
-    dfb->pixelInfo.componentMasks[1] = 0x0000ff00;
-    dfb->pixelInfo.componentMasks[2] = 0x000000ff;
-#endif
 
     bounds = CGDisplayBounds(cgID);
     dfb->x = bounds.origin.x;
@@ -206,13 +281,15 @@ static Bool QuartzFSSetupScreen(
 
     if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
         // initialize colormap handling
-        fsDisplayInfo->aquaPalette = CGPaletteCreateWithDisplay(cgID);
+        size_t aquaBpp;
+
+        CFNumberGetValue(CFDictionaryGetValue(fsDisplayInfo->aquaDisplayMode,
+                         kCGDisplayBitsPerPixel), kCFNumberLongType, &aquaBpp);
+        if (aquaBpp <= 8)
+            fsDisplayInfo->aquaPalette = CGPaletteCreateWithDisplay(cgID);
         fsDisplayInfo->xPalette = CGPaletteCreateDefaultColorPalette();
         pScreen->StoreColors = QuartzFSStoreColors;
     }
-
-    // capture full screen because X doesn't like read-only framebuffer
-    CGDisplayCapture(cgID);
 
     return TRUE;
 }
@@ -259,6 +336,9 @@ void QuartzCapture(void)
 
         if (!CGDisplayIsCaptured(cgID) && !quartzRootless) {
             CGDisplayCapture(cgID);
+            fsDisplayInfo->aquaDisplayMode = CGDisplayCurrentMode(cgID);
+            if (fsDisplayInfo->xDisplayMode != fsDisplayInfo->aquaDisplayMode)
+                CGDisplaySwitchToMode(cgID, fsDisplayInfo->xDisplayMode);
             if (fsDisplayInfo->xPalette)
                 CGDisplaySetPalette(cgID, fsDisplayInfo->xPalette);
         }
@@ -280,6 +360,8 @@ static void QuartzRelease(void)
         CGDirectDisplayID cgID = fsDisplayInfo->displayID;
 
         if (CGDisplayIsCaptured(cgID) && !quartzRootless) {
+            if (fsDisplayInfo->xDisplayMode != fsDisplayInfo->aquaDisplayMode)
+                CGDisplaySwitchToMode(cgID, fsDisplayInfo->aquaDisplayMode);
             if (fsDisplayInfo->aquaPalette)
                 CGDisplaySetPalette(cgID, fsDisplayInfo->aquaPalette);
             CGDisplayRelease(cgID);
@@ -346,7 +428,7 @@ void QuartzShow(
     if (!serverVisible) {
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
-	        if (!quartzRootless)
+                if (!quartzRootless)
                     xf86SetRootClip(screenInfo.screens[i], TRUE);
                 QuartzResumeXCursor(screenInfo.screens[i], x, y);
             }
@@ -396,4 +478,3 @@ void QuartzGiveUp(void)
     }
     QuartzRelease();
 }
-
