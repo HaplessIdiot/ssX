@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.11 2003/08/19 19:21:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.12 2003/09/16 00:36:12 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -46,10 +46,7 @@
     BOOL queueShowServer;
     BOOL quitWithoutQuery;
     UInt32 mouseState;
-
-    // server event queue
     BOOL sendServerEvents;
-    int eventWriteFD;
 
     // Aqua interface
     IBOutlet NSWindow *modeWindow;
@@ -89,7 +86,6 @@
 - (void)sendXEvent:(xEvent *)xe;
 - (void)sendShowHide:(BOOL)show;
 - (void)clientProcessDone:(int)clientStatus;
-- (void)itemSelected:sender;
 - (void)setX11WindowList:(NSArray *)list;
 - (void)setX11WindowCheck:(NSNumber *)nn;
 
@@ -97,11 +93,23 @@
 - (IBAction)startFullScreen:(id)sender;
 - (IBAction)startRootless:(id)sender;
 - (IBAction)closeHelpAndShow:(id)sender;
+- (IBAction)showSwitchPanel:(id)sender;
 - (IBAction)showAction:(id)sender;
+- (IBAction)itemSelected:(id)sender;
+- (IBAction)nextWindow:(id)sender;
+- (IBAction)previousWindow:(id)sender;
+- (IBAction)performClose:(id)sender;
+- (IBAction)performMiniaturize:(id)sender;
+- (IBAction)performZoom:(id)sender;
+- (IBAction)bringAllToFront:(id)sender;
+- (IBAction)copy:(id)sender;
 
 // NSApplication delegate
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+- (void)applicationWillTerminate:(NSNotification *)aNotification;
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
+- (void)applicationDidHide:(NSNotification *)aNotification;
+- (void)applicationDidUnhide:(NSNotification *)aNotification;
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
 - (void)applicationWillResignActive:(NSNotification *)aNotification;
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification;

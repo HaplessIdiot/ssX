@@ -23,7 +23,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.17 2003/05/14 05:27:55 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.18 2003/08/12 23:47:10 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -95,7 +95,8 @@ void DarwinModeBell(int volume, DeviceIntPtr pDevice, pointer ctrl, int class);
 extern int              darwinScreenIndex; // index into pScreen.devPrivates
 extern int              darwinScreensFound;
 extern io_connect_t     darwinParamConnect;
-extern int              darwinEventFD;
+extern int              darwinEventReadFD;
+extern int              darwinEventWriteFD;
 
 // User preferences
 extern int              darwinMouseAccelChange;
@@ -116,19 +117,31 @@ extern int              darwinMainScreenY;
  * Special ddx events understood by the X server
  */
 enum {
-  kXDarwinUpdateModifiers   // update all modifier keys
-            = LASTEvent+1,  // (from X.h list of event names)
-  kXDarwinUpdateButtons,    // update state of mouse buttons 2 and up
-  kXDarwinScrollWheel,      // scroll wheel event
-  kXDarwinShow,             // vt switch to X server;
-                            // recapture screen and restore X drawing
-  kXDarwinHide,             // vt switch away from X server;
-                            // release screen and clip X drawing
-  kXDarwinSetRootClip,      // enable or disable drawing to the X screen
-  kXDarwinQuit,             // kill the X server and release the display
-  kXDarwinReadPasteboard,   // copy Mac OS X pasteboard into X cut buffer
-  kXDarwinWritePasteboard,  // copy X cut buffer onto Mac OS X pasteboard
-  kXDarwinControllerNotify  // send an AppleWMControllerNotify event
+    kXDarwinUpdateModifiers   // update all modifier keys
+            = LASTEvent+1,    // (from X.h list of event names)
+    kXDarwinUpdateButtons,    // update state of mouse buttons 2 and up
+    kXDarwinScrollWheel,      // scroll wheel event
+
+    /*
+     * Quartz-specific events -- not used in IOKit mode
+     */
+    kXDarwinActivate,         // restore X drawing and cursor
+    kXDarwinDeactivate,       // clip X drawing and switch to Aqua cursor
+    kXDarwinSetRootClip,      // enable or disable drawing to the X screen
+    kXDarwinQuit,             // kill the X server and release the display
+    kXDarwinReadPasteboard,   // copy Mac OS X pasteboard into X cut buffer
+    kXDarwinWritePasteboard,  // copy X cut buffer onto Mac OS X pasteboard
+    /*
+     * AppleWM events
+     */
+    kXDarwinControllerNotify, // send an AppleWMControllerNotify event
+    kXDarwinPasteboardNotify, // notify the WM to copy or paste
+    /*
+     * Xplugin notification events
+     */
+    kXDarwinDisplayChanged,   // display configuration has changed
+    kXDarwinWindowState,      // window visibility state has changed
+    kXDarwinWindowMoved       // window has moved on screen
 };
 
 #endif	/* _DARWIN_H */

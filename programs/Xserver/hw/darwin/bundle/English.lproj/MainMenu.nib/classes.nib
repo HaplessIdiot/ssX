@@ -41,8 +41,13 @@
         }, 
         {
             ACTIONS = {
+                bringAllToFront = id; 
                 closeHelpAndShow = id; 
+                itemSelected = id; 
+                nextWindow = id; 
+                previousWindow = id; 
                 showAction = id; 
+                showSwitchPanel = id; 
                 startFullScreen = id; 
                 startRootless = id; 
             }; 
