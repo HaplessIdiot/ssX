@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.12 2000/03/03 04:47:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.13 2000/03/22 03:08:14 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -305,9 +305,8 @@ ATIMach64PreInit
 
         pATIHW->dp_mix = SetBits(MIX_SRC, DP_FRGD_MIX) |
             SetBits(MIX_DST, DP_BKGD_MIX);
-        pATIHW->dp_src = SetBits(DP_MONO_SRC_ALLONES, DP_MONO_SRC) |
-            SetBits(SRC_FRGD, DP_FRGD_SRC) |
-            SetBits(SRC_BKGD, DP_BKGD_SRC);
+        pATIHW->dp_src = DP_MONO_SRC_ALLONES |
+            SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC);
 
         /* Initialise colour compare */
         pATIHW->clr_cmp_msk = (CARD32)(-1);
@@ -891,7 +890,7 @@ ATIMach64SetupForScreenToScreenCopy
 
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, SetBits(DP_MONO_SRC_ALLONES, DP_MONO_SRC) |
+    outm(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_BLIT, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
 }
 
@@ -965,12 +964,12 @@ ATIMach64SetupForSolidFill
     else
     {
         ATIMach64WaitForFIFO(5);
-        outm(DST_CNTL, pATI->NewHW.dst_cntl);
+        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
     }
 
     outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
     outm(DP_WRITE_MASK, planemask);
-    outm(DP_SRC, SetBits(DP_MONO_SRC_ALLONES, DP_MONO_SRC) |
+    outm(DP_SRC, DP_MONO_SRC_ALLONES |
         SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
     outm(DP_FRGD_CLR, colour);
 }
@@ -1000,8 +999,8 @@ ATIMach64SubsequentSolidFillRect
         w *= pATI->XModifier;
 
         ATIMach64WaitForFIFO(3);
-        outm(DST_CNTL, pATI->NewHW.dst_cntl | DST_24_ROT_EN |
-            SetBits((x / 4) % 6, DST_24_ROT));
+        outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
+            (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
     outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
@@ -1053,6 +1052,96 @@ ATIMach64DisableClipping
 }
 
 /*
+ * ATIMach64SetupForMono8x8PatternFill --
+ *
+ * This function sets up the draw engine for a series of 8x8 1bpp pattern
+ * fills.
+ */
+static void
+ATIMach64SetupForMono8x8PatternFill
+(
+    ScrnInfoPtr  pScreenInfo,
+    int          patx,
+    int          paty,
+    int          fg,
+    int          bg,
+    int          rop,
+    unsigned int planemask
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    if (bg == -1)
+    {
+        if (pATI->XModifier == 1)
+            ATIMach64WaitForFIFO(8);
+        else
+            ATIMach64WaitForFIFO(7);
+
+        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+            SetBits(MIX_DST, DP_BKGD_MIX));
+    }
+    else
+    {
+        if (pATI->XModifier == 1)
+            ATIMach64WaitForFIFO(9);
+        else
+            ATIMach64WaitForFIFO(8);
+
+        outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX) |
+            SetBits(ATIMach64ALU[rop], DP_BKGD_MIX));
+        outm(DP_BKGD_CLR, bg);
+    }
+
+    outm(DP_WRITE_MASK, planemask);
+    outm(DP_SRC, DP_MONO_SRC_PATTERN |
+        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+    outm(DP_FRGD_CLR, fg);
+
+    outm(PAT_REG0, patx);
+    outm(PAT_REG1, paty);
+    outm(PAT_CNTL, PAT_MONO_EN);
+
+    if (pATI->XModifier == 1)
+        outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+}
+
+/*
+ * ATIMach64SubsequentMono8x8PatternFillRect --
+ *
+ * This function performs an 8x8 1bpp pattern fill.
+ */
+static void
+ATIMach64SubsequentMono8x8PatternFillRect
+(
+    ScrnInfoPtr pScreenInfo,
+    int         patx,
+    int         paty,
+    int         x,
+    int         y,
+    int         w,
+    int         h
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    if (pATI->XModifier == 1)
+        ATIMach64WaitForFIFO(2);
+    else
+    {
+        x *= pATI->XModifier;
+        w *= pATI->XModifier;
+
+        ATIMach64WaitForFIFO(3);
+        outm(DST_CNTL, SetBits((x / 4) % 6, DST_24_ROT) |
+            (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
+    }
+
+    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outm(DST_HEIGHT_WIDTH, SetWord(w, 1) | SetWord(h, 0));
+}
+
+/*
  * ATIMach64AccelInit --
  *
  * This function fills in structure fields needed for acceleration on Mach64
@@ -1095,6 +1184,13 @@ ATIMach64AccelInit
         HARDWARE_CLIP_DASHED_LINE | HARDWARE_CLIP_SOLID_LINE;
     pXAAInfo->SetClippingRectangle = ATIMach64SetClippingRectangle;
     pXAAInfo->DisableClipping = ATIMach64DisableClipping;
+
+    /* 8x8 mono pattern fills */
+    pXAAInfo->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
+        HARDWARE_PATTERN_SCREEN_ORIGIN | BIT_ORDER_IN_BYTE_MSBFIRST;
+    pXAAInfo->SetupForMono8x8PatternFill = ATIMach64SetupForMono8x8PatternFill;
+    pXAAInfo->SubsequentMono8x8PatternFillRect =
+        ATIMach64SubsequentMono8x8PatternFillRect;
 
     return TRUE;
 }
