@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.2 2000/12/08 22:06:22 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.3 2000/12/11 17:31:42 dawes Exp $
  */
 
 #include <stdio.h>
@@ -1423,10 +1423,8 @@ ScreenConfig(void)
 			"Enter an identifier for your screen definition:",
 			11, 40, label,
 			" Next >>", " Cancel ", 0);
-	if (identifier == NULL) {
-	    XtFree((XtPointer)screen);
+	if (identifier == NULL)
 	    return (-1);
-	}
 
 	nlist = 0;
 	list = NULL;
@@ -1530,6 +1528,7 @@ ScreenConfig(void)
 	display = (XF86ConfDisplayPtr)(display->list.next);
     if (display == NULL) {
 	display = (XF86ConfDisplayPtr)XtCalloc(1, sizeof(XF86ConfDisplayRec));
+	display->disp_white.red = display->disp_black.red = -1;
 	display->disp_depth = screen->scrn_defaultdepth;
 	disp_allocated = 1;
     }
@@ -1630,7 +1629,8 @@ ScreenConfig(void)
 	screen->scrn_identifier = identifier;
 	screen->scrn_monitor_str = XtNewString(monitor->mon_identifier);
 	screen->scrn_device_str = XtNewString(device->dev_identifier);
-	xf86addScreen(XF86Config, screen);
+	XF86Config->conf_screen_lst =
+	    xf86addScreen(XF86Config->conf_screen_lst, screen);
     }
 
     return (1);
@@ -1949,8 +1949,10 @@ LayoutConfig(void)
 	    iref->list.next = layout->lay_input_lst;
 	    if (layout->lay_input_lst == NULL)
 		layout->lay_input_lst = iref;
-	    else
-		layout->lay_input_lst->list.next = iref;
+	    else {
+		iref->list.next = layout->lay_input_lst;
+		layout->lay_input_lst = iref;
+	    }
 	}
     }
     else
@@ -2045,8 +2047,10 @@ LayoutConfig(void)
 	    iref->list.next = layout->lay_input_lst;
 	    if (layout->lay_input_lst == NULL)
 		layout->lay_input_lst = iref;
-	    else
-		layout->lay_input_lst->list.next = iref;
+	    else {
+		iref->list.next = layout->lay_input_lst;
+		layout->lay_input_lst = iref;
+	    }
 	}
     }
     else
@@ -2261,6 +2265,7 @@ LayoutFinish:
     if (layout->lay_adjacency_lst == NULL) {
 	adj = (XF86ConfAdjacencyPtr)XtCalloc(1, sizeof(XF86ConfAdjacencyRec));
 	adj->adj_screen = XF86Config->conf_screen_lst;
+	adj->adj_screen_str = XtNewString(XF86Config->conf_screen_lst->scrn_identifier);
 	adj->adj_where = CONF_ADJ_ABSOLUTE;
 	layout->lay_adjacency_lst = adj;
     }
