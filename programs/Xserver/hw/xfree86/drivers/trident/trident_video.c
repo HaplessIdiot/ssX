@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.18 2001/11/30 12:12:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.20 2001/12/13 18:01:51 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1410,5 +1410,7 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
   }
   pTrident->hsync+=pTrident->OverrideHsync;
   pTrident->vsync+=pTrident->OverrideVsync;
+  pTrident->hsync_rskew+=pTrident->OverrideRskew;
+  pTrident->vsync_bskew+=pTrident->OverrideBskew;
 }
     

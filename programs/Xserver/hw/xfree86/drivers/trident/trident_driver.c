@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.156 2001/12/19 21:16:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.157 2002/01/11 09:48:55 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -250,6 +250,8 @@ static const OptionInfoRec TRIDENTOptions[] = {
     { OPTION_CYBER_STRETCH,	"CyberStretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_XV_HSYNC,          "XvHsync",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_XV_VSYNC,          "XvVsync",      OPTV_INTEGER,   {0}, FALSE },
+    { OPTION_XV_BSKEW,          "XvBskew",      OPTV_INTEGER,   {0}, FALSE },
+    { OPTION_XV_RSKEW,          "XvRskew",      OPTV_INTEGER,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1294,6 +1296,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Vsync set to %d\n",
 						pTrident->OverrideVsync);
     }
+    pTrident->OverrideRskew = 0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_RSKEW, 
+						&pTrident->OverrideRskew)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Rskew set to %d\n",
+						pTrident->OverrideRskew);
+    }
+    pTrident->OverrideBskew = 0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_XV_BSKEW, 
+						&pTrident->OverrideBskew)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Xv Bskew set to %d\n",
+						pTrident->OverrideBskew);
+    }
     if (xf86ReturnOptValBool(pTrident->Options, OPTION_SHADOW_FB, FALSE)) {
         if (!pTrident->Linear) 
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Ignoring Option SHADOW_FB"
@@ -1446,6 +1460,32 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NoAccel = TRUE;
 	    pTrident->HWCursor = FALSE;
 	    chipset = "TVGA9000/9000i";
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    pTrident->frequency = NTSC;
+	    break;
+	case TVGA9100B:
+	    pScrn->progClock = FALSE;
+	    NoClocks = 8;
+	    pTrident->NoMMIO = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TVGA9100B";
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    pTrident->frequency = NTSC;
+	    break;
+	case TVGA8900B:
+	    pScrn->progClock = FALSE;
+	    NoClocks = 8;
+	    pTrident->NoMMIO = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TVGA8900B";
 	    ramtype = "Standard DRAM";
 	    if (pTrident->UsePCIRetry)
 	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");

@@ -1,4 +1,6 @@
 XFree86 4.1.99.6 (xx January 2002)
+ 668. Add XvBskew, XvRskew to adjust skew values for centering of an
+      Xvideo window for the trident driver (Alan Hourihane).
  667. Fix loader for Motorola 68k machines (Alan Hourihane).
  666. Fix very high resolution modes (e.g. 1600x1200@16bpp) in the
       Trident driver (Alan Hourihane).
@@ -14513,4 +14515,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2127 2002/01/11 13:06:28 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2128 2002/01/12 19:25:23 alanh Exp $
