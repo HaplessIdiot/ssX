@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.21 2001/09/27 08:28:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.23tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -72,6 +72,13 @@ xf86GetKbdLeds()
 #include <asm/kbio.h>
 #endif
 
+/* Deal with spurious kernel header change */
+#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION)
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,42)
+#  define rate period
+# endif
+#endif
+
 static int
 KDKBDREP_ioctl_ok(int rate, int delay) {
 #if defined(KDKBDREP) && !defined(__sparc__)
@@ -133,6 +140,7 @@ KIOCSRATE_ioctl_ok(int rate, int delay) {
 #endif /* KIOCSRATE */
 }
 
+#undef rate
 
 #if NeedFunctionPrototypes
 void xf86SetKbdRepeat(char rad)
