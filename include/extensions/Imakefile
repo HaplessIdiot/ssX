@@ -32,11 +32,14 @@ FONTCACHEHEADERS = fontcache.h fontcacheP.h fontcachstr.h
 #if BuildXinerama
 XINERAMAHEADERS = panoramiXext.h panoramiXproto.h Xinerama.h
 #endif
+#if BuildRender
+RENDERHEADERS = render.h renderproto.h
+#endif
 
 EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86MISCHEADERS) $(XF86BIGFONTHEADERS) \
 	       $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) $(XINERAMAHEADERS) \
 	       $(LBXHEADERS) $(XVHEADERS) $(XF86RUSHHEADERS) \
-	       $(FONTCACHEHEADERS)
+	       $(FONTCACHEHEADERS) $(RENDERHEADERS)
 
 
 
