@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>6 December 2000
+<date>11 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.43tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.44 2000/12/07 15:43:41 tsi Exp $
 </ident>
 
 <abstract>
@@ -228,8 +228,26 @@ don't have enough space to cover it all here.
 	a wider range of ISO-8859 subsets have been added.  Oblique/italic
 	versions of some of them have also been added.
 
-  <item>The converters in Xlib have been improved and reworked.  UTF-8
-	support has been added.
+  <item>Functions to read keyboard input in locale independent UTF-8 encoding
+        have been added to libX11: Xutf8LookupString, Xutf8ResetIC.
+
+  <item>Functions to output strings in locale independent UTF-8 encoding
+        have been added to libX11: Xutf8DrawString, Xutf8DrawImageString,
+        Xutf8TextEscapement, Xutf8TextExtents, Xutf8TextPerCharExtents,
+        Xutf8DrawText.
+
+  <item>Functions to convert between Compound Text or locale dependent encoding
+        and UTF-8 have been added to libX11: Xutf8TextListToTextProperty,
+        Xutf8TextPropertyToTextList. The converter between Compound Text
+        and UTF-8 in Xlib has been improved; a round-trip conversion
+        now correctly converts all graphic Unicode characters back and
+        forth.
+
+  <item>libXaw now offers selected text using both selection targets,
+        UTF8_STRING and COMPOUND_TEXT.
+
+  <item>Locales with UTF-8 encodings are now supported; but the UTF-8
+        displaying facilities are not adequate yet.
 
   <item>Support for ISO-8859-13 has been added to Xlib and to the UTF-8
 	converters.
@@ -445,7 +463,7 @@ EndSection
 </verb></quote>
 
 <!-- what is this doing in the middle of information about the config file??
-j
+
      Note: Additional sample rates have been added for some mice.
            Matching the mouse sampling rate with the vertical refresh
            rate can yield very noticeable improvements in smoothness of
