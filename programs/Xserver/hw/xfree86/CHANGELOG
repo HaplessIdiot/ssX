@@ -1,4 +1,5 @@
 XFree86 4.0b (?? May 2000)
+ 164. Fix a window unmapping bug in the mioverlay code (Mark Vojkovich).
  163. Attempt to improve memory detection reliability in the Matrox driver
       (Mark Vojkovich). 
  162. Fix possible SEGV in generic int10 module (Marc La France).
