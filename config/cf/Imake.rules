@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $TOG: Imake.rules /main/220 1997/06/05 18:05:16 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.40 1997/06/11 12:24:17 dawes Exp $
+XCOMM rules:  $TOG: Imake.rules /main/221 1997/07/02 13:42:46 kaleb $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.41 1997/07/05 15:14:44 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2569,10 +2569,14 @@ clean::									@@\
 #ifndef CppScriptTarget
 #if ExecableScripts		/* can use #! instead of colon */
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
-	CppFileTarget(dst,src,defs,deplist)				@@\
-									@@\
 dst::	src deplist							@@\
-	chmod a+x $@
+	RemoveFile($@)							@@\
+	ClearmakeOSName \
+	$(CPP) CppNoLineInfoOption defs <src | CppSedMagic >$@		@@\
+	chmod a+x $@							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(dst)
 #else
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\

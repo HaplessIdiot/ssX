@@ -552,6 +552,19 @@ Flags
     generic acceleration functions will call Sync() when all operations
     have been done.
 
+    DELAYED_SYNC
+    
+    If enabled, the acceleration functions will try to use as much
+    parallellism between the CPU and the accelerator as possible by
+    postponing calls to Sync() as much as possible. Without this flag, and
+    with BACKGROUND_OPERATIONS enabled, the acceleration functions will call
+    Sync() after each major set of acelerated operations. With DELAYED_SYNC
+    set, Sync() will only be called when absolutely necessary to maintain
+    framebuffer consistency. In practice, this means Sync() will only be
+    called just before writing to or reading from the framebuffer with the
+    CPU. This option increases performance, but is much more vulnerable to
+    display errors and synchronisation problems.
+
     PIXMAP_CACHE
 
     Use a pixmap cache for tiles and stipples, when the required
@@ -1824,4 +1837,4 @@ Mach64 server provided a baseline for what to implement first.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.12 1997/03/28 09:43:01 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.13 1997/04/08 10:14:11 hohndel Exp $

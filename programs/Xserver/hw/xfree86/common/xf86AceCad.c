@@ -1,5 +1,5 @@
 /*
- * Copyright 1996 by Steven Lang <tiger@ecis.com>
+ * Copyright 1996 by Steven Lang <tiger@tyger.org>
  *       Modified for the AceCad Tablet,
  *                by Shane Watts <shane@bofh.asn.au>
  *
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.1 1997/06/29 07:54:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.2 1997/07/05 08:45:13 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -502,31 +502,6 @@ xf86AceCadControlProc(DeviceIntPtr	device, PtrCtrl *ctrl)
 }
 
 /*
-** fdflush
-** Flushes all pending data from a fd..  (Isn't there a system call to do this
-** more effeciently?)
-*/
-static void
-fdflush(int	fd)
-{
-  fd_set readfds;
-  struct timeval timeout;
-  int err;
-  char buffer[100];
-
-  FD_ZERO(&readfds);
-  FD_SET(fd, &readfds);
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 50;
-  while (1) {
-    SYSCALL(err = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout));
-    if (err <= 0)
-      return;
-    read(fd, buffer, 100);
-  }
-}
-
-/*
 ** write_and_read
 ** Write data, and get the response.
 */
@@ -670,7 +645,7 @@ xf86AceCadOpen(LocalDevicePtr local)
 	return !Success;
     }
 /* Clear any pending input */
-    fdflush(local->fd);
+    tcflush(local->fd, TCIFLUSH);
   
 /*    DBG(2, ErrorF("Reading Firmware ID\n"));						*/
 /*    if (!write_and_read(local->fd, ACECAD_PROMPT, buffer, 5, 1))			*/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.7 1997/06/25 08:25:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.8 1997/06/29 07:54:36 dawes Exp $ */
 
 
 
@@ -10,6 +10,8 @@
  *
  * Revision history:
  *
+ *
+ * 0.4	Apr 12 1997	add the ANSI defines
  * 0.3	Feb 24 1997	handle getenv
  * 0.2	Feb 24 1997	hide few FILE functions
  * 0.1	Feb 24 1997	hide the trivial functions mem* str*
@@ -30,11 +32,11 @@
  * such a structure.
  */
 typedef pointer XF86FILE;	/* opaque FILE* replacement */
-extern  XF86FILE xf86stdin;
-extern  XF86FILE xf86stdout;
-extern  XF86FILE xf86stderr;
+extern  XF86FILE* xf86stdin;
+extern  XF86FILE* xf86stdout;
+extern  XF86FILE* xf86stderr;
 
-typedef pointer XF86FPOS_T;	/* opaque fpos_t* replacement */
+typedef pointer XF86fpos_t;	/* opaque fpos_t* replacement */
 
 #define _XF86NAMELEN	263	/* enough for a larger filename */
 				/* (divisble by 8) */
@@ -46,7 +48,12 @@ typedef pointer XF86DIR;	/* opaque DIR* replacement */
 struct _xf86dirent {		/* types in struct dirent/direct: */
 	char	d_name[_XF86NAMELEN+1];	/* char [MAXNAMLEN]; might be smaller or unaligned */
 };
-typedef struct _xf86dirent *XF86DIRENT;
+typedef struct _xf86dirent XF86DIRENT;
+
+/* for setvbuf */
+#define XF86_IONBF    1
+#define XF86_IOFBF    2
+#define XF86_IOLBF    3
 
 /*
  * the rest of this file should only be included for code that is supposed
@@ -54,44 +61,140 @@ typedef struct _xf86dirent *XF86DIRENT;
  */
 
 #ifndef DONT_DEFINE_WRAPPERS
-/*
- * the mem.../bcopy family
- */
-#define memcpy(a,b,c)	xf86memcpy(a,b,c)
-#define memset(a,b,c)	xf86memset(a,b,c)
-#define memmove(a,b,c)	xf86memmove(a,b,c)
-#define memcmp(a,b,c)	xf86memcmp(a,b,c)
-#ifdef  bcopy
-#undef  bcopy
+
+#define abort()			xf86abort()
+#undef abs
+#define abs(i)			xf86abs(i)
+#define acos(d)			xf86acos(d)
+#define asin(d)			xf86asin(d)
+#define atan(d)			xf86atan(d)
+#define atan2(d1,d2)		xf86atan2(d1,d2)
+#define atof(ccp)		xf86atof(ccp)
+#define atoi(ccp)		xf86atoi(ccp)
+#define atol(ccp)		xf86atol(ccp)
+#define ceil(d)			xf86ceil(d)
+#define calloc(I1,I2)		xf86calloc(I1,I2)
+#define clearerr(FP)		xf86clearerr(FP)
+#define cos(d)			xf86cos(d)
+#define exit(i)			xf86exit(i)
+#define exp(d)			xf86exp(d)
+#define fabs(d)			xf86fabs(d)
+#define fclose(FP)		xf86fclose(FP)
+#define feof(FP)		xf86feof(FP)
+#define ferror(FP)		xf86ferror(FP)
+#define fflush(FP)		xf86fflush(FP)
+#define fgetc(FP)		xf86fgetc(FP)
+#define fgetpos(FP,fpp)		xf86fgetpos(FP,fpp)
+#define fgets(cp,i,FP)		xf86fgets(cp,i,FP)
+#define floor(d)		xf86floor(d)
+#define fmod(d1,d2)		xf86fmod(d1,d2)
+#define fopen(ccp1,ccp2)	xf86fopen(ccp1,ccp2)
+#define fprintf			xf86fprintf
+#define fputc(i,FP)		xf86fputc(i,FP)
+#define fputs(ccp,FP)		xf86fputs(ccp,FP)
+#define fread(vp,I1,I2,FP)	xf86fread(vp,I1,I2,FP)
+#define free(vp)		xf86free(vp)
+#define freopen(ccp1,ccp2,FP)	xf86freopen(ccp1,ccp2,FP)
+#define fscanf			xf86fscanf
+#define fseek(FP,l,i)		xf86fseek(FP,l,i)
+#define fsetpos(FP,cfpp)	xf86fsetpos(FP,cfpp)
+#define ftell(FP)		xf86ftell(FP)
+#define fwrite(cvp,I1,I2,FP)	xf86fwrite(cvp,I1,I2,FP)
+#define getenv(ccp)		xf86getenv(ccp)
+#define isalnum(i)		xf86isalnum(i)
+#define isalpha(i)		xf86isalpha(i)
+#define iscntrl(i)		xf86iscntrl(i)
+#define isdigit(i)		xf86isdigit(i)
+#define isgraph(i)		xf86isgraph(i)
+#define islower(i)		xf86islower(i)
+#define isprint(i)		xf86isprint(i)
+#define ispunct(i)		xf86ispunct(i)
+#define isspace(i)		xf86isspace(i)
+#define isupper(i)		xf86isupper(i)
+#define isxdigit(i)		xf86isxdigit(i)
+#define labs(l)			xf86labs(l)
+#define log(d)			xf86log(d)
+#define log10(d)		xf86log10(d)
+#define malloc(I)		xf86malloc(I)
+#define memchr(cvp,i,I)		xf86memchr(cvp,i,I)
+#define memcmp(cvp1,cvp2,I)	xf86memcmp(cvp1,cvp2,I)
+#define memcpy(vp,cvp,I)	xf86memcpy(vp,cvp,I)
+#define memmove(vp,cvp,I)	xf86memmove(vp,cvp,I)
+#define memset(vp,int,I)	xf86memset(vp,int,I)
+#define modf(d,dp)		xf86modf(d,dp)
+#define perror(ccp)		xf86perror(ccp)
+#define pow(d1,d2)		xf86pow(d1,d2)
+#define realloc(vp,I)		xf86realloc(vp,I)
+#define remove(ccp)		xf86remove(ccp)
+#define rename(ccp1,ccp2)	xf86rename(ccp1,ccp2)
+#define rewind(FP)		xf86rewind(FP)
+#define setbuf(FP,cp)		xf86setbuf(FP,cp)
+#define setvbuf(FP,cp,i,I)	xf86setvbuf(FP,cp,i,I)
+#define sin(d)			xf86sin(d)
+#define sprintf			xf86sprintf
+#define sqrt(d)			xf86sqrt(d)
+#define sscanf			xf86sscanf
+#define strcat(cp,ccp)		xf86strcat(cp,ccp)
+#define strcmp(ccp1,ccp2)	xf86strcmp(ccp1,ccp2)
+#define strcpy(cp,ccp)		xf86strcpy(cp,ccp)
+#define strcspn(ccp1,ccp2)	xf86strcspn(ccp1,ccp2)
+#define strerror(i)		xf86strerror(i)
+#define strlen(ccp)		xf86strlen(ccp)
+#define strncmp(ccp1,ccp2,I)	xf86strncmp(ccp1,ccp2,I)
+#define strncpy(cp,ccp,I)	xf86strncpy(cp,ccp,I)
+#define strpbrk(ccp1,ccp2)	xf86strpbrk(ccp1,ccp2)
+#define strrchr(ccp,i)		xf86strrchr(ccp,i)
+#define strspn(ccp1,ccp2)	xf86strspn(ccp1,ccp2)
+#define strstr(ccp1,ccp2)	xf86strstr(ccp1,ccp2)
+#define strtod(ccp,cpp)		xf86strtod(ccp,cpp)
+#define strtok(cp,ccp)		xf86strtok(cp,ccp)
+#define strtol(ccp,cpp,i)	xf86strtol(ccp,cpp,i)
+#define strtoul(ccp,cpp,i)	xf86strtoul(ccp,cpp,i)
+#define tan(d)			xf86tan(d)
+#define tmpfile()		xf86tmpfile()
+#define tmpnam(cp)		xf86tmpnam(cp)
+#define tolower(i)		xf86tolower(i)
+#define toupper(i)		xf86toupper(i)
+#define ungetc(i,FP)		xf86ungetc(i,FP)
+#define vfprintf		xf86vfprintf
+#define vsprintf		xf86vsprintf
+
+/* non-ANSI C functions */
+#define opendir(cp)		xf86opendir(cp)
+#define closedir(DP)		xf86closedir(DP)
+#define readdir(DP)		xf86readdir(DP)
+#define rewinddir(DP)		xf86rewinddir(DP)
+#undef bcopy
+#define bcopy(vp,cvp,I)		xf86memmove(cvp,vp,I)
+#define ffs(i)			xf86ffs(i)
+#define strdup(ccp)		xf86strdup(ccp)
+#define usleep(ul)		xf86usleep(ul)
+#undef bzero
+#define bzero(vp,ui)		xf86bzero(vp,ui)
+#define execl	        	xf86execl
+
+/* some types */
+#define FILE			XF86FILE
+#define fpos_t			XF86fpos_t
+#define DIR			XF86DIR
+#define DIRENT			XF86DIRENT
+
+/* some vars */
+#ifdef stdin
+#undef stdin
 #endif
-#define bcopy(a,b,c)	xf86memmove(b,a,c)
+#define	stdin			xf86stdin
+#ifdef stdout
+#undef stdout
+#endif
+#define stdout			xf86stdout
+#ifdef stderr
+#undef stderr
+#endif
+#define stderr			xf86stderr
 
 /*
- * the string functions 
- */
-#define strcpy(a,b)	xf86strcpy(a,b)
-#define strncpy(a,b,c)	xf86strncpy(a,b,c)
-#define strcat(a,b)	xf86strcat(a,b)
-#define strcmp(a,b)	xf86strcmp(a,b)
-#define strncmp(a,b,c)	xf86strncmp(a,b,c)
-#define strlen(a)	xf86strlen(a)
-#define strdup(a)       xf86strdup(a)
-
-/*
- * some math functions
- *
- * hopefully calling and return conventions using doubles won't mess this up
- */
-#define log(a)		xf86log(a)
-#define exp(a)		xf86exp(a)
-#define pow(a,b)	xf86pow(a,b)
-#define sqrt(a)		xf86sqrt(a)
-#define cos(a)		xf86cos(a)
-#define ffs(a)          xf86ffs(a)
-#define fabs(a)         xf86fabs(a)
-
-/*
- * Basic I/O functions 
+ * XXX Basic I/O functions BAD,BAD,BAD!
  */
 #define open(a,b,c)     xf86open(a,b,c)
 #define close(a)        xf86close(a)
@@ -99,151 +202,7 @@ typedef struct _xf86dirent *XF86DIRENT;
 #define read(a,b,c)     xf86read(a,b,c)
 #define write(a,b,c)    xf86write(a,b,c)
 
-/*
- * FILE is not really compatible accross operating systems
- *
- */
-#define FILE		XF86FILE
-#define fopen(a,b)	xf86fopen(a,b)
-#define fclose(a)	xf86fclose(a)
-#define fread(a,b,c,d)	xf86fread(a,b,c,d)
-#define fwrite(a,b,c,d)	xf86fwrite(a,b,c,d)
-#define fseek(a,b,c)	xf86fseek(a,b,c)
-
-/*
- * DIR and DIRENT need to be replaced as well
- */
-#define opendir(a)	xf86opendir(a)
-#define readdir(a)	xf86readdir(a)
-#define rewinddir(a)	xf86rewinddir(a)
-#define closedir(a)	xf86closedir(a)
-
-/*
- * misc other functions we provide
- */
-#define getenv(a)	xf86getenv(a)
-#define strerror(a)     xf86strerror(a)
-#define errno           xf86errno
-
-#endif /* DONT_DEFINE_WRAPPERS */
-
-/*
- * at this point I don't think we support any non-ANSI compilers...
- */
-extern int xf86errno;
-
-extern void xf86getsecs(INT32 *, INT32 *);
-
-Bool xf86setexternclock(char *, int, int);
-
-int xf86getbitsperpixel(int);
-
-int xf86sprintf(char *, const char *, ...);
-
-int xf86execl(char *, ...);
-
-int xf86fprintf(XF86FILE f, const char *format, ...);
-
-int xf86fscanf(XF86FILE f, const char *format, ...);
-
-char *xf86fgets(char *buf, INT32 n, XF86FILE f);
-
-int xf86fputs(char *buf, XF86FILE f);
-
-int xf86fgetc(XF86FILE f);
-
-int xf86fputc(int c,XF86FILE f);
-
-int xf86fflush(XF86FILE f);
-
-long xf86ftell(XF86FILE f);
-
-long xf86fpossize();
-
-int xf86fgetpos(XF86FILE f,XF86FPOS_T pos);
-
-int xf86fsetpos(XF86FILE f,const XF86FPOS_T pos);
-
-void xf86perror(const char *s);
-
-int xf86remove(const char *s);
-
-int xf86rename(const char *old, const char *new);
-
-void xf86rewind(XF86FILE f);
-
-
-extern void * xf86memmove(void *, const void *, INT32);
-
-extern void * xf86memset(void *, int, INT32);
-
-extern void * xf86memcpy(void *, const void *, INT32);
-
-extern int xf86memcmp(const void *, const void *, INT32);
-
-extern char * xf86strcat(char *, const char *);
-
-extern char * xf86strcpy(char *, const char *);
-
-extern char * xf86strncpy(char *, const char *, INT32);
-
-extern int xf86strcmp(const char *, const char *);
-
-extern int xf86strncmp(const char *, const char *, INT32);
-
-extern char *xf86strdup(const char *);
-
-extern size_t xf86strlen(const char *);
-
-double xf86exp(double);
-
-double xf86log(double);
-
-double xf86pow(double, double);
-
-double xf86sqrt(double);
-
-double xf86cos(double);
-
-double xf86fabs(double);
-
-void xf86bzero(void *, unsigned int);
-
-char * xf86strerror(int);
-
-void xf86usleep(unsigned long);
-
-XF86FILE xf86fopen(const char* fn, const char* mode);
-
-int xf86fclose(XF86FILE f);
-
-size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE f);
-
-size_t xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE f);
-
-int xf86fseek(XF86FILE f, long pos, int loc);
-
-int xf86ffs(int mask);
-
-char * xf86getenv(const char *);
-
-XF86DIR	xf86opendir(const char *name);
-
-XF86DIRENT xf86readdir(XF86DIR dirp);
-
-void xf86rewinddir(XF86DIR dirp);
-
-int xf86closedir(XF86DIR dirp);
-
-int xf86open(const char *path, int flags, ...);
-
-int xf86close(int fd);
-
-int xf86ioctl(int fd, unsigned long request, char *argp);
-
-unsigned int xf86read(int fd, void *buf, size_t nbytes);
-
-unsigned int xf86write(int fd, void *buf, size_t nbytes);
+#endif /*DONT_DEFINE_WRAPPERS*/
 
 #endif /* XFree86LOADER */
 

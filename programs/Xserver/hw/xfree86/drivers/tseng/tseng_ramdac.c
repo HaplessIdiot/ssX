@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.9 1997/06/11 12:24:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.10 1997/06/29 11:40:35 dawes Exp $ */
 
 /*
  *
@@ -306,11 +306,10 @@ read_color(entry, cmap)
 
           
 
-t_ramdactype Check_Tseng_Ramdac()
+void Check_Tseng_Ramdac()
 {
     unsigned char cmap[3], save_cmap[3];
     BOOL cr_saved;
-    t_ramdactype dac;
 
     rmr = inb(RAMDAC_RMR);
     saved_cr = read_cr(); cr_saved = TRUE;
@@ -320,18 +319,18 @@ t_ramdactype Check_Tseng_Ramdac()
      */
     if (vga256InfoRec.ramdac) 
     {
-       dac = xf86StringToToken(TsengDacTable, vga256InfoRec.ramdac);
-       if (dac < 0) {
+       TsengRamdacType = xf86StringToToken(TsengDacTable, vga256InfoRec.ramdac);
+       if (TsengRamdacType < 0) {
           ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
                  vga256InfoRec.name, vga256InfoRec.ramdac);
-          return UNKNOWN_DAC;
+          return;
        }
     }
     else    /* autoprobe for the RAMDAC */
     {
         if (et4000_type >= TYPE_ET6000)
         {
-           dac = ET6000_DAC;
+           TsengRamdacType = ET6000_DAC;
         }
         else if (ProbeGenDAC(FALSE))
         {
@@ -358,14 +357,14 @@ t_ramdactype Check_Tseng_Ramdac()
           if (inb(RAMDAC_RMR) != 0xff)
           {
               cr_saved = FALSE;
-              dac = ATT20C47xA_DAC;
+              TsengRamdacType = ATT20C47xA_DAC;
               goto dac_found;
           }
 
           write_cr(0xe0);
           if ((read_cr() >> 5) != 0x7)
           {
-              dac = ATT20C497_DAC;
+              TsengRamdacType = ATT20C497_DAC;
               goto dac_found;
           }
 
@@ -374,9 +373,9 @@ t_ramdactype Check_Tseng_Ramdac()
           {
               write_cr(0x2);        
               if ((read_cr() & 0x2) != 0)
-                  dac = ATT20C490_DAC;
+                  TsengRamdacType = ATT20C490_DAC;
               else
-                  dac = ATT20C493_DAC;
+                  TsengRamdacType = ATT20C493_DAC;
           }
           else
           {
@@ -388,9 +387,9 @@ t_ramdactype Check_Tseng_Ramdac()
               read_color(0xff, cmap);
 
               if (cmap[0] == 0xff && cmap[1] == 0xff && cmap[2] == 0xff)
-                  dac = ATT20C491_DAC;
+                  TsengRamdacType = ATT20C491_DAC;
               else
-                  dac = ATT20C492_DAC;
+                  TsengRamdacType = ATT20C492_DAC;
               
               write_color(0xff, save_cmap);
           }
@@ -405,7 +404,7 @@ dac_found:
    dac_is_16bit = FALSE;
 
    /* now override defaults with appropriate values for each RAMDAC */
-   switch(dac)
+   switch(TsengRamdacType)
    {
      case  ATT20C490_DAC:
      case  ATT20C491_DAC:
@@ -442,13 +441,11 @@ dac_found:
 
     ErrorF("%s %s: Ramdac: %s\n",
             (vga256InfoRec.ramdac) ? XCONFIG_GIVEN : XCONFIG_PROBED,
-            vga256InfoRec.name, xf86TokenToString(TsengDacTable, dac));
+            vga256InfoRec.name, xf86TokenToString(TsengDacTable, TsengRamdacType));
 
     if (cr_saved && RamdacShift == 10)
         write_cr(saved_cr);
     outb(RAMDAC_RMR, 0xff);
-    
-    return dac;
 }
 
 

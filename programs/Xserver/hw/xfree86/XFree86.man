@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.39 1997/05/31 13:51:25 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.40 1997/06/15 07:12:15 dawes Exp $ 
 .TH XFree86 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -557,7 +557,7 @@ XInput extension integration. Wacom, joystick and extended mouse drivers.
 Patrick Lecoanet,   \flecoanet@cena.dgac.fr\fP
 Elographics touchscreen driver.
 .TP 8
-Steven Lang,        \ftiger@ecis.com\fP
+Steven Lang,        \ftiger@tyger.org\fP
 SummaSketch tablet driver.
 .PP
  ... and many more people out there on the net who helped with beta-testing

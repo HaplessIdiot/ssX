@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.24 1997/01/14 22:13:43 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.25 1997/01/18 06:52:41 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -108,7 +108,7 @@ from the X Consortium.
 #if !defined(_SEQUENT_) && !defined(ESIX) && !defined(sco)
 #include <net/errno.h>
 #endif /* _SEQUENT_  || ESIX  || SCO */
-#if !defined(ISC) || !defined(I_NREAD)
+#if !defined(ISC) || !defined(I_NREAD) || defined(SCO325)
 #include <sys/stropts.h>
 #endif
 #endif /* i386 && SYSV || _SEQUENT_ */
@@ -295,7 +295,7 @@ XtransConnInfo ciptr;
 
 {
     struct sockaddr_in 	sockname;
-    int			namelen = sizeof sockname;
+    unsigned int namelen = sizeof sockname;
 
     PRMSG (3,"SocketINETGetAddr(%x)\n", ciptr, 0, 0);
 
@@ -338,7 +338,7 @@ XtransConnInfo ciptr;
 
 {
     struct sockaddr_in 	sockname;
-    int			namelen = sizeof(sockname);
+    unsigned int	namelen = sizeof(sockname);
 
     PRMSG (3,"SocketINETGetPeerAddr(%x)\n", ciptr, 0, 0);
 
@@ -1149,7 +1149,7 @@ int	       *status;
 {
     XtransConnInfo	newciptr;
     struct sockaddr_un	sockname;
-    int			namelen = sizeof(sockname);
+    unsigned int	namelen = sizeof(sockname);
 
     PRMSG (2, "SocketUNIXAccept(%x,%d)\n", ciptr, ciptr->fd, 0);
 
@@ -1229,7 +1229,7 @@ char 		*port;
 
 {
     struct sockaddr_in	sockname;
-    int			namelen = sizeof(sockname);
+    unsigned int	namelen = sizeof(sockname);
     _Xgethostbynameparams hparams;
     _Xgetservbynameparams sparams;
     struct hostent	*hostp;
@@ -1660,17 +1660,14 @@ TRANS(SocketBytesReadable) (ciptr, pend)
 
 XtransConnInfo ciptr;
 BytesReadable_t *pend;
-
 {
-int ret;
-char dummybuf[1500];
     PRMSG (2,"SocketBytesReadable(%x,%d,%x)\n",
 	ciptr, ciptr->fd, pend);
 
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (defined(i386) && defined(SYSV)) || defined(_SEQUENT_)
+#if (!defined(SCO325) && defined(i386) && defined(SYSV)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
 #if defined(__EMX__)
@@ -1691,8 +1688,6 @@ char		*buf;
 int		size;
 
 {
-int ret;
-
     PRMSG (2,"SocketRead(%d,%x,%d)\n", ciptr->fd, buf, size);
 
 #if defined(WIN32) || defined(__EMX__)

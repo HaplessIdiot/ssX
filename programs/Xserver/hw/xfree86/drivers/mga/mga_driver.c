@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.7 1997/06/15 07:12:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.8 1997/07/05 08:45:14 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -563,6 +563,7 @@ MGAProbe()
 #endif /* __alpha__ */
 			    vga256InfoRec.scrnIndex, MMIO_REGION,
 			    (pointer)(MGAMMIOAddr), 0x4000);
+#ifdef READ_MMIO
 #ifndef SVR4
 	/* Simulate the SVR4.0 mmap behaviour by reading the first long */
 	{
@@ -573,6 +574,7 @@ MGAProbe()
 		val = ((volatile CARD32 *)MGAMMIOBase)[0];
 		ErrorF("Just read the first dword\n");
 	}
+#endif
 #endif
 
 #ifdef __alpha__

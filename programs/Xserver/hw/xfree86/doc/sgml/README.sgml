@@ -666,7 +666,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item>Frederic Lepied <it>&lt;lepied@XFree86.Org&gt;</it> (XInput integration, Wacom tablet, Joystick and extended mouse devices, xsetpointer and xsetmode clients)
        <item>Patrick Lecoanet <it>&lt;lecoanet@cena.dgac.fr&gt;</it> (Elographics touchscreen device)
-       <item>Steven Lang <it>&lt;tiger@ecis.com&gt;</it> (Summagraphics tablet device)
+       <item>Steven Lang <it>&lt;tiger@tyger.org&gt;</it> (Summagraphics tablet device)
 </itemize>
 
 <tag/Other contributors:  /
@@ -1084,7 +1084,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.84 1997/05/31 13:51:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.85 1997/06/15 07:12:29 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.30 1997/06/08 15:31:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.31 1997/06/15 07:12:39 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -58,6 +58,7 @@
 #define PCI_CHIP_ET4000_W32P_D	0x3206
 #define PCI_CHIP_ET4000_W32P_C	0x3207
 #define PCI_CHIP_ET6000		0x3208
+#define PCI_CHIP_ET6300		0x4702
 
 /* Weitek */
 #define PCI_CHIP_P9000		0x9001
@@ -212,7 +213,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_ET4000_W32P_B, "ET4000W32P revB"},
 				{PCI_CHIP_ET4000_W32P_C, "ET4000W32P revC"},
 				{PCI_CHIP_ET4000_W32P_D, "ET4000W32P revD"},
-				{PCI_CHIP_ET6000,	 "ET6000"},
+				{PCI_CHIP_ET6000,	 "ET6000/6100"},
+				{PCI_CHIP_ET6300,	 "ET6300"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_WEITEK,	"Weitek", {
 				{PCI_CHIP_P9000,	"P9000"},

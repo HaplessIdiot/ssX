@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.58 1997/05/24 13:46:26 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.59 1997/05/25 14:41:14 dawes Exp $
 
 
 #ifndef OSName
@@ -39,6 +39,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define Malloc0ReturnsNull	NO
 #define SetTtyGroup     	YES
 #define DBMLibrary		/**/
+#define HasDlopen		YES
 #ifndef HasLibCrypt
 # define HasLibCrypt		YES
 #endif

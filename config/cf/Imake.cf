@@ -1,5 +1,5 @@
 XCOMM $TOG: Imake.cf /main/28 1997/06/25 08:31:36 barstow $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.34 1997/01/05 11:49:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.35 1997/07/05 15:14:43 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -194,8 +194,6 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.34 1997/01/05 11:49:28 dawes Exp $
 # define SCOArchitecture
 # define i386SVR3Architecture
 # define SVR3Architecture
-# define i386SVR4Architecture
-# define SVR4Architecture
 # define i386ScoArchitecture
 # define i386Sco325Architecture
 #endif /* sco - SCO Open Server 5 */

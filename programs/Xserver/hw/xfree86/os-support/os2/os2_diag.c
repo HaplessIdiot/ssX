@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.1 1997/01/27 06:58:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.2 1997/06/03 14:12:30 hohndel Exp $ */
 /*
  * (c) Copyright 1997 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -89,6 +89,17 @@ static void check_bsl(const char *var)
 	}
 }
 
+
+static void check_fsl(const char *var)
+{
+	char *t1 = strrchr(var,'/');
+	if (strchr(var,'\\')) {
+		ErrorF("xf86-OS/2: \"%s\" must exclusively use forward slashes \"/\"\n",
+			var);
+	}
+}
+
+
 static void check_long(const char* path)
 {
 	FILE *f;
@@ -158,5 +169,5 @@ void os2_checkinstallation(void)
 	logname = check_env_present("LOGNAME");
 	termcap = check_env_present("TERMCAP");
 	if (termcap)
-	        check_bsl(termcap);
+	        check_fsl(termcap);
 }

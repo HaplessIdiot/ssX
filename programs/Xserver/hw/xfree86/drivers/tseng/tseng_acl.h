@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.3 1997/04/08 10:13:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.4 1997/06/03 14:12:22 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -121,8 +121,6 @@ extern LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */
 extern LongP CPU2ACLBase;
 
 extern long scratchVidBase;
-
-extern Bool Use_Pci_Retry; /* Often checked value */
 
 /******************************************************************************/
 

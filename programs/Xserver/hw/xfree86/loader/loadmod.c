@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.16 1997/06/25 08:25:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.17 1997/07/05 08:45:15 dawes Exp $ */
 
 
 
@@ -209,15 +209,27 @@ LoadModule(module,path)
 	 * if the module name is not a full pathname, we need to
 	 * check the elements in the path
 	 */
+#ifndef __EMX__
 	if (module[0] == '/') 
 		found = module;
+#else
+	/* accept a drive name here */
+	if (isalpha(module[0]) && module[1]==':' && module[2]=='/')
+		found = module;
+#endif
 	dir_elem = strtok(dir_elem, ",");
 	while( (! found) && (dir_elem != NULL) )
 	{
 	    /*
 	     * only allow fully specified path 
 	     */
+#ifndef __EMX__
 	    if (*dir_elem == '/') {
+#else
+	    if (*dir_elem == '/' || 
+		(isalpha(dir_elem[0]) && dir_elem[1]==':' && dir_elem[2]=='/')) 
+	    {
+#endif
 		strcpy(path_elem, dir_elem);
 		if (dir_elem[strlen(dir_elem) - 1] != '/') 
 		{

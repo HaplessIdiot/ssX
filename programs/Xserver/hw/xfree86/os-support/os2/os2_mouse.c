@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.10 1996/10/17 15:19:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.11 1996/12/23 06:50:39 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -126,6 +126,28 @@ int what;
 			miPointerGetMotionBufferSize());
 
 		xfree(map);
+
+#ifdef XINPUT
+		InitValuatorAxisStruct(pPointer,
+                             0,
+                             0, /* min val */
+                             screenInfo.screens[0]->width, /* max val */
+                             1, /* resolution */
+                             0, /* min_res */
+                             1); /* max_res */
+		InitValuatorAxisStruct(pPointer,
+                             1,
+                             0, /* min val */
+                             screenInfo.screens[0]->height, /* max val */
+                             1, /* resolution */
+                             0, /* min_res */
+                             1); /* max_res */
+		/* Initialize valuator values in synch
+		 * with dix/event.c DefineInitialRootWindow
+		 */
+		*pPointer->valuator->axisVal = screenInfo.screens[0]->width / 2;
+		*(pPointer->valuator->axisVal+1) = screenInfo.screens[0]->height / 2;
+#endif
 
          /* OK, we are ready to start up the mouse thread ! */
                 if(!HandleValid){

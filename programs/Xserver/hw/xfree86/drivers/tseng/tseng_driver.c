@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.12 1997/06/11 12:24:45 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.13 1997/06/29 11:40:34 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -731,7 +731,7 @@ static int et6000_check_videoram(int ram)
   outb(0x3C4, 4); outb(0x3C5, oldSEQ4);
 
   xf86UnMapVidMem(vga256InfoRec.scrnIndex, VGA_REGION,
-                (pointer)0xA0000, 0x10000);
+                  check_vgabase, 0x10000);
 
   return real_ram;
 }
@@ -908,7 +908,7 @@ ET4000Probe()
  /*
   * Check for RAMDAC type
   */
-  TsengRamdacType = Check_Tseng_Ramdac();
+  Check_Tseng_Ramdac();
   tseng_init_clockscale(vgaBitsPerPixel/8);
   tseng_set_dacspeed(vgaBitsPerPixel/8);
 
@@ -969,7 +969,7 @@ ET4000Probe()
   * doesn't work yet.
   */  
 
-  if (et4000_type < TYPE_ET4000W32P)
+  if (et4000_type < TYPE_ET4000W32)
   {
     tseng_use_ACL = FALSE;
   }
@@ -981,18 +981,6 @@ ET4000Probe()
 
     tseng_use_ACL = !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options);
   }
-
- /*
-  * Acceleration combined with linear mode doesn't work yet on chips before
-  * W32p rev c.
-  */  
-
-  if (tseng_use_ACL && TSENG.ChipUseLinearAddressing && (et4000_type < TYPE_ET4000W32Pc))
-    {
-      ErrorF("%s %s: Acceleration disabled (not yet supported in linear mode).\n",
-             XCONFIG_PROBED, vga256InfoRec.name);
-      tseng_use_ACL = FALSE;
-    }
 
  /*
   * Some combinations can't use all available memory.

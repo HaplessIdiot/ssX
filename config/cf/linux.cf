@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.68 1997/06/22 10:16:47 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.69 1997/06/30 06:31:09 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -100,6 +100,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
+#if UseElfFormat
+# define HasDlopen		YES
+#endif
 #ifndef HasShadowPasswd
 # if UseElfFormat
 #  define HasShadowPasswd	YES

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.7 1997/05/06 09:46:30 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.8 1997/06/25 08:25:03 hohndel Exp $ */
 
 
 
@@ -12,8 +12,10 @@ SYS_LIBRARIES=-ldbmalloc
 DBMALLOCDEFINE=-DDBMALLOC
 #endif
 
-#if defined(OpenBSDArchitecture) || defined(NetBSDArchitecture)
+#if HasDlopen
 DEFINES = -DDLOPEN_SUPPORT
+DLSRC=dlloader.c
+DLOBJ=dlloader.o
 #endif
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
@@ -28,9 +30,9 @@ SRCS1 = os2funcs.c
 OBJS1 = os2funcs.o
 #endif
 
-SRCS = aoutloader.c coffloader.c dlloader.c elfloader.c hash.c loader.c \
+SRCS = aoutloader.c coffloader.c $(DLSRC) elfloader.c hash.c loader.c \
 	loadmod.c dixsym.c misym.c xf86sym.c $(SRCS1)
-OBJS = aoutloader.o coffloader.o dlloader.o  elfloader.o hash.o loader.o \
+OBJS = aoutloader.o coffloader.o $(DLOBJ)  elfloader.o hash.o loader.o \
 	loadmod.o dixsym.o misym.o xf86sym.o $(OBJS1)
 
 NormalAsmObjectRule()

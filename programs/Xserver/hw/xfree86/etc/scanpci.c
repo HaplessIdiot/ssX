@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.42 1997/06/08 15:31:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.43 1997/06/15 07:12:36 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -467,7 +467,8 @@ struct pci_vendor_device {
                             { 0x3205, "ET4000w32p rev B", NF },
                             { 0x3206, "ET4000w32p rev D", NF },
                             { 0x3207, "ET4000w32p rev C", NF },
-                            { 0x3208, "ET6000", NF },
+                            { 0x3208, "ET6000/6100", NF },
+                            { 0x4702, "ET6300", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x100E, "Weitek", {
                             { 0x9001, "P9000", NF },

@@ -247,16 +247,16 @@ xkb_symbols "pc105compose" {
     include "us(pc104compose)"
     key <LSGT> {	[      less,    greater		]	};
 };
-// universam maps are identical to pc105; wish we had aliases for map names.
+// universal maps are identical to pc105; wish we had aliases for map names.
 xkb_symbols "pc_universal" {
     include "us(pc104)"
     key <LSGT> {	[      less,    greater		]	};
 };
-xkb_symbols "pc105euro" {
+xkb_symbols "pc_universal_euro" {
     include "us(pc104euro)"
     key <LSGT> {	[      less,    greater		]	};
 };
-xkb_symbols "pc105compose" {
+xkb_symbols "pc_universal_compose" {
     include "us(pc104compose)"
     key <LSGT> {	[      less,    greater		]	};
 };

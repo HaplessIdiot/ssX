@@ -1,5 +1,5 @@
 /*
- * Copyright 1996 by Steven Lang <tiger@ecis.com>
+ * Copyright 1996 by Steven Lang <tiger@tyger.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.8 1997/06/30 05:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.9 1997/07/05 08:45:14 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -101,10 +101,10 @@ typedef struct
     int		sumOldButtons;	/* previous buttons state */
     int		sumMaxX;	/* max X value */
     int		sumMaxY;	/* max Y value */
-    int		sumXLeft;	/* screen left */
-    int		sumXRight;	/* screen right */
-    int		sumYtop;	/* screen top */
-    int		sumYbot;	/* screen bottom */
+    int		sumXSize;	/* active area X size */
+    int		sumXOffset;	/* active area X offset */
+    int		sumYSize;	/* active area Y size */
+    int		sumYOffset;	/* active area Y offset */
     int		sumRes;		/* resolution in lines per inch */
     int		flags;		/* various flags */
     int		sumIndex;	/* number of bytes read */
@@ -124,6 +124,8 @@ typedef struct
 #define DEBUG_LEVEL     7
 #define HISTORY_SIZE	8
 #define ALWAYS_CORE	9
+#define ACTIVE_AREA	10
+#define ACTIVE_OFFSET	11
 
 #if !defined(sun) || defined(i386)
 static SymTabRec SumTab[] = {
@@ -136,7 +138,9 @@ static SymTabRec SumTab[] = {
 	{BORDER,		"border"},
 	{DEBUG_LEVEL,		"debuglevel"},
 	{HISTORY_SIZE,		"historysize"},
-	{ ALWAYS_CORE,		"alwayscore" },
+	{ALWAYS_CORE,		"alwayscore"},
+	{ACTIVE_AREA,		"activearea"},
+	{ACTIVE_OFFSET,		"activeoffset"},
 	{-1,			""}
 };
 
@@ -336,6 +340,34 @@ xf86SumConfig(LocalDevicePtr *array, int inx, int max, LexPtr val)
 		       XCONFIG_GIVEN);
 	    break;
 
+	case ACTIVE_AREA:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    priv->sumXSize = val->num;
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    priv->sumYSize = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s SummaSketch active area set to %d.%1dx%d.%1d"
+		       " inches\n", XCONFIG_GIVEN, priv->sumXSize / 10,
+		       priv->sumXSize % 10, priv->sumYSize / 10,
+		       priv->sumYSize % 10);
+	    break;
+	    
+	case ACTIVE_OFFSET:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    priv->sumXOffset = val->num;
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    priv->sumYOffset = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s SummaSketch active area offset set to %d.%1dx%d.%1d"
+		       " inches\n", XCONFIG_GIVEN, priv->sumXOffset / 10,
+		       priv->sumXOffset % 10, priv->sumYOffset / 10,
+		       priv->sumYOffset % 10);
+	    break;
+
 	case EOF:
 	    FatalError("Unexpected EOF (missing EndSubSection)");
 	    break;
@@ -374,8 +406,16 @@ xf86SumConvert(LocalDevicePtr	local,
     if (first != 0 || num == 1)
       return FALSE;
 
-    *x = v0 * screenInfo.screens[0]->width / priv->sumMaxX;
-    *y = v1 * screenInfo.screens[0]->height / priv->sumMaxY;
+    *x = (v0 - priv->sumXOffset) * screenInfo.screens[0]->width / priv->sumXSize;
+    *y = (v1 - priv->sumYOffset) * screenInfo.screens[0]->height / priv->sumYSize;
+    if (*x < 0)
+	*x = 0;
+    if (*y < 0)
+	*y = 0;
+    if (*x > screenInfo.screens[0]->width)
+	*x = screenInfo.screens[0]->width;
+    if (*y > screenInfo.screens[0]->height)
+	*y = screenInfo.screens[0]->height;
 
     DBG(6, ErrorF("Adjusted coords x=%d y=%d\n", *x, *y));
 
@@ -518,36 +558,11 @@ xf86SumControlProc(DeviceIntPtr	device, PtrCtrl *ctrl)
 }
 
 /*
-** fdflush
-** Flushes all pending data from a fd..  (Isn't there a system call to do this
-** more effeciently?)
-*/
-static void
-fdflush(int	fd)
-{
-  fd_set readfds;
-  struct timeval timeout;
-  int err;
-  char buffer[100];
-
-  FD_ZERO(&readfds);
-  FD_SET(fd, &readfds);
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 50;
-  while (1) {
-    SYSCALL(err = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout));
-    if (err <= 0)
-      return;
-    read(fd, buffer, 100);
-  }
-}
-
-/*
-** write_and_read
+** xf86SumWriteAndRead
 ** Write data, and get the response.
 */
 static char *
-write_and_read(int fd, char *data, char *buffer, int len, int cr_term)
+xf86SumWriteAndRead(int fd, char *data, char *buffer, int len, int cr_term)
 {
     int err, numread = 0;
     fd_set readfds;
@@ -585,8 +600,8 @@ write_and_read(int fd, char *data, char *buffer, int len, int cr_term)
 	    break;
 	}
 	if (cr_term && buffer[numread - 1] == '\r') {
-	    break;				/* Is this intentional? */
 	    buffer[numread - 1] = 0;
+	    break;
 	}
     }
     buffer[numread] = 0;
@@ -603,7 +618,7 @@ xf86SumOpen(LocalDevicePtr local)
     struct termios	termios_tty;
     struct timeval	timeout;
     char		buffer[256];
-    int			err;
+    int			err, idx;
     SummaDevicePtr	priv = (SummaDevicePtr)local->private;
 
     DBG(1, ErrorF("opening %s\n", priv->sumDevice));
@@ -686,10 +701,10 @@ xf86SumOpen(LocalDevicePtr local)
 	return !Success;
     }
 /* Clear any pending input */
-    fdflush(local->fd);
+    tcflush(local->fd, TCIFLUSH);
   
     DBG(2, ErrorF("reading firmware ID\n"));
-    if (!write_and_read(local->fd, SS_FIRMID, buffer, 255, 1))
+    if (!xf86SumWriteAndRead(local->fd, SS_FIRMID, buffer, 255, 1))
       return !Success;
 
     DBG(2, ErrorF("%s\n", buffer));
@@ -698,7 +713,7 @@ xf86SumOpen(LocalDevicePtr local)
 	ErrorF("%s SummaSketch firmware ID : %s\n", XCONFIG_PROBED, buffer);
 
     DBG(2, ErrorF("reading max coordinates\n"));
-    if (!write_and_read(local->fd, SS_500LPI SS_CONFIG, buffer, 5, 0))
+    if (!xf86SumWriteAndRead(local->fd, SS_500LPI SS_CONFIG, buffer, 5, 0))
 	return !Success;
     priv->sumMaxX = (int)buffer[1] + ((int)buffer[2] << 7);
     priv->sumMaxY = (int)buffer[3] + ((int)buffer[4] << 7);
@@ -710,15 +725,47 @@ xf86SumOpen(LocalDevicePtr local)
 	       priv->sumMaxY / 500, (priv->sumMaxY / 50) % 10,
 	       priv->sumMaxX, priv->sumMaxY);
 
+    if (priv->sumXSize > 0 && priv->sumYSize > 0) {
+	if (priv->sumXSize * 50 < priv->sumMaxX &&
+	    priv->sumYSize * 50 < priv->sumMaxY) {
+	    priv->sumXSize *= 50;
+	    priv->sumYSize *= 50;
+	} else {
+	    ErrorF("%s SummaSketch active area bigger than tablet, "
+		   "assuming maximum\n", XCONFIG_PROBED);
+	    priv->sumXSize = priv->sumMaxX;
+	    priv->sumYSize = priv->sumMaxX;
+	}
+    } else {
+	priv->sumXSize = priv->sumMaxX;
+	priv->sumYSize = priv->sumMaxY;
+    }
+
+    if (priv->sumXOffset > 0 && priv->sumYOffset > 0) {
+	if (priv->sumXSize * 50 < priv->sumMaxX - priv->sumXOffset &&
+	    priv->sumYSize * 50 < priv->sumMaxY - priv->sumYOffset) {
+	    priv->sumXOffset *= 50;
+	    priv->sumYOffset *= 50;
+	} else {
+	    ErrorF("%s SummaSketch offset sets active area off tablet, "
+		   "centering\n", XCONFIG_PROBED);
+	    priv->sumXOffset = (priv->sumMaxX - priv->sumXSize) / 2;
+	    priv->sumYOffset = (priv->sumMaxY - priv->sumYSize) / 2;
+	}
+    } else {
+	priv->sumXOffset = (priv->sumMaxX - priv->sumXSize) / 2;
+	priv->sumYOffset = (priv->sumMaxY - priv->sumYSize) / 2;
+    }
+
     if (priv->sumInc > 95)
 	priv->sumInc = 95;
     if (priv->sumInc < 1) {
 /* Make a guess as to the best increment value given video mode */
-	if (priv->sumMaxX / screenInfo.screens[0]->width <
-	       priv->sumMaxY / screenInfo.screens[0]->height)
-	    priv->sumInc = priv->sumMaxX / screenInfo.screens[0]->width;
+	if (priv->sumXSize / screenInfo.screens[0]->width <
+	       priv->sumYSize / screenInfo.screens[0]->height)
+	    priv->sumInc = priv->sumXSize / screenInfo.screens[0]->width;
 	else
-	    priv->sumInc = priv->sumMaxY / screenInfo.screens[0]->height;
+	    priv->sumInc = priv->sumYSize / screenInfo.screens[0]->height;
 	if (priv->sumInc < 1)
 	    priv->sumInc = 1;
 	if (xf86Verbose)
@@ -727,10 +774,16 @@ xf86SumOpen(LocalDevicePtr local)
     }
 
 /* Sets up the tablet mode to increment, stream, and such */
-    sprintf(buffer, "%s%c%c%c", ss_initstr, SS_INCREMENT, 32 + priv->sumInc,
-	   (priv->flags & ABSOLUTE_FLAG)? SS_ABSOLUTE: SS_RELATIVE);
+    for (idx = 0; ss_initstr[idx]; idx++) {
+	buffer[idx] = ss_initstr[idx];
+    }
+    buffer[idx++] = SS_INCREMENT;
+    buffer[idx++] = 32 + priv->sumInc;
+    buffer[idx++] = (priv->flags & ABSOLUTE_FLAG)?
+       SS_ABSOLUTE: SS_RELATIVE;
+    buffer[idx] = 0;
 
-    SYSCALL(err = write(local->fd, buffer, strlen(buffer)));
+    SYSCALL(err = write(local->fd, buffer, idx));
     if (err == -1) {
 	Error("SummaSketch write");
 	return !Success;
@@ -969,6 +1022,7 @@ xf86SumAllocate()
     local->control_proc = xf86SumChangeControl;
     local->close_proc = xf86SumClose;
     local->switch_mode = xf86SumSwitchMode;
+    local->conversion_proc = xf86SumConvert;
     local->fd = -1;
     local->atom = 0;
     local->dev = NULL;
@@ -994,6 +1048,10 @@ xf86SumAllocate()
     priv->sumOldButtons = 0;      /* previous buttons state */
     priv->sumMaxX = -1;           /* max X value */
     priv->sumMaxY = -1;           /* max Y value */
+    priv->sumXSize = -1;	  /* active area X */
+    priv->sumXOffset = -1;	  /* active area X offset */
+    priv->sumYSize = -1;	  /* active area Y */
+    priv->sumYOffset = -1;	  /* active area U offset */
     priv->flags = 0;              /* various flags */
     priv->sumIndex = 0;           /* number of bytes read */
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.2 1997/04/10 11:34:04 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.3 1997/05/25 14:41:15 dawes Exp $
 
 /*
  * This is for SCO Open Server 5.0.2 or later.
@@ -9,7 +9,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.2 1997/04/10 11:34:04 hohndel Exp $
 #endif
 
 #ifndef OSName
-#define OSName                  UNIX System V/386 Open Server 5
+#define OSName                  UNIX System V/386 Open Server 5.0.4
 #endif
 #ifndef OSVendor
 #define OSVendor                SCO
@@ -39,7 +39,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.2 1997/04/10 11:34:04 hohndel Exp $
  * product of this is that we get better signals too.
  */
 
-#define StandardDefines         -Dsco -DSCO -DSYSV -Di386 -DSCO325 -DSVR4 -DFD_SETSIZE=256 -D_NO_STATIC -D_SVID3
+#define StandardDefines         -Dsco -DSCO -DSYSV -Di386 -DSCO325 -DFD_SETSIZE=256 -D_NO_STATIC
 #ifdef HasGcc2
 # define DefaultCCOptions       -melf
 # define CcCmd                  gcc
@@ -138,7 +138,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.2 1997/04/10 11:34:04 hohndel Exp $
  * you may need to remove -DLOCALCONN. There have been reports of it
  * working on some 5.0.0 machines but not others.
  */
-#define ConnectionFlags         -DLOCALCONN -DTCPCONN -DUNIXCONN
+#define ConnectionFlags         -DLOCALCONN -DTCPCONN -DUNIXCONN 
 
 #define InstallManPageAliases(file,destdir,aliases)                     @@\
 install.man::                                                           @@\

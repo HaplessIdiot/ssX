@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.55 1997/06/06 06:07:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.56 1997/06/15 07:12:18 dawes Exp $ */
 
 /*
  * Includes
@@ -614,6 +614,8 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ET4KW32P_C	SVGA_TYPE(V_TSENG,9)	/* Tseng ET4000/W32p rC	*/
 #define CHIP_ET4KW32P_D	SVGA_TYPE(V_TSENG,10)	/* Tseng ET4000/W32p rD	*/
 #define CHIP_ET6K	SVGA_TYPE(V_TSENG,11)	/* Tseng ET6000		*/
+#define CHIP_ET6K1	SVGA_TYPE(V_TSENG,12)	/* Tseng ET6100		*/
+#define CHIP_ET6K3	SVGA_TYPE(V_TSENG,13)	/* Tseng ET6300		*/
 #define CHIP_UMC_408	SVGA_TYPE(V_UMC,0)	/* UMC 85c408		*/
 #define CHIP_V7_UNKNOWN	SVGA_TYPE(V_VIDEO7,0)	/* Video7 unknown	*/
 #define CHIP_V7_FWRITE	SVGA_TYPE(V_VIDEO7,1)	/* Video7 Fastwrite/VRAM*/

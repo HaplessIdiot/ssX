@@ -1,3 +1,47 @@
+XFree86 3.9i (6 July 1997)
+1089. Add similar ET6300 detection to scanpci and vgaPCI.h.
+1088. Fix SuperProbe's ET6000 memory probe (#742, Koen Gadeyne).
+1087. Add detection for the ET6100 and ET6300 to SuperProbe (#742,
+      Koen Gadeyne).
+1086. Some PCI video cards don't have the expected "IBM" string in the
+      BIOS, so look for the "PCI" string too.  Without this, scanning with
+      -nopci fails for some cards (#741, Koen Gadeyne).
+1085. Possible fix for XWarpCursor() not working with the XInput
+      xf86PostMotionEvent() function (#740, Michael Rohleder).
+1084. Add some "test-support" code to xterm, which is not enabled by
+      default (#739, Thomas E. Dickey).
+1083. Fix ET4000W32p RAMDAC detction (backs out most of #717), make
+      the tseng driver use DELAYED_SYNC, and an (unsuccessful) attempt
+      to get CPU-to-screen colour expansion working (#737, Koen Gadeyne).
+1082. Add missing valuator initialisation to the OS/2, SCO and Xqueue
+      MouseProc() functions.  This fixes the mouse problems on those OSs
+      (#736, 738, Holger Veit and Richard Coley).
+1081. Fix a misplaced va_end() in the recent XInput code which caused a core
+      dump on OS/2 (#736, Holger Veit).
+1080. Fix SummaSketch bug that shows up with newer XInput code, add
+      a missing conversion_proc, fix misplaced break, and add new config
+      options to the SummaSketch subsection for ActiveArea and ActiveOffset
+      (#735, Steven Lang).
+1079. Fix a problem with xterm's cursor colour versus the background, and
+      remove a duplicate initialisation of the cursor's GC (#734,
+      Thomas E. Dickey).
+1078. Fix XAA's bpp setting at 24bpp (#733, Mark Vojkovich).
+1077. Fix cpp script problem on AIX (#732, Kaleb Keithley).
+1076. Fix xhost core dump that can happen if no hosts are authorised
+      (#731, Kaleb Keithley).
+1075. Glint driver updates (#729, 730, Alan Hourihane).
+1074. Move the solx86usleep() function out of solx86_init.c into a separate
+      file, which should fix the problems addressed by #726.
+1073. Add ANSI-C wrappers (#724, Holger Veit).
+1072. Update recent config and libX11 changes for OS/2 (#724, Holger Veit).
+1071. Fix and enable ET4000W32i acceleration, and fix unmap bug in the
+      ET6000 memory probe (#723, Koen Gadeyne).
+1070. Replace fdflush() in the Summa and AceCad drivers with tcflush
+      (#722, Steven Lang).
+1069. SCO support updates (#721, J. Kean Johnston).
+1068. Add some more dead accents to the 'se' xkb layout (#718, Dejan Ilic).
+1067. Merge in TOG's X11R6.3 public patch 2.
+
 XFree86 3.9h (30 June 1997)
 1066. Don't call seteuid in the server when the real uid is root.  This
       fixes a problem of not getting a core file under some FreeBSD versions.
@@ -5033,4 +5077,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.501 1997/06/30 06:31:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.502 1997/06/30 07:13:02 dawes Exp $

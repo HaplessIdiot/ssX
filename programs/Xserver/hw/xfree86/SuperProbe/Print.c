@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.56 1997/06/06 06:07:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.57 1997/06/15 07:12:17 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -153,7 +153,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Tseng ET4000/W32p Rev B",
 		  "Tseng ET4000/W32p Rev C",
 		  "Tseng ET4000/W32p Rev D",
-		  "Tseng ET6000",
+		  "Tseng ET6000", "Tseng ET6100", "Tseng ET6300"
 		},
 /* UMC */	{ "UMC 85c408" },
 /* Video7 */	{ "Video7 (chipset unknown)",

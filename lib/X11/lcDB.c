@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.3 1996/12/23 05:59:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.4 1997/06/08 15:31:45 dawes Exp $ */
 
 
 
@@ -1225,7 +1225,11 @@ _XlcCreateLocaleDataBase(lcd)
 	return (XPointer)NULL;
     }
 
+#ifndef __EMX__
     name_q = XrmStringToQuark(name);
+#else
+    name_q = XrmStringToQuark((char*)__XOS2RedirRoot(name));
+#endif
     for(list = _db_list; list; list = list->next){
 	if(name_q == list->name_q){
 	    list->ref_count++;

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.67 1997/06/30 05:49:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.68 1997/07/05 08:45:13 dawes Exp $
 
 
 
@@ -419,4 +419,6 @@ InstallLinkKitNonExecFile(XF86_LOADER.c,$(LINKKITDIR))
 InstallDynamicModule(XF86_P9000.o,$(MODULEDIR))
 #endif
 
+#ifndef OS2Architecture
 DependTarget()
+#endif

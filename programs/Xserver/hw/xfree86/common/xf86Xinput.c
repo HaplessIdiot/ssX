@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.28 1997/06/25 08:24:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.29 1997/06/29 07:54:33 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -1061,6 +1061,19 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 			device->ptrfeed->ctrl.den;
 		}
 	    }
+            /* mr Sat Jul  5 13:46:55 MET 1997
+             * fix to recognize XWarpCursor requests
+             */
+            {
+               int x1,y1;
+               miPointerPosition(&x1,&y1);
+               if (x1!=local->old_x || y1!=local->old_y ) {
+                  axisvals[loop+first_valuator-1] = x1;
+                  axisvals[loop+first_valuator] = y1;
+                  }
+	    DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
+            }
+
 	    RELATIVE_CHECK(xv->valuator0, loop+first_valuator-1);
 	    RELATIVE_CHECK(xv->valuator1, loop+first_valuator);
 	    break;
@@ -1143,8 +1156,8 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		  break;
 	    }
 	}
-	va_end(var);
     }
+    va_end(var);
     if (HAS_MOTION_HISTORY(local)) {
 	local->last = (local->last + 1) % device->valuator->numMotionEvents;
 	if (local->last == local->first)

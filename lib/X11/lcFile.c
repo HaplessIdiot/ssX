@@ -37,6 +37,12 @@ extern char *getenv();
 #define	iscomment(ch)	((ch) == '#' || (ch) == '\0')
 #define isreadable(f)	((access((f), R_OK) != -1) ? 1 : 0)
 
+#ifndef __EMX__
+#define LC_PATHDELIM ':'
+#else
+#define LC_PATHDELIM ';'
+#endif
+
 #define XLC_BUFSIZE 256
 
 #ifndef X_NOT_POSIX
@@ -104,7 +110,7 @@ _XlcParsePath(path, argv, argsize)
     char *p = path;
     int i, n;
 
-    while((p = strchr(p, ':')) != NULL){
+    while((p = strchr(p, LC_PATHDELIM)) != NULL){
 	*p = ' ';	/* place space on delimter */
     }
     n = parse_line(path, argv, argsize);
@@ -140,12 +146,16 @@ xlocaledir(buf, buf_len)
 	len = strlen(dir);
 	strncpy(p, dir, buf_len);
 	if (len < buf_len) {
-	    p[len++] = ':';
+	    p[len++] = LC_PATHDELIM;
 	    p += len;
 	}
     }
     if (len < buf_len)
-	strncpy(p, XLOCALEDIR, buf_len-len);
+#ifndef __EMX__
+      strncpy(p, XLOCALEDIR, buf_len - len);
+#else
+      strncpy(p,__XOS2RedirRoot(XLOCALEDIR), buf_len - len);
+#endif
     buf[buf_len-1] = '\0';
 }
 
@@ -169,6 +179,17 @@ resolve_name(lc_name, file_name, direction)
 	char *p = buf;
 	int n;
 	char *args[2], *from, *to;
+#ifdef __EMX__  /* Take out CR under OS/2 */
+	int len;
+
+	len=strlen(p);
+	if (len>1) {
+	  if (*(p+len-2) == '\r' && *(p+len-1) == '\n') {
+		*(p+len-2) = '\n';
+		*(p+len-1) = '\0';
+	  }
+	}
+#endif
 	while(isspace(*p)){
 	    ++p;
 	}

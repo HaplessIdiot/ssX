@@ -5,8 +5,8 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.40 1997/06/03 14:11:02 hohndel Exp $
-XCOMM
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.41 1997/07/05 15:14:45 dawes Exp $
+XCOMM ----------------------------------------------------------------------
 
 /*
  * generic imake template
@@ -247,6 +247,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasSnprintf
 #define HasSnprintf		NO	/* assume not */
+#endif
+#ifndef HasDlopen
+#define HasDlopen		NO	/* assume not */
 #endif
 #ifndef HasMkstemp
 #define HasMkstemp		NO	/* assume not */

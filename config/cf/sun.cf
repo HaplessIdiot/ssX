@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/163 1997/06/08 20:08:23 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.35 1997/06/11 12:24:19 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.36 1997/07/05 15:14:46 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -209,6 +209,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif
 # define HasVFork          NO
+# define HasDlopen         YES
 # define InstKmemFlags	  -g sys -m 2711
 # define ShLibIncludeFile <sunLib.tmpl>
 /*

@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.17 1997/06/29 07:54:20 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.18 1997/07/05 08:45:12 dawes Exp $ */
 
 /*
  * 
@@ -887,6 +887,7 @@ static void get_ld_version(inFile)
 #define PATH_MAX 1024
 #endif
 
+#ifndef __EMX__
 static void get_gcc_incdir(inFile)
   FILE* inFile;
 {
@@ -922,12 +923,13 @@ static void get_gcc_incdir(inFile)
   if (buf[0])
     fprintf (inFile, "#define DefaultGccIncludeDir %s\n", buf);
 }
+#endif
 
 boolean
 define_os_defaults(inFile)
 	FILE	*inFile;
 {
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__EMX__)
 #if (defined(DEFAULT_OS_NAME) || defined(DEFAULT_OS_MAJOR_REV) || \
      defined(DEFAULT_OS_MINOR_REV) || defined(DEFAUL_OS_TEENY_REV))
 	struct utsname name;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.2 1997/06/20 09:24:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.3 1997/06/25 08:24:55 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -237,13 +237,13 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	 */
 	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
-		GLINT_WRITE_REG(0x400 | (0x0e << 2) | 1,DitherMode);
+		GLINT_WRITE_REG(0x400 | (0x0e << 2) | 0,DitherMode);
 		break;
 	case 16:
-		GLINT_WRITE_REG(0x400 | (0x01 << 2) | 1,DitherMode);
+		GLINT_WRITE_REG(0x400 | (0x01 << 2) | 0,DitherMode);
 		break;
 	case 32:
-		GLINT_WRITE_REG(0x400 | (0x00 << 2) | 1,DitherMode);
+		GLINT_WRITE_REG(0x400 | (0x00 << 2) | 0,DitherMode);
 		break;
 	}
 	GLINT_WRITE_REG(0x3000,			AlphaBlendMode);

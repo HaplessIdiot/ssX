@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.31 1997/05/21 15:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.32 1997/05/22 14:22:23 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -1123,7 +1123,7 @@ int *RamDac;
 	else if (  ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_801B))
                  ||(SVGA_VENDOR(Chipset) == V_TSENG) ) 
 	{
-	    if ( Chipset == CHIP_ET6K )
+	    if ( (Chipset == CHIP_ET6K) || (Chipset == CHIP_ET6K1) || (Chipset == CHIP_ET6K3) )
 	    {
 	      *RamDac = DAC_ET6K;
 	    }
@@ -1142,7 +1142,8 @@ int *RamDac;
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
-	    if ( (SVGA_VENDOR(Chipset) == V_TSENG) && ( Chipset != CHIP_ET6K ) )
+	    if ( (SVGA_VENDOR(Chipset) == V_TSENG) && ( Chipset != CHIP_ET6K )
+	        && ( Chipset != CHIP_ET6K1 ) && ( Chipset != CHIP_ET6K3 ) )
 	    {
 	        if (Tseng_GENDACCheck(RamDac))
 	        {
