@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.21 2000/02/12 02:54:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.22 2000/02/18 12:18:51 tsi Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -796,7 +796,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
 	    strcpy((char*) local_buf, cset->escape_seq);
 	    local_count = strlen(cset->escape_seq);
 	    strncpy((char *)(&local_buf[local_count]), (char *)look, count);
-	    local_count += local_count;
+	    local_count += count;
 	    local_buf[local_count] = '\0';
 	    if ((count = im->methods->ctstombs(ic->core.im,
 				(char*) local_buf, local_count,
