@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.1 1997/09/25 06:55:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.2 1997/12/05 22:01:30 hohndel Exp $ */
 /*
  * Copyright 1997 The XFree86 Project, Inc
  *
@@ -108,9 +108,9 @@ PM2DACGlintSetClock(long freq)
     /*
      * now set the clock
      */
-    glintOutPM2IndReg(PM2DACIndexClockCM,0x00,m);
-    glintOutPM2IndReg(PM2DACIndexClockCN,0x00,n);
-    glintOutPM2IndReg(PM2DACIndexClockCP,0x00,p|0x08);
+    glintOutPM2IndReg(PM2DACIndexClockAM,0x00,m);
+    glintOutPM2IndReg(PM2DACIndexClockAN,0x00,n);
+    glintOutPM2IndReg(PM2DACIndexClockAP,0x00,p|0x08);
 }
 
 int

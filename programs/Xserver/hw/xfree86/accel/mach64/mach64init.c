@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.27 1997/06/15 07:12:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.28 1997/07/29 12:07:35 hohndel Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
- * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * This code may be freely incorporated in any program without royalty, as
  * long as the copyright notice stays intact.
@@ -86,6 +86,8 @@ static unsigned long old_CONFIG_CNTL;
 static unsigned long old_MEM_CNTL;
 static unsigned long old_CRTC_GEN_CNTL;
 
+static unsigned long old_HW_DEBUG;
+
 static unsigned long old_CRTC_OFF_PITCH;
 static unsigned long old_DST_OFF_PITCH;
 static unsigned long old_SRC_OFF_PITCH;
@@ -120,7 +122,7 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
     int i;
     int pixel_delay;
 
-    if (mode->CrtcHTotal > 2048) {
+    if ((mode->CrtcHTotal > 2048) && (mach64RamdacSubType != DAC_INTERNAL)) {
 	isMuxMode = TRUE;
 
 	crtcRegs->h_total_disp =
@@ -340,19 +342,19 @@ int mach64FIFOdepth(cdepth, clock, width)
 {
     int fifo_depth;
 
-    if (mach64ChipType == MACH64_VT) {
+    if (mach64ChipType == MACH64_VT_ID) {
 	if (mach64ChipRev == 0x48) { /* VTA4 */
 	    fifo_depth = mach64FIFOdepthVTA4(cdepth, clock, width);
 	} else { /* VTA3 */
 	    fifo_depth = mach64FIFOdepthVTA3(cdepth, clock, width);
 	}
-    } else if (mach64ChipType == MACH64_GT) {
+    } else if (mach64ChipType == MACH64_GT_ID) {
 	fifo_depth = mach64FIFOdepthGT(cdepth, clock, width);
-    } else if (mach64ChipType == MACH64_CT && mach64ChipRev == 0x0a) {
+    } else if (mach64ChipType == MACH64_CT_ID && mach64ChipRev == 0x0a) {
 	/* CT-D has a larger FIFO and thus requires special code */
 	fifo_depth = mach64FIFOdepthCTD(cdepth, clock, width);
-    } else if (mach64ChipType == MACH64_CT ||
-	       mach64ChipType == MACH64_ET) {
+    } else if (mach64ChipType == MACH64_CT_ID ||
+	       mach64ChipType == MACH64_ET_ID) {
 	fifo_depth = mach64FIFOdepthCT(cdepth, clock, width);
     } else {
 	fifo_depth = mach64FIFOdepthDefault(cdepth, clock, width);
@@ -806,8 +808,7 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
 
     Q = (mhz100 * M)/(2.0 * R);
 
-    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x07)) {
+    if (mach64HasDSP) {
 	if (Q > 255) {
 	    ErrorF("mach64ProgramClkMach64CT: Warning: Q > 255\n");
 	    Q = 255;
@@ -884,8 +885,7 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
     outb(ioCLOCK_CNTL + 1, (PLL_VCLK_CNTL << 2) | PLL_WR_EN);
     outb(ioCLOCK_CNTL + 2, tmp1 & ~0x04);
 
-    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x07)) {
+    if (mach64HasDSP) {
 	outb(ioCLOCK_CNTL + 1, PLL_XCLK_CNTL << 2);
 	tmp1 = inb(ioCLOCK_CNTL + 2);
 	outb(ioCLOCK_CNTL + 1, (PLL_XCLK_CNTL << 2) | PLL_WR_EN);
@@ -1136,8 +1136,7 @@ void mach64SetCRTCRegs(crtcRegs)
     regw(CRTC_GEN_CNTL, crtcGenCntl & ~(CRTC_EXT_EN | CRTC_LOCK_REGS));
 
     /* Set the DSP registers on the VT-B and GT-B */
-    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x07))
+    if (mach64HasDSP)
 	mach64SetDSPRegs(crtcRegs);
 
     /* Check to see if we need to program the clock chip */
@@ -1200,7 +1199,7 @@ void mach64SetCRTCRegs(crtcRegs)
 	    depth = CRTC_PIX_WIDTH_32BPP;
     }
 
-    if (mach64ChipType == MACH64_CT && mach64ChipRev == 0x0a) { /* CT-D only */
+    if (mach64ChipType == MACH64_CT_ID && mach64ChipRev == 0x0a) { /* CT-D only */
 	CTD_sharedCntl = regrb(SHARED_CNTL+3) & ~(CTD_FIFO5 >> 24);
 	regwb(SHARED_CNTL+3,
 	      CTD_sharedCntl | ((crtcRegs->fifo_v1 & 0x10) >> 4));
@@ -1301,8 +1300,7 @@ mach64GetCTClock(i)
     N = inb(ioCLOCK_CNTL + 2);
     outb(ioCLOCK_CNTL + 1, VCLK_POST_DIV << 2);
     postDiv = (inb(ioCLOCK_CNTL + 2) >> (2 * i)) & 0x03;
-    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x07)) {
+    if (mach64HasDSP) {
 	outb(ioCLOCK_CNTL + 1, PLL_XCLK_CNTL << 2);
 	if ((inb(ioCLOCK_CNTL + 2) >> (4 + i)) & 0x01) {
 	    switch (postDiv) {
@@ -1350,6 +1348,23 @@ void mach64ResetEngine()
     }
 
     regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+
+    /* On RagePro chips we can enable auto block write and auto fast fill
+     * modes if block write mode is not initialized by the BIOS.
+     */
+    if (mach64ChipType == MACH64_GB_ID ||
+	mach64ChipType == MACH64_GD_ID ||
+	mach64ChipType == MACH64_GI_ID ||
+	mach64ChipType == MACH64_GP_ID ||
+	mach64ChipType == MACH64_GQ_ID) {
+	temp = regr(HW_DEBUG);
+	if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options)) {
+	    temp &= ~(AUTO_FF_DIS | AUTO_BLKWRT_DIS);
+	} else if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options)) {
+	    temp |= AUTO_FF_DIS | AUTO_BLKWRT_DIS;
+	}
+	regw(HW_DEBUG, temp);
+    }
 
     WaitIdleEmpty();
 }
@@ -1434,7 +1449,7 @@ void mach64InitAperture(screen_idx)
     int i;
     unsigned long apaddr;
     unsigned long regpage, regoffset;
-    long memsize;
+    long memsize, regsize;
 
     if (!mach64VideoMem) {
 	old_CONFIG_CNTL = inw(ioCONFIG_CNTL);
@@ -1442,12 +1457,27 @@ void mach64InitAperture(screen_idx)
 
     apaddr = mach64ApertureAddr;
 
-    if (mach64ApertureSize == MEM_SIZE_4M) {
-	mach64MemRegOffset = 0x3ffc00;
-	outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 1);
+    if (mach64RegisterAddr) { /* Use Auxilliary Register Aperture */
+	mach64MemRegOffset = 0x400;
+
+	regpage = mach64RegisterAddr;
+	regoffset = mach64MemRegOffset;
+	regsize = 0x1000;
     } else {
-	mach64MemRegOffset = 0x7ffc00;
-	outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 2);
+	if ((mach64BusType == PCI) && (mach64IntegratedController)) {
+	    mach64MemRegOffset = 0x7ffc00;
+	} else if (mach64ApertureSize == MEM_SIZE_4M) {
+	    mach64MemRegOffset = 0x3ffc00;
+	    outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 1);
+	} else {
+	    mach64MemRegOffset = 0x7ffc00;
+	    outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 2);
+	}
+
+	regpage = mach64MemRegOffset & XF_PAGE_MASK;
+	regoffset = mach64MemRegOffset - regpage;
+	regpage += apaddr;
+	regsize = PAGE_SIZE;
     }
 
     switch(mach64MemorySize) {
@@ -1469,18 +1499,16 @@ void mach64InitAperture(screen_idx)
     case MEM_SIZE_8M:
 	memsize = 8 * 1024 * 1024;
 	break;
+    case MEM_SIZE_16M:
+	memsize = 16 * 1024 * 1024;
+	break;
     }
-
-    regpage = mach64MemRegOffset & XF_PAGE_MASK;
-    regoffset = mach64MemRegOffset - regpage;
 
     if (!mach64MemRegMap) {
 	mach64MemRegMap = xf86MapVidMem(screen_idx, EXTENDED_REGION,
-					(pointer)(apaddr + regpage),
-					PAGE_SIZE);
+					(pointer)(regpage), regsize);
 	mach64MemReg = (pointer)((unsigned long)mach64MemRegMap + regoffset);
     }
-
 
     if (!mach64VideoMem) {
 	mach64VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
@@ -2249,8 +2277,7 @@ void mach64InitDisplay(screen_idx)
 	    old_PLL[i] = inb(ioCLOCK_CNTL+2);
 	}
 
-	if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	    (mach64ChipRev & 0x07)) {
+	if (mach64HasDSP) {
 	    old_DSP_CONFIG = regr(DSP_CONFIG);
 	    old_DSP_ON_OFF = regr(DSP_ON_OFF);
 	}
@@ -2279,8 +2306,24 @@ void mach64InitDisplay(screen_idx)
     if (!mach64IntegratedController)
 	regw(MEM_CNTL, old_MEM_CNTL & ~(MEM_BNDRY | MEM_BNDRY_EN));
 
+    WaitQueue(2);
+
+    /* Turn off the memory mapped registers in the frame buffer */
+    /* (only when there is an auxilliary register aperture) */
+    if (mach64RegisterAddr)
+	regw(BUS_CNTL, old_BUS_CNTL | BUS_APER_REG_DIS);
+
+    /* Save the HW_DEBUG register if on a RagePro */
+    if (mach64ChipType == MACH64_GB_ID ||
+        mach64ChipType == MACH64_GD_ID ||
+        mach64ChipType == MACH64_GI_ID ||
+        mach64ChipType == MACH64_GP_ID ||
+        mach64ChipType == MACH64_GQ_ID)
+	old_HW_DEBUG = regr(HW_DEBUG);
+
 #ifdef DEBUG
     ErrorF("MEM_CNTL is 0x%08x\n", regr(MEM_CNTL));
+    ErrorF("BUS_CNTL is 0x%08x\n", regr(BUS_CNTL));
 #endif
 
     WaitQueue(4);
@@ -2331,8 +2374,7 @@ void mach64CleanUp()
 	    outb(ioCLOCK_CNTL+2, old_PLL[i]);
 	}
 
-	if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	    (mach64ChipRev & 0x07)) {
+	if (mach64HasDSP) {
 	    regw(DSP_CONFIG, old_DSP_CONFIG);
 	    regw(DSP_ON_OFF, old_DSP_ON_OFF);
 	}
@@ -2439,6 +2481,15 @@ void mach64CleanUp()
     regw(CRTC_OFF_PITCH, old_CRTC_OFF_PITCH);
     regw(DST_OFF_PITCH, old_DST_OFF_PITCH);
     regw(SRC_OFF_PITCH, old_SRC_OFF_PITCH);
+
+    WaitIdleEmpty();
+    /* Restore the HW_DEBUG register if on a RagePro */
+    if (mach64ChipType == MACH64_GB_ID ||
+        mach64ChipType == MACH64_GD_ID ||
+        mach64ChipType == MACH64_GI_ID ||
+        mach64ChipType == MACH64_GP_ID ||
+        mach64ChipType == MACH64_GQ_ID)
+	regw(HW_DEBUG, old_HW_DEBUG);
 
     /* Was getting set to 0x00020200 */
     regw(CRTC_GEN_CNTL, old_CRTC_GEN_CNTL);

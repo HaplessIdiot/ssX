@@ -1,3 +1,21 @@
+XFree86 3.9Aa (20 December 1997)
+1521. Fix border colours for Trident server (#1289, Alan Hourihane).
+1520. Major update to Mach64 server. Proper identification of the different
+      chips. Support for 16MB boards. Increased max DAC speed settings for
+      newer chips. Support for AGP RagePro cards. Block write mode for
+      RagePro chips. 1600x1200 mode support for VT and newer chips. Use the
+      auxilliary register aperture on chips that support it. Use 16MB memory
+      aperture on PCI Mach64s with integrated controllers. 
+      (#1288, Kevin Martin).
+1519. New code for the glint server. Preliminary support for the Permedia 2
+      hardware cursor. Preliminary support for panning the display with
+      multiple modelines for Permedia/Permedia 2. Fix ELSA Permedia 2 boards.
+      Cleanup of glint_init.c. Fix DGA when using software cursor. Addition
+      of code to not save VGA state if the VGA core is disabled.
+      (#1285,1286,1287, Alan Hourihane).
+1518. Fix the "invalid depth" problem with packed 24 (#1284, Andrew Aitchison). 
+1517. Fixes to finish keyboard layout (Johan Myreen).
+
 XFree86 3.9z (14 December 1997)
 1516. Fix loss of sync while panning problem and attempt to fix the occasional
       crashes of the Millennium II by restricting the MGACountRam function
@@ -6,7 +24,7 @@ XFree86 3.9z (14 December 1997)
       doesn't exist (#1279, Matthieu Herrb).
 1514. Fix solid trap/rect fill bugain the mga server for the Millennium II 
       that was hurting performance severely (#1277, Mark Vojkovich).
-1513. Reenable BitBlt accelerations for Millennium II (#1271, Mark Vojkovich).
+1513. Reenable BitBlt accelerations for Millennium II (#1271, Mark Montague).
 1512. Fix mmap memory leak in IGS driver. ARM32/NetBSD specific fix for
       xf86MapInfoMap (#1265, Katrina Maffey).
 1511. Resync change 1474 for PC98 and fix a reference to usleep on SVR4
@@ -5771,4 +5789,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.557 1997/12/14 05:15:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.558 1997/12/14 10:03:52 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.6 1997/12/05 06:39:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.7 1997/12/05 22:01:28 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -491,7 +491,7 @@ IBMRGB52x_Init_Stdmode (int clock)
     glintOutIBMRGBIndReg (RGB640_VGA_CONTROL, 0, 
 			  IBM640_RDBK | IBM640_PSIZE8 | IBM640_VRAM);
     /* enable all three DACs and groud the complementary output */
-    glintOutIBMRGBIndReg (RGB640_VGA_CONTROL, 0, 
+    glintOutIBMRGBIndReg (RGB640_DAC_CONTROL, 0, 
 			  IBM640_DACENBL | IBM640_SHUNT);
     /* don't autoincrement for read, do autoincrement for write, update window
        attribute table during retrace only */
@@ -509,6 +509,8 @@ IBMRGB52x_Init_Stdmode (int clock)
       glintOutIBMRGBIndReg (RGB640_SER_15_08, 0, 0x00);
       glintOutIBMRGBIndReg (RGB640_SER_23_16, 0, 0x00);
       glintOutIBMRGBIndReg (RGB640_SER_31_24, 0, 0x00);
+      glintOutIBMRGBIndReg (RGB640_SER_WID_03_00, 0, 0x10);
+      glintOutIBMRGBIndReg (RGB640_SER_WID_07_04, 0, 0x11);
       glintOutIBMRGBIndReg (RGB640_SER_MODE,  0, IBM640_SER_16_1);
       break;
     case 15: 
@@ -526,6 +528,7 @@ IBMRGB52x_Init_Stdmode (int clock)
       glintOutIBMRGBIndReg (RGB640_SER_31_24, 0, 0x33);
       glintOutIBMRGBIndReg (RGB640_SER_MODE,  0, IBM640_SER_4_1);
     }
+    glintOutIBMRGBIndReg (RGB640_AUX_PLL_CTL, 0, IBM640_AUX_LO);
     glintOutIBMRGBIndReg (RGB640_MISC_CONF, 0, IBM640_PCLK_8);
     glintOutIBMRGBIndReg (RGB640_PLL_M,   0, 0x18);
     glintOutIBMRGBIndReg (RGB640_PLL_N,   0, 0x08);
