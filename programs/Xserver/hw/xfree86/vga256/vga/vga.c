@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.80 1997/03/07 00:30:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.81 1997/03/11 11:11:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -400,7 +400,7 @@ vgaPrintIdent()
 #ifdef PC98_EGC
   ErrorF("%s\n",PC98_VGA16_BOARDS);
 #endif
-#ifdef PC98_NEC480
+#ifdef PC98_PEGC
   ErrorF("%s\n",PC98_VGA256_BOARDS);
 #endif
 #if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)||\
@@ -1173,7 +1173,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
 			      pc98PvramBase, vgaMapSize);
 #else
-#if defined(PC98_EGC) || defined(PC98_NEC480)
+#if defined(PC98_EGC) || defined(PC98_PEGC)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA8000,
 			    vgaMapSize);
 #else    
@@ -1397,7 +1397,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   /* Fill the screen with black */
   if (serverGeneration == 1)
   {
-#ifdef PC98_NEC480		/* { */
+#ifdef PC98_PEGC		/* { */
 	{ int i;
 		extern short *vramwindow;
 
@@ -1411,7 +1411,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		}
 		*(vramwindow+2) = 0;
 	}
-#else /* PC98_NEC480 */		/* }{ */
+#else /* PC98_PEGC */		/* }{ */
 #ifndef BANKEDMONOVGA		/* { */
     if (xf86bpp == 1) 
     	xf86memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
@@ -1468,7 +1468,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     }
 #endif /* !PC98_EGC */		/* } */
     }
-#endif /* !PC98_NEC480 */	/* } */
+#endif /* !PC98_PEGC */	/* } */
   }
   vgaSaveScreen(NULL, TRUE); /* unblank the screen */
 #endif /* ! DIRTY_STARTUP */	/* } */
@@ -1771,7 +1771,7 @@ vgaCloseScreen(screen_idx, pScreen)
 /* outb((hiresoflg)?0xa4:0x7c, 0x00); */
   outb(0x7c, 0x00);
 #endif
-#ifdef PC98_NEC480
+#ifdef PC98_PEGC
 	{ int i;
 		extern short *vramwindow;
 
@@ -1789,7 +1789,7 @@ vgaCloseScreen(screen_idx, pScreen)
 	outb(0x6a, 0x04);
 	outb(0x6a, 0x06);
 	outb(0x7c, 0x00);
-#endif /* PC98_NEC480 */
+#endif /* PC98_PEGC */
   if (xf86VTSema)
     vgaEnterLeaveVT(LEAVE, screen_idx);
   else if (ppix) {

@@ -9,63 +9,69 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.10 1996/12/2
 
 #define IHaveSubdirs
 
-#if XF98GANBWAPServer
+#if XF98GANBWAPServer || XF98GANBWAPModule
 GANBWAPSUBDIRS = ganbwap 
 GANBWAPSRCS    = ganbwap/?*.c
 GANBWAPOBJS    = ganbwap/?*.o
 GANBWAPDONES   = ganbwap/DONE
 #endif
 
-#if XF98NEC480Server
-NEC480SUBDIRS = nec480
-NEC480SRCS    = nec480/?*.c
-NEC480OBJS    = nec480/?*.o
-NEC480DONES   = nec480/DONE
+#if XF98PEGCServer || XF98PEGCModule
+PEGCSUBDIRS = pegc
+PEGCSRCS    = pegc/?*.c
+PEGCOBJS    = pegc/?*.o
+PEGCDONES   = pegc/DONE
 #endif
 
-#if XF98NKVNECServer
+#if XF98NKVNECServer || XF98NKVNECModule
 NKVNECSUBDIRS = nkvnec
 NKVNECSRCS    = nkvnec/?*.c
 NKVNECOBJS    = nkvnec/?*.o
 NKVNECDONES   = nkvnec/DONE
 #endif
 
-#if XF98WABSServer
+#if XF98WABSServer || XF98WABSModule
 WABSSUBDIRS = wabs
 WABSSRCS    = wabs/?*.c
 WABSOBJS    = wabs/?*.o
 WABSDONES   = wabs/DONE
 #endif
 
-#if XF98WABEPServer
+#if XF98WABEPServer || XF98WABEPModule
 WABEPSUBDIRS = wabep
 WABEPSRCS    = wabep/?*.c
 WABEPOBJS    = wabep/?*.o
 WABEPDONES   = wabep/DONE
 #endif
 
-#if XF98WSNAServer
+#if XF98WSNAServer || XF98WSNAModule
 WSNASUBDIRS = wsna
 WSNASRCS    = wsna/?*.c
 WSNAOBJS    = wsna/?*.o
 WSNADONES   = wsna/DONE
 #endif
 
-#if XF98TGUIServer
+#if XF98TGUIServer || XF98TGUIModule
 TGUISUBDIRS = trident
 TGUISRCS    = trident/?*.c
 TGUIOBJS    = trident/?*.o
 TGUIDONES   = trident/DONE
 #endif
 
-SUBDIRS = $(GANBWAPSUBDIRS) $(NEC480SUBDIRS) $(NKVNECSUBDIRS) \
+#if DoLoadableServer
+SUBDIRS = $(GANBWAPSUBDIRS) $(PEGCSUBDIRS) $(NKVNECSUBDIRS) \
+	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS)
+#else
+SUBDIRS = $(GANBWAPSUBDIRS) $(PEGCSUBDIRS) $(NKVNECSUBDIRS) \
 	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS) \
 	  drivers
-SRCS    = $(GANBWAPSRCS) $(NEC480SRCS) $(NKVNECSRCS) $(WABSSRCS) \
+#endif
+
+SRCS    = $(GANBWAPSRCS) $(PEGCSRCS) $(NKVNECSRCS) $(WABSSRCS) \
 	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS)
-OBJS    = $(GANBWAPOBJS) $(NEC480OBJS) $(NKVNECOBJS) $(WABSOBJS) \
+OBJS    = $(GANBWAPOBJS) $(PEGCOBJS) $(NKVNECOBJS) $(WABSOBJS) \
 	  $(WABEPOBJS) $(WSNAOBJS) $(TGUIOBJS)
-DONES   = $(GANBWAPDONES) $(NEC480DONES) $(NKVNECDONES) $(WABSDONES) \
+DONES   = $(GANBWAPDONES) $(PEGCDONES) $(NKVNECDONES) $(WABSDONES) \
 	  $(WABEPDONES) $(WSNADONES) $(TGUIDONES)
 
 INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
@@ -81,14 +87,15 @@ MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 $(DONES): $(SUBDIRS)
 #endif
 
+#if ! DoLoadableServer
 #if XF98GANBWAPServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 #endif
 #if XF98WSNAServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 #endif
-#if XF98NEC480Server
-ConfigTargetNoDepend(nec480Conf,$(ICONFIGFILES),cnec480.SHsuf,nec480)
+#if XF98PEGCServer
+ConfigTargetNoDepend(pegcConf,$(ICONFIGFILES),cpegc.SHsuf,pegc)
 #endif
 #if XF98NKVNECServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
@@ -102,52 +109,53 @@ ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 #if XF98TGUIServer
 ConfigTargetNoDepend(tguiConf,$(ICONFIGFILES),ctgui.SHsuf,tvga8900)
 #endif
+#endif
 
 #ifdef OS2Architecture
 all:: DONE
 	cp $(OBJS) .
 
-#if XF98GANBWAPServer
+#if XF98GANBWAPServer || XF98GANBWAPModule
 NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers $(GANBWAPDONES),?*.o)
 #endif
-#if XF98WSNAServer
+#if XF98WSNAServer || XF98WSNAModule
 NormalDepLibraryTarget(wsna,$(WSNASUBDIRS) drivers $(WSNADONES),?*.o)
 #endif
-#if XF98NEC480Server
-NormalDepLibraryTarget(nec480,$(NEC480SUBDIRS) drivers $(NEC480DONES),?*.o)
+#if XF98PEGCServer || XF98PEGCModule
+NormalDepLibraryTarget(pegc,$(PEGCSUBDIRS) drivers $(PEGCDONES),?*.o)
 #endif
-#if XF98NKVNECServer
+#if XF98NKVNECServer || XF98NKVNECModule
 NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) drivers $(NKVNECDONES),?*.o)
 #endif
-#if XF98WABSServer
+#if XF98WABSServer || XF98WABSModule
 NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers $(WABSDONES),?*.o)
 #endif
-#if XF98WABEPServer
+#if XF98WABEPServer || XF98WABEPModule
 NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) drivers $(WABEPDONES),?*.o)
 #endif
-#if XF98TGUIServer
+#if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(trident,$(TGUISUBDIRS) drivers $(TGUIDONES),?*.o)
 #endif
 #else
-#if XF98GANBWAPServer
+#if XF98GANBWAPServer || XF98GANBWAPModule
 NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers $(GANBWAPDONES),$(GANBWAPOBJS))
 #endif
-#if XF98WSNAServer
+#if XF98WSNAServer || XF98WSNAModule
 NormalDepLibraryTarget(wsna,$(WSNASUBDIRS) drivers $(WSNADONES),$(WSNAOBJS))
 #endif
-#if XF98NEC480Server
-NormalDepLibraryTarget(nec480,$(NEC480SUBDIRS) drivers $(NEC480DONES),$(NEC480OBJS))
+#if XF98PEGCServer || XF98PEGCModule
+NormalDepLibraryTarget(pegc,$(PEGCSUBDIRS) drivers $(PEGCDONES),$(PEGCOBJS))
 #endif
-#if XF98NKVNECServer
+#if XF98NKVNECServer || XF98NKVNECModule
 NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) drivers $(NKVNECDONES),$(NKVNECOBJS))
 #endif
-#if XF98WABSServer
+#if XF98WABSServer || XF98WABSModule
 NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers $(WABSDONES),$(WABSOBJS))
 #endif
-#if XF98WABEPServer
+#if XF98WABEPServer || XF98WABEPModule
 NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) drivers $(WABEPDONES),$(WABEPOBJS))
 #endif
-#if XF98TGUIServer
+#if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(trident,$(TGUISUBDIRS) drivers $(TGUIDONES),$(TGUIOBJS))
 #endif
 #endif
@@ -157,7 +165,7 @@ NormalLibraryObjectRule()
 ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(ganbwap,$(XF98LINKKITDIR)/drivers98)
-InstallLinkKitLibrary(nec480,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitLibrary(pegc,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(nkvnec,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(trident,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabep,$(XF98LINKKITDIR)/drivers98)
@@ -166,7 +174,33 @@ InstallLinkKitLibrary(wsna,$(XF98LINKKITDIR)/drivers98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(cvga256.SHsuf,$(XF98LINKKITDIR))
 #endif
-InstallLinkKitNonExecFile(cnec480.SHsuf,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(cpegc.SHsuf,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(ctgui.SHsuf,$(XF98LINKKITDIR))
+
+#if DoLoadableServer
+#if XF98GANBWAPModule
+InstallDynamicModule(LibraryTargetName(ganbwap),$(MODULEDIR))
+#endif
+#if XF98PEGCModule
+InstallDynamicModule(LibraryTargetName(pegc),$(MODULEDIR))
+#endif
+#if XF98NKVNECModule
+InstallDynamicModule(LibraryTargetName(nkvnec),$(MODULEDIR))
+#endif
+#if XF98TGUIModule
+#ifndef DontInstallPC98Version
+InstallDynamicModule(LibraryTargetName(trident),$(MODULEDIR))
+#endif
+#endif
+#if XF98WABEPModule
+InstallDynamicModule(LibraryTargetName(wabep),$(MODULEDIR))
+#endif
+#if XF98WABSModule
+InstallDynamicModule(LibraryTargetName(wabs),$(MODULEDIR))
+#endif
+#if XF98WSNAModule
+InstallDynamicModule(LibraryTargetName(wsna),$(MODULEDIR))
+#endif
+#endif
 
 DependSubdirs($(SUBDIRS))

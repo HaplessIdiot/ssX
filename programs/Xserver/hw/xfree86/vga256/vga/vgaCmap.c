@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.14 1996/10/23 13:10:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.15 1996/12/23 06:59:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -104,7 +104,7 @@ vgaStoreColors(pmap, ndef, pdefs)
 	}
         cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
 #ifndef PC98_EGC
-#ifndef PC98_NEC480
+#ifndef PC98_PEGC
 	if (vgaDAC8BitComponents) {
             cmap[0] = pdefs[i].red   >> 8;
             cmap[1] = pdefs[i].green >> 8;
@@ -115,11 +115,11 @@ vgaStoreColors(pmap, ndef, pdefs)
             cmap[1] = pdefs[i].green >> 10;
             cmap[2] = pdefs[i].blue  >> 10;
         }
-#else /* PC98_NEC480 */
+#else /* PC98_PEGC */
         cmap[0] = pdefs[i].red   >> 8;
         cmap[1] = pdefs[i].green >> 8;
         cmap[2] = pdefs[i].blue  >> 8;
-#endif /* PC98_NEC480 */
+#endif /* PC98_PEGC */
 #else
         cmap[0] = pdefs[i].red   >> 12;
         cmap[1] = pdefs[i].green >> 12;
@@ -141,7 +141,7 @@ vgaStoreColors(pmap, ndef, pdefs)
 #endif
 	   )
 	{
-#if !defined(PC98_EGC) && !defined(PC98_NEC480)
+#if !defined(PC98_EGC) && !defined(PC98_PEGC)
 	    outb(0x3C8, pdefs[i].pixel);
 	    DACDelay;
 	    outb(0x3C9, cmap[0]);

@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.11 1997/01/27 06:58:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.1 1997/03/06 23:17:10 hohndel Exp $ */
 
 
 /*
@@ -76,6 +76,8 @@ static long Bg;
 static LongP MemPat;
 static long Pat;
 
+/* Do we use PCI-retry or busy-waiting */
+extern Bool Use_Pci_Retry;
 
 /*
  * The following function sets up the supported acceleration. Call it
@@ -614,6 +616,9 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
 
     PINGPONG();
 
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
+
     SET_FG_ROP(rop);
     SET_FG_COLOR(color);
     
@@ -634,6 +639,9 @@ void Tseng4SubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
+
     SET_XYDIR(0);
 
     SET_XY_4(w, h);
@@ -644,6 +652,9 @@ void Tseng6SubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
 {
     int destaddr = FBADDR(x,y);
+
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
 
    /* if XYDIR is not reset here, drawing a hardware line in between
     * blitting, with the same ROP, color, etc will not cause a call to
@@ -687,6 +698,10 @@ transparency_color)
     
     if (xdir == -1) blit_dir |= 0x1;
     if (ydir == -1) blit_dir |= 0x2;
+
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
+
     SET_XYDIR(blit_dir);
     
     if ((et4000_type >= TYPE_ET6000) && (transparency_color != -1))
@@ -759,6 +774,9 @@ void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
         destaddr += x2;
     }
 
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
+
     SET_XY(w, h);
     *ACL_SOURCE_ADDRESS = srcaddr;
     START_ACL(destaddr);
@@ -775,6 +793,9 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
   pat_src_addr = FBADDR(patternx, patterny);
   
 /*  ErrorF("P");*/
+
+  /* Avoid PCI-Retry's */
+  if (!Use_Pci_Retry) WAIT_QUEUE;
 
   SET_FG_ROP(rop);
 
@@ -812,6 +833,9 @@ void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
   int destaddr = FBADDR(x,y);
   int srcaddr = pat_src_addr + MULBPP(patterny * 8 + patternx);
 
+  /* Avoid PCI-Retry's */
+  if (!Use_Pci_Retry) WAIT_QUEUE;
+
   *ACL_SOURCE_ADDRESS = srcaddr;
 
   SET_XY(w, h);
@@ -834,6 +858,9 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
     PINGPONG();
 
     ColorExpandDst = FBADDR(x,y);
+
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
 
     SET_FG_ROP(rop);
     SET_BG_ROP_TR(rop, bg);
@@ -890,6 +917,9 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * less font corruption we get. But nothing really solves it.
      */
     
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
+
     *ACL_MIX_ADDRESS = srcaddr;
     START_ACL(ColorExpandDst);
     ColorExpandDst += tseng_line_width;
@@ -921,6 +951,9 @@ void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 
   PINGPONG();
 
+  /* Avoid PCI-Retry's */
+  if (!Use_Pci_Retry) WAIT_QUEUE;
+
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
 
@@ -949,6 +982,9 @@ void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
 
   /* ErrorF("\n %dx%d",w,h); */
   
+  /* Avoid PCI-Retry's */
+  if (!Use_Pci_Retry) WAIT_QUEUE;
+
   *ACL_MIX_Y_OFFSET = w-1;
   SET_XY(w, h);
   START_ACL_CPU(destaddr);
@@ -963,6 +999,9 @@ void TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 /*  ErrorF("SSC ");*/
 
   PINGPONG();
+
+  /* Avoid PCI-Retry's */
+  if (!Use_Pci_Retry) WAIT_QUEUE;
 
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
@@ -983,6 +1022,9 @@ void TsengSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
 
   int mixaddr = FBADDR(srcx, srcy * 8);
   
+  /* Avoid PCI-Retry's */
+  if (!Use_Pci_Retry) WAIT_QUEUE;
+
   SET_XY(w, h);
   *ACL_MIX_ADDRESS = mixaddr;
   *ACL_MIX_Y_OFFSET = w-1;
@@ -1021,6 +1063,9 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 
    if (!(octant & YDECREASING))
      algrthm = 16;
+
+   /* Avoid PCI-Retry's */
+   if (!Use_Pci_Retry) WAIT_QUEUE;
    
    if (!(octant & YMAJOR))
    {
@@ -1110,6 +1155,9 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
        dy = -dy;
      }
 
+   /* Avoid PCI-Retry's */
+   if (!Use_Pci_Retry) WAIT_QUEUE;
+
    /* compute axial direction and load registers */
    if (dx >= dy)  /* X is major axis */
    {
@@ -1132,4 +1180,3 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 
    START_ACL(destaddr);
 }
-

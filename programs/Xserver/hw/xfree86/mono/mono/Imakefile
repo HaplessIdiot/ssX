@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/Imakefile,v 3.2 1996/02/04 09:09:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/Imakefile,v 3.3 1996/12/23 06:48:45 dawes Exp $
 
 
 
@@ -6,6 +6,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/Imakefile,v 3.2 1996/02
 
 XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:23:19 rws $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = 	mono.c

@@ -72,5 +72,11 @@ InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/vga256/trident)
 InstallLinkKitNonExecFile(pc98_tgui.h,$(XF98LINKKITDIR)/drivers98/vga256/trident)
 InstallLinkKitNonExecFile(pc98_tgui.c,$(XF98LINKKITDIR)/drivers98/vga256/trident)
 
+#if DoLoadableServer
+#ifndef DontInstallPC98Version
+InstallDynamicModule(tvga89_drv.o, $(MODULEDIR))
+#endif
+#endif
+
 DependTarget()
 

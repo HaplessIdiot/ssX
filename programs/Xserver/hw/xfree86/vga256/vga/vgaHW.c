@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.53 1997/02/24 17:47:13 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.54 1997/03/11 11:12:04 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,7 +71,7 @@
 #define		EGC_LENGTH	0x4ae	/* EGC Bit length          */
 #endif
 
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
 #if !defined(MONOVGA) && !defined(SCO)
 #ifndef SAVE_FONT1
 #define SAVE_FONT1
@@ -101,7 +101,7 @@
 
 /* bytes per plane to save for font data */
 #define FONT_AMOUNT 8192
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 
 #if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/time.h>
@@ -156,7 +156,7 @@ int vgaRamdacMask = 0x3F;
 #define new ((vgaHWPtr)vgaNewVideoState)
 
 unsigned VGA_IOPorts[] = {
-#ifdef PC98_NEC480
+#ifdef PC98_PEGC
 	0x60,  0x62,  0x6a,  0x7c,  0x7e,  0x80,  0xa0,  0xa2,  0x3c0, 0x3c2,
 	0x3c4, 0x3c6, 0x3c7, 0x3c8, 0x3c9, 0x3cc, 0x3ce, 0x3d0, 0x9a0, 0x9a8,
 #else
@@ -265,7 +265,7 @@ void
 vgaProtect(on)
      Bool on;
 {
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   unsigned char tmp;
 
   if (xf86VTSema) {
@@ -296,7 +296,7 @@ vgaProtect(on)
       outb(0x3C0, 0x20);			/* disable pallete access */
     }
   }
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 }
 
 /*
@@ -308,7 +308,7 @@ vgaSaveScreen(pScreen, on)
      ScreenPtr pScreen;
      Bool  on;
 {
-#if !defined(PC98_EGC) && !defined(PC98_NEC480)
+#if !defined(PC98_EGC) && !defined(PC98_PEGC)
    unsigned char scrn;
 
    if (on)
@@ -331,7 +331,7 @@ vgaSaveScreen(pScreen, on)
       outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
       (*vgaSaveScreenFunc)(SS_FINISH);
    }
-#else /* PC98_EGC || PC98_NEC480 */
+#else /* PC98_EGC || PC98_PEGC */
   if (on)
     SetTimeSinceLastInputEvent();
   
@@ -342,7 +342,7 @@ vgaSaveScreen(pScreen, on)
       else
 	outb(0xa2, 0xc);
     }
-#endif /* PC98_EGC || PC98_NEC480 */
+#endif /* PC98_EGC || PC98_PEGC */
    return (TRUE);
 }
 
@@ -405,7 +405,7 @@ void
 vgaHWSaveScreen(start)
     Bool start;
 {
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   if (start == SS_START)
     outw(0x3C4, 0x0100);        /* synchronous reset */
   else
@@ -538,7 +538,7 @@ vgaHWRestore(restore)
 {
   int i,tmp;
 
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   tmp = inb(vgaIOBase + 0x0A);		/* Reset flip-flop */
   outb(0x3C0, 0x00);			/* Enables pallete access */
 #endif
@@ -611,7 +611,7 @@ vgaHWRestore(restore)
   }
   vgaSaveScreen(NULL, TRUE);
 
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
 
   tmp = inb(vgaIOBase + 0x0A);			/* Reset flip-flop */
   outb(0x3C0, 0x00);				/* Enables pallete access */
@@ -664,7 +664,7 @@ vgaHWRestore(restore)
   tmp = inb(vgaIOBase + 0x0A);
   outb(0x3C0, 0x20);
 
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 
   /* If restoring text mode, and a text clock is specified with clkprog */
   if (((restore->Attribute[0x10] & 0x01) == 0))
@@ -716,14 +716,14 @@ vgaHWSave(save, size)
     first_time = TRUE;
     if (vga256InfoRec.clockprog && vga256InfoRec.textclock >= 0)
       save->NoClock = -1;
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
     else
       /* This isn't very useful -- it ignores the high order CS bits */
       save->NoClock = (inb(0x3CC) >> 2) & 3;
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
   }
 
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   save->MiscOutReg = inb(0x3CC);
 #ifdef PC98
   save->MiscOutReg |= 0x01;
@@ -816,11 +816,11 @@ vgaHWSave(save, size)
 
   for (i=0; i<5;  i++) { outb(0x3C4,i); save->Sequencer[i]   = inb(0x3C5); }
 
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
 
   vgaSaveScreen(NULL, FALSE);
   
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   /* XXXX Still not sure if this is needed.  It isn't done in the Restore */
   outb(0x3C2, save->MiscOutReg | 0x01);		/* shift to colour emulation */
   /* Since forced to colour mode, must use 0x3Dx instead of (vgaIOBase + x) */
@@ -891,15 +891,15 @@ vgaHWSave(save, size)
   }
 
   outb(0x3C2, save->MiscOutReg);		/* back to original setting */
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
   
   vgaSaveScreen(NULL, TRUE);
 
-#if !defined(PC98_NEC480) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC)
   /* Turn on PAS bit */
   tmp = inb(vgaIOBase + 0x0A);
   outb(0x3C0, 0x20);
-#endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
   
   return ((void *) save);
 }

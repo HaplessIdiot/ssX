@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/67 1996/12/02 10:19:53 lehors $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.12 1997/02/25 14:19:49 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.13 1997/02/27 13:57:41 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -74,7 +74,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 
 #ifdef XFree86Version
 #if DoLoadableServer
-EXTRAINCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC)
+EXTRAINCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC)
 #else
 EXTRAINCLUDES = -I$(XF86COMSRC)
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.8 1997/03/03 15:55:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.9 1997/03/04 10:39:55 hohndel Exp $ */
 
 
 
@@ -98,6 +98,9 @@ FindModule(module,dir)
 			strcat(buf,prefixes[p]);
 			strcat(buf,module);
 			strcat(buf,suffixes[s]);
+#ifdef __EMX__
+			strcpy(buf,(char*)__XOS2RedirRoot(buf));
+#endif
 			if ((stat(buf, &stat_buf) == 0) &&
 			    ((S_IFMT & stat_buf.st_mode) == S_IFREG)) 
 			{

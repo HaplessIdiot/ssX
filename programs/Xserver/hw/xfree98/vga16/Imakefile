@@ -9,7 +9,11 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:42:45 kaleb $
 
 #define IHaveSubdirs
 
+#if DoLoadableServer
+SUBDIRS = vga ibm mfb misc
+#else
 SUBDIRS = vga ibm mfb drivers misc
+#endif
 
 SRCS = vga/?*.c ibm/?*.c mfb/?*.c
 
@@ -30,6 +34,10 @@ MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 $(DONES): $(SUBDIRS)
 #endif
 
+#if ! DoLoadableServer
+ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),cvga16.SHsuf,$(VGA16DRIVERS))
+#endif
+
 #ifdef OS2Architecture
 all:: DONE
 	cp $(OBJS) .
@@ -38,7 +46,6 @@ NormalDepLibraryTarget(vga16,$(SUBDIRS) $(DONES),?*.o)
 #else
 NormalDepLibraryTarget(vga16,$(SUBDIRS) $(DONES),$(OBJS))
 #endif
-ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),cvga16.SHsuf,$(VGA16DRIVERS))
 
 NormalLibraryObjectRule()
 
@@ -51,6 +58,12 @@ LinkSourceFile(cvga16.sh,$(XF86SRC)/vga16)
 InstallLinkKitLibrary(vga16,$(XF98LINKKITDIR)/drivers98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(cvga16.SHsuf,$(XF98LINKKITDIR))
+#endif
+
+#if DoLoadableServer
+#ifndef DontInstallPC98Version
+InstallLinkKitNonExecFile(cvga16.SHsuf,$(XF98LINKKITDIR))
+#endif
 #endif
 
 DependSubdirs($(SUBDIRS))

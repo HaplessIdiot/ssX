@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.6 1997/01/20 12:37:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.1 1997/03/06 23:17:11 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -140,8 +140,6 @@ LongP MemW32BackgroundPong;
 LongP MemW32PatternPing;
 LongP MemW32PatternPong;
 LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */ 
-
-extern long ET6Kbase;
 
 LongP CPU2ACLBase;
 

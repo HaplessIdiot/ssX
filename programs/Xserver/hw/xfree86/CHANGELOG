@@ -1,4 +1,12 @@
 XFree86 3.2Am (11 March 1997)
+ 566. Fixes for Trident Cyber chipsets (#154,155, Alan Hourihane).
+ 565. Fixes for OS/2 (more IHaveModules and drive letters in ModulePath),
+      get Mach64 to work again (#153, Holger Veit).
+ 564. Cleanups and improvements to tseng hw cursor code (#152, Koen Gadeyne,
+      Harald Nordgard Hansen).
+ 563. Add pci_retry option to tseng driver (#151, Dejan Ilic).
+ 562. Change NEC480 to PEGC, resync of SuperProbe/Imakefile (#150, Takaaki
+      Nomura).
  561. Add hardware cursor to MGA driver (#149, Xavier Ducoin).
  560. Make tseng driver handle 1/4/8bpp at runtime (#145, Koen Gadeyne).
  559. Make apm driver loadable (#146, Joe Moss).
@@ -4153,4 +4161,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.426 1997/03/10 10:11:21 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.427 1997/03/11 11:09:12 hohndel Exp $

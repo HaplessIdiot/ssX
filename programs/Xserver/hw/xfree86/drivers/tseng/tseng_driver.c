@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.2 1997/03/10 10:12:16 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.3 1997/03/11 11:10:41 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -97,6 +97,9 @@ extern void	TsengAccelInit();
 extern void     ET4000HWSaveScreen();
 
 unsigned char 	tseng_save_divide = 0;
+#ifdef USE_XAA
+Bool Use_Pci_Retry = 0;
+#endif
 
 #ifndef MONOVGA
 #include "tseng_cursor.h"
@@ -174,14 +177,14 @@ vgaVideoChipRec TSENG = {
 #define new ((vgaET4000Ptr)vgaNewVideoState)
 
 static SymTabRec chipsets[] = {
-  { TYPE_ET4000,	"et4000" },
+  { TYPE_ET4000,	"ET4000" },
 #ifdef W32_SUPPORT
-  { TYPE_ET4000W32,	"et4000w32" },
-  { TYPE_ET4000W32I,	"et4000w32i" },
-  { TYPE_ET4000W32P,	"et4000w32p" },
-  { TYPE_ET4000W32Pc,	"et4000w32p" },
+  { TYPE_ET4000W32,	"ET4000W32" },
+  { TYPE_ET4000W32I,	"ET4000W32i" },
+  { TYPE_ET4000W32P,	"ET4000W32p" },
+  { TYPE_ET4000W32Pc,	"ET4000W32p" },
 #endif
-  { TYPE_ET6000,	"et6000" },
+  { TYPE_ET6000,	"ET6000" },
   { -1,			"" },
 };
 
@@ -952,7 +955,7 @@ ET4000Probe()
   }
 
       /* Hardware Cursor support */
-  if (et4000_type == TYPE_ET6000)
+  if (et4000_type >= TYPE_ET4000W32P)
   {
           /* Set HW Cursor option valid */
       OFLG_SET(OPTION_HW_CURSOR, &TSENG.ChipOptionFlags);
@@ -960,7 +963,7 @@ ET4000Probe()
 
   if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
   {
-      if (et4000_type == TYPE_ET6000)
+      if (et4000_type >= TYPE_ET4000W32P)
       {
           ErrorF("%s %s: Reserving 1kb of video memory for hardware cursor.\n",
                  XCONFIG_PROBED, vga256InfoRec.name);
@@ -970,6 +973,9 @@ ET4000Probe()
           OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
   }
         
+  /* Set PCI_RETRY option valid */
+  OFLG_SET(OPTION_PCI_RETRY, &TSENG.ChipOptionFlags);
+
   OFLG_SET(OPTION_NOACCEL, &TSENG.ChipOptionFlags);
   
   } /* if (vgaBitsPerPixel >= 8) */
@@ -1202,6 +1208,12 @@ ET4000FbInit()
                  XCONFIG_PROBED, vga256InfoRec.name,
                  vga256InfoRec.chipset);             
   }
+
+  if (OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))
+    {
+      ErrorF("%s %s: Using PCI retrys.\n",XCONFIG_PROBED, vga256InfoRec.name);
+      Use_Pci_Retry = 1;
+    }
 
 #endif /* MONOVGA */
 }

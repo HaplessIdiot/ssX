@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/8 1996/10/25 15:43:26 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nkvnec/Imakefile,v 3.10 1996/12/19 02:58:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nkvnec/Imakefile,v 3.11 1996/12/23 07:08:39 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -43,7 +43,7 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-NormalRelocatableTarget(cir_drv, $(OBJS))
+NormalRelocatableTarget(nkvnec_drv, $(OBJS))
 
 #if !XF86LinkKit
 LinkSourceFile(cirBlitMM.h,$(XF86SRC)/vga256/drivers/cirrus)
@@ -125,5 +125,9 @@ InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/vga256/nkvnec)
 InstallLinkKitNonExecFile(linearline.c,$(XF98LINKKITDIR)/drivers98/vga256/nkvnec)
 InstallLinkKitNonExecFile(linearline.h,$(XF98LINKKITDIR)/drivers98/vga256/nkvnec)
 InstallLinkKitNonExecFile(cir_pc98.c,$(XF98LINKKITDIR)/drivers98/vga256/nkvnec)
+
+#if DoLoadableServer
+InstallDynamicModule(nkvnec_drv.o, $(MODULEDIR))
+#endif
 
 DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.144 1997/03/07 00:28:36 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.145 1997/03/11 11:08:17 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -291,8 +291,8 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # define XF98GANBWAPServer	NO	
 #endif
 
-#ifndef XF98NEC480Server
-# define XF98NEC480Server	NO
+#ifndef XF98PEGCServer
+# define XF98PEGCServer	NO
 #endif
 
 #ifndef XF98NKVNECServer
@@ -335,25 +335,25 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define XF98GA968Server		NO
 #endif
 
-#if XF98NECS3Server
+#if XF98NECS3Server || XF98NECS3Module
 # define XF98NECS3Dir		s3nec
 #else
 # define XF98NECS3Dir		/**/
 #endif
 
-#if XF98PWSKBServer
+#if XF98PWSKBServer || XF98PWSKBModule
 # define XF98PWSKBDir		s3pwskb
 #else
 # define XF98PWSKBDir		/**/
 #endif
 
-#if XF98PWLBServer
+#if XF98PWLBServer || XF98PWLBModule
 # define XF98PWLBDir		s3pwlb
 #else
 # define XF98PWLBDir		/**/
 #endif
 
-#if XF98GA968Server
+#if XF98GA968Server || XF98GA968Module
 # define XF98GA968Dir		s3ga968
 #else
 # define XF98GA968Dir		/**/
@@ -379,7 +379,8 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define XF98AccelServerDirs   XF98NECS3Dir XF98PWSKBDir XF98PWLBDir XF98GA968Dir
 
 #undef XF98AccelServer
-#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || XF98GA968Server
+#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer || \
+    XF98GA968Server || XF98LoaderServer
 # define XF98AccelServer	YES
 #else
 # define XF98AccelServer	NO
@@ -427,17 +428,9 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # endif
 #endif
 
-#ifndef XF98SvgaDrivers
-# define XF98SvgaDrivers	generic
-#endif
-
 #ifndef XF86Vga16Drivers
 # define XF86Vga16Drivers	et4000 et3000 ncr77c22 ati sis tvga8900 \
 				oak cl64xx generic
-#endif
-
-#ifndef XF98Vga16Drivers
-# define XF98Vga16Drivers	generic
 #endif
 
 #ifndef XF86Vga2Drivers
@@ -452,6 +445,22 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef XF86MonoDrivers
 # define XF86MonoDrivers	hgc1280 sigma apollo hercules
 #endif
+
+#ifdef XF98LoaderServer
+#ifndef XF98CardDrivers
+# define XF98CardDrivers	egc pegc ganbwap nkvnec trident wabep \
+				wabs wsna
+# define XF98SvgaDrivers	/* */
+# define XF98Vga16Drivers	/* */
+#endif
+#else
+#ifndef XF98SvgaDrivers
+# define XF98SvgaDrivers	generic
+#endif
+#ifndef XF98Vga16Drivers
+# define XF98Vga16Drivers	generic
+#endif
+#endif /* XF98LoaderServer */
 
 #ifndef XF86Vga2Banked
 # define XF86Vga2Banked		YES
@@ -559,7 +568,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #if !defined(BuildPexExt) || BuildPexExt
 #undef BuildPexExt
 #if XF86AccelServer || XF86SVGAServer || XF98AccelServer || \
-    XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
+    XF98GANBWAPServer || XF98PEGCServer || XF98NKVNECServer || \
     XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
 #define BuildPexExt		YES
 #else
@@ -573,7 +582,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #if !defined(BuildXIE) || BuildXIE
 #undef BuildXIE
 #if XF86AccelServer || XF86SVGAServer || XF98AccelServer || \
-    XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
+    XF98GANBWAPServer || XF98PEGCServer || XF98NKVNECServer || \
     XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
 #define BuildXIE		YES
 #else

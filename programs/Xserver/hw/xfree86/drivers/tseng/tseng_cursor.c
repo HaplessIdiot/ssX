@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_cursor.c,v 1.5 1997/02/27 13:59:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.1 1997/03/06 23:17:13 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -24,7 +24,7 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 
-extern long ET6Kbase;
+#include "tseng.h"
 
 extern Bool vgaUseLinearAddressing;
 
@@ -59,6 +59,8 @@ static int              tsengCursorAddress;
 
 int tsengCursorHotX;
 int tsengCursorHotY;
+int tsengCursorOriginX; /* The offset into the sprite of the curren cursor. */
+int tsengCursorOriginY;
 int tsengCursorWidth;	/* Must be set before calling TsengCursorInit. */
 int tsengCursorHeight;
 static CursorPtr tsengCursorpCurs;
@@ -75,6 +77,8 @@ Bool TsengCursorInit(pm, pScr)
 {
 	tsengCursorHotX = 0;
 	tsengCursorHotY = 0;
+	tsengCursorOriginX = 0;
+	tsengCursorOriginY = 0;
 
 	if (tsengCursorGeneration != serverGeneration)
 		if (!(miPointerInitialize(pScr, &tsengPointerSpriteFuncs,
@@ -103,8 +107,15 @@ static void TsengShowCursor() {
 	unsigned char tmp;
 
 	/* Enable the hardware cursor. */
-	tmp = inb(ET6Kbase+0x46);
-	outb(ET6Kbase+0x46, (tmp | 0x01));
+	if (et4000_type >= TYPE_ET6000) {
+	    tmp = inb(ET6Kbase+0x46);
+	    outb(ET6Kbase+0x46, (tmp | 0x01));
+	}
+	else {
+	    outb(0x217A, 0xF7);
+	    tmp = inb(0x217B);
+	    outb(0x217B, tmp | 0x80);
+	}
 }
 
 /*
@@ -116,8 +127,15 @@ void TsengHideCursor() {
 	unsigned char tmp;
 
 	/* Disable the hardware cursor. */
-	tmp = inb(ET6Kbase+0x46);
-	outb(ET6Kbase+0x46, (tmp & 0xfe));;
+	if (et4000_type >= TYPE_ET6000) {
+	    tmp = inb(ET6Kbase+0x46);
+	    outb(ET6Kbase+0x46, (tmp & 0xfe));;
+	}
+	else {
+	    outb(0x217A, 0xF7);
+	    tmp = inb(0x217B);
+	    outb(0x217B, tmp & ~0x80);
+	}
 }
 
 /*
@@ -136,11 +154,9 @@ static Bool TsengRealizeCursor(pScr, pCurs)
    unsigned char *pServSrc;
    int   index = pScr->myNum;
    pointer *pPriv = &pCurs->bits->devPriv[index];
-   int   w, h, stride;
+   int   w, h, wsrc;
    unsigned char *ram, *dst, v;
    CursorBitsPtr bits = pCurs->bits;
-
-   int lookup [] = {0x2, 0x0, 0x2, 0x1};
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;
@@ -174,15 +190,12 @@ static Bool TsengRealizeCursor(pScr, pCurs)
                  01 = colour 1
                  10 = transparent (allow CRTC pass thru)
                  11 = invert (Display regular pixel data inverted)
+                      Invert is actualy not used here.
 
-          so we do the conversion through lookup table. The position is
-          calculated as (Src|Mask) and the value is corresponding ET6000
-          value.
-
-          int lookup [] = {0x2, 0x0, 0x2, 0x1};
-
-          Invert is actualy not used.
-
+          As a result, for Tseng the plane data changes:
+              plane 0 = Src & Msk
+              plane 1 = ~Msk
+          
           The bit order on ET6000 cursor image:
           -------------------------------------
           bit number        7 6 5 4 3 2 1 0
@@ -194,61 +207,71 @@ static Bool TsengRealizeCursor(pScr, pCurs)
    pServSrc = (unsigned char *)bits->source;
    pServMsk = (unsigned char *)bits->mask;
 
-	h = pCurs->bits->height;
-	if (h > tsengCursorHeight) h = tsengCursorHeight;
-	w = pCurs->bits->width;
-	if (w > tsengCursorWidth) w = tsengCursorWidth;
+   h = pCurs->bits->height;
+   if (h > tsengCursorHeight) h = tsengCursorHeight;
+   w = pCurs->bits->width;
+   if (w > tsengCursorWidth) w = tsengCursorWidth;
+
+   wsrc = PixmapBytePad(bits->width, 1); /* Determine padding, in Bytes per line. */
+   
+
+   /*
+    * Since cursor data is at least byte-padded, and Tseng hardware cursor
+    * is easier to handle with 4-pixel padding, we'll use that padding to
+    * get 8-pixel padding, which avoids us from having to do some
+    * byte-boundary magic in the cursor storage code. We also make w a width
+    * in bytes, which is easier further on.
+    */
+   w = (w+7) / 8;
+
+   /*
+    * ram is first offset to move the cursor to the lower right
+    * portion of the sprite, as shown in the Tseng databook. -HNH
+    */
+   ram += (tsengCursorHeight-h)*16 + (tsengCursorWidth/8 - w)*2;
 
 #if 0
-   /*
-    * Probably cursor data is stored DWORD alligned (as are all X structs).
-    * This means the WIDTH (in BYTES, because the masks are stored as chars)
-    * must be rounded up to the next multiple of 32 (i.e. 4 bytes) to find
-    * the boundaries of row data. We could even opt to always use a hardware
-    * cursor with a size rounded up to the nearest multiple of 32. That
-    * would reduce the amount of obfuscated code. The code below relies
-    * heavily on machine architecture and the "fixed" size of some X
-    * variables, and is thus not very portable.
-    *
-    * Rounding "c" up to a multiple of "r" : result = (c + (r-1)) & ~(r-1)
-    */
    ErrorF("w = %d ; h = %d\n", w, h);
-   ErrorF("pServSrc\n");
    for (i = 0; i < h ; i++) {
-     for (j = 0; j < (w/8); j++) {
+     for (j = 0; j < w; j++) {
+       int offset = i * wsrc + j;
        for (b = 0; b < 8; b++)
-         ErrorF("%c", (pServSrc[i*(((w/8)+3)&~3) + j]) & (1<<b)?'1':'0');
-     }
-     ErrorF("\n");
-   }
-   ErrorF("pServMsk\n");
-   for (i = 0; i < h ; i++) {
-     for (j = 0; j < (w/8); j++) {
-       for (b = 0; b < 8; b++)
-         ErrorF("%c", (pServMsk[i*(((w/8)+3)&~3) + j]) & (1<<b)?'1':'0');
+         ErrorF("%d", ( ((pServMsk[offset]) >> b) & 1)
+                    | ( (((pServSrc[offset]) >> b) & 1) << 1));
      }
      ErrorF("\n");
    }
 #endif
 
-   for (i = 0; i < h; i++, ram+=16) {
-     for (j = 0; j < ((w+7)/8); j++) {
-        unsigned char m, s;
-        int offset = i*((((w+7)/8)+3)&~3) + j;
+
+   for (i = 0; i < h; i++, ram+=16) {  /* each scanline of cursor data */
+     for (j = 0; j < w; j++) {         /* each byte of cursor data */
+        unsigned char m, s, b0, b1;
+
+        int offset = i * wsrc + j;
 
         m = pServMsk[offset];
         s = pServSrc[offset];
 
+        b0 = s & m;
+        b1 = ~m;
+        
+        /*
+         * Now b0 contains 8 bits "bit 0" and b1 8 bits "bit 1" of the
+         * cursor data. All we need to do now is interleave them.
+         */
+         
         ram[j*2] =
-                (lookup[((s&0x01) << 1) |  (m&0x01)      ]     ) |
-                (lookup[ (s&0x02)       | ((m&0x02) >> 1)] << 2) |
-                (lookup[((s&0x04) >> 1) | ((m&0x04) >> 2)] << 4) |
-                (lookup[((s&0x08) >> 2) | ((m&0x08) >> 3)] << 6) ;
+            ((b0 & 0x01)     ) | ((b1 & 0x01) << 1) |
+            ((b0 & 0x02) << 1) | ((b1 & 0x02) << 2) |
+            ((b0 & 0x04) << 2) | ((b1 & 0x04) << 3) |
+            ((b0 & 0x08) << 3) | ((b1 & 0x08) << 4) ;
+        
         ram[(j*2)+1] =
-                (lookup[((s&0x10) >> 3) | ((m&0x10) >> 4)]     ) |
-                (lookup[((s&0x20) >> 4) | ((m&0x20) >> 5)] << 2) |
-                (lookup[((s&0x40) >> 5) | ((m&0x40) >> 6)] << 4) |
-                (lookup[((s&0x80) >> 6) | ((m&0x80) >> 7)] << 6) ;
+            ((b0 & 0x10) >> 4) | ((b1 & 0x10) >> 3) |
+            ((b0 & 0x20) >> 3) | ((b1 & 0x20) >> 2) |
+            ((b0 & 0x40) >> 2) | ((b1 & 0x40) >> 1) |
+            ((b0 & 0x80) >> 1) | ((b1 & 0x80)     ) ;
      }
    }
 
@@ -299,7 +322,7 @@ static void TsengLoadCursorToCard(pScr, pCurs, x, y)
 	cursor_image = pCurs->bits->devPriv[index];
 
 	if (vgaUseLinearAddressing)
-		memcpy((unsigned char *)vgaLinearBase + tsengCursorAddress,
+		xf86memcpy((unsigned char *)vgaLinearBase + tsengCursorAddress,
 			cursor_image, 1024);
 	else {
 		/*
@@ -307,8 +330,8 @@ static void TsengLoadCursorToCard(pScr, pCurs, x, y)
 		 * which fits in the last banking window.
 		 */
 		vgaSaveBank();
-		ET4000SetWrite(tsengCursorAddress >> 16);
-		memcpy((unsigned char *)vgaBase + (tsengCursorAddress & 0xFFFF),
+		vgaSetVidPage(tsengCursorAddress >> 16);
+		xf86memcpy((unsigned char *)vgaBase + (tsengCursorAddress & 0xFFFF),
 			cursor_image, 1024);
 		vgaRestoreBank();
 	}
@@ -342,16 +365,35 @@ static void TsengLoadCursor(pScr, pCurs, x, y)
 	TsengHideCursor();
 
 	/* Program the cursor image address in video memory. */
-        /* The adress is given in doublewords with bits (7:0) always 0 */
+        /* The adress is given in doublewords */
+	if (et4000_type >= TYPE_ET6000) {
+            /* bits 19:16 */
+            outb(vgaIOBase + 0x04, 0x0E);
+            tmp = inb(vgaIOBase + 0x05) & 0xF0;
+            outb(vgaIOBase + 0x05, tmp | (((tsengCursorAddress/4) >> 16) & 0x0F));
+            /* bits 15:8 */
+            outb(vgaIOBase + 0x04, 0x0F);
+            outb(vgaIOBase + 0x05, ((tsengCursorAddress/4) >> 8) & 0xFF);
+	    /* on the ET6000, bits (7:0) are always 0 */
+        }
+        else {
+            /* bits 19:16 */
+            outb(0x217A, 0xEA);
+            tmp = inb(0x217B) & 0xF0;
+            outb(0x217B, tmp | (((tsengCursorAddress/4) >> 16) & 0x0F));
+            /* bits 15:8 */
+            outb(0x217A, 0xE9);
+            outb(0x217B, ((tsengCursorAddress/4) >> 8) & 0xFF);
+            /* bits 7:0 */
+            outb(0x217A, 0xE8);
+            outb(0x217B, (tsengCursorAddress/4) & 0xFF);
 
-        outb(vgaIOBase + 0x04, 0x0e);
-        tmp = (inb(vgaIOBase + 0x05) & 0xf0);
-
-        outb(vgaIOBase + 0x04, 0x0e);
-        outb(vgaIOBase + 0x05,(tmp | (tsengCursorAddress/4) >> 16)); /* bits 19:16 */
-
-        outb(vgaIOBase + 0x04, 0x0f);
-        outb(vgaIOBase + 0x05, (((tsengCursorAddress/4) & 0xffff) >> 8)); /* bits 15:8 */
+            /* this needs to be set for the sprite */
+            outb(0x217A, 0xEB); outb(0x217B, 2);
+            outb(0x217A, 0xEC); tmp = inb(0x217B); outb(0x217B, tmp & 0xFE);
+            outb(0x217A, 0xEF); tmp = inb(0x217B); outb(0x217B, (tmp & 0xF8) | 0x02);
+            outb(0x217A, 0xEE); outb(0x217B, 1);
+        }
 
 	TsengLoadCursorToCard(pScr, pCurs, x, y);
 
@@ -379,6 +421,8 @@ static void TsengSetCursor(pScr, pCurs, x, y, generateEvent)
 
 	tsengCursorHotX = pCurs->bits->xhot;
 	tsengCursorHotY = pCurs->bits->yhot;
+	tsengCursorOriginX = (tsengCursorWidth - pCurs->bits->width) & ~7; /* byte aligned */
+	tsengCursorOriginY = (tsengCursorHeight - pCurs->bits->height);
 
 	TsengLoadCursor(pScr, pCurs, x, y);
 }
@@ -415,18 +459,20 @@ static void TsengMoveCursor(pScr, x, y)
 	x -= vga256InfoRec.frameX0 + tsengCursorHotX;
 	y -= vga256InfoRec.frameY0 + tsengCursorHotY;
 
+	/* The default origin is calculated in TsengSetCursor */
+	xorigin = tsengCursorOriginX;
+	yorigin = tsengCursorOriginY;
+
 	/*
 	 * If the cursor is partly out of screen at the left or top,
-	 * we need set the origin.
+	 * we need to modify the origin.
 	 */
-	xorigin = 0;
-	yorigin = 0;
 	if (x < 0) {
-		xorigin = -x;
+		xorigin += -x;
 		x = 0;
 	}
 	if (y < 0) {
-		yorigin = -y;
+		yorigin += -y;
 		y = 0;
 	}
 
@@ -434,16 +480,53 @@ static void TsengMoveCursor(pScr, x, y)
 		y *= 2;
 
 	/* Program the cursor origin (offset into the cursor bitmap). */
-	outb (ET6Kbase + 0x82, xorigin);
-	outb (ET6Kbase + 0x83, yorigin);
-
 	/* Program the new cursor position. */
-	outb (ET6Kbase + 0x84, (x & 0xff));        /* X bits 7-0 */
-        outb (ET6Kbase + 0x85, ((x >> 8) & 0x0f)); /* X bits 11-8 */
+	if (et4000_type >= TYPE_ET6000) {
+	    outb (ET6Kbase + 0x82, xorigin);
+	    outb (ET6Kbase + 0x83, yorigin);
 
-        outb (ET6Kbase + 0x86, (y & 0xff));        /* Y bits 7-0 */
-        outb (ET6Kbase + 0x87, ((y >> 8) & 0x0f)); /* Y bits 11-8 */
+	    outb (ET6Kbase + 0x84, (x & 0xff));        /* X bits 7-0 */
+            outb (ET6Kbase + 0x85, ((x >> 8) & 0x0f)); /* X bits 11-8 */
+
+            outb (ET6Kbase + 0x86, (y & 0xff));        /* Y bits 7-0 */
+            outb (ET6Kbase + 0x87, ((y >> 8) & 0x0f)); /* Y bits 11-8 */
+        }
+        else {
+	    outb(0x217A, 0xE2); outb (0x217B, xorigin);
+	    outb(0x217A, 0xE6); outb (0x217B, yorigin);
+
+	    outb(0x217A, 0xE0); outb (0x217B, (x & 0xff));        /* X bits 7-0 */
+	    outb(0x217A, 0xE1); outb (0x217B, ((x >> 8) & 0x0f)); /* X bits 10-8 */
+
+	    outb(0x217A, 0xE4); outb (0x217B, (y & 0xff));        /* Y bits 7-0 */
+	    outb(0x217A, 0xE5); outb (0x217B, ((y >> 8) & 0x0f)); /* Y bits 10-8 */
+        }
 }
+
+
+/*
+ * Check if ET6000 can generate requested color, and return 2 color bits for
+ * in the ET6000's cursor color storage. Since the color is a short, this
+ * code is probably not portable to architectures with a different idea
+ * about shorts. On most systems, it is 16 bits.
+ */
+
+static unsigned char get_et6000_color_bits(unsigned short col_in, int* badColour)
+{
+    switch (col_in >> 12) {   /* extract top four bits */
+    case 0x0: /* bit combination "0000" */
+    case 0x5: /* bit combination "0101" */
+    case 0xa: /* bit combination "1010" */
+    case 0xf: /* bit combination "1111" */
+      return (col_in & 0xc000) >> 14; /* return bits for ET6000 */
+      break;
+
+    default: /* not a valid colour */
+      *badColour = 1;
+    }
+    return 0;
+}
+
 
 /*
  * This is a local function that programs the colors of the cursor
@@ -457,9 +540,10 @@ static void TsengRecolorCursor(pScr, pCurs, displayed)
 	Bool displayed;
 {
   /*
-    The RAMDAC is only 6 bits per color component in 8bpp mode, so in that case
-    you can only be prcise up to 6 bits per color. Thus, "01010101", "01010100",
-    "01010110", and "01010111" will show EXACTLY the same color.
+    The ET6000 RAMDAC is only 6 bits per color component in 8bpp mode, so in
+    that case you can only be precise up to 6 bits per color. Thus,
+    "01010101", "01010100", "01010110", and "01010111" will show EXACTLY the
+    same color.
     
     In 15 or 16bpp mode, only 5 bits per color are significant, so there is no
     need to drop back to SW cursor mode when the 5 MSBits of the requested
@@ -473,13 +557,13 @@ static void TsengRecolorCursor(pScr, pCurs, displayed)
     should be enough for a hardware cursor, in all modes.
     
     If we make the HW cursor behave like this, people can always use the
-    "sw_cursor" option if they don't like this "imprecision".
-    
-    Koen.
+    "sw_cursor" option if they don't like this lack of precision.
     */
 
+        ColormapPtr pmap;
         Bool badColour;
         int fgColour, bgColour;
+        xColorItem sourceColor, maskColor;
 
 	if (!xf86VTSema)
 		return;
@@ -487,98 +571,74 @@ static void TsengRecolorCursor(pScr, pCurs, displayed)
         badColour = 0; 
         fgColour = 0; bgColour = 0;
 
-	switch (vgaBitsPerPixel) {
-	case 8: /* 6 bits in color component */
-
-        case 15: /* 5 bits in color component */
-	case 16:
-
-        case 24: /* 4 bits in color component */
-	case 32:
-
-          /* Extract foreground Cursor Colour */
-          switch (pCurs->foreRed >> 28) {   /* extract top four bits */
-          case 0x0: /* bit combination "0000" */
-          case 0x5: /* bit combination "0101" */
-          case 0xa: /* bit combination "1010" */
-          case 0xf: /* bit combination "1111" */
-            fgColour |= ((pCurs->foreRed & 0xc000) >> 10); /* put in position bits 5 and 4 */
-            break;
-
-          default: /* not a valid colour */
-            badColour = 1;
-          }
-
-          switch (pCurs->foreGreen >> 28) {   /* extract top four bits */
-          case 0x0: /* bit combination "0000" */
-          case 0x5: /* bit combination "0101" */
-          case 0xa: /* bit combination "1010" */
-          case 0xf: /* bit combination "1111" */
-            fgColour |= ((pCurs->foreGreen & 0xc000) >> 12); /* put in position bits 3 and 2 */
-            break;
-
-          default: /* not a valid colour */
-            badColour = 1;
-          }
-
-          switch (pCurs->foreBlue >> 28) {   /* extract top four bits */
-          case 0x0: /* bit combination "0000" */
-          case 0x5: /* bit combination "0101" */
-          case 0xa: /* bit combination "1010" */
-          case 0xf: /* bit combination "1111" */
-            fgColour |= ((pCurs->foreBlue & 0xc000) >> 14); /* put in position bits 1 and 0 */
-            break;
-
-          default: /* not a valid colour */
-            badColour = 1;
-          }
+        if (et4000_type >= TYPE_ET6000) {
+          /* Extract foreground Cursor Colour, put in position bits 5 and 4 */
+          fgColour = get_et6000_color_bits(pCurs->foreRed,   &badColour) << 4
+                   | get_et6000_color_bits(pCurs->foreGreen, &badColour) << 2
+                   | get_et6000_color_bits(pCurs->foreBlue,  &badColour)     ;
 
           /* Extract background Cursor Colour */
+          bgColour = get_et6000_color_bits(pCurs->backRed,   &badColour) << 4
+                   | get_et6000_color_bits(pCurs->backGreen, &badColour) << 2
+                   | get_et6000_color_bits(pCurs->backBlue,  &badColour)     ;
 
-          switch (pCurs->backRed >> 28) {   /* extract top four bits */
-          case 0x0: /* bit combination "0000" */
-          case 0x5: /* bit combination "0101" */
-          case 0xa: /* bit combination "1010" */
-          case 0xf: /* bit combination "1111" */
-            bgColour |= ((pCurs->backRed & 0xc000) >> 10); /* put in position bits 5 and 4 */
-            break;
-
-          default: /* not a valid colour */
-            badColour = 1;
-          }
-
-          switch (pCurs->backGreen >> 28) {   /* extract top four bits */
-          case 0x0: /* bit combination "0000" */
-          case 0x5: /* bit combination "0101" */
-          case 0xa: /* bit combination "1010" */
-          case 0xf: /* bit combination "1111" */
-            bgColour |= ((pCurs->backGreen & 0xc000) >> 12); /* put in position bits 3 and 2 */
-            break;
-
-          default: /* not a valid colour */
-            badColour = 1;
-          }
-
-          switch (pCurs->backBlue >> 28) {   /* extract top four bits */
-          case 0x0: /* bit combination "0000" */
-          case 0x5: /* bit combination "0101" */
-          case 0xa: /* bit combination "1010" */
-          case 0xf: /* bit combination "1111" */
-            bgColour |= ((pCurs->backBlue & 0xc000) >> 14); /* put in position bits 1 and 0 */
-            break;
-
-          default: /* not a valid colour */
-            badColour = 1;
+          if (!badColour){
+            outb (ET6Kbase + 0x67, 0x09); /* prepare for colour data */
+            outb (ET6Kbase + 0x69, fgColour);
+            outb (ET6Kbase + 0x69, bgColour);
           }
         }
+        else {  /* ET4000 */
+          /*
+           * The ET4000 uses color 0 as color "0", and color 0xFF as color
+           * "1". Changing colors implies changing colors 0 and 255. It
+           * doesn't seem to work at all in any non-8bpp modes (you get TWO
+           * cursor images...). For the HW cursor to work all, we need to
+           * allocate color #255 for color 1, which will then also allow us
+           * to change it to any desired color. We could do this with color
+           * 0 as well, so that we have full color control for both color 0
+           * and 1, but that would mean claiming color 0 as well, and I
+           * think color 0 and 1 are fixed at black and white or the
+           * opposite (depending on the -flipPixels server flag).
+           */
 
-        if (!badColour){
-          outb (ET6Kbase + 0x67, 0x09); /* prepare for colour data */
-          outb (ET6Kbase + 0x69, bgColour);
-          outb (ET6Kbase + 0x69, fgColour);
+          /* get palette color 0, and see if it matches the HW cursor requirements */
+          if (pCurs->foreRed == pCurs->foreGreen == pCurs->foreBlue == 0) {
+          }
+          
+          /*
+           * Allocate color #255 for the HW cursor, and set it to the correct color.
+           */
+           if (vgaBitsPerPixel == 8) {
+                vgaGetInstalledColormaps(pScr, &pmap);
+                
+#if WHEN_THIS_GETS_FIXED
+                /* ARK code. assumes we can use any color index */
+                /* on ET4000W32, we need index 255. HOW? */
+                sourceColor.red = pCurs->foreRed;
+                sourceColor.green = pCurs->foreGreen;
+                sourceColor.blue = pCurs->foreBlue;
+                FakeAllocColor(pmap, &sourceColor);
+                maskColor.red = pCurs->backRed;
+                maskColor.green = pCurs->backGreen;
+                maskColor.blue = pCurs->backBlue;
+                FakeAllocColor(pmap, &maskColor);
+                FakeFreeColor(pmap, sourceColor.pixel);
+                FakeFreeColor(pmap, maskColor.pixel);
+#endif
+            }
+            /* if not 8bpp, we can't change the color: it's always B&W */
         }
-        else
-          ErrorF ("-- Bad Cursor Colour tried\n");
+
+        if (badColour) {
+            /*
+             * At this point we should be switching to a SW cursor instead
+             * -- if that is possible at this stage. If not, we should
+             * remove this message, and just document the limitation.
+             */
+
+            ErrorF ("-- Bad Cursor Colour tried\n");
+        }
 }
 
 

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng.h,v 3.3 1997/02/28 13:21:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.1 1997/03/06 23:17:09 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -11,9 +11,6 @@
 #include "vga.h"
 
 #define MAX_TSENG_CLOCK 86000
-
-extern vgaVideoChipRec ET4000;
-extern unsigned char tseng_save_divide; /* saves state of hibit */
 
 #ifdef W32_SUPPORT
 typedef struct {
@@ -66,6 +63,10 @@ typedef enum {
 } t_tseng_type;
 
 extern t_tseng_type et4000_type;
+extern vgaVideoChipRec ET4000;
+extern unsigned char tseng_save_divide; /* saves state of hibit */
+extern unsigned long ET6Kbase;
+
 
 extern SymTabRec TsengDacTable[];
 

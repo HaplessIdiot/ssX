@@ -4,7 +4,9 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:25:32 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/sis/Imakefile,v 3.3 1996/12/23 06:52:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/sis/Imakefile,v 3.4 1997/03/04 11:36:48 hohndel Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = sis86c201.c sis_bank.s

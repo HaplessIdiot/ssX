@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.68 1997/02/28 12:01:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.69 1997/03/03 10:18:36 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -229,7 +229,7 @@ ServerInit()
 
 XF86ModuleVersionInfo mach64VersRec =
 {
-	"mach64.o", 
+	"libmach64.a", 
 	"The XFree86 Project",
 	MODINFOSTRING1,
 	MODINFOSTRING2,
@@ -255,10 +255,6 @@ ModuleInit(data,magic)
     case 1:
 	* data = (pointer) &mach64InfoRec;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
-	break;
-    case 2:
-	* data = (pointer) "libmfb.a";
-	* magic= MAGIC_LOAD;
 	break;
     default:
 	* magic= MAGIC_DONE;
@@ -493,7 +489,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 		    (unsigned char *)bios_signature, 10) != 10) {
       return NULL;
    }
-   if (strncmp( signature, bios_signature, 10 )) {
+   if (xf86strncmp( signature, bios_signature, 10 )) {
 #ifdef DEBUG
 	 ErrorF("Mach64 probe failed on BIOS signature\n");
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.23 1997/01/18 06:57:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.25 1997/03/07 00:30:18 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -364,7 +364,7 @@ typedef struct {
 		temp = inb(vgaIOBase + 0x0A); \
 	}
 
-#ifndef XFree86LOADER
+/*#ifndef XFree86LOADER*/
 #ifdef MONOVGA
 #define vga256InfoRec vga2InfoRec
 #endif
@@ -384,7 +384,7 @@ typedef struct {
 #ifdef AGX_SERVER
 #define vga256InfoRec agxInfoRec
 #endif
-#endif
+/*#endif*/
 extern ScrnInfoRec vga256InfoRec;
 
 /* Values for vgaInterlaceType */

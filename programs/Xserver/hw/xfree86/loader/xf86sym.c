@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.13 1997/03/04 10:40:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.14 1997/03/07 00:29:44 hohndel Exp $ */
 
 
 
@@ -131,7 +131,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(ET4000gendacSetClock)
    SYMFUNC(xf86DisableInterrupts)
    SYMFUNC(xf86EnableInterrupts)
-
+   SYMFUNC(xf86GetNearestClock)
 
    SYMFUNC(pciWriteWord)
    SYMFUNC(pcibusWrite)

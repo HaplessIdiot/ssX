@@ -24,7 +24,7 @@ and truecolor modes are not supported on these chips.
 
 On W32p rev C and D however, all color depths are supported on the supported
 RAMDACs (currently ICS5341 and Chrontel CH8398). These modes are also
-accelerated. 24bpp sometimes gives wrong colors aty this moment. This can be
+accelerated. 24bpp sometimes gives wrong colors at this moment. This can be
 overcome by fiddling with the mode timings (shifting the image left or
 right).
 
@@ -104,6 +104,16 @@ following in the Device section of your
 <verb>
   Option "noaccel"
 </verb>
+
+Hardware cursor is supported in all color depths. Due to a hardware
+limitation in the ET6000, only a limited set of colors is supported (2
+significant bits per color component). This may cause some cursor color
+errors, in which case the only solution is not to use the hardware cursor at
+all. The hardware cursor can be enabled using
+<verb>
+  Option "hw_cursor"
+</verb>
+
 
 On some systems, acceleration may cause occasional font corruption. Until
 this problem is fixed, font acceleration may be disabled using the following

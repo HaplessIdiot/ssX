@@ -4,7 +4,9 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:23:11 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/Imakefile,v 3.4 1996/12/23 06:48:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/Imakefile,v 3.5 1997/01/05 11:59:01 dawes Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -34,8 +36,12 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o \
          mfbplywhite.o mfbplyblack.o mfbplyinv.o
 
+#if DoLoadableServer
+XF86INCL = -I../../common -I../../os-support -I../../common_hw -I../..
+#endif
+
 INCLUDES = -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I../mono
+           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I../mono $(XF86INCL)
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
 	   -DEQWHOLEWORD=\=\~0 -DOPEQ=\|=

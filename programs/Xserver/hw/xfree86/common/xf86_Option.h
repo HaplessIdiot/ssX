@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.65 1997/01/23 11:01:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.66 1997/02/17 12:35:41 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -147,6 +147,7 @@ typedef struct {
 #define OPTION_USE_MODELINE	104 /* use modeline for LCD instead of preset (ct)*/
 #define OPTION_SUSPEND_HACK	105 /* (CT) Use different suspend/resume scheme */
 #define OPTION_18_BIT_BUS	106 /* (CT) Use 18bit TFT bus for 24bpp mode */
+#define OPTION_PCI_RETRY	107 /* Use PCI-retry instead of busy-waiting */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	108 /* Allow cache to be seen (S3) */
@@ -358,6 +359,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "use_modeline",	OPTION_USE_MODELINE },
   { "suspend_hack",	OPTION_SUSPEND_HACK },
   { "use_18bit_bus",	OPTION_18_BIT_BUS },
+  { "pci_retry",	OPTION_PCI_RETRY },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

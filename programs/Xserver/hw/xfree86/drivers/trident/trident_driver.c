@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.2 1997/03/10 05:56:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.3 1997/03/11 11:10:28 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -115,6 +115,7 @@ typedef struct {
 	unsigned char CyberCont;	/* For Cyber Control LCD	*/
 	unsigned char CyberVExp;	/* For Cyber VDisplay Control   */
 	unsigned char CyberHExp;	/* For Cyber HDisplay Control   */
+	unsigned char CyberEnhance;	/* For Cyber Enhancement	*/
 	unsigned char DRAMTiming;	/* For 9400/9420/9430 DRAM 	*/
 	unsigned char FIFOControl;	/* For 9400/9420/9430 FIFO 	*/
 } vgaTVGA8900Rec, *vgaTVGA8900Ptr;
@@ -1507,6 +1508,7 @@ TVGA8900Restore(restore)
 			outw(0x3CE, ((restore->CyberCont) << 8) | 0x30);
 			outw(0x3CE, ((restore->CyberVExp) << 8) | 0x52);
 			outw(0x3CE, ((restore->CyberHExp) << 8) | 0x53);
+			outw(0x3CE, ((restore->CyberEnhance) << 8) | 0x31);
 		}
 
 		if (vgaBitsPerPixel >= 8) {
@@ -1652,6 +1654,8 @@ TVGA8900Save(save)
 	{
 		if (IsCyber) 
 		{
+			outb(0x3CE, 0x31);
+			save->CyberEnhance = inb(0x3CF);
 			outb(0x3CE, 0x30);
 			save->CyberCont = inb(0x3CF);
 			outb(0x3CE, 0x52);
@@ -1937,6 +1941,16 @@ TVGA8900Init(mode)
 	{
 		if (IsCyber) 
 		{
+			outb(0x3CE, 0x31);
+			new->CyberEnhance = inb(0x3CF) & 0x8F;
+			if (mode->CrtcVDisplay > 768)
+				new->CyberEnhance |= 0x30;
+			else
+			if (mode->CrtcVDisplay > 600)
+				new->CyberEnhance |= 0x20;
+			else
+			if (mode->CrtcVDisplay > 480)
+				new->CyberEnhance |= 0x10;
 			outb(0x3CE, 0x30);
 			new->CyberCont = inb(0x3CF) & 0xEE;
 			outb(0x3CE, 0x52);
@@ -2168,6 +2182,18 @@ int flag;
 		    return(MODE_BAD);
 		}
 	}
+	}
+
+	if (IsCyber)
+	{
+		if (mode->VDisplay > 1024)
+		{
+		   if (verbose)
+			ErrorF("%s %s: Chipset supports a max. height"
+			       "of 1024, Adjust Modes in XF86Conig.\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+		   return(MODE_BAD);
+		}
 	}
 
 	if ( (tridentDACtype == TKD8001) && (vgaBitsPerPixel > 8) )

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.106 1997/02/27 13:57:30 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.107 1997/03/04 10:37:27 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -189,9 +189,23 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.106 1997/02/27 13:57:30 hohndel Ex
 /*
  * PC98 X servers
  *
+#define XF98LoaderServer        YES
+#define XF98EGCModule		YES
+#define XF98GANBWAPModule	YES
+#define XF98PEGCModule		YES
+#define XF98NKVNECModule	YES
+#define XF98WABSModule		YES
+#define XF98WABEPModule		YES
+#define XF98WSNAModule		YES
+#define XF98TGUIModule		YES
+#define XF98NECS3Module		YES
+#define XF98PWSKBModule		YES
+#define XF98PWLBModule		YES
+#define XF98GA968Module		YES
+
 #define XF98EGCServer		YES
 #define XF98GANBWAPServer	YES
-#define XF98NEC480Server	YES
+#define XF98PEGCServer		YES
 #define XF98NKVNECServer	YES
 #define XF98WABSServer		YES
 #define XF98WABEPServer		YES

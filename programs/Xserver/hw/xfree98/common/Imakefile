@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.28 1997/01/08 20:51:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.29 1997/02/24 08:10:18 dawes Exp $
 
 
 
@@ -74,10 +74,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.28 1997/01/0
 # endif
 #endif
 
-#if PexModule
+#if PexModule | DoLoadableServer
    PEX_MODULE_DEFINES = -DPEX_MODULE
 #endif
-#if XieModule
+#if XieModule | DoLoadableServer
    XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
 
@@ -92,6 +92,7 @@ EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)
 #else
 #if DoLoadableServer
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
+EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)
 #endif
 #endif
 
@@ -123,6 +124,7 @@ SERVERSRCS = \
 	XF86_Mach64.c \
 	XF86_P9000.c \
 	XF86_AGX.c \
+	XF86_LOADER.c \
 	XF86_W32.c \
 	XF86_I128.c \
 	XF86_TGA.c
@@ -137,6 +139,7 @@ SRCS =	\
 	xf86Events.c \
 	xf86Init.c \
 	xf86Init_m.c \
+	xf86Init_L.c \
 	xf86Io.c \
 	xf86Lock.c \
 	xf86_Mouse.c \
@@ -172,6 +175,7 @@ OBJS = \
 OFILES = \
 	xf86Init.o \
 	xf86Init_m.o \
+	xf86Init_L.o \
 	xf86IniExt.o \
 	xf86MIniExt.o \
 	xf86_Option.o
@@ -248,12 +252,17 @@ all:: XF86_VGA16.o
 SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_S3.o
 #endif
+#if XF98LoaderServer
+SpecialObjectRule(XF86_LOADER.o,XF86_LOADER.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_LOADER.o
+#endif
 
 #if NeedXF86Beta
 SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 #endif
 
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
+ObjectFromSpecialSource(xf86Init_L,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DLOADER)
 SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
 SpecialObjectRule(xf86MIniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES) -UPEXEXT -UXIE)
 
@@ -265,8 +274,10 @@ LinkFile(XF86_Mach32.c,$(XF86SRC)/common/Mach32.c)
 LinkFile(XF86_Mach64.c,$(XF86SRC)/common/Mach64.c)
 LinkFile(xf86IniExt.c,$(SERVERSRC)/mi/miinitext.c)
 LinkFile(xf86MIniExt.c,$(SERVERSRC)/mi/miinitext.c)
+LinkSourceFile(xf86Version.h,$(XF86SRC))
 LinkSourceFile(XF86_8514.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_AGX.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_LOADER.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_Mono.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_P9000.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_S3.c,$(XF86SRC)/common)

@@ -3,74 +3,74 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/25 15:43:11 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/Imakefile,v 3.7 1996/10/08 12:45:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/Imakefile,v 3.8 1996/12/23 07:08:31 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if XF98GANBWAPServer
+#if XF98GANBWAPServer || XF98GANBWAPModule
 GANBWAPDIR  = ganbwap
 GANBWAPSRCS = ganbwap/?*.c
-GANBWAPOBJS = ganbwap/cir_drv.o
+GANBWAPOBJS = ganbwap/ganbwap_drv.o
 #endif
 
-#if XF98NEC480Server
-NEC480DIR  = nec480
-NEC480SRCS = nec480/?*.c
-NEC480OBJS = nec480/nec480_drv.o
+#if XF98PEGCServer || XF98PEGCModule
+PEGCDIR  = pegc
+PEGCSRCS = pegc/?*.c
+PEGCOBJS = pegc/pegc_drv.o
 #endif
 
-#if XF98NKVNECServer
+#if XF98NKVNECServer || XF98NKVNECModule
 NKVNECDIR  = nkvnec
 NKVNECSRCS = nkvnec/?*.c
-NKVNECOBJS = nkvnec/cir_drv.o
+NKVNECOBJS = nkvnec/nkvnec_drv.o
 #endif
 
-#if XF98WABSServer
+#if XF98WABSServer || XF98WABSModule
 WABSDIR  = wabs
 WABSSRCS = wabs/?*.c
-WABSOBJS = wabs/cir_drv.o
+WABSOBJS = wabs/wabs_drv.o
 #endif
 
-#if XF98WABEPServer
+#if XF98WABEPServer || XF98WABEPModule
 WABEPDIR  = wabep
 WABEPSRCS = wabep/?*.c
-WABEPOBJS = wabep/cir_drv.o
+WABEPOBJS = wabep/wabep_drv.o
 #endif
 
-#if XF98WSNAServer
+#if XF98WSNAServer || XF98WSNAModule
 WSNADIR  = wsna
 WSNASRCS = wsna/?*.c
-WSNAOBJS = wsna/cir_drv.o
+WSNAOBJS = wsna/wsna_drv.o
 #endif
 
-#if XF98TGUIServer
+#if XF98TGUIServer || XF98TGUIModule
 TGUIDIR  = trident
 TGUISRCS = trident/?*.c
 TGUIOBJS = trident/tvga89_drv.o
 #endif
 
-SUBDIRS = $(GANBWAPDIR) $(NEC480DIR) $(NKVNECDIR) $(WABSDIR) $(WABEPDIR) \
+SUBDIRS = $(GANBWAPDIR) $(PEGCDIR) $(NKVNECDIR) $(WABSDIR) $(WABEPDIR) \
 	  $(WSNADIR) $(TGUIDIR)
 
-#if XF98GANBWAPServer
+#if XF98GANBWAPServer || XF98GANBWAPModule
 NormalDepLibraryTarget(driverganbwap,$(GANBWAPDIR) $(GANBWAPOBJS),$(GANBWAPOBJS))
 #endif
-#if XF98NEC480Server
-NormalDepLibraryTarget(drivernec480,$(NEC480DIR) $(NEC480OBJS),$(NEC480OBJS))
+#if XF98PEGCServer || XF98PEGCModule
+NormalDepLibraryTarget(driverpegc,$(PEGCDIR) $(PEGCOBJS),$(PEGCOBJS))
 #endif
-#if XF98NKVNECServer
+#if XF98NKVNECServer || XF98NKVNECModule
 NormalDepLibraryTarget(drivernkvnec,$(NKVNECDIR) $(NKVNECOBJS),$(NKVNECOBJS))
 #endif
-#if XF98WABSServer
+#if XF98WABSServer || XF98WABSModule
 NormalDepLibraryTarget(driverwabs,$(WABSDIR) $(WABSOBJS),$(WABSOBJS))
 #endif
-#if XF98WABEPServer
+#if XF98WABEPServer || XF98WABEPModule
 NormalDepLibraryTarget(driverwabep,$(WABEPDIR) $(WABEPOBJS),$(WABEPOBJS))
 #endif
-#if XF98WSNAServer
+#if XF98WSNAServer || XF98WSNAModule
 NormalDepLibraryTarget(driverwsna,$(WSNADIR) $(WSNAOBJS),$(WSNAOBJS))
 #endif
-#if XF98TGUIServer
+#if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(drivertrident,$(TGUIDIR) $(TGUIOBJS),$(TGUIOBJS))
 #endif
 

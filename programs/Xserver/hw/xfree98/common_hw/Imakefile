@@ -4,26 +4,29 @@ XCOMM $XConsortium: Imakefile /main/5 1996/10/19 18:21:54 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/Imakefile,v 3.5 1996/08/14 14:36:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/Imakefile,v 3.6 1996/12/23 07:06:39 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if XF98NECS3Server
+#if XF98NECS3Server || XF98NECS3Module
 NECS3DIR = nec
 #endif
-#if XF98PWSKBServer
+#if XF98PWSKBServer || XF98PWSKBModule
 PWSKBDIR = pwskb
 #endif
-#if XF98PWLBServer
+#if XF98PWLBServer || XF98PWLBModule
 PWLBDIR = pwlb
 #endif
-#if XF98GA968Server
+#if XF98GA968Server || XF98GA968Module
 GA968DIR = ga968
 #endif
 #if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
     XF98WABSServer    || XF98WABEPServer  || XF98WSNAServer   || \
-    XF98TGUIServer    || XF98EGCServer
+    XF98TGUIServer    || XF98EGCServer || \
+    XF98GANBWAPModule || XF98NEC480Module || XF98NKVNECModule || \
+    XF98WABSModule    || XF98WABEPModule  || XF98WSNAModule   || \
+    XF98TGUIModule    || XF98EGCModule
 GENERICDIR = generic
 #endif
 

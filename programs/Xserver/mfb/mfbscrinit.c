@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbscrinit.c,v 5.17 94/04/17 20:28:34 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.0 1994/06/18 16:29:52 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -62,6 +62,16 @@ SOFTWARE.
 #include "mibstore.h"
 #include "migc.h"
 #include "servermd.h"
+
+#ifdef XFree86LOADER
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86Procs.h"
+#include "xf86_OSlib.h"
+#include "xf86_HWlib.h"
+#include "xf86Version.h"
+#include "xf86_Config.h"
+#endif
 
 #ifdef PIXMAP_PER_WINDOW
 int frameWindowPrivateIndex;
@@ -158,3 +168,37 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			1, 1, &depth, VID, 1, &visual, &mfbBSFuncRec);
 }
+
+#if defined(XFree86LOADER)
+XF86ModuleVersionInfo mfbVersRec =
+{
+        "libmfb.a",
+        "The XFree86 Project",
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,
+        {0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void
+ModuleInit(data,magic)
+    pointer   * data;
+    INT32     * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+        /* MAGIC_VERSION must be first in ModuleInit */
+    case 0:
+        * data = (pointer) &mfbVersRec;
+        * magic= MAGIC_VERSION;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif

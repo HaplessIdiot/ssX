@@ -3,18 +3,21 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:39:23 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.13 1996/11/24 09:57:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.14 1996/12/23 07:04:53 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
 #if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
     XF98WABSServer    || XF98WABEPServer  || XF98WSNAServer   || \
-    XF98TGUIServer
+    XF98TGUIServer || \
+    XF98GANBWAPModule || XF98NEC480Module || XF98NKVNECModule || \
+    XF98WABSModule    || XF98WABEPModule  || XF98WSNAModule   || \
+    XF98TGUIModule
 VGA256SCREEN = vga256
 #endif
 
-#if XF98EGCServer
+#if XF98EGCServer || XF98EGCModule
 VGA16SCREEN = vga16
 #endif
 
@@ -30,11 +33,16 @@ SUPERPROBE = SuperProbe
 XF86SETUPDIR = XF86Setup
 #endif
 
-SCREENS = $(VGA16SCREEN) $(VGA256SCREEN)
+#if XF98LoaderServer
+LOADERDIR = loader
+DRIVERS = drivers
+#endif
 
-SUBDIRS = os-support common common_hw xaa $(SCREENS) $(ACCELDIRS) doc \
-          reconfig xf86config $(XF86SETUPDIR) etc LinkKit \
-          VGADriverDoc $(SUPERPROBE)
+SCREENS = $(VGA16SCREEN) $(VGA256SCREEN) $(ACCELDIRS) $(DRIVERS)
+
+SUBDIRS = os-support common common_hw xaa $(SCREENS) \
+          $(LOADERDIR) doc reconfig xf86config $(XF86SETUPDIR) etc \
+          LinkKit VGADriverDoc $(SUPERPROBE)
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config

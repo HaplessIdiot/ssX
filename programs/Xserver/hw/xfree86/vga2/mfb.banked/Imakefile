@@ -1,11 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/Imakefile,v 3.5 1996/04/15 11:31:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/Imakefile,v 3.6 1996/12/23 06:55:21 dawes Exp $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/Imakefile,v 3.5 1996/04/15 11:31:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/Imakefile,v 3.6 1996/12/23 06:55:21 dawes Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -37,8 +38,12 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
          mfbplywhite.o mfbplyblack.o mfbplyinv.o \
 	 mfbbltTBC.o mfbbltTBCI.o
 
+#if DoLoadableServer
+XF86INCL = -I../../common -I../../os-support -I../../common_hw
+#endif
+
 INCLUDES = -I. -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC) $(XF86INCL)
 
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
            -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
