@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.60 2001/02/15 20:31:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.62 2001/05/28 14:21:54 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1731,9 +1731,13 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 	    range.type = (range.type & ~ResAccMask) | (access & ResAccMask);
 	}
  	range.type &= ~ResEstimated;	/* Not allowed for drivers */
+#if !(defined(__alpha__) && defined(linux))
+	/* On Alpha Linux, do not check for conflicts, trust the kernel. */
 	if (checkConflict(&range, Acc, entityIndex, SETUP,TRUE)) 
 	    res = xf86AddResToList(res,&range,entityIndex);
-	else {
+	else
+#endif
+	{
 	    Acc = xf86AddResToList(Acc,&range,entityIndex);
 	}
 	list++;
@@ -2481,7 +2485,10 @@ xf86PostProbe(void)
     }
     xf86FreeResList(acc);
 
+#if !(defined(__alpha__) && defined(linux))
+    /* No need to validate on Alpha Linux, trust the kernel. */
     ValidatePci();
+#endif
     
     xf86MsgVerb(X_INFO, 3, "resource ranges after probing:\n");
     xf86PrintResList(3, Acc);
