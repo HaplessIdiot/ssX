@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.9 2001/01/17 19:41:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.10 2001/07/25 15:04:44 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -29,6 +29,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xatom.h>
 #include "bigreqstr.h"
 #include <stdio.h>
+#include "Xintconn.h"
 
 #ifdef XKB
 #include "XKBlib.h"
@@ -47,14 +48,14 @@ typedef struct {
     int opcode;
 } _XBigReqState;
 
-extern int _Xdebug;
 #ifdef WIN32
 int *_Xdebug_p = &_Xdebug;
 #endif
 
 #ifdef XTHREADS
-int  (*_XInitDisplayLock_fn)() = NULL;
-void (*_XFreeDisplayLock_fn)() = NULL;
+#include "locking.h"
+int  (*_XInitDisplayLock_fn)(Display *dpy) = NULL;
+void (*_XFreeDisplayLock_fn)(Display *dpy) = NULL;
 
 #define InitDisplayLock(d)	(_XInitDisplayLock_fn ? (*_XInitDisplayLock_fn)(d) : Success)
 #define FreeDisplayLock(d)	if (_XFreeDisplayLock_fn) (*_XFreeDisplayLock_fn)(d)
@@ -67,21 +68,9 @@ static xReq _dummy_request = {
 	0, 0, 0
 };
 
-static void OutOfMemory();
-static Bool _XBigReqHandler();
-
-extern Bool _XWireToEvent();
-extern Status _XUnknownNativeEvent();
-extern Bool _XUnknownWireEvent();
-
-/* XlibInt.c */
-extern Bool _XPollfdCacheInit();
-
-/* ConnDis.c */
-extern int _XDisconnectDisplay();
-
-/* FreeEData.c */
-extern int _XFreeExtData();
+static void OutOfMemory(Display *dpy, char *setup);
+static Bool _XBigReqHandler(Display *dpy, xReply *rep, char *buf, int len,
+				XPointer data);
 
 /* 
  * Connects to a server, creates a Display object and returns a pointer to
@@ -121,10 +110,6 @@ Display *XOpenDisplay (display)
 	char *conn_auth_name, *conn_auth_data;
 	int conn_auth_namelen, conn_auth_datalen;
 	unsigned long mask;
-	extern Bool _XSendClientPrefix();
-	extern XtransConnInfo _X11TransConnectDisplay();
-	extern XID _XAllocID();
-	extern void _XAllocIDs();
 
 	bzero((char *) &client, sizeof(client));
 	bzero((char *) &prefix, sizeof(prefix));

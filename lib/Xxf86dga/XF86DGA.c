@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.17 2001/08/01 00:44:42 tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.18 2001/08/17 13:27:51 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -371,7 +371,6 @@ Bool XF86DGAViewPortChanged(
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
-extern int errno;
 
 #if defined(SVR4) && !defined(sun) && !defined(SCO325)
 #define DEV_MEM "/dev/pmem"
