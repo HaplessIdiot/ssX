@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.3 1998/07/25 16:56:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/sym.h,v 1.4 1999/03/14 11:18:06 dawes Exp $ */
 
 /*
  *
@@ -40,5 +40,6 @@ typedef struct {
 
 #define SYMFUNC( func ) { #func, (funcptr)&func },
 #define SYMVAR( var ) { #var, (funcptr)&var },
+#define SYMVARALIAS( name, var ) { name, (funcptr)&var },
 
 #endif /* _SYM_H */
