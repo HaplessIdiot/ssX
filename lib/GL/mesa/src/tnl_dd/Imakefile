@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile,v 1.2 2002/02/23 00:45:53 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile,v 1.3 2002/02/27 00:51:16 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -38,7 +38,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines
  DRI_INCLUDES = -I../../../dri -I../../../glx -I../../dri -I../../../include \
-		-I$(TOP)/include -I$(TOP)/include/GL \
+		-I$(XINCLUDESRC) -I$(INCLUDESRC)/GL \
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
 #endif
 

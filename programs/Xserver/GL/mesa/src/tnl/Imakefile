@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/tnl/Imakefile,v 1.1 2002/02/22 21:45:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/tnl/Imakefile,v 1.2 2002/02/25 00:45:45 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -20,7 +20,7 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/tnl/Imakefile,v 1.1 2002/02/22 2
                 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
                 -I../../../include -I../../../glx \
                 -I$(LIBSRC)/GL/include \
-                -I$(XF86SRC) -I$(XTOP)/include
+                -I$(XF86SRC) -I$(INCLUDESRC)
 
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 
