@@ -1,4 +1,14 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 548. Update libfreetype-xtt2 to version 1.1:
+       - Improved the very lazy method.  To prevent displaying chipped bitmap
+         when having italic angle, the lsb and rsb are adjusted by using in
+         post table.
+       - Added automatic correction of bitmap position for preventing
+         displaying chipped bitmap when using charcell or very lazy method.
+       - Set DEFAULT_VERY_LAZY macro.  If post table is available, the very
+         lazy method is used as default when handling multi-bytes fonts.
+       - Added additional glyphs(0x2d21-0x2d7c) to jisx0208.1990-0.enc.
+      (Chisato Yamauchi, After-XTT Project).
  547. Set the pixel clock limit above which hzoom is enabled for the video
       overlay for G450 and G550 cards to 234MHz.  This fixes a problem with
       the Xv support having half horizontal resolution (Michel Lespinasse).
@@ -18083,7 +18093,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2925 2003/11/01 08:13:05 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2926 2003/11/02 04:24:33 dawes Exp $
 
 
 

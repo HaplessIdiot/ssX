@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.14 2003/10/19 18:53:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.15 2003/10/27 00:26:53 dawes Exp $ */
 
 /* Number of buckets in the hashtable holding faces */
 #define NUMFACEBUCKETS 32
@@ -107,6 +107,7 @@ struct TTCapInfo {
     double force_c_scale_b_box_height;
     double force_c_scale_lsb;
     double force_c_scale_rsb;
+    double vl_slant;
     int lsbShiftOfBitmapAutoItalic;
     int rsbShiftOfBitmapAutoItalic;
 };

@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.16 2003/06/08 15:41:14 herrb Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.17 2003/10/19 18:53:50 dawes Exp $ */
 
 #include "misc.h"
 
@@ -40,7 +40,7 @@ static MODULESETUPPROTO(freetypeSetup);
 static XF86ModuleVersionInfo VersRec =
 {
 	"freetype",
-	MODULEVENDORSTRING,
+	MODULEVENDORSTRING " & the After X-TT Project",
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
