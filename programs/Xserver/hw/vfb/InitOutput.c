@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.23 2003/09/13 21:33:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.24 2003/11/15 03:05:36 dawes Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -994,8 +994,6 @@ vfbScreenInit(index, pScreen, argc, argv)
 
     pScreen->blackPixel = pvfb->blackPixel;
     pScreen->whitePixel = pvfb->whitePixel;
-    pvfb->closeScreen = pScreen->CloseScreen;
-    pScreen->CloseScreen = vfbCloseScreen;
 
     if (pvfb->bitsPerPixel == 1)
     {
@@ -1007,6 +1005,9 @@ vfbScreenInit(index, pScreen, argc, argv)
     }
 
     miSetZeroLineBias(pScreen, pvfb->lineBias);
+
+    pvfb->closeScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = vfbCloseScreen;
 
     return ret;
 
@@ -1030,9 +1031,16 @@ InitOutput(screenInfo, argc, argv)
 	vfbPixmapDepths[vfbScreens[i].depth] = TRUE;
     }
 
-    /* for RENDER we need 32bpp */
-    if (Render)
+    /* RENDER needs a good set of pixmaps. */
+    if (Render) {
+	vfbPixmapDepths[1] = TRUE;
+	vfbPixmapDepths[4] = TRUE;
+	vfbPixmapDepths[8] = TRUE;
+	vfbPixmapDepths[15] = TRUE;
+	vfbPixmapDepths[16] = TRUE;
+	vfbPixmapDepths[24] = TRUE;
 	vfbPixmapDepths[32] = TRUE;
+    }
 
     for (i = 1; i <= 32; i++)
     {
