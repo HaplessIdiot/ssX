@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.41 2001/07/19 02:22:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.42 2001/11/03 21:59:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -675,6 +675,7 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 	   mode, mode->name, monitor, monitor->id);
 #endif
 
+#ifdef USE_DDC
     if (monitor->DDC) {
 	xf86MonPtr DDC = (xf86MonPtr)(monitor->DDC);
 	struct detailed_monitor_section* detMon;
@@ -682,23 +683,25 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 	int i;
 
 	mon_range = NULL;
-	for (i=0; i<4; i++) {
-	  detMon = &DDC->det_mon[i];
-	  if(detMon->type == DS_RANGES) {
-	    mon_range = &detMon->section.ranges;
-	  }
+	for (i = 0; i < 4; i++) {
+	    detMon = &DDC->det_mon[i];
+	    if(detMon->type == DS_RANGES) {
+		mon_range = &detMon->section.ranges;
+	    }
 	}
 	if (mon_range) {
-	  /* mode->Clock in kHz, DDC in MHz */
-	  if ( mon_range->max_clock<2550 && mode->Clock/1000.0 > mon_range->max_clock ) {
-
-	    xf86Msg(X_INFO, "(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
+	    /* mode->Clock in kHz, DDC in MHz */
+	    if (mon_range->max_clock < 2550 &&
+		 mode->Clock / 1000.0 > mon_range->max_clock) {
+		xf86Msg(X_INFO,
+		   "(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
 		   mode->name, monitor->id,
 		   mode->Clock/1000.0, mon_range->max_clock);
-	    return MODE_CLOCK_HIGH;
-	  }
+		return MODE_CLOCK_HIGH;
+	    }
 	}
     }
+#endif /* USE_DDC */
 
     /* Some basic mode validity checks */
     if (0 >= mode->HDisplay || mode->HDisplay > mode->HSyncStart ||
@@ -1166,62 +1169,76 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	return -1;
     }
 
+#ifdef USE_DDC
     /* Probe monitor so that we can enforce/warn about its limits */
     if (scrp->monitor->DDC) {
-      MonPtr monitor = scrp->monitor;
-      xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC);
-      struct detailed_monitor_section* detMon;
-      struct monitor_ranges *mon_range;
-      int i;
+	MonPtr monitor = scrp->monitor;
+	xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC);
+	struct detailed_monitor_section* detMon;
+	struct monitor_ranges *mon_range;
+	int i;
 
-      mon_range = NULL;
-      for (i=0; i<4; i++) {
-	detMon = &DDC->det_mon[i];
-	if(detMon->type == DS_RANGES) {
-	  mon_range = &detMon->section.ranges;
+	mon_range = NULL;
+	for (i = 0; i < 4; i++) {
+	    detMon = &DDC->det_mon[i];
+	    if(detMon->type == DS_RANGES) {
+		mon_range = &detMon->section.ranges;
+	    }
 	}
-      }
-      if (mon_range) {
+	if (mon_range) {
+
 #if DEBUG
-	ErrorF("DDC - Max clock %d, Hsync %d-%d kHz - Vrefresh %d-%d Hz\n",
-	       mon_range->max_clock, mon_range->min_h, mon_range->max_h, mon_range->min_v, mon_range->max_v );
+	    ErrorF("DDC - Max clock %d, Hsync %d-%d kHz - Vrefresh %d-%d Hz\n",
+	           mon_range->max_clock, mon_range->min_h, mon_range->max_h,
+	           mon_range->min_v, mon_range->max_v );
 #endif
-#define DDC_SYNC_TOLERANCE SYNC_TOLERANCE
-	if (monitor->nHsync == 0) {
-	  monitor->nHsync = 1;
-	  monitor->hsync[0].lo = mon_range->min_h;
-	  monitor->hsync[0].hi = mon_range->max_h;
-	  xf86DrvMsg(scrp->scrnIndex, X_PROBED, "Hsync range %g-%gkHz\n",
-		     monitor->hsync[0].lo, monitor->hsync[0].hi );  
-	} else {
-	  for (i=0; i<monitor->nHsync; i++) {
-	    if ( (1.0-DDC_SYNC_TOLERANCE)*mon_range->min_h > monitor->hsync[i].lo ||
-		 (1.0+DDC_SYNC_TOLERANCE)*mon_range->max_h < monitor->hsync[i].hi )
-	      {
-		xf86DrvMsg(scrp->scrnIndex, X_WARNING, "config file hsync range %g-%gkHz not within DDC hsync range %d-%dkHz\n",
-			   monitor->hsync[i].lo, monitor->hsync[i].hi, mon_range->min_h, mon_range->max_h);
-	      }
-	  }
-	}
 
-	if (monitor->nVrefresh == 0) {
-	  monitor->nVrefresh = 1;
-	  monitor->vrefresh[0].lo = mon_range->min_v;
-	  monitor->vrefresh[0].hi = mon_range->max_v;
-	  xf86DrvMsg(scrp->scrnIndex, X_PROBED, "vrefresh range %g-%gHz\n",
-		     monitor->vrefresh[0].lo, monitor->vrefresh[0].hi);  
-	} else {
-	  for (i=0; i<monitor->nVrefresh; i++) {
-	    if ( (1.0-DDC_SYNC_TOLERANCE)*mon_range->min_v > monitor->vrefresh[0].lo ||
-		 (1.0+DDC_SYNC_TOLERANCE)*mon_range->max_v < monitor->vrefresh[0].hi )
-	      {
-		xf86DrvMsg(scrp->scrnIndex, X_WARNING, "config file vrefresh range %g-%gHz not within DDC vrefresh range %d-%dHz\n",
-			   monitor->vrefresh[i].lo, monitor->vrefresh[i].hi, mon_range->min_v, mon_range->max_v);
-	      }
-	  }
-	}
-      } /* if (mon_range) */
+#define DDC_SYNC_TOLERANCE SYNC_TOLERANCE
+	    if (monitor->nHsync == 0) {
+		monitor->nHsync = 1;
+		monitor->hsync[0].lo = mon_range->min_h;
+		monitor->hsync[0].hi = mon_range->max_h;
+		xf86DrvMsg(scrp->scrnIndex, X_PROBED, "Hsync range %g-%gkHz\n",
+			   monitor->hsync[0].lo, monitor->hsync[0].hi );  
+	    } else {
+		for (i = 0; i < monitor->nHsync; i++) {
+		    if ((1.0 - DDC_SYNC_TOLERANCE) * mon_range->min_h >
+				monitor->hsync[i].lo ||
+			(1.0 + DDC_SYNC_TOLERANCE) * mon_range->max_h <
+				monitor->hsync[i].hi) {
+			xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			  "config file hsync range %g-%gkHz not within DDC "
+			  "hsync range %d-%dkHz\n",
+			  monitor->hsync[i].lo, monitor->hsync[i].hi,
+			  mon_range->min_h, mon_range->max_h);
+		    }
+		}
+	    }
+
+	    if (monitor->nVrefresh == 0) {
+		monitor->nVrefresh = 1;
+		monitor->vrefresh[0].lo = mon_range->min_v;
+		monitor->vrefresh[0].hi = mon_range->max_v;
+		xf86DrvMsg(scrp->scrnIndex, X_PROBED,
+			   "vrefresh range %g-%gHz\n",
+		           monitor->vrefresh[0].lo, monitor->vrefresh[0].hi);  
+	    } else {
+		for (i=0; i<monitor->nVrefresh; i++) {
+		    if ((1.0 - DDC_SYNC_TOLERANCE) * mon_range->min_v >
+				monitor->vrefresh[0].lo ||
+			(1.0 + DDC_SYNC_TOLERANCE) * mon_range->max_v <
+				monitor->vrefresh[0].hi) {
+			xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			  "config file vrefresh range %g-%gHz not within DDC "
+			  "vrefresh range %d-%dHz\n",
+			  monitor->vrefresh[i].lo, monitor->vrefresh[i].hi,
+			  mon_range->min_v, mon_range->max_v);
+		    }
+		}
+	    }
+        } /* if (mon_range) */
     }
+#endif /* USE_DDC */
 
     /*
      * If requested by the driver, allow missing hsync and/or vrefresh ranges
@@ -1396,9 +1413,11 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 						   strategy, maxPitch,
 						   virtualX, virtualY);
 
+#if USE_DDC
 	    if (status == MODE_OK) {
-	      status = xf86CheckModeForMonitor(p, scrp->monitor);
+		status = xf86CheckModeForMonitor(p, scrp->monitor);
 	    }
+#endif
 
 	    if (status == MODE_OK) {
 		new = xnfalloc(sizeof(DisplayModeRec));
