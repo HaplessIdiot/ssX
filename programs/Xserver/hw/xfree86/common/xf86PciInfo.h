@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.62 2000/06/21 00:45:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.63 2000/06/23 09:49:52 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -481,7 +481,7 @@
 #define PCI_CHIP_VOODOO2	0x0002
 #define PCI_CHIP_BANSHEE	0x0003
 #define PCI_CHIP_VOODOO3	0x0005
-#define PCI_CHIP_VOODOO3	0x0009
+#define PCI_CHIP_VOODOO5	0x0009
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
