@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c /main/24 1995/12/05 16:52:01 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.13 1996/01/05 13:14:35 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.14 1996/01/07 03:46:24 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -102,7 +102,7 @@ from the X Consortium.
 #include <sys/un.h>
 #endif
 
-#ifdef ISC
+#if defined(ISC) && !defined(_POSIX_SOURCE)
 typedef unsigned short  mode_t;
 /* POSIX needed for mode_t define in sys/types.h */
 #endif

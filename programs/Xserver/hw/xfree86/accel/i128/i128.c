@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.3 1995/12/17 05:02:52 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -98,8 +98,12 @@ ScrnInfoRec i128InfoRec =
    0,				/* int suspendTime */
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
+#ifdef XFreeXDGA
    0,				/* int directMode */
    NULL,			/* Set Vid Page */
+   0,				/* unsigned long physBase */
+   0,				/* int physSize */
+#endif
 };
 
 short i128alu[16] =
@@ -174,8 +178,13 @@ void (*i128ImageFillFunc)(
 void
 i128PrintIdent()
 {
+#ifdef I128_ACCEL
   ErrorF("  %s: accelerated server for I128 graphics adaptors (Patchlevel %s)\n",
 	 i128InfoRec.name, i128InfoRec.patchLevel);
+#else
+  ErrorF("  %s: server for I128 graphics adaptors (Patchlevel %s)\n",
+	 i128InfoRec.name, i128InfoRec.patchLevel);
+#endif
 }
 
 
@@ -452,10 +461,10 @@ i128Probe()
 #endif
    i128mem.rbase_g = (unsigned long *)xf86MapVidMem(0, 4,
 			(pointer)(i128pci.base4 & 0xFFFF0000), 64 * 1024);
-   i128mem.rbase_w = i128mem.rbase_g +  8 * 1024;
-   i128mem.rbase_a = i128mem.rbase_g + 16 * 1024;
-   i128mem.rbase_b = i128mem.rbase_g + 24 * 1024;
-   i128mem.rbase_i = i128mem.rbase_g + 32 * 1024;
+   i128mem.rbase_w = i128mem.rbase_g + ( 8 * 1024)/4;
+   i128mem.rbase_a = i128mem.rbase_g + (16 * 1024)/4;
+   i128mem.rbase_b = i128mem.rbase_g + (24 * 1024)/4;
+   i128mem.rbase_i = i128mem.rbase_g + (32 * 1024)/4;
    i128mem.rbase_g_b = (unsigned char *)i128mem.rbase_g;
 
    if (i128pci.devicevendor == I128_DEVICE_ID1) {
@@ -698,6 +707,16 @@ int freq;
    i128mem.rbase_g_b[DATA_TI] = n;
    i128mem.rbase_g_b[DATA_TI] = m;
    i128mem.rbase_g_b[DATA_TI] = p | TI_PLL_ENABLE;
+
+#ifdef NOTYET
+   /*
+    * Program the MCLK to 57MHz
+    */
+   i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_PLL_DATA;
+   i128mem.rbase_g_b[DATA_TI] = 0x05;
+   i128mem.rbase_g_b[DATA_TI] = 0x05;
+   i128mem.rbase_g_b[DATA_TI] = 0x05;
+#endif
 
    switch (i128InfoRec.bitsPerPixel) {
 	case 8:

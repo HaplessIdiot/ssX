@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.2 1996/01/06 05:25:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.3 1996/01/10 05:42:09 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -133,6 +133,7 @@ LinkSourceFile(et4000clock.c,$(XF86SRC)/etc)
 LinkSourceFile(install.sv3,$(XF86SRC)/etc)
 LinkSourceFile(install.sv4,$(XF86SRC)/etc)
 LinkSourceFile(ioctl_pc.h,$(XF86SRC)/etc)
+LinkSourceFile(joycal.c,$(XF86SRC)/etc)
 LinkSourceFile(kbd_mode.c,$(XF86SRC)/etc)
 LinkSourceFile(kbd_mode.man,$(XF86SRC)/etc)
 LinkSourceFile(ld-wrapper.c,$(XF86SRC)/etc)

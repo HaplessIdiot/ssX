@@ -1,5 +1,5 @@
 /* $XConsortium: s3dseg.c,v 1.3 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.3 1994/09/26 15:31:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.5 1995/01/28 17:01:54 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -130,6 +130,8 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    int   e, e1, e2;		/* bresenham error and increments */
    int   len;			/* length of segment */
    int   axis;			/* major axis */
+   int   octant;
+   unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
    short direction;
    unsigned char *pDash;
    int   dashOffset;   
@@ -341,22 +343,17 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 #endif
       {			/* sloped line */
 	 direction = 0x0000;
-	 signdx = 1;
 	 if ((adx = x2 - x1) < 0) {
-	    adx = -adx;
-	    signdx = -1;
 	    fix = 0;
 	 } else {
 	    direction |= INC_X;
 	    fix = -1;
 	 }
-	 signdy = 1;
-	 if ((ady = y2 - y1) < 0) {
-	    ady = -ady;
-	    signdy = -1;
-	 } else {
+	 if ((ady = y2 - y1) >= 0) {
 	    direction |= INC_Y;
 	 }
+
+	 CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
 
 	 if (adx > ady) {
 	    axis = X_AXIS;
@@ -371,7 +368,10 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 	    e = e1 - ady;
 	    direction |= YMAJAXIS;
 	    unclippedlen = ady;	    
+	    SetYMajorOctant(octant);
 	 }
+
+	 FIXUP_ERROR(e, octant, bias);
 
        /*
         * we have bresenham parameters and two points. all we have to do now
@@ -441,7 +441,7 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 					&new_x2, &new_y2,
 					adx, ady,
 					&clip1, &clip2,
-					axis, (signdx == signdy),
+					octant, bias,
 					oc1, oc2) == -1)
 		  {
 		     pbox++;

@@ -1,6 +1,5 @@
-
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.34 1995/12/21 11:44:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.35 1995/12/23 09:38:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -110,6 +109,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 {
    int displayResolution = 75;	/* default to 75dpi */
    extern int monitorResolution;
+   int i;
+   unsigned char *pat;
 
    s3Unlock();	  /* for restarts */
    
@@ -472,6 +473,86 @@ s3Initialize(scr_index, pScreen, argc, argv)
    AlreadyInited = TRUE;
 
    s3ImageInit();
+
+
+   /* now testing Trio32 BITBLT bug 
+    * using a 2*2 pixel pattern BLT from (0,0) to (0,2) */
+
+   pat = (unsigned char*) xcalloc(s3Bpp, 2 * 2);
+   
+   /* init source pattern:   2*2 pixel checker pattern (glyph source) */
+   pat[0 * s3Bpp] = pat[3 * s3Bpp] = 0;
+   pat[1 * s3Bpp] = pat[2 * s3Bpp] = 1;
+   (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp, 
+		       0, 0, (short) s3alu[GXcopy], ~0);
+   
+   /* first test original BITBLT; then workaround */
+   for (s3Trio32FCBug = 0; s3Trio32FCBug < 2; s3Trio32FCBug++) {
+
+      /* init destination (all bits set) */
+      for(i = 0; i < s3Bpp * 2 * 2; i++) 
+	 pat[i] = (char)0xff;
+      s3ImageWriteNoMem(0, 2, 2, 2, (char*)pat, 2 * s3Bpp,
+			0, 0, (short) s3alu[GXcopy], ~0);
+
+      BLOCK_CURSOR;
+
+      if (s3Trio32FCBug) {
+	 WaitQueue16_32(2, 3);
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+	 S3_OUTW32(BKGD_COLOR, 0);
+      } else {
+	 WaitQueue(1);
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      }
+
+      WaitQueue16_32(3, 6);
+      S3_OUTW32(FRGD_COLOR, 1);
+      S3_OUTW32(RD_MASK, 1);
+      S3_OUTW32(WRT_MASK, ~0);
+
+      WaitQueue(4);
+      S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+      S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+      S3_OUTW(CUR_X, 0);
+      S3_OUTW(CUR_Y, 0);
+	 
+      WaitQueue(5);
+      S3_OUTW(DESTX_DIASTP, 0);
+      S3_OUTW(DESTY_AXSTP, 2);
+      S3_OUTW(MAJ_AXIS_PCNT, 1);
+      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | 1);
+
+      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      /* read back the destination */
+      WaitIdle();
+      (*s3ImageReadFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 0, 0, ~0);
+
+#ifdef DEBUG_TRI32_BITBLT_TEST
+      for(i = 0; i < s3Bpp * 2 * 2; i++)
+	 ErrorF("%s %s: BITBLT %2d %02x\n",
+		XCONFIG_PROBED, s3InfoRec.name, i, pat[i]&0xff);
+      ErrorF("\n");
+#endif
+      if (pat[0] == 0xff && pat[3 * s3Bpp] == 0xff)
+	 break;  /* BITBLT worked */
+   }
+   if (s3Trio32FCBug > 1) {
+      ErrorF("%s %s: WARNING: BITBLT malfunction --\n"
+	     "\tplease report to XFree86@XFree86.Org\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   else if (s3Trio32FCBug) {
+      ErrorF("%s %s: BITBLT malfunction, using workaround code\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   xfree(pat);
+
+   /* restore read mask */
+   WaitQueue16_32(1, 2);
+   S3_OUTW32(RD_MASK, 0);
+
    xf86InitCache(s3CacheMoveBlock);
    s3FontCache8Init();
 

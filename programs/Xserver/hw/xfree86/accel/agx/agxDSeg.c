@@ -1,5 +1,5 @@
 /* $XConsortium: agxDSeg.c,v 1.2 95/01/06 20:56:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.3 1995/05/27 03:02:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.4 1995/06/21 11:51:29 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -127,6 +127,8 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
    int   e, e1, e2;		/* bresenham error and increments */
    int   len;			/* length of segment */
    int   axis;			/* major axis */
+   int   octant;
+   unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
    int   cmd2;
    unsigned char *pDash;
    int numInDashList;
@@ -357,26 +359,22 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
 	       nbox--;
 	       pbox++;
 	    }
-	 }
       }
       else
 #endif
       {			/* sloped line */
          cmd2 = 0;
-	 signdx = 1;
 	 fix = -1;
 	 if ((adx = x2 - x1) < 0) {
-	    adx = -adx;
-	    signdx = -1;
 	    fix = 0;
             cmd2 |= GE_OP_DEC_X;
 	 } 
-	 signdy = 1;
 	 if ((ady = y2 - y1) < 0) {
-	    ady = -ady;
-	    signdy = -1;
             cmd2  |= GE_OP_DEC_Y;
 	 } 
+	 CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			1, 1, octant);
+
 	 if (adx > ady) {
 	    axis = X_AXIS;
 	    e1 = ady << 1;
@@ -388,7 +386,10 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
 	    e2 = e1 - (ady << 1);
 	    e = e1 - ady;
             cmd2 |= GE_OP_Y_MAJ;
+	    SetYMajorOctant(octant);
 	 }
+
+	 FIXUP_ERROR(e, octant, bias);
 
        /*
         * we have bresenham parameters and two points. all we have to do now
@@ -472,7 +473,7 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
 					&new_x2, &new_y2,
 					adx, ady,
 					&clip1, &clip2,
-					axis, (signdx == signdy),
+					octant, bias,
 					oc1, oc2) == -1) {
 		     pbox++;
 		     continue;

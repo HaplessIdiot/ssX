@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.41 1996/01/08 08:56:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.42 1996/01/10 05:41:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1257,14 +1257,15 @@ vgaEnterLeaveVT(enter, screen_idx)
         xf86MapDisplay(screen_idx, LINEAR_REGION);
 
       (vgaEnterLeaveFunc)(ENTER);
-      if (vga256InfoRec.directMode & XF86DGADirectGraphics)
-      {
+#ifdef XFreeXDGA
+      if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
 	/* Should we do something here or not ? */
-      }
-      else
+      } else
+#endif
       {
         vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
       }
+
       vgaRestore(vgaNewVideoState);
 #ifdef SCO
       /*

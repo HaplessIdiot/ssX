@@ -1,4 +1,5 @@
-/* $XConsortium $ */
+/* $XConsortium: XKBMAlloc.c /main/4 1996/01/01 11:27:11 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -98,10 +99,14 @@ static	XkbKeyTypeRec	canonicalTypes[XkbNumRequiredTypes] = {
 };
 
 Status
+#if NeedFunctionPrototypes
+XkbInitCanonicalKeyTypes(XkbDescPtr xkb,unsigned which,int keypadVMod)
+#else
 XkbInitCanonicalKeyTypes(xkb,which,keypadVMod)
     XkbDescPtr		xkb;
     unsigned		which;
     int			keypadVMod;
+#endif
 {
 XkbClientMapPtr	map;
 XkbKeyTypePtr	from,to;
@@ -148,10 +153,14 @@ Status		rtrn;
 /***====================================================================***/
 
 Status
+#if NeedFunctionPrototypes
+XkbAllocClientMap(XkbDescPtr xkb,unsigned which,unsigned nTotalTypes)
+#else
 XkbAllocClientMap(xkb,which,nTotalTypes)
     XkbDescPtr		xkb;
     unsigned		which;
     unsigned		nTotalTypes;
+#endif
 {
 register int	i;
 XkbClientMapPtr map;
@@ -231,10 +240,14 @@ fprintf(stderr,"bad keycode (%d,%d) in XkbAllocClientMap\n",
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbAllocServerMap(XkbDescPtr xkb,unsigned which,unsigned nNewActions)
+#else
 XkbAllocServerMap(xkb,which,nNewActions)
     XkbDescPtr		xkb;
     unsigned		which;
     unsigned		nNewActions;
+#endif
 {
 register int	i;
 XkbServerMapPtr map;
@@ -326,9 +339,13 @@ XkbServerMapPtr map;
 /***====================================================================***/
 
 Status
+#if NeedFunctionPrototypes
+XkbCopyKeyType(XkbKeyTypePtr from,XkbKeyTypePtr into)
+#else
 XkbCopyKeyType(from,into)
     XkbKeyTypePtr	from;
     XkbKeyTypePtr	into;
+#endif
 {
     if ((!from)||(!into))
 	return BadMatch;
@@ -369,10 +386,14 @@ XkbCopyKeyType(from,into)
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbCopyKeyTypes(XkbKeyTypePtr from,XkbKeyTypePtr into,int num_types)
+#else
 XkbCopyKeyTypes(from,into,num_types)
     XkbKeyTypePtr	from;
     XkbKeyTypePtr	into;
     int			num_types;
+#endif
 {
 register int i,rtrn;
 
@@ -386,12 +407,20 @@ register int i,rtrn;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbResizeKeyType(	XkbDescPtr	xkb,
+			int		type_ndx,
+			int		map_count,
+			Bool		want_preserve,
+			int		new_num_lvls)
+#else
 XkbResizeKeyType(xkb,type_ndx,map_count,want_preserve,new_num_lvls)
     XkbDescPtr		xkb;
     int			type_ndx;
     int			map_count;
     Bool		want_preserve;
     int			new_num_lvls;
+#endif
 {
 XkbKeyTypePtr	type;
 KeyCode		matchingKeys[XkbMaxKeyCount],nMatchingKeys;
@@ -510,7 +539,7 @@ KeyCode		matchingKeys[XkbMaxKeyCount],nMatchingKeys;
 		}
 	    }
 	    type->num_levels= new_num_lvls;
-	    free(xkb->map->syms);
+	    _XkbFree(xkb->map->syms);
 	    xkb->map->syms= newSyms;
 	    xkb->map->num_syms= nSyms;
 	    return Success;
@@ -558,10 +587,14 @@ KeyCode		matchingKeys[XkbMaxKeyCount],nMatchingKeys;
 }
 
 KeySym *
+#if NeedFunctionPrototypes
+XkbResizeKeySyms(XkbDescPtr xkb,int key,int needed)
+#else
 XkbResizeKeySyms(xkb,key,needed)
-    XkbDescRec *xkb;
-    int key;
-    int needed;
+    XkbDescPtr	xkb;
+    int 	key;
+    int 	needed;
+#endif
 {
 register int i,nSyms,nKeySyms;
 unsigned nOldSyms;
@@ -609,17 +642,21 @@ KeySym	*newSyms;
 	xkb->map->key_sym_map[i].offset = nSyms;
 	nSyms+= nKeySyms;
     }
-    free(xkb->map->syms);
+    _XkbFree(xkb->map->syms);
     xkb->map->syms = newSyms;
     xkb->map->num_syms = nSyms;
     return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
 }
 
 XkbAction *
+#if NeedFunctionPrototypes
+XkbResizeKeyActions(XkbDescPtr xkb,int key,int needed)
+#else
 XkbResizeKeyActions(xkb,key,needed)
-    XkbDescRec *xkb;
-    int key;
-    int needed;
+    XkbDescPtr	xkb;
+    int 	key;
+    int 	needed;
+#endif
 {
 register int i,nActs;
 XkbAction *newActs;
@@ -662,13 +699,21 @@ XkbAction *newActs;
 	xkb->server->key_acts[i]= nActs;
 	nActs+= nKeyActs;
     }
-    free(xkb->server->acts);
+    _XkbFree(xkb->server->acts);
     xkb->server->acts = newActs;
     xkb->server->num_acts= nActs;
     return &xkb->server->acts[xkb->server->key_acts[key]];
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbChangeTypesOfKey(	XkbDescPtr		 xkb,
+			int		 	 key,
+			int			 nGroups,
+			unsigned	 	 groups,
+			int	* 	 	 newTypesIn,
+			XkbMapChangesPtr	 pChanges)
+#else
 XkbChangeTypesOfKey(xkb,key,nGroups,groups,newTypesIn,pChanges)
     XkbDescPtr		 xkb;
     int		 	 key;
@@ -676,6 +721,7 @@ XkbChangeTypesOfKey(xkb,key,nGroups,groups,newTypesIn,pChanges)
     unsigned	 	 groups;
     int	* 	 	 newTypesIn;
     XkbMapChangesPtr	 pChanges;
+#endif
 {
 XkbKeyTypePtr	pOldType,pNewType;
 register int	i;
@@ -777,10 +823,14 @@ int		width,nOldGroups,oldWidth,newTypes[XkbNumKbdGroups];
 }
 
 void
+#if NeedFunctionPrototypes
+XkbFreeClientMap(XkbDescPtr xkb,unsigned what,Bool freeMap)
+#else
 XkbFreeClientMap(xkb,what,freeMap)
     XkbDescPtr	xkb;
     unsigned	what;
     Bool	freeMap;
+#endif
 {
 XkbClientMapPtr	map;
 
@@ -826,22 +876,26 @@ XkbClientMapPtr	map;
 	    map->syms= NULL;
 	}
     }
-    if (freeMap) {
-	_XkbFree(xkb->map);
-	xkb->map= NULL;
-    }
     if ((what&XkbModifierMapMask)&&(map->modmap!=NULL)) {
 	_XkbFree(map->modmap);
 	map->modmap= NULL;
+    }
+    if (freeMap) {
+	_XkbFree(xkb->map);
+	xkb->map= NULL;
     }
     return;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbFreeServerMap(XkbDescPtr xkb,unsigned what,Bool freeMap)
+#else
 XkbFreeServerMap(xkb,what,freeMap)
     XkbDescPtr	xkb;
     unsigned	what;
     Bool	freeMap;
+#endif
 {
 XkbServerMapPtr	map;
 

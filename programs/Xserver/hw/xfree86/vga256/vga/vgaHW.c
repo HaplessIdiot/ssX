@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.25 1995/07/07 15:45:19 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.26 1995/12/21 11:45:23 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,7 +38,7 @@
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
 #else
-#if defined(MINIX) || defined(AMOEBA)
+#if defined(MINIX) || defined(AMOEBA) || (defined(ISC) && defined(_POSIX_SOURCE))
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>

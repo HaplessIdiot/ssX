@@ -1,4 +1,4 @@
-/* $XConsortium: mach8dssg.c,v 1.2 94/04/17 20:30:55 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8dssg.c,v 1.1.1.2 1996/01/03 07:13:39 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -54,6 +54,7 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 */
 
 /* 18-sep-93 TCG: mach8dssg.c from ibm8514dssg.c */
+/* $XConsortium: mach8dssg.c /main/3 1995/11/12 18:00:13 kaleb $ */
 
 #include "X.h"
 
@@ -98,6 +99,8 @@ mach8DashSegment(pDrawable, pGC, nseg, pSeg)
     int e, e1, e2;              /* bresenham error and increments */
     int len;                    /* length of segment */
     int axis;                   /* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     short cmd = CMD_LINE | PLANAR | WRTDATA | LASTPIX;
     short cmd2;
     short fix;
@@ -155,11 +158,8 @@ mach8DashSegment(pDrawable, pGC, nseg, pSeg)
         /* sloped line */
         {
             cmd2 = cmd;
-            signdx = 1;
             if ((adx = x2 - x1) < 0)
             {
-                adx = -adx;
-                signdx = -1;
                 fix = 0;
             }
             else
@@ -167,16 +167,13 @@ mach8DashSegment(pDrawable, pGC, nseg, pSeg)
                 cmd2 |= INC_X;
                 fix = -1;
             }
-            signdy = 1;
-            if ((ady = y2 - y1) < 0)
-            {
-                ady = -ady;
-                signdy = -1;
-            }
-            else
+            if ((ady = y2 - y1) >= 0)
             {
                 cmd2 |= INC_Y;
             }
+
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			   1, 1, octant);
 
             if (adx > ady)
             {
@@ -192,7 +189,10 @@ mach8DashSegment(pDrawable, pGC, nseg, pSeg)
                 e2 = e1 - (ady << 1);
                 e = e1 - ady;
                 cmd2 |= YMAJAXIS;
+		SetYMajorOctant(octant);
             }
+
+	    FIXUP_ERROR(e, octant, bias);
 
             /* we have bresenham parameters and two points.
              */
@@ -336,7 +336,7 @@ mach8DashSegment(pDrawable, pGC, nseg, pSeg)
 					&new_x2, &new_y2,
 					adx, ady,
 					&clip1, &clip2,
-					axis, (signdx == signdy),
+					octant, bias,
 					oc1, oc2) == -1)
                     {
                         pbox++;

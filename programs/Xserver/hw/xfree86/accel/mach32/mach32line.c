@@ -1,5 +1,5 @@
 /* $XConsortium: mach32line.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.3 1995/01/28 16:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.4 1995/02/12 02:37:46 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -104,6 +104,8 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     short cmd = CMD_LINE | DRAW | PLANAR | WRTDATA | LASTPIX;
     short cmd2;
     short fix;
@@ -328,11 +330,8 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
 	else	/* sloped line */
 	{
 	    cmd2 = cmd;
-	    signdx = 1;
 	    if ((adx = x2 - x1) < 0)
 	    {
-		adx = -adx;
-		signdx = -1;
 		fix = 0;
 	    }
 	    else
@@ -340,16 +339,12 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
 		cmd2 |= INC_X;
 		fix = -1;
 	    }
-	    signdy = 1;
-	    if ((ady = y2 - y1) < 0)
-	    {
-		ady = -ady;
-		signdy = -1;
-	    }
-	    else
+	    if ((ady = y2 - y1) >= 0)
 	    {
 		cmd2 |= INC_Y;
 	    }
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			   1, 1, octant);
 
 	    if (adx > ady)
 	    {
@@ -365,7 +360,10 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
 		cmd2 |= YMAJAXIS;
+		SetYMajorOctant(octant);
 	    }
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -426,7 +424,7 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
 					&new_x2, &new_y2,
 					adx, ady,
 					&clip1, &clip2,
-					axis, (signdx == signdy),
+					octant, bias,
 					oc1, oc2) == -1)
 		    {
 		    	pbox++;

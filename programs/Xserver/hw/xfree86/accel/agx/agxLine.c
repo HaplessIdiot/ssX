@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.5 1995/05/27 03:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.6 1995/06/21 11:51:47 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -115,6 +115,8 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     register int len;		/* length of segment */
     int axis;			/* major axis */
+    int   octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     short cmd2;
     short fix;
     Bool  first = TRUE;
@@ -286,20 +288,17 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
 	else	/* sloped line */
 	{
 	    cmd2 = 0;
-	    signdx = 1;
             fix = -1;
 	    if ((adx = x2 - x1) < 0) {
-		adx    = -adx;
-		signdx = -1;
 		fix    = 0;
 		cmd2  |= GE_OP_DEC_X;
 	    }
-	    signdy = 1;
 	    if ((ady = y2 - y1) < 0) {
-		ady    = -ady;
-		signdy = -1;
 		cmd2  |= GE_OP_DEC_Y;
 	    }
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			   1, 1, octant);
+
 	    if (adx > ady) {
 		axis = X_AXIS;
                 len  = adx;
@@ -310,9 +309,12 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
                 len   = ady;
 		e1    = adx << 1;
 		cmd2 |= GE_OP_Y_MAJ; 
+		SetYMajorOctant(octant);
 	    }
 	    e  = e1 - len;
 	    e2 = e  - len;
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -374,7 +376,7 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
                                         &new_x2, &new_y2,
                                         adx, ady,
                                         &clip1, &clip2,
-                                        axis, (signdx == signdy),
+                                        octant, bias,
                                         oc1, oc2) == -1)
                     {
                         pbox++;

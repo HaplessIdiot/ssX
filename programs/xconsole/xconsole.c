@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.8 1996/01/05 13:20:51 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.9 1996/01/10 05:42:36 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -823,6 +823,10 @@ get_pty (pty, tty, ttydev, ptydev)
 #else
 #define	OSM_DEVICE	"/dev/osm"
 #endif
+#endif
+
+#ifdef ISC
+#define NO_READAHAED
 #endif
 
 FILE *

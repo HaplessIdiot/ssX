@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.28 1995/12/02 05:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.29 1995/12/23 09:38:32 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -168,7 +168,7 @@ extern Bool s3DAC8Bit;
 extern Bool s3UsingPixMux;
 extern Bool s3Bt485PixMux;
 extern Bool s3ATT498PixMux;
-extern Bool s3Trio32FCBug;
+extern int s3Trio32FCBug;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
