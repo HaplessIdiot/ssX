@@ -36,6 +36,7 @@
  *     VALUE		:=	'('  EXPRESSION  ')'
  * 			 |	'!'  VALUE
  * 			 |	'-'  VALUE
+ * 			 |	'+'  VALUE
  *			 |	'~'  VALUE
  * 			 |	'defined'  '('  variable  ')'
  * 			 |	'defined'  variable
@@ -58,7 +59,7 @@
  * 
  *     ParseIfExpression		parse a string for #if
  */
-/* $XFree86: xc/config/makedepend/ifparser.c,v 3.8 2001/01/17 16:38:58 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/ifparser.c,v 3.9 2001/04/29 23:25:02 tsi Exp $ */
 
 #include "ifparser.h"
 #include <ctype.h>
@@ -195,6 +196,10 @@ parse_value (IfParser *g, const char *cp, long *valp)
       case '-':
 	DO (cp = parse_value (g, cp + 1, valp));
 	*valp = -(*valp);
+	return cp;
+
+      case '+':
+	DO (cp = parse_value (g, cp + 1, valp));
 	return cp;
 
       case '~':
