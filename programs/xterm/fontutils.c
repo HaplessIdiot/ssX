@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.19 2000/08/25 21:51:11 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.21 2000/10/05 18:06:35 keithp Exp $
  */
 
 /************************************************************
@@ -781,8 +781,9 @@ xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStruct *font, in
 	fn.size = term->misc.face_size * 64;
 	fn.spacing = XftFontSpacingCell;
 	screen->renderFont = XftLoadFont (dpy, &fn);
-	if (XftFontMaxAdvanceWidth (dpy, screen->renderFont) == 0 ||
-	    XftFontHeight (dpy, screen->renderFont) == 0)
+	if (screen->renderFont &&
+	    (XftFontMaxAdvanceWidth (dpy, screen->renderFont) == 0 ||
+	     XftFontHeight (dpy, screen->renderFont) == 0))
 	{
 	    XftFreeFont (dpy, screen->renderFont);
 	    screen->renderFont = 0;

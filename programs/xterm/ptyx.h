@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.76 2000/08/25 21:51:13 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.78 2000/10/05 18:06:36 keithp Exp $
  */
 
 /*
@@ -72,7 +72,7 @@
 #include <X11/Xmu/Converters.h>
 #ifdef XRENDERFONT
 #include <X11/extensions/Xrender.h>
-#include <X11/Xft/xft.h>
+#include <X11/Xft/Xft.h>
 #endif
 
 /* adapted from IntrinsicI.h */
