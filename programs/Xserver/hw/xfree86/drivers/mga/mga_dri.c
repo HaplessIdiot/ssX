@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.29 2003/07/09 01:45:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.30 2003/09/24 02:43:24 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -192,11 +192,11 @@ static Bool MGAInitVisualConfigs( ScreenPtr pScreen )
                pConfigs[i].auxBuffers		= 0;
                pConfigs[i].level		= 0;
                if ( accum || stencil ) {
-                  pConfigs[i].visualRating	= GLX_SLOW_VISUAL_EXT;
+                  pConfigs[i].visualRating	= GLX_SLOW_CONFIG;
                } else {
-                  pConfigs[i].visualRating	= GLX_NONE_EXT;
+                  pConfigs[i].visualRating	= GLX_NONE;
 	       }
-               pConfigs[i].transparentPixel	= 0;
+               pConfigs[i].transparentPixel	= GLX_NONE;
                pConfigs[i].transparentRed	= 0;
                pConfigs[i].transparentGreen	= 0;
                pConfigs[i].transparentBlue	= 0;
@@ -285,11 +285,11 @@ static Bool MGAInitVisualConfigs( ScreenPtr pScreen )
                pConfigs[i].auxBuffers		= 0;
                pConfigs[i].level		= 0;
                if ( accum ) {
-                  pConfigs[i].visualRating	= GLX_SLOW_VISUAL_EXT;
+                  pConfigs[i].visualRating	= GLX_SLOW_CONFIG;
                } else {
-                  pConfigs[i].visualRating	= GLX_NONE_EXT;
+                  pConfigs[i].visualRating	= GLX_NONE;
 	       }
-               pConfigs[i].transparentPixel	= 0;
+               pConfigs[i].transparentPixel	= GLX_NONE;
                pConfigs[i].transparentRed	= 0;
                pConfigs[i].transparentGreen	= 0;
                pConfigs[i].transparentBlue	= 0;
@@ -1359,6 +1359,7 @@ void MGADRICloseScreen( ScreenPtr pScreen )
    if (pMga->irq) {
       drmCtlUninstHandler(pMga->drmFD);
       pMga->irq = 0;
+      pMga->reg_ien = 0;
    }
 
    /* Cleanup DMA */
@@ -1391,7 +1392,7 @@ void MGADRICloseScreen( ScreenPtr pScreen )
    if ( pMGADRIServer->agp.handle != DRM_AGP_NO_HANDLE ) {
       drmAgpUnbind( pMga->drmFD, pMGADRIServer->agp.handle );
       drmAgpFree( pMga->drmFD, pMGADRIServer->agp.handle );
-      pMGADRIServer->agp.handle = 0;
+      pMGADRIServer->agp.handle = DRM_AGP_NO_HANDLE;
       drmAgpRelease( pMga->drmFD );
    }
 

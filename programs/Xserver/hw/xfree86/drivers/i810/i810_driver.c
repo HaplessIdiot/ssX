@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.90 2003/09/24 02:43:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.91 2003/09/24 03:16:54 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -151,7 +151,8 @@ typedef enum {
    OPTION_DRI,
    OPTION_NO_DDC,
    OPTION_SHOW_CACHE,
-   OPTION_XVMC_SURFACES
+   OPTION_XVMC_SURFACES,
+   OPTION_PAGEFLIP
 } I810Opts;
  
 static const OptionInfoRec I810Options[] = {
@@ -164,6 +165,7 @@ static const OptionInfoRec I810Options[] = {
    {OPTION_NO_DDC,		"NoDDC",	OPTV_BOOLEAN,	{0}, FALSE},
    {OPTION_SHOW_CACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE},
    {OPTION_XVMC_SURFACES,	"XvMCSurfaces",	OPTV_INTEGER,	{0}, FALSE},
+   {OPTION_PAGEFLIP,            "PageFlip",     OPTV_BOOLEAN, {0},   FALSE},
    {-1,				NULL,		OPTV_NONE,	{0}, FALSE}
 };
 /* *INDENT-ON* */
@@ -241,6 +243,7 @@ const char *I810int10Symbols[] = {
 const char *I810xaaSymbols[] = {
    "XAACreateInfoRec",
    "XAADestroyInfoRec",
+   "XAAFillSolidRects",
    "XAAInit",
    NULL
 };
@@ -291,13 +294,23 @@ const char *I810driSymbols[] = {
    NULL
 };
 
-const char *I810shadowSymbols[] = {
-   "shadowInit",
-   "shadowSetup",
-   "shadowAdd",
-   NULL
+#ifdef XF86DRI
+
+static const char *driShadowFBSymbols[] = {
+    "ShadowFBInit",
+    NULL
 };
+
+const char *I810shadowSymbols[] = {
+    "shadowInit",
+    "shadowSetup",
+    "shadowAdd",
+    NULL
+};
+
 #endif
+
+#endif /* I830_ONLY */
 
 #ifndef I810_DEBUG
 int I810_DEBUG = (0
@@ -612,6 +625,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
    int flags24;
    rgb defaultWeight = { 0, 0, 0 };
    int mem;
+   Bool enable;
 
    if (pScrn->numEntities != 1)
       return FALSE;
@@ -987,6 +1001,47 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 	    (((pScrn->mask.blue >> pScrn->offset.blue) -
 	      1) << pScrn->offset.blue);
    }
+
+   pI810->directRenderingDisabled =
+     !xf86ReturnOptValBool(pI810->Options, OPTION_DRI, TRUE);
+
+#ifdef XF86DRI
+   if (!pI810->directRenderingDisabled) {
+     if (pI810->noAccel) {
+       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "DRI is disabled because it "
+		  "needs 2D acceleration.\n");
+       pI810->directRenderingDisabled=TRUE;
+     } else if (pScrn->depth!=16) {
+       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "DRI is disabled because it "
+		  "runs only at 16-bit depth.\n");
+       pI810->directRenderingDisabled=TRUE;
+     }
+   }
+#endif
+
+   pI810->allowPageFlip=FALSE;
+   enable = xf86ReturnOptValBool(pI810->Options, OPTION_PAGEFLIP, FALSE);   
+
+#ifdef XF86DRI
+   if (!pI810->directRenderingDisabled) {
+     pI810->allowPageFlip = enable;
+     if (pI810->allowPageFlip == enable)
+     {
+       if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	 pI810->allowPageFlip = 0;
+	 xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		    "Couldn't load shadowfb module:\n");
+       }
+       else {
+	 xf86LoaderReqSymLists(driShadowFBSymbols, NULL);
+       }
+     }
+     
+     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "page flipping %s\n",
+		enable ? "enabled" : "disabled");
+     
+   }
+#endif
 
    if (xf86GetOptValInteger(pI810->Options, OPTION_XVMC_SURFACES,
 			    &(pI810->numSurfaces))) {
@@ -1980,14 +2035,16 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     * is called.   cfbScreenInit will eventually call into the drivers
     * InitGLXVisuals call back.
     */
-
-   if (xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE) ||
-       !xf86ReturnOptValBool(pI810->Options, OPTION_DRI, TRUE)) {
-      pI810->directRenderingEnabled = FALSE;
-      driFrom = X_CONFIG;
-   } else {
-      pI810->directRenderingEnabled = I810DRIScreenInit(pScreen);
-   }
+   /*
+    * pI810->directRenderingDisabled is set once in PreInit.  Reinitialise
+    * pI810->directRenderingEnabled based on it each generation.
+    */
+   pI810->directRenderingEnabled = !pI810->directRenderingDisabled;
+   
+   if (pI810->directRenderingEnabled==TRUE)
+     pI810->directRenderingEnabled = I810DRIScreenInit(pScreen);
+   else
+     driFrom = X_CONFIG;
 
 #else
    pI810->directRenderingEnabled = FALSE;

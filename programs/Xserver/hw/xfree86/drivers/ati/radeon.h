@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.39 2003/04/07 01:22:09 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.40 2003/07/02 17:31:29 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -430,9 +430,9 @@ typedef struct {
     Bool              have3DWindows;    /* Are there any 3d clients? */
     int               drmMinor;
 
-    drmSize           agpSize;
+    drmSize           gartSize;
     drmHandle         agpMemHandle;     /* Handle from drmAgpAlloc */
-    unsigned long     agpOffset;
+    unsigned long     gartOffset;
     unsigned char     *AGP;             /* Map */
     int               agpMode;
     int               agpFastWrite;
@@ -447,20 +447,20 @@ typedef struct {
     int               CPusecTimeout;    /* CP timeout in usecs */
 
 				/* CP ring buffer data */
-    unsigned long     ringStart;        /* Offset into AGP space */
+    unsigned long     ringStart;        /* Offset into GART space */
     drmHandle         ringHandle;       /* Handle from drmAddMap */
     drmSize           ringMapSize;      /* Size of map */
     int               ringSize;         /* Size of ring (in MB) */
     unsigned char     *ring;            /* Map */
     int               ringSizeLog2QW;
 
-    unsigned long     ringReadOffset;   /* Offset into AGP space */
+    unsigned long     ringReadOffset;   /* Offset into GART space */
     drmHandle         ringReadPtrHandle; /* Handle from drmAddMap */
     drmSize           ringReadMapSize;  /* Size of map */
     unsigned char     *ringReadPtr;     /* Map */
 
 				/* CP vertex/indirect buffer data */
-    unsigned long     bufStart;         /* Offset into AGP space */
+    unsigned long     bufStart;         /* Offset into GART space */
     drmHandle         bufHandle;        /* Handle from drmAddMap */
     drmSize           bufMapSize;       /* Size of map */
     int               bufSize;          /* Size of buffers (in MB) */
@@ -468,13 +468,13 @@ typedef struct {
     int               bufNumBufs;       /* Number of buffers */
     drmBufMapPtr      buffers;          /* Buffer map */
 
-				/* CP AGP Texture data */
-    unsigned long     agpTexStart;      /* Offset into AGP space */
-    drmHandle         agpTexHandle;     /* Handle from drmAddMap */
-    drmSize           agpTexMapSize;    /* Size of map */
-    int               agpTexSize;       /* Size of AGP tex space (in MB) */
-    unsigned char     *agpTex;          /* Map */
-    int               log2AGPTexGran;
+				/* CP GART Texture data */
+    unsigned long     gartTexStart;      /* Offset into GART space */
+    drmHandle         gartTexHandle;     /* Handle from drmAddMap */
+    drmSize           gartTexMapSize;    /* Size of map */
+    int               gartTexSize;       /* Size of GART tex space (in MB) */
+    unsigned char     *gartTex;          /* Map */
+    int               log2GARTTexGran;
 
 				/* CP accleration */
     drmBufPtr         indirectBuffer;
@@ -576,8 +576,6 @@ extern Bool        RADEONDGAInit(ScreenPtr pScreen);
 extern int         RADEONMinBits(int val);
 
 extern void        RADEONInitVideo(ScreenPtr pScreen);
-/* added by cpbotha@ieee.org so that we can call this function from
- * radeon_driver.c to get xvideo working after a resume from disc/ram */
 extern void        RADEONResetVideo(ScrnInfoPtr pScrn);
 extern void        R300CGWorkaround(ScrnInfoPtr pScrn);
 

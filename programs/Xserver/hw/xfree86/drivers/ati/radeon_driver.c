@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.105 2003/09/24 02:43:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.106 2003/09/24 22:23:04 daenzer Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -115,7 +115,7 @@ typedef enum {
     OPTION_USEC_TIMEOUT,
     OPTION_AGP_MODE,
     OPTION_AGP_FW,
-    OPTION_AGP_SIZE,
+    OPTION_GART_SIZE,
     OPTION_RING_SIZE,
     OPTION_BUFFER_SIZE,
     OPTION_DEPTH_MOVE,
@@ -145,7 +145,8 @@ const OptionInfoRec RADEONOptions[] = {
     { OPTION_USEC_TIMEOUT,   "CPusecTimeout",    OPTV_INTEGER, {0}, FALSE },
     { OPTION_AGP_MODE,       "AGPMode",          OPTV_INTEGER, {0}, FALSE },
     { OPTION_AGP_FW,         "AGPFastWrite",     OPTV_BOOLEAN, {0}, FALSE },
-    { OPTION_AGP_SIZE,       "AGPSize",          OPTV_INTEGER, {0}, FALSE },
+    { OPTION_GART_SIZE,      "AGPSize",          OPTV_INTEGER, {0}, FALSE },
+    { OPTION_GART_SIZE,      "GARTSize",         OPTV_INTEGER, {0}, FALSE },
     { OPTION_RING_SIZE,      "RingSize",         OPTV_INTEGER, {0}, FALSE },
     { OPTION_BUFFER_SIZE,    "BufferSize",       OPTV_INTEGER, {0}, FALSE },
     { OPTION_DEPTH_MOVE,     "EnableDepthMoves", OPTV_BOOLEAN, {0}, FALSE },
@@ -3494,10 +3495,10 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
     }
 
     info->agpMode       = RADEON_DEFAULT_AGP_MODE;
-    info->agpSize       = RADEON_DEFAULT_AGP_SIZE;
+    info->gartSize      = RADEON_DEFAULT_GART_SIZE;
     info->ringSize      = RADEON_DEFAULT_RING_SIZE;
     info->bufSize       = RADEON_DEFAULT_BUFFER_SIZE;
-    info->agpTexSize    = RADEON_DEFAULT_AGP_TEX_SIZE;
+    info->gartTexSize   = RADEON_DEFAULT_GART_TEX_SIZE;
     info->agpFastWrite  = RADEON_DEFAULT_AGP_FAST_WRITE;
 
     info->CPusecTimeout = RADEON_DEFAULT_CP_TIMEOUT;
@@ -3523,63 +3524,63 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		       "AGP Fast Write disabled by default\n");
 	}
+    }
 
-	if (xf86GetOptValInteger(info->Options,
-				 OPTION_AGP_SIZE, (int *)&(info->agpSize))) {
-	    switch (info->agpSize) {
-	    case 4:
-	    case 8:
-	    case 16:
-	    case 32:
-	    case 64:
-	    case 128:
-	    case 256:
-		break;
+    if (xf86GetOptValInteger(info->Options,
+			     OPTION_GART_SIZE, (int *)&(info->gartSize))) {
+	switch (info->gartSize) {
+	case 4:
+	case 8:
+	case 16:
+	case 32:
+	case 64:
+	case 128:
+	case 256:
+	    break;
 
-	    default:
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Illegal AGP size: %d MB\n", info->agpSize);
-		return FALSE;
-	    }
-	}
-
-	if (xf86GetOptValInteger(info->Options,
-				 OPTION_RING_SIZE, &(info->ringSize))) {
-	    if (info->ringSize < 1 || info->ringSize >= (int)info->agpSize) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Illegal ring buffer size: %d MB\n",
-			   info->ringSize);
-		return FALSE;
-	    }
-	}
-
-	if (xf86GetOptValInteger(info->Options,
-				 OPTION_BUFFER_SIZE, &(info->bufSize))) {
-	    if (info->bufSize < 1 || info->bufSize >= (int)info->agpSize) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Illegal vertex/indirect buffers size: %d MB\n",
-			   info->bufSize);
-		return FALSE;
-	    }
-	    if (info->bufSize > 2) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Illegal vertex/indirect buffers size: %d MB\n",
-			   info->bufSize);
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Clamping vertex/indirect buffers size to 2 MB\n");
-		info->bufSize = 2;
-	    }
-	}
-
-	if (info->ringSize + info->bufSize + info->agpTexSize >
-	    (int)info->agpSize) {
+	default:
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Buffers are too big for requested AGP space\n");
+		       "Illegal GART size: %d MB\n", info->gartSize);
 	    return FALSE;
 	}
-
-	info->agpTexSize = info->agpSize - (info->ringSize + info->bufSize);
     }
+
+    if (xf86GetOptValInteger(info->Options,
+			     OPTION_RING_SIZE, &(info->ringSize))) {
+	if (info->ringSize < 1 || info->ringSize >= (int)info->gartSize) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Illegal ring buffer size: %d MB\n",
+		       info->ringSize);
+	    return FALSE;
+	}
+    }
+
+    if (xf86GetOptValInteger(info->Options,
+			     OPTION_BUFFER_SIZE, &(info->bufSize))) {
+	if (info->bufSize < 1 || info->bufSize >= (int)info->gartSize) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Illegal vertex/indirect buffers size: %d MB\n",
+		       info->bufSize);
+	    return FALSE;
+	}
+	if (info->bufSize > 2) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Illegal vertex/indirect buffers size: %d MB\n",
+		       info->bufSize);
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Clamping vertex/indirect buffers size to 2 MB\n");
+	    info->bufSize = 2;
+	}
+    }
+
+    if (info->ringSize + info->bufSize + info->gartTexSize >
+	(int)info->gartSize) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Buffers are too big for requested GART space\n");
+	return FALSE;
+    }
+
+    info->gartTexSize = info->gartSize - (info->ringSize + info->bufSize);
 
     if (xf86GetOptValInteger(info->Options, OPTION_USEC_TIMEOUT,
 			     &(info->CPusecTimeout))) {
@@ -4210,13 +4211,13 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Using %d MB AGP aperture\n", info->agpSize);
+		   "Using %d MB GART aperture\n", info->gartSize);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Using %d MB for the ring buffer\n", info->ringSize);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "Using %d MB for vertex/indirect buffers\n", info->bufSize);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Using %d MB for AGP textures\n", info->agpTexSize);
+		   "Using %d MB for GART textures\n", info->gartTexSize);
 
 	/* Try for front, back, depth, and three framebuffers worth of
 	 * pixmap cache.  Should be enough for a fullscreen background
@@ -6229,6 +6230,7 @@ Bool RADEONSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     return ret;
 }
 
+#ifdef X_XF86MiscPassMessage
 Bool RADEONHandleMessage(int scrnIndex, const char* msgtype,
 			 const char* msgval, char** retmsg)
 {
@@ -6237,6 +6239,7 @@ Bool RADEONHandleMessage(int scrnIndex, const char* msgtype,
     *retmsg = "";
     return 0;
 }
+#endif
 
 /* Used to disallow modes that are not supported by the hardware */
 int RADEONValidMode(int scrnIndex, DisplayModePtr mode,
@@ -6341,9 +6344,6 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
     } else
 	if (!RADEONModeInit(pScrn, pScrn->currentMode)) return FALSE;
 
-    /* BEGIN RESUME CODE */
-    /*********************/
-
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
 	/* get the Radeon back into shape after resume */
@@ -6352,11 +6352,8 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 #endif
     /* this will get XVideo going again, but only if XVideo was initialised 
        during server startup (hence the info->adaptor if). */
-    if(info->adaptor)
+    if (info->adaptor)
 	RADEONResetVideo(pScrn);
-
-    /* END RESUME CODE */
-    /*******************/
 
     if (info->accelOn)
 	RADEONEngineRestore(pScrn);

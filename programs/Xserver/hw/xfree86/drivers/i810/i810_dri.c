@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.40 2003/07/09 01:45:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.41 2003/09/24 02:43:23 dawes Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -21,6 +21,8 @@
 #include "xf86Pci.h"
 
 #include "windowstr.h"
+#include "shadow.h"
+#include "shadowfb.h"
 
 #include "GL/glxtokens.h"
 
@@ -45,6 +47,18 @@ static void I810DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void I810DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 			       RegionPtr prgnSrc, CARD32 index);
 
+
+static Bool I810DRIOpenFullScreen(ScreenPtr pScreen);
+static Bool I810DRICloseFullScreen(ScreenPtr pScreen);
+static void I810EnablePageFlip(ScreenPtr pScreen);
+static void I810DisablePageFlip(ScreenPtr pScreen);
+static void I810DRITransitionSingleToMulti3d(ScreenPtr pScreen);
+static void I810DRITransitionMultiToSingle3d(ScreenPtr pScreen);
+static void I810DRITransitionTo3d(ScreenPtr pScreen);
+static void I810DRITransitionTo2d(ScreenPtr pScreen);
+
+static void I810DRIRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
 extern void GlxSetVisualConfigs(int nconfigs,
 				__GLXvisualConfig * configs,
 				void **configprivs);
@@ -65,7 +79,9 @@ static int i810_pitch_flags[] = {
    0
 };
 
-static Bool
+static unsigned int i810_drm_version = 0;
+
+Bool
 I810CleanupDma(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
@@ -84,7 +100,7 @@ I810CleanupDma(ScrnInfoPtr pScrn)
    return TRUE;
 }
 
-static Bool
+Bool
 I810InitDma(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
@@ -93,8 +109,6 @@ I810InitDma(ScrnInfoPtr pScrn)
    drmI810Init info;
 
    memset(&info, 0, sizeof(drmI810Init));
-
-   info.func = I810_INIT_DMA;
 
    info.ring_start = ring->mem.Start;
    info.ring_end = ring->mem.End;
@@ -112,6 +126,28 @@ I810InitDma(ScrnInfoPtr pScrn)
    info.h = pScrn->virtualY;
    info.pitch = pI810->auxPitch;
    info.pitch_bits = pI810->auxPitchBits;
+
+   /* We require DRM v1.2 or greater. Since DRM v1.2 broke compatibility
+    * we created a new v1.4 that supports a new init function. Eventually the
+    * old init function will go away. If you change the drm interface, make a
+    * new init type too so that we can detect the new client.
+    */
+   switch(i810_drm_version) {
+   case ((1<<16) | 0):
+   case ((1<<16) | 1):
+   case ((1<<16) | 2):
+   case ((1<<16) | 3):
+      /* Use OLD drm < 1.4 init */
+      info.func = I810_INIT_DMA;
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] Init PRE v1.4 interface.\n");
+      break;
+   default:
+   case ((1<<16) | 4):
+      /*  DRM version 1.3 or greater init */
+      info.func = I810_INIT_DMA_1_4;
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] Init v1.4 interface.\n");
+      break;
+   }
 
    if (drmCommandWrite(pI810->drmSubFD, DRM_I810_INIT,
 		       &info, sizeof(drmI810Init))) {
@@ -188,7 +224,7 @@ I810InitVisualConfigs(ScreenPtr pScreen)
 		  pConfigs[i].accumRedSize = 16;
 		  pConfigs[i].accumGreenSize = 16;
 		  pConfigs[i].accumBlueSize = 16;
-		  pConfigs[i].accumAlphaSize = 16;
+		  pConfigs[i].accumAlphaSize = 0;
 	       } else {
 		  pConfigs[i].accumRedSize = 0;
 		  pConfigs[i].accumGreenSize = 0;
@@ -209,10 +245,10 @@ I810InitVisualConfigs(ScreenPtr pScreen)
 	       pConfigs[i].auxBuffers = 0;
 	       pConfigs[i].level = 0;
 	       if (stencil || accum)
-		  pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
+		  pConfigs[i].visualRating = GLX_SLOW_CONFIG;
 	       else
-		  pConfigs[i].visualRating = GLX_NONE_EXT;
-	       pConfigs[i].transparentPixel = 0;
+		  pConfigs[i].visualRating = GLX_NONE;
+	       pConfigs[i].transparentPixel = GLX_NONE;
 	       pConfigs[i].transparentRed = 0;
 	       pConfigs[i].transparentGreen = 0;
 	       pConfigs[i].transparentBlue = 0;
@@ -354,6 +390,12 @@ I810DRIScreenInit(ScreenPtr pScreen)
    pDRIInfo->InitBuffers = I810DRIInitBuffers;
    pDRIInfo->MoveBuffers = I810DRIMoveBuffers;
    pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
+   pDRIInfo->OpenFullScreen = I810DRIOpenFullScreen;
+   pDRIInfo->CloseFullScreen = I810DRICloseFullScreen;
+   pDRIInfo->TransitionTo2d = I810DRITransitionTo2d;
+   pDRIInfo->TransitionTo3d = I810DRITransitionTo3d;
+   pDRIInfo->TransitionSingleToMulti3D = I810DRITransitionSingleToMulti3d;
+   pDRIInfo->TransitionMultiToSingle3D = I810DRITransitionMultiToSingle3d;
 
    pDRIInfo->createDummyCtx = TRUE;
    pDRIInfo->createDummyCtxPriv = FALSE;
@@ -416,6 +458,8 @@ I810DRIScreenInit(ScreenPtr pScreen)
       /* Check the i810 DRM version */
       version = drmGetVersion(pI810->drmSubFD);
       if (version) {
+	i810_drm_version = (version->version_major<<16) |
+	                    version->version_minor;
 	 if (version->version_major != 1 || version->version_minor < 2) {
 	    /* incompatible drm version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
@@ -428,6 +472,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
 	    drmFreeVersion(version);
 	    return FALSE;
 	 }
+         pI810->drmMinor = version->version_minor;
 	 drmFreeVersion(version);
       }
    }
@@ -513,13 +558,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
    } else {
       sysmem_size = sysmem_size - 2 * back_size;
    }
-   
-   if (sysmem_size < 0) {
-       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		  "[dri] Not sufficient AGP memory for Mode\n");
-       DRICloseScreen(pScreen);
-       return FALSE;
-   }
+
    /* Max size is 48 without XvMC, 41 with 6 surfaces, 40 with 7 surfaces */
    if (pI810->numSurfaces && (pI810->numSurfaces == 6)) {
       if (sysmem_size > (pI810->FbMapSize - 7 * 1024 * 1024)) {
@@ -582,6 +621,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		 "[agp] GART: no dcache memory found\n");
    }
+
    drmAgpAlloc(pI810->drmSubFD, back_size, 0, NULL, &agpHandle);
    pI810->backHandle = agpHandle;
 
@@ -1013,8 +1053,18 @@ Bool
 I810DRIFinishScreenInit(ScreenPtr pScreen)
 {
    I810SAREARec *sPriv = (I810SAREARec *) DRIGetSAREAPrivate(pScreen);
+   ScrnInfoPtr        pScrn = xf86Screens[pScreen->myNum];
+   I810Ptr info  = I810PTR(pScrn);
 
    memset(sPriv, 0, sizeof(sPriv));
+
+   /* Have shadow run only while there is 3d active.
+    */
+   if (info->allowPageFlip && info->drmMinor >= 3) {
+     ShadowFBInit( pScreen, I810DRIRefreshArea );
+   } 
+   else
+     info->allowPageFlip = 0;
    return DRIFinishScreenInit(pScreen);
 }
 
@@ -1218,7 +1268,7 @@ I810DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
 	 ErrorF("MoveBuffers %d,%d %dx%d dx: %d dy: %d\n",
 		x1, y1, w, h, dx, dy);
-
+      
       I810SelectBuffer(pScrn, I810_SELECT_BACK);
       I810SubsequentScreenToScreenCopy(pScrn, x1, y1, destx, desty, w, h);
       I810SelectBuffer(pScrn, I810_SELECT_DEPTH);
@@ -1237,6 +1287,142 @@ I810DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
    }
 
    pI810->AccelInfoRec->NeedToSync = TRUE;
+}
+
+
+/* Fullscreen hooks.  The DRI fullscreen mode can probably be removed as
+ * it adds little or nothing above the mechanism below (and isn't widely
+ * used).
+ */
+static Bool I810DRIOpenFullScreen(ScreenPtr pScreen)
+{
+    return TRUE;
+}
+
+static Bool I810DRICloseFullScreen(ScreenPtr pScreen)
+{
+    return TRUE;
+}
+/* Use the miext/shadow module to maintain a list of dirty rectangles.
+ * These are blitted to the back buffer to keep both buffers clean
+ * during page-flipping when the 3d application isn't fullscreen.
+ *
+ * Unlike most use of the shadow code, both buffers are in video memory.
+ *
+ * An alternative to this would be to organize for all on-screen drawing
+ * operations to be duplicated for the two buffers.  That might be
+ * faster, but seems like a lot more work...
+ */
+
+
+/* This should be done *before* XAA syncs or fires its buffer.
+ * Otherwise will have to fire it again???
+ */
+static void I810DRIRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    I810Ptr pI810 = I810PTR(pScrn);
+    int i;
+    I810SAREAPtr  pSAREAPriv = DRIGetSAREAPrivate(pScrn->pScreen);
+    unsigned int br13;
+    int cpp=2;
+
+    
+    /* Don't want to do this when no 3d is active and pages are
+     * right-way-round
+     */
+    if (!pSAREAPriv->pf_active && pSAREAPriv->pf_current_page == 0)
+      return;
+
+    br13 = (pI810->auxPitch) | (0xcc << 16);
+    
+    for (i = 0 ; i < num ; i++, pbox++) {
+      unsigned int w = min(pbox->y2, pScrn->virtualY-1) - max(pbox->y1, 0) + 1;
+      unsigned int h = min(pbox->x2, pScrn->virtualX-1) - max(pbox->x1, 0) + 1;
+      unsigned int dst = max(pbox->x1, 0)*cpp + (max(pbox->y1, 0)*pI810->auxPitch);
+      
+      BEGIN_LP_RING(6);
+
+      OUT_RING(BR00_BITBLT_CLIENT | BR00_OP_SRC_COPY_BLT | 0x4);
+      OUT_RING(br13);
+      OUT_RING( (h<<16) | (w*cpp) );
+      OUT_RING(pI810->BackBuffer.Start + dst);
+      OUT_RING(br13 & 0xffff);
+      OUT_RING(dst);
+
+      ADVANCE_LP_RING();
+    }
+
+}
+
+static void I810EnablePageFlip(ScreenPtr pScreen)
+{
+    ScrnInfoPtr         pScrn      = xf86Screens[pScreen->myNum];
+    I810Ptr       pI810       = I810PTR(pScrn);
+    I810SAREAPtr  pSAREAPriv = DRIGetSAREAPrivate(pScreen);
+    int cpp=2;
+    pSAREAPriv->pf_enabled = pI810->allowPageFlip;
+    pSAREAPriv->pf_active = 0;
+    
+   if (pI810->allowPageFlip) {
+      unsigned int br13 = pI810->auxPitch | (0xcc << 16);
+      
+      BEGIN_LP_RING(6);
+
+      OUT_RING(BR00_BITBLT_CLIENT | BR00_OP_SRC_COPY_BLT | 0x4);
+      OUT_RING(br13);
+      OUT_RING((pScrn->virtualY << 16) | (pScrn->virtualX*cpp));
+      OUT_RING(pI810->BackBuffer.Start);
+      OUT_RING(br13 & 0xFFFF);
+      OUT_RING(0);
+      ADVANCE_LP_RING();
+
+      pSAREAPriv->pf_active = 1;
+   }
+   
+}
+
+static void I810DisablePageFlip(ScreenPtr pScreen)
+{
+    I810SAREAPtr  pSAREAPriv = DRIGetSAREAPrivate(pScreen);
+
+    pSAREAPriv->pf_active=0;
+}
+
+static void I810DRITransitionSingleToMulti3d(ScreenPtr pScreen)
+{
+    /* Tell the clients not to pageflip.  How?
+     *   -- Field in sarea, plus bumping the window counters.
+     *   -- DRM needs to cope with Front-to-Back swapbuffers.
+     */
+    I810DisablePageFlip(pScreen);
+}
+
+static void I810DRITransitionMultiToSingle3d(ScreenPtr pScreen)
+{
+    /* Let the remaining 3d app start page flipping again */
+    I810EnablePageFlip(pScreen);
+}
+
+static void I810DRITransitionTo3d(ScreenPtr pScreen)
+{
+    ScrnInfoPtr    pScrn = xf86Screens[pScreen->myNum];
+    I810Ptr  pI810  = I810PTR(pScrn);
+
+    I810EnablePageFlip(pScreen);
+    pI810->have3DWindows = 1;
+}
+
+static void I810DRITransitionTo2d(ScreenPtr pScreen)
+{
+    ScrnInfoPtr         pScrn      = xf86Screens[pScreen->myNum];
+    I810Ptr       pI810       = I810PTR(pScrn);
+    I810SAREAPtr  pSAREAPriv = DRIGetSAREAPrivate(pScreen);
+
+    /* Shut down shadowing if we've made it back to the front page */
+    if (pSAREAPriv->pf_current_page == 0) {
+	I810DisablePageFlip(pScreen);
+    }
+    pI810->have3DWindows = 0;
 }
 
 Bool

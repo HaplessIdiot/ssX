@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.19 2001/10/31 22:50:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.32 2003/08/29 08:50:54 twini Exp $ */
 /*
  *  DRI wrapper for 300 and 315 series
  *
@@ -26,7 +26,7 @@
 #include "xf86drmCompat.h"
 #endif
 
-#ifdef SISNEWDRI
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
 #include "sis_common.h"
 #endif
 
@@ -207,7 +207,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
-#ifdef SISNEWDRI
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
   drmVersionPtr version;
 #endif
 
@@ -334,7 +334,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
      return FALSE;
   }
 
-#ifdef SISNEWDRI
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
   /* Check DRM kernel version */
   version = drmGetVersion(pSIS->drmSubFD);
   if(version) {

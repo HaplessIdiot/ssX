@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.457 2003/09/20 20:00:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.458 2003/09/21 14:02:28 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -395,7 +395,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 # ifndef DriDrivers
 #  define DriDrivers		gamma i810 i830 mga r128 radeon r200 \
-				/*sis*/ tdfx DevelDRIDrivers
+				/* sis */ tdfx DevelDRIDrivers
 # endif
 #endif
 

@@ -1,9 +1,10 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texmem.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texmem.c,v 1.5 2002/11/05 17:46:07 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "glheader.h"
+#include "colormac.h"
 #include "macros.h"
 #include "mtypes.h"
 #include "simple_list.h"

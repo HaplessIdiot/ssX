@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.4 2002/02/22 21:32:53 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -29,6 +29,7 @@
 */
 
 #include "packrender.h"
+#include "size.h"
 
 void glCallList(GLuint list)
 {
@@ -3460,3 +3461,134 @@ void glMultTransposeMatrixdARB(const GLdouble *m)
 	__GLX_END(132);
 }
 
+
+/*
+ * New extension functions
+ */
+
+void glPointParameterfARB(GLenum pname, GLfloat param)
+{
+	__GLX_DECLARE_VARIABLES();
+	__GLX_LOAD_VARIABLES();
+	__GLX_BEGIN(X_GLrop_PointParameterfARB,12);
+	__GLX_PUT_LONG(4,pname);
+	__GLX_PUT_FLOAT(8,param);
+	__GLX_END(12);
+}
+
+void glPointParameterfvARB(GLenum pname, const GLfloat *params)
+{
+	__GLX_DECLARE_VARIABLES();
+	__GLX_LOAD_VARIABLES();
+	if (pname == GL_POINT_DISTANCE_ATTENUATION_ARB) {
+		/* params is float[3] */
+		__GLX_BEGIN(X_GLrop_PointParameterfvARB,20);
+		__GLX_PUT_LONG(4,pname);
+		__GLX_PUT_FLOAT(8,params[0]);
+		__GLX_PUT_FLOAT(12,params[1]);
+		__GLX_PUT_FLOAT(16,params[2]);
+		__GLX_END(20);
+	}
+	else {
+		/* params is float[1] */
+		__GLX_BEGIN(X_GLrop_PointParameterfvARB,12);
+		__GLX_PUT_LONG(4,pname);
+		__GLX_PUT_FLOAT(8,params[0]);
+		__GLX_END(12);
+	}
+}
+
+void glWindowPos2dARB(GLdouble x, GLdouble y)
+{
+	glWindowPos3fARB(x, y, 0.0);
+}
+
+void glWindowPos2iARB(GLint x, GLint y)
+{
+	glWindowPos3fARB(x, y, 0.0);
+}
+
+void glWindowPos2fARB(GLfloat x, GLfloat y)
+{
+	glWindowPos3fARB(x, y, 0.0);
+}
+
+void glWindowPos2sARB(GLshort x, GLshort y)
+{
+	glWindowPos3fARB(x, y, 0.0);
+}
+
+void glWindowPos2dvARB(const GLdouble * p)
+{
+	glWindowPos3fARB(p[0], p[1], 0.0);
+}
+
+void glWindowPos2fvARB(const GLfloat * p)
+{
+	glWindowPos3fARB(p[0], p[1], 0.0);
+}
+
+void glWindowPos2ivARB(const GLint * p)
+{
+	glWindowPos3fARB(p[0], p[1], 0.0);
+}
+
+void glWindowPos2svARB(const GLshort * p)
+{
+	glWindowPos3fARB(p[0], p[1], 0.0);
+}
+
+void glWindowPos3dARB(GLdouble x, GLdouble y, GLdouble z)
+{
+	glWindowPos3fARB(x, y, z);
+}
+
+void glWindowPos3fARB(GLfloat x, GLfloat y, GLfloat z)
+{
+	__GLX_DECLARE_VARIABLES();
+	__GLX_LOAD_VARIABLES();
+	__GLX_BEGIN(X_GLrop_WindowPos3fARB,16);
+	__GLX_PUT_FLOAT(4,x);
+	__GLX_PUT_FLOAT(8,y);
+	__GLX_PUT_FLOAT(12,z);
+	__GLX_END(16);
+}
+
+void glWindowPos3iARB(GLint x, GLint y, GLint z)
+{
+	glWindowPos3fARB(x, y, z);
+}
+
+void glWindowPos3sARB(GLshort x, GLshort y, GLshort z)
+{
+	glWindowPos3fARB(x, y, z);
+}
+
+void glWindowPos3dvARB(const GLdouble * p)
+{
+	glWindowPos3fARB(p[0], p[1], p[2]);
+}
+
+void glWindowPos3fvARB(const GLfloat * p)
+{
+	glWindowPos3fARB(p[0], p[1], p[2]);
+}
+
+void glWindowPos3ivARB(const GLint * p)
+{
+	glWindowPos3fARB(p[0], p[1], p[2]);
+}
+
+void glWindowPos3svARB(const GLshort * p)
+{
+	glWindowPos3fARB(p[0], p[1], p[2]);
+}
+
+void glActiveStencilFaceEXT(GLenum face)
+{
+	__GLX_DECLARE_VARIABLES();
+	__GLX_LOAD_VARIABLES();
+	__GLX_BEGIN(X_GLrop_ActiveStencilFaceEXT,8);
+	__GLX_PUT_LONG(4,face);
+	__GLX_END(8);
+}

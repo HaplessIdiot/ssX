@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.23 2002/11/09 17:26:17 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.24 2002/12/16 16:19:10 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -303,6 +303,10 @@ typedef struct {
     drmSize           pciSize;
     drmHandle         pciMemHandle;
     unsigned char     *PCI;             /* Map */
+
+    Bool              allowPageFlip;    /* Enable 3d page flipping */
+    Bool              have3DWindows;    /* Are there any 3d clients? */
+    int               drmMinor;
 
     drmSize           agpSize;
     drmHandle         agpMemHandle;     /* Handle from drmAgpAlloc */

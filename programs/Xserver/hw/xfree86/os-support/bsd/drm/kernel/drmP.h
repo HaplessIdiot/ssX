@@ -27,7 +27,7 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
- * $FreeBSD: src/sys/dev/drm/drmP.h,v 1.4 2003/04/25 01:18:46 anholt Exp $
+ *
  */
 
 #ifndef _DRM_P_H_
@@ -401,6 +401,7 @@ extern int           DRM(version)( DRM_IOCTL_ARGS );
 extern void	     DRM(mem_init)(void);
 extern void	     DRM(mem_uninit)(void);
 extern void	     *DRM(alloc)(size_t size, int area);
+extern void	     *DRM(calloc)(size_t nmemb, size_t size, int area);
 extern void	     *DRM(realloc)(void *oldpt, size_t oldsize, size_t size,
 				   int area);
 extern void	     DRM(free)(void *pt, size_t size, int area);

@@ -31,7 +31,7 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.1 2002/10/30 12:52:13 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.2 2003/04/07 01:22:09 martin Exp $
  *
  */
 
@@ -95,7 +95,7 @@ typedef struct {
    unsigned long sarea_priv_offset;
    int is_pci;
    int cp_mode;
-   int agp_size;
+   int gart_size;
    int ring_size;
    int usec_timeout;
 
@@ -110,7 +110,7 @@ typedef struct {
    unsigned long ring_offset;
    unsigned long ring_rptr_offset;
    unsigned long buffers_offset;
-   unsigned long agp_textures_offset;
+   unsigned long gart_textures_offset;
 } drmRadeonInit;
 
 typedef struct {
@@ -343,7 +343,22 @@ typedef struct {
 #define R200_EMIT_SE_VTX_STATE_CNTL                 58 /* cst/1 */
 #define R200_EMIT_RE_POINTSIZE                      59 /* cst/1 */
 #define R200_EMIT_TCL_INPUT_VTX_VECTOR_ADDR_0       60 /* cst/4 */
-#define RADEON_MAX_STATE_PACKETS                    61
+#define R200_EMIT_PP_CUBIC_FACES_0                  61
+#define R200_EMIT_PP_CUBIC_OFFSETS_0                62
+#define R200_EMIT_PP_CUBIC_FACES_1                  63
+#define R200_EMIT_PP_CUBIC_OFFSETS_1                64
+#define R200_EMIT_PP_CUBIC_FACES_2                  65
+#define R200_EMIT_PP_CUBIC_OFFSETS_2                66
+#define R200_EMIT_PP_CUBIC_FACES_3                  67
+#define R200_EMIT_PP_CUBIC_OFFSETS_3                68
+#define R200_EMIT_PP_CUBIC_FACES_4                  69
+#define R200_EMIT_PP_CUBIC_OFFSETS_4                70
+#define R200_EMIT_PP_CUBIC_FACES_5                  71
+#define R200_EMIT_PP_CUBIC_OFFSETS_5                72
+#define RADEON_EMIT_PP_TEX_SIZE_0                   73
+#define RADEON_EMIT_PP_TEX_SIZE_1                   74
+#define RADEON_EMIT_PP_TEX_SIZE_2                   75
+#define RADEON_MAX_STATE_PACKETS                    76
 
 
 /* Commands understood by cmd_buffer ioctl.  More can be added but
@@ -390,22 +405,22 @@ typedef struct drm_radeon_getparam {
 	int *value;
 } drmRadeonGetParam;
 
-#define RADEON_PARAM_AGP_BUFFER_OFFSET 1
-#define RADEON_PARAM_LAST_FRAME        2
-#define RADEON_PARAM_LAST_DISPATCH     3
-#define RADEON_PARAM_LAST_CLEAR        4
-#define RADEON_PARAM_IRQ_NR            5
-#define RADEON_PARAM_AGP_BASE          6
+#define RADEON_PARAM_GART_BUFFER_OFFSET 1
+#define RADEON_PARAM_LAST_FRAME         2
+#define RADEON_PARAM_LAST_DISPATCH      3
+#define RADEON_PARAM_LAST_CLEAR         4
+#define RADEON_PARAM_IRQ_NR             5
+#define RADEON_PARAM_GART_BASE          6
 
 
-#define RADEON_MEM_REGION_AGP 1
-#define RADEON_MEM_REGION_FB  2
+#define RADEON_MEM_REGION_GART 1
+#define RADEON_MEM_REGION_FB   2
 
 typedef struct drm_radeon_mem_alloc {
 	int region;
 	int alignment;
 	int size;
-	int *region_offset;	/* offset from start of fb or agp */
+	int *region_offset;	/* offset from start of fb or GART */
 } drmRadeonMemAlloc;
 
 typedef struct drm_radeon_mem_free {
