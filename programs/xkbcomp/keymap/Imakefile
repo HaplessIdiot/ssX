@@ -1,10 +1,9 @@
-XCOMM $XConsortium: Imakefile /main/2 1995/12/07 21:37:47 kaleb $
+XCOMM $XConsortium: Imakefile /main/4 1996/01/19 16:49:28 kaleb $
 
 #ifdef DebugXKB
       TESTDATA = test_ovl test_pc test_sun5
 #endif
-     DATAFILES = STEPnote linux sgi us_sun4 us_sun5 \
-		$(TESTDATA)
+     DATAFILES = STEPnote xfree86 xfree98 sgi sun digital_us $(TESTDATA)
 
 all::
 
