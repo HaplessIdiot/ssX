@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 743. Fix for xf86Msg() call with swapped arguments (Bugzilla #1064,
+      Nicolas Joly).
  742. Set the dependencies correctly for SCO shared libraries, and use gcc
       for linking instead of ld (Bugzilla #1045, Kean Johnston).
  741. Some cleanups for the SCO support, and a few changes required for
@@ -18511,7 +18513,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3085 2004/01/07 04:28:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3086 2004/01/07 04:30:28 dawes Exp $
 
 
 
