@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.4 2001/10/28 03:34:16 tsi Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.5 2002/10/03 22:50:21 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -144,6 +144,9 @@ LayerNewKind (ScreenPtr pScreen)
     pLayKind->PaintWindowBorder = pScreen->PaintWindowBorder;
     pLayKind->CopyWindow = pScreen->CopyWindow;
 
+    pLayKind->CreatePixmap = pScreen->CreatePixmap;
+    pLayKind->DestroyPixmap = pScreen->DestroyPixmap;
+    
     pLayKind->CreateGC = pScreen->CreateGC;
 
 #ifdef RENDER
@@ -168,6 +171,9 @@ LayerNewKind (ScreenPtr pScreen)
 	pScreen->PaintWindowBackground = pLayKinds->PaintWindowBackground;
 	pScreen->PaintWindowBorder = pLayKinds->PaintWindowBorder;
 	pScreen->CopyWindow = pLayKinds->CopyWindow;
+
+	pScreen->CreatePixmap = pLayKinds->CreatePixmap;
+	pScreen->DestroyPixmap = pLayKinds->DestroyPixmap;
 
 	pScreen->CreateGC = pLayKinds->CreateGC;
 
@@ -205,6 +211,9 @@ LayerFinishInit (ScreenPtr pScreen)
     pScreen->PaintWindowBackground = layerPaintWindowBackground;
     pScreen->PaintWindowBorder = layerPaintWindowBorder;
     pScreen->CopyWindow = layerCopyWindow;
+
+    pScreen->CreatePixmap = layerCreatePixmap;
+    pScreen->DestroyPixmap = layerDestroyPixmap;
 
     pScreen->CreateGC = layerCreateGC;
 
