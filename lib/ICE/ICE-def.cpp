@@ -62,5 +62,13 @@ EXPORTS
  _IceWrite
  IceListenForWellKnownConnections
  _IceTransGetHostname
+ _IceTransSetOption
+ _IceTransConnect
+ _IceTransClose
+ _IceTransOpenCOTSClient
+ _IceTransGetConnectionNumber
+ _IceTransRead
+ _IceTransWrite
+ 
 /* $Xorg: ICE-def.cpp,v 1.3 2000/08/21 16:42:31 coskrey Exp $ */
-/* $XFree86: xc/lib/ICE/ICE-def.cpp,v 1.3 2000/08/09 23:40:12 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/ICE-def.cpp,v 1.4 2001/01/17 19:41:29 dawes Exp $ */

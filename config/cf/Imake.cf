@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.64 2001/01/17 16:22:29 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.65 2001/04/12 20:09:52 torrey Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -61,6 +61,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.64 2001/01/17 16:22:29 dawes Exp $
 # ifdef mips
 #  undef mips
 #  define MipsArchitecture
+#  define MipselArchitecture
 # endif
 # undef ultrix
 # define UltrixArchitecture
@@ -575,6 +576,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.64 2001/01/17 16:22:29 dawes Exp $
 # ifdef __mips__
 #  undef __mips__
 #  define MipsArchitecture
+#  define MipselArchitecture
 # endif
 # ifdef __alpha
 #  undef __alpha
@@ -751,6 +753,11 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  define MipsArchitecture
 #  undef mips
 #  undef __mips__
+#  if defined(MIPSEL) || defined(_MIPSEL)
+#   define MipselArchitecture
+#  endif
+#  undef MIPSEL
+#  undef _MIPSEL
 # endif
 XCOMM  for compatibility with 3.3.x 
 # ifdef PpcArchitecture

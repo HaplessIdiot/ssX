@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/xfs/xfs.man,v 3.13 2001/01/24 00:06:45 dawes Exp $
+.\" $XFree86: xc/programs/xfs/xfs.man,v 3.14 2001/01/27 18:21:13 dawes Exp $
 .\"
 .\" Copyright 1991, 1998  The Open Group
 .\" 
@@ -79,10 +79,6 @@ process (unless xfs was built to daemonize by default).
 .B \-droppriv
 If specified, xfs will attempt to run as user and group \fIxfs\fR (unless
 the
-.TP 8
-.B \-nodaemon
-When xfs is built to daemonize (run in the background) by default,
-this prevents that and starts xfs up as a regular process.
 .B \-user
 option is used). This
 has been implemented for security reasons, as xfs may have undiscovered
@@ -90,6 +86,10 @@ buffer overflows or other paths for possible exploit, both local and
 remote.  With this option, you may also wish to specify
 "no-listen = tcp"
 in the config file, which ensures that xfs will not to use a TCP port at all.
+.TP 8
+.B \-nodaemon
+When xfs is built to daemonize (run in the background) by default,
+this prevents that and starts xfs up as a regular process.
 .TP 8
 .B \-user username
 This is equivalent to
