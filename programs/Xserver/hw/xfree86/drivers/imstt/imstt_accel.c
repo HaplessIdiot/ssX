@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.4 2000/08/01 20:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.5 2001/04/05 21:29:14 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -41,7 +41,7 @@
 static void IMSTTSync(ScrnInfoPtr pScrn)
 {
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
-	IMSTTMMIO_VARS();
+/*	IMSTTMMIO_VARS(); */
 
 	while(INREG(IMSTT_SSTATUS) & 0x80);
 	while(INREG(IMSTT_SSTATUS) & 0x40);
@@ -54,7 +54,7 @@ static void IMSTTSetupForSolidFill(ScrnInfoPtr pScrn, int color,
 				   int rop, unsigned int planemask)
 {
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
-	IMSTTMMIO_VARS();
+/*	IMSTTMMIO_VARS(); */
 
 	switch (pScrn->depth) {
 		case 8:
@@ -75,7 +75,7 @@ static void IMSTTSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 					 int x, int y, int w, int h)
 {
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
-	IMSTTMMIO_VARS();
+/*	IMSTTMMIO_VARS(); */
 
 	x *= (pScrn->bitsPerPixel >> 3);
 	y *= iptr->ll;
@@ -107,8 +107,8 @@ static void IMSTTSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 					    int trans_color)
 {
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
-	IMSTTMMIO_VARS();
-	unsigned long sp, dp, ll, cnt;
+/*	IMSTTMMIO_VARS(); */
+	unsigned long sp, dp, ll;
 
 	iptr->bltctl = 0x05;
 
@@ -146,7 +146,7 @@ static void IMSTTSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 					      int w, int h)
 {
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
-	IMSTTMMIO_VARS();
+/*	IMSTTMMIO_VARS(); */
 	unsigned long cnt;
 
 	x1 *= (pScrn->bitsPerPixel >> 3);

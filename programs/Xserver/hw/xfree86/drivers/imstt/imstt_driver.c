@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.13 2001/05/07 21:12:20 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.14 2001/05/10 16:48:12 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -46,12 +46,7 @@
 #include "mibstore.h"
 #include "fbdevhw.h"
 
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
+#include "fb.h"
 
 #include "xf86cmap.h"
 
@@ -72,14 +67,18 @@ static void IMSTTIdentify(int flags);
 static Bool IMSTTProbe(DriverPtr drv, int flags);
 static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags);
 
+#if 0
 static Bool IMSTTEnterVT(int scrnIndex, int flags);
 static void IMSTTLeaveVT(int scrnIndex, int flags);
 static void IMSTTSave(ScrnInfoPtr pScrn);
+#endif
 static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 			    char **argv);
+#if 0
 static int IMSTTInternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static ModeStatus IMSTTValidMode(int index, DisplayModePtr mode,
 				 Bool verbose, int flags);
+#endif
 
 static Bool IMSTTMapMem(ScrnInfoPtr pScrn);
 static void IMSTTUnmapMem(ScrnInfoPtr pScrn);
@@ -87,10 +86,11 @@ static Bool IMSTTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void IMSTTAdjustFrame(int scrnIndex, int x, int y, int flags);
 Bool IMSTTCloseScreen(int scrnIndex, ScreenPtr pScreen);
 Bool IMSTTSaveScreen(ScreenPtr pScreen, int mode);
+#if 0
 static void IMSTTLoadPalette(ScrnInfoPtr pScrn, int numColors,
 			     int *indicies, LOCO *colors,
 			     VisualPtr pVisual);
-
+#endif
 static void IMSTTGetVideoMemSize(ScrnInfoPtr pScrn);
 static void IMSTTSetClock(ScrnInfoPtr pScrn, unsigned long mhz);
 static void IMSTTWriteMode(ScrnInfoPtr pScrn);
@@ -146,20 +146,11 @@ static const OptionInfoRec IMSTTOptions[] =
 	{ -1, NULL, OPTV_NONE, {0}, FALSE }
 };
 
-
-static const char *cfbSymbols[] = {
-	"cfbScreenInit",
-	"cfb16ScreenInit",
-	"cfb24ScreenInit",
-	"cfb32ScreenInit",
-	"cfb16BresS",
-	"cfb24BresS",
-	NULL
-};
-
-
 static const char *fbSymbols[] = {
 	"fbScreenInit",
+#ifdef RENDER
+	"fbPictureInit",
+#endif
 	NULL
 };
 
@@ -226,7 +217,7 @@ pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&IMSTT, module, 0);
-		LoaderRefSymLists(cfbSymbols, xaaSymbols, fbdevHWSymbols, NULL);
+		LoaderRefSymLists(fbSymbols, xaaSymbols, fbdevHWSymbols, NULL);
 		return (pointer) 1;
 	} else {
 		if (errmaj)
@@ -334,11 +325,8 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 {
 	EntityInfoPtr pEnt;
 	IMSTTPtr iptr;
-	MessageType from = X_DEFAULT;
 	int i;
 	ClockRangePtr clockRanges;
-	char *mod = NULL;
-	const char *reqSym = NULL;
 	rgb zeros = {0, 0, 0};
 	Gamma gzeros = {0.0, 0.0, 0.0};
 
@@ -564,7 +552,7 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86SetDpi(pScrn, 0, 0);
 
 	xf86LoadSubModule(pScrn, "fb");
-	xf86LoaderReqSymbols("fbScreenInit", NULL);
+	xf86LoaderReqSymLists(fbSymbols, NULL);
 
 	if (!xf86LoadSubModule(pScrn, "xaa"))
 		return FALSE;
@@ -593,7 +581,7 @@ static Bool IMSTTMapMem(ScrnInfoPtr pScrn)
 		return FALSE;
 	}
 
-	IMSTTTRACE("Mapped MMIO @ 0x%x with size 0x1000\n", iptr->PciInfo->memBase[0] + 0x800000);
+	IMSTTTRACE1("Mapped MMIO @ 0x%x with size 0x1000\n", iptr->PciInfo->memBase[0] + 0x800000);
 
 	IMSTTGetVideoMemSize(pScrn);
 
@@ -659,8 +647,7 @@ static void IMSTTUnmapMem(ScrnInfoPtr pScrn)
 
 static void IMSTTGetVideoMemSize(ScrnInfoPtr pScrn)
 {
-	IMSTTPtr iptr;
-	IMSTTMMIO_VARS();
+	IMSTTPtr iptr = IMSTTPTR(pScrn);
 	unsigned long tmp;
 
 	if (iptr->FBDev) {
@@ -683,7 +670,6 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 {
 	ScrnInfoPtr pScrn;
 	IMSTTPtr iptr;
-	IMSTTMMIO_VARS();
 	unsigned long tmp;
 	VisualPtr visual;
 	int r = TRUE;
@@ -801,24 +787,20 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 			return FALSE;
 	}
 
-	switch (pScrn->bitsPerPixel) {
-		case 8:
-		case 16:
-		case 24:
-		case 32:
-			r = fbScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
-					  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-					  pScrn->displayWidth, pScrn->bitsPerPixel);
-			break;
-		default:
-			ErrorF("invalid bpp %d\n", pScrn->bitsPerPixel);
-			return FALSE;
-	}
+	miSetPixmapDepths ();
+	
+	r = fbScreenInit(pScreen, iptr->FBBase, pScrn->virtualX,
+			 pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			 pScrn->displayWidth, pScrn->bitsPerPixel);
 
 	if (!r) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "ScreenInit failed\n");
 		return FALSE;
 	}
+
+#ifdef RENDER
+	fbPictureInit (pScreen, 0, 0);
+#endif
 
 	if (pScrn->bitsPerPixel > 8) {
 		visual = pScreen->visuals + pScreen->numVisuals;
@@ -876,7 +858,6 @@ static Bool IMSTTScreenInit(int scrnIndex, ScreenPtr pScreen,
 static Bool IMSTTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode) 
 {
 	IMSTTPtr iptr;
-	IMSTTMMIO_VARS();
 	unsigned long mhz;
 	unsigned short hes, heb, veb, htp, vtp;
 
@@ -1119,9 +1100,8 @@ static void IMSTTWriteMode(ScrnInfoPtr pScrn)
 {
 	IMSTTPtr iptr;
 	unsigned char pixformat;
-	unsigned long ctl, pitch, byteswap, scr;
-	unsigned char tcc, mxc, lckl_n, mic, mlc, lckl_p;
-	IMSTTMMIO_VARS();
+	unsigned long ctl = 0, pitch = 0, byteswap = 0, scr = 0;
+	unsigned char tcc = 0, mxc = 0, lckl_n = 0, mic, mlc = 0, lckl_p = 0;
 
 	iptr = IMSTTPTR(pScrn);
 
@@ -1292,7 +1272,6 @@ static void IMSTTAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	IMSTTPtr iptr;
-	IMSTTMMIO_VARS();
 	unsigned long offset;
 
 	iptr = IMSTTPTR(pScrn);
@@ -1320,7 +1299,5 @@ Bool IMSTTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 Bool IMSTTSaveScreen(ScreenPtr pScreen, int mode)
 {
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-
 	return TRUE;
 }

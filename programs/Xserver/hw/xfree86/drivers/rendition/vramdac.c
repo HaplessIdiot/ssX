@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.10 2000/03/31 20:13:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.12 2001/02/15 17:50:34 eich Exp $ */
 /*
  * includes
  */
@@ -422,7 +422,6 @@ verite_setpalette(ScrnInfoPtr pScreenInfo, int numColors, int *indices,
     vu16 iob=pRendition->board.io_base;
     vu32 crtc_status;
     int i, index;
-    int c;
 
 #ifdef DEBUG
     ErrorF ("Rendition: Debug verite_setpalette called\n");

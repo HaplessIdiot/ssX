@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.8 2001/04/01 14:00:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.9 2001/05/04 19:05:42 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -42,12 +42,8 @@
 /* Drivers using the mi colourmap code need: */
 #include "micmap.h"
 
-/* Drivers using cfb need: */
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb24.h"
-#include "cfb24_32.h"
+/* Drivers using fb need: */
+#include "fb.h"
 
 /* Drivers using the shadow frame buffer need: */
 #include "shadowfb.h"
@@ -104,8 +100,11 @@ static SymTabRec NewportChipsets[] = {
 
 /* List of Symbols from other modules that this module references */
 
-static const char *cfbSymbols[] = {
-	"cfbScreenInit",
+static const char *fbSymbols[] = {
+	"fbScreenInit",
+#ifdef RENDER
+	"fbPictureInit",
+#endif
 	NULL
 };	
 
@@ -153,7 +152,7 @@ newportSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		 * might refer to.
 		 *
 		 */
-		LoaderRefSymLists( cfbSymbols, shadowSymbols, NULL);
+		LoaderRefSymLists( fbSymbols, shadowSymbols, NULL);
 
 
 		/*
@@ -279,7 +278,6 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	NewportPtr pNewport;
 	MessageType from;
 	ClockRangePtr clockRanges;
-	char *mod=0, *reqSym=0;
 
 	if (flags & PROBE_DETECT) return FALSE;
 
@@ -432,17 +430,12 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintModes(pScrn);
 	xf86SetDpi (pScrn, 0, 0);
 
-	switch(pScrn->bitsPerPixel) {
-		case 8: 
-			mod = "cfb";
-			reqSym = "cfbScreenInit";
-			break;
-	}
-	if ( mod && (!xf86LoadSubModule(pScrn, mod))) {
+	/* Load FB module */
+	if (!xf86LoadSubModule (pScrn, "fb")) {
 		NewportFreeRec(pScrn);
 		return FALSE;
 	}
-	xf86LoaderReqSymbols( reqSym, NULL);
+	xf86LoaderReqSymLists( fbSymbols, NULL);
 
 	/* Load ShadowFB module */
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
@@ -479,6 +472,8 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 				pScrn->rgbBits, pScrn->defaultVisual))
 		return FALSE;
 	
+	miSetPixmapDepths ();
+
 	pNewport->Bpp = pScrn->bitsPerPixel >> 3;
 	/* Setup the stuff for the shadow framebuffer */
 	pNewport->ShadowPitch = (( pScrn->virtualX * pNewport->Bpp ) + 3) & ~3L;
@@ -487,22 +482,18 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 	if (!NewportModeInit(pScrn, pScrn->currentMode))
 			return FALSE;
 
-	switch( pScrn->bitsPerPixel) {
-		case 8:
-			ret=cfbScreenInit(pScreen, pNewport->ShadowPtr,
-				pScrn->virtualX, pScrn->virtualY,
-				pScrn->xDpi, pScrn->yDpi,
-				pScrn->displayWidth);
-			break;
-		default:
-			xf86Msg(X_ERROR,
-				"Internal Error: Display depth not supported in NewportScreenInit.\n");
-			ret=FALSE;
-			break;
-	}
+	ret = fbScreenInit(pScreen, pNewport->ShadowPtr,
+			   pScrn->virtualX, pScrn->virtualY,
+			   pScrn->xDpi, pScrn->yDpi,
+			   pScrn->displayWidth,
+			   pScrn->bitsPerPixel);
 
 	if(!ret)
 		return FALSE;
+
+#ifdef RENDER
+	fbPictureInit (pScreen, 0, 0);
+#endif
 
 	/* we need rgb ordering if bitsPerPixel > 8 */
 	if (pScrn->bitsPerPixel > 8) {

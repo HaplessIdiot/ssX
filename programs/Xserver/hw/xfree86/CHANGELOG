@@ -1,4 +1,6 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 532. Update glide, imstt, newport, rendition, suncg14, suncg3, suncg6,
+      sunleo, suntcx, vga and vmware to use fb and support Render (Keith Packard).
  531. XDarwin fixes:
        - Turn off building non-functional RENDER support.
        - Reduce disappearing cursor problems when switching with Dock.
@@ -13256,4 +13258,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1771 2001/05/16 03:57:25 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1772 2001/05/16 06:10:06 torrey Exp $

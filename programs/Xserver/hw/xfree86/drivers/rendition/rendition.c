@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.40 2001/02/15 17:50:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.41 2001/05/04 19:05:42 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -187,9 +187,10 @@ static const char *int10Symbols[] = {
 static const char *fbSymbols[]={
     "xf1bppScreenInit",
     "xf4bppScreenInit",
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb32ScreenInit",
+    "fbScreenInit",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     NULL
 };
 
@@ -467,11 +468,9 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     static ClockRange renditionClockRange = {NULL, 0, 135000, -1, FALSE, TRUE, 1, 1, 0};
     MessageType       From;
     int               videoRam, Rounding, nModes = 0;
-    char             *Module;
-    const char       *Sym;
-    vgaHWPtr          pvgaHW;
     renditionPtr      pRendition;
     char             *in_string;
+    vgaHWPtr          pvgaHW;
     
 #ifdef DEBUG
     ErrorF("Rendition: renditionPreInit() called\n");
@@ -540,30 +539,15 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, Support32bppFb))
         return FALSE;
 
-    switch (pScreenInfo->depth) {
-        case 8:   Module = "cfb";   Sym = "cfbScreenInit";   break;
-
-        case 15:  if (PCI_CHIP_V1000==pRendition->PciInfo->chipType){
-                    Module = "cfb16"; Sym = "cfbScreenInit16"; break;
-	          }
-                  else {
-		    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+    if (pScreenInfo->depth == 15)
+    {
+        if (PCI_CHIP_V1000 != pRendition->PciInfo->chipType) {
+	    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
 		       "Given depth (%d) is not supported by this chipset.\n",
 		       pScreenInfo->depth);
-		    return FALSE;
-		  }
-        case 16:  Module = "cfb16"; Sym = "cfbScreenInit16"; break;
-
-        case 24:  Module = "cfb32"; Sym = "cfbScreenInit32"; break;
-
-        default:
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                "Given depth (%d) is not supported by this driver.\n",
-                pScreenInfo->depth);
-            return FALSE;
+	    return FALSE;
+	}
     }
-
-
 
     /* collect all of the options flags and process them */
 
@@ -575,11 +559,11 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
         pRendition->Options);
 
 
-    /* Ensure depth-specific entry points are available */
-    if (!xf86LoadSubModule(pScreenInfo, Module))
+    /* Load fb */
+    if (!xf86LoadSubModule(pScreenInfo, "fb"))
       return FALSE;
 
-    xf86LoaderReqSymbols(Sym, NULL);
+    xf86LoaderReqSymbols("fbScreenInit", NULL);
 
     /* determine colour weights */
     pScreenInfo->rgbBits=8;
@@ -1137,9 +1121,8 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     Bool Inited = FALSE;
     unsigned char *FBBase;
     VisualPtr visual;
+    vgaHWPtr pvgaHW;
     int displayWidth,width,height;
-
-    vgaHWPtr          pvgaHW;
 
 #ifdef DEBUG
     ErrorF("RENDITION: renditionScreenInit() called\n");
@@ -1165,6 +1148,8 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
               pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
       return FALSE;
 
+    miSetPixmapDepths ();
+	
     if (pRendition->board.rotate) {
       height = pScreenInfo->virtualX;
       width = pScreenInfo->virtualY;
@@ -1185,38 +1170,18 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       displayWidth=pScreenInfo->displayWidth;
     }
 
-
-    /* initialise the framebuffer */
-    switch (pScreenInfo->bitsPerPixel)
-    {
-        case 8:
-            Inited = cfbScreenInit(pScreen, FBBase,
-				   width, height,
-				   pScreenInfo->xDpi, pScreenInfo->yDpi,
-				   displayWidth);
-            break;
-        case 16:
-            Inited = cfb16ScreenInit(pScreen, FBBase,
-				     width, height,
-				     pScreenInfo->xDpi, pScreenInfo->yDpi,
-				     displayWidth);
-	    break;
-        case 32:
-            Inited = cfb32ScreenInit(pScreen, FBBase,
-				     width, height,
-				     pScreenInfo->xDpi, pScreenInfo->yDpi,
-				     displayWidth);
-	    break;
-    default:
-        xf86DrvMsg(scrnIndex, X_ERROR,
-                   "Internal error: invalid bpp (%d) in renditionScreenInit\n",
-                   pScreenInfo->bitsPerPixel);
-        break;
-    }
-
+    Inited = fbScreenInit(pScreen, FBBase,
+			  width, height,
+			  pScreenInfo->xDpi, pScreenInfo->yDpi,
+			  displayWidth,
+			  pScreenInfo->bitsPerPixel);
+    
     if (!Inited)
         return FALSE;
 
+#ifdef RENDER
+    fbPictureInit (pScreen, 0, 0);
+#endif
 
     if (pScreenInfo->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
@@ -1277,7 +1242,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    
     /*********************************************************/
     /* The actual setup of the driver-specific code          */
-    /* has to be after cfb*ScreenInit and before cursor init */
+    /* has to be after fbScreenInit and before cursor init */
     /*********************************************************/
 #if USE_ACCEL
     if (!xf86ReturnOptValBool(pRendition->Options, OPTION_NOACCEL,0)) 
