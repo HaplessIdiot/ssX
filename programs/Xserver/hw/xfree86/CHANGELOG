@@ -1,4 +1,6 @@
 XFree86 4.0.1e (x November 2000)
+ 834. Fix Rage128/Radeon drivers to free correct scratch buffer on LeaveVT
+      (Alan Hourihane).
  833. Xterm patch #148 (#4213, Thomas Dickey).
  832. Split ATI driver into two modules in preparation for merging in the
       r128 and radeon drivers (Marc La France).
@@ -11363,4 +11365,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1362 2000/10/30 23:02:07 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1363 2000/11/01 01:12:31 dawes Exp $
