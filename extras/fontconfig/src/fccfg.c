@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccfg.c,v 1.23 2002/08/31 22:17:32 keithp Exp $
- *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include "fcint.h"
 
@@ -1141,7 +1140,11 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		if ((t->kind == FcMatchFont || kind == FcMatchPattern) &&
 		    !FcStrCmpIgnoreCase ((FcChar8 *) t->field, 
 					 (FcChar8 *) e->field))
+		{
+		    if (!st[i].elt)
+			t = 0;
 		    break;
+		}
 	    }
 	    switch (e->op) {
 	    case FcOpAssign:
@@ -1299,7 +1302,11 @@ FcConfigGetPath (void)
 	e = env;
 	npath++;
 	while (*e)
+#ifndef __UNIXOS2__
 	    if (*e++ == ':')
+#else
+	    if (*e++ == ';')
+#endif
 		npath++;
     }
     path = calloc (npath, sizeof (FcChar8 *));
@@ -1312,7 +1319,11 @@ FcConfigGetPath (void)
 	e = env;
 	while (*e) 
 	{
+#ifndef __UNIXOS2__
 	    colon = (FcChar8 *) strchr ((char *) e, ':');
+#else
+	    colon = (FcChar8 *) strchr ((char *) e, ';');
+#endif
 	    if (!colon)
 		colon = e + strlen ((char *) e);
 	    path[i] = malloc (colon - e + 1);
@@ -1328,7 +1339,11 @@ FcConfigGetPath (void)
 	}
     }
     
+#ifndef __UNIXOS2__
     dir = (FcChar8 *) FONTCONFIG_PATH;
+#else
+    dir = (FcChar8 *) __XOS2RedirRoot(FONTCONFIG_PATH);
+#endif
     path[i] = malloc (strlen ((char *) dir) + 1);
     if (!path[i])
 	goto bail1;

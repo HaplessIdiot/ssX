@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcstr.c,v 1.10 2002/08/31 22:17:32 keithp Exp $
- *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -283,7 +282,7 @@ FcUtf16ToUcs4 (const FcChar8	*src_orig,
 	if ((b & 0xfc00) != 0xdc00)
 	    return 0;
 	result = ((((FcChar32) a & 0x3ff) << 10) |
-		  ((FcChar32) b & 0x3ff)) | 0x10000;
+		  ((FcChar32) b & 0x3ff)) + 0x10000;
     }
     else
 	result = a;

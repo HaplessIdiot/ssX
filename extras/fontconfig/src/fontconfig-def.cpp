@@ -9,12 +9,15 @@ FcAtomicNewFile
 FcAtomicOrigFile
 FcAtomicReplaceOrig
 FcAtomicUnlock
+#ifndef __UNIXOS2__
 FcAvlDelete
 FcAvlInsert
+#endif
 FcBlanksAdd
 FcBlanksCreate
 FcBlanksDestroy
 FcBlanksIsMember
+#ifndef __UNIXOS2__
 FcFileCacheCreate
 FcFileCacheDestroy
 FcFileCacheFind
@@ -23,6 +26,7 @@ FcFileCacheReadDir
 FcFileCacheSave
 FcFileCacheUpdate
 FcFileCacheWriteDir
+#endif
 FcConfigAddBlank
 FcConfigAddConfigFile
 FcConfigAddDir
@@ -39,7 +43,9 @@ FcConfigGetBlanks
 FcConfigGetCache
 FcConfigGetConfigFiles
 FcConfigGetCurrent
+#ifndef __UNIXOS2__
 FcConfigGetDirs
+#endif
 FcConfigGetFonts
 FcConfigSetCache
 FcConfigSetCurrent
@@ -82,8 +88,10 @@ FcFontSetAdd
 FcFontSetCreate
 FcFontSetDestroy
 FcInit
+#ifndef __UNIXOS2__
 FcInitConfig
 FcInitFonts
+#endif
 FcMemAlloc
 FcMemFree
 FcMemReport
@@ -127,7 +135,9 @@ FcPatternCreate
 FcPatternDel
 FcPatternDestroy
 FcPatternDuplicate
+#ifndef __UNIXOS2__
 FcPatternFind
+#endif
 FcPatternGet
 FcPatternGetBool
 FcPatternGetCharSet
@@ -167,4 +177,22 @@ FcExprCreateString
 FcExprDestroy
 FcTestCreate
 FcTestDestroy
-/* $XFree86: xc/lib/fontconfig/src/fontconfig-def.cpp,v 1.1 2002/04/10 11:28:10 alanh Exp $ */
+#ifdef __UNIXOS2__
+FcStrListCreate
+FcStrListNext
+FcStrListDone
+FcStrSetCreate
+FcDirCacheValid
+FcStrSetDestroy
+FcInitLoadConfig
+FcStrSetAdd
+FcConfigGetConfigDirs
+FcPatternAddFTFace
+FcPatternGetFTFace
+FcPatternFindElt
+FcPatternInsertElt
+FcCharSetFirstPage
+FcCharSetNextPage
+FcUtf16ToUcs4
+#endif
+/* $XFree86: xc/lib/fontconfig/src/fontconfig-def.cpp,v 1.2 2003/03/25 04:18:14 dawes Exp $ */

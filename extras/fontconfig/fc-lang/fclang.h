@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-lang/fclang.h,v 1.20 2002/10/21 17:03:47 keithp Exp $
- *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 /* total size: 877 unique leaves: 599 */
 
@@ -3996,3 +3995,11 @@ static const FcLangCharSet  fcLangCharSets[] = {
       { FC_REF_CONSTANT, 1, (FcCharLeaf **) leaves_fj, (FcChar16 *) numbers_fj } },
 };
 
+#define NUM_LANG_CHAR_SET	175
+#define NUM_LANG_SET_MAP	6
+
+static const FcChar32 fcLangCountrySets[][NUM_LANG_SET_MAP] = {
+    { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00003e00, }, /* zh */
+};
+
+#define NUM_COUNTRY_SET 1

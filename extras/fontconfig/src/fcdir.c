@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcdir.c,v 1.10 2002/09/26 00:15:53 keithp Exp $
- *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include "fcint.h"
 #include <dirent.h>
@@ -47,7 +46,6 @@ FcFileScan (FcFontSet	    *set,
     FcChar8		*name;
     FcPattern		*font;
     FcBool		ret = FcTrue;
-    FcBool		isDir;
     int			count = 0;
     FcGlobalCacheFile	*cache_file;
     FcGlobalCacheDir	*cache_dir;
@@ -112,10 +110,8 @@ FcFileScan (FcFontSet	    *set,
 	    font = FcFreeTypeQuery (file, id, blanks, &count);
 	    if (FcDebug () & FC_DBG_SCAN)
 		printf ("done\n");
-	    isDir = FcFalse;
 	    if (!font && FcFileIsDir (file))
 	    {
-		isDir = FcTrue;
 		ret = FcStrSetAdd (dirs, file);
 		if (cache && ret)
 		    FcGlobalCacheUpdate (cache, file, 0, FC_FONT_FILE_DIR);

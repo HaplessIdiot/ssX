@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.19 2002/08/31 22:17:32 keithp Exp $
- *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include "fcint.h"
@@ -1800,7 +1799,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 {
-    FcChar32	    page, off, max, ucs4;
+    FcChar32	    page, off, ucs4;
 #ifdef CHECK
     FcChar32	    font_max = 0;
 #endif
@@ -1847,7 +1846,6 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 	{
 	    FT_UInt gindex;
 	  
-	    max = fcFontDecoders[o].max;
 	    /*
 	     * Find the first encoded character in the font
 	     */

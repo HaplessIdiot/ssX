@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.6 2002/08/22 07:36:44 keithp Exp $
- *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #ifndef _FCPRIVATE_H_
 #define _FCPRIVATE_H_
@@ -87,7 +86,7 @@ _FcPatternVapBuild_bail1:					    \
     if (!orig)							    \
 	FcPatternDestroy (__p__);				    \
 _FcPatternVapBuild_bail0:					    \
-    result = 0;							    \
+    result = (void*)0;						    \
 								    \
 _FcPatternVapBuild_return:					    \
     ;								    \
