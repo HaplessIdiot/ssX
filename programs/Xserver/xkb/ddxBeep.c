@@ -322,7 +322,7 @@ Atom		name;
 		next = SHORT_DELAY;	    
 	    break;
     }
-    if (duration>0) {
+    if (timer == NULL && duration>0) {
 	CARD32		starttime = GetTimeInMillis();
 	CARD32		elapsedtime;
 
