@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.13 2001/05/03 10:52:21 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.14 2001/05/03 20:13:11 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -55,6 +55,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.13 2001/05/03 10:52:21 ala
 
 #define HasSockets              YES
 #define GzipFontCompression	YES
+#define HasZlib			YES
 
 #define SharedLibFont           NO
 #define AvoidNullMakeCommand    YES
