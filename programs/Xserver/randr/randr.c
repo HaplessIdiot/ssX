@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.1 2001/05/23 03:29:44 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.2 2001/05/23 04:15:06 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -98,6 +98,12 @@ RRCloseScreen (int i, ScreenPtr pScreen)
     rrScrPriv(pScreen);
 
     unwrap (pScrPriv, pScreen, CloseScreen);
+    if (pScrPriv->pSizes)
+	xfree (pScrPriv->pSizes);
+    if (pScrPriv->pSetsOfVisualSets)
+	xfree (pScrPriv->pSetsOfVisualSets);
+    if (pScrPriv->pVisualSets)
+	xfree (pScrPriv->pVisualSets);
     xfree (pScrPriv);
     RRNScreens -= 1;	/* ok, one fewer screen with RandR running */
     return (*pScreen->CloseScreen) (i, pScreen);    
@@ -137,10 +143,40 @@ Bool RRScreenInit(ScreenPtr pScreen)
     }
     SetRRScreen(pScreen, pScrPriv);
 
-    pScrPriv->rotation = 0;
-    /*    pScrPriv->lastSetTime = 0;	/* XXX is this right? */
+    /*
+     * Calling function best set these function vectors
+     */
+    pScrPriv->rrSetConfig = 0;
+    pScrPriv->rrGetInfo = 0;
+    /*
+     * This value doesn't really matter -- any client must call
+     * GetScreenInfo before reading it which will automatically update
+     * the time
+     */
+    pScrPriv->lastSetTime.milliseconds = 0;
+    pScrPriv->lastSetTime.months = 0;
     
     wrap (pScrPriv, pScreen, CloseScreen, RRCloseScreen);
+
+    pScrPriv->rotations = RR_ROTATE_0;
+    pScrPriv->swaps = 0;
+    pScrPriv->nVisualSets = 0;
+    pScrPriv->nVisualSetsInUse = 0;
+    pScrPriv->pVisualSets = 0;
+    
+    pScrPriv->nSetsOfVisualSets = 0;
+    pScrPriv->nSetsOfVisualSetsInUse = 0;
+    pScrPriv->pSetsOfVisualSets = 0;
+    
+    pScrPriv->nSizes = 0;
+    pScrPriv->nSizesInUse = 0;
+    pScrPriv->pSizes = 0;
+    
+    pScrPriv->rotation = RR_ROTATE_0;
+    pScrPriv->swap = 0;
+    pScrPriv->pSize = 0;
+    pScrPriv->pVisualSet = 0;
+    
     RRNScreens += 1;	/* keep count of screens that implement randr */
     return TRUE;
 }
@@ -235,7 +271,7 @@ TellChanged (WindowPtr pWin, pointer value)
 	    continue;
 	se.type = RRScreenChangeNotify + RREventBase;
 	se.sequenceNumber = client->sequence;
-	se.timestamp = currentTime.milliseconds;
+	se.timestamp = pScrPriv->lastSetTime.milliseconds;
 	se.root = pRoot->drawable.id;
 	WriteEventsToClient (client, 1, (xEvent *) &se);
     }
@@ -314,10 +350,32 @@ RRGetInfo (ScreenPtr pScreen)
     if (changed)
     {
 	UpdateCurrentTime ();
+	pScrPriv->lastSetTime = currentTime;
 	WalkTree (pScreen, TellChanged, (pointer) pScreen);
     }
+    return TRUE;
 }
 
+static void
+RRSendConfigNotify (ScreenPtr pScreen)
+{
+    WindowPtr	pWin = WindowTable[pScreen->myNum];
+    xEvent	event;
+
+    event.u.u.type = ConfigureNotify;
+    event.u.configureNotify.window = pWin->drawable.id;
+    event.u.configureNotify.aboveSibling = None;
+    event.u.configureNotify.x = 0;
+    event.u.configureNotify.y = 0;
+
+    /* XXX xinerama stuff ? */
+    
+    event.u.configureNotify.width = pWin->drawable.width;
+    event.u.configureNotify.height = pWin->drawable.height;
+    event.u.configureNotify.borderWidth = wBorderWidth (pWin);
+    event.u.configureNotify.override = pWin->overrideRedirect;
+    DeliverEvents(pWin, &event, 1, NullWindow);
+}
 
 static int
 ProcRRQueryVersion (ClientPtr client)
@@ -342,63 +400,309 @@ ProcRRQueryVersion (ClientPtr client)
     return (client->noClientException);
 }
 
+static Bool
+RRVisualSetContains (RRVisualSetPtr pVisualSet,
+		     VisualID	    visual)
+{
+    int	    i;
+
+    for (i = 0; i < pVisualSet->nvisuals; i++)
+	if (pVisualSet->visuals[i]->vid == visual)
+	    return TRUE;
+    return FALSE;
+}
+
+static CARD16
+RRNumMatchingVisualSets (ScreenPtr  pScreen,
+			 VisualID   visual)
+{
+    rrScrPriv(pScreen);
+    int		    i;
+    CARD16	    n = 0;
+    RRVisualSetPtr  pVisualSet;
+
+    for (i = 0; i < pScrPriv->nVisualSets; i++)
+    {
+	pVisualSet = &pScrPriv->pVisualSets[i];
+	if (pVisualSet->referenced && RRVisualSetContains (pVisualSet, visual))
+	    n++;
+    }
+    return n;
+}
+
+static void
+RRGetMatchingVisualSets (ScreenPtr	pScreen,
+			 VisualID	visual,
+			 VISUALSETID	*pVisualSetIDs)
+{
+    rrScrPriv(pScreen);
+    int		    i;
+    CARD16	    n = 0;
+    RRVisualSetPtr  pVisualSet;
+
+    for (i = 0; i < pScrPriv->nVisualSets; i++)
+    {
+	pVisualSet = &pScrPriv->pVisualSets[i];
+	if (pVisualSet->referenced && RRVisualSetContains (pVisualSet, visual))
+	    *pVisualSetIDs++ = pVisualSet->id;
+    }
+}
+
+extern char	*ConnectionInfo;
+
+static int padlength[4] = {0, 3, 2, 1};
+
+static void
+RREditConnectionInfo (ScreenPtr pScreen)
+{
+    xConnSetup	    *connSetup;
+    char	    *vendor;
+    xPixmapFormat   *formats;
+    xWindowRoot	    *root;
+    xDepth	    *depth;
+    xVisualType	    *visual;
+    int		    screen = 0;
+
+    connSetup = (xConnSetup *) ConnectionInfo;
+    vendor = (char *) connSetup + sizeof (xConnSetup);
+    formats = (xPixmapFormat *) ((char *) vendor +
+				 connSetup->nbytesVendor +
+				 padlength[connSetup->nbytesVendor & 3]);
+    root = (xWindowRoot *) ((char *) formats +
+			    sizeof (xPixmapFormat) * screenInfo.numPixmapFormats);
+    while (screen != pScreen->myNum)
+    {
+	depth = (xDepth *) ((char *) root + 
+			    sizeof (xWindowRoot));
+	visual = (xVisualType *) ((char *) depth +
+				  sizeof (xDepth));
+	root = (xWindowRoot *) ((char *) visual + 
+				depth->nVisuals * sizeof (xVisualType));
+	screen++;
+    }
+    root->pixWidth = pScreen->width;
+    root->pixHeight = pScreen->height;
+    root->mmWidth = pScreen->mmWidth;
+    root->mmHeight = pScreen->mmHeight;
+}
+
 static int
 ProcRRGetScreenInfo (ClientPtr client)
 {
-    xRRGetScreenInfoReply rep;
-    register DrawablePtr pDraw;
-    register int n;
     REQUEST(xRRGetScreenInfoReq);
-    rrScrPrivPtr    pScrPriv;
+    xRRGetScreenInfoReply   rep;
+    WindowPtr	    	    pWin;
+    int			    n;
+    ScreenPtr		    pScreen;
+    rrScrPrivPtr	    pScrPriv;
+    CARD8		    *extra;
+    int			    extraLen;
 
     REQUEST_SIZE_MATCH(xRRGetScreenInfoReq);
-    SECURITY_VERIFY_DRAWABLE (pDraw, stuff->drawable, client,
-			      SecurityReadAccess);
+    pWin = (WindowPtr)SecurityLookupWindow(stuff->window, client,
+					   SecurityReadAccess);
 
-    pScrPriv = rrGetScrPriv(pDraw->pScreen);
+    if (!pWin)
+	return BadWindow;
+
+    pScreen = pWin->drawable.pScreen;
+    pScrPriv = rrGetScrPriv(pScreen);
     if (!pScrPriv)
+    {
+	rep.type = X_Reply;
+	rep.length = 0;
+	rep.sequenceNumber = client->sequence;
+	rep.timestamp = currentTime.milliseconds;
+	rep.rotation = 0;
+	rep.nSizes = 0;
+	rep.nVisualSets = 0;
+	rep.nAccelerated = 0;
+	rep.nRotations = 0;
+	rep.sizeSetID = 0;
+	rep.visualSetID = 0;
+	extra = 0;
+	extraLen = 0;
+    }
+    else
+    {
+	int		    i, j;
+	int		    nSetOfVisualSetsElements;
+	RRSetOfVisualSetPtr pSetOfVisualSets;
+	int		    nVisualSetElements;
+	RRVisualSetPtr	    pVisualSet;
+	xScreenSizes	    *size;
+	CARD16		    *data16;
+	CARD32		    *data32;
     
-    RRGetInfo (pDraw->pScreen);
+	RRGetInfo (pScreen);
 
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.timestamp = 
-    rep.rotation =
-    rep.nSizes = 
-    rep.nVisualSets = 
-    rep.nAccelerated = 
-    rep.nRotations =
-    rep.sizeSetID =
-    rep.visualSetID = 0;
-    
+	rep.type = X_Reply;
+	rep.length = 0;
+	rep.sequenceNumber = client->sequence;
+	rep.timestamp = pScrPriv->lastSetTime.milliseconds;
+	rep.rotation = pScrPriv->rotation;
+	rep.nSizes = pScrPriv->nSizesInUse;
+	rep.nVisualSets = pScrPriv->nVisualSetsInUse;
+	rep.nSetsOfVisualSets = pScrPriv->nSetsOfVisualSetsInUse;
+	rep.nAccelerated = RRNumMatchingVisualSets (pScreen, wVisual(pWin));
+	rep.nRotations = Ones (pScrPriv->rotations);
+	if (pScrPriv->pSize)
+	    rep.sizeSetID = pScrPriv->pSize->id;
+	else
+	    return BadImplementation;
+	if (pScrPriv->pVisualSet)
+	    rep.visualSetID = pScrPriv->pVisualSet->id;
+	else
+	    return BadImplementation;
+	/*
+	 * Count up the total number of spaces needed to transmit
+	 * the sets of visual sets
+	 */
+	nSetOfVisualSetsElements = 0;
+	for (i = 0; i < pScrPriv->nSetsOfVisualSets; i++)
+	{
+	    pSetOfVisualSets = &pScrPriv->pSetsOfVisualSets[i];
+	    if (pSetOfVisualSets->referenced)
+		nSetOfVisualSetsElements += pSetOfVisualSets->nsets + 1;
+	}
+	/*
+	 * Count up the total number of spaces needed to transmit
+	 * the visual sets
+	 */
+	nVisualSetElements = 0;
+	for (i = 0; i < pScrPriv->nVisualSets; i++)
+	{
+	    pVisualSet = &pScrPriv->pVisualSets[i];
+	    if (pVisualSet->referenced)
+		nVisualSetElements += pVisualSet->nvisuals + 1;
+	}
+	/*
+	 * Allocate space for the extra information
+	 */
+	extraLen = (rep.nSizes * sizeof (xScreenSizes) +
+		    nVisualSetElements * sizeof (CARD32) +
+		    nSetOfVisualSetsElements * sizeof (CARD16) +
+		    rep.nAccelerated * sizeof (CARD16) +
+		    rep.nRotations * sizeof (CARD16));
+	extra = (CARD8 *) xalloc (extraLen);
+	if (!extra)
+	    return BadAlloc;
+	/*
+	 * First comes the size information
+	 */
+	size = (xScreenSizes *) extra;
+	for (i = 0; i < pScrPriv->nSizes; i++)
+	{
+	    if (pScrPriv->pSizes[i].referenced)
+	    {
+		size->widthInPixels = pScrPriv->pSizes[i].width;
+		size->heightInPixels = pScrPriv->pSizes[i].height;
+		size->widthInMillimeters = pScrPriv->pSizes[i].mmWidth;
+		size->heightInMillimeters = pScrPriv->pSizes[i].mmHeight;
+		size->visualGroup = pScrPriv->pSetsOfVisualSets[pScrPriv->pSizes[i].setOfVisualSets].id;
+		if (client->swapped)
+		{
+		    swaps (&size->widthInPixels, n);
+		    swaps (&size->heightInPixels, n);
+		    swaps (&size->widthInMillimeters, n);
+		    swaps (&size->heightInMillimeters, n);
+		    swaps (&size->visualGroup, n);
+		}
+		size++;
+	    }
+	}
+	data32 = (CARD32 *) size;
+	/*
+	 * Next comes the visual sets
+	 */
+	for (i = 0; i < pScrPriv->nVisualSets; i++)
+	{
+	    pVisualSet = &pScrPriv->pVisualSets[i];
+	    if (pVisualSet->referenced)
+	    {
+		*data32++ = pVisualSet->nvisuals;
+		for (j = 0; j < pVisualSet->nvisuals; j++)
+		    *data32++ = pVisualSet->visuals[j]->vid;
+	    }
+	}
+	if (client->swapped)
+	    SwapLongs (data32 - nVisualSetElements, nVisualSetElements);
+	/*
+	 * Next comes the sets of visual sets
+	 */
+	data16 = (CARD16 *) data32;
+	for (i = 0; i < pScrPriv->nSetsOfVisualSets; i++)
+	{
+	    pSetOfVisualSets = &pScrPriv->pSetsOfVisualSets[i];
+	    if (pSetOfVisualSets->referenced)
+	    {
+		*data16++ = (CARD16) pSetOfVisualSets->nsets;
+		for (j = 0; j < pSetOfVisualSets->nsets; j++)
+		{
+		    pVisualSet = &pScrPriv->pVisualSets[pSetOfVisualSets->sets[j]];
+		    *data16++ = (CARD16) pVisualSet->id;
+		}
+	    }
+	}
+	/*
+	 * Now for the list of possible rotations
+	 */
+	if (pScrPriv->rotations & RR_ROTATE_0)
+	    *data16++ = 0;
+	if (pScrPriv->rotations & RR_ROTATE_90)
+	    *data16++ = 90;
+	if (pScrPriv->rotations & RR_ROTATE_180)
+	    *data16++ = 180;
+	if (pScrPriv->rotations & RR_ROTATE_270)
+	    *data16++ = 270;
+	/*
+	 * Finally, the list of accelerated visual sets
+	 */
+	RRGetMatchingVisualSets (pScreen, wVisual (pWin), 
+				 (VISUALSETID *) data16);
+	data16 += rep.nAccelerated;
+	if (client->swapped)
+	    SwapShorts ((CARD16 *) data32, data16 - (CARD16 *) data32);
+	if ((CARD8 *) data16 - (CARD8 *) extra != extraLen)
+	    FatalError ("RRGetScreenInfo bad extra len %d != %d\n",
+			(CARD8 *) data16 - (CARD8 *) extra, extraLen);
+	rep.length = extraLen >> 2;
+    }
     if (client->swapped) {
-    	swaps(&rep.sequenceNumber, n);
-    	swapl(&rep.length, n);
+	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length, n);
+	swapl(&rep.timestamp, n);
+	swaps(&rep.rotation, n);
+	swaps(&rep.nSizes, n);
+	swaps(&rep.nVisualSets, n);
+	swaps(&rep.nAccelerated, n);
+	swaps(&rep.nRotations, n);
+	swaps(&rep.sizeSetID, n);
+	swaps(&rep.visualSetID, n);
     }
     WriteToClient(client, sizeof(xRRGetScreenInfoReply), (char *)&rep);
+    if (extraLen)
+    {
+	WriteToClient (client, extraLen, extra);
+	xfree (extra);
+    }
     return (client->noClientException);
 }
 
 static int
 ProcRRSetScreenConfig (ClientPtr client)
 {
-    xRRSetScreenConfigReply rep;
-    rrScrPrivPtr pScrPriv;
-    register int n;
-    register DrawablePtr pDraw;
-    TimeStamp time;
     REQUEST(xRRSetScreenConfigReq);
+    xRRSetScreenConfigReply rep;
+    DrawablePtr		    pDraw;
+    int			    n;
+    ScreenPtr		    pScreen;
+    rrScrPrivPtr	    pScrPriv;
+    TimeStamp		    time;
 
     REQUEST_SIZE_MATCH(xRRSetScreenConfigReq);
     SECURITY_VERIFY_DRAWABLE(pDraw, stuff->drawable, client,
 			     SecurityWriteAccess);
-    /* 
-     * make sure any input is processed, as some screen
-     * may have a pending config event outstanding 
-     * not yet reflected back to users. Time only goes forwards...
-     */
-    UpdateCurrentTime();
 
     fprintf(stderr, "got to procRRSetScreenConfig, draw = %d, time = %d, sizeseti = %d, visualseti = %d, rotation = %d\n",
 	    pDraw,
@@ -407,21 +711,103 @@ ProcRRSetScreenConfig (ClientPtr client)
 	    stuff->visualSetIndex,
 	    stuff->rotation);
 
-    time = ClientTimeToServerTime(stuff->timestamp);
+    pScreen = pDraw->pScreen;
 
-    /* 
-     * if the client's time stamp is older than the last time
-     *  the client got screen information, then we should  
-     */
+    pScrPriv= rrGetScrPriv(pScreen);
+    
+    if (!pScrPriv)
+    {
+	time = currentTime;
+    }
+    else
+    {
+	if (!RRGetInfo (pScreen))
+	    return BadAlloc;
 
-    /* call out to ddx routine */
+	time = ClientTimeToServerTime(stuff->timestamp);
+    
+	/* 
+	 * if the client's time stamp is not the same as the last time
+	 * the screen information changed, then ignore the request
+	 */
+    
+	if (CompareTimeStamps (time, pScrPriv->lastSetTime) == 0)
+	{
+	    RRSizeInfoPtr	pSize;
+	    RRVisualSetPtr	pVisualSet;
+	    RRSetOfVisualSetPtr	pSetOfVisualSets;
+	    int			i;
+	    int			rotation;
+	    short		oldWidth, oldHeight;
+
+	    for (i = 0; i < pScrPriv->nSizes; i++)
+	    {
+		pSize = &pScrPriv->pSizes[i];
+		if (pSize->referenced && pSize->id == stuff->sizeSetIndex)
+		    break;
+	    }
+	    if (i == pScrPriv->nSizes)
+	    {
+		client->errorValue = stuff->sizeSetIndex;
+		return BadValue;
+	    }
+	    for (i = 0; i < pScrPriv->nVisualSets; i++)
+	    {
+		pVisualSet = &pScrPriv->pVisualSets[i];
+		if (pVisualSet->referenced && pVisualSet->id == stuff->visualSetIndex)
+		    break;
+	    }
+	    if (i == pScrPriv->nVisualSets)
+	    {
+		client->errorValue = stuff->visualSetIndex;
+		return BadValue;
+	    }
+	    pSetOfVisualSets = &pScrPriv->pSetsOfVisualSets[pSize->setOfVisualSets];
+	    for (i = 0; i < pSetOfVisualSets->nsets; i++)
+	    {
+		if (pSetOfVisualSets->sets[i] == pVisualSet - pScrPriv->pVisualSets)
+		    break;
+	    }
+	    if (i == pSetOfVisualSets->nsets)
+		return BadMatch;
+	    switch (stuff->rotation) {
+	    case 0:	rotation = RR_ROTATE_0; break;
+	    case 90:	rotation = RR_ROTATE_90; break;
+	    case 180:	rotation = RR_ROTATE_180; break;
+	    case 270:	rotation = RR_ROTATE_270; break;
+	    default:
+		client->errorValue = stuff->rotation;
+		return BadValue;
+	    }
+	    if (!pScrPriv->rotations & rotation)
+		return BadMatch;
+	    
+	    oldWidth = pScreen->width;
+	    oldHeight = pScreen->height;
+	    
+	    /* call out to ddx routine */
+	    if (!(*pScrPriv->rrSetConfig) (pScreen, rotation, 0, pSize, pVisualSet))
+		return BadAlloc;
+	    /* set current configuration */
+	    RRSetCurrentConfig (pScreen, rotation, 0, pSize, pVisualSet);
+	    /* tell interested clients */
+	    WalkTree (pScreen, TellChanged, (pointer) pScreen);
+	    if (oldWidth != pScreen->width || oldHeight != pScreen->height)
+		RRSendConfigNotify (pScreen);
+	    RREditConnectionInfo (pScreen);
+	    ScreenRestructured (pScreen);
+	}
+	time = pScrPriv->lastSetTime;
+    }
 
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
+    rep.newtimestamp = time.milliseconds;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
+	swapl(&rep.newtimestamp, n);
     }
     WriteToClient(client, sizeof(xRRSetScreenConfigReply), (char *)&rep);
 
@@ -557,7 +943,7 @@ SProcRRGetScreenInfo (ClientPtr client)
     REQUEST(xRRGetScreenInfoReq);
 
     swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
+    swapl(&stuff->window, n);
     return ProcRRGetScreenInfo(client);
 }
 
@@ -902,4 +1288,22 @@ RRRegisterSize (ScreenPtr	    pScreen,
     pNew[pScrPriv->nSizes++] = tmp;
     pScrPriv->pSizes = pNew;
     return &pNew[pScrPriv->nSizes-1];
+}
+
+void
+RRSetCurrentConfig (ScreenPtr	    pScreen,
+		    int		    rotation,
+		    int		    swap,
+		    RRSizeInfoPtr   pSize,
+		    RRVisualSetPtr  pVisualSet)
+{
+    rrScrPriv (pScreen);
+
+    if (!pScrPriv)
+	return;
+
+    pScrPriv->rotation = rotation;
+    pScrPriv->swap = swap;
+    pScrPriv->pSize = pSize;
+    pScrPriv->pVisualSet = pVisualSet;
 }

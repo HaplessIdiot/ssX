@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.1 2001/05/23 03:29:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -28,7 +28,8 @@
 XExtensionInfo XRRExtensionInfo;
 char XRRExtensionName[] = RANDR_NAME;
 
-static int XRRCloseDisplay();
+static int
+XRRCloseDisplay (Display *dpy, XExtCodes *codes);
 
 static /* const */ XExtensionHooks rr_extension_hooks = {
     NULL,				/* create_gc */
@@ -115,6 +116,67 @@ Status XRRQueryVersion (Display *dpy,
     return 1;
 }
 
+Time XRRGetScreenInfo (Display		*dpy,
+		       Window		win,
+		       XRRScreenSize	**sizes,
+		       int		*nsize)
+{
+    XExtDisplayInfo *info = XRRFindDisplay(dpy);
+    xRRGetScreenInfoReply   rep;
+    xRRGetScreenInfoReq	    *req;
+    int			    nbytes;
+    int			    n;
+    xScreenSizes	    *psize;
+    char		    *data;
+
+    RRCheckExtension (dpy, info, 0);
+
+    LockDisplay (dpy);
+    GetReq (RRGetScreenInfo, req);
+    req->reqType = info->codes->major_opcode;
+    req->randrReqType = X_RRGetScreenInfo;
+    req->window = win;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xFalse))
+    {
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return CurrentTime;
+    }
+    nbytes = (long) rep.length << 2;
+    data = (char *) Xmalloc ((unsigned) nbytes);
+    if (!data)
+    {
+	_XEatData (dpy, (unsigned long) nbytes);
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return CurrentTime;
+    }
+    _XReadPad (dpy, data, nbytes);
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    *sizes = Xmalloc (rep.nSizes * sizeof (XRRScreenSize));
+    if (!*sizes)
+    {
+	*nsize = 0;
+	return CurrentTime;
+    }
+    *nsize = rep.nSizes;
+    psize = (xScreenSizes *) data;
+    for (n = 0; n < rep.nSizes; n++)
+    {
+	(*sizes)[n].width = psize[n].widthInPixels;
+	(*sizes)[n].height = psize[n].heightInPixels;
+	(*sizes)[n].mwidth = psize[n].widthInMillimeters;
+	(*sizes)[n].mheight = psize[n].heightInMillimeters;
+	(*sizes)[n].set = 0;
+    }
+    return (rep.timestamp);
+}
+    
+void XRRFreeScreenInfo (XRRScreenSize	*sizes)
+{
+}
+
 Time XRRSetScreenConfig (Display *dpy,
 			 Drawable draw,
 			 int size_set_index,
@@ -136,7 +198,8 @@ Time XRRSetScreenConfig (Display *dpy,
     req->sizeSetIndex = size_set_index;
     req->visualSetIndex = visual_set_index;
     req->rotation = rotation;
-    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue) == 0) 
+    req->timestamp = timestamp;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) 
       rep.newtimestamp = CurrentTime;
     UnlockDisplay (dpy);
     SyncHandle ();
