@@ -51,8 +51,6 @@ GCFuncs cfb32GCFuncs_Underlay = {
 static void
 cfb32DestroyGC_Underlay(GCPtr pGC)
 {
-    cfb8_32GCPtr pGCPriv = CFB8_32_GET_GC_PRIVATE(pGC);
-
     if (pGC->freeCompClip)
         REGION_DESTROY(pGC->pScreen, pGC->pCompositeClip);
 

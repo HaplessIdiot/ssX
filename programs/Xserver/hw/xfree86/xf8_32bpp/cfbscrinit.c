@@ -204,6 +204,19 @@ cfb8_32FinishScreenInit(
     return TRUE;
 }
 
+static void
+cfb8_32EnableDisableFBAccess (
+    int index,
+    Bool enable
+){
+    ScreenPtr pScreen = screenInfo.screens[index];
+    cfb8_32ScreenPtr pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
+    
+    miOverlaySetRootClip(pScreen, enable);
+
+    (*pScreenPriv->EnableDisableFBAccess) (index, enable);
+}
+
 Bool
 cfb8_32ScreenInit(
     ScreenPtr pScreen,
@@ -220,6 +233,9 @@ cfb8_32ScreenInit(
 
     pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
     pScreenPriv->key = pScrn->colorKey;
+
+    pScreenPriv->EnableDisableFBAccess = pScrn->EnableDisableFBAccess;
+    pScrn->EnableDisableFBAccess = cfb8_32EnableDisableFBAccess;
 
     return cfb8_32FinishScreenInit(
 		pScreen, pbits, xsize, ysize, dpix, dpiy, width);

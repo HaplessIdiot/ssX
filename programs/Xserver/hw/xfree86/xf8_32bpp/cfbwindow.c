@@ -12,6 +12,7 @@
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
+#include "mioverlay.h"
 
 
 /* We don't bother with cfb's fastBackground/Border so we don't
