@@ -1,3 +1,4 @@
+3293. Fix VESA mode typos and some warnings (Marc La France).
 3292. Add GeForce/Quadro support to the NVIDIA driver (Chas Inman, 
       Mark Vojkovich).
 3291. Fix a DGA colormap problem (Mark Vojkovich).
@@ -9020,4 +9021,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.845 1999/11/02 16:16:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.848 1999/11/12 02:14:06 mvojkovi Exp $

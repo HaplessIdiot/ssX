@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: /X11R6/x-cvs/xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.69 1999/10/24 18:01:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.70 1999/11/03 20:53:42 alanh Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -86,11 +86,6 @@ static Bool	TRIDENTEnterVT(int scrnIndex, int flags);
 static void	TRIDENTLeaveVT(int scrnIndex, int flags);
 static Bool	TRIDENTCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	TRIDENTSaveScreen(ScreenPtr pScreen, Bool unblank);
-
-/* Required if the driver supports mode switching */
-Bool	TRIDENTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-/* Required if the driver supports moving the viewport */
-void	TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 static void	TRIDENTFreeScreen(int scrnIndex, int flags);
