@@ -1,6 +1,6 @@
-$XFree86: xc/programs/xedit/lisp/TODO,v 1.7 2002/11/08 08:00:55 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/TODO,v 1.8 2002/11/23 08:26:47 paulo Exp $
 
-LAST UPDATED:	$Date: 2002/11/23 08:26:47 $
+LAST UPDATED:	$Date: 2002/12/16 03:59:27 $
 
   Small todo list
 
@@ -79,6 +79,3 @@ o Write some "demos" (maybe a file manager or a simple mail reader) using the
   Xt/Xaw bindings (needs modules working in all systems).
 o Remove all calls to the macros GCDisable and GCEnable. This is unsafe
   and should be removed.
-o Write a set of tests. The interpreter is expected to be only a subset of
-  Common Lisp, but what it understand should generate the expected/acceptable
-  results. Probably there are yet errors in the math code.

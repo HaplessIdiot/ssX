@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.66 2002/12/02 14:49:44 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.67 2002/12/04 05:27:57 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -116,6 +116,10 @@ extern void unsetenv(const char *name);
 	code ? LispObjectCompare(left, right, code) != NIL :	\
 	       APPLY2(predicate, left, right) != NIL
 
+#define FUNCTION_CHECK(predicate)				\
+    if (FUNCTIONP(predicate))					\
+	predicate = (predicate)->data.atom->object
+
 #define CHECK_TEST_0()						\
     if (test != UNSPEC && test_not != UNSPEC)			\
 	LispDestroy("%s: specify either :TEST or :TEST-NOT",	\
@@ -134,6 +138,7 @@ extern void unsetenv(const char *name);
 	lambda = test_not;					\
 	expect = 0;						\
     }								\
+    FUNCTION_CHECK(lambda);					\
     code = FCODE(lambda)
 
 
@@ -3776,6 +3781,7 @@ LispFindOrPosition(LispBuiltin *builtin,
 	    predicate = test_not;
 	    expect = 0;
 	}
+	FUNCTION_CHECK(predicate);
 	code = FCODE(predicate);
     }
 
@@ -4803,6 +4809,7 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 	    lambda = test_not;
 	    expect = 0;
 	}
+	FUNCTION_CHECK(lambda);
     }
     else
 	expect = comparison == IFNOT ? 0 : 1;
@@ -6052,6 +6059,7 @@ Lisp_Sort(LispBuiltin *builtin)
     else
 	work = list;
 
+    FUNCTION_CHECK(predicate);
     code = FCODE(predicate);
     work = LispMergeSort(work, predicate, key, code);
 

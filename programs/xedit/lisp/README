@@ -1,24 +1,28 @@
-$XFree86: xc/programs/xedit/lisp/README,v 1.11 2002/11/10 16:29:03 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/README,v 1.12 2002/11/23 08:26:47 paulo Exp $
 
-LAST UPDATED:	$Date: 2002/11/23 08:26:47 $
+LAST UPDATED:	$Date: 2002/12/16 03:59:27 $
 
 
     SUMMARY
 
-  This is a small lisp interpreter for xedit. In the current implementation,
-it is just reading from stdin and writing to stdout/stderr. The code in xedit
-just wraps these and read/write from a pipe to the lisp interpreter. This
-is expected to change at some time, so that it should be possible to manage
-the xedit text buffers from lisp code.
+  This is a small lisp interpreter for xedit. It implements a subset of
+Common Lisp and the xedit package implements several of the basic Emacs
+lisp functions.
 
-  It has a very simple method for loading shared modules, slightly based on
-the XFree86 loader code, that is currently disabled by default. To enable it,
-edit lisp.cf and change BuildSharedLispModules to YES.
-
-  Assuming you have built it with BuildSharedLispModules enabled, you can build
-a small test application can be built in this directory running "make lsp".
-Two lisp programs are available in the test directory. To test the programs
-run "./lsp test/hello.lsp" or "./lsp test/widgets.lsp".
+(shared modules not broken, but needs a redesign for better performance,
+ but won't be made available in the default build probably for a long time,
+ it would be really better to generate the interface dinamically, and/or just
+ link agains't the required libraries and use a ffi interface)
++------------------------------------------------------------------------
+|   It has a very simple method for loading shared modules, slightly based on
+| the XFree86 loader code, that is currently disabled by default. To enable it,
+| edit lisp.cf and change BuildSharedLispModules to YES.
+|
+|   Assuming you have built it with BuildSharedLispModules enabled, you can build
+| a small test application can be built in this directory running "make lsp".
+| Two lisp programs are available in the test directory. To test the programs
+| run "./lsp test/hello.lsp" or "./lsp test/widgets.lsp".
++------------------------------------------------------------------------
 
   Currently, it should be used as an helper and/or a small calculator embedded
 in xedit. For the future it should be possible to write entire interfaces
@@ -36,83 +40,46 @@ C-g	- will send an SIGINT to the lisp process, and that process will
 	  stop whatever it was processing and jump to the toplevel,
 	  to wait for more input.
 
-Note that C-j currently will only work in the *scratch* buffer.
+Note that C-j will only work in the *scratch* buffer.
 
 
-    IMPLEMENTATION SUMMARY
+     NOTES
 
-  The interpreter is expected to be a subset of Common Lisp, and is not
-expected to invent any new features or interfaces, just become more and
-more compatible with Common Lisp. The only non Common Lisp features, currently
-is/are:
-
-  o It has some Emacs Lisp functions, that should be removed and replaced with
-    the Common Lisp equivalent ones.
-
-
-    WHY?
-
-  I have used Emacs for a long time, and since I was working as volunteer to
-make of Xaw a better user interface, xedit seemed to need some work. For at
-least 3 years now, I don't use any other text editor than xedit, unless I
-need for some reason to work on the text console.
-
-
-    DEBUGGER
-
-  There is a, currently, very simple debugger implement in the interpreter.
-The debugger is now optional, and off by default. To make it available,
-you need to recompile with -DDEBUGGER.
-To use the debugger, run the lsp sample program as "./lsp -d", and optionally
-pass a second parameter, for the file to be interpreted. Once the debugger
-prompt is visible, type "help" for a summary of options. To leave the debugger
-type "continue".
-  Note that the debugger is still very simple, it won't work from xedit, and
-won't drop to the debugger on "fatal errors". It allows adding breakpoints to
-functions and watchpoints to variables. Support for changing data and going to
-the debugger on fatal errors should be added at some time.
+  The improvements to xedit including the several possibilites to extend
+the editor using Lisp are expected to allow making of xedit a versatile
+text editor for programming, but there is code being (slowly) developed
+that should also make it useable as a small word processor, for things
+like WYSIWYG html, etc.
+  The xedit development is being done very slowly, maybe it will get
+somewhere someday, but it is a pet/hobby project, there is no intention
+of making of it an end user editor (the idea is to make it an useful
+development tool).
+  In some aspects the development is trying to mimic several Emacs
+features, but there is no intention of competition (if xedit ever get
+something better than Emacs, I hope that it serves as a motivation to
+make of Emacs an even better editor), actually it is expected to explore
+different areas and use alternate solutions for the implementation.
+  Most work in a computer is done in a text editor and the more the editor
+can help the user the better.
 
 
-    STRUCTURE IMPLEMENTATION OVERVIEW
-
-    Assuming structure person is created as:
-	(defstruct person age first-name last-name)
-    The interpreter will gc protect the arguments in the list DEF defined as
-	(person age first-name last-name), and create the special atoms:
-	make-person	  with structure property DEF function STRUCT_CONSTRUCTOR
-	person-p	  with structure property DEF function STRUCT_CHECK
-	person-age	  with structure property DEF function 0
-	person-first-name with structure property DEF function 1
-	person-last-name  with structure property DEF function 2
-    When an accessor function is called, as in:
-	(person-age (make-person :age 30))
-    The evaluator will internally translate the code to:
-	(xedit::struct-access 'person-age (xedit::make-struct 'make-person :age 30))
-    The function xedit::struct-access will fetch the structure property
-from the atom person-age to determine the offset, and also make sure it's
-argument is of type person. The function xedit::make-struct only checks that
-the structure property is set to the atom person, and that the age field is
-a person field name.
-    It is possible to override the setf method for structures, but a suitable
-one is constructed, for example:
-	(setf (person-first-name some-person) 'MARIA)
-    Internally, it will be evaluated as this definition where provided:
-	(defsetf person-first-name (struct) (value)
-	    `(xedit::struct-store 'person-first-name ,struct ,value))
-    And the code executed is:
-	(xedit::struct-store 'person-first-name some-person 'MARIA)
-    Type checking is also done with a single function, as the code:
-	(person-p some-person)
-    Is internally translated to:
-	(xedit::struct-type 'person-p some-person)
-    The current structure implementation, like almost everything in the
-interpreter is very simple, and calling any of the xedit::* functions
-explicitly is unsupported.
-    Structure redefinition is supported, but not encouraged, and you should
-do it only when sure no instances of the previous definition exists, previous
-access method functions are only removed if the new definition has a field
-with the same name, and calling the new methods on old objects will generate
-errors.
+(debugger is broken and very slow, no prevision for fixing it, but is
+ expected to work correctly for interpreted only code)
++------------------------------------------------------------------------
+|     DEBUGGER
+|
+|   There is a, currently, very simple debugger implement in the interpreter.
+| The debugger is now optional, and off by default. To make it available,
+| you need to recompile with -DDEBUGGER.
+| To use the debugger, run the lsp sample program as "./lsp -d", and optionally
+| pass a second parameter, for the file to be interpreted. Once the debugger
+| prompt is visible, type "help" for a summary of options. To leave the debugger
+| type "continue".
+|   Note that the debugger is still very simple, it won't work from xedit, and
+| won't drop to the debugger on "fatal errors". It allows adding breakpoints to
+| functions and watchpoints to variables. Support for changing data and going to
+| the debugger on fatal errors should be added at some time.
++------------------------------------------------------------------------
 
 
     COMPILER
@@ -192,7 +159,7 @@ of shorts and ints.
 current value", so the code generator can choose register allocation for
 loop control variables, commonly used variables, etc, for example. Jumps
 should have 3 types: byte relative, 2 bytes relative and 4 bytes relative.
-For now there is only sizeof(int) byte relative jumps, byte relative jumps
+For now there is only 2 byte relative jumps, byte relative jumps
 can show a significant performance increase, but they are disable until
 it is decided how inlined functions will work, if it just updates the bytecode
 header and cut&past the bytecode, jumps must be updated, and some jumps
@@ -203,13 +170,11 @@ may not fit anymore in a byte.
 
   There are plenty of possibilities to make the interpreter run faster. Some
 optimizations that can make it run quite faster in certain cases are:
-  o Better object memory layout and gc. It is not very smart to traverse
-    all list/vector elements to mark the objects, should only need to
-    mark the first element of a list/vector.
-    The current memory allocation code is very bad also, it try to keep
-    3 times more free objects than the currently used number, this can
-    consume a lot of memory. The reason is to reduce the gc time cost
-    so that it will in average miss only one in every 4 collect tries.
+  o Better object memory layout and gc. The current memory allocation code
+    is very bad, it try to keep 3 times more free objects than the currently
+    used number, this can consume a lot of memory. The reason is to reduce
+    the gc time cost so that it will in average miss only one in every 4
+    collect tries.
   o Implement real vectors, currently they are just a list, so it cannot
     just deference a given index, and gc time is very long also.
   o Most lists are never changed once created, it could somehow add an index
