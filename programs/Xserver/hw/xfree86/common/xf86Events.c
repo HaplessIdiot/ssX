@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.124 2001/11/30 12:11:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.125 2002/01/23 18:56:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,6 +26,7 @@
 /* [JCH-96/01/21] Extended std reverse map to four buttons. */
 
 #include "X.h"
+#include "Xpoll.h"
 #include "Xproto.h"
 #include "misc.h"
 
@@ -35,7 +36,6 @@
 #include "xf86Priv.h"
 #define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
-#include "Xpoll.h"
 #include "atKeynames.h"
 
 
