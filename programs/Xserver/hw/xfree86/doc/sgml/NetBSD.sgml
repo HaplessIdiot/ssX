@@ -206,20 +206,22 @@ below.
 <tscreen><verb>
  cd /usr/X11R6
 
- tar xzf X312Ddoc.tgz
- tar xzf X312Dbin.tgz
- tar xzf X312Dlib.tgz 
- tar xzf X312Dfont.tgz
- tar xzf X312Dman.tgz
+ tar xzf X312doc.tgz
+ tar xzf X312bin.tgz
+ tar xzf X312lib.tgz 
+ tar xzf X312font.tgz
+ tar xzf X312man.tgz
 
- tar xzf X312Dprog.tgz
- tar xzf X312Dfsrv.tgz
- tar xzf X312Dcfg.tgz
+ tar xzf X312link.tgz
+ tar xzf X312prog.tgz
+ tar xzf X312xfnt.tgz
+ tar xzf X312fs.tgz
+ tar xzf X312cfg.tgz
 
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
- tar xzf X312D<server>.tgz
+ tar xzf X312<server>.tgz
 </verb></tscreen>
 </enum>
 
@@ -708,7 +710,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.23 1996/02/25 01:25:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.22 1996/02/24 05:59:07 dawes Exp $
 
 
 
