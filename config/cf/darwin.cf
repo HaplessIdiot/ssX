@@ -35,6 +35,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define HasGroff               YES
 #endif
 
+/* Libtool on Darwin always uses minor numbers */
+#define LibtoolMinorVersions	YES
+
 /* The most common file system, HFS+, is not case sensitive. */
 #ifndef CaseSensitiveFileSystem
 # define CaseSensitiveFileSystem NO
