@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2E (beta version)
  <author>The XFree86 Project, Inc
- <date>11 May 1996
+ <date>12 May 1996
 
 
 <abstract>
@@ -157,11 +157,10 @@ It is expected that it will reappear in some form in a future release.
 <p>
 <itemize>
   <item>Problems with the colour support in xterm have been fixed.
-  <item>POSIX termios support has been added for xterm on BSD systems.
+  <item>POSIX termios support has been added for xterm on most BSD systems.
 	This removes the need for the BSD kernel to built with the
-	COMPAT_43 option.  We've noticed that 'rlogin' on FreeBSD 2.0.5
-	doesn't work when run from the new xterm.  This doesn't appear to
-	be a problem on more recent versions of FreeBSD or on NetBSD.
+	COMPAT_43 option.  There are problems with this on FreeBSD 2.0.5
+	and earlier, so it isn't used in that case.
 </itemize>
 <p>
 <sect> New Features in 3.1.2D
@@ -894,7 +893,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.26 1996/05/12 11:58:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.27 1996/05/12 12:36:35 dawes Exp $
 </verb>
 
 </article>

@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2E (beta version)
   The XFree86 Project, Inc
 
-  11 May 1996
+  12 May 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2E, 3.1.2D,
@@ -165,11 +165,10 @@
 
      o  Problems with the colour support in xterm have been fixed.
 
-     o  POSIX termios support has been added for xterm on BSD systems.
-        This removes the need for the BSD kernel to built with the
-        COMPAT_43 option.  We've noticed that 'rlogin' on FreeBSD 2.0.5
-        doesn't work when run from the new xterm.  This doesn't appear
-        to be a problem on more recent versions of FreeBSD or on NetBSD.
+     o  POSIX termios support has been added for xterm on most BSD
+        systems.  This removes the need for the BSD kernel to built with
+        the COMPAT_43 option.  There are problems with this on FreeBSD
+        2.0.5 and earlier, so it isn't used in that case.
 
   4.  New Features in 3.1.2D
 
@@ -194,6 +193,7 @@
         allows changes to modes by clients using a local connection
         type.  There is also an option to completely disable mode
         changes via this extension.
+
 
 
      o  A new server extension called "XFree86-Misc" has been added.
@@ -995,7 +995,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.27 1996/05/12 12:36:35 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.28 1996/05/12 13:10:21 dawes Exp $
 
 
 
