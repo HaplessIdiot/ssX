@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.8 2001/01/28 22:49:26 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.9 2001/02/04 03:19:28 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -193,6 +193,9 @@ XAADoComposite (
     CARD32 *formats;
     BoxPtr pbox;
     int nbox;
+
+    if(!REGION_NUM_RECTS(pDst->pCompositeClip))
+        return TRUE;
 
     if(!infoRec->pScrn->vtSema || 
       ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
@@ -422,6 +425,9 @@ XAADoGlyphs (CARD8         op,
 {
     ScreenPtr	pScreen = pDst->pDrawable->pScreen;
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+
+    if(!REGION_NUM_RECTS(pDst->pCompositeClip))
+	return TRUE;
 
     if(!infoRec->pScrn->vtSema || 
       ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
