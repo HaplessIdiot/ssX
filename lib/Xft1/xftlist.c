@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft1/xftlist.c,v 1.2 2002/03/01 01:00:53 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftlist.c,v 1.3 2002/06/21 06:15:14 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -134,7 +134,7 @@ XftListFontsPatternObjects (Display	    *dpy,
 	if (sets[nsets])
 	    nsets++;
     }
-    ret = XftListFontSets (sets, nsets, pattern, os);
+    ret = XftListFontSets (sets, nsets, pattern_trim, os);
     XftPatternDestroy (pattern_trim);
     return ret;
 }
