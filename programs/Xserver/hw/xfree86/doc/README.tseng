@@ -380,7 +380,7 @@ If the server gets it wrong, you may end up with a severe system crash (e.g.
 if it maps the video memory right on top of your system memory). If this hap-
 pens, RESET IMMEDIATELY. Do not try to shut down cleanly, because the X-server,
 thinking it writes to the VGA memory, will write to system memory instead, and
-you'll by writing corrupted data to disk. If you did a sync prior to starting
+you'll be writing corrupted data to disk. If you did a sync prior to starting
 the server, there will be no harm done (only a filesystem check which should
 end up clean). DO NOT attempt to redirect the server output to a file on the
 system you're testing on (that will write data after you synced).
@@ -409,10 +409,10 @@ mining the MemBase your card uses, trying to put it a few Mb above the system
 memory is a good first guess. E.g. if you have 16 Mb of RAM, defining MemBase
 0x01000000 (=16M) or 0x01400000 (=20M) may work.
 
-However, this may only work on non-PCI systems, as those mostly map all hard-
-ware above the 2GB mark. But then again, on PCI systems the server is almost
-always able to detect the correct linear memory base address. The only excep-
-tion are those systems with more than one PCI VGA card.
+However, this may only work on non-PCI systems, as PCI systems mostly map all
+hardware above the 2GB mark. But then again, on PCI systems the server is
+almost always able to detect the correct linear memory base address. The only
+exception are those systems with more than one PCI VGA card.
 
 On most VESA local bus (VLB) boards, there is an additional problem with
 address decoding. Some motherboards only decode the first 32, 64 or 128 MB of
@@ -453,8 +453,8 @@ card, and there is no reliable way to read it back from the card. You need to
 know the address in some way, and specify it. The current code does an intelli-
 gent guess at it, but this is no guarantee.
 
-
-
+On ISA cards, things are much more simple: ISA only uses 24 address lines, and
+hence the linear memory MUST lie within the 16 MB boundary. Together with the
 
 
 
@@ -465,6 +465,19 @@ gent guess at it, but this is no guarantee.
 
  Information for Tseng Chipset Users
 
+
+
+4MB granularity of the linear memory base address on ET4000 cards, this means
+that you cannot have more than 12 MB of system memory in the machine if you
+want to use linear memory. Hence, the only realistic MemBase for ISA cards is
+0x00C00000. This is also what the server will automatically choose if it
+detects an ISA W32 card.
+
+WARNING: you must not have over 12 MB of system memory in this case. Or if you
+have it, you must disable access to all memory above the 12 MB mark.  Some
+operating systems allow you to specify at startup how much memory it is allowed
+to use, so you don't have to unplug some memory each time you want to use lin-
+ear memory.
 
 
 9.  Mode issues
@@ -508,6 +521,18 @@ ET6000-based cards however use MDRAM (multi-bank DRAM), which is much faster
 than DRAM. Some 4 MB systems, with 4 MDRAM chips will also do interleaving,
 which should give virtually unlimited memory bandwidth: theoretically >1GB/sec,
 comparing to the already neat 90MB/sec on a 1MB ET4000W32i/p card). Most 4MB
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 models have only 2 MDRAM chips (as do the 2MB models). So far for the marketing
 hype: a real ET6000 card is limited to somewhere around 225 MB/sec.
 
@@ -520,18 +545,6 @@ ation features will be disabled or crippled, resulting in less performance.
 
 To avoid this from happening, try to keep an absolute minimum of 16 kb of free
 memory, in addition to the 1kb already reserved by the accelerator.
-
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
 
 In practice, this small amount of memory should not be a problem. Most cards
 nowadays have 2 MB of video memory, and running 1280x1024 still leaves plenty
@@ -575,6 +588,17 @@ the ET6000. One socketed rectangular chip, mostly with a sticker on it,is the
 BIOS. The remaining chips are (mostly) 2 or 4 other large square chips on it
 with the following markings:
 
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 MDRAM MD9xy	("xy" is a two-digit number) SJ-5-100  (this may differ, but it
 will have the same layout)
 
@@ -586,18 +610,6 @@ The "xy" number tells you how much MEGABITS are in that one chip.
 The amount of RAM on the card is then:
 
 ("xy" * number_of_MDRAM_chips) / 8    Mbytes
-
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
 
 On my board, there are two MD908 chips, which means I have
 
@@ -641,18 +653,6 @@ for the PCI bus and the accelerator.
 
 That is why some modes will be refused, depending on your MDRAM memory layout,
 even if the amount of memory would permit such a mode. See also the trouble
-shooting section to see what can happen if too little memory bandwidth is
-available.
-
-
-13.  Linear addressing and 16bpp/24bpp/32bpp modes
-
-Currently the 16-bit (32768 or 65536 colors), 24-bit (16M colors, packed
-pixel), and 32-bit (16M colors, sparse) pixel support in the SVGA server
-requires linear addressing. (This restriction may be removed in a future ver-
-sion, but with nearly all new cards using the PCI bus (where linear addressing
-poses no problem), removing the linear addressing requirement presently has a
-lower priority than other features.) Option "linear" can be specified in a
 
 
 
@@ -665,6 +665,18 @@ lower priority than other features.) Option "linear" can be specified in a
 
 
 
+shooting section to see what can happen if too little memory bandwidth is
+available.
+
+
+13.  Linear addressing and 16bpp/24bpp/32bpp modes
+
+Currently the 16-bit (32768 or 65536 colors), 24-bit (16M colors, packed
+pixel), and 32-bit (16M colors, sparse) pixel support in the SVGA server
+requires linear addressing. (This restriction may be removed in a future ver-
+sion, but with nearly all new cards using the PCI bus (where linear addressing
+poses no problem), removing the linear addressing requirement presently has a
+lower priority than other features.) Option "linear" can be specified in a
 depth-specific screen section to enable linear addressing; a MemBase setting
 (in the device section) is probably also required on non-PCI based systems, and
 optionally on PCI systems that have trouble finding out for themselves where
@@ -689,6 +701,35 @@ you need at least 4MB of video memory to do this. With only 2MB of (M)DRAM,
 In the XF86Config "Screen" section, a "Display" subsection must be defined for
 each depth that you want to run, with separate Modes and virtual screen size.
 Example (2Mb of video memory):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
 
      Section "screen"
 	 SubSection "Display"
@@ -718,19 +759,6 @@ Example (2Mb of video memory):
      EndSection
 
 
-
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
 14.  Trouble shooting with the SVGA Tseng driver
 
 First of all, make sure that the default modes selected from your XF86Config
@@ -757,6 +785,18 @@ horizontal timing parameters).
 	    This problem shows up especially when drawing operations such as
 	    scrolling or blitting are in progress. There is currently no easy
 	    fix for this, You can try the "fast_dram" option, or use a lower
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 	    dot clock. If that is not sufficient, the "noaccel" option will
 	    almost always help (it leaves more bandwidth for the RAMDAC). In
 	    most cases, this is caused by the video memory not being able to
@@ -785,18 +825,6 @@ horizontal timing parameters).
 	    or a problem with the BitBLT engine. Try the "noaccel" option.
 	    Also check the BIOS settings.
 
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
       `ACL: TIMEOUT' messages from the server.
 	    Same as for the above entry. However, on some systems, the problem
 	    will not go away no matter what you do. It may be related to the
@@ -823,6 +851,18 @@ horizontal timing parameters).
 
       Mostly black or blue screen when using accelerated driver features
 	    If you are seeing a mostly black or blue screen, with only a few
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 	    icons (pixmaps) displayed, this section applies to you.
 
 	    There can be several causes for this.
@@ -851,22 +891,19 @@ horizontal timing parameters).
 	    There are two possible solutions: disable acceleration using the
 	    "noaccel" option, or disable PCI-retry (which is causing the large
 	    bus delays) by removing the "pci_retry" option.  This will cause a
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
 	    very small slowdown of accelerated operations.
 
 	    The "pci_retry" option applies not only to the PCI bus systems, but
 	    has a similar effect on other busses.
+
+      "Cannot read colourmap from VGA.	Will restore with default"
+	    If this error occurs, the server was unable to properly initialize
+	    the RAMDAC, and tries to restore a default color map. On some
+	    unsupported RAMDACs, this will have the adverse effect of removing
+	    all color alltogether, leaving you with a bunch of weird colors, or
+	    with a completely black screen. If that happens, add the ramdac
+	    "normal" statement to the Device section in your XF86Config file.
+	    In most cases, this will solve the color problem.
 
 For other screen drawing related problems, try the "noaccel" option.
 
@@ -880,15 +917,44 @@ ing the XFree86 team.
 In fact, reports (success or failure) are very welcome, especially on configu-
 rations that have not been tested. You can do this via the BetaReport form
 (mail it to report@XFree86.org). You may want to keep an eye on forthcoming
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 beta releases at www.xfree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.26 1997/06/06 06:07:13 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.27 1997/07/26 12:59:07 dawes Exp $
 
 
 
 
 
      $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1017,13 +1083,13 @@ beta releases at www.xfree86.org.
 
 9.  Mode issues  ............................................................ 8
 
-10. Acceleration issues  .................................................... 8
+10. Acceleration issues  .................................................... 9
 
 11. ET6000 memory size facts and fiction  ................................... 9
 
 12. ET6000 memory bandwidth hype and the impact on video modes	............ 10
 
-13. Linear addressing and 16bpp/24bpp/32bpp modes  ......................... 10
+13. Linear addressing and 16bpp/24bpp/32bpp modes  ......................... 11
 
 14. Trouble shooting with the SVGA Tseng driver ............................ 12
 

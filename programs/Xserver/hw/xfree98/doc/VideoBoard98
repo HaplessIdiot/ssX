@@ -26,12 +26,12 @@ NEC
 |WAB-A    (PC-9821A-E01) |S3-928         |Bt481  |ICS2494 |1|   O   | |
 |WAB-A2   (PC-9821A-E11) |MGA2           |       |        |2|   X   | |
 |WAB-B    (PC-9801-85)   |S3-928         |Bt481  |ICS2494 |1|   O   | |
-|WAB-B3   (PC-9801-96)   |CLGD5428       | B/I   |  B/I   |1|   ?   |X|
+|WAB-B3   (PC-9801-96)   |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |FC-WAB-A (PC-9821A-E09) |S3-928         |Bt485  |ICS2494 |2|   o   | |
 |FC-WAB-B (PC-9801-91)   |S3-928         |Bt485  |ICS2494 |2|  o?   | |
 |FC-WAB-X (PC-9821X-B01) |MGA2           |       |        |2|   X   | |
 |FC-WAB-X2(PC-9821X-B03) |MGA2064W       |Ti3026 |Ti3026  |2|   D   |O|
-|MSWIN KIT(PC-9801B3-E02)|CLGD5428       | B/I   |  B/I   |1|   ?   |X|
+|MSWIN KIT(PC-9801B3-E02)|CLGD5428       | B/I   |  B/I   |1|   X   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821As2/U7W/U8W       |S3-928E        |       |        |1|  o?   | |
 |PC9821As3               |S3-864         |S3-SDAC|S3-SDAC |2|   o   |O|
@@ -42,13 +42,13 @@ NEC
 |PC9821An/U8W            |S3-928         |Bt485  |ICS2494 |2|  o?   | |
 |PC9821An/C9T            |MGA2           |       |        |2|   X   | |
 +------------------------+---------------+-------+--------+-+-------+-+
-|PC9821Bf/U8W            |CLGD5428       | B/I   |  B/I   |1|   O   |X|
+|PC9821Bf/U8W            |CLGD5428       | B/I   |  B/I   |1|   o   |X|
 |PC9821Bp/U8W/U7W        |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
-|PC9821Bs/U7W            |CLGD5428       | B/I   |  B/I   |1|   O   |X|
+|PC9821Bs/U7W            |CLGD5428       | B/I   |  B/I   |1|   o   |X|
 |PC9821Be/U7W            |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
-|PC9801BA3/U2/W          |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
-|PC9801BX3/U2/W          |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
+|PC9801BA3/U2/W          |CLGD5428       | B/I   |  B/I   |1|   X   |X|
+|PC9801BX3/U2/W          |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |PC9801BX4/U2            |CLGD5430       | B/I   |  B/I   |1|  o?   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821Xt                |MGA2           |       |        |4|   X   | |
@@ -104,9 +104,9 @@ NEC
 |PC9821Cs2               |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cf                |CLGD5430       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cx                |CLGD5430       | B/I   |  B/I   |1|  o?   |X|
-|PC9821Cx2               |CLGD5430       | B/I   |  B/I   |1|   O   |X|
+|PC9821Cx2               |CLGD5430       | B/I   |  B/I   |1|   o   |X|
 |PC9821Cx3               |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
-|PC9821Cb                |CLGD5430       | B/I   |  B/I   |1|   O   |X|
+|PC9821Cb                |CLGD5430       | B/I   |  B/I   |1|   o   |X|
 |PC9821Cb3               |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cx13              |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cu10              |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
@@ -117,7 +117,7 @@ NEC
 |PC9821Cu16/H            |ProVidia9685   | B/I   |  B/I   |2|   ?   |X|
 |PC9821Ct20/A            |ProVidia9685   | B/I   |  B/I   |2|   ?   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
-|PC9821Ra20/N            |TGUI9682       | B/I   |  B/I   |2|  o?   | |
+|PC9821Ra20/N            |TGUI9682       | B/I   |  B/I   |2|   o   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821RaII23/N,W        |TGUI9682       | B/I   |  B/I   |2|  o?   | |
 |PC9821RvII26/N20        |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
@@ -130,14 +130,14 @@ NEC
 |PC9821C200/C,V          |ProVidia9685   | B/I   |  B/I   |2|   ?   | |
 |PC9821C233/V            |3Dimage975     |       |        |4|   X   | |
 +------------------------+---------------+-------+--------+-+-------+-+
-|PC9821ES                |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
+|PC9821Es                |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 |PC9821F200/X20          |ProVidia9685   | B/I   |  B/I   |2|   ?   | |
 +------------------------+---------------+-------+--------+-+-------+-+
-|PC9821Ne2               |CLGD5428       | B/I   |  B/I   |1|   O   |X|
+|PC9821Ne2               |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |PC9821Np                |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Nf                |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Ns                |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
-|PC9821Nd                |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
+|PC9821Nd                |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |PC9821Ne3               |Cyber9320      | B/I   |  B/I   |1|   X   | |
 |PC9821Nd2               |Cyber9320      | B/I   |  B/I   |1|   X   | |
 |PC9821Na7/HC,H          |Cyber9320      | B/I   |  B/I   |1|   X   | |
@@ -284,8 +284,8 @@ MELCO
 							    
 IO DATA							    
 +------------------------+---------------+-------+--------+-+-------+-+
-|GA-1024/A/AL/NL         |ORIGINAL       |       |        | |   X   | |
-|GA-1280/AL              |ORIGINAL       |       |        | |   X   | |
+|GA-1024/A/AL/NL         |ORIGINAL       |       |        |1|   X   | |
+|GA-1280/AL              |ORIGINAL       |       |        |2|   X   | |
 |GA-98NBI/C,SB16-GA98    |CLGD5434       | B/I   |  B/I   |1|   O   |X|
 |GA-98NB II              |CLGD5434       | B/I   |  B/I   |2|   O   |X|
 |GA-98NB IV              |CLGD5434       | B/I   |  B/I   |4|   O   |X|
@@ -313,7 +313,7 @@ IO DATA
 ICM							    
 +------------------------+---------------+-------+--------+-+-------+-+
 |GI-5434-2M              |CLGD5434       | B/I   |  B/I   |2|  o?   |X|
-|GI-5434-4M              |CLGD5434       | B/I   |  B/I   |4|  o?   |X|
+|GI-5434-4M              |CLGD5434       | B/I   |  B/I   |4|   O   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
 
 
@@ -350,4 +350,4 @@ Sumitomo Kinzoku
 |MGA98-PCI/4             |MGA2           |       |        |4|   X   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.5 1997/06/03 14:12:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.6 1997/07/31 07:16:16 dawes Exp $ */
