@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Xtos.h,v 3.4 2000/08/23 22:10:03 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/Xtos.h,v 3.5 2001/01/17 19:43:13 dawes Exp $ */
 
 #ifndef _Xtos_h
 #define _Xtos_h
@@ -58,7 +58,8 @@ SOFTWARE.
 #endif
 
 #if defined(__alpha) || defined(__alpha__) || \
-    defined(__ia64__) || defined(ia64)
+    defined(__ia64__) || defined(ia64) || \
+    defined(__s390x__)
 #define LONG64
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.44 2001/04/12 20:10:00 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.45 2001/07/23 13:15:49 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -310,6 +310,24 @@ SOFTWARE.
 
 #endif /* alpha */
 
+#if defined (linux) && defined (__s390__)
+
+#define IMAGE_BYTE_ORDER      	MSBFirst
+#define BITMAP_BIT_ORDER      	MSBFirst
+#define GLYPHPADBYTES         	4
+#define GETLEFTBITS_ALIGNMENT  1	
+
+#endif /* linux/s390 */
+
+#if defined (linux) && defined (__s390x__)
+
+#define IMAGE_BYTE_ORDER       MSBFirst
+#define BITMAP_BIT_ORDER       MSBFirst
+#define GLYPHPADBYTES          4
+#define GETLEFTBITS_ALIGNMENT  1
+
+#endif /* linux/s390x */
+
 
 #if defined(__ia64__) || defined(ia64)
 # define IMAGE_BYTE_ORDER	LSBFirst
@@ -368,7 +386,8 @@ SOFTWARE.
 	defined(__EMX__) || \
 	defined(__OS2ELF__) || \
 	defined(__QNX__)
-
+	defined(__s390x__) || defined(__s390__)
+  
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst
 #endif

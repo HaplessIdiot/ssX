@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/micoord.h,v 1.1 2000/10/23 21:16:52 tsi Exp $ */
 /*
  * Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -46,7 +46,8 @@
     defined(sparc) || \
     defined(__alpha) || defined(__alpha__) || \
     defined(__i386__) || defined(i386) || \
-    defined(__ia64__) || defined(ia64)
+    defined(__ia64__) || defined(ia64) || \
+    defined(__s390x__) || defined(__s390__)
 #define GetHighWord(x) (((int) (x)) >> 16)
 #else
 #define GetHighWord(x) (((int) (x)) / 65536)

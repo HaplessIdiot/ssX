@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.367 2001/07/03 15:13:54 paulo Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.368 2001/07/04 13:38:05 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -734,13 +734,12 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * The server-side of PEX is not 64-bit clean.
  */
 #if !defined(BuildPexExt)
-# if XF86Server && !defined(AlphaArchitecture) && !defined(ia64Architecture)
-#  define BuildPexExt		NO
+# if XF86Server && !defined(AlphaArchitecture) && !defined(ia64Architecture) && !defined(s390xArchitecture)
+#  define BuildPexExt		NO	/* But we turn off PEX anyway now */
 # else
 #  define BuildPexExt		NO
 # endif
 #endif
-
 
 /*
  * Build GLX server interface
@@ -879,7 +878,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define GlxCoreLibDefines /**/
 #  endif
 
-#  if defined(SparcArchitecture)  || defined(ia64Architecture)
+#  if defined(SparcArchitecture)  || defined(ia64Architecture) || defined(s390xArchitecture)
 #    define GlxArchDefines -D__GLX_ALIGN64
 #  else
 #    if defined(AlphaArchitecture)

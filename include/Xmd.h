@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/Xmd.h,v 3.9 2001/01/17 17:53:11 dawes Exp $ */
+/* $XFree86: xc/include/Xmd.h,v 3.10 2001/05/30 08:18:28 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -55,7 +55,8 @@ SOFTWARE.
 #define WORD64				/* 64-bit architecture */
 #endif
 #if defined(__alpha) || defined(__alpha__) || \
-    defined(__ia64__) || defined(ia64)
+    defined(__ia64__) || defined(ia64) || \
+    defined(__s390x__)
 #define LONG64				/* 32/64-bit architecture */
 #endif
 #ifdef __sgi
