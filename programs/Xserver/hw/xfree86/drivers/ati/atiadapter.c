@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.6 2000/03/22 03:08:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.7 2000/03/30 15:41:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1072,8 +1072,8 @@ ATIAdapterAccelInit
     ScreenArea.x2 = pScreenInfo->displayWidth;
     ScreenArea.y2 = pScreenInfo->videoRam * 1024 * 8 /
         pScreenInfo->displayWidth / pScreenInfo->bitsPerPixel;
-    if ((unsigned)ScreenArea.y2 > 16383)
-        ScreenArea.y2 = 16383;
+    if ((unsigned)ScreenArea.y2 > ATIMach64MaxY)
+        ScreenArea.y2 = ATIMach64MaxY;
     xf86InitFBManager(pScreen, &ScreenArea);
 
     if (XAAInit(pScreen, pATI->pXAAInfo))

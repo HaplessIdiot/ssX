@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.3 2000/02/18 12:20:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.4 2000/03/31 20:13:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -857,11 +857,9 @@ GetRAMDAC2Data(CARD8 *ROMAddr, CARD16 ModeNo)
 	unsigned short	tempax,		/* horizontal total */
 			tempbx;		/* vertical total */
 	unsigned char	cr0, cr6, cr7, sra, srb;
-	char *	t1;
 
 	RVBHCMAX=1;
 	RVBHCFACT=1;
-	t1 = ROMAddr+CRTC1Offset;
 	if (ModeNo <= 0x13)  {
 		/* unused */
 		ErrorF("Current we do not support STD mode for LCD/TV\n");
