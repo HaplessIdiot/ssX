@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.193 94/04/10 17:39:55 rws Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.0 1994/05/30 08:17:40 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.1 1994/06/12 16:30:08 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -516,6 +516,20 @@ InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* ProgramTargetHelper */
 
+#ifndef ProgramTargetHelperNoMan
+#define	ProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib) @@\
+ProgramTargetName(program): $(objs) $(deplib)				@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
+									@@\
+CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+SentinelProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+									@@\
+InstallProgram(program,$(BINDIR))
+#endif /* ProgramTargetHelperNoMan */
+
 #ifndef CplusplusProgramTargetHelper
 #define	CplusplusProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib) @@\
 ProgramTargetName(program): $(objs) $(deplib)				@@\
@@ -551,6 +565,27 @@ LintTarget()								@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTarget */
+
+/*
+ * ComplexProgramTargetNoMan - generate rules for compiling and linking
+ * the program specified by $(OBJS) and $(SRCS), installing the program 
+ * and generating dependencies.  It should only be used in Imakefiles
+ * that describe a single program.
+ */
+#ifndef ComplexProgramTargetNoMan
+#define	ComplexProgramTargetNoMan(program)				@@\
+        PROGRAM = program						@@\
+									@@\
+AllTarget(program)							@@\
+									@@\
+ProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
+#endif /* ComplexProgramTargetNoMan */
 
 #ifndef ComplexCplusplusProgramTarget
 #define	ComplexCplusplusProgramTarget(program)				@@\

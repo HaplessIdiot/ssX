@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.5 1994/06/12 16:30:10 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.6 1994/06/28 12:14:58 dawes Exp $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -109,6 +109,14 @@ XCOMM operating system:  OSName
         NROFF = /usr/bin/nroff
 #define TroffCmd        	groff -Tps
 
+/*
+ * To use the NetBSD Aperture driver
+ */
+#if defined(i386Architecture)
+#ifndef HasNetBSDApertureDrv
+#define HasNetBSDApertureDrv	NO
+#endif
+#endif
 
 XCOMM Man pages need to be formatted when installed, so override the default
 XCOMM imake rules.
