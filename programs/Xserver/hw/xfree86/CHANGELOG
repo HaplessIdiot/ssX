@@ -1,4 +1,5 @@
 XFree86 3.9.16f (xx December 1999)
+3384. Xv client library documentation (#3480, Mark Vojkovich).
 3383. Rendition microcode cleanup, accel fix, int10/ddc support,
       pixmap cache fix, doc update (#3479, Dejan Ilic/Marc Langenbach).
 3382. Reverse kbdrate patch (#3478, Harald Koenig).
@@ -9167,4 +9168,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.879 1999/12/14 02:59:22 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.880 1999/12/14 03:12:04 robin Exp $
