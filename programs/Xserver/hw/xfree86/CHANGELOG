@@ -1,4 +1,22 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 672. Temporarily enable the hard-coded Ctrl-Alt-Backspace terminate sequence
+      until a better fallback mechanism is implemented (Egbert Eich).
+ 671. Allow XKB-remappable hot keys to work with the "kbd" driver
+      (Egbert Eich).
+ 670. Export xf86inSuspend as needed by the "kbd" driver (Egbert Eich).
+ 669. SiS driver updates, including:
+       - support for SiS 330 Xabre (untested)
+       - Bugfix for boxes with two VGA connectors (tested)
+       - Autodetection of second monitor (tested)
+       - TV detection improved (tested)
+       - fixed error in 1280x1024 panel support (yet untested)
+       - Fixed bug in TV output on SiS30xB/30xLV (PAL still only BW, not
+         even the Windows driver can display PAL in color)
+       - Fixed positioning of TV picture. Works now for all video bridges
+         except Chrontel 7019 (still untested).
+      (Thomas Winischhofer).
+ 668. Add an alternative French XKB layout (fr-latin9) (#A.1446, Guylhem Aznar,
+      Rene Cougnenc, Nicolas Mailhot).
  667. Add bar and brokenbar to default <LSGT> definition for pc102 and
       pc105 xkb maps (based on #A.1445, Göran Uddeborg).
  666. Change the keypad "decimal" key to KP_Separator in the dk, fi, no, se
@@ -15863,4 +15881,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2454 2002/12/18 15:41:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2455 2002/12/19 17:12:15 dawes Exp $
