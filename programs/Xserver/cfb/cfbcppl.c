@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.1 1999/08/21 13:48:14 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -35,8 +35,8 @@ in this Software without prior written authorization from The Open Group.
 #undef   PSZ /* for maskbits.h */
 #include "maskbits.h"
 #define PSZ 8
-#endif
 #include "mergerop.h"
+#endif
 
 
 void

@@ -29,7 +29,7 @@
 /* CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT        */
 /* OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS           */
 /* SOFTWARE.                                                         */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/Type1/curves.c,v 1.4 1999/08/22 08:58:50 dawes Exp $ */
 
 /*
 :h1.CURVES Module - Stepping Beziers
@@ -182,6 +182,7 @@ Intermediate values in the Bezier subdivision are 8 times bigger than
 the starting values.  If this overflows, a 'long', we are in trouble:
 */
  
+#undef   BITS
 #define  BITS         (sizeof(long)*8)
 #define  HIGHTEST(p)  (((p)>>(BITS-4)) != 0)  /* includes sign bit */
 #define  TOOBIG(xy)   ((xy < 0) ? HIGHTEST(-xy) : HIGHTEST(xy))

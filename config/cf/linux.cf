@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.99 1999/08/28 09:00:19 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.100 1999/08/31 08:39:01 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -255,12 +255,26 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LdCmd			ld
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++
+#ifndef LinuxUsesNcurses
+#if LinuxCLibMajorVersion >= 6 || (LinuxDistribution == LinuxSuSE)
+#define LinuxUsesNcurses	YES
+#else
+#define LinuxUsesNcurses	NO
+#endif
+#endif
 #ifndef TermcapLibrary
 #if UseStaticTermcapLib
-#define TermcapLibrary		StaticLibrary(/usr/lib/termcap,termcap)
+#if LinuxUsesNcurses
+#define TermcapLibrary		StaticLibrary(/usr/lib,ncurses)
 #else
-#if (LinuxDistribution == LinuxSuSE) || (LinuxDistribution == LinuxDebian)
+#define TermcapLibrary		StaticLibrary(/usr/lib/termcap,termcap)
+#endif
+#else
+#if LinuxUsesNcurses
 #define TermcapLibrary		-lncurses
+#else
+#define TermcapLibrary		-ltermcap
+#endif
 #endif
 #endif
 #endif

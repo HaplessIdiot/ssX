@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.9 1998/10/04 09:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.10 1999/08/21 13:48:43 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -572,11 +572,14 @@ extern Bool ClientSleep(
 #endif
 );
 
+#ifndef ___CLIENTSIGNAL_DEFINED___
+#define ___CLIENTSIGNAL_DEFINED___
 extern Bool ClientSignal(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
+#endif /* ___CLIENTSIGNAL_DEFINED___ */
 
 extern void ClientWakeup(
 #if NeedFunctionPrototypes

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.10 1999/08/01 11:55:14 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.11 1999/08/21 13:48:06 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -83,6 +83,7 @@ extern int f_strcasecmp(const char *s1, const char *s2);
 #endif
 #define lowbit(x) ((x) & (~(x) + 1))
 
+#undef assert
 #define assert(x)	((void)0)
 
 #ifndef strcasecmp
@@ -120,8 +121,8 @@ RepadBitmap (
 );
 
 extern void CopyISOLatin1Lowered(
-    unsigned char * /*dest*/,
-    unsigned char * /*source*/,
+    char * /*dest*/,
+    char * /*source*/,
     int /*length*/
 );
 

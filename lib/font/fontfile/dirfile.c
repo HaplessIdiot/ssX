@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.8 1999/07/17 05:30:40 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.9 1999/07/17 08:55:13 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -201,8 +201,7 @@ AddFileNameAliases(FontDirectoryPtr dir)
 	    continue;
 	
 	len = strlen (fileName) - renderer->fileSuffixLen;
-	CopyISOLatin1Lowered ((unsigned char *)copy,
-				(unsigned char *)fileName, len);
+	CopyISOLatin1Lowered (copy, fileName, len);
 	copy[len] = '\0';
 	name.name = copy;
 	name.length = len;
@@ -302,12 +301,8 @@ ReadFontAlias(char *directory, Bool isFile, FontDirectoryPtr *pdir)
 		status = AllocError;
 		break;
 	    case NAME:
-		CopyISOLatin1Lowered((unsigned char *) alias,
-				     (unsigned char *) alias,
-				     strlen(alias));
-		CopyISOLatin1Lowered((unsigned char *) font_name,
-				     (unsigned char *) lexToken,
-				     strlen(lexToken));
+		CopyISOLatin1Lowered(alias, alias, strlen(alias));
+		CopyISOLatin1Lowered(font_name, lexToken, strlen(lexToken));
 		if (!FontFileAddFontAlias (dir, alias, font_name))
 		    status = AllocError;
 		break;

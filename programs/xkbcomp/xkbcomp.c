@@ -24,11 +24,17 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.11 1998/10/04 09:41:27 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.12 1999/05/15 14:31:23 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
 #include <X11/keysym.h>
+
+/* for symlink attack security fix -- Branden Robinson */
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+/* end BR */
 
 #if defined(sgi)
 #include <malloc.h>
@@ -890,12 +896,31 @@ Status		status;
 	    if (uStringEqual(outputFile,"-"))
 		outputFile= "stdout";
 	    else {
-		out= fopen(outputFile,"w");
+		/*
+		 * fix to prevent symlink attack (e.g.,
+		 * ln -s /etc/passwd /var/tmp/server-0.xkm)
+		 */
+		/*
+		 * this patch may have POSIX, Linux, or GNU libc bias
+		 * -- Branden Robinson
+		 */
+		int outputFileFd;
+		unlink(outputFile);
+		outputFileFd= open(outputFile, O_WRONLY|O_CREAT|O_EXCL,
+			    S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		if (outputFileFd<0) {
+		    ERROR1("Cannot open \"%s\" to write keyboard description\n",
+								outputFile);
+		    ACTION("Exiting\n");
+		    exit(1);
+		}
+		out= fdopen(outputFileFd, "w");
+		/* end BR */
 		if (out==NULL) {
 		    ERROR1("Cannot open \"%s\" to write keyboard description\n",
 								outputFile);
-		     ACTION("Exiting\n");
-		     exit(1);
+		    ACTION("Exiting\n");
+		    exit(1);
 		}
 	    }
 	}
