@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               6 December 2000
+                              11 December 2000
 
                                   Abstract
 
@@ -194,8 +194,24 @@ enough space to cover it all here.
      range of ISO-8859 subsets have been added.  Oblique/italic versions of
      some of them have also been added.
 
-   o The converters in Xlib have been improved and reworked.  UTF-8 support
-     has been added.
+   o Functions to read keyboard input in locale independent UTF-8 encoding
+     have been added to libX11: Xutf8LookupString, Xutf8ResetIC.
+
+   o Functions to output strings in locale independent UTF-8 encoding have
+     been added to libX11: Xutf8DrawString, Xutf8DrawImageString, Xutf8Tex-
+     tEscapement, Xutf8TextExtents, Xutf8TextPerCharExtents, Xutf8DrawText.
+
+   o Functions to convert between Compound Text or locale dependent encoding
+     and UTF-8 have been added to libX11: Xutf8TextListToTextProperty,
+     Xutf8TextPropertyToTextList. The converter between Compound Text and
+     UTF-8 in Xlib has been improved; a round-trip conversion now correctly
+     converts all graphic Unicode characters back and forth.
+
+   o libXaw now offers selected text using both selection targets,
+     UTF8_STRING and COMPOUND_TEXT.
+
+   o Locales with UTF-8 encodings are now supported; but the UTF-8 displaying
+     facilities are not adequate yet.
 
    o Support for ISO-8859-13 has been added to Xlib and to the UTF-8 convert-
      ers.
@@ -1199,7 +1215,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.44 2000/12/07 15:43:41 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.45 2000/12/11 19:42:02 dawes Exp $
 
 
 $XFree86$
