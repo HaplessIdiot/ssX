@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.140 1998/03/20 21:06:21 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.141 1998/03/27 23:23:29 hohndel Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -12,6 +12,9 @@
 
 
 #if defined(SYSV) || defined(linux)
+#if defined(ISC)
+#include <sys/types.h>
+#endif
 #include <sys/wait.h>
 #endif
 
@@ -818,7 +821,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
       mouse_dev->mseProc   = xf86XqueMseProc;
       mouse_dev->mseEvents = (void(*)(MouseDevPtr))xf86XqueEvents;
       mouse_dev->xqueSema  = 0;
-      mtoken               = XQUEUE;
+      mtoken               = XQUE;
       if (xf86Verbose)
         ErrorF("%s Xqueue selected for mouse input\n",
                XCONFIG_GIVEN);
@@ -1194,14 +1197,6 @@ XF86OptionPtr	options;
     }
     break;
   case 8:
-#ifndef MetroLink
-    if( xf86issvgatype ) {
-      ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-    }
-    if( xf86xaaloaded ) {
-          ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-    }
-#else
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
       if (xf86xaaloaded) {
@@ -1212,19 +1207,10 @@ XF86OptionPtr	options;
         ConfigLoadDriver("xaa8", xf86ModulePath, handle, options);
       }
     }
-#endif
+    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   case 15:
   case 16:
-#ifndef MetroLink
-    if( xf86issvgatype ) {
-      ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-    }
-    if( xf86xaaloaded ) {
-      ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-      ConfigLoadDriver("xaa16", xf86ModulePath, handle, options);
-    }
-#else
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
       if( xf86xaaloaded ) {
@@ -1234,18 +1220,9 @@ XF86OptionPtr	options;
     if( xf86xaaloaded ) {
       ConfigLoadDriver("xaa16", xf86ModulePath, handle, options);
     }
-#endif
+    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   case 24:
-#ifndef MetroLink
-    if( xf86issvgatype ) {
-      ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-    }
-    if( xf86xaaloaded ) {
-      ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-      ConfigLoadDriver("xaa24", xf86ModulePath, handle, options);
-    }
-#else
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
       if( xf86xaaloaded ) {
@@ -1255,18 +1232,9 @@ XF86OptionPtr	options;
     if( xf86xaaloaded ) {
       ConfigLoadDriver("xaa24", xf86ModulePath, handle, options);
     }
-#endif
+    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   case 32:
-#ifndef MetroLink
-    if( xf86issvgatype ) {
-      ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
-    }
-    if( xf86xaaloaded ) {
-      ConfigLoadDriver("xaavga256", xf86ModulePath, handle, options);
-      ConfigLoadDriver("xaa32", xf86ModulePath, handle, options);
-    }
-#else
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
       if( xf86xaaloaded ) {
@@ -1276,7 +1244,7 @@ XF86OptionPtr	options;
     if( xf86xaaloaded ) {
       ConfigLoadDriver("xaa32", xf86ModulePath, handle, options);
     }
-#endif
+    ConfigLoadDriver("extmod", xf86ModulePath, handle, options);
     break;
   default:
     FatalError("color depth of %d currently not supported by loader\n",
@@ -1704,8 +1672,6 @@ configFrameBuffers()
       ConfigLoadModule("libvga256", xf86ModulePath, NULL);
     ConfigLoadModule("libmfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb", xf86ModulePath, NULL);
-    if( xf86xaaloaded )
-      ConfigLoadModule("xaavga256", xf86ModulePath, NULL);
     break;
   case 15:
   case 16:
@@ -1714,10 +1680,6 @@ configFrameBuffers()
     ConfigLoadModule("libmfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb16", xf86ModulePath, NULL);
-    if( xf86xaaloaded ) {
-      ConfigLoadModule("xaavga256", xf86ModulePath, NULL);
-      ConfigLoadModule("xaa16", xf86ModulePath, NULL);
-    }
     break;
   case 24:
     if( xf86issvgatype )
@@ -1725,10 +1687,6 @@ configFrameBuffers()
     ConfigLoadModule("libmfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb24", xf86ModulePath, NULL);
-    if( xf86xaaloaded ) {
-      ConfigLoadModule("xaavga256", xf86ModulePath, NULL);
-      ConfigLoadModule("xaa24", xf86ModulePath, NULL);
-    }
     break;
   case 32:
     if( xf86issvgatype )
@@ -1736,10 +1694,6 @@ configFrameBuffers()
     ConfigLoadModule("libmfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb", xf86ModulePath, NULL);
     ConfigLoadModule("libcfb32", xf86ModulePath, NULL);
-    if( xf86xaaloaded ) {
-      ConfigLoadModule("xaavga256", xf86ModulePath, NULL);
-      ConfigLoadModule("xaa32", xf86ModulePath, NULL);
-    }
     break;
   default:
     FatalError("color depth of %d currently not supported by loader\n", xf86bpp);
@@ -4312,14 +4266,6 @@ configDynamicModuleSection()
 		}
 		break;
 	    case 8:
-#ifndef MetroLink
-		if( xf86issvgatype ) {
-		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		}
-		if( xf86xaaloaded ) {
-		    ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		}
-#else
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
 		    if (xf86xaaloaded) {
@@ -4330,19 +4276,9 @@ configDynamicModuleSection()
 			ConfigLoadDriver("xaa8", xf86ModulePath, handle);
 		    }
 		}
-#endif
 		break;
 	    case 15:
 	    case 16:
-#ifndef MetroLink
-		if( xf86issvgatype ) {
-		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		}
-		if( xf86xaaloaded ) {
-		    ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		    ConfigLoadDriver("xaa16", xf86ModulePath, handle);
-		}
-#else
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
 		    if( xf86xaaloaded ) {
@@ -4352,18 +4288,8 @@ configDynamicModuleSection()
 		if( xf86xaaloaded ) {
 		    ConfigLoadDriver("xaa16", xf86ModulePath, handle);
 		}
-#endif
 		break;
 	    case 24:
-#ifndef MetroLink
-		if( xf86issvgatype ) {
-		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		}
-		if( xf86xaaloaded ) {
-		    ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		    ConfigLoadDriver("xaa24", xf86ModulePath, handle);
-		}
-#else
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
 		    if( xf86xaaloaded ) {
@@ -4373,18 +4299,8 @@ configDynamicModuleSection()
 		if( xf86xaaloaded ) {
 		    ConfigLoadDriver("xaa24", xf86ModulePath, handle);
 		}
-#endif
 		break;
 	    case 32:
-#ifndef MetroLink
-		if( xf86issvgatype ) {
-		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
-		}
-		if( xf86xaaloaded ) {
-		    ConfigLoadDriver("xaavga256", xf86ModulePath, handle);
-		    ConfigLoadDriver("xaa32", xf86ModulePath, handle);
-		}
-#else
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
 		    if( xf86xaaloaded ) {
@@ -4394,7 +4310,6 @@ configDynamicModuleSection()
 		if( xf86xaaloaded ) {
 		    ConfigLoadDriver("xaa32", xf86ModulePath, handle);
 		}
-#endif
 		break;
 	    default:
 		FatalError("color depth of %d currently not supported by loader\n",
@@ -5918,6 +5833,7 @@ xf86PruneModes(monp, allmodes, scrp, card)
 	return remainder; /* Return pointer to {the first / the list } */
 }
 
+#ifndef XF86SETUP
 void
 xf86DeleteMode(infoptr, dispmp)
 ScrnInfoPtr	infoptr;
@@ -5937,6 +5853,7 @@ DisplayModePtr	dispmp;
 	xfree(dispmp->name);
 	xfree(dispmp);
 }
+#endif
 
 /*
  * xf86TokenToString --

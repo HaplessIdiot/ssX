@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.177 1998/03/20 21:06:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.178 1998/03/27 23:23:24 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -59,7 +59,6 @@
 #endif
 
 #ifdef PC98
-#include "pc98_vers.h"
 #include "s3pc98.h"
 #endif
 
@@ -102,43 +101,16 @@ extern unsigned char *find_bios_string(
 /* Clock limit for non-Bt485, non-Ti3020, non-ATT498 cards */
 #define MAX_S3_CLOCK    110000
 
-int s3MaxClock = MAX_S3_CLOCK;
+extern int s3MaxClock;
 
-ScrnInfoPtr xf86Screens[] = 
-{
-  &s3InfoRec,
-};
+extern ScrnInfoPtr xf86Screens[];
 
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+extern int xf86MaxScreens;
 
-int xf86ScreenNames[] =
-{
-  ACCEL,
-  -1
-};
+extern int xf86ScreenNames[];
 
-int s3ValidTokens[] =
-{
-  STATICGRAY,
-  GRAYSCALE,
-  STATICCOLOR,
-  PSEUDOCOLOR,
-  TRUECOLOR,
-  DIRECTCOLOR,
-  CHIPSET,
-  CLOCKS,
-  MODES,
-  OPTION,
-  VIDEORAM,
-  VIEWPORT,
-  VIRTUAL,
-  CLOCKPROG,
-  BIOSBASE,
-  MEMBASE,
-  RAMDAC,
-  DACSPEED,
-  -1
-};
+extern int s3ValidTokens[];
+
 #endif /* defined(XFree86LOADER) */
 
 ScrnInfoRec s3InfoRec =
@@ -546,9 +518,6 @@ s3PrintIdent()
       c += strlen(id);
     }
   ErrorF("\n");
-#ifdef PC98
-  ErrorF("  PC98: Supported Video Boards:\n\t%s\n",PC98_S3_BOARDS);
-#endif
 }
 
 
@@ -707,7 +676,7 @@ s3GetPCIInfo()
        && info.ChipType != S3_928
        && info.ChipType != S3_864
        && info.ChipType != S3_964
-       && (info.ChipType == S3_TRIO_32_64 && info.ChipRev < 0x40)  /* only Trio64V+ */
+       && !(info.ChipType == S3_TRIO_32_64 && info.ChipRev < 0x40)  /* only Trio64V+ */
        ) {
       unsigned long base0;
       char *probed;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.11 1997/12/20 14:20:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.12 1998/03/27 23:23:11 hohndel Exp $ */
 
 /*
  * glint register file 
@@ -328,6 +328,7 @@
 #define PointTable3							GLINT_TAG_ADDR(0x01,0x03)
 #define RasterizerMode							GLINT_TAG_ADDR(0x01,0x04)
 #define		ForceBackgroundColor		1<<6
+#define		InvertBitMask			1<<1
 #define YLimits								GLINT_TAG_ADDR(0x01,0x05)
 #define ScanLineOwnership						GLINT_TAG_ADDR(0x01,0x06)
 #define WaitForCompletion						GLINT_TAG_ADDR(0x01,0x07)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.73 1997/06/15 07:12:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.74 1998/01/24 16:57:25 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,7 +30,7 @@ extern int atoi();
 #endif
 
 #if !defined(AMOEBA) && !defined(MINIX)
-#if defined(MetroLink) && defined(Lynx)
+#if defined(MetroLink) && defined(Lynx) || defined(ISC)
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>
@@ -68,10 +68,6 @@ extern int atoi();
 #include "atKeynames.h"
 extern int xtest_command_key;
 #endif /* XTESTEXT1 */
-
-#ifdef PC98
-#include "pc98_vers.h"
-#endif
 
 #ifdef __EMX__
 #define seteuid(x) /*nothing*/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.108 1998/03/20 21:07:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.109 1998/03/27 23:23:44 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -46,10 +46,6 @@
 #include "xf86_Config.h"
 #include "vga.h"
 #include "vgaPCI.h"
-
-#ifdef PC98
-#include "pc98_vers.h"
-#endif
 
 #ifdef XFreeXDGA
 #include "scrnintstr.h"
@@ -433,22 +429,6 @@ vgaPrintIdent()
       c += strlen(id);
     }
   ErrorF("\n");
-#ifdef PC98
-  ErrorF("  PC98: Supported Video Boards:\n\t");
-#endif
-#ifdef PC98_EGC
-  ErrorF("%s\n",PC98_VGA16_BOARDS);
-#endif
-#ifdef PC98_PEGC
-  ErrorF("%s\n",PC98_VGA256_BOARDS);
-#endif
-#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)||\
-	defined(PC98_NKVNEC)||defined(PC98_WSNA)
-  ErrorF("%s\n",PC98_CIRRUS_BOARDS);
-#endif
-#ifdef PC98_TGUI
-  ErrorF("%s\n",PC98_TGUI_BOARDS);
-#endif
 }
 
 

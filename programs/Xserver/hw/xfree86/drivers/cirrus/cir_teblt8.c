@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.3 1998/01/24 16:58:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.4 1998/01/24 21:42:01 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -292,7 +292,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	/* Gather bytes until we have a dword to write. Doubleword is   */
 	/* LSByte first, and MSBit first in each byte, as required for  */
 	/* the blit data. */
-#ifdef __i386__
+#if defined(__i386__) || defined(i386)
 	if (ISSPECIALWIDTH(glyphWidth))
 		CirrusTransferText32bitSpecial(nglyph, h, glyphp, glyphWidth,
 			CIRRUSBASE());

@@ -1,3 +1,21 @@
+XFree86 3.9Ag (05 April 1998)
+1645. XAA fixes for xf86bpp (#1633, Alan Hourihane).
+1644. More 3.3.2 syncs, PC98 sync, usleep problem with FreeBSD,
+      SVR4.0 build problem fixes (#1631, Takaaki Nomura).
+1643. Kensinngton Thinking and Expert Mouse fix (#1630, Kazutaka Yokota).
+1642. S3 968 fix (#1628, Kazutaka Yokota).
+1641. Add DoImageWrite for Permedia2 and partial 24bpp acceleration to
+      the glint server (#1627, Alan Hourihane).
+1640. ISC sync with 3.3.2 (#1625,1626, Michael Rohleder).
+1639. Xterm patch 70 including Imakefile fix for logging, "ich"
+      restoration, cursor color fix, "-vb" arg fix, character-set
+      rework, SS2/SS3 control fix, terminfo updates (#1624, T.E.Dickey).
+1638. Add loader symbol for miSetZeroLineBias (#1623, Mark Vojkovich).
+1637. Fix duplicate symbols in s3 server (#1621, Takaaki Nomura).
+1636. glint cleanup for XAA autoload modules (#1620, Alan Hourihane).
+1635. xf86Config fixes for svga and accel servers, extmod load for all
+      depths (#1618,1619, Alan Hourihane).
+
 XFree86 3.9Af (28 March 1998)
 1634. Add 1024x600 to the identified video modes in the chips server
       (#1617, Nozomi Ytow).
@@ -6059,4 +6077,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.577 1998/03/27 23:23:00 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.578 1998/03/28 06:35:54 hohndel Exp $

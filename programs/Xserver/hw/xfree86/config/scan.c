@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.1.2.2 1997/07/22 04:55:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/scan.c,v 1.1 1998/01/24 16:57:46 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -55,6 +55,7 @@
 #define MAXHOSTNAMELEN 32
 #endif /* !MAXHOSTNAMELEN */
 
+#include "X11/Xos.h"
 #include "Configint.h"
 #include "xf86tokens.h"
 

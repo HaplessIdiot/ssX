@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/25 15:39:47 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/Imakefile,v 3.12 1998/03/20 19:07:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/Imakefile,v 3.13 1998/03/20 21:07:36 hohndel Exp $
 
 
 
@@ -51,6 +51,14 @@ INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_GA968
 
 S3DRIVERS = XF86S3Drivers
+
+all::	s3newmmio/LibraryTargetName(s3ga968newmmio) s3mmio/LibraryTargetName(s3ga968mmio)\
+	drivers
+
+
+s3newmmio/LibraryTargetName(s3ga968newmmio):	s3newmmio
+
+s3mmio/LibraryTargetName(s3ga968mmio):	s3mmio
 
 ConfigTarget(s3Conf,$(ICONFIGFILES),confS3.SHsuf,$(S3DRIVERS))
 

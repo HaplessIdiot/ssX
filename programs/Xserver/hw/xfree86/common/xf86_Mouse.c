@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.33 1998/03/21 00:33:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.34 1998/03/27 23:23:32 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -901,6 +901,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	        (pBuf[0] & 0x02) >> 1 |       /* Right */
 		(pBuf[0] & 0x01) << 2 |       /* Left */
 		((pBuf[0] & 0x08) ? 0x08 : 0);/* fourth button */
+      pBuf[1] |= (pBuf[0] & 0x40) ? 0x80 : 0x00;
       dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
       dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       break;

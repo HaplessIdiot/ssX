@@ -111,7 +111,7 @@ FillTiledRect(x, y, w, h, src, srcwidth, pwidth, pheight, srcx, srcy)
     int pwidth, pheight;
     int srcx, srcy;
 {
-    int Bpp = xf86bpp >> 3;
+    int Bpp = xf86AccelInfoRec.BitsPerPixel >> 3;
     int width, MaxDWORDS, dwords;
     void (*FillColumn)();
 
@@ -228,10 +228,10 @@ FillTiledRect_Fast(x, y, w, h, src, srcwidth, pwidth, pheight, srcx, srcy)
 {
     register CARD32 pattern;
     unsigned char* srcp = (srcwidth * srcy) + src;
-    int Bpp = xf86bpp >> 3;
+    int Bpp = xf86AccelInfoRec.BitsPerPixel >> 3;
     int dwords;
 
-    srcx *= xf86bpp;
+    srcx *= xf86AccelInfoRec.BitsPerPixel;
     dwords = ((w * Bpp) + 3) >> 2;
     pwidth *= Bpp;
 	
@@ -298,7 +298,7 @@ xf86FillRectTiledImageWrite(pDrawable, pGC, nBoxInit, pBoxInit)
 
     pPixmap = pGC->tile.pixmap;
 
-    switch(pPixmap->drawable.width * (xf86bpp >> 3)) {
+    switch(pPixmap->drawable.width * (xf86AccelInfoRec.BitsPerPixel >> 3)) {
 	case 4:
 	case 2:
 	case 1: 	TileRectFunc = FillTiledRect_Fast;

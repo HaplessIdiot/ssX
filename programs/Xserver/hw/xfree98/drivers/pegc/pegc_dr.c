@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.4 1997/05/03 09:19:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.5 1997/08/26 10:01:47 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -22,13 +22,12 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
 #include <sys/types.h>
 #include <sys/fcntl.h>
-#include <unistd.h>
 
 /*
  * Driver data structures.

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.5 1996/02/04 09:08:54 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/install.sv3,v 3.6 1996/12/23 06:47:10 dawes Exp $
 #
 # Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
 #
@@ -35,7 +35,33 @@
 #
 # XFree86 version
 #
-VERSION=3.1.1
+#VERSION=4.0
+#this assumes: the current X can be found via PATH
+VERSION=`X -version 2>&1 | 
+      grep 'XFree86 Version' | sed -e 's/^.*Version //' -e 's/ .*$//'`
+
+VERSION_STRING="X11R6 XFree86 Version $VERSION"
+#
+# Functions .... 
+#
+great() {
+clear
+echo
+echo $VERSION_STRING
+echo ------------------------------------------------------------------------------- 
+echo
+echo
+echo
+}
+
+do_wait() {
+echo
+echo
+echo -n "[PRESS ANY KEY TO GO ON]"
+read anykey
+}
+
+great
 
 #
 # dependencies
@@ -59,14 +85,34 @@ fi
 # 
 if [ ! -s /usr/options/xfree86.name ]
 then
-    echo "X11R6 XFree86 Version $VERSION" >/usr/options/xfree86.name
+    echo $VERSION_STRING >/usr/options/xfree86.name
+else
+    echo "The following XFree86 Version is installed:"
+    echo
+    cat /usr/options/xfree86.name
+    echo
+    echo -n "Should I Update this to $VERSION ?(y/n)"
+    read yesno
+    [ "$yesno" = "y" -o "$yesno" = "Y" ] && {
+    echo $VERSION_STRING >/usr/options/xfree86.name
+    echo
+    echo "Updated !!!"
+    }
 fi
+echo
+echo -n "Current Version: "
+cat /usr/options/xfree86.name
+echo
+
+do_wait
+great
 
 if [ ! -s /usr/options/xu.name ]
 then
    echo "There's no Interactive X11 installed"
    echo "Generating links, so following commercial products can be installed"
    ln /usr/options/xfree86.name /usr/options/xu.name
+   echo
 fi
 
 #
@@ -74,14 +120,32 @@ fi
 #
 if [ ! -s /usr/lib/installed/Remove/xfree86.name ]
 then
+    echo "Install remove script"
     echo -n 'echo "Removing XFree86 Version ' >/usr/lib/installed/Remove/xfree86.name
     echo -n $VERSION >>/usr/lib/installed/Remove/xfree86.name
     echo '"' >>/usr/lib/installed/Remove/xfree86.name
     echo '/bin/rm -rf /usr/X11R6' >>/usr/lib/installed/Remove/xfree86.name
     echo '/bin/rm -f /usr/options/xfree86.name' >>/usr/lib/installed/Remove/xfree86.name
+    echo "Installed !!!"
+else
+    echo -n "Would you like to update your remove script ? (j/n)"
+    read yesno
+    [ "$yesno" = "y" -o "$yesno" = "Y" ] && {
+    echo -n 'echo "Removing XFree86 Version ' >/usr/lib/installed/Remove/xfree86.name
+    echo -n $VERSION >>/usr/lib/installed/Remove/xfree86.name
+    echo '"' >>/usr/lib/installed/Remove/xfree86.name
+    echo '/bin/rm -rf /usr/X11R6' >>/usr/lib/installed/Remove/xfree86.name
+    echo '/bin/rm -f /usr/options/xfree86.name' >>/usr/lib/installed/Remove/xfree86.name
+    echo "Updated !!!"
+    }
 fi
 
-echo "Setting up node and sdevice"
+do_wait
+great
+
+echo -n "Setting up node and sdevice(y/n)"
+read yesno
+[ "$yesno" = "y" -o "$yesno" = "Y" ] && {
 cd /usr/X11R6/lib/X11/etc
 cp pts.node /etc/conf/node.d/pts 2>/dev/null
 cp sp.node /etc/conf/node.d/sp 2>/dev/null
@@ -90,6 +154,7 @@ cp ptem.sdevice /etc/conf/sdevice.d/ptem 2>/dev/null
 cp ptm.sdevice /etc/conf/sdevice.d/ptm 2>/dev/null
 cp pts.sdevice /etc/conf/sdevice.d/pts 2>/dev/null
 cp sp.sdevice /etc/conf/sdevice.d/sp 2>/dev/null
+}
 
 
 #
@@ -194,33 +259,46 @@ ptx	ttyqf	c	31" >>/etc/conf/node.d/ptx
 
 fi
 
+do_wait
+great
+
 echo "*** New Installation ***"
 echo "If this is a new installation of XFree86 $VERSION use \"kconfig\" to build a new"
 echo "kernel. XFree86 won't run without this new kernel."
 echo ""
-echo "<press return>"
-read answer
+#echo "<press return>"
+#read answer
+
+do_wait
+great
 
 #
 # install additional termcap & terminfo entries
 #
-echo "Do you want me to Install additional termcap & terminfo entries...[y/n]"
+echo -n "Do you want me to Install additional termcap & terminfo entries...[y/n]"
 read answer
-[ "$answer" = "y" ] && {
+[ "$answer" = "y" -o "$answer" = "Y" ] && {
 grep xterm   /etc/termcap >/dev/null || cat xterm.termcap >>/etc/termcap
 grep sun-cmd /etc/termcap >/dev/null || cat sun.termcap   >>/etc/termcap
 
 tic sun.terminfo 2>/dev/null
 tic xterm.terminfo 2>/dev/null
+}
 
 if [ -s /usr/lib/loadfont/vga437.bdf ]
 then
-    echo "Convert VGA font for using under X11..."
+    echo -n "Convert VGA font for using under X11...(y/n)"
+    read answer
+    [ "$answer" = "y" -o "$answer" = "Y" ] && {
     sed -e 's/FONT 8x16/FONT vga/' </usr/lib/loadfont/vga437.bdf \
     | bdftopcf -t >/usr/X11R6/lib/X11/fonts/misc/vga.pcf
     chmod 644 /usr/X11R6/lib/X11/fonts/misc/fonts.dir
     mkfontdir /usr/X11R6/lib/X11/fonts/misc
+    }
 fi
-}
 echo READY
+echo
+echo -n "Thats all folks ;-) Current XFree86 Version: "
+cat /usr/options/xfree86.name
+exit
 

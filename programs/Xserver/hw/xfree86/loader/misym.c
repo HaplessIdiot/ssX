@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.5 1997/08/26 10:01:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.6 1998/03/21 11:08:49 dawes Exp $ */
 
 
 
@@ -109,6 +109,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miPolyBuildPoly)
    SYMFUNC(miRoundJoinClip)
    SYMFUNC(miRoundCapClip)
+   SYMFUNC(miSetZeroLineBias)
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.44 1998/03/22 05:09:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.45 1998/03/27 23:23:46 hohndel Exp $
 
 
 
@@ -93,6 +93,12 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.44 1998/03/2
    XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
 
+#if !defined(LynxOSArchitecture) && !defined(OS2Architecture)
+ PNP_MOUSE_SRC=xf86_PnPMouse.c
+ PNP_MOUSE_OBJ=xf86_PnPMouse.o
+ PNP_MOUSE_DEFINES=-DPNP_MOUSE
+#endif
+
 #if BuildDynamicLoading
 #ifndef OS2Architecture
    XF86DL_SRC = xf86Dl.c
@@ -179,10 +185,10 @@ SRCS =	\
 	xf86Io.c \
 	xf86Lock.c \
 	xf86_Mouse.c \
-	xf86_PnPMouse.c \
 	xf86_Option.c \
 	xf86Cmap.c \
 	$(KBD).c \
+	$(PNP_MOUSE_SRC) \
 	$(XF86_XINPUT_SRC) \
 	$(XINPUT_DEV_SRCS) \
 	$(XKBDDXSRC) \
@@ -198,7 +204,7 @@ OBJS = \
 	xf86Io.o \
 	xf86Lock.o \
 	xf86_Mouse.o \
-	xf86_PnPMouse.o \
+	$(PNP_MOUSE_OBJ) \
 	xf86Cmap.o \
 	$(XF86_XINPUT_OBJ) \
 	$(XINPUT_DEV_OBJS) \
@@ -225,7 +231,7 @@ OFILES = \
 CONSDEFINES = XFree86ConsoleDefines
 EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 
-    DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES) -DPC98
+    DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES) $(PNP_MOUSE_DEFINES) -DPC98
 
 XF86SCREENFLAGS = $(VGA16BUILD) $(VGA16MONOBUILD)
 

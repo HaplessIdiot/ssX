@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.66 1998/03/20 21:08:36 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.67 1998/03/27 23:24:01 hohndel Exp $ */
 
 
 /* main.c */
@@ -976,6 +976,12 @@ static char *message[] = {
 "will be started.  Options that start with a plus sign (+) restore the default.",
 NULL};
 
+static int abbrev (char *tst, char *cmp)
+{
+	size_t len = strlen(tst);
+	return ((len >= 2) && (!strncmp(tst, cmp, len)));
+}
+
 static void Syntax (badOption)
     char *badOption;
 {
@@ -1115,9 +1121,9 @@ char **argv;
 	/* Do these first, since we may not be able to open the display */
 	ProgramName = argv[0];
 	if (argc > 1) {
-		if (!strncmp(argv[1], "-v", 2))
+		if (abbrev(argv[1], "-version"))
 			Version();
-		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 3))
+		if (abbrev(argv[1], "-help"))
 			Help();
 	}
 
