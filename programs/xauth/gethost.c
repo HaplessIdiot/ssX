@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.18 2003/07/09 15:27:37 tsi Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.19 2003/07/18 15:53:28 tsi Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -259,6 +259,7 @@ struct addrlist *get_address_info (
     struct addrlist *lastrv = NULL;
     struct addrinfo *firstai = NULL;
     struct addrinfo *ai = NULL;
+    struct addrinfo hints;
 #else
     unsigned int hostinetaddr;
 #endif
@@ -293,7 +294,11 @@ struct addrlist *get_address_info (
 #ifdef TCPCONN
 #if defined(IPv6) && defined(AF_INET6)
       case FamilyInternet6:
-        if (getaddrinfo(host,NULL,NULL,&firstai) !=0) return NULL;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = PF_UNSPEC; /* IPv4 or IPv6 */
+	hints.ai_socktype = SOCK_STREAM; /* only interested in TCP */
+	hints.ai_protocol = 0;	
+        if (getaddrinfo(host,NULL,&hints,&firstai) !=0) return NULL;
 	for (ai = firstai; ai != NULL; ai = ai->ai_next) {
 	    if (ai->ai_family == AF_INET) {
 		struct sockaddr_in *sin = (struct sockaddr_in *)ai->ai_addr;
