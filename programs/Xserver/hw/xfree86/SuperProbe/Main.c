@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.2 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.3 1994/11/30 20:36:12 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -75,6 +75,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
 static Chip_Descriptor *CoProc_Descriptors[] = {
     &ATIMach_Descriptor,
     &IBM8514_Descriptor,	/* Make this the last 8514-type entry */
+    &I128_Descriptor,
     NULL
 };
 

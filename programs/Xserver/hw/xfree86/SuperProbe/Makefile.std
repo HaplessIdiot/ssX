@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.0 1994/05/14 06:50:59 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.1 1994/05/21 23:54:39 dawes Exp $
 #
 # Installation parameters
 #
@@ -66,8 +66,8 @@ SVGA_SRC = Tseng.c WD.c ChipsTech.c Video7.c Genoa.c Trident.c Oak.c \
 SVGA_OBJ = Tseng.o WD.o ChipsTech.o Video7.o Genoa.o Trident.o Oak.o \
 	   Cirrus.o Ahead.o ATI.o S3.o AL.o Yamaha.o NCR.o MX.o \
 	   RealTek.o Primus.o Compaq.o HMC.o UMC.o Weitek.o
-COPROC_SRC = 8514.c ATIMach.c
-COPROC_OBJ = 8514.o ATIMach.o
+COPROC_SRC = 8514.c ATIMach.c I128.c
+COPROC_OBJ = 8514.o ATIMach.o I128.o
 SRCS = Main.c $(SVGA_SRC) $(COPROC_SRC) $(BASE_SRC) Print.c \
        Utils.c $(OS_SRC) $(IO_SRC)
 OBJS = Main.o $(SVGA_OBJ) $(COPROC_OBJ) $(BASE_OBJ) Print.o \

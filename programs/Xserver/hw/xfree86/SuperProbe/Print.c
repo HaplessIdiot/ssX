@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.4 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.5 1994/11/30 20:36:14 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -194,6 +194,7 @@ static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] =
 		  "Chips & Technologies 82C480 (8514/A clone)" },
 /* XGA */	{ "" },
 /* Mach64 */	{ "ATI Mach64" },
+/* Number9 */	{ "Number Nine Imagine I128" },
 };
 
 void Print_SVGA_Name(Chipset)

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.4 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.5 1994/11/30 20:36:15 dawes Exp $ */
 
 /*
  * Includes
@@ -182,6 +182,7 @@ Bool Probe_Weitek __STDCARGS((int *));
 /* CoProc */
 Bool Probe_8514 __STDCARGS((int *));
 Bool Probe_ATIMach __STDCARGS((int *));
+Bool Probe_I128 __STDCARGS((int *));
 
 /*
  * Print functions
@@ -229,6 +230,7 @@ extern Chip_Descriptor Yamaha_Descriptor;
 
 extern Chip_Descriptor IBM8514_Descriptor;
 extern Chip_Descriptor ATIMach_Descriptor;
+extern Chip_Descriptor I128_Descriptor;
 
 /*
  * Useful macros
@@ -539,8 +541,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define C_8514		0
 #define C_XGA		1
 #define C_MACH64	2
+#define C_I128		3
 
-#define NUM_CP_TYPES	3
+#define NUM_CP_TYPES	4
 #define CHPS_PER_CPTYPE	6
 
 #define CHIP_8514	COPROC_TYPE(C_8514,0)	/* 8514/A or true clone */
@@ -549,6 +552,8 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CT480	COPROC_TYPE(C_8514,3)	/* C&T 82c480		*/
 
 #define CHIP_MACH64	COPROC_TYPE(C_MACH64,0)	/* ATI Mach64		*/
+
+#define CHIP_I128	COPROC_TYPE(C_I128,0)	/* Number9 Imagine I128 */
 
 /*
  * Useful macros

@@ -2,11 +2,6 @@
 		Information for Cirrus Chipset Users
 		------------------------------------
 
-A number of problems has been reported with the Cirrus driver in previous
-versions of XFree86, and it is hoped that these are alleviated in this
-version. Some important issues are described here. Please take the time
-to read this.
-
 Contents
 
 	1. Supported chipsets
@@ -19,9 +14,9 @@ Contents
 1 - Supported chipsets
 
 The driver is used in the 256-color SVGA server (with acceleration) and the
-mono server (without acceleration). The SVGA server supports unaccelerated
-16 and 32 bits-per-pixel truecolor modes on some configurations. The
-following chipsets by Cirrus Logic are supported:
+mono server (without acceleration). The SVGA server supports 16 and 32
+bits-per-pixel truecolor modes on some configurations. The following
+chipsets by Cirrus Logic are supported:
 
 CL-GD5420	ISA SVGA chipset, 1Mbyte; maximum dot clock is 45 MHz (256
 		color server). Acceleration with extended write modes (used
@@ -68,7 +63,7 @@ CL-GD5434	Next generation 'Alpine' family chip with 64-bit internal
 Here's a list of maximum dot clocks for each supported depth:
 
 		mono		8 bpp (256c)	16 bpp		32 bpp
-CL_GD62x5	45 MHz		45 MHz		-		-
+CL-GD62x5	45 MHz		45 MHz		-		-
 CL-GD5420	80 MHz		45 MHz (1)	-		-
 CL-GD542x/512K	80 MHz		45 MHz		-		-
 CL-GD5422/24	80 MHz		80 MHz		40 MHz		-
@@ -160,13 +155,10 @@ Option "slow_dram"
 		addressing enabled.
 	0x22	Value that most (Extended RAS) cards seem to be able to
 		handle, used by	the "fast_dram" option.
-	0x26	Highest value that seems to be stable on one card tested.
-		This is also the maximum value of the MCLK register
-		according to the CL-GD542x databook, however, in other
-		places the databook says that the parts are not specified
-		for a MCLK higher than 50 MHz.
 
-	The official spec. for the 5434 is also 50 MHz (0x1c), and that for
+	The official maximum of the 542x chips is 50 MHz.
+	The official spec. for the 5434 is also 50 MHz (0x1c), although
+	newer revisions may allow 60 MHz in graphics mode, and that for
         the 5429 and 5430 is probably 60 MHz (0x22).
 
 	The driver takes the MCLK into account for clock limits that
@@ -180,9 +172,7 @@ Option "no_bitblt"
 	This option, when used with a 5426/28/29/3x, will have the effect of
         disabling the use of the BitBLT engine (which the 5424 does not
         have), while retaining some acceleration. This will be useful for
-        problems related to the BitBLT engine. In particular, this will be
-        useful for the 5434, if functions that use the BitBLT engine do not
-        work correctly.
+        problems related to the BitBLT engine.
 
 chipset "clgd54xx"
 
@@ -212,7 +202,7 @@ Option "fifo_aggressive" (5424/6/8/9/30)
 	it will be the same as that used for lower dot clocks. It improves
 	performance at high dot clocks.
 
-Option "no_2mb_banksel"
+Option "no_2mb_banksel" (542x)
 
 	This option will cause the driver not to set the 'DRAM bank select'
 	bit to enable the upper megabyte of memory on a 2Mbyte card. This
@@ -237,6 +227,14 @@ Option "probe_clocks"
 	25.2  28.3  41.1  36.1  31.5  40.0  45.1  49.9
 	65.0  72.2  75.0  80.0  85.2
 
+Clockchip "cirrus"
+
+	This enables programmable clocks. It must be specified in the
+	Device section. With this option, the clocks the modes use will
+	be automatically selected. Do not specify any Clocks line. This
+	option makes a 12.5 MHz clock possible for a 320x200 Doublescan
+	mode.
+
 Option "linear"
 
 	This enables linear addressing, which is the mapping of the entire
@@ -251,7 +249,7 @@ Membase 0x00e00000 (or a different address)
         framebuffer. It must be specified in the Device section. It is
 	required for most linear addressing configurations.
 
-Option "favour_bitblt" (5426/8/9)
+Option "favour_bitblt" (5426)
 
 	This option will, when the BitBLT engine is enabled, favour its use
         over framebuffer color expansion functions that are normally faster. 
@@ -259,17 +257,15 @@ Option "favour_bitblt" (5426/8/9)
         system (e.g. running gcc and other programs at the same time) in
 	certain situations.
 
-Option "mmio" (543x) [disabled; it doesn't work yet]
+Option "mmio" (543x)
 
 	This enables the use of memory-mapped I/O to talk to the BitBLT
-        engine on the 543x. This may not work, and the performance advantage
-        is very small with the current driver. Don't try this casually.
+        engine on the 543x, which is a bit faster.
 
 Option "sw_cursor" (542x/3x)
 
 	This disables use of the hardware cursor provided by the chip. Try
-        this if the cursor seems to have problems (especially at the edges
-	of the screen).
+        this if the cursor seems to have problems.
 
 Option "clgd6225_lcd"
 
@@ -316,8 +312,10 @@ are a number of different card configurations.
 
 If you have a 542x/543x on the ISA bus, and you have 16Mb or more of
 system memory, linear addressing is impossible. 16bpp is out, sorry.
-If you have less than 14Mb of memory, you can map the framebuffer at
-14Mb, using 'MemBase 0x00e00000'. That's five zeros after the 'e'.
+If you have less than 14Mb of memory, you may be able to map the
+framebuffer at 14Mb, using 'MemBase 0x00e00000'. That's five zeros
+after the 'e'. Unfortunately many ISA cards don't support linear
+addressing.
 
 If you have a 5424/26/28 on VESA local bus, the situation is more
 complicated. There are two different types of cards w.r.t. linear
@@ -359,8 +357,9 @@ With a card on the PCI bus, there is a PCI configuration register that holds
 the framebuffer base address. However, the driver currently does not read it
 out yet, so you'll have to specify the address with MemBase. There may be a
 hint about this in the card documentation, or in some .ini file for an
-MS-Windows driver. The PCIDUMP.EXE program can help (see README.P9000).
-On one system tested, it mapped at 0xa0000000, but that doesn't say much.
+MS-Windows driver. On one system tested, it mapped at 0xa0000000, and it
+appeared addresses where assigned in 0x08000000 increments over the PCI
+devices.
 
 On the VESA local bus, most 543x cards have a default mapping address of
 64Mb, with jumper options for 2048Mb and 32Mb. This is probably described in
@@ -374,8 +373,8 @@ a default of 64Mb if MemBase isn't specified. A few examples for MemBase:
 	MemBase	0x04000000	64Mb
 	MemBase	0x80000000	2048Mb
 
-The 16bpp and 32bpp modes are unaccelerated (this will change in a future
-version), which means they can be slow, although a good local bus host
+The 16bpp and 32bpp modes have limited acceleration (scroll, text)
+which means they can be slow, although a good local bus host
 interface (like the 543x has) helps a lot. Note that the standard cfb
 framebuffer code can be very slow for monochrome stipples and bitmaps.
 32bpp mode is only supported on a 5434 with 2Mb or more of memory.
@@ -413,11 +412,11 @@ EndSection
 
 First of all, make sure that the default modes selected from your XF86Config
 is supported by your monitor, i.e. make sure the horizontal sync limit is
-correct. It is best to start with standard 640x480x256 with a 25 MHz clock
-(by specifying a single horizontal sync of 31.25) to make sure the driver
-works on your configuration. The default mode used will always be the first
-mode listed in the modes line, with the highest dot clock listed for that
-resolution in the timing section.
+correct. It is best to start with standard 640x480x256 with a 25.175 MHz
+clock (by specifying a single horizontal sync of 31.5) to make sure the
+driver works on your configuration. The default mode used will always be
+the first mode listed in the modes line, with the highest dot clock listed
+for that resolution in the timing section.
 
 Note that some VESA standard mode timings may give problems on some monitors
 (try increasing the horizontal sync pulse, i.e. the difference between
@@ -447,6 +446,9 @@ Sparklies/streaks at high dot clocks.
 	dot clock 1024x768 mode (about 60 Hz) that might help:
 
  "1024x768"     65      1024 1116 1228 1328     768  783  789  818
+
+	If you are using programmable clocks with Clockchip "cirrus",
+	try disabling it and using the default set of clocks.
 
 Crash or hang after start-up (probably with a black screen).
 
@@ -499,6 +501,15 @@ Incorrect little lines (mostly white) appear occasionally
 	This may be related to a problem with system-to-video-memory BitBLT
 	operations. Try "no_bitblt" if it annoys you.
 
+Textmode is not properly restored
+
+	This has been reported on some configurations. In XFree86 3.1
+	the SVGA server probe would corrupt a register on the 543x,
+	requiring Chipset line. Normally you should be able to restore
+	the textmode font using a utility that sets it (setfont, runx,
+	restorefont on Linux).
+
+
 For other screen drawing related problems, try the "noaccel" option (if
 "no_bitblt" doesn't help).
 
@@ -507,4 +518,25 @@ If are having driver-related problems that are not addressed by this document,
 or if you have found bugs in accelerated functions, you can try contacting
 the XFree86 team, or post in the Usenet newsgroup "comp.windows.x.i386unix".
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.3 1994/09/17 04:06:48 dawes Exp $
+
+6 - Driver changes
+
+Bugs fixed since XFree86 3.1:
+
+	- Accelerated 14-pixel wide font drawing bug.
+	- Server crash when switched to another VC with linear addressing
+	  enabled at 8bpp.
+	- DAC programming lock-up at VC switch at 16bpp on a 542x.
+	- Driver undoes SVGA probe corruption to 543x register.
+	- Linear addressing on a 543x with 8bpp.
+	- Hardware cursor color mapping at 16/32bpp.
+
+New features in XFree86 3.1.1:
+
+	- Some minor speed improvements.
+	- Scrolling/text acceleration at 16/32bpp.
+	- Support for programmable clocks.
+	- Support for Memory-Mapped I/O on 543x.
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.4 1994/09/27 10:30:40 dawes Exp $
