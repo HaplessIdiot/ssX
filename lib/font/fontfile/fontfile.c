@@ -1,4 +1,5 @@
 /* $XConsortium: fontfile.c,v 1.27 94/04/17 20:17:06 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -676,7 +677,7 @@ _FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
     int			i;
     fsRange		*ranges;
     int			nranges;
-    int			result;
+    int			result = BadFontName;
 
     if (len >= MAXFONTNAMELEN)
 	return AllocError;

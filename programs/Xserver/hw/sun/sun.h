@@ -1,6 +1,6 @@
 
 /* $XConsortium: sun.h,v 5.39.1.1 95/01/05 19:58:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.0 1994/11/19 07:49:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.1 1995/01/28 15:46:01 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -69,12 +69,6 @@ extern int errno;
  * Even if only needed by one source file, I have put them here 
  * to simplify finding them...
  */
-#ifdef        __NetBSD__
-# include <machine/fbio.h>
-# include <machine/kbd.h>
-# include <machine/kbio.h>
-# include <machine/vuid_event.h>
-#else
 #ifdef SVR4
 # include <sys/fbio.h>
 # include <sys/kbd.h>

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.28 1995/01/15 10:30:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.30 1995/01/28 16:58:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -640,11 +640,10 @@ mach32Probe()
 	OFLG_CLR(XCONFIG_VIRTUAL,&mach32InfoRec.xconfigFlag);
 
     /*
-     * Limitation of 8514 drawing commands  (taking into account 256 lines
-     * required by the cache)
+     * Limitation of 8514 drawing commands
      */
-    if (mach32VirtY > 1280) {
-	ErrorF("Virtual screen height must be no greater than 1280\n");
+    if (mach32VirtY > 1536) {
+	ErrorF("Virtual screen height must be no greater than 1536\n");
 	xf86DisableIOPorts(mach32InfoRec.scrnIndex);
 	return(FALSE);
     }
