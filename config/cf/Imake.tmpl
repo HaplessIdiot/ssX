@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.165 2004/06/09 19:00:09 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.166 2004/06/23 17:04:13 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -1896,7 +1896,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
 #else
             MODCC = ModuleCcCmd
 #endif
-           MODCPP = ModuleCppCmd
+           MODCPP = ModuleCppCmd $(STD_CPP_DEFINES)
         MODCFLAGS = ModuleCFlags
             MODAS = ModuleAsCmd
        MODASFLAGS = ModuleAsFlags
