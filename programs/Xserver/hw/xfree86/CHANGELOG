@@ -1,5 +1,7 @@
 XFree86 4.0.1h (xx December 2000)
-1069.  Update OpenBSD and NetBSD docs (Matthieu Herrb).
+1070. Add a MIT-MAGIC-COOKIE-1 generator to startx for OpenBSD and make
+      mkcookie support more generic (Matthieu Herrb).
+1069. Update OpenBSD and NetBSD docs (Matthieu Herrb).
 1068. Clean up r128_video.c again (Marc La France).
 1067. Fix ATI clock generator recognition when an adapter BIOS cannot be
       retrieved (Linus Torvalds).
@@ -11799,4 +11801,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1435 2000/12/02 15:41:54 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1436 2000/12/02 15:58:34 herrb Exp $

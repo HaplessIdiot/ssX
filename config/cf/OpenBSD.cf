@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.41 2000/11/30 23:29:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.42 2000/12/02 17:45:23 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -237,6 +237,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef HasNetBSDApertureDriver
 #define HasNetBSDApertureDriver	YES
 #endif
+#endif
+
+#ifndef HasCookieMaker
+#  define HasCookieMaker	YES
+#  define MkCookieCmd \
+	'dd if=/dev/urandom bs=16 count=1 2>/dev/null | hexdump -e \\"%02x\\"'
 #endif
 
 
