@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.34 2002/10/08 22:14:13 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -102,7 +102,7 @@ static XF86ModuleVersionInfo xaaVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	1, 0, 0,
+	1, 1, 0,
 	ABI_CLASS_VIDEODRV,		/* requires the video driver ABI */
 	ABI_VIDEODRV_VERSION,
 	MOD_CLASS_NONE,
