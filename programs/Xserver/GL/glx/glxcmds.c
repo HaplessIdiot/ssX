@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.9 2002/12/14 01:36:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.10tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -747,6 +747,8 @@ int __glXQueryVersion(__GLXclientState *cl, GLbyte *pc)
 
     major = req->majorVersion;
     minor = req->minorVersion;
+    (void)major;
+    (void)minor;
 
     /*
     ** Server should take into consideration the version numbers sent by the

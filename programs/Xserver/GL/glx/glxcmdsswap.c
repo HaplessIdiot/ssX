@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmdsswap.c,v 1.7 2002/01/14 22:47:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmdsswap.c,v 1.8tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -357,7 +357,7 @@ int __glXSwapClientInfo(__GLXclientState *cl, GLbyte *pc)
     return __glXClientInfo(cl, pc);
 }
 
-int __glXSwapQueryContextInfoEXT(__GLXclientState *cl, char *pc)
+int __glXSwapQueryContextInfoEXT(__GLXclientState *cl, GLbyte *pc)
 {
     xGLXQueryContextInfoEXTReq *req = (xGLXQueryContextInfoEXTReq *) pc;
     __GLX_DECLARE_SWAP_VARIABLES;
@@ -365,7 +365,7 @@ int __glXSwapQueryContextInfoEXT(__GLXclientState *cl, char *pc)
     __GLX_SWAP_SHORT(&req->length);
     __GLX_SWAP_INT(&req->context);
 
-    return __glXQueryContextInfoEXT(cl, (GLbyte *)pc);
+    return __glXQueryContextInfoEXT(cl, pc);
 }
 
 /************************************************************************/
