@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.1 1994/05/31 08:08:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.2 1994/06/15 15:41:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -101,7 +101,7 @@ ScrnInfoRec p9000InfoRec = {
     {0, },		/* RgbRec blackColour */
     {0, },		/* RgbRec whiteColour */
     p9000ValidTokens,	/* int *validTokens */
-    P9000_PATCHLEVEL	/* char *patchlevel */
+    P9000_PATCHLEVEL,	/* char *patchlevel */
     0,			/* int IObase */
     0,			/* int PALbase */
     0,			/* int COPbase */
