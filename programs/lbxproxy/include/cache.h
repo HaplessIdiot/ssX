@@ -50,7 +50,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/include/cache.h,v 1.7tsi Exp $ */
 
 #ifndef _CACHE_H_
 #define	_CACHE_H_
@@ -63,7 +63,7 @@ from The Open Group.
 
 typedef unsigned long CacheID;
 typedef unsigned long Cache;
-typedef void (*CacheFree) ();
+typedef void (*CacheFree) (CacheID id, ClientPtr client, pointer data, int reason);
 
 typedef struct _cache *CachePtr;
 

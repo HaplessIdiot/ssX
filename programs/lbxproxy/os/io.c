@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.10 2001/12/14 20:00:58 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.11tsi Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -65,6 +65,7 @@ SOFTWARE.
 #include <X11/Xpoll.h>
 #include "osdep.h"
 #include "lbx.h"
+#include "io.h"
 
 #ifdef BIGREQS
 #include "bigreqstr.h"
@@ -83,7 +84,6 @@ SOFTWARE.
 #endif
 #endif
 
-extern void MarkClientException();
 static int timesThisConnection = 0;
 static ConnectionInputPtr FreeInputs = (ConnectionInputPtr)NULL;
 static ConnectionOutputPtr FreeOutputs = (ConnectionOutputPtr)NULL;
@@ -829,9 +829,9 @@ StandardFlushClient(who, oc, extraBuf, extraCount)
 }
 
 static int
-ExpandOutputBuffer(oco, len)
-    ConnectionOutputPtr oco;
-    int len;
+ExpandOutputBuffer(
+    ConnectionOutputPtr oco,
+    int len)
 {
     unsigned char *obuf;
 
@@ -849,11 +849,11 @@ ExpandOutputBuffer(oco, len)
 }
 
 int
-LbxFlushClient(who, oc, extraBuf, extraCount)
-    ClientPtr who;
-    OsCommPtr oc;
-    char *extraBuf;
-    int extraCount; /* do not modify... returned below */
+LbxFlushClient(
+    ClientPtr who,
+    OsCommPtr oc,
+    char *extraBuf,
+    int extraCount) /* do not modify... returned below */
 {
     ConnectionOutputPtr obuf;
     register ConnectionOutputPtr oco;

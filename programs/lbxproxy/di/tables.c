@@ -1,4 +1,4 @@
-/* $XConsortium: tables.c /main/12 1996/11/18 20:20:06 rws $ */
+/* $Xorg: tables.c,v 1.3 2000/08/17 19:53:56 cpqbld Exp $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,56 +20,21 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
-extern int  ProcInitialConnection(), ProcEstablishConnection();
+#include "lbx.h"
+#include "gfx.h"
+#include "wire.h"
+#include "tables.h"
 
-extern int  ProcStandardRequest();
-
-extern int  ProcLBXChangeWindowAttributes(),
-	    ProcLBXGetWindowAttributes(),
-	    ProcLBXGetGeometry(),
-	    ProcLBXInternAtom(),
-            ProcLBXGetAtomName(),
-            ProcLBXCreateColormap(),
-            ProcLBXFreeColormap(),
-            ProcLBXCopyColormapAndFree(),
-            ProcLBXFreeColors(),
-            ProcLBXLookupColor(),
-            ProcLBXAllocColor(),
-            ProcLBXAllocNamedColor(),
-            ProcLBXAllocColorCells(),
-            ProcLBXAllocColorPlanes(),
-            ProcLBXGetModifierMapping(),
-            ProcLBXGetKeyboardMapping(),
-            ProcLBXQueryFont(),
-            ProcLBXChangeProperty(),
-            ProcLBXGetProperty(),
-	    ProcLBXCopyArea(),
-	    ProcLBXCopyPlane(),
-            ProcLBXPolyPoint(),
-            ProcLBXPolyLine(),
-            ProcLBXPolySegment(),
-            ProcLBXPolyRectangle(),
-            ProcLBXPolyArc(),
-            ProcLBXFillPoly(),
-            ProcLBXPolyFillRectangle(),
-            ProcLBXPolyFillArc(),
-	    ProcLBXPolyText(),
-	    ProcLBXImageText(),
-            ProcLBXQueryExtension(),
-	    ProcLBXGetImage(),
-	    ProcLBXPutImage();
-
-extern int  ProcBadRequest();
-
-int         (*InitialVector[3]) () =
+int         (*InitialVector[3]) (ClientPtr client) =
 {
     0,
     ProcInitialConnection,
     ProcEstablishConnection
 };
 
-int         (*ProcVector[256]) () =
+int         (*ProcVector[256]) (ClientPtr client) =
 {
     ProcBadRequest,
     ProcStandardRequest,
@@ -330,10 +295,7 @@ int         (*ProcVector[256]) () =
 };
 
 
-extern int  ServerProcError(), ServerProcReply(),
-            ServerProcStandardEvent();
-
-int         (*ServerVector[256]) () = {
+int         (*ServerVector[256]) (ClientPtr sc) = {
     ServerProcStandardEvent,
     ServerProcStandardEvent,
     ServerProcStandardEvent,

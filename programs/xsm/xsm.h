@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.h,v 1.7 2001/12/08 18:33:45 herrb Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.h,v 1.8tsi Exp $ */
 
 #ifndef _XSM_H_
 #define _XSM_H_
@@ -205,9 +205,9 @@ extern void remote_start(char *restart_protocol, char *restart_machine,
 			 char *non_local_session_env );
 
 /* signals.c */
-extern void sig_child_handler(void);
-extern void sig_term_handler(void);
-extern void sig_usr1_handler(void);
+extern void sig_child_handler(XtPointer closure, XtSignalId id);
+extern void sig_term_handler(int sig);
+extern void sig_usr1_handler(int sig);
 extern void register_signals(XtAppContext);
 extern int execute_system_command(char *s);
 

@@ -26,6 +26,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "RxI.h"
 
@@ -422,6 +423,7 @@ RxInitializeParams(RxParams *params)
     params->x_print_lbx = RxUndef;
 }
 
+static
 void
 FreeAuthListData(char **list)
 {

@@ -45,13 +45,15 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "misc.h"
 #include "util.h"
+#include "os.h"
 
 void
-OsInit()
+OsInit(void)
 {
     static Bool been_here = FALSE;
 
