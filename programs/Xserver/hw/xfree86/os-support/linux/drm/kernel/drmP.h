@@ -106,9 +106,6 @@
 #ifndef __HAVE_DMA_FREELIST
 #define __HAVE_DMA_FREELIST	0
 #endif
-#ifndef __HAVE_DMA_HISTOGRAM
-#define __HAVE_DMA_HISTOGRAM	0
-#endif
 
 #define __REALLY_HAVE_AGP	(__HAVE_AGP && (defined(CONFIG_AGP) || \
 						defined(CONFIG_AGP_MODULE)))
@@ -130,7 +127,6 @@
 #define DRM_LOCK_SLICE	      1	/* Time slice for lock, in jiffies	  */
 
 #define DRM_FLAG_DEBUG	  0x01
-#define DRM_FLAG_NOCTX	  0x02
 
 #define DRM_MEM_DMA	   0
 #define DRM_MEM_SAREA	   1
@@ -365,38 +361,11 @@ typedef struct drm_buf {
 		DRM_LIST_RECLAIM = 5
 	}		  list;	       /* Which list we're on		     */
 
-#if DRM_DMA_HISTOGRAM
-	cycles_t	  time_queued;	   /* Queued to kernel DMA queue     */
-	cycles_t	  time_dispatched; /* Dispatched to hardware	     */
-	cycles_t	  time_completed;  /* Completed by hardware	     */
-	cycles_t	  time_freed;	   /* Back on freelist		     */
-#endif
 
 	int		  dev_priv_size; /* Size of buffer private stoarge   */
 	void		  *dev_private;  /* Per-buffer private storage       */
 } drm_buf_t;
 
-#if DRM_DMA_HISTOGRAM
-#define DRM_DMA_HISTOGRAM_SLOTS		  9
-#define DRM_DMA_HISTOGRAM_INITIAL	 10
-#define DRM_DMA_HISTOGRAM_NEXT(current)	 ((current)*10)
-typedef struct drm_histogram {
-	atomic_t	  total;
-
-	atomic_t	  queued_to_dispatched[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  dispatched_to_completed[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  completed_to_freed[DRM_DMA_HISTOGRAM_SLOTS];
-
-	atomic_t	  queued_to_completed[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  queued_to_freed[DRM_DMA_HISTOGRAM_SLOTS];
-
-	atomic_t	  dma[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  schedule[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  ctx[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  lacq[DRM_DMA_HISTOGRAM_SLOTS];
-	atomic_t	  lhld[DRM_DMA_HISTOGRAM_SLOTS];
-} drm_histogram_t;
-#endif
 
 				/* bufs is one longer than it has to be */
 typedef struct drm_waitlist {
@@ -639,9 +608,6 @@ typedef struct drm_device {
 #endif
 	cycles_t	  ctx_start;
 	cycles_t	  lck_start;
-#if __HAVE_DMA_HISTOGRAM
-	drm_histogram_t	  histo;
-#endif
 
 				/* Callback to X server for context switch
 				   and for heavy-handed reset. */
@@ -697,13 +663,7 @@ extern int           DRM(unlock)(struct inode *inode, struct file *filp,
 extern int	     DRM(open_helper)(struct inode *inode, struct file *filp,
 				      drm_device_t *dev);
 extern int	     DRM(flush)(struct file *filp);
-extern int	     DRM(release_fuck)(struct inode *inode, struct file *filp);
 extern int	     DRM(fasync)(int fd, struct file *filp, int on);
-extern ssize_t	     DRM(read)(struct file *filp, char *buf, size_t count,
-			       loff_t *off);
-extern int	     DRM(write_string)(drm_device_t *dev, const char *s);
-extern unsigned int  DRM(poll)(struct file *filp,
-			       struct poll_table_struct *wait);
 
 				/* Mapping support (drm_vm.h) */
 extern struct page *DRM(vm_nopage)(struct vm_area_struct *vma,
@@ -808,12 +768,11 @@ extern int	     DRM(getmagic)(struct inode *inode, struct file *filp,
 extern int	     DRM(authmagic)(struct inode *inode, struct file *filp,
 				    unsigned int cmd, unsigned long arg);
 
+                                /* Placeholder for ioctls past */
+extern int	     DRM(noop)(struct inode *inode, struct file *filp,
+				  unsigned int cmd, unsigned long arg);
 
 				/* Locking IOCTL support (drm_lock.h) */
-extern int	     DRM(block)(struct inode *inode, struct file *filp,
-				unsigned int cmd, unsigned long arg);
-extern int	     DRM(unblock)(struct inode *inode, struct file *filp,
-				  unsigned int cmd, unsigned long arg);
 extern int	     DRM(lock_take)(__volatile__ unsigned int *lock,
 				    unsigned int context);
 extern int	     DRM(lock_transfer)(drm_device_t *dev,
@@ -853,15 +812,6 @@ extern int	     DRM(dma_setup)(drm_device_t *dev);
 extern void	     DRM(dma_takedown)(drm_device_t *dev);
 extern void	     DRM(free_buffer)(drm_device_t *dev, drm_buf_t *buf);
 extern void	     DRM(reclaim_buffers)( struct file *filp );
-#if __HAVE_OLD_DMA
-/* GH: This is a dirty hack for now...
- */
-extern void	     DRM(clear_next_buffer)(drm_device_t *dev);
-extern int	     DRM(select_queue)(drm_device_t *dev,
-				       void (*wrapper)(unsigned long));
-extern int	     DRM(dma_enqueue)(struct file *filp, drm_dma_t *dma);
-extern int	     DRM(dma_get_buffers)(struct file *filp, drm_dma_t *dma);
-#endif
 #if __HAVE_DMA_IRQ
 extern int           DRM(control)( struct inode *inode, struct file *filp,
 				   unsigned int cmd, unsigned long arg );
@@ -882,25 +832,7 @@ extern void          DRM(vbl_send_signals)( drm_device_t *dev );
 extern void          DRM(dma_immediate_bh)( void *dev );
 #endif
 #endif
-#if DRM_DMA_HISTOGRAM
-extern int	     DRM(histogram_slot)(unsigned long count);
-extern void	     DRM(histogram_compute)(drm_device_t *dev, drm_buf_t *buf);
-#endif
 
-				/* Buffer list support (drm_lists.h) */
-#if __HAVE_DMA_WAITLIST
-extern int	     DRM(waitlist_create)(drm_waitlist_t *bl, int count);
-extern int	     DRM(waitlist_destroy)(drm_waitlist_t *bl);
-extern int	     DRM(waitlist_put)(drm_waitlist_t *bl, drm_buf_t *buf);
-extern drm_buf_t     *DRM(waitlist_get)(drm_waitlist_t *bl);
-#endif
-#if __HAVE_DMA_FREELIST
-extern int	     DRM(freelist_create)(drm_freelist_t *bl, int count);
-extern int	     DRM(freelist_destroy)(drm_freelist_t *bl);
-extern int	     DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl,
-				       drm_buf_t *buf);
-extern drm_buf_t     *DRM(freelist_get)(drm_freelist_t *bl, int block);
-#endif
 #endif /* __HAVE_DMA */
 
 #if __REALLY_HAVE_AGP
