@@ -67,6 +67,11 @@
 #define outb(p,v) _outb((v),(p))
 #define outw(p,v) _outw((v),(p))
 #define outl(p,v) _outl((v),(p))
+#elif defined(linux) && defined(__ia64__)
+#include <stdlib.h>
+#include <asm/types.h>
+#include <asm/system.h>
+#include <asm/io.h>
 #else
 #if defined(__sparc__)
 #ifndef ASI_PL

@@ -45,6 +45,10 @@
 #endif	/* MACH386 */
 #include <ctype.h>
 #if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__QNX__) || defined(__QNXNTO__)
+#if defined(__ia64__)
+#include <sys/io.h>
+#include <asm/io.h>
+#endif
 # include <string.h>
 #if !(defined(__QNX__) && !defined(__QNXNTO__))
 # include <memory.h>
