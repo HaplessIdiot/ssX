@@ -125,7 +125,7 @@ Most notably image viewers such as xv-3.10 exhibit this problem.<p>
 It is recommended that you set ThreadedX in <tt>~xc/config/cf/host.def</tt> to
 NO, if you are using GCC.
 ProWorks does not have this problem.
-Whether this behavour still exists with newer GCC's has not been verified.<p>
+Whether this behaviour still exists with newer GCC's has not been verified.<p>
 <item>
 To build XFree86 with GCC you need gcc and (optionally) c++filt from GNU
 binutils.
@@ -213,6 +213,6 @@ Bug reports should be sent to one of the <bf/XFree86@XFree86.org/,
 <bf>Xpert@XFree86.org</bf>, or <bf>Newbie@XFree86.org</bf> (depending on your
 level of comfort).
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.1 2001/10/28 03:33:21 tsi Exp $
 </verb>
 </article>
