@@ -10,6 +10,8 @@
 <sect> Available Documentation <p>
 
 <itemize>
+<item> <htmlurl name="Release Notes for XFree86&tm; 3.1.2D (beta version)"
+	url="RELNOTE.html">
 <item> <htmlurl name="README for XFree86&tm; 3.1.2"
 	url="README.html">
 <item> <htmlurl name="Copyright"
@@ -28,8 +30,12 @@
 	url="LynxOS.html">
 <item> <htmlurl name="README for XFree86 3.1 on Mach"
 	url="Mach.html">
-<item> <htmlurl name="README for XFree86 3.1.2 on NetBSD"
+<item> <htmlurl name="README for XFree86 3.1.2D on NetBSD"
 	url="NetBSD.html">
+<item> <htmlurl name="README for XFree86 3.1.2D on OS/2"
+	url="OS2.html">
+<item> <htmlurl name="Notes on Rebuilding XFree86/OS2 from Scratch"
+	url="OS2note.html">
 <item> <htmlurl name="Information for SCO Users"
 	url="SCO.html">
 <item> <htmlurl name="Information for Solaris for x86 Users"
@@ -79,7 +85,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.8 1996/01/16 15:04:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.9 1996/02/04 09:08:05 dawes Exp $
 
 
 

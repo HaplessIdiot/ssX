@@ -218,7 +218,7 @@ other Mach64 adapters.<p>
 There is some controversy over whether or not clocks higher than 135MHz should
 be allowed on CT &amp; ET adapters.
 For now, clocks will be limited to 135MHz by default.  
-This limit can only be increased (upto a driver-calculated absolute maximum)
+This limit can only be increased (up to a driver-calculated absolute maximum)
 through the DACSpeed option in XF86Config.
 Be aware however that doing this is untested and might damage the adapter.<p>
 Future development plans include addressing the above problems and using
@@ -226,7 +226,7 @@ accelerated functionality.<p>
 Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.7tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.8 1996/02/22 05:12:06 dawes Exp $
 
 
 

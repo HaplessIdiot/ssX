@@ -1,4 +1,5 @@
 XFree86 3.1.2D (24 February 1996)
+403. Fix xterm SEGV if it cannot open an input method (Manabe Takashi).
 402. Update Linux/ELF SharedLibraryTarget() (H.J. Lu).
 401. Add a BinUtilsVersion parameter for Linux, and modify ExtraLoadFlags for
      Binutils versions 2.6.0.7 and later (H.J. Lu).

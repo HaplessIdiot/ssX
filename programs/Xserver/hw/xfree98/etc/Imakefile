@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.6 1996/02/09 08:21:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.7 1996/02/10 10:42:41 dawes Exp $
 
 
 
@@ -53,8 +53,10 @@ XCOMM $XConsortium: Imakefile /main/5 1996/01/11 12:23:36 kaleb $
 #endif
 #endif
 
+#if 0
 #if XFree86Version % 10
 POSTINST = postinst.sh
+#endif
 #endif
 
        FILES = $(CONFIGFILES) $(TERMFILES) \

@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2D (beta version)
  <author>The XFree86 Project, Inc
- <date>11 February 1996
+ <date>24 February 1996
 
 
 <abstract>
@@ -59,6 +59,10 @@ a section about the current beta version.  It includes a regularly
 updated list of known problems.  If you are having problems with the
 current beta version, please look here first.
 
+Note that much of the documentation provided with this release has not
+been updated and still refers to 3.1.2.  If in doubt, check the date
+shown in the file(s).
+
 <sect> 3.1.2D and X11R6.1
 <p>
 XFree86 3.1.2D is based on the X Consortium's X11R6.1 release (which has
@@ -73,6 +77,36 @@ It is expected that it will reappear in some form in a future release.
 <sect> New Features in 3.1.2D
 <sect1> General
 <p>
+<itemize>
+  <item>OS/2 support has advanced significantly.  There should be OS/2
+	binaries available soon.
+</itemize>
+<sect1> General X server changes
+<p>
+<itemize>
+  <item>A security problem related to the X server's lock files has been
+	fixed.
+  <item>The DGA extension has been implemented now for all servers that
+	can support it, and some bugs in the previous version have been
+	fixed.  Connections are now only allowed from clients using a local
+	connection type (e.g., DISPLAY=":0").
+  <item>The VidMode extension (as used by xvidtune) now by default only allows
+	changes to modes by clients using a local connection type.  There is
+	also an option to completely disable mode changes via this extension.
+  <item>A new server extension called "XFree86-Misc" has been added.  The
+	primary purpose of this is to allow reconfiguration of some parameters	
+	while the server is running.  Some functions previously in the
+	VidMode extension (like screen save functions) have been moved to
+	this new extension.
+  <item>Support has been added for the ALPS GlidePoint.  A tap on the pad
+	is treated as a fourth button.
+  <item>A RecolorCursor problem that was present in servers/drivers using
+	HW cursors has been fixed.
+  <item>The XKEYBOARD extension is included in the servers as part of X11R6.1.
+	It is enabled by default, but can be disabled either from the command
+	line or from the XF86Config file.  With this extension enabled, you
+	may see some differences in the keyboard mappings.
+</itemize>
 <sect1> PC98 Support
 <p>
 <itemize>
@@ -82,10 +116,147 @@ It is expected that it will reappear in some form in a future release.
 	on the PC-AT SVGA(cirrus) server.
   <item>Initial release of the PC98 GANB-WAP server. This server is based
 	on the PC-AT SVGA(cirrus) server.
+  <item>Initial release of the PC98 WAB-EP server. This server is based
+	on the PC-AT SVGA(cirrus) server.
+  <item>Initial release of the PC98 WSN-A2F server. This server is based
+	on the PC-AT SVGA(cirrus) server.
   <item>Initial release of the PC98 EGC server. This server is based
 	on the PC-AT VGA16(generic) server.
   <item>Initial release of the PC98 PEGC-480 server. This server is based
 	on the PC-AT SVGA(generic) server.
+</itemize>
+<sect1> S3 server
+<p>
+<itemize>
+  <item>A Ti3026 clock problem that appears on some SPEA cards has been fixed.
+  <item>Code has been added to automatically detect the Trio32 bug that causes
+	font cache problems.  If you've needed to use the "trio32_fc_bug"
+	option in 3.1.2B, try removing it and let us know if there are any
+	problems.
+  <item>Framebuffer address problems with some 1MB Trio64 VLB cards should
+	be fixed.
+  <item>The low ICS5342 clock limit has been removed.
+  <item>A workaround is included for the "bright left border" problem that
+	shows up with some Trio64V+ cards.
+  <item>Detection of Diamond S3 cards has been improved.  If you've needed
+	to use the "diamond" option to avoid screen wrapping in previous
+	releases, try removing it and let us know if there are any problems.
+  <item>Memory parameter calculations for 2MB Trio64 cards have been fixed.
+	If you've needed to add something like "S3MClk 170" to your
+	XF86Config with previous versions, you should remove it now.
+  <item>The handling of the S3RefClk XF86Config setting has been fixed
+	for cards with an IBM Ramdac.
+  <item>Fixes for S3 dashed lines are included.  Part of this is a workaround
+	for a dashed line bug in some 968 chips.
+</itemize>
+<sect1> Mach64 server
+<p>
+<itemize>
+  <item>The Mach64 server now correctly initialises Block I/O mode on cards
+	which report that it is available.  This fixes the problem of some
+	Mach64 CT cards not being recognised in earlier versions.
+  <item>In addition to the known problems listed below for version 3.1.2B,
+	the following problems are known:
+	<itemize>
+	  <item>Olvwm icons may be displayed with some pieces missing.
+	  <item>Screen blanking at 16bpp doesn't work properly with CT
+		(and other?) cards.
+	</itemize>
+</itemize>
+<sect1> I128 server
+<p>
+<itemize>
+  <item>Problems detecting some I128 cards have been fixed.
+  <item>The server doesn't yet support 8MB cards.
+  <item>The server is still completely unaccelerated.
+</itemize>
+<sect1> SVGA/VGA16/Mono servers
+<p>
+<itemize>
+  <item>A PCI probe has been added to these servers.  If it causes problems,
+	it can be disabled by adding the line:
+	<verb>
+	Option "no_pci_probe"
+	</verb>
+	to the Device section in your XF86Config file.
+</itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>Known problems with TGUI9440 cards have been fixed (including
+	interlaced modes).
+  <item>Support for TGUI9660/9680 cards has been improved.
+</itemize>
+<sect1> ARK driver (SVGA server)
+<p>
+<itemize>
+  <item>The ICS5342 clock support (required for the Diamond Stealth64
+	Graphics 2001 series) has been fixed.
+</itemize>
+<sect1> ATI driver (SVGA server)
+<p>
+<itemize>
+  <item>The driver name has been changed back from "vgawonder" to "ati".
+  <item>Support is included for most recent Mach64 cards.
+  <item>The "undoc_clocks" option has been removed.  If you had been using
+	it, remove it from your XF86Config file.
+  <item>A colourmap problem with VGA Wonder V3 boards has been fixed.
+</itemize>
+<sect1> ET4000 driver (SVGA server)
+<p>
+<itemize>
+  <item>The ET4000 driver support in the SVGA server was broken in 3.1.2B
+	for old ET4000 (non-W32) cards.  This has been fixed.
+</itemize>
+<sect1> Compaq AVGA driver (SVGA server)
+<p>
+<itemize>
+  <item>The Compaq AVGA driver has been disabled in this release because it
+	doesn't work, and nobody seems interested in fixing it.
+</itemize>
+<sect1> Hercules mono driver
+<p>
+<itemize>
+  <item>The Hercules mono driver has been disabled in this release because
+	it has problems, and isn't likely to be fixed soon.
+</itemize>
+<sect1> XInput Extension
+<p>
+<itemize>
+  <item>Bugs with the Wacom Tablet support have been fixed.
+  <item>The Eraser button of a Wacom stylus may now be used as a third
+	button.
+  <item>Joystick support is now included for NetBSD.
+  <item>XInput drivers are now dynamically loadable for Linux/ELF, FreeBSD,
+	and NetBSD.
+  <item>Multiple instances of XInput devices may be specified.  As a
+	consequence, the "Joystick2" device has been removed.
+</itemize>
+<sect1> SuperProbe
+<p>
+<itemize>
+  <item>Much improved detection for Mach64 cards.
+  <item>Improved detection for Trident cards.
+  <item>Added detection of SiS cards. 
+</itemize>
+<sect1> Client/Library Changes
+<p>
+<itemize>
+  <item>As part of the change to X11R6.1, the shared library revisions
+	for libX11, libXaw, libXext, and libXtst have been incremented
+	to 6.1.
+  <item>The client-side library code for the XFree86 extensions and the
+	ScreenSaver extension has been moved into separate libraries.
+	The old libXExExt has been removed.
+  <item>Colour support is now included by default in xterm.  I18N support
+	in xterm has been improved (as part of X11R6.1).  If you've previously
+	been using one of the many "color_xterm" variants, try this and let
+	us know if you have any problems.
+  <item>xdpyinfo has been updated to provide more detailed information
+	about the XInput extension and the XFree86 extensions.
+  <item>The setting/examining of extended screen saver parameters has
+	been added to xset (was in xvidtune).  xset can now also be used
+	to set the keyboard repeat parameters.
 </itemize>
 
 <sect> New Features in 3.1.2B
@@ -387,63 +558,113 @@ It is expected that it will reappear in some form in a future release.
 </itemize>
 <p>
 
-<sect>Installing an XFree86 Beta Release
+<sect>Installing the XFree86 3.1.2D Beta Release
 <p>
+<!--
 The XFree86 3.1.2B binary beta release is distributed as a upgrade to
 3.1.2.  It consists of the following files:
-<!--
-<quote>
-<descrip>
-<tag/BetaReport/	Beta test report template form
-<tag/X312B8514.tgz/	8514/A server
-<tag/X312BAGX.tgz/	AGX server
-<tag/X312BI128.tgz/	I128 server
-<tag/X312BMa32.tgz/	Mach 32 server
-<tag/X312BMa64.tgz/	Mach 64 server
-<tag/X312BMa8.tgz/	Mach 8 server
-<tag/X312BMono.tgz/	Mono server
-<tag/X312BP9K.tgz/	P9000 server
-<tag/X312BSVGA.tgz/	SVGA server
-<tag/X312BVG16.tgz/	16 colour VGA server
-<tag/X312BW32.tgz/	ET4000/W32 server
-<tag/X312B9NS3.tgz/	PC98 NEC(S3) server
-<tag/X312B9SPW.tgz/	PC98 PCSKB-PowerWindow(S3) server
-<tag/X312B9LPW.tgz/	PC98 PowerWindowLB(S3) server
-<tag/X312Bupd.tgz/	clients/libraries that have changed since 3.1.2
-<tag/postinst.sh/	script to run after installing the 3.1.2B binaries
-</descrip>
-</quote>
 -->
+The XFree86 3.1.2D binary beta release is distributed as a full release,
+not as an upgrade.  For most operating systems, it consists of the following
+files.
+
+What follows is a list of the XFree86 3.1.2D components.  There may be
+some variations in this for some OSs.
+
+The following are required for all installations:
 <quote>
 <verb>
-BetaReport	   Beta test report template form
-X312B8514.tgz	   8514/A server
-X312BAGX.tgz	   AGX server
-X312BI128.tgz	   I128 server
-X312BMa32.tgz	   Mach 32 server
-X312BMa64.tgz	   Mach 64 server
-X312BMa8.tgz	   Mach 8 server
-X312BMono.tgz	   Mono server
-X312BP9K.tgz	   P9000 server
-X312BSVGA.tgz	   SVGA server
-X312BVG16.tgz	   16 colour VGA server
-X312BW32.tgz	   ET4000/W32 server
-X312B9NS3.tgz	   PC98 NEC(S3) server (*)
-X312B9SPW.tgz	   PC98 PCSKB-PowerWindow(S3) server (*)
-X312B9LPW.tgz	   PC98 PowerWindowLB(S3) server (*)
-X312Bupd.tgz	   clients/libraries that have changed since 3.1.2
-postinst.sh	   script to run after installing the 3.1.2B binaries
+BetaReport         Beta test report template form
+X312Dbin.tgz       Clients, run-time libs, and app-defaults files.
+X312Ddoc.tgz       Documentation
+X312Dfnts.tgz      75dpi and misc fonts
+X312Dlib.tgz       Data files required at run-time.
+X312Dman.tgz       Manual pages
 </verb>
 </quote>
-(*)Note: The PC98 servers are for use only on PC98 machines (if you don't
-know what a PC98 machine is, you don't need these).  Binaries for these
-are available only for FreeBSD and NetBSD.
 
+The following X servers are for PC/AT hardware.  Choose at least one which
+matches your hardware.
+<quote>
+<verb>
+X312D8514.tgz      8514/A server
+X312DAGX.tgz       AGX server
+X312DI128.tgz      I128 server
+X312DMa32.tgz      Mach 32 server
+X312DMa64.tgz      Mach 64 server
+X312DMa8.tgz       Mach 8 server
+X312DMono.tgz      Mono server
+X312DP9K.tgz       P9000 server
+X312DSVGA.tgz      SVGA server
+X312DVG16.tgz      16 colour VGA server
+X312DW32.tgz       ET4000/W32 server
+</verb>
+</quote>
+The following X servers are for PC98 hardware.  If you have a PC98 machine,
+choose one which suits your hardware.  If you don't know what a PC98 machine
+is, you don't need any of these.
+<quote>
+<verb>
+X312D9NS3.tgz      PC98 NEC(S3) server
+X312D9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
+X312D9LPW.tgz      PC98 PowerWindowLB(S3) server
+X312D9EGC.tgz      PC98 EGC(generic) server
+X312D9GAN.tgz      PC98 GANB-WAP(cirrus) server
+X312D9480.tgz      PC98 PEGC-480(generic) server
+X312D9NKV.tgz      PC98 NKV-NEC(cirrus) server
+X312D9WBS.tgz      PC98 WABS(cirrus) server
+X312D9WEP.tgz      PC98 WAB-EP(cirrus) server
+X312D9WSN.tgz      PC98 WSN-A2F(cirrus) server
+</verb>
+</quote>
+The following are optional.
+<quote>
+<verb>
+X312Df100.tgz     100dpi fonts
+X312Dfcyr.tgz     Cyrillic fonts
+X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
+X312Dfscl.tgz     Scaled fonts (Speedo and Type1)
+X312Dfsrv.tgz     Font server and config files
+X312Dprog.tgz     X header files, config files and compile-time libs
+X312Dcfg.tgz      sample config files for xinit, xdm
+X312Dnest.tgz     Nested X server
+X312Dvfb.tgz      Virtual framebuffer X server
+</verb>
+</quote>
+
+If you already have a version of XFree86 installed, <bf>MAKE A BACKUP OF</bf>
+<tt>/usr/X11R6</tt> <bf>BEFORE DOING ANYTHING ELSE</bf>.  The standard
+installation procedure will overwrite your existing version of XFree86.
+
+If you have a previous version of XFree86 installed, you can upgrade
+to the new version by extracting the required .tgz files over the
+previous version in <tt>/usr/X11R6</tt>.
+
+If you are installing from scratch, create a directory called
+<tt>/usr/X11R6</tt>, then extract the required <tt>.tgz</tt> files.
+If you don't have enough space in <tt>/usr</tt> for this, create a
+directory elsewhere and create a symbolic link to it.
+E.g., if you create a directory in <tt>/home</tt>:
+<tscreen><verb>
+	mkdir /home/X11R6
+	ln -s /home/X11R6 /usr
+</verb></tscreen>
+
+The <tt>.tgz</tt> files are gzipped tar files.  To extract them, go to
+<tt>/usr/X11R6</tt>, and run the following as <bf>root</bf> for each
+file you need:
+<tscreen><verb>
+	gzip -d < X312Dfile.tgz | tar vxf -
+</verb></tscreen>
+
+Note that there is no postinst.sh script to be run for this release.
+
+<!--
 If you don't already have XFree86 3.1.2 installed, first install that.
 If you have already installed 3.1.2A, that's fine.
 Then, you will need to get at least one of the XFree86 3.1.2B X servers
 plus the update set (<tt/X312Bupd.tgz/), the post-install script (make
-sure you have the correct version of this script -- check that the
+sure you have the correct version of this script - check that the
 <tt>BETAVERSION</tt> matches the version you are installing), and
 the BetaReport file.  It is recommended that this release be
 installed in the directory <tt>/usr/XFree86-3.1.2B</tt>.  You will need
@@ -466,9 +687,10 @@ you already had installed in /usr/X11R6.  It puts the backups into the
 /usr/X11R6.  If you had installed 3.1.2A previously according to the
 instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
+-->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.17 1996/01/30 15:26:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.18 1996/02/12 11:13:09 dawes Exp $
 </verb>
 
 </article>
