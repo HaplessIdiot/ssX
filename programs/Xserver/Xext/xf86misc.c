@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.43 2004/04/10 17:57:23 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.44tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -634,7 +634,6 @@ ProcXF86MiscPassMessage(client)
 			stuff->vallen);
     } else {
 	xfree(msgtype);
-	xfree(msgval);
 	return BadValue;
     }
 
