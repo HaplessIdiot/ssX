@@ -1,11 +1,11 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.3 2002/22/04 01:16:16 dawes Exp $ */
 /*
- * Mode switching code (CRT2 section) for SiS 300/540/630/730/315/550/650/740/330/660
+ * Mode switching code (CRT2 section)
+ * for SiS 300/305/540/630/730/315/550/650/M650/651/740/330/660/M660/760/M760
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
  *
- * Assembler-To-C translation
  * Copyright 2002, 2003 by Thomas Winischhofer <thomas@winischhofer.net>
- * Formerly based on non-functional code-fragements by SiS, Inc.
+ * Formerly based on non-functional code-fragements for 300 series by SiS, Inc.
  *
  * If distributed as part of the linux kernel, the contents of this file
  * is entirely covered by the GPL.
@@ -2730,6 +2730,8 @@ SiS_GetLVDSDesData(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT Mode
      	case  5: PanelDesPtr = SiS_Pr->LVDS1280x1024Des_2;  break;
 	case  6: PanelDesPtr = SiS_Pr->LVDS1400x1050Des_2;  break;
 	case  7: PanelDesPtr = SiS_Pr->LVDS1600x1200Des_2;  break;
+	case 80: PanelDesPtr = (SiS_LVDSDesStruct *)Clevo1024x768Des_1;  break;  /*  custom  */
+	case 81: PanelDesPtr = (SiS_LVDSDesStruct *)Clevo1024x768Des_2;  break;
 	default: PanelDesPtr = SiS_Pr->LVDS1024x768Des_1;   break;
      }
 #endif
@@ -2890,6 +2892,15 @@ SiS_GetLVDSDesPtrA(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT Mode
   else tempbx = SiS_Pr->SiS_LCDResInfo - SiS_Pr->SiS_PanelMinLVDS;
 
   if(SiS_Pr->SiS_LCDInfo & DontExpandLCD)  tempbx += 4;
+
+  if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+     if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
+        if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x39) & 0x04)) {
+	   tempbx = 80;
+	   if(SiS_Pr->SiS_LCDInfo & DontExpandLCD) tempbx++;
+	}
+     }
+  }
 
   if(ModeNo <= 0x13)
      tempal = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_CRT2CRTC;
@@ -4117,6 +4128,14 @@ SiS_GetCRT2Part2Ptr(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT Mod
         tempbx = 100;
         if(SiS_Pr->SiS_LCDInfo & DontExpandLCD)      tempbx = 101;
   	else if(SiS_Pr->SiS_SetFlag & LCDVESATiming) tempbx = 102;
+     }
+  } else if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+     if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
+        if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x39) & 0x04)) {
+           tempbx = 103;
+           if(SiS_Pr->SiS_LCDInfo & DontExpandLCD)      tempbx = 104;
+  	   else if(SiS_Pr->SiS_SetFlag & LCDVESATiming) tempbx = 105;
+	}
      }
   }
 #endif
@@ -6915,16 +6934,22 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,
   if(HwDeviceExtension->jChipType >= SIS_315H) {
      if(SiS_Pr->SiS_IF_DEF_LVDS == 0) {
         SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x39,~0x04);
-        if(SiS_Pr->SiS_VBType & (VB_SIS302B | VB_SIS302LV)) {
-           /* Enable 302B/302LV dual link mode.
+	if(SiS_Pr->SiS_VBType & (VB_SIS302B | VB_SIS302LV)) {
+	   /* Enable 302B/302LV dual link mode.
             * (302B is a theory - not in any BIOS)
 	    */
+           if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+	      if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
+	         /* (Sets this in SenseLCD; new paneltypes) */
+	         SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x39,0x04);
+	      }
+	   }
            if((SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) ||
               (SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) ||
               (SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1600x1200)) {
 	      SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x39,0x04);
 	   }
-  	}
+	}
      }
   }
 #endif
@@ -7588,7 +7613,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
      temp |= 0x18;
      SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x46,temp);
      temp = tempbx & 0x00FF;
-     SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x47,temp);	/* tv gatingno */
+     SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x47,temp);
      if(HwDeviceExtension->jChipType >= SIS_315H) {
         if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
            tempax = 0;
@@ -7853,6 +7878,9 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
 	case 100:		   CRT2Part2Ptr = (SiS_Part2PortTblStruct *)SiS310_CRT2Part2_Compaq1280x1024_1; break;  /* Custom */
 	case 101:		   CRT2Part2Ptr = (SiS_Part2PortTblStruct *)SiS310_CRT2Part2_Compaq1280x1024_2; break;
 	case 102:		   CRT2Part2Ptr = (SiS_Part2PortTblStruct *)SiS310_CRT2Part2_Compaq1280x1024_3; break;
+	case 103:		   CRT2Part2Ptr = (SiS_Part2PortTblStruct *)SiS310_CRT2Part2_Clevo1024x768_1; break;    /* Custom */
+	case 104:		   CRT2Part2Ptr = (SiS_Part2PortTblStruct *)SiS310_CRT2Part2_Clevo1024x768_2; break;
+	case 105:		   CRT2Part2Ptr = (SiS_Part2PortTblStruct *)SiS310_CRT2Part2_Clevo1024x768_3; break;
 	default:                   CRT2Part2Ptr = SiS_Pr->SiS_CRT2Part2_1024x768_3;  break;
       }
 
@@ -11786,8 +11814,19 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
   }
 
   if(IS_SIS650) {
-     if((SiS_GetReg1(SiS_Pr->SiS_P3d4, 0x5f) & 0xf0)) {
-        SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x1e,0x03);
+     if(!(SiS_GetReg1(SiS_Pr->SiS_P3d4, 0x5f) & 0xf0)) {
+        if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+	   SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x1e,0x02);
+	} else {
+           SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x1e,0x03);
+	}
+     }
+  }
+
+  if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
+     if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {  /* Maybe all panels? */
+        SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+	return;
      }
   }
 
@@ -11796,7 +11835,7 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
         SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
 	SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
 	SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
-     } else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) {   /* For all panels? */
+     } else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) {   /* Maybe all panels? */
         /* Maybe ACER only? */
         SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
      }

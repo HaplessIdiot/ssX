@@ -202,7 +202,7 @@ SiS315AccelInit(ScreenPtr pScreen)
 	/* sync */
 	infoPtr->Sync = SiSSync;
 
-	if ((pScrn->bitsPerPixel != 8) && (pScrn->bitsPerPixel != 16) &&
+	if((pScrn->bitsPerPixel != 8) && (pScrn->bitsPerPixel != 16) &&
 		(pScrn->bitsPerPixel != 32))
 			return FALSE;
 

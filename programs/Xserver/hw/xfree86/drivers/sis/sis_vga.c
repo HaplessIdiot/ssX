@@ -4,8 +4,8 @@
  *
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
- * Init() function for old series based on code which was
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
+ * Init() function for old series (except for FIFO calculation) based on code
+ * which was Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -37,20 +37,6 @@
 #include "sis.h"
 #include "sis_regs.h"
 #include "sis_dac.h"
-
-#define Midx         0
-#define Nidx         1
-#define VLDidx       2
-#define Pidx         3
-#define PSNidx       4
-#define Fref         14318180
-/* stability constraints for internal VCO -- MAX_VCO also determines
- * the maximum Video pixel clock */
-#define MIN_VCO      Fref
-#define MAX_VCO      135000000
-#define MAX_VCO_5597 353000000
-#define MAX_PSN      0         /* no pre scaler for this chip */
-#define TOLERANCE    0.01      /* search smallest M and N in this tolerance */
 
 #if 0
 #define TV6326TEST
@@ -276,8 +262,11 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if(!pSiS->UseVESA) {
 
-       /* Enable 32bit mem access (D7), read-ahead cache (D4) */
-       pReg->sisRegs3C4[0x0C] |= 0xA0;
+       /* Enable 32bit mem access (D7), read-ahead cache (D5) */
+       pReg->sisRegs3C4[0x0C] |= 0x80;
+       if(pSiS->oldChipset > OC_SIS6225) {
+          pReg->sisRegs3C4[0x0C] |= 0x20;
+       }
 
        /* Some speed-up stuff */
        switch(pSiS->Chipset) {
@@ -463,6 +452,15 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        /* We use the internal VCLK */
        pReg->sisRegs3C4[0x38] &= 0xFC;
 
+       /* Programmable Clock */
+       pReg->sisRegs3C2 = inb(SISMISCR) | 0x0C;
+
+       if(pSiS->oldChipset <= OC_SIS86202) {
+          /* TODO: Handle SR07 for clock selection */
+	  /* 86C201 does not even have a programmable clock... */
+	  /* pReg->sisRegs3C4[0x07] &= 0x??; */
+       }
+
        /* Set VCLK */
        if((sis6326tvmode) || (sis6326himode)) {
 
@@ -523,6 +521,12 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
           /* if SiS_compute_vclk cannot handle the requested clock, try sisCalcClock */
           SiSCalcClock(pScrn, clock, 2, vclk);
 
+#define Midx    0
+#define Nidx    1
+#define VLDidx  2
+#define Pidx    3
+#define PSNidx  4	  
+
           pReg->sisRegs3C4[0x2A] = (vclk[Midx] - 1) & 0x7f;
           pReg->sisRegs3C4[0x2A] |= ((vclk[VLDidx] == 2) ? 1 : 0) << 7;
 
@@ -546,30 +550,29 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        if(clock > 135000)
           pReg->sisRegs3C4[0x07] |= 0x02;
 
-       /* Programmable Clock */
-       pReg->sisRegs3C2 = inb(SISMISCR) | 0x0C;
+       if(pSiS->oldChipset > OC_SIS6225) {
+          /* 1 or 2 cycle DRAM (set by option FastVram) */
+          if(pSiS->newFastVram == -1) {
+             if(pSiS->oldChipset == OC_SIS620) {
+	        /* Use different default on the 620 */
+                pReg->sisRegs3C4[0x34] |= 0x40;
+	        pReg->sisRegs3C4[0x34] &= ~0x80;
+             } else {
+                pReg->sisRegs3C4[0x34] |= 0x80;
+	        pReg->sisRegs3C4[0x34] &= ~0x40;
+             }
+          } else if(pSiS->newFastVram == 1)
+             pReg->sisRegs3C4[0x34] |= 0xC0;
+          else
+             pReg->sisRegs3C4[0x34] &= ~0xC0;
 
-       /* 1 or 2 cycle DRAM (set by option FastVram) */
-       if(pSiS->newFastVram == -1) {
           if(pSiS->oldChipset == OC_SIS620) {
-	     /* Use different default on the 620 */
-             pReg->sisRegs3C4[0x34] |= 0x40;
-	     pReg->sisRegs3C4[0x34] &= ~0x80;
-          } else {
-             pReg->sisRegs3C4[0x34] |= 0x80;
-	     pReg->sisRegs3C4[0x34] &= ~0x40;
-          }
-       } else if(pSiS->newFastVram == 1)
-          pReg->sisRegs3C4[0x34] |= 0xC0;
-       else
-          pReg->sisRegs3C4[0x34] &= ~0xC0;
-
-       if(pSiS->oldChipset == OC_SIS620) {
-          /* Enable SGRAM burst timing (= bit clear) on the 620 */
-          if(pSiS->Flags & SYNCDRAM) {
-             pReg->sisRegs3C4[0x35] &= ~0x20;
-          } else {
-             pReg->sisRegs3C4[0x35] |= 0x20;
+             /* Enable SGRAM burst timing (= bit clear) on the 620 */
+             if(pSiS->Flags & SYNCDRAM) {
+                pReg->sisRegs3C4[0x35] &= ~0x20;
+             } else {
+                pReg->sisRegs3C4[0x35] |= 0x20;
+             }
           }
        }
 
@@ -605,6 +608,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(!pSiS->NoAccel) {
        pReg->sisRegs3C4[0x27] |= 0x40;   /* Enable engine programming registers */
        if( (pSiS->TurboQueue) &&	 /* Handle TurboQueue */
+           (pSiS->oldChipset > OC_SIS6225) &&
  	   ( (pSiS->Chipset != PCI_CHIP_SIS530) ||
 	     (pSiS->CurrentLayout.bitsPerPixel != 24) ) ) {
           pReg->sisRegs3C4[0x27] |= 0x80;        /* Enable TQ */
@@ -697,7 +701,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         * switch will switch to the right, and the FIFO will be refilled with data.
         * When the amount of data in the FIFO reaches the Threshold high value, the
         * selector switch will switch to the left and allows the CPU and the chip
-        * engines to access video RAM.
+        * engines to access the video RAM.
         *
         * The Threshold low values should be increased at higher bpps, simply because
         * there is more data needed for the CRT. When Threshold low and high are very
@@ -709,7 +713,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        case PCI_CHIP_SIS5597:  factor = 65; break;
        case PCI_CHIP_SIS6326:  factor = 30; break;
        case PCI_CHIP_SIS530:   factor = (pSiS->Flags & UMA) ? 60 : 30; break;
-       default:                factor = (pScrn->videoRam > (1024*1024)) ? 24 : 12;
+       default:                factor = (pScrn->videoRam > 1024) ? 24 : 12;
        }
        a = width * height * rate * 1.40 * factor * ((pSiS->CurrentLayout.bitsPerPixel + 1) / 8);
        b = (mclk / 1000) * 999488.0 * (buswidth / 8);

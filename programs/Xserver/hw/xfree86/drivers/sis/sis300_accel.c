@@ -320,8 +320,8 @@ SiS300AccelInit(ScreenPtr pScreen)
 	}
 
 #ifdef SISDUALHEAD
-	if (pSiS->DualHeadMode) {
-		infoPtr->RestoreAccelState = SiSRestoreAccelState;
+	if(pSiS->DualHeadMode) {
+	   infoPtr->RestoreAccelState = SiSRestoreAccelState;
 	}
 #endif
 

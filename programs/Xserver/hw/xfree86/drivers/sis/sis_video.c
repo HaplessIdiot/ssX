@@ -342,6 +342,10 @@ static char sisxvsdresultcheckmodeindexforcrt2[] 	= "XV_SD_RESULTCHECKMODEINDEXF
 static char sisxvsdsisantiflicker[] 			= "XV_SD_SISANTIFLICKER";
 static char sisxvsdsissaturation[] 			= "XV_SD_SISSATURATION";
 static char sisxvsdsisedgeenhance[] 			= "XV_SD_SISEDGEENHANCE";
+static char sisxvsdsiscolcalibf[] 			= "XV_SD_SISCOLCALIBF";
+static char sisxvsdsiscolcalibc[] 			= "XV_SD_SISCOLCALIBC";
+static char sisxvsdsiscfilter[] 			= "XV_SD_SISCFILTER";
+static char sisxvsdsisyfilter[] 			= "XV_SD_SISYFILTER";
 static char sisxvsdchcontrast[] 			= "XV_SD_CHCONTRAST";
 static char sisxvsdchtextenhance[] 			= "XV_SD_CHTEXTENHANCE";
 static char sisxvsdchchromaflickerfilter[] 		= "XV_SD_CHCHROMAFLICKERFILTER";
@@ -349,10 +353,12 @@ static char sisxvsdchlumaflickerfilter[] 		= "XV_SD_CHLUMAFLICKERFILTER";
 static char sisxvsdchcvbscolor[] 			= "XV_SD_CHCVBSCOLOR";
 static char sisxvsdchoverscan[]				= "XV_SD_CHOVERSCAN";
 static char sisxvsdenablegamma[]			= "XV_SD_ENABLEGAMMA";
+static char sisxvsdtvxscale[] 				= "XV_SD_TVXSCALE";
+static char sisxvsdtvyscale[] 				= "XV_SD_TVYSCALE";
 
 #ifndef SIS_CP
-#define NUM_ATTRIBUTES_300 37
-#define NUM_ATTRIBUTES_315 39
+#define NUM_ATTRIBUTES_300 43
+#define NUM_ATTRIBUTES_315 45
 #endif
 
 static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
@@ -387,6 +393,10 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, 0, 4,             sisxvsdsisantiflicker},
    {XvSettable | XvGettable, 0, 15,            sisxvsdsissaturation},
    {XvSettable | XvGettable, 0, 15,            sisxvsdsisedgeenhance},
+   {XvSettable | XvGettable, -128, 127,        sisxvsdsiscolcalibf},
+   {XvSettable | XvGettable, -120, 120,        sisxvsdsiscolcalibc},
+   {XvSettable | XvGettable, 0, 1,             sisxvsdsiscfilter},
+   {XvSettable | XvGettable, 0, 8,             sisxvsdsisyfilter},
    {XvSettable | XvGettable, 0, 15,            sisxvsdchcontrast},
    {XvSettable | XvGettable, 0, 15,            sisxvsdchtextenhance},
    {XvSettable | XvGettable, 0, 15,            sisxvsdchchromaflickerfilter},
@@ -394,6 +404,8 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, 0, 1,             sisxvsdchcvbscolor},
    {XvSettable | XvGettable, 0, 3,             sisxvsdchoverscan},
    {XvSettable | XvGettable, 0, 3,             sisxvsdenablegamma},
+   {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
+   {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -433,6 +445,10 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 0, 4,             sisxvsdsisantiflicker},
    {XvSettable | XvGettable, 0, 15,            sisxvsdsissaturation},
    {XvSettable | XvGettable, 0, 15,            sisxvsdsisedgeenhance},
+   {XvSettable | XvGettable, -128, 127,        sisxvsdsiscolcalibf},
+   {XvSettable | XvGettable, -120, 120,        sisxvsdsiscolcalibc},
+   {XvSettable | XvGettable, 0, 1,             sisxvsdsiscfilter},
+   {XvSettable | XvGettable, 0, 8,             sisxvsdsisyfilter},
    {XvSettable | XvGettable, 0, 15,            sisxvsdchcontrast},
    {XvSettable | XvGettable, 0, 15,            sisxvsdchtextenhance},
    {XvSettable | XvGettable, 0, 15,            sisxvsdchchromaflickerfilter},
@@ -440,6 +456,8 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 0, 1,             sisxvsdchcvbscolor},
    {XvSettable | XvGettable, 0, 3,             sisxvsdchoverscan},
    {XvSettable | XvGettable, 0, 3,             sisxvsdenablegamma},
+   {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
+   {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -1033,6 +1051,36 @@ set_allowswitchcrt(SISPtr pSiS, SISPortPrivPtr pPriv)
     }
 }
 
+static void
+set_maxencoding(SISPtr pSiS, SISPortPrivPtr pPriv)
+{
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+       DummyEncoding.width = IMAGE_MAX_WIDTH_300;
+       DummyEncoding.height = IMAGE_MAX_HEIGHT_300;
+    } else {
+       DummyEncoding.width = IMAGE_MAX_WIDTH_315;
+       DummyEncoding.height = IMAGE_MAX_HEIGHT_315;
+       if(pPriv->hasTwoOverlays) {
+          /* Only half width available if both overlays
+	   * are going to be used
+	   */
+#ifdef SISDUALHEAD
+          if(pSiS->DualHeadMode) {
+             DummyEncoding.width >>= 1;
+          } else
+#endif
+#ifdef SISMERGED
+          if(pSiS->MergedFB) {
+             DummyEncoding.width >>= 1;
+          } else
+#endif
+          if(pPriv->displayMode == DISPMODE_MIRROR) {
+             DummyEncoding.width >>= 1;
+          }
+       }
+    }
+}
+
 static XF86VideoAdaptorPtr
 SISSetupImageVideo(ScreenPtr pScreen)
 {
@@ -1152,6 +1200,10 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_TAF	      = MAKE_ATOM(sisxvsdsisantiflicker);
     pSiS->xv_TSA	      = MAKE_ATOM(sisxvsdsissaturation);
     pSiS->xv_TEE	      = MAKE_ATOM(sisxvsdsisedgeenhance);
+    pSiS->xv_COC	      = MAKE_ATOM(sisxvsdsiscolcalibc);
+    pSiS->xv_COF	      = MAKE_ATOM(sisxvsdsiscolcalibf);
+    pSiS->xv_CFI	      = MAKE_ATOM(sisxvsdsiscfilter);
+    pSiS->xv_YFI	      = MAKE_ATOM(sisxvsdsisyfilter);
     pSiS->xv_TCO	      = MAKE_ATOM(sisxvsdchcontrast);
     pSiS->xv_TTE	      = MAKE_ATOM(sisxvsdchtextenhance);
     pSiS->xv_TCF	      = MAKE_ATOM(sisxvsdchchromaflickerfilter);
@@ -1159,6 +1211,8 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_TCC	      = MAKE_ATOM(sisxvsdchcvbscolor);
     pSiS->xv_OVR	      = MAKE_ATOM(sisxvsdchoverscan);
     pSiS->xv_SGA	      = MAKE_ATOM(sisxvsdenablegamma);
+    pSiS->xv_TXS	      = MAKE_ATOM(sisxvsdtvxscale);
+    pSiS->xv_TYS	      = MAKE_ATOM(sisxvsdtvyscale);
 #ifdef SIS_CP
     SIS_CP_VIDEO_ATOMS
 #endif
@@ -1207,41 +1261,18 @@ SISSetupImageVideo(ScreenPtr pScreen)
 
     pPriv->linebufMergeLimit = LINEBUFLIMIT1;
 
+    set_maxencoding(pSiS, pPriv);
+
     if(pSiS->VGAEngine == SIS_300_VGA) {
-
-       DummyEncoding.width = IMAGE_MAX_WIDTH_300;
-       DummyEncoding.height = IMAGE_MAX_HEIGHT_300;
        pPriv->linebufmask = 0x11;
-
     } else {
-
-       DummyEncoding.width = IMAGE_MAX_WIDTH_315;
-       DummyEncoding.height = IMAGE_MAX_HEIGHT_315;
        pPriv->linebufmask = 0xb1;
-       if(pPriv->hasTwoOverlays) {
-          /* Only half width available if both overlays
-	   * are going to be used
-	   */
-#ifdef SISDUALHEAD
-          if(pSiS->DualHeadMode) {
-             DummyEncoding.width >>= 1;
-          } else
-#endif
-#ifdef SISMERGED
-          if(pSiS->MergedFB) {
-             DummyEncoding.width >>= 1;
-          } else
-#endif
-          if(pPriv->displayMode == DISPMODE_MIRROR) {
-             DummyEncoding.width >>= 1;
-          }
-       } else {
+       if(!(pPriv->hasTwoOverlays)) {
           /* On machines with only one overlay, the linebuffers are
            * generally larger, so our merging-limit is higher, too.
 	   */
           pPriv->linebufMergeLimit = LINEBUFLIMIT2;
        }
-
     }
     
     /* Reset the properties to their defaults */
@@ -1381,6 +1412,7 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
         if(pSiS->xv_sisdirectunlocked) {
 	   SISSwitchCRT2Type(pScrn, (unsigned long)value);
 	   set_allowswitchcrt(pSiS, pPriv);
+	   set_maxencoding(pSiS, pPriv);
         }
   } else if(attribute == pSiS->xv_CT1) {
 #ifdef SISDUALHEAD
@@ -1389,6 +1421,7 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
         if(pSiS->xv_sisdirectunlocked) {
 	   SISSwitchCRT1Status(pScrn, (unsigned long)value);
 	   set_allowswitchcrt(pSiS, pPriv);
+	   set_maxencoding(pSiS, pPriv);
         }
   } else if(attribute == pSiS->xv_TAF) {
      if(pSiS->xv_sisdirectunlocked) {
@@ -1401,6 +1434,22 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
   } else if(attribute == pSiS->xv_TEE) {
      if(pSiS->xv_sisdirectunlocked) {
         SiS_SetSISTVedgeenhance(pScrn, (int)value);
+     }
+  } else if(attribute == pSiS->xv_CFI) {
+     if(pSiS->xv_sisdirectunlocked) {
+        SiS_SetSISTVcfilter(pScrn, value ? 1 : 0);
+     }
+  } else if(attribute == pSiS->xv_YFI) {
+     if(pSiS->xv_sisdirectunlocked) {
+        SiS_SetSISTVyfilter(pScrn, value);
+     }
+  } else if(attribute == pSiS->xv_COC) {
+     if(pSiS->xv_sisdirectunlocked) {
+        SiS_SetSISTVcolcalib(pScrn, (int)value, TRUE);
+     }
+  } else if(attribute == pSiS->xv_COF) {
+     if(pSiS->xv_sisdirectunlocked) {
+        SiS_SetSISTVcolcalib(pScrn, (int)value, FALSE);
      }
   } else if(attribute == pSiS->xv_TCO) {
      if(pSiS->xv_sisdirectunlocked) {
@@ -1455,6 +1504,18 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
 #ifdef SISDUALHEAD
         }
 #endif
+     }
+  } else if(attribute == pSiS->xv_TXS) {
+     if((value < -16) || (value > 16))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        SiS_SetTVxscale(pScrn, value);
+     }
+  } else if(attribute == pSiS->xv_TYS) {
+     if((value < -4) || (value > 3))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+        SiS_SetTVyscale(pScrn, value);
      }
 #ifdef SIS_CP
   SIS_CP_VIDEO_SETATTRIBUTE
@@ -1547,6 +1608,14 @@ SISGetPortAttribute(
      *value = SiS_GetSISTVsaturation(pScrn);
   } else if(attribute == pSiS->xv_TEE) {
      *value = SiS_GetSISTVedgeenhance(pScrn);
+  } else if(attribute == pSiS->xv_CFI) {
+     *value = SiS_GetSISTVcfilter(pScrn);
+  } else if(attribute == pSiS->xv_YFI) {
+     *value = SiS_GetSISTVyfilter(pScrn);
+  } else if(attribute == pSiS->xv_COC) {
+     *value = SiS_GetSISTVcolcalib(pScrn, TRUE);
+  } else if(attribute == pSiS->xv_COF) {
+     *value = SiS_GetSISTVcolcalib(pScrn, FALSE);
   } else if(attribute == pSiS->xv_TCO) {
      *value = SiS_GetCHTVcontrast(pScrn);
   } else if(attribute == pSiS->xv_TTE) {
@@ -1577,6 +1646,10 @@ SISGetPortAttribute(
 #ifdef SISDUALHEAD
      }
 #endif
+  } else if(attribute == pSiS->xv_TXS) {
+     *value = SiS_GetTVxscale(pScrn);
+  } else if(attribute == pSiS->xv_TYS) {
+     *value = SiS_GetTVyscale(pScrn);
 #ifdef SIS_CP
   SIS_CP_VIDEO_GETATTRIBUTE
 #endif
@@ -1745,6 +1818,7 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
    }
 }
 
+#ifdef SISMERGED
 static void
 calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
                  SISPortPrivPtr pPriv, int index, int iscrt2)
@@ -1870,6 +1944,7 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
         }
    }
 }
+#endif
 
 static CARD8
 calc_line_buf_size(CARD32 srcW, CARD8 wHPre, CARD32 pixelFormat)
@@ -2534,9 +2609,9 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    int srcOffsetX=0, srcOffsetY=0;
    int sx=0, sy=0;
    int index = 0, iscrt2 = 0;
+#ifdef SISMERGED
    unsigned char temp;
    CARD32 watchdog;
-#ifdef SISMERGED
    unsigned short screen2width=0;
    int srcOffsetX2=0, srcOffsetY2=0;
    int sx2=0, sy2=0;
@@ -3304,7 +3379,7 @@ SISPutImage(
 #endif
      /* draw these */
      pPriv->PrevOverlay = pPriv->NoOverlay;
-     if(pPriv->NoOverlay) {
+     if((pPriv->NoOverlay) && (!pSiS->NoAccel)) {
         XAAFillMono8x8PatternRects(pScrn, myreds[depth-1], 0x000000, GXcopy, ~0,
 			REGION_NUM_RECTS(clipBoxes),
 			REGION_RECTS(clipBoxes),
@@ -3587,8 +3662,8 @@ SISDisplaySurface (
    SISDisplayVideo(pScrn, pPriv);
 
    if(pPriv->autopaintColorKey) {
-      if(pPriv->NoOverlay) {
-         XAAFillMono8x8PatternRects(pScrn, 
+      if((pPriv->NoOverlay) && (!(pSiS->NoAccel))) {
+         XAAFillMono8x8PatternRects(pScrn,
 	  		myreds[(pSiS->CurrentLayout.bitsPerPixel >> 3) - 1], 
 	 		0x000000, GXcopy, ~0,
 			REGION_NUM_RECTS(clipBoxes),

@@ -732,7 +732,7 @@ calc_scale_factor(SISPtr pSiS, SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 	if(temp > 63) temp = 63;
 	pOverlay->HUSF = temp;
   } else {
-  	/* TW: 6326 can't scale below factor .440 - to check with 530/620 */
+  	/* 6326 can't scale below factor .440 - to check with 530/620 */
         if(((dstW * 1000) / srcW) < 440) dstW = ((srcW * 440) / 1000) + 1;
 	temp = srcW / dstW;
 	if(temp > 15) temp = 15;
@@ -752,7 +752,7 @@ calc_scale_factor(SISPtr pSiS, SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 	pOverlay->VUSF = temp;
 	pOverlay->PitchMult = 1;
   } else {
-        /* TW: 6326 can't scale below factor .440 - to check with 530/620 */
+        /* 6326 can't scale below factor .440 - to check with 530/620 */
 	if(((dstH * 1000) / srcH) < 440) dstH = ((srcH * 440) / 1000) + 1;
 	temp = srcH / dstH;
 	if(srcH % dstH) {
@@ -765,7 +765,7 @@ calc_scale_factor(SISPtr pSiS, SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   }
 }
 
-static void  /* V 530/6326 */
+static void
 calc_line_buf_size(SISOverlayPtr pOverlay)
 {
     CARD32 I;
@@ -785,7 +785,7 @@ calc_line_buf_size(SISOverlayPtr pOverlay)
     pOverlay->lineBufSize = (CARD8)I;
 }
 
-static void  /* V 530/6326 */
+static void
 merge_line_buf(SISPtr pSiS, SISPortPrivPtr pPriv, Bool enable)
 {
   if(enable) {
@@ -795,7 +795,7 @@ merge_line_buf(SISPtr pSiS, SISPortPrivPtr pPriv, Bool enable)
   }
 }
 
-static void  /* V 530/6326 */
+static void
 set_format(SISPtr pSiS, SISOverlayPtr pOverlay)
 {
     CARD8 fmt, misc0, misc1, misc4;
@@ -850,7 +850,7 @@ set_format(SISPtr pSiS, SISOverlayPtr pOverlay)
     }
 }
 
-static void  /* V 6326/530 */
+static void
 set_colorkey(SISPtr pSiS, CARD32 colorkey)
 {
     CARD8 r, g, b, s;
@@ -1056,7 +1056,7 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     set_format(pSiS, pOverlay);
 }
 
-/* TW: Overlay MUST NOT be switched off while beam is over it */
+/* Overlay MUST NOT be switched off while beam is over it */
 static void
 close_overlay(SISPtr pSiS, SISPortPrivPtr pPriv)
 {
@@ -1516,7 +1516,7 @@ SIS6326VideoTimerCallback (ScrnInfoPtr pScrn, Time now)
    }
 }
 
-/* TW: Offscreen surface stuff for v4l */
+/* Offscreen surface stuff for v4l */
 
 static int
 SIS6326AllocSurface (
