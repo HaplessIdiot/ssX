@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/03/14 03:21:56 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -880,27 +880,29 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pGlint->HWCursor = TRUE; /* ON by default */
-    if (xf86IsOptionSet(GLINTOptions, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(GLINTOptions, OPTION_HW_CURSOR, &pGlint->HWCursor))
 	from = X_CONFIG;
-	pGlint->HWCursor = TRUE;
-    }
-    if (xf86IsOptionSet(GLINTOptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(GLINTOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pGlint->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pGlint->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(GLINTOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(GLINTOptions, OPTION_NOACCEL, FALSE)) {
 	pGlint->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
     pGlint->UsePCIRetry = FALSE;
-    if (xf86IsOptionSet(GLINTOptions, OPTION_PCI_RETRY)) {
-	pGlint->UsePCIRetry = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
-    }
+    from = X_DEFAULT;
+    if (xf86GetOptValBool(GLINTOptions, OPTION_PCI_RETRY, &pGlint->UsePCIRetry))
+	from = X_CONFIG;
+    if (pGlint->UsePCIRetry)
+	xf86DrvMsg(pScrn->scrnIndex, from, "PCI retry enabled\n");
     pGlint->Overlay = FALSE;
-    if (xf86IsOptionSet(GLINTOptions, OPTION_OVERLAY)) {
+    from = X_DEFAULT;
+    if (xf86GetOptValBool(GLINTOptions, OPTION_OVERLAY, &pGlint->Overlay))
+	from = X_CONFIG;
+    if (pGlint->Overlay) {
 	if ((pScrn->depth == 24) && (pScrn->bitsPerPixel == 32)) {
 	    pGlint->Overlay = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "32/8bpp overlay enabled\n");
@@ -972,14 +974,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     if ((pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2)) {
-    	if (xf86IsOptionSet(GLINTOptions, OPTION_BLOCK_WRITE)) {
+    	if (xf86ReturnOptValBool(GLINTOptions, OPTION_BLOCK_WRITE, FALSE)) {
 	    pGlint->UseBlockWrite = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Block Writes enabled\n");
     	}
     }
 
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) {
-    	if (xf86IsOptionSet(GLINTOptions, OPTION_FIREGL3000)) {
+    	if (xf86ReturnOptValBool(GLINTOptions, OPTION_FIREGL3000, FALSE)) {
 	    /* Can't we detect a Fire GL 3000 ????? and remove this ? */
 	    pGlint->UseFireGL3000 = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Diamond FireGL3000 mode enabled\n");

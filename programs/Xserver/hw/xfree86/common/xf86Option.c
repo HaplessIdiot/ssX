@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.4 1999/01/14 13:04:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.5 1999/02/28 11:19:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -112,7 +112,7 @@ xf86SetBoolOption(pointer optlist, const char *name, int deflt)
     OptionInfoRec o;
 
     o.name = name;
-    o.type = OPTV_TRI;
+    o.type = OPTV_BOOLEAN;
     if (ParseOptionValue(-1, optlist, &o))
 	deflt = o.value.bool;
     return deflt;
@@ -235,6 +235,34 @@ xf86ShowUnusedOptions(int scrnIndex, pointer options)
 
 
 static Bool
+GetBoolValue(OptionInfoPtr p, const char *s)
+{
+    if (*s == '\0') {
+	p->value.bool = TRUE;
+    } else {
+	if (xf86NameCmp(s, "1") == 0)
+	    p->value.bool = TRUE;
+	else if (xf86NameCmp(s, "on") == 0)
+	    p->value.bool = TRUE;
+	else if (xf86NameCmp(s, "true") == 0)
+	    p->value.bool = TRUE;
+	else if (xf86NameCmp(s, "yes") == 0)
+	    p->value.bool = TRUE;
+	else if (xf86NameCmp(s, "0") == 0)
+	    p->value.bool = FALSE;
+	else if (xf86NameCmp(s, "off") == 0)
+	    p->value.bool = FALSE;
+	else if (xf86NameCmp(s, "false") == 0)
+	    p->value.bool = FALSE;
+	else if (xf86NameCmp(s, "no") == 0)
+	    p->value.bool = FALSE;
+	else
+	    return FALSE;
+    }
+    return TRUE;
+}
+
+static Bool
 ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 {
     char *s, *end;
@@ -293,36 +321,12 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	    }
 	    break;
 	case OPTV_BOOLEAN:
-	    p->found = TRUE;
-	    break;
-	case OPTV_TRI:
-	    if (*s == '\0') {
+	    if (GetBoolValue(p, s)) {
 		p->found = TRUE;
-		p->value.bool = TRUE;
 	    } else {
-		p->found = TRUE;
-		if (xf86NameCmp(s, "1") == 0)
-		    p->value.bool = TRUE;
-		else if (xf86NameCmp(s, "on") == 0)
-		    p->value.bool = TRUE;
-		else if (xf86NameCmp(s, "true") == 0)
-		    p->value.bool = TRUE;
-		else if (xf86NameCmp(s, "yes") == 0)
-		    p->value.bool = TRUE;
-		else if (xf86NameCmp(s, "0") == 0)
-		    p->value.bool = FALSE;
-		else if (xf86NameCmp(s, "off") == 0)
-		    p->value.bool = FALSE;
-		else if (xf86NameCmp(s, "false") == 0)
-		    p->value.bool = FALSE;
-		else if (xf86NameCmp(s, "no") == 0)
-		    p->value.bool = FALSE;
-		else {
-		    xf86DrvMsg(scrnIndex, X_WARNING,
-			       "Option \"%s\" requires a boolean value\n",
-			       p->name);
-		    p->found = FALSE;
-		}
+		xf86DrvMsg(scrnIndex, X_WARNING,
+			   "Option \"%s\" requires a boolean value\n", p->name);
+		p->found = FALSE;
 	    }
 	    break;
 	case OPTV_NONE:
@@ -332,11 +336,53 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	}
 	if (p->found) {
 	    xf86DrvMsgVerb(scrnIndex, X_CONFIG, 2, "Option \"%s\"", p->name);
-	    if (p->type != OPTV_BOOLEAN && !(p->type == OPTV_TRI && *s == 0)) {
+	    if (!(p->type == OPTV_BOOLEAN && *s == 0)) {
 		xf86ErrorFVerb(2, " \"%s\"", s);
 	    }
 	    xf86ErrorFVerb(2, "\n");
 	}
+    } else if (p->type == OPTV_BOOLEAN) {
+	/* Look for matches with options with or without a "No" prefix. */
+	char *n, *newn;
+	OptionInfoRec opt;
+
+	n = xf86NormalizeName(p->name);
+	if (!n) {
+	    p->found = FALSE;
+	    return FALSE;
+	}
+	if (strncmp(n, "no", 2) == 0) {
+	    newn = n + 2;
+	} else {
+	    xfree(n);
+	    n = xalloc(strlen(p->name) + 2 + 1);
+	    if (!n) {
+		p->found = FALSE;
+		return FALSE;
+	    }
+	    strcpy(n, "No");
+	    strcat(n, p->name);
+	    newn = n;
+	}
+	if ((s = FindOptionValue(options, newn)) != NULL) {
+	    xf86MarkOptionUsedByName(options, newn);
+	    if (GetBoolValue(&opt, s)) {
+		p->value.bool = !opt.value.bool;
+		p->found = TRUE;
+	    } else {
+		xf86DrvMsg(scrnIndex, X_WARNING,
+			   "Option \"%s\" requires a boolean value\n", newn);
+		p->found = FALSE;
+	    }
+	}
+	if (p->found) {
+	    xf86DrvMsgVerb(scrnIndex, X_CONFIG, 2, "Option \"%s\"", newn);
+	    if (*s != 0) {
+		xf86ErrorFVerb(2, " \"%s\"", s);
+	    }
+	    xf86ErrorFVerb(2, "\n");
+	}
+	xfree(n);
     } else {
 	p->found = FALSE;
     }
@@ -456,6 +502,19 @@ xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value)
 	return TRUE;
     } else
 	return FALSE;
+}
+
+
+Bool
+xf86ReturnOptValBool(OptionInfoPtr table, int token, Bool def)
+{
+    OptionInfoPtr p;
+
+    p = xf86TokenToOptinfo(table, token);
+    if (p && p->found) {
+	return p->value.bool;
+    } else
+	return def;
 }
 
 

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.7 1999/01/26 10:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.8 1999/02/28 11:19:39 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -120,7 +120,7 @@ typedef enum {
 } LgOpts;
 
 static OptionInfoRec LgOptions[] = {
-    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_TRI,	{0}, FALSE },
+    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     /* fifo_conservative/aggressive; fast/med/slow_dram; ... */
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
@@ -428,13 +428,13 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86GetOptValBool(LgOptions, OPTION_HW_CURSOR, &pLg->HWCursor)) {
 	from = X_CONFIG;
     }
-    if (xf86IsOptionSet(LgOptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(LgOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pLg->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pLg->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(LgOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(LgOptions, OPTION_NOACCEL, FALSE)) {
 	pLg->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }

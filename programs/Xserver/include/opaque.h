@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.5 1998/10/04 09:38:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.6 1999/01/13 08:31:09 dawes Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -53,6 +53,7 @@ extern char *display;
 
 extern int defaultBackingStore;
 extern Bool disableBackingStore;
+extern Bool enableBackingStore;
 extern Bool disableSaveUnders;
 extern Bool PartialNetwork;
 #ifndef NOLOGOHACK

@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.31 1999/01/26 10:40:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.32 1999/02/28 11:19:37 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -186,16 +186,14 @@ typedef enum {
     OPTION_PCI_RETRY,
     OPTION_NOACCEL,
     OPTION_MMIO,
-    OPTION_NOMMIO,
     OPTION_MEMCFG1,
     OPTION_MEMCFG2
 } CIROpts;
 
 static OptionInfoRec CIROptions[] = {
-    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_TRI,	{0}, FALSE },
+    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_MEMCFG1,		"MemCFG1",	OPTV_INTEGER,	{0}, -1 },
     { OPTION_MEMCFG2,		"MemCFG2",	OPTV_INTEGER,	{0}, -1 },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
@@ -821,13 +819,13 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86GetOptValBool(CIROptions, OPTION_HW_CURSOR, &pCir->HWCursor)) {
 	from = X_CONFIG;
     }
-    if (xf86IsOptionSet(CIROptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(CIROptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pCir->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pCir->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(CIROptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(CIROptions, OPTION_NOACCEL, FALSE)) {
 	pCir->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
@@ -947,12 +945,12 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     /* User options can override the MMIO default */
 #if 0
     /* Will we ever support MMIO on 5446A or older? */
-    if (xf86IsOptionSet(CIROptions, OPTION_MMIO)) {
+    if (xf86ReturnOptValBool(CIROptions, OPTION_MMIO, FALSE)) {
         pCir->UseMMIO = TRUE;
 	from = X_CONFIG;
     }
 #endif
-    if (xf86IsOptionSet(CIROptions, OPTION_NOMMIO)) {
+    if (!xf86ReturnOptValBool(CIROptions, OPTION_MMIO, TRUE)) {
         pCir->UseMMIO = FALSE;
 	from = X_CONFIG;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.3 1998/12/05 14:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.4 1999/02/28 11:19:32 dawes Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
 
@@ -18,8 +18,7 @@ typedef enum {
     OPTV_STRING,                /* a non-empty string */
     OPTV_ANYSTR,                /* Any string, including an empty one */
     OPTV_REAL,
-    OPTV_BOOLEAN,
-    OPTV_TRI
+    OPTV_BOOLEAN
 } OptionValueType;
 
 typedef struct {
@@ -56,6 +55,7 @@ Bool xf86GetOptValInteger(OptionInfoPtr table, int token, int *value);
 Bool xf86GetOptValULong(OptionInfoPtr table, int token, unsigned long *value);
 Bool xf86GetOptValReal(OptionInfoPtr table, int token, double *value);
 Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value);
+Bool xf86ReturnOptValBool(OptionInfoPtr table, int token, Bool def);
 int xf86NameCmp(const char *s1, const char *s2);
 char *xf86NormalizeName(const char *s);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.7 1999/03/14 03:21:55 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -137,11 +137,15 @@ xf86DoEDID_DDC1(
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     unsigned char *EDID_block = NULL;
     xf86MonPtr tmp = NULL;
+    /* Default DDC and DDC1 to enabled. */
+    Bool noddc = FALSE, noddc1 = FALSE;
 
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, DDCOptions);
 
-    if (xf86IsOptionSet(DDCOptions, DDCOPT_NODDC1) ||
-	xf86IsOptionSet(DDCOptions, DDCOPT_NODDC))
+    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC, &noddc);
+    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC1, &noddc1);
+    
+    if (noddc || noddc1)
 	return NULL;
 
     EDID_block = EDIDRead_DDC1(pScrn,DDC1SetSpeed,DDC1Read);
@@ -159,11 +163,15 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     unsigned char *EDID_block = NULL;
     unsigned char *VDIF_Block = NULL;
     xf86MonPtr tmp = NULL;
-    
+    /* Default DDC and DDC2 to enabled. */
+    Bool noddc = FALSE, noddc2 = FALSE;
+
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, DDCOptions);
 
-    if (xf86IsOptionSet(DDCOptions, DDCOPT_NODDC2) ||
-	xf86IsOptionSet(DDCOptions, DDCOPT_NODDC))
+    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC, &noddc);
+    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC2, &noddc2);
+    
+    if (noddc || noddc2)
 	return NULL;
 
     EDID_block = EDID1Read_DDC2(scrnIndex,pBus);

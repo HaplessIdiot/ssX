@@ -1,3 +1,12 @@
+XFree86 3.9Pf (21 March 1999)
+2374. Update the Option Names section of xfree86/Registry (David Dawes).
+2373. Merge the OPTV_BOOLEAN and OPTV_TRI option classes, removing the
+      latter.  Update code affected by this (David Dawes).
+2372. Fix the BackingStore option.
+2371. Disable transparency for screen->screen copies for Trident Image for
+      now.
+2370. Trident Image transparency update (#2564, Alan Hourihane).
+
 XFree86 3.9Pe (14 March 1999)
 2369. Fix problems debugging archive library modules on Linux with long
       member names (Paul Flinders).
@@ -7489,4 +7498,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.706 1999/03/14 12:53:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.707 1999/03/14 14:10:45 dawes Exp $

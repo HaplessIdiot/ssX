@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.51 1999/02/12 22:52:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.52 1999/03/14 11:18:01 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -529,7 +529,6 @@ typedef enum {
     OPTION_LINEAR,
     OPTION_NOACCEL,
     OPTION_HW_CLKS,
-    OPTION_NOLINEAR_MODE,
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_STN,
@@ -550,7 +549,6 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CLKS,		"HWclocks",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOLINEAR_MODE,	"NoLinear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_STN,		"STN",		OPTV_BOOLEAN,	{0}, FALSE },
@@ -571,7 +569,6 @@ static OptionInfoRec ChipsWingineOptions[] = {
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CLKS,		"HWclocks",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOLINEAR_MODE,	"NoLinear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
@@ -585,7 +582,6 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CLKS,		"HWclocks",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOLINEAR_MODE,	"NoLinear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_STN,		"STN",		OPTV_BOOLEAN,	{0}, FALSE },
@@ -1387,7 +1383,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
 
     if ((cPtr->Flags & ChipsAccelSupport) &&
-	(xf86IsOptionSet(cPtr->Options, OPTION_NOACCEL))) {
+	(xf86ReturnOptValBool(cPtr->Options, OPTION_NOACCEL, FALSE))) {
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
@@ -1401,29 +1397,32 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	cPtr->Accel.UseHWCursor = TRUE;
 	cPtr->Flags |= ChipsHWCursor;
     }
-    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(cPtr->Options, OPTION_HW_CURSOR,
+			  &cPtr->Accel.UseHWCursor))
 	from = X_CONFIG;
-	cPtr->Accel.UseHWCursor = TRUE;
+    if (xf86GetOptValBool(cPtr->Options, OPTION_SW_CURSOR,
+			  &cPtr->Accel.UseHWCursor)) {
+	from = X_CONFIG;
+	cPtr->Accel.UseHWCursor = !cPtr->Accel.UseHWCursor;
+    }
+    if (cPtr->Accel.UseHWCursor)
 	cPtr->Flags |= ChipsHWCursor;
-    }
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SW_CURSOR)) {
-	from = X_CONFIG;
-	cPtr->Accel.UseHWCursor = FALSE;
+    else
 	cPtr->Flags &= ~ChipsHWCursor;
-    }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
+    /* Default to nonlinear for < 8bpp and linear for >= 8bpp. */
     if ((pScrn->bitsPerPixel < 8) && 
-	!xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	cPtr->Flags &= ~ChipsLinearSupport;
     } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	       xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	       xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
     }
     
-    if (xf86IsOptionSet(cPtr->Options, OPTION_NOLINEAR_MODE)) {
+    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
 	cPtr->Flags &= ~ChipsLinearSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Disabling linear addressing\n");
@@ -1431,7 +1430,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	cPtr->UseMMIO = TRUE;
 
     /* Are we using MMIO mapping of VGA registers */
-    if (xf86IsOptionSet(cPtr->Options, OPTION_MMIO)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE)) {
 	if ((cPtr->Flags & ChipsLinearSupport) && cPtr->UseMMIO && 
 		(cPtr->Flags & ChipsFullMMIOSupport) &&
 		xf86IsPciBus(pScrn->scrnIndex)) {
@@ -1460,7 +1459,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SHADOW_FB)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	cPtr->Flags |= ChipsShadowFB;
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -1548,7 +1547,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* 0 = Single Panel Single Drive, 3 = Dual Panel Dual Drive */
     switch (tmp & 0x3) {
     case 0:
-	if (xf86IsOptionSet(cPtr->Options, OPTION_STN)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_STN, FALSE)) {
 	    cPtr->PanelType |= ChipsSS;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "SS-STN probed\n");
 	} else {
@@ -1619,7 +1618,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	/* Warn the user if the panel size has been overridden by
 	 * the modeline values
 	 */
-	if (xf86IsOptionSet(cPtr->Options, OPTION_PANEL_SIZE)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_PANEL_SIZE, FALSE)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Display size overridden by modelines.\n");
 	}
@@ -1732,7 +1731,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Using programmable clocks\n");
 
-    if (xf86IsOptionSet(cPtr->Options, OPTION_FORCE_VCLK1)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_FORCE_VCLK1, FALSE)) {
         cPtr->Flags |= ChipsUseVClk1;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Using VCLK1 as programmable clocks\n");
@@ -2013,7 +2012,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     }
 
     if ((cPtr->Flags & ChipsAccelSupport) &&
-	    (xf86IsOptionSet(cPtr->Options, OPTION_NOACCEL))) {
+	    (xf86ReturnOptValBool(cPtr->Options, OPTION_NOACCEL, FALSE))) {
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
@@ -2027,37 +2026,38 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	cPtr->Accel.UseHWCursor = TRUE;
 	cPtr->Flags |= ChipsHWCursor;
     }
-    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(cPtr->Options, OPTION_HW_CURSOR,
+			  &cPtr->Accel.UseHWCursor))
 	from = X_CONFIG;
-	cPtr->Accel.UseHWCursor = TRUE;
+    if (xf86GetOptValBool(cPtr->Options, OPTION_SW_CURSOR,
+			  &cPtr->Accel.UseHWCursor)) {
+	from = X_CONFIG;
+	cPtr->Accel.UseHWCursor = !cPtr->Accel.UseHWCursor;
+    }
+    if (cPtr->Accel.UseHWCursor)
 	cPtr->Flags |= ChipsHWCursor;
-    }
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SW_CURSOR)) {
-	from = X_CONFIG;
-	cPtr->Accel.UseHWCursor = FALSE;
+    else
 	cPtr->Flags &= ~ChipsHWCursor;
-    }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-	   (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
+	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
     if ((pScrn->bitsPerPixel < 8) && 
-	    !xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	cPtr->Flags &= ~ChipsLinearSupport;
     } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	    xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	       xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
     }
-    
     if (cPtr->Flags & ChipsLinearSupport) {
-	if (xf86IsOptionSet(cPtr->Options, OPTION_NOLINEAR_MODE)) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
 	    cPtr->Flags &= ~ChipsLinearSupport;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Disabling linear addressing\n");
 	}
     }
 
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SHADOW_FB)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	cPtr->Flags |= ChipsShadowFB;
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -2193,7 +2193,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		       "Using internal clock generator\n");
-	    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CLKS)) {
+	    if (xf86ReturnOptValBool(cPtr->Options, OPTION_HW_CLKS, FALSE)) {
 		NoClocks = 3;
 		cPtr->ClockType = WINGINE_2_STYLE | TYPE_HW;
 	    } else {
@@ -2406,7 +2406,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     }
 
     if ((cPtr->Flags & ChipsAccelSupport) &&
-	    (xf86IsOptionSet(cPtr->Options, OPTION_NOACCEL))) {
+	    (xf86ReturnOptValBool(cPtr->Options, OPTION_NOACCEL, FALSE))) {
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
@@ -2420,44 +2420,45 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	cPtr->Accel.UseHWCursor = TRUE;
 	cPtr->Flags |= ChipsHWCursor;
     }
-    
-    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(cPtr->Options, OPTION_HW_CURSOR,
+			  &cPtr->Accel.UseHWCursor))
 	from = X_CONFIG;
-	cPtr->Accel.UseHWCursor = TRUE;
+    if (xf86GetOptValBool(cPtr->Options, OPTION_SW_CURSOR,
+			  &cPtr->Accel.UseHWCursor)) {
+	from = X_CONFIG;
+	cPtr->Accel.UseHWCursor = !cPtr->Accel.UseHWCursor;
+    }
+    if (cPtr->Accel.UseHWCursor)
 	cPtr->Flags |= ChipsHWCursor;
-    }
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SW_CURSOR)) {
-	from = X_CONFIG;
-	cPtr->Accel.UseHWCursor = FALSE;
+    else
 	cPtr->Flags &= ~ChipsHWCursor;
-    }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-	   (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
+	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
     if ((pScrn->bitsPerPixel < 8) && 
-	    !xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	cPtr->Flags &= ~ChipsLinearSupport;
     } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	    xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	       xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
     }
-    
     if (cPtr->Flags & ChipsLinearSupport) {
-	if (xf86IsOptionSet(cPtr->Options, OPTION_NOLINEAR_MODE)) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) {
 	    cPtr->Flags &= ~ChipsLinearSupport;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Disabling linear addressing\n");
 	}
     }
-    if (xf86IsOptionSet(cPtr->Options, OPTION_MMIO) &&
+
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE) &&
 	    (cPtr->Flags & ChipsLinearSupport) &&
 	    (cPtr->Flags & ChipsMMIOSupport)) {
 	cPtr->UseMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
     }
 
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SHADOW_FB)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	cPtr->Flags |= ChipsShadowFB;
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -2505,7 +2506,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     /* 0 = Single Panel Single Drive, 3 = Dual Panel Dual Drive */
     switch (tmp & 0x3) {
     case 0:
-	if (xf86IsOptionSet(cPtr->Options, OPTION_STN)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_STN, FALSE)) {
 	    cPtr->PanelType |= ChipsSS;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "SS-STN probed\n");
 	} else {
@@ -2576,7 +2577,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	/* Warn the user if the panel size has been overridden by
 	 * the modeline values
 	 */
-	if (xf86IsOptionSet(cPtr->Options, OPTION_PANEL_SIZE)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_PANEL_SIZE, FALSE)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Display size overridden by modelines.\n");
 	}
@@ -2678,7 +2679,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	/* linear mode is no longer default on ct65530 since it */
 	/* requires additional hardware which some manufacturers*/
 	/* might not provide.                                   */
-	if (!xf86IsOptionSet(cPtr->Options, OPTION_LINEAR))
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, FALSE))
 	    cPtr->Flags &= ~ChipsLinearSupport;
 	
 	/* Test wether linear addressing is possible on 65530 */
@@ -2792,7 +2793,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	cPtr->ClockType = OLD_STYLE | TYPE_HW;
 	break;
     default:
-	if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CLKS)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_HW_CLKS, FALSE)) {
 	    NoClocks = 5;		/* Some number */
 	    cPtr->ClockType = NEW_STYLE | TYPE_HW;
 	} else {
@@ -3461,7 +3462,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
     hwp = VGAHWPTR(pScrn);
     cPtr = CHIPSPTR(pScrn);
 
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SHOWCACHE) && y) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHOWCACHE, FALSE) && y) {
 	int lastline = cPtr->FbMapSize / 
 		((pScrn->displayWidth * pScrn->bitsPerPixel) / 8);
 	lastline -= pScrn->currentMode->VDisplay;
@@ -4201,7 +4202,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * Possibly fix up the panel size, if the manufacture is stupid
      * enough to set it incorrectly in text modes
      */
-    if (xf86IsOptionSet(cPtr->Options, OPTION_PANEL_SIZE)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_PANEL_SIZE, FALSE)) {
 	cPtr->PanelSize.HDisplay = mode->CrtcHDisplay;
 	cPtr->PanelSize.VDisplay = mode->CrtcVDisplay;
     }
@@ -4263,7 +4264,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsNew->CR[0x41] = (tmp >> 8) & 0x0F;
 
     /* Set paging mode on the HiQV32 architecture, if required */
-    if ((xf86IsOptionSet(cPtr->Options, OPTION_NOLINEAR_MODE)) ||
+    if ((!xf86ReturnOptValBool(cPtr->Options, OPTION_LINEAR, TRUE)) ||
 	    (pScrn->bitsPerPixel < 8))
 	ChipsNew->XR[0x0A] |= 0x1;
 
@@ -4296,7 +4297,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* panel timing */
     /* By default don't set panel timings, but allow it as an option */
-    if (xf86IsOptionSet(cPtr->Options, OPTION_USE_MODELINE)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_MODELINE, FALSE)) {
 	lcdHTotal = (mode->CrtcHTotal >> 3) - 5;
 	lcdHDisplay = (cPtr->PanelSize.HDisplay >> 3) - 1;
 	lcdHRetraceStart = (mode->CrtcHSyncStart >> 3);
@@ -4345,8 +4346,8 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsNew->CR[0x40] |= 0x80;
 
     /* centering/stretching */
-    if (!xf86IsOptionSet(cPtr->Options, OPTION_SUSPEND_HACK)) {
-	if (xf86IsOptionSet(cPtr->Options, OPTION_LCD_STRETCH)) {
+    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_SUSPEND_HACK, FALSE)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH, FALSE)) {
 	    ChipsNew->FR[0x40] &= 0xDF;    /* Disable Horizontal stretching */
 	    ChipsNew->FR[0x48] &= 0xFB;    /* Disable vertical stretching */
 	    ChipsNew->XR[0xA0] = 0x10;     /* Disable cursor stretching */
@@ -4355,7 +4356,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->FR[0x40] |= 0x21;    /* Enable Horizontal stretching */
 	    ChipsNew->FR[0x48] |= 0x05;    /* Enable vertical stretching */
 	    ChipsNew->XR[0xA0] = 0x70;     /* Enable cursor stretching */
-	    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR))
+	    if (xf86ReturnOptValBool(cPtr->Options, OPTION_HW_CURSOR, FALSE))
 		cPtr->Accel.UseHWCursor = TRUE;      /* H/W  cursor forced */
 	    else {
 		if ((cPtr->PanelSize.HDisplay != mode->CrtcHDisplay) && 
@@ -4369,7 +4370,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
 
-    if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_CENTER)) {
+    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_CENTER, FALSE)) {
 	ChipsNew->FR[0x40] &= 0xFD;    /* Disable Horizontal centering */
 	ChipsNew->FR[0x48] &= 0xFD;    /* Disable Vertical centering */
     } else {
@@ -4378,7 +4379,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* sync on green */
-    if (xf86IsOptionSet(cPtr->Options, OPTION_SYNC_ON_GREEN))
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SYNC_ON_GREEN, FALSE))
 	ChipsNew->XR[0x82] |=0x02;
 
     /* software mode flag */
@@ -4748,7 +4749,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
      * Possibly fix up the panel size, if the manufacture is stupid
      * enough to set it incorrectly in text modes
      */
-    if (xf86IsOptionSet(cPtr->Options, OPTION_PANEL_SIZE)) {
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_PANEL_SIZE, FALSE)) {
 	cPtr->PanelSize.HDisplay = mode->CrtcHDisplay;
 	cPtr->PanelSize.VDisplay = mode->CrtcVDisplay;
     }
@@ -4881,7 +4882,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* horizontal timing registers */
 	/* in LCD/dual mode use saved bios values to derive timing values if
 	 * not told otherwise */
-	if (!xf86IsOptionSet(cPtr->Options, OPTION_USE_MODELINE)) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_USE_MODELINE, FALSE)) {
 	    lcdHTotal = cPtr->PanelSize.HTotal;
 	    lcdHRetraceStart = cPtr->PanelSize.HRetraceStart;
 	    lcdHRetraceEnd = cPtr->PanelSize.HRetraceEnd;
@@ -4951,7 +4952,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* similar to CR02, actual value - 1 */
 	ChipsNew->XR[0x1C] = lcdHDisplay & 0xFF;
 
-	if (xf86IsOptionSet(cPtr->Options, OPTION_USE_MODELINE)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_MODELINE, FALSE)) {
 	    /* for ext. packed pixel mode on 64520/64530 */
 	    /* no need to rescale: used only in 65530    */
 	    ChipsNew->XR[0x21] = lcdHRetraceStart & 0xFF;
@@ -5007,11 +5008,12 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 
 	/* set stretching/centering */	
-	if (!xf86IsOptionSet(cPtr->Options, OPTION_SUSPEND_HACK)) {
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_SUSPEND_HACK, FALSE)) {
 	    ChipsNew->XR[0x51] |= 0x40;   /* enable FP compensation          */
 	    ChipsNew->XR[0x55] |= 0x01;   /* enable horiz. compensation      */
 	    ChipsNew->XR[0x57] |= 0x01;   /* enable horiz. compensation      */
-	    if (xf86IsOptionSet(cPtr->Options, OPTION_LCD_STRETCH)) {
+	    if (xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
+				     FALSE)) {
 		if (mode->CrtcHDisplay < 1489)      /* HWBug                 */
 		    ChipsNew->XR[0x55] |= 0x02;	/* enable h-centering     */
 		else if (pScrn->bitsPerPixel == 24)
@@ -5021,13 +5023,15 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	      ChipsNew->XR[0x56] = 0;
 	    }
 	    ChipsNew->XR[0x57] = 0x03;    /* enable v-comp disable v-stretch */
-	    if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_STRETCH)) {
+	    if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
+				      FALSE)) {
 		ChipsNew->XR[0x55] |= 0x20; /* enable h-comp disable h-double*/
 		ChipsNew->XR[0x57] |= 0x60; /* Enable vertical stretching    */
 		tmp = (mode->CrtcVDisplay / (cPtr->PanelSize.VDisplay -
 		    mode->CrtcVDisplay + 1));
 		if (tmp == 0)
-		    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR))
+		    if (xf86ReturnOptValBool(cPtr->Options, OPTION_HW_CURSOR,
+					     FALSE))
 			cPtr->Accel.UseHWCursor = TRUE; /* H/W cursor forced */
 		    else {
 			if ((cPtr->PanelSize.HDisplay != mode->CrtcHDisplay)
@@ -5041,8 +5045,10 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		    }
 		else
 		    cPtr->Accel.UseHWCursor = TRUE;
-		if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR) &&
-		    !xf86IsOptionSet(cPtr->Options, OPTION_SW_CURSOR))
+		if (xf86ReturnOptValBool(cPtr->Options, OPTION_HW_CURSOR,
+					 FALSE) &&
+		    !xf86ReturnOptValBool(cPtr->Options, OPTION_SW_CURSOR,
+					  FALSE))
 		    tmp = (tmp == 0 ? 1 : tmp);  /* Bug when doubling */
 		ChipsNew->XR[0x5A] = tmp > 0x0F ? 0 : (unsigned char)tmp;
 	    } else {
@@ -5151,7 +5157,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
     } else if (pScrn->bitsPerPixel == 24) {
 	ChipsNew->XR[0x06] |= 0xC8;   /*24 bpp colour               */
 	ChipsNew->XR[0x0F] |= 0x10;   /*Hi-/True-Colour             */
-	if (xf86IsOptionSet(cPtr->Options, OPTION_18_BIT_BUS)) {
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_18_BIT_BUS, FALSE)) {
 	    ChipsNew->XR[0x50] &= 0x7F;   /*18 bit TFT data width   */
 	} else {
 	    ChipsNew->XR[0x50] |= 0x80;   /*24 bit TFT data width   */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.20 1999/03/02 10:42:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.21 1999/03/14 03:22:15 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -319,7 +319,7 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 		enum { OPTION_MTRR };
 		static OptionInfoRec opts[] =
 		{
-			{ OPTION_MTRR, "mtrr", OPTV_TRI, {0}, FALSE },
+			{ OPTION_MTRR, "mtrr", OPTV_BOOLEAN, {0}, FALSE },
 			{ -1, NULL, OPTV_NONE, {0}, FALSE }
 		};
 		/*

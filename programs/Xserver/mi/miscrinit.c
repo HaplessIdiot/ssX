@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.5 1998/10/04 09:39:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.6 1998/11/29 13:09:23 dawes Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -181,7 +181,7 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* defColormap */
     pScreen->minInstalledCmaps = 1;
     pScreen->maxInstalledCmaps = 1;
-    pScreen->backingStoreSupport = Always;
+    pScreen->backingStoreSupport = NotUseful;
     pScreen->saveUnderSupport = NotUseful;
     /* whitePixel, blackPixel */
     pScreen->ModifyPixmapHeader = miModifyPixmapHeader;

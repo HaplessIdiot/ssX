@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.162 1999/03/07 08:29:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.163 1999/03/14 03:21:50 dawes Exp $ */
 
 
 /*
@@ -391,21 +391,21 @@ typedef enum {
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
-  { FLAG_NOTRAPSIGNALS,		"NoTrapSignals",		OPTV_TRI,
+  { FLAG_NOTRAPSIGNALS,		"NoTrapSignals",		OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_DONTZAP,		"DontZap",			OPTV_TRI,
+  { FLAG_DONTZAP,		"DontZap",			OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_DONTZOOM,		"DontZoom",			OPTV_TRI,
+  { FLAG_DONTZOOM,		"DontZoom",			OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_DISABLEVIDMODE,	"DisableVidModeExtension",	OPTV_TRI,
+  { FLAG_DISABLEVIDMODE,	"DisableVidModeExtension",	OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_ALLOWNONLOCAL,		"AllowNonLocalXvidtune",	OPTV_TRI,
+  { FLAG_ALLOWNONLOCAL,		"AllowNonLocalXvidtune",	OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_DISABLEMODINDEV,	"DisableModInDev",		OPTV_TRI,
+  { FLAG_DISABLEMODINDEV,	"DisableModInDev",		OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_MODINDEVALLOWNONLOCAL,	"AllowNonLocalModInDev",	OPTV_TRI,
+  { FLAG_MODINDEVALLOWNONLOCAL,	"AllowNonLocalModInDev",	OPTV_BOOLEAN,
 	{0}, FALSE },
-  { FLAG_ALLOWMOUSEOPENFAIL,	"AllowMouseOpenFail",		OPTV_TRI,
+  { FLAG_ALLOWMOUSEOPENFAIL,	"AllowMouseOpenFail",		OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_PCIPROBE1,		"PciProbe1"		,	OPTV_BOOLEAN,
 	{0}, FALSE },
@@ -475,9 +475,8 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 
 #ifdef XF86MISC
     if (xf86MiscModInDevEnabled) {
-	xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV,
-			  &xf86Info.miscModInDevEnabled);
-	if (xf86IsOptionSet(FlagOptions, FLAG_DISABLEMODINDEV))
+	if (xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV,
+			      &xf86Info.miscModInDevEnabled))
 	    xf86Info.miscModInDevEnabled = !xf86Info.miscModInDevEnabled;
     } else
 	xf86Info.miscModInDevEnabled = xf86MiscModInDevEnabled;

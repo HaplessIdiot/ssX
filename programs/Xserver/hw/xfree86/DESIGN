@@ -2,8 +2,11 @@
 
                                   DRAFT
 
-Last modified: 14 February 1999.
+   NOTE: This is a DRAFT document, and the interfaces described here
+   are subject to change without notice.
 
+
+Last modified: 20 March 1999.
 
 
 Preface
@@ -1427,8 +1430,7 @@ Next, the higher level functions that most drivers would use.
             OPTV_STRING,           /* a non-empty string */
             OPTV_ANYSTR,           /* Any string, including an empty one */
             OPTV_REAL,
-            OPTV_BOOLEAN,
-            OPTV_TRI
+            OPTV_BOOLEAN
         } OptionValueType;
 
         typedef struct {
@@ -1465,7 +1467,10 @@ Next, the higher level functions that most drivers would use.
     Bool xf86IsOptionSet(OptionInfoPtr table, int token)
 
       Returns the "found" field of the OptionInfoRec in "table" with
-      a token field matching "token".  Returns FALSE if no match is found.
+      a token field matching "token".  This can be used for options of
+      all types.  Note that for options of type OPTV_BOOLEAN, it isn't
+      sufficient to check this to determine the value of the option.
+      Returns FALSE if no match is found.
 
 
     char *xf86GetOptValString(OptionInfoPtr table, int token)
@@ -1497,14 +1502,24 @@ Next, the higher level functions that most drivers would use.
 
     Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value)
 
-      This function is used to check tri-state options (OPTV_TRI).  If
+      This function is used to check boolean options (OPTV_BOOLEAN).  If
       the function return value is FALSE, it means the option wasn't set.
       Otherwise *value is set to the boolean value indicated by the option's
       value.  No option value is interpreted as TRUE.  Option values
       meaning TRUE are "1", "yes", "on", "true", and option values meaning
-      FALSE are "0", "no", "off", "false".  *value is not changed when the
-      option isn't present.  It should normally be set to a default value
-      before calling this function.
+      FALSE are "0", "no", "off", "false".  Option names both with the "no"
+      prefix in their names, and with that prefix removed are also checked
+      and handled in the obvious way.  *value is not changed when the
+      option isn't present.  It should normally be set to a default
+      value before calling this function.
+
+
+    Bool xf86ReturnOptValBool(OptionInfoPtr table, int token, Bool def)
+
+      This function is used to check boolean options (OPTV_BOOLEAN).
+      If the option is set, its value is returned.  If the options is not
+      set, the default value specified by `def' is returned.  The option
+      interpretation is the same as for xf86GetOptValBool().
 
 
     int xf86NameCmp(const char *s1, const char *s2)
@@ -4631,4 +4646,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.25 1999/02/14 03:20:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.26 1999/02/28 11:19:25 dawes Exp $

@@ -95,74 +95,177 @@ neo2200
 
 4. Option Names.
 
-Option names and their usage should be consistent between drivers.  Case,
-white space and underscore characters are ignored when comparing option
-names.  All names listed here are in their preferred user-visible form.
-Some registered option names are:
+Option names and their usage should be consistent between drivers.
+Case, white space and underscore characters are ignored when comparing
+option names.  The prefix "no" may be added or removed from boolean
+option names.  All names listed here are in their preferred user-visible
+form.  Some registered option names are:
+
+Types are:  B = boolean, O = set/unset (no value), I = integer, S = string,
+            F = floating point number
+
+Scopes are: F = global flags, V = video driver, C = common (per screen),
+            I = input drivers, X = XAA, M = misc.
+
+Names currently in use:
+
+Name                    Type  Scope      Description
+----------------------------------------------------------------------------
+AllowMouseOpenFail        B     F    ignore mouse dev open failure
+AllowNonLocalModInDev     B     F    allow non-local mod of input devs
+AllowNonLocalXvidtune     B     F    allow non-local VidMode connections
+BlankTime                 I     F    Screen saver timeout (min)
+DisableModInDev           B     F    disallow changing input devs
+DisableVidModeExtension   B     F    disable VidMode extension
+DontZap                   B     F    disable Ctrl-Alt-BS sequence
+DontZoom                  B     F    disable Ctrl-Alt-+/-
+NoTrapSignals             B     F    don't trap signals
+OffTime                   I     F    Time before DPMS off mode active (min)
+PciProbe1                 O     F    use PCI probe algorithm 1
+PciProbe2                 O     F    use PCI probe algorithm 2
+PciForceConfig1           O     F    force PCI config type 1
+PciForceConfig2           O     F    force PCI config type 2
+Pixmap                    I     F    depth 24 pixmap size (24 or 32)
+StandbyTime               I     F    Time before DPMS standby active (min)
+SuspendTime               I     F    Time before DPMS suspend mode active (min)
+
+BackingStore              B     C    Enable backing store
+DDC                       B     C    Enable/disable DDC
+DDC1                      B     C    Enable/disable DDC1
+DDC2                      B     C    Enable/disable DDC2
+DPMS                      O     C    Enable DPMS
+MTRR                      B     C    Enable/disable setting MTRRs
+
+BaudRate                  I     I    Serial port baud rate
+ButtonNumber              I     I    Button number (for touch screen?)
+ButtonThreshold           I     I    ??
+ClearDTR                  O     I    Clear serial port DTR
+ClearRTS                  O     I    Clear serial port RTS
+DataBits                  I     I    Serial port data bits
+DemandLoad                O     I    ??
+Device                    S     I    Device file name
+DeviceName                S     I    Input device name
+FlowControl               S     I    Serial flow control ("xon", "none")
+HistorySize               I     I    ??
+MaxX                      I     I    Maximum X coordinate
+MaxY                      I     I    Maximum Y coordinate
+MinX                      I     I    Minimum X coordinate
+MinY                      I     I    Minimum Y coordinate
+Parity                    S     I    Serial port parity ("odd", "even", "none")
+ReportDelay               I     I    ??
+ReportingMode             S     I    may be "raw" or "scaled"
+ScreenNumber              I     I    Screen number (for touch screen)
+SendCoreEvents            B     I    Send core events
+SendDragEvents            B     I    Send drag events
+StopBits                  I     I    Serial port stop bits
+UntouchDelay              I     I    ??
+Vmin                      I     I    Tty VMIN
+Vtime                     I     I    Tty VTIME
+
+
+18BitBus                  B     V    ??
+8Plus24                   B     V    Enable depth 8 + depth 24 with overlay
+BlockWrite                B     V    Enable/disable block write
+EarlyRasPrecharge         O     V    Early RAS pre-charge
+FastDRAM                  O     V    Fast DRAM
+FifoAggressive            O     V    Aggressive FIFO setting
+FifoConservative          O     V    Conservative FIFO setting
+FifoModerate              O     V    Moderate FIFO setting
+FireGL3000                B     V    Card is Diamond FireGL3000
+FixPanelSize              B     V    ??
+FPMVRAM                   O     V    Fast page mode VRAM
+HiBitHigh                 O     V    High clock bit default to set
+HiBitLow                  O     V    High clock bit default to cleared
+HWClocks                  B     V    Enable/disable HW clocks
+HWCursor                  B     V    Enable/disable HW cursor
+LateRasPrecharge          O     V    Late RAS pre-charge
+Legend                    O     V    Card is Legend ET4000
+LCDCenter                 B     V    Enable/disable centering for LCD displays
+Linear                    B     V    Enable/disable linear framebuffer
+MCLK                      I     V    Set memory clock (kHz) (cf SetMclk)
+MedDRAM                   B     V    Medium speed DRAM
+MemCfg1                   I     V    ??
+MemCfg2                   I     V    ??
+MemClock                  I     V    Memory clock (MHz)  (cf SetMclk?)
+MGASDRAM                  B     V    Mga card has SDRAM
+MMIO                      B     V    Enable/disable memory mapped I/O
+MuxThreshold              I     V    Multiplexing threshold (kHz)
+NoAccel                   B     V    Disable/enable acceleration
+NoClockChip               B     V    ??
+NoStretch                 B     V    Disable/enable stretching for LCD displays
+NoTurboQueue              B     V    Disable/enable turbo queue
+Overlay                   B     V    Enable/disable multi-depth/overlay
+PciBurst                  B     V    Enable/disable PCI burst mode
+PciRetry                  B     V    Enable/disable PCI retries
+RGBbits                   I     V    Number of significant bits per rgb
+SetLCDClk                 I     V    Set LCD clock (kHz)
+SetMclk                   I     V    Set Memory Clock (kHz)
+ShadowFB                  B     V    Enable shadow framebuffer layer
+ShowCache                 B     V    Enable viewing of offscreen memory
+ShowOverscan              O     V    Set the overscan area to a visible colour
+SlowDRAM                  O     V    Slow DRAM
+SlowEDODRAM               O     V    Slow EDO DRAM
+STN                       B     V    STN screen type (??)
+SWCursor                  B     V    Enable/disable SW cursor
+SuspendHack               B     V    ??
+SyncOnGreen               B     V    Enable/disable sync on green
+UseFBDev                  B     V    Use the fbdev driver interface
+UseModeLine               B     V    Use Modeline (??)
+UseVclk1                  B     V    ??
+W32Interleave             B     V    ??
+
+XAA options.  All are of type "O" and scope "X", and are self-explanatory
+
+XaaNoColor8x8PatternFillRect
+XaaNoColor8x8PatternFillTrap
+XaaNoCPUToScreenColorExpandFill
+XaaNoDashedBresenhamLine
+XaaNoDashedTwoPointLine
+XaaNoScreenToScreenCopy
+XaaNoImageReadRect
+XaaNoImageWriteRect
+XaaNoMono8x8PatternFillRect
+XaaNoMono8x8PatternFillTrap
+XaaNoOffscreenPixmaps
+XaaNoPixmapCache
+XaaNoScanlineCPUToScreenColorExpandFill
+XaaNoScanlineImageWriteRect
+XaaNoScreenToScreenColorExpandFill
+XaaNoSolidBresenhamLine
+XaaNoSolidFillRect
+XaaNoSolidFillTrap
+XaaNoSolidHorVertLine
+XaaNoSolidTwoPointLine
+
+
+Names used in previous versions:
 
 16Clocks
 8Clocks
-BlockWrite
 ClkDiv2
-EarlyRASprecharge
 EDO VRAM
 ExternDisp
 ExtFramBuf
-FastDRAM
 FastVRAM
 FavorBitBlt
-FIFOaggressive
-FIFOconservative
-FixPanelSize
-FPM VRAM
-HiBitHigh
-HiBitLow
-HWclocks
-HWcursor
 InternDisp
-LateRASprecharge
-LCDCenter
-Linear
-MedDRAM
-MMIO
-noMMIO
-NoAccel
 NoBitBlt
-NoBlockWrite
 NoFontCache
 NoImageBlt
-NoLinear
 NoMemAccess
-NoMMIO
 NoPciDisconnect
 NoPixmapCache
 NoProgramClocks
 NoSplitXfer
-NoStretch
 OverrideBIOS
-PciBurstOn
-PciBurstOff
-PciRetry
+OverrideValidateMode
 ProbeClocks
-ShowCache
-SlowDRAM
+ProgLcdModeRegs
+ProgLcdModeStretch
 SlowDRAMrefresh
-SlowEDODRAM
 SlowVRAM
 STN
 SwapHiBit
-SWcursor
-SyncOnGreen
-UseModeline
-UseVclk1
-internDisp
-externDisp
-pciBurstOn
-progLcdModeRegs
-noProgLcdModeRegs
-progLcdModeStretch
-noProgLcdModeStretch
-overrideValidateMode
 
 
 5. Ramdac Names.
@@ -184,4 +287,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.2 1998/07/25 16:54:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.3 1998/12/05 14:40:01 dawes Exp $

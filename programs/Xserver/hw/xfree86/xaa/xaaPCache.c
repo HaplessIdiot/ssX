@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.14 1999/03/06 13:12:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.15 1999/03/07 11:40:47 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1040,6 +1040,7 @@ XAAInitPixmapCache(
 	infoRec->CanDoColor8x8 = TRUE;
     }
 
+    /* This doesn't prevent the messages coming out for each new generation */
     if(!infoRec->pixmapCacheInit) {
 	xf86ErrorF("\tSetting up tile and stipple cache:\n");
 	if(NumPartial) 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.30 1999/03/07 08:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.31 1999/03/14 03:21:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1843,8 +1843,8 @@ typedef enum {
 } BSOpts;
 
 static OptionInfoRec BSOptions[] = {
-   { OPTION_BACKING_STORE, "BackingStore", OPTV_TRI,  {0}, FALSE },
-   { -1,                   NULL,           OPTV_NONE, {0}, FALSE }
+   { OPTION_BACKING_STORE, "BackingStore", OPTV_BOOLEAN, {0}, FALSE },
+   { -1,                   NULL,           OPTV_NONE,    {0}, FALSE }
 };
 
 void 
