@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.165 2002/04/06 11:57:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.166 2002/04/17 22:35:46 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1989,7 +1989,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
   	    break;
 	case 0x04: 
 	    /* 
-	     * 8MB, but - hw cursor can't store above 4MB */
+	     * 8MB, but - hw cursor can't store above 4MB
 	     * This only affects Image series chipsets, but for
 	     * some reason, reports suggest that the 9397DVD isn't
 	     * affected. XXX needs furthur investigation !
