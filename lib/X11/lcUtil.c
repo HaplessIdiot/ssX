@@ -24,6 +24,7 @@
  *			   	mopi@osa.ilab.toshiba.co.jp
  * Bug fixes: Bruno Haible	XFree86 Inc.
  */
+/* $XFree86$ */
 
 #include <X11/Xlib.h>
 #include "XlcPublic.h"

@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.144 2000/11/27 00:10:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.145 2000/11/28 16:10:22 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -98,8 +98,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define TclIncDir		/usr/include
 #define TclLibName		tcl8.3
 #define XF86SetupUsesStaticTcl	NO
+#if 0
 #define XInputDrivers mouse dynapro elo2300 elographics magellan microtouch \
 	mutouch spaceorb wacom void
+#endif
 /* un-comment this when it is un-broken */
 /* #define JoystickSupport YES */
 #define InstallXinitConfig	YES

@@ -1,5 +1,5 @@
 /*
- * $Xfree86: xc/lib/Xft/drawstr.c,v 1.3 2000/10/13 13:41:17 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *

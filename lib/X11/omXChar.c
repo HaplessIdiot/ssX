@@ -34,6 +34,7 @@
 /*
  * Modifiers: Jeff Walls, Paul Anderson (HEWLETT-PACKARD)
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "XlcPublic.h"

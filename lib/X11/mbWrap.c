@@ -46,6 +46,7 @@ from The Open Group.
  * 
  *		 M. Collins		OSF  
  */				
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
