@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64text.c,v 3.0 1994/11/26 12:43:01 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -50,8 +50,8 @@ mach64PolyText8(pDraw, pGC, x, y, count, chars)
 	((plane = mach64CacheFont(pGC->font)) == -1))
 	return miPolyText8(pDraw, pGC, x, y, count, chars);
     else
-	return mach64DrawText(pDraw, pGC, x, y, count, chars, plane, 
-				POLY_TEXT_TYPE_8);
+	return mach64DrawText(pDraw, pGC, x, y, count, (unsigned char *)chars,
+				plane, POLY_TEXT_TYPE_8);
 }
 
 
@@ -81,7 +81,7 @@ mach64ImageText8(pDraw, pGC, x, y, count, chars)
     if (!xf86VTSema || ((plane = mach64CacheFont(pGC->font)) == -1))
 	miImageText8(pDraw, pGC, x, y, count, chars);
     else
-	mach64DrawText(pDraw, pGC, x, y, count, chars, plane, 
+	mach64DrawText(pDraw, pGC, x, y, count, (unsigned char *)chars, plane, 
 			IMAGE_TEXT_TYPE_8);
     return;
 }

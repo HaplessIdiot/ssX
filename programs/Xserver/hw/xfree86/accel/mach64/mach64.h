@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.0 1994/11/26 12:42:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.1 1994/11/27 07:04:45 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -83,8 +83,34 @@ extern int mach64alu[];
 
 extern Bool checkCursorColor;
 
-extern void (*mach64ImageReadFunc)();
-extern void (*mach64ImageWriteFunc)();
+extern void (*mach64ImageReadFunc)(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    char *,
+    int,
+    int,
+    int,
+    unsigned long
+#endif 
+);
+
+extern void (*mach64ImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    char *,
+    int,
+    int,
+    int,
+    int,
+    unsigned long
+#endif 
+);
 
 /* Function Prototypes */
 
@@ -296,14 +322,14 @@ void mach64ImageStippleFunc(
     int y,
     int w,
     int h,
-    unsigned char *psrc,
+    char *psrc,
     int pwidth,
     int px,
     int py,
     Pixel fgPixel,
     Pixel bgPixel,
     int alu,
-    int planemask,
+    unsigned long planemask,
     int opaque
 #endif
 );

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.20 1994/10/30 02:59:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.21 1994/12/02 05:48:11 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -306,11 +306,8 @@ static cirrusClockRec cirrusDoubleClockTab[] = {
   { 0x5F, 0x22 }		/* 80.012 =~ 2 * 39.992 */
 };
 
-/* Lowest clock number for which multiplexing is required on the 5434. */
-#define CLOCKNO_MULTIPLEXING 14
-
-/* Lowest clock number for which VCLK at pixel rate is required at 16bpp. */
-#define CLOCKNO_16BPP_VCLKPIXELRATE 6
+/* Lowest clock for which palette clock doubling is required on the 5434. */
+#define CLOCK_PALETTE_DOUBLING_5434 85500
 
 #define NUM_CIRRUS_CLOCKS (sizeof(cirrusClockTab)/sizeof(cirrusClockRec))
 
@@ -1815,8 +1812,8 @@ cirrusInit(mode)
 
      multiplexing = 0;
      if (vgaBitsPerPixel == 8 && cirrusChip == CLGD5434
-     && mode->Clock >= CLOCKNO_MULTIPLEXING) {
-         /* On the 5434, enable pixel multiplexing for clocks > 85.5 MHz. */
+     && vga256InfoRec.clock[mode->Clock] > CLOCK_PALETTE_DOUBLING_5434) {
+         /* On the 5434, enable palette doubling mode for clocks > 85.5 MHz. */
          multiplexing = 1;
          /* The actual DAC register value is set later. */
          /* The CRTC is clocked at VCLK / 2, so we must half the */

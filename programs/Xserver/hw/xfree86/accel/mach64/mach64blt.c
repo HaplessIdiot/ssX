@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.0 1994/11/26 12:42:39 dawes Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -712,7 +712,7 @@ mach64DoBitBlt (pSrc, pDst, pGC, rgnDst, pptSrc, bitPlane)
      */
     else if ((pSrc->type != DRAWABLE_WINDOW) && (pDst->type == DRAWABLE_WINDOW))
     {
-	unsigned char *psrc = ((PixmapPtr)pSrc)->devPrivate.ptr;
+	char *psrc = ((PixmapPtr)pSrc)->devPrivate.ptr;
 	int pixWidth = PixmapBytePad(pSrc->width, pSrc->depth);
 
 	while(numRects --)
@@ -737,7 +737,7 @@ mach64DoBitBlt (pSrc, pDst, pGC, rgnDst, pptSrc, bitPlane)
 	if ((pGC->planemask & 0xffffffff) == 0xffffffff)
 	{
 	    int pixWidth = PixmapBytePad(pDst->width, pDst->depth);
-	    unsigned char *pdst = ((PixmapPtr)pDst)->devPrivate.ptr;
+	    char *pdst = ((PixmapPtr)pDst)->devPrivate.ptr;
 
 	    while(numRects --)
 	    {
@@ -791,7 +791,7 @@ mach64CopyPlane1toN(pSrcDrawable, pDstDrawable, pGC, rgnDst, pptSrc, bitPlane)
 {
     BoxPtr pbox;
     int pixWidth, i, numRects;
-    unsigned char *psrc;
+    char *psrc;
 
     if ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
 	(pDstDrawable->type == DRAWABLE_WINDOW) && xf86VTSema)
@@ -958,8 +958,8 @@ cfbCopyPlane1to32 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 	height = pbox->y2 - pbox->y1;
 	pbox++;
 	pptSrc++;
-	psrcLine = (int *)psrcBase + srcy * widthSrc + (srcx >> 5);
-	pdstLine = (int *)pdstBase + dsty * widthDst + dstx;
+	psrcLine = (unsigned int *)psrcBase + srcy * widthSrc + (srcx >> 5);
+	pdstLine = (unsigned int *)pdstBase + dsty * widthDst + dstx;
 	xoffSrc = srcx & 0x1f;
 
 	/*
@@ -1130,8 +1130,8 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 	height = pbox->y2 - pbox->y1;
 	pbox++;
 	pptSrc++;
-	psrcLine = (int *)psrcBase + srcy * widthSrc + srcx;
-	pdstLine = (int *)pdstBase + dsty * widthDst + (dstx >> 5);
+	psrcLine = (unsigned int *)psrcBase + srcy * widthSrc + srcx;
+	pdstLine = (unsigned int *)pdstBase + dsty * widthDst + (dstx >> 5);
 	if (dstx + width <= 32)
 	{
 	    mfbmaskpartialbits(dstx, width, startmask);
@@ -1292,7 +1292,7 @@ cfbCopyPlane1to16 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 	height = pbox->y2 - pbox->y1;
 	pbox++;
 	pptSrc++;
-	psrcLine = (int *)psrcBase + srcy * widthSrc + (srcx >> 5);
+	psrcLine = (unsigned int *)psrcBase + srcy * widthSrc + (srcx >> 5);
 	pdstLine = (unsigned short *)pdstBase + dsty * widthDst + dstx;
 	xoffSrc = srcx & 0x1f;
 
@@ -1466,7 +1466,7 @@ cfbCopyPlane16to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 	pbox++;
 	pptSrc++;
 	psrcLine = (unsigned short *)psrcBase + srcy * widthSrc + srcx;
-	pdstLine = (int *)pdstBase + dsty * widthDst + (dstx >> 5);
+	pdstLine = (unsigned int *)pdstBase + dsty * widthDst + (dstx >> 5);
 	if (dstx + width <= 32)
 	{
 	    mfbmaskpartialbits(dstx, width, startmask);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.0 1994/10/20 06:09:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.1 1994/10/30 02:58:05 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -40,6 +40,9 @@ int CirrusFindClock(freq, num_out, den_out, usemclk_out)
 		int d;
 		for (d = 0x14; d < 0x3f; d++) {
 			int c, diff;
+			/* Avoid combinations that can be unstable. */
+			if (n < d && (d & 1) == 0)
+				continue;
 			c = CLOCKVAL(n, d);
 			diff = abs(c - freq);
 			if (diff < mindiff) {

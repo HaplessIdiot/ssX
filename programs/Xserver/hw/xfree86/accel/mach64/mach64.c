@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.0 1994/11/26 12:42:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.1 1994/11/27 07:04:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1058,28 +1058,26 @@ mach64SaveScreen (pScreen, on)
      ScreenPtr     pScreen;
      Bool          on;
 {
-     int	   ext_ge_config;
-
     if (on)
 	SetTimeSinceLastInputEvent();
 
     if (xf86VTSema) {
 	if (on) {
-	    mach64RestoreColor0(pScreen);
-
-	    outb(ioDAC_REGS+2, 0xff);
 	    if (mach64HWCursorSave != -1) {
+		mach64SetRamdac(mach64CRTCRegs.color_depth >> 8, TRUE);
 		regwb(GEN_TEST_CNTL, mach64HWCursorSave);
 		mach64HWCursorSave = -1;
 	    }
+	    mach64RestoreColor0(pScreen);
+	    outb(ioDAC_REGS+2, 0xff);
 	} else {
 	    outb(ioDAC_REGS, 0);
 	    outb(ioDAC_REGS+1, 0);
 	    outb(ioDAC_REGS+1, 0);
 	    outb(ioDAC_REGS+1, 0);
-
 	    outb(ioDAC_REGS+2, 0x00);
 
+	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP >> 8, TRUE);
 	    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
 	    regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
 	}

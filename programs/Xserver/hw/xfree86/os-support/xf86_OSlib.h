@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.6 1994/10/23 12:59:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.7 1994/11/26 12:46:45 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -434,7 +434,7 @@ extern int sys_nerr;
  * This is to prevent re-entrancy to FatalError() when aborting.
  * Anything that can be called as a result of AbortDDX() should use this
  * instead of FatalError(). (xf86Exiting gets set to TRUE the first time
- * AbortDDX() is called.
+ * AbortDDX() is called.)
  */
 
 extern Bool xf86Exiting;

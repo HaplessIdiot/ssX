@@ -1,4 +1,6 @@
-XFree86 3.1.0A (4 December 1994)
+XFree86 3.1.0A (5 December 1994)
+112. Mach64 pixmap cache fixes (Kevin Martin).
+111. Improve cirrus programmable clock handling (Harm Hanemaayer).
 110. Add code to SuperProbe to detect the #9 Imagine I128 (Robin Cutshaw).
 
 XFree86 3.1.0g (2 December 1994)
