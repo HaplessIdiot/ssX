@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/9 1995/12/04 10:35:08 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.38 1995/12/17 04:58:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.39 1996/01/05 13:06:22 dawes Exp $
 
 #ifndef OSName
 #define OSName            FreeBSD 2.1
@@ -193,7 +193,9 @@ install.man::                                                           @@\
 #define ForceSubdirs(dirs)						@@\
 dirs: .EXEC								@@\
 	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all
+	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+									@@\
+.EXEC:
 #endif
 
 #include <bsdLib.rules>

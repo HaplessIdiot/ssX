@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf /main/11 1995/12/09 16:09:40 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.24 1995/12/07 07:14:23 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.25 1996/01/05 13:06:30 dawes Exp $
 
 #ifndef OSName
 #define OSName		NetBSD 1.1
@@ -161,8 +161,9 @@ XCOMM operating system:  OSName
 #define ForceSubdirs(dirs)						@@\
 dirs:	.EXEC								@@\
 	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all
-
+	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+									@@\
+.EXEC:
 
 XCOMM Man pages need to be formatted when installed, so override the default
 XCOMM imake rules.
@@ -181,8 +182,6 @@ file.0:: file.man							@@\
 	cp /tmp/$$$$.man file.0; \					@@\
 	$(RM) /tmp/$$$$.man; \						@@\
 	fi 								@@\
-									@@\
-file.man::								@@\
 									@@\
 install.man::                                                           @@\
 	MakeDir($(DESTDIR)destdir)					@@\
