@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.66 2003/02/15 05:37:58 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.67 2003/02/15 15:36:15 herrb Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -532,9 +532,6 @@ mouse_configuration(void) {
 #define MOUSETYPE_COUNT sizeof(mouse_info)/sizeof(mouse_info[0])
 	for (i = 0; i < MOUSETYPE_COUNT; i++)
 		*(mouse_info[i].ident) = i;
-
-	for (i = 0; i < MOUSETYPE_COUNT; i++)
-		printf("%2d.  %s\n", i + 1, mouse_info[i].name);
 
 	for (i=0;;) {
 		emptylines();
