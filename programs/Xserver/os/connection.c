@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.195 95/04/25 20:33:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.12 1995/06/20 14:31:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.13 1995/06/24 10:30:59 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -514,7 +514,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 			proto_n, auth_proto);
 	    }
 
-	    free ((char *) from);
+	    xfree ((char *) from);
 	}
 
 	if (auth_id == (XID) ~0L)
@@ -531,7 +531,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 	    AuthAudit(client->index, TRUE, (struct sockaddr *) from, fromlen,
 		      proto_n, auth_proto);
 
-	    free ((char *) from);
+	    xfree ((char *) from);
 	}
     }
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.16 1995/03/04 06:19:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.17 1995/05/27 03:17:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -36,6 +36,11 @@
 
 /*
  * Support for 90C33 added by Bill Morgart <wsm@morticia.ssw.com>
+ */
+
+/*
+ * Support for 90C24a added by Brad Bosch <brad@lachman.com> 6/18/95
+ * Primary testing and many ideas provided by Darin Ernst <dernst@pppl.gov>
  */
 
 #include "X.h"
@@ -150,6 +155,7 @@ static int MClk = 45000;
 static int MClkIndex = 8;
 static unsigned char save_cs2 = 0;
 static Bool use_cs2 = TRUE;
+static Bool wd90c24_use_1meg = FALSE;
 
 #undef DO_WD90C20
 
@@ -157,12 +163,13 @@ static SymTabRec chipsets[] = {
   { C_PVGA1,	"pvga1" },
   { WD90C00,	"wd90c00" },
   { WD90C10,	"wd90c10" },
+  { WD90C30,	"wd90c30" },
+  { WD90C24,	"wd90c24" },
+  { WD90C31,	"wd90c31" },
+  { WD90C33,	"wd90c33" },
 #ifdef DO_WD90C20
   { WD90C20,	"wd90c20" },
 #endif
-  { WD90C30,	"wd90c30" },
-  { WD90C31,	"wd90c31" },
-  { WD90C33,	"wd90c33" },
   { -1,		"" },
 };
 
@@ -212,13 +219,30 @@ static Bool
 PVGA1ClockSelect(no)
      int no;
 {
-  static unsigned char save1, save2, save3, save4;
+  static unsigned char save1, save2, save3, save4, save5;
   unsigned char temp;
 
   switch(no)
   {
     case CLK_REG_SAVE:
       save1 = inb(0x3CC);
+      if (WDchipset == WD90C24) {
+	  outb(0x3C4, 0x06); /* unlock paradise extended registers */
+	  save4 = inb (0x3C5);
+	  outb(0x3C5, (save4 & 0xEF) | 0x48);
+
+	  /* save feed Mclk state (miscctrl1) */
+	  outb(vgaIOBase + 4, 0x2E); save3 = inb(vgaIOBase + 5);
+
+	  wrinx(0x3C4, 0x35, 0x50);	/* unlock pr68 */
+	  save5 = rdinx(0x3C4, 0x32);
+	  wrinx(0x3C4, 0x32, 139);	/* set programable clock to ~62.2MHz */
+	  save2 = rdinx(0x3C4, 0x31);
+	  ErrorF("%s %s: WD: Current clock is 0x%x\n",
+		 XCONFIG_PROBED, vga256InfoRec.name,
+		 (save2>>1 & 0xc0) ^ 0x4 | (save1>>2 & 0x3));
+	  break;
+      }
       if (use_cs2)
       {
         outb(0x3CE, 0x0C); save2 = inb(0x3CF);
@@ -235,6 +259,20 @@ PVGA1ClockSelect(no)
       break;
     case CLK_REG_RESTORE:
       outb(0x3C2, save1);
+      if (WDchipset == WD90C24) {
+	  outb(0x3C4, 0x06); /* unlock paradise extended registers */
+	  temp = inb (0x3C5);
+	  outb(0x3C5, (temp & 0xEF) | 0x48);
+
+ 	  outw(vgaIOBase + 4, 0x2E | (save3 << 8)); /* disable feed Mclk */
+
+	  wrinx(0x3C4, 0x35, 0x50);	/* unlock pr68 */
+	  wrinx(0x3C4, 0x31, save2);
+
+	  outb(0x3C4, 0x06); /* restore paradise extended registers lock */
+	  outb(0x3C5, save4);
+	  break;
+      }
       if (use_cs2)
       {
         outw(0x3CE, 0x0C | (save2 << 8));
@@ -272,6 +310,15 @@ PVGA1ClockSelect(no)
         }
         temp = inb(0x3CC);
         outb(0x3C2, ( temp & 0xf3) | ((no << 2) & 0x0C));
+	if (WDchipset == WD90C24) {
+	    outb(0x3C4, 0x06); /* unlock paradise extended registers */
+	    temp = inb (0x3C5);
+	    outb(0x3C5, (temp & 0xEF) | 0x48);
+
+	    wrinx(0x3C4, 0x35, 0x50);	/* unlock pr68 */
+	    wrinx(0x3C4, 0x31, (rdinx(0x3C4, 0x31) & 0xE7) | (((no ^ 0x4) << 1) & 0x18));
+	    break;
+	}
         if (use_cs2)
         {
           outw(0x3CE, 0x0C | ((((no & 0x04) >> 1) ^ save_cs2) << 8));
@@ -297,7 +344,7 @@ PVGA1ClockSelect(no)
 static Bool
 PVGA1Probe()
 {
-    int numclocks;
+    int numclocks = 17;
 
     /*
      * Set up I/O ports to be used by this card
@@ -379,8 +426,8 @@ PVGA1Probe()
 		else if ((sig[0] == '3') && (sig[1] == '3'))
 		    WDchipset = WD90C33;
 		else if ((sig[0] == '2') && (sig[1] == '4')) {
-		    WDchipset = WD90C30;
-		    ErrorF("%s %s: WD: Detected 90C24, treating it at 90C30\n",
+		    WDchipset = WD90C24;
+		    ErrorF("%s %s: WD: Detected 90C24.  Try 90C30 or 90C31 if this doesn't work.\n",
 			   XCONFIG_PROBED, vga256InfoRec.name);
 		}
 		else if ((sig[0] == '2') && (sig[1] == '6')) {
@@ -410,7 +457,8 @@ PVGA1Probe()
     }
     vga256InfoRec.chipset = xf86TokenToString(chipsets, WDchipset);
 
-    if (WDchipset == WD90C31)  /* enable extra hardware accel registers */
+    if (WDchipset == WD90C31 || WDchipset == WD90C24)
+	/* enable extra hardware accel registers */
     {
         xf86AddIOPorts(vga256InfoRec.scrnIndex,
                        NumPVGA1_ExtPorts, PVGA1_ExtPorts);
@@ -432,10 +480,10 @@ PVGA1Probe()
      * Detect how much memory is installed
      */
     if (!vga256InfoRec.videoRam) {
-      unsigned char config;
+      unsigned char config, temp;
 
       outb(0x3CE, 0x0B); config = inb(0x3CF);
-      
+
       switch(config & 0xC0) {
       case 0x00:
       case 0x40:
@@ -443,6 +491,31 @@ PVGA1Probe()
 	break;
       case 0x80:
 	vga256InfoRec.videoRam = 512;
+
+	if (WDchipset == WD90C24) {
+
+	    ErrorF("%s %s: WD: FP_Lock = 0x%0x:\n",
+		   XCONFIG_PROBED, vga256InfoRec.name,
+		   rdinx(vgaIOBase+0x04, 0x34));
+	    wrinx(vgaIOBase+0x04, 0x34, 0xA0); /* Unlock FP Reg, lock shadows*/
+
+	    /* dual scan ==  (PR18[bit:3,1,0] = 0). */
+	    /* flat panel disable == (PR19[bit:4] = 0). */
+	    wd90c24_use_1meg = !((rdinx(vgaIOBase+0x04, 0x031) & 0x0B) ||
+				 (rdinx(vgaIOBase+0x04, 0x032) & 0x10));
+	    if (wd90c24_use_1meg) {
+		wrinx(vgaIOBase+0x04, 0x34, 0xA6); /* unlock shadows */
+		ErrorF("%s %s: WD: dual scan 90C24, external monitor: assuming 1 Meg VRAM\n",
+		       XCONFIG_PROBED, vga256InfoRec.name);
+		vga256InfoRec.videoRam = 1024;
+	    }
+	    else {
+		if (vga256InfoRec.virtualX*vga256InfoRec.virtualY > 512*1024) {
+		    vga256InfoRec.virtualX = 640;
+		    vga256InfoRec.virtualY = 480;
+		}
+	    }
+	}
 	break;
       case 0xC0:
 	vga256InfoRec.videoRam = 1024;
@@ -527,8 +600,13 @@ PVGA1Probe()
 	OFLG_SET(OPTION_INTERN_DISP, &PVGA1.ChipOptionFlags);
 	OFLG_SET(OPTION_EXTERN_DISP, &PVGA1.ChipOptionFlags);
     }
-    if (WDchipset == WD90C31 || WDchipset == WD90C33)
+    if (WDchipset == WD90C31 || WDchipset == WD90C33 || WDchipset == WD90C24)
 	OFLG_SET(OPTION_NOACCEL, &PVGA1.ChipOptionFlags);
+    if (WDchipset == WD90C24) {
+	OFLG_SET(OPTION_SLOW_DRAM, &PVGA1.ChipOptionFlags);
+	OFLG_SET(OPTION_MED_DRAM, &PVGA1.ChipOptionFlags);
+	OFLG_SET(OPTION_FAST_DRAM, &PVGA1.ChipOptionFlags);
+    }
     
     return(TRUE);
 }
@@ -564,7 +642,8 @@ PVGA1FbInit()
 #ifndef MONOVGA
   int useSpeedUp;
 
-  if (((WDchipset != WD90C31) && (WDchipset != WD90C33)) ||
+  if (((WDchipset != WD90C31) && (WDchipset != WD90C33)
+       && (WDchipset != WD90C24)) ||
       OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
      return;
 
@@ -630,7 +709,7 @@ PVGA1EnterLeave(enter)
 	outb(0x3C5, 0x48);
       } else {
 	temp = inb (0x3C5);
-	outb(0x3C5, temp | 0x48);
+	outb(0x3C5, (temp & 0xEF) | 0x48);
       }
     }
   else
@@ -659,8 +738,17 @@ PVGA1Restore(restore)
   outb(0x3CE, 0x0D); temp = inb(0x3CF); outb(0x3CF, temp & 0x1C);
   outb(0x3CE, 0x0E); temp = inb(0x3CF); outb(0x3CF, temp & 0xFB);
 
-  outb(vgaIOBase + 4, 0x2A); temp = inb(vgaIOBase + 5);
-  outb(vgaIOBase + 5, temp & 0xF8);
+  if (WDchipset != WD90C24 || !((rdinx(vgaIOBase+0x04, 0x031) & 0x0B) ||
+		       (rdinx(vgaIOBase+0x04, 0x032) & 0x10)))
+      /* Leave 8/9 character clock unlocked */
+      temp = 0xF8;
+  else {
+      /* this is a wd90c24 in CRT only mode */
+      wrinx(vgaIOBase+0x04, 0x34, 0xA0); /* Unlock FP Reg, lock shadows*/
+      temp = 0xFF;
+  }
+  outb(vgaIOBase + 4, 0x2A); temp &= inb(vgaIOBase + 5);
+  outb(vgaIOBase + 5, temp);
 
   /* Unlock sequencer extended registers */
   outb(0x3C4, 0x06);
@@ -668,26 +756,46 @@ PVGA1Restore(restore)
     outb(0x3C5, 0x48);
   } else {
     temp = inb (0x3C5);
-    outb(0x3C5, temp | 0x48);
+    outb(0x3C5, (temp & 0xEF) | 0x48);
   }
 
   outw(0x3CE, 0x0009);   /* segment select A */
   outw(0x3CE, 0x000A);   /* segment select B */
 
-  vgaHWRestore((vgaHWPtr)restore);
-
   outw(0x3CE, (restore->PR0A << 8) | 0x09);
   outw(0x3CE, (restore->PR0B << 8) | 0x0A);
 
   outb(0x3CE, 0x0B); temp = inb(0x3CF);          /* banking mode ... */
-  outb(0x3CF, (temp & 0xF7) | (restore->MemorySize & 0x08));
+  outb(0x3CF, (temp & 0x37) | (restore->MemorySize & 0xC8));
        
   if (new->std.NoClock >= 0)
   {
-    outw(0x3CE, (restore->VideoSelect << 8) | 0x0C);
-    if (IS_WD90C3X(WDchipset) &&
-	!OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
-      outw(0x3C4, (restore->MiscCtrl4 << 8) | 0x12);
+      if (WDchipset == WD90C24) {
+	  outb(0x3C4, 0x06); /* unlock paradise extended registers */
+	  temp = inb (0x3C5);
+	  outb(0x3C5, (temp & 0xEF) | 0x48);
+	  
+	  wrinx(0x3C4, 0x35, 0x50);	/* unlock pr68 */
+#if 0
+fprintf(stderr, "pr68 was = 0x%x\n", rdinx(0x3C4, 0x31));
+fprintf(stderr, "pr69 was = 0x%x\n", rdinx(0x3C4, 0x32));
+#endif
+	  wrinx(0x3C4, 0x31, (rdinx(0x3C4, 0x31) & 0xE0) | ((restore->VideoSelect) & 0x1F));
+	  /* set programable clock */
+	  if ((restore->std.NoClock & 0x14) == 0x04)
+	      wrinx(0x3C4, 0x32, restore->MiscCtrl4);
+#if 0
+fprintf(stderr, "restored pr68 = 0x%x\n", restore->VideoSelect);
+fprintf(stderr, "pr68 now = 0x%x\n", rdinx(0x3C4, 0x31));
+fprintf(stderr, "pr69 now = 0x%x\n", rdinx(0x3C4, 0x32));
+#endif
+      }
+      else {
+	  outw(0x3CE, (restore->VideoSelect << 8) | 0x0C);
+	  if (IS_WD90C3X(WDchipset) &&
+	      !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
+	      outw(0x3C4, (restore->MiscCtrl4 << 8) | 0x12);
+      }
   }
 #ifndef MONOVGA
   outw(0x3CE, (restore->CRTCCtrl << 8)    | 0x0D);
@@ -726,19 +834,33 @@ PVGA1Restore(restore)
     {
       unsigned char mask = (IS_WD90C3X(WDchipset) ? 0xCF : 0x0F);
 
+      if (wd90c24_use_1meg)
+	  mask = 0xEF;	/* also restore VRAM data path width */
+
       outb(0x3C4, 0x10);
       temp = inb(0x3C5);
       outb(0x3C5, (restore->MemoryInterface & mask) | (temp & ~mask));
     }
+
+  /* This must be done AFTER the Memory width (MemoryInterface) is restored */
+  vgaHWRestore((vgaHWPtr)restore);
+
+  if (WDchipset == WD90C24) {
+      if (restore->std.NoClock & 0x4) {
+	  /* Use programable clock */
+	  temp = inb(0x3CC);
+	  outb(0x3C2, ( temp & 0xf3) | 0x8);
+      }
+  }
   if (WDchipset == WD90C20)
     {
-      /* Note, only selected bits of FlagPanelCtrl are restored */
+      /* Note, only selected bits of FlatPanelCtrl are restored */
       outb(vgaIOBase + 4, 0x32);
       temp = inb(vgaIOBase + 5);
       outb(vgaIOBase + 5, (temp & 0xCF) | (restore->FlatPanelCtrl & 0x30));
     }
 
-  if (WDchipset == WD90C31 ||
+  if (WDchipset == WD90C31 || WDchipset == WD90C24 ||
       WDchipset == WD90C33)    /* set hardware cursor register */
   {
      outw (EXT_REG_ACCESS_PORT, CURSOR_BLOCK);
@@ -763,8 +885,12 @@ PVGA1Save(save)
   outb(0x3CE, 0x0D); temp = inb(0x3CF); outb(0x3CF, temp & 0x1C);
   outb(0x3CE, 0x0E); temp = inb(0x3CF); outb(0x3CF, temp & 0xFD);
 
-  outb(vgaIOBase + 4, 0x2A); temp = inb(vgaIOBase + 5);
-  outb(vgaIOBase + 5, temp & 0xF8);
+  if (WDchipset != WD90C24 || wd90c24_use_1meg)
+      temp = 0xF8;
+  else
+      temp = 0xFF;
+  outb(vgaIOBase + 4, 0x2A); temp &= inb(vgaIOBase + 5);
+  outb(vgaIOBase + 5, temp);
 
   /* Unlock sequencer extended registers */
   outb(0x3C4, 0x06);
@@ -772,7 +898,7 @@ PVGA1Save(save)
     outb(0x3C5, 0x48);
   } else {
     temp = inb (0x3C5);
-    outb(0x3C5, temp | 0x48);
+    outb(0x3C5, (temp & 0xEF) | 0x48);
   }
 
   outb(0X3CE, 0x09); PR0A = inb(0x3CF); outb(0x3CF, 0x00);
@@ -783,11 +909,17 @@ PVGA1Save(save)
   save->PR0A = PR0A;
   save->PR0B = PR0B;
   outb(0x3CE, 0x0B); save->MemorySize  = inb(0x3CF);
-  outb(0x3CE, 0x0C); save->VideoSelect = inb(0x3CF);
-  if (IS_WD90C3X(WDchipset) &&
-      !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
-  {
-    outb(0x3C4, 0x12); save->MiscCtrl4 = inb(0x3C5);
+  if (WDchipset == WD90C24) {
+      wrinx(0x3C4, 0x35, 0x50);	/* unlock pr68 */
+      outb(0x3C4, 0x31); save->VideoSelect = inb(0x3C5);
+      outb(0x3C4, 0x32); save->MiscCtrl4 = inb(0x3C5);
+  } else {
+      outb(0x3CE, 0x0C); save->VideoSelect = inb(0x3CF);
+      if (IS_WD90C3X(WDchipset) &&
+	  !OFLG_ISSET(OPTION_8CLKS, &vga256InfoRec.options))
+      {
+	  outb(0x3C4, 0x12); save->MiscCtrl4 = inb(0x3C5);
+      }
   }
 #ifndef MONOVGA
   outb(0x3CE, 0x0D); save->CRTCCtrl    = inb(0x3CF);
@@ -813,7 +945,7 @@ PVGA1Save(save)
       outb(vgaIOBase + 4, 0x32); save->FlatPanelCtrl = inb(vgaIOBase + 5);
     }
 
-  if (WDchipset == WD90C31 ||
+  if (WDchipset == WD90C31 || WDchipset == WD90C24 ||
       WDchipset == WD90C33)   /* save hardware cursor register */
   {
      outw (EXT_REG_ACCESS_PORT, CURSOR_BLOCK);
@@ -835,6 +967,7 @@ PVGA1Init(mode)
      DisplayModePtr mode;
 {
 
+/*  new->SeqClkMode = 0; */
 
   if (!vgaHWInit(mode,sizeof(vgaPVGA1Rec)))
     return(FALSE);
@@ -860,11 +993,58 @@ PVGA1Init(mode)
    * Try setting this to 0x0C to play with 8bit vs 16 bit stuff
    *************************************
    */
-  new->MemorySize = 0x08;
+  outb(0x3CE, 0x0B); new->MemorySize  = inb(0x3CF) | 0x08;
   if (new->std.NoClock >= 0)
   {
-    new->VideoSelect = ((new->std.NoClock & 0x4) >> 1) ^ save_cs2;
-    new->MiscCtrl4 = ((new->std.NoClock & 0x8) >> 1) ^ 0x4;
+      if (WDchipset == WD90C24) {
+	  if (new->std.NoClock & 0x4) {
+	      /* Use programable clock */
+	      new->VideoSelect = 0;
+	      new->MiscCtrl4=vga256InfoRec.clock[new->std.NoClock]/447.443+.5;
+	      if (new->MiscCtrl4 < 0x38) new->MiscCtrl4 = 0x38;
+	      if (new->MiscCtrl4 > 0xBE) new->MiscCtrl4 = 0xBE;
+	      if (abs(new->MiscCtrl4 * 447.443 - vga256InfoRec.clock[new->std.NoClock]) > 20) {
+		  ErrorF("%s %s: WD: Clock %6.3f adjusted to %6.3f by clock generator\n",
+			 XCONFIG_PROBED, vga256InfoRec.name,
+			 vga256InfoRec.clock[new->std.NoClock]/1000.,
+			 new->MiscCtrl4 * .447443);
+	      }
+	  } else {
+	      /* Use preprogrammed clocks */
+	      new->VideoSelect = ((new->std.NoClock ^ 0x4) << 1) & 0x18;
+	      new->MiscCtrl4 = 139;	/* Just a sane value */
+	  }
+	  if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options) ||
+	      OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options) ||
+	      OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options)) {
+	      ErrorF("%s %s: %s: Memory clock overridden by option\n",
+		     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+	      /* Set Mclk */
+	      /* I know this seems strange, but it allows what I wanted */
+	      if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options)) {
+		  new->VideoSelect ^= 0x6;
+		  if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+		      new->VideoSelect ^= 0x2;
+	      }
+	      if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options)) {
+		  new->VideoSelect ^= 0x7;
+		  if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options) &&
+		      !OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+		      new->VideoSelect ^= 0x2;
+	      }
+	  } else {	/* Keep current Mclk */
+	      unsigned char tmp;
+	      outb(0x3C4, 0x06); /* unlock paradise extended registers */
+	      tmp = inb (0x3C5);
+	      outb(0x3C5, (tmp & 0xEF) | 0x48);
+	      wrinx(0x3C4, 0x35, 0x50);	/* unlock pr68 */
+	      
+	      new->VideoSelect |= rdinx(0x3C4, 0x31) & 0x7; /* Fetch Mclk */
+	  }
+      } else {
+	  new->VideoSelect = ((new->std.NoClock & 0x4) >> 1) ^ save_cs2;
+	  new->MiscCtrl4 = ((new->std.NoClock & 0x8) >> 1) ^ 0x4;
+      }
   }
 #ifndef MONOVGA
   new->CRTCCtrl = 0x00;
@@ -911,13 +1091,20 @@ PVGA1Init(mode)
 
   if (IS_WD90C3X(WDchipset))
     {
-      if (vga256InfoRec.clock[new->std.NoClock] > MClk) {
-	new->MemoryInterface = 0x41;
-	new->MiscCtrl1 |= 0x40;
-      } else
-	new->MemoryInterface = 0xC1;
-
-      if (WDchipset == WD90C31 || WDchipset == WD90C33)
+      if (wd90c24_use_1meg)
+        {
+	  new->MemoryInterface = 0xC1;
+	  new->MemorySize = 0xc8;
+        }
+      else
+        {
+	  if (vga256InfoRec.clock[new->std.NoClock] > MClk) {
+	      new->MemoryInterface = 0x41;
+	      new->MiscCtrl1 |= 0x40;
+	  } else
+	      new->MemoryInterface = 0xC1;
+        }
+      if (WDchipset == WD90C31 || WDchipset == WD90C33 || WDchipset == WD90C24)
 	{
 /*** MJT ***/
 /**** not yet

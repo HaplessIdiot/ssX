@@ -1,4 +1,5 @@
 /* $XConsortium: xkbPrKeyEv.c,v 1.1 94/04/01 18:46:13 erik Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -694,7 +695,7 @@ register int i;
 
     if (szFilters==0) {
 	szFilters = 4;
-	filters = (XkbFilter *)Xcalloc(szFilters*sizeof(XkbFilter));
+	filters = (XkbFilter *)xcalloc(szFilters,sizeof(XkbFilter));
 	/* 6/21/93 (ef) -- XXX! deal with allocation failure */
     }
     for (i=0;i<szFilters;i++) {
@@ -704,7 +705,7 @@ register int i;
 	}
     }
     szFilters*=2;
-    filters= (XkbFilter *)Xrealloc(filters,szFilters*sizeof(XkbFilter));
+    filters= (XkbFilter *)xrealloc(filters,szFilters*sizeof(XkbFilter));
     /* 6/21/93 (ef) -- XXX! deal with allocation failure */
     bzero(&filters[szFilters/2],(szFilters/2)*sizeof(XkbFilter));
     return &filters[szFilters/2];

@@ -1,4 +1,5 @@
 /* $XConsortium: xkb.c,v 1.9 94/04/08 15:13:15 erik Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1451,7 +1452,7 @@ CARD8			*map,*preserve;
 	nNew= req->firstType+req->nTypes;
 	if (nNew<xkb->map->num_types)
 	    nNew= xkb->map->num_types;
-	pTmp= (XkbKeyTypePtr)Xcalloc(nNew*sizeof(XkbKeyTypeRec));
+	pTmp= (XkbKeyTypePtr)xcalloc(nNew,sizeof(XkbKeyTypeRec));
 	if (pTmp==NULL)
 	    return NULL;
 	memcpy(pTmp,xkb->map->types,xkb->map->num_types*sizeof(XkbKeyTypeRec));
@@ -1462,7 +1463,7 @@ CARD8			*map,*preserve;
     if ((unsigned)(req->firstType+req->nTypes)>xkb->map->size_types) {
 	XkbKeyTypeRec	*pNew;
 	width = req->firstType+req->nTypes;
-	pNew = (XkbKeyTypeRec *)Xrealloc(xkb->map->types,
+	pNew = (XkbKeyTypeRec *)xrealloc(xkb->map->types,
 						width*sizeof(XkbKeyTypeRec));
 	if (!pNew)
 	    return NULL;
@@ -1488,11 +1489,11 @@ CARD8			*map,*preserve;
 	if (pOld->free&XkbNoFreeKTMap)
 	    pOld->map = NULL;
 	if (!pOld->map) {
-	    pOld->map = (XkbKTMapEntryPtr)Xcalloc(width);
+	    pOld->map = (XkbKTMapEntryPtr)xcalloc(1,width);
 	    pOld->free&= ~XkbNoFreeKTMap;
 	}
 	else if (pOld->map_count<wire->nMapEntries) {
-	    pOld->map = (XkbKTMapEntryPtr)Xrealloc(pOld->map,width);
+	    pOld->map = (XkbKTMapEntryPtr)xrealloc(pOld->map,width);
 	}
 	if (!pOld->map)
 	    return NULL;
@@ -1500,16 +1501,16 @@ CARD8			*map,*preserve;
 	if (wire->preserve) {
 	    width= wire->nMapEntries*sizeof(XkbKTPreserveRec);
 	    if (pOld->preserve==NULL) 
-		pOld->preserve= (XkbKTPreservePtr)Xcalloc(width);
+		pOld->preserve= (XkbKTPreservePtr)xcalloc(1,width);
 	     else {
-		pOld->preserve=(XkbKTPreservePtr)Xrealloc(pOld->preserve,width);
+		pOld->preserve=(XkbKTPreservePtr)xrealloc(pOld->preserve,width);
 	     }
 	     if (!pOld->preserve)
 		return NULL;
 	}
 	else if (pOld->preserve) {
 	    if ((pOld->free&XkbNoFreeKTPreserve)==0)
-		Xfree(pOld->preserve);
+		xfree(pOld->preserve);
 	    pOld->preserve= NULL;
 	}
 
@@ -1687,9 +1688,9 @@ unsigned	 lowKey,highKey;
     if (maxRG>(int)xkbSI->nRadioGroups) {
         int sz = (maxRG+1)*sizeof(XkbRadioGroupRec);
         if (xkbSI->radioGroups)
-            xkbSI->radioGroups=(XkbRadioGroupRec *)Xrealloc(xkbSI->radioGroups,
+            xkbSI->radioGroups=(XkbRadioGroupRec *)xrealloc(xkbSI->radioGroups,
                                                                         sz);
-        else xkbSI->radioGroups= (XkbRadioGroupRec *)Xcalloc(sz);
+        else xkbSI->radioGroups= (XkbRadioGroupRec *)xcalloc(1,sz);
         if (xkbSI->radioGroups) {
              if (xkbSI->nRadioGroups)
                 bzero(&xkbSI->radioGroups[xkbSI->nRadioGroups],
@@ -2051,7 +2052,7 @@ ProcXkbSetCompatMap(client)
 	XkbSymInterpretRec *sym;
 	if ((unsigned)(stuff->firstSI+stuff->nSI)>compat->num_si) {
 	    compat->num_si= stuff->firstSI+stuff->nSI;
-	    compat->sym_interpret= (XkbSymInterpretRec *)Xrealloc(
+	    compat->sym_interpret= (XkbSymInterpretRec *)xrealloc(
 			compat->sym_interpret,
 			compat->num_si*sizeof(XkbSymInterpretRec));
 	    if (!compat->sym_interpret) {
@@ -2900,7 +2901,7 @@ ProcXkbSetNames(client)
 	for (i=0;i<stuff->nTypes;i++,type++) {
 	    if (width[i]>0) {
 		if ((!type->lvl_names)||(type->free&XkbNoFreeKTLevelNames)) {
-		    type->lvl_names= (Atom *)Xcalloc(width[i]*sizeof(Atom));
+		    type->lvl_names= (Atom *)xcalloc(width[i],sizeof(Atom));
 		    type->free&= ~XkbNoFreeKTLevelNames;
 		}
 		if (type->lvl_names) {
@@ -2933,7 +2934,7 @@ ProcXkbSetNames(client)
     if (stuff->which&XkbKeyNamesMask) {
 	if (names->keys==NULL) {
 	    int totalKeys= xkb->max_key_code-xkb->min_key_code+1;
-	    names->keys=(XkbKeyNamePtr)Xcalloc(sizeof(XkbKeyNameRec)*totalKeys);
+	    names->keys=(XkbKeyNamePtr)xcalloc(sizeof(XkbKeyNameRec),totalKeys);
 	    if (names->keys==NULL)
 		return BadAlloc;
 	}
@@ -2946,10 +2947,10 @@ ProcXkbSetNames(client)
 	    register unsigned i;
 	    if (names->radio_groups==NULL) {
 		names->radio_groups= (Atom *)
-				Xcalloc(sizeof(Atom)*stuff->nRadioGroups);
+				xcalloc(sizeof(Atom),stuff->nRadioGroups);
 	    }
 	    else if (stuff->nRadioGroups>=names->num_rg) {
-		names->radio_groups=(Atom*)Xrealloc(names->radio_groups,
+		names->radio_groups=(Atom*)xrealloc(names->radio_groups,
 					sizeof(Atom)*stuff->nRadioGroups);
 	    }
 
@@ -2968,7 +2969,7 @@ ProcXkbSetNames(client)
 	    }
 	}
 	else if (names->radio_groups) {
-	    Xfree(names->radio_groups);
+	    xfree(names->radio_groups);
 	    names->radio_groups= NULL;
 	    names->num_rg= 0;
 	}
@@ -2978,17 +2979,17 @@ ProcXkbSetNames(client)
     if (stuff->which&XkbCharSetsMask) {
 	if (stuff->nCharSets==0) {
 	    if (names->char_sets) 
-		Xfree(names->char_sets);
+		xfree(names->char_sets);
 	    names->char_sets= NULL;
 	    names->num_char_sets= 0;
 	}
 	else {
 	    if (stuff->nCharSets>names->num_char_sets) {
 		if (names->num_char_sets==0)
-		    names->char_sets= (Atom *)Xcalloc(stuff->nCharSets*
+		    names->char_sets= (Atom *)xcalloc(stuff->nCharSets,
 								sizeof(Atom));
 		else {
-		    names->char_sets=(Atom *)Xrealloc(names->char_sets,
+		    names->char_sets=(Atom *)xrealloc(names->char_sets,
 						stuff->nCharSets*sizeof(Atom));
 		}
 	    }

@@ -1,5 +1,5 @@
 /* $XConsortium: pvgapntwin.c,v 1.4 95/01/16 13:18:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgapntwin.c,v 3.1 1995/01/14 10:49:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgapntwin.c,v 3.3 1995/01/28 17:09:18 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -112,6 +112,7 @@ pvgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
       switch (WDchipset)
 	{
 	case WD90C31:
+	case WD90C24:
 	  wd90c31BitBlt((unsigned char *)NULL, pdstBase,
 			0, widthDst,
 			0, 0,
@@ -140,6 +141,6 @@ pvgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	}
     }
 
-    if (WDchipset == WD90C31)
+    if (WDchipset == WD90C31 || WDchipset == WD90C24)
       WAIT_BLIT; /* must wait since memory writes can mess up as well */
 }
