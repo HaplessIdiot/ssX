@@ -811,6 +811,7 @@ EXPORTS
  XkbUpdateMapFromCore
  XkbXlibControlsImplemented
  Xutf8TextPropertyToTextList
+ Xutf8TextListToTextProperty	 
 #else
 	XSaveContext   
 	XFindContext   
@@ -1755,7 +1756,8 @@ EXPORTS
 	_XimXTransGetConnectionNumber   
 	_XimXTransGetHostname   
 	_Xdebug  
-	Xutf8TextPropertyToTextList  
+	Xutf8TextPropertyToTextList 
+	Xutf8TextListToTextProperty	 
 	XkbIgnoreExtension  
 	XkbOpenDisplay  
 	XkbQueryExtension  
@@ -1986,4 +1988,4 @@ EXPORTS
 #endif
 
 /* $Xorg: X11-def.cpp,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
-/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.8 2001/02/13 19:19:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.9 2001/03/01 00:37:06 dawes Exp $ */

@@ -1,4 +1,9 @@
 XFree86 4.0.99.2 (?? April 2001)
+ 341. Add a driver for VMware virtual SVGA devices.  This is for use
+      by X servers running under a VMware guest OS (#4529, VMware, Inc).
+ 340. Remove Cygwin-specific #ifdef in Xserver/os/Waitfor.c, which fixes
+      a crash (#4528, Suhaib Siddiqi).
+ 339. Cygwin build fixes (#4527, Suhaib Siddiqi).
  338. Updates to the "citron" input driver.  It includes compatibility
       with the Winbond SIO chip (83977EF), and some new commands to
       communicate to the touch driver from an application program
@@ -12835,4 +12840,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1664 2001/04/05 02:43:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1665 2001/04/05 17:42:28 dawes Exp $
