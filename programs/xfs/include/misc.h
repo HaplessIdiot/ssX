@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/misc.h,v 3.5 1999/08/21 13:48:51 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/misc.h,v 3.6 2001/01/17 23:45:31 dawes Exp $ */
 
 #ifndef _MISC_H_
 #define _MISC_H_
@@ -72,7 +72,6 @@ in this Software without prior written authorization from The Open Group.
 
 #define	min(a, b)	(((a) < (b)) ? (a) : (b))
 #define	max(a, b)	(((a) > (b)) ? (a) : (b))
-#define	abs(a)		((a) > 0 ? (a) : -(a))
 
 #include	"os.h"
 
