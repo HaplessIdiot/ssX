@@ -387,18 +387,26 @@ _XF86BigfontCodes (dpy)
     pData->free_private = _XF86BigfontFreeCodes;
     XAddToExtensionList(XEHeadOfExtensionList(dpy_union), pData);
     if (pCodes) {
+	int result;
 
 	/* See if the server supports the XF86BigfontQueryFont request. */
 	xXF86BigfontQueryVersionReply reply;
 	register xXF86BigfontQueryVersionReq *req;
 
+	LockDisplay(dpy);
+
 	GetReq(XF86BigfontQueryVersion, req);
 	req->reqType = pCodes->codes->major_opcode;
 	req->xf86bigfontReqType = X_XF86BigfontQueryVersion;
 
-	if (!(_XReply (dpy, (xReply *) &reply,
+	result = _XReply (dpy, (xReply *) &reply,
 		(SIZEOF(xXF86BigfontQueryVersionReply) - SIZEOF(xReply)) >> 2,
-		xFalse)))
+		xFalse);
+
+	UnlockDisplay(dpy);
+    	SyncHandle();
+
+	if(!result)
 	    goto ignore_extension;
 
 	/* No need to provide backward compatibility with version 1.0. It
