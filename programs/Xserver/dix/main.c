@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.39 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.40 2003/02/17 16:55:31 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -420,6 +420,9 @@ main(int argc, char *argv[], char *envp[])
 	    InitRootWindow(WindowTable[i]);
         DefineInitialRootWindow(WindowTable[0]);
 	SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
+#ifdef DPMSExtension
+        SetDPMSTimers();
+#endif
 
 #ifdef PANORAMIX
 	if (!noPanoramiXExtension) {

@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.31 2002/11/30 06:21:49 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.32 2003/01/12 02:44:26 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -3487,6 +3487,8 @@ SaveScreens(on, mode)
 	}
     }
     screenIsSaved = what;
+    if (mode == ScreenSaverReset)
+       SetScreenSaverTimer();
 }
 
 static Bool

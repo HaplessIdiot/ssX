@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.38 2002/05/31 18:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.40 2003/06/23 18:39:59 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -131,17 +131,12 @@ static OsTimerPtr timers;
  *     pClientsReady is an array to store ready client->index values into.
  *****************/
 
-static INT32 timeTilFrob = 0;		/* while screen saving */
-
 int
 WaitForSomething(int *pClientsReady)
 {
     int i;
     struct timeval waittime, *wt;
     INT32 timeout = 0;
-#ifdef DPMSExtension
-    INT32 standbyTimeout = 0, suspendTimeout = 0, offTimeout = 0;
-#endif
     fd_set clientsReadable;
     fd_set clientsWritable;
     int curclient;
@@ -188,138 +183,17 @@ WaitForSomething(int *pClientsReady)
 	else
 	{
 #endif
-#ifdef DPMSExtension
-	if (ScreenSaverTime > 0 || DPMSEnabled || timers)
-#else
-	if (ScreenSaverTime > 0 || timers)
-#endif
-	    now = GetTimeInMillis();
-	wt = NULL;
+        wt = NULL;
 	if (timers)
-	{
-	    while (timers && (int) (timers->expires - now) <= 0)
-		DoTimer(timers, now, &timers);
-	    if (timers)
-	    {
-		timeout = timers->expires - now;
-		waittime.tv_sec = timeout / MILLI_PER_SECOND;
-		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
-		    (1000000 / MILLI_PER_SECOND);
-		wt = &waittime;
-	    }
-	}
-	if (ScreenSaverTime > 0
-#ifdef DPMSExtension
-	    || (DPMSEnabled &&
-	     (DPMSStandbyTime > 0 || DPMSSuspendTime > 0 || DPMSOffTime > 0))
-#endif
-	) {
-#ifdef DPMSExtension
-	    if (ScreenSaverTime > 0)
-#endif
-		timeout = (ScreenSaverTime -
-			   (now - lastDeviceEventTime.milliseconds));
-#ifdef DPMSExtension
-	    if (DPMSStandbyTime > 0)
-		standbyTimeout = (DPMSStandbyTime -
-				  (now - lastDeviceEventTime.milliseconds));
-	    if (DPMSSuspendTime > 0)
-		suspendTimeout = (DPMSSuspendTime -
-				  (now - lastDeviceEventTime.milliseconds));
-	    if (DPMSOffTime > 0)
-		offTimeout = (DPMSOffTime -
-			      (now - lastDeviceEventTime.milliseconds));
-#endif /* DPMSExtension */
-
-	    if (
-		timeout <= 0
-#ifdef DPMSExtension
-		 && ScreenSaverTime > 0
-#endif /* DPMSExtension */
-	    ) {
-		INT32 timeSinceSave;
-
-		timeSinceSave = -timeout;
-		if (timeSinceSave >= timeTilFrob && timeTilFrob >= 0)
-		{
-		    ResetOsBuffers(); /* not ideal, but better than nothing */
-		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
-#ifdef DPMSExtension
-		    if (ScreenSaverInterval > 0 &&
-			DPMSPowerLevel == DPMSModeOn)
-#else
-		    if (ScreenSaverInterval)
-#endif /* DPMSExtension */
-			/* round up to the next ScreenSaverInterval */
-			timeTilFrob = ScreenSaverInterval *
-				((timeSinceSave + ScreenSaverInterval) /
-					ScreenSaverInterval);
-		    else
-			timeTilFrob = -1;
-		}
-		timeout = timeTilFrob - timeSinceSave;
-	    }
-	    else
-	    {
-		if (ScreenSaverTime > 0 && timeout > ScreenSaverTime)
-		    timeout = ScreenSaverTime;
-		timeTilFrob = 0;
-	    }
-#ifdef DPMSExtension
-	    if (DPMSEnabled)
-	    {
-		if (standbyTimeout > 0 
-		    && (timeout <= 0 || timeout > standbyTimeout))
-		    timeout = standbyTimeout;
-		if (suspendTimeout > 0 
-		    && (timeout <= 0 || timeout > suspendTimeout))
-		    timeout = suspendTimeout;
-		if (offTimeout > 0 
-		    && (timeout <= 0 || timeout > offTimeout))
-		    timeout = offTimeout;
-	    }
-#endif
-	    if (timeout > 0 && (!wt || timeout < (int) (timers->expires - now)))
-	    {
-		waittime.tv_sec = timeout / MILLI_PER_SECOND;
-		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
-					(1000000 / MILLI_PER_SECOND);
-		wt = &waittime;
-	    }
-#ifdef DPMSExtension
-	    /* don't bother unless it's switched on */
-	    if (DPMSEnabled) {
-		/*
-		 * If this mode's enabled, and if the time's come
-		 * and if we're still at a lesser mode, do it now.
-		 */
-		if (DPMSStandbyTime > 0) {
-		    if (standbyTimeout <= 0) {
-			if (DPMSPowerLevel < DPMSModeStandby) {
-			    DPMSSet(DPMSModeStandby);
-			}
-		    }
-		}
-		/*
-		 * and ditto.  Note that since these modes can have the
-		 * same timeouts, they can happen at the same time.
-		 */
-		if (DPMSSuspendTime > 0) {
-		    if (suspendTimeout <= 0) {
-			if (DPMSPowerLevel < DPMSModeSuspend) {
-			    DPMSSet(DPMSModeSuspend);
-			}
-		    }
-		}
-		if (DPMSOffTime > 0) {
-		    if (offTimeout <= 0) {
-			if (DPMSPowerLevel < DPMSModeOff) {
-			    DPMSSet(DPMSModeOff);
-			}
-		    }
-		}
-           }
-#endif
+        {
+            now = GetTimeInMillis();
+	    timeout = timers->expires - now;
+            if (timeout < 0)
+                timeout = 0;
+	    waittime.tv_sec = timeout / MILLI_PER_SECOND;
+	    waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+		               (1000000 / MILLI_PER_SECOND);
+	    wt = &waittime;
 	}
 	XFD_COPYSET(&AllSockets, &LastSelectMask);
 #ifdef SMART_SCHEDULE
@@ -398,18 +272,42 @@ WaitForSomething(int *pClientsReady)
 		break;
 	    }
 #endif
-	    if (timers)
-	    {
-		now = GetTimeInMillis();
-		while (timers && (int) (timers->expires - now) <= 0)
-		    DoTimer(timers, now, &timers);
-	    }
 	    if (*checkForInput[0] != *checkForInput[1])
 		return 0;
+
+	    if (timers)
+	    {
+                int expired = 0;
+		now = GetTimeInMillis();
+		if ((int) (timers->expires - now) <= 0)
+		    expired = 1;
+
+		while (timers && (int) (timers->expires - now) <= 0)
+		    DoTimer(timers, now, &timers);
+
+                if (expired)
+                    return 0;
+	    }
 	}
 	else
 	{
 	    fd_set tmp_set;
+
+	    if (*checkForInput[0] == *checkForInput[1]) {
+	        if (timers)
+	        {
+                    int expired = 0;
+		    now = GetTimeInMillis();
+		    if ((int) (timers->expires - now) <= 0)
+		        expired = 1;
+
+		    while (timers && (int) (timers->expires - now) <= 0)
+		        DoTimer(timers, now, &timers);
+
+                    if (expired)
+                        return 0;
+	        }
+	    }
 #ifdef SMART_SCHEDULE
 	    if (someReady)
 		XFD_ORSET(&LastSelectMask, &ClientsWithInput, &LastSelectMask);
@@ -646,3 +544,108 @@ TimerInit(void)
 	xfree(timer);
     }
 }
+
+static CARD32
+ScreenSaverTimeoutExpire(OsTimerPtr timer,CARD32 now,pointer arg)
+{
+    INT32 timeout = now - lastDeviceEventTime.milliseconds;
+
+    if (timeout < ScreenSaverTime) {
+        return ScreenSaverTime - timeout;
+    }
+
+    ResetOsBuffers(); /* not ideal, but better than nothing */
+    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
+
+#ifdef DPMSExtension
+    if (ScreenSaverInterval > 0 && DPMSPowerLevel == DPMSModeOn)
+#else
+    if (ScreenSaverInterval > 0)
+#endif /* DPMSExtension */
+        return ScreenSaverInterval;
+
+    return 0;
+}
+
+static OsTimerPtr ScreenSaverTimer = NULL;
+
+void
+SetScreenSaverTimer(void)
+{
+    if (ScreenSaverTime > 0) {
+       ScreenSaverTimer = TimerSet(ScreenSaverTimer, 0, ScreenSaverTime,
+                                   ScreenSaverTimeoutExpire, NULL);
+    } else if (ScreenSaverTimer) {
+       TimerFree(ScreenSaverTimer);
+       ScreenSaverTimer = NULL;
+    }
+}
+
+#ifdef DPMSExtension
+
+static OsTimerPtr DPMSStandbyTimer = NULL;
+static OsTimerPtr DPMSSuspendTimer = NULL;
+static OsTimerPtr DPMSOffTimer = NULL;
+
+static CARD32
+DPMSStandbyTimerExpire(OsTimerPtr timer,CARD32 now,pointer arg)
+{
+    INT32 timeout = now - lastDeviceEventTime.milliseconds;
+
+    if (timeout < DPMSStandbyTime) {
+        return DPMSStandbyTime - timeout;
+    }
+    if (DPMSPowerLevel < DPMSModeStandby) {
+        DPMSSet(DPMSModeStandby);
+    }
+    return DPMSStandbyTime;
+}
+
+static CARD32
+DPMSSuspendTimerExpire(OsTimerPtr timer,CARD32 now,pointer arg)
+{
+    INT32 timeout = now - lastDeviceEventTime.milliseconds;
+
+    if (timeout < DPMSSuspendTime) {
+        return DPMSSuspendTime - timeout;
+    }
+    if (DPMSPowerLevel < DPMSModeSuspend) {
+        DPMSSet(DPMSModeSuspend);
+    }
+    return DPMSSuspendTime;
+}
+
+static CARD32
+DPMSOffTimerExpire(OsTimerPtr timer,CARD32 now,pointer arg)
+{
+    INT32 timeout = now - lastDeviceEventTime.milliseconds;
+
+    if (timeout < DPMSOffTime) {
+        return DPMSOffTime - timeout;
+    }
+    if (DPMSPowerLevel < DPMSModeOff) {
+        DPMSSet(DPMSModeOff);
+    }
+    return DPMSOffTime;
+}
+
+void
+SetDPMSTimers(void)
+{
+    if (!DPMSEnabled)
+        return;
+
+    if (DPMSStandbyTime > 0) {
+        DPMSStandbyTimer = TimerSet(DPMSStandbyTimer, 0, DPMSStandbyTime,
+                                    DPMSStandbyTimerExpire, NULL);
+    }
+    if (DPMSSuspendTime > 0) {
+        DPMSStandbyTimer = TimerSet(DPMSSuspendTimer, 0, DPMSSuspendTime,
+                                    DPMSSuspendTimerExpire, NULL);
+    }
+    if (DPMSOffTime > 0) {
+        DPMSOffTimer = TimerSet(DPMSOffTimer, 0, DPMSOffTime,
+                                DPMSOffTimerExpire, NULL);
+    }
+}
+#endif
