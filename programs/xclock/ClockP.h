@@ -57,6 +57,9 @@ SOFTWARE.
 #include <X11/Xos.h>		/* Needed for struct tm. */
 #include "Clock.h"
 #include <X11/Xaw/SimpleP.h>
+#ifdef XRENDER
+#include <X11/extensions/Xrender.h>
+#endif
 
 #define SEG_BUFF_SIZE		128
 #define ASCII_TIME_BUFLEN	32	/* big enough for 26 plus slop */
@@ -96,6 +99,22 @@ typedef struct {
 	 struct tm  otm ;
 	 XtIntervalId interval_id;
 	 char prev_time_string[ASCII_TIME_BUFLEN];
+#ifdef XRENDER
+	 XRenderColor	hour_color;
+	 XRenderColor	min_color;
+	 XRenderColor	sec_color;
+	 XRenderColor	major_color;
+	 XRenderColor	minor_color;
+	 Boolean    render;
+	 Picture    picture;
+	 Picture    fill_picture;
+	 XRenderColor	fill_color;
+	 XRectangle damage;
+	 XDouble    x_scale;
+	 XDouble    x_off;
+	 XDouble    y_scale;
+	 XDouble    y_off;
+#endif
    } ClockPart;
 
 /* Full instance record declaration */

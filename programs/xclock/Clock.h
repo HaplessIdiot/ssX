@@ -109,6 +109,17 @@ SOFTWARE.
 		/* Int: amount of space around outside of clock */
 #define XtNpadding "padding"
 
+		/* Boolean: use Render extension if TRUE */
+#define XtNrender "render"
+
+#define XtNhourColor "hourColor"
+#define XtNminuteColor "minuteColor"
+#define XtNsecondColor "secondColor"
+#define XtNmajorColor "majorColor"
+#define XtNminorColor "minorColor"
+
+#define XtRRenderColor "RenderColor"
+
 typedef struct _ClockRec *ClockWidget;  /* completely defined in ClockPrivate.h */
 typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in ClockPrivate.h */
 
