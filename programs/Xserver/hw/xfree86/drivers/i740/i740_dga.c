@@ -21,7 +21,7 @@
  *
  * Authors:  Patrick LERDA
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_dga.c,v 1.1tsi Exp $ */
 
 
 #include "xf86.h"
@@ -44,7 +44,9 @@ static int  I740_GetViewport(ScrnInfoPtr);
 static void I740_SetViewport(ScrnInfoPtr, int, int, int);
 static void I740_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void I740_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+#if 0
 static void I740_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, unsigned long);
+#endif
 
 static DGAFunctionRec I740DGAFuncs = {
    I740_OpenFramebuffer,
@@ -217,7 +219,7 @@ static void I740_BlitRect(
   }
 }
 
-
+#if 0
 static void I740_BlitTransRect(ScrnInfoPtr pScrn, 
 			       int srcx, int srcy, 
 			       int w, int h, 
@@ -228,7 +230,7 @@ static void I740_BlitTransRect(ScrnInfoPtr pScrn,
   /* this one should be separate since the XAA function would
      prohibit usage of ~0 as the key */
 }
-
+#endif
 
 static Bool I740_OpenFramebuffer(
 				 ScrnInfoPtr pScrn, 

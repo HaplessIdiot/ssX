@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.10 2001/05/23 20:13:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.11tsi Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -326,7 +326,9 @@ static DISPATCH_PROC(ProcXF86RushLockPixmap);
 static DISPATCH_PROC(ProcXF86RushUnlockPixmap);
 static DISPATCH_PROC(ProcXF86RushUnlockAllPixmaps);
 static DISPATCH_PROC(ProcXF86RushSetCopyMode);
+#if 0
 static DISPATCH_PROC(ProcXF86RushSetPixelStride);
+#endif
 static DISPATCH_PROC(ProcXF86RushOverlayPixmap);
 static DISPATCH_PROC(ProcXF86RushStatusRegOffset);
 static DISPATCH_PROC(ProcXF86RushAT3DEnableRegs);
@@ -462,6 +464,7 @@ ProcXF86RushSetCopyMode(register ClientPtr client)
   return client->noClientException;
 }
 
+#if 0
 static int
 ProcXF86RushSetPixelStride(register ClientPtr client)
 {
@@ -471,6 +474,7 @@ ProcXF86RushSetPixelStride(register ClientPtr client)
   APMPTR(xf86Screens[stuff->screen])->pixelStride = stuff->PixelStride;
   return client->noClientException;
 }
+#endif
 
 int
 ProcXF86RushDispatch (register ClientPtr client)

@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.25tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -478,6 +478,7 @@ TridentSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     TridentSync(pScrn);
 }
 
+#if 0
 static void MoveDWORDS(
    register CARD32* dest,
    register CARD32* src,
@@ -505,6 +506,7 @@ static void MoveDWORDS(
      dest += 1;
      src += 1;
 }
+#endif
 
 static void 
 TridentSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 

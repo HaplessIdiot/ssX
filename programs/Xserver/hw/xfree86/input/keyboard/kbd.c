@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.3 2002/12/12 18:29:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.4tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -148,12 +148,14 @@ static char *xkb_options;
 static XkbComponentNamesRec xkbnames;
 #endif /* XKB */
 
+#ifdef XFree86LOADER
 /*ARGSUSED*/
 static const OptionInfoRec *
 KeyboardAvailableOptions(void *unused)
 {
     return (KeyboardOptions);
 }
+#endif
 
 static void
 SetXkbOption(InputInfoPtr pInfo, char *name, char **option)
