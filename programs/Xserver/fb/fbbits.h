@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.10 2001/03/18 08:35:30 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.11 2001/05/29 04:54:08 keithp Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -286,11 +286,9 @@ DOTS (FbBits	    *dst,
     INT32    	off;
     INT32    	pt;
 
-    off = coordToInt(xoff,yoff);
-    off -= (off & 0x8000) << 1;
-    ul = *((int *) &pBox->x1) - off;
-    lr = *((int *) &pBox->x2) - off - 0x00010001;
-    
+    ul = coordToInt(pBox->x1 - xoff,     pBox->y1 - yoff);
+    lr = coordToInt(pBox->x2 - xoff - 1, pBox->y2 - yoff - 1);
+
     bits += bitsStride * yoff + xoff * MUL;
     
     if (and == 0)
@@ -693,11 +691,9 @@ POLYLINE (DrawablePtr	pDrawable,
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
     bitsStride = dstStride * (sizeof (FbBits) / sizeof (UNIT));
     bitsBase = ((UNIT *) dst) + (yoff + dstYoff) * bitsStride + (xoff + dstXoff) * MUL;
-    off = coordToInt(xoff,yoff);
-    off -= (off & 0x8000) << 1;
-    ul = *((int *) &pBox->x1) - off;
-    lr = *((int *) &pBox->x2) - off - 0x00010001;
-    
+    ul = coordToInt(pBox->x1 - xoff,     pBox->y1 - yoff);
+    lr = coordToInt(pBox->x2 - xoff - 1, pBox->y2 - yoff - 1);
+
     pt1 = *pts++;
     npt--;
     pt2 = *pts++;
@@ -828,11 +824,9 @@ POLYSEGMENT (DrawablePtr    pDrawable,
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
     bitsStride = dstStride * (sizeof (FbBits) / sizeof (UNIT));
     bitsBase = ((UNIT *) dst) + (yoff + dstYoff) * bitsStride + (xoff + dstXoff) * MUL;
-    off = coordToInt(xoff,yoff);
-    off -= (off & 0x8000) << 1;
-    ul = *((int *) &pBox->x1) - off;
-    lr = *((int *) &pBox->x2) - off - 0x00010001;
-    
+    ul = coordToInt(pBox->x1 - xoff,     pBox->y1 - yoff);
+    lr = coordToInt(pBox->x2 - xoff - 1, pBox->y2 - yoff - 1);
+
     bits += bitsStride * yoff + xoff * MUL;
     
     capNotLast = pGC->capStyle == CapNotLast;
