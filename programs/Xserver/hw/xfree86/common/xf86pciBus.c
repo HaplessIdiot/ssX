@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.67tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -1764,7 +1764,8 @@ xf86GetPciBridgeInfo(void)
 							   &primary,
 							   &secondary,
 							   &subordinate);
-		if (primary >= secondary) {
+
+		if (!pcrp->fakeDevice && (primary >= secondary)) {
 		    xf86MsgVerb(X_WARNING, 3, "Misconfigured PCI bridge"
 				" %x:%x:%x (%x,%x)\n",
 				pcrp->busnum, pcrp->devnum, pcrp->funcnum,
