@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.man,v 1.13 2002/12/02 23:01:36 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.man,v 1.14 2003/01/13 02:20:39 mvojkovi Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH NV __drivermansuffix__ __vendorversion__
@@ -50,7 +50,7 @@ NV1A, NV1F
 .B GeForce4, QUADRO4
 NV17, NV18, NV25, NV28
 .TP 22
-.B GeForceFX, QUADRO FX
+.B GeForce FX, QUADRO FX
 NV30
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
@@ -76,15 +76,16 @@ on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
 .TP
 .BI "Option \*qCrtcNumber\*q \*q" integer \*q
-NV17, NV18, NV1F and NV25 may have two video outputs.  The driver attempts to autodetect
+nForce2, Quadro4, GeForce4 and NV30 may have two video outputs.  
+The driver attempts to autodetect
 which one the monitor is connected to.  In the case that autodetection picks
 the wrong one, this option may be used to force usage of a particular output. 
 The options are "0" or "1".
 Default: autodetected.
 .TP
 .BI "Option \*qFlatPanel\*q \*q" boolean \*q
-This driver has experimental flat panel support.  The driver
-cannot autodetect the presence of a flat panel so this option must be set
+This driver has experimental flat panel support.  The driver usually
+cannot autodetect the presence of a flat panel so this option should be set
 when used with a flat panel.
 Default: off.
 .TP
@@ -92,7 +93,7 @@ Default: off.
 Most digital flat panels have only 6 bits per component color resolution.
 This option tells the driver to dither from 8 bits per component to 6 before
 the flat panel truncates it. This is only suported in depth 24 on NV11, 
-nForce2 and GeForce4.
+nForce2, GeForce4, Quadro4 and NV30.
 Default: off.
 .TP
 .BI "Option \*qRotate\*q \*qCW\*q"
