@@ -9,7 +9,7 @@
 <date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.11 2000/02/13 03:45:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.12 2000/02/18 16:23:21 dawes Exp $
 </ident>
 
 <abstract>
@@ -17,7 +17,7 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.11 2000/02/13 
 This document provides information about the status of the driver and
 hardware support in XFree86 &relvers; compared with that in XFree86
 &legacyvers;.  Please send updates for this document to
-<email>dawes@xfree86.org</email>
+<email>fixes@xfree86.org</email>
 
 </abstract>
 

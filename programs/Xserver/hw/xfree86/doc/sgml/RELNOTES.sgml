@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>12 February 2000
+<date>21 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.27 2000/02/13 03:06:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.28 2000/02/13 03:45:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -63,6 +63,9 @@ that are new to the pre-4.0 snapshot series.
 
   <item>Preliminary support has been added to the X server for the extended
 	keys on some "Internet" keyboards.
+
+  <item>A new X server extension has been added for optimising access to
+	metric data for large fonts.
 
 </itemize>
 
@@ -1225,6 +1228,14 @@ encoding.  This layer is used by the Type1 and Speedo backends and the
 `xfsft' version of the TrueType backend.  The `X-TrueType' version of
 the TrueType backend uses a different re-encoding method based on loadable
 encoding modules.
+
+<sect1>Large font optimisation
+<p>
+
+The glyph metrics array, which all the X clients using a particular font
+have access to, is now placed in shared memory, so as to reduce redundant
+memory consumption.  For non-local clients, the glyph metrics array is
+trasmitted in a compressed format.
 
 <sect1>Unicode support
 <p>
