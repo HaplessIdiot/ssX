@@ -16183,8 +16183,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-<<<<<<< CHANGELOG
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2510 2003/01/29 23:00:41 dawes Exp $
-=======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2510 2003/01/29 23:00:41 dawes Exp $
->>>>>>> 3.2508
+$XFree86$
