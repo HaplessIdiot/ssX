@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.7 1995/01/10 10:31:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.8 1995/05/27 03:16:58 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -55,6 +55,15 @@
 #include "xf86_HWlib.h"
 #include "vga.h"
 
+#ifdef XFreeXDGA 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 /*
  * Driver data structures.
@@ -454,6 +463,12 @@ MXProbe()
 	 */
   	vga256InfoRec.chipset = MXIdent(0);
   	vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
   	return(TRUE);
 }
 
@@ -472,6 +487,13 @@ MXEnterLeave(enter)
 Bool enter;
 {
 	unsigned char temp, temp2;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
 
   	if (enter)
     	{

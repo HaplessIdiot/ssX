@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.0 1995/06/02 10:27:16 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -82,6 +82,16 @@
  */
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#ifdef XFreeXDGA 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 /*
  * In many cases, this is sufficient for VGA16 support when VGA2 support is
@@ -620,6 +630,12 @@ RTVGAProbe()
 	  REALTEK.ChipClockScaleFactor *= 2;
 	if (vga256InfoRec.videoRam < 1024)
 	  REALTEK.ChipClockScaleFactor *= 2;
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
   	return(TRUE);
 }
 
@@ -641,6 +657,13 @@ Bool enter;
 #ifdef DEBUG
    ErrorF ("RTVGAEnter (%d)\n", enter);
 #endif   
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
 
   	if (enter)
     	{

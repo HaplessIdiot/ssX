@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.1 1995/12/02 05:05:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.2 1996/01/08 08:55:36 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -162,7 +162,17 @@ struct pci_config_reg {
 
 #define PCI_EN 0x80000000
 #define MAX_PCI_DEVICES 64
+
+/* Registers */
 #define PCI_REG_USERCONFIG 0x40
+
+/* Base Classes */
+#define PCI_CLASS_PREHISTORIC		0x00
+#define PCI_CLASS_DISPLAY		0x03
+
+/* Sub Classes */
+#define PCI_SUBCLASS_PREHISTORIC_VGA	0x01
+#define PCI_SUBCLASS_DISPLAY_VGA	0x00
 
 extern struct pci_config_reg *pci_devp[];
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: ali_driver.c,v 1.4 95/01/16 13:18:01 kaleb Exp $ 
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.4 1995/01/28 16:11:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.5 1995/05/27 03:14:58 dawes Exp $
  */
 
 #include "X.h"
@@ -16,6 +16,16 @@
 #define  XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 /*
  * Definitions for ALI chips
@@ -372,6 +382,11 @@ ALIProbe()
 	 */
         vga256InfoRec.chipset = ALIIdent(ALIchipset);
   	vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
 
   	return(TRUE);
 }
@@ -387,6 +402,13 @@ ALIEnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
 
   if (enter)
     {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.4 1996/01/05 06:29:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.5 1996/01/05 12:30:54 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -119,12 +119,23 @@
 #include "xf86_HWlib.h"
 #include "vga.h"
 
+
 /*
  * If the driver makes use of XF86Config 'Option' flags, the following will be
  * required
  */
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #ifdef XF86VGA16
 #define MONOVGA
@@ -899,6 +910,12 @@ ArkProbe()
 	 */
   	vga256InfoRec.bankedMono = FALSE;
  	OFLG_SET(OPTION_NOLINEAR_MODE, &ARK.ChipOptionFlags);
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
   	return TRUE;
 }
 
@@ -983,6 +1000,13 @@ Bool enter;
 	static int enterCalled = FALSE;
 	static int savedSR1D;
 	unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
 
   	if (enter)
     	{

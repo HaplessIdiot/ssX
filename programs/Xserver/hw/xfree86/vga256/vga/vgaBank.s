@@ -1,5 +1,5 @@
 /* $XConsortium: vgaBank.s,v 1.3 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.1 1994/05/06 08:27:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.3 1995/01/28 17:10:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -567,3 +567,33 @@ GLNAME(vgaPopRead):
 	CALL	(CODEPTR(EDX))
 	POP_L	(EDX)
 	RET
+
+/*
+ *-----------------------------------------------------------------------
+ * vgaSetVidPage ---
+ *     select a memory bank of the VGA board for read & write access
+ * Results:
+ *      None.
+ *
+ * Side Effects:
+ *      None.
+ *-----------------------------------------------------------------------
+ * void
+ * vgaSetVidPage(page)
+ *     register int page;
+ * {
+ *   (vgaSetReadWriteFunc)(page);
+ *   return;
+ * }
+ *
+ */
+	ALIGNTEXT4
+	GLOBL GLNAME(vgaSetVidPage)
+GLNAME(vgaSetVidPage):
+	MOV_L	(REGOFF(4,ESP),EAX)
+	PUSH_L	(EDX)
+	MOV_L	(CONTENT(GLNAME(vgaSetReadWriteFunc)),EDX)
+	CALL	(CODEPTR(EDX))
+	POP_L	(EDX)
+ 	RET
+

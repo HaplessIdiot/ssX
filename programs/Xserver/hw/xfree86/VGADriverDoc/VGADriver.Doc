@@ -1004,8 +1004,8 @@
 
         (408) 737-3838 (fax)
 
-     S3 (911, 924, 801
-        805, 928)/ (408) 980-5400
+     S3 (911, 924, 801/805, 928, 864, 868, 964, 968, 764, 765)
+        (408) 980-5400
 
      Trident Microsystems Inc (8800, 8900, 9000)
         205 Ravendale Dr
@@ -1033,7 +1033,7 @@
 
 
   $XConsortium: VGADriv.sgml,v 1.3 95/01/23 15:34:51 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.6 1995/11/12 09:52:36 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.7 1996/01/10 05:39:30 dawes Exp $
 
 
 
@@ -1054,4 +1054,5 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.15 1995/11/12 10:18:59 dawes Exp $
+
+$XFree86$

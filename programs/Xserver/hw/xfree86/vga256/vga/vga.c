@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.42 1996/01/10 05:41:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.43 1996/01/11 10:37:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -43,6 +43,7 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 #include "vga.h"
+#include "vgaPCI.h"
 
 #ifdef PC98
 #include "pc98_vers.h"
@@ -197,6 +198,7 @@ pointer vgaNewVideoState = NULL;
 pointer vgaBase = NULL;
 pointer vgaVirtBase = NULL;
 pointer vgaLinearBase = NULL;
+vgaPCIInformation *vgaPCIInfo = NULL;
 
 void (* vgaEnterLeaveFunc)(
 #if NeedFunctionPrototypes
@@ -464,6 +466,13 @@ vgaProbe()
   }
 #endif
 
+#ifndef PC98
+  /* First do a general PCI probe (unless disabled) */
+  if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
+    vgaPCIInfo = vgaGetPCIInfo();
+  }
+#endif
+
   for (i=0; Drivers[i]; i++)
   {
     vgaSaveScreenFunc = Drivers[i]->ChipSaveScreen;
@@ -606,6 +615,7 @@ vgaProbe()
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
 	OFLG_SET(OPTION_POWER_SAVER, &vgaOptionFlags);
 	OFLG_SET(OPTION_CLGD6225_LCD, &vgaOptionFlags);
+	OFLG_SET(OPTION_NO_PCI_PROBE, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
@@ -874,8 +884,9 @@ vgaProbe()
 	    vga256InfoRec.physBase = vgaPhysLinearBase;
 	    vga256InfoRec.physSize = vgaLinearSize;
 	} else {
-	    vga256InfoRec.physBase = 0xA0000;
-	    vga256InfoRec.physSize = Drivers[i]->ChipMapSize;
+	    vga256InfoRec.physBase = 0xA0000 + Drivers[i]->ChipWriteBottom;
+	    vga256InfoRec.physSize = Drivers[i]->ChipSegmentSize;
+	    vga256InfoRec.setBank = vgaSetVidPage;;
 	}
 #endif
 
@@ -1410,7 +1421,10 @@ vgaEnterLeaveVT(enter, screen_idx)
       vgaSaveScreenFunc = saveDummy;
       vgaSetReadFunc = saveDummy;
       vgaSetWriteFunc = saveDummy;
-      vgaSetReadWriteFunc = saveDummy;
+#ifdef XFreeXDGA
+      if (!(vga256InfoRec.directMode & XF86DGADirectGraphics))
+#endif
+        vgaSetReadWriteFunc = saveDummy;
       
     }
 }

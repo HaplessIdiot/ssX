@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.4 1995/12/23 09:39:13 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -56,6 +56,9 @@
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4)
+#if defined(sun)
+#define __EXTENSIONS__
+#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
 #if defined(NCR)
@@ -75,13 +78,17 @@
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
 #include <sys/file.h>
 #include <machine/console.h>
+#ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
 #endif
 #if defined(__bsdi__)
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <i386/isa/pcconsioctl.h>
+#ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
 #endif
 #if defined(SCO)
 #include <sys/console.h>
@@ -94,7 +101,9 @@
 #include <sys/v86.h>
 #endif
 #if defined(Lynx_22)
+#ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
 #endif
 
 
@@ -315,6 +324,21 @@ struct pci_config_reg {
 #define _int_pin  mmii.mmii.int_pin
 #define _min_gnt  mmii.mmii.min_gnt
 #define _max_lat  mmii.mmii.max_lat
+    /* I don't know how accurate or standard this is (DHD) */
+    union {
+	unsigned long user_config;
+	struct {
+	    unsigned char user_config_0;
+	    unsigned char user_config_1;
+	    unsigned char user_config_2;
+	    unsigned char user_config_3;
+	} uc;
+    } uc;
+#define _user_config uc.user_config
+#define _user_config_0 uc.uc.user_config_0
+#define _user_config_1 uc.uc.user_config_1
+#define _user_config_2 uc.uc.user_config_2
+#define _user_config_3 uc.uc.user_config_3
     /* end of official PCI config space header */
     unsigned long _pcibusidx;
     unsigned long _pcinumbus;
@@ -326,6 +350,7 @@ struct pci_config_reg {
 
 extern void identify_card(struct pci_config_reg *);
 extern void print_i128(struct pci_config_reg *);
+extern void print_mach64(struct pci_config_reg *);
 extern void print_pcibridge(struct pci_config_reg *);
 extern void enable_os_io();
 extern void disable_os_io();
@@ -351,14 +376,17 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1002, "ATI", {
                             { 0x4158, "Mach32", NF },
-                            { 0x4758, "Mach64", NF },
+                            { 0x4758, "Mach64 GX", print_mach64 },
+                            { 0x4358, "Mach64 CX", print_mach64 },
+                            { 0x4354, "Mach64 CT", print_mach64 },
+                            { 0x4554, "Mach64 ET", print_mach64 },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1004, "VLSI", {
                             { 0x0005, "82C592-FC1", NF },
                             { 0x0006, "82C593-FC1", NF },
                             { 0x0000, (char *)NULL, NF } } },
-        { 0x1005, "ADL", {
-                            { 0x2301, "2301", NF },
+        { 0x1005, "Avance Logic", {
+                            { 0x2301, "ALG2301", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x100B, "NS", {
                             { 0xD001, "87410", NF },
@@ -503,7 +531,7 @@ struct pci_vendor_device {
                             { 0x0001, "82C101", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x5333, "S3", {
-                            { 0x8811, "Trio64", NF },
+                            { 0x8811, "Trio32/64", NF },
                             { 0x8880, "868", NF },
                             { 0x88B0, "928", NF },
                             { 0x88C0, "864-0", NF },
@@ -531,8 +559,9 @@ struct pci_vendor_device {
         { 0x907F, "Atronics", {
                             { 0x2015, "IDE-2015PL", NF },
                             { 0x0000, (char *)NULL, NF } } },
-        { 0xEDD8, "Hercules", {
-                            { 0xA091, "Stingray", NF },
+        { 0xEDD8, "ARK Logic", {
+                            { 0xA091, "1000PV", NF },
+                            { 0xA099, "2000PV", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x0000, (char *)NULL, {
                             { 0x0000, (char *)NULL, NF } } }
@@ -623,6 +652,7 @@ main(int argc, unsigned char *argv[])
             outl(0xCF8, config_cmd | 0x30); pcr._baserom = inl(0xCFC);
             outl(0xCF8, config_cmd | 0x3C); pcr._max_min_ipin_iline
 								= inl(0xCFC);
+            outl(0xCF8, config_cmd | 0x40); pcr._user_config = inl(0xCFC);
 
             /* check for pci-pci bridges (currently we only know Digital) */
             if ((pcr._vendor == 0x1011) && (pcr._device == 0x0001))
@@ -656,6 +686,8 @@ main(int argc, unsigned char *argv[])
 
             if ((pcr._vendor == 0xFFFF) || (pcr._device == 0xFFFF))
                 continue;
+            if ((pcr._vendor == 0xF0F0) || (pcr._device == 0xF0F0))
+                continue;  /* catch ASUS P55TP4XE motherboards */
 
 	    printf("\npci bus 0x%x slot at 0x%04x, vendor 0x%04x device 0x%04x\n",
 	        pcr._pcibuses[pcr._pcibusidx], pcr._ioaddr, pcr._vendor,
@@ -673,6 +705,7 @@ main(int argc, unsigned char *argv[])
             pcr._base5 = inl(pcr._ioaddr + 0x24);
             pcr._baserom = inl(pcr._ioaddr + 0x30);
             pcr._max_min_ipin_iline = inl(pcr._ioaddr + 0x3C);
+            pcr._user_config = inl(pcr._ioaddr + 0x40);
 	    outb(0xCFA, 0x00); /* bus 0 for now */
 
             /* check for pci-pci bridges (currently we only know Digital) */
@@ -769,8 +802,58 @@ identify_card(struct pci_config_reg *pcr)
         if (pcr->_max_min_ipin_iline)
             printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
                 pcr->_max_lat, pcr->_min_gnt, pcr->_int_pin, pcr->_int_line);
+        if (pcr->_user_config)
+            printf("  BYTE_0    0x%02x  BYTE_1  0x%02x  BYTE_2  0x%02x  BYTE_3  0x%02x\n",
+                pcr->_user_config_0, pcr->_user_config_1, pcr->_user_config_2, pcr->_user_config_3);
 }
 
+
+void
+print_mach64(struct pci_config_reg *pcr)
+{
+    unsigned long sparse_io = 0;
+
+    if (pcr->_status_command)
+        printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
+            pcr->_status, pcr->_command);
+    if (pcr->_class_revision)
+        printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
+            pcr->_base_class, pcr->_sub_class, pcr->_prog_if, pcr->_rev_id);
+    if (pcr->_bist_header_latency_cache)
+        printf("  BIST      0x%02x  HEADER 0x%02x  LATENCY 0x%02x  CACHE 0x%02x\n",
+            pcr->_bist, pcr->_header_type, pcr->_latency_timer,
+            pcr->_cache_line_size);
+    if (pcr->_base0)
+        printf("  APBASE    0x%08x  addr 0x%08x\n",
+            pcr->_base0, pcr->_base0 & (pcr->_base0 & 0x1 ?
+		0xFFFFFFFC : 0xFFFFFFF0));
+    if (pcr->_base1)
+        printf("  BLOCKIO   0x%08x  addr 0x%08x\n",
+            pcr->_base1, pcr->_base1 & (pcr->_base1 & 0x1 ?
+		0xFFFFFFFC : 0xFFFFFFF0));
+    if (pcr->_baserom)
+        printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",
+            pcr->_baserom, pcr->_baserom & 0xFFFF8000,
+            pcr->_baserom & 0x1 ? "" : "not-");
+    if (pcr->_max_min_ipin_iline)
+        printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
+            pcr->_max_lat, pcr->_min_gnt, pcr->_int_pin, pcr->_int_line);
+    switch (pcr->_user_config_0 & 0x03) {
+    case 0:
+	sparse_io = 0x2ec;
+	break;
+    case 1:
+	sparse_io = 0x1cc;
+	break;
+    case 2:
+	sparse_io = 0x1c8;
+	break;
+    }
+    printf("  SPARSEIO  0x%03x    %s    %s\n",
+	    sparse_io, pcr->_user_config_0 & 0x04 ? "Block IO enabled" :
+	    "Sparse IO enabled",
+	    pcr->_user_config_0 & 0x08 ? "Disable 0x46E8" : "Enable 0x46E8");
+}
 
 void
 print_i128(struct pci_config_reg *pcr)

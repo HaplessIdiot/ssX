@@ -1,5 +1,5 @@
 /* $XConsortium: cl_driver.c,v 1.2 95/01/16 13:18:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.4 1995/01/28 16:12:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.5 1995/05/27 03:16:01 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -51,6 +51,16 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 /*
  *	'Supported' chip sets
@@ -608,6 +618,11 @@ CL64XXProbe()
 	 */
 	vga256InfoRec.chipset = CL64XXIdent(CL64XXset);
 	vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
 
 #ifdef OPTION_MONOCHROME
 	/*
@@ -635,6 +650,13 @@ Bool enter;
 {
 	static unsigned char save1;
 	unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
 
 	if (enter)
 	{

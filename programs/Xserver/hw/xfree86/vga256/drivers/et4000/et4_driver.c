@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.21 1995/12/23 09:39:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.22 1996/01/03 02:12:49 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -43,6 +43,16 @@
 
 #ifdef W32_ACCEL_SUPPORT
 #include "w32.h"
+#endif
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"  
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
 #endif
 
 #ifdef XF86VGA16
@@ -597,6 +607,11 @@ ET4000Probe()
   
   vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);
   vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+  vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
 
   return(TRUE);
 }
@@ -663,6 +678,13 @@ ET4000EnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
 
   if (enter)
     {

@@ -1,3 +1,14 @@
+XFree86 3.1.2Bg (12 January 1996)
+220. Fix cursor colour for TGUI 9660/9680 (Alan Hourihane).
+219. LynxOS fix for xterm's resize (Thomas Mueller).
+218. Write beta marker file as the user's real uid rather than as root.
+217. Fix DGA for SVGA cards using banked memory, and enable it for most
+     SVGA drivers.
+216. Add a PCI probe to the VGA servers.  The happens before the chipset
+     probes, and may be disabled with the "no_pci_probe" option.
+215. Add 16bpp support for Trident 8900D, and some cleanups (Alan Hourihane).
+214. Add install.linkkit target to the top level Makefile.
+
 XFree86 3.1.2Bf (11 January 1996)
 213. Xinput updates, including: improved error handling, "Screen" option
      renamed to "ScreenNo" for consistency, new config options for the

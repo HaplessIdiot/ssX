@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c,v 1.4 95/01/16 13:18:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.7 1995/01/28 17:08:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.8 1995/05/27 03:17:05 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -39,6 +39,16 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 typedef struct {
   vgaHWRec      std;		/* std IBM VGA register */
@@ -314,6 +324,12 @@ NCRProbe()
 
     vga256InfoRec.chipset = NCRIdent(NCRchipset);
     vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+    vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
     return(TRUE);
 }
 
@@ -329,6 +345,13 @@ NCREnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
 
   if (enter)
     {

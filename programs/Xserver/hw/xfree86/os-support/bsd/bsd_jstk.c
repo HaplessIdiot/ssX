@@ -23,7 +23,7 @@
 
 /* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.0 1995/12/26 06:08:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.1 1995/12/26 10:41:51 dawes Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -34,6 +34,7 @@
 #define JS_RETURN sizeof(struct joystick)
 
 extern int errno;
+extern int xf86Verbose;
 
 /***********************************************************************
  *
@@ -77,8 +78,8 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
     changed = 1;
   }
   
-  if (changed)
-    ErrorF("xf86JoystickOn: Timeout value changed to %d\n", *timeout);
+  if (changed && xf86Verbose)
+    ErrorF("(--) Joystick: timeout value = %d\n", *timeout);
 
   timeinmicros = *timeout * 1000;
 
@@ -86,11 +87,15 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
   read(status, &js, JS_RETURN);
   if (*centerX < 0) {
     *centerX = js.x;
-    ErrorF("xf86JoystickOn: CenterX set to %d\n", *centerX);
+    if (xf86Verbose) {
+      ErrorF("(--) Joystick: CenterX set to %d\n", *centerX);
+    }
   }
   if (*centerY < 0) {
     *centerY = js.y;
-    ErrorF("xf86JoystickOn: CenterY set to %d\n", *centerY);
+    if (xf86Verbose) {
+      ErrorF("(--) Joystick: CenterY set to %d\n", *centerY);
+    }
   }
 
   return status;

@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.6 95/01/23 15:35:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.16 1995/05/27 03:17:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.17 1995/11/12 09:53:33 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -103,6 +103,16 @@
 #include "xf86_Option.h"
 #include "vga.h"
 #include "region.h"
+
+#ifdef XFreeXDGA 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #ifdef XF86VGA16
 #define MONOVGA
@@ -703,6 +713,11 @@ OAKProbe()
 
   vga256InfoRec.chipset = OAKIdent(OTI_chipset);
   vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+  vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
 
   /* Lastly we add the flags for the 'Option' fields of the driver */
   
@@ -738,6 +753,13 @@ OAKEnterLeave(enter)
   static unsigned char save;
   unsigned char temp;
   
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
+
   if (enter)
     {
       

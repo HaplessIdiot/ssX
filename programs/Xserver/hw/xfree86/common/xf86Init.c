@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.30 1995/12/23 09:38:53 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.31 1996/01/05 06:28:55 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -814,17 +814,48 @@ xf86CheckBeta()
     }
   }
 #ifdef SHOW_BETA_MESSAGE
-  if (writefile) {
-    /*
-     * This should really be done as the real-uid to avoid problems writing
-     * as root to NFS-mounted home directories, and potential security
-     * problems.
-     */
-    unlink(filename);
-    if (f = fopen(filename, "w")) {
-      fprintf(f, XF86_VERSION);
-      fclose(f);
+
+#define WRITE_BETA_FILE  { \
+      unlink(filename); \
+      if (f = fopen(filename, "w")) { \
+        fprintf(f, XF86_VERSION); \
+        fclose(f); \
+      } \
     }
+
+  if (writefile) {
+#if defined(SYSV) || defined(linux)
+    /* Need to fork to change to ruid without loosing euid */
+    if (getuid() != 0) {
+      switch (fork()) {
+      case -1:
+	FatalError("xf86CheckBeta(): fork failed (%s)\n", strerror(errno));
+	break;
+      case 0:	/* child */
+	setuid(getuid());
+	WRITE_BETA_FILE
+	exit(0);
+	break;
+      default:	/* parent */
+	wait(NULL);
+      }
+    } else {
+      WRITE_BETA_FILE
+    }
+#else /* ! (SYSV || linux) */
+    {
+      int realuid = getuid();
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
+      setruid(0);
+#endif
+      seteuid(realuid);
+      WRITE_BETA_FILE
+      seteuid(0);
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
+      setruid(realuid);
+#endif
+    }
+#endif /* SYSV || linux */
   }
   if (filename) {
     DEALLOCATE_LOCAL(filename);

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.1 1995/12/26 06:08:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.2 1996/01/11 13:31:21 dawes Exp $ */
 
 static const char rcs_id[] = "Id: xf86Jstk.c,v 1.1 1995/12/20 14:02:12 lepied Exp";
 
@@ -289,8 +289,8 @@ xf86JstkConfig(LocalDevicePtr     dev,
 		priv->jstkDelta));
 
   if (xf86Verbose) {
-    ErrorF("%s %s : timeout=%d port=%s maxx=%d maxy=%d minx=%d miny=%d "
-	   "centerx=%d centery=%d delta=%d\n", XCONFIG_GIVEN, dev->name,
+    ErrorF("%s %s: timeout=%d port=%s maxx=%d maxy=%d minx=%d miny=%d\n"
+	   "\tcenterx=%d centery=%d delta=%d\n", XCONFIG_GIVEN, dev->name,
 	   priv->jstkTimeout, priv->jstkDevice, priv->jstkMaxX, priv->jstkMaxY,
 	   priv->jstkMinX, priv->jstkMinY, priv->jstkCenterX, priv->jstkCenterY,
 	   priv->jstkDelta);

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.2 1995/12/31 12:04:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.3 1996/01/11 13:31:36 dawes Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
@@ -69,7 +69,7 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
     }
     else {
       if (xf86Verbose) {
-	ErrorF("(--) Joystick timeout value = %d\n", *timeout);
+	ErrorF("(--) Joystick: timeout value = %d\n", *timeout);
       }
     }
   }
@@ -84,13 +84,13 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
   if (*centerX < 0) {
     *centerX = js.x;
     if (xf86Verbose) {    
-      ErrorF("(--) Joystick CenterX set to %d\n", *centerX);
+      ErrorF("(--) Joystick: CenterX set to %d\n", *centerX);
     }
   }
   if (*centerY < 0) {
     *centerY = js.y;
     if (xf86Verbose) {    
-      ErrorF("(--) Joystick CenterY set to %d\n", *centerY);
+      ErrorF("(--) Joystick: CenterY set to %d\n", *centerY);
     }
   }
   

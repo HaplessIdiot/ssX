@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.6 1995/01/10 10:30:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.7 1995/05/27 03:14:42 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -36,6 +36,16 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA
+#include "X.h" 
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 typedef struct {
   vgaHWRec std;               /* good old IBM VGA */
@@ -219,6 +229,12 @@ AL2101Probe()
 
   vga256InfoRec.chipset = AL2101Ident(0);
   vga256InfoRec.bankedMono = FALSE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+  vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
   return(TRUE);
 }
 
@@ -234,6 +250,13 @@ AL2101EnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
 
   if (enter)
     {

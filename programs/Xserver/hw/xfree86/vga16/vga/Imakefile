@@ -1,10 +1,10 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 21:09:48 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/vga/Imakefile,v 3.0 1994/05/04 15:04:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/vga/Imakefile,v 3.2 1995/01/28 17:06:47 dawes Exp $
 #include <Server.tmpl>
 
-SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s
+SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s vgaPCI.c
 
-OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o
+OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o vgaPCI.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	   -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -20,9 +20,10 @@ STARTUPDEFINES = -DDIRTY_STARTUP
 
 DEFINES = -DXF86VGA16 $(STARTUPDEFINES)
 
-ObjectFromSpecialSource(vga,$(XF86SRC)/vga256/vga/vga,/**/)
-ObjectFromSpecialSource(vgaHW,$(XF86SRC)/vga256/vga/vgaHW,/**/)
-ObjectFromSpecialSource(vgaCmap,$(XF86SRC)/vga256/vga/vgaCmap,/**/)
-ObjectFromSpecialAsmSource(vgaBank,$(XF86SRC)/vga256/vga/vgaBank,/**/)
+LinkSourceFile(vga.c,../../vga256/vga)
+LinkSourceFile(vgaHW.c,../../vga256/vga)
+LinkSourceFile(vgaCmap.c,../../vga256/vga)
+LinkSourceFile(vgaBank.s,../../vga256/vga)
+LinkSourceFile(vgaPCI.c,../../vga256/vga)
 
 DependTarget()

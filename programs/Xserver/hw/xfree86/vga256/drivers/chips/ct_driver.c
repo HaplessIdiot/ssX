@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c,v 1.4 95/01/23 15:35:08 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.8 1995/01/28 16:11:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.9 1995/05/27 03:15:28 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -61,6 +61,16 @@
  */
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 /*
  * In many cases, this is sufficient for VGA16 support when VGA2 support is
@@ -606,6 +616,12 @@ CHIPSProbe()
         vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
         vga256InfoRec.bankedMono = FALSE;
 /*	OFLG_SET(OPTION_FLG1, &CHIPS.ChipOptionFlags); */
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
         return(TRUE);
 }
 
@@ -628,6 +644,13 @@ Bool enter;
 
 #ifdef DEBUG
     ErrorF("CHIPSEnterLeave\n");
+#endif
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
 #endif
 
         if (enter)

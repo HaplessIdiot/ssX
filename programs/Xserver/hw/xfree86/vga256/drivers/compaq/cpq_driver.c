@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c,v 1.4 95/01/16 13:18:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.7 1995/01/28 17:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.8 1995/05/27 03:16:18 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -51,6 +51,16 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 typedef struct {
 	vgaHWRec std;               /* good old IBM VGA */
@@ -246,6 +256,11 @@ COMPAQProbe()
 
 	vga256InfoRec.chipset = COMPAQIdent(0);
 	vga256InfoRec.bankedMono = FALSE;     /* who cares ;-) */
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
 
 	return TRUE;
 }
@@ -260,6 +275,13 @@ COMPAQProbe()
 static void COMPAQEnterLeave(enter)
 Bool enter;
 {
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
+
 	if (enter) {
 		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0; 

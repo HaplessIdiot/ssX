@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.6 1995/01/10 10:31:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.7 1995/05/27 03:16:43 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -60,6 +60,16 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 
 typedef struct {
@@ -256,6 +266,12 @@ GenericProbe()
 	vga256InfoRec.maxClock = 25200;
   	vga256InfoRec.chipset = GenericIdent(0);
   	vga256InfoRec.bankedMono = FALSE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
   	return (TRUE);
 }
 
@@ -265,6 +281,13 @@ GenericEnterLeave(enter)
 Bool enter;
 {
 	unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
 
   	if (enter)
     	{

@@ -1,6 +1,6 @@
   Information for Trident Chipset Users
   The XFree86 Project, Inc.
-  17 December 1995
+  11 January 1996
 
   1.  Supported chipsets
 
@@ -8,35 +8,40 @@
   of this work, all of the Trident SVGA chipsets, except the very first
   one, are supported by both the color and monochrome servers.
 
-       8200LX 8800CS 8900B 8900C 8900CL/D 9000 9000i 9100B 9200CXr
+       8800CS 8200LX 8900B 8900C 8900CL/D 9000 9000i 9100B 9200CXr
        9320LCD 9400CXi 9420 9420DGi 9430DGi 9440AGi 9660XGi 9680
 
 
   It must be noted that the 9000i chipset is treated as a 9000 by the
   server.  Additionally the 9100B is treated as a Trident 8900CL. There-
   fore it is equivalent to putting `Chipset "tvga8900cl"' or `Chipset
-  "tvga9000"' in the XF86Config file.  Also, note that the 9000i, 9100B,
-  and 9320 have not been tested with the server, but should work in this
-  way according to the chipset documentation.
+  "tvga9000"' in the XF86Config file.  Also, note that the 9000i, 9100B
+  have not been tested with the server, but should work in this way
+  according to the chipset documentation.
 
    NOTES:
 
-     o  The TGUI9440 is now fully supported by the SVGA server.
+     o  The TGUI9440/9660/9680 are now fully supported by the SVGA
+        server.
 
-     o  Preliminary support for the TGUI9660/9680 - please test and
-        report!
+     o  16 bits per pixel is now suppored for the 8900D, 9200CXr,
+        9400CXi, 9420DGi, 9430DGi, 9440AGi, 9660XGi and 9680, but only
+        the 9440AGi and 9400CXi have been tested.
 
      o  Linear access has been implemented for chipsets that support it.
-        Additionally Hardware cursor is implemented for the
-        9430/9440/9660 and 9680, although only the 9440 has been tested.
+        Additionally Hardware cursor is implemented for the 9430, 9440,
+        9660 and 9680, although only the 9440 and 9660 have been tested
+        with the hardware cursor.
 
      o  The following options may be specified for the Trident driver:
 
-        Option "no_linear"
+        Option "nolinear"
            Turn off linear mapping
 
         Option "linear"
-           Force linear mapping
+           Force linear mapping.  Use this if you have an 8900CL/D card,
+           but you must have less than 16MB of memory for this to work.
+           For the 8900D, linear mode is required for 16bpp support.
 
         Option "fast_dram"
            45ns DRAM
@@ -45,13 +50,22 @@
            70ns DRAM
 
         Option "slow_dram"
-           80ns DRAM
+           80ns DRAM.  This is the default for TGUIs.
 
         Option "sw_cursor"
            Turn off hardware cursor
 
+        Option "pci_burst_on"
+           Turn on PCI burst mode
+
+        Option "pci_burst_off"
+           Turn off PCI burst mode.  If you appear to be sufferent
+           screen corruption use this setting.
+
+
+
         ClockChip "tgui"
-           Turn on programmable clocks
+           Turn on programmable clocks.  This is the default for TGUIs.
 
      o  No acceleration features of the newer chipsets have been taken
         advantage of yet!
@@ -60,9 +74,6 @@
   chipset by either the color or monochrome servers.  The chip is
   supported, however, by the ``generic'' driver for the monochrome
   server.
-
-
-
 
   2.  Special considerations for 512k boards
 
@@ -118,6 +129,7 @@
   that determine whether the board will operate in zero-wait-state mode
   on the ISA bus.  Disabling the zero-wait-state mode via jumpers cured
   the lockups, but at the expense of performance.  Whether or not a
+
   given system will experience this problem is likely a combination of
   (a) bus speed, (b) video memory speed, and (c) dot clock speed.  So be
   prepared for this phenomenon to occur, and have the board
@@ -128,10 +140,8 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-
-
   $XConsortium: trident.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.4 1995/12/23 09:39:09 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.5 1996/01/12 13:09:01 dawes Exp $
 
 
 
@@ -187,13 +197,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.trident,v 3.12 1995/12/23 11:19:30 dawes Exp $
+$XFree86$

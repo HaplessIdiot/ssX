@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.42 1995/12/23 10:36:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.43 1995/12/26 06:08:27 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -128,10 +128,11 @@ typedef struct {
 #define OPTION_NO_BIOS_CLOCKS	97 /* Override BIOS clocks for Mach64 */
 #define OPTION_S3_INVERT_VCLK	98 /* invert VLCK (CR67:0) (S3) */
 #define OPTION_NO_PROGRAM_CLOCKS 99 /* Turn off clock programming */
+#define OPTION_NO_PCI_PROBE	100 /* Disable PCI probe (VGA) */
 
 /* Debugging options */
-#define OPTION_SHOWCACHE	100 /* Allow cache to be seen (S3) */
-#define OPTION_FB_DEBUG		101 /* Linear fb debug for S3 */
+#define OPTION_SHOWCACHE	105 /* Allow cache to be seen (S3) */
+#define OPTION_FB_DEBUG		106 /* Linear fb debug for S3 */
 
 /* Some AGX Tuning/Debugging options -- several are for development testing */
 #define OPTION_8_BIT_BUS        110 /* Force 8-bit CPU interface - MR1:0 */
@@ -287,6 +288,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "no_bios_clocks",	OPTION_NO_BIOS_CLOCKS },
   { "s3_invert_vclk",	OPTION_S3_INVERT_VCLK },
   { "no_program_clocks",OPTION_NO_PROGRAM_CLOCKS },
+  { "no_pci_probe",	OPTION_NO_PCI_PROBE },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

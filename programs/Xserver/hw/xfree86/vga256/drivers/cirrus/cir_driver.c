@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.45 1995/12/02 05:06:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.46 1995/12/09 11:08:36 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1674,8 +1674,7 @@ cirrusEnterLeave(enter)
 
 #ifndef MONOVGA
 #ifdef XFreeXDGA
-  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
-     {
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
       cirrusHideCursor();
       return;
   }

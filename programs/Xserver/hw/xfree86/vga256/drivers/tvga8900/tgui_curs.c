@@ -25,7 +25,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.2 1995/12/23 09:39:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.3 1996/01/08 08:56:41 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -542,11 +542,11 @@ TridentRecolorCursor(pScr, pCurs, displayed)
    {
 	/* We've got specific colours now for the cursor */
 
-	wrinx(vgaIOBase + 4, 0x48, 0x00);
+	wrinx(vgaIOBase + 4, 0x48, 0xFF);
 	wrinx(vgaIOBase + 4, 0x49, 0x00);
 	wrinx(vgaIOBase + 4, 0x4A, 0x00);
 	wrinx(vgaIOBase + 4, 0x4B, 0x00);
-	wrinx(vgaIOBase + 4, 0x4C, 0xFF);
+	wrinx(vgaIOBase + 4, 0x4C, 0x00);
 	wrinx(vgaIOBase + 4, 0x4D, 0x00);
 	wrinx(vgaIOBase + 4, 0x4E, 0x00);
 	wrinx(vgaIOBase + 4, 0x4F, 0x00);

@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.18 1995/12/26 06:09:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.19 1996/01/08 08:56:38 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -601,12 +601,10 @@ TVGA8900Probe()
 
      	switch (TVGAchipset)
       	{
-	case TVGA8900CL:
       	case TVGA8900D:
 		tridentLinearOK = TRUE;
-#if 0
+		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;	/* Has HiColor DAC */
-#endif
       		break;
 	case TVGA9000i:
 #if 0
@@ -649,18 +647,9 @@ TVGA8900Probe()
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
 		break;
+	case TGUI9440AGi:
 	case TGUI9660XGi:
 	case TGUI9680:
-		tridentIsTGUI = TRUE;			/* This should work */
-		tridentTGUIProgrammableClocks = TRUE;
-		tridentHWCursorType = 1;
-		tridentDACtype = TGUIDAC;
-		TVGA8900.ChipHas16bpp = TRUE;
-#if 0
-		TVGA8900.ChipHas32bpp = TRUE;
-#endif
-		break;
-	case TGUI9440AGi:			/* This works for me ! */
 		tridentIsTGUI = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 		tridentHWCursorType = 1;
@@ -875,9 +864,11 @@ TVGA8900Probe()
 	/* We support Direct Video Access */
 	vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
+#endif /* MONOVGA */
 
 	if (TVGAchipset >= TGUI9440AGi)
 	{
+#ifndef MONOVGA
 		/* TGUI Accelerator stuff */
 
 		if (vga256InfoRec.virtualX <= 8192)
@@ -892,13 +883,13 @@ TVGA8900Probe()
 			tridentDisplayWidth = 512;
 
 		OFLG_SET(OPTION_MMIO, &TVGA8900.ChipOptionFlags);
+#endif
 		if (tridentBusType == PCI)
 		{
 		OFLG_SET(OPTION_PCI_BURST_ON, &TVGA8900.ChipOptionFlags);
 		OFLG_SET(OPTION_PCI_BURST_OFF, &TVGA8900.ChipOptionFlags);
 		}
 	}
-#endif /* MONOVGA */
 	
 	if (tridentIsTGUI)
 	{
@@ -1293,7 +1284,9 @@ TVGA8900Restore(restore)
 		if (TVGAchipset >= TGUI9440AGi)
 		{
 			outw(vgaIOBase + 4, ((restore->PixelBusReg) << 8) | 0x38);
+#if 0
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
+#endif
 			outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
@@ -1301,7 +1294,7 @@ TVGA8900Restore(restore)
 	}
 
 #ifndef MONOVGA
-	if (tridentDACtype == TKD8001)
+	if ( (tridentDACtype == TKD8001) && (TVGAchipset != TVGA8900D) )
 			outb(0x3C7, restore->TRDReg); 
 #endif
 
@@ -1464,8 +1457,10 @@ TVGA8900Save(save)
 		{
 			outb(vgaIOBase + 4, 0x38); 
 			save->PixelBusReg = inb(vgaIOBase + 5);
+#if 0
 			outb(vgaIOBase + 4, 0x36); 
 			save->GraphEngReg = inb(vgaIOBase + 5);
+#endif
 			outb(vgaIOBase + 4, 0x39);
 			save->PCIReg = inb(vgaIOBase + 5);
 		}
@@ -1473,7 +1468,7 @@ TVGA8900Save(save)
 	}
 
 #ifndef MONOVGA
-	if (tridentDACtype == TKD8001)
+	if ( (tridentDACtype == TKD8001) && (TVGAchipset != TVGA8900D) )
 			save->TRDReg = inb(0x3C7); 
 #endif
 
@@ -1605,7 +1600,8 @@ TVGA8900Init(mode)
 	new->std.CRTC[19] = offset & 0xFF;
 	if (tridentIsTGUI) 
 	{
-		new->AddColReg = (offset & 0x100) >> 4;
+		outb(vgaIOBase + 4, 0x29);
+		new->AddColReg = inb(vgaIOBase + 5) | ((offset & 0x100) >> 4);
  		new->CRTHiOrd = ((mode->CrtcVSyncStart & 0x400) >> 4) |
  				(((mode->CrtcVTotal - 2) & 0x400) >> 3) |
  				((mode->CrtcVSyncStart & 0x400) >> 5) |
@@ -1614,78 +1610,84 @@ TVGA8900Init(mode)
 #ifndef MONOVGA
 		new->MiscExtFunc = 0x97;	/* Enable Dual Banks & Chain 4*/
 		new->CommandReg = 0x00;		/* DAC Standard colourmap */
+#endif
+	}
 
-		if (tridentHWCursorType)
-		  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
-			new->std.Attribute[17] = 0x00; /* Black overscan */
+#ifndef MONOVGA
+	if (tridentHWCursorType)
+	  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
+		new->std.Attribute[17] = 0x00; /* Black overscan */
 
-		if ( (TVGAchipset == TVGA9200CXr) ||
-		     (TVGAchipset == TGUI9400CXi) ||
-		     (TVGAchipset == TGUI9420DGi) ||
-		     (TVGAchipset == TGUI9430DGi) )
+	if ( (TVGAchipset == TVGA8900D) ||
+	     (TVGAchipset == TVGA9200CXr) ||
+	     (TVGAchipset == TGUI9400CXi) ||
+	     (TVGAchipset == TGUI9420DGi) ||
+	     (TVGAchipset == TGUI9430DGi) )
+	{
+		if (TVGAchipset != TVGA8900D)
 		{
-			new->AddColReg |= 0x24;	 	/* Enable DAC/Clock */
 			temp = inb(0x3C7);
 			new->TRDReg = temp & 0xBF; 	/* Sierra DAC */
-			if (vgaBitsPerPixel == 16)
-			{
-				new->std.Attribute[17] = 0x00;
-				new->CommandReg = 0xE0;
-				new->MiscExtFunc |= 0x08;
-			}
-			if (vgaBitsPerPixel == 32)
-			{
-				new->std.Attribute[17] = 0x00;
-				new->CommandReg = 0xC0;
-				new->MiscExtFunc |= 0x08;
-			}
 		}
-#endif
-		if (TVGAchipset >= TGUI9440AGi)
+		if (vgaBitsPerPixel == 16)
 		{
-			if (TVGAchipset >= TGUI9660XGi)
-				new->AddColReg |= 
-					(0x04 | ((offset & 0x200) >> 4));
-			else
-				new->AddColReg |= 0x2C;
-#ifndef MONOVGA
-			if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
-			{
-				new->GraphEngReg = 0x82; /* Enable MMIO, GER */
-				/* mmap MMIO address here ! */
-			}
-			else
-				new->GraphEngReg = 0x80; /* Enable 0x21XX, GER */
-			if (tridentBusType == PCI)
-			{
-			if (OFLG_ISSET(OPTION_PCI_BURST_ON, &vga256InfoRec.options))
-			{
-				outb(vgaIOBase + 4, 0x39);
-				new->PCIReg = inb(vgaIOBase + 5) | 0x06;
-			}
-			if (OFLG_ISSET(OPTION_PCI_BURST_OFF, &vga256InfoRec.options))
-			{
-				outb(vgaIOBase + 4, 0x39);
-				new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
-			}
-			}
-			new->MiscIntContReg = 0x04;	/* double line width */
-			if (vgaBitsPerPixel == 16)
-			{
-				new->std.Attribute[17] = 0x00;
-				new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
-				new->CommandReg = 0x30;	 /* 16bpp */
-				new->PixelBusReg = 0x04;
-			}
-			if (vgaBitsPerPixel == 32)
-			{
-				new->std.Attribute[17] = 0x00;
-				new->CommandReg = 0xD0; /* 32bpp */
-				new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
-				new->PixelBusReg = 0x08;
-			}
-#endif
+			new->std.Attribute[17] = 0x00;
+			new->CommandReg = 0xE0;
+			new->MiscExtFunc |= 0x08;
 		}
+		if (vgaBitsPerPixel == 32)
+		{
+			new->std.Attribute[17] = 0x00;
+			if (TVGAchipset == TVGA8900D)
+				new->CommandReg = 0x42;
+			else
+				new->CommandReg = 0xC0;
+			new->MiscExtFunc |= 0x08;
+		}
+	}
+#endif
+
+
+	if (TVGAchipset >= TGUI9440AGi)
+	{
+		if (TVGAchipset >= TGUI9660XGi)
+			new->AddColReg |= (offset & 0x200) >> 4;
+		if (tridentBusType == PCI)
+		{
+			outb(vgaIOBase + 4, 0x39);
+			if (OFLG_ISSET(OPTION_PCI_BURST_ON, 
+						&vga256InfoRec.options))
+				new->PCIReg = inb(vgaIOBase + 5) | 0x06;
+			if (OFLG_ISSET(OPTION_PCI_BURST_OFF, 
+						&vga256InfoRec.options))
+				new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
+		}
+#ifndef MONOVGA
+#if 0
+		if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
+		{
+			new->GraphEngReg = 0x82; /* Enable MMIO, GER */
+			/* mmap MMIO address here ! */
+		}
+		else
+			new->GraphEngReg = 0x80; /* Enable 0x21XX, GER */
+#endif
+		new->MiscIntContReg = 0x04;	/* double line width */
+		if (vgaBitsPerPixel == 16)
+		{
+			new->std.Attribute[17] = 0x00;
+			new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
+			new->CommandReg = 0x30;	 /* 16bpp */
+			new->PixelBusReg = 0x04;
+		}
+		if (vgaBitsPerPixel == 32)
+		{
+			new->std.Attribute[17] = 0x00;
+			new->CommandReg = 0xD0; /* 32bpp */
+			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
+			new->PixelBusReg = 0x08;
+		}
+#endif
 	}
 
 	if (new->std.NoClock >= 0)
