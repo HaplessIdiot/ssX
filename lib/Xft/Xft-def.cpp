@@ -178,6 +178,7 @@ XftFreeTypeClose
 XftRenderString16
 #else
 XftCharExists
+XftDrawCharSpec
 #endif  /* __UNIXOS2__ */
 
 /* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.4 2002/09/18 01:25:00 dawes Exp $ */

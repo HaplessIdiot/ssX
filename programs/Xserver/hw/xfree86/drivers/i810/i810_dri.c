@@ -512,7 +512,13 @@ I810DRIScreenInit(ScreenPtr pScreen)
    } else {
       sysmem_size = sysmem_size - 2 * back_size;
    }
-
+   
+   if (sysmem_size < 0) {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		  "[dri] Not sufficient AGP memory for Mode\n");
+       DRICloseScreen(pScreen);
+       return FALSE;
+   }
    /* Max size is 48 without XvMC, 41 with 6 surfaces, 40 with 7 surfaces */
    if (pI810->numSurfaces && (pI810->numSurfaces == 6)) {
       if (sysmem_size > (pI810->FbMapSize - 7 * 1024 * 1024)) {
@@ -575,7 +581,6 @@ I810DRIScreenInit(ScreenPtr pScreen)
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		 "[agp] GART: no dcache memory found\n");
    }
-
    drmAgpAlloc(pI810->drmSubFD, back_size, 0, NULL, &agpHandle);
    pI810->backHandle = agpHandle;
 

@@ -961,7 +961,18 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   clockRanges->minClock= 12000; /* !!! What's the min clock? !!! */
   clockRanges->maxClock=pTDFX->MaxClock;
   clockRanges->clockIndex = -1;
-  clockRanges->interlaceAllowed = FALSE;
+  switch (pTDFX->ChipType) {
+    case PCI_CHIP_BANSHEE:
+      clockRanges->interlaceAllowed = FALSE;
+      break;
+    case PCI_CHIP_VOODOO3:
+    case PCI_CHIP_VOODOO5:
+      clockRanges->interlaceAllowed = TRUE;
+      break;
+    default:
+      clockRanges->interlaceAllowed = FALSE;
+      break;
+  }    
   clockRanges->doubleScanAllowed = TRUE;
 
   /*
@@ -991,7 +1002,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     return FALSE;
   }
 
-  xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+  xf86SetCrtcForModes(pScrn, 0);
 
   pScrn->currentMode = pScrn->modes;
 
@@ -1667,6 +1678,10 @@ TDFXSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
     tdfxReg->screensize=mode->HDisplay|(mode->VDisplay<<12);
     tdfxReg->vidcfg &= ~SST_HALF_MODE;
   }
+  if (mode->Flags&V_INTERLACE) {
+    tdfxReg->vidcfg|=SST_INTERLACE;
+  } else
+    tdfxReg->vidcfg&=~SST_INTERLACE;
 
   TDFXTRACEREG("cpp=%d Hdisplay=%d Vdisplay=%d stride=%d screensize=%x\n", 
 	     pTDFX->cpp, mode->HDisplay, mode->VDisplay, tdfxReg->stride, 
@@ -2389,12 +2404,29 @@ TDFXFreeScreen(int scrnIndex, int flags) {
 
 static int
 TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
+  ScrnInfoPtr pScrn;
+  TDFXPtr pTDFX;
+
   TDFXTRACE("TDFXValidMode start\n");
   if ((mode->HDisplay>2048) || (mode->VDisplay>1536)) 
     return MODE_BAD;
-  /* Banshee doesn't support interlace. Does V3? */
-  if (mode->Flags&V_INTERLACE) 
-    return MODE_BAD;
+  /* Banshee doesn't support interlace, but Voodoo 3 and higher do. */
+  pScrn = xf86Screens[scrnIndex];
+  pTDFX = TDFXPTR(pScrn);
+  if (mode->Flags&V_INTERLACE) {
+    switch (pTDFX->ChipType) {
+      case PCI_CHIP_BANSHEE:
+        return MODE_BAD;
+        break;
+      case PCI_CHIP_VOODOO3:
+      case PCI_CHIP_VOODOO5:
+        return MODE_OK;
+        break;
+      default:
+        return MODE_BAD;
+        break;
+    }
+  }
   /* In clock doubled mode widths must be divisible by 16 instead of 8 */
   if ((mode->Clock>TDFX2XCUTOFF) && (mode->HDisplay%16))
     return MODE_BAD;

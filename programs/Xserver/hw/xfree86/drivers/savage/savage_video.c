@@ -1239,16 +1239,15 @@ SavageDisplayVideoOld(
 
     if( src_w > (drw_w << 1) )
     {
-	/* BUGBUG shouldn't this be >=?  */
 	if( src_w <= (drw_w << 2) )
 	    ssControl |= HDSCALE_4;
-	else if( src_w > (drw_w << 3) )
+	else if( src_w <= (drw_w << 3) )
 	    ssControl |= HDSCALE_8;
-	else if( src_w > (drw_w << 4) )
+	else if( src_w <= (drw_w << 4) )
 	    ssControl |= HDSCALE_16;
-	else if( src_w > (drw_w << 5) )
+	else if( src_w <= (drw_w << 5) )
 	    ssControl |= HDSCALE_32;
-	else if( src_w > (drw_w << 6) )
+	else if( src_w <= (drw_w << 6) )
 	    ssControl |= HDSCALE_64;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.52tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.54 2003/06/12 14:12:34 eich Exp $ */
 
 /*
  *
@@ -65,15 +65,14 @@
 #if defined(__ia64__)
 
 /*
-
  * R_IA64_LTOFF22X and R_IA64_LDXMOV are relocation optimizations for
  * IA64. Conforming implementations must recognize them and may either
  * implement the optimization or may fallback to previous
  * non-optimized behavior by treating R_IA64_LTOFF22X as a
- * R_IA64_LTOFF22X and ignoring R_IA64_LDXMOV. The
+ * R_IA64_LTOFF22 and ignoring R_IA64_LDXMOV. The
  * IA64_LDX_OPTIMIZATION conditional controls the fallback behavior,
  * if defined the optimizations are performed.
-
+ *
  * To implement the optimization we want to change is the sequence on
  * the left to that on the right, without regard to any intervening
  * instructions:
@@ -1181,17 +1180,19 @@ long			value;
     case IA64_OPND_LDXMOV:
         /*
          * Convert "ld8 t2=[t1]" to "mov t2=t1" which is really "add t2=0,t1"
-         * Mask all but the qp,r1, and r3 fields, then OR in the ALU opcode.
+         * Mask all but the r3,r1,qp fields, 
+	 * then OR in the ALU opcode = 8 into the opcode field [40:37]
 	 * 
-	 * Mask for bit fields [26:20][12:6][5:0] = 0x7f01fff,
-	 * shift this mask left by 5 for the template, 0x7f01fff << 5 = 0xfe03ffe0
+	 * Mask for the r3,r1,qp bit fields [26:20][12:6][5:0] = 0x7f01fff,
+	 * This mask negated only within the 41 bit wide instruction and
+	 * shifted left by 5 for the bundle template is 0x3FFF01FC0000
 	 *
-	 * mask 0xffffc0000000001f is bits [40:0] shifted left by 5 for the template
-	 * and bitwise negated to preserve bits not part of this instruction.
+	 * opcode field [40:37] with a value of 8 is 0x10000000000
+	 * shifted left by 5 for the bundle template is 0x200000000000
+	 *
 	 */
-
-        data &= ((0xffffc0000000001fUL << slot) | (0xfe03ffe0 << slot));
-        data |=  (0x10000000000UL << (5 + slot));
+        data &= ~(0x3FFF01FC0000 << slot);
+        data |=  (0x200000000000 << slot);
         break;
 #endif
     default:
@@ -2311,7 +2312,7 @@ int		force;
 
 	    if (gp_offset << 42 >> 42 != gp_offset) {
 	      /* Offset is too large for LTOFF22X, 
-	       * fallback to using GOT lookup, e.g. LTOFF22X. 
+	       * fallback to using GOT lookup, e.g. LTOFF22. 
 	       * Note: LDXMOV will fail the same test and will be ignored. */
 
 # ifdef ELFDEBUG
@@ -2374,8 +2375,8 @@ int		force;
 
 	      IA64InstallReloc(dest128, rel->r_offset & 3, IA64_OPND_LDXMOV, 0);
 	    }
-#endif
 	  }
+#endif
 	    break;
 
 #endif /*__ia64__*/
