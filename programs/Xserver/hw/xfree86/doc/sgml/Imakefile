@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.55 2000/02/26 04:56:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.56 2000/03/03 20:02:14 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -16,75 +16,90 @@ SGMLDEPENDS = defs.ent
               ati.sgml chips.sgml DECtga.sgml r128.sgml rendition.sgml \
 	      s3virge.sgml SiS.sgml
 
-#if 0
+#ifdef DEADDOCS
 LinuxDocReadmeTarget(Bsdi)
 #endif
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(DGUX)
 LinuxDocReadmeTarget(FreeBSD)
+#endif
+LinuxDocReadmeTarget(isc)
+#ifdef OUTOFDATE
+LinuxDocReadmeTarget(Linux)
+#endif
+LinuxDocReadmeTarget(LynxOS)
 LinuxDocReadmeTarget(NetBSD)
 LinuxDocReadmeTarget(OpenBSD)
-LinuxDocReadmeTarget(Linux)
-LinuxDocReadmeTarget(LynxOS)
-LinuxDocReadmeTarget(SCO)
-LinuxDocReadmeTarget(isc)
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(OS2)
 LinuxDocTargetLong(OS2note.sgml,OS2.Notes,OS2Notes)
+LinuxDocReadmeTarget(SCO)
 LinuxDocReadmeTarget(SOLX86)
 LinuxDocReadmeTarget(SVR4)
+#endif
 
 /* Hardware docs */
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(3Dlabs)
+LinuxDocReadmeTarget(apm)
+LinuxDocReadmeTarget(ark)
+LinuxDocReadmeTarget(agx)
+#endif
+LinuxDocReadmeTarget(ati)
+LinuxDocReadmeTarget(chips)
+#ifdef OUTOFDATE
+LinuxDocReadmeTarget(cirrus)
+LinuxDocReadmeTarget(cyrix)
+#endif
 LinuxDocReadmeTarget(DECtga)
+#ifdef OUTOFDATE
+LinuxDocReadmeTarget(epson)
+LinuxDocReadmeTarget(fbdev)
 LinuxDocReadmeTarget(I128)
+LinuxDocReadmeTarget(i740)
+LinuxDocReadmeTarget(neomagic)
 LinuxDocReadmeTarget(Mach32)
 LinuxDocReadmeTarget(Mach64)
 LinuxDocReadmeTarget(MGA)
 LinuxDocReadmeTarget(NVIDIA)
 LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)
-LinuxDocReadmeTarget(Video7)
-LinuxDocReadmeTarget(S3)
-LinuxDocReadmeTarget(SiS)
-LinuxDocReadmeTarget(WstDig)
-LinuxDocReadmeTarget(apm)
-LinuxDocReadmeTarget(ark)
-LinuxDocReadmeTarget(agx)
-LinuxDocReadmeTarget(ati)
-LinuxDocReadmeTarget(chips)
-LinuxDocReadmeTarget(cirrus)
-LinuxDocReadmeTarget(cyrix)
-LinuxDocReadmeTarget(epson)
-LinuxDocReadmeTarget(fbdev)
-LinuxDocReadmeTarget(i740)
+#endif
 LinuxDocReadmeTarget(r128)
-LinuxDocReadmeTarget(neomagic)
 LinuxDocReadmeTarget(rendition)
+#ifdef OUTOFDATE
+LinuxDocReadmeTarget(S3)
+#endif
 LinuxDocReadmeTarget(s3virge)
+LinuxDocReadmeTarget(SiS)
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(trident)
 LinuxDocReadmeTarget(tseng)
+LinuxDocReadmeTarget(Video7)
+LinuxDocReadmeTarget(WstDig)
+#endif
 
 /* Main docs */
-LinuxDocTarget(LICENSE)
-LinuxDocTarget(RELNOTES)
-LinuxDocTarget(Status)
-LinuxDocTarget(Install)
-#ifdef UPTODATE
-LinuxDocReadmeTarget(Config)
+#ifdef OUTOFDATE
 LinuxDocTarget(BUILD)
+LinuxDocReadmeTarget(Config)
 #endif
-LinuxDocTarget(README)
 LinuxDocTarget(DESIGN)
-#ifdef UPTODATE
+LinuxDocTarget(Install)
+LinuxDocTarget(LICENSE)
+#ifdef OUTOFDATE
 LinuxDocTargetLong(QStart.sgml,QuickStart.doc,QuickStart)
 #endif
+LinuxDocTarget(README)
+LinuxDocTarget(RELNOTES)
+LinuxDocTarget(Status)
 
 /* Other docs */
-LinuxDocTarget(xinput)
-LinuxDocReadmeTarget(mouse)
 LinuxDocReadmeTarget(fonts)
+LinuxDocReadmeTarget(mouse)
+#ifdef OUTOFDATE
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
-#ifdef UPTODATE
-LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
+LinuxDocTarget(xinput)
 #endif
 
 /* Generate the documentation index */

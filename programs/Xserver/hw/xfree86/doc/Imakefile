@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.62 2000/02/24 20:45:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.63 2000/02/26 04:56:00 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -28,46 +28,47 @@ REPORTFORM = BugReport
 #if !BuildLinuxDocText
 OSREADMES = \
 	/*ReadmeFile(Bsdi)*/	\
-	ReadmeFile(DGUX)	\
-	ReadmeFile(FreeBSD)	\
+	/*ReadmeFile(DGUX)*/	\
+	/*ReadmeFile(FreeBSD)*/	\
 	ReadmeFile(isc)		\
-	ReadmeFile(Linux)	\
+	/*ReadmeFile(Linux)*/	\
 	ReadmeFile(LynxOS)	\
 	ReadmeFile(NetBSD)	\
 	ReadmeFile(OpenBSD)	\
-	ReadmeFile(OS2)		\
-	OS2.Notes		\
-	ReadmeFile(SCO)		\
-	ReadmeFile(SOLX86)	\
-	ReadmeFile(SVR4)	\
+	/*ReadmeFile(OS2)*/	\
+	/*OS2.Notes*/		\
+	/*ReadmeFile(SCO)*/	\
+	/*ReadmeFile(SOLX86)*/	\
+	/*ReadmeFile(SVR4)*/	\
 	$(_NULLENTRY_)
 
 HWREADME = \
-	ReadmeFile(3Dlabs)	\
-	ReadmeFile(apm)		\
+	/*ReadmeFile(3Dlabs)*/	\
+	/*ReadmeFile(apm)*/	\
 	/*ReadmeFile(agx)*/	\
 	/*ReadmeFile(ark)*/	\
 	ReadmeFile(ati)		\
 	ReadmeFile(chips)	\
-	ReadmeFile(cirrus)	\
+	/*ReadmeFile(cirrus)*/	\
 	/*ReadmeFile(cyrix)*/	\
 	ReadmeFile(DECtga)	\
 	/*ReadmeFile(epson)*/	\
-	ReadmeFile(fbdev)	\
+	/*ReadmeFile(fbdev)*/	\
 	/*ReadmeFile(I128)*/	\
 	/*ReadmeFile(i740)*/	\
 	/*ReadmeFile(Mach32)*/	\
 	/*ReadmeFile(Mach64)*/	\
-	ReadmeFile(MGA)		\
-	ReadmeFile(NVIDIA)	\
+	/*ReadmeFile(MGA)*/	\
+	/*ReadmeFile(NVIDIA)*/	\
 	/*ReadmeFile(Oak)*/	\
 	/*ReadmeFile(P9000)*/	\
+	ReadmeFile(r128)	\
 	ReadmeFile(rendition)	\
 	/*ReadmeFile(S3)*/	\
-	ReadmeFile(SiS)		\
 	ReadmeFile(s3virge)	\
-	ReadmeFile(trident)	\
-	ReadmeFile(tseng)	\
+	ReadmeFile(SiS)		\
+	/*ReadmeFile(trident)*/	\
+	/*ReadmeFile(tseng)*/	\
 	/*ReadmeFile(Video7)*/	\
 	/*ReadmeFile(WstDig)*/	\
 	$(_NULLENTRY_)
@@ -75,7 +76,7 @@ HWREADME = \
 MAINDOCS = LICENSE README /*ReadmeFile(Config)*/ /*BUILD*/ RELNOTES \
 	   Install Status DESIGN
 
-OTHERDOCS = VideoModes.doc /*QuickStart.doc*/ xinput \
+OTHERDOCS = /*VideoModes.doc*/ /*QuickStart.doc*/ /*xinput*/ \
 	    ReadmeFile(fonts) ReadmeFile(mouse)
 #endif
 

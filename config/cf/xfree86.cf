@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.276 2000/03/02 17:52:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.278 2000/03/03 01:11:05 mvojkovi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -7,6 +7,14 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.276 2000/03/02 17:52:52 dawes Exp $
  * BeforeVendor part of the site.def file.
  */
 XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
+
+/*
+ * This enables some settings for developers.
+ */
+
+#ifndef XFree86Devel
+# define XFree86Devel		NO
+#endif
 
 /*
  * settings for the config file parser
@@ -1049,9 +1057,13 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 #if HasGcc
 # ifndef GccWarningOptions
-#  define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
+#  if XFree86Devel
+#   define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wmissing-declarations \
 			  -Wredundant-decls -Wnested-externs
+#  else
+#   define GccWarningOptions -Wall -Wpointer-arith
+#  endif
 # endif
 # ifndef DefaultCCOptions
 #  if defined(UseInstalled)

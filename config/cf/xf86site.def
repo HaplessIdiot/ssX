@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.155 2000/03/02 17:52:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.156 2000/03/03 01:05:23 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -24,6 +24,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.155 2000/03/02 17:52:52 dawes Exp 
  *
 #define InstallEmptyHostDef
  */
+
+/*
+ * If you want to enable some developer settings, like more verbose
+ * compiler warnings, uncomment this.
+ *
+#define XFree86Devel	YES
+*/
 
 /*
  * If using GCC 2.x on a system where it isn't the default, uncomment
