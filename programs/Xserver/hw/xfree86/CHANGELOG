@@ -1,4 +1,6 @@
 XFree86 4.4.99.3 (xx March 2004)
+  60. Modify xdm's DefineLocal() to use Xlib's _XGetHostname() (Bugzilla #1302,
+      Kean Johnston).
   59. Cleanup the via driver's primary DDC/EDID retrieval:
       - Remove NoDDCValue entirely (also adapts the manpage now).
       - Comment out ddc1 and ddc1Read, as this is broken.
@@ -18819,7 +18821,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3208 2004/04/03 21:45:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3209 2004/04/03 22:05:00 dawes Exp $
 
 
 
