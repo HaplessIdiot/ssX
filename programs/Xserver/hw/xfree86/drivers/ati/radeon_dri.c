@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.34 2003/04/07 01:22:09 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.35 2003/07/02 17:31:29 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1690,7 +1690,7 @@ void RADEONDRICloseScreen(ScreenPtr pScreen)
 	drmUnmap(info->ring, info->ringMapSize);
 	info->ring = NULL;
     }
-    if (info->agpMemHandle) {
+    if (info->agpMemHandle != DRM_AGP_NO_HANDLE) {
 	drmAgpUnbind(info->drmFD, info->agpMemHandle);
 	drmAgpFree(info->drmFD, info->agpMemHandle);
 	info->agpMemHandle = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.27 2002/12/16 16:19:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.28 2003/02/08 21:26:58 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -1388,7 +1388,7 @@ void MGADRICloseScreen( ScreenPtr pScreen )
       pMGADRIServer->agpTextures.map = NULL;
    }
 
-   if ( pMGADRIServer->agp.handle ) {
+   if ( pMGADRIServer->agp.handle != DRM_AGP_NO_HANDLE ) {
       drmAgpUnbind( pMga->drmFD, pMGADRIServer->agp.handle );
       drmAgpFree( pMga->drmFD, pMGADRIServer->agp.handle );
       pMGADRIServer->agp.handle = 0;

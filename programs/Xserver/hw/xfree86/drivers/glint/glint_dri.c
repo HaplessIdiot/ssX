@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.32 2003/02/10 13:20:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.33 2003/04/03 16:52:18 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -548,7 +548,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 
     /* So DRICloseScreen does the right thing if we abort */
     pGlint->buffers.map = 0;
-    pGlint->agp.handle = 0;
+    pGlint->agp.handle = DRM_AGP_NO_HANDLE;
 
     if (!DRIScreenInit(pScreen, pDRIInfo, &(pGlint->drmSubFD))) {
 	DRIDestroyInfoRec(pGlint->pDRIInfo);
@@ -790,7 +790,7 @@ GLINTDRICloseScreen(ScreenPtr pScreen)
 	pGlint->buffers.map = NULL;
     }
 
-    if (pGlint->agp.handle) {
+    if (pGlint->agp.handle != DRM_AGP_NO_HANDLE) {
 	drmAgpUnbind( pGlint->drmSubFD, pGlint->agp.handle );
 	drmAgpFree( pGlint->drmSubFD, pGlint->agp.handle );
 	pGlint->agp.handle = 0;

@@ -1,4 +1,7 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 290. Update the usage of DRM AGP handles to reflect the fact that 0 is
+      a valid handle since handles were switched to be AGP "key" values
+      (Bugzilla #484, Dave Airlie).
  289. Twisting fontfile.c and fontdir.c to be able to pass all fonts (bitmap
       and scaleable) to the scalable renderer as this one can deal with 
       XLFD names (Bugzilla #475, Juliusz Chroboczek). PLEASE TEST!
@@ -17259,7 +17262,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2767 2003/07/07 15:34:23 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2768 2003/07/07 16:40:12 eich Exp $
 
 
 
