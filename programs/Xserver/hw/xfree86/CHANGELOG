@@ -1,4 +1,6 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 283. First phase of dynamic configuration (David Dawes, S. Lussos,
+      Michael Dawes, J. D. Darling, X-Oz Technologies).
  282. Fix sysarch() prototype for FreeBSD/alpha (Bugzilla #1325, Greg Lewis).
  281. Generalise SIGIO handling for silkenMouse (Marc La France).
  280. Fix missing Makefile dependencies for (f)lex source (Marc La France).
@@ -19298,7 +19300,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3394 2005/01/24 21:27:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3395 2005/01/26 03:17:38 dawes Exp $
 
 
 

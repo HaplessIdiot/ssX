@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.65tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.66 2005/01/13 15:51:19 tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -350,6 +350,7 @@ LOOKUP dixLookupTab[] = {
     SYMFUNC(VErrorF)
     SYMFUNC(ErrorF)
     SYMFUNC(Error)
+    SYMFUNC(LogTypeToTxt)
     /* xalloc.c */
     SYMFUNC(XNFalloc)
     SYMFUNC(XNFcalloc)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.26 2005/01/10 17:30:42 tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -130,6 +130,7 @@ extern LexRec val;
 static xf86ConfigSymTabRec ServerFlagsTab[] =
 {
 	{ENDSECTION, "endsection"},
+	{IDENTIFIER, "identifier"},
 	{NOTRAPSIGNALS, "notrapsignals"},
 	{DONTZAP, "dontzap"},
 	{DONTZOOM, "dontzoom"},
@@ -152,6 +153,7 @@ static xf86ConfigSymTabRec ServerFlagsTab[] =
 XF86ConfFlagsPtr
 xf86parseFlagsSection (void)
 {
+	int has_ident = FALSE;
 	int token;
 	parsePrologue (XF86ConfFlagsPtr, XF86ConfFlagsRec)
 
@@ -165,9 +167,17 @@ xf86parseFlagsSection (void)
 		case COMMENT:
 			ptr->flg_comment = xf86addComment(ptr->flg_comment, val.str);
 			break;
+		case IDENTIFIER:
+			if (xf86getSubToken (&(ptr->flg_comment)) != STRING)
+				Error (QUOTE_MSG, "Identifier");
+			if (has_ident)
+				Error (MULTIPLE_MSG, "Identifier");
+			ptr->flg_identifier = val.str;
+			has_ident = TRUE;
+			break;
 			/* 
-			 * these old keywords are turned into standard generic options.
-			 * we fall through here on purpose
+			 * These old keywords are turned into standard generic options.
+			 * We fall through here on purpose.
 			 */
 		case DEFAULTLAYOUT:
 			strvalue = TRUE;
@@ -248,6 +258,8 @@ xf86printServerFlagsSection (FILE * f, XF86ConfFlagsPtr ptr)
 		fprintf (f, "Section \"ServerFlags\"\n");
 		if (ptr->flg_comment)
 			fprintf (f, "%s", ptr->flg_comment);
+		if (ptr->flg_identifier)
+			fprintf (f, "\tIdentifier   \"%s\"\n", ptr->flg_identifier);
 		xf86printOptionList(f, ptr->flg_option_lst, 1);
 		fprintf (f, "EndSection\n\n");
 		ptr = ptr->list.next;
@@ -290,6 +302,7 @@ xf86freeFlagsList (XF86ConfFlagsPtr ptr)
 	while (ptr) {
 		xf86optionListFree (ptr->flg_option_lst);
 		TestFree(ptr->flg_comment);
+		TestFree(ptr->flg_identifier);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);

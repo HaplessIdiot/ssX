@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.25 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.26 2005/01/07 23:03:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -258,7 +258,8 @@ xf86parseConfigFile (XF86ConfigPtr ptr)
 			{
 				xf86conffree(val.str);
 				val.str = NULL;
-				HANDLE_RETURN (conf_dri, xf86parseDRISection ());
+				HANDLE_LIST (conf_dri_lst, xf86parseDRISection,
+							   XF86ConfDRIPtr);
 			}
 			else
 			{
@@ -383,7 +384,7 @@ xf86freeConfig (XF86ConfigPtr p)
 	xf86freeLayoutList (p->conf_layout_lst);
 	xf86freeInputList (p->conf_input_lst);
 	xf86freeVendorList (p->conf_vendor_lst);
-	xf86freeDRI (p->conf_dri);
+	xf86freeDRIList (p->conf_dri_lst);
 	TestFree(p->conf_comment);
 
 	xf86conffree (p);

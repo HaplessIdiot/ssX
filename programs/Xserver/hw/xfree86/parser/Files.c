@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.17 2004/02/13 23:58:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.18 2005/01/07 23:03:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -130,11 +130,13 @@ extern LexRec val;
 static xf86ConfigSymTabRec FilesTab[] =
 {
 	{ENDSECTION, "endsection"},
+	{IDENTIFIER, "identifier"},
 	{FONTPATH, "fontpath"},
 	{RGBPATH, "rgbpath"},
 	{MODULEPATH, "modulepath"},
 	{INPUTDEVICES, "inputdevices"},
 	{LOGFILEPATH, "logfile"},
+	{OPTION, "option"},
 	{-1, ""},
 };
 
@@ -154,6 +156,7 @@ prependRoot (char *pathname)
 XF86ConfFilesPtr
 xf86parseFilesSection (void)
 {
+	int has_ident = FALSE;
 	int i, j;
 	int k, l;
 	char *str;
@@ -166,6 +169,14 @@ xf86parseFilesSection (void)
 		{
 		case COMMENT:
 			ptr->file_comment = xf86addComment(ptr->file_comment, val.str);
+			break;
+		case IDENTIFIER:
+			if (xf86getSubToken (&(ptr->file_comment)) != STRING)
+				Error (QUOTE_MSG, "Identifier");
+			if (has_ident)
+				Error (MULTIPLE_MSG, "Identifier");
+			ptr->file_identifier = val.str;
+			has_ident = TRUE;
 			break;
 		case FONTPATH:
 			if (xf86getSubToken (&(ptr->file_comment)) != STRING)
@@ -259,6 +270,9 @@ xf86parseFilesSection (void)
 				Error (QUOTE_MSG, "LogFile");
 			ptr->file_logfile = val.str;
 			break;
+		case OPTION:
+			ptr->file_option_lst = xf86parseOption(ptr->file_option_lst);
+			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -288,6 +302,8 @@ xf86printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 
 		if (ptr->file_comment)
 			fprintf (cf, "%s", ptr->file_comment);
+		if (ptr->file_identifier)
+			fprintf (cf, "\tIdentifier   \"%s\"\n", ptr->file_identifier);
 		if (ptr->file_logfile)
 			fprintf (cf, "\tLogFile      \"%s\"\n", ptr->file_logfile);
 		if (ptr->file_rgbpath)
@@ -337,6 +353,7 @@ xf86printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 			}
 			fprintf (cf, "\tFontPath     \"%s\"\n", s);
 		}
+		xf86printOptionList(cf, ptr->file_option_lst, 1);
 		fprintf(cf, "EndSection\n");
 		ptr = ptr->list.next;
 	}
@@ -355,6 +372,8 @@ xf86freeFilesList (XF86ConfFilesPtr ptr)
 		TestFree (ptr->file_inputdevs);
 		TestFree (ptr->file_fontpath);
 		TestFree (ptr->file_comment);
+		TestFree (ptr->file_identifier);
+		xf86optionListFree (ptr->file_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree(prev);
