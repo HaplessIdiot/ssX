@@ -1,12 +1,12 @@
  GNU indent options:
 
--bad -bap -c40 -cd40 -ncdb -ci4 -cli0 -cp0 -ncs -d0
+-bad -bap -c40 -cd0 -ncdb -ci4 -cli0 -cp0 -ncs -d0
 -di4 -i4 -ip4 -l78 -lp -npcs -psl -sob -ss -br -ce -sc
 
 -bad  forces a blank line after every block of declarations.
 -bap  forces a blank line after every procedure body.
 -c40  put comments to the right of code in column 40
--cd40 put comments to the right of the declarations in column 40
+-cd0  put comments immediately to the right of the declarations.
 -ncdb do not put comment delimiters on blank lines
 -ci4  continuation indent of 4 spaces.
 -cli0 case label indent of 0 spaces
