@@ -1,4 +1,9 @@
 XFree86 4.0e (19 June 2000)
+ 348. Disable SmartScheduler on LynxOS 3.1 (#4013, Thomas Mueller).
+ 347. Update Japanese PC98 docs (#4012, Isao Ohishi, Takaaki Nomura).
+ 346. Add some S3/Diamond PCI IDs (#4011, Werner Leeb).
+ 345. Update sbus support for recent bus infrastructure changes
+      (David S. Miller)
  344. Check for NULL pointers from item 332 (Alan Hourihane).
  343. Xf86cfg updates (#4010, Paulo Cesar Pereira de Andrade).
  342. Fix threads support in OpenBSD 2.7 and above (#4006, 4009,
@@ -10669,4 +10674,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1193 2000/06/20 05:08:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1192 2000/06/19 23:41:27 alanh Exp $

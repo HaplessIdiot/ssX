@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.59 2000/06/17 00:27:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.60 2000/06/20 05:08:45 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -829,14 +829,14 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x6001,		"CS4236B/CS4611 Audio" ,0},
 #endif
 				{0x0000,		NULL,0}}},
-#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IBM, {
 				{0x000A,		"Fire Coral",0 },
 				{0x0018,		"Token Ring",0 },
 				{0x001D,		"82G2675",0 },
 				{0x0022,		"82351 pci-pci bridge",0 },
+				{0x00B7,		"256-bit Graphics Rasterizer",0 },
+				{0x0170,		"RC1000 / GT 1000",0},
 				{0x0000,		NULL,0}}},
-#endif
 #ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_NCR_2,	{
 				{0x0000,		NULL,0}}},
@@ -1494,19 +1494,22 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 #endif
 						{ 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_DIAMOND, {
-                        { 0x8000, "C&T 69000",0, NF },
-                        { 0x1103, "Fire GL 1000",0, NF },
-                        { 0x0154, "Fire GL 1000 PRO",0, NF },
                         { 0x0003, "Monster Fusion",0, NF },
-                        { 0x4803, "Monster Fusion",0, NF },
-                        { 0x8a10, "Stealth 3D 4000",0, NF },
+			{ 0x00b8, "Fire GL1",0, NF },
                         { 0x0100, "Stealth II G460",0, NF },
-                        { 0x2000, "Stealth II S220",0, NF },
-                        { 0x1092, "Viper 330",0, NF },
+                        { 0x0154, "Fire GL 1000 PRO",0, NF },
+			{ 0x0172, "Fire GL2",0, NF },
+			{ 0x0173, "Fire GL2",0, NF },
                         { 0x0550, "Viper 550",0, NF },
-                        { 0x6820, "Viper 770",0, NF },
-			{ 0x8760, "Fireport 40 Dual",0, NF },
+                        { 0x1092, "Viper 330",0, NF },
+                        { 0x1103, "Fire GL 1000",0, NF },
+                        { 0x2000, "Stealth II S220",0, NF },
 			{ 0x2110, "Sonic Impact S70",0, NF },
+                        { 0x4803, "Monster Fusion",0, NF },
+                        { 0x6820, "Viper 770",0, NF },
+                        { 0x8000, "C&T 69000",0, NF },
+			{ 0x8760, "Fireport 40 Dual",0, NF },
+                        { 0x8a10, "Stealth 3D 4000",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_ELSA, {
                         { 0x0914, "Winner 1000",0, NF },

@@ -5,7 +5,7 @@
 <!-- Title information -->
 <title> XFree86 PC98 Dependent Information
 <author> The XFree86 Project Inc. and X98 CORE TEAM
-<date> 2000年 6月 6日
+<date> 2000年 6月20日
 <abstract>
 このドキュメントでは、PC98固有の事項について解説します。
 PC/AT互換機と共通の事項については、共通のドキュメントを参照して下さい。
@@ -15,11 +15,11 @@ PC/AT互換機と共通の事項については、共通のドキュメントを参照して下さい。
 <p>本リリースでは、PC98用XサーバはPC/AT互換機用Xサーバと統合(ファイル名:
 XFree86)されており、従来のボード/チップセット毎のサーバもなくなりました。
 また、各ドライバはすべてSVGAベースで、XF86_S3ベースのドライバはありません。
-現在のところ、PC98で動作しているのは、mga、tridentドライバのみです。
-Millennium、Mystique、TGUI968x(いずれもPCI)のボードをお持ちの方以外は、
-3.3ベース(ex. 3.3.3.1, 3.3.4)の環境を御利用下さい。EGCやPEGCすら利用
-できません。開発メンバが非常に少なくなっているので、開発に興味がおありの
-方はX98 Core Teamまで、御連絡下さい。</p>
+現在のところ、PC98で動作しているのは、mga、apm、glint、tridentドライバのみ
+です。Millennium、Mystique、VoodooRUSH、Permedia2、TGUI968x(いずれもPCI)の
+ボードをお持ちの方以外は、3.3ベース(ex. 3.3.6)の環境を御利用下さい。
+現状4.0ではEGCやPEGCすら利用できません。開発メンバが非常に少なくなっている
+ので、開発に興味がおありの方はX98 Core Teamまで、御連絡下さい。</p>
 
 <p>XF86Configや起動時のオプション等の変更については、RELNOTESに詳しく書いて
 ありますので、参照して下さい。/usr/X11R6/lib/X11/XF86Config.98が、PC98用
@@ -36,6 +36,9 @@ Millennium、Mystique、TGUI968x(いずれもPCI)のボードをお持ちの方以外は、
   ------------- ----------------------------------------------- -------
   NEC		フルカラーウィンドウアクセラレータボード X2	XFree86
   Matrox	MGA Millennium(PC/AT 互換機用)			XFree86
+  IO-DATA	GA-RUSH6/PCI					XFree86
+  Melco		WHP-PS8, WHP-PS4				XFree86
+  (IO-DATA	GA-PII8, GA-PIIH8				XFree86)
 </verb></p></sect1>
 
 <sect1>サポート内蔵ビデオシステム一覧<p>
@@ -126,9 +129,7 @@ Millennium、Mystique、TGUI968x(いずれもPCI)のボードをお持ちの方以外は、
 <itemize>
 	<ITEM>Millenniumでは、Modelineの設定によっては24bppで縦に線
 	あるいは縞模様のノイズが出るかもしれません。
-	<ITEM>Millenniumでは、初期化が不完全なため、使用前に3.3ベースの
-	サーバを起動しておかないとハングアップすることがあります。一旦起動
-	すれば電源をOFFにするまでは正常に動作します。
+	<ITEM>Mystiqueでは、VideoRamの明示的な指定が必須となります。
 </itemize>
 <sect2>その他<p>
 <itemize>
@@ -146,20 +147,41 @@ Millennium、Mystique、TGUI968x(いずれもPCI)のボードをお持ちの方以外は、
 	README.MGA、XF86_SVGA man page</p>
 
 <sect1>apmドライバ<p>
-	(将来的には)IO-DATAのGA-RUSH6/PCIでも動作する(予定の)ドライバです。</p>
+	IO-DATAのGA-RUSH6/PCIで動作するドライバです。</p>
 <sect2>XF86Configの設定<p>
-	README.MGA内に解説されているオプションを指定できます。通常は特に
+	README.apm内に解説されているオプションを指定できます。通常は特に
 	何も指定する必要無い筈です。
 <sect2>報告されている問題<p>
 <itemize>
-	<ITEM>8bpp以外ではまったく同期が取れません。8bppの場合でも同期が
-	おかしくて同じ物が3つ表示されたりします。
-	<ITEM>XF86Configでのオプション指定によってはハングアップしたりする
-	こともあります。
+	<ITEM>現時点で実用的に使用できる事が確認されているのは1024x768 256色
+	のみです。16bppや1280x1024等の表示では同期が取れなかったり、ゴミなど
+	が表示されたりします。
+	<ITEM>「VideoRam 4096」の指定が必須です。
 </itemize>
 <sect2>その他<p>
 <itemize>
-	<ITEM>まだPC-98対応作業が殆ど出来ていません。実用には耐えないでしょう。
+	<ITEM>実用性を考慮するなら1024x768 256色を使用して下さい。
+	<ITEM>本ビデオカードに関してはXFree86 4.0以降を使用して下さい。
+	<ITEM>まだ十分なテストが行われていないので動作レポートをお願いします。
+</itemize>
+<sect2>関連<p>
+	XF86_SVGA man page</p>
+
+<sect1>glintドライバ<p>
+	MelcoのWHP-PS8,WHP-PS4等Permedia2搭載のビデオカードで動作するドライバ
+	です。IO-DATAのGA-PII8やGA-PIIH8等でも動作するかもしれません。</p>
+<sect2>XF86Configの設定<p>
+	README.3Dlabs内に解説されているオプションを指定できます。通常は特に
+	何も指定する必要無い筈です。
+<sect2>報告されている問題<p>
+<itemize>
+	<ITEM>PC-98での動作させるべく対応コードが含まれていますが、動作確認が
+	殆どされていません。
+</itemize>
+<sect2>その他<p>
+<itemize>
+	<ITEM>まだ殆どテストが行われていないので動作レポートをお願いします。
+	<ITEM>本ビデオカードに関してはXFree86 4.0以降を使用して下さい。
 </itemize>
 <sect2>関連<p>
 	XF86_SVGA man page</p>
@@ -224,18 +246,13 @@ Optionの多くは使用できないので注意して下さい。
 
 <sect1>NetBSD/pc98での注意事項<p>
 <itemize>
-	<ITEM>サーバをmake Worldすると、xc/programs/Xserver/hw/xfree86/
-	os-support/bsd/bsd_apm.cにおいてAPM_IOC_NEXTEVENT等のマクロが
-	undeclaredとなります。NetBSD/i386ではエラーにはなりません。make
-	Worldが途中で止まったら、make -kで再開して下さい。これで、サーバ、
-	各ドライバ共makeできる筈です。インストールもmake -k installで
-	行なって下さい。
+	<ITEM>現状ではNetBSD/pc98 1.4.xで利用できなくなっています。対策
+	準備中ですので、暫くお待ち下さい。なお、NetBSD/i386では問題はあ
+	りません。
 </itemize>
 
 <sect1>PANIX for 98での注意事項<p>
 <itemize>
-	<ITEM>サーバを、startx -- -dumbSchedのようにして起動して下さい。
-	さもないと、サーバ起動時にOS毎ハングアップします。
 	<ITEM>VT switchができません。
 </itemize>
 
