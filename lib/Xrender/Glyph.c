@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Glyph.c,v 1.9 2002/08/31 06:52:31 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.10 2002/08/31 18:15:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -214,6 +214,7 @@ XRenderCompositeString8 (Display	    *dpy,
 	elt->deltay = yDst;
 	memcpy ((char *) (elt + 1), string, nchar);
     }
+#undef MAX_8
     
     UnlockDisplay(dpy);
     SyncHandle();
@@ -257,7 +258,7 @@ XRenderCompositeString16 (Display	    *dpy,
 
 #define MAX_16	254
 
-    len = SIZEOF(xGlyphElt) * ((nchar + MAX_8-1) / MAX_8) + nchar * 2;
+    len = SIZEOF(xGlyphElt) * ((nchar + MAX_16-1) / MAX_16) + nchar * 2;
     
     req->length += (len + 3)>>2;  /* convert to number of 32-bit words */
     
@@ -292,6 +293,7 @@ XRenderCompositeString16 (Display	    *dpy,
 	elt->deltay = yDst;
 	memcpy ((char *) (elt + 1), (char *) string, nchar * 2);
     }
+#undef MAX_16
     
     UnlockDisplay(dpy);
     SyncHandle();
@@ -336,7 +338,7 @@ XRenderCompositeString32 (Display	    *dpy,
 
 #define MAX_32	254
 
-    len = SIZEOF(xGlyphElt) * ((nchar + MAX_8-1) / MAX_8) + nchar * 4;
+    len = SIZEOF(xGlyphElt) * ((nchar + MAX_32-1) / MAX_32) + nchar * 4;
     
     req->length += (len + 3)>>2;  /* convert to number of 32-bit words */
     
@@ -371,6 +373,7 @@ XRenderCompositeString32 (Display	    *dpy,
 	elt->deltay = yDst;
 	memcpy ((char *) (elt + 1), (char *) string, nchar * 4);
     }
+#undef MAX_32
     
     UnlockDisplay(dpy);
     SyncHandle();
@@ -421,6 +424,8 @@ XRenderCompositeText8 (Display			    *dpy,
      */
     len = 0;
     
+#define MAX_8 252
+
     glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
@@ -481,6 +486,7 @@ XRenderCompositeText8 (Display			    *dpy,
 	    chars += this_chars;
 	}
     }
+#undef MAX_8
     
     UnlockDisplay(dpy);
     SyncHandle();
@@ -531,6 +537,8 @@ XRenderCompositeText16 (Display			    *dpy,
      */
     len = 0;
     
+#define MAX_16	254
+
     glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
@@ -589,6 +597,7 @@ XRenderCompositeText16 (Display			    *dpy,
 	    chars += this_chars;
 	}
     }
+#undef MAX_16
     
     UnlockDisplay(dpy);
     SyncHandle();
@@ -639,6 +648,8 @@ XRenderCompositeText32 (Display			    *dpy,
      * Compute the space necessary
      */
     len = 0;
+
+#define MAX_32	254
     
     glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
@@ -692,6 +703,7 @@ XRenderCompositeText32 (Display			    *dpy,
 	    chars += this_chars;
 	}
     }
+#undef MAX_32
     
     UnlockDisplay(dpy);
     SyncHandle();
