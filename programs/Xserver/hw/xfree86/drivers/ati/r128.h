@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.3 2000/11/18 19:37:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.4 2000/11/29 22:01:08 mvojkovi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -39,6 +39,8 @@
 #define _R128_H_
 
 #include "xf86str.h"
+
+#include "xf86_OSproc.h"
 
 				/* PCI support */
 #include "xf86Pci.h"
