@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.5 1996/02/04 09:16:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.6 1996/02/09 08:21:54 dawes Exp $
 
 
 
@@ -58,7 +58,7 @@ POSTINST = postinst.sh
 #endif
 
        FILES = $(CONFIGFILES) $(TERMFILES) \
-               $(PATCHFILES) $(XDMCONF) ati.test.c regati.h \
+               $(PATCHFILES) $(XDMCONF) \
                et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST)
     INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	       -I$(SERVERSRC)/include -I$(INCLUDESRC)
@@ -137,7 +137,6 @@ LinkSourceFile(2key.c,$(XF86SRC)/etc)
 LinkSourceFile(BM-Lynx.shar,$(XF86SRC)/etc)
 LinkSourceFile(XdmConf.svr4,$(XF86SRC)/etc)
 LinkSourceFile(apSolx86.shar,$(XF86SRC)/etc)
-LinkSourceFile(ati.test.c,$(XF86SRC)/etc)
 LinkSourceFile(dmmap.shar,$(XF86SRC)/etc)
 LinkSourceFile(et4000clock.c,$(XF86SRC)/etc)
 LinkSourceFile(install.sv3,$(XF86SRC)/etc)
@@ -169,7 +168,6 @@ LinkSourceFile(xcode.xfree86,$(XF86SRC)/etc)
 LinkSourceFile(xf86pci.c,$(XF86SRC)/etc)
 LinkSourceFile(xmodmap.std,$(XF86SRC)/etc)
 
-LinkSourceFile(regati.h,$(VGADRIVERSRC)/ati)
 LinkFile(sun.termcap,sun.tcap)
 LinkFile(sun.terminfo,sun.tinfo)
 

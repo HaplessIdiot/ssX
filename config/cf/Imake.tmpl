@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl /main/r61_main/2 1995/12/14 15:35:00 matt $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.19 1995/09/22 07:20:11 dawes Exp $
+XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.20 1996/01/05 13:06:26 dawes Exp $
 XCOMM
 
 /*
@@ -441,7 +441,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define InstBinFlags -m 0755
 #endif
 #ifndef InstUidFlags
-#define InstUidFlags -m 4755
+#define InstUidFlags -m 4711
 #endif
 #ifndef InstLibFlags
 #define InstLibFlags -m 0644
@@ -455,7 +455,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef InstDatFlags
 #define InstDatFlags -m 0444
 #endif
-#ifndef InstKmemFlags     /* put -g kmem -m 2755 in site.def... */
+#ifndef InstKmemFlags     /* put -g kmem -m 2711 in site.def... */
 #define InstKmemFlags InstUidFlags
 #endif
 #ifndef ArCmdBase

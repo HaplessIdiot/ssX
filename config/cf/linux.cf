@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: linux.cf /main/17 1996/01/22 17:36:52 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.35 1996/02/04 08:53:41 dawes Exp $
+XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		NO
@@ -111,6 +111,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.35 1996/02/04 08:53:41 dawe
 #define ServerExtraSysLibs	$(CBRT) -lm
 #endif
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
+#define InstUidFlags		-s -m 4711
 
 /* Some of these man page defaults are overriden in the above OS sections */
 #ifndef ManSuffix

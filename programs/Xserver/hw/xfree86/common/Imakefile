@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.28 1996/02/04 09:05:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.29 1996/02/09 08:20:20 dawes Exp $
 
 
 
@@ -65,6 +65,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.28 1996/02/0
 #if BuildDynamicLoading
  XF86DL_SRC = xf86Dl.c
  XF86DL_OBJ = xf86Dl.o
+MODULEFLAGS = -DDYNAMIC_MODULES
 #endif
 
 SERVERSRCS = \
@@ -177,7 +178,7 @@ InstallProgram(xf86Elo.so,$(BINDIR))
 #  endif
 # endif
 #endif
-SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"')
+SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEFLAGS))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF86SVGAServer

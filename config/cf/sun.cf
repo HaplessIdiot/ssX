@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf /main/150 1996/01/22 16:50:08 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.24 1996/01/16 15:00:03 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf /main/151 1996/02/02 18:59:56 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.25 1996/01/26 08:59:17 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -199,7 +199,7 @@ XCOMM operating system:  OSName
 #endif
 #endif 		/* OSMinorVersion > 1 */
 #define HasVFork          NO
-#define InstKmemFlags	  -g sys -m 2755
+#define InstKmemFlags	  -g sys -m 2711
 #define ShLibIncludeFile <sunLib.tmpl>
 /*
  * Set flags for position independent code before including sv4Lib.rules
@@ -212,7 +212,7 @@ XCOMM operating system:  OSName
 #define PositionIndependentCplusplusFlags -pic
 #endif
 #else /* not OSMajorVersion > 4 */
-#define InstKmemFlags	  -g kmem -m 2755
+#define InstKmemFlags	  -g kmem -m 2711
 #include <sunLib.rules>
 #endif /* OSMajorVersion > 4 (else) */
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.73 1996/02/04 09:06:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.74 1996/02/09 08:20:23 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -890,6 +890,7 @@ xf86Config (vtopen)
 	  break;
 	  
       case MODULE:
+#ifdef DYNAMIC_MODULES
 	  {
 	      void	*(*xf86LoadModule(const char*));
 	      
@@ -898,6 +899,9 @@ xf86Config (vtopen)
 	      
 	      xf86LoadModule(val.str);
 	  }
+#else
+	  ErrorF("Dynamic modules not supported\n");
+#endif
 	  break;
       }
   }

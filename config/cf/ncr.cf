@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: ncr.cf /main/26 1996/01/22 17:43:35 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.14 1996/01/05 13:06:39 dawes Exp $
+XCOMM platform:  $XConsortium: ncr.cf /main/27 1996/02/02 18:59:47 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.15 1996/01/26 08:59:14 dawes Exp $
 
 #ifndef OSName
 #define OSName			Unix System V Release 4/MP-RAS
@@ -35,9 +35,9 @@ XCOMM #define ExtensionOSDefines	-DXTESTEXT1
 /* Setup proper ownership of installed files */
 
 #define StripInstalledPrograms	YES
-#define InstPgmFlags		-s -m 0755 -o bin -g bin
+#define InstPgmFlags		-s -m 0711 -o bin -g bin
 #define InstBinFlags		-m 0755 -o bin -g bin
-#define InstUidFlags		-m 4755 -o root -g bin
+#define InstUidFlags		-m 4711 -o root -g bin
 #define InstLibFlags		-m 0644 -o bin -g bin
 #define InstIncFlags		-m 0444 -o bin -g bin
 #define InstManFlags		-m 0444 -o bin -g bin
