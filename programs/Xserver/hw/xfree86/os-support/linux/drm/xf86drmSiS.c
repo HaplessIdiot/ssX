@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.4 2001/01/08 01:07:37 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.5 2001/04/10 16:08:04 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -47,6 +47,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "drm.h"
 #undef CONFIG_DRM_SIS
 
+#if 0
 Bool drmSiSAgpInit(int driSubFD, int offset, int size)
 {
    drm_sis_agp_t agp;
@@ -57,3 +58,4 @@ Bool drmSiSAgpInit(int driSubFD, int offset, int size)
 
    return TRUE;
 }
+#endif

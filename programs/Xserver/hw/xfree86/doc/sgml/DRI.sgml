@@ -10,10 +10,10 @@
     <author>
         <htmlurl url="http://www.valinux.com/"
           name="VA Linux Systems, Inc."> Professional Services - Graphics.
-    <date>15 March 2001
+    <date>3 May 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.21 2001/04/10 16:07:58 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.22 2001/05/18 19:59:18 dawes Exp $
     </ident>
 
     <toc>
@@ -131,16 +131,15 @@
             </itemize>
 	  <item>ATI Rage 128, supported on Intel x86 and AMD:
             <itemize>
-              <item>Rage Fury AGP
-              <item>Rage Magnum AGP
-              <item>XPERT 2000 AGP
-              <item>XPERT 128 AGP
-	      <item>XPERT 99 AGP
-	      <item>All-in-Wonder 128 AGP
+              <item>Rage Fury
+              <item>Rage Magnum
+              <item>XPERT 2000
+              <item>XPERT 128
+	      <item>XPERT 99
+	      <item>All-in-Wonder 128
             </itemize>
-	    The PCI versions of these cards also have minimal support.
-	    Note that there are Rage 128 Pro boards on the market but they're
-            not yet supported.
+	    Note that both PCI and AGP versions of Rage 128 based cards
+	    are supported at this time.
 	  <item>ATI Radeon, supported on Intel x86 and AMD:
             <itemize>
               <item>Radeon SDR AGP
@@ -678,7 +677,7 @@
 
       <sect1>3dfx Banshee, Voodoo3, Voodoo4 and Voodoo5 Series
 <p>
-        <sect2>Dependencies
+        <sect2>Requirements
 <p>
           The 3dfx DRI driver requires special versions of the 3dfx Glide
           library.
@@ -792,7 +791,7 @@
               32bpp mode is fully 3D accelerated.
           </itemize>
 
-        <sect2>Performance
+        <sect2>Performance and Features
 <p>
           <itemize>
             <item>
@@ -874,6 +873,9 @@
             <item>
               The lowest mipmap level is sometimes miscolored in trilinear-
               sampled polygons.
+            <item>
+              The GL_EXT_texture_env_combine extension is supported on the
+              Voodoo4 and Voodoo5.
           </itemize>
 
         <sect2>Known Problems
@@ -900,13 +902,10 @@
 
       <sect1>Intel i810
 <p>
-        <sect2>Dependencies
+        <sect2>Requirements
 <p>
-          A Linux kernel with AGP GART support is required.
-          The 2.2.x kernel series does not have AGP GART support.
-          The 2.4.x test kernels have AGP GART and have been tested
-          with the i810.
-          <p>
+          A kernel with AGP GART support (such as Linux 2.4.x) is needed.
+<p>
 
         <sect2>Configuration
 <p>
@@ -966,15 +965,29 @@
 	      rendering will be disabled.
           </itemize>
 
+        <sect2>Performance and Features
+<p>
+          Basically all of the i810 features which can be exposed through
+          OpenGL 1.2 are implemented.
+          However, the following OpenGL features are implemented in software
+          and will be slow:
+          <itemize>
+            <item>Stencil buffer and accumulation buffer operations
+            <item>Blend subtract, min/max and logic op blend modes
+            <item>glColorMask when any mask is set to false
+            <item>GL_SEPARATE_SPECULAR_COLOR lighting mode
+            <item>glDrawBuffer(GL_FRONT_AND_BACK)
+            <item>Using 1D or 3D textures
+            <item>Using texture borders
+          </itemize>
 <p>
 
       <sect1>Matrox G200 and G400
 <p>
-        <sect2>Dependencies
+        <sect2>Requirements
 <p>
-          A Linux kernel with AGP GART support (such as the 2.4.x test
-          kernels) is needed.
-          <p>
+          A kernel with AGP GART support (such as Linux 2.4.x) is needed.
+<p>
         <sect2>Configuration
 <p>
           Your XF86Config file's device section must specify the
@@ -1028,7 +1041,7 @@
 	    <tt>/usr/X11R6/lib/modules/dri/mga_dri.so</tt>.
             This will be automatically loaded by libGL.so.
 
-        <sect2>Performance
+        <sect2>Performance and Features
 <p>
           Software rendering will be used under any of the
           following conditions:
@@ -1126,11 +1139,10 @@
 
       <sect1>ATI Rage 128
 <p>
-        <sect2>Dependencies
+        <sect2>Requirements
 <p>
-          A Linux kernel with AGP GART support (such as the 2.4.x test
-          kernels) is needed.
-          <p>
+          A kernel with AGP GART support (such as Linux 2.4.x) is needed.
+<p>
         <sect2>Configuration
 <p>
           Your XF86Config file's device section must specify the
@@ -1175,7 +1187,7 @@
             You may also set your screen depth to 32 for 32bpp mode.
           <p>
 
-        <sect2>Performance
+        <sect2>Performance and Features
 <p>
           While PCI Rage 128 based cards are supported, they do not yet
           support PCI GART, so they will not perform as well as their
@@ -1185,7 +1197,20 @@
           used by default.
           Higher AGP speeds may result in unreliable performance depending
           on your motherboard.
-
+<p>
+          Note that even at 32bpp there is no alpha channel.
+<p>
+          The following OpenGL features are implemented in software and
+          will be slow:
+          <itemize>
+            <item>Stencil buffer and accumulation buffer operations
+            <item>Blend subtract, min/max and logic op blend modes
+            <item>GL_SEPARATE_SPECULAR_COLOR lighting mode
+            <item>glDrawBuffer(GL_FRONT_AND_BACK)
+            <item>Using 1D or 3D textures
+            <item>Using texture borders
+          </itemize>
+<p>
         <sect2>Known Problems
 <p>
           If you experience stability problems you may try setting the
@@ -1197,11 +1222,10 @@
 
       <sect1>ATI Radeon
 <p>
-        <sect2>Dependencies
+        <sect2>Requirements
 <p>
-          A Linux kernel with AGP GART support (such as the 2.4.x test
-          kernels) is needed.
-          <p>
+          A kernel with AGP GART support (such as Linux 2.4.x) is needed.
+<p>
         <sect2>Configuration
 <p>
           Your XF86Config file's device section must specify the
@@ -1245,7 +1269,7 @@
             You may also set your screen depth to 32 for 32bpp mode.
           <p>
 
-        <sect2>Performance
+        <sect2>Performance and Features
 <p>
           While this driver supports many of the features of ATI Radeon
           cards, we do not <em/yet/ fully support the card's TCL
@@ -1254,11 +1278,38 @@
           The AGP mode may be set to 1, 2, or 4.  One is used by default.
           Higher AGP speeds may result in unreliable performance depending
           on your motherboard.
-
+<p>
+          The following OpenGL features are implemented in software and will
+          be slow:
+          <itemize>
+            <item>Blend subtract, blend min/max and blend logicops
+            <item>Stencil and accumulation operations
+            <item>1D and 3D textures
+            <item>Texture borders
+          </itemize>
+<p>
+          The GL_EXT_texture_env_combine, GL_EXT_texture_env_add and
+          GL_EXT_texture_env_dot3 extensions are supported (or will be
+          soon supported in the new driver based on Mesa 3.5).
+<p>
+          We hope to implement support for the following features in the
+          future:
+          <itemize>
+            <item>Vertex transformation, clipping and lighting (TCL)
+            <item>Hardware stencil buffer
+            <item>Cube map textures
+            <item>3D textures
+            <item>Three texture units
+          </itemize>
+<p>
         <sect2>Known Problems
 <p>
-          None.
-
+          Certain (early?) revisions of the AMD Irongate chipset have
+          AGPGART problems which effect Radeon, and other graphics cards.
+          The card may work unreliably, or not work at all.  If the DRM
+          kernel module is not loaded, the 2D Xserver may work.  There's
+          hope that this can be fixed in the future.
+<p>
 
       <sect1>3DLabs Oxygen GMX 2000
 <p>
@@ -1274,7 +1325,7 @@
           overlays, stereo, hardware-accelerated indirect rendering.
         <p>
           OpenGL-like functionality is provided with the Mesa library.
-          XFree86 4.0.2 uses Mesa 3.4.
+          XFree86 4.0.3 uses Mesa 3.4.1.
           Subsequent releases of XFree86 will use newer versions of Mesa.
           When newer versions of Mesa are available, the 3D drivers can
           be updated without reinstalling XFree86 or libGL.so.
@@ -1369,8 +1420,8 @@
 <p>
           A collection of useful configuration files, libraries, headers,
           utilities and demo programs is available from
-          <htmlurl url="http://dri.sourceforge.net/resources/resources.html"
-                   name="http://dri.sourceforge.net/resources/resources.html">
+          <htmlurl url="http://dri.sourceforge.net/res.phtml"
+                  name="http://dri.sourceforge.net/res.phtml">
 
       <sect1>Documentation
 <p>
@@ -1385,7 +1436,8 @@
           <item>Visit the <htmlurl url="http://dri.sourceforge.net"
             name="DRI project on SourceForge.net"> for the latest development
             news about the DRI and 3D drivers.
-          <item>The <htmlurl url="http://dri.sourceforge.net/DRIcompile.html"
+          <item>The <htmlurl
+            url="http://dri.sourceforge.net/doc/DRIcompile.html"
             name="DRI Compilation Guide"> explains how to download, compile
             and install the DRI for yourself.
         </itemize>

@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.50 2001/02/15 11:03:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.51 2001/04/16 15:02:13 tsi Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -193,6 +193,7 @@ extern int xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 extern Bool xf86BindGARTMemory(int screenNum, int key, unsigned long offset);
 extern Bool xf86UnbindGARTMemory(int screenNum, int key);
 extern Bool xf86EnableAGP(int screenNum, CARD32 mode);
+extern Bool xf86GARTCloseScreen(int screenNum);
 
 /* These routines are in shared/sigio.c and are not loaded as part of the
    module.  These routines are small, and the code if very POSIX-signal (or

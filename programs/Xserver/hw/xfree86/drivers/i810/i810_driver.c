@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.47 2001/05/04 19:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.48 2001/05/10 21:14:55 dawes Exp $ */
 
 /*
  * Authors:
@@ -693,9 +693,23 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    xf86DrvMsg(pScrn->scrnIndex, from, "Will alloc AGP framebuffer: %d kByte\n",
 	      pScrn->videoRam);
 
-   /* Since we always want write combining on first 32 mb of framebuffer
-    * we pass a mapsize of 32 mb */
-   pI810->FbMapSize = 32*1024*1024;
+   /* Calculate Fixed Offsets depending on graphics aperture size */   
+   {
+      PCITAG bridge;
+      long smram_miscc;
+
+      bridge = pciTag(0,0,0); /* This is always the host bridge */
+      smram_miscc = pciReadLong(bridge, SMRAM_MISCC);
+      if((smram_miscc & GFX_MEM_WIN_SIZE) == GFX_MEM_WIN_32M) {
+	 pI810->FbMapSize = 0x1000000;
+	 pI810->DepthOffset = 0x1000000;
+	 pI810->BackOffset = 0x1800000;
+      } else {
+	 pI810->FbMapSize = 0x3000000;
+	 pI810->DepthOffset = 0x3000000;
+	 pI810->BackOffset = 0x3800000;
+      }      
+   }
 
    /*
     * If the driver can do gamma correction, it should call xf86SetGamma()
@@ -1640,14 +1654,25 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
       if (pScrn->displayWidth <= 1024)
 	 cache_lines *= 2;
    }
-   /* Make sure there's enough space for cache_lines. */
+   /* Make sure there's enough space for cache_lines.
+    *
+    * Had a bug here where maxCacheLines was computed to be less than 0.
+    * Not sure why 256 was initially subtracted from videoRam in the
+    * maxCacheLines calculation, but that was causing a problem
+    * for configurations that have exactly enough Ram for the framebuffer.
+    * Common code should catch the case where there isn't enough space for 
+    * framebuffer, we'll just check for no space for cache_lines.  -jens
+    *
+    */
    {
       int maxCacheLines;
 
-      maxCacheLines = ((pScrn->videoRam - 256) * 1024 /
+      maxCacheLines = (pScrn->videoRam * 1024 /
 		        (pScrn->bitsPerPixel / 8) /
 			pScrn->displayWidth) - pScrn->virtualY;
-      if (maxCacheLines >= 0 && cache_lines > maxCacheLines)
+      if (maxCacheLines < 0)
+         maxCacheLines = 0;
+      if (cache_lines > maxCacheLines)
 	 cache_lines = maxCacheLines;
    }
    pI810->FbMemBox.y2 += cache_lines;
@@ -2045,6 +2070,11 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
    pI810->SysMem = pI810->SavedSysMem;
    pI810->DcacheMem = pI810->SavedDcacheMem;
    pI810->DoneFrontAlloc = FALSE;
+
+   /* Need to actually close the gart fd, or the unbound memory will just sit
+    * around.  Will prevent the Xserver from recycling.
+    */
+   xf86GARTCloseScreen(scrnIndex);
 
    pScrn->vtSema=FALSE;
    pScreen->CloseScreen = pI810->CloseScreen;
