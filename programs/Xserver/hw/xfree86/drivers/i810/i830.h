@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.7 2003/01/28 22:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.8 2003/06/18 13:14:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -294,6 +294,10 @@ typedef struct _I830Rec {
    Bool starting;
    Bool closing;
    Bool suspended;
+
+   /* fbOffset converted to (x, y). */
+   int xoffset;
+   int yoffset;
 
 } I830Rec;
 

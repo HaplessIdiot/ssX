@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.34 2003/06/18 13:14:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.35 2003/07/16 01:38:44 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -229,9 +229,6 @@ static Bool I830BIOSSaveScreen(ScreenPtr pScreen, int unblack);
 static Bool I830BIOSEnterVT(int scrnIndex, int flags);
 static Bool I830VESASetVBEMode(ScrnInfoPtr pScrn, int mode,
 			       VbeCRTCInfoBlock *block);
-
-static Bool OffsetFrame = FALSE;
-
 
 
 #ifdef I830DEBUG
@@ -3027,6 +3024,9 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    pScrn->memPhysBase = (unsigned long)pI830->FbBase;
    pScrn->fbOffset = pI830->FrontBuffer.Start;
 
+   pI830->xoffset = (pScrn->fbOffset / pI830->cpp) % pScrn->displayWidth;
+   pI830->yoffset = (pScrn->fbOffset / pI830->cpp) / pScrn->displayWidth;
+
    vgaHWSetMmioFuncs(hwp, pI830->MMIOBase, 0);
    vgaHWGetIOBase(hwp);
    DPRINTF(PFX, "assert( if(!vgaHWMapMem(pScrn)) )\n");
@@ -3162,34 +3162,15 @@ I830BIOSAdjustFrame(int scrnIndex, int x, int y, int flags)
    ScrnInfoPtr pScrn;
    I830Ptr pI830;
    vbeInfoPtr pVbe;
-   static int xoffset = 0, yoffset = 0;
-   static int adjustGeneration = -1;
 
    pScrn = xf86Screens[scrnIndex];
    pI830 = I830PTR(pScrn);
    pVbe = pI830->pVbe;
 
    DPRINTF(PFX, "I830BIOSAdjustFrame: y = %d (+ %d), x = %d (+ %d)\n",
-	   x, xoffset, y, yoffset);
+	   x, pI830->xoffset, y, pI830->yoffset);
 
-   /* Calculate the offsets once per server generation. */
-   if (adjustGeneration != serverGeneration) {
-      adjustGeneration = serverGeneration;
-      xoffset = (pScrn->fbOffset / pI830->cpp) % pScrn->displayWidth;
-      yoffset = (pScrn->fbOffset / pI830->cpp) / pScrn->displayWidth;
-   }
-
-   if (OffsetFrame) {
-      y = (pI830->FbMemBox.y2 - pScrn->currentMode->VDisplay);
-      ErrorF("AdjustFrame: OffsetFrame is set, setting y to %d\n", y);
-   }
-   x += xoffset;
-   y += yoffset;
-#if 0
-   x >>= 4;
-   x <<= 4;
-#endif
-   VBESetDisplayStart(pVbe, x, y, TRUE);
+   VBESetDisplayStart(pVbe, x + pI830->xoffset, y + pI830->yoffset, TRUE);
 }
 
 static void
@@ -3345,11 +3326,6 @@ I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 	 DELAY(1000);
       } while (_head != _tail);
    }
-
-#if 0
-   OffsetFrame = !OffsetFrame;
-   pScrn->AdjustFrame(scrnIndex, 0, 0, 0);
-#endif
 
 #ifndef BINDUNBIND
 #define BINDUNBIND 0
