@@ -6,7 +6,7 @@
 char rcsId_vmware[] =
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.22 2004/10/26 22:26:38 tsi Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -730,6 +730,22 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->doubleScanAllowed = FALSE;
     clockRanges->ClockMulFactor = 1;
     clockRanges->ClockDivFactor = 1;
+
+    /*
+     * If the monitor parameters are not specified explicitly, set them
+     * so that 60Hz modes up to just below the maximum size are allowed.
+     */
+    if (!pScrn->monitor->DDC && pScrn->monitor->nHsync == 0) {
+	pScrn->monitor->nHsync = 1;
+	pScrn->monitor->hsync[0].lo = 28;
+	pScrn->monitor->hsync[0].hi =
+		60 * 0.95 * pVMWARE->maxHeight / 1000.0;
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		   "Using hsync range matching max display size: "
+		   "%.2f-%.2f kHz\n",
+		   pScrn->monitor->hsync[0].lo,
+		   pScrn->monitor->hsync[0].hi);
+    }
 
     i = xf86ValidateModes(pScrn, pScrn->monitor->Modes, pScrn->display->modes,
                           clockRanges, NULL, 256, pVMWARE->maxWidth, 32 * 32,
