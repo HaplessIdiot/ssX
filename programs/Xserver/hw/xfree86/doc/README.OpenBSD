@@ -15,11 +15,11 @@ See the Copyright Notice.
 
 The sources for XFree86 4.0 are available by anonymous ftp from:
 
-ftp://ftp.XFree86.org/pub/XFree86/snapshots/4.0
+ftp://ftp.XFree86.org/pub/XFree86/4.0
 
 Binaries for OpenBSD/i386 2.6 and later are available from:
 
-ftp://ftp.XFree86.org/pub/XFree86/snapshots/4.0/binaries/OpenBSD
+ftp://ftp.XFree86.org/pub/XFree86/4.0/binaries/OpenBSD
 
 A list of mirror sites is provided by ftp://ftp.XFree86.org/pub/XFree86/MIR-
 RORS
@@ -29,8 +29,8 @@ other architectures (section 8.2, page 1) for details.
 
 2.  Bug Reports for This Document
 
-Send email to herrb@xfree86.org (Matthieu Herrb) or XFree86@XFree86.org if
-you have comments or suggestions about this file and we'll revise it.
+Send email to <herrb@xfree86.org> (Matthieu Herrb) or <XFree86@XFree86.org>
+if you have comments or suggestions about this file and we'll revise it.
 
 3.  New OS dependent features
 
@@ -59,8 +59,7 @@ See the Release Notes for non-OS dependent new features in XFree86 4.0.
 
 4.  Installing the Binaries
 
-Refer to section 5 of the Release Notes  for detailed installation instruc-
-tions.
+Refer to the Installation Document for detailed installation instructions.
 
 5.  Configuring X for Your Hardware
 
@@ -191,9 +190,6 @@ imum amount of disk space.  Just unpack it, make the appropriate changes to
 the xf86site.def, type ``./mkmf'' and ``make'' to link the server.  See
 /usr/X11R6/lib/Server/README for more info.
 
-See INSTALL for instructions on unbundling and building the source distribu-
-tion.
-
 You should configure the distribution by editing xc/config/cf/host.def
 before compiling.  To compile the sources, invoke ``make World'' in the xc
 directory.
@@ -233,7 +229,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.8 2000/02/29 03:09:15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.10 2000/03/03 21:28:10 dawes Exp $
 
 
 $XFree86$

@@ -92,7 +92,7 @@ revert back to software cursor.
             ory.  This is normally the case for PCI or AGP adapters, and, so,
             this option is enabled by default unless acceleration is enabled.
 
-      Rotate
+      Option "Rotate"
             The option expect a value "CW" for clockwise or "CCW" for coun-
             terclockwise rotation of the screen. This is useful when you need
             more height then width on the screen. Desktop publishing is one
@@ -135,7 +135,7 @@ revert back to software cursor.
      enable the "USE_ACCEL" define in rendition.c file! Beware as it has sev-
      eral bugs left to clear out before if is stable for general use.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.7 2000/03/01 00:25:23 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.8 2000/03/01 23:54:34 dawes Exp $
 
 
 $XFree86$

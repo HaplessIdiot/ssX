@@ -312,37 +312,14 @@ Please add the following at the bottom of math.h, before the last #endif
                        3Dlabs GLINT Permedia rev 1
                        3Dlabs GLINT Delta rev 1
 
-6.  XKeyboard Extension
-
-   o Sample Setup ...
-
-     Here is a sample XKeyboard Definition to include inside the Keyboard
-     Section of your XF86Config File.
-
-              Xkbkeycodes "xfree86"
-          /*    XkbSymbols  "us(pc101)+de_nodead"  */
-          /*    This has changed between 3.1.2E and 3.1.2F */
-          /*    it is now:                                 */
-              XkbSymbols  "us(pc102)+de(nodeadkeys)"
-              XkbTypes    "default"
-              XkbCompat   "default"
-              XkbGeometry "pc"
-
-     or you could use this one with the new Options:
-
-             XkbRules        "xfree86"
-             XkbModel        "pc102"
-             XkbLayout       "de"
-             XkbVariant      "nodeadkeys"
-
-7.  Multibuffer Extension
+6.  Multibuffer Extension
 
 This is an obsolete Extension. Anyway, if you want to include this Extension
 inside your build, you have to add: #define BuildMultibuffer        YES
 inside xf86site.def Please note, this Extension should be disabled when
 building the Loader Server.
 
-8.  Default Definitions
+7.  Default Definitions
 
 These are default options defined inside isc.cf.  You can redefine them
 inside host.def.
@@ -410,7 +387,7 @@ inside host.def.
      #define CpuOption   -mpentium
      #endif
 
-9.  Installation
+8.  Installation
 
 After your make World BOOTSTRAPCFLAGS="... succeed,
 
@@ -424,10 +401,6 @@ another filesystem.
 
 to install the compressed nroff versions of the manual pages into
 /usr/X11R6/man. This directory will be generated if it doesn't exist.
-
-     make install.linkkit
-
-to install the server binary LinkKit into /usr/X11R6/lib/Server.
 
             You should tune the Kernel using the command-file
 
@@ -468,25 +441,12 @@ You also should increase MAXUMEM to its maximum, else programs may die with:
 
 You could do this automatically with menu entry no. 5.
 
-10.  Using ...
+9.  Using ...
 
    o Xprt:
 
      The new Xprint Server is configured to use lpr as its print helper so
      you have to install and configure lpr to use Xprt.
-
-   o Keyboard:
-
-     You don't need any modmap-File to get your keyboard working with any
-     iso-8859-1 Font. Simply enable
-
-        o LeftAlt  Meta
-
-        o RightAlt ModeShift
-
-        o RightCtl Compose
-
-     in your XF86Config - Section "Keyboard"
 
    o xpcterm:
 
@@ -544,13 +504,13 @@ You could do this automatically with menu entry no. 5.
           This message either isn't critical. Interactive doesn't support
           this kind of connection.
 
-11.  Acknowledgements
+10.  Acknowledgements
 
 All thanks should go to the members of the XFree86 Team for their great work
 and the X Consortium for their Public Release of X11R6, as to all who con-
 tribute to this excellent piece of free software.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.22 1999/08/28 10:43:33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.23 2000/03/03 21:28:11 dawes Exp $
 
 
 $XFree86$
