@@ -1,5 +1,5 @@
-/* $XConsortium: dispatch.c,v 5.65 94/04/17 20:26:25 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: dispatch.c,v 5.66 94/10/19 21:59:25 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.2 1994/06/19 10:58:54 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -130,7 +130,7 @@ extern unsigned long  StandardRequestLength();
 
 static int nextFreeClientID; /* always MIN free client ID */
 
-static int	nClients;	/* number active clients */
+static int	nClients;	/* number of authorized clients */
 
 CallbackListPtr ClientStateCallback;
 char dispatchException = 0;
@@ -3350,8 +3350,17 @@ CloseDownClient(client)
 	}
 	client->clientGone = TRUE;  /* so events aren't sent to client */
 	CloseDownConnection(client);
-	if (client->clientState != ClientStateInitial)
+
+	/* If the client made it to the Running stage, nClients has
+	 * been incremented on its behalf, so we need to decrement it
+	 * now.  If it hasn't gotten to Running, nClients has *not*
+	 * been incremented, so *don't* decrement it.
+	 */
+	if (client->clientState != ClientStateInitial &&
+	    client->clientState != ClientStateAuthenticating )
+	{
 	    --nClients;
+	}
     }
 
     if (really_close_down)
@@ -3607,7 +3616,13 @@ SendConnSetup(client, reason)
 	return (client->noClientException = -1);
     }
 
+    /* We're about to start speaking X protocol back to the client by
+     * sending the connection setup info.  This means the authorization
+     * step is complete, and we can count the client as an
+     * authorized one.
+     */
     nClients++;
+
     client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
     client->sequence = 0;
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
@@ -3671,10 +3686,14 @@ ProcEstablishConnection(client)
 				  (unsigned short)prefix->nbytesAuthString,
 				  auth_string);
     /*
-     * if auth protocol does some magic, fall back through to the
-     * dispatcher.
+     * If Kerberos is being used for this client, the clientState
+     * will be set to ClientStateAuthenticating at this point.
+     * More messages need to be exchanged among the X server, Kerberos
+     * server, and client to figure out if everyone is authorized.
+     * So we don't want to send the connection setup info yet, since
+     * the auth step isn't really done.
      */
-    if (client->clientState == ClientStateInitial)
+    if (client->clientState != ClientStateAuthenticating)
 	return(SendConnSetup(client, reason));
     return(client->noClientException);
 }
