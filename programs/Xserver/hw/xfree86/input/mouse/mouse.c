@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.7 1999/05/22 08:40:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.8 1999/05/22 09:59:50 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -599,15 +599,11 @@ SetupMouse(InputInfoPtr pInfo)
 #ifdef PNP_MOUSE
 	if (!name) {
 	    /* A PnP serial mouse? */
-	    name = MouseGetPnpProtocol(pInfo);
-	    if (name) {
-		protocolID = ProtocolNameToID(name);
-		switch (protocolID) {
-		case PROT_UNKNOWN:
-		case PROT_UNSUP:
-		    name = NULL;
-		    break;
-		}
+	    protocolID = MouseGetPnpProtocol(pInfo);
+	    if (protocolID >= 0 && protocolID < PROT_NUMPROTOS) {
+		name = ProtocolIDToName(protocolID);
+		xf86Msg(X_PROBED, "%s: PnP-detected protocol: \"%s\"\n",
+			pInfo->name, name);
 	    }
 	}
 #endif
@@ -838,11 +834,11 @@ SetupMouse(InputInfoPtr pInfo)
 #ifdef EXTMOUSEDEBUG
 	for (i = 0; i < paramlen; ++i) {
 	    if (xf86WriteSerial(pInfo->fd, &param[i], 1) != 1)
-		ErrorF("xf86SetupMouse: Write to mouse failed (%s)\n",
+		ErrorF("SetupMouse: Write to mouse failed (%s)\n",
 		       strerror(errno));
 	    usleep(30000);
 	    xf86ReadSerial(pInfo->fd, &c, 1);
-	    ErrorF("xf86SetupMouse: got %02x\n", c);
+	    ErrorF("SetupMouse: got %02x\n", c);
 	}
 #else
 	if (xf86WriteSerial(pInfo->fd, param, paramlen) != paramlen)
@@ -1359,15 +1355,20 @@ MouseProc(DeviceIntPtr device, int what)
 	else {
 	    pMse->buffer = XisbNew(pInfo->fd, 64);
 	    if (!pMse->buffer) {
-		xfree(pMse);
 		xf86CloseSerial(pInfo->fd);
 		pInfo->fd = -1;
 	    } else {
-		SetupMouse(pInfo);
-		xf86FlushInput(pInfo->fd);
-		if (pMse->protocolID == PROT_PS2)
-		    xf86WriteSerial(pInfo->fd, "\364", 1);
-		AddEnabledDevice(pInfo->fd);
+		if (!SetupMouse(pInfo)) {
+		    xf86CloseSerial(pInfo->fd);
+		    pInfo->fd = -1;
+		    XisbFree(pMse->buffer);
+		    pMse->buffer = NULL;
+		} else {
+		    xf86FlushInput(pInfo->fd);
+		    if (pMse->protocolID == PROT_PS2)
+			xf86WriteSerial(pInfo->fd, "\364", 1);
+		    AddEnabledDevice(pInfo->fd);
+		}
 	    }
 	}
 	pMse->lastButtons = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.2 1999/05/16 06:55:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.3 1999/05/23 04:26:07 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -125,53 +125,37 @@ static symtab_t pnpprod[] = {
     { NULL,	  -1 },
 };
 
-static int
-pnpgets(
-#if NeedFunctionPrototypes
-    MouseDevPtr,
-    char *
-#endif
-);
+static const char *pnpSerial[] = {
+	"BaudRate",	"1200",
+	"DataBits",	"7",
+	"StopBits",	"1",
+	"Parity",	"None",
+	"FlowControl",	"None",
+	"VTime",	"0",
+	"VMin",		"1",
+	NULL
+};
 
-static int
-pnpparse(
-#if NeedFunctionPrototypes
-    pnpid_t *,
-    char *,
-    int
-#endif
-);
-
-static symtab_t *
-pnpproto(
-#if NeedFunctionPrototypes
-    pnpid_t *
-#endif
-);
-
-static symtab_t *
-gettoken(
-#if NeedFunctionPrototypes
-    symtab_t *,
-    char *,
-    int
-#endif
-);
+static int pnpgets(InputInfoPtr, char *);
+static int pnpparse(InputInfoPtr, pnpid_t *, char *, int);
+static symtab_t *pnpproto(pnpid_t *);
+static symtab_t *gettoken(symtab_t *, char *, int);
 
 int
-xf86GetPnPMouseProtocol(mouse)
-MouseDevPtr mouse;
+MouseGetPnpProtocol(InputInfoPtr pInfo)
 {
     char buf[256];	/* PnP ID string may be up to 256 bytes long */
     pnpid_t pnpid;
     symtab_t *t;
     int len;
 
-    if (((len = pnpgets(mouse, buf)) <= 0) || !pnpparse(&pnpid, buf, len))
+    if (((len = pnpgets(pInfo, buf)) <= 0) ||
+	!pnpparse(pInfo, &pnpid, buf, len))
 	return -1;
     if ((t = pnpproto(&pnpid)) == NULL)
 	return -1;
-    ErrorF("Mouse: protocol: %d\n", t->val);
+    xf86MsgVerb(X_INFO, 2, "%s: PnP-detected protocol ID: %d\n",
+		pInfo->name, t->val);
     return (t->val);
 }
 
@@ -180,7 +164,7 @@ MouseDevPtr mouse;
  * Microsoft, Hayes: "Plug and Play External COM Device Specification, 
  * rev 1.00", 1995.
  *
- * The routine does not fully implement the COM Enumerator as par Section
+ * The routine does not fully implement the COM Enumerator as per Section
  * 2.1 of the document.  In particular, we don't have idle state in which
  * the driver software monitors the com port for dynamic connection or 
  * removal of a device at the port, because `moused' simply quits if no 
@@ -192,14 +176,11 @@ MouseDevPtr mouse;
  * procedure is used. XXX
  */
 static int
-pnpgets(mouse, buf)
-MouseDevPtr mouse;
-char *buf;
+pnpgets(InputInfoPtr pInfo, char *buf)
 {
-    struct timeval timeout;
-    fd_set fds;
     int i;
     char c;
+    pointer pnpOpts;
 
 #if 0
     /* 
@@ -209,51 +190,47 @@ char *buf;
      */
 
     /* port initialization (2.1.2) */
-    ioctl(mouse->mseFd, TIOCMGET, &i);
-    i |= TIOCM_DTR;		/* DTR = 1 */
-    i &= ~TIOCM_RTS;		/* RTS = 0 */
-    ioctl(mouse->mseFd, TIOCMSET, &i);
+    if ((i = xf86GetSerialModemState(pInfo->fd)) == -1)
+	return 0;
+    i |= XF86_M_DTR;		/* DTR = 1 */
+    i &= ~XF86_M_RTS;		/* RTS = 0 */
+    if (xf86SetSerialModemState(pInfo->fd, i) == -1)
+	goto disconnect_idle;
     usleep(200000);
-    if ((ioctl(mouse->mseFd, TIOCMGET, &i) == -1) || ((i & TIOCM_DSR) == 0))
+    if ((i = xf86GetSerialModemState(pInfo->fd)) == -1 ||
+	(i & XF86_M_DSR) == 0)
 	goto disconnect_idle;
 
     /* port setup, 1st phase (2.1.3) */
-    xf86SetMouseSpeed(mouse, 1200, 1200, (CS7 | CREAD | CLOCAL | HUPCL));
+    pnpOpts = xf86OptionListCreate(pnpSerial, -1, 1);
+    xf86SetSerial(pInfo->fd, pnpOpts);
     i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 0, RTS = 0 */
-    ioctl(mouse->mseFd, TIOCMBIC, &i);
+    xf86SerialModemClearBits(pInfo->fd, i);
     usleep(200000);
     i = TIOCM_DTR;		/* DTR = 1, RTS = 0 */
-    ioctl(mouse->mseFd, TIOCMBIS, &i);
+    xf86SerialModemSetBits(pInfo->fd, i);
     usleep(200000);
 
     /* wait for response, 1st phase (2.1.4) */
-    xf86FlushInput(mouse->mseFd);
+    xf86FlushInput(pInfo->fd);
     i = TIOCM_RTS;		/* DTR = 1, RTS = 1 */
-    ioctl(mouse->mseFd, TIOCMBIS, &i);
+    xf86SerialModemSetBits(pInfo->fd, i);
 
     /* try to read something */
-    FD_ZERO(&fds);
-    FD_SET(mouse->mseFd, &fds);
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 200000;
-    if (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) <= 0) {
+    if (xf86WaitForInput(pInfo->fd, 200000) <= 0) {
 
 	/* port setup, 2nd phase (2.1.5) */
         i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 0, RTS = 0 */
-        ioctl(mouse->mseFd, TIOCMBIC, &i);
+	xf86SerialModemClearBits(pInfo->fd, i);
         usleep(200000);
 
 	/* wait for respose, 2nd phase (2.1.6) */
-	xf86FlushInput(mouse->mseFd);
+	xf86FlushInput(pInfo->fd);
         i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 1, RTS = 1 */
-        ioctl(mouse->mseFd, TIOCMBIS, &i);
+	xf86SerialModemSetBits(pInfo->fd, i);
 
         /* try to read something */
-        FD_ZERO(&fds);
-        FD_SET(mouse->mseFd, &fds);
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 200000;
-        if (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) <= 0)
+	if (xf86WaitForInput(pInfo->fd, 200000) <= 0)
 	    goto connect_idle;
     }
 #else
@@ -261,39 +238,38 @@ char *buf;
      * This is a simplified procedure; it simply toggles RTS.
      */
 
-    ioctl(mouse->mseFd, TIOCMGET, &i);
+    if ((i = xf86GetSerialModemState(pInfo->fd)) == -1)
+	return 0;
     i |= TIOCM_DTR;		/* DTR = 1 */
     i &= ~TIOCM_RTS;		/* RTS = 0 */
-    ioctl(mouse->mseFd, TIOCMSET, &i);
+    if (xf86SetSerialModemState(pInfo->fd, i) == -1)
+	goto disconnect_idle;
     usleep(200000);
 
-#if 0
-    xf86SetMouseSpeed(mouse, 1200, 1200, (CS7 | CREAD | CLOCAL | HUPCL));
-#endif
+    pnpOpts = xf86OptionListCreate(pnpSerial, -1, 1);
+    xf86SetSerial(pInfo->fd, pnpOpts);
 
     /* wait for respose */
-    xf86FlushInput(mouse->mseFd);
+    xf86FlushInput(pInfo->fd);
     i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 1, RTS = 1 */
-    ioctl(mouse->mseFd, TIOCMBIS, &i);
+    xf86SerialModemSetBits(pInfo->fd, i);
 
     /* try to read something */
-    FD_ZERO(&fds);
-    FD_SET(mouse->mseFd, &fds);
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 200000;
-    if (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) <= 0)
+    if (xf86WaitForInput(pInfo->fd, 200000) <= 0)
         goto connect_idle;
 #endif
 
     /* collect PnP COM device ID (2.1.7) */
     i = 0;
     usleep(200000);	/* the mouse must send `Begin ID' within 200msec */
-    while (read(mouse->mseFd, &c, 1) == 1) {
+    while (xf86ReadSerial(pInfo->fd, &c, 1) == 1) {
 	/* we may see "M", or "M3..." before `Begin ID' */
         if ((c == 0x08) || (c == 0x28)) {	/* Begin ID */
 	    buf[i++] = c;
 	    break;
         }
+	if (xf86WaitForInput(pInfo->fd, 200000) <= 0)
+	    break;
     }
     if (i <= 0) {
 	/* we haven't seen `Begin ID' in time... */
@@ -302,14 +278,10 @@ char *buf;
 
     ++c;			/* make it `End ID' */
     for (;;) {
-        FD_ZERO(&fds);
-        FD_SET(mouse->mseFd, &fds);
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 200000;
-        if (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) <= 0)
+	if (xf86WaitForInput(pInfo->fd, 200000) <= 0)
 	    break;
 
-	read(mouse->mseFd, &buf[i], 1);
+	xf86ReadSerial(pInfo->fd, &buf[i], 1);
         if (buf[i++] == c)	/* End ID */
 	    break;
 	if (i >= 256)
@@ -327,16 +299,13 @@ char *buf;
      */
 disconnect_idle:
     i = TIOCM_DTR | TIOCM_RTS;		/* DTR = 1, RTS = 1 */
-    ioctl(mouse->mseFd, TIOCMBIS, &i);
+    xf86SerialModemSetBits(pInfo->fd, i);
 connect_idle:
     return 0;
 }
 
 static int
-pnpparse(id, buf, len)
-pnpid_t *id;
-char *buf;
-int len;
+pnpparse(InputInfoPtr pInfo, pnpid_t *id, char *buf, int len)
 {
     char s[3];
     int offset;
@@ -365,13 +334,15 @@ int len;
     sum += buf[len - 1];
     for (; i < len; ++i)
 	buf[i] += offset;
-    ErrorF("Mouse: PnP ID string: '%*.*s'\n", len, len, buf);
+    xf86MsgVerb(X_INFO, 2, "%s: PnP ID string: `%*.*s'\n", pInfo->name,
+		len, len, buf);
 
     /* revision */
     buf[1] -= offset;
     buf[2] -= offset;
     id->revision = ((buf[1] & 0x3f) << 6) | (buf[2] & 0x3f);
-    ErrorF("Mouse: PnP rev %d.%02d\n", id->revision / 100, id->revision % 100);
+    xf86MsgVerb(X_INFO, 2, "%s: PnP rev %d.%02d\n", pInfo->name,
+		id->revision / 100, id->revision % 100);
 
     /* EISA vender and product ID */
     id->eisaid = &buf[3];
@@ -413,7 +384,7 @@ int len;
         }
 	/*
 	 * PnP COM spec prior to v0.96 allowed '*' in this field, 
-	 * it's not allowed now; just igore it.
+	 * it's not allowed now; just ignore it.
 	 */
 	if (buf[j] == '*')
 	    ++j;
@@ -441,9 +412,7 @@ int len;
     /* checksum exists if there are any optional fields */
     if ((id->nserial > 0) || (id->nclass > 0)
 	|| (id->ncompat > 0) || (id->ndescription > 0)) {
-#if 0
-        ErrorF("Mouse: PnP checksum: 0x%02X\n", sum); 
-#endif
+	xf86MsgVerb(X_INFO, 4, "PnP checksum: 0x%02X\n", pInfo->name, sum);
         sprintf(s, "%02X", sum & 0x0ff);
         if (strncmp(s, &buf[len - 3], 2) != 0) {
 #if 0
@@ -461,8 +430,7 @@ int len;
 }
 
 static symtab_t *
-pnpproto(id)
-pnpid_t *id;
+pnpproto(pnpid_t *id)
 {
     symtab_t *t;
     int i, j;

@@ -370,7 +370,7 @@ Option "ShadowFB"
 	rendering is all done into a virtual framebuffer acceleration can not
 	be used.
 <tag>
-Option "8Plus16"
+Option "Overlay"
 </tag>
 	The HiQV chipsets contain a multimedia engine that allow a 16bpp
 	window to be overlayed on the screen. This driver uses this capability
@@ -451,7 +451,7 @@ driver you'll needed to considered several points
 	the cache will only have a detrimental effect on the graphics
 	performance.
 <tag> * PseudoColor Overlay </tag>
-		If you use the "<tt>8plus16</tt>" option, then there are
+		If you use the "<tt>overlay</tt>" option, then there are
 	actually two framebuffers in the video memory. An 8bpp one and a
 	16bpp one. The total memory requirements in this mode of operation
 	is therefore similar to a 24bpp mode. The overlay consumes memory
@@ -853,7 +853,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.21 1999/03/21 07:35:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.22 1999/03/21 12:46:40 dawes Exp $
 </verb>
 
 </article>

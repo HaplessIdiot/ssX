@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.123 1999/05/30 07:50:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.124 1999/05/30 14:04:20 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1283,6 +1283,10 @@ ddxUseMsg()
     ErrorF("-modulepath paths      specify the module search path\n");
     ErrorF("-logfile file          specify a log file name\n");
     ErrorF("-scanpci               execute the scanpci module and exit\n");
+  }
+  else
+  {
+    ErrorF("-xf86config file       specify a configuration file (must be relative)\n");
   }
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose [n]           verbose startup messages\n");

@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.24 1999/05/09 06:06:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.25 1999/05/23 04:26:07 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -85,6 +85,20 @@
 #define VIDMEM_MMIO		0x02	/* memory for I/O use */
 #define VIDMEM_SPARSE		0x04	/* sparse mapping required */
 #define VIDMEM_READSIDEEFFECT	0x08	/* reads can have side-effects */
+
+/*
+ * OS-independent modem state flags for xf86SetSerialModemState() and
+ * xf86GetSerialModemState().
+ */
+#define XF86_M_LE		0x001	/* line enable */
+#define XF86_M_DTR		0x002	/* data terminal ready */
+#define XF86_M_RTS		0x004	/* request to send */
+#define XF86_M_ST		0x008	/* secondary transmit */
+#define XF86_M_SR		0x010	/* secondary receive */
+#define XF86_M_CTS		0x020	/* clear to send */
+#define XF86_M_CAR		0x040	/* carrier detect */
+#define XF86_M_RNG		0x080	/* ring */
+#define XF86_M_DSR		0x100	/* data set ready */
 
 #ifdef XF86_OS_PRIVS
 extern void xf86WrapperInit(void);
@@ -135,10 +149,12 @@ extern int xf86ReadSerial(int fd, void *buf, int count);
 extern int xf86WriteSerial(int fd, const void *buf, int count);
 extern int xf86CloseSerial(int fd);
 extern int xf86FlushInput(int fd);
-/* Merged from Metrolink tree for Xinput */
-extern int xf86WaitForInput( int, int );
-extern int xf86SerialSendBreak( int, int );
-/* End merged section	*/
+extern int xf86WaitForInput(int fd, int timeout);
+extern int xf86SerialSendBreak(int fd, int duration);
+extern int xf86SetSerialModemState(int fd, int state);
+extern int xf86GetSerialModemState(int fd);
+extern int xf86SerialModemSetBits(int fd, int bits);
+extern int xf86SerialModemClearBits(int fd, int bits);
 
 
 #if defined(__alpha__)

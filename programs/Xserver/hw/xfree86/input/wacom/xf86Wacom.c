@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.6 1999/05/15 12:10:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.7 1999/05/23 06:33:50 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -2687,7 +2687,7 @@ xf86WcmPlug(pointer	module,
      * phasis is based on those values.
      */
     defaults = xf86OptionListCreate(default_options,
-				    (sizeof(default_options) / sizeof(default_options[0])));
+				    (sizeof(default_options) / sizeof(default_options[0])), 0);
     merged = xf86OptionListMerge(defaults, options);
     
     xf86OptionListReport(merged);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.11 1999/05/09 06:06:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.12 1999/05/22 09:59:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -101,7 +101,7 @@ xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts,
 
     pInfo->options = NULL;
     if (defaultOpts) {
-	pInfo->options = xf86OptionListCreate(defaultOpts, -1);
+	pInfo->options = xf86OptionListCreate(defaultOpts, -1, 0);
     }
     if (pInfo->conf_idev->commonOptions) {
 	tmp = OptionListDup(pInfo->conf_idev->commonOptions);
@@ -193,9 +193,9 @@ xf86NextOption(pointer list)
 }
 
 pointer
-xf86OptionListCreate(const char **options, int count)
+xf86OptionListCreate(const char **options, int count, int used)
 {
-	return OptionListCreate(options, count);
+	return OptionListCreate(options, count, used);
 }
 
 pointer

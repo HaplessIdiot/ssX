@@ -67,6 +67,7 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 # define BuildLibPathVar	_RLD_ROOT=/dev/null LD_LIBRARYN32_PATH
 # define SystemBuildLibPath	/usr/lib32:/lib32
 # define LdCmd			ld -n32
+# define AsCmd			as -n32
 #else
 # define BuildLibPathVar	_RLD_ROOT=/dev/null LD_LIBRARY_PATH
 # define SystemBuildLibPath	/usr/lib:/lib

@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.7 1999/04/04 07:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.8 1999/05/15 12:10:32 dawes Exp $ */
 
 #define _SPACEORB_C_
 /*****************************************************************************
@@ -125,7 +125,7 @@ SetupProc(	pointer module,
 		goto SetupProc_fail;
 
 	defaults = xf86OptionListCreate (default_options,
-				  (sizeof (default_options) / sizeof (default_options[0])));
+				  (sizeof (default_options) / sizeof (default_options[0])), 0);
 	merged = xf86OptionListMerge (defaults, options);
 
 	xf86OptionListReport( merged );

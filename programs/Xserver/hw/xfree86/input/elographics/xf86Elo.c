@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.1 1999/04/04 07:03:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.2 1999/05/15 12:10:29 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1528,7 +1528,7 @@ Plug(pointer	module,
   priv = local->private;
   
   defaults = xf86OptionListCreate(default_options,
-				  sizeof(default_options)/sizeof(default_options[0]));
+				  sizeof(default_options)/sizeof(default_options[0]), 0);
   merged = xf86OptionListMerge(defaults, options);
   xf86OptionListReport(merged);
 
