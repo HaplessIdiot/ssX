@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 6.1 94/01/11 18:36:15 gildea Exp $
+XCOMM $XFree86$
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
@@ -32,11 +33,12 @@ NormalLibraryTarget(mi,$(OBJS))
 LintLibraryTarget(mi,$(SRCS))
 NormalLintTarget($(SRCS))
 
-all:: cbrt.o
+NormalLibraryTarget(cbrt,cbrt.o)
 
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
+LinkSourceFile(cbrt.c,$(SERVERSRC)/mi)
 LinkSourceFile(mi.h,$(SERVERSRC)/mi)
 LinkSourceFile(mibstore.h,$(SERVERSRC)/mi)
 LinkSourceFile(mibstorest.h,$(SERVERSRC)/mi)
