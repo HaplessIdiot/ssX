@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.33 2001/08/13 17:46:05 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.34 2001/08/17 13:27:58 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -66,7 +66,7 @@
   lv		Latvian
   mk		Macedonian
   mt		Maltese
-  mt_uk		Maltese (UK layout)
+  mt_us		Maltese (US layout)
   no		Norwegian
   pl		Polish
   pt		Portuguese
@@ -131,3 +131,6 @@
   altwin:meta_super	Super is mapped to the Win-keys (default).
   altwin:meta_hyper	Hyper is mapped to the Win-keys.
 
+  compose:ralt		Right Alt is Compose
+  compose:rwin		Right Win-key is Compose
+  compose:menu		Menu is Compose
