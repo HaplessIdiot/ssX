@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/vendor.c,v 1.2 2000/03/03 20:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.c,v 1.3 2000/03/03 23:16:28 dawes Exp $ */
 
 /* Vendor-specific data structures and operations */
 
@@ -55,7 +55,7 @@ static SectionNameRec SectionNames[] = {
     {"(l) Local",			"l"},
     {"(n) New",				"n"},
     {"(o) Old",				"o"}
-#ifdef SCO
+#ifdef __SCO__
       ,
       { "(ADM) System Administration", "ADM" },
       { "(ADMN) Network Administration", "ADMN" },

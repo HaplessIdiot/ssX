@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/chooser.c,v 3.27tsi Exp $ */
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.28 2004/03/15 16:51:37 tsi Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one
@@ -74,7 +74,7 @@ in this Software without prior written authorization from The Open Group.
 #include    <X11/extensions/Xinerama.h>
 #endif
 
-#if defined(SVR4) && !defined(SCO325)
+#if defined(SVR4)
 #include    <sys/sockio.h>
 #endif
 #if defined(SVR4) && defined(PowerMAX_OS)

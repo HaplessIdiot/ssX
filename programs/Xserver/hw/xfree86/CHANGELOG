@@ -1,4 +1,12 @@
 XFree86 4.4.99.3 (xx March 2004)
+  61. Updates for the SCO port:
+      - Update the transport layer code to allow the LOCAL SCO connection
+        type to be used for more than just X protocol connections.
+      - Handle the XFree86 server's reassignment of stdin and stdout at
+        startup more cleanly.
+      - Cleanup the mix of SCO-related preprocessor symbols, unifying them
+        to "__SCO__".
+      (Bugzilla #1301, Kean Johnston). 
   60. Modify xdm's DefineLocal() to use Xlib's _XGetHostname() (Bugzilla #1302,
       Kean Johnston).
   59. Cleanup the via driver's primary DDC/EDID retrieval:
@@ -18821,7 +18829,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3209 2004/04/03 22:05:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3210 2004/04/03 22:13:52 dawes Exp $
 
 
 

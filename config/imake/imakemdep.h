@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.72 2003/12/30 01:53:52 tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.73 2004/03/21 11:27:05 herrb Exp $ */
 
 
 /* 
@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef imake_ccflags
 #undef imake_ccflags
 #endif
-#define imake_ccflags "-Dsco -DSYSV -DSCO -DSCO325"
+#define imake_ccflags "-DSYSV -DSCO325 -D__SCO__"
 #endif
 
 #ifdef sony
@@ -199,7 +199,7 @@ in this Software without prior written authorization from The Open Group.
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#if defined(SYSV) && !defined(_CRAY) && !defined(Mips) && !defined(_SEQUENT_) && !defined(sco)
+#if defined(SYSV) && !defined(_CRAY) && !defined(Mips) && !defined(_SEQUENT_) && !defined(__SCO__)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
 #endif
@@ -214,7 +214,7 @@ in this Software without prior written authorization from The Open Group.
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__) || defined(__sgi) || defined(__UNIXOS2__)
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(__SCO__) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__) || defined(__sgi) || defined(__UNIXOS2__)
 #define FIXUP_CPP_WHITESPACE
 #endif
 #ifdef WIN32
@@ -485,8 +485,8 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DSVR4",
 # endif
 #endif /* MOTOROLA */
-#if defined(M_UNIX) || defined(sco)
-	"-Dsco",
+#if defined(M_UNIX) || defined(__SCO__) || defined(sco) || defined(_SCO_DS)
+	"-D__SCO__",
 	"-DSYSV",
 #endif
 #ifdef i386
@@ -512,11 +512,8 @@ char *cpp_argv[ARGUMENTS] = {
 #    endif
 #   endif
 #  endif
-#  ifdef SCO
-	"-DSCO",
-#   ifdef _SCO_DS
+#  ifdef _SCO_DS
     "-DSCO325",
-#   endif
 #  endif
 # endif
 # ifdef ESIX
@@ -550,11 +547,8 @@ char *cpp_argv[ARGUMENTS] = {
 #   endif
 #  endif
 # endif
-# ifdef SCO
-	"-DSCO",
-#  ifdef _SCO_DS
+# ifdef _SCO_DS
 	"-DSCO325",
-#  endif
 # endif
 # ifdef ESIX
 	"-DESIX",

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/misc.c,v 1.10 2003/08/02 17:35:48 herrb Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.11 2004/03/12 02:17:55 dickey Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -61,7 +61,7 @@ static Boolean UncompressUnformatted(ManpageGlobals * man_globals,
 static Boolean ConstructCommand(char * cmdbuf, char * path, char * filename, char * tempfile);
 #endif
 
-#if defined(ISC) || defined(SCO)
+#if defined(ISC) || defined(__SCO__)
 static char *uncompress_format = NULL;
 static char *uncompress_formats[] =
       {  UNCOMPRESS_FORMAT_1,
@@ -185,7 +185,7 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
   char filename[BUFSIZ];
   char * entry = manual[section_num].entries[entry_num];
   int len_cat = strlen(CAT);
-#if defined(ISC) || defined(SCO)
+#if defined(ISC) || defined(__SCO__)
   int i;
 #endif
 
@@ -216,7 +216,7 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
  * Then for compressed files in an uncompressed directory.
  */
 
-#if !defined(ISC) && !defined(SCO)
+#if !defined(ISC) && !defined(__SCO__)
 #if defined(__OpenBSD__) || defined(__NetBSD__)
   /* look in machine subdir first */
   sprintf(filename, "%s/%s%s/%s/%s.%s", path, CAT,
