@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.237 1999/06/27 14:07:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.238 1999/07/04 06:38:21 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -730,10 +730,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #ifndef StripInstalledPrograms
 #define StripInstalledPrograms	YES
-#endif
-
-#ifndef HasLinuxDoc
-#define HasLinuxDoc		NO
 #endif
 
 #ifndef InstallJapaneseDocs
