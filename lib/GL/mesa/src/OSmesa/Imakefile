@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.18 2003/03/25 04:18:08 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.19 2003/11/04 00:24:35 torrey Exp $
 
 #include <Threads.tmpl>
 
@@ -15,7 +15,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.18 2003/03/25 04:18:08 d
 #include "../tnl/Imakefile.inc"
 #include "../tnl_dd/Imakefile.inc"
 #include "../Imakefile.inc"
-#if defined(i386Architecture) && !SystemV4 && MesaUseX86Asm
+#if defined(i386Architecture) && MesaUseX86Asm
 #include "../X86/Imakefile.inc"
 #endif
 #ifdef SparcArchitecture

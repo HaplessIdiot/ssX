@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.237 2003/12/11 21:07:41 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.238 2003/12/11 22:21:59 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1218,7 +1218,8 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 
 #ifndef MesaUseX86Asm
-# if HasX86Support
+/* The current Mesa X86 ASM code doesn't work well with SVR4 shared libs. */
+# if HasX86Support && !SystemV4
 #  define MesaUseX86Asm YES
 # else
 #  define MesaUseX86Asm NO
