@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.91 2002/05/22 21:38:25 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.92 2002/07/02 20:21:47 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -124,7 +124,7 @@ extern unsigned short ldw_brx(volatile unsigned char *, int);
 
 # ifndef NO_INLINE
 #  ifdef __GNUC__
-#   if (defined(linux) || defined(__FreeBSD__)) && defined(__alpha__)
+#   if (defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__)) && defined(__alpha__)
 #    ifdef linux
 
 /* for Linux on Alpha, we use the LIBC _inx/_outx routines */
@@ -189,6 +189,10 @@ extern unsigned short inw(unsigned int port);
 extern unsigned int inl(unsigned int port);
 
 #    endif /* __FreeBSD__ && !DO_PROTOTYPES */
+
+#if defined(__NetBSD__)
+#include <machine/pio.h>
+#endif /* __NetBSD__ */
 
 /*
  * inline functions to do unaligned accesses
@@ -1004,7 +1008,7 @@ xf86WriteMmio32Be(__volatile__ void *base, const unsigned long offset,
 #     define write_mem_barrier()	/* NOP */
 #    endif /* __arm32__ */
 
-#   elif (defined(Lynx) || defined(linux) || defined(__OpenBSD__)) && defined(__powerpc__)
+#   elif (defined(Lynx) || defined(linux) || defined(__OpenBSD__) || defined(__NetBSD__)) && defined(__powerpc__)
 
 #    ifndef MAP_FAILED
 #     define MAP_FAILED ((void *)-1)
