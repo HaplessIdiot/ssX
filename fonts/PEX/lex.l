@@ -1,5 +1,5 @@
 %{
-/* $TOG: lex.l /main/10 1998/02/09 11:54:08 kaleb $ */
+/* $Xorg: lex.l,v 1.3 2000/08/17 19:42:52 cpqbld Exp $ */
 
 /*****************************************************************
 
@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.9 1996/10/17 15:10:45 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.10 1998/10/02 06:49:06 dawes Exp $ */
 
 
 #include <ctype.h>
