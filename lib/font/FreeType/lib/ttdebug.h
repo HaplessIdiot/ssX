@@ -1,6 +1,8 @@
 /* Simple debugging component. Should be replaced by Pavel's version */
 /* real soon now :)                                                  */
 
+/* $XFree86: $ */
+  
 #ifndef TTDEBUG_H
 #define TTDEBUG_H
 

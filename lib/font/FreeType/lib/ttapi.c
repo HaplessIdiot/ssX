@@ -22,6 +22,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "freetype.h"
 #include "ttcommon.h"
 #include "ttengine.h"

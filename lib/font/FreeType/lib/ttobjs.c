@@ -15,6 +15,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "ttobjs.h"
 #include "ttfile.h"
 #include "ttcalc.h"

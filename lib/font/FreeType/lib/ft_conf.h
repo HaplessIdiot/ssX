@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+  
 /* ft_conf.h.  Generated automatically by configure.  */
 /* ft_conf.h.in.  Generated automatically from configure.in by autoheader.  */
 

@@ -15,6 +15,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "ttobjs.h"
 #include "tterror.h"
 #include "ttfile.h"
