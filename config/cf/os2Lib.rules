@@ -2,7 +2,7 @@ XCOMM $Xorg: os2Lib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.12 2001/01/17 16:22:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.13tsi Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -71,8 +71,8 @@ Concat(libname,os2.def): Concat(libname,-def.cpp)			@@\
 	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) $(CONFIGSRC)/cf/os2def.db libname @@\
 	cmd /c $(subst /,\\,$(CONFIGSRC)/util/makedef.cmd) -O1 $(CONFIGSRC)/cf/os2def.db libname @@\
 									@@\
-Concat3(libname,rev,.dll):  $(OBJS) Concat(libname,os2.def)		@@\
-	$(SHLD) -o $@ $(OBJS) $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)	@@\
+Concat3(libname,rev,.dll):  solist Concat(libname,os2.def)		@@\
+	$(SHLD) -o $@ solist $(REQUIREDLIBS) $(SHADDLIBS) Concat(libname,o_os2.def)	@@\
 	BuildDllSupportLibs3(libname,rev)				@@\
 	LinkBuildLibrary3(libname,rev,.dll)				@@\
 									@@\

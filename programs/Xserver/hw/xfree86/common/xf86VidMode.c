@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.12 2001/05/06 21:59:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.13 2002/05/02 15:20:19 tsi Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -329,12 +329,17 @@ VidModeGetViewPort(int scrnIndex, int *x, int *y)
 Bool
 VidModeSwitchMode(int scrnIndex, pointer mode)
 {
+    ScrnInfoPtr pScrn;
+
     DEBUG_P("VidModeSwitchMode");
 
     if (!VidModeAvailable(scrnIndex))
 	return FALSE;
 
-    return xf86SwitchMode(xf86Screens[scrnIndex]->pScreen, mode);
+    pScrn = xf86Screens[scrnIndex];
+    /* Force a mode switch */
+    pScrn->currentMode = NULL;
+    return xf86SwitchMode(pScrn->pScreen, mode);
 }
 
 Bool
