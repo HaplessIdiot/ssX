@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX February 2002)
+  42. Reimplement Xft library on top of new fontconfig library (Keith Packard).
   41. Resync with the final Mesa-3.4.x-based DRI trunk.
   40. Add support for wscons bell (Jason Wright). 
   39. Fix IBM-reported bug that could cause PCI bus lockouts with second
