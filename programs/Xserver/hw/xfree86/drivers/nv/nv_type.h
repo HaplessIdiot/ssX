@@ -8,6 +8,7 @@
 #include "vgaHW.h"
 #include "xaa.h"
 #include "xf86Cursor.h"
+#include "xf86int10.h"
 
 #define SetBitField(value,from,to) SetBF(to, GetBF(value,from))
 #define SetBit(n) (1<<(n))
