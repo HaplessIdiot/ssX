@@ -501,9 +501,10 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 	     pSiS->VBFlags |= TV_PAL;
 	     if(CR35 & 0x04)      pSiS->VBFlags |= TV_PALM;
 	     else if(CR35 & 0x08) pSiS->VBFlags |= TV_PALN;
-	  } else
+	  } else {
 	     pSiS->VBFlags |= TV_NTSC;
 	     if(CR35 & 0x02)      pSiS->VBFlags |= TV_NTSCJ;
+	  }
        } else {	/* 315, 330 */
 	  if(SR38 & 0x01) {
              pSiS->VBFlags |= TV_PAL;
