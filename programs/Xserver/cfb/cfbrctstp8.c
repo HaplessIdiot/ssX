@@ -31,7 +31,7 @@ Author: Keith Packard, MIT X Consortium
 */
 
 /* $XConsortium: cfbrctstp8.c,v 1.17 94/04/17 20:28:59 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.0 1996/12/09 11:50:55 dawes Exp $ */
 
 #if PSZ == 8
 
@@ -77,12 +77,10 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     register unsigned long bits;	/* bits from stipple */
     int	rot, lastStop, i;
     register unsigned long  xor, and;
-    cfbPrivGCPtr	    devPriv;
     PixmapPtr		    stipple;
     int	    wEnd;
 
-    devPriv = cfbGetGCPrivate(pGC);
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
 
     cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
@@ -265,7 +263,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     register int    nlw;
     
     devPriv = cfbGetGCPrivate(pGC);
-    stipple = devPriv->pRotatedPixmap;
+    stipple = pGC->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb/mfbbitblt.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb/mfbbitblt.c,v 1.1 1997/04/12 14:11:30 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -215,7 +215,7 @@ int dstx, dsty;
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = pGC->pCompositeClip;
 	}
 	else
 	{
@@ -237,7 +237,7 @@ int dstx, dsty;
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = pGC->pCompositeClip;
 	    }
 	    else
 	    {
@@ -323,7 +323,7 @@ int dstx, dsty;
 	/* If the destination composite clip is one rectangle we can
 	   do the clip directly.  Otherwise we have to create a full
 	   blown region and call intersect */
-	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
@@ -359,8 +359,7 @@ int dstx, dsty;
 
     if (!fastClip)
     {
-	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
-	 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, pGC->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -390,7 +389,7 @@ int dstx, dsty;
     }
 
     prgnExposed = NULL;
-    if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose) 
+    if (pGC->fExpose) 
     {
         /* Pixmap sources generate a NoExposed (we return NULL to do this) */
         if (!fastExpose)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.22 1998/01/11 03:48:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.23 1998/01/24 16:56:31 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -173,13 +173,17 @@ ScrnInfoRec glintInfoRec = {
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
-    0			/* int MemClk */
+    0,			/* int MemClk */
 #ifdef XFreeXDGA
-    ,0,			/* int directMode */
+    0,			/* int directMode */
     NULL,		/* Set Vid Page */
     0,			/* unsigned long physBase */
     0,			/* int physSize */
 #endif
+#ifdef XF86SETUP
+    NULL,		/* void *device */
+#endif
+    FALSE		/* hasDirectColor */
 };
 
 #if defined(XFree86LOADER)

@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: cfbpolypnt.c,v 5.17 94/04/17 20:28:57 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpolypnt.c,v 3.0 1996/06/29 09:05:47 dawes Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -106,7 +106,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     rop = devPriv->rop;
     if (rop == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     xor = devPriv->xor;
     if ((mode == CoordModePrevious) && (npt > 1))
     {

@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbimggblt.c,v 5.17 94/04/17 20:28:25 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbimggblt.c,v 3.0 1995/06/14 12:43:46 dawes Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -167,9 +167,8 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y2 = y + info.overallDescent;
 
     /* UNCLEAN CODE
-       we know the mfbPolyFillRect uses only three fields in
-       devPrivate[mfbGCPrivateIndex].ptr, two of which (the rotated
-       tile/stipple and the ropFillArea) are 
+       we know the mfbPolyFillRect uses only two fields in
+       devPrivate[mfbGCPrivateIndex].ptr, one of which (ropFillArea) is
        irrelevant for solid filling, so we just poke the FillArea
        field.  the GC is now in an inconsistent state, but we'll fix
        it as soon as PolyFillRect returns.  fortunately, the server
@@ -198,8 +197,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = oldFillArea;
 
     /* the faint-hearted can open their eyes now */
-    switch (RECT_IN_REGION(pGC->pScreen, 
-	((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -328,7 +326,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	}
 
-	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	pbox = REGION_RECTS(cclip);
 	nbox = REGION_NUM_RECTS(cclip);
 

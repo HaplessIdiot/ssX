@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.3 1996/12/30 13:59:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.4 1996/12/31 07:05:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -336,10 +336,7 @@ PclCopyArea(DrawablePtr pSrc,
     miTranslateRegion( drawRegion, dstx, dsty );
     
     region = miRegionCreate( NULL, 0 );
-    miIntersect( region, drawRegion,
-		((PclGCPrivPtr)
-		 (pGC->devPrivates[PclGCPrivateIndex].ptr))
-		->pCompositeClip );
+    miIntersect( region, drawRegion, pGC->pCompositeClip );
 
     /*
      * Now select the operation to be performed on each box in the

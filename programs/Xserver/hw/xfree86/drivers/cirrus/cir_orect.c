@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_orect.c,v 1.1 1997/03/06 23:15:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_orect.c,v 1.2 1998/01/24 16:57:59 hohndel Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -76,7 +76,6 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
     BoxPtr      pClipRects;     /* points to the list of clip rects */
     int         xOrigin;        /* Drawables x origin */
     int         yOrigin;        /* Drawables x origin */
-    cfbPrivGC  *pGCPriv;        /* pointer to private GC */
     xRectangle *pRect;          /* list of rects */
     int         nRects;         /* running count of number of rects */
     int         origX1, origY1; /* original rectangle's U/L corner */
@@ -103,8 +102,6 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	miPolyRectangle(pDrawable, pGC, nRectsInit, pRectsInit);
 	return;
     }
-
-    pGCPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
 
     xOrigin = pDrawable->x;
     yOrigin = pDrawable->y;
@@ -137,8 +134,8 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 
     base = vgaLinearBase;	/* Assume linear addressing. */
 
-    for ( nClipRects = REGION_NUM_RECTS(pGCPriv->pCompositeClip),
-          pClipRects = REGION_RECTS(pGCPriv->pCompositeClip);
+    for ( nClipRects = REGION_NUM_RECTS(pGC->pCompositeClip),
+          pClipRects = REGION_RECTS(pGC->pCompositeClip);
 	  nClipRects > 0; 
 	  nClipRects--, pClipRects++ )
     {

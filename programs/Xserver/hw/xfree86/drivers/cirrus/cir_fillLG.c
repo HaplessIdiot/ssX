@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillLG.c,v 3.2 1996/12/27 07:05:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_fillLG.c,v 1.1 1997/03/06 23:15:27 hohndel Exp $ */
 
 
 #include "vga256.h"
@@ -243,7 +243,7 @@ CirrusLgPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     }
     
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
     switch (pGC->fillStyle)

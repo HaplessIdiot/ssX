@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplply1rct.c,v 3.0 1996/08/18 01:55:00 dawes Exp $ */
 /*
  * $XConsortium: iplply1rct.c,v 1.14 94/04/17 20:28:56 dpw Exp $
  *
@@ -86,7 +86,7 @@ INTER_RROP_NAME(iplFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     
     devPriv = iplGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
-    if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
@@ -94,7 +94,7 @@ INTER_RROP_NAME(iplFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #endif
     origin = *((int *) &pDrawable->x);
     origin -= (origin & 0x8000) << 1;
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     INTER_RROP_FETCH_GCPRIV(devPriv);
     vertex1 = *((int *) &extents->x1) - origin;
     vertex2 = *((int *) &extents->x2) - origin - 0x00010001;

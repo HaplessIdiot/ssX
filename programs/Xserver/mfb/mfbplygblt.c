@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbplygblt.c,v 5.14 94/04/17 20:28:29 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbplygblt.c,v 3.0 1995/06/14 12:43:48 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -156,8 +156,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y1 = y - info.overallAscent;
     bbox.y2 = y + info.overallDescent;
 
-    switch (RECT_IN_REGION(pGC->pScreen, 
-           ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -286,7 +285,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	}
 
-	cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	pbox = REGION_RECTS(cclip);
 	nbox = REGION_NUM_RECTS(cclip);
 

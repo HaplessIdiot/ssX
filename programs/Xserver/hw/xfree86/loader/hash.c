@@ -5,7 +5,7 @@
 
 /*
  *
- * Copyright 1995,96 by Metro Link, Inc.
+ * Copyright 1995-1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,49 +26,67 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <string.h>
+#if defined(Lynx)
+#define MAXINT	32000
+#else
+#include <values.h>
+#endif
 
+#include "os.h"
+#include "Xos.h"
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern void free();
+#endif
+#include "sym.h"
 #include "loader.h"
+#include "hash.h"
 
-#define HASHDIV 8
-#define HASHSIZE (1<<HASHDIV)
+/* Prototypes for static functions. */
+static unsigned int hashFunc(const char *);
+static itemPtr LoaderHashFindNearest(
+#if NeedFunctionPrototypes
+int
+#endif
+);
 
 static itemPtr LoaderhashTable[ HASHSIZE ] ;
 
 #ifdef DEBUG
 static int hashhits[ HASHSIZE ] ;
 
-DumpHashHits()
+void
+DumpHashHits(void)
 {
-int	i;
-int	depth=0;
-int	dev=0;
+    int	i;
+    int	depth=0;
+    int	dev=0;
 
-for(i=0;i<HASHSIZE;i++) {
-	ErrorF("hashists[%d]=%d\n", i, hashhits[i] );
+    for(i=0;i<HASHSIZE;i++) {
+	ErrorF("hashhits[%d]=%d\n", i, hashhits[i] );
 	depth += hashhits[i];
-	}
+    }
 
-depth /= HASHSIZE;
-ErrorF("Average hash depth=%d\n", depth );
+    depth /= HASHSIZE;
+    ErrorF("Average hash depth=%d\n", depth );
 
-for(i=0;i<HASHSIZE;i++) {
+    for(i=0;i<HASHSIZE;i++) {
 	if( hashhits[i] < depth )
-		dev += depth-hashhits[i];
+	    dev += depth-hashhits[i];
 	else
-		dev += hashhits[i]-depth;
-	}
+	    dev += hashhits[i]-depth;
+    }
 
-dev /=HASHSIZE;
-ErrorF("Average hash deviation=%d\n", dev );
+    dev /=HASHSIZE;
+    ErrorF("Average hash deviation=%d\n", dev );
 }
 #endif
 
 
 static unsigned int
-  hashFunc( string )
-char * string ;
+hashFunc(string)
+const char *string;
 {
     int i=0; 
 
@@ -96,75 +114,87 @@ char * string ;
     return HASH;
 }
 
+void
 LoaderHashAdd( entry )
-     itemPtr entry ;
+    itemPtr entry ;
 {
   int bucket = hashFunc( entry->name ) ;
   itemPtr oentry;
 
-  if( oentry=LoaderHashFind( entry->name ) )
+  if ((oentry = LoaderHashFind(entry->name)) != NULL)
 	LoaderDuplicateSymbol(entry->name, oentry->handle);
 
   entry->next = LoaderhashTable[ bucket ] ;
   LoaderhashTable[ bucket ] = entry ;
-  return 0 ;
+  return;
 }
 
 void
-LoaderAddSymbols( handle, list )
+LoaderAddSymbols(handle, module, list)
 int	handle;
+int	module;
 LOOKUP	*list ;
 {
-  LOOKUP	*l = list ;
-  itemPtr	 i ;
-  char		*p;
-  char		*modname;
-  char		*newmodname;
+    LOOKUP	*l = list;
+    itemPtr	i;
+    char		*p;
+    char		*modname;
+    char		*newmodname;
 
-  while ( l->symName ) {
-    i = (itemPtr) malloc( sizeof( itemRec )) ;
-    i->name = l->symName ;
-    if( strcmp(i->name,"ModuleInit") == 0 )
-    {
-      /*
-       * special handling for symbol name "ModuleInit"
-       */
-      modname = _LoaderHandleToName(handle);
-      if( modname )
-      {
-        newmodname = strdup(modname);
-        p = strrchr(newmodname,'.');
-	if( p )
-	  *p = '\0';
-	p = strrchr(newmodname,'/');
-	if( p )
-	  p++;
-	else
-	  p = newmodname;
-      }
-      i->name = (char*)malloc(strlen(p)+11);
-      if( i->name )
-      {
-        strcpy(i->name,p);
-	strcat(i->name,"ModuleInit");
-      }
-      free(newmodname);
+    if (!list)
+	return;
+    /* Visit every symbol in the lookup table,
+     * and add it to the given namespace.
+     */
+    while ( l->symName ) {
+	i = (itemPtr) xalloc( sizeof( itemRec )) ;
+	i->name = l->symName ;
+	if( strcmp(i->name,"ModuleInit") == 0
+#if defined(__powerpc__) && defined(Lynx)
+	  || strcmp(i->name,".ModuleInit") == 0
+#endif
+	  )
+	    {
+		char *origname=i->name;
+		/*
+		 * special handling for symbol name "ModuleInit"
+		 */
+		modname = _LoaderHandleToName(handle);
+		if( modname )
+		    {
+			newmodname = strdup(modname);
+			p = strrchr(newmodname,'.');
+			if( p )
+			    *p = '\0';
+			p = strrchr(newmodname,'/');
+			if( p )
+			    p++;
+			else
+			    p = newmodname;
+
+			i->name = (char*)xalloc(strlen(p)+11);
+			if( i->name )
+			    {
+				strcpy(i->name,p);
+				strcat(i->name,origname);
+			    }
+			free(newmodname);
+		    }
 #ifdef DEBUG
-      ErrorF("Add module init function %s \n",i->name);
+		ErrorF("Add module init function %s \n",i->name);
 #endif
+	    }
+	i->address = (char *) l->offset ;
+	i->handle = handle ;
+	i->module = module ;
+	LoaderHashAdd( i );
+	l ++ ;
     }
-    i->address = (char *) l->offset ;
-#ifdef HANDLE_IN_HASH_ENTRY
-    i->handle = handle ;
-#endif
-    LoaderHashAdd( i ) ;
-    l ++ ;
-  }
 }
 
 itemPtr
-  LoaderHashDelete( string )
-char * string ;
+LoaderHashDelete(string)
+const char *string;
 {
   int bucket = hashFunc( string ) ;
   itemPtr entry;
@@ -175,8 +205,8 @@ char * string ;
   while ( entry ) {
     if (! strcmp( entry->name, string )) {
       *entry2=entry->next;
-      free( entry->name ) ; /* strdup */
-      free( entry ) ;
+      xfree(entry->name);
+      xfree( entry ) ;
       return 0 ;
     }
     entry2 = &(entry->next) ;
@@ -186,28 +216,27 @@ char * string ;
 }
 
 itemPtr
-  LoaderHashFind( string )
-char * string ;
+LoaderHashFind(string)
+const char *string;
 {
-  int bucket = hashFunc( string ) ;
-  itemPtr entry ;
-
-  entry = LoaderhashTable[ bucket ] ;
-  while ( entry ) {
-    if (! strcmp( entry->name, string ))
-      return entry ;
-    entry = entry->next ;
-  }
-  return 0 ;
+    int bucket = hashFunc( string ) ;
+    itemPtr entry ;
+	entry = LoaderhashTable[ bucket ] ;
+	while ( entry ) {
+	    if (!strcmp(entry->name, string))
+		return entry;
+	    entry = entry->next;
+	}
+    return 0;
 }
 
-itemPtr
-  LoaderHashFindNearset( address )
-int address ;
+static itemPtr
+LoaderHashFindNearest(address)
+int address;
 {
   int i ;
   itemPtr entry, best_entry = 0 ;
-  int best_difference ;
+  int best_difference = MAXINT;
 
   for ( i = 0 ; i < HASHSIZE ; i ++ ) {
     entry = LoaderhashTable[ i ] ;
@@ -231,31 +260,42 @@ int address ;
   return best_entry ;
 }
 
-LoaderPrintSymbol( address )
-int address ;
+void
+LoaderPrintSymbol(address)
+unsigned long address;
 {
-itemPtr	entry;
-
-entry=LoaderHashFindNearset(address);
-ErrorF("0x%x %s+%x\n", entry->address, entry->name,(address-(int)entry->address) );
-}
-
-LoaderPrintAddress( symbol )
-char *symbol ;
-{
-itemPtr	entry;
-
-entry=LoaderHashFind(symbol);
-if (entry) 
-    ErrorF("0x%x %s\n", entry->address, entry->name );
-else
-    ErrorF("Symbol not found\n");
+    itemPtr	entry;
+    entry=LoaderHashFindNearest(address);
+    if (entry) {
+	ErrorF("0x%x %s+%x\n", entry->address, entry->name,
+		   address - (unsigned long) entry->address);
+    } else {
+	ErrorF("(null)\n");
+    }
 }
 
 void
-  LoaderHashTraverse( card, fnp )
-void *card ;
-int (* fnp ) () ;
+LoaderPrintItem(itemPtr pItem)
+{
+    if (pItem)
+	ErrorF("0x%x %s\n", pItem->address, pItem->name);
+    else
+	ErrorF("(null)\n");
+}
+	
+void
+LoaderPrintAddress(symbol)
+const char *symbol;
+{
+    itemPtr	entry;
+    entry = LoaderHashFind(symbol);
+    LoaderPrintItem(entry);
+}
+
+void
+LoaderHashTraverse(card, fnp)
+    void *card;
+    int (*fnp)(void *, itemPtr);
 {
   int i ;
   itemPtr entry, last_entry = 0 ;
@@ -267,14 +307,14 @@ int (* fnp ) () ;
       if (( * fnp )( card, entry )) {
 	if ( last_entry ) {
 	  last_entry->next = entry->next ;
-	  free( entry->name ) ;
-	  free( entry ) ;
+	  xfree( entry->name ) ;
+	  xfree( entry ) ;
 	  entry = last_entry->next ;
 	}
 	else {
 	  LoaderhashTable[ i ] = entry->next ;
-	  free( entry->name ) ;
-	  free( entry ) ;
+	  xfree( entry->name ) ;
+	  xfree( entry ) ;
 	  entry = LoaderhashTable[ i ] ;
 	}
       }
@@ -284,4 +324,20 @@ int (* fnp ) () ;
       }
     }
   }
+}
+
+void
+LoaderDumpSymbols()
+{
+	itemPtr       entry;
+	int           i,j;
+		
+	for (j=0; j<HASHSIZE; j++) {
+		entry = LoaderhashTable[j];
+		while (entry) {
+			LoaderPrintItem(entry);
+			entry = entry->next;
+		}
+	}
+		
 }

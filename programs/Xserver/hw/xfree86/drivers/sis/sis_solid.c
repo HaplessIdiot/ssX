@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_solid.c,v 1.1 1997/03/06 23:16:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_solid.c,v 1.2 1998/01/24 16:58:23 hohndel Exp $ */
 
 /*
  * 
@@ -209,9 +209,7 @@ sisMMIOFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 	break;
     }
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)
-	    (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-	->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
     initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -222,10 +220,7 @@ sisMMIOFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 	    DEALLOCATE_LOCAL(pwidth);
 	return;
     }
-    n = miClipSpans(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))
-	->pCompositeClip,
-	pptInit, pwidthInit, nInit,
-	ppt, pwidth, fSorted);
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit, ppt, pwidth, fSorted);
 
     RROP_FETCH_GC(pGC);
 

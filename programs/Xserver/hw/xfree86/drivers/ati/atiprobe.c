@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.3 1997/10/25 13:50:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.4tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -389,7 +389,7 @@ ATIProbe(void)
     CARD8 BIOS[BIOS_SIZE];
 #   define BIOSByte(_n)     (*((CARD8  *)(BIOS + (_n))))
 #   define BIOSWord(_n)     (*((CARD16 *)(BIOS + (_n))))
-    CARD32 IO_Value, IO_Value2;
+    CARD32 IO_Value = 0, IO_Value2;
     unsigned int Signature = No_Signature;
     int saved_BIOSbase = vga256InfoRec.BIOSbase;
     int MachvideoRam = 0;
@@ -401,15 +401,46 @@ ATIProbe(void)
         {0, 256, 512, 1024, 2*1024, 4*1024, 6*1024, 8*1024, 12*1024, 16*1024, 0};
     int ROMTable = 0, ClockTable = 0, FrequencyTable = 0, Index;
     const DACRec *DAC;
-    pciConfigPtr PCIDevice;
-    pciConfigPtr *pcrpp;
+    pciConfigPtr PCIDevice, *PCIInfo = NULL;
+    static pciConfigPtr NoPCI = NULL;
 
     /* Get out if this isn't the driver the user wants */
     if (!ATIIdentProbe())
         return FALSE;
 
+    /* First, get PCI information, unless requested not to */
+    if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options))
+        PCIInfo = xf86scanpci(vga256InfoRec.scrnIndex);
+    if (!PCIInfo)
+        PCIInfo = &NoPCI;
+
     /* Enable the I/O ports needed for probing */
     xf86EnableIOPorts(vga256InfoRec.scrnIndex);
+
+    /*
+     * It is quite possible for a system to preclude the existence of a mix of
+     * sparse I/O and block I/O devices.  Scan PCI configuration space, if
+     * available, for any registered I/O ranges which would in most cases
+     * preclude the existence of an 8514/A compatible device.  The following
+     * check is a bit of an overkill, but will do for now.
+     */
+    Index = 0;
+    while ((PCIDevice = PCIInfo[Index++]))
+    {
+        CARD32 *BasePointer = &PCIDevice->_base0;
+
+        /* Check all six base addresses */
+        for (;  BasePointer <= &PCIDevice->_base5;  BasePointer++)
+        {
+            /* Skip 8514/A probe if this device has registered an I/O range */
+            if (*BasePointer & 1U)
+                goto Skip8514Probe;
+
+            /* Allow for 64-bit memory addresses */
+            if (*BasePointer & 4U)
+                BasePointer++;
+        }
+    }
 
     /*
      * Save register value to be modified, just in case there is no 8514/A
@@ -483,12 +514,19 @@ ATIProbe(void)
                 ATIAdapter = ATI_ADAPTER_8514A;
         }
     }
-
-    else if (ATIAdapter == ATI_ADAPTER_NONE)
+    else
     {
         /* Restore register clobbered by 8514/A reset attempt */
         outw(SUBSYS_CNTL, IO_Value);
+    }
 
+Skip8514Probe:
+    /*
+     * At this point, a non-NULL PCIDevice means that sparse I/O probes are not
+     * to be done, unless directed by the user.
+     */
+    if (ATIAdapter == ATI_ADAPTER_NONE)
+    {
         /*
          * Determine if a Mach64 is present.  First, check the user's IObase.
          */
@@ -497,24 +535,26 @@ ATIProbe(void)
         else if (vga256InfoRec.IObase & SPARSE_IO_SELECT)
             ATIMach64Probe(vga256InfoRec.IObase & BLOCK_IO_BASE, BLOCK_IO, 0);
 
-        /* Check the "standard" sparse I/O bases */
-        ATIMach64Probe(0x02ECU, SPARSE_IO, 0);
-        ATIMach64Probe(0x01C8U, SPARSE_IO, 0);
-        ATIMach64Probe(0x01CCU, SPARSE_IO, 0);
+        if (!PCIDevice)
+        {
+            /* Check the "standard" sparse I/O bases */
+            ATIMach64Probe(0x02ECU, SPARSE_IO, 0);
+            ATIMach64Probe(0x01C8U, SPARSE_IO, 0);
+            ATIMach64Probe(0x01CCU, SPARSE_IO, 0);
+        }
 
         /* Lastly, check PCI configuration space */
-	pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
-	for (Index = 0, PCIDevice = pcrpp[0];
-	     (ATIAdapter == ATI_ADAPTER_NONE) && PCIDevice;
-	     PCIDevice = pcrpp[++Index]) {
-	    if (PCIDevice->_vendor != PCI_VENDOR_ATI)
-		continue;
-	    if (PCIDevice->_device == PCI_CHIP_MACH32)
-		continue;
-	    ATIMach64Probe(PCIDevice->_base1 & BLOCK_IO_BASE, BLOCK_IO,
-			   PCIDevice->_device);
+        Index = 0;
+        while ((ATIAdapter == ATI_ADAPTER_NONE) &&
+               (PCIDevice = PCIInfo[Index++]))
+        {
+            if (PCIDevice->_vendor != PCI_VENDOR_ATI)
+                continue;
+            if (PCIDevice->_device == PCI_CHIP_MACH32)
+                continue;
+            ATIMach64Probe(PCIDevice->_base1 & BLOCK_IO_BASE, BLOCK_IO,
+                PCIDevice->_device);
         }
-	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
     }
 
     /* Extract various information from any detected accelerator */
@@ -647,7 +687,10 @@ ATIProbe(void)
                 if ((ATIChip < ATI_CHIP_264VT) || (IO_Value2 & CFG_VGA_EN_T))
                     ATIVGAAdapter = ATI_ADAPTER_MACH64;
 
-                ATIBusType = ATI_BUS_PCI;       /* **ALWAYS** */
+                if ((ATIChipType == 0x4742U) || (ATIChipType == 0x4744U))
+                    ATIBusType = ATI_BUS_AGP;
+                else
+                    ATIBusType = ATI_BUS_PCI;
                 ATIMemoryType = GetBits(IO_Value2, CFG_MEM_TYPE_T);
             }
 
@@ -969,7 +1012,20 @@ ATIProbe(void)
          * use for the video modes generated by the server.
          */
         if (!ATIUsingPlanarModes && (ATIChipSet == ATI_CHIPSET_ATI))
+        {
             ATICRTC = ATI_CRTC_MACH64;
+
+            /* Support higher depths on integrated controllers */
+            if (ATIChip >= ATI_CHIP_264CT)
+            {
+                if ((xf86weight.red == 5) && (xf86weight.blue == 5) &&
+                    (xf86weight.green >= 5) && (xf86weight.green <= 6))
+                    ATI.ChipHas15bpp =
+                        ATI.ChipHas16bpp = TRUE;
+                ATI.ChipHas24bpp = 
+                    ATI.ChipHas32bpp = TRUE;
+            }
+        }
 
         /*
          * Decide which aperture(s) to enable to allow CPU access to video
@@ -1017,29 +1073,38 @@ ATIProbe(void)
                     ATI.ChipUseLinearAddressing = TRUE;
             }
 
-            /*
-             * Enable the small dual paged apertures, even if the linear
-             * aperture is available.
-             */
-            ATIUsingSmallApertures = TRUE;
-
-            /* Reset banking functions */
-            if (ATIUsingPlanarModes)
+            if (ATIVGAAdapter == ATI_ADAPTER_NONE)
             {
-                ATI.ChipSetRead = ATIMach64SetReadPlanar;
-                ATI.ChipSetWrite = ATIMach64SetWritePlanar;
-                ATI.ChipSetReadWrite = ATIMach64SetReadWritePlanar;
+                /* Reset banking functions */
+                ATI.ChipSetRead = ATI.ChipSetWrite =
+                    ATI.ChipSetReadWrite = (BankFunction *)NoopDDA;
             }
             else
             {
-                ATI.ChipSetRead = ATIMach64SetReadPacked;
-                ATI.ChipSetWrite = ATIMach64SetWritePacked;
-                ATI.ChipSetReadWrite = ATIMach64SetReadWritePacked;
-            }
+                /*
+                 * Enable the small dual paged apertures, even if the linear
+                 * aperture is available.
+                 */
+                ATIUsingSmallApertures = TRUE;
 
-            /* Set banking port numbers */
-            ATIIOPortMEM_VGA_RP_SEL = ATIIOPort(MEM_VGA_RP_SEL);
-            ATIIOPortMEM_VGA_WP_SEL = ATIIOPort(MEM_VGA_WP_SEL);
+                /* Reset banking functions */
+                if (ATIUsingPlanarModes)
+                {
+                    ATI.ChipSetRead = ATIMach64SetReadPlanar;
+                    ATI.ChipSetWrite = ATIMach64SetWritePlanar;
+                    ATI.ChipSetReadWrite = ATIMach64SetReadWritePlanar;
+                }
+                else
+                {
+                    ATI.ChipSetRead = ATIMach64SetReadPacked;
+                    ATI.ChipSetWrite = ATIMach64SetWritePacked;
+                    ATI.ChipSetReadWrite = ATIMach64SetReadWritePacked;
+                }
+
+                /* Set banking port numbers */
+                ATIIOPortMEM_VGA_RP_SEL = ATIIOPort(MEM_VGA_RP_SEL);
+                ATIIOPortMEM_VGA_WP_SEL = ATIIOPort(MEM_VGA_WP_SEL);
+            }
         }
     }
 
@@ -1061,9 +1126,7 @@ ATIProbe(void)
         PutReg(GRAX, 0x51U, GetByte(ATIIOPortVGAWonder, 1) | ATIVGAOffset);
     }
 
-    /* Rebuild I/O port list.  Some of its entries might have changed */
     xf86DisableIOPorts(vga256InfoRec.scrnIndex);
-
     ATIEnterLeave(ENTER);               /* Unlock registers */
 
     /* Sometimes, the BIOS lies about the chip */
@@ -1075,8 +1138,9 @@ ATIProbe(void)
             ATIChip = IO_Value;
     }
 
-    if ((xf86Verbose) || (ATIVGAAdapter == ATI_ADAPTER_NONE) ||
-        (ATIChip == ATI_CHIP_NONE) || (ATIChip == ATI_CHIP_Mach64))
+    if ((xf86Verbose) ||
+        (ATIChip == ATI_CHIP_NONE) || (ATIChip == ATI_CHIP_Mach64) ||
+        ((ATIVGAAdapter == ATI_ADAPTER_NONE) && (ATICRTC == ATI_CRTC_VGA)))
     {
         ErrorF("Using XFree86 ATI driver version " ATI_VERSION_NAME ".\n");
         ErrorF("%s graphics controller detected.\n", ATIChipNames[ATIChip]);
@@ -1148,9 +1212,10 @@ ATIProbe(void)
         case ATI_ADAPTER_MACH32:
         case ATI_ADAPTER_MACH64:
             if ((ATIVGAAdapter == ATI_ADAPTER_NONE) &&
-                (ATICRTC == ATI_CRTC_VGA))
+                (!ATI.ChipUseLinearAddressing || (ATICRTC == ATI_CRTC_VGA)))
             {
-                ErrorF("VGA capability is not available.\n");
+                ErrorF("VGA aperture is not available through this"
+                       " adapter.\n");
                 ATIEnterLeave(LEAVE);
                 vga256InfoRec.BIOSbase = saved_BIOSbase;
                 return FALSE;
@@ -1329,22 +1394,51 @@ ATIProbe(void)
         /* Planar modes also need a larger virtual X rounding */
         ATI.ChipRounding = 32;
     }
+    else if ((ATIChip >= ATI_CHIP_264CT) || (ATICRTC == ATI_CRTC_MACH64) ||
+             ((ATIChip <= ATI_CHIP_18800) && (ATIvideoRam == 256)))
+    {
+        ATI.ChipRounding = 8;   /* Reduce virtual X rounding requirements */
+#       ifdef __TSI__
+            /* A temporary kludge */
+            if (!ATI.ChipUseLinearAddressing &&
+                (vga256InfoRec.bitsPerPixel == 24))
+                ATI.ChipRounding = 5464;
+#       endif /* __TSI__ */
+    }
 
     if (ATI.ChipUseLinearAddressing)
     {
-        ErrorF("Using %dMB linear aperture at 0x%08X.\n",
-            ATI.ChipLinearSize >> 20, ATI.ChipLinearBase);
-
         MachvideoRam = (ATI.ChipLinearSize >> 10) - 2;  /* 4? */
         if (vga256InfoRec.videoRam > MachvideoRam)
         {
-            /*
-             * Don't allow virtual resolution to overlay register aperture(s).
-             */
-            vga256InfoRec.videoRam = MachvideoRam;
-            ErrorF("Virtual resolutions will be limited to %dkB to account"
-                   " for\n accelerator register aperture.\n", MachvideoRam);
+            if (ATIChip < ATI_CHIP_264VTB)
+            {
+                /*
+                 * Don't allow virtual resolution to overlay register
+                 * aperture(s).
+                 */
+                vga256InfoRec.videoRam = MachvideoRam;
+                ErrorF("Virtual resolutions will be limited to %dkB to account"
+                       " for\n accelerator register aperture.\n", MachvideoRam);
+            }
+            else
+            {
+                /*
+                 * On VTB's and later, ATIInit disables the primary register
+                 * aperture.  This is done so the driver can get at the frame
+                 * buffer memory behind it.  For MMIO purposes, the auxillary
+                 * register aperture will be used instead.  Also, ignore the
+                 * CONFIG_CNTL register's indication of linear aperture size,
+                 * as it is insufficient for adapters with more than 8MB of
+                 * video memory.
+                 */
+                if (vga256InfoRec.videoRam > (8 * 1024))
+                    ATI.ChipLinearSize = 16 * 1024 * 1024;
+            }
         }
+
+        ErrorF("Using %dMB linear aperture at 0x%08X.\n",
+            ATI.ChipLinearSize >> 20, ATI.ChipLinearBase);
 
         /* Only mmap what is needed */
         ATI.ChipLinearSize = vga256InfoRec.videoRam * 1024;
@@ -1384,7 +1478,11 @@ ATIProbe(void)
         ATIDivide(vga256InfoRec.videoRam, WindowSize, 10, 1);
 
     if (!ATIUsingSmallApertures)
+    {
         ATISelectBankFunction = ATI.ChipSetReadWrite;
+        if (ATIVGAAdapter == ATI_ADAPTER_NONE)
+            ATICurrentBanks = 1;
+    }
     else if (!(inb(ATIIOPortCONFIG_CNTL) & CFG_MEM_VGA_AP_EN))
     {
         ATICurrentBanks = 1;
@@ -1400,8 +1498,7 @@ ATIProbe(void)
      * dependent on what the RAMDAC can handle (in non-pixmux mode, for now).
      * For an internal DAC, assume it can handle whatever frequency the
      * internal PLL can produce (with the reference divider set by BIOS
-     * initialization), but default maxClock to 135MHz (170MHz for VTB and
-     * later).
+     * initialization), but default maxClock to a lower chip-specific default.
      */
     if ((ATIDac & ~0x0FU) == ATI_DAC_INTERNAL)
     {
@@ -1410,7 +1507,14 @@ ATIProbe(void)
             int DefaultmaxClock = 135000;
 
             if ((ATIChip >= ATI_CHIP_264VTB) && (ATIChip != ATI_CHIP_Mach64))
-                DefaultmaxClock = 170000;
+            {
+                if (ATIChip >= ATI_CHIP_264GT3)
+                    DefaultmaxClock = 230000;
+                else if (ATIChip >= ATI_CHIP_264VT3)
+                    DefaultmaxClock = 200000;
+                else
+                    DefaultmaxClock = 170000;
+            }
             if (vga256InfoRec.dacSpeeds[0] > DefaultmaxClock)
                 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
             else if (DefaultmaxClock < vga256InfoRec.maxClock)
@@ -1437,7 +1541,7 @@ ATIProbe(void)
      * If user did not specify any modes, attempt to create a default mode.
      * Its timings will be taken from the mode in effect on driver entry.
      */
-    if (vga256InfoRec.modes == NULL)
+    if ((vga256InfoRec.modes == NULL) && (ATIVGAAdapter != ATI_ADAPTER_NONE))
     {
         const char *Message = NULL;
         int MaxScreen;
@@ -1451,7 +1555,7 @@ ATIProbe(void)
                 MaxScreen = vga256InfoRec.videoRam << 11;
             else
                 MaxScreen = (vga256InfoRec.videoRam << 13) /
-                    vga256InfoRec.depth;
+                    vga256InfoRec.bitsPerPixel;
 
         /* Get current timings */
         ATIGetMode(&DefaultMode);

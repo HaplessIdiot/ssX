@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.2 1997/10/25 13:50:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.3tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,6 +22,8 @@
  */
 
 #include "ati.h"
+#include "atiadapter.h"
+#include "atiadjust.h"
 #include "atichip.h"
 #include "aticlock.h"
 #include "aticonsole.h"
@@ -82,6 +84,14 @@ ATISwap(ATIHWPtr mode, Bool ToFB)
      * restoring its own video memory.
      */
     if (mode->crtc != ATI_CRTC_VGA)
+        return;
+
+    /*
+     * There's also no need to do this if the VGA aperture isn't accessible
+     * through the adapter being driven.
+     */
+    if ( /* (mode->crtc == ATI_CRTC_VGA) && */
+        (mode != ATINewHWPtr) && (ATIVGAAdapter == ATI_ADAPTER_NONE))
         return;
 
     if (ToFB)
@@ -262,17 +272,25 @@ ATISave(void *data)
     switch (save->crtc)
     {
         case ATI_CRTC_VGA:
-            /* Save VGA Wonder registers */
-            if (ATIChipHasVGAWonder)
-                ATIVGAWonderSave(save);
+            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+            {
+                /* Save VGA Wonder registers */
+                if (ATIChipHasVGAWonder)
+                    ATIVGAWonderSave(save);
 
-            /* Save VGA registers */
-            ATIVGASave(save);
+                /* Save VGA registers */
+                ATIVGASave(save);
+            }
 
             if (ATIChip >= ATI_CHIP_88800GXC)
             {
                 save->crtc_off_pitch = inl(ATIIOPortCRTC_OFF_PITCH);
                 save->config_cntl = inl(ATIIOPortCONFIG_CNTL);
+                save->mem_vga_wp_sel = inl(ATIIOPortMEM_VGA_WP_SEL);
+                save->mem_vga_rp_sel = inl(ATIIOPortMEM_VGA_RP_SEL);
+                save->dac_cntl = inl(ATIIOPortDAC_CNTL);
+                if (ATIChip >= ATI_CHIP_264VTB)
+                    save->bus_cntl = inl(ATIIOPortBUS_CNTL);
             }
             break;
 
@@ -330,6 +348,9 @@ ATIInit(DisplayModePtr mode)
 
     if (ATINewHWPtr == NULL)
     {
+        /* Initialize ATIAdjust */
+        ATIAdjustInit();
+
         /*
          * Check limits related to the virtual width.  A better place for this
          * would be in ATIValidMode were it not for the fact that the virtual
@@ -441,10 +462,25 @@ ATIInit(DisplayModePtr mode)
                 if (ATIChip >= ATI_CHIP_264CT)
                 {
                     ATINewHWPtr->config_cntl = inl(ATIIOPortCONFIG_CNTL);
+                    ATINewHWPtr->mem_vga_wp_sel =
+                        /* SetBits(0, MEM_VGA_WPS0) + */
+                        SetBits(ATINewHWPtr->planes, MEM_VGA_WPS1);
+                    ATINewHWPtr->mem_vga_rp_sel =
+                        /* SetBits(0, MEM_VGA_RPS0) + */
+                        SetBits(ATINewHWPtr->planes, MEM_VGA_RPS1);
+                    ATINewHWPtr->dac_cntl = inl(ATIIOPortDAC_CNTL);
+                    if (vga256InfoRec.depth > 8)
+                        ATINewHWPtr->dac_cntl |= DAC_8BIT_EN;
+                    else
+                        ATINewHWPtr->dac_cntl &= ~DAC_8BIT_EN;
                     if (ATIUsingSmallApertures)
                         ATINewHWPtr->config_cntl |= CFG_MEM_VGA_AP_EN;
                     else
                         ATINewHWPtr->config_cntl &= ~CFG_MEM_VGA_AP_EN;
+                    if (ATIChip >= ATI_CHIP_264VTB)
+                        ATINewHWPtr->bus_cntl = (inl(ATIIOPortBUS_CNTL) &
+                            ~(BUS_HOST_ERR_INT_EN | BUS_ROM_DIS)) |
+                            (BUS_HOST_ERR_INT | BUS_APER_REG_DIS);
                 }
                 break;
 
@@ -572,40 +608,53 @@ ATIRestore(void *data)
     switch (restore->crtc)
     {
         case ATI_CRTC_VGA:
-            ATISetVGAIOBase(restore->std.MiscOutReg);
+            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+            {
+                ATISetVGAIOBase(restore->std.MiscOutReg);
 
-            if (ATIChip >= ATI_CHIP_88800GXC)
-                outl(ATIIOPortCRTC_GEN_CNTL,
-                    restore->crtc_gen_cntl & ~CRTC_EN);
+                if (ATIChip >= ATI_CHIP_88800GXC)
+                    outl(ATIIOPortCRTC_GEN_CNTL,
+                        restore->crtc_gen_cntl & ~CRTC_EN);
 
-            /* Start sequencer reset */
-            PutReg(SEQX, 0x00U, 0x00U);
+                /* Start sequencer reset */
+                PutReg(SEQX, 0x00U, 0x00U);
+            }
 
             /* Set the pixel clock */
             if ((restore->FeedbackDivider > 0) &&
                 (ATIProgrammableClock != ATI_CLOCK_FIXED))
                 ATIClockRestore(restore);
 
-            /* Restore VGA Wonder registers */
-            if (ATIChipHasVGAWonder)
-                ATIVGAWonderRestore(restore);
+            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+            {
+                /* Restore VGA Wonder registers */
+                if (ATIChipHasVGAWonder)
+                    ATIVGAWonderRestore(restore);
 
-            /* Load VGA device */
-            ATIVGARestore(restore);
+                /* Load VGA device */
+                ATIVGARestore(restore);
+            }
 
             if (ATIChip >= ATI_CHIP_88800GXC)
             {
                 outl(ATIIOPortCRTC_GEN_CNTL, restore->crtc_gen_cntl);
+                outl(ATIIOPortMEM_VGA_WP_SEL, restore->mem_vga_wp_sel);
+                outl(ATIIOPortMEM_VGA_RP_SEL, restore->mem_vga_rp_sel);
                 if (ATIChip >= ATI_CHIP_264CT)
                 {
                     outl(ATIIOPortCRTC_OFF_PITCH, restore->crtc_off_pitch);
+                    outl(ATIIOPortDAC_CNTL, restore->dac_cntl);
                     outl(ATIIOPortCONFIG_CNTL, restore->config_cntl);
+                    outl(ATIIOPortBUS_CNTL, restore->bus_cntl);
                 }
             }
 
-            /* Give LUT access to CRTC */
-            (void) inb(GENS1(vgaIOBase));
-            outb(ATTRX, 0x20U);
+            if (ATIVGAAdapter != ATI_ADAPTER_NONE)
+            {
+                /* Give LUT access to CRTC */
+                (void) inb(GENS1(vgaIOBase));
+                outb(ATTRX, 0x20U);
+            }
             break;
 
         case ATI_CRTC_MACH64:

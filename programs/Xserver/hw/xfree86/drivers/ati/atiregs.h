@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.1 1997/07/29 13:25:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1994 through 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1994 through 1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -550,6 +550,7 @@
 #define CRTC_VLINE_CRNT_VLINE	IOPortTag(0x04u, 0x04u)
 #define CRTC_OFF_PITCH		IOPortTag(0x05u, 0x05u)
 #define CRTC_OFFSET			0x000ffffful
+#define CRTC_OFFSET_VGA			0x0003fffful
 /*	?				0x00300000ul */
 #define CRTC_PITCH			0xffc00000ul
 #define CRTC_INT_CNTL		IOPortTag(0x06u, 0x06u)
@@ -821,7 +822,11 @@
 /*	?				0xe0000000ul */
 #define CTL_MEM_PAGE_SIZE		0x30000000ul	/* VTB/GTB/LT */
 #define MEM_VGA_WP_SEL		IOPortTag(0x15u, 0x2du)
+#define MEM_VGA_WPS0			0x0000fffful
+#define MEM_VGA_WPS1			0xffff0000ul
 #define MEM_VGA_RP_SEL		IOPortTag(0x16u, 0x2eu)
+#define MEM_VGA_RPS0			0x0000fffful
+#define MEM_VGA_RPS1			0xffff0000ul
 #define LT_GIO			BlockIOTag(0x2fu)	/* LT */
 #define I2C_CNTL_1		BlockIOTag(0x2fu)	/* GT3 */
 #define DAC_REGS		IOPortTag(0x17u, 0x30u)	/* 4 separate bytes */

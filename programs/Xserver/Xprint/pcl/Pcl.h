@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.2 1997/01/14 22:14:14 dawes Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -160,8 +160,6 @@ typedef struct {
 } PclWindowPrivRec, *PclWindowPrivPtr;
 
 typedef struct {
-    unsigned freeCompClip;
-    RegionPtr pCompositeClip;
     unsigned long stippleFg, stippleBg;
 } PclGCPrivRec, *PclGCPrivPtr;
 

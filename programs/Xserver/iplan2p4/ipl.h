@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/ipl.h,v 3.0 1996/08/18 01:54:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipl.h,v 3.1 1996/12/31 04:18:21 dawes Exp $ */
 /* $XConsortium: ipl.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -61,10 +61,6 @@ typedef struct {
     unsigned char       ropOpStip;      /* rop for opaque stipple */
     /* this value is ropFillArea in mfb, usurped for ipl */
     unsigned char       oneRect;	/*  drawable has one clip rect */
-    unsigned		fExpose:1;	/* callexposure handling ? */
-    unsigned		freeCompClip:1;
-    PixmapPtr		pRotatedPixmap;
-    RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     unsigned long	xor, and;	/* reduced rop values */
     unsigned short 	xorg[INTER_PLANES],andg[INTER_PLANES];
     } iplPrivGC;
@@ -74,8 +70,7 @@ typedef iplPrivGC	*iplPrivGCPtr;
 #define iplGetGCPrivate(pGC)	((iplPrivGCPtr)\
 	(pGC)->devPrivates[iplGCPrivateIndex].ptr)
 
-#define iplGetCompositeClip(pGC) (((iplPrivGCPtr)\
-	(pGC)->devPrivates[iplGCPrivateIndex].ptr)->pCompositeClip)
+#define iplGetCompositeClip(pGC) ((pGC)->pCompositeClip)
 
 /* way to carry RROP info around */
 typedef struct {

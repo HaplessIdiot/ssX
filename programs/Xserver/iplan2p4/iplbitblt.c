@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplbitblt.c,v 3.0 1996/08/18 01:54:34 dawes Exp $ */
 /*
  * ipl copy area
  */
@@ -284,7 +284,7 @@ iplBitBlt (pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if ( iplGetGCPrivate(pGC)->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 

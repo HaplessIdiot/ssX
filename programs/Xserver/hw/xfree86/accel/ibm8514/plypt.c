@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/plypt.c,v 3.0 1996/11/18 13:09:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/plypt.c,v 3.1 1996/12/23 06:38:02 dawes Exp $ */
 
 /************************************************************
 
@@ -70,7 +70,6 @@ ibm8514PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register int    i;
     register BoxPtr pbox;
     int		    off;
-    cfbPrivGCPtr    devPriv;
     xPoint	    *pptPrev;
 
 /* 4-5-93 TCG : is VT visible */
@@ -80,10 +79,9 @@ ibm8514PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	return;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (pGC->alu == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     if ((mode == CoordModePrevious) && (npt > 1))
     {
 	for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++)

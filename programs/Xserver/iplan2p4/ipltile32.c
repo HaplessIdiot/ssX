@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipltile32.c,v 3.0 1996/08/18 01:55:10 dawes Exp $ */
 /*
  * Fill 32 bit tiled rectangles.  Used by both PolyFillRect and PaintWindow.
  * no depth dependencies.
@@ -101,7 +101,7 @@ INTER_MROP_NAME(iplFillRectTile32) (pDrawable, pGC, nBox, pBox)
     INTER_MROP_DECLARE_REG()
     INTER_MROP_PREBUILT_DECLARE()
 
-    tile = iplGetGCPrivate(pGC)->pRotatedPixmap;
+    tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned short *)tile->devPrivate.ptr;
 
@@ -219,7 +219,7 @@ INTER_MROP_NAME(iplTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    tile = iplGetGCPrivate(pGC)->pRotatedPixmap;
+    tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned short *)tile->devPrivate.ptr;
 

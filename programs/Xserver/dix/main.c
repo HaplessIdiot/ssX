@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.13 1997/11/16 06:17:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.14 1997/11/22 06:50:21 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -654,10 +654,12 @@ AddScreen(pfnInit, argc, argv)
     pScreen->myNum = i;
     pScreen->WindowPrivateLen = 0;
     pScreen->WindowPrivateSizes = (unsigned *)NULL;
-    pScreen->totalWindowSize = sizeof(WindowRec);
+    pScreen->totalWindowSize =
+        ((sizeof(WindowRec) + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
     pScreen->GCPrivateLen = 0;
     pScreen->GCPrivateSizes = (unsigned *)NULL;
-    pScreen->totalGCSize = sizeof(GC);
+    pScreen->totalGCSize =
+        ((sizeof(GC) + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
 #ifdef PIXPRIV
     pScreen->PixmapPrivateLen = 0;
     pScreen->PixmapPrivateSizes = (unsigned *)NULL;

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.1 1997/07/29 13:25:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -56,10 +56,12 @@ const char *ATIChipNames[] =
     "ATI 264ET",
     "ATI 264VT",
     "ATI 3D Rage",
-    "ATI 264VT-B or 264VT3",
-    "ATI 3D Rage II or II+",
+    "ATI 264VT-B",
+    "ATI 3D Rage II",
+    "ATI 264VT3",
+    "ATI 3D Rage II+DVD",
     "ATI 3D Rage LT",
-    "ATI 3D Rage III",
+    "ATI 3D Rage Pro",
     "ATI unknown Mach64",
 };
 
@@ -173,8 +175,6 @@ ATIMach64ChipID(const CARD16 ExpectedChipType)
             break;
 
         case 0x02B3U:
-        case 0x02B4U:   /* "VU" == "VT" */
-        case 0x5655U:   /* "VU" == "VT" */
             ATIChipType = 0x5654U;
         case 0x5654U:
             ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
@@ -184,7 +184,7 @@ ATIMach64ChipID(const CARD16 ExpectedChipType)
             {
                 if (ExpectedChipType == 0x4754U)
                     ATIChip = ATI_CHIP_264GT;
-                else if (ExpectedChipType != 0x5655U)
+                else
                     ErrorF("Mach64 chip type probe discrepancy detected:\n"
                            " PCI=0x%04X;  CHIP_ID=0x%04X.\n",
                            ExpectedChipType, ATIChipType);
@@ -194,8 +194,6 @@ ATIMach64ChipID(const CARD16 ExpectedChipType)
             break;
 
         case 0x00D3U:
-        case 0x00D4U:   /* "GU" == "GT" */
-        case 0x4755U:   /* "GU" == "GT" */
             ATIChipType = 0x4754U;
         case 0x4754U:
             ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
@@ -203,6 +201,20 @@ ATIMach64ChipID(const CARD16 ExpectedChipType)
                 ATIChip = ATI_CHIP_264GT;
             else
                 ATIChip = ATI_CHIP_264GTB;
+            break;
+
+        case 0x02B4U:
+            ATIChipType = 0x5655U;
+        case 0x5655U:
+            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
+            ATIChip = ATI_CHIP_264VT3;
+            break;
+
+        case 0x00D4U:
+            ATIChipType = 0x4755U;
+        case 0x4755U:
+            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
+            ATIChip = ATI_CHIP_264GTDVD;
             break;
 
         case 0x0166U:

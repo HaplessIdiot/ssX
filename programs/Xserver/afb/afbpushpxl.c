@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbpushpxl.c,v 3.0 1996/08/18 01:45:52 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -124,8 +124,7 @@ afbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	REGION_INIT(pGC->pScreen, &rgnDst, &srcBox, 1);
 
 	/* clip the shape of the dst to the destination composite clip */
-	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
-		((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, pGC->pCompositeClip);
 
 	if (!REGION_NIL(&rgnDst)) {
 		i = REGION_NUM_RECTS(&rgnDst);

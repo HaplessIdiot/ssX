@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.12 1998/01/11 03:48:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.13 1998/01/24 01:53:37 hohndel Exp $ */
 
 /***********************************************************
 
@@ -1066,10 +1066,6 @@ char **envp;
 #endif	/* DEBUG */
 	XSetErrorHandler(xerror);
 	XSetIOErrorHandler(xioerror);
-
-	(void) setuid (screen->uid); /* we're done with privileges... */
-	(void) setgid (screen->gid);
-	done_setuid = 1;
 
 #ifdef ALLOWLOGGING
 	if (term->misc.log_on) {

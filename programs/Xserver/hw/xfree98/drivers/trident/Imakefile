@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/trident/Imakefile,v 1.5 1997/04/08 14:55:51 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/trident/Imakefile,v 1.6 1998/03/20 19:08:08 hohndel Exp $
 
 
 #define IHaveModules
@@ -27,7 +27,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(XF86SRC) \
 	   -I$(SERVERSRC)/cfb -I$(XF86SRC)/vga256/vga -I$(XF86SRC)/xaa \
 	   -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	   -I$(XF86SRC)/config -I$(XF98SRC)/vga256/trident
+	   -I$(XF98SRC)/vga256/trident
 #endif
 
 #if MakeHasPosixVariableSubstitutions

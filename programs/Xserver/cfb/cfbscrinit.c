@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.10 1997/02/27 16:45:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.11 1997/06/03 14:11:08 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -44,7 +44,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "mibstore.h"
 
-
 miBSFuncRec cfbBSFuncRec = {
     cfbSaveAreas,
     cfbRestoreAreas,
@@ -52,105 +51,6 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
     (PixmapPtr (*)()) 0,
 };
-
-#ifdef XFree86LOADER
-
-#include <xf86.h>
-#include <xf86Version.h>
-    /*
-     * this is the module init function that is executed when loading
-     * libcfb as a module. Its name has to be ModuleInit.
-     * With this we initialize the function and variable pointers used
-     * in generic parts of XFree86
-     */
-#if PSZ == 8
-#define cfbVersRec cfbVersRec8
-XF86ModuleVersionInfo cfbVersRec =
-{
-	"libcfb.a",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,
-	{0,0,0,0}       /* signature, to be patched into the file by a tool */
-};
-
-void libcfbModuleInit(data,magic)
-#endif 
-#if PSZ == 16 
-#define cfbVersRec cfbVersRec16
-XF86ModuleVersionInfo cfbVersRec =
-{
-	"libcfb16.a",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,
-	{0,0,0,0}       /* signature, to be patched into the file by a tool */
-};
-
-void libcfb16ModuleInit(data,magic)
-#endif
-#if PSZ == 24
-#define cfbVersRec cfbVersRec24
-XF86ModuleVersionInfo cfbVersRec =
-{
-	"libcfb24.a",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,
-	{0,0,0,0}       /* signature, to be patched into the file by a tool */
-};
-
-void libcfb24ModuleInit(data,magic)
-#endif
-#if PSZ == 32 
-#define cfbVersRec cfbVersRec32
-XF86ModuleVersionInfo cfbVersRec =
-{
-	"libcfb32.a",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	0x00010001,
-	{0,0,0,0}       /* signature, to be patched into the file by a tool */
-};
-
-void libcfb32ModuleInit(data,magic)
-#endif
-    pointer *	data;
-    INT32 *	magic;
-{
-    static int  cnt = 0;
-
-    switch(cnt++)
-    {
-    case 0:
-	* magic = MAGIC_VERSION;
-	* data = (pointer) &cfbVersRec;
-	break;
-    case 1:
-    	* magic = MAGIC_CCD_DO_BITBLT;
-	* data  = (pointer) &cfbDoBitblt;
-	break;
-#ifdef CFB_NEED_SCREEN_PRIVATE
-    case 2:
-    	* magic = MAGIC_CCD_SCREEN_PRIV_IDX;
-	* data  = (pointer) &cfbScreenPrivateIndex;
-	break;
-#endif
-    default:
-    	* magic = MAGIC_DONE;
-	break;
-    }
-    return;
-}
-#endif
 
 Bool
 cfbCloseScreen (index, pScreen)

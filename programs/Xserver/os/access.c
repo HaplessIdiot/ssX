@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.22 1997/12/14 02:55:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.23 1998/01/25 04:00:11 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -851,7 +851,7 @@ ResetHosts (display)
     fnamelen = strlen(ETC_HOST_PREFIX) + strlen(ETC_HOST_SUFFIX) +
 		strlen(display) + 1;
     if (fnamelen > sizeof(fname))
-	FatalError("Display name `%s' is too long\n");
+	FatalError("Display name `%s' is too long\n", display);
     sprintf(fname, ETC_HOST_PREFIX "%s" ETC_HOST_SUFFIX, display);
 #ifdef __EMX__
     strcpy(fname, (char*)__XOS2RedirRoot(fname));

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfbsolid.c,v 1.9 94/04/17 20:29:02 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/cfb/cfbsolid.c,v 3.0 1996/06/29 09:05:51 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -127,12 +127,9 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     int		    h;
     int		    w;
     int		    widthDst;
-    cfbPrivGCPtr    devPriv;
 #if PSZ == 24
     int leftIndex, rightIndex, xOffset;
 #endif
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
@@ -790,7 +787,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     devPriv = cfbGetGCPrivate(pGC);
     RROP_FETCH_GCPRIV(devPriv)
-    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -801,8 +798,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(devPriv->pCompositeClip,
-		     pptInit, pwidthInit, nInit,
+    n = miClipSpans(pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.6 1997/09/25 16:13:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.7 1998/01/24 16:58:15 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -975,10 +975,11 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	outb(vgaCRReg, s3SAM256);
    }
 
-   WaitQueue(5);
+   WaitQueue(7);
    SET_SCISSORS(0,0,s3ScissR,s3ScissB);
    if(s3Bpp > 2)
       	SET_MULT_MISC(CMD_REG_WIDTH);
+   SET_RD_MASK(1);
 
    return TRUE;
 }

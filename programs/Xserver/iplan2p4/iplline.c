@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplline.c,v 3.0 1996/08/18 01:54:50 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -146,7 +146,7 @@ iplLineSS (pDrawable, pGC, mode, npt, pptInit)
     int		    alu;
 
     devPriv = iplGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -510,7 +510,7 @@ iplLineSD( pDrawable, pGC, mode, npt, pptInit)
     iplPrivGCPtr    devPriv;
 
     devPriv = iplGetGCPrivate(pGC);
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     rrops[0].rop = devPriv->rop;
     INTER_COPY(devPriv->andg, rrops[0].andg)
     INTER_COPY(devPriv->xorg, rrops[0].xorg)

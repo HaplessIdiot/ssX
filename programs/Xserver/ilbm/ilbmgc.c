@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmgc.c,v 3.0 1996/08/18 01:53:52 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -132,9 +132,9 @@ ilbmCreateGC(pGC)
 	ilbmReduceOpaqueStipple(pGC->fgPixel, pGC->bgPixel, pGC->planemask,
 									pGC->depth, pPriv->rropOS);
 
-	pPriv->fExpose = TRUE;
-	pPriv->pRotatedPixmap = NullPixmap;
-	pPriv->freeCompClip = FALSE;
+	pGC->fExpose = TRUE;
+	pGC->pRotatedPixmap = NullPixmap;
+	pGC->freeCompClip = FALSE;
 	return TRUE;
 }
 
@@ -299,7 +299,7 @@ ilbmValidateGC(pGC, changes, pDrawable)
 					 (pGC->tile.pixmap->drawable.width <= PPW) &&
 					 !(pGC->tile.pixmap->drawable.width &
 						(pGC->tile.pixmap->drawable.width - 1))) {
-					ilbmCopyRotatePixmap(pGC->tile.pixmap, &devPriv->pRotatedPixmap,
+					ilbmCopyRotatePixmap(pGC->tile.pixmap, &pGC->pRotatedPixmap,
 												xrot, yrot);
 					new_pix = TRUE;
 				}
@@ -309,15 +309,15 @@ ilbmValidateGC(pGC, changes, pDrawable)
 				if (pGC->stipple && (pGC->stipple->drawable.width <= PPW) &&
 					 !(pGC->stipple->drawable.width &
 						(pGC->stipple->drawable.width - 1))) {
-					ilbmCopyRotatePixmap(pGC->stipple, &devPriv->pRotatedPixmap,
+					ilbmCopyRotatePixmap(pGC->stipple, &pGC->pRotatedPixmap,
 												xrot, yrot);
 					new_pix = TRUE;
 				}
 		}
 		/* destroy any previously rotated tile or stipple */
-		if (!new_pix && devPriv->pRotatedPixmap) {
-			(*pDrawable->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-			devPriv->pRotatedPixmap = (PixmapPtr)NULL;
+		if (!new_pix && pGC->pRotatedPixmap) {
+			(*pDrawable->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+			pGC->pRotatedPixmap = (PixmapPtr)NULL;
 		}
 	}
 
@@ -413,20 +413,20 @@ ilbmValidateGC(pGC, changes, pDrawable)
 				pGC->ops->PolyFillArc = ilbmPolyFillArcSolid;
 				break;
 			case FillTiled:
-				if (devPriv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					pGC->ops->FillSpans = ilbmTileFS;
 				else
 					pGC->ops->FillSpans = ilbmUnnaturalTileFS;
 				break;
 			case FillOpaqueStippled:
-				if (devPriv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					pGC->ops->FillSpans = ilbmOpaqueStippleFS;
 				else
 					pGC->ops->FillSpans = ilbmUnnaturalOpaqueStippleFS;
 				break;
 
 			case FillStippled:
-				if (devPriv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					pGC->ops->FillSpans = ilbmStippleFS;
 				else
 					pGC->ops->FillSpans = ilbmUnnaturalStippleFS;
@@ -439,13 +439,10 @@ void
 ilbmDestroyGC(pGC)
 	GCPtr pGC;
 {
-	ilbmPrivGC *pPriv;
-
-	pPriv = (ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr);
-	if (pPriv->pRotatedPixmap)
-		(*pGC->pScreen->DestroyPixmap)(pPriv->pRotatedPixmap);
-	if (pPriv->freeCompClip)
-		REGION_DESTROY(pGC->pScreen, pPriv->pCompositeClip);
+	if (pGC->pRotatedPixmap)
+		(*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	if (pGC->freeCompClip)
+		REGION_DESTROY(pGC->pScreen, pGC->pCompositeClip);
 	miDestroyGCOps(pGC->ops);
 }
 
@@ -626,7 +623,6 @@ ilbmComputeCompositeClip(pGC, pDrawable)
 	DrawablePtr pDrawable;
 {
 	ScreenPtr pScreen = pGC->pScreen;
-	ilbmPrivGC *devPriv = (ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr);
 
 	if (pDrawable->type == DRAWABLE_WINDOW) {
 		WindowPtr pWin = (WindowPtr) pDrawable;
@@ -640,7 +636,7 @@ ilbmComputeCompositeClip(pGC, pDrawable)
 		pregWin = &pWin->clipList;
 		freeTmpClip = FALSE;
 	}
-	freeCompClip = devPriv->freeCompClip;
+	freeCompClip = pGC->freeCompClip;
 
 	/*
 	 * if there is no client clip, we can get by with just keeping the
@@ -651,9 +647,9 @@ ilbmComputeCompositeClip(pGC, pDrawable)
 	 */
 	if (pGC->clientClipType == CT_NONE) {
 		if (freeCompClip)
-			REGION_DESTROY(pScreen, devPriv->pCompositeClip);
-			devPriv->pCompositeClip = pregWin;
-			devPriv->freeCompClip = freeTmpClip;
+			REGION_DESTROY(pScreen, pGC->pCompositeClip);
+			pGC->pCompositeClip = pregWin;
+			pGC->freeCompClip = freeTmpClip;
 		} else {
 			/*
 			 * we need one 'real' region to put into the composite clip. if
@@ -669,19 +665,19 @@ ilbmComputeCompositeClip(pGC, pDrawable)
 			pDrawable->y + pGC->clipOrg.y);
 
 			if (freeCompClip) {
-				REGION_INTERSECT(pGC->pScreen, devPriv->pCompositeClip, pregWin,
+				REGION_INTERSECT(pGC->pScreen, pGC->pCompositeClip, pregWin,
 									  pGC->clientClip);
 				if (freeTmpClip)
 					REGION_DESTROY(pScreen, pregWin);
 			} else if (freeTmpClip) {
 				REGION_INTERSECT(pScreen, pregWin, pregWin, pGC->clientClip);
-				devPriv->pCompositeClip = pregWin;
+				pGC->pCompositeClip = pregWin;
 			} else {
-				devPriv->pCompositeClip = REGION_CREATE(pScreen, NullBox, 0);
-				REGION_INTERSECT(pScreen, devPriv->pCompositeClip,
+				pGC->pCompositeClip = REGION_CREATE(pScreen, NullBox, 0);
+				REGION_INTERSECT(pScreen, pGC->pCompositeClip,
 				pregWin, pGC->clientClip);
 			}
-			devPriv->freeCompClip = TRUE;
+			pGC->freeCompClip = TRUE;
 			REGION_TRANSLATE(pScreen, pGC->clientClip,
 			-(pDrawable->x + pGC->clipOrg.x),
 			-(pDrawable->y + pGC->clipOrg.y));
@@ -696,19 +692,19 @@ ilbmComputeCompositeClip(pGC, pDrawable)
 		pixbounds.x2 = pDrawable->width;
 		pixbounds.y2 = pDrawable->height;
 
-		if (devPriv->freeCompClip) {
-			REGION_RESET(pScreen, devPriv->pCompositeClip, &pixbounds);
+		if (pGC->freeCompClip) {
+			REGION_RESET(pScreen, pGC->pCompositeClip, &pixbounds);
 		} else {
-			devPriv->freeCompClip = TRUE;
-			devPriv->pCompositeClip = REGION_CREATE(pScreen, &pixbounds, 1);
+			pGC->freeCompClip = TRUE;
+			pGC->pCompositeClip = REGION_CREATE(pScreen, &pixbounds, 1);
 		}
 
 		if (pGC->clientClipType == CT_REGION) {
-			REGION_TRANSLATE(pScreen, devPriv->pCompositeClip, -pGC->clipOrg.x,
+			REGION_TRANSLATE(pScreen, pGC->pCompositeClip, -pGC->clipOrg.x,
 								  -pGC->clipOrg.y);
-			REGION_INTERSECT(pScreen, devPriv->pCompositeClip,
-								  devPriv->pCompositeClip, pGC->clientClip);
-			REGION_TRANSLATE(pScreen, devPriv->pCompositeClip, pGC->clipOrg.x,
+			REGION_INTERSECT(pScreen, pGC->pCompositeClip,
+								  pGC->pCompositeClip, pGC->clientClip);
+			REGION_TRANSLATE(pScreen, pGC->pCompositeClip, pGC->clipOrg.x,
 								  pGC->clipOrg.y);
 		}
 	}	/* end of composite clip for pixmap */

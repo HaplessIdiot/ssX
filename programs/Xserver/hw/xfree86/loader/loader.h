@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.8 1997/11/16 11:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.9 1998/01/25 08:28:19 dawes Exp $ */
 
 
 
 
 /*
  *
- * Copyright 1995,96 by Metro Link, Inc.
+ * Copyright 1995-1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,6 +25,11 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#ifndef _LOADER_H
+#define _LOADER_H
+
+#include "sym.h"
+
 #if defined(Lynx) && defined(sun)
 #define const /**/
 #endif
@@ -39,10 +44,6 @@
 
 /* For LOOKUP definition */
 #include "sym.h"
-
-#ifdef DBMALLOC
-#include <debug/malloc.h>
-#endif
 
 #define LD_UNKNOWN	-1
 #define LD_ARCHIVE	0
@@ -65,59 +66,95 @@
 #define N_BSS        3
 #define N_COMMENT    4
 
+#define TestFree(a) if (a) { xfree (a); a = NULL; }
+
+#define HASHDIV 8
+#define HASHSIZE (1<<HASHDIV)
+
+typedef struct _elf_reloc   *ELFRelocPtr;
+typedef struct _elf_COMMON  *ELFCommonPtr;
+typedef struct _coff_reloc  *COFFRelocPtr;
+typedef struct _coff_COMMON *COFFCommonPtr;
+typedef struct AOUT_RELOC   *AOUTRelocPtr;
+typedef struct AOUT_COMMON  *AOUTCommonPtr;
+
+typedef struct _LoaderReloc {
+    int modtype;
+    struct _LoaderReloc *next;
+    COFFRelocPtr coff_reloc;
+    ELFRelocPtr elf_reloc;
+    AOUTRelocPtr aout_reloc;
+} LoaderRelocRec, *LoaderRelocPtr;
+
 typedef struct _loader_item {
 	char	*name ;
-	char	*address ;
+	void	*address ;
 	struct _loader_item *next ;
-#ifdef HANDLE_IN_HASH_ENTRY
 	int	handle ;
-#endif
+	int	module ;
 #if defined(__powerpc__)
-	unsigned short	plt[8];
+	/*
+	 * PowerPC file formats require special routines in some circumstances
+	 * to assist in the linking process. See the specific loader for
+	 * more details.
+	 */
+	union {
+		unsigned short	plt[8];		/* ELF */
+		unsigned short	glink[14];	/* XCOFF */
+	} code ;
 #endif
 	} itemRec, *itemPtr ;
+
+typedef struct _loader *loaderPtr;
 
 /*
  * _loader_funcs hold the entry points for a module format.
  */
 
-typedef struct _loader_funcs {
-	void *(*LoadModule)(
-#if NeedFunctionPrototypes
-	int,	/* modtype */
-	char *,	/* modname */
-	int,	/* handle */
-	int	/* fd */
+typedef void * (*LoadModuleProcPtr)(
+#if NeedNestedPrototypes
+	loaderPtr,	/* modrec */
+	int,		/* fd */
+	LOOKUP **
 #endif
 	);
-	void (*ResolveSymbols)(
-#if NeedFunctionPrototypes
-	void
-#endif
-	);
-	int (*CheckForUnresolved)(
-#if NeedFunctionPrototypes
-	int
-#endif
-	);
-	void (*LoaderUnload)(
-#if NeedFunctionPrototypes
+typedef void (*ResolveSymbolsProcPtr)(
+#if NeedNestedPrototypes
 	void *
 #endif
 	);
-	} loader_funcs;
+typedef int (*CheckForUnresolvedProcPtr)(
+#if NeedNestedPrototypes
+	int,
+	void *
+#endif
+	);
+typedef void (*LoaderUnloadProcPtr)(
+#if NeedNestedPrototypes
+	void *
+#endif
+	);
 
+typedef struct _loader_funcs {
+	LoadModuleProcPtr	LoadModule;
+	ResolveSymbolsProcPtr	ResolveSymbols;
+	CheckForUnresolvedProcPtr CheckForUnresolved;
+	LoaderUnloadProcPtr	LoaderUnload;
+	LoaderRelocRec		pRelocs; /* type specific relocations */
+} loader_funcs;
 
 /* Each module loaded has a loaderRec */
 typedef struct _loader {
 	int	handle;		/* Unique id used to remove symbols from
-				   this module whne it is unloaded */
+				   this module when it is unloaded */
+	int	module;		/* Unique id to identify compilation units */
 	char	*name;
 	void	*private;	/* format specific data */
-	loader_funcs	funcs;	/* funcs for operating on this module */
-	struct _loader *next ;
-} loaderRec, *loaderPtr;
+	loader_funcs	*funcs;	/* funcs for operating on this module */
+	loaderPtr next;
+} loaderRec;
 
+void LoaderInit(void);
 
 /* Internal Functions */
 
@@ -125,49 +162,89 @@ void
 LoaderAddSymbols(
 #if NeedFunctionPrototypes
 int,
+int,
 LOOKUP *
 #endif
 );
+void
+LoaderDefaultFunc(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+void
+LoaderDuplicateSymbol(
+#if NeedFunctionPrototypes
+const char *,
+const int
+#endif
+);
+void
+LoaderFixups(void);
 void
 LoaderResolve(
 #if NeedFunctionPrototypes
 void
 #endif
 );
-itemPtr
-LoaderHashFind(
+int
+LoaderResolveSymbols(
 #if NeedFunctionPrototypes
+void
+#endif
+);
 char *
+LoaderHandleToName(
+#if NeedFunctionPrototypes
+int
 #endif
 );
 int
+_LoaderHandleUnresolved(
+#if NeedFunctionPrototypes
+char *, char *, int
+#endif
+);
+void
 LoaderHashAdd(
 #if NeedFunctionPrototypes
 itemPtr
+#endif
+);
+itemPtr
+LoaderHashDelete(
+#if NeedFunctionPrototypes
+const char *
+#endif
+);
+itemPtr
+LoaderHashFind(
+#if NeedFunctionPrototypes
+const char *
 #endif
 );
 void
 LoaderHashTraverse( 
 #if NeedFunctionPrototypes
 void *,
-int (*)()
+int (*)(void *, itemPtr)
 #endif
 );
-itemPtr
-LoaderHashFindNearest(
 #if NeedFunctionPrototypes
-int
+void LoaderPrintAddress(const char *);
+void LoaderPrintItem(itemPtr);
+void LoaderPrintSymbol(unsigned long);
+#else
+void LoaderPrintAddress();
+void LoaderPrintItem();
+void LoaderPrintSymbol();
 #endif
-);
-int 
-_LoaderHandleUnresolved(
+void LoaderResolve(
 #if NeedFunctionPrototypes
-char *,
-char *,
-int
+void
 #endif
 );
- 
+
 /*
  * File interface functions
  */
@@ -199,6 +276,19 @@ int		/* size */
 #endif
 );
 
+/*
+ * Relocation list manipulation routines
+ */
+LoaderRelocPtr
+_LoaderGetRelocations(
+#if NeedFunctionPrototypes
+void *
+#endif
+);
+
+/*
+ * object to name lookup routines
+ */
 char *
 _LoaderHandleToName(
 #if NeedFunctionPrototypes
@@ -209,90 +299,15 @@ int            /* handle */
 /*
  * Entry points for the different loader types
  */
-
-/* LD_COFFOBJECT */
-void *COFF2LoadModule(
-#if NeedFunctionPrototypes
-int,
-char *,
-int,
-int
-#endif
-);
-void COFF2ResolveSymbols(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-int COFF2CheckForUnresolved(
-#if NeedFunctionPrototypes
-int
-#endif
-);
-void COFF2UnloadModule(
-#if NeedFunctionPrototypes
-void *
-#endif
-);
-
+#include "aoutloader.h"
+#include "coffloader.h"
+#include "elfloader.h"
 /* LD_ARCHIVE */
 void *ARCHIVELoadModule(
 #if NeedFunctionPrototypes
+loaderPtr,
 int,
-char *,
-int,
-int
-#endif
-);
-
-/* LD_ELFOBJECT */
-void *ELFLoadModule(
-#if NeedFunctionPrototypes
-int,
-char *,
-int,
-int
-#endif
-);
-void ELFResolveSymbols(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-int ELFCheckForUnresolved(
-#if NeedFunctionPrototypes
-int
-#endif
-);
-void ELFUnloadModule(
-#if NeedFunctionPrototypes
-void *
-#endif
-);
-
-
-/* LD_AOUTOBJECT */
-void *AOUTLoadModule(
-#if NeedFunctionPrototypes
-int,
-char *,
-int,
-int
-#endif
-);
-void AOUTResolveSymbols(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-int AOUTCheckForUnresolved(
-#if NeedFunctionPrototypes
-int
-#endif
-);
-void AOUTUnloadModule(
-#if NeedFunctionPrototypes
-void *
+LOOKUP **
 #endif
 );
 
@@ -300,10 +315,9 @@ void *
 /* LD_DLOBJECT */
 void *DLLoadModule(
 #if NeedFunctionPrototypes
+loaderPtr,
 int,
-char *,
-int,
-int
+LOOKUP **
 #endif
 );
 void DLResolveSymbols(
@@ -328,3 +342,4 @@ char *
 );
 
 
+#endif /* _LOADER_H */

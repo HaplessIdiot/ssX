@@ -71,6 +71,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+/* $XFree86: xc/programs/Xserver/hw/ibm/skyway/skySGC.c,v 1.0tsi Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -408,9 +409,9 @@ skyCreateGC(pGC)
     pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     pPriv->rop = pGC->alu;
     pPriv->oneRect = FALSE;
-    pPriv->fExpose = TRUE;
-    pPriv->freeCompClip = FALSE;
-    pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+    pGC->fExpose = TRUE;
+    pGC->freeCompClip = FALSE;
+    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 
     /* ---- */
     pSkyPriv->fillMode         = punt;
@@ -437,13 +438,10 @@ void
 skyDestroyGC(pGC)
     GC 			*pGC;
 {
-    cfbPrivGC *pPriv;
-
-    pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-    if (pPriv->pRotatedPixmap)
-	cfbDestroyPixmap(pPriv->pRotatedPixmap);
-    if (pPriv->freeCompClip)
-	REGION_DESTROY(pGC->pScreen, pPriv->pCompositeClip);
+    if (pGC->pRotatedPixmap)
+	cfbDestroyPixmap(pGC->pRotatedPixmap);
+    if (pGC->freeCompClip)
+	REGION_DESTROY(pGC->pScreen, pGC->pCompositeClip);
     skyDestroyOps (pGC->ops);
 }
 
@@ -854,7 +852,7 @@ skyValidateGC(pGC, changes, pDrawable)
 		pregWin = &pWin->clipList;
 		freeTmpClip = FALSE;
 	    }
-	    freeCompClip = devPriv->freeCompClip;
+	    freeCompClip = pGC->freeCompClip;
 
 	    /*
 	     * if there is no client clip, we can get by with just keeping
@@ -865,9 +863,9 @@ skyValidateGC(pGC, changes, pDrawable)
 	     */
 	    if (pGC->clientClipType == CT_NONE) {
 		if (freeCompClip)
-		    REGION_DESTROY(pScreen, devPriv->pCompositeClip);
-		devPriv->pCompositeClip = pregWin;
-		devPriv->freeCompClip = freeTmpClip;
+		    REGION_DESTROY(pScreen, pGC->pCompositeClip);
+		pGC->pCompositeClip = pregWin;
+		pGC->freeCompClip = freeTmpClip;
 	    }
 	    else {
 		/*
@@ -886,7 +884,7 @@ skyValidateGC(pGC, changes, pDrawable)
 						  
 		if (freeCompClip)
 		{
-		    REGION_INTERSECT(pGC->pScreen, devPriv->pCompositeClip,
+		    REGION_INTERSECT(pGC->pScreen, pGC->pCompositeClip,
 					       pregWin, pGC->clientClip);
 		    if (freeTmpClip)
 			REGION_DESTROY(pScreen, pregWin);
@@ -894,16 +892,15 @@ skyValidateGC(pGC, changes, pDrawable)
 		else if (freeTmpClip)
 		{
 		    REGION_INTERSECT(pScreen, pregWin, pregWin, pGC->clientClip);
-		    devPriv->pCompositeClip = pregWin;
+		    pGC->pCompositeClip = pregWin;
 		}
 		else
 		{
-		    devPriv->pCompositeClip = REGION_CREATE(pScreen, NullBox,
-								       0);
-		    REGION_INTERSECT(pScreen, devPriv->pCompositeClip,
+		    pGC->pCompositeClip = REGION_CREATE(pScreen, NullBox, 0);
+		    REGION_INTERSECT(pScreen, pGC->pCompositeClip,
 					  pregWin, pGC->clientClip);
 		}
-		devPriv->freeCompClip = TRUE;
+		pGC->freeCompClip = TRUE;
 		REGION_TRANSLATE(pScreen, pGC->clientClip,
 					    -(pDrawable->x + pGC->clipOrg.x),
 					    -(pDrawable->y + pGC->clipOrg.y));
@@ -919,28 +916,26 @@ skyValidateGC(pGC, changes, pDrawable)
 	    pixbounds.x2 = pDrawable->width;
 	    pixbounds.y2 = pDrawable->height;
 
-	    if (devPriv->freeCompClip)
+	    if (pGC->freeCompClip)
 	    {
-		REGION_RESET(pScreen, devPriv->pCompositeClip, &pixbounds);
+		REGION_RESET(pScreen, pGC->pCompositeClip, &pixbounds);
 	    }
 	    else {
-		devPriv->freeCompClip = TRUE;
-		devPriv->pCompositeClip = REGION_CREATE(pScreen, &pixbounds,
-								   1);
+		pGC->freeCompClip = TRUE;
+		pGC->pCompositeClip = REGION_CREATE(pScreen, &pixbounds, 1);
 	    }
 
 	    if (pGC->clientClipType == CT_REGION)
 	    {
-		REGION_TRANSLATE(pScreen, devPriv->pCompositeClip,
+		REGION_TRANSLATE(pScreen, pGC->pCompositeClip,
 					    -pGC->clipOrg.x, -pGC->clipOrg.y);
-		REGION_INTERSECT(pScreen, devPriv->pCompositeClip,
-				      devPriv->pCompositeClip,
-				      pGC->clientClip);
-		REGION_TRANSLATE(pScreen, devPriv->pCompositeClip,
+		REGION_INTERSECT(pScreen, pGC->pCompositeClip,
+				      pGC->pCompositeClip, pGC->clientClip);
+		REGION_TRANSLATE(pScreen, pGC->pCompositeClip,
 					    pGC->clipOrg.x, pGC->clipOrg.y);
 	    }
 	}			/* end of composute clip for pixmap */
-	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
@@ -1096,7 +1091,7 @@ skyValidateGC(pGC, changes, pDrawable)
 		if ((width <= 32) && !(width & (width - 1)))
 		{
 		    cfbCopyRotatePixmap(pGC->tile.pixmap,
-					&devPriv->pRotatedPixmap,
+					&pGC->pRotatedPixmap,
 					xrot, yrot);
 		    new_pix = TRUE;
 		}
@@ -1111,7 +1106,7 @@ skyValidateGC(pGC, changes, pDrawable)
 		if ((width <= 32) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
-					&devPriv->pRotatedPixmap, xrot, yrot);
+					&pGC->pRotatedPixmap, xrot, yrot);
 		    new_pix = TRUE;
 		}
 	    }
@@ -1120,10 +1115,10 @@ skyValidateGC(pGC, changes, pDrawable)
 	}
 	}
 
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    cfbDestroyPixmap(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+	    cfbDestroyPixmap(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 
@@ -1329,7 +1324,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    }
 	    break;
 	case FillTiled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	    {
 		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    pGC->ops->FillSpans = cfbTile32FSCopy;
@@ -1341,7 +1336,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillStippled:
 #if PSZ == 8
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8Stipple32FS;
 	    else
 #endif
@@ -1349,7 +1344,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillOpaqueStippled:
 #if PSZ == 8
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	    else
 #endif

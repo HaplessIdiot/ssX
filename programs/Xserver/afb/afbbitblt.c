@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.0 1996/08/18 01:45:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbbitblt.c,v 3.1 1997/01/25 04:13:34 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -208,7 +208,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 
 	if (pSrcDrawable->type == DRAWABLE_PIXMAP)
 		if ((pSrcDrawable == pDstDrawable) && (pGC->clientClipType == CT_NONE))
-			prgnSrcClip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+			prgnSrcClip = pGC->pCompositeClip;
 		else
 			fastClip = 1;
 	else if (pGC->subWindowMode == IncludeInferiors)
@@ -219,7 +219,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 			 */
 			fastClip = 1;
 		else if ((pSrcDrawable == pDstDrawable) && (pGC->clientClipType == CT_NONE))
-			prgnSrcClip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+			prgnSrcClip = pGC->pCompositeClip;
 		else {
 			prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
 			freeSrcClip = TRUE;
@@ -288,7 +288,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 		/* If the destination composite clip is one rectangle we can
 		   do the clip directly.  Otherwise we have to create a full
 		   blown region and call intersect */
-		cclip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+		cclip = pGC->pCompositeClip;
 		if (REGION_NUM_RECTS(cclip) == 1) {
 			BoxPtr pBox = REGION_RECTS(cclip);
 
@@ -319,7 +319,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 
 	if (!fastClip) {
 		REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
-		 ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip);
+		 pGC->pCompositeClip);
 	}
 
 	/* Do bit blitting */
@@ -346,7 +346,7 @@ afbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 	}
 
 	prgnExposed = NULL;
-	if (((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->fExpose)  {
+	if (pGC->fExpose)  {
 		/* Pixmap sources generate a NoExposed (we return NULL to do this) */
 		if (!fastExpose)
 			prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
@@ -442,7 +442,7 @@ unsigned long plane;
 			FreeScratchGC(pGC1);
 		}
 
-		if (afbGetGCPrivate(pGC)->fExpose)
+		if (pGC->fExpose)
 			prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx,
 													  srcy, width, height, dstx, dsty,
 													  plane);

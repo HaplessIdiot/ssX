@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8ss.c,v 3.0 1996/11/18 13:09:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8ss.c,v 3.1 1996/12/23 06:40:11 dawes Exp $ */
 
 /*
 
@@ -123,7 +123,7 @@ mach8SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     }
 
     alu = pGC->alu;
-    prgnDst = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    prgnDst = pGC->pCompositeClip;
 
     pptLast = ppt + nspans;
 

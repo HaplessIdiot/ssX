@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbzerarc.c,v 3.0 1996/08/18 01:45:59 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -190,7 +190,7 @@ afbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
 	BoxRec box;
 	RegionPtr cclip;
 
-	cclip = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = pGC->pCompositeClip;
 	for (arc = parcs, i = narcs; --i >= 0; arc++) {
 		if (miCanZeroArc(arc)) {
 			box.x1 = arc->x + pDraw->x;

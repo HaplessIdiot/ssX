@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -123,8 +124,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     REGION_INIT(pGC->pScreen, &rgnDst, &srcBox, 1);
 
     /* clip the shape of the dst to the destination composite clip */
-    REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
-	((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+    REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, pGC->pCompositeClip);
 
     if (!REGION_NIL(&rgnDst))
     {

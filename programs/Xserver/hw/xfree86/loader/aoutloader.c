@@ -7,7 +7,7 @@
 /*
  *
  * Copyright (c) 1997 Matthieu Herrb
- * Copyright 1995,96 by Metro Link, Inc.
+ * Copyright 1995-1998 Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -33,18 +33,34 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef QNX
+#include <fcntl.h>
+#else
+#include <sys/fcntl.h>
+#endif
+#include <sys/stat.h>
 
-#ifdef __EMX__
-#include <sys/param.h>
+#ifdef DBMALLOC
+#include <debug/malloc.h>
+#define Xalloc(size) malloc(size)
+#define Xcalloc(size) calloc(1,(size))
+#define Xfree(size) free(size)
 #endif
 
+#include "Xos.h"
+#include "os.h"
 #include "aout.h"
+
+#include "sym.h"
 #include "loader.h"
+#include "aoutloader.h"
 
 #include "xf86.h"
 #include "xf86Priv.h"
 
-/* #define AOUTDEBUG ErrorF */
+/*
+#define AOUTDEBUG ErrorF
+*/
 
 
 #ifndef MIN
@@ -58,7 +74,9 @@
 
 typedef struct {
     int     handle;
+    int     module;
     int     fd;
+    loader_funcs	*funcs;
     AOUTHDR      *header;/* file header */
     unsigned char *text;       /* Start address of the text section */
     unsigned char *data;       /* Start address of the data section */
@@ -81,9 +99,7 @@ typedef struct AOUT_RELOC {
     struct relocation_info *rel;
     int type;			/* AOUT_TEXT or AOUT_DATA */
     struct AOUT_RELOC *next;
-} AOUT_RELOC ;
-
-static AOUT_RELOC *listResolve = NULL;
+} AOUTRelocRec;
 
 /*
  * Symbols with a section number of 0 (N_UNDF) but a value of non-zero
@@ -97,82 +113,89 @@ typedef struct AOUT_COMMON {
     struct AOUT_nlist *sym;
     int index;
     struct AOUT_COMMON *next;
-} AOUT_COMMON;
+} AOUTCommonRec;
 
-static AOUT_COMMON *listCOMMON = NULL;
+static AOUTCommonPtr listCOMMON = NULL;
+
+/* prototypes for static functions */
+static int AOUTHashCleanOut(void *, itemPtr);
+static char *AOUTGetSymbolName(AOUTModulePtr, struct AOUT_nlist *);
+static void *AOUTGetSymbolValue(AOUTModulePtr, int);
+static AOUTCommonPtr AOUTAddCommon(struct AOUT_nlist *, int);
+static LOOKUP *AOUTCreateCommon(AOUTModulePtr);
+static LOOKUP *AOUT_GetSymbols(AOUTModulePtr);
+static AOUTRelocPtr AOUTDelayRelocation(AOUTModulePtr, int, struct relocation_info_i386 *);
+static AOUTRelocPtr AOUTCollectRelocations(AOUTModulePtr);
+static void AOUT_Relocate(unsigned long *, unsigned long, int);
+static AOUTRelocPtr AOUT_RelocateEntry(AOUTModulePtr, int, struct relocation_info_i386 *);
 
 /*
  * Return 1 if the symbol in item belongs to aoutfile
  */
 static int
-AOUTHashCleanOut(AOUTModulePtr aoutfile, itemPtr item)
+AOUTHashCleanOut(void *voidptr, itemPtr item)
 {
+    AOUTModulePtr aoutfile = (AOUTModulePtr) voidptr;
     return (aoutfile->handle == item->handle);
 }
 
 /*
- * Return the name of a symbol 
+ * Manage listResolv 
  */
-static char *
-AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
+static AOUTRelocPtr
+AOUTDelayRelocation(AOUTModulePtr aoutfile, int type, 
+			struct relocation_info *rel)
 {
-    char *symname =  (char *)&(aoutfile->strings[sym->n_un.n_strx]);
+    AOUTRelocPtr reloc;
 
-    if (symname[0] == '_') {
-	return symname + 1;
-    } else {
-	return symname;
+    if ((reloc = (AOUTRelocPtr) xalloc(sizeof(AOUTRelocRec))) == NULL) {
+	ErrorF("AOUTDelayRelocation() Unable to allocate memory\n");
+	return NULL;
     }
+    if ((unsigned long)rel < 0x200) {
+	ErrorF("bug");
+    }
+    reloc->file = aoutfile;
+    reloc->type = type;
+    reloc->rel = rel;
+    reloc->next = 0;
+    return reloc;
 }
+	
 
-/*
- * Return the value of a symbol in the loader's symbol table
- */
-unsigned long
-AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index)
-{
-    unsigned long symval = 0; /* value of the indicated symbol */
-    itemPtr symbol;		/* name/value of symbol */
-
-    symbol = LoaderHashFind(AOUTGetSymbolName(aoutfile, aoutfile->symtab 
-					      + index)) ;
-    if (symbol)
-	symval = (unsigned long)(symbol->address);
-
-    return symval;
-}
 
 /*
  * Manage listCOMMON
  */
 
-static void
-AOUTAddCommon(struct AOUT_nlist *sym)
+static AOUTCommonPtr
+AOUTAddCommon(struct AOUT_nlist *sym, int index)
 {
-    AOUT_COMMON	*common;
+    AOUTCommonPtr common;
 
-    if ((common = (AOUT_COMMON*)malloc(sizeof(AOUT_COMMON))) == NULL) {
+    if ((common = (AOUTCommonPtr) xalloc(sizeof (AOUTCommonRec))) == NULL) {
 	ErrorF( "AOUTAddCommon() Unable to allocate memory\n" );
-	return;
+	return 0;
     }
     common->sym = sym;
-    common->next = listCOMMON;
-    listCOMMON = common;
+    common->index = index;
+    common->next = 0;
+    return common;
 }
 
-static void
+static LOOKUP *
 AOUTCreateCommon(AOUTModulePtr aoutfile)
 {
     int	numsyms = 0, size = 0, l = 0;
     int	offset = 0;
-    AOUT_COMMON *common;
+    AOUTCommonPtr common;
     LOOKUP *lookup;
 
     if (listCOMMON == NULL)
-	return;
+	return NULL;
 
     common = listCOMMON;
-    while (common) {
+    for (common = listCOMMON; common; common = common->next) {
 	/* Ensure long word alignment */
 	if( (common->sym->n_value & (sizeof(long)-1)) != 0 )
 	    common->sym->n_value = (common->sym->n_value + (sizeof(long)-1))
@@ -181,7 +204,6 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 	/* accumulate the sizes */
 	size += common->sym->n_value;
 	numsyms++;
-	common = common->next;
     } /* while */
 
 #ifdef AOUTDEBUG
@@ -189,15 +211,15 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 	      numsyms, size );
 #endif
     
-    if ((lookup = malloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+    if ((lookup = (LOOKUP *) xalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
         ErrorF( "AOUTCreateCommon() Unable to allocate memory\n" );
-        return;
+        return NULL;
     }
     
     aoutfile->comsize = size;
-    if ((aoutfile->common = (unsigned char *)calloc(1,size)) == NULL) {
+    if ((aoutfile->common = (unsigned char *)xcalloc(1,size)) == NULL) {
         ErrorF( "AOUTCreateCommon() Unable to allocate memory\n" );
-        return;
+        return NULL;
     }
     
     while (listCOMMON) {
@@ -209,168 +231,70 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 #endif
         listCOMMON = common->next;
         offset += common->sym->n_value;
-        free(common);
+        xfree(common);
         l++;
     } /* while */
+    /* listCOMMON == NULL */
 
     lookup[l].symName=NULL; /* Terminate the list */
-    LoaderAddSymbols(aoutfile->handle, lookup);
-    free(lookup);
-
+    return lookup;
 }
 
 /*
- * AOUT_GetSymbols()
- * 
- * add the symbols to the loader's symbol table
+ * Symbol Table
  */
-static void 
-AOUT_GetSymbols(AOUTModulePtr aoutfile)
+
+static char *
+AOUTGetString(AOUTModulePtr aoutfile, int index)
 {
-    int fd = aoutfile->fd;
-    AOUTHDR *header = aoutfile->header;
-    int nsyms, soff, i, l;
-    char *symname;
-    AOUT_nlist *s;
-    LOOKUP *lookup;
+    char *symname = (char *) &(aoutfile->strings[index]);
 
-    aoutfile->symtab = (AOUT_nlist *)_LoaderFileToMem(fd,
-						      AOUT_SYMOFF(header),
-						      header->a_syms,
-						      "symbols");
-    nsyms = header->a_syms/sizeof(AOUT_nlist);
-    lookup = (LOOKUP *)malloc(nsyms * sizeof(LOOKUP));
-    if (lookup == NULL) {
-	ErrorF("AOUT_GetSymbols(): can't allocate memory\n");
-	return;
+    if (symname[0] == '_') {
+	symname++;
     }
-    for (i = 0, l = 0; i < nsyms; i++) {
-	s = aoutfile->symtab + i;
-	soff = s->n_un.n_strx;
 
-	symname = (char *)&(aoutfile->strings[soff]);
-	/* strip leading underscore */
-	if (symname[0] == '_') {
-	    symname++;
-	}
-#ifdef AOUTDEBUG
-	AOUTDEBUG("AOUT_GetSymbols(): %s %02x %02x %08x\n",
-		  symname, s->n_type,
-		  s->n_other, s->n_value);
-#endif
-	if (soff == 0 || (s->n_type & AOUT_STAB) != 0) 
-	    continue;
-	switch (s->n_type & AOUT_TYPE) {
-	  case AOUT_UNDF:
-	    if (s->n_value != 0) {
-		if (!LoaderHashFind(symname)) {
-#ifdef AOUTDEBUG
-		    AOUTDEBUG("Adding common %s\n", symname);
-#endif
-		    AOUTAddCommon(s);
-		}
-	    } else {
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding undef %s\n", symname);
-#endif
-	    }
-	    break;
-	  case AOUT_TEXT:
-	    if (s->n_type & AOUT_EXT) {
-		lookup[l].symName = symname;
-		/* text symbols start at 0 */
-		lookup[l].offset = (void(*)())(aoutfile->text + s->n_value);
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding text %s %08x\n", symname, lookup[l].offset);
-#endif
-		l++;
-	    }
-	    break;
-	  case AOUT_DATA :
-	    if (s->n_type & AOUT_EXT) {
-		lookup[l].symName = symname;
-		/* data symbols are following text */
-		lookup[l].offset = (void(*)())(aoutfile->data + 
-					       s->n_value - header->a_text);
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding data %s %08x\n", symname, lookup[l].offset);
-#endif
-		l++;
-	    }
-	    break;
-	  case AOUT_BSS:
-	    if (s->n_type & AOUT_EXT) {
-		lookup[l].symName = symname;
-		/* bss symbols follow both text and data */
-		lookup[l].offset = (void(*)())(aoutfile->bss + s->n_value 
-					       - (header->a_data 
-						  + header->a_text));
-#ifdef AOUTDEBUG
-		AOUTDEBUG("Adding bss %s %08x\n", symname, lookup[l].offset);
-#endif
-		l++;
-	    }
-	    break;
-	} /* switch */
-    } /* for */
-    lookup[l].symName = NULL;
-    LoaderAddSymbols(aoutfile->handle, lookup);
-    free(lookup);
-    
-    AOUTCreateCommon(aoutfile);
-    
-} /* AOUT_GetSymbols */
+    return symname;
+}
+/*
+ * Return the name of a symbol 
+ */
+static char *
+AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
+{
+    char *symname = AOUTGetString(aoutfile,sym->n_un.n_strx);
+    char *name;
+
+    name=(char *) xalloc(strlen(symname)+1);
+    if (!name)
+	FatalError("AOUTGetSymbolName: Out of memory\n");
+
+    strcpy(name,symname);
+
+    return name;
+}
 
 /*
- * Manage listResolv 
+ * Return the value of a symbol in the loader's symbol table
  */
-static void
-AOUTDelayRelocation(AOUTModulePtr aoutfile, int type, 
-			struct relocation_info *rel)
+static void *
+AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index)
 {
-    AOUT_RELOC *reloc;
+    void *symval = NULL; /* value of the indicated symbol */
+    itemPtr symbol = NULL;		/* name/value of symbol */
+    char *name = NULL;
 
-    if ((reloc = (AOUT_RELOC *) malloc(sizeof(AOUT_RELOC))) == NULL) {
-	ErrorF("AOUTDelayRelocation() Unable to allocate memory\n");
-	return;
-    }
-    if ((unsigned long)rel < 0x200) {
-	ErrorF("bug");
-    }
-    reloc->file = aoutfile;
-    reloc->type = type;
-    reloc->rel = rel;
-    reloc->next = listResolve;
-    listResolve = reloc;
+    name = AOUTGetSymbolName(aoutfile, aoutfile->symtab + index);
+
+    if( name )
+	symbol = LoaderHashFind(name);
+
+    if (symbol)
+	symval = (unsigned char *)symbol->address;
+
+    xfree(name);
+    return symval;
 }
-	
 
-static void
-AOUT_DoRelocations(AOUTModulePtr aoutfile)
-{
-    AOUTHDR *header = aoutfile->header;
-    int i, nreloc;
-    struct relocation_info *rel;
-
-    /* Text relocations */
-    if (aoutfile->text != NULL && aoutfile->txtrel != NULL) {
-	nreloc = header->a_trsize/sizeof(struct relocation_info);
-
-	for (i = 0; i < nreloc; i++) {
-	    rel = aoutfile->txtrel + i;
-	    AOUTDelayRelocation(aoutfile, AOUT_TEXT, rel);
-	} /* for */
-    }
-    /* Data relocations */
-    if (aoutfile->data != NULL && aoutfile->datarel != NULL) {
-	nreloc = header->a_drsize/sizeof(struct relocation_info);
-    
-	for (i = 0; i < nreloc; i++) {
-	    rel = aoutfile->datarel + i;
-	    AOUTDelayRelocation(aoutfile, AOUT_DATA, rel);
-	} /* for */
-    }
-} /* AOUT_DoRelocations */
 
 /*
  * Perform the actual relocation 
@@ -398,21 +322,23 @@ AOUT_Relocate(unsigned long *destl, unsigned long val, int pcrel)
 /*
  * Fix the relocation for text or data section
  */
-static void
-AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type, 
+static AOUTRelocPtr
+AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 		   struct relocation_info *rel) 
 {
     AOUTHDR *header = aoutfile->header;
     AOUT_nlist *symtab = aoutfile->symtab;
     int symnum;
-    unsigned long symval;
+    void *symval;
     unsigned long *destl;	/* address of the location to be modified */
 
     symnum = rel->r_symbolnum;
 #ifdef AOUTDEBUG 
+    char *name;
     if (rel->r_extern) {
 	AOUTDEBUG("AOUT_RelocateEntry: extern %s\n", 
-		  AOUTGetSymbolName(aoutfile, symtab+symnum));
+		  name=AOUTGetSymbolName(aoutfile, symtab+symnum));
+        xfree(name);
     } else {
 	AOUTDEBUG("AOUT_RelocateEntry: intern\n");
     }
@@ -449,7 +375,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 	break;
       default:
 	ErrorF("AOUT_RelocateEntry(): unknown section type %d\n", type);
-	return;
+	return 0;
     } /* switch */
 
     /*
@@ -460,7 +386,8 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 	symval = AOUTGetSymbolValue(aoutfile, symnum);
 	if (symval != 0) {
 	    /* we've got the value */
-	    AOUT_Relocate(destl, symval, rel->r_pcrel);
+	    AOUT_Relocate(destl, (unsigned long) symval, rel->r_pcrel);
+	    return 0;
 	} else {
 	    /* The symbol should be undefined */
 	    switch (symtab[symnum].n_type & AOUT_TYPE) {
@@ -469,14 +396,13 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 		AOUTDEBUG("  extern AOUT_UNDEF\n");
 #endif
 		/* Add this relocation back to the global list */
-		AOUTDelayRelocation(aoutfile,type,rel);
-		return;
+		return AOUTDelayRelocation(aoutfile,type,rel);
 
 	      default:
 		ErrorF("AOUT_RelocateEntry():"
 		       " impossible intern relocation type: %d\n", 
 		       symtab[symnum].n_type);
-		return;
+		return 0;
 	    } /* switch */
 	}
     } else {
@@ -490,7 +416,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 	    if (rel->r_pcrel == 0) 
 		AOUT_Relocate(destl, (unsigned long)aoutfile->text, 
 			      rel->r_pcrel);
-	    return;
+	    return 0;
 	  case AOUT_DATA:
 #ifdef AOUTDEBUG
 	    AOUTDEBUG("  AOUT_DATA\n");
@@ -502,7 +428,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 		ErrorF("AOUT_RelocateEntry(): "
 		       "don't know how to handle data pc-relative reloc\n");
 	    
-	    return;
+	    return 0;
 	  case AOUT_BSS:
 #ifdef AOUTDEBUG
 	    AOUTDEBUG("  AOUT_BSS\n");
@@ -515,43 +441,197 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 		ErrorF("AOUT_RelocateEntry(): "
 		       "don't know how to handle bss pc-relative reloc\n");
 	    
-	    return;
+	    return 0;
 	  default:
 	    ErrorF("AOUT_RelocateEntry():"
 		   " unknown intern relocation type: %d\n", rel->r_symbolnum);
-	    return;
+	    return 0;
 	} /* switch */
     }
-	
 } /* AOUT_RelocateEntry */
     
+static AOUTRelocPtr
+AOUTCollectRelocations(AOUTModulePtr aoutfile)
+{
+    AOUTHDR *header = aoutfile->header;
+    int i, nreloc;
+    struct relocation_info *rel;
+    AOUTRelocPtr reloc_head = NULL;
+    AOUTRelocPtr tmp;
+
+    /* Text relocations */
+    if (aoutfile->text != NULL && aoutfile->txtrel != NULL) {
+	nreloc = header->a_trsize/sizeof(struct relocation_info);
+
+	for (i = 0; i < nreloc; i++) {
+	    rel = aoutfile->txtrel + i;
+	    tmp = AOUTDelayRelocation(aoutfile, AOUT_TEXT, rel);
+	    if (tmp) {
+		tmp->next = reloc_head;
+		reloc_head = tmp;
+	    }
+	} /* for */
+    }
+    /* Data relocations */
+    if (aoutfile->data != NULL && aoutfile->datarel != NULL) {
+	nreloc = header->a_drsize/sizeof(struct relocation_info);
+    
+	for (i = 0; i < nreloc; i++) {
+	    rel = aoutfile->datarel + i;
+	    tmp = AOUTDelayRelocation(aoutfile, AOUT_DATA, rel);
+	    tmp->next = reloc_head;
+	    reloc_head = tmp;
+	} /* for */
+    }
+    return reloc_head;
+} /* AOUTCollectRelocations */
+/*
+ * AOUT_GetSymbols()
+ * 
+ * add the symbols to the loader's symbol table
+ */
+static LOOKUP * 
+AOUT_GetSymbols(AOUTModulePtr aoutfile)
+{
+    int fd = aoutfile->fd;
+    AOUTHDR *header = aoutfile->header;
+    int nsyms, soff, i, l;
+    char *symname;
+    AOUT_nlist *s;
+    LOOKUP *lookup, *lookup_common;
+    AOUTCommonPtr tmp;
+
+    aoutfile->symtab = (AOUT_nlist *)_LoaderFileToMem(fd,
+						      AOUT_SYMOFF(header),
+						      header->a_syms,
+						      "symbols");
+    nsyms = header->a_syms/sizeof(AOUT_nlist);
+    lookup = (LOOKUP *)xalloc(nsyms * sizeof(LOOKUP));
+    if (lookup == NULL) {
+	ErrorF("AOUT_GetSymbols(): can't allocate memory\n");
+	return NULL;
+    }
+    for (i = 0, l = 0; i < nsyms; i++) {
+	s = aoutfile->symtab + i;
+	soff=s->n_un.n_strx;
+	if (soff == 0 || (s->n_type & AOUT_STAB) != 0) 
+	    continue;
+	symname=AOUTGetSymbolName(aoutfile,s);
+#ifdef AOUTDEBUG
+	AOUTDEBUG("AOUT_GetSymbols(): %s %02x %02x %08x\n",
+		  symname, s->n_type,
+		  s->n_other, s->n_value);
+#endif
+	switch (s->n_type & AOUT_TYPE) {
+	  case AOUT_UNDF:
+	    if (s->n_value != 0) {
+		if (!LoaderHashFind(symname)) {
+#ifdef AOUTDEBUG
+		    AOUTDEBUG("Adding common %s\n", symname);
+#endif
+		    tmp = AOUTAddCommon(s, i);
+		    if (tmp) {
+			tmp->next = listCOMMON;
+			listCOMMON = tmp;
+		    }
+		}
+	    } else {
+#ifdef AOUTDEBUG
+		AOUTDEBUG("Adding undef %s\n", symname);
+#endif
+	    }
+	    xfree(symname);
+	    break;
+	  case AOUT_TEXT:
+	    if (s->n_type & AOUT_EXT) {
+		lookup[l].symName = symname;
+		/* text symbols start at 0 */
+		lookup[l].offset = (void (*)())(aoutfile->text + s->n_value);
+#ifdef AOUTDEBUG
+		AOUTDEBUG("Adding text %s %08x\n", symname, lookup[l].offset);
+#endif
+		l++;
+	    } else {
+		xfree(symname);
+	    }
+	    break;
+	  case AOUT_DATA :
+	    if (s->n_type & AOUT_EXT) {
+		lookup[l].symName = symname;
+		/* data symbols are following text */
+		lookup[l].offset = (void (*)())(aoutfile->data + 
+					       s->n_value - header->a_text);
+#ifdef AOUTDEBUG
+		AOUTDEBUG("Adding data %s %08x\n", symname, lookup[l].offset);
+#endif
+		l++;
+	    } else {
+		xfree(symname);
+	    }
+	    break;
+	  case AOUT_BSS:
+	    if (s->n_type & AOUT_EXT) {
+		lookup[l].symName = symname;
+		/* bss symbols follow both text and data */
+		lookup[l].offset = (void (*)())(aoutfile->bss + s->n_value 
+					       - (header->a_data 
+						  + header->a_text));
+#ifdef AOUTDEBUG
+		AOUTDEBUG("Adding bss %s %08x\n", symname, lookup[l].offset);
+#endif
+		l++;
+	    } else {
+		xfree(symname);
+	    }
+	    break;
+	  default:
+		ErrorF("Unknown symbol type %x\n", s->n_type & AOUT_TYPE);
+		xfree(symname);
+	} /* switch */
+    } /* for */
+    lookup[l].symName = NULL;
+    
+    lookup_common = AOUTCreateCommon(aoutfile);
+    if (lookup_common) {
+	LOOKUP *p;
+
+	for (i = 0, p = lookup_common; p->symName; i++, p++)
+	    ;
+	memcpy(&(lookup[l]), lookup_common, i * sizeof (LOOKUP));
+
+	xfree(lookup_common);
+	l += i;
+	lookup[l].symName = NULL;
+    }
+    return lookup;
+} /* AOUT_GetSymbols */
+
 /*
  * Public API for the a.out implementation of the loader
  */
 void *
-AOUTLoadModule(int modtype,
-	       char *modname,
-	       int handle,
-	       int aoutfd)
+AOUTLoadModule(loaderPtr modrec,
+	       int aoutfd,
+	       LOOKUP **ppLookup)
 {
     AOUTModulePtr aoutfile = NULL;
     AOUTHDR *header;
+    AOUTRelocPtr reloc, tail;
+    void	*v;
 
 #ifdef AOUTDEBUG
-    AOUTDEBUG("AOUTLoadModule(%d, %s, %d, %d)\n",
-	      modtype, modname, handle, aoutfd);
+    AOUTDEBUG("AOUTLoadModule(%s, %d, %d)\n",
+	      modrec->name, modrec->handle, aoutfd);
 #endif
-    if ((modtype != LD_AOUTOBJECT)) {
-	ErrorF( "AOUTLoadModule(): modtype != a.out\n" );
-	return NULL;
-    }
-    if ((aoutfile=(AOUTModulePtr)calloc(1,sizeof(AOUTModuleRec))) == NULL ) {
+    if ((aoutfile=(AOUTModulePtr)xcalloc(1,sizeof(AOUTModuleRec))) == NULL ) {
 	ErrorF( "Unable to allocate AOUTModuleRec\n" );
 	return NULL;
     }
 
-    aoutfile->handle=handle;
+    aoutfile->handle=modrec->handle;
+    aoutfile->module=modrec->module;
     aoutfile->fd=aoutfd;
+    v=aoutfile->funcs=modrec->funcs;
 
     /*
      *  Get the a.out header
@@ -581,7 +661,7 @@ AOUTLoadModule(int modtype,
     }
     /* bss */
     if (header->a_bss != 0) {
-	aoutfile->bss = calloc(1, header->a_bss);
+	aoutfile->bss = (unsigned char *) xcalloc(1, header->a_bss);
     } else {
 	aoutfile->bss = NULL;
     }
@@ -612,48 +692,62 @@ AOUTLoadModule(int modtype,
 	aoutfile->strings = NULL;
     }
     /* load symbol table */
-    AOUT_GetSymbols(aoutfile);
+    *ppLookup = AOUT_GetSymbols(aoutfile);
 
     /* Do relocations */
-    AOUT_DoRelocations(aoutfile);
+    reloc = AOUTCollectRelocations(aoutfile);
+
+    if (reloc) {
+	for (tail = reloc; tail->next; tail = tail->next)
+	    ;
+	tail->next = _LoaderGetRelocations(v)->aout_reloc;
+	_LoaderGetRelocations(v)->aout_reloc = reloc;
+    }
 
     return (void *)aoutfile;
 }
 
 void
-AOUTResolveSymbols(void)
+AOUTResolveSymbols(mod)
+void	*mod;
 {
-    AOUT_RELOC *rel, *oldlist;
+    AOUTRelocPtr newlist, p, tmp;
 
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUTResolveSymbols()\n");
 #endif
-    oldlist = listResolve;
-    listResolve = NULL;
 
-    while ((rel = oldlist) != NULL) {
-	oldlist = rel->next;
-	AOUT_RelocateEntry(rel->file, rel->type, rel->rel);
-	free(rel);
-    } /* while */
-
+    newlist = 0;
+    for (p = _LoaderGetRelocations(mod)->aout_reloc; p; ) {
+	tmp = AOUT_RelocateEntry(p->file, p->type, p->rel);
+	if (tmp) {
+	    /* Failed to relocate.  Keep it in the list. */
+	    tmp->next = newlist;
+	    newlist = tmp;
+	}
+	tmp = p;
+	p = p->next;
+	xfree(tmp);
+    }
+    _LoaderGetRelocations(mod)->aout_reloc = newlist;
 } /* AOUTResolveSymbols */
 
 int
-AOUTCheckForUnresolved(color_depth)
-int color_depth;
+AOUTCheckForUnresolved(color_depth, mod)
+int	color_depth;
+void	*mod;
 {
     int symnum;
-    AOUT_RELOC *crel = listResolve;
-    extern int LoaderDefaultFunc();
+    AOUTRelocPtr crel;
+    char *name;
     int fatalsym = 0, flag;
 
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUTCheckForUnResolved()\n");
 #endif
-    if (crel == NULL) {
+    if ((crel = _LoaderGetRelocations(mod)->aout_reloc) == NULL)
 	return 0;
-    }
+
     while (crel) {
 	if (crel->type == AOUT_TEXT) {
 	    /* Attempt to make unresolved  text references 
@@ -664,8 +758,10 @@ int color_depth;
 			  crel->rel->r_pcrel);
 	}
 	symnum = crel->rel->r_symbolnum;
-        flag = _LoaderHandleUnresolved(AOUTGetSymbolName(crel->file, crel->file->symtab + symnum),
+        name=AOUTGetSymbolName(crel->file, crel->file->symtab + symnum);
+        flag = _LoaderHandleUnresolved(name,
 		   _LoaderHandleToName(crel->file->handle), color_depth);
+	xfree(name);
         if (flag) fatalsym = 1;
 	crel = crel->next;
     }
@@ -677,17 +773,22 @@ AOUTUnloadModule(void *modptr)
 {
     AOUTModulePtr aoutfile = (AOUTModulePtr)modptr;
     AOUTHDR *header = aoutfile->header;
-    AOUT_RELOC *relptr, **prevptr;
+    AOUTRelocPtr relptr, *prevptr;
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUTUnLoadModule(0x%p)\n", modptr);
 #endif
-    /* Free pending relocations */
-    prevptr = &listResolve;
-    relptr = listResolve;
+
+/*
+ * Delete any unresolved relocations
+ */
+
+    relptr=_LoaderGetRelocations(aoutfile->funcs)->aout_reloc;
+    prevptr = &relptr;
+
     while (relptr) {
 	if (relptr->file == aoutfile) {
 	    *prevptr = relptr->next;
-	    free(relptr);
+	    xfree(relptr);
 	    relptr = *prevptr;
 	} else {
 	    prevptr = &(relptr->next);
@@ -698,32 +799,27 @@ AOUTUnloadModule(void *modptr)
     /* clean the symbols table */
     LoaderHashTraverse((void *)aoutfile, AOUTHashCleanOut);
 
-    if (aoutfile->strings != NULL) {
-	_LoaderFreeFileMem(aoutfile->strings, aoutfile->strsize);
-    }
-    if (aoutfile->symtab != NULL) {
-	_LoaderFreeFileMem(aoutfile->symtab, header->a_syms);
-    }
-    /* Free relocations */
-    if (aoutfile->datarel != NULL) {
-	_LoaderFreeFileMem(aoutfile->datarel, header->a_drsize);
-    }
-    if (aoutfile->txtrel != NULL) {
-	_LoaderFreeFileMem(aoutfile->txtrel, header->a_trsize);
-    }
-    /* Free symbol table */
+#define CheckandFree(ptr,size)  if(ptr) _LoaderFreeFileMem((ptr),(size))
+
+    CheckandFree(aoutfile->strings,aoutfile->strsize);
+    CheckandFree(aoutfile->symtab,aoutfile->header->a_syms);
+    CheckandFree(aoutfile->datarel,aoutfile->header->a_drsize);
+    CheckandFree(aoutfile->txtrel,aoutfile->header->a_trsize);
+    CheckandFree(aoutfile->data,aoutfile->header->a_data);
+    CheckandFree(aoutfile->text,aoutfile->header->a_text);
     /* Free allocated sections */
     if (aoutfile->bss != NULL) {
-	free(aoutfile->bss);
+	xfree(aoutfile->bss);
     }
-    if (aoutfile->data != NULL) {
-	_LoaderFreeFileMem(aoutfile->data, header->a_data);
+    if (aoutfile->common != NULL) {
+	xfree(aoutfile->common);
     }
-    if (aoutfile->text != NULL) {
-	_LoaderFreeFileMem(aoutfile->text, header->a_text);
-    }
+
     /* Free header */
     _LoaderFreeFileMem(aoutfile->header, sizeof(AOUTHDR));
+
     /* Free the module structure itself */
-    free(aoutfile);
+    xfree(aoutfile);
+
+    return;
 }

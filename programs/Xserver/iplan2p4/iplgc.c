@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplgc.c,v 3.0 1996/08/18 01:54:45 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -295,9 +295,9 @@ iplCreateGC(pGC)
     pPriv = iplGetGCPrivate(pGC);
     pPriv->rop = pGC->alu;
     pPriv->oneRect = FALSE;
-    pPriv->fExpose = TRUE;
-    pPriv->freeCompClip = FALSE;
-    pPriv->pRotatedPixmap = (PixmapPtr) NULL;
+    pGC->fExpose = TRUE;
+    pGC->freeCompClip = FALSE;
+    pGC->pRotatedPixmap = (PixmapPtr) NULL;
     return TRUE;
 }
 
@@ -354,7 +354,7 @@ iplValidateGC(pGC, changes, pDrawable)
 #ifdef NO_ONE_RECT
 	devPriv->oneRect = FALSE;
 #else
-	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	    new_line = TRUE;
 	devPriv->oneRect = oneRect;
@@ -480,7 +480,7 @@ iplValidateGC(pGC, changes, pDrawable)
 		if ((width <= INTER_PGSZ) && !(width & (width - 1)))
 		{
 		    iplCopyRotatePixmap(pGC->tile.pixmap,
-					&devPriv->pRotatedPixmap,
+					&pGC->pRotatedPixmap,
 					xrot, yrot);
 		    new_pix = TRUE;
 		}
@@ -495,17 +495,17 @@ iplValidateGC(pGC, changes, pDrawable)
 		if ((width <= INTER_PGSZ) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
-					&devPriv->pRotatedPixmap, xrot, yrot);
+					&pGC->pRotatedPixmap, xrot, yrot);
 		    new_pix = TRUE;
 		}
 	    }
 	    break;
 #endif
 	}
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    (*pGC->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+	    (*pGC->pScreen->DestroyPixmap)(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 
@@ -721,7 +721,7 @@ iplValidateGC(pGC, changes, pDrawable)
 	    }
 	    break;
 	case FillTiled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	    {
 		if (pGC->alu == GXcopy && (pGC->planemask & INTER_PMSK) == INTER_PMSK)
 		    pGC->ops->FillSpans = iplTile32FSCopy;
@@ -733,7 +733,7 @@ iplValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillStippled:
 #ifdef FOUR_BIT_CODE
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = ipl8Stipple32FS;
 	    else
 #endif
@@ -741,7 +741,7 @@ iplValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillOpaqueStippled:
 #ifdef FOUR_BIT_CODE
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = ipl8OpaqueStipple32FS;
 	    else
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.3 1997/09/09 11:56:23 hohndel Exp $ */
 
 
 
@@ -70,6 +70,68 @@ typedef struct {
   char *dformat;
 } thunk;
 
+#if NeedFunctionPrototypes
+static Atom Parse_Atom(char *, int);
+extern thunk *Create_Thunk_List(void);
+extern void Free_Thunk_List(thunk *);
+extern thunk *Add_Thunk(thunk *, thunk);
+extern char *Copy_String(char *);
+extern int Read_Char(FILE *);
+extern void Read_White_Space(FILE *);
+extern char *Read_Quoted(FILE *);
+extern void Apply_Default_Formats(char **, char **);
+extern void Lookup_Formats(Atom, char **, char **);
+extern void Add_Mapping(Atom, char *, char *);
+extern void Setup_Mapping(void);
+extern char *GetAtomName(Atom);
+extern void Read_Mappings(FILE *);
+extern char *Format_Hex(long);
+extern char *Format_Unsigned(long);
+extern char *Format_Signed(long);
+extern int ignore_errors(Display *, XErrorEvent *);
+extern char *Format_Atom(Atom);
+extern char *Format_Mask_Word(long);
+extern char *Format_Bool(long);
+extern void _put_char(char);
+extern void _format_char(char);
+extern char *Format_String(char *);
+extern char *Format_Len_String(char *, int);
+extern char *Skip_Digits(char *);
+extern char *Scan_Long(char *, long *);
+extern char *Scan_Octal(char *, long *);
+extern char *Skip_Past_Right_Paran(char *);
+extern int Is_A_Format(char *);
+extern int Get_Format_Size(char *);
+extern char Get_Format_Char(char *, int);
+extern char *Format_Thunk(thunk, char);
+extern char *Format_Thunk_I(thunk *, char *, int);
+extern long Mask_Word(thunk *, char *);
+extern int Is_A_DFormat(char *);
+extern char *Handle_Backslash(char *);
+extern char *Handle_Dollar_sign(char *, thunk *, char *);
+extern int Mask_Bit_I(thunk *, char *, int);
+extern char *Scan_Term(char *, thunk *, char *, long *);
+extern char *Scan_Exp(char *, thunk *, char *, long *);
+extern char *Handle_Question_Mark(char *, thunk *, char *);
+extern void Display_Property(thunk *, char *, char *);
+extern long Extract_Value(char **, int *, int, int);
+extern long Extract_Len_String(char **, int *, int, char **);
+extern thunk *Break_Down_Property(char *, int, char *, int);
+extern void usage(void);
+extern void grammar(void);
+extern void Parse_Format_Mapping(int *, char ***);
+extern int main(int, char **);
+extern void remove_property(Display *, Window, char *);
+extern thunk *Handle_Prop_Requests(int, char **);
+extern void Show_All_Props(void);
+extern void Set_Prop(char *, char *, char *, char, char *);
+extern char *Get_Font_Property_Data_And_Type(Atom, long *, Atom *, int *);
+extern char *Get_Window_Property_Data_And_Type(Atom, long *, Atom *, int *);
+extern char *Get_Property_Data_And_Type(Atom, long *, Atom *, int *);
+extern void Show_Prop(char *, char *, char *);
+#endif
+
+
 thunk *Create_Thunk_List()
 {
   thunk *tptr;
@@ -81,6 +143,7 @@ thunk *Create_Thunk_List()
   return(tptr);
 }
 
+void
 Free_Thunk_List(list)
 thunk *list;
 {
@@ -134,6 +197,7 @@ int Read_Char(stream)
 	return(c);
 }
 
+void
 Read_White_Space(stream)
      FILE *stream;
 {
@@ -187,6 +251,7 @@ char *Read_Quoted(stream)
 
 static thunk *_property_formats = 0;   /* Holds mapping */
 
+void
 Apply_Default_Formats(format, dformat)
      char **format;
      char **dformat;
@@ -196,7 +261,8 @@ Apply_Default_Formats(format, dformat)
   if (!*dformat)
     *dformat = D_DFORMAT;
 }
-  
+
+void
 Lookup_Formats(atom, format, dformat)
      Atom atom;
      char **format;
@@ -215,6 +281,7 @@ Lookup_Formats(atom, format, dformat)
       }
 }
 
+void
 Add_Mapping(atom, format, dformat)
      Atom atom;
      char *format;
@@ -414,6 +481,7 @@ static int XpropMode;
 #define XpropWindowProperties 0
 #define XpropFontProperties   1
 
+void
 Setup_Mapping()
 {
     int n;
@@ -461,13 +529,14 @@ char *GetAtomName(atom)
  *               already open for reading.
  */
 
+void
 Read_Mappings(stream)
      FILE *stream;
 {
 	char format_buffer[100];
 	char name[1000], *dformat, *format;
 	int count, c;
-	Atom atom, Parse_Atom();
+	Atom atom;
 
 	while ((count=fscanf(stream," %990s %90s ",name,format_buffer))!=EOF) {
 		if (count != 2)
@@ -535,7 +604,7 @@ char *Format_Atom(atom)
      Atom atom;
 {
   char *name;
-  int (*handler)();
+  XErrorHandler handler;
 
   if (name = GetAtomName(atom)) {
       strncpy(_formatting_buffer, name, MAXSTR);
@@ -587,8 +656,14 @@ char *Format_Bool(value)
 static char *_buf_ptr;
 static int _buf_len;
 
+#if NeedFunctionPrototypes
+void
+_put_char(char c)
+#else
+void
 _put_char(c)
      char c;
+#endif
 {
 	if (--_buf_len<0) {
 		_buf_ptr[0]='\0';
@@ -597,8 +672,14 @@ _put_char(c)
 	_buf_ptr++[0] = c;
 }
 
+#if NeedFunctionPrototypes
+void
+_format_char(char c)
+#else
+void
 _format_char(c)
      char c;
+#endif
 {
 	switch (c) {
 	      case '\\':
@@ -779,9 +860,14 @@ char Get_Format_Char(format, i)
   return(format[i]);
 }
 
+#if NeedFunctionPrototypes
+char *
+Format_Thunk(thunk t, char format_char)
+#else
 char *Format_Thunk(t, format_char)
      thunk t;
      char format_char;
+#endif
 {
   long value;
   value = t.value;
@@ -987,6 +1073,7 @@ char *Handle_Question_Mark(dformat, thunks, format)
 	return(dformat);
 }
 
+void
 Display_Property(thunks, dformat, format)
      thunk *thunks;
      char *dformat, *format;
@@ -1099,6 +1186,7 @@ thunk *Break_Down_Property(pointer, length, format, size)
  *
  */
 
+void
 usage()
 {
     char **cpp;
@@ -1129,6 +1217,7 @@ NULL};
     exit (1);
 }
 
+void
 grammar ()
 {
 	printf ("Grammar for xprop:\n\n");
@@ -1150,6 +1239,7 @@ grammar ()
 	exit(0);
 }
 
+void
 Parse_Format_Mapping(argc, argv)
      int *argc;
      char ***argv;
@@ -1186,13 +1276,14 @@ int spy=0;
 int max_len=MAXSTR;
 XFontStruct *font;
 
+int
 main(argc, argv)
 int argc;
 char **argv;
 {
   FILE *stream;
   char *name;
-  thunk *props, *Handle_Prop_Requests();
+  thunk *props;
   char *remove_propname = NULL;
   Bool frame_only = False;
   int n;
@@ -1324,6 +1415,7 @@ char **argv;
  *
  */
 
+void
 remove_property (dpy, w, propname)
     Display *dpy;
     Window w;
@@ -1382,6 +1474,7 @@ thunk *Handle_Prop_Requests(argc, argv)
   return(thunks);
 }
 
+void
 Show_All_Props()
 {
   Atom *atoms, atom;
@@ -1402,9 +1495,15 @@ Show_All_Props()
     }
 }
 
+#if NeedFunctionPrototypes
+void
+Set_Prop(char *format, char *dformat, char *prop, char mode, char *value)
+#else
+void
 Set_Prop(format, dformat, prop, mode, value)
      char *format, *dformat, *prop, *value;
      char mode;
+#endif
 {
   outl("Seting prop %s(%s) using %s mode %c to %s",
        prop, format, dformat, mode, value);
@@ -1479,6 +1578,7 @@ char *Get_Property_Data_And_Type(atom, length, type, size)
 	  return(Get_Window_Property_Data_And_Type(atom, length, type, size));
 }
 
+void
 Show_Prop(format, dformat, prop)
      char *format, *dformat, *prop;
 {

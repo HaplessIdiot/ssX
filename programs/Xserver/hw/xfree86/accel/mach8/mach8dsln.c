@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8dsln.c,v 3.1 1996/02/04 09:03:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8dsln.c,v 3.2 1996/12/23 06:39:48 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -114,7 +114,6 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    cfbPrivGCPtr    devPriv;
 
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
@@ -123,8 +122,7 @@ mach8DashLine(pDrawable, pGC, mode, npt, pptInit)
         return;
     }
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 

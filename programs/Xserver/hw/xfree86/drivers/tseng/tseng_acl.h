@@ -1,8 +1,10 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.10 1997/12/28 21:28:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.11 1998/01/11 03:36:51 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
+
+#include <compiler.h>
 
 /*
  * if NO_OPTIMIZE is set, some optimizations are disabled.

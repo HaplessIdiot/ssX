@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.0 1996/08/18 01:45:53 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -128,7 +128,6 @@ afbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 #endif
 		afbWindowPrivateIndex = AllocateWindowPrivateIndex();
 		afbGCPrivateIndex = AllocateGCPrivateIndex();
-		miRegisterGCPrivateIndex(afbGCPrivateIndex);
 		afbGeneration = serverGeneration;
 	}
 	if (pWinIndex)

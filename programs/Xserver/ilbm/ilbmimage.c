@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmimage.c,v 3.0 1996/08/18 01:53:56 dawes Exp $ */
 #include <stdio.h>
 
 /* Modified jun 95 by Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
@@ -98,7 +98,7 @@ ilbmPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 				DEALLOCATE_LOCAL(ptmp);
 				return;
 			}
-			ilbmGetGCPrivate(pGC)->fExpose = FALSE;
+			pGC->fExpose = FALSE;
 			(void)(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, pDraw, pGC, leftPad,
 												  0, width, height, x, y, 1);
 			DEALLOCATE_LOCAL(ptmp);
@@ -183,14 +183,14 @@ ilbmPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 				return;
 			}
 
-			ilbmGetGCPrivate(pGC)->fExpose = FALSE;
+			pGC->fExpose = FALSE;
 			(void)(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, pDraw, pGC, leftPad,
 												 0, width, height, x, y);
 			DEALLOCATE_LOCAL(ptmp);
 #endif
 		}
 
-		ilbmGetGCPrivate(pGC)->fExpose = TRUE;
+		pGC->fExpose = TRUE;
 		FreeScratchPixmapHeader(pPixmap);
 	} else {
 		/* Chunky to planar conversion required */
@@ -261,10 +261,10 @@ ilbmPutImage(pDraw, pGC, depth, x, y, width, height, leftPad, format, pImage)
 			}
 		} /* for (d = ...) */
 
-		ilbmGetGCPrivate(pGC)->fExpose = FALSE;
+		pGC->fExpose = FALSE;
 		(void)(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, pDraw, pGC, leftPad, 0,
 											 width, height, x, y);
-		ilbmGetGCPrivate(pGC)->fExpose = TRUE;
+		pGC->fExpose = TRUE;
 		(*pScreen->DestroyPixmap)(pPixmap);
 	}
 }

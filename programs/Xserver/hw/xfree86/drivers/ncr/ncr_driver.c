@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.5 1997/08/26 10:01:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.6 1998/01/24 16:58:07 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -54,6 +54,7 @@
 /* This must be done after the header file or else Xalloca.h will blow up */
 #undef NCR
 #endif
+#undef NCR
 
 typedef struct {
   vgaHWRec      std;		/* std IBM VGA register */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.19 1997/11/08 17:07:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.20 1998/01/24 16:57:53 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -562,16 +562,17 @@ static int Num_CHIPS_ExtPorts32 =
 #define CT_554   9
 #define CT_555   10
 #define CT_8554  11
-#define CT_4200  12
-#define CT_4300  13
+#define CT_9000  12
+#define CT_4200  13
+#define CT_4300  14
 #ifdef CT45X_SUPPORT
 /* CT_451 - CT457 are not supported */
-#define CT_451   14
-#define CT_452   15
-#define CT_453   16
-#define CT_455   17
-#define CT_456   18
-#define CT_457   19
+#define CT_451   15
+#define CT_452   16
+#define CT_453   17
+#define CT_455   18
+#define CT_456   19
+#define CT_457   20
 #endif
 
 static unsigned char CHIPSchipset;
@@ -628,7 +629,7 @@ CHIPSIdent(n)
     {
 	"ct65520", "ct65525", "ct65530", "ct65535", "ct65540", 
 	"ct65545", "ct65546", "ct65548", "ct65550", "ct65554",
-	"ct65555", "ct68554", "ct64200", "ct64300",
+	"ct65555", "ct68554", "ct69000", "ct64200", "ct64300",
 #ifdef CT45X_SUPPORT
 	"ct451", "ct452", "ct453", "ct455",
 	"ct456", "ct457",
@@ -694,9 +695,7 @@ CHIPSClockSelect(no)
  */
 
 static void
-ctClockSave(Type,Clock)
-    unsigned char Type;
-    ctClockPtr Clock;
+ctClockSave(unsigned char Type, ctClockPtr Clock)
 {
     unsigned char temp;
 
@@ -740,10 +739,7 @@ ctClockSave(Type,Clock)
 }
 
 static Bool
-ctClockFind(Type, no, Clock)
-    unsigned char Type;
-    int no;
-    ctClockPtr Clock;
+ctClockFind(unsigned char Type, int no, ctClockPtr Clock)
 {
     if (no > (vga256InfoRec.clocks - 1))
 	return (FALSE);
@@ -808,8 +804,7 @@ ctClockFind(Type, no, Clock)
 }
 
 
-int ctGetHWClock(Type)
-unsigned char Type;
+int ctGetHWClock(unsigned char Type)
 {
     unsigned char temp, temp1;
 
@@ -853,9 +848,7 @@ unsigned char Type;
   }
 }
 static void
-ctClockLoad(Type, Clock)
-    unsigned char Type;
-    ctClockPtr Clock;
+ctClockLoad(unsigned char Type, ctClockPtr Clock)
 {
     volatile unsigned char temp, tempmsr, tempfcr, temp02;
     volatile unsigned char temp33, temp54, tempf03;
@@ -1172,6 +1165,18 @@ CHIPSProbe()
 	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
 	    ctDPMSSupport = TRUE;
 	    ctTMED = TRUE;           /* Flag the new STN dithering scheme */
+	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_9000))) {
+	    CHIPSchipset = CT_9000;
+	    ctLinearSupport = TRUE;
+	    ctAccelSupport = TRUE;
+	    ctSupportMMIO = TRUE;
+	    ctUseMMIO = TRUE;	     /* MMIO seems to be usuable on all Buses
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
+	    ctHDepth = TRUE;
+	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
+	    ctDPMSSupport = TRUE;
+	    ctTMED = TRUE;           /* Flag the new STN dithering scheme */
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_4200))) {
 	  CHIPSchipset = CT_4200;
 	  ctisWINGINE = TRUE;
@@ -1227,6 +1232,11 @@ CHIPSProbe()
 	    ctTMED = TRUE;         /* Flag the new STN dithering scheme */
 	} else if (tmp == 0xF4) {
 	    CHIPSchipset = CT_8554;
+	    ctUseMMIO = TRUE;	
+	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
+	    ctTMED = TRUE;         /* Flag the new STN dithering scheme */
+	} else if (tmp == 0xC0) {
+	    CHIPSchipset = CT_9000;
 	    ctUseMMIO = TRUE;	
 	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
 	    ctTMED = TRUE;         /* Flag the new STN dithering scheme */
@@ -1363,6 +1373,19 @@ CHIPSProbe()
 		ctDPMSSupport = TRUE;
 		ctTMED = TRUE;       /* Flag the new STN dithering scheme */
 	    }
+	    if (temp == 0xC0) {
+		CHIPSchipset = CT_9000;
+		ctLinearSupport = TRUE;
+		ctAccelSupport = TRUE;
+		ctSupportMMIO = TRUE;
+		ctUseMMIO = TRUE;    /* MMIO seems to be usuable on all Buses.
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
+		ctHDepth = TRUE;
+		ctisHiQV32 = TRUE;
+		ctDPMSSupport = TRUE;
+		ctTMED = TRUE;       /* Flag the new STN dithering scheme */
+	    }
 	    if (CHIPSchipset != 99) {
 		outb(0x3D6, 0x04);
 		temp = inb(0x3D7);
@@ -1465,26 +1488,58 @@ Bool ctProbeHiQV()
   /* memory size */
   if (!vga256InfoRec.videoRam) {
       /* not given, probe it    */
-      /* XR43: DRAM interface   */
-      /* bit 2-1: memory size   */
-      /*          0: 1024 kB    */
-      /*          1: 2048 kB    */
-      /*          2: 4096 kB    */
-      /*          3: reserved   */
-      outb(0x3D6, 0x43);
-      switch ((inb(0x3D7) & 0x06) >> 1) {
-	case 0:
-	  vga256InfoRec.videoRam = 1024;
-	  break;
-	case 1:
+      if (CHIPSchipset == CT_9000) {
+	  /* The ct69000 has 2Mb of SGRAM integrated */
 	  vga256InfoRec.videoRam = 2048;
-	  break;
-	case 2:
-	case 3:
-	  vga256InfoRec.videoRam = 4096;
-	  break;
+      } else if (CHIPSchipset == CT_550) {
+          /* XR43: DRAM interface   */
+	  /* bit 2-1: memory size   */
+          /*          0: 1024 kB    */
+          /*          1: 2048 kB    */
+          /*          2:  reserved  */
+          /*          3: reserved   */
+          outb(0x3D6, 0x43);
+	  switch ((inb(0x3D7) & 0x06) >> 1) {
+	    case 0:
+	      vga256InfoRec.videoRam = 1024;
+	      break;
+	    case 1:
+	    case 2:
+	    case 3:
+	      vga256InfoRec.videoRam = 2048;
+	      break;
+	  }
+      } else {
+	  /* XRE0: Software reg     */
+	  /* bit 3-0: memory size   */
+          /*          0: 512k       */
+          /*          1: 1024k      */
+          /*          2: 1536k(1.5M)*/
+          /*          3: 2048k      */
+          /*          7: 4096k      */
+          outb(0x3D6, 0xE0);
+	  temp = inb(0x3D7) & 0xF;
+	  switch (temp) {
+	    case 0:
+	      vga256InfoRec.videoRam = 512;
+	      break;
+	    case 1:
+	      vga256InfoRec.videoRam = 1024;
+	      break;
+	    case 2:
+	      vga256InfoRec.videoRam = 1536;
+	      break;
+	    case 3:
+	      vga256InfoRec.videoRam = 2048;
+	      break;
+	    case 7:
+	      vga256InfoRec.videoRam = 4096;
+	      break;
+	    default:
+	      vga256InfoRec.videoRam = 1024;
+	    break;
+	  }
       }
-      
       ErrorF("%s %s: CHIPS: %d kB VRAM\n", XCONFIG_PROBED,
 	     vga256InfoRec.name, vga256InfoRec.videoRam);
   } else {
@@ -1744,6 +1799,9 @@ Bool ctProbeHiQV()
       case CT_8554:
 	ctMemClk->Max = 55000;
 	break;
+      case CT_9000:
+	ctMemClk->Max = 100000;
+	break;
     }
 
     /* Probe the memory clock currently in use */
@@ -1806,6 +1864,9 @@ Bool ctProbeHiQV()
     
     /* maximal clock */
     switch (CHIPSchipset) {
+      case CT_9000:
+	vga256InfoRec.maxClock = 220000;
+	break;
       case CT_8554:
       case CT_555:
 	vga256InfoRec.maxClock = 110000;
@@ -4440,8 +4501,7 @@ CHIPSFbInit()
 }
 
 static void
-ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
-    unsigned char ctHorizontalStretch, ctVerticalStretch;
+ctRestoreStretching(unsigned char ctHorizontalStretch, unsigned char ctVerticalStretch)
 {
   unsigned char tmp;
     /* write to regs. */

@@ -30,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbtile32.c,v 1.8 94/04/17 20:29:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtile32.c,v 3.0 1996/06/29 09:05:53 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -241,7 +241,7 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
     unsigned long xtmp;
 #endif
 
-    tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
+    tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned long *)tile->devPrivate.ptr;
 
@@ -368,7 +368,7 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
+    tile = pGC->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned long *)tile->devPrivate.ptr;
 

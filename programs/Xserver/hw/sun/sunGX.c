@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.26 94/04/17 20:29:38 kaleb Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.27 95/06/15 18:32:58 dpw Exp $";
 #endif /* lint */
 /*
 Copyright (c) 1991  X Consortium
@@ -27,6 +27,8 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.0tsi Exp $ */
 
 #include	"sun.h"
 
@@ -659,13 +661,11 @@ sunGXPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxPtr	    pboxClippedBase;
     BoxPtr	    pextent;
     BoxRec	    stackRects[NUM_STACK_RECTS];
-    cfbPrivGC	    *priv;
     int		    numRects;
     int		    n;
     int		    xorg, yorg;
 
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
     prect = prectInit;
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -820,12 +820,12 @@ sunGXFillSpans (pDrawable, pGC, n, ppt, pwidth, fSorted)
 	GXStippleInit(gx,gxPriv->stipple);
     if (devPriv->oneRect)
     {
-	extents = &devPriv->pCompositeClip->extents;
+	extents = &pGC->pCompositeClip->extents;
 	GXSetClip (gx, extents);
     }
     else
     {
-    	nTmp = n * miFindMaxBand(devPriv->pCompositeClip);
+    	nTmp = n * miFindMaxBand(pGC->pCompositeClip);
     	pwidthFree = (int *)ALLOCATE_LOCAL(nTmp * sizeof(int));
     	pptFree = (DDXPointRec *)ALLOCATE_LOCAL(nTmp * sizeof(DDXPointRec));
     	if(!pptFree || !pwidthFree)
@@ -834,8 +834,7 @@ sunGXFillSpans (pDrawable, pGC, n, ppt, pwidth, fSorted)
 	    if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	    return;
     	}
-    	n = miClipSpans(devPriv->pCompositeClip,
-		     	 ppt, pwidth, n,
+    	n = miClipSpans(pGC->pCompositeClip, ppt, pwidth, n,
 		     	 pptFree, pwidthFree, fSorted);
     	pwidth = pwidthFree;
     	ppt = pptFree;
@@ -887,7 +886,7 @@ sunGXPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (devPriv->rop == GXnoop)
 	return;
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     gx->offx = pDrawable->x;
     gx->offy = pDrawable->y;
@@ -1078,7 +1077,7 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cclip = devPriv->pCompositeClip;
+    cclip = pGC->pCompositeClip;
     GXSetOff(gx,pDraw->x,pDraw->y)
     if (devPriv->oneRect) {
 	extents = &cclip->extents;
@@ -1175,7 +1174,6 @@ sunGXFillPoly1Rect (pDrawable, pGC, shape, mode, count, ptsIn)
     int		count;
     DDXPointPtr	ptsIn;
 {
-    cfbPrivGCPtr    devPriv;
     int		    c;
     BoxPtr	    extents;
     int		    *endp;
@@ -1201,8 +1199,7 @@ sunGXFillPoly1Rect (pDrawable, pGC, shape, mode, count, ptsIn)
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu]|POLY_N,pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
-    devPriv = cfbGetGCPrivate (pGC);
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     GXSetOff(gx,pDrawable->x, pDrawable->y);
     GXSetClip(gx,extents);
     if (mode == CoordModeOrigin)
@@ -1319,7 +1316,6 @@ sunGXPolySeg1Rect (pDrawable, pGC, nseg, pSeg)
     sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     sunGXPrivGCPtr  gxPriv = sunGXGetGCPrivate (pGC);
     BoxPtr	    extents;
-    cfbPrivGCPtr    devPriv;
     int		    x, y;
     int		    r;
     unsigned char   *baseAddr, *loAddr, *hiAddr, *saveAddr = 0, save;
@@ -1329,8 +1325,7 @@ sunGXPolySeg1Rect (pDrawable, pGC, nseg, pSeg)
 	GXStippleInit(gx,gxPriv->stipple);
     GXSetOff (gx, pDrawable->x, pDrawable->y);
     
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     GXSetClip (gx, extents);
     if (pGC->capStyle == CapNotLast)
     {
@@ -1385,7 +1380,6 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
     sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     sunGXPrivGCPtr  gxPriv = sunGXGetGCPrivate (pGC);
     BoxPtr	    extents;
-    cfbPrivGCPtr    devPriv;
     unsigned char   *baseAddr, *loAddr, *hiAddr, *saveAddr, save;
     int		    r;
     Bool	    careful;
@@ -1399,8 +1393,7 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
     careful = ((pGC->alu & 0xc) == 0x8 || (pGC->alu & 0x3) == 0x2);
     capNotLast = pGC->capStyle == CapNotLast;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    extents = &devPriv->pCompositeClip->extents;
+    extents = &pGC->pCompositeClip->extents;
     GXSetOff (gx, pDrawable->x, pDrawable->y);
     GXSetClip (gx, extents);
     if (careful) 
@@ -1483,8 +1476,8 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
 		saveAddr = 0;
 	    else
 		save = *saveAddr;
-	    gx->alinex = x;
 	    gx->aliney = y;
+	    gx->alinex = x;
 	    GXDrawDone(gx,r);
 	    GXWait(gx,r);
 	    if (saveAddr)
@@ -1508,8 +1501,7 @@ sunGXPolyFillRect1Rect (pDrawable, pGC, nrect, prect)
 {
     sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     sunGXPrivGCPtr  gxPriv = sunGXGetGCPrivate (pGC);
-    cfbPrivGCPtr    devPriv = cfbGetGCPrivate (pGC);
-    BoxPtr	    extents = &devPriv->pCompositeClip->extents;
+    BoxPtr	    extents = &pGC->pCompositeClip->extents;
     int		    r;
     int		    x, y;
 
@@ -1551,7 +1543,7 @@ sunGXPolyGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     BoxPtr	    extents;
     BoxRec	    box;
 
-    clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    clip = pGC->pCompositeClip;
     extents = &clip->extents;
 
     if (REGION_NUM_RECTS(clip) == 1)
@@ -1636,7 +1628,7 @@ sunGXTEGlyphBlt (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     widthGlyph = FONTMAXBOUNDS(pfont,characterWidth);
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
-    clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    clip = pGC->pCompositeClip;
     extents = &clip->extents;
 
     if (REGION_NUM_RECTS(clip) == 1)
@@ -2185,7 +2177,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	)
     {
 	miComputeCompositeClip(pGC, pDrawable);
-	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	oneRect = REGION_NUM_RECTS(pGC->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
 	{
 	    new_line = TRUE;
@@ -2302,7 +2294,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 		    if ((width <= 32) && !(width & (width - 1)))
 		    {
 		    	cfbCopyRotatePixmap(pGC->tile.pixmap,
-					    &devPriv->pRotatedPixmap,
+					    &pGC->pRotatedPixmap,
 					    xrot, yrot);
 		    	new_pix = TRUE;
 		    }
@@ -2316,17 +2308,17 @@ sunGXValidateGC (pGC, changes, pDrawable)
 		    if ((width <= 32) && !(width & (width - 1)))
 		    {
 		    	mfbCopyRotatePixmap(pGC->stipple,
-					    &devPriv->pRotatedPixmap, xrot, yrot);
+					    &pGC->pRotatedPixmap, xrot, yrot);
 		    	new_pix = TRUE;
 		    }
 	    	}
 	    	break;
 	    }
 	}
-	if (!new_pix && devPriv->pRotatedPixmap)
+	if (!new_pix && pGC->pRotatedPixmap)
 	{
-	    cfbDestroyPixmap(devPriv->pRotatedPixmap);
-	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
+	    cfbDestroyPixmap(pGC->pRotatedPixmap);
+	    pGC->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 
@@ -2487,7 +2479,7 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	    pGC->ops->FillSpans = sunGXFillSpans;
 	else switch (pGC->fillStyle) {
 	case FillTiled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 	    {
 		if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
 		    pGC->ops->FillSpans = cfbTile32FSCopy;
@@ -2498,13 +2490,13 @@ sunGXValidateGC (pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
 	case FillStippled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8Stipple32FS;
 	    else
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-	    if (devPriv->pRotatedPixmap)
+	    if (pGC->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	    else
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;

@@ -53,11 +53,40 @@ from the X Consortium.
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"
 
+typedef struct {
+	long code;
+	char *name;
+} binding;
+
+#if NeedFunctionPrototypes
+extern void scale_init(void);
+extern char *nscale(int, int, int, char *);
+extern char *xscale(int);
+extern char *yscale(int);
+extern char *bscale(int);
+extern int bad_window_handler(Display *, XErrorEvent *);
+extern int main(int, char **);
+extern char *LookupL(long, binding *);
+extern char *Lookup(int, binding *);
+extern void Display_Window_Id(Window, int);
+extern void Display_Stats_Info(Window);
+extern void Display_Bits_Info(Window);
+extern void Display_Event_Mask(long);
+extern void Display_Events_Info(Window);
+extern void Display_Tree_Info(Window, int);
+extern void display_tree_info_1(Window, int, int);
+extern void Display_Hints(XSizeHints *);
+extern void Display_Size_Hints(Window);
+extern void Display_Window_Shape(Window);
+extern void Display_WM_Info(Window);
+#endif
+
 static char *window_id_format = "0x%lx";
 
 /*
  * Report the syntax for calling xwininfo:
  */
+void
 usage()
 {
     fprintf (stderr,
@@ -226,6 +255,7 @@ char *bscale(b)
    to see if the -id the user specified is valid. */
 
 /* ARGSUSED */
+int
 bad_window_handler(disp, err)
     Display *disp;
     XErrorEvent *err;
@@ -238,6 +268,7 @@ bad_window_handler(disp, err)
 }
 
 
+int
 main(argc, argv)
      int argc;
      char **argv;
@@ -346,7 +377,7 @@ main(argc, argv)
     Window root;
     int x, y;
     unsigned width, height, bw, depth;
-    int (*old_handler)();
+    XErrorHandler old_handler;
 
     old_handler = XSetErrorHandler(bad_window_handler);
     XGetGeometry (dpy, window, &root, &x, &y, &width, &height, &bw, &depth);
@@ -378,11 +409,6 @@ main(argc, argv)
 /*
  * Lookup: lookup a code in a table.
  */
-typedef struct {
-	long code;
-	char *name;
-} binding;
-
 static char _lookup_buffer[100];
 
 char *LookupL(code, table)
@@ -416,6 +442,7 @@ char *Lookup(code, table)
  * Routine to display a window id in dec/hex with name if window has one
  */
 
+void
 Display_Window_Id(window, newline_wanted)
     Window window;
     Bool newline_wanted;
@@ -503,6 +530,7 @@ static binding _visual_classes[] = {
 	{ DirectColor, "DirectColor" },
 	{ 0, 0 }};
 
+void
 Display_Stats_Info(window)
      Window window;
 {
@@ -694,6 +722,7 @@ static binding _bool[] = {
 	{ 1, "Yes" },
 	{ 0, 0 } };
 
+void
 Display_Bits_Info(window)
      Window window;
 {
@@ -709,9 +738,9 @@ Display_Bits_Info(window)
 	 Lookup(win_attributes.win_gravity, _gravities));
   printf("  Backing-store hint: %s\n",
 	 Lookup(win_attributes.backing_store, _backing_store_hint));
-  printf("  Backing-planes to be preserved: 0x%x\n",
+  printf("  Backing-planes to be preserved: 0x%lx\n",
 	 win_attributes.backing_planes);
-  printf("  Backing pixel: %d\n", win_attributes.backing_pixel);
+  printf("  Backing pixel: %ld\n", win_attributes.backing_pixel);
   printf("  Save-unders: %s\n",
 	 Lookup(win_attributes.save_under, _bool));
 }
@@ -748,6 +777,7 @@ static binding _event_mask_names[] = {
 	{ OwnerGrabButtonMask, "OwnerGrabButton" },
 	{ 0, 0 } };
 
+void
 Display_Event_Mask(mask)
      long mask;
 {
@@ -763,6 +793,7 @@ Display_Event_Mask(mask)
 /*
  * Display info on events
  */
+void
 Display_Events_Info(window)
      Window window;
 {
@@ -791,6 +822,7 @@ Display_Events_Info(window)
 /*
  * Display root, parent, and (recursively) children information
  */
+void
 Display_Tree_Info(window, recurse)
      Window window;
      int recurse;		/* true if should show children's children */
@@ -798,6 +830,7 @@ Display_Tree_Info(window, recurse)
     display_tree_info_1(window, recurse, 0);
 }
 
+void
 display_tree_info_1(window, recurse, level)
      Window window;
      int recurse;
@@ -872,6 +905,7 @@ display_tree_info_1(window, recurse, level)
 /*
  * Display a set of size hints
  */
+void
 Display_Hints(hints)
      XSizeHints *hints;
 {
@@ -950,6 +984,7 @@ Display_Hints(hints)
 /*
  * Display Size Hints info
  */
+void
 Display_Size_Hints(window)
      Window window;
 {
@@ -976,6 +1011,7 @@ Display_Size_Hints(window)
 }
 
 
+void
 Display_Window_Shape (window)
     Window  window;
 {
@@ -1016,6 +1052,7 @@ static binding _state_hints[] = {
 	{ InactiveState, "Inactive State" },
 	{ 0, 0 } };
 
+void
 Display_WM_Info(window)
      Window window;
 {

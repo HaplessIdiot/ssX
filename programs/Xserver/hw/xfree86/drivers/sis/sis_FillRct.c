@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_FillRct.c,v 1.2 1997/01/12 10:52:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillRct.c,v 1.1 1997/03/06 23:16:47 hohndel Exp $ */
 
 /*
  * 
@@ -84,7 +84,6 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxPtr pboxClippedBase;
     BoxPtr pextent;
     BoxRec stackRects[NUM_STACK_RECTS];
-    cfbPrivGC *priv;
     int numRects;
     void (*BoxFill) ();
     int n;
@@ -116,8 +115,7 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	return;
     }
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
-    prgnClip = priv->pCompositeClip;
+    prgnClip = pGC->pCompositeClip;
 
     BoxFill = 0;
     switch (pGC->fillStyle) {
@@ -134,8 +132,7 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    } else
 #endif
 	    {
-		if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-		    pRotatedPixmap) {
+		if (!pGC->pRotatedPixmap) {
 		    BoxFill = vga256FillRectTileOdd;
 		} else {
 		    if (pGC->alu == GXcopy && (pGC->planemask & 0xFF)
@@ -154,8 +151,7 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    } else
 #endif
 	    {
-		if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-		    pRotatedPixmap) {
+		if (!pGC->pRotatedPixmap) {
 		    BoxFill = cfb16FillRectTileOdd;
 		} else {
 		    if (pGC->alu == GXcopy && (pGC->planemask & 0xFFFF)
@@ -168,8 +164,7 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    }
 	    break;
 	case 24:
-	    if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-		pRotatedPixmap) {
+	    if (!pGC->pRotatedPixmap) {
 		BoxFill = cfb24FillRectTileOdd;
 	    } else {
 		if (pGC->alu == GXcopy && (pGC->planemask & 0xFFFFFF)
@@ -184,8 +179,7 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
     case FillStippled:
 #ifdef STIPPLE_ACCEL			       /* disable acelerated fill */
-	if ((!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-		pRotatedPixmap) || sisAvoidImageBLT || 
+	if ((!pGC->pRotatedPixmap) || sisAvoidImageBLT || 
 	        sisBLTPatternAddress <= 0 )
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else {
@@ -197,8 +191,7 @@ siscfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
     case FillOpaqueStippled:
 #ifdef STIPPLE_ACCEL			       /* disable acelerated fill */
-	if ((!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-	     pRotatedPixmap) || sisAvoidImageBLT || 
+	if ((!pGC->pRotatedPixmap) || sisAvoidImageBLT || 
 	        sisBLTPatternAddress <= 0 )
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else {

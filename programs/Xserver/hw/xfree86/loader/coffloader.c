@@ -33,13 +33,25 @@
 #include <sys/fcntl.h>
 #endif
 #include <sys/stat.h>
+
+#ifdef DBMALLOC
+#include <debug/malloc.h>
+#define Xalloc(size) malloc(size)
+#define Xcalloc(size) calloc(1,(size))
+#define Xfree(size) free(size)
+#endif
+
+#include "Xos.h"
+#include "os.h"
 #include "coff.h"
 
+#include "sym.h"
 #include "loader.h"
+#include "coffloader.h"
 
 /*
 #ifndef LDTEST
-#define COFF2DEBUG ErrorF
+#define COFFDEBUG ErrorF
 #endif
 */
 
@@ -50,7 +62,9 @@
 
 typedef	struct {
 	int	handle;
+	long	module;		/* Id of the module used to find inter module calls */
 	int	fd;
+	loader_funcs	*funcs;
 	FILHDR 	*header;	/* file header */
 	AOUTHDR  *optheader;	/* optional file header */
 	unsigned short	numsh;
@@ -62,34 +76,37 @@ typedef	struct {
 	int	strsize;	/* size of the string table */
 	unsigned char *text;	/* Start address of the .text section */
 	int	txtndx;		/* index of the .text section */
+	long	txtaddr;	/* offset of the .text section */
 	int	txtsize;	/* size of the .text section */
 	int	txtrelsize;	/* size of the .rel.text section */
 	unsigned char *data;	/* Start address of the .data section */
 	int	datndx;		/* index of the .data section */
+	long	dataddr;	/* offset of the .data section */
 	int	datsize;	/* size of the .data section */
 	int	datrelsize;	/* size of the .rel.data section */
 	unsigned char *bss;	/* Start address of the .bss section */
 	int	bssndx;		/* index of the .bss section */
+	long	bssaddr;	/* offset of the .bss section */
 	int	bsssize;	/* size of the .bss section */
 	SYMENT *symtab;		/* Start address of the .symtab section */
 	int	symndx;		/* index of the .symtab section */
 	int	symsize;	/* size of the .symtab section */
 	unsigned char *common;	/* Start address of the .common section */
 	int	comsize;	/* size of the .common section */
-	}	COFF2ModuleRec, *COFF2ModulePtr;
+	long	toc;		/* Offset of the TOC csect */
+	unsigned char *tocaddr;	/* Address of the TOC csect */
+	}	COFFModuleRec, *COFFModulePtr;
 
 /*
- * If an relocation is unable to be satisfied, then put it on a list
- * to try later after more odules have been loaded.
+ * If any relocation is unable to be satisfied, then put it on a list
+ * to try later after more modules have been loaded.
  */
 typedef struct _coff_reloc {
-	COFF2ModulePtr	file;
+	COFFModulePtr	file;
 	RELOC		*rel;
 	int		secndx;
 	struct _coff_reloc	*next;
-	} coff_reloc ;
-
-static	coff_reloc *listResolve = NULL;
+} COFFRelocRec;
 
 /*
  * Symbols with a section number of 0 (N_UNDEF) but a value of non-zero
@@ -103,95 +120,98 @@ typedef struct _coff_COMMON {
 	SYMENT	*sym;
 	int	index;
 	struct _coff_COMMON	*next;
-	} coff_COMMON;
+	} COFFCommonRec;
 
-static coff_COMMON *listCOMMON = NULL;
+static COFFCommonPtr listCOMMON = NULL;
+
+/* Prototypes for static functions */
+static int COFFhashCleanOut(void *, itemPtr);
+static char *COFFGetSymbolName(COFFModulePtr, int);
+static COFFCommonPtr COFFAddCOMMON(SYMENT *, int);
+static LOOKUP *COFFCreateCOMMON(COFFModulePtr);
+static COFFRelocPtr COFFDelayRelocation(COFFModulePtr, int, RELOC *);
+static SYMENT *COFFGetSymbol(COFFModulePtr, int);
+static unsigned char *COFFGetSymbolValue(COFFModulePtr, int);
+static COFFRelocPtr COFF_RelocateEntry(COFFModulePtr, int, RELOC *);
+static LOOKUP *COFF_GetSymbols(COFFModulePtr);
+static void COFFCollectSections(COFFModulePtr);
+static COFFRelocPtr COFFCollectRelocations(COFFModulePtr);
 
 /*
  * Utility Functions
  */
 
 
-#ifdef HANDLE_IN_HASH_ENTRY
 static int
-  COFF2hashCleanOut( module, item )
-COFF2ModulePtr module ;
+COFFhashCleanOut(voidptr, item)
+void *voidptr;
 itemPtr item ;
 {
+  COFFModulePtr module = (COFFModulePtr) voidptr;
   return ( module->handle == item->handle ) ;
 }
-#endif
+
 
 /*
- * Get symbol name
+ * Manage listResolv
  */
-char *
-COFF2GetSymbolName(cofffile, index)
-COFF2ModulePtr	cofffile;
-int		index;
+static COFFRelocPtr
+COFFDelayRelocation(cofffile,secndx,rel)
+COFFModulePtr	cofffile;
+int		secndx;
+RELOC		*rel;
 {
-char	*name;
-SYMENT	*sym;
+    COFFRelocPtr reloc;
 
-sym=(SYMENT *)(((unsigned char *)cofffile->symtab)+(index*SYMESZ));
+    if ((reloc = (COFFRelocPtr) xalloc(sizeof(COFFRelocRec))) == NULL) {
+	ErrorF( "COFFDelayRelocation() Unable to allocate memory!!!!\n" );
+	return 0;
+    }
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2GetSymbolName(%x,%x) %x",cofffile, index, sym->n_zeroes );
-#endif
+    reloc->file=cofffile;
+    reloc->secndx=secndx;
+    reloc->rel=rel;
+    reloc->next = 0;
 
-if( sym->n_zeroes )
-	{
-	if( (name=malloc(SYMNMLEN+1)) == NULL ) /* +1 for NULL */
-		FatalError("COFF2GetSymbolNameIndex() Can't malloc space\n" );
-	strncpy(name,sym->n_name,SYMNMLEN);
-	name[SYMNMLEN]='\000';
-	}
-else
-	{
-	name=(char *)strdup((const char *)&cofffile->strtab[(int)sym->n_offset-4]);
-	}
-#ifdef COFF2DEBUG
-COFF2DEBUG(" %s\n", name );
-#endif
-return name;
+    return reloc;
 }
 
 /*
  * Manage listCOMMON
  */
 
-static void
-COFF2AddCOMMON(sym,index)
+static COFFCommonPtr
+COFFAddCOMMON(sym,index)
 SYMENT	*sym;
+int index;
 {
-coff_COMMON	*common;
+    COFFCommonPtr common;
 
-if( (common=(coff_COMMON*)malloc(sizeof(coff_COMMON))) == NULL ) {
-	ErrorF( "COFF2AddCOMMON() Unable to allocate memory!!!!\n" );
-	return;
-	}
-common->sym=sym;
-common->index=index;
-common->next=listCOMMON;
-listCOMMON=common;
+    if ((common = (COFFCommonPtr) xalloc(sizeof(COFFCommonRec))) == NULL) {
+	ErrorF( "COFFAddCOMMON() Unable to allocate memory!!!!\n" );
+	return 0;
+    }
+    common->sym=sym;
+    common->index=index;
+    common->next=0;
 
-return;
+    return common;
 }
 
-static void
-COFF2CreateCOMMON(cofffile)
-COFF2ModulePtr	cofffile;
+static LOOKUP *
+COFFCreateCOMMON(cofffile)
+COFFModulePtr	cofffile;
 {
-int	numsyms=0,size=0,l=0;
-int	offset=0;
-coff_COMMON	*common;
-LOOKUP		*lookup;
+    int	numsyms=0,size=0,l=0;
+    int	offset=0;
+    LOOKUP	*lookup;
+    COFFCommonPtr common;
 
-if( listCOMMON == NULL )
-	return;
+    if (listCOMMON == NULL)
+	return NULL;
 
-common=listCOMMON;
-while(common) {
+    common=listCOMMON;
+    for (common = listCOMMON; common; common = common->next) {
 	/* Ensure long word alignment */
 	if(   common->sym->n_value != 2
 	   && common->sym->n_value != 1) /* But not for short and char ;-)(mr)*/
@@ -201,124 +221,207 @@ while(common) {
 	/* accumulate the sizes */
 	size+=common->sym->n_value;
 	numsyms++;
-	common=common->next;
-	}
+    }
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2CreateCOMMON() %d entries (%d bytes) of COMMON data\n",
-				numsyms, size );
+#ifdef COFFDEBUG
+    COFFDEBUG("COFFCreateCOMMON() %d entries (%d bytes) of COMMON data\n",
+	       numsyms, size );
 #endif
 
-if( (lookup=malloc((numsyms+1)*sizeof(LOOKUP))) == NULL ) {
-        ErrorF( "COFF2CreateCOMMON() Unable to allocate memory!!!!\n" );
-        return;
-        }
+    if ((lookup = (LOOKUP *) xalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+        ErrorF( "COFFCreateCOMMON() Unable to allocate memory!!!!\n" );
+        return NULL;
+    }
 
-cofffile->comsize=size;
-if( (cofffile->common=(unsigned char *)calloc(1,size)) == NULL ) {
-        ErrorF( "COFF2CreateCOMMON() Unable to allocate memory!!!!\n" );
-        return;
-        }
+    cofffile->comsize=size;
+    if ((cofffile->common = (unsigned char *) xcalloc(1,size)) == NULL) {
+        ErrorF( "COFFCreateCOMMON() Unable to allocate memory!!!!\n" );
+        return NULL;
+    }
 
-while(listCOMMON) {
+    /* Traverse the common list and create a lookup table with all the
+     * common symbols.  Destroy the common list in the process.
+     * See also ResolveSymbols.
+     */
+    while(listCOMMON) {
         common=listCOMMON;
-        lookup[l].symName=COFF2GetSymbolName(cofffile,common->index);
+        lookup[l].symName=COFFGetSymbolName(cofffile,common->index);
         lookup[l].offset=(void (*)())(cofffile->common+offset);
-#ifdef COFF2DEBUG
-        COFF2DEBUG("Adding %x %s\n", lookup[l].offset, lookup[l].symName );
+#ifdef COFFDEBUG
+        COFFDEBUG("Adding %x %s\n", lookup[l].offset, lookup[l].symName );
 #endif
         listCOMMON=common->next;
         offset+=common->sym->n_value;
-        free(common);
+        xfree(common);
         l++;
-        }
+    }
+    /* listCOMMON == NULL */
 
-lookup[l].symName=NULL; /* Terminate the list */
-LoaderAddSymbols(cofffile->handle,lookup);
-free(lookup);
-
-return;
-
+    lookup[l].symName=NULL; /* Terminate the list */
+    return lookup;
 }
-
-/*
- * Manage listResolv
- */
-static void
-COFF2DelayRelocation(cofffile,secndx,rel)
-COFF2ModulePtr	cofffile;
-int		secndx;
-RELOC		*rel;
-{
-coff_reloc	*reloc;
-
-if( (reloc=(coff_reloc *)malloc(sizeof(coff_reloc))) == NULL ) {
-	ErrorF( "COFF2DelayRelocation() Unable to allocate memory!!!!\n" );
-	return;
-	}
-
-reloc->file=cofffile;
-reloc->secndx=secndx;
-reloc->rel=rel;
-reloc->next=listResolve;
-listResolve=reloc;
-
-return;
-}
-
 
 /*
  * Symbol Table
  */
 
-SYMENT *
-COFF2GetSymbol(file, index)
-COFF2ModulePtr	file;
-int index;
+/*
+ * Get symbol name
+ */
+static char *
+COFFGetSymbolName(cofffile, index)
+COFFModulePtr	cofffile;
+int		index;
 {
-return (SYMENT *)(((unsigned char *)file->symtab)+(index*SYMESZ));
-}
+    char	*name;
+    SYMENT	*sym;
 
-unsigned char *
-COFF2GetSymbolValue(cofffile, index)
-COFF2ModulePtr	cofffile;
-int index;
-{
-unsigned char *symval=0;	/* value of the indicated symbol */
-itemPtr symbol;		/* name/value of symbol */
-char	*name;
+    sym=(SYMENT *)(((unsigned char *)cofffile->symtab)+(index*SYMESZ));
 
-name=COFF2GetSymbolName(cofffile, index);
-
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2GetSymbolValue() for %s=", name );
+#ifdef COFFDEBUG
+    COFFDEBUG("COFFGetSymbolName(%x,%x) %x",cofffile, index, sym->n_zeroes );
 #endif
 
-symbol = LoaderHashFind( name ) ;
+    name = (char *) xalloc(sym->n_zeroes ? SYMNMLEN + 1
+	   : strlen((const char *)&cofffile->strtab[(int)sym->n_offset-4]) + 1);
+    if (!name)
+	FatalError("COFFGetSymbolName: Out of memory\n");
 
-if( symbol )
+    if( sym->n_zeroes )
+	{
+	    strncpy(name,sym->n_name,SYMNMLEN);
+	    name[SYMNMLEN]='\000';
+	}
+    else {
+	strcpy(name, (const char *)&cofffile->strtab[(int)sym->n_offset-4]);
+        }
+#ifdef COFFDEBUG
+    COFFDEBUG(" %s\n", name );
+#endif
+    return name;
+}
+
+static SYMENT *
+COFFGetSymbol(file, index)
+COFFModulePtr	file;
+int index;
+{
+    return (SYMENT *)(((unsigned char *)file->symtab)+(index*SYMESZ));
+}
+
+static unsigned char *
+COFFGetSymbolValue(cofffile, index)
+COFFModulePtr	cofffile;
+int index;
+{
+    unsigned char *symval=0;	/* value of the indicated symbol */
+    itemPtr symbol;		/* name/value of symbol */
+    char	*symname;
+
+    symname=COFFGetSymbolName(cofffile, index);
+
+#ifdef COFFDEBUG
+    COFFDEBUG("COFFGetSymbolValue() for %s=", symname );
+#endif
+
+    symbol = LoaderHashFind(symname);
+
+    if( symbol )
 	symval=(unsigned char *)symbol->address;
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("%x\n", symval );
+#ifdef COFFDEBUG
+    COFFDEBUG("%x\n", symval );
 #endif
 
-free(name);
-return symval;
+    xfree(symname);
+    return symval;
 }
+
+#if defined(__powerpc__)
+/*
+ * This function returns the address of the glink routine for a symbol. This
+ * address is used in cases where the function being called is not in the
+ * same module as the calling function.
+ */
+static unsigned char *
+COFFGetSymbolGlinkValue(pNamespace, cofffile, index)
+NamespacePtr pNamespace;
+COFFModulePtr	cofffile;
+int index;
+{
+    unsigned char *symval=0;	/* value of the indicated symbol */
+    itemPtr symbol;		/* name/value of symbol */
+    char	*name;
+
+    name=COFFGetSymbolName(cofffile, index);
+
+#ifdef COFFDEBUG
+    COFFDEBUG("COFFGetSymbolGlinkValue() for %s=", name );
+#endif
+
+    symbol = LoaderHashFind(name+1); /* Eat the '.' so we get the
+					  Function descriptor instead */
+
+/* Here we are building up a glink function that will change the TOC
+ * pointer before calling a function that resides in a different module.
+ * The following code is being used to implement this.
+
+	1 00000000 3d80xxxx	lis   r12,hi16(funcdesc)
+	2 00000004 618cxxxx	ori   r12,r12,lo16(funcdesc)
+	3 00000008 90410014	st    r2,20(r1)	# save old TOC pointer
+	4 0000000c 800c0000	l     r0,0(r12)	# Get address of functions
+	5 00000010 804c0004	l     r2,4(r12)	# get TOC of function
+	6 00000014 7c0903a6	mtctr  r0	# load destination address
+	7 00000018 4e800420	bctr		# branch to it
+
+ */
+    if( symbol ) {
+	symval=(unsigned char *)&symbol->code.glink;
+#ifdef COFFDEBUG
+    COFFDEBUG("%x\n", symval );
+    COFFDEBUG("glink_%s=%x\n", name,symval );
+#endif
+	symbol->code.glink[ 0]=0x3d80; /* lis r12 */
+	symbol->code.glink[ 1]=((unsigned long)symbol->address&0xffff0000)>>16;
+	symbol->code.glink[ 2]=0x618c; /* ori r12 */
+	symbol->code.glink[ 3]=((unsigned long)symbol->address&0x0000ffff);
+	symbol->code.glink[ 4]=0x9041; /* st r2,20(r1) */
+	symbol->code.glink[ 5]=0x0014;
+	symbol->code.glink[ 6]=0x800c; /* l r0,0(r12) */
+	symbol->code.glink[ 7]=0x0000;
+	symbol->code.glink[ 8]=0x804c; /* l r2,4(r12) */
+	symbol->code.glink[ 9]=0x0004;
+	symbol->code.glink[10]=0x7c09; /* mtctr */
+	symbol->code.glink[11]=0x03a6;
+	symbol->code.glink[12]=0x4e80; /* bctr */
+	symbol->code.glink[13]=0x0420;
+	ppc_flush_icache(&symbol->code.glink[0]);
+	ppc_flush_icache(&symbol->code.glink[8]);
+	ppc_flush_icache(&symbol->code.glink[12]);
+    }
+
+    xfree(name);
+    return symval;
+}
+#endif /* __powerpc__ */
 
 /*
  * Fix all of the relocation for the given section.
  */
-static void
-COFF2_RelocateEntry(cofffile,secndx,rel)
-COFF2ModulePtr	cofffile;
+static COFFRelocPtr
+COFF_RelocateEntry(cofffile, secndx, rel)
+COFFModulePtr	cofffile;
 int		secndx;	/* index of the target section */
 RELOC		*rel;
 {
-SYMENT	*symbol;	/* value of the indicated symbol */
-unsigned long *destl;	/* address of the place being modified */
-unsigned char *symval;	/* value of the indicated symbol */
+    SYMENT	*symbol;	/* value of the indicated symbol */
+    unsigned long *dest32;	/* address of the place being modified */
+#if defined(__powerpc__)
+    unsigned short *dest16;	/* address of the place being modified */
+    itemPtr	symitem;	/* symbol structure from has table */
+    char	*name;
+#endif
+    unsigned char *symval;	/* value of the indicated symbol */
 
 /*
  * Note: Section numbers are 1 biased, while the cofffile->saddr[] array
@@ -330,13 +433,17 @@ unsigned char *symval;	/* value of the indicated symbol */
  *           symbol->n_scnum is the section in which the symbol value resides.
  */
 
-#ifdef COFF2DEBUG
-	COFF2DEBUG("%x %d %o ",
-		rel->r_vaddr,rel->r_symndx,rel->r_type );
+#ifdef COFFDEBUG
+    COFFDEBUG("%x %d %o ",
+	       rel->r_vaddr,rel->r_symndx,rel->r_type );
+#if defined(__powerpc__)
+    COFFDEBUG("[%x %x %x] ",
+	       RELOC_RSIGN(*rel), RELOC_RFIXUP(*rel), RELOC_RLEN(*rel));
 #endif
-symbol=COFF2GetSymbol(cofffile,rel->r_symndx);
-#ifdef COFF2DEBUG
-	COFF2DEBUG("%d %x %d-%d\n", symbol->n_sclass, symbol->n_value, symbol->n_scnum, secndx );
+#endif
+    symbol=COFFGetSymbol(cofffile,rel->r_symndx);
+#ifdef COFFDEBUG
+    COFFDEBUG("%d %x %d-%d\n", symbol->n_sclass, symbol->n_value, symbol->n_scnum, secndx );
 #endif
 
 /*
@@ -344,491 +451,751 @@ symbol=COFF2GetSymbol(cofffile,rel->r_symndx);
  * If not, we must change the offset to be relative to the .data section
  * which is NOT contiguous.
  */ 
-if( (long)rel->r_vaddr < (long)(cofffile->txtsize) ) {
-	if( secndx != N_TEXT-1 )
-		ErrorF("secndx != N_TEXT-1\n" );
-	destl=(unsigned long *)((long)(cofffile->saddr[secndx])+rel->r_vaddr);
-} else {
-	if( (long)rel->r_vaddr < (long)(cofffile->txtsize+cofffile->datsize) ){
-		if( secndx != N_DATA-1 )
-			ErrorF("secndx != N_DATA-1\n" );
-		destl=(unsigned long *)((long)(cofffile->saddr[N_DATA-1])+
-			rel->r_vaddr-cofffile->txtsize);
-	} else {
-		if( secndx != N_BSS-1 )
-			ErrorF("secndx != N_BSS-1\n" );
-		destl=(unsigned long *)((long)(cofffile->saddr[N_DATA-1])+
-			rel->r_vaddr-(cofffile->txtsize+cofffile->datsize));
-		}
+    switch(secndx+1) {  /* change the bias */
+    case N_TEXT:
+	if( (long)rel->r_vaddr < cofffile->txtaddr ||
+	    (long)rel->r_vaddr > (long)(cofffile->txtaddr+cofffile->txtsize) ) {
+		FatalError("Relocation against N_TEXT not in .text section\n");
 	}
+	dest32=(unsigned long *)((long)(cofffile->saddr[secndx])+
+			((unsigned char *)rel->r_vaddr-cofffile->txtaddr));
+	break;
+    case N_DATA:
+	if( (long)rel->r_vaddr < cofffile->dataddr ||
+	    (long)rel->r_vaddr > (long)(cofffile->dataddr+cofffile->datsize) ) {
+		FatalError("Relocation against N_DATA not in .data section\n");
+	}
+	dest32=(unsigned long *)((long)(cofffile->saddr[secndx])+
+			((unsigned char *)rel->r_vaddr-cofffile->dataddr));
+	break;
+    case N_BSS:
+	if( (long)rel->r_vaddr < cofffile->bssaddr ||
+	    (long)rel->r_vaddr > (long)(cofffile->bssaddr+cofffile->bsssize) ) {
+		FatalError("Relocation against N_TEXT not in .bss section\n");
+	}
+	dest32=(unsigned long *)((long)(cofffile->saddr[secndx])+
+			((unsigned char *)rel->r_vaddr-cofffile->bssaddr));
+	break;
+    default:
+	FatalError("Relocation against unknown section %d\n", secndx );
+    }
 
-if( symbol->n_sclass == 0 )
+    if( symbol->n_sclass == 0 )
 	{
-	symval=(unsigned char *)(symbol->n_value+(*destl)-symbol->n_type);
-#ifdef COFF2DEBUG
-	COFF2DEBUG( "symbol->n_sclass==0\n" );
-	COFF2DEBUG( "destl=%x\t", destl );
-	COFF2DEBUG( "symval=%x\t", symval );
-	COFF2DEBUG( "*destl=%8.8x\t", *destl );
+	    symval=(unsigned char *)(symbol->n_value+(*dest32)-symbol->n_type);
+#ifdef COFFDEBUG
+	    COFFDEBUG( "symbol->n_sclass==0\n" );
+	    COFFDEBUG( "dest32=%x\t", dest32 );
+	    COFFDEBUG( "symval=%x\t", symval );
+	    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
 #endif
-	*destl=(unsigned long)symval;
-	return;
+	    *dest32=(unsigned long)symval;
+	    return 0;
 	}
 
-switch( rel->r_type )
+    switch( rel->r_type )
 	{
+#if defined(i386)
 	case R_DIR32:
-#ifdef COFF2DEBUG
+#ifdef COFFDEBUG
 #endif
-		symval=COFF2GetSymbolValue(cofffile,rel->r_symndx);
-		if( symval ) {
-#ifdef COFF2DEBUG
-			char *namestr;
-			COFF2DEBUG( "R_DIR32 %s\n",
-			namestr=COFF2GetSymbolName(cofffile,rel->r_symndx) );
-			free(namestr);
-			COFF2DEBUG( "txtsize=%x\t", cofffile->txtsize );
-			COFF2DEBUG( "destl=%x\t", destl );
-			COFF2DEBUG( "symval=%x\t", symval );
-			COFF2DEBUG( "*destl=%8.8x\t", *destl );
+	    symval=COFFGetSymbolValue(cofffile, rel->r_symndx);
+	    if( symval ) {
+#ifdef COFFDEBUG
+		char *namestr;
+		COFFDEBUG( "R_DIR32 %s\n",
+			    namestr=COFFGetSymbolName(cofffile,rel->r_symndx) );
+		xfree(namestr);
+		COFFDEBUG( "txtsize=%x\t", cofffile->txtsize );
+		COFFDEBUG( "dest32=%x\t", dest32 );
+		COFFDEBUG( "symval=%x\t", symval );
+		COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
 #endif
-			*destl=(unsigned long)(symval+(*destl)-symbol->n_value);
-		} else {
-			switch( symbol->n_scnum ) {
-			case N_UNDEF:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_UNDEF\n" );
+		*dest32=(unsigned long)(symval+(*dest32)-symbol->n_value);
+	    } else {
+		switch( symbol->n_scnum ) {
+		case N_UNDEF:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_UNDEF\n" );
 #endif
-				COFF2DelayRelocation(cofffile,secndx,rel);
-				return;
-			case N_ABS:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_ABS\n" );
+		    return COFFDelayRelocation(cofffile,secndx,rel);
+		case N_ABS:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_ABS\n" );
 #endif
-				return;
-			case N_DEBUG:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_DEBUG\n" );
+		    return 0;
+		case N_DEBUG:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_DEBUG\n" );
 #endif
-				return;
-			case N_COMMENT:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_COMMENT\n" );
+		    return 0;
+		case N_COMMENT:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_COMMENT\n" );
 #endif
-				return;
-			case N_TEXT:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_TEXT\n" );
-				COFF2DEBUG( "destl=%x\t", destl );
-				COFF2DEBUG( "symval=%x\t", symval );
-				COFF2DEBUG( "*destl=%8.8x\t", *destl );
+		    return 0;
+		case N_TEXT:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_TEXT\n" );
+		    COFFDEBUG( "dest32=%x\t", dest32 );
+		    COFFDEBUG( "symval=%x\t", symval );
+		    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
 #endif
-				*destl=(unsigned long)((*destl)+
-				 (unsigned long)(cofffile->saddr[N_TEXT-1]));
-				break;
-			case N_DATA:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_DATA\n" );
-				COFF2DEBUG( "txtsize=%x\t", cofffile->txtsize );
-				COFF2DEBUG( "destl=%x\t", destl );
-				COFF2DEBUG( "symval=%x\t", symval );
-				COFF2DEBUG( "*destl=%8.8x\t", *destl );
+		    *dest32=(unsigned long)((*dest32)+
+					   (unsigned long)(cofffile->saddr[N_TEXT-1]));
+		    break;
+		case N_DATA:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_DATA\n" );
+		    COFFDEBUG( "txtsize=%x\t", cofffile->txtsize );
+		    COFFDEBUG( "dest32=%x\t", dest32 );
+		    COFFDEBUG( "symval=%x\t", symval );
+		    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
 #endif
-				*destl=(unsigned long)((*destl)+
-				 ((unsigned long)(cofffile->saddr[N_DATA-1]))-
-				 cofffile->txtsize);
-				break;
-			case N_BSS:
-#ifdef COFF2DEBUG
-				COFF2DEBUG( "R_DIR32 N_BSS\n" );
-				COFF2DEBUG( "destl=%x\t", destl );
-				COFF2DEBUG( "symval=%x\t", symval );
-				COFF2DEBUG( "*destl=%8.8x\t", *destl );
+		    *dest32=(unsigned long)((*dest32)+
+					   ((unsigned long)(cofffile->saddr[N_DATA-1]))-
+					   cofffile->dataddr);
+		    break;
+		case N_BSS:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_DIR32 N_BSS\n" );
+		    COFFDEBUG( "dest32=%x\t", dest32 );
+		    COFFDEBUG( "symval=%x\t", symval );
+		    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
 #endif
-				*destl=(unsigned long)((*destl)+
-				 (unsigned long)(cofffile->saddr[N_BSS-1])-
-				 (cofffile->txtsize+cofffile->datsize));
-				break;
-			default:
-				ErrorF("R_DIR32 with unexpected section %d\n",
-							symbol->n_scnum );
-			}
-
+		    *dest32=(unsigned long)((*dest32)+
+					   (unsigned long)(cofffile->saddr[N_BSS-1])-
+					   (cofffile->bssaddr));
+		    break;
+		default:
+		    ErrorF("R_DIR32 with unexpected section %d\n",
+			   symbol->n_scnum );
 		}
-#ifdef COFF2DEBUG
-COFF2DEBUG( "*destl=%8.8x\n", *destl );
+
+	    }
+#ifdef COFFDEBUG
+	    COFFDEBUG( "*dest32=%8.8x\n", *dest32 );
 #endif
-		break;
+	    break;
 	case R_PCRLONG:
-		if( symbol->n_scnum == N_TEXT )
-			break;
-
-		symval=COFF2GetSymbolValue(cofffile,rel->r_symndx);
-#ifdef COFF2DEBUG
-COFF2DEBUG( "R_PCRLONG ");
-COFF2DEBUG( "destl=%x\t", destl );
-COFF2DEBUG( "symval=%x\t", symval );
-COFF2DEBUG( "*destl=%8.8x\t", *destl );
-#endif
-		if( symval == 0 ) {
-#ifdef COFF2DEBUG
-			char *name;
-			COFF2DEBUG( "***Unable to resolve symbol %s\n",
-			     name=COFF2GetSymbolName(cofffile,rel->r_symndx) );
-			free(name);
-#endif
-			COFF2DelayRelocation(cofffile,secndx,rel);
-			break;
-			}
-		*destl=(unsigned long)(symval-((long)destl+sizeof(long)));
-
-#ifdef COFF2DEBUG
-COFF2DEBUG( "*destl=%8.8x\n", *destl );
-#endif
+	    if( symbol->n_scnum == N_TEXT )
 		break;
+
+	    symval=COFFGetSymbolValue(cofffile, rel->r_symndx);
+#ifdef COFFDEBUG
+	    COFFDEBUG( "R_PCRLONG ");
+	    COFFDEBUG( "dest32=%x\t", dest32 );
+	    COFFDEBUG( "symval=%x\t", symval );
+	    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+	    if( symval == 0 ) {
+#ifdef COFFDEBUG
+		char *name;
+		COFFDEBUG( "***Unable to resolve symbol %s\n",
+			    name=COFFGetSymbolName(cofffile,rel->r_symndx) );
+		xfree(name);
+#endif
+		return COFFDelayRelocation(cofffile,secndx,rel);
+	    }
+	    *dest32=(unsigned long)(symval-((long)dest32+sizeof(long)));
+
+#ifdef COFFDEBUG
+	    COFFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+	    break;
 	case R_ABS:
-		/*
-		 * Nothing to really do here.
-		 * Usually, a dummy relocation for .file
-		 */
-		break;
+	    /*
+	     * Nothing to really do here.
+	     * Usually, a dummy relocation for .file
+	     */
+	    break;
+#endif /* i386 */
 #if defined(__powerpc__)
-	case R_LEN:
-		/*
-		 */
-		break;
+	case R_POS:
+	    /*
+	     * Positive Relocation
+	     */
+	    if( RELOC_RLEN(*rel) != 0x1f )
+		FatalError("R_POS with size != 32 bits" );
+	    symval=COFFGetSymbolValue(cofffile, rel->r_symndx);
+	    if( symval ) {
+#ifdef COFFDEBUG
+	    	COFFDEBUG( "R_POS ");
+	    	COFFDEBUG( "dest32=%x\t", dest32 );
+	    	COFFDEBUG( "symval=%x\t", symval );
+	    	COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
 #endif
+		*dest32=(unsigned long)(symval+(*dest32)-symbol->n_value);
+		ppc_flush_icache(dest32);
+	    } else {
+		switch( symbol->n_scnum ) {
+		case N_UNDEF:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_UNDEF\n" );
+#endif
+		    return COFFDelayRelocation(cofffile,secndx,rel);
+		case N_ABS:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_ABS\n" );
+#endif
+		    return 0;
+		case N_DEBUG:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_DEBUG\n" );
+#endif
+		    return 0;
+		case N_COMMENT:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_COMMENT\n" );
+#endif
+		    return 0;
+		case N_TEXT:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_TEXT\n" );
+		    COFFDEBUG( "dest32=%x\t", dest32 );
+		    COFFDEBUG( "symval=%x\t", symval );
+		    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+		    *dest32=(unsigned long)((*dest32)+
+					   ((unsigned long)(cofffile->saddr[N_TEXT-1]))-
+					   cofffile->txtaddr);
+		    ppc_flush_icache(dest32);
+		    break;
+		case N_DATA:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_DATA\n" );
+		    COFFDEBUG( "txtsize=%x\t", cofffile->txtsize );
+		    COFFDEBUG( "dest32=%x\t", dest32 );
+		    COFFDEBUG( "symval=%x\t", symval );
+		    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+		    *dest32=(unsigned long)((*dest32)+
+					   ((unsigned long)(cofffile->saddr[N_DATA-1]))-
+					   cofffile->dataddr);
+		    ppc_flush_icache(dest32);
+		    break;
+		case N_BSS:
+#ifdef COFFDEBUG
+		    COFFDEBUG( "R_POS N_BSS\n" );
+		    COFFDEBUG( "dest32=%x\t", dest32 );
+		    COFFDEBUG( "symval=%x\t", symval );
+		    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+		    *dest32=(unsigned long)((*dest32)+
+					   (unsigned long)(cofffile->saddr[N_BSS-1])-
+					   (cofffile->bssaddr));
+		    ppc_flush_icache(dest32);
+		    break;
+		default:
+		    ErrorF("R_POS with unexpected section %d\n",
+			   symbol->n_scnum );
+		}
+	    }
+#ifdef COFFDEBUG
+	    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
+	    COFFDEBUG( "\n" );
+#endif
+	    break;
+	case R_TOC:
+	    /*
+	     * Relative to TOC
+	     */
+	    {
+	    dest16=(unsigned short *)dest32;
+	    if( RELOC_RLEN(*rel) != 0x0f )
+		FatalError("R_TOC with size != 16 bits" );
+#ifdef COFFDEBUG
+	    COFFDEBUG( "R_TOC ");
+	    COFFDEBUG( "dest16=%x\t", dest16 );
+	    COFFDEBUG( "symbol=%x\t", symbol );
+	    COFFDEBUG( "symbol->n_value=%x\t", symbol->n_value );
+	    COFFDEBUG( "cofffile->toc=%x\t", cofffile->toc );
+	    COFFDEBUG( "*dest16=%8.8x\t", *dest16 );
+#endif
+	    *dest16=(unsigned long)((symbol->n_value-cofffile->toc));
+	    ppc_flush_icache(dest16);
+	    }
+#ifdef COFFDEBUG
+	    COFFDEBUG( "*dest16=%8.8x\t", *dest16 );
+	    COFFDEBUG( "\n" );
+#endif
+	    break;
+	case R_BR:
+	    /*
+	     * Branch relative to self, non-modifiable
+	     */
+
+	    if( RELOC_RLEN(*rel) != 0x19 )
+		FatalError("R_BR with size != 24 bits" );
+	    name = COFFGetSymbolName(cofffile, rel->r_symndx);
+	    symitem = LoaderHashFind(name);
+	    if( symitem == 0 ) {
+		name++;
+		symitem = LoaderHashFind(name);
+	    }
+	    if( symitem && cofffile->module != symitem->module ) {
+#ifdef COFFDEBUG
+		COFFDEBUG("Symbol module %d != file module %d\n",
+			symitem->module, cofffile->module );
+#endif
+		symval=COFFGetSymbolGlinkValue(cofffile, rel->r_symndx);
+	    }
+	    else
+		symval=COFFGetSymbolValue(cofffile, rel->r_symndx);
+	    if( symval == 0 ) {
+#ifdef COFFDEBUG
+		char *name;
+		COFFDEBUG( "***Unable to resolve symbol %s\n",
+			    name=COFFGetSymbolName(cofffile,rel->r_symndx) );
+		xfree(name);
+#endif
+		return COFFDelayRelocation(cofffile,secndx,rel);
+	    }
+#ifdef COFFDEBUG
+	    COFFDEBUG( "R_BR ");
+	    COFFDEBUG( "dest32=%x\t", dest32 );
+	    COFFDEBUG( "symval=%x\t", symval );
+	    COFFDEBUG( "*dest32=%8.8x\t", *dest32 );
+#endif
+	    {
+		unsigned long val;
+		val=((unsigned long)symval-(unsigned long)dest32);
+#ifdef COFFDEBUG
+	    COFFDEBUG( "val=%8.8x\n", val );
+#endif
+		val = val>>2;
+		if( (val & 0x3f000000) != 0x3f000000 &&
+		    (val & 0x3f000000) != 0x00000000 )  {
+			FatalError( "R_BR offset %x too large\n", val<<2 );
+			break;
+		}
+		val &= 0x00ffffff;
+#ifdef COFFDEBUG
+	    COFFDEBUG( "val=%8.8x\n", val );
+#endif
+		/*
+		 * The address part contains the offset to the beginning
+		 * of the .text section. Disreguard this since we have
+		 * calculated the correct offset already.
+		 */
+		(*dest32)=((*dest32)&0xfc000003)|(val<<2);
+#ifdef COFFDEBUG
+	    COFFDEBUG( "*dest32=%8.8x\n", *dest32 );
+#endif
+		if( cofffile->module != symitem->module ) {
+		    (*++dest32)=0x80410014;	/* lwz r2,20(r1) */
+		}
+		ppc_flush_icache(--dest32);
+	    }
+
+	    break;
+#endif /* __powerpc__ */
 	default:
-		ErrorF(
-		 "COFF2_RelocateEntry() Unsupported relocation type %o\n",
-				rel->r_type );
-		break;
+#if defined(i386)
+	    ErrorF(
+		   "COFF_RelocateEntry() Unsupported relocation type %o\n",
+		   rel->r_type );
+#endif
+#if defined(__powerpc__)
+	    ErrorF(
+		   "COFF_RelocateEntry() Unsupported relocation type %o\n",
+		   rel->r_type );
+#endif
+	    break;
 	}
+    return 0;
 }
 
-void
-COFF2_DoRelocations(cofffile)
-COFF2ModulePtr	cofffile;
+static COFFRelocPtr
+COFFCollectRelocations(cofffile)
+COFFModulePtr	cofffile;
 {
-unsigned short	i,j;
-RELOC	*rel;
-SCNHDR	*sec;
+    unsigned short	i,j;
+    RELOC	*rel;
+    SCNHDR	*sec;
+    COFFRelocPtr reloc_head = NULL;
+    COFFRelocPtr tmp;
 
-for(i=0; i<cofffile->numsh; i++ ) {
+    for(i=0; i<cofffile->numsh; i++ ) {
 	if( cofffile->saddr[i] == NULL )
-		continue; /* Section not loaded!! */
+	    continue; /* Section not loaded!! */
 	sec=&(cofffile->sections[i]);
 	for(j=0;j<sec->s_nreloc;j++) {
-		rel=(RELOC *)(cofffile->reladdr[i]+(j*RELSZ));
-		COFF2DelayRelocation(cofffile,i,rel);
-		}
+	    rel=(RELOC *)(cofffile->reladdr[i]+(j*RELSZ));
+	    tmp = COFFDelayRelocation(cofffile,i,rel);
+	    tmp->next = reloc_head;
+	    reloc_head = tmp;
 	}
+    }
 
-return;
+    return reloc_head;
 }
 
 /*
- * COFF2_GetSymbols()
+ * COFF_GetSymbols()
  *
  * add the symbols to the symbol table maintained by the loader.
  */
 
-static void
-COFF2_GetSymbols(cofffile)
-COFF2ModulePtr	cofffile;
+static LOOKUP *
+COFF_GetSymbols(cofffile)
+COFFModulePtr	cofffile;
 {
-SYMENT	*sym;
-int	i, l, numsyms;
-LOOKUP	*lookup;
-char	*symname;
+    SYMENT	*sym;
+    AUXENT	*aux=NULL;
+    int	i, l, numsyms;
+    LOOKUP	*lookup, *lookup_common, *p;
+    char	*symname;
 
 /*
  * Load the symbols into memory
  */
-numsyms=cofffile->header->f_nsyms;
+    numsyms=cofffile->header->f_nsyms;
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2_GetSymbols(): %d symbols\n", numsyms );
+#ifdef COFFDEBUG
+    COFFDEBUG("COFF_GetSymbols(): %d symbols\n", numsyms );
 #endif
 
-cofffile->symsize=(numsyms*SYMESZ);
-cofffile->symtab=(SYMENT *)_LoaderFileToMem(cofffile->fd,cofffile->header->f_symptr,
-				(numsyms*SYMESZ),"symbols");
+    cofffile->symsize=(numsyms*SYMESZ);
+    cofffile->symtab=(SYMENT *)_LoaderFileToMem(cofffile->fd,cofffile->header->f_symptr,
+						(numsyms*SYMESZ),"symbols");
 
-if( (lookup=malloc((numsyms+1)*sizeof(LOOKUP))) == NULL )
-	return;
+    if ((lookup = (LOOKUP *) xalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
+	return NULL;
 
-for(i=0,l=0; i<numsyms; i++)
+    for(i=0,l=0; i<numsyms; i++)
 	{
-	sym=(SYMENT *)(((unsigned char *)cofffile->symtab)+(i*SYMESZ));
-	symname=COFF2GetSymbolName(cofffile,i);
-#ifdef COFF2DEBUG
-	COFF2DEBUG("\t%d %d %x %x %d %d %s\n",
-		i, sym->n_scnum, sym->n_value, sym->n_type,
-		sym->n_sclass, sym->n_numaux, symname );
+	    sym=(SYMENT *)(((unsigned char *)cofffile->symtab)+(i*SYMESZ));
+	    symname=COFFGetSymbolName(cofffile,i);
+	    if( sym->n_numaux > 0 )
+		aux=(AUXENT *)(((unsigned char *)cofffile->symtab)+((i+1)*SYMESZ));
+	    else
+		aux=NULL;
+#ifdef COFFDEBUG
+	    COFFDEBUG("\t%d %d %x %x %d %d %s\n",
+		       i, sym->n_scnum, sym->n_value, sym->n_type,
+		       sym->n_sclass, sym->n_numaux, symname );
+	    if( aux )
+	    COFFDEBUG("aux=\t%d %x %x %x %x %x %x\n",
+			aux->x_scnlen, aux->x_parmhash, aux->x_snhash,
+			aux->x_smtyp, aux->x_smclas, aux->x_stab,
+			aux->x_snstab );
 #endif
-	i+=sym->n_numaux;
-	switch( sym->n_scnum )
+	    i+=sym->n_numaux;
+	    /*
+	     * check for TOC csect before discarding C_HIDEXT below
+	     */
+	    if( aux && aux->x_smclas == XMC_TC0 ) {
+		if( sym->n_scnum != N_DATA )
+			FatalError("TOC not in N_DATA section");
+		cofffile->toc=sym->n_value;
+		cofffile->tocaddr=(cofffile->saddr[sym->n_scnum-1]+
+			     sym->n_value-(cofffile->dataddr));
+#ifdef COFFDEBUG
+	        COFFDEBUG("TOC=%x\n", cofffile->toc );
+	        COFFDEBUG("TOCaddr=%x\n", cofffile->tocaddr );
+#endif
+		continue;
+	    }
+	    if( sym->n_sclass == C_HIDEXT ) {
+/*
+		&& aux && !(aux->x_smclas == XMC_DS
+		&& aux->x_smtyp == XTY_SD) ) ) {
+*/
+#ifdef COFFDEBUG
+	    COFFDEBUG("Skipping C_HIDEXT class symbol %s\n", symname );
+#endif
+		continue;
+	    }
+	    switch( sym->n_scnum )
 		{
 		case N_UNDEF:
-			if( sym->n_value != 0 ) {
-#ifdef COFF2DEBUG
-				{
-				char *name;
-				COFF2DEBUG("Adding COMMON space for %s\n",
-					name=COFF2GetSymbolName(cofffile,i));
-				free(name);
-				}
+		    if( sym->n_value != 0 ) {
+			char *name;
+			COFFCommonPtr tmp;
+
+			name = COFFGetSymbolName(cofffile,i);
+#ifdef COFFDEBUG
+			COFFDEBUG("Adding COMMON space for %s\n", name);
 #endif
-				if( !LoaderHashFind(
-						COFF2GetSymbolName(cofffile,i)))
-					COFF2AddCOMMON(sym,i);
+			if(!LoaderHashFind(name)) {
+			    tmp = COFFAddCOMMON(sym,i);
+			    if (tmp) {
+				tmp->next = listCOMMON;
+				listCOMMON = tmp;
+			    }
 			}
-			free(symname);
-			break;
+			xfree(name);
+		    }
+		    xfree(symname);
+		    break;
 		case N_ABS:
 		case N_DEBUG:
 		case N_COMMENT:
-#ifdef COFF2DEBUG
-			COFF2DEBUG("Freeing %s, section %d\n",
-				symname, sym->n_scnum );
+#ifdef COFFDEBUG
+		    COFFDEBUG("Freeing %s, section %d\n",
+			       symname, sym->n_scnum );
 #endif
-			free(symname);
-			break;
+		    xfree(symname);
+		    break;
 		case N_TEXT:
-			if(sym->n_sclass == C_EXT &&
-			   cofffile->saddr[sym->n_scnum-1]) {
-				lookup[l].symName=symname;
-				lookup[l].offset=(void (*)())
-					    (cofffile->saddr[sym->n_scnum-1]+
-							sym->n_value);
-#ifdef COFF2DEBUG
-			COFF2DEBUG("Adding %x %s\n",
-				lookup[l].offset, lookup[l].symName );
+		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
+		       && cofffile->saddr[sym->n_scnum-1]) {
+			lookup[l].symName=symname;
+			lookup[l].offset=(void (*)())
+			    (cofffile->saddr[sym->n_scnum-1]+
+			     sym->n_value-cofffile->txtaddr);
+#ifdef COFFDEBUG
+			COFFDEBUG("Adding %x %s\n",
+				   lookup[l].offset, lookup[l].symName );
 #endif
 			l++;
-			}
-			else {
-#ifdef COFF2DEBUG
-			  COFF2DEBUG( "Section not loaded %d\n",
-							sym->n_scnum-1 );
+		    }
+		    else {
+#ifdef COFFDEBUG
+			COFFDEBUG( "TEXT Section not loaded %d\n",
+				    sym->n_scnum-1 );
 #endif
-			  free(symname);
-			}
-			break;
+			xfree(symname);
+		    }
+		    break;
 		case N_DATA:
-			/*
-			 * Note: COFF expects .data to be contiguous with
-			 * .data, so that offsets for .data are relative to
-			 * .text. We need to adjust for this, and make them
-			 * relative to .data so that the relocation can be
-			 * properly applied. This is needed becasue we allocate
-			 * .data seperately from .text.
-			 */
-			if(sym->n_sclass == C_EXT &&
-			   cofffile->saddr[sym->n_scnum-1]) {
-			  lookup[l].symName=symname;
-			  lookup[l].offset=(void (*)())
-					    (cofffile->saddr[sym->n_scnum-1]+
-					    sym->n_value-cofffile->txtsize);
-#ifdef COFF2DEBUG
-			COFF2DEBUG("Adding %x %s\n",
-				lookup[l].offset, lookup[l].symName );
+		    /*
+		     * Note: COFF expects .data to be contiguous with
+		     * .data, so that offsets for .data are relative to
+		     * .text. We need to adjust for this, and make them
+		     * relative to .data so that the relocation can be
+		     * properly applied. This is needed becasue we allocate
+		     * .data seperately from .text.
+		     */
+		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
+		       && cofffile->saddr[sym->n_scnum-1]) {
+			lookup[l].symName=symname;
+			lookup[l].offset=(void (*)())
+			    (cofffile->saddr[sym->n_scnum-1]+
+			     sym->n_value-cofffile->dataddr);
+#ifdef COFFDEBUG
+			COFFDEBUG("Adding %x %s\n",
+				   lookup[l].offset, lookup[l].symName );
 #endif
 			l++;
-			}
-			else {
-#ifdef COFF2DEBUG
-			  COFF2DEBUG( "Section not loaded %d\n",
-							sym->n_scnum-1 );
+		    }
+		    else {
+#ifdef COFFDEBUG
+			COFFDEBUG( "DATA Section not loaded %d\n",
+				    sym->n_scnum-1 );
 #endif
-			  free(symname);
-			}
-			break;
+			xfree(symname);
+		    }
+		    break;
 		case N_BSS:
-			/*
-			 * Note: COFF expects .bss to be contiguous with
-			 * .data, so that offsets for .bss are relative to
-			 * .text. We need to adjust for this, and make them
-			 * relative to .bss so that the relocation can be
-			 * properly applied. This is needed becasue we allocate
-			 * .bss seperately from .text and .data.
-			 */
-			if(sym->n_sclass == C_EXT &&
-			   cofffile->saddr[sym->n_scnum-1]) {
-			  lookup[l].symName=symname;
-			  lookup[l].offset=(void (*)())
-					    (cofffile->saddr[sym->n_scnum-1]+
-					    sym->n_value-(cofffile->txtsize+
-						cofffile->datsize));
-#ifdef COFF2DEBUG
-			COFF2DEBUG("Adding %x %s\n",
-				lookup[l].offset, lookup[l].symName );
+		    /*
+		     * Note: COFF expects .bss to be contiguous with
+		     * .data, so that offsets for .bss are relative to
+		     * .text. We need to adjust for this, and make them
+		     * relative to .bss so that the relocation can be
+		     * properly applied. This is needed becasue we allocate
+		     * .bss seperately from .text and .data.
+		     */
+		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
+		       && cofffile->saddr[sym->n_scnum-1]) {
+			lookup[l].symName=symname;
+			lookup[l].offset=(void (*)())
+			    (cofffile->saddr[sym->n_scnum-1]+
+			     sym->n_value-cofffile->bssaddr);
+#ifdef COFFDEBUG
+			COFFDEBUG("Adding %x %s\n",
+				   lookup[l].offset, lookup[l].symName );
 #endif
 			l++;
-			}
-			else {
-#ifdef COFF2DEBUG
-			  COFF2DEBUG( "Section not loaded %d\n",
-							sym->n_scnum-1 );
+		    }
+		    else {
+#ifdef COFFDEBUG
+			COFFDEBUG( "BSS Section not loaded %d\n",
+				    sym->n_scnum-1 );
 #endif
-			  free(symname);
-			}
-			break;
+			xfree(symname);
+		    }
+		    break;
 		default:
-			ErrorF("Unknown Section number %d\n", sym->n_scnum );
-			free(symname);
-			break;
+		    ErrorF("Unknown Section number %d\n", sym->n_scnum );
+		    xfree(symname);
+		    break;
 		}
 	}
 
-lookup[l].symName=NULL; /* Terminate the list */
-LoaderAddSymbols(cofffile->handle,lookup);
-free(lookup);
+    lookup[l].symName=NULL; /* Terminate the list */
 
-COFF2CreateCOMMON(cofffile);
+    lookup_common = COFFCreateCOMMON(cofffile);
+    if (lookup_common) {
+	for (i = 0, p = lookup_common; p->symName; i++, p++)
+	    ;
+	memcpy(&(lookup[l]), lookup_common, i * sizeof (LOOKUP));
+
+	xfree(lookup_common);
+	l += i;
+	lookup[l].symName = NULL;
+    }
 
 /*
  * remove the COFF symbols that will show up in every module
  */
-LoaderHashDelete(".text");
-LoaderHashDelete(".data");
-LoaderHashDelete(".bss");
+    for (i = 0, p = lookup; p->symName; i++, p++) {
+	while (p->symName && (!strcmp(lookup[i].symName, ".text")
+	       || !strcmp(lookup[i].symName, ".data")
+	       || !strcmp(lookup[i].symName, ".bss")
+	       )) {
+	    memmove(&(lookup[i]), &(lookup[i+1]), (l-- - i) * sizeof (LOOKUP));
+	}
+    }
+
+    return lookup;
 }
 
 #define SecOffset(index) cofffile->sections[index].s_scnptr
 #define SecSize(index) cofffile->sections[index].s_size
+#define SecAddr(index) cofffile->sections[index].s_paddr
 #define RelOffset(index) cofffile->sections[index].s_relptr
 #define RelSize(index) (cofffile->sections[index].s_nreloc*RELSZ)
 
 /*
- * COFF2CollectSections
+ * COFFCollectSections
  *
  * Do the work required to load each section into memory.
  */
 static void
-COFF2CollectSections(cofffile)
-COFF2ModulePtr	cofffile;
+COFFCollectSections(cofffile)
+COFFModulePtr	cofffile;
 {
-unsigned short	i;
+    unsigned short	i;
 
 /*
  * Find and identify all of the Sections
  */
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2CollectSections(): %d sections\n", cofffile->numsh );
+#ifdef COFFDEBUG
+    COFFDEBUG("COFFCollectSections(): %d sections\n", cofffile->numsh );
 #endif
 
-for( i=0; i<cofffile->numsh; i++) {
-#ifdef COFF2DEBUG
-	COFF2DEBUG("%d %s\n", i, cofffile->sections[i].s_name );
+    for( i=0; i<cofffile->numsh; i++) {
+#ifdef COFFDEBUG
+	COFFDEBUG("%d %s\n", i, cofffile->sections[i].s_name );
 #endif
 	/* .text */
 	if( strcmp(cofffile->sections[i].s_name,
-							".text" ) == 0 ) {
-		cofffile->text=_LoaderFileToMem(cofffile->fd,
-					SecOffset(i),SecSize(i),".text");
-		cofffile->saddr[i]=cofffile->text;
-		cofffile->txtndx=i;
-		cofffile->txtsize=SecSize(i);
-		cofffile->txtrelsize=RelSize(i);
-		cofffile->reladdr[i]=_LoaderFileToMem(cofffile->fd,
-					RelOffset(i), RelSize(i),".rel.text");
-#ifdef COFF2DEBUG
-COFF2DEBUG(".text starts at %x (%x bytes)\n", cofffile->text, cofffile->txtsize );
+		   ".text" ) == 0 ) {
+	    cofffile->text=_LoaderFileToMem(cofffile->fd,
+					    SecOffset(i),SecSize(i),".text");
+	    cofffile->saddr[i]=cofffile->text;
+	    cofffile->txtndx=i;
+	    cofffile->txtaddr=SecAddr(i);
+	    cofffile->txtsize=SecSize(i);
+	    cofffile->txtrelsize=RelSize(i);
+	    cofffile->reladdr[i]=_LoaderFileToMem(cofffile->fd,
+						  RelOffset(i), RelSize(i),".rel.text");
+#ifdef COFFDEBUG
+	    COFFDEBUG(".text starts at %x (%x bytes)\n", cofffile->text, cofffile->txtsize );
 #endif
-		continue;
-		}
+	    continue;
+	}
 	/* .data */
 	if( strcmp(cofffile->sections[i].s_name,
-							".data" ) == 0 ) {
-		cofffile->data=_LoaderFileToMem(cofffile->fd,
-					SecOffset(i),SecSize(i),".data");
-		cofffile->saddr[i]=cofffile->data;
-		cofffile->datndx=i;
-		cofffile->datsize=SecSize(i);
-		cofffile->datrelsize=RelSize(i);
-		cofffile->reladdr[i]=_LoaderFileToMem(cofffile->fd,
-					RelOffset(i), RelSize(i),".rel.data");
-#ifdef COFF2DEBUG
-COFF2DEBUG(".data starts at %x (%x bytes)\n", cofffile->data, cofffile->datsize );
+		   ".data" ) == 0 ) {
+	    cofffile->data=_LoaderFileToMem(cofffile->fd,
+					    SecOffset(i),SecSize(i),".data");
+	    cofffile->saddr[i]=cofffile->data;
+	    cofffile->datndx=i;
+	    cofffile->dataddr=SecAddr(i);
+	    cofffile->datsize=SecSize(i);
+	    cofffile->datrelsize=RelSize(i);
+	    cofffile->reladdr[i]=_LoaderFileToMem(cofffile->fd,
+						  RelOffset(i), RelSize(i),".rel.data");
+#ifdef COFFDEBUG
+	    COFFDEBUG(".data starts at %x (%x bytes)\n", cofffile->data, cofffile->datsize );
 #endif
-		continue;
-		}
+	    continue;
+	}
 	/* .bss */
 	if( strcmp(cofffile->sections[i].s_name,
-							".bss" ) == 0 ) {
-		if( SecSize(i) )
-			cofffile->bss=calloc(1,SecSize(i));
-		else
-			cofffile->bss=NULL;
-		cofffile->saddr[i]=cofffile->bss;
-		cofffile->bssndx=i;
-		cofffile->bsssize=SecSize(i);
-#ifdef COFF2DEBUG
-COFF2DEBUG(".bss starts at %x (%x bytes)\n", cofffile->bss, cofffile->bsssize );
+		   ".bss" ) == 0 ) {
+	    if( SecSize(i) )
+		cofffile->bss=(unsigned char *) xcalloc(1,SecSize(i));
+	    else
+		cofffile->bss=NULL;
+	    cofffile->saddr[i]=cofffile->bss;
+	    cofffile->bssndx=i;
+	    cofffile->bssaddr=SecAddr(i);
+	    cofffile->bsssize=SecSize(i);
+#ifdef COFFDEBUG
+	    COFFDEBUG(".bss starts at %x (%x bytes)\n", cofffile->bss, cofffile->bsssize );
 #endif
-		continue;
-		}
+	    continue;
+	}
 	/* .comment */
 	if( strcmp(cofffile->sections[i].s_name,
-							".comment" ) == 0 ) {
-		continue;
-		}
-#ifdef COFF2DEBUG
-COFF2DEBUG("Not loading %s\n", cofffile->sections[i].s_name );
-#endif
+		   ".comment" ) == 0 ) {
+	    continue;
 	}
+	/* .stab */
+	if( strcmp(cofffile->sections[i].s_name,
+		   ".stab" ) == 0 ) {
+	    continue;
+	}
+	/* .stabstr */
+	if( strcmp(cofffile->sections[i].s_name,
+		   ".stabstr" ) == 0 ) {
+	    continue;
+	}
+	ErrorF("Not loading %s\n", cofffile->sections[i].s_name );
+    }
 }
 
 /*
- * Public API for the COFF2 implementation of the loader.
+ * Public API for the COFF implementation of the loader.
  */
 void *
-COFF2LoadModule(modtype,modname,handle,cofffd)
-int	modtype; /* Always LD_COFF2OBJECT */
-char	*modname;
-int	handle;
+COFFLoadModule(modrec, cofffd, ppLookup)
+loaderPtr	modrec;
 int	cofffd;
+LOOKUP **ppLookup;
 {
-COFF2ModulePtr	cofffile;
-FILHDR *header;
-int stroffset; /* offset of string table */
+    COFFModulePtr	cofffile;
+    FILHDR *header;
+    int stroffset; /* offset of string table */
+    COFFRelocPtr coff_reloc, tail;
+    void	*v;
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2LoadModule(%x,%s,%x,%x)\n",modtype,modname,
-					handle,cofffd );
+#ifdef COFFDEBUG
+    COFFDEBUG("COFFLoadModule(%s,%x,%x)\n",modrec->name,modrec->handle,cofffd);
 #endif
 
-if( modtype != LD_COFFOBJECT ) {
-	ErrorF( "COFF2LoadModule(): modtype != COFF\n" );
+    if ((cofffile = (COFFModulePtr) xcalloc(1,sizeof(COFFModuleRec))) == NULL) {
+	ErrorF( "Unable to allocate COFFModuleRec\n" );
 	return NULL;
-	}
+    }
 
-if( (cofffile=(COFF2ModulePtr)calloc(1,sizeof(COFF2ModuleRec))) == NULL ) {
-	ErrorF( "Unable to allocate COFF2ModuleRec\n" );
-	return NULL;
-	}
-
-cofffile->handle=handle;
-cofffile->fd=cofffd;
+    cofffile->handle=modrec->handle;
+    cofffile->module=modrec->module;
+    cofffile->fd=cofffd;
+    v=cofffile->funcs=modrec->funcs;
 
 /*
- *  Get the COFF2 header
+ *  Get the COFF header
  */
-cofffile->header=(FILHDR *)_LoaderFileToMem(cofffd,0,sizeof(FILHDR),"header");
-header=(FILHDR *)cofffile->header;
+    cofffile->header=(FILHDR *)_LoaderFileToMem(cofffd,0,sizeof(FILHDR),"header");
+    header=(FILHDR *)cofffile->header;
 
 /*
  * Get the section table
  */
-cofffile->numsh=header->f_nscns;
-cofffile->secsize=(header->f_nscns*SCNHSZ);
-cofffile->sections=(SCNHDR *)_LoaderFileToMem(cofffd,FILHSZ+header->f_opthdr,
-					cofffile->secsize, "sections");
-cofffile->saddr=calloc(cofffile->numsh,sizeof(unsigned char *));
-cofffile->reladdr=calloc(cofffile->numsh,sizeof(unsigned char *));
+    cofffile->numsh=header->f_nscns;
+    cofffile->secsize=(header->f_nscns*SCNHSZ);
+    cofffile->sections=(SCNHDR *)_LoaderFileToMem(cofffd,FILHSZ+header->f_opthdr,
+						  cofffile->secsize, "sections");
+    cofffile->saddr=(unsigned char **) xcalloc(cofffile->numsh,
+					       sizeof(unsigned char *));
+    cofffile->reladdr=(unsigned char **) xcalloc(cofffile->numsh,
+						 sizeof(unsigned char *));
 
 /*
  * Load the optional header if we need it ?????
@@ -837,131 +1204,142 @@ cofffile->reladdr=calloc(cofffile->numsh,sizeof(unsigned char *));
 /*
  * Load the rest of the desired sections
  */
-COFF2CollectSections(cofffile);
+    COFFCollectSections(cofffile);
 
 /*
  * load the string table (must be done before we process symbols).
  */
-stroffset=header->f_symptr+(header->f_nsyms*SYMESZ);
+    stroffset=header->f_symptr+(header->f_nsyms*SYMESZ);
 
-_LoaderFileRead(cofffd,stroffset,&(cofffile->strsize),sizeof(int));
+    _LoaderFileRead(cofffd,stroffset,&(cofffile->strsize),sizeof(int));
 
-stroffset+=4; /* Move past the size */
-cofffile->strsize-=sizeof(int);	/* size includes itself, so reduce by 4 */
-cofffile->strtab=_LoaderFileToMem(cofffd,stroffset,cofffile->strsize,"strings");
+    stroffset+=4; /* Move past the size */
+    cofffile->strsize-=sizeof(int);	/* size includes itself, so reduce by 4 */
+    cofffile->strtab=_LoaderFileToMem(cofffd,stroffset,cofffile->strsize,"strings");
 
 /*
  * add symbols
  */
-COFF2_GetSymbols(cofffile);
+    *ppLookup = COFF_GetSymbols(cofffile);
 
 /*
  * Do relocations
  */
-COFF2_DoRelocations(cofffile);
+    coff_reloc = COFFCollectRelocations(cofffile);
+    if (coff_reloc) {
+	for (tail = coff_reloc; tail->next; tail = tail->next)
+	    ;
+	tail->next = _LoaderGetRelocations(v)->coff_reloc;
+	_LoaderGetRelocations(v)->coff_reloc = coff_reloc;
+    }
 
-return (void *)cofffile;
+    return (void *)cofffile;
 }
 
 void
-COFF2ResolveSymbols()
+COFFResolveSymbols(mod)
+void *mod;
 {
-coff_reloc	*rel,*oldlist;
+    COFFRelocPtr newlist, p, tmp;
 
-#ifdef COFF2DEBUG
-COFF2DEBUG("COFF2ResolvSymbols()\n" );
-#endif
-
-/* avoid looping */
-oldlist=listResolve;
-listResolve=NULL;
-
-while( (rel=oldlist) != NULL )
-	{
-	oldlist=rel->next;
-	COFF2_RelocateEntry(rel->file,rel->secndx,rel->rel);
-	free(rel);
+    /* Try to relocate everything.  Build a new list containing entries
+     * which we failed to relocate.  Destroy the old list in the process.
+     */
+    newlist = 0;
+    for (p = _LoaderGetRelocations(mod)->coff_reloc; p; ) {
+	tmp = COFF_RelocateEntry(p->file, p->secndx, p->rel);
+	if (tmp) {
+	    /* Failed to relocate.  Keep it in the list. */
+	    tmp->next = newlist;
+	    newlist = tmp;
 	}
+	tmp = p;
+	p = p->next;
+	xfree(tmp);
+    }
+    _LoaderGetRelocations(mod)->coff_reloc = newlist;
 }
 
 int
-COFF2CheckForUnresolved(color_depth)
+COFFCheckForUnresolved(color_depth, mod)
 int color_depth;
+void	*mod;
 {
-char	*name;
-coff_reloc	*crel;
-int flag, fatalsym = 0;
+    char	*name;
+    COFFRelocPtr crel;
+    int flag, fatalsym = 0;
 
-if( (crel=listResolve) == NULL )
+    if ((crel = _LoaderGetRelocations(mod)->coff_reloc) == NULL)
 	return 0;
 
-while( crel )
+    while( crel )
 	{
-        flag = _LoaderHandleUnresolved(name=COFF2GetSymbolName(crel->file, crel->rel->r_symndx),
+	name = COFFGetSymbolName(crel->file, crel->rel->r_symndx);
+        flag = _LoaderHandleUnresolved(name,
 			_LoaderHandleToName(crel->file->handle), color_depth);
         if (flag) fatalsym = 1;
-	free(name);
+	xfree(name);
 	crel=crel->next;
 	}
-return fatalsym;
+    return fatalsym;
 }
 
 void
-COFF2UnloadModule( modptr )
+COFFUnloadModule(modptr)
 void *modptr;
 {
-COFF2ModulePtr	cofffile = (COFF2ModulePtr)modptr;
-coff_reloc	*relptr, *reltptr, **brelptr;
+    COFFModulePtr	cofffile = (COFFModulePtr)modptr;
+    COFFRelocPtr	relptr, reltptr, *brelptr;
 
 /*
  * Delete any unresolved relocations
  */
 
-relptr=listResolve;
-brelptr=&listResolve;
+    relptr=_LoaderGetRelocations(cofffile->funcs)->coff_reloc;
+    brelptr=&relptr;
 
-while(relptr) {
+    while(relptr) {
 	if( relptr->file == cofffile ) {
-		*brelptr=relptr->next;	/* take it out of the list */
-		reltptr=relptr;		/* save pointer to this node */
-		relptr=relptr->next;	/* advance the pointer */
-		free(reltptr);		/* free the node */
-		}
-	else
-		relptr=relptr->next;	/* advance the pointer */
+	    *brelptr=relptr->next;	/* take it out of the list */
+	    reltptr=relptr;		/* save pointer to this node */
+	    relptr=relptr->next;	/* advance the pointer */
+	    xfree(reltptr);		/* free the node */
 	}
+	else
+	    relptr=relptr->next;	/* advance the pointer */
+    }
 
 /*
  * Delete any symbols in the symbols table.
  */
 
-LoaderHashTraverse( (void *)cofffile, COFF2hashCleanOut ) ;
+    LoaderHashTraverse((void *)cofffile, COFFhashCleanOut);
 
 /*
  * Free the sections that were allocated.
  */
-#define CheckandFree(ptr,size)	if(ptr) _LoaderFreeFileMem(ptr,size);
+#define CheckandFree(ptr,size)	if(ptr) _LoaderFreeFileMem((ptr),(size))
 
-CheckandFree(cofffile->strtab,cofffile->strsize)
-CheckandFree(cofffile->symtab,cofffile->symsize)
-CheckandFree(cofffile->text,cofffile->txtsize)
-CheckandFree(cofffile->reladdr[cofffile->txtndx],cofffile->txtrelsize)
-CheckandFree(cofffile->data,cofffile->datsize)
-CheckandFree(cofffile->reladdr[cofffile->datndx],cofffile->datrelsize)
-CheckandFree(cofffile->bss,cofffile->bsssize)
-if( cofffile->common )
-	free(cofffile->common);
+    CheckandFree(cofffile->strtab,cofffile->strsize);
+    CheckandFree(cofffile->symtab,cofffile->symsize);
+    CheckandFree(cofffile->text,cofffile->txtsize);
+    CheckandFree(cofffile->reladdr[cofffile->txtndx],cofffile->txtrelsize);
+    CheckandFree(cofffile->data,cofffile->datsize);
+    CheckandFree(cofffile->reladdr[cofffile->datndx],cofffile->datrelsize);
+    CheckandFree(cofffile->bss,cofffile->bsssize);
+    if( cofffile->common )
+	xfree(cofffile->common);
 /*
  * Free the section table, and section pointer array
  */
-_LoaderFreeFileMem(cofffile->sections,cofffile->secsize);
-free(cofffile->saddr);
-free(cofffile->reladdr);
-_LoaderFreeFileMem(cofffile->header,sizeof(FILHDR));
+    _LoaderFreeFileMem(cofffile->sections,cofffile->secsize);
+    xfree(cofffile->saddr);
+    xfree(cofffile->reladdr);
+    _LoaderFreeFileMem(cofffile->header,sizeof(FILHDR));
 /*
- * Free the COFF2ModuleRec
+ * Free the COFFModuleRec
  */
-free(cofffile);
+    xfree(cofffile);
 
-return;
+    return;
 }

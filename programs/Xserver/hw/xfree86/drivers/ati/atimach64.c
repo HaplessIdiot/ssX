@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.1tsi Exp $ */
 /*
- * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -51,6 +51,13 @@ ATIMach64Save(ATIHWPtr save)
 
     save->clock_cntl = inl(ATIIOPortCLOCK_CNTL);
 
+    save->bus_cntl = inl(ATIIOPortBUS_CNTL);
+
+    save->mem_vga_wp_sel = inl(ATIIOPortMEM_VGA_WP_SEL);
+    save->mem_vga_rp_sel = inl(ATIIOPortMEM_VGA_RP_SEL);
+
+    save->dac_cntl = inl(ATIIOPortDAC_CNTL);
+
     save->config_cntl = inl(ATIIOPortCONFIG_CNTL);
 }
 
@@ -66,6 +73,21 @@ ATIMach64Init(DisplayModePtr mode)
     {
         ATINewHWPtr->crtc_off_pitch =
             SetBits(vga256InfoRec.displayWidth >> 3, CRTC_PITCH);
+
+        ATINewHWPtr->bus_cntl = (inl(ATIIOPortBUS_CNTL) &
+            ~BUS_HOST_ERR_INT_EN) | BUS_HOST_ERR_INT;
+        if (ATIChip < ATI_CHIP_264VTB)
+            ATINewHWPtr->bus_cntl = (ATINewHWPtr->bus_cntl &
+                ~(BUS_FIFO_ERR_INT_EN | BUS_ROM_DIS)) |
+                (SetBits(15, BUS_FIFO_WS) | BUS_FIFO_ERR_INT);
+        else
+            ATINewHWPtr->bus_cntl |= BUS_APER_REG_DIS;
+
+        ATINewHWPtr->dac_cntl = inl(ATIIOPortDAC_CNTL);
+        if (vga256InfoRec.depth > 8)
+            ATINewHWPtr->dac_cntl |= DAC_8BIT_EN;
+        else
+            ATINewHWPtr->dac_cntl &= ~DAC_8BIT_EN;
 
         ATINewHWPtr->config_cntl = inl(ATIIOPortCONFIG_CNTL);
         if (ATIUsingSmallApertures)
@@ -193,6 +215,12 @@ ATIMach64Init(DisplayModePtr mode)
             CRTC_VGA_LINEAR | CRTC_CNT_EN;
         switch (vga256InfoRec.depth)
         {
+            case 1:
+                ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_1BPP;
+                break;
+            case 4:
+                ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_4BPP;
+                break;
             case 8:
                 ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_8BPP;
                 break;
@@ -203,7 +231,10 @@ ATIMach64Init(DisplayModePtr mode)
                 ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_16BPP;
                 break;
             case 24:
-                ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_24BPP;
+                if (vga256InfoRec.bitsPerPixel == 24)
+                    ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_24BPP;
+                else if (vga256InfoRec.bitsPerPixel == 32)
+                    ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_32BPP;
                 break;
             case 32:
                 ATINewHWPtr->crtc_gen_cntl |= CRTC_PIX_WIDTH_32BPP;
@@ -257,6 +288,13 @@ ATIMach64Restore(ATIHWPtr restore)
     /* Finalize CRTC setup and turn on the screen */
     outl(ATIIOPortCRTC_GEN_CNTL, restore->crtc_gen_cntl);
 
-    /* Enable or disable the small dual paged apertures */
+    /* Aperture setup */
+    outl(ATIIOPortBUS_CNTL, restore->bus_cntl);
+
+    outl(ATIIOPortMEM_VGA_WP_SEL, restore->mem_vga_wp_sel);
+    outl(ATIIOPortMEM_VGA_RP_SEL, restore->mem_vga_rp_sel);
+
+    outl(ATIIOPortDAC_CNTL, restore->dac_cntl);
+
     outl(ATIIOPortCONFIG_CNTL, restore->config_cntl);
 }

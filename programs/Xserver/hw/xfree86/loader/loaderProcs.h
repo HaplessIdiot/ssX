@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.3 1997/04/08 10:13:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.4 1998/01/25 08:28:20 dawes Exp $ */
 
 
 
 
 /*
  *
- * Copyright 1995,96 by Metro Link, Inc.
+ * Copyright 1995-1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,24 +26,49 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "xf86Optrec.h"
+#include "loaderErrors.h"
+
+typedef struct module_desc {
+	struct module_desc *child;
+	struct module_desc *sib;
+	struct module_desc *demand_next;
+	char *name;
+	char *identifier;
+	XID client_id;
+	int in_use;
+	int handle;
+	ModuleSetupProc SetupProc;
+	ModuleTearDownProc TearDownProc;
+	void *TearDownData; /* returned from SetupProc */
+} ModuleDesc, *ModuleDescPtr;
+
+
 /*
  * Extenal API for the loader 
  */
-void (*LoaderSymbol())(
+ModuleDescPtr
+LoadDriver(const char *, const char *, int, XF86OptionPtr, int*, int *);
+ModuleDescPtr
+LoadModule(const char *, const char *, XF86OptionPtr, int*, int *);
+void UnloadModule (ModuleDescPtr);
+void UnloadDriver (ModuleDescPtr);
+void FreeModuleDesc (ModuleDescPtr mod);
+ModuleDescPtr NewModuleDesc (const char *);
+ModuleDescPtr AddSibling (ModuleDescPtr head, ModuleDescPtr new);
+
+
+int LoaderCheckUnresolved(
 #if NeedFunctionPrototypes
-char *
+int, int
 #endif
 );
-#if 0
-metroScreenRecPtr LoaderInitDriver(
-#if NeedFunctionPrototypes
-char *
-#endif
-);
-#endif
 int LoaderOpen(
 #if NeedFunctionPrototypes
-char *
+const char *,
+int,
+int *,
+int *
 #endif
 );
 void LoaderShowStack(
@@ -51,22 +76,20 @@ void LoaderShowStack(
 void
 #endif
 );
-int LoaderResolveSymbols(
+void *LoaderSymbol(
 #if NeedFunctionPrototypes
-void
+const char *
 #endif
 );
-int LoaderCheckUnresolved(
+void *
+LoaderSymbolHandle(
 #if NeedFunctionPrototypes
-int, int
+const char *,
+int
 #endif
 );
-int LoaderDefaultFunc(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-int LoaderUnload(
+int
+LoaderUnload(
 #if NeedFunctionPrototypes
 int
 #endif

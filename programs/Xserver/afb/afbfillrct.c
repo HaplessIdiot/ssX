@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillrct.c,v 3.0 1996/08/18 01:45:32 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -95,8 +95,8 @@ afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	unsigned char *rropsOS;
 
 	priv = (afbPrivGC *)pGC->devPrivates[afbGCPrivateIndex].ptr;
-	ppix = priv->pRotatedPixmap;
-	prgnClip = priv->pCompositeClip;
+	ppix = pGC->pRotatedPixmap;
+	prgnClip = pGC->pCompositeClip;
 	rrops = priv->rrops;
 	rropsOS = priv->rropOS;
 
@@ -215,10 +215,10 @@ afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 			case FillTiled:
 				switch (pGC->alu) {
 					case GXcopy:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							afbTileAreaPPWCopy(pDrawable, pboxClipped-pboxClippedBase,
 												pboxClippedBase, GXcopy,
-												priv->pRotatedPixmap, pGC->planemask);
+												pGC->pRotatedPixmap, pGC->planemask);
 						else
 							afbTileAreaCopy (pDrawable, pboxClipped-pboxClippedBase,
 												pboxClippedBase, GXcopy,
@@ -228,10 +228,10 @@ afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 						break;
 
 					default:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							afbTileAreaPPWGeneral(pDrawable, pboxClipped-pboxClippedBase,
 												   pboxClippedBase, pGC->alu,
-												   priv->pRotatedPixmap,
+												   pGC->pRotatedPixmap,
 												   pGC->planemask);
 						else
 							afbTileAreaGeneral(pDrawable, pboxClipped-pboxClippedBase,
@@ -244,9 +244,9 @@ afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 				break;
 
 			case FillStippled:
-				if (priv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					afbStippleAreaPPW(pDrawable, pboxClipped-pboxClippedBase,
-									   pboxClippedBase, priv->pRotatedPixmap, rrops);
+									   pboxClippedBase, pGC->pRotatedPixmap, rrops);
 				else
 					afbStippleArea(pDrawable, pboxClipped-pboxClippedBase,
 									pboxClippedBase, pGC->stipple,
@@ -256,10 +256,10 @@ afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 			case FillOpaqueStippled:
 				switch (pGC->alu) {
 					case GXcopy:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							afbOpaqueStippleAreaPPWCopy(pDrawable, pboxClipped-pboxClippedBase,
 												pboxClippedBase, GXcopy,
-												priv->pRotatedPixmap,
+												pGC->pRotatedPixmap,
 												rropsOS, pGC->planemask);
 						else
 							afbOpaqueStippleAreaCopy(pDrawable, pboxClipped-pboxClippedBase,
@@ -270,10 +270,10 @@ afbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 						break;
 
 					default:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							afbOpaqueStippleAreaPPWGeneral(pDrawable, pboxClipped-pboxClippedBase,
 													pboxClippedBase, pGC->alu,
-													priv->pRotatedPixmap,
+													pGC->pRotatedPixmap,
 													rropsOS,
 													pGC->planemask);
 						else

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -52,6 +53,7 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "gcstruct.h"
+#include "mi.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "servermd.h"
@@ -79,14 +81,14 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	if (!pPixmap)
 	    return;
 	
-    	cfbGetGCPrivate(pGC)->fExpose = FALSE;
+    	pGC->fExpose = FALSE;
 	if (format == ZPixmap)
 	    (void)(*pGC->ops->CopyArea)((DrawablePtr)pPixmap, pDraw, pGC,
 					leftPad, 0, w, h, x, y);
 	else
 	    (void)(*pGC->ops->CopyPlane)((DrawablePtr)pPixmap, pDraw, pGC,
 					 leftPad, 0, w, h, x, y, 1);
-	cfbGetGCPrivate(pGC)->fExpose = TRUE;
+	pGC->fExpose = TRUE;
         FreeScratchPixmapHeader(pPixmap);
     }
     else

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbsetsp.c,v 3.0 1996/08/18 01:45:55 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -172,7 +172,7 @@ afbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 	int yMax;
 
 	alu = pGC->alu;
-	prgnDst = ((afbPrivGC *)(pGC->devPrivates[afbGCPrivateIndex].ptr))->pCompositeClip;
+	prgnDst = pGC->pCompositeClip;
 
 	pptLast = ppt + nspans;
 

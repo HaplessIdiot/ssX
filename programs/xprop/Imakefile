@@ -4,4 +4,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xprop.c dsimple.c
            OBJS = xprop.o dsimple.o
 
+LinkSourceFile(dsimple.c,../xlsfonts)
+LinkSourceFile(dsimple.h,../xlsfonts)
+
 ComplexProgramTarget(xprop)

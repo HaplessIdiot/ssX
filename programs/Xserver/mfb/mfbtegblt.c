@@ -47,6 +47,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+/* $XFree86: xc/programs/Xserver/mfb/mfbtegblt.c,v 1.0tsi Exp $ */
+
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -263,8 +266,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y1 = ypos;
     bbox.y2 = ypos + h;
 
-    switch (RECT_IN_REGION(pGC->pScreen, 
-           ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, pGC->pCompositeClip, &bbox))
     {
       case rgnPART:
 	/* this is the WRONG thing to do, but it works.

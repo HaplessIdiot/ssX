@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.3 1996/12/30 13:59:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.4 1996/12/31 07:06:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -73,7 +73,6 @@ int PsScreenPrivateIndex;
 int PsContextPrivateIndex;
 int PsPixmapPrivateIndex;
 int PsWindowPrivateIndex;
-int PsGCPrivateIndex;
 
 Bool
 InitializePsDriver(ndx, pScreen, argc, argv)
@@ -219,10 +218,6 @@ AllocatePsPrivates(ScreenPtr pScreen)
     PsContextPrivateIndex = XpAllocateContextPrivateIndex();
     XpAllocateContextPrivate(PsContextPrivateIndex, 
                              sizeof(PsContextPrivRec));
-
-    PsGCPrivateIndex = AllocateGCPrivateIndex();
-    AllocateGCPrivate(pScreen, PsGCPrivateIndex,
-                      sizeof(PsGCPrivRec));
 
     PsPixmapPrivateIndex = AllocatePixmapPrivateIndex();
     AllocatePixmapPrivate(pScreen, PsPixmapPrivateIndex,

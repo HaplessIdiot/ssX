@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.8 1997/09/09 10:27:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.9 1997/11/22 08:17:36 dawes Exp $ */
 
 
 
 
 /*
  *
- * Copyright 1995,96 by Metro Link, Inc.
+ * Copyright 1995-1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,6 +25,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
+#undef DBMALLOC
 #include "sym.h"
 #include "colormap.h"
 #include "cursor.h"
@@ -42,6 +44,9 @@
 #include "extnsionst.h"
 #include "swaprep.h"
 #include "inputstr.h"
+#include "XIproto.h"
+#include "exevents.h"
+#include "extinit.h"
 
 extern Bool     Must_have_memory;
 extern WindowPtr *WindowTable;
@@ -51,18 +56,15 @@ extern int monitorResolution;
 extern Bool permitOldBugs;
 extern Bool noTestExtensions;
 
-#ifdef XINPUT
-extern void InitValuatorAxisStruct();
-extern void AssignTypeAndName();
-#endif
+extern void ClientSleepUntil();
 
 /* DIX things */
 
-extern void writev () ;
+/* extern void writev(); */
 
 LOOKUP dixLookupTab[] = {
 
-  /*dix/ */
+  /* dix */
   /* atom.c */
   SYMFUNC(MakeAtom)
   /* colormap.c */
@@ -92,6 +94,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(ClientStateCallback)
   /* dixutils.c */
   SYMFUNC(AddCallback)
+  SYMFUNC(CompareTimeStamps)
   SYMFUNC(CopyISOLatin1Lowered)
   SYMFUNC(DeleteCallback)
   SYMFUNC(LookupClient)
@@ -114,6 +117,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(inputInfo)
   /* extension.c */
   SYMFUNC(AddExtension)
+  SYMFUNC(AddExtensionAlias)
   SYMFUNC(DeclareExtensionSecurity)
   SYMFUNC(MinorOpcodeOfRequest)
   SYMFUNC(StandardMinorOpcode)
@@ -178,6 +182,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(LookupIDByType)
   SYMFUNC(LookupIDByClass)
   SYMFUNC(LegalNewID)
+  SYMFUNC(SecurityLookupIDByClass)
   SYMFUNC(SecurityLookupIDByType)
   /* swaprep.c */
   SYMFUNC(CopySwap32Write)
@@ -191,6 +196,7 @@ LOOKUP dixLookupTab[] = {
   /* window.c */
   SYMFUNC(ChangeWindowAttributes)
   SYMFUNC(CheckWindowOptionalNeed)
+  SYMFUNC(CreateUnclippedWinSize)
   SYMFUNC(CreateWindow)
   SYMFUNC(FindWindowWithOptional)
   SYMFUNC(GravityTranslate)
@@ -236,9 +242,12 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(FlushCallback)
   SYMVAR(ReplyCallback)
   SYMVAR(SkippedRequestsCallback)
+  SYMFUNC(ResetCurrentRequest)
   /* connection.c */
   SYMFUNC(IgnoreClient)
   SYMFUNC(AttendClient)
+  SYMFUNC(AddEnabledDevice)
+  SYMFUNC(RemoveEnabledDevice)
   SYMVAR(GrabInProgress)
   /* utils.c */
   SYMFUNC(AdjustWaitForDelay)
@@ -248,6 +257,7 @@ LOOKUP dixLookupTab[] = {
   /* Xi */
   /* exevents.c */
   SYMFUNC(InitValuatorAxisStruct)
+  SYMFUNC(InitProximityClassDeviceStruct)
   /* extinit.c */
   SYMFUNC(AssignTypeAndName)
 #endif
@@ -255,6 +265,9 @@ LOOKUP dixLookupTab[] = {
   /* libfont.a */
   SYMFUNC(GetGlyphs)
   SYMFUNC(QueryGlyphExtents)
+
+  /* libXext.a */
+  SYMFUNC(ClientSleepUntil)
   
 
   { 0, 0 },

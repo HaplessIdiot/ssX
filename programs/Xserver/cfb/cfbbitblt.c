@@ -2,6 +2,8 @@
  * cfb copy area
  */
 
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.0tsi Exp $ */
+
 /*
 
 Copyright (c) 1989  X Consortium
@@ -30,7 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.50 94/04/17 20:28:43 dpw Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.51 94/05/27 11:00:56 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -280,7 +282,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if ( cfbGetGCPrivate(pGC)->fExpose)
+    if (pGC->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -451,7 +453,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	leftShift = xoffSrc;
 	rightShift = MFB_PPW - leftShift;
 
-	pixelsRemainingOnRightEdge = (nlMiddle & 7) + ((dstx + width) & PIM);
+	pixelsRemainingOnRightEdge = (nlMiddle & 7) * PPW +
+	    				((dstx + width) & PIM);
 
 	/* setup is done; now let's move some bits */
 

@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/configure.in,v 3.12 1998/01/11 03:48:37 dawes Exp $
+dnl $XFree86: xc/programs/xterm/configure.in,v 3.13 1998/01/24 01:53:32 hohndel Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -27,7 +27,7 @@ dnl
 dnl ---------------------------------------------------------------------------
 dnl Process this file with autoconf to produce a configure script.
 dnl
-AC_PREREQ(2.12)
+AC_PREREQ(2.12.971230)
 AC_INIT(charproc.c)
 AC_CONFIG_HEADER(xtermcfg.h:xtermcfg.hin)
 CF_CHECK_CACHE
@@ -54,6 +54,7 @@ AC_CHECK_FUNCS( \
 	bcopy \
 	memmove \
 	strerror \
+	waitpid \
 	)
 CF_FUNC_MEMMOVE
 CF_FUNC_TGETENT
@@ -67,15 +68,31 @@ CF_ANSI_CC_CHECK
 
 ###	checks for system services and user specified options
 
+AC_CHECK_HEADERS(unistd.h)
+AC_HEADER_SYS_WAIT
+
 CF_X_TOOLKIT
 
+# Change CPPFLAGS temporarily so that checks for X include files will
+# look in any directories specified with `--x-includes=DIR', obtained
+# via xmkmf, or located by AC_PATH_XTRA.  These flags are already in
+# CFLAGS (put there by CF_X_TOOLKIT), but that doesn't help here because
+# AC_CHECK_HEADERS uses cpp, not cc.
+
+if test "${x_includes}" != NONE && test -n "${x_includes}"; then
+	C_SWITCH_X_SITE=-I`echo ${x_includes} | sed -e "s/:/ -I/g"`
+fi
+cf_save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$C_SWITCH_X_SITE $CPPFLAGS"
+
 AC_CHECK_HEADERS( \
-	unistd.h \
 	X11/DECkeysym.h \
 	X11/Xpoll.h \
 	)
 
 CF_X_ATHENA
+
+CPPFLAGS="$cf_save_CPPFLAGS"
 
 LIBS="$LIBS $X_EXTRA_LIBS"
 
@@ -201,6 +218,15 @@ CF_ARG_ENABLE(logging,
 AC_MSG_RESULT($enable_logging)
 if test $enable_logging = yes ; then
 	AC_DEFINE(ALLOWLOGGING)
+	AC_MSG_CHECKING(if you want to allow logging via a pipe)
+	CF_ARG_ENABLE(logfile-exec,
+		[  --enable-logfile-exec   enable exec'd logfile filter],
+		[enable_log_exec=yes],
+		[enable_log_exec=no])
+	AC_MSG_RESULT($enable_log_exec)
+	if test $enable_log_exec = yes ; then
+		AC_DEFINE(ALLOWLOGFILEEXEC)
+	fi
 fi
 
 AC_MSG_CHECKING(if you want support for right-scrollbar)

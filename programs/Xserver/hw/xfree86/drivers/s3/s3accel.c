@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.16 1997/12/05 22:01:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.17 1998/01/11 03:36:49 dawes Exp $ */
 
 /*
  *
@@ -29,8 +29,8 @@ void S3SubsequentFillRectSolid();
 void S3SubsequentBresenhamLine();
 void S3SetupForDashedLine();
 void S3SubsequentDashedBresenhamLine32();
-void S3SetupForFill8x8Pattern();
-void S3SubsequentFill8x8Pattern();
+void S3SetupFor8x8PatternColorExpand();
+void S3Subsequent8x8PatternColorExpand();
 void S3SetupForCPUToScreenColorExpand();
 void S3FillRectStippledCPUToScreenColorExpand();
 void S3WriteBitmapCPUToScreenColorExpand32();
@@ -79,7 +79,9 @@ void S3AccelInit()
 				LINE_PATTERN_MSBFIRST_MSBJUSTIFIED |
 				DELAYED_SYNC;
  
-    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NOT_LINEAR;
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NOT_LINEAR |
+				HARDWARE_PATTERN_SCREEN_ORIGIN |
+				HARDWARE_PATTERN_MONO_TRANSPARENCY;
 
     if(s3Bpp != 3) 
 	xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;	
@@ -126,12 +128,11 @@ void S3AccelInit()
 
 
     /* 8x8 pattern fills */
-    /*  Warning! By all accounts (all 2 of them) 8x8 pattern fills are 
-	broken in plain old Trio64 in 32bpp.  This should be disabled
-	in 32bpp when I figure out which ChipID's those are. */
     if(!S3_911_SERIES(s3ChipId)) {
-       xf86AccelInfoRec.SetupForFill8x8Pattern = S3SetupForFill8x8Pattern;
-       xf86AccelInfoRec.SubsequentFill8x8Pattern = S3SubsequentFill8x8Pattern;
+       xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
+		S3SetupFor8x8PatternColorExpand;
+       xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
+		S3Subsequent8x8PatternColorExpand;
     }
 
 
@@ -381,37 +382,35 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	| 	8x8 Fill Patterns	|
 	\*******************************/
 
-void S3SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
-    int patternx, patterny, rop, planemask, trans_col;
+void S3SetupFor8x8PatternColorExpand(patx, paty, bg, fg, rop, planemask)
+    int patx, paty, bg, fg, rop, planemask;
 {
-    TransColor = trans_col;
-    WaitQueue16_32(3,4);
-    SET_PIX_CNTL(0);
-    SET_FRGD_MIX(FSS_BITBLT | s3alu[rop]);
+    WaitQueue16_32(5, 6);
+    if(bg == -1) {  
+	if(ColorExpandBug) {
+    	  SET_MIX(FSS_FRGDCOL | s3alu[rop], BSS_BKGDCOL | MIX_XOR); 
+    	  SET_BKGD_COLOR(0);
+	} else
+    	  SET_MIX(FSS_FRGDCOL | s3alu[rop], BSS_BKGDCOL | MIX_DST); 
+    } else {
+   	SET_MIX(FSS_FRGDCOL | s3alu[rop], BSS_BKGDCOL | s3alu[rop]); 
+    	SET_BKGD_COLOR(bg);
+    }
+    SET_CURPT((short)patx, (short)paty); 
+
+    WaitQueue16_32(3, 5);
+    SET_FRGD_COLOR(fg);
     SET_WRT_MASK(planemask);
+    SET_PIX_CNTL(MIXSEL_EXPBLT);
 }
 
-void S3SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
+void S3Subsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
     int patternx, patterny, x, y, w, h;
 {
-    if(TransColor == -1) {
-    	WaitQueue(7);
-    	SET_CURPT((short)patternx, (short)patterny); 
-    	SET_DESTSTP((short)x, (short)y);
-    	SET_AXIS_PCNT(w - 1, h - 1);
-    	SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
-    } else {
-    	WaitQueue16_32(2,3);
-    	SET_MULT_MISC(CMD_REG_WIDTH | 0x0100); /* enable compare */
-    	SET_COLOR_CMP(TransColor);
-
-    	WaitQueue(8);
-    	SET_CURPT((short)patternx, (short)patterny); 
-    	SET_DESTSTP((short)x, (short)y);
-    	SET_AXIS_PCNT(w - 1, h - 1);
-    	SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
-    	SET_MULT_MISC(CMD_REG_WIDTH);	/* disable compare */
-   }
+    WaitQueue(5);
+    SET_DESTSTP((short)x, (short)y);
+    SET_AXIS_PCNT(w - 1, h - 1);
+    SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA | PLANAR);
 }
 
 	/***************************************\

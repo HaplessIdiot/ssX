@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmpolypnt.c,v 3.0 1996/08/18 01:54:07 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -104,8 +104,8 @@ ilbmPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 			ppt->y += (ppt-1)->y;
 		}
 
-	nbox = REGION_NUM_RECTS(pGCPriv->pCompositeClip);
-	pbox = REGION_RECTS(pGCPriv->pCompositeClip);
+	nbox = REGION_NUM_RECTS(pGC->pCompositeClip);
+	pbox = REGION_RECTS(pGC->pCompositeClip);
 	for (; --nbox >= 0; pbox++)
 		for (d = 0, pBase = pBaseSave; d < depthDst; d++, pBase += nlwidth) {	/* @@@ NEXT PLANE @@@ */
 			addrl = pBase;

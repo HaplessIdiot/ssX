@@ -29,28 +29,7 @@ from the X Consortium.
 
 */
 
-/* This structure has to line up with the mfb and cfb gc private structures so
- * that when it is superimposed on them, the three fields that migc.c needs to
- * see will be accessed correctly.  I know this is not beautiful, but it seemed
- * better than all the code duplication in cfb and mfb.
- */
-typedef struct {
-    unsigned char       pad1;
-    unsigned char       pad2;
-    unsigned char       pad3;
-    unsigned		pad4:1;
-    unsigned		freeCompClip:1;
-    PixmapPtr		pRotatedPixmap;
-    RegionPtr		pCompositeClip;
-} miPrivGC;
-
-extern int miGCPrivateIndex;
-
-extern void miRegisterGCPrivateIndex(
-#if NeedFunctionPrototypes
-    int /*gcindex*/
-#endif
-);
+/* $XFree86: xc/programs/Xserver/mi/migc.h,v 1.0tsi Exp $ */
 
 extern void miChangeGC(
 #if NeedFunctionPrototypes

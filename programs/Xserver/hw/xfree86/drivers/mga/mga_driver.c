@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.28 1998/01/24 19:15:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.29 1998/01/24 21:42:02 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -71,7 +71,7 @@
 
 extern vgaPCIInformation *vgaPCIInfo;
 
-#define DEFAULT_SW_CURSOR
+#define DEFAULT_HW_CURSOR
 
 /*
  * Driver data structures.
@@ -869,7 +869,7 @@ MGAProbe()
 	OFLG_SET(OPTION_DAC_8_BIT, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_SW_CURSOR, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_HW_CURSOR, &MGA.ChipOptionFlags);
-	OFLG_SET(OPTION_NO_PCI_RETRY, &MGA.ChipOptionFlags);
+	OFLG_SET(OPTION_PCI_RETRY, &MGA.ChipOptionFlags);
 
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.15 1997/12/05 22:01:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.16 1998/01/24 01:53:09 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -583,7 +583,7 @@ MGATi3026SetMCLK( f_out )
 
 	rfhcnt <<= 16;
 
-    	if(OFLG_ISSET(OPTION_NO_PCI_RETRY, &vga256InfoRec.options))
+    	if(!OFLG_ISSET(OPTION_PCI_RETRY, &vga256InfoRec.options))
 	   rfhcnt |= (1 << 29);
 
  	pciWriteLong( MGAPciTag, PCI_OPTION_REG, rfhcnt |
@@ -1127,6 +1127,9 @@ static void
 MGA3026SetCursorPosition(x, y, xorigin, yorigin)
     int x, y;
 {
+    if(vga256InfoRec.modes->Flags & V_DBLSCAN)
+	y *= 2;
+
     x += 64 - xorigin;
     y += 64 - yorigin;
 

@@ -1,5 +1,5 @@
 /* $XConsortium: cfbtegblt.c,v 5.9 94/04/17 20:29:03 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtegblt.c,v 3.0 1996/06/29 09:05:52 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -159,7 +159,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 	   one day...
 	*/
-	miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	cfbImageGlyphBlt8(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 	break;
       case rgnIN:
 

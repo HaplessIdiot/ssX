@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmfillrct.c,v 3.0 1996/08/18 01:53:49 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -98,8 +98,8 @@ ilbmPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	unsigned char *rropsOS;
 
 	priv = (ilbmPrivGC *)pGC->devPrivates[ilbmGCPrivateIndex].ptr;
-	ppix = priv->pRotatedPixmap;
-	prgnClip = priv->pCompositeClip;
+	ppix = pGC->pRotatedPixmap;
+	prgnClip = pGC->pCompositeClip;
 	rrops = priv->rrops;
 	rropsOS = priv->rropOS;
 
@@ -217,10 +217,10 @@ ilbmPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 			case FillTiled:
 				switch (pGC->alu) {
 					case GXcopy:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							ilbmTileAreaPPWCopy(pDrawable, pboxClipped-pboxClippedBase,
 													  pboxClippedBase, GXcopy,
-													  priv->pRotatedPixmap, pGC->planemask);
+													  pGC->pRotatedPixmap, pGC->planemask);
 						else
 							ilbmTileAreaCopy(pDrawable, pboxClipped-pboxClippedBase,
 												  pboxClippedBase, GXcopy, pGC->tile.pixmap,
@@ -229,10 +229,10 @@ ilbmPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 						break;
 
 					default:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							ilbmTileAreaPPWGeneral(pDrawable, pboxClipped-pboxClippedBase,
 														  pboxClippedBase, pGC->alu,
-														  priv->pRotatedPixmap,
+														  pGC->pRotatedPixmap,
 														  pGC->planemask);
 						else
 							ilbmTileAreaGeneral(pDrawable, pboxClipped-pboxClippedBase,
@@ -244,9 +244,9 @@ ilbmPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 				break;
 
 			case FillStippled:
-				if (priv->pRotatedPixmap)
+				if (pGC->pRotatedPixmap)
 					ilbmStippleAreaPPW(pDrawable, pboxClipped-pboxClippedBase,
-											 pboxClippedBase, priv->pRotatedPixmap, rrops);
+											 pboxClippedBase, pGC->pRotatedPixmap, rrops);
 				else
 					ilbmStippleArea(pDrawable, pboxClipped-pboxClippedBase,
 										 pboxClippedBase, pGC->stipple, pGC->patOrg.x,
@@ -256,11 +256,11 @@ ilbmPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 			case FillOpaqueStippled:
 				switch (pGC->alu) {
 					case GXcopy:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							ilbmOpaqueStippleAreaPPWCopy(pDrawable,
 																  pboxClipped-pboxClippedBase,
 																  pboxClippedBase, GXcopy,
-																  priv->pRotatedPixmap, rropsOS,
+																  pGC->pRotatedPixmap, rropsOS,
 																  pGC->planemask);
 						else
 							ilbmOpaqueStippleAreaCopy(pDrawable,
@@ -272,11 +272,11 @@ ilbmPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 						break;
 
 					default:
-						if (priv->pRotatedPixmap)
+						if (pGC->pRotatedPixmap)
 							ilbmOpaqueStippleAreaPPWGeneral(pDrawable,
 																	  pboxClipped-pboxClippedBase,
 																	  pboxClippedBase, pGC->alu,
-																	  priv->pRotatedPixmap,
+																	  pGC->pRotatedPixmap,
 																	  rropsOS, pGC->planemask);
 						else
 							ilbmOpaqueStippleAreaGeneral(pDrawable,

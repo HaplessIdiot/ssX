@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmpushpxl.c,v 3.0 1996/08/18 01:54:08 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -127,8 +127,7 @@ ilbmSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	REGION_INIT(pGC->pScreen, &rgnDst, &srcBox, 1);
 
 	/* clip the shape of the dst to the destination composite clip */
-	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
-		((ilbmPrivGC *)(pGC->devPrivates[ilbmGCPrivateIndex].ptr))->pCompositeClip);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, pGC->pCompositeClip);
 
 	if (!REGION_NIL(&rgnDst)) {
 		i = REGION_NUM_RECTS(&rgnDst);

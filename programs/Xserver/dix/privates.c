@@ -1,5 +1,5 @@
 /* $XConsortium: privates.c /main/5 1996/06/17 10:56:22 mor $ */
-/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.1 1996/12/23 06:29:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.2 1997/01/23 10:57:19 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -64,8 +64,8 @@ ResetClientPrivates()
     clientPrivateLen = 0;
     xfree(clientPrivateSizes);
     clientPrivateSizes = (unsigned *)NULL;
-    totalClientSize = sizeof(ClientRec);
-
+    totalClientSize =
+	((sizeof(ClientRec) + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
 }
 
 int
@@ -80,6 +80,9 @@ AllocateClientPrivate(index2, amount)
     unsigned amount;
 {
     unsigned oldamount;
+
+    /* Round up sizes for proper alignment */
+    amount = ((amount + (sizeof(long) - 1)) / sizeof(long)) * sizeof(long);
 
     if (index2 >= clientPrivateLen)
     {
@@ -170,6 +173,9 @@ AllocateWindowPrivate(pScreen, index2, amount)
 {
     unsigned oldamount;
 
+    /* Round up sizes for proper alignment */
+    amount = ((amount + (sizeof(long) - 1)) / sizeof(long)) * sizeof(long);
+
     if (index2 >= pScreen->WindowPrivateLen)
     {
 	unsigned *nsizes;
@@ -220,6 +226,9 @@ AllocateGCPrivate(pScreen, index2, amount)
 {
     unsigned oldamount;
 
+    /* Round up sizes for proper alignment */
+    amount = ((amount + (sizeof(long) - 1)) / sizeof(long)) * sizeof(long);
+
     if (index2 >= pScreen->GCPrivateLen)
     {
 	unsigned *nsizes;
@@ -269,6 +278,9 @@ AllocatePixmapPrivate(pScreen, index2, amount)
     unsigned amount;
 {
     unsigned oldamount;
+
+    /* Round up sizes for proper alignment */
+    amount = ((amount + (sizeof(long) - 1)) / sizeof(long)) * sizeof(long);
 
     if (index2 >= pScreen->PixmapPrivateLen)
     {
