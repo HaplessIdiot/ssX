@@ -12,8 +12,7 @@ XFree86 3.2o (5 January 1997)
  182. Fix a problem for Mach64 CT-D cards where the server writes to the
       wrong I/O address, possibly that of another PCI device (Kevin Martin).
  181. Fix Rage II support in the Mach64 server (Kevin Martin).
- 180. Add preliminary XAA support for the TGA server, but currently
-      disabled (Alan Hourihane).
+ 180. Add preliminary XAA support for the TGA server.
  179. Don't compile Xprint/Xrm.c because it is already included in
       attributes.c (Holger Veit).
  178. Various updates for OS/2 (Holger Veit).
