@@ -31,7 +31,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: $ */
+ /* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaPicture.c,v 1.2 2002/07/24 05:58:33 torrey Exp $ */
 
 #ifdef RENDER
 
@@ -48,7 +48,7 @@
 void
 AquaStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value)
 {
-    FbBits  *line = op->line; CARD32 offset = op->offset;
+    FbBits  *line = op->u.drawable.line; CARD32 offset = op->u.drawable.offset;
     ((CARD32 *)line)[offset >> 5] = (value & 0xffffff) | 0xff000000;
 }
 
@@ -72,16 +72,16 @@ AquaCompositeGeneral(
     CARD16              width,
     CARD16              height)
 {
-    FbCompositeOperand  src[3],msk[3],dst[3],*pmsk;
-    FbCompositeOperand  *srcPict, *srcAlpha;
-    FbCompositeOperand  *dstPict, *dstAlpha;
-    FbCompositeOperand  *mskPict = 0, *mskAlpha = 0;
-    FbCombineFunc       f;
-    int                 w;
+    FbCompositeOperand	src[4],msk[4],dst[4],*pmsk;
+    FbCompositeOperand	*srcPict, *srcAlpha;
+    FbCompositeOperand	*dstPict, *dstAlpha;
+    FbCompositeOperand	*mskPict = 0, *mskAlpha = 0;
+    FbCombineFunc	f;
+    int			w;
 
-    if (!fbBuildCompositeOperand (pSrc, src, xSrc, ySrc))
+    if (!fbBuildCompositeOperand (pSrc, src, xSrc, ySrc, TRUE, TRUE))
 	return;
-    if (!fbBuildCompositeOperand (pDst, dst, xDst, yDst))
+    if (!fbBuildCompositeOperand (pDst, dst, xDst, yDst, FALSE, TRUE))
 	return;
 
     // Use Aqua operands for on screen picture formats
@@ -112,7 +112,7 @@ AquaCompositeGeneral(
     f = fbCombineFuncU[op];
     if (pMask)
     {
-	if (!fbBuildCompositeOperand (pMask, msk, xMask, yMask))
+	if (!fbBuildCompositeOperand (pMask, msk, xMask, yMask, TRUE, TRUE))
 	    return;
 	pmsk = msk;
 	if (pMask->componentAlpha)
@@ -134,49 +134,18 @@ AquaCompositeGeneral(
     {
 	w = width;
 	
-        srcPict->offset = (xSrc + srcPict->xoff) * srcPict->bpp;
-	if (srcAlpha)
-	    srcAlpha->offset = (xSrc + srcAlpha->xoff) * srcAlpha->bpp;
-	
-        dstPict->offset = (xDst + dstPict->xoff) * dstPict->bpp;
-	if (dstAlpha)
-	    dstAlpha->offset = (xDst + dstAlpha->xoff) * dstAlpha->bpp;
-
-	if (pmsk)
-	{
-	    mskPict->offset = (xMask + mskPict->xoff) * mskPict->bpp;
-	    if (mskAlpha)
-		mskAlpha->offset = (xMask + mskAlpha->xoff) * mskAlpha->bpp;
-	}
 	while (w--)
 	{
 	    (*f) (src, pmsk, dst);
-	    srcPict->offset += srcPict->bpp;
-	    if (srcAlpha)
-		srcAlpha->offset += srcAlpha->bpp;
-	    dstPict->offset += dstPict->bpp;
-	    if (dstAlpha)
-		dstAlpha->offset += dstAlpha->bpp;
+	    (*src->over) (src);
+	    (*dst->over) (dst);
 	    if (pmsk)
-	    {
-		mskPict->offset += mskPict->bpp;
-		if (mskAlpha)
-		    mskAlpha->offset += mskAlpha->bpp;
-	    }
+		(*pmsk->over) (pmsk);
 	}
-	srcPict->line += srcPict->stride;
-	if (srcAlpha)
-	    srcAlpha->line += srcAlpha->stride;
-	
-	dstPict->line += dstPict->stride;
-	if (dstAlpha)
-	    dstAlpha->line += dstAlpha->stride;
+	(*src->down) (src);
+	(*dst->down) (dst);
 	if (pmsk)
-	{
-	    mskPict->line += mskPict->stride;
-	    if (mskAlpha)
-		mskAlpha->line += mskAlpha->stride;
-	}
+	    (*pmsk->down) (pmsk);
     }
 }
 
@@ -202,9 +171,10 @@ AquaComposite(
     CompositeFunc   func;
     Bool	    srcRepeat = pSrc->repeat;
     Bool	    maskRepeat = FALSE;
+    Bool	    maskAlphaMap = FALSE;
     int		    x_msk, y_msk, x_src, y_src, x_dst, y_dst;
     int		    w, h, w_this, h_this;
-    
+
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
     xSrc += pSrc->pDrawable->x;
@@ -214,8 +184,9 @@ AquaComposite(
 	xMask += pMask->pDrawable->x;
 	yMask += pMask->pDrawable->y;
 	maskRepeat = pMask->repeat;
+	maskAlphaMap = pMask->alphaMap != 0;
     }
-    
+
     if (!miComputeCompositeRegion (&region,
 				   pSrc,
 				   pMask,
@@ -229,7 +200,7 @@ AquaComposite(
 				   width,
 				   height))
 	return;
-				   
+
     // To preserve the alpha channel we only use a special,
     // non-optimzied compositor.
     func = AquaCompositeGeneral;
@@ -277,7 +248,7 @@ AquaComposite(
 			w_this = pSrc->pDrawable->width - x_src;
 		}
 		(*func) (op, pSrc, pMask, pDst,
-			 x_src, y_src, x_msk, y_msk, x_dst, y_dst, 
+			 x_src, y_src, x_msk, y_msk, x_dst, y_dst,
 			 w_this, h_this);
 		w -= w_this;
 		x_src += w_this;
