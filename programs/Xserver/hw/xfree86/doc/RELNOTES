@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              15 December 2000
+                              17 December 2000
 
                                   Abstract
 
@@ -78,6 +78,9 @@ enough space to cover them all here.
    o The trident driver has lots of fixes to the CyberBlade/Blade support,
      XVideo support for the Image/Blade series (although scaling doesn't work
      yet on the Image series).
+
+   o The s3virge driver has stabilized ViRGE GX2 support, includes ViRGE DX
+     and ViRGE support for XVideo YUV images, and various fixes.
 
    o The 3Dlabs (glint) driver now has Permedia3 support.
 
@@ -321,7 +324,7 @@ XFree86 4.0.2 includes the following video drivers:
 |sunleo (+)    | Sun Leo (ZX)             |                                  |
 |suntcx (+)    | Sun TCX                  |                                  |
 |tdfx          | 3Dfx                     |                                  |
-|tga           | DEC TGA                  | README.TGA                       |
+|tga           | DEC TGA                  | README.DECtga                    |
 |trident       | Trident                  | trident(4)                       |
 |tseng         | Tseng Labs               |                                  |
 |vesa          | VESA                     | vesa(4)                          |
@@ -1078,7 +1081,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.56 2000/12/15 22:01:09 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.58 2000/12/17 23:01:10 dawes Exp $
 
 
 $XFree86$

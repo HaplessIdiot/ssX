@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.458 2000/12/14 17:16:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.459 2000/12/15 22:48:42 dawes Exp $ */
 
-#define XF86_VERSION " 4.0.2 (RC4) "
+#define XF86_VERSION " 4.0.2 "
 
 /* The finer points in versions... */
 #define XF86_VERSION_MAJOR	4
@@ -18,6 +18,6 @@
 			XF86_VERSION_BETA,			\
 			XF86_VERSION_ALPHA)
 
-#define XF86_DATE	"15 December 2000"
+#define XF86_DATE	"18 December 2000"
 
 /* $XConsortium: xf86Version.h /main/78 1996/10/28 05:42:10 kaleb $ */

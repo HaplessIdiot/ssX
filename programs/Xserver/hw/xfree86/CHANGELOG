@@ -1,3 +1,11 @@
+XFree86 4.0.2 (18 December 2000)
+1209. Rename the R6.4 INSTALL and RELNOTES docs at the top level of the source
+      tree, and add a copy of the XFree86 RELNOTES.
+1208. Add Solaris 8/x86 key mappings for some more jp106 keys.
+1207. Fix wacom man page to match the driver (based on #4398, Akio Morita).
+1206. Install the iso8859-13 encoding file (#4397, Nerijus Baliunas).
+1205. Misc doc-related updates.
+
 XFree86 4.0.1Zc (15 December 2000)
 1204. Fix an Xlib memory overrun when the Xutf8TextPropertyToTextList function
       is used in a unibyte locale (#4394, Bruno Haible).
@@ -12102,4 +12110,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1482 2000/12/14 23:10:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1483 2000/12/15 22:48:40 dawes Exp $
