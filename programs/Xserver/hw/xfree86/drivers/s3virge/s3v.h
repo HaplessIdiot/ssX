@@ -80,11 +80,9 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #include "vbe.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
 #include "fourcc.h"
-#endif
 
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
