@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.6 2001/04/02 08:50:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.7 2001/04/05 06:08:46 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -75,10 +75,10 @@ extern char **envpGlobal;
         [self toggle];
         return YES;
     }
-    
+
     if(!serverVisible)
         return NO;
-    
+
     [self getNXMouse:&ev];
     ev.type=[anEvent type];
     ev.flags=[anEvent modifierFlags];
@@ -188,7 +188,10 @@ extern char **envpGlobal;
 
     helpVal = [startupHelpButton intValue];
     [Preferences setStartupHelp:helpVal];
+    [Preferences saveToDisk];
+
     [helpWindow close];
+
     serverVisible = YES;
     [self sendShowHide:YES];
     [NSApp activateIgnoringOtherApps:YES];

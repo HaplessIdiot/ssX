@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzShared.h"
@@ -71,10 +71,7 @@
     [Preferences setFakeButtons:[fakeButton intValue]];
     [Preferences setStartupHelp:[startupHelpButton intValue]];
     [Preferences setSystemBeep:[systemBeepButton intValue]];
-
-    // Update the settings used by the X server thread
-    quartzUseSysBeep = [Preferences systemBeep];
-    darwinFakeButtons = [Preferences fakeButton];
+    [Preferences saveToDisk];
 
     [window orderOut:nil];
 }
@@ -136,6 +133,8 @@
 
 + (void)setFakeButtons:(BOOL)newFakeButtons {
     [[NSUserDefaults standardUserDefaults] setBool:newFakeButtons forKey:@"FakeButtons"];
+    // Update the setting used by the X server thread
+    darwinFakeButtons = newFakeButtons;
 }
 
 + (void)setStartupHelp:(BOOL)newStartupHelp {
@@ -144,6 +143,12 @@
 
 + (void)setSystemBeep:(BOOL)newSystemBeep {
     [[NSUserDefaults standardUserDefaults] setBool:newSystemBeep forKey:@"UseSystemBeep"];
+    // Update the setting used by the X server thread
+    quartzUseSysBeep = newSystemBeep;
+}
+
++ (void)saveToDisk {
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 + (NSString*)switchString {
