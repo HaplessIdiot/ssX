@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/XInput.h>
