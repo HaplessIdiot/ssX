@@ -1,4 +1,5 @@
 XFree86 3.9l (31 July 1997)
+1169. Catch a NULL dereference in lib/X11/lcFile.c (#843, Dirk Hohndel).
 1168. Xterm support for compound text cut and paste (#836, Kaleb Keithley).
 1166. Fix some I128 problems reported with PPro CPUs (#834, Robin Cutshaw).
 1165. Disable C&T fill at 32bpp (#831, David Bateman).
@@ -5213,4 +5214,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.515 1997/07/31 07:16:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.516 1997/07/31 09:18:31 dawes Exp $

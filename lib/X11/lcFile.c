@@ -350,13 +350,13 @@ _XlcResolveLocaleName(lc_name, pub)
     if (dst) {
 	*dst = '\0';
 	pub->territory = ++dst;
-    }
 
-    /* codeset */
-    dst = strchr (dst, '.');
-    if (dst) {
-	*dst = '\0';
-	pub->codeset = ++dst;
+	/* codeset */
+	dst = strchr (dst, '.');
+	if (dst) {
+	    *dst = '\0';
+	    pub->codeset = ++dst;
+	}
     }
 
     return (pub->siname[0] != '\0') ? 1 : 0;
