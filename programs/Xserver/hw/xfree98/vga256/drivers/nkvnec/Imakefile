@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:57:17 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nkvnec/Imakefile,v 3.6 1996/08/14 14:38:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nkvnec/Imakefile,v 3.7 1996/08/16 12:44:54 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -32,7 +32,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/vga256/vga \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(INCLUDESRC) \
-	   -I$(XF86SRC)/vga256/drivers/cirrus
+	   -I../../nkvnec
 #endif
 
 #if MakeHasPosixVariableSubstitutions

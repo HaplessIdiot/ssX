@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.41 1996/07/08 10:15:21 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.42 1996/08/13 11:24:05 dawes Exp $
 
 #ifndef LinuxElfDefault
 #if defined(i386Architecture) || defined(Mc68020Architecture)
@@ -24,13 +24,13 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.41 1996/07/08 10:15:21 dawe
 #define OSVendor		/**/
 #endif
 #ifndef OSMajorVersion
-#define OSMajorVersion		1
+#define OSMajorVersion		2
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion		2
+#define OSMinorVersion		0
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		13
+#define OSTeenyVersion		0
 #endif
 
 /*
