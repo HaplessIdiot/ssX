@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.110 2005/01/29 03:42:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.111 2005/01/31 01:06:04 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -728,7 +728,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 
    pI810 = I810PTR(pScrn);
 
-   pI810->LpRing = xalloc(sizeof(*pI810->LpRing));
+   pI810->LpRing = xcalloc(1, sizeof(I810RingBuffer));
    if (!pI810->LpRing)
       return FALSE;
 
