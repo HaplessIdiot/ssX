@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 264. Add ability to let Aqua and X use different display modes while running
+      XDarwin full screen (Torrey T. Lyons).
  263. Fix build dependency problem in xedit/lisp/lisp.rules
       (#4930, Harald Koenig).
  262. Fix a fontenc-related problem that can cause the TrueType backend
@@ -13779,4 +13781,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1930 2001/09/04 13:49:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1931 2001/09/05 18:13:13 paulo Exp $
