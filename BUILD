@@ -17,19 +17,19 @@
 We highly recommend using gcc to build XFree86, but XFree86 also generally
 builds with the native compiler for each OS platform;
 
-1.  How to get the XFree86 4.4.99.902 source
+1.  How to get the XFree86 4.4.99.903 source
 
-The recommended way of getting the XFree86 4.4.99.902 source is to obtain it
+The recommended way of getting the XFree86 4.4.99.903 source is to obtain it
 directly from the XFree86 CVS repository.  There are several ways of doing
 that, and they are described at our CVS web page
 <URL:http://www.xfree86.org/cvs/>  The CVS tag for this release is
-"xf-4_4_99_902".
+"xf-4_4_99_903".
 
-Alternatively you can download the source for the XFree86 4.4.99.902 snapshot
+Alternatively you can download the source for the XFree86 4.4.99.903 snapshot
 as a tarball from ftp://ftp.xfree86.org/pub/XFree86/devel-
-snaps/XFree86-4.4.99.902.tar.bz2.  This can be extracted by running:
+snaps/XFree86-4.4.99.903.tar.bz2.  This can be extracted by running:
 
-     bzip2 -d < XFree86-4.4.99.902.tar.bz2 | tar vxf -
+     bzip2 -d < XFree86-4.4.99.903.tar.bz2 | tar vxf -
 
 All methods will produce one main source directory called xc.
 
