@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.22 2001/06/27 21:30:39 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.24 2001/10/01 13:44:12 eich Exp $
  */
 
 #include "vesa.h"
@@ -648,7 +648,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMode->prev = pMode->next = NULL;
 
 	pMode->status = MODE_OK;
-	pMode->type = M_T_DEFAULT;/*M_T_BUILTIN;*/
+	pMode->type = M_T_BUILTIN;
 
 	/* for adjust frame */
 	pMode->HDisplay = mode->XResolution;
@@ -688,6 +688,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
         vbeFree(pVesa->pVbe);
 	return (FALSE);
     }
+
+    /* Match modes from the Display subsection with the suitable BIOS modes. */
     for (i = 0; pScrn->modePool != NULL && pScrn->display->modes[i] != NULL; i++) {
 	pMode = pScrn->modePool;
 
@@ -724,8 +726,29 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	} while (pMode != pScrn->modePool && pScrn->modePool != NULL);
     }
 
+    /* If there are no matches, use all of the relevant BIOS modes. */
     if (pScrn->modes == NULL)
 	pScrn->modes = pScrn->modePool;
+
+    /*
+     * Fill in names for all modePool modes that weren't already assigned
+     * a name.
+     */
+    pMode = pScrn->modePool;
+    do {
+	if (!pMode->name) {
+	    /* Catch "bad" modes. */
+	    if (pMode->HDisplay > 10000 || pMode->HDisplay < 0 ||
+		pMode->VDisplay > 10000 || pMode->VDisplay < 0)
+		pMode->name = strdup("BADMODE");
+	    else {
+		pMode->name = xnfalloc(4 + 1 + 4 + 1);
+		sprintf(pMode->name, "%dx%d", pMode->HDisplay, pMode->VDisplay);
+	    }
+	}
+	pMode = pMode->next;
+    } while (pMode && (pMode != pScrn->modePool));
+
     tmp = pScrn->modes;
     do {
 	mode = ((ModeInfoData*)tmp->Private)->data;
