@@ -1,3 +1,10 @@
+XFree86 3.9.18Zb (8 March 2000)
+3968. Release notes updates (David Dawes).
+3967. Major updates to the XF86Config man page (David Dawes).
+3966. Update the Cyrix driver documentation (#3810, Richard Hecker).
+3965. Update the APM driver documentation (#3809, Loic Grenie).
+3964. Fix a name clash in XF86OffscreenImageRec (Mark Vojkovich).
+
 XFree86 3.9.18Za (7 March 2000)
 3963. GCC/egcs bug workaround and other more minor ATI fixes (Marc La France).
 3962. Split HasGlide into HasGlide2 and HasGlide3 (David Dawes).
@@ -10022,4 +10029,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1075 2000/03/07 14:31:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1076 2000/03/07 16:16:51 tsi Exp $
