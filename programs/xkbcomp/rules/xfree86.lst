@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.45 2002/11/22 03:06:50 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.47 2002/11/25 14:05:06 eich Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -105,6 +105,7 @@
   bg		Bulgarian
   mm		Burmese
   ca		Canadian
+  ca_enhanced	French Canadian
   hr		Croatian
   cz		Czech
   cz_qwerty	Czech (qwerty)
