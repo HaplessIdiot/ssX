@@ -1,4 +1,5 @@
 /* $XConsortium: InitOutput.c /main/15 1996/01/20 18:43:04 kaleb $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
