@@ -60,9 +60,9 @@ might work for you, too.
                         Note: the ATT20C490 RAMDAC is not automatically
                         detected by the server.  You need to provide
                         a 'Ramdac "att20c490"' entry in your XF86Config.
-			Also, the server's RAMDAC probe reportedly causes
-			problems with some of these boards, and a RamDac
-			entry should be used to avoid the probe.
+                        Also, the server's RAMDAC probe reportedly causes
+                        problems with some of these boards, and a RamDac
+                        entry should be used to avoid the probe.
 
                         Real AT&T 20C490 or 20C491 RAMDACs work with
                         the "dac_8_bit" option.  Some clones (like
@@ -284,4 +284,4 @@ this not being correct is the HW cursor being chopped off when positioned
 close to the right edge of the screen.
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.6 1994/10/01 01:48:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.7 1994/11/19 07:55:37 dawes Exp $

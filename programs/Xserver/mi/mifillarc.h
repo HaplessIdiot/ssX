@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: mifillarc.h,v 5.7 94/04/17 20:27:34 dpw Exp $ */
+/* $XFree86$ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -180,6 +181,13 @@ extern struct finalSpan *realAllocSpan(
 );
 
 extern void miFillArcSetup(
+#if NeedFunctionPrototypes
+    xArc * /*arc*/,
+    miFillArcRec * /*info*/
+#endif
+);
+
+extern void miFillArcDSetup(
 #if NeedFunctionPrototypes
     xArc * /*arc*/,
     miFillArcRec * /*info*/
