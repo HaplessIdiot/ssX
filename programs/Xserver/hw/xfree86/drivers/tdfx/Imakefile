@@ -33,7 +33,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
            -I$(XF86SRC)/ddc -I$(XF86OSSRC)/vbe -I$(SERVERSRC)/Xext \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	   -I$(EXTINCSRC) \
+	   -I$(EXTINCSRC) -I$(SERVERSRC)/render \
 	   $(DRIINCLUDES)
 #endif
 

@@ -25,7 +25,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
 	   -I$(XF86SRC)/shadowfb \
 	   -I$(XF86SRC)/i2c -I$(XF86SRC)/ddc \
-           -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
+           -I$(SERVERSRC)/Xext -I$(EXTINCSRC) -I$(SERVERSRC)/render \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86OSSRC)/vbe -I$(FONTINCSRC)
 #endif

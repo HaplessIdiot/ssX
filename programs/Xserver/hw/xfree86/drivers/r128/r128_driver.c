@@ -120,6 +120,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_sarea.h"
 #endif
 
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
@@ -317,6 +320,9 @@ static const char *vbeSymbols[] = {
 #ifdef USE_FB
 static const char *fbSymbols[] = {
     "fbScreenInit",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     NULL
 };
 #else
@@ -1271,6 +1277,11 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 #endif
     if (mod && !xf86LoadSubModule(pScrn, mod)) return FALSE;
     xf86LoaderReqSymbols(Sym, NULL);
+#ifdef USE_FB
+#ifdef RENDER
+    xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
+#endif
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
     info->CurrentLayout.mode = pScrn->currentMode;
@@ -1648,7 +1659,8 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 			  miGetDefaultVisualMask(pScrn->depth),
 			  pScrn->rgbBits,
 			  pScrn->defaultVisual)) return FALSE;
-
+    miSetPixmapDepths ();
+    
 #ifdef XF86DRI
 				/* Setup DRI after visuals have been
                                    established, but before cfbScreenInit is
@@ -1688,6 +1700,9 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
 		       pScrn->bitsPerPixel))
 	return FALSE;
+#ifdef RENDER
+    fbPictureInit (pScreen, 0, 0);
+#endif
 #else
     switch (pScrn->bitsPerPixel) {
     case 8:

@@ -16,6 +16,10 @@ XFMODSRC = fbmodule.c
 XFMODOBJ = fbmodule.o
 #endif
 #endif
+#if BuildRender
+PICTSRCS = fbpict.c
+PICTOBJS = fbpict.o
+#endif
 
 SRCS =	$(XFMODSRC) \
 	fballpriv.c \
@@ -45,7 +49,8 @@ SRCS =	$(XFMODSRC) \
 	fbtile.c \
 	fbutil.c \
 	fbwindow.c \
-	fb24_32.c
+	fb24_32.c \
+	$(PICTSRCS)
 
 OBJS =	$(XFMODOBJ) \
 	fbarc.o \
@@ -76,10 +81,12 @@ OBJS =	$(XFMODOBJ) \
 	fbtile.o \
 	fbutil.o \
 	fbwindow.o \
-	fb24_32.o
+	fb24_32.o \
+	$(PICTOBJS)
 	
    INCLUDES = -I. -I../mi -I../include -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES)
+	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \
+	      -I../render -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mi/llib-lmi.ln
 

@@ -29,6 +29,7 @@
 #include "renderproto.h"
 #include "picture.h"
 #include "glyphstr.h"
+#include "resource.h"
 
 typedef struct _DirectFormat {
     CARD16	    red, redMask;
@@ -179,6 +180,11 @@ PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual);
 Bool
 PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
+Bool
+miPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
+
+Bool
+fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
 
 PicturePtr

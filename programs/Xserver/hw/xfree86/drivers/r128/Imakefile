@@ -30,7 +30,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/int10 -I$(SERVERSRC)/Xext \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(EXTINCSRC) -I$(XF86SRC)/xf24_32bpp \
-	   $(DRIINCLUDES)
+	   $(DRIINCLUDES) -I$(SERVERSRC)/render
 #endif
 
 DEFINES = $(DRIDEFINES)

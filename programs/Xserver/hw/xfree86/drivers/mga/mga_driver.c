@@ -98,6 +98,10 @@
 #endif
 
 
+#ifdef RENDER
+#include "picturestr.h"
+#endif
+
 /*
  * Forward definitions for the functions that make up the driver.
  */
@@ -1898,6 +1902,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 	xf86LoaderReqSymbols("fbScreenInit", NULL);
+#ifdef RENDER
+	xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
     }
 
     /* Load XAA if needed */
@@ -2268,6 +2275,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			      miGetDefaultVisualMask(pScrn->depth),
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
+	if (!miSetPixmapDepths ())
+	    return FALSE;
     }
 
 
@@ -2320,6 +2329,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FBStart, width, height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
+#ifdef RENDER
+	if (ret)
+	    fbPictureInit (pScreen, 0, 0);
+#endif
     }
     if (!ret)
 	return FALSE;

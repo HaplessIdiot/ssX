@@ -99,7 +99,8 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC) \
            -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb \
            -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-           -I$(SERVERSRC)/Xext -I$(XINCLUDESRC) -I$(FONTINCSRC)
+           -I$(SERVERSRC)/Xext -I$(XINCLUDESRC) -I$(FONTINCSRC) \
+	   -I$(EXTINCSRC) -I$(SERVERSRC)/render
 #endif
 
 #if MakeHasPosixVariableSubstitutions

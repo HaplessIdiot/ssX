@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.103 2000/08/04 16:13:35 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.105 2000/09/03 05:13:27 keithp Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -468,6 +468,9 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     NULL
@@ -1976,6 +1979,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86LoaderReqSymbols(Sym, NULL);
+#ifdef RENDER
+    xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
 	if (IsPciCard && UseMMIO) {
@@ -2373,6 +2379,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
+    miSetPixmapDepths ();
 
     /* FIXME - we don't do shadowfb for < 4 */
     if(pTrident->ShadowFB) {
@@ -2420,6 +2427,10 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
+#ifdef RENDER
+    fbPictureInit (pScreen, 0, 0);
+#endif
+    
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;

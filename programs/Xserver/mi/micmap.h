@@ -24,6 +24,7 @@ int miExpandDirectColors(ColormapPtr, int, xColorItem *, xColorItem *);
 Bool miCreateDefColormap(ScreenPtr);
 void miClearVisualTypes(void);
 Bool miSetVisualTypes(int, int, int, int);
+Bool miSetPixmapDepths(void);
 Bool miSetVisualTypesAndMasks(int depth, int visuals, int bitsPerRGB, 
 			      int preferredCVC,
 			      Pixel redMask, Pixel greenMask, Pixel blueMask);
