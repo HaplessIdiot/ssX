@@ -445,7 +445,7 @@ ProcXvQueryEncodings(ClientPtr client)
 
   ne = pPort->pAdaptor->nEncodings;
   pe = pPort->pAdaptor->pEncodings;
-  do
+  while (ne--) 
     {
       einfo.encoding = pe->id;
       einfo.name_size = strlen(pe->name);
@@ -456,7 +456,7 @@ ProcXvQueryEncodings(ClientPtr client)
       _WriteEncodingInfo(client, &einfo);
       WriteToClient(client, einfo.name_size, pe->name);
       pe++;
-    } while (--ne);
+    }
 
   return (client->noClientException);
 
