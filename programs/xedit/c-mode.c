@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.3 1999/08/28 09:01:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.4 1999/09/27 06:30:08 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -383,7 +383,7 @@ previous_anchor:
 		    rtmp = MAX(rtmp, pright);
 		}
 		right = anchor->position + entity->offset;
-		while (entity && ++count < 3) {
+		while (entity && count++ < 3) {
 		    if (entity->property == Qerror) {
 			right = anchor->position + entity->offset + entity->length;
 			count = 0;
