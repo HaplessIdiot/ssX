@@ -1,5 +1,5 @@
 /* $XConsortium: mach8init.c,v 1.1 94/03/28 21:12:17 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.0 1994/04/29 14:07:18 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -43,7 +43,7 @@ static short LUTInited = -1;
 
 /* mach8calcvmode--
  *      Calculate Mach8 register values from display specifications
- *      from the Xconfig file.
+ *      from the XF86Config file.
  */
 
 void
