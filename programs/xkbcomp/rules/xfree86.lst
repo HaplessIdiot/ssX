@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.54 2002/12/17 21:35:07 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.55 2002/12/17 21:45:03 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -127,6 +127,7 @@
   ir		Farsi
   fi		Finnish
   fr		French
+  fr-latin9	French (alternative)
   fr_CH		Swiss French
   ge_la		Georgian (latin)
   ge_ru		Georgian (russian)

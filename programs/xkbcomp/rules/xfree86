@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.50 2002/12/17 21:35:07 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.51 2002/12/17 21:45:03 dawes Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -26,7 +26,7 @@
   abnt2		=	xfree86(abnt2)
   *		=	xfree86
 
-! $azerty = be fr
+! $azerty = be fr fr-latin9
 ! $qwertz = al cz de hr pl2 si sk
 
 ! layout[1]	=	keycodes
