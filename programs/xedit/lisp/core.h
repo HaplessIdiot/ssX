@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.25 2002/11/02 22:58:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.26 2002/11/08 08:00:56 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -131,9 +131,6 @@ LispObj *Lisp_Pop(LispBuiltin*);
 LispObj *Lisp_Position(LispBuiltin*);
 LispObj *Lisp_PositionIf(LispBuiltin*);
 LispObj *Lisp_PositionIfNot(LispBuiltin*);
-LispObj *Lisp_Prin1(LispBuiltin*);
-LispObj *Lisp_Princ(LispBuiltin*);
-LispObj *Lisp_Print(LispBuiltin*);
 LispObj *Lisp_Proclaim(LispBuiltin*);
 LispObj *Lisp_Prog1(LispBuiltin*);
 LispObj *Lisp_Prog2(LispBuiltin*);

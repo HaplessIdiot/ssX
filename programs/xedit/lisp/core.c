@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.55 2002/11/10 16:29:03 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.56 2002/11/10 23:21:59 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -3053,58 +3053,6 @@ Lisp_PositionIfNot(LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Prin1(LispBuiltin *builtin)
-/*
- prin1 object &optional output-stream
- */
-{
-    LispObj *object, *output_stream;
-
-    output_stream = ARGUMENT(1);
-    object = ARGUMENT(0);
-
-    LispPrint(object, output_stream, 0);
-
-    return (object);
-}
-
-LispObj *
-Lisp_Princ(LispBuiltin *builtin)
-/*
- princ object &optional output-stream
- */
-{
-    int escape;
-    LispObj *object, *output_stream;
-
-    output_stream = ARGUMENT(1);
-    object = ARGUMENT(0);
-
-    escape = LispGetEscape(output_stream);
-    LispSetEscape(output_stream, 1);
-    LispPrint(object, output_stream, 0);
-    LispSetEscape(output_stream, escape);
-
-    return (object);
-}
-
-LispObj *
-Lisp_Print(LispBuiltin *builtin)
-/*
- print object &optional output-stream
- */
-{
-    LispObj *object, *output_stream;
-
-    output_stream = ARGUMENT(1);
-    object = ARGUMENT(0);
-
-    LispPrint(object, output_stream, 1);
-
-    return (object);
-}
-
-LispObj *
 Lisp_Proclaim(LispBuiltin *builtin)
 /*
  proclaim declaration
@@ -5727,25 +5675,35 @@ Lisp_XeditPut(LispBuiltin *builtin)
 LispObj *
 Lisp_XeditVectorStore(LispBuiltin *builtin)
 /*
- lisp::vector-store array subscripts value
+ lisp::vector-store array &rest values
  */
 {
-    long count, sequence, offset, accum;
-    LispObj *list, *object;
+    LispObj *value, *list, *object;
+    long rank, count, sequence, offset, accum;
 
-    LispObj *array, *subscripts, *value;
+    LispObj *array, *values;
 
-    value = ARGUMENT(2);
-    subscripts = ARGUMENT(1);
+    values = ARGUMENT(1);
     array = ARGUMENT(0);
 
-    if (STRINGP(array) && CONSP(subscripts) &&
-	INDEXP(CAR(subscripts)) && CDR(subscripts) == NIL &&
-	SCHARP(value)) {
-	long ch = SCHAR_VALUE(value);
-	long length = STRLEN(array);
-	long offset = FIXNUM_VALUE(CAR(subscripts));
+    /* check for errors */
+    for (rank = 0, list = values;
+	 CONSP(list) && CONSP(CDR(list));
+	 list = CDR(list), rank++) {
+	CHECK_INDEX(CAR(values));
+    }
 
+    if (rank == 0)
+	LispDestroy("%s: too few subscripts", STRFUN(builtin));
+    value = CAR(list);
+
+    if (STRINGP(array) && rank == 1) {
+	long ch;
+	long length = STRLEN(array);
+	long offset = FIXNUM_VALUE(CAR(values));
+
+	CHECK_SCHAR(value);
+	ch = SCHAR_VALUE(value);
 	if (offset >= length)
 	    LispDestroy("%s: index %ld too large for sequence length %ld",
 			STRFUN(builtin), offset, length);
@@ -5759,24 +5717,22 @@ Lisp_XeditVectorStore(LispBuiltin *builtin)
     }
 
     CHECK_ARRAY(array);
+    if (rank != array->data.array.rank)
+	LispDestroy("%s: too %s subscripts", STRFUN(builtin),
+		    rank < array->data.array.rank ? "few" : "many");
 
-    for (count = 0, list = subscripts, object = array->data.array.dim;
-	 CONSP(list); count++, list = CDR(list), object = CDR(object)) {
-	if (count >= array->data.array.rank)
-	    LispDestroy("%s: too many subscripts %s",
-			STRFUN(builtin), STROBJ(subscripts));
-	CHECK_INDEX(CAR(list));
+    for (list = values, object = array->data.array.dim;
+	 CONSP(CDR(list));
+	 list = CDR(list), object = CDR(object)) {
 	if (FIXNUM_VALUE(CAR(list)) >= FIXNUM_VALUE(CAR(object)))
 	    LispDestroy("%s: %ld is out of range, index %ld",
 			STRFUN(builtin),
 			FIXNUM_VALUE(CAR(list)),
 			FIXNUM_VALUE(CAR(object)));
     }
-    if (count < array->data.array.rank)
-	LispDestroy("%s: too few subscripts %s",
-		    STRFUN(builtin), STROBJ(subscripts));
 
-    for (count = sequence = 0, list = subscripts; CONSP(list);
+    for (count = sequence = 0, list = values;
+	 CONSP(CDR(list));
 	 list = CDR(list), sequence++) {
 	for (offset = 0, object = array->data.array.dim;
 	     offset < sequence; object = CDR(object), offset++)

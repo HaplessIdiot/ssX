@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.9 2002/11/08 08:00:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.10 2002/11/10 16:29:03 paulo Exp $ */
 
 
 /*
@@ -613,7 +613,7 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	LispWriteStr(NIL, "Macro ", 6);
     else
 	LispWriteStr(NIL, "Function ", 9);
-    LispWriteAtom(NIL, name);
+    LispWriteObject(NIL, name);
     LispWriteStr(NIL, ":\n", 2);
 
     if (alist) {
@@ -650,7 +650,7 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	for (i = 0; i < alist->keys.num_symbols; i++) {
 	    LispWriteChar(NIL, i ? ',' : ':');
 	    LispWriteChar(NIL, ' ');
-	    LispWriteAtom(NIL, alist->keys.symbols[i]);
+	    LispWriteObject(NIL, alist->keys.symbols[i]);
 	}
 	LispWriteChar(NIL, '\n');
 

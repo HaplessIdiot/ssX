@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.1 2002/07/22 07:26:29 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.3 2002/10/06 17:11:46 paulo Exp $
 ;;
 (provide "lisp")
 
@@ -145,7 +145,7 @@
 (defsetf nth lisp::nth-store)
 
 (defsetf aref (array &rest indices) (value)
-    `(lisp::vector-store ,array ',indices ,value))
+    `(lisp::vector-store ,array ,@indices ,value))
 
 (defsetf get (symbol key &optional default) (value)
     `(lisp::put ,symbol ,key ,value))

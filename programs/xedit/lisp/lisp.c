@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.67 2002/11/10 16:29:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.68 2002/11/12 06:05:08 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -154,9 +154,7 @@ void LispAllocSeg(LispObjSeg*, int);
 static INLINE void LispMark(LispObj*);
 
 /* functions, macros, setf methods, and structure definitions */
-static INLINE void LispImmutable(LispObj*);
-/* if redefined or unbounded */
-static INLINE void LispMutable(LispObj*);
+static INLINE void LispProt(LispObj*);
 
 static LispObj *LispCheckNeedProtect(LispObj*);
 
@@ -544,6 +542,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Values, "values &rest objects", 1},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
     {LispMacro, Lisp_When, "when test &rest body", 0, 0, Com_When},
+    {LispFunction, Lisp_Write, " write object &key (case nil do-case) (circle nil do-circle) (escape nil do-escape) (length nil do-length) (level nil do-level) lines pretty readably right-margin stream"},
     {LispFunction, Lisp_WriteChar, "write-char string &optional output-stream"},
     {LispFunction, Lisp_WriteLine, "write-line string &optional output-stream &key start end"},
     {LispFunction, Lisp_WriteString, "write-string string &optional output-stream &key start end"},
@@ -555,7 +554,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 0, 1},
-    {LispFunction, Lisp_XeditVectorStore, "lisp::vector-store array subscripts value", 0, 1},
+    {LispFunction, Lisp_XeditVectorStore, "lisp::vector-store array &rest values", 0, 1},
     {LispFunction, Lisp_Zerop, "zerop number"},
 };
 
@@ -840,6 +839,18 @@ Lisp__GC(LispObj *car, LispObj *cdr)
 	gettimeofday(&start, NULL);
 #endif
 
+    /*  Need to measure timings again to check if it is not better/faster
+     * to just mark these fields as any other data, as the interface was
+     * changed to properly handle circular lists in the function body itself.
+     */
+    if (lisp__data.gc.immutablebits) {
+	for (j = 0; j < objseg.nsegs; j++) {
+	    for (entry = objseg.objects[j], last = entry + segsize;
+		 entry < last; entry++)
+		entry->prot = 0;
+	}
+    }
+
     /* Protect all packages */
     for (entry = PACK; CONSP(entry); entry = CDR(entry)) {
 	LispObj *package = CAR(entry);
@@ -872,13 +883,13 @@ Lisp__GC(LispObj *car, LispObj *cdr)
 			LispMark(atom->property->properties);
 		    if (lisp__data.gc.immutablebits) {
 			if (atom->a_function || atom->a_compiled)
-			    LispImmutable(atom->property->fun.function);
+			    LispProt(atom->property->fun.function);
 			if (atom->a_builtin)
-			    LispImmutable(atom->property->fun.builtin->data);
+			    LispProt(atom->property->fun.builtin->data);
 			if (atom->a_defsetf)
-			    LispImmutable(atom->property->setf);
+			    LispProt(atom->property->setf);
 			if (atom->a_defstruct)
-			    LispImmutable(atom->property->structure.definition);
+			    LispProt(atom->property->structure.definition);
 		    }
 		}
 		atom = atom->next;
@@ -1364,14 +1375,26 @@ LispRemAtomAllProperties(LispAtom *atom)
     if (atom->property != NOPROPERTY) {
 	if (atom->a_object)
 	    LispRemAtomObjectProperty(atom);
-	if (atom->a_function)
+	if (atom->a_function) {
+	    lisp__data.gc.immutablebits = 1;
 	    LispRemAtomFunctionProperty(atom);
-	else if (atom->a_builtin)
+	}
+	else if (atom->a_compiled) {
+	    lisp__data.gc.immutablebits = 1;
+	    LispRemAtomCompiledProperty(atom);
+	}
+	else if (atom->a_builtin) {
+	    lisp__data.gc.immutablebits = 1;
 	    LispRemAtomBuiltinProperty(atom);
-	if (atom->a_defsetf)
+	}
+	if (atom->a_defsetf) {
+	    lisp__data.gc.immutablebits = 1;
 	    LispRemAtomSetfProperty(atom);
-	if (atom->a_defstruct)
+	}
+	if (atom->a_defstruct) {
+	    lisp__data.gc.immutablebits = 1;
 	    LispRemAtomStructProperty(atom);
+	}
     }
 }
 
@@ -1409,11 +1432,12 @@ LispSetAtomCompiledProperty(LispAtom *atom, LispObj *bytecode)
 	LispAllocAtomProperty(atom);
 
     lisp__data.gc.immutablebits = 1;
-    atom->a_function = 0;
-    LispMutable(atom->property->fun.function);
-
-    LispImmutable(bytecode);
-
+    if (atom->a_builtin) {
+	atom->a_builtin = 0;
+	LispFreeArgList(atom->property->alist);
+    }
+    else
+	atom->a_function = 0;
     atom->a_compiled = 1;
     atom->property->fun.function = bytecode;
 }
@@ -1423,7 +1447,6 @@ LispRemAtomCompiledProperty(LispAtom *atom)
 {
     if (atom->a_compiled) {
 	lisp__data.gc.immutablebits = 1;
-	LispMutable(atom->property->fun.function);
 	atom->property->fun.function = NULL;
 	atom->a_compiled = 0;
 	LispFreeArgList(atom->property->alist);
@@ -1438,23 +1461,18 @@ LispSetAtomFunctionProperty(LispAtom *atom, LispObj *function,
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(atom);
 
+    lisp__data.gc.immutablebits = 1;
     if (atom->a_function == 0 && atom->a_builtin == 0 && atom->a_compiled == 0)
 	atom->a_function = 1;
     else {
-	lisp__data.gc.immutablebits = 1;
 	if (atom->a_builtin) {
-	    LispMutable(atom->property->fun.builtin->data);
 	    atom->a_builtin = 0;
 	    LispFreeArgList(atom->property->alist);
 	}
-	else {
+	else
 	    atom->a_compiled = 0;
-	    LispMutable(atom->property->fun.function);
-	}
 	atom->a_function = 1;
     }
-
-    LispImmutable(function);
 
     atom->property->fun.function = function;
     atom->property->alist = alist;
@@ -1465,7 +1483,6 @@ LispRemAtomFunctionProperty(LispAtom *atom)
 {
     if (atom->a_function) {
 	lisp__data.gc.immutablebits = 1;
-	LispMutable(atom->property->fun.function);
 	atom->property->fun.function = NULL;
 	atom->a_function = 0;
 	LispFreeArgList(atom->property->alist);
@@ -1480,20 +1497,15 @@ LispSetAtomBuiltinProperty(LispAtom *atom, LispBuiltin *builtin,
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(atom);
 
+    lisp__data.gc.immutablebits = 1;
     if (atom->a_builtin == 0 && atom->a_function == 0)
 	atom->a_builtin = 1;
     else {
-	lisp__data.gc.immutablebits = 1;
 	if (atom->a_function) {
-	    LispMutable(atom->property->fun.function);
 	    atom->a_function = 0;
 	    LispFreeArgList(atom->property->alist);
 	}
-	else
-	    LispMutable(atom->property->fun.builtin->data);
     }
-
-    LispImmutable(builtin->data);
 
     atom->property->fun.builtin = builtin;
     atom->property->alist = alist;
@@ -1504,7 +1516,6 @@ LispRemAtomBuiltinProperty(LispAtom *atom)
 {
     if (atom->a_builtin) {
 	lisp__data.gc.immutablebits = 1;
-	LispImmutable(atom->property->fun.builtin->data);
 	atom->property->fun.function = NULL;
 	atom->a_builtin = 0;
 	LispFreeArgList(atom->property->alist);
@@ -1518,13 +1529,9 @@ LispSetAtomSetfProperty(LispAtom *atom, LispObj *setf, LispArgList *alist)
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(atom);
 
-    if (atom->a_defsetf) {
-	lisp__data.gc.immutablebits = 1;
-	LispMutable(atom->property->setf);
+    lisp__data.gc.immutablebits = 1;
+    if (atom->a_defsetf)
 	LispFreeArgList(atom->property->salist);
-    }
-
-    LispImmutable(setf);
 
     atom->a_defsetf = 1;
     atom->property->setf = setf;
@@ -1536,7 +1543,6 @@ LispRemAtomSetfProperty(LispAtom *atom)
 {
     if (atom->a_defsetf) {
 	lisp__data.gc.immutablebits = 1;
-	LispMutable(atom->property->setf);
 	atom->property->setf = NULL;
 	atom->a_defsetf = 0;
 	LispFreeArgList(atom->property->salist);
@@ -1555,18 +1561,10 @@ LispSetAtomStructProperty(LispAtom *atom, LispObj *def, int fun)
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(atom);
 
-    if (atom->a_defstruct) {
-	lisp__data.gc.immutablebits = 1;
-	LispMutable(atom->object);
-	LispMutable(atom->property->structure.definition);
-    }
-
+    lisp__data.gc.immutablebits = 1;
     atom->a_defstruct = 1;
     atom->property->structure.definition = def;
     atom->property->structure.function = fun;
-
-    LispImmutable(atom->object);
-    LispImmutable(def);
 }
 
 void
@@ -1574,8 +1572,6 @@ LispRemAtomStructProperty(LispAtom *atom)
 {
     if (atom->a_defstruct) {
 	lisp__data.gc.immutablebits = 1;
-	LispMutable(atom->object);
-	LispMutable(atom->property->structure.definition);
 	atom->property->structure.definition = NULL;
 	atom->a_defstruct = 0;
     }
@@ -2193,6 +2189,7 @@ mark_again:
 	case LispCons_t:
 mark_cons:
 	    for (; CONSP(object) && !object->mark; object = CDR(object)) {
+		object->mark = 1;
 		switch (OBJECT_TYPE(CAR(object))) {
 		    case LispNil_t:
 		    case LispAtom_t:
@@ -2213,7 +2210,6 @@ mark_cons:
 			LispMark(CAR(object));
 			break;
 		}
-		object->mark = 1;
 	    }
 	    if (POINTERP(object) && !object->mark)
 		goto mark_again;
@@ -2300,9 +2296,9 @@ mark_stream:
 }
 
 static INLINE void
-LispImmutable(register LispObj *object)
+LispProt(register LispObj *object)
 {
-immutable_again:
+prot_again:
     switch (OBJECT_TYPE(object)) {
 	case LispNil_t:
 	case LispAtom_t:
@@ -2313,22 +2309,22 @@ immutable_again:
 	    if (OPAQUEP(object->data.lambda.name))
 		object->data.lambda.name->prot = 1;
 	    object->prot = 1;
-	    LispImmutable(object->data.lambda.data);
+	    LispProt(object->data.lambda.data);
 	    object = object->data.lambda.code;
-	    goto immutable_again;
+	    goto prot_cons;
 	case LispQuote_t:
 	case LispBackquote_t:
 	    object->prot = 1;
 	    object = object->data.quote;
-	    goto immutable_again;
+	    goto prot_again;
 	case LispPathname_t:
 	    object->prot = 1;
 	    object = object->data.pathname;
-	    goto immutable_again;
+	    goto prot_again;
 	case LispComma_t:
 	    object->prot = 1;
 	    object = object->data.comma.eval;
-	    goto immutable_again;
+	    goto prot_again;
 	case LispComplex_t:
 	    if (POINTERP(object->data.complex.real))
 		object->data.complex.real->prot = 1;
@@ -2336,33 +2332,49 @@ immutable_again:
 		object->data.complex.imag->prot = 1;
 	    break;
 	case LispCons_t:
-	    for (; CONSP(object); object = CDR(object)) {
-		if (POINTERP(CAR(object))) {
-		    if (XOBJECT_TYPE(CAR(object)) <= LispAtom_t)
-			CAR(object)->prot = 1;
-		    else
-			LispImmutable(CAR(object));
-		}
+prot_cons:
+	    for (; CONSP(object) && !object->prot; object = CDR(object)) {
 		object->prot = 1;
+		switch (OBJECT_TYPE(CAR(object))) {
+		    case LispNil_t:
+		    case LispAtom_t:
+		    case LispFixnum_t:
+		    case LispSChar_t:
+		    case LispPackage_t:		/* protected in gc */
+			break;
+		    case LispInteger_t:
+		    case LispDFloat_t:
+		    case LispString_t:
+		    case LispRatio_t:
+		    case LispOpaque_t:
+		    case LispBignum_t:
+		    case LispBigratio_t:
+			CAR(object)->prot = 1;
+			break;
+		    default:
+			LispProt(CAR(object));
+			break;
+		}
 	    }
-	    if (object != NIL)
-		goto immutable_again;
+	    if (POINTERP(object) && !object->prot)
+		goto prot_again;
 	    return;
 	case LispArray_t:
-	    LispImmutable(object->data.array.list);
+	    LispProt(object->data.array.list);
 	    object->prot = 1;
 	    object = object->data.array.dim;
-	    goto immutable_again;
+	    goto prot_cons;
 	case LispStruct_t:
 	    object->prot = 1;
 	    object = object->data.struc.fields;
-	    goto immutable_again;
+	    goto prot_cons;
 	case LispStream_t:
-	    LispImmutable(object->data.stream.pathname);
+prot_stream:
+	    LispProt(object->data.stream.pathname);
 	    if (object->data.stream.type == LispStreamPipe) {
 		object->prot = 1;
 		object = object->data.stream.source.program->errorp;
-		goto immutable_again;
+		goto prot_stream;
 	    }
 	    break;
 	case LispRegex_t:
@@ -2371,7 +2383,7 @@ immutable_again:
 	case LispBytecode_t:
 	    object->prot = 1;
 	    object = object->data.bytecode.code;
-	    goto immutable_again;
+	    goto prot_again;
 	case LispHashTable_t: {
 	    unsigned long i;
 	    LispHashEntry *entry = object->data.hash.table->entries,
@@ -2396,7 +2408,7 @@ immutable_again:
 			    entry->keys[i]->prot = 1;
 			    break;
 			default:
-			    LispImmutable(entry->keys[i]);
+			    LispProt(entry->keys[i]);
 			    break;
 		    }
 		    switch (OBJECT_TYPE(entry->values[i])) {
@@ -2416,7 +2428,7 @@ immutable_again:
 			    entry->values[i]->prot = 1;
 			    break;
 			default:
-			    LispImmutable(entry->values[i]);
+			    LispProt(entry->values[i]);
 			    break;
 		    }
 		}
@@ -2426,135 +2438,6 @@ immutable_again:
 	    break;
     }
     object->prot = 1;
-}
-
-static INLINE void
-LispMutable(register LispObj *object)
-{
-mutable_again:
-    switch (OBJECT_TYPE(object)) {
-	case LispNil_t:
-	case LispAtom_t:
-	case LispFixnum_t:
-	case LispSChar_t:
-	    return;
-	case LispLambda_t:
-	    if (OPAQUEP(object->data.lambda.name))
-		object->data.lambda.name->prot = 0;
-	    object->prot = 0;
-	    LispMutable(object->data.lambda.data);
-	    object = object->data.lambda.code;
-	    goto mutable_again;
-	case LispQuote_t:
-	case LispBackquote_t:
-	    object->prot = 0;
-	    object = object->data.quote;
-	    goto mutable_again;
-	case LispPathname_t:
-	    object->prot = 0;
-	    object = object->data.pathname;
-	    goto mutable_again;
-	case LispComma_t:
-	    object->prot = 0;
-	    object = object->data.comma.eval;
-	    goto mutable_again;
-	case LispComplex_t:
-	    if (POINTERP(object->data.complex.real))
-		object->data.complex.real->prot = 0;
-	    if (POINTERP(object->data.complex.imag))
-		object->data.complex.imag->prot = 0;
-	    break;
-	case LispCons_t:
-	    for (; CONSP(object); object = CDR(object)) {
-		if (POINTERP(CAR(object))) {
-		    if (XOBJECT_TYPE(CAR(object)) <= LispAtom_t)
-			CAR(object)->prot = 0;
-		    else
-			LispMutable(CAR(object));
-		}
-		object->prot = 0;
-	    }
-	    if (object != NIL)
-		goto mutable_again;
-	    return;
-	case LispArray_t:
-	    LispMutable(object->data.array.list);
-	    object->prot = 0;
-	    object = object->data.array.dim;
-	    goto mutable_again;
-	case LispStruct_t:
-	    object->prot = 0;
-	    object = object->data.struc.fields;
-	    goto mutable_again;
-	case LispStream_t:
-	    LispMutable(object->data.stream.pathname);
-	    if (object->data.stream.type == LispStreamPipe) {
-		object->prot = 0;
-		object = object->data.stream.source.program->errorp;
-		goto mutable_again;
-	    }
-	    break;
-	case LispRegex_t:
-	    object->data.regex.pattern->prot = 0;
-	    break;
-	case LispBytecode_t:
-	    object->prot = 0;
-	    object = object->data.bytecode.code;
-	    goto mutable_again;
-	case LispHashTable_t: {
-	    unsigned long i;
-	    LispHashEntry *entry = object->data.hash.table->entries,
-			  *last = entry + object->data.hash.table->num_entries;
-
-	    for (; entry < last; entry++) {
-		for (i = 0; i < entry->count; i++) {
-		    switch (OBJECT_TYPE(entry->keys[i])) {
-			case LispNil_t:
-			case LispAtom_t:
-			case LispFixnum_t:
-			case LispSChar_t:
-			case LispPackage_t:
-			    break;
-			case LispInteger_t:
-			case LispDFloat_t:
-			case LispString_t:
-			case LispRatio_t:
-			case LispOpaque_t:
-			case LispBignum_t:
-			case LispBigratio_t:
-			    entry->keys[i]->prot = 0;
-			    break;
-			default:
-			    LispMutable(entry->keys[i]);
-			    break;
-		    }
-		    switch (OBJECT_TYPE(entry->values[i])) {
-			case LispNil_t:
-			case LispAtom_t:
-			case LispFixnum_t:
-			case LispSChar_t:
-			case LispPackage_t:
-			    break;
-			case LispInteger_t:
-			case LispDFloat_t:
-			case LispString_t:
-			case LispRatio_t:
-			case LispOpaque_t:
-			case LispBignum_t:
-			case LispBigratio_t:
-			    entry->values[i]->prot = 0;
-			    break;
-			default:
-			    LispMutable(entry->values[i]);
-			    break;
-		    }
-		}
-	    }
-	}   break;
-	default:
-	    break;
-    }
-    object->prot = 0;
 }
 
 void

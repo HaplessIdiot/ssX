@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.13 2002/10/06 17:11:39 paulo Exp $
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.14 2002/11/10 23:21:56 paulo Exp $
 
 #include "Xedit"
 
@@ -91,18 +91,14 @@ line		1,0,-2,0
 *Scrollbar.foreground:		rgb:a/5/5
 *Scrollbar.background:		gray60
 *Text.Scrollbar.background:	gray60
-*Scrollbar.backgroundPixmap:	gradient:horizontal?dimension=14&start=gray70&end=gray80
-*hScrollbar.backgroundPixmap:	gradient:vertical?dimension=14&start=gray80&end=gray70
+*Scrollbar.backgroundPixmap:	gradient:horizontal?dimension=14&start=gray70&end=gray85
+*hScrollbar.backgroundPixmap:	gradient:vertical?dimension=14&start=gray85&end=gray70
 *hScrollbar.displayList:\
-foreground	gray75;\
-line		1,-1,-2,-1;\
 foreground	gray85;\
-lines		1,0,-2,0
+segments	1,-1,-2,-1,1,0,-2,0
 *vScrollbar.displayList:\
 foreground	gray85;\
-lines		0,1,0,-2;\
-foreground	gray75;\
-lines		-1,1,-1,-2
+segments	0,1,0,-2,-1,1,-1,-2
 *Scrollbar.thumb:		vlines2
 *hScrollbar.thumb:		hlines2
 

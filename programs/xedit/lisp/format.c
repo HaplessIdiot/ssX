@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.24 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.25 2002/11/10 16:29:04 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -240,6 +240,8 @@ static FmtDefs TabulateDefs = {
 	{0, 1},			/* colinc */
     },
 };
+
+extern LispObj *Oprint_escape;
 
 /*
  * Implementation
@@ -1725,7 +1727,7 @@ LispFormat(LispObj *stream, FmtInfo *info)
     FmtDefs *defs = NULL;
     LispObj *object, *arguments;
     char stk[256], *format, *next_format;
-    int length, num_arguments, code, need_update, need_argument, hash, escape;
+    int length, num_arguments, code, need_update, need_argument, hash, head;
 
     /* arguments that will be updated on function exit */
     format = *(info->format);
@@ -1886,10 +1888,11 @@ LispFormat(LispObj *stream, FmtInfo *info)
 	    /* everything seens fine, print the format directive */
 	    switch (args->command) {
 		case 'A':
-		    escape = LispGetEscape(stream);
-		    LispSetEscape(stream, 1);
+		    head = lisp__data.env.length;
+		    LispAddVar(Oprint_escape, NIL);
+		    ++lisp__data.env.head;
 		    format_ascii(stream, object, args);
-		    LispSetEscape(stream, escape);
+		    lisp__data.env.head = lisp__data.env.length = head;
 		    break;
 		case 'S':
 		    format_ascii(stream, object, args);
