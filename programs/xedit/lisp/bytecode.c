@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.12 2002/11/21 07:25:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.13 2002/11/23 08:26:48 paulo Exp $ */
 
 
 /*
@@ -3527,9 +3527,14 @@ OPCODE_LABEL(XBC_CALL):
 	offset = *stream++;
 	lisp__data.stack.base = lisp__data.stack.length - offset;
 	builtin = builtins[*stream++];
-	reg0 = builtin->function(builtin);
-	if (!builtin->multiple_values)
+	if (builtin->multiple_values) {
 	    RETURN_COUNT = 0;
+	    reg0 = builtin->function(builtin);
+	}
+	else {
+	    reg0 = builtin->function(builtin);
+	    RETURN_COUNT = 0;
+	}
 	lisp__data.stack.length -= offset;
 	NEXT_OPCODE();
 
@@ -3537,9 +3542,14 @@ OPCODE_LABEL(XBC_CALL_SET):
 	offset = *stream++;
 	lisp__data.stack.base = lisp__data.stack.length - offset;
 	builtin = builtins[*stream++];
-	reg0 = builtin->function(builtin);
-	if (!builtin->multiple_values)
+	if (builtin->multiple_values) {
 	    RETURN_COUNT = 0;
+	    reg0 = builtin->function(builtin);
+	}
+	else {
+	    reg0 = builtin->function(builtin);
+	    RETURN_COUNT = 0;
+	}
 	lisp__data.stack.length -= offset;
 	offset = *stream++;
 	lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
