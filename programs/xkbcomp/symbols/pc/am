@@ -1,7 +1,7 @@
 
 // based on a keyboard map from an 'xkb/symbols/am' file
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/am,v 1.2 2002/11/22 04:03:28 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/am,v 1.3 2003/04/12 10:53:48 pascal Exp $
 
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
@@ -117,14 +117,14 @@ xkb_symbols "old" {
     key <AB07> {	[ 0x1000577,  0x1000547 ]	};
     key <AB08> {	[ comma,      guillemotleft ]	};
     key <AB09> {	[ period,     guillemotright ]	};
-    key <AB10> {	[ 0x100055e,  0x1000530 ]	};
-    
+    key <AB10> {	[ 0x100055e,  0x100055e ]	};
+
 };
 
 xkb_symbols "phonetic" {
     include "pc/am(old)"
 	
-    key <BKSL> {	[ 0x1000530,  backslash ]	};
+    key <BKSL> {	[ 0x1000577,  0x1000547 ]	};
 	
     key <AE01> {	[ 0x1000567,  0x1000537 ]	};
     key <AE02> {	[ 0x1000569,  0x1000539 ]	};
@@ -168,6 +168,6 @@ xkb_symbols "phonetic" {
     key <LatB> {	[ 0x1000562,  0x1000532 ]	};
     key <LatN> {	[ 0x1000576,  0x1000546 ]	};
     key <LatM> {	[ 0x1000574,  0x1000544 ]	};
-    key <AB10> {	[ 0x1000577,  0x1000547 ]	};
+    key <AB10> {	[ slash    ,  0x100055e ]	};
 
 };
